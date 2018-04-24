@@ -2,8 +2,6 @@ package io.iohk.cef
 
 package object encoding {
 
-  case class ValidEncoding[U](enc: U)
-
   trait Encoder[T, U] {
     def encode(t: T): U
   }
@@ -11,6 +9,8 @@ package object encoding {
   trait Decoder[U, T] {
     def decode(u: U): T
   }
+
+  // TODO would it be preferable to use Try, Either or Throwables here?
 
   def encode[T, U](t: T)(implicit enc: Encoder[T, U]): U = enc.encode(t)
 
