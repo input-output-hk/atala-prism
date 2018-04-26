@@ -1,4 +1,4 @@
-package io.iohk.cef.ethereum.crypto
+package io.iohk.cef.net.rlpx.ethereum.crypto
 
 import akka.util.ByteString
 import org.bouncycastle.crypto.Digest

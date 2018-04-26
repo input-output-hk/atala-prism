@@ -3,7 +3,7 @@ package io.iohk.cef.net.rlpx
 import java.util.concurrent.atomic.AtomicInteger
 
 import akka.util.ByteString
-import io.iohk.cef.ethereum.p2p.{Message, MessageDecoder, MessageSerializable}
+import io.iohk.cef.net.rlpx.ethereum.p2p.{Message, MessageDecoder, MessageSerializable}
 
 import scala.util.Try
 

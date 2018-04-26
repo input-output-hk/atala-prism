@@ -1,7 +1,7 @@
 package io.iohk.cef.net.rlpx
 
 import akka.util.ByteString
-import io.iohk.cef.ethereum.crypto._
+import io.iohk.cef.net.rlpx.ethereum.crypto._
 import org.bouncycastle.math.ec.ECPoint
 
 object AuthResponseMessage {

@@ -1,10 +1,10 @@
-package io.iohk.cef
+package io.iohk.cef.net
 
 import java.io.{File, PrintWriter}
 import java.net.{Inet6Address, InetAddress}
 import java.security.SecureRandom
 
-import io.iohk.cef.ethereum.crypto._
+import io.iohk.cef.net.rlpx.ethereum.crypto._
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair
 import org.bouncycastle.crypto.params.ECPublicKeyParameters
 import org.bouncycastle.math.ec.ECPoint
@@ -12,7 +12,7 @@ import org.bouncycastle.util.encoders.Hex
 
 import scala.io.Source
 
-package object net {
+package object rlpx {
 
   val ProtocolVersion = 4
 

@@ -1,4 +1,4 @@
-package io.iohk.cef.ethereum.p2p
+package io.iohk.cef.net.rlpx.ethereum.p2p
 
 import akka.util.ByteString
 import Message.Version

@@ -6,10 +6,10 @@ import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.io.Tcp
 import akka.testkit.{TestActorRef, TestProbe}
 import akka.util.ByteString
-import io.iohk.cef.ethereum.p2p.Message.Version
-import io.iohk.cef.ethereum.p2p.{MessageDecoder, MessageSerializable}
-import io.iohk.cef.ethereum.p2p.messages.Versions
-import io.iohk.cef.ethereum.p2p.messages.WireProtocol.Ping
+import io.iohk.cef.net.rlpx.ethereum.p2p.Message.Version
+import io.iohk.cef.net.rlpx.ethereum.p2p.{MessageDecoder, MessageSerializable}
+import io.iohk.cef.net.rlpx.ethereum.p2p.messages.Versions
+import io.iohk.cef.net.rlpx.ethereum.p2p.messages.WireProtocol.Ping
 import io.iohk.cef.net.rlpx.RLPxConnectionHandler.RLPxConfiguration
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FlatSpec, Matchers}

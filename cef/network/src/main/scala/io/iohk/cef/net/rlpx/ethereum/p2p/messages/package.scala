@@ -1,6 +1,6 @@
-package io.iohk.cef.ethereum.p2p
+package io.iohk.cef.net.rlpx.ethereum.p2p
 
-import io.iohk.cef.ethereum.p2p.Message.Version
+import io.iohk.cef.net.rlpx.ethereum.p2p.Message.Version
 
 package object messages {
   object Versions {

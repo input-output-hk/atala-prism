@@ -2,7 +2,7 @@ package io.iohk.cef.net.rlpx
 
 
 import akka.util.ByteString
-import io.iohk.cef.ethereum.crypto._
+import io.iohk.cef.net.rlpx.ethereum.crypto._
 import io.iohk.cef.encoding.rlp.RLPImplicitConversions._
 import io.iohk.cef.encoding.rlp.RLPImplicits._
 import io.iohk.cef.encoding.rlp.{RLPDecoder, RLPEncodeable, RLPEncoder, RLPList}

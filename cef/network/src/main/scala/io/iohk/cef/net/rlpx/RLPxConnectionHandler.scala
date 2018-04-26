@@ -6,7 +6,7 @@ import akka.actor._
 import akka.io.Tcp._
 import akka.io.{IO, Tcp}
 import akka.util.ByteString
-import io.iohk.cef.ethereum.p2p.{Message, MessageDecoder, MessageSerializable}
+import io.iohk.cef.net.rlpx.ethereum.p2p.{Message, MessageDecoder, MessageSerializable}
 import io.iohk.cef.net.rlpx.RLPxConnectionHandler.RLPxConfiguration
 import org.bouncycastle.util.encoders.Hex
 

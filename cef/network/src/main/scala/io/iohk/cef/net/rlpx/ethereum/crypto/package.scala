@@ -1,4 +1,4 @@
-package io.iohk.cef.ethereum
+package io.iohk.cef.net.rlpx.ethereum
 
 import java.nio.charset.StandardCharsets
 import java.security.SecureRandom
