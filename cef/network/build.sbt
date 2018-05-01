@@ -7,6 +7,8 @@ val commonSettings = Seq(
 
 val akkaVersion = "2.4.17"
 
+mainClass in (Compile, run) := Some("io.iohk.cef.net.rlpx.RLPxNode")
+
 val dep = Seq(
   "com.typesafe.akka" %% "akka-actor" % akkaVersion,
   "com.typesafe.akka" %% "akka-agent" % akkaVersion,
@@ -42,6 +44,7 @@ val root = project.in(file("."))
 
 scalacOptions := Seq(
   "-unchecked",
+  "-language:postfixOps",
   "-deprecation",
   "-feature",
   "-Xfatal-warnings",
