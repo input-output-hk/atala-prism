@@ -202,6 +202,9 @@ class RLPxConnectionHandler(
           cancellableAckTimeout.foreach(_.cancellable.cancel())
           log.debug(s"[Stopping Connection] Write to $peerId failed")
           context stop self
+        case x => {
+          println("Got an unmatched message in handshaked: " + x)
+        }
       }
 
     /**

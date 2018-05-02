@@ -3,12 +3,12 @@ package io.iohk.cef.net.rlpx
 import java.net.InetSocketAddress
 import java.security.SecureRandom
 
-import akka.actor.{Actor, ActorContext, ActorRef, ActorSystem, Props}
+import akka.actor.{Actor, ActorContext, ActorLogging, ActorRef, ActorSystem, Props}
 import akka.util.ByteString
 import com.typesafe.config.ConfigFactory
 import io.iohk.cef.io.iohk.cef.net.SimpleNode.StartServer
 import io.iohk.cef.io.iohk.cef.net.{NodeInfo, SimpleNode}
-import io.iohk.cef.net.rlpx.RLPxConnectionHandler.{ConnectionEstablished, RLPxConfiguration}
+import io.iohk.cef.net.rlpx.RLPxConnectionHandler.{ConnectionEstablished, RLPxConfiguration, SendMessage}
 import io.iohk.cef.net.rlpx.ethereum.p2p.Message.Version
 import io.iohk.cef.net.rlpx.ethereum.p2p.{Message, MessageDecoder, MessageSerializable}
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair
@@ -96,13 +96,15 @@ object RLPxNode extends App {
 
 
 
-  class ConversationActor extends Actor {
+  class ConversationActor extends Actor with ActorLogging {
 
     val bootstrapNodeInfo = createBootstrapNode(context)
     val (nextActorId, nextActor) = createNode("sender", context, Some(bootstrapNodeInfo))
 
     override def receive: Receive = {
-      case ConnectionEstablished(x) => println(s"Connection established to ${x}")
+      case ConnectionEstablished(x) =>
+        log.debug(s"Connection established to ${Hex.toHexString(x.toArray)}")
+        nextActor ! SendMessage(SampleMessage("Hello, peer!"))
       case _ => nextActor ! StartServer(new InetSocketAddress("localhost", 0))
     }
   }
