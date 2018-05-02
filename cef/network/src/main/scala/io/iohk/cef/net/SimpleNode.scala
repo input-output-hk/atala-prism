@@ -1,4 +1,4 @@
-package io.iohk.cef.io.iohk.cef.net
+package io.iohk.cef.net
 
 import java.net.{InetSocketAddress, URI}
 
