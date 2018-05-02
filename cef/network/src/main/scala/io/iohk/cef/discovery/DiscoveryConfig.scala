@@ -1,21 +1,21 @@
 package io.iohk.cef.discovery
 
-import io.iohk.cef.network.{Node, NodeParser}
+import io.iohk.cef.network.{NodeAddress, NodeParser}
 
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.duration._
 
 case class DiscoveryConfig(
-    discoveryEnabled: Boolean,
-    interface: String,
-    port: Int,
-    bootstrapNodes: Set[Node],
-    nodesLimit: Int,
-    scanMaxNodes: Int,
-    scanInitialDelay: FiniteDuration,
-    scanInterval: FiniteDuration,
-    messageExpiration: FiniteDuration,
-    maxSeekResults: Int)
+                            discoveryEnabled: Boolean,
+                            interface: String,
+                            port: Int,
+                            bootstrapNodes: Set[NodeAddress],
+                            nodesLimit: Int,
+                            scanMaxNodes: Int,
+                            scanInitialDelay: FiniteDuration,
+                            scanInterval: FiniteDuration,
+                            messageExpiration: FiniteDuration,
+                            maxSeekResults: Int)
 
 object DiscoveryConfig {
   def apply(etcClientConfig: com.typesafe.config.Config): DiscoveryConfig = {

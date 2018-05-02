@@ -1,9 +1,7 @@
-package io.iohk.cef.utils
+package io.iohk.cef.network
 
 import java.net.InetSocketAddress
 
-import io.iohk.cef.discovery.DiscoveryMessage.Capabilities
-import io.iohk.cef.network._
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair
 import org.bouncycastle.crypto.params.ECPublicKeyParameters
 

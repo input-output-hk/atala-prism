@@ -10,8 +10,7 @@ import io.iohk.cef.crypto
 import io.iohk.cef.db.{KnownNode, KnownNodesStorage}
 import io.iohk.cef.discovery.DiscoveryMessage.{Ping, Pong, Seek}
 import io.iohk.cef.encoding.{Decoder, Encoder}
-import io.iohk.cef.network.{Endpoint, Node}
-import io.iohk.cef.utils.{NodeStatus, ServerStatus}
+import io.iohk.cef.network.{Capabilities, Endpoint, Node, NodeAddress, NodeStatus, ServerStatus}
 
 import scala.collection.mutable
 import scala.util.Random
@@ -31,11 +30,10 @@ class DiscoveryManager(
   val pingedNodes: mutable.LinkedHashMap[ByteString, PingInfo] = mutable.LinkedHashMap.empty
 
   var discoveredNodes: Vector[DiscoveryNodeInfo] = {
-    val bootStrapNodesInfo = discoveryConfig.bootstrapNodes.map(DiscoveryNodeInfo.fromNode(_, clock))
     val knownNodes =
       if (discoveryConfig.discoveryEnabled) knownNodesStorage.getNodes()
       else Set.empty
-    knownNodes.map(knownNode => DiscoveryNodeInfo.fromKnownNode(knownNode)).toVector ++ bootStrapNodesInfo
+    knownNodes.map(knownNode => DiscoveryNodeInfo.fromKnownNode(knownNode)).toVector
   }
 
   if (discoveryConfig.discoveryEnabled) startListening()
@@ -60,18 +58,18 @@ class DiscoveryManager(
     case DiscoveryListener.MessageReceived(Pong(capabilities, token, timestamp), from) =>
       if (hasNotExpired(timestamp)) {
         pingedNodes.get(token).foreach { pingInfo =>
-          if (pingInfo.nodeinfo.node.udpSocketAddress == from) {
+          if (pingInfo.nodeAddress.udpSocketAddress == from) {
             pingedNodes -= token
-            val node = pingInfo.nodeinfo.node
+            val node = Node(pingInfo.nodeAddress, capabilities)
             if (capabilities.satisfies(nodeStatusHolder().capabilities)) {
               context.system.eventStream.publish(CompatibleNodeFound(node))
               knownNodesStorage.insertNode(node)
               discoveredNodes = discoveredNodes :+ DiscoveryNodeInfo(node, clock.instant())
             }
             val seek = Seek(nodeStatusHolder().capabilities, discoveryConfig.maxSeekResults)
-            listener ! DiscoveryListener.SendMessage(seek, node.udpSocketAddress)
+            listener ! DiscoveryListener.SendMessage(seek, node.address.udpSocketAddress)
           } else {
-            log.warning(s"Expected pong message from ${pingInfo.nodeinfo.node} but got it from ${from}")
+            log.warning(s"Expected pong message from ${pingInfo.nodeAddress} but got it from ${from}")
           }
         }
       } else {
@@ -106,19 +104,19 @@ class DiscoveryManager(
     expired.foreach {
       case (id, pingInfo) => {
         pingedNodes -= id
-        discoveredNodes = discoveredNodes.filter(_ == pingInfo.nodeinfo)
+        discoveredNodes = discoveredNodes.filter(_.node.address == pingInfo.nodeAddress)
       }
     }
 
     new Random().shuffle(pingedNodes.values).take(discoveryConfig.scanMaxNodes).foreach {pingInfo =>
-      sendPing(listener, address, pingInfo.nodeinfo)
+      sendPing(listener, address, pingInfo.nodeAddress)
     }
 
     discoveredNodes
       .sortBy(_.addTimestamp)
       .takeRight(discoveryConfig.scanMaxNodes)
       .foreach { nodeInfo =>
-        sendPing(listener, address, nodeInfo)
+        sendPing(listener, address, nodeInfo.node.address)
       }
   }
 
@@ -130,20 +128,25 @@ class DiscoveryManager(
   def waitingUdpConnection(listener: ActorRef): Receive = {
     case DiscoveryListener.Ready(address) =>
       context.become(listening(listener, address))
+
+      //Pinging all bootstrap nodes
+      discoveryConfig.bootstrapNodes.foreach( node =>
+        sendPing(listener, address, node)
+      )
     case _ =>
       log.warning("UDP connection not ready yet. Ignoring the message.")
   }
 
-  private def sendPing(listener: ActorRef, listeningAddress: InetSocketAddress, nodeInfo: DiscoveryNodeInfo): Unit = {
+  private def sendPing(listener: ActorRef, listeningAddress: InetSocketAddress, nodeAddress: NodeAddress): Unit = {
     val from = Endpoint.fromUdpAddress(listeningAddress, getTcpPort)
     val ping = DiscoveryMessage.Ping(DiscoveryMessage.ProtocolVersion, from, expirationTimestamp)
     val key = pingMessageKey(ping)
 
     if(pingedNodes.size >= discoveryConfig.nodesLimit) pingedNodes -= pingedNodes.head._1
 
-    pingedNodes += ((key, PingInfo(nodeInfo, clock.instant())))
+    pingedNodes += ((key, PingInfo(nodeAddress, clock.instant())))
 
-    listener ! DiscoveryListener.SendMessage(ping, nodeInfo.node.udpSocketAddress)
+    listener ! DiscoveryListener.SendMessage(ping, nodeAddress.udpSocketAddress)
   }
 
   private def pingMessageKey(ping: DiscoveryMessage.Ping) = {
@@ -174,18 +177,27 @@ class DiscoveryManager(
 }
 
 object DiscoveryManager {
-  def props(discoveryListener: ActorRef,
-            discoveryConfig: DiscoveryConfig,
+  def props(discoveryConfig: DiscoveryConfig,
             knownNodesStorage: KnownNodesStorage,
             nodeStatusHolder: Agent[NodeStatus],
-            clock: Clock): Props =
-    Props(new DiscoveryManager(discoveryListener, discoveryConfig, knownNodesStorage, nodeStatusHolder, clock))
+            clock: Clock,
+            encoder: Encoder[DiscoveryMessage, ByteString],
+            decoder: Decoder[ByteString, DiscoveryMessage]): Props =
+    Props(new DiscoveryManager(
+      discoveryConfig,
+      knownNodesStorage,
+      nodeStatusHolder,
+      clock,
+      encoder,
+      decoder))
 
   object DiscoveryNodeInfo {
 
-    def fromKnownNode(knownNode: KnownNode): DiscoveryNodeInfo = DiscoveryNodeInfo(knownNode.node, knownNode.discovered)
+    def fromKnownNode(knownNode: KnownNode): DiscoveryNodeInfo =
+      DiscoveryNodeInfo(knownNode.node, knownNode.lastSeen)
 
-    def fromNode(node: Node, clock: Clock): DiscoveryNodeInfo = DiscoveryNodeInfo(node, clock.instant())
+    def fromNode(node: Node, capabilities: Capabilities, clock: Clock): DiscoveryNodeInfo =
+      DiscoveryNodeInfo(node, clock.instant())
 
   }
 
@@ -194,7 +206,7 @@ object DiscoveryManager {
     def addTimestamp: Instant
   }
   case class DiscoveryNodeInfo(node: Node, addTimestamp: Instant) extends TimedInfo
-  case class PingInfo(nodeinfo: DiscoveryNodeInfo, addTimestamp: Instant) extends TimedInfo
+  case class PingInfo(nodeAddress: NodeAddress, addTimestamp: Instant) extends TimedInfo
 
   case object GetDiscoveredNodesInfo
   case class DiscoveredNodesInfo(nodes: Set[DiscoveryNodeInfo])
@@ -202,7 +214,5 @@ object DiscoveryManager {
   private[discovery] case object Scan
 
   case object StartListening
-
-  case object Scan
 
 }

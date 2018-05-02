@@ -14,7 +14,9 @@ val dep = {
     "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
     "org.scalatest" %% "scalatest" % "3.0.1" % "test",
     "org.scalacheck" %% "scalacheck" % "1.13.4" % "test",
-    "org.bouncycastle" % "bcprov-jdk15on" % "1.59")
+    "org.bouncycastle" % "bcprov-jdk15on" % "1.59",
+    "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test,
+    "org.scalamock" %% "scalamock" % "4.1.0" % Test)
 }
 
 val verifyDeps = Seq(

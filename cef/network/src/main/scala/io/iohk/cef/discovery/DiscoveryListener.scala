@@ -7,7 +7,7 @@ import akka.agent.Agent
 import akka.io.{IO, Udp}
 import akka.util.ByteString
 import io.iohk.cef.encoding.{Decoder, Encoder}
-import io.iohk.cef.utils.NodeStatus
+import io.iohk.cef.network.NodeStatus
 
 class DiscoveryListener(
     discoveryConfig: DiscoveryConfig,
