@@ -16,7 +16,7 @@ case class NodeAddress(id: ByteString, addr: InetAddress, tcpPort: Int, udpPort:
 
   def toUri: URI = {
     val host = NodeAddress.getHostName(addr)
-    new URI(s"enode://${Hex.toHexString(id.toArray[Byte])}@$host:$tcpPort?discport=$udpPort")
+    new URI(s"enode://${id.utf8String}@$host:$tcpPort?discport=$udpPort")
   }
 }
 

@@ -1,6 +1,14 @@
 package io.iohk.cef
 
+import java.io.{File, PrintWriter}
+import java.security.SecureRandom
+
+import org.bouncycastle.crypto.AsymmetricCipherKeyPair
 import org.bouncycastle.crypto.params.ECPublicKeyParameters
+import org.bouncycastle.util.encoders.Hex
+
+import scala.io.Source
+import crypto._
 
 package object network {
   implicit class ECPublicKeyParametersNodeId(val pubKey: ECPublicKeyParameters) extends AnyVal {
@@ -8,5 +16,32 @@ package object network {
       pubKey.asInstanceOf[ECPublicKeyParameters].getQ
         .getEncoded(false)
         .drop(1) // drop type info
+  }
+
+  def loadAsymmetricCipherKeyPair(filePath: String, secureRandom: SecureRandom): AsymmetricCipherKeyPair = {
+    val file = new File(filePath)
+    if(!file.exists()){
+      val keysValuePair = generateKeyPair(secureRandom)
+
+      //Write keys to file
+      val (priv, _) = keyPairToByteArrays(keysValuePair)
+      require(file.getParentFile.exists() || file.getParentFile.mkdirs(), "Key's file parent directory creation failed")
+      val writer = new PrintWriter(filePath)
+      try {
+        writer.write(Hex.toHexString(priv))
+      } finally {
+        writer.close()
+      }
+
+      keysValuePair
+    } else {
+      val reader = Source.fromFile(filePath)
+      try {
+        val privHex = reader.mkString
+        keyPairFromPrvKey(Hex.decode(privHex))
+      } finally {
+        reader.close()
+      }
+    }
   }
 }
