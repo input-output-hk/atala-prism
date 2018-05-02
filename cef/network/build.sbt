@@ -5,11 +5,12 @@ val commonSettings = Seq(
   scalaVersion := "2.12.5"
 )
 
-val akkaVersion = "2.4.17"
+val akkaVersion = "2.5.12"
 
 mainClass in (Compile, run) := Some("io.iohk.cef.net.rlpx.RLPxNode")
 
 val dep = Seq(
+  "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
   "com.typesafe.akka" %% "akka-actor" % akkaVersion,
   "com.typesafe.akka" %% "akka-agent" % akkaVersion,
   //  "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,

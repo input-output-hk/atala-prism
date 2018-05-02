@@ -6,8 +6,8 @@ import java.security.SecureRandom
 import akka.actor.{Actor, ActorContext, ActorLogging, ActorRef, ActorSystem, Props}
 import akka.util.ByteString
 import com.typesafe.config.ConfigFactory
-import io.iohk.cef.io.iohk.cef.net.SimpleNode.StartServer
-import io.iohk.cef.io.iohk.cef.net.{NodeInfo, SimpleNode}
+import io.iohk.cef.net.SimpleNode.StartServer
+import io.iohk.cef.net.{NodeInfo, SimpleNode}
 import io.iohk.cef.net.rlpx.RLPxConnectionHandler.{ConnectionEstablished, RLPxConfiguration, SendMessage}
 import io.iohk.cef.net.rlpx.ethereum.p2p.Message.Version
 import io.iohk.cef.net.rlpx.ethereum.p2p.{Message, MessageDecoder, MessageSerializable}

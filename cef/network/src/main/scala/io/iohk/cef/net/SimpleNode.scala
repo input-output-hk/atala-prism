@@ -5,7 +5,7 @@ import java.net.{InetSocketAddress, URI}
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import akka.io.Tcp.{Bind, Bound, CommandFailed, Connected}
 import akka.io.{IO, Tcp}
-import io.iohk.cef.io.iohk.cef.net.SimpleNode.StartServer
+import io.iohk.cef.net.SimpleNode.StartServer
 import io.iohk.cef.net.rlpx.RLPxConnectionHandler.{ConnectTo, HandleConnection}
 
 class SimpleNode(val nodeId: String, protoHandler: ActorRef, bootstrapPeer: Option[NodeInfo]) extends Actor with ActorLogging {

@@ -38,13 +38,13 @@ class RLPxConnectionHandlerSpec extends FlatSpec with Matchers with MockFactory 
     rlpxConnection ! RLPxConnectionHandler.SendMessage(Ping())
     connection.expectMsg(Tcp.Write(ByteString("ping encoded"), RLPxConnectionHandler.Ack))
     rlpxConnection ! RLPxConnectionHandler.Ack
-    connection.expectNoMsg()
+    connection.expectNoMessage()
 
     //Send second message
     rlpxConnection ! RLPxConnectionHandler.SendMessage(Ping())
     connection.expectMsg(Tcp.Write(ByteString("ping encoded"), RLPxConnectionHandler.Ack))
     rlpxConnection ! RLPxConnectionHandler.Ack
-    connection.expectNoMsg()
+    connection.expectNoMessage()
   }
 
   it should "accummulate messages and write them when receiving ACKs" in new TestSetup {
@@ -60,17 +60,17 @@ class RLPxConnectionHandlerSpec extends FlatSpec with Matchers with MockFactory 
 
     //Only first message is sent
     connection.expectMsg(Tcp.Write(ByteString("ping encoded"), RLPxConnectionHandler.Ack))
-    connection.expectNoMsg()
+    connection.expectNoMessage()
 
     //Send Ack, second message should now be sent through TCP connection
     rlpxConnection ! RLPxConnectionHandler.Ack
     connection.expectMsg(Tcp.Write(ByteString("ping encoded"), RLPxConnectionHandler.Ack))
-    connection.expectNoMsg()
+    connection.expectNoMessage()
 
     //Send Ack, third message should now be sent through TCP connection
     rlpxConnection ! RLPxConnectionHandler.Ack
     connection.expectMsg(Tcp.Write(ByteString("ping encoded"), RLPxConnectionHandler.Ack))
-    connection.expectNoMsg()
+    connection.expectNoMessage()
   }
 
   it should "close the connection when Ack timeout happens" in new TestSetup {
