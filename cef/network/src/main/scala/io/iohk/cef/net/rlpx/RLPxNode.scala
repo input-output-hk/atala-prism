@@ -104,7 +104,7 @@ object RLPxNode extends App {
     override def receive: Receive = {
       case ConnectionEstablished(x) =>
         log.debug(s"Connection established to ${Hex.toHexString(x.toArray)}")
-        nextActor ! SendMessage(SampleMessage("Hello, peer!"))
+        sender() ! SendMessage(SampleMessage("Hello, peer!"))
       case _ => nextActor ! StartServer(new InetSocketAddress("localhost", 0))
     }
   }
