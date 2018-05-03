@@ -20,7 +20,8 @@ val dep = Seq(
 
   "org.scalatest" %% "scalatest" % "3.0.1" % "test",
   "org.scalacheck" %% "scalacheck" % "1.13.4" % "test",
-  "org.scalamock" %% "scalamock-scalatest-support" % "3.5.0" % "test"
+  "org.scalamock" %% "scalamock-scalatest-support" % "3.5.0" % "test",
+  "com.typesafe.akka" %% "akka-testkit-typed" % akkaVersion % "test"
 
 )
 
