@@ -3,6 +3,7 @@ package io.iohk.cef.network
 import java.net.{InetSocketAddress, _}
 
 import akka.util.ByteString
+import io.iohk.cef.encoding.rlp._
 import org.bouncycastle.util.encoders.Hex
 
 import scala.util.{Failure, Success, Try}
@@ -21,6 +22,20 @@ case class NodeAddress(id: ByteString, addr: InetAddress, tcpPort: Int, udpPort:
 }
 
 object NodeAddress {
+
+  implicit def nodeAddressRLPEncDec(implicit
+                                   byteStrEncDec: RLPEncDec[ByteString],
+                                    addrEncDec: RLPEncDec[InetAddress],
+                                    intEncDec: RLPEncDec[Int]) = new RLPEncDec[NodeAddress] {
+    override def encode(obj: NodeAddress): RLPEncodeable =
+      RLPList(byteStrEncDec.encode(obj.id), addrEncDec.encode(obj.addr), intEncDec.encode(obj.tcpPort), intEncDec.encode(obj.udpPort))
+
+    override def decode(rlp: RLPEncodeable): NodeAddress = rlp match {
+      case RLPList(id, addr, tcpPort, udpPort) =>
+        NodeAddress(byteStrEncDec.decode(id), addrEncDec.decode(addr), intEncDec.decode(tcpPort), intEncDec.decode(udpPort))
+      case _ => throw new RLPException("src is not a valid NodeAddress")
+    }
+  }
 
   /**
     * Given an address, returns the corresponding host name for the URI.
