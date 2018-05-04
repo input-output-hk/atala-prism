@@ -1,13 +1,15 @@
 package io.iohk.cef.encoding.rlp
 
+import java.net.InetAddress
+
 import akka.util.ByteString
-import RLP._
-import BigIntExtensionMethods._
+import io.iohk.cef.encoding.rlp.BigIntExtensionMethods._
+import io.iohk.cef.encoding.rlp.RLP._
 
 
 object RLPImplicits {
 
-  implicit val byteEncDec = new RLPEncoder[Byte] with RLPDecoder[Byte] {
+  implicit val byteEncDec = new RLPEncDec[Byte] {
     override def encode(obj: Byte): RLPValue = RLPValue(byteToByteArray(obj))
 
     override def decode(rlp: RLPEncodeable): Byte = rlp match {
@@ -23,7 +25,7 @@ object RLPImplicits {
     }
   }
 
-  implicit val shortEncDec = new RLPEncoder[Short] with RLPDecoder[Short] {
+  implicit val shortEncDec = new RLPEncDec[Short] {
     override def encode(obj: Short): RLPValue = RLPValue(shortToBigEndianMinLength(obj))
 
     override def decode(rlp: RLPEncodeable): Short = rlp match {
@@ -40,7 +42,7 @@ object RLPImplicits {
     }
   }
 
-  implicit val intEncDec = new RLPEncoder[Int] with RLPDecoder[Int] {
+  implicit val intEncDec = new RLPEncDec[Int] {
     override def encode(obj: Int): RLPValue = RLPValue(intToBigEndianMinLength(obj))
 
     override def decode(rlp: RLPEncodeable): Int = rlp match {
@@ -50,7 +52,7 @@ object RLPImplicits {
   }
 
   //Used for decoding and encoding positive (or 0) BigInts
-  implicit val bigIntEncDec = new RLPEncoder[BigInt] with RLPDecoder[BigInt] {
+  implicit val bigIntEncDec = new RLPEncDec[BigInt] {
 
     override def encode(obj: BigInt): RLPValue = RLPValue(
       if (obj.equals(BigInt(0))) byteToByteArray(0: Byte) else obj.toUnsignedByteArray
@@ -63,7 +65,7 @@ object RLPImplicits {
   }
 
   //Used for decoding and encoding positive (or 0) longs
-  implicit val longEncDec = new RLPEncoder[Long] with RLPDecoder[Long] {
+  implicit val longEncDec = new RLPEncDec[Long] {
     override def encode(obj: Long): RLPValue = bigIntEncDec.encode(BigInt(obj))
 
     override def decode(rlp: RLPEncodeable): Long = rlp match {
@@ -72,7 +74,7 @@ object RLPImplicits {
     }
   }
 
-  implicit val stringEncDec = new RLPEncoder[String] with RLPDecoder[String] {
+  implicit val stringEncDec = new RLPEncDec[String] {
     override def encode(obj: String): RLPValue = RLPValue(obj.getBytes)
 
     override def decode(rlp: RLPEncodeable): String = rlp match {
@@ -81,7 +83,7 @@ object RLPImplicits {
     }
   }
 
-  implicit val byteArrayEncDec = new RLPEncoder[Array[Byte]] with RLPDecoder[Array[Byte]] {
+  implicit val byteArrayEncDec = new RLPEncDec[Array[Byte]] {
 
     override def encode(obj: Array[Byte]): RLPValue = RLPValue(obj)
 
@@ -91,18 +93,27 @@ object RLPImplicits {
     }
   }
 
-  implicit val byteStringEncDec = new RLPEncoder[ByteString] with RLPDecoder[ByteString] {
+  implicit val byteStringEncDec = new RLPEncDec[ByteString] {
     override def encode(obj: ByteString): RLPEncodeable = byteArrayEncDec.encode(obj.toArray[Byte])
 
     override def decode(rlp: RLPEncodeable): ByteString = ByteString(byteArrayEncDec.decode(rlp))
   }
 
-  implicit def seqEncDec[T]()(implicit enc: RLPEncoder[T], dec: RLPDecoder[T]): RLPEncoder[Seq[T]] with RLPDecoder[Seq[T]] =
-    new RLPEncoder[Seq[T]] with RLPDecoder[Seq[T]] {
-      override def encode(obj: Seq[T]): RLPEncodeable = RLPList(obj.map(enc.encode): _*)
+  implicit val inetAddressEncDec = new RLPEncDec[InetAddress] {
+    override def encode(obj: InetAddress): RLPEncodeable = RLPValue(obj.getAddress)
+
+    override def decode(rlp: RLPEncodeable): InetAddress = rlp match {
+      case RLPValue(bytes) => InetAddress.getByAddress(bytes)
+      case _ => throw RLPException("src is not an InetAddress")
+    }
+  }
+
+  implicit def seqEncDec[T](implicit encDec: RLPEncDec[T]): RLPEncDec[Seq[T]] =
+    new RLPEncDec[Seq[T]] {
+      override def encode(obj: Seq[T]): RLPEncodeable = RLPList(obj.map(encDec.encode): _*)
 
       override def decode(rlp: RLPEncodeable): Seq[T] = rlp match {
-        case l: RLPList => l.items.map(dec.decode)
+        case l: RLPList => l.items.map(encDec.decode)
         case _ => throw RLPException("src is not a Seq")
       }
   }

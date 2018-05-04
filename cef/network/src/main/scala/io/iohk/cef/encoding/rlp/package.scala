@@ -9,11 +9,15 @@ package object rlp {
 
   sealed trait RLPEncodeable
 
-  case class RLPList(items: RLPEncodeable*) extends RLPEncodeable
+  case class RLPList(items: RLPEncodeable*) extends RLPEncodeable {
+    def ++(that: RLPList) = RLPList(this.items ++ that.items:_*)
+  }
 
   case class RLPValue(bytes: Array[Byte]) extends RLPEncodeable {
     override def toString: String = s"RLPValue(${Hex.toHexString(bytes)})"
   }
+
+  trait RLPEncDec[T] extends RLPEncoder[T] with RLPDecoder[T]
 
   trait RLPEncoder[T] {
     def encode(obj: T): RLPEncodeable
@@ -27,7 +31,7 @@ package object rlp {
 
   def encode(input: RLPEncodeable): Array[Byte] = RLP.encode(input)
 
-  def decode[T](data: Array[Byte])(implicit dec: RLPDecoder[T]): T = dec.decode(RLP.rawDecode(data))
+  def decode(data: Array[Byte]): RLPEncodeable = RLP.rawDecode(data)
 
   def decode[T](data: RLPEncodeable)(implicit dec: RLPDecoder[T]): T = dec.decode(data)
 
