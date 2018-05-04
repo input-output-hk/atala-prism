@@ -15,12 +15,12 @@ trait RLPEncoders {
   //Provide encoders and decoders to ByteString
   val rlpEncodeableEncoder = new Encoder[RLPEncodeable, ByteString] {
     override def encode(t: RLPEncodeable): ByteString =
-      ByteString(rlp.encode(t))
+      ByteString(rlp.rawEncode(t))
   }
 
   val rlpEncodeableDecoder = new Decoder[ByteString, RLPEncodeable] {
     override def decode(u: ByteString): RLPEncodeable =
-      rlp.decode(u.toArray)
+      rlp.rawDecode(u.toArray)
   }
 
   implicit def byteStringRlpEncoder[T](implicit enc: Encoder[T, RLPEncodeable]): Encoder[T, ByteString] =

@@ -27,15 +27,17 @@ package object rlp {
     def decode(rlp: RLPEncodeable): T
   }
 
-  def encode[T](input: T)(implicit enc: RLPEncoder[T]): Array[Byte] = RLP.encode(enc.encode(input))
+  def encodeToArray[T](input: T)(implicit enc: RLPEncoder[T]): Array[Byte] = RLP.encode(encodeToRlpEncodeable(input))
 
-  def encode(input: RLPEncodeable): Array[Byte] = RLP.encode(input)
+  def encodeToRlpEncodeable[T](input: T)(implicit enc: RLPEncoder[T]): RLPEncodeable = enc.encode(input)
 
-  def decode(data: Array[Byte]): RLPEncodeable = RLP.rawDecode(data)
+  def decodeFromRlpEncodeable[T](data: RLPEncodeable)(implicit dec: RLPDecoder[T]): T = dec.decode(data)
 
-  def decode[T](data: RLPEncodeable)(implicit dec: RLPDecoder[T]): T = dec.decode(data)
+  def decodeFromArray[T](data: Array[Byte])(implicit dec: RLPDecoder[T]): T = dec.decode(rawDecode(data))
 
   def rawDecode(input: Array[Byte]): RLPEncodeable = RLP.rawDecode(input)
+
+  def rawEncode(input: RLPEncodeable): Array[Byte] = RLP.encode(input)
 
   /**
     * This function calculates the next element item based on a previous element starting position. It's meant to be
@@ -52,7 +54,7 @@ package object rlp {
   trait RLPSerializable {
     def toRLPEncodable: RLPEncodeable
     def toBytes(implicit di: DummyImplicit): ByteString = ByteString(toBytes: Array[Byte])
-    def toBytes: Array[Byte] = encode(this.toRLPEncodable)
+    def toBytes: Array[Byte] = rawEncode(this.toRLPEncodable)
   }
 
 }

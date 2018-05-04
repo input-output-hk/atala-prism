@@ -1,16 +1,14 @@
 package io.iohk.cef.encoding.rlp
 
 import akka.util.ByteString
+import io.iohk.cef.encoding.rlp
 import org.bouncycastle.util.encoders.Hex
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.FunSuite
 
 import scala.language.implicitConversions
 import scala.util.Try
-
-import io.iohk.cef.encoding.rlp.RLPImplicitConversions._
 import io.iohk.cef.encoding.rlp.RLPImplicits._
-
 import org.scalatest.prop.GeneratorDrivenPropertyChecks._
 
 class RLPSuite extends FunSuite {
@@ -21,25 +19,25 @@ class RLPSuite extends FunSuite {
   }
 
   test("Decoding of empty data"){
-    val maybeDecoded = Try{decode[Array[Byte]](Array.emptyByteArray)}
+    val maybeDecoded = Try{decodeFromArray[String](Array.emptyByteArray)}
     assert(maybeDecoded.isFailure)
   }
 
   test("Decoding failure: Passing RLPValue when RLPList is expected"){
-    val data = encode(0.toLong)
-    val maybeSeqObtained = Try{decode[Seq[Long]](data)(seqEncDec())}
+    val data = encodeToRlpEncodeable(0.toLong)
+    val maybeSeqObtained = Try{decodeFromRlpEncodeable[Seq[Long]](data)(seqEncDec)}
     assert(maybeSeqObtained.isFailure)
   }
 
   test("Decoding failure: Passing RLPList when RLPValue is expected"){
-    val data = RLP.encode(RLPList("cat", "dog"))
-    val maybeByteObtained = Try{decode[Byte](data)}
-    val maybeShortObtained = Try{decode[Short](data)}
-    val maybeIntObtained = Try{decode[Int](data)}
-    val maybeLongObtained = Try{decode[Long](data)}
-    val maybeBigIntObtained = Try{decode[BigInt](data)}
-    val maybeStringObtained = Try{decode[String](data)}
-    val maybeByteArrayObtained = Try{decode[Array[Byte]](data)}
+    val data = encodeToRlpEncodeable(Seq("cat", "dog"))
+    val maybeByteObtained = Try{decodeFromRlpEncodeable[Byte](data)}
+    val maybeShortObtained = Try{decodeFromRlpEncodeable[Short](data)}
+    val maybeIntObtained = Try{decodeFromRlpEncodeable[Int](data)}
+    val maybeLongObtained = Try{decodeFromRlpEncodeable[Long](data)}
+    val maybeBigIntObtained = Try{decodeFromRlpEncodeable[BigInt](data)}
+    val maybeStringObtained = Try{decodeFromRlpEncodeable[String](data)}
+    val maybeByteArrayObtained = Try{decodeFromRlpEncodeable[Array[Byte]](data)}
     assert(maybeByteObtained.isFailure)
     assert(maybeShortObtained.isFailure)
     assert(maybeIntObtained.isFailure)
@@ -51,11 +49,11 @@ class RLPSuite extends FunSuite {
 
   test("Decoding failure: Passing an RLPValue larger than expected"){
     val num: BigInt = 16 * BigInt(Long.MaxValue)
-    val data = encode(num)
-    val maybeByteObtained = Try{decode[Byte](data)}
-    val maybeShortObtained = Try{decode[Short](data)}
-    val maybeIntObtained = Try{decode[Int](data)}
-    val maybeLongObtained = Try{decode[Long](data)}
+    val data = encodeToRlpEncodeable(num)
+    val maybeByteObtained = Try{decodeFromRlpEncodeable[Byte](data)}
+    val maybeShortObtained = Try{decodeFromRlpEncodeable[Short](data)}
+    val maybeIntObtained = Try{decodeFromRlpEncodeable[Int](data)}
+    val maybeLongObtained = Try{decodeFromRlpEncodeable[Long](data)}
     assert(maybeByteObtained.isFailure)
     assert(maybeShortObtained.isFailure)
     assert(maybeIntObtained.isFailure)
@@ -64,31 +62,31 @@ class RLPSuite extends FunSuite {
 
   test("Byte Encoding") {
     val expected = Array[Byte](0x80.toByte)
-    val data = encode(0: Byte)
+    val data = encodeToArray(0: Byte)
 
     assert(expected sameElements data)
-    val dataObtained = decode[Byte](data)
+    val dataObtained = decodeFromArray[Byte](data)
     val obtained: Byte = dataObtained
     assert((0: Byte) == obtained)
 
     val expected2 = Array[Byte](0x78.toByte)
-    val data2 = encode(120: Byte)
+    val data2 = encodeToArray(120: Byte)
     assert(expected2 sameElements data2)
-    val dataObtained2 = decode[Byte](data2)
+    val dataObtained2 = decodeFromArray[Byte](data2)
     val obtained2: Byte = dataObtained2
     assert((120: Byte) == obtained2)
 
     val expected3 = Array[Byte](0x7F.toByte)
-    val data3 = encode(127: Byte)
+    val data3 = encodeToArray(127: Byte)
     assert(expected3 sameElements data3)
-    val dataObtained3 = decode[Byte](data3)
+    val dataObtained3 = decodeFromArray[Byte](data3)
     val obtained3: Byte = dataObtained3
     assert((127: Byte) == obtained3)
 
     forAll(Gen.choose[Byte](Byte.MinValue, Byte.MaxValue)) {
       (aByte: Byte) => {
-        val data = encode(aByte)
-        val dataObtained = decode[Byte](data)
+        val data = encodeToArray(aByte)
+        val dataObtained = decodeFromArray[Byte](data)
         val obtained: Byte = dataObtained
         assert(aByte == obtained)
       }
@@ -97,44 +95,44 @@ class RLPSuite extends FunSuite {
 
   test("Short Encoding") {
     val expected4 = Array[Byte](0x82.toByte, 0x76.toByte, 0x5F.toByte)
-    val data4 = encode(30303.toShort)
+    val data4 = encodeToArray(30303.toShort)
     assert(expected4 sameElements data4)
-    val dataObtained4 = decode[Short](data4)
+    val dataObtained4 = decodeFromArray[Short](data4)
     val obtained4: Short = dataObtained4
     assert((30303: Short) == obtained4)
 
     val expected5 = Array[Byte](0x82.toByte, 0x4E.toByte, 0xEA.toByte)
-    val data5 = encode(20202.toShort)
+    val data5 = encodeToArray(20202.toShort)
     assert(expected5 sameElements data5)
-    val dataObtained5 = decode[Short](data5)
+    val dataObtained5 = decodeFromArray[Short](data5)
     val obtained5: Short = dataObtained5
     assert((20202: Short) == obtained5)
 
     val expected6 = Array[Byte](0x82.toByte, 0x9D.toByte, 0x0A.toByte)
-    val data6 = encode(40202.toShort)
+    val data6 = encodeToArray(40202.toShort)
     assert(expected6 sameElements data6)
-    val dataObtained6 = decode[Short](data6)
+    val dataObtained6 = decodeFromArray[Short](data6)
     val obtained6: Short = dataObtained6
     assert(40202.toShort == obtained6)
 
     val expected7 = Array[Byte](0x7f.toByte)
-    val data7 = encode(127.toShort)
+    val data7 = encodeToArray(127.toShort)
     assert(expected7 sameElements data7)
-    val dataObtained7 = decode[Short](data7)
+    val dataObtained7 = decodeFromArray[Short](data7)
     val obtained7: Short = dataObtained7
     assert(127.toShort == obtained7)
 
     val expected8 = Array[Byte](0x80.toByte)
-    val data8 = encode(0.toShort)
+    val data8 = encodeToArray(0.toShort)
     assert(expected8 sameElements data8)
-    val dataObtained8 = decode[Short](data8)
+    val dataObtained8 = decodeFromArray[Short](data8)
     val obtained8: Short = dataObtained8
     assert(0.toShort == obtained8)
 
     forAll(Gen.choose[Short](Short.MinValue, Short.MaxValue)) {
       (aShort: Short) => {
-        val data = encode(aShort)
-        val dataObtained = decode[Short](data)
+        val data = encodeToArray(aShort)
+        val dataObtained = decodeFromArray[Short](data)
         val obtained: Short = dataObtained
         assert(aShort == obtained)
       }
@@ -143,17 +141,17 @@ class RLPSuite extends FunSuite {
 
   test("String encoding") {
     val expected = Array[Byte](0x80.toByte)
-    val data = encode("")
+    val data = encodeToArray("")
     assert(expected sameElements data)
-    val dataObtained = decode[String](data)
+    val dataObtained = decodeFromArray[String](data)
     val obtained: String = dataObtained
     assert("" == obtained)
 
     val expected2 = Array[Byte](0x90.toByte, 0x45.toByte, 0x74.toByte, 0x68.toByte, 0x65.toByte, 0x72.toByte, 0x65.toByte,
       0x75.toByte, 0x6D.toByte, 0x4A.toByte, 0x20.toByte, 0x43.toByte, 0x6C.toByte, 0x69.toByte, 0x65.toByte, 0x6E.toByte, 0x74.toByte)
-    val data2 = encode("EthereumJ Client")
+    val data2 = encodeToArray("EthereumJ Client")
     assert(expected2 sameElements data2)
-    val dataObtained2 = decode[String](data2)
+    val dataObtained2 = decodeFromArray[String](data2)
     val obtained2: String = dataObtained2
     assert("EthereumJ Client" == obtained2)
 
@@ -166,9 +164,9 @@ class RLPSuite extends FunSuite {
       0x73.toByte, 0x2F.toByte, 0x4C.toByte, 0x69.toByte, 0x6E.toByte, 0x75.toByte, 0x78.toByte,
       0x2F.toByte, 0x67.toByte, 0x2B.toByte, 0x2B.toByte
     )
-    val data3 = encode("Ethereum(++)/ZeroGox/v0.5.0/ncurses/Linux/g++")
+    val data3 = encodeToArray("Ethereum(++)/ZeroGox/v0.5.0/ncurses/Linux/g++")
     assert(expected3 sameElements data3)
-    val dataObtained3 = decode[String](data3)
+    val dataObtained3 = decodeFromArray[String](data3)
     val obtained3: String = dataObtained3
     assert("Ethereum(++)/ZeroGox/v0.5.0/ncurses/Linux/g++" == obtained3)
 
@@ -190,9 +188,9 @@ class RLPSuite extends FunSuite {
       0x73.toByte, 0x2F.toByte, 0x4C.toByte, 0x69.toByte, 0x6E.toByte, 0x75.toByte, 0x78.toByte,
       0x2F.toByte, 0x67.toByte, 0x2B.toByte, 0x2B.toByte
     )
-    val data4 = encode("Ethereum(++)/ZeroGox/v0.5.0/ncurses/Linux/g++Ethereum(++)/ZeroGox/v0.5.0/ncurses/Linux/g++")
+    val data4 = encodeToArray("Ethereum(++)/ZeroGox/v0.5.0/ncurses/Linux/g++Ethereum(++)/ZeroGox/v0.5.0/ncurses/Linux/g++")
     assert(expected4 sameElements data4)
-    val dataObtained4 = decode[String](data4)
+    val dataObtained4 = decodeFromArray[String](data4)
     val obtained4: String = dataObtained4
     assert("Ethereum(++)/ZeroGox/v0.5.0/ncurses/Linux/g++Ethereum(++)/ZeroGox/v0.5.0/ncurses/Linux/g++" == obtained4)
 
@@ -200,8 +198,8 @@ class RLPSuite extends FunSuite {
 
     forAll(strGen(10000)) {
       (aString: String) => {
-        val data = encode(aString)
-        val dataObtained = decode[String](data)
+        val data = encodeToArray(aString)
+        val dataObtained = decodeFromArray[String](data)
         val obtained: String = dataObtained
         assert(aString == obtained)
       }
@@ -210,72 +208,72 @@ class RLPSuite extends FunSuite {
 
   test("Int Encoding") {
     val expected = Array[Byte](0x80.toByte)
-    val data = encode(0)
+    val data = encodeToArray(0)
     assert(expected sameElements data)
-    val dataObtained = decode[Int](data)
+    val dataObtained = decodeFromArray[Int](data)
     val obtained: Int = dataObtained
     assert(0 == obtained)
 
     val expected2 = Array(0x78.toByte)
-    val data2 = encode(120)
+    val data2 = encodeToArray(120)
     assert(expected2 sameElements data2)
-    val dataObtained2 = decode[Int](data2)
+    val dataObtained2 = decodeFromArray[Int](data2)
     val obtained2: Int = dataObtained2
     assert(120 == obtained2)
 
     val expected3 = Array(0x7F.toByte)
-    val data3 = encode(127)
+    val data3 = encodeToArray(127)
     assert(expected3 sameElements data3)
-    val dataObtained3 = decode[Int](data3)
+    val dataObtained3 = decodeFromArray[Int](data3)
     val obtained3: Int = dataObtained3
     assert(127 == obtained3)
 
     val expected4 = Array(0x82.toByte, 0x76.toByte, 0x5F.toByte)
-    val data4 = encode(30303)
+    val data4 = encodeToArray(30303)
     assert(expected4 sameElements data4)
-    val dataObtained4 = decode[Int](data4)
+    val dataObtained4 = decodeFromArray[Int](data4)
     val obtained4: Int = dataObtained4
     assert(30303 == obtained4)
 
     val expected5 = Array(0x82.toByte, 0x4E.toByte, 0xEA.toByte)
-    val data5 = encode(20202)
+    val data5 = encodeToArray(20202)
     assert(expected5 sameElements data5)
-    val dataObtained5 = decode[Int](data5)
+    val dataObtained5 = decodeFromArray[Int](data5)
     val obtained5: Int = dataObtained5
     assert(20202 == obtained5)
 
     val expected6 = Array(0x83.toByte, 1.toByte, 0.toByte, 0.toByte)
-    val data6 = encode(65536)
+    val data6 = encodeToArray(65536)
     assert(expected6 sameElements data6)
-    val dataObtained6 = decode[Int](data6)
+    val dataObtained6 = decodeFromArray[Int](data6)
     val obtained6: Int = dataObtained6
     assert(65536 == obtained6)
 
     val expected7 = Array(0x84.toByte, 0x80.toByte, 0x00.toByte, 0x00.toByte, 0x00.toByte)
-    val data7 = encode(Integer.MIN_VALUE)
+    val data7 = encodeToArray(Integer.MIN_VALUE)
     assert(expected7 sameElements data7)
-    val dataObtained7 = decode[Int](data7)
+    val dataObtained7 = decodeFromArray[Int](data7)
     val obtained7: Int = dataObtained7
     assert(Integer.MIN_VALUE == obtained7)
 
     val expected8 = Array(0x84.toByte, 0x7F.toByte, 0xFF.toByte, 0xFF.toByte, 0xFF.toByte)
-    val data8 = encode(Integer.MAX_VALUE)
+    val data8 = encodeToArray(Integer.MAX_VALUE)
     assert(expected8 sameElements data8)
-    val dataObtained8 = decode[Int](data8)
+    val dataObtained8 = decodeFromArray[Int](data8)
     val obtained8: Int = dataObtained8
     assert(Integer.MAX_VALUE == obtained8)
 
     val expected9 = Array(0x84.toByte, 0xFF.toByte, 0xFF.toByte, 0xFF.toByte, 0xFF.toByte)
-    val data9 = encode(0xFFFFFFFF)
+    val data9 = encodeToArray(0xFFFFFFFF)
     assert(expected9 sameElements data9)
-    val dataObtained9 = decode[Int](data9)
+    val dataObtained9 = decodeFromArray[Int](data9)
     val obtained9: Int = dataObtained9
     assert(0xFFFFFFFF == obtained9)
 
     forAll(Gen.choose[Int](Int.MinValue, Int.MaxValue)) {
       (anInt: Int) => {
-        val data = encode(anInt)
-        val dataObtained = decode[Int](data)
+        val data = encodeToArray(anInt)
+        val dataObtained = decodeFromArray[Int](data)
         val obtained: Int = dataObtained
         assert(anInt == obtained)
       }
@@ -285,8 +283,8 @@ class RLPSuite extends FunSuite {
   test("Long Encoding") {
     forAll(Gen.choose[Long](0, Long.MaxValue)) {
       (aLong: Long) => {
-        val data = encode(aLong)
-        val dataObtained = decode[Long](data)
+        val data = encodeToArray(aLong)
+        val dataObtained = decodeFromArray[Long](data)
         val obtained: Long = dataObtained
         assert(aLong == obtained)
       }
@@ -295,18 +293,18 @@ class RLPSuite extends FunSuite {
 
   test("BigInt Encoding") {
     val expected = Array[Byte](0x80.toByte)
-    val data = encode(BigInt(0))
+    val data = encodeToArray(BigInt(0))
     assert(expected sameElements data)
-    val dataObtained = decode[BigInt](data)
+    val dataObtained = decodeFromArray[BigInt](data)
     val obtained: BigInt = dataObtained
     assert(BigInt(0) == obtained)
 
 
     val bigInt = BigInt("100102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f", 16)
     val expected2 = "a0100102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f"
-    val data2 = encode(bigInt)
+    val data2 = encodeToArray(bigInt)
     assert(expected2 equals Hex.toHexString(data2))
-    val dataObtained2 = decode[BigInt](data2)
+    val dataObtained2 = decodeFromArray[BigInt](data2)
     val obtained2: BigInt = dataObtained2
     assert(bigInt == obtained2)
 
@@ -314,8 +312,8 @@ class RLPSuite extends FunSuite {
     forAll(Arbitrary.arbitrary[BigInt]) {
       (aBigIntSigned: BigInt) => {
         val aBigInt = aBigIntSigned.abs
-        val data = encode(aBigInt)
-        val dataObtained = decode[BigInt](data)
+        val data = encodeToArray(aBigInt)
+        val dataObtained = decodeFromArray[BigInt](data)
         val obtained: BigInt = dataObtained
         assert(aBigInt == obtained)
       }
@@ -327,22 +325,22 @@ class RLPSuite extends FunSuite {
     val byteArray: Array[Byte] = Hex.decode(byteArr)
     val expected = "b840" + byteArr
 
-    val data = encode(byteArray)
+    val data = encodeToArray(byteArray)
     assert(expected equals Hex.toHexString(data))
-    val dataObtained = decode[Array[Byte]](data)
+    val dataObtained = decodeFromArray[Array[Byte]](data)
     val obtained: Array[Byte] = dataObtained
     assert(byteArray sameElements obtained)
 
     val shouldBeError = Try {
       val byteArray255Elements = Array.fill(255)(0x1.toByte)
-      encode(byteArray255Elements)
+      encodeToRlpEncodeable(byteArray255Elements)
     }
     assert(shouldBeError.isSuccess)
 
     forAll(Gen.nonEmptyListOf(Arbitrary.arbitrary[Byte])) {
       (aByteList: List[Byte]) => {
-        val data = encode(aByteList.toArray)
-        val dataObtained = decode[Array[Byte]](data)
+        val data = encodeToArray(aByteList.toArray)
+        val dataObtained = decodeFromArray[Array[Byte]](data)
         val obtained: Array[Byte] = dataObtained
         assert(aByteList.toArray sameElements obtained)
       }
@@ -353,8 +351,8 @@ class RLPSuite extends FunSuite {
     forAll(Gen.nonEmptyListOf(Arbitrary.arbitrary[Byte])) {
       (aByteList: List[Byte]) => {
         val byteString = ByteString(aByteList.toArray)
-        val data = encode(byteString)
-        val dataObtained = decode[ByteString](data)
+        val data = encodeToArray(byteString)
+        val dataObtained = decodeFromArray[ByteString](data)
         val obtained: ByteString = dataObtained
         assert(byteString equals obtained)
       }
@@ -365,8 +363,8 @@ class RLPSuite extends FunSuite {
     forAll(Gen.nonEmptyListOf(Gen.choose[Long](0, Long.MaxValue))) {
       (aLongList: List[Long]) => {
         val aLongSeq: Seq[Long] = aLongList
-        val data = encode(aLongSeq)(seqEncDec())
-        val dataObtained: Seq[Long] = decode[Seq[Long]](data)(seqEncDec())
+        val data = encodeToArray(aLongSeq)(seqEncDec)
+        val dataObtained: Seq[Long] = decodeFromArray[Seq[Long]](data)(seqEncDec)
         assert(aLongSeq equals dataObtained)
       }
     }
@@ -374,26 +372,26 @@ class RLPSuite extends FunSuite {
 
   test("Encode Empty List") {
     val expected = "c0"
-    val data = encode(Seq[Any]())
+    val data = encodeToArray(Seq[String]())
     assert(expected == Hex.toHexString(data))
 
-    val dataObtained = decode[Seq[Any]](data)
-    val obtained: Seq[Any] = dataObtained
+    val dataObtained = decodeFromArray[Seq[String]](data)
+    val obtained: Seq[String] = dataObtained
     assert(obtained.isEmpty)
   }
 
   test("Encode Short  List") {
     val expected = "c88363617483646f67"
-    val data = RLP.encode(RLPList("cat", "dog"))
+    val data = encodeToArray(Seq("cat", "dog"))
     assert(expected == Hex.toHexString(data))
-    val dataObtained = decode[Seq[String]](data)(stringSeqEncDec)
+    val dataObtained = decodeFromArray[Seq[String]](data)
     val obtained = dataObtained
     assert(Seq("cat", "dog") equals obtained)
 
     val expected2 = "cc83646f6783676f6483636174"
-    val data2 = RLP.encode(RLPList("dog", "god", "cat"))
+    val data2 = encodeToArray(Seq("dog", "god", "cat"))
     assert(expected2 == Hex.toHexString(data2))
-    val dataObtained2 = decode[Seq[String]](data2)(stringSeqEncDec)
+    val dataObtained2 = decodeFromArray[Seq[String]](data2)
     val obtained2 = dataObtained2
     assert(Seq("dog", "god", "cat") equals obtained2)
   }
@@ -401,9 +399,9 @@ class RLPSuite extends FunSuite {
   test("Encode Long  List") {
     val list = Seq("cat", "Lorem ipsum dolor sit amet, consectetur adipisicing elit")
     val expected = "f83e83636174b8384c6f72656d20697073756d20646f6c6f722073697420616d65742c20636f6e7365637465747572206164697069736963696e6720656c6974"
-    val data = RLP.encode(RLPList(list.map(i => toEncodeable(i)): _*))
+    val data = encodeToArray(list)
     assert(expected == Hex.toHexString(data))
-    val dataObtained = decode[Seq[String]](data)(stringSeqEncDec)
+    val dataObtained = decodeFromArray[Seq[String]](data)
     val obtained = dataObtained
     assert(list equals obtained)
   }
@@ -411,17 +409,17 @@ class RLPSuite extends FunSuite {
   test("Encode multilist") {
     val expected = "cc01c48363617483646f67c102"
     val multilist1 = MultiList1(1, Seq("cat"), "dog", Seq(2))
-    val data = encode(multilist1)(MultiList1.encDec)
+    val data = encodeToArray(multilist1)(MultiList1.encDec)
     assert(expected == Hex.toHexString(data))
-    val dataObtained = decode[MultiList1](data)
+    val dataObtained = decodeFromArray[MultiList1](data)
     val obtained = dataObtained
     assert(multilist1 equals obtained)
 
     val multilist2 = MultiList2(Seq("cat", "dog"), Seq(1, 2))
     val expected2 = "cdc88363617483646f67c20102c0"
-    val data2 = encode(multilist2)(MultiList2.encDec)
+    val data2 = encodeToArray(multilist2)(MultiList2.encDec)
     assert(expected2 == Hex.toHexString(data2))
-    val dataObtained2 = decode[MultiList2](data2)
+    val dataObtained2 = decodeFromArray[MultiList2](data2)
     val obtained2 = dataObtained2
     assert(multilist2 equals obtained2)
   }
@@ -429,9 +427,9 @@ class RLPSuite extends FunSuite {
   test("Encode Empty List Of List") {
     val emptyListOfList = EmptyListOfList()
     val expected = "c4c2c0c0c0"
-    val data = encode(emptyListOfList)(EmptyListOfList.encDec)
+    val data = encodeToArray(emptyListOfList)(EmptyListOfList.encDec)
     assert(expected == Hex.toHexString(data))
-    val dataObtained = decode[EmptyListOfList](data)
+    val dataObtained = decodeFromArray[EmptyListOfList](data)
     val obtained = dataObtained
     assert(emptyListOfList equals obtained)
   }
@@ -439,9 +437,9 @@ class RLPSuite extends FunSuite {
   test("Encode Rep Of Two List Of List") {
     val twoListOfList = RepOfTwoListOfList()
     val expected = "c7c0c1c0c3c0c1c0"
-    val data = encode(twoListOfList)(RepOfTwoListOfList.encDec)
+    val data = encodeToArray(twoListOfList)(RepOfTwoListOfList.encDec)
     assert(expected == Hex.toHexString(data))
-    val dataObtained = decode[RepOfTwoListOfList](data)
+    val dataObtained = decodeFromArray[RepOfTwoListOfList](data)
     val obtained = dataObtained
     assert(twoListOfList equals obtained)
   }
@@ -464,8 +462,8 @@ class RLPSuite extends FunSuite {
     val tx1 = TestSimpleTransaction(2, "dog")
 
     val block = TestSimpleBlock(127, -127: Short, "horse", 1000, Seq(tx0, tx1), Seq(1, 2))
-    val data = encode(block)(TestSimpleBlock.encDec)
-    val dataObtained = decode[TestSimpleBlock](data)
+    val data = encodeToArray(block)(TestSimpleBlock.encDec)
+    val dataObtained = decodeFromArray[TestSimpleBlock](data)
     val obtained: TestSimpleBlock = dataObtained
     assert(block equals obtained)
   }
@@ -473,87 +471,76 @@ class RLPSuite extends FunSuite {
   test("Partial Data Parse Test") {
     val hex: String = "000080c180000000000000000000000042699b1104e93abf0008be55f912c2ff"
     val data = Hex.decode(hex)
-    val decoded: Seq[Int] = decode[Seq[Int]](data.splitAt(3)._2)
+    val decoded: Seq[Int] = decodeFromArray[Seq[Int]](data.splitAt(3)._2)
     assert(1 == decoded.length)
     assert(0 == decoded.head)
   }
 
   test("Multiple partial decode") {
-    val seq1 = RLPList("cat", "dog")
-    val seq2 = RLPList(23, 10, 1986)
-    val seq3 = RLPList("cat", "Lorem ipsum dolor sit amet, consectetur adipisicing elit")
+    val seq1 = RLPList(rlp.encodeToRlpEncodeable("cat"), rlp.encodeToRlpEncodeable("dog"))
+    val seq2 = RLPList(rlp.encodeToRlpEncodeable(23), rlp.encodeToRlpEncodeable(10), rlp.encodeToRlpEncodeable(1986))
+    val seq3 = RLPList(
+      rlp.encodeToRlpEncodeable("cat"),
+      rlp.encodeToRlpEncodeable("Lorem ipsum dolor sit amet, consectetur adipisicing elit")
+    )
     val data = Seq(RLP.encode(seq1), RLP.encode(seq2), RLP.encode(seq3)).reduce(_ ++ _)
 
-    val decoded1 = decode[Seq[String]](data)
+    val decoded1 = decodeFromArray[Seq[String]](data)
     assert(decoded1 equals "cat" :: "dog" :: Nil)
 
     val secondItemIndex = nextElementIndex(data, 0)
-    val decoded2 = decode[Seq[Int]](data.drop(secondItemIndex))
+    val decoded2 = decodeFromArray[Seq[Int]](data.drop(secondItemIndex))
     assert(decoded2 equals 23 :: 10 :: 1986 :: Nil)
 
     val thirdItemIndex = nextElementIndex(data, secondItemIndex)
-    val decoded3 = decode[Seq[String]](data.drop(thirdItemIndex))
+    val decoded3 = decodeFromArray[Seq[String]](data.drop(thirdItemIndex))
     assert(decoded3 equals Seq("cat", "Lorem ipsum dolor sit amet, consectetur adipisicing elit"))
   }
-
-  implicit def emptySeqEncDec: RLPEncoder[Seq[Any]] with RLPDecoder[Seq[Any]] = new RLPEncoder[Seq[Any]] with RLPDecoder[Seq[Any]] {
-    override def encode(obj: Seq[Any]): RLPEncodeable = RLPList()
-
-    override def decode(rlp: RLPEncodeable): Seq[Any] = rlp match {
-      case l: RLPList if l.items.isEmpty => Seq()
-      case _ => throw new Exception("src is not an empty Seq")
-    }
-  }
-
-  implicit val stringSeqEncDec = new RLPEncoder[Seq[String]] with RLPDecoder[Seq[String]] {
-    override def encode(strings: Seq[String]): RLPEncodeable = RLPList(strings.map(stringEncDec.encode): _*)
-
-    override def decode(rlp: RLPEncodeable): Seq[String] = rlp match {
-      case l: RLPList => l.items.map(item => item: String)
-      case _ => throw new RuntimeException("Invalid String Seq Decoder")
-    }
-  }
-
-  implicit def stringSeqFromEncodeable(rlp: RLPEncodeable)(implicit dec: RLPDecoder[Seq[String]]): Seq[String] = dec.decode(rlp)
-
-  implicit val intSeqEncDec = new RLPEncoder[Seq[Int]] with RLPDecoder[Seq[Int]] {
-    override def encode(ints: Seq[Int]): RLPEncodeable = ints: RLPList
-
-    override def decode(rlp: RLPEncodeable): Seq[Int] = rlp match {
-      case l: RLPList => l.items.map(item => item: Int)
-      case _ => throw new RuntimeException("Invalid Int Seq Decoder")
-    }
-  }
-
-  implicit def intSeqFromEncodeable(rlp: RLPEncodeable)(implicit dec: RLPDecoder[Seq[Int]]): Seq[Int] = dec.decode(rlp)
 
   case class MultiList1(number: Int, seq1: Seq[String], string: String, seq2: Seq[Int])
 
   object MultiList1 {
-    implicit val encDec = new RLPEncoder[MultiList1] with RLPDecoder[MultiList1] {
+    implicit val encDec = new RLPEncDec[MultiList1] {
       override def encode(obj: MultiList1): RLPEncodeable = {
         import obj._
-        RLPList(number, seq1, string, seq2)
+        RLPList(rlp.encodeToRlpEncodeable(number), rlp.encodeToRlpEncodeable(seq1), rlp.encodeToRlpEncodeable(string), rlp.encodeToRlpEncodeable(seq2))
       }
 
-      override def decode(rlp: RLPEncodeable): MultiList1 = rlp match {
-        case l: RLPList => MultiList1(l.items.head, l.items(1), l.items(2), l.items(3))
+      override def decode(rlpObj: RLPEncodeable): MultiList1 = rlpObj match {
+        case l: RLPList =>
+          l.items.head
+          val a = l.items(1)
+
+          MultiList1(
+            rlp.decodeFromRlpEncodeable[Int](l.items.head),
+            rlp.decodeFromRlpEncodeable[Seq[String]](l.items(1)),
+            rlp.decodeFromRlpEncodeable[String](l.items(2)),
+            rlp.decodeFromRlpEncodeable[Seq[Int]](l.items(3)))
         case _ => throw new RuntimeException("Invalid Int Seq Decoder")
       }
     }
   }
 
-  case class MultiList2(seq1: Seq[String], seq2: Seq[Int], seq3: Seq[Any] = Seq())
+  case class MultiList2(seq1: Seq[String], seq2: Seq[Int], seq3: Seq[Byte] = Seq())
 
   object MultiList2 {
-    implicit val encDec = new RLPEncoder[MultiList2] with RLPDecoder[MultiList2] {
+    implicit val encDec = new RLPEncDec[MultiList2] {
       override def encode(obj: MultiList2): RLPEncodeable = {
         import obj._
-        RLPList(seq1, seq2, seq3)
+        RLPList(
+          rlp.encodeToRlpEncodeable[Seq[String]](seq1),
+          rlp.encodeToRlpEncodeable[Seq[Int]](seq2),
+          rlp.encodeToRlpEncodeable[Seq[Byte]](seq3)
+        )
       }
 
-      override def decode(rlp: RLPEncodeable): MultiList2 = rlp match {
-        case l: RLPList => MultiList2(l.items.head, l.items(1), emptySeqEncDec.decode(l.items(2)))
+      override def decode(rlpObj: RLPEncodeable): MultiList2 = rlpObj match {
+        case l: RLPList =>
+          MultiList2(
+            rlp.decodeFromRlpEncodeable[Seq[String]](l.items.head),
+            rlp.decodeFromRlpEncodeable[Seq[Int]](l.items(1)),
+            rlp.decodeFromRlpEncodeable[Seq[Byte]](l.items(2))
+          )
         case _ => throw new RuntimeException("Invalid Int Seq Decoder")
       }
     }
@@ -583,7 +570,7 @@ class RLPSuite extends FunSuite {
   object RepOfTwoListOfList {
     val instance = Seq(RLPList(), RLPList(RLPList()), RLPList(RLPList(), RLPList(RLPList())))
 
-    implicit val encDec = new RLPEncoder[RepOfTwoListOfList] with RLPDecoder[RepOfTwoListOfList] {
+    implicit val encDec = new RLPEncDec[RepOfTwoListOfList] {
       override def encode(obj: RepOfTwoListOfList): RLPEncodeable = RLPList(instance: _*)
 
       override def decode(rlp: RLPEncodeable): RepOfTwoListOfList = rlp match {
@@ -603,8 +590,8 @@ class RLPSuite extends FunSuite {
     stringEncDec.encode("d") -> "64",
     stringEncDec.encode("cat") -> "83636174",
     stringEncDec.encode("dog") -> "83646f67",
-    stringSeqEncDec.encode(Seq("cat", "dog")) -> "c88363617483646f67",
-    stringSeqEncDec.encode(Seq("dog", "god", "cat")) -> "cc83646f6783676f6483636174",
+    rlp.encodeToRlpEncodeable[Seq[String]](Seq("cat", "dog")) -> "c88363617483646f67",
+    rlp.encodeToRlpEncodeable[Seq[String]](Seq("dog", "god", "cat")) -> "cc83646f6783676f6483636174",
     intEncDec.encode(1) -> "01",
     intEncDec.encode(10) -> "0a",
     intEncDec.encode(100) -> "64",
@@ -619,14 +606,18 @@ class RLPSuite extends FunSuite {
   private case class TestSimpleTransaction(id: Int, name: String)
 
   private object TestSimpleTransaction {
-    implicit val encDec = new RLPEncoder[TestSimpleTransaction] with RLPDecoder[TestSimpleTransaction] {
+    implicit val encDec = new RLPEncDec[TestSimpleTransaction] {
       override def encode(obj: TestSimpleTransaction): RLPEncodeable = {
         import obj._
-        RLPList(id, name)
+        RLPList(rlp.encodeToRlpEncodeable(id), rlp.encodeToRlpEncodeable(name))
       }
 
-      override def decode(rlp: RLPEncodeable): TestSimpleTransaction = rlp match {
-        case RLPList(id, name) => TestSimpleTransaction(id, name)
+      override def decode(rlpObj: RLPEncodeable): TestSimpleTransaction = rlpObj match {
+        case RLPList(id, name) =>
+          TestSimpleTransaction(
+            rlp.decodeFromRlpEncodeable[Int](id),
+            rlp.decodeFromRlpEncodeable[String](name)
+          )
         case _ => throw new RuntimeException("Invalid Simple Transaction")
       }
     }
@@ -637,15 +628,25 @@ class RLPSuite extends FunSuite {
   private case class TestSimpleBlock(id: Byte, parentId: Short, owner: String, nonce: Int, txs: Seq[TestSimpleTransaction], unclesIds: Seq[Int])
 
   private object TestSimpleBlock {
-    implicit val encDec = new RLPEncoder[TestSimpleBlock] with RLPDecoder[TestSimpleBlock] {
+    implicit val encDec = new RLPEncDec[TestSimpleBlock] {
       override def encode(obj: TestSimpleBlock): RLPEncodeable = {
         import obj._
-        RLPList(id, parentId, owner, nonce, RLPList(txs.map(TestSimpleTransaction.encDec.encode): _*), RLPList(unclesIds.map(id => id: RLPEncodeable): _*))
+        RLPList(rlp.encodeToRlpEncodeable(id),
+          rlp.encodeToRlpEncodeable(parentId),
+          rlp.encodeToRlpEncodeable(owner),
+          rlp.encodeToRlpEncodeable(nonce),
+          RLPList(txs.map(TestSimpleTransaction.encDec.encode): _*),
+          RLPList(unclesIds.map(id => rlp.encodeToRlpEncodeable(id)): _*))
       }
 
-      override def decode(rlp: RLPEncodeable): TestSimpleBlock = rlp match {
+      override def decode(rlpObj: RLPEncodeable): TestSimpleBlock = rlpObj match {
         case RLPList(id, parentId, owner, nonce, (txs: RLPList), (unclesIds: RLPList)) =>
-          TestSimpleBlock(id, parentId, owner, nonce, txs.items.map(TestSimpleTransaction.encDec.decode), unclesIds.items.map(intEncDec.decode))
+          TestSimpleBlock(rlp.decodeFromRlpEncodeable[Byte](id),
+            rlp.decodeFromRlpEncodeable[Short](parentId),
+            rlp.decodeFromRlpEncodeable[String](owner),
+            rlp.decodeFromRlpEncodeable[Int](nonce),
+            txs.items.map(TestSimpleTransaction.encDec.decode),
+            unclesIds.items.map(intEncDec.decode))
         case _ => throw new Exception("Can't transform RLPEncodeable to block")
       }
     }
