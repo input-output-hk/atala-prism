@@ -1,21 +1,21 @@
 package io.iohk.cef.discovery
 
-import io.iohk.cef.network.{NodeAddress, NodeParser}
+import io.iohk.cef.network.{Node, NodeParser}
 
-import scala.concurrent.duration.FiniteDuration
-import scala.concurrent.duration._
+import scala.concurrent.duration.{FiniteDuration, _}
 
 case class DiscoveryConfig(
                             discoveryEnabled: Boolean,
                             interface: String,
                             port: Int,
-                            bootstrapNodes: Set[NodeAddress],
+                            bootstrapNodes: Set[Node],
                             nodesLimit: Int,
                             scanMaxNodes: Int,
                             scanInitialDelay: FiniteDuration,
                             scanInterval: FiniteDuration,
                             messageExpiration: FiniteDuration,
-                            maxSeekResults: Int)
+                            maxSeekResults: Int,
+                            multipleConnectionsPerAddress: Boolean)
 
 object DiscoveryConfig {
   def apply(etcClientConfig: com.typesafe.config.Config): DiscoveryConfig = {
@@ -33,7 +33,8 @@ object DiscoveryConfig {
       scanInitialDelay = discoveryConfig.getDuration("scan-initial-delay").toMillis.millis,
       scanInterval = discoveryConfig.getDuration("scan-interval").toMillis.millis,
       messageExpiration = discoveryConfig.getDuration("message-expiration").toMillis.millis,
-      maxSeekResults = discoveryConfig.getInt("max-seek-results"))
+      maxSeekResults = discoveryConfig.getInt("max-seek-results"),
+      multipleConnectionsPerAddress = discoveryConfig.getBoolean("multiple-connection-per-address"))
   }
 
 }

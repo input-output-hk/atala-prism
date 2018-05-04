@@ -69,8 +69,13 @@ object NodeParser extends Logger {
     * @param node to be parsed
     * @return the parsed node, or the errors detected during parsing
     */
-  def parseNode(node:String): Either[Set[Error], NodeAddress] = {
-    validateNodeUri(node).map(uri => NodeAddress.fromUri(uri))
+  def parseNode(node:String): Either[Set[Error], Node] = {
+    val validation = validateNodeUri(node)
+    val errorSet = validation.left.getOrElse(Set())
+    validation.flatMap(uri => Node.fromUri(uri) match {
+      case Success(node) => Right(node)
+      case Failure(ex) => Left(errorSet +  ex.getMessage)
+    })
   }
 
   /**
@@ -79,7 +84,7 @@ object NodeParser extends Logger {
     * @param unParsedNodes, nodes to be parsed
     * @return set of parsed and valid nodes
     */
-  def parseNodes(unParsedNodes: Set[String]): Set[NodeAddress] = unParsedNodes.foldLeft[Set[NodeAddress]](Set.empty) {
+  def parseNodes(unParsedNodes: Set[String]): Set[Node] = unParsedNodes.foldLeft[Set[Node]](Set.empty) {
     case (parsedNodes, nodeString) =>
       val maybeNode = NodeParser.parseNode(nodeString)
       maybeNode match {

@@ -9,7 +9,7 @@ import akka.util.ByteString
 import io.iohk.cef.crypto
 import io.iohk.cef.db.{KnownNode, KnownNodesStorage}
 import io.iohk.cef.encoding.{Decoder, Encoder}
-import io.iohk.cef.network.{Capabilities, Endpoint, Node, NodeAddress, NodeStatus, ServerStatus}
+import io.iohk.cef.network.{Capabilities, Endpoint, Node, NodeStatus, ServerStatus}
 
 import scala.collection.mutable
 import scala.util.Random
@@ -59,7 +59,7 @@ class DiscoveryManager(
         pingedNodes.get(token).foreach { pingInfo =>
           //TODO should I check the sending address matches with the one stored?
           pingedNodes -= token
-          val node = Node(pingInfo.nodeAddress, capabilities)
+          val node = pingInfo.node.copy(capabilities = capabilities)
           if (capabilities.satisfies(nodeStatusHolder().capabilities)) {
             context.system.eventStream.publish(CompatibleNodeFound(node))
             knownNodesStorage.insertNode(node)
@@ -78,8 +78,13 @@ class DiscoveryManager(
       val neighbors = Neighbors(capabilities, nodes.size, randomNodeSubset)
       listener ! DiscoveryListener.SendMessage(neighbors, from)
 
-    case Neighbors(capabilities, _, neighbors) if (capabilities.satisfies(nodeStatusHolder().capabilities)) =>
-
+    case DiscoveryListener.MessageReceived(Neighbors(capabilities, _, neighbors), from)
+        if (capabilities.satisfies(nodeStatusHolder().capabilities)) =>
+      val nodeAddresses = discoveredNodes.map(_.node.address).toSet
+      val newNodes = neighbors.filterNot(node => nodeAddresses.contains(node.address))
+      newNodes.foreach(node => {
+        sendPing(listener, address, node)
+      })
     case Scan =>
       scan(listener, address)
   }
@@ -98,19 +103,19 @@ class DiscoveryManager(
     expired.foreach {
       case (id, pingInfo) => {
         pingedNodes -= id
-        discoveredNodes = discoveredNodes.filter(_.node.address == pingInfo.nodeAddress)
+        discoveredNodes = discoveredNodes.filter(_.node.address == pingInfo.node.address)
       }
     }
 
     new Random().shuffle(pingedNodes.values).take(discoveryConfig.scanMaxNodes).foreach {pingInfo =>
-      sendPing(listener, address, pingInfo.nodeAddress)
+      sendPing(listener, address, pingInfo.node)
     }
 
     discoveredNodes
       .sortBy(_.addTimestamp)
       .takeRight(discoveryConfig.scanMaxNodes)
       .foreach { nodeInfo =>
-        sendPing(listener, address, nodeInfo.node.address)
+        sendPing(listener, address, nodeInfo.node)
       }
   }
 
@@ -132,16 +137,16 @@ class DiscoveryManager(
       log.warning("UDP connection not ready yet. Ignoring the message.")
   }
 
-  private def sendPing(listener: ActorRef, listeningAddress: InetSocketAddress, nodeAddress: NodeAddress): Unit = {
+  private def sendPing(listener: ActorRef, listeningAddress: InetSocketAddress, node: Node): Unit = {
     val from = Endpoint.fromUdpAddress(listeningAddress, getTcpPort)
     val ping = Ping(DiscoveryMessage.ProtocolVersion, from, expirationTimestamp)
     val key = pingMessageKey(ping)
 
     if(pingedNodes.size >= discoveryConfig.nodesLimit) pingedNodes -= pingedNodes.head._1
 
-    pingedNodes += ((key, PingInfo(nodeAddress, clock.instant())))
+    pingedNodes += ((key, PingInfo(node, clock.instant())))
 
-    listener ! DiscoveryListener.SendMessage(ping, nodeAddress.udpSocketAddress)
+    listener ! DiscoveryListener.SendMessage(ping, node.address.udpSocketAddress)
   }
 
   private def pingMessageKey(ping: Ping) = {
@@ -168,7 +173,11 @@ class DiscoveryManager(
     newMap + (key -> info)
   }
 
-  def hasNotExpired(timestamp: Long) = timestamp > clock.instant().getEpochSecond
+  private def equivalentNodes(first: Node, second: Node) = {
+    first.address == second.address
+  }
+
+  private def hasNotExpired(timestamp: Long) = timestamp > clock.instant().getEpochSecond
   private def expirationTimestamp = clock.instant().plusSeconds(expirationTimeSec).getEpochSecond
 }
 
@@ -202,7 +211,7 @@ object DiscoveryManager {
     def addTimestamp: Instant
   }
   case class DiscoveryNodeInfo(node: Node, addTimestamp: Instant) extends TimedInfo
-  case class PingInfo(nodeAddress: NodeAddress, addTimestamp: Instant) extends TimedInfo
+  case class PingInfo(node: Node, addTimestamp: Instant) extends TimedInfo
 
   case object GetDiscoveredNodesInfo
   case class DiscoveredNodesInfo(nodes: Set[DiscoveryNodeInfo])
