@@ -9,7 +9,7 @@ sealed trait DiscoveryMessage {
   def messageType: Byte
 }
 
-case class Ping(protocolVersion: Int, from: Endpoint, timestamp: Long) extends DiscoveryMessage {
+case class Ping(protocolVersion: Int, replyTo: Endpoint, timestamp: Long) extends DiscoveryMessage {
   override def messageType: Byte = Ping.messageType
 }
 
@@ -26,7 +26,7 @@ object Ping {
     override def encode(obj: Ping): RLPEncodeable =
       RLPList(byteEncDec.encode(obj.messageType),
         intEncDec.encode(obj.protocolVersion),
-        endpointEncDec.encode(obj.from),
+        endpointEncDec.encode(obj.replyTo),
         longEncDec.encode(obj.timestamp))
 
     override def decode(rlp: RLPEncodeable): Ping = rlp match {
@@ -66,7 +66,7 @@ object Pong {
   }
 }
 
-case class Seek(capabilities: Capabilities, maxResults: Int) extends DiscoveryMessage {
+case class Seek(capabilities: Capabilities, maxResults: Int, timestamp: Long) extends DiscoveryMessage {
   override def messageType: Byte = Seek.messageType
 }
 
@@ -77,24 +77,28 @@ object Seek {
   implicit def seekRLPEncDec(implicit
                              byteEncDec: RLPEncDec[Byte],
                              capabilitiesEncDec: RLPEncDec[Capabilities],
-                             intEncDec: RLPEncDec[Int]) = new RLPEncDec[Seek] {
+                             intEncDec: RLPEncDec[Int],
+                             longEncDec: RLPEncDec[Long]) = new RLPEncDec[Seek] {
 
     override def encode(obj: Seek): RLPEncodeable =
       RLPList(byteEncDec.encode(obj.messageType),
         capabilitiesEncDec.encode(obj.capabilities),
-        intEncDec.encode(obj.maxResults))
+        intEncDec.encode(obj.maxResults),
+        longEncDec.encode(obj.timestamp))
 
     override def decode(rlp: RLPEncodeable): Seek = rlp match {
-      case RLPList(messageType, capabilities, maxResults) if byteEncDec.decode(messageType) == Seek.messageType =>
-        Seek(capabilitiesEncDec.decode(capabilities), intEncDec.decode(maxResults))
+      case RLPList(messageType, capabilities, maxResults, timestamp) if byteEncDec.decode(messageType) == Seek.messageType =>
+        Seek(capabilitiesEncDec.decode(capabilities), intEncDec.decode(maxResults), longEncDec.decode(timestamp))
       case _ => throw new RLPException("src is not a valid Seek message")
     }
   }
 }
 
 case class Neighbors(capabilities: Capabilities,
+                     token: ByteString,
                      neighborsWithCapabilities: Int,
-                     neighbors: Seq[Node]) extends DiscoveryMessage {
+                     neighbors: Seq[Node],
+                     timestamp: Long) extends DiscoveryMessage {
   override def messageType: Byte = Neighbors.messageType
 }
 
@@ -104,19 +108,28 @@ object Neighbors {
 
   implicit def neighborsRLPEncDec(implicit
                                   byteEncDec: RLPEncDec[Byte],
+                                  byteStringEncDec: RLPEncDec[ByteString],
                                   capabilitiesEncDec: RLPEncDec[Capabilities],
                                   intStrEncDec: RLPEncDec[Int],
-                                  seqNodeEncDec: RLPEncDec[Seq[Node]]) = new RLPEncDec[Neighbors] {
+                                  seqNodeEncDec: RLPEncDec[Seq[Node]],
+                                  longEncDec: RLPEncDec[Long]) = new RLPEncDec[Neighbors] {
 
     override def encode(obj: Neighbors): RLPEncodeable =
       RLPList(byteEncDec.encode(obj.messageType),
+        byteStringEncDec.encode(obj.token),
         capabilitiesEncDec.encode(obj.capabilities),
         intStrEncDec.encode(obj.neighborsWithCapabilities),
-        seqNodeEncDec.encode(obj.neighbors))
+        seqNodeEncDec.encode(obj.neighbors),
+        longEncDec.encode(obj.timestamp))
 
     override def decode(rlp: RLPEncodeable): Neighbors = rlp match {
-      case RLPList(messageType, capabilities, neighborsWithCap, neighbors) if byteEncDec.decode(messageType) == Neighbors.messageType =>
-        Neighbors(capabilitiesEncDec.decode(capabilities), intStrEncDec.decode(neighborsWithCap), seqNodeEncDec.decode(neighbors))
+      case RLPList(messageType, token, capabilities, neighborsWithCap, neighbors, timestamp)
+          if byteEncDec.decode(messageType) == Neighbors.messageType =>
+        Neighbors(capabilitiesEncDec.decode(capabilities),
+          byteStringEncDec.decode(token),
+          intStrEncDec.decode(neighborsWithCap),
+          seqNodeEncDec.decode(neighbors),
+          longEncDec.decode(timestamp))
       case _ => throw new RLPException("src is not a valid Neighbors message")
     }
   }

@@ -18,7 +18,7 @@ object Endpoint {
     Endpoint(udpAddress.getAddress, udpAddress.getPort, tcpPort)
 
   implicit def endpointRLPEncDec(implicit
-                                intEncDec: RLPEncDec[Int],
+                                 intEncDec: RLPEncDec[Int],
                                  addrEncDec: RLPEncDec[InetAddress]) =
   new RLPEncDec[Endpoint] {
 

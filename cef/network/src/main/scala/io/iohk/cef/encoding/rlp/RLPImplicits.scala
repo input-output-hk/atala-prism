@@ -100,7 +100,8 @@ object RLPImplicits {
   }
 
   implicit val inetAddressEncDec = new RLPEncDec[InetAddress] {
-    override def encode(obj: InetAddress): RLPEncodeable = RLPValue(obj.getAddress)
+    override def encode(obj: InetAddress): RLPEncodeable =
+      RLPValue(obj.getAddress)
 
     override def decode(rlp: RLPEncodeable): InetAddress = rlp match {
       case RLPValue(bytes) => InetAddress.getByAddress(bytes)
