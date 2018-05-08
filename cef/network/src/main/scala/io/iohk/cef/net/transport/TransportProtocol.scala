@@ -43,7 +43,7 @@ object TransportProtocol {
   case class Connected[PeerInfoType](peerInfo: PeerInfoType)
     extends ConnectionReply[PeerInfoType]
 
-  case class ConnectionError[PeerInfoType](message: String)
+  case class ConnectionError[PeerInfoType](message: String, peerInfo: PeerInfoType)
     extends ConnectionReply[PeerInfoType]
 
 }

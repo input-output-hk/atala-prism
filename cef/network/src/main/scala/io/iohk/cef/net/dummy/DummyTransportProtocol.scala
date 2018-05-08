@@ -22,7 +22,7 @@ class DummyTransportProtocol extends TransportProtocol {
           val newPeer = DummyPeerInfo(address.toString)
 
           if (address.to != "localhost") {
-            replyTo ! ConnectionError("Cannot connect to remote addresses. I'm a dummy.")
+            replyTo ! ConnectionError("Cannot connect to remote addresses. I'm a dummy.", newPeer)
             dummyTransport(peers)
           } else {
             replyTo ! Connected(newPeer)

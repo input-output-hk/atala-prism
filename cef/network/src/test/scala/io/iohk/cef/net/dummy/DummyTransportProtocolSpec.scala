@@ -19,7 +19,7 @@ class DummyTransportProtocolSpec extends FunSpec with ActorTestKit with BeforeAn
 
     it("should raise an error when connecting to remote hosts") {
       testKit.run(Connect(DummyAddress("remotehost"), probe.ref))
-      probe.expectMessage(ConnectionError[DummyPeerInfo]("Cannot connect to remote addresses. I'm a dummy."))
+      probe.expectMessage(ConnectionError("Cannot connect to remote addresses. I'm a dummy.", DummyPeerInfo("DummyAddress(remotehost)")))
     }
   }
 

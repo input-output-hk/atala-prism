@@ -9,8 +9,8 @@ import akka.testkit.typed.scaladsl.TestProbe
 import akka.testkit.{TestActors, TestProbe => UntypedTestProbe}
 import akka.util.ByteString
 import akka.{actor => untyped}
-import io.iohk.cef.net.rlpx.RLPxConnectionHandler.{ConnectTo, ConnectionEstablished}
-import io.iohk.cef.net.transport.TransportProtocol.{Connect, Connected, ConnectionReply, TransportMessage}
+import io.iohk.cef.net.rlpx.RLPxConnectionHandler.{ConnectTo, ConnectionEstablished, ConnectionFailed}
+import io.iohk.cef.net.transport.TransportProtocol._
 import org.scalatest.FunSpec
 
 class RLPxTransportProtocolSpec extends FunSpec {
@@ -42,6 +42,16 @@ class RLPxTransportProtocolSpec extends FunSpec {
       rlpxConnectionHandler.reply(ConnectionEstablished(ByteString(remotePubKey)))
 
       userActor.expectMessage(Connected(ByteString(remotePubKey)))
+    }
+
+    it("should report a connection failure to the user") {
+
+      transportActor ! Connect(uri, userActor.ref)
+
+      rlpxConnectionHandler.expectMsg(ConnectTo(uri))
+      rlpxConnectionHandler.reply(ConnectionFailed)
+
+      userActor.expectMessage(ConnectionError(s"Failed to connect to uri $uri", ByteString(remotePubKey)))
     }
   }
 }

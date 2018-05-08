@@ -25,7 +25,7 @@ class RLPxTransportProtocol(rLPxConnectionHandlerProps: () => untyped.Props /* T
         message match {
           case Connect(uri, replyTo) => {
             val connectHandlerActor = connectHandler(uri, replyTo)
-            rlpxTransport(connectionTable + (uri -> context.actorOf(connectHandlerActor, s"handler_${uri.getUserInfo}")))
+            rlpxTransport(connectionTable + (uri -> context.actorOf(connectHandlerActor)))
           }
         }
     }
@@ -43,7 +43,7 @@ class ConnectHandler(uri: URI, typedClient: ActorRef[ConnectionReply[ByteString]
 
   override def receive: PartialFunction[Any, Unit] = {
     case ConnectionEstablished(nodeId: ByteString) => typedClient ! Connected(nodeId)
-    case ConnectionFailed => typedClient ! ConnectionError(s"Failed to connect to uri '$uri'")
+    case ConnectionFailed => typedClient ! ConnectionError(s"Failed to connect to uri $uri", ByteString(uri.getUserInfo))
   }
 }
 
