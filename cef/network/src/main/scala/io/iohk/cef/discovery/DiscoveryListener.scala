@@ -2,19 +2,19 @@ package io.iohk.cef.discovery
 
 import java.net.InetSocketAddress
 
-import akka.actor.{Actor, ActorLogging, ActorRef, Props}
-import akka.agent.Agent
+import akka.actor.typed.ActorRef
 import akka.io.{IO, Udp}
 import akka.util.ByteString
+import akka.{actor => untyped}
 import io.iohk.cef.encoding.{Decoder, Encoder}
-import io.iohk.cef.network.NodeStatus
+import io.iohk.cef.network.NodeStatus.NodeStatusMessage
 
 class DiscoveryListener(
-    discoveryConfig: DiscoveryConfig,
-    nodeStatusHolder: Agent[NodeStatus],
-    encoder: Encoder[DiscoveryMessage, ByteString],
-    decoder: Decoder[ByteString, DiscoveryMessage])
-  extends Actor with ActorLogging {
+                         discoveryConfig: DiscoveryConfig,
+                         nodeStatusHolder: ActorRef[NodeStatusMessage],
+                         encoder: Encoder[DiscoveryMessage, ByteString],
+                         decoder: Decoder[ByteString, DiscoveryMessage])
+  extends untyped.Actor with untyped.ActorLogging {
 
   import DiscoveryListener._
   import context.system
@@ -28,7 +28,7 @@ class DiscoveryListener(
       context.become(ready(sender()))
   }
 
-  def ready(socket: ActorRef): Receive = {
+  def ready(socket: untyped.ActorRef): Receive = {
     case Udp.Received(data, remote) =>
       val packet = decoder.decode(data)
       val msgReceived = MessageReceived(packet, remote)
@@ -43,10 +43,10 @@ class DiscoveryListener(
 
 object DiscoveryListener {
   def props(config: DiscoveryConfig
-            , nodeStatusHolder: Agent[NodeStatus]
+            , nodeStatusHolder: ActorRef[NodeStatusMessage]
             , encoder: Encoder[DiscoveryMessage, ByteString]
-            , decoder: Decoder[ByteString, DiscoveryMessage]): Props =
-    Props(new DiscoveryListener(config, nodeStatusHolder, encoder, decoder))
+            , decoder: Decoder[ByteString, DiscoveryMessage]): untyped.Props =
+    untyped.Props(new DiscoveryListener(config, nodeStatusHolder, encoder, decoder))
 
   case object Start
 

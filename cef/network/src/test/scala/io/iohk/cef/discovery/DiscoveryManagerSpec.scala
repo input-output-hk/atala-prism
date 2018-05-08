@@ -3,22 +3,22 @@ package io.iohk.cef.discovery
 import java.net.{InetAddress, InetSocketAddress}
 import java.security.SecureRandom
 
-import akka.actor.{ActorRefFactory, ActorSystem}
-import akka.agent.Agent
+import akka.actor.typed._
 import akka.testkit.{TestActorRef, TestKit, TestProbe}
 import akka.util.ByteString
+import akka.{actor => untyped}
 import io.iohk.cef.db.KnownNodesStorage
 import io.iohk.cef.encoding.{Decoder, Encoder}
+import io.iohk.cef.network.NodeStatus.NodeStatusMessage
 import io.iohk.cef.network.{Capabilities, Endpoint, Node, NodeAddress, NodeStatus, ServerStatus}
 import io.iohk.cef.test.{StopAfterAll, TestClock}
 import io.iohk.cef.{crypto, network}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{MustMatchers, WordSpecLike}
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
-class DiscoveryManagerSpec extends TestKit(ActorSystem("DiscoveryManagerSpec"))
+class DiscoveryManagerSpec extends TestKit(untyped.ActorSystem("DiscoveryManagerSpec"))
   with WordSpecLike
   with StopAfterAll
   with MustMatchers
@@ -45,10 +45,10 @@ class DiscoveryManagerSpec extends TestKit(ActorSystem("DiscoveryManagerSpec"))
       maxSeekResults = 10,
       multipleConnectionsPerAddress = true)
     val nodeStatus =
-      NodeStatus(
-        key = network.loadAsymmetricCipherKeyPair("/tmp/file", SecureRandom.getInstance("NativePRNGNonBlocking")),
-        capabilities = Capabilities(0x01),
-        serverStatus = ServerStatus.NotListening)
+      NodeStatus.NodeState(
+        network.loadAsymmetricCipherKeyPair("/tmp/file", SecureRandom.getInstance("NativePRNGNonBlocking")),
+        ServerStatus.NotListening,
+        Capabilities(0x01))
 
     import io.iohk.cef.encoding.rlp.RLPEncoders._
     import io.iohk.cef.encoding.rlp.RLPImplicits._
@@ -59,7 +59,7 @@ class DiscoveryManagerSpec extends TestKit(ActorSystem("DiscoveryManagerSpec"))
 
     val listener = TestProbe()
 
-    val listenerMaker = (_: ActorRefFactory) => listener.ref
+    val listenerMaker = (_: untyped.ActorRefFactory) => listener.ref
 
     //Not sure how to mock parameterless methods.
     val mockClock = new TestClock
@@ -68,12 +68,15 @@ class DiscoveryManagerSpec extends TestKit(ActorSystem("DiscoveryManagerSpec"))
 
     val scheduler = system.scheduler
 
+    //Not sure how to init a "TestProbe" of a Behavior
+    val nodeState: ActorRef[NodeStatusMessage] = null
+
     def createActor = {
       val actor = TestActorRef[DiscoveryManager](
         DiscoveryManager.props(
           discoveryConfig,
           new KnownNodesStorage,
-          Agent(nodeStatus),
+          nodeState,
           mockClock,
           encoder,
           decoder,
