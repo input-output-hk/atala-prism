@@ -30,12 +30,14 @@ class DiscoveryListener(
 
   def ready(socket: untyped.ActorRef): Receive = {
     case Udp.Received(data, remote) =>
+      log.debug("Received UDP packet")
       val packet = decoder.decode(data)
       val msgReceived = MessageReceived(packet, remote)
 
       context.parent ! msgReceived
 
     case SendMessage(packet, to) =>
+      log.debug(s"Sending UDP packet ${packet} to ${to}")
       val encodedPacket = encoder.encode(packet)
       socket ! Udp.Send(encodedPacket, to)
   }

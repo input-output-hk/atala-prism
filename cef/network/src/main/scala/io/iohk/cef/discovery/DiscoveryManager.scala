@@ -48,6 +48,7 @@ class DiscoveryManager(
 
   override def receive: Receive = {
     case NodeStatus.StateUpdated(state) =>
+      log.debug(s"State ${state} received. Proceeding to listening if configured.")
       nodeStatus = state
       unstashAll()
       if(discoveryConfig.discoveryEnabled) startListening()
@@ -73,14 +74,14 @@ class DiscoveryManager(
   def waitingUdpConnection(listener: untyped.ActorRef): Receive = {
     case DiscoveryListener.Ready(address) =>
       context.become(listening(listener, address))
-      log.debug(s"UDP address ${address} was bound. Pinging Bootstrap Nodes.")
+      log.debug(s"UDP address ${address} was bound. Pinging ${discoveryConfig.bootstrapNodes.size} Bootstrap Nodes.")
 
       //Pinging all bootstrap nodes
       discoveryConfig.bootstrapNodes.foreach( node =>
         sendPing(listener, address, node)
       )
-    case a =>
-      log.warning(s"UDP connection not ready yet. Ignoring the message. Received: ${a}")
+    case message =>
+      log.warning(s"UDP connection not ready yet. Ignoring the message. Received: ${message}")
   }
 
   def listening(listener: untyped.ActorRef, address: InetSocketAddress): Receive = {
@@ -107,6 +108,7 @@ class DiscoveryManager(
             discoveredNodes = discoveredNodes :+ Discovered(node, clock.instant())
           }
           val seek = Seek(nodeStatus.capabilities, discoveryConfig.maxSeekResults, expirationTimestamp)
+          log.debug(s"Sending seek message ${seek}")
           listener ! DiscoveryListener.SendMessage(seek, node.address.udpSocketAddress)
           val messageKey = calculateMessageKey(seek)
           soughtNodes += ((messageKey, discoveryConfig.maxSeekResults))
@@ -119,9 +121,11 @@ class DiscoveryManager(
       if(hasNotExpired(timestamp)) {
         log.debug(s"Received a seek message from ${from}")
         val nodes = discoveredNodes.filter(_.node.capabilities.satisfies(capabilities)).map(_.node)
+        log.debug(s"Nodes satisfying capabilities = ${nodes}")
         val randomNodeSubset = Random.shuffle(nodes).take(maxResults)
         val token = calculateMessageKey(seek)
         val neighbors = Neighbors(capabilities, token, nodes.size, randomNodeSubset, expirationTimestamp)
+        log.debug(s"Sending neighbors answer with ${randomNodeSubset} to ${from}")
         listener ! DiscoveryListener.SendMessage(neighbors, from)
       } else {
         log.warning("Received an invalid Seek message")

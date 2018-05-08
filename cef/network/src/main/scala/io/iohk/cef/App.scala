@@ -61,34 +61,34 @@ object App extends Logger {
       val key = network.loadAsymmetricCipherKeyPair("/tmp/file", SecureRandom.getInstance("NativePRNGNonBlocking"))
       val state = NodeState(key, ServerStatus.NotListening, capabilities)
       val portBase = 8090
-      val bootstrapNodes = bootstrapNodeIds.map(nodeId => Node(ByteString("0"),NodeAddress(localhost,0,portBase + nodeId), state.capabilities))
-      val discoveryConfig0 = discoveryConfig.copy(port = portBase + id, bootstrapNodes = bootstrapNodes)
+      val bNodes = bootstrapNodeIds.map(nodeId => Node(ByteString("0"),NodeAddress(localhost,0,portBase + nodeId), state.capabilities))
+      val config = discoveryConfig.copy(port = portBase + id, bootstrapNodes = bNodes)
       val system = untyped.ActorSystem("cef_system" + id)
       val stateHolder = system.spawn(NodeStatus.nodeState(state, Seq()), "stateHolder")
       system.actorOf(DiscoveryManager.props(
-        discoveryConfig,
+        config,
         new KnownNodesStorage,
         stateHolder,
         Clock.systemUTC(),
         encoder,
         decoder,
-        DiscoveryManager.listenerMaker(discoveryConfig0, stateHolder, encoder, decoder),
+        DiscoveryManager.listenerMaker(config, stateHolder, encoder, decoder),
         system.scheduler
       ))
       system
     }
 
-    createActor(0, Set(), Capabilities(1))
+    createActor(0, Set(1), Capabilities(1))
 
     createActor(1, Set(0), Capabilities(1))
 
-    createActor(2, Set(1,2), Capabilities(1))
+    //createActor(2, Set(1,2), Capabilities(1))
 
-    createActor(3, Set(0,1), Capabilities(1))
+    //createActor(3, Set(0,1), Capabilities(1))
 
-    createActor(4, Set(2), Capabilities(1))
+    //createActor(4, Set(2), Capabilities(1))
 
-    val system = createActor(5, Set(4), Capabilities(1))
+    val system = createActor(5, Set(0), Capabilities(1))
 
     val spy = system.actorOf(LogEverything.props())
 

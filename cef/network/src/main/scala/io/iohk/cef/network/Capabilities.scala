@@ -11,7 +11,9 @@ case class Capabilities(byte: Byte) {
     * @param other
     * @return
     */
-  def satisfies(other: Capabilities) = (byte & other.byte) == other.byte
+  def satisfies(other: Capabilities) = {
+    (byte & other.byte) == other.byte
+  }
 }
 
 object Capabilities {
