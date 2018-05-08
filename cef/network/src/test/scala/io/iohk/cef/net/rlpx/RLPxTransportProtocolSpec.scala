@@ -9,11 +9,13 @@ import akka.testkit.typed.scaladsl.TestProbe
 import akka.testkit.{TestActors, TestProbe => UntypedTestProbe}
 import akka.util.ByteString
 import akka.{actor => untyped}
+
 import io.iohk.cef.net.rlpx.RLPxConnectionHandler.{ConnectTo, ConnectionEstablished, ConnectionFailed}
 import io.iohk.cef.net.transport.TransportProtocol._
-import org.scalatest.FunSpec
 
-class RLPxTransportProtocolSpec extends FunSpec {
+import org.scalatest.{BeforeAndAfterAll, FlatSpec}
+
+class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
 
   val remotePubKey = "18a551bee469c2e02de660ab01dede06503c986f6b8520cb5a65ad122df88b17b285e3fef09a40a0d44f99e014f8616cf1ebc2e094f96c6e09e2f390f5d34857"
   val uri = new URI(s"enode://$remotePubKey@47.90.36.129:30303")
@@ -25,33 +27,36 @@ class RLPxTransportProtocolSpec extends FunSpec {
   val rLPxConnectionHandlerProps = () => TestActors.forwardActorProps(rlpxConnectionHandler.ref)
   val rlpxTransportProtocol = new RLPxTransportProtocol(rLPxConnectionHandlerProps)
 
-  val transportBehaviour: Behavior[TransportMessage[URI, ByteString]] = rlpxTransportProtocol.createTransport()
+  val transportBehaviour: Behavior[TransportCommand[URI, ByteString]] = rlpxTransportProtocol.createTransport()
 
-  val transportActor: ActorRef[TransportMessage[URI, ByteString]] = untypedSystem.spawn(transportBehaviour, "Transport")
-
+  val transportActor: ActorRef[TransportCommand[URI, ByteString]] = untypedSystem.spawn(transportBehaviour, "Transport")
 
   val userActor: TestProbe[ConnectionReply[ByteString]] = TestProbe[ConnectionReply[ByteString]]("userActorProbe")(typedSystem)
 
 
-  describe("RLPx transport protocol") {
-    it("should open a connection to a valid peer") {
+  "RLPx transport protocol" should "open a connection to a valid peer" in {
 
-      transportActor ! Connect(uri, userActor.ref)
+    transportActor ! Connect(uri, userActor.ref)
 
-      rlpxConnectionHandler.expectMsg(ConnectTo(uri))
-      rlpxConnectionHandler.reply(ConnectionEstablished(ByteString(remotePubKey)))
+    rlpxConnectionHandler.expectMsg(ConnectTo(uri))
+    rlpxConnectionHandler.reply(ConnectionEstablished(ByteString(remotePubKey)))
 
-      userActor.expectMessage(Connected(ByteString(remotePubKey)))
-    }
+    userActor.expectMessage(Connected(ByteString(remotePubKey)))
+  }
 
-    it("should report a connection failure to the user") {
+  it should "report a connection failure to the user" in {
 
-      transportActor ! Connect(uri, userActor.ref)
+    transportActor ! Connect(uri, userActor.ref)
 
-      rlpxConnectionHandler.expectMsg(ConnectTo(uri))
-      rlpxConnectionHandler.reply(ConnectionFailed)
+    rlpxConnectionHandler.expectMsg(ConnectTo(uri))
+    rlpxConnectionHandler.reply(ConnectionFailed)
 
-      userActor.expectMessage(ConnectionError(s"Failed to connect to uri $uri", ByteString(remotePubKey)))
-    }
+    userActor.expectMessage(ConnectionError(s"Failed to connect to uri $uri", ByteString(remotePubKey)))
+  }
+
+
+  override protected def afterAll(): Unit = {
+    typedSystem.terminate()
+    untypedSystem.terminate()
   }
 }
