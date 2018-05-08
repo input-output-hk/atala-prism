@@ -170,7 +170,7 @@ class RLPxConnectionHandlerSpec extends FlatSpec with Matchers with MockFactory 
       override val waitForHandshakeTimeout: FiniteDuration = Timeouts.veryLongTimeout
     }
 
-//    val tcpActorProbe = TestProbe()
+    val tcpActorProbe = TestProbe()
     val rlpxConnectionParent = TestProbe()
     val rlpxConnection = TestActorRef(
       Props(new RLPxConnectionHandler(mockMessageDecoder, protocolVersion, mockHandshaker, (_, _, _) => mockMessageCodec, rlpxConfiguration) {

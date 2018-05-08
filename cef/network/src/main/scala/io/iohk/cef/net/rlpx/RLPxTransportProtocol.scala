@@ -7,13 +7,11 @@ import untyped.Props
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.util.ByteString
-import io.iohk.cef.net.rlpx.RLPxConnectionHandler.{ConnectTo, ConnectionEstablished, ConnectionFailed, RLPxConfiguration}
-import io.iohk.cef.net.rlpx.ethereum.p2p.MessageDecoder
+import io.iohk.cef.net.rlpx.RLPxConnectionHandler.{ConnectTo, ConnectionEstablished, ConnectionFailed}
 import io.iohk.cef.net.transport.TransportProtocol
 import io.iohk.cef.net.transport.TransportProtocol._
 
-class RLPxTransportProtocol(messageDecoder: MessageDecoder, protocolVersion: Int,
-                            authHandshaker: AuthHandshaker, rlpxConfiguration: RLPxConfiguration) extends TransportProtocol {
+class RLPxTransportProtocol(rLPxConnectionHandlerProps: () => untyped.Props /* TODO a better way, surely? */) extends TransportProtocol {
 
   override type AddressType = URI
   override type PeerInfoType = ByteString // currently a byte string representing the peer's public key
@@ -33,16 +31,15 @@ class RLPxTransportProtocol(messageDecoder: MessageDecoder, protocolVersion: Int
     }
 
   private def connectHandler(uri: URI, replyTo: ActorRef[ConnectionReply[ByteString]]): Props =
-    ConnectHandler.props(uri, replyTo, messageDecoder, protocolVersion, authHandshaker, rlpxConfiguration)
+    ConnectHandler.props(uri, replyTo, rLPxConnectionHandlerProps)
 }
 
 class ConnectHandler(uri: URI, typedClient: ActorRef[ConnectionReply[ByteString]],
-                     messageDecoder: MessageDecoder, protocolVersion: Int,
-                     authHandshaker: AuthHandshaker, rlpxConfiguration: RLPxConfiguration) extends untyped.Actor {
-    import context.system
-    private val rlpxConnectionHandler = system.actorOf(RLPxConnectionHandler.props(messageDecoder, protocolVersion, authHandshaker, rlpxConfiguration))
+                     rlpxConnectionHandlerProps: () => untyped.Props) extends untyped.Actor {
 
-    rlpxConnectionHandler ! ConnectTo(uri)
+  private val rlpxConnectionHandler = context.actorOf(rlpxConnectionHandlerProps())
+
+  rlpxConnectionHandler ! ConnectTo(uri)
 
   override def receive: PartialFunction[Any, Unit] = {
     case ConnectionEstablished(nodeId: ByteString) => typedClient ! Connected(nodeId)
@@ -52,7 +49,6 @@ class ConnectHandler(uri: URI, typedClient: ActorRef[ConnectionReply[ByteString]
 
 object ConnectHandler {
   def props(uri: URI, typedClient: ActorRef[ConnectionReply[ByteString]],
-            messageDecoder: MessageDecoder, protocolVersion: Int,
-            authHandshaker: AuthHandshaker, rlpxConfiguration: RLPxConfiguration): Props =
-    Props(new ConnectHandler(uri, typedClient, messageDecoder, protocolVersion, authHandshaker, rlpxConfiguration))
+            rlpxConnectionHandlerProps: () => untyped.Props): Props =
+    Props(new ConnectHandler(uri, typedClient, rlpxConnectionHandlerProps))
 }
