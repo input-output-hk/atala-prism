@@ -21,7 +21,7 @@ object TransportProtocol {
                                                  replyTo: ActorRef[ConnectionReply[PeerInfoType]])
     extends TransportCommand[AddressType, PeerInfoType]
 
-  case class CreateListener[AddressType, PeerInfoType](replyTo: ActorRef[ListenerCreated])
+  case class CreateListener[AddressType, PeerInfoType](replyTo: ActorRef[ListenerCreated[AddressType]])
     extends TransportCommand[AddressType, PeerInfoType]
 
   //case class GetListeners(replyTo: ActorRef)
@@ -33,17 +33,17 @@ object TransportProtocol {
   case class ConnectionError[PeerInfoType](message: String, peerInfo: PeerInfoType)
     extends ConnectionReply[PeerInfoType]
 
-  case class ListenerCreated(listener: ActorRef[ListenerCommand])
+  case class ListenerCreated[AddressType](listener: ActorRef[ListenerCommand[AddressType]])
 
-  sealed trait ListenerEvent
-  case class Listening[AddressType](address: AddressType) extends ListenerEvent
+  sealed trait ListenerEvent[AddressType]
+  case class Listening[AddressType](address: AddressType) extends ListenerEvent[AddressType]
   //  case class ConnectionReceived[PeerInfoType](peerInfo: PeerInfoType)
   //      extends ListenerEvent
   //  case class Close[PeerInfoType](peerInfo: PeerInfoType) extends ListenerEvent
   //  case class Error(message: String) extends ListenerEvent
   //
-  sealed trait ListenerCommand
-  case class Listen[AddressType](addressType: AddressType, replyTo: ActorRef[ListenerEvent]) extends ListenerCommand
+  sealed trait ListenerCommand[AddressType]
+  case class Listen[AddressType](addressType: AddressType, replyTo: ActorRef[ListenerEvent[AddressType]]) extends ListenerCommand[AddressType]
   //  case class GetListenerAddr[AddressType](replyTo: ActorRef[AddressType])
   //      extends ListenerMessage
 
