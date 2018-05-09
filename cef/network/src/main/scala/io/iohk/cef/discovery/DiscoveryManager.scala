@@ -52,8 +52,8 @@ class DiscoveryManager(
       unstashAll()
       if(discoveryConfig.discoveryEnabled) startListening()
       else context.become(stateLoaded)
-    case _ =>
-      log.warning("NodeState has not loaded yet. Stashing the message.")
+    case m =>
+      log.warning(s"NodeState has not loaded yet. Stashing the message of type ${m.getClass}.")
       stash()
   }
 

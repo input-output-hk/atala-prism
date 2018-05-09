@@ -3,13 +3,15 @@ package io.iohk.cef.discovery
 import java.net.{InetAddress, InetSocketAddress}
 import java.security.SecureRandom
 
-import akka.actor.typed._
+import akka.actor.typed.scaladsl.adapter._
+import akka.testkit.typed.scaladsl.TestInbox
 import akka.testkit.{TestActorRef, TestKit, TestProbe}
 import akka.util.ByteString
 import akka.{actor => untyped}
 import io.iohk.cef.db.KnownNodesStorage
+import io.iohk.cef.discovery.DiscoveryListener.Start
 import io.iohk.cef.encoding.{Decoder, Encoder}
-import io.iohk.cef.network.NodeStatus.NodeStatusMessage
+import io.iohk.cef.network.NodeStatus.{NodeStatusMessage, Subscribe}
 import io.iohk.cef.network.{Capabilities, Endpoint, Node, NodeAddress, NodeStatus, ServerStatus}
 import io.iohk.cef.test.{StopAfterAll, TestClock}
 import io.iohk.cef.{crypto, network}
@@ -44,7 +46,7 @@ class DiscoveryManagerSpec extends TestKit(untyped.ActorSystem("DiscoveryManager
       messageExpiration = 100.minute,
       maxSeekResults = 10,
       multipleConnectionsPerAddress = true)
-    val nodeStatus =
+    val nodeState =
       NodeStatus.NodeState(
         network.loadAsymmetricCipherKeyPair("/tmp/file", SecureRandom.getInstance("NativePRNGNonBlocking")),
         ServerStatus.NotListening,
@@ -68,17 +70,16 @@ class DiscoveryManagerSpec extends TestKit(untyped.ActorSystem("DiscoveryManager
 
     val scheduler = system.scheduler
 
-    //Not sure how to init a "TestProbe" of a Behavior
-    val nodeState: ActorRef[NodeStatusMessage] = null
+    val nodeStateInbox = TestInbox[NodeStatusMessage]()
 
-    val secureRandom = mock[SecureRandom]
+    val secureRandom = new SecureRandom()
 
     def createActor = {
       val actor = TestActorRef[DiscoveryManager](
         DiscoveryManager.props(
           discoveryConfig,
           new KnownNodesStorage,
-          nodeState,
+          nodeStateInbox.ref,
           mockClock,
           encoder,
           decoder,
@@ -87,7 +88,9 @@ class DiscoveryManagerSpec extends TestKit(untyped.ActorSystem("DiscoveryManager
           secureRandom
         )
       )
-      listener.expectMsg(DiscoveryListener.Start)
+      nodeStateInbox.expectMessage(Subscribe(actor))
+      actor ! NodeStatus.StateUpdated(nodeState)
+      listener.expectMsg(Start)
       actor ! DiscoveryListener.Ready(listeningAddress)
       actor
     }
@@ -118,7 +121,7 @@ class DiscoveryManagerSpec extends TestKit(untyped.ActorSystem("DiscoveryManager
       sendMessage.message.messageType mustBe Pong.messageType
       sendMessage.message match {
         case pong: Pong =>
-          pong.capabilities mustBe nodeStatus.capabilities
+          pong.capabilities mustBe nodeState.capabilities
           pong.token mustBe token
         case _ => fail("Wrong message type")
       }
