@@ -1,6 +1,7 @@
 package io.iohk.cef.discovery
 
 import java.net.InetSocketAddress
+import java.security.SecureRandom
 import java.time.{Clock, Instant}
 
 import akka.actor.typed.ActorRef
@@ -11,7 +12,7 @@ import io.iohk.cef.crypto
 import io.iohk.cef.db.{KnownNode, KnownNodesStorage}
 import io.iohk.cef.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.NodeStatus.{NodeState, NodeStatusMessage}
-import io.iohk.cef.network.{Capabilities, Endpoint, Node, NodeStatus, ServerStatus}
+import io.iohk.cef.network.{Capabilities, Endpoint, Node, NodeAddress, NodeStatus, ServerStatus}
 
 import scala.collection.mutable
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -25,11 +26,10 @@ class DiscoveryManager(
                         encoder: Encoder[DiscoveryMessage, ByteString],
                         decoder: Decoder[ByteString, DiscoveryMessage],
                         listenerMaker: untyped.ActorRefFactory => untyped.ActorRef,
-                        scheduler: untyped.Scheduler) extends untyped.Actor with untyped.ActorLogging with untyped.Stash {
+                        scheduler: untyped.Scheduler,
+                        randomSource: SecureRandom) extends untyped.Actor with untyped.ActorLogging with untyped.Stash {
 
   import DiscoveryManager._
-
-  val expirationTimeSec = discoveryConfig.messageExpiration.toSeconds
 
   val pingedNodes: mutable.LinkedHashMap[ByteString, Pinged] = mutable.LinkedHashMap.empty
 
@@ -48,8 +48,7 @@ class DiscoveryManager(
 
   override def receive: Receive = {
     case NodeStatus.StateUpdated(state) =>
-      log.debug(s"State ${state} received. Proceeding to listening if configured.")
-      nodeStatus = state
+      processNodeStateUpdated(NodeStatus.StateUpdated(state))
       unstashAll()
       if(discoveryConfig.discoveryEnabled) startListening()
       else context.become(stateLoaded)
@@ -58,7 +57,7 @@ class DiscoveryManager(
       stash()
   }
 
-  def stateLoaded: Receive = {
+  def stateLoaded: Receive = processNodeStateUpdated orElse {
     case DiscoveryManager.StartListening => startListening()
     case _ => log.warning("Discovery manager not listening.")
   }
@@ -71,7 +70,7 @@ class DiscoveryManager(
     log.debug("Waiting for UDP Connection")
   }
 
-  def waitingUdpConnection(listener: untyped.ActorRef): Receive = {
+  def waitingUdpConnection(listener: untyped.ActorRef): Receive = processNodeStateUpdated orElse {
     case DiscoveryListener.Ready(address) =>
       context.become(listening(listener, address))
       log.debug(s"UDP address ${address} was bound. Pinging ${discoveryConfig.bootstrapNodes.size} Bootstrap Nodes.")
@@ -84,13 +83,14 @@ class DiscoveryManager(
       log.warning(s"UDP connection not ready yet. Ignoring the message. Received: ${message}")
   }
 
-  def listening(listener: untyped.ActorRef, address: InetSocketAddress): Receive = {
-    case DiscoveryListener.MessageReceived(ping @ Ping(protocolVersion, replyTo, timestamp), from) =>
+  def listening(listener: untyped.ActorRef, address: InetSocketAddress): Receive = processNodeStateUpdated orElse {
+    case DiscoveryListener.MessageReceived(ping @ Ping(protocolVersion, replyTo, timestamp, _), from) =>
         if (hasNotExpired(timestamp) &&
             protocolVersion == DiscoveryMessage.ProtocolVersion) {
           log.debug(s"Received a ping message from ${from}, replyTo: $replyTo")
           val messageKey = calculateMessageKey(ping)
           val pong = Pong(nodeStatus.capabilities, messageKey, expirationTimestamp)
+          log.debug(s"Sending pong message with capabilities ${pong.capabilities}, to: ${replyTo.toUdpAddress}")
           listener ! DiscoveryListener.SendMessage(pong, replyTo.toUdpAddress)
         } else {
           log.warning(s"Received an invalid Ping message")
@@ -106,9 +106,12 @@ class DiscoveryManager(
             context.system.eventStream.publish(CompatibleNodeFound(node))
             knownNodesStorage.insertNode(node)
             discoveredNodes = discoveredNodes :+ Discovered(node, clock.instant())
+            log.debug(s"New discovered list: ${discoveredNodes.map(_.node.address.udpSocketAddress)}")
+          } else {
+            log.debug(s"Node received in pong ${from} does not satisfy the capabilities.")
           }
           val seek = Seek(nodeStatus.capabilities, discoveryConfig.maxSeekResults, expirationTimestamp)
-          log.debug(s"Sending seek message ${seek}")
+          log.debug(s"Sending seek message ${seek} to ${node.address.udpSocketAddress}")
           listener ! DiscoveryListener.SendMessage(seek, node.address.udpSocketAddress)
           val messageKey = calculateMessageKey(seek)
           soughtNodes += ((messageKey, discoveryConfig.maxSeekResults))
@@ -119,9 +122,13 @@ class DiscoveryManager(
 
     case DiscoveryListener.MessageReceived(seek @ Seek(capabilities, maxResults, timestamp), from) =>
       if(hasNotExpired(timestamp)) {
-        log.debug(s"Received a seek message from ${from}")
-        val nodes = discoveredNodes.filter(_.node.capabilities.satisfies(capabilities)).map(_.node)
-        log.debug(s"Nodes satisfying capabilities = ${nodes}")
+        log.debug(s"Received a seek message ${seek} from ${from}")
+        val nodes =
+          discoveredNodes.filter(discovered => {
+            discovered.node.capabilities.satisfies(capabilities) &&
+              !equivalentAddresses(discovered.node.address, from)
+          }).map(_.node)
+        log.debug(s"Nodes satisfying capabilities = ${nodes.map(_.address.udpSocketAddress)}")
         val randomNodeSubset = Random.shuffle(nodes).take(maxResults)
         val token = calculateMessageKey(seek)
         val neighbors = Neighbors(capabilities, token, nodes.size, randomNodeSubset, expirationTimestamp)
@@ -136,7 +143,6 @@ class DiscoveryManager(
         log.debug(s"Received a neighbors message from ${from}. Neighbors: $neighbors")
         soughtNodes.get(token).foreach { maxSeekResults =>
           val croppedNeighbors = neighbors.take(maxSeekResults)
-          log.debug(s"Neighbors message has the correct token. Processing.")
           val newNodes = if (discoveryConfig.multipleConnectionsPerAddress) {
             val nodeAddresses = discoveredNodes.map(_.node.address).toSet
             croppedNeighbors.filterNot(node => nodeAddresses.contains(node.address))
@@ -144,6 +150,7 @@ class DiscoveryManager(
             val nodeAddresses = discoveredNodes.map(_.node.address.addr.getHostAddress).toSet
             croppedNeighbors.filterNot(node => nodeAddresses.contains(node.address.addr.getHostAddress))
           }
+          log.debug(s"Sending ping to ${newNodes.size} nodes. Nodes: ${newNodes.map(_.address.udpSocketAddress)}")
           newNodes.foreach(node => {
             sendPing(listener, address, node)
           })
@@ -189,14 +196,24 @@ class DiscoveryManager(
   private def sendPing(listener: untyped.ActorRef, listeningAddress: InetSocketAddress, node: Node): Unit = {
     log.debug(s"Sending ping to ${node}")
     val from = Endpoint.fromUdpAddress(listeningAddress, getTcpPort)
-    val ping = Ping(DiscoveryMessage.ProtocolVersion, from, expirationTimestamp)
+    val nonce = new Array[Byte](2)
+    randomSource.nextBytes(nonce)
+    val ping = Ping(DiscoveryMessage.ProtocolVersion, from, expirationTimestamp, nonce)
     val key = calculateMessageKey(ping)
+    log.debug(s"Ping message: ${ping}")
 
     if(pingedNodes.size >= discoveryConfig.nodesLimit) pingedNodes -= pingedNodes.head._1
 
     listener ! DiscoveryListener.SendMessage(ping, node.address.udpSocketAddress)
 
     pingedNodes += ((key, Pinged(node, clock.instant())))
+    log.debug(s"""New pinged nodes: ${pingedNodes.map(pair => s"${pair._1.toArray.map("%02x".format(_)).mkString} -> ${pair._2.node.address.udpSocketAddress}" )}""")
+  }
+
+  private def processNodeStateUpdated: Receive = {
+    case NodeStatus.StateUpdated(state) =>
+      log.debug(s"State ${state} received. Proceeding to listening if configured.")
+      nodeStatus = state
   }
 
   private def calculateMessageKey(message: DiscoveryMessage) = {
@@ -223,8 +240,19 @@ class DiscoveryManager(
     newMap + (key -> info)
   }
 
-  private def hasNotExpired(timestamp: Long) = timestamp > clock.instant().getEpochSecond
-  private def expirationTimestamp = clock.instant().plusSeconds(expirationTimeSec).getEpochSecond
+  private def equivalentAddresses(nodeAddress: NodeAddress, socketAddress: InetSocketAddress) = {
+    if(discoveryConfig.multipleConnectionsPerAddress) {
+      nodeAddress.equalUdpAddress(socketAddress)
+    } else {
+      nodeAddress.equalIpAddress(socketAddress.getAddress)
+    }
+  }
+
+  private def hasNotExpired(timestamp: Long) =
+    timestamp > clock.instant().getEpochSecond
+
+  private def expirationTimestamp =
+    clock.instant().plusSeconds(discoveryConfig.messageExpiration.toSeconds).getEpochSecond
 }
 
 object DiscoveryManager {
@@ -235,7 +263,8 @@ object DiscoveryManager {
             encoder: Encoder[DiscoveryMessage, ByteString],
             decoder: Decoder[ByteString, DiscoveryMessage],
             listenerMaker: untyped.ActorRefFactory => untyped.ActorRef,
-            scheduler: untyped.Scheduler): untyped.Props =
+            scheduler: untyped.Scheduler,
+            secureRandom: SecureRandom): untyped.Props =
     untyped.Props(new DiscoveryManager(
       discoveryConfig,
       knownNodesStorage,
@@ -244,7 +273,8 @@ object DiscoveryManager {
       encoder,
       decoder,
       listenerMaker,
-      scheduler))
+      scheduler,
+      secureRandom))
 
   def listenerMaker(discoveryConfig: DiscoveryConfig,
                     nodeStatusHolder: ActorRef[NodeStatusMessage],

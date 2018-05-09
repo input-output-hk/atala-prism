@@ -9,7 +9,7 @@ sealed trait DiscoveryMessage {
   def messageType: Byte
 }
 
-case class Ping(protocolVersion: Int, replyTo: Endpoint, timestamp: Long) extends DiscoveryMessage {
+case class Ping(protocolVersion: Int, replyTo: Endpoint, timestamp: Long, nonce: Array[Byte]) extends DiscoveryMessage {
   override def messageType: Byte = Ping.messageType
 }
 
@@ -21,17 +21,22 @@ object Ping {
                              byteEncDec: RLPEncDec[Byte],
                              intEncDec: RLPEncDec[Int],
                              endpointEncDec: RLPEncDec[Endpoint],
-                             longEncDec: RLPEncDec[Long]) = new RLPEncDec[Ping] {
+                             longEncDec: RLPEncDec[Long],
+                             arrayByteEncDec: RLPEncDec[Array[Byte]]) = new RLPEncDec[Ping] {
 
     override def encode(obj: Ping): RLPEncodeable =
       RLPList(byteEncDec.encode(obj.messageType),
         intEncDec.encode(obj.protocolVersion),
         endpointEncDec.encode(obj.replyTo),
-        longEncDec.encode(obj.timestamp))
+        longEncDec.encode(obj.timestamp),
+        arrayByteEncDec.encode(obj.nonce))
 
     override def decode(rlp: RLPEncodeable): Ping = rlp match {
-      case RLPList(messageType, protocolVersion, from, timestamp) if byteEncDec.decode(messageType) == Ping.messageType =>
-        Ping(intEncDec.decode(protocolVersion), endpointEncDec.decode(from), longEncDec.decode(timestamp))
+      case RLPList(messageType, protocolVersion, from, timestamp, nonce) if byteEncDec.decode(messageType) == Ping.messageType =>
+        Ping(intEncDec.decode(protocolVersion),
+          endpointEncDec.decode(from),
+          longEncDec.decode(timestamp),
+          arrayByteEncDec.decode(nonce))
       case _ => throw new RLPException("src is not a valid Ping message")
     }
   }

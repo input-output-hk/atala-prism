@@ -71,6 +71,8 @@ class DiscoveryManagerSpec extends TestKit(untyped.ActorSystem("DiscoveryManager
     //Not sure how to init a "TestProbe" of a Behavior
     val nodeState: ActorRef[NodeStatusMessage] = null
 
+    val secureRandom = mock[SecureRandom]
+
     def createActor = {
       val actor = TestActorRef[DiscoveryManager](
         DiscoveryManager.props(
@@ -81,7 +83,8 @@ class DiscoveryManagerSpec extends TestKit(untyped.ActorSystem("DiscoveryManager
           encoder,
           decoder,
           listenerMaker,
-          scheduler
+          scheduler,
+          secureRandom
         )
       )
       listener.expectMsg(DiscoveryListener.Start)
@@ -98,7 +101,6 @@ class DiscoveryManagerSpec extends TestKit(untyped.ActorSystem("DiscoveryManager
       actor.underlyingActor.pingedNodes.size mustBe 0
       actor.underlyingActor.discoveredNodes.size mustBe 0
       actor.underlyingActor.soughtNodes.size mustBe 0
-      actor.underlyingActor.expirationTimeSec mustBe discoveryConfig.messageExpiration.toSeconds
     }
     "process a Ping message" in new ListeningDiscoveryManager {
 
@@ -107,8 +109,9 @@ class DiscoveryManagerSpec extends TestKit(untyped.ActorSystem("DiscoveryManager
       //override val
       val actor = createActor
       val expiration = mockClock.instant().getEpochSecond + 1
-      val ping = Ping(DiscoveryMessage.ProtocolVersion, localhostEndpoint, expiration)
-      actor ! DiscoveryListener.MessageReceived(Ping(DiscoveryMessage.ProtocolVersion, localhostEndpoint, expiration), localhostEndpoint.toUdpAddress)
+      val nonce = Array[Byte]()
+      val ping = Ping(DiscoveryMessage.ProtocolVersion, localhostEndpoint, expiration, nonce)
+      actor ! DiscoveryListener.MessageReceived(ping, localhostEndpoint.toUdpAddress)
       val token = crypto.kec256(encoder.encode(ping))
       val sendMessage = listener.expectMsgType[DiscoveryListener.SendMessage]
       sendMessage.message mustBe a [Pong]

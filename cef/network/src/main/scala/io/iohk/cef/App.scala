@@ -65,6 +65,7 @@ object App extends Logger {
       val config = discoveryConfig.copy(port = portBase + id, bootstrapNodes = bNodes)
       val system = untyped.ActorSystem("cef_system" + id)
       val stateHolder = system.spawn(NodeStatus.nodeState(state, Seq()), "stateHolder")
+      val secureRandom = new SecureRandom()
       system.actorOf(DiscoveryManager.props(
         config,
         new KnownNodesStorage,
@@ -73,20 +74,21 @@ object App extends Logger {
         encoder,
         decoder,
         DiscoveryManager.listenerMaker(config, stateHolder, encoder, decoder),
-        system.scheduler
+        system.scheduler,
+        secureRandom
       ))
       system
     }
 
-    createActor(0, Set(1), Capabilities(1))
+    createActor(0, Set(1,5,4), Capabilities(1))
 
     createActor(1, Set(0), Capabilities(1))
 
-    //createActor(2, Set(1,2), Capabilities(1))
+    createActor(2, Set(), Capabilities(3))
 
-    //createActor(3, Set(0,1), Capabilities(1))
+    createActor(3, Set(2), Capabilities(3))
 
-    //createActor(4, Set(2), Capabilities(1))
+    createActor(4, Set(3), Capabilities(1))
 
     val system = createActor(5, Set(0), Capabilities(1))
 

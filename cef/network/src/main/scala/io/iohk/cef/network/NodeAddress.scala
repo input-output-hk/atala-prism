@@ -10,6 +10,30 @@ case class NodeAddress(addr: InetAddress, tcpPort: Int, udpPort: Int) {
   lazy val tcpSocketAddress = new InetSocketAddress(addr, tcpPort)
 
   lazy val endpoint = Endpoint(addr, udpPort, tcpPort)
+
+  def equalIpAddress(that: NodeAddress) = {
+    this.addr.getAddress.sameElements(that.addr.getAddress)
+  }
+
+  def equalUdpAddress(that: NodeAddress) = {
+    equalIpAddress(that) && udpPort == that.udpPort
+  }
+
+  def equalTcpAddress(that: NodeAddress) = {
+    equalIpAddress(that) && tcpPort == that.tcpPort
+  }
+
+  def equalIpAddress(that: InetAddress) = {
+    this.addr.getAddress.sameElements(that.getAddress)
+  }
+
+  def equalUdpAddress(that: InetSocketAddress) = {
+    equalIpAddress(that.getAddress) && udpPort == that.getPort
+  }
+
+  def equalTcpAddress(that: InetSocketAddress) = {
+    equalIpAddress(that.getAddress) && tcpPort == that.getPort
+  }
 }
 
 object NodeAddress {
