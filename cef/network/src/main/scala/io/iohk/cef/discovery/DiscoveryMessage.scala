@@ -71,7 +71,7 @@ object Pong {
   }
 }
 
-case class Seek(capabilities: Capabilities, maxResults: Int, timestamp: Long) extends DiscoveryMessage {
+case class Seek(capabilities: Capabilities, maxResults: Int, timestamp: Long, nonce: Array[Byte]) extends DiscoveryMessage {
   override def messageType: Byte = Seek.messageType
 }
 
@@ -83,17 +83,22 @@ object Seek {
                              byteEncDec: RLPEncDec[Byte],
                              capabilitiesEncDec: RLPEncDec[Capabilities],
                              intEncDec: RLPEncDec[Int],
-                             longEncDec: RLPEncDec[Long]) = new RLPEncDec[Seek] {
+                             longEncDec: RLPEncDec[Long],
+                             arrayByteEncDec: RLPEncDec[Array[Byte]]) = new RLPEncDec[Seek] {
 
     override def encode(obj: Seek): RLPEncodeable =
       RLPList(byteEncDec.encode(obj.messageType),
         capabilitiesEncDec.encode(obj.capabilities),
         intEncDec.encode(obj.maxResults),
-        longEncDec.encode(obj.timestamp))
+        longEncDec.encode(obj.timestamp),
+        arrayByteEncDec.encode(obj.nonce))
 
     override def decode(rlp: RLPEncodeable): Seek = rlp match {
-      case RLPList(messageType, capabilities, maxResults, timestamp) if byteEncDec.decode(messageType) == Seek.messageType =>
-        Seek(capabilitiesEncDec.decode(capabilities), intEncDec.decode(maxResults), longEncDec.decode(timestamp))
+      case RLPList(messageType, capabilities, maxResults, timestamp, nonce) if byteEncDec.decode(messageType) == Seek.messageType =>
+        Seek(capabilitiesEncDec.decode(capabilities),
+          intEncDec.decode(maxResults),
+          longEncDec.decode(timestamp),
+          arrayByteEncDec.decode(nonce))
       case _ => throw new RLPException("src is not a valid Seek message")
     }
   }

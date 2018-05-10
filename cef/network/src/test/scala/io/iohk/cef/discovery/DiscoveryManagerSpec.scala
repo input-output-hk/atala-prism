@@ -10,6 +10,7 @@ import akka.util.ByteString
 import akka.{actor => untyped}
 import io.iohk.cef.db.KnownNodesStorage
 import io.iohk.cef.discovery.DiscoveryListener.Start
+import io.iohk.cef.discovery.DiscoveryManager.{Discovered, Pinged}
 import io.iohk.cef.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.NodeStatus.{NodeStatusMessage, Subscribe}
 import io.iohk.cef.network.{Capabilities, Endpoint, Node, NodeAddress, NodeStatus, ServerStatus}
@@ -32,7 +33,7 @@ class DiscoveryManagerSpec extends TestKit(untyped.ActorSystem("DiscoveryManager
     val localhost = InetAddress.getByAddress("",address)
     val localhostEndpoint = Endpoint(localhost, 1000, 2000)
 
-    def bootstrapNodes: Set[Node] = Set(Node(ByteString("1"),NodeAddress(localhost,0,8091), Capabilities(0x0)))
+    def bootstrapNodes: Set[Node] = Set()
 
     def discoveryConfig = new DiscoveryConfig(
       discoveryEnabled = true,
@@ -63,7 +64,6 @@ class DiscoveryManagerSpec extends TestKit(untyped.ActorSystem("DiscoveryManager
 
     val listenerMaker = (_: untyped.ActorRefFactory) => listener.ref
 
-    //Not sure how to mock parameterless methods.
     val mockClock = new TestClock
 
     val listeningAddress = new InetSocketAddress(localhost,1000)
@@ -99,17 +99,12 @@ class DiscoveryManagerSpec extends TestKit(untyped.ActorSystem("DiscoveryManager
 
   "A DiscoveryManager" should {
     "initialize correctly" in new ListeningDiscoveryManager {
-      override def bootstrapNodes: Set[Node] = Set()
       val actor = createActor
       actor.underlyingActor.pingedNodes.size mustBe 0
       actor.underlyingActor.discoveredNodes.size mustBe 0
       actor.underlyingActor.soughtNodes.size mustBe 0
     }
     "process a Ping message" in new ListeningDiscoveryManager {
-
-      override def bootstrapNodes: Set[Node] = Set()
-
-      //override val
       val actor = createActor
       val expiration = mockClock.instant().getEpochSecond + 1
       val nonce = Array[Byte]()
@@ -127,13 +122,72 @@ class DiscoveryManagerSpec extends TestKit(untyped.ActorSystem("DiscoveryManager
       }
     }
     "process a Pong message" in new ListeningDiscoveryManager {
-      pending
+      val actor = createActor
+      val token = ByteString("token")
+      val node = Node(ByteString("1"),NodeAddress(InetAddress.getLocalHost, 9000, 9001),Capabilities(1))
+      actor.underlyingActor.pingedNodes += ((token -> Pinged(node, mockClock.instant())))
+      val expiration = mockClock.instant().getEpochSecond + 1
+      val pong = Pong(nodeState.capabilities,token,expiration)
+      val probe = TestProbe()
+      system.eventStream.subscribe(probe.ref, classOf[CompatibleNodeFound])
+      actor ! DiscoveryListener.MessageReceived(pong, localhostEndpoint.toUdpAddress)
+      probe.expectMsg(CompatibleNodeFound(node))
+      val sendMessage = listener.expectMsgType[DiscoveryListener.SendMessage]
+      sendMessage.message mustBe a [Seek]
+      sendMessage.message.messageType mustBe Seek.messageType
+      sendMessage.message match {
+        case seek: Seek =>
+          seek.capabilities mustBe nodeState.capabilities
+        case _ => fail("Wrong message type")
+      }
     }
-    "process a Seek message" in {
-      pending
+    "process a Seek message" in new ListeningDiscoveryManager {
+      val actor = createActor
+      val node = Node(ByteString("1"),NodeAddress(InetAddress.getLocalHost, 9000, 9001),Capabilities(11))
+      actor.underlyingActor.discoveredNodes = actor.underlyingActor.discoveredNodes :+ Discovered(node, mockClock.instant())
+      val expiration = mockClock.instant().getEpochSecond + 1
+      val seek = Seek(Capabilities(10),10,expiration, Array[Byte]())
+      val token = crypto.kec256(encoder.encode(seek))
+      actor.underlyingActor.soughtNodes += ((token -> 10))
+      actor ! DiscoveryListener.MessageReceived(seek, localhostEndpoint.toUdpAddress)
+
+      val sendMessage = listener.expectMsgType[DiscoveryListener.SendMessage]
+      sendMessage.message mustBe a [Neighbors]
+      sendMessage.message.messageType mustBe Neighbors.messageType
+      sendMessage.message match {
+        case neighbors: Neighbors =>
+          neighbors.capabilities mustBe Capabilities(10)
+          neighbors.neighbors mustBe Seq(node)
+        case _ => fail("Wrong message type")
+      }
     }
-    "process a Neighbors message" in {
-      pending
+    "process a Neighbors message" in new ListeningDiscoveryManager {
+      val actor = createActor
+      val nodeA = Node(ByteString("1"),NodeAddress(InetAddress.getLocalHost, 9000, 9001),Capabilities(1))
+      val nodeB = Node(ByteString("2"),NodeAddress(InetAddress.getLocalHost, 9002, 9003),Capabilities(1))
+      val nodeC = Node(ByteString("3"),NodeAddress(InetAddress.getLocalHost, 9004, 9005),Capabilities(1))
+      val expiration = mockClock.instant().getEpochSecond + 2
+      val token = ByteString("token")
+      actor.underlyingActor.soughtNodes += ((token -> 2))
+      val neighbors = Neighbors(Capabilities(1), token, 10, Seq(nodeA, nodeB, nodeC), expiration)
+      mockClock.tick
+      actor ! DiscoveryListener.MessageReceived(neighbors, localhostEndpoint.toUdpAddress)
+
+      val pingA = listener.expectMsgType[DiscoveryListener.SendMessage]
+      val pingB = listener.expectMsgType[DiscoveryListener.SendMessage]
+
+      actor.underlyingActor.pingedNodes.values.toSet mustBe Set(Pinged(nodeA, mockClock.instant), Pinged(nodeB, mockClock.instant))
+      pingA.message mustBe a [Ping]
+      pingB.message mustBe a [Ping]
+      pingA.to mustBe nodeA.address.udpSocketAddress
+      pingB.to mustBe nodeB.address.udpSocketAddress
+
+      (pingA.message, pingB.message) match {
+        case (pa: Ping, pb: Ping) =>
+          pa.messageType mustBe Ping.messageType
+          pb.messageType mustBe Ping.messageType
+        case _ => fail("Wrong message type")
+      }
     }
     "discover the peers of a connected node" in {
       pending
@@ -147,8 +201,15 @@ class DiscoveryManagerSpec extends TestKit(untyped.ActorSystem("DiscoveryManager
     "prevent multiple connections from the same IP when configured" in {
       pending
     }
-    "not process pong messages in absence of a ping" in {
-      pending
+    "not process pong messages in absence of a ping" in new ListeningDiscoveryManager {
+      val actor = createActor
+      val node = Node(ByteString("1"),NodeAddress(InetAddress.getLocalHost, 9000, 9001),Capabilities(1))
+      val expiration = mockClock.instant().getEpochSecond + 1
+      val pong = Pong(nodeState.capabilities,ByteString("token"),expiration)
+      val probe = TestProbe()
+      system.eventStream.subscribe(probe.ref, classOf[CompatibleNodeFound])
+      actor ! DiscoveryListener.MessageReceived(pong, localhostEndpoint.toUdpAddress)
+      probe.expectNoMessage()
     }
     "not process neighbors messages in absence of a seek" in {
       pending

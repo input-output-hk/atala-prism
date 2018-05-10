@@ -31,6 +31,6 @@ class TestClock(private var currentTime: Instant = Instant.ofEpochMilli(0),
 
   def tick: Unit = tick(defaultTickSize)
 
-  def tick(leap: FiniteDuration): Unit =
-    currentTime = currentTime.plusMillis(leap.toMillis)
+  def tick(tickSize: FiniteDuration): Unit =
+    currentTime = currentTime.plusMillis(tickSize.toMillis)
 }

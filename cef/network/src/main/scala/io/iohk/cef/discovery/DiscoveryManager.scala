@@ -44,6 +44,8 @@ class DiscoveryManager(
 
   var nodeStatus: NodeState = _
 
+  val nonceSize = 2
+
   nodeStatusHolder ! NodeStatus.Subscribe(self)
 
   override def receive: Receive = {
@@ -110,7 +112,9 @@ class DiscoveryManager(
           } else {
             log.debug(s"Node received in pong ${from} does not satisfy the capabilities.")
           }
-          val seek = Seek(nodeStatus.capabilities, discoveryConfig.maxSeekResults, expirationTimestamp)
+          val nonce = new Array[Byte](nonceSize)
+          randomSource.nextBytes(nonce)
+          val seek = Seek(nodeStatus.capabilities, discoveryConfig.maxSeekResults, expirationTimestamp, nonce)
           log.debug(s"Sending seek message ${seek} to ${node.address.udpSocketAddress}")
           listener ! DiscoveryListener.SendMessage(seek, node.address.udpSocketAddress)
           val messageKey = calculateMessageKey(seek)
@@ -120,7 +124,7 @@ class DiscoveryManager(
         log.warning("Received an invalid Pong message")
       }
 
-    case DiscoveryListener.MessageReceived(seek @ Seek(capabilities, maxResults, timestamp), from) =>
+    case DiscoveryListener.MessageReceived(seek @ Seek(capabilities, maxResults, timestamp, _), from) =>
       if(hasNotExpired(timestamp)) {
         log.debug(s"Received a seek message ${seek} from ${from}")
         val nodes =
@@ -196,7 +200,7 @@ class DiscoveryManager(
   private def sendPing(listener: untyped.ActorRef, listeningAddress: InetSocketAddress, node: Node): Unit = {
     log.debug(s"Sending ping to ${node}")
     val from = Endpoint.fromUdpAddress(listeningAddress, getTcpPort)
-    val nonce = new Array[Byte](2)
+    val nonce = new Array[Byte](nonceSize)
     randomSource.nextBytes(nonce)
     val ping = Ping(DiscoveryMessage.ProtocolVersion, from, expirationTimestamp, nonce)
     val key = calculateMessageKey(ping)
