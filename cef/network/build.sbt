@@ -5,20 +5,25 @@ val commonSettings = Seq(
   scalaVersion := "2.12.5"
 )
 
+
+mainClass in (Compile, run) := Some("io.iohk.cef.net.rlpx.RLPxNode")
+
 val dep = {
   val akkaVersion = "2.5.12"
 
   Seq(
-    "com.typesafe.akka" %% "akka-actor" % akkaVersion,
-    "com.typesafe.akka" %% "akka-agent" % akkaVersion,
-    "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
     "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
-    "org.scalatest" %% "scalatest" % "3.0.1" % "test",
-    "org.scalacheck" %% "scalacheck" % "1.13.4" % "test",
+    "com.typesafe.akka" %% "akka-actor" % akkaVersion,
+    "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
+  
     "org.bouncycastle" % "bcprov-jdk15on" % "1.59",
+  
+    "org.scalatest" %% "scalatest" % "3.0.1" % Test,
+    "org.scalacheck" %% "scalacheck" % "1.13.4" % Test,
+    "org.scalamock" %% "scalamock-scalatest-support" % "3.5.0" % Test,
     "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test,
-    "com.typesafe.akka" %% "akka-testkit-typed" % "2.5.12" % Test,
-    "org.scalamock" %% "scalamock" % "4.1.0" % Test)
+    "com.typesafe.akka" %% "akka-testkit-typed" % akkaVersion % Test
+  )
 }
 
 val verifyDeps = Seq(
@@ -49,6 +54,7 @@ val root = project.in(file("."))
 
 scalacOptions := Seq(
   "-unchecked",
+  "-language:postfixOps",
   "-deprecation",
   "-feature",
   "-Xfatal-warnings",
