@@ -12,7 +12,10 @@ import akka.util.ByteString
 import akka.{actor => untyped}
 import io.iohk.cef.net.rlpx.RLPxConnectionHandler.{ConnectTo, ConnectionEstablished, ConnectionFailed, HandleConnection}
 import io.iohk.cef.net.transport.TransportProtocol._
+import io.iohk.cef.test.DummyMessage
+import io.iohk.cef.test.TypedTestProbeOps._
 import org.scalatest.{BeforeAndAfterAll, FlatSpec}
+import org.scalatest.Matchers._
 
 import scala.concurrent.duration._
 
@@ -44,7 +47,10 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
     rlpxConnectionHandler.expectMsg(ConnectTo(remoteUri))
     rlpxConnectionHandler.reply(ConnectionEstablished(ByteString(remotePubKey)))
 
-    userActor.expectMessage(Connected(ByteString(remotePubKey)))
+    userActor.uponReceivingMessage {
+      case Connected(nodeId, _) =>
+        nodeId shouldBe ByteString(remotePubKey)
+    }
   }
 
   it should "report a connection failure to the user" in {
@@ -83,6 +89,7 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
 
     createListener(typedSystem) ! Listen(localUri, userActor.ref)
 
+    // TODO tidy up, make readable
     val bindMsg = tcpProbe.expectMsgType[Bind]
     val bindHandler: untyped.ActorRef = bindMsg.handler
     bindHandler ! akka.io.Tcp.Connected(new InetSocketAddress(remoteUri.getHost, remoteUri.getPort), new InetSocketAddress(localUri.getHost, localUri.getPort))
@@ -99,7 +106,21 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
   // TODO akka's TCP handles inbound and outbound connections equivalently
   // once the connection is make. Should do the same, although should
   // bear in mind some transports are connectionless.
-  "Outbound connections" should "support message sending" in pending
+  "Outbound connections" should "support message sending" in {
+    val userActor = TestProbe[ConnectionReply[ByteString]]("userActorProbe")(typedSystem)
+
+    transportActor ! Connect(remoteUri, userActor.ref)
+
+    rlpxConnectionHandler.expectMsg(ConnectTo(remoteUri))
+    rlpxConnectionHandler.reply(ConnectionEstablished(ByteString(remotePubKey)))
+
+    userActor.uponReceivingMessage {
+      case Connected(_, connectionActor) =>
+        connectionActor ! SendMessage(DummyMessage("Hello!"))
+        rlpxConnectionHandler.expectMsg(io.iohk.cef.net.rlpx.RLPxConnectionHandler.SendMessage(DummyMessage("Hello!")))
+    }
+  }
+
   "Inbound connections" should "support message sending" in pending
 
   private def createListener(actorSystem: typed.ActorSystem[_]): ActorRef[ListenerCommand[URI, ByteString]] = {

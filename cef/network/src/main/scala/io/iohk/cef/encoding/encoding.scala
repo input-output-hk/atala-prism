@@ -30,4 +30,5 @@ package object encoding {
 
   def decode[U, T](enc: U)(implicit dec: Decoder[U, T]): T = dec.decode(enc)
 
+  type ByteEncoder[T] = Encoder[T, Array[Byte]]
 }

@@ -1,6 +1,7 @@
 package io.iohk.cef.net.transport
 
 import akka.actor.typed.{ActorRef, Behavior}
+import io.iohk.cef.net.rlpx.ethereum.p2p.MessageSerializable
 import io.iohk.cef.net.transport.TransportProtocol.TransportCommand
 
 /**
@@ -40,7 +41,7 @@ object TransportProtocol {
    */
   sealed trait ConnectionReply[PeerInfoType]
 
-  case class Connected[PeerInfoType](peerInfo: PeerInfoType)
+  case class Connected[PeerInfoType](peerInfo: PeerInfoType, connection: ActorRef[ConnectionCommand])
       extends ConnectionReply[PeerInfoType]
 
   case class ConnectionError[PeerInfoType](message: String,
@@ -60,10 +61,9 @@ object TransportProtocol {
   sealed trait ListenerCommand[AddressType, PeerInfoType]
 
   case class Listen[AddressType, PeerInfoType](
-                                                addressType: AddressType,
+                                                address: AddressType,
                                                 replyTo: ActorRef[ListenerEvent[AddressType, PeerInfoType]])
     extends ListenerCommand[AddressType, PeerInfoType]
-
 
   /**
    * ListenerEvent defines notifications sent by listeners to the user.
@@ -79,6 +79,9 @@ object TransportProtocol {
   //  case class Error(message: String) extends ListenerEvent
   //
 
+  sealed trait ConnectionCommand
 
-
+  // TODO integrate with newer encoders. Remove dependency on the rlpx MessageSerializable
+  // or pull up MessageSerializable somehow.
+  case class SendMessage(message: MessageSerializable) extends ConnectionCommand
 }
