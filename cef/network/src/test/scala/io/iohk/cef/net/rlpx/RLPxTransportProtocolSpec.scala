@@ -66,7 +66,7 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
     userActor.expectMessageType[ListenerCreated[URI, ByteString]]
   }
 
-  "Inbound connection listeners" should "listen on a given address" in {
+  "Inbound connection listeners" should "bind to a given address" in {
     val userActor = TestProbe[ListenerEvent[URI, ByteString]]("userActorProbe")(typedSystem)
     val listener: ActorRef[ListenerCommand[URI, ByteString]] = createListener(typedSystem)
 
@@ -92,6 +92,15 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
 
     userActor.expectMessage(1 second, ConnectionReceived[URI, ByteString](ByteString(remotePubKey)))
   }
+
+  they should "notify users when binding fails" in pending
+  they should "notify users when incoming connections fail" in pending
+
+  // TODO akka's TCP handles inbound and outbound connections equivalently
+  // once the connection is make. Should do the same, although should
+  // bear in mind some transports are connectionless.
+  "Outbound connections" should "support message sending" in pending
+  "Inbound connections" should "support message sending" in pending
 
   private def createListener(actorSystem: typed.ActorSystem[_]): ActorRef[ListenerCommand[URI, ByteString]] = {
     val tp = TestProbe[ListenerCreated[URI, ByteString]]("listener-created-probe")(actorSystem)
