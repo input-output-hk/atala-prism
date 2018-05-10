@@ -10,9 +10,10 @@ import akka.testkit.typed.scaladsl.TestProbe
 import akka.testkit.{TestActors, TestProbe => UntypedTestProbe}
 import akka.util.ByteString
 import akka.{actor => untyped}
-import io.iohk.cef.net.rlpx.RLPxConnectionHandler.{ConnectTo, ConnectionEstablished, ConnectionFailed}
+import io.iohk.cef.net.rlpx.RLPxConnectionHandler.{ConnectTo, ConnectionEstablished, ConnectionFailed, HandleConnection}
 import io.iohk.cef.net.transport.TransportProtocol._
 import org.scalatest.{BeforeAndAfterAll, FlatSpec}
+
 import scala.concurrent.duration._
 
 class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
@@ -58,31 +59,46 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
   }
 
   it should "enable the creation of inbound connection listeners" in {
-    val userActor = TestProbe[ListenerCreated[URI]]("userActorProbe")(typedSystem)
+    val userActor = TestProbe[ListenerCreated[URI, ByteString]]("userActorProbe")(typedSystem)
 
     transportActor ! CreateListener(userActor.ref)
 
-    userActor.expectMessageType[ListenerCreated[URI]]
+    userActor.expectMessageType[ListenerCreated[URI, ByteString]]
   }
 
   "Inbound connection listeners" should "listen on a given address" in {
-    val userActor = TestProbe[ListenerEvent[URI]]("userActorProbe")(typedSystem)
-    val listener: ActorRef[ListenerCommand[URI]] = createListener(typedSystem)
+    val userActor = TestProbe[ListenerEvent[URI, ByteString]]("userActorProbe")(typedSystem)
+    val listener: ActorRef[ListenerCommand[URI, ByteString]] = createListener(typedSystem)
 
     listener ! Listen(localUri, userActor.ref)
 
     tcpProbe.expectMsgClass(classOf[Bind])
     tcpProbe.reply(Bound(new InetSocketAddress(1234)))
 
-    userActor.expectMessage(1 second, Listening(localUri))
+    userActor.expectMessage(1 second, Listening[URI, ByteString](localUri))
   }
 
-  private def createListener(actorSystem: typed.ActorSystem[_]): ActorRef[ListenerCommand[URI]] = {
-    val tp = TestProbe[ListenerCreated[URI]]("listener-created-probe")(actorSystem)
+  they should "accept incoming connections when listening" in {
+    val userActor = TestProbe[ListenerEvent[URI, ByteString]]("userActorProbe")(typedSystem)
+
+    createListener(typedSystem) ! Listen(localUri, userActor.ref)
+
+    val bindMsg = tcpProbe.expectMsgType[Bind]
+    val bindHandler: untyped.ActorRef = bindMsg.handler
+    bindHandler ! akka.io.Tcp.Connected(new InetSocketAddress(remoteUri.getHost, remoteUri.getPort), new InetSocketAddress(localUri.getHost, localUri.getPort))
+    rlpxConnectionHandler.expectMsgType[HandleConnection]
+
+    bindHandler ! ConnectionEstablished(ByteString(remotePubKey))
+
+    userActor.expectMessage(1 second, ConnectionReceived[URI, ByteString](ByteString(remotePubKey)))
+  }
+
+  private def createListener(actorSystem: typed.ActorSystem[_]): ActorRef[ListenerCommand[URI, ByteString]] = {
+    val tp = TestProbe[ListenerCreated[URI, ByteString]]("listener-created-probe")(actorSystem)
 
     transportActor ! CreateListener(tp.ref)
 
-    tp.expectMessageType[ListenerCreated[URI]].listener
+    tp.expectMessageType[ListenerCreated[URI, ByteString]].listener
   }
 
   override protected def afterAll(): Unit = {

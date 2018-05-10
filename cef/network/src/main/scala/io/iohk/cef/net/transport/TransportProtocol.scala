@@ -3,6 +3,10 @@ package io.iohk.cef.net.transport
 import akka.actor.typed.{ActorRef, Behavior}
 import io.iohk.cef.net.transport.TransportProtocol.TransportCommand
 
+/**
+  * TransportProtocol defines an abstraction over network transports,
+  * such as TCP, TLS or RLPx.
+  */
 trait TransportProtocol {
 
   type AddressType
@@ -14,37 +18,67 @@ trait TransportProtocol {
 
 object TransportProtocol {
 
+  /**
+   * TransportCommands create and configure transports
+   * but do not connect or send messages.
+   */
   sealed trait TransportCommand[AddressType, PeerInfoType]
 
   case class Connect[AddressType, PeerInfoType](
-                                                 address: AddressType,
-                                                 replyTo: ActorRef[ConnectionReply[PeerInfoType]])
-    extends TransportCommand[AddressType, PeerInfoType]
+      address: AddressType,
+      replyTo: ActorRef[ConnectionReply[PeerInfoType]])
+      extends TransportCommand[AddressType, PeerInfoType]
 
-  case class CreateListener[AddressType, PeerInfoType](replyTo: ActorRef[ListenerCreated[AddressType]])
-    extends TransportCommand[AddressType, PeerInfoType]
+  case class CreateListener[AddressType, PeerInfoType](
+      replyTo: ActorRef[ListenerCreated[AddressType, PeerInfoType]])
+      extends TransportCommand[AddressType, PeerInfoType]
 
-  //case class GetListeners(replyTo: ActorRef)
+
+  /**
+   * ConnectionReply allows connection oriented transports
+   * to notify users re the success of Connect commands.
+   */
   sealed trait ConnectionReply[PeerInfoType]
 
   case class Connected[PeerInfoType](peerInfo: PeerInfoType)
-    extends ConnectionReply[PeerInfoType]
+      extends ConnectionReply[PeerInfoType]
 
-  case class ConnectionError[PeerInfoType](message: String, peerInfo: PeerInfoType)
-    extends ConnectionReply[PeerInfoType]
+  case class ConnectionError[PeerInfoType](message: String,
+                                           peerInfo: PeerInfoType)
+      extends ConnectionReply[PeerInfoType]
 
-  case class ListenerCreated[AddressType](listener: ActorRef[ListenerCommand[AddressType]])
+  /**
+   * ListenerCreated allows for the setup of listeners to be notified.
+   */
+  case class ListenerCreated[AddressType, PeerInfoType](
+      listener: ActorRef[ListenerCommand[AddressType, PeerInfoType]])
 
-  sealed trait ListenerEvent[AddressType]
-  case class Listening[AddressType](address: AddressType) extends ListenerEvent[AddressType]
-  //  case class ConnectionReceived[PeerInfoType](peerInfo: PeerInfoType)
-  //      extends ListenerEvent
+
+  /**
+   * ListenerCommand supports the setup of listeners on a specific address.
+   */
+  sealed trait ListenerCommand[AddressType, PeerInfoType]
+
+  case class Listen[AddressType, PeerInfoType](
+                                                addressType: AddressType,
+                                                replyTo: ActorRef[ListenerEvent[AddressType, PeerInfoType]])
+    extends ListenerCommand[AddressType, PeerInfoType]
+
+
+  /**
+   * ListenerEvent defines notifications sent by listeners to the user.
+   */
+  sealed trait ListenerEvent[AddressType, PeerInfoType]
+
+  case class Listening[AddressType, PeerInfoType](address: AddressType)
+      extends ListenerEvent[AddressType, PeerInfoType]
+
+  case class ConnectionReceived[AddressType, PeerInfoType](peerInfo: PeerInfoType)
+      extends ListenerEvent[AddressType, PeerInfoType]
   //  case class Close[PeerInfoType](peerInfo: PeerInfoType) extends ListenerEvent
   //  case class Error(message: String) extends ListenerEvent
   //
-  sealed trait ListenerCommand[AddressType]
-  case class Listen[AddressType](addressType: AddressType, replyTo: ActorRef[ListenerEvent[AddressType]]) extends ListenerCommand[AddressType]
-  //  case class GetListenerAddr[AddressType](replyTo: ActorRef[AddressType])
-  //      extends ListenerMessage
+
+
 
 }
