@@ -12,7 +12,7 @@ import io.iohk.cef.crypto
 import io.iohk.cef.db.{KnownNode, KnownNodesStorage}
 import io.iohk.cef.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.NodeStatus.{NodeState, NodeStatusMessage}
-import io.iohk.cef.network.{Capabilities, Endpoint, Node, NodeAddress, NodeStatus, ServerStatus}
+import io.iohk.cef.network.{Capabilities, Endpoint, Node, NodeStatus, ServerStatus}
 
 import scala.collection.mutable
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -92,8 +92,8 @@ class DiscoveryManager(
           log.debug(s"Received a ping message from ${from}, replyTo: $replyTo")
           val messageKey = calculateMessageKey(ping)
           val pong = Pong(nodeStatus.capabilities, messageKey, expirationTimestamp)
-          log.debug(s"Sending pong message with capabilities ${pong.capabilities}, to: ${replyTo.toUdpAddress}")
-          listener ! DiscoveryListener.SendMessage(pong, replyTo.toUdpAddress)
+          log.debug(s"Sending pong message with capabilities ${pong.capabilities}, to: ${replyTo.udpSocketAddress}")
+          listener ! DiscoveryListener.SendMessage(pong, replyTo.udpSocketAddress)
         } else {
           log.warning(s"Received an invalid Ping message")
         }
@@ -108,15 +108,15 @@ class DiscoveryManager(
             context.system.eventStream.publish(CompatibleNodeFound(node))
             knownNodesStorage.insertNode(node)
             discoveredNodes = discoveredNodes :+ Discovered(node, clock.instant())
-            log.debug(s"New discovered list: ${discoveredNodes.map(_.node.address.udpSocketAddress)}")
+            log.debug(s"New discovered list: ${discoveredNodes.map(_.node.endpoint.udpSocketAddress)}")
           } else {
             log.debug(s"Node received in pong ${from} does not satisfy the capabilities.")
           }
           val nonce = new Array[Byte](nonceSize)
           randomSource.nextBytes(nonce)
           val seek = Seek(nodeStatus.capabilities, discoveryConfig.maxSeekResults, expirationTimestamp, nonce)
-          log.debug(s"Sending seek message ${seek} to ${node.address.udpSocketAddress}")
-          listener ! DiscoveryListener.SendMessage(seek, node.address.udpSocketAddress)
+          log.debug(s"Sending seek message ${seek} to ${node.endpoint.udpSocketAddress}")
+          listener ! DiscoveryListener.SendMessage(seek, node.endpoint.udpSocketAddress)
           val messageKey = calculateMessageKey(seek)
           soughtNodes += ((messageKey, discoveryConfig.maxSeekResults))
         }
@@ -130,9 +130,9 @@ class DiscoveryManager(
         val nodes =
           discoveredNodes.filter(discovered => {
             discovered.node.capabilities.satisfies(capabilities) &&
-              !equivalentAddresses(discovered.node.address, from)
+              !equivalentAddresses(discovered.node.endpoint, from)
           }).map(_.node)
-        log.debug(s"Nodes satisfying capabilities = ${nodes.map(_.address.udpSocketAddress)}")
+        log.debug(s"Nodes satisfying capabilities = ${nodes.map(_.endpoint.udpSocketAddress)}")
         val randomNodeSubset = Random.shuffle(nodes).take(maxResults)
         val token = calculateMessageKey(seek)
         val neighbors = Neighbors(capabilities, token, nodes.size, randomNodeSubset, expirationTimestamp)
@@ -148,13 +148,13 @@ class DiscoveryManager(
         soughtNodes.get(token).foreach { maxSeekResults =>
           val croppedNeighbors = neighbors.take(maxSeekResults)
           val newNodes = if (discoveryConfig.multipleConnectionsPerAddress) {
-            val nodeAddresses = discoveredNodes.map(_.node.address).toSet
-            croppedNeighbors.filterNot(node => nodeAddresses.contains(node.address))
+            val nodeEndpoints = discoveredNodes.map(_.node.endpoint).toSet
+            croppedNeighbors.filterNot(node => nodeEndpoints.contains(node.endpoint))
           } else {
-            val nodeAddresses = discoveredNodes.map(_.node.address.addr.getHostAddress).toSet
-            croppedNeighbors.filterNot(node => nodeAddresses.contains(node.address.addr.getHostAddress))
+            val nodeEndpoints = discoveredNodes.map(_.node.endpoint.address.getHostAddress).toSet
+            croppedNeighbors.filterNot(node => nodeEndpoints.contains(node.endpoint.address.getHostAddress))
           }
-          log.debug(s"Sending ping to ${newNodes.size} nodes. Nodes: ${newNodes.map(_.address.udpSocketAddress)}")
+          log.debug(s"Sending ping to ${newNodes.size} nodes. Nodes: ${newNodes.map(_.endpoint.udpSocketAddress)}")
           newNodes.foreach(node => {
             sendPing(listener, address, node)
           })
@@ -181,7 +181,7 @@ class DiscoveryManager(
     expired.foreach {
       case (id, pingInfo) => {
         pingedNodes -= id
-        discoveredNodes = discoveredNodes.filter(_.node.address == pingInfo.node.address)
+        discoveredNodes = discoveredNodes.filter(_.node.endpoint == pingInfo.node.endpoint)
       }
     }
 
@@ -208,10 +208,10 @@ class DiscoveryManager(
 
     if(pingedNodes.size >= discoveryConfig.nodesLimit) pingedNodes -= pingedNodes.head._1
 
-    listener ! DiscoveryListener.SendMessage(ping, node.address.udpSocketAddress)
+    listener ! DiscoveryListener.SendMessage(ping, node.endpoint.udpSocketAddress)
 
     pingedNodes += ((key, Pinged(node, clock.instant())))
-    log.debug(s"""New pinged nodes: ${pingedNodes.map(pair => s"${pair._1.toArray.map("%02x".format(_)).mkString} -> ${pair._2.node.address.udpSocketAddress}" )}""")
+    log.debug(s"""New pinged nodes: ${pingedNodes.map(pair => s"${pair._1.toArray.map("%02x".format(_)).mkString} -> ${pair._2.node.endpoint.udpSocketAddress}" )}""")
   }
 
   private def processNodeStateUpdated: Receive = {
@@ -244,7 +244,7 @@ class DiscoveryManager(
     newMap + (key -> info)
   }
 
-  private def equivalentAddresses(nodeAddress: NodeAddress, socketAddress: InetSocketAddress) = {
+  private def equivalentAddresses(nodeAddress: Endpoint, socketAddress: InetSocketAddress) = {
     if(discoveryConfig.multipleConnectionsPerAddress) {
       nodeAddress.equalUdpAddress(socketAddress)
     } else {

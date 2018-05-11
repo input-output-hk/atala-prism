@@ -2,12 +2,12 @@ package io.iohk.cef.db
 
 import java.time.Instant
 
-import io.iohk.cef.network.{Node, NodeAddress}
+import io.iohk.cef.network.{Node, Endpoint}
 
 //Implementation only for demo-ing purposes
 class KnownNodesStorage {
 
-  var nodeMap: Map[NodeAddress, KnownNode] = Map.empty
+  var nodeMap: Map[Endpoint, KnownNode] = Map.empty
 
   def getNodes(): Set[KnownNode] = nodeMap.values.toSet
 
@@ -17,12 +17,12 @@ class KnownNodesStorage {
     * @return
     */
   def insertNode(node: Node): Unit = {
-    val updatedNode = nodeMap.get(node.address).map(_.copy(node = node, lastSeen = Instant.now()))
-    nodeMap = nodeMap + ((node.address, updatedNode.getOrElse(KnownNode(node, Instant.now(), Instant.now()))))
+    val updatedNode = nodeMap.get(node.endpoint).map(_.copy(node = node, lastSeen = Instant.now()))
+    nodeMap = nodeMap + ((node.endpoint, updatedNode.getOrElse(KnownNode(node, Instant.now(), Instant.now()))))
   }
 
   def removeNode(node: Node): Unit = {
-    nodeMap = nodeMap - node.address
+    nodeMap = nodeMap - node.endpoint
   }
 
 }

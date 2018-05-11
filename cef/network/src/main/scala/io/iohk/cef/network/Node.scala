@@ -9,11 +9,11 @@ import org.bouncycastle.util.encoders.Hex
 
 import scala.util.Try
 
-case class Node(id: ByteString, address: NodeAddress, capabilities: Capabilities) {
+case class Node(id: ByteString, endpoint: Endpoint, capabilities: Capabilities) {
 
   def toUri: URI = {
-    val host = NodeAddress.getHostName(address.addr)
-    new URI(s"enode://${id.utf8String}@$host:${address.tcpPort}?discport=${address.udpPort}&capabilities=${capabilities.byte.toHexString}")
+    val host = Endpoint.getHostName(endpoint.address)
+    new URI(s"enode://${id.utf8String}@$host:${endpoint.tcpPort}?discport=${endpoint.udpPort}&capabilities=${capabilities.byte.toHexString}")
   }
 }
 
@@ -21,10 +21,10 @@ object Node {
 
   implicit def nodeRlpEncDec(implicit
                              byteStrEncDec: RLPEncDec[ByteString],
-                             nodeAddrEncDec: RLPEncDec[NodeAddress],
+                             nodeAddrEncDec: RLPEncDec[Endpoint],
                              capEncDec: RLPEncDec[Capabilities]) = new RLPEncDec[Node] {
     override def encode(obj: Node): RLPEncodeable =
-      RLPList(byteStrEncDec.encode(obj.id), nodeAddrEncDec.encode(obj.address), capEncDec.encode(obj.capabilities))
+      RLPList(byteStrEncDec.encode(obj.id), nodeAddrEncDec.encode(obj.endpoint), capEncDec.encode(obj.capabilities))
 
     override def decode(rlp: RLPEncodeable): Node = rlp match {
       case RLPList(id, addr, cap) =>
@@ -52,6 +52,6 @@ object Node {
       queryMap.get("capabilities").getOrElse(throw new IllegalArgumentException("Node URI does not have a capabilities value"))
     val capabilities = DatatypeConverter.parseHexBinary(capabilitiesHex)(0)
 
-    Node(nodeId, NodeAddress(address, tcpPort, udpPort.getOrElse(tcpPort)), Capabilities(capabilities))
+    Node(nodeId, Endpoint(address, udpPort.getOrElse(tcpPort), tcpPort), Capabilities(capabilities))
   }
 }

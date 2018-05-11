@@ -11,7 +11,7 @@ import io.iohk.cef.db.KnownNodesStorage
 import io.iohk.cef.discovery._
 import io.iohk.cef.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.NodeStatus.NodeState
-import io.iohk.cef.network.{Capabilities, Node, NodeAddress, NodeStatus, ServerStatus}
+import io.iohk.cef.network.{Capabilities, Node, Endpoint, NodeStatus, ServerStatus}
 import io.iohk.cef.utils.Logger
 
 import scala.concurrent.duration._
@@ -41,7 +41,7 @@ object App extends Logger {
       discoveryEnabled = true,
       interface = "0.0.0.0",
       port = 8090,
-      bootstrapNodes = Set(Node(ByteString("1"),NodeAddress(localhost,0,8091), Capabilities(0x0))),
+      bootstrapNodes = Set(Node(ByteString("1"),Endpoint(localhost, 8091, 0), Capabilities(0x0))),
       nodesLimit = 10,
       scanMaxNodes = 10,
       scanInitialDelay = 10.seconds,
@@ -61,7 +61,7 @@ object App extends Logger {
       val key = network.loadAsymmetricCipherKeyPair("/tmp/file", SecureRandom.getInstance("NativePRNGNonBlocking"))
       val state = NodeState(key, ServerStatus.NotListening, capabilities)
       val portBase = 8090
-      val bNodes = bootstrapNodeIds.map(nodeId => Node(ByteString("0"),NodeAddress(localhost,0,portBase + nodeId), state.capabilities))
+      val bNodes = bootstrapNodeIds.map(nodeId => Node(ByteString("0"),Endpoint(localhost, portBase + nodeId, 0), state.capabilities))
       val config = discoveryConfig.copy(port = portBase + id, bootstrapNodes = bNodes)
       val system = untyped.ActorSystem("cef_system" + id)
       val stateHolder = system.spawn(NodeStatus.nodeState(state, Seq()), "stateHolder")
