@@ -4,52 +4,50 @@ import java.net.{InetSocketAddress, _}
 
 import io.iohk.cef.encoding.rlp._
 
-case class NodeAddress(address: InetAddress, udpPort: Int, tcpPort: Int) {
+case class Endpoint(address: InetAddress, udpPort: Int, tcpPort: Int) {
 
   lazy val udpSocketAddress = new InetSocketAddress(address, udpPort)
   lazy val tcpSocketAddress = new InetSocketAddress(address, tcpPort)
 
-  lazy val endpoint = NodeAddress(address, udpPort, tcpPort)
+  lazy val endpoint = Endpoint(address, udpPort, tcpPort)
 
-  def equalIpAddress(that: NodeAddress) = {
+  def equalIpAddress(that: Endpoint) = {
     this.address.getAddress.sameElements(that.address.getAddress)
   }
 
-  def equalUdpAddress(that: NodeAddress) = {
-    equalIpAddress(that) && udpPort == that.udpPort
+  def equalUdpAddress(that: Endpoint): Boolean = {
+    equalUdpAddress(that.udpSocketAddress)
   }
 
-  def equalTcpAddress(that: NodeAddress) = {
-    equalIpAddress(that) && tcpPort == that.tcpPort
+  def equalTcpAddress(that: Endpoint): Boolean = {
+    equalTcpAddress(that.tcpSocketAddress)
   }
 
-  def equalIpAddress(that: InetAddress) = {
+  def equalIpAddress(that: InetAddress): Boolean = {
     this.address.getAddress.sameElements(that.getAddress)
   }
 
-  def equalUdpAddress(that: InetSocketAddress) = {
+  def equalUdpAddress(that: InetSocketAddress): Boolean = {
     equalIpAddress(that.getAddress) && udpPort == that.getPort
   }
 
-  def equalTcpAddress(that: InetSocketAddress) = {
+  def equalTcpAddress(that: InetSocketAddress): Boolean = {
     equalIpAddress(that.getAddress) && tcpPort == that.getPort
   }
-  def toUdpAddress: InetSocketAddress = {
-    new InetSocketAddress(address, udpPort)
-  }
+
 }
 
-object NodeAddress {
+object Endpoint {
 
   implicit def nodeAddressRLPEncDec(implicit
                                     addrEncDec: RLPEncDec[InetAddress],
-                                    intEncDec: RLPEncDec[Int]) = new RLPEncDec[NodeAddress] {
-    override def encode(obj: NodeAddress): RLPEncodeable =
+                                    intEncDec: RLPEncDec[Int]) = new RLPEncDec[Endpoint] {
+    override def encode(obj: Endpoint): RLPEncodeable =
       RLPList(addrEncDec.encode(obj.address), intEncDec.encode(obj.udpPort), intEncDec.encode(obj.tcpPort))
 
-    override def decode(rlp: RLPEncodeable): NodeAddress = rlp match {
+    override def decode(rlp: RLPEncodeable): Endpoint = rlp match {
       case RLPList(addr, udpPort, tcpPort) =>
-        NodeAddress(addrEncDec.decode(addr), intEncDec.decode(udpPort), intEncDec.decode(tcpPort))
+        Endpoint(addrEncDec.decode(addr), intEncDec.decode(udpPort), intEncDec.decode(tcpPort))
       case _ => throw new RLPException("src is not a valid NodeAddress")
     }
   }
@@ -69,6 +67,6 @@ object NodeAddress {
     }
   }
 
-  def fromUdpAddress(udpAddress: InetSocketAddress, tcpPort: Int): NodeAddress =
-    NodeAddress(udpAddress.getAddress, udpAddress.getPort, tcpPort)
+  def fromUdpAddress(udpAddress: InetSocketAddress, tcpPort: Int): Endpoint =
+    Endpoint(udpAddress.getAddress, udpAddress.getPort, tcpPort)
 }
