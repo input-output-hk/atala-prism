@@ -12,9 +12,9 @@ import akka.util.ByteString
 import akka.{actor => untyped}
 import io.iohk.cef.net.rlpx.RLPxConnectionHandler.{ConnectTo, ConnectionEstablished, ConnectionFailed, HandleConnection}
 import io.iohk.cef.net.transport.TransportProtocol._
-import io.iohk.cef.test.DummyMessage
+import io.iohk.cef.test.TestEncoderDecoder
 import io.iohk.cef.test.TypedTestProbeOps._
-import org.scalatest.{BeforeAndAfterAll, FlatSpec}
+import org.scalatest.{Assertion, BeforeAndAfterAll, FlatSpec}
 import org.scalatest.Matchers._
 
 import scala.concurrent.duration._
@@ -33,7 +33,10 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
   val tcpProbe = UntypedTestProbe()(untypedSystem)
   val rlpxConnectionHandler = UntypedTestProbe()(untypedSystem)
   val rLPxConnectionHandlerProps = () => TestActors.forwardActorProps(rlpxConnectionHandler.ref)
-  val rlpxTransportProtocol = new RLPxTransportProtocol(rLPxConnectionHandlerProps, tcpProbe.ref)
+
+  val rlpxTransportProtocol = new RLPxTransportProtocol(
+    TestEncoderDecoder.testEncoder, TestEncoderDecoder.testDecoder,
+    rLPxConnectionHandlerProps, tcpProbe.ref)
 
   val transportBehaviour: Behavior[TransportCommand[URI, ByteString]] = rlpxTransportProtocol.createTransport()
 
@@ -114,10 +117,17 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
     rlpxConnectionHandler.expectMsg(ConnectTo(remoteUri))
     rlpxConnectionHandler.reply(ConnectionEstablished(ByteString(remotePubKey)))
 
+    type RlpxMessage = io.iohk.cef.net.rlpx.RLPxConnectionHandler.SendMessage
+
     userActor.uponReceivingMessage {
       case Connected(_, connectionActor) =>
-        connectionActor ! SendMessage(DummyMessage("Hello!"))
-        rlpxConnectionHandler.expectMsg(io.iohk.cef.net.rlpx.RLPxConnectionHandler.SendMessage(DummyMessage("Hello!")))
+        connectionActor ! SendMessage("Hello!")
+
+        rlpxConnectionHandler.expectMsgPF[Assertion](1 second)({
+          case io.iohk.cef.net.rlpx.RLPxConnectionHandler.SendMessage(m) =>
+            val arr: Array[Byte] = m.toBytes
+            new String(arr) shouldBe "Hello!"
+        })
     }
   }
 

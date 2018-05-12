@@ -1,7 +1,6 @@
 package io.iohk.cef.net.transport
 
 import akka.actor.typed.{ActorRef, Behavior}
-import io.iohk.cef.net.rlpx.ethereum.p2p.MessageSerializable
 import io.iohk.cef.net.transport.TransportProtocol.TransportCommand
 
 /**
@@ -12,7 +11,14 @@ trait TransportProtocol {
 
   type AddressType
   type PeerInfoType
+  type MessageType
 
+  /**
+    * This function bootstraps the transport and from there on
+    * the message types dictate the allowable protocol.
+    * [TODO verify this assertion carefully].
+    * @return
+    */
   def createTransport(): Behavior[TransportCommand[AddressType, PeerInfoType]]
 
 }
@@ -41,7 +47,7 @@ object TransportProtocol {
    */
   sealed trait ConnectionReply[PeerInfoType]
 
-  case class Connected[PeerInfoType](peerInfo: PeerInfoType, connection: ActorRef[ConnectionCommand])
+  case class Connected[PeerInfoType, MessageType](peerInfo: PeerInfoType, connection: ActorRef[ConnectionCommand[MessageType]])
       extends ConnectionReply[PeerInfoType]
 
   case class ConnectionError[PeerInfoType](message: String,
@@ -79,9 +85,9 @@ object TransportProtocol {
   //  case class Error(message: String) extends ListenerEvent
   //
 
-  sealed trait ConnectionCommand
+  sealed trait ConnectionCommand[MessageType]
 
   // TODO integrate with newer encoders. Remove dependency on the rlpx MessageSerializable
   // or pull up MessageSerializable somehow.
-  case class SendMessage(message: MessageSerializable) extends ConnectionCommand
+  case class SendMessage[MessageType](message: MessageType) extends ConnectionCommand[MessageType]
 }

@@ -8,15 +8,21 @@ import untyped.Props
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.util.ByteString
+import io.iohk.cef.encoding.rlp.EncodingAdapter
+import io.iohk.cef.encoding.{Decoder, Encoder}
 import io.iohk.cef.net.rlpx.RLPxConnectionHandler.{ConnectTo, ConnectionEstablished, ConnectionFailed, HandleConnection}
 import io.iohk.cef.net.transport.TransportProtocol
 import io.iohk.cef.net.transport.TransportProtocol._
 
-class RLPxTransportProtocol(rLPxConnectionHandlerProps: () => untyped.Props,
+class RLPxTransportProtocol[T](encoder: Encoder[T, Array[Byte]],
+                               decoder: Decoder[Array[Byte], T],
+                               rlpxConnectionHandlerProps: () => untyped.Props,
                             tcpActor: untyped.ActorRef) extends TransportProtocol {
 
   override type AddressType = URI
   override type PeerInfoType = ByteString // currently a byte string representing the peer's public key
+  override type MessageType = T
+
   import akka.actor.typed.scaladsl.adapter._
 
   override def createTransport(): Behavior[TransportCommand[URI, ByteString]] = rlpxTransport()
@@ -51,26 +57,26 @@ class RLPxTransportProtocol(rLPxConnectionHandlerProps: () => untyped.Props,
       }
   }
 
-  private def connectionBehaviour(uri: URI, replyTo: ActorRef[ConnectionReply[ByteString]]): Behavior[ConnectionCommand] = Behaviors.setup {
+  private def connectionBehaviour(uri: URI, replyTo: ActorRef[ConnectionReply[ByteString]]): Behavior[ConnectionCommand[MessageType]] = Behaviors.setup {
     context =>
 
       val connectionBridgeActor = context.actorOf(connectionBridge(uri, context.self, replyTo))
 
       Behaviors.receive {
-        (context, message) =>
+        (_, message) =>
           message match {
-            case SendMessage(messageSerializable) =>
-              connectionBridgeActor ! io.iohk.cef.net.rlpx.RLPxConnectionHandler.SendMessage(messageSerializable)
+            case SendMessage(m) =>
+              connectionBridgeActor ! io.iohk.cef.net.rlpx.RLPxConnectionHandler.SendMessage(new EncodingAdapter(m, encoder))
               Behavior.same
           }
       }
   }
 
   private def binderBridge(uri: URI, replyTo: ActorRef[ListenerEvent[URI, ByteString]]): Props =
-    BinderBridge.props(uri, tcpActor, rLPxConnectionHandlerProps, replyTo)
+    BinderBridge.props(uri, tcpActor, rlpxConnectionHandlerProps, replyTo)
 
-  private def connectionBridge(uri: URI, connectActor: ActorRef[ConnectionCommand], replyTo: ActorRef[ConnectionReply[ByteString]]): Props =
-    ConnectionBridge.props(uri, replyTo, rLPxConnectionHandlerProps, connectActor)
+  private def connectionBridge(uri: URI, connectActor: ActorRef[ConnectionCommand[MessageType]], replyTo: ActorRef[ConnectionReply[ByteString]]): Props =
+    ConnectionBridge.props(uri, replyTo, rlpxConnectionHandlerProps, connectActor)
 }
 
 /**
@@ -120,9 +126,9 @@ object BinderBridge {
 /**
   * Bridges between the typed connectionBehaviour and the untyped RlpxConnectionHandler.
   */
-class ConnectionBridge(uri: URI, typedClient: ActorRef[ConnectionReply[ByteString]],
+class ConnectionBridge[MessageType](uri: URI, typedClient: ActorRef[ConnectionReply[ByteString]],
                        rlpxConnectionHandlerProps: () => untyped.Props,
-                       connectBehaviour: ActorRef[ConnectionCommand]) extends untyped.Actor {
+                       connectBehaviour: ActorRef[ConnectionCommand[MessageType]]) extends untyped.Actor {
 
   private val rlpxConnectionHandler = context.actorOf(rlpxConnectionHandlerProps())
 
@@ -140,8 +146,8 @@ class ConnectionBridge(uri: URI, typedClient: ActorRef[ConnectionReply[ByteStrin
 }
 
 object ConnectionBridge {
-  def props(uri: URI, typedClient: ActorRef[ConnectionReply[ByteString]],
+  def props[MessageType](uri: URI, typedClient: ActorRef[ConnectionReply[ByteString]],
             rlpxConnectionHandlerProps: () => untyped.Props,
-            connectBehaviour: ActorRef[ConnectionCommand]): Props =
+            connectBehaviour: ActorRef[ConnectionCommand[MessageType]]): Props =
     Props(new ConnectionBridge(uri, typedClient, rlpxConnectionHandlerProps, connectBehaviour))
 }
