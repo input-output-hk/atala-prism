@@ -114,11 +114,9 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
     rlpxConnectionHandler.expectMsg(ConnectTo(remoteUri))
     rlpxConnectionHandler.reply(ConnectionEstablished(ByteString(remotePubKey)))
 
-    type RlpxMessage = io.iohk.cef.net.rlpx.RLPxConnectionHandler.SendMessage
-
     userActor.uponReceivingMessage {
       case Connected(_, connectionActor) =>
-        connectionActor ! SendMessage("Hello!")
+        connectionActor ! SendMessage('a')
 
         rlpxConnectionHandler.expectMsgPF[Assertion](1 second)({
           case io.iohk.cef.net.rlpx.RLPxConnectionHandler.SendMessage(m) =>
@@ -128,7 +126,11 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
     }
   }
 
-  "Inbound connections" should "support message sending" in {
+  they should "support inbound messages" in {
+    pending
+  }
+
+  "Inbound connections" should "support outbound message sending" in {
     val userActor = TestProbe[ListenerEvent[URI]]("userActorProbe")(typedSystem)
 
     transportActor ! CreateListener[URI](localUri, userActor.ref)
@@ -154,30 +156,9 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
     }
   }
 
-  private def createInboundConnection(local: URI, remote: URI, actorSystem: typed.ActorSystem[_]): ActorRef[ListenerCommand[URI]] = {
-
-    val userActor = TestProbe[ListenerEvent[URI]]("userActorProbe")(typedSystem)
-
-    transportActor ! CreateListener[URI](local, userActor.ref)
-
-    // TODO tidy up, make readable
-    val bindMsg = tcpProbe.expectMsgType[Bind]
-    val bindHandler: untyped.ActorRef = bindMsg.handler
-    bindHandler ! akka.io.Tcp.Connected(new InetSocketAddress(remoteUri.getHost, remoteUri.getPort), new InetSocketAddress(localUri.getHost, localUri.getPort))
-    rlpxConnectionHandler.expectMsgType[HandleConnection]
-
-    bindHandler ! ConnectionEstablished(ByteString(remotePubKey))
-
-    ???
+  they should "support inbound messages" in {
+    pending
   }
-
-//  private def createListener(uri: URI, actorSystem: typed.ActorSystem[_]): ActorRef[ListenerCommand[URI]] = {
-//    val tp = TestProbe[ListenerEvent[URI]]("listener-created-probe")(actorSystem)
-//
-//    transportActor ! CreateListener(uri, tp.ref)
-//
-//    tp.expectMessageType[ListenerCreated[URI]].listener
-//  }
 
   override protected def afterAll(): Unit = {
     typedSystem.terminate()

@@ -75,10 +75,15 @@ object TransportProtocol {
   case class ConnectionReceived[AddressType, MessageType](address: AddressType, connection: ActorRef[ConnectionCommand[MessageType]])
       extends ListenerEvent[AddressType]
 
+  /**
+    * ConnectionEvent defines notifications of events on established p2p channels.
+    */
+  sealed trait ConnectionEvent[MessageType]
+
+  case class MessageReceived[MessageType](message: MessageType) extends ConnectionEvent[MessageType]
   // TODO connection events
-  // message received
   // connection closed
-  
+
   sealed trait ConnectionCommand[MessageType]
 
   case class SendMessage[MessageType](message: MessageType) extends ConnectionCommand[MessageType]
