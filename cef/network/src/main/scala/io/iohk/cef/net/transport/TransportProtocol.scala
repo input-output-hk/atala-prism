@@ -68,26 +68,24 @@ object TransportProtocol {
 
   case class Listen[AddressType, PeerInfoType](
                                                 address: AddressType,
-                                                replyTo: ActorRef[ListenerEvent[AddressType, PeerInfoType]])
+                                                replyTo: ActorRef[ListenerEvent[AddressType]])
     extends ListenerCommand[AddressType, PeerInfoType]
 
   /**
    * ListenerEvent defines notifications sent by listeners to the user.
    */
-  sealed trait ListenerEvent[AddressType, PeerInfoType]
+  sealed trait ListenerEvent[AddressType]
 
-  case class Listening[AddressType, PeerInfoType](address: AddressType)
-      extends ListenerEvent[AddressType, PeerInfoType]
+  case class Listening[AddressType](address: AddressType)
+      extends ListenerEvent[AddressType]
 
-  case class ConnectionReceived[AddressType, PeerInfoType](peerInfo: PeerInfoType)
-      extends ListenerEvent[AddressType, PeerInfoType]
+  case class ConnectionReceived[AddressType, MessageType](address: AddressType, connection: ActorRef[ConnectionCommand[MessageType]])
+      extends ListenerEvent[AddressType]
   //  case class Close[PeerInfoType](peerInfo: PeerInfoType) extends ListenerEvent
   //  case class Error(message: String) extends ListenerEvent
   //
 
   sealed trait ConnectionCommand[MessageType]
 
-  // TODO integrate with newer encoders. Remove dependency on the rlpx MessageSerializable
-  // or pull up MessageSerializable somehow.
   case class SendMessage[MessageType](message: MessageType) extends ConnectionCommand[MessageType]
 }
