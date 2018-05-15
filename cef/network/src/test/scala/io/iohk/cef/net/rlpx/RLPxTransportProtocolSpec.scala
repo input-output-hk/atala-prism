@@ -38,12 +38,12 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
     TestEncoderDecoder.testEncoder, TestEncoderDecoder.testDecoder,
     rLPxConnectionHandlerProps, tcpProbe.ref)
 
-  val transportBehaviour: Behavior[TransportCommand[URI, ByteString]] = rlpxTransportProtocol.createTransport()
+  val transportBehaviour: Behavior[TransportCommand[URI]] = rlpxTransportProtocol.createTransport()
 
-  val transportActor: ActorRef[TransportCommand[URI, ByteString]] = untypedSystem.spawn(transportBehaviour, "Transport")
+  val transportActor: ActorRef[TransportCommand[URI]] = untypedSystem.spawn(transportBehaviour, "Transport")
 
   "RLPx transport protocol" should "open a connection to a valid peer" in {
-    val userActor = TestProbe[ConnectionReply[ByteString]]("userActorProbe")(typedSystem)
+    val userActor = TestProbe[ConnectionReply]("userActorProbe")(typedSystem)
 
     transportActor ! Connect(remoteUri, userActor.ref)
 
@@ -57,7 +57,7 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
   }
 
   it should "report a connection failure to the user" in {
-    val userActor = TestProbe[ConnectionReply[ByteString]]("userActorProbe")(typedSystem)
+    val userActor = TestProbe[ConnectionReply]("userActorProbe")(typedSystem)
 
     transportActor ! Connect(remoteUri, userActor.ref)
 
@@ -68,18 +68,9 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
   }
 
   it should "enable the creation of inbound connection listeners" in {
-    val userActor = TestProbe[ListenerCreated[URI, ByteString]]("userActorProbe")(typedSystem)
-
-    transportActor ! CreateListener(userActor.ref)
-
-    userActor.expectMessageType[ListenerCreated[URI, ByteString]]
-  }
-
-  "Inbound connection listeners" should "bind to a given address" in {
     val userActor = TestProbe[ListenerEvent[URI]]("userActorProbe")(typedSystem)
-    val listener: ActorRef[ListenerCommand[URI, ByteString]] = createListener(typedSystem)
 
-    listener ! Listen(localUri, userActor.ref)
+    transportActor ! CreateListener(localUri, userActor.ref)
 
     tcpProbe.expectMsgClass(classOf[Bind])
     tcpProbe.reply(Bound(new InetSocketAddress(1234)))
@@ -87,17 +78,20 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
     userActor.expectMessage(1 second, Listening(localUri))
   }
 
-  they should "accept incoming connections when listening" in {
+  "Listeners" should "accept incoming connections when listening" in {
     val userActor = TestProbe[ListenerEvent[URI]]("userActorProbe")(typedSystem)
 
-    createListener(typedSystem) ! Listen(localUri, userActor.ref)
-
     // TODO tidy up, make readable
+    // create a listener
+    transportActor ! CreateListener[URI](localUri, userActor.ref)
     val bindMsg = tcpProbe.expectMsgType[Bind]
     val bindHandler: untyped.ActorRef = bindMsg.handler
+
+    // send it a new connection msg
     bindHandler ! akka.io.Tcp.Connected(new InetSocketAddress(remoteUri.getHost, remoteUri.getPort), new InetSocketAddress(localUri.getHost, localUri.getPort))
     rlpxConnectionHandler.expectMsgType[HandleConnection]
 
+    // simulate rlpx handshake success
     bindHandler ! ConnectionEstablished(ByteString(remotePubKey))
 
     userActor.uponReceivingMessage {
@@ -113,7 +107,7 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
   // once the connection is make. Should do the same, although should
   // bear in mind some transports are connectionless.
   "Outbound connections" should "support message sending" in {
-    val userActor = TestProbe[ConnectionReply[ByteString]]("userActorProbe")(typedSystem)
+    val userActor = TestProbe[ConnectionReply]("userActorProbe")(typedSystem)
 
     transportActor ! Connect(remoteUri, userActor.ref)
 
@@ -137,7 +131,7 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
   "Inbound connections" should "support message sending" in {
     val userActor = TestProbe[ListenerEvent[URI]]("userActorProbe")(typedSystem)
 
-    createListener(typedSystem) ! Listen(localUri, userActor.ref)
+    transportActor ! CreateListener[URI](localUri, userActor.ref)
 
     // TODO tidy up, make readable
     val bindMsg = tcpProbe.expectMsgType[Bind]
@@ -160,13 +154,30 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
     }
   }
 
-  private def createListener(actorSystem: typed.ActorSystem[_]): ActorRef[ListenerCommand[URI, ByteString]] = {
-    val tp = TestProbe[ListenerCreated[URI, ByteString]]("listener-created-probe")(actorSystem)
+  private def createInboundConnection(local: URI, remote: URI, actorSystem: typed.ActorSystem[_]): ActorRef[ListenerCommand[URI]] = {
 
-    transportActor ! CreateListener(tp.ref)
+    val userActor = TestProbe[ListenerEvent[URI]]("userActorProbe")(typedSystem)
 
-    tp.expectMessageType[ListenerCreated[URI, ByteString]].listener
+    transportActor ! CreateListener[URI](local, userActor.ref)
+
+    // TODO tidy up, make readable
+    val bindMsg = tcpProbe.expectMsgType[Bind]
+    val bindHandler: untyped.ActorRef = bindMsg.handler
+    bindHandler ! akka.io.Tcp.Connected(new InetSocketAddress(remoteUri.getHost, remoteUri.getPort), new InetSocketAddress(localUri.getHost, localUri.getPort))
+    rlpxConnectionHandler.expectMsgType[HandleConnection]
+
+    bindHandler ! ConnectionEstablished(ByteString(remotePubKey))
+
+    ???
   }
+
+//  private def createListener(uri: URI, actorSystem: typed.ActorSystem[_]): ActorRef[ListenerCommand[URI]] = {
+//    val tp = TestProbe[ListenerEvent[URI]]("listener-created-probe")(actorSystem)
+//
+//    transportActor ! CreateListener(uri, tp.ref)
+//
+//    tp.expectMessageType[ListenerCreated[URI]].listener
+//  }
 
   override protected def afterAll(): Unit = {
     typedSystem.terminate()
