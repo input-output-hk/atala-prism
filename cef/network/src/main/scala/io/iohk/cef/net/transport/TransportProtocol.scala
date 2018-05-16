@@ -26,26 +26,12 @@ trait TransportProtocol {
   sealed trait TransportCommand
 
   case class Connect(address: AddressType,
-                     replyTo: ActorRef[ConnectionReply],
-                     listener: ActorRef[ConnectionEvent])
+                     eventHandler: ActorRef[ConnectionEvent])
       extends TransportCommand
 
   case class CreateListener(address: AddressType,
                             listener: ActorRef[ListenerEvent])
       extends TransportCommand
-
-  /**
-    * ConnectionReply allows connection oriented transports
-    * to notify users re the success of Connect commands.
-    */
-  sealed trait ConnectionReply
-
-  case class Connected(address: AddressType,
-                       connection: ActorRef[ConnectionCommand])
-      extends ConnectionReply
-
-  case class ConnectionError(message: String, address: AddressType)
-      extends ConnectionReply
 
   /**
     * ListenerCommand supports the setup of listeners on a specific address.
@@ -73,12 +59,11 @@ trait TransportProtocol {
     */
   sealed trait ConnectionEvent
 
-  //  case class Connected[AddressType, MessageType](address: AddressType, connection: ActorRef[ConnectionCommand[MessageType]])
-  //    extends ConnectionEvent[AddressType, MessageType]
-  //
-  //  case class ConnectionError[AddressType](message: String,
-  //                                          address: AddressType)
-  //    extends ConnectionReply
+  case class Connected(address: AddressType, connection: ActorRef[ConnectionCommand])
+    extends ConnectionEvent
+
+  case class ConnectionError(message: String, address: AddressType)
+    extends ConnectionEvent
 
   case class MessageReceived(message: MessageType) extends ConnectionEvent
   // TODO connection events
