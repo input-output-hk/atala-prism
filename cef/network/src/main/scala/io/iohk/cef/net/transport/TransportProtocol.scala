@@ -25,14 +25,14 @@ trait TransportProtocol {
     */
   sealed trait TransportCommand
 
-  case class Connect(address: AddressType,replyTo: ActorRef[ConnectionReply],listener: ActorRef[ConnectionEvent])
-    extends TransportCommand
+  case class Connect(address: AddressType,
+                     replyTo: ActorRef[ConnectionReply],
+                     listener: ActorRef[ConnectionEvent])
+      extends TransportCommand
 
-  case class CreateListener(
-                                          address: AddressType,
-                                          listener: ActorRef[ListenerEvent])
-    extends TransportCommand
-
+  case class CreateListener(address: AddressType,
+                            listener: ActorRef[ListenerEvent])
+      extends TransportCommand
 
   /**
     * ConnectionReply allows connection oriented transports
@@ -40,12 +40,12 @@ trait TransportProtocol {
     */
   sealed trait ConnectionReply
 
-  case class Connected(address: AddressType, connection: ActorRef[ConnectionCommand])
-    extends ConnectionReply
+  case class Connected(address: AddressType,
+                       connection: ActorRef[ConnectionCommand])
+      extends ConnectionReply
 
   case class ConnectionError(message: String, address: AddressType)
-    extends ConnectionReply
-
+      extends ConnectionReply
 
   /**
     * ListenerCommand supports the setup of listeners on a specific address.
@@ -59,13 +59,14 @@ trait TransportProtocol {
     */
   sealed trait ListenerEvent
 
-  case class ListenerCreated(listener: ActorRef[ListenerCommand]) extends ListenerEvent
+  case class ListenerCreated(listener: ActorRef[ListenerCommand])
+      extends ListenerEvent
 
-  case class Listening(address: AddressType)
-    extends ListenerEvent
+  case class Listening(address: AddressType) extends ListenerEvent
 
-  case class ConnectionReceived(address: AddressType, connection: ActorRef[ConnectionCommand])
-    extends ListenerEvent
+  case class ConnectionReceived(address: AddressType,
+                                connection: ActorRef[ConnectionCommand])
+      extends ListenerEvent
 
   /**
     * ConnectionEvent defines notifications of events on established p2p channels.
@@ -91,6 +92,4 @@ trait TransportProtocol {
 
 }
 
-object TransportProtocol {
-
-}
+object TransportProtocol {}
