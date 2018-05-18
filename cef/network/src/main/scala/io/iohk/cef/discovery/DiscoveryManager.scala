@@ -12,8 +12,9 @@ import io.iohk.cef.crypto
 import io.iohk.cef.db.KnownNodesStorage
 import io.iohk.cef.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.NodeStatus.{NodeState, NodeStatusMessage}
-import io.iohk.cef.network.{Endpoint, Node, NodeStatus, ServerStatus}
+import io.iohk.cef.network.{Node, NodeStatus, ServerStatus}
 import io.iohk.cef.utils.FiniteSizedMap
+import org.bouncycastle.util.encoders.Hex
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Random
@@ -89,7 +90,10 @@ class DiscoveryManager(
           val messageKey = calculateMessageKey(ping)
           val node = getNode(discoveryAddress = address)
           val pong = Pong(node, messageKey, expirationTimestamp)
-          knownNodesStorage.insertNode(sourceNode)
+          if(sourceNode.capabilities.satisfies(nodeStatus.capabilities)) {
+            knownNodesStorage.insertNode(sourceNode)
+            log.debug(s"New discovered list: ${knownNodesStorage.getNodes().map(_.node.discoveryAddress)}")
+          }
           log.debug(s"Sending pong message with capabilities ${pong.node.capabilities}, to: ${sourceNode.discoveryAddress}")
           listener ! DiscoveryListener.SendMessage(pong, sourceNode.discoveryAddress)
         } else {
@@ -146,8 +150,9 @@ class DiscoveryManager(
             val nodeEndpoints = discoveredNodes.map(dn => ByteString(dn.discoveryAddress.getAddress.getAddress))
             neighbors.filterNot(node => nodeEndpoints.contains(ByteString(node.discoveryAddress.getAddress.getAddress)))
           }
-          log.debug(s"Sending ping to ${newNodes.size} nodes. Nodes: ${newNodes.map(_.discoveryAddress)}")
-          newNodes.foreach(node => {
+          val newNodesWithoutMe = newNodes.filterNot(_.id == nodeStatus.nodeId)
+          log.debug(s"Sending ping to ${newNodesWithoutMe.size} nodes. Nodes: ${newNodesWithoutMe.map(_.discoveryAddress)}")
+          newNodesWithoutMe.foreach(node => {
             sendPing(listener, address, node)
           })
           soughtNodes -= token
@@ -165,6 +170,7 @@ class DiscoveryManager(
     //Eliminating the nodes that never answered.
     expired.foreach {
       case (id, pingInfo) => {
+        log.debug(s"Dropping node ${Hex.toHexString(id.toArray)}")
         pingedNodes -= id
         knownNodesStorage.removeNode(pingInfo.node)
       }
@@ -209,28 +215,6 @@ class DiscoveryManager(
   private def getServerAddress(default: InetSocketAddress): InetSocketAddress = nodeStatus.serverStatus match {
     case ServerStatus.Listening(addr) => addr
     case _ => default
-  }
-
-  private def updateNodes[V <: NodeEvent](map: Map[ByteString, V], key: ByteString, info: V): Map[ByteString, V] = {
-    if (map.size < discoveryConfig.discoveredNodesLimit) {
-      map + (key -> info)
-    } else {
-      replaceOldestNode(map, key, info)
-    }
-  }
-
-  private def replaceOldestNode[V <: NodeEvent](map: Map[ByteString, V], key: ByteString, info: V): Map[ByteString, V] = {
-    val (earliestNode, _) = map.minBy { case (_, node) => node.timestamp }
-    val newMap = map - earliestNode
-    newMap + (key -> info)
-  }
-
-  private def equivalentAddresses(nodeAddress: Endpoint, socketAddress: InetSocketAddress) = {
-    if(discoveryConfig.multipleConnectionsPerAddress) {
-      nodeAddress.equalUdpAddress(socketAddress)
-    } else {
-      nodeAddress.equalIpAddress(socketAddress.getAddress)
-    }
   }
 
   private def getNode(discoveryAddress: InetSocketAddress): Node =

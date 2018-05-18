@@ -59,11 +59,11 @@ object App extends Logger {
     val decoder = implicitly[Decoder[ByteString, DiscoveryWireMessage]]
 
     def createActor(id: Int, bootstrapNodeIds: Set[Int], capabilities: Capabilities) = {
-      val key = network.loadAsymmetricCipherKeyPair("/tmp/file", SecureRandom.getInstance("NativePRNGNonBlocking"))
-      val state = NodeState(key, ServerStatus.NotListening, ServerStatus.NotListening, capabilities)
+      val key = ByteString(id.toString)
+      val state = new NodeState(key, ServerStatus.NotListening, ServerStatus.NotListening, capabilities)
       val portBase = 8090
       val bNodes = bootstrapNodeIds.map(nodeId =>
-        Node(ByteString("0"), new InetSocketAddress(localhost, portBase + nodeId), new InetSocketAddress(localhost, portBase + nodeId), state.capabilities)
+        Node(ByteString(nodeId.toString), new InetSocketAddress(localhost, portBase + nodeId), new InetSocketAddress(localhost, portBase + nodeId), state.capabilities)
       )
       val config = discoveryConfig.copy(port = portBase + id, bootstrapNodes = bNodes)
       val system = untyped.ActorSystem("cef_system" + id)
@@ -83,7 +83,7 @@ object App extends Logger {
       system
     }
 
-    createActor(0, Set(1,5,4), Capabilities(1))
+    createActor(0, Set(2), Capabilities(1))
 
     createActor(1, Set(0), Capabilities(1))
 

@@ -8,6 +8,7 @@ import akka.testkit.typed.scaladsl.TestInbox
 import akka.testkit.{TestActorRef, TestKit, TestProbe}
 import akka.util.ByteString
 import akka.{actor => untyped}
+import io.iohk.cef.crypto
 import io.iohk.cef.db.KnownNodesStorage
 import io.iohk.cef.discovery.DiscoveryListener.Start
 import io.iohk.cef.discovery.DiscoveryManager.{Pinged, Sought}
@@ -15,7 +16,6 @@ import io.iohk.cef.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.NodeStatus.{NodeStatusMessage, Subscribe}
 import io.iohk.cef.network.{Capabilities, Node, NodeStatus, ServerStatus}
 import io.iohk.cef.test.{StopAfterAll, TestClock}
-import io.iohk.cef.{crypto, network}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{MustMatchers, WordSpecLike}
 
@@ -51,7 +51,7 @@ class DiscoveryManagerSpec extends TestKit(untyped.ActorSystem("DiscoveryManager
       multipleConnectionsPerAddress = true)
     val nodeState =
       NodeStatus.NodeState(
-        network.loadAsymmetricCipherKeyPair("/tmp/file", SecureRandom.getInstance("NativePRNGNonBlocking")),
+        ByteString("0"),
         ServerStatus.NotListening,
         ServerStatus.NotListening,
         Capabilities(0x01))
