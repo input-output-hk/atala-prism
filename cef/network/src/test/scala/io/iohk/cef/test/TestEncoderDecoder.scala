@@ -2,7 +2,7 @@ package io.iohk.cef.test
 
 import akka.util.ByteString
 import io.iohk.cef.encoding.{Decoder, Encoder}
-import io.iohk.cef.net.rlpx.ethereum.p2p.Message
+import io.iohk.cef.net.transport.rlpx.ethereum.p2p.Message
 
 object TestEncoderDecoder {
 

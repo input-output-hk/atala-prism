@@ -2,7 +2,7 @@ package io.iohk.cef.encoding.rlp
 
 import akka.util.ByteString
 import io.iohk.cef.encoding.Encoder
-import io.iohk.cef.net.rlpx.ethereum.p2p.{Message, MessageSerializable}
+import io.iohk.cef.net.transport.rlpx.ethereum.p2p.{Message, MessageSerializable}
 
 class EncodingAdapter[T](message: T, encoder: Encoder[T, ByteString]) extends MessageSerializable {
 
