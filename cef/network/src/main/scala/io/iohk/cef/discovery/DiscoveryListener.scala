@@ -12,8 +12,8 @@ import io.iohk.cef.network.NodeStatus.NodeStatusMessage
 class DiscoveryListener(
                          discoveryConfig: DiscoveryConfig,
                          nodeStatusHolder: ActorRef[NodeStatusMessage],
-                         encoder: Encoder[DiscoveryMessage, ByteString],
-                         decoder: Decoder[ByteString, DiscoveryMessage])
+                         encoder: Encoder[DiscoveryWireMessage, ByteString],
+                         decoder: Decoder[ByteString, DiscoveryWireMessage])
   extends untyped.Actor with untyped.ActorLogging {
 
   import DiscoveryListener._
@@ -44,17 +44,17 @@ class DiscoveryListener(
 object DiscoveryListener {
   def props(config: DiscoveryConfig
             , nodeStatusHolder: ActorRef[NodeStatusMessage]
-            , encoder: Encoder[DiscoveryMessage, ByteString]
-            , decoder: Decoder[ByteString, DiscoveryMessage]): untyped.Props =
+            , encoder: Encoder[DiscoveryWireMessage, ByteString]
+            , decoder: Decoder[ByteString, DiscoveryWireMessage]): untyped.Props =
     untyped.Props(new DiscoveryListener(config, nodeStatusHolder, encoder, decoder))
 
   case object Start
 
   case class Ready(address: InetSocketAddress)
 
-  case class SendMessage(message: DiscoveryMessage, to: InetSocketAddress)
+  case class SendMessage(message: DiscoveryWireMessage, to: InetSocketAddress)
 
-  case class MessageReceived(packet: DiscoveryMessage, from: InetSocketAddress)
+  case class MessageReceived(packet: DiscoveryWireMessage, from: InetSocketAddress)
 
   case class Blacklist()
 

@@ -1,6 +1,6 @@
 package io.iohk.cef
 
-import java.net.InetAddress
+import java.net.{InetAddress, InetSocketAddress}
 import java.security.SecureRandom
 import java.time.Clock
 
@@ -11,7 +11,7 @@ import io.iohk.cef.db.KnownNodesStorage
 import io.iohk.cef.discovery._
 import io.iohk.cef.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.NodeStatus.NodeState
-import io.iohk.cef.network.{Capabilities, Node, Endpoint, NodeStatus, ServerStatus}
+import io.iohk.cef.network.{Capabilities, Node, NodeStatus, ServerStatus}
 import io.iohk.cef.utils.Logger
 
 import scala.concurrent.duration._
@@ -41,34 +41,37 @@ object App extends Logger {
       discoveryEnabled = true,
       interface = "0.0.0.0",
       port = 8090,
-      bootstrapNodes = Set(Node(ByteString("1"),Endpoint(localhost, 8091, 0), Capabilities(0x0))),
-      nodesLimit = 10,
-      scanMaxNodes = 10,
+      bootstrapNodes = Set(Node(ByteString("1"),new InetSocketAddress(localhost, 8091), new InetSocketAddress(localhost, 8091), Capabilities(0x0))),
+      discoveredNodesLimit = 10,
+      scanNodesLimit = 10,
+      concurrencyDegree = 20,
       scanInitialDelay = 10.seconds,
       scanInterval = 10.seconds,
       messageExpiration = 100.minute,
       maxSeekResults = 10,
       multipleConnectionsPerAddress = true)
 
-    import io.iohk.cef.encoding.rlp.RLPEncoders._
     import io.iohk.cef.encoding.rlp.RLPImplicits._
+    import io.iohk.cef.encoding.rlp.RLPEncoders._
 
-    val encoder = implicitly[Encoder[DiscoveryMessage, ByteString]]
+    val encoder = implicitly[Encoder[DiscoveryWireMessage, ByteString]]
 
-    val decoder = implicitly[Decoder[ByteString, DiscoveryMessage]]
+    val decoder = implicitly[Decoder[ByteString, DiscoveryWireMessage]]
 
     def createActor(id: Int, bootstrapNodeIds: Set[Int], capabilities: Capabilities) = {
       val key = network.loadAsymmetricCipherKeyPair("/tmp/file", SecureRandom.getInstance("NativePRNGNonBlocking"))
-      val state = NodeState(key, ServerStatus.NotListening, capabilities)
+      val state = NodeState(key, ServerStatus.NotListening, ServerStatus.NotListening, capabilities)
       val portBase = 8090
-      val bNodes = bootstrapNodeIds.map(nodeId => Node(ByteString("0"),Endpoint(localhost, portBase + nodeId, 0), state.capabilities))
+      val bNodes = bootstrapNodeIds.map(nodeId =>
+        Node(ByteString("0"), new InetSocketAddress(localhost, portBase + nodeId), new InetSocketAddress(localhost, portBase + nodeId), state.capabilities)
+      )
       val config = discoveryConfig.copy(port = portBase + id, bootstrapNodes = bNodes)
       val system = untyped.ActorSystem("cef_system" + id)
       val stateHolder = system.spawn(NodeStatus.nodeState(state, Seq()), "stateHolder")
       val secureRandom = new SecureRandom()
       system.actorOf(DiscoveryManager.props(
         config,
-        new KnownNodesStorage,
+        new KnownNodesStorage(Clock.systemUTC()),
         stateHolder,
         Clock.systemUTC(),
         encoder,

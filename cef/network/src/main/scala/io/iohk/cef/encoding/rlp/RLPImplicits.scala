@@ -1,6 +1,6 @@
 package io.iohk.cef.encoding.rlp
 
-import java.net.InetAddress
+import java.net.{InetAddress, InetSocketAddress}
 
 import akka.util.ByteString
 import io.iohk.cef.encoding.rlp.BigIntExtensionMethods._
@@ -105,6 +105,16 @@ object RLPImplicits {
 
     override def decode(rlp: RLPEncodeable): InetAddress = rlp match {
       case RLPValue(bytes) => InetAddress.getByAddress(bytes)
+      case _ => throw RLPException("src is not an InetAddress")
+    }
+  }
+
+  implicit val inetSocketAddressEncDec = new RLPEncDec[InetSocketAddress] {
+    override def encode(obj: InetSocketAddress): RLPEncodeable =
+      RLPList(inetAddressEncDec.encode(obj.getAddress), intEncDec.encode(obj.getPort))
+
+    override def decode(rlp: RLPEncodeable): InetSocketAddress = rlp match {
+      case RLPList(addr, port) => new InetSocketAddress(inetAddressEncDec.decode(addr), intEncDec.decode(port))
       case _ => throw RLPException("src is not an InetAddress")
     }
   }

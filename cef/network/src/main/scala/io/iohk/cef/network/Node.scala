@@ -1,6 +1,6 @@
 package io.iohk.cef.network
 
-import java.net.{InetAddress, URI}
+import java.net.{InetAddress, InetSocketAddress, URI}
 
 import akka.util.ByteString
 import io.iohk.cef.encoding.rlp.{RLPEncDec, RLPEncodeable, RLPException, RLPList}
@@ -9,11 +9,14 @@ import org.bouncycastle.util.encoders.Hex
 
 import scala.util.Try
 
-case class Node(id: ByteString, endpoint: Endpoint, capabilities: Capabilities) {
+case class Node(id: ByteString,
+                discoveryAddress: InetSocketAddress,
+                serverAddress: InetSocketAddress,
+                capabilities: Capabilities) {
 
   def toUri: URI = {
-    val host = Endpoint.getHostName(endpoint.address)
-    new URI(s"enode://${id.utf8String}@$host:${endpoint.tcpPort}?discport=${endpoint.udpPort}&capabilities=${capabilities.byte.toHexString}")
+    val host = Endpoint.getHostName(serverAddress.getAddress)
+    new URI(s"enode://${Hex.toHexString(id.toArray[Byte])}@$host:${serverAddress.getPort}?discport=${discoveryAddress.getPort}&capabilities=${capabilities.byte.toHexString}")
   }
 }
 
@@ -22,13 +25,20 @@ object Node {
   implicit def nodeRlpEncDec(implicit
                              byteStrEncDec: RLPEncDec[ByteString],
                              nodeAddrEncDec: RLPEncDec[Endpoint],
-                             capEncDec: RLPEncDec[Capabilities]) = new RLPEncDec[Node] {
+                             capEncDec: RLPEncDec[Capabilities],
+                             inetSocketAddrEncDec: RLPEncDec[InetSocketAddress]) = new RLPEncDec[Node] {
     override def encode(obj: Node): RLPEncodeable =
-      RLPList(byteStrEncDec.encode(obj.id), nodeAddrEncDec.encode(obj.endpoint), capEncDec.encode(obj.capabilities))
+      RLPList(byteStrEncDec.encode(obj.id),
+        inetSocketAddrEncDec.encode(obj.discoveryAddress),
+        inetSocketAddrEncDec.encode(obj.serverAddress),
+        capEncDec.encode(obj.capabilities))
 
     override def decode(rlp: RLPEncodeable): Node = rlp match {
-      case RLPList(id, addr, cap) =>
-        Node(byteStrEncDec.decode(id), nodeAddrEncDec.decode(addr), capEncDec.decode(cap))
+      case RLPList(id, discoveryAddr, serverAddr, cap) =>
+        Node(byteStrEncDec.decode(id),
+          inetSocketAddrEncDec.decode(discoveryAddr),
+          inetSocketAddrEncDec.decode(serverAddr),
+          capEncDec.decode(cap))
       case _ => throw new RLPException("src is not a Node")
     }
   }
@@ -52,6 +62,9 @@ object Node {
       queryMap.get("capabilities").getOrElse(throw new IllegalArgumentException("Node URI does not have a capabilities value"))
     val capabilities = DatatypeConverter.parseHexBinary(capabilitiesHex)(0)
 
-    Node(nodeId, Endpoint(address, udpPort.getOrElse(tcpPort), tcpPort), Capabilities(capabilities))
+    Node(nodeId,
+      new InetSocketAddress(address, udpPort.getOrElse(tcpPort)),
+      new InetSocketAddress(address, tcpPort),
+      Capabilities(capabilities))
   }
 }

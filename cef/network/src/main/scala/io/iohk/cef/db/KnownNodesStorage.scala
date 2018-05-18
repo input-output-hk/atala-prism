@@ -1,13 +1,14 @@
 package io.iohk.cef.db
 
-import java.time.Instant
+import java.time.Clock
 
-import io.iohk.cef.network.{Node, Endpoint}
+import akka.util.ByteString
+import io.iohk.cef.network.Node
 
 //Implementation only for demo-ing purposes
-class KnownNodesStorage {
+class KnownNodesStorage(clock: Clock) {
 
-  var nodeMap: Map[Endpoint, KnownNode] = Map.empty
+  var nodeMap: Map[ByteString, KnownNode] = Map.empty
 
   def getNodes(): Set[KnownNode] = nodeMap.values.toSet
 
@@ -17,12 +18,12 @@ class KnownNodesStorage {
     * @return
     */
   def insertNode(node: Node): Unit = {
-    val updatedNode = nodeMap.get(node.endpoint).map(_.copy(node = node, lastSeen = Instant.now()))
-    nodeMap = nodeMap + ((node.endpoint, updatedNode.getOrElse(KnownNode(node, Instant.now(), Instant.now()))))
+    val updatedNode = nodeMap.get(node.id).map(_.copy(node = node, lastSeen = clock.instant()))
+    nodeMap = nodeMap + ((node.id, updatedNode.getOrElse(KnownNode(node, clock.instant(), clock.instant()))))
   }
 
   def removeNode(node: Node): Unit = {
-    nodeMap = nodeMap - node.endpoint
+    nodeMap = nodeMap - node.id
   }
 
 }

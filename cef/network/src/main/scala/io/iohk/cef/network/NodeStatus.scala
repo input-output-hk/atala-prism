@@ -4,6 +4,7 @@ import java.net.InetSocketAddress
 
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
+import akka.util.ByteString
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair
 import org.bouncycastle.crypto.params.ECPublicKeyParameters
 
@@ -19,9 +20,10 @@ object NodeStatus {
   case class NodeState(
                     key: AsymmetricCipherKeyPair,
                     serverStatus: ServerStatus,
+                    discoveryStatus: ServerStatus,
                     capabilities: Capabilities) extends  {
 
-    val nodeId = key.getPublic.asInstanceOf[ECPublicKeyParameters].toNodeId
+    val nodeId = ByteString(key.getPublic.asInstanceOf[ECPublicKeyParameters].toNodeId)
   }
 
   case class StateUpdated(state: NodeState)
@@ -29,9 +31,13 @@ object NodeStatus {
   sealed trait NodeStatusMessage
   case class RequestState(replyTo: ActorRef[NodeState]) extends NodeStatusMessage
   case class UpdateState(capabilities: Capabilities) extends NodeStatusMessage
+  case class UpdateDiscoveryStatus(serverStatus: ServerStatus) extends NodeStatusMessage
+  case class UpdateServerStatus(serverStatus: ServerStatus) extends NodeStatusMessage
   case class Subscribe(ref: ActorRef[StateUpdated]) extends NodeStatusMessage
 
   def nodeState(state: NodeState, subscribers: Seq[ActorRef[StateUpdated]]): Behavior[NodeStatusMessage] = Behaviors.setup { context =>
+
+    def sendUpdate(newState: NodeState) = subscribers.foreach(_ ! StateUpdated(newState))
 
     Behaviors.receiveMessage { message =>
       message match {
@@ -40,7 +46,15 @@ object NodeStatus {
           Behavior.same
         case update: UpdateState =>
           val newState = state.copy(capabilities = update.capabilities)
-          subscribers.foreach(_ ! StateUpdated(newState))
+          sendUpdate(newState)
+          nodeState(newState, subscribers)
+        case update: UpdateDiscoveryStatus =>
+          val newState = state.copy(discoveryStatus = update.serverStatus)
+          sendUpdate(newState)
+          nodeState(newState, subscribers)
+        case update: UpdateServerStatus =>
+          val newState = state.copy(serverStatus = update.serverStatus)
+          sendUpdate(newState)
           nodeState(newState, subscribers)
         case subscribe: Subscribe =>
           subscribe.ref ! StateUpdated(state)
