@@ -7,12 +7,15 @@ import akka.{actor => untyped}
 import untyped.Props
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
+import akka.io.Tcp.{/*Received,*/ Register}
+//import akka.io.Tcp.Register
 import akka.util.ByteString
 import io.iohk.cef.encoding.rlp.EncodingAdapter
 import io.iohk.cef.encoding.{Decoder, Encoder}
 import io.iohk.cef.net.transport.rlpx.RLPxConnectionHandler.{ConnectTo, ConnectionEstablished, ConnectionFailed, HandleConnection}
 import io.iohk.cef.net.transport.rlpx.ethereum.p2p.Message
 import io.iohk.cef.net.transport.TransportProtocol
+import org.bouncycastle.util.encoders.Hex
 
 class RLPxTransportProtocol[T](encoder: Encoder[T, ByteString],
                                decoder: Decoder[Message, T],
@@ -51,6 +54,7 @@ class RLPxTransportProtocol[T](encoder: Encoder[T, ByteString],
       replyTo: ActorRef[ListenerEvent],
       connectionFactory: URI => ActorRef[ConnectionEvent]): Behavior[ListenerCommand] =
     Behaviors.setup { context =>
+
       val bridgeActor =
         context.actorOf(listenerBridge(uri, messageBehaviour, replyTo, connectionFactory))
 
@@ -122,7 +126,7 @@ class RLPxTransportProtocol[T](encoder: Encoder[T, ByteString],
       extends untyped.Actor {
 
     import akka.io.Tcp.{Bind, Bound, CommandFailed, Connected => TcpConnected}
-    import akka.actor.typed.scaladsl.adapter._
+//    import akka.actor.typed.scaladsl.adapter._
 
     tcpActor ! Bind(self, toAddress(uri))
 
@@ -134,13 +138,15 @@ class RLPxTransportProtocol[T](encoder: Encoder[T, ByteString],
       case CommandFailed(b: Bind) => ???
 
       case TcpConnected(remoteAddr, localAddr) =>
-        val rlpxConnectionHandler =
-          context.actorOf(rlpxConnectionHandlerProps)
 
-        val connectionActor: ActorRef[ConnectionCommand] =
-          context.spawn(connectBehaviour(rlpxConnectionHandler), UUID.randomUUID().toString)
+        val tcpConnection = sender()
+        println(s"1. Connection received. sender = $tcpConnection")
+        context.actorOf(
+          PeerBridge.props(
+            remoteAddr, connectionEventHandlerFactory,
+            rlpxConnectionHandlerProps, tcpConnection,
+            connectBehaviour))
 
-        context.actorOf(PeerBridge.props(remoteAddr, connectionEventHandlerFactory, connectionActor, rlpxConnectionHandler))
     }
 
     private def toAddress(uri: URI): InetSocketAddress =
@@ -170,15 +176,24 @@ class RLPxTransportProtocol[T](encoder: Encoder[T, ByteString],
     */
   class PeerBridge(remoteAddress: InetSocketAddress,
                    connectionEventHandlerFactory: URI => ActorRef[ConnectionEvent],
-                   connectionActor: ActorRef[ConnectionCommand],
-                   rlpxConnectionHandler: untyped.ActorRef)
+                   rlpxConnectionHandlerProps: untyped.Props,
+                   tcpConnection: untyped.ActorRef,
+                   connectBehaviour: untyped.ActorRef => Behavior[ConnectionCommand])
     extends untyped.Actor {
 
-    rlpxConnectionHandler ! HandleConnection(sender())
+    private val rlpxConnectionHandler =
+      context.actorOf(rlpxConnectionHandlerProps)
 
-    override def receive: Receive = awaitingConnectionHandshake
+    private val connectionActor: ActorRef[ConnectionCommand] =
+      context.spawn(connectBehaviour(rlpxConnectionHandler), UUID.randomUUID().toString)
 
-    private def awaitingConnectionHandshake: Receive = {
+    tcpConnection ! Register(rlpxConnectionHandler)
+
+    println(s"2. Setting up peer bridge. Registering tcpConnection ($tcpConnection) with ${rlpxConnectionHandler}")
+
+    rlpxConnectionHandler ! HandleConnection(tcpActor)
+
+    override def receive: Receive = {
 
       case ConnectionEstablished(nodeId) =>
         val remoteUri = toUri(remoteAddress, nodeId)
@@ -199,15 +214,17 @@ class RLPxTransportProtocol[T](encoder: Encoder[T, ByteString],
 
     private def toUri(remoteAddr: InetSocketAddress, nodeId: ByteString): URI =
       new URI(
-        s"enode://${nodeId.utf8String}@${remoteAddr.getHostName}:${remoteAddr.getPort}")
+        s"enode://${Hex.toHexString(nodeId.toArray)}@${remoteAddr.getHostName}:${remoteAddr.getPort}")
   }
 
   object PeerBridge {
     def props(remoteAddress: InetSocketAddress,
               connectionEventHandlerFactory: URI => ActorRef[ConnectionEvent],
-              connectionActor: ActorRef[ConnectionCommand],
-              rlpxConnectionHandler: untyped.ActorRef): Props =
-      Props(new PeerBridge(remoteAddress, connectionEventHandlerFactory, connectionActor, rlpxConnectionHandler))
+              rlpxConnectionHandlerProps: untyped.Props,
+              tcpConnection: untyped.ActorRef,
+              connectBehaviour: untyped.ActorRef => Behavior[ConnectionCommand]): Props =
+      Props(new PeerBridge(remoteAddress, connectionEventHandlerFactory,
+        rlpxConnectionHandlerProps, tcpConnection, connectBehaviour))
   }
 
   /**
@@ -221,11 +238,14 @@ class RLPxTransportProtocol[T](encoder: Encoder[T, ByteString],
       extends untyped.Actor {
 
     private val rlpxConnectionHandler =
-      context.actorOf(rlpxConnectionHandlerProps)
+      context.actorOf(rlpxConnectionHandlerProps, s"conn-bridge-rlpx-handler-${UUID.randomUUID().toString}")
+
+    println(s"1. Setting up connection bridge. RLPxHandler is $rlpxConnectionHandler")
 
     rlpxConnectionHandler ! ConnectTo(uri)
 
     override def receive: Receive = {
+
       case ConnectionEstablished(_) =>
         eventHandler ! Connected(uri, connectBehaviour)
 
@@ -235,10 +255,9 @@ class RLPxTransportProtocol[T](encoder: Encoder[T, ByteString],
       case sm: RLPxConnectionHandler.SendMessage =>
         rlpxConnectionHandler ! sm
 
-      case RLPxConnectionHandler.MessageReceived(message) => {
-        val m: MessageType = decoder.decode(message)
-        eventHandler ! MessageReceived(m)
-      }
+      case RLPxConnectionHandler.MessageReceived(message) =>
+        eventHandler ! MessageReceived(decoder.decode(message))
+
     }
   }
 

@@ -16,5 +16,5 @@ class EncodingAdapter[T](message: T, encoder: Encoder[T, ByteString]) extends Me
     override def code: Int = throw new UnsupportedOperationException
   }
 
-  override def code: Int = throw new UnsupportedOperationException
+  override def code: Int = 1
 }

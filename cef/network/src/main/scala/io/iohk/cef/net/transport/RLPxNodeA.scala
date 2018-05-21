@@ -4,9 +4,8 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorSystem, Behavior}
 import com.typesafe.config.ConfigFactory
 import io.iohk.cef.net.SimpleNode2
-import io.iohk.cef.net.SimpleNode2.Send
 
-object RLPxNode2 extends App {
+object RLPxNodeA extends App {
 
   val config = ConfigFactory.parseString(
     """
@@ -32,21 +31,7 @@ object RLPxNode2 extends App {
       val nodeAStarted: Behavior[Started] = Behaviors.receive {
         (context, message) => message match {
           case Started(nodeAUri) =>
-
-            val bActor = context.spawn(new SimpleNode2("B", 4000, Some(nodeAUri)).server, "NodeB")
-
-            val nodeBStarted: Behavior[Started] = Behaviors.receiveMessage {
-              case Started(nodeBUri) =>
-
-                aActor ! Send("Hello Bob, my name is Alice", nodeBUri)
-
-//                bActor ! Send("Hello Alice, my name is Bob", nodeAUri)
-
-                Behavior.same
-            }
-
-            bActor ! Start(context.spawn(nodeBStarted, "Node_B_Startup_Listener"))
-
+            println("Node A started")
             Behavior.same
         }
       }
@@ -54,7 +39,7 @@ object RLPxNode2 extends App {
       Behaviors.receive {
         (context, _) =>
           aActor ! Start(context.spawn(nodeAStarted, "Node_A_Startup_Listener"))
-          Behavior.ignore
+          Behavior.same
       }
   }
 

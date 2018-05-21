@@ -45,11 +45,14 @@ class RLPxConnectionHandler(
 
   def waitingForCommand: Receive = {
     case ConnectTo(uri) =>
+      log.debug(s"2. RLPx has received connect message for $uri. Connecting.")
       tcpActor ! Connect(new InetSocketAddress(uri.getHost, uri.getPort))
       context become waitingForConnectionResult(uri)
 
     case HandleConnection(connection) =>
       connection ! Register(self)
+      log.debug(s"3. RLPx is handling connection and have registered myself.")
+
       val timeout = system.scheduler.scheduleOnce(rlpxConfiguration.waitForHandshakeTimeout, self, AuthHandshakeTimeout)
       context become new ConnectedHandler(connection).waitingForAuthHandshakeInit(authHandshaker, timeout)
   }
@@ -59,9 +62,12 @@ class RLPxConnectionHandler(
       val connection = sender()
       connection ! Register(self)
       val (initPacket, handshaker) = authHandshaker.initiate(uri)
-      connection ! Write(initPacket)
+      log.debug(s"3. Connected. I am $self. I have registered myself with $connection and written handshake message.")
+
       val timeout = system.scheduler.scheduleOnce(rlpxConfiguration.waitForHandshakeTimeout, self, AuthHandshakeTimeout)
       context become new ConnectedHandler(connection).waitingForAuthHandshakeResponse(handshaker, timeout)
+
+      connection ! Write(initPacket)
 
     case CommandFailed(_: Connect) =>
       log.debug("[Stopping Connection] Connection to {} failed", uri)
@@ -74,6 +80,8 @@ class RLPxConnectionHandler(
     def waitingForAuthHandshakeInit(handshaker: AuthHandshaker, timeout: Cancellable): Receive =
       handleTimeout orElse handleConnectionClosed orElse {
         case Received(data) =>
+          log.debug(s"4. Received handshake data. Cancelling timeout")
+
           timeout.cancel()
           val maybePreEIP8Result = Try {
             val (responsePacket, result) = handshaker.handleInitialMessage(data.take(InitiatePacketLength))
@@ -88,7 +96,12 @@ class RLPxConnectionHandler(
 
           maybePreEIP8Result orElse maybePostEIP8Result match {
             case Success((responsePacket, result, remainingData)) =>
+              log.debug(s"5. Okay. Writing response packet. ${Hex.toHexString(responsePacket.toArray)}")
+
               connection ! Write(responsePacket)
+//              connection ! WritePath(java.nio.file.Paths.get("/Users/jtownson/Desktop/towrite.mp4"), 0, 34623399, NoAck)
+//              connection ! WriteFile("/Users/jtownson/Desktop/towrite.mp4", 0, 34623399, NoAck)
+//              connection ! Write(ByteString("What the hell is going on?"))
               processHandshakeResult(result, remainingData)
 
             case Failure(ex) =>
@@ -101,6 +114,8 @@ class RLPxConnectionHandler(
     def waitingForAuthHandshakeResponse(handshaker: AuthHandshaker, timeout: Cancellable): Receive =
       handleWriteFailed orElse handleTimeout orElse handleConnectionClosed orElse {
         case Received(data) =>
+          log.debug(s"4. Received data while waiting for auth handshake response.")
+
           timeout.cancel()
           val maybePreEIP8Result = Try {
             val result = handshaker.handleResponseMessage(data.take(ResponsePacketLength))
@@ -113,7 +128,11 @@ class RLPxConnectionHandler(
             (result, remainingData)
           }
           maybePreEIP8Result orElse maybePostEIP8Result match {
-            case Success((result, remainingData)) => processHandshakeResult(result, remainingData)
+            case Success((result, remainingData)) => {
+              log.debug(s"5. Success reading handshake. Processing result.")
+
+              processHandshakeResult(result, remainingData)
+            }
             case Failure(ex) =>
               log.debug(s"[Stopping Connection] Response AuthHandshaker message handling failed for peer $peerId due to ${ex.getMessage}")
               context.parent ! ConnectionFailed
@@ -143,6 +162,7 @@ class RLPxConnectionHandler(
     def processHandshakeResult(result: AuthHandshakeResult, remainingData: ByteString): Unit =
       result match {
         case AuthHandshakeSuccess(secrets, remotePubKey) =>
+          log.debug(s"6. Auth handshake succeeded for peer $peerId. Notifying parent of connection established.")
           log.debug(s"Auth handshake succeeded for peer $peerId")
           context.parent ! ConnectionEstablished(remotePubKey)
           val messageCodec = messageCodecFactory(secrets, messageDecoder, protocolVersion)
@@ -151,6 +171,8 @@ class RLPxConnectionHandler(
           context become handshaked(messageCodec)
 
         case AuthHandshakeError =>
+          log.debug(s"6. Unfortunately auth handshake failed.")
+
           log.debug(s"[Stopping Connection] Auth handshake failed for peer $peerId")
           context.parent ! ConnectionFailed
           context stop self
@@ -203,7 +225,7 @@ class RLPxConnectionHandler(
           log.debug(s"[Stopping Connection] Write to $peerId failed")
           context stop self
         case x => {
-          println("Got an unmatched message in handshaked: " + x)
+          log.debug("Got an unmatched message in handshaked: " + x)
         }
       }
 

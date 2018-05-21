@@ -2,6 +2,7 @@ package io.iohk.cef.net
 
 import java.net.URI
 import java.security.SecureRandom
+import java.util.UUID
 
 import akka.actor.{ActorSystem, Props}
 import akka.actor.typed.{ActorRef, Behavior}
@@ -24,12 +25,10 @@ class SimpleNode2(nodeName: String, port: Int, bootstrapPeer: Option[URI]) {
   private val secureRandom: SecureRandom = new SecureRandom()
   private val nodeId = MantisCode.nodeIdFromNodeName(nodeName, secureRandom)
   private val nodeUri = new URI(s"enode://$nodeId@127.0.0.1:$port")
-//  private val bindAddress: URI = new URI(s"enode://$nodeId@127.0.0.1:$port")
 
-  case class Start(replyTo: ActorRef[Started])
-  case class Started(nodeUri: URI)
+  import SimpleNode2.{NodeCommand, Start, Send, Started}
 
-  val server: Behavior[Start] = Behaviors.setup { context: ActorContext[Start] =>
+  val server: Behavior[NodeCommand] = Behaviors.setup { context: ActorContext[NodeCommand] =>
     import akka.actor.typed.scaladsl.adapter._
 
     implicit val untypedActorSystem: ActorSystem = context.system.toUntyped
@@ -39,18 +38,23 @@ class SimpleNode2(nodeName: String, port: Int, bootstrapPeer: Option[URI]) {
 
     import transport._
 
-    def connectionHandlerFactory(context: ActorContext[Start])(remoteUri: URI): ActorRef[ConnectionEvent] = {
-      context.spawn(connectionBehaviour(remoteUri), s"connection_$remoteUri")
+    def connectionHandlerFactory(context: ActorContext[NodeCommand])(remoteUri: URI): ActorRef[ConnectionEvent] = {
+      context.spawn(connectionBehaviour(remoteUri), s"connection_${UUID.randomUUID().toString}")
     }
 
-    def connectionBehaviour(remoteUri: URI): Behavior[ConnectionEvent] = Behaviors.receive {
-      (context, msg) => {
-        ???
-      }
+    def connectionBehaviour(remoteUri: URI): Behavior[ConnectionEvent] = Behaviors.receiveMessage {
+      case Connected(remoteUri, connectionActor) =>
+        println(s"I got an inbound connection from $remoteUri")
+        Behavior.same
+      case ConnectionError(m, remoteUri) =>
+        println(s"Inbound connection failed from $remoteUri")
+        Behavior.stopped
+      case MessageReceived(m) =>
+        println("I received message $m from $remoteUri")
+        Behavior.same
     }
 
     val transportActor = context.spawn(transport.createTransport(), "RLPxTransport")
-
 
     Behaviors.receiveMessage {
       case Start(replyTo) =>
@@ -66,7 +70,25 @@ class SimpleNode2(nodeName: String, port: Int, bootstrapPeer: Option[URI]) {
 
         transportActor ! CreateListener(nodeUri, listenerActor, connectionHandlerFactory(context))
 
-        Behavior.ignore
+        Behavior.same
+
+      case Send(msg, to) =>
+
+        val connectedBehaviour: Behavior[ConnectionEvent] = Behaviors.receiveMessage {
+          case Connected(remoteUri, connectionActor) =>
+            println(s"Successfully connected to $remoteUri")
+            connectionActor ! SendMessage(msg)
+            Behavior.same
+          case ConnectionError(m, remoteUri) =>
+            println(s"Failed to connect to $remoteUri")
+            Behavior.stopped
+          case MessageReceived(m) =>
+            println("I got a message $m")
+            Behavior.same
+        }
+        transportActor ! Connect(to, context.spawn(connectedBehaviour, "connection_handler"))
+
+        Behavior.same
     }
   }
 
@@ -113,8 +135,8 @@ class SimpleNode2(nodeName: String, port: Int, bootstrapPeer: Option[URI]) {
   private def rlpxProps(nodeName: String): Props = {
 
     val rlpxConfiguration = new RLPxConfiguration {
-      override val waitForHandshakeTimeout: FiniteDuration = 3 seconds
-      override val waitForTcpAckTimeout: FiniteDuration = 3 seconds
+      override val waitForHandshakeTimeout: FiniteDuration = 30 seconds
+      override val waitForTcpAckTimeout: FiniteDuration = 30 seconds
     }
 
     val nodeKey: AsymmetricCipherKeyPair = MantisCode.nodeKeyFromName(nodeName, secureRandom)
@@ -124,4 +146,16 @@ class SimpleNode2(nodeName: String, port: Int, bootstrapPeer: Option[URI]) {
     RLPxConnectionHandler.props(
       MessageConfig.sampleMessageDecoder, protocolVersion = 1, authHandshaker, rlpxConfiguration)
   }
+}
+
+object SimpleNode2 {
+
+  sealed trait NodeCommand
+
+  case class Start(replyTo: ActorRef[Started]) extends NodeCommand
+
+  case class Send(msg: String, to: URI) extends NodeCommand
+
+  case class Started(nodeUri: URI)
+
 }
