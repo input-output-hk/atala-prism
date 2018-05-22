@@ -81,7 +81,7 @@ object RLPxNode2 extends App {
     }
 
     def createBootstrapNode(context: ActorContext): NodeInfo = {
-      val (bootstrapNodeId, bootstrapNode) = createNode("bootstrap", context)
+      val (bootstrapNodeId, bootstrapNode) = createNode("A", context)
       val bootstrapAddr = new InetSocketAddress("localhost", 3000)
 
 //      bootstrapNode ! StartServer(bootstrapAddr)
@@ -100,7 +100,7 @@ object RLPxNode2 extends App {
   class ConversationActor extends Actor with ActorLogging {
 
     val bootstrapNodeInfo = createBootstrapNode(context)
-    val (nextActorId, nextActor) = createNode("sender", context, Some(bootstrapNodeInfo))
+    val (nextActorId, nextActor) = createNode("B", context, Some(bootstrapNodeInfo))
 
     override def receive: Receive = {
       case ConnectionEstablished(x) =>

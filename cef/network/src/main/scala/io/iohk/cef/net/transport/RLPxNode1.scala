@@ -81,7 +81,7 @@ object RLPxNode1 extends App {
     }
 
     def createBootstrapNode(context: ActorContext): NodeInfo = {
-      val (bootstrapNodeId, bootstrapNode) = createNode("bootstrap", context)
+      val (bootstrapNodeId, bootstrapNode) = createNode("A", context)
       val bootstrapAddr = new InetSocketAddress("localhost", 3000)
 
       bootstrapNode ! StartServer(bootstrapAddr)

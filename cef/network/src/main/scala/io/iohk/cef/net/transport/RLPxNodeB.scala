@@ -39,7 +39,7 @@ object RLPxNodeB extends App {
             println("Node B started")
 
             bActor ! Send("Hello, Alice! I'm Bob.",
-              new URI("enode://7089d553b732ec4b60cf84819f8cdbf1c22e8ef95d3b9d936936157e89f45249a87863c4d51b0cfa110f0d3c3f8d9fc9cc3f9bce2aec84fbcf3bbb39f1c3bca7@127.0.0.1:3000"))
+              new URI("enode://011866dfb208191b57bd9eabfcd1967fbc5dd5db7c11e620028cc730fec6a088409a90583ae37a07c83ed76a4c8b242d6c601eb6e5fe48cfdfce0cea63465e28@127.0.0.1:3000"))
 
             Behavior.same
         }

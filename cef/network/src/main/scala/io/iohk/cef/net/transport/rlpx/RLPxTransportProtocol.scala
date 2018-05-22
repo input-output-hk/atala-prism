@@ -7,8 +7,7 @@ import akka.{actor => untyped}
 import untyped.Props
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
-import akka.io.Tcp.{/*Received,*/ Register}
-//import akka.io.Tcp.Register
+import akka.io.Tcp.Register
 import akka.util.ByteString
 import io.iohk.cef.encoding.rlp.EncodingAdapter
 import io.iohk.cef.encoding.{Decoder, Encoder}
@@ -126,7 +125,6 @@ class RLPxTransportProtocol[T](encoder: Encoder[T, ByteString],
       extends untyped.Actor {
 
     import akka.io.Tcp.{Bind, Bound, CommandFailed, Connected => TcpConnected}
-//    import akka.actor.typed.scaladsl.adapter._
 
     tcpActor ! Bind(self, toAddress(uri))
 
@@ -191,7 +189,7 @@ class RLPxTransportProtocol[T](encoder: Encoder[T, ByteString],
 
     println(s"2. Setting up peer bridge. Registering tcpConnection ($tcpConnection) with ${rlpxConnectionHandler}")
 
-    rlpxConnectionHandler ! HandleConnection(tcpActor)
+    rlpxConnectionHandler ! HandleConnection(tcpConnection)
 
     override def receive: Receive = {
 
