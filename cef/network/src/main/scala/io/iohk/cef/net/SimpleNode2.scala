@@ -50,7 +50,7 @@ class SimpleNode2(nodeName: String, port: Int, bootstrapPeer: Option[URI]) {
         println(s"Inbound connection failed from $remoteUri")
         Behavior.stopped
       case MessageReceived(m) =>
-        println("I received message $m from $remoteUri")
+        println(s"I received message $m from $remoteUri")
         Behavior.same
     }
 
