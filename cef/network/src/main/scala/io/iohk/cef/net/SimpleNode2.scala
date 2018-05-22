@@ -60,9 +60,15 @@ class SimpleNode2(nodeName: String, port: Int, bootstrapPeer: Option[URI]) {
       case Start(replyTo) =>
 
         val listenerBehaviour: Behavior[ListenerEvent] = Behaviors.receiveMessage {
-          case Listening(localUri) =>
+          case Listening(localUri, _) =>
             println(s"Server listening: $localUri")
             replyTo ! Started(localUri)
+            Behavior.same
+          case ListeningFailed(_, message) =>
+            println(message)
+            Behavior.stopped
+          case Unbound(_) =>
+            println(s"Server unbound")
             Behavior.same
         }
 
