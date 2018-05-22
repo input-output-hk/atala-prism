@@ -7,7 +7,7 @@ import akka.actor.{Actor, ActorContext, ActorLogging, ActorRef, ActorSystem, Pro
 import akka.util.ByteString
 import com.typesafe.config.ConfigFactory
 import io.iohk.cef.net.SimpleNode.StartServer
-import io.iohk.cef.net.transport.rlpx.RLPxConnectionHandler.{ConnectionEstablished, RLPxConfiguration, SendMessage}
+import io.iohk.cef.net.transport.rlpx.RLPxConnectionHandler.RLPxConfiguration
 import io.iohk.cef.net.transport.rlpx.ethereum.p2p.Message.Version
 import io.iohk.cef.net.transport.rlpx.ethereum.p2p.{Message, MessageDecoder, MessageSerializable}
 import io.iohk.cef.net.transport.rlpx.{AuthHandshaker, ECPublicKeyParametersNodeId, RLPxConnectionHandler, loadAsymmetricCipherKeyPair}
@@ -94,19 +94,11 @@ object RLPxNode1 extends App {
   import UserCode._
 
 
-
-
-
   class ConversationActor extends Actor with ActorLogging {
-
-    val bootstrapNodeInfo = createBootstrapNode(context)
-    val (nextActorId, nextActor) = createNode("sender", context, Some(bootstrapNodeInfo))
-
     override def receive: Receive = {
-      case ConnectionEstablished(x) =>
-        log.debug(s"Connection established to ${Hex.toHexString(x.toArray)}")
-        sender() ! SendMessage(SampleMessage("Hello, peer!"))
-      case _ => nextActor ! StartServer(new InetSocketAddress("localhost", 0))
+      case "go" =>
+        log.debug("creating bootstrap node")
+        createBootstrapNode(context)
     }
   }
 

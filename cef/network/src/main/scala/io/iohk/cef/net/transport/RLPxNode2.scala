@@ -1,10 +1,22 @@
 package io.iohk.cef.net.transport
 
-import akka.actor.typed.scaladsl.Behaviors
-import akka.actor.typed.{ActorSystem, Behavior}
+import java.net.InetSocketAddress
+import java.security.SecureRandom
+
+import akka.actor.{Actor, ActorContext, ActorLogging, ActorRef, ActorSystem, Props}
+import akka.util.ByteString
 import com.typesafe.config.ConfigFactory
-import io.iohk.cef.net.SimpleNode2
-import io.iohk.cef.net.SimpleNode2.Send
+import io.iohk.cef.net.SimpleNode.StartServer
+import io.iohk.cef.net.transport.rlpx.RLPxConnectionHandler.{ConnectionEstablished, RLPxConfiguration, SendMessage}
+import io.iohk.cef.net.transport.rlpx.ethereum.p2p.Message.Version
+import io.iohk.cef.net.transport.rlpx.ethereum.p2p.{Message, MessageDecoder, MessageSerializable}
+import io.iohk.cef.net.transport.rlpx.{AuthHandshaker, ECPublicKeyParametersNodeId, RLPxConnectionHandler, loadAsymmetricCipherKeyPair}
+import io.iohk.cef.net.{NodeInfo, SimpleNode}
+import org.bouncycastle.crypto.AsymmetricCipherKeyPair
+import org.bouncycastle.crypto.params.ECPublicKeyParameters
+import org.bouncycastle.util.encoders.Hex
+
+import scala.concurrent.duration.{FiniteDuration, _}
 
 object RLPxNode2 extends App {
 
@@ -22,41 +34,83 @@ object RLPxNode2 extends App {
       |}
     """.stripMargin)
 
-  import SimpleNode2.{Start, Started}
+  object UserCode {
 
-  val start: Behavior[String] = Behaviors.setup {
-    context =>
+    case class SampleMessage(content: String) extends MessageSerializable {
+      override def toBytes(implicit di: DummyImplicit): ByteString = ByteString(content)
 
-      val aActor = context.spawn(new SimpleNode2("A", 3000, None).server, "NodeA")
+      override def toBytes: Array[Byte] = content.getBytes
 
-      val nodeAStarted: Behavior[Started] = Behaviors.receive {
-        (context, message) => message match {
-          case Started(nodeAUri) =>
+      override def underlyingMsg: Message = this
 
-            val bActor = context.spawn(new SimpleNode2("B", 4000, Some(nodeAUri)).server, "NodeB")
+      override def code: Version = 1
+    }
 
-            val nodeBStarted: Behavior[Started] = Behaviors.receiveMessage {
-              case Started(nodeBUri) =>
+    private val sampleMessageDecoder = new MessageDecoder {
+      override def fromBytes(`type`: Int, payload: Array[Byte], protocolVersion: Version): Message = SampleMessage(new String(payload))
+    }
 
-                aActor ! Send("Hello Bob, my name is Alice", nodeBUri)
+    private val rlpxConfiguration = new RLPxConfiguration {
+      override val waitForHandshakeTimeout: FiniteDuration = 3 seconds
+      override val waitForTcpAckTimeout: FiniteDuration = 3 seconds
+    }
 
-//                bActor ! Send("Hello Alice, my name is Bob", nodeAUri)
+    private val secureRandom: SecureRandom = new SecureRandom()
 
-                Behavior.same
-            }
+    // how mantis generates node ids.
+    def nodeIdFromKey(nodeKey: AsymmetricCipherKeyPair): String = {
+      Hex.toHexString(new ECPublicKeyParametersNodeId(nodeKey.getPublic.asInstanceOf[ECPublicKeyParameters]).toNodeId)
+    }
 
-            bActor ! Start(context.spawn(nodeBStarted, "Node_B_Startup_Listener"))
+    // mantis uses loadAsymmetricCipherKeyPair to lazily generate node keys
+    def nodeKeyFromName(nodeName: String): AsymmetricCipherKeyPair = {
+      loadAsymmetricCipherKeyPair(s"/tmp/${nodeName}_key", secureRandom)
+    }
 
-            Behavior.same
-        }
-      }
+    def createNode(nodeName: String, context: ActorContext, bootstrapPeers: Option[NodeInfo] = None): (String, ActorRef) = {
+      val nodeKey = nodeKeyFromName(nodeName)
+      val nodeId = nodeIdFromKey(nodeKey)
 
-      Behaviors.receive {
-        (context, _) =>
-          aActor ! Start(context.spawn(nodeAStarted, "Node_A_Startup_Listener"))
-          Behavior.ignore
-      }
+      val authHandshaker = AuthHandshaker(nodeKey, secureRandom)
+
+      val props = RLPxConnectionHandler.props(sampleMessageDecoder, protocolVersion = 1, authHandshaker, rlpxConfiguration)
+
+      val rlpxHandler = context.actorOf(props, name = s"RLPxNode_$nodeName")
+
+      (nodeId, context.actorOf(Props(new SimpleNode(nodeId, rlpxHandler, bootstrapPeers))))
+    }
+
+    def createBootstrapNode(context: ActorContext): NodeInfo = {
+      val (bootstrapNodeId, bootstrapNode) = createNode("bootstrap", context)
+      val bootstrapAddr = new InetSocketAddress("localhost", 3000)
+
+//      bootstrapNode ! StartServer(bootstrapAddr)
+
+      NodeInfo(bootstrapNodeId, bootstrapAddr)
+    }
+
   }
 
-  ActorSystem(start, "main") ! "go"
+  import UserCode._
+
+
+
+
+
+  class ConversationActor extends Actor with ActorLogging {
+
+    val bootstrapNodeInfo = createBootstrapNode(context)
+    val (nextActorId, nextActor) = createNode("sender", context, Some(bootstrapNodeInfo))
+
+    override def receive: Receive = {
+      case ConnectionEstablished(x) =>
+        log.debug(s"Connection established to ${Hex.toHexString(x.toArray)}")
+        sender() ! SendMessage(SampleMessage("Hello, peer!"))
+      case _ => nextActor ! StartServer(new InetSocketAddress("localhost", 0))
+    }
+  }
+
+  implicit val system: ActorSystem = ActorSystem("RLPxNode", config)
+  val conversationActor = system.actorOf(Props[ConversationActor], "Conversation")
+  conversationActor ! "go"
 }
