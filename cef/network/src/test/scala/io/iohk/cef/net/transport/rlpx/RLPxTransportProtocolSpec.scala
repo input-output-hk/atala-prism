@@ -5,7 +5,7 @@ import java.net.{InetSocketAddress, URI}
 import akka.actor.{ActorSystem, typed}
 import akka.actor.typed.scaladsl.adapter._
 import akka.actor.typed.{ActorRef, Behavior}
-import akka.io.Tcp.{Bind, Bound}
+import akka.io.Tcp.{Bind, Bound, CommandFailed}
 import akka.testkit.typed.scaladsl.TestProbe
 import akka.testkit.{TestActors, TestProbe => UntypedTestProbe}
 import akka.util.ByteString
@@ -81,7 +81,10 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
     tcpProbe.expectMsgClass(classOf[Bind])
     tcpProbe.reply(Bound(new InetSocketAddress(1234)))
 
-    userActor.expectMessage(1 second, Listening(localUri))
+    userActor.uponReceivingMessage {
+      case Listening(address, _) =>
+        address shouldBe localUri
+    }
   }
 
   "Listeners" should "accept incoming connections when listening" in {
@@ -92,6 +95,7 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
 
     transportActor ! CreateListener(localUri, listenerEventProbe.ref, connectionEventHandlerFactory)
     tcpProbe.expectMsgType[Bind]
+    tcpProbe.reply(Bound(localAddress))
     val listenerBridge = tcpProbe.sender()
 
     // send it a new connection msg
@@ -108,8 +112,60 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
     }
   }
 
-  they should "notify users when binding fails" in pending
-  they should "notify users when incoming connections fail" in pending
+  they should "notify users when binding fails" in {
+    val userActor = TestProbe[ListenerEvent]("userActorProbe")(typedSystem)
+    val userConnectionFactory = (_: URI) => TestProbe[ConnectionEvent]("userActorProbe")(typedSystem).ref
+
+    transportActor ! CreateListener(localUri, userActor.ref, userConnectionFactory)
+
+    tcpProbe.expectMsgClass(classOf[Bind])
+    tcpProbe.reply(CommandFailed(Bind(tcpProbe.ref, localAddress)))
+
+    userActor.expectMessage(ListeningFailed(localUri, s"Error setting up listener on $localUri"))
+  }
+
+  they should "be unbindable" in {
+    val userActor = TestProbe[ListenerEvent]("userActorProbe")(typedSystem)
+    val userConnectionFactory = (_: URI) => TestProbe[ConnectionEvent]("userActorProbe")(typedSystem).ref
+
+    transportActor ! CreateListener(localUri, userActor.ref, userConnectionFactory)
+
+    tcpProbe.expectMsgClass(classOf[Bind])
+    tcpProbe.reply(Bound(new InetSocketAddress(1234)))
+
+    userActor.uponReceivingMessage {
+      case Listening(_, listenerActor) =>
+        listenerActor ! Unbind
+
+        tcpProbe.expectMsg(akka.io.Tcp.Unbind)
+
+        userActor.expectMessage(Unbound(localUri))
+    }
+  }
+
+  they should "notify users when incoming connections fail" in {
+    val listenerEventProbe = TestProbe[ListenerEvent]("userActorProbe")(typedSystem)
+    val connectionEventProbe = TestProbe[ConnectionEvent]("userActorProbe")(typedSystem)
+    val connectionEventHandlerFactory = (_: URI) => connectionEventProbe.ref
+
+    transportActor ! CreateListener(localUri, listenerEventProbe.ref, connectionEventHandlerFactory)
+
+    tcpProbe.expectMsgType[Bind]
+    tcpProbe.reply(Bound(localAddress))
+    val listenerBridge: untyped.ActorRef = tcpProbe.sender()
+
+    listenerBridge ! akka.io.Tcp.Connected(remoteAddress, localAddress)
+    rlpxConnectionHandler.expectMsgType[HandleConnection]
+    val peerBridge = rlpxConnectionHandler.sender()
+
+    peerBridge ! RLPxConnectionHandler.ConnectionFailed
+
+    connectionEventProbe.uponReceivingMessage {
+      case ConnectionError(message, address) =>
+        address shouldBe new URI(s"enode://@${remoteAddress.getHostName}:${remoteAddress.getPort}")
+        message shouldBe s"Error setting up connection with peer at $remoteAddress"
+    }
+  }
 
   "Outbound connections" should "support message sending" in {
     val userActor = TestProbe[ConnectionEvent]("userActorProbe")(typedSystem)
@@ -153,6 +209,7 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
     transportActor ! CreateListener(localUri, listenerEventProbe.ref, connectionEventHandlerFactory)
 
     tcpProbe.expectMsgType[Bind]
+    tcpProbe.reply(Bound(localAddress))
     val listenerBridge: untyped.ActorRef = tcpProbe.sender()
 
     listenerBridge ! akka.io.Tcp.Connected(remoteAddress, localAddress)
@@ -181,6 +238,7 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
     transportActor ! CreateListener(localUri, listenerEventProbe.ref, connectionEventHandlerFactory)
 
     tcpProbe.expectMsgType[Bind]
+    tcpProbe.reply(Bound(localAddress))
     val listenerBridge: untyped.ActorRef = tcpProbe.sender()
 
     listenerBridge ! akka.io.Tcp.Connected(remoteAddress, localAddress)

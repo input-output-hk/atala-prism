@@ -54,7 +54,7 @@ trait TransportProtocol {
     */
   sealed trait ListenerCommand
 
-  // TODO unbind a listener
+  case object Unbind extends ListenerCommand
 
   /**
     * ListenerEvent defines notifications sent by listeners to the user.
@@ -65,7 +65,11 @@ trait TransportProtocol {
     * Indicates that a listener is setup.
     * @param address the local address on which the listener is listening.
     */
-  case class Listening(address: AddressType) extends ListenerEvent
+  case class Listening(address: AddressType, listener: ActorRef[ListenerCommand]) extends ListenerEvent
+
+  case class ListeningFailed(addressType: AddressType, message: String) extends ListenerEvent
+
+  case class Unbound(addressType: AddressType) extends ListenerEvent
 
   /**
     * ConnectionEvent defines notifications of events on established p2p channels.
