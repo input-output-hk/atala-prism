@@ -82,7 +82,10 @@ class DiscoveryManager(
       log.warning(s"UDP connection not ready yet. Ignoring the message. Received: ${message}")
   }
 
-  def listening(listener: untyped.ActorRef, address: InetSocketAddress): Receive = processNodeStateUpdated orElse {
+  def listening(listener: untyped.ActorRef, address: InetSocketAddress): Receive =
+    processNodeStateUpdated orElse
+      processDiscoveryRequest(listener, address) orElse {
+
     case DiscoveryListener.MessageReceived(ping @ Ping(protocolVersion, sourceNode, timestamp, _), from) =>
         if (hasNotExpired(timestamp) &&
             protocolVersion == DiscoveryWireMessage.ProtocolVersion) {
@@ -205,6 +208,15 @@ class DiscoveryManager(
     case NodeStatus.StateUpdated(state) =>
       log.debug(s"State ${state} received. Proceeding to listening if configured.")
       nodeStatus = state
+  }
+
+  private def processDiscoveryRequest(listener: untyped.ActorRef, listeningAddress: InetSocketAddress): Receive = {
+    case Blacklist(node) =>
+      knownNodesStorage.blacklist(node)
+    case _: GetDiscoveredNodes =>
+      sender() ! DiscoveredNodes(knownNodesStorage.getNodes())
+    case FetchNeighbors(node) =>
+      sendPing(listener, listeningAddress, node)
   }
 
   private def calculateMessageKey(message: DiscoveryWireMessage) = {

@@ -13,4 +13,4 @@ case class FetchNeighbors(node: Node) extends DiscoveryRequest
 
 sealed trait DiscoveryResponse
 
-case class DiscoveredNodes(nodes: Seq[KnownNode]) extends DiscoveryResponse
+case class DiscoveredNodes(nodes: Set[KnownNode]) extends DiscoveryResponse

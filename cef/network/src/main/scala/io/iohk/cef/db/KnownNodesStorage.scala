@@ -26,4 +26,7 @@ class KnownNodesStorage(clock: Clock) {
     nodeMap = nodeMap - node.id
   }
 
+  //Implementation only for demo-ing purposes
+  def blacklist(node: Node): Unit = removeNode(node)
+
 }
