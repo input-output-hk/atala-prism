@@ -14,6 +14,7 @@ import io.iohk.cef.net.transport.rlpx.RLPxConnectionHandler.{ConnectTo, Connecti
 import io.iohk.cef.test.TestEncoderDecoder
 import io.iohk.cef.test.TestEncoderDecoder.TestMessage
 import io.iohk.cef.test.TypedTestProbeOps._
+import org.bouncycastle.util.encoders.Hex
 import org.scalatest.{Assertion, BeforeAndAfterAll, FlatSpec}
 import org.scalatest.Matchers._
 
@@ -99,7 +100,7 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
     val peerBridge = rlpxConnectionHandler.sender()
 
     // simulate rlpx handshake success
-    peerBridge ! ConnectionEstablished(ByteString(remotePubKey))
+    peerBridge ! ConnectionEstablished(ByteString(Hex.decode(remotePubKey)))
 
     connectionEventProbe.uponReceivingMessage {
       case Connected(uri, _) =>

@@ -198,7 +198,7 @@ class RLPxTransportProtocol[T](encoder: Encoder[T, ByteString],
         val connectionEventHandler = connectionEventHandlerFactory(remoteUri)
         context.become(connected(remoteUri, connectionEventHandler))
 
-        connectionEventHandler ! Connected(toUri(remoteAddress, nodeId), connectionActor)
+        connectionEventHandler ! Connected(remoteUri, connectionActor)
 
       case ConnectionFailed => ???
     }
