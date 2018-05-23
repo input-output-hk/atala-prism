@@ -69,7 +69,7 @@ class SimpleNode2(nodeName: String, port: Int, bootstrapPeer: Option[URI]) {
             Behavior.stopped
           case Unbound(_) =>
             println(s"Server unbound")
-            Behavior.same
+            Behavior.stopped
         }
 
         val listenerActor = context.spawn(listenerBehaviour, "listener")
