@@ -6,6 +6,7 @@ import akka.util.ByteString
 import io.iohk.cef.encoding.rlp.{RLPEncDec, RLPEncodeable, RLPException, RLPList}
 import javax.xml.bind.DatatypeConverter
 import org.bouncycastle.util.encoders.Hex
+import scalikejdbc._
 
 import scala.util.Try
 
@@ -20,7 +21,16 @@ case class Node(id: ByteString,
   }
 }
 
-object Node {
+object Node extends SQLSyntaxSupport[Node] {
+
+  override val tableName: String = "node"
+
+  def apply(rs: WrappedResultSet) = new Node(
+    ByteString(Hex.decode(rs.string("node_id"))),
+    new InetSocketAddress(InetAddress.getByAddress(rs.bytes("discovery_address")), rs.int("discovery_port")),
+    new InetSocketAddress(InetAddress.getByAddress(rs.bytes("server_address")), rs.int("server_port")),
+    Capabilities(rs.byte("capabilities"))
+  )
 
   implicit def nodeRlpEncDec(implicit
                              byteStrEncDec: RLPEncDec[ByteString],

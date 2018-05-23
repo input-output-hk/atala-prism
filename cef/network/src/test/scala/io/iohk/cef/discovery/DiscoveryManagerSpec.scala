@@ -9,7 +9,7 @@ import akka.testkit.{TestActorRef, TestKit, TestProbe}
 import akka.util.ByteString
 import akka.{actor => untyped}
 import io.iohk.cef.crypto
-import io.iohk.cef.db.KnownNodesStorage
+import io.iohk.cef.db.DummyKnownNodesStorage
 import io.iohk.cef.discovery.DiscoveryListener.Start
 import io.iohk.cef.discovery.DiscoveryManager.{Pinged, Sought}
 import io.iohk.cef.encoding.{Decoder, Encoder}
@@ -51,7 +51,7 @@ class DiscoveryManagerSpec extends TestKit(untyped.ActorSystem("DiscoveryManager
       multipleConnectionsPerAddress = true)
     val nodeState =
       NodeStatus.NodeState(
-        ByteString("0"),
+        ByteString(0),
         ServerStatus.NotListening,
         ServerStatus.NotListening,
         Capabilities(0x01))
@@ -81,7 +81,7 @@ class DiscoveryManagerSpec extends TestKit(untyped.ActorSystem("DiscoveryManager
       val actor = TestActorRef[DiscoveryManager](
         DiscoveryManager.props(
           discoveryConfig,
-          new KnownNodesStorage(mockClock),
+          new DummyKnownNodesStorage(mockClock),
           nodeStateInbox.ref,
           mockClock,
           encoder,

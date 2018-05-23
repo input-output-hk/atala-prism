@@ -5,8 +5,6 @@ import java.net.InetSocketAddress
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.util.ByteString
-import org.bouncycastle.crypto.AsymmetricCipherKeyPair
-import org.bouncycastle.crypto.params.ECPublicKeyParameters
 
 
 sealed trait ServerStatus
@@ -18,12 +16,12 @@ object ServerStatus {
 object NodeStatus {
 
   case class NodeState(
-                    key: AsymmetricCipherKeyPair,
+                    key: ByteString,
                     serverStatus: ServerStatus,
                     discoveryStatus: ServerStatus,
                     capabilities: Capabilities) extends  {
 
-    val nodeId = ByteString(key.getPublic.asInstanceOf[ECPublicKeyParameters].toNodeId)
+    val nodeId = key
   }
 
   case class StateUpdated(state: NodeState)

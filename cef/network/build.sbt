@@ -17,7 +17,20 @@ val dep = {
     "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
   
     "org.bouncycastle" % "bcprov-jdk15on" % "1.59",
-  
+    "com.h2database" % "h2" % "1.4.197",
+
+    //Scalike
+    "org.scalikejdbc" %% "scalikejdbc"       % "3.2.2",
+    "ch.qos.logback"  %  "logback-classic"   % "1.2.3",
+    "org.scalikejdbc" %% "scalikejdbc-config"  % "3.2.2",
+
+    "org.scalikejdbc" %% "scalikejdbc-test"   % "3.2.2" % Test,
+
+    //Anorm
+
+
+    //Doobie
+
     "org.scalatest" %% "scalatest" % "3.0.1" % Test,
     "org.scalacheck" %% "scalacheck" % "1.13.4" % Test,
     "org.scalamock" %% "scalamock-scalatest-support" % "3.5.0" % Test,

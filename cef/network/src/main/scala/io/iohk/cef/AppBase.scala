@@ -7,7 +7,7 @@ import java.time.Clock
 import akka.actor.typed.scaladsl.adapter._
 import akka.util.ByteString
 import akka.{actor => untyped}
-import io.iohk.cef.db.KnownNodesStorage
+import io.iohk.cef.db.ScalikeKnownNodeStorage
 import io.iohk.cef.discovery._
 import io.iohk.cef.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.NodeStatus.NodeState
@@ -16,21 +16,7 @@ import io.iohk.cef.utils.Logger
 
 import scala.concurrent.duration._
 
-class LogEverything extends untyped.Actor with untyped.ActorLogging {
-
-  override def receive: Receive = {
-    case m =>
-      println(s"Message Received: $m")
-  }
-}
-
-object LogEverything {
-  def props() = untyped.Props(new LogEverything)
-}
-
-object App extends Logger {
-
-  def main(args: Array[String]): Unit = {
+trait AppBase extends Logger {
 
     implicit lazy val actorSystem = untyped.ActorSystem("cef_system")
 
@@ -46,21 +32,20 @@ object App extends Logger {
       scanNodesLimit = 10,
       concurrencyDegree = 20,
       scanInitialDelay = 10.seconds,
-      scanInterval = 10.seconds,
+      scanInterval = 100.seconds,
       messageExpiration = 100.minute,
       maxSeekResults = 10,
       multipleConnectionsPerAddress = true)
 
-    import io.iohk.cef.encoding.rlp.RLPImplicits._
     import io.iohk.cef.encoding.rlp.RLPEncoders._
+    import io.iohk.cef.encoding.rlp.RLPImplicits._
 
     val encoder = implicitly[Encoder[DiscoveryWireMessage, ByteString]]
 
     val decoder = implicitly[Decoder[ByteString, DiscoveryWireMessage]]
 
     def createActor(id: Int, bootstrapNodeIds: Set[Int], capabilities: Capabilities) = {
-      val key = ByteString(id.toString)
-      val state = new NodeState(key, ServerStatus.NotListening, ServerStatus.NotListening, capabilities)
+      val state = new NodeState(ByteString(id), ServerStatus.NotListening, ServerStatus.NotListening, capabilities)
       val portBase = 8090
       val bNodes = bootstrapNodeIds.map(nodeId =>
         Node(ByteString(nodeId.toString), new InetSocketAddress(localhost, portBase + nodeId), new InetSocketAddress(localhost, portBase + nodeId), state.capabilities)
@@ -71,7 +56,8 @@ object App extends Logger {
       val secureRandom = new SecureRandom()
       system.actorOf(DiscoveryManager.props(
         config,
-        new KnownNodesStorage(Clock.systemUTC()),
+        //new DummyKnownNodesStorage(Clock.systemUTC()),
+        new ScalikeKnownNodeStorage(Clock.systemUTC()),
         stateHolder,
         Clock.systemUTC(),
         encoder,
@@ -82,21 +68,4 @@ object App extends Logger {
       ))
       system
     }
-
-    createActor(0, Set(2), Capabilities(1))
-
-    createActor(1, Set(0), Capabilities(1))
-
-    createActor(2, Set(), Capabilities(3))
-
-    createActor(3, Set(2), Capabilities(3))
-
-    createActor(4, Set(3), Capabilities(1))
-
-    val system = createActor(5, Set(0), Capabilities(1))
-
-    val spy = system.actorOf(LogEverything.props())
-
-    system.eventStream.subscribe(spy, classOf[CompatibleNodeFound])
-  }
 }

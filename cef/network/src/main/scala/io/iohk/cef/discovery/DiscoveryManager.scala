@@ -94,8 +94,8 @@ class DiscoveryManager(
           val node = getNode(discoveryAddress = address)
           val pong = Pong(node, messageKey, expirationTimestamp)
           if(sourceNode.capabilities.satisfies(nodeStatus.capabilities)) {
-            knownNodesStorage.insertNode(sourceNode)
-            log.debug(s"New discovered list: ${knownNodesStorage.getNodes().map(_.node.discoveryAddress)}")
+            knownNodesStorage.insert(sourceNode)
+            log.debug(s"New discovered list: ${knownNodesStorage.getAll().map(_.node.discoveryAddress)}")
           }
           log.debug(s"Sending pong message with capabilities ${pong.node.capabilities}, to: ${sourceNode.discoveryAddress}")
           listener ! DiscoveryListener.SendMessage(pong, sourceNode.discoveryAddress)
@@ -109,8 +109,8 @@ class DiscoveryManager(
           pingedNodes -= token
           if (pingedNode.capabilities.satisfies(nodeStatus.capabilities)) {
             context.system.eventStream.publish(CompatibleNodeFound(pingedNode))
-            knownNodesStorage.insertNode(pingedNode)
-            log.debug(s"New discovered list: ${knownNodesStorage.getNodes().map(_.node.discoveryAddress)}")
+            knownNodesStorage.insert(pingedNode)
+            log.debug(s"New discovered list: ${knownNodesStorage.getAll().map(_.node.discoveryAddress)}")
           } else {
             log.debug(s"Node received in pong ${from} does not satisfy the capabilities.")
           }
@@ -130,7 +130,7 @@ class DiscoveryManager(
       if(hasNotExpired(timestamp)) {
         log.debug(s"Received a seek message ${seek} from ${from}")
         val nodes =
-          knownNodesStorage.getNodes().filter(_.node.capabilities.satisfies(capabilities)).map(_.node)
+          knownNodesStorage.getAll().filter(_.node.capabilities.satisfies(capabilities)).map(_.node)
         log.debug(s"Nodes satisfying capabilities = ${nodes.map(_.discoveryAddress)}")
         val randomNodeSubset = Random.shuffle(nodes).take(maxResults)
         val token = calculateMessageKey(seek)
@@ -144,7 +144,7 @@ class DiscoveryManager(
       if (hasNotExpired(timestamp) &&
         capabilities.satisfies(nodeStatus.capabilities)) {
         log.debug(s"Received a neighbors message from ${from}. Neighbors: $neighbors")
-        val discoveredNodes = knownNodesStorage.getNodes().map(_.node).union(pingedNodes.values.map(_.node).toSet)
+        val discoveredNodes = knownNodesStorage.getAll().map(_.node).union(pingedNodes.values.map(_.node).toSet)
         soughtNodes.get(token).foreach { _ =>
           val newNodes = if (discoveryConfig.multipleConnectionsPerAddress) {
             val nodeEndpoints = discoveredNodes.map(dn => (ByteString(dn.discoveryAddress.getAddress.getAddress), dn.discoveryAddress.getPort))
@@ -175,7 +175,7 @@ class DiscoveryManager(
       case (id, pingInfo) => {
         log.debug(s"Dropping node ${Hex.toHexString(id.toArray)}")
         pingedNodes -= id
-        knownNodesStorage.removeNode(pingInfo.node)
+        knownNodesStorage.remove(pingInfo.node)
       }
     }
 
@@ -183,7 +183,7 @@ class DiscoveryManager(
       sendPing(listener, address, pingInfo.node)
     }
 
-    knownNodesStorage.getNodes().toSeq
+    knownNodesStorage.getAll().toSeq
       .sortBy(_.lastSeen)
       .takeRight(discoveryConfig.scanNodesLimit)
       .foreach { nodeInfo =>
@@ -214,7 +214,7 @@ class DiscoveryManager(
     case Blacklist(node) =>
       knownNodesStorage.blacklist(node)
     case _: GetDiscoveredNodes =>
-      sender() ! DiscoveredNodes(knownNodesStorage.getNodes())
+      sender() ! DiscoveredNodes(knownNodesStorage.getAll())
     case FetchNeighbors(node) =>
       sendPing(listener, listeningAddress, node)
   }
