@@ -7,7 +7,7 @@ import java.time.Clock
 import akka.actor.typed.scaladsl.adapter._
 import akka.util.ByteString
 import akka.{actor => untyped}
-import io.iohk.cef.db.ScalikeKnownNodeStorage
+import io.iohk.cef.db.DummyKnownNodesStorage
 import io.iohk.cef.discovery._
 import io.iohk.cef.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.NodeStatus.NodeState
@@ -54,10 +54,10 @@ trait AppBase extends Logger {
       val system = untyped.ActorSystem("cef_system" + id)
       val stateHolder = system.spawn(NodeStatus.nodeState(state, Seq()), "stateHolder")
       val secureRandom = new SecureRandom()
-      system.actorOf(DiscoveryManager.props(
+      val actor = system.actorOf(DiscoveryManager.props(
         config,
-        //new DummyKnownNodesStorage(Clock.systemUTC()),
-        new ScalikeKnownNodeStorage(Clock.systemUTC()),
+        new DummyKnownNodesStorage(Clock.systemUTC()),
+        //new ScalikeKnownNodeStorage(Clock.systemUTC()),
         stateHolder,
         Clock.systemUTC(),
         encoder,
@@ -66,6 +66,6 @@ trait AppBase extends Logger {
         system.scheduler,
         secureRandom
       ))
-      system
+      (system, actor)
     }
 }
