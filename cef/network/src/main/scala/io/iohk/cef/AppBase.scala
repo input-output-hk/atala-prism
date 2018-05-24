@@ -7,7 +7,7 @@ import java.time.Clock
 import akka.actor.typed.scaladsl.adapter._
 import akka.util.ByteString
 import akka.{actor => untyped}
-import io.iohk.cef.db.DummyKnownNodesStorage
+import io.iohk.cef.db.{AnormKnownNodeStorage, ConnectionPool}
 import io.iohk.cef.discovery._
 import io.iohk.cef.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.NodeStatus.NodeState
@@ -44,7 +44,7 @@ trait AppBase extends Logger {
 
     val decoder = implicitly[Decoder[ByteString, DiscoveryWireMessage]]
 
-    def createActor(id: Int, bootstrapNodeIds: Set[Int], capabilities: Capabilities) = {
+    def createActor(id: Int, bootstrapNodeIds: Set[Int], capabilities: Capabilities, pool: ConnectionPool) = {
       val state = new NodeState(ByteString(id), ServerStatus.NotListening, ServerStatus.NotListening, capabilities)
       val portBase = 8090
       val bNodes = bootstrapNodeIds.map(nodeId =>
@@ -56,8 +56,9 @@ trait AppBase extends Logger {
       val secureRandom = new SecureRandom()
       val actor = system.actorOf(DiscoveryManager.props(
         config,
-        new DummyKnownNodesStorage(Clock.systemUTC()),
+        //new DummyKnownNodesStorage(Clock.systemUTC()),
         //new ScalikeKnownNodeStorage(Clock.systemUTC()),
+        new AnormKnownNodeStorage(Clock.systemUTC(), pool),
         stateHolder,
         Clock.systemUTC(),
         encoder,
