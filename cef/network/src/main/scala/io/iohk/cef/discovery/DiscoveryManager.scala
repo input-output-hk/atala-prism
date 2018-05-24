@@ -192,7 +192,7 @@ class DiscoveryManager(
   }
 
   private def sendPing(listener: untyped.ActorRef, listeningAddress: InetSocketAddress, node: Node): Unit = {
-    log.debug(s"Sending ping to ${node}")
+    log.debug(s"Sending ping to ${node.toUri}")
     val nonce = new Array[Byte](nonceSize)
     randomSource.nextBytes(nonce)
     val ping = Ping(DiscoveryWireMessage.ProtocolVersion, getNode(listeningAddress), expirationTimestamp, ByteString(nonce))

@@ -89,10 +89,10 @@ class SimpleNode2(nodeName: String, port: Int, bootstrapPeer: Option[URI]) {
             println(s"Failed to connect to $remoteUri")
             Behavior.stopped
           case MessageReceived(m) =>
-            println("I got a message $m")
+            println(s"I got a message $m")
             Behavior.same
         }
-        transportActor ! Connect(to, context.spawn(connectedBehaviour, "connection_handler"))
+        transportActor ! Connect(to, context.spawn(connectedBehaviour, s"connection_handler_${UUID.randomUUID().toString}"))
 
         Behavior.same
     }
