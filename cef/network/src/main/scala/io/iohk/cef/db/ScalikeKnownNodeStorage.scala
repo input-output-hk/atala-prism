@@ -15,9 +15,8 @@ class ScalikeKnownNodeStorage(clock: Clock) extends KnownNodesStorage {
 
   implicit val session = AutoSession
 
-  Schema.nodeTable.execute().apply()
-  Schema.knownNodeTable.execute().apply()
-
+  SQL(Schema.nodeTable).execute().apply()
+  SQL(Schema.knownNodeTable).execute().apply()
 
   override def blacklist(node: Node): Unit = ???
 

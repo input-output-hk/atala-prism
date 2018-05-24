@@ -27,7 +27,8 @@ val dep = {
     "org.scalikejdbc" %% "scalikejdbc-test"   % "3.2.2" % Test,
 
     //Anorm
-
+    "org.playframework.anorm" %% "anorm" % "2.6.2",
+    "com.jolbox" % "bonecp" % "0.8.0.RELEASE",
 
     //Doobie
 

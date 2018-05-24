@@ -3,6 +3,8 @@ package io.iohk.cef.network
 import java.net.{InetAddress, InetSocketAddress, URI}
 
 import akka.util.ByteString
+import io.iohk.cef.db.RowParsers
+import io.iohk.cef.db.Schema.NodeTableColumn
 import io.iohk.cef.encoding.rlp.{RLPEncDec, RLPEncodeable, RLPException, RLPList}
 import javax.xml.bind.DatatypeConverter
 import org.bouncycastle.util.encoders.Hex
@@ -22,6 +24,18 @@ case class Node(id: ByteString,
 }
 
 object Node extends SQLSyntaxSupport[Node] {
+
+  import anorm._
+
+  def nodeParser: RowParser[Node] = {
+    RowParsers.byteStringParser(NodeTableColumn.id) ~
+      RowParsers.inetSocketAddressParser(NodeTableColumn.discoveryAddress, NodeTableColumn.discoveryPort) ~
+      RowParsers.inetSocketAddressParser(NodeTableColumn.serverAddress, NodeTableColumn.serverPort) ~
+      Capabilities.tableParser(NodeTableColumn.capabilities) map {
+      case id ~ discoverySocketAddr ~ serverSocketAddr ~ capabilities =>
+        Node(id, discoverySocketAddr, serverSocketAddr, capabilities)
+    }
+  }
 
   override val tableName: String = "node"
 
