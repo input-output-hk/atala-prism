@@ -6,7 +6,7 @@ val commonSettings = Seq(
 )
 
 
-mainClass in (Compile, run) := Some("io.iohk.cef.net.transport.rlpx.RLPxNode")
+mainClass in (Compile, run) := Some("io.iohk.cef.network.transport.rlpx.RLPxNode")
 
 val dep = {
   val akkaVersion = "2.5.12"

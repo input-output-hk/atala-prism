@@ -8,8 +8,8 @@ import akka.actor.typed.{ActorRef, ActorSystem, Behavior, Logger}
 import io.iohk.cef.db.KnownNode
 import io.iohk.cef.discovery.DiscoveryProtocol.FindPeers
 import io.iohk.cef.discovery.DiscoveryProtocolImpl
-import io.iohk.cef.net.SimpleNode2
-import io.iohk.cef.net.SimpleNode2.{Send, Start, Started}
+import io.iohk.cef.network.SimpleNode2
+import io.iohk.cef.network.SimpleNode2.{Send, Start, Started}
 import io.iohk.cef.network.{Capabilities, Node}
 
 object DiscoveryAndMessageApp {
