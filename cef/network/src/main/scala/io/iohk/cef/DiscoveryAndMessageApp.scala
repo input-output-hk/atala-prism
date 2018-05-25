@@ -24,7 +24,7 @@ object DiscoveryAndMessageApp {
     }
 
     if (args.length == 0) {
-      printUsageAndExit
+      printUsageAndExit()
     }
 
     val argMap = args.sliding(2, 2).toList.collect {
