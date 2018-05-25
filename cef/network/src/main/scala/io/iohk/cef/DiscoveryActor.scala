@@ -17,12 +17,9 @@ import scala.concurrent.duration._
 
 object DiscoveryActor {
 
-  def apply(uri: URI, bootstrapNodeUris: Set[URI], capabilities: Capabilities)(context: untyped.ActorContext):
-    untyped.ActorRef = {
-
+  def props(uri: URI, bootstrapNodeUris: Set[URI], capabilities: Capabilities): untyped.Props = {
     import io.iohk.cef.encoding.rlp.RLPEncoders._
     import io.iohk.cef.encoding.rlp.RLPImplicits._
-    import akka.actor.typed.scaladsl.adapter._
 
     val state = NodeState(
       key = toNodeKey(uri),
@@ -32,25 +29,22 @@ object DiscoveryActor {
 
     val discoveryConfig = config(uri, bootstrapNodeUris, capabilities)
 
-    val stateHolder = context.spawn(NodeStatus.nodeState(state, Seq()), "stateHolder")
+    val stateHolder = NodeStatus.nodeState(state, Seq())
 
     val encoder = implicitly[Encoder[DiscoveryWireMessage, ByteString]]
 
     val decoder = implicitly[Decoder[ByteString, DiscoveryWireMessage]]
 
-    val discoveryManagerProps = DiscoveryManager.props(
+    DiscoveryManager.props(
       discoveryConfig,
       new DummyKnownNodesStorage(Clock.systemUTC()),
       stateHolder,
       Clock.systemUTC(),
       encoder,
       decoder,
-      DiscoveryManager.listenerMaker(discoveryConfig, stateHolder, encoder, decoder),
-      context.system.scheduler,
+      DiscoveryManager.listenerMaker(discoveryConfig, encoder, decoder),
       new SecureRandom()
     )
-
-    context.actorOf(discoveryManagerProps)
   }
 
   private def localhost(port: Int): InetSocketAddress =

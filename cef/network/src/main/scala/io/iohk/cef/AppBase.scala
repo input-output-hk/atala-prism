@@ -4,7 +4,6 @@ import java.net.{InetAddress, InetSocketAddress}
 import java.security.SecureRandom
 import java.time.Clock
 
-import akka.actor.typed.scaladsl.adapter._
 import akka.util.ByteString
 import akka.{actor => untyped}
 import io.iohk.cef.db.{AnormKnownNodeStorage, ConnectionPool}
@@ -52,7 +51,7 @@ trait AppBase extends Logger {
       )
       val config = discoveryConfig.copy(port = portBase + id, bootstrapNodes = bNodes)
       val system = untyped.ActorSystem("cef_system" + id)
-      val stateHolder = system.spawn(NodeStatus.nodeState(state, Seq()), "stateHolder")
+      val stateHolder = NodeStatus.nodeState(state, Seq())
       val secureRandom = new SecureRandom()
       val actor = system.actorOf(DiscoveryManager.props(
         config,
@@ -63,8 +62,7 @@ trait AppBase extends Logger {
         Clock.systemUTC(),
         encoder,
         decoder,
-        DiscoveryManager.listenerMaker(config, stateHolder, encoder, decoder),
-        system.scheduler,
+        DiscoveryManager.listenerMaker(config, encoder, decoder),
         secureRandom
       ))
       (system, actor)

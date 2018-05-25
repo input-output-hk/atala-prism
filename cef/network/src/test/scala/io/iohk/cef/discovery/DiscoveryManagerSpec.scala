@@ -4,7 +4,6 @@ import java.net.{InetAddress, InetSocketAddress}
 import java.security.SecureRandom
 
 import akka.actor.typed.scaladsl.adapter._
-import akka.testkit.typed.scaladsl.TestInbox
 import akka.testkit.{TestActorRef, TestKit, TestProbe}
 import akka.util.ByteString
 import akka.{actor => untyped}
@@ -15,6 +14,7 @@ import io.iohk.cef.discovery.DiscoveryManager.{Pinged, Sought}
 import io.iohk.cef.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.NodeStatus.{NodeStatusMessage, Subscribe}
 import io.iohk.cef.network.{Capabilities, Node, NodeStatus, ServerStatus}
+import io.iohk.cef.test.MockBehavior.mockBehavior
 import io.iohk.cef.test.{StopAfterAll, TestClock}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{MustMatchers, WordSpecLike}
@@ -71,9 +71,9 @@ class DiscoveryManagerSpec extends TestKit(untyped.ActorSystem("DiscoveryManager
 
     val listeningAddress = new InetSocketAddress(localhost,1000)
 
-    val scheduler = system.scheduler
+//    val scheduler = system.scheduler
 
-    val nodeStateInbox = TestInbox[NodeStatusMessage]()
+    val nodeStateBehavior = mockBehavior[NodeStatusMessage]
 
     val secureRandom = new SecureRandom()
 
@@ -82,16 +82,16 @@ class DiscoveryManagerSpec extends TestKit(untyped.ActorSystem("DiscoveryManager
         DiscoveryManager.props(
           discoveryConfig,
           new DummyKnownNodesStorage(mockClock),
-          nodeStateInbox.ref,
+          nodeStateBehavior,
           mockClock,
           encoder,
           decoder,
           listenerMaker,
-          scheduler,
           secureRandom
         )
       )
-      nodeStateInbox.expectMessage(Subscribe(actor))
+
+      nodeStateBehavior.expectMessage(Subscribe(actor))
       actor ! NodeStatus.StateUpdated(nodeState)
       listener.expectMsg(Start)
       actor ! DiscoveryListener.Ready(listeningAddress)

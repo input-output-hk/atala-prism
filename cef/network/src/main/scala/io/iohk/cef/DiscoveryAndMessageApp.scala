@@ -3,16 +3,14 @@ package io.iohk.cef
 import java.net.URI
 import java.time.Instant
 
-import akka.actor.typed.scaladsl.Behaviors
-import akka.actor.typed.{ActorRef, ActorSystem, Behavior}
-import akka.{actor => untyped}
+import akka.actor.typed.scaladsl.{Behaviors, TimerScheduler}
+import akka.actor.typed.{ActorRef, ActorSystem, Behavior, Logger}
+import io.iohk.cef.db.KnownNode
+import io.iohk.cef.discovery.DiscoveryProtocol.FindPeers
+import io.iohk.cef.discovery.DiscoveryProtocolImpl
 import io.iohk.cef.net.SimpleNode2
 import io.iohk.cef.net.SimpleNode2.{Send, Start, Started}
 import io.iohk.cef.network.{Capabilities, Node}
-import io.iohk.cef.db.KnownNode
-import io.iohk.cef.discovery.{DiscoveredNodes, GetDiscoveredNodes}
-
-import scala.concurrent.duration._
 
 object DiscoveryAndMessageApp {
 
@@ -40,7 +38,6 @@ object DiscoveryAndMessageApp {
 
     val start: Behavior[String] = Behaviors.setup {
       context =>
-        import akka.actor.typed.scaladsl.adapter._
 
         val nodeActor: ActorRef[SimpleNode2.NodeCommand] =
           context.spawn(new SimpleNode2(nodeName, port, None).server, "NodeActor")
@@ -48,7 +45,11 @@ object DiscoveryAndMessageApp {
         val startupListener: Behavior[Started] = Behaviors.receiveMessage {
           case Started(nodeUri) =>
 
-            context.actorOf(SayHelloActor.props(nodeUri, bootstrapNodes, nodeActor))
+            val discoveryProtocol = new DiscoveryProtocolImpl(DiscoveryActor.props(nodeUri, bootstrapNodes, Capabilities(1)))
+
+            val discoveryActor = context.spawn(discoveryProtocol.createDiscovery(), "DiscoveryActor")
+
+            context.spawn(new Greeter(nodeUri, nodeActor, discoveryActor).behavior, "PeerGreeter")
 
             Behavior.ignore
         }
@@ -64,15 +65,32 @@ object DiscoveryAndMessageApp {
   }
 }
 
-class SayHelloActor(nodeUri: URI, bootstrapNodeUris: Set[URI],
-                    nodeActor: ActorRef[SimpleNode2.NodeCommand]) extends untyped.Actor with untyped.ActorLogging {
+class Greeter(nodeUri: URI, nodeActor: ActorRef[SimpleNode2.NodeCommand], discoveryActor: ActorRef[FindPeers]) {
 
-  val discoveryActor: untyped.ActorRef =
-    DiscoveryActor(nodeUri, bootstrapNodeUris, Capabilities(1))(context)
+  import scala.concurrent.duration._
 
-  rescheduleTick()
+  val behavior: Behavior[String] = Behaviors.withTimers(timer => tick(timer))
 
-  private def sayHelloTo(peers: Set[KnownNode]): Unit = {
+  private val tock: Behavior[Set[KnownNode]] = Behaviors.receive((context, message) => message match {
+    case s =>
+      sayHelloTo(s, context.log)
+      Behavior.same
+  })
+
+  private def tick(timer: TimerScheduler[String]): Behavior[String] = Behaviors.setup { context =>
+
+    val tockActor = context.spawn(tock, s"GreeterTock")
+
+    timer.startPeriodicTimer("greeter_timer", "DiscoveryTick", 5 seconds)
+
+    Behaviors.receiveMessage(_ => {
+      discoveryActor ! FindPeers(tockActor)
+      Behavior.same
+    })
+  }
+
+
+  private def sayHelloTo(peers: Set[KnownNode], log: Logger): Unit = {
     val livingPeers = peers.filter(notDead).map(_.node) // TODO how to get discovery to do this bit?
 
     log.debug(s"It's message time! My peers are $livingPeers")
@@ -80,33 +98,13 @@ class SayHelloActor(nodeUri: URI, bootstrapNodeUris: Set[URI],
     livingPeers.foreach(greet)
   }
 
+  private def notDead(knownNode: KnownNode): Boolean =
+    knownNode.lastSeen.plusSeconds(10).isAfter(Instant.now)
+
   private def greet(peer: Node): Unit =
     nodeActor ! Send(greeting(peer.toUri, nodeUri), peer.toUri)
 
   private def greeting(you: URI, me: URI): String =
     s"Hello, $you! I'm $me"
-
-  private def notDead(knownNode: KnownNode): Boolean =
-    knownNode.lastSeen.plusSeconds(10).isAfter(Instant.now)
-
-  override def receive: Receive = {
-    case DiscoveredNodes(nodes) =>
-      sayHelloTo(nodes)
-    case "DiscoveryTick" =>
-      discoveryActor ! GetDiscoveredNodes()
-      rescheduleTick()
-  }
-
-  private def rescheduleTick(): Unit = {
-    import context.dispatcher
-    context.system.scheduler.scheduleOnce(5 seconds, self, "DiscoveryTick")
-  }
 }
-
-object SayHelloActor {
-  def props(nodeUri: URI, bootstrapNodeUris: Set[URI],
-            nodeActor: ActorRef[SimpleNode2.NodeCommand]): untyped.Props =
-    untyped.Props(new SayHelloActor(nodeUri, bootstrapNodeUris, nodeActor))
-}
-
 

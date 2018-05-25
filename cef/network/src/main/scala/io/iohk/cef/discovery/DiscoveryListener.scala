@@ -2,16 +2,13 @@ package io.iohk.cef.discovery
 
 import java.net.InetSocketAddress
 
-import akka.actor.typed.ActorRef
 import akka.io.{IO, Udp}
 import akka.util.ByteString
 import akka.{actor => untyped}
 import io.iohk.cef.encoding.{Decoder, Encoder}
-import io.iohk.cef.network.NodeStatus.NodeStatusMessage
 
 class DiscoveryListener(
                          discoveryConfig: DiscoveryConfig,
-                         nodeStatusHolder: ActorRef[NodeStatusMessage],
                          encoder: Encoder[DiscoveryWireMessage, ByteString],
                          decoder: Decoder[ByteString, DiscoveryWireMessage])
   extends untyped.Actor with untyped.ActorLogging {
@@ -43,10 +40,9 @@ class DiscoveryListener(
 
 object DiscoveryListener {
   def props(config: DiscoveryConfig
-            , nodeStatusHolder: ActorRef[NodeStatusMessage]
             , encoder: Encoder[DiscoveryWireMessage, ByteString]
             , decoder: Decoder[ByteString, DiscoveryWireMessage]): untyped.Props =
-    untyped.Props(new DiscoveryListener(config, nodeStatusHolder, encoder, decoder))
+    untyped.Props(new DiscoveryListener(config, encoder, decoder))
 
   case object Start
 

@@ -4,7 +4,7 @@ import java.net.InetSocketAddress
 import java.security.SecureRandom
 import java.time.{Clock, Instant}
 
-import akka.actor.typed.ActorRef
+import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.adapter._
 import akka.util.ByteString
 import akka.{actor => untyped}
@@ -22,15 +22,16 @@ import scala.util.Random
 class DiscoveryManager(
                         discoveryConfig: DiscoveryConfig,
                         knownNodesStorage: KnownNodesStorage,
-                        nodeStatusHolder: ActorRef[NodeStatusMessage],
+                        nodeStatusHolderBehavior: Behavior[NodeStatusMessage],
                         clock: Clock,
                         encoder: Encoder[DiscoveryWireMessage, ByteString],
                         decoder: Decoder[ByteString, DiscoveryWireMessage],
                         listenerMaker: untyped.ActorRefFactory => untyped.ActorRef,
-                        scheduler: untyped.Scheduler,
                         randomSource: SecureRandom) extends untyped.Actor with untyped.ActorLogging with untyped.Stash {
 
   import DiscoveryManager._
+
+  private val scheduler = context.system.scheduler
 
   val pingedNodes: FiniteSizedMap[ByteString, Pinged] =
     FiniteSizedMap(discoveryConfig.concurrencyDegree, discoveryConfig.messageExpiration * 2, clock)
@@ -41,6 +42,8 @@ class DiscoveryManager(
   var nodeStatus: NodeState = _
 
   val nonceSize = 2
+
+  val nodeStatusHolder: ActorRef[NodeStatusMessage] = context.spawn(nodeStatusHolderBehavior, "NodeStatusHolder")
 
   nodeStatusHolder ! NodeStatus.Subscribe(self)
 
@@ -242,38 +245,35 @@ class DiscoveryManager(
 object DiscoveryManager {
   def props(discoveryConfig: DiscoveryConfig,
             knownNodesStorage: KnownNodesStorage,
-            nodeStatusHolder: ActorRef[NodeStatusMessage],
+            nodeStatusHolderBehavior: Behavior[NodeStatusMessage],
             clock: Clock,
             encoder: Encoder[DiscoveryWireMessage, ByteString],
             decoder: Decoder[ByteString, DiscoveryWireMessage],
             listenerMaker: untyped.ActorRefFactory => untyped.ActorRef,
-            scheduler: untyped.Scheduler,
             secureRandom: SecureRandom): untyped.Props =
     untyped.Props(new DiscoveryManager(
       discoveryConfig,
       knownNodesStorage,
-      nodeStatusHolder,
+      nodeStatusHolderBehavior,
       clock,
       encoder,
       decoder,
       listenerMaker,
-      scheduler,
       secureRandom))
 
+
   def listenerMaker(discoveryConfig: DiscoveryConfig,
-                    nodeStatusHolder: ActorRef[NodeStatusMessage],
                     encoder: Encoder[DiscoveryWireMessage, ByteString],
                     decoder: Decoder[ByteString, DiscoveryWireMessage])
-                   (actorRefFactory: untyped.ActorRefFactory) = {
+                   (actorRefFactory: untyped.ActorRefFactory): untyped.ActorRef = {
     actorRefFactory.actorOf(DiscoveryListener.props(
       discoveryConfig,
-      nodeStatusHolder,
       encoder,
       decoder
     ))
   }
 
-  sealed abstract trait NodeEvent {
+  sealed trait NodeEvent {
     def timestamp: Instant
   }
   case class Sought(node: Node, timestamp: Instant) extends NodeEvent
