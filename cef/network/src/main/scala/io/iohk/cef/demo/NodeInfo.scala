@@ -1,4 +1,4 @@
-package io.iohk.cef.network
+package io.iohk.cef.demo
 
 import java.net.InetSocketAddress
 

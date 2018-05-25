@@ -5,10 +5,9 @@ import java.net.URI
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorSystem, Behavior}
 import io.iohk.cef.utils.PortFinder
-import SimpleNode2.Send
-object RLPxNodeB extends App {
+import SimpleNode2._
 
-  import SimpleNode2.{Start, Started}
+object RLPxNodeB extends App {
 
   val start: Behavior[String] = Behaviors.setup {
     context =>
@@ -21,7 +20,6 @@ object RLPxNodeB extends App {
 
           bActor ! Send("Hello, Alice! I'm Bob.",
             new URI("enode://011866dfb208191b57bd9eabfcd1967fbc5dd5db7c11e620028cc730fec6a088409a90583ae37a07c83ed76a4c8b242d6c601eb6e5fe48cfdfce0cea63465e28@127.0.0.1:3000"))
-
 
           Behavior.same
       }
