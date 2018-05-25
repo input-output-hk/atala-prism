@@ -1,8 +1,7 @@
-package io.iohk.cef.network.transport
+package io.iohk.cef.demo
 
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorSystem, Behavior}
-import io.iohk.cef.network.SimpleNode2
 
 object RLPxNodeA extends App {
 

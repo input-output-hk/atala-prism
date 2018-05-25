@@ -1,4 +1,4 @@
-package io.iohk.cef
+package io.iohk.cef.demo
 
 import akka.pattern.ask
 import akka.{actor => untyped}

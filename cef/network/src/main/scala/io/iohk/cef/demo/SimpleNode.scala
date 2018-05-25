@@ -1,12 +1,13 @@
-package io.iohk.cef.network
+package io.iohk.cef.demo
 
 import java.net.{InetSocketAddress, URI}
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import akka.io.Tcp.{Bind, Bound, CommandFailed, Connected}
 import akka.io.{IO, Tcp}
-import io.iohk.cef.network.SimpleNode.StartServer
+import io.iohk.cef.network.NodeInfo
 import io.iohk.cef.network.transport.rlpx.RLPxConnectionHandler.{ConnectTo, HandleConnection}
+import SimpleNode.StartServer
 
 class SimpleNode(val nodeId: String, protoHandler: ActorRef, bootstrapPeer: Option[NodeInfo]) extends Actor with ActorLogging {
 

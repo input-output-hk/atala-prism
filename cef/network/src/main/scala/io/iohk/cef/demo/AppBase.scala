@@ -1,4 +1,4 @@
-package io.iohk.cef
+package io.iohk.cef.demo
 
 import java.net.{InetAddress, InetSocketAddress}
 import java.security.SecureRandom

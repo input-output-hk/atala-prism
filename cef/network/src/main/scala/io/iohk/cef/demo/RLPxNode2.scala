@@ -1,4 +1,4 @@
-package io.iohk.cef.network.transport
+package io.iohk.cef.demo
 
 import java.net.InetSocketAddress
 import java.security.SecureRandom
@@ -6,12 +6,12 @@ import java.security.SecureRandom
 import akka.actor.{Actor, ActorContext, ActorLogging, ActorRef, ActorSystem, Props}
 import akka.util.ByteString
 import com.typesafe.config.ConfigFactory
-import io.iohk.cef.network.SimpleNode.StartServer
+import io.iohk.cef.network.NodeInfo
 import io.iohk.cef.network.transport.rlpx.RLPxConnectionHandler.{ConnectionEstablished, RLPxConfiguration, SendMessage}
 import io.iohk.cef.network.transport.rlpx.ethereum.p2p.Message.Version
 import io.iohk.cef.network.transport.rlpx.ethereum.p2p.{Message, MessageDecoder, MessageSerializable}
 import io.iohk.cef.network.transport.rlpx.{AuthHandshaker, ECPublicKeyParametersNodeId, RLPxConnectionHandler, loadAsymmetricCipherKeyPair}
-import io.iohk.cef.network.{NodeInfo, SimpleNode}
+import SimpleNode.StartServer
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair
 import org.bouncycastle.crypto.params.ECPublicKeyParameters
 import org.bouncycastle.util.encoders.Hex

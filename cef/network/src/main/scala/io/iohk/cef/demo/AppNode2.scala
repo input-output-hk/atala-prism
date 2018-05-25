@@ -1,7 +1,7 @@
-package io.iohk.cef
+package io.iohk.cef.demo
 
-import io.iohk.cef.AppNode1.createActor
 import io.iohk.cef.db.ConnectionPool
+import io.iohk.cef.demo.AppNode1.createActor
 import io.iohk.cef.discovery.CompatibleNodeFound
 import io.iohk.cef.network.Capabilities
 

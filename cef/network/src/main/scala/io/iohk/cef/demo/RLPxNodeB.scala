@@ -1,13 +1,11 @@
-package io.iohk.cef.network.transport
+package io.iohk.cef.demo
 
 import java.net.URI
 
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorSystem, Behavior}
-import io.iohk.cef.network.SimpleNode2
-import io.iohk.cef.network.SimpleNode2.Send
 import io.iohk.cef.utils.PortFinder
-
+import SimpleNode2.Send
 object RLPxNodeB extends App {
 
   import SimpleNode2.{Start, Started}
