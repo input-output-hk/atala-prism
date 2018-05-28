@@ -2,7 +2,7 @@ package io.iohk.cef.discovery
 
 import java.net.InetSocketAddress
 import java.security.SecureRandom
-import java.time.Clock
+import java.time.{Clock, Instant}
 
 import akka.util.ByteString
 import akka.{actor => untyped}
@@ -10,7 +10,7 @@ import io.iohk.cef.crypto
 import io.iohk.cef.db.KnownNodesStorage
 import io.iohk.cef.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.NodeStatus.NodeState
-import io.iohk.cef.network.{Node, NodeStatus, ServerStatus}
+import io.iohk.cef.network.{Node, ServerStatus}
 import io.iohk.cef.utils.FiniteSizedMap
 import org.bouncycastle.util.encoders.Hex
 
@@ -27,7 +27,7 @@ class DiscoveryManager2(
                         listenerMaker: untyped.ActorRefFactory => untyped.ActorRef,
                         randomSource: SecureRandom) extends untyped.Actor with untyped.ActorLogging with untyped.Stash {
 
-  import DiscoveryManager._
+  import DiscoveryManager2._
 
   private val scheduler = context.system.scheduler
 
@@ -37,27 +37,16 @@ class DiscoveryManager2(
   val soughtNodes: FiniteSizedMap[ByteString, Sought] =
     FiniteSizedMap(discoveryConfig.concurrencyDegree, discoveryConfig.messageExpiration * 2, clock)
 
-  var nodeStatus: NodeState = _
-
   val nonceSize = 2
 
-  override def receive: Receive = {
-    case NodeStatus.StateUpdated(state) =>
-      processNodeStateUpdated(NodeStatus.StateUpdated(state))
-      unstashAll()
-      if(discoveryConfig.discoveryEnabled) startListening()
-      else context.become(stateLoaded)
-    case m =>
-      log.warning(s"NodeState has not loaded yet. Stashing the message of type ${m.getClass}.")
-      stash()
-  }
+  override def receive: Receive = stateLoaded
 
-  def stateLoaded: Receive = processNodeStateUpdated orElse {
-    case DiscoveryManager.StartListening => startListening()
+  private def stateLoaded: Receive = {
+    case DiscoveryManager2.StartListening => startListening()
     case _ => log.warning("Discovery manager not listening.")
   }
 
-  def startListening() = {
+  private def startListening(): Unit = {
     val listener = listenerMaker(context)
     listener ! DiscoveryListener.Start
     scheduler.schedule(discoveryConfig.scanInitialDelay, discoveryConfig.scanInterval, self, Scan)
@@ -65,13 +54,12 @@ class DiscoveryManager2(
     log.debug("Waiting for UDP Connection")
   }
 
-  def waitingUdpConnection(listener: untyped.ActorRef): Receive = processNodeStateUpdated orElse {
+  private def waitingUdpConnection(listener: untyped.ActorRef): Receive = {
     case DiscoveryListener.Ready(address) =>
-//      nodeStatusHolder ! NodeStatus.UpdateDiscoveryStatus(ServerStatus.Listening(address))
       context.become(listening(listener, address))
       log.debug(s"UDP address ${address} was bound. Pinging ${discoveryConfig.bootstrapNodes.size} Bootstrap Nodes.")
 
-      //Pinging all bootstrap nodes
+      // Pinging all bootstrap nodes
       discoveryConfig.bootstrapNodes.foreach( node =>
         sendPing(listener, address, node)
       )
@@ -79,8 +67,7 @@ class DiscoveryManager2(
       log.warning(s"UDP connection not ready yet. Ignoring the message. Received: ${message}")
   }
 
-  def listening(listener: untyped.ActorRef, address: InetSocketAddress): Receive =
-    processNodeStateUpdated orElse
+  private def listening(listener: untyped.ActorRef, address: InetSocketAddress): Receive =
       processDiscoveryRequest(listener, address) orElse {
 
     case DiscoveryListener.MessageReceived(ping @ Ping(protocolVersion, sourceNode, timestamp, _), from) =>
@@ -90,7 +77,7 @@ class DiscoveryManager2(
           val messageKey = calculateMessageKey(ping)
           val node = getNode(discoveryAddress = address)
           val pong = Pong(node, messageKey, expirationTimestamp)
-          if(sourceNode.capabilities.satisfies(nodeStatus.capabilities)) {
+          if(sourceNode.capabilities.satisfies(nodeState.capabilities)) {
             knownNodesStorage.insert(sourceNode)
             log.debug(s"New discovered list: ${knownNodesStorage.getAll().map(_.node.discoveryAddress)}")
           }
@@ -104,7 +91,7 @@ class DiscoveryManager2(
         pingedNodes.get(token).foreach { _ =>
           log.debug(s"Received a pong message from ${from}")
           pingedNodes -= token
-          if (pingedNode.capabilities.satisfies(nodeStatus.capabilities)) {
+          if (pingedNode.capabilities.satisfies(nodeState.capabilities)) {
             context.system.eventStream.publish(CompatibleNodeFound(pingedNode))
             knownNodesStorage.insert(pingedNode)
             log.debug(s"New discovered list: ${knownNodesStorage.getAll().map(_.node.discoveryAddress)}")
@@ -113,7 +100,7 @@ class DiscoveryManager2(
           }
           val nonce = new Array[Byte](nonceSize)
           randomSource.nextBytes(nonce)
-          val seek = Seek(nodeStatus.capabilities, discoveryConfig.maxSeekResults, expirationTimestamp, ByteString(nonce))
+          val seek = Seek(nodeState.capabilities, discoveryConfig.maxSeekResults, expirationTimestamp, ByteString(nonce))
           log.debug(s"Sending seek message ${seek} to ${pingedNode.discoveryAddress}")
           listener ! DiscoveryListener.SendMessage(seek, pingedNode.discoveryAddress)
           val messageKey = calculateMessageKey(seek)
@@ -139,7 +126,7 @@ class DiscoveryManager2(
       }
     case DiscoveryListener.MessageReceived(Neighbors(capabilities, token, _, neighbors, timestamp), from) =>
       if (hasNotExpired(timestamp) &&
-        capabilities.satisfies(nodeStatus.capabilities)) {
+        capabilities.satisfies(nodeState.capabilities)) {
         log.debug(s"Received a neighbors message from ${from}. Neighbors: $neighbors")
         val discoveredNodes = knownNodesStorage.getAll().map(_.node).union(pingedNodes.values.map(_.node).toSet)
         soughtNodes.get(token).foreach { _ =>
@@ -150,7 +137,7 @@ class DiscoveryManager2(
             val nodeEndpoints = discoveredNodes.map(dn => ByteString(dn.discoveryAddress.getAddress.getAddress))
             neighbors.filterNot(node => nodeEndpoints.contains(ByteString(node.discoveryAddress.getAddress.getAddress)))
           }
-          val newNodesWithoutMe = newNodes.filterNot(_.id == nodeStatus.nodeId)
+          val newNodesWithoutMe = newNodes.filterNot(_.id == nodeState.nodeId)
           log.debug(s"Sending ping to ${newNodesWithoutMe.size} nodes. Nodes: ${newNodesWithoutMe.map(_.discoveryAddress)}")
           newNodesWithoutMe.foreach(node => {
             sendPing(listener, address, node)
@@ -201,12 +188,6 @@ class DiscoveryManager2(
     })
   }
 
-  private def processNodeStateUpdated: Receive = {
-    case NodeStatus.StateUpdated(state) =>
-      log.debug(s"State ${state} received. Proceeding to listening if configured.")
-      nodeStatus = state
-  }
-
   private def processDiscoveryRequest(listener: untyped.ActorRef, listeningAddress: InetSocketAddress): Receive = {
     case Blacklist(node) =>
       knownNodesStorage.blacklist(node)
@@ -221,13 +202,13 @@ class DiscoveryManager2(
     crypto.kec256(encodedPing)
   }
 
-  private def getServerAddress(default: InetSocketAddress): InetSocketAddress = nodeStatus.serverStatus match {
+  private def getServerAddress(default: InetSocketAddress): InetSocketAddress = nodeState.serverStatus match {
     case ServerStatus.Listening(addr) => addr
     case _ => default
   }
 
   private def getNode(discoveryAddress: InetSocketAddress): Node =
-    Node(nodeStatus.nodeId, discoveryAddress, getServerAddress(default = discoveryAddress), nodeStatus.capabilities)
+    Node(nodeState.nodeId, discoveryAddress, getServerAddress(default = discoveryAddress), nodeState.capabilities)
 
   private def hasNotExpired(timestamp: Long) =
     timestamp > clock.instant().getEpochSecond
@@ -237,3 +218,44 @@ class DiscoveryManager2(
 }
 
 
+object DiscoveryManager2 {
+  def props(discoveryConfig: DiscoveryConfig,
+            knownNodesStorage: KnownNodesStorage,
+            nodeState: NodeState,
+            clock: Clock,
+            encoder: Encoder[DiscoveryWireMessage, ByteString],
+            decoder: Decoder[ByteString, DiscoveryWireMessage],
+            listenerMaker: untyped.ActorRefFactory => untyped.ActorRef,
+            secureRandom: SecureRandom): untyped.Props =
+    untyped.Props(new DiscoveryManager2(
+      discoveryConfig,
+      knownNodesStorage,
+      nodeState,
+      clock,
+      encoder,
+      decoder,
+      listenerMaker,
+      secureRandom))
+
+
+  def listenerMaker(discoveryConfig: DiscoveryConfig,
+                    encoder: Encoder[DiscoveryWireMessage, ByteString],
+                    decoder: Decoder[ByteString, DiscoveryWireMessage])
+                   (actorRefFactory: untyped.ActorRefFactory): untyped.ActorRef = {
+    actorRefFactory.actorOf(DiscoveryListener.props(
+      discoveryConfig,
+      encoder,
+      decoder
+    ))
+  }
+
+  sealed trait NodeEvent {
+    def timestamp: Instant
+  }
+  case class Sought(node: Node, timestamp: Instant) extends NodeEvent
+  case class Pinged(node: Node, timestamp: Instant) extends NodeEvent
+
+  private[discovery] case object Scan
+
+  case object StartListening
+}
