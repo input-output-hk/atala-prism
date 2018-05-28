@@ -5,6 +5,8 @@ import io.iohk.cef.network.Node
 
 sealed trait DiscoveryRequest
 
+case class StartListening() extends DiscoveryRequest
+
 case class Blacklist(node: Node) extends DiscoveryRequest
 
 case class GetDiscoveredNodes() extends DiscoveryRequest
