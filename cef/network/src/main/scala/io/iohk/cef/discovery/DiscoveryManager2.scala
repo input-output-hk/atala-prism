@@ -27,19 +27,19 @@ object DiscoveryManager2 {
   import io.iohk.cef.db.KnownNode
   import io.iohk.cef.network.Node
 
-  sealed trait DiscoveryRequest
+  sealed trait TypedDiscoveryRequest
 
-  case class StartListening() extends DiscoveryRequest
+  case class TypedStartListening() extends TypedDiscoveryRequest
 
-  case class Blacklist(node: Node) extends DiscoveryRequest
+  case class TypedBlacklist(node: Node) extends TypedDiscoveryRequest
 
-  case class GetDiscoveredNodes(replyTo: ActorRef[DiscoveredNodes]) extends DiscoveryRequest
+  case class TypedGetDiscoveredNodes(replyTo: ActorRef[DiscoveredNodes]) extends TypedDiscoveryRequest
 
-  case class FetchNeighbors(node: Node) extends DiscoveryRequest
+  case class TypedFetchNeighbors(node: Node) extends TypedDiscoveryRequest
 
-  private case class Initialized(address: InetSocketAddress) extends DiscoveryRequest
+  private[discovery] case class Initialized(address: InetSocketAddress) extends TypedDiscoveryRequest
 
-  private case class MessageReceivedWrapper(innerMessage: DiscoveryListener.MessageReceived) extends DiscoveryRequest
+  private[discovery] case class MessageReceivedWrapper(innerMessage: DiscoveryListener.MessageReceived) extends TypedDiscoveryRequest
 
 
   sealed trait DiscoveryResponse
@@ -56,7 +56,7 @@ object DiscoveryManager2 {
 
   private[discovery] case object Scan
 
-  case object StartListening
+  case object TypedStartListening
 
   private val nonceSize = 2
 
@@ -67,7 +67,7 @@ object DiscoveryManager2 {
                 encoder: Encoder[DiscoveryWireMessage, ByteString],
                 decoder: Decoder[ByteString, DiscoveryWireMessage],
                 discoveryListenerProps: untyped.Props,
-                randomSource: SecureRandom): Behavior[DiscoveryRequest] = Behaviors.setup {
+                randomSource: SecureRandom): Behavior[TypedDiscoveryRequest] = Behaviors.setup {
     context =>
 
       import akka.actor.typed.scaladsl.adapter._
@@ -78,19 +78,19 @@ object DiscoveryManager2 {
       val soughtNodes: FiniteSizedMap[ByteString, Sought] =
         FiniteSizedMap(discoveryConfig.concurrencyDegree, discoveryConfig.messageExpiration * 2, clock)
 
-      val buffer = StashBuffer[DiscoveryRequest](capacity = 100)
+      val buffer = StashBuffer[TypedDiscoveryRequest](capacity = 100)
 
       val discoveryListener = context.actorOf(discoveryListenerProps)
 
-      def initialBehaviour: Behavior[DiscoveryRequest] = Behaviors.receiveMessage {
-        case StartListening() =>
+      def initialBehaviour: Behavior[TypedDiscoveryRequest] = Behaviors.receiveMessage {
+        case TypedStartListening() =>
           startListening()
         case msg =>
           buffer.stash(msg)
           Behavior.same
       }
 
-      def startListening(): Behavior[DiscoveryRequest] = Behaviors.setup {
+      def startListening(): Behavior[TypedDiscoveryRequest] = Behaviors.setup {
         context =>
           implicit val timeout: Timeout = 1 second // TODO discoveryConfig
           implicit val ec: ExecutionContext = context.executionContext
@@ -105,7 +105,7 @@ object DiscoveryManager2 {
             case Initialized(address) =>
               context.log.debug(
                 s"UDP address ${discoveryConfig.port} bound successfully. " +
-                  s"Pinging ${discoveryConfig.bootstrapNodes.size} bootstrap Nodes.")
+                s"Pinging ${discoveryConfig.bootstrapNodes.size} bootstrap Nodes.")
 
               discoveryConfig.bootstrapNodes.foreach(node =>
                 sendPing(discoveryListener, address, node)
@@ -120,17 +120,17 @@ object DiscoveryManager2 {
           }
       }
 
-      def listening(address: InetSocketAddress): Behavior[DiscoveryRequest] = Behaviors.receiveMessage {
+      def listening(address: InetSocketAddress): Behavior[TypedDiscoveryRequest] = Behaviors.receiveMessage {
 
-        case Blacklist(node: Node) =>
+        case TypedBlacklist(node: Node) =>
           knownNodesStorage.blacklist(node)
           Behavior.same
 
-        case GetDiscoveredNodes(replyTo) =>
+        case TypedGetDiscoveredNodes(replyTo) =>
           replyTo ! DiscoveredNodes(knownNodesStorage.getAll())
           Behavior.same
 
-        case FetchNeighbors(node: Node) =>
+        case TypedFetchNeighbors(node: Node) =>
           sendPing(discoveryListener, address, node)
           Behavior.same
 
@@ -138,7 +138,7 @@ object DiscoveryManager2 {
           processDiscoveryMessage(address, innerMessage)
           Behavior.same
 
-        case StartListening() => ??? // TODO raise an error
+        case TypedStartListening() => ??? // TODO raise an error
 
         case x => ??? // TODO illegal state. stop or throw?
       }

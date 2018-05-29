@@ -1,102 +1,104 @@
-//package io.iohk.cef.discovery
-//
-//import java.net.{InetAddress, InetSocketAddress}
-//import java.security.SecureRandom
-//
-//import akka.testkit.{TestActorRef, TestKit, TestProbe}
-//import akka.util.ByteString
-//import akka.{actor => untyped}
-//import io.iohk.cef.crypto
-//import io.iohk.cef.db.DummyKnownNodesStorage
-//import io.iohk.cef.discovery.DiscoveryListener.Start
-//import io.iohk.cef.discovery.DiscoveryManager2.{Pinged, Sought}
-//import io.iohk.cef.encoding.{Decoder, Encoder}
-//import io.iohk.cef.network.{Capabilities, Node, NodeStatus, ServerStatus}
-//import io.iohk.cef.test.{StopAfterAll, TestClock}
-//import org.scalamock.scalatest.MockFactory
-//import org.scalatest.{MustMatchers, WordSpecLike}
-//
-//import scala.concurrent.duration._
-//
-//class DiscoveryManager2Spec extends TestKit(untyped.ActorSystem("DiscoveryManager2Spec"))
-//  with WordSpecLike
-//  with StopAfterAll
-//  with MustMatchers
-//  with MockFactory {
-//
-//  trait ListeningDiscoveryManager {
-//
-//    val address: Array[Byte] = Array(127.toByte,0,0,1)
-//    val localhost = InetAddress.getByAddress("",address)
-//    val discoveryAddress = new InetSocketAddress(localhost, 1000)
-//    val serverAddress = new InetSocketAddress(localhost, 2000)
-//
-//    def bootstrapNodes: Set[Node] = Set()
-//
-//    def discoveryConfig = new DiscoveryConfig(
-//      discoveryEnabled = true,
-//      interface = "0.0.0.0",
-//      port = 8090,
-//      bootstrapNodes = bootstrapNodes,
-//      discoveredNodesLimit = 10,
-//      scanNodesLimit = 10,
-//      concurrencyDegree = 10,
-//      scanInitialDelay = 10.minutes,
-//      scanInterval = 11.minutes,
-//      messageExpiration = 100.minute,
-//      maxSeekResults = 10,
-//      multipleConnectionsPerAddress = true)
-//    val nodeState =
-//      NodeStatus.NodeState(
-//        ByteString(0),
-//        ServerStatus.NotListening,
-//        ServerStatus.NotListening,
-//        Capabilities(0x01))
-//
-//    import io.iohk.cef.encoding.rlp.RLPEncoders._
-//    import io.iohk.cef.encoding.rlp.RLPImplicits._
-//
-//    val encoder = implicitly[Encoder[DiscoveryWireMessage, ByteString]]
-//
-//    val decoder = implicitly[Decoder[ByteString, DiscoveryWireMessage]]
-//
-//    val listener = TestProbe()
-//
-//    val listenerMaker = (_: untyped.ActorRefFactory) => listener.ref
-//
-//    val mockClock = new TestClock
-//
-//    val listeningAddress = new InetSocketAddress(localhost,1000)
-//
-//    val secureRandom = new SecureRandom()
-//
-//    def createActor: TestActorRef[DiscoveryManager2] = {
-//      val actor = TestActorRef[DiscoveryManager2](
-//        DiscoveryManager2.props(
-//          discoveryConfig,
-//          new DummyKnownNodesStorage(mockClock),
-//          nodeState,
-//          mockClock,
-//          encoder,
-//          decoder,
-//          listenerMaker,
-//          secureRandom
-//        )
-//      )
-//      actor ! DiscoveryManager2.StartListening
-//      listener.expectMsg(Start)
-//      actor ! DiscoveryListener.Ready(listeningAddress)
-//      actor
-//    }
-//  }
-//
-//
-//  "A DiscoveryManager" should {
-//    "initialize correctly" in new ListeningDiscoveryManager {
-//      val actor = createActor
+package io.iohk.cef.discovery
+
+import java.net.{InetAddress, InetSocketAddress}
+import java.security.SecureRandom
+
+import akka.actor.typed.ActorRef._
+import akka.actor.typed.scaladsl.adapter._
+import akka.actor.typed.{ActorRef, Behavior}
+import akka.actor.{ActorSystem, typed}
+import akka.testkit.{TestActors, TestProbe}
+import akka.util.ByteString
+import akka.{actor => untyped}
+import io.iohk.cef.db.DummyKnownNodesStorage
+import io.iohk.cef.discovery.DiscoveryListener.{Ready, Start}
+import io.iohk.cef.discovery.DiscoveryManager2._
+import io.iohk.cef.encoding.{Decoder, Encoder}
+import io.iohk.cef.network.{Capabilities, Node, NodeStatus, ServerStatus}
+import io.iohk.cef.test.TestClock
+import org.scalatest.{BeforeAndAfterAll, WordSpecLike}
+
+import scala.concurrent.duration._
+
+class DiscoveryManager2Spec extends WordSpecLike with BeforeAndAfterAll {
+
+  val untypedSystem: ActorSystem = untyped.ActorSystem("TypedWatchingUntyped")
+  val typedSystem: typed.ActorSystem[_] = untypedSystem.toTyped
+
+  trait ListeningDiscoveryManager {
+
+    val address: Array[Byte] = Array(127.toByte,0,0,1)
+    val localhost = InetAddress.getByAddress("",address)
+    val discoveryAddress = new InetSocketAddress(localhost, 1000)
+    val serverAddress = new InetSocketAddress(localhost, 2000)
+
+    def bootstrapNodes: Set[Node] = Set()
+
+    def discoveryConfig = new DiscoveryConfig(
+      discoveryEnabled = true,
+      interface = "0.0.0.0",
+      port = 8090,
+      bootstrapNodes = bootstrapNodes,
+      discoveredNodesLimit = 10,
+      scanNodesLimit = 10,
+      concurrencyDegree = 10,
+      scanInitialDelay = 10.minutes,
+      scanInterval = 11.minutes,
+      messageExpiration = 100.minute,
+      maxSeekResults = 10,
+      multipleConnectionsPerAddress = true)
+
+    val nodeState =
+      NodeStatus.NodeState(
+        ByteString(0),
+        ServerStatus.NotListening,
+        ServerStatus.NotListening,
+        Capabilities(0x01))
+
+    import io.iohk.cef.encoding.rlp.RLPEncoders._
+    import io.iohk.cef.encoding.rlp.RLPImplicits._
+
+    val encoder = implicitly[Encoder[DiscoveryWireMessage, ByteString]]
+
+    val decoder = implicitly[Decoder[ByteString, DiscoveryWireMessage]]
+
+    val listener = TestProbe()(untypedSystem)
+
+    val listenerProps = TestActors.forwardActorProps(listener.ref)
+
+    val mockClock = new TestClock
+
+    val listeningAddress = new InetSocketAddress(localhost,1000)
+
+    val secureRandom = new SecureRandom()
+
+    def createActor: ActorRef[TypedDiscoveryRequest] = {
+      val behavior: Behavior[TypedDiscoveryRequest] = DiscoveryManager2.behaviour(
+        discoveryConfig,
+        new DummyKnownNodesStorage(mockClock),
+        nodeState,
+        mockClock,
+        encoder, decoder,
+        listenerProps, secureRandom)
+
+      val actor: ActorRef[TypedDiscoveryRequest] = untypedSystem.spawn(behavior, "ActorUnderTest")
+
+      actor ! TypedStartListening()
+
+      listener.expectMsg(Start)
+      listener.sender() ! Ready(discoveryAddress)
+
+      actor
+    }
+  }
+
+
+  "A DiscoveryManager" should {
+    "initialize correctly" in new ListeningDiscoveryManager {
+      val actor = createActor
 //      actor.underlyingActor.pingedNodes.values.size mustBe 0
 //      actor.underlyingActor.soughtNodes.values.size mustBe 0
-//    }
+    }
 //    "process a Ping message" in new ListeningDiscoveryManager {
 //      val actor = createActor
 //      val expiration = mockClock.instant().getEpochSecond + 1
@@ -215,5 +217,10 @@
 //    "not process neighbors messages in absence of a seek" in {
 //      pending
 //    }
-//  }
-//}
+  }
+
+  override protected def afterAll(): Unit = {
+    typedSystem.terminate()
+    untypedSystem.terminate()
+  }
+}
