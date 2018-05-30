@@ -71,7 +71,8 @@ object DiscoveryActor {
       scanInterval = 10.seconds,
       messageExpiration = 100.seconds,
       maxSeekResults = 10,
-      multipleConnectionsPerAddress = true
+      multipleConnectionsPerAddress = true,
+      blacklistDefaultDuration = 30 seconds
     )
   }
 

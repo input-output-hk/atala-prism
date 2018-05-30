@@ -48,7 +48,8 @@ class DiscoveryManagerSpec extends TestKit(untyped.ActorSystem("DiscoveryManager
       scanInterval = 11.minutes,
       messageExpiration = 100.minute,
       maxSeekResults = 10,
-      multipleConnectionsPerAddress = true)
+      multipleConnectionsPerAddress = true,
+      blacklistDefaultDuration = 30 seconds)
     val nodeState =
       NodeStatus.NodeState(
         ByteString(0),

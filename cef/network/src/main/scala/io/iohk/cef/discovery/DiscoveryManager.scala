@@ -213,7 +213,7 @@ class DiscoveryManager(
 
   private def processDiscoveryRequest(listener: untyped.ActorRef, listeningAddress: InetSocketAddress): Receive = {
     case Blacklist(node) =>
-      knownNodesStorage.blacklist(node)
+      knownNodesStorage.blacklist(node, discoveryConfig.blacklistDefaultDuration)
     case _: GetDiscoveredNodes =>
       sender() ! DiscoveredNodes(knownNodesStorage.getAll())
     case FetchNeighbors(node) =>

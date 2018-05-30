@@ -34,7 +34,8 @@ trait AppBase extends Logger {
       scanInterval = 100.seconds,
       messageExpiration = 100.minute,
       maxSeekResults = 10,
-      multipleConnectionsPerAddress = true)
+      multipleConnectionsPerAddress = true,
+      blacklistDefaultDuration = 30 seconds)
 
     import io.iohk.cef.encoding.rlp.RLPEncoders._
     import io.iohk.cef.encoding.rlp.RLPImplicits._
