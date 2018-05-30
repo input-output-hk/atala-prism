@@ -10,10 +10,9 @@ import scalikejdbc.config._
 import scala.concurrent.duration.FiniteDuration
 
 
-class KnownNodeStorageImpl(clock: Clock) extends KnownNodesStorage {
+class KnownNodeStorageImpl(clock: Clock, dbName: Symbol) extends KnownNodesStorage {
 
-  Class.forName("org.h2.Driver")
-  DBs.setupAll()
+  DBs.setup(dbName)
 
   implicit val session = AutoSession
 
@@ -23,7 +22,7 @@ class KnownNodeStorageImpl(clock: Clock) extends KnownNodesStorage {
       val nodeColumn = NodeTable.column
       val blacklistColumn = BlacklistNodeTable.column
 
-      insertNodeStatement(node, nodeColumn)
+      mergeNodeStatement(node, nodeColumn)
 
       sql"""merge into ${BlacklistNodeTable.table} (
           ${blacklistColumn.nodeId},
@@ -40,8 +39,13 @@ class KnownNodeStorageImpl(clock: Clock) extends KnownNodesStorage {
     DB localTx { implicit session =>
       val nodeColumn = NodeTable.column
       val knownNodeColumn = KnownNodeTable.column
+      val kn = KnownNodeTable.syntax("kn")
+      val discovered =
+        sql"""
+             select ${kn.discovered} from ${KnownNodeTable as kn} where ${kn.nodeId} = ${Hex.toHexString(node.id.toArray)}
+           """.map(_.timestamp(kn.discovered).toInstant).single().apply()
 
-      insertNodeStatement(node, nodeColumn)
+      mergeNodeStatement(node, nodeColumn)
 
       sql"""merge into ${KnownNodeTable.table} (
           ${knownNodeColumn.nodeId},
@@ -50,11 +54,11 @@ class KnownNodeStorageImpl(clock: Clock) extends KnownNodesStorage {
       ) key(${knownNodeColumn.nodeId})
        values(${Hex.toHexString(node.id.toArray)},
        ${clock.instant()},
-       ${clock.instant()})""".update().apply()
+       ${discovered.getOrElse(clock.instant())})""".update().apply()
     }
   }
 
-  private def insertNodeStatement(node: Node, nodeColumn: scalikejdbc.ColumnName[NodeTable]) = {
+  private def mergeNodeStatement(node: Node, nodeColumn: scalikejdbc.ColumnName[NodeTable]) = {
     sql"""merge into ${NodeTable.table} (
           ${nodeColumn.id},
           ${nodeColumn.discoveryAddress},

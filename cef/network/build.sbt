@@ -38,6 +38,7 @@ val dep = {
     "ch.qos.logback"  %  "logback-classic"   % "1.2.3",
     "org.scalikejdbc" %% "scalikejdbc-config"  % "3.2.2",
     "org.scalikejdbc" %% "scalikejdbc-test"   % "3.2.2" % Test,
+    "org.flywaydb" % "flyway-core" % "5.0.2" % Test,
 
     "org.scalatest" %% "scalatest" % "3.0.1" % Test,
     "org.scalacheck" %% "scalacheck" % "1.13.4" % Test,
@@ -85,3 +86,5 @@ scalacOptions := Seq(
   "-Ypartial-unification",
   "-encoding", "utf-8"
 )
+
+javaOptions in Test += "-Dconfig.resource=application.test.conf"
