@@ -222,7 +222,7 @@ class DiscoveryManager(
       sendPing(listener, listeningAddress, node)
   }
 
-  private def calculateMessageKey(message: DiscoveryWireMessage) = {
+  private def calculateMessageKey(message: DiscoveryWireMessage): ByteString = {
     val encodedPing = encoder.encode(message)
     crypto.kec256(encodedPing)
   }

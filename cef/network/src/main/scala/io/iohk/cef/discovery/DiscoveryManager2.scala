@@ -16,6 +16,7 @@ import io.iohk.cef.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.NodeStatus.NodeState
 import io.iohk.cef.network.ServerStatus
 import io.iohk.cef.utils.FiniteSizedMap
+import org.bouncycastle.util.encoders.Hex
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Random, Success}
@@ -135,12 +136,13 @@ object DiscoveryManager2 {
           Behavior.same
 
         case MessageReceivedWrapper(innerMessage: DiscoveryListener.MessageReceived) =>
+          context.log.debug(s"Got a wrapped message $innerMessage")
           processDiscoveryMessage(address, innerMessage)
           Behavior.same
 
         case TypedStartListening() => ??? // TODO raise an error
 
-        case x => ??? // TODO illegal state. stop or throw?
+        case x => throw new IllegalStateException(s"Unexpected message $x.")
       }
 
       def sendPing(listener: untyped.ActorRef, listeningAddress: InetSocketAddress, node: Node): Unit = {
@@ -148,18 +150,14 @@ object DiscoveryManager2 {
         val nonce = new Array[Byte](nonceSize)
         randomSource.nextBytes(nonce)
         val ping = Ping(DiscoveryWireMessage.ProtocolVersion, getNode(listeningAddress), expirationTimestamp, ByteString(nonce))
-        val key = calculateMessageKey(ping)
+        val key = calculateMessageKey(encoder, ping)
         context.log.debug(s"Ping message: ${ping}")
-
-        pingedNodes.put(key, Pinged(node, clock.instant())).foreach(pinged => {
+        context.log.debug(s"In sendPing. Key = ${Hex.encode(key.toArray)}")
+        val putResult = pingedNodes.put(key, Pinged(node, clock.instant()))
+        context.log.debug(s"In sendPing. putResult = ${putResult}")
+        putResult.foreach(pinged => {
           listener ! DiscoveryListener.SendMessage(ping, pinged.node.discoveryAddress)
         })
-      }
-
-
-      def calculateMessageKey(message: DiscoveryWireMessage): ByteString = {
-        val encodedPing = encoder.encode(message)
-        crypto.kec256(encodedPing)
       }
 
       def getServerAddress(default: InetSocketAddress): InetSocketAddress = nodeState.serverStatus match {
@@ -181,7 +179,7 @@ object DiscoveryManager2 {
           if (hasNotExpired(timestamp) &&
             protocolVersion == DiscoveryWireMessage.ProtocolVersion) {
             context.log.debug(s"Received a ping message from ${from}, replyTo: ${sourceNode.discoveryAddress}")
-            val messageKey = calculateMessageKey(ping)
+            val messageKey = calculateMessageKey(encoder, ping)
             val node = getNode(discoveryAddress = address)
             val pong = Pong(node, messageKey, expirationTimestamp)
             if (sourceNode.capabilities.satisfies(nodeState.capabilities)) {
@@ -195,11 +193,12 @@ object DiscoveryManager2 {
           }
         case DiscoveryListener.MessageReceived(Pong(pingedNode, token, timestamp), from) =>
           if (hasNotExpired(timestamp)) {
+            context.log.debug(s"Received pong from $pingedNode with token ${Hex.encode(token.toArray)}")
             pingedNodes.get(token).foreach { _ =>
               context.log.debug(s"Received a pong message from ${from}")
               pingedNodes -= token
               if (pingedNode.capabilities.satisfies(nodeState.capabilities)) {
-//                context.system.eventStream.publish(CompatibleNodeFound(pingedNode)) // TODO
+                context.system.toUntyped.eventStream.publish(CompatibleNodeFound(pingedNode))
                 knownNodesStorage.insert(pingedNode)
                 context.log.debug(s"New discovered list: ${knownNodesStorage.getAll().map(_.node.discoveryAddress)}")
               } else {
@@ -210,7 +209,7 @@ object DiscoveryManager2 {
               val seek = Seek(nodeState.capabilities, discoveryConfig.maxSeekResults, expirationTimestamp, ByteString(nonce))
               context.log.debug(s"Sending seek message ${seek} to ${pingedNode.discoveryAddress}")
               discoveryListener ! DiscoveryListener.SendMessage(seek, pingedNode.discoveryAddress)
-              val messageKey = calculateMessageKey(seek)
+              val messageKey = calculateMessageKey(encoder, seek)
               soughtNodes.put(messageKey, Sought(pingedNode, clock.instant()))
             }
           } else {
@@ -222,9 +221,10 @@ object DiscoveryManager2 {
             context.log.debug(s"Received a seek message ${seek} from ${from}")
             val nodes =
               knownNodesStorage.getAll().filter(_.node.capabilities.satisfies(capabilities)).map(_.node)
+            context.log.debug(s"Nodes are ${knownNodesStorage.getAll()}")
             context.log.debug(s"Nodes satisfying capabilities = ${nodes.map(_.discoveryAddress)}")
             val randomNodeSubset = Random.shuffle(nodes).take(maxResults)
-            val token = calculateMessageKey(seek)
+            val token = calculateMessageKey(encoder, seek)
             val neighbors = Neighbors(capabilities, token, nodes.size, randomNodeSubset.toSeq, expirationTimestamp)
             context.log.debug(s"Sending neighbors answer with ${randomNodeSubset} to ${from}")
             discoveryListener ! DiscoveryListener.SendMessage(neighbors, from)
@@ -259,4 +259,8 @@ object DiscoveryManager2 {
       initialBehaviour
   }
 
+  def calculateMessageKey(encoder: Encoder[DiscoveryWireMessage, ByteString], message: DiscoveryWireMessage): ByteString = {
+    val encodedPing = encoder.encode(message)
+    crypto.kec256(encodedPing)
+  }
 }
