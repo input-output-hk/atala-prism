@@ -4,15 +4,19 @@ import java.net.{InetAddress, InetSocketAddress}
 import java.security.SecureRandom
 
 import akka.actor.typed.ActorRef._
+import io.iohk.cef.discovery.DiscoveryListener.{Ready, SendMessage, Start}
+import org.apache.commons.lang3.RandomStringUtils.randomAlphabetic
 import akka.actor.typed.scaladsl.adapter._
-import akka.actor.typed.{ActorRef, Behavior}
+import akka.actor.typed.{ActorContext, ActorRef, Behavior}
 import akka.actor.{ActorSystem, typed}
-import akka.testkit.{TestActors, TestProbe}
+import akka.testkit.typed.scaladsl.TestProbe
+import akka.testkit.{TestProbe => UntypedTestProbe}
 import akka.util.ByteString
 import akka.{actor => untyped}
+
 import io.iohk.cef.crypto
 import io.iohk.cef.db.DummyKnownNodesStorage
-import io.iohk.cef.discovery.DiscoveryListener.{Ready, SendMessage, Start}
+import io.iohk.cef.discovery.DiscoveryListener.DiscoveryListenerRequest
 import io.iohk.cef.discovery.DiscoveryManager._
 import io.iohk.cef.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.{Capabilities, Node, NodeStatus, ServerStatus}
@@ -25,8 +29,8 @@ import scala.concurrent.duration._
 
 class DiscoveryManagerSpec extends WordSpecLike with BeforeAndAfterAll {
 
-  val untypedSystem: ActorSystem = untyped.ActorSystem("TypedWatchingUntyped")
-  val typedSystem: typed.ActorSystem[_] = untypedSystem.toTyped
+  implicit val untypedSystem: ActorSystem = untyped.ActorSystem("TypedWatchingUntyped")
+  implicit val typedSystem: typed.ActorSystem[_] = untypedSystem.toTyped
 
   trait ListeningDiscoveryManager {
 
@@ -65,9 +69,9 @@ class DiscoveryManagerSpec extends WordSpecLike with BeforeAndAfterAll {
 
     val decoder = implicitly[Decoder[ByteString, DiscoveryWireMessage]]
 
-    val listener = TestProbe()(untypedSystem)
+    val discoveryListener = TestProbe[DiscoveryListenerRequest]
 
-    val listenerProps = TestActors.forwardActorProps(listener.ref)
+    val listenerMaker: ActorContext[DiscoveryRequest] => ActorRef[DiscoveryListenerRequest] = _ => discoveryListener.ref
 
     val mockClock = new TestClock
 
@@ -82,15 +86,14 @@ class DiscoveryManagerSpec extends WordSpecLike with BeforeAndAfterAll {
         nodeState,
         mockClock,
         encoder, decoder,
-        listenerProps, secureRandom)
+        listenerMaker,
+        secureRandom)
 
       val actor: ActorRef[DiscoveryRequest] =
         untypedSystem.spawn(behavior, s"ActorUnderTest_${randomAlphanumeric(5)}")
 
-      actor ! StartListening()
-
-      listener.expectMsg(Start)
-      listener.sender() ! Ready(discoveryAddress)
+      val startMessage = discoveryListener.expectMessageType[Start]
+      startMessage.replyTo ! Ready(discoveryAddress)
 
       actor
     }
@@ -111,7 +114,7 @@ class DiscoveryManagerSpec extends WordSpecLike with BeforeAndAfterAll {
   private def pingActor(actor: ActorRef[DiscoveryRequest],
                         listeningDiscoveryManager: ListeningDiscoveryManager): Ping = {
     val ping = getPing(listeningDiscoveryManager)
-    actor ! MessageReceivedWrapper(DiscoveryListener.MessageReceived(ping, listeningDiscoveryManager.discoveryAddress))
+    actor ! DiscoveryResponseWrapper(DiscoveryListener.MessageReceived(ping, listeningDiscoveryManager.discoveryAddress))
     ping
   }
 
@@ -125,7 +128,7 @@ class DiscoveryManagerSpec extends WordSpecLike with BeforeAndAfterAll {
       val ping = pingActor(actor, this)
 
       val token = crypto.kec256(encoder.encode(ping))
-      val sendMessage = listener.expectMsgType[DiscoveryListener.SendMessage]
+      val sendMessage = discoveryListener.expectMessageType[SendMessage]
       sendMessage.message mustBe a [Pong]
       sendMessage.message.messageType mustBe Pong.messageType
       sendMessage.message match {
@@ -141,16 +144,16 @@ class DiscoveryManagerSpec extends WordSpecLike with BeforeAndAfterAll {
       val node = getNode(this)
 
       actor ! FetchNeighbors(node)
-      val ping = listener.expectMsgType[DiscoveryListener.SendMessage].message.asInstanceOf[Ping]
+      val ping = discoveryListener.expectMessageType[SendMessage].message.asInstanceOf[Ping]
       val token = calculateMessageKey(encoder, ping)
 
       val expiration = ping.timestamp
       val pong = Pong(node, token, expiration)
-      val probe = TestProbe()(untypedSystem)
+      val probe = UntypedTestProbe(randomAlphabetic(6))(untypedSystem)
       untypedSystem.eventStream.subscribe(probe.ref, classOf[CompatibleNodeFound])
-      actor ! MessageReceivedWrapper(DiscoveryListener.MessageReceived(pong, discoveryAddress))
+      actor ! DiscoveryResponseWrapper(DiscoveryListener.MessageReceived(pong, discoveryAddress))
       probe.expectMsg(CompatibleNodeFound(node))
-      val sendMessage = listener.expectMsgType[DiscoveryListener.SendMessage]
+      val sendMessage = discoveryListener.expectMessageType[SendMessage]
       sendMessage.message mustBe a [Seek]
       sendMessage.message.messageType mustBe Seek.messageType
       sendMessage.message match {
@@ -163,16 +166,16 @@ class DiscoveryManagerSpec extends WordSpecLike with BeforeAndAfterAll {
       val actor = createActor
 
       val ping = pingActor(actor, this)
-      listener.expectMsgType[SendMessage].message.asInstanceOf[Pong]
+      discoveryListener.expectMessageType[SendMessage].message.asInstanceOf[Pong]
 
       val node = Node(nodeState.nodeId,discoveryAddress, serverAddress, Capabilities(1))
       val expiration = mockClock.instant().getEpochSecond + 1
       val seek = Seek(Capabilities(1),10,expiration, ByteString())
       val token = crypto.kec256(encoder.encode(seek))
 
-      actor ! MessageReceivedWrapper(DiscoveryListener.MessageReceived(seek, discoveryAddress))
+      actor ! DiscoveryResponseWrapper(DiscoveryListener.MessageReceived(seek, discoveryAddress))
 
-      val sendMessage = listener.expectMsgType[DiscoveryListener.SendMessage]
+      val sendMessage = discoveryListener.expectMessageType[SendMessage]
       sendMessage.message mustBe a [Neighbors]
       sendMessage.message.messageType mustBe Neighbors.messageType
       sendMessage.message match {

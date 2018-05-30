@@ -41,7 +41,9 @@ object DiscoveryActor {
       Clock.systemUTC(),
       encoder,
       decoder,
-      DiscoveryListener.props(discoveryConfig, encoder, decoder),
+      context => context.spawn(
+        DiscoveryListener.behavior(discoveryConfig, encoder, decoder),
+        "DiscoveryListener"),
       new SecureRandom())
   }
 

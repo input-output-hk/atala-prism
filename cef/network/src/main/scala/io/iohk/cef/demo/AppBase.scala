@@ -50,7 +50,7 @@ trait AppBase extends Logger {
 
   def createActor(id: Int, bootstrapNodeIds: Set[Int], capabilities: Capabilities, pool: ConnectionPool)
                  (implicit system: untyped.ActorSystem):
-    ActorRef[DiscoveryRequest] = {
+  ActorRef[DiscoveryRequest] = {
 
     val state = new NodeState(ByteString(id), ServerStatus.NotListening, ServerStatus.NotListening, capabilities)
     val portBase = 8090
@@ -70,10 +70,8 @@ trait AppBase extends Logger {
       Clock.systemUTC(),
       encoder,
       decoder,
-      DiscoveryListener.props(
-        discoveryConfig,
-        encoder,
-        decoder),
+      context => context.spawn(
+        DiscoveryListener.behavior(discoveryConfig, encoder, decoder), "DiscoveryListener"),
       secureRandom
     )
 

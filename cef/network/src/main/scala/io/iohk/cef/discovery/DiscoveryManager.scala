@@ -4,23 +4,19 @@ import java.net.InetSocketAddress
 import java.security.SecureRandom
 import java.time.{Clock, Instant}
 
+import akka.actor.typed.scaladsl.{ActorContext, Behaviors, StashBuffer}
 import akka.actor.typed.{ActorRef, Behavior}
-import akka.actor.typed.scaladsl.{Behaviors, StashBuffer}
-import akka.util.{ByteString, Timeout}
-import akka.{actor => untyped}
-import akka.pattern.ask
+import akka.util.ByteString
 import io.iohk.cef.crypto
 import io.iohk.cef.db.KnownNodesStorage
-import io.iohk.cef.discovery.DiscoveryListener.Ready
 import io.iohk.cef.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.NodeStatus.NodeState
 import io.iohk.cef.network.ServerStatus
 import io.iohk.cef.utils.FiniteSizedMap
+import DiscoveryListener._
 import org.bouncycastle.util.encoders.Hex
 
-import scala.concurrent.ExecutionContext
-import scala.util.{Failure, Random, Success}
-import scala.concurrent.duration._
+import scala.util.Random
 
 
 object DiscoveryManager {
@@ -30,34 +26,26 @@ object DiscoveryManager {
 
   sealed trait DiscoveryRequest
 
-  case class StartListening() extends DiscoveryRequest
-
   case class Blacklist(node: Node) extends DiscoveryRequest
 
   case class GetDiscoveredNodes(replyTo: ActorRef[DiscoveredNodes]) extends DiscoveryRequest
 
   case class FetchNeighbors(node: Node) extends DiscoveryRequest
 
-  private[discovery] case class Initialized(address: InetSocketAddress) extends DiscoveryRequest
-
-  private[discovery] case class MessageReceivedWrapper(innerMessage: DiscoveryListener.MessageReceived) extends DiscoveryRequest
+  private[discovery] case class DiscoveryResponseWrapper(innerMessage: DiscoveryListenerResponse) extends DiscoveryRequest
 
 
   sealed trait DiscoveryResponse
 
   case class DiscoveredNodes(nodes: Set[KnownNode]) extends DiscoveryResponse
 
-  sealed trait NodeEvent {
+  private [discovery] sealed trait NodeEvent {
     def timestamp: Instant
   }
 
-  case class Sought(node: Node, timestamp: Instant) extends NodeEvent
+  private [discovery] case class Sought(node: Node, timestamp: Instant) extends NodeEvent
 
-  case class Pinged(node: Node, timestamp: Instant) extends NodeEvent
-
-  private[discovery] case object Scan
-
-  case object StartListening
+  private [discovery] case class Pinged(node: Node, timestamp: Instant) extends NodeEvent
 
   private val nonceSize = 2
 
@@ -67,7 +55,7 @@ object DiscoveryManager {
                 clock: Clock,
                 encoder: Encoder[DiscoveryWireMessage, ByteString],
                 decoder: Decoder[ByteString, DiscoveryWireMessage],
-                discoveryListenerProps: untyped.Props,
+                discoveryListenerFactory: ActorContext[DiscoveryRequest] => ActorRef[DiscoveryListenerRequest],
                 randomSource: SecureRandom): Behavior[DiscoveryRequest] = Behaviors.setup {
     context =>
 
@@ -81,31 +69,19 @@ object DiscoveryManager {
 
       val buffer = StashBuffer[DiscoveryRequest](capacity = 100)
 
-      val discoveryListener = context.actorOf(discoveryListenerProps)
+      val discoveryListener = discoveryListenerFactory(context)
 
-      def initialBehaviour: Behavior[DiscoveryRequest] = Behaviors.receiveMessage {
-        case StartListening() =>
-          startListening()
-        case msg =>
-          buffer.stash(msg)
-          Behavior.same
-      }
+      val discoveryListenerAdapter = context.messageAdapter(DiscoveryResponseWrapper)
 
       def startListening(): Behavior[DiscoveryRequest] = Behaviors.setup {
         context =>
-          implicit val timeout: Timeout = 1 second // TODO discoveryConfig
-          implicit val ec: ExecutionContext = context.executionContext
 
-          ask(discoveryListener, DiscoveryListener.Start).onComplete {
-            case Success(Ready(address)) => context.self ! Initialized(address)
-            case Failure(cause) => throw cause // TODO
-            case Success(_) => ??? // TODO an illegal state
-          }
+          discoveryListener ! Start(discoveryListenerAdapter)
 
           Behaviors.receiveMessage {
-            case Initialized(address) =>
+            case DiscoveryResponseWrapper(Ready(address)) =>
               context.log.debug(
-                s"UDP address ${discoveryConfig.port} bound successfully. " +
+                s"UDP address $address bound successfully. " +
                 s"Pinging ${discoveryConfig.bootstrapNodes.size} bootstrap Nodes.")
 
               discoveryConfig.bootstrapNodes.foreach(node =>
@@ -135,17 +111,15 @@ object DiscoveryManager {
           sendPing(discoveryListener, address, node)
           Behavior.same
 
-        case MessageReceivedWrapper(innerMessage: DiscoveryListener.MessageReceived) =>
+        case DiscoveryResponseWrapper(innerMessage: DiscoveryListener.MessageReceived) =>
           context.log.debug(s"Got a wrapped message $innerMessage")
           processDiscoveryMessage(address, innerMessage)
           Behavior.same
 
-        case StartListening() => ??? // TODO raise an error
-
-        case x => throw new IllegalStateException(s"Unexpected message $x.")
+        case x => throw new IllegalStateException(s"Received an unexpected message '$x'.")
       }
 
-      def sendPing(listener: untyped.ActorRef, listeningAddress: InetSocketAddress, node: Node): Unit = {
+      def sendPing(listener: ActorRef[DiscoveryListenerRequest], listeningAddress: InetSocketAddress, node: Node): Unit = {
         context.log.debug(s"Sending ping to ${node.toUri}")
         val nonce = new Array[Byte](nonceSize)
         randomSource.nextBytes(nonce)
@@ -256,7 +230,7 @@ object DiscoveryManager {
           }
       }
 
-      initialBehaviour
+      startListening()
   }
 
   def calculateMessageKey(encoder: Encoder[DiscoveryWireMessage, ByteString], message: DiscoveryWireMessage): ByteString = {
