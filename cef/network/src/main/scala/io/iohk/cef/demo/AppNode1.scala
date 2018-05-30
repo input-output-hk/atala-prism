@@ -2,7 +2,6 @@ package io.iohk.cef.demo
 
 import akka.pattern.ask
 import akka.{actor => untyped}
-import io.iohk.cef.db.ConnectionPool
 import io.iohk.cef.discovery._
 import io.iohk.cef.network.Capabilities
 
@@ -25,9 +24,8 @@ object AppNode1 extends AppBase {
 
 
   def main(args: Array[String]): Unit = {
-    val pool = new ConnectionPool("default")
 
-    val (system, actor) = createActor(8, Set(9), Capabilities(1), pool)
+    val (system, actor) = createActor(8, Set(9), Capabilities(1))
 
     val spy = system.actorOf(LogEverything.props())
 

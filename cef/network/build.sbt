@@ -1,3 +1,5 @@
+import com.typesafe.config.ConfigFactory
+
 // Thus it begins.
 val commonSettings = Seq(
   name := "network",
@@ -5,6 +7,19 @@ val commonSettings = Seq(
   scalaVersion := "2.12.5"
 )
 
+enablePlugins(FlywayPlugin)
+
+FlywayConfig.config := {
+  val parsedFile = ConfigFactory.parseFile((resourceDirectory in Compile).value / "application.conf")
+  val url = parsedFile.getString("db.default.url")
+  val user = parsedFile.getString("db.default.user")
+  val password = parsedFile.getString("db.default.password")
+  new FlywayConfig(url, user, password)
+}
+
+flywayUrl := FlywayConfig.config.value.url
+flywayUser := FlywayConfig.config.value.user
+flywayLocations += "db/migration"
 
 mainClass in (Compile, run) := Some("io.iohk.cef.network.transport.rlpx.RLPxNode")
 
@@ -19,18 +34,10 @@ val dep = {
     "org.bouncycastle" % "bcprov-jdk15on" % "1.59",
     "com.h2database" % "h2" % "1.4.197",
 
-    //Scalike
     "org.scalikejdbc" %% "scalikejdbc"       % "3.2.2",
     "ch.qos.logback"  %  "logback-classic"   % "1.2.3",
     "org.scalikejdbc" %% "scalikejdbc-config"  % "3.2.2",
-
     "org.scalikejdbc" %% "scalikejdbc-test"   % "3.2.2" % Test,
-
-    //Anorm
-    "org.playframework.anorm" %% "anorm" % "2.6.2",
-    "com.jolbox" % "bonecp" % "0.8.0.RELEASE",
-
-    //Doobie
 
     "org.scalatest" %% "scalatest" % "3.0.1" % Test,
     "org.scalacheck" %% "scalacheck" % "1.13.4" % Test,

@@ -208,9 +208,7 @@ class DiscoveryManager(
   }
 
   private def processNodeStateUpdated: Receive = {
-    case NodeStatus.StateUpdated(state) =>
-      log.debug(s"State ${state} received. Proceeding to listening if configured.")
-      nodeStatus = state
+    case NodeStatus.StateUpdated(state) => nodeStatus = state
   }
 
   private def processDiscoveryRequest(listener: untyped.ActorRef, listeningAddress: InetSocketAddress): Receive = {

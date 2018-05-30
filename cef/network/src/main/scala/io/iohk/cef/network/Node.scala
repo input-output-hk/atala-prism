@@ -3,12 +3,9 @@ package io.iohk.cef.network
 import java.net.{InetAddress, InetSocketAddress, URI}
 
 import akka.util.ByteString
-import io.iohk.cef.db.RowParsers
-import io.iohk.cef.db.Schema.NodeTableColumn
 import io.iohk.cef.encoding.rlp.{RLPEncDec, RLPEncodeable, RLPException, RLPList}
 import javax.xml.bind.DatatypeConverter
 import org.bouncycastle.util.encoders.Hex
-import scalikejdbc._
 
 import scala.util.Try
 
@@ -23,28 +20,7 @@ case class Node(id: ByteString,
   }
 }
 
-object Node extends SQLSyntaxSupport[Node] {
-
-  import anorm._
-
-  def nodeParser: RowParser[Node] = {
-    RowParsers.byteStringParser(NodeTableColumn.id) ~
-      RowParsers.inetSocketAddressParser(NodeTableColumn.discoveryAddress, NodeTableColumn.discoveryPort) ~
-      RowParsers.inetSocketAddressParser(NodeTableColumn.serverAddress, NodeTableColumn.serverPort) ~
-      Capabilities.tableParser(NodeTableColumn.capabilities) map {
-      case id ~ discoverySocketAddr ~ serverSocketAddr ~ capabilities =>
-        Node(id, discoverySocketAddr, serverSocketAddr, capabilities)
-    }
-  }
-
-  override val tableName: String = "node"
-
-  def apply(rs: WrappedResultSet) = new Node(
-    ByteString(Hex.decode(rs.string("node_id"))),
-    new InetSocketAddress(InetAddress.getByAddress(rs.bytes("discovery_address")), rs.int("discovery_port")),
-    new InetSocketAddress(InetAddress.getByAddress(rs.bytes("server_address")), rs.int("server_port")),
-    Capabilities(rs.byte("capabilities"))
-  )
+object Node {
 
   implicit def nodeRlpEncDec(implicit
                              byteStrEncDec: RLPEncDec[ByteString],
