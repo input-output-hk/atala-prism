@@ -1,20 +1,21 @@
 package io.iohk.cef.demo
 
+import akka.{actor => untyped}
 import io.iohk.cef.db.ConnectionPool
 import io.iohk.cef.demo.AppNode1.createActor
 import io.iohk.cef.discovery.CompatibleNodeFound
 import io.iohk.cef.network.Capabilities
 
 object AppNode2 {
-
-
   def main(args: Array[String]): Unit = {
     val pool = new ConnectionPool("default2")
 
-    val (system, actor) = createActor(9, Set(8), Capabilities(1), pool)
+    implicit val actorSystem: untyped.ActorSystem = untyped.ActorSystem("cef_system")
 
-    val spy = system.actorOf(LogEverything.props())
+    createActor(9, Set(8), Capabilities(1), pool)
 
-    system.eventStream.subscribe(spy, classOf[CompatibleNodeFound])
+    val spy = actorSystem.actorOf(LogEverything.props())
+
+    actorSystem.eventStream.subscribe(spy, classOf[CompatibleNodeFound])
   }
 }
