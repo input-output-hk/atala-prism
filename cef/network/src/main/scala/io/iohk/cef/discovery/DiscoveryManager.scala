@@ -4,7 +4,7 @@ import java.net.InetSocketAddress
 import java.security.SecureRandom
 import java.time.{Clock, Instant}
 
-import akka.actor.typed.scaladsl.{ActorContext, Behaviors, StashBuffer}
+import akka.actor.typed.scaladsl.{ActorContext, Behaviors, StashBuffer, TimerScheduler}
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.util.ByteString
 import io.iohk.cef.crypto
@@ -33,6 +33,8 @@ object DiscoveryManager {
   case class FetchNeighbors(node: Node) extends DiscoveryRequest
 
   private[discovery] case class DiscoveryResponseWrapper(innerMessage: DiscoveryListenerResponse) extends DiscoveryRequest
+
+  private [discovery] case object Scan extends DiscoveryRequest
 
 
   sealed trait DiscoveryResponse
@@ -73,7 +75,7 @@ object DiscoveryManager {
 
       val discoveryListenerAdapter = context.messageAdapter(DiscoveryResponseWrapper)
 
-      def startListening(): Behavior[DiscoveryRequest] = Behaviors.setup {
+      def startListening(timer: TimerScheduler[DiscoveryRequest]): Behavior[DiscoveryRequest] = Behaviors.setup {
         context =>
 
           discoveryListener ! Start(discoveryListenerAdapter)
@@ -87,6 +89,8 @@ object DiscoveryManager {
               discoveryConfig.bootstrapNodes.foreach(node =>
                 sendPing(discoveryListener, address, node)
               )
+
+              timer.startPeriodicTimer("scan_timer", Scan, discoveryConfig.scanInterval)
 
               // processess all stashed messages with listening
               // and also returns listening as the current behaviour
@@ -112,8 +116,11 @@ object DiscoveryManager {
           Behavior.same
 
         case DiscoveryResponseWrapper(innerMessage: DiscoveryListener.MessageReceived) =>
-          context.log.debug(s"Got a wrapped message $innerMessage")
           processDiscoveryMessage(address, innerMessage)
+          Behavior.same
+
+        case Scan =>
+          scan(address)
           Behavior.same
 
         case x => throw new IllegalStateException(s"Received an unexpected message '$x'.")
@@ -132,6 +139,24 @@ object DiscoveryManager {
         putResult.foreach(pinged => {
           listener ! DiscoveryListener.SendMessage(ping, pinged.node.discoveryAddress)
         })
+      }
+
+      def scan(address: InetSocketAddress): Unit = {
+        context.log.debug("Starting peer scan.")
+        val expired = pingedNodes.dropExpired
+
+        // Eliminating the nodes that never answered.
+        expired.foreach {
+          case (id, pingInfo) => {
+            context.log.debug(s"Dropping node ${Hex.toHexString(id.toArray)}")
+            pingedNodes -= id
+            knownNodesStorage.remove(pingInfo.node)
+          }
+        }
+
+        new Random().shuffle(pingedNodes.values).take(discoveryConfig.scanNodesLimit).foreach { pingInfo =>
+          sendPing(discoveryListener, address, pingInfo.node)
+        }
       }
 
       def getServerAddress(default: InetSocketAddress): InetSocketAddress = nodeState.serverStatus match {
@@ -230,7 +255,7 @@ object DiscoveryManager {
           }
       }
 
-      startListening()
+      Behaviors.withTimers(startListening)
   }
 
   def calculateMessageKey(encoder: Encoder[DiscoveryWireMessage, ByteString], message: DiscoveryWireMessage): ByteString = {

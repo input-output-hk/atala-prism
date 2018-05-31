@@ -96,7 +96,7 @@ class Greeter(nodeUri: URI, nodeActor: ActorRef[SimpleNode2.NodeCommand], discov
   }
 
   private def notDead(knownNode: KnownNode): Boolean =
-    knownNode.lastSeen.plusSeconds(10).isAfter(Instant.now)
+    knownNode.lastSeen.plusSeconds(100).isAfter(Instant.now)
 
   private def greet(peer: Node): Unit =
     nodeActor ! Send(greeting(peer.toUri, nodeUri), peer.toUri)
