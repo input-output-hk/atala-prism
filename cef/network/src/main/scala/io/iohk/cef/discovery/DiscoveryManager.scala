@@ -133,10 +133,7 @@ object DiscoveryManager {
         val ping = Ping(DiscoveryWireMessage.ProtocolVersion, getNode(listeningAddress), expirationTimestamp, ByteString(nonce))
         val key = calculateMessageKey(encoder, ping)
         context.log.debug(s"Ping message: ${ping}")
-        context.log.debug(s"In sendPing. Key = ${Hex.encode(key.toArray)}")
-        val putResult = pingedNodes.put(key, Pinged(node, clock.instant()))
-        context.log.debug(s"In sendPing. putResult = ${putResult}")
-        putResult.foreach(pinged => {
+        pingedNodes.put(key, Pinged(node, clock.instant())).foreach(pinged => {
           listener ! DiscoveryListener.SendMessage(ping, pinged.node.discoveryAddress)
         })
       }
@@ -157,6 +154,13 @@ object DiscoveryManager {
         new Random().shuffle(pingedNodes.values).take(discoveryConfig.scanNodesLimit).foreach { pingInfo =>
           sendPing(discoveryListener, address, pingInfo.node)
         }
+
+        knownNodesStorage.getAll().toSeq
+          .sortBy(_.lastSeen)
+          .takeRight(discoveryConfig.scanNodesLimit)
+          .foreach { nodeInfo =>
+            sendPing(discoveryListener, address, nodeInfo.node)
+          }
       }
 
       def getServerAddress(default: InetSocketAddress): InetSocketAddress = nodeState.serverStatus match {
