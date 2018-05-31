@@ -1,7 +1,7 @@
 // Thus it begins.
 val commonSettings = Seq(
-  organization := "io.iohk",
-  name := "cef-network",
+  organization := "io.iohk.cef",
+  name := "network",
   version := "0.1-SNAPSHOT",
   scalaVersion := "2.12.5"
 )
