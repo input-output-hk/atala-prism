@@ -43,7 +43,10 @@ val dep = {
     "org.scalacheck" %% "scalacheck" % "1.13.4" % Test,
     "org.scalamock" %% "scalamock-scalatest-support" % "3.5.0" % Test,
     "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test,
-    "com.typesafe.akka" %% "akka-testkit-typed" % akkaVersion % Test
+    "com.typesafe.akka" %% "akka-testkit-typed" % akkaVersion % Test,
+
+    // apache commons
+    "org.apache.commons" % "commons-lang3" % "3.7"
   )
 }
 

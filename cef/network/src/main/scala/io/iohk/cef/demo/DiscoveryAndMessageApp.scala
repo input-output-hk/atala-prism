@@ -6,9 +6,8 @@ import java.time.Instant
 import akka.actor.typed.scaladsl.{Behaviors, TimerScheduler}
 import akka.actor.typed.{ActorRef, ActorSystem, Behavior, Logger}
 import io.iohk.cef.db.KnownNode
-import io.iohk.cef.discovery.DiscoveryProtocol.FindPeers
-import io.iohk.cef.discovery.DiscoveryProtocolImpl
 import SimpleNode2.{Send, Start, Started}
+import io.iohk.cef.discovery.DiscoveryManager.{DiscoveredNodes, DiscoveryRequest, GetDiscoveredNodes}
 import io.iohk.cef.network.{Capabilities, Node}
 
 object DiscoveryAndMessageApp {
@@ -44,9 +43,8 @@ object DiscoveryAndMessageApp {
         val startupListener: Behavior[Started] = Behaviors.receiveMessage {
           case Started(nodeUri) =>
 
-            val discoveryProtocol = new DiscoveryProtocolImpl(DiscoveryActor.props(nodeUri, bootstrapNodes, Capabilities(1)))
-
-            val discoveryActor = context.spawn(discoveryProtocol.createDiscovery(), "DiscoveryActor")
+            val discoveryActor: ActorRef[DiscoveryRequest] =
+              context.spawn(DiscoveryActor.discoveryBehavior(nodeUri, bootstrapNodes, Capabilities(1)), "DiscoveryActor")
 
             context.spawn(new Greeter(nodeUri, nodeActor, discoveryActor).behavior, "PeerGreeter")
 
@@ -64,15 +62,15 @@ object DiscoveryAndMessageApp {
   }
 }
 
-class Greeter(nodeUri: URI, nodeActor: ActorRef[SimpleNode2.NodeCommand], discoveryActor: ActorRef[FindPeers]) {
+class Greeter(nodeUri: URI, nodeActor: ActorRef[SimpleNode2.NodeCommand], discoveryActor: ActorRef[DiscoveryRequest]) {
 
   import scala.concurrent.duration._
 
   val behavior: Behavior[String] = Behaviors.withTimers(timer => tick(timer))
 
-  private val tock: Behavior[Set[KnownNode]] = Behaviors.receive((context, message) => message match {
+  private val tock: Behavior[DiscoveredNodes] = Behaviors.receive((context, message) => message match {
     case s =>
-      sayHelloTo(s, context.log)
+      sayHelloTo(s.nodes, context.log)
       Behavior.same
   })
 
@@ -83,7 +81,7 @@ class Greeter(nodeUri: URI, nodeActor: ActorRef[SimpleNode2.NodeCommand], discov
     timer.startPeriodicTimer("greeter_timer", "DiscoveryTick", 5 seconds)
 
     Behaviors.receiveMessage(_ => {
-      discoveryActor ! FindPeers(tockActor)
+      discoveryActor ! GetDiscoveredNodes(tockActor)
       Behavior.same
     })
   }

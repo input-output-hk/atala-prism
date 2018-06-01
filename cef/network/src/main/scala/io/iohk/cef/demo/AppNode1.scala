@@ -1,12 +1,12 @@
 package io.iohk.cef.demo
 
-import akka.pattern.ask
+import akka.actor.typed.scaladsl.Behaviors
+import akka.actor.typed.scaladsl.adapter._
+import akka.actor.typed.{ActorRef, Behavior}
 import akka.{actor => untyped}
+import io.iohk.cef.discovery.DiscoveryManager.{DiscoveredNodes, GetDiscoveredNodes}
 import io.iohk.cef.discovery._
 import io.iohk.cef.network.Capabilities
-
-import scala.concurrent.Await
-import scala.concurrent.duration._
 
 class LogEverything extends untyped.Actor with untyped.ActorLogging {
 
@@ -22,19 +22,24 @@ object LogEverything {
 
 object AppNode1 extends AppBase {
 
-
   def main(args: Array[String]): Unit = {
 
-    val (system, actor) = createActor(8, Set(9), Capabilities(1))
+    implicit val actorSystem: untyped.ActorSystem = untyped.ActorSystem("cef_system")
 
-    val spy = system.actorOf(LogEverything.props())
+    val actor = createActor(8, Set(9), Capabilities(1))
 
-    system.eventStream.subscribe(spy, classOf[CompatibleNodeFound])
+    val spy = actorSystem.actorOf(LogEverything.props())
 
-    implicit val timeout = akka.util.Timeout.durationToTimeout(10.minutes)
+    actorSystem.eventStream.subscribe(spy, classOf[CompatibleNodeFound])
 
-    Thread.sleep(10000)
+    val printer: ActorRef[DiscoveredNodes] =
+      actorSystem.spawn(Behaviors.receiveMessage[DiscoveredNodes](printMessage), "printer")
 
-    println(Await.result(actor ? GetDiscoveredNodes(), 5.seconds))
+    actor ! GetDiscoveredNodes(printer)
+  }
+
+  private def printMessage[M](message: M): Behavior[M] = {
+    println(message)
+    Behavior.same
   }
 }

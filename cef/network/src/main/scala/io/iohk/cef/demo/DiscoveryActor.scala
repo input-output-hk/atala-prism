@@ -4,20 +4,21 @@ import java.net.{InetSocketAddress, URI}
 import java.security.SecureRandom
 import java.time.Clock
 
+import akka.actor.typed.Behavior
 import akka.util.ByteString
-import akka.{actor => untyped}
 import io.iohk.cef.db.DummyKnownNodesStorage
+import io.iohk.cef.discovery.DiscoveryManager.DiscoveryRequest
 import io.iohk.cef.discovery._
 import io.iohk.cef.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.NodeStatus.NodeState
-import io.iohk.cef.network.{Capabilities, Node, NodeStatus, ServerStatus}
+import io.iohk.cef.network.{Capabilities, Node, ServerStatus}
 import org.bouncycastle.util.encoders.Hex
 
 import scala.concurrent.duration._
 
 object DiscoveryActor {
 
-  def props(uri: URI, bootstrapNodeUris: Set[URI], capabilities: Capabilities): untyped.Props = {
+  def discoveryBehavior(uri: URI, bootstrapNodeUris: Set[URI], capabilities: Capabilities): Behavior[DiscoveryRequest] = {
     import io.iohk.cef.encoding.rlp.RLPEncoders._
     import io.iohk.cef.encoding.rlp.RLPImplicits._
 
@@ -29,22 +30,21 @@ object DiscoveryActor {
 
     val discoveryConfig = config(uri, bootstrapNodeUris, capabilities)
 
-    val stateHolder = NodeStatus.nodeState(state, Seq())
-
     val encoder = implicitly[Encoder[DiscoveryWireMessage, ByteString]]
 
     val decoder = implicitly[Decoder[ByteString, DiscoveryWireMessage]]
 
-    DiscoveryManager.props(
+    DiscoveryManager.behaviour(
       discoveryConfig,
       new DummyKnownNodesStorage(Clock.systemUTC()),
-      stateHolder,
+      state,
       Clock.systemUTC(),
       encoder,
       decoder,
-      DiscoveryManager.listenerMaker(discoveryConfig, encoder, decoder),
-      new SecureRandom()
-    )
+      context => context.spawn(
+        DiscoveryListener.behavior(discoveryConfig, encoder, decoder),
+        "DiscoveryListener"),
+      new SecureRandom())
   }
 
   private def localhost(port: Int): InetSocketAddress =
