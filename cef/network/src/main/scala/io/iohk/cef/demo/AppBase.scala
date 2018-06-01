@@ -57,7 +57,7 @@ trait AppBase extends Logger {
       val actor = system.actorOf(DiscoveryManager.props(
         config,
         //new DummyKnownNodesStorage(Clock.systemUTC()),
-        new KnownNodeStorageImpl(Clock.systemUTC(), 'default),
+        new KnownNodeStorageImpl(Clock.systemUTC()),
         //new AnormKnownNodeStorage(Clock.systemUTC(), pool),
         stateHolder,
         Clock.systemUTC(),
