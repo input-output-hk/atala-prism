@@ -36,8 +36,8 @@ class RLPxTransportProtocol[T](encoder: Encoder[T, ByteString],
     Behaviors.receive { (context, message) =>
       message match {
 
-        case Connect(uri, eventHandler) =>
-          context.spawn(connectionBehaviour(uri, eventHandler),
+        case Connect(uri, replyTo, eventHandler) =>
+          context.spawn(connectionBehaviour(uri, replyTo, eventHandler),
                         UUID.randomUUID().toString)
           Behavior.same
 
@@ -70,12 +70,15 @@ class RLPxTransportProtocol[T](encoder: Encoder[T, ByteString],
   // for those connections.
   private def connectionBehaviour(
       uri: URI,
+      replyTo: ActorRef[ActorRef[ConnectionCommand]],
       eventHandler: ActorRef[ConnectionEvent]): Behavior[ConnectionCommand] = Behaviors.setup {
 
     context =>
 
       val connectionBridgeActor =
         context.actorOf(connectionBridge(uri, context.self, eventHandler))
+
+      replyTo ! context.self
 
       Behaviors.receiveMessage {
         case SendMessage(m) =>

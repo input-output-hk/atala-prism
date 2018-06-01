@@ -30,6 +30,7 @@ trait TransportProtocol {
     * @param eventHandler an actor to send notifications about events on the connection.
     */
   case class Connect(address: AddressType,
+                     replyTo: ActorRef[ActorRef[ConnectionCommand]],
                      eventHandler: ActorRef[ConnectionEvent])
       extends TransportCommand
 

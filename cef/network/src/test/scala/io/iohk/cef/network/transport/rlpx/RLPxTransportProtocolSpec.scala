@@ -50,11 +50,13 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
 
   "RLPx transport protocol" should "open a connection to a valid peer" in {
     val userActor = TestProbe[ConnectionEvent]("userActorProbe")(typedSystem)
-
-    transportActor ! Connect(remoteUri, userActor.ref)
+    val acceptConnectionActor = TestProbe[ActorRef[ConnectionCommand]]("acceptConnectionActorProbe")(typedSystem)
+    transportActor ! Connect(remoteUri, acceptConnectionActor.ref, userActor.ref)
 
     rlpxConnectionHandler.expectMsg(ConnectTo(remoteUri))
     rlpxConnectionHandler.reply(ConnectionEstablished(ByteString(remotePubKey)))
+
+    acceptConnectionActor.expectMessageType[ActorRef[ConnectionCommand]]
 
     userActor.uponReceivingMessage {
       case Connected(nodeId, _) =>
@@ -64,7 +66,9 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
 
   it should "report a connection failure to the user" in {
     val userActor = TestProbe[ConnectionEvent]("userActorProbe")(typedSystem)
-    transportActor ! Connect(remoteUri, userActor.ref)
+    val acceptConnectionActor = TestProbe[ActorRef[ConnectionCommand]]("acceptConnectionActorProbe")(typedSystem)
+
+    transportActor ! Connect(remoteUri, acceptConnectionActor.ref, userActor.ref)
 
     rlpxConnectionHandler.expectMsg(ConnectTo(remoteUri))
     rlpxConnectionHandler.reply(ConnectionFailed)
@@ -169,7 +173,9 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
 
   "Outbound connections" should "support message sending" in {
     val userActor = TestProbe[ConnectionEvent]("userActorProbe")(typedSystem)
-    transportActor ! Connect(remoteUri, userActor.ref)
+    val acceptConnectionActor = TestProbe[ActorRef[ConnectionCommand]]("acceptConnectionActorProbe")(typedSystem)
+
+    transportActor ! Connect(remoteUri, acceptConnectionActor.ref, userActor.ref)
 
     rlpxConnectionHandler.expectMsg(ConnectTo(remoteUri))
     rlpxConnectionHandler.reply(ConnectionEstablished(ByteString(remotePubKey)))
@@ -188,7 +194,9 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
 
   they should "support inbound messages" in {
     val userActor = TestProbe[ConnectionEvent]("userActorProbe")(typedSystem)
-    transportActor ! Connect(remoteUri, userActor.ref)
+    val acceptConnectionActor = TestProbe[ActorRef[ConnectionCommand]]("acceptConnectionActorProbe")(typedSystem)
+
+    transportActor ! Connect(remoteUri, acceptConnectionActor.ref, userActor.ref)
 
     rlpxConnectionHandler.expectMsg(ConnectTo(remoteUri))
     val connectionBridge = rlpxConnectionHandler.sender()
