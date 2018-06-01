@@ -2,7 +2,6 @@ package io.iohk.cef.test
 
 import java.time.{Clock, Instant, ZoneId}
 
-import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.duration._
 
 /**

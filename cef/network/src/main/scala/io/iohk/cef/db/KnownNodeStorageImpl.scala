@@ -10,7 +10,7 @@ import scalikejdbc.config._
 import scala.concurrent.duration.FiniteDuration
 
 
-class KnownNodeStorageImpl(clock: Clock, dbName: Symbol) extends KnownNodesStorage {
+class KnownNodeStorageImpl(clock: Clock, dbName: Symbol = 'default) extends KnownNodesStorage {
 
   DBs.setup(dbName)
 
@@ -40,10 +40,11 @@ class KnownNodeStorageImpl(clock: Clock, dbName: Symbol) extends KnownNodesStora
       val nodeColumn = NodeTable.column
       val knownNodeColumn = KnownNodeTable.column
       val kn = KnownNodeTable.syntax("kn")
+
       val discovered =
         sql"""
              select ${kn.discovered} from ${KnownNodeTable as kn} where ${kn.nodeId} = ${Hex.toHexString(node.id.toArray)}
-           """.map(_.timestamp(kn.discovered).toInstant).single().apply()
+           """.map(_.timestamp(knownNodeColumn.discovered).toInstant).single().apply()
 
       mergeNodeStatement(node, nodeColumn)
 
