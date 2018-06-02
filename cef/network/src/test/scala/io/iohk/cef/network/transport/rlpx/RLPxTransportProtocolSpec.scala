@@ -14,6 +14,7 @@ import io.iohk.cef.network.transport.rlpx.RLPxConnectionHandler.{ConnectTo, Conn
 import io.iohk.cef.test.TestEncoderDecoder
 import io.iohk.cef.test.TestEncoderDecoder.TestMessage
 import io.iohk.cef.test.TypedTestProbeOps._
+import org.apache.commons.lang3.RandomStringUtils
 import org.bouncycastle.util.encoders.Hex
 import org.scalatest.{Assertion, BeforeAndAfterAll, FlatSpec}
 import org.scalatest.Matchers._
@@ -21,6 +22,9 @@ import org.scalatest.Matchers._
 import scala.concurrent.duration._
 
 class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
+
+  val untypedSystem: ActorSystem = untyped.ActorSystem("TypedWatchingUntyped")
+  val typedSystem: typed.ActorSystem[_] = untypedSystem.toTyped
 
   val localPubKey = "ae9025d54592c854fcfdf6a5a9f1e377a124d3492647070e9e6365deef1119e6e046acfd7dd62f6f94d0bc58645e103f78f4c7150933383656ddb6a9fffeb2af"
   val localUri = new URI(s"enode://$localPubKey@0.0.0.0:1234")
@@ -30,25 +34,26 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
   val remoteUri = new URI(s"enode://$remotePubKey@47.90.36.129:30303")
   val remoteAddress = new InetSocketAddress(remoteUri.getHost, remoteUri.getPort)
 
-  val untypedSystem: ActorSystem = untyped.ActorSystem("TypedWatchingUntyped")
-  val typedSystem: typed.ActorSystem[_] = untypedSystem.toTyped
+  trait TestFixture {
 
-  val tcpProbe = UntypedTestProbe()(untypedSystem)
-  val rlpxConnectionHandler = UntypedTestProbe()(untypedSystem)
-  val rLPxConnectionHandlerProps = TestActors.forwardActorProps(rlpxConnectionHandler.ref)
+    val tcpProbe = UntypedTestProbe()(untypedSystem)
+    val rlpxConnectionHandler = UntypedTestProbe()(untypedSystem)
+    val rLPxConnectionHandlerProps = TestActors.forwardActorProps(rlpxConnectionHandler.ref)
 
-  val rlpxTransportProtocol = new RLPxTransportProtocol[String](
-    TestEncoderDecoder.testEncoder, TestEncoderDecoder.testDecoder,
-    rLPxConnectionHandlerProps, tcpProbe.ref)
+    val rlpxTransportProtocol = new RLPxTransportProtocol[String](
+      TestEncoderDecoder.testEncoder, TestEncoderDecoder.testDecoder,
+      rLPxConnectionHandlerProps, tcpProbe.ref)
 
-  import rlpxTransportProtocol._
+    import rlpxTransportProtocol._
 
-  val transportBehaviour: Behavior[TransportCommand] = rlpxTransportProtocol.createTransport()
+    val transportBehaviour: Behavior[TransportCommand] = rlpxTransportProtocol.createTransport()
 
-  val transportActor: ActorRef[TransportCommand] = untypedSystem.spawn(transportBehaviour, "Transport")
+    val transportActor: ActorRef[TransportCommand] = untypedSystem.spawn(
+      transportBehaviour, s"Transport${RandomStringUtils.randomAlphanumeric(6)}")
+  }
 
-
-  "RLPx transport protocol" should "open a connection to a valid peer" in {
+  "RLPx transport protocol" should "open a connection to a valid peer" in new TestFixture {
+    import rlpxTransportProtocol._
     val userActor = TestProbe[ConnectionEvent]("userActorProbe")(typedSystem)
     val acceptConnectionActor = TestProbe[ActorRef[ConnectionCommand]]("acceptConnectionActorProbe")(typedSystem)
     transportActor ! Connect(remoteUri, acceptConnectionActor.ref, userActor.ref)
@@ -64,7 +69,32 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
     }
   }
 
-  it should "report a connection failure to the user" in {
+  it should "close it again" in new TestFixture {
+    import rlpxTransportProtocol._
+    val userActor = TestProbe[ConnectionEvent]("userActorProbe")(typedSystem)
+    val acceptConnectionActor = TestProbe[ActorRef[ConnectionCommand]]("acceptConnectionActorProbe")(typedSystem)
+    transportActor ! Connect(remoteUri, acceptConnectionActor.ref, userActor.ref)
+
+    rlpxConnectionHandler.expectMsg(ConnectTo(remoteUri))
+    rlpxConnectionHandler.reply(ConnectionEstablished(ByteString(remotePubKey)))
+
+    userActor.uponReceivingMessage {
+      case Connected(nodeId, connection) =>
+        nodeId shouldBe remoteUri
+
+        connection ! CloseConnection
+
+        rlpxConnectionHandler.expectMsg(akka.io.Tcp.Close)
+        rlpxConnectionHandler.reply(akka.io.Tcp.Closed)
+
+        rlpxConnectionHandler.reply(ConnectionEstablished(ByteString(remotePubKey)))
+
+        userActor.expectMessage(ConnectionClosed(remoteUri))
+    }
+  }
+
+  it should "report a connection failure to the user" in new TestFixture {
+    import rlpxTransportProtocol._
     val userActor = TestProbe[ConnectionEvent]("userActorProbe")(typedSystem)
     val acceptConnectionActor = TestProbe[ActorRef[ConnectionCommand]]("acceptConnectionActorProbe")(typedSystem)
 
@@ -76,7 +106,8 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
     userActor.expectMessage(ConnectionError(s"Failed to connect to uri $remoteUri", remoteUri))
   }
 
-  it should "enable the creation of inbound connection listeners" in {
+  it should "enable the creation of inbound connection listeners" in new TestFixture {
+    import rlpxTransportProtocol._
     val userActor = TestProbe[ListenerEvent]("userActorProbe")(typedSystem)
     val userConnectionFactory = (_: URI) => TestProbe[ConnectionEvent]("userActorProbe")(typedSystem).ref
 
@@ -91,7 +122,8 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
     }
   }
 
-  "Listeners" should "accept incoming connections when listening" in {
+  "Listeners" should "accept incoming connections when listening" in new TestFixture {
+    import rlpxTransportProtocol._
     val listenerEventProbe = TestProbe[ListenerEvent]("userActorProbe")(typedSystem)
     val connectionEventProbe = TestProbe[ConnectionEvent]("userActorProbe")(typedSystem)
 
@@ -116,7 +148,8 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
     }
   }
 
-  they should "notify users when binding fails" in {
+  they should "notify users when binding fails" in new TestFixture {
+    import rlpxTransportProtocol._
     val userActor = TestProbe[ListenerEvent]("userActorProbe")(typedSystem)
     val userConnectionFactory = (_: URI) => TestProbe[ConnectionEvent]("userActorProbe")(typedSystem).ref
 
@@ -128,7 +161,8 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
     userActor.expectMessage(ListeningFailed(localUri, s"Error setting up listener on $localUri"))
   }
 
-  they should "be unbindable" in {
+  they should "be unbindable" in new TestFixture {
+    import rlpxTransportProtocol._
     val userActor = TestProbe[ListenerEvent]("userActorProbe")(typedSystem)
     val userConnectionFactory = (_: URI) => TestProbe[ConnectionEvent]("userActorProbe")(typedSystem).ref
 
@@ -147,7 +181,8 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
     }
   }
 
-  they should "notify users when incoming connections fail" in {
+  they should "notify users when incoming connections fail" in new TestFixture {
+    import rlpxTransportProtocol._
     val listenerEventProbe = TestProbe[ListenerEvent]("userActorProbe")(typedSystem)
     val connectionEventProbe = TestProbe[ConnectionEvent]("userActorProbe")(typedSystem)
     val connectionEventHandlerFactory = (_: URI) => connectionEventProbe.ref
@@ -171,7 +206,8 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
     }
   }
 
-  "Outbound connections" should "support message sending" in {
+  "Outbound connections" should "support message sending" in new TestFixture {
+    import rlpxTransportProtocol._
     val userActor = TestProbe[ConnectionEvent]("userActorProbe")(typedSystem)
     val acceptConnectionActor = TestProbe[ActorRef[ConnectionCommand]]("acceptConnectionActorProbe")(typedSystem)
 
@@ -192,7 +228,8 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
     }
   }
 
-  they should "support inbound messages" in {
+  they should "support inbound messages" in new TestFixture {
+    import rlpxTransportProtocol._
     val userActor = TestProbe[ConnectionEvent]("userActorProbe")(typedSystem)
     val acceptConnectionActor = TestProbe[ActorRef[ConnectionCommand]]("acceptConnectionActorProbe")(typedSystem)
 
@@ -209,7 +246,8 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
     }
   }
 
-  "Inbound connections" should "support outbound message sending" in {
+  "Inbound connections" should "support outbound message sending" in new TestFixture {
+    import rlpxTransportProtocol._
     val listenerEventProbe = TestProbe[ListenerEvent]("userActorProbe")(typedSystem)
     val connectionEventProbe = TestProbe[ConnectionEvent]("userActorProbe")(typedSystem)
     val connectionEventHandlerFactory = (_: URI) => connectionEventProbe.ref
@@ -238,7 +276,8 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
     }
   }
 
-  they should "support inbound messages" in {
+  they should "support inbound messages" in new TestFixture {
+    import rlpxTransportProtocol._
     val listenerEventProbe = TestProbe[ListenerEvent]("userActorProbe")(typedSystem)
     val connectionEventProbe = TestProbe[ConnectionEvent]("userActorProbe")(typedSystem)
     val connectionEventHandlerFactory = (_: URI) => connectionEventProbe.ref

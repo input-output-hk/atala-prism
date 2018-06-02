@@ -58,6 +58,9 @@ class SimpleNode2(nodeName: String, port: Int, bootstrapPeer: Option[URI]) {
         case MessageReceived(m) =>
           println(s"I received message $m from $remoteUri")
           Behavior.same
+        case ConnectionClosed(remoteUri) =>
+          println(s"Connection close to $remoteUri")
+          Behavior.stopped
       }
 
       val transportActor = context.spawn(transport.createTransport(), "RLPxTransport")
@@ -90,6 +93,7 @@ class SimpleNode2(nodeName: String, port: Int, bootstrapPeer: Option[URI]) {
             case Connected(remoteUri, connectionActor) =>
               println(s"Successfully connected to $remoteUri")
               connectionActor ! SendMessage(msg)
+              connectionActor ! CloseConnection
               Behavior.same
             case ConnectionError(m, remoteUri) =>
               println(s"Failed to connect to $remoteUri")
@@ -97,6 +101,9 @@ class SimpleNode2(nodeName: String, port: Int, bootstrapPeer: Option[URI]) {
             case MessageReceived(m) =>
               println(s"I got a message $m")
               Behavior.same
+            case ConnectionClosed(remoteUri) =>
+              println(s"Connection close to $remoteUri")
+              Behavior.stopped
           }
 
           transportActor ! Connect(
