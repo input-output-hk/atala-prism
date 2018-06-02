@@ -104,7 +104,7 @@ object DiscoveryManager {
       def listening(address: InetSocketAddress): Behavior[DiscoveryRequest] = Behaviors.receiveMessage {
 
         case Blacklist(node: Node) =>
-          knownNodesStorage.blacklist(node)
+          knownNodesStorage.blacklist(node, discoveryConfig.blacklistDefaultDuration)
           Behavior.same
 
         case GetDiscoveredNodes(replyTo) =>

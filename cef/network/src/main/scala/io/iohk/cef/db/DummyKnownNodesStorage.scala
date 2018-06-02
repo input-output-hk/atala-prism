@@ -5,6 +5,8 @@ import java.time.Clock
 import akka.util.ByteString
 import io.iohk.cef.network.Node
 
+import scala.concurrent.duration.FiniteDuration
+
 //Implementation only for demo-ing purposes
 class DummyKnownNodesStorage(clock: Clock) extends KnownNodesStorage {
 
@@ -23,6 +25,6 @@ class DummyKnownNodesStorage(clock: Clock) extends KnownNodesStorage {
   }
 
   //Implementation only for demo-ing purposes
-  override def blacklist(node: Node): Unit = remove(node)
+  override def blacklist(node: Node, duration: FiniteDuration): Unit = remove(node)
 
 }

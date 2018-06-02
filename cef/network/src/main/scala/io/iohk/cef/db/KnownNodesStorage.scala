@@ -2,6 +2,8 @@ package io.iohk.cef.db
 
 import io.iohk.cef.network.Node
 
+import scala.concurrent.duration.FiniteDuration
+
 trait KnownNodesStorage {
   def getAll(): Set[KnownNode]
 
@@ -14,5 +16,5 @@ trait KnownNodesStorage {
 
   def remove(node: Node): Unit
 
-  def blacklist(node: Node): Unit
+  def blacklist(node: Node, duration: FiniteDuration): Unit
 }

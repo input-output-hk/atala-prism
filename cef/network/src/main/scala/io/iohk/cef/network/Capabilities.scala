@@ -18,11 +18,6 @@ case class Capabilities(byte: Byte) {
 
 object Capabilities {
 
-  import anorm._
-
-  def tableParser(columnName: String) =
-    SqlParser.byteArray(columnName).map(arr => Capabilities(arr(0)))
-
   implicit val capabilitiesRLPEncDec = new RLPEncDec[Capabilities] {
     override def encode(obj: Capabilities): RLPEncodeable = {
       RLPValue(Array(obj.byte))
