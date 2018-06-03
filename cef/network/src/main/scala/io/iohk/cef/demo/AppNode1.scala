@@ -1,10 +1,9 @@
 package io.iohk.cef.demo
 
-import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.Behaviors
-import akka.{actor => untyped}
 import akka.actor.typed.scaladsl.adapter._
-import io.iohk.cef.db.ConnectionPool
+import akka.actor.typed.{ActorRef, Behavior}
+import akka.{actor => untyped}
 import io.iohk.cef.discovery.DiscoveryManager.{DiscoveredNodes, GetDiscoveredNodes}
 import io.iohk.cef.discovery._
 import io.iohk.cef.network.Capabilities
@@ -24,11 +23,10 @@ object LogEverything {
 object AppNode1 extends AppBase {
 
   def main(args: Array[String]): Unit = {
-    val pool = new ConnectionPool("default")
 
     implicit val actorSystem: untyped.ActorSystem = untyped.ActorSystem("cef_system")
 
-    val actor = createActor(8, Set(9), Capabilities(1), pool)
+    val actor = createActor(8, Set(9), Capabilities(1))
 
     val spy = actorSystem.actorOf(LogEverything.props())
 

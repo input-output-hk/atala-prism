@@ -1,3 +1,5 @@
+import com.typesafe.config.ConfigFactory
+
 // Thus it begins.
 val commonSettings = Seq(
   organization := "io.iohk.cef",
@@ -6,7 +8,21 @@ val commonSettings = Seq(
   scalaVersion := "2.12.5"
 )
 
-val dependencies = {
+enablePlugins(FlywayPlugin)
+
+FlywayConfig.config := {
+  val parsedFile = ConfigFactory.parseFile((resourceDirectory in Compile).value / "application.conf")
+  val url = parsedFile.getString("db.default.url")
+  val user = parsedFile.getString("db.default.user")
+  val password = parsedFile.getString("db.default.password")
+  new FlywayConfig(url, user, password)
+}
+
+flywayUrl := FlywayConfig.config.value.url
+flywayUser := FlywayConfig.config.value.user
+flywayLocations += "db/migration"
+
+val dep = {
   val akkaVersion = "2.5.12"
 
   Seq(
@@ -17,18 +33,11 @@ val dependencies = {
     "org.bouncycastle" % "bcprov-jdk15on" % "1.59",
     "com.h2database" % "h2" % "1.4.197",
 
-    //Scalike
     "org.scalikejdbc" %% "scalikejdbc"       % "3.2.2",
     "ch.qos.logback"  %  "logback-classic"   % "1.2.3",
     "org.scalikejdbc" %% "scalikejdbc-config"  % "3.2.2",
-
     "org.scalikejdbc" %% "scalikejdbc-test"   % "3.2.2" % Test,
-
-    //Anorm
-    "org.playframework.anorm" %% "anorm" % "2.6.2",
-    "com.jolbox" % "bonecp" % "0.8.0.RELEASE",
-
-    //Doobie
+    "org.flywaydb" % "flyway-core" % "5.0.2" % Test,
 
     "org.scalatest" %% "scalatest" % "3.0.1" % Test,
     "org.scalacheck" %% "scalacheck" % "1.13.4" % Test,
@@ -68,7 +77,7 @@ val compilerOptions = Seq(
 val root = project.in(file("."))
   .settings(commonSettings: _*)
   .settings(
-    libraryDependencies ++= dependencies,
+    libraryDependencies ++= dep,
     autoAPIMappings := true,
     verifyDependencies in verify ++= verifyDeps,
     verifyOptions in verify := VerifyOptions(
@@ -81,3 +90,5 @@ val root = project.in(file("."))
     ),
     scalacOptions ++= compilerOptions
   )
+
+javaOptions in Test += "-Dconfig.resource=application.test.conf"

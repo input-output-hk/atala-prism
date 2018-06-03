@@ -30,6 +30,7 @@ trait TransportProtocol {
     * @param eventHandler an actor to send notifications about events on the connection.
     */
   case class Connect(address: AddressType,
+                     replyTo: ActorRef[ActorRef[ConnectionCommand]],
                      eventHandler: ActorRef[ConnectionEvent])
       extends TransportCommand
 
@@ -93,12 +94,15 @@ trait TransportProtocol {
     extends ConnectionEvent
 
   /**
+    * Notification that a connection has been closed.
+    */
+  case class ConnectionClosed(address: AddressType) extends ConnectionEvent
+
+  /**
     * Notification that a message has been received from a peer on the network.
     * @param message the received message
     */
   case class MessageReceived(message: MessageType) extends ConnectionEvent
-  // TODO connection events
-  // connection closed
 
   /**
     * ConnectionCommand allows the management of connections and message sending.
@@ -111,7 +115,10 @@ trait TransportProtocol {
     */
   case class SendMessage(message: MessageType) extends ConnectionCommand
 
-  // TODO close connection
+  /**
+    * Close a connection.
+    */
+  case object CloseConnection extends ConnectionCommand
 
 }
 

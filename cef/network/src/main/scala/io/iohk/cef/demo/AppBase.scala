@@ -7,9 +7,9 @@ import java.time.Clock
 import akka.{actor => untyped}
 import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.adapter._
-
 import akka.util.ByteString
-import io.iohk.cef.db.{AnormKnownNodeStorage, ConnectionPool}
+import akka.{actor => untyped}
+import io.iohk.cef.db.KnownNodeStorageImpl
 import io.iohk.cef.discovery.DiscoveryManager.DiscoveryRequest
 import io.iohk.cef.discovery._
 import io.iohk.cef.encoding.{Decoder, Encoder}
@@ -39,7 +39,8 @@ trait AppBase extends Logger {
     scanInterval = 100.seconds,
     messageExpiration = 100.minute,
     maxSeekResults = 10,
-    multipleConnectionsPerAddress = true)
+    multipleConnectionsPerAddress = true,
+    blacklistDefaultDuration = 30 seconds)
 
   import io.iohk.cef.encoding.rlp.RLPEncoders._
   import io.iohk.cef.encoding.rlp.RLPImplicits._
@@ -48,7 +49,7 @@ trait AppBase extends Logger {
 
   val decoder = implicitly[Decoder[ByteString, DiscoveryWireMessage]]
 
-  def createActor(id: Int, bootstrapNodeIds: Set[Int], capabilities: Capabilities, pool: ConnectionPool)
+  def createActor(id: Int, bootstrapNodeIds: Set[Int], capabilities: Capabilities)
                  (implicit system: untyped.ActorSystem):
   ActorRef[DiscoveryRequest] = {
 
@@ -65,13 +66,13 @@ trait AppBase extends Logger {
 
     val behavior = DiscoveryManager.behaviour(
       config,
-      new AnormKnownNodeStorage(Clock.systemUTC(), pool),
+      new KnownNodeStorageImpl(Clock.systemUTC()),
       state,
       Clock.systemUTC(),
       encoder,
       decoder,
       context => context.spawn(
-        DiscoveryListener.behavior(discoveryConfig, encoder, decoder), "DiscoveryListener"),
+        DiscoveryListener.behavior(config, encoder, decoder), "DiscoveryListener"),
       secureRandom
     )
 

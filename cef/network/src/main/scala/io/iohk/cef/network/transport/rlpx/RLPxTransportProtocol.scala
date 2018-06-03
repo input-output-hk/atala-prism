@@ -36,8 +36,8 @@ class RLPxTransportProtocol[T](encoder: Encoder[T, ByteString],
     Behaviors.receive { (context, message) =>
       message match {
 
-        case Connect(uri, eventHandler) =>
-          context.spawn(connectionBehaviour(uri, eventHandler),
+        case Connect(uri, replyTo, eventHandler) =>
+          context.spawn(connectionBehaviour(uri, replyTo, eventHandler),
                         UUID.randomUUID().toString)
           Behavior.same
 
@@ -70,6 +70,7 @@ class RLPxTransportProtocol[T](encoder: Encoder[T, ByteString],
   // for those connections.
   private def connectionBehaviour(
       uri: URI,
+      replyTo: ActorRef[ActorRef[ConnectionCommand]],
       eventHandler: ActorRef[ConnectionEvent]): Behavior[ConnectionCommand] = Behaviors.setup {
 
     context =>
@@ -77,11 +78,15 @@ class RLPxTransportProtocol[T](encoder: Encoder[T, ByteString],
       val connectionBridgeActor =
         context.actorOf(connectionBridge(uri, context.self, eventHandler))
 
+      replyTo ! context.self
+
       Behaviors.receiveMessage {
         case SendMessage(m) =>
-          connectionBridgeActor ! io.iohk.cef.network.transport.rlpx.RLPxConnectionHandler
-            .SendMessage(new EncodingAdapter(m, encoder))
+          connectionBridgeActor ! RLPxConnectionHandler.SendMessage(new EncodingAdapter(m, encoder))
           Behavior.same
+        case CloseConnection =>
+          connectionBridgeActor ! akka.io.Tcp.Close
+          Behavior.ignore // The bridge will stop this actor upon receiving the Tcp close event.
       }
     }
 
@@ -89,9 +94,10 @@ class RLPxTransportProtocol[T](encoder: Encoder[T, ByteString],
   private def connectionBehaviour(rLPxConnectionHandler: untyped.ActorRef): Behavior[ConnectionCommand] =
     Behaviors.receiveMessage {
       case SendMessage(m) =>
-        rLPxConnectionHandler ! io.iohk.cef.network.transport.rlpx.RLPxConnectionHandler
-          .SendMessage(new EncodingAdapter(m, encoder))
+        rLPxConnectionHandler ! RLPxConnectionHandler.SendMessage(new EncodingAdapter(m, encoder))
         Behavior.same
+      case CloseConnection =>
+        ???
     }
 
   private def listenerBridge(
@@ -275,8 +281,17 @@ class RLPxTransportProtocol[T](encoder: Encoder[T, ByteString],
       case RLPxConnectionHandler.MessageReceived(message) =>
         eventHandler ! MessageReceived(decoder.decode(message))
 
+      case akka.io.Tcp.Close =>
+        rlpxConnectionHandler ! akka.io.Tcp.Close
+        context.become(awaitingClosure)
     }
-  }
+
+    private def awaitingClosure: Receive = {
+        case akka.io.Tcp.Closed =>
+          eventHandler ! ConnectionClosed(uri)
+          context.stop(connectBehaviour)
+      }
+    }
 
   object ConnectionBridge {
     def props(uri: URI,
