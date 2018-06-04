@@ -6,7 +6,7 @@ import java.time.Clock
 
 import akka.actor.typed.Behavior
 import akka.util.ByteString
-import io.iohk.cef.db.DummyKnownNodesStorage
+import io.iohk.cef.db.KnownNodeStorage
 import io.iohk.cef.discovery.DiscoveryManager.DiscoveryRequest
 import io.iohk.cef.discovery._
 import io.iohk.cef.encoding.{Decoder, Encoder}
@@ -18,7 +18,10 @@ import scala.concurrent.duration._
 
 object DiscoveryActor {
 
-  def discoveryBehavior(uri: URI, bootstrapNodeUris: Set[URI], capabilities: Capabilities): Behavior[DiscoveryRequest] = {
+  def discoveryBehavior(uri: URI,
+                        bootstrapNodeUris: Set[URI],
+                        capabilities: Capabilities,
+                        knownNodeStorage: KnownNodeStorage): Behavior[DiscoveryRequest] = {
     import io.iohk.cef.encoding.rlp.RLPEncoders._
     import io.iohk.cef.encoding.rlp.RLPImplicits._
 
@@ -36,7 +39,7 @@ object DiscoveryActor {
 
     DiscoveryManager.behaviour(
       discoveryConfig,
-      new DummyKnownNodesStorage(Clock.systemUTC()),
+      knownNodeStorage,
       state,
       Clock.systemUTC(),
       encoder,

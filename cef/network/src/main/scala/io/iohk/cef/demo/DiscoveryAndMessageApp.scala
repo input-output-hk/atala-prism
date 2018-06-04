@@ -1,11 +1,11 @@
 package io.iohk.cef.demo
 
 import java.net.URI
-import java.time.Instant
+import java.time.{Clock, Instant}
 
 import akka.actor.typed.scaladsl.{Behaviors, TimerScheduler}
 import akka.actor.typed.{ActorRef, ActorSystem, Behavior, Logger}
-import io.iohk.cef.db.KnownNode
+import io.iohk.cef.db.{KnownNode, KnownNodeStorageImpl}
 import SimpleNode2.{Send, Start, Started}
 import io.iohk.cef.discovery.DiscoveryManager.{DiscoveredNodes, DiscoveryRequest, GetDiscoveredNodes}
 import io.iohk.cef.network.{Capabilities, Node}
@@ -34,6 +34,8 @@ object DiscoveryAndMessageApp {
     val port = argMap("port").toInt
     val bootstrapNodes = argMap("bootstrap-node-uris").split("\\s*,\\s*").filterNot(_.isEmpty).map(new URI(_)).toSet
 
+    val knownNodeStorage = new KnownNodeStorageImpl(Clock.systemUTC())
+
     val start: Behavior[String] = Behaviors.setup {
       context =>
 
@@ -44,7 +46,10 @@ object DiscoveryAndMessageApp {
           case Started(nodeUri) =>
 
             val discoveryActor: ActorRef[DiscoveryRequest] =
-              context.spawn(DiscoveryActor.discoveryBehavior(nodeUri, bootstrapNodes, Capabilities(1)), "DiscoveryActor")
+              context.spawn(DiscoveryActor.discoveryBehavior(nodeUri,
+                bootstrapNodes,
+                Capabilities(1),
+                knownNodeStorage), "DiscoveryActor")
 
             context.spawn(new Greeter(nodeUri, nodeActor, discoveryActor).behavior, "PeerGreeter")
 
