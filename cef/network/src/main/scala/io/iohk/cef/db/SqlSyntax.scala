@@ -8,36 +8,30 @@ import io.iohk.cef.network.{Capabilities, Node}
 import org.bouncycastle.util.encoders.Hex
 import scalikejdbc.{WrappedResultSet, _}
 
-case class KnownNodeTable(nodeId: ByteString, lastSeen: Instant, discovered: Instant)
+case class KnownNodeTable(id: ByteString,
+                          discoveryAddress: Array[Byte],
+                          discoveryPort: Int,
+                          serverAddress: Array[Byte],
+                          serverPort: Int,
+                          capabilities: Capabilities,
+                          nodeId: ByteString,
+                          lastSeen: Instant,
+                          discovered: Instant)
 
 object KnownNodeTable extends SQLSyntaxSupport[KnownNodeTable] {
   override val tableName = Schema.knownNodeTableName
 
-  def apply(n: ResultName[NodeTable], kn: ResultName[KnownNodeTable])(rs: WrappedResultSet) = new KnownNode(
-    NodeTable(n)(rs),
+  def apply(kn: ResultName[KnownNodeTable])(rs: WrappedResultSet) = new KnownNode(
+    Node(
+      ByteString(Hex.decode(rs.string(kn.id))),
+      new InetSocketAddress(InetAddress.getByAddress(rs.bytes(kn.discoveryAddress)), rs.int(kn.discoveryPort)),
+      new InetSocketAddress(InetAddress.getByAddress(rs.bytes(kn.serverAddress)), rs.int(kn.serverPort)),
+      Capabilities(rs.bytes(kn.capabilities)(0))
+    ),
     rs.timestamp(kn.discovered).toInstant,
     rs.timestamp(kn.lastSeen).toInstant
   )
 }
-
-case class NodeTable(id: ByteString,
-                    discoveryAddress: Array[Byte],
-                    discoveryPort: Int,
-                    serverAddress: Array[Byte],
-                    serverPort: Int,
-                    capabilities: Capabilities)
-
-object NodeTable extends SQLSyntaxSupport[NodeTable] {
-  override val tableName = Schema.nodeTableName
-
-  def apply(n: ResultName[NodeTable])(rs: WrappedResultSet) = Node(
-    ByteString(Hex.decode(rs.string(n.id))),
-    new InetSocketAddress(InetAddress.getByAddress(rs.bytes(n.discoveryAddress)), rs.int(n.discoveryPort)),
-    new InetSocketAddress(InetAddress.getByAddress(rs.bytes(n.serverAddress)), rs.int(n.serverPort)),
-    Capabilities(rs.bytes(n.capabilities)(0))
-  )
-}
-
 
 case class BlacklistNodeTable(nodeId: ByteString,
                               blacklistSince: Instant,
@@ -46,8 +40,8 @@ case class BlacklistNodeTable(nodeId: ByteString,
 object BlacklistNodeTable extends SQLSyntaxSupport[BlacklistNodeTable] {
   override val tableName = Schema.blacklistNodeTableName
 
-  def apply(n: ResultName[NodeTable], bn: ResultName[BlacklistNodeTable])(rs: WrappedResultSet) = BlacklistNode(
-    NodeTable(n)(rs),
+  def apply(n: ResultName[KnownNodeTable], bn: ResultName[BlacklistNodeTable])(rs: WrappedResultSet) = BlacklistNode(
+    KnownNodeTable(n)(rs).node,
     rs.timestamp(bn.blacklistSince).toInstant,
     rs.timestamp(bn.blacklistUntil).toInstant
   )
