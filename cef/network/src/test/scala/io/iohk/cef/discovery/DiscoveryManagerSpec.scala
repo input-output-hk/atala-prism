@@ -5,9 +5,9 @@ import java.security.SecureRandom
 
 import akka.actor.typed.ActorRef._
 import akka.actor.typed.scaladsl.adapter._
-import akka.actor.typed.{ActorContext, ActorRef, Behavior}
+import akka.actor.typed.{ActorContext, ActorRef}
 import akka.actor.{ActorSystem, typed}
-import akka.testkit.typed.scaladsl.TestProbe
+import akka.testkit.typed.scaladsl.{BehaviorTestKit, TestInbox, TestProbe}
 import akka.testkit.{TestProbe => UntypedTestProbe}
 import akka.util.ByteString
 import akka.{actor => untyped}
@@ -47,7 +47,7 @@ class DiscoveryManagerSpec extends fixture.FlatSpecLike with AutoRollbackSpec wi
 
     def bootstrapNodes: Set[Node] = Set()
 
-    def discoveryConfig = new DiscoveryConfig(
+    val discoveryConfig = new DiscoveryConfig(
       discoveryEnabled = true,
       interface = "0.0.0.0",
       port = 8090,
@@ -83,15 +83,17 @@ class DiscoveryManagerSpec extends fixture.FlatSpecLike with AutoRollbackSpec wi
 
     val secureRandom = new SecureRandom()
 
+    def createBehavior = DiscoveryManager.behaviour(
+      discoveryConfig,
+      knownNodeStorage,
+      nodeState,
+      mockClock,
+      encoder, decoder,
+      listenerMaker,
+      secureRandom)
+
     def createActor: ActorRef[DiscoveryRequest] = {
-      val behavior: Behavior[DiscoveryRequest] = DiscoveryManager.behaviour(
-        discoveryConfig,
-        knownNodeStorage,
-        nodeState,
-        mockClock,
-        encoder, decoder,
-        listenerMaker,
-        secureRandom)
+      val behavior = createBehavior
 
       val actor: ActorRef[DiscoveryRequest] =
         untypedSystem.spawn(behavior, s"ActorUnderTest_${randomAlphanumeric(5)}")
@@ -200,7 +202,9 @@ class DiscoveryManagerSpec extends fixture.FlatSpecLike with AutoRollbackSpec wi
       }
     }
   }
-//    "process a Neighbors message" in new ListeningDiscoveryManager {
+//  it should "process a Neighbors message" in { s =>
+//    new ListeningDiscoveryManager {
+//      override val session = s
 //      def createNode(id: String, discoveryPort: Int, serverPort: Int, capabilities: Capabilities) =
 //        Node(ByteString(id),
 //          new InetSocketAddress(localhost, discoveryPort),
@@ -223,8 +227,8 @@ class DiscoveryManagerSpec extends fixture.FlatSpecLike with AutoRollbackSpec wi
 //      val pingB = listener.expectMsgType[DiscoveryListener.SendMessage]
 //
 //      actor.underlyingActor.pingedNodes.values.toSet mustBe Set(Pinged(nodeA, mockClock.instant), Pinged(nodeB, mockClock.instant))
-//      pingA.message mustBe a [Ping]
-//      pingB.message mustBe a [Ping]
+//      pingA.message mustBe a[Ping]
+//      pingB.message mustBe a[Ping]
 //      pingA.to mustBe nodeA.discoveryAddress
 //      pingB.to mustBe nodeB.discoveryAddress
 //
@@ -235,31 +239,37 @@ class DiscoveryManagerSpec extends fixture.FlatSpecLike with AutoRollbackSpec wi
 //        case _ => fail("Wrong message type")
 //      }
 //    }
-//    "discover the peers of a connected node" in {
-//      pending
-//    }
-//    "stop accepting new peers when the nodes limit is reached" in {
-//      pending
-//    }
-//    "scan pinged nodes and already discovered nodes" in {
-//      pending
-//    }
-//    "prevent multiple connections from the same IP when configured" in {
-//      pending
-//    }
-//    "not process pong messages in absence of a ping" in new ListeningDiscoveryManager {
-//      val actor = createActor
-//      val node = Node(nodeState.nodeId,discoveryAddress, serverAddress, nodeState.capabilities)
-//      val expiration = mockClock.instant().getEpochSecond + 1
-//      val pong = Pong(node,ByteString("token"),expiration)
-//      val probe = TestProbe()
-//      system.eventStream.subscribe(probe.ref, classOf[CompatibleNodeFound])
-//      actor ! DiscoveryListener.MessageReceived(pong, discoveryAddress)
-//      probe.expectNoMessage()
-//    }
-//    "not process neighbors messages in absence of a seek" in {
-//      pending
-//    }
+//  }
+  it should "discover the peers of a connected node" in { s =>
+    pending
+  }
+  it should "stop accepting new peers when the nodes limit is reached" in { s =>
+    pending
+  }
+  it should "scan pinged nodes and already discovered nodes" in { s =>
+    pending
+  }
+  it should "prevent multiple connections from the same IP when configured" in { s =>
+    pending
+  }
+  it should "not process pong messages in absence of a ping" in { s =>
+    new ListeningDiscoveryManager {
+      override val session = s
+      val inbox = TestInbox[DiscoveryListenerRequest]()
+      override val listenerMaker = (_: ActorContext[DiscoveryRequest]) => inbox.ref
+
+      val actor = BehaviorTestKit(createBehavior)
+      val node = Node(nodeState.nodeId, discoveryAddress, serverAddress, nodeState.capabilities)
+      val expiration = mockClock.instant().getEpochSecond + 1
+      val pong = Pong(node, ByteString("token"), expiration)
+      actor.run(DiscoveryResponseWrapper(DiscoveryListener.MessageReceived(pong, discoveryAddress)))
+      knownNodeStorage.getAll() mustBe Set()
+      inbox.receiveAll().collect { case w: DiscoveryResponseWrapper => w} mustBe Seq()
+    }
+  }
+  it should "not process neighbors messages in absence of a seek" in { s =>
+    pending
+  }
 
   override protected def afterAll(): Unit = {
     typedSystem.terminate()
