@@ -34,6 +34,8 @@ val dep = {
     "org.bouncycastle" % "bcprov-jdk15on" % "1.59",
     "com.h2database" % "h2" % "1.4.197",
 
+    "io.micrometer" % "micrometer-registry-datadog" % "1.0.4",
+
     "org.scalikejdbc" %% "scalikejdbc"       % "3.2.2",
     "ch.qos.logback"  %  "logback-classic"   % "1.2.3",
     "org.scalikejdbc" %% "scalikejdbc-config"  % "3.2.2",

@@ -14,6 +14,7 @@ import io.iohk.cef.network.NodeStatus.NodeState
 import io.iohk.cef.network.ServerStatus
 import io.iohk.cef.utils.FiniteSizedMap
 import DiscoveryListener._
+import io.micrometer.core.instrument.MeterRegistry
 import org.bouncycastle.util.encoders.Hex
 
 import scala.util.Random
@@ -58,7 +59,8 @@ object DiscoveryManager {
                 encoder: Encoder[DiscoveryWireMessage, ByteString],
                 decoder: Decoder[ByteString, DiscoveryWireMessage],
                 discoveryListenerFactory: ActorContext[DiscoveryRequest] => ActorRef[DiscoveryListenerRequest],
-                randomSource: SecureRandom): Behavior[DiscoveryRequest] = Behaviors.setup {
+                randomSource: SecureRandom,
+                registry: MeterRegistry): Behavior[DiscoveryRequest] = Behaviors.setup {
     context =>
 
       import akka.actor.typed.scaladsl.adapter._
@@ -74,6 +76,8 @@ object DiscoveryManager {
       val discoveryListener = discoveryListenerFactory(context)
 
       val discoveryListenerAdapter = context.messageAdapter(DiscoveryResponseWrapper)
+
+      val knownNode = registry.gaugeCollectionSize[List[Any]](List(), "list")
 
       def startListening(timer: TimerScheduler[DiscoveryRequest]): Behavior[DiscoveryRequest] = Behaviors.setup {
         context =>
