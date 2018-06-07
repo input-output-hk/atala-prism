@@ -45,7 +45,8 @@ object DiscoveryActor {
       encoder,
       decoder,
       context => context.spawn(
-        DiscoveryListener.behavior(discoveryConfig, encoder, decoder),
+        DiscoveryListener.behavior(discoveryConfig,
+          UDPBridge.creator(discoveryConfig, encoder, decoder)),
         "DiscoveryListener"),
       new SecureRandom())
   }

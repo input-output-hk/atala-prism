@@ -2,13 +2,9 @@ package io.iohk.cef.discovery
 
 import java.net.InetSocketAddress
 
-import akka.actor.typed.scaladsl.Behaviors
+import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
 import akka.actor.typed.{ActorRef, Behavior}
-import akka.io.{IO, Udp}
-import akka.actor.typed.scaladsl.adapter._
-import akka.util.ByteString
 import akka.{actor => untyped}
-import io.iohk.cef.encoding.{Decoder, Encoder}
 
 private [cef] object DiscoveryListener {
 
@@ -18,7 +14,7 @@ private [cef] object DiscoveryListener {
 
   case class SendMessage(message: DiscoveryWireMessage, to: InetSocketAddress) extends DiscoveryListenerRequest
 
-  private case class Forward(response: DiscoveryListenerResponse) extends DiscoveryListenerRequest
+  private [discovery] case class Forward(response: DiscoveryListenerResponse) extends DiscoveryListenerRequest
 
   sealed trait DiscoveryListenerResponse
 
@@ -29,33 +25,11 @@ private [cef] object DiscoveryListener {
 
 
   def behavior(discoveryConfig: DiscoveryConfig,
-               encoder: Encoder[DiscoveryWireMessage, ByteString],
-               decoder: Decoder[ByteString, DiscoveryWireMessage]): Behavior[DiscoveryListenerRequest] = {
-
-    class UDPBridge(discoveryListener: ActorRef[DiscoveryListenerRequest]) extends untyped.Actor {
-
-      IO(Udp)(context.system) ! Udp.Bind(self, new InetSocketAddress(discoveryConfig.interface, discoveryConfig.port))
-
-      override def receive: Receive = {
-        case Udp.Bound(local) =>
-          discoveryListener ! Forward(Ready(local))
-          context.become(ready(sender()))
-      }
-
-      private def ready(socket: untyped.ActorRef): Receive = {
-        case Udp.Received(data, remote) =>
-          val packet = decoder.decode(data)
-          discoveryListener ! Forward(MessageReceived(packet, remote))
-
-        case SendMessage(packet, to) =>
-          val encodedPacket = encoder.encode(packet)
-          socket ! Udp.Send(encodedPacket, to)
-      }
-    }
+               udpBridgeCreator: (ActorContext[DiscoveryListenerRequest]) => untyped.ActorRef): Behavior[DiscoveryListenerRequest] = {
 
     def initialState: Behavior[DiscoveryListenerRequest] = Behaviors.receivePartial {
       case (context, Start(replyTo)) => {
-        val udpBridge = context.actorOf(untyped.Props(new UDPBridge(context.self)))
+        val udpBridge = udpBridgeCreator(context)
         startingState(replyTo, udpBridge)
       }
       case (context, msg) => {
