@@ -1,0 +1,44 @@
+package io.iohk.cef.discovery
+
+import java.net.InetSocketAddress
+
+import akka.actor.typed.ActorRef
+import akka.actor.typed.scaladsl.ActorContext
+import akka.{actor => untyped}
+import akka.io.{IO, Udp}
+import akka.util.ByteString
+import io.iohk.cef.discovery.DiscoveryListener._
+import io.iohk.cef.encoding.{Decoder, Encoder}
+import akka.actor.typed.scaladsl.adapter._
+
+class UDPBridge(discoveryListener: ActorRef[DiscoveryListenerRequest],
+                discoveryConfig: DiscoveryConfig,
+                encoder: Encoder[DiscoveryWireMessage, ByteString],
+                decoder: Decoder[ByteString, DiscoveryWireMessage]) extends untyped.Actor {
+
+  IO(Udp)(context.system) ! Udp.Bind(self, new InetSocketAddress(discoveryConfig.interface, discoveryConfig.port))
+
+  override def receive: Receive = {
+    case Udp.Bound(local) =>
+      discoveryListener ! Forward(Ready(local))
+      context.become(ready(sender()))
+  }
+
+  private def ready(socket: untyped.ActorRef): Receive = {
+    case Udp.Received(data, remote) =>
+      val packet = decoder.decode(data)
+      discoveryListener ! Forward(MessageReceived(packet, remote))
+
+    case SendMessage(packet, to) =>
+      val encodedPacket = encoder.encode(packet)
+      socket ! Udp.Send(encodedPacket, to)
+  }
+}
+
+object UDPBridge {
+  def creator(config: DiscoveryConfig,
+              encoder: Encoder[DiscoveryWireMessage, ByteString],
+              decoder: Decoder[ByteString, DiscoveryWireMessage])
+              (context: ActorContext[DiscoveryListenerRequest]) =
+    context.actorOf(untyped.Props(new UDPBridge(context.asScala.self, config, encoder, decoder)))
+}

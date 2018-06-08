@@ -26,6 +26,7 @@ class FiniteSizedMapSpec extends FlatSpec with PropertyChecks with MustMatchers 
   it should "be empty when created" in {
     val map = new FiniteSizedMap[String,Int](1, 10 milli, Clock.systemUTC())
     map.size mustBe 0
+    map.values.size mustBe 0
   }
 
   it should "drop values already expired" in {

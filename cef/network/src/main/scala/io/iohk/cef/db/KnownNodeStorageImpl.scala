@@ -10,7 +10,7 @@ import scalikejdbc.config._
 import scala.concurrent.duration.FiniteDuration
 
 
-class KnownNodeStorageImpl(clock: Clock, dbName: Symbol = 'default) extends KnownNodesStorage {
+class KnownNodeStorageImpl(clock: Clock, dbName: Symbol = 'default) extends KnownNodeStorage {
 
   DBs.setup(dbName)
 

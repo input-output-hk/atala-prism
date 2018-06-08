@@ -8,7 +8,7 @@ import akka.actor.typed.scaladsl.{ActorContext, Behaviors, StashBuffer, TimerSch
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.util.ByteString
 import io.iohk.cef.crypto
-import io.iohk.cef.db.KnownNodesStorage
+import io.iohk.cef.db.KnownNodeStorage
 import io.iohk.cef.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.NodeStatus.NodeState
 import io.iohk.cef.network.ServerStatus
@@ -52,7 +52,7 @@ object DiscoveryManager {
   private val nonceSize = 2
 
   def behaviour(discoveryConfig: DiscoveryConfig,
-                knownNodesStorage: KnownNodesStorage,
+                knownNodesStorage: KnownNodeStorage,
                 nodeState: NodeState,
                 clock: Clock,
                 encoder: Encoder[DiscoveryWireMessage, ByteString],

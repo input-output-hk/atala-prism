@@ -4,7 +4,6 @@ import java.net.{InetAddress, InetSocketAddress}
 import java.security.SecureRandom
 import java.time.Clock
 
-import akka.{actor => untyped}
 import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.adapter._
 import akka.util.ByteString
@@ -72,7 +71,8 @@ trait AppBase extends Logger {
       encoder,
       decoder,
       context => context.spawn(
-        DiscoveryListener.behavior(config, encoder, decoder), "DiscoveryListener"),
+        DiscoveryListener.behavior(config,
+          UDPBridge.creator(config, encoder, decoder)), "DiscoveryListener"),
       secureRandom
     )
 
