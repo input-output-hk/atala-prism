@@ -204,44 +204,45 @@ class DiscoveryManagerSpec extends fixture.FlatSpecLike with AutoRollbackSpec wi
       }
     }
   }
-//  it should "process a Neighbors message" in { s =>
-//    new ListeningDiscoveryManager {
-//      override val session = s
-//      def createNode(id: String, discoveryPort: Int, serverPort: Int, capabilities: Capabilities) =
-//        Node(ByteString(id),
-//          new InetSocketAddress(localhost, discoveryPort),
-//          new InetSocketAddress(localhost, serverPort),
-//          capabilities)
-//
-//      val actor = createActor
-//      val node = Node(nodeState.nodeId, discoveryAddress, serverAddress, nodeState.capabilities)
-//      val nodeA = createNode("1", 9000, 9001, nodeState.capabilities)
-//      val nodeB = createNode("2", 9003, 9002, nodeState.capabilities)
-//      val nodeC = createNode("3", 9005, 9004, nodeState.capabilities)
-//      val expiration = mockClock.instant().getEpochSecond + 2
-//      val token = ByteString("token")
-//      actor.underlyingActor.soughtNodes += ((token -> Sought(node, mockClock.instant())))
-//      val neighbors = Neighbors(Capabilities(1), token, 10, Seq(nodeA, nodeB, nodeC), expiration)
-//      mockClock.tick
-//      actor ! DiscoveryListener.MessageReceived(neighbors, discoveryAddress)
-//
-//      val pingA = listener.expectMsgType[DiscoveryListener.SendMessage]
-//      val pingB = listener.expectMsgType[DiscoveryListener.SendMessage]
-//
-//      actor.underlyingActor.pingedNodes.values.toSet mustBe Set(Pinged(nodeA, mockClock.instant), Pinged(nodeB, mockClock.instant))
-//      pingA.message mustBe a[Ping]
-//      pingB.message mustBe a[Ping]
-//      pingA.to mustBe nodeA.discoveryAddress
-//      pingB.to mustBe nodeB.discoveryAddress
-//
-//      (pingA.message, pingB.message) match {
-//        case (pa: Ping, pb: Ping) =>
-//          pa.messageType mustBe Ping.messageType
-//          pb.messageType mustBe Ping.messageType
-//        case _ => fail("Wrong message type")
-//      }
-//    }
-//  }
+  it should "process a Neighbors message" in { s =>
+    pending
+    new ListeningDiscoveryManager {
+      override val session = s
+      def createNode(id: String, discoveryPort: Int, serverPort: Int, capabilities: Capabilities) =
+        Node(ByteString(id),
+          new InetSocketAddress(localhost, discoveryPort),
+          new InetSocketAddress(localhost, serverPort),
+          capabilities)
+
+      val actor = BehaviorTestKit(createBehavior)
+      val node = Node(nodeState.nodeId, discoveryAddress, serverAddress, nodeState.capabilities)
+      val nodeA = createNode("1", 9000, 9001, nodeState.capabilities)
+      val nodeB = createNode("2", 9003, 9002, nodeState.capabilities)
+      val nodeC = createNode("3", 9005, 9004, nodeState.capabilities)
+      val expiration = mockClock.instant().getEpochSecond + 2
+      val token = ByteString("token")
+      val neighbors = Neighbors(Capabilities(1), token, 10, Seq(nodeA, nodeB, nodeC), expiration)
+      mockClock.tick
+
+      discoveryListener.expectMessageType[Start]
+      actor.run(DiscoveryResponseWrapper(Ready(new InetSocketAddress(localhost, 9000))))
+      actor.run(DiscoveryResponseWrapper(DiscoveryListener.MessageReceived(neighbors, discoveryAddress)))
+      val pingA = discoveryListener.expectMessageType[DiscoveryListener.SendMessage]
+      val pingB = discoveryListener.expectMessageType[DiscoveryListener.SendMessage]
+
+      pingA.message mustBe a[Ping]
+      pingB.message mustBe a[Ping]
+      pingA.to mustBe nodeA.discoveryAddress
+      pingB.to mustBe nodeB.discoveryAddress
+
+      (pingA.message, pingB.message) match {
+        case (pa: Ping, pb: Ping) =>
+          pa.messageType mustBe Ping.messageType
+          pb.messageType mustBe Ping.messageType
+        case _ => fail("Wrong message type")
+      }
+    }
+  }
   it should "discover the peers of a connected node" in { s =>
     pending
   }
