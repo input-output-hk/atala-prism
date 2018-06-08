@@ -2,6 +2,7 @@ import com.typesafe.config.ConfigFactory
 
 // Thus it begins.
 val commonSettings = Seq(
+  organization := "io.iohk.cef",
   name := "network",
   version := "0.1-SNAPSHOT",
   scalaVersion := "2.12.5"
@@ -20,8 +21,6 @@ FlywayConfig.config := {
 flywayUrl := FlywayConfig.config.value.url
 flywayUser := FlywayConfig.config.value.user
 flywayLocations += "db/migration"
-
-mainClass in (Compile, run) := Some("io.iohk.cef.network.transport.rlpx.RLPxNode")
 
 val dep = {
   val akkaVersion = "2.5.12"
@@ -64,10 +63,24 @@ val verifyDeps = Seq(
   "org.bouncycastle" % "bcprov-jdk15on" sha256 "1c31e44e331d25e46d293b3e8ee2d07028a67db011e74cb2443285aed1d59c85"
 )
 
+val compilerOptions = Seq(
+  "-unchecked",
+  "-language:postfixOps",
+  "-deprecation",
+  "-feature",
+  "-Xfatal-warnings",
+  "-Xlint:unsound-match",
+  "-Ywarn-inaccessible",
+  "-Ywarn-unused-import",
+  "-Ypartial-unification",
+  "-encoding", "utf-8"
+)
+
 val root = project.in(file("."))
   .settings(commonSettings: _*)
   .settings(
     libraryDependencies ++= dep,
+    autoAPIMappings := true,
     verifyDependencies in verify ++= verifyDeps,
     verifyOptions in verify := VerifyOptions(
       includeBin = true,
@@ -76,7 +89,8 @@ val root = project.in(file("."))
       excludedJars = Nil,
       warnOnUnverifiedFiles = false,
       warnOnUnusedVerifications = false
-    )
+    ),
+    scalacOptions ++= compilerOptions
   )
 
 scalacOptions := Seq(
@@ -84,7 +98,7 @@ scalacOptions := Seq(
   "-language:postfixOps",
   "-deprecation",
   "-feature",
-  //"-Xfatal-warnings",
+//  "-Xfatal-warnings",
   "-Xlint:unsound-match",
 //  "-Ywarn-inaccessible",
 //  "-Ywarn-unused-import",
