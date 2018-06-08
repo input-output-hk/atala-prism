@@ -11,9 +11,5 @@ object AppNode2 {
     implicit val actorSystem: untyped.ActorSystem = untyped.ActorSystem("cef_system")
 
     createActor(9, Set(8), Capabilities(1))
-
-    val spy = actorSystem.actorOf(LogEverything.props())
-
-    actorSystem.eventStream.subscribe(spy, classOf[CompatibleNodeFound])
   }
 }
