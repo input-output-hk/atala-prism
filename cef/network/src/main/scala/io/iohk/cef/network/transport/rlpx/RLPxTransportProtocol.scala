@@ -4,18 +4,20 @@ import java.net.{InetSocketAddress, URI}
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicInteger
 
-import akka.{actor => untyped}
-import untyped.Props
+import akka.actor.Props
 import akka.actor.typed.scaladsl.Behaviors
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.io.Tcp.Register
 import akka.util.ByteString
+import akka.{actor => untyped}
+import com.typesafe.config.ConfigFactory
 import io.iohk.cef.encoding.rlp.EncodingAdapter
 import io.iohk.cef.encoding.{Decoder, Encoder}
+import io.iohk.cef.network.transport.TransportProtocol
 import io.iohk.cef.network.transport.rlpx.RLPxConnectionHandler.{ConnectTo, ConnectionEstablished, ConnectionFailed, HandleConnection}
 import io.iohk.cef.network.transport.rlpx.ethereum.p2p.Message
-import io.iohk.cef.network.transport.TransportProtocol
-import io.iohk.cef.telemetery.RegistryConfig
+import io.iohk.cef.telemetery.DatadogRegistryConfig
+import io.micrometer.core.instrument.MeterRegistry
 import org.bouncycastle.util.encoders.Hex
 
 class RLPxTransportProtocol[T](encoder: Encoder[T, ByteString],
@@ -29,7 +31,9 @@ class RLPxTransportProtocol[T](encoder: Encoder[T, ByteString],
 
   import akka.actor.typed.scaladsl.adapter._
 
-  val connectionsTracker = RegistryConfig.registry.gauge("connections", new AtomicInteger())
+  override val registry: MeterRegistry = DatadogRegistryConfig.registry
+
+  val connectionsGauge = registry.gauge("connections." + DatadogRegistryConfig.name, new AtomicInteger(0))
 
   override def createTransport(): Behavior[TransportCommand] =
     rlpxTransport()
