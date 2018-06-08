@@ -1,6 +1,9 @@
 package io.iohk.cef.network.transport
 
+import java.util.concurrent.atomic.AtomicInteger
+
 import akka.actor.typed.{ActorRef, Behavior}
+import io.iohk.cef.telemetery.RegistryConfig
 
 /**
   * TransportProtocol defines an abstraction over network transports,
@@ -10,6 +13,8 @@ trait TransportProtocol {
 
   type AddressType
   type MessageType
+
+  val connectionsGauge = RegistryConfig.registry.gauge("connections", new AtomicInteger(0))
 
   /**
     * This function bootstraps the transport and from there on

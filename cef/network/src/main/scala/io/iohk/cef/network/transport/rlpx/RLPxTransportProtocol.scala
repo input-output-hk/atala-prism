@@ -2,6 +2,7 @@ package io.iohk.cef.network.transport.rlpx
 
 import java.net.{InetSocketAddress, URI}
 import java.util.UUID
+import java.util.concurrent.atomic.AtomicInteger
 
 import akka.{actor => untyped}
 import untyped.Props
@@ -14,6 +15,7 @@ import io.iohk.cef.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.transport.rlpx.RLPxConnectionHandler.{ConnectTo, ConnectionEstablished, ConnectionFailed, HandleConnection}
 import io.iohk.cef.network.transport.rlpx.ethereum.p2p.Message
 import io.iohk.cef.network.transport.TransportProtocol
+import io.iohk.cef.telemetery.RegistryConfig
 import org.bouncycastle.util.encoders.Hex
 
 class RLPxTransportProtocol[T](encoder: Encoder[T, ByteString],
@@ -26,6 +28,8 @@ class RLPxTransportProtocol[T](encoder: Encoder[T, ByteString],
   override type MessageType = T
 
   import akka.actor.typed.scaladsl.adapter._
+
+  val connectionsTracker = RegistryConfig.registry.gauge("connections", new AtomicInteger())
 
   override def createTransport(): Behavior[TransportCommand] =
     rlpxTransport()
@@ -212,6 +216,7 @@ class RLPxTransportProtocol[T](encoder: Encoder[T, ByteString],
       case ConnectionEstablished(nodeId) =>
         val remoteUri = toUri(remoteAddress, nodeId)
         val connectionEventHandler = connectionEventHandlerFactory(remoteUri)
+        connectionsGauge.incrementAndGet()
         context.become(connected(remoteUri, connectionEventHandler))
 
         connectionEventHandler ! Connected(remoteUri, connectionActor)

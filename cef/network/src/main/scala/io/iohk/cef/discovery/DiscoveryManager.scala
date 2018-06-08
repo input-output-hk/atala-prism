@@ -77,8 +77,6 @@ object DiscoveryManager {
 
       val discoveryListenerAdapter = context.messageAdapter(DiscoveryResponseWrapper)
 
-      val knownNode = registry.gaugeCollectionSize[List[Any]](List(), "list")
-
       def startListening(timer: TimerScheduler[DiscoveryRequest]): Behavior[DiscoveryRequest] = Behaviors.setup {
         context =>
 

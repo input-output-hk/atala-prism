@@ -14,6 +14,7 @@ import io.iohk.cef.discovery._
 import io.iohk.cef.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.NodeStatus.NodeState
 import io.iohk.cef.network.{Capabilities, Node, ServerStatus}
+import io.iohk.cef.telemetery.RegistryConfig
 import io.iohk.cef.utils.Logger
 
 import scala.concurrent.duration._
@@ -73,7 +74,8 @@ trait AppBase extends Logger {
       context => context.spawn(
         DiscoveryListener.behavior(config,
           UDPBridge.creator(config, encoder, decoder)), "DiscoveryListener"),
-      secureRandom
+      secureRandom,
+      RegistryConfig.registry
     )
 
     system.spawn(behavior, "discovery_behaviour")

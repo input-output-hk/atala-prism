@@ -1,8 +1,10 @@
 package io.iohk.cef.db
 
 import java.time.Clock
+import java.util.concurrent.atomic.AtomicInteger
 
 import io.iohk.cef.network.Node
+import io.iohk.cef.telemetery.RegistryConfig
 import org.bouncycastle.util.encoders.Hex
 import scalikejdbc._
 import scalikejdbc.config._
@@ -13,6 +15,8 @@ import scala.concurrent.duration.FiniteDuration
 class KnownNodeStorageImpl(clock: Clock, dbName: Symbol = 'default) extends KnownNodeStorage {
 
   DBs.setup(dbName)
+
+  val trackingKnownNodes = RegistryConfig.registry.gauge("knownNodes", new AtomicInteger(getAll().size))
 
   override def blacklist(node: Node, duration: FiniteDuration): Unit = {
     val until = clock.instant().plusMillis(duration.toMillis)
@@ -38,7 +42,7 @@ class KnownNodeStorageImpl(clock: Clock, dbName: Symbol = 'default) extends Know
     val knownNodeColumn = KnownNodeTable.column
     val kn = KnownNodeTable.syntax("kn")
 
-    inTx { implicit session =>
+    val statement = inTx { implicit session =>
       val discovered =
         sql"""
            select ${kn.discovered} from ${KnownNodeTable as kn} where ${kn.nodeId} = ${Hex.toHexString(node.id.toArray)}
@@ -55,6 +59,8 @@ class KnownNodeStorageImpl(clock: Clock, dbName: Symbol = 'default) extends Know
        ${clock.instant()},
        ${discovered.getOrElse(clock.instant())})""".update().apply()
     }
+    trackingKnownNodes.incrementAndGet()
+    statement
   }
 
   private def mergeNodeStatement(node: Node, nodeColumn: scalikejdbc.ColumnName[NodeTable])(implicit session: DBSession) = {
@@ -99,7 +105,19 @@ class KnownNodeStorageImpl(clock: Clock, dbName: Symbol = 'default) extends Know
       sql"""delete from ${BlacklistNodeTable.table} where ${blacklistNodeColumn.nodeId} = ${Hex.toHexString(node.id.toArray)}""".executeUpdate.apply
       sql"""delete from ${NodeTable.table} where ${nodeColumn.id} = ${Hex.toHexString(node.id.toArray)}""".executeUpdate.apply
     }
+    trackingKnownNodes.decrementAndGet()
   }
+
+//  def getBlacklisted(): Set[BlacklistNode] = {
+//    val (n, bn) = (NodeTable.syntax("n"), BlacklistNodeTable.syntax("bn"))
+//
+//    inTx { implicit session =>
+//      sql"""select ${n.result.*}, ${bn.result.*}
+//         from ${NodeTable as n}
+//            inner join ${BlacklistNodeTable as bn} on ${n.id} = ${bn.nodeId} and ${bn.blacklistUntil} <= ${clock.instant()};
+//       """.map(rs => BlacklistNodeTable(n.resultName, bn.resultName)(rs)).list.apply().toSet
+//    }
+//  }
 
   def inTx[T](block: DBSession => T) = {
     DB localTx {

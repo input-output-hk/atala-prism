@@ -7,6 +7,7 @@ import akka.{actor => untyped}
 import io.iohk.cef.discovery.DiscoveryManager.{DiscoveredNodes, GetDiscoveredNodes}
 import io.iohk.cef.discovery._
 import io.iohk.cef.network.Capabilities
+import io.iohk.cef.telemetery.RegistryConfig
 
 class LogEverything extends untyped.Actor with untyped.ActorLogging {
 
@@ -36,6 +37,12 @@ object AppNode1 extends AppBase {
       actorSystem.spawn(Behaviors.receiveMessage[DiscoveredNodes](printMessage), "printer")
 
     actor ! GetDiscoveredNodes(printer)
+
+    Thread.sleep(30000)
+    import collection.JavaConverters._
+    RegistryConfig.registry.getMeters.asScala.foreach(meter => {
+      println("-" * 100 + s"Seeing meter ${meter.getId} with measures: ${meter.measure().asScala.toList}")
+    })
   }
 
   private def printMessage[M](message: M): Behavior[M] = {

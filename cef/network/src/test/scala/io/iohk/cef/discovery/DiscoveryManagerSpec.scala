@@ -18,6 +18,7 @@ import io.iohk.cef.discovery.DiscoveryManager._
 import io.iohk.cef.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.{Capabilities, Node, NodeStatus, ServerStatus}
 import io.iohk.cef.test.TestClock
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import org.apache.commons.lang3.RandomStringUtils.{randomAlphabetic, randomAlphanumeric}
 import org.scalatest.MustMatchers._
 import org.scalatest.{BeforeAndAfterAll, fixture}
@@ -90,7 +91,8 @@ class DiscoveryManagerSpec extends fixture.FlatSpecLike with AutoRollbackSpec wi
       mockClock,
       encoder, decoder,
       listenerMaker,
-      secureRandom)
+      secureRandom,
+      new SimpleMeterRegistry())
 
     def createActor: ActorRef[DiscoveryRequest] = {
       val behavior = createBehavior

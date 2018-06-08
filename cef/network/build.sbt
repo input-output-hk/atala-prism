@@ -84,10 +84,10 @@ scalacOptions := Seq(
   "-language:postfixOps",
   "-deprecation",
   "-feature",
-  "-Xfatal-warnings",
+  //"-Xfatal-warnings",
   "-Xlint:unsound-match",
-  "-Ywarn-inaccessible",
-  "-Ywarn-unused-import",
+//  "-Ywarn-inaccessible",
+//  "-Ywarn-unused-import",
   "-Ypartial-unification",
   "-encoding", "utf-8"
 )
