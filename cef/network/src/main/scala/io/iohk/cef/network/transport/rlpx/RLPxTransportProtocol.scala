@@ -10,7 +10,6 @@ import akka.actor.typed.{ActorRef, Behavior}
 import akka.io.Tcp.Register
 import akka.util.ByteString
 import akka.{actor => untyped}
-import com.typesafe.config.ConfigFactory
 import io.iohk.cef.encoding.rlp.EncodingAdapter
 import io.iohk.cef.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.transport.TransportProtocol

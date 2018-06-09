@@ -9,15 +9,13 @@ import io.micrometer.datadog.{DatadogConfig, DatadogMeterRegistry}
 
 trait MicrometerRegistryConfig {
   val registry: MeterRegistry
-  val name: String
+
+  protected val configFile = ConfigFactory.load()
+  val name: String = configFile.getString("telemetery.name")
 }
 
 object DatadogRegistryConfig extends MicrometerRegistryConfig {
   self =>
-
-  val configFile = ConfigFactory.load()
-
-  override val name: String = configFile.getString("telemetery.name")
 
   val step: Duration = configFile.getDuration("telemetery.datadog.duration")
 
@@ -35,9 +33,5 @@ object DatadogRegistryConfig extends MicrometerRegistryConfig {
 }
 
 object InMemoryRegistryConfig extends MicrometerRegistryConfig {
-
-  val configFile = ConfigFactory.load()
-
-  override val name: String = configFile.getString("telemetery.name")
   override val registry: MeterRegistry = new SimpleMeterRegistry()
 }

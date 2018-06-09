@@ -15,23 +15,24 @@ class ScalaTimerSpec extends FlatSpec with MustMatchers {
     val timer = Timer.builder("test timer")
       .register(simpleRegistry)
     import ScalaTimer._
-    timer.asScala.wrap{ () =>
+    timer.asScala.wrap {
       Thread.sleep(20)
       println("Works")
     }
     timer.totalTime(TimeUnit.MILLISECONDS) must be > (20.0)
+    timer.totalTime(TimeUnit.MILLISECONDS) must be < (25.0)
   }
   it should "wrap a block returning a value" in {
     val simpleRegistry = new SimpleMeterRegistry()
     val timer = Timer.builder("test timer")
       .register(simpleRegistry)
     import ScalaTimer._
-    val result = timer.asScala.wrap{ () => {
-        Thread.sleep(2000)
-        1
-      }
+    val result = timer.asScala.wrap{
+      Thread.sleep(20)
+      1
     }
     result mustBe 1
     timer.totalTime(TimeUnit.MILLISECONDS) must be > (20.0)
+    timer.totalTime(TimeUnit.MILLISECONDS) must be < (25.0)
   }
 }
