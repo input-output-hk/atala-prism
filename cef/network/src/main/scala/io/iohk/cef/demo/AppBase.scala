@@ -1,6 +1,6 @@
 package io.iohk.cef.demo
 
-import java.net.InetSocketAddress
+import java.net.{InetAddress, InetSocketAddress}
 import java.security.SecureRandom
 import java.time.Clock
 
@@ -37,7 +37,7 @@ trait AppBase extends Logger {
 
     val state = new NodeState(ByteString(id), ServerStatus.NotListening, ServerStatus.NotListening, capabilities)
     val portBase = discoveryConfig.port
-    val address = discoveryConfig.interface
+    val address = InetAddress.getByAddress(Array(127,0,0,1))
     val bootstrapNodes = bootstrapNodeIds.map(nodeId =>
       Node(ByteString(nodeId.toString),
         new InetSocketAddress(address, portBase + nodeId),

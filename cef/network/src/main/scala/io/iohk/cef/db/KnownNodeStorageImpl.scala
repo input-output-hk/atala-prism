@@ -5,6 +5,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import io.iohk.cef.network.Node
 import io.iohk.cef.telemetery.DatadogRegistryConfig
+import io.micrometer.core.instrument.Tag
 import org.bouncycastle.util.encoders.Hex
 import scalikejdbc._
 import scalikejdbc.config._
@@ -16,8 +17,10 @@ class KnownNodeStorageImpl(clock: Clock, dbName: Symbol = 'default) extends Know
 
   DBs.setup(dbName)
 
+  import collection.JavaConverters._
+
   val trackingKnownNodes =
-    DatadogRegistryConfig.registry.gauge("known_nodes." + DatadogRegistryConfig.name, new AtomicInteger(getAll().size))
+    DatadogRegistryConfig.registry.gauge("known_nodes", List(Tag.of("node", DatadogRegistryConfig.name)).asJava, new AtomicInteger(getAll().size))
 
   override def blacklist(node: Node, duration: FiniteDuration): Unit = {
     val until = clock.instant().plusMillis(duration.toMillis)
