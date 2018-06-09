@@ -46,7 +46,7 @@ class KnownNodeStorageImpl(clock: Clock, dbName: Symbol = 'default) extends Know
     val knownNodeColumn = KnownNodeTable.column
     val kn = KnownNodeTable.syntax("kn")
 
-    val statement = inTx { implicit session =>
+    inTx { implicit session =>
       val discovered =
         sql"""
            select ${kn.discovered} from ${KnownNodeTable as kn} where ${kn.nodeId} = ${Hex.toHexString(node.id.toArray)}
@@ -54,7 +54,7 @@ class KnownNodeStorageImpl(clock: Clock, dbName: Symbol = 'default) extends Know
 
       mergeNodeStatement(node, nodeColumn)
 
-      sql"""merge into ${KnownNodeTable.table} (
+      val result = sql"""merge into ${KnownNodeTable.table} (
         ${knownNodeColumn.nodeId},
         ${knownNodeColumn.lastSeen},
         ${knownNodeColumn.discovered}
@@ -62,9 +62,10 @@ class KnownNodeStorageImpl(clock: Clock, dbName: Symbol = 'default) extends Know
        values(${Hex.toHexString(node.id.toArray)},
        ${clock.instant()},
        ${discovered.getOrElse(clock.instant())})""".update().apply()
+
+      if(discovered.isEmpty) trackingKnownNodes.incrementAndGet()
+      result
     }
-    trackingKnownNodes.incrementAndGet()
-    statement
   }
 
   private def mergeNodeStatement(node: Node, nodeColumn: scalikejdbc.ColumnName[NodeTable])(implicit session: DBSession) = {
