@@ -35,7 +35,7 @@ trait AppBase extends Logger {
                  (implicit system: untyped.ActorSystem):
   ActorRef[DiscoveryRequest] = {
 
-    val state = new NodeState(ByteString(id), ServerStatus.NotListening, ServerStatus.NotListening, capabilities)
+    val state = new NodeState(ByteString(id.toString), ServerStatus.NotListening, ServerStatus.NotListening, capabilities)
     val portBase = discoveryConfig.port
     val address = InetAddress.getByAddress(Array(127,0,0,1))
     val bootstrapNodes = bootstrapNodeIds.map(nodeId =>
