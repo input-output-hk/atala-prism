@@ -90,5 +90,3 @@ val root = project.in(file("."))
     ),
     scalacOptions ++= compilerOptions
   )
-
-javaOptions in Test += "-Dconfig.resource=application.test.conf"

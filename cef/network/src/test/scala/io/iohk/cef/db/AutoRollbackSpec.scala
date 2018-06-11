@@ -11,7 +11,7 @@ trait AutoRollbackSpec extends AutoRollback {
 
   //override def db() = NamedDB('test).toDB()
 
-  val config = ConfigFactory.load()
+  val config = ConfigFactory.load("application.test")
 
   val flyway = new Flyway()
   val dbUrl = config.getString("db.default.url")
