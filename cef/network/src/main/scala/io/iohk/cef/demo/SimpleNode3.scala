@@ -10,7 +10,7 @@ import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.{ActorSystem, Props}
 import akka.io.{IO, Tcp}
 import akka.util.ByteString
-import io.iohk.cef.db.KnownNodeStorageImpl
+import io.iohk.cef.db.DummyKnownNodesStorage
 import io.iohk.cef.discovery.DiscoveryManager.{DiscoveredNodes, DiscoveryRequest, DiscoveryResponse, GetDiscoveredNodes}
 import io.iohk.cef.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.transport.rlpx.RLPxConnectionHandler.RLPxConfiguration
@@ -70,7 +70,7 @@ class SimpleNode3(nodeName: String, host: String, port: Int, bootstrapPeer: Opti
     val discoveryActor: ActorRef[DiscoveryRequest] =
       context.spawn(DiscoveryActor.discoveryBehavior(
         nodeUri, bootstrapPeer.fold(Set[URI]())(Set(_)), Capabilities(1),
-        new KnownNodeStorageImpl(Clock.systemUTC())), "DiscoveryActor")
+        new DummyKnownNodesStorage(Clock.systemUTC())), "DiscoveryActor")
 
     def serverBehavior(timer: TimerScheduler[NodeCommand], connectionCache: Map[URI, ActorRef[ConnectionCommand]]): Behavior[NodeCommand] = Behaviors.setup {
       context =>
