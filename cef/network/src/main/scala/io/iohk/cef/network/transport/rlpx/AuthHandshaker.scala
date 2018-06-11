@@ -5,16 +5,16 @@ import java.nio.ByteBuffer
 import java.security.SecureRandom
 
 import akka.util.ByteString
-import io.iohk.cef.network.transport.rlpx.ethereum.crypto.ECIESCoder
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair
 import org.bouncycastle.crypto.agreement.ECDHBasicAgreement
 import org.bouncycastle.crypto.digests.KeccakDigest
 import org.bouncycastle.crypto.params.{ECPrivateKeyParameters, ECPublicKeyParameters}
 import org.bouncycastle.math.ec.ECPoint
 import AuthInitiateMessageV4._
+import io.iohk.cef.crypto.{ECDSASignature, ECIESCoder}
 import io.iohk.cef.encoding.rlp
 import io.iohk.cef.network.transport.rlpx.ByteUtils._
-import io.iohk.cef.network.transport.rlpx.ethereum.crypto._
+import io.iohk.cef.crypto._
 
 import scala.util.Random
 

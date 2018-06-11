@@ -1,4 +1,4 @@
-package io.iohk.cef.network.transport.rlpx.ethereum.crypto
+package io.iohk.cef.crypto
 
 import java.io.{ByteArrayInputStream, IOException}
 import java.math.BigInteger
