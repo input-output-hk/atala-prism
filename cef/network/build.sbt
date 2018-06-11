@@ -88,5 +88,6 @@ val root = project.in(file("."))
       warnOnUnverifiedFiles = false,
       warnOnUnusedVerifications = false
     ),
-    scalacOptions ++= compilerOptions
+    scalacOptions ++= compilerOptions,
+    coverageExcludedPackages := "<empty>;io\\.iohk\\.cef\\.demo\\..*"
   )
