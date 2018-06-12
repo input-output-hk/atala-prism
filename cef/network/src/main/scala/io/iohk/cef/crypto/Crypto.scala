@@ -72,6 +72,10 @@ trait Crypto {
     (ByteString(prv), ByteString(pub))
   }
 
+  def keyPairFromPrvKey(prvKeyByteString: ByteString): AsymmetricCipherKeyPair = {
+    keyPairFromPrvKey(prvKeyByteString.toArray)
+  }
+
   def keyPairFromPrvKey(prvKeyBytes: Array[Byte]): AsymmetricCipherKeyPair = {
     val privateKey = BigInt(1, prvKeyBytes)
     keyPairFromPrvKey(privateKey)

@@ -10,6 +10,7 @@ import org.scalatest.prop.PropertyChecks
 import org.scalatest.{FlatSpec, Matchers}
 
 class ECDSASignatureSpec extends FlatSpec with Matchers with PropertyChecks with SecureRandomBuilder {
+
   "ECDSASignature" should "recover public key correctly for go ethereum transaction" in {
     val bytesToSign = Hex.decode("5a1465f4683bf2c18fc72c0789239c0f52b3ceac666ca9551cf265a11abe912c")
     val signatureRandom = ByteString(Hex.decode("f3af65a23fbf207b933d3c962381aa50e0ac19649c59c1af1655e592a8d95401"))
@@ -17,6 +18,17 @@ class ECDSASignatureSpec extends FlatSpec with Matchers with PropertyChecks with
     val pointSign = 28
 
     val sig = ECDSASignature(BigInt(1, signatureRandom.toArray[Byte]), BigInt(1, signature.toArray[Byte]), pointSign.toByte)
+
+    sig.publicKey(bytesToSign).isEmpty shouldBe false
+  }
+
+  it should "recover public key correctly using ByteString apply method" in {
+    val bytesToSign = Hex.decode("5a1465f4683bf2c18fc72c0789239c0f52b3ceac666ca9551cf265a11abe912c")
+    val signatureRandom = ByteString(Hex.decode("f3af65a23fbf207b933d3c962381aa50e0ac19649c59c1af1655e592a8d95401"))
+    val signature = ByteString(Hex.decode("53629a403579f5ce57bcbefba2616b1c6156d308ddcd37372c94943fdabeda97"))
+    val pointSign = 28
+
+    val sig = ECDSASignature(signatureRandom, signature, pointSign.toByte)
 
     sig.publicKey(bytesToSign).isEmpty shouldBe false
   }

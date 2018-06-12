@@ -3,6 +3,8 @@ package io.iohk.cef.crypto
 import java.security._
 
 import akka.util.ByteString
+import org.bouncycastle.crypto.util.PrivateKeyInfoFactory.createPrivateKeyInfo
+import org.bouncycastle.crypto.util.SubjectPublicKeyInfoFactory.createSubjectPublicKeyInfo
 import org.bouncycastle.util.encoders.Hex
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
@@ -42,7 +44,20 @@ class CryptoSpec extends FlatSpec {
     secureRandomByteString(new SecureRandom(Array(0)), 1).length shouldBe 1
   }
 
-  "keyPairToByteStrings" should "generate the correct result" in {
-    pending
+  "keyPair serialization/deserialization" should "generate the correct result" in {
+    // given
+    val secureRandom = new SecureRandom()
+    val expectedKeyPair = generateKeyPair(secureRandom)
+
+    // when
+    val (priv, _) = keyPairToByteStrings(expectedKeyPair) // serialize
+    val actualKeyPair = keyPairFromPrvKey(priv)           // deserialize
+
+    // then
+    createPrivateKeyInfo(expectedKeyPair.getPrivate) shouldBe
+      createPrivateKeyInfo(actualKeyPair.getPrivate)
+
+    createSubjectPublicKeyInfo(expectedKeyPair.getPublic) shouldBe
+      createSubjectPublicKeyInfo(actualKeyPair.getPublic)
   }
 }
