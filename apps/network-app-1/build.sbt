@@ -1,3 +1,5 @@
+enablePlugins(GatlingPlugin)
+
 val commonSettings = Seq(
   name := "network-app-1",
   version := "0.1-SNAPSHOT",
@@ -17,6 +19,11 @@ val dependencies = {
     "com.typesafe.akka" %% "akka-http" % akkaHttpVersion,
     "com.typesafe.akka" %% "akka-http-testkit" % akkaHttpVersion,
     "com.typesafe.akka" %% "akka-http-spray-json" % akkaHttpVersion,
+
+    "ch.qos.logback" % "logback-classic" % "1.2.3",
+
+    "io.gatling" % "gatling-test-framework" % "2.3.0",
+    "io.gatling.highcharts" % "gatling-charts-highcharts" % "2.3.0",
 
     "io.iohk.cef" %% "network" % cefVersion
   )
