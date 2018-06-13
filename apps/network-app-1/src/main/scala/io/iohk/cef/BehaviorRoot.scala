@@ -1,6 +1,7 @@
 package io.iohk.cef
 
 import java.net.URI
+import java.util.concurrent.ConcurrentHashMap
 
 import akka.actor.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
@@ -10,9 +11,11 @@ import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.server.RouteResult._
 import akka.stream.Materializer
 import io.iohk.cef.demo.SimpleNode3
-import io.iohk.cef.demo.SimpleNode3.{NodeCommand, Send, Start, Started}
+import io.iohk.cef.demo.SimpleNode3._
 
-import scala.concurrent.ExecutionContext
+import scala.collection.mutable
+import scala.concurrent.{ExecutionContext, Promise}
+import collection.JavaConverters._
 
 object BehaviorRoot {
   def start(nodeName: String,
@@ -21,10 +24,10 @@ object BehaviorRoot {
             gatewayHost: String,
             gatewayPort: Int,
             bootstrapPeer: Option[URI])(
-      implicit
-      system: ActorSystem,
-      materializer: Materializer,
-      executionContext: ExecutionContext): Behavior[String] = Behaviors.setup {
+             implicit
+             system: ActorSystem,
+             materializer: Materializer,
+             executionContext: ExecutionContext): Behavior[String] = Behaviors.setup {
 
     context =>
       val nodeActor: ActorRef[NodeCommand] =
@@ -32,19 +35,39 @@ object BehaviorRoot {
           new SimpleNode3(nodeName, serverHost, serverPort, bootstrapPeer).server,
           "NodeActor")
 
-      val httpGatewayRoute: Route =
-        HttpGateway.route(request => nodeActor ! Send(request.message))
+      def serverListener(currentRequests: mutable.Map[String, Promise[Unit]]): Behavior[NodeResponse] =
 
-      val startupListener: Behavior[Started] = Behaviors.receiveMessage {
-        case Started(nodeUri) =>
-          Http().bindAndHandle(route2HandlerFlow(httpGatewayRoute),
-                               gatewayHost,
-                               gatewayPort.toInt)
+        Behaviors.receiveMessage {
 
-          Behavior.ignore
-      }
+          case Started(_) => // p2p server has started. boot the http server
 
-      nodeActor ! Start(context.spawn(startupListener, "Node_Startup_Listener"))
+            val httpGatewayRoute: Route =
+              HttpGateway.route(request => {
+                val message = request.message
+
+                val promise = Promise[Unit]()
+
+                currentRequests.put(message, promise)
+
+                nodeActor ! Send(message)
+
+                promise.future
+              })
+
+            Http().bindAndHandle(route2HandlerFlow(httpGatewayRoute),
+              gatewayHost,
+              gatewayPort.toInt)
+
+            Behavior.same
+
+          case EchoReceived(msg) =>
+
+            currentRequests.remove(msg).foreach(_.success(()))
+
+            Behavior.same
+        }
+
+      nodeActor ! Start(context.spawn(serverListener(new ConcurrentHashMap[String, Promise[Unit]]().asScala), "Node_Startup_Listener"))
 
       Behaviors.receiveMessage(_ => Behavior.ignore)
   }

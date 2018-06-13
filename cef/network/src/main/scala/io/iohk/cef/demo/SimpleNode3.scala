@@ -11,7 +11,7 @@ import akka.actor.{ActorSystem, Props}
 import akka.io.{IO, Tcp}
 import akka.util.{ByteString, Timeout}
 import io.iohk.cef.db.DummyKnownNodesStorage
-import io.iohk.cef.demo.SimpleNode3.{Resend, SendTo}
+import io.iohk.cef.demo.SimpleNode3.{EchoReceived, NodeResponse, Resend, SendTo}
 import io.iohk.cef.discovery.DiscoveryManager.{DiscoveredNodes, DiscoveryRequest, GetDiscoveredNodes}
 import io.iohk.cef.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.transport.rlpx.RLPxConnectionHandler.RLPxConfiguration
@@ -44,41 +44,43 @@ class SimpleNode3(nodeName: String, host: String, port: Int, bootstrapPeer: Opti
       val transport: RLPxTransportProtocol[String] =
         new RLPxTransportProtocol[String](MessageConfig.sampleEncoder, MessageConfig.sampleDecoder, rlpxProps(nodeName), IO(Tcp))
 
+      val transportActor = context.spawn(transport.createTransport(), "RLPxTransport")
+
       import transport._
 
       case class UpdateConnectionCache(connectionCache: Map[URI, ActorRef[ConnectionCommand]]) extends NodeCommand
 
-
-      def connectionHandlerFactory(context: ActorContext[NodeCommand])(remoteUri: URI): ActorRef[ConnectionEvent] = {
-        context.spawn(connectionBehaviour(remoteUri), s"connection_${UUID.randomUUID().toString}")
-      }
-
-      def connectionBehaviour(remoteUri: URI, maybeConnection: Option[ActorRef[ConnectionCommand]] = None): Behavior[ConnectionEvent] =
-        Behaviors.receiveMessage {
-          case Connected(remoteUri, connectionActor) =>
-            context.log.info(s"Inbound connection from $remoteUri")
-            connectionBehaviour(remoteUri, Some(connectionActor))
-          case ConnectionError(m, remoteUri) =>
-            context.log.info(s"Inbound connection failed from $remoteUri")
-            Behavior.stopped
-          case MessageReceived(m) =>
-            context.log.info(s"Received: $m from $remoteUri")
-            maybeConnection.foreach(connection => connection ! SendMessage(m)) // echo back the message
-            Behavior.same
-          case ConnectionClosed(uri) =>
-            context.log.info(s"Remote Connection closed by $uri")
-            Behavior.stopped
-        }
-
-      val transportActor = context.spawn(transport.createTransport(), "RLPxTransport")
 
       val discoveryActor: ActorRef[DiscoveryRequest] =
         context.spawn(DiscoveryActor.discoveryBehavior(
           nodeUri, bootstrapPeer.fold(Set[URI]())(Set(_)), Capabilities(1),
           new DummyKnownNodesStorage(Clock.systemUTC())), "DiscoveryActor")
 
-      def serverBehavior(timer: TimerScheduler[NodeCommand], connectionCache: Map[URI, ActorRef[ConnectionCommand]]): Behavior[NodeCommand] = Behaviors.setup {
+      def serverBehavior(timer: TimerScheduler[NodeCommand],
+                         connectionCache: Map[URI, ActorRef[ConnectionCommand]],
+                         serverListener: Option[ActorRef[NodeResponse]] = None): Behavior[NodeCommand] = Behaviors.setup {
         context =>
+
+          def connectionHandlerFactory(context: ActorContext[NodeCommand])(remoteUri: URI): ActorRef[ConnectionEvent] = {
+            context.spawn(inboundConnectionBehavior(remoteUri), s"connection_${UUID.randomUUID().toString}")
+          }
+
+          def inboundConnectionBehavior(remoteUri: URI, maybeConnection: Option[ActorRef[ConnectionCommand]] = None): Behavior[ConnectionEvent] =
+            Behaviors.receiveMessage {
+              case Connected(remoteUri, connectionActor) =>
+                context.log.info(s"Inbound connection from $remoteUri")
+                inboundConnectionBehavior(remoteUri, Some(connectionActor))
+              case ConnectionError(m, remoteUri) =>
+                context.log.info(s"Inbound connection failed from $remoteUri. $m")
+                Behavior.stopped
+              case MessageReceived(m) =>
+                context.log.info(s"Received: $m from $remoteUri")
+                maybeConnection.foreach(connection => connection ! SendMessage(m)) // echo back the message
+                Behavior.same
+              case ConnectionClosed(uri) =>
+                context.log.info(s"Remote Connection closed by $uri")
+                Behavior.stopped
+            }
 
           def listenerBehaviour(replyTo: ActorRef[Started]): Behavior[ListenerEvent] = Behaviors.receiveMessage {
             case Listening(localUri, _) =>
@@ -93,7 +95,7 @@ class SimpleNode3(nodeName: String, host: String, port: Int, bootstrapPeer: Opti
               Behavior.stopped
           }
 
-          def connectedBehaviour(node: ActorRef[NodeCommand],
+          def outboundConnectionBehaviour(node: ActorRef[NodeCommand],
                                  connectionCont: (ActorContext[_], ActorRef[ConnectionCommand]) => Unit,
                                  maybeRemoteUri: Option[URI] = None):
           Behavior[ConnectionEvent] = Behaviors.receiveMessage {
@@ -104,13 +106,14 @@ class SimpleNode3(nodeName: String, host: String, port: Int, bootstrapPeer: Opti
 
               node ! UpdateConnectionCache(connectionCache + (remoteUri -> connectionActor))
 
-              connectedBehaviour(node, connectionCont, Some(remoteUri))
+              outboundConnectionBehaviour(node, connectionCont, Some(remoteUri))
 
             case ConnectionError(m, remoteUri) =>
               context.log.info(s"Failed to connect to $remoteUri. $m")
               Behavior.stopped
             case MessageReceived(m) =>
               context.log.info(s"Received: $m from ${maybeRemoteUri.get}")
+              serverListener.get ! EchoReceived(m)
               Behavior.same
             case ConnectionClosed(uri) =>
               context.log.info(s"Connection closed to $uri")
@@ -124,10 +127,10 @@ class SimpleNode3(nodeName: String, host: String, port: Int, bootstrapPeer: Opti
 
               transportActor ! CreateListener(nodeUri, listenerActor, connectionHandlerFactory(context))
 
-              Behavior.same
+              serverBehavior(timer, connectionCache, Some(replyTo))
 
             case UpdateConnectionCache(updatedCache) =>
-              serverBehavior(timer, updatedCache)
+              serverBehavior(timer, updatedCache, serverListener)
 
             case Send(msg) =>
               // run a discovery query and
@@ -158,7 +161,7 @@ class SimpleNode3(nodeName: String, host: String, port: Int, bootstrapPeer: Opti
                 transportActor ! Connect(
                   address = toUri,
                   replyTo = UtilityBehaviors.ignore(context),
-                  eventHandler = context.spawn(connectedBehaviour(context.self, withConnection),
+                  eventHandler = context.spawn(outboundConnectionBehaviour(context.self, withConnection),
                     s"connection_handler_${UUID.randomUUID().toString}")))(withConnection(context, _))
 
               Behavior.same
@@ -232,7 +235,7 @@ object SimpleNode3 {
 
   sealed trait NodeCommand
 
-  case class Start(replyTo: ActorRef[Started]) extends NodeCommand
+  case class Start(replyTo: ActorRef[NodeResponse]) extends NodeCommand
 
   case class Send(msg: String) extends NodeCommand
 
@@ -240,6 +243,9 @@ object SimpleNode3 {
 
   private case class SendTo(msg: String, toUri: URI) extends NodeCommand
 
-  case class Started(nodeUri: URI)
+  sealed trait NodeResponse
 
+  case class Started(nodeUri: URI) extends NodeResponse
+
+  case class EchoReceived(msg: String) extends NodeResponse
 }

@@ -33,6 +33,6 @@ class PerfSimulation extends Simulation {
     .acceptHeader("application/json")
 
   setUp(singleMessageScenario.
-    inject(Range.inclusive(1, 10).map(i => constantUsersPerSec(i) during(2 seconds))).
+    inject(Range.inclusive(1, 100).map(i => constantUsersPerSec(i) during(2 seconds))).
     protocols(httpConf))
 }
