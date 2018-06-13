@@ -1,6 +1,6 @@
 .idea/
 target/
-
+*.log
 *.iml
 
 cef/network/db/
