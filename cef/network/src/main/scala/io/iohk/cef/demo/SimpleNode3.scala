@@ -19,7 +19,7 @@ import io.iohk.cef.network.transport.rlpx.ethereum.p2p.Message.Version
 import io.iohk.cef.network.transport.rlpx.ethereum.p2p.{Message, MessageDecoder, MessageSerializable}
 import io.iohk.cef.network.transport.rlpx.{AuthHandshaker, RLPxConnectionHandler, RLPxTransportProtocol}
 import io.iohk.cef.network.{Capabilities, ECPublicKeyParametersNodeId, loadAsymmetricCipherKeyPair}
-import io.iohk.cef.utils.{RandomElement, UtilityBehaviors}
+import io.iohk.cef.utils.RandomElement
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair
 import org.bouncycastle.crypto.params.ECPublicKeyParameters
 import org.bouncycastle.util.encoders.Hex
@@ -61,21 +61,21 @@ class SimpleNode3(nodeName: String, host: String, port: Int, bootstrapPeer: Opti
                          serverListener: Option[ActorRef[NodeResponse]] = None): Behavior[NodeCommand] = Behaviors.setup {
         context =>
 
-          def connectionHandlerFactory(context: ActorContext[NodeCommand])(remoteUri: URI): ActorRef[ConnectionEvent] = {
-            context.spawn(inboundConnectionBehavior(remoteUri), s"connection_${UUID.randomUUID().toString}")
-          }
+          def connectionHandlerFactory(context: ActorContext[NodeCommand]): () => ActorRef[ConnectionEvent] = () =>
+            context.spawn(inboundConnectionBehavior, s"connection_${UUID.randomUUID().toString}")
 
-          def inboundConnectionBehavior(remoteUri: URI, maybeConnection: Option[ActorRef[ConnectionCommand]] = None): Behavior[ConnectionEvent] =
+          def inboundConnectionBehavior: Behavior[ConnectionEvent] =
             Behaviors.receiveMessage {
-              case Connected(remoteUri, connectionActor) =>
+              case Connected(remoteUri, _) =>
                 context.log.info(s"Inbound connection from $remoteUri")
-                inboundConnectionBehavior(remoteUri, Some(connectionActor))
-              case ConnectionError(m, remoteUri) =>
+                Behavior.same
+              case ConnectionError(m, remoteUri, connection) =>
                 context.log.info(s"Inbound connection failed from $remoteUri. $m")
+                connection ! CloseConnection
                 Behavior.stopped
-              case MessageReceived(m) =>
+              case MessageReceived(m, remoteUri, connection) =>
                 context.log.info(s"Received: $m from $remoteUri")
-                maybeConnection.foreach(connection => connection ! SendMessage(m)) // echo back the message
+                connection ! SendMessage(m) // echo back the message
                 Behavior.same
               case ConnectionClosed(uri) =>
                 context.log.info(s"Remote Connection closed by $uri")
@@ -108,10 +108,10 @@ class SimpleNode3(nodeName: String, host: String, port: Int, bootstrapPeer: Opti
 
               outboundConnectionBehaviour(node, connectionCont, Some(remoteUri))
 
-            case ConnectionError(m, remoteUri) =>
+            case ConnectionError(m, remoteUri, connection) =>
               context.log.info(s"Failed to connect to $remoteUri. $m")
               Behavior.stopped
-            case MessageReceived(m) =>
+            case MessageReceived(m, remoteUri, connection) =>
               context.log.info(s"Received: $m from ${maybeRemoteUri.get}")
               serverListener.get ! EchoReceived(m)
               Behavior.same
@@ -160,7 +160,6 @@ class SimpleNode3(nodeName: String, host: String, port: Int, bootstrapPeer: Opti
               connectionCache.get(toUri).fold(
                 transportActor ! Connect(
                   address = toUri,
-                  replyTo = UtilityBehaviors.ignore(context),
                   eventHandler = context.spawn(outboundConnectionBehaviour(context.self, withConnection),
                     s"connection_handler_${UUID.randomUUID().toString}")))(withConnection(context, _))
 
