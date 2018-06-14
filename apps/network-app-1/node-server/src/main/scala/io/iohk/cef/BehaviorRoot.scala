@@ -44,7 +44,7 @@ object BehaviorRoot {
             val httpGatewayRoute: Route =
               HttpGateway.route(request => {
                 val message = request.message
-
+                context.log.info(s"Gateway received: $message")
                 val promise = Promise[Unit]()
 
                 currentRequests.put(message, promise)
@@ -60,8 +60,8 @@ object BehaviorRoot {
 
             Behavior.same
 
-          case EchoReceived(msg) =>
-
+          case Confirmed(msg) =>
+            context.log.info(s"Confirming message $msg")
             currentRequests.remove(msg).foreach(_.success(()))
 
             Behavior.same

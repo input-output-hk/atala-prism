@@ -8,9 +8,9 @@ $ sbt publishLocal
 * startup some demo nodes
 ```bash 
 $ cd cardano-enterprise/apps/network-app-1
-$ sbt -J-Dconfig.resource=node-a.conf 'node-server/runMain io.iohk.cef.NetworkApp1' &
-$ sbt -J-Dconfig.resource=node-b.conf 'node-server/runMain io.iohk.cef.NetworkApp1' &
-$ sbt -J-Dconfig.resource=node-c.conf 'node-server/runMain io.iohk.cef.NetworkApp1' &
+$ sbt -J-Dconfig.resource=node-a.conf 'node-server/runMain io.iohk.cef.NetworkApp1'
+$ sbt -J-Dconfig.resource=node-b.conf 'node-server/runMain io.iohk.cef.NetworkApp1'
+$ sbt -J-Dconfig.resource=node-c.conf 'node-server/runMain io.iohk.cef.NetworkApp1'
 ``` 
 * run the gatling test
 ```bash
