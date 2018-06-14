@@ -17,7 +17,7 @@ trait AutoRollbackSpec extends AutoRollback {
   val dbUrl = config.getString("db.default.url")
   val dbUser = config.getString("db.default.user")
   if(dbUrl.endsWith("default"))
-    throw new IllegalStateException("You are using the default database for test. Please remember to set -Dconfig.resource=application.test.conf")
+    throw new IllegalStateException("You are using the default database for test. Please remember to configure an application.conf in your test resources.")
   flyway.setDataSource(dbUrl, dbUser, null)
   flyway.clean()
   flyway.migrate()
