@@ -11,7 +11,7 @@ val commonSettings = Seq(
 enablePlugins(FlywayPlugin)
 
 FlywayConfig.config := {
-  val parsedFile = ConfigFactory.parseFile((resourceDirectory in Compile).value / "application.conf")
+  val parsedFile = ConfigFactory.parseFile((resourceDirectory in Compile).value / "reference.conf")
   val url = parsedFile.getString("db.default.url")
   val user = parsedFile.getString("db.default.user")
   val password = parsedFile.getString("db.default.password")
