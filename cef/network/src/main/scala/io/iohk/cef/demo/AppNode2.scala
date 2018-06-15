@@ -2,7 +2,6 @@ package io.iohk.cef.demo
 
 import akka.{actor => untyped}
 import io.iohk.cef.demo.AppNode1.createActor
-import io.iohk.cef.discovery.CompatibleNodeFound
 import io.iohk.cef.network.Capabilities
 
 object AppNode2 {

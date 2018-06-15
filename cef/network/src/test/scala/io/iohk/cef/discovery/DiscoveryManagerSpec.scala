@@ -12,7 +12,7 @@ import akka.testkit.{TestProbe => UntypedTestProbe}
 import akka.util.ByteString
 import akka.{actor => untyped}
 import io.iohk.cef.crypto
-import io.iohk.cef.db.{AutoRollbackSpec, KnownNodeStorageImpl}
+import io.iohk.cef.db.{AutoRollbackSpec, DummyKnownNodesStorage}
 import io.iohk.cef.discovery.DiscoveryListener.{DiscoveryListenerRequest, Ready, SendMessage, Start}
 import io.iohk.cef.discovery.DiscoveryManager._
 import io.iohk.cef.encoding.{Decoder, Encoder}
@@ -37,9 +37,7 @@ class DiscoveryManagerSpec extends fixture.FlatSpecLike with AutoRollbackSpec wi
 
     val mockClock = new TestClock
 
-    val knownNodeStorage = new KnownNodeStorageImpl(mockClock) {
-      override def inTx[T](block: DBSession => T): T = block(session)
-    }
+    val knownNodeStorage = new DummyKnownNodesStorage(mockClock)
 
     val address: Array[Byte] = Array(127.toByte,0,0,1)
     val localhost = InetAddress.getByAddress("",address)

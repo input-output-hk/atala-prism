@@ -1,7 +1,8 @@
 package io.iohk.cef.network.transport.rlpx
 
 import akka.util.ByteString
-import io.iohk.cef.network.transport.rlpx.ethereum.crypto._
+import io.iohk.cef.crypto.ECDSASignature
+import io.iohk.cef.crypto._
 import org.bouncycastle.math.ec.ECPoint
 
 object AuthInitiateMessage extends AuthInitiateEcdsaCodec {

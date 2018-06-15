@@ -38,9 +38,7 @@ object DiscoveryManager {
   private [discovery] case object Scan extends DiscoveryRequest
 
 
-  sealed trait DiscoveryResponse
-
-  case class DiscoveredNodes(nodes: Set[KnownNode]) extends DiscoveryResponse
+  case class DiscoveredNodes(nodes: Set[KnownNode])
 
   private [discovery] sealed trait NodeEvent {
     def timestamp: Instant

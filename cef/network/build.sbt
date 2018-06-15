@@ -11,7 +11,7 @@ val commonSettings = Seq(
 enablePlugins(FlywayPlugin)
 
 FlywayConfig.config := {
-  val parsedFile = ConfigFactory.parseFile((resourceDirectory in Compile).value / "application.conf")
+  val parsedFile = ConfigFactory.parseFile((resourceDirectory in Compile).value / "reference.conf")
   val url = parsedFile.getString("db.default.url")
   val user = parsedFile.getString("db.default.user")
   val password = parsedFile.getString("db.default.password")
@@ -33,7 +33,7 @@ val dep = {
     "org.bouncycastle" % "bcprov-jdk15on" % "1.59",
     "com.h2database" % "h2" % "1.4.197",
 
-    "io.micrometer" % "micrometer-registry-datadog" % "1.0.4",
+    "io.micrometer" % "micrometer-registry-datadog" % "0.12.0.RELEASE",
 
     "org.scalikejdbc" %% "scalikejdbc"       % "3.2.2",
     "ch.qos.logback"  %  "logback-classic"   % "1.2.3",
@@ -90,20 +90,6 @@ val root = project.in(file("."))
       warnOnUnverifiedFiles = false,
       warnOnUnusedVerifications = false
     ),
-    scalacOptions ++= compilerOptions
+    scalacOptions ++= compilerOptions,
+    coverageExcludedPackages := "<empty>;io\\.iohk\\.cef\\.demo\\..*"
   )
-
-scalacOptions := Seq(
-  "-unchecked",
-  "-language:postfixOps",
-  "-deprecation",
-  "-feature",
-//  "-Xfatal-warnings",
-  "-Xlint:unsound-match",
-//  "-Ywarn-inaccessible",
-//  "-Ywarn-unused-import",
-  "-Ypartial-unification",
-  "-encoding", "utf-8"
-)
-
-javaOptions in Test += "-Dconfig.resource=application.test.conf"
