@@ -105,12 +105,12 @@ class KnownNodeStorageImpl(clock: Clock, dbName: Symbol = 'default) extends Know
     val knownNodeColumn = KnownNodeTable.column
     val blacklistNodeColumn = BlacklistNodeTable.column
 
-    inTx { implicit session =>
+    val result = inTx { implicit session =>
       sql"""delete from ${KnownNodeTable.table} where ${knownNodeColumn.nodeId} = ${Hex.toHexString(node.id.toArray)}""".executeUpdate.apply
       sql"""delete from ${BlacklistNodeTable.table} where ${blacklistNodeColumn.nodeId} = ${Hex.toHexString(node.id.toArray)}""".executeUpdate.apply
       sql"""delete from ${NodeTable.table} where ${nodeColumn.id} = ${Hex.toHexString(node.id.toArray)}""".executeUpdate.apply
     }
-    trackingKnownNodes.decrementAndGet()
+    if (result > 0) trackingKnownNodes.decrementAndGet()
   }
 
 //  def getBlacklisted(): Set[BlacklistNode] = {

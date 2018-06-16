@@ -3,6 +3,7 @@ package io.iohk.cef.telemetery
 import java.time.Duration
 
 import com.typesafe.config.ConfigFactory
+import io.micrometer.core.instrument.binder.{JvmMemoryMetrics, JvmThreadMetrics, ProcessorMetrics}
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import io.micrometer.core.instrument.{Clock, MeterRegistry}
 import io.micrometer.datadog.{DatadogConfig, DatadogMeterRegistry}
@@ -30,6 +31,11 @@ object DatadogRegistryConfig extends MicrometerRegistryConfig {
   }
 
   override val registry = new DatadogMeterRegistry(config, Clock.SYSTEM)
+
+  new JvmMemoryMetrics().bindTo(registry)
+  new ProcessorMetrics().bindTo(registry)
+  new JvmThreadMetrics().bindTo(registry)
+
 }
 
 object InMemoryRegistryConfig extends MicrometerRegistryConfig {
