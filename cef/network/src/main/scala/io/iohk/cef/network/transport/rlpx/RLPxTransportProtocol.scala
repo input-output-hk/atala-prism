@@ -16,8 +16,10 @@ import io.iohk.cef.network.transport.TransportProtocol
 import io.iohk.cef.network.transport.rlpx.RLPxConnectionHandler.{ConnectTo, ConnectionEstablished, ConnectionFailed, HandleConnection}
 import io.iohk.cef.network.transport.rlpx.ethereum.p2p.Message
 import io.iohk.cef.telemetery.{DatadogRegistryConfig, Telemetery}
-import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.core.instrument.{MeterRegistry, Tag}
 import org.bouncycastle.util.encoders.Hex
+
+import scala.collection.JavaConverters._
 
 class RLPxTransportProtocol[T](encoder: Encoder[T, ByteString],
                                decoder: Decoder[Message, T],
@@ -32,7 +34,9 @@ class RLPxTransportProtocol[T](encoder: Encoder[T, ByteString],
 
   override val registry: MeterRegistry = DatadogRegistryConfig.registry
 
-  val connectionsGauge = registry.gauge("connections." + DatadogRegistryConfig.name, new AtomicInteger(0))
+  val registryTags = List(Tag.of("node", DatadogRegistryConfig.name)).asJava
+  val inboundConnGauge = registry.gauge("connections.inbound", registryTags, new AtomicInteger(0))
+  val outboundConnGauge = registry.gauge("connections.outbound", registryTags, new AtomicInteger(0))
 
   override def createTransport(): Behavior[TransportCommand] =
     rlpxTransport()
@@ -222,7 +226,6 @@ class RLPxTransportProtocol[T](encoder: Encoder[T, ByteString],
       case ConnectionEstablished(nodeId) =>
         val remoteUri = toUri(remoteAddress, nodeId)
         val connectionEventHandler = connectionEventHandlerFactory()
-        connectionsGauge.incrementAndGet()
         context.become(connected(remoteUri, connectionEventHandler))
 
         connectionEventHandler ! Connected(remoteUri, connectionActor)
