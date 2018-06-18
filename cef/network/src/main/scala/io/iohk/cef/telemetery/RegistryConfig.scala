@@ -12,7 +12,7 @@ trait MicrometerRegistryConfig {
   val registry: MeterRegistry
 
   protected val configFile = ConfigFactory.load()
-  val name: String = configFile.getString("telemetery.name")
+  val name: String = configFile.getString("telemetery.nodeTag")
 }
 
 object DatadogRegistryConfig extends MicrometerRegistryConfig {
