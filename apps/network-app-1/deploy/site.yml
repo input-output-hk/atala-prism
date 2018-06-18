@@ -6,12 +6,12 @@
   - name: install python 2
     raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
 
-- hosts: control-node
-  roles:
-#    - common
-    - control-node
-
 - hosts: p2p-net
   roles:
-#    - common
+    - java8
+    - common
     - p2p-node
+
+- hosts: control-node
+  roles:
+    - control-node

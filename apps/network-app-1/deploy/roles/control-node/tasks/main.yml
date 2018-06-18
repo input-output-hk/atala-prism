@@ -2,8 +2,32 @@
 #- import_role:
 #    name: nginx
 
-- name: push the perf-test distribution
+- name: Ensure gatling directory exists with correct permissions
+  file:
+    path: "{{gatling_dir}}"
+    state: directory
+    mode: 0775
+
+- name: Download Gatling
+  get_url:
+    url: "{{ gatling_url }}"
+    dest: "{{ gatling_dir }}/{{gatling_archive}}"
+
+- name: Extract Gatling
   unarchive:
-    src: "{{playbook_dir}}/../perf-test/target/universal/perf-test_dist.tgz"
-    dest: "{{deploy_root}}"
-    creates: "{{deploy_root}}/perf-test_dist"
+    remote_src: yes
+    src: "{{gatling_dir}}/{{gatling_archive}}"
+    dest: "{{gatling_dir}}"
+
+- name: Remove Gatling archive
+  file:
+    path: "{{gatling_dir}}/{{gatling_archive}}"
+    state: absent
+
+- name: Push the performance test
+  copy:
+    src: "{{playbook_dir}}/../perf-test/src/it/scala/io/iohk/cef/PerfSimulation.scala"
+    dest: "{{gatling_dir}}/{{gatling_base}}/user-files/simulations"
+
+- name: Run the performance test
+  shell: "{{gatling_dir}}/{{gatling_base}}/bin/gatling.sh -s io.iohk.cef.PerfSimulation"
