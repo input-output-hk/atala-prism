@@ -1,0 +1,13 @@
+---
+- name: install python 2
+  gather_facts: False
+  raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+
+- import_role:
+    name: java8
+
+- name: Ensure deployment root exists with correct permissions
+  file:
+    path: "{{deploy_root}}"
+    state: directory
+    mode: 0775

@@ -1,0 +1,15 @@
+[p2p-net]
+ec2-34-252-201-97.eu-west-1.compute.amazonaws.com node_name=A bootstrap_peer=
+
+[unused]
+ec2-34-252-201-97.eu-west-1.compute.amazonaws.com
+ec2-34-242-177-119.eu-west-1.compute.amazonaws.com
+ec2-34-244-140-152.eu-west-1.compute.amazonaws.com
+ec2-52-51-230-152.eu-west-1.compute.amazonaws.com
+ec2-52-50-184-172.eu-west-1.compute.amazonaws.com
+ec2-52-50-142-196.eu-west-1.compute.amazonaws.com
+
+[control-node]
+ec2-34-252-201-97.eu-west-1.compute.amazonaws.com
+
+

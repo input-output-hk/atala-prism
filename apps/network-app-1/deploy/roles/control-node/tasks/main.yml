@@ -1,0 +1,9 @@
+---
+#- import_role:
+#    name: nginx
+
+- name: push the perf-test distribution
+  unarchive:
+    src: "{{playbook_dir}}/../perf-test/target/universal/perf-test_dist.tgz"
+    dest: "{{deploy_root}}"
+    creates: "{{deploy_root}}/perf-test_dist"

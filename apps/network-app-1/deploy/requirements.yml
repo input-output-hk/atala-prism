@@ -1,0 +1,5 @@
+---
+- src: mrlesmithjr.oracle-java8
+  name: java8
+- src: nginxinc.nginx
+  name: nginx
