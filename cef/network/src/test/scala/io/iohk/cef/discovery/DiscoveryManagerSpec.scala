@@ -202,7 +202,7 @@ class DiscoveryManagerSpec extends fixture.FlatSpecLike with AutoRollbackSpec wi
       }
     }
   }
-  it should "process a Neighbors message" in { s =>
+  it should "discover the peers of a connected node" in { s =>
     pending
     new ListeningDiscoveryManager {
       override val session = s
@@ -212,37 +212,41 @@ class DiscoveryManagerSpec extends fixture.FlatSpecLike with AutoRollbackSpec wi
           new InetSocketAddress(localhost, serverPort),
           capabilities)
 
-      val actor = BehaviorTestKit(createBehavior)
+      val actor = createActor
       val node = Node(nodeState.nodeId, discoveryAddress, serverAddress, nodeState.capabilities)
       val nodeA = createNode("1", 9000, 9001, nodeState.capabilities)
       val nodeB = createNode("2", 9003, 9002, nodeState.capabilities)
-      val nodeC = createNode("3", 9005, 9004, nodeState.capabilities)
       val expiration = mockClock.instant().getEpochSecond + 2
-      val token = ByteString("token")
-      val neighbors = Neighbors(Capabilities(1), token, 10, Seq(nodeA, nodeB, nodeC), expiration)
       mockClock.tick
 
-      discoveryListener.expectMessageType[Start]
-      actor.run(DiscoveryResponseWrapper(Ready(new InetSocketAddress(localhost, 9000))))
-      actor.run(DiscoveryResponseWrapper(DiscoveryListener.MessageReceived(neighbors, discoveryAddress)))
-      val pingA = discoveryListener.expectMessageType[DiscoveryListener.SendMessage]
-      val pingB = discoveryListener.expectMessageType[DiscoveryListener.SendMessage]
-
+      actor ! DiscoveryResponseWrapper(Ready(new InetSocketAddress(localhost, 9000)))
+      discoveryListener.expectMessageType[Start](1 seconds)
+      actor ! FetchNeighbors(nodeA)
+      val pingA = discoveryListener.expectMessageType[DiscoveryListener.SendMessage](5 second)
       pingA.message mustBe a[Ping]
-      pingB.message mustBe a[Ping]
       pingA.to mustBe nodeA.discoveryAddress
-      pingB.to mustBe nodeB.discoveryAddress
+      val pongA = Pong(nodeA, calculateMessageKey(encoder, pingA.message), mockClock.instant().getEpochSecond)
+      actor ! DiscoveryResponseWrapper(DiscoveryListener.MessageReceived(pongA, discoveryAddress))
+      val seek = discoveryListener.expectMessageType[DiscoveryListener.SendMessage](1 second)
+      seek.message mustBe a [Neighbors]
+      seek.to mustBe nodeA.discoveryAddress
+      val neighbors = Neighbors(Capabilities(1), calculateMessageKey(encoder, seek.message), 10, Seq(nodeB), expiration)
+      actor ! DiscoveryResponseWrapper(DiscoveryListener.MessageReceived(neighbors, discoveryAddress))
+      val pingB = discoveryListener.expectMessageType[DiscoveryListener.SendMessage](1 second)
+      val pingC = discoveryListener.expectMessageType[DiscoveryListener.SendMessage](1 second)
 
-      (pingA.message, pingB.message) match {
-        case (pa: Ping, pb: Ping) =>
-          pa.messageType mustBe Ping.messageType
+      pingB.message mustBe a[Ping]
+      pingB.to mustBe nodeB.discoveryAddress
+      pingC.message mustBe a[Ping]
+      pingC.to mustBe nodeB.discoveryAddress
+
+      (pingB.message, pingC.message) match {
+        case (pb: Ping, pc: Ping) =>
           pb.messageType mustBe Ping.messageType
+          pc.messageType mustBe Ping.messageType
         case _ => fail("Wrong message type")
       }
     }
-  }
-  it should "discover the peers of a connected node" in { s =>
-    pending
   }
   it should "stop accepting new peers when the nodes limit is reached" in { s =>
     pending
@@ -269,7 +273,28 @@ class DiscoveryManagerSpec extends fixture.FlatSpecLike with AutoRollbackSpec wi
     }
   }
   it should "not process neighbors messages in absence of a seek" in { s =>
-    pending
+    new ListeningDiscoveryManager {
+      override val session = s
+
+      def createNode(id: String, discoveryPort: Int, serverPort: Int, capabilities: Capabilities) =
+        Node(ByteString(id),
+          new InetSocketAddress(localhost, discoveryPort),
+          new InetSocketAddress(localhost, serverPort),
+          capabilities)
+
+      val actor = createActor
+      val node = Node(nodeState.nodeId, discoveryAddress, serverAddress, nodeState.capabilities)
+      val nodeA = createNode("1", 9000, 9001, nodeState.capabilities)
+      val expiration = mockClock.instant().getEpochSecond + 2
+      val token = ByteString("token")
+      val neighbors = Neighbors(Capabilities(1), token, 10, Seq(nodeA), expiration)
+      mockClock.tick
+
+      actor ! DiscoveryResponseWrapper(Ready(new InetSocketAddress(localhost, 9000)))
+      actor ! DiscoveryResponseWrapper(DiscoveryListener.MessageReceived(neighbors, discoveryAddress))
+      discoveryListener.expectMessageType[Start](1 second)
+      val pingB = discoveryListener.expectNoMessage(1 second)
+    }
   }
 
   override protected def afterAll(): Unit = {

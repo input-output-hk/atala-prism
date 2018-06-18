@@ -4,6 +4,7 @@ import java.net.URI
 import java.security.SecureRandom
 import java.time.{Clock, Instant}
 import java.util.UUID
+import java.util.concurrent.atomic.AtomicInteger
 
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors, TimerScheduler}
 import akka.actor.typed.{ActorRef, Behavior, Logger}
@@ -19,6 +20,8 @@ import io.iohk.cef.network.transport.rlpx.ethereum.p2p.Message.Version
 import io.iohk.cef.network.transport.rlpx.ethereum.p2p.{Message, MessageDecoder, MessageSerializable}
 import io.iohk.cef.network.transport.rlpx.{AuthHandshaker, RLPxConnectionHandler, RLPxTransportProtocol}
 import io.iohk.cef.network.{Capabilities, ECPublicKeyParametersNodeId, loadAsymmetricCipherKeyPair}
+import io.iohk.cef.telemetery.DatadogTelemetry
+import io.micrometer.core.instrument.{Counter, DistributionSummary}
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair
 import org.bouncycastle.crypto.params.ECPublicKeyParameters
 import org.bouncycastle.util.encoders.Hex
@@ -26,13 +29,26 @@ import org.bouncycastle.util.encoders.Hex
 import scala.concurrent.duration._
 import scala.util.Success
 
-class SimpleNode3(nodeName: String, host: String, port: Int, bootstrapPeer: Option[URI]) {
+class SimpleNode3(nodeName: String, host: String, port: Int, bootstrapPeer: Option[URI]) extends DatadogTelemetry {
 
   private val secureRandom: SecureRandom = new SecureRandom()
   private val nodeId = MantisCode.nodeIdFromNodeName(nodeName, secureRandom)
   private val nodeUri = new URI(s"enode://$nodeId@$host:$port")
 
   import SimpleNode3.{NodeCommand, Send, Start, Started}
+
+  val inboundConnGauge = registry.gauge("connections.inbound", new AtomicInteger(0))
+  val outboundConnGauge = registry.gauge("connections.outbound", new AtomicInteger(0))
+  val messageReceivedCounter = registry.counter("messages.count.received")
+  val messageSentCounter = registry.counter("messages.count.sent")
+  val messageSentSize = DistributionSummary
+    .builder("messages.size.sent")
+    .baseUnit("bytes")
+    .register(registry)
+  val messageReceivedSize = DistributionSummary
+    .builder("messages.size.received")
+    .baseUnit("bytes")
+    .register(registry)
 
   val server: Behavior[NodeCommand] = Behaviors.setup {
     context: ActorContext[NodeCommand] =>
@@ -46,6 +62,19 @@ class SimpleNode3(nodeName: String, host: String, port: Int, bootstrapPeer: Opti
       val transportActor = context.spawn(transport.createTransport(), "RLPxTransport")
 
       import transport._
+
+      def recordMessage(messageType: MessageType, counter: Counter, sizeSummary: DistributionSummary) = {
+        counter.increment()
+        sizeSummary.record(messageType.getBytes().size)
+      }
+
+      def recordIncomingMessage(message: MessageType) = {
+        recordMessage(message, messageReceivedCounter, messageReceivedSize)
+      }
+
+      def recordOutgoingMessage(message: MessageType) = {
+        recordMessage(message, messageSentCounter, messageSentSize)
+      }
 
       case class UpdateConnectionCache(connectionCache: Map[URI, ActorRef[ConnectionCommand]]) extends NodeCommand
       case class NotifyMessageTracker(message: String, receivedBy: URI) extends NodeCommand
@@ -68,17 +97,20 @@ class SimpleNode3(nodeName: String, host: String, port: Int, bootstrapPeer: Opti
             Behaviors.receiveMessage {
               case Connected(remoteUri, _) =>
                 context.log.info(s"Inbound connection from $remoteUri")
+                inboundConnGauge.incrementAndGet()
                 Behavior.same
               case ConnectionError(m, remoteUri, connection) =>
                 context.log.info(s"Inbound connection failed from $remoteUri. $m")
                 connection ! CloseConnection
                 Behavior.stopped
               case MessageReceived(m, remoteUri, connection) =>
+                recordIncomingMessage(m)
                 context.log.info(s"Received/confirmed: $m from $remoteUri")
                 connection ! SendMessage(m) // echo back the message
                 Behavior.same
               case ConnectionClosed(uri) =>
                 context.log.info(s"Remote Connection closed by $uri")
+                inboundConnGauge.decrementAndGet()
                 Behavior.stopped
             }
 
@@ -104,6 +136,7 @@ class SimpleNode3(nodeName: String, host: String, port: Int, bootstrapPeer: Opti
               connectionCont(context.log, remoteUri, connectionActor) // now we have the connection, this sends the message
 
               node ! UpdateConnectionCache(connectionCache + (remoteUri -> connectionActor))
+              outboundConnGauge.incrementAndGet()
 
               Behavior.same
 
@@ -111,6 +144,7 @@ class SimpleNode3(nodeName: String, host: String, port: Int, bootstrapPeer: Opti
               context.log.info(s"Failed to connect to $remoteUri. $m")
               Behavior.stopped
             case MessageReceived(m, remoteUri, _) =>
+              recordIncomingMessage(m)
               context.log.info(s"Confirmed: $m by $remoteUri")
 
               node ! NotifyMessageTracker(m, remoteUri)
@@ -119,6 +153,7 @@ class SimpleNode3(nodeName: String, host: String, port: Int, bootstrapPeer: Opti
 
             case ConnectionClosed(uri) =>
               context.log.info(s"Connection closed to $uri")
+              outboundConnGauge.decrementAndGet()
               Behavior.stopped
           }
 
@@ -166,6 +201,7 @@ class SimpleNode3(nodeName: String, host: String, port: Int, bootstrapPeer: Opti
               def withConnection: (Logger, URI, ActorRef[ConnectionCommand]) => Unit =
                 (logger, uri, connection) => {
                   logger.info(s"Sending: $msg to $uri")
+                  recordOutgoingMessage(msg)
                   connection ! SendMessage(msg)
                 }
 
