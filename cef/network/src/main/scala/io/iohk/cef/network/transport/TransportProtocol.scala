@@ -1,7 +1,6 @@
 package io.iohk.cef.network.transport
 
 import akka.actor.typed.{ActorRef, Behavior}
-import io.micrometer.core.instrument.MeterRegistry
 
 /**
   * TransportProtocol defines an abstraction over network transports,
@@ -11,8 +10,6 @@ trait TransportProtocol {
 
   type AddressType
   type MessageType
-
-  val registry: MeterRegistry
 
   /**
     * This function bootstraps the transport and from there on

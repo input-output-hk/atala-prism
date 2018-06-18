@@ -15,7 +15,7 @@ import io.iohk.cef.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.transport.TransportProtocol
 import io.iohk.cef.network.transport.rlpx.RLPxConnectionHandler.{ConnectTo, ConnectionEstablished, ConnectionFailed, HandleConnection}
 import io.iohk.cef.network.transport.rlpx.ethereum.p2p.Message
-import io.iohk.cef.telemetery.DatadogRegistryConfig
+import io.iohk.cef.telemetery.{DatadogRegistryConfig, Telemetery}
 import io.micrometer.core.instrument.MeterRegistry
 import org.bouncycastle.util.encoders.Hex
 
@@ -23,7 +23,7 @@ class RLPxTransportProtocol[T](encoder: Encoder[T, ByteString],
                                decoder: Decoder[Message, T],
                                rlpxConnectionHandlerProps: untyped.Props,
                                tcpActor: untyped.ActorRef)
-    extends TransportProtocol {
+    extends TransportProtocol with Telemetery {
 
   override type AddressType = URI
   override type MessageType = T
