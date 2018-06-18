@@ -1,0 +1,36 @@
+#!/bin/bash
+
+set -e
+
+CEF_HOME="{{deploy_root}}"
+NAME=cef
+PIDFILE="$CEF_HOME/node-server_dist/$NAME.pid"
+DAEMON="$CEF_HOME/node-server_dist/bin/network-app-1"
+DAEMON_OPTS="-Dconfig.file=$CEF_HOME/node-server_dist/node.conf -DLOG_DIR=$CEF_HOME/node-server_dist/logs"
+
+export PATH="${PATH:+$PATH:}/usr/sbin:/sbin"
+
+case "$1" in
+  start)
+    echo -n "Starting $NAME... "
+	start-stop-daemon --chuid ubuntu --background --make-pidfile --start --quiet --pidfile $PIDFILE --exec $DAEMON -- $DAEMON_OPTS
+        echo "."
+	;;
+  stop)
+    echo -n "Stopping $NAME... "
+	start-stop-daemon --stop --remove-pidfile --quiet --oknodo --pidfile $PIDFILE
+        echo "."
+	;;
+  restart)
+    echo -n "Restarting $NAME... "
+	start-stop-daemon --stop --remove-pidfile --quiet --oknodo --retry 30 --pidfile $PIDFILE
+	start-stop-daemon --chuid ubuntu --background --make-pidfile --start --quiet --pidfile $PIDFILE --exec $DAEMON -- $DAEMON_OPTS
+	echo "."
+	;;
+
+  *)
+	echo "Usage: "$1" {start|stop|restart}"
+	exit 1
+esac
+
+exit 0

@@ -1,0 +1,17 @@
+---
+- hosts: all
+  gather_facts: False
+  become: True
+  tasks:
+  - name: install python 2
+    raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+
+- hosts: p2p-net
+  roles:
+    - java8
+    - common
+    - p2p-node
+
+- hosts: control-node
+  roles:
+    - control-node

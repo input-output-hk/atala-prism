@@ -1,4 +1,3 @@
-enablePlugins(AssemblyPlugin)
 
 val compilerOptions = Seq(
   "-unchecked",
@@ -47,15 +46,15 @@ val logback = Seq(
 val `perf-test` = project.settings(
   name := "perf-test",
   commonSettings,
-  libraryDependencies := gatling
+  libraryDependencies := gatling,
+  mainClass in Compile := Some("io.gatling.app.Gatling")
 )
 
 val `node-server` = project.settings(
   name := "node-server",
-  assemblyJarName in assembly := "node-server.jar",
   commonSettings,
   libraryDependencies := akka ++ `akka-http` ++ `cef-network` ++ logback,
-  mainClass in (Compile, run) := Some("io.iohk.cef.NetworkApp1")
+  mainClass in Compile := Some("io.iohk.cef.NetworkApp1")
 )
 
 val root = project.in(file("."))
@@ -64,10 +63,3 @@ val root = project.in(file("."))
     publishArtifact := false,
     commonSettings
   ).aggregate(`perf-test`, `node-server`)
-
-assemblyMergeStrategy in assembly ~= {
-  (old) => {
-    case PathList("META-INF", "io.netty.versions.properties") => MergeStrategy.last
-    case x => old(x)
-  }
-}
