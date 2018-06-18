@@ -15,8 +15,8 @@ import io.iohk.cef.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.transport.TransportProtocol
 import io.iohk.cef.network.transport.rlpx.RLPxConnectionHandler.{ConnectTo, ConnectionEstablished, ConnectionFailed, HandleConnection}
 import io.iohk.cef.network.transport.rlpx.ethereum.p2p.Message
-import io.iohk.cef.telemetery.{DatadogRegistryConfig, Telemetery}
-import io.micrometer.core.instrument.{MeterRegistry, Tag}
+import io.iohk.cef.telemetery.DatadogTelemetry
+import io.micrometer.core.instrument.Tag
 import org.bouncycastle.util.encoders.Hex
 
 import scala.collection.JavaConverters._
@@ -25,16 +25,14 @@ class RLPxTransportProtocol[T](encoder: Encoder[T, ByteString],
                                decoder: Decoder[Message, T],
                                rlpxConnectionHandlerProps: untyped.Props,
                                tcpActor: untyped.ActorRef)
-    extends TransportProtocol with Telemetery {
+    extends TransportProtocol with DatadogTelemetry {
 
   override type AddressType = URI
   override type MessageType = T
 
   import akka.actor.typed.scaladsl.adapter._
 
-  override val registry: MeterRegistry = DatadogRegistryConfig.registry
-
-  val registryTags = List(Tag.of("node", DatadogRegistryConfig.name)).asJava
+  val registryTags = List(Tag.of("node", nodeTag)).asJava
   val inboundConnGauge = registry.gauge("connections.inbound", registryTags, new AtomicInteger(0))
   val outboundConnGauge = registry.gauge("connections.outbound", registryTags, new AtomicInteger(0))
 

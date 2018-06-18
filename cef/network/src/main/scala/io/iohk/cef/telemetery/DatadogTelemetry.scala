@@ -1,21 +1,19 @@
 package io.iohk.cef.telemetery
-
 import java.time.Duration
 
-import com.typesafe.config.ConfigFactory
-import io.micrometer.core.instrument.binder.{JvmMemoryMetrics, JvmThreadMetrics, ProcessorMetrics}
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry
+import io.micrometer.core.instrument.binder.jvm.{JvmMemoryMetrics, JvmThreadMetrics}
+import io.micrometer.core.instrument.binder.system.ProcessorMetrics
 import io.micrometer.core.instrument.{Clock, MeterRegistry}
 import io.micrometer.datadog.{DatadogConfig, DatadogMeterRegistry}
 
-trait MicrometerRegistryConfig {
-  val registry: MeterRegistry
+trait DatadogTelemetry extends Telemetery {
 
-  protected val configFile = ConfigFactory.load()
-  val name: String = configFile.getString("telemetery.nodeTag")
+  override val registry: MeterRegistry = DatadogTelemetry.registry
+
+  override val nodeTag: String = DatadogTelemetry.nodeTag
 }
 
-object DatadogRegistryConfig extends MicrometerRegistryConfig {
+object DatadogTelemetry extends MicrometerRegistryConfig {
   self =>
 
   val step: Duration = configFile.getDuration("telemetery.datadog.duration")
@@ -36,8 +34,4 @@ object DatadogRegistryConfig extends MicrometerRegistryConfig {
   new ProcessorMetrics().bindTo(registry)
   new JvmThreadMetrics().bindTo(registry)
 
-}
-
-object InMemoryRegistryConfig extends MicrometerRegistryConfig {
-  override val registry: MeterRegistry = new SimpleMeterRegistry()
 }

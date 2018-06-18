@@ -12,12 +12,12 @@ import io.iohk.cef.discovery._
 import io.iohk.cef.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.NodeStatus.NodeState
 import io.iohk.cef.network.{Capabilities, Node, ServerStatus}
-import io.iohk.cef.telemetery.DatadogRegistryConfig
+import io.iohk.cef.telemetery.DatadogTelemetry
 import org.bouncycastle.util.encoders.Hex
 
 import scala.concurrent.duration._
 
-object DiscoveryActor {
+object DiscoveryActor extends DatadogTelemetry {
 
   def discoveryBehavior(uri: URI,
                         bootstrapNodeUris: Set[URI],
@@ -50,7 +50,7 @@ object DiscoveryActor {
           UDPBridge.creator(discoveryConfig, encoder, decoder)),
         "DiscoveryListener"),
       new SecureRandom(),
-      DatadogRegistryConfig.registry)
+      registry)
   }
 
   private def localhost(port: Int): InetSocketAddress =
