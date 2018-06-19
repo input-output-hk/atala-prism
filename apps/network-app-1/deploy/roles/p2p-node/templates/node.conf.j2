@@ -1,14 +1,19 @@
+{% if node_name is defined %}
 node-name = "{{node_name}}"
-gateway-host = localhost
-gateway-port = 8000
 server-host = 0.0.0.0
 server-port = 3000
+{% else %}
+node-uri = "{{node_uri}}"
+{% endif %}
+
+gateway-host = localhost
+gateway-port = 8000
 # NB: Fixme. Because of the use of SecureRandom to generate node keys
 # this peer URL will be wrong on your system when first running.
 # You should startup node-a, get the server URI from that log
 # and paste it here.
 
-{% if bootstrap_peer %}bootstrap-peer = "{{bootstrap_peer}}"{% endif %}
+{% if bootstrap_peer is defined %}bootstrap-peer = "{{bootstrap_peer}}"{% endif %}
 
 akka {
   loggers = ["akka.event.slf4j.Slf4jLogger"]

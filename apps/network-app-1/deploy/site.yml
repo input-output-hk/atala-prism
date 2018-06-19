@@ -1,10 +1,11 @@
 ---
-- hosts: all
-  gather_facts: False
-  become: True
-  tasks:
-  - name: install python 2
-    raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
+# Uncomment if you need to boostrap python on remote hosts
+#- hosts: all
+#  gather_facts: False
+#  become: True
+#  tasks:
+#  - name: install python 2
+#    raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
 
 - hosts: p2p-net
   roles:
@@ -12,6 +13,8 @@
     - common
     - p2p-node
 
+# The control node is also a peer so picks up java8 and common
 - hosts: control-node
   roles:
+    - nginx
     - control-node
