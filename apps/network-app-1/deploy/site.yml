@@ -7,13 +7,21 @@
 #  - name: install python 2
 #    raw: test -e /usr/bin/python || (apt -y update && apt install -y python-minimal)
 
+# Control node acts as bootstrap so needs to come up before the p2p network
+- hosts: control-node
+  roles:
+    - { role: java8, become: yes }
+    - common
+    - p2p-node
+
+# Installs/starts the cef network
 - hosts: p2p-net
   roles:
     - { role: java8, become: yes }
     - common
     - p2p-node
 
-# The control node is also a peer so picks up java8 and common
+# Installs/runs the performance tests
 - hosts: control-node
   roles:
     - { role: nginx, become: yes }
