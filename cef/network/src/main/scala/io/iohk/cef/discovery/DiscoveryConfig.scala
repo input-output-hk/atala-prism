@@ -49,6 +49,7 @@ object DiscoveryConfig {
       blacklistDefaultDuration = blacklistDuration)
   }
 
+  //TODO: properly represent bootstrap nodes
   def fromConfig(config: com.typesafe.config.Config) = {
     import scala.collection.JavaConverters._
     new DiscoveryConfig(
