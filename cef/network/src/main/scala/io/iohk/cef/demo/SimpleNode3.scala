@@ -197,20 +197,25 @@ class SimpleNode3(node: Node, bootstrapPeer: Option[URI],
 
               context.log.info(s"Peer size is ${toUris.size} for sending $msg ($toUris).")
 
-              // try to obtain an existing connection to the peer.
-              // or create a connection and cache it
-              // either way, run a continuation to actually send the message
-              toUris.foreach(toUri =>
-                connectionCache.get(toUri).fold(
-                  transportActor ! Connect(
-                    address = toUri,
-                    eventHandler = context.spawn(outboundConnectionBehaviour(context.self, withConnection),
-                      s"connection_handler_${UUID.randomUUID().toString}")))(withConnection(context.log, toUri, _))
-              )
+              if (toUris.nonEmpty) {
+                // try to obtain an existing connection to the peer.
+                // or create a connection and cache it
+                // either way, run a continuation to actually send the message
+                toUris.foreach(toUri =>
+                  connectionCache.get(toUri).fold(
+                    transportActor ! Connect(
+                      address = toUri,
+                      eventHandler = context.spawn(outboundConnectionBehaviour(context.self, withConnection),
+                        s"connection_handler_${UUID.randomUUID().toString}")))(withConnection(context.log, toUri, _))
+                )
 
-              val newMessageTracker = messageTracker + (msg -> toUris)
+                val newMessageTracker = messageTracker + (msg -> toUris)
 
-              serverBehavior(timer, connectionCache, newMessageTracker, serverListener)
+                serverBehavior(timer, connectionCache, newMessageTracker, serverListener)
+              } else {
+                serverListener.get ! Confirmed(msg)
+                Behavior.same
+              }
 
             case Resend(msg, delay) =>
               context.schedule(delay, context.self, msg)
