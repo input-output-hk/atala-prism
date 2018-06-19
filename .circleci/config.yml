@@ -23,6 +23,7 @@ jobs:
     
     steps:
       - checkout
+      - run: cd cef/network
 
       # Download and cache dependencies
       - restore_cache:
