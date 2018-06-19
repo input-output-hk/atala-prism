@@ -1,4 +1,7 @@
 ---
+- name: Stop node if one is running
+  shell: "{{deploy_root}}/node-server_dist/bin/cef-node stop"
+
 # Uncomment out the creates line if you get bored of
 # watching redundant uploads of unchanged archives.
 - name: push the node distribution
@@ -13,14 +16,17 @@
     dest: "{{deploy_root}}/node-server_dist/node.conf"
     mode: 0644
 
+- name: push the logging configuration
+  template:
+    src: logback.xml.j2
+    dest: "{{deploy_root}}/node-server_dist/logback.xml"
+    mode: 0644
+
 - name: push the control script
   template:
     src: cef-node.j2
     dest: "{{deploy_root}}/node-server_dist/bin/cef-node"
     mode: 0744
-
-- name: Stop node if one is running
-  shell: "{{deploy_root}}/node-server_dist/bin/cef-node stop"
 
 - name: Start the node
   shell: "{{deploy_root}}/node-server_dist/bin/cef-node start"

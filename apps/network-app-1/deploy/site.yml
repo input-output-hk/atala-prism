@@ -9,12 +9,12 @@
 
 - hosts: p2p-net
   roles:
-    - java8
+    - { role: java8, become: yes }
     - common
     - p2p-node
 
 # The control node is also a peer so picks up java8 and common
 - hosts: control-node
   roles:
-    - nginx
+    - { role: nginx, become: yes }
     - control-node

@@ -1,9 +1,8 @@
 [p2p-net]
-ec2-34-252-201-97.eu-west-1.compute.amazonaws.com node_uri="enode://97559160a10e31579430ba6a841c14f74af6e4aaf8d49828b7b1576e045d2a67b42bbde876fb2f040554fd2d51908927c0a603117e924ff7890664008df585fa@127.0.0.1:3000"
+ec2-34-242-177-119.eu-west-1.compute.amazonaws.com ip_addr="172.31.2.237" node_name=A bootstrap_peer="enode://761d11916c0baf6632134cf5a55d3bdf821ee2e9f8b76ee4b7f8c7246d345fcf15099965c5f2d4adfaafbb9721202ee7b71eb3ccf1d96a1489f63506b498f1cb@172.31.45.165:3000"
+ec2-34-252-201-97.eu-west-1.compute.amazonaws.com ip_addr="172.31.45.165" node_key="00b1ae013ca60dad194ecc563e40d4aedf2ab961420fc4a0437be1a9869401c416"
 
 [unused]
-ec2-34-252-201-97.eu-west-1.compute.amazonaws.com
-ec2-34-242-177-119.eu-west-1.compute.amazonaws.com
 ec2-34-244-140-152.eu-west-1.compute.amazonaws.com
 ec2-52-51-230-152.eu-west-1.compute.amazonaws.com
 ec2-52-50-184-172.eu-west-1.compute.amazonaws.com

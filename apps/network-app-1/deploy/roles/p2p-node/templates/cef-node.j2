@@ -6,7 +6,7 @@ CEF_HOME="{{deploy_root}}"
 NAME=cef
 PIDFILE="$CEF_HOME/node-server_dist/$NAME.pid"
 DAEMON="$CEF_HOME/node-server_dist/bin/network-app-1"
-DAEMON_OPTS="-Dconfig.file=$CEF_HOME/node-server_dist/node.conf -DLOG_DIR=$CEF_HOME/node-server_dist/logs"
+DAEMON_OPTS="-Dlogback.configurationFile=$CEF_HOME/node-server_dist/logback.xml -Dconfig.file=$CEF_HOME/node-server_dist/node.conf -DLOG_DIR=$CEF_HOME/node-server_dist/logs"
 
 export PATH="${PATH:+$PATH:}/usr/sbin:/sbin"
 
