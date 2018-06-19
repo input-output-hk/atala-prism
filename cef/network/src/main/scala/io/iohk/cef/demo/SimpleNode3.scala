@@ -11,13 +11,13 @@ import akka.actor.ActorSystem
 import akka.io.{IO, Tcp}
 import akka.util.{ByteString, Timeout}
 import io.iohk.cef.db.{DummyKnownNodesStorage, KnownNode}
-import io.iohk.cef.demo.MantisCode.MessageConfig
 import io.iohk.cef.demo.SimpleNode3.{Confirmed, NodeResponse, Resend, SendTo}
 import io.iohk.cef.discovery.DiscoveryManager.{DiscoveredNodes, DiscoveryRequest, GetDiscoveredNodes}
 import io.iohk.cef.network.transport.rlpx.RLPxTransportProtocol
 import io.iohk.cef.network.{Capabilities, Node}
 import io.iohk.cef.telemetery.DatadogTelemetry
 import io.micrometer.core.instrument.{Counter, DistributionSummary}
+import org.bouncycastle.crypto.AsymmetricCipherKeyPair
 import org.bouncycastle.util.encoders.Hex
 
 import scala.concurrent.duration._
@@ -69,10 +69,11 @@ class SimpleNode3(node: Node, bootstrapPeer: Option[URI],
       case class UpdateConnectionCache(connectionCache: Map[URI, ActorRef[ConnectionCommand]]) extends NodeCommand
       case class NotifyMessageTracker(message: String, receivedBy: URI) extends NodeCommand
 
+      val discoveryBehavior = DiscoveryActor.discoveryBehavior(
+        node, bootstrapPeer.fold(Set[URI]())(Set(_)), new DummyKnownNodesStorage(Clock.systemUTC()))
+
       val discoveryActor: ActorRef[DiscoveryRequest] =
-        context.spawn(DiscoveryActor.discoveryBehavior(
-          nodeUri, bootstrapPeer.fold(Set[URI]())(Set(_)), Capabilities(1),
-          new DummyKnownNodesStorage(Clock.systemUTC())), "DiscoveryActor")
+        context.spawn(discoveryBehavior, "DiscoveryActor")
 
       def serverBehavior(timer: TimerScheduler[NodeCommand],
                          connectionCache: Map[URI, ActorRef[ConnectionCommand]],
@@ -255,31 +256,36 @@ object SimpleNode3 {
       serverAddress = new InetSocketAddress(host, port),
       capabilities = Capabilities(1))
 
-  private def node(nodeUri: URI): Node =
-    Node(
-      id = ByteString(Hex.decode(nodeUri.getUserInfo)),
-      discoveryAddress = new InetSocketAddress(nodeUri.getHost, nodeUri.getPort + 1),
-      serverAddress = new InetSocketAddress(nodeUri.getHost, nodeUri.getPort),
+  def apply(host: String, port: Int, nodeKey: String, bootstrapPeer: Option[URI])(
+    implicit actorSystem: ActorSystem): SimpleNode3 = {
+
+    import io.iohk.cef.crypto._
+    val nodeKeyBytes: Array[Byte] = Hex.decode(nodeKey)
+    val keyPair: AsymmetricCipherKeyPair = keyPairFromPrvKey(nodeKeyBytes)
+    val nodeId = ByteString(MantisCode.nodeIdFromKey(keyPair))
+
+    val node = Node(
+      id = nodeId,
+      discoveryAddress = new InetSocketAddress(host, port + 1),
+      serverAddress = new InetSocketAddress(host, port),
       capabilities = Capabilities(1))
 
-
-  def apply(nodeUri: URI, bootstrapPeer: Option[URI])(implicit actorSystem: ActorSystem): SimpleNode3 =
     new SimpleNode3(
-      node = node(nodeUri),
+      node = node,
       bootstrapPeer = bootstrapPeer,
       transport = new RLPxTransportProtocol[String](
         MessageConfig.sampleEncoder,
         MessageConfig.sampleDecoder,
-        MantisCode.rlpxProps(MantisCode.nodeKeyFromUri(nodeUri)), IO(Tcp))
+        MantisCode.rlpxProps(keyPair), IO(Tcp))
     )
+  }
 
-  def apply(nodeName: String, host: String, port: Int, bootstrapPeer: Option[URI])(implicit actorSystem: ActorSystem): SimpleNode3 =
-    new SimpleNode3(
-      node = node(nodeName, host, port),
-      bootstrapPeer = bootstrapPeer,
-      transport = new RLPxTransportProtocol[String](
-        MessageConfig.sampleEncoder,
-        MessageConfig.sampleDecoder,
-        MantisCode.rlpxProps(MantisCode.nodeKeyFromName(nodeName)), IO(Tcp))
-  )
+  def apply(nodeName: String, host: String, port: Int, bootstrapPeer: Option[URI])(implicit actorSystem: ActorSystem): SimpleNode3 = {
+
+    val keyPair: AsymmetricCipherKeyPair = MantisCode.nodeKeyFromName(nodeName)
+
+    val (priv, _) = io.iohk.cef.crypto.keyPairToByteArrays(keyPair)
+
+    SimpleNode3(host, port, Hex.toHexString(priv), bootstrapPeer)
+  }
 }

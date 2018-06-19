@@ -27,4 +27,6 @@
         <appender-ref ref="FILE"/>
     </root>
 
+    <logger name="io.micrometer" level="ERROR" />
+
 </configuration>

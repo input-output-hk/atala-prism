@@ -24,9 +24,15 @@ class NetworkApp1(config: Config) {
     serverPort <- config.getOption(_.getInt("server-port"))
   } yield SimpleNode3(nodeName, serverHost, serverPort, bootstrapPeer)
 
+  val fixedKeyConfig: Option[SimpleNode3] = for {
+    nodeKey <- config.getOption(_.getString("node-key"))
+    serverHost <- config.getOption(_.getString("server-host"))
+    serverPort <- config.getOption(_.getInt("server-port"))
+  } yield SimpleNode3(serverHost, serverPort, nodeKey, bootstrapPeer)
+
+
   // or explicitly specify a node URI with a key in the user info
-  val node: SimpleNode3 = ephemeralConfig.getOrElse(
-    SimpleNode3(config.getURI("node-uri"), bootstrapPeer))
+  val node: SimpleNode3 = ephemeralConfig.getOrElse(fixedKeyConfig.get)
 
   val behavior = BehaviorRoot.start(
     node = node,
