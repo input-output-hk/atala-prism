@@ -1,39 +1,32 @@
 package io.iohk.cef.demo
 
-import java.net.URI
-import java.security.SecureRandom
+import java.net.{InetSocketAddress, URI}
 import java.time.{Clock, Instant}
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicInteger
 
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors, TimerScheduler}
 import akka.actor.typed.{ActorRef, Behavior, Logger}
-import akka.actor.{ActorSystem, Props}
+import akka.actor.ActorSystem
 import akka.io.{IO, Tcp}
 import akka.util.{ByteString, Timeout}
 import io.iohk.cef.db.{DummyKnownNodesStorage, KnownNode}
+import io.iohk.cef.demo.MantisCode.MessageConfig
 import io.iohk.cef.demo.SimpleNode3.{Confirmed, NodeResponse, Resend, SendTo}
 import io.iohk.cef.discovery.DiscoveryManager.{DiscoveredNodes, DiscoveryRequest, GetDiscoveredNodes}
-import io.iohk.cef.encoding.{Decoder, Encoder}
-import io.iohk.cef.network.transport.rlpx.RLPxConnectionHandler.RLPxConfiguration
-import io.iohk.cef.network.transport.rlpx.ethereum.p2p.Message.Version
-import io.iohk.cef.network.transport.rlpx.ethereum.p2p.{Message, MessageDecoder, MessageSerializable}
-import io.iohk.cef.network.transport.rlpx.{AuthHandshaker, RLPxConnectionHandler, RLPxTransportProtocol}
-import io.iohk.cef.network.{Capabilities, ECPublicKeyParametersNodeId, loadAsymmetricCipherKeyPair}
+import io.iohk.cef.network.transport.rlpx.RLPxTransportProtocol
+import io.iohk.cef.network.{Capabilities, Node}
 import io.iohk.cef.telemetery.DatadogTelemetry
 import io.micrometer.core.instrument.{Counter, DistributionSummary}
-import org.bouncycastle.crypto.AsymmetricCipherKeyPair
-import org.bouncycastle.crypto.params.ECPublicKeyParameters
 import org.bouncycastle.util.encoders.Hex
 
 import scala.concurrent.duration._
 import scala.util.Success
 
-class SimpleNode3(nodeName: String, host: String, port: Int, bootstrapPeer: Option[URI]) extends DatadogTelemetry {
+class SimpleNode3(node: Node, bootstrapPeer: Option[URI],
+                  transport: RLPxTransportProtocol[String]) extends DatadogTelemetry {
 
-  private val secureRandom: SecureRandom = new SecureRandom()
-  private val nodeId = MantisCode.nodeIdFromNodeName(nodeName, secureRandom)
-  private val nodeUri = new URI(s"enode://$nodeId@$host:$port")
+  private val nodeUri = node.toUri
 
   import SimpleNode3.{NodeCommand, Send, Start, Started}
 
@@ -55,9 +48,6 @@ class SimpleNode3(nodeName: String, host: String, port: Int, bootstrapPeer: Opti
       import akka.actor.typed.scaladsl.adapter._
 
       implicit val untypedActorSystem: ActorSystem = context.system.toUntyped
-
-      val transport: RLPxTransportProtocol[String] =
-        new RLPxTransportProtocol[String](MessageConfig.sampleEncoder, MessageConfig.sampleDecoder, rlpxProps(nodeName), IO(Tcp))
 
       val transportActor = context.spawn(transport.createTransport(), "RLPxTransport")
 
@@ -230,61 +220,6 @@ class SimpleNode3(nodeName: String, host: String, port: Int, bootstrapPeer: Opti
 
       Behaviors.withTimers(timer => serverBehavior(timer, Map(), Map(), None))
   }
-
-
-  object MessageConfig {
-
-    case class SampleMessage(content: String) extends MessageSerializable {
-      override def toBytes(implicit di: DummyImplicit): ByteString = ByteString(content)
-
-      override def toBytes: Array[Byte] = content.getBytes
-
-      override def underlyingMsg: Message = this
-
-      override def code: Version = 1
-    }
-
-    val sampleMessageDecoder = new MessageDecoder {
-      override def fromBytes(`type`: Int, payload: Array[Byte], protocolVersion: Version): Message = SampleMessage(new String(payload))
-    }
-
-    val sampleEncoder: Encoder[String, ByteString] = ByteString(_)
-
-    val sampleDecoder: Decoder[Message, String] = {
-      case SampleMessage(content) => content
-      case _ => throw new UnsupportedOperationException(s"This is a dummy test decoder and it only supports ${classOf[SampleMessage]}")
-    }
-  }
-
-  object MantisCode {
-    // mantis uses loadAsymmetricCipherKeyPair to lazily generate node keys
-    def nodeKeyFromName(nodeName: String, secureRandom: SecureRandom): AsymmetricCipherKeyPair = {
-      loadAsymmetricCipherKeyPair(s"/tmp/${nodeName}_key", secureRandom)
-    }
-
-    // how mantis generates node ids.
-    def nodeIdFromKey(nodeKey: AsymmetricCipherKeyPair): String = {
-      Hex.toHexString(new ECPublicKeyParametersNodeId(nodeKey.getPublic.asInstanceOf[ECPublicKeyParameters]).toNodeId)
-    }
-
-    def nodeIdFromNodeName(nodeName: String, secureRandom: SecureRandom): String =
-      nodeIdFromKey(nodeKeyFromName(nodeName, secureRandom))
-  }
-
-  private def rlpxProps(nodeName: String): Props = {
-
-    val rlpxConfiguration = new RLPxConfiguration {
-      override val waitForHandshakeTimeout: FiniteDuration = 30 seconds
-      override val waitForTcpAckTimeout: FiniteDuration = 30 seconds
-    }
-
-    val nodeKey: AsymmetricCipherKeyPair = MantisCode.nodeKeyFromName(nodeName, secureRandom)
-
-    val authHandshaker = AuthHandshaker(nodeKey, secureRandom)
-
-    RLPxConnectionHandler.props(
-      MessageConfig.sampleMessageDecoder, protocolVersion = 1, authHandshaker, rlpxConfiguration)
-  }
 }
 
 object SimpleNode3 {
@@ -308,4 +243,38 @@ object SimpleNode3 {
   def notDead(knownNode: KnownNode): Boolean =
     knownNode.lastSeen.plusSeconds(10).isAfter(Instant.now)
 
+  private def node(nodeName: String, host: String, port: Int): Node =
+    Node(
+      id = MantisCode.nodeIdByteStringFromNodeName(nodeName),
+      discoveryAddress = new InetSocketAddress(host, port + 1),
+      serverAddress = new InetSocketAddress(host, port),
+      capabilities = Capabilities(1))
+
+  private def node(nodeUri: URI): Node =
+    Node(
+      id = ByteString(Hex.decode(nodeUri.getUserInfo)),
+      discoveryAddress = new InetSocketAddress(nodeUri.getHost, nodeUri.getPort + 1),
+      serverAddress = new InetSocketAddress(nodeUri.getHost, nodeUri.getPort),
+      capabilities = Capabilities(1))
+
+
+  def apply(nodeUri: URI, bootstrapPeer: Option[URI])(implicit actorSystem: ActorSystem): SimpleNode3 =
+    new SimpleNode3(
+      node = node(nodeUri),
+      bootstrapPeer = bootstrapPeer,
+      transport = new RLPxTransportProtocol[String](
+        MessageConfig.sampleEncoder,
+        MessageConfig.sampleDecoder,
+        MantisCode.rlpxProps(MantisCode.nodeKeyFromUri(nodeUri)), IO(Tcp))
+    )
+
+  def apply(nodeName: String, host: String, port: Int, bootstrapPeer: Option[URI])(implicit actorSystem: ActorSystem): SimpleNode3 =
+    new SimpleNode3(
+      node = node(nodeName, host, port),
+      bootstrapPeer = bootstrapPeer,
+      transport = new RLPxTransportProtocol[String](
+        MessageConfig.sampleEncoder,
+        MessageConfig.sampleDecoder,
+        MantisCode.rlpxProps(MantisCode.nodeKeyFromName(nodeName)), IO(Tcp))
+  )
 }
