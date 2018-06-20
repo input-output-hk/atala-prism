@@ -36,7 +36,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-          key: v1-dependencies--{{ checksum "build.sbt" }}-{{ checksum "cef/network/project/build.properties" }}-{{ checksum "cef/network/project/plugins.sbt" }}
+          key: v1-dependencies--{{ checksum "cef/network/build.sbt" }}-{{ checksum "cef/network/project/build.properties" }}-{{ checksum "cef/network/project/plugins.sbt" }}
         
       # run tests!
       - run: cd cef/network && cat /dev/null | sbt test:test
