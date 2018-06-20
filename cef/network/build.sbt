@@ -2,6 +2,7 @@ import com.typesafe.config.ConfigFactory
 
 // Thus it begins.
 val commonSettings = Seq(
+  organization := "io.iohk.cef",
   name := "network",
   version := "0.1-SNAPSHOT",
   scalaVersion := "2.12.5"
@@ -10,7 +11,7 @@ val commonSettings = Seq(
 enablePlugins(FlywayPlugin)
 
 FlywayConfig.config := {
-  val parsedFile = ConfigFactory.parseFile((resourceDirectory in Compile).value / "application.conf")
+  val parsedFile = ConfigFactory.parseFile((resourceDirectory in Compile).value / "reference.conf")
   val url = parsedFile.getString("db.default.url")
   val user = parsedFile.getString("db.default.user")
   val password = parsedFile.getString("db.default.password")
@@ -20,8 +21,6 @@ FlywayConfig.config := {
 flywayUrl := FlywayConfig.config.value.url
 flywayUser := FlywayConfig.config.value.user
 flywayLocations += "db/migration"
-
-mainClass in (Compile, run) := Some("io.iohk.cef.network.transport.rlpx.RLPxNode")
 
 val dep = {
   val akkaVersion = "2.5.12"
@@ -33,6 +32,8 @@ val dep = {
   
     "org.bouncycastle" % "bcprov-jdk15on" % "1.59",
     "com.h2database" % "h2" % "1.4.197",
+
+    "io.micrometer" % "micrometer-registry-datadog" % "0.12.0.RELEASE",
 
     "org.scalikejdbc" %% "scalikejdbc"       % "3.2.2",
     "ch.qos.logback"  %  "logback-classic"   % "1.2.3",
@@ -62,22 +63,7 @@ val verifyDeps = Seq(
   "org.bouncycastle" % "bcprov-jdk15on" sha256 "1c31e44e331d25e46d293b3e8ee2d07028a67db011e74cb2443285aed1d59c85"
 )
 
-val root = project.in(file("."))
-  .settings(commonSettings: _*)
-  .settings(
-    libraryDependencies ++= dep,
-    verifyDependencies in verify ++= verifyDeps,
-    verifyOptions in verify := VerifyOptions(
-      includeBin = true,
-      includeScala = true,
-      includeDependency = true,
-      excludedJars = Nil,
-      warnOnUnverifiedFiles = false,
-      warnOnUnusedVerifications = false
-    )
-  )
-
-scalacOptions := Seq(
+val compilerOptions = Seq(
   "-unchecked",
   "-language:postfixOps",
   "-deprecation",
@@ -90,4 +76,20 @@ scalacOptions := Seq(
   "-encoding", "utf-8"
 )
 
-javaOptions in Test += "-Dconfig.resource=application.test.conf"
+val root = project.in(file("."))
+  .settings(commonSettings: _*)
+  .settings(
+    libraryDependencies ++= dep,
+    autoAPIMappings := true,
+    verifyDependencies in verify ++= verifyDeps,
+    verifyOptions in verify := VerifyOptions(
+      includeBin = true,
+      includeScala = true,
+      includeDependency = true,
+      excludedJars = Nil,
+      warnOnUnverifiedFiles = false,
+      warnOnUnusedVerifications = false
+    ),
+    scalacOptions ++= compilerOptions,
+    coverageExcludedPackages := "<empty>;io\\.iohk\\.cef\\.demo\\..*"
+  )

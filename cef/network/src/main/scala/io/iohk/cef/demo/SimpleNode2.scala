@@ -29,74 +29,84 @@ class SimpleNode2(nodeName: String, port: Int, bootstrapPeer: Option[URI]) {
 
   import SimpleNode2.{NodeCommand, Send, Start, Started}
 
-  val server: Behavior[NodeCommand] = Behaviors.setup { context: ActorContext[NodeCommand] =>
-    import akka.actor.typed.scaladsl.adapter._
+  val server: Behavior[NodeCommand] = Behaviors.setup {
+    context: ActorContext[NodeCommand] =>
 
-    implicit val untypedActorSystem: ActorSystem = context.system.toUntyped
+      import akka.actor.typed.scaladsl.adapter._
 
-    val transport: RLPxTransportProtocol[String] =
-      new RLPxTransportProtocol[String](MessageConfig.sampleEncoder, MessageConfig.sampleDecoder, rlpxProps(nodeName), IO(Tcp))
+      implicit val untypedActorSystem: ActorSystem = context.system.toUntyped
 
-    import transport._
+      val transport: RLPxTransportProtocol[String] =
+        new RLPxTransportProtocol[String](MessageConfig.sampleEncoder, MessageConfig.sampleDecoder, rlpxProps(nodeName), IO(Tcp))
 
-    def connectionHandlerFactory(context: ActorContext[NodeCommand])(remoteUri: URI): ActorRef[ConnectionEvent] = {
-      context.spawn(connectionBehaviour(remoteUri), s"connection_${UUID.randomUUID().toString}")
-    }
+      import transport._
 
-    def connectionBehaviour(remoteUri: URI): Behavior[ConnectionEvent] = Behaviors.receiveMessage {
-      case Connected(remoteUri, connectionActor) =>
-        println(s"I got an inbound connection from $remoteUri")
-        Behavior.same
-      case ConnectionError(m, remoteUri) =>
-        println(s"Inbound connection failed from $remoteUri")
-        Behavior.stopped
-      case MessageReceived(m) =>
-        println(s"I received message $m from $remoteUri")
-        Behavior.same
-    }
+      def connectionHandlerFactory(context: ActorContext[NodeCommand]): () => ActorRef[ConnectionEvent] = () =>
+        context.spawn(connectionBehaviour, s"connection_${UUID.randomUUID().toString}")
 
-    val transportActor = context.spawn(transport.createTransport(), "RLPxTransport")
+      def connectionBehaviour: Behavior[ConnectionEvent] = Behaviors.receiveMessage {
+        case Connected(remoteUri, connectionActor) =>
+          println(s"I got an inbound connection from $remoteUri")
+          Behavior.same
+        case ConnectionError(_, remoteUri, _) =>
+          println(s"Inbound connection failed from $remoteUri")
+          Behavior.stopped
+        case MessageReceived(m, remoteUri, _) =>
+          println(s"I received message $m from $remoteUri")
+          Behavior.same
+        case ConnectionClosed(remoteUri) =>
+          println(s"Connection close to $remoteUri")
+          Behavior.stopped
+      }
 
-    Behaviors.receiveMessage {
-      case Start(replyTo) =>
+      val transportActor = context.spawn(transport.createTransport(), "RLPxTransport")
 
-        val listenerBehaviour: Behavior[ListenerEvent] = Behaviors.receiveMessage {
-          case Listening(localUri, _) =>
-            println(s"Server listening: $localUri")
-            replyTo ! Started(localUri)
-            Behavior.same
-          case ListeningFailed(_, message) =>
-            println(message)
-            Behavior.stopped
-          case Unbound(_) =>
-            println(s"Server unbound")
-            Behavior.stopped
-        }
+      Behaviors.receiveMessage {
+        case Start(replyTo) =>
 
-        val listenerActor = context.spawn(listenerBehaviour, "listener")
+          val listenerBehaviour: Behavior[ListenerEvent] = Behaviors.receiveMessage {
+            case Listening(localUri, _) =>
+              println(s"Server listening: $localUri")
+              replyTo ! Started(localUri)
+              Behavior.same
+            case ListeningFailed(_, message) =>
+              println(message)
+              Behavior.stopped
+            case Unbound(_) =>
+              println(s"Server unbound")
+              Behavior.stopped
+          }
 
-        transportActor ! CreateListener(nodeUri, listenerActor, connectionHandlerFactory(context))
+          val listenerActor = context.spawn(listenerBehaviour, "listener")
 
-        Behavior.same
+          transportActor ! CreateListener(nodeUri, listenerActor, connectionHandlerFactory(context))
 
-      case Send(msg, to) =>
+          Behavior.same
 
-        val connectedBehaviour: Behavior[ConnectionEvent] = Behaviors.receiveMessage {
-          case Connected(remoteUri, connectionActor) =>
-            println(s"Successfully connected to $remoteUri")
-            connectionActor ! SendMessage(msg)
-            Behavior.same
-          case ConnectionError(m, remoteUri) =>
-            println(s"Failed to connect to $remoteUri")
-            Behavior.stopped
-          case MessageReceived(m) =>
-            println(s"I got a message $m")
-            Behavior.same
-        }
-        transportActor ! Connect(to, context.spawn(connectedBehaviour, s"connection_handler_${UUID.randomUUID().toString}"))
+        case Send(msg, to) =>
 
-        Behavior.same
-    }
+          val connectedBehaviour: Behavior[ConnectionEvent] = Behaviors.receiveMessage {
+            case Connected(remoteUri, connectionActor) =>
+              println(s"Successfully connected to $remoteUri")
+              connectionActor ! SendMessage(msg)
+              connectionActor ! CloseConnection
+              Behavior.same
+            case ConnectionError(m, remoteUri, _) =>
+              println(s"Failed to connect to $remoteUri")
+              Behavior.stopped
+            case MessageReceived(m, _, _) =>
+              println(s"I got a message $m")
+              Behavior.same
+            case ConnectionClosed(remoteUri) =>
+              println(s"Connection close to $remoteUri")
+              Behavior.stopped
+          }
+
+          transportActor ! Connect(
+            to, context.spawn(connectedBehaviour, s"connection_handler_${UUID.randomUUID().toString}"))
+
+          Behavior.same
+      }
   }
 
 

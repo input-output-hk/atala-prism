@@ -41,12 +41,11 @@ trait TransportProtocol {
     * @param listener An actor to receive success or failure notification.
     * @param connectionFactory When inbound connections are received by
     *                          the listener will use this function to spin up your actor
-    *                          for handling events on that connection, passing the
-    *                          peer's address.
+    *                          for handling events on that connection.
     */
   case class CreateListener(address: AddressType,
                             listener: ActorRef[ListenerEvent],
-                            connectionFactory: AddressType => ActorRef[ConnectionEvent])
+                            connectionFactory: () => ActorRef[ConnectionEvent])
       extends TransportCommand
 
   /**
@@ -86,19 +85,26 @@ trait TransportProtocol {
 
   /**
     * Notification that setting up a connection has failed.
-    * @param message a human readable message.
-    * @param address the remote address.
+    * @param message A human readable message.
+    * @param address The remote address.
+    * @param connection An actor which can be used to control the connection.
     */
-  case class ConnectionError(message: String, address: AddressType)
+  case class ConnectionError(message: String, address: AddressType, connection: ActorRef[ConnectionCommand])
     extends ConnectionEvent
 
   /**
-    * Notification that a message has been received from a peer on the network.
-    * @param message the received message
+    * Notification that a connection has been closed.
+    * @param address The remote address
     */
-  case class MessageReceived(message: MessageType) extends ConnectionEvent
-  // TODO connection events
-  // connection closed
+  case class ConnectionClosed(address: AddressType) extends ConnectionEvent
+
+  /**
+    * Notification that a message has been received from a peer on the network.
+    * @param message The received message
+    * @param address The remote address
+    * @param connection An actor which can be used to control the connection.
+    */
+  case class MessageReceived(message: MessageType, address: AddressType, connection: ActorRef[ConnectionCommand]) extends ConnectionEvent
 
   /**
     * ConnectionCommand allows the management of connections and message sending.
@@ -111,7 +117,10 @@ trait TransportProtocol {
     */
   case class SendMessage(message: MessageType) extends ConnectionCommand
 
-  // TODO close connection
+  /**
+    * Close a connection.
+    */
+  case object CloseConnection extends ConnectionCommand
 
 }
 

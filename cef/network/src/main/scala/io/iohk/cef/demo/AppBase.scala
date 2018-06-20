@@ -4,11 +4,11 @@ import java.net.{InetAddress, InetSocketAddress}
 import java.security.SecureRandom
 import java.time.Clock
 
-import akka.{actor => untyped}
 import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.adapter._
 import akka.util.ByteString
 import akka.{actor => untyped}
+import com.typesafe.config.ConfigFactory
 import io.iohk.cef.db.KnownNodeStorageImpl
 import io.iohk.cef.discovery.DiscoveryManager.DiscoveryRequest
 import io.iohk.cef.discovery._
@@ -16,31 +16,13 @@ import io.iohk.cef.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.NodeStatus.NodeState
 import io.iohk.cef.network.{Capabilities, Node, ServerStatus}
 import io.iohk.cef.utils.Logger
-
-import scala.concurrent.duration._
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 
 trait AppBase extends Logger {
 
-  val address: Array[Byte] = Array(127.toByte, 0, 0, 1)
-  val localhost = InetAddress.getByAddress("", address)
+  val configFile = ConfigFactory.load()
 
-  val discoveryConfig = new DiscoveryConfig(
-    discoveryEnabled = true,
-    interface = "0.0.0.0",
-    port = 8090,
-    bootstrapNodes = Set(Node(ByteString("1"),
-      new InetSocketAddress(localhost, 8091),
-      new InetSocketAddress(localhost, 8091),
-      Capabilities(0x0))),
-    discoveredNodesLimit = 10,
-    scanNodesLimit = 10,
-    concurrencyDegree = 20,
-    scanInitialDelay = 10.seconds,
-    scanInterval = 100.seconds,
-    messageExpiration = 100.minute,
-    maxSeekResults = 10,
-    multipleConnectionsPerAddress = true,
-    blacklistDefaultDuration = 30 seconds)
+  val discoveryConfig = DiscoveryConfig.fromConfig(configFile)
 
   import io.iohk.cef.encoding.rlp.RLPEncoders._
   import io.iohk.cef.encoding.rlp.RLPImplicits._
@@ -53,12 +35,13 @@ trait AppBase extends Logger {
                  (implicit system: untyped.ActorSystem):
   ActorRef[DiscoveryRequest] = {
 
-    val state = new NodeState(ByteString(id), ServerStatus.NotListening, ServerStatus.NotListening, capabilities)
-    val portBase = 8090
+    val state = new NodeState(ByteString(id.toString), ServerStatus.NotListening, ServerStatus.NotListening, capabilities)
+    val portBase = discoveryConfig.port
+    val address = InetAddress.getByAddress(Array(127,0,0,1))
     val bootstrapNodes = bootstrapNodeIds.map(nodeId =>
       Node(ByteString(nodeId.toString),
-        new InetSocketAddress(localhost, portBase + nodeId),
-        new InetSocketAddress(localhost, portBase + nodeId), state.capabilities)
+        new InetSocketAddress(address, portBase + nodeId),
+        new InetSocketAddress(address, portBase + nodeId), state.capabilities)
     )
 
     val config = discoveryConfig.copy(port = portBase + id, bootstrapNodes = bootstrapNodes)
@@ -72,8 +55,10 @@ trait AppBase extends Logger {
       encoder,
       decoder,
       context => context.spawn(
-        DiscoveryListener.behavior(config, encoder, decoder), "DiscoveryListener"),
-      secureRandom
+        DiscoveryListener.behavior(config,
+          UDPBridge.creator(config, encoder, decoder)), "DiscoveryListener"),
+      secureRandom,
+      new SimpleMeterRegistry()
     )
 
     system.spawn(behavior, "discovery_behaviour")

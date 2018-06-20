@@ -1,0 +1,6 @@
+---
+- name: Ensure deployment root exists with correct permissions
+  file:
+    path: "{{deploy_root}}"
+    state: directory
+    mode: 0775

@@ -72,7 +72,7 @@ class RLPxConnectionHandler(
   class ConnectedHandler(connection: ActorRef) {
 
     def waitingForAuthHandshakeInit(handshaker: AuthHandshaker, timeout: Cancellable): Receive =
-      handleTimeout orElse handleConnectionClosed orElse {
+      handleCloseConnection orElse handleTimeout orElse handleConnectionClosed orElse {
         case Received(data) =>
           timeout.cancel()
           val maybePreEIP8Result = Try {
@@ -99,7 +99,7 @@ class RLPxConnectionHandler(
       }
 
     def waitingForAuthHandshakeResponse(handshaker: AuthHandshaker, timeout: Cancellable): Receive =
-      handleWriteFailed orElse handleTimeout orElse handleConnectionClosed orElse {
+      handleCloseConnection orElse handleWriteFailed orElse handleTimeout orElse handleConnectionClosed orElse {
         case Received(data) =>
           timeout.cancel()
           val maybePreEIP8Result = Try {
@@ -177,7 +177,7 @@ class RLPxConnectionHandler(
                    messagesNotSent: Queue[MessageSerializable] = Queue.empty,
                    cancellableAckTimeout: Option[CancellableAckTimeout] = None,
                    seqNumber: Int = 0): Receive =
-      handleWriteFailed orElse handleConnectionClosed orElse {
+      handleCloseConnection orElse handleWriteFailed orElse handleConnectionClosed orElse {
         case sm: SendMessage =>
           if(cancellableAckTimeout.isEmpty)
             sendMessage(messageCodec, sm.serializable, seqNumber, messagesNotSent)
@@ -253,8 +253,13 @@ class RLPxConnectionHandler(
         if(msg.isErrorClosed){
           log.debug(s"[Stopping Connection] Connection with $peerId closed because of error ${msg.getErrorCause}")
         }
-
+        context.parent ! msg
         context stop self
+    }
+
+    def handleCloseConnection: Receive = {
+      case Close =>
+        connection ! Close
     }
   }
 }

@@ -1,0 +1,34 @@
+---
+# Uncomment out the creates line if you get bored of
+# watching redundant uploads of unchanged archives.
+- name: push the node distribution
+  unarchive:
+    src: "{{playbook_dir}}/../node-server/target/universal/node-server_dist.tgz"
+    dest: "{{deploy_root}}"
+    creates: "{{deploy_root}}/node-server_dist"
+
+- name: push the node configuration
+  template:
+    src: node.conf.j2
+    dest: "{{deploy_root}}/node-server_dist/node.conf"
+    mode: 0644
+
+- name: push the logging configuration
+  template:
+    src: logback.xml.j2
+    dest: "{{deploy_root}}/node-server_dist/logback.xml"
+    mode: 0644
+
+- name: push the control script
+  template:
+    src: cef-node.j2
+    dest: "{{deploy_root}}/node-server_dist/bin/cef-node"
+    mode: 0744
+
+- name: Stop node if one is running
+  shell: "{{deploy_root}}/node-server_dist/bin/cef-node stop"
+
+- name: Start the node
+  shell: "{{deploy_root}}/node-server_dist/bin/cef-node start"
+  args:
+    chdir: "{{deploy_root}}/node-server_dist"

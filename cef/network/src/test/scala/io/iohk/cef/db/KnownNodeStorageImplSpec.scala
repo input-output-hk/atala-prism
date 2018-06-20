@@ -7,12 +7,12 @@ import java.util.concurrent.TimeUnit
 import akka.util.ByteString
 import io.iohk.cef.network.{Capabilities, Node}
 import io.iohk.cef.test.TestClock
-import org.scalatest.MustMatchers
+import org.scalatest.{MustMatchers, fixture}
 import scalikejdbc.DBSession
 
 import scala.concurrent.duration.FiniteDuration
 
-class KnownNodeStorageImplSpec extends AutoRollbackSpec with MustMatchers {
+class KnownNodeStorageImplSpec extends fixture.FlatSpec with AutoRollbackSpec with MustMatchers {
 
   def createKnownNodeStorage(clock: Clock, session: DBSession) = new KnownNodeStorageImpl(clock) {
     override def inTx[T](block: DBSession => T): T = block(session)

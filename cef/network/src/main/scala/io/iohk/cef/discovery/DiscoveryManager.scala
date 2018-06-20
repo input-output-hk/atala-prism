@@ -8,12 +8,13 @@ import akka.actor.typed.scaladsl.{ActorContext, Behaviors, StashBuffer, TimerSch
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.util.ByteString
 import io.iohk.cef.crypto
-import io.iohk.cef.db.KnownNodesStorage
+import io.iohk.cef.db.KnownNodeStorage
 import io.iohk.cef.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.NodeStatus.NodeState
 import io.iohk.cef.network.ServerStatus
 import io.iohk.cef.utils.FiniteSizedMap
 import DiscoveryListener._
+import io.micrometer.core.instrument.MeterRegistry
 import org.bouncycastle.util.encoders.Hex
 
 import scala.util.Random
@@ -37,9 +38,7 @@ object DiscoveryManager {
   private [discovery] case object Scan extends DiscoveryRequest
 
 
-  sealed trait DiscoveryResponse
-
-  case class DiscoveredNodes(nodes: Set[KnownNode]) extends DiscoveryResponse
+  case class DiscoveredNodes(nodes: Set[KnownNode])
 
   private [discovery] sealed trait NodeEvent {
     def timestamp: Instant
@@ -52,13 +51,14 @@ object DiscoveryManager {
   private val nonceSize = 2
 
   def behaviour(discoveryConfig: DiscoveryConfig,
-                knownNodesStorage: KnownNodesStorage,
+                knownNodesStorage: KnownNodeStorage,
                 nodeState: NodeState,
                 clock: Clock,
                 encoder: Encoder[DiscoveryWireMessage, ByteString],
                 decoder: Decoder[ByteString, DiscoveryWireMessage],
                 discoveryListenerFactory: ActorContext[DiscoveryRequest] => ActorRef[DiscoveryListenerRequest],
-                randomSource: SecureRandom): Behavior[DiscoveryRequest] = Behaviors.setup {
+                randomSource: SecureRandom,
+                registry: MeterRegistry): Behavior[DiscoveryRequest] = Behaviors.setup {
     context =>
 
       import akka.actor.typed.scaladsl.adapter._

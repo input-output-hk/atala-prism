@@ -1,0 +1,25 @@
+{% if node_key is defined %}
+node-key = "{{node_key}}"
+{% else %}
+node-name = "{{node_name}}"
+{% endif %}
+
+server-host = "{{ip_addr}}"
+server-port = 3000
+
+gateway-host = localhost
+gateway-port = 8000
+
+{% if bootstrap_peer is defined %}
+bootstrap-peer = "{{bootstrap_peer}}"
+{% endif %}
+
+akka {
+  loggers = ["akka.event.slf4j.Slf4jLogger"]
+  loglevel = "DEBUG"
+  logging-filter = "akka.event.slf4j.Slf4jLoggingFilter"
+}
+
+telemetery {
+  nodeTag = "test_node_{{node_name}}"
+}

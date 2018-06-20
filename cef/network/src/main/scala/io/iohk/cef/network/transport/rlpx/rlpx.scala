@@ -4,7 +4,7 @@ import java.io.{File, PrintWriter}
 import java.net.{Inet6Address, InetAddress}
 import java.security.SecureRandom
 
-import io.iohk.cef.network.transport.rlpx.ethereum.crypto._
+import io.iohk.cef.crypto._
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair
 import org.bouncycastle.crypto.params.ECPublicKeyParameters
 import org.bouncycastle.math.ec.ECPoint

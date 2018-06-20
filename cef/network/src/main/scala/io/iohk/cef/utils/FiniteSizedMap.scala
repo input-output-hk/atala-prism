@@ -9,7 +9,7 @@ import scala.concurrent.duration.FiniteDuration
   * A map that has a limited size and the concept of expiration.
   * Once the max size has been reached, new pairs can be added if any of the existing pairs is expired.
   * This will be used to control the amount of nodes discovery is querying at the same time. It works two ways:
-  * prevents Discovery from waiting for a significant amount of nodes, and prevents dead nodes
+  * prevents Discovery from waiting for a significant amount of nodes, and prevents waiting for dead nodes
   * @param maxSize
   * @param expiration
   * @param clock
