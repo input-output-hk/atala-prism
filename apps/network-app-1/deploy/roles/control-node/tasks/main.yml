@@ -2,35 +2,44 @@
 #- import_role:
 #    name: nginx
 
-- name: Ensure gatling directory exists with correct permissions
-  file:
-    path: "{{gatling_dir}}"
-    state: directory
-    mode: 0775
+#- name: Ensure gatling directory exists with correct permissions
+#  file:
+#    path: "{{gatling_dir}}"
+#    state: directory
+#    mode: 0775
+#
+#- name: Download Gatling
+#  get_url:
+#    url: "{{ gatling_url }}"
+#    dest: "{{ gatling_dir }}/{{gatling_archive}}"
+#
+#- name: Extract Gatling
+#  unarchive:
+#    remote_src: yes
+#    src: "{{gatling_dir}}/{{gatling_archive}}"
+#    dest: "{{gatling_dir}}"
+#
+#- name: Remove Gatling archive
+#  file:
+#    path: "{{gatling_dir}}/{{gatling_archive}}"
+#    state: absent
 
-- name: Download Gatling
-  get_url:
-    url: "{{ gatling_url }}"
-    dest: "{{ gatling_dir }}/{{gatling_archive}}"
+- name: Push the gatling.conf
+  template:
+    src: gatling.conf.j2
+    dest: "{{gatling_dir}}/{{gatling_base}}/conf/gatling.conf"
 
-- name: Extract Gatling
-  unarchive:
-    remote_src: yes
-    src: "{{gatling_dir}}/{{gatling_archive}}"
-    dest: "{{gatling_dir}}"
+- name: Push the performance tests
+  copy: src={{playbook_dir}}/../perf-test/src/it/scala/io/iohk/cef/{{item.file}} dest={{gatling_dir}}/{{gatling_base}}/user-files/simulations
+  with_items:
+    - { file: 'MessageRateSimulation.scala' }
+    - { file: 'MessageSizeSimulation.scala' }
 
-- name: Remove Gatling archive
-  file:
-    path: "{{gatling_dir}}/{{gatling_archive}}"
-    state: absent
+- name: Run the message rate performance test
+  shell: "{{gatling_dir}}/{{gatling_base}}/bin/gatling.sh -s io.iohk.cef.MessageRateSimulation"
 
-- name: Push the performance test
-  copy:
-    src: "{{playbook_dir}}/../perf-test/src/it/scala/io/iohk/cef/PerfSimulation.scala"
-    dest: "{{gatling_dir}}/{{gatling_base}}/user-files/simulations"
-
-- name: Run the performance test
-  shell: "{{gatling_dir}}/{{gatling_base}}/bin/gatling.sh -s io.iohk.cef.PerfSimulation"
+- name: Run the message size performance test
+  shell: "{{gatling_dir}}/{{gatling_base}}/bin/gatling.sh -s io.iohk.cef.MessageSizeSimulation"
 
 - name: Copy nginx config for results directory
   become: True

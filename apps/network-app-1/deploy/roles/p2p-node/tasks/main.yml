@@ -1,7 +1,4 @@
 ---
-- name: Stop node if one is running
-  shell: "{{deploy_root}}/node-server_dist/bin/cef-node stop"
-
 # Uncomment out the creates line if you get bored of
 # watching redundant uploads of unchanged archives.
 - name: push the node distribution
@@ -27,6 +24,9 @@
     src: cef-node.j2
     dest: "{{deploy_root}}/node-server_dist/bin/cef-node"
     mode: 0744
+
+- name: Stop node if one is running
+  shell: "{{deploy_root}}/node-server_dist/bin/cef-node stop"
 
 - name: Start the node
   shell: "{{deploy_root}}/node-server_dist/bin/cef-node start"

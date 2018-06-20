@@ -1,30 +1,29 @@
 package io.iohk.cef
 
 import io.gatling.core.Predef._
+import io.gatling.core.structure.ChainBuilder
 import io.gatling.http.Predef._
-import io.iohk.cef.SendMessage.sendMessage
 
 import scala.concurrent.duration._
 import scala.util.Random
 
-object SendMessage {
+class MessageRateSimulation extends Simulation {
 
   private val messageLength = 256
+  private val maxUsersPerSec = 500
 
-  private val feeder = Iterator.continually(
-    Map("message" -> Random.alphanumeric.take(messageLength).mkString))
+  private val feeder: Iterator[Map[String, String]] =
+    Iterator.continually(
+      Map("message" -> Random.alphanumeric.take(messageLength).mkString))
 
-  val sendMessage =
+  private val sendMessage: ChainBuilder =
     feed(feeder).exec(
       http("SendMessage")
         .post("/message")
         .body(StringBody("""{"message":"${message}"}""")))
-}
-
-class PerfSimulation extends Simulation {
 
   private val singleMessageScenario =
-    scenario("Simple message sending scenario").
+    scenario(s"Max Users / sec = $maxUsersPerSec, messageLength = $messageLength").
       exec(sendMessage)
 
   private val httpConf = http
@@ -33,6 +32,6 @@ class PerfSimulation extends Simulation {
     .acceptHeader("application/json")
 
   setUp(singleMessageScenario.
-    inject(Range.inclusive(1, 10).map(i => constantUsersPerSec(i) during(2 seconds))).
+    inject(Range.inclusive(1, maxUsersPerSec, 10).map(i => constantUsersPerSec(i) during (2 seconds))).
     protocols(httpConf))
 }
