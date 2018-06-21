@@ -41,4 +41,3 @@ jobs:
       # run tests!
       - run: cd cef/network && cat /dev/null | sbt coverage test:test
 
-      - coveralls
