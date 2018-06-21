@@ -59,7 +59,7 @@ class KnownNodeStorageImpl(clock: Clock, dbName: Symbol = 'default) extends Know
                                   implicit session: DBSession
   ) = {
     sql"""
-           select ${kn.discovered} from ${KnownNodeTable as kn} where ${kn.nodeId} = ${Hex.toHexString(node.id.toArray)}
+           select ${kn.discovered} from ${KnownNodeTable as kn} where ${kn.id} = ${Hex.toHexString(node.id.toArray)}
          """.map(_.timestamp(knownNodeColumn.discovered).toInstant).single().apply()
   }
 
