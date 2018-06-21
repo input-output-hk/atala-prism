@@ -1,28 +1,25 @@
 ---
-#- import_role:
-#    name: nginx
+- name: Ensure gatling directory exists with correct permissions
+  file:
+    path: "{{gatling_dir}}"
+    state: directory
+    mode: 0775
 
-#- name: Ensure gatling directory exists with correct permissions
-#  file:
-#    path: "{{gatling_dir}}"
-#    state: directory
-#    mode: 0775
-#
-#- name: Download Gatling
-#  get_url:
-#    url: "{{ gatling_url }}"
-#    dest: "{{ gatling_dir }}/{{gatling_archive}}"
-#
-#- name: Extract Gatling
-#  unarchive:
-#    remote_src: yes
-#    src: "{{gatling_dir}}/{{gatling_archive}}"
-#    dest: "{{gatling_dir}}"
-#
-#- name: Remove Gatling archive
-#  file:
-#    path: "{{gatling_dir}}/{{gatling_archive}}"
-#    state: absent
+- name: Download Gatling
+  get_url:
+    url: "{{ gatling_url }}"
+    dest: "{{ gatling_dir }}/{{gatling_archive}}"
+
+- name: Extract Gatling
+  unarchive:
+    remote_src: yes
+    src: "{{gatling_dir}}/{{gatling_archive}}"
+    dest: "{{gatling_dir}}"
+
+- name: Remove Gatling archive
+  file:
+    path: "{{gatling_dir}}/{{gatling_archive}}"
+    state: absent
 
 - name: Push the gatling.conf
   template:
@@ -34,6 +31,9 @@
   with_items:
     - { file: 'MessageRateSimulation.scala' }
     - { file: 'MessageSizeSimulation.scala' }
+
+- name: Warm up the nodes
+  shell: "{{gatling_dir}}/{{gatling_base}}/bin/gatling.sh -s io.iohk.cef.MessageRateSimulation"
 
 - name: Run the message rate performance test
   shell: "{{gatling_dir}}/{{gatling_base}}/bin/gatling.sh -s io.iohk.cef.MessageRateSimulation"

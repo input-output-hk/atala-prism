@@ -8,24 +8,28 @@ import scala.util.Random
 
 class MessageSizeSimulation extends Simulation {
 
-  private val usersPerSec = 1
-  private val maxMessageSize: Int = 1024 * 25
+  private val steps = 25
+  private val minMessageSize = 1024
+  private val maxMessageSize = 1024 * 50
+  private val dy = (maxMessageSize - minMessageSize) / steps
 
   private val feeder: Iterator[Map[String, String]] =
-    Range.inclusive(1, maxMessageSize).map(messageLength =>
-      Map(
-        "messageLength" -> messageLength.toString,
-        "message" -> Random.alphanumeric.take(messageLength).mkString)).toIterator
+    (for {
+      messageSize <- Range.inclusive(minMessageSize, maxMessageSize, dy)
+      _ <- Range.inclusive(0, 99)
+    } yield Map(
+      "messageSize" -> messageSize.toString,
+      "message" -> Random.alphanumeric.take(messageSize).mkString)).toIterator
 
   private val sendMessage: ChainBuilder =
     feed(feeder).exec(
-      http("SendMessage")
+      http("SendMessage (sz=${messageSize})")
         .post("/message")
         .body(StringBody("""{"message":"${message}"}""")))
 
   private val messageScenario =
-    scenario(s"Users / sec = $usersPerSec").
-      repeat(maxMessageSize, "n")(exec(sendMessage))
+    scenario(s"Message size scenario").
+      repeat(steps, "step")(repeat(100, "loop")(exec(sendMessage)))
 
   private val httpConf = http
     .baseURL("http://localhost:8000")
@@ -33,6 +37,6 @@ class MessageSizeSimulation extends Simulation {
     .acceptHeader("application/json")
 
   setUp(messageScenario.
-    inject(atOnceUsers(usersPerSec))).
+    inject(atOnceUsers(1))).
     protocols(httpConf)
 }

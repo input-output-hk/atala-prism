@@ -10,19 +10,19 @@
 # Control node acts as bootstrap so needs to come up before the p2p network
 - hosts: control-node
   roles:
-#    - { role: java8, become: yes }
+    - { role: java8, become: yes }
     - common
     - p2p-node
 
 # Installs/starts the cef network
 - hosts: p2p-net
   roles:
-#    - { role: java8, become: yes }
+    - { role: java8, become: yes }
     - common
     - p2p-node
 
 # Installs/runs the performance tests
 - hosts: control-node
   roles:
-#    - { role: nginx, become: yes }
+    - { role: nginx, become: yes }
     - control-node
