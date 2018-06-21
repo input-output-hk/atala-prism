@@ -10,6 +10,7 @@ import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.server.RouteResult._
 import akka.stream.Materializer
+import io.iohk.cef.db.KnownNodeStorage
 import io.iohk.cef.demo.SimpleNode3
 import io.iohk.cef.demo.SimpleNode3._
 
@@ -74,7 +75,8 @@ object BehaviorRoot {
             serverPort: Int,
             gatewayHost: String,
             gatewayPort: Int,
-            bootstrapPeer: Option[URI])(
+            bootstrapPeer: Option[URI],
+            knownNodeStorage: KnownNodeStorage)(
              implicit
              system: ActorSystem,
              materializer: Materializer,
@@ -83,7 +85,7 @@ object BehaviorRoot {
     context =>
       val nodeActor: ActorRef[NodeCommand] =
         context.spawn(
-          SimpleNode3(nodeName, serverHost, serverPort, bootstrapPeer).server,
+          SimpleNode3(nodeName, serverHost, serverPort, bootstrapPeer, knownNodeStorage).server,
           "NodeActor")
 
       def serverListener(currentRequests: mutable.Map[String, Promise[Unit]]): Behavior[NodeResponse] =

@@ -1,16 +1,16 @@
 package io.iohk.cef.demo
 
 import java.net.{InetSocketAddress, URI}
-import java.time.{Clock, Instant}
+import java.time.Instant
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicInteger
 
+import akka.actor.ActorSystem
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors, TimerScheduler}
 import akka.actor.typed.{ActorRef, Behavior, Logger}
-import akka.actor.ActorSystem
 import akka.io.{IO, Tcp}
 import akka.util.{ByteString, Timeout}
-import io.iohk.cef.db.{DummyKnownNodesStorage, KnownNode}
+import io.iohk.cef.db.{KnownNode, KnownNodeStorage}
 import io.iohk.cef.demo.SimpleNode3.{Confirmed, NodeResponse, Resend, SendTo}
 import io.iohk.cef.discovery.DiscoveryManager.{DiscoveredNodes, DiscoveryRequest, GetDiscoveredNodes}
 import io.iohk.cef.network.transport.rlpx.RLPxTransportProtocol
@@ -24,7 +24,8 @@ import scala.concurrent.duration._
 import scala.util.Success
 
 class SimpleNode3(node: Node, bootstrapPeer: Option[URI],
-                  transport: RLPxTransportProtocol[String]) extends DatadogTelemetry {
+                  transport: RLPxTransportProtocol[String],
+                  knownNodeStorage: KnownNodeStorage) extends DatadogTelemetry {
 
   private val nodeUri = node.toUri
 
@@ -70,7 +71,7 @@ class SimpleNode3(node: Node, bootstrapPeer: Option[URI],
       case class NotifyMessageTracker(message: String, receivedBy: URI) extends NodeCommand
 
       val discoveryBehavior = DiscoveryActor.discoveryBehavior(
-        node, bootstrapPeer.fold(Set[URI]())(Set(_)), new DummyKnownNodesStorage(Clock.systemUTC()))
+        node, bootstrapPeer.fold(Set[URI]())(Set(_)), knownNodeStorage)
 
       val discoveryActor: ActorRef[DiscoveryRequest] =
         context.spawn(discoveryBehavior, "DiscoveryActor")
@@ -256,7 +257,7 @@ object SimpleNode3 {
       serverAddress = new InetSocketAddress(host, port),
       capabilities = Capabilities(1))
 
-  def apply(host: String, port: Int, nodeKey: String, bootstrapPeer: Option[URI])(
+  def apply(host: String, port: Int, nodeKey: String, bootstrapPeer: Option[URI], knownNodeStorage: KnownNodeStorage)(
     implicit actorSystem: ActorSystem): SimpleNode3 = {
 
     import io.iohk.cef.crypto._
@@ -276,16 +277,17 @@ object SimpleNode3 {
       transport = new RLPxTransportProtocol[String](
         MessageConfig.sampleEncoder,
         MessageConfig.sampleDecoder,
-        MantisCode.rlpxProps(keyPair), IO(Tcp))
+        MantisCode.rlpxProps(keyPair), IO(Tcp)),
+      knownNodeStorage
     )
   }
 
-  def apply(nodeName: String, host: String, port: Int, bootstrapPeer: Option[URI])(implicit actorSystem: ActorSystem): SimpleNode3 = {
+  def apply(nodeName: String, host: String, port: Int, bootstrapPeer: Option[URI], knownNodeStorage: KnownNodeStorage)(implicit actorSystem: ActorSystem): SimpleNode3 = {
 
     val keyPair: AsymmetricCipherKeyPair = MantisCode.nodeKeyFromName(nodeName)
 
     val (priv, _) = io.iohk.cef.crypto.keyPairToByteArrays(keyPair)
 
-    SimpleNode3(host, port, Hex.toHexString(priv), bootstrapPeer)
+    SimpleNode3(host, port, Hex.toHexString(priv), bootstrapPeer, knownNodeStorage)
   }
 }

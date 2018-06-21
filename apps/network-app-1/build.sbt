@@ -1,4 +1,3 @@
-
 val compilerOptions = Seq(
   "-unchecked",
   "-language:postfixOps",
@@ -18,6 +17,12 @@ val commonSettings = Seq(
   scalaVersion := "2.12.5",
   scalacOptions := compilerOptions
 )
+
+val dep = {
+  Seq(
+    "com.h2database" % "h2" % "1.4.197"
+  )
+}
 
 val akka = Seq(
   "com.typesafe.akka" %% "akka-actor-typed" % "2.5.12",
@@ -61,5 +66,6 @@ val root = project.in(file("."))
   .settings(
     name := "network-app-1",
     publishArtifact := false,
+    libraryDependencies ++= dep,
     commonSettings
   ).aggregate(`perf-test`, `node-server`)
