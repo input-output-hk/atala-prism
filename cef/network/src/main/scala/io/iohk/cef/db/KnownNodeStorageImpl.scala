@@ -49,7 +49,9 @@ class KnownNodeStorageImpl(clock: Clock, dbName: Symbol = 'default) extends Know
 
     inTx { implicit session =>
       val discovered = getDiscoveredInstant(node, knownNodeColumn, kn)
-      mergeNodeStatement(node, discovered, knownNodeColumn)
+      val result = mergeNodeStatement(node, discovered, knownNodeColumn)
+      if (discovered.isEmpty) trackingKnownNodes.incrementAndGet()
+      result
     }
   }
 
