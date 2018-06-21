@@ -31,7 +31,7 @@ jobs:
           # fallback to using the latest cache if no exact match is found
           - v1-dependencies-
 
-      - run: cd cef/network && cat /dev/null | sbt test:compile
+      - run: cd cef/network && cat /dev/null | sbt coverage test:compile
 
       - save_cache:
           paths:
@@ -39,4 +39,6 @@ jobs:
           key: v1-dependencies--{{ checksum "cef/network/build.sbt" }}-{{ checksum "cef/network/project/build.properties" }}-{{ checksum "cef/network/project/plugins.sbt" }}
         
       # run tests!
-      - run: cd cef/network && cat /dev/null | sbt test:test
+      - run: cd cef/network && cat /dev/null | sbt coverage test:test
+
+      - coveralls
