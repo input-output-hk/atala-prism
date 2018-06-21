@@ -22,6 +22,10 @@ flywayUrl := FlywayConfig.config.value.url
 flywayUser := FlywayConfig.config.value.user
 flywayLocations += "db/migration"
 
+import org.scoverage.coveralls.Imports.CoverallsKeys._
+
+coverallsToken := sys.env.get("COVERALLS_REPO_TOKEN")
+
 val dep = {
   val akkaVersion = "2.5.12"
 
