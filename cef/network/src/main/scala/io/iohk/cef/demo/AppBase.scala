@@ -22,7 +22,7 @@ trait AppBase extends Logger {
 
   val configFile = ConfigFactory.load()
 
-  val discoveryConfig = DiscoveryConfig.fromConfig(configFile)
+  val discoveryConfig = DiscoveryConfig(configFile)
 
   import io.iohk.cef.encoding.rlp.RLPEncoders._
   import io.iohk.cef.encoding.rlp.RLPImplicits._

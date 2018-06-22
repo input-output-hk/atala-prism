@@ -12,6 +12,7 @@ import akka.io.{IO, Tcp}
 import akka.util.{ByteString, Timeout}
 import io.iohk.cef.db.{KnownNode, KnownNodeStorage}
 import io.iohk.cef.demo.SimpleNode3.{Confirmed, NodeResponse, Resend, SendTo}
+import io.iohk.cef.discovery.DiscoveryConfig
 import io.iohk.cef.discovery.DiscoveryManager.{DiscoveredNodes, DiscoveryRequest, GetDiscoveredNodes}
 import io.iohk.cef.network.transport.rlpx.RLPxTransportProtocol
 import io.iohk.cef.network.{Capabilities, Node}
@@ -23,11 +24,12 @@ import org.bouncycastle.util.encoders.Hex
 import scala.concurrent.duration._
 import scala.util.Success
 
-class SimpleNode3(node: Node, bootstrapPeer: Option[URI],
+class SimpleNode3(node: Node,
                   transport: RLPxTransportProtocol[String],
-                  knownNodeStorage: KnownNodeStorage) extends DatadogTelemetry {
+                  knownNodeStorage: KnownNodeStorage,
+                  discoveryConfig: DiscoveryConfig) extends DatadogTelemetry {
 
-  private val nodeUri = node.toUri
+  private val nodeUri = node.getServerUri
 
   import SimpleNode3.{NodeCommand, Send, Start, Started}
 
@@ -71,7 +73,7 @@ class SimpleNode3(node: Node, bootstrapPeer: Option[URI],
       case class NotifyMessageTracker(message: String, receivedBy: URI) extends NodeCommand
 
       val discoveryBehavior = DiscoveryActor.discoveryBehavior(
-        node, bootstrapPeer.fold(Set[URI]())(Set(_)), knownNodeStorage)
+        node, discoveryConfig, knownNodeStorage)
 
       val discoveryActor: ActorRef[DiscoveryRequest] =
         context.spawn(discoveryBehavior, "DiscoveryActor")
@@ -182,7 +184,7 @@ class SimpleNode3(node: Node, bootstrapPeer: Option[URI],
 
               context.ask(discoveryActor)(GetDiscoveredNodes) {
                 case Success(DiscoveredNodes(nodes: Set[KnownNode])) =>
-                  SendTo(msg, nodes.filter(SimpleNode3.notDead).map(_.node.toUri))
+                  SendTo(msg, nodes.filter(SimpleNode3.notDead).map(_.node.getServerUri))
                 case _ =>
                   Resend(Send(msg), 5 seconds)
               }
@@ -250,14 +252,14 @@ object SimpleNode3 {
   def notDead(knownNode: KnownNode): Boolean =
     knownNode.lastSeen.plusSeconds(10).isAfter(Instant.now)
 
-  private def node(nodeName: String, host: String, port: Int): Node =
-    Node(
-      id = MantisCode.nodeIdByteStringFromNodeName(nodeName),
-      discoveryAddress = new InetSocketAddress(host, port + 1),
-      serverAddress = new InetSocketAddress(host, port),
-      capabilities = Capabilities(1))
+//  private def node(nodeName: String, host: String, port: Int): Node =
+//    Node(
+//      id = MantisCode.nodeIdByteStringFromNodeName(nodeName),
+//      discoveryAddress = new InetSocketAddress(host, port + 1),
+//      serverAddress = new InetSocketAddress(host, port),
+//      capabilities = Capabilities(1))
 
-  def apply(host: String, port: Int, nodeKey: String, bootstrapPeer: Option[URI], knownNodeStorage: KnownNodeStorage)(
+  def apply(host: String, port: Int, nodeKey: String, discoveryConfig: DiscoveryConfig, knownNodeStorage: KnownNodeStorage)(
     implicit actorSystem: ActorSystem): SimpleNode3 = {
 
     import io.iohk.cef.crypto._
@@ -267,27 +269,27 @@ object SimpleNode3 {
 
     val node = Node(
       id = nodeId,
-      discoveryAddress = new InetSocketAddress(host, port + 1),
+      discoveryAddress = new InetSocketAddress(discoveryConfig.interface, discoveryConfig.port),
       serverAddress = new InetSocketAddress(host, port),
       capabilities = Capabilities(1))
 
     new SimpleNode3(
-      node = node,
-      bootstrapPeer = bootstrapPeer,
-      transport = new RLPxTransportProtocol[String](
+      node,
+      new RLPxTransportProtocol[String](
         MessageConfig.sampleEncoder,
         MessageConfig.sampleDecoder,
         MantisCode.rlpxProps(keyPair), IO(Tcp)),
-      knownNodeStorage
+      knownNodeStorage,
+      discoveryConfig
     )
   }
 
-  def apply(nodeName: String, host: String, port: Int, bootstrapPeer: Option[URI], knownNodeStorage: KnownNodeStorage)(implicit actorSystem: ActorSystem): SimpleNode3 = {
+  def apply(nodeName: String, host: String, port: Int, discoveryConfig: DiscoveryConfig, knownNodeStorage: KnownNodeStorage)(implicit actorSystem: ActorSystem): SimpleNode3 = {
 
     val keyPair: AsymmetricCipherKeyPair = MantisCode.nodeKeyFromName(nodeName)
 
     val (priv, _) = io.iohk.cef.crypto.keyPairToByteArrays(keyPair)
 
-    SimpleNode3(host, port, Hex.toHexString(priv), bootstrapPeer, knownNodeStorage)
+    SimpleNode3(host, port, Hex.toHexString(priv), discoveryConfig, knownNodeStorage)
   }
 }

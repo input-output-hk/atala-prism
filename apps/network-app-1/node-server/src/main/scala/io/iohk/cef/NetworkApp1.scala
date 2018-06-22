@@ -9,6 +9,7 @@ import com.typesafe.config.{Config, ConfigFactory}
 import io.iohk.cef.ConfigExtensions._
 import io.iohk.cef.db.KnownNodeStorageImpl
 import io.iohk.cef.demo.SimpleNode3
+import io.iohk.cef.discovery.DiscoveryConfig
 
 class NetworkApp1(config: Config) {
 
@@ -18,7 +19,7 @@ class NetworkApp1(config: Config) {
 
   type NameHostPort = (String, String, Int)
 
-  val bootstrapPeer = config.getOption(_.getURI("bootstrap-peer"))
+  val discoveryConfig = DiscoveryConfig(config)
 
   val knownNodeStorage = new KnownNodeStorageImpl(Clock.systemUTC())
 
@@ -27,13 +28,13 @@ class NetworkApp1(config: Config) {
     nodeName <- config.getOption(_.getString("node-name"))
     serverHost <- config.getOption(_.getString("server-host"))
     serverPort <- config.getOption(_.getInt("server-port"))
-  } yield SimpleNode3(nodeName, serverHost, serverPort, bootstrapPeer, knownNodeStorage)
+  } yield SimpleNode3(nodeName, serverHost, serverPort, discoveryConfig, knownNodeStorage)
 
   val fixedKeyConfig: Option[SimpleNode3] = for {
     nodeKey <- config.getOption(_.getString("node-key"))
     serverHost <- config.getOption(_.getString("server-host"))
     serverPort <- config.getOption(_.getInt("server-port"))
-  } yield SimpleNode3(serverHost, serverPort, nodeKey, bootstrapPeer, knownNodeStorage)
+  } yield SimpleNode3(serverHost, serverPort, nodeKey, discoveryConfig, knownNodeStorage)
 
 
   // or explicitly specify a node URI with a key in the user info

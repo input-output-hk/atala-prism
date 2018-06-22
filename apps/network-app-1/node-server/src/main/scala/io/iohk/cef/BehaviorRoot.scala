@@ -1,6 +1,5 @@
 package io.iohk.cef
 
-import java.net.URI
 import java.util.concurrent.ConcurrentHashMap
 
 import akka.actor.ActorSystem
@@ -13,10 +12,11 @@ import akka.stream.Materializer
 import io.iohk.cef.db.KnownNodeStorage
 import io.iohk.cef.demo.SimpleNode3
 import io.iohk.cef.demo.SimpleNode3._
+import io.iohk.cef.discovery.DiscoveryConfig
 
+import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.concurrent.{ExecutionContext, Promise}
-import collection.JavaConverters._
 
 object BehaviorRoot {
 
@@ -75,7 +75,7 @@ object BehaviorRoot {
             serverPort: Int,
             gatewayHost: String,
             gatewayPort: Int,
-            bootstrapPeer: Option[URI],
+            discoveryConfig: DiscoveryConfig,
             knownNodeStorage: KnownNodeStorage)(
              implicit
              system: ActorSystem,
@@ -85,7 +85,7 @@ object BehaviorRoot {
     context =>
       val nodeActor: ActorRef[NodeCommand] =
         context.spawn(
-          SimpleNode3(nodeName, serverHost, serverPort, bootstrapPeer, knownNodeStorage).server,
+          SimpleNode3(nodeName, serverHost, serverPort, discoveryConfig, knownNodeStorage).server,
           "NodeActor")
 
       def serverListener(currentRequests: mutable.Map[String, Promise[Unit]]): Behavior[NodeResponse] =

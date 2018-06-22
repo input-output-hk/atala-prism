@@ -127,7 +127,7 @@ object DiscoveryManager {
       }
 
       def sendPing(listener: ActorRef[DiscoveryListenerRequest], listeningAddress: InetSocketAddress, node: Node): Unit = {
-        context.log.debug(s"Sending ping to ${node.toUri}")
+        context.log.debug(s"Sending ping to ${node.discoveryAddress}")
         val nonce = new Array[Byte](nonceSize)
         randomSource.nextBytes(nonce)
         val ping = Ping(DiscoveryWireMessage.ProtocolVersion, getNode(listeningAddress), expirationTimestamp, ByteString(nonce))

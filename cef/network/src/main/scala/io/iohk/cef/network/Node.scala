@@ -16,9 +16,9 @@ case class Node(id: ByteString,
 
   def idHex: String = Hex.toHexString(id.toArray)
 
-  def toUri: URI = {
+  def getServerUri: URI = {
     val host = Endpoint.getHostName(serverAddress.getAddress)
-    new URI(s"enode://${Hex.toHexString(id.toArray[Byte])}@$host:${serverAddress.getPort}?discport=${discoveryAddress.getPort}&capabilities=${capabilities.byte.toHexString}")
+    new URI(s"enode://${Hex.toHexString(id.toArray[Byte])}@$host:${serverAddress.getPort}?capabilities=${capabilities.byte.toHexString}")
   }
 }
 
