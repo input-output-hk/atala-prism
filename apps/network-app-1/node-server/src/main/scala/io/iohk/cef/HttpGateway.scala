@@ -10,16 +10,19 @@ import scala.concurrent.Future
 
 object HttpGateway {
 
-  case class MessageRequest(message: String)
+  case class MessageRequest(message: String, expectedPeerCount: Int)
 
-  implicit val messageRequestJsonFormat = jsonFormat1(MessageRequest)
+  implicit val messageRequestJsonFormat = jsonFormat2(MessageRequest)
 
-  def route(requestHandler: MessageRequest => Future[Unit]): Route =
+  def route(requestHandler: MessageRequest => Future[Int]): Route =
     path("message") {
       post {
         entity(as[MessageRequest]) { messageRequest =>
-          onSuccess(requestHandler(messageRequest)) {
-            complete(StatusCodes.NoContent)
+          onSuccess(requestHandler(messageRequest)) { peerCount =>
+            if (peerCount == messageRequest.expectedPeerCount)
+              complete(StatusCodes.NoContent)
+            else
+              complete(StatusCodes.BadGateway, s"Expected ${messageRequest.expectedPeerCount} confirms but received $peerCount.")
           }
         }
       }

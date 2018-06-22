@@ -80,7 +80,7 @@ class SimpleNode3(node: Node,
 
       def serverBehavior(timer: TimerScheduler[NodeCommand],
                          connectionCache: Map[URI, ActorRef[ConnectionCommand]],
-                         messageTracker: Map[String, Set[URI]],
+                         messageTracker: Map[String, (Int, Set[URI])],
                          serverListener: Option[ActorRef[NodeResponse]] = None): Behavior[NodeCommand] = Behaviors.setup {
         context =>
 
@@ -164,14 +164,14 @@ class SimpleNode3(node: Node,
               serverBehavior(timer, updatedCache, messageTracker, serverListener)
 
             case NotifyMessageTracker(message: String, receivedBy: URI) =>
-              val currentUris: Set[URI] = messageTracker(message)
+              val (peerCount, currentUris): (Int, Set[URI]) = messageTracker(message)
               val remainingUris = currentUris - receivedBy
               val newMessageTracker =
                 if (remainingUris.isEmpty) {
-                  serverListener.get ! Confirmed(message)
+                  serverListener.get ! Confirmed(message, peerCount)
                   messageTracker - message
                 } else {
-                  messageTracker + (message -> remainingUris)
+                  messageTracker + (message -> (peerCount, remainingUris))
                 }
 
               serverBehavior(timer, connectionCache, newMessageTracker, serverListener)
@@ -213,11 +213,11 @@ class SimpleNode3(node: Node,
                         s"connection_handler_${UUID.randomUUID().toString}")))(withConnection(context.log, toUri, _))
                 )
 
-                val newMessageTracker = messageTracker + (msg -> toUris)
+                val newMessageTracker = messageTracker + (msg -> (toUris.size, toUris))
 
                 serverBehavior(timer, connectionCache, newMessageTracker, serverListener)
               } else {
-                serverListener.get ! Confirmed(msg)
+                serverListener.get ! Confirmed(msg, 0)
                 Behavior.same
               }
 
@@ -247,17 +247,10 @@ object SimpleNode3 {
 
   case class Started(nodeUri: URI) extends NodeResponse
 
-  case class Confirmed(msg: String) extends NodeResponse
+  case class Confirmed(msg: String, peerCount: Int) extends NodeResponse
 
   def notDead(knownNode: KnownNode): Boolean =
     knownNode.lastSeen.plusSeconds(10).isAfter(Instant.now)
-
-//  private def node(nodeName: String, host: String, port: Int): Node =
-//    Node(
-//      id = MantisCode.nodeIdByteStringFromNodeName(nodeName),
-//      discoveryAddress = new InetSocketAddress(host, port + 1),
-//      serverAddress = new InetSocketAddress(host, port),
-//      capabilities = Capabilities(1))
 
   def apply(host: String, port: Int, nodeKey: String, discoveryConfig: DiscoveryConfig, knownNodeStorage: KnownNodeStorage)(
     implicit actorSystem: ActorSystem): SimpleNode3 = {
