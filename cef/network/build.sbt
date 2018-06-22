@@ -43,16 +43,17 @@ val dep = {
     "ch.qos.logback"  %  "logback-classic"   % "1.2.3",
     "org.scalikejdbc" %% "scalikejdbc-config"  % "3.2.2",
     "org.scalikejdbc" %% "scalikejdbc-test"   % "3.2.2" % Test,
-    "org.flywaydb" % "flyway-core" % "5.0.2" % Test,
-
+    "org.flywaydb" % "flyway-core" % "5.1.3",
+    
     "org.scalatest" %% "scalatest" % "3.0.1" % Test,
     "org.scalacheck" %% "scalacheck" % "1.13.4" % Test,
     "org.scalamock" %% "scalamock-scalatest-support" % "3.5.0" % Test,
     "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test,
     "com.typesafe.akka" %% "akka-testkit-typed" % akkaVersion % Test,
 
-    // apache commons
     "org.apache.commons" % "commons-lang3" % "3.7"
+
+
   )
 }
 
