@@ -29,7 +29,7 @@ class MessageRateSimulation extends Simulation {
     feed(feeder).exec(
       http("SendMessage (rate=${messageRate})")
         .post("/message")
-        .body(StringBody("""{"message":"${message}"}""")))
+        .body(StringBody("""{"message":"${message}", "expectedPeerCount":7}""")))
 
   private val messageScenario: ScenarioBuilder =
     scenario(s"Message rate scenario").

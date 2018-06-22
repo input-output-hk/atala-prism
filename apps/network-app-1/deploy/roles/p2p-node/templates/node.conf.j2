@@ -10,10 +10,6 @@ server-port = 3000
 gateway-host = localhost
 gateway-port = 8000
 
-{% if bootstrap_peer is defined %}
-bootstrap-peer = "{{bootstrap_peer}}"
-{% endif %}
-
 akka {
   loggers = ["akka.event.slf4j.Slf4jLogger"]
   loglevel = "DEBUG"
@@ -22,4 +18,42 @@ akka {
 
 telemetery {
   nodeTag = "test_node_{{node_name}}"
+}
+
+discovery {
+  enabled = true
+  interface = "127.0.0.1"
+  port = 3002
+  bootstrapNodes = [
+    {% if bootstrap_peer_udp is defined %}
+    {
+      discoveryUri = "{{bootstrap_peer_udp}}"
+      p2pUri = "{{bootstrap_peer_rlpx}}"
+      capabilities = "01"
+    }
+    {% endif %}
+    ]
+  discoveredNodesLimit = 10
+  scanNodesLimit = 10
+  concurrencyDegree = 20
+  scanInitialDelay = 2500
+  scanInterval = 2500
+  messageExpiration = 100000
+  maxSeekResults = 10
+  multipleConnectionsPerAddress = true
+  blacklistDefaultDuration = 30000
+}
+
+db {
+  default {
+    driver = "org.h2.Driver"
+    url = "jdbc:h2:file:/tmp/db/default"
+    user="sa"
+    password=""
+    poolInitialSize=5
+    poolMaxSize=7
+    poolConnectionTimeoutMillis=1000
+    poolValidationQuery="select 1 as one"
+    poolFactoryName="commons-dbcp2"
+  }
 }

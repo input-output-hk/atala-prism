@@ -15,7 +15,7 @@ class SingleMessageSimulation extends Simulation {
     feed(feeder).exec(
       http("SendMessage")
         .post("/message")
-        .body(StringBody("""{"message":"${message}"}""")))
+        .body(StringBody("""{"message":"${message}", "expectedPeerCount":7}""")))
 
   private val messageScenario =
     scenario(s"Message scenario").exec(sendMessage)

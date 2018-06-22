@@ -25,7 +25,7 @@ class MessageSizeSimulation extends Simulation {
     feed(feeder).exec(
       http("SendMessage (sz=${messageSize})")
         .post("/message")
-        .body(StringBody("""{"message":"${message}"}""")))
+        .body(StringBody("""{"message":"${message}", "expectedPeerCount":7}""")))
 
   private val messageScenario =
     scenario(s"Message size scenario").
