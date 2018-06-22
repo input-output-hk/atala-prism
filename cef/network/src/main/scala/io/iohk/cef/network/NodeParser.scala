@@ -3,13 +3,15 @@ package io.iohk.cef.network
 import java.net.{InetAddress, URI}
 
 import akka.util.ByteString
+import com.typesafe.config.Config
 import io.iohk.cef.utils.Logger
 
 import scala.util.{Failure, Success, Try}
 
 object NodeParser extends Logger {
   val NodeScheme = "enode"
-  val NodeIdSize = 5
+  val UdpScheme = "udp"
+  val NodeIdSize = 128
 
 
   type Error = String
@@ -22,11 +24,11 @@ object NodeParser extends Logger {
     }
   }
 
-  private def validateScheme(uri: URI): Either[Error, URI] = {
+  private def validateScheme(uri: URI, expectedScheme: String): Either[Error, URI] = {
     val scheme = Option(uri.getScheme).toRight(s"No defined scheme for uri $uri")
 
     scheme.flatMap{ scheme =>
-      Either.cond(uri.getScheme == NodeScheme, uri, s"Invalid node scheme $scheme, it should be $NodeScheme")
+      Either.cond(uri.getScheme == expectedScheme, uri, s"Invalid node scheme $scheme, it should be $expectedScheme")
     }
   }
 
@@ -37,14 +39,14 @@ object NodeParser extends Logger {
     }
 
     nodeId.flatMap(nodeId =>
-      Either.cond(nodeId.size == NodeIdSize, uri, s"Invalid node scheme $nodeId size, it should be $NodeScheme")
+      Either.cond(nodeId.size == NodeIdSize, uri, s"Invalid node id $nodeId size, it should be $NodeIdSize")
     )
   }
 
-  private def validateUri(uriString: String): Either[Error, URI] = {
+  private def validateUri(uriString: String): Either[Set[Error], URI] = {
     Try(new URI(uriString)) match {
       case Success(nUri) => Right(nUri)
-      case Failure(ex) => Left(s"Malformed URI for node $uriString")
+      case Failure(ex) => Left(Set(s"Malformed URI for node $uriString"))
     }
   }
 
@@ -53,12 +55,25 @@ object NodeParser extends Logger {
 
     val uri = validateUri(node)
     uri match {
-      case Left(error) => Left(Set(error))
+      case Left(error) => Left(error)
       case Right(nUri)  =>
-        val valScheme = validateScheme(nUri)
+        val valScheme = validateScheme(nUri, NodeScheme)
         val valNodeId = validateNodeId(nUri)
         val valTcpAddress = validateTcpAddress(nUri)
         combineValidations(nUri, valScheme, valNodeId, valTcpAddress)
+    }
+  }
+
+  private def validateUdpUri(udp: String): Either[Set[Error], URI] = {
+    import io.iohk.cef.utils.ValidationUtils._
+
+    val uri = validateUri(udp)
+    uri match {
+      case Left(error) => Left(error)
+      case Right(nUri)  =>
+        val valScheme = validateScheme(nUri, UdpScheme)
+        val valTcpAddress = validateTcpAddress(nUri)
+        combineValidations(nUri, valScheme, valTcpAddress)
     }
   }
 
@@ -66,16 +81,23 @@ object NodeParser extends Logger {
     * Parse a node string, for it to be valid it should have the format:
     * "enode://[128 char (64bytes) hex string]@[IPv4 address | '['IPv6 address']' ]:[port]"
     *
-    * @param node to be parsed
+    * @param nodeConfig to be parsed
     * @return the parsed node, or the errors detected during parsing
     */
-  def parseNode(node:String): Either[Set[Error], Node] = {
-    val validation = validateNodeUri(node)
-    val errorSet = validation.left.getOrElse(Set())
-    validation.flatMap(uri => Node.fromUri(uri) match {
-      case Success(node) => Right(node)
-      case Failure(ex) => Left(errorSet +  ex.getMessage)
-    })
+  def parseNode(nodeConfig: Config): Either[Set[Error], Node] = {
+    val discoveryUri = nodeConfig.getString("discoveryUri")
+    val p2pUri = nodeConfig.getString("p2pUri")
+    val validationP2p = validateNodeUri(p2pUri)
+    val validationDisc = validateUdpUri(discoveryUri)
+    val errorSet = validationP2p.left.getOrElse(validationDisc.left.getOrElse(Set()))
+    for {
+      p2pUri <- validationP2p
+      discUri <- validationDisc
+      node <- Node.fromUri(p2pUri, discUri, nodeConfig.getString("capabilities")) match {
+        case Success(node) => Right(node)
+        case Failure(ex) => Left(errorSet + ex.getMessage)
+      }
+    } yield node
   }
 
   /**
@@ -84,13 +106,13 @@ object NodeParser extends Logger {
     * @param unParsedNodes, nodes to be parsed
     * @return set of parsed and valid nodes
     */
-  def parseNodes(unParsedNodes: Set[String]): Set[Node] = unParsedNodes.foldLeft[Set[Node]](Set.empty) {
-    case (parsedNodes, nodeString) =>
-      val maybeNode = NodeParser.parseNode(nodeString)
+  def parseNodes(unParsedNodes: Set[Config]): Set[Node] = unParsedNodes.foldLeft[Set[Node]](Set.empty) {
+    case (parsedNodes, nodeConfig) =>
+      val maybeNode = NodeParser.parseNode(nodeConfig)
       maybeNode match {
         case Right(node) => parsedNodes + node
         case Left(errors) =>
-          log.warn(s"Unable to parse node: $nodeString due to: $errors")
+          log.warn(s"Unable to parse node: $nodeConfig due to: $errors")
           parsedNodes
       }
   }

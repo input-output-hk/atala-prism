@@ -45,28 +45,17 @@ object Node {
     }
   }
 
-  def fromUri(uri: URI): Try[Node] = Try {
-    val nodeId = ByteString(Hex.decode(uri.getUserInfo))
-    val address = InetAddress.getByName(uri.getHost)
-    val tcpPort = uri.getPort
-    val parsedQuery = Option(uri.getQuery).map(query =>{
-      query.split("&").map { assignment =>
-        val valuePair = assignment.split("=")
-        if (valuePair.size == 2)
-          Option((valuePair(0), valuePair(1)))
-        else
-          None
-      }.flatten
-    }.toMap)
-    val queryMap = parsedQuery.getOrElse(Map())
-    val udpPort = queryMap.get("discport").map(_.toInt)
-    val capabilitiesHex =
-      queryMap.get("capabilities").getOrElse(throw new IllegalArgumentException("Node URI does not have a capabilities value"))
+  def fromUri(p2pUri: URI, discoveryUri: URI, capabilitiesHex: String): Try[Node] = Try {
+    val nodeId = ByteString(Hex.decode(p2pUri.getUserInfo))
+    val p2pAddress = InetAddress.getByName(p2pUri.getHost)
+    val udpAddress = InetAddress.getByName(discoveryUri.getHost)
+    val p2pTcpPort = p2pUri.getPort
+    val udpPort = discoveryUri.getPort
     val capabilities = DatatypeConverter.parseHexBinary(capabilitiesHex)(0)
 
     Node(nodeId,
-      new InetSocketAddress(address, udpPort.getOrElse(tcpPort)),
-      new InetSocketAddress(address, tcpPort),
+      new InetSocketAddress(udpAddress, udpPort),
+      new InetSocketAddress(p2pAddress, p2pTcpPort),
       Capabilities(capabilities))
   }
 }
