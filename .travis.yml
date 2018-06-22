@@ -1,0 +1,13 @@
+language: scala
+jdk:
+  - oraclejdk8
+scala:
+   - 2.12.5
+branches:
+  only:
+    - master
+    - experiment/base-network
+script:
+    - cd cef/network && sbt clean coverage test
+after_success:
+    - cd cef/network && sbt coverageReport coveralls
