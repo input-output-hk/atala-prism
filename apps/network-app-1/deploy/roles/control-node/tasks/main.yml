@@ -31,6 +31,7 @@
   with_items:
     - { file: 'MessageRateSimulation.scala' }
     - { file: 'MessageSizeSimulation.scala' }
+    - { file: 'SingleMessageSimulation.scala' }
 
 - name: Warm up the nodes
   shell: "{{gatling_dir}}/{{gatling_base}}/bin/gatling.sh -s io.iohk.cef.MessageRateSimulation"
