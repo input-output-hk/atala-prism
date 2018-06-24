@@ -25,6 +25,7 @@ flywayLocations += "db/migration"
 import org.scoverage.coveralls.Imports.CoverallsKeys._
 
 coverallsToken := sys.env.get("COVERALLS_REPO_TOKEN")
+coverallsGitRepoLocation := Some("../../")
 
 val dep = {
   val akkaVersion = "2.5.12"

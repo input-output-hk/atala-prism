@@ -39,5 +39,5 @@ jobs:
           key: v1-dependencies--{{ checksum "cef/network/build.sbt" }}-{{ checksum "cef/network/project/build.properties" }}-{{ checksum "cef/network/project/plugins.sbt" }}
         
       # run tests!
-      - run: cd cef/network && cat /dev/null | sbt coverage test:test
+      - run: cd cef/network && cat /dev/null | sbt coverage test:test coverageReport coveralls
 
