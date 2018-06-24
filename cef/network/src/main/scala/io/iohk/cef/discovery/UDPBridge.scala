@@ -12,11 +12,9 @@ import io.iohk.cef.encoding.{Decoder, Encoder}
 import akka.actor.typed.scaladsl.adapter._
 
 class UDPBridge(discoveryListener: ActorRef[DiscoveryListenerRequest],
-                discoveryConfig: DiscoveryConfig,
                 encoder: Encoder[DiscoveryWireMessage, ByteString],
-                decoder: Decoder[ByteString, DiscoveryWireMessage]) extends untyped.Actor {
-
-  IO(Udp)(context.system) ! Udp.Bind(self, new InetSocketAddress(discoveryConfig.interface, discoveryConfig.port))
+                decoder: Decoder[ByteString, DiscoveryWireMessage],
+                udpBinder: untyped.ActorContext => Unit) extends untyped.Actor {
 
   override def receive: Receive = {
     case Udp.Bound(local) =>
@@ -40,5 +38,10 @@ object UDPBridge {
               encoder: Encoder[DiscoveryWireMessage, ByteString],
               decoder: Decoder[ByteString, DiscoveryWireMessage])
               (context: ActorContext[DiscoveryListenerRequest]) =
-    context.actorOf(untyped.Props(new UDPBridge(context.asScala.self, config, encoder, decoder)))
+    context.actorOf(untyped.Props(
+      new UDPBridge(context.asScala.self,
+        encoder,
+        decoder,
+        context => IO(Udp)(context.system) ! Udp.Bind(context.self, new InetSocketAddress(config.interface, config.port))
+      )))
 }
