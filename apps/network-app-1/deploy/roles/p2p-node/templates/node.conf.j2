@@ -22,7 +22,7 @@ telemetery {
 
 discovery {
   enabled = true
-  interface = "{{ip_addr}}"
+  interface = "{{disc_addr}}"
   port = 3001
   bootstrapNodes = [
     {% if bootstrap_peer_udp is defined %}
