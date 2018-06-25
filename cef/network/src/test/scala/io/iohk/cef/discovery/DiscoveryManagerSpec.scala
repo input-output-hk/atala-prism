@@ -213,40 +213,37 @@ class DiscoveryManagerSpec extends fixture.FlatSpecLike with AutoRollbackSpec wi
     }
   }
   it should "discover the peers of a connected node" in { s =>
-    pending
     new ListeningDiscoveryManager {
       override val session = s
+
+      override def discoveryConfig: DiscoveryConfig =
+        super.discoveryConfig.copy(multipleConnectionsPerAddress = true)
 
       val actor = createActor
       val node = Node(nodeState.nodeId, discoveryAddress, serverAddress, nodeState.capabilities)
       val expiration = mockClock.instant().getEpochSecond + 2
       mockClock.tick
 
-      actor ! DiscoveryResponseWrapper(Ready(new InetSocketAddress(localhost, 9000)))
-      discoveryListener.expectMessageType[Start](1 seconds)
       actor ! FetchNeighbors(nodeA)
-      val pingA = discoveryListener.expectMessageType[DiscoveryListener.SendMessage](5 second)
-      pingA.message mustBe a[Ping]
-      pingA.to mustBe nodeA.discoveryAddress
-      val pongA = Pong(nodeA, calculateMessageKey(encoder, pingA.message), mockClock.instant().getEpochSecond)
+      val firstPing = discoveryListener.expectMessageType[DiscoveryListener.SendMessage](5 second)
+      firstPing.message mustBe a[Ping]
+      firstPing.to mustBe nodeA.discoveryAddress
+      val pongA = Pong(nodeA, calculateMessageKey(encoder, firstPing.message), mockClock.instant().getEpochSecond + 10)
       actor ! DiscoveryResponseWrapper(DiscoveryListener.MessageReceived(pongA, discoveryAddress))
-      val seek = discoveryListener.expectMessageType[DiscoveryListener.SendMessage](1 second)
-      seek.message mustBe a [Neighbors]
+      val seek = discoveryListener.expectMessageType[DiscoveryListener.SendMessage]
+      seek.message mustBe a [Seek]
       seek.to mustBe nodeA.discoveryAddress
-      val neighbors = Neighbors(Capabilities(1), calculateMessageKey(encoder, seek.message), 10, Seq(nodeB), expiration)
+      val neighbors = Neighbors(Capabilities(1), calculateMessageKey(encoder, seek.message), 10, Seq(nodeB, nodeA), expiration)
       actor ! DiscoveryResponseWrapper(DiscoveryListener.MessageReceived(neighbors, discoveryAddress))
-      val pingB = discoveryListener.expectMessageType[DiscoveryListener.SendMessage](1 second)
-      val pingC = discoveryListener.expectMessageType[DiscoveryListener.SendMessage](1 second)
+      val pingB = discoveryListener.expectMessageType[DiscoveryListener.SendMessage]
 
       pingB.message mustBe a[Ping]
       pingB.to mustBe nodeB.discoveryAddress
-      pingC.message mustBe a[Ping]
-      pingC.to mustBe nodeB.discoveryAddress
 
-      (pingB.message, pingC.message) match {
-        case (pb: Ping, pc: Ping) =>
+      (pingB.message) match {
+        case pb: Ping =>
           pb.messageType mustBe Ping.messageType
-          pc.messageType mustBe Ping.messageType
+          pb.node.discoveryAddress mustBe discoveryAddress
         case _ => fail("Wrong message type")
       }
     }
