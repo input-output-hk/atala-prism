@@ -12,7 +12,7 @@ import akka.testkit.{TestProbe => UntypedTestProbe}
 import akka.util.ByteString
 import akka.{actor => untyped}
 import io.iohk.cef.crypto
-import io.iohk.cef.db.{AutoRollbackSpec, DummyKnownNodesStorage}
+import io.iohk.cef.db.{AutoRollbackSpec, DummyKnownNodesStorage, KnownNode}
 import io.iohk.cef.discovery.DiscoveryListener.{DiscoveryListenerRequest, Ready, SendMessage, Start}
 import io.iohk.cef.discovery.DiscoveryManager._
 import io.iohk.cef.encoding.{Decoder, Encoder}
@@ -44,8 +44,6 @@ class DiscoveryManagerSpec extends fixture.FlatSpecLike with AutoRollbackSpec wi
     val discoveryAddress = new InetSocketAddress(localhost, 1000)
     val serverAddress = new InetSocketAddress(localhost, 2000)
 
-    def bootstrapNodes: Set[Node] = Set()
-
     val nodeState =
       NodeStatus.NodeState(
         ByteString(0),
@@ -53,7 +51,12 @@ class DiscoveryManagerSpec extends fixture.FlatSpecLike with AutoRollbackSpec wi
         ServerStatus.NotListening,
         Capabilities(0x01))
 
-    val discoveryConfig = new DiscoveryConfig(
+    val nodeA = createNode("1", 9000, 9001, nodeState.capabilities)
+    val nodeB = createNode("2", 9003, 9002, nodeState.capabilities)
+
+    def bootstrapNodes: Set[Node] = Set()
+
+    def discoveryConfig = new DiscoveryConfig(
       discoveryEnabled = true,
       interface = "0.0.0.0",
       port = 8090,
@@ -216,8 +219,6 @@ class DiscoveryManagerSpec extends fixture.FlatSpecLike with AutoRollbackSpec wi
 
       val actor = createActor
       val node = Node(nodeState.nodeId, discoveryAddress, serverAddress, nodeState.capabilities)
-      val nodeA = createNode("1", 9000, 9001, nodeState.capabilities)
-      val nodeB = createNode("2", 9003, 9002, nodeState.capabilities)
       val expiration = mockClock.instant().getEpochSecond + 2
       mockClock.tick
 
@@ -255,8 +256,6 @@ class DiscoveryManagerSpec extends fixture.FlatSpecLike with AutoRollbackSpec wi
       override val session: FixtureParam = s
 
       override def bootstrapNodes: Set[Node] = {
-        val nodeA = createNode("1", 9000, 9001, nodeState.capabilities)
-        val nodeB = createNode("2", 9003, 9002, nodeState.capabilities)
         Set(nodeA, nodeB)
       }
 
@@ -278,6 +277,52 @@ class DiscoveryManagerSpec extends fixture.FlatSpecLike with AutoRollbackSpec wi
           pingA.to must not be pingB.to
         case _ => fail("Wrong message type")
       }
+    }
+  }
+  it should "return the known nodes" in {s =>
+    new ListeningDiscoveryManager {
+      override val session: FixtureParam = s
+
+      val actor = createActor
+
+      knownNodeStorage.insert(nodeA)
+      knownNodeStorage.insert(nodeB)
+
+      val inbox = TestProbe[DiscoveredNodes]()
+
+      actor ! GetDiscoveredNodes(inbox.ref)
+
+      inbox.expectMessage(DiscoveredNodes(
+        Set(KnownNode(nodeA, mockClock.instant(), mockClock.instant()),
+          KnownNode(nodeB, mockClock.instant(), mockClock.instant())))
+      )
+    }
+  }
+  it should "blacklist nodes" in { s =>
+    new ListeningDiscoveryManager {
+      override val session: FixtureParam = s
+
+      val blacklistDuration = 1 second
+
+      override def discoveryConfig: DiscoveryConfig =
+        super.discoveryConfig.copy(
+          blacklistDefaultDuration = blacklistDuration
+        )
+
+      val actor = createActor
+
+      knownNodeStorage.insert(nodeA)
+
+      val probe = TestProbe[DiscoveredNodes]()
+
+      actor ! GetDiscoveredNodes(probe.ref)
+
+      probe.expectMessageType[DiscoveredNodes].nodes.size mustBe 1
+
+      actor ! Blacklist(nodeA)
+      actor ! GetDiscoveredNodes(probe.ref)
+
+      probe.expectMessageType[DiscoveredNodes].nodes.size mustBe 0
     }
   }
   it should "stop accepting new peers when the nodes limit is reached" in { s =>
@@ -310,7 +355,6 @@ class DiscoveryManagerSpec extends fixture.FlatSpecLike with AutoRollbackSpec wi
 
       val actor = createActor
       val node = Node(nodeState.nodeId, discoveryAddress, serverAddress, nodeState.capabilities)
-      val nodeA = createNode("1", 9000, 9001, nodeState.capabilities)
       val expiration = mockClock.instant().getEpochSecond + 2
       val token = ByteString("token")
       val neighbors = Neighbors(Capabilities(1), token, 10, Seq(nodeA), expiration)
