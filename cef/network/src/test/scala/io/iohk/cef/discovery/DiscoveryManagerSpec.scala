@@ -46,6 +46,13 @@ class DiscoveryManagerSpec extends fixture.FlatSpecLike with AutoRollbackSpec wi
 
     def bootstrapNodes: Set[Node] = Set()
 
+    val nodeState =
+      NodeStatus.NodeState(
+        ByteString(0),
+        ServerStatus.NotListening,
+        ServerStatus.NotListening,
+        Capabilities(0x01))
+
     val discoveryConfig = new DiscoveryConfig(
       discoveryEnabled = true,
       interface = "0.0.0.0",
@@ -60,12 +67,6 @@ class DiscoveryManagerSpec extends fixture.FlatSpecLike with AutoRollbackSpec wi
       maxSeekResults = 10,
       multipleConnectionsPerAddress = true,
       blacklistDefaultDuration = 30 seconds)
-    val nodeState =
-      NodeStatus.NodeState(
-        ByteString(0),
-        ServerStatus.NotListening,
-        ServerStatus.NotListening,
-        Capabilities(0x01))
 
     import io.iohk.cef.encoding.rlp.RLPEncoders._
     import io.iohk.cef.encoding.rlp.RLPImplicits._
@@ -103,6 +104,12 @@ class DiscoveryManagerSpec extends fixture.FlatSpecLike with AutoRollbackSpec wi
 
       actor
     }
+
+    def createNode(id: String, discoveryPort: Int, serverPort: Int, capabilities: Capabilities) =
+      Node(ByteString(id),
+        new InetSocketAddress(localhost, discoveryPort),
+        new InetSocketAddress(localhost, serverPort),
+        capabilities)
   }
 
   private def getNode(listeningDiscoveryManager: ListeningDiscoveryManager): Node = {
@@ -206,11 +213,6 @@ class DiscoveryManagerSpec extends fixture.FlatSpecLike with AutoRollbackSpec wi
     pending
     new ListeningDiscoveryManager {
       override val session = s
-      def createNode(id: String, discoveryPort: Int, serverPort: Int, capabilities: Capabilities) =
-        Node(ByteString(id),
-          new InetSocketAddress(localhost, discoveryPort),
-          new InetSocketAddress(localhost, serverPort),
-          capabilities)
 
       val actor = createActor
       val node = Node(nodeState.nodeId, discoveryAddress, serverAddress, nodeState.capabilities)
@@ -248,6 +250,36 @@ class DiscoveryManagerSpec extends fixture.FlatSpecLike with AutoRollbackSpec wi
       }
     }
   }
+  it should "ping bootstrap nodes" in { s =>
+    new ListeningDiscoveryManager {
+      override val session: FixtureParam = s
+
+      override def bootstrapNodes: Set[Node] = {
+        val nodeA = createNode("1", 9000, 9001, nodeState.capabilities)
+        val nodeB = createNode("2", 9003, 9002, nodeState.capabilities)
+        Set(nodeA, nodeB)
+      }
+
+      val actor = createActor
+      val pingA = discoveryListener.expectMessageType[DiscoveryListener.SendMessage]
+      val pingB = discoveryListener.expectMessageType[DiscoveryListener.SendMessage]
+      pingA.message mustBe a [Ping]
+      pingB.message mustBe a [Ping]
+      pingA.message.messageType mustBe Ping.messageType
+      pingB.message.messageType mustBe Ping.messageType
+      (pingA.message, pingB.message) match {
+        case (a: Ping, b: Ping) =>
+          val thisNode = Node(nodeState.nodeId, discoveryAddress, discoveryAddress, Capabilities(1))
+          a.node mustBe thisNode
+          b.node mustBe thisNode
+          val addresses = bootstrapNodes.map(_.discoveryAddress)
+          addresses must contain (pingA.to)
+          addresses must contain(pingB.to)
+          pingA.to must not be pingB.to
+        case _ => fail("Wrong message type")
+      }
+    }
+  }
   it should "stop accepting new peers when the nodes limit is reached" in { s =>
     pending
   }
@@ -275,12 +307,6 @@ class DiscoveryManagerSpec extends fixture.FlatSpecLike with AutoRollbackSpec wi
   it should "not process neighbors messages in absence of a seek" in { s =>
     new ListeningDiscoveryManager {
       override val session = s
-
-      def createNode(id: String, discoveryPort: Int, serverPort: Int, capabilities: Capabilities) =
-        Node(ByteString(id),
-          new InetSocketAddress(localhost, discoveryPort),
-          new InetSocketAddress(localhost, serverPort),
-          capabilities)
 
       val actor = createActor
       val node = Node(nodeState.nodeId, discoveryAddress, serverAddress, nodeState.capabilities)
