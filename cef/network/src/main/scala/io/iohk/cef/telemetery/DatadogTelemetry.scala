@@ -9,7 +9,7 @@ import collection.JavaConverters._
 
 trait DatadogTelemetry extends Telemetery {
 
-  override val registry: MeterRegistry = DatadogTelemetry.registry
+  override def registry: MeterRegistry = DatadogTelemetry.registry
 
   val tags = List(Tag.of("node", DatadogTelemetry.nodeTag)).asJava
 

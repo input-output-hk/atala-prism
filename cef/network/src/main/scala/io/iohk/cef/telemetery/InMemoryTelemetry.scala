@@ -5,7 +5,7 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 
 trait InMemoryTelemetry extends Telemetery {
 
-  override val registry: MeterRegistry = InMemoryTelemetry.registry
+  override def registry: MeterRegistry = InMemoryTelemetry.registry
 }
 
 object InMemoryTelemetry extends MicrometerRegistryConfig {

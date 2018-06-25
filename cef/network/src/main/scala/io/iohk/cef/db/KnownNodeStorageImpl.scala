@@ -4,7 +4,7 @@ import java.time.{Clock, Instant}
 import java.util.concurrent.atomic.AtomicInteger
 
 import io.iohk.cef.network.Node
-import io.iohk.cef.telemetery.DatadogTelemetry
+import io.iohk.cef.telemetery.Telemetery
 import org.bouncycastle.util.encoders.Hex
 import org.flywaydb.core.Flyway
 import scalikejdbc._
@@ -21,7 +21,9 @@ import scala.concurrent.duration.FiniteDuration
   * @param clock
   * @param dbName
   */
-class KnownNodeStorageImpl(clock: Clock, dbName: Symbol = 'default) extends KnownNodeStorage with DatadogTelemetry {
+class KnownNodeStorageImpl(clock: Clock, dbName: Symbol = 'default)
+  extends KnownNodeStorage {
+  self: Telemetery =>
 
   val flyway = new Flyway()
   private val settings: JDBCSettings = DBs.readJDBCSettings(dbName)

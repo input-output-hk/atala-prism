@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit
 
 import akka.util.ByteString
 import io.iohk.cef.network.{Capabilities, Node}
+import io.iohk.cef.telemetery.InMemoryTelemetry
 import io.iohk.cef.test.TestClock
 import org.scalatest.{MustMatchers, fixture}
 import scalikejdbc.DBSession
@@ -14,7 +15,8 @@ import scala.concurrent.duration.FiniteDuration
 
 class KnownNodeStorageImplSpec extends fixture.FlatSpec with AutoRollbackSpec with MustMatchers {
 
-  def createKnownNodeStorage(clock: Clock, session: DBSession) = new KnownNodeStorageImpl(clock) {
+  def createKnownNodeStorage(clock: Clock, session: DBSession) =
+    new KnownNodeStorageImpl(clock) with InMemoryTelemetry {
     override def inTx[T](block: DBSession => T): T = block(session)
   }
 
