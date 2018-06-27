@@ -20,13 +20,18 @@ import io.iohk.cef.network.{Capabilities, Node, NodeStatus, ServerStatus}
 import io.iohk.cef.test.TestClock
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import org.apache.commons.lang3.RandomStringUtils.{randomAlphabetic, randomAlphanumeric}
+import org.scalamock.scalatest.MockFactory
 import org.scalatest.MustMatchers._
 import org.scalatest.{BeforeAndAfterAll, fixture}
 import scalikejdbc.DBSession
 
 import scala.concurrent.duration._
 
-class DiscoveryManagerSpec extends fixture.FlatSpecLike with AutoRollbackSpec with BeforeAndAfterAll {
+class DiscoveryManagerSpec
+  extends fixture.FlatSpecLike
+    with AutoRollbackSpec
+    with BeforeAndAfterAll
+    with MockFactory {
 
   implicit val untypedSystem: ActorSystem = untyped.ActorSystem("TypedWatchingUntyped")
   implicit val typedSystem: typed.ActorSystem[_] = untypedSystem.toTyped
@@ -84,7 +89,7 @@ class DiscoveryManagerSpec extends fixture.FlatSpecLike with AutoRollbackSpec wi
 
     val listeningAddress = new InetSocketAddress(localhost,1000)
 
-    val secureRandom = new SecureRandom()
+    def secureRandom = new SecureRandom()
 
     def createBehavior = DiscoveryManager.behaviour(
       discoveryConfig,
@@ -326,7 +331,30 @@ class DiscoveryManagerSpec extends fixture.FlatSpecLike with AutoRollbackSpec wi
     pending
   }
   it should "scan pinged nodes and already discovered nodes" in { s =>
-    pending
+    new ListeningDiscoveryManager {
+      override val session = s
+
+      val randomSource = new SecureRandom {
+        override def nextBytes(bytes: Array[Byte]): Unit = ()
+      }
+
+      override def secureRandom: SecureRandom = randomSource
+
+      override def discoveryConfig: DiscoveryConfig =
+        super.discoveryConfig.copy(scanInitialDelay = 10 hours)
+
+      val actor = createActor
+
+      actor ! FetchNeighbors(nodeA)
+
+      val pingA = discoveryListener.expectMessageType[SendMessage]
+
+      actor ! Scan
+
+      val pingC = discoveryListener.expectMessageType[SendMessage]
+
+      pingC mustBe pingA
+    }
   }
   it should "prevent multiple connections from the same IP when configured" in { s =>
     pending
