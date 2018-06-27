@@ -23,8 +23,31 @@ class ByteUtilsSpec extends FlatSpec with MustMatchers with PropertyChecks {
     }
   }
   it should "perform and operations" in {
-    forAll { (list1: Array[Byte], list2: Array[Byte]) =>
+    forAll { (list1: Array[Byte]) =>
       and(Array.fill[Byte](list1.size)(0xFF.toByte), list1) mustBe list1
+    }
+    intercept[IllegalArgumentException] {
+      and()
+    }
+    intercept[IllegalArgumentException] {
+      and(Array(1), Array(1,2))
+    }
+  }
+  it should "convert big integer to bytes" in {
+    forAll { (l: Long) =>
+      val bi = BigInt(l)
+      bigIntegerToBytes(bi.bigInteger, bi.toByteArray.size) mustBe bi.toByteArray
+    }
+  }
+  it should "perform or operations" in {
+    forAll { (list1: Array[Byte]) =>
+      or(Array.fill[Byte](list1.size)(0x00.toByte), list1) mustBe list1
+    }
+    intercept[IllegalArgumentException] {
+      or()
+    }
+    intercept[IllegalArgumentException] {
+      or(Array(1), Array(1,2))
     }
   }
 }

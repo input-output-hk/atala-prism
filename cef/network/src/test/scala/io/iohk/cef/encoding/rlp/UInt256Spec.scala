@@ -157,4 +157,14 @@ class UInt256Spec extends FlatSpec with MustMatchers with PropertyChecks {
       BigInt.apply(ui.toHexString.drop(2), 16) mustBe n
     }
   }
+  it should "sign extend" in {
+    forAll(Gen.posNum[Long]) {(n: Long) =>
+      whenever(n >= 0) {
+        val ui = UInt256(n)
+        ui.signExtend(UInt256(32)) mustBe ui
+        ui.signExtend(UInt256(200)) mustBe ui
+        (ui.byteSize to 31).foreach(i => {ui.signExtend(i).compare(n) mustBe 0})
+      }
+    }
+  }
 }

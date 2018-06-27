@@ -28,5 +28,9 @@ class DiscoveryWireMessageSpec extends FlatSpec with MustMatchers {
 
     val seek = Seek(Capabilities(2), 3, 4, ByteString("nonce"))
     Seek.seekRLPEncDec.decode(Seek.seekRLPEncDec.encode(seek)) mustBe seek
+
+    Seq(ping, pong, neighbors, seek).foreach {m =>
+      DiscoveryWireMessage.RLPEncDec.decode(DiscoveryWireMessage.RLPEncDec.encode(m)) mustBe m
+    }
   }
 }
