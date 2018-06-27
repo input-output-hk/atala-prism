@@ -10,6 +10,7 @@ import io.iohk.cef.ConfigExtensions._
 import io.iohk.cef.db.KnownNodeStorageImpl
 import io.iohk.cef.demo.SimpleNode3
 import io.iohk.cef.discovery.DiscoveryConfig
+import io.iohk.cef.telemetery.DatadogTelemetry
 
 class NetworkApp1(config: Config) {
 
@@ -21,7 +22,7 @@ class NetworkApp1(config: Config) {
 
   val discoveryConfig = DiscoveryConfig(config)
 
-  val knownNodeStorage = new KnownNodeStorageImpl(Clock.systemUTC())
+  val knownNodeStorage = new KnownNodeStorageImpl(Clock.systemUTC()) with DatadogTelemetry
 
   // either specify name/host/port and let the node generate a key
   val ephemeralConfig: Option[SimpleNode3] = for {
