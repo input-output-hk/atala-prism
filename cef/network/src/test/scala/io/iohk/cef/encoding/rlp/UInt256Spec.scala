@@ -1,5 +1,6 @@
 package io.iohk.cef.encoding.rlp
 
+import akka.util.ByteString
 import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{FlatSpec, MustMatchers}
@@ -100,6 +101,60 @@ class UInt256Spec extends FlatSpec with MustMatchers with PropertyChecks {
         us1 addmod (us2, us3) mustBe UInt256((s1 + s2) mod s3)
         us1 mulmod (us2, us3) mustBe UInt256((s1 * s2) mod s3)
       }
+    }
+  }
+  it should "throw an exception when byte array is larger than size" in {
+    intercept[IllegalArgumentException] {
+      UInt256(ByteString(Array.fill[Byte](UInt256.Size + 1)(0)))
+    }
+  }
+  it should "convert BigInt into UInt256" in {
+    import UInt256._
+    forAll(genUInt256) { (s1: BigInt) =>
+      s1.toUInt256.toBigInt mustBe s1
+    }
+  }
+  it should "convert from byte" in {
+    import UInt256._
+    forAll { (b: Byte) =>
+      val ui: UInt256 = b
+      ui.toByte mustBe b
+    }
+  }
+  it should "convert from Int" in {
+    import UInt256._
+    forAll(Gen.posNum[Int]) { (n: Int) =>
+      val ui: UInt256 = n
+      ui.toBigInt mustBe BigInt(n)
+    }
+  }
+  it should "convert from Long" in {
+    import UInt256._
+    forAll(Gen.posNum[Long]) { (n: Long) =>
+      val ui: UInt256 = n
+      ui.toBigInt mustBe BigInt(n)
+    }
+  }
+  it should "convert from Boolean" in {
+    import UInt256._
+    forAll { (n: Boolean) =>
+      val ui: UInt256 = n
+      val expected = if(n) 1 else 0
+      ui.toInt mustBe expected
+    }
+  }
+  it should "calculate bytesize" in {
+    UInt256.Zero.byteSize mustBe 0
+    UInt256(BigInt(2).pow(7)).byteSize mustBe 1
+    UInt256(BigInt(2).pow(8)).byteSize mustBe 2
+    UInt256(BigInt(2).pow(255)).byteSize mustBe 32
+    UInt256(BigInt(2).pow(248)).byteSize mustBe 32
+    UInt256(BigInt(2).pow(247)).byteSize mustBe 31
+  }
+  it should "convertable to Hex" in {
+    forAll(genUInt256) {(n: BigInt) =>
+      val ui = UInt256(n)
+      BigInt.apply(ui.toHexString.drop(2), 16) mustBe n
     }
   }
 }
