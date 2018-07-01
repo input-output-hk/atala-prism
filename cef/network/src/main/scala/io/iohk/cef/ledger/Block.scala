@@ -1,3 +1,3 @@
 package io.iohk.cef.ledger
 
-case class Block(height: Int, items: Seq[LedgerItem])
+class Block[T](height: Int, transactions: Seq[T])
