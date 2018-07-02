@@ -13,7 +13,7 @@ class IdentityLedgerManagerImpl extends IdentityLedgerManager {
 
   override val LedgerId: Int = 1
 
-  override val ledger: IdentityLedger = new IdentityLedger {
+  override val state: IdentityLedgerState = new IdentityLedgerState {
     var identities: Map[Identity, Set[PublicKey]] = Map()
 
     override def claim(identity: Identity, key: PublicKey): Future[Unit] = {
@@ -21,11 +21,6 @@ class IdentityLedgerManagerImpl extends IdentityLedgerManager {
       else Future.successful({
         identities = identities + ((identity, Set(key)))
       })
-    }
-
-    override def isLinked(identity: Identity, key: PublicKey): Future[Boolean] = {
-      Future.successful(identities.contains(identity) &&
-        identities(identity).contains(key))
     }
 
     override def link(identity: Identity, newKey: PublicKey): Future[Unit] = {

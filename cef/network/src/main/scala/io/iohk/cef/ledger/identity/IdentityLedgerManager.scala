@@ -1,6 +1,6 @@
 package io.iohk.cef.ledger.identity
 
-import io.iohk.cef.ledger.identity2.LedgerManager
+import io.iohk.cef.ledger.LedgerManager
 
 import scala.concurrent.Future
 

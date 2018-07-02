@@ -8,7 +8,5 @@ trait LedgerManager {
 
   val LedgerId: Int
 
-  val blocks: Stream[Block[Transaction]]
-
   def apply(transaction: Transaction): Future[Unit]
 }

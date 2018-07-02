@@ -1,5 +1,7 @@
 package io.iohk.cef.ledger.identity2
 
+import io.iohk.cef.ledger.LedgerManager2
+
 import scala.concurrent.Future
 
 trait IdentityLedgerManager extends LedgerManager2 {
@@ -8,9 +10,9 @@ trait IdentityLedgerManager extends LedgerManager2 {
   type Identity
   type PublicKey
 
-  val ledger: IdentityLedger
+  def ledger: IdentityLedger
 
-  val state: IdentityLedgerState
+  def state: IdentityLedgerState
 
   override def apply(ledgerState: LedgerState, transaction: Transaction): Either[Error, LedgerState] = transaction match {
     case Claim(identity, key) =>
