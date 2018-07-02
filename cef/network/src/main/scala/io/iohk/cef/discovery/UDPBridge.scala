@@ -16,6 +16,8 @@ class UDPBridge(discoveryListener: ActorRef[DiscoveryListenerRequest],
                 decoder: Decoder[ByteString, DiscoveryWireMessage],
                 udpBinder: untyped.ActorContext => Unit) extends untyped.Actor {
 
+  udpBinder(context)
+
   override def receive: Receive = {
     case Udp.Bound(local) =>
       discoveryListener ! Forward(Ready(local))
@@ -42,6 +44,6 @@ object UDPBridge {
       new UDPBridge(context.asScala.self,
         encoder,
         decoder,
-        context => IO(Udp)(context.system) ! Udp.Bind(context.self, new InetSocketAddress(config.interface, config.port))
+        (context) => IO(Udp)(context.system).tell(Udp.Bind(context.self, new InetSocketAddress(config.interface, config.port)), context.self)
       )))
 }
