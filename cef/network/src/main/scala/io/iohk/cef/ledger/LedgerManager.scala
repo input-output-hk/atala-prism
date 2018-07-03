@@ -6,7 +6,7 @@ trait LedgerManager {
 
   type Transaction
 
-  val LedgerId: Int
+  val LedgerId: String
 
   def apply(transaction: Transaction): Future[Unit]
 }

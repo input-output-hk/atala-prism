@@ -1,13 +1,11 @@
 package io.iohk.cef.ledger
 
-import io.iohk.cef.ledger.identity2.Error
+trait LedgerManager2[Error <: LedgerError] {
 
-trait LedgerManager2 {
-
-  type Transaction
+  trait Transaction extends (LedgerState => Either[Error, LedgerState])
   type LedgerState
 
-  val LedgerId: Int
+  val LedgerId: String
 
   def apply(currentState: LedgerState, transaction: Transaction): Either[Error, LedgerState]
 }
