@@ -56,5 +56,4 @@ object IdentityLedger extends App {
   val block = Block[IdentityLedgerState[String, ByteString]](1, txs)
 
   val newLedger = Await.result(identityLedger.apply(block), 1 second)
-  println(identityLedger)
 }
