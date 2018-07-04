@@ -105,6 +105,7 @@ object DiscoveryManager {
 
         case Blacklist(node: Node) =>
           knownNodesStorage.blacklist(node, discoveryConfig.blacklistDefaultDuration)
+          context.system.toUntyped.eventStream.publish(NodeRemoved(node))
           Behavior.same
 
         case GetDiscoveredNodes(replyTo) =>
@@ -148,6 +149,7 @@ object DiscoveryManager {
             context.log.debug(s"Dropping node ${Hex.toHexString(id.toArray)}")
             pingedNodes -= id
             knownNodesStorage.remove(pingInfo.node)
+            context.system.toUntyped.eventStream.publish(CompatibleNodeFound(pingInfo.node))
           }
         }
 
@@ -187,6 +189,7 @@ object DiscoveryManager {
             val pong = Pong(node, messageKey, expirationTimestamp)
             if (sourceNode.capabilities.satisfies(nodeState.capabilities)) {
               knownNodesStorage.insert(sourceNode)
+              context.system.toUntyped.eventStream.publish(CompatibleNodeFound(sourceNode))
               context.log.debug(s"New discovered list: ${knownNodesStorage.getAll().map(_.node.discoveryAddress)}")
             }
             context.log.debug(s"Sending pong message with capabilities ${pong.node.capabilities}, to: ${sourceNode.discoveryAddress}")
