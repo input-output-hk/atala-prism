@@ -1,4 +1,4 @@
-package io.iohk.cef.ledger.identity2
+package io.iohk.cef.ledger.identity
 
 import io.iohk.cef.ledger.LedgerError
 

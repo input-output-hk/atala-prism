@@ -1,38 +1,42 @@
-package io.iohk.cef.ledger.identity2
+package io.iohk.cef.ledger.subtyping.identity
 
-import io.iohk.cef.ledger.LedgerManager2
+import io.iohk.cef.ledger.LedgerError
+import io.iohk.cef.ledger.identity.{IdentityNotClaimedError, IdentityTakenError}
+import io.iohk.cef.ledger.subtyping.LedgerManager
 
-trait IdentityLedgerManager extends LedgerManager2[IdentityLedgerError] {
+trait IdentityLedgerManager extends LedgerManager {
   override type LedgerState = IdentityLedgerState
   type Identity
   type PublicKey
 
-  def ledger: IdentityLedger
+  def storage: IdentityLedgerStorage
 
   def state: IdentityLedgerState
 
-  override def apply(ledgerState: LedgerState, transaction: Transaction): Either[IdentityLedgerError, LedgerState] = transaction(ledgerState)
+  override def apply(ledgerState: LedgerState, block: Block): Either[LedgerError, LedgerState] = {
+    storage.push(block)
+    block.stateTransition(ledgerState)
+  }
 
   def isLinked(identity: Identity, key: PublicKey): Boolean =
     state.get(identity).map(_.contains(key)).getOrElse(false)
 
   //Transactions
   case class Claim(identity: Identity, key: PublicKey) extends Transaction {
-    override def apply(ledgerState: IdentityLedgerState): Either[IdentityLedgerError, IdentityLedgerState] =
+    override def apply(ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] =
       if(ledgerState.contains(identity)) Left(IdentityTakenError(new IllegalArgumentException("Identity already taken")))
       else {
-        ledger.claim(identity, key)
+        Right(ledgerState.put(identity, key))
       }
   }
-
   case class Link(identity: Identity, key: PublicKey) extends Transaction {
-    override def apply(ledgerState: IdentityLedgerState): Either[IdentityLedgerError, IdentityLedgerState] =
+    override def apply(ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] =
       if(!ledgerState.contains(identity)) Left(IdentityNotClaimedError(new IllegalArgumentException("Identity has not been claimed")))
       else Right(ledgerState.put(identity, key))
   }
 
   case class Unlink(identity: Identity, key: PublicKey) extends Transaction {
-    override def apply(ledgerState: IdentityLedgerState): Either[IdentityLedgerError, IdentityLedgerState] =
+    override def apply(ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] =
       Right(ledgerState.remove(identity, key))
   }
 
@@ -45,9 +49,8 @@ trait IdentityLedgerManager extends LedgerManager2[IdentityLedgerError] {
   }
 
   //The ledger Interface
-  trait IdentityLedger {
-    def claim(identity: Identity, key: PublicKey): Either[IdentityLedgerError, LedgerState]
-    def link(identity: Identity, newKey: PublicKey): Either[IdentityLedgerError, LedgerState]
-    def unlink(identity: Identity, key: PublicKey): Either[IdentityLedgerError, LedgerState]
+  trait IdentityLedgerStorage {
+    def push(block: Block): Unit
+    def pop(): Block
   }
 }
