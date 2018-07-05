@@ -1,10 +1,10 @@
-package io.iohk.cef.ledger.typeParams.identity
+package io.iohk.cef.ledger.identity
 
 import akka.util.ByteString
-import io.iohk.cef.ledger.typeParams.{Block, Ledger, LedgerStorage}
+import io.iohk.cef.ledger
+import io.iohk.cef.ledger.{Block, BlockHeader, Ledger, LedgerStorage}
 
 import scala.concurrent.duration._
-
 import scala.concurrent.{Await, Future}
 
 object IdentityLedger extends App {
@@ -53,7 +53,11 @@ object IdentityLedger extends App {
     Link("carlos", ByteString("vargas"))
   )
 
-  val block = Block[IdentityLedgerState[String, ByteString]](1, txs)
+  val block = ledger.Block[IdentityLedgerState[String, ByteString]](new BlockHeader {}, txs)
 
   val newLedger = Await.result(identityLedger.apply(block), 1 second)
+
+  val exception = new Exception("a exception")
+
+  println(exception.getStackTrace.toList)
 }

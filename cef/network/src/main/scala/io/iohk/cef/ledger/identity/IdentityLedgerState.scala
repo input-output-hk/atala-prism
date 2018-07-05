@@ -1,6 +1,6 @@
-package io.iohk.cef.ledger.typeParams.identity
+package io.iohk.cef.ledger.identity
 
-import io.iohk.cef.ledger.typeParams.LedgerState
+import io.iohk.cef.ledger.LedgerState
 
 trait IdentityLedgerState[Identity, PublicKey] extends LedgerState {
   def get(identity: Identity): Option[Set[PublicKey]]

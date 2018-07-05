@@ -1,4 +1,4 @@
-package io.iohk.cef.ledger.typeParams
+package io.iohk.cef.ledger
 
 import scala.language.higherKinds
 

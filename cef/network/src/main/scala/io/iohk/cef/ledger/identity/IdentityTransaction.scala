@@ -1,8 +1,6 @@
-package io.iohk.cef.ledger.typeParams.identity
+package io.iohk.cef.ledger.identity
 
-import io.iohk.cef.ledger.LedgerError
-import io.iohk.cef.ledger.typeParams.Transaction
-import io.iohk.cef.ledger.identity.{IdentityNotClaimedError, IdentityTakenError}
+import io.iohk.cef.ledger.{LedgerError, Transaction}
 
 sealed trait IdentityTransaction[I, K] extends Transaction[IdentityLedgerState[I, K]]
 
