@@ -35,15 +35,15 @@ object IdentityLedgerPersistence extends App {
   val identityLedger = Ledger[PersistentIdentityLedgerState](ledgerStorage, ledgerState)
 
   val txs1 = List(
-    ClaimP("carlos", ByteString("carlos"))
+    Claim("carlos", ByteString("carlos"))
   )
 
   val txs2 = List(
-    LinkP("carlos", ByteString("vargas")),
-    LinkP("carlos", ByteString("montero")),
-    LinkP("carlos", ByteString("roberto")),
-    UnlinkP("carlos", ByteString("vargas")),
-    ClaimP("carlos", ByteString("carlos"))
+    Link("carlos", ByteString("vargas")),
+    Link("carlos", ByteString("montero")),
+    Link("carlos", ByteString("roberto")),
+    Unlink("carlos", ByteString("vargas")),
+    Claim("carlos", ByteString("carlos"))
   )
 
   val block1 = Block[PersistentIdentityLedgerState](new BlockHeader {}, txs1)

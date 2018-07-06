@@ -6,9 +6,9 @@ import io.iohk.cef.ledger.persistence.Transaction
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-sealed trait IdentityTransactionP extends Transaction[PersistentIdentityLedgerState]
+sealed trait IdentityTransaction extends Transaction[PersistentIdentityLedgerState]
 
-case class ClaimP(identity: String, key: ByteString) extends IdentityTransactionP {
+case class Claim(identity: String, key: ByteString) extends IdentityTransaction {
   override def apply(ledgerState: PersistentIdentityLedgerState): Future[PersistentIdentityLedgerState] = {
     for {
       containsIdentity <- ledgerState.containsIdentity(identity)
@@ -18,7 +18,7 @@ case class ClaimP(identity: String, key: ByteString) extends IdentityTransaction
   }
 }
 
-case class LinkP(identity: String, key: ByteString) extends IdentityTransactionP {
+case class Link(identity: String, key: ByteString) extends IdentityTransaction {
   override def apply(ledgerState: PersistentIdentityLedgerState): Future[PersistentIdentityLedgerState] = {
     for {
       containsIdentity <- ledgerState.containsIdentity(identity)
@@ -28,7 +28,7 @@ case class LinkP(identity: String, key: ByteString) extends IdentityTransactionP
   }
 }
 
-case class UnlinkP(identity: String, key: ByteString) extends IdentityTransactionP {
+case class Unlink(identity: String, key: ByteString) extends IdentityTransaction {
   override def apply(ledgerState: PersistentIdentityLedgerState): Future[PersistentIdentityLedgerState] = {
     for {
       _ <- ledgerState.remove(identity, key)

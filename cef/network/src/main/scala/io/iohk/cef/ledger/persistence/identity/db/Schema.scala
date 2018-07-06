@@ -1,4 +1,4 @@
-package io.iohk.cef.ledger.persistence.identity
+package io.iohk.cef.ledger.persistence.identity.db
 
 object Schema {
 

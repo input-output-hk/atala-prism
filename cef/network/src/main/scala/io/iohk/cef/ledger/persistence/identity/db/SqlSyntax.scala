@@ -1,4 +1,4 @@
-package io.iohk.cef.ledger.persistence.identity
+package io.iohk.cef.ledger.persistence.identity.db
 
 import akka.util.ByteString
 import scalikejdbc.{WrappedResultSet, _}

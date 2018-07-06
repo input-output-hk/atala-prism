@@ -2,6 +2,7 @@ package io.iohk.cef.ledger.persistence.identity
 
 import akka.util.ByteString
 import io.iohk.cef.ledger.persistence.LedgerState
+import io.iohk.cef.ledger.persistence.identity.db.IdentityLedgerStateTable
 import scalikejdbc._
 import scalikejdbc.config.DBs
 
@@ -30,6 +31,7 @@ sealed trait PersistentIdentityLedgerState extends LedgerState {
 //  }
 }
 
+//NOT thread safe. Error prone. More a proof of concept than production quality code
 class PersistentIdentityLedgerStateImpl extends PersistentIdentityLedgerState {
 
   DBs.setup('default)
@@ -49,8 +51,8 @@ class PersistentIdentityLedgerStateImpl extends PersistentIdentityLedgerState {
   override def commit(): Unit = {
     if(!isInTx()) throw new IllegalStateException("Cannot commit when inTx is false")
     else {
-      db.head.commit()
-      db.head.close()
+      db.get.commit()
+      db.get.close()
       db = None
     }
   }
@@ -58,8 +60,8 @@ class PersistentIdentityLedgerStateImpl extends PersistentIdentityLedgerState {
   override def rollback(): Unit = {
     if(!isInTx()) throw new IllegalStateException("Cannot rollback when inTx is false")
     else {
-      db.head.rollbackIfActive()
-      db.head.close()
+      db.get.rollbackIfActive()
+      db.get.close()
       db = None
     }
   }
@@ -67,7 +69,7 @@ class PersistentIdentityLedgerStateImpl extends PersistentIdentityLedgerState {
   override def containsIdentity(identity: String): Future[Boolean] = {
     if(isInTx()) {
       val st = IdentityLedgerStateTable.syntax("st")
-      inTx(db.head) { implicit session =>
+      inTx(db.get) { implicit session =>
         Future {
           sql"""
           select ${st.identity}, ${st.publicKey} from ${IdentityLedgerStateTable as st}
@@ -81,7 +83,7 @@ class PersistentIdentityLedgerStateImpl extends PersistentIdentityLedgerState {
   override def containsPair(identity: String, publicKey: ByteString): Future[Boolean] = {
     if(isInTx()) {
       val st = IdentityLedgerStateTable.syntax("st")
-      inTx(db.head) { implicit session =>
+      inTx(db.get) { implicit session =>
         Future {
           sql"""
           select ${st.identity}, ${st.publicKey} from ${IdentityLedgerStateTable as st}
@@ -95,7 +97,7 @@ class PersistentIdentityLedgerStateImpl extends PersistentIdentityLedgerState {
   override def get(identity: String): Future[Option[Set[ByteString]]] = {
     if(isInTx()) {
       val st = IdentityLedgerStateTable.syntax("st")
-      inTx(db.head) { implicit session =>
+      inTx(db.get) { implicit session =>
         Future {
           val list =
             sql"""
@@ -119,7 +121,7 @@ class PersistentIdentityLedgerStateImpl extends PersistentIdentityLedgerState {
         } yield {
           if (!containsPair) {
             val column = IdentityLedgerStateTable.column
-            inTx(db.head) { implicit session =>
+            inTx(db.get) { implicit session =>
               sql"""
             insert into ${IdentityLedgerStateTable.table} (${column.identity}, ${column.publicKey})
               values (${identity}, ${publicKey})
@@ -139,7 +141,7 @@ class PersistentIdentityLedgerStateImpl extends PersistentIdentityLedgerState {
         } yield {
           if (containsPair) {
             val column = IdentityLedgerStateTable.column
-            inTx(db.head) { implicit session =>
+            inTx(db.get) { implicit session =>
               sql"""
             delete from ${IdentityLedgerStateTable.table}
              where ${column.identity} = ${identity} and ${column.publicKey} = ${publicKey}

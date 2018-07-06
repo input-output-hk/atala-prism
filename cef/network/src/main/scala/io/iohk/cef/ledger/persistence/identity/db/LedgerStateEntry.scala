@@ -1,4 +1,4 @@
-package io.iohk.cef.ledger.persistence.identity
+package io.iohk.cef.ledger.persistence.identity.db
 
 case class LedgerStateEntry[I, K](identity: I, key: K) {
   def toAggregatedEntry = new LedgerStateAggregatedEntry[I, K](identity, Set(key))

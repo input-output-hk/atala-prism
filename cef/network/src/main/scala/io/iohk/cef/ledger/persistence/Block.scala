@@ -12,6 +12,8 @@ case class Block[State <: LedgerState](header: BlockHeader, transactions: List[T
     transactions.foldLeft[Future[State]](Future.successful(state))((future, tx) => {
       future.flatMap(tx(_))
     }).andThen {
+      //Not good, this runs in a different thread and the state object is not thread safe.
+      //Need to provide a better implementation of this "transaction" concept
       case Success(_) =>
         state.commit()
       case Failure(_) =>
