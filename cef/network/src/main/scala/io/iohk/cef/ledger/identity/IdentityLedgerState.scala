@@ -9,6 +9,4 @@ trait IdentityLedgerState extends LedgerState[String, Set[ByteString]] {
   def remove(identity: String, key: ByteString): IdentityLedgerState
 
   def keys: Set[String]
-
-  def iterator: Iterator[(String, Set[ByteString])]
 }

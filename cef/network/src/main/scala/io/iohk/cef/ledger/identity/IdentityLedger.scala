@@ -24,8 +24,6 @@ object IdentityLedger extends App {
     new LedgerStateImpl(map + ((identity, get(identity).getOrElse(Set()) - publicKey)))
 
     override def keys: Set[String] = map.keySet
-
-    override def iterator: Iterator[(String, Set[ByteString])] = map.iterator
   }
 
   class Storage extends LedgerStorage[Future, IdentityLedgerState, String] {
@@ -53,4 +51,6 @@ object IdentityLedger extends App {
   val block = Block(new BlockHeader {}, txs)
 
   val newLedger = identityLedger.apply(block).map(future => Await.result(future, 1 second))
+
+  println(newLedger)
 }
