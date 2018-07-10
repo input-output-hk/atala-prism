@@ -1,6 +1,7 @@
 package io.iohk.cef.ledger.storage
 
 import io.iohk.cef.ledger._
+import io.iohk.cef.utils.ForExpressionsEnabler
 
 import scala.language.higherKinds
 

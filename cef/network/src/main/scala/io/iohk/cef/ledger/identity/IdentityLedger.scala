@@ -6,7 +6,7 @@ import io.iohk.cef.ledger.{Block, BlockHeader}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
-import io.iohk.cef.ledger.ForExpressionsEnabler._
+import io.iohk.cef.utils.ForExpressionsEnabler._
 
 object IdentityLedger extends App {
 

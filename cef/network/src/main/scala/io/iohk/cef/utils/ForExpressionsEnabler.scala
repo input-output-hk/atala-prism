@@ -1,7 +1,7 @@
-package io.iohk.cef.ledger
+package io.iohk.cef.utils
 
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 import scala.language.higherKinds
 
 trait ForExpressionsEnabler[F[_]] {
@@ -10,7 +10,7 @@ trait ForExpressionsEnabler[F[_]] {
 
 trait ForExpressionsEnabled[F[_]] {
   type A
-  
+
   def map[B](f: A => B): F[B]
 
   def flatMap[B](f: A => F[B]): F[B]
