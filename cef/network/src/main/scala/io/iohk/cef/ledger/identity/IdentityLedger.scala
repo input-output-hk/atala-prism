@@ -1,61 +1,58 @@
 package io.iohk.cef.ledger.identity
 
 import akka.util.ByteString
-import io.iohk.cef.ledger
-import io.iohk.cef.ledger.{Block, BlockHeader, Ledger, LedgerStorage}
+import io.iohk.cef.ledger.storage.{Ledger, LedgerStorage}
+import io.iohk.cef.ledger.{Block, BlockHeader}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
 object IdentityLedger extends App {
 
-  class State[I, K](map: Map[I, Set[K]] = Map[I, Set[K]]()) extends IdentityLedgerState[I, K] {
+  class LedgerStateImpl(map: Map[String, Set[ByteString]] = Map[String, Set[ByteString]]()) extends IdentityLedgerState {
 
-    override def contains(identity: I): Boolean = map.contains(identity)
+    override def hash: ByteString = ByteString(map.hashCode())
 
-    override def get(identity: I): Option[Set[K]] = map.get(identity)
+    override def contains(identity: String): Boolean = map.contains(identity)
 
-    override def put(identity: I, publicKey: K): IdentityLedgerState[I, K] =
-    new State(map + ((identity, get(identity).getOrElse(Set()) + publicKey)))
+    override def get(identity: String): Option[Set[ByteString]] = map.get(identity)
 
-    override def remove(identity: I, publicKey: K): IdentityLedgerState[I, K] =
-    new State(map + ((identity, get(identity).getOrElse(Set()) - publicKey)))
+    override def put(identity: String, publicKey: ByteString): IdentityLedgerState =
+    new LedgerStateImpl(map + ((identity, get(identity).getOrElse(Set()) + publicKey)))
+
+    override def remove(identity: String, publicKey: ByteString): IdentityLedgerState =
+    new LedgerStateImpl(map + ((identity, get(identity).getOrElse(Set()) - publicKey)))
+
+    override def keys: Set[String] = map.keySet
+
+    override def iterator: Iterator[(String, Set[ByteString])] = map.iterator
   }
 
-  class Storage[I, K] extends LedgerStorage[Future, IdentityLedgerState[I, K]] {
+  class Storage extends LedgerStorage[Future, IdentityLedgerState, String] {
 
     //Imagine persistent storage
-    var stack = List[Block[IdentityLedgerState[I, K]]]()
+    var stack = List[Block[IdentityLedgerState, String]]()
 
-    override def peek(): Future[Block[IdentityLedgerState[I, K]]] =
-      Future.successful(stack.head)
-
-    override def pop(): Future[Block[IdentityLedgerState[I, K]]] = {
-      val result = Future.successful(stack.head)
-      stack = stack.tail
-      result
-    }
-
-    override def push(block: Block[IdentityLedgerState[I, K]]): Future[Unit] = {
+    override def push(block: Block[IdentityLedgerState, String]): Future[Unit] = {
       stack = block :: stack
-      Future.successful(())
+      Future.successful(Right(()))
     }
   }
 
-  val ledgerState = new State[String, ByteString]()
+  val ledgerStateStorage = new StateStorage()
 
-  val ledgerStorage = new Storage[String, ByteString]()
+  val ledgerStorage = new Storage()
 
-  val identityLedger = Ledger(ledgerStorage, ledgerState)
+  val identityLedger = Ledger(ledgerStorage, ledgerStateStorage)
 
   val txs = List(
     Claim("carlos", ByteString("carlos")),
     Link("carlos", ByteString("vargas"))
   )
 
-  val block = ledger.Block[IdentityLedgerState[String, ByteString]](new BlockHeader {}, txs)
+  val block = Block(new BlockHeader {}, txs)
 
-  val newLedger = Await.result(identityLedger.apply(block), 1 second)
+  val newLedger = identityLedger.apply(block).map(future => Await.result(future, 1 second))
 
   val exception = new Exception("a exception")
 

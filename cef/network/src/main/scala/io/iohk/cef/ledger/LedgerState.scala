@@ -1,3 +1,9 @@
 package io.iohk.cef.ledger
 
-trait LedgerState
+import akka.util.ByteString
+
+trait LedgerState[K, V] {
+  def hash: ByteString
+  def get(key: K): Option[V]
+  def contains(key: K): Boolean
+}
