@@ -17,15 +17,14 @@ class StateStorage  extends LedgerStateStorage[Future, IdentityLedgerState, Stri
   DBs.setup('default)
 
   override def slice(keys: Set[String]): IdentityLedgerState = {
-    begin(db => {
+    beginTry(db => {
       slice(db)(keys)
-      //TODO: eliminate get
-    }).get
+    })
   }
 
   def slice(db: DB)(keys: Set[String]): IdentityLedgerState = {
     val st = IdentityLedgerStateTable.syntax("st")
-    db.readOnly { implicit session =>
+    inTx(db) { implicit session =>
       val pairs =
         sql"""
       select ${st.identity}, ${st.publicKey} from ${IdentityLedgerStateTable as st}
@@ -41,25 +40,26 @@ class StateStorage  extends LedgerStateStorage[Future, IdentityLedgerState, Stri
   override def update[B <: Block[IdentityLedgerState, String]](previousHash: ByteString, newState: IdentityLedgerState): Future[Unit] = {
     begin(db => {
       update(db)(previousHash, newState)
-      //TODO: eliminate get
-    }).get
+    })
   }
 
   def update[B <: Block[IdentityLedgerState, String]](db: DB)(previousHash: ByteString, newState: IdentityLedgerState): Future[Unit] = {
-    val result = begin(db => {
+    begin(db => {
       val currentState = slice(db)(newState.keys)
       inTx(db) { implicit session =>
-        Future.sequence(newState.iterator.map {
-          case (key, values) =>
-            for {
-              _ <- Future.sequence((values diff currentState.get(key).getOrElse(Set())).map(v => insert(db)(key, v)))
-              _ <- Future.sequence((currentState.get(key).getOrElse(Set()) diff values).map(v => remove(db)(key, v)))
-            } yield ()
-            //TODO: Need to handle the case when a key is removed (i.e. compare keys after comparing values)
-        }).map (_ => ())
+        for {
+          _ <- Future.sequence((newState.keys diff currentState.keys).map(key => newState.get(key).getOrElse(Set()).map(value => insert(db)(key, value))).flatten)
+          _ <- Future.sequence((currentState.keys diff newState.keys).map(key => newState.get(key).getOrElse(Set()).map(value => remove(db)(key, value))).flatten)
+          _ <- Future.sequence(newState.iterator.map {
+                  case (key, values) =>
+                    for {
+                      _ <- Future.sequence((values diff currentState.get(key).getOrElse(Set())).map(v => insert(db)(key, v)))
+                      _ <- Future.sequence((currentState.get(key).getOrElse(Set()) diff values).map(v => remove(db)(key, v)))
+                    } yield ()
+                })
+        } yield ()
       }
     })
-    Future.fromTry(result).flatten
   }
 
   def insert(db: DB)(identity: String, publicKey: ByteString) = {
@@ -87,17 +87,37 @@ class StateStorage  extends LedgerStateStorage[Future, IdentityLedgerState, Stri
   }
 
 
-  def begin[T](f: DB => T): Try[T] = {
+  def begin[T](f: DB => Future[T]): Future[T] = {
     val theDb = DB(ConnectionPool.borrow())
     val tx = theDb.newTx
     tx.begin()
-    val result = Try(f(theDb))
-    result match {
-      case Success(_) => theDb.commit()
-      case Failure(_) => theDb.rollbackIfActive()
+    val result = f(theDb)
+    result andThen {
+      case Success(_) =>
+        theDb.commit()
+        theDb.close()
+      case Failure(_) =>
+        theDb.rollbackIfActive()
+        theDb.close()
     }
-    theDb.close()
-    result
+  }
+
+  def beginTry[T](f: DB => T): T = {
+    val conn = ConnectionPool.borrow()
+    val theDb = DB(conn)
+    val tx = theDb.newTx
+    tx.begin()
+    val result = Try(f(theDb))
+    //TODO: bubble up the Try
+    result match {
+      case Success(_) =>
+        theDb.commit()
+        theDb.close()
+      case Failure(_) =>
+        theDb.rollbackIfActive()
+        theDb.close()
+    }
+    result.get
   }
 
   /**
