@@ -5,6 +5,7 @@ import io.iohk.cef.ledger.Block
 import io.iohk.cef.ledger.identity.IdentityLedger.LedgerStateImpl
 import io.iohk.cef.ledger.storage.LedgerStateStorage
 import io.iohk.cef.ledger.storage.db.{IdentityLedgerStateTable, LedgerStateAggregatedEntries}
+import org.bouncycastle.util.encoders.Hex
 import scalikejdbc._
 import scalikejdbc.config._
 
@@ -68,7 +69,7 @@ class StateStorage  extends LedgerStateStorage[Future, IdentityLedgerState, Stri
       Future {
         sql"""
             insert into ${IdentityLedgerStateTable.table} (${column.identity}, ${column.publicKey})
-              values (${identity}, ${publicKey})
+              values (${identity}, ${Hex.toHexString(publicKey.toArray)})
             """.executeUpdate.apply()
       }
     }
@@ -80,7 +81,7 @@ class StateStorage  extends LedgerStateStorage[Future, IdentityLedgerState, Stri
       Future {
         sql"""
             delete from ${IdentityLedgerStateTable.table}
-             where ${column.identity} = ${identity} and ${column.publicKey} = ${publicKey}
+             where ${column.identity} = ${identity} and ${column.publicKey} = ${Hex.toHexString(publicKey.toArray)}
             """.executeUpdate.apply()
       }
     }
@@ -108,7 +109,6 @@ class StateStorage  extends LedgerStateStorage[Future, IdentityLedgerState, Stri
     val tx = theDb.newTx
     tx.begin()
     val result = Try(f(theDb))
-    //TODO: bubble up the Try
     result match {
       case Success(_) =>
         theDb.commit()
@@ -117,6 +117,7 @@ class StateStorage  extends LedgerStateStorage[Future, IdentityLedgerState, Stri
         theDb.rollbackIfActive()
         theDb.close()
     }
+    //TODO: bubble up the Try
     result.get
   }
 
