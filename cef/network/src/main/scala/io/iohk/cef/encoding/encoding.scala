@@ -8,9 +8,7 @@ package object encoding {
     def encode(t: T): U
 
     def andThen[S](that: Encoder[U, S]): Encoder[T, S] =
-      new Encoder[T, S] {
-        override def encode(t: T): S = that.encode(self.encode(t))
-      }
+      (t: T) => that.encode(self.encode(t))
   }
 
   trait Decoder[U, T] {
@@ -19,16 +17,27 @@ package object encoding {
     def decode(u: U): T
 
     def andThen[S](that: Decoder[T, S]): Decoder[U, S] =
-      new Decoder[U, S] {
-        override def decode(u: U): S = that.decode(self.decode(u))
-      }
+      (u: U) => that.decode(self.decode(u))
   }
 
-  // TODO would it be preferable to use Try, Either or Throwables here?
+  def encode[T, U](t: T)(implicit enc: Encoder[T, U]): U =
+    try {
+      enc.encode(t)
+    } catch {
+      case t: Throwable =>
+        throw new EncodingException(t)
+    }
 
-  def encode[T, U](t: T)(implicit enc: Encoder[T, U]): U = enc.encode(t)
+    def decode[U, T](enc: U)(implicit dec: Decoder[U, T]): T = try {
+      dec.decode(enc)
+    } catch {
+      case t: Throwable =>
+        throw new DecodingException(t)
+    }
 
-  def decode[U, T](enc: U)(implicit dec: Decoder[U, T]): T = dec.decode(enc)
+    class EncodingException(cause: Throwable) extends RuntimeException(cause)
 
-  type ByteEncoder[T] = Encoder[T, Array[Byte]]
+    class DecodingException(cause: Throwable) extends RuntimeException(cause)
+
+    type ByteEncoder[T] = Encoder[T, Array[Byte]]
 }
