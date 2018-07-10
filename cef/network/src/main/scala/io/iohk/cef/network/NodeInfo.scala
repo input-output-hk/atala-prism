@@ -14,8 +14,6 @@ case class NodeInfo(id: ByteString,
                     serverAddress: InetSocketAddress,
                     capabilities: Capabilities) {
 
-  def idHex: String = Hex.toHexString(id.toArray)
-
   def getServerUri: URI = {
     val host = getHostName(serverAddress.getAddress)
     new URI(s"enode://${Hex.toHexString(id.toArray[Byte])}@$host:${serverAddress.getPort}?capabilities=${capabilities.byte.toHexString}")
@@ -28,7 +26,7 @@ case class NodeInfo(id: ByteString,
     * @param address, whose host name will be obtained
     * @return host name associated with the address
     */
-  def getHostName(address: InetAddress): String = {
+  private def getHostName(address: InetAddress): String = {
     val hostName = address.getHostAddress
     address match {
       case _: Inet6Address => s"[$hostName]"
