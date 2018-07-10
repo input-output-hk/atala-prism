@@ -5,7 +5,7 @@ import java.time.Clock
 import java.util.concurrent.TimeUnit
 
 import akka.util.ByteString
-import io.iohk.cef.network.{Capabilities, Node}
+import io.iohk.cef.network.{Capabilities, NodeInfo}
 import io.iohk.cef.telemetery.InMemoryTelemetry
 import io.iohk.cef.test.TestClock
 import org.scalatest.{MustMatchers, fixture}
@@ -32,7 +32,7 @@ class KnownNodeStorageImplSpec extends fixture.FlatSpec with AutoRollbackSpec wi
     val clock = TestClock()
     val storage = createKnownNodeStorage(clock, session)
     val addr = new InetSocketAddress(InetAddress.getByAddress(Array(1,2,3,4)),23)
-    val node = Node(ByteString("1"), addr, addr, Capabilities(1))
+    val node = NodeInfo(ByteString("1"), addr, addr, Capabilities(1))
     storage.insert(node)
     storage.getAll() mustBe Set(KnownNode(node, clock.instant(), clock.instant()))
   }
@@ -41,7 +41,7 @@ class KnownNodeStorageImplSpec extends fixture.FlatSpec with AutoRollbackSpec wi
     val clock = TestClock()
     val storage = createKnownNodeStorage(clock, session)
     val addr = new InetSocketAddress(InetAddress.getByAddress(Array(1,2,3,4)),23)
-    val node = Node(ByteString("1"), addr, addr, Capabilities(1))
+    val node = NodeInfo(ByteString("1"), addr, addr, Capabilities(1))
     val now = clock.instant()
     storage.insert(node)
     storage.getAll() mustBe Set(KnownNode(node, now, now))
@@ -56,7 +56,7 @@ class KnownNodeStorageImplSpec extends fixture.FlatSpec with AutoRollbackSpec wi
     val clock = TestClock()
     val storage = createKnownNodeStorage(clock, session)
     val addr = new InetSocketAddress(InetAddress.getByAddress(Array(1,2,3,4)),23)
-    val node = Node(ByteString("1"), addr, addr, Capabilities(1))
+    val node = NodeInfo(ByteString("1"), addr, addr, Capabilities(1))
     val now = clock.instant()
     storage.insert(node)
     storage.getAll() mustBe Set(KnownNode(node, now, now))
@@ -68,7 +68,7 @@ class KnownNodeStorageImplSpec extends fixture.FlatSpec with AutoRollbackSpec wi
     val clock = TestClock()
     val storage = createKnownNodeStorage(clock, session)
     val addr = new InetSocketAddress(InetAddress.getByAddress(Array(1,2,3,4)),23)
-    val node = Node(ByteString("1"), addr, addr, Capabilities(1))
+    val node = NodeInfo(ByteString("1"), addr, addr, Capabilities(1))
     val now = clock.instant()
     storage.insert(node)
     storage.getAll() mustBe Set(KnownNode(node, now, now))

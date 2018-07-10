@@ -3,7 +3,7 @@ package io.iohk.cef.discovery
 import java.net.{InetAddress, InetSocketAddress}
 
 import akka.util.ByteString
-import io.iohk.cef.network.{Capabilities, Node}
+import io.iohk.cef.network.{Capabilities, NodeInfo}
 import org.scalatest.{FlatSpec, MustMatchers}
 
 class DiscoveryWireMessageSpec extends FlatSpec with MustMatchers {
@@ -13,7 +13,7 @@ class DiscoveryWireMessageSpec extends FlatSpec with MustMatchers {
   it should "not lose info when encode/decode the messages" in {
     val addr1 = new InetSocketAddress(InetAddress.getByAddress(Array(1,2,3,4)), 5)
     val addr2 = new InetSocketAddress(InetAddress.getByAddress(Array(6,7,8,9)),10)
-    val node = Node(ByteString("node"), addr1, addr2, Capabilities(2))
+    val node = NodeInfo(ByteString("node"), addr1, addr2, Capabilities(2))
 
     import io.iohk.cef.encoding.rlp.RLPImplicits._
 

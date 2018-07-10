@@ -8,7 +8,7 @@ import akka.util.ByteString
 import akka.{actor => untyped, testkit => untypedKit}
 import io.iohk.cef.discovery.DiscoveryListener._
 import io.iohk.cef.encoding.{Decoder, Encoder}
-import io.iohk.cef.network.{Capabilities, Node}
+import io.iohk.cef.network.{Capabilities, NodeInfo}
 import io.iohk.cef.test.StopAfterAll
 import org.scalatest.WordSpecLike
 
@@ -24,8 +24,8 @@ class DiscoveryListenerSpec
   val discAddressNodeB = new InetSocketAddress(InetAddress.getByAddress(Array(0,0,0,2)),1002)
   val serverAddressNodeB = new InetSocketAddress(InetAddress.getByAddress(Array(0,0,2,2)),2002)
 
-  val nodeA = Node(ByteString("1"), discAddressNodeA, serverAddressNodeA, Capabilities(1))
-  val nodeB = Node(ByteString("2"), discAddressNodeB, serverAddressNodeB, Capabilities(1))
+  val nodeA = NodeInfo(ByteString("1"), discAddressNodeA, serverAddressNodeA, Capabilities(1))
+  val nodeB = NodeInfo(ByteString("2"), discAddressNodeB, serverAddressNodeB, Capabilities(1))
 
   val nonce = ByteString("nonce")
   val pingToken = ByteString("ping-token")

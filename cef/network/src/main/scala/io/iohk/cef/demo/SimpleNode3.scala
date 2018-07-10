@@ -15,7 +15,7 @@ import io.iohk.cef.demo.SimpleNode3.{Confirmed, NodeResponse, Resend, SendTo}
 import io.iohk.cef.discovery.DiscoveryConfig
 import io.iohk.cef.discovery.DiscoveryManager.{DiscoveredNodes, DiscoveryRequest, GetDiscoveredNodes}
 import io.iohk.cef.network.transport.rlpx.RLPxTransportProtocol
-import io.iohk.cef.network.{Capabilities, Node}
+import io.iohk.cef.network.{Capabilities, NodeInfo}
 import io.iohk.cef.telemetery.DatadogTelemetry
 import io.micrometer.core.instrument.{Counter, DistributionSummary}
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair
@@ -24,7 +24,7 @@ import org.bouncycastle.util.encoders.Hex
 import scala.concurrent.duration._
 import scala.util.Success
 
-class SimpleNode3(node: Node,
+class SimpleNode3(node: NodeInfo,
                   transport: RLPxTransportProtocol[String],
                   knownNodeStorage: KnownNodeStorage,
                   discoveryConfig: DiscoveryConfig) extends DatadogTelemetry {
@@ -260,14 +260,14 @@ object SimpleNode3 {
     val keyPair: AsymmetricCipherKeyPair = keyPairFromPrvKey(nodeKeyBytes)
     val nodeId = ByteString(MantisCode.nodeIdFromKey(keyPair))
 
-    val node = Node(
+    val nodeInfo = NodeInfo(
       id = nodeId,
       discoveryAddress = new InetSocketAddress(discoveryConfig.interface, discoveryConfig.port),
       serverAddress = new InetSocketAddress(host, port),
       capabilities = Capabilities(1))
 
     new SimpleNode3(
-      node,
+      nodeInfo,
       new RLPxTransportProtocol[String](
         MessageConfig.sampleEncoder,
         MessageConfig.sampleDecoder,

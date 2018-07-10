@@ -23,7 +23,7 @@ class NodeParserSpec extends FlatSpec with MustMatchers {
          |    }
          |  ]
       """.stripMargin).getConfigList("nodes")
-    val parsed = NodeParser.parseNodes(config.asScala.toSet)
+    val parsed = NodeParser.parseNodeInfos(config.asScala.toSet)
     parsed.size mustBe 1
     val node = parsed.head
     node.discoveryAddress.getAddress.getAddress.toList mustBe List[Byte](127,0,0,1)

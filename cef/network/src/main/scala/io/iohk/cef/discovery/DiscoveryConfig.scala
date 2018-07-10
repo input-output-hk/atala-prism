@@ -2,7 +2,7 @@ package io.iohk.cef.discovery
 
 import java.util.concurrent.TimeUnit
 
-import io.iohk.cef.network.{Node, NodeParser}
+import io.iohk.cef.network.{NodeInfo, NodeParser}
 
 import scala.concurrent.duration.{FiniteDuration, _}
 
@@ -10,7 +10,7 @@ case class DiscoveryConfig(
                             discoveryEnabled: Boolean,
                             interface: String,
                             port: Int,
-                            bootstrapNodes: Set[Node],
+                            bootstrapNodes: Set[NodeInfo],
                             discoveredNodesLimit: Int,
                             scanNodesLimit: Int,
                             concurrencyDegree: Int,
@@ -25,7 +25,7 @@ object DiscoveryConfig {
   def apply(etcClientConfig: com.typesafe.config.Config): DiscoveryConfig = {
     import scala.collection.JavaConverters._
     val discoveryConfig = etcClientConfig.getConfig("discovery")
-    val bootstrapNodes = NodeParser.parseNodes(discoveryConfig.getConfigList("bootstrapNodes").asScala.toSet)
+    val bootstrapNodes = NodeParser.parseNodeInfos(discoveryConfig.getConfigList("bootstrapNodes").asScala.toSet)
     val blacklistDuration = {
       val duration = discoveryConfig.getDuration("blacklistDefaultDuration")
       FiniteDuration(duration.toNanos, TimeUnit.NANOSECONDS)

@@ -4,7 +4,7 @@ import java.net.{InetAddress, InetSocketAddress}
 import java.time.Instant
 
 import akka.util.ByteString
-import io.iohk.cef.network.{Capabilities, Node}
+import io.iohk.cef.network.{Capabilities, NodeInfo}
 import org.bouncycastle.util.encoders.Hex
 import scalikejdbc.{WrappedResultSet, _}
 
@@ -22,7 +22,7 @@ object KnownNodeTable extends SQLSyntaxSupport[KnownNodeTable] {
   override val tableName = Schema.knownNodeTableName
 
   def apply(kn: ResultName[KnownNodeTable])(rs: WrappedResultSet) = new KnownNode(
-    Node(
+    NodeInfo(
       ByteString(Hex.decode(rs.string(kn.id))),
       new InetSocketAddress(InetAddress.getByAddress(rs.bytes(kn.discoveryAddress)), rs.int(kn.discoveryPort)),
       new InetSocketAddress(InetAddress.getByAddress(rs.bytes(kn.serverAddress)), rs.int(kn.serverPort)),
