@@ -17,7 +17,7 @@ class StateStorage  extends LedgerStateStorage[Future, IdentityLedgerState, Stri
 
   DBs.setup('default)
 
-  override def slice(keys: Set[String]): IdentityLedgerState = {
+  override def slice(keys: Set[String]): Try[IdentityLedgerState] = {
     beginTry(db => {
       slice(db)(keys)
     })
@@ -60,13 +60,11 @@ class StateStorage  extends LedgerStateStorage[Future, IdentityLedgerState, Stri
           )).flatten)
           _ <- Future.sequence((newState.keys intersect currentState.keys).map { key => {
                   val values = newState.get(key).getOrElse(Set())
+                  val valuesToAdd = (values diff currentState.get(key).getOrElse(Set()))
+                  val valuesToRemove = (currentState.get(key).getOrElse(Set()) diff values)
                   for {
-                    _ <- Future.sequence((values diff currentState.get(key).getOrElse(Set())).map(v =>
-                      insert(db)(key, v)
-                    ))
-                    _ <- Future.sequence((currentState.get(key).getOrElse(Set()) diff values).map(v =>
-                      remove(db)(key, v)
-                    ))
+                    _ <- Future.sequence(valuesToAdd.map(v => insert(db)(key, v)))
+                    _ <- Future.sequence(valuesToRemove.map(v => remove(db)(key, v)))
                   } yield ()
                 }
               })
@@ -115,7 +113,7 @@ class StateStorage  extends LedgerStateStorage[Future, IdentityLedgerState, Stri
     }
   }
 
-  def beginTry[T](f: DB => T): T = {
+  def beginTry[T](f: DB => T): Try[T] = {
     val conn = ConnectionPool.borrow()
     val theDb = DB(conn)
     val tx = theDb.newTx
@@ -129,8 +127,7 @@ class StateStorage  extends LedgerStateStorage[Future, IdentityLedgerState, Stri
         theDb.rollbackIfActive()
         theDb.close()
     }
-    //TODO: bubble up the Try
-    result.get
+    result
   }
 
   /**
