@@ -1,4 +1,4 @@
-package io.iohk.cef.ledger.storage.db
+package io.iohk.cef.ledger.identity.db
 
 case class LedgerStateEntry[I, K](identity: I, key: K) {
   def toAggregatedEntry =

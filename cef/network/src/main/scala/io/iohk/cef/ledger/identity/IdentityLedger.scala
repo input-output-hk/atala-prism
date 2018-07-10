@@ -53,8 +53,4 @@ object IdentityLedger extends App {
   val block = Block(new BlockHeader {}, txs)
 
   val newLedger = identityLedger.apply(block).map(future => Await.result(future, 1 second))
-
-  val exception = new Exception("a exception")
-
-  println(exception.getStackTrace.toList)
 }

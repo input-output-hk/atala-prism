@@ -4,7 +4,7 @@ import akka.util.ByteString
 import io.iohk.cef.ledger.Block
 import io.iohk.cef.ledger.identity.IdentityLedger.LedgerStateImpl
 import io.iohk.cef.ledger.storage.LedgerStateStorage
-import io.iohk.cef.ledger.storage.db.{IdentityLedgerStateTable, LedgerStateAggregatedEntries}
+import io.iohk.cef.ledger.identity.db.{IdentityLedgerStateTable, LedgerStateAggregatedEntries}
 import org.bouncycastle.util.encoders.Hex
 import scalikejdbc._
 import scalikejdbc.config._
@@ -28,7 +28,7 @@ class StateStorage  extends LedgerStateStorage[Future, IdentityLedgerState, Stri
     inTx(db) { implicit session =>
       val pairs =
         sql"""
-      select ${st.identity}, ${st.publicKey} from ${IdentityLedgerStateTable as st}
+      select ${st.result.*} from ${IdentityLedgerStateTable as st}
        where ${st.identity} in (${keys})
       """.map(rs => IdentityLedgerStateTable(st.resultName)(rs)).list.apply()
       val emptyEntries = LedgerStateAggregatedEntries[String, ByteString]()
@@ -48,16 +48,28 @@ class StateStorage  extends LedgerStateStorage[Future, IdentityLedgerState, Stri
     begin(db => {
       val currentState = slice(db)(newState.keys)
       inTx(db) { implicit session =>
+        val keysToAdd = (newState.keys diff currentState.keys)
+        val keysToRemove = (currentState.keys diff newState.keys)
+        println()
         for {
-          _ <- Future.sequence((newState.keys diff currentState.keys).map(key => newState.get(key).getOrElse(Set()).map(value => insert(db)(key, value))).flatten)
-          _ <- Future.sequence((currentState.keys diff newState.keys).map(key => newState.get(key).getOrElse(Set()).map(value => remove(db)(key, value))).flatten)
-          _ <- Future.sequence(newState.iterator.map {
-                  case (key, values) =>
-                    for {
-                      _ <- Future.sequence((values diff currentState.get(key).getOrElse(Set())).map(v => insert(db)(key, v)))
-                      _ <- Future.sequence((currentState.get(key).getOrElse(Set()) diff values).map(v => remove(db)(key, v)))
-                    } yield ()
-                })
+          _ <- Future.sequence(keysToAdd.map(key => newState.get(key).getOrElse(Set()).map(value =>
+            insert(db)(key, value)
+          )).flatten)
+          _ <- Future.sequence(keysToRemove.map(key => newState.get(key).getOrElse(Set()).map(value =>
+            remove(db)(key, value)
+          )).flatten)
+          _ <- Future.sequence((newState.keys intersect currentState.keys).map { key => {
+                  val values = newState.get(key).getOrElse(Set())
+                  for {
+                    _ <- Future.sequence((values diff currentState.get(key).getOrElse(Set())).map(v =>
+                      insert(db)(key, v)
+                    ))
+                    _ <- Future.sequence((currentState.get(key).getOrElse(Set()) diff values).map(v =>
+                      remove(db)(key, v)
+                    ))
+                  } yield ()
+                }
+              })
         } yield ()
       }
     })
