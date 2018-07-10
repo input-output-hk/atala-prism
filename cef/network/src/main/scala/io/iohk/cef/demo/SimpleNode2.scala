@@ -14,7 +14,7 @@ import io.iohk.cef.network.transport.rlpx.RLPxConnectionHandler.RLPxConfiguratio
 import io.iohk.cef.network.transport.rlpx.ethereum.p2p.Message.Version
 import io.iohk.cef.network.transport.rlpx.ethereum.p2p.{Message, MessageDecoder, MessageSerializable}
 import io.iohk.cef.network.transport.rlpx.{AuthHandshaker, RLPxConnectionHandler, RLPxTransportProtocol}
-import io.iohk.cef.network.{ECPublicKeyParametersNodeId, loadAsymmetricCipherKeyPair}
+import KeyLoader.{ECPublicKeyParametersNodeId, loadAsymmetricCipherKeyPair}
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair
 import org.bouncycastle.crypto.params.ECPublicKeyParameters
 import org.bouncycastle.util.encoders.Hex

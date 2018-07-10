@@ -1,31 +1,22 @@
-package io.iohk.cef.network.transport
+package io.iohk.cef.demo
 
 import java.io.{File, PrintWriter}
-import java.net.{Inet6Address, InetAddress}
 import java.security.SecureRandom
 
-import io.iohk.cef.crypto._
+import io.iohk.cef.crypto.{generateKeyPair, keyPairFromPrvKey, keyPairToByteArrays}
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair
 import org.bouncycastle.crypto.params.ECPublicKeyParameters
-import org.bouncycastle.math.ec.ECPoint
 import org.bouncycastle.util.encoders.Hex
 
 import scala.io.Source
 
-package object rlpx {
-
-  val ProtocolVersion = 4
+object KeyLoader {
 
   implicit class ECPublicKeyParametersNodeId(val pubKey: ECPublicKeyParameters) extends AnyVal {
     def toNodeId: Array[Byte] =
       pubKey.asInstanceOf[ECPublicKeyParameters].getQ
         .getEncoded(false)
         .drop(1) // drop type info
-  }
-
-  def publicKeyFromNodeId(nodeId: String): ECPoint = {
-    val bytes = ECDSASignature.uncompressedIndicator +: Hex.decode(nodeId)
-    curve.getCurve.decodePoint(bytes)
   }
 
   def loadAsymmetricCipherKeyPair(filePath: String, secureRandom: SecureRandom): AsymmetricCipherKeyPair = {
@@ -54,20 +45,4 @@ package object rlpx {
       }
     }
   }
-
-  /**
-    * Given an address, returns the corresponding host name for the URI.
-    * All IPv6 addresses are enclosed in square brackets.
-    *
-    * @param address, whose host name will be obtained
-    * @return host name associated with the address
-    */
-  def getHostName(address: InetAddress): String = {
-    val hostName = address.getHostAddress
-    address match {
-      case _: Inet6Address => s"[$hostName]"
-      case _ => hostName
-    }
-  }
-
 }

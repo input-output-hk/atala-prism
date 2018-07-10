@@ -50,6 +50,7 @@ class UDPBridgeSpec extends FlatSpec with MustMatchers with MockFactory {
 
     listenerInbox.expectMessage(Forward(MessageReceived(data, addr2)))
   }
+
   it should "forward a sent message" in new UdpTestHelper {
     val addr2 = new InetSocketAddress(1001)
     val data = Ping(1, node, 0L, ByteString("nonce"))

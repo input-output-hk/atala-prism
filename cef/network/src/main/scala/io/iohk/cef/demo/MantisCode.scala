@@ -5,7 +5,7 @@ import java.security.SecureRandom
 import akka.actor.Props
 import akka.util.ByteString
 
-import io.iohk.cef.network.{ECPublicKeyParametersNodeId, loadAsymmetricCipherKeyPair}
+import KeyLoader.{ECPublicKeyParametersNodeId, loadAsymmetricCipherKeyPair}
 import io.iohk.cef.network.transport.rlpx.{AuthHandshaker, RLPxConnectionHandler}
 import io.iohk.cef.network.transport.rlpx.RLPxConnectionHandler.RLPxConfiguration
 
