@@ -2,7 +2,6 @@ package io.iohk.cef.network
 
 import java.net.{InetAddress, URI}
 
-import akka.util.ByteString
 import com.typesafe.config.Config
 import io.iohk.cef.utils.Logger
 
@@ -28,18 +27,19 @@ object NodeParser extends Logger {
     val scheme = Option(uri.getScheme).toRight(s"No defined scheme for uri $uri")
 
     scheme.flatMap{ scheme =>
-      Either.cond(uri.getScheme == expectedScheme, uri, s"Invalid node scheme $scheme, it should be $expectedScheme")
+      Either.cond(uri.getScheme == expectedScheme, uri, s"Invalid node scheme '$scheme'. It should be '$expectedScheme'.")
     }
   }
 
   private def validateNodeId(uri: URI): Either[Error, URI] = {
-    val nodeId = Try(ByteString(uri.getUserInfo)) match {
+    val nodeId: Either[String, Error] = Try(uri.getUserInfo) match {
       case Success(id) => Right(id)
-      case Failure(_) => Left(s"Malformed nodeId for URI ${uri.toString}")
+      case Failure(_) => Left(s"Malformed nodeId for URI '${uri.toString}'.")
     }
 
     nodeId.flatMap(nodeId =>
-      Either.cond(nodeId.size == NodeIdSize, uri, s"Invalid node id $nodeId size, it should be $NodeIdSize")
+      Either.cond(nodeId.length == NodeIdSize, uri,
+        s"Invalid id length for '$nodeId'. It should be $NodeIdSize.")
     )
   }
 
