@@ -45,6 +45,13 @@ object AuthHandshaker {
     val nonce = secureRandomByteArray(secureRandom, NonceSize)
     AuthHandshaker(nodeKey, ByteString(nonce), generateKeyPair(secureRandom), secureRandom)
   }
+
+  implicit class ECPublicKeyParametersNodeId(val pubKey: ECPublicKeyParameters) extends AnyVal {
+    def toNodeId: Array[Byte] =
+      pubKey.asInstanceOf[ECPublicKeyParameters].getQ
+        .getEncoded(false)
+        .drop(1) // drop type info
+  }
 }
 
 case class AuthHandshaker(

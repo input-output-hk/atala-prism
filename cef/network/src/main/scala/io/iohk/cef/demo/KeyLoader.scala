@@ -5,19 +5,11 @@ import java.security.SecureRandom
 
 import io.iohk.cef.crypto.{generateKeyPair, keyPairFromPrvKey, keyPairToByteArrays}
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair
-import org.bouncycastle.crypto.params.ECPublicKeyParameters
 import org.bouncycastle.util.encoders.Hex
 
 import scala.io.Source
 
 object KeyLoader {
-
-  implicit class ECPublicKeyParametersNodeId(val pubKey: ECPublicKeyParameters) extends AnyVal {
-    def toNodeId: Array[Byte] =
-      pubKey.asInstanceOf[ECPublicKeyParameters].getQ
-        .getEncoded(false)
-        .drop(1) // drop type info
-  }
 
   def loadAsymmetricCipherKeyPair(filePath: String, secureRandom: SecureRandom): AsymmetricCipherKeyPair = {
     val file = new File(filePath)
