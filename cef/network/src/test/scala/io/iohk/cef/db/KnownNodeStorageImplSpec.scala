@@ -15,7 +15,7 @@ import scala.concurrent.duration.FiniteDuration
 
 class KnownNodeStorageImplSpec extends fixture.FlatSpec with AutoRollbackSpec with MustMatchers {
 
-  def createKnownNodeStorage(clock: Clock, session: DBSession) =
+  def createKnownNodeStorage(clock: Clock, session: DBSession): KnownNodeStorage =
     new KnownNodeStorageImpl(clock) with InMemoryTelemetry {
     override def inTx[T](block: DBSession => T): T = block(session)
   }

@@ -40,9 +40,9 @@ case class BlacklistNodeTable(nodeId: ByteString,
 object BlacklistNodeTable extends SQLSyntaxSupport[BlacklistNodeTable] {
   override val tableName = Schema.blacklistNodeTableName
 
-  def apply(n: ResultName[KnownNodeTable], bn: ResultName[BlacklistNodeTable])(rs: WrappedResultSet) = BlacklistNode(
-    KnownNodeTable(n)(rs).node,
-    rs.timestamp(bn.blacklistSince).toInstant,
-    rs.timestamp(bn.blacklistUntil).toInstant
-  )
+//  def apply(n: ResultName[KnownNodeTable], bn: ResultName[BlacklistNodeTable])(rs: WrappedResultSet) = BlacklistNode(
+//    KnownNodeTable(n)(rs).node,
+//    rs.timestamp(bn.blacklistSince).toInstant,
+//    rs.timestamp(bn.blacklistUntil).toInstant
+//  )
 }
