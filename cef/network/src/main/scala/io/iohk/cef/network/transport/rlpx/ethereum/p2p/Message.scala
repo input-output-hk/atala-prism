@@ -1,9 +1,6 @@
 package io.iohk.cef.network.transport.rlpx.ethereum.p2p
 
 import akka.util.ByteString
-import Message.Version
-
-import scala.util.Try
 
 object Message {
   type Version = Int
@@ -24,11 +21,6 @@ trait MessageSerializable extends Message {
 
 }
 
-trait MessageDecoder { self =>
+trait MessageDecoder {
   def fromBytes(`type`: Int, payload: Array[Byte], protocolVersion: Message.Version): Message
-
-  def orElse(otherMessageDecoder: MessageDecoder): MessageDecoder = new MessageDecoder {
-    override def fromBytes(`type`: Int, payload: Array[Byte], protocolVersion: Version): Message =
-      Try{ self.fromBytes(`type`, payload, protocolVersion) }.getOrElse( otherMessageDecoder.fromBytes(`type`, payload, protocolVersion))
-  }
 }
