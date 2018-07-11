@@ -3,39 +3,44 @@ package io.iohk.cef.ledger.identity
 import akka.util.ByteString
 import io.iohk.cef.ledger.Block
 import io.iohk.cef.ledger.identity.IdentityLedger.LedgerStateImpl
-import io.iohk.cef.ledger.storage.LedgerStateStorage
 import io.iohk.cef.ledger.identity.db.{IdentityLedgerStateTable, LedgerStateAggregatedEntries}
+import io.iohk.cef.ledger.storage.LedgerStateStorage
 import org.bouncycastle.util.encoders.Hex
 import scalikejdbc._
 import scalikejdbc.config._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Success}
 
 class StateStorage  extends LedgerStateStorage[Future, IdentityLedgerState, String] {
 
   DBs.setup('default)
 
-  override def slice(keys: Set[String]): Try[IdentityLedgerState] = {
-    beginTry(db => {
-      slice(db)(keys)
-    })
+  override def slice(keys: Set[String]): IdentityLedgerState = {
+    val db = createDb
+    db.readOnly { implicit session =>
+      executeSlice(keys)
+    }
   }
 
   def slice(db: DB)(keys: Set[String]): IdentityLedgerState = {
-    val st = IdentityLedgerStateTable.syntax("st")
     inTx(db) { implicit session =>
-      val pairs =
-        sql"""
+      executeSlice(keys)
+    }
+  }
+
+  private def executeSlice(keys: Set[String])(implicit session: DBSession) = {
+    val st = IdentityLedgerStateTable.syntax("st")
+    val pairs =
+      sql"""
       select ${st.result.*} from ${IdentityLedgerStateTable as st}
        where ${st.identity} in (${keys})
       """.map(rs => IdentityLedgerStateTable(st.resultName)(rs)).list.apply()
-      val emptyEntries = LedgerStateAggregatedEntries[String, ByteString]()
-      val aggregatedEntries =
-        pairs.foldLeft(emptyEntries)(_.aggregate(_))
-      new LedgerStateImpl(aggregatedEntries.map)
-    }
+    val emptyEntries = LedgerStateAggregatedEntries[String, ByteString]()
+    val aggregatedEntries =
+      pairs.foldLeft(emptyEntries)(_.aggregate(_))
+    new LedgerStateImpl(aggregatedEntries.map)
   }
 
   override def update[B <: Block[IdentityLedgerState, String]](previousHash: ByteString, newState: IdentityLedgerState): Future[Unit] = {
@@ -99,7 +104,7 @@ class StateStorage  extends LedgerStateStorage[Future, IdentityLedgerState, Stri
 
 
   def begin[T](f: DB => Future[T]): Future[T] = {
-    val theDb = DB(ConnectionPool.borrow())
+    val theDb = createDb
     val tx = theDb.newTx
     tx.begin()
     val result = f(theDb)
@@ -113,21 +118,9 @@ class StateStorage  extends LedgerStateStorage[Future, IdentityLedgerState, Stri
     }
   }
 
-  def beginTry[T](f: DB => T): Try[T] = {
+  def createDb: DB = {
     val conn = ConnectionPool.borrow()
-    val theDb = DB(conn)
-    val tx = theDb.newTx
-    tx.begin()
-    val result = Try(f(theDb))
-    result match {
-      case Success(_) =>
-        theDb.commit()
-        theDb.close()
-      case Failure(_) =>
-        theDb.rollbackIfActive()
-        theDb.close()
-    }
-    result
+    DB(conn)
   }
 
   /**
