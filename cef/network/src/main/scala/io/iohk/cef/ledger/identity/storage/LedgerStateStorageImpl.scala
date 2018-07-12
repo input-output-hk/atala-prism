@@ -1,9 +1,8 @@
-package io.iohk.cef.ledger.identity
+package io.iohk.cef.ledger.identity.storage
 
 import akka.util.ByteString
-import io.iohk.cef.ledger.Block
-import io.iohk.cef.ledger.identity.IdentityLedger.LedgerStateImpl
-import io.iohk.cef.ledger.identity.db.{IdentityLedgerStateTable, LedgerStateAggregatedEntries}
+import io.iohk.cef.ledger.identity.storage.db.{IdentityLedgerStateTable, LedgerStateEntryMap}
+import io.iohk.cef.ledger.identity.{IdentityLedgerState, IdentityLedgerStateImpl}
 import io.iohk.cef.ledger.storage.LedgerStateStorage
 import org.bouncycastle.util.encoders.Hex
 import scalikejdbc._
@@ -13,7 +12,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
-class StateStorage  extends LedgerStateStorage[Future, IdentityLedgerState, String] {
+class LedgerStateStorageImpl  extends LedgerStateStorage[Future, IdentityLedgerState, String] {
 
   DBs.setup('default)
 
@@ -37,19 +36,19 @@ class StateStorage  extends LedgerStateStorage[Future, IdentityLedgerState, Stri
       select ${st.result.*} from ${IdentityLedgerStateTable as st}
        where ${st.identity} in (${keys})
       """.map(rs => IdentityLedgerStateTable(st.resultName)(rs)).list.apply()
-    val emptyEntries = LedgerStateAggregatedEntries[String, ByteString]()
+    val emptyEntries = LedgerStateEntryMap[String, ByteString]()
     val aggregatedEntries =
-      pairs.foldLeft(emptyEntries)(_.aggregate(_))
-    new LedgerStateImpl(aggregatedEntries.map)
+      pairs.foldLeft(emptyEntries)(_ aggregateWith _)
+    new IdentityLedgerStateImpl(aggregatedEntries.map)
   }
 
-  override def update[B <: Block[IdentityLedgerState, String]](previousHash: ByteString, newState: IdentityLedgerState): Future[Unit] = {
+  override def update(previousHash: ByteString, newState: IdentityLedgerState): Future[Unit] = {
     begin(db => {
       update(db)(previousHash, newState)
     })
   }
 
-  def update[B <: Block[IdentityLedgerState, String]](db: DB)(previousHash: ByteString, newState: IdentityLedgerState): Future[Unit] = {
+  def update(db: DB)(previousHash: ByteString, newState: IdentityLedgerState): Future[Unit] = {
     begin(db => {
       val currentState = slice(db)(newState.keys)
       inTx(db) { implicit session =>
@@ -101,7 +100,6 @@ class StateStorage  extends LedgerStateStorage[Future, IdentityLedgerState, Stri
       }
     }
   }
-
 
   def begin[T](f: DB => Future[T]): Future[T] = {
     val theDb = createDb

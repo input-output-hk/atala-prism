@@ -5,12 +5,16 @@ import io.iohk.cef.utils.ForExpressionsEnabler
 
 import scala.language.higherKinds
 
-case class Ledger[State <: LedgerState[Key, _], Key, F[_]](
-                                                     ledgerStorage: LedgerStorage[F, State, Key],
-                                                     ledgerStateStorage: LedgerStateStorage[F, State, Key])(
-                                                     implicit adapter: ForExpressionsEnabler[F]) {
+case class Ledger[F[_],
+                  State <: LedgerState[Key, _],
+                  Key,
+                  Header <: BlockHeader,
+                  Tx <: Transaction[State, Key]](
+                       ledgerStorage: LedgerStorage[F, State, Key, Header, Tx],
+                       ledgerStateStorage: LedgerStateStorage[F, State, Key])(
+                       implicit adapter: ForExpressionsEnabler[F]) {
 
-  def apply(block: Block[State, Key]): Either[LedgerError, F[Unit]] = {
+  def apply(block: Block[State, Key, Header, Tx]): Either[LedgerError, F[Unit]] = {
     val state = ledgerStateStorage.slice(block.keys)
     for {
       updateResult <- block(state).map(newState => ledgerStateStorage.update(state.hash, newState))
