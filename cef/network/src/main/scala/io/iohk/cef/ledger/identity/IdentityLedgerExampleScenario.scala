@@ -19,9 +19,9 @@ object IdentityLedgerExampleScenario extends App {
 
   val identityLedger = Ledger(ledgerStorage, ledgerStateStorage)
 
-  val txs = List[IdentityTransaction](
-    Claim("carlos11", ByteString("carlos"))
-    //,Link("carlos", ByteString("vargas"))
+  val txs = List(
+    Claim("carlos11", ByteString("carlos")),
+    Link("carlos", ByteString("vargas"))
   )
 
   val block = Block[IdentityLedgerState, String, IdentityBlockHeader, IdentityTransaction](IdentityBlockHeader(ByteString("hash1"), Instant.now()), txs)

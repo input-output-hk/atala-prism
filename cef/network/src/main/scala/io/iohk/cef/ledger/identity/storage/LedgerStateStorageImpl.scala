@@ -18,7 +18,7 @@ class LedgerStateStorageImpl  extends LedgerStateStorage[Future, IdentityLedgerS
 
   override def slice(keys: Set[String]): IdentityLedgerState = {
     val db = createDb
-    db.readOnly { implicit session =>
+    readOnly(db) { implicit session =>
       executeSlice(keys)
     }
   }
@@ -49,12 +49,13 @@ class LedgerStateStorageImpl  extends LedgerStateStorage[Future, IdentityLedgerS
   }
 
   def update(db: DB)(previousHash: ByteString, newState: IdentityLedgerState): Future[Unit] = {
-    begin(db => {
-      val currentState = slice(db)(newState.keys)
+    val currentState = slice(db)(newState.keys)
+    if (previousHash != currentState.hash)
+      Future.failed(new IllegalArgumentException("Provided hash must be equal to the current state's hash"))
+    else {
       inTx(db) { implicit session =>
         val keysToAdd = (newState.keys diff currentState.keys)
         val keysToRemove = (currentState.keys diff newState.keys)
-        println()
         for {
           _ <- Future.sequence(keysToAdd.map(key => newState.get(key).getOrElse(Set()).map(value =>
             insert(db)(key, value)
@@ -63,18 +64,18 @@ class LedgerStateStorageImpl  extends LedgerStateStorage[Future, IdentityLedgerS
             remove(db)(key, value)
           )).flatten)
           _ <- Future.sequence((newState.keys intersect currentState.keys).map { key => {
-                  val values = newState.get(key).getOrElse(Set())
-                  val valuesToAdd = (values diff currentState.get(key).getOrElse(Set()))
-                  val valuesToRemove = (currentState.get(key).getOrElse(Set()) diff values)
-                  for {
-                    _ <- Future.sequence(valuesToAdd.map(v => insert(db)(key, v)))
-                    _ <- Future.sequence(valuesToRemove.map(v => remove(db)(key, v)))
-                  } yield ()
-                }
-              })
+            val values = newState.get(key).getOrElse(Set())
+            val valuesToAdd = (values diff currentState.get(key).getOrElse(Set()))
+            val valuesToRemove = (currentState.get(key).getOrElse(Set()) diff values)
+            for {
+              _ <- Future.sequence(valuesToAdd.map(v => insert(db)(key, v)))
+              _ <- Future.sequence(valuesToRemove.map(v => remove(db)(key, v)))
+            } yield ()
+          }
+          })
         } yield ()
       }
-    })
+    }
   }
 
   def insert(db: DB)(identity: String, publicKey: ByteString) = {
@@ -83,7 +84,7 @@ class LedgerStateStorageImpl  extends LedgerStateStorage[Future, IdentityLedgerS
       Future {
         sql"""
             insert into ${IdentityLedgerStateTable.table} (${column.identity}, ${column.publicKey})
-              values (${identity}, ${Hex.toHexString(publicKey.toArray)})
+              values (${identity}, ${publicKey.toArray})
             """.executeUpdate.apply()
       }
     }
@@ -101,7 +102,7 @@ class LedgerStateStorageImpl  extends LedgerStateStorage[Future, IdentityLedgerS
     }
   }
 
-  def begin[T](f: DB => Future[T]): Future[T] = {
+  protected def begin[T](f: DB => Future[T]): Future[T] = {
     val theDb = createDb
     val tx = theDb.newTx
     tx.begin()
@@ -116,7 +117,7 @@ class LedgerStateStorageImpl  extends LedgerStateStorage[Future, IdentityLedgerS
     }
   }
 
-  def createDb: DB = {
+  protected def createDb: DB = {
     val conn = ConnectionPool.borrow()
     DB(conn)
   }
@@ -129,6 +130,12 @@ class LedgerStateStorageImpl  extends LedgerStateStorage[Future, IdentityLedgerS
     */
   protected def inTx[T](db: DB)(block: DBSession => T) = {
     db withinTx {
+      block
+    }
+  }
+
+  protected def readOnly[T](db: DB)(block: DBSession => T) = {
+    db readOnly {
       block
     }
   }
