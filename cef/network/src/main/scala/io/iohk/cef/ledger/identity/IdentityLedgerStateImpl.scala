@@ -2,7 +2,7 @@ package io.iohk.cef.ledger.identity
 
 import akka.util.ByteString
 
-class IdentityLedgerStateImpl(map: Map[String, Set[ByteString]] = Map[String, Set[ByteString]]()) extends IdentityLedgerState {
+case class IdentityLedgerStateImpl(map: Map[String, Set[ByteString]] = Map[String, Set[ByteString]]()) extends IdentityLedgerState {
 
   override def hash: ByteString = ByteString(map.hashCode())
 
