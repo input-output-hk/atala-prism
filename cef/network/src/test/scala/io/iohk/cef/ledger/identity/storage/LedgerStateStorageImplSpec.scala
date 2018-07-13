@@ -1,44 +1,19 @@
 package io.iohk.cef.ledger.identity.storage
 import akka.util.ByteString
 import io.iohk.cef.db.AutoRollbackSpec
-import io.iohk.cef.ledger.identity.IdentityLedgerStateImpl
-import io.iohk.cef.ledger.identity.storage.db.IdentityLedgerStateTable
+import io.iohk.cef.ledger.identity._
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{MustMatchers, fixture}
-import scalikejdbc._
-
-import scala.concurrent.Future
 
 class LedgerStateStorageImplSpec extends fixture.FlatSpec
   with AutoRollbackSpec
   with MustMatchers
-  with MockFactory {
-
-  def createStorage(session: DBSession) = new LedgerStateStorageImpl {
-    override def createDb: DB = null
-
-    override def inTx[T](db: DB)(block: DBSession => T): T = block(session)
-
-    override def readOnly[T](db: DB)(block: DBSession => T): T = block(session)
-
-    override def begin[T](f: DB => Future[T]): Future[T] = f(createDb)
-  }
-
-  def insertPairs(pairs: List[(String, ByteString)])(implicit session: DBSession) = {
-    val column = IdentityLedgerStateTable.column
-    pairs.foreach(item => {
-      val (identity, publicKey) = item
-      sql"""
-            insert into ${IdentityLedgerStateTable.table} (${column.identity}, ${column.publicKey})
-              values (${identity}, ${publicKey.toArray})
-            """.executeUpdate.apply()
-    })
-  }
+  with MockFactory
+  with LedgerStateStorageFixture {
 
   behavior of "LedgerStateStorage"
 
-  it should "execute a slice" in { session =>
-    implicit val s = session
+  it should "execute a slice" in { implicit session =>
     val list = List(
       ("one", ByteString("one")),
       ("two", ByteString("two"))
@@ -51,8 +26,7 @@ class LedgerStateStorageImplSpec extends fixture.FlatSpec
     state.get("two") mustBe None
   }
 
-  it should "update a state" in { session =>
-    implicit val s = session
+  it should "update a state" in { implicit session =>
     val list = List(
       ("zero", ByteString("zero")),
       ("zero", ByteString("zeroh")),

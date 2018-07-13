@@ -20,11 +20,8 @@ class LedgerStorageImpl extends LedgerStorage[Future, IdentityLedgerState, Strin
     val blockColumn = IdentityLedgerBlockTable.column
     val txColumn = IdentityLedgerTransactionTable.column
     val bt = IdentityLedgerBlockTable.syntax("bt")
-    val conn = ConnectionPool.borrow()
-    val db = DB(conn)
-    db futureLocalTx { implicit session =>
+    inFutureTx { implicit session =>
       Future {
-        val c = conn
         sql"""insert into cef.identity_ledger_block (${blockColumn.hash}, ${blockColumn.created})
             values (${block.header.hash.toArray}, ${block.header.created})""".executeUpdate().apply()
         val blockId =
@@ -45,6 +42,12 @@ class LedgerStorageImpl extends LedgerStorage[Future, IdentityLedgerState, Strin
         }
       }
     }
+  }
+
+  def inFutureTx[T](f: DBSession => Future[T]) = {
+    val conn = ConnectionPool.borrow()
+    val db = DB(conn)
+    db futureLocalTx(f)
   }
 
 }

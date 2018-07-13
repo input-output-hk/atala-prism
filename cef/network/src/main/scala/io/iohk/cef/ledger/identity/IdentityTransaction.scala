@@ -2,7 +2,6 @@ package io.iohk.cef.ledger.identity
 
 import akka.util.ByteString
 import io.iohk.cef.ledger.{LedgerError, Transaction}
-import org.bouncycastle.util.encoders.Hex
 
 sealed trait IdentityTransaction extends Transaction[IdentityLedgerState, String] {
   val TxType: Int
@@ -42,7 +41,7 @@ case class Unlink(identity: String, key: ByteString) extends IdentityTransaction
 
   override def apply(ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] =
     if(!ledgerState.contains(identity) || !ledgerState.get(identity).getOrElse(Set()).contains(key))
-      Left(PublicKeyNotAssociatedWithIdentity(identity, Hex.toHexString(key.toArray).take(8).mkString))
+      Left(PublicKeyNotAssociatedWithIdentity(identity, key))
     else Right(ledgerState.remove(identity, key))
 
   override def keys: Set[String] = Set(identity)
