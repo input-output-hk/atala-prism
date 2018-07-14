@@ -19,12 +19,12 @@ object IdentityLedgerExampleScenario extends App {
 
   val identityLedger = Ledger(ledgerStorage, ledgerStateStorage)
 
-  val txs = List(
+  val txs = List[IdentityTransaction](
     Claim("carlos11", ByteString("carlos")),
     Link("carlos", ByteString("vargas"))
   )
 
-  val block = Block[IdentityLedgerState, String, IdentityBlockHeader, IdentityTransaction](IdentityBlockHeader(ByteString("hash1"), Instant.now()), txs)
+  val block = Block(IdentityBlockHeader(ByteString("hash1"), Instant.now()), txs)
 
   val newLedger = identityLedger.apply(block).map(future => Await.result(future, 1 hour))
 
