@@ -80,9 +80,9 @@ class IdentityTransactionSpec extends fixture.FlatSpec
     stateAfter1.get("one") mustBe Some(Set(ByteString("two")))
     stateAfter1.contains("one") mustBe true
     stateAfter1.contains("two") mustBe false
-    stateAfter2.keys mustBe Set("one")
-    stateAfter2.get("one") mustBe Some(Set())
-    stateAfter2.contains("one") mustBe true
+    stateAfter2.keys mustBe Set()
+    stateAfter2.get("one") mustBe None
+    stateAfter2.contains("one") mustBe false
     stateAfter2.contains("two") mustBe false
   }
 

@@ -1,8 +1,8 @@
 package io.iohk.cef.ledger.identity.storage
 
 import akka.util.ByteString
+import io.iohk.cef.ledger.LedgerState
 import io.iohk.cef.ledger.identity.storage.db.{IdentityLedgerStateTable, LedgerStateEntryMap}
-import io.iohk.cef.ledger.identity.{IdentityLedgerState, IdentityLedgerStateImpl}
 import io.iohk.cef.ledger.storage.LedgerStateStorage
 import org.bouncycastle.util.encoders.Hex
 import scalikejdbc._
@@ -12,18 +12,18 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
-class LedgerStateStorageImpl  extends LedgerStateStorage[Future, IdentityLedgerState, String] {
+class LedgerStateStorageImpl  extends LedgerStateStorage[Future, LedgerState[String, Set[ByteString]], String] {
 
   DBs.setup('default)
 
-  override def slice(keys: Set[String]): IdentityLedgerState = {
+  override def slice(keys: Set[String]): LedgerState[String, Set[ByteString]] = {
     val db = createDb
     readOnly(db) { implicit session =>
       executeSlice(keys)
     }
   }
 
-  def slice(db: DB)(keys: Set[String]): IdentityLedgerState = {
+  def slice(db: DB)(keys: Set[String]): LedgerState[String, Set[ByteString]] = {
     inTx(db) { implicit session =>
       executeSlice(keys)
     }
@@ -39,19 +39,19 @@ class LedgerStateStorageImpl  extends LedgerStateStorage[Future, IdentityLedgerS
     val emptyEntries = LedgerStateEntryMap[String, ByteString]()
     val aggregatedEntries =
       pairs.foldLeft(emptyEntries)(_ aggregateWith _)
-    new IdentityLedgerStateImpl(aggregatedEntries.map)
+    LedgerState[String, Set[ByteString]](aggregatedEntries.map)
   }
 
-  override def update(previousHash: ByteString, newState: IdentityLedgerState): Future[Unit] = {
+  override def update(previousState: LedgerState[String, Set[ByteString]], newState: LedgerState[String, Set[ByteString]]): Future[Unit] = {
     begin(db => {
-      update(db)(previousHash, newState)
+      update(db)(previousState, newState)
     })
   }
 
-  def update(db: DB)(previousHash: ByteString, newState: IdentityLedgerState): Future[Unit] = {
+  def update(db: DB)(previousState: LedgerState[String, Set[ByteString]], newState: LedgerState[String, Set[ByteString]]): Future[Unit] = {
     val currentState = slice(db)(newState.keys)
-    if (previousHash != currentState.hash)
-      Future.failed(new IllegalArgumentException("Provided hash must be equal to the current state's hash"))
+    if (previousState != currentState)
+      Future.failed(new IllegalArgumentException("Provided previous state is not equal to current state. Cannot transition"))
     else {
       inTx(db) { implicit session =>
         val keysToAdd = (newState.keys diff currentState.keys)

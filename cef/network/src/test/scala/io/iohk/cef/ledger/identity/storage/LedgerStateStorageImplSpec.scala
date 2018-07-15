@@ -1,6 +1,7 @@
 package io.iohk.cef.ledger.identity.storage
 import akka.util.ByteString
 import io.iohk.cef.db.AutoRollbackSpec
+import io.iohk.cef.ledger.LedgerState
 import io.iohk.cef.ledger.identity._
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{MustMatchers, fixture}
@@ -35,12 +36,12 @@ class LedgerStateStorageImplSpec extends fixture.FlatSpec
     )
     insertPairs(list)
     val storage = createStorage(session)
-    val hash = storage.slice(Set("one", "zero")).hash
+    val prevStorage = storage.slice(Set("one", "zero"))
     val newState =
-      new IdentityLedgerStateImpl(Map(("one", Set(ByteString("one"))),
+      new LedgerState[String, Set[ByteString]](Map(("one", Set(ByteString("one"))),
         ("three", Set(ByteString("three"))),
         ("zero", Set())))
-    storage.update(hash, newState)
+    storage.update(prevStorage, newState)
     val editedState = storage.slice(Set("one", "two", "three"))
     editedState.keys mustBe Set("one", "two", "three")
     Set("one", "two", "three").foreach(n => editedState.get(n) mustBe Some(Set(ByteString(n))))

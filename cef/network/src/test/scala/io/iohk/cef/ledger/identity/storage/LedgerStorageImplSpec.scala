@@ -33,8 +33,8 @@ class LedgerStorageImplSpec extends fixture.FlatSpec
 
   it should "update the ledger" in { implicit session =>
     val header = IdentityBlockHeader(ByteString("hash"), Instant.now)
-    val txList = List(Claim("one", ByteString("one")), Link("two", ByteString("two")))
-    val block = Block[IdentityLedgerState, String, IdentityBlockHeader, IdentityTransaction](header, txList)
+    val txList = List[IdentityTransaction](Claim("one", ByteString("one")), Link("two", ByteString("two")))
+    val block = Block(header, txList)
     val storage = createStorage(session)
     storage.push(block)
     val bt = IdentityLedgerBlockTable.syntax("bt")
