@@ -21,7 +21,7 @@ case class Claim(identity: String, key: ByteString) extends IdentityTransaction 
   override def apply(ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] =
     if(ledgerState.contains(identity)) Left(IdentityTakenError(identity))
     else {
-      Right(ledgerState.put(identity, key))
+      Right(ledgerState.put(identity, Set(key)))
     }
 
   override def keys: Set[String] = Set(identity)
@@ -32,7 +32,7 @@ case class Link(identity: String, key: ByteString) extends IdentityTransaction{
 
   override def apply(ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] =
     if(!ledgerState.contains(identity)) Left(IdentityNotClaimedError(identity))
-    else Right(ledgerState.put(identity, key))
+    else Right(ledgerState.put(identity, ledgerState.get(identity).getOrElse(Set()) + key))
 
   override def keys: Set[String] = Set(identity)
 }
@@ -42,7 +42,8 @@ case class Unlink(identity: String, key: ByteString) extends IdentityTransaction
   override def apply(ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] =
     if(!ledgerState.contains(identity) || !ledgerState.get(identity).getOrElse(Set()).contains(key))
       Left(PublicKeyNotAssociatedWithIdentity(identity, key))
-    else Right(ledgerState.remove(identity, key))
+    else if(ledgerState.get(identity).get.size == 1) Right(ledgerState.remove(identity))
+    else Right(ledgerState.put(identity, ledgerState.get(identity).getOrElse(Set()) - key))
 
   override def keys: Set[String] = Set(identity)
 }
