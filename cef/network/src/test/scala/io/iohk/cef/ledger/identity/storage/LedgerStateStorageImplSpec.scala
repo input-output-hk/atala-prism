@@ -35,12 +35,12 @@ class LedgerStateStorageImplSpec extends fixture.FlatSpec
     )
     insertPairs(list)
     val storage = createStorage(session)
-    val hash = storage.slice(Set("one", "zero")).hash
+    val state = storage.slice(Set("one", "zero"))
     val newState =
       new IdentityLedgerStateImpl(Map(("one", Set(ByteString("one"))),
         ("three", Set(ByteString("three"))),
         ("zero", Set())))
-    storage.update(hash, newState)
+    storage.update(state, newState)
     val editedState = storage.slice(Set("one", "two", "three"))
     editedState.keys mustBe Set("one", "two", "three")
     Set("one", "two", "three").foreach(n => editedState.get(n) mustBe Some(Set(ByteString(n))))

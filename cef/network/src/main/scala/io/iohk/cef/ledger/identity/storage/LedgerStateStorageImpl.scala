@@ -42,15 +42,15 @@ class LedgerStateStorageImpl  extends LedgerStateStorage[Future, IdentityLedgerS
     new IdentityLedgerStateImpl(aggregatedEntries.map)
   }
 
-  override def update(previousHash: ByteString, newState: IdentityLedgerState): Future[Unit] = {
+  override def update(previousState: IdentityLedgerState, newState: IdentityLedgerState): Future[Unit] = {
     begin(db => {
-      update(db)(previousHash, newState)
+      update(db)(previousState, newState)
     })
   }
 
-  def update(db: DB)(previousHash: ByteString, newState: IdentityLedgerState): Future[Unit] = {
+  def update(db: DB)(previousState: IdentityLedgerState, newState: IdentityLedgerState): Future[Unit] = {
     val currentState = slice(db)(newState.keys)
-    if (previousHash != currentState.hash)
+    if (previousState.equals(currentState))
       Future.failed(new IllegalArgumentException("Provided hash must be equal to the current state's hash"))
     else {
       inTx(db) { implicit session =>

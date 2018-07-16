@@ -17,7 +17,7 @@ case class Ledger[F[_],
   def apply(block: Block[State, Key, Header, Tx]): Either[LedgerError, F[Unit]] = {
     val state = ledgerStateStorage.slice(block.keys)
     for {
-      updateResult <- block(state).map(newState => ledgerStateStorage.update(state.hash, newState))
+      updateResult <- block(state).map(newState => ledgerStateStorage.update(state, newState))
     } yield adapter.enable(updateResult).flatMap { _ => ledgerStorage.push(block) }
   }
 
