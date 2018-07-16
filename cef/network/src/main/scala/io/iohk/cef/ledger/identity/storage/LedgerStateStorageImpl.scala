@@ -49,9 +49,9 @@ class LedgerStateStorageImpl  extends LedgerStateStorage[Future, IdentityLedgerS
   }
 
   def update(db: DB)(previousState: IdentityLedgerState, newState: IdentityLedgerState): Future[Unit] = {
-    val currentState = slice(db)(newState.keys)
-    if (previousState.equals(currentState))
-      Future.failed(new IllegalArgumentException("Provided hash must be equal to the current state's hash"))
+    val currentState = slice(db)(previousState.keys)
+    if (!previousState.equals(currentState))
+      Future.failed(new IllegalArgumentException("Provided previous state must be equal to the current state"))
     else {
       inTx(db) { implicit session =>
         val keysToAdd = (newState.keys diff currentState.keys)
@@ -60,7 +60,7 @@ class LedgerStateStorageImpl  extends LedgerStateStorage[Future, IdentityLedgerS
           _ <- Future.sequence(keysToAdd.map(key => newState.get(key).getOrElse(Set()).map(value =>
             insert(db)(key, value)
           )).flatten)
-          _ <- Future.sequence(keysToRemove.map(key => newState.get(key).getOrElse(Set()).map(value =>
+          _ <- Future.sequence(keysToRemove.map(key => currentState.get(key).getOrElse(Set()).map(value =>
             remove(db)(key, value)
           )).flatten)
           _ <- Future.sequence((newState.keys intersect currentState.keys).map { key => {

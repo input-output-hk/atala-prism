@@ -5,6 +5,9 @@ import io.iohk.cef.ledger.identity._
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{MustMatchers, fixture}
 
+import scala.concurrent.Await
+import scala.concurrent.duration._
+
 class LedgerStateStorageImplSpec extends fixture.FlatSpec
   with AutoRollbackSpec
   with MustMatchers
@@ -38,10 +41,9 @@ class LedgerStateStorageImplSpec extends fixture.FlatSpec
     val state = storage.slice(Set("one", "zero"))
     val newState =
       new IdentityLedgerStateImpl(Map(("one", Set(ByteString("one"))),
-        ("three", Set(ByteString("three"))),
-        ("zero", Set())))
-    storage.update(state, newState)
-    val editedState = storage.slice(Set("one", "two", "three"))
+        ("three", Set(ByteString("three")))))
+    Await.result(storage.update(state, newState), 100 seconds)
+    val editedState = storage.slice(Set("one", "two", "three", "zero"))
     editedState.keys mustBe Set("one", "two", "three")
     Set("one", "two", "three").foreach(n => editedState.get(n) mustBe Some(Set(ByteString(n))))
   }
