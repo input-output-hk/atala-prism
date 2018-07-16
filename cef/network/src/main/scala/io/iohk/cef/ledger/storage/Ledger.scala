@@ -14,11 +14,17 @@ case class Ledger[F[_],
                        ledgerStateStorage: LedgerStateStorage[F, State, Key])(
                        implicit adapter: ForExpressionsEnabler[F]) {
 
+  import adapter._
+
   def apply(block: Block[State, Key, Header, Tx]): Either[LedgerError, F[Unit]] = {
     val state = ledgerStateStorage.slice(block.keys)
-    for {
-      updateResult <- block(state).map(newState => ledgerStateStorage.update(state, newState))
-    } yield adapter.enable(updateResult).flatMap { _ => ledgerStorage.push(block) }
+    val either = block(state)
+    either.map(newState =>
+      for {
+        _ <- enableForExp(ledgerStateStorage.update(state, newState))
+        _ <- enableForExp(ledgerStorage.push(block))
+      } yield ()
+    )
   }
 
   def slice(keys: Set[Key]): State =

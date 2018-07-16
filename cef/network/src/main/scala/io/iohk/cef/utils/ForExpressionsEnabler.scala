@@ -6,7 +6,7 @@ import scala.language.higherKinds
 import scala.util.Try
 
 trait ForExpressionsEnabler[F[_]] {
-  def enable[A](f: F[A]): ForExpressionsCapable[F]
+  def enableForExp[A](f: F[A]): ForExpressionsCapable[F]
 }
 
 trait ForExpressionsCapable[F[_]] {
@@ -21,7 +21,7 @@ trait ForExpressionsCapable[F[_]] {
 
 object ForExpressionsEnabler {
   implicit val futureEnabler: ForExpressionsEnabler[Future] = new ForExpressionsEnabler[Future] {
-    override def enable[Value](future: Future[Value]): ForExpressionsCapable[Future] = new ForExpressionsCapable[Future] {
+    override def enableForExp[Value](future: Future[Value]): ForExpressionsCapable[Future] = new ForExpressionsCapable[Future] {
       override type A = Value
 
       override def flatMap[B](f: A => Future[B]): Future[B] = future.flatMap(f)
@@ -33,7 +33,7 @@ object ForExpressionsEnabler {
   }
 
   implicit val tryEnabler: ForExpressionsEnabler[Try] = new ForExpressionsEnabler[Try] {
-    override def enable[Value](tryObj: Try[Value]): ForExpressionsCapable[Try] = new ForExpressionsCapable[Try] {
+    override def enableForExp[Value](tryObj: Try[Value]): ForExpressionsCapable[Try] = new ForExpressionsCapable[Try] {
       override type A = Value
 
       override def flatMap[B](f: A => Try[B]): Try[B] = tryObj.flatMap(f)
