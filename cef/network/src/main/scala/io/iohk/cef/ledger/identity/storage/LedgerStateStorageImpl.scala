@@ -1,7 +1,7 @@
 package io.iohk.cef.ledger.identity.storage
 
 import akka.util.ByteString
-import io.iohk.cef.ledger.LedgerState
+import io.iohk.cef.ledger.identity.IdentityLedgerState
 import io.iohk.cef.ledger.identity.storage.db.{IdentityLedgerStateTable, LedgerStateEntryMap}
 import io.iohk.cef.ledger.storage.LedgerStateStorage
 import org.bouncycastle.util.encoders.Hex
@@ -12,18 +12,18 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
-class LedgerStateStorageImpl  extends LedgerStateStorage[Future, LedgerState[String, Set[ByteString]], String] {
+class LedgerStateStorageImpl  extends LedgerStateStorage[Future, String, Set[ByteString]] {
 
   DBs.setup('default)
 
-  override def slice(keys: Set[String]): LedgerState[String, Set[ByteString]] = {
+  override def slice(keys: Set[String]): IdentityLedgerState = {
     val db = createDb
     readOnly(db) { implicit session =>
       executeSlice(keys)
     }
   }
 
-  def slice(db: DB)(keys: Set[String]): LedgerState[String, Set[ByteString]] = {
+  def slice(db: DB)(keys: Set[String]): IdentityLedgerState = {
     inTx(db) { implicit session =>
       executeSlice(keys)
     }
@@ -39,7 +39,7 @@ class LedgerStateStorageImpl  extends LedgerStateStorage[Future, LedgerState[Str
     val emptyEntries = LedgerStateEntryMap[String, ByteString]()
     val aggregatedEntries =
       pairs.foldLeft(emptyEntries)(_ aggregateWith _)
-    LedgerState[String, Set[ByteString]](aggregatedEntries.map)
+    IdentityLedgerState(aggregatedEntries.map)
   }
 
   override def update(previousState: IdentityLedgerState, newState: IdentityLedgerState): Future[Unit] = {

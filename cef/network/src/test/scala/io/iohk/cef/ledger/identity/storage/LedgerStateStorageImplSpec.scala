@@ -1,7 +1,6 @@
 package io.iohk.cef.ledger.identity.storage
 import akka.util.ByteString
 import io.iohk.cef.db.AutoRollbackSpec
-import io.iohk.cef.ledger.LedgerState
 import io.iohk.cef.ledger.identity._
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{MustMatchers, fixture}
