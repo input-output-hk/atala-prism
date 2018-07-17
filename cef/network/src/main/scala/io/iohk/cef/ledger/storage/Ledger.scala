@@ -6,21 +6,27 @@ import io.iohk.cef.utils.ForExpressionsEnabler
 import scala.language.higherKinds
 
 case class Ledger[F[_],
-                  State <: LedgerState[Key, _],
                   Key,
+                  Value,
                   Header <: BlockHeader,
-                  Tx <: Transaction[State, Key]](
-                       ledgerStorage: LedgerStorage[F, State, Key, Header, Tx],
-                       ledgerStateStorage: LedgerStateStorage[F, State, Key])(
+                  Tx <: Transaction[Key, Value]](
+                       ledgerStorage: LedgerStorage[F, Key, Value, Header, Tx],
+                       ledgerStateStorage: LedgerStateStorage[F, Key, Value])(
                        implicit adapter: ForExpressionsEnabler[F]) {
 
-  def apply(block: Block[State, Key, Header, Tx]): Either[LedgerError, F[Unit]] = {
+  import adapter._
+
+  def apply(block: Block[Key, Value, Header, Tx]): Either[LedgerError, F[Unit]] = {
     val state = ledgerStateStorage.slice(block.keys)
-    for {
-      updateResult <- block(state).map(newState => ledgerStateStorage.update(state, newState))
-    } yield adapter.enable(updateResult).flatMap { _ => ledgerStorage.push(block) }
+    val either = block(state)
+    either.map(newState =>
+      for {
+        _ <- enableForExp(ledgerStateStorage.update(state, newState))
+        _ <- enableForExp(ledgerStorage.push(block))
+      } yield ()
+    )
   }
 
-  def slice(keys: Set[Key]): State =
+  def slice(keys: Set[Key]): LedgerState[Key, Value] =
     ledgerStateStorage.slice(keys)
 }

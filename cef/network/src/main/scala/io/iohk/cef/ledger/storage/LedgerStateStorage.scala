@@ -4,9 +4,9 @@ import io.iohk.cef.ledger.LedgerState
 
 import scala.language.higherKinds
 
-trait LedgerStateStorage[F[_], State <: LedgerState[Key, _], Key] {
+trait LedgerStateStorage[F[_], Key, Value] {
 
-  def slice(keys: Set[Key]): State
+  def slice(keys: Set[Key]): LedgerState[Key, Value]
 
-  def update(previousState: State, newState: State): F[Unit]
+  def update(previousState: LedgerState[Key, Value], newState: LedgerState[Key, Value]): F[Unit]
 }

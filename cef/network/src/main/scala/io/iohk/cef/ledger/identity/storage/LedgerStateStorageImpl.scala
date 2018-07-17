@@ -42,16 +42,16 @@ class LedgerStateStorageImpl  extends LedgerStateStorage[Future, LedgerState[Str
     LedgerState[String, Set[ByteString]](aggregatedEntries.map)
   }
 
-  override def update(previousState: LedgerState[String, Set[ByteString]], newState: LedgerState[String, Set[ByteString]]): Future[Unit] = {
+  override def update(previousState: IdentityLedgerState, newState: IdentityLedgerState): Future[Unit] = {
     begin(db => {
       update(db)(previousState, newState)
     })
   }
 
-  def update(db: DB)(previousState: LedgerState[String, Set[ByteString]], newState: LedgerState[String, Set[ByteString]]): Future[Unit] = {
-    val currentState = slice(db)(newState.keys)
+  def update(db: DB)(previousState: IdentityLedgerState, newState: IdentityLedgerState): Future[Unit] = {
+    val currentState = slice(db)(previousState.keys)
     if (previousState != currentState)
-      Future.failed(new IllegalArgumentException("Provided previous state is not equal to current state. Cannot transition"))
+      Future.failed(new IllegalArgumentException("Provided previous state must be equal to the current state"))
     else {
       inTx(db) { implicit session =>
         val keysToAdd = (newState.keys diff currentState.keys)
@@ -60,7 +60,7 @@ class LedgerStateStorageImpl  extends LedgerStateStorage[Future, LedgerState[Str
           _ <- Future.sequence(keysToAdd.map(key => newState.get(key).getOrElse(Set()).map(value =>
             insert(db)(key, value)
           )).flatten)
-          _ <- Future.sequence(keysToRemove.map(key => newState.get(key).getOrElse(Set()).map(value =>
+          _ <- Future.sequence(keysToRemove.map(key => currentState.get(key).getOrElse(Set()).map(value =>
             remove(db)(key, value)
           )).flatten)
           _ <- Future.sequence((newState.keys intersect currentState.keys).map { key => {

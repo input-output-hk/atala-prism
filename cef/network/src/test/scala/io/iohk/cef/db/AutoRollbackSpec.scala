@@ -1,6 +1,5 @@
 package io.iohk.cef.db
 
-import com.typesafe.config.ConfigFactory
 import org.flywaydb.core.Flyway
 import org.scalatest.fixture.TestSuite
 import scalikejdbc.JDBCSettings
@@ -14,13 +13,10 @@ trait AutoRollbackSpec extends AutoRollback {
   private val settings: JDBCSettings = DBs.readJDBCSettings('default)
   flyway.setDataSource(settings.url, settings.user, settings.password)
   flyway.migrate()
-
-  val config = ConfigFactory.load
-  val dbUrl = config.getString("db.default.url")
-  if (dbUrl.endsWith("default"))
+  if (!settings.url.endsWith("test"))
     throw new IllegalStateException(
-      "You are using the default database for test. " +
-      "Please remember to configure an application.conf in your test resources.")
+      "Test databases' name should end with 'test'. " +
+      "Please check that you are using the correct database for testing.")
 
   DBs.setupAll()
 }

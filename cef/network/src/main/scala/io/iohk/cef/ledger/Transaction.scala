@@ -1,5 +1,5 @@
 package io.iohk.cef.ledger
 
-trait Transaction[State <: LedgerState[Key, _], Key] extends (State => Either[LedgerError, State]) {
+trait Transaction[Key, Value] extends (LedgerState[Key, Value] => Either[LedgerError, LedgerState[Key, Value]]) {
   def keys: Set[Key]
 }

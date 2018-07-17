@@ -1,7 +1,7 @@
 package io.iohk.cef.ledger.identity.storage
 
 import akka.util.ByteString
-import io.iohk.cef.ledger.{Block, LedgerState}
+import io.iohk.cef.ledger.Block
 import io.iohk.cef.ledger.identity.storage.db.{IdentityLedgerBlockTable, IdentityLedgerTransactionTable}
 import io.iohk.cef.ledger.identity.{IdentityBlockHeader, IdentityTransaction}
 import io.iohk.cef.ledger.storage.LedgerStorage
@@ -13,11 +13,11 @@ import scala.concurrent.Future
 
 case class DataLayerException(msg: String) extends Exception(msg)
 
-class LedgerStorageImpl extends LedgerStorage[Future, LedgerState[String, Set[ByteString]], String, IdentityBlockHeader, IdentityTransaction] {
+class LedgerStorageImpl extends LedgerStorage[Future, String, Set[ByteString], IdentityBlockHeader, IdentityTransaction] {
 
   DBs.setup('default)
 
-  override def push(block: Block[LedgerState[String, Set[ByteString]], String, IdentityBlockHeader, IdentityTransaction]): Future[Unit] = {
+  override def push(block: Block[String, Set[ByteString], IdentityBlockHeader, IdentityTransaction]): Future[Unit] = {
     val blockColumn = IdentityLedgerBlockTable.column
     val txColumn = IdentityLedgerTransactionTable.column
     val bt = IdentityLedgerBlockTable.syntax("bt")

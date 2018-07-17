@@ -1,14 +1,14 @@
 package io.iohk.cef.ledger.storage
 
-import io.iohk.cef.ledger.{Block, BlockHeader, LedgerState, Transaction}
+import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
 
 import scala.language.higherKinds
 
 trait LedgerStorage[F[_],
-                    State <: LedgerState[Key, _],
                     Key,
+                    Value,
                     Header <: BlockHeader,
-                    Tx <: Transaction[State, Key]] {
+                    Tx <: Transaction[Key, Value]] {
 
-  def push(block: Block[State, Key, Header, Tx]): F[Unit]
+  def push(block: Block[Key, Value, Header, Tx]): F[Unit]
 }

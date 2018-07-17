@@ -3,7 +3,7 @@ package io.iohk.cef.ledger.identity
 import akka.util.ByteString
 import io.iohk.cef.ledger.{LedgerError, LedgerState, Transaction}
 
-sealed trait IdentityTransaction extends Transaction[LedgerState[String, Set[ByteString]], String] {
+sealed trait IdentityTransaction extends Transaction[String, Set[ByteString]] {
   val TxType: Int
   val identity: String
   val key: ByteString
