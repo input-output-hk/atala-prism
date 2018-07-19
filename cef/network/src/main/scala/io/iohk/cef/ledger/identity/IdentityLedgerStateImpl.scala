@@ -12,7 +12,7 @@ case class IdentityLedgerStateImpl(map: Map[String, Set[ByteString]] = Map[Strin
   override def get(identity: String): Option[Set[ByteString]] = map.get(identity)
 
   override def put(identity: String, publicKeys: Set[ByteString]): LedgerState[String, Set[ByteString]] =
-    new IdentityLedgerStateImpl(map + ((identity, publicKeys)))
+    new IdentityLedgerStateImpl(map + (identity -> publicKeys))
 
   override def remove(identity: String): LedgerState[String, Set[ByteString]] =
     new IdentityLedgerStateImpl(map - identity)

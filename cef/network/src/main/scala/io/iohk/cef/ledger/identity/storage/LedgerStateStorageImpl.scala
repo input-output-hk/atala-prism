@@ -1,7 +1,7 @@
 package io.iohk.cef.ledger.identity.storage
 
 import akka.util.ByteString
-import io.iohk.cef.ledger.identity.storage.db.{IdentityLedgerStateTable, LedgerStateEntryMap}
+import io.iohk.cef.ledger.identity.storage.scalike.{IdentityLedgerStateTable, LedgerStateEntryMap}
 import io.iohk.cef.ledger.identity.{IdentityLedgerState, IdentityLedgerStateImpl}
 import io.iohk.cef.ledger.storage.LedgerStateStorage
 import org.bouncycastle.util.encoders.Hex

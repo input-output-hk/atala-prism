@@ -15,7 +15,7 @@ class BlockSpec extends FlatSpec with MustMatchers {
       Link("one", ByteString("two")),
       Unlink("one", ByteString("two")),
       Unlink("one", ByteString("one")))
-    val header = IdentityBlockHeader(ByteString("hash"), Instant.now)
+    val header = IdentityBlockHeader(ByteString("hash"), Instant.now, 1)
     val block = Block(header, txs)
     val state = new IdentityLedgerStateImpl(Map())
     val newState = block(state)
@@ -33,7 +33,7 @@ class BlockSpec extends FlatSpec with MustMatchers {
       Link("two", ByteString("two")),
       Unlink("three", ByteString("two")),
       Unlink("three", ByteString("one")))
-    val header = IdentityBlockHeader(ByteString("hash"), Instant.now)
+    val header = IdentityBlockHeader(ByteString("hash"), Instant.now, 1)
     val block = Block(header, txs)
     block.keys mustBe Set("one", "two", "three")
   }

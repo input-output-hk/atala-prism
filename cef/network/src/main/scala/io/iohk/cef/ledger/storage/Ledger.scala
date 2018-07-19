@@ -7,22 +7,23 @@ import scala.language.higherKinds
 
 case class Ledger[F[_],
                   State <: LedgerState[Key, _],
-                  Key,
-                  Header <: BlockHeader,
-                  Tx <: Transaction[State, Key]](
-                       ledgerStorage: LedgerStorage[F, State, Key, Header, Tx],
+                  Key](
+                       ledgerStorage: LedgerStorage[F],
                        ledgerStateStorage: LedgerStateStorage[F, State, Key])(
                        implicit adapter: ForExpressionsEnabler[F]) {
 
   import adapter._
 
-  def apply(block: Block[State, Key, Header, Tx]): Either[LedgerError, F[Unit]] = {
+  def apply[Header <: BlockHeader,
+            Tx <: Transaction[State, Key]](ledgerId: Int, block: Block[State, Key, Header, Tx])(
+                                          implicit serializer: ByteStringSerializable[Block[State, Key, Header, Tx]]
+  ): Either[LedgerError, F[Unit]] = {
     val state = ledgerStateStorage.slice(block.keys)
     val either = block(state)
     either.map(newState =>
       for {
         _ <- enableForExp(ledgerStateStorage.update(state, newState))
-        _ <- enableForExp(ledgerStorage.push(block))
+        _ <- enableForExp(ledgerStorage.push(ledgerId, block))
       } yield ()
     )
   }

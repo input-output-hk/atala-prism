@@ -6,7 +6,7 @@ import akka.util.ByteString
 import io.iohk.cef.db.AutoRollbackSpec
 import io.iohk.cef.ledger.Block
 import io.iohk.cef.ledger.identity._
-import io.iohk.cef.ledger.identity.storage.db.{IdentityLedgerBlockTable, IdentityLedgerTransactionTable}
+import io.iohk.cef.ledger.storage.scalike.{LedgerStorageImpl, LedgerTable}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{MustMatchers, fixture}
 import scalikejdbc._
@@ -32,24 +32,19 @@ class LedgerStorageImplSpec extends fixture.FlatSpec
   behavior of "LedgerStorageImpl"
 
   it should "update the ledger" in { implicit session =>
-    val header = IdentityBlockHeader(ByteString("hash"), Instant.now)
+    val header = IdentityBlockHeader(ByteString("hash"), Instant.now, 1)
     val txList = List[IdentityTransaction](Claim("one", ByteString("one")), Link("two", ByteString("two")))
     val block = Block(header, txList)
     val storage = createStorage(session)
-    storage.push(block)
-    val bt = IdentityLedgerBlockTable.syntax("bt")
-    val tt = IdentityLedgerTransactionTable.syntax("tt")
-    val blockDataInDb = sql"""select ${bt.result.*} from ${IdentityLedgerBlockTable as bt}"""
-      .map(rs => (rs.long(bt.resultName.id), ByteString(rs.bytes(bt.resultName.hash)), rs.timestamp(bt.resultName.created).toInstant)).single().apply()
+    Await.ready(storage.push(1, block)(IdentityBlockSerializer.serializable), 30 seconds)
+    val lt = LedgerTable.syntax("lt")
+    val blockDataInDb = sql"""select ${lt.result.*} from ${LedgerTable as lt}"""
+      .map(rs => LedgerTable(lt.resultName)(rs)).single().apply()
     blockDataInDb.isDefined mustBe true
-    val (blockId, hash, created) = blockDataInDb.get
-    hash mustBe header.hash
-    created mustBe header.created
-    val txDataInDb =
-      sql"""select ${tt.result.*} from ${IdentityLedgerTransactionTable as tt}"""
-      .map(rs => (IdentityLedgerTransactionTable(tt.resultName)(rs), rs.long(tt.resultName.blockId))).list().apply
-    txDataInDb.map(_._1).toSet mustBe txList.toSet
-    txDataInDb.map(_._2).foreach(_ mustBe blockId)
+    val blockEntry = blockDataInDb.get
+    val dbBlock = IdentityBlockSerializer.serializable.deserialize(blockEntry.data)
+    dbBlock.header mustBe header
+    dbBlock.transactions mustBe txList
   }
 
 }

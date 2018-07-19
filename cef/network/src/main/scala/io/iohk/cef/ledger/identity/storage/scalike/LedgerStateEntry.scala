@@ -1,4 +1,4 @@
-package io.iohk.cef.ledger.identity.storage.db
+package io.iohk.cef.ledger.identity.storage.scalike
 
 case class LedgerStateEntry[I, K](identity: I, key: K)
 

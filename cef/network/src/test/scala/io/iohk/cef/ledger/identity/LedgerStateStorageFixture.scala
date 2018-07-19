@@ -2,7 +2,7 @@ package io.iohk.cef.ledger.identity
 
 import akka.util.ByteString
 import io.iohk.cef.ledger.identity.storage.LedgerStateStorageImpl
-import io.iohk.cef.ledger.identity.storage.db.IdentityLedgerStateTable
+import io.iohk.cef.ledger.identity.storage.scalike.IdentityLedgerStateTable
 import scalikejdbc._
 
 import scala.concurrent.Future

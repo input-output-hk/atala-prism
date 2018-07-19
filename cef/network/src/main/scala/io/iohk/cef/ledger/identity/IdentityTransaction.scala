@@ -13,6 +13,12 @@ object IdentityTransaction {
   val ClaimTxType = 1
   val LinkTxType = 2
   val UnlinkTxType = 3
+
+  def apply(txType: Int, identity: String, key: ByteString) = txType match {
+    case ClaimTxType => Claim(identity, key)
+    case LinkTxType => Link(identity, key)
+    case UnlinkTxType => Unlink(identity, key)
+  }
 }
 
 case class Claim(identity: String, key: ByteString) extends IdentityTransaction {

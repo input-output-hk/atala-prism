@@ -99,3 +99,7 @@ val root = project.in(file("."))
     scalacOptions ++= compilerOptions,
     coverageExcludedPackages := "<empty>;io\\.iohk\\.cef\\.demo\\..*"
   )
+
+PB.targets in Compile := Seq(
+  scalapb.gen() -> (sourceManaged in Compile).value
+)
