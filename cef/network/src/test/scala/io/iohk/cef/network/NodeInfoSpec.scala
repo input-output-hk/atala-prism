@@ -3,9 +3,12 @@ package io.iohk.cef.network
 import java.net.{Inet6Address, InetSocketAddress, URI}
 
 import akka.util.ByteString
-import org.bouncycastle.util.encoders.Hex
+import org.bouncycastle.util.encoders.{DecoderException, Hex}
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
+import org.scalatest.Inside._
+
+import scala.util.{Failure, Success}
 
 class NodeInfoSpec extends FlatSpec {
 
@@ -29,5 +32,40 @@ class NodeInfoSpec extends FlatSpec {
   it should "correctly create a node uri for IPv6" in {
     val nodeInfo = NodeInfo(ByteString(Hex.decode(id)), ip6Address, ip6Address, Capabilities(1))
     nodeInfo.getServerUri shouldBe new URI("enode://761d11916c0baf6632134cf5a55d3bdf821ee2e9f8b76ee4b7f8c7246d345fcf15099965c5f2d4adfaafbb9721202ee7b71eb3ccf1d96a1489f63506b498f1cb@[0:0:0:0:0:0:0:1%0]:3000?capabilities=1")
+  }
+
+  it should "parse a URI with fromURI" in {
+    val p2pUri = new URI("enode://761d11916c0baf6632134cf5a55d3bdf821ee2e9f8b76ee4b7f8c7246d345fcf15099965c5f2d4adfaafbb9721202ee7b71eb3ccf1d96a1489f63506b498f1cb@127.0.0.1:3000?capabilities=1")
+    val discoveryUri = new URI("udp://localhost:3000")
+    val capabilities = "01"
+
+    val parseResult = NodeInfo.fromUri(p2pUri, discoveryUri, capabilities)
+
+    parseResult shouldBe Success(NodeInfo(ByteString(Hex.decode(id)), ip4Address, ip4Address, Capabilities(1)))
+  }
+
+  it should "fail to parse a URI with invalid id" in {
+    val p2pUri = new URI("enode://--1d11916c0baf6632134cf5a55d3bdf821ee2e9f8b76ee4b7f8c7246d345fcf15099965c5f2d4adfaafbb9721202ee7b71eb3ccf1d96a1489f63506b498f1cb@127.0.0.1:3000?capabilities=1")
+    val discoveryUri = new URI("udp://localhost:3000")
+    val capabilities = "01"
+
+    val parseResult = NodeInfo.fromUri(p2pUri, discoveryUri, capabilities)
+
+    inside(parseResult) {
+      case Failure(e: DecoderException) => e.getMessage shouldBe "exception decoding Hex string: invalid characters encountered in Hex string"
+    }
+  }
+
+  it should "fail to parse a URI with invalid capabilities" in {
+    val p2pUri = new URI("enode://1d11916c0baf6632134cf5a55d3bdf821ee2e9f8b76ee4b7f8c7246d345fcf15099965c5f2d4adfaafbb9721202ee7b71eb3ccf1d96a1489f63506b498f1cb@127.0.0.1:3000?capabilities=1")
+    val discoveryUri = new URI("udp://localhost:3000")
+    val capabilities = "1"
+
+    val parseResult = NodeInfo.fromUri(p2pUri, discoveryUri, capabilities)
+
+    println(parseResult)
+    inside(parseResult) {
+      case Failure(e: IllegalArgumentException) => e.getMessage shouldBe "hexBinary needs to be even-length: 1"
+    }
   }
 }
