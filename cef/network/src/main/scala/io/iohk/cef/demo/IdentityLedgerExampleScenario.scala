@@ -1,9 +1,10 @@
-package io.iohk.cef.ledger.identity
+package io.iohk.cef.demo
 
 import java.time.{Clock, Instant}
 
 import akka.util.ByteString
 import io.iohk.cef.ledger.Block
+import io.iohk.cef.ledger.identity._
 import io.iohk.cef.ledger.identity.storage.scalike.LedgerStateStorageImpl
 import io.iohk.cef.ledger.identity.storage.scalike.dao.LedgerStateStorageDao
 import io.iohk.cef.ledger.storage.Ledger

@@ -97,7 +97,8 @@ val root = project.in(file("."))
       warnOnUnusedVerifications = false
     ),
     scalacOptions ++= compilerOptions,
-    coverageExcludedPackages := "<empty>;io\\.iohk\\.cef\\.demo\\..*"
+    coverageExcludedPackages :=
+      "<empty>;io\\.iohk\\.cef\\.demo\\..*;io.iohk.cef.ledger.identity.storage.protobuf.identityLedger"
   )
 
 PB.targets in Compile := Seq(
