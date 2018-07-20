@@ -10,7 +10,7 @@ import akka.util.ByteString
 import akka.{testkit => untypedKit}
 import io.iohk.cef.discovery.DiscoveryListener._
 import io.iohk.cef.encoding.{Decoder, Encoder}
-import io.iohk.cef.network.{Capabilities, Node}
+import io.iohk.cef.network.{Capabilities, NodeInfo}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FlatSpec, MustMatchers}
 
@@ -32,7 +32,7 @@ class UDPBridgeSpec extends FlatSpec with MustMatchers with MockFactory {
     val nodeAddr = new InetSocketAddress(1000)
 
     val socket = untypedKit.TestProbe("probe2")
-    val node = Node(ByteString("1"), nodeAddr, nodeAddr, Capabilities(1))
+    val node = NodeInfo(ByteString("1"), nodeAddr, nodeAddr, Capabilities(1))
     val addr = new InetSocketAddress(1000)
     bridge.tell(Udp.Bound(addr), socket.ref)
     listenerInbox.expectMessage(Forward(Ready(addr)))
@@ -50,6 +50,7 @@ class UDPBridgeSpec extends FlatSpec with MustMatchers with MockFactory {
 
     listenerInbox.expectMessage(Forward(MessageReceived(data, addr2)))
   }
+
   it should "forward a sent message" in new UdpTestHelper {
     val addr2 = new InetSocketAddress(1001)
     val data = Ping(1, node, 0L, ByteString("nonce"))

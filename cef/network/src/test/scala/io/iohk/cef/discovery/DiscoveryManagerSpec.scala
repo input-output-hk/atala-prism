@@ -16,7 +16,7 @@ import io.iohk.cef.db.{AutoRollbackSpec, DummyKnownNodesStorage, KnownNode}
 import io.iohk.cef.discovery.DiscoveryListener.{DiscoveryListenerRequest, Ready, SendMessage, Start}
 import io.iohk.cef.discovery.DiscoveryManager._
 import io.iohk.cef.encoding.{Decoder, Encoder}
-import io.iohk.cef.network.{Capabilities, Node, NodeStatus, ServerStatus}
+import io.iohk.cef.network.{Capabilities, NodeInfo, NodeStatus, ServerStatus}
 import io.iohk.cef.test.TestClock
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import org.apache.commons.lang3.RandomStringUtils.{randomAlphabetic, randomAlphanumeric}
@@ -59,7 +59,7 @@ class DiscoveryManagerSpec
     val nodeA = createNode("1", 9000, 9001, nodeState.capabilities)
     val nodeB = createNode("2", 9003, 9002, nodeState.capabilities)
 
-    def bootstrapNodes: Set[Node] = Set()
+    def bootstrapNodes: Set[NodeInfo] = Set()
 
     def discoveryConfig = new DiscoveryConfig(
       discoveryEnabled = true,
@@ -114,15 +114,15 @@ class DiscoveryManagerSpec
     }
 
     def createNode(id: String, discoveryPort: Int, serverPort: Int, capabilities: Capabilities) =
-      Node(ByteString(id),
+      NodeInfo(ByteString(id),
         new InetSocketAddress(localhost, discoveryPort),
         new InetSocketAddress(localhost, serverPort),
         capabilities)
   }
 
-  private def getNode(listeningDiscoveryManager: ListeningDiscoveryManager): Node = {
+  private def getNode(listeningDiscoveryManager: ListeningDiscoveryManager): NodeInfo = {
     import listeningDiscoveryManager._
-    Node(nodeState.nodeId, discoveryAddress, serverAddress, nodeState.capabilities)
+    NodeInfo(nodeState.nodeId, discoveryAddress, serverAddress, nodeState.capabilities)
   }
 
   private def getPing(listeningDiscoveryManager: ListeningDiscoveryManager): Ping = {
@@ -199,7 +199,7 @@ class DiscoveryManagerSpec
       val ping = pingActor(actor, this)
       discoveryListener.expectMessageType[SendMessage].message.asInstanceOf[Pong]
 
-      val node = Node(nodeState.nodeId, discoveryAddress, serverAddress, Capabilities(1))
+      val node = NodeInfo(nodeState.nodeId, discoveryAddress, serverAddress, Capabilities(1))
       val expiration = mockClock.instant().getEpochSecond + 1
       val seek = Seek(Capabilities(1), 10, expiration, ByteString())
       val token = crypto.kec256(encoder.encode(seek))
@@ -225,7 +225,7 @@ class DiscoveryManagerSpec
         super.discoveryConfig.copy(multipleConnectionsPerAddress = true)
 
       val actor = createActor
-      val node = Node(nodeState.nodeId, discoveryAddress, serverAddress, nodeState.capabilities)
+      val node = NodeInfo(nodeState.nodeId, discoveryAddress, serverAddress, nodeState.capabilities)
       val expiration = mockClock.instant().getEpochSecond + 2
       mockClock.tick
 
@@ -257,7 +257,7 @@ class DiscoveryManagerSpec
     new ListeningDiscoveryManager {
       override val session: FixtureParam = s
 
-      override def bootstrapNodes: Set[Node] = {
+      override def bootstrapNodes: Set[NodeInfo] = {
         Set(nodeA, nodeB)
       }
 
@@ -270,7 +270,7 @@ class DiscoveryManagerSpec
       pingB.message.messageType mustBe Ping.messageType
       (pingA.message, pingB.message) match {
         case (a: Ping, b: Ping) =>
-          val thisNode = Node(nodeState.nodeId, discoveryAddress, discoveryAddress, Capabilities(1))
+          val thisNode = NodeInfo(nodeState.nodeId, discoveryAddress, discoveryAddress, Capabilities(1))
           a.node mustBe thisNode
           b.node mustBe thisNode
           val addresses = bootstrapNodes.map(_.discoveryAddress)
@@ -366,7 +366,7 @@ class DiscoveryManagerSpec
       override val listenerMaker = (_: ActorContext[DiscoveryRequest]) => inbox.ref
 
       val actor = BehaviorTestKit(createBehavior)
-      val node = Node(nodeState.nodeId, discoveryAddress, serverAddress, nodeState.capabilities)
+      val node = NodeInfo(nodeState.nodeId, discoveryAddress, serverAddress, nodeState.capabilities)
       val expiration = mockClock.instant().getEpochSecond + 1
       val pong = Pong(node, ByteString("token"), expiration)
       actor.run(DiscoveryResponseWrapper(DiscoveryListener.MessageReceived(pong, discoveryAddress)))
@@ -379,7 +379,7 @@ class DiscoveryManagerSpec
       override val session = s
 
       val actor = createActor
-      val node = Node(nodeState.nodeId, discoveryAddress, serverAddress, nodeState.capabilities)
+      val node = NodeInfo(nodeState.nodeId, discoveryAddress, serverAddress, nodeState.capabilities)
       val expiration = mockClock.instant().getEpochSecond + 2
       val token = ByteString("token")
       val neighbors = Neighbors(Capabilities(1), token, 10, Seq(nodeA), expiration)

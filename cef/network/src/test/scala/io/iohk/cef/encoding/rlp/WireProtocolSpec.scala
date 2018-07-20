@@ -2,7 +2,6 @@ package io.iohk.cef.encoding.rlp
 
 import akka.util.ByteString
 import io.iohk.cef.network.transport.rlpx.ethereum.p2p.messages.WireProtocol
-import io.iohk.cef.network.transport.rlpx.ethereum.p2p.messages.WireProtocol.Disconnect.Reasons
 import io.iohk.cef.network.transport.rlpx.ethereum.p2p.messages.WireProtocol._
 import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
@@ -64,4 +63,31 @@ class WireProtocolSpec extends FlatSpec with MustMatchers with PropertyChecks {
     import io.iohk.cef.network.transport.rlpx.ethereum.p2p.messages.WireProtocol.Pong._
     RLP.encode(Pong().toRLPEncodable).toPong mustBe Pong()
   }
+
+  val validDisconnectCodes = Table(
+    ("Code", "Reason"),
+    (0x00,"Disconnect requested"),
+    (0x01,"TCP sub-system error"),
+    (0x03,"Useless peer"),
+    (0x04,"Too many peers"),
+    (0x05,"Already connected"),
+    (0x06,"Incompatible P2P protocol version"),
+    (0x07,"Null node identity received - this is automatically invalid"),
+    (0x08,"Client quitting"),
+    (0x09,"Unexpected identity"),
+    (0xa,"Identity is the same as this node"),
+    (0x0b,"Timeout on receiving a message"),
+    (0x10, "Some other reason specific to a subprotocol"))
+
+  forAll(validDisconnectCodes) { (code, reason) =>
+    it should f"print a human readable reason for code $code%h" in {
+      Disconnect(code).toString mustBe s"Disconnect($reason)"
+    }
+  }
+
+  it should "print a readable reason for an invalid code" in {
+    Disconnect(101).toString mustBe s"Disconnect(unknown reason code: 101)"
+  }
 }
+
+

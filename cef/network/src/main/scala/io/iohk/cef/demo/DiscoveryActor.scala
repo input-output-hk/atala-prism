@@ -11,13 +11,13 @@ import io.iohk.cef.discovery.DiscoveryManager.DiscoveryRequest
 import io.iohk.cef.discovery._
 import io.iohk.cef.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.NodeStatus.NodeState
-import io.iohk.cef.network.{Node, ServerStatus}
+import io.iohk.cef.network.{NodeInfo, ServerStatus}
 import io.iohk.cef.telemetery.DatadogTelemetry
 import org.bouncycastle.util.encoders.Hex
 
 object DiscoveryActor extends DatadogTelemetry {
 
-  def discoveryBehavior(node: Node,
+  def discoveryBehavior(nodeInfo: NodeInfo,
                         discoveryConfig: DiscoveryConfig,
                         knownNodeStorage: KnownNodeStorage): Behavior[DiscoveryRequest] = {
 
@@ -25,10 +25,10 @@ object DiscoveryActor extends DatadogTelemetry {
     import io.iohk.cef.encoding.rlp.RLPImplicits._
 
     val state = NodeState(
-      key = node.id,
-      serverStatus = ServerStatus.Listening(node.serverAddress),
+      key = nodeInfo.id,
+      serverStatus = ServerStatus.Listening(nodeInfo.serverAddress),
       discoveryStatus = ServerStatus.NotListening,
-      capabilities = node.capabilities
+      capabilities = nodeInfo.capabilities
     )
 
     val encoder = implicitly[Encoder[DiscoveryWireMessage, ByteString]]

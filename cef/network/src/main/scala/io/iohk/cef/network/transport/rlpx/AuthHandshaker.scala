@@ -15,6 +15,7 @@ import io.iohk.cef.crypto.{ECDSASignature, ECIESCoder}
 import io.iohk.cef.encoding.rlp
 import io.iohk.cef.network.transport.rlpx.ByteUtils._
 import io.iohk.cef.crypto._
+import org.bouncycastle.util.encoders.Hex
 
 import scala.util.Random
 
@@ -30,6 +31,7 @@ class Secrets(
     val ingressMac: KeccakDigest)
 
 object AuthHandshaker {
+  val ProtocolVersion = 4
   val InitiatePacketLength = AuthInitiateMessage.EncodedLength + ECIESCoder.OverheadSize
   val ResponsePacketLength = AuthResponseMessage.EncodedLength + ECIESCoder.OverheadSize
 
@@ -42,6 +44,13 @@ object AuthHandshaker {
   def apply(nodeKey: AsymmetricCipherKeyPair, secureRandom: SecureRandom): AuthHandshaker = {
     val nonce = secureRandomByteArray(secureRandom, NonceSize)
     AuthHandshaker(nodeKey, ByteString(nonce), generateKeyPair(secureRandom), secureRandom)
+  }
+
+  implicit class ECPublicKeyParametersNodeId(val pubKey: ECPublicKeyParameters) extends AnyVal {
+    def toNodeId: Array[Byte] =
+      pubKey.asInstanceOf[ECPublicKeyParameters].getQ
+        .getEncoded(false)
+        .drop(1) // drop type info
   }
 }
 
@@ -140,6 +149,11 @@ case class AuthHandshaker(
       remotePubKeyOpt = Some(message.publicKey)).finalizeHandshake(remoteEphemeralKey, message.nonce)
 
     (packet, handshakeResult)
+  }
+
+  def publicKeyFromNodeId(nodeId: String): ECPoint = {
+    val bytes = ECDSASignature.uncompressedIndicator +: Hex.decode(nodeId)
+    curve.getCurve.decodePoint(bytes)
   }
 
   private def extractEphemeralKey(signature: ECDSASignature, nonce: ByteString, publicKey: ECPoint): ECPoint = {
