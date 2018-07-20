@@ -8,8 +8,8 @@ import scala.language.higherKinds
 case class Ledger[F[_],
                   State <: LedgerState[Key, _],
                   Key](
-                       ledgerStorage: LedgerStorage[F],
-                       ledgerStateStorage: LedgerStateStorage[F, State, Key])(
+                       ledgerStorage: LedgerStorage,
+                       ledgerStateStorage: LedgerStateStorage[State, Key])(
                        implicit adapter: ForExpressionsEnabler[F]) {
 
   import adapter._

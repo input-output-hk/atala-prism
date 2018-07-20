@@ -2,6 +2,7 @@ package io.iohk.cef.ledger.identity
 
 import akka.util.ByteString
 import io.iohk.cef.db.AutoRollbackSpec
+import io.iohk.cef.ledger.identity.storage.scalike.dao.LedgerStateStorageDao
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{MustMatchers, fixture}
 
@@ -18,7 +19,7 @@ class IdentityTransactionSpec extends fixture.FlatSpec
       ("one", ByteString("one"))
     )
     insertPairs(list)
-    val storage = createStorage(session)
+    val storage = new LedgerStateStorageDao
     val state = storage.slice(Set("one"))
     val claim = Claim("one", ByteString("one"))
     val link = Link("two", ByteString("two"))
@@ -31,7 +32,7 @@ class IdentityTransactionSpec extends fixture.FlatSpec
   }
 
   it should "apply a claim" in { implicit session =>
-    val storage = createStorage(session)
+    val storage = new LedgerStateStorageDao
     val state = storage.slice(Set("one"))
     val claim = Claim("one", ByteString("one"))
     val newStateEither = claim(state)
@@ -48,7 +49,7 @@ class IdentityTransactionSpec extends fixture.FlatSpec
       ("one", ByteString("one"))
     )
     insertPairs(list)
-    val storage = createStorage(session)
+    val storage = new LedgerStateStorageDao
     val state = storage.slice(Set("one"))
     val link = Link("one", ByteString("two"))
     val newStateEither = link(state)
@@ -66,7 +67,7 @@ class IdentityTransactionSpec extends fixture.FlatSpec
       ("one", ByteString("two"))
     )
     insertPairs(list)
-    val storage = createStorage(session)
+    val storage = new LedgerStateStorageDao
     val state = storage.slice(Set("one"))
     val unlink1 = Unlink("one", ByteString("one"))
     val unlink2 = Unlink("one", ByteString("two"))

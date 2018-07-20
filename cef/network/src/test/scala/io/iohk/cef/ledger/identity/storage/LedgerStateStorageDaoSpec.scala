@@ -2,13 +2,11 @@ package io.iohk.cef.ledger.identity.storage
 import akka.util.ByteString
 import io.iohk.cef.db.AutoRollbackSpec
 import io.iohk.cef.ledger.identity._
+import io.iohk.cef.ledger.identity.storage.scalike.dao.LedgerStateStorageDao
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{MustMatchers, fixture}
 
-import scala.concurrent.Await
-import scala.concurrent.duration._
-
-class LedgerStateStorageImplSpec extends fixture.FlatSpec
+class LedgerStateStorageDaoSpec extends fixture.FlatSpec
   with AutoRollbackSpec
   with MustMatchers
   with MockFactory
@@ -22,7 +20,7 @@ class LedgerStateStorageImplSpec extends fixture.FlatSpec
       ("two", ByteString("two"))
     )
     insertPairs(list)
-    val storage = createStorage(session)
+    val storage = new LedgerStateStorageDao
     val state = storage.slice(Set("one"))
     state.keys mustBe Set("one")
     state.get("one") mustBe Some(Set(ByteString("one")))
@@ -37,12 +35,12 @@ class LedgerStateStorageImplSpec extends fixture.FlatSpec
       ("two", ByteString("two"))
     )
     insertPairs(list)
-    val storage = createStorage(session)
+    val storage = new LedgerStateStorageDao
     val state = storage.slice(Set("one", "zero"))
     val newState =
       new IdentityLedgerStateImpl(Map(("one", Set(ByteString("one"))),
         ("three", Set(ByteString("three")))))
-    Await.result(storage.update(state, newState), 100 seconds)
+    storage.update(state, newState)
     val editedState = storage.slice(Set("one", "two", "three", "zero"))
     editedState.keys mustBe Set("one", "two", "three")
     Set("one", "two", "three").foreach(n => editedState.get(n) mustBe Some(Set(ByteString(n))))

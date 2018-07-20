@@ -12,12 +12,22 @@ object IdentityBlockSerializer {
 
   implicit val serializable: ByteStringSerializable[IdentityLedgerBlock] = {
     new ByteStringSerializable[IdentityLedgerBlock] {
+
+      val ClaimTxType = 1
+      val LinkTxType = 2
+      val UnlinkTxType = 3
+
       override def deserialize(bytes: ByteString) = {
         val proto = IdentityBlockProto.parseFrom(bytes.toArray)
         Block(
           IdentityBlockHeader(ByteString(proto.header.hash.toByteArray), Instant.ofEpochMilli(proto.header.createdEpochMilli), proto.header.blockHeight),
           proto.transactions.map(ptx => {
-            IdentityTransaction(ptx.`type`, ptx.identity, ByteString(ptx.publicKey.toByteArray))
+            val key = ByteString(ptx.publicKey.toByteArray)
+            ptx.`type` match {
+              case ClaimTxType => Claim(ptx.identity, key)
+              case LinkTxType => Link(ptx.identity, key)
+              case UnlinkTxType => Unlink(ptx.identity, key)
+            }
           }).toList
         )
       }
@@ -29,7 +39,12 @@ object IdentityBlockSerializer {
             t.header.height,
             t.header.created.toEpochMilli),
             t.transactions.map(tx => {
-              IdentityTransactionProto(tx.TxType, tx.identity, com.google.protobuf.ByteString.copyFrom(tx.key.toArray))
+              val txType = tx match {
+                case _ : Claim => ClaimTxType
+                case _ : Link => LinkTxType
+                case _ : Unlink => UnlinkTxType
+              }
+              IdentityTransactionProto(txType, tx.identity, com.google.protobuf.ByteString.copyFrom(tx.key.toArray))
             })
         )
         ByteString(proto.toByteArray)
