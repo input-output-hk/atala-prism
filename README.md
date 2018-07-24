@@ -8,7 +8,7 @@ The Cardano Enterprise Framework and Reference Applications
 
 To be able to build or test the codebase, `sbt-verify` needs to be properly setup.
 
-`sbt-verify` is used in order to check the validity of the downloaded libraries checksums.
+`sbt-verify` is used in order to check the validity of the checksums of all the downloaded libraries.
 
 `sbt-verify` can be downloaded from our read only repository by typing
 
