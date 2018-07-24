@@ -5,7 +5,7 @@ import io.iohk.cef.ledger.LedgerState
 
 case class IdentityLedgerStateImpl(map: Map[String, Set[ByteString]] = Map[String, Set[ByteString]]()) extends LedgerState[String, Set[ByteString]] {
 
-  override def equals(that: LedgerState[String, Set[ByteString]]): Boolean = this == that
+  override def equivalentTo(that: LedgerState[String, Set[ByteString]]): Boolean = this == that
 
   override def contains(identity: String): Boolean = map.contains(identity)
 

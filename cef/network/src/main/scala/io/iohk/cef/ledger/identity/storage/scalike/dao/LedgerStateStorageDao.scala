@@ -21,27 +21,26 @@ class LedgerStateStorageDao {
     new IdentityLedgerStateImpl(aggregatedEntries.map)
   }
 
-  def update(previousState: IdentityLedgerState, newState: IdentityLedgerState)(implicit session: DBSession): Unit = {
+  def update(previousState: IdentityLedgerState,
+             newState: IdentityLedgerState)(implicit session: DBSession): Unit = {
     val currentState = slice(previousState.keys)
-    if (!previousState.equals(currentState))
+    if (!previousState.equivalentTo(currentState)) {
       throw new IllegalArgumentException("Provided previous state must be equal to the current state")
-    else {
-      val keysToAdd = (newState.keys diff currentState.keys)
-      val keysToRemove = (currentState.keys diff newState.keys)
-      for {
-        _ <- keysToAdd.map(key => newState.get(key).getOrElse(Set()).map(insert(key, _)))
-        _ <- keysToRemove.map(key => currentState.get(key).getOrElse(Set()).map(remove(key, _)))
-        _ <- (newState.keys intersect currentState.keys).map { key => {
-          val values = newState.get(key).getOrElse(Set())
-          val valuesToAdd = (values diff currentState.get(key).getOrElse(Set()))
-          val valuesToRemove = (currentState.get(key).getOrElse(Set()) diff values)
-          for {
-            _ <- valuesToAdd.map(v => insert(key, v))
-            _ <- valuesToRemove.map(v => remove(key, v))
-          } yield ()
-        }
-        }
-      } yield ()
+    } else {
+      val keysToAdd = (newState.keys diff currentState.keys).toList
+      val keysToRemove = (currentState.keys diff newState.keys).toList
+      keysToAdd.map(key => newState.get(key).getOrElse(Set()).map(insert(key, _)))
+      keysToRemove.map(key => currentState.get(key).getOrElse(Set()).map(remove(key, _)))
+      (newState.keys intersect currentState.keys).map { key => {
+        val values = newState.get(key).getOrElse(Set())
+        val valuesToAdd = (values diff currentState.get(key).getOrElse(Set()))
+        val valuesToRemove = (currentState.get(key).getOrElse(Set()) diff values)
+        for {
+          _ <- valuesToAdd.map(v => insert(key, v))
+          _ <- valuesToRemove.map(v => remove(key, v))
+        } yield ()
+      }
+      }
     }
   }
 

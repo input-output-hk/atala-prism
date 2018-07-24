@@ -5,12 +5,13 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import akka.util.ByteString
 import io.iohk.cef.network.NodeInfo
-import io.iohk.cef.telemetery.DatadogTelemetry
+import io.iohk.cef.telemetery.Telemetery
 
 import scala.concurrent.duration.FiniteDuration
 
 //Implementation only for demo-ing purposes
-class DummyKnownNodesStorage(clock: Clock) extends KnownNodeStorage with DatadogTelemetry {
+class DummyKnownNodesStorage(clock: Clock) extends KnownNodeStorage {
+  self: Telemetery =>
 
   var nodeMap: Map[ByteString, KnownNode] = Map.empty
 

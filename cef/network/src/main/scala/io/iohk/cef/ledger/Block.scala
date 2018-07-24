@@ -12,7 +12,10 @@ case class Block[State <: LedgerState[Key, _],
     })
   }
 
-  def keys: Set[Key] = {
-    transactions.foldLeft[Set[Key]](Set())(_ ++ _.keys)
+  /**
+    * See the doc in Transaction
+    */
+  def partitionIds: Set[Key] = {
+    transactions.foldLeft[Set[Key]](Set())(_ ++ _.partitionIds)
   }
 }

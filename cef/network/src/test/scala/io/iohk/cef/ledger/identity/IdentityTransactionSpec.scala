@@ -1,26 +1,17 @@
 package io.iohk.cef.ledger.identity
 
 import akka.util.ByteString
-import io.iohk.cef.db.AutoRollbackSpec
-import io.iohk.cef.ledger.identity.storage.scalike.dao.LedgerStateStorageDao
 import org.scalamock.scalatest.MockFactory
-import org.scalatest.{MustMatchers, fixture}
+import org.scalatest.{FlatSpec, MustMatchers}
 
-class IdentityTransactionSpec extends fixture.FlatSpec
-  with AutoRollbackSpec
+class IdentityTransactionSpec  extends FlatSpec
   with MustMatchers
-  with MockFactory
-  with LedgerStateStorageFixture {
+  with MockFactory {
 
   behavior of "IdentityTransaction"
 
-  it should "throw an error when the tx is inconsistent with the state" in { implicit session =>
-    val list = List(
-      ("one", ByteString("one"))
-    )
-    insertPairs(list)
-    val storage = new LedgerStateStorageDao
-    val state = storage.slice(Set("one"))
+  it should "throw an error when the tx is inconsistent with the state" in {
+    val state = IdentityLedgerStateImpl(Map("one" -> Set(ByteString("one"))))
     val claim = Claim("one", ByteString("one"))
     val link = Link("two", ByteString("two"))
     val unlink1 = Unlink("two", ByteString("two"))
@@ -31,9 +22,8 @@ class IdentityTransactionSpec extends fixture.FlatSpec
     unlink2(state) mustBe Left(PublicKeyNotAssociatedWithIdentity("one", ByteString("two")))
   }
 
-  it should "apply a claim" in { implicit session =>
-    val storage = new LedgerStateStorageDao
-    val state = storage.slice(Set("one"))
+  it should "apply a claim" in {
+    val state = IdentityLedgerStateImpl()
     val claim = Claim("one", ByteString("one"))
     val newStateEither = claim(state)
     newStateEither.isRight mustBe true
@@ -44,13 +34,8 @@ class IdentityTransactionSpec extends fixture.FlatSpec
     newState.contains("two") mustBe false
   }
 
-  it should "apply a link" in { implicit session =>
-    val list = List(
-      ("one", ByteString("one"))
-    )
-    insertPairs(list)
-    val storage = new LedgerStateStorageDao
-    val state = storage.slice(Set("one"))
+  it should "apply a link" in {
+    val state = IdentityLedgerStateImpl(Map("one" -> Set(ByteString("one"))))
     val link = Link("one", ByteString("two"))
     val newStateEither = link(state)
     newStateEither.isRight mustBe true
@@ -61,14 +46,8 @@ class IdentityTransactionSpec extends fixture.FlatSpec
     newState.contains("two") mustBe false
   }
 
-  it should "apply an unlink" in { implicit session =>
-    val list = List(
-      ("one", ByteString("one")),
-      ("one", ByteString("two"))
-    )
-    insertPairs(list)
-    val storage = new LedgerStateStorageDao
-    val state = storage.slice(Set("one"))
+  it should "apply an unlink" in {
+    val state = IdentityLedgerStateImpl(Map("one" -> Set(ByteString("one"), ByteString("two"))))
     val unlink1 = Unlink("one", ByteString("one"))
     val unlink2 = Unlink("one", ByteString("two"))
     val stateAfter1Either = unlink1(state)
@@ -87,12 +66,12 @@ class IdentityTransactionSpec extends fixture.FlatSpec
     stateAfter2.contains("two") mustBe false
   }
 
-  it should "have the correct keys per tx" in { session =>
+  it should "have the correct keys per tx" in {
     val claim = Claim("one", ByteString("one"))
     val link = Link("two", ByteString("two"))
     val unlink = Unlink("two", ByteString("two"))
-    claim.keys mustBe Set(claim.identity)
-    link.keys mustBe Set(link.identity)
-    unlink.keys mustBe Set(unlink.identity)
+    claim.partitionIds mustBe Set(claim.identity)
+    link.partitionIds mustBe Set(link.identity)
+    unlink.partitionIds mustBe Set(unlink.identity)
   }
 }

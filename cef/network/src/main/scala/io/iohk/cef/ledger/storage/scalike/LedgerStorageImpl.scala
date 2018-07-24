@@ -14,10 +14,10 @@ class LedgerStorageImpl(ledgerStorageDao: LedgerStorageDao) extends LedgerStorag
                     Header <: BlockHeader,
                     Tx <: Transaction[State, Key]](ledgerId: Int, block: Block[State, Key, Header, Tx])(
     implicit blockSerializable: ByteStringSerializable[Block[State, Key, Header, Tx]]): Unit = {
-    val conn = ConnectionPool.borrow()
-    val db = DB(conn)
-    db localTx { implicit session =>
+    execInSession { implicit session =>
       ledgerStorageDao.push(ledgerId, block)
     }
   }
+
+  protected def execInSession[T](block: DBSession => T): T = DB(ConnectionPool.borrow()).localTx(block)
 }

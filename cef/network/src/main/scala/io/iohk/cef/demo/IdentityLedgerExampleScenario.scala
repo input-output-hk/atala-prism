@@ -35,7 +35,7 @@ object IdentityLedgerExampleScenario extends App {
 
   val txs = List[IdentityTransaction](
     Claim("carlos11", ByteString("carlos")),
-    Link("carlos", ByteString("vargas"))
+    Link("carlos11", ByteString("vargas"))
   )
 
   val block = Block(IdentityBlockHeader(ByteString("hash1"), Instant.now(), 1), txs)

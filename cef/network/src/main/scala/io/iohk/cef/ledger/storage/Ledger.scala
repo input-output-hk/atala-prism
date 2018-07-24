@@ -18,10 +18,11 @@ case class Ledger[F[_],
             Tx <: Transaction[State, Key]](ledgerId: Int, block: Block[State, Key, Header, Tx])(
                                           implicit serializer: ByteStringSerializable[Block[State, Key, Header, Tx]]
   ): Either[LedgerError, F[Unit]] = {
-    val state = ledgerStateStorage.slice(block.keys)
+    val state = ledgerStateStorage.slice(block.partitionIds)
     val either = block(state)
     either.map(newState =>
       for {
+        //TODO: Ledger state's slice must also be dependent on ledgerId
         _ <- enableForExp(ledgerStateStorage.update(state, newState))
         _ <- enableForExp(ledgerStorage.push(ledgerId, block))
       } yield ()

@@ -16,7 +16,7 @@ case class Claim(identity: String, key: ByteString) extends IdentityTransaction 
       Right(ledgerState.put(identity, Set(key)))
     }
 
-  override def keys: Set[String] = Set(identity)
+  override def partitionIds: Set[String] = Set(identity)
 }
 
 case class Link(identity: String, key: ByteString) extends IdentityTransaction{
@@ -25,7 +25,7 @@ case class Link(identity: String, key: ByteString) extends IdentityTransaction{
     if(!ledgerState.contains(identity)) Left(IdentityNotClaimedError(identity))
     else Right(ledgerState.put(identity, ledgerState.get(identity).getOrElse(Set()) + key))
 
-  override def keys: Set[String] = Set(identity)
+  override def partitionIds: Set[String] = Set(identity)
 }
 case class Unlink(identity: String, key: ByteString) extends IdentityTransaction {
 
@@ -35,5 +35,5 @@ case class Unlink(identity: String, key: ByteString) extends IdentityTransaction
     else if(ledgerState.get(identity).get.size == 1) Right(ledgerState.remove(identity))
     else Right(ledgerState.put(identity, ledgerState.get(identity).getOrElse(Set()) - key))
 
-  override def keys: Set[String] = Set(identity)
+  override def partitionIds: Set[String] = Set(identity)
 }

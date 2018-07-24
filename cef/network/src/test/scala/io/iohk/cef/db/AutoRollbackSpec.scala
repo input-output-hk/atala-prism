@@ -13,10 +13,11 @@ trait AutoRollbackSpec extends AutoRollback {
   private val settings: JDBCSettings = DBs.readJDBCSettings('default)
   flyway.setDataSource(settings.url, settings.user, settings.password)
   flyway.migrate()
-  if (!settings.url.endsWith("test"))
+  if (!settings.url.endsWith("test")) {
     throw new IllegalStateException(
       "Test databases' name should end with 'test'. " +
-      "Please check that you are using the correct database for testing.")
+        "Please check that you are using the correct database for testing.")
+  }
 
   DBs.setupAll()
 }

@@ -3,13 +3,11 @@ import akka.util.ByteString
 import io.iohk.cef.db.AutoRollbackSpec
 import io.iohk.cef.ledger.identity._
 import io.iohk.cef.ledger.identity.storage.scalike.dao.LedgerStateStorageDao
-import org.scalamock.scalatest.MockFactory
 import org.scalatest.{MustMatchers, fixture}
 
 class LedgerStateStorageDaoSpec extends fixture.FlatSpec
   with AutoRollbackSpec
   with MustMatchers
-  with MockFactory
   with LedgerStateStorageFixture {
 
   behavior of "LedgerStateStorage"
