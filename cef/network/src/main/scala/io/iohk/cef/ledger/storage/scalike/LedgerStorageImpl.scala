@@ -7,13 +7,13 @@ import scalikejdbc._
 
 case class DataLayerException(msg: String) extends Exception(msg)
 
-class LedgerStorageImpl(ledgerStorageDao: LedgerStorageDao) extends LedgerStorage{
+class LedgerStorageImpl(ledgerStorageDao: LedgerStorageDao) extends LedgerStorage {
 
-  override def push[State <: LedgerState[Key, _],
-                    Key,
+  override def push[Key,
+                    Value,
                     Header <: BlockHeader,
-                    Tx <: Transaction[State, Key]](ledgerId: Int, block: Block[State, Key, Header, Tx])(
-    implicit blockSerializable: ByteStringSerializable[Block[State, Key, Header, Tx]]): Unit = {
+                    Tx <: Transaction[Key, Value]](ledgerId: Int, block: Block[Key, Value, Header, Tx])(
+    implicit blockSerializable: ByteStringSerializable[Block[Key, Value, Header, Tx]]): Unit = {
     execInSession { implicit session =>
       ledgerStorageDao.push(ledgerId, block)
     }

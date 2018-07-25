@@ -22,7 +22,7 @@ class IdentityLedgerItSpec extends fixture.FlatSpec
   with MustMatchers
   with LedgerStateStorageFixture {
 
-  def createLedger(ledgerStateStorageDao: LedgerStateStorageDao)(implicit dBSession: DBSession): Ledger[Try, IdentityLedgerState, String] = {
+  def createLedger(ledgerStateStorageDao: LedgerStateStorageDao)(implicit dBSession: DBSession): Ledger[Try, String, Set[ByteString]] = {
     implicit val forExpEnabler = ForExpressionsEnabler.tryEnabler
     val ledgerStateStorage = new LedgerStateStorageImpl(ledgerStateStorageDao) {
       override def execInSession[T](block: DBSession => T): T = block(dBSession)
@@ -47,11 +47,11 @@ class IdentityLedgerItSpec extends fixture.FlatSpec
     block1Result.isRight mustBe true
     block1Result.right.get.isSuccess mustBe true
 
-    ledgerStateStorageDao.slice(Set("one")) mustBe IdentityLedgerStateImpl(Map("one" -> Set(ByteString("one"))))
-    ledgerStateStorageDao.slice(Set("two")) mustBe IdentityLedgerStateImpl(Map("two" -> Set(ByteString("two"))))
-    ledgerStateStorageDao.slice(Set("three")) mustBe IdentityLedgerStateImpl()
+    ledgerStateStorageDao.slice(Set("one")) mustBe IdentityLedgerState(Map("one" -> Set(ByteString("one"))))
+    ledgerStateStorageDao.slice(Set("two")) mustBe IdentityLedgerState(Map("two" -> Set(ByteString("two"))))
+    ledgerStateStorageDao.slice(Set("three")) mustBe IdentityLedgerState()
     ledgerStateStorageDao.slice(Set("one","two","three")) mustBe
-      IdentityLedgerStateImpl(Map("one" -> Set(ByteString("one")), "two" -> Set(ByteString("two"))))
+      IdentityLedgerState(Map("one" -> Set(ByteString("one")), "two" -> Set(ByteString("two"))))
     val block2 = Block(header.copy(height = 2), List[IdentityTransaction](Link("two", ByteString("two-two"))))
 
     val block2Result = ledger(1, block2)
@@ -59,7 +59,7 @@ class IdentityLedgerItSpec extends fixture.FlatSpec
     block2Result.right.get.isSuccess mustBe true
 
     ledgerStateStorageDao.slice(Set("one","two")) mustBe
-      IdentityLedgerStateImpl(
+      IdentityLedgerState(
         Map("one" -> Set(ByteString("one")), "two" -> Set(ByteString("two"), ByteString("two-two")))
       )
 

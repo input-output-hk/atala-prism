@@ -36,7 +36,7 @@ class LedgerStateStorageDaoSpec extends fixture.FlatSpec
     val storage = new LedgerStateStorageDao
     val state = storage.slice(Set("one", "zero"))
     val newState =
-      new IdentityLedgerStateImpl(Map(("one", Set(ByteString("one"))),
+      new IdentityLedgerState(Map(("one", Set(ByteString("one"))),
         ("three", Set(ByteString("three")))))
     storage.update(state, newState)
     val editedState = storage.slice(Set("one", "two", "three", "zero"))

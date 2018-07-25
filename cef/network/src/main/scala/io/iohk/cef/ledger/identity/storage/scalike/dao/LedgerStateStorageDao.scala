@@ -1,8 +1,9 @@
 package io.iohk.cef.ledger.identity.storage.scalike.dao
 
 import akka.util.ByteString
+import io.iohk.cef.ledger.LedgerState
+import io.iohk.cef.ledger.identity.IdentityLedgerState
 import io.iohk.cef.ledger.identity.storage.scalike.{IdentityLedgerStateTable, LedgerStateEntryMap}
-import io.iohk.cef.ledger.identity.{IdentityLedgerState, IdentityLedgerStateImpl}
 import org.bouncycastle.util.encoders.Hex
 import scalikejdbc._
 
@@ -18,13 +19,13 @@ class LedgerStateStorageDao {
     val emptyEntries = LedgerStateEntryMap[String, ByteString]()
     val aggregatedEntries =
       pairs.foldLeft(emptyEntries)(_ aggregateWith _)
-    new IdentityLedgerStateImpl(aggregatedEntries.map)
+    LedgerState(aggregatedEntries.map)
   }
 
   def update(previousState: IdentityLedgerState,
              newState: IdentityLedgerState)(implicit session: DBSession): Unit = {
     val currentState = slice(previousState.keys)
-    if (!previousState.equivalentTo(currentState)) {
+    if (previousState != currentState) {
       throw new IllegalArgumentException("Provided previous state must be equal to the current state")
     } else {
       val keysToAdd = (newState.keys diff currentState.keys).toList

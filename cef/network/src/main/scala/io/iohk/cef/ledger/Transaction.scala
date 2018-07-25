@@ -1,6 +1,6 @@
 package io.iohk.cef.ledger
 
-trait Transaction[State <: LedgerState[Key, _], Key] extends (State => Either[LedgerError, State]) {
+trait Transaction[Key, Value] extends (LedgerState[Key, Value] => Either[LedgerError, LedgerState[Key, Value]]) {
   /**
     * The ids of the state partitions that need to be retrieved for this tx.
     * The partitioning is contextual. It will change from ledger to ledger. A state is well partitioned iff:

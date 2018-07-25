@@ -11,7 +11,7 @@ class IdentityTransactionSpec  extends FlatSpec
   behavior of "IdentityTransaction"
 
   it should "throw an error when the tx is inconsistent with the state" in {
-    val state = IdentityLedgerStateImpl(Map("one" -> Set(ByteString("one"))))
+    val state = IdentityLedgerState(Map("one" -> Set(ByteString("one"))))
     val claim = Claim("one", ByteString("one"))
     val link = Link("two", ByteString("two"))
     val unlink1 = Unlink("two", ByteString("two"))
@@ -23,7 +23,7 @@ class IdentityTransactionSpec  extends FlatSpec
   }
 
   it should "apply a claim" in {
-    val state = IdentityLedgerStateImpl()
+    val state = IdentityLedgerState()
     val claim = Claim("one", ByteString("one"))
     val newStateEither = claim(state)
     newStateEither.isRight mustBe true
@@ -35,7 +35,7 @@ class IdentityTransactionSpec  extends FlatSpec
   }
 
   it should "apply a link" in {
-    val state = IdentityLedgerStateImpl(Map("one" -> Set(ByteString("one"))))
+    val state = IdentityLedgerState(Map("one" -> Set(ByteString("one"))))
     val link = Link("one", ByteString("two"))
     val newStateEither = link(state)
     newStateEither.isRight mustBe true
@@ -47,7 +47,7 @@ class IdentityTransactionSpec  extends FlatSpec
   }
 
   it should "apply an unlink" in {
-    val state = IdentityLedgerStateImpl(Map("one" -> Set(ByteString("one"), ByteString("two"))))
+    val state = IdentityLedgerState(Map("one" -> Set(ByteString("one"), ByteString("two"))))
     val unlink1 = Unlink("one", ByteString("one"))
     val unlink2 = Unlink("one", ByteString("two"))
     val stateAfter1Either = unlink1(state)

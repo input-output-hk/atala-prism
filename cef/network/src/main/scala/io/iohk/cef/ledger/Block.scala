@@ -1,13 +1,13 @@
 package io.iohk.cef.ledger
 
-case class Block[State <: LedgerState[Key, _],
-                 Key,
+case class Block[Key,
+                 Value,
                  Header <: BlockHeader,
-                 Tx <: Transaction[State, Key]](header: Header, transactions: List[Tx with Transaction[State, Key]])
-    extends (State => Either[LedgerError, State]) {
+                 Tx <: Transaction[Key, Value]](header: Header, transactions: List[Tx with Transaction[Key, Value]])
+    extends (LedgerState[Key, Value] => Either[LedgerError, LedgerState[Key, Value]]) {
 
-  override def apply(state: State): Either[LedgerError, State] = {
-    transactions.foldLeft[Either[LedgerError, State]](Right(state))((either, tx) => {
+  override def apply(state: LedgerState[Key, Value]): Either[LedgerError, LedgerState[Key, Value]] = {
+    transactions.foldLeft[Either[LedgerError, LedgerState[Key, Value]]](Right(state))((either, tx) => {
       either.flatMap(tx(_))
     })
   }
