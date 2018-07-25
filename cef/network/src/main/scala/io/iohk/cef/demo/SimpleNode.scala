@@ -8,7 +8,7 @@ import akka.io.{IO, Tcp}
 import io.iohk.cef.network.transport.rlpx.RLPxConnectionHandler.{ConnectTo, HandleConnection}
 import SimpleNode.StartServer
 
-class SimpleNode(val nodeId: String, protoHandler: ActorRef, bootstrapPeer: Option[NodeInfo]) extends Actor with ActorLogging {
+class SimpleNode(val nodeId: String, protoHandler: ActorRef, bootstrapPeer: Option[SimpleNodeInfo]) extends Actor with ActorLogging {
 
   import context.system
 
@@ -34,7 +34,7 @@ class SimpleNode(val nodeId: String, protoHandler: ActorRef, bootstrapPeer: Opti
     case m => println(s"Got unhandled message $m")
   }
 
-  private def connectToPeer(peerInfo: NodeInfo): Unit =
+  private def connectToPeer(peerInfo: SimpleNodeInfo): Unit =
     protoHandler ! ConnectTo(new URI(nodeUri(peerInfo.nodeId, peerInfo.inetSocketAddress)))
 
   private def nodeUri(nodeId: String, address: InetSocketAddress): String =
@@ -50,7 +50,7 @@ class SimpleNode(val nodeId: String, protoHandler: ActorRef, bootstrapPeer: Opti
 }
 
 object SimpleNode {
-  def props(nodeId: String, protoHandler: ActorRef, bootstrapPeers: Option[NodeInfo] = None): Props =
+  def props(nodeId: String, protoHandler: ActorRef, bootstrapPeers: Option[SimpleNodeInfo] = None): Props =
     Props(new SimpleNode(nodeId, protoHandler, bootstrapPeers))
 
   case class StartServer(address: InetSocketAddress)

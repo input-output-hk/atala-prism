@@ -3,7 +3,7 @@ package io.iohk.cef.db
 import java.time.{Clock, Instant}
 import java.util.concurrent.atomic.AtomicInteger
 
-import io.iohk.cef.network.Node
+import io.iohk.cef.network.NodeInfo
 import io.iohk.cef.telemetery.Telemetery
 import org.bouncycastle.util.encoders.Hex
 import org.flywaydb.core.Flyway
@@ -35,7 +35,7 @@ class KnownNodeStorageImpl(clock: Clock, dbName: Symbol = 'default)
   val trackingKnownNodes =
     registry.gauge("known_nodes", new AtomicInteger(getAll().size))
 
-  override def blacklist(node: Node, duration: FiniteDuration): Unit = {
+  override def blacklist(nodeInfo: NodeInfo, duration: FiniteDuration): Unit = {
     val until = clock.instant().plusMillis(duration.toMillis)
     val blacklistColumn = BlacklistNodeTable.column
 
@@ -45,31 +45,31 @@ class KnownNodeStorageImpl(clock: Clock, dbName: Symbol = 'default)
         ${blacklistColumn.blacklistSince},
         ${blacklistColumn.blacklistUntil}
       ) key(${blacklistColumn.nodeId})
-       values(${Hex.toHexString(node.id.toArray)},
+       values(${Hex.toHexString(nodeInfo.id.toArray)},
        ${clock.instant()},
        ${until})""".update().apply()
     }
   }
 
-  override def insert(node: Node): Long = {
+  override def insert(nodeInfo: NodeInfo): Long = {
     val knownNodeColumn = KnownNodeTable.column
     val kn = KnownNodeTable.syntax("kn")
 
     inTx { implicit session =>
-      val discovered = getDiscoveredInstant(node, knownNodeColumn, kn)
-      val result = mergeNodeStatement(node, discovered, knownNodeColumn)
+      val discovered = getDiscoveredInstant(nodeInfo, knownNodeColumn, kn)
+      val result = mergeNodeStatement(nodeInfo, discovered, knownNodeColumn)
       if (discovered.isEmpty) trackingKnownNodes.incrementAndGet()
       result
     }
   }
 
-  private def getDiscoveredInstant(node: Node,
+  private def getDiscoveredInstant(nodeInfo: NodeInfo,
                                    knownNodeColumn: ColumnName[KnownNodeTable],
                                    kn: QuerySQLSyntaxProvider[SQLSyntaxSupport[KnownNodeTable], KnownNodeTable])(
                                   implicit session: DBSession
   ) = {
     sql"""
-           select ${kn.discovered} from ${KnownNodeTable as kn} where ${kn.id} = ${Hex.toHexString(node.id.toArray)}
+           select ${kn.discovered} from ${KnownNodeTable as kn} where ${kn.id} = ${Hex.toHexString(nodeInfo.id.toArray)}
          """.map(_.timestamp(knownNodeColumn.discovered).toInstant).single().apply()
   }
 
@@ -85,13 +85,13 @@ class KnownNodeStorageImpl(clock: Clock, dbName: Symbol = 'default)
     }
   }
 
-  override def remove(node: Node): Unit = {
+  override def remove(nodeInfo: NodeInfo): Unit = {
     val knownNodeColumn = KnownNodeTable.column
     val blacklistNodeColumn = BlacklistNodeTable.column
 
     val result = inTx { implicit session =>
-      sql"""delete from ${BlacklistNodeTable.table} where ${blacklistNodeColumn.nodeId} = ${Hex.toHexString(node.id.toArray)}""".executeUpdate.apply
-      sql"""delete from ${KnownNodeTable.table} where ${knownNodeColumn.id} = ${Hex.toHexString(node.id.toArray)}""".executeUpdate.apply
+      sql"""delete from ${BlacklistNodeTable.table} where ${blacklistNodeColumn.nodeId} = ${Hex.toHexString(nodeInfo.id.toArray)}""".executeUpdate.apply
+      sql"""delete from ${KnownNodeTable.table} where ${knownNodeColumn.id} = ${Hex.toHexString(nodeInfo.id.toArray)}""".executeUpdate.apply
     }
     if (result > 0) trackingKnownNodes.decrementAndGet()
   }
@@ -119,7 +119,7 @@ class KnownNodeStorageImpl(clock: Clock, dbName: Symbol = 'default)
     }
   }
 
-  private def mergeNodeStatement(node: Node, discovered: Option[Instant], nodeColumn: scalikejdbc.ColumnName[KnownNodeTable])(implicit session: DBSession) = {
+  private def mergeNodeStatement(nodeInfo: NodeInfo, discovered: Option[Instant], nodeColumn: scalikejdbc.ColumnName[KnownNodeTable])(implicit session: DBSession) = {
     sql"""merge into ${KnownNodeTable.table} (
           ${nodeColumn.id},
           ${nodeColumn.discoveryAddress},
@@ -131,12 +131,12 @@ class KnownNodeStorageImpl(clock: Clock, dbName: Symbol = 'default)
           ${nodeColumn.discovered}
 
        ) key (${nodeColumn.id})
-       values (${Hex.toHexString(node.id.toArray)},
-         ${Hex.toHexString(node.discoveryAddress.getAddress.getAddress)},
-         ${node.discoveryAddress.getPort},
-         ${Hex.toHexString(node.serverAddress.getAddress.getAddress)},
-         ${node.serverAddress.getPort},
-         ${node.capabilities.byte},
+       values (${Hex.toHexString(nodeInfo.id.toArray)},
+         ${Hex.toHexString(nodeInfo.discoveryAddress.getAddress.getAddress)},
+         ${nodeInfo.discoveryAddress.getPort},
+         ${Hex.toHexString(nodeInfo.serverAddress.getAddress.getAddress)},
+         ${nodeInfo.serverAddress.getPort},
+         ${nodeInfo.capabilities.byte},
          ${clock.instant()},
          ${discovered.getOrElse(clock.instant())}
        );

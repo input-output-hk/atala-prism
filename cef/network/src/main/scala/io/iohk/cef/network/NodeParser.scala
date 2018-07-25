@@ -2,7 +2,6 @@ package io.iohk.cef.network
 
 import java.net.{InetAddress, URI}
 
-import akka.util.ByteString
 import com.typesafe.config.Config
 import io.iohk.cef.utils.Logger
 
@@ -28,18 +27,19 @@ object NodeParser extends Logger {
     val scheme = Option(uri.getScheme).toRight(s"No defined scheme for uri $uri")
 
     scheme.flatMap{ scheme =>
-      Either.cond(uri.getScheme == expectedScheme, uri, s"Invalid node scheme $scheme, it should be $expectedScheme")
+      Either.cond(uri.getScheme == expectedScheme, uri, s"Invalid node scheme '$scheme'. It should be '$expectedScheme'.")
     }
   }
 
   private def validateNodeId(uri: URI): Either[Error, URI] = {
-    val nodeId = Try(ByteString(uri.getUserInfo)) match {
+    val nodeId: Either[String, Error] = Try(uri.getUserInfo) match {
       case Success(id) => Right(id)
-      case Failure(_) => Left(s"Malformed nodeId for URI ${uri.toString}")
+      case Failure(_) => Left(s"Malformed nodeId for URI '${uri.toString}'.")
     }
 
     nodeId.flatMap(nodeId =>
-      Either.cond(nodeId.size == NodeIdSize, uri, s"Invalid node id $nodeId size, it should be $NodeIdSize")
+      Either.cond(nodeId.length == NodeIdSize, uri,
+        s"Invalid id length for '$nodeId'. It should be $NodeIdSize.")
     )
   }
 
@@ -78,13 +78,13 @@ object NodeParser extends Logger {
   }
 
   /**
-    * Parse a node string, for it to be valid it should have the format:
+    * Parse a node URI string, for it to be valid it should have the format:
     * "enode://[128 char (64bytes) hex string]@[IPv4 address | '['IPv6 address']' ]:[port]"
     *
     * @param nodeConfig to be parsed
     * @return the parsed node, or the errors detected during parsing
     */
-  def parseNode(nodeConfig: Config): Either[Set[Error], Node] = {
+  def parseNodeInfo(nodeConfig: Config): Either[Set[Error], NodeInfo] = {
     val discoveryUri = nodeConfig.getString("discoveryUri")
     val p2pUri = nodeConfig.getString("p2pUri")
     val validationP2p = validateNodeUri(p2pUri)
@@ -93,7 +93,7 @@ object NodeParser extends Logger {
     for {
       p2pUri <- validationP2p
       discUri <- validationDisc
-      node <- Node.fromUri(p2pUri, discUri, nodeConfig.getString("capabilities")) match {
+      node <- NodeInfo.fromUri(p2pUri, discUri, nodeConfig.getString("capabilities")) match {
         case Success(node) => Right(node)
         case Failure(ex) => Left(errorSet + ex.getMessage)
       }
@@ -106,9 +106,9 @@ object NodeParser extends Logger {
     * @param unParsedNodes, nodes to be parsed
     * @return set of parsed and valid nodes
     */
-  def parseNodes(unParsedNodes: Set[Config]): Set[Node] = unParsedNodes.foldLeft[Set[Node]](Set.empty) {
+  def parseNodeInfos(unParsedNodes: Set[Config]): Set[NodeInfo] = unParsedNodes.foldLeft[Set[NodeInfo]](Set.empty) {
     case (parsedNodes, nodeConfig) =>
-      val maybeNode = NodeParser.parseNode(nodeConfig)
+      val maybeNode = NodeParser.parseNodeInfo(nodeConfig)
       maybeNode match {
         case Right(node) => parsedNodes + node
         case Left(errors) =>

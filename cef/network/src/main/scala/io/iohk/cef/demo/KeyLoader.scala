@@ -1,22 +1,15 @@
-package io.iohk.cef
+package io.iohk.cef.demo
 
 import java.io.{File, PrintWriter}
 import java.security.SecureRandom
 
+import io.iohk.cef.crypto.{generateKeyPair, keyPairFromPrvKey, keyPairToByteArrays}
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair
-import org.bouncycastle.crypto.params.ECPublicKeyParameters
 import org.bouncycastle.util.encoders.Hex
 
 import scala.io.Source
-import crypto._
 
-package object network {
-  implicit class ECPublicKeyParametersNodeId(val pubKey: ECPublicKeyParameters) extends AnyVal {
-    def toNodeId: Array[Byte] =
-      pubKey.asInstanceOf[ECPublicKeyParameters].getQ
-        .getEncoded(false)
-        .drop(1) // drop type info
-  }
+object KeyLoader {
 
   def loadAsymmetricCipherKeyPair(filePath: String, secureRandom: SecureRandom): AsymmetricCipherKeyPair = {
     val file = new File(filePath)

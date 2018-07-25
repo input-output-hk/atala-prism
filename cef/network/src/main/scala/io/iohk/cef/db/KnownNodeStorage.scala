@@ -1,6 +1,6 @@
 package io.iohk.cef.db
 
-import io.iohk.cef.network.Node
+import io.iohk.cef.network.NodeInfo
 
 import scala.concurrent.duration.FiniteDuration
 
@@ -9,12 +9,12 @@ trait KnownNodeStorage {
 
   /**
     * Inserts a new node or updates the lastSeen timestamp
-    * @param node
+    * @param nodeInfo
     * @return
     */
-  def insert(node: Node): Long
+  def insert(nodeInfo: NodeInfo): Long
 
-  def remove(node: Node): Unit
+  def remove(nodeInfo: NodeInfo): Unit
 
-  def blacklist(node: Node, duration: FiniteDuration): Unit
+  def blacklist(nodeInfo: NodeInfo, duration: FiniteDuration): Unit
 }

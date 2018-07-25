@@ -2,14 +2,14 @@ package io.iohk.cef.discovery
 
 import akka.util.ByteString
 import io.iohk.cef.encoding.rlp._
-import io.iohk.cef.network.{Capabilities, Node}
+import io.iohk.cef.network.{Capabilities, NodeInfo}
 
 sealed trait DiscoveryWireMessage {
 
   def messageType: Byte
 }
 
-case class Ping(protocolVersion: Int, node: Node, timestamp: Long, nonce: ByteString) extends DiscoveryWireMessage {
+case class Ping(protocolVersion: Int, node: NodeInfo, timestamp: Long, nonce: ByteString) extends DiscoveryWireMessage {
   override def messageType: Byte = Ping.messageType
 }
 
@@ -20,7 +20,7 @@ object Ping {
   implicit def pingRLPEncDec(implicit
                              byteEncDec: RLPEncDec[Byte],
                              intEncDec: RLPEncDec[Int],
-                             nodeEncDec: RLPEncDec[Node],
+                             nodeEncDec: RLPEncDec[NodeInfo],
                              longEncDec: RLPEncDec[Long],
                              byteStrEncDec: RLPEncDec[ByteString]) = new RLPEncDec[Ping] {
 
@@ -42,7 +42,7 @@ object Ping {
   }
 }
 
-case class Pong(node: Node, token: ByteString, timestamp: Long) extends DiscoveryWireMessage {
+case class Pong(node: NodeInfo, token: ByteString, timestamp: Long) extends DiscoveryWireMessage {
   override def messageType: Byte = Pong.messageType
 
 }
@@ -53,7 +53,7 @@ object Pong {
 
   implicit def pongRLPEncDec(implicit
                              byteEncDec: RLPEncDec[Byte],
-                             nodeEncDec: RLPEncDec[Node],
+                             nodeEncDec: RLPEncDec[NodeInfo],
                              byteStrEncDec: RLPEncDec[ByteString],
                              longEncDec: RLPEncDec[Long]) = new RLPEncDec[Pong] {
 
@@ -107,7 +107,7 @@ object Seek {
 case class Neighbors(capabilities: Capabilities,
                      token: ByteString,
                      neighborsWithCapabilities: Int,
-                     neighbors: Seq[Node],
+                     neighbors: Seq[NodeInfo],
                      timestamp: Long) extends DiscoveryWireMessage {
   override def messageType: Byte = Neighbors.messageType
 }
@@ -121,7 +121,7 @@ object Neighbors {
                                   byteStringEncDec: RLPEncDec[ByteString],
                                   capabilitiesEncDec: RLPEncDec[Capabilities],
                                   intStrEncDec: RLPEncDec[Int],
-                                  seqNodeEncDec: RLPEncDec[Seq[Node]],
+                                  seqNodeEncDec: RLPEncDec[Seq[NodeInfo]],
                                   longEncDec: RLPEncDec[Long]) = new RLPEncDec[Neighbors] {
 
     override def encode(obj: Neighbors): RLPEncodeable =

@@ -1,14 +1,12 @@
 package io.iohk.cef.ledger.storage
 
-import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
+import io.iohk.cef.ledger.{Block, BlockHeader, ByteStringSerializable, Transaction}
 
-import scala.language.higherKinds
+trait LedgerStorage {
 
-trait LedgerStorage[F[_],
-                    Key,
-                    Value,
-                    Header <: BlockHeader,
-                    Tx <: Transaction[Key, Value]] {
-
-  def push(block: Block[Key, Value, Header, Tx]): F[Unit]
+  def push[Key,
+          Value,
+          Header <: BlockHeader,
+          Tx <: Transaction[Key, Value]](ledgerId: Int, block: Block[Key, Value, Header, Tx])(
+                                        implicit blockSerializable: ByteStringSerializable[Block[Key, Value, Header, Tx]]): Unit
 }

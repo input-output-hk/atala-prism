@@ -1,9 +1,9 @@
 package io.iohk.cef.discovery
 
-import io.iohk.cef.network.Node
+import io.iohk.cef.network.NodeInfo
 
 sealed abstract class DiscoveryClassifier
 
-case class CompatibleNodeFound(node: Node)
+case class CompatibleNodeFound(nodeInfo: NodeInfo) extends DiscoveryClassifier
 
-case class NodeRemoved(node: Node)
+case class NodeRemoved(nodeInfo: NodeInfo) extends DiscoveryClassifier

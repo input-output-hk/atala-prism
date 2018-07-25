@@ -23,15 +23,15 @@ import scala.util.Random
 object DiscoveryManager {
 
   import io.iohk.cef.db.KnownNode
-  import io.iohk.cef.network.Node
+  import io.iohk.cef.network.NodeInfo
 
   sealed trait DiscoveryRequest
 
-  case class Blacklist(node: Node) extends DiscoveryRequest
+  case class Blacklist(node: NodeInfo) extends DiscoveryRequest
 
   case class GetDiscoveredNodes(replyTo: ActorRef[DiscoveredNodes]) extends DiscoveryRequest
 
-  case class FetchNeighbors(node: Node) extends DiscoveryRequest
+  case class FetchNeighbors(node: NodeInfo) extends DiscoveryRequest
 
   private[discovery] case class DiscoveryResponseWrapper(innerMessage: DiscoveryListenerResponse) extends DiscoveryRequest
 
@@ -44,9 +44,9 @@ object DiscoveryManager {
     def timestamp: Instant
   }
 
-  private [discovery] case class Sought(node: Node, timestamp: Instant) extends NodeEvent
+  private [discovery] case class Sought(node: NodeInfo, timestamp: Instant) extends NodeEvent
 
-  private [discovery] case class Pinged(node: Node, timestamp: Instant) extends NodeEvent
+  private [discovery] case class Pinged(node: NodeInfo, timestamp: Instant) extends NodeEvent
 
   private val nonceSize = 2
 
@@ -103,15 +103,16 @@ object DiscoveryManager {
 
       def listening(address: InetSocketAddress): Behavior[DiscoveryRequest] = Behaviors.receiveMessage {
 
-        case Blacklist(node: Node) =>
+        case Blacklist(node: NodeInfo) =>
           knownNodesStorage.blacklist(node, discoveryConfig.blacklistDefaultDuration)
+          context.system.toUntyped.eventStream.publish(NodeRemoved(node))
           Behavior.same
 
         case GetDiscoveredNodes(replyTo) =>
           replyTo ! DiscoveredNodes(knownNodesStorage.getAll())
           Behavior.same
 
-        case FetchNeighbors(node: Node) =>
+        case FetchNeighbors(node: NodeInfo) =>
           sendPing(discoveryListener, address, node)
           Behavior.same
 
@@ -126,7 +127,7 @@ object DiscoveryManager {
         case x => throw new IllegalStateException(s"Received an unexpected message '$x'.")
       }
 
-      def sendPing(listener: ActorRef[DiscoveryListenerRequest], listeningAddress: InetSocketAddress, node: Node): Unit = {
+      def sendPing(listener: ActorRef[DiscoveryListenerRequest], listeningAddress: InetSocketAddress, node: NodeInfo): Unit = {
         context.log.debug(s"Sending ping to ${node.discoveryAddress}")
         val nonce = new Array[Byte](nonceSize)
         randomSource.nextBytes(nonce)
@@ -148,6 +149,7 @@ object DiscoveryManager {
             context.log.debug(s"Dropping node ${Hex.toHexString(id.toArray)}")
             pingedNodes -= id
             knownNodesStorage.remove(pingInfo.node)
+            context.system.toUntyped.eventStream.publish(CompatibleNodeFound(pingInfo.node))
           }
         }
 
@@ -168,8 +170,8 @@ object DiscoveryManager {
         case _ => default
       }
 
-      def getNode(discoveryAddress: InetSocketAddress): Node =
-        Node(nodeState.nodeId, discoveryAddress, getServerAddress(default = discoveryAddress), nodeState.capabilities)
+      def getNode(discoveryAddress: InetSocketAddress): NodeInfo =
+        NodeInfo(nodeState.nodeId, discoveryAddress, getServerAddress(default = discoveryAddress), nodeState.capabilities)
 
       def hasNotExpired(timestamp: Long): Boolean =
         timestamp > clock.instant().getEpochSecond
@@ -187,6 +189,7 @@ object DiscoveryManager {
             val pong = Pong(node, messageKey, expirationTimestamp)
             if (sourceNode.capabilities.satisfies(nodeState.capabilities)) {
               knownNodesStorage.insert(sourceNode)
+              context.system.toUntyped.eventStream.publish(CompatibleNodeFound(sourceNode))
               context.log.debug(s"New discovered list: ${knownNodesStorage.getAll().map(_.node.discoveryAddress)}")
             }
             context.log.debug(s"Sending pong message with capabilities ${pong.node.capabilities}, to: ${sourceNode.discoveryAddress}")

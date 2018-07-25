@@ -10,12 +10,12 @@ class BlockSpec extends FlatSpec with MustMatchers {
 
   behavior of "Block"
 
-  it should "apply itself to an state" in {
+  it should "apply itself to a state" in {
     val txs = List (Claim("one", ByteString("one")),
       Link("one", ByteString("two")),
       Unlink("one", ByteString("two")),
       Unlink("one", ByteString("one")))
-    val header = IdentityBlockHeader(ByteString("hash"), Instant.now)
+    val header = IdentityBlockHeader(ByteString("hash"), Instant.now, 1)
     val block = Block(header, txs)
     val state = new IdentityLedgerState(Map())
     val newState = block(state)
@@ -33,8 +33,8 @@ class BlockSpec extends FlatSpec with MustMatchers {
       Link("two", ByteString("two")),
       Unlink("three", ByteString("two")),
       Unlink("three", ByteString("one")))
-    val header = IdentityBlockHeader(ByteString("hash"), Instant.now)
+    val header = IdentityBlockHeader(ByteString("hash"), Instant.now, 1)
     val block = Block(header, txs)
-    block.keys mustBe Set("one", "two", "three")
+    block.partitionIds mustBe Set("one", "two", "three")
   }
 }
