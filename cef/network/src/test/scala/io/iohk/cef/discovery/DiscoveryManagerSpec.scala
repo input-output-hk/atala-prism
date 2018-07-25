@@ -17,6 +17,7 @@ import io.iohk.cef.discovery.DiscoveryListener.{DiscoveryListenerRequest, Ready,
 import io.iohk.cef.discovery.DiscoveryManager._
 import io.iohk.cef.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.{Capabilities, NodeInfo, NodeStatus, ServerStatus}
+import io.iohk.cef.telemetery.InMemoryTelemetry
 import io.iohk.cef.test.TestClock
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import org.apache.commons.lang3.RandomStringUtils.{randomAlphabetic, randomAlphanumeric}
@@ -42,7 +43,7 @@ class DiscoveryManagerSpec
 
     val mockClock = new TestClock
 
-    val knownNodeStorage = new DummyKnownNodesStorage(mockClock)
+    val knownNodeStorage = new DummyKnownNodesStorage(mockClock) with InMemoryTelemetry
 
     val address: Array[Byte] = Array(127.toByte,0,0,1)
     val localhost = InetAddress.getByAddress("",address)
