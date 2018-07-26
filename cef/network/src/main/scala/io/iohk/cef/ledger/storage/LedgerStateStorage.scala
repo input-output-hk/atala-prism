@@ -2,9 +2,9 @@ package io.iohk.cef.ledger.storage
 
 import io.iohk.cef.ledger.LedgerState
 
-trait LedgerStateStorage[Key, Value] {
+trait LedgerStateStorage[S] {
 
-  def slice(keys: Set[Key]): LedgerState[Key, Value]
+  def slice(keys: Set[String]): LedgerState[S]
 
-  def update(previousState: LedgerState[Key, Value], newState: LedgerState[Key, Value]): Unit
+  def update(previousState: LedgerState[S], newState: LedgerState[S]): Unit
 }

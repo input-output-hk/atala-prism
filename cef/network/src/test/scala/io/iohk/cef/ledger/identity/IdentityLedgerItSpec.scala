@@ -22,7 +22,7 @@ class IdentityLedgerItSpec extends fixture.FlatSpec
   with MustMatchers
   with LedgerStateStorageFixture {
 
-  def createLedger(ledgerStateStorageDao: LedgerStateStorageDao)(implicit dBSession: DBSession): Ledger[Try, String, Set[ByteString]] = {
+  def createLedger(ledgerStateStorageDao: LedgerStateStorageDao)(implicit dBSession: DBSession): Ledger[Try, Set[ByteString]] = {
     implicit val forExpEnabler = ForExpressionsEnabler.tryEnabler
     val ledgerStateStorage = new LedgerStateStorageImpl(ledgerStateStorageDao) {
       override def execInSession[T](block: DBSession => T): T = block(dBSession)
