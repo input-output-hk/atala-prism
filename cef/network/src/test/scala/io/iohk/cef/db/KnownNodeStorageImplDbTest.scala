@@ -10,10 +10,11 @@ import io.iohk.cef.telemetery.InMemoryTelemetry
 import io.iohk.cef.test.TestClock
 import org.scalatest.{MustMatchers, fixture}
 import scalikejdbc.DBSession
+import scalikejdbc.scalatest.AutoRollback
 
 import scala.concurrent.duration.FiniteDuration
 
-class KnownNodeStorageImplSpec extends fixture.FlatSpec with AutoRollbackSpec with MustMatchers {
+trait KnownNodeStorageImplDbTest extends fixture.FlatSpec with AutoRollback with MustMatchers {
 
   def createKnownNodeStorage(clock: Clock, session: DBSession): KnownNodeStorage =
     new KnownNodeStorageImpl(clock) with InMemoryTelemetry {

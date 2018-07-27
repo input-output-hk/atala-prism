@@ -3,7 +3,6 @@ package io.iohk.cef.ledger.identity
 import java.time.{Clock, Instant}
 
 import akka.util.ByteString
-import io.iohk.cef.db.AutoRollbackSpec
 import io.iohk.cef.ledger.Block
 import io.iohk.cef.ledger.identity.IdentityBlockSerializer._
 import io.iohk.cef.ledger.identity.storage.scalike.LedgerStateStorageImpl
@@ -14,11 +13,12 @@ import io.iohk.cef.ledger.storage.scalike.dao.LedgerStorageDao
 import io.iohk.cef.utils.ForExpressionsEnabler
 import org.scalatest.{MustMatchers, fixture}
 import scalikejdbc._
+import scalikejdbc.scalatest.AutoRollback
 
 import scala.util.Try
 
-class IdentityLedgerItSpec extends fixture.FlatSpec
-  with AutoRollbackSpec
+trait IdentityLedgerItDbTest extends fixture.FlatSpec
+  with AutoRollback
   with MustMatchers
   with LedgerStateStorageFixture {
 

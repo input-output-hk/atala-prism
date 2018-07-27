@@ -3,7 +3,6 @@ package io.iohk.cef.ledger.storage.dao
 import java.time.{Clock, Instant}
 
 import akka.util.ByteString
-import io.iohk.cef.db.AutoRollbackSpec
 import io.iohk.cef.ledger.Block
 import io.iohk.cef.ledger.identity._
 import io.iohk.cef.ledger.storage.scalike.LedgerTable
@@ -11,9 +10,10 @@ import io.iohk.cef.ledger.storage.scalike.dao.LedgerStorageDao
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{MustMatchers, fixture}
 import scalikejdbc._
+import scalikejdbc.scalatest.AutoRollback
 
-class LedgerStorageDaoSpec extends fixture.FlatSpec
-  with AutoRollbackSpec
+trait LedgerStorageDaoDbTest extends fixture.FlatSpec
+  with AutoRollback
   with MustMatchers
   with MockFactory {
 
