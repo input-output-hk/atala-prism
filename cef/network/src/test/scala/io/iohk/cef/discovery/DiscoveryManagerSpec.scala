@@ -12,7 +12,7 @@ import akka.testkit.{TestProbe => UntypedTestProbe}
 import akka.util.ByteString
 import akka.{actor => untyped}
 import io.iohk.cef.crypto
-import io.iohk.cef.db.{AutoRollbackSpec, DummyKnownNodesStorage, KnownNode}
+import io.iohk.cef.db.{DummyKnownNodesStorage, KnownNode}
 import io.iohk.cef.discovery.DiscoveryListener.{DiscoveryListenerRequest, Ready, SendMessage, Start}
 import io.iohk.cef.discovery.DiscoveryManager._
 import io.iohk.cef.encoding.{Decoder, Encoder}
@@ -23,14 +23,12 @@ import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import org.apache.commons.lang3.RandomStringUtils.{randomAlphabetic, randomAlphanumeric}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.MustMatchers._
-import org.scalatest.{BeforeAndAfterAll, fixture}
-import scalikejdbc.DBSession
+import org.scalatest.{BeforeAndAfterAll, FlatSpec}
 
 import scala.concurrent.duration._
 
 class DiscoveryManagerSpec
-  extends fixture.FlatSpecLike
-    with AutoRollbackSpec
+  extends FlatSpec
     with BeforeAndAfterAll
     with MockFactory {
 
@@ -38,8 +36,6 @@ class DiscoveryManagerSpec
   implicit val typedSystem: typed.ActorSystem[_] = untypedSystem.toTyped
 
   trait ListeningDiscoveryManager {
-
-    val session: DBSession
 
     val mockClock = new TestClock
 
@@ -140,15 +136,13 @@ class DiscoveryManagerSpec
     ping
   }
 
-  "A DiscoveryManager" should "initialize correctly" in { s =>
+  "A DiscoveryManager" should "initialize correctly" in {
     new ListeningDiscoveryManager {
-      override val session: DBSession = s
       createActor
     }
   }
-  it should "process a Ping message" in { s =>
+  it should "process a Ping message" in {
     new ListeningDiscoveryManager {
-      override val session: DBSession = s
       val actor: ActorRef[DiscoveryRequest] = createActor
 
       val ping = pingActor(actor, this)
@@ -165,9 +159,8 @@ class DiscoveryManagerSpec
       }
     }
   }
-  it should "process a Pong message" in { s =>
+  it should "process a Pong message" in {
     new ListeningDiscoveryManager {
-      override val session: DBSession = s
       val actor: ActorRef[DiscoveryRequest] = createActor
 
       val node = getNode(this)
@@ -192,9 +185,8 @@ class DiscoveryManagerSpec
       }
     }
   }
-  it should "process a Seek message" in { s =>
+  it should "process a Seek message" in {
     new ListeningDiscoveryManager {
-      override val session: DBSession = s
       val actor = createActor
 
       val ping = pingActor(actor, this)
@@ -218,9 +210,8 @@ class DiscoveryManagerSpec
       }
     }
   }
-  it should "discover the peers of a connected node" in { s =>
+  it should "discover the peers of a connected node" in {
     new ListeningDiscoveryManager {
-      override val session = s
 
       override def discoveryConfig: DiscoveryConfig =
         super.discoveryConfig.copy(multipleConnectionsPerAddress = true)
@@ -254,9 +245,8 @@ class DiscoveryManagerSpec
       }
     }
   }
-  it should "ping bootstrap nodes" in { s =>
+  it should "ping bootstrap nodes" in {
     new ListeningDiscoveryManager {
-      override val session: FixtureParam = s
 
       override def bootstrapNodes: Set[NodeInfo] = {
         Set(nodeA, nodeB)
@@ -282,9 +272,8 @@ class DiscoveryManagerSpec
       }
     }
   }
-  it should "return the known nodes" in {s =>
+  it should "return the known nodes" in {
     new ListeningDiscoveryManager {
-      override val session: FixtureParam = s
 
       val actor = createActor
 
@@ -301,9 +290,8 @@ class DiscoveryManagerSpec
       )
     }
   }
-  it should "blacklist nodes" in { s =>
+  it should "blacklist nodes" in {
     new ListeningDiscoveryManager {
-      override val session: FixtureParam = s
 
       val blacklistDuration = 1 second
 
@@ -328,12 +316,11 @@ class DiscoveryManagerSpec
       probe.expectMessageType[DiscoveredNodes].nodes.size mustBe 0
     }
   }
-  it should "stop accepting new peers when the nodes limit is reached" in { s =>
+  it should "stop accepting new peers when the nodes limit is reached" in {
     pending
   }
-  it should "scan pinged nodes and already discovered nodes" in { s =>
+  it should "scan pinged nodes and already discovered nodes" in {
     new ListeningDiscoveryManager {
-      override val session = s
 
       val randomSource = new SecureRandom {
         override def nextBytes(bytes: Array[Byte]): Unit = ()
@@ -357,12 +344,11 @@ class DiscoveryManagerSpec
       pingC mustBe pingA
     }
   }
-  it should "prevent multiple connections from the same IP when configured" in { s =>
+  it should "prevent multiple connections from the same IP when configured" in {
     pending
   }
-  it should "not process pong messages in absence of a ping" in { s =>
+  it should "not process pong messages in absence of a ping" in {
     new ListeningDiscoveryManager {
-      override val session = s
       val inbox = TestInbox[DiscoveryListenerRequest]()
       override val listenerMaker = (_: ActorContext[DiscoveryRequest]) => inbox.ref
 
@@ -375,9 +361,8 @@ class DiscoveryManagerSpec
       inbox.receiveAll().collect { case w: DiscoveryResponseWrapper => w} mustBe Seq()
     }
   }
-  it should "not process neighbors messages in absence of a seek" in { s =>
+  it should "not process neighbors messages in absence of a seek" in {
     new ListeningDiscoveryManager {
-      override val session = s
 
       val actor = createActor
       val node = NodeInfo(nodeState.nodeId, discoveryAddress, serverAddress, nodeState.capabilities)

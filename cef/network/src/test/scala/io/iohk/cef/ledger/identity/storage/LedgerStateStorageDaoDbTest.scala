@@ -1,12 +1,12 @@
 package io.iohk.cef.ledger.identity.storage
 import akka.util.ByteString
-import io.iohk.cef.db.AutoRollbackSpec
 import io.iohk.cef.ledger.identity._
 import io.iohk.cef.ledger.identity.storage.scalike.dao.LedgerStateStorageDao
 import org.scalatest.{MustMatchers, fixture}
+import scalikejdbc.scalatest.AutoRollback
 
-class LedgerStateStorageDaoSpec extends fixture.FlatSpec
-  with AutoRollbackSpec
+trait LedgerStateStorageDaoDbTest extends fixture.FlatSpec
+  with AutoRollback
   with MustMatchers
   with LedgerStateStorageFixture {
 
