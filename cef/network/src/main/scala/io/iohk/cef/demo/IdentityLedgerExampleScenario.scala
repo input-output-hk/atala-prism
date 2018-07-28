@@ -31,7 +31,7 @@ object IdentityLedgerExampleScenario extends App {
 
   implicit val forExpEnabler = ForExpressionsEnabler.futureEnabler
 
-  val identityLedger = Ledger(ledgerStorage, ledgerStateStorage)
+  val identityLedger = Ledger(1, ledgerStorage, ledgerStateStorage)
 
   val txs = List[IdentityTransaction](
     Claim("carlos11", ByteString("carlos")),
@@ -42,7 +42,7 @@ object IdentityLedgerExampleScenario extends App {
 
   import IdentityBlockSerializer._
 
-  val newLedger = identityLedger.apply(1, block).map(future => Await.result(future, 1 hour))
+  val newLedger = identityLedger.apply(block).map(future => Await.result(future, 1 hour))
 
   println(newLedger)
 }
