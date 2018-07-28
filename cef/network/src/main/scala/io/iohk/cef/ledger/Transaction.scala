@@ -7,9 +7,9 @@ trait Transaction[Key, Value] extends (LedgerState[Key, Value] => Either[LedgerE
     * (1) for any transaction, the set of partitions P it depends on can be clearly identified.
     * (2) for any transaction, P fits in memory.
     *
-    * Let S be the ledger state and P be a set of partitions of S. Then:
-    *   A transaction t is dependent on P iff t(P) = t(S)
-    * Meaning that the application of t in P has the same effect/result than the application of t in S.
+    * Let S be the ledger state and Q be a set of partitions of S. Then:
+    *   A transaction t is dependent on Q iff t(S - Q) != t(S)
+    * Meaning that the application of t in S without Q results in a different scenario than applying t on S.
     * @return
     */
   def partitionIds: Set[Key]

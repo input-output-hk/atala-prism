@@ -31,7 +31,7 @@ class IdentityLedgerItSpec extends fixture.FlatSpec
     val ledgerStorage = new LedgerStorageImpl(ledgerStorageDao) {
       override def execInSession[T](block: DBSession => T): T = block(dBSession)
     }
-    Ledger(ledgerStorage, ledgerStateStorage)
+    Ledger(1, ledgerStorage, ledgerStateStorage)
   }
 
   behavior of "IdentityLedgerIt"
@@ -43,7 +43,7 @@ class IdentityLedgerItSpec extends fixture.FlatSpec
     val header = IdentityBlockHeader(ByteString("header"), now, 1)
     val block1 = Block(header, List[IdentityTransaction](Claim("one", ByteString("one")), Claim("two", ByteString("two"))))
 
-    val block1Result = ledger(1, block1)
+    val block1Result = ledger(block1)
     block1Result.isRight mustBe true
     block1Result.right.get.isSuccess mustBe true
 
@@ -54,7 +54,7 @@ class IdentityLedgerItSpec extends fixture.FlatSpec
       IdentityLedgerState(Map("one" -> Set(ByteString("one")), "two" -> Set(ByteString("two"))))
     val block2 = Block(header.copy(height = 2), List[IdentityTransaction](Link("two", ByteString("two-two"))))
 
-    val block2Result = ledger(1, block2)
+    val block2Result = ledger(block2)
     block2Result.isRight mustBe true
     block2Result.right.get.isSuccess mustBe true
 
@@ -64,7 +64,7 @@ class IdentityLedgerItSpec extends fixture.FlatSpec
       )
 
     val block3 = Block(header.copy(height = 2), List[IdentityTransaction](Link("three", ByteString("three"))))
-    val invalidResult = ledger(1, block3)
+    val invalidResult = ledger(block3)
 
     if(invalidResult.isRight) {
       fail(s"Link transaction should've been invalid. Expected IdentityNotClaimedError but got ${invalidResult}")
