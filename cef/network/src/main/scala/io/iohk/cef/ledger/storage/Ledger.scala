@@ -5,20 +5,19 @@ import io.iohk.cef.utils.ForExpressionsEnabler
 
 import scala.language.higherKinds
 
-case class Ledger[F[_],
-                  State <: LedgerState[Key, _],
-                  Key](
+case class Ledger[F[_], S](
+                       ledgerId: Int,
                        ledgerStorage: LedgerStorage,
-                       ledgerStateStorage: LedgerStateStorage[State, Key])(
+                       ledgerStateStorage: LedgerStateStorage[S])(
                        implicit adapter: ForExpressionsEnabler[F]) {
 
   import adapter._
 
   def apply[Header <: BlockHeader,
-            Tx <: Transaction[State, Key]](ledgerId: Int, block: Block[State, Key, Header, Tx])(
-                                          implicit serializer: ByteStringSerializable[Block[State, Key, Header, Tx]]
+            Tx <: Transaction[S]](block: Block[S, Header, Tx])(
+                                          implicit serializer: ByteStringSerializable[Block[S, Header, Tx]]
   ): Either[LedgerError, F[Unit]] = {
-    val state = ledgerStateStorage.slice(block.keys)
+    val state = ledgerStateStorage.slice(block.partitionIds)
     val either = block(state)
     either.map(newState =>
       for {
@@ -28,6 +27,6 @@ case class Ledger[F[_],
     )
   }
 
-  def slice(keys: Set[Key]): State =
+  def slice(keys: Set[String]): LedgerState[S] =
     ledgerStateStorage.slice(keys)
 }

@@ -3,12 +3,10 @@ package io.iohk.cef.ledger.identity
 import java.time.Instant
 
 import akka.util.ByteString
-import io.iohk.cef.ledger.{Block, ByteStringSerializable, LedgerState}
 import io.iohk.cef.ledger.identity.storage.protobuf.identityLedger.{IdentityBlockProto, IdentityHeaderProto, IdentityTransactionProto}
+import io.iohk.cef.ledger.{Block, ByteStringSerializable}
 
 object IdentityBlockSerializer {
-
-  type IdentityLedgerBlock = Block[LedgerState[String, Set[ByteString]], String, IdentityBlockHeader, IdentityTransaction]
 
   implicit val serializable: ByteStringSerializable[IdentityLedgerBlock] = {
     new ByteStringSerializable[IdentityLedgerBlock] {

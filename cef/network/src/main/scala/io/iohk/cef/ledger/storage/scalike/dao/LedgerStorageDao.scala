@@ -8,11 +8,10 @@ import scalikejdbc._
 
 class LedgerStorageDao(clock: Clock) {
 
-  def push[State <: LedgerState[Key, _],
-          Key,
+  def push[S,
           Header <: BlockHeader,
-          Tx <: Transaction[State, Key]](ledgerId: Int, block: Block[State, Key, Header, Tx])(
-      implicit blockSerializable: ByteStringSerializable[Block[State, Key, Header, Tx]],
+          Tx <: Transaction[S]](ledgerId: Int, block: Block[S, Header, Tx])(
+      implicit blockSerializable: ByteStringSerializable[Block[S, Header, Tx]],
       session: DBSession): Int = {
     val blockColumn = LedgerTable.column
     val lt = LedgerTable.syntax("bt")

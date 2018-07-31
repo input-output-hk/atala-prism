@@ -1,15 +1,13 @@
 package io.iohk.cef.ledger.identity.storage
 import akka.util.ByteString
-import io.iohk.cef.db.AutoRollbackSpec
 import io.iohk.cef.ledger.identity._
 import io.iohk.cef.ledger.identity.storage.scalike.dao.LedgerStateStorageDao
-import org.scalamock.scalatest.MockFactory
 import org.scalatest.{MustMatchers, fixture}
+import scalikejdbc.scalatest.AutoRollback
 
-class LedgerStateStorageDaoSpec extends fixture.FlatSpec
-  with AutoRollbackSpec
+trait LedgerStateStorageDaoDbTest extends fixture.FlatSpec
+  with AutoRollback
   with MustMatchers
-  with MockFactory
   with LedgerStateStorageFixture {
 
   behavior of "LedgerStateStorage"
@@ -38,7 +36,7 @@ class LedgerStateStorageDaoSpec extends fixture.FlatSpec
     val storage = new LedgerStateStorageDao
     val state = storage.slice(Set("one", "zero"))
     val newState =
-      new IdentityLedgerStateImpl(Map(("one", Set(ByteString("one"))),
+      new IdentityLedgerState(Map(("one", Set(ByteString("one"))),
         ("three", Set(ByteString("three")))))
     storage.update(state, newState)
     val editedState = storage.slice(Set("one", "two", "three", "zero"))

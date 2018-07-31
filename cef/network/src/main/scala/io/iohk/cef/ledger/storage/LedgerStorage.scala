@@ -1,13 +1,11 @@
 package io.iohk.cef.ledger.storage
 
-import io.iohk.cef.ledger.{Block, BlockHeader, LedgerState, Transaction}
-import io.iohk.cef.ledger.ByteStringSerializable
+import io.iohk.cef.ledger.{Block, BlockHeader, ByteStringSerializable, Transaction}
 
 trait LedgerStorage {
 
-  def push[State <: LedgerState[Key, _],
-          Key,
+  def push[S,
           Header <: BlockHeader,
-          Tx <: Transaction[State, Key]](ledgerId: Int, block: Block[State, Key, Header, Tx])(
-                                        implicit blockSerializable: ByteStringSerializable[Block[State, Key, Header, Tx]]): Unit
+          Tx <: Transaction[S]](ledgerId: Int, block: Block[S, Header, Tx])(
+                                        implicit blockSerializable: ByteStringSerializable[Block[S, Header, Tx]]): Unit
 }

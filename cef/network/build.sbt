@@ -27,6 +27,10 @@ import org.scoverage.coveralls.Imports.CoverallsKeys._
 coverallsToken := sys.env.get("COVERALLS_REPO_TOKEN")
 coverallsGitRepoLocation := Some("../../")
 
+coverageEnabled := true
+coverageMinimum := 80
+coverageFailOnMinimum := true
+
 val dep = {
   val akkaVersion = "2.5.12"
 
@@ -98,7 +102,7 @@ val root = project.in(file("."))
     ),
     scalacOptions ++= compilerOptions,
     coverageExcludedPackages :=
-      "<empty>;io\\.iohk\\.cef\\.demo\\..*;io.iohk.cef.ledger.identity.storage.protobuf.identityLedger"
+      "<empty>;io.iohk.cef.ledger.identity.storage.protobuf.identityLedger"
   )
 
 PB.targets in Compile := Seq(

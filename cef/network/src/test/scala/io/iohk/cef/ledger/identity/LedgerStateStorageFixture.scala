@@ -6,7 +6,7 @@ import scalikejdbc._
 
 trait LedgerStateStorageFixture {
 
-  def insertPairs(pairs: List[(String, ByteString)])(implicit session: DBSession) = {
+  def insertPairs(pairs: List[(String, ByteString)])(implicit session: DBSession): Unit = {
     val column = IdentityLedgerStateTable.column
     pairs.foreach(item => {
       val (identity, publicKey) = item
