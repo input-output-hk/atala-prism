@@ -2,7 +2,7 @@ package io.iohk.cef.ledger.chimeric
 
 import scala.collection.mutable
 
-class Value(protected[Value] val m: Map[Currency, Quantity]) {
+case class Value(protected[Value] val m: Map[Currency, Quantity]) {
   require(m.forall(_._2 != 0))
 
   def + (that: Value): Value = combine(that, _ + _)

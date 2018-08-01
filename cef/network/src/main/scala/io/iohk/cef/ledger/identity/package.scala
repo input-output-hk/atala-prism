@@ -4,8 +4,8 @@ import akka.util.ByteString
 
 package object identity {
   type IdentityLedgerBlock = Block[Set[ByteString], IdentityBlockHeader, IdentityTransaction]
-  type IdentityLedgerState = LedgerState[Set[ByteString]]
+  type IdentityLedgerState = Partitioned[Set[ByteString]]
 
   //Mimics the apply method
-  def IdentityLedgerState(map: Map[String, Set[ByteString]] = Map()): IdentityLedgerState = LedgerState[Set[ByteString]](map)
+  def IdentityLedgerState(map: Map[String, Set[ByteString]] = Map()): IdentityLedgerState = Partitioned[Set[ByteString]](map)
 }

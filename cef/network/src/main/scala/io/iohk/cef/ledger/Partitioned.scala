@@ -14,10 +14,10 @@ package io.iohk.cef.ledger
   * @param map
   * @tparam S
   */
-case class LedgerState[S](map: Map[String, S]) {
+case class Partitioned[S](map: Map[String, S]) {
   def get(key: String): Option[S] = map.get(key)
   def contains(key: String): Boolean = map.contains(key)
-  def put(key: String, value: S): LedgerState[S] = LedgerState(map + ((key, value)))
-  def remove(key: String): LedgerState[S] = LedgerState(map - key)
+  def put(key: String, value: S): Partitioned[S] = Partitioned(map + ((key, value)))
+  def remove(key: String): Partitioned[S] = Partitioned(map - key)
   def keys: Set[String] = map.keySet
 }

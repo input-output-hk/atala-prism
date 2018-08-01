@@ -1,9 +1,10 @@
 package io.iohk.cef.ledger
 
-trait Transaction[S] extends (LedgerState[S] => Either[LedgerError, LedgerState[S]]) {
+trait Transaction[S] extends (Partitioned[S] => Either[LedgerError, Partitioned[S]]) {
   /**
     * The ids of the state partitions that need to be retrieved for this tx.
-    * See [[LedgerState]] for more detail.
+    * See [[Partitioned]] for more detail.
+    *
     * @return
     */
   def partitionIds: Set[String]

@@ -1,7 +1,7 @@
 package io.iohk.cef.ledger.identity.storage.scalike.dao
 
 import akka.util.ByteString
-import io.iohk.cef.ledger.LedgerState
+import io.iohk.cef.ledger.Partitioned
 import io.iohk.cef.ledger.identity.IdentityLedgerState
 import io.iohk.cef.ledger.identity.storage.scalike.{IdentityLedgerStateTable, LedgerStateEntryMap}
 import org.bouncycastle.util.encoders.Hex
@@ -19,7 +19,7 @@ class LedgerStateStorageDao {
     val emptyEntries = LedgerStateEntryMap[String, ByteString]()
     val aggregatedEntries =
       pairs.foldLeft(emptyEntries)(_ aggregateWith _)
-    LedgerState(aggregatedEntries.map)
+    Partitioned(aggregatedEntries.map)
   }
 
   def update(previousState: IdentityLedgerState,

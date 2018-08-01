@@ -1,17 +1,12 @@
 package io.iohk.cef.ledger.chimeric
 
-//Using old model and not the tx frag model
-//sealed trait ChimericTx extends Transaction[LedgerState[ValueHolder, Value], ValueHolder]
-//
-//class UtxoTransaction(inputs: Set[Input], outputs: List[Output], forge: Value, fee: Value) extends ChimericTx
-//
-//class AccountTransaction(sender: Option[Address], receiver: Option[Address], value: Value, forge: Value, fee: Value, nonce: Int) extends ChimericTx
-//
-//class HybridTransaction(inputs: Map[Address, Value], outputs: Map[Address, Value], forge: Value, fee: Value, nonce: Int) extends ChimericTx
-//
-//class DepositTransaction(inputs: Set[Input], depositor: Address, forge: Value, fee: Value) extends ChimericTx
-//
-//class WithdrawTransaction(withdrawer: Address, outputs: List[Output], forge: Value, fee: Value, nonce: Int) extends ChimericTx
+import io.iohk.cef.ledger.{LedgerError, Partitioned, Transaction}
 
+class ChimericTx(fragments: Seq[ChimericTxFragment]) extends Transaction[ChimericLedgerState] {
+  override def apply(s: Partitioned[ChimericLedgerState]): Either[LedgerError, Partitioned[ChimericLedgerState]] = {
 
+  }
+
+  override def partitionIds: Set[String] = ???
+}
 
