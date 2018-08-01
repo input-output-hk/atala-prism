@@ -1,5 +1,3 @@
 package io.iohk.cef.ledger.chimeric
 
-class ChimericLedgerState {
-
-}
+case class ChimericLedgerState(currencies: Map[Currency, Create], accountBalance: Map[Address, Double], utxos: Set[TxOutRef])
