@@ -7,11 +7,11 @@ object NetworkTransport {
 /**
   * NetworkTransports define a p2p abstraction over TCP, TLS, UDP, RLPx, etc.
   */
-abstract class NetworkTransport[NodeId, Message](
+abstract class NetworkTransport[Address, Message](
     /**
       * The messageHandler receives inbound messages from peers.
       */
-    messageHandler: (NodeId, Message) => Unit) {
+    messageHandler: (Address, Message) => Unit) {
 
   /**
     * Although not specified here, you probably want your transport
@@ -37,8 +37,8 @@ abstract class NetworkTransport[NodeId, Message](
 
   /**
     * Send a message to another peer.
-    * @param nodeId the nodeId of the peer to which to send the message
+    * @param address the address of the peer to which to send the message
     * @param message the message body itself.
     */
-  def sendMessage(nodeId: NodeId, message: Message): Unit
+  def sendMessage(address: Address, message: Message): Unit
 }
