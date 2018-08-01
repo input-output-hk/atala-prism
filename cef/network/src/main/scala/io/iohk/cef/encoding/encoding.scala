@@ -2,6 +2,8 @@ package io.iohk.cef
 
 package object encoding {
 
+  case class Codec[T, U](encoder: Encoder[T, U], decoder: Decoder[U, T])
+
   trait Encoder[T, U] {
     self =>
 
