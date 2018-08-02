@@ -10,7 +10,7 @@ import io.iohk.cef.ConfigExtensions._
 import io.iohk.cef.network.discovery.db.KnownNodeStorageImpl
 import io.iohk.cef.demo.SimpleNode3
 import io.iohk.cef.network.discovery.DiscoveryConfig
-import io.iohk.cef.telemetery.DatadogTelemetry
+import io.iohk.cef.network.telemetry.DatadogTelemetry
 
 class NetworkApp1(config: Config) {
 

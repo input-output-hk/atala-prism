@@ -6,7 +6,7 @@ import java.util.concurrent.TimeUnit
 
 import akka.util.ByteString
 import io.iohk.cef.network.{Capabilities, NodeInfo}
-import io.iohk.cef.telemetery.InMemoryTelemetry
+import io.iohk.cef.network.telemetry.InMemoryTelemetry
 import io.iohk.cef.test.TestClock
 import org.scalatest.{MustMatchers, fixture}
 import scalikejdbc.DBSession

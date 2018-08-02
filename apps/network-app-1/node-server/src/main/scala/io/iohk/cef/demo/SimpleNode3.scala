@@ -16,7 +16,7 @@ import io.iohk.cef.network.discovery.DiscoveryConfig
 import io.iohk.cef.network.discovery.DiscoveryManager.{DiscoveredNodes, DiscoveryRequest, GetDiscoveredNodes}
 import io.iohk.cef.network.transport.rlpx.RLPxTransportProtocol
 import io.iohk.cef.network.{Capabilities, NodeInfo}
-import io.iohk.cef.telemetery.DatadogTelemetry
+import io.iohk.cef.network.telemetry.DatadogTelemetry
 import io.micrometer.core.instrument.{Counter, DistributionSummary}
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair
 import org.bouncycastle.util.encoders.Hex

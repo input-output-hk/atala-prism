@@ -5,7 +5,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import akka.util.ByteString
 import io.iohk.cef.network.NodeInfo
-import io.iohk.cef.telemetery.Telemetery
+import io.iohk.cef.network.telemetry.Telemetery
 
 import scala.concurrent.duration.FiniteDuration
 

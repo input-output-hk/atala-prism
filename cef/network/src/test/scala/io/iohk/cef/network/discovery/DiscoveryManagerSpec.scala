@@ -17,7 +17,7 @@ import io.iohk.cef.network.discovery.DiscoveryListener.{DiscoveryListenerRequest
 import io.iohk.cef.network.discovery.DiscoveryManager._
 import io.iohk.cef.network.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.{Capabilities, NodeInfo, NodeStatus, ServerStatus}
-import io.iohk.cef.telemetery.InMemoryTelemetry
+import io.iohk.cef.network.telemetry.InMemoryTelemetry
 import io.iohk.cef.test.TestClock
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import org.apache.commons.lang3.RandomStringUtils.{randomAlphabetic, randomAlphanumeric}

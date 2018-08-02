@@ -4,7 +4,7 @@ import java.time.{Clock, Instant}
 import java.util.concurrent.atomic.AtomicInteger
 
 import io.iohk.cef.network.NodeInfo
-import io.iohk.cef.telemetery.Telemetery
+import io.iohk.cef.network.telemetry.Telemetery
 import org.bouncycastle.util.encoders.Hex
 import org.flywaydb.core.Flyway
 import scalikejdbc._

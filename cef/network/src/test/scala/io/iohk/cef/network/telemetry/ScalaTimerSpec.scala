@@ -1,4 +1,4 @@
-package io.iohk.cef.telemetery
+package io.iohk.cef.network.telemetry
 
 import java.util.concurrent.TimeUnit
 

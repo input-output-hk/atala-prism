@@ -1,4 +1,4 @@
-package io.iohk.cef.telemetery
+package io.iohk.cef.network.telemetry
 
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry

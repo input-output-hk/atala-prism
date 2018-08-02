@@ -1,4 +1,4 @@
-package io.iohk.cef.telemetery
+package io.iohk.cef.network.telemetry
 import java.time.Duration
 
 import io.micrometer.core.instrument.binder.{JvmMemoryMetrics, JvmThreadMetrics, ProcessorMetrics}
@@ -19,9 +19,9 @@ trait DatadogTelemetry extends Telemetery {
 object DatadogTelemetry extends MicrometerRegistryConfig {
   self =>
 
-  val step: Duration = configFile.getDuration("telemetery.datadog.duration")
+  val step: Duration = configFile.getDuration("telemetry.datadog.duration")
 
-  val apiKey: String = configFile.getString("telemetery.datadog.apiKey")
+  val apiKey: String = configFile.getString("telemetry.datadog.apiKey")
 
   val config = new DatadogConfig() {
     override def apiKey(): String = self.apiKey

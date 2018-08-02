@@ -12,7 +12,7 @@ import io.iohk.cef.network.discovery._
 import io.iohk.cef.network.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.NodeStatus.NodeState
 import io.iohk.cef.network.{NodeInfo, ServerStatus}
-import io.iohk.cef.telemetery.DatadogTelemetry
+import io.iohk.cef.network.telemetry.DatadogTelemetry
 import org.bouncycastle.util.encoders.Hex
 
 object DiscoveryActor extends DatadogTelemetry {
