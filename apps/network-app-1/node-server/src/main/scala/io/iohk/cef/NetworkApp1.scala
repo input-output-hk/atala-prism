@@ -7,9 +7,9 @@ import akka.actor.typed.scaladsl.adapter._
 import akka.stream.ActorMaterializer
 import com.typesafe.config.{Config, ConfigFactory}
 import io.iohk.cef.ConfigExtensions._
-import io.iohk.cef.discovery.db.KnownNodeStorageImpl
+import io.iohk.cef.network.discovery.db.KnownNodeStorageImpl
 import io.iohk.cef.demo.SimpleNode3
-import io.iohk.cef.discovery.DiscoveryConfig
+import io.iohk.cef.network.discovery.DiscoveryConfig
 import io.iohk.cef.telemetery.DatadogTelemetry
 
 class NetworkApp1(config: Config) {

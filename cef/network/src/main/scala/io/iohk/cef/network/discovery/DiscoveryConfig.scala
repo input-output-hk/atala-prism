@@ -1,4 +1,4 @@
-package io.iohk.cef.discovery
+package io.iohk.cef.network.discovery
 
 import java.util.concurrent.TimeUnit
 

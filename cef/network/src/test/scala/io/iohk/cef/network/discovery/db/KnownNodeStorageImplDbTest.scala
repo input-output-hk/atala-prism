@@ -1,4 +1,4 @@
-package io.iohk.cef.discovery.db
+package io.iohk.cef.network.discovery.db
 
 import java.net.{InetAddress, InetSocketAddress}
 import java.time.Clock

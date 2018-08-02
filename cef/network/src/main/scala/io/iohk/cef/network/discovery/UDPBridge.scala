@@ -1,4 +1,4 @@
-package io.iohk.cef.discovery
+package io.iohk.cef.network.discovery
 
 import java.net.InetSocketAddress
 
@@ -7,7 +7,7 @@ import akka.actor.typed.scaladsl.ActorContext
 import akka.{actor => untyped}
 import akka.io.{IO, Udp}
 import akka.util.ByteString
-import io.iohk.cef.discovery.DiscoveryListener._
+import io.iohk.cef.network.discovery.DiscoveryListener._
 import io.iohk.cef.network.encoding.{Decoder, Encoder}
 import akka.actor.typed.scaladsl.adapter._
 

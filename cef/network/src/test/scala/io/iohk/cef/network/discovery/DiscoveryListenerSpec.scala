@@ -1,4 +1,4 @@
-package io.iohk.cef.discovery
+package io.iohk.cef.network.discovery
 
 import java.net.{InetAddress, InetSocketAddress}
 
@@ -6,7 +6,7 @@ import akka.actor.typed.scaladsl.adapter._
 import akka.testkit.typed.scaladsl.{BehaviorTestKit, TestInbox}
 import akka.util.ByteString
 import akka.{actor => untyped, testkit => untypedKit}
-import io.iohk.cef.discovery.DiscoveryListener._
+import io.iohk.cef.network.discovery.DiscoveryListener._
 import io.iohk.cef.network.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.{Capabilities, NodeInfo}
 import io.iohk.cef.test.StopAfterAll

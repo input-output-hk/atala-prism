@@ -1,4 +1,4 @@
-package io.iohk.cef.discovery
+package io.iohk.cef.network.discovery
 
 import java.net.InetSocketAddress
 
@@ -8,7 +8,7 @@ import akka.io.Udp
 import akka.testkit.typed.scaladsl.TestProbe
 import akka.util.ByteString
 import akka.{testkit => untypedKit}
-import io.iohk.cef.discovery.DiscoveryListener._
+import io.iohk.cef.network.discovery.DiscoveryListener._
 import io.iohk.cef.network.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.{Capabilities, NodeInfo}
 import org.scalamock.scalatest.MockFactory

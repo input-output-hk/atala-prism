@@ -1,4 +1,4 @@
-package io.iohk.cef.discovery
+package io.iohk.cef.network.discovery
 
 import java.net.{InetAddress, InetSocketAddress}
 import java.security.SecureRandom
@@ -12,9 +12,9 @@ import akka.testkit.{TestProbe => UntypedTestProbe}
 import akka.util.ByteString
 import akka.{actor => untyped}
 import io.iohk.cef.crypto
-import io.iohk.cef.discovery.db.{DummyKnownNodesStorage, KnownNode}
-import io.iohk.cef.discovery.DiscoveryListener.{DiscoveryListenerRequest, Ready, SendMessage, Start}
-import io.iohk.cef.discovery.DiscoveryManager._
+import io.iohk.cef.network.discovery.db.{DummyKnownNodesStorage, KnownNode}
+import io.iohk.cef.network.discovery.DiscoveryListener.{DiscoveryListenerRequest, Ready, SendMessage, Start}
+import io.iohk.cef.network.discovery.DiscoveryManager._
 import io.iohk.cef.network.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.{Capabilities, NodeInfo, NodeStatus, ServerStatus}
 import io.iohk.cef.telemetery.InMemoryTelemetry

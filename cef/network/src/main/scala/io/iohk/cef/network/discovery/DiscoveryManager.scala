@@ -1,4 +1,4 @@
-package io.iohk.cef.discovery
+package io.iohk.cef.network.discovery
 
 import java.net.InetSocketAddress
 import java.security.SecureRandom
@@ -8,7 +8,7 @@ import akka.actor.typed.scaladsl.{ActorContext, Behaviors, StashBuffer, TimerSch
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.util.ByteString
 import io.iohk.cef.crypto
-import io.iohk.cef.discovery.db.KnownNodeStorage
+import io.iohk.cef.network.discovery.db.KnownNodeStorage
 import io.iohk.cef.network.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.NodeStatus.NodeState
 import io.iohk.cef.network.ServerStatus
@@ -22,7 +22,7 @@ import scala.util.Random
 
 object DiscoveryManager {
 
-  import io.iohk.cef.discovery.db.KnownNode
+  import io.iohk.cef.network.discovery.db.KnownNode
   import io.iohk.cef.network.NodeInfo
 
   sealed trait DiscoveryRequest
