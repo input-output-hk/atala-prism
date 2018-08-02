@@ -6,7 +6,7 @@ import java.time.Clock
 
 import akka.actor.typed.Behavior
 import akka.util.ByteString
-import io.iohk.cef.db.KnownNodeStorage
+import io.iohk.cef.discovery.db.KnownNodeStorage
 import io.iohk.cef.discovery.DiscoveryManager.DiscoveryRequest
 import io.iohk.cef.discovery._
 import io.iohk.cef.encoding.{Decoder, Encoder}

@@ -31,7 +31,7 @@ abstract class NetworkTransport[Address, Message](
     *
     * This method should run synchronously.
     *
-    * @throws TransportInitializationException if initialization fails.
+    * throws TransportInitializationException if initialization fails.
     */
   def start(): Unit
 

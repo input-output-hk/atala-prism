@@ -1,6 +1,6 @@
 package io.iohk.cef.discovery
 
-import io.iohk.cef.db.KnownNode
+import io.iohk.cef.discovery.db.KnownNode
 import io.iohk.cef.network.NodeInfo
 
 /**

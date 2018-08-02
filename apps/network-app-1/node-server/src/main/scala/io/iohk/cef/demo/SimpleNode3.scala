@@ -10,7 +10,7 @@ import akka.actor.typed.scaladsl.{ActorContext, Behaviors, TimerScheduler}
 import akka.actor.typed.{ActorRef, Behavior, Logger}
 import akka.io.{IO, Tcp}
 import akka.util.{ByteString, Timeout}
-import io.iohk.cef.db.{KnownNode, KnownNodeStorage}
+import io.iohk.cef.discovery.db.{KnownNode, KnownNodeStorage}
 import io.iohk.cef.demo.SimpleNode3.{Confirmed, NodeResponse, Resend, SendTo}
 import io.iohk.cef.discovery.DiscoveryConfig
 import io.iohk.cef.discovery.DiscoveryManager.{DiscoveredNodes, DiscoveryRequest, GetDiscoveredNodes}

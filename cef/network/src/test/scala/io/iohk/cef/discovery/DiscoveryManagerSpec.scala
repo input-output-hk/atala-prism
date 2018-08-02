@@ -12,7 +12,7 @@ import akka.testkit.{TestProbe => UntypedTestProbe}
 import akka.util.ByteString
 import akka.{actor => untyped}
 import io.iohk.cef.crypto
-import io.iohk.cef.db.{DummyKnownNodesStorage, KnownNode}
+import io.iohk.cef.discovery.db.{DummyKnownNodesStorage, KnownNode}
 import io.iohk.cef.discovery.DiscoveryListener.{DiscoveryListenerRequest, Ready, SendMessage, Start}
 import io.iohk.cef.discovery.DiscoveryManager._
 import io.iohk.cef.encoding.{Decoder, Encoder}

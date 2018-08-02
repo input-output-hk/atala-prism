@@ -1,6 +1,6 @@
 package io.iohk.cef
 
-import io.iohk.cef.db.KnownNodeStorageImplDbTest
+import io.iohk.cef.discovery.db.KnownNodeStorageImplDbTest
 import io.iohk.cef.ledger.LedgerDbTest
 import io.iohk.cef.ledger.identity.IdentityLedgerItDbTest
 import io.iohk.cef.ledger.identity.storage.LedgerStateStorageDaoDbTest
