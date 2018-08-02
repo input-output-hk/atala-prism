@@ -9,6 +9,9 @@ import org.bouncycastle.util.encoders.Hex
 
 import scala.util.Try
 
+/**
+  * TODO this is currently hardcoded only to work with rlpx on a tcp/ip network.
+  */
 case class NodeInfo(id: ByteString,
                     discoveryAddress: InetSocketAddress,
                     serverAddress: InetSocketAddress,
