@@ -15,7 +15,7 @@ import io.iohk.cef.crypto
 import io.iohk.cef.discovery.db.{DummyKnownNodesStorage, KnownNode}
 import io.iohk.cef.discovery.DiscoveryListener.{DiscoveryListenerRequest, Ready, SendMessage, Start}
 import io.iohk.cef.discovery.DiscoveryManager._
-import io.iohk.cef.encoding.{Decoder, Encoder}
+import io.iohk.cef.network.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.{Capabilities, NodeInfo, NodeStatus, ServerStatus}
 import io.iohk.cef.telemetery.InMemoryTelemetry
 import io.iohk.cef.test.TestClock
@@ -73,8 +73,8 @@ class DiscoveryManagerSpec
       multipleConnectionsPerAddress = true,
       blacklistDefaultDuration = 30 seconds)
 
-    import io.iohk.cef.encoding.rlp.RLPEncoders._
-    import io.iohk.cef.encoding.rlp.RLPImplicits._
+    import io.iohk.cef.network.encoding.rlp.RLPEncoders._
+    import io.iohk.cef.network.encoding.rlp.RLPImplicits._
 
     val encoder = implicitly[Encoder[DiscoveryWireMessage, ByteString]]
 

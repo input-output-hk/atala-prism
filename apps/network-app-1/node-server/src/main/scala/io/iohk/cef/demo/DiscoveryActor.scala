@@ -9,7 +9,7 @@ import akka.util.ByteString
 import io.iohk.cef.discovery.db.KnownNodeStorage
 import io.iohk.cef.discovery.DiscoveryManager.DiscoveryRequest
 import io.iohk.cef.discovery._
-import io.iohk.cef.encoding.{Decoder, Encoder}
+import io.iohk.cef.network.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.NodeStatus.NodeState
 import io.iohk.cef.network.{NodeInfo, ServerStatus}
 import io.iohk.cef.telemetery.DatadogTelemetry
@@ -21,8 +21,8 @@ object DiscoveryActor extends DatadogTelemetry {
                         discoveryConfig: DiscoveryConfig,
                         knownNodeStorage: KnownNodeStorage): Behavior[DiscoveryRequest] = {
 
-    import io.iohk.cef.encoding.rlp.RLPEncoders._
-    import io.iohk.cef.encoding.rlp.RLPImplicits._
+    import io.iohk.cef.network.encoding.rlp.RLPEncoders._
+    import io.iohk.cef.network.encoding.rlp.RLPImplicits._
 
     val state = NodeState(
       key = nodeInfo.id,

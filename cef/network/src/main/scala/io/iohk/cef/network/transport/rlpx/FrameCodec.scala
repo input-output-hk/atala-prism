@@ -3,8 +3,8 @@ package io.iohk.cef.network.transport.rlpx
 import java.io.IOException
 
 import akka.util.ByteString
-import io.iohk.cef.encoding.rlp
-import io.iohk.cef.encoding.rlp.RLPImplicits._
+import io.iohk.cef.network.encoding.rlp
+import io.iohk.cef.network.encoding.rlp.RLPImplicits._
 import org.bouncycastle.crypto.StreamCipher
 import org.bouncycastle.crypto.digests.KeccakDigest
 import org.bouncycastle.crypto.engines.AESEngine

@@ -1,4 +1,4 @@
-package io.iohk.cef
+package io.iohk.cef.network
 
 package object encoding {
 

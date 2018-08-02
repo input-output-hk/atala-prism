@@ -9,7 +9,7 @@ import akka.actor.typed.{ActorRef, Behavior}
 import akka.util.ByteString
 import io.iohk.cef.crypto
 import io.iohk.cef.discovery.db.KnownNodeStorage
-import io.iohk.cef.encoding.{Decoder, Encoder}
+import io.iohk.cef.network.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.NodeStatus.NodeState
 import io.iohk.cef.network.ServerStatus
 import io.iohk.cef.utils.FiniteSizedMap

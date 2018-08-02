@@ -1,4 +1,4 @@
-package io.iohk.cef.encoding
+package io.iohk.cef.network.encoding
 
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
