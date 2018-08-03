@@ -20,12 +20,12 @@ class ConversationalNetwork[Message](
     * and the 'turning on' of a network.
     *
     * After successful return from this method, the network
-    * is ready to send and receive messages.
+    * instance returned will be ready to send and receive messages.
     *
-    * This method runs synchronously.
+    * This method runs synchronously and return the new network state.
     *
     */
-  def start(): Unit = ???
+  def start(): ConversationalNetwork[Message] = ???
 
   /**
     * Send a message to another network address.
