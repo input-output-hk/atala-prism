@@ -1,3 +1,3 @@
 package io.iohk.cef.ledger.chimeric
 
-class TxOutRef(id: ChimericTxId, index: Int)
+case class TxOutRef(id: ChimericTxId, index: Int)

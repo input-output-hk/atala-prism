@@ -5,4 +5,5 @@ package object chimeric {
   type Currency = String
   type Quantity = Int
   type ChimericTxId = String
+  type Address = String
 }

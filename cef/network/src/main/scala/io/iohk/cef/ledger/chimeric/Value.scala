@@ -14,7 +14,14 @@ case class Value(protected[Value] val m: Map[Currency, Quantity]) {
     //Using mutable for performance. Note that these side effects are not observable.
     //Referential transparency still holds for this method.
     val mutableM = mutable.Map(m.toSeq:_*)
-    mutableM.foreach{ case (curr, quant)  => mutableM += (curr -> (f(quant, that(curr)))) }
+    mutableM.foreach{ case (curr, quant)  => {
+      val newQuant = f(quant, that(curr))
+      if(newQuant != 0) {
+        mutableM += (curr -> newQuant)
+      } else {
+        mutableM -= curr
+      }
+    }}
     val keysToAdd = that.m.keySet diff m.keySet
     keysToAdd.foreach(curr => mutableM += (curr -> that(curr)))
     new Value(mutableM.toMap)

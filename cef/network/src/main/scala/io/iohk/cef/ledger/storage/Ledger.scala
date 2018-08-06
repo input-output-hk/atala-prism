@@ -27,6 +27,6 @@ case class Ledger[F[_], S](
     )
   }
 
-  def slice(keys: Set[String]): Partitioned[S] =
+  def slice(keys: Set[String]): LedgerState[S] =
     ledgerStateStorage.slice(keys)
 }
