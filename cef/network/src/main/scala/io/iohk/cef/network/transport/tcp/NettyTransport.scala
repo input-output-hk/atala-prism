@@ -28,8 +28,8 @@ private[tcp] class NettyTransport[Message](address: InetSocketAddress,
   def start(): NettyTransport[Message] = {
     val bossGroup = new NioEventLoopGroup
     val workerGroup = new NioEventLoopGroup
-    val b = new ServerBootstrap
-    b.group(bossGroup, workerGroup)
+    new ServerBootstrap()
+      .group(bossGroup, workerGroup)
       .channel(classOf[NioServerSocketChannel])
       .childHandler(new ChannelInitializer[SocketChannel]() {
         override def initChannel(ch: SocketChannel): Unit = {
@@ -38,8 +38,8 @@ private[tcp] class NettyTransport[Message](address: InetSocketAddress,
       })
       .option[Integer](ChannelOption.SO_BACKLOG, 128)
       .childOption[java.lang.Boolean](ChannelOption.SO_KEEPALIVE, true)
-
-    b.bind(address).await()
+      .bind(address)
+      .await()
     this
   }
 
