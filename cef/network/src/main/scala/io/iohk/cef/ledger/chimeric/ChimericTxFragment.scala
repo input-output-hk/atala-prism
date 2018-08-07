@@ -36,10 +36,10 @@ case class Deposit(address: Address, value: Value) extends TxOutput {
   override def partitionIds: Set[String] = Set()
 }
 
-class CreateCurrency(currency: Currency) extends TxAction {
+case class CreateCurrency(currency: Currency) extends TxAction {
   override def partitionIds: Set[String] = Set(ChimericLedgerState.getCurrencyPartitionId(currency))
 }
 
-class LedgerId(id: Int) extends TxMetaData {
+case class LedgerId(id: Int) extends TxMetaData {
   override def partitionIds: Set[String] = Set()
 }

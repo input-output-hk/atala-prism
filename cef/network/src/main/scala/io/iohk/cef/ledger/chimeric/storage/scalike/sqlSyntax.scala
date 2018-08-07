@@ -1,7 +1,6 @@
 package io.iohk.cef.ledger.chimeric.storage.scalike
 
-import io.iohk.cef.ledger.LedgerState
-import io.iohk.cef.ledger.chimeric.ChimericStateValue
+import io.iohk.cef.ledger.chimeric.{CreateCurrency, Value}
 import scalikejdbc._
 
 case class ChimericLedgerStateTable(id: Long, stringId: String)
@@ -10,23 +9,50 @@ object ChimericLedgerStateTable extends SQLSyntaxSupport[ChimericLedgerStateTabl
   override def tableName: String = Schema.LedgerStateTableName
 }
 
-case class ChimericLedgerStateAddressTable(id: Long, address: String, value: Array[Byte])
+case class ChimericLedgerStateAddressTable(id: Long, address: String)
 
 object ChimericLedgerStateAddressTable extends SQLSyntaxSupport[ChimericLedgerStateAddressTable] {
   override def tableName: String = Schema.LedgerStateAddressTableName
 
-  def apply(sa: ResultName[ChimericLedgerStateAddressTable])(rs: WrappedResultSet): LedgerState[ChimericStateValue] =
-    new LedgerState[ChimericStateValue](Map(rs.string(sa.address) -> ???))
+  def apply(sa: ResultName[ChimericLedgerStateAddressTable])(rs: WrappedResultSet): ChimericLedgerStateAddressTable =
+    ChimericLedgerStateAddressTable(rs.long(sa.id), rs.string(sa.address))
 }
 
-case class ChimericLedgerStateUtxoTable(id: Long, txId: String, index: Int, value: Array[Byte])
+case class ChimericLedgerStateUtxoTable(id: Long, txId: String, index: Int)
 
 object ChimericLedgerStateUtxoTable extends SQLSyntaxSupport[ChimericLedgerStateUtxoTable] {
   override def tableName: String = Schema.LedgerStateUtxoTableName
+
+  def apply(su: ResultName[ChimericLedgerStateUtxoTable])(rs: WrappedResultSet): ChimericLedgerStateUtxoTable =
+    ChimericLedgerStateUtxoTable(rs.long(su.id), rs.string(su.txId), rs.int(su.index))
 }
 
-case class ChimericLedgerStateCurrency(id: Long, currency: String)
+case class ChimericLedgerStateCurrencyTable(id: Long, currency: String) {
+  def toCreateCurrency = CreateCurrency(currency)
+}
 
-object ChimericLedgerStateCurrency extends SQLSyntaxSupport[ChimericLedgerStateUtxoTable] {
+object ChimericLedgerStateCurrencyTable extends SQLSyntaxSupport[ChimericLedgerStateCurrencyTable] {
   override def tableName: String = Schema.LedgerStateCurrencyTableName
+
+  def apply(cr: ResultName[ChimericLedgerStateCurrencyTable])(rs: WrappedResultSet): ChimericLedgerStateCurrencyTable =
+    ChimericLedgerStateCurrencyTable(rs.long(cr.id), rs.string(cr.currency))
+}
+
+case class ChimericValueEntryTable(ledgerStateEntryId: Long, currency: String, amount: java.math.BigDecimal)
+
+object ChimericValueEntryTable extends SQLSyntaxSupport[ChimericValueEntryTable] {
+  override def tableName: String = Schema.ValueTableName
+
+  def apply(sv: ResultName[ChimericValueEntryTable])(rs: WrappedResultSet): ChimericValueEntryTable = {
+    ChimericValueEntryTable(rs.long(sv.ledgerStateEntryId), rs.string(sv.currency), rs.bigDecimal(sv.amount))
+  }
+
+  def toValue(entries: Seq[ChimericValueEntryTable]): Value = {
+    if (entries.isEmpty) {
+      Value.empty
+    } else {
+      entries.forall(_.ledgerStateEntryId == entries.head.ledgerStateEntryId)
+      entries.foldLeft(Value.empty)((state, current) => state + (current.currency -> current.amount.toScalaBigDecimal))
+    }
+  }
 }
