@@ -9,7 +9,6 @@ import io.netty.channel._
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.{NioServerSocketChannel, NioSocketChannel}
-import io.netty.util.ReferenceCountUtil
 
 private[tcp] class NettyTransport[Message](address: InetSocketAddress,
                                            codec: StreamCodec[Message, ByteBuf],
@@ -23,21 +22,6 @@ private[tcp] class NettyTransport[Message](address: InetSocketAddress,
       decoder
         .decodeStream(msg.asInstanceOf[ByteBuf])
         .foreach(message => messageHandler(ctx.channel().remoteAddress().asInstanceOf[InetSocketAddress], message))
-    }
-  }
-
-  class NettyEncoder extends ChannelOutboundHandlerAdapter {
-    override def write(ctx: ChannelHandlerContext, msg: Object, promise: ChannelPromise): Unit = {
-      val buf = encoder.encode(msg.asInstanceOf[Message])
-      try {
-        try {
-          ctx.write(buf, promise)
-        } finally {
-          buf.release()
-        }
-      } finally {
-        ReferenceCountUtil.release(msg)
-      }
     }
   }
 

@@ -17,9 +17,7 @@ class TcpNetworkTransportSpec extends FlatSpec {
     val alicesAddress = aRandomAddress()
     val bobsAddress = aRandomAddress()
     val alice =
-      new TcpNetworkTransport[String](discardMessages,
-                                      codec,
-                                      TcpTransportConfiguration(alicesAddress))
+      new TcpNetworkTransport[String](discardMessages, codec, TcpTransportConfiguration(alicesAddress))
 
     an[UnsupportedOperationException] shouldBe thrownBy(alice.sendMessage(bobsAddress, ""))
   }
@@ -39,9 +37,7 @@ class TcpNetworkTransportSpec extends FlatSpec {
     val address = aRandomAddress()
     val messagesReceived = new mutable.ListBuffer[String]()
 
-    new TcpNetworkTransport[String](logMessages(messagesReceived),
-                                                    codec,
-                                                    TcpTransportConfiguration(address)).start()
+    new TcpNetworkTransport[String](logMessages(messagesReceived), codec, TcpTransportConfiguration(address)).start()
 
     writeTo(address, "hello".getBytes)
 
@@ -61,9 +57,7 @@ class TcpNetworkTransportSpec extends FlatSpec {
         .start()
 
     val bob =
-      new TcpNetworkTransport(logMessages(bobsMessages),
-                              codec,
-                              TcpTransportConfiguration(bobsAddress)).start()
+      new TcpNetworkTransport(logMessages(bobsMessages), codec, TcpTransportConfiguration(bobsAddress)).start()
 
     alice.sendMessage(bobsAddress, "Hello, Bob!")
 
