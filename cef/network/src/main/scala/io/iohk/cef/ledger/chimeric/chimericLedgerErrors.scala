@@ -9,3 +9,7 @@ case class SpentOutputReferenced(txOutRef: TxOutRef) extends LedgerError {
 case class ValueNotPreserved(mint: Value, fee: Value, inputs: Value, outputs: Value) extends LedgerError {
   override def toString: String = s"Value is not preserved: ${mint + inputs} was not equal to ${fee + outputs}"
 }
+
+case class InsufficientBalance(address: Address, value: Value) extends LedgerError {
+  override def toString(): String = s"Insufficient balance to withdraw from address ${address}. Requested ${value}"
+}

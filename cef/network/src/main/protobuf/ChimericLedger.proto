@@ -1,0 +1,13 @@
+syntax = "proto2";
+
+package io.iohk.cef.protobuf;
+import "Common.proto";
+
+message ChimericValueEntryProto {
+    required string currency = 1;
+    required DecimalProto amount = 2;
+}
+
+message ChimericValueProto {
+    repeated ChimericValueEntryProto entries = 1;
+}

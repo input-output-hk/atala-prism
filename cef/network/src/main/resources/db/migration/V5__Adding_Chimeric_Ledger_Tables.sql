@@ -1,0 +1,28 @@
+create table cef.chimeric_ledger_state (
+    id bigint auto_increment not null primary key,
+    string_id varchar(max) not null,
+    unique(string_id)
+);
+
+create table cef.chimeric_ledger_state_address(
+    id bigint not null primary key,
+    address varchar(max) not null,
+    value bytes not null,
+    foreign key (id) references cef.chimeric_ledger_state(id)
+)
+
+create table cef.chimeric_ledger_state_utxo(
+    id bigint not null primary key,
+    tx_id varchar(max) not null,
+    index int not null,
+    value bytes not null,
+    unique (tx_id, index),
+    foreign key (id) references cef.chimeric_ledger_state(id)
+)
+
+create table cef.chimeric_ledger_state_currency(
+    id bigint not null primary key,
+    currency varchar(12) not null,
+    unique (currency),
+    foreign key (id) references cef.chimeric_ledger_state(id)
+)

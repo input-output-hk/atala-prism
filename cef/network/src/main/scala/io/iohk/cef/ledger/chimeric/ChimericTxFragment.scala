@@ -4,27 +4,42 @@ sealed trait ChimericTxFragment {
   def partitionIds: Set[String]
 }
 
-class Fee(value: Value) extends ChimericTxFragment {
+sealed trait TxInput extends ChimericTxFragment {
+  def value: Value
+}
+
+sealed trait TxOutput extends ChimericTxFragment {
+  def value: Value
+}
+
+sealed trait TxMetaData extends ChimericTxFragment
+
+sealed trait TxAction extends ChimericTxFragment
+
+case class Withdrawal(address: Address, value: Value, nonce: Int) extends TxInput {
+  override def partitionIds: Set[String] = Set(ChimericLedgerState.getAddressPartitionId(address))
+}
+case class Mint(value: Value) extends TxInput {
   override def partitionIds: Set[String] = Set()
 }
-class Mint(value: Value) extends ChimericTxFragment {
+case class Input(txOutRef: TxOutRef, value: Value) extends TxInput {
+  override def partitionIds: Set[String] = Set(ChimericLedgerState.getPartitionId(txOutRef))
+}
+
+case class Fee(value: Value) extends TxOutput {
   override def partitionIds: Set[String] = Set()
 }
-class Create(currency: Currency) extends ChimericTxFragment {
-  override def partitionIds: Set[String] = Set(currency)
+case class Output(address: Address, value: Value) extends TxOutput {
+  override def partitionIds: Set[String] = Set(ChimericLedgerState.getAddressPartitionId(address))
 }
-class Output(address: Address, value: Value) extends ChimericTxFragment {
-  override def partitionIds: Set[String] = Set(ChimericLedgerState.getPartitionKey(address))
-}
-class Input(txOutRef: TxOutRef) extends ChimericTxFragment {
-  override def partitionIds: Set[String] = Set(ChimericLedgerState.getPartitionKey(txOutRef))
-}
-class Deposit(address: Address, value: Value) extends ChimericTxFragment {
+case class Deposit(address: Address, value: Value) extends TxOutput {
   override def partitionIds: Set[String] = Set()
 }
-class Withdrawal(address: Address, value: Value, nonce: Int) extends ChimericTxFragment {
-  override def partitionIds: Set[String] = Set(ChimericLedgerState.getPartitionKey(address))
+
+class CreateCurrency(currency: Currency) extends TxAction {
+  override def partitionIds: Set[String] = Set(ChimericLedgerState.getCurrencyPartitionId(currency))
 }
-class LedgerId(id: Int) extends ChimericTxFragment {
+
+class LedgerId(id: Int) extends TxMetaData {
   override def partitionIds: Set[String] = Set()
 }
