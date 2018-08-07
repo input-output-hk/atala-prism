@@ -23,7 +23,7 @@ case class Mint(value: Value) extends TxInput {
   override def partitionIds: Set[String] = Set()
 }
 case class Input(txOutRef: TxOutRef, value: Value) extends TxInput {
-  override def partitionIds: Set[String] = Set(ChimericLedgerState.getPartitionId(txOutRef))
+  override def partitionIds: Set[String] = Set(ChimericLedgerState.getUtxoPartitionId(txOutRef))
 }
 
 case class Fee(value: Value) extends TxOutput {

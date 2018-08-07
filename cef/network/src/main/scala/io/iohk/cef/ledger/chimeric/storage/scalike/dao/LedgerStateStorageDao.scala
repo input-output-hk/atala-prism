@@ -17,7 +17,7 @@ class LedgerStateStorageDao {
         ChimericLedgerState.getCurrencyPartitionId(createCurr.currency) -> CreateCurrencyHolder(createCurr)
       ) ++
       utxos.map(utxoPair =>
-        ChimericLedgerState.getPartitionId(utxoPair._1) -> ValueHolder(utxoPair._2)
+        ChimericLedgerState.getUtxoPartitionId(utxoPair._1) -> ValueHolder(utxoPair._2)
       ) ++
       addresses.map(addressPair =>
         ChimericLedgerState.getAddressPartitionId(addressPair._1) -> ValueHolder(addressPair._2)

@@ -6,7 +6,7 @@ object ChimericLedgerState {
   private val CurrencyPrefix = "cr="
 
   def getAddressPartitionId(address: Address): String = s"$AddressPrefix$address"
-  def getPartitionId(txOutRef: TxOutRef): String = s"$TxOutRefPrefix${txOutRef.index}--${txOutRef.id}"
+  def getUtxoPartitionId(txOutRef: TxOutRef): String = s"$TxOutRefPrefix${txOutRef.index}--${txOutRef.id}"
   def getCurrencyPartitionId(currency: Currency): String = s"$CurrencyPrefix$currency"
 
   def toStateKey(partitionId: String): ChimericStateKey = partitionId.take(3) match {
