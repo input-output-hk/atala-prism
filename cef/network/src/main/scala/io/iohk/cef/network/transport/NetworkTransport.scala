@@ -20,7 +20,6 @@ abstract class NetworkTransport[Address, Message](
     * Array[Byte] whilst others to netty bytebuf or akka ByteString, etc.
     */
 
-
   /**
     * The primary purpose of this method is to decouple the creation
     * and the 'turning on' of a transport.
@@ -29,11 +28,11 @@ abstract class NetworkTransport[Address, Message](
     * for sending and receiving messages. This might mean, for example,
     * binding to an address.
     *
-    * This method should run synchronously.
+    * This method should run synchronously then return the Transport in its new state.
     *
     * throws TransportInitializationException if initialization fails.
     */
-  def start(): Unit
+  def start(): NetworkTransport[Address, Message]
 
   /**
     * Send a message to another peer.
