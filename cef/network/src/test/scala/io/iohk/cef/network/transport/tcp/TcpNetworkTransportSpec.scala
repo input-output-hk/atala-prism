@@ -1,9 +1,7 @@
 package io.iohk.cef.network.transport.tcp
 
-import java.io.OutputStream
-import java.net.{InetSocketAddress, ServerSocket, Socket}
-
-import io.iohk.cef.network.encoding.{Encoder, StreamDecoder}
+import io.iohk.cef.network.encoding.StreamCodec
+import io.iohk.cef.network.transport.tcp.NetUtils._
 import io.netty.buffer.{ByteBuf, Unpooled}
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
@@ -19,7 +17,9 @@ class TcpNetworkTransportSpec extends FlatSpec {
     val alicesAddress = aRandomAddress()
     val bobsAddress = aRandomAddress()
     val alice =
-      new TcpNetworkTransport(discardMessages, testEncoder, testDecoder, TcpNetworkConfiguration(alicesAddress))
+      new TcpNetworkTransport[String](discardMessages,
+                                      codec,
+                                      TcpTransportConfiguration(alicesAddress))
 
     an[UnsupportedOperationException] shouldBe thrownBy(alice.sendMessage(bobsAddress, ""))
   }
@@ -27,7 +27,7 @@ class TcpNetworkTransportSpec extends FlatSpec {
   it should "start" in {
     val address = aRandomAddress()
     val transport =
-      new TcpNetworkTransport(discardMessages, testEncoder, testDecoder, TcpNetworkConfiguration(address))
+      new TcpNetworkTransport(discardMessages, codec, TcpTransportConfiguration(address))
     isListening(address) shouldBe false
 
     transport.start()
@@ -38,8 +38,10 @@ class TcpNetworkTransportSpec extends FlatSpec {
   it should "receive a message" in {
     val address = aRandomAddress()
     val messagesReceived = new mutable.ListBuffer[String]()
-    val transport = new TcpNetworkTransport[String](logMessages(messagesReceived), testEncoder, testDecoder,
-      TcpNetworkConfiguration(address)).start()
+
+    new TcpNetworkTransport[String](logMessages(messagesReceived),
+                                                    codec,
+                                                    TcpTransportConfiguration(address)).start()
 
     writeTo(address, "hello".getBytes)
 
@@ -55,10 +57,13 @@ class TcpNetworkTransportSpec extends FlatSpec {
     val bobsMessages = new mutable.ListBuffer[String]()
 
     val alice =
-      new TcpNetworkTransport(discardMessages, testEncoder, testDecoder, TcpNetworkConfiguration(alicesAddress)).start()
+      new TcpNetworkTransport(discardMessages, codec, TcpTransportConfiguration(alicesAddress))
+        .start()
 
     val bob =
-      new TcpNetworkTransport(logMessages(bobsMessages), testEncoder, testDecoder, TcpNetworkConfiguration(bobsAddress)).start()
+      new TcpNetworkTransport(logMessages(bobsMessages),
+                              codec,
+                              TcpTransportConfiguration(bobsAddress)).start()
 
     alice.sendMessage(bobsAddress, "Hello, Bob!")
 
@@ -67,51 +72,8 @@ class TcpNetworkTransportSpec extends FlatSpec {
     }
   }
 
-  def writeTo(address: InetSocketAddress, bytes: Array[Byte]): Unit = {
-    val socket = new Socket(address.getHostName, address.getPort)
-    val out: OutputStream = socket.getOutputStream
-    try {
-      out.write(bytes)
-    }
-    finally {
-        out.close()
-    }
-  }
-
-  private def aRandomAddress(): InetSocketAddress = {
-    val s = new ServerSocket(0)
-    try {
-      new InetSocketAddress("localhost", s.getLocalPort)
-    } finally {
-      s.close()
-    }
-  }
-
-  private def discardMessages[T](remoteAddress: InetSocketAddress, message: T): Unit = ()
-
-  private def logMessages[T](messages: mutable.ListBuffer[T])(remoteAddress: InetSocketAddress, message: T): Unit =
-    messages += message
-
-  private def isListening(address: InetSocketAddress): Boolean = {
-    try {
-      new Socket(address.getHostName, address.getPort).close()
-      true
-    } catch {
-      case e: Exception =>
-        false
-    }
-  }
-
-  private def testDecoder = new StreamDecoder[ByteBuf, String] {
-    override def decodeStream(u: ByteBuf): Seq[String] = Seq(decode(u))
-
-    override def decode(u: ByteBuf): String = u.toString(io.netty.util.CharsetUtil.UTF_8)
-  }
-
-  private def testEncoder = new Encoder[String, ByteBuf] {
-    override def encode(t: String): ByteBuf = {
-      val buff = Unpooled.directBuffer()
-      buff.writeBytes(t.getBytes)
-    }
-  }
+  private val codec = StreamCodec[String, ByteBuf](
+    (t: String) => Unpooled.directBuffer().writeBytes(t.getBytes),
+    (u: ByteBuf) => Seq(u.toString(io.netty.util.CharsetUtil.UTF_8))
+  )
 }

@@ -4,6 +4,8 @@ package object encoding {
 
   case class Codec[T, U](encoder: Encoder[T, U], decoder: Decoder[U, T])
 
+  case class StreamCodec[T, U](encoder: Encoder[T, U], decoder: StreamDecoder[U, T])
+
   trait Encoder[T, U] {
     self =>
 
@@ -22,7 +24,7 @@ package object encoding {
       (u: U) => that.decode(self.decode(u))
   }
 
-  trait StreamDecoder[U, T] extends Decoder[U, T] {
+  trait StreamDecoder[U, T] {
     def decodeStream(u: U): Seq[T]
   }
 
