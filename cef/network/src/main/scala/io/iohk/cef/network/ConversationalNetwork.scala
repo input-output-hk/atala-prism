@@ -16,6 +16,13 @@ class ConversationalNetwork[Message](
     messageHandler: (NetworkAddress, Message) => Unit) {
 
   /**
+    * Message forwarding.
+    * When receiving wrapped messages that are not for this node
+    * we should examine the routing table to see if any peer matches
+    * the message destination. If not, forward the message to 'suitable'
+    * peers in the routing table.
+    */
+  /**
     * The primary purpose of this method is to decouple the configuration
     * and the 'turning on' of a network.
     *
@@ -29,6 +36,12 @@ class ConversationalNetwork[Message](
 
   /**
     * Send a message to another network address.
+    *
+    * The process for sending a message is
+    * 1. Wrap the caller's message, setting src and dst headers.
+    * 2. Examine the routing table to see if an existing peer has the given address.
+    *    If so, send the message directly to that peer.
+    * 3. Otherwise, send the message to 'suitable' peers in the routing table.
     * @param address the address of the peer to which to send the message
     * @param message the message body itself.
     */
