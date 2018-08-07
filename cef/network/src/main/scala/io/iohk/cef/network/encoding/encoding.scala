@@ -22,6 +22,10 @@ package object encoding {
       (u: U) => that.decode(self.decode(u))
   }
 
+  trait StreamDecoder[U, T] extends Decoder[U, T] {
+    def decodeStream(u: U): Seq[T]
+  }
+
   def encode[T, U](t: T)(implicit enc: Encoder[T, U]): U =
     try {
       enc.encode(t)
