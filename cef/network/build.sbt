@@ -56,9 +56,7 @@ val dep = {
     "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test,
     "com.typesafe.akka" %% "akka-testkit-typed" % akkaVersion % Test,
 
-    "org.apache.commons" % "commons-lang3" % "3.7"
-
-
+    "io.netty" % "netty-all" % "4.1.28.Final"
   )
 }
 
