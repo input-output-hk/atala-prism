@@ -10,12 +10,17 @@ class LedgerStateStorageImpl(ledgerStateStorageDao: LedgerStateStorageDao)
   extends LedgerStateStorage[ChimericStateValue] {
 
   override def slice(keys: Set[String]): LedgerState[ChimericStateValue] = {
-    execInSession{ implicit session => ???
+    execInSession{ implicit session =>
+      ledgerStateStorageDao.slice(keys)
     }
   }
 
   override def update(previousState: LedgerState[ChimericStateValue],
-                      newState: LedgerState[ChimericStateValue]): Unit = ???
+                      newState: LedgerState[ChimericStateValue]): Unit = {
+    execInSession{ implicit session =>
+      ledgerStateStorageDao.update(previousState, newState)
+    }
+  }
 
   protected def execInSession[T](block: DBSession => T): T = DB(ConnectionPool.borrow()).localTx(block)
 
