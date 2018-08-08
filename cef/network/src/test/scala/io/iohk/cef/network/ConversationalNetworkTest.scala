@@ -3,7 +3,10 @@ package io.iohk.cef.network
 import org.scalatest.FlatSpec
 
 class ConversationalNetworkTest extends FlatSpec {
+
   behavior of "ConversationalNetwork"
+
+  it should "not support messaging before starting" in pending
 
   it should "start" in pending
 
