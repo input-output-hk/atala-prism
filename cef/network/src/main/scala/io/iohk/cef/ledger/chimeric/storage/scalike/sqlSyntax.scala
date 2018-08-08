@@ -3,10 +3,13 @@ package io.iohk.cef.ledger.chimeric.storage.scalike
 import io.iohk.cef.ledger.chimeric.{CreateCurrency, Value}
 import scalikejdbc._
 
-case class ChimericLedgerStateTable(id: Long, stringId: String)
+case class ChimericLedgerStateEntryTable(id: Long, stringId: String)
 
-object ChimericLedgerStateTable extends SQLSyntaxSupport[ChimericLedgerStateTable] {
+object ChimericLedgerStateEntryTable extends SQLSyntaxSupport[ChimericLedgerStateEntryTable] {
   override def tableName: String = Schema.LedgerStateTableName
+
+  def apply(se: ResultName[ChimericLedgerStateEntryTable])(rs: WrappedResultSet): ChimericLedgerStateEntryTable =
+    ChimericLedgerStateEntryTable(rs.long(se.id), rs.string(se.stringId))
 }
 
 case class ChimericLedgerStateAddressTable(id: Long, address: String)

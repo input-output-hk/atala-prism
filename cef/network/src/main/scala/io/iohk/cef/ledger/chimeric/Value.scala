@@ -18,6 +18,8 @@ case class Value(protected[Value] val m: Map[Currency, Quantity]) {
 
   def >=(that: Value): Boolean = (m.keys ++ that.m.keys).forall(at => this(at) >= that(at))
 
+  def iterator: Iterator[(Currency, Quantity)] = m.iterator
+
   private def combine(that: Value, f: (Quantity, Quantity) => Quantity): Value = {
     //Using mutable for performance. Note that these side effects are not observable.
     //Referential transparency still holds for this method.

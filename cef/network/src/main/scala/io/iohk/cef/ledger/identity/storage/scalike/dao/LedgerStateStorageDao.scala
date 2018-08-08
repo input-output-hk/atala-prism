@@ -1,7 +1,7 @@
 package io.iohk.cef.ledger.identity.storage.scalike.dao
 
 import akka.util.ByteString
-import io.iohk.cef.ledger.LedgerState
+import io.iohk.cef.ledger.{Delete, Insert, LedgerState, Update}
 import io.iohk.cef.ledger.identity.IdentityLedgerState
 import io.iohk.cef.ledger.identity.storage.scalike.{IdentityLedgerStateTable, LedgerStateEntryMap}
 import org.bouncycastle.util.encoders.Hex
@@ -29,9 +29,10 @@ class LedgerStateStorageDao {
       throw new IllegalArgumentException("Provided previous state must be equal to the current state")
     } else {
       val updateActions = currentState.updateTo(newState)
-      updateActions.insert.map{case (key, set) => set.map(insert(key, _))}
-      updateActions.delete.map{case (key, set) => set.map(remove(key, _))}
-      updateActions.update.map { case (key, set) => {
+      updateActions.actions.foreach {
+        case Insert(key, set) => set.map(insert(key, _))
+        case Delete(key, set) => set.map(remove(key, _))
+        case Update(key, set) => {
         val valuesToAdd = (set diff currentState.get(key).getOrElse(Set()))
         val valuesToRemove = (currentState.get(key).getOrElse(Set()) diff set)
         for {
