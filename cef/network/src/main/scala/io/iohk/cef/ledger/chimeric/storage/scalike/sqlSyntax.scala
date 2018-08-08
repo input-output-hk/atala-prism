@@ -52,10 +52,10 @@ object ChimericValueEntryTable extends SQLSyntaxSupport[ChimericValueEntryTable]
 
   def toValue(entries: Seq[ChimericValueEntryTable]): Value = {
     if (entries.isEmpty) {
-      Value.empty
+      Value.Zero
     } else {
       entries.forall(_.ledgerStateEntryId == entries.head.ledgerStateEntryId)
-      entries.foldLeft(Value.empty)((state, current) => state + (current.currency -> current.amount.toScalaBigDecimal))
+      entries.foldLeft(Value.Zero)((state, current) => state + (current.currency -> current.amount.toScalaBigDecimal))
     }
   }
 }

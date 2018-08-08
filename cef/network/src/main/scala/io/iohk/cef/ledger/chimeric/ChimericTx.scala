@@ -2,15 +2,15 @@ package io.iohk.cef.ledger.chimeric
 
 import io.iohk.cef.ledger.{LedgerError, LedgerState, Transaction}
 
-class ChimericTx(fragments: Seq[ChimericTxFragment]) extends Transaction[ChimericStateValue] {
+case class ChimericTx(fragments: Seq[ChimericTxFragment]) extends Transaction[ChimericStateValue] {
 
   type StateEither = Either[LedgerError, LedgerState[ChimericStateValue]]
 
-  private case class InputOutputValues(inputs: Value = Value.empty, outputs: Value = Value.empty)
+  private case class InputOutputValues(inputs: Value = Value.Zero, outputs: Value = Value.Zero)
 
   override def apply(currentState: LedgerState[ChimericStateValue]): StateEither = {
     val txOutRefs = getFragmentTxOutRefs
-    val newState = fragments.foldLeft[StateEither](testPreservationOfValue(Right(currentState)))(
+    fragments.foldLeft[StateEither](testPreservationOfValue(Right(currentState)))(
       (stateEither, current) => {
         stateEither.flatMap(state => {
           current match {
@@ -28,10 +28,9 @@ class ChimericTx(fragments: Seq[ChimericTxFragment]) extends Transaction[Chimeri
           }
         })
       })
-    newState
   }
 
-  override def partitionIds: Set[String] = {
+  override val partitionIds: Set[String] = {
     //Special treatment for the tx outputs because there's an ordering component that is implicit in the output's
     // position in the fragments Seq. In other words, not all the required info is in the Output type (and shouldn't).
     val txOutRefPartitionIds =
@@ -56,7 +55,7 @@ class ChimericTx(fragments: Seq[ChimericTxFragment]) extends Transaction[Chimeri
     outputs.map{ case (o, i) => (TxOutRef(txId, i), o.value) }
   }
 
-  private def txId: ChimericTxId = ??? //Some hash function
+  private def txId: ChimericTxId = toString()
 
   private def handleCreateCurrency(state: LedgerState[ChimericStateValue], cc: CreateCurrency) = {
     val createCurrencyKey = ChimericLedgerState.getCurrencyPartitionId(cc.currency)
@@ -72,7 +71,7 @@ class ChimericTx(fragments: Seq[ChimericTxFragment]) extends Transaction[Chimeri
     val addressKey = ChimericLedgerState.getAddressPartitionId(address)
     val addressValueOpt =
       state.get(addressKey).collect { case ValueHolder(value) => value }
-    Right(state.put(addressKey, ValueHolder(addressValueOpt.getOrElse(Value.empty) + value)))
+    Right(state.put(addressKey, ValueHolder(addressValueOpt.getOrElse(Value.Zero) + value)))
   }
 
   private def handleOutput(state: LedgerState[ChimericStateValue],
@@ -104,7 +103,7 @@ class ChimericTx(fragments: Seq[ChimericTxFragment]) extends Transaction[Chimeri
   private def handleWithdrawal(state: LedgerState[ChimericStateValue], address: Address, value: Value) = {
     val addressKey = ChimericLedgerState.getAddressPartitionId(address)
     val addressValue =
-      state.get(addressKey).collect { case ValueHolder(value) => value }.getOrElse(Value.empty)
+      state.get(addressKey).collect { case ValueHolder(value) => value }.getOrElse(Value.Zero)
     if (addressValue >= value) {
       Right(state.put(addressKey, ValueHolder(addressValue - value)))
     } else {
@@ -114,14 +113,14 @@ class ChimericTx(fragments: Seq[ChimericTxFragment]) extends Transaction[Chimeri
 
   private def testPreservationOfValue(currentStateEither: StateEither): StateEither =
     currentStateEither.flatMap { currentState =>
-    val totalValue = fragments.foldLeft(Value.empty)((state, current) =>
+    val totalValue = fragments.foldLeft(Value.Zero)((state, current) =>
       current match {
         case input: TxInput => state + input.value
         case output: TxOutput => state - output.value
         case _: TxAction => state
       }
     )
-    if (totalValue == Value.empty) {
+    if (totalValue == Value.Zero) {
       Right(currentState)
     } else {
       Left(ValueNotPreserved(totalValue))

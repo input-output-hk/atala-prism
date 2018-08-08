@@ -8,7 +8,7 @@ import io.iohk.cef.utils.BigDecimalUtils
 import scala.collection.mutable
 
 case class Value(protected[Value] val m: Map[Currency, Quantity]) {
-  require(m.forall(_._2 != 0))
+  require(m.forall(_._2 != BigDecimal(0)))
 
   def + (entry: (Currency, Quantity)) = Value(this.m + entry)
   def + (that: Value): Value = combine(that, _ + _)
@@ -26,7 +26,7 @@ case class Value(protected[Value] val m: Map[Currency, Quantity]) {
     val mutableM = mutable.Map(m.toSeq:_*)
     mutableM.foreach{ case (curr, quant)  => {
       val newQuant = f(quant, that(curr))
-      if(newQuant != 0) {
+      if(newQuant != BigDecimal(0)) {
         mutableM += (curr -> newQuant)
       } else {
         mutableM -= curr
@@ -39,14 +39,14 @@ case class Value(protected[Value] val m: Map[Currency, Quantity]) {
 }
 
 object Value {
-  val empty: Value = new Value(Map())
+  val Zero: Value = new Value(Map())
   //If currency c is present in more than one pair, the last element where currency==c will remain as c's quantity
   def apply(values: (Currency, Quantity)*): Value = new Value(Map(values:_*))
 
   implicit val ByteStringSerializableImpl = new ByteStringSerializable[Value] {
     override def deserialize(bytes: ByteString): Value = {
       val proto = ChimericValueProto.parseFrom(bytes.toArray)
-      proto.entries.foldLeft(Value.empty) ((state, current) => {
+      proto.entries.foldLeft(Value.Zero) ((state, current) => {
         state + (current.currency, BigDecimalUtils.fromProto(current.amount))
       })
     }
