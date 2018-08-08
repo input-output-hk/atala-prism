@@ -12,8 +12,6 @@ sealed trait TxOutput extends ChimericTxFragment {
   def value: Value
 }
 
-sealed trait TxMetaData extends ChimericTxFragment
-
 sealed trait TxAction extends ChimericTxFragment
 
 case class Withdrawal(address: Address, value: Value, nonce: Int) extends TxInput {
@@ -29,7 +27,7 @@ case class Fee(value: Value, address: Address) extends TxOutput {
   override def partitionIds: Set[String] = Set()
 }
 case class Output(value: Value) extends TxOutput {
-  override def partitionIds: Set[String] = Set(ChimericLedgerState.getUtxoPartitionId(address))
+  override def partitionIds: Set[String] = Set() //Contextual info missing. Need to add partitionIds in the tx
 }
 case class Deposit(address: Address, value: Value) extends TxOutput {
   override def partitionIds: Set[String] = Set()

@@ -9,8 +9,7 @@ class ChimericTx(fragments: Seq[ChimericTxFragment]) extends Transaction[Chimeri
   private case class InputOutputValues(inputs: Value = Value.empty, outputs: Value = Value.empty)
 
   override def apply(currentState: LedgerState[ChimericStateValue]): StateEither = {
-    val outputs = fragments.collect{ case o: Output => o }.zipWithIndex
-    val txOutRefs = outputs.map{ case (o, i) => (TxOutRef(txId, i), o.value) }
+    val txOutRefs = getTxOutRefs
     val newState = fragments.foldLeft[StateEither](testPreservationOfValue(Right(currentState)))(
       (stateEither, current) => {
       stateEither.flatMap(state => {
@@ -30,6 +29,16 @@ class ChimericTx(fragments: Seq[ChimericTxFragment]) extends Transaction[Chimeri
       })
     })
     newState
+  }
+
+  override def partitionIds: Set[String] = {
+    getTxOutRefs.map{ case (txOutRef, _) => ChimericLedgerState.getUtxoPartitionId(txOutRef)}.toSet ++
+      fragments.foldLeft(Set[String]())((st, curr) => st ++ curr.partitionIds)
+  }
+
+  private def getTxOutRefs: Seq[(TxOutRef, Value)] = {
+    val outputs = fragments.collect{ case o: Output => o }.zipWithIndex
+    outputs.map{ case (o, i) => (TxOutRef(txId, i), o.value) }
   }
 
   private def txId: String = ??? //Some hash function
@@ -88,14 +97,13 @@ class ChimericTx(fragments: Seq[ChimericTxFragment]) extends Transaction[Chimeri
     }
   }
 
-  override def partitionIds: Set[String] = fragments.foldLeft(Set[String]())((st, curr) => st ++ curr.partitionIds)
-
   private def testPreservationOfValue(currentStateEither: StateEither): StateEither =
     currentStateEither.flatMap { currentState =>
     val totalValue = fragments.foldLeft(Value.empty)((state, current) =>
       current match {
         case input: TxInput => state + input.value
         case output: TxOutput => state - output.value
+        case _: TxAction => state
       }
     )
     if (totalValue == Value.empty) {
