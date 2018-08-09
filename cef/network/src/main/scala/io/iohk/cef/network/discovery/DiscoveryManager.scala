@@ -7,7 +7,7 @@ import java.time.{Clock, Instant}
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors, StashBuffer, TimerScheduler}
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.util.ByteString
-import io.iohk.cef.cryptonew._
+import io.iohk.cef.crypto.low._
 import io.iohk.cef.network.discovery.db.KnownNodeStorage
 import io.iohk.cef.network.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.NodeStatus.NodeState

@@ -1,4 +1,4 @@
-package io.iohk.cef.cryptonew
+package io.iohk.cef.crypto.low
 
 import akka.util.ByteString
 
