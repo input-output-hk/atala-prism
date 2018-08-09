@@ -1,4 +1,4 @@
-package io.iohk.cef.crypto
+package io.iohk.cef.cryptolegacy
 
 import java.nio.charset.StandardCharsets
 import java.security.SecureRandom

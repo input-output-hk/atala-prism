@@ -2,8 +2,8 @@ package io.iohk.cef.network.transport.rlpx
 
 import akka.util.ByteString
 import io.iohk.cef.builder.SecureRandomBuilder
-import io.iohk.cef.crypto.ECDSASignature
-import io.iohk.cef.crypto._
+import io.iohk.cef.cryptolegacy.ECDSASignature
+import io.iohk.cef.cryptolegacy._
 import org.scalatest.{FlatSpec, Matchers}
 import org.bouncycastle.crypto.generators.ECKeyPairGenerator
 import org.bouncycastle.crypto.params.{ECKeyGenerationParameters, ECPublicKeyParameters}

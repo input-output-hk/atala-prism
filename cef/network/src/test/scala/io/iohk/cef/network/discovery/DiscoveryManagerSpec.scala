@@ -11,7 +11,7 @@ import akka.testkit.typed.scaladsl.{BehaviorTestKit, TestInbox, TestProbe}
 import akka.testkit.{TestProbe => UntypedTestProbe}
 import akka.util.ByteString
 import akka.{actor => untyped}
-import io.iohk.cef.crypto
+import io.iohk.cef.cryptolegacy
 import io.iohk.cef.network.discovery.db.{DummyKnownNodesStorage, KnownNode}
 import io.iohk.cef.network.discovery.DiscoveryListener.{DiscoveryListenerRequest, Ready, SendMessage, Start}
 import io.iohk.cef.network.discovery.DiscoveryManager._
@@ -147,7 +147,7 @@ class DiscoveryManagerSpec
 
       val ping = pingActor(actor, this)
 
-      val token = crypto.kec256(encoder.encode(ping))
+      val token = cryptolegacy.kec256(encoder.encode(ping))
       val sendMessage = discoveryListener.expectMessageType[SendMessage]
       sendMessage.message mustBe a[Pong]
       sendMessage.message.messageType mustBe Pong.messageType
@@ -195,7 +195,7 @@ class DiscoveryManagerSpec
       val node = NodeInfo(nodeState.nodeId, discoveryAddress, serverAddress, Capabilities(1))
       val expiration = mockClock.instant().getEpochSecond + 1
       val seek = Seek(Capabilities(1), 10, expiration, ByteString())
-      val token = crypto.kec256(encoder.encode(seek))
+      val token = cryptolegacy.kec256(encoder.encode(seek))
 
       actor ! DiscoveryResponseWrapper(DiscoveryListener.MessageReceived(seek, discoveryAddress))
 
