@@ -66,7 +66,7 @@ class TcpNetworkTransportSpec extends FlatSpec {
     }
   }
 
-  private val codec = StreamCodec[String, ByteBuf](
+  private val codec = new StreamCodec[String, ByteBuf](
     (t: String) => Unpooled.directBuffer().writeBytes(t.getBytes),
     (u: ByteBuf) => Seq(u.toString(io.netty.util.CharsetUtil.UTF_8))
   )

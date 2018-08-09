@@ -2,9 +2,9 @@ package io.iohk.cef.network
 
 package object encoding {
 
-  case class Codec[T, U](encoder: Encoder[T, U], decoder: Decoder[U, T])
+  class Codec[T, U](val encoder: Encoder[T, U], val decoder: Decoder[U, T])
 
-  case class StreamCodec[T, U](encoder: Encoder[T, U], decoder: StreamDecoder[U, T])
+  class StreamCodec[T, U](val encoder: Encoder[T, U], val decoder: StreamDecoder[U, T])
 
   trait Encoder[T, U] {
     self =>
