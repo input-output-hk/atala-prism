@@ -1,29 +1,19 @@
 package io.iohk.cef.network.transport.tcp
 
 import java.net.InetSocketAddress
+import java.nio.ByteBuffer
 
 import io.iohk.cef.network.encoding.StreamCodec
 import io.netty.bootstrap.{Bootstrap, ServerBootstrap}
-import io.netty.buffer.ByteBuf
+import io.netty.buffer.{ByteBuf, Unpooled}
 import io.netty.channel._
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.{NioServerSocketChannel, NioSocketChannel}
 
 private[tcp] class NettyTransport[Message](address: InetSocketAddress,
-                                           codec: StreamCodec[Message, ByteBuf],
+                                           codec: StreamCodec[Message, ByteBuffer],
                                            messageHandler: (InetSocketAddress, Message) => Unit) {
-
-  private val encoder = codec.encoder
-  private val decoder = codec.decoder
-
-  class NettyDecoder extends ChannelInboundHandlerAdapter {
-    override def channelRead(ctx: ChannelHandlerContext, msg: Any): Unit = {
-      decoder
-        .decodeStream(msg.asInstanceOf[ByteBuf])
-        .foreach(message => messageHandler(ctx.channel().remoteAddress().asInstanceOf[InetSocketAddress], message))
-    }
-  }
 
   def start(): NettyTransport[Message] = {
     val bossGroup = new NioEventLoopGroup
@@ -49,7 +39,7 @@ private[tcp] class NettyTransport[Message](address: InetSocketAddress,
 
     val activationAdapter = new ChannelInboundHandlerAdapter() {
       override def channelActive(ctx: ChannelHandlerContext): Unit = {
-        val buf: ByteBuf = encoder.encode(message)
+        val buf: ByteBuf = encode(message)
         try {
           ctx.writeAndFlush(buf)
         } finally {
@@ -68,5 +58,20 @@ private[tcp] class NettyTransport[Message](address: InetSocketAddress,
         }
       })
       .connect(address)
+  }
+
+  private def encode(message: Message): ByteBuf =
+    Unpooled.wrappedBuffer(codec.encoder.encode(message))
+
+
+  private def decode(byteBuf: ByteBuf): Seq[Message] = {
+    codec.decoder.decodeStream(byteBuf.nioBuffer())
+  }
+
+  private class NettyDecoder extends ChannelInboundHandlerAdapter {
+    override def channelRead(ctx: ChannelHandlerContext, msg: Any): Unit = {
+      decode(msg.asInstanceOf[ByteBuf])
+        .foreach(message => messageHandler(ctx.channel().remoteAddress().asInstanceOf[InetSocketAddress], message))
+    }
   }
 }

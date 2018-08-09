@@ -1,8 +1,9 @@
 package io.iohk.cef.network.transport.tcp
 
+import java.nio.ByteBuffer
+
 import io.iohk.cef.network.encoding.StreamCodec
 import io.iohk.cef.network.transport.tcp.NetUtils._
-import io.netty.buffer.{ByteBuf, Unpooled}
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 import org.scalatest.concurrent.Eventually._
@@ -66,8 +67,8 @@ class TcpNetworkTransportSpec extends FlatSpec {
     }
   }
 
-  private val codec = new StreamCodec[String, ByteBuf](
-    (t: String) => Unpooled.directBuffer().writeBytes(t.getBytes),
-    (u: ByteBuf) => Seq(u.toString(io.netty.util.CharsetUtil.UTF_8))
+  private val codec = new StreamCodec[String, ByteBuffer](
+    (t: String) => ByteBuffer.wrap(t.getBytes),
+    (u: ByteBuffer) => Seq(new String(toArray(u)))
   )
 }

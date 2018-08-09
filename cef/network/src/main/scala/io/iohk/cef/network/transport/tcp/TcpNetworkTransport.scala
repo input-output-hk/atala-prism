@@ -1,13 +1,13 @@
 package io.iohk.cef.network.transport.tcp
 
 import java.net.InetSocketAddress
+import java.nio.ByteBuffer
 
 import io.iohk.cef.network.encoding.StreamCodec
 import io.iohk.cef.network.transport.NetworkTransport
-import io.netty.buffer.ByteBuf
 
 class TcpNetworkTransport[Message](messageHandler: (InetSocketAddress, Message) => Unit,
-                                   codec: StreamCodec[Message, ByteBuf],
+                                   codec: StreamCodec[Message, ByteBuffer],
                                    configuration: TcpTransportConfiguration)
   extends NetworkTransport[InetSocketAddress, Message](messageHandler) {
 

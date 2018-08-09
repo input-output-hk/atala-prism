@@ -1,6 +1,7 @@
 package io.iohk.cef.network.transport.tcp
 import java.io.OutputStream
 import java.net.{InetSocketAddress, ServerSocket, Socket}
+import java.nio.ByteBuffer
 
 import scala.collection.mutable
 
@@ -38,5 +39,11 @@ object NetUtils {
       case e: Exception =>
         false
     }
+  }
+
+  def toArray(b: ByteBuffer): Array[Byte] = {
+    val a = new Array[Byte](b.remaining())
+    b.get(a)
+    a
   }
 }
