@@ -10,13 +10,13 @@ import akka.actor.typed.scaladsl.{ActorContext, Behaviors, TimerScheduler}
 import akka.actor.typed.{ActorRef, Behavior, Logger}
 import akka.io.{IO, Tcp}
 import akka.util.{ByteString, Timeout}
-import io.iohk.cef.db.{KnownNode, KnownNodeStorage}
+import io.iohk.cef.network.discovery.db.{KnownNode, KnownNodeStorage}
 import io.iohk.cef.demo.SimpleNode3.{Confirmed, NodeResponse, Resend, SendTo}
-import io.iohk.cef.discovery.DiscoveryConfig
-import io.iohk.cef.discovery.DiscoveryManager.{DiscoveredNodes, DiscoveryRequest, GetDiscoveredNodes}
+import io.iohk.cef.network.discovery.DiscoveryConfig
+import io.iohk.cef.network.discovery.DiscoveryManager.{DiscoveredNodes, DiscoveryRequest, GetDiscoveredNodes}
 import io.iohk.cef.network.transport.rlpx.RLPxTransportProtocol
 import io.iohk.cef.network.{Capabilities, NodeInfo}
-import io.iohk.cef.telemetery.DatadogTelemetry
+import io.iohk.cef.network.telemetry.DatadogTelemetry
 import io.micrometer.core.instrument.{Counter, DistributionSummary}
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair
 import org.bouncycastle.util.encoders.Hex

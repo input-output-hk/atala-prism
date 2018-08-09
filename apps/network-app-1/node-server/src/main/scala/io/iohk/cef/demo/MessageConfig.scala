@@ -1,7 +1,7 @@
 package io.iohk.cef.demo
 
 import akka.util.ByteString
-import io.iohk.cef.encoding.{Decoder, Encoder}
+import io.iohk.cef.network.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.transport.rlpx.ethereum.p2p.Message.Version
 import io.iohk.cef.network.transport.rlpx.ethereum.p2p.{Message, MessageDecoder, MessageSerializable}
 

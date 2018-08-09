@@ -9,8 +9,8 @@ import akka.actor.typed.{ActorRef, Behavior}
 import akka.io.Tcp.Register
 import akka.util.ByteString
 import akka.{actor => untyped}
-import io.iohk.cef.encoding.rlp.EncodingAdapter
-import io.iohk.cef.encoding.{Decoder, Encoder}
+import io.iohk.cef.network.encoding.rlp.EncodingAdapter
+import io.iohk.cef.network.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.transport.TransportProtocol
 import io.iohk.cef.network.transport.rlpx.RLPxConnectionHandler.{ConnectTo, ConnectionEstablished, ConnectionFailed, HandleConnection}
 import io.iohk.cef.network.transport.rlpx.ethereum.p2p.Message

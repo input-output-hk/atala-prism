@@ -12,5 +12,6 @@
     </root>
 
     <logger name="io.micrometer" level="ERROR" />
+    <logger name="scalikejdbc" level="ERROR" />
 
 </configuration>
