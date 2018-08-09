@@ -7,7 +7,7 @@ trait Hasher extends HashAlgorithms {
   def hashBytes(algorithm: HashAlgorithm)(source: ByteString): ByteString =
     algorithm(source)
 
-  implicit class ByteStringOps(source: ByteString) {
+  implicit class ByteStringHashOps(source: ByteString) {
     def hashWith(algorithm: HashAlgorithm): ByteString =
       hashBytes(algorithm)(source)
   }
