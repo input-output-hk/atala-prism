@@ -7,7 +7,7 @@ import java.time.{Clock, Instant}
 import akka.actor.typed.scaladsl.{ActorContext, Behaviors, StashBuffer, TimerScheduler}
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.util.ByteString
-import io.iohk.cef.crypto
+import io.iohk.cef.cryptonew._
 import io.iohk.cef.network.discovery.db.KnownNodeStorage
 import io.iohk.cef.network.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.NodeStatus.NodeState
@@ -265,8 +265,8 @@ object DiscoveryManager {
       Behaviors.withTimers(startListening)
   }
 
-  def calculateMessageKey(encoder: Encoder[DiscoveryWireMessage, ByteString], message: DiscoveryWireMessage): ByteString = {
-    val encodedPing = encoder.encode(message)
-    crypto.kec256(encodedPing)
-  }
+  def calculateMessageKey(encoder: Encoder[DiscoveryWireMessage, ByteString], message: DiscoveryWireMessage): ByteString =
+    encoder
+      .encode(message)
+      .hashWith(HashAlgorithm.KEC256)
 }
