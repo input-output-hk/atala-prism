@@ -45,7 +45,7 @@ trait ChimericLedgerStateStorageDaoDbTest extends fixture.FlatSpec
         sql"""
              insert into ${ChimericLedgerStateUtxoTable.table}
               (${column.id}, ${column.txId}, ${column.index})
-              values (${entryId}, ${txOutRef.id}, ${txOutRef.index})
+              values (${entryId}, ${txOutRef.txId}, ${txOutRef.index})
             """.update.apply()
       case CurrencyHolder(currency) =>
         val column = ChimericLedgerStateCurrencyTable.column

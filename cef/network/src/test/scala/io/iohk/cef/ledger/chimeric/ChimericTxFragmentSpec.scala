@@ -57,7 +57,7 @@ class ChimericTxFragmentSpec extends FlatSpec with MustMatchers with PropertyChe
         ChimericLedgerState.getUtxoPartitionId(txOutRef) -> ValueHolder(value)
       ))
       val input = Input(txOutRef, value)
-      val missingTxOutRef = txOutRef.copy(id = "a")
+      val missingTxOutRef = txOutRef.copy(txId = "a")
       val missingInput = input.copy(txOutRef = missingTxOutRef)
       val wrongValue = Value(currency -> (decimal + BigDecimal(1)))
       val wrongInput = input.copy(value = wrongValue)
@@ -82,8 +82,8 @@ class ChimericTxFragmentSpec extends FlatSpec with MustMatchers with PropertyChe
         ChimericLedgerState.getUtxoPartitionId(txOutRef) -> ValueHolder(value),
         ChimericLedgerState.getUtxoPartitionId(txOutRef2) -> ValueHolder(value2)
       ))
-      Output(value)(state, txOutRef.index, txOutRef.id) mustBe Left(UnspentOutputAlreadyExists(txOutRef))
-      Output(value2)(state, txOutRef2.index, txOutRef2.id) mustBe Right(newState)
+      Output(value)(state, txOutRef.index, txOutRef.txId) mustBe Left(UnspentOutputAlreadyExists(txOutRef))
+      Output(value2)(state, txOutRef2.index, txOutRef2.txId) mustBe Right(newState)
     }
   }
 

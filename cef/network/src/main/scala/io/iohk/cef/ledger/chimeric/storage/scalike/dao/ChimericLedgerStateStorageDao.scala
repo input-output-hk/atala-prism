@@ -119,7 +119,7 @@ class ChimericLedgerStateStorageDao {
       sql"""
          select ${ut.result.*}
          from ${ChimericLedgerStateUtxoTable as ut}
-         where ${ut.txId} = ${stateKeys.txOutRef.id} and ${ut.index} = ${stateKeys.txOutRef.index}
+         where ${ut.txId} = ${stateKeys.txOutRef.txId} and ${ut.index} = ${stateKeys.txOutRef.index}
          """.map(ChimericLedgerStateUtxoTable(ut.resultName)(_)).toOption().apply()
     utxo.map(t => (TxOutRef(t.txId, t.index) -> readValue(t.id)))
   }
@@ -129,7 +129,7 @@ class ChimericLedgerStateStorageDao {
     val entryId = insertStateEntry(ChimericLedgerState.getUtxoPartitionId(utxo._1))
     sql"""
        insert into ${ChimericLedgerStateUtxoTable.table} (${column.id}, ${column.txId}, ${column.index})
-       values (${entryId}, ${utxo._1.id}, ${utxo._1.index})
+       values (${entryId}, ${utxo._1.txId}, ${utxo._1.index})
        """.update().apply()
     insertValue(entryId, utxo._2)
   }
@@ -141,7 +141,7 @@ class ChimericLedgerStateStorageDao {
         .getOrElse(throw new DataLayerException(s"address not found: ${utxo}"))
     sql"""
        delete from ${ChimericLedgerStateUtxoTable.table}
-       where ${column.txId} = ${utxo.id} and ${column.index} = ${utxo.index})
+       where ${column.txId} = ${utxo.txId} and ${column.index} = ${utxo.index})
        """.update().apply()
     deleteValue(entryId)
     deleteStateEntry(entryId)

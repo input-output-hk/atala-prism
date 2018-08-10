@@ -11,7 +11,7 @@ object ChimericLedgerState {
     CurrencyPrefix.size == PrefixLength)
 
   def getAddressPartitionId(address: Address): String = s"$AddressPrefix$address"
-  def getUtxoPartitionId(txOutRef: TxOutRef): String = s"$TxOutRefPrefix${txOutRef.id}${Delimiter}${txOutRef.index}"
+  def getUtxoPartitionId(txOutRef: TxOutRef): String = s"$TxOutRefPrefix${txOutRef.txId}${Delimiter}${txOutRef.index}"
   def getCurrencyPartitionId(currency: Currency): String = s"$CurrencyPrefix$currency"
 
   def toStateKey(partitionId: String): ChimericStateKey = partitionId.take(PrefixLength) match {
