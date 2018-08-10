@@ -28,7 +28,7 @@ create table cef.chimeric_ledger_state_currency(
 create table cef.chimeric_value_entry(
     ledger_state_entry_id bigint not null,
     currency varchar(12) not null,
-    amount decimal(25,5) not null,
+    amount decimal not null,
     primary key(ledger_state_entry_id, currency),
     foreign key(ledger_state_entry_id) references cef.chimeric_ledger_state_entry(id)
 );
