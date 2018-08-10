@@ -4,20 +4,25 @@ object ChimericLedgerState {
   private val AddressPrefix = "ad="
   private val TxOutRefPrefix = "to="
   private val CurrencyPrefix = "cr="
+  private val PrefixLength = 3
+  private val Delimiter = "--"
+  require(AddressPrefix.size == PrefixLength &&
+    TxOutRefPrefix.size == PrefixLength &&
+    CurrencyPrefix.size == PrefixLength)
 
   def getAddressPartitionId(address: Address): String = s"$AddressPrefix$address"
-  def getUtxoPartitionId(txOutRef: TxOutRef): String = s"$TxOutRefPrefix${txOutRef.index}--${txOutRef.id}"
+  def getUtxoPartitionId(txOutRef: TxOutRef): String = s"$TxOutRefPrefix${txOutRef.id}${Delimiter}${txOutRef.index}"
   def getCurrencyPartitionId(currency: Currency): String = s"$CurrencyPrefix$currency"
 
-  def toStateKey(partitionId: String): ChimericStateKey = partitionId.take(3) match {
+  def toStateKey(partitionId: String): ChimericStateKey = partitionId.take(PrefixLength) match {
     case AddressPrefix =>
-      AddressHolder(partitionId.drop(3))
+      AddressHolder(partitionId.drop(PrefixLength))
     case TxOutRefPrefix =>
-      val utxo = partitionId.drop(3).split("--")
+      val utxo = partitionId.drop(PrefixLength).split(Delimiter)
       UtxoHolder(TxOutRef(utxo.head, utxo.tail.head.toInt))
     case CurrencyPrefix =>
-      CurrencyHolder(partitionId.drop(3))
-    case _ => throw new IllegalStateException(s"Invalid partition key prefix: ${partitionId.take(3)}")
+      CurrencyHolder(partitionId.drop(PrefixLength))
+    case _ => throw new IllegalStateException(s"Invalid partition key prefix: ${partitionId.take(PrefixLength)}")
   }
 }
 

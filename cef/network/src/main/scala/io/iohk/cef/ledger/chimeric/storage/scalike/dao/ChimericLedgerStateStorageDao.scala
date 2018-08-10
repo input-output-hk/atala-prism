@@ -6,7 +6,7 @@ import io.iohk.cef.ledger.chimeric._
 import io.iohk.cef.ledger.storage.scalike.DataLayerException
 import scalikejdbc._
 
-class LedgerStateStorageDao {
+class ChimericLedgerStateStorageDao {
 
   def slice(keys: Set[String])(implicit DBSession: DBSession): LedgerState[ChimericStateValue] = {
     val stateKeys = keys.map(ChimericLedgerState.toStateKey)
@@ -53,9 +53,9 @@ class LedgerStateStorageDao {
   private def getStateEntryId(stringId: String)(implicit DBSession: DBSession): Option[Long] = {
     val se = ChimericLedgerStateEntryTable.syntax("se")
     sql"""
-       select ${se.resultName.*}
+       select ${se.result.*}
        from ${ChimericLedgerStateEntryTable as se}
-       where ${se.result.stringId} = ${stringId}
+       where ${se.stringId} = ${stringId}
      """.map(ChimericLedgerStateEntryTable(se.resultName)(_).id).toOption().apply()
   }
 
@@ -83,7 +83,7 @@ class LedgerStateStorageDao {
       sql"""
          select ${cr.result.*}
          from ${ChimericLedgerStateCurrencyTable as cr}
-         where ${cr.resultName.currency} in ${currencyKeys.map(_.currency)}
+         where ${cr.currency} in (${currencyKeys.map(_.currency)})
          """.map(ChimericLedgerStateCurrencyTable(cr.resultName)(_)).list().apply()
     addresses.map(_.toCreateCurrency)
   }
@@ -153,7 +153,7 @@ class LedgerStateStorageDao {
       sql"""
          select ${ad.result.*}
          from ${ChimericLedgerStateAddressTable as ad}
-         where ${ad.resultName.address} in ${stateKeys.map(_.address)}
+         where ${ad.address} in (${stateKeys.map(_.address)})
          """.map(ChimericLedgerStateAddressTable(ad.resultName)(_)).list().apply()
     addresses.map(t => (t.address, readValue(t.id)))
   }
@@ -186,7 +186,7 @@ class LedgerStateStorageDao {
     val entryList = sql"""
          select ${v.result.*}
          from ${ChimericValueEntryTable as v}
-         where ${v.resultName.ledgerStateEntryId} = ${ledgerStateEntryId}
+         where ${v.ledgerStateEntryId} = ${ledgerStateEntryId}
        """.map(rs => ChimericValueEntryTable(v.resultName)(rs)).list().apply()
     ChimericValueEntryTable.toValue(entryList)
   }

@@ -4,7 +4,7 @@ object Schema {
 
   val SchemaName = "cef"
 
-  val LedgerStateTableName = s"$SchemaName.chimeric_ledger_state"
+  val LedgerStateEntryTableName = s"$SchemaName.chimeric_ledger_state_entry"
   val LedgerStateAddressTableName = s"$SchemaName.chimeric_ledger_state_address"
   val LedgerStateUtxoTableName = s"$SchemaName.chimeric_ledger_state_utxo"
   val LedgerStateCurrencyTableName = s"$SchemaName.chimeric_ledger_state_currency"

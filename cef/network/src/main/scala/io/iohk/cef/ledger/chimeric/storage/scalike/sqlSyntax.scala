@@ -6,7 +6,7 @@ import scalikejdbc._
 case class ChimericLedgerStateEntryTable(id: Long, stringId: String)
 
 object ChimericLedgerStateEntryTable extends SQLSyntaxSupport[ChimericLedgerStateEntryTable] {
-  override def tableName: String = Schema.LedgerStateTableName
+  override def tableName: String = Schema.LedgerStateEntryTableName
 
   def apply(se: ResultName[ChimericLedgerStateEntryTable])(rs: WrappedResultSet): ChimericLedgerStateEntryTable =
     ChimericLedgerStateEntryTable(rs.long(se.id), rs.string(se.stringId))

@@ -14,9 +14,13 @@ case class Value(protected[Value] val m: Map[Currency, Quantity]) {
   def + (that: Value): Value = combine(that, _ + _)
   def unary_- : Value = new Value(m.mapValues(- _))
   def -(that: Value): Value = this + (- that)
-  def apply(currency: Currency): Quantity = m.get(currency).getOrElse(0)
+  def apply(currency: Currency): Quantity = m.get(currency).getOrElse(BigDecimal(0))
 
-  def >=(that: Value): Boolean = (m.keys ++ that.m.keys).forall(at => this(at) >= that(at))
+  def >=(that: Value): Boolean = {
+    (this.m.keys ++ that.m.keys).forall(at => {
+      this (at) >= that(at)
+    })
+  }
 
   def iterator: Iterator[(Currency, Quantity)] = m.iterator
 
@@ -41,7 +45,8 @@ case class Value(protected[Value] val m: Map[Currency, Quantity]) {
 object Value {
   val Zero: Value = new Value(Map())
   //If currency c is present in more than one pair, the last element where currency==c will remain as c's quantity
-  def apply(values: (Currency, Quantity)*): Value = new Value(Map(values:_*))
+  def apply(values: (Currency, Quantity)*): Value =
+    new Value(Map(values.filter(_._2 != 0):_*))
 
   implicit val ByteStringSerializableImpl = new ByteStringSerializable[Value] {
     override def deserialize(bytes: ByteString): Value = {
