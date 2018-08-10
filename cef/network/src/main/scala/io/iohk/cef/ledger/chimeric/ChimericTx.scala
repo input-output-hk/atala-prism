@@ -18,7 +18,8 @@ case class ChimericTx(fragments: Seq[ChimericTxFragment]) extends Transaction[Ch
     fragments.zipWithIndex.map{ case (fragment, index) => fragment.partitionIds(txId, index)}.toSet.flatten
   }
 
-  private def txId: ChimericTxId = toString()
+  //FIXME: This is a placeholder until we add hash functions.
+  def txId: ChimericTxId = s"ChimericTx(${fragments})"
 
   private def testPreservationOfValue(currentStateEither: ChimericStateOrError): ChimericStateOrError =
     currentStateEither.flatMap { currentState =>
