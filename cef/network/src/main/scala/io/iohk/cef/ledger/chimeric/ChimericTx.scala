@@ -1,12 +1,12 @@
 package io.iohk.cef.ledger.chimeric
 
-import io.iohk.cef.ledger.{LedgerError, LedgerState, Transaction}
+import io.iohk.cef.ledger.{LedgerError, Transaction}
 
 case class ChimericTx(fragments: Seq[ChimericTxFragment]) extends Transaction[ChimericStateValue] {
 
-  type StateEither = Either[LedgerError, LedgerState[ChimericStateValue]]
+  type StateEither = Either[LedgerError, ChimericLedgerState]
 
-  override def apply(currentState: LedgerState[ChimericStateValue]): StateEither = {
+  override def apply(currentState: ChimericLedgerState): StateEither = {
     fragments.zipWithIndex.foldLeft[StateEither](testPreservationOfValue(Right(currentState)))(
       (stateEither, current) => {
         stateEither.flatMap(state => {

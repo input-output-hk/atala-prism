@@ -8,7 +8,7 @@ import scalikejdbc._
 
 class ChimericLedgerStateStorageDao {
 
-  def slice(keys: Set[String])(implicit DBSession: DBSession): LedgerState[ChimericStateValue] = {
+  def slice(keys: Set[String])(implicit DBSession: DBSession): ChimericLedgerState = {
     val stateKeys = keys.map(ChimericLedgerState.toStateKey)
     val currencies = readCurrencies(stateKeys.collect{ case ch: CurrencyHolder => ch })
     val utxos = readUtxos(stateKeys.collect{ case uh: UtxoHolder => uh })
@@ -26,8 +26,8 @@ class ChimericLedgerStateStorageDao {
     LedgerState[ChimericStateValue](stateSequence.toMap)
   }
 
-  def update(previousState: LedgerState[ChimericStateValue],
-             newState: LedgerState[ChimericStateValue])(implicit DBsession: DBSession): Unit = {
+  def update(previousState: ChimericLedgerState,
+             newState: ChimericLedgerState)(implicit DBsession: DBSession): Unit = {
     val currentState = slice(previousState.keys)
     if (previousState != currentState) {
       throw new IllegalArgumentException("Provided previous state must be equal to the current state")

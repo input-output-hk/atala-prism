@@ -22,7 +22,7 @@ class ChimericTxFragmentSpec extends FlatSpec with MustMatchers with PropertyChe
       val state = LedgerState[ChimericStateValue](Map(
         ChimericLedgerState.getAddressPartitionId(address) -> ValueHolder(value)
       ))
-      def newState(substractedValue: Value): LedgerState[ChimericStateValue] = LedgerState[ChimericStateValue](Map(
+      def newState(substractedValue: Value): ChimericLedgerState = LedgerState[ChimericStateValue](Map(
         ChimericLedgerState.getAddressPartitionId(address) -> ValueHolder(value - substractedValue)
       ))
       val moreThanValue = value + Value(currency -> BigDecimal(1))
@@ -41,7 +41,7 @@ class ChimericTxFragmentSpec extends FlatSpec with MustMatchers with PropertyChe
            ChimericGenerators.ValueGen,
            Gen.alphaNumStr,
            Gen.posNum[Int]) {
-      (s: LedgerState[ChimericStateValue], v: Value, txId: String, i: Int) =>
+      (s: ChimericLedgerState, v: Value, txId: String, i: Int) =>
       Mint(v)(s, i, txId) mustBe Right(s)
       Fee(v)(s, i, txId) mustBe Right(s)
     }

@@ -20,7 +20,7 @@ import scala.util.Try
 trait IdentityLedgerItDbTest extends fixture.FlatSpec
   with AutoRollback
   with MustMatchers
-  with LedgerStateStorageFixture {
+  with IdentityLedgerStateStorageFixture {
 
   def createLedger(ledgerStateStorageDao: LedgerStateStorageDao)(implicit dBSession: DBSession): Ledger[Try, Set[ByteString]] = {
     implicit val forExpEnabler = ForExpressionsEnabler.tryEnabler
