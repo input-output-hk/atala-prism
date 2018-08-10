@@ -33,13 +33,13 @@ class TcpNetworkTransportSpec extends FlatSpec {
     val alicesAddress: InetSocketAddress = aRandomAddress()
     val alicesInbox: ListBuffer[String] = new ListBuffer()
     val alicesTransport =
-      new TcpNetworkTransport[String](logMessages(alicesInbox), codec, new NettyTransport(alicesAddress))
+      new TcpNetworkTransport(logMessages(alicesInbox), codec, new NettyTransport(alicesAddress))
   }
 
   trait BobsConfig {
     val bobsAddress: InetSocketAddress = aRandomAddress()
     val bobsInbox: ListBuffer[String] = new ListBuffer()
     val bobsTransport =
-      new TcpNetworkTransport[String](logMessages(bobsInbox), codec, new NettyTransport(bobsAddress))
+      new TcpNetworkTransport(logMessages(bobsInbox), codec, new NettyTransport(bobsAddress))
   }
 }
