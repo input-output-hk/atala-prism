@@ -1,6 +1,6 @@
 package io.iohk.cef.ledger.chimeric.storage.scalike.dao
 
-import io.iohk.cef.ledger.{Delete, Insert, LedgerState, Update}
+import io.iohk.cef.ledger.{DeleteStateUpdate, InsertStateUpdate, LedgerState, UpdateStateUpdate}
 import io.iohk.cef.ledger.chimeric.storage.scalike._
 import io.iohk.cef.ledger.chimeric._
 import io.iohk.cef.ledger.storage.scalike.DataLayerException
@@ -34,15 +34,15 @@ class ChimericLedgerStateStorageDao {
     } else {
       val updateActions = currentState.updateTo(newState).mapKeys(ChimericLedgerState.toStateKey)
       updateActions.actions.foreach {
-        case Insert(key: CurrencyHolder, value: CreateCurrencyHolder) => insertCurrency(key.currency -> value.createCurrency)
-        case Insert(key: AddressHolder, value: ValueHolder) => insertAddress(key.address -> value.value)
-        case Insert(key: UtxoHolder, value: ValueHolder) => insertUtxo(key.txOutRef -> value.value)
-        case Delete(key: AddressHolder, _) => deleteAddress(key.address)
-        case Delete(key: UtxoHolder, _) => deleteUtxo(key.txOutRef)
-        case Update(key: AddressHolder, value: ValueHolder) =>
+        case InsertStateUpdate(key: CurrencyHolder, value: CreateCurrencyHolder) => insertCurrency(key.currency -> value.createCurrency)
+        case InsertStateUpdate(key: AddressHolder, value: ValueHolder) => insertAddress(key.address -> value.value)
+        case InsertStateUpdate(key: UtxoHolder, value: ValueHolder) => insertUtxo(key.txOutRef -> value.value)
+        case DeleteStateUpdate(key: AddressHolder, _) => deleteAddress(key.address)
+        case DeleteStateUpdate(key: UtxoHolder, _) => deleteUtxo(key.txOutRef)
+        case UpdateStateUpdate(key: AddressHolder, value: ValueHolder) =>
           deleteAddress(key.address)
           insertAddress((key.address, value.value))
-        case Update(key: UtxoHolder, value: ValueHolder) =>
+        case UpdateStateUpdate(key: UtxoHolder, value: ValueHolder) =>
           deleteUtxo(key.txOutRef)
           insertUtxo((key.txOutRef, value.value))
         case a => throw new IllegalArgumentException(s"Unexpected action: ${a}")
