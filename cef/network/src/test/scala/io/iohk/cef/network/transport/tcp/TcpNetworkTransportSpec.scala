@@ -1,73 +1,45 @@
 package io.iohk.cef.network.transport.tcp
 
+import java.net.InetSocketAddress
+import java.nio.ByteBuffer
+
 import io.iohk.cef.network.encoding.StreamCodec
 import io.iohk.cef.network.transport.tcp.NetUtils._
-import io.netty.buffer.{ByteBuf, Unpooled}
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 import org.scalatest.concurrent.Eventually._
 
-import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
 
 class TcpNetworkTransportSpec extends FlatSpec {
 
   behavior of "TcpNetworkTransport"
 
-  it should "not support messaging before starting" in {
-    val alicesAddress = aRandomAddress()
-    val bobsAddress = aRandomAddress()
-    val alice =
-      new TcpNetworkTransport[String](discardMessages, codec, TcpTransportConfiguration(alicesAddress))
+  it should "send and receive a message" in new AlicesConfig with BobsConfig {
 
-    an[UnsupportedOperationException] shouldBe thrownBy(alice.sendMessage(bobsAddress, ""))
-  }
-
-  it should "start" in {
-    val address = aRandomAddress()
-    val transport =
-      new TcpNetworkTransport(discardMessages, codec, TcpTransportConfiguration(address))
-    isListening(address) shouldBe false
-
-    transport.start()
-
-    isListening(address) shouldBe true
-  }
-
-  it should "receive a message" in {
-    val address = aRandomAddress()
-    val messagesReceived = new mutable.ListBuffer[String]()
-
-    new TcpNetworkTransport[String](logMessages(messagesReceived), codec, TcpTransportConfiguration(address)).start()
-
-    writeTo(address, "hello".getBytes)
+    alicesTransport.sendMessage(bobsAddress, "Hello, Bob!")
 
     eventually {
-      messagesReceived should contain("hello")
+      bobsInbox should contain("Hello, Bob!")
     }
   }
 
-  it should "send a message to a valid address" in {
-
-    val alicesAddress = aRandomAddress()
-    val bobsAddress = aRandomAddress()
-    val bobsMessages = new mutable.ListBuffer[String]()
-
-    val alice =
-      new TcpNetworkTransport(discardMessages, codec, TcpTransportConfiguration(alicesAddress))
-        .start()
-
-    val bob =
-      new TcpNetworkTransport(logMessages(bobsMessages), codec, TcpTransportConfiguration(bobsAddress)).start()
-
-    alice.sendMessage(bobsAddress, "Hello, Bob!")
-
-    eventually {
-      bobsMessages should contain("Hello, Bob!")
-    }
-  }
-
-  private val codec = StreamCodec[String, ByteBuf](
-    (t: String) => Unpooled.directBuffer().writeBytes(t.getBytes),
-    (u: ByteBuf) => Seq(u.toString(io.netty.util.CharsetUtil.UTF_8))
+  private val codec = new StreamCodec[String, ByteBuffer](
+    (t: String) => ByteBuffer.wrap(t.getBytes),
+    (u: ByteBuffer) => Seq(new String(toArray(u)))
   )
+
+  trait AlicesConfig {
+    val alicesAddress: InetSocketAddress = aRandomAddress()
+    val alicesInbox: ListBuffer[String] = new ListBuffer()
+    val alicesTransport =
+      new TcpNetworkTransport(logMessages(alicesInbox), codec, new NettyTransport(alicesAddress))
+  }
+
+  trait BobsConfig {
+    val bobsAddress: InetSocketAddress = aRandomAddress()
+    val bobsInbox: ListBuffer[String] = new ListBuffer()
+    val bobsTransport =
+      new TcpNetworkTransport(logMessages(bobsInbox), codec, new NettyTransport(bobsAddress))
+  }
 }

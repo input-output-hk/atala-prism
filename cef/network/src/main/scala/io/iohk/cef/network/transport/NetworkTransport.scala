@@ -21,20 +21,6 @@ abstract class NetworkTransport[Address, Message](
     */
 
   /**
-    * The primary purpose of this method is to decouple the creation
-    * and the 'turning on' of a transport.
-    *
-    * This method should make the transport ready
-    * for sending and receiving messages. This might mean, for example,
-    * binding to an address.
-    *
-    * This method should run synchronously then return the Transport in its new state.
-    *
-    * throws TransportInitializationException if initialization fails.
-    */
-  def start(): NetworkTransport[Address, Message]
-
-  /**
     * Send a message to another peer.
     * @param address the address of the peer to which to send the message
     * @param message the message body itself.
