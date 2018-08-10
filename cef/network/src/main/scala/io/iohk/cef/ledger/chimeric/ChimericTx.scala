@@ -1,13 +1,11 @@
 package io.iohk.cef.ledger.chimeric
 
-import io.iohk.cef.ledger.{LedgerError, LedgerState, Transaction}
+import io.iohk.cef.ledger.Transaction
 
 case class ChimericTx(fragments: Seq[ChimericTxFragment]) extends Transaction[ChimericStateValue] {
 
-  type StateEither = Either[LedgerError, LedgerState[ChimericStateValue]]
-
-  override def apply(currentState: LedgerState[ChimericStateValue]): StateEither = {
-    fragments.zipWithIndex.foldLeft[StateEither](testPreservationOfValue(Right(currentState)))(
+  override def apply(currentState: ChimericLedgerState): ChimericStateOrError = {
+    fragments.zipWithIndex.foldLeft[ChimericStateOrError](testPreservationOfValue(Right(currentState)))(
       (stateEither, current) => {
         stateEither.flatMap(state => {
           val (fragment, index) = current
@@ -22,7 +20,7 @@ case class ChimericTx(fragments: Seq[ChimericTxFragment]) extends Transaction[Ch
 
   private def txId: ChimericTxId = toString()
 
-  private def testPreservationOfValue(currentStateEither: StateEither): StateEither =
+  private def testPreservationOfValue(currentStateEither: ChimericStateOrError): ChimericStateOrError =
     currentStateEither.flatMap { currentState =>
     val totalValue = fragments.foldLeft(Value.Zero)((sum, current) =>
       current match {

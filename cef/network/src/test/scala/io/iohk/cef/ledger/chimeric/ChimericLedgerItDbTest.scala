@@ -15,7 +15,7 @@ import scalikejdbc.scalatest.AutoRollback
 
 import scala.util.Try
 
-class ChimericLedgerItDbTest extends fixture.FlatSpec
+trait ChimericLedgerItDbTest extends fixture.FlatSpec
   with AutoRollback
   with MustMatchers
   with LedgerFixture {

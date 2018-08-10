@@ -1,6 +1,6 @@
 package io.iohk.cef.ledger.chimeric.storage.scalike.dao
 
-import io.iohk.cef.ledger.{Delete, Insert, LedgerState, Update}
+import io.iohk.cef.ledger.{DeleteStateUpdate, InsertStateUpdate, LedgerState, UpdateStateUpdate}
 import io.iohk.cef.ledger.chimeric.storage.scalike._
 import io.iohk.cef.ledger.chimeric._
 import io.iohk.cef.ledger.storage.scalike.DataLayerException
@@ -8,7 +8,7 @@ import scalikejdbc._
 
 class ChimericLedgerStateStorageDao {
 
-  def slice(keys: Set[String])(implicit DBSession: DBSession): LedgerState[ChimericStateValue] = {
+  def slice(keys: Set[String])(implicit DBSession: DBSession): ChimericLedgerState = {
     val stateKeys = keys.map(ChimericLedgerState.toStateKey)
     val currencies = readCurrencies(stateKeys.collect{ case ch: CurrencyHolder => ch })
     val utxos = readUtxos(stateKeys.collect{ case uh: UtxoHolder => uh })
@@ -26,23 +26,23 @@ class ChimericLedgerStateStorageDao {
     LedgerState[ChimericStateValue](stateSequence.toMap)
   }
 
-  def update(previousState: LedgerState[ChimericStateValue],
-             newState: LedgerState[ChimericStateValue])(implicit DBsession: DBSession): Unit = {
+  def update(previousState: ChimericLedgerState,
+             newState: ChimericLedgerState)(implicit DBsession: DBSession): Unit = {
     val currentState = slice(previousState.keys)
     if (previousState != currentState) {
       throw new IllegalArgumentException("Provided previous state must be equal to the current state")
     } else {
       val updateActions = currentState.updateTo(newState).mapKeys(ChimericLedgerState.toStateKey)
       updateActions.actions.foreach {
-        case Insert(key: CurrencyHolder, value: CreateCurrencyHolder) => insertCurrency(key.currency -> value.createCurrency)
-        case Insert(key: AddressHolder, value: ValueHolder) => insertAddress(key.address -> value.value)
-        case Insert(key: UtxoHolder, value: ValueHolder) => insertUtxo(key.txOutRef -> value.value)
-        case Delete(key: AddressHolder, _) => deleteAddress(key.address)
-        case Delete(key: UtxoHolder, _) => deleteUtxo(key.txOutRef)
-        case Update(key: AddressHolder, value: ValueHolder) =>
+        case InsertStateUpdate(key: CurrencyHolder, value: CreateCurrencyHolder) => insertCurrency(key.currency -> value.createCurrency)
+        case InsertStateUpdate(key: AddressHolder, value: ValueHolder) => insertAddress(key.address -> value.value)
+        case InsertStateUpdate(key: UtxoHolder, value: ValueHolder) => insertUtxo(key.txOutRef -> value.value)
+        case DeleteStateUpdate(key: AddressHolder, _) => deleteAddress(key.address)
+        case DeleteStateUpdate(key: UtxoHolder, _) => deleteUtxo(key.txOutRef)
+        case UpdateStateUpdate(key: AddressHolder, value: ValueHolder) =>
           deleteAddress(key.address)
           insertAddress((key.address, value.value))
-        case Update(key: UtxoHolder, value: ValueHolder) =>
+        case UpdateStateUpdate(key: UtxoHolder, value: ValueHolder) =>
           deleteUtxo(key.txOutRef)
           insertUtxo((key.txOutRef, value.value))
         case a => throw new IllegalArgumentException(s"Unexpected action: ${a}")
@@ -119,7 +119,7 @@ class ChimericLedgerStateStorageDao {
       sql"""
          select ${ut.result.*}
          from ${ChimericLedgerStateUtxoTable as ut}
-         where ${ut.txId} = ${stateKeys.txOutRef.id} and ${ut.index} = ${stateKeys.txOutRef.index}
+         where ${ut.txId} = ${stateKeys.txOutRef.txId} and ${ut.index} = ${stateKeys.txOutRef.index}
          """.map(ChimericLedgerStateUtxoTable(ut.resultName)(_)).toOption().apply()
     utxo.map(t => (TxOutRef(t.txId, t.index) -> readValue(t.id)))
   }
@@ -129,7 +129,7 @@ class ChimericLedgerStateStorageDao {
     val entryId = insertStateEntry(ChimericLedgerState.getUtxoPartitionId(utxo._1))
     sql"""
        insert into ${ChimericLedgerStateUtxoTable.table} (${column.id}, ${column.txId}, ${column.index})
-       values (${entryId}, ${utxo._1.id}, ${utxo._1.index})
+       values (${entryId}, ${utxo._1.txId}, ${utxo._1.index})
        """.update().apply()
     insertValue(entryId, utxo._2)
   }
@@ -141,7 +141,7 @@ class ChimericLedgerStateStorageDao {
         .getOrElse(throw new DataLayerException(s"address not found: ${utxo}"))
     sql"""
        delete from ${ChimericLedgerStateUtxoTable.table}
-       where ${column.txId} = ${utxo.id} and ${column.index} = ${utxo.index})
+       where ${column.txId} = ${utxo.txId} and ${column.index} = ${utxo.index})
        """.update().apply()
     deleteValue(entryId)
     deleteStateEntry(entryId)

@@ -1,10 +1,9 @@
 package io.iohk.cef.ledger.chimeric
 
-import io.iohk.cef.ledger.{LedgerError, LedgerState}
+import io.iohk.cef.ledger.LedgerError
 
 sealed trait ChimericTxFragment
-  extends ((LedgerState[ChimericStateValue], Int, String)=> Either[LedgerError, LedgerState[ChimericStateValue]]) {
-  type StateOrError = Either[LedgerError, LedgerState[ChimericStateValue]]
+  extends ((ChimericLedgerState, Int, String) => Either[LedgerError, ChimericLedgerState]) {
 
   def partitionIds(txId: String, index: Int): Set[String]
 }
@@ -14,18 +13,18 @@ sealed trait ActionTx extends ChimericTxFragment
 sealed trait ValueTx extends ChimericTxFragment {
   def value: Value
 
-  def exec(state: LedgerState[ChimericStateValue], index: Int, txId: String): StateOrError
+  def exec(state: ChimericLedgerState, index: Int, txId: String): ChimericStateOrError
 
-  final override def apply(state: LedgerState[ChimericStateValue], index: Int, txId: String): StateOrError = for {
+  final override def apply(state: ChimericLedgerState, index: Int, txId: String): ChimericStateOrError = for {
     validatedState <- validateState(state)
     result <- exec(validatedState, index, txId)
   } yield result
 
-  protected def validateState(state: LedgerState[ChimericStateValue]): StateOrError = {
+  protected def validateState(state: ChimericLedgerState): ChimericStateOrError = {
     validateCurrencyExists(state)
   }
 
-  protected def validateCurrencyExists(state: LedgerState[ChimericStateValue]): StateOrError = {
+  protected def validateCurrencyExists(state: ChimericLedgerState): ChimericStateOrError = {
     val missingCurrencies =
       value.iterator.filterNot{ case (currency, _) =>
         state.contains(ChimericLedgerState.getCurrencyPartitionId(currency))
@@ -43,7 +42,7 @@ sealed trait TxInput extends ValueTx
 sealed trait TxOutput extends ValueTx
 
 case class Withdrawal(address: Address, value: Value, nonce: Int) extends TxInput {
-  override def exec(state: LedgerState[ChimericStateValue], index: Int, txId: String): StateOrError = {
+  override def exec(state: ChimericLedgerState, index: Int, txId: String): ChimericStateOrError = {
     val addressKey = ChimericLedgerState.getAddressPartitionId(address)
     val addressValue =
       state.get(addressKey).collect { case ValueHolder(value) => value }.getOrElse(Value.Zero)
@@ -61,7 +60,7 @@ case class Withdrawal(address: Address, value: Value, nonce: Int) extends TxInpu
 }
 
 case class Mint(value: Value) extends TxInput {
-  override def exec(state: LedgerState[ChimericStateValue], v2: Int, v3: String): StateOrError = {
+  override def exec(state: ChimericLedgerState, v2: Int, v3: String): ChimericStateOrError = {
     Right(state)
   }
 
@@ -69,7 +68,7 @@ case class Mint(value: Value) extends TxInput {
 }
 
 case class Input(txOutRef: TxOutRef, value: Value) extends TxInput {
-  override def exec(state: LedgerState[ChimericStateValue], index: Int, txId: String): StateOrError = {
+  override def exec(state: ChimericLedgerState, index: Int, txId: String): ChimericStateOrError = {
     val txOutKey = ChimericLedgerState.getUtxoPartitionId(txOutRef)
     val txOutValueOpt =
       state.get(txOutKey).collect { case ValueHolder(value) => value }
@@ -87,7 +86,7 @@ case class Input(txOutRef: TxOutRef, value: Value) extends TxInput {
 }
 
 case class Fee(value: Value) extends TxOutput {
-  override def exec(state: LedgerState[ChimericStateValue], v2: Int, v3: String): StateOrError = {
+  override def exec(state: ChimericLedgerState, v2: Int, v3: String): ChimericStateOrError = {
     Right(state)
   }
 
@@ -95,7 +94,7 @@ case class Fee(value: Value) extends TxOutput {
 }
 //TODO: Add the identity concept here
 case class Output(value: Value) extends TxOutput {
-  override def exec(state: LedgerState[ChimericStateValue], index: Int, txId: String): StateOrError = {
+  override def exec(state: ChimericLedgerState, index: Int, txId: String): ChimericStateOrError = {
     val txOutRef = TxOutRef(txId, index)
     val txOutKey = ChimericLedgerState.getUtxoPartitionId(txOutRef)
     val txOutValueOpt =
@@ -114,7 +113,7 @@ case class Output(value: Value) extends TxOutput {
 }
 
 case class Deposit(address: Address, value: Value) extends TxOutput {
-  override def exec(state: LedgerState[ChimericStateValue], v2: Int, v3: String): StateOrError = {
+  override def exec(state: ChimericLedgerState, v2: Int, v3: String): ChimericStateOrError = {
     val addressKey = ChimericLedgerState.getAddressPartitionId(address)
     val addressValueOpt =
       state.get(addressKey).collect { case ValueHolder(value) => value }
@@ -125,7 +124,7 @@ case class Deposit(address: Address, value: Value) extends TxOutput {
 }
 
 case class CreateCurrency(currency: Currency) extends ActionTx {
-  override def apply(state: LedgerState[ChimericStateValue], v2: Int, v3: String): StateOrError = {
+  override def apply(state: ChimericLedgerState, v2: Int, v3: String): ChimericStateOrError = {
     val createCurrencyKey = ChimericLedgerState.getCurrencyPartitionId(currency)
     val currencyOpt = state.get(createCurrencyKey)
     if (currencyOpt.isDefined) {

@@ -11,7 +11,7 @@ object ChimericLedgerState {
     CurrencyPrefix.size == PrefixLength)
 
   def getAddressPartitionId(address: Address): String = s"$AddressPrefix$address"
-  def getUtxoPartitionId(txOutRef: TxOutRef): String = s"$TxOutRefPrefix${txOutRef.id}${Delimiter}${txOutRef.index}"
+  def getUtxoPartitionId(txOutRef: TxOutRef): String = s"$TxOutRefPrefix${txOutRef.txId}${Delimiter}${txOutRef.index}"
   def getCurrencyPartitionId(currency: Currency): String = s"$CurrencyPrefix$currency"
 
   def toStateKey(partitionId: String): ChimericStateKey = partitionId.take(PrefixLength) match {
@@ -19,7 +19,11 @@ object ChimericLedgerState {
       AddressHolder(partitionId.drop(PrefixLength))
     case TxOutRefPrefix =>
       val utxo = partitionId.drop(PrefixLength).split(Delimiter)
-      UtxoHolder(TxOutRef(utxo.head, utxo.tail.head.toInt))
+      if (utxo.size != 2) {
+        throw new IllegalArgumentException(s"Wrong format for the utxo key ${partitionId}")
+      } else {
+        UtxoHolder(TxOutRef(utxo.head, utxo.tail.head.toInt))
+      }
     case CurrencyPrefix =>
       CurrencyHolder(partitionId.drop(PrefixLength))
     case _ => throw new IllegalStateException(s"Invalid partition key prefix: ${partitionId.take(PrefixLength)}")

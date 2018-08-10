@@ -20,9 +20,11 @@ class ChimericTxFragmentSpec extends FlatSpec with MustMatchers with PropertyChe
       val currency: Currency = "CRC"
       val value = Value(currency -> decimal)
       val state = LedgerState[ChimericStateValue](Map(
+        ChimericLedgerState.getCurrencyPartitionId(currency) -> CreateCurrencyHolder(CreateCurrency(currency)),
         ChimericLedgerState.getAddressPartitionId(address) -> ValueHolder(value)
       ))
-      def newState(substractedValue: Value): LedgerState[ChimericStateValue] = LedgerState[ChimericStateValue](Map(
+      def newState(substractedValue: Value): ChimericLedgerState = LedgerState[ChimericStateValue](Map(
+        ChimericLedgerState.getCurrencyPartitionId(currency) -> CreateCurrencyHolder(CreateCurrency(currency)),
         ChimericLedgerState.getAddressPartitionId(address) -> ValueHolder(value - substractedValue)
       ))
       val moreThanValue = value + Value(currency -> BigDecimal(1))
@@ -37,11 +39,14 @@ class ChimericTxFragmentSpec extends FlatSpec with MustMatchers with PropertyChe
   }
 
   it should "apply a Mint & Fee" in {
-    forAll(ChimericGenerators.StateGen,
-           ChimericGenerators.ValueGen,
+    forAll(ChimericGenerators.ValueGen,
            Gen.alphaNumStr,
            Gen.posNum[Int]) {
-      (s: LedgerState[ChimericStateValue], v: Value, txId: String, i: Int) =>
+      (v: Value, txId: String, i: Int) =>
+      val createCurrencyTxs = v.iterator.map{ case (currency, _) =>
+        ChimericLedgerState.getCurrencyPartitionId(currency) -> CreateCurrencyHolder(CreateCurrency(currency))
+      }.toSeq
+      val s = LedgerState[ChimericStateValue](Map(createCurrencyTxs:_*))
       Mint(v)(s, i, txId) mustBe Right(s)
       Fee(v)(s, i, txId) mustBe Right(s)
     }
@@ -54,14 +59,17 @@ class ChimericTxFragmentSpec extends FlatSpec with MustMatchers with PropertyChe
       val currency: Currency = "CRC"
       val value = Value(currency -> decimal)
       val state = LedgerState[ChimericStateValue](Map(
+        ChimericLedgerState.getCurrencyPartitionId(currency) -> CreateCurrencyHolder(CreateCurrency(currency)),
         ChimericLedgerState.getUtxoPartitionId(txOutRef) -> ValueHolder(value)
       ))
       val input = Input(txOutRef, value)
-      val missingTxOutRef = txOutRef.copy(id = "a")
+      val missingTxOutRef = txOutRef.copy(txId = "a")
       val missingInput = input.copy(txOutRef = missingTxOutRef)
       val wrongValue = Value(currency -> (decimal + BigDecimal(1)))
       val wrongInput = input.copy(value = wrongValue)
-      input(state, 1, "") mustBe Right(LedgerState[ChimericStateValue](Map()))
+      input(state, 1, "") mustBe Right(LedgerState[ChimericStateValue](Map(
+        ChimericLedgerState.getCurrencyPartitionId(currency) -> CreateCurrencyHolder(CreateCurrency(currency))
+      )))
       missingInput(state, 1, "") mustBe Left(UnspentOutputNotFound(missingTxOutRef))
       wrongInput(state, 1, "") mustBe Left(UnspentOutputInvalidValue(txOutRef, wrongValue, value))
     }
@@ -76,14 +84,16 @@ class ChimericTxFragmentSpec extends FlatSpec with MustMatchers with PropertyChe
       val value = Value(currency -> decimal)
       val value2 = Value(currency -> (decimal + 1))
       val state = LedgerState[ChimericStateValue](Map(
+        ChimericLedgerState.getCurrencyPartitionId(currency) -> CreateCurrencyHolder(CreateCurrency(currency)),
         ChimericLedgerState.getUtxoPartitionId(txOutRef) -> ValueHolder(value)
       ))
       val newState = LedgerState[ChimericStateValue](Map(
+        ChimericLedgerState.getCurrencyPartitionId(currency) -> CreateCurrencyHolder(CreateCurrency(currency)),
         ChimericLedgerState.getUtxoPartitionId(txOutRef) -> ValueHolder(value),
         ChimericLedgerState.getUtxoPartitionId(txOutRef2) -> ValueHolder(value2)
       ))
-      Output(value)(state, txOutRef.index, txOutRef.id) mustBe Left(UnspentOutputAlreadyExists(txOutRef))
-      Output(value2)(state, txOutRef2.index, txOutRef2.id) mustBe Right(newState)
+      Output(value)(state, txOutRef.index, txOutRef.txId) mustBe Left(UnspentOutputAlreadyExists(txOutRef))
+      Output(value2)(state, txOutRef2.index, txOutRef2.txId) mustBe Right(newState)
     }
   }
 
@@ -95,11 +105,15 @@ class ChimericTxFragmentSpec extends FlatSpec with MustMatchers with PropertyChe
       val currency: Currency = "CRC"
       val value = Value(currency -> decimal)
       val value2 = Value(currency -> (decimal + 1))
-      val emptyState = LedgerState[ChimericStateValue](Map())
+      val emptyState = LedgerState[ChimericStateValue](Map(
+        ChimericLedgerState.getCurrencyPartitionId(currency) -> CreateCurrencyHolder(CreateCurrency(currency))
+      ))
       val stateWithValue = LedgerState[ChimericStateValue](Map(
+        ChimericLedgerState.getCurrencyPartitionId(currency) -> CreateCurrencyHolder(CreateCurrency(currency)),
         ChimericLedgerState.getAddressPartitionId(address) -> ValueHolder(value)
       ))
       val stateWithValue2 = LedgerState[ChimericStateValue](Map(
+        ChimericLedgerState.getCurrencyPartitionId(currency) -> CreateCurrencyHolder(CreateCurrency(currency)),
         ChimericLedgerState.getAddressPartitionId(address) -> ValueHolder(value + value2)
       ))
       Deposit(address, value)(emptyState, 1, "") mustBe Right(stateWithValue)

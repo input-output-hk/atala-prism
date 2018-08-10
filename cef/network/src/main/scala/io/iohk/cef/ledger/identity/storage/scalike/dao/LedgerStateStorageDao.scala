@@ -1,7 +1,7 @@
 package io.iohk.cef.ledger.identity.storage.scalike.dao
 
 import akka.util.ByteString
-import io.iohk.cef.ledger.{Delete, Insert, LedgerState, Update}
+import io.iohk.cef.ledger.{DeleteStateUpdate, InsertStateUpdate, LedgerState, UpdateStateUpdate}
 import io.iohk.cef.ledger.identity.IdentityLedgerState
 import io.iohk.cef.ledger.identity.storage.scalike.{IdentityLedgerStateTable, LedgerStateEntryMap}
 import org.bouncycastle.util.encoders.Hex
@@ -30,16 +30,14 @@ class LedgerStateStorageDao {
     } else {
       val updateActions = currentState.updateTo(newState)
       updateActions.actions.foreach {
-        case Insert(key, set) => set.map(insert(key, _))
-        case Delete(key, set) => set.map(remove(key, _))
-        case Update(key, set) => {
-        val valuesToAdd = (set diff currentState.get(key).getOrElse(Set()))
-        val valuesToRemove = (currentState.get(key).getOrElse(Set()) diff set)
-        for {
-          _ <- valuesToAdd.map(v => insert(key, v))
-          _ <- valuesToRemove.map(v => remove(key, v))
-        } yield ()
-      }
+        case InsertStateUpdate(key, set) => set.foreach(insert(key, _))
+        case DeleteStateUpdate(key, set) => set.foreach(remove(key, _))
+        case UpdateStateUpdate(key, set) => {
+          val valuesToAdd = (set diff currentState.get(key).getOrElse(Set()))
+          val valuesToRemove = (currentState.get(key).getOrElse(Set()) diff set)
+          valuesToAdd.foreach(v => insert(key, v))
+          valuesToRemove.foreach(v => remove(key, v))
+        }
       }
     }
   }
