@@ -141,7 +141,7 @@ class ChimericLedgerStateStorageDao {
         .getOrElse(throw new DataLayerException(s"address not found: ${utxo}"))
     sql"""
        delete from ${ChimericLedgerStateUtxoTable.table}
-       where ${column.txId} = ${utxo.txId} and ${column.index} = ${utxo.index})
+       where ${column.txId} = ${utxo.txId} and ${column.index} = ${utxo.index}
        """.update().apply()
     deleteValue(entryId)
     deleteStateEntry(entryId)

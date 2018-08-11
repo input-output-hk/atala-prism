@@ -15,16 +15,19 @@ sealed trait ValueTx extends ChimericTxFragment {
 
   def exec(state: ChimericLedgerState, index: Int, txId: String): ChimericStateOrError
 
+  def txSpecificPartitionIds(txId: String, index: Int): Set[String]
+
   final override def apply(state: ChimericLedgerState, index: Int, txId: String): ChimericStateOrError = for {
     validatedState <- validateState(state)
     result <- exec(validatedState, index, txId)
   } yield result
 
-  protected def validateState(state: ChimericLedgerState): ChimericStateOrError = {
-    validateCurrencyExists(state)
-  }
+  private def validateState(state: ChimericLedgerState): ChimericStateOrError = for {
+    currencyExists <- validateCurrencyExists(state)
+    positiveValues <- validatePositiveValues(currencyExists)
+  } yield positiveValues
 
-  protected def validateCurrencyExists(state: ChimericLedgerState): ChimericStateOrError = {
+  private def validateCurrencyExists(state: ChimericLedgerState): ChimericStateOrError = {
     val missingCurrencies =
       value.iterator.filterNot{ case (currency, _) =>
         state.contains(ChimericLedgerState.getCurrencyPartitionId(currency))
@@ -34,6 +37,19 @@ sealed trait ValueTx extends ChimericTxFragment {
     } else {
       Left(CurrencyDoesNotExist(missingCurrencies.head._1, this))
     }
+  }
+
+  private def validatePositiveValues(state: ChimericLedgerState): ChimericStateOrError = {
+    if(value.iterator.exists{ case (_, quantity) => quantity < BigDecimal(0)}) {
+      Left(ValueNegative(value))
+    } else {
+      Right(state)
+    }
+  }
+
+  final override def partitionIds(txId: String, index: Int): Set[String] = {
+    value.iterator.map{ case (currency, _) => ChimericLedgerState.getCurrencyPartitionId(currency) }.toSet ++
+      txSpecificPartitionIds(txId, index)
   }
 }
 
@@ -55,7 +71,7 @@ case class Withdrawal(address: Address, value: Value, nonce: Int) extends TxInpu
     }
   }
 
-  override def partitionIds(txId: String, index: Int): Set[String] =
+  override def txSpecificPartitionIds(txId: String, index: Int): Set[String] =
     Set(ChimericLedgerState.getAddressPartitionId(address))
 
   override def toString(): ChimericTxId = s"Withdrawal($address,$value)"
@@ -66,7 +82,7 @@ case class Mint(value: Value) extends TxInput {
     Right(state)
   }
 
-  override def partitionIds(txId: String, index: Int): Set[String] = Set()
+  override def txSpecificPartitionIds(txId: String, index: Int): Set[String] = Set()
 
   override def toString(): ChimericTxId = s"Mint($value)"
 }
@@ -85,7 +101,7 @@ case class Input(txOutRef: TxOutRef, value: Value) extends TxInput {
     }
   }
 
-  override def partitionIds(txId: String, index: Int): Set[String] =
+  override def txSpecificPartitionIds(txId: String, index: Int): Set[String] =
     Set(ChimericLedgerState.getUtxoPartitionId(txOutRef))
 
   override def toString(): ChimericTxId = s"Input($txOutRef,$value)"
@@ -96,7 +112,7 @@ case class Fee(value: Value) extends TxOutput {
     Right(state)
   }
 
-  override def partitionIds(txId: String, index: Int): Set[String] = Set()
+  override def txSpecificPartitionIds(txId: String, index: Int): Set[String] = Set()
 
   override def toString(): ChimericTxId = s"Fee($value)"
 }
@@ -114,7 +130,7 @@ case class Output(value: Value) extends TxOutput {
     }
   }
 
-  override def partitionIds(txId: String, index: Int): Set[String] = {
+  override def txSpecificPartitionIds(txId: String, index: Int): Set[String] = {
     val txOutRef = TxOutRef(txId, index)
     Set(ChimericLedgerState.getUtxoPartitionId(txOutRef))
   }
@@ -130,7 +146,7 @@ case class Deposit(address: Address, value: Value) extends TxOutput {
     Right(state.put(addressKey, ValueHolder(addressValueOpt.getOrElse(Value.Zero) + value)))
   }
 
-  override def partitionIds(txId: String, index: Int): Set[String] = Set()
+  override def txSpecificPartitionIds(txId: String, index: Int): Set[String] = Set()
 
   override def toString(): ChimericTxId = s"Deposit($address,$value)"
 }

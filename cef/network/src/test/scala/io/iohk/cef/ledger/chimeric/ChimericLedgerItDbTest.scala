@@ -84,5 +84,20 @@ trait ChimericLedgerItDbTest extends fixture.FlatSpec
       address1Key -> ValueHolder(value2 - value3),
       address2Key -> ValueHolder(value1 - multiFee)
     ))
+    val block2 = Block(header, Seq(
+      ChimericTx(Seq(
+        Input(TxOutRef(utxoTx.txId, 1), value3 - singleFee),
+        Fee(value3 - singleFee)
+      ))
+    ))
+    val result2 = ledger(block2)
+    result2.isRight mustBe true
+    result2.right.get.isSuccess mustBe true
+    stateStorage.slice(allKeys) mustBe LedgerState[ChimericStateValue](Map(
+      currency1Key -> CreateCurrencyHolder(CreateCurrency(currency1)),
+      currency2Key -> CreateCurrencyHolder(CreateCurrency(currency2)),
+      address1Key -> ValueHolder(value2 - value3),
+      address2Key -> ValueHolder(value1 - multiFee)
+    ))
   }
 }
