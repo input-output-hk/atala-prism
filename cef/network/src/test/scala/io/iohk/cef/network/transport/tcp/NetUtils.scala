@@ -61,4 +61,7 @@ object NetUtils {
 
     buffs.foldLeft(b0)( (accBuff, nextBuff) => accBuff.put(nextBuff)).flip().asInstanceOf[ByteBuffer]
   }
+
+  def forwardPort(srcPort: Int, dst: InetSocketAddress): PortForward =
+    new PortForward(srcPort, dst)
 }
