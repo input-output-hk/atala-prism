@@ -4,6 +4,7 @@ import java.net.{InetSocketAddress, ServerSocket, Socket}
 import java.nio.ByteBuffer
 
 import scala.collection.mutable
+import scala.util.Random
 
 object NetUtils {
   def writeTo(address: InetSocketAddress, bytes: Array[Byte]): Unit = {
@@ -45,5 +46,19 @@ object NetUtils {
     val a = new Array[Byte](b.remaining())
     b.get(a)
     a
+  }
+
+  def randomBytes(n: Int): Array[Byte] = {
+    val a = new Array[Byte](n)
+    Random.nextBytes(a)
+    a
+  }
+
+  def concatenate(buffs: List[ByteBuffer]): ByteBuffer = {
+    val allocSize = buffs.foldLeft(0)((acc, nextBuff) => acc + nextBuff.capacity())
+
+    val b0 = ByteBuffer.allocate(allocSize)
+
+    buffs.foldLeft(b0)( (accBuff, nextBuff) => accBuff.put(nextBuff)).flip().asInstanceOf[ByteBuffer]
   }
 }
