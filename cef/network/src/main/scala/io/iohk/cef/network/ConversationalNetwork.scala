@@ -1,5 +1,4 @@
 package io.iohk.cef.network
-import java.net.InetSocketAddress
 import java.nio.ByteBuffer
 
 import io.iohk.cef.network.discovery.NetworkDiscovery
@@ -30,6 +29,19 @@ class ConversationalNetwork[Message](peerInfo: PeerInfo,
     */
   val messageTtl = 5
 
+  private def frameHandler(frame: Frame[Message]): Unit = {
+    if (frame.header.dst == peerInfo.nodeId) {
+      messageHandler(frame.header.src, frame.content)
+    } else {
+      // else if the ttl is zero, discard the message
+      // else decrement the message ttl and resend it.
+      ???
+    }
+  }
+
+  private def liftedFrameHandler[Address]: (Address, Frame[Message]) => Unit =
+    (_, frame) => frameHandler(frame)
+
   /**
     * Message forwarding.
     * When receiving wrapped messages that are not for this node
@@ -37,24 +49,14 @@ class ConversationalNetwork[Message](peerInfo: PeerInfo,
     * the message destination. If not, forward the message to 'suitable'
     * peers in the routing table.
     */
-  private val tcpNetworkTransport: Option[TcpNetworkTransport[Frame[Message]]] =
+  val tcpNetworkTransport: Option[TcpNetworkTransport[Frame[Message]]] =
     peerInfo.configuration.tcpTransportConfiguration.map(tcpConfiguration => {
-      val frameHandler: (InetSocketAddress, Frame[Message]) => Unit = { (tcpAddress, frame) =>
-        // if the message is for this peer, invoke the application messageHandler
-        if (frame.header.dst == peerInfo.nodeId) {
-          messageHandler(frame.header.src, frame.content)
-        } else {
-          // else if the ttl is zero, discard the message
-          // else decrement the message ttl and resend it.
-          ???
-        }
-      }
 
       val frameCodec =
         new StreamCodec[Frame[Message], ByteBuffer](new FrameEncoder[Message](messageCodec.encoder),
                                                     new FrameDecoder[Message](messageCodec.decoder))
 
-      new TcpNetworkTransport[Frame[Message]](frameHandler,
+      new TcpNetworkTransport[Frame[Message]](liftedFrameHandler,
                                               frameCodec,
                                               new NettyTransport(tcpConfiguration.bindAddress))
     })
@@ -76,11 +78,14 @@ class ConversationalNetwork[Message](peerInfo: PeerInfo,
       .peer(nodeId)
       .foreach(remotePeerInfo => {
         val networkMessage = Frame(FrameHeader(peerInfo.nodeId, nodeId), message)
-        if (tcpNetworkTransport.isDefined)
+        if (usesTcp(peerInfo) && usesTcp(remotePeerInfo))
           tcpNetworkTransport.get.sendMessage(remotePeerInfo.configuration.tcpTransportConfiguration.get.natAddress,
                                               networkMessage)
         else
-          ???
+          ()
       })
   }
+
+  private def usesTcp(peerInfo: PeerInfo): Boolean =
+    peerInfo.configuration.tcpTransportConfiguration.isDefined
 }
