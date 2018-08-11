@@ -22,6 +22,7 @@ trait NioCodecs {
       new String(a)
     }
   }
+
 }
 
 object NioCodecs extends NioCodecs

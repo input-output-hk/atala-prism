@@ -39,18 +39,22 @@ class ConversationalNetwork[Message](peerInfo: PeerInfo,
     */
   private val tcpNetworkTransport: Option[TcpNetworkTransport[Frame[Message]]] =
     peerInfo.configuration.tcpTransportConfiguration.map(tcpConfiguration => {
-      val messageHandler: (InetSocketAddress, Frame[Message]) => Unit = {
+      val frameHandler: (InetSocketAddress, Frame[Message]) => Unit = { (tcpAddress, frame) =>
         // if the message is for this peer, invoke the application messageHandler
-        // else if the ttl is zero, discard the message
-        // else decrement the message ttl and resend it.
-        ???
+        if (frame.header.dst == peerInfo.nodeId) {
+          messageHandler(frame.header.src, frame.content)
+        } else {
+          // else if the ttl is zero, discard the message
+          // else decrement the message ttl and resend it.
+          ???
+        }
       }
 
       val frameCodec =
         new StreamCodec[Frame[Message], ByteBuffer](new FrameEncoder[Message](messageCodec.encoder),
                                                     new FrameDecoder[Message](messageCodec.decoder))
 
-      new TcpNetworkTransport[Frame[Message]](messageHandler,
+      new TcpNetworkTransport[Frame[Message]](frameHandler,
                                               frameCodec,
                                               new NettyTransport(tcpConfiguration.bindAddress))
     })
@@ -70,10 +74,10 @@ class ConversationalNetwork[Message](peerInfo: PeerInfo,
   def sendMessage(nodeId: NodeId, message: Message): Unit = {
     networkDiscovery
       .peer(nodeId)
-      .foreach(peerInfo => {
+      .foreach(remotePeerInfo => {
         val networkMessage = Frame(FrameHeader(peerInfo.nodeId, nodeId), message)
         if (tcpNetworkTransport.isDefined)
-          tcpNetworkTransport.get.sendMessage(peerInfo.configuration.tcpTransportConfiguration.get.bindAddress,
+          tcpNetworkTransport.get.sendMessage(remotePeerInfo.configuration.tcpTransportConfiguration.get.natAddress,
                                               networkMessage)
         else
           ???
