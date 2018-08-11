@@ -4,13 +4,13 @@ import akka.util.ByteString
 import io.iohk.cef.ledger.{Block, ByteStringSerializable}
 import io.iohk.cef.protobuf.ChimericLedger.ChimericTxFragmentProto.Fragment._
 import io.iohk.cef.protobuf.ChimericLedger._
-import io.iohk.cef.utils.BigDecimalUtils
+import io.iohk.cef.utils.DecimalProtoUtils
 
 object ChimericBlockSerializer {
 
   def protoValueToValue(protoValue: ChimericValueProto): Value = {
     Value(protoValue.entries.map(entry =>
-        entry.currency -> BigDecimalUtils.fromProto(entry.amount)
+        entry.currency -> DecimalProtoUtils.fromProto(entry.amount)
       ):_*
     )
   }
@@ -19,7 +19,7 @@ object ChimericBlockSerializer {
     ChimericValueProto(
       value.iterator.map {
         case (currency, quantity) =>
-          ChimericValueEntryProto(currency, BigDecimalUtils.toProto(quantity))
+          ChimericValueEntryProto(currency, DecimalProtoUtils.toProto(quantity))
       }.toSeq
     )
   }

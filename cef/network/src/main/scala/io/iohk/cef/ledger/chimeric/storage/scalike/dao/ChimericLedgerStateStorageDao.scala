@@ -42,9 +42,6 @@ class ChimericLedgerStateStorageDao {
         case UpdateStateAction(key: AddressHolder, value: ValueHolder) =>
           deleteAddress(key.address)
           insertAddress((key.address, value.value))
-        case UpdateStateAction(key: UtxoHolder, value: ValueHolder) =>
-          deleteUtxo(key.txOutRef)
-          insertUtxo((key.txOutRef, value.value))
         case a => throw new IllegalArgumentException(s"Unexpected action: ${a}")
       }
     }
@@ -95,19 +92,6 @@ class ChimericLedgerStateStorageDao {
       insert into ${ChimericLedgerStateCurrencyTable.table} (${column.id}, ${column.currency})
       values (${entryId}, ${currency._2.currency})
       """.update().apply()
-  }
-
-  private def deleteCurrency(currency: Currency)(implicit DBSession: DBSession): Unit = {
-    val column = ChimericLedgerStateCurrencyTable.column
-    val entryId =
-      getStateEntryId(ChimericLedgerState.getCurrencyPartitionId(currency))
-        .getOrElse(throw new DataLayerException(s"address not found: ${currency}"))
-    sql"""
-      delete from ${ChimericLedgerStateCurrencyTable.table}
-      where ${column.currency} = ${currency}
-      """.update().apply()
-    deleteValue(entryId)
-    deleteStateEntry(entryId)
   }
 
   private def readUtxos(stateKeys: Set[UtxoHolder])(implicit DBSession: DBSession): Seq[(TxOutRef, Value)] =

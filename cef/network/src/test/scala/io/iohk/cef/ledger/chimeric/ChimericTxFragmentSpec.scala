@@ -23,10 +23,12 @@ class ChimericTxFragmentSpec extends FlatSpec with MustMatchers with PropertyChe
         ChimericLedgerState.getCurrencyPartitionId(currency) -> CreateCurrencyHolder(CreateCurrency(currency)),
         ChimericLedgerState.getAddressPartitionId(address) -> ValueHolder(value)
       ))
-      def newState(substractedValue: Value): ChimericLedgerState = LedgerState[ChimericStateValue](Map(
-        ChimericLedgerState.getCurrencyPartitionId(currency) -> CreateCurrencyHolder(CreateCurrency(currency)),
-        ChimericLedgerState.getAddressPartitionId(address) -> ValueHolder(value - substractedValue)
-      ))
+      def newState(substractedValue: Value): ChimericLedgerState = {
+        val currencyPair = Seq(ChimericLedgerState.getCurrencyPartitionId(currency) -> CreateCurrencyHolder(CreateCurrency(currency)))
+        val valuePair = if (value == substractedValue) { Seq() }
+            else { Seq(ChimericLedgerState.getAddressPartitionId(address) -> ValueHolder(value - substractedValue)) }
+        LedgerState[ChimericStateValue](Map((currencyPair ++ valuePair):_*))
+      }
       val moreThanValue = value + Value(currency -> BigDecimal(1))
       val lessThanValue = value - Value(currency -> BigDecimal(1))
       val withdrawalCorrect = Withdrawal(address, value, 1)
@@ -101,7 +103,6 @@ class ChimericTxFragmentSpec extends FlatSpec with MustMatchers with PropertyChe
     forAll(Gen.posNum[Double]) { (d: Double) =>
       val decimal = BigDecimal(d)
       val address = "address"
-      val addressKey = ChimericLedgerState.getAddressPartitionId(address)
       val currency: Currency = "CRC"
       val value = Value(currency -> decimal)
       val value2 = Value(currency -> (decimal + 1))

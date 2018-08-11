@@ -65,7 +65,11 @@ case class Withdrawal(address: Address, value: Value, nonce: Int) extends TxInpu
     if (value.iterator.exists(BigDecimal(0) > _._2)) {
       Left(ValueNegative(value))
     } else if (addressValue >= value) {
-      Right(state.put(addressKey, ValueHolder(addressValue - value)))
+      if (addressValue == value) {
+        Right(state.remove(addressKey))
+      } else {
+        Right(state.put(addressKey, ValueHolder(addressValue - value)))
+      }
     } else {
       Left(InsufficientBalance(address, value, addressValue))
     }
@@ -106,7 +110,7 @@ case class Input(txOutRef: TxOutRef, value: Value) extends TxInput {
 
   override def toString(): ChimericTxId = s"Input($txOutRef,$value)"
 }
-
+//FIXME: Where are the fees going? We need to setup somewhere who can spend this value in the future
 case class Fee(value: Value) extends TxOutput {
   override def exec(state: ChimericLedgerState, index: Int, txId: String): ChimericStateOrError = {
     Right(state)

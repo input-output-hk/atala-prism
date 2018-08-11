@@ -3,7 +3,7 @@ package io.iohk.cef.ledger.chimeric
 import akka.util.ByteString
 import io.iohk.cef.ledger.ByteStringSerializable
 import io.iohk.cef.protobuf.ChimericLedger._
-import io.iohk.cef.utils.BigDecimalUtils
+import io.iohk.cef.utils.DecimalProtoUtils
 
 import scala.collection.mutable
 
@@ -52,7 +52,7 @@ object Value {
     override def deserialize(bytes: ByteString): Value = {
       val proto = ChimericValueProto.parseFrom(bytes.toArray)
       proto.entries.foldLeft(Value.Zero) ((state, current) => {
-        state + (current.currency, BigDecimalUtils.fromProto(current.amount))
+        state + (current.currency, DecimalProtoUtils.fromProto(current.amount))
       })
     }
 
@@ -60,7 +60,7 @@ object Value {
       val proto = ChimericValueProto(
         t.m.map{
           case (currency, quantity) =>
-            ChimericValueEntryProto(currency, BigDecimalUtils.toProto(quantity))
+            ChimericValueEntryProto(currency, DecimalProtoUtils.toProto(quantity))
         }.toSeq
       )
       ByteString(proto.toByteArray)
