@@ -1,10 +1,5 @@
 package io.iohk.cef.ledger.chimeric
 
-import akka.util.ByteString
-import io.iohk.cef.ledger.ByteStringSerializable
-import io.iohk.cef.protobuf.ChimericLedger._
-import io.iohk.cef.utils.DecimalProtoUtils
-
 import scala.collection.mutable
 
 case class Value(protected[Value] val m: Map[Currency, Quantity]) {
@@ -47,23 +42,4 @@ object Value {
   //If currency c is present in more than one pair, the last element where currency==c will remain as c's quantity
   def apply(values: (Currency, Quantity)*): Value =
     new Value(Map(values.filter(_._2 != 0):_*))
-
-  implicit val ByteStringSerializableImpl = new ByteStringSerializable[Value] {
-    override def deserialize(bytes: ByteString): Value = {
-      val proto = ChimericValueProto.parseFrom(bytes.toArray)
-      proto.entries.foldLeft(Value.Zero) ((state, current) => {
-        state + (current.currency, DecimalProtoUtils.fromProto(current.amount))
-      })
-    }
-
-    override def serialize(t: Value): ByteString = {
-      val proto = ChimericValueProto(
-        t.m.map{
-          case (currency, quantity) =>
-            ChimericValueEntryProto(currency, DecimalProtoUtils.toProto(quantity))
-        }.toSeq
-      )
-      ByteString(proto.toByteArray)
-    }
-  }
 }
