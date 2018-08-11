@@ -8,6 +8,7 @@ import io.iohk.cef.network.NodeId.nodeIdBytes
 import io.iohk.cef.network.discovery.NetworkDiscovery
 import io.iohk.cef.network.encoding.Codec
 import io.iohk.cef.network.encoding.nio.NioCodecs
+import io.iohk.cef.network.transport.FrameHeader
 import io.iohk.cef.network.transport.tcp.NetUtils.{aRandomAddress, forwardPort, randomBytes}
 import io.iohk.cef.network.transport.tcp.TcpTransportConfiguration
 import org.mockito.ArgumentMatchers._
@@ -70,9 +71,33 @@ class ConversationalNetworkSpec extends FlatSpec with MockitoSugar {
     }
   }
 
-  it should "not send a message to an invalid address" in pending
+  it should "forward messages on behalf of peers" in {
+    val alice: NetworkFixture = randomNetworkFixture()
+    val bob: NetworkFixture = randomNetworkFixture()
+    val charlie: NetworkFixture = randomNetworkFixture()
 
-  it should "receive a message from a peer" in pending
+    when(alice.networkDiscovery.peer(charlie.nodeId)).thenReturn(Option(bob.peerInfo))
+    when(bob.networkDiscovery.peer(charlie.nodeId)).thenReturn(Option(charlie.peerInfo))
+
+    alice.network.sendMessage(charlie.nodeId, "Hi, Charlie!")
+
+    eventually {
+      verify(charlie.messageHandler).apply(alice.nodeId, "Hi, Charlie!")
+    }
+  }
+
+  it should "not forward messages on behalf of peers after expiration of the TTL" in {
+    val alice: NetworkFixture = randomNetworkFixture(messageTtl = 0)
+    val bob: NetworkFixture = randomNetworkFixture()
+    val charlie: NetworkFixture = randomNetworkFixture()
+
+    when(alice.networkDiscovery.peer(charlie.nodeId)).thenReturn(Option(bob.peerInfo))
+    when(bob.networkDiscovery.peer(charlie.nodeId)).thenReturn(Option(charlie.peerInfo))
+
+    alice.network.sendMessage(charlie.nodeId, "Hi, Charlie!")
+
+    verify(charlie.messageHandler, after(200).never()).apply(any[NodeId], any[String])
+  }
 
   private case class NetworkFixture(nodeId: NodeId,
                                     peerInfo: PeerInfo,
@@ -80,9 +105,9 @@ class ConversationalNetworkSpec extends FlatSpec with MockitoSugar {
                                     messageHandler: (NodeId, String) => Unit,
                                     network: ConversationalNetwork[String])
 
-  private def randomNetworkFixture(): NetworkFixture = {
+  private def randomNetworkFixture(messageTtl: Int = FrameHeader.defaultTtl): NetworkFixture = {
     val tcpAddress: InetSocketAddress = aRandomAddress()
-    val configuration = ConversationalNetworkConfiguration(Some(TcpTransportConfiguration(tcpAddress)))
+    val configuration = ConversationalNetworkConfiguration(Some(TcpTransportConfiguration(tcpAddress)), messageTtl)
     val codec: Codec[String, ByteBuffer] = new Codec(NioCodecs.stringEncoder, NioCodecs.stringDecoder)
 
     val nodeId = NodeId(randomBytes(nodeIdBytes))
