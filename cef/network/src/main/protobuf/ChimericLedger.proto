@@ -51,13 +51,13 @@ message CreateCurrencyProto {
 
 message ChimericTxFragmentProto {
     oneof fragment {
-        WithdrawalProto withdrawalP = 1;
-        MintProto mintP = 2;
-        InputProto inputP = 3;
-        OutputProto outputP = 4;
-        DepositProto depositP = 5;
-        FeeProto feeP = 6;
-        CreateCurrencyProto createCurrencyP = 7;
+        WithdrawalProto withdrawalWrapper = 1;
+        MintProto mintWrapper = 2;
+        InputProto inputWrapper = 3;
+        OutputProto outputWrapper = 4;
+        DepositProto depositWrapper = 5;
+        FeeProto feeWrapper = 6;
+        CreateCurrencyProto createCurrencyWrapper = 7;
     }
 }
 

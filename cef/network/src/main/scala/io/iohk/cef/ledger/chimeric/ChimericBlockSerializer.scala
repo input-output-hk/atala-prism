@@ -39,22 +39,22 @@ object ChimericBlockSerializer {
         val proto = ChimericBlockProto.parseFrom(bytes.toArray)
         val txs: Seq[ChimericTx] = proto.txs.map(txProto =>
           txProto.txFragments.map { txFragment =>
-            if (txFragment.fragment.isCreateCurrencyP) {
-              CreateCurrency(txFragment.fragment.createCurrencyP.get.currency)
-            } else if (txFragment.fragment.isDepositP) {
-              val deposit = txFragment.fragment.depositP.get
+            if (txFragment.fragment.isCreateCurrencyWrapper) {
+              CreateCurrency(txFragment.fragment.createCurrencyWrapper.get.currency)
+            } else if (txFragment.fragment.isDepositWrapper) {
+              val deposit = txFragment.fragment.depositWrapper.get
               Deposit(deposit.address, protoValueToValue(deposit.value))
-            } else if (txFragment.fragment.isFeeP) {
-              Fee(protoValueToValue(txFragment.fragment.feeP.get.value))
-            } else if (txFragment.fragment.isInputP) {
-              val input = txFragment.fragment.inputP.get
+            } else if (txFragment.fragment.isFeeWrapper) {
+              Fee(protoValueToValue(txFragment.fragment.feeWrapper.get.value))
+            } else if (txFragment.fragment.isInputWrapper) {
+              val input = txFragment.fragment.inputWrapper.get
               Input(protoTxOutRefToTxOutRef(input.txOutRef), protoValueToValue(input.value))
-            } else if (txFragment.fragment.isMintP) {
-              Mint(protoValueToValue(txFragment.fragment.mintP.get.value))
-            } else if (txFragment.fragment.isOutputP) {
-              Output(protoValueToValue(txFragment.fragment.outputP.get.value))
-            } else if (txFragment.fragment.isWithdrawalP) {
-              val withdrawal = txFragment.fragment.withdrawalP.get
+            } else if (txFragment.fragment.isMintWrapper) {
+              Mint(protoValueToValue(txFragment.fragment.mintWrapper.get.value))
+            } else if (txFragment.fragment.isOutputWrapper) {
+              Output(protoValueToValue(txFragment.fragment.outputWrapper.get.value))
+            } else if (txFragment.fragment.isWithdrawalWrapper) {
+              val withdrawal = txFragment.fragment.withdrawalWrapper.get
               Withdrawal(withdrawal.address, protoValueToValue(withdrawal.value), withdrawal.nonce)
             } else {
               throw new IllegalArgumentException(s"Invalid tx found in proto: ${txFragment.fragment}")
@@ -71,19 +71,19 @@ object ChimericBlockSerializer {
             ChimericTxProto(tx.fragments.map(fragment => {
               val fragmentProto = fragment match {
                 case Input(TxOutRef(txId, index), value) =>
-                  InputP(InputProto(TxOutRefProto(txId, index), valueToProtoValue(value)))
+                  InputWrapper(InputProto(TxOutRefProto(txId, index), valueToProtoValue(value)))
                 case Output(value) =>
-                  OutputP(OutputProto(valueToProtoValue(value)))
+                  OutputWrapper(OutputProto(valueToProtoValue(value)))
                 case Withdrawal(address, value, nonce) =>
-                  WithdrawalP(WithdrawalProto(address, valueToProtoValue(value), nonce))
+                  WithdrawalWrapper(WithdrawalProto(address, valueToProtoValue(value), nonce))
                 case Deposit(address, value) =>
-                  DepositP(DepositProto(address, valueToProtoValue(value)))
+                  DepositWrapper(DepositProto(address, valueToProtoValue(value)))
                 case Mint(value) =>
-                  MintP(MintProto(valueToProtoValue(value)))
+                  MintWrapper(MintProto(valueToProtoValue(value)))
                 case Fee(value) =>
-                  FeeP(FeeProto(valueToProtoValue(value)))
+                  FeeWrapper(FeeProto(valueToProtoValue(value)))
                 case CreateCurrency(currency) =>
-                  CreateCurrencyP(CreateCurrencyProto(currency))
+                  CreateCurrencyWrapper(CreateCurrencyProto(currency))
               }
               ChimericTxFragmentProto(fragmentProto)
             }))
