@@ -5,13 +5,18 @@ import java.nio.ByteBuffer
 
 import io.iohk.cef.network.encoding.StreamCodec
 import io.iohk.cef.network.transport.tcp.NetUtils._
+
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 import org.scalatest.concurrent.Eventually._
 
 import scala.collection.mutable.ListBuffer
 
+import scala.concurrent.duration._
+
 class TcpNetworkTransportSpec extends FlatSpec {
+
+  private implicit val patienceConfig = PatienceConfig(timeout = 1 second)
 
   behavior of "TcpNetworkTransport"
 
