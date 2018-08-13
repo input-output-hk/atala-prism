@@ -15,24 +15,17 @@ import io.iohk.cef.network.transport.{FrameHeader, Frame, FrameEncoder, FrameDec
   * The term 'conversational' is used in the sense introduced
   * by Van Jacobson, to distinguish from the 'disseminational'
   * networking style.
+  *
+  * @param peerInfo the peer configuration of this node
+  * @param messageHandler The messageHandler receives inbound messages from remote peers.
+  * @param messageCodec This is a codec which can decode your messages to/from NIO ByteBuffers.
+  *                     It should be possible to summon an encoder for any case class using
+  *                     encoders io.iohk.cef.network.encoding.nio.
+  * @param networkDiscovery Encapsulates a routing table implementation.
   */
-class ConversationalNetwork[Message]( /**
-                                       * The peer configuration of this node
-                                       */
-                                     peerInfo: PeerInfo,
-                                     /**
-                                       * The messageHandler receives inbound messages from remote peers.
-                                       */
+class ConversationalNetwork[Message](peerInfo: PeerInfo,
                                      messageHandler: (NodeId, Message) => Unit,
-                                     /**
-                                       * This is a codec which can decode your messages to/from NIO ByteBuffers.
-                                       * It should be possible to summon an encoder for any case class using
-                                       * encoders io.iohk.cef.network.encoding.nio
-                                       */
                                      messageCodec: Codec[Message, ByteBuffer],
-                                     /**
-                                       * Encapsulates a routing table implementation.
-                                       */
                                      networkDiscovery: NetworkDiscovery) {
 
   /**
