@@ -26,7 +26,7 @@ class ValueSpec extends FlatSpec with PropertyChecks with MustMatchers {
       Value.Zero + a mustBe a
     }
   }
-  it should "return zero when value is substracted to itself" in {
+  it should "return zero when value is substracted from itself" in {
     forAll { (a: Value) =>
       a - a mustBe Value.Zero
     }
@@ -37,12 +37,10 @@ class ValueSpec extends FlatSpec with PropertyChecks with MustMatchers {
   it should "implement an addition equivalent to the BigDecimal addition" in {
     forAll { (currency: String) =>
       forAll { (a: BigDecimal, b: BigDecimal) =>
-        whenever(a != BigDecimal(0) && b != BigDecimal(0)) {
-          val valueA = Value((currency, a))
-          val valueB = Value((currency, b))
-          (valueA + valueB) (currency) mustBe a + b
-          (valueA - valueB) (currency) mustBe a - b
-        }
+        val valueA = Value((currency, a))
+        val valueB = Value((currency, b))
+        (valueA + valueB) (currency) mustBe a + b
+        (valueA - valueB) (currency) mustBe a - b
       }
     }
   }
