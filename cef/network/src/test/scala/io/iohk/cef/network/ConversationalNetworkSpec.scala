@@ -8,7 +8,7 @@ import io.iohk.cef.network.NodeId.nodeIdBytes
 import io.iohk.cef.network.discovery.NetworkDiscovery
 import io.iohk.cef.network.encoding.Codec
 import io.iohk.cef.network.encoding.nio.NioCodecs
-import io.iohk.cef.network.transport.FrameHeader
+import io.iohk.cef.network.transport.{FrameHeader, Transports}
 import io.iohk.cef.network.transport.tcp.NetUtils.{aRandomAddress, forwardPort, randomBytes}
 import io.iohk.cef.network.transport.tcp.TcpTransportConfiguration
 import org.mockito.ArgumentMatchers._
@@ -54,7 +54,8 @@ class ConversationalNetworkSpec extends FlatSpec with MockitoSugar {
     val bobsTransportConfig = bob.peerInfo.configuration.tcpTransportConfiguration.get
 
     // by resetting the bind address, we guarantee that attempting to talk to it will break the test.
-    val bobsNattedConfig = TcpTransportConfiguration(bindAddress = new InetSocketAddress(0), natAddress = aRandomAddress())
+    val bobsNattedConfig =
+      TcpTransportConfiguration(bindAddress = new InetSocketAddress(0), natAddress = aRandomAddress())
     val bobsNattedPeerInfo =
       bob.peerInfo.modify(_.configuration.tcpTransportConfiguration).setTo(Option(bobsNattedConfig))
 
@@ -118,7 +119,8 @@ class ConversationalNetworkSpec extends FlatSpec with MockitoSugar {
 
     val peerInfo = PeerInfo(nodeId, configuration)
 
-    val network = new ConversationalNetwork[String](peerInfo, messageHandler, codec, networkDiscovery)
+    val network =
+      new ConversationalNetwork[String](peerInfo, messageHandler, codec, networkDiscovery, new Transports(peerInfo))
 
     NetworkFixture(nodeId, peerInfo, networkDiscovery, messageHandler, network)
   }
