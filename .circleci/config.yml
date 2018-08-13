@@ -27,17 +27,17 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-          - v1-dependencies-{{ checksum "cef/network/build.sbt" }}-{{ checksum "cef/network/project/build.properties" }}-{{ checksum "cef/network/project/plugins.sbt" }}
+          - v1-dependencies-{{ checksum "build.sbt" }}-{{ checksum "project/build.properties" }}-{{ checksum "project/plugins.sbt" }}
           # fallback to using the latest cache if no exact match is found
           - v1-dependencies-
 
-      - run: cd cef/network && cat /dev/null | sbt coverage test:compile
+      - run: cat /dev/null | sbt coverage test:compile
 
       - save_cache:
           paths:
             - ~/.m2
-          key: v1-dependencies--{{ checksum "cef/network/build.sbt" }}-{{ checksum "cef/network/project/build.properties" }}-{{ checksum "cef/network/project/plugins.sbt" }}
+          key: v1-dependencies--{{ checksum "build.sbt" }}-{{ checksum "project/build.properties" }}-{{ checksum "project/plugins.sbt" }}
         
       # run tests!
-      - run: cd cef/network && cat /dev/null | sbt coverage test:test coverageReport coveralls
+      - run: cat /dev/null | sbt coverage test:test coverageReport coveralls
 
