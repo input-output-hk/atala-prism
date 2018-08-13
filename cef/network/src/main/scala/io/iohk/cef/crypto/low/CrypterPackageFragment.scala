@@ -9,7 +9,7 @@ import akka.util.ByteString
   *   PARTIAL IMPLEMENTATION OF
   *   package object low
   */
-trait Crypter extends CryptoAlgorithms {
+trait CrypterPackageFragment extends CryptoAlgorithmPackageFragment {
 
 
 

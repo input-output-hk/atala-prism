@@ -10,7 +10,7 @@ import akka.util.ByteString
   *   PARTIAL IMPLEMENTATION OF
   *   package object low
   */
-trait Hasher extends HashAlgorithms {
+trait HasherPackageFragment extends HashAlgorithmPackageFragment {
 
   /**
     * Hash the provided `source` bytes with the provided `algorithm`

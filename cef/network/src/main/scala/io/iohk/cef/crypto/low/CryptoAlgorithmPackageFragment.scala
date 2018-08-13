@@ -11,7 +11,7 @@ import akka.util.ByteString
   *   PARTIAL IMPLEMENTATION OF
   *   package object low
   */
-trait CryptoAlgorithms {
+trait CryptoAlgorithmPackageFragment {
 
   /**
     * Contract all encrypting/decrypting algorithm pair implementations should follow

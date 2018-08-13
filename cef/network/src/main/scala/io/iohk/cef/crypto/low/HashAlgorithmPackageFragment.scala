@@ -11,7 +11,7 @@ import org.bouncycastle.crypto.digests.KeccakDigest
   *   PARTIAL IMPLEMENTATION OF
   *   package object low
   */
-trait HashAlgorithms {
+trait HashAlgorithmPackageFragment {
 
   /**
     * Contract all hashing algorithm implementations should follow

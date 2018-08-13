@@ -1,11 +1,11 @@
 package io.iohk.cef.crypto
 
-trait CryptoLow extends low.HashAlgorithms
-                   with low.Hasher
-                   with low.CryptoAlgorithms
-                   with low.Crypter
-                   with low.SignAlgorithms
-                   with low.Signer
+trait CryptoLow extends low.HashAlgorithmPackageFragment
+                   with low.HasherPackageFragment
+                   with low.CryptoAlgorithmPackageFragment
+                   with low.CrypterPackageFragment
+                   with low.SignAlgorithmPackageFragment
+                   with low.SignerPackageFragment
 
 /**
   * Collection of low-level cryptographic primitives

@@ -9,7 +9,7 @@ import akka.util.ByteString
   *   PARTIAL IMPLEMENTATION OF
   *   package object low
   */
-trait SignAlgorithms {
+trait SignAlgorithmPackageFragment {
 
   /**
     * Contract all signing algorithm implementations should follow
