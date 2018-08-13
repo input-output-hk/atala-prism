@@ -7,6 +7,9 @@ trait CryptoLow extends low.HashAlgorithms
                    with low.SignAlgorithms
                    with low.Signer
 
+/**
+  * Collection of low-level cryptographic primitives
+  */
 package object low extends CryptoLow {
 
 }
