@@ -15,27 +15,27 @@ class FrameCodecSpec extends FlatSpec {
 
   private val genNodeId: Gen[NodeId] = listOfN(nodeIdBytes, arbitrary[Byte]).map(NodeId(_))
 
-  private val genFrame: Gen[Frame[String]] = for {
+  private val genFrame: Gen[Frame[Int]] = for {
     src <- genNodeId
     dst <- genNodeId
-    content <- arbitrary[String]
+    content <- arbitrary[Int]
   } yield Frame(FrameHeader(src, dst), content)
 
-  private val genFrames: Gen[List[Frame[String]]] = listOfN(2, genFrame)
+  private val genFrames: Gen[List[Frame[Int]]] = listOfN(2, genFrame)
 
-  private val encoder = new FrameEncoder[String](NioCodecs.stringEncoder)
-  private val decoder = new FrameDecoder[String](NioCodecs.stringDecoder)
+  private val encoder = new FrameEncoder[Int](NioCodecs.intEncoder)
+  private val decoder = new FrameDecoder[Int](NioCodecs.intDecoder)
 
   behavior of "FrameEncoder"
 
-  forAll(genFrame) { frame: Frame[String] =>
+  forAll(genFrame) { frame: Frame[Int] =>
     it should s"encode and decode single frame $frame" in {
       println(s"Testing with: $frame")
       decoder.decodeStream(encoder.encode(frame)) shouldBe Seq(frame)
     }
   }
 
-  forAll(genFrames) { frames: List[Frame[String]] =>
+  forAll(genFrames) { frames: List[Frame[Int]] =>
     it should s"encode and decode multiple frames: $frames" in {
       val buffs = frames.map(encoder.encode)
       val bigBuff = NetUtils.concatenate(buffs)

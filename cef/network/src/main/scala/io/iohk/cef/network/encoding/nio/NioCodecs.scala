@@ -23,6 +23,17 @@ trait NioCodecs {
     }
   }
 
+  implicit val intEncoder = new Encoder[Int, ByteBuffer] {
+    override def encode(i: Int): ByteBuffer =
+      ByteBuffer.allocate(4).putInt(i)
+  }
+
+  implicit val intDecoder = new Decoder[ByteBuffer, Int] {
+    override def decode(u: ByteBuffer): Int =
+      u.getInt()
+  }
+
+
 }
 
 object NioCodecs extends NioCodecs
