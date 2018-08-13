@@ -2,7 +2,9 @@ package io.iohk.cef.network
 
 package object encoding {
 
-  case class Codec[T, U](encoder: Encoder[T, U], decoder: Decoder[U, T])
+  class Codec[T, U](val encoder: Encoder[T, U], val decoder: Decoder[U, T])
+
+  class StreamCodec[T, U](val encoder: Encoder[T, U], val decoder: StreamDecoder[U, T])
 
   trait Encoder[T, U] {
     self =>
@@ -20,6 +22,10 @@ package object encoding {
 
     def andThen[S](that: Decoder[T, S]): Decoder[U, S] =
       (u: U) => that.decode(self.decode(u))
+  }
+
+  trait StreamDecoder[U, T] {
+    def decodeStream(u: U): Seq[T]
   }
 
   def encode[T, U](t: T)(implicit enc: Encoder[T, U]): U =
