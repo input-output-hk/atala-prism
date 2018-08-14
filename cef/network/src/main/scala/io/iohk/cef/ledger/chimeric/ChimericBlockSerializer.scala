@@ -6,6 +6,8 @@ import io.iohk.cef.protobuf.ChimericLedger.ChimericTxFragmentProto.Fragment._
 import io.iohk.cef.protobuf.ChimericLedger._
 import io.iohk.cef.utils.DecimalProtoUtils
 
+import scala.collection.immutable
+
 object ChimericBlockSerializer {
 
   def protoValueToValue(protoValue: ChimericValueProto): Value = {
@@ -37,7 +39,7 @@ object ChimericBlockSerializer {
 
       override def deserialize(bytes: ByteString): ChimericLedgerBlock = {
         val proto = ChimericBlockProto.parseFrom(bytes.toArray)
-        val txs: Seq[ChimericTx] = proto.txs.map(txProto =>
+        val txs: immutable.Seq[ChimericTx] = proto.txs.toList.map(txProto =>
           txProto.txFragments.map { txFragment =>
             if (txFragment.fragment.isCreateCurrencyWrapper) {
               CreateCurrency(txFragment.fragment.createCurrencyWrapper.get.currency)

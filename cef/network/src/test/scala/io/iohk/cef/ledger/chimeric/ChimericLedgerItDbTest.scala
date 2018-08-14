@@ -13,6 +13,7 @@ import org.scalatest.{MustMatchers, fixture}
 import scalikejdbc._
 import scalikejdbc.scalatest.AutoRollback
 
+import scala.collection.immutable
 import scala.util.Try
 
 trait ChimericLedgerItDbTest extends fixture.FlatSpec
@@ -84,8 +85,8 @@ trait ChimericLedgerItDbTest extends fixture.FlatSpec
       address1Key -> ValueHolder(value2 - value3),
       address2Key -> ValueHolder(value1 - multiFee)
     ))
-    val block2 = Block(header, Seq(
-      ChimericTx(Seq(
+    val block2 = Block(header, immutable.Seq(
+      ChimericTx(immutable.Seq(
         Input(TxOutRef(utxoTx.txId, 1), value3 - singleFee),
         Fee(value3 - singleFee),
         Withdrawal(address1, value2 - value3, 1),
