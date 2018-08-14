@@ -3,6 +3,9 @@ import java.io.OutputStream
 import java.net.{InetSocketAddress, ServerSocket, Socket}
 import java.nio.ByteBuffer
 
+import io.iohk.cef.network.NodeId
+import io.iohk.cef.network.NodeId.nodeIdBytes
+
 import scala.collection.mutable
 import scala.util.Random
 
@@ -17,6 +20,9 @@ object NetUtils {
       out.close()
     }
   }
+
+  def aRandomNodeId(): NodeId =
+    NodeId(randomBytes(nodeIdBytes))
 
   def aRandomAddress(): InetSocketAddress = {
     val s = new ServerSocket(0)

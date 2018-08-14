@@ -1,11 +1,10 @@
 package io.iohk.cef.network.transport
 import java.net.InetSocketAddress
 
-import io.iohk.cef.network.transport.tcp.NetUtils.aRandomAddress
-import io.iohk.cef.network.transport.tcp.TcpTransportConfiguration
-import io.iohk.cef.network.{ConversationalNetworkConfiguration, NodeId, PeerInfo}
 import io.iohk.cef.network.encoding.nio.NioCodecs.NioStreamCodec
-
+import io.iohk.cef.network.transport.tcp.NetUtils.{aRandomAddress, aRandomNodeId}
+import io.iohk.cef.network.transport.tcp.TcpTransportConfiguration
+import io.iohk.cef.network.{ConversationalNetworkConfiguration, PeerInfo}
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 import org.scalatest.mockito.MockitoSugar._
@@ -15,21 +14,21 @@ class TransportsSpec extends FlatSpec {
   behavior of "Transports"
 
   it should "say usesTcp = true if tcp is configured" in {
-    val peerInfo = PeerInfo(NodeId(List(0.toByte, 0.toByte)),
+    val peerInfo = PeerInfo(aRandomNodeId(),
                             ConversationalNetworkConfiguration(Some(TcpTransportConfiguration(aRandomAddress()))))
 
     Transports.usesTcp(peerInfo) shouldBe true
   }
 
   it should "say usesTcp = false if tcp is not configured" in {
-    val peerInfo = PeerInfo(NodeId(List(0.toByte, 0.toByte)),
+    val peerInfo = PeerInfo(aRandomNodeId(),
                             ConversationalNetworkConfiguration(None))
 
     Transports.usesTcp(peerInfo) shouldBe false
   }
 
   it should "initialize netty if tcp is configured" in {
-    val peerInfo = PeerInfo(NodeId(List(0.toByte, 0.toByte)),
+    val peerInfo = PeerInfo(aRandomNodeId(),
                             ConversationalNetworkConfiguration(Some(TcpTransportConfiguration(aRandomAddress()))))
 
     val transports = new Transports(peerInfo)
@@ -38,7 +37,7 @@ class TransportsSpec extends FlatSpec {
   }
 
   it should "not initialize netty if tcp is not configured" in {
-    val peerInfo = PeerInfo(NodeId(List(0.toByte, 0.toByte)), ConversationalNetworkConfiguration(None))
+    val peerInfo = PeerInfo(aRandomNodeId(), ConversationalNetworkConfiguration(None))
 
     val transports = new Transports(peerInfo)
 
@@ -46,7 +45,7 @@ class TransportsSpec extends FlatSpec {
   }
 
   it should "not initialize netty twice" in {
-    val peerInfo = PeerInfo(NodeId(List(0.toByte, 0.toByte)),
+    val peerInfo = PeerInfo(aRandomNodeId(),
                             ConversationalNetworkConfiguration(Some(TcpTransportConfiguration(aRandomAddress()))))
 
     val transports = new Transports(peerInfo)
@@ -55,7 +54,7 @@ class TransportsSpec extends FlatSpec {
   }
 
   it should "return tcp if tcp is configured" in {
-    val peerInfo = PeerInfo(NodeId(List(0.toByte, 0.toByte)),
+    val peerInfo = PeerInfo(aRandomNodeId(),
                             ConversationalNetworkConfiguration(Some(TcpTransportConfiguration(aRandomAddress()))))
 
     val transports = new Transports(peerInfo)
@@ -64,7 +63,7 @@ class TransportsSpec extends FlatSpec {
   }
 
   it should "not return tcp if tcp is not configured" in {
-    val peerInfo = PeerInfo(NodeId(List(0.toByte, 0.toByte)),
+    val peerInfo = PeerInfo(aRandomNodeId(),
                             ConversationalNetworkConfiguration(None))
 
     val transports = new Transports(peerInfo)

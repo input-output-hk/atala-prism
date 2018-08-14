@@ -1,11 +1,30 @@
 package io.iohk.cef.network.discovery
+
+import io.iohk.cef.network.transport.Transports
+import io.iohk.cef.network.transport.tcp.NetUtils.{aRandomAddress, aRandomNodeId}
+import io.iohk.cef.network.transport.tcp.TcpTransportConfiguration
+import io.iohk.cef.network.{ConversationalNetworkConfiguration, PeerInfo}
 import org.scalatest.FlatSpec
+import org.scalatest.Matchers._
 
 class MeshNetDiscoverySpec extends FlatSpec {
 
   behavior of "MeshNetworkDiscovery"
 
-  it should "have an initial routing table containg a bootstrap node" in pending
+  it should "have an initial routing table containing itself and a bootstrap node" in {
+    val peerInfo = PeerInfo(aRandomNodeId(),
+      ConversationalNetworkConfiguration(Some(TcpTransportConfiguration(aRandomAddress()))))
+
+    val transports = new Transports(peerInfo)
+
+    val bootstrapPeerInfo = PeerInfo(aRandomNodeId(),
+      ConversationalNetworkConfiguration(Some(TcpTransportConfiguration(aRandomAddress()))))
+
+    val discovery = new MeshNetDiscovery(peerInfo, bootstrapPeerInfo, transports)
+
+    discovery.peer(peerInfo.nodeId) shouldBe Some(peerInfo)
+    discovery.peer(bootstrapPeerInfo.nodeId) shouldBe Some(bootstrapPeerInfo)
+  }
 
   it should "bootstrap with a self lookup" in pending
 

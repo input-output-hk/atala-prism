@@ -14,7 +14,7 @@ class Transports(peerInfo: PeerInfo) {
 
   private var nettyTransportRef: Option[NettyTransport] = None
 
-  def netty(): Option[NettyTransport] = this.synchronized {
+  def netty(): Option[NettyTransport] = this.synchronized { // AtomicRef does not work for side-effecting fns
     peerInfo.configuration.tcpTransportConfiguration.map(tcpConfiguration => {
       nettyTransportRef match {
         case Some(nettyTransport) =>

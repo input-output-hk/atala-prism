@@ -22,6 +22,7 @@ import io.iohk.cef.network.transport._
   *                     It should be possible to summon an encoder for any case class using
   *                     encoders io.iohk.cef.network.encoding.nio.
   * @param networkDiscovery Encapsulates a routing table implementation.
+  * @param transports helpers to obtain network transport instances.
   */
 class ConversationalNetwork[Message](peerInfo: PeerInfo,
                                      messageHandler: (NodeId, Message) => Unit,
