@@ -2,7 +2,9 @@ package io.iohk.cef.network
 
 package object encoding {
 
-  case class Codec[T, U](encoder: Encoder[T, U], decoder: Decoder[U, T])
+  class Codec[T, U](val encoder: Encoder[T, U], val decoder: Decoder[U, T])
+
+  class StreamCodec[T, U](val encoder: Encoder[T, U], val decoder: StreamDecoder[U, T])
 
   trait Encoder[T, U] {
     self =>
@@ -22,6 +24,10 @@ package object encoding {
       (u: U) => that.decode(self.decode(u))
   }
 
+  trait StreamDecoder[U, T] {
+    def decodeStream(u: U): Seq[T]
+  }
+
   def encode[T, U](t: T)(implicit enc: Encoder[T, U]): U =
     try {
       enc.encode(t)
@@ -30,16 +36,17 @@ package object encoding {
         throw new EncodingException(t)
     }
 
-    def decode[U, T](enc: U)(implicit dec: Decoder[U, T]): T = try {
+  def decode[U, T](enc: U)(implicit dec: Decoder[U, T]): T =
+    try {
       dec.decode(enc)
     } catch {
       case t: Throwable =>
         throw new DecodingException(t)
     }
 
-    class EncodingException(cause: Throwable) extends RuntimeException(cause)
+  class EncodingException(cause: Throwable) extends RuntimeException(cause)
 
-    class DecodingException(cause: Throwable) extends RuntimeException(cause)
+  class DecodingException(cause: Throwable) extends RuntimeException(cause)
 
-    type ByteEncoder[T] = Encoder[T, Array[Byte]]
+  type ByteEncoder[T] = Encoder[T, Array[Byte]]
 }

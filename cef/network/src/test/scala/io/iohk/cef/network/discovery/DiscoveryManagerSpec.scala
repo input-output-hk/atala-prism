@@ -20,7 +20,6 @@ import io.iohk.cef.network.{Capabilities, NodeInfo, NodeStatus, ServerStatus}
 import io.iohk.cef.network.telemetry.InMemoryTelemetry
 import io.iohk.cef.test.TestClock
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
-import org.apache.commons.lang3.RandomStringUtils.{randomAlphabetic, randomAlphanumeric}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.MustMatchers._
 import org.scalatest.{BeforeAndAfterAll, FlatSpec}
@@ -102,7 +101,7 @@ class DiscoveryManagerSpec
       val behavior = createBehavior
 
       val actor: ActorRef[DiscoveryRequest] =
-        untypedSystem.spawn(behavior, s"ActorUnderTest_${randomAlphanumeric(5)}")
+        untypedSystem.spawnAnonymous(behavior)
 
       val startMessage = discoveryListener.expectMessageType[Start]
       startMessage.replyTo ! Ready(discoveryAddress)
@@ -171,7 +170,7 @@ class DiscoveryManagerSpec
 
       val expiration = ping.timestamp
       val pong = Pong(node, token, expiration)
-      val probe = UntypedTestProbe(randomAlphabetic(6))(untypedSystem)
+      val probe = UntypedTestProbe("TestProbe")(untypedSystem)
       untypedSystem.eventStream.subscribe(probe.ref, classOf[CompatibleNodeFound])
       actor ! DiscoveryResponseWrapper(DiscoveryListener.MessageReceived(pong, discoveryAddress))
       probe.expectMsg(CompatibleNodeFound(node))
