@@ -6,7 +6,7 @@ import akka.actor.typed.{ActorRef, Behavior}
   * TransportProtocol defines an abstraction over network transports,
   * such as TCP, TLS or RLPx.
   */
-trait TransportProtocol {
+private[network] trait TransportProtocol {
 
   type AddressType
   type MessageType

@@ -53,12 +53,12 @@ val dep = {
     "org.scalatest" %% "scalatest" % "3.0.1" % Test,
     "org.scalacheck" %% "scalacheck" % "1.13.4" % Test,
     "org.scalamock" %% "scalamock-scalatest-support" % "3.5.0" % Test,
+    "org.mockito" % "mockito-core" % "2.21.0" % Test,
+    "com.softwaremill.quicklens" %% "quicklens" % "1.4.11" % Test,
     "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test,
     "com.typesafe.akka" %% "akka-testkit-typed" % akkaVersion % Test,
 
-    "org.apache.commons" % "commons-lang3" % "3.7"
-
-
+    "io.netty" % "netty-all" % "4.1.28.Final"
   )
 }
 
