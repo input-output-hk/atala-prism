@@ -157,7 +157,7 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
     userActor.expectMessage(ListeningFailed(localUri, s"Error setting up listener on $localUri"))
   }
 
-  they should "be unbindable" in new TestFixture {
+  ignore should "be unbindable" in new TestFixture {
     import rlpxTransportProtocol._
     val userActor = TestProbe[ListenerEvent]("userActorProbe")(typedSystem)
     val userConnectionFactory = () => TestProbe[ConnectionEvent]("userActorProbe")(typedSystem).ref

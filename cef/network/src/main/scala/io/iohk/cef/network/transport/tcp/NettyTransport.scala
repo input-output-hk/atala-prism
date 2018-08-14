@@ -11,7 +11,7 @@ import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.{NioServerSocketChannel, NioSocketChannel}
 
-private[tcp] class NettyTransport(address: InetSocketAddress) {
+private[network] class NettyTransport(address: InetSocketAddress) {
 
   type MessageHandler = (InetSocketAddress, ByteBuffer) => Unit
 

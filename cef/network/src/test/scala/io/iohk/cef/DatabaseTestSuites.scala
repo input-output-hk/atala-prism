@@ -2,6 +2,8 @@ package io.iohk.cef
 
 import io.iohk.cef.network.discovery.db.KnownNodeStorageImplDbTest
 import io.iohk.cef.ledger.LedgerDbTest
+import io.iohk.cef.ledger.chimeric.ChimericLedgerItDbTest
+import io.iohk.cef.ledger.chimeric.storage.scalike.dao.ChimericLedgerStateStorageDaoDbTest
 import io.iohk.cef.ledger.identity.IdentityLedgerItDbTest
 import io.iohk.cef.ledger.identity.storage.LedgerStateStorageDaoDbTest
 import io.iohk.cef.ledger.storage.dao.LedgerStorageDaoDbTest
@@ -15,7 +17,9 @@ class DatabaseTestSuites extends Suites(
     new LedgerStateStorageDaoDbTest {},
     new IdentityLedgerItDbTest {},
     new LedgerStorageDaoDbTest {},
-    new LedgerDbTest {}
+    new LedgerDbTest {},
+    new ChimericLedgerStateStorageDaoDbTest {},
+    new ChimericLedgerItDbTest {}
   ) with BeforeAndAfterAll {
 
   val flyway = new Flyway()
@@ -41,8 +45,4 @@ class DatabaseTestSuites extends Suites(
     super.beforeAll()
   }
 
-  override def afterAll(): Unit = {
-    tearDownDB()
-    super.afterAll()
-  }
 }
