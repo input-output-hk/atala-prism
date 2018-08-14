@@ -3,10 +3,11 @@ package io.iohk.cef.raft.akka.fsm.protocol
 import akka.actor.ActorRef
 
 trait StateMetadata extends Serializable {
+  type Member = ActorRef
 
-  type CandidateRef = ActorRef
   sealed trait MetaData {
-    def votedFor: Option[CandidateRef]
+
+    def votedFor: Option[Member]
 
     def currentTerm: Term
 
@@ -18,10 +19,21 @@ trait StateMetadata extends Serializable {
       */
     def canVoteIn(term: Term): Boolean = votedFor.isEmpty && term == currentTerm
 
+    implicit def self: ActorRef
+
+    def config: ClusterConfiguration
+
+    /** Since I'm the Leader  everyone but myself */
+    def membersExceptSelf: Set[Member] = config.members filterNot { _ == self }
+
+    def members: Set[Member] = config.members
+
   }
 
   case class StateData(currentTerm: Term,
-                       votedFor: Option[CandidateRef] = None,
+                       self:ActorRef,
+                       config: ClusterConfiguration,
+                       votedFor: Option[Member] = None,
                        votesReceived: Int = 0) extends MetaData
 
 }

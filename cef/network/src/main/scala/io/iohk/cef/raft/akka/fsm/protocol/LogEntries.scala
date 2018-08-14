@@ -1,7 +1,6 @@
 package io.iohk.cef.raft.akka.fsm.protocol
 
 import akka.actor.ActorRef
-import scala.annotation.switch
 
 
 case class Entry[T](

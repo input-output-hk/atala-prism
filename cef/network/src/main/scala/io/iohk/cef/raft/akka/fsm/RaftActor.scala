@@ -11,10 +11,12 @@ abstract class RaftActor extends Actor with PersistentFSM[RaftState, MetaData, D
 
   type PersistentFSMState = PersistentFSM.State[RaftState, MetaData, DomainEvent]
 
+  type Command
 
   private val ElectionTimeoutTimerName = "election-timer"
 
   var electionDeadline: Deadline = 0.seconds.fromNow
+  var logEntries = LogEntries.empty[Command](10) //TODO configurable
 
 
   def nextElectionDeadline(): Deadline = ElectionTimeout.DefaultElectionTimeout.randomTimeout().fromNow

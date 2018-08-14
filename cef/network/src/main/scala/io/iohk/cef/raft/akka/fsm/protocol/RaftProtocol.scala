@@ -17,4 +17,7 @@ trait RaftProtocol extends Serializable {
 
   case class VoteCandidateEvent(term: Term)    extends RaftEventMessage
   case class DeclineCandidateEvent(term: Term) extends RaftEventMessage
+
+  case object BeginElectionEvent extends RaftEventMessage
+
 }

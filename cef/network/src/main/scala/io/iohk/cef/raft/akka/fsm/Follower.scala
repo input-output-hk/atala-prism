@@ -20,42 +20,42 @@ trait Follower {
       stay() applying UpdateTermEvent(term)
 
     case Event(RequestVote(term, candidate, lastLogTerm, lastLogIndex), myState: StateData)
-      if myState.canVoteIn(term) =>
-      resetElectionDeadline()
-      // Check if the log is up-to-date before granting vote.
-      // Raft determines which of two logs is more up-to-date
-      // by comparing the index and term of the last entries in the
-      // logs. If the logs have last entries with different terms, then
-      // the log with the later term is more up-to-date. If the logs
-      // end with the same term, then whichever log is longer is
-      // more up-to-date.
-      if (lastLogTerm < LogEntries.lastTerm) {
-        log.info("Rejecting vote for {}, and {}. Candidate's lastLogTerm: {} < ours: {}",
-          candidate, term, lastLogTerm, LogEntries.lastTerm)
-        sender ! DeclineCandidateEvent(myState.currentTerm)
-        stay()
-      } else if (lastLogTerm == LogEntries.lastTerm &&
-        lastLogIndex < LogEntries.lastIndex) {
-        log.info("Rejecting vote for {}, and {}. Candidate's lastLogIndex: {} < ours: {}",
-          candidate, term, lastLogIndex, LogEntries.lastIndex)
-        sender ! DeclineCandidateEvent(myState.currentTerm)
-        stay()
-      } else {
-        log.info("Voting for {} in {}", candidate, term)
-        sender ! VoteCandidateEvent(myState.currentTerm)
+        if myState.canVoteIn(term) =>
+        resetElectionDeadline()
+        // Check if the log is up-to-date before granting vote.
+        // Raft determines which of two logs is more up-to-date
+        // by comparing the index and term of the last entries in the
+        // logs. If the logs have last entries with different terms, then
+        // the log with the later term is more up-to-date. If the logs
+        // end with the same term, then whichever log is longer is
+        // more up-to-date.
+        if (lastLogTerm < logEntries.lastTerm) {
+          log.info("Rejecting vote for {}, and {}. Candidate's lastLogTerm: {} < ours: {}",
+            candidate, term, lastLogTerm, logEntries.lastTerm)
+          sender ! DeclineCandidateEvent(myState.currentTerm)
+          stay()
+        } else if (lastLogTerm == logEntries.lastTerm &&
+          lastLogIndex < logEntries.lastIndex) {
+          log.info("Rejecting vote for {}, and {}. Candidate's lastLogIndex: {} < ours: {}",
+            candidate, term, lastLogIndex, logEntries.lastIndex)
+          sender ! DeclineCandidateEvent(myState.currentTerm)
+          stay()
+        } else {
+          log.info("Voting for {} in {}", candidate, term)
+          sender ! VoteCandidateEvent(myState.currentTerm)
 
-        stay() applying VoteForEvent(candidate)
-      }
+          stay() applying VoteForEvent(candidate)
+        }
 
-      case Event(RequestVote(term, candidateId, lastLogTerm, lastLogIndex), myState: StateData) if myState.votedFor.isDefined =>
-        log.info("Rejecting vote for {}, and {}, currentTerm: {}, already voted for: {}", candidate(), term, myState.currentTerm, myState.votedFor.get)
-        sender ! DeclineCandidateEvent(myState.currentTerm)
-        stay()
+    case Event(RequestVote(term, candidateId, lastLogTerm, lastLogIndex), myState: StateData) if myState.votedFor.isDefined =>
+      log.info("Rejecting vote for {}, and {}, currentTerm: {}, already voted for: {}", candidate(), term, myState.currentTerm, myState.votedFor.get)
+      sender ! DeclineCandidateEvent(myState.currentTerm)
+      stay()
 
-      case Event(RequestVote(term, candidateId, lastLogTerm, lastLogIndex), myState: StateData) =>
-        log.info("Rejecting vote for {}, and {}, currentTerm: {}, received stale term number {}", candidate(), term, myState.currentTerm, term)
-        sender ! DeclineCandidateEvent(myState.currentTerm)
-        stay()
+    case Event(RequestVote(term, candidateId, lastLogTerm, lastLogIndex), myState: StateData) =>
+      log.info("Rejecting vote for {}, and {}, currentTerm: {}, received stale term number {}", candidate(), term, myState.currentTerm, term)
+      sender ! DeclineCandidateEvent(myState.currentTerm)
+      stay()
 
     // end of election
 
