@@ -2,7 +2,6 @@ package io.iohk.cef.raft.akka.fsm
 
 import akka.actor.{Actor, ActorRef}
 import akka.persistence.fsm.PersistentFSM
-import io.iohk.cef.raft.{ElectionTimeout, Index, LogEntry, Term}
 
 import scala.concurrent.duration._
 import protocol._
