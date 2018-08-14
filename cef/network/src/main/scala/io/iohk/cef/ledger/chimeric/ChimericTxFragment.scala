@@ -158,11 +158,9 @@ case class Deposit(address: Address, value: Value) extends TxOutput {
 case class CreateCurrency(currency: Currency) extends ActionTx {
   override def apply(state: ChimericLedgerState, index: Int, txId: String): ChimericStateOrError = {
     val createCurrencyKey = ChimericLedgerState.getCurrencyPartitionId(currency)
-    val currencyOpt = state.get(createCurrencyKey)
-    if (currencyOpt.isDefined) {
-      Left(CurrencyAlreadyExists(currency))
-    } else {
-      Right(state.put(createCurrencyKey, CreateCurrencyHolder(this)))
+    state.get(createCurrencyKey) match {
+      case Some(_) => Left(CurrencyAlreadyExists(currency))
+      case None => Right(state.put(createCurrencyKey, CreateCurrencyHolder(this)))
     }
   }
 

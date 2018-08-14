@@ -6,15 +6,15 @@ import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.io.Tcp
 import akka.testkit.{TestActorRef, TestProbe}
 import akka.util.ByteString
+import io.iohk.cef.network.transport.rlpx.RLPxConnectionHandler.RLPxConfiguration
 import io.iohk.cef.network.transport.rlpx.ethereum.p2p.Message.Version
-import io.iohk.cef.network.transport.rlpx.ethereum.p2p.{MessageDecoder, MessageSerializable}
 import io.iohk.cef.network.transport.rlpx.ethereum.p2p.messages.Versions
 import io.iohk.cef.network.transport.rlpx.ethereum.p2p.messages.WireProtocol.Ping
-import io.iohk.cef.network.transport.rlpx.RLPxConnectionHandler.RLPxConfiguration
+import io.iohk.cef.network.transport.rlpx.ethereum.p2p.{MessageDecoder, MessageSerializable}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.duration._
 
 class RLPxConnectionHandlerSpec extends FlatSpec with Matchers with MockFactory {
 
@@ -64,7 +64,7 @@ class RLPxConnectionHandlerSpec extends FlatSpec with Matchers with MockFactory 
 
     //Send Ack, second message should now be sent through TCP connection
     rlpxConnection ! RLPxConnectionHandler.Ack
-    connection.expectMsg(Tcp.Write(ByteString("ping encoded"), RLPxConnectionHandler.Ack))
+    connection.expectMsg(5 seconds, Tcp.Write(ByteString("ping encoded"), RLPxConnectionHandler.Ack))
     connection.expectNoMessage()
 
     //Send Ack, third message should now be sent through TCP connection
