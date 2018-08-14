@@ -2,7 +2,7 @@ package io.iohk.cef.ledger.chimeric
 
 import scala.collection.mutable
 
-case class Value(protected[Value] val m: Map[Currency, Quantity]) {
+case class Value(protected[Value] val m: Map[Currency, Quantity]) extends PartiallyOrdered[Value] {
   require(m.forall(_._2 != BigDecimal(0)))
 
   def + (entry: (Currency, Quantity)): Value = {
@@ -17,14 +17,25 @@ case class Value(protected[Value] val m: Map[Currency, Quantity]) {
   def -(that: Value): Value = combineWithValue(_ - _, that)
   def apply(currency: Currency): Quantity = m.get(currency).getOrElse(BigDecimal(0))
 
-  def >=(that: Value): Boolean = {
-    (this.m.keys ++ that.m.keys).forall(at => {
-      this (at) >= that(at)
-    })
-  }
-
   def iterator: Iterator[(Currency, Quantity)] = m.iterator
 
+  override def tryCompareTo[B >: Value](that: B)(implicit evidence$1: B => PartiallyOrdered[B]): Option[Int] = that match {
+    case v: Value =>
+      if (this.compareWith(v, _ == _)) {
+        Some(0)
+      } else if(this.compareWith(v, _ < _)) {
+        Some(-1)
+      } else if (this.compareWith(v, _ > _)) {
+        Some(1)
+      } else {
+        None
+      }
+    case _ => None
+  }
+
+  private def compareWith(that: Value, f: (Quantity, Quantity) => Boolean): Boolean = {
+    (this.m.keySet union that.m.keySet).forall(key => f(this(key), that(key)))
+  }
 
   private def combineWithValue(f: (Quantity, Quantity) => Quantity, that: Value): Value = combineWithPairs(f, that.m.toSeq)
 

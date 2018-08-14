@@ -8,6 +8,11 @@ class ValueSpec extends FlatSpec with PropertyChecks with MustMatchers {
 
   implicit val ArbitraryValue: Arbitrary[Value] = Arbitrary(ChimericGenerators.ValueGen)
 
+  implicit class BooleanOperator(a: Boolean) {
+    //Implies
+    def ==>(b: Boolean): Boolean = (!a) || b
+  }
+
   behavior of "Value"
 
   it should "implement a commutative addition" in {
@@ -63,6 +68,36 @@ class ValueSpec extends FlatSpec with PropertyChecks with MustMatchers {
       }
       a >= a mustBe true
     }
+    }
+  }
+
+  it should "implement a reflexive comparison" in {
+    forAll { (a: Value) => {
+      a == a mustBe true
+      a > a mustBe false
+      a < a mustBe false
+      a >= a mustBe true
+      a <= a mustBe true
+    }
+    }
+  }
+
+  it should "implement an antisymmetric comparison" in {
+    forAll { (a: Value, b: Value) => {
+      ((a == b) ==> !((a > b) || (a < b))) mustBe true
+      ((a > b) ==> !((a == b) || (a < b))) mustBe true
+      ((a < b) ==> !((a == b) || (a > b))) mustBe true
+    }
+    }
+  }
+
+  it should "implement a transitive comparison" in {
+    forAll { (a: Value, b: Value, c: Value) =>
+      ((a < b) && (b < c)) ==> (a < c) mustBe true
+      ((a > b) && (b > c)) ==> (a > c) mustBe true
+      ((a <= b) && (b <= c)) ==> (a <= c) mustBe true
+      ((a >= b) && (b >= c)) ==> (a >= c) mustBe true
+      ((a == b) && (b == c)) ==> (a == c) mustBe true
     }
   }
 }
