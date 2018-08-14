@@ -25,9 +25,9 @@ case class ChimericTx(fragments: Seq[ChimericTxFragment]) extends Transaction[Ch
     currentStateEither.flatMap { currentState =>
     val totalValue = fragments.foldLeft(Value.Zero)((sum, current) =>
       current match {
-        case input: TxInput => sum + input.value
-        case output: TxOutput => sum - output.value
-        case _: ActionTx => sum
+        case input: TxInputFragment => sum + input.value
+        case output: TxOutputFragment => sum - output.value
+        case _: ActionTxFragment => sum
       }
     )
     if (totalValue == Value.Zero) {

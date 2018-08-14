@@ -8,9 +8,18 @@ sealed trait ChimericTxFragment
   def partitionIds(txId: String, index: Int): Set[String]
 }
 
-sealed trait ActionTx extends ChimericTxFragment
+/**
+  * An Action tx does not hold or operates over values. Instead, it changes the data that is available in the ledger
+  * For instance, creating currencies for other txs to utilize
+  */
+sealed trait ActionTxFragment extends ChimericTxFragment
 
-sealed trait ValueTx extends ChimericTxFragment {
+/**
+  * A 'Value' transaction fragment operate over or represent value (utxos, accounts).
+  * These transaction fragments have several operations in common: like verifying that the currencies it references
+  * already exist in the ledger.
+  */
+sealed trait ValueTxFragment extends ChimericTxFragment {
   def value: Value
 
   def exec(state: ChimericLedgerState, index: Int, txId: String): ChimericStateOrError
@@ -35,7 +44,7 @@ sealed trait ValueTx extends ChimericTxFragment {
     if (missingCurrencies.isEmpty) {
       Right(state)
     } else {
-      Left(CurrencyDoesNotExist(missingCurrencies.head._1, this))
+      Left(CurrenciesDoNotExist(missingCurrencies.map(_._1), this))
     }
   }
 
@@ -53,11 +62,17 @@ sealed trait ValueTx extends ChimericTxFragment {
   }
 }
 
-sealed trait TxInput extends ValueTx
+/**
+  * An Input Tx fragment references value that can be used in the transaction (either by paying fees or to transfer)
+  */
+sealed trait TxInputFragment extends ValueTxFragment
 
-sealed trait TxOutput extends ValueTx
+/**
+  * An Output Tx fragment declares a new (or the same) owner of some value. Either through deposits or utxos
+  */
+sealed trait TxOutputFragment extends ValueTxFragment
 
-case class Withdrawal(address: Address, value: Value, nonce: Int) extends TxInput {
+case class Withdrawal(address: Address, value: Value, nonce: Int) extends TxInputFragment {
   override def exec(state: ChimericLedgerState, index: Int, txId: String): ChimericStateOrError = {
     val addressKey = ChimericLedgerState.getAddressPartitionId(address)
     val addressValue =
@@ -81,7 +96,7 @@ case class Withdrawal(address: Address, value: Value, nonce: Int) extends TxInpu
   override def toString(): ChimericTxId = s"Withdrawal($address,$value)"
 }
 
-case class Mint(value: Value) extends TxInput {
+case class Mint(value: Value) extends TxInputFragment {
   override def exec(state: ChimericLedgerState, index: Int, txId: String): ChimericStateOrError = {
     Right(state)
   }
@@ -91,7 +106,7 @@ case class Mint(value: Value) extends TxInput {
   override def toString(): ChimericTxId = s"Mint($value)"
 }
 
-case class Input(txOutRef: TxOutRef, value: Value) extends TxInput {
+case class Input(txOutRef: TxOutRef, value: Value) extends TxInputFragment {
   override def exec(state: ChimericLedgerState, index: Int, txId: String): ChimericStateOrError = {
     val txOutKey = ChimericLedgerState.getUtxoPartitionId(txOutRef)
     val txOutValueOpt =
@@ -111,7 +126,7 @@ case class Input(txOutRef: TxOutRef, value: Value) extends TxInput {
   override def toString(): ChimericTxId = s"Input($txOutRef,$value)"
 }
 //FIXME: Where are the fees going? We need to setup somewhere who can spend this value in the future
-case class Fee(value: Value) extends TxOutput {
+case class Fee(value: Value) extends TxOutputFragment {
   override def exec(state: ChimericLedgerState, index: Int, txId: String): ChimericStateOrError = {
     Right(state)
   }
@@ -121,7 +136,7 @@ case class Fee(value: Value) extends TxOutput {
   override def toString(): ChimericTxId = s"Fee($value)"
 }
 //TODO: Add the identity concept here
-case class Output(value: Value) extends TxOutput {
+case class Output(value: Value) extends TxOutputFragment {
   override def exec(state: ChimericLedgerState, index: Int, txId: String): ChimericStateOrError = {
     val txOutRef = TxOutRef(txId, index)
     val txOutKey = ChimericLedgerState.getUtxoPartitionId(txOutRef)
@@ -142,7 +157,7 @@ case class Output(value: Value) extends TxOutput {
   override def toString(): ChimericTxId = s"Output($value)"
 }
 
-case class Deposit(address: Address, value: Value) extends TxOutput {
+case class Deposit(address: Address, value: Value) extends TxOutputFragment {
   override def exec(state: ChimericLedgerState, index: Int, txId: String): ChimericStateOrError = {
     val addressKey = ChimericLedgerState.getAddressPartitionId(address)
     val addressValueOpt =
@@ -155,7 +170,7 @@ case class Deposit(address: Address, value: Value) extends TxOutput {
   override def toString(): ChimericTxId = s"Deposit($address,$value)"
 }
 
-case class CreateCurrency(currency: Currency) extends ActionTx {
+case class CreateCurrency(currency: Currency) extends ActionTxFragment {
   override def apply(state: ChimericLedgerState, index: Int, txId: String): ChimericStateOrError = {
     val createCurrencyKey = ChimericLedgerState.getCurrencyPartitionId(currency)
     state.get(createCurrencyKey) match {
