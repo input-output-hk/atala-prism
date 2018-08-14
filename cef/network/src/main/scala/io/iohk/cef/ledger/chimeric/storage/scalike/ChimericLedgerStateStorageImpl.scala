@@ -5,7 +5,7 @@ import io.iohk.cef.ledger.chimeric.{ChimericLedgerState, ChimericStateValue}
 import io.iohk.cef.ledger.storage.LedgerStateStorage
 import scalikejdbc.{ConnectionPool, DB, DBSession}
 
-class LedgerStateStorageImpl(ledgerStateStorageDao: ChimericLedgerStateStorageDao)
+class ChimericLedgerStateStorageImpl(ledgerStateStorageDao: ChimericLedgerStateStorageDao)
   extends LedgerStateStorage[ChimericStateValue] {
 
   override def slice(keys: Set[String]): ChimericLedgerState = {

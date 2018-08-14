@@ -52,14 +52,14 @@ class ValueSpec extends FlatSpec with PropertyChecks with MustMatchers {
 
   it should "calculate the inequalities among values" in {
     forAll { (a: Value) => {
-        val greaterValue =
-          if (a.iterator.isEmpty) {
-            Value(Map("CRC" -> BigDecimal(0.0001)))
-          } else {
-            Value(a.iterator.map {
-              case (currency, quantity) => (currency, quantity + BigDecimal(0.0001))
-            }.toSeq: _*)
-          }
+      val greaterValue =
+        if (a.iterator.isEmpty) {
+          Value(Map("CRC" -> BigDecimal(0.0001)))
+        } else {
+          Value(a.iterator.map {
+            case (currency, quantity) => (currency, quantity + BigDecimal(0.0001))
+          }.toSeq: _*)
+        }
       val smallerValue =
         if (a.iterator.isEmpty) {
           Value(Map("CRC" -> BigDecimal(-0.0001)))

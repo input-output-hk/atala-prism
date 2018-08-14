@@ -34,3 +34,7 @@ case class ValueNegative(value: Value) extends LedgerError {
 case class CurrencyAlreadyExists(currency: Currency) extends LedgerError {
   override def toString: String = s"Currency ${currency} already exists"
 }
+
+case class CurrenciesDoNotExist(currencies: Seq[Currency], txFragment: ChimericTxFragment) extends LedgerError {
+  override def toString: String = s"Tx Fragment ${txFragment} references one or more currencies that doesn't exist: $currencies"
+}
