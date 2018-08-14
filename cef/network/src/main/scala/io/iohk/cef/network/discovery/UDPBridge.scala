@@ -26,8 +26,7 @@ class UDPBridge(discoveryListener: ActorRef[DiscoveryListenerRequest],
 
   private def ready(socket: untyped.ActorRef): Receive = {
     case Udp.Received(data, remote) =>
-      val packet = decoder.decode(data)
-      discoveryListener ! Forward(MessageReceived(packet, remote))
+      decoder.decode(data).foreach(packet => discoveryListener ! Forward(MessageReceived(packet, remote)))
 
     case SendMessage(packet, to) =>
       val encodedPacket = encoder.encode(packet)
@@ -39,7 +38,7 @@ object UDPBridge {
   def creator(config: DiscoveryConfig,
               encoder: Encoder[DiscoveryWireMessage, ByteString],
               decoder: Decoder[ByteString, DiscoveryWireMessage])
-              (context: ActorContext[DiscoveryListenerRequest]) =
+              (context: ActorContext[DiscoveryListenerRequest]): untyped.ActorRef =
     context.actorOf(untyped.Props(
       new UDPBridge(context.asScala.self,
         encoder,

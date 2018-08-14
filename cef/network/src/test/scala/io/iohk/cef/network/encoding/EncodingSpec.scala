@@ -5,23 +5,13 @@ import org.scalatest.Matchers._
 
 class EncodingSpec extends FlatSpec {
 
-  implicit val anEncoder = new Encoder[String, Int] {
-    override def encode(t: String): Int = Map("a" -> 1)(t)
-  }
+  implicit val anEncoder: Encoder[String, Int] = (t: String) => Map("a" -> 1)(t)
 
-  implicit val aDecoder = new Decoder[Int, String] {
-    override def decode(i: Int): String = Map(1 -> "a")(i)
-  }
+  implicit val aDecoder: Decoder[Int, String] = (i: Int) => Map(1 -> "a").get(i)
 
-  val anotherEncoder = new Encoder[Int, Char] {
-    override def encode(t: Int): Char = Map(1 -> 'a')(t)
-  }
+  val anotherEncoder: Encoder[Int, Char] = (t: Int) => Map(1 -> 'a')(t)
 
-  val anotherDecoder = new Decoder[Char, Int] {
-    override def decode(t: Char): Int = Map('a' -> 1)(t)
-  }
-
-
+  val anotherDecoder: Decoder[Char, Int] = (t: Char) => Map('a' -> 1).get(t)
 
   "encode" should "accept a pluggable encoder" in {
     encode("a") shouldBe 1
@@ -36,15 +26,14 @@ class EncodingSpec extends FlatSpec {
   }
 
   "Decoders" should "compose" in {
-    decode('a')(anotherDecoder andThen aDecoder) shouldBe "a"
+    decode('a')(anotherDecoder andThen aDecoder) shouldBe Some("a")
   }
 
   "decode" should "accept a pluggable decoder" in {
-    decode(1) shouldBe "a"
+    decode(1) shouldBe Some("a")
   }
 
   it should "handle decoding errors" in {
-    a[DecodingException] should be thrownBy decode(2)
+    a[DecodingException] should be thrownBy decode(2)(_ => ???)
   }
-
 }

@@ -21,12 +21,12 @@ trait NioCodecs {
     val l = u.limit()
     val a = new Array[Byte](l - p)
     u.get(a)
-    new String(a)
+    Option(new String(a))
   }
 
   implicit val intEncoder: NioEncoder[Int] = (i: Int) => ByteBuffer.allocate(4).putInt(i)
 
-  implicit val intDecoder: NioDecoder[Int] = (u: ByteBuffer) => u.getInt()
+  implicit val intDecoder: NioDecoder[Int] = (u: ByteBuffer) => Some(u.getInt())
 }
 
 object NioCodecs extends NioCodecs

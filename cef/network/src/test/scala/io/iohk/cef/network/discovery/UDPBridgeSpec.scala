@@ -45,7 +45,7 @@ class UDPBridgeSpec extends FlatSpec with MustMatchers with MockFactory {
     val addr2 = new InetSocketAddress(1001)
     val data = Ping(1, node, 0L, ByteString("nonce"))
     val encodedData = ByteString("Ping")
-    (decoder.decode _) when(encodedData) returns(data)
+    (decoder.decode _) when(encodedData) returns(Some(data))
     bridge ! Udp.Received(encodedData, addr2)
 
     listenerInbox.expectMessage(Forward(MessageReceived(data, addr2)))
