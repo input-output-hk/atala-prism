@@ -107,7 +107,7 @@ trait Leader {
     stay()
   }
 
-  def  leaderStatHandler:Unit = {
+  def  leaderStateHandler:Unit = {
     self ! BeginAsLeader(stateData.currentTerm, self)
     cancelElectionDeadline()
   }

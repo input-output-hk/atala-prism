@@ -88,7 +88,7 @@ trait Candidate {
 
   }
 
-  def  candidateStatHandler:Unit = {
+  def  candidateStateHandler:Unit = {
     self ! BeginElection
     resetElectionDeadline()
   }

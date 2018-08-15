@@ -63,7 +63,7 @@ trait Follower {
   }
 
 
-  def  followerStatHandler:Unit = {
+  def  followerStateHandler:Unit = {
     self ! BeginAsFollower(stateData.currentTerm, self)
     resetElectionDeadline()
   }
