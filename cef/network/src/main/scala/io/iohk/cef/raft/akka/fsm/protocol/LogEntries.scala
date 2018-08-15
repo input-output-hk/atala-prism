@@ -28,7 +28,12 @@ case class LogEntries[Command](
   // log state
   def lastTerm: Term = entries.lastOption map { _.term } getOrElse Term(0)
   def lastIndex: Int = entries.lastOption map { _.index } getOrElse 1
-
+  /**
+    * Convinient method for increment
+    * Determines index of the next Entry that will be inserted into this log.
+    * First entry gets index 1 (not 0, which indicates empty log)
+    */
+  def nextIndex: Int = entries.size + 1
 }
 
 class EmptyLog[T](defaultBatchSize: Int) extends LogEntries[T](List.empty, 0, defaultBatchSize) {

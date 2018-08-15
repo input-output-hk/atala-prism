@@ -8,6 +8,7 @@ sealed trait ClusterConfiguration {
   def members: Set[ActorRef]
 }
 
-case object ClusterConfiguration extends ClusterConfiguration{
+ object ClusterConfiguration extends ClusterConfiguration{
   override def members: Set[ActorRef] = ???
 }
+

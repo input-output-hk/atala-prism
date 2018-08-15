@@ -3,7 +3,7 @@ import protocol._
 trait Candidate {
   this : RaftActor =>
 
-  val candidateBehavior: StateFunction = {
+  val candidateEvents : StateFunction = {
 
     // election
     case Event(BeginElectionEvent, sd: StateData) =>

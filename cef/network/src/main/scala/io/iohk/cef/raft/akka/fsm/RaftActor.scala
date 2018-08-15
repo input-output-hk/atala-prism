@@ -6,14 +6,18 @@ import akka.persistence.fsm.PersistentFSM
 import scala.concurrent.duration._
 import protocol._
 
-abstract class RaftActor extends Actor with PersistentFSM[RaftState, MetaData, DomainEvent]
-  with Follower with Candidate with Leader {
+import scala.reflect._
 
-  type PersistentFSMState = PersistentFSM.State[RaftState, MetaData, DomainEvent]
+abstract class RaftActor extends Actor with PersistentFSM[RaftState, MetaData, DomainEvent]
+  with Follower with Candidate with Leader with InitialState {
 
   type Command
 
+  type PersistentFSMState = PersistentFSM.State[RaftState, MetaData, DomainEvent]
+
+
   private val ElectionTimeoutTimerName = "election-timer"
+  val heartbeatInterval: FiniteDuration =  10.seconds  //TODO configurable  I am thinking of RaftConfig any thoughts
 
   var electionDeadline: Deadline = 0.seconds.fromNow
   var logEntries = LogEntries.empty[Command](10) //TODO configurable
@@ -30,6 +34,60 @@ abstract class RaftActor extends Actor with PersistentFSM[RaftState, MetaData, D
     setTimer(ElectionTimeoutTimerName, ElectionTimeoutEvent, electionDeadline.timeLeft, repeat = false)
 
     electionDeadline
+  }
+
+  override def domainEventClassTag: ClassTag[DomainEvent] = classTag[DomainEvent]
+
+  override def persistenceId: String = "RaftActor-" + self.path.name
+
+  override def applyEvent(domainEvent: DomainEvent, sd: StateData):StateData = domainEvent match  {
+    case GoToFollowerEvent(term) => term.fold(sd.forFollower()){ t => sd.forFollower(t)}
+    case GoToLeaderEvent() => sd.forLeader
+    case StartElectionEvent() => sd.forNewElection
+    case KeepStateEvent() => sd
+    case VoteForEvent(candidate) => sd.withVoteFor(candidate)
+    case IncrementVoteEvent() => sd.incVote
+    case VoteForSelfEvent() => sd.incVote.withVoteFor(sd.self)
+    case UpdateTermEvent(term) => sd.withTerm(term)
+  }
+
+  startWith(Init, StateData.initial(self))
+
+  when(Init)(initialConfiguration)
+
+  when(Follower)(followerEvents)
+
+  when(Candidate)(candidateEvents)
+
+  when(Leader)(leaderEvents)
+
+  onTransition {
+    case Init -> Follower if stateData.self != self =>
+      self ! BeginAsFollowerEvent(stateData.currentTerm, self)
+      log.info("Cluster self != self => Running clustered via a proxy.")
+      resetElectionDeadline()
+
+    case Follower -> Candidate =>
+      self ! BeginElectionEvent
+      resetElectionDeadline()
+
+    case Candidate -> Leader =>
+      self ! BeginAsLeader(stateData.currentTerm, self)
+      cancelElectionDeadline()
+
+    case _ -> Follower =>
+      self ! BeginAsFollowerEvent(stateData.currentTerm, self)
+      resetElectionDeadline()
+  }
+
+  onTermination {
+    case stop =>
+      stopHeartbeat()
+  }
+
+
+  def cancelElectionDeadline() {
+    cancelTimer(ElectionTimeoutTimerName)
   }
 
 
