@@ -1,8 +1,10 @@
 package io.iohk.cef.ledger
 
+import scala.collection.immutable
+
 case class Block[S,
                  Header <: BlockHeader,
-                 Tx <: Transaction[S]](header: Header, transactions: List[Tx with Transaction[S]])
+                 Tx <: Transaction[S]](header: Header, transactions: immutable.Seq[Tx with Transaction[S]])
     extends (LedgerState[S] => Either[LedgerError, LedgerState[S]]) {
 
   override def apply(state: LedgerState[S]): Either[LedgerError, LedgerState[S]] = {

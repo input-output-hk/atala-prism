@@ -1,0 +1,74 @@
+syntax = "proto2";
+
+package io.iohk.cef.protobuf;
+import "Common.proto";
+
+message ChimericValueEntryProto {
+    required string currency = 1;
+    required DecimalProto amount = 2;
+}
+
+message ChimericValueProto {
+    repeated ChimericValueEntryProto entries = 1;
+}
+
+message WithdrawalProto {
+    required string address = 1;
+    required ChimericValueProto value = 2;
+    required uint32 nonce = 3;
+}
+
+message MintProto {
+    required ChimericValueProto value = 1;
+}
+
+message TxOutRefProto {
+    required string txId = 1;
+    required uint32 index = 2;
+}
+
+message InputProto {
+    required TxOutRefProto txOutRef = 1;
+    required ChimericValueProto value = 2;
+}
+
+message OutputProto {
+    required ChimericValueProto value = 1;
+}
+
+message DepositProto {
+    required string address = 1;
+    required ChimericValueProto value = 2;
+}
+
+message FeeProto {
+    required ChimericValueProto value = 1;
+}
+
+message CreateCurrencyProto {
+    required string currency = 1;
+}
+
+message ChimericTxFragmentProto {
+    oneof fragment {
+        WithdrawalProto withdrawalWrapper = 1;
+        MintProto mintWrapper = 2;
+        InputProto inputWrapper = 3;
+        OutputProto outputWrapper = 4;
+        DepositProto depositWrapper = 5;
+        FeeProto feeWrapper = 6;
+        CreateCurrencyProto createCurrencyWrapper = 7;
+    }
+}
+
+message ChimericTxProto {
+    repeated ChimericTxFragmentProto txFragments = 1;
+}
+
+message ChimericBlockHeaderProto {
+}
+
+message ChimericBlockProto {
+    required ChimericBlockHeaderProto header = 1;
+    repeated ChimericTxProto txs = 2;
+}

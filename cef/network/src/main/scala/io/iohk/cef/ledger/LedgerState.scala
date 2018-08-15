@@ -20,4 +20,16 @@ case class LedgerState[S](map: Map[String, S]) {
   def put(key: String, value: S): LedgerState[S] = LedgerState(map + ((key, value)))
   def remove(key: String): LedgerState[S] = LedgerState(map - key)
   def keys: Set[String] = map.keySet
+
+  def updateTo(that: LedgerState[S]): LedgerStateUpdateActions[String, S] = {
+    val keysToAdd = (that.keys diff this.keys).map(key => InsertStateAction(key, that.get(key).get))
+    val keysToRemove = (this.keys diff that.keys).map(key => DeleteStateAction(key, this.get(key).get))
+    val keysToUpdate =
+      (that.keys intersect this.keys)
+        .filterNot(key => that.get(key) == this.get(key))
+        .map(key => UpdateStateAction(key, that.get(key).get))
+    val actions: Seq[LedgerStateUpdateAction[String, S]] =
+      keysToAdd.toSeq ++ keysToRemove ++ keysToUpdate
+    LedgerStateUpdateActions[String, S](actions)
+  }
 }
