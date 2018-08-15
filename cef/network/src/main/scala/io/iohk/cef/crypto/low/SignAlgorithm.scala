@@ -91,12 +91,12 @@ object SignAlgorithm {
     /** @inheritdoc */
     def sign(source: ByteString, key: ByteString): ByteString =
       cryptoAlgorithm.encrypt(
-        hashAlgorithm(source),
+        hashAlgorithm.hash(source),
         key)
 
     /** @inheritdoc */
     def validate(signature: ByteString, source: ByteString, key: ByteString): Boolean =
-      cryptoAlgorithm.decrypt(signature, key) == hashAlgorithm(source)
+      cryptoAlgorithm.decrypt(signature, key) == hashAlgorithm.hash(source)
   }
 
 }

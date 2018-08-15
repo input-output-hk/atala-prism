@@ -15,7 +15,7 @@ class SignAlogorithmSpec extends FlatSpec
     val hashMock = mock[HashAlgorithm]
     val hashed = ByteString("Hashed")
     val wrongHashed = ByteString("WrongHashed")
-    when(hashMock.apply(message)).thenReturn(hashed)
+    when(hashMock.hash(message)).thenReturn(hashed)
 
     val signKey = ByteString("TheSigningKey")
     val validateKey = ByteString("TheValidatingKey")

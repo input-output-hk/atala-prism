@@ -17,7 +17,7 @@ sealed trait HashAlgorithm {
     *
     * @return a hashed version of the `source` bytes
     */
-  def apply(source: ByteString): ByteString
+  def hash(source: ByteString): ByteString
 
 }
 
@@ -35,11 +35,11 @@ sealed trait ArrayBasedHashAlgorithm extends HashAlgorithm {
     *
     * @return a hashed version of the `source` bytes
     */
-  protected def apply(source: Array[Byte]): Array[Byte]
+  protected def hash(source: Array[Byte]): Array[Byte]
 
   /** @inheritdoc */
-  override final def apply(source: ByteString): ByteString =
-    ByteString(apply(source.toArray))
+  override final def hash(source: ByteString): ByteString =
+    ByteString(hash(source.toArray))
 }
 
 
@@ -54,7 +54,7 @@ object HashAlgorithm {
   case object KEC256 extends ArrayBasedHashAlgorithm {
 
     /** @inheritdoc */
-    override final protected def apply(source: Array[Byte]): Array[Byte] = {
+    override final protected def hash(source: Array[Byte]): Array[Byte] = {
       val digest = new KeccakDigest(256)
       val output = Array.ofDim[Byte](digest.getDigestSize)
       digest.update(source, 0, source.length)

@@ -22,7 +22,7 @@ package object low {
     * @return a hashed version of the `source` bytes
     */
   def hashBytes(algorithm: HashAlgorithm)(source: ByteString): ByteString =
-    algorithm(source)
+    algorithm.hash(source)
 
 
 
