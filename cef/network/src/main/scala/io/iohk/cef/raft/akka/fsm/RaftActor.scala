@@ -7,6 +7,8 @@ import scala.concurrent.duration._
 import protocol._
 
 import scala.reflect._
+import config.RaftConfiguration
+
 
 abstract class RaftActor extends Actor with PersistentFSM[RaftState, StateData, DomainEvent]
   with Follower with Candidate with Leader with InitialState {
@@ -15,26 +17,13 @@ abstract class RaftActor extends Actor with PersistentFSM[RaftState, StateData, 
 
   type PersistentFSMState = PersistentFSM.State[RaftState, StateData, DomainEvent]
 
+  protected val raftConfig = RaftConfiguration(context.system)
 
   private val ElectionTimeoutTimerName = "election-timer"
-  val heartbeatInterval: FiniteDuration =  Timeout.heartBeatInterval
+  val heartbeatInterval: FiniteDuration =  raftConfig.heartbeatInterval
 
-  var electionDeadline: Deadline = 0.seconds.fromNow
-  var logEntries = LogEntries.empty[Command](10) //TODO configurable
+  var logEntries = LogEntries.empty[Command](raftConfig.defaultAppendEntriesBatchSize)
 
-
-  def nextElectionDeadline(): Deadline = Timeout.DefaultElectionTimeout.randomTimeout().fromNow
-
-  def resetElectionDeadline(): Deadline = {
-    cancelTimer(ElectionTimeoutTimerName)
-
-    electionDeadline = nextElectionDeadline()
-    log.debug("Resetting election timeout: {}", electionDeadline)
-
-    setTimer(ElectionTimeoutTimerName, Timeout, electionDeadline.timeLeft, repeat = false)
-
-    electionDeadline
-  }
 
   override def domainEventClassTag: ClassTag[DomainEvent] = classTag[DomainEvent]
 
@@ -55,9 +44,9 @@ abstract class RaftActor extends Actor with PersistentFSM[RaftState, StateData, 
 
   when(Init)(initialConfiguration)
 
-  when(Follower)(followerEvents)
+  when(Follower ,stateTimeout = nextElectionTime)(followerEvents)
 
-  when(Candidate)(candidateEvents)
+  when(Candidate ,stateTimeout = nextElectionTime)(candidateEvents)
 
   when(Leader)(leaderEvents)
 
@@ -78,15 +67,24 @@ abstract class RaftActor extends Actor with PersistentFSM[RaftState, StateData, 
   }
 
 
-  def cancelElectionDeadline() {
-    cancelTimer(ElectionTimeoutTimerName)
-  }
+// Helper for timeout
+  def nextElectionTime(): FiniteDuration = randomElectionTimeout(
+    from = raftConfig.electionTimeoutMin,
+    to = raftConfig.electionTimeoutMax
+  )
 
+  private def randomElectionTimeout(from: FiniteDuration, to: FiniteDuration): FiniteDuration = {
+    val fromMs = from.toMillis
+    val toMs = to.toMillis
+    require(toMs > fromMs, s"to ($to) must be greater than from ($from) in order to create valid election timeout.")
+
+    (fromMs + java.util.concurrent.ThreadLocalRandom.current().nextInt(toMs.toInt - fromMs.toInt)).millis
+  }
+  // End Helper for timeout
 
   /** Start a new election */
   def beginElection(m: StateData):PersistentFSMState= {
-    resetElectionDeadline()
-      goto(Candidate) applying StartElectionEvent() forMax nextElectionDeadline().timeLeft
+      goto(Candidate) applying StartElectionEvent()
   }
 
   /** Stop being the Leader */
@@ -96,7 +94,6 @@ abstract class RaftActor extends Actor with PersistentFSM[RaftState, StateData, 
 
   /** Stay in current state and reset the election timeout */
   def acceptHeartbeat():PersistentFSMState = {
-    resetElectionDeadline()
     stay()
   }
 

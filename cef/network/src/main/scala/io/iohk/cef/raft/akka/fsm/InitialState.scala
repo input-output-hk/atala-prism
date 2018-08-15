@@ -9,16 +9,13 @@ trait InitialState {
   /** Waits for initial cluster configuration. Step needed before we can start voting for a Leader. */
    lazy val initialConfiguration: StateFunction = {
 
-    case Event(ClusterConfiguration, m: StateData) =>
+    case Event(ClusterConfiguration, _) =>
       log.info("Applying initial raft cluster configuration. Consists of [{}] nodes: {}",
         ClusterConfiguration.members.size,
         ClusterConfiguration.members.map(_.path.elements.last).mkString("{", ", ", "}"))
-
-      val deadline = resetElectionDeadline()
-      log.info("Finished init of new Raft member, becoming Follower. Initial election deadline: {}", deadline)
       goto(Follower)
 
-  }
+   }
 
 
 }

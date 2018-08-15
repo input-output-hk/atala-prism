@@ -109,7 +109,6 @@ trait Leader {
 
   def  leaderStateHandler:Unit = {
     self ! BeginAsLeader(stateData.currentTerm, self)
-    cancelElectionDeadline()
   }
 
 }

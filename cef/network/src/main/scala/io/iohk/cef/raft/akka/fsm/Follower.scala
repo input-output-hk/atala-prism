@@ -10,9 +10,8 @@ trait Follower {
       stay()
 
     // timeout,  Need to start an election
-    case Event(ElectionTimeout, myState: StateData) =>
-      if (electionDeadline.isOverdue()) beginElection(myState) else stay()
-
+    case Event(StateTimeout, myState: StateData) =>
+      beginElection(myState)
 
     // election
     case Event(r @ RequestVote(term, candidate, lastLogTerm, lastLogIndex), myState: StateData)
@@ -22,7 +21,6 @@ trait Follower {
 
     case Event(RequestVote(term, candidate, lastLogTerm, lastLogIndex), myState: StateData)
         if myState.canVoteIn(term) =>
-        resetElectionDeadline()
         // Check if the log is up-to-date before granting vote.
         // Raft determines which of two logs is more up-to-date
         // by comparing the index and term of the last entries in the
@@ -65,7 +63,6 @@ trait Follower {
 
   def  followerStateHandler:Unit = {
     self ! BeginAsFollower(stateData.currentTerm, self)
-    resetElectionDeadline()
   }
 
 

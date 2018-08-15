@@ -20,6 +20,8 @@ trait Candidate {
         }
         stay() applying VoteForSelfEvent()
       }
+    // timeout,  Need to start an election
+    case Event(StateTimeout, myState: StateData) => stay() applying StartElectionEvent()
 
     case Event(msg: RequestVote, sd: StateData) if msg.term < sd.currentTerm =>
       log.info("Rejecting RequestVote msg by {} in {}. Received stale {}.", candidate, sd.currentTerm, msg.term)
@@ -73,23 +75,9 @@ trait Candidate {
 
     // end of election
 
-
-    // ending election due to timeout
-    case Event(Timeout, sd: StateData) if sd.config.members.size > 1 =>
-      log.info("Voting timeout, starting a new election (among {})...", sd.config.members.size)
-      sd.self ! BeginElection
-      stay() applying StartElectionEvent()
-
-    // would like to start election, but I'm all alone!
-    case Event(Timeout, m: StateData) =>
-      log.info("Voting timeout, unable to start election, don't know enough nodes (members: {})...", m.config.members.size)
-      goto(Follower) applying GoToFollowerEvent()
-
-
   }
 
   def  candidateStateHandler:Unit = {
     self ! BeginElection
-    resetElectionDeadline()
   }
 }
