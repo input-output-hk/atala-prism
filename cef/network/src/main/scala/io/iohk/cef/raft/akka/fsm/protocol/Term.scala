@@ -1,8 +1,8 @@
 package io.iohk.cef.raft.akka.fsm.protocol
-
+//FIXME: use Ordered instead
 final case class Term(termNo: Long) extends AnyVal {
-  def prev = this - 1
-  def next = this + 1
+  def prev: Term = this - 1
+  def next: Term = this + 1
 
   def -(n: Long): Term = Term(termNo - n)
   def +(n: Long): Term = Term(termNo + n)
