@@ -45,7 +45,7 @@ trait Leader {
       registerAppendSuccessful(follower(), msg, sd)
     // End append entries response handling
 
-    //TODO Somoe other event AS Leader based on RAFT papper
+    //TODO Somoe other event AS Leader based on RAFT paper
 
   }
 
