@@ -8,7 +8,7 @@ import scalikejdbc.scalatest.AutoRollback
 trait LedgerStateStorageDaoDbTest extends fixture.FlatSpec
   with AutoRollback
   with MustMatchers
-  with LedgerStateStorageFixture {
+  with IdentityLedgerStateStorageFixture {
 
   behavior of "LedgerStateStorage"
 

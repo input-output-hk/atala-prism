@@ -11,10 +11,10 @@ import org.bouncycastle.crypto.digests.KeccakDigest
 import org.bouncycastle.crypto.params.{ECPrivateKeyParameters, ECPublicKeyParameters}
 import org.bouncycastle.math.ec.ECPoint
 import AuthInitiateMessageV4._
-import io.iohk.cef.crypto.{ECDSASignature, ECIESCoder}
+import io.iohk.cef.cryptolegacy.{ECDSASignature, ECIESCoder}
 import io.iohk.cef.network.encoding.rlp
 import io.iohk.cef.network.transport.rlpx.ByteUtils._
-import io.iohk.cef.crypto._
+import io.iohk.cef.cryptolegacy._
 import org.bouncycastle.util.encoders.Hex
 
 import scala.util.Random

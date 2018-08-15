@@ -20,7 +20,6 @@ class ScalaTimerSpec extends FlatSpec with MustMatchers {
       println("Works")
     }
     timer.totalTime(TimeUnit.MILLISECONDS) must be > (20.0)
-    timer.totalTime(TimeUnit.MILLISECONDS) must be < (100.0)
   }
   it should "wrap a block returning a value" in {
     val simpleRegistry = new SimpleMeterRegistry()
@@ -33,6 +32,5 @@ class ScalaTimerSpec extends FlatSpec with MustMatchers {
     }
     result mustBe 1
     timer.totalTime(TimeUnit.MILLISECONDS) must be > (20.0)
-    timer.totalTime(TimeUnit.MILLISECONDS) must be < (100.0)
   }
 }

@@ -3,8 +3,8 @@ package io.iohk.cef.builder
 import java.net.URI
 
 import akka.util.ByteString
-import io.iohk.cef.crypto
-import io.iohk.cef.crypto._
+import io.iohk.cef.cryptolegacy
+import io.iohk.cef.cryptolegacy._
 import io.iohk.cef.network.transport.rlpx.{AuthHandshakeSuccess, AuthHandshaker, Secrets}
 import AuthHandshaker._
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair
@@ -30,5 +30,5 @@ trait SecureChannelSetup extends SecureRandomBuilder {
   val (responsePacket, AuthHandshakeSuccess(remoteSecrets: Secrets, _)) = remoteHandshaker.handleInitialMessageV4(initPacket)
   val AuthHandshakeSuccess(secrets: Secrets, _) = handshakerInitiated.handleResponseMessageV4(responsePacket)
 
-  def randomNonce(): ByteString = crypto.secureRandomByteString(secureRandom, AuthHandshaker.NonceSize)
+  def randomNonce(): ByteString = cryptolegacy.secureRandomByteString(secureRandom, AuthHandshaker.NonceSize)
 }
