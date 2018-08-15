@@ -48,5 +48,4 @@ package object encoding {
 
   class DecodingException(cause: Throwable) extends RuntimeException(cause)
 
-  type ByteEncoder[T] = Encoder[T, Array[Byte]]
 }
