@@ -6,7 +6,7 @@ trait Candidate {
   val candidateBehavior: StateFunction = {
 
     // election
-    case Event(msg @ BeginElectionEvent, sd: StateData) =>
+    case Event(BeginElectionEvent, sd: StateData) =>
 
       if (sd.config.members.isEmpty) {
         log.warning("Tried to initialize election with no members...")

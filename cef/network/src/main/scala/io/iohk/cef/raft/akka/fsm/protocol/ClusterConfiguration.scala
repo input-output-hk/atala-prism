@@ -9,5 +9,5 @@ sealed trait ClusterConfiguration {
 }
 
 case object ClusterConfiguration extends ClusterConfiguration{
-  override def members: Set[CandidateRef] = ???
+  override def members: Set[ActorRef] = ???
 }

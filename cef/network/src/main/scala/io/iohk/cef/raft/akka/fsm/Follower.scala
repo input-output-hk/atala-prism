@@ -5,7 +5,7 @@ trait Follower {
 
 
   val followerEvents : StateFunction = {
-    case Event(msg @ BeginAsFollowerEvent(term, _), myState: StateData) =>
+    case Event(BeginAsFollowerEvent(term, _), myState: StateData) =>
       stay()
 
     // timeout,  Need to start an election
