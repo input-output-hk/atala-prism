@@ -2,8 +2,10 @@ package io.iohk.cef.network.encoding.nio
 
 import java.nio.ByteBuffer
 import java.nio.ByteBuffer.allocate
+import java.security.MessageDigest
 
-import shapeless.{::, Generic, HList, HNil}
+import scala.reflect.runtime.universe._
+import shapeless.{::, Generic, HList, HNil, Typeable}
 
 trait ProductCodecs {
 
@@ -18,8 +20,18 @@ trait ProductCodecs {
     }
   }
 
-  implicit def productEncoder[T, R](implicit gen: Generic.Aux[T, R], enc: NioEncoder[R]): NioEncoder[T] =
-    t => enc.encode(gen.to(t))
+  private def hash(s: String): Array[Byte] = {
+    MessageDigest.getInstance("MD5").digest(s.getBytes)
+  }
+
+  implicit def productEncoder[T, R](implicit gen: Generic.Aux[T, R],
+                                    enc: NioEncoder[R],
+                                    typeTag: TypeTag[T]): NioEncoder[T] =
+    (t: T) => {
+      val describe: String = typeTag.toString()
+      println(s"description is $describe")
+      enc.encode(gen.to(t))
+    }
 
   implicit val hNilDecoder: NioDecoder[HNil] = _ => None
 
@@ -40,6 +52,10 @@ trait ProductCodecs {
       }
     }
 
-  implicit def productDecoder[T, R](implicit gen: Generic.Aux[T, R], dec: NioDecoder[R]): NioDecoder[T] =
-    (b: ByteBuffer) => dec.decode(b).map(r => gen.from(r))
+  implicit def productDecoder[T, R](implicit gen: Generic.Aux[T, R],
+                                    dec: NioDecoder[R],
+                                    typeInfo: Typeable[T]): NioDecoder[T] =
+    (b: ByteBuffer) => {
+      dec.decode(b).map(r => gen.from(r))
+    }
 }

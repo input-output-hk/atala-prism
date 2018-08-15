@@ -1,11 +1,12 @@
 package io.iohk.cef.network.encoding.nio
 import java.nio.ByteBuffer
 
+import io.iohk.cef.network.transport.tcp.NetUtils.randomBytes
 import org.scalacheck.Arbitrary
 import org.scalacheck.Arbitrary.arbitrary
-
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
+import org.scalatest.Inside._
 import org.scalatest.prop.GeneratorDrivenPropertyChecks._
 
 class NativeCodecsSpec extends FlatSpec {
@@ -36,9 +37,17 @@ class NativeCodecsSpec extends FlatSpec {
     bufferPositionTest[String]
   }
 
+  they should "correctly determine length for variable length types" in {
+
+    variableLengthTest[String]
+    variableLengthTest[List[String]]
+    variableLengthTest[Array[Int]]
+    variableLengthTest[List[Int]]
+  }
+
+
   def encodeDecodeTest[T](implicit encoder: NioEncoder[T], decoder: NioDecoder[T], a: Arbitrary[T]): Unit = {
-    forAll(arbitrary[T]) {
-      t => decoder.decode(encoder.encode(t)) shouldBe Some(t)
+    forAll(arbitrary[T]) { t => decoder.decode(encoder.encode(t)) shouldBe Some(t)
     }
   }
 
@@ -51,6 +60,23 @@ class NativeCodecsSpec extends FlatSpec {
       b.position() shouldBe 0
       decoder.decode(b)
       b.position() shouldBe byteLength(t)
+    }
+  }
+
+  def variableLengthTest[T](implicit encoder: NioEncoder[T],
+                            decoder: NioDecoder[T],
+                            a: Arbitrary[T]): Unit = {
+    forAll(arbitrary[T]) { t =>
+      // create a buffer with one half full of real data
+      // and the second half full of rubbish.
+      // decoders should not be fooled by this.
+      val b: ByteBuffer = encoder.encode(t)
+      val newB = ByteBuffer.allocate(b.capacity() * 2).put(b).put(randomBytes(b.capacity()))
+      newB.flip()
+
+      inside(decoder.decode(newB)) {
+        case Some(tt) => tt shouldBe t
+      }
     }
   }
 

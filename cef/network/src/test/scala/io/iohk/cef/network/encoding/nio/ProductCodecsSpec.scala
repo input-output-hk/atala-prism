@@ -11,6 +11,8 @@ class ProductCodecsSpec extends FlatSpec {
 
   object UserCode {
     case class A(i: Int, b: Boolean, s: String)
+
+    case class B(i: Int)
   }
 
   import UserCode._
@@ -26,6 +28,15 @@ class ProductCodecsSpec extends FlatSpec {
       val buffer = NioEncoder[A].encode(a)
       val maybeA = NioDecoder[A].decode(buffer)
       maybeA shouldBe Some(a)
+    }
+  }
+
+  they should "not attempt to decode instances of the wrong class" in {
+    forAll(as) { a =>
+      val buffer = NioEncoder[A].encode(a)
+
+      val maybeB = NioDecoder[B].decode(buffer)
+      maybeB shouldBe None
     }
   }
 }
