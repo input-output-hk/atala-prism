@@ -106,4 +106,10 @@ trait Leader {
     //follower
     stay()
   }
+
+  def  leaderStatHandler:Unit = {
+    self ! BeginAsLeader(stateData.currentTerm, self)
+    cancelElectionDeadline()
+  }
+
 }

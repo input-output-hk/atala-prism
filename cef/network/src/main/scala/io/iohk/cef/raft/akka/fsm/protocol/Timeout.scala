@@ -32,10 +32,15 @@ class Timeout private (minTimeout: FiniteDuration, maxTimeout: FiniteDuration) {
 
     minTimeout.plus(shiftBy.millis)
   }
+
+  def heartBeatInterval: FiniteDuration =10.seconds //TODO configurable
+
 }
 
 object Timeout {
   //TODO  configurable
   val DefaultElectionTimeout = new Timeout(150.millis, 300.millis)
+
+  val heartBeatInterval = DefaultElectionTimeout.heartBeatInterval
 
 }

@@ -17,7 +17,7 @@ abstract class RaftActor extends Actor with PersistentFSM[RaftState, StateData, 
 
 
   private val ElectionTimeoutTimerName = "election-timer"
-  val heartbeatInterval: FiniteDuration =  10.seconds  //TODO configurable  I am thinking of RaftConfig any thoughts
+  val heartbeatInterval: FiniteDuration =  Timeout.heartBeatInterval
 
   var electionDeadline: Deadline = 0.seconds.fromNow
   var logEntries = LogEntries.empty[Command](10) //TODO configurable
@@ -62,21 +62,14 @@ abstract class RaftActor extends Actor with PersistentFSM[RaftState, StateData, 
   when(Leader)(leaderEvents)
 
   onTransition {
-    case Init -> Follower if stateData.self != self =>
-      self ! BeginAsFollower(stateData.currentTerm, self)
-      resetElectionDeadline()
+    case Init -> Follower => followerStatHandler
 
-    case Follower -> Candidate =>
-      self ! BeginElection
-      resetElectionDeadline()
+    case Follower -> Candidate => candidateStatHandler
 
-    case Candidate -> Leader =>
-      self ! BeginAsLeader(stateData.currentTerm, self)
-      cancelElectionDeadline()
+    case Candidate -> Leader => leaderStatHandler
 
-    case _ -> Follower =>
-      self ! BeginAsFollower(stateData.currentTerm, self)
-      resetElectionDeadline()
+    case _ -> Follower => followerStatHandler
+
   }
 
   onTermination {
