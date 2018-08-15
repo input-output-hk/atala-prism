@@ -19,13 +19,13 @@ trait Leader {
       stay()
 
     // Leader handling
-    case Event(append: AppendEntries[Command], sd: StateData) if append.term > sd.currentTerm =>
+    case Event(append: AppendEntries[_], sd: StateData) if append.term > sd.currentTerm =>
       log.info("Leader (@ {}) got AppendEntries from fresher Leader " +
         "(@ {}), will step down and the Leader will keep being: {}", sd.currentTerm, append.term, sender())
       stopHeartbeat()
       stepDown(sd)
 
-    case Event(append: AppendEntries[Command], sd: StateData) if append.term <= sd.currentTerm =>
+    case Event(append: AppendEntries[_], sd: StateData) if append.term <= sd.currentTerm =>
       log.warning("Leader (@ {}) got AppendEntries from rogue Leader ({} @ {}); It's not fresher than self." +
         " Will send entries, to force it to step down.", sd.currentTerm, sender(), append.term)
       sendEntries(sender(), sd)

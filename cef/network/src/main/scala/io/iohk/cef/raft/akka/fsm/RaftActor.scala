@@ -8,12 +8,12 @@ import protocol._
 
 import scala.reflect._
 
-abstract class RaftActor extends Actor with PersistentFSM[RaftState, MetaData, DomainEvent]
+abstract class RaftActor extends Actor with PersistentFSM[RaftState, StateData, DomainEvent]
   with Follower with Candidate with Leader with InitialState {
 
-  type Command
 
-  type PersistentFSMState = PersistentFSM.State[RaftState, MetaData, DomainEvent]
+
+  type PersistentFSMState = PersistentFSM.State[RaftState, StateData, DomainEvent]
 
 
   private val ElectionTimeoutTimerName = "election-timer"
@@ -64,7 +64,6 @@ abstract class RaftActor extends Actor with PersistentFSM[RaftState, MetaData, D
   onTransition {
     case Init -> Follower if stateData.self != self =>
       self ! BeginAsFollowerEvent(stateData.currentTerm, self)
-      log.info("Cluster self != self => Running clustered via a proxy.")
       resetElectionDeadline()
 
     case Follower -> Candidate =>

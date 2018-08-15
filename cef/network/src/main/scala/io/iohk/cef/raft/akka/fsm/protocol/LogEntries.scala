@@ -20,8 +20,10 @@ case class Entry[T](
 /**
  * @param defaultBatchSize number of commands that can be sent together in one message.
  */
-case class LogEntries[Command](
-  entries: List[Entry[Command]],
+
+sealed trait Command extends Serializable
+case class LogEntries[T <: Command](
+  entries: List[Entry[T]],
   committedIndex: Int,
   defaultBatchSize: Int) {
 
@@ -36,13 +38,13 @@ case class LogEntries[Command](
   def nextIndex: Int = entries.size + 1
 }
 
-class EmptyLog[T](defaultBatchSize: Int) extends LogEntries[T](List.empty, 0, defaultBatchSize) {
+class EmptyLog[T <: Command](defaultBatchSize: Int) extends LogEntries[T](List.empty, 0, defaultBatchSize) {
   override def lastTerm: Term = Term(0)
   override def lastIndex: Int = 1
 }
 
 object LogEntries {
-  def empty[T](defaultBatchSize: Int): LogEntries[T] = new EmptyLog[T](defaultBatchSize)
+  def empty[T <:Command](defaultBatchSize: Int): LogEntries[T] = new EmptyLog[T](defaultBatchSize)
 }
 
 
