@@ -14,15 +14,13 @@ class HashingAlogorithmSpec extends FlatSpec
   }
 
   "kec256" should "generate hashes that are unique for each ByteString" in {
-    val algo = HashAlgorithm.KEC256
-    forAll { (aString: String, bString: String) =>
-      val a = ByteString(aString)
-      val b = ByteString(bString)
 
-      if (aString == bString)
-        a.hashWith(algo) should === (b.hashWith(algo))
-      else
-        a.hashWith(algo) should !== (b.hashWith(algo))
+    val algo = HashAlgorithm.KEC256
+
+    forAll { (a: String, b: String) =>
+      whenever (a != b) {
+        ByteString(a).hashWith(algo) should !== (ByteString(b).hashWith(algo))
+      }
     }
   }
 
