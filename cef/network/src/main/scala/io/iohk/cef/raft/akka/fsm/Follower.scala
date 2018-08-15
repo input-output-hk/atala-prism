@@ -1,15 +1,16 @@
 package io.iohk.cef.raft.akka.fsm
 import protocol._
+
 trait Follower {
   this : RaftActor =>
 
 
   val followerEvents : StateFunction = {
-    case Event(BeginAsFollowerEvent(term, _), myState: StateData) =>
+    case Event(BeginAsFollower(term, _), myState: StateData) =>
       stay()
 
     // timeout,  Need to start an election
-    case Event(ElectionTimeoutEvent, myState: StateData) =>
+    case Event(ElectionTimeout, myState: StateData) =>
       if (electionDeadline.isOverdue()) beginElection(myState) else stay()
 
 
@@ -32,29 +33,29 @@ trait Follower {
         if (lastLogTerm < logEntries.lastTerm) {
           log.info("Rejecting vote for {}, and {}. Candidate's lastLogTerm: {} < ours: {}",
             candidate, term, lastLogTerm, logEntries.lastTerm)
-          sender ! DeclineCandidateEvent(myState.currentTerm)
+          sender ! DeclineCandidate(myState.currentTerm)
           stay()
         } else if (lastLogTerm == logEntries.lastTerm &&
           lastLogIndex < logEntries.lastIndex) {
           log.info("Rejecting vote for {}, and {}. Candidate's lastLogIndex: {} < ours: {}",
             candidate, term, lastLogIndex, logEntries.lastIndex)
-          sender ! DeclineCandidateEvent(myState.currentTerm)
+          sender ! DeclineCandidate(myState.currentTerm)
           stay()
         } else {
           log.info("Voting for {} in {}", candidate, term)
-          sender ! VoteCandidateEvent(myState.currentTerm)
+          sender ! VoteCandidate(myState.currentTerm)
 
           stay() applying VoteForEvent(candidate)
         }
 
     case Event(RequestVote(term, candidateId, lastLogTerm, lastLogIndex), myState: StateData) if myState.votedFor.isDefined =>
       log.info("Rejecting vote for {}, and {}, currentTerm: {}, already voted for: {}", candidate(), term, myState.currentTerm, myState.votedFor.get)
-      sender ! DeclineCandidateEvent(myState.currentTerm)
+      sender ! DeclineCandidate(myState.currentTerm)
       stay()
 
     case Event(RequestVote(term, candidateId, lastLogTerm, lastLogIndex), myState: StateData) =>
       log.info("Rejecting vote for {}, and {}, currentTerm: {}, received stale term number {}", candidate(), term, myState.currentTerm, term)
-      sender ! DeclineCandidateEvent(myState.currentTerm)
+      sender ! DeclineCandidate(myState.currentTerm)
       stay()
 
     // end of election

@@ -31,7 +31,7 @@ abstract class RaftActor extends Actor with PersistentFSM[RaftState, StateData, 
     electionDeadline = nextElectionDeadline()
     log.debug("Resetting election timeout: {}", electionDeadline)
 
-    setTimer(ElectionTimeoutTimerName, ElectionTimeoutEvent, electionDeadline.timeLeft, repeat = false)
+    setTimer(ElectionTimeoutTimerName, ElectionTimeout, electionDeadline.timeLeft, repeat = false)
 
     electionDeadline
   }
@@ -63,11 +63,11 @@ abstract class RaftActor extends Actor with PersistentFSM[RaftState, StateData, 
 
   onTransition {
     case Init -> Follower if stateData.self != self =>
-      self ! BeginAsFollowerEvent(stateData.currentTerm, self)
+      self ! BeginAsFollower(stateData.currentTerm, self)
       resetElectionDeadline()
 
     case Follower -> Candidate =>
-      self ! BeginElectionEvent
+      self ! BeginElection
       resetElectionDeadline()
 
     case Candidate -> Leader =>
@@ -75,7 +75,7 @@ abstract class RaftActor extends Actor with PersistentFSM[RaftState, StateData, 
       cancelElectionDeadline()
 
     case _ -> Follower =>
-      self ! BeginAsFollowerEvent(stateData.currentTerm, self)
+      self ! BeginAsFollower(stateData.currentTerm, self)
       resetElectionDeadline()
   }
 

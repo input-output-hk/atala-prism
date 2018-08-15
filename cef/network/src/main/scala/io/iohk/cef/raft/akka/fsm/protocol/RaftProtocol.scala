@@ -5,25 +5,25 @@ import akka.actor.ActorRef
 import scala.collection.immutable
 trait RaftProtocol extends Serializable {
 
-  sealed trait RaftEventMessage
+  sealed trait Message
 
   case class RequestVote(
                           term: Term,
                           candidateId: ActorRef,
                           lastLogTerm: Term,
                           lastLogIndex: Int
-                        ) extends RaftEventMessage
+                        ) extends Message
 
-  case class BeginAsFollowerEvent(term: Term, ref: ActorRef) extends RaftEventMessage
-  case object ElectionTimeoutEvent extends RaftEventMessage
+  case class BeginAsFollower(term: Term, ref: ActorRef) extends Message
+  case object ElectionTimeout extends Message
 
-  case class VoteCandidateEvent(term: Term)    extends RaftEventMessage
-  case class DeclineCandidateEvent(term: Term) extends RaftEventMessage
+  case class VoteCandidate(term: Term)    extends Message
+  case class DeclineCandidate(term: Term) extends Message
 
-  case object BeginElectionEvent extends RaftEventMessage
-  case class BeginAsLeader(term: Term, ref: ActorRef)   extends RaftEventMessage
+  case object BeginElection extends Message
+  case class BeginAsLeader(term: Term, ref: ActorRef)   extends Message
 
-  case object SendHeartbeat extends RaftEventMessage
+  case object SendHeartbeat extends Message
 
 
   case class AppendEntries[T](
@@ -32,12 +32,12 @@ trait RaftProtocol extends Serializable {
                                prevLogIndex: Int,
                                entries: immutable.Seq[Entry[T]],
                                leaderCommitId: Int
-                             ) extends RaftEventMessage {
+                             ) extends Message {
     override def toString: String =
       s"""AppendEntries(term:$term,prevLog:($prevLogTerm,$prevLogIndex),entries:$entries,leaderCommit:$leaderCommitId)"""
   }
 
-  sealed trait FollowerResponse extends RaftEventMessage
+  sealed trait FollowerResponse extends Message
 
   /** When the Leader has sent an append, for an unexpected number, the Follower replies with this */
   sealed trait AppendResponse extends FollowerResponse {

@@ -1,12 +1,13 @@
 package io.iohk.cef.raft.akka.fsm
 import protocol._
+
 trait Candidate {
   this : RaftActor =>
 
   val candidateEvents : StateFunction = {
 
     // election
-    case Event(BeginElectionEvent, sd: StateData) =>
+    case Event(BeginElection, sd: StateData) =>
 
       if (sd.config.members.isEmpty) {
         log.warning("Tried to initialize election with no members...")
@@ -22,7 +23,7 @@ trait Candidate {
 
     case Event(msg: RequestVote, sd: StateData) if msg.term < sd.currentTerm =>
       log.info("Rejecting RequestVote msg by {} in {}. Received stale {}.", candidate, sd.currentTerm, msg.term)
-      candidate ! DeclineCandidateEvent(sd.currentTerm)
+      candidate ! DeclineCandidate(sd.currentTerm)
       stay()
 
     case Event(msg: RequestVote, sd: StateData) if msg.term > sd.currentTerm =>
@@ -32,24 +33,24 @@ trait Candidate {
     case Event(msg: RequestVote, sd: StateData) =>
       if (sd.canVoteIn(msg.term)) {
         log.info("Voting for {} in {}.", candidate, sd.currentTerm)
-        candidate ! VoteCandidateEvent(sd.currentTerm)
+        candidate ! VoteCandidate(sd.currentTerm)
         stay() applying VoteForEvent(candidate)
       } else {
         log.info("Rejecting RequestVote msg by {} in {}. Already voted for {}", candidate, sd.currentTerm, sd.votedFor.get)
-        sender ! DeclineCandidateEvent(sd.currentTerm)
+        sender ! DeclineCandidate(sd.currentTerm)
         stay()
       }
 
-    case Event(VoteCandidateEvent(term), sd: StateData) if term < sd.currentTerm =>
+    case Event(VoteCandidate(term), sd: StateData) if term < sd.currentTerm =>
       log.info("Rejecting VoteCandidate msg by {} in {}. Received stale {}.", voter(), sd.currentTerm, term)
-      voter ! DeclineCandidateEvent(sd.currentTerm)
+      voter ! DeclineCandidate(sd.currentTerm)
       stay()
 
-    case Event(VoteCandidateEvent(term), sd: StateData) if term > sd.currentTerm =>
+    case Event(VoteCandidate(term), sd: StateData) if term > sd.currentTerm =>
       log.info("Received newer {}. Current term is {}. Revert to follower state.", term, sd.currentTerm)
       goto(Follower) applying GoToFollowerEvent(Some(term))
 
-    case Event(VoteCandidateEvent(term), sd: StateData) =>
+    case Event(VoteCandidate(term), sd: StateData) =>
       val votesReceived = sd.votesReceived + 1
 
       val hasWonElection = votesReceived > sd.config.members.size / 2
@@ -61,7 +62,7 @@ trait Candidate {
         stay applying IncrementVoteEvent()
       }
 
-    case Event(DeclineCandidateEvent(term), sd: StateData) =>
+    case Event(DeclineCandidate(term), sd: StateData) =>
       if (term > sd.currentTerm) {
         log.info("Received newer {}. Current term is {}. Revert to follower state.", term, sd.currentTerm)
         goto(Follower) applying GoToFollowerEvent(Some(term))
@@ -76,7 +77,7 @@ trait Candidate {
     // ending election due to timeout
     case Event(ElectionTimeout, sd: StateData) if sd.config.members.size > 1 =>
       log.info("Voting timeout, starting a new election (among {})...", sd.config.members.size)
-      sd.self ! BeginElectionEvent
+      sd.self ! BeginElection
       stay() applying StartElectionEvent()
 
     // would like to start election, but I'm all alone!

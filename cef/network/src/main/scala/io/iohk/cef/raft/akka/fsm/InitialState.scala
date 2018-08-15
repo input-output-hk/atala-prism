@@ -9,7 +9,6 @@ trait InitialState {
   /** Waits for initial cluster configuration. Step needed before we can start voting for a Leader. */
    lazy val initialConfiguration: StateFunction = {
 
-
     case Event(ClusterConfiguration, m: StateData) =>
       log.info("Applying initial raft cluster configuration. Consists of [{}] nodes: {}",
         ClusterConfiguration.members.size,
