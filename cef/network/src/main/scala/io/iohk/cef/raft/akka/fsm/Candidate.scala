@@ -75,13 +75,13 @@ trait Candidate {
 
 
     // ending election due to timeout
-    case Event(ElectionTimeout, sd: StateData) if sd.config.members.size > 1 =>
+    case Event(Timeout, sd: StateData) if sd.config.members.size > 1 =>
       log.info("Voting timeout, starting a new election (among {})...", sd.config.members.size)
       sd.self ! BeginElection
       stay() applying StartElectionEvent()
 
     // would like to start election, but I'm all alone!
-    case Event(ElectionTimeout, m: StateData) =>
+    case Event(Timeout, m: StateData) =>
       log.info("Voting timeout, unable to start election, don't know enough nodes (members: {})...", m.config.members.size)
       goto(Follower) applying GoToFollowerEvent()
 

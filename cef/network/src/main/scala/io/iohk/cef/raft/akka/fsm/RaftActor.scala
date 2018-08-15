@@ -23,7 +23,7 @@ abstract class RaftActor extends Actor with PersistentFSM[RaftState, StateData, 
   var logEntries = LogEntries.empty[Command](10) //TODO configurable
 
 
-  def nextElectionDeadline(): Deadline = ElectionTimeout.DefaultElectionTimeout.randomTimeout().fromNow
+  def nextElectionDeadline(): Deadline = Timeout.DefaultElectionTimeout.randomTimeout().fromNow
 
   def resetElectionDeadline(): Deadline = {
     cancelTimer(ElectionTimeoutTimerName)
@@ -31,7 +31,7 @@ abstract class RaftActor extends Actor with PersistentFSM[RaftState, StateData, 
     electionDeadline = nextElectionDeadline()
     log.debug("Resetting election timeout: {}", electionDeadline)
 
-    setTimer(ElectionTimeoutTimerName, ElectionTimeout, electionDeadline.timeLeft, repeat = false)
+    setTimer(ElectionTimeoutTimerName, Timeout, electionDeadline.timeLeft, repeat = false)
 
     electionDeadline
   }

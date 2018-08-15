@@ -17,7 +17,7 @@ import scala.concurrent.duration.{DurationInt, FiniteDuration}
   * @param minTimeout the minimum allowed timeout
   * @param maxTimeout the maximun allowed timeout
   */
-class ElectionTimeout private (minTimeout: FiniteDuration, maxTimeout: FiniteDuration) {
+class Timeout private (minTimeout: FiniteDuration, maxTimeout: FiniteDuration) {
 
   /**
     * Generates a random timeout
@@ -34,8 +34,8 @@ class ElectionTimeout private (minTimeout: FiniteDuration, maxTimeout: FiniteDur
   }
 }
 
-object ElectionTimeout {
+object Timeout {
   //TODO  configurable
-  val DefaultElectionTimeout = new ElectionTimeout(150.millis, 300.millis)
+  val DefaultElectionTimeout = new Timeout(150.millis, 300.millis)
 
 }
