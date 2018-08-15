@@ -17,7 +17,13 @@ import io.iohk.cef.network.{NodeId, PeerInfo}
 class MeshNetDiscovery(peerInfo: PeerInfo, bootstrapPeerInfo: PeerInfo, transports: Transports)
     extends NetworkDiscovery {
 
-
+//  val pingTransport = transports.tcp(handlePing)()
+//
+//  private def handlePing(ping: Ping): Unit = ???
+//  private def sendPing(ping: Ping): Unit = {
+//
+//  }
+//
   override def peer(nodeId: NodeId): Option[PeerInfo] = ???
 }
 
@@ -28,5 +34,6 @@ object MeshNetDiscovery {
   def pingHandler(address: InetSocketAddress, message: Ping): Unit = ???
 
   case class Ping(peerInfo: PeerInfo)
+
   case class FindNodes(nodeId: NodeId)
 }

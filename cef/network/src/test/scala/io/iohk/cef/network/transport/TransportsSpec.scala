@@ -1,7 +1,7 @@
 package io.iohk.cef.network.transport
 import java.net.InetSocketAddress
 
-import io.iohk.cef.network.encoding.nio.NioCodecs.NioStreamCodec
+import io.iohk.cef.network.encoding.nio._
 import io.iohk.cef.network.transport.tcp.NetUtils.{aRandomAddress, aRandomNodeId}
 import io.iohk.cef.network.transport.tcp.TcpTransportConfiguration
 import io.iohk.cef.network.{ConversationalNetworkConfiguration, PeerInfo}

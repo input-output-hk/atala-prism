@@ -11,7 +11,7 @@ class MeshNetDiscoverySpec extends FlatSpec {
 
   behavior of "MeshNetworkDiscovery"
 
-  it should "have an initial routing table containing itself and a bootstrap node" in {
+  ignore should "have an initial routing table containing itself and a bootstrap node" in {
     val peerInfo = PeerInfo(aRandomNodeId(),
       ConversationalNetworkConfiguration(Some(TcpTransportConfiguration(aRandomAddress()))))
 

@@ -7,7 +7,7 @@ import com.softwaremill.quicklens._
 import io.iohk.cef.network.NodeId.nodeIdBytes
 import io.iohk.cef.network.discovery.NetworkDiscovery
 import io.iohk.cef.network.encoding.Codec
-import io.iohk.cef.network.encoding.nio.NioCodecs
+import io.iohk.cef.network.encoding.nio.NativeCodecs
 import io.iohk.cef.network.transport.{FrameHeader, Transports}
 import io.iohk.cef.network.transport.tcp.NetUtils.{aRandomAddress, forwardPort, randomBytes}
 import io.iohk.cef.network.transport.tcp.TcpTransportConfiguration
@@ -109,7 +109,7 @@ class ConversationalNetworkSpec extends FlatSpec with MockitoSugar {
   private def randomNetworkFixture(messageTtl: Int = FrameHeader.defaultTtl): NetworkFixture = {
     val tcpAddress: InetSocketAddress = aRandomAddress()
     val configuration = ConversationalNetworkConfiguration(Some(TcpTransportConfiguration(tcpAddress)), messageTtl)
-    val codec: Codec[String, ByteBuffer] = new Codec(NioCodecs.stringEncoder, NioCodecs.stringDecoder)
+    val codec: Codec[String, ByteBuffer] = new Codec(NativeCodecs.stringEncoder, NativeCodecs.stringDecoder)
 
     val nodeId = NodeId(randomBytes(nodeIdBytes))
 

@@ -3,7 +3,7 @@ package io.iohk.cef.network.transport.tcp
 import java.net.InetSocketAddress
 import java.nio.ByteBuffer
 
-import io.iohk.cef.network.encoding.nio.NioCodecs.NioStreamCodec
+import io.iohk.cef.network.encoding.nio._
 import io.iohk.cef.network.transport.NetworkTransport
 
 class TcpNetworkTransport[Message](messageHandler: (InetSocketAddress, Message) => Unit,
