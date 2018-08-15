@@ -5,7 +5,7 @@ import io.iohk.cef.ledger.identity.storage.scalike.dao.LedgerStateStorageDao
 import org.scalatest.{MustMatchers, fixture}
 import scalikejdbc.scalatest.AutoRollback
 
-trait LedgerStateStorageDaoDbTest extends fixture.FlatSpec
+trait IdentityLedgerStateStorageDaoDbTest extends fixture.FlatSpec
   with AutoRollback
   with MustMatchers
   with IdentityLedgerStateStorageFixture {
