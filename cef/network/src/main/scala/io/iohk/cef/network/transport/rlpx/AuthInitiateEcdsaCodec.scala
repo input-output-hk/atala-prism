@@ -1,8 +1,8 @@
 package io.iohk.cef.network.transport.rlpx
 
 import akka.util.ByteString
-import io.iohk.cef.crypto.ECDSASignature
-import io.iohk.cef.crypto.ECDSASignature.{RLength, SLength}
+import io.iohk.cef.cryptolegacy.ECDSASignature
+import io.iohk.cef.cryptolegacy.ECDSASignature.{RLength, SLength}
 import org.bouncycastle.util.BigIntegers.asUnsignedByteArray
 
 trait AuthInitiateEcdsaCodec {

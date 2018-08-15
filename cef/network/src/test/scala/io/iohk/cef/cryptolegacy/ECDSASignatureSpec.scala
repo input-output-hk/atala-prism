@@ -1,4 +1,4 @@
-package io.iohk.cef.crypto
+package io.iohk.cef.cryptolegacy
 
 import akka.util.ByteString
 import io.iohk.cef.builder.SecureRandomBuilder
