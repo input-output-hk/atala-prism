@@ -2,7 +2,7 @@ package io.iohk.cef.network.encoding
 
 import java.nio.ByteBuffer
 
-package object nio extends NativeCodecs with ProductCodecs {
+package object nio extends NativeCodecs with GenericCodecs {
 
   type NioEncoder[T] = Encoder[T, ByteBuffer]
 
