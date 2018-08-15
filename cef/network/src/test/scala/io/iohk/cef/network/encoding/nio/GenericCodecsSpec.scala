@@ -35,8 +35,8 @@ class GenericCodecsSpec extends FlatSpec {
     forAll(as) { a =>
       val buffer = NioEncoder[A].encode(a)
 
-      val maybeB = NioDecoder[B].decode(buffer)
-      maybeB shouldBe None
+      NioDecoder[B].decode(buffer) shouldBe None
+      buffer.position() shouldBe 0
     }
   }
 }

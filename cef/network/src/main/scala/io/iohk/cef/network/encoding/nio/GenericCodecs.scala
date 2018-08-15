@@ -61,13 +61,19 @@ trait GenericCodecs {
     new NioDecoder[T] {
       override def decode(b: ByteBuffer): Option[T] = {
 
+        val initialPosition = b.position()
         val expectedTypeHash: Array[Byte] = hash(ct.runtimeClass.getName)
         val actualTypeHashDec: Option[Array[Byte]] = arrayDecoder[Byte].decode(b)
 
-        actualTypeHashDec
-          .filter(actualTypeHash => actualTypeHash.deep == expectedTypeHash.deep)
-          .flatMap(_ => dec.decode(b))
-          .map(r => gen.from(r))
+        val matchingTypeHash = actualTypeHashDec
+          .exists(actualTypeHash => actualTypeHash.deep == expectedTypeHash.deep)
+
+        if (matchingTypeHash)
+          dec.decode(b).map(gen.from)
+        else {
+          b.position(initialPosition)
+          None
+        }
       }
     }
 
