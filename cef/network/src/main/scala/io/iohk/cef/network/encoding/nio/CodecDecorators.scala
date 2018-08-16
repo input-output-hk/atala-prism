@@ -4,7 +4,14 @@ import java.security.MessageDigest
 
 import scala.reflect.ClassTag
 
-object TypedCodecs {
+private[nio] object CodecDecorators {
+
+  def verifyingRemaining[T](remaining: Int, b: ByteBuffer)(decode: => Option[T]): Option[T] = {
+    if (b.remaining() < remaining)
+      None
+    else
+      decode
+  }
 
   def typeCodeEncoder[T](enc: NioEncoder[T])(implicit ct: ClassTag[T]): NioEncoder[T] = (t: T) => {
     val hashBuff: ByteBuffer = arrayEncoderImpl[Byte].encode(typeCode[T])

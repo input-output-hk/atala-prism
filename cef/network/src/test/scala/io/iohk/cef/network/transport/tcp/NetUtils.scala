@@ -60,7 +60,7 @@ object NetUtils {
     a
   }
 
-  def concatenate(buffs: List[ByteBuffer]): ByteBuffer = {
+  def concatenate(buffs: Seq[ByteBuffer]): ByteBuffer = {
     val allocSize = buffs.foldLeft(0)((acc, nextBuff) => acc + nextBuff.capacity())
 
     val b0 = ByteBuffer.allocate(allocSize)

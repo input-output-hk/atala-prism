@@ -21,5 +21,5 @@ object ByteLength {
   implicit val lengthString: ByteLength[String] = v => 4 + v.getBytes(UTF_8).length
 
   implicit def lengthArray[T](implicit lt: ByteLength[T]): ByteLength[Array[T]] =
-    a => 4 + 4 + a.foldLeft(0)((sum, next) => sum + lt(next))
+    a => 4 + 4 + 4 + a.foldLeft(0)((sum, next) => sum + lt(next))
 }

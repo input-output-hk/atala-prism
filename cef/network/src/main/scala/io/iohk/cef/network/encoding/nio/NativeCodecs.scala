@@ -5,7 +5,7 @@ import java.nio.ByteBuffer.allocate
 import java.nio.charset.StandardCharsets.UTF_8
 
 import ByteLength._
-import io.iohk.cef.network.encoding.nio.TypedCodecs.{typeCodeDecoder, typeCodeEncoder}
+import io.iohk.cef.network.encoding.nio.CodecDecorators.{typeCodeDecoder, typeCodeEncoder, verifyingRemaining}
 
 import scala.reflect.ClassTag
 
@@ -103,7 +103,7 @@ trait NativeCodecs {
 
       val sizeBytes = lt(a)
 
-      val accBuffer = ByteBuffer.allocate(sizeBytes).putInt(a.length)
+      val accBuffer = ByteBuffer.allocate(sizeBytes).putInt(sizeBytes).putInt(a.length)
 
       a.foldLeft(accBuffer)((accBuff, nextElmt) => accBuff.put(enc.encode(nextElmt)))
         .flip()
@@ -112,20 +112,23 @@ trait NativeCodecs {
 
   def arrayDecoderImpl[T](implicit dec: NioDecoder[T], ct: ClassTag[T]): NioDecoder[Array[T]] =
     (b: ByteBuffer) => {
+      verifyingRemaining(4, b) {
 
-      val sizeElements = b.getInt()
+        val sizeBytes = b.getInt()
+        val sizeElements = b.getInt()
 
-      val arr = new Array[T](sizeElements)
+        val arr = new Array[T](sizeElements)
 
-      Range(0, sizeElements).foreach(i => {
-        dec
-          .decode(b)
-          .foreach(decodedElement => {
-            arr(i) = decodedElement
-          })
-      })
+        Range(0, sizeElements).foreach(i => {
+          dec
+            .decode(b)
+            .foreach(decodedElement => {
+              arr(i) = decodedElement
+            })
+        })
 
-      Some(arr)
+        Some(arr)
+      }
     }
 
 //  implicit def iterableEncoder[T: ClassTag, I <: Iterable[T]](implicit enc: NioEncoder[T],
@@ -137,8 +140,8 @@ trait NativeCodecs {
 //    arrayDecoder(dec, ct).decode(b).map(arr => cbf.apply(arr).result())
 
   implicit def listEncoder[T](implicit enc: NioEncoder[T],
-                                        lt: ByteLength[Array[T]],
-                                        ct: ClassTag[T]): NioEncoder[List[T]] =
+                              lt: ByteLength[Array[T]],
+                              ct: ClassTag[T]): NioEncoder[List[T]] =
     (l: List[T]) => arrayEncoder(enc, lt, ct).encode(l.toArray)
 
   implicit def listDecoder[T](implicit dec: NioDecoder[T], ct: ClassTag[T]): NioDecoder[List[T]] =

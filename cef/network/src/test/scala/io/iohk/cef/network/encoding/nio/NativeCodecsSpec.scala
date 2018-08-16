@@ -38,7 +38,6 @@ class NativeCodecsSpec extends FlatSpec {
   }
 
   they should "correctly determine length for variable length types" in {
-
     variableLengthTest[String]
     variableLengthTest[List[String]]
     variableLengthTest[Array[Int]]
@@ -47,6 +46,11 @@ class NativeCodecsSpec extends FlatSpec {
 
   they should "not decode a value for another type" in {
     mistypeTest[Array[Int], Array[Boolean]]
+  }
+
+  they should "return None for an unfully populated buffer" in {
+    unfulBufferTest[Array[Int]]
+    unfulBufferTest[List[Int]]
   }
 
   def encodeDecodeTest[T](implicit encoder: NioEncoder[T], decoder: NioDecoder[T], a: Arbitrary[T]): Unit = {
@@ -91,5 +95,9 @@ class NativeCodecsSpec extends FlatSpec {
         case Some(tt) => tt shouldBe t
       }
     }
+  }
+
+  def unfulBufferTest[T](implicit decoder: NioDecoder[T]): Unit = {
+    decoder.decode(ByteBuffer.allocate(0)) shouldBe None
   }
 }

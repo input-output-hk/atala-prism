@@ -3,7 +3,7 @@ package io.iohk.cef.network.encoding.nio
 import java.nio.ByteBuffer
 import java.nio.ByteBuffer.allocate
 
-import io.iohk.cef.network.encoding.nio.TypedCodecs.{typeCodeDecoder, typeCodeEncoder}
+import io.iohk.cef.network.encoding.nio.CodecDecorators.{typeCodeDecoder, typeCodeEncoder}
 import shapeless.{::, Generic, HList, HNil}
 
 import scala.reflect.ClassTag

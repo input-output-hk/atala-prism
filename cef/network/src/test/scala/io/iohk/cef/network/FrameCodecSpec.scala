@@ -30,7 +30,6 @@ class FrameCodecSpec extends FlatSpec {
 
   forAll(genFrame) { frame: Frame[Int] =>
     it should s"encode and decode single frame $frame" in {
-      println(s"Testing with: $frame")
       decoder.decodeStream(encoder.encode(frame)) shouldBe Seq(frame)
     }
   }
