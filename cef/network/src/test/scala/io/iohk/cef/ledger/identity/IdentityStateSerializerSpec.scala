@@ -11,7 +11,8 @@ class IdentityStateSerializerSpec extends FlatSpec with MustMatchers with Proper
   it should "serialize in a lossless way" in {
     forAll { (values: Set[Array[Byte]]) =>
       val s = IdentityStateSerializer.byteStringSerializable
-      s.deserialize(s.serialize(values.map(ByteString.apply))).map(_.toArray) mustBe values
+      val bsValues = values.map(ByteString.apply)
+      s.deserialize(s.serialize(bsValues)) mustBe bsValues
     }
   }
 }

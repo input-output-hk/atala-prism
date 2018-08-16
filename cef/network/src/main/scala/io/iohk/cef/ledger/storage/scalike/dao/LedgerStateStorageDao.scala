@@ -14,8 +14,8 @@ class LedgerStateStorageDao[S] {
     val entries = sql"""
        select ${lst.result.*}
        from ${LedgerStateTable as lst}
-       where ${lst.resultName.ledgerStateId} = ${ledgerStateId} and
-        ${lst.resultName.partitionId} in (${keys})
+       where ${lst.ledgerStateId} = ${ledgerStateId} and
+        ${lst.partitionId} in (${keys})
        """.map(rs => LedgerStateTable(lst.resultName)(rs)).list().apply()
     val pairs = entries.map(entry => (entry.partitionId -> byteStringSerializable.deserialize(entry.data)))
     LedgerState(Map(pairs:_*))
@@ -31,7 +31,7 @@ class LedgerStateStorageDao[S] {
       val actions = previousState.updateTo(newState)
       actions.actions.foreach(_ match {
         case InsertStateAction(key, value) => insertEntry(ledgerStateId, key, byteStringSerializable.serialize(value))
-        case DeleteStateAction(key, value) => deleteEntry(ledgerStateId, key, byteStringSerializable.serialize(value))
+        case DeleteStateAction(key, _) => deleteEntry(ledgerStateId, key)
         case UpdateStateAction(key, value) => updateEntry(ledgerStateId, key, byteStringSerializable.serialize(value))
       })
     }
@@ -42,11 +42,11 @@ class LedgerStateStorageDao[S] {
     sql"""
        insert into ${LedgerStateTable.table}
         (${column.ledgerStateId}, ${column.partitionId}, ${column.data})
-        values (${ledgerStateId}, ${key}, ${value})
+        values (${ledgerStateId}, ${key}, ${value.toArray})
        """.update.apply
   }
 
-  private def deleteEntry(ledgerStateId: Int, key: String, value: ByteString)(implicit DBSession: DBSession) = {
+  private def deleteEntry(ledgerStateId: Int, key: String)(implicit DBSession: DBSession) = {
     val column = LedgerStateTable.column
     sql"""
        delete from ${LedgerStateTable.table}
@@ -57,7 +57,7 @@ class LedgerStateStorageDao[S] {
   private def updateEntry(ledgerStateId: Int, key: String, value: ByteString)(implicit DBSession: DBSession) = {
     val column = LedgerStateTable.column
     sql"""
-       update ${LedgerStateTable.table} set ${column.data} = ${value}
+       update ${LedgerStateTable.table} set ${column.data} = ${value.toArray}
        where ${column.ledgerStateId} = ${ledgerStateId} and ${column.partitionId} = ${key}
        """.update.apply()
   }
