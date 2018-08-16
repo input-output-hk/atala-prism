@@ -1,7 +1,7 @@
 package io.iohk.cef
 
 import io.iohk.cef.network.discovery.db.KnownNodeStorageImplDbTest
-import io.iohk.cef.ledger.LedgerDbTest
+import io.iohk.cef.ledger.LedgerItDbTest
 import io.iohk.cef.ledger.chimeric.ChimericLedgerItDbTest
 import io.iohk.cef.ledger.chimeric.storage.scalike.dao.ChimericLedgerStateStorageDaoDbTest
 import io.iohk.cef.ledger.identity.IdentityLedgerItDbTest
@@ -17,7 +17,7 @@ class DatabaseTestSuites extends Suites(
     new IdentityLedgerStateStorageDaoDbTest {},
     new IdentityLedgerItDbTest {},
     new LedgerStorageDaoDbTest {},
-    new LedgerDbTest {},
+    new LedgerItDbTest {},
     new ChimericLedgerStateStorageDaoDbTest {},
     new ChimericLedgerItDbTest {},
     new LedgerStateStorageDaoDbTest {},
