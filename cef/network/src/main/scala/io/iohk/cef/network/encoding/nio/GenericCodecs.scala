@@ -2,9 +2,10 @@ package io.iohk.cef.network.encoding.nio
 
 import java.nio.ByteBuffer
 import java.nio.ByteBuffer.allocate
-import java.security.MessageDigest
 
+import io.iohk.cef.network.encoding.nio.TypedCodecs.{typeCodeDecoder, typeCodeEncoder}
 import shapeless.{::, Generic, HList, HNil}
+
 import scala.reflect.ClassTag
 
 trait GenericCodecs {
@@ -41,43 +42,11 @@ trait GenericCodecs {
 
   implicit def genericEncoder[T, R](implicit gen: Generic.Aux[T, R],
                                     enc: NioEncoder[R],
-                                    ct: ClassTag[T]): NioEncoder[T] = new NioEncoder[T] {
-    override def encode(t: T): ByteBuffer = {
-      val hashBuff: ByteBuffer = arrayEncoder[Byte].encode(hash(ct.runtimeClass.getName))
-      val messageBuff: ByteBuffer = enc.encode(gen.to(t))
-
-      ByteBuffer
-        .allocate(hashBuff.capacity() + messageBuff.capacity())
-        .put(hashBuff)
-        .put(messageBuff)
-        .flip()
-        .asInstanceOf[ByteBuffer]
-    }
-  }
+                                    ct: ClassTag[T]): NioEncoder[T] =
+    typeCodeEncoder((t: T) => enc.encode(gen.to(t)))
 
   implicit def genericDecoder[T, R](implicit gen: Generic.Aux[T, R],
                                     dec: NioDecoder[R],
                                     ct: ClassTag[T]): NioDecoder[T] =
-    new NioDecoder[T] {
-      override def decode(b: ByteBuffer): Option[T] = {
-
-        val initialPosition = b.position()
-        val expectedTypeHash: Array[Byte] = hash(ct.runtimeClass.getName)
-        val actualTypeHashDec: Option[Array[Byte]] = arrayDecoder[Byte].decode(b)
-
-        val matchingTypeHash = actualTypeHashDec
-          .exists(actualTypeHash => actualTypeHash.deep == expectedTypeHash.deep)
-
-        if (matchingTypeHash)
-          dec.decode(b).map(gen.from)
-        else {
-          b.position(initialPosition)
-          None
-        }
-      }
-    }
-
-  private def hash(s: String): Array[Byte] = {
-    MessageDigest.getInstance("MD5").digest(s.getBytes)
-  }
+    typeCodeDecoder((b: ByteBuffer) => dec.decode(b).map(gen.from))
 }

@@ -45,9 +45,24 @@ class NativeCodecsSpec extends FlatSpec {
     variableLengthTest[List[Int]]
   }
 
+  they should "not decode a value for another type" in {
+    mistypeTest[Array[Int], Array[Boolean]]
+  }
 
   def encodeDecodeTest[T](implicit encoder: NioEncoder[T], decoder: NioDecoder[T], a: Arbitrary[T]): Unit = {
     forAll(arbitrary[T]) { t => decoder.decode(encoder.encode(t)) shouldBe Some(t)
+    }
+  }
+
+  def mistypeTest[T, U](implicit encoder: NioEncoder[T],
+                        decoder: NioDecoder[U],
+                        a: Arbitrary[T]): Unit = {
+
+    forAll(arbitrary[T]) { t =>
+      val buff: ByteBuffer = encoder.encode(t)
+      val dec: Option[U] = decoder.decode(buff)
+      dec shouldBe None
+      buff.position() shouldBe 0
     }
   }
 
@@ -63,9 +78,7 @@ class NativeCodecsSpec extends FlatSpec {
     }
   }
 
-  def variableLengthTest[T](implicit encoder: NioEncoder[T],
-                            decoder: NioDecoder[T],
-                            a: Arbitrary[T]): Unit = {
+  def variableLengthTest[T](implicit encoder: NioEncoder[T], decoder: NioDecoder[T], a: Arbitrary[T]): Unit = {
     forAll(arbitrary[T]) { t =>
       // create a buffer with one half full of real data
       // and the second half full of rubbish.
@@ -79,7 +92,4 @@ class NativeCodecsSpec extends FlatSpec {
       }
     }
   }
-
-  they should "not decode a value for another type" in pending
-
 }

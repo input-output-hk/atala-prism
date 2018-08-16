@@ -5,8 +5,8 @@ import java.nio.ByteBuffer.allocate
 import java.nio.charset.StandardCharsets.UTF_8
 
 import ByteLength._
+import io.iohk.cef.network.encoding.nio.TypedCodecs.{typeCodeDecoder, typeCodeEncoder}
 
-//import scala.collection.generic.CanBuildFrom
 import scala.reflect.ClassTag
 
 trait NativeCodecs {
@@ -66,7 +66,39 @@ trait NativeCodecs {
 
   implicit val charDecoder: NioDecoder[Char] = (b: ByteBuffer) => Some(b.getChar())
 
-  implicit def arrayEncoder[T](implicit enc: NioEncoder[T], lt: ByteLength[Array[T]]): NioEncoder[Array[T]] =
+  implicit def arrayEncoder[T](implicit enc: NioEncoder[T],
+                               lt: ByteLength[Array[T]],
+                               ct: ClassTag[T]): NioEncoder[Array[T]] =
+    typeCodeEncoder((a: Array[T]) => {
+
+      val sizeBytes = lt(a)
+
+      val accBuffer = ByteBuffer.allocate(sizeBytes).putInt(a.length)
+
+      a.foldLeft(accBuffer)((accBuff, nextElmt) => accBuff.put(enc.encode(nextElmt)))
+        .flip()
+        .asInstanceOf[ByteBuffer]
+    })
+
+  implicit def arrayDecoder[T](implicit dec: NioDecoder[T], ct: ClassTag[T]): NioDecoder[Array[T]] =
+    typeCodeDecoder((b: ByteBuffer) => {
+
+      val sizeElements = b.getInt()
+
+      val arr = new Array[T](sizeElements)
+
+      Range(0, sizeElements).foreach(i => {
+        dec
+          .decode(b)
+          .foreach(decodedElement => {
+            arr(i) = decodedElement
+          })
+      })
+
+      Some(arr)
+    })
+
+  def arrayEncoderImpl[T](implicit enc: NioEncoder[T], lt: ByteLength[Array[T]]): NioEncoder[Array[T]] =
     (a: Array[T]) => {
 
       val sizeBytes = lt(a)
@@ -78,22 +110,23 @@ trait NativeCodecs {
         .asInstanceOf[ByteBuffer]
     }
 
-  implicit def arrayDecoder[T](implicit dec: NioDecoder[T], ct: ClassTag[T]): NioDecoder[Array[T]] = new NioDecoder[Array[T]] {
-    override def decode(b: ByteBuffer): Option[Array[T]] = {
+  def arrayDecoderImpl[T](implicit dec: NioDecoder[T], ct: ClassTag[T]): NioDecoder[Array[T]] =
+    (b: ByteBuffer) => {
 
       val sizeElements = b.getInt()
 
       val arr = new Array[T](sizeElements)
 
       Range(0, sizeElements).foreach(i => {
-        dec.decode(b).foreach(decodedElement => {
-          arr(i) = decodedElement
-        })
+        dec
+          .decode(b)
+          .foreach(decodedElement => {
+            arr(i) = decodedElement
+          })
       })
 
       Some(arr)
     }
-  }
 
 //  implicit def iterableEncoder[T: ClassTag, I <: Iterable[T]](implicit enc: NioEncoder[T],
 //                                                              lt: ByteLength[Array[T]]): NioEncoder[I] =
@@ -103,13 +136,13 @@ trait NativeCodecs {
 //  implicit def iterableDecoder[T, C](implicit dec: NioDecoder[T], cbf: CanBuildFrom[Array[T], T, C], ct: ClassTag[T]): NioDecoder[C] = (b: ByteBuffer) =>
 //    arrayDecoder(dec, ct).decode(b).map(arr => cbf.apply(arr).result())
 
-   implicit def listEncoder[T: ClassTag](implicit enc: NioEncoder[T],
-                                                              lt: ByteLength[Array[T]]): NioEncoder[List[T]] =
-    (l: List[T]) => arrayEncoder(enc, lt).encode(l.toArray)
+  implicit def listEncoder[T](implicit enc: NioEncoder[T],
+                                        lt: ByteLength[Array[T]],
+                                        ct: ClassTag[T]): NioEncoder[List[T]] =
+    (l: List[T]) => arrayEncoder(enc, lt, ct).encode(l.toArray)
 
-
-  implicit def listDecoder[T, C](implicit dec: NioDecoder[T], ct: ClassTag[T]): NioDecoder[List[T]] = (b: ByteBuffer) =>
-    arrayDecoder(dec, ct).decode(b).map(arr => List(arr: _*))
+  implicit def listDecoder[T](implicit dec: NioDecoder[T], ct: ClassTag[T]): NioDecoder[List[T]] =
+    (b: ByteBuffer) => arrayDecoder(dec, ct).decode(b).map(arr => List(arr: _*))
 }
 
 object NativeCodecs extends NativeCodecs
