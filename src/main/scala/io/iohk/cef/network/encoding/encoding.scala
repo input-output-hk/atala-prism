@@ -36,16 +36,17 @@ package object encoding {
         throw new EncodingException(t)
     }
 
-    def decode[U, T](enc: U)(implicit dec: Decoder[U, T]): T = try {
+  def decode[U, T](enc: U)(implicit dec: Decoder[U, T]): T =
+    try {
       dec.decode(enc)
     } catch {
       case t: Throwable =>
         throw new DecodingException(t)
     }
 
-    class EncodingException(cause: Throwable) extends RuntimeException(cause)
+  class EncodingException(cause: Throwable) extends RuntimeException(cause)
 
-    class DecodingException(cause: Throwable) extends RuntimeException(cause)
+  class DecodingException(cause: Throwable) extends RuntimeException(cause)
 
-    type ByteEncoder[T] = Encoder[T, Array[Byte]]
+  type ByteEncoder[T] = Encoder[T, Array[Byte]]
 }
