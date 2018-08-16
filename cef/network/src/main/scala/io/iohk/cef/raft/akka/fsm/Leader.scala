@@ -1,8 +1,8 @@
 package io.iohk.cef.raft.akka.fsm
 
 import akka.actor.ActorRef
-import io.iohk.cef.raft.akka.fsm.model.{Command, Entry, LogIndexMap}
-import protocol._
+import io.iohk.cef.raft.akka.fsm.model.{Entry, LogIndexMap}
+import io.iohk.cef.raft.akka.fsm.protocol._
 
 trait Leader {
   this: RaftActor =>
@@ -13,6 +13,18 @@ trait Leader {
       log.info("Became leader for {}", sd.currentTerm)
       initializeLeaderState(sd.config.members)
       startHeartbeat(sd)
+      stay()
+
+    // client request
+
+    case Event(ClientMessage(client, command), sd: StateData) =>
+      log.info("Appending command: [{}] from {} to replicated log...", command, client)
+
+      val entry = Entry(command, sd.currentTerm, replicatedLog.nextIndex, Some(client))
+
+      log.debug("adding to log: {}", entry)
+      replicatedLog += entry
+      log.debug("log status = {}", replicatedLog)
       stay()
 
     case Event(SendHeartbeat, m: StateData) =>
@@ -56,17 +68,7 @@ trait Leader {
       registerAppendSuccessful(follower(), msg, sd)
     // End append entries response handling
 
-    // client request
-    case Event(ClientMessage(client, cmd: Command), sd: StateData) =>
-      log.info("Appending command: [{}] from {} to replicated log...", cmd, client)
 
-      val entry = Entry(cmd, sd.currentTerm, replicatedLog.nextIndex, Some(client))
-
-      log.debug("adding to log: {}", entry)
-      replicatedLog += entry
-      log.debug("log status = {}", replicatedLog)
-
-      stay()
 
     //TODO Somoe other event AS Leader based on RAFT paper
 

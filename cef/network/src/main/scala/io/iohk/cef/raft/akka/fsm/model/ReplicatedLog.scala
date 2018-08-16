@@ -57,13 +57,13 @@ case class ReplicatedLog[T <: Command](
     }
   }
 
-  def append(entry: Entry[Command], take: Int = entries.length): ReplicatedLog[Command] =
+  def append(entry: Entry[T], take: Int = entries.length): ReplicatedLog[T] =
     append(List(entry), take)
 
-  def append(entriesToAppend: Seq[Entry[Command]], take: Int): ReplicatedLog[Command] =
+  def append(entriesToAppend: Seq[Entry[T]], take: Int): ReplicatedLog[T] =
     copy(entries = entries.take(take) ++ entriesToAppend)
 
-  def +(newEntry: Entry[Command]): ReplicatedLog[Command] =
+  def +(newEntry: Entry[T]): ReplicatedLog[T] =
     append(List(newEntry), entries.size)
 
   /**
