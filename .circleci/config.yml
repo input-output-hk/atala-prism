@@ -39,5 +39,5 @@ jobs:
           key: v1-dependencies--{{ checksum "build.sbt" }}-{{ checksum "project/build.properties" }}-{{ checksum "project/plugins.sbt" }}
         
       # run tests!
-      - run: cat /dev/null | sbt coverage test:test coverageReport coveralls
+      - run: cat /dev/null | sbt coverage test:test coverageReport
 
