@@ -3,9 +3,9 @@ import java.nio.ByteBuffer
 
 import io.iohk.cef.network.discovery.NetworkDiscovery
 import io.iohk.cef.network.encoding._
-import io.iohk.cef.network.transport.tcp.{NettyTransport, TcpNetworkTransport}
-
-import io.iohk.cef.network.transport.{FrameHeader, Frame, FrameEncoder, FrameDecoder}
+import io.iohk.cef.network.transport.Transports.usesTcp
+import io.iohk.cef.network.transport.tcp.TcpNetworkTransport
+import io.iohk.cef.network.transport._
 
 /**
   * Represents a conversational model of the network
@@ -22,11 +22,13 @@ import io.iohk.cef.network.transport.{FrameHeader, Frame, FrameEncoder, FrameDec
   *                     It should be possible to summon an encoder for any case class using
   *                     encoders io.iohk.cef.network.encoding.nio.
   * @param networkDiscovery Encapsulates a routing table implementation.
+  * @param transports helpers to obtain network transport instances.
   */
 class ConversationalNetwork[Message](peerInfo: PeerInfo,
                                      messageHandler: (NodeId, Message) => Unit,
                                      messageCodec: Codec[Message, ByteBuffer],
-                                     networkDiscovery: NetworkDiscovery) {
+                                     networkDiscovery: NetworkDiscovery,
+                                     transports: Transports) {
 
   /**
     * Send a message to another network address.
@@ -42,7 +44,6 @@ class ConversationalNetwork[Message](peerInfo: PeerInfo,
     */
   def sendMessage(nodeId: NodeId, message: Message): Unit =
     sendMessage(Frame(FrameHeader(peerInfo.nodeId, nodeId, peerInfo.configuration.messageTtl), message))
-
 
   private def frameHandler(frame: Frame[Message]): Unit = {
     if (thisNodeIsTheDest(frame)) {
@@ -62,17 +63,12 @@ class ConversationalNetwork[Message](peerInfo: PeerInfo,
   private def liftedFrameHandler[Address]: (Address, Frame[Message]) => Unit =
     (_, frame) => frameHandler(frame)
 
+  private val frameCodec =
+    new StreamCodec[Frame[Message], ByteBuffer](new FrameEncoder[Message](messageCodec.encoder),
+                                                new FrameDecoder[Message](messageCodec.decoder))
+
   private val tcpNetworkTransport: Option[TcpNetworkTransport[Frame[Message]]] =
-    peerInfo.configuration.tcpTransportConfiguration.map(tcpConfiguration => {
-
-      val frameCodec =
-        new StreamCodec[Frame[Message], ByteBuffer](new FrameEncoder[Message](messageCodec.encoder),
-          new FrameDecoder[Message](messageCodec.decoder))
-
-      new TcpNetworkTransport[Frame[Message]](liftedFrameHandler,
-        frameCodec,
-        new NettyTransport(tcpConfiguration.bindAddress))
-    })
+    transports.tcp(liftedFrameHandler)(frameCodec)
 
   private def sendMessage(frame: Frame[Message]): Unit = {
     networkDiscovery
@@ -85,7 +81,4 @@ class ConversationalNetwork[Message](peerInfo: PeerInfo,
           ()
       })
   }
-
-  private def usesTcp(peerInfo: PeerInfo): Boolean =
-    peerInfo.configuration.tcpTransportConfiguration.isDefined
 }
