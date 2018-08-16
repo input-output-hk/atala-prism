@@ -47,13 +47,13 @@ class DiscoveryListenerSpec
       }
     }
 
-    override def decode(u: ByteString): DiscoveryWireMessage = {
-      u match {
+    override def decode(u: ByteString): Option[DiscoveryWireMessage] = {
+      Some(u match {
         case 0x01 +: rest => ping
         case 0x02 +: rest => pong
         case 0x03 +: rest => seek
         case 0x04 +: rest => neighbors
-      }
+      })
     }
   }
 

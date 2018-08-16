@@ -5,7 +5,7 @@ import java.net.URI
 
 import akka.util.ByteString
 import io.iohk.cef.builder.SecureRandomBuilder
-import io.iohk.cef.crypto._
+import io.iohk.cef.cryptolegacy._
 import AuthHandshaker._
 import org.scalatest.{FlatSpec, Matchers}
 import org.bouncycastle.crypto.params.{ECPrivateKeyParameters, ECPublicKeyParameters}

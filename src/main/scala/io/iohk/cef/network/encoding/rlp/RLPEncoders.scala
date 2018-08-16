@@ -10,7 +10,7 @@ trait RLPEncoders {
 
   // Adapt concrete RLP encoding scheme to generic cef encoders.
   implicit def genericEnc[T](implicit enc: RLPEncoder[T]): E[T] = enc.encode(_)
-  implicit def genericDec[T](implicit dec: RLPDecoder[T]): D[T] = dec.decode(_)
+  implicit def genericDec[T](implicit dec: RLPDecoder[T]): D[T] = (u: RLPEncodeable) => Some(dec.decode(u))
 
   //Provide encoders and decoders to ByteString
   val rlpEncodeableEncoder = new Encoder[RLPEncodeable, ByteString] {
@@ -19,8 +19,8 @@ trait RLPEncoders {
   }
 
   val rlpEncodeableDecoder = new Decoder[ByteString, RLPEncodeable] {
-    override def decode(u: ByteString): RLPEncodeable =
-      rlp.rawDecode(u.toArray)
+    override def decode(u: ByteString): Option[RLPEncodeable] =
+      Some(rlp.rawDecode(u.toArray))
   }
 
   implicit def byteStringRlpEncoder[T](implicit enc: Encoder[T, RLPEncodeable]): Encoder[T, ByteString] =

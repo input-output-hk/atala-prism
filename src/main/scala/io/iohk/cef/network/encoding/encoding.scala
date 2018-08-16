@@ -18,10 +18,10 @@ package object encoding {
   trait Decoder[U, T] {
     self =>
 
-    def decode(u: U): T
+    def decode(u: U): Option[T]
 
     def andThen[S](that: Decoder[T, S]): Decoder[U, S] =
-      (u: U) => that.decode(self.decode(u))
+      (u: U) => self.decode(u).flatMap(that.decode)
   }
 
   trait StreamDecoder[U, T] {
@@ -36,7 +36,7 @@ package object encoding {
         throw new EncodingException(t)
     }
 
-  def decode[U, T](enc: U)(implicit dec: Decoder[U, T]): T =
+  def decode[U, T](enc: U)(implicit dec: Decoder[U, T]): Option[T] =
     try {
       dec.decode(enc)
     } catch {
@@ -48,5 +48,4 @@ package object encoding {
 
   class DecodingException(cause: Throwable) extends RuntimeException(cause)
 
-  type ByteEncoder[T] = Encoder[T, Array[Byte]]
 }

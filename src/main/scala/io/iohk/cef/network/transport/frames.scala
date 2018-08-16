@@ -15,7 +15,6 @@ case class FrameHeader(src: NodeId, dst: NodeId, ttl: Int = defaultTtl)
 
 case class Frame[Message](header: FrameHeader, content: Message)
 
-
 class FrameEncoder[Message](messageEncoder: Encoder[Message, ByteBuffer]) extends Encoder[Frame[Message], ByteBuffer] {
 
   private def length(h: FrameHeader, userMessageBuffer: ByteBuffer): Int =
@@ -58,9 +57,9 @@ class FrameDecoder[Message](messageDecoder: Decoder[ByteBuffer, Message])
         val src = decodeNodeId(b)
         val dst = decodeNodeId(b)
         val ttl = b.getInt()
-        val content = decodeUserMessage(messageLength, b)
 
-        Some(Frame[Message](FrameHeader(src, dst, ttl), content))
+        decodeUserMessage(messageLength, b).map(content => Frame[Message](FrameHeader(src, dst, ttl), content))
+
       } else {
         b.position(p0)
         None
@@ -70,7 +69,7 @@ class FrameDecoder[Message](messageDecoder: Decoder[ByteBuffer, Message])
     }
   }
 
-  private def decodeUserMessage(messageLength: Int, b: ByteBuffer): Message = {
+  private def decodeUserMessage(messageLength: Int, b: ByteBuffer): Option[Message] = {
     val currentLimit = b.limit()
     val userMessageLength = messageLength - frameHeaderLength
     val currentPos = b.position()

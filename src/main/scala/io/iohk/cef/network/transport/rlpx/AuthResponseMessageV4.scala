@@ -2,7 +2,7 @@ package io.iohk.cef.network.transport.rlpx
 
 
 import akka.util.ByteString
-import io.iohk.cef.crypto._
+import io.iohk.cef.cryptolegacy._
 import io.iohk.cef.network.encoding.rlp.RLPImplicits._
 import io.iohk.cef.network.encoding.rlp._
 import org.bouncycastle.math.ec.ECPoint

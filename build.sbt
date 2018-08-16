@@ -1,11 +1,14 @@
 import com.typesafe.config.ConfigFactory
 
 // Thus it begins.
+val scalaV = "2.12.5"
+
 val commonSettings = Seq(
   organization := "io.iohk.cef",
   name := "network",
   version := "0.1-SNAPSHOT",
-  scalaVersion := "2.12.5"
+  scalaVersion := scalaV,
+  addCompilerPlugin("io.tryp" % "splain" % "0.3.1" cross CrossVersion.patch)
 )
 
 enablePlugins(FlywayPlugin)
@@ -58,7 +61,9 @@ val dep = {
     "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test,
     "com.typesafe.akka" %% "akka-testkit-typed" % akkaVersion % Test,
 
-    "io.netty" % "netty-all" % "4.1.28.Final"
+    "io.netty" % "netty-all" % "4.1.28.Final",
+    "com.chuusai" %% "shapeless" % "2.3.3",
+    "org.scala-lang" % "scala-reflect" % scalaV
   )
 }
 
@@ -102,7 +107,7 @@ val root = project.in(file("."))
     ),
     scalacOptions ++= compilerOptions,
     coverageExcludedPackages :=
-      "<empty>;io.iohk.cef.ledger.identity.storage.protobuf.identityLedger"
+      "<empty>;io.iohk.cef.ledger.identity.storage.protobuf.identityLedger;io.iohk.cef.protobuf.*"
   )
 
 PB.targets in Compile := Seq(

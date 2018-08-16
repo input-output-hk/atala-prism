@@ -12,7 +12,12 @@ import akka.{actor => untyped}
 import io.iohk.cef.network.encoding.rlp.EncodingAdapter
 import io.iohk.cef.network.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.transport.TransportProtocol
-import io.iohk.cef.network.transport.rlpx.RLPxConnectionHandler.{ConnectTo, ConnectionEstablished, ConnectionFailed, HandleConnection}
+import io.iohk.cef.network.transport.rlpx.RLPxConnectionHandler.{
+  ConnectTo,
+  ConnectionEstablished,
+  ConnectionFailed,
+  HandleConnection
+}
 import io.iohk.cef.network.transport.rlpx.ethereum.p2p.Message
 import org.bouncycastle.util.encoders.Hex
 
@@ -37,25 +42,21 @@ class RLPxTransportProtocol[T](encoder: Encoder[T, ByteString],
       message match {
 
         case Connect(uri, eventHandler) =>
-          context.spawn(connectionBehaviour(uri, eventHandler),
-                        UUID.randomUUID().toString)
+          context.spawn(connectionBehaviour(uri, eventHandler), UUID.randomUUID().toString)
           Behavior.same
 
         case CreateListener(uri, replyTo, connectionFactory) =>
-          context.spawn(listenerBehaviour(uri, replyTo, connectionFactory),
-                        UUID.randomUUID().toString)
+          context.spawn(listenerBehaviour(uri, replyTo, connectionFactory), UUID.randomUUID().toString)
           Behavior.same
       }
     }
 
   // manages individual socket listeners and handles Unbind requests
   // for those listeners.
-  private def listenerBehaviour(
-      uri: URI,
-      replyTo: ActorRef[ListenerEvent],
-      connectionFactory: () => ActorRef[ConnectionEvent]): Behavior[ListenerCommand] =
+  private def listenerBehaviour(uri: URI,
+                                replyTo: ActorRef[ListenerEvent],
+                                connectionFactory: () => ActorRef[ConnectionEvent]): Behavior[ListenerCommand] =
     Behaviors.setup { context =>
-
       val bridgeActor =
         context.actorOf(listenerBridge(uri, connectionBehaviour, replyTo, context.self, connectionFactory))
 
@@ -68,12 +69,8 @@ class RLPxTransportProtocol[T](encoder: Encoder[T, ByteString],
 
   // manages outbound connections and handles SendMessage requests
   // for those connections.
-  private def connectionBehaviour(
-      uri: URI,
-      eventHandler: ActorRef[ConnectionEvent]): Behavior[ConnectionCommand] = Behaviors.setup {
-
-    context =>
-
+  private def connectionBehaviour(uri: URI, eventHandler: ActorRef[ConnectionEvent]): Behavior[ConnectionCommand] =
+    Behaviors.setup { context =>
       val connectionBridgeActor =
         context.actorOf(connectionBridge(uri, context.self, eventHandler))
 
@@ -97,39 +94,34 @@ class RLPxTransportProtocol[T](encoder: Encoder[T, ByteString],
         ???
     }
 
-  private def listenerBridge(
-      uri: URI,
-      connectActor: untyped.ActorRef => Behavior[ConnectionCommand],
-      replyTo: ActorRef[ListenerEvent],
-      listenerActor: ActorRef[ListenerCommand],
-      connectionFactory: () => ActorRef[ConnectionEvent]): Props =
+  private def listenerBridge(uri: URI,
+                             connectActor: untyped.ActorRef => Behavior[ConnectionCommand],
+                             replyTo: ActorRef[ListenerEvent],
+                             listenerActor: ActorRef[ListenerCommand],
+                             connectionFactory: () => ActorRef[ConnectionEvent]): Props =
     ListenerBridge.props(uri,
                          tcpActor,
                          rlpxConnectionHandlerProps,
                          replyTo,
                          listenerActor,
                          connectActor,
-                        connectionFactory)
+                         connectionFactory)
 
   private def connectionBridge(uri: URI,
                                connectActor: ActorRef[ConnectionCommand],
                                eventHandler: ActorRef[ConnectionEvent]): Props =
-    ConnectionBridge.props(uri,
-                           eventHandler,
-                           rlpxConnectionHandlerProps,
-                           connectActor)
+    ConnectionBridge.props(uri, eventHandler, rlpxConnectionHandlerProps, connectActor)
 
   /**
     * Handles listener setup (i.e. the binding process).
     */
-  class ListenerBridge(
-                        uri: URI,
-                        tcpActor: untyped.ActorRef,
-                        rlpxConnectionHandlerProps: untyped.Props,
-                        replyTo: ActorRef[ListenerEvent],
-                        listenerActor: ActorRef[ListenerCommand],
-                        connectBehaviour: untyped.ActorRef => Behavior[ConnectionCommand],
-                        connectionEventHandlerFactory: () => ActorRef[ConnectionEvent])
+  class ListenerBridge(uri: URI,
+                       tcpActor: untyped.ActorRef,
+                       rlpxConnectionHandlerProps: untyped.Props,
+                       replyTo: ActorRef[ListenerEvent],
+                       listenerActor: ActorRef[ListenerCommand],
+                       connectBehaviour: untyped.ActorRef => Behavior[ConnectionCommand],
+                       connectionEventHandlerFactory: () => ActorRef[ConnectionEvent])
       extends untyped.Actor {
 
     import akka.io.Tcp.{Bind, Bound, CommandFailed, Connected => TcpConnected}
@@ -151,14 +143,14 @@ class RLPxTransportProtocol[T](encoder: Encoder[T, ByteString],
     def bound(socket: untyped.ActorRef): Receive = {
 
       case TcpConnected(remoteAddr, localAddr) =>
-
         val tcpConnection = sender()
 
         context.actorOf(
-          PeerBridge.props(
-            remoteAddr, connectionEventHandlerFactory,
-            rlpxConnectionHandlerProps, tcpConnection,
-            connectBehaviour))
+          PeerBridge.props(remoteAddr,
+                           connectionEventHandlerFactory,
+                           rlpxConnectionHandlerProps,
+                           tcpConnection,
+                           connectBehaviour))
 
       case Unbind =>
         socket ! akka.io.Tcp.Unbind
@@ -177,16 +169,15 @@ class RLPxTransportProtocol[T](encoder: Encoder[T, ByteString],
               replyTo: ActorRef[ListenerEvent],
               listenerActor: ActorRef[ListenerCommand],
               connectBehaviour: untyped.ActorRef => Behavior[ConnectionCommand],
-              connectionFactory: () => ActorRef[ConnectionEvent])
-      : Props =
+              connectionFactory: () => ActorRef[ConnectionEvent]): Props =
       Props(
         new ListenerBridge(uri,
                            tcpActor,
                            rlpxConnectionHandlerProps,
                            replyTo,
-                            listenerActor,
+                           listenerActor,
                            connectBehaviour,
-                          connectionFactory))
+                           connectionFactory))
   }
 
   /**
@@ -198,7 +189,7 @@ class RLPxTransportProtocol[T](encoder: Encoder[T, ByteString],
                    rlpxConnectionHandlerProps: untyped.Props,
                    tcpConnection: untyped.ActorRef,
                    connectBehaviour: untyped.ActorRef => Behavior[ConnectionCommand])
-    extends untyped.Actor {
+      extends untyped.Actor {
 
     private val rlpxConnectionHandler =
       context.actorOf(rlpxConnectionHandlerProps)
@@ -222,21 +213,20 @@ class RLPxTransportProtocol[T](encoder: Encoder[T, ByteString],
       case ConnectionFailed =>
         val remoteUri = toUri(remoteAddress, ByteString())
         val connectionEventHandler = connectionEventHandlerFactory()
-        connectionEventHandler ! ConnectionError(
-          s"Error setting up connection with peer at $remoteAddress", remoteUri, connectionActor)
+        connectionEventHandler ! ConnectionError(s"Error setting up connection with peer at $remoteAddress",
+                                                 remoteUri,
+                                                 connectionActor)
         context.stop(self)
     }
 
     private def connected(uri: URI, connectionEventHandler: ActorRef[ConnectionEvent]): Receive = {
       case RLPxConnectionHandler.MessageReceived(message) => {
-        val m: MessageType = decoder.decode(message)
-        connectionEventHandler ! MessageReceived(m, uri, connectionActor)
+        decoder.decode(message).foreach(m => connectionEventHandler ! MessageReceived(m, uri, connectionActor))
       }
     }
 
     private def toUri(remoteAddr: InetSocketAddress, nodeId: ByteString): URI =
-      new URI(
-        s"enode://${Hex.toHexString(nodeId.toArray)}@${remoteAddr.getHostName}:${remoteAddr.getPort}")
+      new URI(s"enode://${Hex.toHexString(nodeId.toArray)}@${remoteAddr.getHostName}:${remoteAddr.getPort}")
   }
 
   object PeerBridge {
@@ -245,8 +235,12 @@ class RLPxTransportProtocol[T](encoder: Encoder[T, ByteString],
               rlpxConnectionHandlerProps: untyped.Props,
               tcpConnection: untyped.ActorRef,
               connectBehaviour: untyped.ActorRef => Behavior[ConnectionCommand]): Props =
-      Props(new PeerBridge(remoteAddress, connectionEventHandlerFactory,
-        rlpxConnectionHandlerProps, tcpConnection, connectBehaviour))
+      Props(
+        new PeerBridge(remoteAddress,
+                       connectionEventHandlerFactory,
+                       rlpxConnectionHandlerProps,
+                       tcpConnection,
+                       connectBehaviour))
   }
 
   /**
@@ -277,7 +271,9 @@ class RLPxTransportProtocol[T](encoder: Encoder[T, ByteString],
         rlpxConnectionHandler ! sm
 
       case RLPxConnectionHandler.MessageReceived(message) =>
-        eventHandler ! MessageReceived(decoder.decode(message), uri, connectBehaviour)
+        decoder
+          .decode(message)
+          .foreach(decodedMessage => eventHandler ! MessageReceived(decodedMessage, uri, connectBehaviour))
 
       case akka.io.Tcp.Close =>
         rlpxConnectionHandler ! akka.io.Tcp.Close
@@ -285,21 +281,17 @@ class RLPxTransportProtocol[T](encoder: Encoder[T, ByteString],
     }
 
     private def awaitingClosure: Receive = {
-        case akka.io.Tcp.Closed =>
-          eventHandler ! ConnectionClosed(uri)
-          context.stop(connectBehaviour)
-      }
+      case akka.io.Tcp.Closed =>
+        eventHandler ! ConnectionClosed(uri)
+        context.stop(connectBehaviour)
     }
+  }
 
   object ConnectionBridge {
     def props(uri: URI,
               eventHandler: ActorRef[ConnectionEvent],
               rlpxConnectionHandlerProps: untyped.Props,
               connectBehaviour: ActorRef[ConnectionCommand]): Props =
-      Props(
-        new ConnectionBridge(uri,
-                             eventHandler,
-                             rlpxConnectionHandlerProps,
-                             connectBehaviour))
+      Props(new ConnectionBridge(uri, eventHandler, rlpxConnectionHandlerProps, connectBehaviour))
   }
 }
