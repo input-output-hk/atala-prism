@@ -15,6 +15,7 @@ case class FrameHeader(src: NodeId, dst: NodeId, ttl: Int = defaultTtl)
 
 case class Frame[Message](header: FrameHeader, content: Message)
 
+
 class FrameEncoder[Message](messageEncoder: Encoder[Message, ByteBuffer]) extends Encoder[Frame[Message], ByteBuffer] {
 
   private def length(h: FrameHeader, userMessageBuffer: ByteBuffer): Int =
