@@ -1,5 +1,4 @@
 package io.iohk.cef.network.encoding.nio
-import java.nio.charset.StandardCharsets.UTF_8
 
 trait ByteLength[T] {
   def apply(t: T): Int
@@ -18,7 +17,7 @@ object ByteLength {
   implicit val lengthFloat: ByteLength[Float] = _ => 4
   implicit val lengthDouble: ByteLength[Double] = _ => 8
   implicit val lengthChar: ByteLength[Char] = _ => 2
-  implicit val lengthString: ByteLength[String] = v => 4 + v.getBytes(UTF_8).length
+  implicit val lengthString: ByteLength[String] = s => 4 + s.length * 2
 
   implicit def lengthArray[T](implicit lt: ByteLength[T]): ByteLength[Array[T]] =
     a => 4 + 4 + 4 + a.foldLeft(0)((sum, next) => sum + lt(next))

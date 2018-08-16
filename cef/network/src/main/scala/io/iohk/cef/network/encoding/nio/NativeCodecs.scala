@@ -2,9 +2,8 @@ package io.iohk.cef.network.encoding.nio
 
 import java.nio.ByteBuffer
 import java.nio.ByteBuffer.allocate
-import java.nio.charset.StandardCharsets.UTF_8
 
-import ByteLength._
+import io.iohk.cef.network.encoding.nio.ByteLength._
 import io.iohk.cef.network.encoding.nio.CodecDecorators.{typeCodeDecoder, typeCodeEncoder, verifyingRemaining}
 
 import scala.reflect.ClassTag
@@ -12,16 +11,20 @@ import scala.reflect.ClassTag
 trait NativeCodecs {
 
   implicit val stringEncoder: NioEncoder[String] = (s: String) => {
-    val b = s.getBytes(UTF_8)
-    val l = b.length
-    allocate(4 + b.length).putInt(l).put(b).flip().asInstanceOf[ByteBuffer]
+    val byteLength = lengthString(s)
+    val buffer = allocate(byteLength).putInt(s.length)
+    s.foreach(buffer.putChar)
+    buffer.flip().asInstanceOf[ByteBuffer]
   }
 
   implicit val stringDecoder: NioDecoder[String] = (b: ByteBuffer) => {
     val l = b.getInt()
-    val a = new Array[Byte](l)
-    b.get(a)
-    Option(new String(a, UTF_8))
+
+    val a: Array[Char] = new Array[Char](l)
+
+    Range(0, l).foreach(i => a(i) = b.getChar)
+
+    Some(new String(a))
   }
 
   implicit val booleanEncoder: NioEncoder[Boolean] = (b: Boolean) =>
