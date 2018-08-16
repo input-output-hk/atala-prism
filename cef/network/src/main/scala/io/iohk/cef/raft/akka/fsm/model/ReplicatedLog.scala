@@ -57,6 +57,15 @@ case class ReplicatedLog[T <: Command](
     }
   }
 
+  def append(entry: Entry[Command], take: Int = entries.length): ReplicatedLog[Command] =
+    append(List(entry), take)
+
+  def append(entriesToAppend: Seq[Entry[Command]], take: Int): ReplicatedLog[Command] =
+    copy(entries = entries.take(take) ++ entriesToAppend)
+
+  def +(newEntry: Entry[Command]): ReplicatedLog[Command] =
+    append(List(newEntry), entries.size)
+
   /**
     * Performs the "consistency check", which checks if the data that we just got from the
     */

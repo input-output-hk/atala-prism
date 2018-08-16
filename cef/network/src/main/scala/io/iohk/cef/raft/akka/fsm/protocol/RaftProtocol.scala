@@ -25,6 +25,11 @@ trait RaftProtocol extends Serializable {
   case class BeginAsLeader(term: Term, ref: ActorRef)   extends Message
 
   case object SendHeartbeat extends Message
+  /**
+    * Wrap messages you want to send to the underlying replicated state machine
+    */
+  case class ClientMessage[T <: Command](client: ActorRef, cmd: T) extends Message
+
 
 
   case class AppendEntries[T](

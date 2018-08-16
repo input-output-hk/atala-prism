@@ -1,7 +1,7 @@
 package io.iohk.cef.raft.akka.fsm
 
 import akka.actor.ActorRef
-import io.iohk.cef.raft.akka.fsm.model.LogIndexMap
+import io.iohk.cef.raft.akka.fsm.model.{Command, Entry, LogIndexMap}
 import protocol._
 
 trait Leader {
@@ -55,6 +55,18 @@ trait Leader {
     case Event(msg: AppendSuccessful, sd: StateData) if msg.term == sd.currentTerm =>
       registerAppendSuccessful(follower(), msg, sd)
     // End append entries response handling
+
+    // client request
+    case Event(ClientMessage(client, cmd: Command), sd: StateData) =>
+      log.info("Appending command: [{}] from {} to replicated log...", cmd, client)
+
+      val entry = Entry(cmd, sd.currentTerm, replicatedLog.nextIndex, Some(client))
+
+      log.debug("adding to log: {}", entry)
+      replicatedLog += entry
+      log.debug("log status = {}", replicatedLog)
+
+      stay()
 
     //TODO Somoe other event AS Leader based on RAFT paper
 
