@@ -14,7 +14,7 @@ trait Candidate {
         goto(Follower) applying GoToFollowerEvent()
       } else {
         log.info("Initializing election (among {} nodes) for {}", sd.config.members.size, sd.currentTerm)
-        val request = RequestVote(sd.currentTerm, sd.self, logEntries.lastTerm, logEntries.lastIndex)
+        val request = RequestVote(sd.currentTerm, sd.self, replicatedLog.lastTerm, replicatedLog.lastIndex)
         sd.membersExceptSelf foreach {
           _ ! request
         }

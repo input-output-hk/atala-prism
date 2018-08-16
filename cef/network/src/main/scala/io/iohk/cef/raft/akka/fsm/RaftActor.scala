@@ -5,6 +5,7 @@ import akka.persistence.fsm.PersistentFSM
 
 import scala.concurrent.duration._
 import protocol._
+import io.iohk.cef.raft.akka.fsm.model._
 
 import scala.reflect._
 import config.RaftConfiguration
@@ -22,7 +23,8 @@ abstract class RaftActor extends Actor with PersistentFSM[RaftState, StateData, 
   private val ElectionTimeoutTimerName = "election-timer"
   val heartbeatInterval: FiniteDuration =  raftConfig.heartbeatInterval
 
-  var logEntries = LogEntries.empty[Command](raftConfig.defaultAppendEntriesBatchSize)
+  var replicatedLog = ReplicatedLog.empty[Command](raftConfig.defaultAppendEntriesBatchSize)
+  var nextIndex = LogIndexMap.initialize(Set.empty, replicatedLog.nextIndex)
 
 
   override def domainEventClassTag: ClassTag[DomainEvent] = classTag[DomainEvent]

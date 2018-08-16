@@ -1,4 +1,4 @@
-package io.iohk.cef.raft.akka.fsm.protocol
+package io.iohk.cef.raft.akka.fsm.model
 //FIXME: use Ordered instead
 final case class Term(termNo: Long) extends AnyVal {
   def prev: Term = this - 1

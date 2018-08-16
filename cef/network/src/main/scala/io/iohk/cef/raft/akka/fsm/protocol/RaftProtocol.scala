@@ -1,6 +1,7 @@
 package io.iohk.cef.raft.akka.fsm.protocol
 
 import akka.actor.ActorRef
+import io.iohk.cef.raft.akka.fsm.model.{Command, Entry, ReplicatedLog, Term}
 
 import scala.collection.immutable
 trait RaftProtocol extends Serializable {
@@ -31,10 +32,28 @@ trait RaftProtocol extends Serializable {
                                prevLogTerm: Term,
                                prevLogIndex: Int,
                                entries: immutable.Seq[Entry[T]],
-                               leaderCommitId: Int
+                               leaderCommitId: Int,
+                               leaderId : ActorRef //Can be NodeId/ actor path in akka eco system
                              ) extends Message {
     override def toString: String =
       s"""AppendEntries(term:$term,prevLog:($prevLogTerm,$prevLogIndex),entries:$entries,leaderCommit:$leaderCommitId)"""
+  }
+
+  object AppendEntries {
+    // Throws IllegalArgumentException if fromIndex > replicatedLog.length
+    def apply[T <: Command](term: Term, replicatedLog: ReplicatedLog[T], fromIndex: Int,leaderCommitIdx: Int , leaderId:ActorRef): AppendEntries[T] = {
+      if (fromIndex > replicatedLog.nextIndex) {
+        throw new IllegalArgumentException(s"fromIndex ($fromIndex) > nextIndex (${replicatedLog.nextIndex})")
+      }
+
+      val entries = replicatedLog.entriesBatchFrom(fromIndex)
+
+      val prevIndex = List(0, fromIndex - 1).max
+      val prevTerm = replicatedLog.termAt(prevIndex)
+
+      new AppendEntries[T](term, prevTerm, fromIndex, entries,
+        leaderCommitIdx ,leaderId)
+    }
   }
 
   sealed trait FollowerResponse extends Message

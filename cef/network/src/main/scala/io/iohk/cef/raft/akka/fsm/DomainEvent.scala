@@ -1,7 +1,7 @@
 package io.iohk.cef.raft.akka.fsm
 
 import akka.actor.ActorRef
-import io.iohk.cef.raft.akka.fsm.protocol.Term
+import io.iohk.cef.raft.akka.fsm.model.Term
 
 /**
   * Events for persisting changes to FSM internal state

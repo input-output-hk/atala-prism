@@ -1,6 +1,7 @@
 package io.iohk.cef.raft.akka.fsm
 
 import akka.actor.ActorRef
+import io.iohk.cef.raft.akka.fsm.model.LogIndexMap
 import protocol._
 
 trait Leader {
@@ -20,14 +21,24 @@ trait Leader {
 
     // Leader handling
     case Event(append: AppendEntries[_], sd: StateData) if append.term > sd.currentTerm =>
-      log.info("Leader (@ {}) got AppendEntries from fresher Leader " +
-        "(@ {}), will step down and the Leader will keep being: {}", sd.currentTerm, append.term, sender())
+      log.info(
+        "Leader (@ {}) got AppendEntries from fresher Leader " +
+          "(@ {}), will step down and the Leader will keep being: {}",
+        sd.currentTerm,
+        append.term,
+        sender()
+      )
       stopHeartbeat()
       stepDown(sd)
 
     case Event(append: AppendEntries[_], sd: StateData) if append.term <= sd.currentTerm =>
-      log.warning("Leader (@ {}) got AppendEntries from rogue Leader ({} @ {}); It's not fresher than self." +
-        " Will send entries, to force it to step down.", sd.currentTerm, sender(), append.term)
+      log.warning(
+        "Leader (@ {}) got AppendEntries from rogue Leader ({} @ {}); It's not fresher than self." +
+          " Will send entries, to force it to step down.",
+        sd.currentTerm,
+        sender(),
+        append.term
+      )
       sendEntries(sender(), sd)
       stay()
     // end of Leader handling
@@ -50,9 +61,11 @@ trait Leader {
   }
 
   def initializeLeaderState(members: Set[ActorRef]) {
-    log.info("Preparing nextIndex and matchIndex table for followers, init all to: logEntries.lastIndex = {}", logEntries.lastIndex)
+    log.info("Preparing nextIndex and matchIndex table for followers, init all to: logEntries.lastIndex = {}",
+             replicatedLog.lastIndex)
+      nextIndex = LogIndexMap.initialize(members, replicatedLog.lastIndex)
 
-//    Volatile state on leaders:
+    //    Volatile state on leaders:
 //    (Reinitialized after election)
 //    nextIndex[]
 //    matchIndex[]
@@ -60,7 +73,6 @@ trait Leader {
 //    last log index + 1)
 //    for each server, index of highest log entry known to be replicated on server (initialized to 0, increases monotonically)
   }
-
 
   def stopHeartbeat() {
     cancelTimer(HeartbeatTimerName)
@@ -74,24 +86,34 @@ trait Leader {
 
   /** Based RAFT  paper heartbeat is implemented as basically sending blank AppendEntry messages */
   def sendHeartbeat(sd: StateData) {
-    //logEntries(sd)
+    replicateLog(sd)
   }
 
-  def sendEntries(sender: ActorRef, m: StateData) {
-    //TODO Append Entries
+
+  def sendEntries(follower: ActorRef, sd: StateData) {
+    follower ! AppendEntries(
+      sd.currentTerm,
+      replicatedLog,
+      fromIndex = nextIndex.valueFor(follower),
+      leaderCommitIdx = replicatedLog.committedIndex,
+      leaderId = sd.self
+    )
   }
 
+  /**
+    * RAFT Paper
+    * If AppendEntries fails because of log inconsistency:
+    * decrement nextIndex and retry
+    */
   def registerAppendRejected(member: ActorRef, msg: AppendRejected, sd: StateData): State = {
     val AppendRejected(followerTerm) = msg
 
-    log.info("Follower {} rejected write: {}, back out the first index in this term and retry", follower(), followerTerm)
-
-    /**
-      * RAFT Paper
-      * If AppendEntries fails because of log inconsistency:
-      * decrement nextIndex and retry
-      */
-    // TODO
+    log.info("Follower {} rejected write: {}, back out the first index in this term and retry",
+             follower(),
+             followerTerm)
+    if (nextIndex.valueFor(follower()) > 1) {
+      nextIndex.decrementFor(follower())
+    }
     sendEntries(follower(), sd)
     stay()
   }
@@ -100,15 +122,33 @@ trait Leader {
     val AppendSuccessful(followerTerm, followerIndex) = msg
 
     log.info("Follower {} took write in term: {}", follower(), followerTerm)
+    assert(followerIndex <= replicatedLog.lastIndex)
+    nextIndex.put(follower(), followerIndex + 1)
+
     //TODO
+    //Commit Entries Here
     // update our tables for this member
     //If successful: update nextIndex and matchIndex for
     //follower
     stay()
   }
 
-  def  leaderStateHandler:Unit = {
+  def leaderStateHandler: Unit = {
     self ! BeginAsLeader(stateData.currentTerm, self)
   }
+
+  def replicateLog(sd: StateData) {
+    sd.membersExceptSelf foreach { member =>
+      // todo remove me
+      member ! AppendEntries(
+        sd.currentTerm,
+        replicatedLog,
+        fromIndex = nextIndex.valueFor(member),
+        leaderCommitIdx = replicatedLog.committedIndex,
+        leaderId = self
+      )
+    }
+  }
+
 
 }

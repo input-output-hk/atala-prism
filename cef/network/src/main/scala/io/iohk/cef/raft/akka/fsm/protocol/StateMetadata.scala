@@ -1,6 +1,7 @@
 package io.iohk.cef.raft.akka.fsm.protocol
 
 import akka.actor.ActorRef
+import io.iohk.cef.raft.akka.fsm.model.Term
 
 trait StateMetadata extends Serializable {
   type Member = ActorRef

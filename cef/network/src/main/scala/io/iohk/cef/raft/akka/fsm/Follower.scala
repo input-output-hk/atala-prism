@@ -1,5 +1,5 @@
 package io.iohk.cef.raft.akka.fsm
-import protocol._
+import io.iohk.cef.raft.akka.fsm.protocol._
 
 trait Follower {
   this : RaftActor =>
@@ -28,15 +28,15 @@ trait Follower {
         // the log with the later term is more up-to-date. If the logs
         // end with the same term, then whichever log is longer is
         // more up-to-date.
-        if (lastLogTerm < logEntries.lastTerm) {
+        if (lastLogTerm < replicatedLog.lastTerm) {
           log.info("Rejecting vote for {}, and {}. Candidate's lastLogTerm: {} < ours: {}",
-            candidate, term, lastLogTerm, logEntries.lastTerm)
+            candidate, term, lastLogTerm, replicatedLog.lastTerm)
           sender ! DeclineCandidate(myState.currentTerm)
           stay()
-        } else if (lastLogTerm == logEntries.lastTerm &&
-          lastLogIndex < logEntries.lastIndex) {
+        } else if (lastLogTerm == replicatedLog.lastTerm &&
+          lastLogIndex < replicatedLog.lastIndex) {
           log.info("Rejecting vote for {}, and {}. Candidate's lastLogIndex: {} < ours: {}",
-            candidate, term, lastLogIndex, logEntries.lastIndex)
+            candidate, term, lastLogIndex, replicatedLog.lastIndex)
           sender ! DeclineCandidate(myState.currentTerm)
           stay()
         } else {
@@ -58,12 +58,30 @@ trait Follower {
 
     // end of election
 
+    // take writes
+    case Event(msg: AppendEntries[_], sd: StateData) =>
+      // First check the consistency of this request
+      if (!replicatedLog.containsMatchingEntry(msg.prevLogTerm, msg.prevLogIndex)) {
+        log.info("Rejecting write (inconsistent log): {} {} {} ", msg.prevLogIndex, msg.prevLogTerm, replicatedLog)
+        leader ! AppendRejected(sd.currentTerm)
+        stay()
+      } else {
+        //TODO
+        appendEntries(msg, sd)
+      }
+
+    // end of take writes
+
   }
 
 
   def  followerStateHandler:Unit = {
     self ! BeginAsFollower(stateData.currentTerm, self)
   }
+  def appendEntries(msg: AppendEntries[_], sd: StateData): State = {
 
+    //TODO
+    acceptHeartbeat()
+  }
 
 }
