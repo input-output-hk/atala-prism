@@ -5,6 +5,7 @@ import io.iohk.cef.raft.akka.fsm.model.Term
 
 /**
   * Events for persisting changes to FSM internal state
+  * replace the ActorRef here by a node id MileStone 4
   */
 sealed trait DomainEvent
 case class UpdateTermEvent(t: Term) extends DomainEvent
