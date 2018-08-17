@@ -1,4 +1,5 @@
 package io.iohk.cef.network.encoding.nio
+import akka.util.ByteString
 
 trait ByteLength[T] {
   def apply(t: T): Int
@@ -19,6 +20,11 @@ object ByteLength {
   implicit val lengthChar: ByteLength[Char] = _ => 2
   implicit val lengthString: ByteLength[String] = s => 4 + s.length * 2
 
+  private val md5Length = 16
+
   implicit def lengthArray[T](implicit lt: ByteLength[T]): ByteLength[Array[T]] =
-    a => 4 + 4 + 4 + a.foldLeft(0)((sum, next) => sum + lt(next))
+    a => 4 + 4 + 4 + md5Length + a.foldLeft(0)((sum, next) => sum + lt(next))
+
+  implicit val lengthByteString: ByteLength[ByteString] =
+    b => 4 + 4 + 4 + md5Length + b.length
 }

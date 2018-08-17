@@ -122,7 +122,7 @@ class ConversationalNetworkSpec extends FlatSpec with MockitoSugar {
     val peerInfo = PeerInfo(nodeId, configuration)
 
     val network =
-      new ConversationalNetwork[String](peerInfo, messageHandler, codec, networkDiscovery, new Transports(peerInfo))
+      new ConversationalNetwork[String](peerInfo, messageHandler, networkDiscovery, new Transports(peerInfo))
 
     NetworkFixture(nodeId, peerInfo, networkDiscovery, messageHandler, network)
   }
