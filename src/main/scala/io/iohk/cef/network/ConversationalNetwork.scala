@@ -17,9 +17,6 @@ import io.iohk.cef.network.transport._
   *
   * @param peerInfo the peer configuration of this node
   * @param messageHandler The messageHandler receives inbound messages from remote peers.
-  * @param messageCodec This is a codec which can decode your messages to/from NIO ByteBuffers.
-  *                     It should be possible to summon an encoder for any case class using
-  *                     encoders io.iohk.cef.network.encoding.nio.
   * @param networkDiscovery Encapsulates a routing table implementation.
   * @param transports helpers to obtain network transport instances.
   */
