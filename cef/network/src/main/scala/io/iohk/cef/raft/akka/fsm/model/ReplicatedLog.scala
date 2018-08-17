@@ -57,6 +57,13 @@ case class ReplicatedLog[T <: Command](
     }
   }
 
+  // log actions
+  def commit(n: Int): ReplicatedLog[T] = copy(committedIndex = n)
+
+  def between(fromIndex: Int, toIndex: Int): List[Entry[T]] =
+  // adjusted of fromIndex: fromIndex - 1. So, fromIndex is exclusive.
+    entries.slice(fromIndex, toIndex)
+
   def append(entry: Entry[T], take: Int = entries.length): ReplicatedLog[T] =
     append(List(entry), take)
 

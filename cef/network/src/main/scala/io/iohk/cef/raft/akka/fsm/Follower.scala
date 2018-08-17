@@ -75,9 +75,12 @@ trait Follower {
   }
 
 
-  def  followerStateHandler:Unit = {
+  def  followerStateHandler():Unit = {
     self ! BeginAsFollower(stateData.currentTerm, self)
   }
+
+
+
   def appendEntries(msg: AppendEntries[_], sd: StateData): State = {
 
     //TODO

@@ -75,6 +75,18 @@ trait Candidate {
 
     // end of election
 
+    // handle appends
+    case Event(append: AppendEntries[_], sd: StateData) =>
+      val leaderIsAhead = append.term >= sd.currentTerm
+
+      if (leaderIsAhead) {
+        log.info("Reverting to Follower, because got AppendEntries from Leader in {}, but am in {}", append.term, sd.currentTerm)
+        sd.self forward append
+        goto(Follower) applying GoToFollowerEvent()
+      } else {
+        stay()
+      }
+
   }
 
   def  candidateStateHandler:Unit = {

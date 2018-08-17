@@ -58,6 +58,6 @@ trait StateMetadata extends Serializable {
 
   object StateData {
     def initial(implicit self: ActorRef): StateData =
-      new StateData(Term(0), self,ClusterConfiguration, None, 0)
+      new StateData(Term(0), self,ClusterConfiguration(), None, 0)
   }
 }

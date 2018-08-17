@@ -25,6 +25,7 @@ abstract class RaftActor extends Actor with PersistentFSM[RaftState, StateData, 
 
   var replicatedLog = ReplicatedLog.empty[Command](raftConfig.defaultAppendEntriesBatchSize)
   var nextIndex = LogIndexMap.initialize(Set.empty, replicatedLog.nextIndex)
+  var matchIndex = LogIndexMap.initialize(Set.empty, 0)
 
 
   override def domainEventClassTag: ClassTag[DomainEvent] = classTag[DomainEvent]

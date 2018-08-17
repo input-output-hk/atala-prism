@@ -1,13 +1,11 @@
 package io.iohk.cef.raft.akka.fsm
 
 import akka.actor.ActorRef
-import io.iohk.cef.raft.akka.fsm.model.{Entry, LogIndexMap}
+import io.iohk.cef.raft.akka.fsm.model.{Command, Entry, LogIndexMap, ReplicatedLog}
 import io.iohk.cef.raft.akka.fsm.protocol._
 
 trait Leader {
   this: RaftActor =>
-  private val HeartbeatTimerName = "heartbeat-timer"
-
   val leaderEvents: StateFunction = {
     case Event(BeginAsLeader(term, _), sd: StateData) =>
       log.info("Became leader for {}", sd.currentTerm)
@@ -19,9 +17,7 @@ trait Leader {
 
     case Event(ClientMessage(client, command), sd: StateData) =>
       log.info("Appending command: [{}] from {} to replicated log...", command, client)
-
       val entry = Entry(command, sd.currentTerm, replicatedLog.nextIndex, Some(client))
-
       log.debug("adding to log: {}", entry)
       replicatedLog += entry
       log.debug("log status = {}", replicatedLog)
@@ -68,24 +64,19 @@ trait Leader {
       registerAppendSuccessful(follower(), msg, sd)
     // End append entries response handling
 
-
-
     //TODO Somoe other event AS Leader based on RAFT paper
 
   }
+  private val HeartbeatTimerName = "heartbeat-timer"
 
   def initializeLeaderState(members: Set[ActorRef]) {
-    log.info("Preparing nextIndex and matchIndex table for followers, init all to: logEntries.lastIndex = {}",
-             replicatedLog.lastIndex)
-      nextIndex = LogIndexMap.initialize(members, replicatedLog.lastIndex)
+    log.info(
+      "Preparing nextIndex and matchIndex table for followers, init all to: logEntries.lastIndex = {}",
+      replicatedLog.lastIndex
+    )
+    nextIndex = LogIndexMap.initialize(members, replicatedLog.lastIndex)
+    matchIndex = LogIndexMap.initialize(members, -1)
 
-    //    Volatile state on leaders:
-//    (Reinitialized after election)
-//    nextIndex[]
-//    matchIndex[]
-//    for each server, index of the next log entry to send to that server (initialized to leader
-//    last log index + 1)
-//    for each server, index of highest log entry known to be replicated on server (initialized to 0, increases monotonically)
   }
 
   def stopHeartbeat() {
@@ -103,54 +94,6 @@ trait Leader {
     replicateLog(sd)
   }
 
-
-  def sendEntries(follower: ActorRef, sd: StateData) {
-    follower ! AppendEntries(
-      sd.currentTerm,
-      replicatedLog,
-      fromIndex = nextIndex.valueFor(follower),
-      leaderCommitIdx = replicatedLog.committedIndex,
-      leaderId = sd.self
-    )
-  }
-
-  /**
-    * RAFT Paper
-    * If AppendEntries fails because of log inconsistency:
-    * decrement nextIndex and retry
-    */
-  def registerAppendRejected(member: ActorRef, msg: AppendRejected, sd: StateData): State = {
-    val AppendRejected(followerTerm) = msg
-
-    log.info("Follower {} rejected write: {}, back out the first index in this term and retry",
-             follower(),
-             followerTerm)
-    if (nextIndex.valueFor(follower()) > 1) {
-      nextIndex.decrementFor(follower())
-    }
-    sendEntries(follower(), sd)
-    stay()
-  }
-
-  def registerAppendSuccessful(member: ActorRef, msg: AppendSuccessful, sd: StateData): State = {
-    val AppendSuccessful(followerTerm, followerIndex) = msg
-
-    log.info("Follower {} took write in term: {}", follower(), followerTerm)
-    assert(followerIndex <= replicatedLog.lastIndex)
-    nextIndex.put(follower(), followerIndex + 1)
-
-    //TODO
-    //Commit Entries Here
-    // update our tables for this member
-    //If successful: update nextIndex and matchIndex for
-    //follower
-    stay()
-  }
-
-  def leaderStateHandler: Unit = {
-    self ! BeginAsLeader(stateData.currentTerm, self)
-  }
-
   def replicateLog(sd: StateData) {
     sd.membersExceptSelf foreach { member =>
       // todo remove me
@@ -164,5 +107,70 @@ trait Leader {
     }
   }
 
+  /**
+    * RAFT Paper
+    * If AppendEntries fails because of log inconsistency:
+    * decrement nextIndex and retry
+    */
+  def registerAppendRejected(member: ActorRef, msg: AppendRejected, sd: StateData): State = {
+    val AppendRejected(followerTerm) = msg
+
+    log.info(
+      "Follower {} rejected write: {}, back out the first index in this term and retry",
+      follower(),
+      followerTerm
+    )
+    if (nextIndex.valueFor(follower()) > 1) {
+      nextIndex.decrementFor(follower())
+    }
+    sendEntries(follower(), sd)
+    stay()
+  }
+
+  def sendEntries(follower: ActorRef, sd: StateData) {
+    follower ! AppendEntries(
+      sd.currentTerm,
+      replicatedLog,
+      fromIndex = nextIndex.valueFor(follower),
+      leaderCommitIdx = replicatedLog.committedIndex,
+      leaderId = sd.self
+    )
+  }
+
+  def registerAppendSuccessful(member: ActorRef, msg: AppendSuccessful, sd: StateData): State = {
+    val AppendSuccessful(followerTerm, followerIndex) = msg
+
+    log.info("Follower {} took write in term: {}", follower(), followerTerm)
+    assert(followerIndex <= replicatedLog.lastIndex)
+    // update our map for this member
+    nextIndex.put(follower(), followerIndex + 1)
+    matchIndex.putIfGreater(follower(), followerIndex)
+
+    replicatedLog = commitEntry(sd, matchIndex, replicatedLog)
+
+    stay()
+  }
+
+  def commitEntry(m: StateData,
+                  matchIndex: LogIndexMap,
+                  replicatedLog: ReplicatedLog[Command]): ReplicatedLog[Command] = {
+    val indexOnMajority = matchIndex.consensusForIndex(m.config)
+    val willCommit = indexOnMajority > replicatedLog.committedIndex
+
+    if (willCommit) {
+      log.info("Consensus for persisted index: {}. (Comitted index: {}, will commit now: {})",
+               indexOnMajority,
+               replicatedLog.committedIndex,
+               willCommit)
+
+      replicatedLog.commit(indexOnMajority)
+    } else {
+      replicatedLog
+    }
+  }
+
+  def leaderStateHandler: Unit = {
+    self ! BeginAsLeader(stateData.currentTerm, self)
+  }
 
 }

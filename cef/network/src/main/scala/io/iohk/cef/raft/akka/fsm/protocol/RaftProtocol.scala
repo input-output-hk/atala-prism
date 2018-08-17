@@ -71,4 +71,6 @@ trait RaftProtocol extends Serializable {
   case class AppendRejected(term: Term)                   extends AppendResponse
   case class AppendSuccessful(term: Term, lastIndex: Int) extends AppendResponse
 
+  case class ChangeConfiguration(newConf: ClusterConfiguration) extends Message
+
 }
