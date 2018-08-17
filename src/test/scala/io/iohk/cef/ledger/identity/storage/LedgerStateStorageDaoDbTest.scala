@@ -12,7 +12,7 @@ trait LedgerStateStorageDaoDbTest extends fixture.FlatSpec
 
   behavior of "LedgerStateStorage"
 
-  it should "execute a slice" in { implicit session =>
+  it should "execute an slice" in { implicit session =>
     val list = List(
       ("one", ByteString("one")),
       ("two", ByteString("two"))
