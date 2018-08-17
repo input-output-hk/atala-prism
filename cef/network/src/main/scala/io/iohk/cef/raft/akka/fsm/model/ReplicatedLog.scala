@@ -41,7 +41,7 @@ case class ReplicatedLog[T <: Command](
   /**
     * @param fromIncluding index from which to start the slice (including the entry at that index)
     *
-    * N.B. log entries are 1-indexed.
+    * log entries are 1-indexed.
     */
   def entriesBatchFrom(fromIncluding: Int, howMany: Int = 5): List[Entry[T]] = {
     val adjusted = fromIncluding - 1

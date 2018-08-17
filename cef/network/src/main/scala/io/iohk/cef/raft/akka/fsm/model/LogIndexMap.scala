@@ -15,11 +15,6 @@ case class LogIndexMap private (private var backing: Map[ActorRef, Int], private
     value
   }
 
-  def incrementFor(member: ActorRef): Int = {
-    val value = backing(member) + 1
-    backing = backing.updated(member, value)
-    value
-  }
 
   def put(member: ActorRef, value: Int): Unit = {
     backing = backing.updated(member, value)
