@@ -1,18 +1,18 @@
 package io.iohk.cef.ledger.identity.storage
 import akka.util.ByteString
-import io.iohk.cef.ledger.identity._
+import io.iohk.cef.ledger.identity.{IdentityLedgerState, IdentityLedgerStateStorageFixture}
 import io.iohk.cef.ledger.identity.storage.scalike.dao.IdentityLedgerStateStorageDao
 import org.scalatest.{MustMatchers, fixture}
 import scalikejdbc.scalatest.AutoRollback
 
-trait LedgerStateStorageDaoDbTest extends fixture.FlatSpec
+trait IdentityLedgerStateStorageDaoDbTest extends fixture.FlatSpec
   with AutoRollback
   with MustMatchers
   with IdentityLedgerStateStorageFixture {
 
   behavior of "LedgerStateStorage"
 
-  it should "execute an slice" in { implicit session =>
+  it should "execute a slice" in { implicit session =>
     val list = List(
       ("one", ByteString("one")),
       ("two", ByteString("two"))

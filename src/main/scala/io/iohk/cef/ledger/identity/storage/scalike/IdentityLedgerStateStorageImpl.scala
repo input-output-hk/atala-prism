@@ -2,11 +2,11 @@ package io.iohk.cef.ledger.identity.storage.scalike
 
 import akka.util.ByteString
 import io.iohk.cef.ledger.identity.IdentityLedgerState
-import io.iohk.cef.ledger.identity.storage.scalike.dao.LedgerStateStorageDao
+import io.iohk.cef.ledger.identity.storage.scalike.dao.IdentityLedgerStateStorageDao
 import io.iohk.cef.ledger.storage.LedgerStateStorage
 import scalikejdbc._
 
-class LedgerStateStorageImpl(ledgerStateStorageDao: LedgerStateStorageDao)
+class IdentityLedgerStateStorageImpl(ledgerStateStorageDao: IdentityLedgerStateStorageDao)
   extends LedgerStateStorage[Set[ByteString]] {
 
   override def slice(keys: Set[String]): IdentityLedgerState = {

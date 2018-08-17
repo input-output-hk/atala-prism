@@ -1,0 +1,7 @@
+syntax = "proto2";
+
+package io.iohk.cef.ledger.identity.storage.protobuf;
+
+message PublicKeyListProto {
+    repeated bytes publicKeys = 1;
+}

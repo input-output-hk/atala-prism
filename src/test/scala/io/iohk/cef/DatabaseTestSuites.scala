@@ -1,12 +1,12 @@
 package io.iohk.cef
 
 import io.iohk.cef.network.discovery.db.KnownNodeStorageImplDbTest
-import io.iohk.cef.ledger.LedgerDbTest
+import io.iohk.cef.ledger.LedgerItDbTest
 import io.iohk.cef.ledger.chimeric.ChimericLedgerItDbTest
 import io.iohk.cef.ledger.chimeric.storage.scalike.dao.ChimericLedgerStateStorageDaoDbTest
 import io.iohk.cef.ledger.identity.IdentityLedgerItDbTest
-import io.iohk.cef.ledger.identity.storage.LedgerStateStorageDaoDbTest
-import io.iohk.cef.ledger.storage.dao.LedgerStorageDaoDbTest
+import io.iohk.cef.ledger.identity.storage.IdentityLedgerStateStorageDaoDbTest
+import io.iohk.cef.ledger.storage.dao.{LedgerStateStorageDaoDbTest, LedgerStorageDaoDbTest}
 import org.flywaydb.core.Flyway
 import org.scalatest.{BeforeAndAfterAll, Suites}
 import scalikejdbc.JDBCSettings
@@ -14,12 +14,13 @@ import scalikejdbc.config.DBs
 
 class DatabaseTestSuites extends Suites(
     new KnownNodeStorageImplDbTest {},
-    new LedgerStateStorageDaoDbTest {},
+    new IdentityLedgerStateStorageDaoDbTest {},
     new IdentityLedgerItDbTest {},
     new LedgerStorageDaoDbTest {},
-    new LedgerDbTest {},
+    new LedgerItDbTest {},
     new ChimericLedgerStateStorageDaoDbTest {},
-    new ChimericLedgerItDbTest {}
+    new ChimericLedgerItDbTest {},
+    new LedgerStateStorageDaoDbTest {},
   ) with BeforeAndAfterAll {
 
   val flyway = new Flyway()
