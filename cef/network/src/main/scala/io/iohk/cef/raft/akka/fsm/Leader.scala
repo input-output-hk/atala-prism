@@ -23,8 +23,8 @@ trait Leader {
       log.debug("log status = {}", replicatedLog)
       stay()
 
-    case Event(SendHeartbeat, m: StateData) =>
-      sendHeartbeat(m)
+    case Event(SendHeartbeat, sd: StateData) =>
+      sendHeartbeat(sd)
       stay()
 
     // Leader handling
@@ -151,10 +151,10 @@ trait Leader {
     stay()
   }
 
-  def commitEntry(m: StateData,
+  def commitEntry(sd: StateData,
                   matchIndex: LogIndexMap,
                   replicatedLog: ReplicatedLog[Command]): ReplicatedLog[Command] = {
-    val indexOnMajority = matchIndex.consensusForIndex(m.config)
+    val indexOnMajority = matchIndex.consensusForIndex(sd.config)
     val willCommit = indexOnMajority > replicatedLog.committedIndex
 
     if (willCommit) {

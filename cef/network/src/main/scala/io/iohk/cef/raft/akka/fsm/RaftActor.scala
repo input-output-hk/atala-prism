@@ -86,7 +86,7 @@ abstract class RaftActor extends Actor with PersistentFSM[RaftState, StateData, 
   // End Helper for timeout
 
   /** Start a new election */
-  def beginElection(m: StateData):PersistentFSMState= {
+  def beginElection(sd: StateData):PersistentFSMState= {
       goto(Candidate) applying StartElectionEvent()
   }
 

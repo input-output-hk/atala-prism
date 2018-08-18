@@ -50,9 +50,7 @@ trait RaftProtocol extends Serializable {
       if (fromIndex > replicatedLog.nextIndex) {
         throw new IllegalArgumentException(s"fromIndex ($fromIndex) > nextIndex (${replicatedLog.nextIndex})")
       }
-
       val entries = replicatedLog.entriesBatchFrom(fromIndex)
-
       val prevIndex = List(0, fromIndex - 1).max
       val prevTerm = replicatedLog.termAt(prevIndex)
 
