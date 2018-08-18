@@ -54,13 +54,13 @@ abstract class RaftActor extends Actor with PersistentFSM[RaftState, StateData, 
   when(Leader)(leaderEvents)
 
   onTransition {
-    case Init -> Follower => followerStateHandler
+    case Init -> Follower => followerStateHandler()
 
-    case Follower -> Candidate => candidateStateHandler
+    case Follower -> Candidate => candidateStateHandler()
 
-    case Candidate -> Leader => leaderStateHandler
+    case Candidate -> Leader => leaderStateHandler()
 
-    case _ -> Follower => followerStateHandler
+    case _ -> Follower => followerStateHandler()
 
   }
 

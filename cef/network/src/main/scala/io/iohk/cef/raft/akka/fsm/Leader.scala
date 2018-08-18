@@ -169,7 +169,7 @@ trait Leader {
     }
   }
 
-  def leaderStateHandler: Unit = {
+  def leaderStateHandler(): Unit = {
     self ! BeginAsLeader(stateData.currentTerm, self)
   }
 

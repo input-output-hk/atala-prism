@@ -89,7 +89,7 @@ trait Candidate {
 
   }
 
-  def  candidateStateHandler:Unit = {
+  def  candidateStateHandler():Unit = {
     self ! BeginElection
   }
 }

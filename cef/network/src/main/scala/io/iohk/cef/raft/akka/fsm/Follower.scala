@@ -62,14 +62,14 @@ trait Follower {
     // end of election
 
     // take writes
-    case Event(msg: AppendEntries[Command @unchecked], sd: StateData) =>
+    case Event(message: AppendEntries[Command @unchecked], sd: StateData) =>
       // First check the consistency of this request
-      if (!replicatedLog.containsMatchingEntry(msg.prevLogTerm, msg.prevLogIndex)) {
-        log.info("Rejecting write (inconsistent log): {} {} {} ", msg.prevLogIndex, msg.prevLogTerm, replicatedLog)
+      if (!replicatedLog.containsMatchingEntry(message.prevLogTerm, message.prevLogIndex)) {
+        log.info("Rejecting write (inconsistent log): {} {} {} ", message.prevLogIndex, message.prevLogTerm, replicatedLog)
         leader ! AppendRejected(sd.currentTerm)
         stay()
       } else {
-        appendEntries(msg, sd)
+        appendEntries(message, sd)
       }
 
     // end of take writes
@@ -82,24 +82,24 @@ trait Follower {
   }
 
 
-  def appendEntries(msg: AppendEntries[Command], sd: StateData): State = {
+  def appendEntries(message: AppendEntries[Command], sd: StateData): State = {
 
-    if (leaderIsLagging(msg, sd)) {
-      log.info("Rejecting write (Leader is lagging) of: " + msg + "; " + replicatedLog)
+    if (leaderIsLagging(message, sd)) {
+      log.info("Rejecting write (Leader is lagging) of: " + message + "; " + replicatedLog)
       leader ! AppendRejected(sd.currentTerm)
       stay()
     }else {
-      log.debug("Appending: " + msg.entries)
-      leader ! append(msg.entries, sd)
-      replicatedLog = commitUntilLeadersIndex(sd, msg)
+      log.debug("Appending: " + message.entries)
+      leader ! append(message.entries, sd)
+      replicatedLog = commitUntilLeadersIndex(sd, message)
 
       acceptHeartbeat()
     }
 
   }
 
-  def leaderIsLagging(msg: AppendEntries[Command], sd: StateData): Boolean =
-    msg.term < sd.currentTerm
+  def leaderIsLagging(message: AppendEntries[Command], sd: StateData): Boolean =
+    message.term < sd.currentTerm
 
   def append(entries: immutable.Seq[Entry[Command]], sd: StateData): AppendSuccessful = {
     if (entries.nonEmpty) {
@@ -111,7 +111,7 @@ trait Follower {
     AppendSuccessful(replicatedLog.lastTerm, replicatedLog.lastIndex)
   }
 
-  def commitUntilLeadersIndex[T](m: StateData, msg: AppendEntries[_]): ReplicatedLog[Command] = {
+  def commitUntilLeadersIndex[T](sd: StateData, msg: AppendEntries[_]): ReplicatedLog[Command] = {
     val entries = replicatedLog.between(replicatedLog.committedIndex, msg.leaderCommitId)
 
     entries.foldLeft(replicatedLog) { case (repLog, entry) =>
