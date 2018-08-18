@@ -1,7 +1,7 @@
 package io.iohk.cef.raft.akka.fsm
 
 import akka.actor.ActorRef
-import io.iohk.cef.raft.akka.fsm.model.{Command, Entry, LogIndexMap, ReplicatedLog}
+import io.iohk.cef.raft.akka.fsm.model.{Entry, LogIndexMap, ReplicatedLog}
 import io.iohk.cef.raft.akka.fsm.protocol._
 
 trait Leader {
@@ -15,9 +15,9 @@ trait Leader {
 
     // client request
 
-    case Event(ClientMessage(client, command), sd: StateData) =>
-      log.info("Appending command: [{}] from {} to replicated log...", command, client)
-      val entry = Entry(command, sd.currentTerm, replicatedLog.nextIndex, Some(client))
+    case Event(ClientMessage(client, cmd:Command @unchecked), sd: StateData) =>
+      log.info("Appending command: [{}] from {} to replicated log...", cmd, client)
+      val entry = Entry(cmd, sd.currentTerm, replicatedLog.nextIndex, Some(client))
       log.debug("adding to log: {}", entry)
       replicatedLog += entry
       log.debug("log status = {}", replicatedLog)
@@ -28,7 +28,7 @@ trait Leader {
       stay()
 
     // Leader handling
-    case Event(append: AppendEntries[_], sd: StateData) if append.term > sd.currentTerm =>
+    case Event(append: AppendEntries[Command @unchecked], sd: StateData) if append.term > sd.currentTerm =>
       log.info(
         "Leader (@ {}) got AppendEntries from fresher Leader " +
           "(@ {}), will step down and the Leader will keep being: {}",
@@ -39,7 +39,7 @@ trait Leader {
       stopHeartbeat()
       stepDown(sd)
 
-    case Event(append: AppendEntries[_], sd: StateData) if append.term <= sd.currentTerm =>
+    case Event(append: AppendEntries[Command @unchecked], sd: StateData) if append.term <= sd.currentTerm =>
       log.warning(
         "Leader (@ {}) got AppendEntries from rogue Leader ({} @ {}); It's not fresher than self." +
           " Will send entries, to force it to step down.",

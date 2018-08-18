@@ -1,5 +1,8 @@
 package io.iohk.cef.raft.akka.fsm
+import io.iohk.cef.raft.akka.fsm.model.{ Entry, ReplicatedLog}
 import io.iohk.cef.raft.akka.fsm.protocol._
+
+import scala.collection.immutable
 
 trait Follower {
   this : RaftActor =>
@@ -59,14 +62,13 @@ trait Follower {
     // end of election
 
     // take writes
-    case Event(msg: AppendEntries[_], sd: StateData) =>
+    case Event(msg: AppendEntries[Command @unchecked], sd: StateData) =>
       // First check the consistency of this request
       if (!replicatedLog.containsMatchingEntry(msg.prevLogTerm, msg.prevLogIndex)) {
         log.info("Rejecting write (inconsistent log): {} {} {} ", msg.prevLogIndex, msg.prevLogTerm, replicatedLog)
         leader ! AppendRejected(sd.currentTerm)
         stay()
       } else {
-        //TODO
         appendEntries(msg, sd)
       }
 
@@ -80,11 +82,42 @@ trait Follower {
   }
 
 
+  def appendEntries(msg: AppendEntries[Command], sd: StateData): State = {
 
-  def appendEntries(msg: AppendEntries[_], sd: StateData): State = {
+    if (leaderIsLagging(msg, sd)) {
+      log.info("Rejecting write (Leader is lagging) of: " + msg + "; " + replicatedLog)
+      leader ! AppendRejected(sd.currentTerm)
+      stay()
+    }else {
+      log.debug("Appending: " + msg.entries)
+      leader ! append(msg.entries, sd)
+      replicatedLog = commitUntilLeadersIndex(sd, msg)
 
-    //TODO
-    acceptHeartbeat()
+      acceptHeartbeat()
+    }
+
+  }
+
+  def leaderIsLagging(msg: AppendEntries[Command], sd: StateData): Boolean =
+    msg.term < sd.currentTerm
+
+  def append(entries: immutable.Seq[Entry[Command]], sd: StateData): AppendSuccessful = {
+    if (entries.nonEmpty) {
+      val atIndex = entries.map(_.index).min
+      log.debug("executing: replicatedLog = replicatedLog.append({}, {})", entries, atIndex-1)
+
+      replicatedLog = replicatedLog.append(entries, take=atIndex-1)
+    }
+    AppendSuccessful(replicatedLog.lastTerm, replicatedLog.lastIndex)
+  }
+
+  def commitUntilLeadersIndex[T](m: StateData, msg: AppendEntries[_]): ReplicatedLog[Command] = {
+    val entries = replicatedLog.between(replicatedLog.committedIndex, msg.leaderCommitId)
+
+    entries.foldLeft(replicatedLog) { case (repLog, entry) =>
+      log.debug("committing entry {} on Follower, leader is committed until [{}]", entry, msg.leaderCommitId)
+      repLog.commit(entry.index)
+    }
   }
 
 }

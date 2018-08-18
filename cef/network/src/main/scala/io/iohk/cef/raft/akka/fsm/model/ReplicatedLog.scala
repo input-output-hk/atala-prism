@@ -21,9 +21,9 @@ case class Entry[T](
  * @param defaultBatchSize number of commands that can be sent together in one message.
  */
 
-sealed trait Command extends Product with  Serializable
+//sealed trait Command extends Product with  Serializable
 
-case class ReplicatedLog[T <: Command](
+case class ReplicatedLog[T](
   entries: List[Entry[T]],
   committedIndex: Int,
   defaultBatchSize: Int) {
@@ -74,7 +74,7 @@ case class ReplicatedLog[T <: Command](
     append(List(newEntry), entries.size)
 
   /**
-    * Performs the "consistency check", which checks if the data that we just got from the
+    * Performs the "consistency check", which checks if the data that we just got
     */
   def containsMatchingEntry(otherPrevTerm: Term, otherPrevIndex: Int): Boolean =
     (otherPrevTerm == Term(0) && otherPrevIndex == 1) ||
@@ -92,13 +92,13 @@ case class ReplicatedLog[T <: Command](
   }
 }
 
-class EmptyReplicatedLog[T <: Command](defaultBatchSize: Int) extends ReplicatedLog[T](List.empty, 0, defaultBatchSize) {
+class EmptyReplicatedLog[T](defaultBatchSize: Int) extends ReplicatedLog[T](List.empty, 0, defaultBatchSize) {
   override def lastTerm: Term = Term(0)
   override def lastIndex: Int = 1
 }
 
 object ReplicatedLog {
-  def empty[T <:Command](defaultBatchSize: Int): ReplicatedLog[T] = new EmptyReplicatedLog[T](defaultBatchSize)
+  def empty[T](defaultBatchSize: Int): ReplicatedLog[T] = new EmptyReplicatedLog[T](defaultBatchSize)
 }
 
 

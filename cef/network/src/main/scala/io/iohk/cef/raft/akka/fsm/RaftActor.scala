@@ -14,7 +14,7 @@ import config.RaftConfiguration
 abstract class RaftActor extends Actor with PersistentFSM[RaftState, StateData, DomainEvent]
   with Follower with Candidate with Leader with InitialState {
 
-
+  type Command
 
   type PersistentFSMState = PersistentFSM.State[RaftState, StateData, DomainEvent]
 

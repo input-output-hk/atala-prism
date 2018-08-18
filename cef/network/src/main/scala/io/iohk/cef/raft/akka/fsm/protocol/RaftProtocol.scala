@@ -1,7 +1,7 @@
 package io.iohk.cef.raft.akka.fsm.protocol
 
 import akka.actor.ActorRef
-import io.iohk.cef.raft.akka.fsm.model.{Command, Entry, ReplicatedLog, Term}
+import io.iohk.cef.raft.akka.fsm.model.{Entry, ReplicatedLog, Term}
 
 import scala.collection.immutable
 trait RaftProtocol extends Serializable {
@@ -28,7 +28,7 @@ trait RaftProtocol extends Serializable {
   /**
     * Wrap messages you want to send to the underlying replicated state machine
     */
-  case class ClientMessage[T <: Command](client: ActorRef, cmd: T) extends Message
+  case class ClientMessage[T](client: ActorRef, cmd: T) extends Message
 
 
 
@@ -46,7 +46,7 @@ trait RaftProtocol extends Serializable {
 
   object AppendEntries {
     // Throws IllegalArgumentException if fromIndex > replicatedLog.length
-    def apply[T <: Command](term: Term, replicatedLog: ReplicatedLog[T], fromIndex: Int,leaderCommitIdx: Int , leaderId:ActorRef): AppendEntries[T] = {
+    def apply[T](term: Term, replicatedLog: ReplicatedLog[T], fromIndex: Int,leaderCommitIdx: Int , leaderId:ActorRef): AppendEntries[T] = {
       if (fromIndex > replicatedLog.nextIndex) {
         throw new IllegalArgumentException(s"fromIndex ($fromIndex) > nextIndex (${replicatedLog.nextIndex})")
       }
