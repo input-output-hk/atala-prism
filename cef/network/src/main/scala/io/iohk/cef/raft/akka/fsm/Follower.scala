@@ -9,7 +9,7 @@ trait Follower {
 
 
   val followerEvents : StateFunction = {
-    case Event(BeginAsFollower(term, _), myState: StateData) =>
+    case Event(BeginAsFollower(term, _), _) =>
       stay()
 
     // timeout,  Need to start an election
@@ -17,7 +17,7 @@ trait Follower {
       beginElection(myState)
 
     // election
-    case Event(r @ RequestVote(term, candidate, lastLogTerm, lastLogIndex), myState: StateData)
+    case Event(r @ RequestVote(term, _, _, _), myState: StateData)
       if term > myState.currentTerm =>
       log.info("Received newer {}. Current term is {}.", term, myState.currentTerm)
       stay() applying UpdateTermEvent(term)
