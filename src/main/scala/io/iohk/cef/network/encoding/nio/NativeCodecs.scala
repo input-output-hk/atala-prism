@@ -3,6 +3,7 @@ package io.iohk.cef.network.encoding.nio
 import java.nio.ByteBuffer
 import java.nio.ByteBuffer.allocate
 
+import akka.util.ByteString
 import io.iohk.cef.network.encoding.nio.ByteLength._
 import io.iohk.cef.network.encoding.nio.CodecDecorators.{typeCodeDecoder, typeCodeEncoder, verifyingRemaining}
 
@@ -134,14 +135,6 @@ trait NativeCodecs {
       }
     }
 
-//  implicit def iterableEncoder[T: ClassTag, I <: Iterable[T]](implicit enc: NioEncoder[T],
-//                                                              lt: ByteLength[Array[T]]): NioEncoder[I] =
-//    (i: I) => arrayEncoder(enc, lt).encode(i.toArray)
-//
-//
-//  implicit def iterableDecoder[T, C](implicit dec: NioDecoder[T], cbf: CanBuildFrom[Array[T], T, C], ct: ClassTag[T]): NioDecoder[C] = (b: ByteBuffer) =>
-//    arrayDecoder(dec, ct).decode(b).map(arr => cbf.apply(arr).result())
-
   implicit def listEncoder[T](implicit enc: NioEncoder[T],
                               lt: ByteLength[Array[T]],
                               ct: ClassTag[T]): NioEncoder[List[T]] =
@@ -149,6 +142,16 @@ trait NativeCodecs {
 
   implicit def listDecoder[T](implicit dec: NioDecoder[T], ct: ClassTag[T]): NioDecoder[List[T]] =
     (b: ByteBuffer) => arrayDecoder(dec, ct).decode(b).map(arr => List(arr: _*))
+
+  implicit val byteStringEncoder: NioEncoder[ByteString] = new NioEncoder[ByteString] {
+    override def encode(b: ByteString): ByteBuffer =
+      arrayEncoder(byteEncoder, lengthArray[Byte], ClassTag(classOf[Byte])).encode(b.toArray)
+  }
+
+  implicit val byteStringDecoder: NioDecoder[ByteString] = new NioDecoder[ByteString] {
+    override def decode(b: ByteBuffer): Option[ByteString] =
+      arrayDecoder(byteDecoder, ClassTag(classOf[Byte])).decode(b).map(arr => ByteString(arr))
+  }
 }
 
 object NativeCodecs extends NativeCodecs

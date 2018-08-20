@@ -1,5 +1,6 @@
 package io.iohk.cef.network.encoding.nio
-import shapeless.{HList, HNil, ::}
+import akka.util.ByteString
+import shapeless.{::, Generic, HList, HNil, Lazy}
 
 trait Default[T] {
   val zero: T
@@ -37,8 +38,17 @@ object Default {
   implicit def mHNil: Default[HNil] = new Default[HNil] {
     val zero: HNil = HNil
   }
-  implicit def hCons[H, T <: HList](implicit hMon: Default[H], tMon: Default[T]): Default[H :: T] =
+  implicit def hCons[H, T <: HList](implicit hMon: Lazy[Default[H]], tMon: Default[T]): Default[H :: T] =
     new Default[H :: T] {
-      override val zero: H :: T = hMon.zero :: tMon.zero
+      override val zero: H :: T = hMon.value.zero :: tMon.zero
+    }
+
+  implicit val mByteString: Default[ByteString] = new Default[ByteString] {
+    override val zero: ByteString = ByteString()
+  }
+
+  implicit def genericDefault[T, R](implicit gen: Generic.Aux[T, R], defR: Lazy[Default[R]]): Default[T] =
+    new Default[T] {
+      override val zero: T = gen.from(defR.value.zero)
     }
 }
