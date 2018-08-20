@@ -10,15 +10,15 @@ import io.iohk.cef.network.transport.{FrameHeader, Transports}
 import io.iohk.cef.network.transport.tcp.NetUtils.{aRandomAddress, forwardPort, randomBytes}
 import io.iohk.cef.network.transport.tcp.TcpTransportConfiguration
 import org.mockito.ArgumentMatchers._
-import org.mockito.Mockito._
 import org.scalatest.FlatSpec
 import org.scalatest.concurrent.Eventually._
-import org.scalatest.mockito.MockitoSugar
+import org.mockito.Mockito.{when, verify, after}
+import org.scalatest.mockito.MockitoSugar._
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class ConversationalNetworkSpec extends FlatSpec with MockitoSugar {
+class ConversationalNetworkSpec extends FlatSpec {
 
   behavior of "ConversationalNetwork"
 
@@ -132,7 +132,7 @@ class ConversationalNetworkSpec extends FlatSpec with MockitoSugar {
     val peerInfo = PeerInfo(nodeId, configuration)
 
     val network =
-      new ConversationalNetwork[T](peerInfo, messageHandler, networkDiscovery, new Transports(peerInfo))
+      new ConversationalNetwork[T](messageHandler, networkDiscovery, new Transports(peerInfo))
 
     NetworkFixture(nodeId, peerInfo, networkDiscovery, messageHandler, network)
   }

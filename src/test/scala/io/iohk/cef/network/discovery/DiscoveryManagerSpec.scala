@@ -7,17 +7,17 @@ import akka.actor.typed.ActorRef._
 import akka.actor.typed.scaladsl.adapter._
 import akka.actor.typed.{ActorContext, ActorRef}
 import akka.actor.{ActorSystem, typed}
-import akka.testkit.typed.scaladsl.{BehaviorTestKit, TestInbox, TestProbe}
+import akka.testkit.typed.scaladsl.TestProbe
 import akka.testkit.{TestProbe => UntypedTestProbe}
 import akka.util.ByteString
 import akka.{actor => untyped}
 import io.iohk.cef.cryptolegacy
-import io.iohk.cef.network.discovery.db.{DummyKnownNodesStorage, KnownNode}
 import io.iohk.cef.network.discovery.DiscoveryListener.{DiscoveryListenerRequest, Ready, SendMessage, Start}
 import io.iohk.cef.network.discovery.DiscoveryManager._
+import io.iohk.cef.network.discovery.db.{DummyKnownNodesStorage, KnownNode}
 import io.iohk.cef.network.encoding.{Decoder, Encoder}
-import io.iohk.cef.network.{Capabilities, NodeInfo, NodeStatus, ServerStatus}
 import io.iohk.cef.network.telemetry.InMemoryTelemetry
+import io.iohk.cef.network.{Capabilities, NodeInfo, NodeStatus, ServerStatus}
 import io.iohk.cef.test.TestClock
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import org.scalamock.scalatest.MockFactory
@@ -57,7 +57,7 @@ class DiscoveryManagerSpec
 
     def bootstrapNodes: Set[NodeInfo] = Set()
 
-    def discoveryConfig = new DiscoveryConfig(
+    def discoveryConfig: DiscoveryConfig = new DiscoveryConfig(
       discoveryEnabled = true,
       interface = "0.0.0.0",
       port = 8090,
@@ -348,16 +348,12 @@ class DiscoveryManagerSpec
   }
   it should "not process pong messages in absence of a ping" in {
     new ListeningDiscoveryManager {
-      val inbox = TestInbox[DiscoveryListenerRequest]()
-      override val listenerMaker = (_: ActorContext[DiscoveryRequest]) => inbox.ref
-
-      val actor = BehaviorTestKit(createBehavior)
+      val actor = createActor
       val node = NodeInfo(nodeState.nodeId, discoveryAddress, serverAddress, nodeState.capabilities)
       val expiration = mockClock.instant().getEpochSecond + 1
       val pong = Pong(node, ByteString("token"), expiration)
-      actor.run(DiscoveryResponseWrapper(DiscoveryListener.MessageReceived(pong, discoveryAddress)))
+      actor ! DiscoveryResponseWrapper(DiscoveryListener.MessageReceived(pong, discoveryAddress))
       knownNodeStorage.getAll() mustBe Set()
-      inbox.receiveAll().collect { case w: DiscoveryResponseWrapper => w} mustBe Seq()
     }
   }
   it should "not process neighbors messages in absence of a seek" in {

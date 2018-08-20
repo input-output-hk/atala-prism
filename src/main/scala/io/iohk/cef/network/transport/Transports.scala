@@ -10,7 +10,7 @@ object Transports {
     peerInfo.configuration.tcpTransportConfiguration.isDefined
 }
 
-class Transports(peerInfo: PeerInfo) {
+class Transports(val peerInfo: PeerInfo) {
 
   private var nettyTransportRef: Option[NettyTransport] = None
 
