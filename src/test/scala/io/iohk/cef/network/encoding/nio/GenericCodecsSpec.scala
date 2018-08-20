@@ -1,4 +1,6 @@
 package io.iohk.cef.network.encoding.nio
+import java.nio.ByteBuffer
+
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
 import org.scalatest.FlatSpec
@@ -37,6 +39,19 @@ class GenericCodecsSpec extends FlatSpec {
 
       NioDecoder[B].decode(buffer) shouldBe None
       buffer.position() shouldBe 0
+    }
+  }
+
+  ignore should "not attempt to decode incomplete buffers" in {
+    forAll(as) { a =>
+      val buffer = NioEncoder[A].encode(a)
+
+      val size = buffer.remaining()
+
+      val halfBuffer: ByteBuffer = ByteBuffer.allocate(size - 1).put(buffer.array(), 0, size - 1)
+
+      NioDecoder[A].decode(halfBuffer) shouldBe None
+      halfBuffer.position() shouldBe 0
     }
   }
 }

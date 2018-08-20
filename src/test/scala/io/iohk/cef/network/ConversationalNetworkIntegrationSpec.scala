@@ -77,7 +77,7 @@ class ConversationalNetworkIntegrationSpec extends FlatSpec {
   }
 
   // Create a typed message channel on top of a base network instance
-  private def messageChannel[T: NioEncoder: NioDecoder: Default](
+  private def messageChannel[T: NioEncoder: NioDecoder](
       baseNetwork: BaseNetwork,
       messageHandler: (NodeId, T) => Unit): ConversationalNetwork[T] = {
     new ConversationalNetwork[T](messageHandler, baseNetwork.networkDiscovery, baseNetwork.transports)

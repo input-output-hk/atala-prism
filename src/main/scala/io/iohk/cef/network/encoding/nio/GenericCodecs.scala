@@ -12,7 +12,7 @@ trait GenericCodecs {
 
   implicit val hNilEncoder: NioEncoder[HNil] = _ => allocate(0)
 
-  implicit val hNilDecoder: NioDecoder[HNil] = _ => None
+  implicit val hNilDecoder: NioDecoder[HNil] = _ => Some(HNil)
 
   implicit def hListEncoder[H, T <: HList](implicit hEncoder: Lazy[NioEncoder[H]],
                                            tEncoder: NioEncoder[T]): NioEncoder[H :: T] = {
@@ -24,16 +24,13 @@ trait GenericCodecs {
   }
 
   implicit def hListDecoder[H, T <: HList](implicit hDecoder: Lazy[NioDecoder[H]],
-                                           tDecoder: NioDecoder[T],
-                                           tDef: Default[T]): NioDecoder[H :: T] =
+                                           tDecoder: NioDecoder[T]): NioDecoder[H :: T] =
     (b: ByteBuffer) => {
       val headOption: Option[H] = hDecoder.value.decode(b)
       val tailOption: Option[T] = tDecoder.decode(b)
       (headOption, tailOption) match {
         case (Some(h), Some(t)) =>
           Some(h :: t)
-        case (Some(h), None) =>
-          Some(h :: tDef.zero)
         case _ =>
           None
       }

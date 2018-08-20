@@ -19,7 +19,7 @@ import io.iohk.cef.network.transport._
   * @param networkDiscovery Encapsulates a routing table implementation.
   * @param transports helpers to obtain network transport instances.
   */
-class ConversationalNetwork[Message: NioEncoder: NioDecoder: Default](messageHandler: (NodeId, Message) => Unit,
+class ConversationalNetwork[Message: NioEncoder: NioDecoder](messageHandler: (NodeId, Message) => Unit,
                                                                       networkDiscovery: NetworkDiscovery,
                                                                       transports: Transports) {
 
