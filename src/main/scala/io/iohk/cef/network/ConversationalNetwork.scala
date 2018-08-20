@@ -15,7 +15,6 @@ import io.iohk.cef.network.transport._
   * by Van Jacobson, to distinguish from the 'disseminational'
   * networking style.
   *
-  * @param peerInfo the peer configuration of this node
   * @param messageHandler The messageHandler receives inbound messages from remote peers.
   * @param networkDiscovery Encapsulates a routing table implementation.
   * @param transports helpers to obtain network transport instances.
