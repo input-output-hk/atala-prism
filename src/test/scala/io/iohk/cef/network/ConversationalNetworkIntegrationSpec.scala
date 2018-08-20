@@ -3,10 +3,9 @@ import java.net.InetSocketAddress
 import java.security.SecureRandom
 import java.time.Clock
 
-import akka.actor.Scheduler
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.ActorContext
-import akka.util.{ByteString, Timeout}
+import akka.util.ByteString
 import io.iohk.cef.network.NodeStatus.NodeState
 import io.iohk.cef.network.discovery.DiscoveryListener.DiscoveryListenerRequest
 import io.iohk.cef.network.discovery.DiscoveryManager.DiscoveryRequest
@@ -154,32 +153,21 @@ class ConversationalNetworkIntegrationSpec extends FlatSpec {
       clock(),
       encoder,
       decoder,
-      synchronousListenerFactory(discoveryConfig, encoder, decoder),
+      listenerFactory(discoveryConfig, encoder, decoder),
       new SecureRandom(),
       InMemoryTelemetry.registry
     )
     discoveryBehavior
   }
 
-  private def synchronousListenerFactory(discoveryConfig: DiscoveryConfig,
+  private def listenerFactory(discoveryConfig: DiscoveryConfig,
                               encoder: Encoder[DiscoveryWireMessage, ByteString],
                               decoder: Decoder[ByteString, DiscoveryWireMessage])(
       context: ActorContext[DiscoveryRequest]): ActorRef[DiscoveryListenerRequest] = {
 
-//    import akka.actor.typed.scaladsl.AskPattern._
-    import scala.concurrent.duration._
-    implicit val timeout: Timeout = 1 second
-    implicit val scheduler: Scheduler = context.system.scheduler
-
-    val discoveryListenerRef = context.spawn(
+    context.spawn(
       DiscoveryListener.behavior(discoveryConfig, UDPBridge.creator(discoveryConfig, encoder, decoder)),
       "DiscoveryListener")
-
-//    val futureStart = discoveryListenerRef ? Start
-//
-//    Await.result(futureStart, 1 minute)
-    println("Discovery listener created.")
-    discoveryListenerRef
   }
 
   private def peerInfo2NodeInfoHack(peerInfo: PeerInfo): NodeInfo = {
