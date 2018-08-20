@@ -10,6 +10,7 @@ trait Follower {
 
   val followerEvents : StateFunction = {
     case Event(BeginAsFollower(term, _), _) =>
+      log.info("Current term is {}.", term)
       stay()
 
     // timeout,  Need to start an election
