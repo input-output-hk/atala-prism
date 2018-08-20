@@ -1,0 +1,22 @@
+syntax = "proto2";
+
+package io.iohk.cef.protobuf;
+import "ChimericLedger.proto";
+
+message ChimericStateValueProto {
+    oneof value {
+        ChimericValueProto valueWrapper = 1;
+        CreateCurrencyProto createCurrencyWrapper = 2;
+    }
+}
+
+message StringValueProto {
+    map<string, string> valueStringWrapper = 1;
+}
+
+message ChimericStateStringValueProto {
+    oneof value {
+        StringValueProto stringValueWrapper = 1;
+        CreateCurrencyProto stringCreateCurrencyWrapper = 2;
+    }
+}
