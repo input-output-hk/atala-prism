@@ -8,6 +8,9 @@ import org.scalacheck.Arbitrary._
 import org.scalatest.FlatSpec
 import org.scalatest.prop.GeneratorDrivenPropertyChecks._
 import org.scalatest.Matchers._
+import org.scalatest.mockito.MockitoSugar._
+import org.mockito.Mockito.verify
+import org.mockito.Mockito.atLeastOnce
 
 import scala.util.Random
 
@@ -59,6 +62,35 @@ class StreamCodecsSpec extends FlatSpec {
       val decodedStream = decodeStream(netBuffer, Random.shuffle(List(aDec, bDec, cDec)))
 
       decodedStream shouldBe asBsAndCs
+    }
+  }
+
+  it should "decode a network message and apply handlers" in {
+    forAll(genNetworkMess) { asBsAndCs =>
+      val buffers = asBsAndCs.collect({
+        case a: A => aEnc.encode(a)
+        case b: B => bEnc.encode(b)
+        case c: C => cEnc.encode(c)
+      })
+      val netBuffer = NetUtils.concatenate(buffers) // provides a random mix of As, Bs plus redundant C's as though 'on the wire'
+
+      val as: Seq[A] = asBsAndCs.collect({ case a: A => a })
+      val bs: Seq[B] = asBsAndCs.collect({ case b: B => b })
+      val cs: Seq[C] = asBsAndCs.collect({ case c: C => c })
+
+      val aHandler: A => Unit = mock[A => Unit]
+      val bHandler = mock[B => Unit]
+      val cHandler = mock[C => Unit]
+
+      val aDecoderFn = new DecoderFunction(aDec, aHandler)
+      val bDecoderFn = new DecoderFunction(bDec, bHandler)
+      val cDecoderFn = new DecoderFunction(cDec, cHandler)
+
+      decodeStream2(netBuffer, Random.shuffle(List(aDecoderFn, bDecoderFn, cDecoderFn)))
+
+      as.foreach(a => verify(aHandler, atLeastOnce()).apply(a))
+      bs.foreach(b => verify(bHandler, atLeastOnce()).apply(b))
+      cs.foreach(c => verify(cHandler, atLeastOnce()).apply(c))
     }
   }
 

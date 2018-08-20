@@ -60,6 +60,40 @@ trait StreamCodecs {
 
     bufferLoop(Vector())
   }
+
+  class DecoderFunction[T, U](decoder: NioDecoder[T], messageHandler: T => U) {
+    def apply(b: ByteBuffer): Seq[U] = {
+      decoder.decodeStream(b).map(messageHandler)
+    }
+  }
+
+  def decodeStream2(b: ByteBuffer, decoderHandlers: List[DecoderFunction[_, _]]): Unit = {
+
+    @tailrec
+    def bufferLoop(): Unit = {
+
+      @tailrec
+      def decoderLoop(iDecoder: Int): Boolean = {
+
+        val decodeResult: Seq[_] = decoderHandlers(iDecoder).apply(b)
+
+        if (decodeResult.nonEmpty)
+          true
+        else /*decodeResult.isEmpty*/
+          if (iDecoder < decoderHandlers.size - 1)
+            decoderLoop(iDecoder + 1)
+          else
+            false
+      }
+
+      if (decoderLoop(0))
+        bufferLoop()
+      else
+        ()
+    }
+
+    bufferLoop()
+  }
 }
 
 object StreamCodecs extends StreamCodecs
