@@ -4,15 +4,14 @@ import java.nio.ByteBuffer
 import java.nio.ByteBuffer.allocate
 
 import akka.util.ByteString
-import io.iohk.cef.network.encoding.nio.ByteLength._
-import io.iohk.cef.network.encoding.nio.CodecDecorators.{typeCodeDecoder, typeCodeEncoder, verifyingRemaining}
+import io.iohk.cef.network.encoding.nio.CodecDecorators._
 
 import scala.reflect.ClassTag
 
 trait NativeCodecs {
 
   implicit val stringEncoder: NioEncoder[String] = (s: String) => {
-    val byteLength = lengthString(s)
+    val byteLength = 4 + s.length * 2
     val buffer = allocate(byteLength).putInt(s.length)
     s.foreach(buffer.putChar)
     buffer.flip().asInstanceOf[ByteBuffer]
@@ -40,7 +39,7 @@ trait NativeCodecs {
   implicit val byteDecoder: NioDecoder[Byte] = (b: ByteBuffer) => Some(b.get())
 
   implicit val shortEncoder: NioEncoder[Short] = (s: Short) =>
-    allocate(lengthShort(s)).putShort(s).flip().asInstanceOf[ByteBuffer]
+    allocate(2).putShort(s).flip().asInstanceOf[ByteBuffer]
 
   implicit val shortDecoder: NioDecoder[Short] = (b: ByteBuffer) => Some(b.getShort())
 
@@ -51,42 +50,54 @@ trait NativeCodecs {
   }
 
   implicit val longEncoder: NioEncoder[Long] = (l: Long) =>
-    allocate(lengthLong(l)).putLong(l).flip().asInstanceOf[ByteBuffer]
+    allocate(8).putLong(l).flip().asInstanceOf[ByteBuffer]
 
   implicit val longDecoder: NioDecoder[Long] = (b: ByteBuffer) => Some(b.getLong)
 
   implicit val floatEncoder: NioEncoder[Float] = (f: Float) =>
-    allocate(lengthFloat(f)).putFloat(f).flip().asInstanceOf[ByteBuffer]
+    allocate(4).putFloat(f).flip().asInstanceOf[ByteBuffer]
 
   implicit val floatDecoder: NioDecoder[Float] = (b: ByteBuffer) => Some(b.getFloat)
 
   implicit val doubleEncoder: NioEncoder[Double] = (d: Double) =>
-    allocate(lengthDouble(d)).putDouble(d).flip().asInstanceOf[ByteBuffer]
+    allocate(8).putDouble(d).flip().asInstanceOf[ByteBuffer]
 
   implicit val doubleDecoder: NioDecoder[Double] = (b: ByteBuffer) => Some(b.getDouble())
 
   implicit val charEncoder: NioEncoder[Char] = (c: Char) =>
-    allocate(lengthChar(c)).putChar(c).flip().asInstanceOf[ByteBuffer]
+    allocate(2).putChar(c).flip().asInstanceOf[ByteBuffer]
 
   implicit val charDecoder: NioDecoder[Char] = (b: ByteBuffer) => Some(b.getChar())
 
   implicit def arrayEncoder[T](implicit enc: NioEncoder[T],
-                               lt: ByteLength[Array[T]],
                                ct: ClassTag[T]): NioEncoder[Array[T]] =
-    typeCodeEncoder((a: Array[T]) => {
-
-      val sizeBytes = lt(a)
-
-      val accBuffer = ByteBuffer.allocate(sizeBytes).putInt(a.length)
-
-      a.foldLeft(accBuffer)((accBuff, nextElmt) => accBuff.put(enc.encode(nextElmt)))
-        .flip()
-        .asInstanceOf[ByteBuffer]
-    })
+    messageLengthEncoder(typeCodeEncoder(arrayEncoderImpl))
 
   implicit def arrayDecoder[T](implicit dec: NioDecoder[T], ct: ClassTag[T]): NioDecoder[Array[T]] =
-    typeCodeDecoder((b: ByteBuffer) => {
+    messageLengthDecoder(typeCodeDecoder(arrayDecoderImpl))
 
+  def arrayEncoderImpl[T](implicit enc: NioEncoder[T]): NioEncoder[Array[T]] =
+    (a: Array[T]) => {
+
+      val acc = (Vector[ByteBuffer](), 0)
+
+      val (buffers, totalSize) = a.foldLeft(acc)((currentAcc, nextElmt) => {
+        val byteBuffer = enc.encode(nextElmt)
+        currentAcc match {
+          case (bufferStorage, size) =>
+            (bufferStorage :+ byteBuffer, size + byteBuffer.remaining())
+        }
+      })
+
+      val uberBuffer = ByteBuffer.allocate(totalSize + 4).putInt(a.length)
+
+      buffers.foreach(buffer => uberBuffer.put(buffer))
+
+      uberBuffer.flip().asInstanceOf[ByteBuffer]
+    }
+
+  def arrayDecoderImpl[T](implicit dec: NioDecoder[T], ct: ClassTag[T]): NioDecoder[Array[T]] =
+    (b: ByteBuffer) => {
       val sizeElements = b.getInt()
 
       val arr = new Array[T](sizeElements)
@@ -100,52 +111,18 @@ trait NativeCodecs {
       })
 
       Some(arr)
-    })
-
-  def arrayEncoderImpl[T](implicit enc: NioEncoder[T], lt: ByteLength[Array[T]]): NioEncoder[Array[T]] =
-    (a: Array[T]) => {
-
-      val sizeBytes = lt(a)
-
-      val accBuffer = ByteBuffer.allocate(sizeBytes).putInt(sizeBytes).putInt(a.length)
-
-      a.foldLeft(accBuffer)((accBuff, nextElmt) => accBuff.put(enc.encode(nextElmt)))
-        .flip()
-        .asInstanceOf[ByteBuffer]
-    }
-
-  def arrayDecoderImpl[T](implicit dec: NioDecoder[T], ct: ClassTag[T]): NioDecoder[Array[T]] =
-    (b: ByteBuffer) => {
-      verifyingRemaining(4, b) {
-
-        val sizeBytes = b.getInt()
-        val sizeElements = b.getInt()
-
-        val arr = new Array[T](sizeElements)
-
-        Range(0, sizeElements).foreach(i => {
-          dec
-            .decode(b)
-            .foreach(decodedElement => {
-              arr(i) = decodedElement
-            })
-        })
-
-        Some(arr)
-      }
     }
 
   implicit def listEncoder[T](implicit enc: NioEncoder[T],
-                              lt: ByteLength[Array[T]],
                               ct: ClassTag[T]): NioEncoder[List[T]] =
-    (l: List[T]) => arrayEncoder(enc, lt, ct).encode(l.toArray)
+    (l: List[T]) => arrayEncoder(enc, ct).encode(l.toArray)
 
   implicit def listDecoder[T](implicit dec: NioDecoder[T], ct: ClassTag[T]): NioDecoder[List[T]] =
     (b: ByteBuffer) => arrayDecoder(dec, ct).decode(b).map(arr => List(arr: _*))
 
   implicit val byteStringEncoder: NioEncoder[ByteString] = new NioEncoder[ByteString] {
     override def encode(b: ByteString): ByteBuffer =
-      arrayEncoder(byteEncoder, lengthArray[Byte], ClassTag(classOf[Byte])).encode(b.toArray)
+      arrayEncoder(byteEncoder, ClassTag(classOf[Byte])).encode(b.toArray)
   }
 
   implicit val byteStringDecoder: NioDecoder[ByteString] = new NioDecoder[ByteString] {

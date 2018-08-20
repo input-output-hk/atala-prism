@@ -42,16 +42,15 @@ class GenericCodecsSpec extends FlatSpec {
     }
   }
 
-  ignore should "not attempt to decode incomplete buffers" in {
+  they should "not attempt to decode incomplete buffers" in {
     forAll(as) { a =>
       val buffer = NioEncoder[A].encode(a)
-
       val size = buffer.remaining()
+      val incompleteBuffer: ByteBuffer =
+        ByteBuffer.allocate(size - 1).put(buffer.array(), 0, size - 1).flip().asInstanceOf[ByteBuffer]
 
-      val halfBuffer: ByteBuffer = ByteBuffer.allocate(size - 1).put(buffer.array(), 0, size - 1)
-
-      NioDecoder[A].decode(halfBuffer) shouldBe None
-      halfBuffer.position() shouldBe 0
+      NioDecoder[A].decode(incompleteBuffer) shouldBe None
+      incompleteBuffer.position() shouldBe 0
     }
   }
 }
