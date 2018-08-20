@@ -5,8 +5,8 @@ import java.time.{Clock, Instant}
 import akka.util.ByteString
 import io.iohk.cef.ledger.Block
 import io.iohk.cef.ledger.identity.IdentityBlockSerializer._
-import io.iohk.cef.ledger.identity.storage.scalike.LedgerStateStorageImpl
-import io.iohk.cef.ledger.identity.storage.scalike.dao.LedgerStateStorageDao
+import io.iohk.cef.ledger.identity.storage.scalike.IdentityLedgerStateStorageImpl
+import io.iohk.cef.ledger.identity.storage.scalike.dao.IdentityLedgerStateStorageDao
 import io.iohk.cef.ledger.storage.Ledger
 import io.iohk.cef.ledger.storage.scalike.LedgerStorageImpl
 import io.iohk.cef.ledger.storage.scalike.dao.LedgerStorageDao
@@ -22,9 +22,9 @@ trait IdentityLedgerItDbTest extends fixture.FlatSpec
   with MustMatchers
   with IdentityLedgerStateStorageFixture {
 
-  def createLedger(ledgerStateStorageDao: LedgerStateStorageDao)(implicit dBSession: DBSession): Ledger[Try, Set[ByteString]] = {
+  def createLedger(ledgerStateStorageDao: IdentityLedgerStateStorageDao)(implicit dBSession: DBSession): Ledger[Try, Set[ByteString]] = {
     implicit val forExpEnabler = ForExpressionsEnabler.tryEnabler
-    val ledgerStateStorage = new LedgerStateStorageImpl(ledgerStateStorageDao) {
+    val ledgerStateStorage = new IdentityLedgerStateStorageImpl(ledgerStateStorageDao) {
       override def execInSession[T](block: DBSession => T): T = block(dBSession)
     }
     val ledgerStorageDao = new LedgerStorageDao(Clock.systemUTC())
@@ -37,7 +37,7 @@ trait IdentityLedgerItDbTest extends fixture.FlatSpec
   behavior of "IdentityLedgerIt"
 
   it should "throw an error when the tx is inconsistent with the state" in { implicit session =>
-    val ledgerStateStorageDao = new LedgerStateStorageDao
+    val ledgerStateStorageDao = new IdentityLedgerStateStorageDao
     val ledger = createLedger(ledgerStateStorageDao)
     val now = Instant.now()
     val header = IdentityBlockHeader(ByteString("header"), now, 1)

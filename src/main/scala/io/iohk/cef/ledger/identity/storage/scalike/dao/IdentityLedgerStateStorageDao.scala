@@ -1,13 +1,13 @@
 package io.iohk.cef.ledger.identity.storage.scalike.dao
 
 import akka.util.ByteString
-import io.iohk.cef.ledger.{DeleteStateAction, InsertStateAction, LedgerState, UpdateStateAction}
 import io.iohk.cef.ledger.identity.IdentityLedgerState
 import io.iohk.cef.ledger.identity.storage.scalike.{IdentityLedgerStateTable, LedgerStateEntryMap}
+import io.iohk.cef.ledger.{DeleteStateAction, InsertStateAction, LedgerState, UpdateStateAction}
 import org.bouncycastle.util.encoders.Hex
 import scalikejdbc._
 
-class LedgerStateStorageDao {
+class IdentityLedgerStateStorageDao {
 
   def slice(keys: Set[String])(implicit session: DBSession): IdentityLedgerState = {
     val st = IdentityLedgerStateTable.syntax("st")

@@ -5,8 +5,7 @@ import java.time.{Clock, Instant}
 import akka.util.ByteString
 import io.iohk.cef.ledger.Block
 import io.iohk.cef.ledger.identity._
-import io.iohk.cef.ledger.identity.storage.scalike.LedgerStateStorageImpl
-import io.iohk.cef.ledger.identity.storage.scalike.dao.LedgerStateStorageDao
+import io.iohk.cef.ledger.identity.storage.scalike.dao.IdentityLedgerStateStorageDao
 import io.iohk.cef.ledger.storage.Ledger
 import io.iohk.cef.ledger.storage.scalike.LedgerStorageImpl
 import io.iohk.cef.ledger.storage.scalike.dao.LedgerStorageDao
@@ -21,7 +20,7 @@ object IdentityLedgerExampleScenario extends App {
 
   DBs.setupAll()
 
-  val ledgerStateStorageDao = new LedgerStateStorageDao()
+  val ledgerStateStorageDao = new IdentityLedgerStateStorageDao()
 
   val ledgerStateStorage = new LedgerStateStorageImpl(ledgerStateStorageDao)
 
