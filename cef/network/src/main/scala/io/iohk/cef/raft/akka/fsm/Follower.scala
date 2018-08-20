@@ -17,7 +17,7 @@ trait Follower {
       beginElection(myState)
 
     // election
-    case Event(r @ RequestVote(term, _, _, _), myState: StateData)
+    case Event(RequestVote(term, _, _, _), myState: StateData)
       if term > myState.currentTerm =>
       log.info("Received newer {}. Current term is {}.", term, myState.currentTerm)
       stay() applying UpdateTermEvent(term)
