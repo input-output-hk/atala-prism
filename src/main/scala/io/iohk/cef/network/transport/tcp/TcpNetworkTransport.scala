@@ -11,7 +11,7 @@ class TcpNetworkTransport[Message](messageHandler: (InetSocketAddress, Message) 
                                   (implicit encoder: NioEncoder[Message], decoder: NioDecoder[Message])
   extends NetworkTransport[InetSocketAddress, Message](messageHandler) {
 
-  nettyTransport.withMessageHandler(decoder, messageHandler)
+  nettyTransport.withMessageApplication(decoder, messageHandler)
 
   override def sendMessage(address: InetSocketAddress, message: Message): Unit =
     nettyTransport.sendMessage(address, encode(message))

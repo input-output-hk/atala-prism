@@ -47,9 +47,9 @@ class StreamCodecsSpec extends FlatSpec {
                               aHandler: (String, A) => Unit,
                               bHandler: (String, B) => Unit,
                               cHandler: (String, C) => Unit,
-                              aDecoderFn: DecoderFunction2[String],
-                              bDecoderFn: DecoderFunction2[String],
-                              cDecoderFn: DecoderFunction2[String])
+                              aDecoderFn: MessageApplication[String],
+                              bDecoderFn: MessageApplication[String],
+                              cDecoderFn: MessageApplication[String])
 
   private val genTestData: Gen[TestData] = for {
     sourceAddress <- alphaStr
@@ -69,9 +69,9 @@ class StreamCodecsSpec extends FlatSpec {
     val bHandler = mock[(String, B) => Unit]
     val cHandler = mock[(String, C) => Unit]
 
-    val aDecoderFn: DecoderFunction2[String] = StreamCodecs.decoderFunction2(NioDecoder[A], aHandler)
-    val bDecoderFn: DecoderFunction2[String] = StreamCodecs.decoderFunction2(NioDecoder[B], bHandler)
-    val cDecoderFn: DecoderFunction2[String] = StreamCodecs.decoderFunction2(NioDecoder[C], cHandler)
+    val aDecoderFn = strictMessageApplication(NioDecoder[A], aHandler)
+    val bDecoderFn = strictMessageApplication(NioDecoder[B], bHandler)
+    val cDecoderFn = strictMessageApplication(NioDecoder[C], cHandler)
 
     TestData(sourceAddress,
              asBsAndCs,
@@ -89,11 +89,40 @@ class StreamCodecsSpec extends FlatSpec {
 
   behavior of "StreamCodec"
 
-  it should "decode a network message and apply handlers" in {
+  it should "decode a network message and apply handlers strictly" in {
     forAll(genTestData) { testData =>
       import testData._
 
-      decodeStream(address, netBuffer, List[DecoderFunction2[String]](aDecoderFn, bDecoderFn, cDecoderFn))
+      decodeStream(
+        address,
+        netBuffer,
+        List(strictMessageApplication(NioDecoder[A], aHandler),
+             strictMessageApplication(NioDecoder[B], bHandler),
+             strictMessageApplication(NioDecoder[C], cHandler)))
+
+      as.foreach(a => verify(aHandler, atLeastOnce()).apply(address, a))
+      bs.foreach(b => verify(bHandler, atLeastOnce()).apply(address, b))
+      cs.foreach(c => verify(cHandler, atLeastOnce()).apply(address, c))
+    }
+  }
+
+  it should "decode a network message and apply handlers lazily" in {
+    forAll(genTestData) { testData =>
+      import testData._
+
+      val decodeResult = decodeStream(
+        address,
+        netBuffer,
+        List(lazyMessageApplication(NioDecoder[A], aHandler),
+             lazyMessageApplication(NioDecoder[B], bHandler),
+             lazyMessageApplication(NioDecoder[C], cHandler))
+      )
+
+      verifyZeroInteractions(aHandler)
+      verifyZeroInteractions(bHandler)
+      verifyZeroInteractions(cHandler)
+
+      decodeResult.foreach((f: ApplicableMessage) => f.apply())
 
       as.foreach(a => verify(aHandler, atLeastOnce()).apply(address, a))
       bs.foreach(b => verify(bHandler, atLeastOnce()).apply(address, b))

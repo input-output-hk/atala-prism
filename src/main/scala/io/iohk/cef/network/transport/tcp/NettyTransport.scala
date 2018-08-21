@@ -4,7 +4,7 @@ import java.net.InetSocketAddress
 import java.nio.ByteBuffer
 import java.util.concurrent.CopyOnWriteArrayList
 
-import io.iohk.cef.network.encoding.nio.StreamCodecs.DecoderFunction2
+import io.iohk.cef.network.encoding.nio.StreamCodecs.MessageApplication
 import io.iohk.cef.network.encoding.nio.{NioDecoder, _}
 import io.netty.bootstrap.{Bootstrap, ServerBootstrap}
 import io.netty.buffer.{ByteBuf, Unpooled}
@@ -17,15 +17,7 @@ import scala.collection.JavaConverters._
 
 private[network] class NettyTransport(address: InetSocketAddress) {
 
-  type MessageHandler = (InetSocketAddress, ByteBuffer) => Unit
-
-  private val messageHandlers = new CopyOnWriteArrayList[DecoderFunction2[InetSocketAddress]]()
-
-  def withMessageHandler[Message](decoder: NioDecoder[Message],
-                                          handler: (InetSocketAddress, Message) => Unit): Unit = {
-
-    messageHandlers.add(StreamCodecs.decoderFunction2(decoder, handler))
-  }
+  private val messageApplications = new CopyOnWriteArrayList[MessageApplication[InetSocketAddress]]()
 
   new ServerBootstrap()
     .group(new NioEventLoopGroup, new NioEventLoopGroup)
@@ -39,6 +31,10 @@ private[network] class NettyTransport(address: InetSocketAddress) {
     .childOption[java.lang.Boolean](ChannelOption.SO_KEEPALIVE, true)
     .bind(address)
     .await()
+
+  def withMessageApplication[Message](decoder: NioDecoder[Message],
+                                      handler: (InetSocketAddress, Message) => Unit): Unit =
+    messageApplications.add(StreamCodecs.lazyMessageApplication(decoder, handler))
 
   def sendMessage(address: InetSocketAddress, message: ByteBuffer): Unit = {
 
@@ -70,7 +66,9 @@ private[network] class NettyTransport(address: InetSocketAddress) {
     override def channelRead(ctx: ChannelHandlerContext, msg: Any): Unit = {
       val remoteAddress = ctx.channel().remoteAddress().asInstanceOf[InetSocketAddress]
 
-      StreamCodecs.decodeStream(remoteAddress, msg.asInstanceOf[ByteBuf].nioBuffer(), messageHandlers.asScala)
+      StreamCodecs
+        .decodeStream(remoteAddress, msg.asInstanceOf[ByteBuf].nioBuffer(), messageApplications.asScala)
+        .foreach(_.apply)
     }
   }
 }

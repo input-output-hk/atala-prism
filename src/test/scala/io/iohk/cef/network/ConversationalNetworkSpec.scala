@@ -16,9 +16,12 @@ import org.mockito.Mockito.{when, verify, after}
 import org.scalatest.mockito.MockitoSugar._
 
 import scala.concurrent.Future
+import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class ConversationalNetworkSpec extends FlatSpec {
+
+  implicit val patienceConfig = PatienceConfig(1 second)
 
   behavior of "ConversationalNetwork"
 
