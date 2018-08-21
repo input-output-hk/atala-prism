@@ -58,7 +58,7 @@ class ConversationalNetwork[Message: NioEncoder: NioDecoder](messageHandler: (No
   private def liftedFrameHandler[Address]: (Address, Frame[Message]) => Unit =
     (_, frame) => frameHandler(frame)
 
-  private val frameCodec = new NioStreamCodec[Frame[Message]](NioEncoder[Frame[Message]], NioDecoder[Frame[Message]])
+  private val frameCodec = new NioCodec[Frame[Message]](NioEncoder[Frame[Message]], NioDecoder[Frame[Message]])
 
   private val tcpNetworkTransport: Option[TcpNetworkTransport[Frame[Message]]] =
     transports.tcp(liftedFrameHandler)(frameCodec)

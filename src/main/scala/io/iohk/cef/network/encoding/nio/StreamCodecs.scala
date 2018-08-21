@@ -5,6 +5,7 @@ import scala.annotation.tailrec
 import scala.language.implicitConversions
 
 trait StreamCodecs {
+
   /**
     * Turn a standard decoder into StreamDecoder with decodeStream.
     */
@@ -32,58 +33,30 @@ trait StreamCodecs {
     *                 know how to handle, there is no choice but to give up.
     * @return a sequence of decoded objects.
     */
-  def decodeStream(b: ByteBuffer, decoders: List[NioDecoder[_]]): Seq[Any] = {
+  type DecoderFunction2[Address] = (Address, ByteBuffer) => Boolean
 
-    @tailrec
-    def bufferLoop(acc: Vector[Any]): Vector[Any] = {
-
-      @tailrec
-      def decoderLoop(iDecoder: Int, innerAcc: Vector[Any]): Vector[Any] = {
-
-        val messages = decoders(iDecoder).decodeStream(b)
-
-        if (messages.isEmpty && iDecoder < decoders.size - 1) // decoder failed, try the next decoder
-          decoderLoop(iDecoder + 1, innerAcc)
-        else if (messages.nonEmpty) // decoder succeeded, return
-          innerAcc ++ messages
-        else // decoder failed but no more to try
-          innerAcc
-      }
-
-      val messages = decoderLoop(0, Vector())
-
-      if (messages.isEmpty)
-        acc
-      else
-        bufferLoop(acc ++ messages)
+  def decoderFunction2[Address, Message](decoder: NioDecoder[Message],
+                                         handler: (Address, Message) => Unit): DecoderFunction2[Address] =
+    (address, byteBuffer) => {
+      val messages = decoder.decodeStream(byteBuffer)
+      messages.foreach(message => handler(address, message))
+      messages.nonEmpty
     }
 
-    bufferLoop(Vector())
-  }
-
-  class DecoderFunction[T, U](decoder: NioDecoder[T], messageHandler: T => U) {
-    def apply(b: ByteBuffer): Seq[U] = {
-      decoder.decodeStream(b).map(messageHandler)
-    }
-  }
-
-  def decodeStream2(b: ByteBuffer, decoderHandlers: List[DecoderFunction[_, _]]): Unit = {
+  def decodeStream[Address](address: Address, b: ByteBuffer, decoderHandlers: Seq[DecoderFunction2[Address]]): Unit = {
 
     @tailrec
     def bufferLoop(): Unit = {
 
       @tailrec
       def decoderLoop(iDecoder: Int): Boolean = {
-
-        val decodeResult: Seq[_] = decoderHandlers(iDecoder).apply(b)
-
-        if (decodeResult.nonEmpty)
-          true
-        else /*decodeResult.isEmpty*/
-          if (iDecoder < decoderHandlers.size - 1)
-            decoderLoop(iDecoder + 1)
+        if (iDecoder < decoderHandlers.size)
+          if (decoderHandlers(iDecoder).apply(address, b))
+            true
           else
-            false
+            decoderLoop(iDecoder + 1)
+        else
+          false
       }
 
       if (decoderLoop(0))
@@ -94,6 +67,7 @@ trait StreamCodecs {
 
     bufferLoop()
   }
+
 }
 
 object StreamCodecs extends StreamCodecs

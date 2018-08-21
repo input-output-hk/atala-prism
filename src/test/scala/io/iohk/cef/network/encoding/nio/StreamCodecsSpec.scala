@@ -2,15 +2,14 @@ package io.iohk.cef.network.encoding.nio
 import java.nio.ByteBuffer
 
 import io.iohk.cef.network.transport.tcp.NetUtils
+import org.mockito.Mockito.{atLeastOnce, verify, verifyZeroInteractions}
+import org.scalacheck.Arbitrary._
 import org.scalacheck.Gen
 import org.scalacheck.Gen._
-import org.scalacheck.Arbitrary._
 import org.scalatest.FlatSpec
+import org.scalatest.mockito.MockitoSugar._
 import org.scalatest.prop.GeneratorDrivenPropertyChecks._
 import org.scalatest.Matchers._
-import org.scalatest.mockito.MockitoSugar._
-import org.mockito.Mockito.verify
-import org.mockito.Mockito.atLeastOnce
 
 import scala.util.Random
 
@@ -39,63 +38,86 @@ class StreamCodecsSpec extends FlatSpec {
     cs <- listOf(genC)
   } yield Random.shuffle(as ::: bs ::: cs)
 
-  private val aEnc = NioEncoder[A]
-  private val bEnc = NioEncoder[B]
-  private val cEnc = NioEncoder[C]
+  private case class TestData(address: String,
+                              asBsCs: List[Any],
+                              netBuffer: ByteBuffer,
+                              as: Seq[A],
+                              bs: Seq[B],
+                              cs: Seq[C],
+                              aHandler: (String, A) => Unit,
+                              bHandler: (String, B) => Unit,
+                              cHandler: (String, C) => Unit,
+                              aDecoderFn: DecoderFunction2[String],
+                              bDecoderFn: DecoderFunction2[String],
+                              cDecoderFn: DecoderFunction2[String])
 
-  private val aDec: NioDecoder[A] = NioDecoder[A]
-  private val bDec: NioDecoder[B] = NioDecoder[B]
-  private val cDec: NioDecoder[C] = NioDecoder[C]
+  private val genTestData: Gen[TestData] = for {
+    sourceAddress <- alphaStr
+    asBsAndCs <- genNetworkMess
+  } yield {
+    val buffers = asBsAndCs.collect({
+      case a: A => NioEncoder[A].encode(a)
+      case b: B => NioEncoder[B].encode(b)
+      case c: C => NioEncoder[C].encode(c)
+    })
+    val netBuffer = NetUtils.concatenate(buffers) // provides a random mix of As, Bs plus redundant C's as though 'on the wire'
+    val as: Seq[A] = asBsAndCs.collect({ case a: A => a })
+    val bs: Seq[B] = asBsAndCs.collect({ case b: B => b })
+    val cs: Seq[C] = asBsAndCs.collect({ case c: C => c })
+
+    val aHandler = mock[(String, A) => Unit]
+    val bHandler = mock[(String, B) => Unit]
+    val cHandler = mock[(String, C) => Unit]
+
+    val aDecoderFn: DecoderFunction2[String] = StreamCodecs.decoderFunction2(NioDecoder[A], aHandler)
+    val bDecoderFn: DecoderFunction2[String] = StreamCodecs.decoderFunction2(NioDecoder[B], bHandler)
+    val cDecoderFn: DecoderFunction2[String] = StreamCodecs.decoderFunction2(NioDecoder[C], cHandler)
+
+    TestData(sourceAddress,
+             asBsAndCs,
+             netBuffer,
+             as,
+             bs,
+             cs,
+             aHandler,
+             bHandler,
+             cHandler,
+             aDecoderFn,
+             bDecoderFn,
+             cDecoderFn)
+  }
 
   behavior of "StreamCodec"
 
-  it should "decode a network message" in {
-    forAll(genNetworkMess) { asBsAndCs =>
-
-      val buffers = asBsAndCs.collect({
-        case a: A => aEnc.encode(a)
-        case b: B => bEnc.encode(b)
-        case c: C => cEnc.encode(c)
-      })
-      val netBuffer = NetUtils.concatenate(buffers) // provides a random mix of As, Bs plus redundant C's as though 'on the wire'
-
-      val decodedStream = decodeStream(netBuffer, Random.shuffle(List(aDec, bDec, cDec)))
-
-      decodedStream shouldBe asBsAndCs
-    }
-  }
-
   it should "decode a network message and apply handlers" in {
-    forAll(genNetworkMess) { asBsAndCs =>
-      val buffers = asBsAndCs.collect({
-        case a: A => aEnc.encode(a)
-        case b: B => bEnc.encode(b)
-        case c: C => cEnc.encode(c)
-      })
-      val netBuffer = NetUtils.concatenate(buffers) // provides a random mix of As, Bs plus redundant C's as though 'on the wire'
+    forAll(genTestData) { testData =>
+      import testData._
 
-      val as: Seq[A] = asBsAndCs.collect({ case a: A => a })
-      val bs: Seq[B] = asBsAndCs.collect({ case b: B => b })
-      val cs: Seq[C] = asBsAndCs.collect({ case c: C => c })
+      decodeStream(address, netBuffer, List[DecoderFunction2[String]](aDecoderFn, bDecoderFn, cDecoderFn))
 
-      val aHandler: A => Unit = mock[A => Unit]
-      val bHandler = mock[B => Unit]
-      val cHandler = mock[C => Unit]
-
-      val aDecoderFn = new DecoderFunction(aDec, aHandler)
-      val bDecoderFn = new DecoderFunction(bDec, bHandler)
-      val cDecoderFn = new DecoderFunction(cDec, cHandler)
-
-      decodeStream2(netBuffer, Random.shuffle(List(aDecoderFn, bDecoderFn, cDecoderFn)))
-
-      as.foreach(a => verify(aHandler, atLeastOnce()).apply(a))
-      bs.foreach(b => verify(bHandler, atLeastOnce()).apply(b))
-      cs.foreach(c => verify(cHandler, atLeastOnce()).apply(c))
+      as.foreach(a => verify(aHandler, atLeastOnce()).apply(address, a))
+      bs.foreach(b => verify(bHandler, atLeastOnce()).apply(address, b))
+      cs.foreach(c => verify(cHandler, atLeastOnce()).apply(address, c))
     }
   }
 
   it should "not choke on empty buffers" in {
-    decodeStream(ByteBuffer.allocate(0), List(aDec, bDec)) shouldBe Seq()
+    forAll(genTestData) { testData =>
+      import testData._
+      decodeStream(address, ByteBuffer.allocate(0), List(aDecoderFn, bDecoderFn, cDecoderFn))
+
+      verifyZeroInteractions(aHandler)
+      verifyZeroInteractions(bHandler)
+      verifyZeroInteractions(cHandler)
+    }
   }
 
+  it should "not choke on empty decoder chains" in {
+    forAll(genTestData) { testData =>
+      import testData._
+      decodeStream(address, netBuffer, List())
+
+      netBuffer.position() shouldBe 0
+    }
+  }
 }
