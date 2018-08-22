@@ -10,9 +10,15 @@ import org.scalatest._
 import org.scalatest.concurrent.Eventually
 import org.scalatest.time.{Millis, Seconds, Span}
 
-abstract class RaftSpec(_system: Option[ActorSystem] = None) extends TestKit(_system getOrElse ActorSystem("raft-protocol-test"))
-  with ImplicitSender with Eventually with FlatSpecLike with Matchers
-  with BeforeAndAfterAll with BeforeAndAfterEach  with PersistenceCleanup {
+abstract class RaftSpec(_system: Option[ActorSystem] = None)
+    extends TestKit(_system getOrElse ActorSystem("raft-protocol-test"))
+    with ImplicitSender
+    with Eventually
+    with FlatSpecLike
+    with Matchers
+    with BeforeAndAfterAll
+    with BeforeAndAfterEach
+    with PersistenceCleanup {
 
   val DefaultTimeout = 5
 
@@ -41,7 +47,9 @@ abstract class RaftSpec(_system: Option[ActorSystem] = None) extends TestKit(_sy
   override def beforeAll() {
     super.beforeAll()
     stateTransitionActor = system.actorOf(Props(classOf[MonitoringActor]))
-    (1 to initialMembers).toList foreach { i => createActor(s"raft-member-$i") }
+    (1 to initialMembers).toList foreach { i =>
+      createActor(s"raft-member-$i")
+    }
     raftConfiguration = ClusterConfiguration(members)
     members foreach { _ ! ChangeConfiguration(raftConfiguration) }
 
@@ -53,8 +61,6 @@ abstract class RaftSpec(_system: Option[ActorSystem] = None) extends TestKit(_sy
     members :+= actor
     actor
   }
-
-
 
   override def beforeEach() {
     super.beforeEach()
@@ -71,8 +77,6 @@ abstract class RaftSpec(_system: Option[ActorSystem] = None) extends TestKit(_sy
     import scala.collection.JavaConverters._
     ref.path.getElements.asScala.last
   }
-
-
 
   def leaders: Seq[Member] = {
     stateTransitionActor.tell(GetLeaders, probe.ref)
@@ -92,19 +96,14 @@ abstract class RaftSpec(_system: Option[ActorSystem] = None) extends TestKit(_sy
     msg.followers
   }
 
-
-
-
   def subscribeClusterStateTransitions(): Unit =
     stateTransitionActor ! Subscribe(members)
-
 
   def subscribeBeginAsLeader()(implicit probe: TestProbe): Unit =
     system.eventStream.subscribe(probe.ref, classOf[BeginAsLeader])
 
   def awaitBeginAsLeader(max: FiniteDuration = DefaultTimeoutDuration)(implicit probe: TestProbe): BeginAsLeader =
     probe.expectMsgClass(max, classOf[BeginAsLeader])
-
 
   def infoMemberStates() {
     val leadersList = leaders.map(m => s"${simpleName(m)}[Leader]")
@@ -113,10 +112,6 @@ abstract class RaftSpec(_system: Option[ActorSystem] = None) extends TestKit(_sy
     val members = (leadersList ++ candidatesList ++ followersList).mkString(",")
     info(s"Members: $members")
   }
-
-
-
-  // end of await stuff ------------------------------------------------------------------------------------------------
 
   override def afterAll() {
     super.afterAll()
