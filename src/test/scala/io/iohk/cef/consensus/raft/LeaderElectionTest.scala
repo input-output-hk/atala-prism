@@ -29,32 +29,28 @@ class LeaderElectionTest extends RaftSpec with Eventually {
     }
   }
 
+  it should "elect replacement Leader if current Leader dies" in {
+    // given
+    subscribeBeginAsLeader()
 
+    infoMemberStates()
 
-    it should "elect replacement Leader if current Leader dies" in {
-      // given
-      subscribeBeginAsLeader()
+    // when
+    killLeader()
 
-      infoMemberStates()
+    // then
+    awaitBeginAsLeader()
+    info("New leader elected: ")
+    infoMemberStates()
 
-      // when
-      killLeader()
-
-      // then
-      awaitBeginAsLeader()
-      info("New leader elected: ")
-      infoMemberStates()
-
-      eventually {
-        leaders should have length 1
-        candidates should have length 0
-        followers should have length 3
-      }
+    eventually {
+      leaders should have length 1
+      candidates should have length 0
+      followers should have length 3
     }
-
-
+  }
 
   override def beforeAll(): Unit =
     subscribeClusterStateTransitions()
-    super.beforeAll()
+  super.beforeAll()
 }

@@ -56,7 +56,7 @@ abstract class RaftSpec(_system: Option[ActorSystem] = None)
   }
 
   def createActor(name: String): ActorRef = {
-    val actor = system.actorOf(Props(new ExampleCommandRaftActor), name)
+    val actor = system.actorOf(Props(new SimpleCommandRaftActor), name)
     stateTransitionActor ! AddMember(actor)
     members :+= actor
     actor
