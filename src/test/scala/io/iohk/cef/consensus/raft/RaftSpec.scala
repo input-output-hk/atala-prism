@@ -113,9 +113,18 @@ abstract class RaftSpec(_system: Option[ActorSystem] = None)
     info(s"Members: $members")
   }
 
+  def killLeader() = {
+    leaders.headOption.map { leader =>
+      stateTransitionActor ! RemoveMember(leader)
+      probe.watch(leader)
+      system.stop(leader)
+      probe.expectTerminated(leader)
+      members = members.filterNot(_ == leader)
+    }
+  }
+
   override def afterAll() {
     super.afterAll()
     shutdown(system)
   }
-
 }
