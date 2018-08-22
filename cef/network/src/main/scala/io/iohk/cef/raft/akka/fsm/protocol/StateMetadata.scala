@@ -47,6 +47,7 @@ trait StateMetadata extends Serializable {
     def incTerm: StateData = copy(currentTerm = currentTerm.next)
 
     def withVoteFor(candidate: ActorRef): StateData = copy(votedFor = Some(candidate))
+    def withConfig(conf: ClusterConfiguration): StateData = copy(config = conf)
 
     def hasMajority: Boolean = votesReceived > config.members.size / 2
 

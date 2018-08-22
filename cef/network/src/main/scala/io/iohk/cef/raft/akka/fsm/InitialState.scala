@@ -9,11 +9,11 @@ trait InitialState {
   /** Waits for initial cluster configuration. Step needed before we can start voting for a Leader. */
    lazy val initialConfiguration: StateFunction = {
 
-    case Event(ChangeConfiguration(initConfig), _) =>
+    case Event(ChangeConfiguration(initialConfig), _) =>
       log.info("Applying initial raft cluster configuration. Consists of [{}] nodes: {}",
-        initConfig.members.size,
-        initConfig.members.map(_.path.elements.last).mkString("{", ", ", "}"))
-      goto(Follower)
+        initialConfig.members.size,
+        initialConfig.members.map(_.path.elements.last).mkString("{", ", ", "}"))
+      goto(Follower) applying WithNewConfigEvent(config = initialConfig)
 
    }
 

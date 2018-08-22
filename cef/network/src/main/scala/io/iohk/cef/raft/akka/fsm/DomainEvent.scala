@@ -2,6 +2,7 @@ package io.iohk.cef.raft.akka.fsm
 
 import akka.actor.ActorRef
 import io.iohk.cef.raft.akka.fsm.model.Term
+import io.iohk.cef.raft.akka.fsm.protocol.ClusterConfiguration
 
 /**
   * Events for persisting changes to FSM internal state
@@ -16,3 +17,4 @@ case class GoToFollowerEvent(t: Option[Term] = None) extends DomainEvent
 case class GoToLeaderEvent() extends DomainEvent
 case class StartElectionEvent() extends DomainEvent
 case class KeepStateEvent() extends DomainEvent
+case class WithNewConfigEvent(t: Option[Term] = None, config: ClusterConfiguration) extends DomainEvent

@@ -7,7 +7,8 @@ import io.iohk.cef.raft.akka.fsm.protocol._
 trait Leader {
   this: RaftActor =>
   val leaderEvents: StateFunction = {
-    case Event(BeginAsLeader(term, _), sd: StateData) =>
+    case Event(msg @ BeginAsLeader(term, _), sd: StateData) =>
+      if  (raftConfig.publishTestEvents) context.system.eventStream.publish(msg) //This if for testing purpose
       log.info("Became leader for {}", sd.currentTerm)
       initializeLeaderState(sd.config.members)
       startHeartbeat(sd)
@@ -64,9 +65,9 @@ trait Leader {
       registerAppendSuccessful(follower(), msg, sd)
     // End append entries response handling
 
-    //TODO Somoe other event AS Leader based on RAFT paper
-
   }
+
+
   private val HeartbeatTimerName = "heartbeat-timer"
 
   def initializeLeaderState(members: Set[ActorRef]) {
@@ -96,7 +97,11 @@ trait Leader {
 
   def replicateLog(sd: StateData) {
     sd.membersExceptSelf foreach { member =>
-      // todo remove me
+      log.info(
+        "Leader current term (@ {}) send  AppendEntries for  member (@ {})",
+        sd.currentTerm,
+        member.path)
+
       member ! AppendEntries(
         sd.currentTerm,
         replicatedLog,

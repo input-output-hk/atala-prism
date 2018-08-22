@@ -38,7 +38,7 @@ trait Candidate {
         candidate ! VoteCandidate(sd.currentTerm)
         stay() applying VoteForEvent(candidate)
       } else {
-        log.info("Rejecting RequestVote msg by {} in {}. Already voted for {}", candidate, sd.currentTerm, sd.votedFor.get)
+        log.info("Rejecting RequestVote msg by {} in {}. Already voted for {}", candidate, sd.currentTerm, sd.votedFor.getOrElse("No Member"))
         sender ! DeclineCandidate(sd.currentTerm)
         stay()
       }

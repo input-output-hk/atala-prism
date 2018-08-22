@@ -24,7 +24,6 @@ abstract class RaftActor
 
   protected val raftConfig = RaftConfiguration(context.system)
 
-  private val ElectionTimeoutTimerName = "election-timer"
   val heartbeatInterval: FiniteDuration = raftConfig.heartbeatInterval
 
   var replicatedLog = ReplicatedLog.empty[Command](raftConfig.defaultAppendEntriesBatchSize)
@@ -46,10 +45,13 @@ abstract class RaftActor
     case VoteForEvent(candidate) => sd.withVoteFor(candidate)
     case IncrementVoteEvent()    => sd.incVote
     case VoteForSelfEvent()      => sd.incVote.withVoteFor(sd.self)
+    case WithNewConfigEvent(term, config) => term.fold(sd.withConfig(config))(t => sd.withConfig(config).withTerm(t))
     case UpdateTermEvent(term)   => sd.withTerm(term)
+
+
   }
 
-  startWith(Init, StateData.initial(self))
+  startWith(Init, StateData.initial)
 
   when(Init)(initialConfiguration)
 
@@ -96,7 +98,7 @@ abstract class RaftActor
   }
 
   /** Stop being the Leader */
-  def stepDown(sd: StateData): PersistentFSMState = {
+  def stepDown(sd: StateData):PersistentFSMState = {
     goto(Follower) applying GoToFollowerEvent()
   }
 

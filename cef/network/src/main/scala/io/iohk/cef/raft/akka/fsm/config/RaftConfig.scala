@@ -18,4 +18,7 @@ class RaftConfig (config: Config) extends Extension {
 
   val heartbeatInterval = raftConfig.getDuration("heartbeat-interval", TimeUnit.MILLISECONDS).millis
 
+  val publishTestEvents = raftConfig.getBoolean("publish-test-events")
+
+
 }

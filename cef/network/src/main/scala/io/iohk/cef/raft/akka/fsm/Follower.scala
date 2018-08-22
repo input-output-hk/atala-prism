@@ -9,8 +9,10 @@ trait Follower {
 
 
   val followerEvents : StateFunction = {
-    case Event(BeginAsFollower(term, _), _) =>
-      log.info("Current term is {}.", term)
+    case Event(BeginAsFollower(term, _), myState: StateData) =>
+      log.info("Received newer {}. Current term is {}.", term, myState.currentTerm)
+      log.info("Received sd {}. Current term is {}.", myState.config.members)
+
       stay()
 
     // timeout,  Need to start an election
@@ -84,6 +86,7 @@ trait Follower {
 
 
   def appendEntries(message: AppendEntries[Command], sd: StateData): State = {
+    log.info("Follower Append Entries message : {}  , Term({}) " ,  message , sd.currentTerm )
 
     if (leaderIsLagging(message, sd)) {
       log.info("Rejecting write (Leader is lagging) of: " + message + "; " + replicatedLog)
@@ -103,7 +106,7 @@ trait Follower {
     message.term < sd.currentTerm
 
   def append(entries: immutable.Seq[Entry[Command]], sd: StateData): AppendSuccessful = {
-    if (entries.nonEmpty) {
+    if (entries.nonEmpty) { //This means its not heartbeat
       val atIndex = entries.map(_.index).min
       log.debug("executing: replicatedLog = replicatedLog.append({}, {})", entries, atIndex-1)
 
