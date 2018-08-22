@@ -1,11 +1,11 @@
-package io.iohk.cef.raft.akka.fsm
+package io.iohk.cef.consensus.raft
 
 import java.util.concurrent.TimeUnit
 
 import akka.actor._
 import akka.testkit.{ImplicitSender, TestKit, TestProbe}
-import io.iohk.cef.raft.akka.fsm.MonitoringActor._
-import io.iohk.cef.raft.akka.fsm.protocol.{ClusterConfiguration, _}
+import io.iohk.cef.consensus.raft.MonitoringActor._
+import io.iohk.cef.consensus.raft.protocol.{ClusterConfiguration, _}
 import org.scalatest._
 import org.scalatest.concurrent.Eventually
 import org.scalatest.time.{Millis, Seconds, Span}

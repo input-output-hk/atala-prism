@@ -1,7 +1,7 @@
-package io.iohk.cef.raft.akka.fsm.model
+package io.iohk.cef.consensus.raft.model
 
 import akka.actor.ActorRef
-import io.iohk.cef.raft.akka.fsm.protocol.ClusterConfiguration
+import io.iohk.cef.consensus.raft.protocol.ClusterConfiguration
 
 import scala.annotation.tailrec
 

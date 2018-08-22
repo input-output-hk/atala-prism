@@ -1,7 +1,7 @@
-package io.iohk.cef.raft.akka.fsm.protocol
+package io.iohk.cef.consensus.raft.protocol
 
 import akka.actor.ActorRef
-import io.iohk.cef.raft.akka.fsm.model.{Entry, ReplicatedLog, Term}
+import io.iohk.cef.consensus.raft.model.{Entry, ReplicatedLog, Term}
 
 import scala.collection.immutable
 trait RaftProtocol extends Serializable {

@@ -1,9 +1,9 @@
-package io.iohk.cef.raft.akka.fsm
+package io.iohk.cef.consensus.raft
 
 import akka.actor.{Actor, ActorLogging, ActorRef}
 import akka.persistence.fsm.PersistentFSM.{CurrentState, SubscribeTransitionCallBack, Transition, UnsubscribeTransitionCallBack}
-import io.iohk.cef.raft.akka.fsm.MonitoringActor._
-import io.iohk.cef.raft.akka.fsm.protocol._
+import io.iohk.cef.consensus.raft.MonitoringActor._
+import io.iohk.cef.consensus.raft.protocol._
 
 import scala.collection._
 

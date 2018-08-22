@@ -1,6 +1,6 @@
-package io.iohk.cef.raft.akka.fsm
-import io.iohk.cef.raft.akka.fsm.model.{ Entry, ReplicatedLog}
-import io.iohk.cef.raft.akka.fsm.protocol._
+package io.iohk.cef.consensus.raft
+import io.iohk.cef.consensus.raft.model.{ Entry, ReplicatedLog}
+import io.iohk.cef.consensus.raft.protocol._
 
 import scala.collection.immutable
 

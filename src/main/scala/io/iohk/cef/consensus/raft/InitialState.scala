@@ -1,6 +1,6 @@
-package io.iohk.cef.raft.akka.fsm
+package io.iohk.cef.consensus.raft
 
-import io.iohk.cef.raft.akka.fsm.protocol._
+import io.iohk.cef.consensus.raft.protocol._
 
 trait InitialState {
   this: RaftActor =>

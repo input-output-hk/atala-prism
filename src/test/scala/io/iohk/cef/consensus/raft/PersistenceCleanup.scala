@@ -1,4 +1,4 @@
-package io.iohk.cef.raft.akka.fsm
+package io.iohk.cef.consensus.raft
 import java.io.File
 
 import akka.testkit.TestKit

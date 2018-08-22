@@ -1,8 +1,8 @@
-package io.iohk.cef.raft.akka.fsm
+package io.iohk.cef.consensus.raft
 
 import akka.actor.ActorRef
-import io.iohk.cef.raft.akka.fsm.model.{Entry, LogIndexMap, ReplicatedLog}
-import io.iohk.cef.raft.akka.fsm.protocol._
+import io.iohk.cef.consensus.raft.model.{Entry, LogIndexMap, ReplicatedLog}
+import io.iohk.cef.consensus.raft.protocol._
 
 trait Leader {
   this: RaftActor =>

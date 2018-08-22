@@ -1,11 +1,11 @@
-package io.iohk.cef.raft.akka.fsm
+package io.iohk.cef.consensus.raft
 
 import akka.actor.{Actor, ActorRef}
 import akka.persistence.fsm.PersistentFSM
 
 import scala.concurrent.duration._
 import protocol._
-import io.iohk.cef.raft.akka.fsm.model._
+import io.iohk.cef.consensus.raft.model._
 
 import scala.reflect._
 import config.RaftConfiguration

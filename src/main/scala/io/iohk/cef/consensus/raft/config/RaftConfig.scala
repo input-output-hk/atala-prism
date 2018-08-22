@@ -1,4 +1,4 @@
-package io.iohk.cef.raft.akka.fsm.config
+package io.iohk.cef.consensus.raft.config
 
 import java.util.concurrent.TimeUnit
 

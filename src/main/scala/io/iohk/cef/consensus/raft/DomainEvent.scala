@@ -1,8 +1,8 @@
-package io.iohk.cef.raft.akka.fsm
+package io.iohk.cef.consensus.raft
 
 import akka.actor.ActorRef
-import io.iohk.cef.raft.akka.fsm.model.Term
-import io.iohk.cef.raft.akka.fsm.protocol.ClusterConfiguration
+import io.iohk.cef.consensus.raft.model.Term
+import io.iohk.cef.consensus.raft.protocol.ClusterConfiguration
 
 /**
   * Events for persisting changes to FSM internal state

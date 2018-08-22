@@ -1,4 +1,4 @@
-package io.iohk.cef.raft.akka.fsm.config
+package io.iohk.cef.consensus.raft.config
 
 import akka.actor.{ExtendedActorSystem, ExtensionId, ExtensionIdProvider}
 

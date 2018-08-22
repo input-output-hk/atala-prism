@@ -1,4 +1,4 @@
-package io.iohk.cef.raft.akka.fsm.protocol
+package io.iohk.cef.consensus.raft.protocol
 
 import akka.actor.ActorRef
 

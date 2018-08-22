@@ -1,4 +1,4 @@
-package io.iohk.cef.raft.akka.fsm
+package io.iohk.cef.consensus.raft
 
 package object protocol
   extends RaftStates
