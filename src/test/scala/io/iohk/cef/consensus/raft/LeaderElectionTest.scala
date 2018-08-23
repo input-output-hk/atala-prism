@@ -1,5 +1,4 @@
 package io.iohk.cef.consensus.raft
-import io.iohk.cef.consensus.raft.protocol._
 import org.scalatest.concurrent.Eventually
 class LeaderElectionTest extends RaftSpec with Eventually {
 
