@@ -170,6 +170,7 @@ class ConversationalNetworkIntegrationSpec extends FlatSpec {
       "DiscoveryListener")
   }
 
+  // FIXME Get rid of NodeInfo
   private def peerInfo2NodeInfoHack(peerInfo: PeerInfo): NodeInfo = {
     val discoveryAddress =
       new InetSocketAddress("localhost", peerInfo.configuration.tcpTransportConfiguration.get.bindAddress.getPort + 1)
