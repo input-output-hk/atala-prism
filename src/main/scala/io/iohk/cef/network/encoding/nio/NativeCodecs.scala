@@ -89,6 +89,7 @@ trait NativeCodecs {
         }
       })
 
+      // buffer for the size metadata and all elements.
       val uberBuffer = ByteBuffer.allocate(totalSize + 4).putInt(a.length)
 
       buffers.foreach(buffer => uberBuffer.put(buffer))
