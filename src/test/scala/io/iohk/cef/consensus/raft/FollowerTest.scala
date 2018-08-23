@@ -38,7 +38,6 @@ class FollowerTest extends RaftSpec with BeforeAndAfterEach
 
 
   it should "reply with Vote if Candidate has later Term than it" in {
-    restartMember()
 
     // given
     subscribeBeginAsFollower()
