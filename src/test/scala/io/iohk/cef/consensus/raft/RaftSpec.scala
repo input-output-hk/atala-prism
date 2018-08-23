@@ -10,6 +10,8 @@ import org.scalatest._
 import org.scalatest.concurrent.Eventually
 import org.scalatest.time.{Millis, Seconds, Span}
 
+import scala.util.Random
+
 abstract class RaftSpec(_system: Option[ActorSystem] = None)
     extends TestKit(_system getOrElse ActorSystem("raft-protocol-test"))
     with ImplicitSender
@@ -20,7 +22,7 @@ abstract class RaftSpec(_system: Option[ActorSystem] = None)
     with BeforeAndAfterEach
     with PersistenceCleanup {
 
-  val DefaultTimeout = 5
+  val DefaultTimeout = 15
 
   import scala.concurrent.duration._
   val DefaultTimeoutDuration: FiniteDuration = DefaultTimeout.seconds
@@ -56,7 +58,8 @@ abstract class RaftSpec(_system: Option[ActorSystem] = None)
   }
 
   def createActor(name: String): ActorRef = {
-    val actor = system.actorOf(Props(new SimpleCommandRaftActor), name)
+
+    val actor = system.actorOf(Props(new SimpleCommandRaftActor).withDispatcher("akka.raft-dispatcher"), name)
     stateTransitionActor ! AddMember(actor)
     members :+= actor
     actor
@@ -105,6 +108,25 @@ abstract class RaftSpec(_system: Option[ActorSystem] = None)
   def awaitBeginAsLeader(max: FiniteDuration = DefaultTimeoutDuration)(implicit probe: TestProbe): BeginAsLeader =
     probe.expectMsgClass(max, classOf[BeginAsLeader])
 
+  def subscribeHeartBeatAppendEntries()(implicit probe: TestProbe): Unit =
+    system.eventStream.subscribe(probe.ref, classOf[AppendEntries[_]])
+
+
+  def awaitExpectedHeartBeatAppendEntries(max: FiniteDuration = DefaultTimeoutDuration)(implicit probe: TestProbe): AppendEntries[_] =
+    probe.expectMsgClass(max, classOf[AppendEntries[_]])
+
+
+
+
+  def subscribeBeginAsFollower()(implicit probe: TestProbe): Unit =
+    system.eventStream.subscribe(probe.ref, classOf[BeginAsFollower])
+
+
+  def awaitBeginAsFollower(max: FiniteDuration = DefaultTimeoutDuration)
+                          (implicit probe: TestProbe): BeginAsFollower =
+    probe.expectMsgClass(max, classOf[BeginAsFollower])
+
+
   def infoMemberStates() {
     val leadersList = leaders.map(m => s"${simpleName(m)}[Leader]")
     val candidatesList = candidates.map(m => s"${simpleName(m)}[Candidate]")
@@ -121,6 +143,29 @@ abstract class RaftSpec(_system: Option[ActorSystem] = None)
       probe.expectTerminated(leader)
       members = members.filterNot(_ == leader)
     }
+  }
+
+
+  def restartMember(_member: Option[ActorRef] = None) = {
+    val member = _member.getOrElse(members(Random.nextInt(members.size)))
+    stateTransitionActor ! RemoveMember(member)
+    probe.watch(member)
+    system.stop(member)
+    members = members.filterNot(_ == member)
+    probe.expectTerminated(member)
+    val newMember = createActor(member.path.name)
+    newMember
+  }
+
+  def restartMembers(_member: Option[ActorRef] = None) = {
+    val member = _member.getOrElse(members(Random.nextInt(members.size)))
+    stateTransitionActor ! RemoveMember(member)
+    probe.watch(member)
+    system.stop(member)
+    members = members.filterNot(_ == member)
+    probe.expectTerminated(member)
+    val newMember = createActor(member.path.name)
+    newMember
   }
 
   override def afterAll() {
