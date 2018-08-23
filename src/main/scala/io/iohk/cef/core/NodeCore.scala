@@ -4,30 +4,34 @@ import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.ledger.{Block, BlockHeader, ByteStringSerializable, Transaction}
 import io.iohk.cef.network.{NetworkComponent, NodeInfo}
 import io.iohk.cef.transactionpool.TransactionPoolService
-import io.iohk.cef.utils.ForExpressionsEnabler
+import io.iohk.cef.utils.{ForExpressionsEnabler, HigherKindEnabler}
+import akka.pattern.ask
+import akka.util.Timeout
 
 import scala.language.higherKinds
 
 class NodeCore[F[+_], State, Header <: BlockHeader](
+    consensusMap: Map[LedgerId, (TransactionPoolService[State, Header], Consensus[F, State])])(
     implicit fexp: ForExpressionsEnabler[F],
+    higherKindEn: HigherKindEnabler[F],
     txSerializable: ByteStringSerializable[Envelope[Transaction[State]]],
-    blockSerializable: ByteStringSerializable[Envelope[Block[State, Header, Transaction[State]]]]) {
+    blockSerializable: ByteStringSerializable[Envelope[Block[State, Header, Transaction[State]]]],
+    timeout: Timeout) {
 
   def receiveTransaction(txEnvelope: Envelope[Transaction[State]]): F[Either[ApplicationError, Unit]] = {
     process(txEnvelope)(env => {
-      pure(consensusMap(env.ledgerId)._1.processTransaction(env.content))
+      val txPoolService = consensusMap(env.ledgerId)._1
+      val txProcess =
+        (txPoolService.poolActor ? txPoolService.ProcessTransaction(txEnvelope.content)).mapTo[txPoolService.ProcessTransactionResponse]
+      for {
+        result <- fexp.enableForExp(higherKindEn.fromFuture(txProcess))
+      } yield result.result
     })
   }
 
   def receiveBlock(blEnvelope: Envelope[Block[State, Header, Transaction[State]]]): F[Either[ApplicationError, Unit]] = {
     process(blEnvelope)(env => consensusMap(env.ledgerId)._2.process(env.content))
   }
-
-  //FIXME: Doesn't belong here
-  protected def pure[A](a: A): F[A] = ???
-
-  //FIXME: Think about a better handling of these dependencies
-  protected def consensusMap: Map[LedgerId, (TransactionPoolService[State, Header], Consensus[F, State])] = ???
 
   /**
     * Represents current node
@@ -48,7 +52,7 @@ class NodeCore[F[+_], State, Header <: BlockHeader](
       disseminationF
     } else if (!thisParticipatesInConsensus(txEnvelope.ledgerId)) {
       val result: Either[ApplicationError, Unit] = Left(MissingCapabilitiesForTx(me, txEnvelope))
-      pure(result)
+      higherKindEn.wrap(result)
     } else
       for {
         txProcess <- fexp.enableForExp(submit(txEnvelope))
