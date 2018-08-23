@@ -5,6 +5,7 @@ import java.nio.ByteBuffer.allocate
 
 import akka.util.ByteString
 import io.iohk.cef.network.encoding.nio.CodecDecorators._
+import io.iohk.cef.network.encoding.nio.ByteLength._
 
 import scala.reflect.ClassTag
 
@@ -28,44 +29,44 @@ trait NativeCodecs {
   }
 
   implicit val booleanEncoder: NioEncoder[Boolean] = (b: Boolean) =>
-    allocate(1).put(if (b) 1.toByte else 0.toByte).flip().asInstanceOf[ByteBuffer]
+    allocate(lengthBoolean).put(if (b) 1.toByte else 0.toByte).flip().asInstanceOf[ByteBuffer]
 
   implicit val booleanDecoder: NioDecoder[Boolean] = (b: ByteBuffer) => {
     Some(b.get() == 1.toByte)
   }
 
-  implicit val byteEncoder: NioEncoder[Byte] = (b: Byte) => allocate(1).put(b).flip().asInstanceOf[ByteBuffer]
+  implicit val byteEncoder: NioEncoder[Byte] = (b: Byte) => allocate(lengthByte).put(b).flip().asInstanceOf[ByteBuffer]
 
   implicit val byteDecoder: NioDecoder[Byte] = (b: ByteBuffer) => Some(b.get())
 
   implicit val shortEncoder: NioEncoder[Short] = (s: Short) =>
-    allocate(2).putShort(s).flip().asInstanceOf[ByteBuffer]
+    allocate(lengthShort).putShort(s).flip().asInstanceOf[ByteBuffer]
 
   implicit val shortDecoder: NioDecoder[Short] = (b: ByteBuffer) => Some(b.getShort())
 
-  implicit val intEncoder: NioEncoder[Int] = (i: Int) => allocate(4).putInt(i).flip().asInstanceOf[ByteBuffer]
+  implicit val intEncoder: NioEncoder[Int] = (i: Int) => allocate(lengthInt).putInt(i).flip().asInstanceOf[ByteBuffer]
 
   implicit val intDecoder: NioDecoder[Int] = (b: ByteBuffer) => {
     Some(b.getInt())
   }
 
   implicit val longEncoder: NioEncoder[Long] = (l: Long) =>
-    allocate(8).putLong(l).flip().asInstanceOf[ByteBuffer]
+    allocate(lengthLong).putLong(l).flip().asInstanceOf[ByteBuffer]
 
   implicit val longDecoder: NioDecoder[Long] = (b: ByteBuffer) => Some(b.getLong)
 
   implicit val floatEncoder: NioEncoder[Float] = (f: Float) =>
-    allocate(4).putFloat(f).flip().asInstanceOf[ByteBuffer]
+    allocate(lengthFloat).putFloat(f).flip().asInstanceOf[ByteBuffer]
 
   implicit val floatDecoder: NioDecoder[Float] = (b: ByteBuffer) => Some(b.getFloat)
 
   implicit val doubleEncoder: NioEncoder[Double] = (d: Double) =>
-    allocate(8).putDouble(d).flip().asInstanceOf[ByteBuffer]
+    allocate(lengthDouble).putDouble(d).flip().asInstanceOf[ByteBuffer]
 
   implicit val doubleDecoder: NioDecoder[Double] = (b: ByteBuffer) => Some(b.getDouble())
 
   implicit val charEncoder: NioEncoder[Char] = (c: Char) =>
-    allocate(2).putChar(c).flip().asInstanceOf[ByteBuffer]
+    allocate(lengthChar).putChar(c).flip().asInstanceOf[ByteBuffer]
 
   implicit val charDecoder: NioDecoder[Char] = (b: ByteBuffer) => Some(b.getChar())
 
@@ -130,8 +131,6 @@ trait NativeCodecs {
     override def decode(b: ByteBuffer): Option[ByteString] =
       arrayDecoder(byteDecoder, ClassTag(classOf[Byte])).decode(b).map(arr => ByteString(arr))
   }
-
-  private def lengthString(s: String): Int = 4 + s.length * 2
 }
 
 object NativeCodecs extends NativeCodecs
