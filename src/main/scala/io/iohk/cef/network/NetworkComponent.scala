@@ -1,7 +1,9 @@
 package io.iohk.cef.network
 import akka.util.ByteString
 import io.iohk.cef.core.Envelope
-import io.iohk.cef.ledger.{Block, ByteStringSerializable, Transaction}
+import io.iohk.cef.ledger.ByteStringSerializable
+
+import scala.language.higherKinds
 
 trait NetworkComponent[F[_], State] {
 

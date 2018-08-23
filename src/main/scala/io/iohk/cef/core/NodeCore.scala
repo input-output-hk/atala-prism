@@ -1,12 +1,14 @@
 package io.iohk.cef.core
 import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.error.ApplicationError
-import io.iohk.cef.ledger.{Block, ByteStringSerializable, Transaction}
+import io.iohk.cef.ledger.{Block, BlockHeader, ByteStringSerializable, Transaction}
 import io.iohk.cef.network.{NetworkComponent, NodeInfo}
-import io.iohk.cef.transactionpool.{TransactionPool, TransactionPoolService}
+import io.iohk.cef.transactionpool.TransactionPoolService
 import io.iohk.cef.utils.ForExpressionsEnabler
 
-class NodeCore[F[+_], State, Header](
+import scala.language.higherKinds
+
+class NodeCore[F[+_], State, Header <: BlockHeader](
     implicit fexp: ForExpressionsEnabler[F],
     txSerializable: ByteStringSerializable[Envelope[Transaction[State]]],
     blockSerializable: ByteStringSerializable[Envelope[Block[State, Header, Transaction[State]]]]) {

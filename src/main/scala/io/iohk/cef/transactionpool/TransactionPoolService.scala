@@ -1,8 +1,8 @@
 package io.iohk.cef.transactionpool
 import io.iohk.cef.error.ApplicationError
-import io.iohk.cef.ledger.{Block, Transaction}
+import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
 
-trait TransactionPoolService[State, Header] {
+trait TransactionPoolService[State, Header <: BlockHeader] {
   type BlockType = Block[State, Header, Transaction[State]]
 
   def generateBlock(): Either[ApplicationError, BlockType]

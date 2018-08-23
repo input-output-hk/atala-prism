@@ -1,9 +1,9 @@
 package io.iohk.cef.transactionpool
-import io.iohk.cef.ledger.{Block, Transaction}
+import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
 
 import scala.collection.immutable.Queue
 
-case class TransactionPool[State, Header](
+case class TransactionPool[State, Header <: BlockHeader](
     queue: Queue[Transaction[State]] = Queue(),
     headerGenerator: Seq[Transaction[State]] => Header,
     maxTxsPerBlock: Int) {

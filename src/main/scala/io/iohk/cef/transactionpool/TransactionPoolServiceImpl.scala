@@ -1,10 +1,10 @@
 package io.iohk.cef.transactionpool
 import io.iohk.cef.error.ApplicationError
-import io.iohk.cef.ledger.Transaction
+import io.iohk.cef.ledger.{BlockHeader, Transaction}
 
 import scala.collection.immutable.Queue
 
-class TransactionPoolServiceImpl[State, Header](headerGenerator: Seq[Transaction[State]] => Header,
+class TransactionPoolServiceImpl[State, Header <: BlockHeader](headerGenerator: Seq[Transaction[State]] => Header,
                                                 maxTxsPerBlock: Int) extends TransactionPoolService[State, Header] {
 
   //FIXME Concurrency model? Currently NOT thread safe. Maybe ConcurrentLinkedQueue?
