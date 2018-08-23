@@ -20,7 +20,6 @@ import io.iohk.cef.network.{Capabilities, NodeInfo, NodeStatus, ServerStatus}
 import io.iohk.cef.network.telemetry.InMemoryTelemetry
 import io.iohk.cef.test.TestClock
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
-import org.scalamock.scalatest.MockFactory
 import org.scalatest.MustMatchers._
 import org.scalatest.{BeforeAndAfterAll, FlatSpec}
 
@@ -28,8 +27,7 @@ import scala.concurrent.duration._
 
 class DiscoveryManagerSpec
   extends FlatSpec
-    with BeforeAndAfterAll
-    with MockFactory {
+    with BeforeAndAfterAll {
 
   implicit val untypedSystem: ActorSystem = untyped.ActorSystem("TypedWatchingUntyped")
   implicit val typedSystem: typed.ActorSystem[_] = untypedSystem.toTyped
