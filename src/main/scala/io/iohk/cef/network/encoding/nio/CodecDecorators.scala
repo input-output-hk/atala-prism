@@ -6,11 +6,32 @@ import scala.reflect.ClassTag
 
 private[nio] object CodecDecorators {
 
-  def verifyingRemaining[T](remaining: Int, b: ByteBuffer)(decode: => Option[T]): Option[T] = {
-    if (b.remaining() < remaining)
-      None
-    else
-      decode
+  def messageLengthEncoder[T](enc: NioEncoder[T]): NioEncoder[T] = new NioEncoder[T] {
+    override def encode(t: T): ByteBuffer = {
+
+      val messageBuff: ByteBuffer = enc.encode(t)
+      val messageSize = messageBuff.remaining()
+
+      ByteBuffer.allocate(messageSize + 4).putInt(messageSize).put(messageBuff).flip().asInstanceOf[ByteBuffer]
+    }
+  }
+
+  def messageLengthDecoder[T](dec: NioDecoder[T]): NioDecoder[T] = new NioDecoder[T] {
+    override def decode(b: ByteBuffer): Option[T] = {
+
+      verifyingSuccess(b) {
+
+        verifyingRemaining(4, b) {
+
+          val messageSize = b.getInt()
+
+          verifyingRemaining(messageSize, b) {
+
+            dec.decode(b)
+          }
+        }
+      }
+    }
   }
 
   def typeCodeEncoder[T](enc: NioEncoder[T])(implicit ct: ClassTag[T]): NioEncoder[T] = (t: T) => {
@@ -25,20 +46,36 @@ private[nio] object CodecDecorators {
       .asInstanceOf[ByteBuffer]
   }
 
-  def typeCodeDecoder[T](dec: NioDecoder[T])(implicit ct: ClassTag[T]): NioDecoder[T] = (b: ByteBuffer) => {
+  def typeCodeDecoder[T](dec: NioDecoder[T])(implicit ct: ClassTag[T]): NioDecoder[T] = new NioDecoder[T] {
+    override def decode(b: ByteBuffer): Option[T] = {
 
-    val initialPosition = b.position()
-    val actualTypeHashDec: Option[Array[Byte]] = arrayDecoderImpl[Byte].decode(b)
+      val actualTypeHashDec: Option[Array[Byte]] = arrayDecoderImpl[Byte].decode(b)
 
-    val matchingTypeHash = actualTypeHashDec
-      .exists(actualTypeHash => actualTypeHash.deep == typeCode[T].deep)
+      val matchingTypeHash = actualTypeHashDec
+        .exists(actualTypeHash => actualTypeHash.deep == typeCode[T].deep)
 
-    if (matchingTypeHash)
-      dec.decode(b)
-    else {
-      b.position(initialPosition)
-      None
+      if (matchingTypeHash)
+        dec.decode(b)
+      else {
+        None
+      }
     }
+  }
+
+  private def verifyingRemaining[T](remaining: Int, b: ByteBuffer)(decode: => Option[T]): Option[T] = {
+    if (b.remaining() < remaining)
+      None
+    else
+      decode
+  }
+
+  private def verifyingSuccess[T](b: ByteBuffer)(decode: => Option[T]): Option[T] = {
+    val initialPosition = b.position()
+    val result = decode
+    if (result.isEmpty)
+      b.position(initialPosition)
+
+    result
   }
 
   private def typeCode[T](implicit ct: ClassTag[T]): Array[Byte] =

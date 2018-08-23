@@ -8,7 +8,7 @@ val commonSettings = Seq(
   name := "network",
   version := "0.1-SNAPSHOT",
   scalaVersion := scalaV,
-  addCompilerPlugin("io.tryp" % "splain" % "0.3.1" cross CrossVersion.patch)
+//  addCompilerPlugin("io.tryp" % "splain" % "0.3.1" cross CrossVersion.patch)
 )
 
 enablePlugins(FlywayPlugin)
