@@ -7,15 +7,13 @@ import io.iohk.cef.ledger.Block
 import io.iohk.cef.ledger.identity._
 import io.iohk.cef.ledger.storage.scalike.LedgerTable
 import io.iohk.cef.ledger.storage.scalike.dao.LedgerStorageDao
-import org.scalamock.scalatest.MockFactory
 import org.scalatest.{MustMatchers, fixture}
 import scalikejdbc._
 import scalikejdbc.scalatest.AutoRollback
 
 trait LedgerStorageDaoDbTest extends fixture.FlatSpec
   with AutoRollback
-  with MustMatchers
-  with MockFactory {
+  with MustMatchers {
 
   behavior of "LedgerStorageImpl"
 
