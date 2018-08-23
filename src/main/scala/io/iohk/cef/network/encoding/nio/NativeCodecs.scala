@@ -11,7 +11,7 @@ import scala.reflect.ClassTag
 trait NativeCodecs {
 
   implicit val stringEncoder: NioEncoder[String] = (s: String) => {
-    val byteLength = 4 + s.length * 2
+    val byteLength = lengthString(s)
     val buffer = allocate(byteLength).putInt(s.length)
     s.foreach(buffer.putChar)
     buffer.flip().asInstanceOf[ByteBuffer]
@@ -130,6 +130,8 @@ trait NativeCodecs {
     override def decode(b: ByteBuffer): Option[ByteString] =
       arrayDecoder(byteDecoder, ClassTag(classOf[Byte])).decode(b).map(arr => ByteString(arr))
   }
+
+  private def lengthString(s: String): Int = 4 + s.length * 2
 }
 
 object NativeCodecs extends NativeCodecs
