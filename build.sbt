@@ -34,6 +34,10 @@ coverageEnabled := true
 coverageMinimum := 80
 coverageFailOnMinimum := true
 
+// scalafmt
+scalafmtOnCompile in ThisBuild := true
+scalafmtTestOnCompile in ThisBuild := true
+
 val dep = {
   val akkaVersion = "2.5.12"
 
