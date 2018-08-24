@@ -1,7 +1,7 @@
 package io.iohk.cef.transactionpool
 import akka.actor.{Actor, ActorRef, Props}
 import io.iohk.cef.error.ApplicationError
-import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
+import io.iohk.cef.ledger.{Block, BlockHeader, LedgerState, Transaction}
 import io.iohk.cef.utils.ByteSizeable
 
 import scala.collection.immutable.Queue
@@ -37,16 +37,17 @@ class TransactionPoolActorHolder[State, Header <: BlockHeader](
     var pool = new TransactionPool[State, Header](Queue(), headerGenerator, maxTxSizeInBytes)
 
     override def receive: Receive = {
-      case GenerateBlock()        => sender() ! GenerateBlockResponse(generateBlock())
+      case GenerateBlock(ls)      => sender() ! GenerateBlockResponse(generateBlock(ls))
       case ProcessTransaction(tx) => sender() ! ProcessTransactionResponse(processTransaction(tx))
       case RemoveBlockTransactions(block) =>
         sender() ! RemoveBlockTransactionsResponse(removeBlockTransactions(block))
     }
 
-    private def generateBlock(): Either[ApplicationError, BlockType] = {
+    private def generateBlock(currentLedgerState: LedgerState[State]): Either[ApplicationError, BlockType] = {
       val (newPool, block) = pool.generateBlock()
+      val result = block(currentLedgerState).map(_ => block)
       pool = newPool
-      Right(block)
+      result
     }
 
     private def processTransaction(transaction: Transaction[State]): Either[ApplicationError, Unit] = {
@@ -63,7 +64,7 @@ class TransactionPoolActorHolder[State, Header <: BlockHeader](
     }
   }
 
-  case class GenerateBlock()
+  case class GenerateBlock(currentLedgerState: LedgerState[State])
   case class ProcessTransaction(tx: Transaction[State])
   case class RemoveBlockTransactions(block: Block[State, Header, Transaction[State]])
 

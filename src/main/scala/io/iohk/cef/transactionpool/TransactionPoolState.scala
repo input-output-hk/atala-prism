@@ -12,7 +12,7 @@ object TransactionPoolState {
       implicit blockByteSizeable: ByteSizeable[Block[State, Header, Transaction[State]]]
   ): StateM[Queue[Transaction[State]], Block[State, Header, Transaction[State]]] = {
 
-    def sizeInBytes(txs: Queue[Transaction[State]]) =
+    def sizeInBytes(txs: Queue[Transaction[State]]): Int =
       blockByteSizeable.sizeInBytes(Block(headerGenerator(txs), txs))
 
     @tailrec

@@ -1,5 +1,5 @@
 package io.iohk.cef.transactionpool
-import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
+import io.iohk.cef.ledger.{Block, BlockHeader, LedgerState, Transaction}
 import io.iohk.cef.utils.ByteSizeable
 
 import scala.collection.immutable.Queue
@@ -21,18 +21,21 @@ class TransactionPool[State, Header <: BlockHeader](
   type QueueType = Queue[Transaction[State]]
   type BlockType = Block[State, Header, Transaction[State]]
 
-  val state = TransactionPoolState(headerGenerator, maxBlockSize)
+  val txPoolState = TransactionPoolState(headerGenerator, maxBlockSize)
 
   def generateBlock(): (TransactionPool[State, Header], BlockType) = {
-    val (newQueue, block) = state(queue)
-    (new TransactionPool(newQueue, headerGenerator, maxBlockSize), block)
+    val (newQueue, block) = txPoolState(queue)
+    (modifyQueue(newQueue), block)
   }
 
   def processTransaction(transaction: Transaction[State]): TransactionPool[State, Header] =
-    new TransactionPool(queue.enqueue(transaction), headerGenerator, maxBlockSize)
+    modifyQueue(queue.enqueue(transaction))
 
   def removeBlockTransactions(block: BlockType): TransactionPool[State, Header] ={
     val blockTxs = block.transactions.toSet
-    new TransactionPool(queue.filterNot(blockTxs.contains), headerGenerator, maxBlockSize)
+    modifyQueue(queue.filterNot(blockTxs.contains))
   }
+
+  private def modifyQueue(newQueue: Queue[Transaction[State]]) =
+    new TransactionPool[State, Header](newQueue, headerGenerator, maxBlockSize)
 }
