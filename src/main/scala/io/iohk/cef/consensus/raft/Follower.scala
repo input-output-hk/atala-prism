@@ -17,12 +17,14 @@ trait Follower {
 
     // timeout,  Need to start an election
     case Event(StateTimeout, myState: StateData) =>
+      log.info("Election Timeout, Current term is {}.", myState.currentTerm)
       beginElection(myState)
 
     // election
-    case Event(RequestVote(term, _, _, _), myState: StateData)
+    case Event(r @ RequestVote(term, _, _, _), myState: StateData)
       if term > myState.currentTerm =>
       log.info("Received newer {}. Current term is {}.", term, myState.currentTerm)
+      myState.self forward r
       stay() applying UpdateTermEvent(term)
 
     case Event(RequestVote(term, candidate, lastLogTerm, lastLogIndex), myState: StateData)

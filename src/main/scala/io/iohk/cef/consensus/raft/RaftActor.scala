@@ -77,6 +77,9 @@ abstract class RaftActor
       stopHeartbeat()
   }
 
+  override def preStart() {
+    log.info("Starting new Raft member, will wait for raft cluster configuration...")
+  }
 // Helper for timeout
   def nextElectionTime(): FiniteDuration = randomElectionTimeout(
     from = raftConfig.electionTimeoutMin,

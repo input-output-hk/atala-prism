@@ -9,6 +9,7 @@ import io.iohk.cef.consensus.raft.protocol.{ClusterConfiguration, _}
 import org.scalatest._
 import org.scalatest.concurrent.Eventually
 import org.scalatest.time.{Millis, Seconds, Span}
+import io.iohk.cef.consensus.raft.protocol._
 
 import scala.util.Random
 
@@ -22,7 +23,7 @@ abstract class RaftSpec(_system: Option[ActorSystem] = None)
     with BeforeAndAfterEach
     with PersistenceCleanup {
 
-  val DefaultTimeout = 15
+  val DefaultTimeout = 5
 
   import scala.concurrent.duration._
   val DefaultTimeoutDuration: FiniteDuration = DefaultTimeout.seconds
@@ -157,16 +158,6 @@ abstract class RaftSpec(_system: Option[ActorSystem] = None)
     newMember
   }
 
-  def restartMembers(_member: Option[ActorRef] = None) = {
-    val member = _member.getOrElse(members(Random.nextInt(members.size)))
-    stateTransitionActor ! RemoveMember(member)
-    probe.watch(member)
-    system.stop(member)
-    members = members.filterNot(_ == member)
-    probe.expectTerminated(member)
-    val newMember = createActor(member.path.name)
-    newMember
-  }
 
   override def afterAll() {
     super.afterAll()

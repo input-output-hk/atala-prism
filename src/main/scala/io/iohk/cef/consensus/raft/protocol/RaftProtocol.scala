@@ -70,5 +70,16 @@ trait RaftProtocol extends Serializable {
   case class AppendSuccessful(term: Term, lastIndex: Int) extends AppendResponse
 
   case class ChangeConfiguration(newConf: ClusterConfiguration) extends Message
+  case object RequestConfiguration extends  Message
+
+  /**
+    * Removes one member to the cluster; Used in discovery phase, during Init state of RaftActor in clustered setup.
+    */
+  case class RaftMemberAdded(member: ActorRef, keepInitUntil: Int) extends Message
+
+  /**
+    * Removes one member to the cluster; Used in discovery phase, during Init state of RaftActor in clustered setup.
+    */
+  case class RaftMemberRemoved(member: ActorRef, keepInitUntil: Int) extends Message
 
 }

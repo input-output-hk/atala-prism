@@ -65,6 +65,11 @@ trait Leader {
       registerAppendSuccessful(follower(), msg, sd)
     // End append entries response handling
 
+//
+    case Event(RequestConfiguration, sd: StateData) =>
+      sender() ! ChangeConfiguration(sd.config)
+      stay()
+
   }
 
 
