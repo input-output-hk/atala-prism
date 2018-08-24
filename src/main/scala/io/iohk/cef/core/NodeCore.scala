@@ -3,7 +3,7 @@ import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.ledger.{Block, BlockHeader, ByteStringSerializable, Transaction}
 import io.iohk.cef.network.{NetworkComponent, NodeInfo}
-import io.iohk.cef.transactionpool.TransactionPoolService
+import io.iohk.cef.transactionpool.TransactionPoolActorHolder
 import io.iohk.cef.utils.{ForExpressionsEnabler, HigherKindEnabler}
 import akka.pattern.ask
 import akka.util.Timeout
@@ -11,7 +11,7 @@ import akka.util.Timeout
 import scala.language.higherKinds
 
 class NodeCore[F[+_], State, Header <: BlockHeader](
-    consensusMap: Map[LedgerId, (TransactionPoolService[State, Header], Consensus[F, State])])(
+    consensusMap: Map[LedgerId, (TransactionPoolActorHolder[State, Header], Consensus[F, State])])(
     implicit fexp: ForExpressionsEnabler[F],
     higherKindEn: HigherKindEnabler[F],
     txSerializable: ByteStringSerializable[Envelope[Transaction[State]]],

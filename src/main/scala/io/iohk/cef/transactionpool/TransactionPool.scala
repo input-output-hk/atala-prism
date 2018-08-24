@@ -4,6 +4,16 @@ import io.iohk.cef.utils.ByteSizeable
 
 import scala.collection.immutable.Queue
 
+/**
+  * A TransactionPool serves as a queue for transactions before being added to a blockchain.
+  * Besides holding the transactions, this class also has the responsibility to create blocks.
+  * @param queue The starting queue for this pool
+  * @param headerGenerator generates a block header based on a list of transactions
+  * @param maxBlockSize maximum block size in bytes
+  * @param blockByteSizeable type class that allows for any block to be measured in bytes
+  * @tparam State the ledger state type
+  * @tparam Header the block header type
+  */
 class TransactionPool[State, Header <: BlockHeader](
     queue: Queue[Transaction[State]] = Queue(),
     headerGenerator: Seq[Transaction[State]] => Header,

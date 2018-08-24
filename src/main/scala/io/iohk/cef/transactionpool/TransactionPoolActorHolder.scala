@@ -1,21 +1,36 @@
 package io.iohk.cef.transactionpool
-import akka.actor.{Actor, ActorSystem, Props}
+import akka.actor.{Actor, ActorRef, Props}
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
 import io.iohk.cef.utils.ByteSizeable
 
 import scala.collection.immutable.Queue
 
-class TransactionPoolService[State, Header <: BlockHeader](
-  system: ActorSystem,
+/**
+  * A TransactionPoolHolder utilizes Akka to provide a [[TransactionPool]] with support for concurrency.
+  * Subtyping is utilized to avoid type parameters in the Akka messages
+  * @param actorCreator a constructor for the TransactionPool actor. By providing a constructor, selecting the actor's
+  *                     parent is delegated to another layer.
+  * @param headerGenerator a generator for the block header based on the block's transactions
+  * @param maxTxSizeInBytes maximum size a block can have in bytes. Must be positive
+  * @param blockByteSizeable type class that allows a block to be measured in bytes
+  * @tparam State the ledger state type
+  * @tparam Header the block header type
+  */
+class TransactionPoolActorHolder[State, Header <: BlockHeader](
+  actorCreator: Props => ActorRef,
   headerGenerator: Seq[Transaction[State]] => Header,
   maxTxSizeInBytes: Int)(
   implicit blockByteSizeable: ByteSizeable[Block[State, Header, Transaction[State]]]) {
 
   type BlockType = Block[State, Header, Transaction[State]]
 
-  val poolActor = system.actorOf(Props(new TransactionPoolActor()))
+  val poolActor = actorCreator(Props(new TransactionPoolActor()))
 
+  /**
+    * A TransactionPoolActor provides a [[TransactionPool]] with support for concurrency.
+    * @param blockByteSizeable type class that allows a block to be measured in bytes
+    */
   class TransactionPoolActor(implicit blockByteSizeable: ByteSizeable[BlockType])
       extends Actor {
 
