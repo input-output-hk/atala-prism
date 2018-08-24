@@ -8,6 +8,7 @@ trait Candidate {
 
     // election
     case Event(BeginElection, sd: StateData) =>
+      if(raftConfig.publishTestEvents) context.system.eventStream.publish(ElectionStarted(sd.currentTerm, self))
 
       if (sd.config.members.isEmpty) {
         log.warning("Tried to initialize election with no members...")

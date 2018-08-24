@@ -117,6 +117,20 @@ abstract class RaftSpec(_system: Option[ActorSystem] = None)
     probe.expectMsgClass(max, classOf[AppendEntries[_]])
 
 
+  def subscribeBeginElection()(implicit probe: TestProbe): Unit =
+    system.eventStream.subscribe(probe.ref, classOf[ElectionStarted])
+
+  def subscribeElectionStarted()(implicit probe: TestProbe): Unit =
+    system.eventStream.subscribe(probe.ref, classOf[ElectionStarted])
+
+  def subscribeTermUpdated()(implicit probe: TestProbe): Unit =
+    system.eventStream.subscribe(probe.ref, classOf[TermUpdated])
+
+  def awaitBeginElection(max: FiniteDuration = DefaultTimeoutDuration)(implicit probe: TestProbe): Unit =
+    probe.expectMsgClass(max, BeginElection.getClass)
+
+  def awaitElectionStarted(max: FiniteDuration = DefaultTimeoutDuration)(implicit probe: TestProbe): ElectionStarted =
+    probe.expectMsgClass(max, classOf[ElectionStarted])
 
 
   def subscribeBeginAsFollower()(implicit probe: TestProbe): Unit =
