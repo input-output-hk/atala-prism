@@ -1,12 +1,10 @@
 package io.iohk.cef.ledger.identity
 
 import akka.util.ByteString
-import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FlatSpec, MustMatchers}
 
 class IdentityTransactionSpec  extends FlatSpec
-  with MustMatchers
-  with MockFactory {
+  with MustMatchers {
 
   behavior of "IdentityTransaction"
 

@@ -11,26 +11,29 @@ import io.iohk.cef.network.transport.rlpx.ethereum.p2p.Message.Version
 import io.iohk.cef.network.transport.rlpx.ethereum.p2p.messages.Versions
 import io.iohk.cef.network.transport.rlpx.ethereum.p2p.messages.WireProtocol.Ping
 import io.iohk.cef.network.transport.rlpx.ethereum.p2p.{MessageDecoder, MessageSerializable}
-import org.scalamock.scalatest.MockFactory
+import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.concurrent.duration._
 
-class RLPxConnectionHandlerSpec extends FlatSpec with Matchers with MockFactory {
+import org.mockito.Mockito._
+import org.mockito.ArgumentMatchers._
+
+class RLPxConnectionHandlerSpec extends FlatSpec with Matchers {
 
   it should "write messages send to TCP connection" in new TestSetup {
 
     setupIncomingRLPxConnection()
 
-    (mockMessageCodec.encodeMessage _).expects(Ping(): MessageSerializable).returning(ByteString("ping encoded"))
+    when(mockMessageCodec.encodeMessage(Ping(): MessageSerializable)).thenReturn(ByteString("ping encoded"))
+
     rlpxConnection ! RLPxConnectionHandler.SendMessage(Ping())
     connection.expectMsg(Tcp.Write(ByteString("ping encoded"), RLPxConnectionHandler.Ack))
-
   }
 
   it should "write messages to TCP connection once all previous ACK were received" in new TestSetup {
 
-    (mockMessageCodec.encodeMessage _).expects(Ping(): MessageSerializable).returning(ByteString("ping encoded")).anyNumberOfTimes()
+    when(mockMessageCodec.encodeMessage(Ping(): MessageSerializable)).thenReturn(ByteString("ping encoded"))
 
     setupIncomingRLPxConnection()
 
@@ -49,7 +52,7 @@ class RLPxConnectionHandlerSpec extends FlatSpec with Matchers with MockFactory 
 
   it should "accummulate messages and write them when receiving ACKs" in new TestSetup {
 
-    (mockMessageCodec.encodeMessage _).expects(Ping(): MessageSerializable).returning(ByteString("ping encoded")).anyNumberOfTimes()
+    when(mockMessageCodec.encodeMessage(Ping(): MessageSerializable)).thenReturn(ByteString("ping encoded"))
 
     setupIncomingRLPxConnection()
 
@@ -74,7 +77,7 @@ class RLPxConnectionHandlerSpec extends FlatSpec with Matchers with MockFactory 
   }
 
   it should "close the connection when Ack timeout happens" in new TestSetup {
-    (mockMessageCodec.encodeMessage _).expects(Ping(): MessageSerializable).returning(ByteString("ping encoded")).anyNumberOfTimes()
+    when(mockMessageCodec.encodeMessage(Ping(): MessageSerializable)).thenReturn(ByteString("ping encoded"))
 
     setupIncomingRLPxConnection()
 
@@ -86,7 +89,7 @@ class RLPxConnectionHandlerSpec extends FlatSpec with Matchers with MockFactory 
   }
 
   it should "ignore timeout of old messages" in new TestSetup {
-    (mockMessageCodec.encodeMessage _).expects(Ping(): MessageSerializable).returning(ByteString("ping encoded")).anyNumberOfTimes()
+    when(mockMessageCodec.encodeMessage(Ping(): MessageSerializable)).thenReturn(ByteString("ping encoded"))
 
     setupIncomingRLPxConnection()
 
@@ -115,8 +118,8 @@ class RLPxConnectionHandlerSpec extends FlatSpec with Matchers with MockFactory 
     connection.expectMsgClass(classOf[Tcp.Register])
 
     //AuthHandshaker throws exception on initial message
-    (mockHandshaker.handleInitialMessage _).expects(*).onCall{_: ByteString => throw new Exception("MAC invalid")}
-    (mockHandshaker.handleInitialMessageV4 _).expects(*).onCall{_: ByteString => throw new Exception("MAC invalid")}
+    when(mockHandshaker.handleResponseMessage(any())).thenThrow(new RuntimeException("MAC invalid"))
+    when(mockHandshaker.handleResponseMessageV4(any())).thenThrow(new RuntimeException("MAC invalid"))
 
     val data = ByteString((0 until AuthHandshaker.InitiatePacketLength).map(_.toByte).toArray)
     rlpxConnection ! Tcp.Received(data)
@@ -131,15 +134,15 @@ class RLPxConnectionHandlerSpec extends FlatSpec with Matchers with MockFactory 
 
     //The TCP connection results are handled
     val initPacket = ByteString("Init packet")
-    (mockHandshaker.initiate _).expects(uri).returning(initPacket -> mockHandshaker)
+    when(mockHandshaker.initiate(uri)).thenReturn(initPacket -> mockHandshaker)
 
     tcpActorProbe.reply(Tcp.Connected(inetAddress, inetAddress))
     tcpActorProbe.expectMsg(Tcp.Register(rlpxConnection))
     tcpActorProbe.expectMsg(Tcp.Write(initPacket))
 
     //AuthHandshaker handles the response message (that throws an invalid MAC)
-    (mockHandshaker.handleResponseMessage _).expects(*).onCall{_: ByteString => throw new Exception("MAC invalid")}
-    (mockHandshaker.handleResponseMessageV4 _).expects(*).onCall{_: ByteString => throw new Exception("MAC invalid")}
+    when(mockHandshaker.handleResponseMessage(any())).thenThrow(new RuntimeException("MAC invalid"))
+    when(mockHandshaker.handleResponseMessageV4(any())).thenThrow(new RuntimeException("MAC invalid"))
 
     val data = ByteString((0 until AuthHandshaker.ResponsePacketLength).map(_.toByte).toArray)
     rlpxConnection ! Tcp.Received(data)
@@ -147,7 +150,7 @@ class RLPxConnectionHandlerSpec extends FlatSpec with Matchers with MockFactory 
     rlpxConnectionParent.expectTerminated(rlpxConnection)
   }
 
-  trait TestSetup extends MockFactory {
+  trait TestSetup extends MockitoSugar {
     implicit val system = ActorSystem("RLPxHandlerSpec_System")
 
     //Mock parameters for RLPxConnectionHandler
@@ -188,8 +191,9 @@ class RLPxConnectionHandlerSpec extends FlatSpec with Matchers with MockFactory 
       //AuthHandshaker handles initial message
       val data = ByteString((0 until AuthHandshaker.InitiatePacketLength).map(_.toByte).toArray)
       val response = ByteString("response data")
-      (mockHandshaker.handleInitialMessage _).expects(data).returning((response, AuthHandshakeSuccess(mock[Secrets], ByteString())))
-      (mockMessageCodec.readMessages _).expects(ByteString.empty).returning(Nil) //For processing of messages after handshaking finishes
+
+      when(mockHandshaker.handleInitialMessage(data)).thenReturn((response, AuthHandshakeSuccess(mock[Secrets], ByteString())))
+      when(mockMessageCodec.readMessages(ByteString.empty)).thenReturn(Nil) //For processing of messages after handshaking finishes
 
       rlpxConnection ! Tcp.Received(data)
       connection.expectMsg(Tcp.Write(response))

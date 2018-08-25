@@ -80,13 +80,13 @@ class NativeCodecsSpec extends FlatSpec {
 
   def bufferPositionTest[T](implicit encoder: NioEncoder[T],
                             decoder: NioDecoder[T],
-                            a: Arbitrary[T],
-                            byteLength: ByteLength[T]): Unit = {
+                            a: Arbitrary[T]): Unit = {
     forAll(arbitrary[T]) { t =>
       val b: ByteBuffer = encoder.encode(t)
+      val remaining = b.remaining()
       b.position() shouldBe 0
       decoder.decode(b)
-      b.position() shouldBe byteLength(t)
+      b.position() shouldBe remaining
     }
   }
 

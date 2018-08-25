@@ -10,7 +10,7 @@ object Transports {
     peerInfo.configuration.tcpTransportConfiguration.isDefined
 }
 
-class Transports(peerInfo: PeerInfo) {
+class Transports(val peerInfo: PeerInfo) {
 
   private var nettyTransportRef: Option[NettyTransport] = None
 
@@ -28,6 +28,6 @@ class Transports(peerInfo: PeerInfo) {
   }
 
   def tcp[T](messageHandler: (InetSocketAddress, T) => Unit)(
-      implicit codec: NioStreamCodec[T]): Option[TcpNetworkTransport[T]] =
-    netty().map(nettyTransport => new TcpNetworkTransport[T](messageHandler, codec, nettyTransport))
+      implicit codec: NioCodec[T]): Option[TcpNetworkTransport[T]] =
+    netty().map(nettyTransport => new TcpNetworkTransport[T](messageHandler, nettyTransport)(codec.encoder, codec.decoder))
 }

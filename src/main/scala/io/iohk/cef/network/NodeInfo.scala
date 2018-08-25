@@ -11,6 +11,7 @@ import scala.util.Try
 
 /**
   * TODO this is currently hardcoded only to work with rlpx on a tcp/ip network.
+  * FIXME replace NodeInfo with PeerInfo and NodeId
   */
 case class NodeInfo(id: ByteString,
                     discoveryAddress: InetSocketAddress,
