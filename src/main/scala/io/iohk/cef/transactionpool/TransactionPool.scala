@@ -1,5 +1,5 @@
 package io.iohk.cef.transactionpool
-import io.iohk.cef.ledger.{Block, BlockHeader, LedgerState, Transaction}
+import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
 import io.iohk.cef.utils.ByteSizeable
 
 import scala.collection.immutable.Queue

@@ -1,7 +1,6 @@
 package io.iohk.cef
-import io.iohk.cef.network.NodeInfo
+import io.iohk.cef.network.NodeId
 
 package object core {
-  type DestinationDescriptor = (NodeInfo => Boolean)
-  type LedgerId = Int
+  type DestinationDescriptor = (NodeId => Boolean)
 }

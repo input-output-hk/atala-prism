@@ -3,11 +3,11 @@ import akka.util.ByteString
 import io.iohk.cef.core.Envelope
 import io.iohk.cef.ledger.ByteStringSerializable
 
-import scala.language.higherKinds
+import scala.concurrent.Future
 
-trait NetworkComponent[F[_], State] {
+trait NetworkComponent[State] {
 
-  def disseminate[T](envelope: Envelope[T])(implicit serializable: ByteStringSerializable[Envelope[T]]): F[Either[NetworkError, Unit]]
+  def disseminate[T](envelope: Envelope[T])(implicit serializable: ByteStringSerializable[Envelope[T]]): Future[Either[NetworkError, Unit]]
 
-  def receive[T](byteString: ByteString)(implicit serializable: ByteStringSerializable[Envelope[T]]): F[Either[NetworkError, Envelope[T]]]
+  def receive[T](byteString: ByteString)(implicit serializable: ByteStringSerializable[Envelope[T]]): Future[Either[NetworkError, Envelope[T]]]
 }

@@ -1,4 +1,5 @@
 package io.iohk.cef.core
+import io.iohk.cef.LedgerId
 
 /**
   *
@@ -10,5 +11,5 @@ package io.iohk.cef.core
   * @tparam State the ledgerState
   */
 case class Envelope[D](content: D,
-                  ledgerId: Int,
+                  ledgerId: LedgerId,
                   destinationDescriptor: DestinationDescriptor)
