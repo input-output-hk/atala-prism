@@ -1,10 +1,9 @@
 package io.iohk.cef.consensus.raft
-import io.iohk.cef.consensus.raft.RaftConsensus.ConsensusModule
-import io.iohk.cef.consensus.raft.RaftConsensus.RaftRPC.RPCImpl
-import org.scalatest.{FlatSpec, WordSpec}
+
+import io.iohk.cef.consensus.raft.RaftConsensus.{ConsensusModule, PersistentStorage, RPCImpl}
+import org.scalatest.WordSpec
 import org.scalatest.Matchers._
 import org.scalatest.mockito.MockitoSugar._
-import org.mockito.Mockito._
 
 class RaftConsensusSpec extends WordSpec {
 
@@ -12,9 +11,11 @@ class RaftConsensusSpec extends WordSpec {
 
   private val stateMachine: Command => Unit = mock[Command => Unit]
 
+  private val persistentStorage = mock[PersistentStorage[String]]
+
   private val rpcImpl = mock[RPCImpl[Command]]
 
-  val consensus = new ConsensusModule[Command](stateMachine)
+  val consensus = new ConsensusModule[Command]("i1", Set("i2"), stateMachine, persistentStorage)
 
   "Rules for servers" when {
     "All servers" when {
@@ -41,6 +42,4 @@ class RaftConsensusSpec extends WordSpec {
       }
     }
   }
-
-  it should "apply "
 }
