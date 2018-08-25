@@ -9,6 +9,9 @@ import io.iohk.cef.consensus.raft.protocol.{ClusterConfiguration, _}
 import org.scalatest._
 import org.scalatest.concurrent.Eventually
 import org.scalatest.time.{Millis, Seconds, Span}
+import io.iohk.cef.consensus.raft.protocol._
+
+import scala.util.Random
 
 abstract class RaftSpec(_system: Option[ActorSystem] = None)
     extends TestKit(_system getOrElse ActorSystem("raft-protocol-test"))
@@ -56,7 +59,8 @@ abstract class RaftSpec(_system: Option[ActorSystem] = None)
   }
 
   def createActor(name: String): ActorRef = {
-    val actor = system.actorOf(Props(new SimpleCommandRaftActor), name)
+
+    val actor = system.actorOf(Props(new SimpleCommandRaftActor).withDispatcher("akka.raft-dispatcher"), name)
     stateTransitionActor ! AddMember(actor)
     members :+= actor
     actor
@@ -105,6 +109,39 @@ abstract class RaftSpec(_system: Option[ActorSystem] = None)
   def awaitBeginAsLeader(max: FiniteDuration = DefaultTimeoutDuration)(implicit probe: TestProbe): BeginAsLeader =
     probe.expectMsgClass(max, classOf[BeginAsLeader])
 
+  def subscribeHeartBeatAppendEntries()(implicit probe: TestProbe): Unit =
+    system.eventStream.subscribe(probe.ref, classOf[AppendEntries[_]])
+
+
+  def awaitExpectedHeartBeatAppendEntries(max: FiniteDuration = DefaultTimeoutDuration)(implicit probe: TestProbe): AppendEntries[_] =
+    probe.expectMsgClass(max, classOf[AppendEntries[_]])
+
+
+  def subscribeBeginElection()(implicit probe: TestProbe): Unit =
+    system.eventStream.subscribe(probe.ref, classOf[ElectionStarted])
+
+  def subscribeElectionStarted()(implicit probe: TestProbe): Unit =
+    system.eventStream.subscribe(probe.ref, classOf[ElectionStarted])
+
+  def subscribeTermUpdated()(implicit probe: TestProbe): Unit =
+    system.eventStream.subscribe(probe.ref, classOf[TermUpdated])
+
+  def awaitBeginElection(max: FiniteDuration = DefaultTimeoutDuration)(implicit probe: TestProbe): Unit =
+    probe.expectMsgClass(max, BeginElection.getClass)
+
+  def awaitElectionStarted(max: FiniteDuration = DefaultTimeoutDuration)(implicit probe: TestProbe): ElectionStarted =
+    probe.expectMsgClass(max, classOf[ElectionStarted])
+
+
+  def subscribeBeginAsFollower()(implicit probe: TestProbe): Unit =
+    system.eventStream.subscribe(probe.ref, classOf[BeginAsFollower])
+
+
+  def awaitBeginAsFollower(max: FiniteDuration = DefaultTimeoutDuration)
+                          (implicit probe: TestProbe): BeginAsFollower =
+    probe.expectMsgClass(max, classOf[BeginAsFollower])
+
+
   def infoMemberStates() {
     val leadersList = leaders.map(m => s"${simpleName(m)}[Leader]")
     val candidatesList = candidates.map(m => s"${simpleName(m)}[Candidate]")
@@ -122,6 +159,19 @@ abstract class RaftSpec(_system: Option[ActorSystem] = None)
       members = members.filterNot(_ == leader)
     }
   }
+
+
+  def restartMember(_member: Option[ActorRef] = None) = {
+    val member = _member.getOrElse(members(Random.nextInt(members.size)))
+    stateTransitionActor ! RemoveMember(member)
+    probe.watch(member)
+    system.stop(member)
+    members = members.filterNot(_ == member)
+    probe.expectTerminated(member)
+    val newMember = createActor(member.path.name)
+    newMember
+  }
+
 
   override def afterAll() {
     super.afterAll()

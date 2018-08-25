@@ -9,20 +9,22 @@ trait Follower {
 
 
   val followerEvents : StateFunction = {
-    case Event(BeginAsFollower(term, _), myState: StateData) =>
-      log.info("Received newer {}. Current term is {}.", term, myState.currentTerm)
-      log.info("Received sd {}. Current term is {}.", myState.config.members)
+    case Event(m @ BeginAsFollower(term, _), myState: StateData) =>
+      if  (raftConfig.publishTestEvents) context.system.eventStream.publish(m) //This if for testing purpose
 
+      log.info("Received newer {}. Current term is {}.", term, myState.currentTerm)
       stay()
 
     // timeout,  Need to start an election
     case Event(StateTimeout, myState: StateData) =>
+      log.info("Election Timeout, Current term is {}.", myState.currentTerm)
       beginElection(myState)
 
     // election
-    case Event(RequestVote(term, _, _, _), myState: StateData)
+    case Event(r @ RequestVote(term, _, _, _), myState: StateData)
       if term > myState.currentTerm =>
       log.info("Received newer {}. Current term is {}.", term, myState.currentTerm)
+      myState.self forward r
       stay() applying UpdateTermEvent(term)
 
     case Event(RequestVote(term, candidate, lastLogTerm, lastLogIndex), myState: StateData)
@@ -65,14 +67,18 @@ trait Follower {
     // end of election
 
     // take writes
-    case Event(message: AppendEntries[Command @unchecked], sd: StateData) =>
+    case Event(append: AppendEntries[Command @unchecked], sd: StateData) =>
       // First check the consistency of this request
-      if (!replicatedLog.containsMatchingEntry(message.prevLogTerm, message.prevLogIndex)) {
-        log.info("Rejecting write (inconsistent log): {} {} {} ", message.prevLogIndex, message.prevLogTerm, replicatedLog)
+      if  (raftConfig.publishTestEvents) context.system.eventStream.publish(append) //This if for testing purpose
+
+      if (!replicatedLog.containsMatchingEntry(append.prevLogTerm, append.prevLogIndex)) {
+        log.info("Rejecting write (inconsistent log): {} {} {} ", append.prevLogIndex, append.prevLogTerm, replicatedLog)
         leader ! AppendRejected(sd.currentTerm)
         stay()
       } else {
-        appendEntries(message, sd)
+        log.info("Append Entries For Follower ({})", append)
+
+        appendEntries(append, sd)
       }
 
     // end of take writes

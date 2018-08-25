@@ -1,7 +1,5 @@
 package io.iohk.cef.consensus.raft
-
 import org.scalatest.concurrent.Eventually
-
 class LeaderElectionTest extends RaftSpec with Eventually {
 
   behavior of "Raft Leader Election"
@@ -49,6 +47,26 @@ class LeaderElectionTest extends RaftSpec with Eventually {
       followers should have length 3
     }
   }
+
+   /**
+    * //RAFT Paper Page 4 Leader Section
+    * Upon election: send initial empty AppendEntries RPCs (heartbeat) to each server; repeat during idle periods to prevent election timeouts
+    **
+    */
+  it should "Upon election: send initial empty AppendEntries RPCs (heartbeat)" in {
+    // given Leader Elected
+    subscribeHeartBeatAppendEntries()
+
+    info("New leader elected Heart Beat Started: ")
+
+    infoMemberStates()
+
+    //then
+
+    awaitExpectedHeartBeatAppendEntries()
+
+  }
+
 
   override def beforeAll(): Unit =
     subscribeClusterStateTransitions()
