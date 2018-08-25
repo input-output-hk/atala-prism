@@ -76,7 +76,9 @@ object RaftConsensus {
       val initialCommitIndex = 0
       val initialLastApplied = 0
 
-      commonVolatileState.set(CommonVolatileState(initialCommitIndex, initialLastApplied)).map(_ => new Follower[Command](raftNode = this))
+      commonVolatileState
+        .set(CommonVolatileState(initialCommitIndex, initialLastApplied))
+        .map(_ => new Follower[Command](raftNode = this))
     }
 
     private def becomeFollower(event: NodeEvent): Unit = event match {
@@ -117,9 +119,7 @@ object RaftConsensus {
     def requestVote(voteRequested: VoteRequested): Future[RequestVoteResult]
   }
 
-  class Follower[Command](raftNode: RaftNode[Command])(
-      implicit ec: ExecutionContext)
-      extends NodeState[Command] {
+  class Follower[Command](raftNode: RaftNode[Command])(implicit ec: ExecutionContext) extends NodeState[Command] {
 
     override def appendEntries(entriesToAppend: EntriesToAppend[Command]): Future[AppendEntriesResult] = {
       for {
@@ -137,9 +137,10 @@ object RaftConsensus {
             raftNode.persistentStorage.dropRight(conflicts)
             AppendEntriesResult(term = currentTerm, success = false)
           } else {
-            ???
+            val additions = appendEntriesAdditions(log, entriesToAppend)
+            additions.foreach(addition => raftNode.persistentStorage.log(addition))
+            AppendEntriesResult(term = currentTerm, success = true)
           }
-
         }
       }
     }
@@ -163,7 +164,8 @@ object RaftConsensus {
     }
 
     // AppendEntries summary note #3 (Sec 5.3 deleting inconsistent log entries)
-    private def appendEntriesConflictSearch(log: Vector[LogEntry[Command]], entriesToAppend: EntriesToAppend[Command]): Int = {
+    private def appendEntriesConflictSearch(log: Vector[LogEntry[Command]],
+                                            entriesToAppend: EntriesToAppend[Command]): Int = {
 
       val logSz = log.size
 
@@ -182,13 +184,13 @@ object RaftConsensus {
           } else {
             // same index but different terms check
             val maybeConflictingEntry: Option[LogEntry[Command]] =
-              entriesToAppend.entries.find(entryToAppend => current.index == entryToAppend.index && current.term != entryToAppend.term)
+              entriesToAppend.entries.find(entryToAppend =>
+                current.index == entryToAppend.index && current.term != entryToAppend.term)
 
-            if (maybeConflictingEntry.isDefined) {
+            if (maybeConflictingEntry.isDefined)
               loop(i - 1, i)
-            } else {
+            else
               loop(i - 1, iMin)
-            }
           }
         }
       }
@@ -196,6 +198,42 @@ object RaftConsensus {
       val iMin = loop(logSz - 1, logSz)
 
       (logSz - iMin).toInt
+    }
+
+    // AppendEntries summary note #4 (append new entries not already in the log)
+    private def appendEntriesAdditions(log: Vector[LogEntry[Command]],
+                                       entriesToAppend: EntriesToAppend[Command]): Seq[LogEntry[Command]] = {
+
+      val logSz = log.size
+
+      val minEntryIndex: Long = entriesToAppend.entries.headOption.map(head => head.index).getOrElse(logSz)
+
+      // can assume the terms are consistent here.
+      // find the entriesToAppend entry without a matching log entry.
+      @tailrec
+      def loop(i: Int, nDrop: Int): Int = {
+        if (i == -1)
+          nDrop
+        else {
+          val current = log(i.toInt)
+
+          if (minEntryIndex > current.index)
+            nDrop
+          else {
+            val maybeOverlappingEntry: Option[LogEntry[Command]] =
+              entriesToAppend.entries.find(entryToAppend =>
+                current.index == entryToAppend.index)
+
+            if (maybeOverlappingEntry.isDefined)
+              loop(i - 1, nDrop + 1)
+            else
+              loop(i - 1, nDrop)
+
+          }
+        }
+      }
+      val nDrop = loop(logSz - 1, 0)
+      entriesToAppend.entries.drop(nDrop)
     }
 
     override def requestVote(voteRequested: VoteRequested): Future[RequestVoteResult] = ???

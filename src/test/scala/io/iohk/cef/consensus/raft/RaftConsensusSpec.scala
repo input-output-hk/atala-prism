@@ -96,7 +96,7 @@ class RaftConsensusSpec extends WordSpec {
       }
 
       "implement rule #3 - if an existing entry conflicts with a new one (same index but different term), " +
-      "delete the existing entry and those that follow it" in new TestRPC {
+        "delete the existing entry and those that follow it" in new TestRPC {
 
         val log = Vector(LogEntry("A", 1, 1), LogEntry("B", term = 1, 2), LogEntry("C", term = 1, 3))
 
@@ -116,6 +116,32 @@ class RaftConsensusSpec extends WordSpec {
 
         appendResult.futureValue shouldBe AppendEntriesResult(term = 1, success = false)
         persistentStorage.logEntries shouldBe Vector(LogEntry("A", 1, 1))
+      }
+
+      "implement rule #4 - append new entries not already in the log" in new TestRPC {
+
+        val log = Vector(LogEntry("A", 1, index = 1), LogEntry("B", 1, index = 2), LogEntry("C", 1, index = 3))
+
+        val persistentStorage =
+          new InMemoryPersistentStorage[String](log, currentTerm = 1, votedFor = "anyone")
+
+        val raftNode =
+          new RaftNode[Command]("i1", Set("i1", "i2"), rpcFactory, stateMachine, persistentStorage)
+
+        val appendResult = appendCallback(
+          EntriesToAppend(term = 1,
+                          leaderId = "anyone",
+                          prevLogIndex = 1,
+                          prevLogTerm = 1,
+                          entries = List(LogEntry("C", 1, index = 3), LogEntry("D", 1, index = 4)),
+                          leaderCommitIndex = 4))
+
+        appendResult.futureValue shouldBe AppendEntriesResult(term = 1, success = true)
+
+        persistentStorage.logEntries shouldBe Vector(LogEntry("A", 1, index = 1),
+                                                     LogEntry("B", 1, index = 2),
+                                                     LogEntry("C", 1, index = 3),
+                                                     LogEntry("D", 1, index = 4))
       }
     }
   }
