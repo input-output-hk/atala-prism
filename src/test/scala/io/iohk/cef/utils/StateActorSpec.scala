@@ -13,20 +13,26 @@ class StateActorSpec extends FlatSpec {
 
   implicit val actorSystem: ActorSystem = ActorSystem()
 
-  it should "Get its initial value" in {
-    forAll(arbitrary[String]) { s =>
-      val state = new StateActor[String](s)
+  it should "Fail to get a nonexistant value" in {
+    val state = new StateActor[String]()
+    state.get.failed.futureValue shouldBe an[IllegalStateException]
+  }
 
-      state.get.futureValue shouldBe s
+  it should "Enable get to succeed if set is invoked before a timeout" in {
+    val state = new StateActor[String]()
+    val getF = state.get
+    state.set("a value")
+
+    whenReady(getF) { value =>
+      value shouldBe "a value"
     }
   }
 
-  it should "Set and Get an updated value" in {
-    forAll(arbitrary[(String, String)]) { ss =>
-      val state = new StateActor[String](ss._1)
-
-      whenReady(state.set(ss._2)) { _ =>
-        state.get.futureValue shouldBe ss._2
+  it should "Set and Get a value" in {
+    forAll(arbitrary[String]) { s =>
+      val state = new StateActor[String]()
+      whenReady(state.set(s)) { _ =>
+        state.get.futureValue shouldBe s
       }
     }
   }

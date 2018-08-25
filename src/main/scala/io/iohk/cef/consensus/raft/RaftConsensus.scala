@@ -4,19 +4,23 @@ import akka.actor.ActorSystem
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.adapter._
 import akka.actor.typed.scaladsl.Behaviors.{receiveMessage, same, setup, unhandled}
+import io.iohk.cef.utils.StateActor
 
-import scala.concurrent.Future
+import scala.annotation.tailrec
+import scala.concurrent.{ExecutionContext, Future}
 
 object RaftConsensus {
 
-  case class LogEntry[Command](command: Command, term: Long, index: Int)
+  case class LogEntry[Command](command: Command, term: Long, index: Long)
 
   trait PersistentStorage[Command] {
     def state: Future[(Long, String)]
     def state(currentTerm: Long, votedFor: String): Future[Unit]
 
-    def log(command: Command): Future[Unit]
-    def log: Future[Seq[Command]]
+    def log(entry: LogEntry[Command]): Future[Unit]
+    def log: Future[Vector[LogEntry[Command]]]
+
+    def dropRight(n: Int): Future[Unit]
   }
 
   case class Redirect(leader: String)
@@ -26,162 +30,218 @@ object RaftConsensus {
     * TODO new entries must go via the leader, so the module will need
     * to talk to the correct node.
     */
-  class ConsensusModule[Command](nodeId: String,
-                                 clusterMembers: Set[String],
-                                 stateMachine: Command => Unit,
-                                 persistentStorage: PersistentStorage[Command]) {
+  class ConsensusModule[Command](raftNode: RaftNode[Command]) {
     // Sec 5.1
     // The leader handles all client requests (if
     // a client contacts a follower, the follower redirects it to the leader)
     def appendEntries(entries: Seq[Command]): Future[Either[Redirect, Unit]] = ???
   }
 
-  class RaftNode[Command](nodeId: String,
-                          clusterMemberIds: Set[String],
-                          rpcFactory: (String, AppendEntries[Command], RequestVote) => RPCImpl[Command],
+  class RaftNode[Command](val nodeId: String,
+                          val clusterMemberIds: Set[String],
+                          rpcFactory: RPCFactory[Command],
                           stateMachine: Command => Unit,
-                          persistentStorage: PersistentStorage[Command])(implicit actorSystem: ActorSystem) {
+                          val persistentStorage: PersistentStorage[Command])(implicit actorSystem: ActorSystem) {
 
-    private val clusterMembers: Set[RPCImpl[Command]] = clusterMemberIds
+    private implicit val executionContext: ExecutionContext = actorSystem.dispatcher
+
+    private val clusterMembers: Set[RPC[Command]] = clusterMemberIds
       .filterNot(_ == nodeId)
-      .map(rpcFactory(_, entriesAppended, voteRequested))
+      .map(rpcFactory(_, appendEntries, requestVote))
+
+    val roleState =
+      new StateActor[NodeState[Command]]()
+
+    val commonVolatileState = new StateActor[CommonVolatileState[Command]]()
+
+    val leaderVolatileState = new StateActor[LeaderVolatileState]()
 
     private val nodeFSM: ActorRef[NodeEvent] =
       actorSystem.spawnAnonymous(new NodeFSM[Command](becomeFollower, becomeCandidate, becomeLeader).stateMachine)
 
-    private val role: ActorRef[NodeState] =
-      actorSystem.spawnAnonymous(roleState())
+    def appendEntries(entriesToAppend: EntriesToAppend[Command]): Future[AppendEntriesResult] =
+      roleState.get.flatMap(state => state.appendEntries(entriesToAppend))
 
-    nodeFSM ! Start
+    def requestVote(voteRequested: VoteRequested): Future[RequestVoteResult] =
+      roleState.get.flatMap(state => state.requestVote(voteRequested))
 
-    private def entriesAppended: AppendEntries[Command] = (entryToAppend: EntryToAppend[Command]) => {
-      // reset election timer
-      // if some logic
-//      role ?
-      ???
+    private def electionTimeout: Unit =
+      nodeFSM ! ElectionTimeout
+
+    def resetElectionTimer: Unit = ???
+
+    def requestVotes: Unit = ???
+
+    private def initialState(): Future[NodeState[Command]] = {
+      val initialCommitIndex = 0
+      val initialLastApplied = 0
+
+      commonVolatileState.set(CommonVolatileState(initialCommitIndex, initialLastApplied)).map(_ => new Follower[Command](raftNode = this))
     }
 
-    private def voteRequested: RequestVote = (voteRequested: VoteRequested) => {
-      ???
+    private def becomeFollower(event: NodeEvent): Unit = event match {
+      case Start =>
+        initialState().map(roleState.set)
+      case _ =>
+        roleState.set(new Follower(this))
     }
 
-    case class NodeState(commitIndex: Long, lastApplied: Long, nextIndices: Seq[Long], matchIndices: Seq[Long])
+    // On conversion to candidate, start election:
+    // Increment currentTerm
+    // Vote for self
+    // Reset election timer
+    // Send RequestVote RPCs to all other servers
+    private def becomeCandidate(event: NodeEvent): Unit = {
+      for {
+        (currentTerm, _) <- persistentStorage.state
+      } yield persistentStorage.state(currentTerm + 1, nodeId)
 
-    // Use akka inboxes to synchronize state mutation
-//    private def stateHolder(state: NodeState): Behavior[NodeState => NodeState] = receiveMessage { f =>
-//      stateHolder(f(state))
-//    }
-
-    private def incomingHandler(nodeState: NodeState,
-                                follower: FollowerRole[Command],
-                                candidate: CandidateRole[Command],
-                               leader: LeaderRole[Command]): Behavior[Any] = receiveMessage {
-//      case ns: NodeState =>
-//        incomingHandler(ns)
-//      case entryToAppend: EntryToAppend[Command] =>
-//        nodeState.
-      ???
-
+      resetElectionTimer
+      requestVotes
     }
 
-    private def roleState(): Behavior[NodeState] = receiveMessage {
-      ???
-//      case _: Follower =>
-//        ???
-//      case _: Candidate =>
-//        ???
-//      case _: Leader =>
-//        ???
-    }
-
-    /*
-     * Invoked by leader to replicate log entries (§5.3); also used as
-     * heartbeat (§5.2).
-     *
-     * Receiver implementation:
-     * 1. Reply false if term < currentTerm (§5.1)
-     * 2. Reply false if log doesn’t contain an entry at prevLogIndex
-     * whose term matches prevLogTerm (§5.3)
-     * 3. If an existing entry conflicts with a new one (same index
-     * but different terms), delete the existing entry and all that
-     * follow it (§5.3)
-     * 4. Append any new entries not already in the log
-     * 5. If leaderCommit > commitIndex, set commitIndex =
-     * min(leaderCommit, index of last new entry)
-     */
-//    private def appendEntries
-
-    /*
-     * Invoked by candidates to gather votes (§5.2).
-     *
-     * Receiver implementation:
-     * 1. Reply false if term < currentTerm (§5.1)
-     * 2. If votedFor is null or candidateId, and candidate’s log is at
-     * least as up-to-date as receiver’s log, grant vote (§5.2, §5.4)
-     */
-    private def becomeFollower(event: NodeEvent): Unit = ??? // role ! Follower
-
-    private def becomeCandidate(event: NodeEvent): Unit = ??? //role ! Candidate
-
-    private def becomeLeader(event: NodeEvent): Unit = ??? // role ! Leader
+    private def becomeLeader(event: NodeEvent): Unit = ???
 
   }
 
-  abstract class NodeRole[Command](currentTerm: Long,
-                                   votedFor: String,
-                                   log: Vector[LogEntry[Command]],
-                                   commitIndex: Long,
-                                   lastApplied: Long) {}
+  class ElectionTimer(onTimeout: () => Unit) {
+    def reset(): Unit = ???
+  }
 
-  class FollowerRole[Command](currentTerm: Long,
-                              votedFor: String,
-                              log: Vector[LogEntry[Command]],
-                              commitIndex: Long,
-                              lastApplied: Long)
-      extends NodeRole[Command](currentTerm, votedFor, log, commitIndex, lastApplied)
+  case class CommonVolatileState[Command](commitIndex: Long, lastApplied: Long)
 
-  class CandidateRole[Command](currentTerm: Long,
-                               votedFor: String,
-                               log: Vector[LogEntry[Command]],
-                               commitIndex: Long,
-                               lastApplied: Long)
-      extends NodeRole[Command](currentTerm, votedFor, log, commitIndex, lastApplied)
+  case class LeaderVolatileState(nextIndex: Seq[Long], matchIndex: Seq[Long])
 
-  class LeaderRole[Command](currentTerm: Long,
-                            votedFor: String,
-                            log: Vector[LogEntry[Command]],
-                            commitIndex: Long,
-                            lastApplied: Long,
-                            nextIndex: Seq[Long],
-                            matchIndex: Seq[Long])
-      extends NodeRole[Command](currentTerm, votedFor, log, commitIndex, lastApplied)
+  sealed trait NodeState[Command] {
+    def appendEntries(entriesToAppend: EntriesToAppend[Command]): Future[AppendEntriesResult]
+    def requestVote(voteRequested: VoteRequested): Future[RequestVoteResult]
+  }
 
-  case class EntryToAppend[Command](term: Long,
-                                    leaderId: String,
-                                    prevLogIndex: Long,
-                                    prevLogTerm: Long,
-                                    entries: Seq[LogEntry[Command]],
-                                    leaderCommit: Long)
+  class Follower[Command](raftNode: RaftNode[Command])(
+      implicit ec: ExecutionContext)
+      extends NodeState[Command] {
+
+    override def appendEntries(entriesToAppend: EntriesToAppend[Command]): Future[AppendEntriesResult] = {
+      for {
+        volatileState <- raftNode.commonVolatileState.get
+        (currentTerm, votedFor) <- raftNode.persistentStorage.state
+        log <- raftNode.persistentStorage.log
+      } yield {
+        if (appendEntriesConsistencyCheck1(entriesToAppend.term, currentTerm)) {
+          AppendEntriesResult(term = currentTerm, success = false)
+        } else if (appendEntriesConsistencyCheck2(log, entriesToAppend.prevLogIndex)) {
+          AppendEntriesResult(term = currentTerm, success = false)
+        } else {
+          val conflicts = appendEntriesConflictSearch(log, entriesToAppend)
+          if (conflicts != 0) {
+            raftNode.persistentStorage.dropRight(conflicts)
+            AppendEntriesResult(term = currentTerm, success = false)
+          } else {
+            ???
+          }
+
+        }
+      }
+    }
+
+    // AppendEntries summary note #1 (Sec 5.1 consistency check)
+    private def appendEntriesConsistencyCheck1(term: Long, currentTerm: Long): Boolean =
+      term < currentTerm
+
+    // AppendEntries summary note #2 (Sec 5.3 Consistency check)
+    private def appendEntriesConsistencyCheck2(log: Vector[LogEntry[Command]], prevLogIndex: Long): Boolean = {
+      @tailrec
+      def loop(i: Long): Boolean = {
+        if (i == -1)
+          true
+        else if (log(i.toInt).index == prevLogIndex)
+          false
+        else
+          loop(i - 1)
+      }
+      loop(log.size - 1)
+    }
+
+    // AppendEntries summary note #3 (Sec 5.3 deleting inconsistent log entries)
+    private def appendEntriesConflictSearch(log: Vector[LogEntry[Command]], entriesToAppend: EntriesToAppend[Command]): Int = {
+
+      val logSz = log.size
+
+      val minEntryIndex: Long = entriesToAppend.entries.headOption.map(head => head.index).getOrElse(logSz)
+
+      @tailrec
+      def loop(i: Long, iMin: Long): Long = { // reverse search for the minimum index of a conflicting entry
+
+        if (i == -1)
+          iMin
+        else {
+          val current: LogEntry[Command] = log(i.toInt)
+
+          if (minEntryIndex > current.index) { // all entries to append have a higher index than current, terminate reverse search
+            iMin
+          } else {
+            // same index but different terms check
+            val maybeConflictingEntry: Option[LogEntry[Command]] =
+              entriesToAppend.entries.find(entryToAppend => current.index == entryToAppend.index && current.term != entryToAppend.term)
+
+            if (maybeConflictingEntry.isDefined) {
+              loop(i - 1, i)
+            } else {
+              loop(i - 1, iMin)
+            }
+          }
+        }
+      }
+
+      val iMin = loop(logSz - 1, logSz)
+
+      (logSz - iMin).toInt
+    }
+
+    override def requestVote(voteRequested: VoteRequested): Future[RequestVoteResult] = ???
+  }
+
+  class Candidate[Command](raftNode: RaftNode[Command])(implicit ec: ExecutionContext) extends NodeState[Command] {
+    override def appendEntries(entriesToAppend: EntriesToAppend[Command]): Future[AppendEntriesResult] = ???
+    override def requestVote(voteRequested: VoteRequested): Future[RequestVoteResult] = ???
+  }
+
+  class Leader[Command](raftNode: RaftNode[Command],
+                        val commonState: CommonVolatileState[Command],
+                        val leaderState: LeaderVolatileState)(implicit ec: ExecutionContext)
+      extends NodeState[Command] {
+    override def appendEntries(entriesToAppend: EntriesToAppend[Command]): Future[AppendEntriesResult] = ???
+    override def requestVote(voteRequested: VoteRequested): Future[RequestVoteResult] = ???
+  }
+
+  case class EntriesToAppend[Command](term: Long,
+                                      leaderId: String,
+                                      prevLogIndex: Long,
+                                      prevLogTerm: Long,
+                                      entries: Seq[LogEntry[Command]],
+                                      leaderCommitIndex: Long)
   case class AppendEntriesResult(term: Long, success: Boolean)
-  type AppendEntries[Command] = EntryToAppend[Command] => Future[AppendEntriesResult]
 
   case class VoteRequested(term: Long, candidateId: String, lastLogIndex: Long, lastLogTerm: Long)
   case class RequestVoteResult(term: Long, voteGranted: Boolean)
-  type RequestVote = VoteRequested => Future[RequestVoteResult]
 
   /**
-    * To be implemented by users of the module using whatever networking method is deemed relevant.
+    * To be implemented by users of the module using whatever networking method is relevant for them.
     *
     * @param node identifier of the node at the other end of the RPC
     * @param entriesAppended callback to invoke when another node sends an appendEntries RPC
     * @param voteRequested callback to invoke when another node sends a voteRequested RPC
     * @tparam Command the user command type.
     */
-  abstract class RPCImpl[Command](node: String, entriesAppended: AppendEntries[Command], voteRequested: RequestVote) {
+  type RPCFactory[Command] = (String,
+                              EntriesToAppend[Command] => Future[AppendEntriesResult],
+                              VoteRequested => Future[RequestVoteResult]) => RPC[Command]
 
-    val appendEntries: AppendEntries[Command]
+  trait RPC[Command] {
 
-    val requestVote: RequestVote
+    def appendEntries(entriesToAppend: EntriesToAppend[Command]): Future[AppendEntriesResult]
+
+    def requestVote(voteRequested: VoteRequested): Future[RequestVoteResult]
   }
 
   sealed trait NodeEvent
@@ -191,11 +251,6 @@ object RaftConsensus {
   case object MajorityVoteReceived extends NodeEvent
   case class NodeWithHigherTermDiscovered(node: String) extends NodeEvent
   case class LeaderDiscovered(node: String) extends NodeEvent
-
-  sealed trait NodeState
-  case object Leader extends NodeState
-  case object Candidate extends NodeState
-  case object Follower extends NodeState
 
   // Figure 4: Server states.
   class NodeFSM[Command](becomeFollower: NodeEvent => Unit,
