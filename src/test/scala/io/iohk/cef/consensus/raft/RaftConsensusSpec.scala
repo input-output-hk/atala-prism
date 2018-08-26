@@ -7,7 +7,7 @@ import org.scalatest.WordSpec
 import org.scalatest.Matchers._
 import org.scalatest.concurrent.ScalaFutures._
 import org.scalatest.mockito.MockitoSugar._
-import org.mockito.Mockito.{inOrder}
+import org.mockito.Mockito.inOrder
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -19,129 +19,131 @@ class RaftConsensusSpec extends WordSpec {
 
   "AppendEntries RPC" when {
     "implemented by a Follower" should {
+      "implement rule #1" should {
+        "reply false if term < currentTerm)" in new TestRPC {
 
-      "implement rule #1 - reply false if term < currentTerm)" in new TestRPC {
+          val persistentStorage =
+            new InMemoryPersistentStorage[String](Vector(), currentTerm = 1, votedFor = "anyone")
 
-        val persistentStorage =
-          new InMemoryPersistentStorage[String](Vector(), currentTerm = 1, votedFor = "anyone")
+          val raftNode =
+            new RaftNode[Command]("i1", Set("i1", "i2"), rpcFactory, stateMachine, persistentStorage)
 
-        val raftNode =
-          new RaftNode[Command]("i1", Set("i1", "i2"), rpcFactory, stateMachine, persistentStorage)
+          val appendResult = appendCallback(EntriesToAppend(term = 0, leaderId = "anyone", 0, 0, List(), 1))
 
-        val appendResult = appendCallback(EntriesToAppend(term = 0, leaderId = "anyone", 0, 0, List(), 1))
-
-        appendResult.futureValue shouldBe AppendEntriesResult(term = 1, success = false)
+          appendResult.futureValue shouldBe AppendEntriesResult(term = 1, success = false)
+        }
       }
+      "implement rule #2" should {
+        "reply false if log doesn't contain an entry at prevLogIndex" in new TestRPC {
 
-      "implement rule #2 - reply false if log doesn't contain an entry at prevLogIndex" in new TestRPC {
+          val persistentStorage =
+            new InMemoryPersistentStorage[String](Vector(LogEntry("A", 1, 0), LogEntry("B", 1, 1), LogEntry("C", 2, 2)),
+                                                  currentTerm = 1,
+                                                  votedFor = "anyone")
 
-        val persistentStorage =
-          new InMemoryPersistentStorage[String](Vector(LogEntry("A", 1, 1), LogEntry("B", 1, 2), LogEntry("C", 2, 3)),
-                                                currentTerm = 1,
-                                                votedFor = "anyone")
+          val raftNode =
+            new RaftNode[Command]("i1", Set("i1", "i2"), rpcFactory, stateMachine, persistentStorage)
 
-        val raftNode =
-          new RaftNode[Command]("i1", Set("i1", "i2"), rpcFactory, stateMachine, persistentStorage)
+          val appendResult = appendCallback(
+            EntriesToAppend(term = 1,
+                            leaderId = "anyone",
+                            prevLogIndex = 3,
+                            prevLogTerm = 1,
+                            entries = List(),
+                            leaderCommitIndex = 1))
 
-        val appendResult = appendCallback(
-          EntriesToAppend(term = 1,
-                          leaderId = "anyone",
-                          prevLogIndex = 4,
-                          prevLogTerm = 1,
-                          entries = List(),
-                          leaderCommitIndex = 1))
-
-        appendResult.futureValue shouldBe AppendEntriesResult(term = 1, success = false)
+          appendResult.futureValue shouldBe AppendEntriesResult(term = 1, success = false)
+        }
       }
+      "implement rule #3" should {
 
-      "implement rule #3 - if an existing entry conflicts with a new one (same index but different term), " +
-        "delete the existing entry and those that follow it" in new TestRPC {
+        "if an existing entry conflicts with a new one (same index but different term), " +
+          "delete the existing entry and those that follow it" in new TestRPC {
 
-        val persistentStorage =
-          new InMemoryPersistentStorage[String](Vector(LogEntry("A", 1, 1),
-                                                       LogEntry("B", term = 1, 2),
-                                                       LogEntry("C", term = 1, 3)),
-                                                currentTerm = 1,
-                                                votedFor = "anyone")
+          val persistentStorage =
+            new InMemoryPersistentStorage[String](
+              Vector(LogEntry("A", 1, 0), LogEntry("B", term = 1, 1), LogEntry("C", term = 1, 2)),
+              currentTerm = 1,
+              votedFor = "anyone")
 
-        val raftNode =
-          new RaftNode[Command]("i1", Set("i1", "i2"), rpcFactory, stateMachine, persistentStorage)
+          val raftNode =
+            new RaftNode[Command]("i1", Set("i1", "i2"), rpcFactory, stateMachine, persistentStorage)
 
-        val appendResult = appendCallback(
-          EntriesToAppend(term = 1,
-                          leaderId = "anyone",
-                          prevLogIndex = 1,
-                          prevLogTerm = 1,
-                          entries = List(LogEntry("B", term = 2, 2), LogEntry("C", term = 2, 3)),
-                          leaderCommitIndex = 4))
+          val appendResult = appendCallback(
+            EntriesToAppend(term = 1,
+                            leaderId = "anyone",
+                            prevLogIndex = 1,
+                            prevLogTerm = 1,
+                            entries = List(LogEntry("B", term = 2, 1), LogEntry("C", term = 2, 2)),
+                            leaderCommitIndex = 4))
 
-        appendResult.futureValue shouldBe AppendEntriesResult(term = 1, success = false)
-        persistentStorage.logEntries shouldBe Vector(LogEntry("A", 1, 1))
+          appendResult.futureValue shouldBe AppendEntriesResult(term = 1, success = false)
+          persistentStorage.logEntries shouldBe Vector(LogEntry("A", 1, 0))
+        }
       }
+      "implement rule #4" should {
+        "append new entries not already in the log" in new TestRPC {
 
-      "implement rule #4 - append new entries not already in the log" in new TestRPC {
+          val persistentStorage =
+            new InMemoryPersistentStorage[String](
+              Vector(LogEntry("A", 1, index = 0), LogEntry("B", 1, index = 1), LogEntry("C", 1, index = 2)),
+              currentTerm = 1,
+              votedFor = "anyone")
 
-        val persistentStorage =
-          new InMemoryPersistentStorage[String](Vector(LogEntry("A", 1, index = 1),
-                                                       LogEntry("B", 1, index = 2),
-                                                       LogEntry("C", 1, index = 3)),
-                                                currentTerm = 1,
-                                                votedFor = "anyone")
+          val raftNode =
+            new RaftNode[Command]("i1", Set("i1", "i2"), rpcFactory, stateMachine, persistentStorage)
 
-        val raftNode =
-          new RaftNode[Command]("i1", Set("i1", "i2"), rpcFactory, stateMachine, persistentStorage)
+          val appendResult = appendCallback(
+            EntriesToAppend(term = 1,
+                            leaderId = "anyone",
+                            prevLogIndex = 1,
+                            prevLogTerm = 1,
+                            entries = List(LogEntry("C", 1, index = 2), LogEntry("D", 1, index = 3)),
+                            leaderCommitIndex = 3))
 
-        val appendResult = appendCallback(
-          EntriesToAppend(term = 1,
-                          leaderId = "anyone",
-                          prevLogIndex = 1,
-                          prevLogTerm = 1,
-                          entries = List(LogEntry("C", 1, index = 3), LogEntry("D", 1, index = 4)),
-                          leaderCommitIndex = 4))
+          appendResult.futureValue shouldBe AppendEntriesResult(term = 1, success = true)
 
-        appendResult.futureValue shouldBe AppendEntriesResult(term = 1, success = true)
-
-        persistentStorage.logEntries shouldBe Vector(LogEntry("A", 1, index = 1),
-                                                     LogEntry("B", 1, index = 2),
-                                                     LogEntry("C", 1, index = 3),
-                                                     LogEntry("D", 1, index = 4))
-      }
-
-      "implement rule #5 - " +
-      "if leaderCommit > commitIndex set commitIndex = min(leaderCommit, index of last new entry)" in new TestRPC {
-        // by 'Rules for servers', note for all servers,
-        // if commitIndex > lastApplied, apply log[lastApplied] to state machine,
-        // and
-        // by 'state', 'volatile state on all servers' the commitIndex is initialized to zero
-        // so
-        // we expect successive append entries calls to apply successive entries to the state machine
-        // until commitIndex = lastApplied
-
-        val persistentStorage =
-          new InMemoryPersistentStorage[String](Vector(LogEntry("A", 1, index = 0),
+          persistentStorage.logEntries shouldBe Vector(LogEntry("A", 1, index = 0),
                                                        LogEntry("B", 1, index = 1),
-                                                       LogEntry("C", 1, index = 2)),
-                                                currentTerm = 1,
-                                                votedFor = "anyone")
+                                                       LogEntry("C", 1, index = 2),
+                                                       LogEntry("D", 1, index = 3))
+        }
+      }
+      "implement rule #5" should {
+        "if leaderCommit > commitIndex set commitIndex = min(leaderCommit, index of last new entry)" in new TestRPC {
+          // by 'Rules for servers', note for all servers,
+          // if commitIndex > lastApplied, apply log[lastApplied] to state machine,
+          // and
+          // by 'state', 'volatile state on all servers' the commitIndex is initialized to zero
+          // so
+          // we expect successive append entries calls to apply successive entries to the state machine
+          // until commitIndex = lastApplied
 
-        val raftNode =
-          new RaftNode[Command]("i1", Set("i1", "i2"), rpcFactory, stateMachine, persistentStorage)
+          val persistentStorage =
+            new InMemoryPersistentStorage[String](
+              Vector(LogEntry("A", 1, index = 0), LogEntry("B", 1, index = 1), LogEntry("C", 1, index = 2)),
+              currentTerm = 1,
+              votedFor = "anyone")
 
-        val appendResult = appendCallback(
-          EntriesToAppend(term = 1,
-                          leaderId = "anyone",
-                          prevLogIndex = 2,
-                          prevLogTerm = 1,
-                          entries = List(LogEntry("D", 1, index = 3)),
-                          leaderCommitIndex = 4))
+          val raftNode =
+            new RaftNode[Command]("i1", Set("i1", "i2"), rpcFactory, stateMachine, persistentStorage)
 
-        appendResult.futureValue shouldBe AppendEntriesResult(term = 1, success = true)
+          val appendResult = appendCallback(
+            EntriesToAppend(term = 1,
+                            leaderId = "anyone",
+                            prevLogIndex = 2,
+                            prevLogTerm = 1,
+                            entries = List(LogEntry("D", 1, index = 3)),
+                            leaderCommitIndex = 4))
 
-        val orderVerify = inOrder(stateMachine)
-        orderVerify.verify(stateMachine).apply("A")
-        orderVerify.verify(stateMachine).apply("B")
-        orderVerify.verify(stateMachine).apply("C")
-        orderVerify.verify(stateMachine).apply("D")
+          appendResult.futureValue shouldBe AppendEntriesResult(term = 1, success = true)
+
+          val orderVerify = inOrder(stateMachine)
+          orderVerify.verify(stateMachine).apply("A")
+          orderVerify.verify(stateMachine).apply("B")
+          orderVerify.verify(stateMachine).apply("C")
+          orderVerify.verify(stateMachine).apply("D")
+        }
       }
     }
   }

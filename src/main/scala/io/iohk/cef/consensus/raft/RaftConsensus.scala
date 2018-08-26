@@ -128,32 +128,57 @@ object RaftConsensus {
         (currentTerm, _) <- raftNode.persistentStorage.state
         log <- raftNode.persistentStorage.log
         volatileState <- raftNode.commonVolatileState.get
-      } yield { // FIXME, the return values need to be sequenced with the futures.
-        if (appendEntriesConsistencyCheck1(entriesToAppend.term, currentTerm)) {
-          AppendEntriesResult(term = currentTerm, success = false)
-        } else if (appendEntriesConsistencyCheck2(log, entriesToAppend.prevLogIndex)) {
-          AppendEntriesResult(term = currentTerm, success = false)
-        } else {
-          val conflicts = appendEntriesConflictSearch(log, entriesToAppend)
-          if (conflicts != 0) {
-            raftNode.persistentStorage.dropRight(conflicts)
+        appendEntriesResult <- applyAppendEntriesRules1To5(entriesToAppend, currentTerm, log, volatileState)
+      } yield {
+        appendEntriesResult
+      }
+    }
+
+    // AppendEntries RPC receiver implementation (figure 2), rules 1-5
+    private def applyAppendEntriesRules1To5(
+        entriesToAppend: EntriesToAppend[Command],
+        currentTerm: Int,
+        log: Vector[LogEntry[Command]],
+        volatileState: CommonVolatileState[Command]): Future[AppendEntriesResult] = {
+
+      if (appendEntriesConsistencyCheck1(entriesToAppend.term, currentTerm)) {
+
+        liftF(AppendEntriesResult(term = currentTerm, success = false))
+
+      } else if (appendEntriesConsistencyCheck2(log, entriesToAppend.prevLogIndex)) {
+
+        liftF(AppendEntriesResult(term = currentTerm, success = false))
+
+      } else {
+        val conflicts = appendEntriesConflictSearch(log, entriesToAppend)
+        if (conflicts != 0) {
+
+          for {
+            _ <- raftNode.persistentStorage.dropRight(conflicts)
+          } yield
             AppendEntriesResult(term = currentTerm, success = false)
-          } else {
-            val additions: Seq[LogEntry[Command]] = appendEntriesAdditions(log, entriesToAppend)
-            val appendFutures = additions.map(addition => raftNode.persistentStorage.log(addition))
 
-            for {
-              _ <- Future.sequence(appendFutures)
-              newLog <- raftNode.persistentStorage.log
-              newState <- appendEntriesCommitIndexCheck(entriesToAppend.leaderCommitIndex, additions.last.index, volatileState)
-              _ <- applyUncommittedLogEntries(newState, newLog)
-            } yield ()
-
+        } else {
+          val additions: Seq[LogEntry[Command]] = appendEntriesAdditions(log, entriesToAppend)
+          val appendFutures = additions.map(addition => raftNode.persistentStorage.log(addition))
+          for {
+            _ <- Future.sequence(appendFutures)
+            newLog <- raftNode.persistentStorage.log
+            newState <- appendEntriesCommitIndexCheck(entriesToAppend.leaderCommitIndex,
+                                                      iLastNewEntry(additions),
+                                                      volatileState)
+            _ <- applyUncommittedLogEntries(newState, newLog)
+          } yield
             AppendEntriesResult(term = currentTerm, success = true)
-          }
         }
       }
     }
+
+    private def iLastNewEntry(additions: Seq[LogEntry[Command]]): Int =
+      additions.lastOption.map(_.index).getOrElse(Int.MaxValue)
+
+    private def liftF[T](t: => T): Future[T] =
+      raftNode.commonVolatileState.get.map(_ => t)
 
     // AppendEntries summary note #1 (Sec 5.1 consistency check)
     private def appendEntriesConsistencyCheck1(term: Int, currentTerm: Int): Boolean =
