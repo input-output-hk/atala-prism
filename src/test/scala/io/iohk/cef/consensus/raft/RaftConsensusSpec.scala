@@ -145,6 +145,36 @@ class RaftConsensusSpec extends WordSpec {
           orderVerify.verify(stateMachine).apply("D")
         }
       }
+      "implement rules for servers" should {
+        "handle rule #1" in {
+          // verified in the rule #5 test above
+        }
+
+        "handle rule #2 - if RPC request contains term T > currentTerm, set currentTerm = T" in new TestRPC {
+          val persistentStorage =
+            new InMemoryPersistentStorage[String](
+              Vector(),
+              currentTerm = 1,
+              votedFor = "anyone")
+
+          val raftNode =
+            new RaftNode[Command]("i1", Set("i1", "i2"), rpcFactory, stateMachine, persistentStorage)
+
+          val appendResult = appendCallback(
+            EntriesToAppend(
+              term = 2,
+              leaderId = "anyone",
+              prevLogIndex = -1,
+              prevLogTerm = 1,
+              entries = List(),
+              leaderCommitIndex = -1))
+
+          whenReady(appendResult) { result =>
+            persistentStorage.state.futureValue shouldBe (2 -> "anyone")
+            result shouldBe AppendEntriesResult(term = 2, success = true)
+          }
+        }
+      }
     }
   }
 

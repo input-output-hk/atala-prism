@@ -59,8 +59,17 @@ object RaftConsensus {
     val nodeFSM: ActorRef[NodeEvent] =
       actorSystem.spawnAnonymous(new NodeFSM[Command](becomeFollower, becomeCandidate, becomeLeader).stateMachine)
 
-    def appendEntries(entriesToAppend: EntriesToAppend[Command]): Future[AppendEntriesResult] =
-      roleState.get.flatMap(state => state.appendEntries(entriesToAppend))
+    def appendEntries(entriesToAppend: EntriesToAppend[Command]): Future[AppendEntriesResult] = {
+      for {
+        _ <- rulesForServersAllServers2(entriesToAppend.term)
+        roleState <- roleState.get
+        appendResult <- roleState.appendEntries(entriesToAppend)
+        commonVolatileState <- commonVolatileState.get
+        log <- persistentStorage.log
+        _ <- applyUncommittedLogEntries(commonVolatileState, log)
+      } yield
+        appendResult
+    }
 
     def requestVote(voteRequested: VoteRequested): Future[RequestVoteResult] =
       roleState.get.flatMap(state => state.requestVote(voteRequested))
@@ -71,6 +80,40 @@ object RaftConsensus {
 
     def applyEntry(iEntry: Int, log: Vector[LogEntry[Command]]): Unit =
       stateMachine(log(iEntry).command)
+
+    // Rules for servers, all servers, note 1.
+    // If commitIndex > lastApplied, apply log[lastApplied] to the state machine.
+    // (do this recursively until commitIndex == lastApplied)
+    private def applyUncommittedLogEntries(state: CommonVolatileState[Command],
+                                           log: Vector[LogEntry[Command]]): Future[Unit] = {
+
+      val commitIndex = state.commitIndex
+      val lastApplied = state.lastApplied
+
+      if (commitIndex > lastApplied) {
+        val nextApplication = lastApplied + 1
+        val nextState: CommonVolatileState[Command] = state.copy(lastApplied = nextApplication)
+        commonVolatileState
+          .set(nextState)
+          .map(_ => applyEntry(nextApplication, log))
+          .flatMap(_ => applyUncommittedLogEntries(nextState, log))
+      } else {
+        commonVolatileState.get.map(_ => ())
+      }
+    }
+
+    // Rules for servers (figure 2), all servers, note 2.
+    // If request (or response) contains term T > currentTerm
+    // set currentTerm = T (convert to follower)
+    private def rulesForServersAllServers2(term: Int): Future[(Int, String)] = {
+      val updateF = for {
+        (currentTerm, votedFor) <- persistentStorage.state
+        if term > currentTerm
+        _ <- persistentStorage.state(term, votedFor)
+      } yield (term, votedFor)
+
+      updateF.fallbackTo(persistentStorage.state)
+    }
 
     // Note, this is different to the paper which specifies
     // one-based array ops, whereas we use zero-based.
@@ -155,8 +198,7 @@ object RaftConsensus {
 
           for {
             _ <- raftNode.persistentStorage.dropRight(conflicts)
-          } yield
-            AppendEntriesResult(term = currentTerm, success = false)
+          } yield AppendEntriesResult(term = currentTerm, success = false)
 
         } else {
           val additions: Seq[LogEntry[Command]] = appendEntriesAdditions(log, entriesToAppend)
@@ -167,9 +209,7 @@ object RaftConsensus {
             newState <- appendEntriesCommitIndexCheck(entriesToAppend.leaderCommitIndex,
                                                       iLastNewEntry(additions),
                                                       volatileState)
-            _ <- applyUncommittedLogEntries(newState, newLog)
-          } yield
-            AppendEntriesResult(term = currentTerm, success = true)
+          } yield AppendEntriesResult(term = currentTerm, success = true)
         }
       }
     }
@@ -195,7 +235,10 @@ object RaftConsensus {
         else
           loop(i - 1)
       }
-      loop(log.size - 1)
+      if (prevLogIndex == -1) // need to handle the case of leader with empty log
+        false
+      else
+        loop(log.size - 1)
     }
 
     // AppendEntries summary note #3 (Sec 5.3 deleting inconsistent log entries)
@@ -288,25 +331,6 @@ object RaftConsensus {
       }
     }
 
-    // Rules for servers, all servers, if commitIndex > lastApplied, apply log[lastApplied] to the state machine.
-    // (do this recursively until commitIndex == lastApplied)
-    private def applyUncommittedLogEntries(state: CommonVolatileState[Command],
-                                           log: Vector[LogEntry[Command]]): Future[Unit] = {
-
-      val commitIndex = state.commitIndex
-      val lastApplied = state.lastApplied
-
-      if (commitIndex > lastApplied) {
-        val nextApplication = lastApplied + 1
-        val nextState: CommonVolatileState[Command] = state.copy(lastApplied = nextApplication)
-        raftNode.commonVolatileState
-          .set(nextState)
-          .map(_ => raftNode.applyEntry(nextApplication, log))
-          .flatMap(_ => applyUncommittedLogEntries(nextState, log))
-      } else {
-        raftNode.commonVolatileState.get.map(_ => ())
-      }
-    }
 
     override def requestVote(voteRequested: VoteRequested): Future[RequestVoteResult] = ???
   }
