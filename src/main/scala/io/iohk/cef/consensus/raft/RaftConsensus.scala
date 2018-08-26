@@ -11,11 +11,11 @@ import scala.concurrent.{ExecutionContext, Future}
 
 object RaftConsensus {
 
-  case class LogEntry[Command](command: Command, term: Long, index: Long)
+  case class LogEntry[Command](command: Command, term: Int, index: Int)
 
   trait PersistentStorage[Command] {
-    def state: Future[(Long, String)]
-    def state(currentTerm: Long, votedFor: String): Future[Unit]
+    def state: Future[(Int, String)]
+    def state(currentTerm: Int, votedFor: String): Future[Unit]
 
     def log(entry: LogEntry[Command]): Future[Unit]
     def log: Future[Vector[LogEntry[Command]]]
@@ -56,7 +56,7 @@ object RaftConsensus {
 
     val leaderVolatileState = new StateActor[LeaderVolatileState]()
 
-    private val nodeFSM: ActorRef[NodeEvent] =
+    val nodeFSM: ActorRef[NodeEvent] =
       actorSystem.spawnAnonymous(new NodeFSM[Command](becomeFollower, becomeCandidate, becomeLeader).stateMachine)
 
     def appendEntries(entriesToAppend: EntriesToAppend[Command]): Future[AppendEntriesResult] =
@@ -65,16 +65,18 @@ object RaftConsensus {
     def requestVote(voteRequested: VoteRequested): Future[RequestVoteResult] =
       roleState.get.flatMap(state => state.requestVote(voteRequested))
 
-    private def electionTimeout: Unit =
-      nodeFSM ! ElectionTimeout
-
     def resetElectionTimer: Unit = ???
 
     def requestVotes: Unit = ???
 
+    def applyEntry(iEntry: Int, log: Vector[LogEntry[Command]]): Unit =
+      stateMachine(log(iEntry).command)
+
+    // Note, this is different to the paper which specifies
+    // one-based array ops, whereas we use zero-based.
     private def initialState(): Future[NodeState[Command]] = {
-      val initialCommitIndex = 0
-      val initialLastApplied = 0
+      val initialCommitIndex = -1
+      val initialLastApplied = -1
 
       commonVolatileState
         .set(CommonVolatileState(initialCommitIndex, initialLastApplied))
@@ -110,9 +112,9 @@ object RaftConsensus {
     def reset(): Unit = ???
   }
 
-  case class CommonVolatileState[Command](commitIndex: Long, lastApplied: Long)
+  case class CommonVolatileState[Command](commitIndex: Int, lastApplied: Int)
 
-  case class LeaderVolatileState(nextIndex: Seq[Long], matchIndex: Seq[Long])
+  case class LeaderVolatileState(nextIndex: Seq[Int], matchIndex: Seq[Int])
 
   sealed trait NodeState[Command] {
     def appendEntries(entriesToAppend: EntriesToAppend[Command]): Future[AppendEntriesResult]
@@ -123,10 +125,10 @@ object RaftConsensus {
 
     override def appendEntries(entriesToAppend: EntriesToAppend[Command]): Future[AppendEntriesResult] = {
       for {
-        volatileState <- raftNode.commonVolatileState.get
-        (currentTerm, votedFor) <- raftNode.persistentStorage.state
+        (currentTerm, _) <- raftNode.persistentStorage.state
         log <- raftNode.persistentStorage.log
-      } yield {
+        volatileState <- raftNode.commonVolatileState.get
+      } yield { // FIXME, the return values need to be sequenced with the futures.
         if (appendEntriesConsistencyCheck1(entriesToAppend.term, currentTerm)) {
           AppendEntriesResult(term = currentTerm, success = false)
         } else if (appendEntriesConsistencyCheck2(log, entriesToAppend.prevLogIndex)) {
@@ -137,8 +139,16 @@ object RaftConsensus {
             raftNode.persistentStorage.dropRight(conflicts)
             AppendEntriesResult(term = currentTerm, success = false)
           } else {
-            val additions = appendEntriesAdditions(log, entriesToAppend)
-            additions.foreach(addition => raftNode.persistentStorage.log(addition))
+            val additions: Seq[LogEntry[Command]] = appendEntriesAdditions(log, entriesToAppend)
+            val appendFutures = additions.map(addition => raftNode.persistentStorage.log(addition))
+
+            for {
+              _ <- Future.sequence(appendFutures)
+              newLog <- raftNode.persistentStorage.log
+              newState <- appendEntriesCommitIndexCheck(entriesToAppend.leaderCommitIndex, additions.last.index, volatileState)
+              _ <- applyUncommittedLogEntries(newState, newLog)
+            } yield ()
+
             AppendEntriesResult(term = currentTerm, success = true)
           }
         }
@@ -146,16 +156,16 @@ object RaftConsensus {
     }
 
     // AppendEntries summary note #1 (Sec 5.1 consistency check)
-    private def appendEntriesConsistencyCheck1(term: Long, currentTerm: Long): Boolean =
+    private def appendEntriesConsistencyCheck1(term: Int, currentTerm: Int): Boolean =
       term < currentTerm
 
     // AppendEntries summary note #2 (Sec 5.3 Consistency check)
-    private def appendEntriesConsistencyCheck2(log: Vector[LogEntry[Command]], prevLogIndex: Long): Boolean = {
+    private def appendEntriesConsistencyCheck2(log: Vector[LogEntry[Command]], prevLogIndex: Int): Boolean = {
       @tailrec
-      def loop(i: Long): Boolean = {
+      def loop(i: Int): Boolean = {
         if (i == -1)
           true
-        else if (log(i.toInt).index == prevLogIndex)
+        else if (log(i).index == prevLogIndex)
           false
         else
           loop(i - 1)
@@ -169,15 +179,15 @@ object RaftConsensus {
 
       val logSz = log.size
 
-      val minEntryIndex: Long = entriesToAppend.entries.headOption.map(head => head.index).getOrElse(logSz)
+      val minEntryIndex: Int = entriesToAppend.entries.headOption.map(head => head.index).getOrElse(logSz)
 
       @tailrec
-      def loop(i: Long, iMin: Long): Long = { // reverse search for the minimum index of a conflicting entry
+      def loop(i: Int, iMin: Int): Int = { // reverse search for the minimum index of a conflicting entry
 
         if (i == -1)
           iMin
         else {
-          val current: LogEntry[Command] = log(i.toInt)
+          val current: LogEntry[Command] = log(i)
 
           if (minEntryIndex > current.index) { // all entries to append have a higher index than current, terminate reverse search
             iMin
@@ -197,7 +207,7 @@ object RaftConsensus {
 
       val iMin = loop(logSz - 1, logSz)
 
-      (logSz - iMin).toInt
+      logSz - iMin
     }
 
     // AppendEntries summary note #4 (append new entries not already in the log)
@@ -206,7 +216,7 @@ object RaftConsensus {
 
       val logSz = log.size
 
-      val minEntryIndex: Long = entriesToAppend.entries.headOption.map(head => head.index).getOrElse(logSz)
+      val minEntryIndex: Int = entriesToAppend.entries.headOption.map(head => head.index).getOrElse(logSz)
 
       // can assume the terms are consistent here.
       // find the entriesToAppend entry without a matching log entry.
@@ -215,14 +225,13 @@ object RaftConsensus {
         if (i == -1)
           nDrop
         else {
-          val current = log(i.toInt)
+          val current = log(i)
 
           if (minEntryIndex > current.index)
             nDrop
           else {
             val maybeOverlappingEntry: Option[LogEntry[Command]] =
-              entriesToAppend.entries.find(entryToAppend =>
-                current.index == entryToAppend.index)
+              entriesToAppend.entries.find(entryToAppend => current.index == entryToAppend.index)
 
             if (maybeOverlappingEntry.isDefined)
               loop(i - 1, nDrop + 1)
@@ -234,6 +243,44 @@ object RaftConsensus {
       }
       val nDrop = loop(logSz - 1, 0)
       entriesToAppend.entries.drop(nDrop)
+    }
+
+    // AppendEntries summary note #5 (if leaderCommit > commitIndex,
+    // set commitIndex = min(leaderCommit, index of last new entry)
+    private def appendEntriesCommitIndexCheck(
+        leaderCommitIndex: Int,
+        iLastNewEntry: Int,
+        nodeState: CommonVolatileState[Command]): Future[CommonVolatileState[Command]] = {
+      val commitIndex = Math.min(leaderCommitIndex, iLastNewEntry)
+
+      if (leaderCommitIndex > nodeState.commitIndex) {
+        for {
+          _ <- raftNode.commonVolatileState.set(nodeState.copy(commitIndex = commitIndex))
+          newVolatileState <- raftNode.commonVolatileState.get
+        } yield newVolatileState
+      } else {
+        raftNode.commonVolatileState.get
+      }
+    }
+
+    // Rules for servers, all servers, if commitIndex > lastApplied, apply log[lastApplied] to the state machine.
+    // (do this recursively until commitIndex == lastApplied)
+    private def applyUncommittedLogEntries(state: CommonVolatileState[Command],
+                                           log: Vector[LogEntry[Command]]): Future[Unit] = {
+
+      val commitIndex = state.commitIndex
+      val lastApplied = state.lastApplied
+
+      if (commitIndex > lastApplied) {
+        val nextApplication = lastApplied + 1
+        val nextState: CommonVolatileState[Command] = state.copy(lastApplied = nextApplication)
+        raftNode.commonVolatileState
+          .set(nextState)
+          .map(_ => raftNode.applyEntry(nextApplication, log))
+          .flatMap(_ => applyUncommittedLogEntries(nextState, log))
+      } else {
+        raftNode.commonVolatileState.get.map(_ => ())
+      }
     }
 
     override def requestVote(voteRequested: VoteRequested): Future[RequestVoteResult] = ???
@@ -252,16 +299,16 @@ object RaftConsensus {
     override def requestVote(voteRequested: VoteRequested): Future[RequestVoteResult] = ???
   }
 
-  case class EntriesToAppend[Command](term: Long,
+  case class EntriesToAppend[Command](term: Int,
                                       leaderId: String,
-                                      prevLogIndex: Long,
-                                      prevLogTerm: Long,
+                                      prevLogIndex: Int,
+                                      prevLogTerm: Int,
                                       entries: Seq[LogEntry[Command]],
-                                      leaderCommitIndex: Long)
-  case class AppendEntriesResult(term: Long, success: Boolean)
+                                      leaderCommitIndex: Int)
+  case class AppendEntriesResult(term: Int, success: Boolean)
 
-  case class VoteRequested(term: Long, candidateId: String, lastLogIndex: Long, lastLogTerm: Long)
-  case class RequestVoteResult(term: Long, voteGranted: Boolean)
+  case class VoteRequested(term: Int, candidateId: String, lastLogIndex: Int, lastLogTerm: Int)
+  case class RequestVoteResult(term: Int, voteGranted: Boolean)
 
   /**
     * To be implemented by users of the module using whatever networking method is relevant for them.
