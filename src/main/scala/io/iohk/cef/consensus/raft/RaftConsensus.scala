@@ -409,7 +409,21 @@ object RaftConsensus {
 
   class Leader[Command](raftNode: RaftNode[Command])(implicit ec: ExecutionContext)
       extends NodeState[Command] {
-    override def appendEntries(entriesToAppend: EntriesToAppend[Command]): Future[AppendEntriesResult] = ???
+
+    override def appendEntries(entriesToAppend: EntriesToAppend[Command]): Future[AppendEntriesResult] = {
+      val prospectiveLeaderTerm = entriesToAppend.term
+      for {
+        (currentTerm, _) <- raftNode.persistentStorage.state
+      } yield {
+        if (prospectiveLeaderTerm >= currentTerm) {
+          // the term will have been updated via rules for servers note 2.
+          raftNode.nodeFSM ! NodeWithHigherTermDiscovered
+          AppendEntriesResult(currentTerm, success = true)
+        } else {
+          AppendEntriesResult(currentTerm, success = false)
+        }
+      }
+    }
     override def requestVote(voteRequested: VoteRequested): Future[RequestVoteResult] = ???
   }
 
