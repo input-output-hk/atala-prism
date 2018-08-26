@@ -13,6 +13,26 @@ object RaftConsensus {
 
   case class LogEntry[Command](command: Command, term: Int, index: Int)
 
+  /**
+    * To be implemented by users of the module using whatever networking method is relevant for them.
+    *
+    * @param node identifier of the node at the other end of the RPC
+    * @param entriesAppended callback to invoke when another node sends an appendEntries RPC
+    * @param voteRequested callback to invoke when another node sends a voteRequested RPC
+    * @tparam Command the user command type.
+    */
+  type RPCFactory[Command] = (String,
+    EntriesToAppend[Command] => Future[AppendEntriesResult],
+    VoteRequested => Future[RequestVoteResult]) => RPC[Command]
+
+  trait RPC[Command] {
+
+    def appendEntries(entriesToAppend: EntriesToAppend[Command]): Future[AppendEntriesResult]
+
+    def requestVote(voteRequested: VoteRequested): Future[RequestVoteResult]
+  }
+
+
   trait PersistentStorage[Command] {
     def state: Future[(Int, String)]
     def state(currentTerm: Int, votedFor: String): Future[Unit]
@@ -24,6 +44,12 @@ object RaftConsensus {
   }
 
   case class Redirect(leader: String)
+
+  type ElectionTimerFactory = (() => Unit) => ElectionTimer
+
+  trait ElectionTimer {
+    def reset(): Unit
+  }
 
   /**
     * From Figure 1.
@@ -40,10 +66,13 @@ object RaftConsensus {
   class RaftNode[Command](val nodeId: String,
                           val clusterMemberIds: Set[String],
                           rpcFactory: RPCFactory[Command],
+                          electionTimerFactory: ElectionTimerFactory,
                           stateMachine: Command => Unit,
                           val persistentStorage: PersistentStorage[Command])(implicit actorSystem: ActorSystem) {
 
     private implicit val executionContext: ExecutionContext = actorSystem.dispatcher
+
+    private val electionTimer = electionTimerFactory(() => electionTimeout())
 
     private val clusterMembers: Set[RPC[Command]] = clusterMemberIds
       .filterNot(_ == nodeId)
@@ -74,9 +103,14 @@ object RaftConsensus {
     def requestVote(voteRequested: VoteRequested): Future[RequestVoteResult] =
       roleState.get.flatMap(state => state.requestVote(voteRequested))
 
-    def resetElectionTimer: Unit = ???
+    private def electionTimeout(): Unit =
+      nodeFSM ! ElectionTimeout
 
-    def requestVotes: Unit = ???
+
+    def requestVotes(voteRequested: VoteRequested): Future[Seq[RequestVoteResult]] = {
+      val rpcFutures = clusterMembers.toSeq.map(memberRpc => memberRpc.requestVote(voteRequested))
+      Future.sequence(rpcFutures)
+    }
 
     def applyEntry(iEntry: Int, log: Vector[LogEntry[Command]]): Unit =
       stateMachine(log(iEntry).command)
@@ -110,7 +144,10 @@ object RaftConsensus {
         (currentTerm, votedFor) <- persistentStorage.state
         if term > currentTerm
         _ <- persistentStorage.state(term, votedFor)
-      } yield (term, votedFor)
+      } yield {
+        nodeFSM ! NodeWithHigherTermDiscovered
+        (term, votedFor)
+      }
 
       updateF.fallbackTo(persistentStorage.state)
     }
@@ -126,9 +163,9 @@ object RaftConsensus {
         .map(_ => new Follower[Command](raftNode = this))
     }
 
-    private def becomeFollower(event: NodeEvent): Unit = event match {
+    private def becomeFollower(event: NodeEvent): Future[Unit] = event match {
       case Start =>
-        initialState().map(roleState.set)
+        initialState().flatMap(state => roleState.set(state))
       case _ =>
         roleState.set(new Follower(this))
     }
@@ -138,21 +175,36 @@ object RaftConsensus {
     // Vote for self
     // Reset election timer
     // Send RequestVote RPCs to all other servers
-    private def becomeCandidate(event: NodeEvent): Unit = {
+    private def becomeCandidate(event: NodeEvent): Future[Unit] = {
+      electionTimer.reset()
       for {
+        _ <- roleState.set(new Candidate(this))
         (currentTerm, _) <- persistentStorage.state
-      } yield persistentStorage.state(currentTerm + 1, nodeId)
-
-      resetElectionTimer
-      requestVotes
+        newTerm = currentTerm + 1
+        _ <- persistentStorage.state(newTerm, nodeId)
+        log <- persistentStorage.log
+        (lastLogIndex, lastLogTerm) = lastLogIndexAndTerm(log)
+        votes <- requestVotes(VoteRequested(newTerm, nodeId, lastLogIndex, lastLogTerm))
+      } yield {
+          if (hasMajority(newTerm, votes))
+            nodeFSM ! MajorityVoteReceived
+          else
+            ()
+        }
     }
 
-    private def becomeLeader(event: NodeEvent): Unit = ???
+    private def hasMajority(term: Int, votes: Seq[RequestVoteResult]): Boolean = {
+      val myOwnVote = 1
+      votes.count(vote => vote.voteGranted && vote.term == term) + myOwnVote > votes.size / 2
+    }
 
-  }
+    private def lastLogIndexAndTerm(log: Vector[LogEntry[Command]]): (Int, Int) = {
+      log.lastOption.map(lastLogEntry => (lastLogEntry.index, lastLogEntry.term)).getOrElse((-1, -1))
+    }
 
-  class ElectionTimer(onTimeout: () => Unit) {
-    def reset(): Unit = ???
+    private def becomeLeader(event: NodeEvent): Future[Unit] = {
+      roleState.set(new Leader(this))
+    }
   }
 
   case class CommonVolatileState[Command](commitIndex: Int, lastApplied: Int)
@@ -336,13 +388,26 @@ object RaftConsensus {
   }
 
   class Candidate[Command](raftNode: RaftNode[Command])(implicit ec: ExecutionContext) extends NodeState[Command] {
-    override def appendEntries(entriesToAppend: EntriesToAppend[Command]): Future[AppendEntriesResult] = ???
+    override def appendEntries(entriesToAppend: EntriesToAppend[Command]): Future[AppendEntriesResult] = {
+      // rules for servers, candidates
+      // if append entries rpc received from new leader, convert to follower
+      val prospectiveLeaderTerm = entriesToAppend.term
+      for {
+        (currentTerm, _) <- raftNode.persistentStorage.state
+      } yield {
+        if (prospectiveLeaderTerm >= currentTerm) {
+          // the term will have been updated via rules for servers note 2.
+          raftNode.nodeFSM ! LeaderDiscovered
+          AppendEntriesResult(currentTerm, success = true)
+        } else {
+          AppendEntriesResult(currentTerm, success = false)
+        }
+      }
+    }
     override def requestVote(voteRequested: VoteRequested): Future[RequestVoteResult] = ???
   }
 
-  class Leader[Command](raftNode: RaftNode[Command],
-                        val commonState: CommonVolatileState[Command],
-                        val leaderState: LeaderVolatileState)(implicit ec: ExecutionContext)
+  class Leader[Command](raftNode: RaftNode[Command])(implicit ec: ExecutionContext)
       extends NodeState[Command] {
     override def appendEntries(entriesToAppend: EntriesToAppend[Command]): Future[AppendEntriesResult] = ???
     override def requestVote(voteRequested: VoteRequested): Future[RequestVoteResult] = ???
@@ -359,32 +424,14 @@ object RaftConsensus {
   case class VoteRequested(term: Int, candidateId: String, lastLogIndex: Int, lastLogTerm: Int)
   case class RequestVoteResult(term: Int, voteGranted: Boolean)
 
-  /**
-    * To be implemented by users of the module using whatever networking method is relevant for them.
-    *
-    * @param node identifier of the node at the other end of the RPC
-    * @param entriesAppended callback to invoke when another node sends an appendEntries RPC
-    * @param voteRequested callback to invoke when another node sends a voteRequested RPC
-    * @tparam Command the user command type.
-    */
-  type RPCFactory[Command] = (String,
-                              EntriesToAppend[Command] => Future[AppendEntriesResult],
-                              VoteRequested => Future[RequestVoteResult]) => RPC[Command]
-
-  trait RPC[Command] {
-
-    def appendEntries(entriesToAppend: EntriesToAppend[Command]): Future[AppendEntriesResult]
-
-    def requestVote(voteRequested: VoteRequested): Future[RequestVoteResult]
-  }
 
   sealed trait NodeEvent
 
   case object Start extends NodeEvent
   case object ElectionTimeout extends NodeEvent
   case object MajorityVoteReceived extends NodeEvent
-  case class NodeWithHigherTermDiscovered(node: String) extends NodeEvent
-  case class LeaderDiscovered(node: String) extends NodeEvent
+  case object NodeWithHigherTermDiscovered extends NodeEvent
+  case object LeaderDiscovered extends NodeEvent
 
   // Figure 4: Server states.
   class NodeFSM[Command](becomeFollower: NodeEvent => Unit,
@@ -411,14 +458,17 @@ object RaftConsensus {
         case MajorityVoteReceived =>
           becomeLeader(MajorityVoteReceived)
           leaderState
+        case LeaderDiscovered =>
+          becomeFollower(LeaderDiscovered)
+          followerState
         case _ =>
           unhandled
       }
 
     private def leaderState: Behavior[NodeEvent] =
       receiveMessage {
-        case e: NodeWithHigherTermDiscovered =>
-          becomeFollower(e)
+        case NodeWithHigherTermDiscovered =>
+          becomeFollower(NodeWithHigherTermDiscovered)
           followerState
         case _ =>
           unhandled
