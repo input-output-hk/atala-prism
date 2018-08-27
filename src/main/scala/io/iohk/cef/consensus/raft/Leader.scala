@@ -30,6 +30,7 @@ trait Leader {
 
     // Leader handling
     case Event(append: AppendEntries[Command @unchecked], sd: StateData) if append.term > sd.currentTerm =>
+      if  (raftConfig.publishTestEvents) context.system.eventStream.publish(append) //This if for testing purpose
       log.info(
         "Leader (@ {}) got AppendEntries from fresher Leader " +
           "(@ {}), will step down and the Leader will keep being: {}",
@@ -172,11 +173,28 @@ trait Leader {
                indexOnMajority,
                replicatedLog.committedIndex,
                willCommit)
+      val entries = replicatedLog.between(replicatedLog.committedIndex, indexOnMajority)
 
+      entries foreach { entry =>
+        applyStateMachine(entry)
+
+        if (raftConfig.publishTestEvents)
+          context.system.eventStream.publish(EntryCommitted(entry.index, sd.self))
+      }
       replicatedLog.commit(indexOnMajority)
+
     } else {
       replicatedLog
     }
+  }
+
+
+
+  private val applyStateMachine: PartialFunction[Any, Unit] = {
+    case entry: Entry[Command @unchecked]=>
+      log.info("Committing log at index: {}; Applying command: {}, will send result to client: {}", entry.index, entry.command, entry.client)
+      val result = apply(entry.command)
+      entry.client foreach { _ ! result }
   }
 
   def leaderStateHandler(): Unit = {

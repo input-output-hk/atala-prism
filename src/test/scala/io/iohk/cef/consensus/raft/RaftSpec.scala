@@ -109,7 +109,7 @@ abstract class RaftSpec(_system: Option[ActorSystem] = None)
   def awaitBeginAsLeader(max: FiniteDuration = DefaultTimeoutDuration)(implicit probe: TestProbe): BeginAsLeader =
     probe.expectMsgClass(max, classOf[BeginAsLeader])
 
-  def subscribeHeartBeatAppendEntries()(implicit probe: TestProbe): Unit =
+  def subscribeForAppendEntries()(implicit probe: TestProbe): Unit =
     system.eventStream.subscribe(probe.ref, classOf[AppendEntries[_]])
 
 
@@ -141,6 +141,23 @@ abstract class RaftSpec(_system: Option[ActorSystem] = None)
                           (implicit probe: TestProbe): BeginAsFollower =
     probe.expectMsgClass(max, classOf[BeginAsFollower])
 
+
+
+  def subscribeEntryComitted()(implicit probe: TestProbe): Unit =
+    system.eventStream.subscribe(probe.ref, classOf[EntryCommitted])
+
+  def awaitEntryComitted(Index: Int, max: FiniteDuration = DefaultTimeoutDuration)(implicit probe: TestProbe): Unit = {
+    val start = System.currentTimeMillis()
+    probe.fishForMessage(max, hint = s"EntryCommitted($Index, actor)") {
+      case EntryCommitted(Index, actor) =>
+        info(s"Finished fishing for EntryCommitted($Index) on ${simpleName(actor)}, took ${System.currentTimeMillis() - start}ms")
+        true
+
+      case other =>
+        info(s"Fished $other, still waiting for ${EntryCommitted(Index, null)}...")
+        false
+    }
+  }
 
   def infoMemberStates() {
     val leadersList = leaders.map(m => s"${simpleName(m)}[Leader]")

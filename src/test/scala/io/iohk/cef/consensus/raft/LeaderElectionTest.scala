@@ -55,7 +55,7 @@ class LeaderElectionTest extends RaftSpec with Eventually {
     */
   it should "Upon election: send initial empty AppendEntries RPCs (heartbeat)" in {
     // given Leader Elected
-    subscribeHeartBeatAppendEntries()
+    subscribeForAppendEntries()
 
     info("New leader elected Heart Beat Started: ")
 

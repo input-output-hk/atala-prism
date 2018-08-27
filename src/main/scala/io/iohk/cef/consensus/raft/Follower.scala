@@ -1,5 +1,5 @@
 package io.iohk.cef.consensus.raft
-import io.iohk.cef.consensus.raft.model.{ Entry, ReplicatedLog}
+import io.iohk.cef.consensus.raft.model.{Entry, ReplicatedLog}
 import io.iohk.cef.consensus.raft.protocol._
 
 import scala.collection.immutable
@@ -12,7 +12,7 @@ trait Follower {
     case Event(m @ BeginAsFollower(term, _), myState: StateData) =>
       if  (raftConfig.publishTestEvents) context.system.eventStream.publish(m) //This if for testing purpose
 
-      log.info("Received newer {}. Current term is {}.", term, myState.currentTerm)
+      log.info(" BeginAsFollower Received newer {}. Current term is {}.", term, myState.currentTerm)
       stay()
 
     // timeout,  Need to start an election
@@ -126,8 +126,14 @@ trait Follower {
 
     entries.foldLeft(replicatedLog) { case (repLog, entry) =>
       log.debug("committing entry {} on Follower, leader is committed until [{}]", entry, msg.leaderCommitId)
+      applyStateMachine(entry)
       repLog.commit(entry.index)
     }
+  }
+
+
+  private val applyStateMachine: PartialFunction[Any, Unit] = {
+    case entry: Entry[Command @unchecked] => apply(entry.command)
   }
 
 }
