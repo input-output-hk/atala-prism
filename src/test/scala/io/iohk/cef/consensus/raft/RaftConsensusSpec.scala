@@ -7,7 +7,7 @@ import org.scalatest.{BeforeAndAfterEach, Suite, WordSpec}
 import org.scalatest.Matchers._
 import org.scalatest.concurrent.Eventually._
 import org.scalatest.mockito.MockitoSugar._
-import org.mockito.Mockito.{inOrder, verify, when, reset}
+import org.mockito.Mockito.{inOrder, reset, verify, when}
 import org.mockito.ArgumentMatchers.any
 
 import scala.concurrent.duration._
@@ -98,9 +98,9 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
           appendResult shouldBe AppendEntriesResult(term = 1, success = true)
 
           raftNode.getLog shouldBe Vector(LogEntry("A", 1, index = 0),
-                                                       LogEntry("B", 1, index = 1),
-                                                       LogEntry("C", 1, index = 2),
-                                                       LogEntry("D", 1, index = 3))
+                                          LogEntry("B", 1, index = 1),
+                                          LogEntry("C", 1, index = 2),
+                                          LogEntry("D", 1, index = 3))
         }
       }
       "implement rule #5" should {
@@ -233,6 +233,104 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
 
         raftNode.getRoleState shouldBe a[RaftConsensus.Leader[_]]
         appendResult shouldBe AppendEntriesResult(term = 3, success = false)
+      }
+    }
+  }
+  "RequestVote RPC" when {
+    "implemented by any role" should {
+      // NB: making use of the 'whitebox' knowledge that the RequestVote impl is common to all roles.
+      "implement rule #1, reply false if term < currentTerm (sec 5.1)" in {
+        val persistentStorage =
+          new InMemoryPersistentStorage[String](Vector(), currentTerm = 2, votedFor = "i2")
+
+        val _ = aRaftNode(persistentStorage)
+
+        val voteResult = voteCallback(VoteRequested(term = 1, candidateId = "i2", lastLogIndex = 0, lastLogTerm = 1))
+
+        voteResult shouldBe RequestVoteResult(term = 2, voteGranted = false)
+      }
+      "implement rule #2" when {
+
+        "votedFor is null and candidate's log is as up to date as the receiver's log" should {
+          "grant vote" in {
+            val persistentStorage =
+              new InMemoryPersistentStorage[String](Vector(), currentTerm = 2, votedFor = "")
+
+            val _ = aRaftNode(persistentStorage)
+
+            val voteResult =
+              voteCallback(VoteRequested(term = 3, candidateId = "i2", lastLogIndex = 0, lastLogTerm = 2))
+
+            voteResult shouldBe RequestVoteResult(term = 3, voteGranted = true)
+          }
+        }
+        "votedFor is candidateId and candidate's log is as up to date as the receiver's log" should {
+          "grant vote" in {
+            val persistentStorage =
+              new InMemoryPersistentStorage[String](Vector(), currentTerm = 2, votedFor = "i2")
+
+            val _ = aRaftNode(persistentStorage)
+
+            val voteResult =
+              voteCallback(VoteRequested(term = 3, candidateId = "i2", lastLogIndex = 0, lastLogTerm = 2))
+
+            voteResult shouldBe RequestVoteResult(term = 3, voteGranted = true)
+          }
+        }
+        /*
+        Sec 5.4.1
+        If the logs have last entries with different terms, then
+        the log with the later term is more up-to-date. If the logs
+        end with the same term, then whichever log is longer is
+        more up-to-date
+         */
+        "candidate's log has lower term than the receiver's log" should {
+          "deny vote" in {
+            val persistentStorage =
+              new InMemoryPersistentStorage[String](Vector(LogEntry("A", 1, 0),
+                                                           LogEntry("B", 1, 1),
+                                                           LogEntry("C", 2, 2)),
+                                                    currentTerm = 2,
+                                                    votedFor = "i2")
+
+            val _ = aRaftNode(persistentStorage)
+
+            val voteResult =
+              voteCallback(VoteRequested(term = 3, candidateId = "i2", lastLogIndex = 2, lastLogTerm = 1))
+
+            voteResult shouldBe RequestVoteResult(term = 3, voteGranted = false)
+          }
+        }
+        "candidate's log has lower lastLogLogIndex than the receiver's log" should {
+          "deny vote" in {
+            val persistentStorage =
+              new InMemoryPersistentStorage[String](Vector(LogEntry("A", 1, 0),
+                                                           LogEntry("B", 1, 1),
+                                                           LogEntry("C", 2, 2)),
+                                                    currentTerm = 2,
+                                                    votedFor = "i2")
+
+            val _ = aRaftNode(persistentStorage)
+
+            val voteResult =
+              voteCallback(VoteRequested(term = 3, candidateId = "i2", lastLogIndex = 1, lastLogTerm = 2))
+
+            voteResult shouldBe RequestVoteResult(term = 3, voteGranted = false)
+          }
+        }
+        "votedFor is NOT candidateId" should {
+          "deny vote" in {
+            val persistentStorage =
+              new InMemoryPersistentStorage[String](Vector(), currentTerm = 2, votedFor = "i3")
+
+            val _ = aRaftNode(persistentStorage)
+
+            val voteResult =
+              voteCallback(VoteRequested(term = 3, candidateId = "i2", lastLogIndex = 0, lastLogTerm = 2))
+
+            voteResult shouldBe RequestVoteResult(term = 3, voteGranted = false)
+          }
+        }
       }
     }
   }

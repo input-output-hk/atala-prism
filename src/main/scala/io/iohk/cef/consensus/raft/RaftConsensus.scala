@@ -96,15 +96,26 @@ object RaftConsensus {
       leaderVolatileState.single()
 
     def appendEntries(entriesToAppend: EntriesToAppend[Command]): AppendEntriesResult = atomic { implicit txn =>
-      val (currentTerm, votedFor) = persistentState()
-      rulesForServersAllServers2(entriesToAppend.term, currentTerm, votedFor)
+      rulesForServersAllServers2(entriesToAppend.term)
       val appendResult = roleState().appendEntries(entriesToAppend)
       applyUncommittedLogEntries()
       appendResult
     }
 
     def requestVote(voteRequested: VoteRequested): RequestVoteResult = atomic { implicit txn =>
-      roleState().requestVote(voteRequested)
+      rulesForServersAllServers2(voteRequested.term)
+
+      val (currentTerm, votedFor) = persistentState()
+      val (lastLogIndex, lastLogTerm) = lastLogIndexAndTerm(log())
+
+      if (voteRequested.term < currentTerm) // receiver implementation, note #1
+        RequestVoteResult(currentTerm, voteGranted = false)
+      else if (
+        (votedFor.isEmpty || votedFor == voteRequested.candidateId)
+        && ((lastLogTerm <= voteRequested.lastLogTerm) && (lastLogIndex <= voteRequested.lastLogIndex)))
+        RequestVoteResult(voteRequested.term, voteGranted = true)
+      else
+        RequestVoteResult(currentTerm, voteGranted = false)
     }
 
     def requestVotes(voteRequested: VoteRequested): Future[Seq[RequestVoteResult]] = {
@@ -137,11 +148,12 @@ object RaftConsensus {
     // Rules for servers (figure 2), all servers, note 2.
     // If request (or response) contains term T > currentTerm
     // set currentTerm = T (convert to follower)
-    private def rulesForServersAllServers2(term: Int, currentTerm: Int, votedFor: String): Unit =
+    private def rulesForServersAllServers2(term: Int): Unit =
       atomic { implicit txn =>
+        val (currentTerm, votedFor) = persistentState()
         if (term > currentTerm) {
-          nodeFSM(NodeWithHigherTermDiscovered)
           persistentState() = (term, votedFor)
+          nodeFSM(NodeWithHigherTermDiscovered)
         }
       }
 
@@ -201,7 +213,6 @@ object RaftConsensus {
 
   sealed trait NodeState[Command] {
     def appendEntries(entriesToAppend: EntriesToAppend[Command]): AppendEntriesResult
-    def requestVote(voteRequested: VoteRequested): RequestVoteResult
   }
 
   class Follower[Command](raftNode: RaftNode[Command]) extends NodeState[Command] {
@@ -347,8 +358,6 @@ object RaftConsensus {
         }
       }
     }
-
-    override def requestVote(voteRequested: VoteRequested): RequestVoteResult = ???
   }
 
   class Candidate[Command](raftNode: RaftNode[Command]) extends NodeState[Command] {
@@ -366,8 +375,6 @@ object RaftConsensus {
           AppendEntriesResult(currentTerm, success = false)
         }
     }
-
-    override def requestVote(voteRequested: VoteRequested): RequestVoteResult = ???
   }
 
   class Leader[Command](raftNode: RaftNode[Command]) extends NodeState[Command] {
@@ -384,7 +391,6 @@ object RaftConsensus {
           AppendEntriesResult(currentTerm, success = false)
         }
     }
-    override def requestVote(voteRequested: VoteRequested): RequestVoteResult = ???
   }
 
   case class EntriesToAppend[Command](term: Int,
