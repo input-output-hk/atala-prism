@@ -1,7 +1,5 @@
 package io.iohk.cef.consensus.raft
 
-import akka.actor.ActorSystem
-
 import scala.annotation.tailrec
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.stm._
@@ -35,9 +33,9 @@ object RaftConsensus {
 
   case class Redirect(leader: String)
 
-  type ElectionTimerFactory = (() => Unit) => ElectionTimer
+  type TimerFactory = (() => Unit) => Timer
 
-  trait ElectionTimer {
+  trait Timer {
     def reset(): Unit
   }
 
@@ -56,11 +54,10 @@ object RaftConsensus {
   class RaftNode[Command](val nodeId: String,
                           val clusterMemberIds: Set[String],
                           rpcFactory: RPCFactory[Command],
-                          electionTimerFactory: ElectionTimerFactory,
+                          electionTimerFactory: TimerFactory,
+                          heartbeatTimerFactory: TimerFactory,
                           stateMachine: Command => Unit,
-                          persistentStorage: PersistentStorage[Command])(implicit actorSystem: ActorSystem) {
-
-    private implicit val executionContext: ExecutionContext = actorSystem.dispatcher
+                          persistentStorage: PersistentStorage[Command])(implicit ec: ExecutionContext) {
 
     private val clusterMembers: Set[RPC[Command]] = clusterMemberIds
       .filterNot(_ == nodeId)
@@ -79,6 +76,8 @@ object RaftConsensus {
     val nodeFSM = new NodeFSM(becomeFollower, becomeCandidate, becomeLeader)
 
     private val electionTimer = electionTimerFactory(() => nodeFSM(ElectionTimeout))
+
+    private val heartbeatTimer = heartbeatTimerFactory(() => sendHeartbeat())
 
     def getRoleState: NodeState[Command] =
       roleState.single()
@@ -204,6 +203,16 @@ object RaftConsensus {
 
     private def becomeLeader(event: NodeEvent): Unit = atomic { implicit txn =>
       roleState() = new Leader(this)
+      sendHeartbeat()
+    }
+
+    private def sendHeartbeat(): Future[Seq[AppendEntriesResult]] = atomic { implicit txn =>
+      val (currentTerm, _) = persistentState()
+      val (prevLogIndex, prevLogTerm) = lastLogIndexAndTerm(log())
+      val commitIndex = commonVolatileState().commitIndex
+      val heartbeat = EntriesToAppend[Command](currentTerm, nodeId, prevLogIndex, prevLogTerm, Seq(), commitIndex)
+      val rpcFutures = clusterMembers.toSeq.map(memberRpc => memberRpc.appendEntries(heartbeat))
+      Future.sequence(rpcFutures)
     }
   }
 

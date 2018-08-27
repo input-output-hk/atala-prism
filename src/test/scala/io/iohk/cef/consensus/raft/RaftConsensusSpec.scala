@@ -1,17 +1,16 @@
 package io.iohk.cef.consensus.raft
 
-import akka.actor.ActorSystem
 import akka.dispatch.ExecutionContexts
 import io.iohk.cef.consensus.raft.RaftConsensus._
 import org.scalatest.{BeforeAndAfterEach, Suite, WordSpec}
 import org.scalatest.Matchers._
 import org.scalatest.concurrent.Eventually._
 import org.scalatest.mockito.MockitoSugar._
-import org.mockito.Mockito.{inOrder, reset, verify, when}
+import org.mockito.Mockito.{inOrder, reset, verify, when, times}
 import org.mockito.ArgumentMatchers.any
 
 import scala.concurrent.duration._
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext, Future}
 
 class RaftConsensusSpec extends WordSpec with TestRPC {
   "AppendEntries RPC" when {
@@ -343,22 +342,22 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
     }
 
     "Election timeouts occur" should {
-      "Convert to candidate" in {
+      "Implement Rules for Servers, Candidates conversion rules" in {
         val persistentStorage =
           new InMemoryPersistentStorage[String](Vector(), currentTerm = 1, votedFor = "anyone")
 
         val raftNode = aRaftNode(persistentStorage)
 
-        timeoutCallback.apply()
+        electionTimeoutCallback.apply()
 
         raftNode.getRoleState shouldBe a[RaftConsensus.Candidate[_]]
 
         // On conversion to candidate
-        raftNode.getPersistentState shouldBe (2, raftNode.nodeId) // increment current term and vote for self
+        raftNode.getPersistentState shouldBe (2, raftNode.nodeId) // 1. increment current term and 2. vote for self
 
-        verify(electionTimer).reset() // reset election timer
+        verify(electionTimer).reset() // 3. reset election timer
 
-        val expectedVoteRequest = VoteRequested(2, "i1", -1, -1) // send request vote RPCs to other servers
+        val expectedVoteRequest = VoteRequested(2, "i1", -1, -1) // 4. send request vote RPCs to other servers
         verify(rpc2).requestVote(expectedVoteRequest)
         verify(rpc3).requestVote(expectedVoteRequest)
       }
@@ -366,7 +365,7 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
   }
   "Candidates" when {
     "votes received from a majority" should {
-      "Convert to leader" in {
+      "Implement Candidates note #2, become leader" in {
         val persistentStorage =
           new InMemoryPersistentStorage[String](Vector(), currentTerm = 1, votedFor = "anyone")
 
@@ -377,7 +376,7 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
         when(rpc3.requestVote(any[VoteRequested]))
           .thenReturn(Future(RequestVoteResult(term = 2, voteGranted = false)))
 
-        timeoutCallback.apply()
+        electionTimeoutCallback.apply()
 
         eventually { // after vote requests have come in
           raftNode.getRoleState shouldBe a[RaftConsensus.Leader[_]]
@@ -385,7 +384,7 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
       }
     }
     "votes received from a minority" should {
-      "Remain a candidate" in {
+      "Remain a candidate" in { // TODO is this correct?
         val persistentStorage =
           new InMemoryPersistentStorage[String](Vector(), currentTerm = 1, votedFor = "anyone")
 
@@ -397,11 +396,34 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
         when(rpc3.requestVote(any[VoteRequested]))
           .thenReturn(Future(RequestVoteResult(term = 2, voteGranted = false)))
 
-        timeoutCallback.apply()
+        electionTimeoutCallback.apply()
 
         after(500) {
           raftNode.getRoleState shouldBe a[RaftConsensus.Candidate[_]]
         }
+      }
+    }
+    // See AppendEntries RPC candidate tests for tests of note #3
+  }
+  "Leaders" when {
+    "Winning an election" should {
+      "Send initial empty AppendEntries RPCs to each server and repeat during idle periods" in {
+        val persistentStorage =
+          new InMemoryPersistentStorage[String](Vector(), currentTerm = 2, votedFor = "i1")
+
+        val _ = aLeader(persistentStorage)
+
+        val expectedHeartbeat = EntriesToAppend(term = 3,
+                                                leaderId = "i1",
+                                                prevLogIndex = -1,
+                                                prevLogTerm = -1,
+                                                entries = Seq[LogEntry[String]](),
+                                                leaderCommitIndex = -1)
+
+        heartbeatTimeoutCallback.apply()
+
+        verify(rpc2, times(2)).appendEntries(expectedHeartbeat)
+        verify(rpc3, times(2)).appendEntries(expectedHeartbeat)
       }
     }
   }
@@ -410,17 +432,13 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
 trait TestRPC extends BeforeAndAfterEach { this: Suite =>
 
   implicit val ec: ExecutionContext = ExecutionContexts.global
-  implicit var actorSystem: ActorSystem = ActorSystem()
   implicit val patienceConfig: PatienceConfig = PatienceConfig(timeout = 500 millis)
 
   override def beforeEach() {
     reset(peer, rpc2, rpc3, stateMachine, electionTimer)
-    actorSystem = ActorSystem()
   }
 
-  override def afterEach() {
-    Await.result(actorSystem.terminate(), 1 second)
-  }
+//  override def afterEach() {}
 
   type Command = String
   val stateMachine: Command => Unit = mock[Command => Unit]
@@ -439,11 +457,18 @@ trait TestRPC extends BeforeAndAfterEach { this: Suite =>
     else
       fail("Test setup is wrong.")
   }
-  var timeoutCallback: () => Unit = _
-  val electionTimer: ElectionTimer = mock[ElectionTimer]
-  val electionTimerFactory: ElectionTimerFactory = timeoutHandler => {
-    timeoutCallback = timeoutHandler
+  var electionTimeoutCallback: () => Unit = _
+  val electionTimer: Timer = mock[Timer]
+  val electionTimerFactory: TimerFactory = timeoutHandler => {
+    electionTimeoutCallback = timeoutHandler
     electionTimer
+  }
+
+  var heartbeatTimeoutCallback: () => Unit = _
+  val heartbeatTimer: Timer = mock[Timer]
+  val heartbeatTimerFactory: TimerFactory = timeoutHandler => {
+    heartbeatTimeoutCallback = timeoutHandler
+    heartbeatTimer
   }
 
   def after[T](millis: Long)(t: => T): Future[T] = {
@@ -457,6 +482,7 @@ trait TestRPC extends BeforeAndAfterEach { this: Suite =>
                           Set("i1", "i2", "i3"),
                           rpcFactory,
                           electionTimerFactory,
+                          heartbeatTimerFactory,
                           stateMachine,
                           persistentStorage)
 
@@ -467,7 +493,7 @@ trait TestRPC extends BeforeAndAfterEach { this: Suite =>
 
     val raftNode = aRaftNode(persistentStorage)
 
-    timeoutCallback.apply()
+    electionTimeoutCallback.apply()
 
     raftNode.getRoleState shouldBe a[RaftConsensus.Candidate[_]]
 
@@ -484,7 +510,7 @@ trait TestRPC extends BeforeAndAfterEach { this: Suite =>
     when(rpc3.requestVote(any[VoteRequested]))
       .thenReturn(Future(RequestVoteResult(term = term + 1, voteGranted = true)))
 
-    timeoutCallback.apply()
+    electionTimeoutCallback.apply()
 
     eventually {
       raftNode.getRoleState shouldBe a[RaftConsensus.Leader[_]]
