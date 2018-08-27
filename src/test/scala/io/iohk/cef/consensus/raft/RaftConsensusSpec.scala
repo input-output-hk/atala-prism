@@ -5,7 +5,6 @@ import akka.dispatch.ExecutionContexts
 import io.iohk.cef.consensus.raft.RaftConsensus._
 import org.scalatest.{BeforeAndAfterEach, Suite, WordSpec}
 import org.scalatest.Matchers._
-import org.scalatest.concurrent.ScalaFutures.{convertScalaFuture, whenReady}
 import org.scalatest.concurrent.Eventually._
 import org.scalatest.mockito.MockitoSugar._
 import org.mockito.Mockito.{inOrder, verify, when, reset}
@@ -15,7 +14,6 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext, Future}
 
 class RaftConsensusSpec extends WordSpec with TestRPC {
-
   "AppendEntries RPC" when {
     "implemented by a Follower" should {
       "implement rule #1" should {
@@ -25,10 +23,9 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
             new InMemoryPersistentStorage[String](Vector(), currentTerm = 1, votedFor = "anyone")
 
           val _ = aRaftNode(persistentStorage)
-
           val appendResult = appendCallback(EntriesToAppend(term = 0, leaderId = "anyone", 0, 0, List(), 1))
 
-          appendResult.futureValue shouldBe AppendEntriesResult(term = 1, success = false)
+          appendResult shouldBe AppendEntriesResult(term = 1, success = false)
         }
       }
       "implement rule #2" should {
@@ -49,7 +46,7 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
                             entries = List(),
                             leaderCommitIndex = 1))
 
-          appendResult.futureValue shouldBe AppendEntriesResult(term = 1, success = false)
+          appendResult shouldBe AppendEntriesResult(term = 1, success = false)
         }
       }
       "implement rule #3" should {
@@ -64,7 +61,7 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
                                                   currentTerm = 1,
                                                   votedFor = "anyone")
 
-          val _ = aRaftNode(persistentStorage)
+          val raftNode = aRaftNode(persistentStorage)
 
           val appendResult = appendCallback(
             EntriesToAppend(term = 1,
@@ -74,8 +71,8 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
                             entries = List(LogEntry("B", term = 2, 1), LogEntry("C", term = 2, 2)),
                             leaderCommitIndex = 4))
 
-          appendResult.futureValue shouldBe AppendEntriesResult(term = 1, success = false)
-          persistentStorage.logEntries shouldBe Vector(LogEntry("A", 1, 0))
+          appendResult shouldBe AppendEntriesResult(term = 1, success = false)
+          raftNode.getLog shouldBe Vector(LogEntry("A", 1, 0))
         }
       }
       "implement rule #4" should {
@@ -88,7 +85,7 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
                                                   currentTerm = 1,
                                                   votedFor = "anyone")
 
-          val _ = aRaftNode(persistentStorage)
+          val raftNode = aRaftNode(persistentStorage)
 
           val appendResult = appendCallback(
             EntriesToAppend(term = 1,
@@ -98,9 +95,9 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
                             entries = List(LogEntry("C", 1, index = 2), LogEntry("D", 1, index = 3)),
                             leaderCommitIndex = 3))
 
-          appendResult.futureValue shouldBe AppendEntriesResult(term = 1, success = true)
+          appendResult shouldBe AppendEntriesResult(term = 1, success = true)
 
-          persistentStorage.logEntries shouldBe Vector(LogEntry("A", 1, index = 0),
+          raftNode.getLog shouldBe Vector(LogEntry("A", 1, index = 0),
                                                        LogEntry("B", 1, index = 1),
                                                        LogEntry("C", 1, index = 2),
                                                        LogEntry("D", 1, index = 3))
@@ -133,7 +130,7 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
                             entries = List(LogEntry("D", 1, index = 3)),
                             leaderCommitIndex = 4))
 
-          appendResult.futureValue shouldBe AppendEntriesResult(term = 1, success = true)
+          appendResult shouldBe AppendEntriesResult(term = 1, success = true)
 
           val orderVerify = inOrder(stateMachine)
           orderVerify.verify(stateMachine).apply("A")
@@ -151,7 +148,7 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
           val persistentStorage =
             new InMemoryPersistentStorage[String](Vector(), currentTerm = 1, votedFor = "anyone")
 
-          val _ = aRaftNode(persistentStorage)
+          val raftNode = aRaftNode(persistentStorage)
 
           val appendResult = appendCallback(
             EntriesToAppend(term = 2,
@@ -161,10 +158,8 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
                             entries = List(),
                             leaderCommitIndex = -1))
 
-          whenReady(appendResult) { result =>
-            persistentStorage.state.futureValue shouldBe (2 -> "anyone")
-            result shouldBe AppendEntriesResult(term = 2, success = true)
-          }
+          raftNode.getPersistentState shouldBe (2, "anyone")
+          appendResult shouldBe AppendEntriesResult(term = 2, success = true)
         }
       }
     }
@@ -183,10 +178,8 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
                           entries = List(),
                           leaderCommitIndex = -1))
 
-        whenReady(appendResult) { result =>
-          raftNode.roleState.get.futureValue shouldBe a[RaftConsensus.Follower[_]]
-          result shouldBe AppendEntriesResult(term = 2, success = true)
-        }
+        raftNode.getRoleState shouldBe a[RaftConsensus.Follower[_]]
+        appendResult shouldBe AppendEntriesResult(term = 2, success = true)
       }
       "reject leader append entries calls from a leader with a lower term" in {
         val persistentStorage =
@@ -202,10 +195,8 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
                           entries = List(),
                           leaderCommitIndex = -1))
 
-        whenReady(appendResult) { result =>
-          raftNode.roleState.get.futureValue shouldBe a[RaftConsensus.Candidate[_]]
-          result shouldBe AppendEntriesResult(term = 3, success = false)
-        }
+        raftNode.getRoleState shouldBe a[RaftConsensus.Candidate[_]]
+        appendResult shouldBe AppendEntriesResult(term = 3, success = false)
       }
     }
     "implemented by a Leader" should {
@@ -217,16 +208,14 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
 
         val appendResult = appendCallback( // another server advises term 3
           EntriesToAppend(term = 3,
-            leaderId = "i2",
-            prevLogIndex = -1,
-            prevLogTerm = 1,
-            entries = List(),
-            leaderCommitIndex = -1))
+                          leaderId = "i2",
+                          prevLogIndex = -1,
+                          prevLogTerm = 1,
+                          entries = List(),
+                          leaderCommitIndex = -1))
 
-        whenReady(appendResult) { result =>
-          raftNode.roleState.get.futureValue shouldBe a[RaftConsensus.Follower[_]]
-          result shouldBe AppendEntriesResult(term = 3, success = true)
-        }
+        raftNode.getRoleState shouldBe a[RaftConsensus.Follower[_]]
+        appendResult shouldBe AppendEntriesResult(term = 3, success = true)
       }
       "reject leader append entries calls from a candidate with a lower term" in {
         val persistentStorage =
@@ -236,16 +225,14 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
 
         val appendResult = appendCallback( // another server advises term 2
           EntriesToAppend(term = 1,
-            leaderId = "i2",
-            prevLogIndex = -1,
-            prevLogTerm = 1,
-            entries = List(),
-            leaderCommitIndex = -1))
+                          leaderId = "i2",
+                          prevLogIndex = -1,
+                          prevLogTerm = 1,
+                          entries = List(),
+                          leaderCommitIndex = -1))
 
-        whenReady(appendResult) { result =>
-          raftNode.roleState.get.futureValue shouldBe a[RaftConsensus.Leader[_]]
-          result shouldBe AppendEntriesResult(term = 3, success = false)
-        }
+        raftNode.getRoleState shouldBe a[RaftConsensus.Leader[_]]
+        appendResult shouldBe AppendEntriesResult(term = 3, success = false)
       }
     }
   }
@@ -266,19 +253,16 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
 
         timeoutCallback.apply()
 
-        eventually {
-          raftNode.roleState.get.futureValue shouldBe a[RaftConsensus.Candidate[_]]
-        }
+        raftNode.getRoleState shouldBe a[RaftConsensus.Candidate[_]]
+
         // On conversion to candidate
-        persistentStorage.currentTerm shouldBe 2 // increment current term
-        persistentStorage.votedFor shouldBe raftNode.nodeId // vote for self
+        raftNode.getPersistentState shouldBe (2, raftNode.nodeId) // increment current term and vote for self
 
         verify(electionTimer).reset() // reset election timer
 
         val expectedVoteRequest = VoteRequested(2, "i1", -1, -1) // send request vote RPCs to other servers
         verify(rpc2).requestVote(expectedVoteRequest)
         verify(rpc3).requestVote(expectedVoteRequest)
-
       }
     }
   }
@@ -292,12 +276,13 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
 
         // gets 2 out of 3 votes
         when(rpc2.requestVote(any[VoteRequested])).thenReturn(Future(RequestVoteResult(term = 2, voteGranted = true)))
-        when(rpc3.requestVote(any[VoteRequested])).thenReturn(Future(RequestVoteResult(term = 2, voteGranted = false)))
+        when(rpc3.requestVote(any[VoteRequested]))
+          .thenReturn(Future(RequestVoteResult(term = 2, voteGranted = false)))
 
         timeoutCallback.apply()
 
-        eventually {
-          raftNode.roleState.get.futureValue shouldBe a[RaftConsensus.Leader[_]]
+        eventually { // after vote requests have come in
+          raftNode.getRoleState shouldBe a[RaftConsensus.Leader[_]]
         }
       }
     }
@@ -309,19 +294,21 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
         val raftNode = aRaftNode(persistentStorage)
 
         // gets 1 out of 3 votes
-        when(rpc2.requestVote(any[VoteRequested])).thenReturn(Future(RequestVoteResult(term = 2, voteGranted = false)))
-        when(rpc3.requestVote(any[VoteRequested])).thenReturn(Future(RequestVoteResult(term = 2, voteGranted = false)))
+        when(rpc2.requestVote(any[VoteRequested]))
+          .thenReturn(Future(RequestVoteResult(term = 2, voteGranted = false)))
+        when(rpc3.requestVote(any[VoteRequested]))
+          .thenReturn(Future(RequestVoteResult(term = 2, voteGranted = false)))
 
         timeoutCallback.apply()
 
         after(500) {
-          raftNode.roleState.get.futureValue shouldBe a[RaftConsensus.Candidate[_]]
+          raftNode.getRoleState shouldBe a[RaftConsensus.Candidate[_]]
         }
       }
     }
   }
-
 }
+
 trait TestRPC extends BeforeAndAfterEach { this: Suite =>
 
   implicit val ec: ExecutionContext = ExecutionContexts.global
@@ -342,8 +329,8 @@ trait TestRPC extends BeforeAndAfterEach { this: Suite =>
   val peer: RaftNode[Command] = mock[RaftNode[Command]]
   val rpc2: RPC[Command] = mock[RPC[Command]]
   val rpc3: RPC[Command] = mock[RPC[Command]]
-  var appendCallback: EntriesToAppend[Command] => Future[AppendEntriesResult] = _
-  var voteCallback: VoteRequested => Future[RequestVoteResult] = _
+  var appendCallback: EntriesToAppend[Command] => AppendEntriesResult = _
+  var voteCallback: VoteRequested => RequestVoteResult = _
   val rpcFactory: RPCFactory[Command] = (node, appendEntriesCallback, requestVoteCallback) => {
     appendCallback = appendEntriesCallback
     voteCallback = requestVoteCallback
@@ -384,16 +371,15 @@ trait TestRPC extends BeforeAndAfterEach { this: Suite =>
 
     timeoutCallback.apply()
 
-    eventually {
-      raftNode.roleState.get.futureValue shouldBe a[RaftConsensus.Candidate[_]]
-    }
+    raftNode.getRoleState shouldBe a[RaftConsensus.Candidate[_]]
+
     raftNode
   }
 
   def aLeader(persistentStorage: PersistentStorage[Command]): RaftNode[Command] = {
     val raftNode = aRaftNode(persistentStorage)
 
-    val (term, _) = persistentStorage.state.futureValue
+    val (term, _) = persistentStorage.state
 
     when(rpc2.requestVote(any[VoteRequested]))
       .thenReturn(Future(RequestVoteResult(term = term + 1, voteGranted = true)))
@@ -403,38 +389,26 @@ trait TestRPC extends BeforeAndAfterEach { this: Suite =>
     timeoutCallback.apply()
 
     eventually {
-      raftNode.roleState.get.futureValue shouldBe a[RaftConsensus.Leader[_]]
+      raftNode.getRoleState shouldBe a[RaftConsensus.Leader[_]]
     }
 
     raftNode
   }
 }
 
-class InMemoryPersistentStorage[T](var logEntries: Vector[LogEntry[T]], var currentTerm: Int, var votedFor: String)(
-    implicit ec: ExecutionContext)
+class InMemoryPersistentStorage[T](var logEntries: Vector[LogEntry[T]], var currentTerm: Int, var votedFor: String)
     extends PersistentStorage[T] {
 
-  override def state: Future[(Int, String)] = Future(currentTerm -> votedFor)
+  override def state: (Int, String) = (currentTerm, votedFor)
 
-  override def state(currentTerm: Int, votedFor: String): Future[Unit] = {
-    this.currentTerm = currentTerm
-    this.votedFor = votedFor
-    Future(Unit)
-  }
-  override def log(entry: LogEntry[T]): Future[Unit] = {
-    logEntries = logEntries :+ entry
-    Future(Unit)
-  }
-  override def dropRight(n: Int): Future[Unit] = {
-    logEntries = logEntries.dropRight(n)
-    Future(Unit)
-  }
-  override def log: Future[Vector[LogEntry[T]]] = Future(logEntries)
+  override def log: Vector[LogEntry[T]] = logEntries
 }
 
-class LocalRPC[T](peer: RaftNode[T]) extends RPC[T] {
-  override def appendEntries(entriesToAppend: EntriesToAppend[T]): Future[AppendEntriesResult] =
-    peer.appendEntries(entriesToAppend)
+class LocalRPC[T](peer: RaftNode[T])(implicit ec: ExecutionContext) extends RPC[T] {
 
-  override def requestVote(voteRequested: VoteRequested): Future[RequestVoteResult] = peer.requestVote(voteRequested)
+  override def appendEntries(entriesToAppend: EntriesToAppend[T]): Future[AppendEntriesResult] =
+    Future(peer.appendEntries(entriesToAppend))
+
+  override def requestVote(voteRequested: VoteRequested): Future[RequestVoteResult] =
+    Future(peer.requestVote(voteRequested))
 }

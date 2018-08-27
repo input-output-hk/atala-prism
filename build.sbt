@@ -65,7 +65,9 @@ val dep = {
 
     "io.netty" % "netty-all" % "4.1.28.Final",
     "com.chuusai" %% "shapeless" % "2.3.3",
-    "org.scala-lang" % "scala-reflect" % scalaV
+    "org.scala-lang" % "scala-reflect" % scalaV,
+
+    "org.scala-stm" %% "scala-stm" % "0.8"
   )
 }
 
