@@ -48,6 +48,7 @@ object RaftConsensus {
     // Sec 5.1
     // The leader handles all client requests (if
     // a client contacts a follower, the follower redirects it to the leader)
+    // todo iterate over cluster members, following redirects until finding one that does not redirect
     def appendEntries(entries: Seq[Command]): Future[Either[Redirect, Unit]] = ???
   }
 
@@ -56,7 +57,7 @@ object RaftConsensus {
                           rpcFactory: RPCFactory[Command],
                           electionTimerFactory: TimerFactory,
                           heartbeatTimerFactory: TimerFactory,
-                          stateMachine: Command => Unit,
+                          val stateMachine: Command => Unit,
                           persistentStorage: PersistentStorage[Command])(implicit ec: ExecutionContext) {
 
     private val clusterMembers: Set[RPC[Command]] = clusterMemberIds
@@ -93,6 +94,9 @@ object RaftConsensus {
 
     def getLeaderVolatileState: LeaderVolatileState =
       leaderVolatileState.single()
+
+    def clientAppendEntries(entries: Seq[Command]): Either[Redirect, Unit] =
+      roleState.single().clientAppendEntries(entries)
 
     def appendEntries(entriesToAppend: EntriesToAppend[Command]): AppendEntriesResult = atomic { implicit txn =>
       rulesForServersAllServers2(entriesToAppend.term)
@@ -197,7 +201,7 @@ object RaftConsensus {
       votes.count(vote => vote.voteGranted && vote.term == term) + myOwnVote > votes.size / 2
     }
 
-    private def lastLogIndexAndTerm(log: Vector[LogEntry[Command]]): (Int, Int) = {
+    def lastLogIndexAndTerm(log: Vector[LogEntry[Command]]): (Int, Int) = {
       log.lastOption.map(lastLogEntry => (lastLogEntry.index, lastLogEntry.term)).getOrElse((-1, -1))
     }
 
@@ -222,6 +226,7 @@ object RaftConsensus {
 
   sealed trait NodeState[Command] {
     def appendEntries(entriesToAppend: EntriesToAppend[Command]): AppendEntriesResult
+    def clientAppendEntries(entries: Seq[Command]): Either[Redirect, Unit]
   }
 
   class Follower[Command](raftNode: RaftNode[Command]) extends NodeState[Command] {
@@ -367,6 +372,10 @@ object RaftConsensus {
         }
       }
     }
+    override def clientAppendEntries(entries: Seq[Command]): Either[Redirect, Unit] = {
+      val (_, votedFor) = raftNode.persistentState.single()
+      Left(Redirect(votedFor))
+    }
   }
 
   class Candidate[Command](raftNode: RaftNode[Command]) extends NodeState[Command] {
@@ -384,6 +393,10 @@ object RaftConsensus {
           AppendEntriesResult(currentTerm, success = false)
         }
     }
+    override def clientAppendEntries(entries: Seq[Command]): Either[Redirect, Unit] = {
+      val (_, votedFor) = raftNode.persistentState.single()
+      Left(Redirect(votedFor))
+    }
   }
 
   class Leader[Command](raftNode: RaftNode[Command]) extends NodeState[Command] {
@@ -399,6 +412,24 @@ object RaftConsensus {
         } else {
           AppendEntriesResult(currentTerm, success = false)
         }
+    }
+    override def clientAppendEntries(entries: Seq[Command]): Either[Redirect, Unit] = atomic { implicit txn =>
+      val log = raftNode.log()
+      val (lastLogIndex, _) = raftNode.lastLogIndexAndTerm(log)
+      val (currentTerm, _) = raftNode.persistentState()
+
+      val (_, entriesToAppend) = entries.foldLeft((lastLogIndex, Vector[LogEntry[Command]]()))((acc, nextCommand) => {
+        val (logIndex, entriesToAppend) = acc
+        val nextLogIndex = logIndex + 1
+        val nextEntry = LogEntry[Command](nextCommand, currentTerm, nextLogIndex)
+        (nextLogIndex, entriesToAppend :+ nextEntry)
+      })
+
+      raftNode.log() = log ++ entriesToAppend
+
+      entries.foreach(entry => raftNode.stateMachine.apply(entry))
+
+      Right(())
     }
   }
 

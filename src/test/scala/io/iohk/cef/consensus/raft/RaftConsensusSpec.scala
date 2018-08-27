@@ -421,9 +421,24 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
                                                 leaderCommitIndex = -1)
 
         heartbeatTimeoutCallback.apply()
+        heartbeatTimeoutCallback.apply()
 
-        verify(rpc2, times(2)).appendEntries(expectedHeartbeat)
-        verify(rpc3, times(2)).appendEntries(expectedHeartbeat)
+        verify(rpc2, times(3)).appendEntries(expectedHeartbeat)
+        verify(rpc3, times(3)).appendEntries(expectedHeartbeat)
+      }
+    }
+    "Receiving commands from a client" should {
+      "append entry to local log, apply to state machine and respond to client" in {
+        val persistentStorage =
+          new InMemoryPersistentStorage[String](Vector(), currentTerm = 2, votedFor = "i1")
+
+        val raftNode = aLeader(persistentStorage)
+
+        val response = raftNode.clientAppendEntries(Seq("A"))
+
+        response shouldBe Right(())
+        raftNode.getLog.last.command shouldBe "A"
+        verify(stateMachine).apply("A")
       }
     }
   }
