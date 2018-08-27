@@ -8,8 +8,8 @@ import scala.concurrent.Future
   * Interface for non actor model
   * Generate block is missing because it is called by Consensus through the actor directly (Consensus uses Akka)
   */
-trait TransactionPoolInterface[State, Header <: BlockHeader] {
-  def processTransaction(tx: Transaction[State]): Future[Either[ApplicationError, Unit]]
+trait TransactionPoolInterface[State, Header <: BlockHeader, Tx <: Transaction[State]] {
+  def processTransaction(tx: Tx): Future[Either[ApplicationError, Unit]]
 
-  def removeBlockTransactions(block: Block[State, Header, Transaction[State]]): Future[Either[ApplicationError, Unit]]
+  def removeBlockTransactions(block: Block[State, Header, Tx]): Future[Either[ApplicationError, Unit]]
 }

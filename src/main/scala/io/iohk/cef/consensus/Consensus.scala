@@ -5,11 +5,11 @@ import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
 
 import scala.concurrent.Future
 
-trait Consensus[State] {
+trait Consensus[State, Tx <: Transaction[State]] {
   def ledgerId: LedgerId
 
   //If Consensus is a leader, it will ask the txPool for the next block
   def txPoolRef: ActorRef
 
-  def process[Header <: BlockHeader](block: Block[State, Header, Transaction[State]]): Future[Either[ConsensusError, Unit]]
+  def process[Header <: BlockHeader](block: Block[State, Header, Tx]): Future[Either[ConsensusError, Unit]]
 }

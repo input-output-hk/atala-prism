@@ -14,28 +14,31 @@ import scala.collection.immutable.Queue
   * @tparam State the ledger state type
   * @tparam Header the block header type
   */
-class TransactionPool[State, Header <: BlockHeader](
-    queue: Queue[Transaction[State]] = Queue(),
-    headerGenerator: Seq[Transaction[State]] => Header,
-    maxBlockSize: Int)(implicit blockByteSizeable: ByteSizeable[Block[State, Header, Transaction[State]]]) {
-  type QueueType = Queue[Transaction[State]]
-  type BlockType = Block[State, Header, Transaction[State]]
+class TransactionPool[State, Header <: BlockHeader, Tx <: Transaction[State]](
+    val queue: Queue[Tx with Transaction[State]] = Queue(),
+    headerGenerator: Seq[Tx] => Header,
+    val maxBlockSize: Int)(implicit blockByteSizeable: ByteSizeable[Block[State, Header, Tx]]) {
+  type QueueType = Queue[Tx]
+  type BlockType = Block[State, Header, Tx]
 
-  val txPoolState = TransactionPoolState(headerGenerator, maxBlockSize)
+  val txPoolState =
+    TransactionPoolState(headerGenerator, maxBlockSize, blockByteSizeable)
 
-  def generateBlock(): (TransactionPool[State, Header], BlockType) = {
+  def generateBlock(): (TransactionPool[State, Header, Tx], BlockType) = {
     val (newQueue, block) = txPoolState(queue)
-    (modifyQueue(newQueue), block)
+    (copy(queue = newQueue), block)
   }
 
-  def processTransaction(transaction: Transaction[State]): TransactionPool[State, Header] =
-    modifyQueue(queue.enqueue(transaction))
+  def processTransaction(transaction: Tx): TransactionPool[State, Header, Tx] =
+    copy(queue = queue.enqueue(transaction))
 
-  def removeBlockTransactions(block: BlockType): TransactionPool[State, Header] ={
+  def removeBlockTransactions(block: BlockType): TransactionPool[State, Header, Tx] ={
     val blockTxs = block.transactions.toSet
-    modifyQueue(queue.filterNot(blockTxs.contains))
+    copy(queue = queue.filterNot(blockTxs.contains))
   }
 
-  private def modifyQueue(newQueue: Queue[Transaction[State]]) =
-    new TransactionPool[State, Header](newQueue, headerGenerator, maxBlockSize)
+  def copy(queue: Queue[Tx with Transaction[State]] = queue,
+           headerGenerator: Seq[Tx] => Header = headerGenerator,
+           maxBlockSize: Int = maxBlockSize): TransactionPool[State, Header, Tx] =
+    new TransactionPool(queue, headerGenerator, maxBlockSize)
 }

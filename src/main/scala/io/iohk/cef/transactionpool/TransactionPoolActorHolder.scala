@@ -17,13 +17,13 @@ import scala.collection.immutable.Queue
   * @tparam State the ledger state type
   * @tparam Header the block header type
   */
-class TransactionPoolActorHolder[State, Header <: BlockHeader](
+class TransactionPoolActorHolder[State, Header <: BlockHeader, Tx <: Transaction[State]](
   actorCreator: Props => ActorRef,
-  headerGenerator: Seq[Transaction[State]] => Header,
+  headerGenerator: Seq[Tx] => Header,
   maxTxSizeInBytes: Int)(
-  implicit blockByteSizeable: ByteSizeable[Block[State, Header, Transaction[State]]]) {
+  implicit blockByteSizeable: ByteSizeable[Block[State, Header, Tx]]) {
 
-  type BlockType = Block[State, Header, Transaction[State]]
+  type BlockType = Block[State, Header, Tx]
 
   val poolActor = actorCreator(Props(new TransactionPoolActor()))
 
@@ -34,7 +34,7 @@ class TransactionPoolActorHolder[State, Header <: BlockHeader](
   class TransactionPoolActor(implicit blockByteSizeable: ByteSizeable[BlockType])
       extends Actor {
 
-    var pool = new TransactionPool[State, Header](Queue(), headerGenerator, maxTxSizeInBytes)
+    var pool = new TransactionPool[State, Header, Tx](Queue(), headerGenerator, maxTxSizeInBytes)
 
     override def receive: Receive = {
       case GenerateBlock(ls)      => sender() ! GenerateBlockResponse(generateBlock(ls))
@@ -50,14 +50,14 @@ class TransactionPoolActorHolder[State, Header <: BlockHeader](
       result
     }
 
-    private def processTransaction(transaction: Transaction[State]): Either[ApplicationError, Unit] = {
+    private def processTransaction(transaction: Tx): Either[ApplicationError, Unit] = {
       val newPool = pool.processTransaction(transaction)
       pool = newPool
       Right(())
     }
 
     private def removeBlockTransactions(
-        block: Block[State, Header, Transaction[State]]): Either[ApplicationError, Unit] = {
+        block: Block[State, Header, Tx]): Either[ApplicationError, Unit] = {
       val newPool = pool.removeBlockTransactions(block)
       pool = newPool
       Right(())
@@ -65,10 +65,10 @@ class TransactionPoolActorHolder[State, Header <: BlockHeader](
   }
 
   case class GenerateBlock(currentLedgerState: LedgerState[State])
-  case class ProcessTransaction(tx: Transaction[State])
-  case class RemoveBlockTransactions(block: Block[State, Header, Transaction[State]])
+  case class ProcessTransaction(tx: Tx)
+  case class RemoveBlockTransactions(block: Block[State, Header, Tx])
 
-  case class GenerateBlockResponse(result: Either[ApplicationError, Block[State, Header, Transaction[State]]])
+  case class GenerateBlockResponse(result: Either[ApplicationError, Block[State, Header, Tx]])
   case class ProcessTransactionResponse(result: Either[ApplicationError, Unit])
   case class RemoveBlockTransactionsResponse(result: Either[ApplicationError, Unit])
 }

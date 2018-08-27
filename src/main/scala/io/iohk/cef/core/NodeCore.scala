@@ -1,12 +1,11 @@
 package io.iohk.cef.core
-import akka.pattern.ask
 import akka.util.Timeout
 import io.iohk.cef.LedgerId
 import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.ledger.{Block, BlockHeader, ByteStringSerializable, Transaction}
 import io.iohk.cef.network.{NetworkComponent, NodeId}
-import io.iohk.cef.transactionpool.TransactionPoolActorHolder
+import io.iohk.cef.transactionpool.TransactionPoolInterface
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -22,25 +21,23 @@ import scala.concurrent.{ExecutionContext, Future}
   * @tparam State
   * @tparam Header
   */
-class NodeCore[State, Header <: BlockHeader](
-    consensusMap: Map[LedgerId, (TransactionPoolActorHolder[State, Header], Consensus[State])],
+class NodeCore[State, Header <: BlockHeader, Tx <: Transaction[State]](
+    consensusMap: Map[LedgerId, (TransactionPoolInterface[State, Header, Tx], Consensus[State, Tx])],
     networkComponent: NetworkComponent[State],
     me: NodeId)(
-    implicit txSerializable: ByteStringSerializable[Envelope[Transaction[State]]],
-    blockSerializable: ByteStringSerializable[Envelope[Block[State, Header, Transaction[State]]]],
+    implicit txSerializable: ByteStringSerializable[Envelope[Tx]],
+    blockSerializable: ByteStringSerializable[Envelope[Block[State, Header, Tx]]],
     timeout: Timeout,
     executionContext: ExecutionContext) {
 
-  def receiveTransaction(txEnvelope: Envelope[Transaction[State]]): Future[Either[ApplicationError, Unit]] = {
+  def receiveTransaction(txEnvelope: Envelope[Tx]): Future[Either[ApplicationError, Unit]] = {
     process(txEnvelope)(env => {
       val txPoolService = consensusMap(env.ledgerId)._1
-      val txProcess =
-        (txPoolService.poolActor ? txPoolService.ProcessTransaction(txEnvelope.content)).mapTo[txPoolService.ProcessTransactionResponse]
-      txProcess.map(_.result)
+      txPoolService.processTransaction(txEnvelope.content)
     })
   }
 
-  def receiveBlock(blEnvelope: Envelope[Block[State, Header, Transaction[State]]]): Future[Either[ApplicationError, Unit]] = {
+  def receiveBlock(blEnvelope: Envelope[Block[State, Header, Tx]]): Future[Either[ApplicationError, Unit]] = {
     process(blEnvelope)(env => consensusMap(env.ledgerId)._2.process(env.content))
   }
 

@@ -6,22 +6,19 @@ import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class TransactionPoolInterfaceImpl[State, Header <: BlockHeader](
-    transactionPoolService: TransactionPoolActorHolder[State, Header])(
+class TransactionPoolInterfaceImpl[State, Header <: BlockHeader, Tx <: Transaction[State]](
+    transactionPoolService: TransactionPoolActorHolder[State, Header, Tx])(
     implicit timeout: Timeout,
     executionContext: ExecutionContext)
-  extends TransactionPoolInterface[State, Header] {
+  extends TransactionPoolInterface[State, Header, Tx] {
 
   import transactionPoolService._
 
-  override def processTransaction(
-      tx: Transaction[State]): Future[Either[ApplicationError, Unit]] = {
+  override def processTransaction(tx: Tx): Future[Either[ApplicationError, Unit]] = {
     (poolActor ? ProcessTransaction(tx)).mapTo[ProcessTransactionResponse].map(_.result)
   }
 
-  override def removeBlockTransactions(
-      block: Block[State, Header, Transaction[State]])
-    : Future[Either[ApplicationError, Unit]] = {
+  override def removeBlockTransactions(block: Block[State, Header, Tx]): Future[Either[ApplicationError, Unit]] = {
     (poolActor ? RemoveBlockTransactions(block)).mapTo[RemoveBlockTransactionsResponse].map(_.result)
   }
 }
