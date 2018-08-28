@@ -5,13 +5,6 @@ import "ChimericLedger.proto";
 
 message ChimericStateValueProto {
     oneof value {
-        ChimericValueProto valueWrapper = 1;
-        CreateCurrencyProto createCurrencyWrapper = 2;
-    }
-}
-
-message ChimericStateStringValueProto {
-    oneof value {
         ChimericStringValueProto stringValueWrapper = 1;
         CreateCurrencyProto stringCreateCurrencyWrapper = 2;
     }

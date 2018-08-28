@@ -8,7 +8,7 @@ class ChimericStateSerializerSpec extends FlatSpec with MustMatchers with Proper
   behavior of "ChimericStateSerializer"
 
   it should "serialize without losing infomation" in {
-    val serializer = ChimericStateSerializer.byteStringSerializableUsingString
+    val serializer = ChimericStateSerializer.byteStringSerializable
     implicit val arb = Arbitrary(ChimericGenerators.StateValueGen)
     forAll { (state: ChimericStateValue) =>
       serializer.deserialize(serializer.serialize(state)) mustBe state
