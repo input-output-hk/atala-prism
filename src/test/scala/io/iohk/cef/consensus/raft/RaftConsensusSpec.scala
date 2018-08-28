@@ -445,7 +445,7 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
         verify(stateMachine).apply("A")
         raftNode.getCommonVolatileState shouldBe CommonVolatileState(0, 0)
       }
-      "Implement Leaders note #3" when {
+      "Implement Leaders note #3 and #4" when {
         "last log index >= nextIndex for a follower" should {
           "send AppendEntries RPC with entries starting at nextIndex" in {
             val persistentStorage =
@@ -488,9 +488,6 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
               leaderVolatileState.matchIndex shouldBe Seq(2, 2)
             }
           }
-        }
-        "last log index < nextIndex" should {
-          "not send an AppendEntries RPC" in {}
         }
       }
     }
@@ -586,6 +583,8 @@ trait TestRPC extends BeforeAndAfterEach { this: Suite =>
 
     raftNode
   }
+
+  def anIntegratedCluster: (RaftNode[Command], RaftNode[Command], RaftNode[Command]) = ???
 }
 
 class InMemoryPersistentStorage[T](var logEntries: Vector[LogEntry[T]], var currentTerm: Int, var votedFor: String)

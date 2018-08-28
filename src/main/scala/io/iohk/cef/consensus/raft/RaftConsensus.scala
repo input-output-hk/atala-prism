@@ -132,21 +132,19 @@ object RaftConsensus {
     // Rules for servers, all servers, note 1.
     // If commitIndex > lastApplied, apply log[lastApplied] to the state machine.
     // (do this recursively until commitIndex == lastApplied)
-    // TODO needs to be tail recursive but atomic makes this a bit tricky
     def applyUncommittedLogEntries(): Unit = atomic { implicit txn =>
-      val state = commonVolatileState()
-      val commitIndex = state.commitIndex
-      val lastApplied = state.lastApplied
-
-      if (commitIndex > lastApplied) {
-        val nextApplication = lastApplied + 1
-        val nextState: CommonVolatileState[Command] = state.copy(lastApplied = nextApplication)
-        commonVolatileState() = nextState
-        applyEntry(nextApplication, log())
-        applyUncommittedLogEntries()
-      } else {
-        ()
+      val theLog = log()
+      @tailrec
+      def loop(state: CommonVolatileState[Command]): CommonVolatileState[Command] = {
+        if (state.commitIndex > state.lastApplied) {
+          val nextApplication = state.lastApplied + 1
+          applyEntry(nextApplication, theLog)
+          loop(state.copy(lastApplied = nextApplication))
+        } else {
+          state
+        }
       }
+      commonVolatileState() = loop(commonVolatileState())
     }
 
     // Rules for servers (figure 2), all servers, note 2.
@@ -219,19 +217,9 @@ object RaftConsensus {
       sendHeartbeat()
     }
 
-    private def sendHeartbeat(): Future[Seq[AppendEntriesResult]] = atomic { implicit txn =>
-      val heartbeat: EntriesToAppend[Command] = getHeartbeat
-      val rpcFutures = clusterMembers.map(memberRpc => memberRpc.appendEntries(heartbeat))
-      Future.sequence(rpcFutures)
+    private def sendHeartbeat(): Unit = atomic { implicit txn =>
+      roleState().sendHeartbeat()
     }
-
-    def getHeartbeat: EntriesToAppend[Command] = atomic { implicit txn =>
-      val (currentTerm, _) = persistentState()
-      val (prevLogIndex, prevLogTerm) = lastLogIndexAndTerm(log())
-      val commitIndex = commonVolatileState().commitIndex
-      EntriesToAppend[Command](currentTerm, nodeId, prevLogIndex, prevLogTerm, Seq(), commitIndex)
-    }
-
   }
 
   case class CommonVolatileState[Command](commitIndex: Int, lastApplied: Int)
@@ -240,6 +228,7 @@ object RaftConsensus {
 
   sealed trait NodeState[Command] {
     def appendEntries(entriesToAppend: EntriesToAppend[Command]): AppendEntriesResult
+    def sendHeartbeat(): Unit
     def clientAppendEntries(entries: Seq[Command]): Either[Redirect, Unit]
   }
 
@@ -390,6 +379,7 @@ object RaftConsensus {
       val (_, votedFor) = raftNode.persistentState.single()
       Left(Redirect(votedFor))
     }
+    override def sendHeartbeat(): Unit = ()
   }
 
   class Candidate[Command](raftNode: RaftNode[Command]) extends NodeState[Command] {
@@ -411,6 +401,7 @@ object RaftConsensus {
       val (_, votedFor) = raftNode.persistentState.single()
       Left(Redirect(votedFor))
     }
+    override def sendHeartbeat(): Unit = ()
   }
 
   class Leader[Command](raftNode: RaftNode[Command])(implicit ec: ExecutionContext) extends NodeState[Command] {
@@ -447,7 +438,12 @@ object RaftConsensus {
       Right(())
     }
 
-    def sendAppendEntries(): Unit = atomic { implicit txn =>
+    override def sendHeartbeat(): Unit = atomic { implicit txn =>
+      val heartbeat: EntriesToAppend[Command] = getHeartbeat
+      raftNode.clusterMembers.map(memberRpc => memberRpc.appendEntries(heartbeat))
+    }
+
+    private def sendAppendEntries(): Unit = atomic { implicit txn =>
       val nextIndexes = raftNode.leaderVolatileState().nextIndex
       val (currentTerm, _) = raftNode.persistentState()
       val commitIndex = raftNode.commonVolatileState().commitIndex
@@ -484,7 +480,7 @@ object RaftConsensus {
 
       val (currentTerm, _) = raftNode.persistentState()
       val appendResultF =
-        appendEntryForNode(nextIndex, commitIndex, log, currentTerm, lastLogIndex, memberRPC, raftNode.getHeartbeat)
+        appendEntryForNode(nextIndex, commitIndex, log, currentTerm, lastLogIndex, memberRPC, getHeartbeat)
 
       appendResultF.flatMap(appendResult => {
         if (appendResult.success) {
@@ -547,6 +543,12 @@ object RaftConsensus {
         None
       else
         Some(ns.max)
+    }
+    private def getHeartbeat: EntriesToAppend[Command] = atomic { implicit txn =>
+      val (currentTerm, _) = raftNode.persistentState()
+      val (prevLogIndex, prevLogTerm) = raftNode.lastLogIndexAndTerm(raftNode.log())
+      val commitIndex = raftNode.commonVolatileState().commitIndex
+      EntriesToAppend[Command](currentTerm, raftNode.nodeId, prevLogIndex, prevLogTerm, Seq(), commitIndex)
     }
   }
 
