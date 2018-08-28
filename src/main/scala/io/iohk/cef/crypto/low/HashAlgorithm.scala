@@ -3,8 +3,6 @@ package io.iohk.cef.crypto.low
 import akka.util.ByteString
 import org.bouncycastle.crypto.digests.KeccakDigest
 
-
-
 /**
   * Contract all hashing algorithm implementations should follow
   */
@@ -13,7 +11,7 @@ sealed trait HashAlgorithm {
   /**
     * Hash the provided `source` bytes
     *
-    * @param source     the bytes to be encrypted
+    * @param source the bytes to hash
     *
     * @return a hashed version of the `source` bytes
     */
@@ -31,7 +29,7 @@ sealed trait ArrayBasedHashAlgorithm extends HashAlgorithm {
   /**
     * Hash the provided `source` bytes
     *
-    * @param source     the bytes to be encrypted
+    * @param source the bytes to hash
     *
     * @return a hashed version of the `source` bytes
     */
@@ -57,12 +55,13 @@ object HashAlgorithm {
     override final protected def hash(source: Array[Byte]): Array[Byte] = {
       val digest = new KeccakDigest(256)
       val output = Array.ofDim[Byte](digest.getDigestSize)
+
+      // TODO: This is unsafe on huge inputs
       digest.update(source, 0, source.length)
       digest.doFinal(output, 0)
       output
     }
   }
-
 }
 
 

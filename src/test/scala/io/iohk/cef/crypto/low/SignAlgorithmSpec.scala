@@ -19,19 +19,20 @@ class SignAlogorithmSpec extends FlatSpec
 
     val signKey = ByteString("TheSigningKey")
     val validateKey = ByteString("TheValidatingKey")
-    val cryptoMock = mock[CryptoAlgorithm]
+    val cryptoMock = mock[CryptoAlgorithm {type PublicKey = ByteString; type PrivateKey = ByteString}]
     val encrypted = ByteString("Encrypted")
     val wrongEncrypted = ByteString("WrongEncrypted")
     when(cryptoMock.encrypt(hashed, signKey)).thenReturn(encrypted)
-    when(cryptoMock.decrypt(encrypted, validateKey)).thenReturn(hashed)
-    when(cryptoMock.decrypt(wrongEncrypted, validateKey)).thenReturn(wrongHashed)
+    when(cryptoMock.decrypt(encrypted, validateKey)).thenReturn(Right(hashed))
+    when(cryptoMock.decrypt(wrongEncrypted, validateKey)).thenReturn(Right(wrongHashed))
 
-    val composedSigningAlgorithm =
+    val composedSigningAlgorithm  =
       SignAlgorithm.Composed(cryptoMock, hashMock)
+      .asInstanceOf[SignAlgorithm{type PublicKey = ByteString; type PrivateKey = ByteString}]
 
-    message.signWith(composedSigningAlgorithm, signKey)  shouldBe  encrypted
-    encrypted.isSignatureOf(message).when(composedSigningAlgorithm, validateKey) shouldBe true
-    wrongEncrypted.isSignatureOf(message).when(composedSigningAlgorithm, validateKey) shouldBe false
+    signBytes(composedSigningAlgorithm)(message, signKey)  shouldBe  encrypted
+    isBytesSignatureValid(composedSigningAlgorithm)(encrypted, message, validateKey) shouldBe true
+    isBytesSignatureValid(composedSigningAlgorithm)(wrongEncrypted, message, validateKey) shouldBe false
   }
 
 }
