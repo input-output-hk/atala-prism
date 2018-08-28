@@ -1,16 +1,18 @@
 package io.iohk.cef.consensus.raft
 
-import akka.dispatch.ExecutionContexts
 import io.iohk.cef.consensus.raft.RaftConsensus._
 import org.scalatest.{BeforeAndAfterEach, Suite, WordSpec}
 import org.scalatest.Matchers._
 import org.scalatest.concurrent.Eventually._
+
 import org.scalatest.mockito.MockitoSugar._
 import org.mockito.Mockito.{inOrder, reset, verify, when, times}
 import org.mockito.ArgumentMatchers.any
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
+
+import scala.concurrent.stm._
 
 class RaftConsensusSpec extends WordSpec with TestRPC {
   "AppendEntries RPC" when {
@@ -407,7 +409,7 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
   }
   "Leaders" when {
     "Winning an election" should {
-      "Send initial empty AppendEntries RPCs to each server and repeat during idle periods" in {
+      "Implement Leaders note #1, send initial empty AppendEntries RPCs to each server and repeat during idle periods" in {
         val persistentStorage =
           new InMemoryPersistentStorage[String](Vector(), currentTerm = 2, votedFor = "i1")
 
@@ -428,17 +430,68 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
       }
     }
     "Receiving commands from a client" should {
-      "append entry to local log, apply to state machine and respond to client" in {
+      "Implement Leaders note #2, append entry to local log, apply to state machine and respond to client" in {
         val persistentStorage =
           new InMemoryPersistentStorage[String](Vector(), currentTerm = 2, votedFor = "i1")
 
         val raftNode = aLeader(persistentStorage)
 
-        val response = raftNode.clientAppendEntries(Seq("A"))
+        when(rpc2.appendEntries(any[EntriesToAppend[Command]])).thenReturn(Future(AppendEntriesResult(3, success = true)))
+        when(rpc3.appendEntries(any[EntriesToAppend[Command]])).thenReturn(Future(AppendEntriesResult(3, success = true)))
 
+        val response = raftNode.clientAppendEntries(Seq("A"))
         response shouldBe Right(())
         raftNode.getLog.last.command shouldBe "A"
         verify(stateMachine).apply("A")
+        raftNode.getCommonVolatileState shouldBe CommonVolatileState(0, 0)
+      }
+      "Implement Leaders note #3" when {
+        "last log index >= nextIndex for a follower" should {
+          "send AppendEntries RPC with entries starting at nextIndex" in {
+            val persistentStorage =
+              new InMemoryPersistentStorage[String](Vector(LogEntry[String]("A", 2, 0)), currentTerm = 2, votedFor = "i1")
+
+            val raftNode = aLeader(persistentStorage)
+
+            verify(rpc2).appendEntries(any[EntriesToAppend[Command]]) // the initial heartbeat
+            verify(rpc3).appendEntries(any[EntriesToAppend[Command]])
+
+            val expectedAppendEntries =
+              EntriesToAppend(3, "i1", 0, 2, Seq(
+                LogEntry[String]("B", 3, 1),
+                LogEntry[String]("C", 3, 2)), -1)
+
+            when(rpc2.appendEntries(expectedAppendEntries)).thenReturn(Future(AppendEntriesResult(3, success = true)))
+            when(rpc3.appendEntries(expectedAppendEntries)).thenReturn(Future(AppendEntriesResult(3, success = false)))
+
+            // the adjusted call to node i3.
+            val expectedAdjustedAppendEntries =
+              EntriesToAppend(3, "i1", -1, -1, Seq(
+                LogEntry[String]("A", 2, 0),
+                LogEntry[String]("B", 3, 1),
+                LogEntry[String]("C", 3, 2)), -1)
+
+            when(rpc3.appendEntries(expectedAdjustedAppendEntries)).thenReturn(Future(AppendEntriesResult(3, success = true)))
+
+            atomic { implicit txn =>
+              val response: Either[Redirect, Unit] = raftNode.clientAppendEntries(Seq("B", "C"))
+
+              response shouldNot be(a[Redirect])
+
+              // the initial rpc following the client request
+              verify(rpc2).appendEntries(expectedAppendEntries)
+              verify(rpc3).appendEntries(expectedAppendEntries)
+              verify(rpc3).appendEntries(expectedAdjustedAppendEntries)
+
+              val leaderVolatileState = raftNode.leaderVolatileState.single()
+              leaderVolatileState.nextIndex shouldBe Seq(3, 3)
+              leaderVolatileState.matchIndex shouldBe Seq(2, 2)
+            }
+          }
+        }
+        "last log index < nextIndex" should {
+          "not send an AppendEntries RPC" in {}
+        }
       }
     }
   }
@@ -446,7 +499,7 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
 
 trait TestRPC extends BeforeAndAfterEach { this: Suite =>
 
-  implicit val ec: ExecutionContext = ExecutionContexts.global
+  implicit val ec: ExecutionContext = ExecutionContext.global
   implicit val patienceConfig: PatienceConfig = PatienceConfig(timeout = 500 millis)
 
   override def beforeEach() {
@@ -494,7 +547,7 @@ trait TestRPC extends BeforeAndAfterEach { this: Suite =>
 
   def aRaftNode(persistentStorage: PersistentStorage[Command]): RaftNode[Command] =
     new RaftNode[Command]("i1",
-                          Set("i1", "i2", "i3"),
+                          Seq("i1", "i2", "i3"),
                           rpcFactory,
                           electionTimerFactory,
                           heartbeatTimerFactory,
