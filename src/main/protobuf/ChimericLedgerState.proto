@@ -10,13 +10,9 @@ message ChimericStateValueProto {
     }
 }
 
-message StringValueProto {
-    map<string, string> valueStringWrapper = 1;
-}
-
 message ChimericStateStringValueProto {
     oneof value {
-        StringValueProto stringValueWrapper = 1;
+        ChimericStringValueProto stringValueWrapper = 1;
         CreateCurrencyProto stringCreateCurrencyWrapper = 2;
     }
 }
