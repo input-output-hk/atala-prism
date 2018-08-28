@@ -16,6 +16,7 @@ class DecimalProtoUtilsSpec extends FlatSpec with MustMatchers with PropertyChec
   }
 
   private def bigDecimalWithinRange(b: BigDecimal) = {
-    b.scale <= DecimalProtoUtils.MaxScale && b <= DecimalProtoUtils.MaxNumber && b >= DecimalProtoUtils.MinNumber
+    val noDecimalRep = b * BigDecimal(10).pow(b.scale)
+    b.scale <= DecimalProtoUtils.MaxScale && noDecimalRep <= DecimalProtoUtils.MaxNumber && noDecimalRep >= DecimalProtoUtils.MinNumber
   }
 }
