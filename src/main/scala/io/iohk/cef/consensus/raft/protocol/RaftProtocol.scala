@@ -87,6 +87,7 @@ trait RaftProtocol extends Serializable {
   // ----   Only For testing AKKA messages     ----
   case class TermUpdated(term: Term, ref: ActorRef) extends Message
   case class ElectionStarted(term: Term, ref: ActorRef) extends Message
+  case class EntryCommitted(index: Int, on: ActorRef) extends Message
   // ---- end of testing AKKA messages ----
 
 }

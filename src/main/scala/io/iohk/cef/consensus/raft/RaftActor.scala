@@ -16,7 +16,8 @@ abstract class RaftActor
     with Follower
     with Candidate
     with Leader
-    with InitialState {
+    with InitialState
+    with ApplyStateMachine {
 
   type Command
 
