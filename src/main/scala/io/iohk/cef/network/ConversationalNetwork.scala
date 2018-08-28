@@ -1,8 +1,7 @@
 package io.iohk.cef.network
-import java.nio.ByteBuffer
 
 import io.iohk.cef.network.discovery.NetworkDiscovery
-import io.iohk.cef.network.encoding._
+import io.iohk.cef.network.encoding.nio._
 import io.iohk.cef.network.transport.Transports.usesTcp
 import io.iohk.cef.network.transport.tcp.TcpNetworkTransport
 import io.iohk.cef.network.transport._
@@ -16,19 +15,15 @@ import io.iohk.cef.network.transport._
   * by Van Jacobson, to distinguish from the 'disseminational'
   * networking style.
   *
-  * @param peerInfo the peer configuration of this node
   * @param messageHandler The messageHandler receives inbound messages from remote peers.
-  * @param messageCodec This is a codec which can decode your messages to/from NIO ByteBuffers.
-  *                     It should be possible to summon an encoder for any case class using
-  *                     encoders io.iohk.cef.network.encoding.nio.
   * @param networkDiscovery Encapsulates a routing table implementation.
   * @param transports helpers to obtain network transport instances.
   */
-class ConversationalNetwork[Message](peerInfo: PeerInfo,
-                                     messageHandler: (NodeId, Message) => Unit,
-                                     messageCodec: Codec[Message, ByteBuffer],
-                                     networkDiscovery: NetworkDiscovery,
-                                     transports: Transports) {
+class ConversationalNetwork[Message: NioEncoder: NioDecoder](messageHandler: (NodeId, Message) => Unit,
+                                                                      networkDiscovery: NetworkDiscovery,
+                                                                      transports: Transports) {
+
+  val peerInfo: PeerInfo = transports.peerInfo
 
   /**
     * Send a message to another network address.
@@ -63,9 +58,7 @@ class ConversationalNetwork[Message](peerInfo: PeerInfo,
   private def liftedFrameHandler[Address]: (Address, Frame[Message]) => Unit =
     (_, frame) => frameHandler(frame)
 
-  private val frameCodec =
-    new StreamCodec[Frame[Message], ByteBuffer](new FrameEncoder[Message](messageCodec.encoder),
-                                                new FrameDecoder[Message](messageCodec.decoder))
+  private val frameCodec = new NioCodec[Frame[Message]](NioEncoder[Frame[Message]], NioDecoder[Frame[Message]])
 
   private val tcpNetworkTransport: Option[TcpNetworkTransport[Frame[Message]]] =
     transports.tcp(liftedFrameHandler)(frameCodec)

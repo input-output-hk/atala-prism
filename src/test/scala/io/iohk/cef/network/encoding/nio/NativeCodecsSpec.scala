@@ -1,15 +1,18 @@
 package io.iohk.cef.network.encoding.nio
 import java.nio.ByteBuffer
 
+import akka.util.ByteString
 import io.iohk.cef.network.transport.tcp.NetUtils.randomBytes
 import org.scalacheck.Arbitrary
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.FlatSpec
-import org.scalatest.Matchers._
 import org.scalatest.Inside._
+import org.scalatest.Matchers._
 import org.scalatest.prop.GeneratorDrivenPropertyChecks._
 
 class NativeCodecsSpec extends FlatSpec {
+
+  implicit val arbByteString: Arbitrary[ByteString] = Arbitrary(arbitrary[Array[Byte]].map(arr => ByteString(arr)))
 
   behavior of "Codecs"
 
@@ -23,6 +26,7 @@ class NativeCodecsSpec extends FlatSpec {
     encodeDecodeTest[Double]
     encodeDecodeTest[Char]
     encodeDecodeTest[String]
+    encodeDecodeTest[ByteString]
   }
 
   they should "correctly set the buffer position after encoding and decoding" in {
@@ -35,6 +39,8 @@ class NativeCodecsSpec extends FlatSpec {
     bufferPositionTest[Double]
     bufferPositionTest[Char]
     bufferPositionTest[String]
+    bufferPositionTest[Array[Int]]
+    bufferPositionTest[ByteString]
   }
 
   they should "correctly determine length for variable length types" in {
@@ -42,25 +48,27 @@ class NativeCodecsSpec extends FlatSpec {
     variableLengthTest[List[String]]
     variableLengthTest[Array[Int]]
     variableLengthTest[List[Int]]
+    variableLengthTest[ByteString]
   }
 
   they should "not decode a value for another type" in {
     mistypeTest[Array[Int], Array[Boolean]]
+    mistypeTest[Array[Boolean], Array[Int]]
+    mistypeTest[Array[Int], ByteString]
+    mistypeTest[ByteString, Array[Int]]
   }
 
   they should "return None for an unfully populated buffer" in {
     unfulBufferTest[Array[Int]]
     unfulBufferTest[List[Int]]
+    unfulBufferTest[ByteString]
   }
 
   def encodeDecodeTest[T](implicit encoder: NioEncoder[T], decoder: NioDecoder[T], a: Arbitrary[T]): Unit = {
-    forAll(arbitrary[T]) { t => decoder.decode(encoder.encode(t)) shouldBe Some(t)
-    }
+    forAll(arbitrary[T])(t => decoder.decode(encoder.encode(t)) shouldBe Some(t))
   }
 
-  def mistypeTest[T, U](implicit encoder: NioEncoder[T],
-                        decoder: NioDecoder[U],
-                        a: Arbitrary[T]): Unit = {
+  def mistypeTest[T, U](implicit encoder: NioEncoder[T], decoder: NioDecoder[U], a: Arbitrary[T]): Unit = {
 
     forAll(arbitrary[T]) { t =>
       val buff: ByteBuffer = encoder.encode(t)
@@ -72,13 +80,13 @@ class NativeCodecsSpec extends FlatSpec {
 
   def bufferPositionTest[T](implicit encoder: NioEncoder[T],
                             decoder: NioDecoder[T],
-                            a: Arbitrary[T],
-                            byteLength: ByteLength[T]): Unit = {
+                            a: Arbitrary[T]): Unit = {
     forAll(arbitrary[T]) { t =>
       val b: ByteBuffer = encoder.encode(t)
+      val remaining = b.remaining()
       b.position() shouldBe 0
       decoder.decode(b)
-      b.position() shouldBe byteLength(t)
+      b.position() shouldBe remaining
     }
   }
 

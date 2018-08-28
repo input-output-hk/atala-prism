@@ -1,9 +1,9 @@
 package io.iohk.cef.network
 
 import io.iohk.cef.network.NodeId.nodeIdBytes
-import io.iohk.cef.network.encoding.nio.NativeCodecs
+import io.iohk.cef.network.encoding.nio._
 import io.iohk.cef.network.transport.tcp.NetUtils
-import io.iohk.cef.network.transport.{Frame, FrameDecoder, FrameEncoder, FrameHeader}
+import io.iohk.cef.network.transport.{Frame, FrameHeader}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
 import org.scalacheck.Gen._
@@ -23,8 +23,8 @@ class FrameCodecSpec extends FlatSpec {
 
   private val genFrames: Gen[List[Frame[Int]]] = listOfN(2, genFrame)
 
-  private val encoder = new FrameEncoder[Int](NativeCodecs.intEncoder)
-  private val decoder = new FrameDecoder[Int](NativeCodecs.intDecoder)
+  private val encoder = NioEncoder[Frame[Int]]
+  private val decoder = NioDecoder[Frame[Int]]
 
   behavior of "FrameEncoder"
 

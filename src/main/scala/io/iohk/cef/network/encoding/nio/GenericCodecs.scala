@@ -3,8 +3,8 @@ package io.iohk.cef.network.encoding.nio
 import java.nio.ByteBuffer
 import java.nio.ByteBuffer.allocate
 
-import io.iohk.cef.network.encoding.nio.CodecDecorators.{typeCodeDecoder, typeCodeEncoder}
-import shapeless.{::, Generic, HList, HNil}
+import io.iohk.cef.network.encoding.nio.CodecDecorators._
+import shapeless.{::, Generic, HList, HNil, Lazy}
 
 import scala.reflect.ClassTag
 
@@ -12,41 +12,39 @@ trait GenericCodecs {
 
   implicit val hNilEncoder: NioEncoder[HNil] = _ => allocate(0)
 
-  implicit val hNilDecoder: NioDecoder[HNil] = _ => None
+  implicit val hNilDecoder: NioDecoder[HNil] = _ => Some(HNil)
 
-  implicit def hListEncoder[H, T <: HList](implicit hEncoder: NioEncoder[H],
+  implicit def hListEncoder[H, T <: HList](implicit hEncoder: Lazy[NioEncoder[H]],
                                            tEncoder: NioEncoder[T]): NioEncoder[H :: T] = {
     case h :: t => {
-      val hEnc: ByteBuffer = hEncoder.encode(h)
+      val hEnc: ByteBuffer = hEncoder.value.encode(h)
       val tEnc: ByteBuffer = tEncoder.encode(t)
       allocate(hEnc.capacity() + tEnc.capacity()).put(hEnc).put(tEnc).flip().asInstanceOf[ByteBuffer]
     }
   }
 
-  implicit def hListDecoder[H, T <: HList](implicit hDecoder: NioDecoder[H],
-                                           tDecoder: NioDecoder[T],
-                                           hDef: Default[H],
-                                           tDef: Default[T]): NioDecoder[H :: T] =
+  implicit def hListDecoder[H, T <: HList](implicit hDecoder: Lazy[NioDecoder[H]],
+                                           tDecoder: NioDecoder[T]): NioDecoder[H :: T] =
     (b: ByteBuffer) => {
-      val headOption: Option[H] = hDecoder.decode(b)
+      val initPosition = b.position()
+      val headOption: Option[H] = hDecoder.value.decode(b)
       val tailOption: Option[T] = tDecoder.decode(b)
       (headOption, tailOption) match {
         case (Some(h), Some(t)) =>
           Some(h :: t)
-        case (Some(h), None) =>
-          Some(h :: tDef.zero)
         case _ =>
+          b.position(initPosition)
           None
       }
     }
 
   implicit def genericEncoder[T, R](implicit gen: Generic.Aux[T, R],
-                                    enc: NioEncoder[R],
+                                    enc: Lazy[NioEncoder[R]],
                                     ct: ClassTag[T]): NioEncoder[T] =
-    typeCodeEncoder((t: T) => enc.encode(gen.to(t)))
+    messageLengthEncoder(typeCodeEncoder(t => enc.value.encode(gen.to(t))))
 
   implicit def genericDecoder[T, R](implicit gen: Generic.Aux[T, R],
-                                    dec: NioDecoder[R],
+                                    dec: Lazy[NioDecoder[R]],
                                     ct: ClassTag[T]): NioDecoder[T] =
-    typeCodeDecoder((b: ByteBuffer) => dec.decode(b).map(gen.from))
+    messageLengthDecoder(typeCodeDecoder((b: ByteBuffer) => dec.value.decode(b).map(gen.from)))
 }
