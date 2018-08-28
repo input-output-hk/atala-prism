@@ -34,9 +34,9 @@ object RaftConsensus {
 
   case class Redirect(leader: String)
 
-  type TimerFactory = (() => Unit) => Timer
+  type RaftTimerFactory = (() => Unit) => RaftTimer
 
-  trait Timer {
+  trait RaftTimer {
     def reset(): Unit
   }
 
@@ -56,8 +56,8 @@ object RaftConsensus {
   class RaftNode[Command](val nodeId: String,
                           val clusterMemberIds: Seq[String],
                           rpcFactory: RPCFactory[Command],
-                          electionTimerFactory: TimerFactory,
-                          heartbeatTimerFactory: TimerFactory,
+                          electionTimerFactory: RaftTimerFactory,
+                          heartbeatTimerFactory: RaftTimerFactory,
                           val stateMachine: Command => Unit,
                           persistentStorage: PersistentStorage[Command])(implicit ec: ExecutionContext) {
 
@@ -121,9 +121,9 @@ object RaftConsensus {
         RequestVoteResult(currentTerm, voteGranted = false)
     }
 
-    def requestVotes(voteRequested: VoteRequested): Future[Seq[RequestVoteResult]] = {
+    def requestVotes(voteRequested: VoteRequested): Seq[RequestVoteResult] = {
       val rpcFutures = clusterMembers.map(memberRpc => memberRpc.requestVote(voteRequested))
-      Future.sequence(rpcFutures)
+      Await.result(Future.sequence(rpcFutures), 5 seconds)
     }
 
     def applyEntry(iEntry: Int, log: Vector[LogEntry[Command]]): Unit =
@@ -197,10 +197,9 @@ object RaftConsensus {
       val newTerm = currentTerm + 1
       val (lastLogIndex, lastLogTerm) = lastLogIndexAndTerm(log())
       persistentState() = (newTerm, nodeId)
-      requestVotes(VoteRequested(newTerm, nodeId, lastLogIndex, lastLogTerm)).foreach(votes => {
-        if (hasMajority(newTerm, votes))
-          nodeFSM(MajorityVoteReceived)
-      })
+      val votes = requestVotes(VoteRequested(newTerm, nodeId, lastLogIndex, lastLogTerm))
+      if (hasMajority(newTerm, votes))
+        nodeFSM(MajorityVoteReceived)
     }
 
     private def hasMajority(term: Int, votes: Seq[RequestVoteResult]): Boolean = {
@@ -440,7 +439,7 @@ object RaftConsensus {
 
     override def sendHeartbeat(): Unit = atomic { implicit txn =>
       val heartbeat: EntriesToAppend[Command] = getHeartbeat
-      raftNode.clusterMembers.map(memberRpc => memberRpc.appendEntries(heartbeat))
+      Await.result(Future.sequence(raftNode.clusterMembers.map(memberRpc => memberRpc.appendEntries(heartbeat))), 5 seconds)
     }
 
     private def sendAppendEntries(): Unit = atomic { implicit txn =>
@@ -571,13 +570,16 @@ object RaftConsensus {
   case object NodeWithHigherTermDiscovered extends NodeEvent
   case object LeaderDiscovered extends NodeEvent
 
+  type Action = NodeEvent => Unit
+
   // Figure 4: Server states.
-  class NodeFSM(becomeFollower: NodeEvent => Unit,
-                becomeCandidate: NodeEvent => Unit,
-                becomeLeader: NodeEvent => Unit) {
+  class NodeFSM(becomeFollower: Action,
+                becomeCandidate: Action,
+                becomeLeader: Action) {
+
 
     trait State[T] {
-      def apply(event: T): State[T]
+      def apply(event: T): (State[T], Action)
     }
 
     private val followerState = new FollowerState
@@ -586,43 +588,40 @@ object RaftConsensus {
     private val state: Ref[State[NodeEvent]] = Ref(followerState)
 
     def apply(event: NodeEvent): Unit = atomic { implicit txn =>
-      state() = state().apply(event)
+      val (nextState, actions) = state().apply(event)
+      state() = nextState
+      actions.apply(event)
     }
 
     class FollowerState extends State[NodeEvent] {
       becomeFollower(Start)
-      override def apply(event: NodeEvent): State[NodeEvent] = event match {
+      override def apply(event: NodeEvent): (State[NodeEvent], Action) = event match {
         case ElectionTimeout =>
-          becomeCandidate(ElectionTimeout)
-          candidateState
+          (candidateState, becomeCandidate)
         case _ =>
-          followerState
+          (followerState, _ => ())
       }
     }
 
     class CandidateState extends State[NodeEvent] {
-      override def apply(event: NodeEvent): State[NodeEvent] = event match {
+      override def apply(event: NodeEvent): (State[NodeEvent], Action) = event match {
         case ElectionTimeout =>
-          becomeCandidate(ElectionTimeout)
-          candidateState
+          (candidateState, becomeCandidate)
         case MajorityVoteReceived =>
-          becomeLeader(MajorityVoteReceived)
-          leaderState
+          (leaderState, becomeLeader)
         case LeaderDiscovered =>
-          becomeFollower(LeaderDiscovered)
-          followerState
+          (followerState, becomeFollower)
         case _ =>
-          candidateState
+          (candidateState, _ => ())
       }
     }
 
     class LeaderState extends State[NodeEvent] {
-      override def apply(event: NodeEvent): State[NodeEvent] = event match {
+      override def apply(event: NodeEvent): (State[NodeEvent], Action) = event match {
         case NodeWithHigherTermDiscovered =>
-          becomeFollower(NodeWithHigherTermDiscovered)
-          followerState
+          (followerState, becomeFollower)
         case _ =>
-          leaderState
+          (leaderState, _ => ())
       }
     }
   }

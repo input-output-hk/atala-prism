@@ -1,18 +1,19 @@
 package io.iohk.cef.consensus.raft
 
-import io.iohk.cef.consensus.raft.RaftConsensus._
+import java.util.{Timer, TimerTask}
+
+import io.iohk.cef.consensus.raft.RaftConsensus.{VoteRequested, _}
 import org.scalatest.{BeforeAndAfterEach, Suite, WordSpec}
 import org.scalatest.Matchers._
 import org.scalatest.concurrent.Eventually._
-
 import org.scalatest.mockito.MockitoSugar._
-import org.mockito.Mockito.{inOrder, reset, verify, when, times}
+import org.mockito.Mockito.{inOrder, reset, times, verify, when}
 import org.mockito.ArgumentMatchers.any
 
+import scala.collection.mutable
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
-
-import scala.concurrent.stm._
+import scala.util.Random
 
 class RaftConsensusSpec extends WordSpec with TestRPC {
   "AppendEntries RPC" when {
@@ -349,6 +350,8 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
           new InMemoryPersistentStorage[String](Vector(), currentTerm = 1, votedFor = "anyone")
 
         val raftNode = aRaftNode(persistentStorage)
+        when(rpc2.requestVote(any[VoteRequested])).thenReturn(Future(RequestVoteResult(term = 2, voteGranted = false)))
+        when(rpc3.requestVote(any[VoteRequested])).thenReturn(Future(RequestVoteResult(term = 2, voteGranted = false)))
 
         electionTimeoutCallback.apply()
 
@@ -375,8 +378,13 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
 
         // gets 2 out of 3 votes
         when(rpc2.requestVote(any[VoteRequested])).thenReturn(Future(RequestVoteResult(term = 2, voteGranted = true)))
-        when(rpc3.requestVote(any[VoteRequested]))
-          .thenReturn(Future(RequestVoteResult(term = 2, voteGranted = false)))
+        when(rpc3.requestVote(any[VoteRequested])).thenReturn(Future(RequestVoteResult(term = 2, voteGranted = false)))
+
+        when(rpc2.appendEntries(any[EntriesToAppend[Command]]))
+          .thenReturn(Future(AppendEntriesResult(2, success = true)))
+        when(rpc3.appendEntries(any[EntriesToAppend[Command]]))
+          .thenReturn(Future(AppendEntriesResult(2, success = true)))
+
 
         electionTimeoutCallback.apply()
 
@@ -436,8 +444,10 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
 
         val raftNode = aLeader(persistentStorage)
 
-        when(rpc2.appendEntries(any[EntriesToAppend[Command]])).thenReturn(Future(AppendEntriesResult(3, success = true)))
-        when(rpc3.appendEntries(any[EntriesToAppend[Command]])).thenReturn(Future(AppendEntriesResult(3, success = true)))
+        when(rpc2.appendEntries(any[EntriesToAppend[Command]]))
+          .thenReturn(Future(AppendEntriesResult(3, success = true)))
+        when(rpc3.appendEntries(any[EntriesToAppend[Command]]))
+          .thenReturn(Future(AppendEntriesResult(3, success = true)))
 
         val response = raftNode.clientAppendEntries(Seq("A"))
         response shouldBe Right(())
@@ -449,7 +459,9 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
         "last log index >= nextIndex for a follower" should {
           "send AppendEntries RPC with entries starting at nextIndex" in {
             val persistentStorage =
-              new InMemoryPersistentStorage[String](Vector(LogEntry[String]("A", 2, 0)), currentTerm = 2, votedFor = "i1")
+              new InMemoryPersistentStorage[String](Vector(LogEntry[String]("A", 2, 0)),
+                                                    currentTerm = 2,
+                                                    votedFor = "i1")
 
             val raftNode = aLeader(persistentStorage)
 
@@ -457,38 +469,98 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
             verify(rpc3).appendEntries(any[EntriesToAppend[Command]])
 
             val expectedAppendEntries =
-              EntriesToAppend(3, "i1", 0, 2, Seq(
-                LogEntry[String]("B", 3, 1),
-                LogEntry[String]("C", 3, 2)), -1)
+              EntriesToAppend(3, "i1", 0, 2, Seq(LogEntry[String]("B", 3, 1), LogEntry[String]("C", 3, 2)), -1)
 
             when(rpc2.appendEntries(expectedAppendEntries)).thenReturn(Future(AppendEntriesResult(3, success = true)))
             when(rpc3.appendEntries(expectedAppendEntries)).thenReturn(Future(AppendEntriesResult(3, success = false)))
 
             // the adjusted call to node i3.
             val expectedAdjustedAppendEntries =
-              EntriesToAppend(3, "i1", -1, -1, Seq(
-                LogEntry[String]("A", 2, 0),
-                LogEntry[String]("B", 3, 1),
-                LogEntry[String]("C", 3, 2)), -1)
+              EntriesToAppend(3,
+                              "i1",
+                              -1,
+                              -1,
+                              Seq(LogEntry[String]("A", 2, 0),
+                                  LogEntry[String]("B", 3, 1),
+                                  LogEntry[String]("C", 3, 2)),
+                              -1)
 
-            when(rpc3.appendEntries(expectedAdjustedAppendEntries)).thenReturn(Future(AppendEntriesResult(3, success = true)))
+            when(rpc3.appendEntries(expectedAdjustedAppendEntries))
+              .thenReturn(Future(AppendEntriesResult(3, success = true)))
 
-            atomic { implicit txn =>
-              val response: Either[Redirect, Unit] = raftNode.clientAppendEntries(Seq("B", "C"))
+            val response: Either[Redirect, Unit] = raftNode.clientAppendEntries(Seq("B", "C"))
 
-              response shouldNot be(a[Redirect])
+            response shouldNot be(a[Redirect])
 
-              // the initial rpc following the client request
-              verify(rpc2).appendEntries(expectedAppendEntries)
-              verify(rpc3).appendEntries(expectedAppendEntries)
-              verify(rpc3).appendEntries(expectedAdjustedAppendEntries)
+            // the initial rpc following the client request
+            verify(rpc2).appendEntries(expectedAppendEntries)
+            verify(rpc3).appendEntries(expectedAppendEntries)
+            verify(rpc3).appendEntries(expectedAdjustedAppendEntries)
 
-              val leaderVolatileState = raftNode.leaderVolatileState.single()
-              leaderVolatileState.nextIndex shouldBe Seq(3, 3)
-              leaderVolatileState.matchIndex shouldBe Seq(2, 2)
-            }
+            val leaderVolatileState = raftNode.leaderVolatileState.single()
+            leaderVolatileState.nextIndex shouldBe Seq(3, 3)
+            leaderVolatileState.matchIndex shouldBe Seq(2, 2)
           }
         }
+      }
+    }
+  }
+  "In an integrated cluster" when {
+    "servers are started" should {
+      "elect a leader" in {
+        val s1 = new InMemoryPersistentStorage[String](Vector(), 1, "")
+        val s2 = new InMemoryPersistentStorage[String](Vector(), 1, "")
+        val s3 = new InMemoryPersistentStorage[String](Vector(), 1, "")
+
+        val (t1, t2, t3) = anIntegratedCluster(s1, s2, s3)
+        t1.electionTimeoutCallback.apply()
+
+        t1.raftNode.getRoleState shouldBe a[RaftConsensus.Leader[_]]
+      }
+      "replicate logs" in {
+        val s1 = new InMemoryPersistentStorage[String](Vector(), 1, "")
+        val s2 = new InMemoryPersistentStorage[String](Vector(), 1, "")
+        val s3 = new InMemoryPersistentStorage[String](Vector(), 1, "")
+
+        val (t1, t2, t3) = anIntegratedCluster(s1, s2, s3)
+        t1.electionTimeoutCallback.apply()
+
+        val appendResult = t1.raftNode.clientAppendEntries(Seq("A", "B", "C", "D", "E"))
+
+        appendResult shouldBe Right(())
+
+        val expectedEntries = Vector(LogEntry("A", 2, 0),
+                                     LogEntry("B", 2, 1),
+                                     LogEntry("C", 2, 2),
+                                     LogEntry("D", 2, 3),
+                                     LogEntry("E", 2, 4))
+        t1.raftNode.getLog shouldBe expectedEntries
+        t2.raftNode.getLog shouldBe expectedEntries
+        t3.raftNode.getLog shouldBe expectedEntries
+
+        t1.raftNode.getLeaderVolatileState shouldBe LeaderVolatileState(Seq(5, 5), Seq(4, 4))
+        t2.raftNode.getLeaderVolatileState shouldBe LeaderVolatileState(Seq(0, 0), Seq(-1, -1))
+        t3.raftNode.getLeaderVolatileState shouldBe LeaderVolatileState(Seq(0, 0), Seq(-1, -1))
+
+        t1.raftNode.getCommonVolatileState shouldBe CommonVolatileState(4, 4)
+        t2.raftNode.getCommonVolatileState shouldBe CommonVolatileState(-1, -1)
+        t3.raftNode.getCommonVolatileState shouldBe CommonVolatileState(-1, -1)
+
+        Seq("A", "B", "C", "D", "E").foreach(command => {
+          verify(t1.machine).apply(command)
+          verify(t2.machine, times(0)).apply(command)
+          verify(t3.machine, times(0)).apply(command)
+        })
+
+        t1.heartbeatTimeoutCallback.apply()
+
+        Seq("A", "B", "C", "D", "E").foreach(command => {
+          verify(t2.machine).apply(command)
+          verify(t3.machine).apply(command)
+        })
+
+        t2.raftNode.getCommonVolatileState shouldBe CommonVolatileState(4, 4)
+        t3.raftNode.getCommonVolatileState shouldBe CommonVolatileState(4, 4)
       }
     }
   }
@@ -523,15 +595,15 @@ trait TestRPC extends BeforeAndAfterEach { this: Suite =>
       fail("Test setup is wrong.")
   }
   var electionTimeoutCallback: () => Unit = _
-  val electionTimer: Timer = mock[Timer]
-  val electionTimerFactory: TimerFactory = timeoutHandler => {
+  val electionTimer: RaftTimer = mock[RaftTimer]
+  val electionTimerFactory: RaftTimerFactory = timeoutHandler => {
     electionTimeoutCallback = timeoutHandler
     electionTimer
   }
 
   var heartbeatTimeoutCallback: () => Unit = _
-  val heartbeatTimer: Timer = mock[Timer]
-  val heartbeatTimerFactory: TimerFactory = timeoutHandler => {
+  val heartbeatTimer: RaftTimer = mock[RaftTimer]
+  val heartbeatTimerFactory: RaftTimerFactory = timeoutHandler => {
     heartbeatTimeoutCallback = timeoutHandler
     heartbeatTimer
   }
@@ -558,6 +630,13 @@ trait TestRPC extends BeforeAndAfterEach { this: Suite =>
 
     val raftNode = aRaftNode(persistentStorage)
 
+    val (term, _) = persistentStorage.state
+
+    when(rpc2.requestVote(any[VoteRequested]))
+      .thenReturn(Future(RequestVoteResult(term = term + 1, voteGranted = false)))
+    when(rpc3.requestVote(any[VoteRequested]))
+      .thenReturn(Future(RequestVoteResult(term = term + 1, voteGranted = false)))
+
     electionTimeoutCallback.apply()
 
     raftNode.getRoleState shouldBe a[RaftConsensus.Candidate[_]]
@@ -575,16 +654,66 @@ trait TestRPC extends BeforeAndAfterEach { this: Suite =>
     when(rpc3.requestVote(any[VoteRequested]))
       .thenReturn(Future(RequestVoteResult(term = term + 1, voteGranted = true)))
 
+    when(rpc2.appendEntries(any[EntriesToAppend[Command]]))
+      .thenReturn(Future(AppendEntriesResult(term + 1, success = true)))
+    when(rpc3.appendEntries(any[EntriesToAppend[Command]]))
+      .thenReturn(Future(AppendEntriesResult(term + 1, success = true)))
+
     electionTimeoutCallback.apply()
 
-    eventually {
-      raftNode.getRoleState shouldBe a[RaftConsensus.Leader[_]]
-    }
+    raftNode.getRoleState shouldBe a[RaftConsensus.Leader[_]]
 
     raftNode
   }
 
-  def anIntegratedCluster: (RaftNode[Command], RaftNode[Command], RaftNode[Command]) = ???
+  val testNodes = mutable.Map[String, TestNode]()
+
+  val clusterIds = Seq("i1", "i2", "i3")
+
+  class TestNode(nodeId: String, state: PersistentStorage[Command]) {
+
+    val machine: Command => Unit = mock[Command => Unit]
+
+    var electionTimeoutCallback: () => Unit = _
+    val electionTimer: RaftTimer = mock[RaftTimer]
+    val electionTimerFactory: RaftTimerFactory = timeoutHandler => {
+      electionTimeoutCallback = timeoutHandler
+      electionTimer
+    }
+
+    var heartbeatTimeoutCallback: () => Unit = _
+    val heartbeatTimer: RaftTimer = mock[RaftTimer]
+    val heartbeatTimerFactory: RaftTimerFactory = timeoutHandler => {
+      heartbeatTimeoutCallback = timeoutHandler
+      heartbeatTimer
+    }
+
+    def localRpcFactory: RPCFactory[Command] = (nodeId, _, _) => {
+      new LocalRPC[Command](testNodes(nodeId).raftNode)
+    }
+
+    lazy val raftNode: RaftNode[Command] =
+      new RaftNode[Command](nodeId,
+                            clusterIds,
+                            localRpcFactory,
+                            electionTimerFactory,
+                            heartbeatTimerFactory,
+                            machine,
+                            state)
+
+    testNodes.put(nodeId, this)
+  }
+
+  def anIntegratedCluster(i1State: PersistentStorage[Command],
+                          i2State: PersistentStorage[Command],
+                          i3State: PersistentStorage[Command]): (TestNode, TestNode, TestNode) = {
+
+    val (t1, t2, t3) = (new TestNode("i1", i1State), new TestNode("i2", i2State), new TestNode("i3", i3State))
+    t1.raftNode
+    t2.raftNode
+    t3.raftNode
+    (t1, t2, t3)
+  }
 }
 
 class InMemoryPersistentStorage[T](var logEntries: Vector[LogEntry[T]], var currentTerm: Int, var votedFor: String)
@@ -595,11 +724,36 @@ class InMemoryPersistentStorage[T](var logEntries: Vector[LogEntry[T]], var curr
   override def log: Vector[LogEntry[T]] = logEntries
 }
 
-class LocalRPC[T](peer: RaftNode[T])(implicit ec: ExecutionContext) extends RPC[T] {
+class LocalRPC[T](peer: => RaftNode[T])(implicit ec: ExecutionContext) extends RPC[T] {
 
   override def appendEntries(entriesToAppend: EntriesToAppend[T]): Future[AppendEntriesResult] =
     Future(peer.appendEntries(entriesToAppend))
 
   override def requestVote(voteRequested: VoteRequested): Future[RequestVoteResult] =
     Future(peer.requestVote(voteRequested))
+}
+
+class BouncyTimer(minTimeout: Duration, maxTimeout: Duration)(timeoutFn: () => Unit) extends RaftTimer {
+
+  val timer = new Timer()
+
+  override def reset(): Unit = {
+    timer.cancel()
+    schedule()
+  }
+
+  private def schedule(): Unit = {
+    timer.schedule(new TimerTask { override def run(): Unit = timeout() }, nextRandom())
+  }
+
+  private def timeout(): Unit = {
+    timeoutFn()
+    schedule()
+  }
+
+  private def nextRandom(): Int = {
+    val minTimeoutMillis = minTimeout.toMillis.toInt
+    val maxTimeoutMillis = maxTimeout.toMillis.toInt
+    minTimeoutMillis + Random.nextInt((maxTimeoutMillis - minTimeoutMillis) + 1)
+  }
 }
