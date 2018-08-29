@@ -1,6 +1,7 @@
 package io.iohk.cef.crypto
 
-import java.security.{PrivateKey, PublicKey}
+import java.security.spec.X509EncodedKeySpec
+import java.security.{KeyFactory, PrivateKey, PublicKey}
 
 import akka.util.ByteString
 
@@ -18,6 +19,14 @@ package object low {
    * Represents a cryptographic signature.
    */
   class DigitalSignature(val value: ByteString) extends AnyVal
+
+  // TODO: Support different key types
+  def decodePublicKey(bytes: Array[Byte]): PublicKey = {
+    val publicKeySpec = new X509EncodedKeySpec(bytes)
+    val keyFactory = KeyFactory.getInstance("RSA")
+    keyFactory.generatePublic(publicKeySpec)
+  }
+
 
   /** HASHING **/
 

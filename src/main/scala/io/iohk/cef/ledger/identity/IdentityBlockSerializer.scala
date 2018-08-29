@@ -5,6 +5,7 @@ import java.time.Instant
 import akka.util.ByteString
 import io.iohk.cef.ledger.identity.storage.protobuf.identityLedger.{IdentityBlockProto, IdentityHeaderProto, IdentityTransactionProto}
 import io.iohk.cef.ledger.{Block, ByteStringSerializable}
+import io.iohk.cef.crypto.low.decodePublicKey
 
 object IdentityBlockSerializer {
 
@@ -20,7 +21,8 @@ object IdentityBlockSerializer {
         Block(
           IdentityBlockHeader(ByteString(proto.header.hash.toByteArray), Instant.ofEpochMilli(proto.header.createdEpochMilli), proto.header.blockHeight),
           proto.transactions.map(ptx => {
-            val key = ByteString(ptx.publicKey.toByteArray)
+            val key = decodePublicKey(ptx.publicKey.toByteArray)
+
             ptx.`type` match {
               case ClaimTxType => Claim(ptx.identity, key)
               case LinkTxType => Link(ptx.identity, key)
@@ -42,7 +44,7 @@ object IdentityBlockSerializer {
                 case _ : Link => LinkTxType
                 case _ : Unlink => UnlinkTxType
               }
-              IdentityTransactionProto(txType, tx.identity, com.google.protobuf.ByteString.copyFrom(tx.key.toArray))
+              IdentityTransactionProto(txType, tx.identity, com.google.protobuf.ByteString.copyFrom(tx.key.getEncoded))
             })
         )
         ByteString(proto.toByteArray)

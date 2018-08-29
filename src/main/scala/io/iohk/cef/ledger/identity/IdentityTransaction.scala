@@ -3,9 +3,9 @@ package io.iohk.cef.ledger.identity
 import akka.util.ByteString
 import io.iohk.cef.ledger.{LedgerError, Transaction}
 
-sealed trait IdentityTransaction extends Transaction[Set[ByteString]] {
+sealed trait IdentityTransaction extends Transaction[Set[PublicKey]] {
   val identity: String
-  val key: ByteString
+  val key: PublicKey
   override def hashCode(): Int = (identity.hashCode) + (key.hashCode())
 }
 
@@ -30,7 +30,7 @@ case class Claim(identity: String, key: ByteString) extends IdentityTransaction 
   override def canEqual(that: Any): Boolean = that.isInstanceOf[Claim]
 }
 
-case class Link(identity: String, key: ByteString) extends IdentityTransaction{
+case class Link(identity: String, key: PublicKey) extends IdentityTransaction{
 
   override def apply(ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] =
     if(!ledgerState.contains(identity)) {
@@ -50,7 +50,7 @@ case class Link(identity: String, key: ByteString) extends IdentityTransaction{
 
   override def canEqual(that: Any): Boolean = that.isInstanceOf[Link]
 }
-case class Unlink(identity: String, key: ByteString) extends IdentityTransaction {
+case class Unlink(identity: String, key: PublicKey) extends IdentityTransaction {
 
   override def apply(ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] =
     if(!ledgerState.contains(identity) || !ledgerState.get(identity).getOrElse(Set()).contains(key)) {
