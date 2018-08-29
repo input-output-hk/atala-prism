@@ -91,7 +91,7 @@ object RaftConsensus {
 
     val rc: Ref[RaftContext[Command]] = Ref(initialRaftContext())
 
-    val electionTimer = electionTimerFactory(() => getNodeFSM(ElectionTimeout))
+    val electionTimer = electionTimerFactory(() => electionTimeout())
 
     val heartbeatTimer = heartbeatTimerFactory(() => sendHeartbeat())
 
@@ -177,7 +177,7 @@ object RaftConsensus {
         val (currentTerm, votedFor) = rc().persistentState
         if (term > currentTerm) {
           rc() = rc().copy(persistentState = (term, votedFor))
-          rc().nodeFSM(NodeWithHigherTermDiscovered)
+          rc().nodeFSM(NodeWithHigherTermDiscovered(rc()))
         }
       }
 
@@ -226,7 +226,7 @@ object RaftConsensus {
       rc() = rc().copy(persistentState = (newTerm, nodeId))
       val votes = requestVotes(VoteRequested(newTerm, nodeId, lastLogIndex, lastLogTerm))
       if (hasMajority(newTerm, votes))
-        rc().nodeFSM(MajorityVoteReceived)
+        rc().nodeFSM(MajorityVoteReceived(rc()))
     }
 
     private def hasMajority(term: Int, votes: Seq[RequestVoteResult]): Boolean = {
@@ -241,6 +241,10 @@ object RaftConsensus {
     private def becomeLeader(event: NodeEvent): Unit = atomic { implicit txn =>
       rc() = rc().copy(roleState = new Leader(this))
       sendHeartbeat()
+    }
+
+    private def electionTimeout(): Unit = atomic { implicit txn =>
+      rc().nodeFSM.apply(ElectionTimeout(rc()))
     }
 
     private def sendHeartbeat(): Unit = atomic { implicit txn =>
@@ -417,7 +421,7 @@ object RaftConsensus {
         val (currentTerm, _) = raftNode.rc().persistentState
         if (prospectiveLeaderTerm >= currentTerm) {
           // the term will have been updated via rules for servers note 2.
-          raftNode.rc().nodeFSM(LeaderDiscovered)
+          raftNode.rc().nodeFSM(LeaderDiscovered(raftNode.rc()))
           AppendEntriesResult(currentTerm, success = true)
         } else {
           AppendEntriesResult(currentTerm, success = false)
@@ -437,7 +441,7 @@ object RaftConsensus {
         val (currentTerm, _) = raftNode.rc().persistentState
         if (prospectiveLeaderTerm >= currentTerm) {
           // the term will have been updated via rules for servers note 2.
-          raftNode.rc().nodeFSM(NodeWithHigherTermDiscovered)
+          raftNode.rc().nodeFSM(NodeWithHigherTermDiscovered(raftNode.rc()))
           AppendEntriesResult(currentTerm, success = true)
         } else {
           AppendEntriesResult(currentTerm, success = false)
@@ -590,11 +594,10 @@ object RaftConsensus {
 
   sealed trait NodeEvent
 
-  case object Start extends NodeEvent
-  case object ElectionTimeout extends NodeEvent
-  case object MajorityVoteReceived extends NodeEvent
-  case object NodeWithHigherTermDiscovered extends NodeEvent
-  case object LeaderDiscovered extends NodeEvent
+  case class ElectionTimeout[Command](rc: RaftContext[Command]) extends NodeEvent
+  case class MajorityVoteReceived[Command](rc: RaftContext[Command]) extends NodeEvent
+  case class NodeWithHigherTermDiscovered[Command](rc: RaftContext[Command]) extends NodeEvent
+  case class LeaderDiscovered[Command](rc: RaftContext[Command]) extends NodeEvent
 
   type Action = NodeEvent => Unit
 
@@ -621,7 +624,7 @@ object RaftConsensus {
 
     class FollowerState extends State[NodeEvent] {
       override def apply(event: NodeEvent): (State[NodeEvent], Action) = event match {
-        case ElectionTimeout =>
+        case ElectionTimeout(_) =>
           (candidateState, becomeCandidate)
         case _ =>
           (followerState, _ => ())
@@ -630,11 +633,11 @@ object RaftConsensus {
 
     class CandidateState extends State[NodeEvent] {
       override def apply(event: NodeEvent): (State[NodeEvent], Action) = event match {
-        case ElectionTimeout =>
+        case ElectionTimeout(_) =>
           (candidateState, becomeCandidate)
-        case MajorityVoteReceived =>
+        case MajorityVoteReceived(_) =>
           (leaderState, becomeLeader)
-        case LeaderDiscovered =>
+        case LeaderDiscovered(_) =>
           (followerState, becomeFollower)
         case _ =>
           (candidateState, _ => ())
@@ -643,7 +646,7 @@ object RaftConsensus {
 
     class LeaderState extends State[NodeEvent] {
       override def apply(event: NodeEvent): (State[NodeEvent], Action) = event match {
-        case NodeWithHigherTermDiscovered =>
+        case NodeWithHigherTermDiscovered(_) =>
           (followerState, becomeFollower)
         case _ =>
           (leaderState, _ => ())
