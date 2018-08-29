@@ -6,6 +6,7 @@ import io.iohk.cef.consensus.raft.RaftConsensus.{VoteRequested, _}
 import org.scalatest.{BeforeAndAfterEach, Suite, WordSpec}
 import org.scalatest.Matchers._
 import org.scalatest.concurrent.Eventually._
+import org.scalatest.concurrent.ScalaFutures.whenReady
 import org.scalatest.mockito.MockitoSugar._
 import org.mockito.Mockito.{inOrder, reset, times, verify, when}
 import org.mockito.ArgumentMatchers.any
@@ -16,6 +17,45 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
 
 class RaftConsensusSpec extends WordSpec with TestRPC {
+  "Consensus module" should {
+    "Handles all client requests" when {
+      "a client contacts a follower" should {
+        "redirect to the leader" in {
+          val raftNode = mock[RaftNode[String]]
+          val apparentLeaderRpc = mock[RPC[String]]
+          val realLeaderRpc = mock[RPC[String]]
+
+          when(raftNode.getLeader).thenReturn(apparentLeaderRpc)
+          when(apparentLeaderRpc.clientAppendEntries(any[Seq[String]])).thenReturn(Future(Left(Redirect(realLeaderRpc))))
+          when(realLeaderRpc.clientAppendEntries(any[Seq[String]])).thenReturn(Future(Right(())))
+
+          val consensusModule = new RaftConsensus(raftNode)
+
+          val responseF = consensusModule.appendEntries(Seq("A", "B", "C"))
+
+          whenReady(responseF) { response =>
+            verify(realLeaderRpc).clientAppendEntries(Seq("A", "B", "C"))
+          }
+        }
+      }
+      "a client contacts the leader" should {
+        "handle the request" in {
+          val raftNode = mock[RaftNode[String]]
+          val leaderRpc = mock[RPC[String]]
+          when(raftNode.getLeader).thenReturn(leaderRpc)
+          when(leaderRpc.clientAppendEntries(any[Seq[String]])).thenReturn(Future(Right(())))
+
+          val consensusModule = new RaftConsensus(raftNode)
+
+          val responseF = consensusModule.appendEntries(Seq("A", "B", "C"))
+
+          whenReady(responseF) { response =>
+            verify(leaderRpc).clientAppendEntries(Seq("A", "B", "C"))
+          }
+        }
+      }
+    }
+  }
   "AppendEntries RPC" when {
     "implemented by a Follower" should {
       "implement rule #1" should {
@@ -488,9 +528,9 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
             when(rpc3.appendEntries(expectedAdjustedAppendEntries))
               .thenReturn(Future(AppendEntriesResult(3, success = true)))
 
-            val response: Either[Redirect, Unit] = raftNode.clientAppendEntries(Seq("B", "C"))
+            val response: Either[Redirect[String], Unit] = raftNode.clientAppendEntries(Seq("B", "C"))
 
-            response shouldNot be(a[Redirect])
+            response shouldNot be(a[Redirect[_]])
 
             // the initial rpc following the client request
             verify(rpc2).appendEntries(expectedAppendEntries)
@@ -731,6 +771,9 @@ class LocalRPC[T](peer: => RaftNode[T])(implicit ec: ExecutionContext) extends R
 
   override def requestVote(voteRequested: VoteRequested): Future[RequestVoteResult] =
     Future(peer.requestVote(voteRequested))
+
+  override def clientAppendEntries(entries: Seq[T]): Future[Either[Redirect[T], Unit]] =
+    Future(peer.clientAppendEntries(entries))
 }
 
 class BouncyTimer(minTimeout: Duration, maxTimeout: Duration)(timeoutFn: () => Unit) extends RaftTimer {

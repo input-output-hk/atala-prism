@@ -25,6 +25,8 @@ object RaftConsensus {
     def appendEntries(entriesToAppend: EntriesToAppend[Command]): Future[AppendEntriesResult]
 
     def requestVote(voteRequested: VoteRequested): Future[RequestVoteResult]
+
+    def clientAppendEntries(entries: Seq[Command]): Future[Either[Redirect[Command], Unit]]
   }
 
   trait PersistentStorage[Command] {
@@ -32,7 +34,7 @@ object RaftConsensus {
     def log: Vector[LogEntry[Command]]
   }
 
-  case class Redirect(leader: String)
+  case class Redirect[Command](leaderRPC: RPC[Command])
 
   type RaftTimerFactory = (() => Unit) => RaftTimer
 
@@ -45,12 +47,22 @@ object RaftConsensus {
     * TODO new entries must go via the leader, so the module will need
     * to talk to the correct node.
     */
-  class ConsensusModule[Command](raftNode: RaftNode[Command]) {
+  class RaftConsensus[Command](raftNode: RaftNode[Command])(implicit ec: ExecutionContext) {
     // Sec 5.1
     // The leader handles all client requests (if
     // a client contacts a follower, the follower redirects it to the leader)
-    // todo iterate over cluster members, following redirects until finding one that does not redirect
-    def appendEntries(entries: Seq[Command]): Future[Either[Redirect, Unit]] = ???
+    def appendEntries(entries: Seq[Command]): Future[Unit] = {
+      appendEntries(raftNode.getLeader, entries)
+    }
+
+    private def appendEntries(leaderRpc: RPC[Command], entries: Seq[Command]): Future[Unit] = {
+      leaderRpc.clientAppendEntries(entries).flatMap {
+        case Left(Redirect(nextLeaderRPC)) =>
+          appendEntries(nextLeaderRPC, entries)
+        case Right(()) =>
+          Future(())
+      }
+    }
   }
 
   class RaftNode[Command](val nodeId: String,
@@ -65,6 +77,10 @@ object RaftConsensus {
       .filterNot(_ == nodeId)
       .map(rpcFactory(_, appendEntries, requestVote))
 
+    val clusterTable: Map[String, RPC[Command]] = clusterMemberIds
+      .filterNot(_ == nodeId)
+      .map(peerId => peerId -> rpcFactory(peerId, appendEntries, requestVote)).toMap
+
     val roleState: Ref[NodeState[Command]] = Ref.make[NodeState[Command]]()
 
     val commonVolatileState: Ref[CommonVolatileState[Command]] = Ref.make[CommonVolatileState[Command]]()
@@ -75,11 +91,17 @@ object RaftConsensus {
 
     val log: Ref[Vector[LogEntry[Command]]] = Ref(persistentStorage.log)
 
+    val leaderId: Ref[String] = Ref(persistentState.single()._2) // initialized to votedFor
+
     val nodeFSM = new NodeFSM(becomeFollower, becomeCandidate, becomeLeader)
 
     val electionTimer = electionTimerFactory(() => nodeFSM(ElectionTimeout))
 
     val heartbeatTimer = heartbeatTimerFactory(() => sendHeartbeat())
+
+
+    def getLeader: RPC[Command] =
+      clusterTable(leaderId.single())
 
     def getRoleState: NodeState[Command] =
       roleState.single()
@@ -96,7 +118,7 @@ object RaftConsensus {
     def getLeaderVolatileState: LeaderVolatileState =
       leaderVolatileState.single()
 
-    def clientAppendEntries(entries: Seq[Command]): Either[Redirect, Unit] =
+    def clientAppendEntries(entries: Seq[Command]): Either[Redirect[Command], Unit] =
       roleState.single().clientAppendEntries(entries)
 
     def appendEntries(entriesToAppend: EntriesToAppend[Command]): AppendEntriesResult = atomic { implicit txn =>
@@ -228,17 +250,19 @@ object RaftConsensus {
   sealed trait NodeState[Command] {
     def appendEntries(entriesToAppend: EntriesToAppend[Command]): AppendEntriesResult
     def sendHeartbeat(): Unit
-    def clientAppendEntries(entries: Seq[Command]): Either[Redirect, Unit]
+    def clientAppendEntries(entries: Seq[Command]): Either[Redirect[Command], Unit]
   }
 
   class Follower[Command](raftNode: RaftNode[Command])(implicit ec: ExecutionContext) extends NodeState[Command] {
 
-    override def appendEntries(entriesToAppend: EntriesToAppend[Command]): AppendEntriesResult =
+    override def appendEntries(entriesToAppend: EntriesToAppend[Command]): AppendEntriesResult = {
       applyAppendEntriesRules1To5(entriesToAppend)
+    }
 
     // AppendEntries RPC receiver implementation (figure 2), rules 1-5
     private def applyAppendEntriesRules1To5(entriesToAppend: EntriesToAppend[Command]): AppendEntriesResult = atomic {
       implicit txn =>
+        raftNode.leaderId() = entriesToAppend.leaderId
         val log = raftNode.log()
         val (currentTerm, _) = raftNode.persistentState()
         val volatileState = raftNode.commonVolatileState()
@@ -374,9 +398,8 @@ object RaftConsensus {
         }
       }
     }
-    override def clientAppendEntries(entries: Seq[Command]): Either[Redirect, Unit] = {
-      val (_, votedFor) = raftNode.persistentState.single()
-      Left(Redirect(votedFor))
+    override def clientAppendEntries(entries: Seq[Command]): Either[Redirect[Command], Unit] = {
+      Left(Redirect(raftNode.getLeader))
     }
     override def sendHeartbeat(): Unit = ()
   }
@@ -396,10 +419,9 @@ object RaftConsensus {
           AppendEntriesResult(currentTerm, success = false)
         }
     }
-    override def clientAppendEntries(entries: Seq[Command]): Either[Redirect, Unit] = {
-      val (_, votedFor) = raftNode.persistentState.single()
-      Left(Redirect(votedFor))
-    }
+    override def clientAppendEntries(entries: Seq[Command]): Either[Redirect[Command], Unit] =
+      Left(Redirect(raftNode.getLeader))
+
     override def sendHeartbeat(): Unit = ()
   }
 
@@ -418,7 +440,7 @@ object RaftConsensus {
         }
     }
 
-    override def clientAppendEntries(entries: Seq[Command]): Either[Redirect, Unit] = atomic { implicit txn =>
+    override def clientAppendEntries(entries: Seq[Command]): Either[Redirect[Command], Unit] = atomic { implicit txn =>
       val log = raftNode.log()
       val (lastLogIndex, _) = raftNode.lastLogIndexAndTerm(log)
       val (currentTerm, _) = raftNode.persistentState()
