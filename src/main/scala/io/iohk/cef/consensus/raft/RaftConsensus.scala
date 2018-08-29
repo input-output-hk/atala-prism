@@ -65,6 +65,14 @@ object RaftConsensus {
     }
   }
 
+  case class RaftContext[Command](roleState: NodeState[Command],
+                                  commonVolatileState: CommonVolatileState[Command],
+                                  leaderVolatileState: LeaderVolatileState,
+                                  persistentState: (Int, String),
+                                  log: Vector[LogEntry[Command]],
+                                  leaderId: String,
+                                  nodeFSM: NodeFSM)
+
   class RaftNode[Command](val nodeId: String,
                           val clusterMemberIds: Seq[String],
                           rpcFactory: RPCFactory[Command],
@@ -81,49 +89,39 @@ object RaftConsensus {
       .filterNot(_ == nodeId)
       .map(peerId => peerId -> rpcFactory(peerId, appendEntries, requestVote)).toMap
 
-    val roleState: Ref[NodeState[Command]] = Ref.make[NodeState[Command]]()
+    val rc: Ref[RaftContext[Command]] = Ref(initialRaftContext())
 
-    val commonVolatileState: Ref[CommonVolatileState[Command]] = Ref.make[CommonVolatileState[Command]]()
-
-    val leaderVolatileState: Ref[LeaderVolatileState] = Ref.make[LeaderVolatileState]()
-
-    val persistentState: Ref[(Int, String)] = Ref(persistentStorage.state)
-
-    val log: Ref[Vector[LogEntry[Command]]] = Ref(persistentStorage.log)
-
-    val leaderId: Ref[String] = Ref(persistentState.single()._2) // initialized to votedFor
-
-    val nodeFSM = new NodeFSM(becomeFollower, becomeCandidate, becomeLeader)
-
-    val electionTimer = electionTimerFactory(() => nodeFSM(ElectionTimeout))
+    val electionTimer = electionTimerFactory(() => getNodeFSM(ElectionTimeout))
 
     val heartbeatTimer = heartbeatTimerFactory(() => sendHeartbeat())
 
+    def getNodeFSM: NodeFSM =
+      rc.single().nodeFSM
 
     def getLeader: RPC[Command] =
-      clusterTable(leaderId.single())
+      clusterTable(rc.single().leaderId)
 
     def getRoleState: NodeState[Command] =
-      roleState.single()
+      rc.single().roleState
 
     def getPersistentState: (Int, String) =
-      persistentState.single()
+      rc.single().persistentState
 
     def getLog: Vector[LogEntry[Command]] =
-      log.single()
+      rc.single().log
 
     def getCommonVolatileState: CommonVolatileState[Command] =
-      commonVolatileState.single()
+      rc.single().commonVolatileState
 
     def getLeaderVolatileState: LeaderVolatileState =
-      leaderVolatileState.single()
+      rc.single().leaderVolatileState
 
     def clientAppendEntries(entries: Seq[Command]): Either[Redirect[Command], Unit] =
-      roleState.single().clientAppendEntries(entries)
+      rc.single().roleState.clientAppendEntries(entries)
 
     def appendEntries(entriesToAppend: EntriesToAppend[Command]): AppendEntriesResult = atomic { implicit txn =>
       rulesForServersAllServers2(entriesToAppend.term)
-      val appendResult = roleState().appendEntries(entriesToAppend)
+      val appendResult = rc().roleState.appendEntries(entriesToAppend)
       applyUncommittedLogEntries()
       appendResult
     }
@@ -131,8 +129,8 @@ object RaftConsensus {
     def requestVote(voteRequested: VoteRequested): RequestVoteResult = atomic { implicit txn =>
       rulesForServersAllServers2(voteRequested.term)
 
-      val (currentTerm, votedFor) = persistentState()
-      val (lastLogIndex, lastLogTerm) = lastLogIndexAndTerm(log())
+      val (currentTerm, votedFor) = rc().persistentState
+      val (lastLogIndex, lastLogTerm) = lastLogIndexAndTerm(rc().log)
 
       if (voteRequested.term < currentTerm) // receiver implementation, note #1
         RequestVoteResult(currentTerm, voteGranted = false)
@@ -155,7 +153,7 @@ object RaftConsensus {
     // If commitIndex > lastApplied, apply log[lastApplied] to the state machine.
     // (do this recursively until commitIndex == lastApplied)
     def applyUncommittedLogEntries(): Unit = atomic { implicit txn =>
-      val theLog = log()
+      val theLog = rc().log
       @tailrec
       def loop(state: CommonVolatileState[Command]): CommonVolatileState[Command] = {
         if (state.commitIndex > state.lastApplied) {
@@ -166,7 +164,9 @@ object RaftConsensus {
           state
         }
       }
-      commonVolatileState() = loop(commonVolatileState())
+      val commonVolatileState = rc().commonVolatileState
+      val nextState = loop(commonVolatileState)
+      rc() = rc().copy(commonVolatileState = nextState)
     }
 
     // Rules for servers (figure 2), all servers, note 2.
@@ -174,16 +174,16 @@ object RaftConsensus {
     // set currentTerm = T (convert to follower)
     private def rulesForServersAllServers2(term: Int): Unit =
       atomic { implicit txn =>
-        val (currentTerm, votedFor) = persistentState()
+        val (currentTerm, votedFor) = rc().persistentState
         if (term > currentTerm) {
-          persistentState() = (term, votedFor)
-          nodeFSM(NodeWithHigherTermDiscovered)
+          rc() = rc().copy(persistentState = (term, votedFor))
+          rc().nodeFSM(NodeWithHigherTermDiscovered)
         }
       }
 
     // Note, this is different to the paper which specifies
     // one-based array ops, whereas we use zero-based.
-    private def initialState(): CommonVolatileState[Command] = {
+    private def initialCommonState(): CommonVolatileState[Command] = {
       val initialCommitIndex = -1
       val initialLastApplied = -1
       CommonVolatileState(initialCommitIndex, initialLastApplied)
@@ -196,15 +196,20 @@ object RaftConsensus {
       LeaderVolatileState(nextIndex, matchIndex)
     }
 
+    private def initialRaftContext(): RaftContext[Command] = {
+      val (currentTerm, votedFor) = persistentStorage.state
+      val log = persistentStorage.log
+      RaftContext(new Follower(this),
+        initialCommonState(),
+        initialLeaderState(log),
+        (currentTerm, votedFor),
+        log,
+        votedFor,
+        new NodeFSM(becomeFollower, becomeCandidate, becomeLeader))
+    }
+
     private def becomeFollower(event: NodeEvent): Unit = atomic { implicit txn =>
-      event match {
-        case Start =>
-          commonVolatileState() = initialState()
-          leaderVolatileState() = initialLeaderState(log())
-          roleState() = new Follower(this)
-        case _ =>
-          roleState() = new Follower(this)
-      }
+      rc() = rc().copy(roleState = new Follower(this))
     }
 
     // On conversion to candidate, start election:
@@ -214,14 +219,14 @@ object RaftConsensus {
     // Send RequestVote RPCs to all other servers
     private def becomeCandidate(event: NodeEvent): Unit = atomic { implicit txn =>
       electionTimer.reset()
-      roleState() = new Candidate(this)
-      val (currentTerm, _) = persistentState()
+      rc() = rc().copy(roleState = new Candidate(this))
+      val (currentTerm, _) = rc().persistentState
       val newTerm = currentTerm + 1
-      val (lastLogIndex, lastLogTerm) = lastLogIndexAndTerm(log())
-      persistentState() = (newTerm, nodeId)
+      val (lastLogIndex, lastLogTerm) = lastLogIndexAndTerm(rc().log)
+      rc() = rc().copy(persistentState = (newTerm, nodeId))
       val votes = requestVotes(VoteRequested(newTerm, nodeId, lastLogIndex, lastLogTerm))
       if (hasMajority(newTerm, votes))
-        nodeFSM(MajorityVoteReceived)
+        rc().nodeFSM(MajorityVoteReceived)
     }
 
     private def hasMajority(term: Int, votes: Seq[RequestVoteResult]): Boolean = {
@@ -234,12 +239,12 @@ object RaftConsensus {
     }
 
     private def becomeLeader(event: NodeEvent): Unit = atomic { implicit txn =>
-      roleState() = new Leader(this)
+      rc() = rc().copy(roleState = new Leader(this))
       sendHeartbeat()
     }
 
     private def sendHeartbeat(): Unit = atomic { implicit txn =>
-      roleState().sendHeartbeat()
+      rc().roleState.sendHeartbeat()
     }
   }
 
@@ -262,10 +267,10 @@ object RaftConsensus {
     // AppendEntries RPC receiver implementation (figure 2), rules 1-5
     private def applyAppendEntriesRules1To5(entriesToAppend: EntriesToAppend[Command]): AppendEntriesResult = atomic {
       implicit txn =>
-        raftNode.leaderId() = entriesToAppend.leaderId
-        val log = raftNode.log()
-        val (currentTerm, _) = raftNode.persistentState()
-        val volatileState = raftNode.commonVolatileState()
+        raftNode.rc() = raftNode.rc().copy(leaderId = entriesToAppend.leaderId)
+        val log = raftNode.rc().log
+        val (currentTerm, _) = raftNode.rc().persistentState
+        val volatileState = raftNode.rc().commonVolatileState
 
         if (appendEntriesConsistencyCheck1(entriesToAppend.term, currentTerm)) {
 
@@ -278,12 +283,11 @@ object RaftConsensus {
         } else {
           val conflicts = appendEntriesConflictSearch(log, entriesToAppend)
           if (conflicts != 0) {
-            raftNode.log() = log.dropRight(conflicts)
+            raftNode.rc() = raftNode.rc().copy(log = log.dropRight(conflicts))
             AppendEntriesResult(term = currentTerm, success = false)
-
           } else {
             val additions: Seq[LogEntry[Command]] = appendEntriesAdditions(log, entriesToAppend)
-            raftNode.log() = log ++ additions
+            raftNode.rc() = raftNode.rc().copy(log = log ++ additions)
             appendEntriesCommitIndexCheck(entriesToAppend.leaderCommitIndex, iLastNewEntry(additions), volatileState)
             AppendEntriesResult(term = currentTerm, success = true)
           }
@@ -394,7 +398,7 @@ object RaftConsensus {
       val commitIndex = Math.min(leaderCommitIndex, iLastNewEntry)
       atomic { implicit txn =>
         if (leaderCommitIndex > nodeState.commitIndex) {
-          raftNode.commonVolatileState() = nodeState.copy(commitIndex = commitIndex)
+          raftNode.rc() = raftNode.rc().copy(commonVolatileState = nodeState.copy(commitIndex = commitIndex))
         }
       }
     }
@@ -410,10 +414,10 @@ object RaftConsensus {
         // rules for servers, candidates
         // if append entries rpc received from new leader, convert to follower
         val prospectiveLeaderTerm = entriesToAppend.term
-        val (currentTerm, _) = raftNode.persistentState()
+        val (currentTerm, _) = raftNode.rc().persistentState
         if (prospectiveLeaderTerm >= currentTerm) {
           // the term will have been updated via rules for servers note 2.
-          raftNode.nodeFSM(LeaderDiscovered)
+          raftNode.rc().nodeFSM(LeaderDiscovered)
           AppendEntriesResult(currentTerm, success = true)
         } else {
           AppendEntriesResult(currentTerm, success = false)
@@ -430,10 +434,10 @@ object RaftConsensus {
     override def appendEntries(entriesToAppend: EntriesToAppend[Command]): AppendEntriesResult = atomic {
       implicit txn =>
         val prospectiveLeaderTerm = entriesToAppend.term
-        val (currentTerm, _) = raftNode.persistentState()
+        val (currentTerm, _) = raftNode.rc().persistentState
         if (prospectiveLeaderTerm >= currentTerm) {
           // the term will have been updated via rules for servers note 2.
-          raftNode.nodeFSM(NodeWithHigherTermDiscovered)
+          raftNode.rc().nodeFSM(NodeWithHigherTermDiscovered)
           AppendEntriesResult(currentTerm, success = true)
         } else {
           AppendEntriesResult(currentTerm, success = false)
@@ -441,9 +445,9 @@ object RaftConsensus {
     }
 
     override def clientAppendEntries(entries: Seq[Command]): Either[Redirect[Command], Unit] = atomic { implicit txn =>
-      val log = raftNode.log()
+      val log = raftNode.rc().log
       val (lastLogIndex, _) = raftNode.lastLogIndexAndTerm(log)
-      val (currentTerm, _) = raftNode.persistentState()
+      val (currentTerm, _) = raftNode.rc().persistentState
 
       val (_, entriesToAppend) = entries.foldLeft((lastLogIndex, Vector[LogEntry[Command]]()))((acc, nextCommand) => {
         val (logIndex, entriesToAppend) = acc
@@ -452,7 +456,7 @@ object RaftConsensus {
         (nextLogIndex, entriesToAppend :+ nextEntry)
       })
 
-      raftNode.log() = log ++ entriesToAppend
+      raftNode.rc() = raftNode.rc().copy(log = log ++ entriesToAppend)
 
       sendAppendEntries()
 
@@ -465,10 +469,10 @@ object RaftConsensus {
     }
 
     private def sendAppendEntries(): Unit = atomic { implicit txn =>
-      val nextIndexes = raftNode.leaderVolatileState().nextIndex
-      val (currentTerm, _) = raftNode.persistentState()
-      val commitIndex = raftNode.commonVolatileState().commitIndex
-      val theLog = raftNode.log()
+      val nextIndexes = raftNode.rc().leaderVolatileState.nextIndex
+      val (currentTerm, _) = raftNode.rc().persistentState
+      val commitIndex = raftNode.rc().commonVolatileState.commitIndex
+      val theLog = raftNode.rc().log
       val (lastLogIndex, _) = raftNode.lastLogIndexAndTerm(theLog)
 
       val callFs: Seq[Future[(Int, Int)]] = raftNode.clusterMembers.indices.map(i =>
@@ -482,12 +486,12 @@ object RaftConsensus {
       val maybeN = findN(theLog, currentTerm, commitIndex, matchIndex)
 
       val nextCommonState =
-        maybeN.fold(raftNode.commonVolatileState())(n => raftNode.commonVolatileState().copy(commitIndex = n))
+        maybeN.fold(raftNode.rc().commonVolatileState)(n => raftNode.rc().commonVolatileState.copy(commitIndex = n))
 
       val nextLeaderState = LeaderVolatileState(nextIndex, matchIndex)
 
-      raftNode.commonVolatileState() = nextCommonState
-      raftNode.leaderVolatileState() = nextLeaderState
+      raftNode.rc() = raftNode.rc().copy(commonVolatileState = nextCommonState)
+      raftNode.rc() = raftNode.rc().copy(leaderVolatileState = nextLeaderState)
 
       raftNode.applyUncommittedLogEntries()
 
@@ -497,9 +501,9 @@ object RaftConsensus {
                                 nextIndex: Int,
                                 lastLogIndex: Int,
                                 memberRPC: RPC[Command]): Future[(Int, Int)] = atomic { implicit txn =>
-      val commitIndex = raftNode.commonVolatileState().commitIndex
+      val commitIndex = raftNode.rc().commonVolatileState.commitIndex
 
-      val (currentTerm, _) = raftNode.persistentState()
+      val (currentTerm, _) = raftNode.rc().persistentState
       val appendResultF =
         appendEntryForNode(nextIndex, commitIndex, log, currentTerm, lastLogIndex, memberRPC, getHeartbeat)
 
@@ -566,9 +570,9 @@ object RaftConsensus {
         Some(ns.max)
     }
     private def getHeartbeat: EntriesToAppend[Command] = atomic { implicit txn =>
-      val (currentTerm, _) = raftNode.persistentState()
-      val (prevLogIndex, prevLogTerm) = raftNode.lastLogIndexAndTerm(raftNode.log())
-      val commitIndex = raftNode.commonVolatileState().commitIndex
+      val (currentTerm, _) = raftNode.rc().persistentState
+      val (prevLogIndex, prevLogTerm) = raftNode.lastLogIndexAndTerm(raftNode.rc().log)
+      val commitIndex = raftNode.rc().commonVolatileState.commitIndex
       EntriesToAppend[Command](currentTerm, raftNode.nodeId, prevLogIndex, prevLogTerm, Seq(), commitIndex)
     }
   }
@@ -616,7 +620,6 @@ object RaftConsensus {
     }
 
     class FollowerState extends State[NodeEvent] {
-      becomeFollower(Start)
       override def apply(event: NodeEvent): (State[NodeEvent], Action) = event match {
         case ElectionTimeout =>
           (candidateState, becomeCandidate)

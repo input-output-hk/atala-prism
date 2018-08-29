@@ -537,7 +537,7 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
             verify(rpc3).appendEntries(expectedAppendEntries)
             verify(rpc3).appendEntries(expectedAdjustedAppendEntries)
 
-            val leaderVolatileState = raftNode.leaderVolatileState.single()
+            val leaderVolatileState = raftNode.rc.single().leaderVolatileState
             leaderVolatileState.nextIndex shouldBe Seq(3, 3)
             leaderVolatileState.matchIndex shouldBe Seq(2, 2)
           }
