@@ -1,11 +1,23 @@
 package io.iohk.cef.crypto
 
+import java.security.{PrivateKey, PublicKey}
+
 import akka.util.ByteString
 
 /**
   * Collection of low-level cryptographic primitives
   */
 package object low {
+
+  /**
+   * Represents data that has been encrypted.
+   */
+  class EncryptedData(val value: ByteString) extends AnyVal
+
+  /**
+   * Represents a cryptographic signature.
+   */
+  class DigitalSignature(val value: ByteString) extends AnyVal
 
   /** HASHING **/
 
@@ -32,7 +44,7 @@ package object low {
     *
     * @return an encrypted version of the `source` bytes
     */
-  def encryptBytes(algorithm: CryptoAlgorithm)(source: ByteString, key: algorithm.PublicKey): ByteString =
+  def encryptBytes(algorithm: CryptoAlgorithm)(source: ByteString, key: PublicKey): EncryptedData =
     algorithm.encrypt(source, key)
 
   /**
@@ -45,7 +57,7 @@ package object low {
     * @return a decrypted version of the encrypted `source` if the `algorithm` and `key` are able
    *          to decrypt the source
     */
-  def decryptBytes(algorithm: CryptoAlgorithm)(source: ByteString, key: algorithm.PrivateKey): Either[algorithm.DecryptError, ByteString] =
+  def decryptBytes(algorithm: CryptoAlgorithm)(source: EncryptedData, key: PrivateKey): Either[algorithm.DecryptError, ByteString] =
     algorithm.decrypt(source, key)
 
 
@@ -61,7 +73,7 @@ package object low {
     *
     * @return a cryptographic signature for the provided `source` bytes
     */
-  def signBytes(algorithm: SignAlgorithm)(source: ByteString, key: algorithm.PrivateKey): ByteString =
+  def signBytes(algorithm: SignAlgorithm)(source: ByteString, key: PrivateKey): DigitalSignature =
     algorithm.sign(source, key)
 
   /**
@@ -75,7 +87,7 @@ package object low {
     * @return `true` if the `signature` corresponds to the `source` when validated using
     *         `algorithm` and `key`. `false` otherwise
     */
-  def isBytesSignatureValid(algorithm: SignAlgorithm)(signature: ByteString, source: ByteString, key: algorithm.PublicKey): Boolean =
+  def isBytesSignatureValid(algorithm: SignAlgorithm)(signature: DigitalSignature, source: ByteString, key: PublicKey): Boolean =
     algorithm.isSignatureValid(signature, source, key)
 
 }
