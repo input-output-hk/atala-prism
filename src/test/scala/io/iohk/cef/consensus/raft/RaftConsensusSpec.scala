@@ -1,12 +1,10 @@
 package io.iohk.cef.consensus.raft
 
-import java.util.{Timer, TimerTask}
-
 import io.iohk.cef.consensus.raft.RaftConsensus.{VoteRequested, _}
 import org.scalatest.{BeforeAndAfterEach, Suite, WordSpec}
 import org.scalatest.Matchers._
 import org.scalatest.concurrent.Eventually._
-import org.scalatest.concurrent.ScalaFutures.{whenReady, convertScalaFuture}
+import org.scalatest.concurrent.ScalaFutures.{convertScalaFuture, whenReady}
 import org.scalatest.mockito.MockitoSugar._
 import org.mockito.Mockito.{inOrder, reset, times, verify, when}
 import org.mockito.ArgumentMatchers.any
@@ -14,7 +12,6 @@ import org.mockito.ArgumentMatchers.any
 import scala.collection.mutable
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Random
 
 class RaftConsensusSpec extends WordSpec with TestRPC {
   "Consensus module" should {
@@ -26,15 +23,15 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
           val realLeaderRpc = mock[RPC[String]]
 
           when(raftNode.getLeader).thenReturn(apparentLeaderRpc)
-          when(apparentLeaderRpc.clientAppendEntries(any[Seq[String]])).thenReturn(Future(Left(Redirect(realLeaderRpc))))
+          when(apparentLeaderRpc.clientAppendEntries(any[Seq[String]]))
+            .thenReturn(Future(Left(Redirect(realLeaderRpc))))
           when(realLeaderRpc.clientAppendEntries(any[Seq[String]])).thenReturn(Future(Right(())))
 
           val consensusModule = new RaftConsensus(raftNode)
 
           val responseF = consensusModule.appendEntries(Seq("A", "B", "C"))
 
-          whenReady(responseF) { response =>
-            verify(realLeaderRpc).clientAppendEntries(Seq("A", "B", "C"))
+          whenReady(responseF) { response => verify(realLeaderRpc).clientAppendEntries(Seq("A", "B", "C"))
           }
         }
       }
@@ -49,8 +46,7 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
 
           val responseF = consensusModule.appendEntries(Seq("A", "B", "C"))
 
-          whenReady(responseF) { response =>
-            verify(leaderRpc).clientAppendEntries(Seq("A", "B", "C"))
+          whenReady(responseF) { response => verify(leaderRpc).clientAppendEntries(Seq("A", "B", "C"))
           }
         }
       }
@@ -220,16 +216,16 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
                           entries = List(),
                           leaderCommitIndex = -1))
 
+        appendResult shouldBe AppendEntriesResult(term = 2, success = true)
         eventually {
           raftNode.getRole shouldBe Follower
-          appendResult shouldBe AppendEntriesResult(term = 2, success = true)
         }
       }
       "reject leader append entries calls from a leader with a lower term" in {
         val persistentStorage =
           new InMemoryPersistentStorage[String](Vector(), currentTerm = 2, votedFor = "anyone")
 
-        val raftNode = aCandidate(persistentStorage)
+        val _ = aCandidate(persistentStorage)
 
         val appendResult = appendCallback( // another server advises term 2
           EntriesToAppend(term = 2,
@@ -239,7 +235,6 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
                           entries = List(),
                           leaderCommitIndex = -1))
 
-        raftNode.getRole shouldBe Candidate
         appendResult shouldBe AppendEntriesResult(term = 3, success = false)
       }
     }
@@ -427,7 +422,6 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
         when(rpc3.appendEntries(any[EntriesToAppend[Command]]))
           .thenReturn(Future(AppendEntriesResult(2, success = true)))
 
-
         electionTimeoutCallback.apply()
 
         eventually { // after vote requests have come in
@@ -506,9 +500,10 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
                                                     votedFor = "i1")
 
             val raftNode = aLeader(persistentStorage)
+            val heartbeat = EntriesToAppend[String](3, "i1", 0, 2, Seq(), -1)
 
-            verify(rpc2).appendEntries(any[EntriesToAppend[Command]]) // the initial heartbeat
-            verify(rpc3).appendEntries(any[EntriesToAppend[Command]])
+            verify(rpc2).appendEntries(heartbeat) // the initial heartbeat
+            verify(rpc3).appendEntries(heartbeat)
 
             val expectedAppendEntries =
               EntriesToAppend(3, "i1", 0, 2, Seq(LogEntry[String]("B", 3, 1), LogEntry[String]("C", 3, 2)), -1)
@@ -539,7 +534,7 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
             verify(rpc3).appendEntries(expectedAppendEntries)
             verify(rpc3).appendEntries(expectedAdjustedAppendEntries)
 
-            val leaderVolatileState = raftNode.rc.single().leaderVolatileState
+            val leaderVolatileState = raftNode.getLeaderVolatileState
             leaderVolatileState.nextIndex shouldBe Seq(3, 3)
             leaderVolatileState.matchIndex shouldBe Seq(2, 2)
           }
@@ -601,13 +596,15 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
 
         t1.heartbeatTimeoutCallback.apply()
 
-        Seq("A", "B", "C", "D", "E").foreach(command => {
-          verify(t2.machine).apply(command)
-          verify(t3.machine).apply(command)
-        })
+        eventually {
+          Seq("A", "B", "C", "D", "E").foreach(command => {
+            verify(t2.machine).apply(command)
+            verify(t3.machine).apply(command)
+          })
 
-        t2.raftNode.getCommonVolatileState shouldBe CommonVolatileState(4, 4)
-        t3.raftNode.getCommonVolatileState shouldBe CommonVolatileState(4, 4)
+          t2.raftNode.getCommonVolatileState shouldBe CommonVolatileState(4, 4)
+          t3.raftNode.getCommonVolatileState shouldBe CommonVolatileState(4, 4)
+        }
       }
     }
   }
@@ -621,8 +618,6 @@ trait TestRPC extends BeforeAndAfterEach { this: Suite =>
   override def beforeEach() {
     reset(peer, rpc2, rpc3, stateMachine, electionTimer)
   }
-
-//  override def afterEach() {}
 
   type Command = String
   val stateMachine: Command => Unit = mock[Command => Unit]
@@ -685,8 +680,9 @@ trait TestRPC extends BeforeAndAfterEach { this: Suite =>
       .thenReturn(Future(RequestVoteResult(term = term + 1, voteGranted = false)))
 
     electionTimeoutCallback.apply()
-
-    raftNode.getRole shouldBe Candidate
+    eventually {
+      raftNode.getRole shouldBe Candidate
+    }
 
     raftNode
   }
@@ -783,29 +779,4 @@ class LocalRPC[T](peer: => RaftNode[T])(implicit ec: ExecutionContext) extends R
 
   override def clientAppendEntries(entries: Seq[T]): Future[Either[Redirect[T], Unit]] =
     peer.clientAppendEntries(entries)
-}
-
-class BouncyTimer(minTimeout: Duration, maxTimeout: Duration)(timeoutFn: () => Unit) extends RaftTimer {
-
-  val timer = new Timer()
-
-  override def reset(): Unit = {
-    timer.cancel()
-    schedule()
-  }
-
-  private def schedule(): Unit = {
-    timer.schedule(new TimerTask { override def run(): Unit = timeout() }, nextRandom())
-  }
-
-  private def timeout(): Unit = {
-    timeoutFn()
-    schedule()
-  }
-
-  private def nextRandom(): Int = {
-    val minTimeoutMillis = minTimeout.toMillis.toInt
-    val maxTimeoutMillis = maxTimeout.toMillis.toInt
-    minTimeoutMillis + Random.nextInt((maxTimeoutMillis - minTimeoutMillis) + 1)
-  }
 }
