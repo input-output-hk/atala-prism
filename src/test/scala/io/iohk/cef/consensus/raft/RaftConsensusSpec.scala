@@ -6,7 +6,7 @@ import io.iohk.cef.consensus.raft.RaftConsensus.{VoteRequested, _}
 import org.scalatest.{BeforeAndAfterEach, Suite, WordSpec}
 import org.scalatest.Matchers._
 import org.scalatest.concurrent.Eventually._
-import org.scalatest.concurrent.ScalaFutures.whenReady
+import org.scalatest.concurrent.ScalaFutures.{whenReady, convertScalaFuture}
 import org.scalatest.mockito.MockitoSugar._
 import org.mockito.Mockito.{inOrder, reset, times, verify, when}
 import org.mockito.ArgumentMatchers.any
@@ -220,8 +220,10 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
                           entries = List(),
                           leaderCommitIndex = -1))
 
-        raftNode.getRoleState shouldBe a[RaftConsensus.Follower[_]]
-        appendResult shouldBe AppendEntriesResult(term = 2, success = true)
+        eventually {
+          raftNode.getRole shouldBe Follower
+          appendResult shouldBe AppendEntriesResult(term = 2, success = true)
+        }
       }
       "reject leader append entries calls from a leader with a lower term" in {
         val persistentStorage =
@@ -237,7 +239,7 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
                           entries = List(),
                           leaderCommitIndex = -1))
 
-        raftNode.getRoleState shouldBe a[RaftConsensus.Candidate[_]]
+        raftNode.getRole shouldBe Candidate
         appendResult shouldBe AppendEntriesResult(term = 3, success = false)
       }
     }
@@ -256,7 +258,7 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
                           entries = List(),
                           leaderCommitIndex = -1))
 
-        raftNode.getRoleState shouldBe a[RaftConsensus.Follower[_]]
+        raftNode.getRole shouldBe Follower
         appendResult shouldBe AppendEntriesResult(term = 3, success = true)
       }
       "reject leader append entries calls from a candidate with a lower term" in {
@@ -273,7 +275,7 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
                           entries = List(),
                           leaderCommitIndex = -1))
 
-        raftNode.getRoleState shouldBe a[RaftConsensus.Leader[_]]
+        raftNode.getRole shouldBe Leader
         appendResult shouldBe AppendEntriesResult(term = 3, success = false)
       }
     }
@@ -395,7 +397,7 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
 
         electionTimeoutCallback.apply()
 
-        raftNode.getRoleState shouldBe a[RaftConsensus.Candidate[_]]
+        raftNode.getRole shouldBe Candidate
 
         // On conversion to candidate
         raftNode.getPersistentState shouldBe (2, raftNode.nodeId) // 1. increment current term and 2. vote for self
@@ -429,7 +431,7 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
         electionTimeoutCallback.apply()
 
         eventually { // after vote requests have come in
-          raftNode.getRoleState shouldBe a[RaftConsensus.Leader[_]]
+          raftNode.getRole shouldBe Leader
         }
       }
     }
@@ -449,7 +451,7 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
         electionTimeoutCallback.apply()
 
         after(500) {
-          raftNode.getRoleState shouldBe a[RaftConsensus.Candidate[_]]
+          raftNode.getRole shouldBe Candidate
         }
       }
     }
@@ -489,7 +491,7 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
         when(rpc3.appendEntries(any[EntriesToAppend[Command]]))
           .thenReturn(Future(AppendEntriesResult(3, success = true)))
 
-        val response = raftNode.clientAppendEntries(Seq("A"))
+        val response = raftNode.clientAppendEntries(Seq("A")).futureValue
         response shouldBe Right(())
         raftNode.getLog.last.command shouldBe "A"
         verify(stateMachine).apply("A")
@@ -528,7 +530,7 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
             when(rpc3.appendEntries(expectedAdjustedAppendEntries))
               .thenReturn(Future(AppendEntriesResult(3, success = true)))
 
-            val response: Either[Redirect[String], Unit] = raftNode.clientAppendEntries(Seq("B", "C"))
+            val response: Either[Redirect[String], Unit] = raftNode.clientAppendEntries(Seq("B", "C")).futureValue
 
             response shouldNot be(a[Redirect[_]])
 
@@ -554,8 +556,9 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
 
         val (t1, t2, t3) = anIntegratedCluster(s1, s2, s3)
         t1.electionTimeoutCallback.apply()
-
-        t1.raftNode.getRoleState shouldBe a[RaftConsensus.Leader[_]]
+        eventually {
+          t1.raftNode.getRole shouldBe Leader
+        }
       }
       "replicate logs" in {
         val s1 = new InMemoryPersistentStorage[String](Vector(), 1, "")
@@ -565,7 +568,11 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
         val (t1, t2, t3) = anIntegratedCluster(s1, s2, s3)
         t1.electionTimeoutCallback.apply()
 
-        val appendResult = t1.raftNode.clientAppendEntries(Seq("A", "B", "C", "D", "E"))
+        eventually {
+          t1.raftNode.getRole shouldBe Leader
+        }
+
+        val appendResult = t1.raftNode.clientAppendEntries(Seq("A", "B", "C", "D", "E")).futureValue
 
         appendResult shouldBe Right(())
 
@@ -679,7 +686,7 @@ trait TestRPC extends BeforeAndAfterEach { this: Suite =>
 
     electionTimeoutCallback.apply()
 
-    raftNode.getRoleState shouldBe a[RaftConsensus.Candidate[_]]
+    raftNode.getRole shouldBe Candidate
 
     raftNode
   }
@@ -701,7 +708,9 @@ trait TestRPC extends BeforeAndAfterEach { this: Suite =>
 
     electionTimeoutCallback.apply()
 
-    raftNode.getRoleState shouldBe a[RaftConsensus.Leader[_]]
+    eventually {
+      raftNode.getRole shouldBe Leader
+    }
 
     raftNode
   }
@@ -773,7 +782,7 @@ class LocalRPC[T](peer: => RaftNode[T])(implicit ec: ExecutionContext) extends R
     Future(peer.requestVote(voteRequested))
 
   override def clientAppendEntries(entries: Seq[T]): Future[Either[Redirect[T], Unit]] =
-    Future(peer.clientAppendEntries(entries))
+    peer.clientAppendEntries(entries)
 }
 
 class BouncyTimer(minTimeout: Duration, maxTimeout: Duration)(timeoutFn: () => Unit) extends RaftTimer {
