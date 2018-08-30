@@ -21,9 +21,14 @@ trait LedgerStorageDaoDbTest extends fixture.FlatSpec
   behavior of "LedgerStorageImpl"
 
   it should "update the ledger" in { implicit session =>
-    val keys = (1 to 4).map(_ => generateKeyPair._1)
+    val pair1 = generateKeyPair
+    val pair2 = generateKeyPair
+    val pair3 = generateKeyPair
+
     val header = IdentityBlockHeader(ByteString("hash"), Instant.now, 1)
-    val txList = List[IdentityTransaction](Claim("one", keys(0)), Link("two", keys(1)))
+    val txList = List[IdentityTransaction](
+      Claim("one", pair1._1),
+      Link("two", pair2._1, Link.sign("two", pair2._1, pair2._2)))
     val block = Block(header, txList)
     val storage = new LedgerStorageDao(Clock.systemUTC())
     storage.push(1, block)(IdentityBlockSerializer.serializable, session)

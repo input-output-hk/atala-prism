@@ -42,23 +42,31 @@ trait IdentityLedgerItDbTest
   behavior of "IdentityLedgerIt"
 
   it should "throw an error when the tx is inconsistent with the state" in { implicit session =>
-    val keys = (1 to 4).map(_ => generateKeyPair._1)
+    val pair1 = generateKeyPair
+    val pair2 = generateKeyPair
+    val pair3 = generateKeyPair
+
     val ledgerStateStorageDao = new IdentityLedgerStateStorageDao
     val ledger = createLedger(ledgerStateStorageDao)
     val now = Instant.now()
     val header = IdentityBlockHeader(ByteString("header"), now, 1)
-    val block1 = Block(header, List[IdentityTransaction](Claim("one", keys(0)), Claim("two", keys(1))))
+    val block1 = Block(header, List[IdentityTransaction](
+      Claim("one", pair1._1),
+      Claim("two", pair2._1)))
 
     val block1Result = ledger(block1)
     block1Result.right.value.isSuccess mustBe true
 
-    ledgerStateStorageDao.slice(Set("one")) mustBe IdentityLedgerState(Map("one" -> Set(keys(0))))
-    ledgerStateStorageDao.slice(Set("two")) mustBe IdentityLedgerState(Map("two" -> Set(keys(1))))
+    ledgerStateStorageDao.slice(Set("one")) mustBe IdentityLedgerState(Map("one" -> Set(pair1._1)))
+    ledgerStateStorageDao.slice(Set("two")) mustBe IdentityLedgerState(Map("two" -> Set(pair2._1)))
     ledgerStateStorageDao.slice(Set("three")) mustBe IdentityLedgerState()
     ledgerStateStorageDao.slice(Set("one","two","three")) mustBe
-      IdentityLedgerState(Map("one" -> Set(keys(0)), "two" -> Set(keys(1))))
+      IdentityLedgerState(Map(
+        "one" -> Set(pair1._1),
+        "two" -> Set(pair2._1)))
 
-    val block2 = Block(header.copy(height = 2), List[IdentityTransaction](Link("two", keys(3))))
+    val block2 = Block(header.copy(height = 2), List[IdentityTransaction](
+      Link("two", pair3._1, Link.sign("two", pair3._1, pair2._2))))
 
     val block2Result = ledger(block2)
     block2Result.right.value.isSuccess mustBe true
@@ -66,11 +74,12 @@ trait IdentityLedgerItDbTest
     ledgerStateStorageDao.slice(Set("one","two")) mustBe
       IdentityLedgerState(
         Map(
-          "one" -> Set(keys(0)),
-          "two" -> Set(keys(1), keys(3)))
+          "one" -> Set(pair1._1),
+          "two" -> Set(pair2._1, pair3._1))
       )
 
-    val block3 = Block(header.copy(height = 2), List[IdentityTransaction](Link("three", keys(3))))
+    val block3 = Block(header.copy(height = 2), List[IdentityTransaction](
+      Link("three", pair3._1, Link.sign("three", pair3._1, pair2._2))))
     val invalidResult = ledger(block3)
 
     if (invalidResult.isRight) {

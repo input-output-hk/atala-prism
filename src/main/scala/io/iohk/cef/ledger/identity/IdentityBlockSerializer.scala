@@ -3,9 +3,9 @@ package io.iohk.cef.ledger.identity
 import java.time.Instant
 
 import akka.util.ByteString
+import io.iohk.cef.crypto.low.{DigitalSignature, decodePublicKey}
 import io.iohk.cef.ledger.identity.storage.protobuf.identityLedger.{IdentityBlockProto, IdentityHeaderProto, IdentityTransactionProto}
 import io.iohk.cef.ledger.{Block, ByteStringSerializable}
-import io.iohk.cef.crypto.low.decodePublicKey
 
 object IdentityBlockSerializer {
 
@@ -25,7 +25,16 @@ object IdentityBlockSerializer {
 
             ptx.`type` match {
               case ClaimTxType => Claim(ptx.identity, key)
-              case LinkTxType => Link(ptx.identity, key)
+              case LinkTxType =>
+                // TODO: handle when the signature isn't there, this might need a good amount of code refactoring
+                val signature = ptx
+                    .signature
+                    .map(_.toByteArray)
+                    .map(ByteString.apply)
+                    .map(new DigitalSignature(_))
+                    .get
+
+                Link(ptx.identity, key, signature)
               case UnlinkTxType => Unlink(ptx.identity, key)
             }
           }).toList
@@ -38,14 +47,27 @@ object IdentityBlockSerializer {
             com.google.protobuf.ByteString.copyFrom(t.header.hash.toArray),
             t.header.height,
             t.header.created.toEpochMilli),
-            t.transactions.map(tx => {
-              val txType = tx match {
-                case _ : Claim => ClaimTxType
-                case _ : Link => LinkTxType
-                case _ : Unlink => UnlinkTxType
+            t.transactions.map { tx =>
+              val signatureMaybe = tx match {
+                case Link(_, _, signature) =>
+                  val bytes = com.google.protobuf.ByteString.copyFrom(signature.value.toArray)
+                  Option(bytes)
+
+                case _ => None
               }
-              IdentityTransactionProto(txType, tx.identity, com.google.protobuf.ByteString.copyFrom(tx.key.getEncoded))
-            })
+
+              val txType = tx match {
+                case _: Claim => ClaimTxType
+                case _: Link => LinkTxType
+                case _: Unlink => UnlinkTxType
+              }
+
+              IdentityTransactionProto(
+                txType,
+                tx.identity,
+                com.google.protobuf.ByteString.copyFrom(tx.key.getEncoded),
+                signatureMaybe)
+            }
         )
         ByteString(proto.toByteArray)
       }

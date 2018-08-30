@@ -9,6 +9,10 @@ case class IdentityNotClaimedError(identity: String) extends LedgerError {
   override def toString: String = s"Identity not claimed: ${identity}"
 }
 
+case object UnableToVerifySignatureError extends LedgerError {
+  override def toString: String = s"The given signature can't be verified"
+}
+
 case class IdentityTakenError(identity: String) extends LedgerError {
   override def toString: String = s"Identity already taken: ${identity}"
 }

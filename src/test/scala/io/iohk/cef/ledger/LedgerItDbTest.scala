@@ -37,15 +37,19 @@ trait LedgerItDbTest
     }
     val ledger = Ledger(1, genericLedgerStorageImpl, genericStateImpl)
 
-    val (key1, _) = generateKeyPair
-    val (key2, _) = generateKeyPair
 
-    val testTxs = List[IdentityTransaction](Claim("carlos", key1), Link("carlos", key2))
+    val pair1 = generateKeyPair
+    val pair2 = generateKeyPair
+
+    val testTxs = List[IdentityTransaction](
+      Claim("carlos", pair1._1),
+      Link("carlos", pair2._1, Link.sign("carlos", pair2._1, pair1._2)))
     val testBlock = Block(IdentityBlockHeader(ByteString("hash"), Instant.EPOCH, 1L), testTxs)
     val emptyLs = LedgerState[Set[PublicKey]](Map())
     genericStateDao.slice(1, Set("carlos")) mustBe emptyLs
+
     ledger(testBlock) mustBe Right(Success(()))
     genericStateDao.slice(1, Set("carlos")) mustBe
-      LedgerState[Set[PublicKey]](Map("carlos" -> Set(key1, key2)))
+      LedgerState[Set[PublicKey]](Map("carlos" -> Set(pair1._1, pair2._1)))
   }
 }

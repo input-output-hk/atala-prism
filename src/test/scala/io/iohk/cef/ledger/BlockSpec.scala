@@ -16,12 +16,14 @@ class BlockSpec
   behavior of "Block"
 
   it should "apply itself to a state" in {
-    val keys = (1 to 2).map(_ => generateKeyPair._1)
+    val pair1 = generateKeyPair
+    val pair2 = generateKeyPair
 
-    val txs = List (Claim("one", keys(0)),
-      Link("one", keys(1)),
-      Unlink("one", keys(1)),
-      Unlink("one", keys(0)))
+    val txs = List (
+      Claim("one", pair1._1),
+      Link("one", pair2._1, Link.sign("one", pair2._1, pair1._2)),
+      Unlink("one", pair2._1),
+      Unlink("one", pair1._1))
 
     val header = IdentityBlockHeader(ByteString("hash"), Instant.now, 1)
     val block = Block(header, txs)
@@ -30,21 +32,25 @@ class BlockSpec
 
     newState.right.value mustBe IdentityLedgerState(Map())
 
-    val badTxs = List (Claim("one", keys(0)),
-      Link("two", keys(1)),
-      Unlink("one", keys(1)),
-      Unlink("one", keys(0)))
+    val badTxs = List (
+      Claim("one", pair1._1),
+      Link("two", pair2._1, Link.sign("two", pair2._1, pair1._2)),
+      Unlink("one", pair2._1),
+      Unlink("one", pair1._1))
     val newBlock = block.copy(transactions = badTxs)
     newBlock(state).left.value mustBe IdentityNotClaimedError("two")
   }
 
   it should "calculate keys correctly" in {
-    val keys = (1 to 2).map(_ => generateKeyPair._1)
+    val pair1 = generateKeyPair
+    val pair2 = generateKeyPair
 
-    val txs = List (Claim("one", keys(0)),
-      Link("two", keys(1)),
-      Unlink("three", keys(1)),
-      Unlink("three", keys(0)))
+    val txs = List (
+      Claim("one", pair1._1),
+      Link("two", pair2._1, Link.sign("two", pair2._1, pair1._2)),
+      Unlink("three", pair2._1),
+      Unlink("three", pair1._1))
+
     val header = IdentityBlockHeader(ByteString("hash"), Instant.now, 1)
     val block = Block(header, txs)
     block.partitionIds mustBe Set("one", "two", "three")
