@@ -46,7 +46,7 @@ class TransactionPoolSpec extends FlatSpec with MustMatchers with PropertyChecks
   it should "not produce blocks larger than the max block size" in {
     forAll { (txs: Queue[DummyTransaction], header: DummyBlockHeader) =>
       val size = totalSize(txs.toList, header)
-      val pool = new TransactionPool(txs, (_: Seq[DummyTransaction]) => header, size)
+      val pool = new TransactionPool(txs, (_: Seq[Transaction[String]]) => header, size)
       val (emptyPool, block) = pool.generateBlock()
       block.header mustBe header
       block.transactions mustBe txs
@@ -65,7 +65,7 @@ class TransactionPoolSpec extends FlatSpec with MustMatchers with PropertyChecks
 
   it should "process a transaction" in {
     val header = DummyBlockHeader(1)
-    val pool = new TransactionPool(Queue[DummyTransaction](), (_: Seq[DummyTransaction]) => header, 2)
+    val pool = new TransactionPool(Queue[DummyTransaction](), (_: Seq[Transaction[String]]) => header, 2)
     val tx = DummyTransaction(2)
     pool.queue.isEmpty mustBe true
     val newPool = pool.processTransaction(tx)
@@ -75,7 +75,7 @@ class TransactionPoolSpec extends FlatSpec with MustMatchers with PropertyChecks
 
   it should "remove block transactions" in {
     val header = DummyBlockHeader(1)
-    val pool = new TransactionPool(Queue[DummyTransaction](), (_: Seq[DummyTransaction]) => header, 2)
+    val pool = new TransactionPool(Queue[DummyTransaction](), (_: Seq[Transaction[String]]) => header, 2)
     val txs = List(DummyTransaction(2), DummyTransaction(3), DummyTransaction(4))
     pool.queue.isEmpty mustBe true
     val newPool = txs.foldLeft(pool)(_.processTransaction(_))
