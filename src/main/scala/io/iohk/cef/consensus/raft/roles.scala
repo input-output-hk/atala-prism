@@ -32,23 +32,18 @@ private[raft] class Follower[Command](raftNode: RaftNode[Command])(implicit ec: 
 
     val log = rc.log
     val (currentTerm, _) = rc.persistentState
-
     if (appendEntriesConsistencyCheck1(entriesToAppend.term, currentTerm)) {
-
       (rc, AppendEntriesResult(term = currentTerm, success = false))
-
     } else if (appendEntriesConsistencyCheck2(log, entriesToAppend.prevLogIndex)) {
-
       (rc, AppendEntriesResult(term = currentTerm, success = false))
-
     } else {
       val conflicts = appendEntriesConflictSearch(log, entriesToAppend)
       if (conflicts != 0) {
-        val rc2 = rc.copy(leaderId = entriesToAppend.leaderId, log = log.dropRight(conflicts))
+        val rc2 = rc.copy(leaderId = entriesToAppend.leaderId, deletes = conflicts)
         (rc2, AppendEntriesResult(term = currentTerm, success = false))
       } else {
         val additions: Seq[LogEntry[Command]] = appendEntriesAdditions(log, entriesToAppend)
-        val rc2 = rc.copy(leaderId = entriesToAppend.leaderId, log = log ++ additions)
+        val rc2 = rc.copy(leaderId = entriesToAppend.leaderId, writes = rc.writes ++ additions)
         val rc3 = appendEntriesCommitIndexCheck(rc2, entriesToAppend.leaderCommitIndex, iLastNewEntry(additions))
         (rc3, AppendEntriesResult(term = currentTerm, success = true))
       }
@@ -63,7 +58,7 @@ private[raft] class Follower[Command](raftNode: RaftNode[Command])(implicit ec: 
     term < currentTerm
 
   // AppendEntries summary note #2 (Sec 5.3 Consistency check)
-  private def appendEntriesConsistencyCheck2(log: Vector[LogEntry[Command]], prevLogIndex: Int): Boolean = {
+  private def appendEntriesConsistencyCheck2(log: IndexedSeq[LogEntry[Command]], prevLogIndex: Int): Boolean = {
     @tailrec
     def loop(i: Int): Boolean = {
       if (i == -1)
@@ -80,7 +75,7 @@ private[raft] class Follower[Command](raftNode: RaftNode[Command])(implicit ec: 
   }
 
   // AppendEntries summary note #3 (Sec 5.3 deleting inconsistent log entries)
-  private def appendEntriesConflictSearch(log: Vector[LogEntry[Command]],
+  private def appendEntriesConflictSearch(log: IndexedSeq[LogEntry[Command]],
                                           entriesToAppend: EntriesToAppend[Command]): Int = {
 
     val logSz = log.size
@@ -117,7 +112,7 @@ private[raft] class Follower[Command](raftNode: RaftNode[Command])(implicit ec: 
   }
 
   // AppendEntries summary note #4 (append new entries not already in the log)
-  private def appendEntriesAdditions(log: Vector[LogEntry[Command]],
+  private def appendEntriesAdditions(log: IndexedSeq[LogEntry[Command]],
                                      entriesToAppend: EntriesToAppend[Command]): Seq[LogEntry[Command]] = {
 
     val logSz = log.size
@@ -227,7 +222,7 @@ private[raft] class Leader[Command](raftNode: RaftNode[Command])(implicit ec: Ex
       (nextLogIndex, entriesToAppend :+ nextEntry)
     })
 
-    val rc2 = rc.copy(log = log ++ entriesToAppend)
+    val rc2 = rc.copy(writes = entriesToAppend)
 
     sendAppendEntries(rc2).map(rcf => (rcf, Right(())))
   }
@@ -283,7 +278,7 @@ private[raft] class Leader[Command](raftNode: RaftNode[Command])(implicit ec: Ex
 
   private def appendEntryForNode(nextIndex: Int,
                                  commitIndex: Int,
-                                 theLog: Vector[LogEntry[Command]],
+                                 theLog: IndexedSeq[LogEntry[Command]],
                                  currentTerm: Int,
                                  lastLogIndex: Int,
                                  peerRpc: RPC[Command],
@@ -306,7 +301,7 @@ private[raft] class Leader[Command](raftNode: RaftNode[Command])(implicit ec: Ex
     }
   }
 
-  private def findN(log: Vector[LogEntry[Command]],
+  private def findN(log: IndexedSeq[LogEntry[Command]],
                     currentTerm: Int,
                     commitIndex: Int,
                     matchIndex: Seq[Int]): Option[Int] = {

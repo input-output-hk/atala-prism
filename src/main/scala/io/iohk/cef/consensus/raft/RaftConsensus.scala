@@ -101,8 +101,22 @@ object RaftConsensus {
     * @tparam Command the user command type.
     */
   trait PersistentStorage[Command] {
+    /**
+      * Return the stored term and votedFor fields.
+      * If none are available, implementations should return (0, "")
+      */
     def state: (Int, String)
-    def log: Vector[LogEntry[Command]]
+
+    /**
+      * A read only view of the log.
+      * Raft scrolls backwards through the log so implementations can
+      * scroll from the tail.
+      */
+    def log: IndexedSeq[LogEntry[Command]]
+
+    def state(currentTerm: Int, votedFor: String): Unit
+
+    def log(deletes: Int, writes: Seq[LogEntry[Command]]): Unit
   }
 
   /**
@@ -176,8 +190,12 @@ object RaftConsensus {
                                   commonVolatileState: CommonVolatileState[Command],
                                   leaderVolatileState: LeaderVolatileState,
                                   persistentState: (Int, String),
-                                  log: Vector[LogEntry[Command]],
-                                  leaderId: String)
+                                  baseLog: IndexedSeq[LogEntry[Command]],
+                                  deletes: Int,
+                                  writes: Seq[LogEntry[Command]],
+                                  leaderId: String) {
+    val log = new VirtualVector(baseLog, deletes, writes)
+  }
 
   trait RaftNodeInterface[Command] {
     def getLeader: RPC[Command]

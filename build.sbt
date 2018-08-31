@@ -67,7 +67,10 @@ val dep = {
     "com.chuusai" %% "shapeless" % "2.3.3",
     "org.scala-lang" % "scala-reflect" % scalaV,
 
-    "org.scala-stm" %% "scala-stm" % "0.8"
+    "org.scala-stm" %% "scala-stm" % "0.8",
+    "com.github.sbtourist" % "journalio" % "1.4.2",
+
+    "commons-io" % "commons-io" % "2.6" % Test
   )
 }
 

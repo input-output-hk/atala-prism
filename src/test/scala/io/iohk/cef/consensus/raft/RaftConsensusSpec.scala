@@ -110,7 +110,7 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
                             leaderCommitIndex = 4))
 
           appendResult shouldBe AppendEntriesResult(term = 1, success = false)
-          raftNode.getLog shouldBe Vector(LogEntry("A", 1, 0))
+          persistentStorage.log shouldBe Vector(LogEntry("A", 1, 0))
         }
       }
       "implement rule #4" should {
@@ -135,7 +135,7 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
 
           appendResult shouldBe AppendEntriesResult(term = 1, success = true)
 
-          raftNode.getLog shouldBe Vector(LogEntry("A", 1, index = 0),
+          persistentStorage.log shouldBe Vector(LogEntry("A", 1, index = 0),
                                           LogEntry("B", 1, index = 1),
                                           LogEntry("C", 1, index = 2),
                                           LogEntry("D", 1, index = 3))
@@ -485,7 +485,7 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
 
         val response = raftNode.clientAppendEntries(Seq("A")).futureValue
         response shouldBe Right(())
-        raftNode.getLog.last.command shouldBe "A"
+        persistentStorage.log.last.command shouldBe "A"
         verify(stateMachine).apply("A")
         raftNode.getCommonVolatileState shouldBe CommonVolatileState(0, 0)
       }
@@ -574,9 +574,9 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
                                      LogEntry("C", 2, 2),
                                      LogEntry("D", 2, 3),
                                      LogEntry("E", 2, 4))
-        t1.raftNode.getLog shouldBe expectedEntries
-        t2.raftNode.getLog shouldBe expectedEntries
-        t3.raftNode.getLog shouldBe expectedEntries
+        s1.log shouldBe expectedEntries
+        s2.log shouldBe expectedEntries
+        s3.log shouldBe expectedEntries
 
         t1.raftNode.getLeaderVolatileState shouldBe LeaderVolatileState(Seq(5, 5), Seq(4, 4))
         t2.raftNode.getLeaderVolatileState shouldBe LeaderVolatileState(Seq(0, 0), Seq(-1, -1))
@@ -585,6 +585,7 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
         t1.raftNode.getCommonVolatileState shouldBe CommonVolatileState(4, 4)
         t2.raftNode.getCommonVolatileState shouldBe CommonVolatileState(-1, -1)
         t3.raftNode.getCommonVolatileState shouldBe CommonVolatileState(-1, -1)
+
 
         Seq("A", "B", "C", "D", "E").foreach(command => {
           verify(t1.machine).apply(command)
@@ -765,12 +766,22 @@ class InMemoryPersistentStorage[T](var logEntries: Vector[LogEntry[T]], var curr
   override def state: (Int, String) = (currentTerm, votedFor)
 
   override def log: Vector[LogEntry[T]] = logEntries
+
+  override def state(currentTerm: Int, votedFor: String): Unit = {
+    this.currentTerm = currentTerm
+    this.votedFor = votedFor
+  }
+  override def log(deletes: Int,
+                   writes: Seq[LogEntry[T]]): Unit = {
+    logEntries = logEntries.dropRight(deletes) ++ writes
+  }
 }
 
 class LocalRPC[T](peer: => RaftNode[T])(implicit ec: ExecutionContext) extends RPC[T] {
 
-  override def appendEntries(entriesToAppend: EntriesToAppend[T]): Future[AppendEntriesResult] =
+  override def appendEntries(entriesToAppend: EntriesToAppend[T]): Future[AppendEntriesResult] = {
     Future(peer.appendEntries(entriesToAppend))
+  }
 
   override def requestVote(voteRequested: VoteRequested): Future[RequestVoteResult] =
     Future(peer.requestVote(voteRequested))
