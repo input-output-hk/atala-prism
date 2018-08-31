@@ -22,7 +22,7 @@ class IdentityTransactionSpec
     val pair3 = generateKeyPair
 
     val state = IdentityLedgerState(Map("one" -> Set(pair1._1)))
-    val claim = Claim("one", pair1._1, dummySignature)
+    val claim = Claim("one", pair1._1, IdentityTransaction.sign("one", pair1._1, pair1._2))
     val link = Link("two", pair2._1, IdentityTransaction.sign("two", pair3._1, pair2._2))
     val unlink1 = Unlink("two", pair2._1, dummySignature)
     val unlink2 = Unlink("one", pair2._1, dummySignature)
@@ -37,7 +37,7 @@ class IdentityTransactionSpec
     val pair1 = generateKeyPair
 
     val state = IdentityLedgerState()
-    val claim = Claim("one", pair1._1, dummySignature)
+    val claim = Claim("one", pair1._1, IdentityTransaction.sign("one", pair1._1, pair1._2))
     val newStateEither = claim(state)
 
     val newState = newStateEither.right.value
@@ -60,6 +60,16 @@ class IdentityTransactionSpec
     newState.get("one").value mustBe Set(pair1._1, pair2._1)
     newState.contains("one") mustBe true
     newState.contains("two") mustBe false
+  }
+
+  it should "fail to apply a claim if the signature can not be verified" in {
+    val pair1 = generateKeyPair
+
+    val state = IdentityLedgerState(Map.empty)
+    val transaction = Claim("one", pair1._1, IdentityTransaction.sign("onee", pair1._1, pair1._2))
+
+    val result = transaction(state).left.value
+    result mustBe UnableToVerifySignatureError
   }
 
   it should "fail to apply a link if the signature can not be verified" in {
@@ -97,7 +107,7 @@ class IdentityTransactionSpec
     val pair1 = generateKeyPair
     val pair2 = generateKeyPair
 
-    val claim = Claim("one", pair1._1, dummySignature)
+    val claim = Claim("one", pair1._1, IdentityTransaction.sign("one", pair1._1, pair1._2))
     val link = Link("two", pair2._1, IdentityTransaction.sign("two", pair2._1, pair2._2))
     val unlink = Unlink("two", pair2._1, dummySignature)
     claim.partitionIds mustBe Set(claim.identity)

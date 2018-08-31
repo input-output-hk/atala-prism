@@ -54,11 +54,10 @@ trait IdentityLedgerItDbTest
     val now = Instant.now()
     val header = IdentityBlockHeader(ByteString("header"), now, 1)
     val block1 = Block(header, List[IdentityTransaction](
-      Claim("one", pair1._1, dummySignature),
-      Claim("two", pair2._1, dummySignature)))
+      Claim("one", pair1._1, IdentityTransaction.sign("one", pair1._1, pair1._2)),
+      Claim("two", pair2._1, IdentityTransaction.sign("two", pair2._1, pair2._2))))
 
-    val block1Result = ledger(block1)
-    block1Result.right.value.isSuccess mustBe true
+    ledger(block1).right.value.isSuccess mustBe true
 
     ledgerStateStorageDao.slice(Set("one")) mustBe IdentityLedgerState(Map("one" -> Set(pair1._1)))
     ledgerStateStorageDao.slice(Set("two")) mustBe IdentityLedgerState(Map("two" -> Set(pair2._1)))
@@ -71,8 +70,7 @@ trait IdentityLedgerItDbTest
     val block2 = Block(header.copy(height = 2), List[IdentityTransaction](
       Link("two", pair3._1, IdentityTransaction.sign("two", pair3._1, pair2._2))))
 
-    val block2Result = ledger(block2)
-    block2Result.right.value.isSuccess mustBe true
+    ledger(block2).right.value.isSuccess mustBe true
 
     ledgerStateStorageDao.slice(Set("one","two")) mustBe
       IdentityLedgerState(

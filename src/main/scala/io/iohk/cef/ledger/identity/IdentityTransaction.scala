@@ -35,12 +35,19 @@ object IdentityTransaction {
 
 case class Claim(identity: String, key: PublicKey, signature: DigitalSignature) extends IdentityTransaction {
 
-  override def apply(ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] =
-    if(ledgerState.contains(identity)) {
+  import IdentityTransaction._
+
+  override def apply(ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] = {
+    val validSignature = isSignedWith(key, signature)(identity, key)
+
+    if (!validSignature) {
+      Left(UnableToVerifySignatureError)
+    } else if (ledgerState.contains(identity)) {
       Left(IdentityTakenError(identity))
     } else {
       Right(ledgerState.put(identity, Set(key)))
     }
+  }
 
   override def partitionIds: Set[String] = Set(identity)
 

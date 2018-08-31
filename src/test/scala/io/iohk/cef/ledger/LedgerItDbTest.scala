@@ -45,7 +45,7 @@ trait LedgerItDbTest
     val pair2 = generateKeyPair
 
     val testTxs = List[IdentityTransaction](
-      Claim("carlos", pair1._1, dummySignature),
+      Claim("carlos", pair1._1, IdentityTransaction.sign("carlos", pair1._1, pair1._2)),
       Link("carlos", pair2._1, IdentityTransaction.sign("carlos", pair2._1, pair1._2)))
     val testBlock = Block(IdentityBlockHeader(ByteString("hash"), Instant.EPOCH, 1L), testTxs)
     val emptyLs = LedgerState[Set[PublicKey]](Map())

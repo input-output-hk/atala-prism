@@ -23,7 +23,7 @@ class BlockSpec
     val pair2 = generateKeyPair
 
     val txs = List (
-      Claim("one", pair1._1, dummySignature),
+      Claim("one", pair1._1, IdentityTransaction.sign("one", pair1._1, pair1._2)),
       Link("one", pair2._1, IdentityTransaction.sign("one", pair2._1, pair1._2)),
       Unlink("one", pair2._1, dummySignature),
       Unlink("one", pair1._1, dummySignature))
@@ -36,7 +36,7 @@ class BlockSpec
     newState.right.value mustBe IdentityLedgerState(Map())
 
     val badTxs = List (
-      Claim("one", pair1._1, dummySignature),
+      Claim("one", pair1._1, IdentityTransaction.sign("one", pair1._1, pair1._2)),
       Link("two", pair2._1, IdentityTransaction.sign("two", pair2._1, pair1._2)),
       Unlink("one", pair2._1, dummySignature),
       Unlink("one", pair1._1, dummySignature))
