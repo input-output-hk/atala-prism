@@ -17,9 +17,9 @@ import scala.collection.immutable.Queue
   * @tparam State the ledger state type
   * @tparam Header the block header type
   */
-class TransactionPoolActorHolder[State, Header <: BlockHeader, Tx <: Transaction[State]](
+class TransactionPoolActorModelInterface[State, Header <: BlockHeader, Tx <: Transaction[State]](
   actorCreator: Props => ActorRef,
-  headerGenerator: Seq[Tx] => Header,
+  headerGenerator: Seq[Transaction[State]] => Header,
   maxTxSizeInBytes: Int)(
   implicit blockByteSizeable: ByteSizeable[Block[State, Header, Tx]]) {
 

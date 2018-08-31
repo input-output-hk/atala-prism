@@ -10,6 +10,6 @@ import io.iohk.cef.LedgerId
   *                              ledger with id ledgerId
   * @tparam State the ledgerState
   */
-case class Envelope[D](content: D,
+case class Envelope[+D](content: D,
                   ledgerId: LedgerId,
                   destinationDescriptor: DestinationDescriptor)

@@ -2,6 +2,7 @@ package io.iohk.cef.transactionpool
 import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
 import io.iohk.cef.utils.ByteSizeable
 
+import scala.annotation.tailrec
 import scala.collection.immutable.Queue
 
 /**
@@ -15,18 +16,17 @@ import scala.collection.immutable.Queue
   * @tparam Header the block header type
   */
 class TransactionPool[State, Header <: BlockHeader, Tx <: Transaction[State]](
-    val queue: Queue[Tx with Transaction[State]] = Queue(),
-    headerGenerator: Seq[Tx] => Header,
+    val queue: Queue[Tx] = Queue(),
+    headerGenerator: Seq[Transaction[State]] => Header,
     val maxBlockSize: Int)(implicit blockByteSizeable: ByteSizeable[Block[State, Header, Tx]]) {
   type QueueType = Queue[Tx]
   type BlockType = Block[State, Header, Tx]
 
-  val txPoolState =
-    TransactionPoolState(headerGenerator, maxBlockSize, blockByteSizeable)
-
   def generateBlock(): (TransactionPool[State, Header, Tx], BlockType) = {
-    val (newQueue, block) = txPoolState(queue)
-    (copy(queue = newQueue), block)
+    require(sizeInBytes(Queue()) <= maxBlockSize)
+    val (blockTxs, tail) = getTxs(Queue(), queue)
+    val header = headerGenerator(blockTxs)
+    (copy(queue = tail), Block(header, blockTxs))
   }
 
   def processTransaction(transaction: Tx): TransactionPool[State, Header, Tx] =
@@ -37,8 +37,29 @@ class TransactionPool[State, Header <: BlockHeader, Tx <: Transaction[State]](
     copy(queue = queue.filterNot(blockTxs.contains))
   }
 
-  def copy(queue: Queue[Tx with Transaction[State]] = queue,
-           headerGenerator: Seq[Tx] => Header = headerGenerator,
+  def copy(queue: QueueType = queue,
+           headerGenerator: Seq[Transaction[State]] => Header = headerGenerator,
            maxBlockSize: Int = maxBlockSize): TransactionPool[State, Header, Tx] =
     new TransactionPool(queue, headerGenerator, maxBlockSize)
+
+
+  def sizeInBytes(txs: QueueType): Int = {
+    val header = headerGenerator(txs)
+    blockByteSizeable.sizeInBytes(Block(header, txs))
+  }
+
+  @tailrec
+  private def getTxs(blockTxs: QueueType, remainingQueue: QueueType): (QueueType, QueueType) = {
+    if(remainingQueue.isEmpty) {
+      (blockTxs, remainingQueue)
+    } else {
+      val (nextTx, tailRemainingQueue) = remainingQueue.dequeue
+      val nextBlockTxs = blockTxs.enqueue(nextTx)
+      if(sizeInBytes(nextBlockTxs) > maxBlockSize) {
+        (blockTxs, remainingQueue)
+      } else {
+        getTxs(nextBlockTxs, tailRemainingQueue)
+      }
+    }
+  }
 }
