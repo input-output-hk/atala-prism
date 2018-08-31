@@ -10,6 +10,4 @@ import scala.concurrent.Future
   */
 trait TransactionPoolInterface[State, Header <: BlockHeader, Tx <: Transaction[State]] {
   def processTransaction(tx: Tx): Future[Either[ApplicationError, Unit]]
-
-  def removeBlockTransactions(block: Block[State, Header, Tx]): Future[Either[ApplicationError, Unit]]
 }

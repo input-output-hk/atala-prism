@@ -17,8 +17,4 @@ class TransactionPoolInterfaceImpl[State, Header <: BlockHeader, Tx <: Transacti
   override def processTransaction(tx: Tx): Future[Either[ApplicationError, Unit]] = {
     (poolActor ? ProcessTransaction(tx)).mapTo[ProcessTransactionResponse].map(_.result)
   }
-
-  override def removeBlockTransactions(block: Block[State, Header, Tx]): Future[Either[ApplicationError, Unit]] = {
-    (poolActor ? RemoveBlockTransactions(block)).mapTo[RemoveBlockTransactionsResponse].map(_.result)
-  }
 }
