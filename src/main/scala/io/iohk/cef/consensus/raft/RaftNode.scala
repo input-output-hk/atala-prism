@@ -3,17 +3,17 @@ import io.iohk.cef.consensus.raft.RaftConsensus._
 
 import scala.annotation.tailrec
 import scala.concurrent.{ExecutionContext, Future}
-import scala.concurrent.stm.{Ref, atomic}
+import scala.concurrent.stm.Ref
 
 /**
   * Raft node implementation.
   */
 private[raft] class RaftNode[Command](val nodeId: String,
-                                      val clusterMemberIds: Seq[String],
+                                      clusterMemberIds: Seq[String],
                                       rpcFactory: RPCFactory[Command],
                                       electionTimerFactory: RaftTimerFactory = defaultElectionTimerFactory,
                                       heartbeatTimerFactory: RaftTimerFactory = defaultHeartbeatTimerFactory,
-                                      val stateMachine: Command => Unit,
+                                      stateMachine: Command => Unit,
                                       persistentStorage: PersistentStorage[Command])(implicit ec: ExecutionContext)
     extends RaftNodeInterface[Command] {
 
@@ -68,19 +68,17 @@ private[raft] class RaftNode[Command](val nodeId: String,
   private def withRaftContext[T](f: RaftContext[Command] => (RaftContext[Command], T)): T = {
     val initialContext = rc.single()
     val (nextContext, result) = f(initialContext)
-    atomic { implicit txn =>
-      rc() = nextContext
-      result
-    }
+    rc.single.compareAndSet(initialContext, nextContext)
+    result
   }
 
   // this function is used by asynchronous entry points (the ones that have to contact other nodes) to atomically update the node state.
   private def withFutureRaftContext[T](f: RaftContext[Command] => Future[(RaftContext[Command], T)]): Future[T] = {
-    f(rc.single()).map(t =>
-      atomic { implicit txn =>
-        val (nextContext, result) = t
-        rc() = nextContext // NB: on a different thread! This is not the same STM state as the enclosing block.
-        result
+    val initialContext = rc.single()
+    f(initialContext).map(t => {
+      val (nextContext, result) = t
+      rc.single.compareAndSet(initialContext, nextContext)
+      result
     })
   }
 

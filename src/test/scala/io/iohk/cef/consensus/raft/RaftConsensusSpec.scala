@@ -217,9 +217,7 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
                           leaderCommitIndex = -1))
 
         appendResult shouldBe AppendEntriesResult(term = 2, success = true)
-        eventually {
-          raftNode.getRole shouldBe Follower
-        }
+        raftNode.getRole shouldBe Follower
       }
       "reject leader append entries calls from a leader with a lower term" in {
         val persistentStorage =
