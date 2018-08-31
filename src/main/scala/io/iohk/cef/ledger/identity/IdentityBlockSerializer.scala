@@ -22,20 +22,12 @@ object IdentityBlockSerializer {
           IdentityBlockHeader(ByteString(proto.header.hash.toByteArray), Instant.ofEpochMilli(proto.header.createdEpochMilli), proto.header.blockHeight),
           proto.transactions.map(ptx => {
             val key = decodePublicKey(ptx.publicKey.toByteArray)
+            val signature = new DigitalSignature(ByteString(ptx.signature.toByteArray))
 
             ptx.`type` match {
-              case ClaimTxType => Claim(ptx.identity, key)
-              case LinkTxType =>
-                // TODO: handle when the signature isn't there, this might need a good amount of code refactoring
-                val signature = ptx
-                    .signature
-                    .map(_.toByteArray)
-                    .map(ByteString.apply)
-                    .map(new DigitalSignature(_))
-                    .get
-
-                Link(ptx.identity, key, signature)
-              case UnlinkTxType => Unlink(ptx.identity, key)
+              case ClaimTxType => Claim(ptx.identity, key, signature)
+              case LinkTxType => Link(ptx.identity, key, signature)
+              case UnlinkTxType => Unlink(ptx.identity, key, signature)
             }
           }).toList
         )
@@ -48,13 +40,7 @@ object IdentityBlockSerializer {
             t.header.height,
             t.header.created.toEpochMilli),
             t.transactions.map { tx =>
-              val signatureMaybe = tx match {
-                case Link(_, _, signature) =>
-                  val bytes = com.google.protobuf.ByteString.copyFrom(signature.value.toArray)
-                  Option(bytes)
-
-                case _ => None
-              }
+              val signature = com.google.protobuf.ByteString.copyFrom(tx.signature.value.toArray)
 
               val txType = tx match {
                 case _: Claim => ClaimTxType
@@ -66,7 +52,7 @@ object IdentityBlockSerializer {
                 txType,
                 tx.identity,
                 com.google.protobuf.ByteString.copyFrom(tx.key.getEncoded),
-                signatureMaybe)
+                signature)
             }
         )
         ByteString(proto.toByteArray)

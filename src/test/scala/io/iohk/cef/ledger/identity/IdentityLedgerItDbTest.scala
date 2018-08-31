@@ -5,6 +5,7 @@ import java.time.{Clock, Instant}
 
 import akka.util.ByteString
 import io.iohk.cef.builder.RSAKeyGenerator
+import io.iohk.cef.crypto.low.DigitalSignature
 import io.iohk.cef.ledger.Block
 import io.iohk.cef.ledger.identity.IdentityBlockSerializer._
 import io.iohk.cef.ledger.identity.storage.scalike.IdentityLedgerStateStorageImpl
@@ -26,6 +27,8 @@ trait IdentityLedgerItDbTest
     with RSAKeyGenerator
     with EitherValues
     with IdentityLedgerStateStorageFixture {
+
+  val dummySignature = new DigitalSignature(ByteString.empty)
 
   def createLedger(ledgerStateStorageDao: IdentityLedgerStateStorageDao)(implicit dBSession: DBSession): Ledger[Try, Set[PublicKey]] = {
     implicit val forExpEnabler = ForExpressionsEnabler.tryEnabler
@@ -51,8 +54,8 @@ trait IdentityLedgerItDbTest
     val now = Instant.now()
     val header = IdentityBlockHeader(ByteString("header"), now, 1)
     val block1 = Block(header, List[IdentityTransaction](
-      Claim("one", pair1._1),
-      Claim("two", pair2._1)))
+      Claim("one", pair1._1, dummySignature),
+      Claim("two", pair2._1, dummySignature)))
 
     val block1Result = ledger(block1)
     block1Result.right.value.isSuccess mustBe true
@@ -66,7 +69,7 @@ trait IdentityLedgerItDbTest
         "two" -> Set(pair2._1)))
 
     val block2 = Block(header.copy(height = 2), List[IdentityTransaction](
-      Link("two", pair3._1, Link.sign("two", pair3._1, pair2._2))))
+      Link("two", pair3._1, IdentityTransaction.sign("two", pair3._1, pair2._2))))
 
     val block2Result = ledger(block2)
     block2Result.right.value.isSuccess mustBe true
@@ -79,7 +82,7 @@ trait IdentityLedgerItDbTest
       )
 
     val block3 = Block(header.copy(height = 2), List[IdentityTransaction](
-      Link("three", pair3._1, Link.sign("three", pair3._1, pair2._2))))
+      Link("three", pair3._1, IdentityTransaction.sign("three", pair3._1, pair2._2))))
     val invalidResult = ledger(block3)
 
     if (invalidResult.isRight) {

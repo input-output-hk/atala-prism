@@ -1,6 +1,8 @@
 package io.iohk.cef.ledger.identity
 
+import akka.util.ByteString
 import io.iohk.cef.builder.RSAKeyGenerator
+import io.iohk.cef.crypto.low.DigitalSignature
 import org.scalatest.{EitherValues, FlatSpec, MustMatchers, OptionValues}
 
 class IdentityTransactionSpec
@@ -12,16 +14,18 @@ class IdentityTransactionSpec
 
   behavior of "IdentityTransaction"
 
+  val dummySignature = new DigitalSignature(ByteString.empty)
+
   it should "throw an error when the tx is inconsistent with the state" in {
     val pair1 = generateKeyPair
     val pair2 = generateKeyPair
     val pair3 = generateKeyPair
 
     val state = IdentityLedgerState(Map("one" -> Set(pair1._1)))
-    val claim = Claim("one", pair1._1)
-    val link = Link("two", pair2._1, Link.sign("two", pair3._1, pair2._2))
-    val unlink1 = Unlink("two", pair2._1)
-    val unlink2 = Unlink("one", pair2._1)
+    val claim = Claim("one", pair1._1, dummySignature)
+    val link = Link("two", pair2._1, IdentityTransaction.sign("two", pair3._1, pair2._2))
+    val unlink1 = Unlink("two", pair2._1, dummySignature)
+    val unlink2 = Unlink("one", pair2._1, dummySignature)
 
     claim(state).left.value mustBe IdentityTakenError("one")
     link(state).left.value mustBe IdentityNotClaimedError("two")
@@ -33,7 +37,7 @@ class IdentityTransactionSpec
     val pair1 = generateKeyPair
 
     val state = IdentityLedgerState()
-    val claim = Claim("one", pair1._1)
+    val claim = Claim("one", pair1._1, dummySignature)
     val newStateEither = claim(state)
 
     val newState = newStateEither.right.value
@@ -48,7 +52,7 @@ class IdentityTransactionSpec
     val pair2 = generateKeyPair
 
     val state = IdentityLedgerState(Map("one" -> Set(pair1._1)))
-    val link = Link("one", pair2._1, Link.sign("one", pair2._1, pair1._2))
+    val link = Link("one", pair2._1, IdentityTransaction.sign("one", pair2._1, pair1._2))
     val newStateEither = link(state)
 
     val newState = newStateEither.right.value
@@ -63,7 +67,7 @@ class IdentityTransactionSpec
     val pair2 = generateKeyPair
 
     val state = IdentityLedgerState(Map("one" -> Set(pair1._1)))
-    val link = Link("one", pair2._1, Link.sign("one", pair2._1, pair2._2))
+    val link = Link("one", pair2._1, IdentityTransaction.sign("one", pair2._1, pair2._2))
 
     val result = link(state).left.value
     result mustBe UnableToVerifySignatureError
@@ -73,8 +77,8 @@ class IdentityTransactionSpec
     val keys = (1 to 4).map(_ => generateKeyPair._1)
 
     val state = IdentityLedgerState(Map("one" -> keys.take(2).toSet))
-    val unlink1 = Unlink("one", keys(0))
-    val unlink2 = Unlink("one", keys(1))
+    val unlink1 = Unlink("one", keys(0), dummySignature)
+    val unlink2 = Unlink("one", keys(1), dummySignature)
     val stateAfter1 = unlink1(state).right.value
     val stateAfter2 = unlink2(stateAfter1).right.value
 
@@ -93,9 +97,9 @@ class IdentityTransactionSpec
     val pair1 = generateKeyPair
     val pair2 = generateKeyPair
 
-    val claim = Claim("one", pair1._1)
-    val link = Link("two", pair2._1, Link.sign("two", pair2._1, pair2._2))
-    val unlink = Unlink("two", pair2._1)
+    val claim = Claim("one", pair1._1, dummySignature)
+    val link = Link("two", pair2._1, IdentityTransaction.sign("two", pair2._1, pair2._2))
+    val unlink = Unlink("two", pair2._1, dummySignature)
     claim.partitionIds mustBe Set(claim.identity)
     link.partitionIds mustBe Set(link.identity)
     unlink.partitionIds mustBe Set(unlink.identity)

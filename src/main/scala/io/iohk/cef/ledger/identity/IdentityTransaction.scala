@@ -9,10 +9,31 @@ import io.iohk.cef.ledger.{LedgerError, Transaction}
 sealed trait IdentityTransaction extends Transaction[Set[PublicKey]] {
   val identity: String
   val key: PublicKey
+  val signature: DigitalSignature
   override def hashCode(): Int = (identity.hashCode) + (key.hashCode())
 }
 
-case class Claim(identity: String, key: PublicKey) extends IdentityTransaction {
+object IdentityTransaction {
+
+  // TODO: allow to use other algorithms
+  private val algorithm = new SignAlgorithm.RSA(new SecureRandom())
+
+  def sign(identity: String, publicKey: PublicKey, privateKey: PrivateKey): DigitalSignature = {
+    val source = serializeForSignature(identity, publicKey)
+    algorithm.sign(source, privateKey)
+  }
+
+  def isSignedWith(signKey: PublicKey, signature: DigitalSignature)(identity: String, publicKey: PublicKey): Boolean = {
+    val source = serializeForSignature(identity, publicKey)
+    algorithm.isSignatureValid(signature, source, signKey)
+  }
+
+  private def serializeForSignature(identity: String, publicKey: PublicKey): ByteString = {
+    ByteString(identity) ++ ByteString(publicKey.getEncoded)
+  }
+}
+
+case class Claim(identity: String, key: PublicKey, signature: DigitalSignature) extends IdentityTransaction {
 
   override def apply(ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] =
     if(ledgerState.contains(identity)) {
@@ -25,7 +46,7 @@ case class Claim(identity: String, key: PublicKey) extends IdentityTransaction {
 
   override def equals(obj: scala.Any): Boolean = {
     obj match {
-      case Claim(i, k) => i == identity && k == key
+      case Claim(i, k, _) => i == identity && k == key
       case _ => false
     }
   }
@@ -43,7 +64,7 @@ case class Claim(identity: String, key: PublicKey) extends IdentityTransaction {
  */
 case class Link(identity: String, key: PublicKey, signature: DigitalSignature) extends IdentityTransaction {
 
-  import Link._
+  import IdentityTransaction._
 
   /**
    * Apply this transaction to the given state
@@ -76,7 +97,7 @@ case class Link(identity: String, key: PublicKey, signature: DigitalSignature) e
 
   override def equals(obj: scala.Any): Boolean = {
     obj match {
-      case Link(i, k) => i == identity && k == key
+      case Link(i, k, _) => i == identity && k == key
       case _ => false
     }
   }
@@ -84,7 +105,7 @@ case class Link(identity: String, key: PublicKey, signature: DigitalSignature) e
   override def canEqual(that: Any): Boolean = that.isInstanceOf[Link]
 }
 
-case class Unlink(identity: String, key: PublicKey) extends IdentityTransaction {
+case class Unlink(identity: String, key: PublicKey, signature: DigitalSignature) extends IdentityTransaction {
 
   override def apply(ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] =
     if(!ledgerState.contains(identity) || !ledgerState.get(identity).getOrElse(Set()).contains(key)) {
@@ -101,7 +122,7 @@ case class Unlink(identity: String, key: PublicKey) extends IdentityTransaction 
 
   override def equals(obj: scala.Any): Boolean = {
     obj match {
-      case Unlink(i, k) => i == identity && k == key
+      case Unlink(i, k, _) => i == identity && k == key
       case _ => false
     }
   }

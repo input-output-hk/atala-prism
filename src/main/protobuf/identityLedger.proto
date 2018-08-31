@@ -7,7 +7,7 @@ message IdentityTransactionProto {
     required uint32 type = 1;
     required string identity = 2;
     required bytes publicKey = 3;
-    optional bytes signature = 4;
+    required bytes signature = 4;
 }
 
 message IdentityHeaderProto {

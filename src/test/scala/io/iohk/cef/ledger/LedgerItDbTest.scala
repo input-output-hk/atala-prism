@@ -5,6 +5,7 @@ import java.time.{Clock, Instant}
 
 import akka.util.ByteString
 import io.iohk.cef.builder.RSAKeyGenerator
+import io.iohk.cef.crypto.low.DigitalSignature
 import io.iohk.cef.ledger.identity.{Claim, IdentityBlockHeader, IdentityTransaction, Link}
 import io.iohk.cef.ledger.storage.Ledger
 import io.iohk.cef.ledger.storage.scalike.dao.{LedgerStateStorageDao, LedgerStorageDao}
@@ -21,6 +22,8 @@ trait LedgerItDbTest
     with MustMatchers {
 
   behavior of "Ledger"
+
+  val dummySignature = new DigitalSignature(ByteString.empty)
 
   it should "apply a block using the generic constructs" in { implicit session =>
     import identity.IdentityBlockSerializer._
@@ -42,8 +45,8 @@ trait LedgerItDbTest
     val pair2 = generateKeyPair
 
     val testTxs = List[IdentityTransaction](
-      Claim("carlos", pair1._1),
-      Link("carlos", pair2._1, Link.sign("carlos", pair2._1, pair1._2)))
+      Claim("carlos", pair1._1, dummySignature),
+      Link("carlos", pair2._1, IdentityTransaction.sign("carlos", pair2._1, pair1._2)))
     val testBlock = Block(IdentityBlockHeader(ByteString("hash"), Instant.EPOCH, 1L), testTxs)
     val emptyLs = LedgerState[Set[PublicKey]](Map())
     genericStateDao.slice(1, Set("carlos")) mustBe emptyLs
