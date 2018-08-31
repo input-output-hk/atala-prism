@@ -2,7 +2,7 @@ package io.iohk.cef.transactionpool
 import akka.pattern.ask
 import akka.util.Timeout
 import io.iohk.cef.error.ApplicationError
-import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
+import io.iohk.cef.ledger.{BlockHeader, Transaction}
 
 import scala.concurrent.{ExecutionContext, Future}
 

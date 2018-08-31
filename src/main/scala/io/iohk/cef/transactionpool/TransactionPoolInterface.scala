@@ -1,6 +1,6 @@
 package io.iohk.cef.transactionpool
 import io.iohk.cef.error.ApplicationError
-import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
+import io.iohk.cef.ledger.{BlockHeader, Transaction}
 
 import scala.concurrent.Future
 
