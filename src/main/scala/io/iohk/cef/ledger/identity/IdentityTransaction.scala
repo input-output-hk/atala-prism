@@ -6,7 +6,6 @@ import io.iohk.cef.ledger.{LedgerError, Transaction}
 sealed trait IdentityTransaction extends Transaction[Set[ByteString]] {
   val identity: String
   val key: ByteString
-  override def hashCode(): Int = (identity.hashCode) + (key.hashCode())
 }
 
 case class Claim(identity: String, key: ByteString) extends IdentityTransaction {
@@ -19,15 +18,6 @@ case class Claim(identity: String, key: ByteString) extends IdentityTransaction 
     }
 
   override def partitionIds: Set[String] = Set(identity)
-
-  override def equals(obj: scala.Any): Boolean = {
-    obj match {
-      case Claim(i, k) => i == identity && k == key
-      case _ => false
-    }
-  }
-
-  override def canEqual(that: Any): Boolean = that.isInstanceOf[Claim]
 }
 
 case class Link(identity: String, key: ByteString) extends IdentityTransaction{
@@ -40,15 +30,6 @@ case class Link(identity: String, key: ByteString) extends IdentityTransaction{
     }
 
   override def partitionIds: Set[String] = Set(identity)
-
-  override def equals(obj: scala.Any): Boolean = {
-    obj match {
-      case Link(i, k) => i == identity && k == key
-      case _ => false
-    }
-  }
-
-  override def canEqual(that: Any): Boolean = that.isInstanceOf[Link]
 }
 case class Unlink(identity: String, key: ByteString) extends IdentityTransaction {
 
@@ -64,13 +45,4 @@ case class Unlink(identity: String, key: ByteString) extends IdentityTransaction
     }
 
   override def partitionIds: Set[String] = Set(identity)
-
-  override def equals(obj: scala.Any): Boolean = {
-    obj match {
-      case Unlink(i, k) => i == identity && k == key
-      case _ => false
-    }
-  }
-
-  override def canEqual(that: Any): Boolean = that.isInstanceOf[Unlink]
 }
