@@ -5,7 +5,7 @@ import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.ledger.{Block, BlockHeader, ByteStringSerializable, Transaction}
 import io.iohk.cef.network.{NetworkComponent, NodeId}
-import io.iohk.cef.transactionpool.TransactionPoolInterface
+import io.iohk.cef.transactionpool.TransactionPoolFutureInterface
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -22,7 +22,7 @@ import scala.concurrent.{ExecutionContext, Future}
   * @tparam Header
   */
 class NodeCore[State, Header <: BlockHeader, Tx <: Transaction[State]](
-    consensusMap: Map[LedgerId, (TransactionPoolInterface[State, Header, Tx], Consensus[State, Tx])],
+    consensusMap: Map[LedgerId, (TransactionPoolFutureInterface[State, Header, Tx], Consensus[State, Tx])],
     networkComponent: NetworkComponent[State],
     me: NodeId)(
     implicit txSerializable: ByteStringSerializable[Envelope[Tx]],
