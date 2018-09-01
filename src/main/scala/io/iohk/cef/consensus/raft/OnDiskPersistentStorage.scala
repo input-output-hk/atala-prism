@@ -6,13 +6,13 @@ import java.nio.file.{Files, Path, Paths}
 import io.iohk.cef.consensus.raft.RaftConsensus.{LogEntry, PersistentStorage}
 import io.iohk.cef.network.encoding.array.ArrayCodecs._
 import journal.io.api.Journal.WriteType
-import journal.io.api.{Journal, JournalBuilder}
+import journal.io.api.{Journal, JournalBuilder, Location}
 
 import scala.collection.JavaConverters._
 
-class OnDiskPersistentStorage[T: ArrayEncoder: ArrayDecoder](nodeId: String)
-                                                            (implicit enc: ArrayEncoder[LogEntry[T]],
-                                                             dec: ArrayDecoder[LogEntry[T]]) extends PersistentStorage[T] {
+class OnDiskPersistentStorage[T: ArrayEncoder: ArrayDecoder](nodeId: String)(implicit enc: ArrayEncoder[LogEntry[T]],
+                                                                             dec: ArrayDecoder[LogEntry[T]])
+    extends PersistentStorage[T] {
 
   val storageDir: Path = Paths.get(getProperty("java.io.tmpdir"), nodeId)
   val logDir: Path = storageDir.resolve("log")
@@ -57,7 +57,14 @@ class OnDiskPersistentStorage[T: ArrayEncoder: ArrayDecoder](nodeId: String)
       writeState(0, "")
   }
 
-  override def log(deletes: Int,
-                   writes: Seq[LogEntry[T]]): Unit =
-    ???
+  private[raft] def truncate(): Unit = {
+    journal.close()
+    journal.truncate()
+    journal.open()
+  }
+
+  override def log(deletes: Int, writes: Seq[LogEntry[T]]): Unit = {
+    journal.undo().asScala.takeRight(deletes).foreach((entry: Location) => journal.delete(entry))
+    writes.foreach(write => journal.write(enc.encode(write), WriteType.SYNC))
+  }
 }
