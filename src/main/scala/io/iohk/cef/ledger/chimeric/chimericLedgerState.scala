@@ -6,9 +6,10 @@ object ChimericLedgerState {
   private val CurrencyPrefix = "cr="
   private val PrefixLength = 3
   private val Delimiter = "--"
-  require(AddressPrefix.size == PrefixLength &&
-    TxOutRefPrefix.size == PrefixLength &&
-    CurrencyPrefix.size == PrefixLength)
+  require(
+    AddressPrefix.size == PrefixLength &&
+      TxOutRefPrefix.size == PrefixLength &&
+      CurrencyPrefix.size == PrefixLength)
 
   def getAddressPartitionId(address: Address): String = s"$AddressPrefix$address"
   def getUtxoPartitionId(txOutRef: TxOutRef): String = s"$TxOutRefPrefix${txOutRef.txId}${Delimiter}${txOutRef.index}"

@@ -11,7 +11,7 @@ class ByteUtilsSpec extends FlatSpec with MustMatchers with PropertyChecks {
   behavior of "ByteUtils"
 
   it should "convert to and from int" in {
-    Seq(1,2,3) foreach { (multiplier: Int) =>
+    Seq(1, 2, 3) foreach { (multiplier: Int) =>
       forAll(Gen.listOfN(multiplier * 4, Gen.choose(Byte.MinValue, Byte.MaxValue))) { (list: List[Byte]) =>
         intsToBytes(bytesToInts(list.toArray)).toList mustBe list
       }
@@ -30,7 +30,7 @@ class ByteUtilsSpec extends FlatSpec with MustMatchers with PropertyChecks {
       and()
     }
     intercept[IllegalArgumentException] {
-      and(Array(1), Array(1,2))
+      and(Array(1), Array(1, 2))
     }
   }
   it should "convert big integer to bytes" in {
@@ -47,7 +47,7 @@ class ByteUtilsSpec extends FlatSpec with MustMatchers with PropertyChecks {
       or()
     }
     intercept[IllegalArgumentException] {
-      or(Array(1), Array(1,2))
+      or(Array(1), Array(1, 2))
     }
   }
 }

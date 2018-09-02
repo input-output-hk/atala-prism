@@ -26,10 +26,7 @@ class UDPBridgeSpec extends FlatSpec with MustMatchers with MockitoSugar {
     val decoder = mock[Decoder[ByteString, DiscoveryWireMessage]]
     val listenerInbox = TestProbe[DiscoveryListenerRequest]()
 
-    val bridge = untypedKit.TestActorRef(new UDPBridge(listenerInbox.ref,
-      encoder,
-      decoder,
-      _ => ()))
+    val bridge = untypedKit.TestActorRef(new UDPBridge(listenerInbox.ref, encoder, decoder, _ => ()))
 
     val nodeAddr = new InetSocketAddress(1000)
 

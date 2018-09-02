@@ -10,13 +10,14 @@ import org.slf4j.LoggerFactory
 /**
   * Raft node implementation.
   */
-private[raft] class RaftNode[Command](val nodeId: String,
-                                      clusterMemberIds: Seq[String],
-                                      rpcFactory: RPCFactory[Command],
-                                      electionTimerFactory: RaftTimerFactory = defaultElectionTimerFactory,
-                                      heartbeatTimerFactory: RaftTimerFactory = defaultHeartbeatTimerFactory,
-                                      stateMachine: Command => Unit,
-                                      persistentStorage: PersistentStorage[Command])(implicit ec: ExecutionContext)
+private[raft] class RaftNode[Command](
+    val nodeId: String,
+    clusterMemberIds: Seq[String],
+    rpcFactory: RPCFactory[Command],
+    electionTimerFactory: RaftTimerFactory = defaultElectionTimerFactory,
+    heartbeatTimerFactory: RaftTimerFactory = defaultHeartbeatTimerFactory,
+    stateMachine: Command => Unit,
+    persistentStorage: PersistentStorage[Command])(implicit ec: ExecutionContext)
     extends RaftNodeInterface[Command] {
 
   private val logger = LoggerFactory.getLogger(classOf[RaftNode[Command]])
@@ -100,12 +101,13 @@ private[raft] class RaftNode[Command](val nodeId: String,
   // the servers (e.g., entry 7 in Figure 6)
   // Thus, we can only commit state changes in the Future.
   def clientAppendEntries(entries: Seq[Command]): Future[Either[Redirect[Command], Unit]] = withFutureRaftContext {
-    rc => {
-      rc.role.clientAppendEntries(rc, entries).map {
-        case (ctx, response) =>
-          (applyUncommittedLogEntries(ctx), response)
+    rc =>
+      {
+        rc.role.clientAppendEntries(rc, entries).map {
+          case (ctx, response) =>
+            (applyUncommittedLogEntries(ctx), response)
+        }
       }
-    }
   }
 
   // Handler for inbound appendEntries RPCs from leaders.
@@ -134,8 +136,9 @@ private[raft] class RaftNode[Command](val nodeId: String,
     rc.role.clientAppendEntries(rc, Seq()).map { case (ctx, _) => (ctx, ()) }
   }
 
-  private def getVoteResult(rc: RaftContext[Command],
-                            voteRequested: VoteRequested): (RaftContext[Command], RequestVoteResult) = {
+  private def getVoteResult(
+      rc: RaftContext[Command],
+      voteRequested: VoteRequested): (RaftContext[Command], RequestVoteResult) = {
 
     val (currentTerm, votedFor) = rc.persistentState
     val (lastLogIndex, lastLogTerm) = lastLogIndexAndTerm(rc.log)
@@ -143,9 +146,10 @@ private[raft] class RaftNode[Command](val nodeId: String,
     if (voteRequested.term < currentTerm) { // receiver implementation, note #1
       (rc, RequestVoteResult(currentTerm, voteGranted = false))
     } else if ((votedFor.isEmpty || votedFor == voteRequested.candidateId)
-               && ((lastLogTerm <= voteRequested.lastLogTerm) && (lastLogIndex <= voteRequested.lastLogIndex))) {
-      (rc.copy(persistentState = (voteRequested.term, voteRequested.candidateId)),
-       RequestVoteResult(voteRequested.term, voteGranted = true))
+      && ((lastLogTerm <= voteRequested.lastLogTerm) && (lastLogIndex <= voteRequested.lastLogIndex))) {
+      (
+        rc.copy(persistentState = (voteRequested.term, voteRequested.candidateId)),
+        RequestVoteResult(voteRequested.term, voteGranted = true))
     } else {
       (rc, RequestVoteResult(currentTerm, voteGranted = false))
     }

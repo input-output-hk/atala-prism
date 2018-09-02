@@ -12,16 +12,18 @@ import org.scalatest.{BeforeAndAfterAll, Suites}
 import scalikejdbc.JDBCSettings
 import scalikejdbc.config.DBs
 
-class DatabaseTestSuites extends Suites(
-    new KnownNodeStorageImplDbTest {},
-    new IdentityLedgerStateStorageDaoDbTest {},
-    new IdentityLedgerItDbTest {},
-    new LedgerStorageDaoDbTest {},
-    new LedgerItDbTest {},
-    new ChimericLedgerStateStorageDaoDbTest {},
-    new ChimericLedgerItDbTest {},
-    new LedgerStateStorageDaoDbTest {},
-  ) with BeforeAndAfterAll {
+class DatabaseTestSuites
+    extends Suites(
+      new KnownNodeStorageImplDbTest {},
+      new IdentityLedgerStateStorageDaoDbTest {},
+      new IdentityLedgerItDbTest {},
+      new LedgerStorageDaoDbTest {},
+      new LedgerItDbTest {},
+      new ChimericLedgerStateStorageDaoDbTest {},
+      new ChimericLedgerItDbTest {},
+      new LedgerStateStorageDaoDbTest {},
+    )
+    with BeforeAndAfterAll {
 
   val flyway = new Flyway()
   val settings: JDBCSettings = DBs.readJDBCSettings('default)

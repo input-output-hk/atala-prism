@@ -32,8 +32,8 @@ import scala.collection.immutable.Queue
   * See: https://github.com/ethereum/wiki/wiki/%5BEnglish%5D-RLP
   *
   */
-
 private[rlp] object RLP {
+
   /**
     * Reason for threshold according to Vitalik Buterin:
     * - 56 bytes maximizes the benefit of both options
@@ -51,7 +51,6 @@ private[rlp] object RLP {
   private val MaxItemLength: Double = Math.pow(256, 8)
 
   /** RLP encoding rules are defined as follows: */
-
   /*
    * For a single byte whose value is in the [0x00, 0x7f] range, that byte is
    * its own RLP encoding.
@@ -115,7 +114,9 @@ private[rlp] object RLP {
   private[rlp] def encode(input: RLPEncodeable): Array[Byte] = {
     input match {
       case list: RLPList =>
-        val output = list.items.foldLeft(Array[Byte]()) { (acum, item) => acum ++ encode(item) }
+        val output = list.items.foldLeft(Array[Byte]()) { (acum, item) =>
+          acum ++ encode(item)
+        }
         encodeLength(output.length, OffsetShortList) ++ output
       case value: RLPValue =>
         val inputAsBytes = value.bytes
@@ -155,7 +156,8 @@ private[rlp] object RLP {
   private[rlp] def intToBigEndianMinLength(singleInt: Int): Array[Byte] = {
     if (singleInt == (singleInt & 0xFF)) byteToByteArray(singleInt.toByte)
     else if (singleInt == (singleInt & 0xFFFF)) shortToBigEndianMinLength(singleInt.toShort)
-    else if (singleInt == (singleInt & 0xFFFFFF)) Array[Byte]((singleInt >>> 16).toByte, (singleInt >>> 8).toByte, singleInt.toByte)
+    else if (singleInt == (singleInt & 0xFFFFFF))
+      Array[Byte]((singleInt >>> 16).toByte, (singleInt >>> 8).toByte, singleInt.toByte)
     else Array[Byte]((singleInt >>> 24).toByte, (singleInt >>> 16).toByte, (singleInt >>> 8).toByte, singleInt.toByte)
   }
 
@@ -172,7 +174,8 @@ private[rlp] object RLP {
       case 1 => bytes(0) & 0xFF
       case 2 => ((bytes(0) & 0xFF) << 8) + (bytes(1) & 0xFF)
       case 3 => ((bytes(0) & 0xFF) << 16) + ((bytes(1) & 0xFF) << 8) + (bytes(2) & 0xFF)
-      case Integer.BYTES => ((bytes(0) & 0xFF) << 24) + ((bytes(1) & 0xFF) << 16) + ((bytes(2) & 0xFF) << 8) + (bytes(3) & 0xFF)
+      case Integer.BYTES =>
+        ((bytes(0) & 0xFF) << 24) + ((bytes(1) & 0xFF) << 16) + ((bytes(2) & 0xFF) << 8) + (bytes(3) & 0xFF)
       case _ => throw RLPException("Bytes don't represent an int")
     }
   }
@@ -183,7 +186,8 @@ private[rlp] object RLP {
     * @param value - int value to convert
     * @return value with leading byte that are zeroes striped
     */
-  private def intToBytesNoLeadZeroes(value: Int): Array[Byte] = ByteBuffer.allocate(Integer.BYTES).putInt(value).array().dropWhile(_ == (0: Byte))
+  private def intToBytesNoLeadZeroes(value: Int): Array[Byte] =
+    ByteBuffer.allocate(Integer.BYTES).putInt(value).array().dropWhile(_ == (0: Byte))
 
   /**
     * Integer limitation goes up to 2&#94;31-1 so length can never be bigger than MAX_ITEM_LENGTH
@@ -193,8 +197,7 @@ private[rlp] object RLP {
     else if (length < MaxItemLength && length > 0xFF) {
       val binaryLength: Array[Byte] = intToBytesNoLeadZeroes(length)
       (binaryLength.length + offset + SizeThreshold - 1).toByte +: binaryLength
-    }
-    else if (length < MaxItemLength && length <= 0xFF) Array((1 + offset + SizeThreshold - 1).toByte, length.toByte)
+    } else if (length < MaxItemLength && length <= 0xFF) Array((1 + offset + SizeThreshold - 1).toByte, length.toByte)
     else throw RLPException("Input too long")
   }
 
@@ -245,11 +248,12 @@ private[rlp] object RLP {
           RLPList(decodeListRecursive(data, start, end - start + 1, Queue()): _*) -> (end + 1)
       }
     }
-
-
   @tailrec
-  private def decodeListRecursive(data: Array[Byte], pos: Int, length: Int,
-                                  acum: Queue[RLPEncodeable]): (Queue[RLPEncodeable]) = {
+  private def decodeListRecursive(
+      data: Array[Byte],
+      pos: Int,
+      length: Int,
+      acum: Queue[RLPEncodeable]): (Queue[RLPEncodeable]) = {
     if (length == 0) acum
     else {
       val (decoded, decodedEnd) = decodeWithPos(data, pos)
@@ -259,4 +263,3 @@ private[rlp] object RLP {
 }
 
 private case class ItemBounds(start: Int, end: Int, isList: Boolean, isEmpty: Boolean = false)
-

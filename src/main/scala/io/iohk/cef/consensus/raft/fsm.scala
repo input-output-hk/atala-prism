@@ -15,24 +15,21 @@ object RaftFSM {
   type Transition[Command] = (RaftContext[Command], NodeEvent) => RaftContext[Command]
 }
 
-class RaftFSM[Command](becomeFollower: Transition[Command],
-                       becomeCandidate: Transition[Command],
-                       becomeLeader: Transition[Command]) {
+class RaftFSM[Command](
+    becomeFollower: Transition[Command],
+    becomeCandidate: Transition[Command],
+    becomeLeader: Transition[Command]) {
 
   private val identity: Transition[Command] = (rc, _) => rc
 
   private val keyFn: RaftContext[Command] => StateCode = rc => rc.role.stateCode
 
-  private val followerState: Transition[Command] = eventCata(
-    electionTimeout = becomeCandidate)
+  private val followerState: Transition[Command] = eventCata(electionTimeout = becomeCandidate)
 
-  private val candidateState: Transition[Command] = eventCata(
-    electionTimeout = becomeCandidate,
-    majorityVoteReceived = becomeLeader,
-    leaderDiscovered = becomeFollower)
+  private val candidateState: Transition[Command] =
+    eventCata(electionTimeout = becomeCandidate, majorityVoteReceived = becomeLeader, leaderDiscovered = becomeFollower)
 
-  private val leaderState: Transition[Command] = eventCata(
-    nodeWithHigherTermDiscovered = becomeFollower)
+  private val leaderState: Transition[Command] = eventCata(nodeWithHigherTermDiscovered = becomeFollower)
 
   private val table = Map[StateCode, Transition[Command]](
     Follower -> followerState,

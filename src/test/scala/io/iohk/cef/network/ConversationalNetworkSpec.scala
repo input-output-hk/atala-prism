@@ -116,13 +116,15 @@ class ConversationalNetworkSpec extends FlatSpec {
     }
   }
 
-  private case class NetworkFixture[T](nodeId: NodeId,
-                                    peerInfo: PeerInfo,
-                                    networkDiscovery: NetworkDiscovery,
-                                    messageHandler: (NodeId, T) => Unit,
-                                    network: ConversationalNetwork[T])
+  private case class NetworkFixture[T](
+      nodeId: NodeId,
+      peerInfo: PeerInfo,
+      networkDiscovery: NetworkDiscovery,
+      messageHandler: (NodeId, T) => Unit,
+      network: ConversationalNetwork[T])
 
-  private def randomNetworkFixture[T: NioEncoder: NioDecoder](messageTtl: Int = FrameHeader.defaultTtl): NetworkFixture[T] = {
+  private def randomNetworkFixture[T: NioEncoder: NioDecoder](
+      messageTtl: Int = FrameHeader.defaultTtl): NetworkFixture[T] = {
     val tcpAddress: InetSocketAddress = aRandomAddress()
     val configuration = ConversationalNetworkConfiguration(Some(TcpTransportConfiguration(tcpAddress)), messageTtl)
 

@@ -16,19 +16,19 @@ import scala.concurrent.duration.FiniteDuration
   * @tparam K
   * @tparam V
   */
-case class FiniteSizedMap[K,V](maxSize: Int, expiration: FiniteDuration, clock: Clock) {
+case class FiniteSizedMap[K, V](maxSize: Int, expiration: FiniteDuration, clock: Clock) {
 
   case class Expiring(value: V, expirationTimestamp: Instant) {
     def hasExpired =
       expirationTimestamp.isBefore(clock.instant())
   }
 
-  private val map: mutable.LinkedHashMap[K,Expiring] = mutable.LinkedHashMap.empty
+  private val map: mutable.LinkedHashMap[K, Expiring] = mutable.LinkedHashMap.empty
 
   def get(key: K): Option[V] = map.get(key).map(_.value)
 
   def put(key: K, value: V): Option[V] = {
-    if(maxSize > map.size) {
+    if (maxSize > map.size) {
       map += ((key, Expiring(value, clock.instant().plusMillis(expiration.toMillis))))
       Some(value)
     } else if (map.head._2.hasExpired) {
@@ -44,7 +44,7 @@ case class FiniteSizedMap[K,V](maxSize: Int, expiration: FiniteDuration, clock: 
 
   def -=(key: K) = map -= key
 
-  def dropExpired: Seq[(K,V)] = {
+  def dropExpired: Seq[(K, V)] = {
     val dropped = map.takeWhile(_._2.hasExpired)
     dropped.foreach(elem => map -= elem._1)
     dropped.map(pair => (pair._1, pair._2.value)).toSeq

@@ -78,9 +78,7 @@ class NativeCodecsSpec extends FlatSpec {
     }
   }
 
-  def bufferPositionTest[T](implicit encoder: NioEncoder[T],
-                            decoder: NioDecoder[T],
-                            a: Arbitrary[T]): Unit = {
+  def bufferPositionTest[T](implicit encoder: NioEncoder[T], decoder: NioDecoder[T], a: Arbitrary[T]): Unit = {
     forAll(arbitrary[T]) { t =>
       val b: ByteBuffer = encoder.encode(t)
       val remaining = b.remaining()

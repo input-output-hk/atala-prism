@@ -17,12 +17,14 @@ import scalikejdbc.scalatest.AutoRollback
 
 import scala.util.Try
 
-trait IdentityLedgerItDbTest extends fixture.FlatSpec
-  with AutoRollback
-  with MustMatchers
-  with IdentityLedgerStateStorageFixture {
+trait IdentityLedgerItDbTest
+    extends fixture.FlatSpec
+    with AutoRollback
+    with MustMatchers
+    with IdentityLedgerStateStorageFixture {
 
-  def createLedger(ledgerStateStorageDao: IdentityLedgerStateStorageDao)(implicit dBSession: DBSession): Ledger[Try, Set[ByteString]] = {
+  def createLedger(ledgerStateStorageDao: IdentityLedgerStateStorageDao)(
+      implicit dBSession: DBSession): Ledger[Try, Set[ByteString]] = {
     implicit val forExpEnabler = ForExpressionsEnabler.tryEnabler
     val ledgerStateStorage = new IdentityLedgerStateStorageImpl(ledgerStateStorageDao) {
       override def execInSession[T](block: DBSession => T): T = block(dBSession)
@@ -41,7 +43,8 @@ trait IdentityLedgerItDbTest extends fixture.FlatSpec
     val ledger = createLedger(ledgerStateStorageDao)
     val now = Instant.now()
     val header = IdentityBlockHeader(ByteString("header"), now, 1)
-    val block1 = Block(header, List[IdentityTransaction](Claim("one", ByteString("one")), Claim("two", ByteString("two"))))
+    val block1 =
+      Block(header, List[IdentityTransaction](Claim("one", ByteString("one")), Claim("two", ByteString("two"))))
 
     val block1Result = ledger(block1)
     block1Result.isRight mustBe true
@@ -50,7 +53,7 @@ trait IdentityLedgerItDbTest extends fixture.FlatSpec
     ledgerStateStorageDao.slice(Set("one")) mustBe IdentityLedgerState(Map("one" -> Set(ByteString("one"))))
     ledgerStateStorageDao.slice(Set("two")) mustBe IdentityLedgerState(Map("two" -> Set(ByteString("two"))))
     ledgerStateStorageDao.slice(Set("three")) mustBe IdentityLedgerState()
-    ledgerStateStorageDao.slice(Set("one","two","three")) mustBe
+    ledgerStateStorageDao.slice(Set("one", "two", "three")) mustBe
       IdentityLedgerState(Map("one" -> Set(ByteString("one")), "two" -> Set(ByteString("two"))))
     val block2 = Block(header.copy(height = 2), List[IdentityTransaction](Link("two", ByteString("two-two"))))
 
@@ -58,7 +61,7 @@ trait IdentityLedgerItDbTest extends fixture.FlatSpec
     block2Result.isRight mustBe true
     block2Result.right.get.isSuccess mustBe true
 
-    ledgerStateStorageDao.slice(Set("one","two")) mustBe
+    ledgerStateStorageDao.slice(Set("one", "two")) mustBe
       IdentityLedgerState(
         Map("one" -> Set(ByteString("one")), "two" -> Set(ByteString("two"), ByteString("two-two")))
       )
@@ -66,7 +69,7 @@ trait IdentityLedgerItDbTest extends fixture.FlatSpec
     val block3 = Block(header.copy(height = 2), List[IdentityTransaction](Link("three", ByteString("three"))))
     val invalidResult = ledger(block3)
 
-    if(invalidResult.isRight) {
+    if (invalidResult.isRight) {
       fail(s"Link transaction should've been invalid. Expected IdentityNotClaimedError but got ${invalidResult}")
     }
   }

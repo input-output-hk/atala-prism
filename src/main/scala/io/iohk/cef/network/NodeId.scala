@@ -6,7 +6,7 @@ import org.bouncycastle.util.encoders.Hex.toHexString
 /**
   * A node id represents an addressable identity on a cef network.
   */
-case class NodeId private[network](id: ByteString) {
+case class NodeId private[network] (id: ByteString) {
   override def toString: String = toHexString(id.toArray)
 }
 

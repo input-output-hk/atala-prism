@@ -20,9 +20,10 @@ object RaftConsensus {
       *                            implementers should invoke this function.
       * @return
       */
-    def apply(nodeId: String,
-              appendEntriesCallback: EntriesToAppend[Command] => AppendEntriesResult,
-              requestVoteCallback: VoteRequested => RequestVoteResult): RPC[Command]
+    def apply(
+        nodeId: String,
+        appendEntriesCallback: EntriesToAppend[Command] => AppendEntriesResult,
+        requestVoteCallback: VoteRequested => RequestVoteResult): RPC[Command]
   }
 
   /**
@@ -67,12 +68,13 @@ object RaftConsensus {
   /**
     * AppendEntries RPC Log replication request made by leaders to followers
     */
-  case class EntriesToAppend[Command](term: Int,
-                                      leaderId: String,
-                                      prevLogIndex: Int,
-                                      prevLogTerm: Int,
-                                      entries: Seq[LogEntry[Command]],
-                                      leaderCommitIndex: Int)
+  case class EntriesToAppend[Command](
+      term: Int,
+      leaderId: String,
+      prevLogIndex: Int,
+      prevLogTerm: Int,
+      entries: Seq[LogEntry[Command]],
+      leaderCommitIndex: Int)
 
   /**
     * AppendEntries RPC response
@@ -101,6 +103,7 @@ object RaftConsensus {
     * @tparam Command the user command type.
     */
   trait PersistentStorage[Command] {
+
     /**
       * Return the stored term and votedFor fields.
       * If none are available, implementations should return (0, "")
@@ -186,14 +189,15 @@ object RaftConsensus {
   /**
     * Raft server state. See figure 2 for descriptions of fields.
     */
-  case class RaftContext[Command](role: NodeRole[Command],
-                                  commonVolatileState: CommonVolatileState[Command],
-                                  leaderVolatileState: LeaderVolatileState,
-                                  persistentState: (Int, String),
-                                  baseLog: IndexedSeq[LogEntry[Command]],
-                                  deletes: Int,
-                                  writes: Seq[LogEntry[Command]],
-                                  leaderId: String) {
+  case class RaftContext[Command](
+      role: NodeRole[Command],
+      commonVolatileState: CommonVolatileState[Command],
+      leaderVolatileState: LeaderVolatileState,
+      persistentState: (Int, String),
+      baseLog: IndexedSeq[LogEntry[Command]],
+      deletes: Int,
+      writes: Seq[LogEntry[Command]],
+      leaderId: String) {
     val log = new VirtualVector(baseLog, deletes, writes)
   }
 
@@ -222,11 +226,12 @@ object RaftConsensus {
       heartbeatTimerFactory: RaftTimerFactory = defaultHeartbeatTimerFactory,
       stateMachine: Command => Unit,
       persistentStorage: PersistentStorage[Command])(implicit ec: ExecutionContext): RaftNodeInterface[Command] =
-    new RaftNode[Command](nodeId,
-                          clusterMemberIds,
-                          rpcFactory,
-                          electionTimerFactory,
-                          heartbeatTimerFactory,
-                          stateMachine,
-                          persistentStorage)
+    new RaftNode[Command](
+      nodeId,
+      clusterMemberIds,
+      rpcFactory,
+      electionTimerFactory,
+      heartbeatTimerFactory,
+      stateMachine,
+      persistentStorage)
 }

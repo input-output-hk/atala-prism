@@ -11,7 +11,8 @@ class BlockSpec extends FlatSpec with MustMatchers {
   behavior of "Block"
 
   it should "apply itself to a state" in {
-    val txs = List (Claim("one", ByteString("one")),
+    val txs = List(
+      Claim("one", ByteString("one")),
       Link("one", ByteString("two")),
       Unlink("one", ByteString("two")),
       Unlink("one", ByteString("one")))
@@ -20,7 +21,8 @@ class BlockSpec extends FlatSpec with MustMatchers {
     val state = new IdentityLedgerState(Map())
     val newState = block(state)
     newState mustBe Right(IdentityLedgerState(Map()))
-    val badTxs = List (Claim("one", ByteString("one")),
+    val badTxs = List(
+      Claim("one", ByteString("one")),
       Link("two", ByteString("two")),
       Unlink("one", ByteString("two")),
       Unlink("one", ByteString("one")))
@@ -29,7 +31,8 @@ class BlockSpec extends FlatSpec with MustMatchers {
   }
 
   it should "calculate keys correctly" in {
-    val txs = List (Claim("one", ByteString("one")),
+    val txs = List(
+      Claim("one", ByteString("one")),
       Link("two", ByteString("two")),
       Unlink("three", ByteString("two")),
       Unlink("three", ByteString("one")))

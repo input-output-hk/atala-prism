@@ -6,9 +6,7 @@ import org.scalatest.Matchers._
 import org.scalatest.prop.PropertyChecks
 import io.iohk.cef.builder.SecureRandomBuilder
 
-class CryptoAlogorithmSpec extends FlatSpec
-                              with PropertyChecks
-                              with SecureRandomBuilder {
+class CryptoAlogorithmSpec extends FlatSpec with PropertyChecks with SecureRandomBuilder {
 
   val cryptos: List[CryptoAlgorithm] = CryptoAlgorithm.RSA(secureRandom) :: Nil
 
@@ -19,13 +17,13 @@ class CryptoAlogorithmSpec extends FlatSpec
       val (encryptKeyB, decryptKeyB) = crypto.generateKeyPair
 
       forAll { (a: String) =>
-        val       encrypted  = encryptBytes(crypto)(ByteString(a), encryptKeyA)
+        val encrypted = encryptBytes(crypto)(ByteString(a), encryptKeyA)
         val Right(decrypted) = decryptBytes(crypto)(encrypted, decryptKeyA)
 
-        decrypted should === (ByteString(a))
+        decrypted should ===(ByteString(a))
 
-        whenever (a != "") {
-          decryptBytes(crypto)(encrypted, decryptKeyB) should !== (Right(ByteString(a)))
+        whenever(a != "") {
+          decryptBytes(crypto)(encrypted, decryptKeyB) should !==(Right(ByteString(a)))
         }
 
       }

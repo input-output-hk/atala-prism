@@ -3,8 +3,7 @@ package io.iohk.cef.ledger.identity
 import akka.util.ByteString
 import org.scalatest.{FlatSpec, MustMatchers}
 
-class IdentityTransactionSpec  extends FlatSpec
-  with MustMatchers {
+class IdentityTransactionSpec extends FlatSpec with MustMatchers {
 
   behavior of "IdentityTransaction"
 

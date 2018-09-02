@@ -8,9 +8,7 @@ import scalikejdbc._
 
 class LedgerStorageDao(clock: Clock) {
 
-  def push[S,
-          Header <: BlockHeader,
-          Tx <: Transaction[S]](ledgerId: Int, block: Block[S, Header, Tx])(
+  def push[S, Header <: BlockHeader, Tx <: Transaction[S]](ledgerId: Int, block: Block[S, Header, Tx])(
       implicit blockSerializable: ByteStringSerializable[Block[S, Header, Tx]],
       session: DBSession): Int = {
     val blockColumn = LedgerTable.column
@@ -21,7 +19,11 @@ class LedgerStorageDao(clock: Clock) {
       sql"""select max(${blockColumn.blockNumber}) as max_block_number
             from ${LedgerTable as lt}
             where ${blockColumn.ledgerId} = ${ledgerId}"""
-        .map(rs => rs.longOpt("max_block_number")).single().apply().flatten.getOrElse(0L)
+        .map(rs => rs.longOpt("max_block_number"))
+        .single()
+        .apply()
+        .flatten
+        .getOrElse(0L)
     val previousBlockId =
       sql"""select ${lt.result.id}
             from ${LedgerTable as lt}

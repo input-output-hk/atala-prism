@@ -16,8 +16,8 @@ object DecimalProtoUtils {
 
   def toProto(bigDecimal: BigDecimal): DecimalProto = {
     val absBigDecimal = bigDecimal.abs
-    val signMultiplier = if(bigDecimal < 0) -1L else 1L
-    if(absBigDecimal.scale > MaxScale || absBigDecimal >= MaxNumber) {
+    val signMultiplier = if (bigDecimal < 0) -1L else 1L
+    if (absBigDecimal.scale > MaxScale || absBigDecimal >= MaxNumber) {
       throw new IllegalArgumentException(
         s"Cannot represent BigDecimal in proto: ${bigDecimal}. Scale: ${bigDecimal.scale}"
       )

@@ -18,8 +18,8 @@ trait KnownNodeStorageImplDbTest extends fixture.FlatSpec with AutoRollback with
 
   def createKnownNodeStorage(clock: Clock, session: DBSession): KnownNodeStorage =
     new KnownNodeStorageImpl(clock) with InMemoryTelemetry {
-    override def inTx[T](block: DBSession => T): T = block(session)
-  }
+      override def inTx[T](block: DBSession => T): T = block(session)
+    }
 
   behavior of "KnownNodeStorageImpl"
 
@@ -32,7 +32,7 @@ trait KnownNodeStorageImplDbTest extends fixture.FlatSpec with AutoRollback with
   it should "insert a new node" in { session =>
     val clock = TestClock()
     val storage = createKnownNodeStorage(clock, session)
-    val addr = new InetSocketAddress(InetAddress.getByAddress(Array(1,2,3,4)),23)
+    val addr = new InetSocketAddress(InetAddress.getByAddress(Array(1, 2, 3, 4)), 23)
     val node = NodeInfo(ByteString("1"), addr, addr, Capabilities(1))
     storage.insert(node)
     storage.getAll() mustBe Set(KnownNode(node, clock.instant(), clock.instant()))
@@ -41,7 +41,7 @@ trait KnownNodeStorageImplDbTest extends fixture.FlatSpec with AutoRollback with
   it should "update last seen of a node" in { session =>
     val clock = TestClock()
     val storage = createKnownNodeStorage(clock, session)
-    val addr = new InetSocketAddress(InetAddress.getByAddress(Array(1,2,3,4)),23)
+    val addr = new InetSocketAddress(InetAddress.getByAddress(Array(1, 2, 3, 4)), 23)
     val node = NodeInfo(ByteString("1"), addr, addr, Capabilities(1))
     val now = clock.instant()
     storage.insert(node)
@@ -56,7 +56,7 @@ trait KnownNodeStorageImplDbTest extends fixture.FlatSpec with AutoRollback with
   it should "remove a node" in { session =>
     val clock = TestClock()
     val storage = createKnownNodeStorage(clock, session)
-    val addr = new InetSocketAddress(InetAddress.getByAddress(Array(1,2,3,4)),23)
+    val addr = new InetSocketAddress(InetAddress.getByAddress(Array(1, 2, 3, 4)), 23)
     val node = NodeInfo(ByteString("1"), addr, addr, Capabilities(1))
     val now = clock.instant()
     storage.insert(node)
@@ -68,7 +68,7 @@ trait KnownNodeStorageImplDbTest extends fixture.FlatSpec with AutoRollback with
   it should "blacklist a node" in { session =>
     val clock = TestClock()
     val storage = createKnownNodeStorage(clock, session)
-    val addr = new InetSocketAddress(InetAddress.getByAddress(Array(1,2,3,4)),23)
+    val addr = new InetSocketAddress(InetAddress.getByAddress(Array(1, 2, 3, 4)), 23)
     val node = NodeInfo(ByteString("1"), addr, addr, Capabilities(1))
     val now = clock.instant()
     storage.insert(node)

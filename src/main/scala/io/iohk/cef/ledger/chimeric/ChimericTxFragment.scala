@@ -3,7 +3,7 @@ package io.iohk.cef.ledger.chimeric
 import io.iohk.cef.ledger.LedgerError
 
 sealed trait ChimericTxFragment
-  extends ((ChimericLedgerState, Int, String) => Either[LedgerError, ChimericLedgerState]) {
+    extends ((ChimericLedgerState, Int, String) => Either[LedgerError, ChimericLedgerState]) {
 
   def partitionIds(txId: String, index: Int): Set[String]
 }
@@ -26,20 +26,23 @@ sealed trait ValueTxFragment extends ChimericTxFragment {
 
   def txSpecificPartitionIds(txId: String, index: Int): Set[String]
 
-  final override def apply(state: ChimericLedgerState, index: Int, txId: String): ChimericStateOrError = for {
-    validatedState <- validateState(state)
-    result <- exec(validatedState, index, txId)
-  } yield result
+  final override def apply(state: ChimericLedgerState, index: Int, txId: String): ChimericStateOrError =
+    for {
+      validatedState <- validateState(state)
+      result <- exec(validatedState, index, txId)
+    } yield result
 
-  private def validateState(state: ChimericLedgerState): ChimericStateOrError = for {
-    currencyExists <- validateCurrencyExists(state)
-    positiveValues <- validatePositiveValues(currencyExists)
-  } yield positiveValues
+  private def validateState(state: ChimericLedgerState): ChimericStateOrError =
+    for {
+      currencyExists <- validateCurrencyExists(state)
+      positiveValues <- validatePositiveValues(currencyExists)
+    } yield positiveValues
 
   private def validateCurrencyExists(state: ChimericLedgerState): ChimericStateOrError = {
     val missingCurrencies =
-      value.iterator.filterNot{ case (currency, _) =>
-        state.contains(ChimericLedgerState.getCurrencyPartitionId(currency))
+      value.iterator.filterNot {
+        case (currency, _) =>
+          state.contains(ChimericLedgerState.getCurrencyPartitionId(currency))
       }.toStream
     if (missingCurrencies.isEmpty) {
       Right(state)
@@ -49,7 +52,7 @@ sealed trait ValueTxFragment extends ChimericTxFragment {
   }
 
   private def validatePositiveValues(state: ChimericLedgerState): ChimericStateOrError = {
-    if(value.iterator.exists{ case (_, quantity) => quantity < BigDecimal(0)}) {
+    if (value.iterator.exists { case (_, quantity) => quantity < BigDecimal(0) }) {
       Left(ValueNegative(value))
     } else {
       Right(state)
@@ -57,7 +60,7 @@ sealed trait ValueTxFragment extends ChimericTxFragment {
   }
 
   final override def partitionIds(txId: String, index: Int): Set[String] = {
-    value.iterator.map{ case (currency, _) => ChimericLedgerState.getCurrencyPartitionId(currency) }.toSet ++
+    value.iterator.map { case (currency, _) => ChimericLedgerState.getCurrencyPartitionId(currency) }.toSet ++
       txSpecificPartitionIds(txId, index)
   }
 }

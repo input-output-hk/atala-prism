@@ -47,22 +47,20 @@ object SignAlgorithm {
     * @param hashAlgorithm    used to ensure the content of the message has not been meddled
     *                         with
     */
-  case class Composed(
-      cryptoAlgorithm: CryptoAlgorithm,
-      hashAlgorithm: HashAlgorithm) extends SignAlgorithm {
-        type PublicKey = cryptoAlgorithm.PrivateKey
-        type PrivateKey = cryptoAlgorithm.PublicKey
+  case class Composed(cryptoAlgorithm: CryptoAlgorithm, hashAlgorithm: HashAlgorithm) extends SignAlgorithm {
+    type PublicKey = cryptoAlgorithm.PrivateKey
+    type PrivateKey = cryptoAlgorithm.PublicKey
 
-        /** @inheritdoc */
-        def sign(source: ByteString, key: PrivateKey): ByteString =
-          cryptoAlgorithm.encrypt(hashAlgorithm.hash(source), key)
+    /** @inheritdoc */
+    def sign(source: ByteString, key: PrivateKey): ByteString =
+      cryptoAlgorithm.encrypt(hashAlgorithm.hash(source), key)
 
-        /** @inheritdoc */
-        def isSignatureValid(signature: ByteString, source: ByteString, key: PublicKey): Boolean =
-          cryptoAlgorithm
-            .decrypt(signature, key)
-            .toOption
-            .contains(hashAlgorithm.hash(source))
+    /** @inheritdoc */
+    def isSignatureValid(signature: ByteString, source: ByteString, key: PublicKey): Boolean =
+      cryptoAlgorithm
+        .decrypt(signature, key)
+        .toOption
+        .contains(hashAlgorithm.hash(source))
 
   }
 }

@@ -1,7 +1,7 @@
 package io.iohk.cef.consensus.raft
 
 import io.iohk.cef.consensus.raft.RaftConsensus.{VoteRequested, _}
-import org.scalatest.{ WordSpec}
+import org.scalatest.{WordSpec}
 import org.scalatest.Matchers._
 import org.scalatest.concurrent.Eventually._
 import org.scalatest.concurrent.ScalaFutures.{convertScalaFuture, whenReady}
@@ -45,8 +45,9 @@ class RaftConsensusSpec extends WordSpec {
       def futureCommitIndexIncrement(): Future[Int] = raftNode.withFutureRaftContext { rc =>
         val currentState = rc.commonVolatileState
         Future(
-          (rc.copy(commonVolatileState = currentState.copy(commitIndex = currentState.commitIndex + 1)),
-           currentState.commitIndex + 1))
+          (
+            rc.copy(commonVolatileState = currentState.copy(commitIndex = currentState.commitIndex + 1)),
+            currentState.commitIndex + 1))
       }
 
       val incrementFs = Range(0, 100).map(_ => futureCommitIndexIncrement())
@@ -73,7 +74,8 @@ class RaftConsensusSpec extends WordSpec {
 
           val responseF = consensusModule.appendEntries(Seq("A", "B", "C"))
 
-          whenReady(responseF) { response => verify(realLeaderRpc).clientAppendEntries(Seq("A", "B", "C"))
+          whenReady(responseF) { response =>
+            verify(realLeaderRpc).clientAppendEntries(Seq("A", "B", "C"))
           }
         }
       }
@@ -88,7 +90,8 @@ class RaftConsensusSpec extends WordSpec {
 
           val responseF = consensusModule.appendEntries(Seq("A", "B", "C"))
 
-          whenReady(responseF) { response => verify(leaderRpc).clientAppendEntries(Seq("A", "B", "C"))
+          whenReady(responseF) { response =>
+            verify(leaderRpc).clientAppendEntries(Seq("A", "B", "C"))
           }
         }
       }
@@ -112,19 +115,21 @@ class RaftConsensusSpec extends WordSpec {
         "reply false if log doesn't contain an entry at prevLogIndex" in new MockFixture {
 
           val persistentStorage =
-            new InMemoryPersistentStorage[String](Vector(LogEntry("A", 1, 0), LogEntry("B", 1, 1), LogEntry("C", 2, 2)),
-                                                  currentTerm = 1,
-                                                  votedFor = "anyone")
+            new InMemoryPersistentStorage[String](
+              Vector(LogEntry("A", 1, 0), LogEntry("B", 1, 1), LogEntry("C", 2, 2)),
+              currentTerm = 1,
+              votedFor = "anyone")
 
           val _ = aRaftNode(persistentStorage)
 
           val appendResult = appendCallback(
-            EntriesToAppend(term = 1,
-                            leaderId = "anyone",
-                            prevLogIndex = 3,
-                            prevLogTerm = 1,
-                            entries = List(),
-                            leaderCommitIndex = 1))
+            EntriesToAppend(
+              term = 1,
+              leaderId = "anyone",
+              prevLogIndex = 3,
+              prevLogTerm = 1,
+              entries = List(),
+              leaderCommitIndex = 1))
 
           appendResult shouldBe AppendEntriesResult(term = 1, success = false)
         }
@@ -135,21 +140,21 @@ class RaftConsensusSpec extends WordSpec {
           "delete the existing entry and those that follow it" in new MockFixture {
 
           val persistentStorage =
-            new InMemoryPersistentStorage[String](Vector(LogEntry("A", 1, 0),
-                                                         LogEntry("B", term = 1, 1),
-                                                         LogEntry("C", term = 1, 2)),
-                                                  currentTerm = 1,
-                                                  votedFor = "anyone")
+            new InMemoryPersistentStorage[String](
+              Vector(LogEntry("A", 1, 0), LogEntry("B", term = 1, 1), LogEntry("C", term = 1, 2)),
+              currentTerm = 1,
+              votedFor = "anyone")
 
           val raftNode = aRaftNode(persistentStorage)
 
           val appendResult = appendCallback(
-            EntriesToAppend(term = 1,
-                            leaderId = "anyone",
-                            prevLogIndex = 1,
-                            prevLogTerm = 1,
-                            entries = List(LogEntry("B", term = 2, 1), LogEntry("C", term = 2, 2)),
-                            leaderCommitIndex = 4))
+            EntriesToAppend(
+              term = 1,
+              leaderId = "anyone",
+              prevLogIndex = 1,
+              prevLogTerm = 1,
+              entries = List(LogEntry("B", term = 2, 1), LogEntry("C", term = 2, 2)),
+              leaderCommitIndex = 4))
 
           appendResult shouldBe AppendEntriesResult(term = 1, success = false)
           persistentStorage.log shouldBe Vector(LogEntry("A", 1, 0))
@@ -159,28 +164,29 @@ class RaftConsensusSpec extends WordSpec {
         "append new entries not already in the log" in new MockFixture {
 
           val persistentStorage =
-            new InMemoryPersistentStorage[String](Vector(LogEntry("A", 1, index = 0),
-                                                         LogEntry("B", 1, index = 1),
-                                                         LogEntry("C", 1, index = 2)),
-                                                  currentTerm = 1,
-                                                  votedFor = "anyone")
+            new InMemoryPersistentStorage[String](
+              Vector(LogEntry("A", 1, index = 0), LogEntry("B", 1, index = 1), LogEntry("C", 1, index = 2)),
+              currentTerm = 1,
+              votedFor = "anyone")
 
           val raftNode = aRaftNode(persistentStorage)
 
           val appendResult = appendCallback(
-            EntriesToAppend(term = 1,
-                            leaderId = "anyone",
-                            prevLogIndex = 1,
-                            prevLogTerm = 1,
-                            entries = List(LogEntry("C", 1, index = 2), LogEntry("D", 1, index = 3)),
-                            leaderCommitIndex = 3))
+            EntriesToAppend(
+              term = 1,
+              leaderId = "anyone",
+              prevLogIndex = 1,
+              prevLogTerm = 1,
+              entries = List(LogEntry("C", 1, index = 2), LogEntry("D", 1, index = 3)),
+              leaderCommitIndex = 3))
 
           appendResult shouldBe AppendEntriesResult(term = 1, success = true)
 
-          persistentStorage.log shouldBe Vector(LogEntry("A", 1, index = 0),
-                                                LogEntry("B", 1, index = 1),
-                                                LogEntry("C", 1, index = 2),
-                                                LogEntry("D", 1, index = 3))
+          persistentStorage.log shouldBe Vector(
+            LogEntry("A", 1, index = 0),
+            LogEntry("B", 1, index = 1),
+            LogEntry("C", 1, index = 2),
+            LogEntry("D", 1, index = 3))
         }
       }
       "implement rule #5" should {
@@ -194,21 +200,21 @@ class RaftConsensusSpec extends WordSpec {
           // until commitIndex = lastApplied
 
           val persistentStorage =
-            new InMemoryPersistentStorage[String](Vector(LogEntry("A", 1, index = 0),
-                                                         LogEntry("B", 1, index = 1),
-                                                         LogEntry("C", 1, index = 2)),
-                                                  currentTerm = 1,
-                                                  votedFor = "anyone")
+            new InMemoryPersistentStorage[String](
+              Vector(LogEntry("A", 1, index = 0), LogEntry("B", 1, index = 1), LogEntry("C", 1, index = 2)),
+              currentTerm = 1,
+              votedFor = "anyone")
 
           val _ = aRaftNode(persistentStorage)
 
           val appendResult = appendCallback(
-            EntriesToAppend(term = 1,
-                            leaderId = "anyone",
-                            prevLogIndex = 2,
-                            prevLogTerm = 1,
-                            entries = List(LogEntry("D", 1, index = 3)),
-                            leaderCommitIndex = 4))
+            EntriesToAppend(
+              term = 1,
+              leaderId = "anyone",
+              prevLogIndex = 2,
+              prevLogTerm = 1,
+              entries = List(LogEntry("D", 1, index = 3)),
+              leaderCommitIndex = 4))
 
           appendResult shouldBe AppendEntriesResult(term = 1, success = true)
 
@@ -231,12 +237,13 @@ class RaftConsensusSpec extends WordSpec {
           val raftNode = aRaftNode(persistentStorage)
 
           val appendResult = appendCallback(
-            EntriesToAppend(term = 2,
-                            leaderId = "anyone",
-                            prevLogIndex = -1,
-                            prevLogTerm = 1,
-                            entries = List(),
-                            leaderCommitIndex = -1))
+            EntriesToAppend(
+              term = 2,
+              leaderId = "anyone",
+              prevLogIndex = -1,
+              prevLogTerm = 1,
+              entries = List(),
+              leaderCommitIndex = -1))
 
           raftNode.getPersistentState shouldBe (2, "anyone")
           appendResult shouldBe AppendEntriesResult(term = 2, success = true)
@@ -251,12 +258,13 @@ class RaftConsensusSpec extends WordSpec {
         val raftNode = aCandidate(persistentStorage)
 
         val appendResult = appendCallback(
-          EntriesToAppend(term = 2,
-                          leaderId = "i2",
-                          prevLogIndex = -1,
-                          prevLogTerm = 1,
-                          entries = List(),
-                          leaderCommitIndex = -1))
+          EntriesToAppend(
+            term = 2,
+            leaderId = "i2",
+            prevLogIndex = -1,
+            prevLogTerm = 1,
+            entries = List(),
+            leaderCommitIndex = -1))
 
         appendResult shouldBe AppendEntriesResult(term = 2, success = true)
         raftNode.getRole shouldBe Follower
@@ -268,12 +276,13 @@ class RaftConsensusSpec extends WordSpec {
         val _ = aCandidate(persistentStorage)
 
         val appendResult = appendCallback( // another server advises term 2
-          EntriesToAppend(term = 2,
-                          leaderId = "i2",
-                          prevLogIndex = -1,
-                          prevLogTerm = 1,
-                          entries = List(),
-                          leaderCommitIndex = -1))
+          EntriesToAppend(
+            term = 2,
+            leaderId = "i2",
+            prevLogIndex = -1,
+            prevLogTerm = 1,
+            entries = List(),
+            leaderCommitIndex = -1))
 
         appendResult shouldBe AppendEntriesResult(term = 3, success = false)
       }
@@ -286,12 +295,13 @@ class RaftConsensusSpec extends WordSpec {
         val raftNode = aLeader(persistentStorage)
 
         val appendResult = appendCallback( // another server advises term 3
-          EntriesToAppend(term = 3,
-                          leaderId = "i2",
-                          prevLogIndex = -1,
-                          prevLogTerm = 1,
-                          entries = List(),
-                          leaderCommitIndex = -1))
+          EntriesToAppend(
+            term = 3,
+            leaderId = "i2",
+            prevLogIndex = -1,
+            prevLogTerm = 1,
+            entries = List(),
+            leaderCommitIndex = -1))
 
         raftNode.getRole shouldBe Follower
         appendResult shouldBe AppendEntriesResult(term = 3, success = true)
@@ -303,12 +313,13 @@ class RaftConsensusSpec extends WordSpec {
         val raftNode = aLeader(persistentStorage) // promotion to leader increments term to 3.
 
         val appendResult = appendCallback( // another server advises term 2
-          EntriesToAppend(term = 1,
-                          leaderId = "i2",
-                          prevLogIndex = -1,
-                          prevLogTerm = 1,
-                          entries = List(),
-                          leaderCommitIndex = -1))
+          EntriesToAppend(
+            term = 1,
+            leaderId = "i2",
+            prevLogIndex = -1,
+            prevLogTerm = 1,
+            entries = List(),
+            leaderCommitIndex = -1))
 
         raftNode.getRole shouldBe Leader
         appendResult shouldBe AppendEntriesResult(term = 3, success = false)
@@ -366,11 +377,10 @@ class RaftConsensusSpec extends WordSpec {
         "candidate's log has lower term than the receiver's log" should {
           "deny vote" in new MockFixture {
             val persistentStorage =
-              new InMemoryPersistentStorage[String](Vector(LogEntry("A", 1, 0),
-                                                           LogEntry("B", 1, 1),
-                                                           LogEntry("C", 2, 2)),
-                                                    currentTerm = 2,
-                                                    votedFor = "i2")
+              new InMemoryPersistentStorage[String](
+                Vector(LogEntry("A", 1, 0), LogEntry("B", 1, 1), LogEntry("C", 2, 2)),
+                currentTerm = 2,
+                votedFor = "i2")
 
             val _ = aRaftNode(persistentStorage)
 
@@ -383,11 +393,10 @@ class RaftConsensusSpec extends WordSpec {
         "candidate's log has lower lastLogLogIndex than the receiver's log" should {
           "deny vote" in new MockFixture {
             val persistentStorage =
-              new InMemoryPersistentStorage[String](Vector(LogEntry("A", 1, 0),
-                                                           LogEntry("B", 1, 1),
-                                                           LogEntry("C", 2, 2)),
-                                                    currentTerm = 2,
-                                                    votedFor = "i2")
+              new InMemoryPersistentStorage[String](
+                Vector(LogEntry("A", 1, 0), LogEntry("B", 1, 1), LogEntry("C", 2, 2)),
+                currentTerm = 2,
+                votedFor = "i2")
 
             val _ = aRaftNode(persistentStorage)
 
@@ -501,12 +510,13 @@ class RaftConsensusSpec extends WordSpec {
 
         val _ = aLeader(persistentStorage)
 
-        val expectedHeartbeat = EntriesToAppend(term = 3,
-                                                leaderId = "i1",
-                                                prevLogIndex = -1,
-                                                prevLogTerm = -1,
-                                                entries = Seq[LogEntry[String]](),
-                                                leaderCommitIndex = -1)
+        val expectedHeartbeat = EntriesToAppend(
+          term = 3,
+          leaderId = "i1",
+          prevLogIndex = -1,
+          prevLogTerm = -1,
+          entries = Seq[LogEntry[String]](),
+          leaderCommitIndex = -1)
 
         heartbeatTimeoutCallback.apply()
         heartbeatTimeoutCallback.apply()
@@ -538,9 +548,10 @@ class RaftConsensusSpec extends WordSpec {
         "last log index >= nextIndex for a follower" should {
           "send AppendEntries RPC with entries starting at nextIndex" in new MockFixture {
             val persistentStorage =
-              new InMemoryPersistentStorage[String](Vector(LogEntry[String]("A", 2, 0)),
-                                                    currentTerm = 2,
-                                                    votedFor = "i1")
+              new InMemoryPersistentStorage[String](
+                Vector(LogEntry[String]("A", 2, 0)),
+                currentTerm = 2,
+                votedFor = "i1")
 
             val raftNode = aLeader(persistentStorage)
             val heartbeat = EntriesToAppend[String](3, "i1", 0, 2, Seq(), -1)
@@ -556,14 +567,13 @@ class RaftConsensusSpec extends WordSpec {
 
             // the adjusted call to node i3.
             val expectedAdjustedAppendEntries =
-              EntriesToAppend(3,
-                              "i1",
-                              -1,
-                              -1,
-                              Seq(LogEntry[String]("A", 2, 0),
-                                  LogEntry[String]("B", 3, 1),
-                                  LogEntry[String]("C", 3, 2)),
-                              -1)
+              EntriesToAppend(
+                3,
+                "i1",
+                -1,
+                -1,
+                Seq(LogEntry[String]("A", 2, 0), LogEntry[String]("B", 3, 1), LogEntry[String]("C", 3, 2)),
+                -1)
 
             when(rpc3.appendEntries(expectedAdjustedAppendEntries))
               .thenReturn(Future(AppendEntriesResult(3, success = true)))
@@ -614,11 +624,12 @@ class RaftConsensusSpec extends WordSpec {
 
         appendResult shouldBe Right(())
 
-        val expectedEntries = Vector(LogEntry("A", 2, 0),
-                                     LogEntry("B", 2, 1),
-                                     LogEntry("C", 2, 2),
-                                     LogEntry("D", 2, 3),
-                                     LogEntry("E", 2, 4))
+        val expectedEntries = Vector(
+          LogEntry("A", 2, 0),
+          LogEntry("B", 2, 1),
+          LogEntry("C", 2, 2),
+          LogEntry("D", 2, 3),
+          LogEntry("E", 2, 4))
         s1.log shouldBe expectedEntries
         s2.log shouldBe expectedEntries
         s3.log shouldBe expectedEntries
@@ -696,13 +707,14 @@ trait MockFixture {
   }
 
   def aRaftNode(persistentStorage: PersistentStorage[Command]): RaftNode[Command] =
-    new RaftNode[Command]("i1",
-                          Seq("i1", "i2", "i3"),
-                          rpcFactory,
-                          electionTimerFactory,
-                          heartbeatTimerFactory,
-                          stateMachine,
-                          persistentStorage)
+    new RaftNode[Command](
+      "i1",
+      Seq("i1", "i2", "i3"),
+      rpcFactory,
+      electionTimerFactory,
+      heartbeatTimerFactory,
+      stateMachine,
+      persistentStorage)
 
   def aFollower(persistentStorage: PersistentStorage[Command]): RaftNode[Command] =
     aRaftNode(persistentStorage)
@@ -785,7 +797,8 @@ trait IntegratedFixture {
     }
 
     lazy val raftNode: RaftNode[Command] =
-      new RaftNode[Command](nodeId,
+      new RaftNode[Command](
+        nodeId,
         clusterIds,
         localRpcFactory,
         electionTimerFactory,
@@ -796,9 +809,10 @@ trait IntegratedFixture {
     testNodes.put(nodeId, this)
   }
 
-  def anIntegratedCluster(i1State: PersistentStorage[Command],
-                          i2State: PersistentStorage[Command],
-                          i3State: PersistentStorage[Command]): (TestNode, TestNode, TestNode) = {
+  def anIntegratedCluster(
+      i1State: PersistentStorage[Command],
+      i2State: PersistentStorage[Command],
+      i3State: PersistentStorage[Command]): (TestNode, TestNode, TestNode) = {
 
     val (t1, t2, t3) = (new TestNode("i1", i1State), new TestNode("i2", i2State), new TestNode("i3", i3State))
     t1.raftNode

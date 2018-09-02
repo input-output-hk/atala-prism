@@ -23,12 +23,12 @@ class DummyKnownNodesStorage(clock: Clock) extends KnownNodeStorage {
   override def insert(nodeInfo: NodeInfo): Long = {
     val updatedNode = nodeMap.get(nodeInfo.id).map(_.copy(node = nodeInfo, lastSeen = clock.instant()))
     nodeMap = nodeMap + ((nodeInfo.id, updatedNode.getOrElse(KnownNode(nodeInfo, clock.instant(), clock.instant()))))
-    if(updatedNode.isEmpty) trackingKnownNodes.incrementAndGet()
+    if (updatedNode.isEmpty) trackingKnownNodes.incrementAndGet()
     0L
   }
 
   override def remove(nodeInfo: NodeInfo): Unit = {
-    if(nodeMap.contains(nodeInfo.id)) trackingKnownNodes.decrementAndGet()
+    if (nodeMap.contains(nodeInfo.id)) trackingKnownNodes.decrementAndGet()
     nodeMap = nodeMap - nodeInfo.id
   }
 

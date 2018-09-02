@@ -11,9 +11,7 @@ import org.scalatest.{MustMatchers, fixture}
 import scalikejdbc._
 import scalikejdbc.scalatest.AutoRollback
 
-trait LedgerStorageDaoDbTest extends fixture.FlatSpec
-  with AutoRollback
-  with MustMatchers {
+trait LedgerStorageDaoDbTest extends fixture.FlatSpec with AutoRollback with MustMatchers {
 
   behavior of "LedgerStorageImpl"
 
@@ -25,7 +23,9 @@ trait LedgerStorageDaoDbTest extends fixture.FlatSpec
     storage.push(1, block)(IdentityBlockSerializer.serializable, session)
     val lt = LedgerTable.syntax("lt")
     val blockDataInDb = sql"""select ${lt.result.*} from ${LedgerTable as lt}"""
-      .map(rs => LedgerTable(lt.resultName)(rs)).single().apply()
+      .map(rs => LedgerTable(lt.resultName)(rs))
+      .single()
+      .apply()
     blockDataInDb.isDefined mustBe true
     val blockEntry = blockDataInDb.get
     val dbBlock = IdentityBlockSerializer.serializable.deserialize(blockEntry.data)

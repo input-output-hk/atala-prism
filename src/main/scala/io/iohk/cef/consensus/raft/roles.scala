@@ -8,10 +8,12 @@ import scala.concurrent.{ExecutionContext, Future}
 
 private[raft] sealed trait NodeRole[Command] {
   val stateCode: StateCode
-  def appendEntries(rc: RaftContext[Command],
-                    entriesToAppend: EntriesToAppend[Command]): (RaftContext[Command], AppendEntriesResult)
-  def clientAppendEntries(rc: RaftContext[Command],
-                          entries: Seq[Command]): Future[(RaftContext[Command], Either[Redirect[Command], Unit])]
+  def appendEntries(
+      rc: RaftContext[Command],
+      entriesToAppend: EntriesToAppend[Command]): (RaftContext[Command], AppendEntriesResult)
+  def clientAppendEntries(
+      rc: RaftContext[Command],
+      entries: Seq[Command]): Future[(RaftContext[Command], Either[Redirect[Command], Unit])]
 }
 
 case object Follower extends StateCode
@@ -21,8 +23,9 @@ case object Leader extends StateCode
 private[raft] class Follower[Command](raftNode: RaftNode[Command])(implicit ec: ExecutionContext)
     extends NodeRole[Command] {
 
-  override def appendEntries(rc: RaftContext[Command],
-                             entriesToAppend: EntriesToAppend[Command]): (RaftContext[Command], AppendEntriesResult) = {
+  override def appendEntries(
+      rc: RaftContext[Command],
+      entriesToAppend: EntriesToAppend[Command]): (RaftContext[Command], AppendEntriesResult) = {
     applyAppendEntriesRules1To5(rc, entriesToAppend)
   }
 
@@ -76,8 +79,9 @@ private[raft] class Follower[Command](raftNode: RaftNode[Command])(implicit ec: 
   }
 
   // AppendEntries summary note #3 (Sec 5.3 deleting inconsistent log entries)
-  private def appendEntriesConflictSearch(log: IndexedSeq[LogEntry[Command]],
-                                          entriesToAppend: EntriesToAppend[Command]): Int = {
+  private def appendEntriesConflictSearch(
+      log: IndexedSeq[LogEntry[Command]],
+      entriesToAppend: EntriesToAppend[Command]): Int = {
 
     val logSz = log.size
 
@@ -113,8 +117,9 @@ private[raft] class Follower[Command](raftNode: RaftNode[Command])(implicit ec: 
   }
 
   // AppendEntries summary note #4 (append new entries not already in the log)
-  private def appendEntriesAdditions(log: IndexedSeq[LogEntry[Command]],
-                                     entriesToAppend: EntriesToAppend[Command]): Seq[LogEntry[Command]] = {
+  private def appendEntriesAdditions(
+      log: IndexedSeq[LogEntry[Command]],
+      entriesToAppend: EntriesToAppend[Command]): Seq[LogEntry[Command]] = {
 
     val logSz = log.size
 
@@ -149,9 +154,10 @@ private[raft] class Follower[Command](raftNode: RaftNode[Command])(implicit ec: 
 
   // AppendEntries summary note #5 (if leaderCommit > commitIndex,
   // set commitIndex = min(leaderCommit, index of last new entry)
-  private def appendEntriesCommitIndexCheck(rc: RaftContext[Command],
-                                            leaderCommitIndex: Int,
-                                            iLastNewEntry: Int): RaftContext[Command] = {
+  private def appendEntriesCommitIndexCheck(
+      rc: RaftContext[Command],
+      leaderCommitIndex: Int,
+      iLastNewEntry: Int): RaftContext[Command] = {
     val commitIndex = Math.min(leaderCommitIndex, iLastNewEntry)
 
     if (leaderCommitIndex > rc.commonVolatileState.commitIndex) {
@@ -169,8 +175,9 @@ private[raft] class Follower[Command](raftNode: RaftNode[Command])(implicit ec: 
 
 private[raft] class Candidate[Command](raftNode: RaftNode[Command])(implicit ec: ExecutionContext)
     extends NodeRole[Command] {
-  override def appendEntries(rc: RaftContext[Command],
-                             entriesToAppend: EntriesToAppend[Command]): (RaftContext[Command], AppendEntriesResult) = {
+  override def appendEntries(
+      rc: RaftContext[Command],
+      entriesToAppend: EntriesToAppend[Command]): (RaftContext[Command], AppendEntriesResult) = {
     // rules for servers, candidates
     // if append entries rpc received from new leader, convert to follower
     val prospectiveLeaderTerm = entriesToAppend.term
@@ -196,8 +203,9 @@ private[raft] class Leader[Command](raftNode: RaftNode[Command])(implicit ec: Ex
 
   override val stateCode: StateCode = Leader
 
-  override def appendEntries(rc: RaftContext[Command],
-                             entriesToAppend: EntriesToAppend[Command]): (RaftContext[Command], AppendEntriesResult) = {
+  override def appendEntries(
+      rc: RaftContext[Command],
+      entriesToAppend: EntriesToAppend[Command]): (RaftContext[Command], AppendEntriesResult) = {
     val prospectiveLeaderTerm = entriesToAppend.term
     val (currentTerm, _) = rc.persistentState
     if (prospectiveLeaderTerm >= currentTerm) {
@@ -256,10 +264,11 @@ private[raft] class Leader[Command](raftNode: RaftNode[Command])(implicit ec: Ex
     }
   }
 
-  private def sendAppendEntry(rc: RaftContext[Command],
-                              nextIndex: Int,
-                              lastLogIndex: Int,
-                              memberRPC: RPC[Command]): Future[(Int, Int)] = {
+  private def sendAppendEntry(
+      rc: RaftContext[Command],
+      nextIndex: Int,
+      lastLogIndex: Int,
+      memberRPC: RPC[Command]): Future[(Int, Int)] = {
     val commitIndex = rc.commonVolatileState.commitIndex
 
     val (currentTerm, _) = rc.persistentState
@@ -277,13 +286,14 @@ private[raft] class Leader[Command](raftNode: RaftNode[Command])(implicit ec: Ex
     })
   }
 
-  private def appendEntryForNode(nextIndex: Int,
-                                 commitIndex: Int,
-                                 theLog: IndexedSeq[LogEntry[Command]],
-                                 currentTerm: Int,
-                                 lastLogIndex: Int,
-                                 peerRpc: RPC[Command],
-                                 heartbeat: EntriesToAppend[Command]): Future[AppendEntriesResult] = {
+  private def appendEntryForNode(
+      nextIndex: Int,
+      commitIndex: Int,
+      theLog: IndexedSeq[LogEntry[Command]],
+      currentTerm: Int,
+      lastLogIndex: Int,
+      peerRpc: RPC[Command],
+      heartbeat: EntriesToAppend[Command]): Future[AppendEntriesResult] = {
 
     if (lastLogIndex >= nextIndex) { // Rules for servers, leaders, note #3.
       val entries = theLog.slice(nextIndex, theLog.size) // NB: will break after impl of log compaction
@@ -302,10 +312,11 @@ private[raft] class Leader[Command](raftNode: RaftNode[Command])(implicit ec: Ex
     }
   }
 
-  private def findN(log: IndexedSeq[LogEntry[Command]],
-                    currentTerm: Int,
-                    commitIndex: Int,
-                    matchIndex: Seq[Int]): Option[Int] = {
+  private def findN(
+      log: IndexedSeq[LogEntry[Command]],
+      currentTerm: Int,
+      commitIndex: Int,
+      matchIndex: Seq[Int]): Option[Int] = {
     @tailrec
     def loop(successN: List[Int], tryN: Int): List[Int] = {
       if (log.size > tryN) {

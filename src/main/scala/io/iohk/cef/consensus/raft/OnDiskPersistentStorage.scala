@@ -10,8 +10,9 @@ import journal.io.api.{Journal, JournalBuilder, Location}
 
 import scala.collection.JavaConverters._
 
-class OnDiskPersistentStorage[T: ArrayEncoder: ArrayDecoder](nodeId: String)(implicit enc: ArrayEncoder[LogEntry[T]],
-                                                                             dec: ArrayDecoder[LogEntry[T]])
+class OnDiskPersistentStorage[T: ArrayEncoder: ArrayDecoder](nodeId: String)(
+    implicit enc: ArrayEncoder[LogEntry[T]],
+    dec: ArrayDecoder[LogEntry[T]])
     extends PersistentStorage[T] {
 
   val storageDir: Path = Paths.get(getProperty("java.io.tmpdir"), "raft", nodeId)

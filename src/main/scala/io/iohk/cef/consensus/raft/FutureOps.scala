@@ -13,8 +13,8 @@ object FutureOps {
   // the result is Future(Seq.empty).
   def sequenceForgiving[A](in: Seq[Future[A]])(implicit ec: ExecutionContext): Future[Seq[A]] = {
     val zero: Future[List[Option[A]]] = successful(List())
-    val fld: Future[List[Option[A]]] = in.foldLeft(zero) {
-      (acc: Future[List[Option[A]]], fa: Future[A]) => {
+    val fld: Future[List[Option[A]]] = in.foldLeft(zero) { (acc: Future[List[Option[A]]], fa: Future[A]) =>
+      {
         val eventualMaybeA: Future[Option[A]] = fa.map(a => Some(a)).fallbackTo(Future(None))
         acc.zipWith(eventualMaybeA)((list, v) => v :: list)
       }

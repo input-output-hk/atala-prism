@@ -109,52 +109,57 @@ class FrameCodec(private val secrets: Secrets) {
   }
 
   def writeFrames(frames: Seq[Frame]): ByteString = {
-    val bytes = frames.zipWithIndex flatMap { case (frame, index) =>
-      val firstFrame = index == 0
-      val lastFrame = index == frames.size - 1
+    val bytes = frames.zipWithIndex flatMap {
+      case (frame, index) =>
+        val firstFrame = index == 0
+        val lastFrame = index == frames.size - 1
 
-      var out: ByteString = ByteString()
+        var out: ByteString = ByteString()
 
-      val headBuffer = new Array[Byte](HeaderLength)
-      val ptype = rlp.encodeToArray(frame.`type`)
+        val headBuffer = new Array[Byte](HeaderLength)
+        val ptype = rlp.encodeToArray(frame.`type`)
 
-      val totalSize =
-        if (firstFrame) frame.payload.length + ptype.length
-        else frame.payload.length
+        val totalSize =
+          if (firstFrame) frame.payload.length + ptype.length
+          else frame.payload.length
 
-      headBuffer(0) = (totalSize >> 16).toByte
-      headBuffer(1) = (totalSize >> 8).toByte
-      headBuffer(2) = totalSize.toByte
+        headBuffer(0) = (totalSize >> 16).toByte
+        headBuffer(1) = (totalSize >> 8).toByte
+        headBuffer(2) = totalSize.toByte
 
-      var headerDataElems: Seq[Array[Byte]] = Nil
-      headerDataElems :+= rlp.encodeToArray(frame.header.protocol)
-      frame.header.contextId.foreach { cid => headerDataElems :+= rlp.encodeToArray(cid) }
-      frame.header.totalPacketSize foreach { tfs => headerDataElems :+= rlp.encodeToArray(tfs) }
+        var headerDataElems: Seq[Array[Byte]] = Nil
+        headerDataElems :+= rlp.encodeToArray(frame.header.protocol)
+        frame.header.contextId.foreach { cid =>
+          headerDataElems :+= rlp.encodeToArray(cid)
+        }
+        frame.header.totalPacketSize foreach { tfs =>
+          headerDataElems :+= rlp.encodeToArray(tfs)
+        }
 
-      val headerData = rlp.encodeToArray(headerDataElems)(seqEncDec[Array[Byte]])
-      System.arraycopy(headerData, 0, headBuffer, 3, headerData.length)
-      enc.processBytes(headBuffer, 0, 16, headBuffer, 0)
-      updateMac(secrets.egressMac, headBuffer, 0, headBuffer, 16, egress = true)
+        val headerData = rlp.encodeToArray(headerDataElems)(seqEncDec[Array[Byte]])
+        System.arraycopy(headerData, 0, headBuffer, 3, headerData.length)
+        enc.processBytes(headBuffer, 0, 16, headBuffer, 0)
+        updateMac(secrets.egressMac, headBuffer, 0, headBuffer, 16, egress = true)
 
-      val buff: Array[Byte] = new Array[Byte](256)
-      out ++= ByteString(headBuffer)
+        val buff: Array[Byte] = new Array[Byte](256)
+        out ++= ByteString(headBuffer)
 
-      if (firstFrame) {
-        // packet-type only in first frame
-        enc.processBytes(ptype, 0, ptype.length, buff, 0)
-        out ++= ByteString(buff.take(ptype.length))
-        secrets.egressMac.update(buff, 0, ptype.length)
-      }
+        if (firstFrame) {
+          // packet-type only in first frame
+          enc.processBytes(ptype, 0, ptype.length, buff, 0)
+          out ++= ByteString(buff.take(ptype.length))
+          secrets.egressMac.update(buff, 0, ptype.length)
+        }
 
-      out ++= processFramePayload(frame.payload)
+        out ++= processFramePayload(frame.payload)
 
-      if (lastFrame) {
-        // padding and mac only in last frame
-        out ++= processFramePadding(totalSize)
-        out ++= processFrameMac()
-      }
+        if (lastFrame) {
+          // padding and mac only in last frame
+          out ++= processFramePadding(totalSize)
+          out ++= processFrameMac()
+        }
 
-      out
+        out
     }
 
     ByteString(bytes.toArray)
@@ -197,7 +202,13 @@ class FrameCodec(private val secrets: Secrets) {
     macc
   }
 
-  private def updateMac(mac: KeccakDigest, seed: Array[Byte], offset: Int, out: Array[Byte], outOffset: Int, egress: Boolean): Array[Byte] = {
+  private def updateMac(
+      mac: KeccakDigest,
+      seed: Array[Byte],
+      offset: Int,
+      out: Array[Byte],
+      outOffset: Int,
+      egress: Boolean): Array[Byte] = {
     val aesBlock = new Array[Byte](mac.getDigestSize)
     doSum(mac, aesBlock)
     makeMacCipher.processBlock(aesBlock, 0, aesBlock, 0)
@@ -213,9 +224,10 @@ class FrameCodec(private val secrets: Secrets) {
     doSum(mac, result)
 
     if (egress) System.arraycopy(result, 0, out, outOffset, length)
-    else (0 until length) foreach { i =>
-      if (out(i + outOffset) != result(i)) throw new IOException("MAC mismatch")
-    }
+    else
+      (0 until length) foreach { i =>
+        if (out(i + outOffset) != result(i)) throw new IOException("MAC mismatch")
+      }
 
     result
   }
