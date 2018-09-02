@@ -9,10 +9,8 @@ case class DataLayerException(msg: String) extends Exception(msg)
 
 class LedgerStorageImpl(ledgerStorageDao: LedgerStorageDao) extends LedgerStorage {
 
-  override def push[S,
-                    Header <: BlockHeader,
-                    Tx <: Transaction[S]](ledgerId: Int, block: Block[S, Header, Tx])(
-    implicit blockSerializable: ByteStringSerializable[Block[S, Header, Tx]]): Unit = {
+  override def push[S, Header <: BlockHeader, Tx <: Transaction[S]](ledgerId: Int, block: Block[S, Header, Tx])(
+      implicit blockSerializable: ByteStringSerializable[Block[S, Header, Tx]]): Unit = {
     execInSession { implicit session =>
       ledgerStorageDao.push(ledgerId, block)
     }

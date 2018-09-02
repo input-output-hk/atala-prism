@@ -11,7 +11,7 @@ sealed trait IdentityTransaction extends Transaction[Set[ByteString]] {
 case class Claim(identity: String, key: ByteString) extends IdentityTransaction {
 
   override def apply(ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] =
-    if(ledgerState.contains(identity)) {
+    if (ledgerState.contains(identity)) {
       Left(IdentityTakenError(identity))
     } else {
       Right(ledgerState.put(identity, Set(key)))
@@ -20,10 +20,10 @@ case class Claim(identity: String, key: ByteString) extends IdentityTransaction 
   override def partitionIds: Set[String] = Set(identity)
 }
 
-case class Link(identity: String, key: ByteString) extends IdentityTransaction{
+case class Link(identity: String, key: ByteString) extends IdentityTransaction {
 
   override def apply(ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] =
-    if(!ledgerState.contains(identity)) {
+    if (!ledgerState.contains(identity)) {
       Left(IdentityNotClaimedError(identity))
     } else {
       Right(ledgerState.put(identity, ledgerState.get(identity).getOrElse(Set()) + key))
@@ -34,10 +34,10 @@ case class Link(identity: String, key: ByteString) extends IdentityTransaction{
 case class Unlink(identity: String, key: ByteString) extends IdentityTransaction {
 
   override def apply(ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] =
-    if(!ledgerState.contains(identity) || !ledgerState.get(identity).getOrElse(Set()).contains(key)) {
+    if (!ledgerState.contains(identity) || !ledgerState.get(identity).getOrElse(Set()).contains(key)) {
       Left(PublicKeyNotAssociatedWithIdentity(identity, key))
     } else {
-      if(ledgerState.get(identity).get.size == 1) {
+      if (ledgerState.get(identity).get.size == 1) {
         Right(ledgerState.remove(identity))
       } else {
         Right(ledgerState.put(identity, ledgerState.get(identity).getOrElse(Set()) - key))

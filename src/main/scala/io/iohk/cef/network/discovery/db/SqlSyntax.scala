@@ -8,15 +8,16 @@ import io.iohk.cef.network.{Capabilities, NodeInfo}
 import org.bouncycastle.util.encoders.Hex
 import scalikejdbc.{WrappedResultSet, _}
 
-case class KnownNodeTable(id: ByteString,
-                          discoveryAddress: Array[Byte],
-                          discoveryPort: Int,
-                          serverAddress: Array[Byte],
-                          serverPort: Int,
-                          capabilities: Capabilities,
-                          nodeId: ByteString,
-                          lastSeen: Instant,
-                          discovered: Instant)
+case class KnownNodeTable(
+    id: ByteString,
+    discoveryAddress: Array[Byte],
+    discoveryPort: Int,
+    serverAddress: Array[Byte],
+    serverPort: Int,
+    capabilities: Capabilities,
+    nodeId: ByteString,
+    lastSeen: Instant,
+    discovered: Instant)
 
 object KnownNodeTable extends SQLSyntaxSupport[KnownNodeTable] {
   override val tableName = Schema.knownNodeTableName
@@ -33,9 +34,7 @@ object KnownNodeTable extends SQLSyntaxSupport[KnownNodeTable] {
   )
 }
 
-case class BlacklistNodeTable(nodeId: ByteString,
-                              blacklistSince: Instant,
-                              blacklistUntil: Instant)
+case class BlacklistNodeTable(nodeId: ByteString, blacklistSince: Instant, blacklistUntil: Instant)
 
 object BlacklistNodeTable extends SQLSyntaxSupport[BlacklistNodeTable] {
   override val tableName = Schema.blacklistNodeTableName

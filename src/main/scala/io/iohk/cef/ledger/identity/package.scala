@@ -7,5 +7,6 @@ package object identity {
   type IdentityLedgerState = LedgerState[Set[ByteString]]
 
   //Mimics the apply method
-  def IdentityLedgerState(map: Map[String, Set[ByteString]] = Map()): IdentityLedgerState = LedgerState[Set[ByteString]](map)
+  def IdentityLedgerState(map: Map[String, Set[ByteString]] = Map()): IdentityLedgerState =
+    LedgerState[Set[ByteString]](map)
 }

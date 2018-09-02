@@ -6,10 +6,10 @@ import java.nio.ByteBuffer
 import io.iohk.cef.network.encoding.nio._
 import io.iohk.cef.network.transport.NetworkTransport
 
-class TcpNetworkTransport[Message](messageHandler: (InetSocketAddress, Message) => Unit,
-                                   nettyTransport: NettyTransport)
-                                  (implicit encoder: NioEncoder[Message], decoder: NioDecoder[Message])
-  extends NetworkTransport[InetSocketAddress, Message](messageHandler) {
+class TcpNetworkTransport[Message](messageHandler: (InetSocketAddress, Message) => Unit, nettyTransport: NettyTransport)(
+    implicit encoder: NioEncoder[Message],
+    decoder: NioDecoder[Message])
+    extends NetworkTransport[InetSocketAddress, Message](messageHandler) {
 
   nettyTransport.withMessageApplication(decoder, messageHandler)
 

@@ -29,5 +29,6 @@ class Transports(val peerInfo: PeerInfo) {
 
   def tcp[T](messageHandler: (InetSocketAddress, T) => Unit)(
       implicit codec: NioCodec[T]): Option[TcpNetworkTransport[T]] =
-    netty().map(nettyTransport => new TcpNetworkTransport[T](messageHandler, nettyTransport)(codec.encoder, codec.decoder))
+    netty().map(nettyTransport =>
+      new TcpNetworkTransport[T](messageHandler, nettyTransport)(codec.encoder, codec.decoder))
 }

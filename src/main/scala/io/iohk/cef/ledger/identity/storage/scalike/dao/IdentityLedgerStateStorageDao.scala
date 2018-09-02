@@ -22,8 +22,7 @@ class IdentityLedgerStateStorageDao {
     LedgerState(aggregatedEntries.map)
   }
 
-  def update(previousState: IdentityLedgerState,
-             newState: IdentityLedgerState)(implicit session: DBSession): Unit = {
+  def update(previousState: IdentityLedgerState, newState: IdentityLedgerState)(implicit session: DBSession): Unit = {
     val currentState = slice(previousState.keys)
     if (previousState != currentState) {
       throw new IllegalArgumentException("Provided previous state must be equal to the current state")

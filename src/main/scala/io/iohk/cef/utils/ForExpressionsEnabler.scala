@@ -18,18 +18,20 @@ trait ForExpressionsCapable[F[_]] {
 }
 
 object ForExpressionsEnabler {
-  def futureEnabler(implicit executionContext: ExecutionContext): ForExpressionsEnabler[Future] = new ForExpressionsEnabler[Future] {
-    override def enableForExp[Value](future: Future[Value]): ForExpressionsCapable[Future] =
-      new ForExpressionsCapable[Future] {
-        override type A = Value
+  def futureEnabler(implicit executionContext: ExecutionContext): ForExpressionsEnabler[Future] =
+    new ForExpressionsEnabler[Future] {
+      override def enableForExp[Value](future: Future[Value]): ForExpressionsCapable[Future] =
+        new ForExpressionsCapable[Future] {
+          override type A = Value
 
-        override def flatMap[B](f: A => Future[B]): Future[B] = future.flatMap(f)
+          override def flatMap[B](f: A => Future[B]): Future[B] = future.flatMap(f)
 
-        override def map[B](f: A => B): Future[B] = future.map(f)
-      }
+          override def map[B](f: A => B): Future[B] = future.map(f)
+        }
 
-    override def enableForExp[A](f: A)(implicit dummyImplicit: DummyImplicit): ForExpressionsCapable[Future] = enableForExp(Future(f))
-  }
+      override def enableForExp[A](f: A)(implicit dummyImplicit: DummyImplicit): ForExpressionsCapable[Future] =
+        enableForExp(Future(f))
+    }
 
   val tryEnabler: ForExpressionsEnabler[Try] = new ForExpressionsEnabler[Try] {
     override def enableForExp[Value](tryObj: Try[Value]): ForExpressionsCapable[Try] = new ForExpressionsCapable[Try] {
@@ -40,7 +42,7 @@ object ForExpressionsEnabler {
       override def map[B](f: A => B): Try[B] = tryObj.map(f)
     }
 
-    override def enableForExp[A](f: A)(implicit dummyImplicit: DummyImplicit): ForExpressionsCapable[Try] = enableForExp(Try(f))
+    override def enableForExp[A](f: A)(implicit dummyImplicit: DummyImplicit): ForExpressionsCapable[Try] =
+      enableForExp(Try(f))
   }
 }
-

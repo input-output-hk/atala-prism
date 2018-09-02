@@ -12,22 +12,24 @@ object NodeParser extends Logger {
   val UdpScheme = "udp"
   val NodeIdSize = 128
 
-
   type Error = String
 
   private def validateTcpAddress(uri: URI): Either[Error, URI] = {
     Try(InetAddress.getByName(uri.getHost) -> uri.getPort) match {
       case Success(tcpAddress) if tcpAddress._2 != -1 => Right(uri)
-      case Success(_)  => Left(s"No defined port for uri $uri")
-      case Failure(_)  => Left(s"Error parsing ip address for $uri")
+      case Success(_) => Left(s"No defined port for uri $uri")
+      case Failure(_) => Left(s"Error parsing ip address for $uri")
     }
   }
 
   private def validateScheme(uri: URI, expectedScheme: String): Either[Error, URI] = {
     val scheme = Option(uri.getScheme).toRight(s"No defined scheme for uri $uri")
 
-    scheme.flatMap{ scheme =>
-      Either.cond(uri.getScheme == expectedScheme, uri, s"Invalid node scheme '$scheme'. It should be '$expectedScheme'.")
+    scheme.flatMap { scheme =>
+      Either.cond(
+        uri.getScheme == expectedScheme,
+        uri,
+        s"Invalid node scheme '$scheme'. It should be '$expectedScheme'.")
     }
   }
 
@@ -38,9 +40,7 @@ object NodeParser extends Logger {
     }
 
     nodeId.flatMap(nodeId =>
-      Either.cond(nodeId.length == NodeIdSize, uri,
-        s"Invalid id length for '$nodeId'. It should be $NodeIdSize.")
-    )
+      Either.cond(nodeId.length == NodeIdSize, uri, s"Invalid id length for '$nodeId'. It should be $NodeIdSize."))
   }
 
   private def validateUri(uriString: String): Either[Set[Error], URI] = {
@@ -56,7 +56,7 @@ object NodeParser extends Logger {
     val uri = validateUri(node)
     uri match {
       case Left(error) => Left(error)
-      case Right(nUri)  =>
+      case Right(nUri) =>
         val valScheme = validateScheme(nUri, NodeScheme)
         val valNodeId = validateNodeId(nUri)
         val valTcpAddress = validateTcpAddress(nUri)
@@ -70,7 +70,7 @@ object NodeParser extends Logger {
     val uri = validateUri(udp)
     uri match {
       case Left(error) => Left(error)
-      case Right(nUri)  =>
+      case Right(nUri) =>
         val valScheme = validateScheme(nUri, UdpScheme)
         val valTcpAddress = validateTcpAddress(nUri)
         combineValidations(nUri, valScheme, valTcpAddress)

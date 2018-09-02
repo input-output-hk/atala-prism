@@ -32,8 +32,9 @@ private[network] class NettyTransport(address: InetSocketAddress) {
     .bind(address)
     .await()
 
-  def withMessageApplication[Message](decoder: NioDecoder[Message],
-                                      handler: (InetSocketAddress, Message) => Unit): Unit =
+  def withMessageApplication[Message](
+      decoder: NioDecoder[Message],
+      handler: (InetSocketAddress, Message) => Unit): Unit =
     messageApplications.add(StreamCodecs.lazyMessageApplication(decoder, handler))
 
   def sendMessage(address: InetSocketAddress, message: ByteBuffer): Unit = {

@@ -6,10 +6,10 @@ import akka.util.ByteString
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 
 /**
- * The contract that all encryption / decryption implementations should follow.
- *
- * Designed for asymmetric encryption only.
- */
+  * The contract that all encryption / decryption implementations should follow.
+  *
+  * Designed for asymmetric encryption only.
+  */
 sealed trait CryptoAlgorithm {
 
   type PublicKey
@@ -38,14 +38,12 @@ sealed trait CryptoAlgorithm {
   def decrypt(source: ByteString, key: PrivateKey): Either[DecryptError, ByteString]
 
   /**
-   * Generates a new asymmetric key pair.
-   *
-   * @return the generated key pair (public and private key)
-   */
+    * Generates a new asymmetric key pair.
+    *
+    * @return the generated key pair (public and private key)
+    */
   def generateKeyPair: (PublicKey, PrivateKey)
 }
-
-
 
 /**
   * Companion object to CryptoAlgorithm, containing all the implemented `CryptoAlgorithm`
@@ -69,7 +67,7 @@ object CryptoAlgorithm {
     // TODO: use a meaningful error
     type DecryptError = Throwable
 
-    override def encrypt(source: ByteString,key: PublicKey): ByteString = {
+    override def encrypt(source: ByteString, key: PublicKey): ByteString = {
       val engine = new RSAEngine()
       engine.init(true, key)
 
@@ -87,22 +85,21 @@ object CryptoAlgorithm {
         val encryptedBytes = source.toArray
         val result = ByteString(engine.processBlock(encryptedBytes, 0, encryptedBytes.length))
         Right(result)
-      }
-      catch {
+      } catch {
         case t: Throwable => Left(t)
       }
     }
 
     override def generateKeyPair: (PublicKey, PrivateKey) = {
-      val generator  = new RSAKeyPairGenerator()
+      val generator = new RSAKeyPairGenerator()
 
       // TODO: Verify that this is secure
-      val parameters = new RSAKeyGenerationParameters (
-                         new BigInteger("10001", 16),//publicExponent
-                         secureRandom,
-                         4096,//strength
-                         80//certainty
-                       )
+      val parameters = new RSAKeyGenerationParameters(
+        new BigInteger("10001", 16), //publicExponent
+        secureRandom,
+        4096, //strength
+        80 //certainty
+      )
       generator.init(parameters)
       val pair = generator.generateKeyPair()
       (pair.getPublic, pair.getPrivate)
@@ -110,6 +107,3 @@ object CryptoAlgorithm {
   }
 
 }
-
-
-
