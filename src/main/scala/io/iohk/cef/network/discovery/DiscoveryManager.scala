@@ -266,7 +266,5 @@ object DiscoveryManager {
   }
 
   def calculateMessageKey(encoder: Encoder[DiscoveryWireMessage, ByteString], message: DiscoveryWireMessage): ByteString =
-    encoder
-      .encode(message)
-      .hashWith(HashAlgorithm.KEC256)
+    hashBytes(HashAlgorithm.KEC256)(encoder.encode(message))
 }

@@ -1,19 +1,19 @@
 package io.iohk.cef.cryptolegacy
 
-import java.io.{ByteArrayInputStream, IOException}
-import java.math.BigInteger
-import java.security.SecureRandom
-
-import org.bouncycastle.crypto.digests.SHA256Digest
-import org.bouncycastle.crypto.engines.AESEngine
-import org.bouncycastle.crypto.generators.ECKeyPairGenerator
-import org.bouncycastle.crypto.macs.HMac
-import org.bouncycastle.crypto.modes.SICBlockCipher
-import org.bouncycastle.crypto.params._
-import org.bouncycastle.crypto.{BufferedBlockCipher, InvalidCipherTextException}
-import org.bouncycastle.math.ec.ECPoint
-
 object ECIESCoder {
+
+  import java.io.{ByteArrayInputStream, IOException}
+  import java.math.BigInteger
+  import java.security.SecureRandom
+
+  import org.bouncycastle.crypto.digests.SHA256Digest
+  import org.bouncycastle.crypto.engines.AESEngine
+  import org.bouncycastle.crypto.generators.ECKeyPairGenerator
+  import org.bouncycastle.crypto.macs.HMac
+  import org.bouncycastle.crypto.modes.SICBlockCipher
+  import org.bouncycastle.crypto.params._
+  import org.bouncycastle.crypto.{BufferedBlockCipher, InvalidCipherTextException}
+  import org.bouncycastle.math.ec.ECPoint
 
   val KeySize = 128
   val PublicKeyOverheadSize = 65
