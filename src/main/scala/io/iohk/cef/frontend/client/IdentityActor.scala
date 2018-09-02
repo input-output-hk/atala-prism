@@ -5,8 +5,8 @@ import akka.util.ByteString
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.ledger.identity.{Claim, IdentityBlockHeader, IdentityTransaction}
 import io.iohk.cef.ledger.{BlockHeader, Transaction}
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+
+import scala.concurrent.{ExecutionContext, Future}
 
 object IdentityClientActor {
   sealed trait ClientRequest
@@ -23,12 +23,13 @@ object IdentityClientActor {
 class IdentityTransactionClientActor(nodeCore: NodeCore[Set[ByteString], IdentityBlockHeader, IdentityTransaction])
     extends Actor {
   import IdentityClientActor._
-
+  import context.dispatcher
   def receive: Receive = {
     case request @ TransactionRequest("claim", _, _, _) => { sender ! processTransaction(request) }
   }
 
-  private def processTransaction(transactionRequest: TransactionRequest): Future[TransactionResponse] = {
+  private def processTransaction(transactionRequest: TransactionRequest)(
+      implicit ec: ExecutionContext): Future[TransactionResponse] = {
     val tx = Claim(identity = transactionRequest.identity, key = ByteString(transactionRequest.key))
     val envelope = Envelope(content = tx, ledgerId = transactionRequest.ledgerId)
     nodeCore.receiveTransaction(envelope) map {
