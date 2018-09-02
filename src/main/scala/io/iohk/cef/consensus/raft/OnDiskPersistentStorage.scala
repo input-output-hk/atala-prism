@@ -14,7 +14,7 @@ class OnDiskPersistentStorage[T: ArrayEncoder: ArrayDecoder](nodeId: String)(imp
                                                                              dec: ArrayDecoder[LogEntry[T]])
     extends PersistentStorage[T] {
 
-  val storageDir: Path = Paths.get(getProperty("java.io.tmpdir"), nodeId)
+  val storageDir: Path = Paths.get(getProperty("java.io.tmpdir"), "raft", nodeId)
   val logDir: Path = storageDir.resolve("log")
   val stateFile: Path = storageDir.resolve("state")
 
@@ -40,10 +40,6 @@ class OnDiskPersistentStorage[T: ArrayEncoder: ArrayDecoder](nodeId: String)(imp
 
   private def writeState(term: Int, votedFor: String): Path =
     Files.write(stateFile, s"$term,$votedFor".getBytes(UTF_8))
-
-  private def writeLog(log: Vector[LogEntry[T]]) = {
-    log.foreach(entry => journal.write(enc.encode(entry), WriteType.SYNC))
-  }
 
   private def readLog: Vector[LogEntry[T]] = {
     journal.redo().asScala.flatMap(location => dec.decode(location.getData)).toVector

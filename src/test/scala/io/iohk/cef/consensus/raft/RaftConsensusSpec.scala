@@ -9,11 +9,53 @@ import org.scalatest.mockito.MockitoSugar._
 import org.mockito.Mockito.{inOrder, reset, times, verify, when}
 import org.mockito.ArgumentMatchers.any
 
-import scala.collection.mutable
+import scala.collection.{mutable}
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 
 class RaftConsensusSpec extends WordSpec with TestRPC {
+  "Concurrency model" should {
+    "prevent multiple votes for the same candidate" in {
+      val persistentStorage =
+        new InMemoryPersistentStorage[String](Vector(), currentTerm = 2, votedFor = "")
+
+      val _ = aRaftNode(persistentStorage)
+
+      val voteRequests =
+        Range(0, 100).map(i => VoteRequested(term = 3, candidateId = s"i$i", lastLogIndex = 0, lastLogTerm = 2))
+
+      // spin up 100 very closely spaced requestVote RPCs
+      val voteResultFs = Range(0, 100).map(i => Future(voteCallback(voteRequests(i))))
+
+      val voteResults = Future.sequence(voteResultFs).futureValue
+
+      // only one vote should be granted.
+      voteResults.count(result => result.voteGranted) shouldBe 1
+    }
+    "provide invariant state with futureRaftContext" in {
+
+      val persistentStorage =
+        new InMemoryPersistentStorage[String](Vector(), currentTerm = 0, votedFor = "")
+
+      val raftNode = aRaftNode(persistentStorage)
+
+      // a raft leader updates its commit index 'in the future' based on the responses of followers to log replication
+      // RPCs. We create a simplified version of this op, which just increments the commitIndex by 1 on every invocation.
+      // If invocations are correctly pipelined, the final commitIndex will equal the number of invocations.
+      def futureCommitIndexIncrement(): Future[Int] = raftNode.withFutureRaftContext { rc =>
+        val currentState = rc.commonVolatileState
+        Future(
+          (rc.copy(commonVolatileState = currentState.copy(commitIndex = currentState.commitIndex + 1)),
+           currentState.commitIndex + 1))
+      }
+
+      val incrementFs = Range(0, 100).map(_ => futureCommitIndexIncrement())
+
+      val commitIndices: Seq[Int] = Future.sequence(incrementFs).futureValue
+
+      commitIndices shouldBe Range(0, 100)
+    }
+  }
   "Consensus module" should {
     "Handles all client requests" when {
       "a client contacts a follower" should {
@@ -136,9 +178,9 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
           appendResult shouldBe AppendEntriesResult(term = 1, success = true)
 
           persistentStorage.log shouldBe Vector(LogEntry("A", 1, index = 0),
-                                          LogEntry("B", 1, index = 1),
-                                          LogEntry("C", 1, index = 2),
-                                          LogEntry("D", 1, index = 3))
+                                                LogEntry("B", 1, index = 1),
+                                                LogEntry("C", 1, index = 2),
+                                                LogEntry("D", 1, index = 3))
         }
       }
       "implement rule #5" should {
@@ -467,8 +509,8 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
         heartbeatTimeoutCallback.apply()
         heartbeatTimeoutCallback.apply()
 
-        verify(rpc2, times(3)).appendEntries(expectedHeartbeat)
-        verify(rpc3, times(3)).appendEntries(expectedHeartbeat)
+        verify(rpc2, times(2)).appendEntries(expectedHeartbeat)
+        verify(rpc3, times(2)).appendEntries(expectedHeartbeat)
       }
     }
     "Receiving commands from a client" should {
@@ -585,7 +627,6 @@ class RaftConsensusSpec extends WordSpec with TestRPC {
         t1.raftNode.getCommonVolatileState shouldBe CommonVolatileState(4, 4)
         t2.raftNode.getCommonVolatileState shouldBe CommonVolatileState(-1, -1)
         t3.raftNode.getCommonVolatileState shouldBe CommonVolatileState(-1, -1)
-
 
         Seq("A", "B", "C", "D", "E").foreach(command => {
           verify(t1.machine).apply(command)
@@ -771,8 +812,7 @@ class InMemoryPersistentStorage[T](var logEntries: Vector[LogEntry[T]], var curr
     this.currentTerm = currentTerm
     this.votedFor = votedFor
   }
-  override def log(deletes: Int,
-                   writes: Seq[LogEntry[T]]): Unit = {
+  override def log(deletes: Int, writes: Seq[LogEntry[T]]): Unit = {
     logEntries = logEntries.dropRight(deletes) ++ writes
   }
 }

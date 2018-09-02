@@ -3,8 +3,7 @@ import io.iohk.cef.consensus.raft.RaftConsensus._
 
 import scala.annotation.tailrec
 import scala.concurrent.{ExecutionContext, Future}
-import scala.concurrent.stm.Ref
-
+import scala.concurrent.stm.{Ref, Txn, atomic}
 import org.slf4j.LoggerFactory
 
 /**
@@ -19,7 +18,6 @@ private[raft] class RaftNode[Command](val nodeId: String,
                                       persistentStorage: PersistentStorage[Command])(implicit ec: ExecutionContext)
     extends RaftNodeInterface[Command] {
 
-
   private val logger = LoggerFactory.getLogger(classOf[RaftNode[Command]])
 
   val clusterTable: Map[String, RPC[Command]] = clusterMemberIds
@@ -30,6 +28,8 @@ private[raft] class RaftNode[Command](val nodeId: String,
   val clusterMembers: Seq[RPC[Command]] = clusterTable.values.toSeq
 
   private val rc: Ref[RaftContext[Command]] = Ref(initialRaftContext())
+
+  private val sequencer: Ref[Future[_]] = Ref(Future(()))
 
   private val electionTimer = electionTimerFactory(() => electionTimeout())
 
@@ -66,13 +66,13 @@ private[raft] class RaftNode[Command](val nodeId: String,
   // clientAppendEntries (called from externally)  (async)
   // electionTimeout     (called from a timer)     (async)
 
-  // this function is used by pure, synchronous entry points to atomically update the node state.
-  private def withRaftContext[T](f: RaftContext[Command] => (RaftContext[Command], T)): T = {
-    val initialContext = rc.single()
-    val (nextContext, result) = f(initialContext)
-    persistState(nextContext)
-    rc.single.compareAndSet(initialContext, nextContext)
-    result
+  private[raft] def withRaftContext[T](f: RaftContext[Command] => (RaftContext[Command], T)): T = atomic {
+    implicit txn =>
+      val initialContext = rc()
+      val (nextContext, result) = f(initialContext)
+      rc() = nextContext
+      Txn.afterCommit(_ => persistState(nextContext))
+      result
   }
 
   private def persistState(rc: RaftContext[Command]): Unit = {
@@ -82,17 +82,22 @@ private[raft] class RaftNode[Command](val nodeId: String,
   }
 
   // this function is used by asynchronous entry points (the ones that have to contact other nodes) to atomically update the node state.
-  private def withFutureRaftContext[T](f: RaftContext[Command] => Future[(RaftContext[Command], T)]): Future[T] = {
-    val initialContext = rc.single()
-    f(initialContext).map(t => {
-      val (nextContext, result) = t
-      persistState(nextContext)
-      rc.single.compareAndSet(initialContext, nextContext)
-      result
-    })
-  }
+  private[raft] def withFutureRaftContext[T](f: RaftContext[Command] => Future[(RaftContext[Command], T)]): Future[T] =
+    atomic { implicit txn =>
+      // by the implementation of Future.flatMap, this will be executed after
+      // any existing Future on the sequencer.
+      val nextSeq = sequencer().flatMap(_ => f(rc.single()).map(t => withRaftContext(_ => t)))
+      // once sequenced, the operation is atomically set at the next Future on the sequencer.
+      sequencer() = nextSeq
+      nextSeq
+    }
 
   // Handler for client requests
+  // This happens withFutureRaftContext because log entries cannot be committed until
+  // From page 7 of the paper:
+  // A log entry is committed once the leader that created the entry has replicated it on a majority of
+  // the servers (e.g., entry 7 in Figure 6)
+  // Thus, we can only commit state changes in the Future.
   def clientAppendEntries(entries: Seq[Command]): Future[Either[Redirect[Command], Unit]] = withFutureRaftContext {
     rc => {
       rc.role.clientAppendEntries(rc, entries).map {
@@ -112,9 +117,7 @@ private[raft] class RaftNode[Command](val nodeId: String,
 
   // Handler for inbound requestVote RPCs from candidates.
   def requestVote(voteRequested: VoteRequested): RequestVoteResult = withRaftContext { rc =>
-    val rc2 = rulesForServersAllServers2(rc, voteRequested.term)
-    val requestVoteResult: RequestVoteResult = getVoteResult(rc2, voteRequested)
-    (rc2, requestVoteResult)
+    getVoteResult(rulesForServersAllServers2(rc, voteRequested.term), voteRequested)
   }
 
   private def electionTimeout(): Unit = {
@@ -130,18 +133,21 @@ private[raft] class RaftNode[Command](val nodeId: String,
     rc.role.clientAppendEntries(rc, Seq()).map { case (ctx, _) => (ctx, ()) }
   }
 
-  private def getVoteResult(rc: RaftContext[Command], voteRequested: VoteRequested): RequestVoteResult = {
+  private def getVoteResult(rc: RaftContext[Command],
+                            voteRequested: VoteRequested): (RaftContext[Command], RequestVoteResult) = {
 
     val (currentTerm, votedFor) = rc.persistentState
     val (lastLogIndex, lastLogTerm) = lastLogIndexAndTerm(rc.log)
 
-    if (voteRequested.term < currentTerm) // receiver implementation, note #1
-      RequestVoteResult(currentTerm, voteGranted = false)
-    else if ((votedFor.isEmpty || votedFor == voteRequested.candidateId)
-             && ((lastLogTerm <= voteRequested.lastLogTerm) && (lastLogIndex <= voteRequested.lastLogIndex)))
-      RequestVoteResult(voteRequested.term, voteGranted = true)
-    else
-      RequestVoteResult(currentTerm, voteGranted = false)
+    if (voteRequested.term < currentTerm) { // receiver implementation, note #1
+      (rc, RequestVoteResult(currentTerm, voteGranted = false))
+    } else if ((votedFor.isEmpty || votedFor == voteRequested.candidateId)
+               && ((lastLogTerm <= voteRequested.lastLogTerm) && (lastLogIndex <= voteRequested.lastLogIndex))) {
+      (rc.copy(persistentState = (voteRequested.term, voteRequested.candidateId)),
+       RequestVoteResult(voteRequested.term, voteGranted = true))
+    } else {
+      (rc, RequestVoteResult(currentTerm, voteGranted = false))
+    }
   }
 
   private def requestVotes(voteRequested: VoteRequested): Future[Seq[RequestVoteResult]] = {
