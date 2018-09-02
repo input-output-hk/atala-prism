@@ -667,7 +667,7 @@ class RaftConsensusSpec extends WordSpec {
 trait MockFixture {
 
   implicit val ec: ExecutionContext = ExecutionContext.global
-  implicit val patienceConfig: PatienceConfig = PatienceConfig(timeout = 2 seconds)
+  implicit val patienceConfig: PatienceConfig = PatienceConfig(timeout = 5 seconds)
 
   type Command = String
   val stateMachine: Command => Unit = mock[Command => Unit]
@@ -767,7 +767,7 @@ trait MockFixture {
 trait IntegratedFixture {
 
   implicit val ec: ExecutionContext = ExecutionContext.global
-  implicit val patienceConfig: PatienceConfig = PatienceConfig(timeout = 2 seconds)
+  implicit val patienceConfig: PatienceConfig = PatienceConfig(timeout = 5 seconds)
   type Command = String
 
   val testNodes = mutable.Map[String, TestNode]()
