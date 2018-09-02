@@ -1,5 +1,6 @@
 package io.iohk.cef.consensus.raft
 
+import io.iohk.cef.consensus.raft.FutureOps.sequenceForgiving
 import io.iohk.cef.consensus.raft.RaftConsensus._
 
 import scala.annotation.tailrec
@@ -238,7 +239,7 @@ private[raft] class Leader[Command](raftNode: RaftNode[Command])(implicit ec: Ex
       sendAppendEntry(rc, nextIndexes(i), lastLogIndex, raftNode.clusterMembers(i)))
 
     val indicesF: Future[(Seq[Int], Seq[Int])] =
-      Future.sequence(callFs).map((indices: Seq[(Int, Int)]) => indices.unzip)
+      sequenceForgiving(callFs).map((indices: Seq[(Int, Int)]) => indices.unzip)
 
     for {
       (nextIndex, matchIndex) <- indicesF
@@ -310,7 +311,7 @@ private[raft] class Leader[Command](raftNode: RaftNode[Command])(implicit ec: Ex
       if (log.size > tryN) {
         val matchingTermN = log(tryN).term == currentTerm
 
-        val majorityN = (matchIndex.count(m => m >= tryN) + 1) > (matchIndex.size + 1) / 2
+        val majorityN = (matchIndex.count(m => m >= tryN) + 1) > (raftNode.clusterMembers.size + 1) / 2
 
         if (matchingTermN && majorityN)
           loop(tryN :: successN, tryN + 1)

@@ -1,4 +1,5 @@
 package io.iohk.cef.consensus.raft
+import io.iohk.cef.consensus.raft.FutureOps.sequenceForgiving
 import io.iohk.cef.consensus.raft.RaftConsensus._
 
 import scala.annotation.tailrec
@@ -152,7 +153,7 @@ private[raft] class RaftNode[Command](val nodeId: String,
 
   private def requestVotes(voteRequested: VoteRequested): Future[Seq[RequestVoteResult]] = {
     val rpcFutures = clusterMembers.map(memberRpc => memberRpc.requestVote(voteRequested))
-    Future.sequence(rpcFutures)
+    sequenceForgiving(rpcFutures)
   }
 
   private def requestVotes(rc: RaftContext[Command]): Future[(RaftContext[Command], Unit)] = {
@@ -254,7 +255,7 @@ private[raft] class RaftNode[Command](val nodeId: String,
 
   private def hasMajority(term: Int, votes: Seq[RequestVoteResult]): Boolean = {
     val myOwnVote = 1
-    votes.count(vote => vote.voteGranted && vote.term == term) + myOwnVote > (votes.size + myOwnVote) / 2
+    votes.count(vote => vote.voteGranted && vote.term == term) + myOwnVote > (clusterMembers.size + myOwnVote) / 2
   }
 
   def lastLogIndexAndTerm(log: IndexedSeq[LogEntry[Command]]): (Int, Int) = {
