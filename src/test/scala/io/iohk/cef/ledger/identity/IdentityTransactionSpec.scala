@@ -24,13 +24,13 @@ class IdentityTransactionSpec
     val state = IdentityLedgerState(Map("one" -> Set(pair1._1)))
     val claim = Claim("one", pair1._1, IdentityTransaction.sign("one", pair1._1, pair1._2))
     val link = Link("two", pair2._1, IdentityTransaction.sign("two", pair3._1, pair2._2))
-    val unlink1 = Unlink("two", pair2._1, dummySignature)
-    val unlink2 = Unlink("one", pair2._1, dummySignature)
+    val unlink1 = Unlink("one", pair2._1, IdentityTransaction.sign("one", pair2._1, pair1._2))
+    val unlink2 = Unlink("two", pair2._1, IdentityTransaction.sign("one", pair2._1, pair2._2))
 
     claim(state).left.value mustBe IdentityTakenError("one")
     link(state).left.value mustBe IdentityNotClaimedError("two")
-    unlink1(state).left.value mustBe PublicKeyNotAssociatedWithIdentity("two", pair2._1)
-    unlink2(state).left.value mustBe PublicKeyNotAssociatedWithIdentity("one", pair2._1)
+    unlink1(state).left.value mustBe PublicKeyNotAssociatedWithIdentity("one", pair2._1)
+    unlink2(state).left.value mustBe UnableToVerifySignatureError
   }
 
   it should "apply a claim" in {
@@ -83,17 +83,28 @@ class IdentityTransactionSpec
     result mustBe UnableToVerifySignatureError
   }
 
-  it should "apply an unlink" in {
-    val keys = (1 to 4).map(_ => generateKeyPair._1)
+  it should "fail to apply a unlink if the signature can not be verified" in {
+    val pair1 = generateKeyPair
 
-    val state = IdentityLedgerState(Map("one" -> keys.take(2).toSet))
-    val unlink1 = Unlink("one", keys(0), dummySignature)
-    val unlink2 = Unlink("one", keys(1), dummySignature)
+    val state = IdentityLedgerState(Map("one" -> Set(pair1._1)))
+    val transaction = Unlink("one", pair1._1, IdentityTransaction.sign("onne", pair1._1, pair1._2))
+
+    val result = transaction(state).left.value
+    result mustBe UnableToVerifySignatureError
+  }
+
+  it should "apply an unlink" in {
+    val pair0 = generateKeyPair
+    val pair1 = generateKeyPair
+
+    val state = IdentityLedgerState(Map("one" -> Set(pair0._1, pair1._1)))
+    val unlink1 = Unlink("one", pair0._1, IdentityTransaction.sign("one", pair0._1, pair0._2))
+    val unlink2 = Unlink("one", pair1._1, IdentityTransaction.sign("one", pair1._1, pair1._2))
     val stateAfter1 = unlink1(state).right.value
     val stateAfter2 = unlink2(stateAfter1).right.value
 
     stateAfter1.keys mustBe Set("one")
-    stateAfter1.get("one").value mustBe Set(keys(1))
+    stateAfter1.get("one").value mustBe Set(pair1._1)
     stateAfter1.contains("one") mustBe true
     stateAfter1.contains("two") mustBe false
 
@@ -109,7 +120,7 @@ class IdentityTransactionSpec
 
     val claim = Claim("one", pair1._1, IdentityTransaction.sign("one", pair1._1, pair1._2))
     val link = Link("two", pair2._1, IdentityTransaction.sign("two", pair2._1, pair2._2))
-    val unlink = Unlink("two", pair2._1, dummySignature)
+    val unlink = Unlink("two", pair2._1, IdentityTransaction.sign("two", pair2._1, pair2._2))
     claim.partitionIds mustBe Set(claim.identity)
     link.partitionIds mustBe Set(link.identity)
     unlink.partitionIds mustBe Set(unlink.identity)

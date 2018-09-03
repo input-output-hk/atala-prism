@@ -25,15 +25,13 @@ class BlockSpec
     val txs = List (
       Claim("one", pair1._1, IdentityTransaction.sign("one", pair1._1, pair1._2)),
       Link("one", pair2._1, IdentityTransaction.sign("one", pair2._1, pair1._2)),
-      Unlink("one", pair2._1, dummySignature),
-      Unlink("one", pair1._1, dummySignature))
+      Unlink("one", pair2._1, IdentityTransaction.sign("one", pair2._1, pair1._2)),
+      Unlink("one", pair1._1, IdentityTransaction.sign("one", pair1._1, pair1._2)))
 
     val header = IdentityBlockHeader(ByteString("hash"), Instant.now, 1)
     val block = Block(header, txs)
     val state = new IdentityLedgerState(Map())
-    val newState = block(state)
-
-    newState.right.value mustBe IdentityLedgerState(Map())
+    block(state).right.value mustBe IdentityLedgerState(Map())
 
     val badTxs = List (
       Claim("one", pair1._1, IdentityTransaction.sign("one", pair1._1, pair1._2)),

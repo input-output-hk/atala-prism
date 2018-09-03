@@ -114,16 +114,30 @@ case class Link(identity: String, key: PublicKey, signature: DigitalSignature) e
 
 case class Unlink(identity: String, key: PublicKey, signature: DigitalSignature) extends IdentityTransaction {
 
-  override def apply(ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] =
-    if(!ledgerState.contains(identity) || !ledgerState.get(identity).getOrElse(Set()).contains(key)) {
+  import IdentityTransaction._
+
+  override def apply(ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] = {
+    // TODO: Go directly to the expected key
+    lazy val validSignature: Boolean = ledgerState
+        .get(identity)
+        .getOrElse(Set.empty)
+        .exists { signKey =>
+          isSignedWith(signKey, signature)(identity, key)
+        }
+
+    if (!validSignature) {
+      Left(UnableToVerifySignatureError)
+    } else if (!ledgerState.contains(identity) || !ledgerState.get(identity).getOrElse(Set()).contains(key)) {
       Left(PublicKeyNotAssociatedWithIdentity(identity, key))
     } else {
-      if(ledgerState.get(identity).get.size == 1) {
+      val newKeys = ledgerState.get(identity).getOrElse(Set()) - key
+      if (newKeys.isEmpty) {
         Right(ledgerState.remove(identity))
       } else {
-        Right(ledgerState.put(identity, ledgerState.get(identity).getOrElse(Set()) - key))
+        Right(ledgerState.put(identity, newKeys))
       }
     }
+  }
 
   override def partitionIds: Set[String] = Set(identity)
 
