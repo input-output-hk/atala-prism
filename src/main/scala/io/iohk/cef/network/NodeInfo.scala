@@ -11,15 +11,18 @@ import scala.util.Try
 
 /**
   * TODO this is currently hardcoded only to work with rlpx on a tcp/ip network.
+  * FIXME replace NodeInfo with PeerInfo and NodeId
   */
-case class NodeInfo(id: ByteString,
-                    discoveryAddress: InetSocketAddress,
-                    serverAddress: InetSocketAddress,
-                    capabilities: Capabilities) {
+case class NodeInfo(
+    id: ByteString,
+    discoveryAddress: InetSocketAddress,
+    serverAddress: InetSocketAddress,
+    capabilities: Capabilities) {
 
   def getServerUri: URI = {
     val host = getHostName(serverAddress.getAddress)
-    new URI(s"enode://${Hex.toHexString(id.toArray[Byte])}@$host:${serverAddress.getPort}?capabilities=${capabilities.byte.toHexString}")
+    new URI(
+      s"enode://${Hex.toHexString(id.toArray[Byte])}@$host:${serverAddress.getPort}?capabilities=${capabilities.byte.toHexString}")
   }
 
   /**
@@ -40,19 +43,23 @@ case class NodeInfo(id: ByteString,
 
 object NodeInfo {
 
-  implicit def nodeRlpEncDec(implicit
-                             byteStrEncDec: RLPEncDec[ByteString],
-                             capEncDec: RLPEncDec[Capabilities],
-                             inetSocketAddrEncDec: RLPEncDec[InetSocketAddress]) = new RLPEncDec[NodeInfo] {
+  implicit def nodeRlpEncDec(
+      implicit
+      byteStrEncDec: RLPEncDec[ByteString],
+      capEncDec: RLPEncDec[Capabilities],
+      inetSocketAddrEncDec: RLPEncDec[InetSocketAddress]) = new RLPEncDec[NodeInfo] {
     override def encode(obj: NodeInfo): RLPEncodeable =
-      RLPList(byteStrEncDec.encode(obj.id),
+      RLPList(
+        byteStrEncDec.encode(obj.id),
         inetSocketAddrEncDec.encode(obj.discoveryAddress),
         inetSocketAddrEncDec.encode(obj.serverAddress),
-        capEncDec.encode(obj.capabilities))
+        capEncDec.encode(obj.capabilities)
+      )
 
     override def decode(rlp: RLPEncodeable): NodeInfo = rlp match {
       case RLPList(id, discoveryAddr, serverAddr, cap) =>
-        NodeInfo(byteStrEncDec.decode(id),
+        NodeInfo(
+          byteStrEncDec.decode(id),
           inetSocketAddrEncDec.decode(discoveryAddr),
           inetSocketAddrEncDec.decode(serverAddr),
           capEncDec.decode(cap))
@@ -68,7 +75,8 @@ object NodeInfo {
     val udpPort = discoveryUri.getPort
     val capabilities = DatatypeConverter.parseHexBinary(capabilitiesHex)(0)
 
-    NodeInfo(nodeId,
+    NodeInfo(
+      nodeId,
       new InetSocketAddress(udpAddress, udpPort),
       new InetSocketAddress(p2pAddress, p2pTcpPort),
       Capabilities(capabilities))

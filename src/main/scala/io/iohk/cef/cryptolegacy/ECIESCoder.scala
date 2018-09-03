@@ -1,19 +1,19 @@
 package io.iohk.cef.cryptolegacy
 
-import java.io.{ByteArrayInputStream, IOException}
-import java.math.BigInteger
-import java.security.SecureRandom
-
-import org.bouncycastle.crypto.digests.SHA256Digest
-import org.bouncycastle.crypto.engines.AESEngine
-import org.bouncycastle.crypto.generators.ECKeyPairGenerator
-import org.bouncycastle.crypto.macs.HMac
-import org.bouncycastle.crypto.modes.SICBlockCipher
-import org.bouncycastle.crypto.params._
-import org.bouncycastle.crypto.{BufferedBlockCipher, InvalidCipherTextException}
-import org.bouncycastle.math.ec.ECPoint
-
 object ECIESCoder {
+
+  import java.io.{ByteArrayInputStream, IOException}
+  import java.math.BigInteger
+  import java.security.SecureRandom
+
+  import org.bouncycastle.crypto.digests.SHA256Digest
+  import org.bouncycastle.crypto.engines.AESEngine
+  import org.bouncycastle.crypto.generators.ECKeyPairGenerator
+  import org.bouncycastle.crypto.macs.HMac
+  import org.bouncycastle.crypto.modes.SICBlockCipher
+  import org.bouncycastle.crypto.params._
+  import org.bouncycastle.crypto.{BufferedBlockCipher, InvalidCipherTextException}
+  import org.bouncycastle.math.ec.ECPoint
 
   val KeySize = 128
   val PublicKeyOverheadSize = 65
@@ -35,7 +35,12 @@ object ECIESCoder {
   }
 
   @throws[InvalidCipherTextException]
-  def decrypt(ephem: ECPoint, prv: BigInteger, IV: Option[Array[Byte]], cipher: Array[Byte], macData: Option[Array[Byte]]): Array[Byte] = {
+  def decrypt(
+      ephem: ECPoint,
+      prv: BigInteger,
+      IV: Option[Array[Byte]],
+      cipher: Array[Byte],
+      macData: Option[Array[Byte]]): Array[Byte] = {
     val aesEngine = new AESEngine
 
     val iesEngine = new EthereumIESEngine(
@@ -45,14 +50,17 @@ object ECIESCoder {
       cipher = Some(new BufferedBlockCipher(new SICBlockCipher(aesEngine))),
       IV = IV,
       prvSrc = Left(new ECPrivateKeyParameters(prv, curve)),
-      pubSrc = Left(new ECPublicKeyParameters(ephem, curve)))
-
+      pubSrc = Left(new ECPublicKeyParameters(ephem, curve))
+    )
 
     iesEngine.processBlock(cipher, 0, cipher.length, forEncryption = false, macData)
   }
 
-
-  def encrypt(toPub: ECPoint, secureRandom: SecureRandom, plaintext: Array[Byte], macData: Option[Array[Byte]] = None): Array[Byte] = {
+  def encrypt(
+      toPub: ECPoint,
+      secureRandom: SecureRandom,
+      plaintext: Array[Byte],
+      macData: Option[Array[Byte]] = None): Array[Byte] = {
 
     val gParam = new ECKeyGenerationParameters(curve, secureRandom)
 
@@ -76,7 +84,6 @@ object ECIESCoder {
     pub.getEncoded(false) ++ IV ++ iesEngine.processBlock(plaintext, 0, plaintext.length, forEncryption = true, macData)
   }
 
-
   private def makeIESEngine(pub: ECPoint, prv: BigInteger, IV: Option[Array[Byte]]) = {
     val aesEngine = new AESEngine
 
@@ -87,7 +94,8 @@ object ECIESCoder {
       cipher = Some(new BufferedBlockCipher(new SICBlockCipher(aesEngine))),
       IV = IV,
       prvSrc = Left(new ECPrivateKeyParameters(prv, curve)),
-      pubSrc = Left(new ECPublicKeyParameters(pub, curve)))
+      pubSrc = Left(new ECPublicKeyParameters(pub, curve))
+    )
 
     iesEngine
   }

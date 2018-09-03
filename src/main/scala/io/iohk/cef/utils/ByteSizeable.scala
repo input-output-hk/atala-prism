@@ -8,7 +8,7 @@ trait ByteSizeable[T] {
 object ByteSizeable {
 
   implicit def txByteSizeable[T](implicit byteStringSerializable: ByteStringSerializable[T]): ByteSizeable[T] =
-  new ByteSizeable[T] {
-    override def sizeInBytes(t: T): Int = byteStringSerializable.serialize(t).size
-  }
+    new ByteSizeable[T] {
+      override def sizeInBytes(t: T): Int = byteStringSerializable.serialize(t).size
+    }
 }

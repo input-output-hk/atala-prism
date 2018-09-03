@@ -11,7 +11,7 @@ class MockBehavior[T] extends ExtensibleBehavior[T] {
   private val receivedMessages = mutable.ListBuffer[T]()
 
   def expectMessage(message: T): Unit = {
-    eventually { receivedMessages should contain (message) }
+    eventually { receivedMessages should contain(message) }
   }
 
   override def receive(ctx: ActorContext[T], msg: T): Behavior[T] = {

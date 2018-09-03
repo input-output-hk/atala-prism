@@ -11,23 +11,22 @@ import akka.{testkit => untypedKit}
 import io.iohk.cef.network.discovery.DiscoveryListener._
 import io.iohk.cef.network.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.{Capabilities, NodeInfo}
-import org.scalamock.scalatest.MockFactory
+import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{FlatSpec, MustMatchers}
 
+import org.mockito.Mockito._
+import org.mockito.ArgumentMatchers._
 
-class UDPBridgeSpec extends FlatSpec with MustMatchers with MockFactory {
+class UDPBridgeSpec extends FlatSpec with MustMatchers with MockitoSugar {
   implicit val untypedSystem = untyped.ActorSystem("UDPBridge_system")
   implicit val system = ActorSystem.wrap(untypedSystem)
 
   class UdpTestHelper {
-    val encoder = stub[Encoder[DiscoveryWireMessage, ByteString]]
-    val decoder = stub[Decoder[ByteString, DiscoveryWireMessage]]
+    val encoder = mock[Encoder[DiscoveryWireMessage, ByteString]]
+    val decoder = mock[Decoder[ByteString, DiscoveryWireMessage]]
     val listenerInbox = TestProbe[DiscoveryListenerRequest]()
 
-    val bridge = untypedKit.TestActorRef(new UDPBridge(listenerInbox.ref,
-      encoder,
-      decoder,
-      _ => ()))
+    val bridge = untypedKit.TestActorRef(new UDPBridge(listenerInbox.ref, encoder, decoder, _ => ()))
 
     val nodeAddr = new InetSocketAddress(1000)
 
@@ -45,7 +44,8 @@ class UDPBridgeSpec extends FlatSpec with MustMatchers with MockFactory {
     val addr2 = new InetSocketAddress(1001)
     val data = Ping(1, node, 0L, ByteString("nonce"))
     val encodedData = ByteString("Ping")
-    (decoder.decode _) when(encodedData) returns(Some(data))
+
+    when(decoder.decode(any())).thenReturn(Some(data))
     bridge ! Udp.Received(encodedData, addr2)
 
     listenerInbox.expectMessage(Forward(MessageReceived(data, addr2)))
@@ -55,7 +55,7 @@ class UDPBridgeSpec extends FlatSpec with MustMatchers with MockFactory {
     val addr2 = new InetSocketAddress(1001)
     val data = Ping(1, node, 0L, ByteString("nonce"))
     val encodedData = ByteString("Ping")
-    (encoder.encode _) when(data) returns(encodedData)
+    when(encoder.encode(any())).thenReturn(encodedData)
     bridge ! SendMessage(data, addr2)
 
     socket.expectMsg(Udp.Send(encodedData, addr2))

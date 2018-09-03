@@ -11,8 +11,8 @@ class DiscoveryWireMessageSpec extends FlatSpec with MustMatchers {
   behavior of "DiscoveryWireMessage"
 
   it should "not lose info when encode/decode the messages" in {
-    val addr1 = new InetSocketAddress(InetAddress.getByAddress(Array(1,2,3,4)), 5)
-    val addr2 = new InetSocketAddress(InetAddress.getByAddress(Array(6,7,8,9)),10)
+    val addr1 = new InetSocketAddress(InetAddress.getByAddress(Array(1, 2, 3, 4)), 5)
+    val addr2 = new InetSocketAddress(InetAddress.getByAddress(Array(6, 7, 8, 9)), 10)
     val node = NodeInfo(ByteString("node"), addr1, addr2, Capabilities(2))
 
     import io.iohk.cef.network.encoding.rlp.RLPImplicits._
@@ -29,7 +29,7 @@ class DiscoveryWireMessageSpec extends FlatSpec with MustMatchers {
     val seek = Seek(Capabilities(2), 3, 4, ByteString("nonce"))
     Seek.seekRLPEncDec.decode(Seek.seekRLPEncDec.encode(seek)) mustBe seek
 
-    Seq(ping, pong, neighbors, seek).foreach {m =>
+    Seq(ping, pong, neighbors, seek).foreach { m =>
       DiscoveryWireMessage.RLPEncDec.decode(DiscoveryWireMessage.RLPEncDec.encode(m)) mustBe m
     }
   }

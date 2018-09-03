@@ -14,8 +14,8 @@ class TransactionPoolSpec extends FlatSpec with MustMatchers with PropertyChecks
 
   val emptyHeaderGenerator: Seq[Transaction[String]] => BlockHeader = _ => new BlockHeader {}
 
-  def headerGenerator(size: Int): Seq[Transaction[String]] => BlockHeader = {
-    _ => new DummyBlockHeader(size)
+  def headerGenerator(size: Int): Seq[Transaction[String]] => BlockHeader = { _ =>
+    new DummyBlockHeader(size)
   }
 
   val sizeableHeaderGenerator: Gen[DummyBlockHeader] = for {
@@ -31,15 +31,13 @@ class TransactionPoolSpec extends FlatSpec with MustMatchers with PropertyChecks
 
   implicit val dummyBlockSerializer: ByteSizeable[Block[String, DummyBlockHeader, DummyTransaction]] =
     new ByteSizeable[Block[String, DummyBlockHeader, DummyTransaction]] {
-      override def sizeInBytes(
-        t: Block[String,
-        DummyBlockHeader,
-        DummyTransaction]): Int = t.transactions.foldLeft(0)(_ + _.size) + t.header.sizeInBytes
+      override def sizeInBytes(t: Block[String, DummyBlockHeader, DummyTransaction]): Int =
+        t.transactions.foldLeft(0)(_ + _.size) + t.header.sizeInBytes
     }
 
   def totalSize(txs: List[DummyTransaction], header: DummyBlockHeader)(
-                implicit txSizeable: ByteSizeable[DummyTransaction],
-                headerSizeable: ByteSizeable[DummyBlockHeader]): Int = {
+      implicit txSizeable: ByteSizeable[DummyTransaction],
+      headerSizeable: ByteSizeable[DummyBlockHeader]): Int = {
     txs.map(txSizeable.sizeInBytes).foldLeft(0)(_ + _) + headerSizeable.sizeInBytes(header)
   }
 
@@ -56,7 +54,7 @@ class TransactionPoolSpec extends FlatSpec with MustMatchers with PropertyChecks
       block2.header mustBe header
       block2.transactions mustBe txs
       oneTxPool.queue.size mustBe 1
-      if(txs.isEmpty)
+      if (txs.isEmpty)
         oneTxPool.generateBlock()._1.queue.size mustBe 1
       else
         oneTxPool.generateBlock()._1.queue.size mustBe 0

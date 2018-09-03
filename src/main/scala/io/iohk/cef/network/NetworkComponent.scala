@@ -7,7 +7,9 @@ import scala.concurrent.Future
 
 trait NetworkComponent[State] {
 
-  def disseminate[T](envelope: Envelope[T])(implicit serializable: ByteStringSerializable[Envelope[T]]): Future[Either[NetworkError, Unit]]
+  def disseminate[T](envelope: Envelope[T])(
+      implicit serializable: ByteStringSerializable[Envelope[T]]): Future[Either[NetworkError, Unit]]
 
-  def receive[T](byteString: ByteString)(implicit serializable: ByteStringSerializable[Envelope[T]]): Future[Either[NetworkError, Envelope[T]]]
+  def receive[T](byteString: ByteString)(
+      implicit serializable: ByteStringSerializable[Envelope[T]]): Future[Either[NetworkError, Envelope[T]]]
 }

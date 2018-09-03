@@ -15,7 +15,8 @@ class DiscoveryConfigSpec extends FlatSpec with MustMatchers {
     val interface = "127.0.0.1"
     val port = 8090
     val bootstrapDiscUri = "udp://127.0.0.2:3020"
-    val nodeId = "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678"
+    val nodeId =
+      "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678"
     val enode = s"enode://${nodeId}@127.0.0.1:3000"
     val capabilities = "01"
     val nodesLimit = 1
@@ -56,9 +57,9 @@ class DiscoveryConfigSpec extends FlatSpec with MustMatchers {
     dc.bootstrapNodes.size mustBe 1
     dc.bootstrapNodes.head.capabilities mustBe Capabilities(1)
     dc.bootstrapNodes.head.id mustBe ByteString(Hex.decode(nodeId))
-    dc.bootstrapNodes.head.discoveryAddress.getAddress.getAddress.toSeq mustBe Seq[Byte](127,0,0,2)
+    dc.bootstrapNodes.head.discoveryAddress.getAddress.getAddress.toSeq mustBe Seq[Byte](127, 0, 0, 2)
     dc.bootstrapNodes.head.discoveryAddress.getPort mustBe 3020
-    dc.bootstrapNodes.head.serverAddress.getAddress.getAddress.toSeq mustBe Seq[Byte](127,0,0,1)
+    dc.bootstrapNodes.head.serverAddress.getAddress.getAddress.toSeq mustBe Seq[Byte](127, 0, 0, 1)
     dc.bootstrapNodes.head.serverAddress.getPort mustBe 3000
     dc.discoveredNodesLimit mustBe nodesLimit
     dc.scanNodesLimit mustBe scanNodesLimit

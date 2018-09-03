@@ -20,16 +20,12 @@ import io.iohk.cef.network.{Capabilities, NodeInfo, NodeStatus, ServerStatus}
 import io.iohk.cef.network.telemetry.InMemoryTelemetry
 import io.iohk.cef.test.TestClock
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
-import org.scalamock.scalatest.MockFactory
 import org.scalatest.MustMatchers._
 import org.scalatest.{BeforeAndAfterAll, FlatSpec}
 
 import scala.concurrent.duration._
 
-class DiscoveryManagerSpec
-  extends FlatSpec
-    with BeforeAndAfterAll
-    with MockFactory {
+class DiscoveryManagerSpec extends FlatSpec with BeforeAndAfterAll {
 
   implicit val untypedSystem: ActorSystem = untyped.ActorSystem("TypedWatchingUntyped")
   implicit val typedSystem: typed.ActorSystem[_] = untypedSystem.toTyped
@@ -40,37 +36,35 @@ class DiscoveryManagerSpec
 
     val knownNodeStorage = new DummyKnownNodesStorage(mockClock) with InMemoryTelemetry
 
-    val address: Array[Byte] = Array(127.toByte,0,0,1)
-    val localhost = InetAddress.getByAddress("",address)
+    val address: Array[Byte] = Array(127.toByte, 0, 0, 1)
+    val localhost = InetAddress.getByAddress("", address)
     val discoveryAddress = new InetSocketAddress(localhost, 1000)
     val serverAddress = new InetSocketAddress(localhost, 2000)
 
     val nodeState =
-      NodeStatus.NodeState(
-        ByteString(0),
-        ServerStatus.NotListening,
-        ServerStatus.NotListening,
-        Capabilities(0x01))
+      NodeStatus.NodeState(ByteString(0), ServerStatus.NotListening, ServerStatus.NotListening, Capabilities(0x01))
 
     val nodeA = createNode("1", 9000, 9001, nodeState.capabilities)
     val nodeB = createNode("2", 9003, 9002, nodeState.capabilities)
 
     def bootstrapNodes: Set[NodeInfo] = Set()
 
-    def discoveryConfig = new DiscoveryConfig(
-      discoveryEnabled = true,
-      interface = "0.0.0.0",
-      port = 8090,
-      bootstrapNodes = bootstrapNodes,
-      discoveredNodesLimit = 10,
-      scanNodesLimit = 10,
-      concurrencyDegree = 10,
-      scanInitialDelay = 10.minutes,
-      scanInterval = 11.minutes,
-      messageExpiration = 100.minute,
-      maxSeekResults = 10,
-      multipleConnectionsPerAddress = true,
-      blacklistDefaultDuration = 30 seconds)
+    def discoveryConfig =
+      new DiscoveryConfig(
+        discoveryEnabled = true,
+        interface = "0.0.0.0",
+        port = 8090,
+        bootstrapNodes = bootstrapNodes,
+        discoveredNodesLimit = 10,
+        scanNodesLimit = 10,
+        concurrencyDegree = 10,
+        scanInitialDelay = 10.minutes,
+        scanInterval = 11.minutes,
+        messageExpiration = 100.minute,
+        maxSeekResults = 10,
+        multipleConnectionsPerAddress = true,
+        blacklistDefaultDuration = 30 seconds
+      )
 
     import io.iohk.cef.network.encoding.rlp.RLPEncoders._
     import io.iohk.cef.network.encoding.rlp.RLPImplicits._
@@ -83,19 +77,21 @@ class DiscoveryManagerSpec
 
     val listenerMaker: ActorContext[DiscoveryRequest] => ActorRef[DiscoveryListenerRequest] = _ => discoveryListener.ref
 
-    val listeningAddress = new InetSocketAddress(localhost,1000)
+    val listeningAddress = new InetSocketAddress(localhost, 1000)
 
     def secureRandom = new SecureRandom()
 
-    def createBehavior = DiscoveryManager.behaviour(
-      discoveryConfig,
-      knownNodeStorage,
-      nodeState,
-      mockClock,
-      encoder, decoder,
-      listenerMaker,
-      secureRandom,
-      new SimpleMeterRegistry())
+    def createBehavior =
+      DiscoveryManager.behaviour(
+        discoveryConfig,
+        knownNodeStorage,
+        nodeState,
+        mockClock,
+        encoder,
+        decoder,
+        listenerMaker,
+        secureRandom,
+        new SimpleMeterRegistry())
 
     def createActor: ActorRef[DiscoveryRequest] = {
       val behavior = createBehavior
@@ -110,7 +106,8 @@ class DiscoveryManagerSpec
     }
 
     def createNode(id: String, discoveryPort: Int, serverPort: Int, capabilities: Capabilities) =
-      NodeInfo(ByteString(id),
+      NodeInfo(
+        ByteString(id),
         new InetSocketAddress(localhost, discoveryPort),
         new InetSocketAddress(localhost, serverPort),
         capabilities)
@@ -128,10 +125,10 @@ class DiscoveryManagerSpec
     Ping(DiscoveryWireMessage.ProtocolVersion, getNode(listeningDiscoveryManager), expiration, nonce)
   }
 
-  def pingActor(actor: ActorRef[DiscoveryRequest],
-                        listeningDiscoveryManager: ListeningDiscoveryManager): Ping = {
+  def pingActor(actor: ActorRef[DiscoveryRequest], listeningDiscoveryManager: ListeningDiscoveryManager): Ping = {
     val ping = getPing(listeningDiscoveryManager)
-    actor ! DiscoveryResponseWrapper(DiscoveryListener.MessageReceived(ping, listeningDiscoveryManager.discoveryAddress))
+    actor ! DiscoveryResponseWrapper(
+      DiscoveryListener.MessageReceived(ping, listeningDiscoveryManager.discoveryAddress))
     ping
   }
 
@@ -227,9 +224,10 @@ class DiscoveryManagerSpec
       val pongA = Pong(nodeA, calculateMessageKey(encoder, firstPing.message), mockClock.instant().getEpochSecond + 10)
       actor ! DiscoveryResponseWrapper(DiscoveryListener.MessageReceived(pongA, discoveryAddress))
       val seek = discoveryListener.expectMessageType[DiscoveryListener.SendMessage]
-      seek.message mustBe a [Seek]
+      seek.message mustBe a[Seek]
       seek.to mustBe nodeA.discoveryAddress
-      val neighbors = Neighbors(Capabilities(1), calculateMessageKey(encoder, seek.message), 10, Seq(nodeB, nodeA), expiration)
+      val neighbors =
+        Neighbors(Capabilities(1), calculateMessageKey(encoder, seek.message), 10, Seq(nodeB, nodeA), expiration)
       actor ! DiscoveryResponseWrapper(DiscoveryListener.MessageReceived(neighbors, discoveryAddress))
       val pingB = discoveryListener.expectMessageType[DiscoveryListener.SendMessage]
 
@@ -254,8 +252,8 @@ class DiscoveryManagerSpec
       val actor = createActor
       val pingA = discoveryListener.expectMessageType[DiscoveryListener.SendMessage]
       val pingB = discoveryListener.expectMessageType[DiscoveryListener.SendMessage]
-      pingA.message mustBe a [Ping]
-      pingB.message mustBe a [Ping]
+      pingA.message mustBe a[Ping]
+      pingB.message mustBe a[Ping]
       pingA.message.messageType mustBe Ping.messageType
       pingB.message.messageType mustBe Ping.messageType
       (pingA.message, pingB.message) match {
@@ -264,7 +262,7 @@ class DiscoveryManagerSpec
           a.node mustBe thisNode
           b.node mustBe thisNode
           val addresses = bootstrapNodes.map(_.discoveryAddress)
-          addresses must contain (pingA.to)
+          addresses must contain(pingA.to)
           addresses must contain(pingB.to)
           pingA.to must not be pingB.to
         case _ => fail("Wrong message type")
@@ -283,10 +281,11 @@ class DiscoveryManagerSpec
 
       actor ! GetDiscoveredNodes(inbox.ref)
 
-      inbox.expectMessage(DiscoveredNodes(
-        Set(KnownNode(nodeA, mockClock.instant(), mockClock.instant()),
-          KnownNode(nodeB, mockClock.instant(), mockClock.instant())))
-      )
+      inbox.expectMessage(
+        DiscoveredNodes(
+          Set(
+            KnownNode(nodeA, mockClock.instant(), mockClock.instant()),
+            KnownNode(nodeB, mockClock.instant(), mockClock.instant()))))
     }
   }
   it should "blacklist nodes" in {
@@ -357,7 +356,7 @@ class DiscoveryManagerSpec
       val pong = Pong(node, ByteString("token"), expiration)
       actor.run(DiscoveryResponseWrapper(DiscoveryListener.MessageReceived(pong, discoveryAddress)))
       knownNodeStorage.getAll() mustBe Set()
-      inbox.receiveAll().collect { case w: DiscoveryResponseWrapper => w} mustBe Seq()
+      inbox.receiveAll().collect { case w: DiscoveryResponseWrapper => w } mustBe Seq()
     }
   }
   it should "not process neighbors messages in absence of a seek" in {

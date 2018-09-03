@@ -8,7 +8,7 @@ val commonSettings = Seq(
   name := "network",
   version := "0.1-SNAPSHOT",
   scalaVersion := scalaV,
-  addCompilerPlugin("io.tryp" % "splain" % "0.3.1" cross CrossVersion.patch)
+//  addCompilerPlugin("io.tryp" % "splain" % "0.3.1" cross CrossVersion.patch)
 )
 
 enablePlugins(FlywayPlugin)
@@ -34,6 +34,10 @@ coverageEnabled := true
 coverageMinimum := 80
 coverageFailOnMinimum := true
 
+// scalafmt
+scalafmtOnCompile in ThisBuild := true
+scalafmtTestOnCompile in ThisBuild := true
+
 val dep = {
   val akkaVersion = "2.5.12"
 
@@ -55,7 +59,6 @@ val dep = {
     
     "org.scalatest" %% "scalatest" % "3.0.1" % Test,
     "org.scalacheck" %% "scalacheck" % "1.13.4" % Test,
-    "org.scalamock" %% "scalamock-scalatest-support" % "3.5.0" % Test,
     "org.mockito" % "mockito-core" % "2.21.0" % Test,
     "com.softwaremill.quicklens" %% "quicklens" % "1.4.11" % Test,
     "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test,
@@ -63,7 +66,8 @@ val dep = {
 
     "io.netty" % "netty-all" % "4.1.28.Final",
     "com.chuusai" %% "shapeless" % "2.3.3",
-    "org.scala-lang" % "scala-reflect" % scalaV
+    "org.scala-lang" % "scala-reflect" % scalaV,
+    "com.zaxxer" % "HikariCP" % "3.1.0"
   )
 }
 

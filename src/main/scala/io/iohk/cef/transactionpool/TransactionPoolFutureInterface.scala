@@ -11,9 +11,9 @@ import scala.concurrent.{ExecutionContext, Future}
   * Generate block is missing because it is called by Consensus through the actor directly (Consensus uses Akka)
   */
 class TransactionPoolFutureInterface[State, Header <: BlockHeader, Tx <: Transaction[State]](
-  transactionPoolActorModelInterface: TransactionPoolActorModelInterface[State, Header, Tx])(
-  implicit timeout: Timeout,
-  executionContext: ExecutionContext) {
+    transactionPoolActorModelInterface: TransactionPoolActorModelInterface[State, Header, Tx])(
+    implicit timeout: Timeout,
+    executionContext: ExecutionContext) {
 
   import transactionPoolActorModelInterface._
 

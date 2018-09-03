@@ -21,8 +21,7 @@ import scala.concurrent.duration.FiniteDuration
   * @param clock
   * @param dbName
   */
-class KnownNodeStorageImpl(clock: Clock, dbName: Symbol = 'default)
-  extends KnownNodeStorage {
+class KnownNodeStorageImpl(clock: Clock, dbName: Symbol = 'default) extends KnownNodeStorage {
   self: Telemetery =>
 
   val flyway = new Flyway()
@@ -63,10 +62,11 @@ class KnownNodeStorageImpl(clock: Clock, dbName: Symbol = 'default)
     }
   }
 
-  private def getDiscoveredInstant(nodeInfo: NodeInfo,
-                                   knownNodeColumn: ColumnName[KnownNodeTable],
-                                   kn: QuerySQLSyntaxProvider[SQLSyntaxSupport[KnownNodeTable], KnownNodeTable])(
-                                  implicit session: DBSession
+  private def getDiscoveredInstant(
+      nodeInfo: NodeInfo,
+      knownNodeColumn: ColumnName[KnownNodeTable],
+      kn: QuerySQLSyntaxProvider[SQLSyntaxSupport[KnownNodeTable], KnownNodeTable])(
+      implicit session: DBSession
   ) = {
     sql"""
            select ${kn.discovered} from ${KnownNodeTable as kn} where ${kn.id} = ${Hex.toHexString(nodeInfo.id.toArray)}
@@ -74,12 +74,13 @@ class KnownNodeStorageImpl(clock: Clock, dbName: Symbol = 'default)
   }
 
   override def getAll(): Set[KnownNode] = {
-    val (kn, bn) = (KnownNodeTable.syntax("kn"),BlacklistNodeTable.syntax("bn"))
+    val (kn, bn) = (KnownNodeTable.syntax("kn"), BlacklistNodeTable.syntax("bn"))
 
     inTx { implicit session =>
       sql"""select ${kn.result.*}, ${kn.result.*}
          from ${KnownNodeTable as kn}
-            left outer join ${BlacklistNodeTable as bn} on ${kn.id} = ${bn.nodeId} and ${bn.blacklistUntil} > ${clock.instant()}
+            left outer join ${BlacklistNodeTable as bn} on ${kn.id} = ${bn.nodeId} and ${bn.blacklistUntil} > ${clock
+        .instant()}
          where ${bn.nodeId} is null;
        """.map(rs => KnownNodeTable(kn.resultName)(rs)).list.apply().toSet
     }
@@ -90,7 +91,8 @@ class KnownNodeStorageImpl(clock: Clock, dbName: Symbol = 'default)
     val blacklistNodeColumn = BlacklistNodeTable.column
 
     val result = inTx { implicit session =>
-      sql"""delete from ${BlacklistNodeTable.table} where ${blacklistNodeColumn.nodeId} = ${Hex.toHexString(nodeInfo.id.toArray)}""".executeUpdate.apply
+      sql"""delete from ${BlacklistNodeTable.table} where ${blacklistNodeColumn.nodeId} = ${Hex.toHexString(
+        nodeInfo.id.toArray)}""".executeUpdate.apply
       sql"""delete from ${KnownNodeTable.table} where ${knownNodeColumn.id} = ${Hex.toHexString(nodeInfo.id.toArray)}""".executeUpdate.apply
     }
     if (result > 0) trackingKnownNodes.decrementAndGet()
@@ -119,7 +121,10 @@ class KnownNodeStorageImpl(clock: Clock, dbName: Symbol = 'default)
     }
   }
 
-  private def mergeNodeStatement(nodeInfo: NodeInfo, discovered: Option[Instant], nodeColumn: scalikejdbc.ColumnName[KnownNodeTable])(implicit session: DBSession) = {
+  private def mergeNodeStatement(
+      nodeInfo: NodeInfo,
+      discovered: Option[Instant],
+      nodeColumn: scalikejdbc.ColumnName[KnownNodeTable])(implicit session: DBSession) = {
     sql"""merge into ${KnownNodeTable.table} (
           ${nodeColumn.id},
           ${nodeColumn.discoveryAddress},

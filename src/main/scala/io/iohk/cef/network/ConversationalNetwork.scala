@@ -15,15 +15,16 @@ import io.iohk.cef.network.transport._
   * by Van Jacobson, to distinguish from the 'disseminational'
   * networking style.
   *
-  * @param peerInfo the peer configuration of this node
   * @param messageHandler The messageHandler receives inbound messages from remote peers.
   * @param networkDiscovery Encapsulates a routing table implementation.
   * @param transports helpers to obtain network transport instances.
   */
-class ConversationalNetwork[Message: NioEncoder: NioDecoder: Default](peerInfo: PeerInfo,
-                                                                      messageHandler: (NodeId, Message) => Unit,
-                                                                      networkDiscovery: NetworkDiscovery,
-                                                                      transports: Transports) {
+class ConversationalNetwork[Message: NioEncoder: NioDecoder](
+    messageHandler: (NodeId, Message) => Unit,
+    networkDiscovery: NetworkDiscovery,
+    transports: Transports) {
+
+  val peerInfo: PeerInfo = transports.peerInfo
 
   /**
     * Send a message to another network address.
@@ -58,7 +59,7 @@ class ConversationalNetwork[Message: NioEncoder: NioDecoder: Default](peerInfo: 
   private def liftedFrameHandler[Address]: (Address, Frame[Message]) => Unit =
     (_, frame) => frameHandler(frame)
 
-  private val frameCodec = new NioStreamCodec[Frame[Message]](NioEncoder[Frame[Message]], NioDecoder[Frame[Message]])
+  private val frameCodec = new NioCodec[Frame[Message]](NioEncoder[Frame[Message]], NioDecoder[Frame[Message]])
 
   private val tcpNetworkTransport: Option[TcpNetworkTransport[Frame[Message]]] =
     transports.tcp(liftedFrameHandler)(frameCodec)
@@ -68,8 +69,8 @@ class ConversationalNetwork[Message: NioEncoder: NioDecoder: Default](peerInfo: 
       .peer(frame.header.dst)
       .foreach(remotePeerInfo => {
         if (usesTcp(peerInfo) && usesTcp(remotePeerInfo))
-          tcpNetworkTransport.get.sendMessage(remotePeerInfo.configuration.tcpTransportConfiguration.get.natAddress,
-                                              frame)
+          tcpNetworkTransport.get
+            .sendMessage(remotePeerInfo.configuration.tcpTransportConfiguration.get.natAddress, frame)
         else
           ()
       })

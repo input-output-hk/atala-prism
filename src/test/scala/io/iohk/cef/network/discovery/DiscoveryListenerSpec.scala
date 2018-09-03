@@ -15,14 +15,14 @@ import org.scalatest.WordSpecLike
 import scala.concurrent.duration._
 
 class DiscoveryListenerSpec
-  extends untypedKit.TestKit(untyped.ActorSystem("DiscoveryListenerSpec"))
+    extends untypedKit.TestKit(untyped.ActorSystem("DiscoveryListenerSpec"))
     with WordSpecLike
     with StopAfterAll {
 
-  val discAddressNodeA = new InetSocketAddress(InetAddress.getByAddress(Array(0,0,0,1)), 1001)
-  val serverAddressNodeA = new InetSocketAddress(InetAddress.getByAddress(Array(0,0,1,1)),2001)
-  val discAddressNodeB = new InetSocketAddress(InetAddress.getByAddress(Array(0,0,0,2)),1002)
-  val serverAddressNodeB = new InetSocketAddress(InetAddress.getByAddress(Array(0,0,2,2)),2002)
+  val discAddressNodeA = new InetSocketAddress(InetAddress.getByAddress(Array(0, 0, 0, 1)), 1001)
+  val serverAddressNodeA = new InetSocketAddress(InetAddress.getByAddress(Array(0, 0, 1, 1)), 2001)
+  val discAddressNodeB = new InetSocketAddress(InetAddress.getByAddress(Array(0, 0, 0, 2)), 1002)
+  val serverAddressNodeB = new InetSocketAddress(InetAddress.getByAddress(Array(0, 0, 2, 2)), 2002)
 
   val nodeA = NodeInfo(ByteString("1"), discAddressNodeA, serverAddressNodeA, Capabilities(1))
   val nodeB = NodeInfo(ByteString("2"), discAddressNodeB, serverAddressNodeB, Capabilities(1))
@@ -36,8 +36,7 @@ class DiscoveryListenerSpec
   val neighbors = Neighbors(Capabilities(1), seekToken, 10, Seq(), 0)
   val allMessages = Seq(ping, pong, seek, neighbors)
 
-  val encDec = new Encoder[DiscoveryWireMessage, ByteString] with
-    Decoder[ByteString, DiscoveryWireMessage] {
+  val encDec = new Encoder[DiscoveryWireMessage, ByteString] with Decoder[ByteString, DiscoveryWireMessage] {
     override def encode(t: DiscoveryWireMessage): ByteString = {
       t match {
         case _: Ping => ByteString(0x01)
@@ -72,7 +71,6 @@ class DiscoveryListenerSpec
     true,
     10 seconds
   )
-
 
   "A DiscoveryListener" must {
     "receive and send UDP packets and forward them to the parent" in {

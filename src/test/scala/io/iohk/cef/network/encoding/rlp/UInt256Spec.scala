@@ -7,14 +7,18 @@ import org.scalatest.{FlatSpec, MustMatchers}
 
 class UInt256Spec extends FlatSpec with MustMatchers with PropertyChecks {
 
-  val genUInt64: Gen[BigInt] = Gen.chooseNum(Long.MinValue, Long.MaxValue).map(long =>
-    BigInt(long) + BigInt(2).pow(63)
-  )
-  val genUInt256: Gen[BigInt] = Gen.listOfN(4, genUInt64).map(list =>
-    list.zip(List(192, 128, 64, 0)).map { case (bigInt, exp)  =>
-      bigInt * BigInt(2).pow(exp)
-    }.sum
-  )
+  val genUInt64: Gen[BigInt] = Gen.chooseNum(Long.MinValue, Long.MaxValue).map(long => BigInt(long) + BigInt(2).pow(63))
+  val genUInt256: Gen[BigInt] = Gen
+    .listOfN(4, genUInt64)
+    .map(
+      list =>
+        list
+          .zip(List(192, 128, 64, 0))
+          .map {
+            case (bigInt, exp) =>
+              bigInt * BigInt(2).pow(exp)
+          }
+          .sum)
 
   behavior of "UInt256"
   it should "Have the correct constants" in {
@@ -24,7 +28,7 @@ class UInt256Spec extends FlatSpec with MustMatchers with PropertyChecks {
     UInt256.One + UInt256.One - UInt256.Two mustBe UInt256.Zero
   }
   it should "be constructed from bytes" in {
-    UInt256(Array[Byte](1,0)) mustBe UInt256(256)
+    UInt256(Array[Byte](1, 0)) mustBe UInt256(256)
   }
   it should "be constructed from other types" in {
     UInt256(true) mustBe UInt256.One
@@ -42,8 +46,8 @@ class UInt256Spec extends FlatSpec with MustMatchers with PropertyChecks {
       UInt256(s1) & UInt256(s2) mustBe UInt256(s1 & s2)
       UInt256(s1) | UInt256(s2) mustBe UInt256(s1 | s2)
       UInt256(s1) ^ UInt256(s2) mustBe UInt256(s1 ^ s2)
-      - UInt256(s1) mustBe UInt256(-s1)
-      ~ UInt256(s1) mustBe UInt256(~s1)
+      -UInt256(s1) mustBe UInt256(-s1)
+      ~UInt256(s1) mustBe UInt256(~s1)
       UInt256(s1) ** UInt256(s2) mustBe UInt256(s1.modPow(s2, BigInt(2).pow(UInt256.Size * 8)))
       UInt256(s1) compare UInt256(s2) mustBe s1.compare(s2)
       UInt256(s1) min UInt256(s2) mustBe UInt256(s1 min s2)
@@ -139,7 +143,7 @@ class UInt256Spec extends FlatSpec with MustMatchers with PropertyChecks {
     import UInt256._
     forAll { (n: Boolean) =>
       val ui: UInt256 = n
-      val expected = if(n) 1 else 0
+      val expected = if (n) 1 else 0
       ui.toInt mustBe expected
     }
   }
@@ -152,18 +156,18 @@ class UInt256Spec extends FlatSpec with MustMatchers with PropertyChecks {
     UInt256(BigInt(2).pow(247)).byteSize mustBe 31
   }
   it should "convertable to Hex" in {
-    forAll(genUInt256) {(n: BigInt) =>
+    forAll(genUInt256) { (n: BigInt) =>
       val ui = UInt256(n)
       BigInt.apply(ui.toHexString.drop(2), 16) mustBe n
     }
   }
   it should "sign extend" in {
-    forAll(Gen.posNum[Long]) {(n: Long) =>
+    forAll(Gen.posNum[Long]) { (n: Long) =>
       whenever(n >= 0) {
         val ui = UInt256(n)
         ui.signExtend(UInt256(32)) mustBe ui
         ui.signExtend(UInt256(200)) mustBe ui
-        (ui.byteSize to 31).foreach(i => {ui.signExtend(i).compare(n) mustBe 0})
+        (ui.byteSize to 31).foreach(i => { ui.signExtend(i).compare(n) mustBe 0 })
       }
     }
   }

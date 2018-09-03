@@ -3,6 +3,10 @@ syntax = "proto2";
 package io.iohk.cef.protobuf;
 import "Common.proto";
 
+message ChimericStringValueProto {
+    map<string, string> valueStringWrapper = 1;
+}
+
 message ChimericValueEntryProto {
     required string currency = 1;
     required DecimalProto amount = 2;
