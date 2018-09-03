@@ -13,11 +13,12 @@ import org.scalatest.{MustMatchers, OptionValues, fixture}
 import scalikejdbc._
 import scalikejdbc.scalatest.AutoRollback
 
-trait LedgerStorageDaoDbTest extends fixture.FlatSpec
-  with AutoRollback
-  with RSAKeyGenerator
-  with OptionValues
-  with MustMatchers {
+trait LedgerStorageDaoDbTest
+    extends fixture.FlatSpec
+    with AutoRollback
+    with RSAKeyGenerator
+    with OptionValues
+    with MustMatchers {
 
   behavior of "LedgerStorageImpl"
 
@@ -38,7 +39,9 @@ trait LedgerStorageDaoDbTest extends fixture.FlatSpec
 
     val lt = LedgerTable.syntax("lt")
     val blockDataInDb = sql"""select ${lt.result.*} from ${LedgerTable as lt}"""
-      .map(rs => LedgerTable(lt.resultName)(rs)).single().apply()
+      .map(rs => LedgerTable(lt.resultName)(rs))
+      .single()
+      .apply()
 
     val blockEntry = blockDataInDb.value
     val dbBlock = IdentityBlockSerializer.serializable.deserialize(blockEntry.data)

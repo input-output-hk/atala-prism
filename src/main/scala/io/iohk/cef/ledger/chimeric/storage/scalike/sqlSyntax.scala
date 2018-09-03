@@ -47,7 +47,10 @@ object ChimericValueEntryTable extends SQLSyntaxSupport[ChimericValueEntryTable]
   override def tableName: String = Schema.ValueTableName
 
   def apply(sv: ResultName[ChimericValueEntryTable])(rs: WrappedResultSet): ChimericValueEntryTable = {
-    ChimericValueEntryTable(rs.long(sv.ledgerStateEntryId), rs.string(sv.currency), BigDecimal(rs.string(sv.amount)).bigDecimal)
+    ChimericValueEntryTable(
+      rs.long(sv.ledgerStateEntryId),
+      rs.string(sv.currency),
+      BigDecimal(rs.string(sv.amount)).bigDecimal)
   }
 
   def toValue(entries: Seq[ChimericValueEntryTable]): Value = {

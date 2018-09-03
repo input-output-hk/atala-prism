@@ -9,7 +9,7 @@ class DecimalProtoUtilsSpec extends FlatSpec with MustMatchers with PropertyChec
 
   it should "convert back and forth from Protos without losing precision" in {
     forAll { (b: BigDecimal) =>
-      whenever(bigDecimalWithinRange(b)){
+      whenever(bigDecimalWithinRange(b)) {
         DecimalProtoUtils.fromProto(DecimalProtoUtils.toProto(b)) mustBe b
       }
     }

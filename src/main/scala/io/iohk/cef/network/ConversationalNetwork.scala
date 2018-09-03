@@ -19,9 +19,10 @@ import io.iohk.cef.network.transport._
   * @param networkDiscovery Encapsulates a routing table implementation.
   * @param transports helpers to obtain network transport instances.
   */
-class ConversationalNetwork[Message: NioEncoder: NioDecoder](messageHandler: (NodeId, Message) => Unit,
-                                                                      networkDiscovery: NetworkDiscovery,
-                                                                      transports: Transports) {
+class ConversationalNetwork[Message: NioEncoder: NioDecoder](
+    messageHandler: (NodeId, Message) => Unit,
+    networkDiscovery: NetworkDiscovery,
+    transports: Transports) {
 
   val peerInfo: PeerInfo = transports.peerInfo
 
@@ -68,8 +69,8 @@ class ConversationalNetwork[Message: NioEncoder: NioDecoder](messageHandler: (No
       .peer(frame.header.dst)
       .foreach(remotePeerInfo => {
         if (usesTcp(peerInfo) && usesTcp(remotePeerInfo))
-          tcpNetworkTransport.get.sendMessage(remotePeerInfo.configuration.tcpTransportConfiguration.get.natAddress,
-                                              frame)
+          tcpNetworkTransport.get
+            .sendMessage(remotePeerInfo.configuration.tcpTransportConfiguration.get.natAddress, frame)
         else
           ()
       })

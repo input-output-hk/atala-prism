@@ -10,31 +10,27 @@ class ChimericLedgerStateStorageDao {
 
   def slice(keys: Set[String])(implicit DBSession: DBSession): ChimericLedgerState = {
     val stateKeys = keys.map(ChimericLedgerState.toStateKey)
-    val currencies = readCurrencies(stateKeys.collect{ case ch: CurrencyHolder => ch })
-    val utxos = readUtxos(stateKeys.collect{ case uh: UtxoHolder => uh })
-    val addresses = readAddresses(stateKeys.collect{ case ad: AddressHolder => ad })
+    val currencies = readCurrencies(stateKeys.collect { case ch: CurrencyHolder => ch })
+    val utxos = readUtxos(stateKeys.collect { case uh: UtxoHolder => uh })
+    val addresses = readAddresses(stateKeys.collect { case ad: AddressHolder => ad })
     val stateSequence: Seq[(String, ChimericStateValue)] =
       currencies.map(createCurr =>
-        ChimericLedgerState.getCurrencyPartitionId(createCurr.currency) -> CreateCurrencyHolder(createCurr)
-      ) ++
-      utxos.map(utxoPair =>
-        ChimericLedgerState.getUtxoPartitionId(utxoPair._1) -> ValueHolder(utxoPair._2)
-      ) ++
-      addresses.map(addressPair =>
-        ChimericLedgerState.getAddressPartitionId(addressPair._1) -> ValueHolder(addressPair._2)
-      )
+        ChimericLedgerState.getCurrencyPartitionId(createCurr.currency) -> CreateCurrencyHolder(createCurr)) ++
+        utxos.map(utxoPair => ChimericLedgerState.getUtxoPartitionId(utxoPair._1) -> ValueHolder(utxoPair._2)) ++
+        addresses.map(addressPair =>
+          ChimericLedgerState.getAddressPartitionId(addressPair._1) -> ValueHolder(addressPair._2))
     LedgerState[ChimericStateValue](stateSequence.toMap)
   }
 
-  def update(previousState: ChimericLedgerState,
-             newState: ChimericLedgerState)(implicit DBsession: DBSession): Unit = {
+  def update(previousState: ChimericLedgerState, newState: ChimericLedgerState)(implicit DBsession: DBSession): Unit = {
     val currentState = slice(previousState.keys)
     if (previousState != currentState) {
       throw new IllegalArgumentException("Provided previous state must be equal to the current state")
     } else {
       val updateActions = currentState.updateTo(newState).mapKeys(ChimericLedgerState.toStateKey)
       updateActions.actions.foreach {
-        case InsertStateAction(key: CurrencyHolder, value: CreateCurrencyHolder) => insertCurrency(key.currency -> value.createCurrency)
+        case InsertStateAction(key: CurrencyHolder, value: CreateCurrencyHolder) =>
+          insertCurrency(key.currency -> value.createCurrency)
         case InsertStateAction(key: AddressHolder, value: ValueHolder) => insertAddress(key.address -> value.value)
         case InsertStateAction(key: UtxoHolder, value: ValueHolder) => insertUtxo(key.txOutRef -> value.value)
         case DeleteStateAction(key: AddressHolder, _) => deleteAddress(key.address)
@@ -177,7 +173,7 @@ class ChimericLedgerStateStorageDao {
 
   private def insertValue(entryId: Long, value: Value)(implicit DBSession: DBSession) = {
     val column = ChimericValueEntryTable.column
-    value.iterator.foreach{
+    value.iterator.foreach {
       case (currency, quantity) =>
         sql"""
           insert into ${ChimericValueEntryTable.table}

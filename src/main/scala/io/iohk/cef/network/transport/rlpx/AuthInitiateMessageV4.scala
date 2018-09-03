@@ -17,7 +17,8 @@ object AuthInitiateMessageV4 extends AuthInitiateEcdsaCodec {
 
       import obj._
       //byte 0 of encoded ECC point indicates that it is uncompressed point, it is part of spongycastle encoding
-      RLPList(bEncDec.encode(encodeECDSA(signature)),
+      RLPList(
+        bEncDec.encode(encodeECDSA(signature)),
         aEncDec.encode(publicKey.getEncoded(false).drop(1)),
         bEncDec.encode(nonce),
         iEncDec.encode(version))

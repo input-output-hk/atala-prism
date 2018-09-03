@@ -29,9 +29,7 @@ private[network] trait TransportProtocol {
     * @param address the address to connect to
     * @param eventHandler an actor to send notifications about events on the connection.
     */
-  case class Connect(address: AddressType,
-                     eventHandler: ActorRef[ConnectionEvent])
-      extends TransportCommand
+  case class Connect(address: AddressType, eventHandler: ActorRef[ConnectionEvent]) extends TransportCommand
 
   /**
     * Create a listener on a given (presumably local) address,
@@ -43,9 +41,10 @@ private[network] trait TransportProtocol {
     *                          the listener will use this function to spin up your actor
     *                          for handling events on that connection.
     */
-  case class CreateListener(address: AddressType,
-                            listener: ActorRef[ListenerEvent],
-                            connectionFactory: () => ActorRef[ConnectionEvent])
+  case class CreateListener(
+      address: AddressType,
+      listener: ActorRef[ListenerEvent],
+      connectionFactory: () => ActorRef[ConnectionEvent])
       extends TransportCommand
 
   /**
@@ -80,8 +79,7 @@ private[network] trait TransportProtocol {
     * @param address The remote address.
     * @param connection An actor which can be used to control the connection.
     */
-  case class Connected(address: AddressType, connection: ActorRef[ConnectionCommand])
-    extends ConnectionEvent
+  case class Connected(address: AddressType, connection: ActorRef[ConnectionCommand]) extends ConnectionEvent
 
   /**
     * Notification that setting up a connection has failed.
@@ -90,7 +88,7 @@ private[network] trait TransportProtocol {
     * @param connection An actor which can be used to control the connection.
     */
   case class ConnectionError(message: String, address: AddressType, connection: ActorRef[ConnectionCommand])
-    extends ConnectionEvent
+      extends ConnectionEvent
 
   /**
     * Notification that a connection has been closed.
@@ -104,7 +102,8 @@ private[network] trait TransportProtocol {
     * @param address The remote address
     * @param connection An actor which can be used to control the connection.
     */
-  case class MessageReceived(message: MessageType, address: AddressType, connection: ActorRef[ConnectionCommand]) extends ConnectionEvent
+  case class MessageReceived(message: MessageType, address: AddressType, connection: ActorRef[ConnectionCommand])
+      extends ConnectionEvent
 
   /**
     * ConnectionCommand allows the management of connections and message sending.

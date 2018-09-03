@@ -129,15 +129,17 @@ class ConversationalNetworkIntegrationSpec extends FlatSpec {
     new DiscoveryManagerAdapter(discoveryBehavior)
   }
 
-  private def discoveryManagerBehavior(peerInfo: PeerInfo,
-                                       discoveryConfig: DiscoveryConfig): Behavior[DiscoveryRequest] = {
+  private def discoveryManagerBehavior(
+      peerInfo: PeerInfo,
+      discoveryConfig: DiscoveryConfig): Behavior[DiscoveryRequest] = {
 
     val nodeInfo = peerInfo2NodeInfoHack(peerInfo)
 
-    val nodeState = NodeState(nodeInfo.id,
-                              ServerStatus.Listening(nodeInfo.serverAddress),
-                              ServerStatus.Listening(nodeInfo.discoveryAddress),
-                              Capabilities(0))
+    val nodeState = NodeState(
+      nodeInfo.id,
+      ServerStatus.Listening(nodeInfo.serverAddress),
+      ServerStatus.Listening(nodeInfo.discoveryAddress),
+      Capabilities(0))
 
     import io.iohk.cef.network.encoding.rlp.RLPEncoders._
     import io.iohk.cef.network.encoding.rlp.RLPImplicits._
@@ -160,9 +162,10 @@ class ConversationalNetworkIntegrationSpec extends FlatSpec {
     discoveryBehavior
   }
 
-  private def listenerFactory(discoveryConfig: DiscoveryConfig,
-                              encoder: Encoder[DiscoveryWireMessage, ByteString],
-                              decoder: Decoder[ByteString, DiscoveryWireMessage])(
+  private def listenerFactory(
+      discoveryConfig: DiscoveryConfig,
+      encoder: Encoder[DiscoveryWireMessage, ByteString],
+      decoder: Decoder[ByteString, DiscoveryWireMessage])(
       context: ActorContext[DiscoveryRequest]): ActorRef[DiscoveryListenerRequest] = {
 
     context.spawn(

@@ -14,22 +14,21 @@ class TransportsSpec extends FlatSpec {
   behavior of "Transports"
 
   it should "say usesTcp = true if tcp is configured" in {
-    val peerInfo = PeerInfo(aRandomNodeId(),
-                            ConversationalNetworkConfiguration(Some(TcpTransportConfiguration(aRandomAddress()))))
+    val peerInfo =
+      PeerInfo(aRandomNodeId(), ConversationalNetworkConfiguration(Some(TcpTransportConfiguration(aRandomAddress()))))
 
     Transports.usesTcp(peerInfo) shouldBe true
   }
 
   it should "say usesTcp = false if tcp is not configured" in {
-    val peerInfo = PeerInfo(aRandomNodeId(),
-                            ConversationalNetworkConfiguration(None))
+    val peerInfo = PeerInfo(aRandomNodeId(), ConversationalNetworkConfiguration(None))
 
     Transports.usesTcp(peerInfo) shouldBe false
   }
 
   it should "initialize netty if tcp is configured" in {
-    val peerInfo = PeerInfo(aRandomNodeId(),
-                            ConversationalNetworkConfiguration(Some(TcpTransportConfiguration(aRandomAddress()))))
+    val peerInfo =
+      PeerInfo(aRandomNodeId(), ConversationalNetworkConfiguration(Some(TcpTransportConfiguration(aRandomAddress()))))
 
     val transports = new Transports(peerInfo)
 
@@ -45,8 +44,8 @@ class TransportsSpec extends FlatSpec {
   }
 
   it should "not initialize netty twice" in {
-    val peerInfo = PeerInfo(aRandomNodeId(),
-                            ConversationalNetworkConfiguration(Some(TcpTransportConfiguration(aRandomAddress()))))
+    val peerInfo =
+      PeerInfo(aRandomNodeId(), ConversationalNetworkConfiguration(Some(TcpTransportConfiguration(aRandomAddress()))))
 
     val transports = new Transports(peerInfo)
 
@@ -54,8 +53,8 @@ class TransportsSpec extends FlatSpec {
   }
 
   it should "return tcp if tcp is configured" in {
-    val peerInfo = PeerInfo(aRandomNodeId(),
-                            ConversationalNetworkConfiguration(Some(TcpTransportConfiguration(aRandomAddress()))))
+    val peerInfo =
+      PeerInfo(aRandomNodeId(), ConversationalNetworkConfiguration(Some(TcpTransportConfiguration(aRandomAddress()))))
 
     val transports = new Transports(peerInfo)
 
@@ -63,8 +62,7 @@ class TransportsSpec extends FlatSpec {
   }
 
   it should "not return tcp if tcp is not configured" in {
-    val peerInfo = PeerInfo(aRandomNodeId(),
-                            ConversationalNetworkConfiguration(None))
+    val peerInfo = PeerInfo(aRandomNodeId(), ConversationalNetworkConfiguration(None))
 
     val transports = new Transports(peerInfo)
 

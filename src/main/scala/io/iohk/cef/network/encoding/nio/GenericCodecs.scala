@@ -14,8 +14,9 @@ trait GenericCodecs {
 
   implicit val hNilDecoder: NioDecoder[HNil] = _ => Some(HNil)
 
-  implicit def hListEncoder[H, T <: HList](implicit hEncoder: Lazy[NioEncoder[H]],
-                                           tEncoder: NioEncoder[T]): NioEncoder[H :: T] = {
+  implicit def hListEncoder[H, T <: HList](
+      implicit hEncoder: Lazy[NioEncoder[H]],
+      tEncoder: NioEncoder[T]): NioEncoder[H :: T] = {
     case h :: t => {
       val hEnc: ByteBuffer = hEncoder.value.encode(h)
       val tEnc: ByteBuffer = tEncoder.encode(t)
@@ -23,8 +24,9 @@ trait GenericCodecs {
     }
   }
 
-  implicit def hListDecoder[H, T <: HList](implicit hDecoder: Lazy[NioDecoder[H]],
-                                           tDecoder: NioDecoder[T]): NioDecoder[H :: T] =
+  implicit def hListDecoder[H, T <: HList](
+      implicit hDecoder: Lazy[NioDecoder[H]],
+      tDecoder: NioDecoder[T]): NioDecoder[H :: T] =
     (b: ByteBuffer) => {
       val initPosition = b.position()
       val headOption: Option[H] = hDecoder.value.decode(b)
@@ -38,13 +40,15 @@ trait GenericCodecs {
       }
     }
 
-  implicit def genericEncoder[T, R](implicit gen: Generic.Aux[T, R],
-                                    enc: Lazy[NioEncoder[R]],
-                                    ct: ClassTag[T]): NioEncoder[T] =
+  implicit def genericEncoder[T, R](
+      implicit gen: Generic.Aux[T, R],
+      enc: Lazy[NioEncoder[R]],
+      ct: ClassTag[T]): NioEncoder[T] =
     messageLengthEncoder(typeCodeEncoder(t => enc.value.encode(gen.to(t))))
 
-  implicit def genericDecoder[T, R](implicit gen: Generic.Aux[T, R],
-                                    dec: Lazy[NioDecoder[R]],
-                                    ct: ClassTag[T]): NioDecoder[T] =
+  implicit def genericDecoder[T, R](
+      implicit gen: Generic.Aux[T, R],
+      dec: Lazy[NioDecoder[R]],
+      ct: ClassTag[T]): NioDecoder[T] =
     messageLengthDecoder(typeCodeDecoder((b: ByteBuffer) => dec.value.decode(b).map(gen.from)))
 }

@@ -62,33 +62,33 @@ case class Claim(identity: String, key: PublicKey, signature: DigitalSignature) 
 }
 
 /**
- * A transaction to link a new key with an existing identity.
- *
- * @param identity the identity where the new key is linked
- * @param key the public key to link to the given identity
- * @param signature a digital signature validating the transaction, it should be generated
- *                  from one of the existing keys on the given identity.
- */
+  * A transaction to link a new key with an existing identity.
+  *
+  * @param identity the identity where the new key is linked
+  * @param key the public key to link to the given identity
+  * @param signature a digital signature validating the transaction, it should be generated
+  *                  from one of the existing keys on the given identity.
+  */
 case class Link(identity: String, key: PublicKey, signature: DigitalSignature) extends IdentityTransaction {
 
   import IdentityTransaction._
 
   /**
-   * Apply this transaction to the given state
-   *
-   * @param ledgerState the state
-   * @return the new state on success or an error if:
-   *         - the identity hasn't ben claimed
-   *         - the signature can't be validated
-   */
+    * Apply this transaction to the given state
+    *
+    * @param ledgerState the state
+    * @return the new state on success or an error if:
+    *         - the identity hasn't ben claimed
+    *         - the signature can't be validated
+    */
   override def apply(ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] = {
     // TODO: Go directly to the expected key
     lazy val validSignature: Boolean = ledgerState
-        .get(identity)
-        .getOrElse(Set.empty)
-        .exists { signKey =>
-          isSignedWith(signKey, signature)(identity, key)
-        }
+      .get(identity)
+      .getOrElse(Set.empty)
+      .exists { signKey =>
+        isSignedWith(signKey, signature)(identity, key)
+      }
 
     if (!ledgerState.contains(identity)) {
       Left(IdentityNotClaimedError(identity))
@@ -119,11 +119,11 @@ case class Unlink(identity: String, key: PublicKey, signature: DigitalSignature)
   override def apply(ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] = {
     // TODO: Go directly to the expected key
     lazy val validSignature: Boolean = ledgerState
-        .get(identity)
-        .getOrElse(Set.empty)
-        .exists { signKey =>
-          isSignedWith(signKey, signature)(identity, key)
-        }
+      .get(identity)
+      .getOrElse(Set.empty)
+      .exists { signKey =>
+        isSignedWith(signKey, signature)(identity, key)
+      }
 
     if (!validSignature) {
       Left(UnableToVerifySignatureError)

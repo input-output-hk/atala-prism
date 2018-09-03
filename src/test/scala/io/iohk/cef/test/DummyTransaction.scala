@@ -4,9 +4,7 @@ import io.iohk.cef.utils.ByteSizeable
 
 case class DummyTransaction(val size: Int) extends Transaction[String] {
 
-  override def apply(v1: LedgerState[String])
-    : Either[LedgerError,
-                   LedgerState[String]] = Right(v1)
+  override def apply(v1: LedgerState[String]): Either[LedgerError, LedgerState[String]] = Right(v1)
   override def partitionIds: Set[String] = Set()
 
   override def toString(): String = s"DummyTransaction($size)"

@@ -15,8 +15,7 @@ import io.iohk.cef.network.{ConversationalNetworkConfiguration, NodeId, PeerInfo
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
-class DiscoveryManagerAdapter(discoveryManagerBehavior: Behavior[DiscoveryRequest])
-    extends NetworkDiscovery {
+class DiscoveryManagerAdapter(discoveryManagerBehavior: Behavior[DiscoveryRequest]) extends NetworkDiscovery {
 
   private implicit val futureTimeout: Duration = 1 minute
   private implicit val askTimeout: Timeout = 1 minute
@@ -25,7 +24,6 @@ class DiscoveryManagerAdapter(discoveryManagerBehavior: Behavior[DiscoveryReques
   private implicit val scheduler: Scheduler = discoveryActorSystem.scheduler
 
   private val discoveryManager = discoveryActorSystem.spawn(discoveryManagerBehavior, "discoveryManager")
-
 
   override def peer(nodeId: NodeId): Option[PeerInfo] = {
     val futureResult: Future[DiscoveredNodes] = discoveryManager ? GetDiscoveredNodes
@@ -40,7 +38,8 @@ class DiscoveryManagerAdapter(discoveryManagerBehavior: Behavior[DiscoveryReques
   private def adaptToPeerInfo(knownNode: KnownNode): PeerInfo = {
     val itsNodeId = NodeId(knownNode.node.id)
     val itsConfiguration =
-      ConversationalNetworkConfiguration(Some(TcpTransportConfiguration(knownNode.node.serverAddress)),
+      ConversationalNetworkConfiguration(
+        Some(TcpTransportConfiguration(knownNode.node.serverAddress)),
         FrameHeader.defaultTtl)
     PeerInfo(itsNodeId, itsConfiguration)
   }

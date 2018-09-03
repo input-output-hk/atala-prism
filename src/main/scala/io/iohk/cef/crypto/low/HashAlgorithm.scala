@@ -22,7 +22,6 @@ sealed trait HashAlgorithm {
 
 }
 
-
 /**
   * Helper trait that allows the implementation of a `HashAlgorithm` basing it on
   * `Array[Byte]` instead of `ByteString`
@@ -42,7 +41,6 @@ sealed trait ArrayBasedHashAlgorithm extends HashAlgorithm {
   override final def hash(source: ByteString): ByteString =
     ByteString(hash(source.toArray))
 }
-
 
 /**
   * Companion object to HashAlgorithm, containing all the implemented `HashAlgorithm`
@@ -68,5 +66,3 @@ object HashAlgorithm {
     }
   }
 }
-
-

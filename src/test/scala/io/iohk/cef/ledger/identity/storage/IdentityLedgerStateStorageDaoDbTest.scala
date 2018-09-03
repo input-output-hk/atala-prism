@@ -6,12 +6,13 @@ import io.iohk.cef.ledger.identity.{IdentityLedgerState, IdentityLedgerStateStor
 import org.scalatest.{MustMatchers, OptionValues, fixture}
 import scalikejdbc.scalatest.AutoRollback
 
-trait IdentityLedgerStateStorageDaoDbTest extends fixture.FlatSpec
-  with AutoRollback
-  with MustMatchers
-  with RSAKeyGenerator
-  with OptionValues
-  with IdentityLedgerStateStorageFixture {
+trait IdentityLedgerStateStorageDaoDbTest
+    extends fixture.FlatSpec
+    with AutoRollback
+    with MustMatchers
+    with RSAKeyGenerator
+    with OptionValues
+    with IdentityLedgerStateStorageFixture {
 
   behavior of "LedgerStateStorage"
 
@@ -47,10 +48,11 @@ trait IdentityLedgerStateStorageDaoDbTest extends fixture.FlatSpec
 
     val storage = new IdentityLedgerStateStorageDao
     val state = storage.slice(Set("one", "zero"))
-    val newState = new IdentityLedgerState(Map(
-      ("one", Set(one)),
-      ("three", Set(three))
-    ))
+    val newState = new IdentityLedgerState(
+      Map(
+        ("one", Set(one)),
+        ("three", Set(three))
+      ))
     storage.update(state, newState)
 
     val editedState = storage.slice(Set("one", "two", "three", "zero"))

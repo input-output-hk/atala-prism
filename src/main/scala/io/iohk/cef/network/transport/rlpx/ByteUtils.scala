@@ -27,8 +27,8 @@ object ByteUtils {
     require(arrays.nonEmpty, "There should be one or more arrays")
 
     val zeroes = Array.fill(arrays.head.length)(0.toByte)
-    arrays.foldLeft[Array[Byte]](zeroes){
-      case (prevOr, array) => prevOr.zip(array).map{ case (b1, b2) => (b1 | b2).toByte }
+    arrays.foldLeft[Array[Byte]](zeroes) {
+      case (prevOr, array) => prevOr.zip(array).map { case (b1, b2) => (b1 | b2).toByte }
     }
   }
 
@@ -37,8 +37,8 @@ object ByteUtils {
     require(arrays.nonEmpty, "There should be one or more arrays")
 
     val ones = Array.fill(arrays.head.length)(0xFF.toByte)
-    arrays.foldLeft[Array[Byte]](ones){
-      case (prevOr, array) => prevOr.zip(array).map{ case (b1, b2) => (b1 & b2).toByte }
+    arrays.foldLeft[Array[Byte]](ones) {
+      case (prevOr, array) => prevOr.zip(array).map { case (b1, b2) => (b1 & b2).toByte }
     }
   }
 
@@ -66,9 +66,8 @@ object ByteUtils {
     ByteString(data)
   }
 
-
   def bytesToInts(bytes: Array[Byte]): Array[Int] = {
-    val buffer =  ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN)
+    val buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN)
     val ints = new Array[Int](bytes.length / 4)
     buffer.asIntBuffer().get(ints)
     ints

@@ -8,7 +8,7 @@ import io.iohk.cef.ledger.storage.LedgerStateStorage
 import scalikejdbc._
 
 class IdentityLedgerStateStorageImpl(ledgerStateStorageDao: IdentityLedgerStateStorageDao)
-  extends LedgerStateStorage[Set[PublicKey]] {
+    extends LedgerStateStorage[Set[PublicKey]] {
 
   override def slice(keys: Set[String]): IdentityLedgerState = {
     execInSession { implicit session =>

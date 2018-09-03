@@ -13,10 +13,10 @@ object ChimericGenerators {
 
   val ValueGen = for {
     list <- Gen.listOf(CurrencyQuantityGen)
-  } yield Value(Map(list.filter(_._2 != BigDecimal(0)):_*))
+  } yield Value(Map(list.filter(_._2 != BigDecimal(0)): _*))
 
   val ValueHolderGen = ValueGen.map(ValueHolder.apply)
-  val CurrencyHolderGen = Gen.alphaNumStr.map(c =>CreateCurrencyHolder(CreateCurrency(c)))
+  val CurrencyHolderGen = Gen.alphaNumStr.map(c => CreateCurrencyHolder(CreateCurrency(c)))
 
   val StateValueGen = Gen.oneOf[ChimericStateValue](ValueHolderGen, CurrencyHolderGen)
 
@@ -25,5 +25,5 @@ object ChimericGenerators {
     value <- StateValueGen
   } yield (key, value)
 
-  val StateGen = Gen.listOf(StateEntryGen).map(list => LedgerState[ChimericStateValue](Map(list:_*)))
+  val StateGen = Gen.listOf(StateEntryGen).map(list => LedgerState[ChimericStateValue](Map(list: _*)))
 }

@@ -7,5 +7,6 @@ package object identity {
   type IdentityLedgerState = LedgerState[Set[PublicKey]]
 
   //Mimics the apply method
-  def IdentityLedgerState(map: Map[String, Set[PublicKey]] = Map()): IdentityLedgerState = LedgerState[Set[PublicKey]](map)
+  def IdentityLedgerState(map: Map[String, Set[PublicKey]] = Map()): IdentityLedgerState =
+    LedgerState[Set[PublicKey]](map)
 }

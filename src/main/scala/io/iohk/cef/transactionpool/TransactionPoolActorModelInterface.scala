@@ -18,10 +18,9 @@ import scala.collection.immutable.Queue
   * @tparam Header the block header type
   */
 class TransactionPoolActorModelInterface[State, Header <: BlockHeader, Tx <: Transaction[State]](
-  actorCreator: Props => ActorRef,
-  headerGenerator: Seq[Transaction[State]] => Header,
-  maxTxSizeInBytes: Int)(
-  implicit blockByteSizeable: ByteSizeable[Block[State, Header, Tx]]) {
+    actorCreator: Props => ActorRef,
+    headerGenerator: Seq[Transaction[State]] => Header,
+    maxTxSizeInBytes: Int)(implicit blockByteSizeable: ByteSizeable[Block[State, Header, Tx]]) {
 
   type BlockType = Block[State, Header, Tx]
 
@@ -31,13 +30,12 @@ class TransactionPoolActorModelInterface[State, Header <: BlockHeader, Tx <: Tra
     * A TransactionPoolActor provides a [[TransactionPool]] with support for concurrency.
     * @param blockByteSizeable type class that allows a block to be measured in bytes
     */
-  class TransactionPoolActor(implicit blockByteSizeable: ByteSizeable[BlockType])
-      extends Actor {
+  class TransactionPoolActor(implicit blockByteSizeable: ByteSizeable[BlockType]) extends Actor {
 
     var pool = new TransactionPool[State, Header, Tx](Queue(), headerGenerator, maxTxSizeInBytes)
 
     override def receive: Receive = {
-      case GenerateBlock(ls)      => sender() ! GenerateBlockResponse(generateBlock(ls))
+      case GenerateBlock(ls) => sender() ! GenerateBlockResponse(generateBlock(ls))
       case ProcessTransaction(tx) => sender() ! ProcessTransactionResponse(processTransaction(tx))
       case RemoveBlockTransactions(block) =>
         sender() ! RemoveBlockTransactionsResponse(removeBlockTransactions(block))
@@ -56,8 +54,7 @@ class TransactionPoolActorModelInterface[State, Header <: BlockHeader, Tx <: Tra
       Right(())
     }
 
-    private def removeBlockTransactions(
-        block: Block[State, Header, Tx]): Either[ApplicationError, Unit] = {
+    private def removeBlockTransactions(block: Block[State, Header, Tx]): Either[ApplicationError, Unit] = {
       val newPool = pool.removeBlockTransactions(block)
       pool = newPool
       Right(())

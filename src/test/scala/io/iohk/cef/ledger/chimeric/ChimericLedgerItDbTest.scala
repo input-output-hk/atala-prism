@@ -16,12 +16,10 @@ import scalikejdbc.scalatest.AutoRollback
 import scala.collection.immutable
 import scala.util.Try
 
-trait ChimericLedgerItDbTest extends fixture.FlatSpec
-  with AutoRollback
-  with MustMatchers
-  with LedgerFixture {
+trait ChimericLedgerItDbTest extends fixture.FlatSpec with AutoRollback with MustMatchers with LedgerFixture {
 
-  def createLedger(ledgerStateStorageDao: ChimericLedgerStateStorageDao)(implicit dBSession: DBSession): Ledger[Try, ChimericStateValue] = {
+  def createLedger(ledgerStateStorageDao: ChimericLedgerStateStorageDao)(
+      implicit dBSession: DBSession): Ledger[Try, ChimericStateValue] = {
     val ledgerStateStorage = new ChimericLedgerStateStorageImpl(ledgerStateStorageDao) {
       override def execInSession[T](block: DBSession => T): T = block(dBSession)
     }
@@ -46,24 +44,27 @@ trait ChimericLedgerItDbTest extends fixture.FlatSpec
     val singleFee = Value(Map(currency1 -> BigDecimal(1)))
     val multiFee = Value(Map(currency1 -> BigDecimal(1), currency2 -> BigDecimal(2)))
     val ledger = createLedger(stateStorage)
-    val utxoTx = ChimericTx(Seq(
-      Withdrawal(address1, value3, 1),
-      Output(value3 - singleFee),
-      Fee(singleFee)
-    ))
+    val utxoTx = ChimericTx(
+      Seq(
+        Withdrawal(address1, value3, 1),
+        Output(value3 - singleFee),
+        Fee(singleFee)
+      ))
     val transactions = List[ChimericTx](
-      ChimericTx(Seq(
-        CreateCurrency(currency1),
-        CreateCurrency(currency2),
-        Mint(value1),
-        Mint(value2),
-        Deposit(address1, value1 + value2)
-      )),
-      ChimericTx(Seq(
-        Withdrawal(address1, value1, 1),
-        Deposit(address2, value1 - multiFee),
-        Fee(multiFee)
-      )),
+      ChimericTx(
+        Seq(
+          CreateCurrency(currency1),
+          CreateCurrency(currency2),
+          Mint(value1),
+          Mint(value2),
+          Deposit(address1, value1 + value2)
+        )),
+      ChimericTx(
+        Seq(
+          Withdrawal(address1, value1, 1),
+          Deposit(address2, value1 - multiFee),
+          Fee(multiFee)
+        )),
       utxoTx
     )
     val header = new ChimericBlockHeader
@@ -78,28 +79,34 @@ trait ChimericLedgerItDbTest extends fixture.FlatSpec
     val currency2Key = ChimericLedgerState.getCurrencyPartitionId(currency2)
     val utxoKey = ChimericLedgerState.getUtxoPartitionId(TxOutRef(utxoTx.txId, 1))
     val allKeys = Set(address1Key, address2Key, currency1Key, currency2Key, utxoKey)
-    stateStorage.slice(allKeys) mustBe LedgerState[ChimericStateValue](Map(
-      currency1Key -> CreateCurrencyHolder(CreateCurrency(currency1)),
-      currency2Key -> CreateCurrencyHolder(CreateCurrency(currency2)),
-      utxoKey -> ValueHolder(value3 - singleFee),
-      address1Key -> ValueHolder(value2 - value3),
-      address2Key -> ValueHolder(value1 - multiFee)
-    ))
-    val block2 = Block(header, immutable.Seq(
-      ChimericTx(immutable.Seq(
-        Input(TxOutRef(utxoTx.txId, 1), value3 - singleFee),
-        Fee(value3 - singleFee),
-        Withdrawal(address1, value2 - value3, 1),
-        Fee(value2 - value3)
+    stateStorage.slice(allKeys) mustBe LedgerState[ChimericStateValue](
+      Map(
+        currency1Key -> CreateCurrencyHolder(CreateCurrency(currency1)),
+        currency2Key -> CreateCurrencyHolder(CreateCurrency(currency2)),
+        utxoKey -> ValueHolder(value3 - singleFee),
+        address1Key -> ValueHolder(value2 - value3),
+        address2Key -> ValueHolder(value1 - multiFee)
       ))
-    ))
+    val block2 = Block(
+      header,
+      immutable.Seq(
+        ChimericTx(
+          immutable.Seq(
+            Input(TxOutRef(utxoTx.txId, 1), value3 - singleFee),
+            Fee(value3 - singleFee),
+            Withdrawal(address1, value2 - value3, 1),
+            Fee(value2 - value3)
+          ))
+      )
+    )
     val result2 = ledger(block2)
     result2.isRight mustBe true
     result2.right.get.isSuccess mustBe true
-    stateStorage.slice(allKeys) mustBe LedgerState[ChimericStateValue](Map(
-      currency1Key -> CreateCurrencyHolder(CreateCurrency(currency1)),
-      currency2Key -> CreateCurrencyHolder(CreateCurrency(currency2)),
-      address2Key -> ValueHolder(value1 - multiFee)
-    ))
+    stateStorage.slice(allKeys) mustBe LedgerState[ChimericStateValue](
+      Map(
+        currency1Key -> CreateCurrencyHolder(CreateCurrency(currency1)),
+        currency2Key -> CreateCurrencyHolder(CreateCurrency(currency2)),
+        address2Key -> ValueHolder(value1 - multiFee)
+      ))
   }
 }

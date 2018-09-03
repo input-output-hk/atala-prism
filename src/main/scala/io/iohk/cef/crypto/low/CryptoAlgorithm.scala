@@ -6,10 +6,10 @@ import javax.crypto.Cipher
 import akka.util.ByteString
 
 /**
- * The contract that all encryption / decryption implementations should follow.
- *
- * Designed for asymmetric encryption only.
- */
+  * The contract that all encryption / decryption implementations should follow.
+  *
+  * Designed for asymmetric encryption only.
+  */
 sealed trait CryptoAlgorithm {
 
   type DecryptError
@@ -35,10 +35,10 @@ sealed trait CryptoAlgorithm {
   def decrypt(source: EncryptedData, key: PrivateKey): Either[DecryptError, ByteString]
 
   /**
-   * Generates a new asymmetric key pair.
-   *
-   * @return the generated key pair (public and private key)
-   */
+    * Generates a new asymmetric key pair.
+    *
+    * @return the generated key pair (public and private key)
+    */
   def generateKeyPair: (PublicKey, PrivateKey)
 }
 

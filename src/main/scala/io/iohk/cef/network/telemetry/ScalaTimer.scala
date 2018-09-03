@@ -7,9 +7,11 @@ import io.micrometer.core.instrument.Timer
 class ScalaTimer(timer: Timer) {
 
   def wrap[T](block: => T) = {
-    timer.wrap(new Callable[T] {
-      override def call(): T = block
-    }).call()
+    timer
+      .wrap(new Callable[T] {
+        override def call(): T = block
+      })
+      .call()
   }
 }
 

@@ -17,7 +17,8 @@ class ECDSASignatureSpec extends FlatSpec with Matchers with PropertyChecks with
     val signature = ByteString(Hex.decode("53629a403579f5ce57bcbefba2616b1c6156d308ddcd37372c94943fdabeda97"))
     val pointSign = 28
 
-    val sig = ECDSASignature(BigInt(1, signatureRandom.toArray[Byte]), BigInt(1, signature.toArray[Byte]), pointSign.toByte)
+    val sig =
+      ECDSASignature(BigInt(1, signatureRandom.toArray[Byte]), BigInt(1, signature.toArray[Byte]), pointSign.toByte)
 
     sig.publicKey(bytesToSign).isEmpty shouldBe false
   }
@@ -39,7 +40,8 @@ class ECDSASignatureSpec extends FlatSpec with Matchers with PropertyChecks with
     val signature = ByteString(Hex.decode("62d73b6a92ac23ff514315fad795bbac6d485481d356329d71467e93c87dfa42"))
     val pointSign = 0x1f
 
-    val sig = ECDSASignature(BigInt(1, signatureRandom.toArray[Byte]), BigInt(1, signature.toArray[Byte]), pointSign.toByte)
+    val sig =
+      ECDSASignature(BigInt(1, signatureRandom.toArray[Byte]), BigInt(1, signature.toArray[Byte]), pointSign.toByte)
 
     sig.publicKey(bytesToSign).isEmpty shouldBe true
   }
@@ -47,14 +49,17 @@ class ECDSASignatureSpec extends FlatSpec with Matchers with PropertyChecks with
   it should "sign message and recover public key" in {
     forAll(arbitrary[Array[Byte]], Arbitrary.arbitrary[Unit].map(_ => generateKeyPair(secureRandom))) {
       (message, keys) =>
-
         val pubKey = keys.getPublic.asInstanceOf[ECPublicKeyParameters].getQ
         val msg = kec256(message)
 
         val signature = ECDSASignature.sign(msg, keys)
         val recPubKey = signature.publicKey(msg)
 
-        val result = recPubKey.map(a => ECDSASignature.uncompressedIndicator +: a).map(curve.getCurve.decodePoint).map(_.getEncoded(true)).map(ByteString(_))
+        val result = recPubKey
+          .map(a => ECDSASignature.uncompressedIndicator +: a)
+          .map(curve.getCurve.decodePoint)
+          .map(_.getEncoded(true))
+          .map(ByteString(_))
         val expected = Some(pubKey.getEncoded(true)).map(ByteString(_))
 
         result shouldBe expected

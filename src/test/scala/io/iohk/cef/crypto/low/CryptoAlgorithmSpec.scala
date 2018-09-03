@@ -6,10 +6,7 @@ import org.scalatest.Matchers._
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{EitherValues, FlatSpec}
 
-class CryptoAlgorithmSpec extends FlatSpec
-    with PropertyChecks
-    with SecureRandomBuilder
-    with EitherValues {
+class CryptoAlgorithmSpec extends FlatSpec with PropertyChecks with SecureRandomBuilder with EitherValues {
 
   val cryptos: List[CryptoAlgorithm] = new CryptoAlgorithm.RSA(secureRandom) :: Nil
 
@@ -23,8 +20,8 @@ class CryptoAlgorithmSpec extends FlatSpec
         val encrypted = encryptBytes(crypto)(ByteString(a), encryptKeyA)
         val result = decryptBytes(crypto)(encrypted, decryptKeyA)
 
-        result.right.value should === (ByteString(a))
-        decryptBytes(crypto)(encrypted, decryptKeyB) should !== (Right(ByteString(a)))
+        result.right.value should ===(ByteString(a))
+        decryptBytes(crypto)(encrypted, decryptKeyB) should !==(Right(ByteString(a)))
       }
     }
   }

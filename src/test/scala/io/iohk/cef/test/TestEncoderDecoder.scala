@@ -14,6 +14,8 @@ object TestEncoderDecoder {
 
   val testDecoder: Decoder[Message, String] = {
     case TestMessage(content) => Some(content)
-    case _ => throw new UnsupportedOperationException(s"This is a dummy test decoder and it only supports ${classOf[TestMessage]}")
+    case _ =>
+      throw new UnsupportedOperationException(
+        s"This is a dummy test decoder and it only supports ${classOf[TestMessage]}")
   }
 }

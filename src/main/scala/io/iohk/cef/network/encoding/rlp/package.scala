@@ -10,7 +10,7 @@ package object rlp {
   sealed trait RLPEncodeable
 
   case class RLPList(items: RLPEncodeable*) extends RLPEncodeable {
-    def ++(that: RLPList) = RLPList(this.items ++ that.items:_*)
+    def ++(that: RLPList) = RLPList(this.items ++ that.items: _*)
   }
 
   case class RLPValue(bytes: Array[Byte]) extends RLPEncodeable {

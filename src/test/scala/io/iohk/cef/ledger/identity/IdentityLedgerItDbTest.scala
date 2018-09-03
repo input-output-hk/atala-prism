@@ -30,7 +30,8 @@ trait IdentityLedgerItDbTest
 
   val dummySignature = new DigitalSignature(ByteString.empty)
 
-  def createLedger(ledgerStateStorageDao: IdentityLedgerStateStorageDao)(implicit dBSession: DBSession): Ledger[Try, Set[PublicKey]] = {
+  def createLedger(ledgerStateStorageDao: IdentityLedgerStateStorageDao)(
+      implicit dBSession: DBSession): Ledger[Try, Set[PublicKey]] = {
     implicit val forExpEnabler = ForExpressionsEnabler.tryEnabler
     val ledgerStateStorage = new IdentityLedgerStateStorageImpl(ledgerStateStorageDao) {
       override def execInSession[T](block: DBSession => T): T = block(dBSession)
@@ -53,34 +54,35 @@ trait IdentityLedgerItDbTest
     val ledger = createLedger(ledgerStateStorageDao)
     val now = Instant.now()
     val header = IdentityBlockHeader(ByteString("header"), now, 1)
-    val block1 = Block(header, List[IdentityTransaction](
-      Claim("one", pair1._1, IdentityTransaction.sign("one", pair1._1, pair1._2)),
-      Claim("two", pair2._1, IdentityTransaction.sign("two", pair2._1, pair2._2))))
+    val block1 = Block(
+      header,
+      List[IdentityTransaction](
+        Claim("one", pair1._1, IdentityTransaction.sign("one", pair1._1, pair1._2)),
+        Claim("two", pair2._1, IdentityTransaction.sign("two", pair2._1, pair2._2)))
+    )
 
     ledger(block1).right.value.isSuccess mustBe true
 
     ledgerStateStorageDao.slice(Set("one")) mustBe IdentityLedgerState(Map("one" -> Set(pair1._1)))
     ledgerStateStorageDao.slice(Set("two")) mustBe IdentityLedgerState(Map("two" -> Set(pair2._1)))
     ledgerStateStorageDao.slice(Set("three")) mustBe IdentityLedgerState()
-    ledgerStateStorageDao.slice(Set("one","two","three")) mustBe
-      IdentityLedgerState(Map(
-        "one" -> Set(pair1._1),
-        "two" -> Set(pair2._1)))
+    ledgerStateStorageDao.slice(Set("one", "two", "three")) mustBe
+      IdentityLedgerState(Map("one" -> Set(pair1._1), "two" -> Set(pair2._1)))
 
-    val block2 = Block(header.copy(height = 2), List[IdentityTransaction](
-      Link("two", pair3._1, IdentityTransaction.sign("two", pair3._1, pair2._2))))
+    val block2 = Block(
+      header.copy(height = 2),
+      List[IdentityTransaction](Link("two", pair3._1, IdentityTransaction.sign("two", pair3._1, pair2._2))))
 
     ledger(block2).right.value.isSuccess mustBe true
 
-    ledgerStateStorageDao.slice(Set("one","two")) mustBe
+    ledgerStateStorageDao.slice(Set("one", "two")) mustBe
       IdentityLedgerState(
-        Map(
-          "one" -> Set(pair1._1),
-          "two" -> Set(pair2._1, pair3._1))
+        Map("one" -> Set(pair1._1), "two" -> Set(pair2._1, pair3._1))
       )
 
-    val block3 = Block(header.copy(height = 2), List[IdentityTransaction](
-      Link("three", pair3._1, IdentityTransaction.sign("three", pair3._1, pair2._2))))
+    val block3 = Block(
+      header.copy(height = 2),
+      List[IdentityTransaction](Link("three", pair3._1, IdentityTransaction.sign("three", pair3._1, pair2._2))))
     val invalidResult = ledger(block3)
 
     if (invalidResult.isRight) {

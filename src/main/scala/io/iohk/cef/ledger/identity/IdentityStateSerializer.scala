@@ -17,9 +17,10 @@ object IdentityStateSerializer {
     }
 
     override def serialize(t: Set[PublicKey]): ByteString = {
-      ByteString(PublicKeyListProto(
-        t.toSeq.map(bs => com.google.protobuf.ByteString.copyFrom(bs.getEncoded))
-      ).toByteArray)
+      ByteString(
+        PublicKeyListProto(
+          t.toSeq.map(bs => com.google.protobuf.ByteString.copyFrom(bs.getEncoded))
+        ).toByteArray)
     }
   }
 }

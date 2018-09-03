@@ -45,8 +45,7 @@ trait LedgerStateStorageDaoDbTest
     val storage = new IdentityLedgerStateStorageDao
     val state = storage.slice(Set("one", "zero"))
     val newState =
-      new IdentityLedgerState(Map(("one", Set(keys(3))),
-        ("three", Set(keys(4)))))
+      new IdentityLedgerState(Map(("one", Set(keys(3))), ("three", Set(keys(4)))))
     storage.update(state, newState)
     val editedState = storage.slice(Set("one", "two", "three", "zero"))
     editedState.keys mustBe Set("one", "two", "three")

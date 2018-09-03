@@ -6,7 +6,6 @@ import akka.util.ByteString
 import io.iohk.cef.network.encoding.rlp.BigIntExtensionMethods._
 import io.iohk.cef.network.encoding.rlp.RLP._
 
-
 object RLPImplicits {
 
   implicit val byteEncDec = new RLPEncDec[Byte] {
@@ -14,7 +13,6 @@ object RLPImplicits {
 
     override def decode(rlp: RLPEncodeable): Byte = rlp match {
       case RLPValue(bytes) =>
-
         val len = bytes.length
 
         if (len == 0) 0: Byte
@@ -30,7 +28,6 @@ object RLPImplicits {
 
     override def decode(rlp: RLPEncodeable): Short = rlp match {
       case RLPValue(bytes) =>
-
         val len = bytes.length
 
         if (len == 0) 0: Short
@@ -59,7 +56,10 @@ object RLPImplicits {
     )
 
     override def decode(rlp: RLPEncodeable): BigInt = rlp match {
-      case RLPValue(bytes) => bytes.foldLeft[BigInt](BigInt(0)) { (rec, byte) => (rec << (8: Int)) + BigInt(byte & 0xFF) }
+      case RLPValue(bytes) =>
+        bytes.foldLeft[BigInt](BigInt(0)) { (rec, byte) =>
+          (rec << (8: Int)) + BigInt(byte & 0xFF)
+        }
       case _ => throw RLPException("src is not an RLPValue")
     }
   }
@@ -70,7 +70,7 @@ object RLPImplicits {
 
     override def decode(rlp: RLPEncodeable): Long = rlp match {
       case RLPValue(bytes) if bytes.length <= 8 => bigIntEncDec.decode(rlp).toLong
-      case _ =>  throw RLPException("src is not an RLPValue")
+      case _ => throw RLPException("src is not an RLPValue")
     }
   }
 
@@ -127,6 +127,6 @@ object RLPImplicits {
         case l: RLPList => l.items.map(encDec.decode)
         case _ => throw RLPException("src is not a Seq")
       }
-  }
+    }
 
 }

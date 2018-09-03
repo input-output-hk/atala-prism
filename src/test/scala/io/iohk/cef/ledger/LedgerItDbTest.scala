@@ -15,11 +15,7 @@ import scalikejdbc.scalatest.AutoRollback
 
 import scala.util.Success
 
-trait LedgerItDbTest
-    extends fixture.FlatSpec
-    with AutoRollback
-    with RSAKeyGenerator
-    with MustMatchers {
+trait LedgerItDbTest extends fixture.FlatSpec with AutoRollback with RSAKeyGenerator with MustMatchers {
 
   behavior of "Ledger"
 
@@ -40,13 +36,13 @@ trait LedgerItDbTest
     }
     val ledger = Ledger(1, genericLedgerStorageImpl, genericStateImpl)
 
-
     val pair1 = generateKeyPair
     val pair2 = generateKeyPair
 
     val testTxs = List[IdentityTransaction](
       Claim("carlos", pair1._1, IdentityTransaction.sign("carlos", pair1._1, pair1._2)),
-      Link("carlos", pair2._1, IdentityTransaction.sign("carlos", pair2._1, pair1._2)))
+      Link("carlos", pair2._1, IdentityTransaction.sign("carlos", pair2._1, pair1._2))
+    )
     val testBlock = Block(IdentityBlockHeader(ByteString("hash"), Instant.EPOCH, 1L), testTxs)
     val emptyLs = LedgerState[Set[PublicKey]](Map())
     genericStateDao.slice(1, Set("carlos")) mustBe emptyLs

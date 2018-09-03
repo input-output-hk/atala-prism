@@ -11,10 +11,7 @@ import scala.collection.immutable
 object ChimericBlockSerializer {
 
   def protoValueToValue(protoValue: ChimericValueProto): Value = {
-    Value(protoValue.entries.map(entry =>
-        entry.currency -> DecimalProtoUtils.fromProto(entry.amount)
-      ):_*
-    )
+    Value(protoValue.entries.map(entry => entry.currency -> DecimalProtoUtils.fromProto(entry.amount)): _*)
   }
 
   def valueToProtoValue(value: Value): ChimericValueProto = {
@@ -39,30 +36,31 @@ object ChimericBlockSerializer {
 
       override def deserialize(bytes: ByteString): ChimericLedgerBlock = {
         val proto = ChimericBlockProto.parseFrom(bytes.toArray)
-        val txs: immutable.Seq[ChimericTx] = proto.txs.toList.map(txProto =>
-          txProto.txFragments.map { txFragment =>
-            if (txFragment.fragment.isCreateCurrencyWrapper) {
-              CreateCurrency(txFragment.fragment.createCurrencyWrapper.get.currency)
-            } else if (txFragment.fragment.isDepositWrapper) {
-              val deposit = txFragment.fragment.depositWrapper.get
-              Deposit(deposit.address, protoValueToValue(deposit.value))
-            } else if (txFragment.fragment.isFeeWrapper) {
-              Fee(protoValueToValue(txFragment.fragment.feeWrapper.get.value))
-            } else if (txFragment.fragment.isInputWrapper) {
-              val input = txFragment.fragment.inputWrapper.get
-              Input(protoTxOutRefToTxOutRef(input.txOutRef), protoValueToValue(input.value))
-            } else if (txFragment.fragment.isMintWrapper) {
-              Mint(protoValueToValue(txFragment.fragment.mintWrapper.get.value))
-            } else if (txFragment.fragment.isOutputWrapper) {
-              Output(protoValueToValue(txFragment.fragment.outputWrapper.get.value))
-            } else if (txFragment.fragment.isWithdrawalWrapper) {
-              val withdrawal = txFragment.fragment.withdrawalWrapper.get
-              Withdrawal(withdrawal.address, protoValueToValue(withdrawal.value), withdrawal.nonce)
-            } else {
-              throw new IllegalArgumentException(s"Invalid tx found in proto: ${txFragment.fragment}")
-            }
-          }
-        ).map(x => ChimericTx(x))
+        val txs: immutable.Seq[ChimericTx] = proto.txs.toList
+          .map(txProto =>
+            txProto.txFragments.map { txFragment =>
+              if (txFragment.fragment.isCreateCurrencyWrapper) {
+                CreateCurrency(txFragment.fragment.createCurrencyWrapper.get.currency)
+              } else if (txFragment.fragment.isDepositWrapper) {
+                val deposit = txFragment.fragment.depositWrapper.get
+                Deposit(deposit.address, protoValueToValue(deposit.value))
+              } else if (txFragment.fragment.isFeeWrapper) {
+                Fee(protoValueToValue(txFragment.fragment.feeWrapper.get.value))
+              } else if (txFragment.fragment.isInputWrapper) {
+                val input = txFragment.fragment.inputWrapper.get
+                Input(protoTxOutRefToTxOutRef(input.txOutRef), protoValueToValue(input.value))
+              } else if (txFragment.fragment.isMintWrapper) {
+                Mint(protoValueToValue(txFragment.fragment.mintWrapper.get.value))
+              } else if (txFragment.fragment.isOutputWrapper) {
+                Output(protoValueToValue(txFragment.fragment.outputWrapper.get.value))
+              } else if (txFragment.fragment.isWithdrawalWrapper) {
+                val withdrawal = txFragment.fragment.withdrawalWrapper.get
+                Withdrawal(withdrawal.address, protoValueToValue(withdrawal.value), withdrawal.nonce)
+              } else {
+                throw new IllegalArgumentException(s"Invalid tx found in proto: ${txFragment.fragment}")
+              }
+          })
+          .map(x => ChimericTx(x))
         Block(new ChimericBlockHeader, txs)
       }
 

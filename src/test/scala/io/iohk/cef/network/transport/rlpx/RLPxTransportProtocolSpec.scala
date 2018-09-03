@@ -10,7 +10,12 @@ import akka.testkit.typed.scaladsl.TestProbe
 import akka.testkit.{TestActors, TestProbe => UntypedTestProbe}
 import akka.util.ByteString
 import akka.{actor => untyped}
-import io.iohk.cef.network.transport.rlpx.RLPxConnectionHandler.{ConnectTo, ConnectionEstablished, ConnectionFailed, HandleConnection}
+import io.iohk.cef.network.transport.rlpx.RLPxConnectionHandler.{
+  ConnectTo,
+  ConnectionEstablished,
+  ConnectionFailed,
+  HandleConnection
+}
 import io.iohk.cef.test.TestEncoderDecoder
 import io.iohk.cef.test.TestEncoderDecoder.TestMessage
 import io.iohk.cef.test.TypedTestProbeOps._
@@ -25,11 +30,13 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
   val untypedSystem: ActorSystem = untyped.ActorSystem("TypedWatchingUntyped")
   val typedSystem: typed.ActorSystem[_] = untypedSystem.toTyped
 
-  val localPubKey = "ae9025d54592c854fcfdf6a5a9f1e377a124d3492647070e9e6365deef1119e6e046acfd7dd62f6f94d0bc58645e103f78f4c7150933383656ddb6a9fffeb2af"
+  val localPubKey =
+    "ae9025d54592c854fcfdf6a5a9f1e377a124d3492647070e9e6365deef1119e6e046acfd7dd62f6f94d0bc58645e103f78f4c7150933383656ddb6a9fffeb2af"
   val localUri = new URI(s"enode://$localPubKey@0.0.0.0:1234")
   val localAddress = new InetSocketAddress(localUri.getHost, localUri.getPort)
 
-  val remotePubKey = "18a551bee469c2e02de660ab01dede06503c986f6b8520cb5a65ad122df88b17b285e3fef09a40a0d44f99e014f8616cf1ebc2e094f96c6e09e2f390f5d34857"
+  val remotePubKey =
+    "18a551bee469c2e02de660ab01dede06503c986f6b8520cb5a65ad122df88b17b285e3fef09a40a0d44f99e014f8616cf1ebc2e094f96c6e09e2f390f5d34857"
   val remoteUri = new URI(s"enode://$remotePubKey@47.90.36.129:30303")
   val remoteAddress = new InetSocketAddress(remoteUri.getHost, remoteUri.getPort)
 
@@ -40,8 +47,10 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
     val rLPxConnectionHandlerProps = TestActors.forwardActorProps(rlpxConnectionHandler.ref)
 
     val rlpxTransportProtocol = new RLPxTransportProtocol[String](
-      TestEncoderDecoder.testEncoder, TestEncoderDecoder.testDecoder,
-      rLPxConnectionHandlerProps, tcpProbe.ref)
+      TestEncoderDecoder.testEncoder,
+      TestEncoderDecoder.testDecoder,
+      rLPxConnectionHandlerProps,
+      tcpProbe.ref)
 
     import rlpxTransportProtocol._
 
@@ -262,7 +271,6 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
 
     connectionEventProbe.uponReceivingMessage {
       case Connected(_, connection) =>
-
         connection ! SendMessage("Hello!")
 
         rlpxConnectionHandler.expectMsgPF[Assertion](1 second)({
@@ -292,7 +300,6 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
 
     connectionEventProbe.uponReceivingMessage {
       case Connected(_, _) =>
-
         peerBridge ! RLPxConnectionHandler.MessageReceived(TestMessage("Hello!"))
 
         val messageReceived = connectionEventProbe.expectMessageType[MessageReceived]

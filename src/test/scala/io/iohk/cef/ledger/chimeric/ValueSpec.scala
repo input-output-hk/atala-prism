@@ -21,7 +21,7 @@ class ValueSpec extends FlatSpec with PropertyChecks with MustMatchers {
     }
   }
   it should "implement an associative addition" in {
-    forAll{ (a: Value, b: Value, c: Value) =>
+    forAll { (a: Value, b: Value, c: Value) =>
       a + (b + c) mustBe (a + b) + c
     }
   }
@@ -44,30 +44,31 @@ class ValueSpec extends FlatSpec with PropertyChecks with MustMatchers {
       forAll { (a: BigDecimal, b: BigDecimal) =>
         val valueA = Value((currency, a))
         val valueB = Value((currency, b))
-        (valueA + valueB) (currency) mustBe a + b
-        (valueA - valueB) (currency) mustBe a - b
+        (valueA + valueB)(currency) mustBe a + b
+        (valueA - valueB)(currency) mustBe a - b
       }
     }
   }
 
   it should "calculate the inequalities among values" in {
-    forAll { (a: Value) => {
-      val greaterValue =
-        if (a.iterator.isEmpty) {
-          Value(Map("CRC" -> BigDecimal(0.0001)))
-        } else {
-          Value(a.iterator.map {
-            case (currency, quantity) => (currency, quantity + BigDecimal(0.0001))
-          }.toSeq: _*)
-        }
-      val smallerValue =
-        if (a.iterator.isEmpty) {
-          Value(Map("CRC" -> BigDecimal(-0.0001)))
-        } else {
-          Value(a.iterator.map {
-            case (currency, quantity) => (currency, quantity - BigDecimal(0.0001))
-          }.toSeq: _*)
-        }
+    forAll { (a: Value) =>
+      {
+        val greaterValue =
+          if (a.iterator.isEmpty) {
+            Value(Map("CRC" -> BigDecimal(0.0001)))
+          } else {
+            Value(a.iterator.map {
+              case (currency, quantity) => (currency, quantity + BigDecimal(0.0001))
+            }.toSeq: _*)
+          }
+        val smallerValue =
+          if (a.iterator.isEmpty) {
+            Value(Map("CRC" -> BigDecimal(-0.0001)))
+          } else {
+            Value(a.iterator.map {
+              case (currency, quantity) => (currency, quantity - BigDecimal(0.0001))
+            }.toSeq: _*)
+          }
         greaterValue >= a mustBe true
         a >= smallerValue mustBe true
         smallerValue >= a mustBe false
@@ -78,22 +79,24 @@ class ValueSpec extends FlatSpec with PropertyChecks with MustMatchers {
   }
 
   it should "implement a reflexive comparison" in {
-    forAll { (a: Value) => {
-      a == a mustBe true
-      a > a mustBe false
-      a < a mustBe false
-      a >= a mustBe true
-      a <= a mustBe true
-    }
+    forAll { (a: Value) =>
+      {
+        a == a mustBe true
+        a > a mustBe false
+        a < a mustBe false
+        a >= a mustBe true
+        a <= a mustBe true
+      }
     }
   }
 
   it should "implement an antisymmetric comparison" in {
-    forAll { (a: Value, b: Value) => {
-      ((a == b) ==> !((a > b) || (a < b))) mustBe true
-      ((a > b) ==> !((a == b) || (a < b))) mustBe true
-      ((a < b) ==> !((a == b) || (a > b))) mustBe true
-    }
+    forAll { (a: Value, b: Value) =>
+      {
+        ((a == b) ==> !((a > b) || (a < b))) mustBe true
+        ((a > b) ==> !((a == b) || (a < b))) mustBe true
+        ((a < b) ==> !((a == b) || (a > b))) mustBe true
+      }
     }
   }
 

@@ -8,10 +8,7 @@ import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 import org.scalatest.prop.PropertyChecks
 
-class SignAlgorithmSpec
-    extends FlatSpec
-    with PropertyChecks
-    with SecureRandomBuilder {
+class SignAlgorithmSpec extends FlatSpec with PropertyChecks with SecureRandomBuilder {
 
   val (publicKey, privateKey) = new crypto.low.CryptoAlgorithm.RSA(secureRandom).generateKeyPair
   val (publicKey2, _) = new crypto.low.CryptoAlgorithm.RSA(secureRandom).generateKeyPair

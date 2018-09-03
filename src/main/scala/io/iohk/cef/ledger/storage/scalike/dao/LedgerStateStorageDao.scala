@@ -8,8 +8,8 @@ import scalikejdbc._
 class LedgerStateStorageDao[S] {
 
   def slice(ledgerStateId: Int, keys: Set[String])(
-    implicit byteStringSerializable: ByteStringSerializable[S],
-    DBSession: DBSession): LedgerState[S] = {
+      implicit byteStringSerializable: ByteStringSerializable[S],
+      DBSession: DBSession): LedgerState[S] = {
     val lst = LedgerStateTable.syntax("lst")
     val entries = sql"""
        select ${lst.result.*}
@@ -18,12 +18,12 @@ class LedgerStateStorageDao[S] {
         ${lst.partitionId} in (${keys})
        """.map(rs => LedgerStateTable(lst.resultName)(rs)).list().apply()
     val pairs = entries.map(entry => (entry.partitionId -> byteStringSerializable.deserialize(entry.data)))
-    LedgerState(Map(pairs:_*))
+    LedgerState(Map(pairs: _*))
   }
 
   def update(ledgerStateId: Int, previousState: LedgerState[S], newState: LedgerState[S])(
-    implicit byteStringSerializable: ByteStringSerializable[S],
-    DBSession: DBSession): Unit = {
+      implicit byteStringSerializable: ByteStringSerializable[S],
+      DBSession: DBSession): Unit = {
     val currentState = slice(ledgerStateId, previousState.keys)
     if (previousState != currentState) {
       throw new IllegalArgumentException("Provided previous state must be equal to the current state")

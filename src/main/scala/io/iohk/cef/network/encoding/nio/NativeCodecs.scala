@@ -70,8 +70,7 @@ trait NativeCodecs {
 
   implicit val charDecoder: NioDecoder[Char] = (b: ByteBuffer) => Some(b.getChar())
 
-  implicit def arrayEncoder[T](implicit enc: NioEncoder[T],
-                               ct: ClassTag[T]): NioEncoder[Array[T]] =
+  implicit def arrayEncoder[T](implicit enc: NioEncoder[T], ct: ClassTag[T]): NioEncoder[Array[T]] =
     messageLengthEncoder(typeCodeEncoder(arrayEncoderImpl))
 
   implicit def arrayDecoder[T](implicit dec: NioDecoder[T], ct: ClassTag[T]): NioDecoder[Array[T]] =
@@ -115,8 +114,7 @@ trait NativeCodecs {
       Some(arr)
     }
 
-  implicit def listEncoder[T](implicit enc: NioEncoder[T],
-                              ct: ClassTag[T]): NioEncoder[List[T]] =
+  implicit def listEncoder[T](implicit enc: NioEncoder[T], ct: ClassTag[T]): NioEncoder[List[T]] =
     (l: List[T]) => arrayEncoder(enc, ct).encode(l.toArray)
 
   implicit def listDecoder[T](implicit dec: NioDecoder[T], ct: ClassTag[T]): NioDecoder[List[T]] =

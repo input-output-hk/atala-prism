@@ -25,7 +25,6 @@ class NodeStatusSpec extends FlatSpec with MustMatchers {
     def getActor = BehaviorTestKit(getBehavior)
   }
 
-
   behavior of "NodeStatus"
 
   it should "start with the vanilla node state" in new ReadyNodeStatus {

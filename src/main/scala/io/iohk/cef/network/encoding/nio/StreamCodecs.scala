@@ -14,7 +14,7 @@ trait StreamCodecs {
       @annotation.tailrec
       def loop(acc: Seq[T]): Seq[T] = {
         dec.decode(b) match {
-          case None        => acc
+          case None => acc
           case Some(frame) => loop(acc :+ frame)
         }
       }
@@ -25,18 +25,21 @@ trait StreamCodecs {
   type ApplicableMessage = () => Unit
   type MessageApplication[Address] = (Address, ByteBuffer) => Seq[ApplicableMessage]
 
-  def lazyMessageApplication[Address, Message, R](decoder: NioDecoder[Message],
-                                                  handler: (Address, Message) => Unit): MessageApplication[Address] =
+  def lazyMessageApplication[Address, Message, R](
+      decoder: NioDecoder[Message],
+      handler: (Address, Message) => Unit): MessageApplication[Address] =
     (address, byteBuffer) => decoder.decodeStream(byteBuffer).map(message => () => handler(address, message))
 
-  def strictMessageApplication[Address, Message, R](decoder: NioDecoder[Message],
-                                                    handler: (Address, Message) => Unit): MessageApplication[Address] =
+  def strictMessageApplication[Address, Message, R](
+      decoder: NioDecoder[Message],
+      handler: (Address, Message) => Unit): MessageApplication[Address] =
     (address, byteBuffer) =>
       decoder
         .decodeStream(byteBuffer)
         .map(message => {
           handler(address, message)
-          () => ()
+          () =>
+            ()
         })
 
   /**
@@ -55,9 +58,10 @@ trait StreamCodecs {
     *                        know how to handle, there is no choice but to give up.
     * @return a sequence of Function0 instances representing the bound Function2[Address, Message] message handlers.
     */
-  def decodeStream[Address](address: Address,
-                            b: ByteBuffer,
-                            messageAppliers: Seq[MessageApplication[Address]]): Seq[ApplicableMessage] = {
+  def decodeStream[Address](
+      address: Address,
+      b: ByteBuffer,
+      messageAppliers: Seq[MessageApplication[Address]]): Seq[ApplicableMessage] = {
 
     @tailrec
     def bufferLoop(acc: Vector[ApplicableMessage]): Seq[ApplicableMessage] = {
@@ -70,8 +74,7 @@ trait StreamCodecs {
             innerAcc ++ applicationResult
           else
             decoderLoop(iDecoder + 1, innerAcc)
-        }
-        else
+        } else
           innerAcc
       }
 

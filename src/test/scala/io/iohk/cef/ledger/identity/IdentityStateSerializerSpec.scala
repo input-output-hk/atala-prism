@@ -4,11 +4,7 @@ import io.iohk.cef.builder.RSAKeyGenerator
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{FlatSpec, MustMatchers}
 
-class IdentityStateSerializerSpec
-    extends FlatSpec
-    with MustMatchers
-    with RSAKeyGenerator
-    with PropertyChecks {
+class IdentityStateSerializerSpec extends FlatSpec with MustMatchers with RSAKeyGenerator with PropertyChecks {
 
   behavior of "IdentityStateSerializer"
 

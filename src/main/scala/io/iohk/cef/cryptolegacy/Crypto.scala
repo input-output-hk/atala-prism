@@ -14,7 +14,8 @@ import org.bouncycastle.crypto.params._
 trait Crypto {
 
   val curveParams: X9ECParameters = SECNamedCurves.getByName("secp256k1")
-  val curve: ECDomainParameters = new ECDomainParameters(curveParams.getCurve, curveParams.getG, curveParams.getN, curveParams.getH)
+  val curve: ECDomainParameters =
+    new ECDomainParameters(curveParams.getCurve, curveParams.getG, curveParams.getN, curveParams.getH)
 
   private val keccakSize = 512
   val kec512 = new KeccakDigest(keccakSize)
@@ -83,12 +84,13 @@ trait Crypto {
 
   def keyPairFromPrvKey(prvKey: BigInt): AsymmetricCipherKeyPair = {
     val publicKey = curve.getG.multiply(prvKey.bigInteger).normalize()
-    new AsymmetricCipherKeyPair(new ECPublicKeyParameters(publicKey, curve), new ECPrivateKeyParameters(prvKey.bigInteger, curve))
+    new AsymmetricCipherKeyPair(
+      new ECPublicKeyParameters(publicKey, curve),
+      new ECPrivateKeyParameters(prvKey.bigInteger, curve))
   }
 
   def pubKeyFromPrvKey(prvKey: Array[Byte]): Array[Byte] =
     keyPairToByteArrays(keyPairFromPrvKey(prvKey))._2
-
 
   def pubKeyFromPrvKey(prvKey: ByteString): ByteString =
     ByteString(pubKeyFromPrvKey(prvKey.toArray))

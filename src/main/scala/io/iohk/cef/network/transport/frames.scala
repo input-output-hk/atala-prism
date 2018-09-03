@@ -12,5 +12,4 @@ object FrameHeader {
 
 case class FrameHeader(src: NodeId, dst: NodeId, ttl: Int)
 
-
 case class Frame[Message](header: FrameHeader, content: Message)

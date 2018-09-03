@@ -29,19 +29,21 @@ class ConcatKDFBytesGenerator(digest: Digest) {
 
     digest.reset()
 
-    (0 until (outputLength / digestSize + 1)).map { i =>
-      Pack.intToBigEndian(((counterStart + i) % (2L << 32)).toInt, counterValue, 0)
-      digest.update(counterValue, 0, counterValue.length)
-      digest.update(seed, 0, seed.length)
-      digest.doFinal(hashBuf, 0)
+    (0 until (outputLength / digestSize + 1))
+      .map { i =>
+        Pack.intToBigEndian(((counterStart + i) % (2L << 32)).toInt, counterValue, 0)
+        digest.update(counterValue, 0, counterValue.length)
+        digest.update(seed, 0, seed.length)
+        digest.doFinal(hashBuf, 0)
 
-      val spaceLeft = outputLength - (i * digestSize)
+        val spaceLeft = outputLength - (i * digestSize)
 
-      if (spaceLeft > digestSize) {
-        ByteString(hashBuf)
-      } else {
-        ByteString(hashBuf).dropRight(digestSize - spaceLeft)
+        if (spaceLeft > digestSize) {
+          ByteString(hashBuf)
+        } else {
+          ByteString(hashBuf).dropRight(digestSize - spaceLeft)
+        }
       }
-    }.reduce[ByteString] { case (a, b) => a ++ b }
+      .reduce[ByteString] { case (a, b) => a ++ b }
   }
 }

@@ -12,7 +12,8 @@ class ScalaTimerSpec extends FlatSpec with MustMatchers {
 
   it should "wrap a block returning Unit" in {
     val simpleRegistry = new SimpleMeterRegistry()
-    val timer = Timer.builder("test timer")
+    val timer = Timer
+      .builder("test timer")
       .register(simpleRegistry)
     import ScalaTimer._
     timer.asScala.wrap {
@@ -23,10 +24,11 @@ class ScalaTimerSpec extends FlatSpec with MustMatchers {
   }
   it should "wrap a block returning a value" in {
     val simpleRegistry = new SimpleMeterRegistry()
-    val timer = Timer.builder("test timer")
+    val timer = Timer
+      .builder("test timer")
       .register(simpleRegistry)
     import ScalaTimer._
-    val result = timer.asScala.wrap{
+    val result = timer.asScala.wrap {
       Thread.sleep(20)
       1
     }
