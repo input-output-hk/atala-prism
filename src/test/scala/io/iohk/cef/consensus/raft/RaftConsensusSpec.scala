@@ -8,6 +8,7 @@ import org.scalatest.concurrent.ScalaFutures.{convertScalaFuture, whenReady}
 import org.scalatest.mockito.MockitoSugar._
 import org.mockito.Mockito.{inOrder, times, verify, when}
 import org.mockito.ArgumentMatchers.any
+import org.scalactic.source.Position
 import org.scalatest.time.{Millis, Seconds, Span}
 
 import scala.collection.mutable
@@ -30,10 +31,10 @@ class RaftConsensusSpec extends WordSpec {
       // spin up 100 very closely spaced requestVote RPCs
       val voteResultFs = Range(0, nRequests).map(i => Future(voteCallback(voteRequests(i))))
 
-      val voteResults = Future.sequence(voteResultFs).futureValue
-
-      // only one vote should be granted.
-      voteResults.count(result => result.voteGranted) shouldBe 1
+      whenReady(Future.sequence(voteResultFs)) { voteResults =>
+        // only one vote should be granted.
+        voteResults.count(result => result.voteGranted) shouldBe 1
+      }
     }
     "provide sequencing of side effecting functions withRaftContext" in new MockFixture {
       val raftNode = aRaftNode(new InMemoryPersistentStorage[String](Vector(), currentTerm = 2, votedFor = ""))
