@@ -1,7 +1,7 @@
 package io.iohk.cef.consensus.raft
 
 import io.iohk.cef.consensus.raft.RaftConsensus.{VoteRequested, _}
-import org.scalatest.{WordSpec}
+import org.scalatest.WordSpec
 import org.scalatest.Matchers._
 import org.scalatest.concurrent.Eventually._
 import org.scalatest.concurrent.ScalaFutures.{convertScalaFuture, whenReady}
@@ -21,11 +21,13 @@ class RaftConsensusSpec extends WordSpec {
 
       val _ = aRaftNode(persistentStorage)
 
+      val nRequests = 25
+
       val voteRequests =
-        Range(0, 100).map(i => VoteRequested(term = 3, candidateId = s"i$i", lastLogIndex = 0, lastLogTerm = 2))
+        Range(0, nRequests).map(i => VoteRequested(term = 3, candidateId = s"i$i", lastLogIndex = 0, lastLogTerm = 2))
 
       // spin up 100 very closely spaced requestVote RPCs
-      val voteResultFs = Range(0, 100).map(i => Future(voteCallback(voteRequests(i))))
+      val voteResultFs = Range(0, nRequests).map(i => Future(voteCallback(voteRequests(i))))
 
       val voteResults = Future.sequence(voteResultFs).futureValue
 
@@ -50,11 +52,13 @@ class RaftConsensusSpec extends WordSpec {
             currentState.commitIndex + 1))
       }
 
-      val incrementFs = Range(0, 100).map(_ => futureCommitIndexIncrement())
+      val nRequests = 25
+
+      val incrementFs = Range(0, nRequests).map(_ => futureCommitIndexIncrement())
 
       val commitIndices: Seq[Int] = Future.sequence(incrementFs).futureValue
 
-      commitIndices shouldBe Range(0, 100)
+      commitIndices shouldBe Range(0, nRequests)
     }
   }
   "Consensus module" should {
