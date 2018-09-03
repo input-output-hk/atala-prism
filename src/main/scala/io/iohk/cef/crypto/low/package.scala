@@ -18,7 +18,7 @@ package object low {
   /**
     * Represents a cryptographic signature.
     */
-  case class DigitalSignature(val value: ByteString) extends AnyVal
+  class DigitalSignature(val value: ByteString) extends AnyVal
 
   // TODO: Support different key types
   def decodePublicKey(bytes: Array[Byte]): PublicKey = {
