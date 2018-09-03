@@ -14,7 +14,6 @@ import io.iohk.cef.frontend.client.IdentityClientActor.{
 import io.swagger.annotations._
 import javax.ws.rs.Path
 import akka.pattern.ask
-
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 
