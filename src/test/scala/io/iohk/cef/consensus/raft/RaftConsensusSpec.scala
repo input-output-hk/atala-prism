@@ -8,8 +8,9 @@ import org.scalatest.concurrent.ScalaFutures.{convertScalaFuture, whenReady}
 import org.scalatest.mockito.MockitoSugar._
 import org.mockito.Mockito.{inOrder, times, verify, when}
 import org.mockito.ArgumentMatchers.any
+import org.scalatest.time.{Millis, Seconds, Span}
 
-import scala.collection.{mutable}
+import scala.collection.mutable
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -49,10 +50,10 @@ class RaftConsensusSpec extends WordSpec {
       // spin up very closely spaced requests
       val resultsF = Range(0, nRequests).map(_ => Future(fnWithSideEffect()))
 
-      val results = Future.sequence(resultsF).futureValue
-
-      Range(0, nRequests).foreach(i => verify(sideEffect, times(1)).apply(i))
-      results.sorted shouldBe Range(0, nRequests) // sorted since we don't know which of the test Futures 'hit' the node first.
+      whenReady(Future.sequence(resultsF)) { results =>
+        Range(0, nRequests).foreach(i => verify(sideEffect, times(1)).apply(i))
+        results.sorted shouldBe Range(0, nRequests) // sorted since we don't know which of the test Futures 'hit' the node first.
+      }
     }
     "provide sequencing of side effecting Future functions with futureRaftContext" in new MockFixture {
 
@@ -74,10 +75,10 @@ class RaftConsensusSpec extends WordSpec {
 
       val incrementFs = Range(0, nRequests).map(_ => futureFnWithSideEffects())
 
-      val commitIndices: Seq[Int] = Future.sequence(incrementFs).futureValue
-
-      Range(0, nRequests).foreach(i => verify(sideEffect, times(1)).apply(i))
-      commitIndices shouldBe Range(0, nRequests)
+      whenReady(Future.sequence(incrementFs)) { commitIndices =>
+        Range(0, nRequests).foreach(i => verify(sideEffect, times(1)).apply(i))
+        commitIndices shouldBe Range(0, nRequests)
+      }
     }
   }
   "Consensus module" should {
@@ -690,7 +691,10 @@ class RaftConsensusSpec extends WordSpec {
 trait MockFixture {
 
   implicit val ec: ExecutionContext = ExecutionContext.global
-  implicit val patienceConfig: PatienceConfig = PatienceConfig(timeout = 5 seconds)
+  val timeout = Span(5, Seconds)
+  val span = Span(50, Millis)
+  implicit val patienceConfig: PatienceConfig =
+    PatienceConfig(timeout = timeout, interval = span)
 
   type Command = String
   val stateMachine: Command => Unit = mock[Command => Unit]
