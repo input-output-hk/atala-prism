@@ -21,5 +21,8 @@ class IdentityLedgerStateStorageImpl(ledgerStateStorageDao: IdentityLedgerStateS
     }
   }
 
-  protected def execInSession[T](block: DBSession => T): T = DB(ConnectionPool.borrow()).localTx(block)
+  protected def execInSession[T](block: DBSession => T): T =
+    using(ConnectionPool.borrow()) { conn =>
+      DB(conn).localTx(block)
+    }
 }
