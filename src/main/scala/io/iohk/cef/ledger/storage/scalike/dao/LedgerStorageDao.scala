@@ -2,6 +2,7 @@ package io.iohk.cef.ledger.storage.scalike.dao
 
 import java.time.{Clock, Instant}
 
+import io.iohk.cef.LedgerId
 import io.iohk.cef.ledger._
 import io.iohk.cef.ledger.storage.scalike.LedgerTable
 import scalikejdbc._
@@ -10,7 +11,7 @@ class LedgerStorageDao(clock: Clock) {
 
   def push[S,
           Header <: BlockHeader,
-          Tx <: Transaction[S]](ledgerId: Int, block: Block[S, Header, Tx])(
+          Tx <: Transaction[S]](ledgerId: LedgerId, block: Block[S, Header, Tx])(
       implicit blockSerializable: ByteStringSerializable[Block[S, Header, Tx]],
       session: DBSession): Int = {
     val blockColumn = LedgerTable.column

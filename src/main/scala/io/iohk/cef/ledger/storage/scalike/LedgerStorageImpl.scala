@@ -1,5 +1,6 @@
 package io.iohk.cef.ledger.storage.scalike
 
+import io.iohk.cef.LedgerId
 import io.iohk.cef.ledger._
 import io.iohk.cef.ledger.storage.LedgerStorage
 import io.iohk.cef.ledger.storage.scalike.dao.LedgerStorageDao
@@ -11,7 +12,7 @@ class LedgerStorageImpl(ledgerStorageDao: LedgerStorageDao) extends LedgerStorag
 
   override def push[S,
                     Header <: BlockHeader,
-                    Tx <: Transaction[S]](ledgerId: Int, block: Block[S, Header, Tx])(
+                    Tx <: Transaction[S]](ledgerId: LedgerId, block: Block[S, Header, Tx])(
     implicit blockSerializable: ByteStringSerializable[Block[S, Header, Tx]]): Unit = {
     execInSession { implicit session =>
       ledgerStorageDao.push(ledgerId, block)
