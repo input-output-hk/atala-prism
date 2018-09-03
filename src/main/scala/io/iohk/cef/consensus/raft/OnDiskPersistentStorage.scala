@@ -1,6 +1,5 @@
 package io.iohk.cef.consensus.raft
 import java.lang.System.getProperty
-import java.nio.charset.StandardCharsets.UTF_8
 import java.nio.file.{Files, Path, Paths}
 
 import io.iohk.cef.consensus.raft.RaftConsensus.{LogEntry, PersistentStorage}
@@ -18,6 +17,8 @@ class OnDiskPersistentStorage[T: ArrayEncoder: ArrayDecoder](nodeId: String)(
   val storageDir: Path = Paths.get(getProperty("java.io.tmpdir"), "raft", nodeId)
   val logDir: Path = storageDir.resolve("log")
   val stateFile: Path = storageDir.resolve("state")
+  val stateEncoder = ArrayEncoder[(Int, String)]
+  val stateDecoder = ArrayDecoder[(Int, String)]
 
   initializeStorage()
 
@@ -33,14 +34,13 @@ class OnDiskPersistentStorage[T: ArrayEncoder: ArrayDecoder](nodeId: String)(
     writeState(currentTerm, votedFor)
   }
 
-  private def readState: (Int, String) = {
-    val s = new String(Files.readAllBytes(stateFile), UTF_8)
-    val split = s.split(',')
-    (split(0).toInt, if (split.size == 2) split(1) else "")
-  }
+  private def readState: (Int, String) =
+    stateDecoder
+      .decode(Files.readAllBytes(stateFile))
+      .getOrElse(throw new IllegalStateException("The state file has become corrupted."))
 
   private def writeState(term: Int, votedFor: String): Path =
-    Files.write(stateFile, s"$term,$votedFor".getBytes(UTF_8))
+    Files.write(stateFile, stateEncoder.encode(term, votedFor))
 
   private def readLog: Vector[LogEntry[T]] = {
     journal.redo().asScala.flatMap(location => dec.decode(location.getData)).toVector
