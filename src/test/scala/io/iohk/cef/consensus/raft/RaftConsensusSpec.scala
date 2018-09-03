@@ -8,7 +8,6 @@ import org.scalatest.concurrent.ScalaFutures.{convertScalaFuture, whenReady}
 import org.scalatest.mockito.MockitoSugar._
 import org.mockito.Mockito.{inOrder, times, verify, when}
 import org.mockito.ArgumentMatchers.any
-import org.scalactic.source.Position
 import org.scalatest.time.{Millis, Seconds, Span}
 
 import scala.collection.mutable
