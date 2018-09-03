@@ -68,13 +68,14 @@ private[raft] class RaftNode[Command](
   // clientAppendEntries (called from externally)  (async)
   // electionTimeout     (called from a timer)     (async)
 
-  private[raft] def withRaftContext[T](f: RaftContext[Command] => (RaftContext[Command], T)): T = atomic {
-    implicit txn =>
+  private[raft] def withRaftContext[T](f: RaftContext[Command] => (RaftContext[Command], T)): T = this.synchronized {
+    atomic { implicit txn =>
       val initialContext = rc()
       val (nextContext, result) = f(initialContext)
       rc() = nextContext
       Txn.afterCommit(_ => persistState(nextContext))
       result
+    }
   }
 
   private def persistState(rc: RaftContext[Command]): Unit = {
@@ -88,7 +89,7 @@ private[raft] class RaftNode[Command](
     atomic { implicit txn =>
       // by the implementation of Future.flatMap, this will be executed after
       // any existing Future on the sequencer.
-      val nextSeq = sequencer().flatMap(_ => f(rc.single()).map(t => withRaftContext(_ => t)))
+      val nextSeq = sequencer().flatMap(_ => this.synchronized { f(rc.single()).map(t => withRaftContext(_ => t)) })
       // once sequenced, the operation is atomically set at the next Future on the sequencer.
       sequencer() = nextSeq
       nextSeq

@@ -9,7 +9,7 @@ import org.scalatest.mockito.MockitoSugar._
 import org.mockito.Mockito.{inOrder, times, verify, when}
 import org.mockito.ArgumentMatchers.any
 
-import scala.collection.mutable
+import scala.collection.{mutable}
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -34,30 +34,49 @@ class RaftConsensusSpec extends WordSpec {
       // only one vote should be granted.
       voteResults.count(result => result.voteGranted) shouldBe 1
     }
-    "provide invariant state with futureRaftContext" in new MockFixture {
+    "provide sequencing of side effecting functions withRaftContext" in new MockFixture {
+      val raftNode = aRaftNode(new InMemoryPersistentStorage[String](Vector(), currentTerm = 2, votedFor = ""))
+      val nRequests = 10
+      val sideEffect = mock[Int => Unit]
 
-      val persistentStorage =
-        new InMemoryPersistentStorage[String](Vector(), currentTerm = 0, votedFor = "")
+      def fnWithSideEffect(): Int = raftNode.withRaftContext { rc =>
+        val currentState = rc.commonVolatileState
+        val rc2 = rc.copy(commonVolatileState = currentState.copy(commitIndex = currentState.commitIndex + 1))
+        sideEffect(rc2.commonVolatileState.commitIndex)
+        (rc2, currentState.commitIndex + 1)
+      }
 
-      val raftNode = aRaftNode(persistentStorage)
+      // spin up very closely spaced requests
+      val resultsF = Range(0, nRequests).map(_ => Future(fnWithSideEffect()))
+
+      val results = Future.sequence(resultsF).futureValue
+
+      Range(0, nRequests).foreach(i => verify(sideEffect, times(1)).apply(i))
+      results.sorted shouldBe Range(0, nRequests) // sorted since we don't know which of the test Futures 'hit' the node first.
+    }
+    "provide sequencing of side effecting Future functions with futureRaftContext" in new MockFixture {
+
+      val raftNode = aRaftNode(new InMemoryPersistentStorage[String](Vector(), currentTerm = 0, votedFor = ""))
+      val nRequests = 25
+      val sideEffect = mock[Int => Unit]
 
       // a raft leader updates its commit index 'in the future' based on the responses of followers to log replication
       // RPCs. We create a simplified version of this op, which just increments the commitIndex by 1 on every invocation.
       // If invocations are correctly pipelined, the final commitIndex will equal the number of invocations.
-      def futureCommitIndexIncrement(): Future[Int] = raftNode.withFutureRaftContext { rc =>
-        val currentState = rc.commonVolatileState
-        Future(
-          (
-            rc.copy(commonVolatileState = currentState.copy(commitIndex = currentState.commitIndex + 1)),
-            currentState.commitIndex + 1))
+      def futureFnWithSideEffects(): Future[Int] = raftNode.withFutureRaftContext { rc =>
+        Future {
+          val currentState = rc.commonVolatileState
+          val rc2 = rc.copy(commonVolatileState = currentState.copy(commitIndex = currentState.commitIndex + 1))
+          sideEffect(rc2.commonVolatileState.commitIndex)
+          (rc2, currentState.commitIndex + 1)
+        }
       }
 
-      val nRequests = 25
-
-      val incrementFs = Range(0, nRequests).map(_ => futureCommitIndexIncrement())
+      val incrementFs = Range(0, nRequests).map(_ => futureFnWithSideEffects())
 
       val commitIndices: Seq[Int] = Future.sequence(incrementFs).futureValue
 
+      Range(0, nRequests).foreach(i => verify(sideEffect, times(1)).apply(i))
       commitIndices shouldBe Range(0, nRequests)
     }
   }
