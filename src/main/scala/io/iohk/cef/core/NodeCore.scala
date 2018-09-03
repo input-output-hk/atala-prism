@@ -46,7 +46,7 @@ class NodeCore[State, Header <: BlockHeader, Tx <: Transaction[State]](
   private def thisParticipatesInConsensus(ledgerId: LedgerId): Boolean = consensusMap.contains(ledgerId)
 
   private def process[T](txEnvelope: Envelope[T])(submit: Envelope[T] => Future[Either[ApplicationError, Unit]])(
-    implicit byteStringSerializable: ByteStringSerializable[Envelope[T]]): Future[Either[ApplicationError, Unit]] = {
+      implicit byteStringSerializable: ByteStringSerializable[Envelope[T]]): Future[Either[ApplicationError, Unit]] = {
     val disseminationF = networkComponent.disseminate(txEnvelope)
     if (!thisIsDestination(txEnvelope)) {
       disseminationF

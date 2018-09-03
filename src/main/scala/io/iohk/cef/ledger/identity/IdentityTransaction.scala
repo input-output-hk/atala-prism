@@ -10,7 +10,6 @@ sealed trait IdentityTransaction extends Transaction[Set[PublicKey]] {
   val identity: String
   val key: PublicKey
   val signature: DigitalSignature
-  override def hashCode(): Int = (identity.hashCode) + (key.hashCode())
 }
 
 object IdentityTransaction {
