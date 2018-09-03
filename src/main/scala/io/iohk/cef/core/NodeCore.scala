@@ -22,11 +22,11 @@ import scala.concurrent.{ExecutionContext, Future}
   * @tparam Header
   */
 class NodeCore[State, Header <: BlockHeader, Tx <: Transaction[State]](
-    consensusMap: Map[LedgerId, (TransactionPoolFutureInterface[State, Header, Tx], Consensus[State, Tx])],
-    networkComponent: NetworkComponent[State],
-    me: NodeId)(
-    implicit txSerializable: ByteStringSerializable[Envelope[Tx]],
-    blockSerializable: ByteStringSerializable[Envelope[Block[State, Header, Tx]]],
+    val consensusMap: Map[LedgerId, (TransactionPoolFutureInterface[State, Header, Tx], Consensus[State, Tx])],
+    val networkComponent: NetworkComponent[State],
+    val me: NodeId)(
+    implicit txSerializable: ByteStringSerializable[Tx],
+    blockSerializable: ByteStringSerializable[Block[State, Header, Tx]],
     timeout: Timeout,
     executionContext: ExecutionContext) {
 
@@ -46,13 +46,12 @@ class NodeCore[State, Header <: BlockHeader, Tx <: Transaction[State]](
   private def thisParticipatesInConsensus(ledgerId: LedgerId): Boolean = consensusMap.contains(ledgerId)
 
   private def process[T](txEnvelope: Envelope[T])(submit: Envelope[T] => Future[Either[ApplicationError, Unit]])(
-      implicit byteStringSerializable: ByteStringSerializable[Envelope[T]]): Future[Either[ApplicationError, Unit]] = {
+      implicit byteStringSerializable: ByteStringSerializable[T]): Future[Either[ApplicationError, Unit]] = {
     val disseminationF = networkComponent.disseminate(txEnvelope)
     if (!thisIsDestination(txEnvelope)) {
       disseminationF
     } else if (!thisParticipatesInConsensus(txEnvelope.ledgerId)) {
-      val result: Either[ApplicationError, Unit] = Left(MissingCapabilitiesForTx(me, txEnvelope))
-      Future.successful(result)
+      Future.successful(Left(MissingCapabilitiesForTx(me, txEnvelope)))
     } else
       for {
         txProcess <- submit(txEnvelope)
