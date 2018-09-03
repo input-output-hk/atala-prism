@@ -3,15 +3,14 @@ package io.iohk.cef.consensus.raft
 import io.iohk.cef.consensus.raft.RaftConsensus.{VoteRequested, _}
 import org.scalatest.WordSpec
 import org.scalatest.Matchers._
-import org.scalatest.concurrent.Eventually._
+import org.scalatest.concurrent.Eventually.eventually
 import org.scalatest.concurrent.ScalaFutures.{convertScalaFuture, whenReady}
 import org.scalatest.mockito.MockitoSugar._
 import org.mockito.Mockito.{inOrder, times, verify, when}
 import org.mockito.ArgumentMatchers.any
+import org.scalatest.concurrent.{Eventually, ScalaFutures}
 import org.scalatest.time.{Millis, Seconds, Span}
-
 import scala.collection.mutable
-import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 
 class RaftConsensusSpec extends WordSpec {
@@ -693,8 +692,10 @@ trait MockFixture {
   implicit val ec: ExecutionContext = ExecutionContext.global
   val timeout = Span(5, Seconds)
   val span = Span(50, Millis)
-  implicit val patienceConfig: PatienceConfig =
-    PatienceConfig(timeout = timeout, interval = span)
+  implicit val eventuallyPatienceConfig: Eventually.PatienceConfig =
+    Eventually.PatienceConfig(timeout = timeout, interval = span)
+  implicit val futuresPatienceConfig: ScalaFutures.PatienceConfig =
+    ScalaFutures.PatienceConfig(timeout = timeout, interval = span)
 
   type Command = String
   val stateMachine: Command => Unit = mock[Command => Unit]
@@ -794,7 +795,15 @@ trait MockFixture {
 trait IntegratedFixture {
 
   implicit val ec: ExecutionContext = ExecutionContext.global
-  implicit val patienceConfig: PatienceConfig = PatienceConfig(timeout = 5 seconds)
+
+  val timeout = Span(5, Seconds)
+  val span = Span(50, Millis)
+
+  implicit val eventuallyPatienceConfig: Eventually.PatienceConfig =
+    Eventually.PatienceConfig(timeout = timeout, interval = span)
+  implicit val futuresPatienceConfig: ScalaFutures.PatienceConfig =
+    ScalaFutures.PatienceConfig(timeout = timeout, interval = span)
+
   type Command = String
 
   val testNodes = mutable.Map[String, TestNode]()
