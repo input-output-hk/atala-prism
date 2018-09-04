@@ -95,6 +95,7 @@ val compilerOptions = Seq(
 )
 
 val root = project
+  .in(file("."))
   .settings(commonSettings: _*)
   .settings(
     libraryDependencies ++= dep,
