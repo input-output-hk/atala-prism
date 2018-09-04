@@ -36,13 +36,13 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
 
   val timeout = Timeout(1 minute)
 
-  def setupTest(ledgerId: LedgerId, me: NodeId = NodeId(ByteString(1)))(
+  private def setupTest(ledgerId: LedgerId, me: NodeId = NodeId(ByteString(1)))(
       implicit txSerializable: ByteStringSerializable[Tx],
-      blockSerializable: ByteStringSerializable[Block[State, Header, Tx]]): NodeCore[State, Header, Tx] = {
+      blockSerializable: ByteStringSerializable[Block[State, Header, Tx]]) = {
     val consensusMap = Map(ledgerId -> (mockTxPoolFutureInterface, mockConsensus))
     val networkComponent = mockNetworkComponent
     implicit val t = timeout
-    new NodeCore(consensusMap, networkComponent, me)
+    (new NodeCore(consensusMap, networkComponent, me), consensusMap, networkComponent)
   }
 
   behavior of "NodeSpec"
@@ -53,14 +53,14 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
     val testEnvelope = Envelope(testTx, 1, _ => true)
     implicit val bs1 = mockByteStringSerializable
     implicit val bs2 = mockBlockSerializable
-    val core = setupTest(ledgerId)
-    when(core.networkComponent.disseminate(testEnvelope))
+    val (core, consensusMap, networkComponent) = setupTest(ledgerId)
+    when(networkComponent.disseminate(testEnvelope))
       .thenReturn(Future.successful(Right(())))
-    when(core.consensusMap(ledgerId)._1.processTransaction(testEnvelope.content))
+    when(consensusMap(ledgerId)._1.processTransaction(testEnvelope.content))
       .thenReturn(Future.successful(Right(())))
     core.receiveTransaction(testEnvelope).map(r =>{
-      verify(core.networkComponent, times(1)).disseminate(testEnvelope)
-      verify(core.consensusMap(ledgerId)._1, times(1)).processTransaction(testEnvelope.content)
+      verify(networkComponent, times(1)).disseminate(testEnvelope)
+      verify(consensusMap(ledgerId)._1, times(1)).processTransaction(testEnvelope.content)
       r mustBe Right(())
     })
   }
@@ -71,87 +71,102 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
     val testEnvelope = Envelope(testBlock, 1, _ => true)
     implicit val bs1 = mockByteStringSerializable
     implicit val bs2 = mockBlockSerializable
-    val core = setupTest(ledgerId)
-    when(core.networkComponent.disseminate(testEnvelope))
+    val (core, consensusMap, networkComponent) = setupTest(ledgerId)
+    when(networkComponent.disseminate(testEnvelope))
       .thenReturn(Future.successful(Right(())))
-    when(core.consensusMap(ledgerId)._2.process(testEnvelope.content))
+    when(consensusMap(ledgerId)._2.process(testEnvelope.content))
       .thenReturn(Future.successful(Right(())))
     core.receiveBlock(testEnvelope).map(r =>{
-      verify(core.networkComponent, times(1)).disseminate(testEnvelope)
-      verify(core.consensusMap(ledgerId)._2, times(1)).process(testEnvelope.content)
+      verify(networkComponent, times(1)).disseminate(testEnvelope)
+      verify(consensusMap(ledgerId)._2, times(1)).process(testEnvelope.content)
       r mustBe Right(())
     })
   }
 
   it should "avoid processing a block if this is not a receiver" in {
-    val (testBlockEnvelope, _, core, _, ledgerId, _, bs, error) = setupMissingCapabilitiesTest(_ => false)
-    implicit val serializable = bs
-    when(core.networkComponent.disseminate(testBlockEnvelope))
+    implicit val bs1 = mockByteStringSerializable
+    implicit val bs2 = mockBlockSerializable
+    val ledgerId = 1
+    val me = NodeId(ByteString("Me"))
+    val (core, consensusMap, networkComponent) = setupTest(ledgerId, me)
+    val (testBlockEnvelope, _, error) = setupMissingCapabilitiesTest(ledgerId, core, _ => false, me)
+    when(networkComponent.disseminate(testBlockEnvelope))
       .thenReturn(Future.successful(error))
     for {
       rcv <- core.receiveBlock(testBlockEnvelope)
     } yield {
-      verify(core.networkComponent, times(1)).disseminate(testBlockEnvelope)
-      verify(core.consensusMap(ledgerId)._2, times(0)).process(testBlockEnvelope.content)
+      verify(networkComponent, times(1)).disseminate(testBlockEnvelope)
+      verify(consensusMap(ledgerId)._2, times(0)).process(testBlockEnvelope.content)
       rcv mustBe error
     }
   }
 
   it should "avoid processing a tx if this is not a receiver" in {
-    val (_, testTxEnvelope, core, _, ledgerId, bs, _, error) = setupMissingCapabilitiesTest(_ => false)
-    implicit val serializable = bs
-    when(core.networkComponent.disseminate(testTxEnvelope))
+    implicit val bs1 = mockByteStringSerializable
+    implicit val bs2 = mockBlockSerializable
+    val ledgerId = 1
+    val me = NodeId(ByteString("Me"))
+    val (core, consensusMap, networkComponent) = setupTest(ledgerId, me)
+    val (_, testTxEnvelope, error) = setupMissingCapabilitiesTest(ledgerId, core, _ => false, me)
+    when(networkComponent.disseminate(testTxEnvelope))
       .thenReturn(Future.successful(error))
     for {
       rcv <- core.receiveTransaction(testTxEnvelope)
     } yield {
-      verify(core.networkComponent, times(1)).disseminate(testTxEnvelope)
-      verify(core.consensusMap(ledgerId)._1, times(0)).processTransaction(testTxEnvelope.content)
+      verify(networkComponent, times(1)).disseminate(testTxEnvelope)
+      verify(consensusMap(ledgerId)._1, times(0)).processTransaction(testTxEnvelope.content)
       rcv mustBe error
     }
   }
 
   it should "avoid processing a block if the node doesn't participate in consensus" in {
-    val (testBlockTxEnvelope, _, core, me, ledgerId, _, bs, _) = setupMissingCapabilitiesTest(_ => true)
-    implicit val serializable = bs
+    implicit val bs1 = mockByteStringSerializable
+    implicit val bs2 = mockBlockSerializable
+    val ledgerId = 1
+    val me = NodeId(ByteString("Me"))
+    val (core, consensusMap, networkComponent) = setupTest(ledgerId, me)
+    val (testBlockTxEnvelope, _, _) = setupMissingCapabilitiesTest(ledgerId, core, _ => true, me)
     val newEnvelope = testBlockTxEnvelope.copy(ledgerId = ledgerId + 1)
-    when(core.networkComponent.disseminate(newEnvelope))
+    when(networkComponent.disseminate(newEnvelope))
       .thenReturn(Future.successful(Right(())))
     for {
       rcv <- core.receiveBlock(newEnvelope)
     } yield {
-      verify(core.networkComponent, times(1)).disseminate(newEnvelope)
-      verify(core.consensusMap(ledgerId)._2, times(0)).process(newEnvelope.content)
+      verify(networkComponent, times(1)).disseminate(newEnvelope)
+      verify(consensusMap(ledgerId)._2, times(0)).process(newEnvelope.content)
       rcv mustBe Left(MissingCapabilitiesForTx(me, newEnvelope))
     }
   }
 
   it should "avoid processing a tx if the node doesn't participate in consensus" in {
-    val (_, testTxEnvelope, core, me, ledgerId, bs, _, _) = setupMissingCapabilitiesTest(_ => true)
-    implicit val serializable = bs
+    implicit val bs1 = mockByteStringSerializable
+    implicit val bs2 = mockBlockSerializable
+    val ledgerId = 1
+    val me = NodeId(ByteString("Me"))
+    val (core, consensusMap, networkComponent) = setupTest(ledgerId, me)
+    val (_, testTxEnvelope, _) = setupMissingCapabilitiesTest(ledgerId, core, _ => true, me)
     val newEnvelope = testTxEnvelope.copy(ledgerId = ledgerId + 1)
-    when(core.networkComponent.disseminate(newEnvelope))
+    when(networkComponent.disseminate(newEnvelope))
       .thenReturn(Future.successful(Right(())))
     for {
       rcv <- core.receiveTransaction(newEnvelope)
     } yield {
-      verify(core.networkComponent, times(1)).disseminate(newEnvelope)
-      verify(core.consensusMap(ledgerId)._1, times(0)).processTransaction(newEnvelope.content)
+      verify(networkComponent, times(1)).disseminate(newEnvelope)
+      verify(consensusMap(ledgerId)._1, times(0)).processTransaction(newEnvelope.content)
       rcv mustBe Left(MissingCapabilitiesForTx(me, newEnvelope))
     }
   }
 
-  private def setupMissingCapabilitiesTest(destinationDescriptor: DestinationDescriptor) = {
+  private def setupMissingCapabilitiesTest(ledgerId: LedgerId, core: NodeCore[String, DummyBlockHeader, DummyTransaction], destinationDescriptor: DestinationDescriptor, me: NodeId)(
+    implicit txSerializable: ByteStringSerializable[Tx],
+    blockSerializable: ByteStringSerializable[Block[State, Header, Tx]]) = {
     val testTx = DummyTransaction(10)
     val testBlock = Block(DummyBlockHeader(1), immutable.Seq(testTx))
     val ledgerId = 1
     val testBlockEnvelope = Envelope(testBlock, 1, destinationDescriptor)
     val testTxEnvelope = Envelope(testTx, 1, destinationDescriptor)
-    val me = NodeId(ByteString("Me"))
-    implicit val bs1 = mockByteStringSerializable
-    implicit val bs2 = mockBlockSerializable
     val core = setupTest(ledgerId, me)
     val error = Left(new NetworkError {})
-    (testBlockEnvelope, testTxEnvelope, core, me, ledgerId, bs1, bs2, error)
+    (testBlockEnvelope, testTxEnvelope, error)
   }
 }

@@ -1,5 +1,4 @@
 package io.iohk.cef.core
-import akka.util.Timeout
 import io.iohk.cef.LedgerId
 import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.error.ApplicationError
@@ -22,19 +21,18 @@ import scala.concurrent.{ExecutionContext, Future}
   * @tparam Header
   */
 class NodeCore[State, Header <: BlockHeader, Tx <: Transaction[State]](
-    val consensusMap: Map[LedgerId, (TransactionPoolFutureInterface[State, Header, Tx], Consensus[State, Tx])],
-    val networkComponent: NetworkComponent[State],
-    val me: NodeId)(
+    consensusMap: Map[LedgerId, (TransactionPoolFutureInterface[State, Header, Tx], Consensus[State, Tx])],
+    networkComponent: NetworkComponent[State],
+    me: NodeId)(
     implicit txSerializable: ByteStringSerializable[Tx],
     blockSerializable: ByteStringSerializable[Block[State, Header, Tx]],
-    timeout: Timeout,
     executionContext: ExecutionContext) {
 
   def receiveTransaction(txEnvelope: Envelope[Tx]): Future[Either[ApplicationError, Unit]] = {
-    process(txEnvelope)(env => {
+    process(txEnvelope) { env =>
       val txPoolService = consensusMap(env.ledgerId)._1
       txPoolService.processTransaction(txEnvelope.content)
-    })
+    }
   }
 
   def receiveBlock(blEnvelope: Envelope[Block[State, Header, Tx]]): Future[Either[ApplicationError, Unit]] = {
