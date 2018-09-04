@@ -49,7 +49,11 @@ class NodeCore[State, Header <: BlockHeader, Tx <: Transaction[State]](
     if (!thisIsDestination(txEnvelope)) {
       disseminationF
     } else if (!thisParticipatesInConsensus(txEnvelope.ledgerId)) {
-      Future.successful(Left(MissingCapabilitiesForTx(me, txEnvelope)))
+      for {
+        dissemination <- disseminationF
+      } yield {
+        Left(MissingCapabilitiesForTx(me, txEnvelope))
+      }
     } else
       for {
         txProcess <- submit(txEnvelope)
