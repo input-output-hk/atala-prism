@@ -1,5 +1,6 @@
 package io.iohk.cef.ledger.storage.dao
 import akka.util.ByteString
+import io.iohk.cef.LedgerId
 import io.iohk.cef.ledger.storage.scalike.LedgerStateTable
 import io.iohk.cef.ledger.storage.scalike.dao.LedgerStateStorageDao
 import io.iohk.cef.ledger.{ByteStringSerializable, LedgerState}
@@ -11,7 +12,7 @@ import scalikejdbc.scalatest.AutoRollback
 
 trait LedgerStateStorageDaoDbTest extends fixture.FlatSpec with AutoRollback with MustMatchers with MockitoSugar {
 
-  private def insertPairs(ledgerId: Int, pairs: Seq[(String, ByteString)])(implicit DBSession: DBSession) = {
+  private def insertPairs(ledgerId: LedgerId, pairs: Seq[(String, ByteString)])(implicit DBSession: DBSession) = {
     val column = LedgerStateTable.column
     pairs.foreach {
       case (key, serializedValue) =>

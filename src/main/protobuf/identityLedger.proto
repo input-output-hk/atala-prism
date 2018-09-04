@@ -2,11 +2,12 @@ syntax = "proto2";
 
 package io.iohk.cef.ledger.identity.storage.protobuf;
 
-
+// TODO: it might be worth serializing messages individually
 message IdentityTransactionProto {
     required uint32 type = 1;
     required string identity = 2;
     required bytes publicKey = 3;
+    required bytes signature = 4;
 }
 
 message IdentityHeaderProto {

@@ -17,13 +17,16 @@ object DecimalProtoUtils {
   def toProto(bigDecimal: BigDecimal): DecimalProto = {
     val absBigDecimal = bigDecimal.abs
     val signMultiplier = if (bigDecimal < 0) -1L else 1L
-    if (absBigDecimal.scale > MaxScale || absBigDecimal >= MaxNumber) {
+    val intRepresentation = absBigDecimal * BigDecimal(10).pow(bigDecimal.scale)
+    if (absBigDecimal.scale > MaxScale || intRepresentation >= MaxNumber) {
       throw new IllegalArgumentException(
         s"Cannot represent BigDecimal in proto: ${bigDecimal}. Scale: ${bigDecimal.scale}"
       )
     }
-    val intRepresentation = absBigDecimal * BigDecimal(10).pow(bigDecimal.scale)
+    println(s"intRepresentation: $intRepresentation")
     val hi = if (intRepresentation > MaxNumberLow) {
+      println(s"hi: ${(intRepresentation / (MaxNumberLow + 1))}")
+      println(s"hi - long: ${(intRepresentation / (MaxNumberLow + 1)).toLong}")
       (intRepresentation / (MaxNumberLow + 1)).toLong
     } else {
       0L

@@ -3,12 +3,13 @@ package io.iohk.cef.ledger.storage.scalike
 import java.time.Instant
 
 import akka.util.ByteString
+import io.iohk.cef.LedgerId
 import scalikejdbc._
 
 //Ledger
 case class LedgerTable(
     id: Long,
-    ledgerId: Int,
+    ledgerId: LedgerId,
     blockNumber: Long,
     previousBlockId: Long,
     createdOn: Instant,

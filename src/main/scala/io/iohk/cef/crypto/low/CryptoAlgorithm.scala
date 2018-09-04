@@ -1,9 +1,9 @@
 package io.iohk.cef.crypto.low
 
-import java.security.Security
+import java.security.{KeyPairGenerator, PrivateKey, PublicKey, SecureRandom}
+import javax.crypto.Cipher
 
 import akka.util.ByteString
-import org.bouncycastle.jce.provider.BouncyCastleProvider
 
 /**
   * The contract that all encryption / decryption implementations should follow.
@@ -11,9 +11,6 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider
   * Designed for asymmetric encryption only.
   */
 sealed trait CryptoAlgorithm {
-
-  type PublicKey
-  type PrivateKey
 
   type DecryptError
 
@@ -25,7 +22,7 @@ sealed trait CryptoAlgorithm {
     *
     * @return an encrypted version of the `source` bytes
     */
-  def encrypt(source: ByteString, key: PublicKey): ByteString
+  def encrypt(source: ByteString, key: PublicKey): EncryptedData
 
   /**
     * Decrypts the provided `source` bytes with the provided `key`
@@ -35,7 +32,7 @@ sealed trait CryptoAlgorithm {
     *
     * @return a decrypted version of the encrypted `source` if the `key` is able to decrypt it
     */
-  def decrypt(source: ByteString, key: PrivateKey): Either[DecryptError, ByteString]
+  def decrypt(source: EncryptedData, key: PrivateKey): Either[DecryptError, ByteString]
 
   /**
     * Generates a new asymmetric key pair.
@@ -50,60 +47,39 @@ sealed trait CryptoAlgorithm {
   */
 object CryptoAlgorithm {
 
-  Security.addProvider(new BouncyCastleProvider())
-
-  case class RSA(secureRandom: java.security.SecureRandom) extends CryptoAlgorithm {
-    import java.math.BigInteger
-
-    import org.bouncycastle.crypto.engines.RSAEngine
-    import org.bouncycastle.crypto.generators.RSAKeyPairGenerator
-    import org.bouncycastle.crypto.params.AsymmetricKeyParameter
-    import org.bouncycastle.crypto.params.RSAKeyGenerationParameters
-
-    // TODO: use specific type for each key
-    type PublicKey = AsymmetricKeyParameter
-    type PrivateKey = AsymmetricKeyParameter
+  class RSA(secureRandom: SecureRandom) extends CryptoAlgorithm {
 
     // TODO: use a meaningful error
     type DecryptError = Throwable
 
-    override def encrypt(source: ByteString, key: PublicKey): ByteString = {
-      val engine = new RSAEngine()
-      engine.init(true, key)
+    override def encrypt(source: ByteString, key: PublicKey): EncryptedData = {
+      val cipher = Cipher.getInstance("RSA")
+      cipher.init(Cipher.ENCRYPT_MODE, key)
 
-      // TODO: This could be problematic if source is huge. Should be addressed in a safe way
-      val data = source.toArray
-      ByteString(engine.processBlock(data, 0, data.length))
+      // TODO: Find a way to use buffers in order to not crash on huge inputs
+      val data = cipher.doFinal(source.toArray)
+      new EncryptedData(ByteString(data))
     }
 
-    override def decrypt(source: ByteString, key: PrivateKey): Either[DecryptError, ByteString] = {
+    override def decrypt(source: EncryptedData, key: PrivateKey): Either[DecryptError, ByteString] = {
       try {
-        val engine = new RSAEngine()
-        engine.init(false, key)
+        val cipher = Cipher.getInstance("RSA")
+        cipher.init(Cipher.DECRYPT_MODE, key)
 
-        // TODO: This could be problematic if source is huge. Should be addressed in safe way
-        val encryptedBytes = source.toArray
-        val result = ByteString(engine.processBlock(encryptedBytes, 0, encryptedBytes.length))
-        Right(result)
+        // TODO: Find a way to use buffers in order to not crash on huge inputs
+        val result = cipher.doFinal(source.value.toArray)
+        Right(ByteString(result))
       } catch {
         case t: Throwable => Left(t)
       }
     }
 
     override def generateKeyPair: (PublicKey, PrivateKey) = {
-      val generator = new RSAKeyPairGenerator()
+      val generator = KeyPairGenerator.getInstance("RSA")
+      generator.initialize(2048)
+      val keyPair = generator.genKeyPair()
 
-      // TODO: Verify that this is secure
-      val parameters = new RSAKeyGenerationParameters(
-        new BigInteger("10001", 16), //publicExponent
-        secureRandom,
-        4096, //strength
-        80 //certainty
-      )
-      generator.init(parameters)
-      val pair = generator.generateKeyPair()
-      (pair.getPublic, pair.getPrivate)
+      (keyPair.getPublic, keyPair.getPrivate)
     }
   }
-
 }

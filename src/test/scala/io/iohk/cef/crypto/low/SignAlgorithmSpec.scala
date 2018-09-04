@@ -1,38 +1,28 @@
 package io.iohk.cef.crypto.low
 
 import akka.util.ByteString
+import io.iohk.cef.builder.SecureRandomBuilder
+import io.iohk.cef.crypto
+import io.iohk.cef.crypto.low
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
-import org.scalatest.mockito.MockitoSugar
-import org.mockito.Mockito._
+import org.scalatest.prop.PropertyChecks
 
-class SignAlogorithmSpec extends FlatSpec with MockitoSugar {
+class SignAlgorithmSpec extends FlatSpec with PropertyChecks with SecureRandomBuilder {
 
-  "SignAlgorithm.Composed" should "sign and validate properly" in {
+  val (publicKey, privateKey) = new crypto.low.CryptoAlgorithm.RSA(secureRandom).generateKeyPair
+  val (publicKey2, _) = new crypto.low.CryptoAlgorithm.RSA(secureRandom).generateKeyPair
 
-    val message = ByteString("Message")
-    val hashMock = mock[HashAlgorithm]
-    val hashed = ByteString("Hashed")
-    val wrongHashed = ByteString("WrongHashed")
-    when(hashMock.hash(message)).thenReturn(hashed)
+  val algorithms: List[SignAlgorithm] = new low.SignAlgorithm.RSA(secureRandom) :: Nil
 
-    val signKey = ByteString("TheSigningKey")
-    val validateKey = ByteString("TheValidatingKey")
-    val cryptoMock = mock[CryptoAlgorithm { type PublicKey = ByteString; type PrivateKey = ByteString }]
-    val encrypted = ByteString("Encrypted")
-    val wrongEncrypted = ByteString("WrongEncrypted")
-    when(cryptoMock.encrypt(hashed, signKey)).thenReturn(encrypted)
-    when(cryptoMock.decrypt(encrypted, validateKey)).thenReturn(Right(hashed))
-    when(cryptoMock.decrypt(wrongEncrypted, validateKey)).thenReturn(Right(wrongHashed))
-
-    val composedSigningAlgorithm =
-      SignAlgorithm
-        .Composed(cryptoMock, hashMock)
-        .asInstanceOf[SignAlgorithm { type PublicKey = ByteString; type PrivateKey = ByteString }]
-
-    signBytes(composedSigningAlgorithm)(message, signKey) shouldBe encrypted
-    isBytesSignatureValid(composedSigningAlgorithm)(encrypted, message, validateKey) shouldBe true
-    isBytesSignatureValid(composedSigningAlgorithm)(wrongEncrypted, message, validateKey) shouldBe false
+  "all signature algorithms" should "sign and validate properly" in {
+    for (algorithm <- algorithms) {
+      forAll { (string: String) =>
+        val message = ByteString(string)
+        val signature = signBytes(algorithm)(message, privateKey)
+        isBytesSignatureValid(algorithm)(signature, message, publicKey) shouldBe true
+        isBytesSignatureValid(algorithm)(signature, message, publicKey2) shouldBe false
+      }
+    }
   }
-
 }

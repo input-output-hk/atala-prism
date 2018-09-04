@@ -178,7 +178,7 @@ class ChimericLedgerStateStorageDao {
         sql"""
           insert into ${ChimericValueEntryTable.table}
           (${column.ledgerStateEntryId}, ${column.currency}, ${column.amount})
-          values (${entryId}, ${currency}, ${quantity})
+          values (${entryId}, ${currency}, ${quantity.toString})
         """.update().apply()
     }
   }
