@@ -81,15 +81,16 @@ private[raft] class RaftNode[Command](
   // we use the properties of flatMap in conjunction with an atomic swap of
   // the future being mapped over to ensure response invariants.
   private[raft] def withFutureState[T](f: RaftState[Command] => Future[(RaftState[Command], T)]): Future[T] =
-    atomic { implicit txn =>
-      // by the implementation of Future.flatMap, this will be executed after
-      // any existing Future on the sequencer.
-      val nextSeq = sequencer().flatMap(_ => f(raftState.single()).map(t => withState(_ => t)))
-      // once sequenced, the operation is atomically set at the next Future on the sequencer.
-      sequencer() = nextSeq
-      nextSeq
+    this.synchronized {
+      atomic { implicit txn =>
+        // by the implementation of Future.flatMap, this will be executed after
+        // any existing Future on the sequencer.
+        val nextSeq = sequencer().flatMap(_ => f(raftState.single()).map(t => withState(_ => t)))
+        // once sequenced, the operation is atomically set at the next Future on the sequencer.
+        sequencer() = nextSeq
+        nextSeq
+      }
     }
-
 
   // node entry points
   // appendEntries       (called from rpc inbound) (not async)
@@ -97,7 +98,6 @@ private[raft] class RaftNode[Command](
   // heartbeatTimeout    (called from a timer)     (async)
   // clientAppendEntries (called from externally)  (async)
   // electionTimeout     (called from a timer)     (async)
-
 
   // Handler for client requests
   // This happens withFutureRaftContext because log entries cannot be committed until
