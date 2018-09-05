@@ -157,12 +157,14 @@ package object raft {
     * A JDK based timer with random timeouts between 150 and 300 ms,
     * generally suitable for LANs.
     */
+  // FIXME: remove magic numbers.
   val defaultElectionTimerFactory: RaftTimerFactory =
     timeoutHandler => new BouncyTimer(150 millis, 300 millis)(timeoutHandler)
 
   /**
     * A JDK based timer with a fixed, 75 ms timeout.
     */
+  // FIXME: remove magic numbers.
   val defaultHeartbeatTimerFactory: RaftTimerFactory =
     timeoutHandler => new BouncyTimer(75 millis, 75 millis)(timeoutHandler)
 
