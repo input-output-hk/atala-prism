@@ -1,14 +1,13 @@
 package io.iohk.cef.crypto.low
 
+import java.security.{PrivateKey, PublicKey, SecureRandom, Signature}
+
 import akka.util.ByteString
 
 /**
   * Contract all signing algorithm implementations should follow
   */
 sealed trait SignAlgorithm {
-
-  type PublicKey
-  type PrivateKey
 
   /**
     * Computes the signature for the provided `source` bytes, using the provided `key`
@@ -18,7 +17,7 @@ sealed trait SignAlgorithm {
     *
     * @return a cryptographic signature for the provided `source` bytes
     */
-  def sign(source: ByteString, key: PrivateKey): ByteString
+  def sign(source: ByteString, key: PrivateKey): DigitalSignature
 
   /**
     * Validates the `signature` of the provided `source` bytes, using the provided `key`
@@ -30,7 +29,7 @@ sealed trait SignAlgorithm {
     * @return `true` if the `signature` corresponds to the `source` when validated using
     *         the provided `key`, `false` otherwise
     */
-  def isSignatureValid(signature: ByteString, source: ByteString, key: PublicKey): Boolean
+  def isSignatureValid(signature: DigitalSignature, source: ByteString, key: PublicKey): Boolean
 
 }
 
@@ -39,28 +38,32 @@ sealed trait SignAlgorithm {
   */
 object SignAlgorithm {
 
-  /**
-    * `SignAlgorithm` based on the composition of a `CryptoAlgorithm` and a `HashAlgorithm`
-    *
-    * @param cryptoAlgorithm  used to encrypt the signature, allowing the validation of the
-    *                         signature author
-    * @param hashAlgorithm    used to ensure the content of the message has not been meddled
-    *                         with
-    */
-  case class Composed(cryptoAlgorithm: CryptoAlgorithm, hashAlgorithm: HashAlgorithm) extends SignAlgorithm {
-    type PublicKey = cryptoAlgorithm.PrivateKey
-    type PrivateKey = cryptoAlgorithm.PublicKey
+  private val Algorithm = "SHA256withRSA"
 
-    /** @inheritdoc */
-    def sign(source: ByteString, key: PrivateKey): ByteString =
-      cryptoAlgorithm.encrypt(hashAlgorithm.hash(source), key)
+  class RSA(secureRandom: SecureRandom) extends SignAlgorithm {
+    override def sign(source: ByteString, key: PrivateKey): DigitalSignature = {
+      val signer = Signature.getInstance(Algorithm)
+      signer.initSign(key)
 
-    /** @inheritdoc */
-    def isSignatureValid(signature: ByteString, source: ByteString, key: PublicKey): Boolean =
-      cryptoAlgorithm
-        .decrypt(signature, key)
-        .toOption
-        .contains(hashAlgorithm.hash(source))
+      // TODO: Find a way to use buffers in order to not crash on huge inputs
+      signer.update(source.toArray)
 
+      val result = signer.sign()
+      new DigitalSignature(ByteString(result))
+    }
+
+    override def isSignatureValid(signature: DigitalSignature, source: ByteString, key: PublicKey): Boolean = {
+      val signer = Signature.getInstance(Algorithm)
+      signer.initVerify(key)
+
+      // TODO: Find a way to use buffers in order to not crash on huge inputs
+      signer.update(source.toArray)
+
+      try {
+        signer.verify(signature.value.toArray)
+      } catch {
+        case _: Throwable => false
+      }
+    }
   }
 }

@@ -1,7 +1,11 @@
 package io.iohk.cef.frontend.client
 
+import java.security.interfaces.RSAPublicKey
+import java.util.Base64
+
 import akka.actor.Actor
 import akka.util.ByteString
+import com.sun.org.apache.xml.internal.security.transforms.implementations.TransformBase64Decode
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.ledger.identity.{Claim, IdentityBlockHeader, IdentityTransaction}
 import io.iohk.cef.ledger.{BlockHeader, Transaction}
@@ -30,6 +34,7 @@ class IdentityTransactionClientActor(nodeCore: NodeCore[Set[ByteString], Identit
 
   private def processTransaction(transactionRequest: TransactionRequest)(
       implicit ec: ExecutionContext): Future[TransactionResponse] = {
+
     val tx = Claim(identity = transactionRequest.identity, key = ByteString(transactionRequest.key))
     val envelope = Envelope(content = tx, ledgerId = transactionRequest.ledgerId)
     nodeCore.receiveTransaction(envelope) map {

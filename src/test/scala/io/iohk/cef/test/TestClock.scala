@@ -11,9 +11,11 @@ import scala.concurrent.duration._
   * @param tickOnReturn If the clock should advance after the instant() is requested
   * @param defaultTickSize The default step size for the clock tick.
   */
-case class TestClock(private var currentTime: Instant = Instant.ofEpochMilli(0),
-                private val tickOnReturn: Boolean = false,
-                private val defaultTickSize: FiniteDuration = 1.milli) extends Clock {
+case class TestClock(
+    private var currentTime: Instant = Instant.ofEpochMilli(0),
+    private val tickOnReturn: Boolean = false,
+    private val defaultTickSize: FiniteDuration = 1.milli)
+    extends Clock {
 
   override def withZone(zone: ZoneId): Clock = ???
 
@@ -21,7 +23,7 @@ case class TestClock(private var currentTime: Instant = Instant.ofEpochMilli(0),
 
   override def instant(): Instant = {
     val now = currentTime
-    if(tickOnReturn) tick
+    if (tickOnReturn) tick
     now
   }
 

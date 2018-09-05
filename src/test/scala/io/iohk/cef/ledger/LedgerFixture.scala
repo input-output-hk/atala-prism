@@ -8,7 +8,8 @@ import scala.util.Try
 
 trait LedgerFixture {
 
-  def createLedger[S](stateStorage: LedgerStateStorage[S], storage: LedgerStorage)(implicit dBSession: DBSession): Ledger[Try, S] = {
+  def createLedger[S](stateStorage: LedgerStateStorage[S], storage: LedgerStorage)(
+      implicit dBSession: DBSession): Ledger[Try, S] = {
     implicit val forExpEnabler = ForExpressionsEnabler.tryEnabler
     Ledger(1, storage, stateStorage)
   }

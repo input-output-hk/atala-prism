@@ -38,18 +38,19 @@ class StreamCodecsSpec extends FlatSpec {
     cs <- listOf(genC)
   } yield Random.shuffle(as ::: bs ::: cs)
 
-  private case class TestData(address: String,
-                              asBsCs: List[Any],
-                              netBuffer: ByteBuffer,
-                              as: Seq[A],
-                              bs: Seq[B],
-                              cs: Seq[C],
-                              aHandler: (String, A) => Unit,
-                              bHandler: (String, B) => Unit,
-                              cHandler: (String, C) => Unit,
-                              aDecoderFn: MessageApplication[String],
-                              bDecoderFn: MessageApplication[String],
-                              cDecoderFn: MessageApplication[String])
+  private case class TestData(
+      address: String,
+      asBsCs: List[Any],
+      netBuffer: ByteBuffer,
+      as: Seq[A],
+      bs: Seq[B],
+      cs: Seq[C],
+      aHandler: (String, A) => Unit,
+      bHandler: (String, B) => Unit,
+      cHandler: (String, C) => Unit,
+      aDecoderFn: MessageApplication[String],
+      bDecoderFn: MessageApplication[String],
+      cDecoderFn: MessageApplication[String])
 
   private val genTestData: Gen[TestData] = for {
     sourceAddress <- alphaStr
@@ -73,18 +74,19 @@ class StreamCodecsSpec extends FlatSpec {
     val bDecoderFn = strictMessageApplication(NioDecoder[B], bHandler)
     val cDecoderFn = strictMessageApplication(NioDecoder[C], cHandler)
 
-    TestData(sourceAddress,
-             asBsAndCs,
-             netBuffer,
-             as,
-             bs,
-             cs,
-             aHandler,
-             bHandler,
-             cHandler,
-             aDecoderFn,
-             bDecoderFn,
-             cDecoderFn)
+    TestData(
+      sourceAddress,
+      asBsAndCs,
+      netBuffer,
+      as,
+      bs,
+      cs,
+      aHandler,
+      bHandler,
+      cHandler,
+      aDecoderFn,
+      bDecoderFn,
+      cDecoderFn)
   }
 
   behavior of "StreamCodec"
@@ -96,9 +98,11 @@ class StreamCodecsSpec extends FlatSpec {
       decodeStream(
         address,
         netBuffer,
-        List(strictMessageApplication(NioDecoder[A], aHandler),
-             strictMessageApplication(NioDecoder[B], bHandler),
-             strictMessageApplication(NioDecoder[C], cHandler)))
+        List(
+          strictMessageApplication(NioDecoder[A], aHandler),
+          strictMessageApplication(NioDecoder[B], bHandler),
+          strictMessageApplication(NioDecoder[C], cHandler))
+      )
 
       as.foreach(a => verify(aHandler, atLeastOnce()).apply(address, a))
       bs.foreach(b => verify(bHandler, atLeastOnce()).apply(address, b))
@@ -113,9 +117,10 @@ class StreamCodecsSpec extends FlatSpec {
       val decodeResult = decodeStream(
         address,
         netBuffer,
-        List(lazyMessageApplication(NioDecoder[A], aHandler),
-             lazyMessageApplication(NioDecoder[B], bHandler),
-             lazyMessageApplication(NioDecoder[C], cHandler))
+        List(
+          lazyMessageApplication(NioDecoder[A], aHandler),
+          lazyMessageApplication(NioDecoder[B], bHandler),
+          lazyMessageApplication(NioDecoder[C], cHandler))
       )
 
       verifyZeroInteractions(aHandler)

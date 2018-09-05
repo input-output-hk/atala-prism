@@ -1,11 +1,12 @@
 package io.iohk.cef.ledger.storage
 
+import io.iohk.cef.LedgerId
 import io.iohk.cef.ledger._
 import io.iohk.cef.utils.ForExpressionsEnabler
 
 import scala.language.higherKinds
 
-case class Ledger[F[_], S](ledgerId: Int, ledgerStorage: LedgerStorage, ledgerStateStorage: LedgerStateStorage[S])(
+case class Ledger[F[_], S](ledgerId: LedgerId, ledgerStorage: LedgerStorage, ledgerStateStorage: LedgerStateStorage[S])(
     implicit adapter: ForExpressionsEnabler[F]) {
 
   import adapter._

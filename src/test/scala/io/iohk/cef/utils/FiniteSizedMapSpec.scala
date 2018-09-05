@@ -13,7 +13,7 @@ class FiniteSizedMapSpec extends FlatSpec with PropertyChecks with MustMatchers 
   "A FiniteSizedMap" should "retrieve keys that were added" in {
     forAll { (s1: String, s2: String, expMilli: Int) =>
       whenever(s1 != s2 && expMilli >= 0) {
-        val map = new FiniteSizedMap[String,Int](1, expMilli milli, Clock.systemUTC())
+        val map = new FiniteSizedMap[String, Int](1, expMilli milli, Clock.systemUTC())
         map.size mustBe 0
         map.put(s1, 1)
         map.size mustBe 1
@@ -24,7 +24,7 @@ class FiniteSizedMapSpec extends FlatSpec with PropertyChecks with MustMatchers 
   }
 
   it should "be empty when created" in {
-    val map = new FiniteSizedMap[String,Int](1, 10 milli, Clock.systemUTC())
+    val map = new FiniteSizedMap[String, Int](1, 10 milli, Clock.systemUTC())
     map.size mustBe 0
     map.values.size mustBe 0
   }
@@ -32,13 +32,13 @@ class FiniteSizedMapSpec extends FlatSpec with PropertyChecks with MustMatchers 
   it should "drop values already expired" in {
     val expiration = 1 milli
     val mockClock = new TestClock(defaultTickSize = expiration, tickOnReturn = false)
-    forAll {
-      (values: Map[String, Int]) => {
+    forAll { (values: Map[String, Int]) =>
+      {
         whenever(values.nonEmpty) {
-          val map = new FiniteSizedMap[String,Int](values.size, expiration, mockClock)
+          val map = new FiniteSizedMap[String, Int](values.size, expiration, mockClock)
           values.foreach(value => map.put(value._1, value._2))
           map.size mustBe values.size
-          values.foreach{
+          values.foreach {
             case (key, value) => map.get(key) mustBe Some(value)
           }
           map.dropExpired.size mustBe 0
@@ -57,10 +57,10 @@ class FiniteSizedMapSpec extends FlatSpec with PropertyChecks with MustMatchers 
   it should "disregard keys when full and none has expired" in {
     val expiration = 1 milli
     val mockClock = new TestClock(defaultTickSize = expiration, tickOnReturn = false)
-    forAll {
-      (values: Map[String, Int]) => {
+    forAll { (values: Map[String, Int]) =>
+      {
         whenever(values.size > 1) {
-          val map = new FiniteSizedMap[String,Int](values.size - 1, expiration, mockClock)
+          val map = new FiniteSizedMap[String, Int](values.size - 1, expiration, mockClock)
           val lastToAdd = values.head
           values.tail.foreach(value => map += ((value._1, value._2)))
           map.size mustBe values.tail.size
@@ -76,10 +76,10 @@ class FiniteSizedMapSpec extends FlatSpec with PropertyChecks with MustMatchers 
   it should "replace keys when full and there is at least one that has expired" in {
     val expiration = 1 milli
     val mockClock = new TestClock(defaultTickSize = expiration, tickOnReturn = false)
-    forAll {
-      (values: Map[String, Int]) => {
+    forAll { (values: Map[String, Int]) =>
+      {
         whenever(values.size > 1) {
-          val map = new FiniteSizedMap[String,Int](values.size - 1, expiration, mockClock)
+          val map = new FiniteSizedMap[String, Int](values.size - 1, expiration, mockClock)
           val lastToAdd = values.head
           values.tail.foreach(value => map += ((value._1, value._2)))
           map.size mustBe values.tail.size

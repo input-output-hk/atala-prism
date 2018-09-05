@@ -33,21 +33,21 @@ class PortForward(sourcePort: Int, dest: InetSocketAddress) {
 object PortForward {
 
   /**
-  * ClientThread is responsible for starting forwarding between
-  * the client and the server. It keeps track of the client and
-  * servers sockets that are both closed on input/output error
-  * durinf the forwarding. The forwarding is bidirectional and
-  * is performed by two ForwardThread instances.
-  */
+    * ClientThread is responsible for starting forwarding between
+    * the client and the server. It keeps track of the client and
+    * servers sockets that are both closed on input/output error
+    * durinf the forwarding. The forwarding is bidirectional and
+    * is performed by two ForwardThread instances.
+    */
   class ClientThread(clientSocket: Socket, destHost: String, destPort: Int) extends Thread {
 
     private var forwardingActive: Boolean = false
 
     /**
-    * Establishes connection to the destination server and
-    * starts bidirectional forwarding ot data between the
-    * client and the server.
-    */
+      * Establishes connection to the destination server and
+      * starts bidirectional forwarding ot data between the
+      * client and the server.
+      */
     override def run(): Unit = {
 
       // Connect to the destination server
@@ -96,22 +96,22 @@ object PortForward {
   }
 
   /**
-  * ForwardThread handles the TCP forwarding between a socket
-  * input stream (source) and a socket output stream (dest).
-  * It reads the input stream and forwards everything to the
-  * output stream. If some of the streams fails, the forwarding
-  * stops and the parent is notified to close all its sockets.
-  */
+    * ForwardThread handles the TCP forwarding between a socket
+    * input stream (source) and a socket output stream (dest).
+    * It reads the input stream and forwards everything to the
+    * output stream. If some of the streams fails, the forwarding
+    * stops and the parent is notified to close all its sockets.
+    */
   class ForwardThread(parent: ClientThread, inputStream: InputStream, outputStream: OutputStream) extends Thread {
 
     val BUFFER_SIZE: Int = 8192
 
     /**
-    * Runs the thread. Continuously reads the input stream and
-    * writes the read data to the output stream. If reading or
-    * writing fail, exits the thread and notifies the parent
-    * about the failure.
-    */
+      * Runs the thread. Continuously reads the input stream and
+      * writes the read data to the output stream. If reading or
+      * writing fail, exits the thread and notifies the parent
+      * about the failure.
+      */
     override def run(): Unit = {
       val buffer: Array[Byte] = new Array(BUFFER_SIZE)
       try {

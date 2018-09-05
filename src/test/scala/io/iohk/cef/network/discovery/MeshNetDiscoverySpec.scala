@@ -12,13 +12,13 @@ class MeshNetDiscoverySpec extends FlatSpec {
   behavior of "MeshNetworkDiscovery"
 
   ignore should "have an initial routing table containing itself and a bootstrap node" in {
-    val peerInfo = PeerInfo(aRandomNodeId(),
-      ConversationalNetworkConfiguration(Some(TcpTransportConfiguration(aRandomAddress()))))
+    val peerInfo =
+      PeerInfo(aRandomNodeId(), ConversationalNetworkConfiguration(Some(TcpTransportConfiguration(aRandomAddress()))))
 
     val transports = new Transports(peerInfo)
 
-    val bootstrapPeerInfo = PeerInfo(aRandomNodeId(),
-      ConversationalNetworkConfiguration(Some(TcpTransportConfiguration(aRandomAddress()))))
+    val bootstrapPeerInfo =
+      PeerInfo(aRandomNodeId(), ConversationalNetworkConfiguration(Some(TcpTransportConfiguration(aRandomAddress()))))
 
     val discovery = new MeshNetDiscovery(peerInfo, bootstrapPeerInfo, transports)
 
@@ -29,7 +29,6 @@ class MeshNetDiscoverySpec extends FlatSpec {
   it should "bootstrap with a self lookup" in pending
 
   it should "perform iterative lookups on the bootstrap result until converging" in pending
-
 
   it should "respond to a FindNodes request with the closest nodes in its routing table" in pending
 

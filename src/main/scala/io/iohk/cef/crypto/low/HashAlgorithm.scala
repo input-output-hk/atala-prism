@@ -1,7 +1,10 @@
 package io.iohk.cef.crypto.low
 
+import java.security.Security
+
 import akka.util.ByteString
 import org.bouncycastle.crypto.digests.KeccakDigest
+import org.bouncycastle.jce.provider.BouncyCastleProvider
 
 /**
   * Contract all hashing algorithm implementations should follow
@@ -43,6 +46,8 @@ sealed trait ArrayBasedHashAlgorithm extends HashAlgorithm {
   * Companion object to HashAlgorithm, containing all the implemented `HashAlgorithm`
   */
 object HashAlgorithm {
+
+  Security.addProvider(new BouncyCastleProvider)
 
   /**
     * Implementation of the `kec256` `HashAlgorithm`
