@@ -61,7 +61,7 @@ private[raft] class RaftNode[Command](
   def getLeaderVolatileState: LeaderVolatileState =
     raftState.single().leaderVolatileState
 
-  // transaction entry points
+  // node entry points
   // appendEntries       (called from rpc inbound) (not async)
   // requestVote         (called from rpc inbound) (not async)
   // heartbeatTimeout    (called from a timer)     (async)
