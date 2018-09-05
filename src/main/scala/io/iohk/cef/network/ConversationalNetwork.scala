@@ -66,7 +66,7 @@ class ConversationalNetwork[Message: NioEncoder: NioDecoder](
 
   private def sendMessage(frame: Frame[Message]): Unit = {
     networkDiscovery
-      .peer(frame.header.dst)
+      .nearestPeerTo(frame.header.dst)
       .foreach(remotePeerInfo => {
         if (usesTcp(peerInfo) && usesTcp(remotePeerInfo))
           tcpNetworkTransport.get

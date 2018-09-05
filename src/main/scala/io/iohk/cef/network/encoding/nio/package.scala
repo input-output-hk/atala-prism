@@ -22,6 +22,9 @@ package object nio extends NativeCodecs with GenericCodecs with StreamCodecs {
     def apply[T](implicit dec: NioDecoder[T]): NioDecoder[T] = dec
   }
 
-  def nioStreamCodec[T](implicit enc: NioEncoder[T], dec: NioStreamDecoder[T]): NioStreamCodec[T] =
+  implicit def nioStreamCodec[T](implicit enc: NioEncoder[T], dec: NioStreamDecoder[T]): NioStreamCodec[T] =
     new NioStreamCodec[T](enc, dec)
+
+  implicit def nioCodec[T](implicit enc: NioEncoder[T], dec: NioDecoder[T]): NioCodec[T] =
+    new NioCodec[T](enc, dec)
 }
