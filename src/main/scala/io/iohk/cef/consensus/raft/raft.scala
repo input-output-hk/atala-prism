@@ -177,7 +177,7 @@ package object raft {
     // The leader handles all client requests
     // (if a client contacts a follower, the follower redirects it to the leader)
     def appendEntries(entries: Seq[Command]): Future[Unit] = {
-      appendEntries(raftNode.getLeader, entries)
+      appendEntries(raftNode.getLeaderRPC, entries)
     }
 
     private def appendEntries(leaderRpc: RPC[Command], entries: Seq[Command]): Future[Unit] = {
@@ -206,7 +206,7 @@ package object raft {
   }
 
   trait RaftNodeInterface[Command] {
-    def getLeader: RPC[Command]
+    def getLeaderRPC: RPC[Command]
   }
 
   /**

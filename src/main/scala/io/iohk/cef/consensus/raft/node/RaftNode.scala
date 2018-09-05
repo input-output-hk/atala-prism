@@ -39,7 +39,7 @@ private[raft] class RaftNode[Command](
 
   val nodeFSM = new RaftFSM[Command](becomeFollower, becomeCandidate, becomeLeader)
 
-  def getLeader: RPC[Command] = {
+  def getLeaderRPC: RPC[Command] = {
     val ctx = raftState.single()
     if (ctx.leaderId.nonEmpty)
       clusterTable(ctx.leaderId)
