@@ -11,7 +11,7 @@ import scala.concurrent.Future.failed
 
 class FutureOpsSpec extends FlatSpec {
 
-  "sequenceForgiving" should "be equivalent to Future.seqence for successful futures" in {
+  "sequenceForgiving" should "be equivalent to Future.sequence for successful futures" in {
     val futures: Seq[Future[Int]] = Seq(Future[Int](1), Future[Int](2))
 
     val futureSequence = Future.sequence(futures).futureValue
