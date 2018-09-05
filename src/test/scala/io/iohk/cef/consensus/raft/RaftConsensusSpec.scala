@@ -39,11 +39,11 @@ class RaftConsensusSpec extends WordSpec {
       val nRequests = 10
       val sideEffect = mock[Int => Unit]
 
-      def fnWithSideEffect(): Int = raftNode.withRaftContext { rc =>
-        val currentState = rc.commonVolatileState
-        val rc2 = rc.copy(commonVolatileState = currentState.copy(commitIndex = currentState.commitIndex + 1))
-        sideEffect(rc2.commonVolatileState.commitIndex)
-        (rc2, currentState.commitIndex + 1)
+      def fnWithSideEffect(): Int = raftNode.withState { rs =>
+        val currentState = rs.commonVolatileState
+        val rs2 = rs.copy(commonVolatileState = currentState.copy(commitIndex = currentState.commitIndex + 1))
+        sideEffect(rs2.commonVolatileState.commitIndex)
+        (rs2, currentState.commitIndex + 1)
       }
 
       // spin up very closely spaced requests
@@ -63,12 +63,12 @@ class RaftConsensusSpec extends WordSpec {
       // a raft leader updates its commit index 'in the future' based on the responses of followers to log replication
       // RPCs. We create a simplified version of this op, which just increments the commitIndex by 1 on every invocation.
       // If invocations are correctly pipelined, the final commitIndex will equal the number of invocations.
-      def futureFnWithSideEffects(): Future[Int] = raftNode.withFutureRaftContext { rc =>
+      def futureFnWithSideEffects(): Future[Int] = raftNode.withFutureState { rs =>
         Future {
-          val currentState = rc.commonVolatileState
-          val rc2 = rc.copy(commonVolatileState = currentState.copy(commitIndex = currentState.commitIndex + 1))
-          sideEffect(rc2.commonVolatileState.commitIndex)
-          (rc2, currentState.commitIndex + 1)
+          val currentState = rs.commonVolatileState
+          val rs2 = rs.copy(commonVolatileState = currentState.copy(commitIndex = currentState.commitIndex + 1))
+          sideEffect(rs2.commonVolatileState.commitIndex)
+          (rs2, currentState.commitIndex + 1)
         }
       }
 

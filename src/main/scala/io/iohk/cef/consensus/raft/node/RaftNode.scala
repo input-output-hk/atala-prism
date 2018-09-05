@@ -29,7 +29,7 @@ private[raft] class RaftNode[Command](
 
   val clusterMembers: Seq[RPC[Command]] = clusterTable.values.toSeq
 
-  private val rc: Ref[RaftState[Command]] = Ref(initialRaftContext())
+  private val raftState: Ref[RaftState[Command]] = Ref(initialRaftState())
 
   private val sequencer: Ref[Future[_]] = Ref(Future(()))
 
@@ -40,7 +40,7 @@ private[raft] class RaftNode[Command](
   val nodeFSM = new RaftFSM[Command](becomeFollower, becomeCandidate, becomeLeader)
 
   def getLeader: RPC[Command] = {
-    val ctx = rc.single()
+    val ctx = raftState.single()
     if (ctx.leaderId.nonEmpty)
       clusterTable(ctx.leaderId)
     else {
@@ -50,16 +50,16 @@ private[raft] class RaftNode[Command](
   }
 
   def getRole: StateCode =
-    rc.single().role.stateCode
+    raftState.single().role.stateCode
 
   def getPersistentState: (Int, String) =
-    rc.single().persistentState
+    raftState.single().persistentState
 
   def getCommonVolatileState: CommonVolatileState[Command] =
-    rc.single().commonVolatileState
+    raftState.single().commonVolatileState
 
   def getLeaderVolatileState: LeaderVolatileState =
-    rc.single().leaderVolatileState
+    raftState.single().leaderVolatileState
 
   // transaction entry points
   // appendEntries       (called from rpc inbound) (not async)
@@ -68,28 +68,22 @@ private[raft] class RaftNode[Command](
   // clientAppendEntries (called from externally)  (async)
   // electionTimeout     (called from a timer)     (async)
 
-  private[raft] def withRaftContext[T](f: RaftState[Command] => (RaftState[Command], T)): T = this.synchronized {
+  private[raft] def withState[T](f: RaftState[Command] => (RaftState[Command], T)): T = this.synchronized {
     atomic { implicit txn =>
-      val initialContext = rc()
+      val initialContext = raftState()
       val (nextContext, result) = f(initialContext)
-      rc() = nextContext
+      raftState() = nextContext
       Txn.afterCommit(_ => persistState(nextContext))
       result
     }
   }
 
-  private def persistState(rc: RaftState[Command]): Unit = {
-    val (term, votedFor) = rc.persistentState
-    persistentStorage.state(term, votedFor)
-    persistentStorage.log(rc.deletes, rc.writes)
-  }
-
   // this function is used by asynchronous entry points (the ones that have to contact other nodes) to atomically update the node state.
-  private[raft] def withFutureRaftContext[T](f: RaftState[Command] => Future[(RaftState[Command], T)]): Future[T] =
+  private[raft] def withFutureState[T](f: RaftState[Command] => Future[(RaftState[Command], T)]): Future[T] =
     atomic { implicit txn =>
       // by the implementation of Future.flatMap, this will be executed after
       // any existing Future on the sequencer.
-      val nextSeq = sequencer().flatMap(_ => this.synchronized { f(rc.single()).map(t => withRaftContext(_ => t)) })
+      val nextSeq = sequencer().flatMap(_ => f(raftState.single()).map(t => withState(_ => t)))
       // once sequenced, the operation is atomically set at the next Future on the sequencer.
       sequencer() = nextSeq
       nextSeq
@@ -101,58 +95,57 @@ private[raft] class RaftNode[Command](
   // A log entry is committed once the leader that created the entry has replicated it on a majority of
   // the servers (e.g., entry 7 in Figure 6)
   // Thus, we can only commit state changes in the Future.
-  def clientAppendEntries(entries: Seq[Command]): Future[Either[Redirect[Command], Unit]] = withFutureRaftContext {
-    rc =>
-      {
-        rc.role.clientAppendEntries(rc, entries).map {
-          case (ctx, response) =>
-            (applyUncommittedLogEntries(ctx), response)
-        }
+  def clientAppendEntries(entries: Seq[Command]): Future[Either[Redirect[Command], Unit]] = withFutureState { rs =>
+    {
+      rs.role.clientAppendEntries(rs, entries).map {
+        case (ctx, response) =>
+          (applyUncommittedLogEntries(ctx), response)
       }
+    }
   }
 
   // Handler for inbound appendEntries RPCs from leaders.
-  def appendEntries(entriesToAppend: EntriesToAppend[Command]): AppendEntriesResult = withRaftContext { rc =>
-    val rc2 = rulesForServersAllServers2(rc, entriesToAppend.term)
-    val (rc3, appendResult) = rc2.role.appendEntries(rc2, entriesToAppend)
-    val rc4 = applyUncommittedLogEntries(rc3)
-    (rc4, appendResult)
+  def appendEntries(entriesToAppend: EntriesToAppend[Command]): AppendEntriesResult = withState { rs =>
+    val rs2 = rulesForServersAllServers2(rs, entriesToAppend.term)
+    val (rs3, appendResult) = rs2.role.appendEntries(rs2, entriesToAppend)
+    val rs4 = applyUncommittedLogEntries(rs3)
+    (rs4, appendResult)
   }
 
   // Handler for inbound requestVote RPCs from candidates.
-  def requestVote(voteRequested: VoteRequested): RequestVoteResult = withRaftContext { rc =>
-    getVoteResult(rulesForServersAllServers2(rc, voteRequested.term), voteRequested)
+  def requestVote(voteRequested: VoteRequested): RequestVoteResult = withState { rs =>
+    getVoteResult(rulesForServersAllServers2(rs, voteRequested.term), voteRequested)
   }
 
   private def electionTimeout(): Unit = {
-    withRaftContext(rc => (nodeFSM.apply(rc, ElectionTimeout), ()))
-    withFutureRaftContext(rc => requestVotes(rc))
+    withState(rs => (nodeFSM.apply(rs, ElectionTimeout), ()))
+    withFutureState(rs => requestVotes(rs))
   }
 
   private def heartbeatTimeout(): Unit = {
-    withFutureRaftContext(rc => sendHeartbeat(rc))
+    withFutureState(rs => sendHeartbeat(rs))
   }
 
-  private def sendHeartbeat(rc: RaftState[Command]): Future[(RaftState[Command], Unit)] = {
-    rc.role.clientAppendEntries(rc, Seq()).map { case (ctx, _) => (ctx, ()) }
+  private def sendHeartbeat(rs: RaftState[Command]): Future[(RaftState[Command], Unit)] = {
+    rs.role.clientAppendEntries(rs, Seq()).map { case (ctx, _) => (ctx, ()) }
   }
 
   private def getVoteResult(
-      rc: RaftState[Command],
+      rs: RaftState[Command],
       voteRequested: VoteRequested): (RaftState[Command], RequestVoteResult) = {
 
-    val (currentTerm, votedFor) = rc.persistentState
-    val (lastLogIndex, lastLogTerm) = lastLogIndexAndTerm(rc.log)
+    val (currentTerm, votedFor) = rs.persistentState
+    val (lastLogIndex, lastLogTerm) = lastLogIndexAndTerm(rs.log)
 
     if (voteRequested.term < currentTerm) { // receiver implementation, note #1
-      (rc, RequestVoteResult(currentTerm, voteGranted = false))
+      (rs, RequestVoteResult(currentTerm, voteGranted = false))
     } else if ((votedFor.isEmpty || votedFor == voteRequested.candidateId)
       && ((lastLogTerm <= voteRequested.lastLogTerm) && (lastLogIndex <= voteRequested.lastLogIndex))) {
       (
-        rc.copy(persistentState = (voteRequested.term, voteRequested.candidateId)),
+        rs.copy(persistentState = (voteRequested.term, voteRequested.candidateId)),
         RequestVoteResult(voteRequested.term, voteGranted = true))
     } else {
-      (rc, RequestVoteResult(currentTerm, voteGranted = false))
+      (rs, RequestVoteResult(currentTerm, voteGranted = false))
     }
   }
 
@@ -161,17 +154,17 @@ private[raft] class RaftNode[Command](
     sequenceForgiving(rpcFutures)
   }
 
-  private def requestVotes(rc: RaftState[Command]): Future[(RaftState[Command], Unit)] = {
-    val (term, _) = rc.persistentState
-    val (lastLogIndex, lastLogTerm) = lastLogIndexAndTerm(rc.log)
+  private def requestVotes(rs: RaftState[Command]): Future[(RaftState[Command], Unit)] = {
+    val (term, _) = rs.persistentState
+    val (lastLogIndex, lastLogTerm) = lastLogIndexAndTerm(rs.log)
     requestVotes(VoteRequested(term, nodeId, lastLogIndex, lastLogTerm)).flatMap(
       votes =>
         if (hasMajority(term, votes)) {
-          val rc2 = nodeFSM(rc, MajorityVoteReceived)
-          log(s"Changing state from ${rc.role.stateCode} to ${rc2.role.stateCode}")
-          sendHeartbeat(rc2)
+          val rs2 = nodeFSM(rs, MajorityVoteReceived)
+          log(s"Changing state from ${rs.role.stateCode} to ${rs2.role.stateCode}")
+          sendHeartbeat(rs2)
         } else
-          Future((rc, ()))
+          Future((rs, ()))
     )
   }
 
@@ -181,31 +174,31 @@ private[raft] class RaftNode[Command](
   // Rules for servers, all servers, note 1.
   // If commitIndex > lastApplied, apply log[lastApplied] to the state machine.
   // (do this recursively until commitIndex == lastApplied)
-  def applyUncommittedLogEntries(rc: RaftState[Command]): RaftState[Command] = {
+  def applyUncommittedLogEntries(rs: RaftState[Command]): RaftState[Command] = {
     @tailrec
     def loop(state: CommonVolatileState[Command]): CommonVolatileState[Command] = {
       if (state.commitIndex > state.lastApplied) {
         val nextApplication = state.lastApplied + 1
-        applyLogEntryToStateMachine(nextApplication, rc.log)
+        applyLogEntryToStateMachine(nextApplication, rs.log)
         loop(state.copy(lastApplied = nextApplication))
       } else {
         state
       }
     }
-    val commonVolatileState = rc.commonVolatileState
+    val commonVolatileState = rs.commonVolatileState
     val nextState = loop(commonVolatileState)
-    rc.copy(commonVolatileState = nextState)
+    rs.copy(commonVolatileState = nextState)
   }
 
   // Rules for servers (figure 2), all servers, note 2.
   // If request (or response) contains term T > currentTerm
   // set currentTerm = T (convert to follower)
-  private def rulesForServersAllServers2(rc: RaftState[Command], term: Int): RaftState[Command] = {
-    val (currentTerm, votedFor) = rc.persistentState
+  private def rulesForServersAllServers2(rs: RaftState[Command], term: Int): RaftState[Command] = {
+    val (currentTerm, votedFor) = rs.persistentState
     if (term > currentTerm) {
-      nodeFSM(rc.copy(persistentState = (term, votedFor)), NodeWithHigherTermDiscovered)
+      nodeFSM(rs.copy(persistentState = (term, votedFor)), NodeWithHigherTermDiscovered)
     } else {
-      rc
+      rs
     }
   }
 
@@ -224,7 +217,7 @@ private[raft] class RaftNode[Command](
     LeaderVolatileState(nextIndex, matchIndex)
   }
 
-  private def initialRaftContext(): RaftState[Command] = {
+  private def initialRaftState(): RaftState[Command] = {
     val (currentTerm, votedFor) = persistentStorage.state
     val log = persistentStorage.log
     RaftState(
@@ -239,9 +232,9 @@ private[raft] class RaftNode[Command](
     )
   }
 
-  private def becomeFollower(rc: RaftState[Command], event: NodeEvent): RaftState[Command] = {
-    log(s"Changing state from ${rc.role.stateCode} to $Follower")
-    rc.copy(role = new Follower(this))
+  private def becomeFollower(rs: RaftState[Command], event: NodeEvent): RaftState[Command] = {
+    log(s"Changing state from ${rs.role.stateCode} to $Follower")
+    rs.copy(role = new Follower(this))
   }
 
   // On conversion to candidate, start election:
@@ -249,13 +242,13 @@ private[raft] class RaftNode[Command](
   // Vote for self
   // Reset election timer
   // Send RequestVote RPCs to all other servers
-  private def becomeCandidate(rc: RaftState[Command], event: NodeEvent): RaftState[Command] = {
-    log(s"Changing state from ${rc.role.stateCode} to $Candidate")
+  private def becomeCandidate(rs: RaftState[Command], event: NodeEvent): RaftState[Command] = {
+    log(s"Changing state from ${rs.role.stateCode} to $Candidate")
     electionTimer.reset()
-    val (currentTerm, _) = rc.persistentState
+    val (currentTerm, _) = rs.persistentState
     val newTerm = currentTerm + 1
     val nextPersistentState = (newTerm, nodeId)
-    rc.copy(role = new Candidate(this), persistentState = nextPersistentState)
+    rs.copy(role = new Candidate(this), persistentState = nextPersistentState)
   }
 
   private def hasMajority(term: Int, votes: Seq[RequestVoteResult]): Boolean = {
@@ -267,12 +260,18 @@ private[raft] class RaftNode[Command](
     log.lastOption.map(lastLogEntry => (lastLogEntry.index, lastLogEntry.term)).getOrElse((-1, -1))
   }
 
-  private def becomeLeader(rc: RaftState[Command], event: NodeEvent): RaftState[Command] = {
-    rc.copy(role = new Leader(this))
+  private def becomeLeader(rs: RaftState[Command], event: NodeEvent): RaftState[Command] = {
+    rs.copy(role = new Leader(this))
   }
 
   private def log(msg: String): Unit = {
     logger.info(s"Node $nodeId - $msg")
+  }
+
+  private def persistState(rs: RaftState[Command]): Unit = {
+    val (term, votedFor) = rs.persistentState
+    persistentStorage.state(term, votedFor)
+    persistentStorage.log(rs.deletes, rs.writes)
   }
 }
 
