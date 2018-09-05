@@ -1,4 +1,4 @@
-package io.iohk.cef.consensus.raft
+package io.iohk.cef.consensus.raft.node
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.Future.successful

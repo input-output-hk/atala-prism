@@ -1,7 +1,7 @@
-package io.iohk.cef.consensus.raft
+package io.iohk.cef.consensus.raft.node
 import java.util.{Timer, TimerTask}
 
-import io.iohk.cef.consensus.raft.RaftConsensus.RaftTimer
+import io.iohk.cef.consensus.raft.RaftTimer
 
 import scala.concurrent.duration.Duration
 import scala.util.Random

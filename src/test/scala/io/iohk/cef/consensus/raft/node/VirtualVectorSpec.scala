@@ -1,4 +1,4 @@
-package io.iohk.cef.consensus.raft
+package io.iohk.cef.consensus.raft.node
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 

@@ -1,7 +1,7 @@
-package io.iohk.cef.consensus.raft
+package io.iohk.cef.consensus.raft.node
 
-import io.iohk.cef.consensus.raft.FutureOps.sequenceForgiving
-import io.iohk.cef.consensus.raft.RaftConsensus._
+import io.iohk.cef.consensus.raft.node.FutureOps.sequenceForgiving
+import io.iohk.cef.consensus.raft._
 
 import scala.annotation.tailrec
 import scala.concurrent.{ExecutionContext, Future}

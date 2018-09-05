@@ -1,6 +1,6 @@
 package io.iohk.cef.consensus.raft
 
-import io.iohk.cef.consensus.raft.RaftConsensus.{VoteRequested, _}
+import io.iohk.cef.consensus.raft.node._
 import org.scalatest.WordSpec
 import org.scalatest.Matchers._
 import org.scalatest.concurrent.Eventually.eventually

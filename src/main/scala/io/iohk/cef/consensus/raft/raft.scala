@@ -1,9 +1,11 @@
-package io.iohk.cef.consensus.raft
+package io.iohk.cef.consensus
+
+import io.iohk.cef.consensus.raft.node._
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 
-object RaftConsensus {
+package object raft {
 
   /**
     * To be implemented by users of the module to provide their desired RPC implementation.

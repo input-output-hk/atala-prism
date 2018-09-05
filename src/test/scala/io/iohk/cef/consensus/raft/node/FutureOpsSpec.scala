@@ -1,6 +1,6 @@
-package io.iohk.cef.consensus.raft
+package io.iohk.cef.consensus.raft.node
 
-import io.iohk.cef.consensus.raft.FutureOps.sequenceForgiving
+import io.iohk.cef.consensus.raft.node.FutureOps.sequenceForgiving
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 import org.scalatest.concurrent.ScalaFutures._

@@ -1,4 +1,4 @@
-package io.iohk.cef.consensus.raft
+package io.iohk.cef.consensus.raft.node
 
 /**
   * The scaladocs state that

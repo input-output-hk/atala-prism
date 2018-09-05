@@ -1,5 +1,5 @@
-package io.iohk.cef.consensus.raft
-import io.iohk.cef.consensus.raft.RaftConsensus.LogEntry
+package io.iohk.cef.consensus.raft.node
+import io.iohk.cef.consensus.raft.LogEntry
 import io.iohk.cef.network.encoding.array.ArrayCodecs._
 import org.apache.commons.io.FileUtils
 import org.scalacheck.Arbitrary.arbitrary

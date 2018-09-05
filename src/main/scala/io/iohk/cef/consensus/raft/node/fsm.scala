@@ -1,6 +1,6 @@
-package io.iohk.cef.consensus.raft
-import io.iohk.cef.consensus.raft.RaftConsensus.RaftState
-import io.iohk.cef.consensus.raft.RaftFSM.Transition
+package io.iohk.cef.consensus.raft.node
+import io.iohk.cef.consensus.raft.RaftState
+import io.iohk.cef.consensus.raft.node.RaftFSM.Transition
 
 sealed trait NodeEvent
 
@@ -27,7 +27,10 @@ class RaftFSM[Command](
   private val followerState: Transition[Command] = eventCatamorphism(electionTimeout = becomeCandidate)
 
   private val candidateState: Transition[Command] =
-    eventCatamorphism(electionTimeout = becomeCandidate, majorityVoteReceived = becomeLeader, leaderDiscovered = becomeFollower)
+    eventCatamorphism(
+      electionTimeout = becomeCandidate,
+      majorityVoteReceived = becomeLeader,
+      leaderDiscovered = becomeFollower)
 
   private val leaderState: Transition[Command] = eventCatamorphism(nodeWithHigherTermDiscovered = becomeFollower)
 
