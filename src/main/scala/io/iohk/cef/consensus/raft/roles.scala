@@ -9,11 +9,11 @@ import scala.concurrent.{ExecutionContext, Future}
 private[raft] sealed trait NodeRole[Command] {
   val stateCode: StateCode
   def appendEntries(
-      rc: RaftContext[Command],
-      entriesToAppend: EntriesToAppend[Command]): (RaftContext[Command], AppendEntriesResult)
+      rc: RaftState[Command],
+      entriesToAppend: EntriesToAppend[Command]): (RaftState[Command], AppendEntriesResult)
   def clientAppendEntries(
-      rc: RaftContext[Command],
-      entries: Seq[Command]): Future[(RaftContext[Command], Either[Redirect[Command], Unit])]
+      rc: RaftState[Command],
+      entries: Seq[Command]): Future[(RaftState[Command], Either[Redirect[Command], Unit])]
 }
 
 case object Follower extends StateCode
@@ -24,15 +24,15 @@ private[raft] class Follower[Command](raftNode: RaftNode[Command])(implicit ec: 
     extends NodeRole[Command] {
 
   override def appendEntries(
-      rc: RaftContext[Command],
-      entriesToAppend: EntriesToAppend[Command]): (RaftContext[Command], AppendEntriesResult) = {
+      rc: RaftState[Command],
+      entriesToAppend: EntriesToAppend[Command]): (RaftState[Command], AppendEntriesResult) = {
     applyAppendEntriesRules1To5(rc, entriesToAppend)
   }
 
   // AppendEntries RPC receiver implementation (figure 2), rules 1-5
   private def applyAppendEntriesRules1To5(
-      rc: RaftContext[Command],
-      entriesToAppend: EntriesToAppend[Command]): (RaftContext[Command], AppendEntriesResult) = {
+      rc: RaftState[Command],
+      entriesToAppend: EntriesToAppend[Command]): (RaftState[Command], AppendEntriesResult) = {
 
     val log = rc.log
     val (currentTerm, _) = rc.persistentState
@@ -155,9 +155,9 @@ private[raft] class Follower[Command](raftNode: RaftNode[Command])(implicit ec: 
   // AppendEntries summary note #5 (if leaderCommit > commitIndex,
   // set commitIndex = min(leaderCommit, index of last new entry)
   private def appendEntriesCommitIndexCheck(
-      rc: RaftContext[Command],
+      rc: RaftState[Command],
       leaderCommitIndex: Int,
-      iLastNewEntry: Int): RaftContext[Command] = {
+      iLastNewEntry: Int): RaftState[Command] = {
     val commitIndex = Math.min(leaderCommitIndex, iLastNewEntry)
 
     if (leaderCommitIndex > rc.commonVolatileState.commitIndex) {
@@ -167,8 +167,8 @@ private[raft] class Follower[Command](raftNode: RaftNode[Command])(implicit ec: 
     }
   }
   override def clientAppendEntries(
-      rc: RaftContext[Command],
-      entries: Seq[Command]): Future[(RaftContext[Command], Either[Redirect[Command], Unit])] =
+      rc: RaftState[Command],
+      entries: Seq[Command]): Future[(RaftState[Command], Either[Redirect[Command], Unit])] =
     Future((rc, Left(Redirect(raftNode.getLeader))))
   override val stateCode: StateCode = Follower
 }
@@ -176,8 +176,8 @@ private[raft] class Follower[Command](raftNode: RaftNode[Command])(implicit ec: 
 private[raft] class Candidate[Command](raftNode: RaftNode[Command])(implicit ec: ExecutionContext)
     extends NodeRole[Command] {
   override def appendEntries(
-      rc: RaftContext[Command],
-      entriesToAppend: EntriesToAppend[Command]): (RaftContext[Command], AppendEntriesResult) = {
+      rc: RaftState[Command],
+      entriesToAppend: EntriesToAppend[Command]): (RaftState[Command], AppendEntriesResult) = {
     // rules for servers, candidates
     // if append entries rpc received from new leader, convert to follower
     val prospectiveLeaderTerm = entriesToAppend.term
@@ -191,8 +191,8 @@ private[raft] class Candidate[Command](raftNode: RaftNode[Command])(implicit ec:
     }
   }
   override def clientAppendEntries(
-      rc: RaftContext[Command],
-      entries: Seq[Command]): Future[(RaftContext[Command], Either[Redirect[Command], Unit])] =
+      rc: RaftState[Command],
+      entries: Seq[Command]): Future[(RaftState[Command], Either[Redirect[Command], Unit])] =
     Future((rc, Left(Redirect(raftNode.getLeader))))
 
   override val stateCode: StateCode = Candidate
@@ -204,8 +204,8 @@ private[raft] class Leader[Command](raftNode: RaftNode[Command])(implicit ec: Ex
   override val stateCode: StateCode = Leader
 
   override def appendEntries(
-      rc: RaftContext[Command],
-      entriesToAppend: EntriesToAppend[Command]): (RaftContext[Command], AppendEntriesResult) = {
+      rc: RaftState[Command],
+      entriesToAppend: EntriesToAppend[Command]): (RaftState[Command], AppendEntriesResult) = {
     val prospectiveLeaderTerm = entriesToAppend.term
     val (currentTerm, _) = rc.persistentState
     if (prospectiveLeaderTerm >= currentTerm) {
@@ -218,8 +218,8 @@ private[raft] class Leader[Command](raftNode: RaftNode[Command])(implicit ec: Ex
   }
 
   override def clientAppendEntries(
-      rc: RaftContext[Command],
-      entries: Seq[Command]): Future[(RaftContext[Command], Either[Redirect[Command], Unit])] = {
+      rc: RaftState[Command],
+      entries: Seq[Command]): Future[(RaftState[Command], Either[Redirect[Command], Unit])] = {
     val log = rc.log
     val (lastLogIndex, _) = raftNode.lastLogIndexAndTerm(log)
     val (currentTerm, _) = rc.persistentState
@@ -236,7 +236,7 @@ private[raft] class Leader[Command](raftNode: RaftNode[Command])(implicit ec: Ex
     sendAppendEntries(rc2).map(rcf => (rcf, Right(())))
   }
 
-  private def sendAppendEntries(rc: RaftContext[Command]): Future[RaftContext[Command]] = {
+  private def sendAppendEntries(rc: RaftState[Command]): Future[RaftState[Command]] = {
     val nextIndexes = rc.leaderVolatileState.nextIndex
     val (currentTerm, _) = rc.persistentState
     val commitIndex = rc.commonVolatileState.commitIndex
@@ -265,7 +265,7 @@ private[raft] class Leader[Command](raftNode: RaftNode[Command])(implicit ec: Ex
   }
 
   private def sendAppendEntry(
-      rc: RaftContext[Command],
+      rc: RaftState[Command],
       nextIndex: Int,
       lastLogIndex: Int,
       memberRPC: RPC[Command]): Future[(Int, Int)] = {
@@ -339,7 +339,7 @@ private[raft] class Leader[Command](raftNode: RaftNode[Command])(implicit ec: Ex
     else
       Some(ns.max)
   }
-  private def getHeartbeat(rc: RaftContext[Command]): EntriesToAppend[Command] = {
+  private def getHeartbeat(rc: RaftState[Command]): EntriesToAppend[Command] = {
     val (currentTerm, _) = rc.persistentState
     val (prevLogIndex, prevLogTerm) = raftNode.lastLogIndexAndTerm(rc.log)
     val commitIndex = rc.commonVolatileState.commitIndex

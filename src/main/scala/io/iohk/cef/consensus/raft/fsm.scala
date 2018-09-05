@@ -1,5 +1,5 @@
 package io.iohk.cef.consensus.raft
-import io.iohk.cef.consensus.raft.RaftConsensus.RaftContext
+import io.iohk.cef.consensus.raft.RaftConsensus.RaftState
 import io.iohk.cef.consensus.raft.RaftFSM.Transition
 
 sealed trait NodeEvent
@@ -12,7 +12,7 @@ case object LeaderDiscovered extends NodeEvent
 trait StateCode
 
 object RaftFSM {
-  type Transition[Command] = (RaftContext[Command], NodeEvent) => RaftContext[Command]
+  type Transition[Command] = (RaftState[Command], NodeEvent) => RaftState[Command]
 }
 
 class RaftFSM[Command](
@@ -22,7 +22,7 @@ class RaftFSM[Command](
 
   private val identity: Transition[Command] = (rc, _) => rc
 
-  private val keyFn: RaftContext[Command] => StateCode = rc => rc.role.stateCode
+  private val keyFn: RaftState[Command] => StateCode = rc => rc.role.stateCode
 
   private val followerState: Transition[Command] = eventCata(electionTimeout = becomeCandidate)
 
@@ -41,7 +41,7 @@ class RaftFSM[Command](
       electionTimeout: Transition[Command] = identity,
       majorityVoteReceived: Transition[Command] = identity,
       nodeWithHigherTermDiscovered: Transition[Command] = identity,
-      leaderDiscovered: Transition[Command] = identity)(rc: RaftContext[Command], e: NodeEvent): RaftContext[Command] =
+      leaderDiscovered: Transition[Command] = identity)(rc: RaftState[Command], e: NodeEvent): RaftState[Command] =
     e match {
       case ElectionTimeout =>
         electionTimeout(rc, e)
@@ -53,6 +53,6 @@ class RaftFSM[Command](
         leaderDiscovered(rc, e)
     }
 
-  def apply(rc: RaftContext[Command], e: NodeEvent): RaftContext[Command] =
+  def apply(rc: RaftState[Command], e: NodeEvent): RaftState[Command] =
     table(keyFn(rc)).apply(rc, e)
 }

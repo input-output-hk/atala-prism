@@ -189,7 +189,7 @@ object RaftConsensus {
   /**
     * Raft server state. See figure 2 for descriptions of fields.
     */
-  case class RaftContext[Command](
+  case class RaftState[Command](
       role: NodeRole[Command],
       commonVolatileState: CommonVolatileState[Command],
       leaderVolatileState: LeaderVolatileState,
