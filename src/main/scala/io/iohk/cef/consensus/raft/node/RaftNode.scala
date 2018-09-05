@@ -61,13 +61,11 @@ private[raft] class RaftNode[Command](
   def getLeaderVolatileState: LeaderVolatileState =
     raftState.single().leaderVolatileState
 
-  // node entry points
-  // appendEntries       (called from rpc inbound) (not async)
-  // requestVote         (called from rpc inbound) (not async)
-  // heartbeatTimeout    (called from a timer)     (async)
-  // clientAppendEntries (called from externally)  (async)
-  // electionTimeout     (called from a timer)     (async)
-
+  // Functions to atomically change the server state.
+  // In the case of pure requests like appendEntries and requestVote,
+  // requests are executed in strict sequence.
+  // This enforces response invariants like only replying in the affirmative
+  // to a requestVote from a single candidate.
   private[raft] def withState[T](f: RaftState[Command] => (RaftState[Command], T)): T = this.synchronized {
     atomic { implicit txn =>
       val initialContext = raftState()
@@ -78,7 +76,10 @@ private[raft] class RaftNode[Command](
     }
   }
 
-  // this function is used by asynchronous entry points (the ones that have to contact other nodes) to atomically update the node state.
+  // In the case of asynchronous entry points, where the answer returned depends
+  // on responses from other nodes (clientAppendEntries and electionTimeout)
+  // we use the properties of flatMap in conjunction with an atomic swap of
+  // the future being mapped over to ensure response invariants.
   private[raft] def withFutureState[T](f: RaftState[Command] => Future[(RaftState[Command], T)]): Future[T] =
     atomic { implicit txn =>
       // by the implementation of Future.flatMap, this will be executed after
@@ -88,6 +89,15 @@ private[raft] class RaftNode[Command](
       sequencer() = nextSeq
       nextSeq
     }
+
+
+  // node entry points
+  // appendEntries       (called from rpc inbound) (not async)
+  // requestVote         (called from rpc inbound) (not async)
+  // heartbeatTimeout    (called from a timer)     (async)
+  // clientAppendEntries (called from externally)  (async)
+  // electionTimeout     (called from a timer)     (async)
+
 
   // Handler for client requests
   // This happens withFutureRaftContext because log entries cannot be committed until
