@@ -24,12 +24,12 @@ class RaftFSM[Command](
 
   private val keyFn: RaftState[Command] => StateCode = rc => rc.role.stateCode
 
-  private val followerState: Transition[Command] = eventCata(electionTimeout = becomeCandidate)
+  private val followerState: Transition[Command] = eventCatamorphism(electionTimeout = becomeCandidate)
 
   private val candidateState: Transition[Command] =
-    eventCata(electionTimeout = becomeCandidate, majorityVoteReceived = becomeLeader, leaderDiscovered = becomeFollower)
+    eventCatamorphism(electionTimeout = becomeCandidate, majorityVoteReceived = becomeLeader, leaderDiscovered = becomeFollower)
 
-  private val leaderState: Transition[Command] = eventCata(nodeWithHigherTermDiscovered = becomeFollower)
+  private val leaderState: Transition[Command] = eventCatamorphism(nodeWithHigherTermDiscovered = becomeFollower)
 
   private val table = Map[StateCode, Transition[Command]](
     Follower -> followerState,
@@ -37,7 +37,7 @@ class RaftFSM[Command](
     Leader -> leaderState
   )
 
-  private def eventCata(
+  private def eventCatamorphism(
       electionTimeout: Transition[Command] = identity,
       majorityVoteReceived: Transition[Command] = identity,
       nodeWithHigherTermDiscovered: Transition[Command] = identity,
