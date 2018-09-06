@@ -1,7 +1,7 @@
-package io.iohk.cef.core
+package io.iohk.cef.network
 import akka.util.ByteString
+import io.iohk.cef.core.Envelope
 import io.iohk.cef.ledger.ByteStringSerializable
-import io.iohk.cef.network.NetworkError
 
 import scala.concurrent.Future
 
