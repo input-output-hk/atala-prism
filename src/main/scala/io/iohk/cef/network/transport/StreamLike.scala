@@ -4,8 +4,10 @@ import monix.execution.Scheduler
 import monix.reactive.Observable
 
 import scala.concurrent.Future
+
 trait StreamLike[T] {
   def map[U](f: T => U): StreamLike[U]
+  def filter(p: T => Boolean): StreamLike[T]
   def fold[U](zero: U)(f: (U, T) => U): Future[U]
   def foreach(f: T => Unit): Future[Unit]
 }
@@ -17,12 +19,12 @@ class MonixStreamLike[T](o: Observable[T]) extends StreamLike[T] {
   override def map[U](f: T => U): StreamLike[U] =
     new MonixStreamLike(o.map(f))
 
+  override def filter(p: T => Boolean): StreamLike[T] =
+    new MonixStreamLike(o.filter(p))
+
   override def fold[U](zero: U)(f: (U, T) => U): Future[U] =
     o.foldLeftL(zero)(f).runAsync
 
   override def foreach(f: T => Unit): Future[Unit] =
     o.foreach(f)
-
-//  override def start(): Unit =
-//    o.subscribe()
 }
