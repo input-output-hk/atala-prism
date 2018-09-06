@@ -1,16 +1,16 @@
 package io.iohk.cef.frontend.client
 
-import java.security.{PublicKey, SecureRandom}
+import java.security.PublicKey
 import java.util.Base64
 
 import akka.actor.Actor
-import akka.util.ByteString
-import io.iohk.cef.error.ApplicationError
-import io.iohk.cef.ledger.identity.{Claim, IdentityBlockHeader, IdentityTransaction}
-import io.iohk.cef.ledger.{BlockHeader, Transaction}
 import akka.pattern.pipe
+import akka.util.ByteString
 import io.iohk.cef.core.Envelope
-import io.iohk.cef.crypto.low.{CryptoAlgorithm, DigitalSignature, decodePublicKey}
+import io.iohk.cef.crypto.low.{DigitalSignature, decodePublicKey}
+import io.iohk.cef.error.ApplicationError
+import io.iohk.cef.ledger.identity._
+import io.iohk.cef.ledger.{BlockHeader, Transaction}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -18,12 +18,7 @@ object IdentityClientActor {
   sealed trait ClientRequest
   sealed trait ClientResponse
 
-  case object Type extends Enumeration(0) {
-    type Type = Value
-    val CLAIM = Value("CLAIM")
-    val LINK = Value("LINK")
-    val UNLINK = Value("UNLINK")
-  }
+
   case class TransactionRequest(`type`: String, identity: String, publicKey: String, signature: String, ledgerId: Int)
       extends ClientRequest // Client Request to capture
   case class TransactionResponse(result: Either[ApplicationError, Unit]) extends ClientResponse
@@ -35,16 +30,36 @@ class IdentityTransactionClientActor(nodeCore: NodeCore[Set[PublicKey], Identity
   import IdentityClientActor._
   import context.dispatcher
   def receive: Receive = {
-    case request @ TransactionRequest("claim", _, _, _, _) => { processTransaction(request).pipeTo(sender()) }
+    case request @ TransactionRequest("claim", _, _, _, _) => {
+      processTransaction(request) {
+        val (key, signature) = getKeyAndSignatureFromRequest(request)
+        Claim(request.identity, key, signature)
+      }.pipeTo(sender())
+    }
+    case request @ TransactionRequest("link", _, _, _, _) => {
+      processTransaction(request) {
+        val (key, signature) = getKeyAndSignatureFromRequest(request)
+        Link(request.identity, key, signature)
+      }.pipeTo(sender())
+    }
+    case request @ TransactionRequest("unlink", _, _, _, _) => {
+      processTransaction(request) {
+        val (key, signature) = getKeyAndSignatureFromRequest(request)
+        Unlink(request.identity, key, signature)
+      }.pipeTo(sender())
+    }
+
   }
 
-  private def processTransaction(transactionRequest: TransactionRequest)(
+  private def processTransaction(transactionRequest: TransactionRequest)(identityTransaction: IdentityTransaction)(
       implicit ec: ExecutionContext): Future[TransactionResponse] = {
+    val envelope = Envelope(content = identityTransaction, ledgerId = transactionRequest.ledgerId, _ => true)
+    nodeCore.receiveTransaction(envelope) map TransactionResponse
+  }
+  private def getKeyAndSignatureFromRequest(transactionRequest: TransactionRequest) = {
     val key: PublicKey = decodePublicKey(Base64.getDecoder.decode(transactionRequest.publicKey.getBytes))
     val signature: DigitalSignature = new DigitalSignature(ByteString(transactionRequest.signature))
-    val tx = Claim(identity = transactionRequest.identity, key = key, signature = signature)
-    val envelope = Envelope(content = tx, ledgerId = transactionRequest.ledgerId, _ => true)
-    nodeCore.receiveTransaction(envelope) map TransactionResponse
+    (key, signature)
   }
 }
 
@@ -54,10 +69,3 @@ class NodeCore[State, Header <: BlockHeader, Tx <: Transaction[State]] {
     Future.successful(Right(()))
 
 }
-
-//class Frontend[State, Header <: BlockHeader, Tx <: Transaction[State]](nodeCore: NodeCore[State, Header, Tx]) {
-//
-//  def processTx(transaction: Tx, ledgerId: LedgerId): Unit = {
-//    nodeCore.receiveTransaction(Envelope(transaction, ledgerId, _ => true))
-//  }
-//}

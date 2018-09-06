@@ -30,5 +30,5 @@ case class Swagger(system: ActorSystem) extends SwaggerHttpService {
   override val securitySchemeDefinitions: Map[String, ApiKeyAuthDefinition] = Map("apiKey" -> apiKey)
 
   override def info: Info =
-    new Info("Swagger Akka HTTP Demo Application...", "1.0", "Swagger API", "", None, None, Map.empty)
+    new Info("Swagger  Application...", "1.0", "Swagger API", "", None, None, Map.empty)
 }
