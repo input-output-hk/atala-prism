@@ -83,7 +83,7 @@ class IdentityTransactionSpec
     result mustBe UnableToVerifySignatureError
   }
 
-  it should "fail to apply a unlink if the signature can not be verified" in {
+  it should "fail to apply an unlink if the signature can not be verified" in {
     val pair1 = generateKeyPair
 
     val state = IdentityLedgerState(Map("one" -> Set(pair1._1)))
