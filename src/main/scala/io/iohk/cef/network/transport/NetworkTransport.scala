@@ -1,4 +1,5 @@
 package io.iohk.cef.network.transport
+import monix.reactive.Observable
 
 object NetworkTransport {
   class TransportInitializationException extends RuntimeException
@@ -6,10 +7,8 @@ object NetworkTransport {
 
 /**
   * NetworkTransports define a p2p abstraction over TCP, TLS, UDP, RLPx, etc.
-  *
-  * @param messageHandler The messageHandler receives inbound messages from peers.
   */
-abstract class NetworkTransport[Address, Message](messageHandler: (Address, Message) => Unit) {
+trait NetworkTransport[Address, Message] {
 
   /**
     * Send a message to another peer.
@@ -18,4 +17,9 @@ abstract class NetworkTransport[Address, Message](messageHandler: (Address, Mess
     * @param message the message body itself.
     */
   def sendMessage(address: Address, message: Message): Unit
+
+  /**
+    * Get the inbound message stream.
+    */
+  def monixMessageStream: Observable[Message]
 }

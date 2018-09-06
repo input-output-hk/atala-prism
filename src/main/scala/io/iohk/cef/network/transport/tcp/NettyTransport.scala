@@ -2,7 +2,8 @@ package io.iohk.cef.network.transport.tcp
 
 import java.net.InetSocketAddress
 import java.nio.ByteBuffer
-import java.util.concurrent.CopyOnWriteArrayList
+import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 
 import io.iohk.cef.network.encoding.nio.StreamCodecs.MessageApplication
 import io.iohk.cef.network.encoding.nio.{NioDecoder, _}
@@ -17,7 +18,7 @@ import scala.collection.JavaConverters._
 
 private[network] class NettyTransport(address: InetSocketAddress) {
 
-  private val messageApplications = new CopyOnWriteArrayList[MessageApplication[InetSocketAddress]]()
+  private val messageApplications = new ConcurrentHashMap[UUID, MessageApplication[InetSocketAddress]]().asScala
 
   new ServerBootstrap()
     .group(new NioEventLoopGroup, new NioEventLoopGroup)
@@ -34,8 +35,14 @@ private[network] class NettyTransport(address: InetSocketAddress) {
 
   def withMessageApplication[Message](
       decoder: NioDecoder[Message],
-      handler: (InetSocketAddress, Message) => Unit): Unit =
-    messageApplications.add(StreamCodecs.lazyMessageApplication(decoder, handler))
+      handler: (InetSocketAddress, Message) => Unit): UUID = {
+    val uuid = UUID.randomUUID()
+    messageApplications.put(uuid, StreamCodecs.lazyMessageApplication(decoder, handler))
+    uuid
+  }
+
+  def cancelMessageApplication(applicationId: UUID): Boolean =
+    messageApplications.remove(applicationId).fold(false)(_ => true)
 
   def sendMessage(address: InetSocketAddress, message: ByteBuffer): Unit = {
 
@@ -68,7 +75,7 @@ private[network] class NettyTransport(address: InetSocketAddress) {
       val remoteAddress = ctx.channel().remoteAddress().asInstanceOf[InetSocketAddress]
 
       StreamCodecs
-        .decodeStream(remoteAddress, msg.asInstanceOf[ByteBuf].nioBuffer(), messageApplications.asScala)
+        .decodeStream(remoteAddress, msg.asInstanceOf[ByteBuf].nioBuffer(), messageApplications.values.toSeq)
         .foreach(_.apply)
     }
   }
