@@ -10,7 +10,6 @@ sealed trait IdentityTransaction extends Transaction[Set[PublicKey]] {
   val identity: String
   val key: PublicKey
   val signature: DigitalSignature
-  override def hashCode(): Int = (identity.hashCode) + (key.hashCode())
 }
 
 object IdentityTransaction {
@@ -50,15 +49,6 @@ case class Claim(identity: String, key: PublicKey, signature: DigitalSignature) 
   }
 
   override def partitionIds: Set[String] = Set(identity)
-
-  override def equals(obj: scala.Any): Boolean = {
-    obj match {
-      case Claim(i, k, _) => i == identity && k == key
-      case _ => false
-    }
-  }
-
-  override def canEqual(that: Any): Boolean = that.isInstanceOf[Claim]
 }
 
 /**
@@ -101,15 +91,6 @@ case class Link(identity: String, key: PublicKey, signature: DigitalSignature) e
   }
 
   override def partitionIds: Set[String] = Set(identity)
-
-  override def equals(obj: scala.Any): Boolean = {
-    obj match {
-      case Link(i, k, _) => i == identity && k == key
-      case _ => false
-    }
-  }
-
-  override def canEqual(that: Any): Boolean = that.isInstanceOf[Link]
 }
 
 case class Unlink(identity: String, key: PublicKey, signature: DigitalSignature) extends IdentityTransaction {
@@ -140,13 +121,4 @@ case class Unlink(identity: String, key: PublicKey, signature: DigitalSignature)
   }
 
   override def partitionIds: Set[String] = Set(identity)
-
-  override def equals(obj: scala.Any): Boolean = {
-    obj match {
-      case Unlink(i, k, _) => i == identity && k == key
-      case _ => false
-    }
-  }
-
-  override def canEqual(that: Any): Boolean = that.isInstanceOf[Unlink]
 }
