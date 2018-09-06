@@ -1,7 +1,7 @@
 package io.iohk.cef.network
 import io.iohk.cef.network.discovery.NetworkDiscovery
 import io.iohk.cef.network.encoding.nio.{NioDecoder, NioEncoder}
-import io.iohk.cef.network.transport.{StreamLike, Transports}
+import io.iohk.cef.network.transport.Transports
 
 /**
   * Represents a (lightweight) resource for type-safe sending, receiving and disseminating messages.
@@ -19,5 +19,5 @@ class Network[Message: NioEncoder: NioDecoder](networkDiscovery: NetworkDiscover
   def disseminateMessage(message: Message): Unit =
     disseminationalNetwork.disseminateMessage(message)
 
-  def messageStream: StreamLike[Message] = conversationalNetwork.messageStream
+  def messageStream: MessageStream[Message] = conversationalNetwork.messageStream
 }

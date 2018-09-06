@@ -4,8 +4,10 @@ import java.net.InetSocketAddress
 import java.nio.ByteBuffer
 import java.util.UUID
 
+import io.iohk.cef.network.MessageStream
 import io.iohk.cef.network.encoding.nio._
-import io.iohk.cef.network.transport.{MonixStreamLike, NetworkTransport, StreamLike}
+import io.iohk.cef.network.monixstream.MonixMessageStream
+import io.iohk.cef.network.transport.NetworkTransport
 import monix.execution.Cancelable
 import monix.reactive.observers.Subscriber
 import monix.reactive.{Observable, OverflowStrategy}
@@ -27,7 +29,7 @@ private[transport] class TcpNetworkTransport[Message](nettyTransport: NettyTrans
       cancelableMessageApplication(applicationId)
     })
 
-  val messageStream: StreamLike[Message] = new MonixStreamLike[Message](monixMessageStream)
+  val messageStream: MessageStream[Message] = new MonixMessageStream[Message](monixMessageStream)
 
   override def sendMessage(address: InetSocketAddress, message: Message): Unit =
     nettyTransport.sendMessage(address, encode(message))

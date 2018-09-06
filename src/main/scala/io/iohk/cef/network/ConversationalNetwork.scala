@@ -4,8 +4,10 @@ import java.net.InetSocketAddress
 
 import io.iohk.cef.network.discovery.NetworkDiscovery
 import io.iohk.cef.network.encoding.nio._
+import io.iohk.cef.network.monixstream.MonixMessageStream
 import io.iohk.cef.network.transport.Transports.usesTcp
 import io.iohk.cef.network.transport._
+
 import monix.reactive.Observable
 
 /**
@@ -42,12 +44,12 @@ class ConversationalNetwork[Message: NioEncoder: NioDecoder](
   def sendMessage(nodeId: NodeId, message: Message): Unit =
     sendMessage(Frame(FrameHeader(peerInfo.nodeId, nodeId, peerInfo.configuration.messageTtl), message))
 
-  def messageStream: StreamLike[Message] =
+  def messageStream: MessageStream[Message] =
     if (usesTcp(peerInfo))
-      new MonixStreamLike(
+      new MonixMessageStream(
         tcpNetworkTransport.get.monixMessageStream.filter(frameHandler).map((frame: Frame[Message]) => frame.content))
     else
-      new MonixStreamLike[Message](Observable.empty)
+      new MonixMessageStream[Message](Observable.empty)
 
   private def frameHandler(frame: Frame[Message]): Boolean = {
     if (thisNodeIsTheDest(frame)) {
