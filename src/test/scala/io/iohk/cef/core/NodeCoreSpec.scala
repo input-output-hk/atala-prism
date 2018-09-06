@@ -3,7 +3,7 @@ import akka.util.{ByteString, Timeout}
 import io.iohk.cef.LedgerId
 import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.ledger.{Block, ByteStringSerializable}
-import io.iohk.cef.network.{DisseminationalNetwork, NetworkError, NodeId}
+import io.iohk.cef.network.{DisseminationalNetwork, NodeId}
 import io.iohk.cef.test.{DummyBlockHeader, DummyTransaction}
 import io.iohk.cef.transactionpool.TransactionPoolFutureInterface
 import org.mockito.Mockito._
@@ -64,7 +64,6 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
     implicit val bs1 = mockByteStringSerializable
     implicit val bs2 = mockBlockSerializable
     val (core, consensusMap, txDM, _) = setupTest(ledgerId)
-    when(txDM.disseminateMessage(testEnvelope)).thenReturn(())
     when(consensusMap(ledgerId)._1.processTransaction(testEnvelope.content))
       .thenReturn(Future.successful(Right(())))
     core
@@ -83,7 +82,6 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
     implicit val bs1 = mockByteStringSerializable
     implicit val bs2 = mockBlockSerializable
     val (core, consensusMap, _, blockDM) = setupTest(ledgerId)
-    when(blockDM.disseminateMessage(testEnvelope)).thenReturn(())
     when(consensusMap(ledgerId)._2.process(testEnvelope.content))
       .thenReturn(Future.successful(Right(())))
     core
@@ -96,40 +94,34 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
   }
 
   it should "avoid processing a block if this is not a receiver" in {
-    pending //Waiting to see if a Disseminational network can return errors
     implicit val bs1 = mockByteStringSerializable
     implicit val bs2 = mockBlockSerializable
     val ledgerId = 1
     val me = NodeId(ByteString("Me"))
     val (core, consensusMap, _, blockDM) = setupTest(ledgerId, me)
-    val (testBlockEnvelope, _, error) = setupMissingCapabilitiesTest(ledgerId, core, _ => false, me)
-//    when(blockDM.disseminateMessage(testBlockEnvelope))
-//      .thenReturn(Future.successful(error))
+    val (testBlockEnvelope, _) = setupMissingCapabilitiesTest(ledgerId, core, _ => false, me)
     for {
       rcv <- core.receiveBlock(testBlockEnvelope)
     } yield {
       verify(blockDM, times(1)).disseminateMessage(testBlockEnvelope)
       verify(consensusMap(ledgerId)._2, times(0)).process(testBlockEnvelope.content)
-      rcv mustBe error
+      rcv mustBe Right(())
     }
   }
 
   it should "avoid processing a tx if this is not a receiver" in {
-    pending //Waiting to see if a Disseminational network can return errors
     implicit val bs1 = mockByteStringSerializable
     implicit val bs2 = mockBlockSerializable
     val ledgerId = 1
     val me = NodeId(ByteString("Me"))
     val (core, consensusMap, txDM, _) = setupTest(ledgerId, me)
-    val (_, testTxEnvelope, error) = setupMissingCapabilitiesTest(ledgerId, core, _ => false, me)
-//    when(txDM.disseminateMessage(testTxEnvelope))
-//      .thenReturn(Future.successful(error))
+    val (_, testTxEnvelope) = setupMissingCapabilitiesTest(ledgerId, core, _ => false, me)
     for {
       rcv <- core.receiveTransaction(testTxEnvelope)
     } yield {
       verify(txDM, times(1)).disseminateMessage(testTxEnvelope)
       verify(consensusMap(ledgerId)._1, times(0)).processTransaction(testTxEnvelope.content)
-      rcv mustBe error
+      rcv mustBe  Right(())
     }
   }
 
@@ -139,9 +131,8 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
     val ledgerId = 1
     val me = NodeId(ByteString("Me"))
     val (core, consensusMap, _, blockDM) = setupTest(ledgerId, me)
-    val (testBlockTxEnvelope, _, _) = setupMissingCapabilitiesTest(ledgerId, core, _ => true, me)
+    val (testBlockTxEnvelope, _) = setupMissingCapabilitiesTest(ledgerId, core, _ => true, me)
     val newEnvelope = testBlockTxEnvelope.copy(ledgerId = ledgerId + 1)
-    when(blockDM.disseminateMessage(newEnvelope)).thenReturn(())
     for {
       rcv <- core.receiveBlock(newEnvelope)
     } yield {
@@ -157,9 +148,8 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
     val ledgerId = 1
     val me = NodeId(ByteString("Me"))
     val (core, consensusMap, txDM, _) = setupTest(ledgerId, me)
-    val (_, testTxEnvelope, _) = setupMissingCapabilitiesTest(ledgerId, core, _ => true, me)
+    val (_, testTxEnvelope) = setupMissingCapabilitiesTest(ledgerId, core, _ => true, me)
     val newEnvelope = testTxEnvelope.copy(ledgerId = ledgerId + 1)
-    when(txDM.disseminateMessage(newEnvelope)).thenReturn(())
     for {
       rcv <- core.receiveTransaction(newEnvelope)
     } yield {
@@ -180,7 +170,6 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
     val testBlock = Block(DummyBlockHeader(1), immutable.Seq(testTx))
     val testBlockEnvelope = Envelope(testBlock, 1, destinationDescriptor)
     val testTxEnvelope = Envelope(testTx, 1, destinationDescriptor)
-    val error = Left(new NetworkError {})
-    (testBlockEnvelope, testTxEnvelope, error)
+    (testBlockEnvelope, testTxEnvelope)
   }
 }
