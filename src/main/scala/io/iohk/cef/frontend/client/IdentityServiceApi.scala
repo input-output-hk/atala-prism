@@ -5,15 +5,11 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.{Directives, Route}
 import akka.util.Timeout
 import io.iohk.cef.frontend.DefaultJsonFormats
-import io.iohk.cef.frontend.client.IdentityClientActor.{
-  IdentityClaimCreated,
-  IdentityClaimFailed,
-  TransactionRequest,
-  TransactionResponse
-}
+import io.iohk.cef.frontend.client.IdentityClientActor._
 import io.swagger.annotations._
 import javax.ws.rs.Path
 import akka.pattern.ask
+
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -46,17 +42,17 @@ class IdentityServiceApi(createActor: ActorRef)(implicit executionContext: Execu
     path("transaction" / "create") {
       post {
         entity(as[TransactionRequest]) { request =>
-          val requestHandler: Future[TransactionResponse] = (createActor ? request).mapTo[TransactionResponse]
-          onSuccess(requestHandler) { response =>
+          val responseHandler: Future[TransactionResponse] =
+            (createActor ? request).mapTo[TransactionResponse]
+          onSuccess(responseHandler) { response =>
             complete(
-              response match {
-                case IdentityClaimCreated => StatusCodes.Created
-                case IdentityClaimFailed => StatusCodes.NoContent
+              response.result match {
+                case Right(_) => StatusCodes.Created
+                case Left(_) => StatusCodes.Conflict
               }
             )
           }
         }
       }
     }
-
 }

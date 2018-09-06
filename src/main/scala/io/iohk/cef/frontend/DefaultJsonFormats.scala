@@ -28,6 +28,6 @@ trait DefaultJsonFormats extends DefaultJsonProtocol with SprayJsonSupport {
     def read(json: JsValue): A = ct.runtimeClass.newInstance().asInstanceOf[A]
   }
 
-  implicit val clientRequestJsonFormat = jsonFormat4(TransactionRequest)
+  implicit val clientRequestJsonFormat = jsonFormat5(TransactionRequest)
 
 }
