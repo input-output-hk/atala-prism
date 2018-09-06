@@ -29,7 +29,7 @@ class ConversationalNetworkSpec extends FlatSpec {
     val alice: NetworkFixture[String] = randomNetworkFixture[String]()
     val bob: NetworkFixture[String] = randomNetworkFixture[String]()
 
-    when(alice.networkDiscovery.peer(bob.nodeId)).thenReturn(Option(bob.peerInfo))
+    when(alice.networkDiscovery.nearestPeerTo(bob.nodeId)).thenReturn(Option(bob.peerInfo))
 
     alice.network.sendMessage(bob.nodeId, "Hi, Bob!")
 
@@ -42,7 +42,7 @@ class ConversationalNetworkSpec extends FlatSpec {
     val alice: NetworkFixture[String] = randomNetworkFixture[String]()
     val bob: NetworkFixture[String] = randomNetworkFixture[String]()
 
-    when(alice.networkDiscovery.peer(bob.nodeId)).thenReturn(None)
+    when(alice.networkDiscovery.nearestPeerTo(bob.nodeId)).thenReturn(None)
 
     alice.network.sendMessage(bob.nodeId, "Hi, Bob!")
 
@@ -64,7 +64,7 @@ class ConversationalNetworkSpec extends FlatSpec {
       forwardPort(bobsNattedConfig.natAddress.getPort, bobsTransportConfig.bindAddress)
     }
 
-    when(alice.networkDiscovery.peer(bob.nodeId)).thenReturn(Option(bobsNattedPeerInfo))
+    when(alice.networkDiscovery.nearestPeerTo(bob.nodeId)).thenReturn(Option(bobsNattedPeerInfo))
 
     alice.network.sendMessage(bob.nodeId, "Hi, Bob!")
 
@@ -78,8 +78,8 @@ class ConversationalNetworkSpec extends FlatSpec {
     val bob: NetworkFixture[String] = randomNetworkFixture[String]()
     val charlie: NetworkFixture[String] = randomNetworkFixture[String]()
 
-    when(alice.networkDiscovery.peer(charlie.nodeId)).thenReturn(Option(bob.peerInfo))
-    when(bob.networkDiscovery.peer(charlie.nodeId)).thenReturn(Option(charlie.peerInfo))
+    when(alice.networkDiscovery.nearestPeerTo(charlie.nodeId)).thenReturn(Option(bob.peerInfo))
+    when(bob.networkDiscovery.nearestPeerTo(charlie.nodeId)).thenReturn(Option(charlie.peerInfo))
 
     alice.network.sendMessage(charlie.nodeId, "Hi, Charlie!")
 
@@ -93,8 +93,8 @@ class ConversationalNetworkSpec extends FlatSpec {
     val bob: NetworkFixture[String] = randomNetworkFixture[String]()
     val charlie: NetworkFixture[String] = randomNetworkFixture[String]()
 
-    when(alice.networkDiscovery.peer(charlie.nodeId)).thenReturn(Option(bob.peerInfo))
-    when(bob.networkDiscovery.peer(charlie.nodeId)).thenReturn(Option(charlie.peerInfo))
+    when(alice.networkDiscovery.nearestPeerTo(charlie.nodeId)).thenReturn(Option(bob.peerInfo))
+    when(bob.networkDiscovery.nearestPeerTo(charlie.nodeId)).thenReturn(Option(charlie.peerInfo))
 
     alice.network.sendMessage(charlie.nodeId, "Hi, Charlie!")
 
@@ -107,7 +107,7 @@ class ConversationalNetworkSpec extends FlatSpec {
     val alice: NetworkFixture[OurMessage] = randomNetworkFixture[OurMessage]()
     val bob: NetworkFixture[OurMessage] = randomNetworkFixture[OurMessage]()
 
-    when(alice.networkDiscovery.peer(bob.nodeId)).thenReturn(Option(bob.peerInfo))
+    when(alice.networkDiscovery.nearestPeerTo(bob.nodeId)).thenReturn(Option(bob.peerInfo))
 
     alice.network.sendMessage(bob.nodeId, OurMessage("Hi, Bob!"))
 

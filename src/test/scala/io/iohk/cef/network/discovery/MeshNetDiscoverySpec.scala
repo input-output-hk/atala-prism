@@ -22,8 +22,8 @@ class MeshNetDiscoverySpec extends FlatSpec {
 
     val discovery = new MeshNetDiscovery(peerInfo, bootstrapPeerInfo, transports)
 
-    discovery.peer(peerInfo.nodeId) shouldBe Some(peerInfo)
-    discovery.peer(bootstrapPeerInfo.nodeId) shouldBe Some(bootstrapPeerInfo)
+    discovery.nearestPeerTo(peerInfo.nodeId) shouldBe Some(peerInfo)
+    discovery.nearestPeerTo(bootstrapPeerInfo.nodeId) shouldBe Some(bootstrapPeerInfo)
   }
 
   it should "bootstrap with a self lookup" in pending
