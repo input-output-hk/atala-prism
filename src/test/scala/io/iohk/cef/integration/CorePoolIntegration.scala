@@ -3,12 +3,13 @@ import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.testkit.{TestActorRef, TestKit}
 import akka.util.Timeout
 import io.iohk.cef.consensus.Consensus
-import io.iohk.cef.core.{Envelope, NodeCore}
+import io.iohk.cef.core.{Anyone, Envelope, NodeCore}
 import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
-import io.iohk.cef.network.{Network, NodeId}
+import io.iohk.cef.network.{MessageStream, Network, NodeId}
 import io.iohk.cef.test.{DummyBlockHeader, DummyBlockSerializable, DummyTransaction}
 import io.iohk.cef.transactionpool.{TransactionPoolActorModelInterface, TransactionPoolFutureInterface}
 import io.iohk.cef.utils.ByteSizeable
+import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{BeforeAndAfterAll, FlatSpecLike, MustMatchers}
@@ -53,13 +54,20 @@ class CorePoolIntegration
     val blockNetwork = mock[Network[Envelope[Block[String, DummyBlockHeader, DummyTransaction]]]]
     val consensusMap = Map(1 -> (txPoolFutureInterface, consensus))
     val me = NodeId("3112")
+    val mockTxMessageStream = mock[MessageStream[Envelope[DummyTransaction]]]
+    val mockBlockMessageStream =
+      mock[MessageStream[Envelope[Block[String, DummyBlockHeader, DummyTransaction]]]]
+    when(txNetwork.messageStream).thenReturn(mockTxMessageStream)
+    when(blockNetwork.messageStream).thenReturn(mockBlockMessageStream)
+    when(mockTxMessageStream.foreach(ArgumentMatchers.any())).thenReturn(Future.successful(()))
+    when(mockBlockMessageStream.foreach(ArgumentMatchers.any())).thenReturn(Future.successful(()))
     val core = new NodeCore(consensusMap, txNetwork, blockNetwork, me)(
-      DummyTransaction.serializable,
-      DummyBlockSerializable.serializable,
-      executionContext)
+      Envelope.envelopeSerializer(DummyTransaction.serializable),
+      Envelope.envelopeSerializer(DummyBlockSerializable.serializable),
+      executionContext
+    )
     val testTransaction = DummyTransaction(5)
-    val envelope = Envelope(testTransaction, 1, _ => true)
-    when(txNetwork.disseminateMessage(envelope)).thenReturn(Future.successful(Right(())))
+    val envelope = Envelope(testTransaction, 1, Anyone())
     val result = Await.result(core.receiveTransaction(envelope), 10 seconds)
     result mustBe Right(())
     val pool = txPoolActorModelInterface.testActorRef.underlyingActor.pool
