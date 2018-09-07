@@ -121,7 +121,7 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
     } yield {
       verify(txDM, times(1)).disseminateMessage(testTxEnvelope)
       verify(consensusMap(ledgerId)._1, times(0)).processTransaction(testTxEnvelope.content)
-      rcv mustBe  Right(())
+      rcv mustBe Right(())
     }
   }
 

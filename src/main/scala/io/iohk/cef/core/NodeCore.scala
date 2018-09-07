@@ -3,7 +3,7 @@ import io.iohk.cef.LedgerId
 import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.ledger.{Block, BlockHeader, ByteStringSerializable, Transaction}
-import io.iohk.cef.network.{DisseminationalNetwork, NodeId}
+import io.iohk.cef.network.{Network, NodeId}
 import io.iohk.cef.transactionpool.TransactionPoolFutureInterface
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -22,32 +22,35 @@ import scala.concurrent.{ExecutionContext, Future}
   */
 class NodeCore[State, Header <: BlockHeader, Tx <: Transaction[State]](
     consensusMap: Map[LedgerId, (TransactionPoolFutureInterface[State, Header, Tx], Consensus[State, Tx])],
-    txDisseminationalNetwork: DisseminationalNetwork[Envelope[Tx]],
-    blockDisseminationalNetwork: DisseminationalNetwork[Envelope[Block[State, Header, Tx]]],
+    txNetwork: Network[Envelope[Tx]],
+    blockNetwork: Network[Envelope[Block[State, Header, Tx]]],
     me: NodeId)(
-    implicit txSerializable: ByteStringSerializable[Tx],
-    blockSerializable: ByteStringSerializable[Block[State, Header, Tx]],
+    implicit txSerializable: ByteStringSerializable[Envelope[Tx]],
+    blockSerializable: ByteStringSerializable[Envelope[Block[State, Header, Tx]]],
     executionContext: ExecutionContext) {
 
+  blockNetwork.messageStream.foreach(receiveBlock)
+  txNetwork.messageStream.foreach(receiveTransaction)
+
   def receiveTransaction(txEnvelope: Envelope[Tx]): Future[Either[ApplicationError, Unit]] = {
-    process(txEnvelope, txDisseminationalNetwork) { env =>
+    process(txEnvelope, txNetwork) { env =>
       val txPoolService = consensusMap(env.ledgerId)._1
       txPoolService.processTransaction(txEnvelope.content)
     }
   }
 
   def receiveBlock(blEnvelope: Envelope[Block[State, Header, Tx]]): Future[Either[ApplicationError, Unit]] = {
-    process(blEnvelope, blockDisseminationalNetwork)(env => consensusMap(env.ledgerId)._2.process(env.content))
+    process(blEnvelope, blockNetwork)(env => consensusMap(env.ledgerId)._2.process(env.content))
   }
 
   private def thisIsDestination[A](envelope: Envelope[A]): Boolean = envelope.destinationDescriptor(me)
 
   private def thisParticipatesInConsensus(ledgerId: LedgerId): Boolean = consensusMap.contains(ledgerId)
 
-  private def process[T](txEnvelope: Envelope[T], disseminationalNetwork: DisseminationalNetwork[Envelope[T]])(
+  private def process[T](txEnvelope: Envelope[T], network: Network[Envelope[T]])(
       submit: Envelope[T] => Future[Either[ApplicationError, Unit]])(
-      implicit byteStringSerializable: ByteStringSerializable[T]): Future[Either[ApplicationError, Unit]] = {
-    val disseminationF = Future(Right(disseminationalNetwork.disseminateMessage(txEnvelope)))
+      implicit byteStringSerializable: ByteStringSerializable[Envelope[T]]): Future[Either[ApplicationError, Unit]] = {
+    val disseminationF = Future(Right(network.disseminateMessage(txEnvelope)))
     if (!thisIsDestination(txEnvelope)) {
       disseminationF
     } else if (!thisParticipatesInConsensus(txEnvelope.ledgerId)) {
