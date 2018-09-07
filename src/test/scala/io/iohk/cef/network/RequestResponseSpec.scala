@@ -1,7 +1,6 @@
 package io.iohk.cef.network
 import java.net.InetSocketAddress
 
-import io.iohk.cef.network.RequestResponse.{CorrelatedRequest, CorrelatedResponse}
 import io.iohk.cef.network.discovery.NetworkDiscovery
 import io.iohk.cef.network.encoding.nio._
 import io.iohk.cef.network.transport.tcp.NetUtils.{aRandomAddress, randomBytes}
@@ -33,23 +32,22 @@ class RequestResponseSpec extends FlatSpec {
     val alicesNetwork = randomNetworkFixture()
     val bobsNetwork = randomNetworkFixture()
 
-    val bobInboundReq =
-      new ConversationalNetwork[CorrelatedRequest[Request]](bobsNetwork.networkDiscovery, bobsNetwork.transports)
-    val bcOutboundRes =
-      new ConversationalNetwork[CorrelatedResponse[Response]](bobsNetwork.networkDiscovery, bobsNetwork.transports)
-
-    bobInboundReq.messageStream.foreach((request: CorrelatedRequest[Request]) => {
-      if (request.content == alicesRequest) {
-        bcOutboundRes.sendMessage(alicesNetwork.nodeId, CorrelatedResponse(request.correlationId, bobsResponse))
-      }
-    })
-
-    val aliceReqRes = new RequestResponse[Request, Response](alicesNetwork.networkDiscovery, alicesNetwork.transports)
-
     when(alicesNetwork.networkDiscovery.nearestPeerTo(bobsNetwork.nodeId)).thenReturn(Some(bobsNetwork.peerInfo))
     when(bobsNetwork.networkDiscovery.nearestPeerTo(alicesNetwork.nodeId)).thenReturn(Some(alicesNetwork.peerInfo))
 
-    val response: Response = aliceReqRes.sendRequest(bobsNetwork.nodeId, alicesRequest).futureValue
+    val alicesSide = new RequestResponse[Request, Response](alicesNetwork.networkDiscovery, alicesNetwork.transports)
+
+    val bobsSide = new RequestResponse[Request, Response](bobsNetwork.networkDiscovery, bobsNetwork.transports)
+
+    bobsSide.handleRequest(request => {
+      if (request == alicesRequest) {
+        bobsResponse
+      } else
+        fail("Received an invalid request")
+    })
+
+
+    val response: Response = alicesSide.sendRequest(bobsNetwork.nodeId, alicesRequest).futureValue
 
     response shouldBe bobsResponse
   }
