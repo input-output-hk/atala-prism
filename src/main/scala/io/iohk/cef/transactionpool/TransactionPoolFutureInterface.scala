@@ -18,6 +18,6 @@ class TransactionPoolFutureInterface[State, Header <: BlockHeader, Tx <: Transac
   import transactionPoolActorModelInterface._
 
   def processTransaction(tx: Tx): Future[Either[ApplicationError, Unit]] = {
-    (poolActor ? ProcessTransaction(tx)).mapTo[ProcessTransactionResponse].map(_.result)
+    (poolActor ? messages.ProcessTransaction(tx)).mapTo[messages.ProcessTransactionResponse].map(_.result)
   }
 }
