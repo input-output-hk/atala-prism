@@ -7,14 +7,14 @@ import io.iohk.cef.core.{Envelope, NodeCore}
 import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
 import io.iohk.cef.network.{NetworkComponent, NodeId}
 import io.iohk.cef.test.{DummyBlockHeader, DummyBlockSerializable, DummyTransaction}
-import io.iohk.cef.transactionpool.{TransactionPoolActor, TransactionPoolActorModelInterface, TransactionPoolFutureInterface}
+import io.iohk.cef.transactionpool.{TransactionPoolActorModelInterface, TransactionPoolFutureInterface}
 import io.iohk.cef.utils.ByteSizeable
+import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{BeforeAndAfterAll, FlatSpecLike, MustMatchers}
 
 import scala.collection.immutable.Queue
 import scala.concurrent.duration._
-import org.mockito.Mockito._
 import scala.concurrent.{ExecutionContext, _}
 
 class CorePoolIntegration
@@ -32,7 +32,7 @@ class CorePoolIntegration
       maxTxSizeInBytes: Int)(implicit blockByteSizeable: ByteSizeable[Block[State, Header, Tx]])
       extends TransactionPoolActorModelInterface[State, Header, Tx](system.actorOf, headerGenerator, maxTxSizeInBytes) {
 
-    lazy val testActorRef = TestActorRef[TransactionPoolActor[State, Header, Tx]](Props(new TransactionPoolActor[State, Header, Tx](headerGenerator, maxTxSizeInBytes, messages)))
+    lazy val testActorRef = TestActorRef[TransactionPoolActor](Props(new TransactionPoolActor()))
     override def poolActor: ActorRef = testActorRef
   }
 
