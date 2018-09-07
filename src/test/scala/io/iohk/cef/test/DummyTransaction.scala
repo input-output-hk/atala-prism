@@ -18,9 +18,10 @@ object DummyTransaction {
     override def sizeInBytes(t: DummyTransaction): Int = t.size
   }
 
-  implicit val serializable = new ByteStringSerializable[DummyTransaction with Transaction[String]] {
+  implicit val serializable = new ByteStringSerializable[DummyTransaction] {
     override def deserialize(bytes: ByteString): DummyTransaction = DummyTransaction(BigInt(bytes.toArray).intValue())
 
-    override def serialize(t: DummyTransaction with Transaction[String]): ByteString = ByteString(BigInt(t.size).toByteArray)
+    override def serialize(t: DummyTransaction): ByteString =
+      ByteString(BigInt(t.size).toByteArray)
   }
 }
