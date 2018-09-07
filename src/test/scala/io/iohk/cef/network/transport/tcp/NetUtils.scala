@@ -3,8 +3,11 @@ import java.io.OutputStream
 import java.net.{InetSocketAddress, ServerSocket, Socket}
 import java.nio.ByteBuffer
 
-import io.iohk.cef.network.NodeId
+import io.iohk.cef.network.{ConversationalNetworkConfiguration, NodeId, PeerInfo}
 import io.iohk.cef.network.NodeId.nodeIdBytes
+import io.iohk.cef.network.transport.FrameHeader
+import org.scalacheck.Gen
+import org.scalacheck.Arbitrary._
 
 import scala.collection.mutable
 import scala.util.Random
@@ -69,4 +72,16 @@ object NetUtils {
 
   def forwardPort(srcPort: Int, dst: InetSocketAddress): PortForward =
     new PortForward(srcPort, dst)
+
+  object NetUtilsGen {
+    val genNodeId: Gen[NodeId] = Gen.listOfN(NodeId.nodeIdBytes, arbitrary[Byte]).map(NodeId(_))
+
+    val genPeerInfo: Gen[PeerInfo] = for {
+      nodeId <- genNodeId
+    } yield {
+      val address = aRandomAddress()
+      val messageTtl = FrameHeader.defaultTtl
+      PeerInfo(nodeId, ConversationalNetworkConfiguration(Some(TcpTransportConfiguration(address)), messageTtl))
+    }
+  }
 }

@@ -62,10 +62,10 @@ val dep = {
     "io.netty" % "netty-all" % "4.1.28.Final",
     "com.chuusai" %% "shapeless" % "2.3.3",
     "org.scala-lang" % "scala-reflect" % scalaV,
+    "com.zaxxer" % "HikariCP" % "3.1.0",
     "org.scala-stm" %% "scala-stm" % "0.8",
     "com.github.sbtourist" % "journalio" % "1.4.2",
-    "commons-io" % "commons-io" % "2.6" % Test,
-    "com.zaxxer" % "HikariCP" % "3.1.0"
+    "io.monix" %% "monix" % "3.0.0-RC1"
   )
 }
 

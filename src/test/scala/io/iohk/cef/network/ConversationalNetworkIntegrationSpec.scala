@@ -62,12 +62,12 @@ class ConversationalNetworkIntegrationSpec extends FlatSpec {
 
     eventually {
       aliceA.sendMessage(bobsNodeId, A(1, "Hi Bob!"))
-      verify(bobsAInbox, atLeastOnce()).apply(alicesNodeId, A(1, "Hi Bob!"))
+      verify(bobsAInbox, atLeastOnce()).apply(A(1, "Hi Bob!"))
     }
   }
 
-  private def mockHandler[T]: (NodeId, T) => Unit =
-    mock[(NodeId, T) => Unit]
+  private def mockHandler[T]: T => Unit =
+    mock[T => Unit]
 
   private class MessageLog[T]() {
     val messages = mutable.ListBuffer[(NodeId, T)]()
@@ -78,8 +78,10 @@ class ConversationalNetworkIntegrationSpec extends FlatSpec {
   // Create a typed message channel on top of a base network instance
   private def messageChannel[T: NioEncoder: NioDecoder](
       baseNetwork: BaseNetwork,
-      messageHandler: (NodeId, T) => Unit): ConversationalNetwork[T] = {
-    new ConversationalNetwork[T](messageHandler, baseNetwork.networkDiscovery, baseNetwork.transports)
+      messageHandler: T => Unit): ConversationalNetwork[T] = {
+    val conversationalNetwork = new ConversationalNetwork[T](baseNetwork.networkDiscovery, baseNetwork.transports)
+    conversationalNetwork.messageStream.foreach(msg => messageHandler(msg))
+    conversationalNetwork
   }
 
   // Each network node should have a single instance of the Transports and
