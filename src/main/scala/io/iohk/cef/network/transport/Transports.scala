@@ -1,4 +1,5 @@
 package io.iohk.cef.network.transport
+
 import java.net.InetSocketAddress
 
 import io.iohk.cef.network.PeerInfo
@@ -10,6 +11,11 @@ object Transports {
     peerInfo.configuration.tcpTransportConfiguration.isDefined
 }
 
+/**
+  * Encapsulates the networking resources held by the node (tcp ports, etc).
+  * You only want one of these objects in most application configurations.
+  * @param peerInfo configuration data for the node.
+  */
 class Transports(val peerInfo: PeerInfo) {
 
   private var nettyTransportRef: Option[NettyTransport] = None
@@ -27,8 +33,6 @@ class Transports(val peerInfo: PeerInfo) {
     })
   }
 
-  def tcp[T](messageHandler: (InetSocketAddress, T) => Unit)(
-      implicit codec: NioCodec[T]): Option[TcpNetworkTransport[T]] =
-    netty().map(nettyTransport =>
-      new TcpNetworkTransport[T](messageHandler, nettyTransport)(codec.encoder, codec.decoder))
+  def tcp[T](implicit codec: NioCodec[T]): Option[NetworkTransport[InetSocketAddress, T]] =
+    netty().map(nettyTransport => new TcpNetworkTransport[T](nettyTransport)(codec.encoder, codec.decoder))
 }

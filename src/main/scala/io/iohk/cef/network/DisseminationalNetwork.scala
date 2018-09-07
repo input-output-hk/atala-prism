@@ -7,10 +7,8 @@ class DisseminationalNetwork[Message: NioEncoder: NioDecoder](
     networkDiscovery: NetworkDiscovery,
     transports: Transports) {
 
-  private val discardInboundMessages: (NodeId, Message) => Unit = (_, _) => ()
-
   private val conversationalNetwork =
-    new ConversationalNetwork[Message](discardInboundMessages, networkDiscovery, transports)
+    new ConversationalNetwork[Message](networkDiscovery, transports)
 
   /**
     * Disseminate a message to those on the network who want it.

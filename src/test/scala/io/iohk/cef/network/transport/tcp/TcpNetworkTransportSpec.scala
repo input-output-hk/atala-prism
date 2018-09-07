@@ -4,22 +4,23 @@ import java.net.InetSocketAddress
 
 import io.iohk.cef.network.encoding.nio._
 import io.iohk.cef.network.transport.tcp.NetUtils._
-
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
+import org.scalatest.concurrent.Eventually
 import org.scalatest.concurrent.Eventually._
 
 import scala.collection.mutable.ListBuffer
-
 import scala.concurrent.duration._
 
 class TcpNetworkTransportSpec extends FlatSpec {
 
-  private implicit val patienceConfig = PatienceConfig(timeout = 1 second)
+  private implicit val patienceConfig = Eventually.PatienceConfig(timeout = 1 second)
 
   behavior of "TcpNetworkTransport"
 
   it should "send and receive a message" in new AlicesConfig with BobsConfig {
+
+    bobsTransport.messageStream.foreach(message => bobsInbox += message)
 
     alicesTransport.sendMessage(bobsAddress, Message("Hello, Bob!"))
 
@@ -33,14 +34,14 @@ class TcpNetworkTransportSpec extends FlatSpec {
   trait AlicesConfig {
     val alicesAddress: InetSocketAddress = aRandomAddress()
     val alicesInbox: ListBuffer[Message] = new ListBuffer()
-    val alicesTransport =
-      new TcpNetworkTransport(logMessages(alicesInbox), new NettyTransport(alicesAddress))
+    val alicesTransport: TcpNetworkTransport[Message] =
+      new TcpNetworkTransport(new NettyTransport(alicesAddress))
   }
 
   trait BobsConfig {
     val bobsAddress: InetSocketAddress = aRandomAddress()
     val bobsInbox: ListBuffer[Message] = new ListBuffer()
-    val bobsTransport =
-      new TcpNetworkTransport(logMessages(bobsInbox), new NettyTransport(bobsAddress))
+    val bobsTransport: TcpNetworkTransport[Message] =
+      new TcpNetworkTransport(new NettyTransport(bobsAddress))
   }
 }
