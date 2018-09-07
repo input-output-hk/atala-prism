@@ -290,7 +290,7 @@ class RaftConsensusSpec extends WordSpec {
             leaderCommitIndex = -1))
 
         appendResult shouldBe AppendEntriesResult(term = 2, success = true)
-        eventually {raftNode.getRole shouldBe Follower}
+        eventually { raftNode.getRole shouldBe Follower }
       }
       "reject leader append entries calls from a leader with a lower term" in new MockFixture {
         val persistentStorage =
