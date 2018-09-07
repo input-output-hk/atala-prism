@@ -24,7 +24,9 @@ class TransactionPoolActorModelInterface[State, Header <: BlockHeader, Tx <: Tra
 
   type BlockType = Block[State, Header, Tx]
 
-  val poolActor = actorCreator(Props(new TransactionPoolActor()))
+  private lazy val actor = actorCreator(Props(new TransactionPoolActor()))
+
+  def poolActor: ActorRef = actor
 
   /**
     * A TransactionPoolActor provides a [[TransactionPool]] with support for concurrency.

@@ -3,7 +3,7 @@ import akka.util.{ByteString, Timeout}
 import io.iohk.cef.LedgerId
 import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.ledger.{Block, ByteStringSerializable}
-import io.iohk.cef.network.{DisseminationalNetwork, NodeId}
+import io.iohk.cef.network.{Network, NodeId}
 import io.iohk.cef.test.{DummyBlockHeader, DummyTransaction}
 import io.iohk.cef.transactionpool.TransactionPoolFutureInterface
 import org.mockito.Mockito._
@@ -26,22 +26,22 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
 
   def mockConsensus: Consensus[State, Tx] = mock[Consensus[State, Tx]]
 
-  def mockDisseminationalNetwork[M]: DisseminationalNetwork[M] = mock[DisseminationalNetwork[M]]
+  def mockNetwork[M]: Network[M] = mock[Network[M]]
 
-  def mockByteStringSerializable: ByteStringSerializable[Tx] =
-    mock[ByteStringSerializable[Tx]]
+  def mockByteStringSerializable: ByteStringSerializable[Envelope[Tx]] =
+    mock[ByteStringSerializable[Envelope[Tx]]]
 
-  def mockBlockSerializable: ByteStringSerializable[BlockType] =
-    mock[ByteStringSerializable[BlockType]]
+  def mockBlockSerializable: ByteStringSerializable[Envelope[BlockType]] =
+    mock[ByteStringSerializable[Envelope[BlockType]]]
 
   val timeout = Timeout(1 minute)
 
   private def setupTest(ledgerId: LedgerId, me: NodeId = NodeId(ByteString(1)))(
-      implicit txSerializable: ByteStringSerializable[Tx],
-      blockSerializable: ByteStringSerializable[Block[State, Header, Tx]]) = {
+      implicit txSerializable: ByteStringSerializable[Envelope[Tx]],
+      blockSerializable: ByteStringSerializable[Envelope[Block[State, Header, Tx]]]) = {
     val consensusMap = Map(ledgerId -> (mockTxPoolFutureInterface, mockConsensus))
-    val txDM = mockDisseminationalNetwork[Envelope[DummyTransaction]]
-    val blockDM = mockDisseminationalNetwork[Envelope[Block[String, DummyBlockHeader, DummyTransaction]]]
+    val txDM = mockNetwork[Envelope[DummyTransaction]]
+    val blockDM = mockNetwork[Envelope[Block[String, DummyBlockHeader, DummyTransaction]]]
     implicit val t = timeout
     (
       new NodeCore(
@@ -164,8 +164,8 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
       core: NodeCore[String, DummyBlockHeader, DummyTransaction],
       destinationDescriptor: DestinationDescriptor,
       me: NodeId)(
-      implicit txSerializable: ByteStringSerializable[Tx],
-      blockSerializable: ByteStringSerializable[Block[State, Header, Tx]]) = {
+      implicit txSerializable: ByteStringSerializable[Envelope[Tx]],
+      blockSerializable: ByteStringSerializable[Envelope[Block[State, Header, Tx]]]) = {
     val testTx = DummyTransaction(10)
     val testBlock = Block(DummyBlockHeader(1), immutable.Seq(testTx))
     val testBlockEnvelope = Envelope(testBlock, 1, destinationDescriptor)
