@@ -1,7 +1,7 @@
 package io.iohk.cef.network.discovery
 import io.iohk.cef.network.{NodeId, PeerInfo}
 
-private[network] trait NetworkDiscovery {
+trait NetworkDiscovery {
 
   /**
     * Enable message forwarding similar to IP packet forwarding.

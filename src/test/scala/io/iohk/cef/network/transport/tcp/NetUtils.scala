@@ -1,13 +1,17 @@
 package io.iohk.cef.network.transport.tcp
+
 import java.io.OutputStream
 import java.net.{InetSocketAddress, ServerSocket, Socket}
 import java.nio.ByteBuffer
 
 import io.iohk.cef.network.{ConversationalNetworkConfiguration, NodeId, PeerInfo}
 import io.iohk.cef.network.NodeId.nodeIdBytes
-import io.iohk.cef.network.transport.FrameHeader
+import io.iohk.cef.network.discovery.NetworkDiscovery
+import io.iohk.cef.network.transport.{FrameHeader, Transports}
+import org.mockito.Mockito.when
 import org.scalacheck.Gen
 import org.scalacheck.Arbitrary._
+import org.scalatest.mockito.MockitoSugar.mock
 
 import scala.collection.mutable
 import scala.util.Random
@@ -83,5 +87,30 @@ object NetUtils {
       val messageTtl = FrameHeader.defaultTtl
       PeerInfo(nodeId, ConversationalNetworkConfiguration(Some(TcpTransportConfiguration(address)), messageTtl))
     }
+  }
+
+  case class NetworkFixture(
+                             nodeId: NodeId,
+                             peerInfo: PeerInfo,
+                             networkDiscovery: NetworkDiscovery,
+                             transports: Transports)
+
+  def randomNetworkFixture(messageTtl: Int = FrameHeader.defaultTtl): NetworkFixture = {
+
+    val tcpAddress: InetSocketAddress = aRandomAddress()
+    val configuration = ConversationalNetworkConfiguration(Some(TcpTransportConfiguration(tcpAddress)), messageTtl)
+
+    val nodeId = NodeId(randomBytes(NodeId.nodeIdBytes))
+
+    val networkDiscovery: NetworkDiscovery = mock[NetworkDiscovery]
+
+    val peerInfo = PeerInfo(nodeId, configuration)
+
+    NetworkFixture(nodeId, peerInfo, networkDiscovery, new Transports(peerInfo))
+  }
+
+  def nodesArePeers(node1: NetworkFixture, node2: NetworkFixture): Unit = {
+    when(node1.networkDiscovery.nearestPeerTo(node2.nodeId)).thenReturn(Some(node2.peerInfo))
+    when(node2.networkDiscovery.nearestPeerTo(node1.nodeId)).thenReturn(Some(node1.peerInfo))
   }
 }

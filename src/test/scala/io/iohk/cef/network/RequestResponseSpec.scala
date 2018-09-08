@@ -1,17 +1,10 @@
 package io.iohk.cef.network
-import java.net.InetSocketAddress
-
-import io.iohk.cef.network.discovery.NetworkDiscovery
 import io.iohk.cef.network.encoding.nio._
-import io.iohk.cef.network.transport.tcp.NetUtils.{aRandomAddress, randomBytes}
-import io.iohk.cef.network.transport.tcp.TcpTransportConfiguration
-import io.iohk.cef.network.transport.{FrameHeader, Transports}
-import org.mockito.Mockito.when
+import io.iohk.cef.network.transport.tcp.NetUtils.{nodesArePeers, randomNetworkFixture}
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
-import org.scalatest.mockito.MockitoSugar._
 
 import scala.concurrent.duration._
 
@@ -32,11 +25,9 @@ class RequestResponseSpec extends FlatSpec {
     val alicesNetwork = randomNetworkFixture()
     val bobsNetwork = randomNetworkFixture()
 
-    when(alicesNetwork.networkDiscovery.nearestPeerTo(bobsNetwork.nodeId)).thenReturn(Some(bobsNetwork.peerInfo))
-    when(bobsNetwork.networkDiscovery.nearestPeerTo(alicesNetwork.nodeId)).thenReturn(Some(alicesNetwork.peerInfo))
+    nodesArePeers(alicesNetwork, bobsNetwork)
 
     val alicesSide = new RequestResponse[Request, Response](alicesNetwork.networkDiscovery, alicesNetwork.transports)
-
     val bobsSide = new RequestResponse[Request, Response](bobsNetwork.networkDiscovery, bobsNetwork.transports)
 
     bobsSide.handleRequest(request => {
@@ -46,29 +37,8 @@ class RequestResponseSpec extends FlatSpec {
         fail("Received an invalid request")
     })
 
-
     val response: Response = alicesSide.sendRequest(bobsNetwork.nodeId, alicesRequest).futureValue
 
     response shouldBe bobsResponse
-  }
-
-  private case class NetworkFixture(
-      nodeId: NodeId,
-      peerInfo: PeerInfo,
-      networkDiscovery: NetworkDiscovery,
-      transports: Transports)
-
-  private def randomNetworkFixture(messageTtl: Int = FrameHeader.defaultTtl): NetworkFixture = {
-
-    val tcpAddress: InetSocketAddress = aRandomAddress()
-    val configuration = ConversationalNetworkConfiguration(Some(TcpTransportConfiguration(tcpAddress)), messageTtl)
-
-    val nodeId = NodeId(randomBytes(NodeId.nodeIdBytes))
-
-    val networkDiscovery: NetworkDiscovery = mock[NetworkDiscovery]
-
-    val peerInfo = PeerInfo(nodeId, configuration)
-
-    NetworkFixture(nodeId, peerInfo, networkDiscovery, new Transports(peerInfo))
   }
 }

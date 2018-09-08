@@ -14,7 +14,7 @@ import scala.concurrent.{Future, Promise}
 
 // FIXME: this will need a way of knowing if the other side
 // actually cares about the request (without reinventing HTTP)
-private[network] class RequestResponse[Request: NioEncoder: NioDecoder, Response: NioEncoder: NioDecoder](
+class RequestResponse[Request: NioEncoder: NioDecoder, Response: NioEncoder: NioDecoder](
     networkDiscovery: NetworkDiscovery,
     transports: Transports) {
 
