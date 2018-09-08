@@ -7,7 +7,7 @@ import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 import org.scalatest.prop.GeneratorDrivenPropertyChecks._
 
-class GenericCodecsSpec extends FlatSpec {
+class ProductCodecsSpec extends FlatSpec {
 
   behavior of "ProductCodecs"
 

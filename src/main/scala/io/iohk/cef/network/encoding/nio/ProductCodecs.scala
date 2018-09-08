@@ -8,7 +8,7 @@ import shapeless.{::, Generic, HList, HNil, Lazy}
 
 import scala.reflect.ClassTag
 
-trait GenericCodecs {
+trait ProductCodecs {
 
   implicit val hNilEncoder: NioEncoder[HNil] = _ => allocate(0)
 
