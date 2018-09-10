@@ -69,7 +69,8 @@ val dep = {
     "org.scala-lang" % "scala-reflect" % scalaV,
     "com.github.swagger-akka-http" %% "swagger-akka-http" % "1.0.0",
     "com.typesafe.akka" %% "akka-http-spray-json" % "10.1.4",
-    "com.zaxxer" % "HikariCP" % "3.1.0"
+    "com.zaxxer" % "HikariCP" % "3.1.0",
+    "com.beachape" %% "enumeratum" % "1.5.13"
   )
 }
 

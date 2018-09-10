@@ -58,11 +58,13 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
       .thenReturn(Future.successful(Right(())))
     when(consensusMap(ledgerId)._1.processTransaction(testEnvelope.content))
       .thenReturn(Future.successful(Right(())))
-    core.receiveTransaction(testEnvelope).map(r =>{
-      verify(networkComponent, times(1)).disseminate(testEnvelope)
-      verify(consensusMap(ledgerId)._1, times(1)).processTransaction(testEnvelope.content)
-      r mustBe Right(())
-    })
+    core
+      .receiveTransaction(testEnvelope)
+      .map(r => {
+        verify(networkComponent, times(1)).disseminate(testEnvelope)
+        verify(consensusMap(ledgerId)._1, times(1)).processTransaction(testEnvelope.content)
+        r mustBe Right(())
+      })
   }
 
   it should "receive a block" in {
@@ -76,11 +78,13 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
       .thenReturn(Future.successful(Right(())))
     when(consensusMap(ledgerId)._2.process(testEnvelope.content))
       .thenReturn(Future.successful(Right(())))
-    core.receiveBlock(testEnvelope).map(r =>{
-      verify(networkComponent, times(1)).disseminate(testEnvelope)
-      verify(consensusMap(ledgerId)._2, times(1)).process(testEnvelope.content)
-      r mustBe Right(())
-    })
+    core
+      .receiveBlock(testEnvelope)
+      .map(r => {
+        verify(networkComponent, times(1)).disseminate(testEnvelope)
+        verify(consensusMap(ledgerId)._2, times(1)).process(testEnvelope.content)
+        r mustBe Right(())
+      })
   }
 
   it should "avoid processing a block if this is not a receiver" in {
@@ -157,9 +161,13 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
     }
   }
 
-  private def setupMissingCapabilitiesTest(ledgerId: LedgerId, core: NodeCore[String, DummyBlockHeader, DummyTransaction], destinationDescriptor: DestinationDescriptor, me: NodeId)(
-    implicit txSerializable: ByteStringSerializable[Tx],
-    blockSerializable: ByteStringSerializable[Block[State, Header, Tx]]) = {
+  private def setupMissingCapabilitiesTest(
+      ledgerId: LedgerId,
+      core: NodeCore[String, DummyBlockHeader, DummyTransaction],
+      destinationDescriptor: DestinationDescriptor,
+      me: NodeId)(
+      implicit txSerializable: ByteStringSerializable[Tx],
+      blockSerializable: ByteStringSerializable[Block[State, Header, Tx]]) = {
     val testTx = DummyTransaction(10)
     val testBlock = Block(DummyBlockHeader(1), immutable.Seq(testTx))
     val ledgerId = 1
