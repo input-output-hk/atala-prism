@@ -11,11 +11,7 @@ class CoproductCodecsSpec extends FlatSpec {
 
   they should "support option" in {
     forAll(arbitrary[Option[String]]) { option =>
-      val result = NioDecoder[Option[String]].decode(NioEncoder[Option[String]].encode(option))
-      if (option.isEmpty)
-        result shouldBe None
-      else
-        result shouldBe Some(option)
+      NioDecoder[Option[String]].decode(NioEncoder[Option[String]].encode(option)) shouldBe Some(option)
     }
   }
 
