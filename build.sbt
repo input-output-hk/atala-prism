@@ -65,7 +65,8 @@ val dep = {
     "org.scala-stm" %% "scala-stm" % "0.8",
     "com.github.sbtourist" % "journalio" % "1.4.2",
     "commons-io" % "commons-io" % "2.6" % Test,
-    "com.zaxxer" % "HikariCP" % "3.1.0"
+    "com.zaxxer" % "HikariCP" % "3.1.0",
+    "com.beachape" %% "enumeratum" % "1.5.13"
   )
 }
 
