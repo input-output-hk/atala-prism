@@ -10,13 +10,14 @@ import io.iohk.cef.network.encoding.nio._
 import io.iohk.cef.network.transport.Transports
 
 import scala.collection.JavaConverters._
-import scala.concurrent.{Future, Promise}
+import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.util.{Failure, Success}
 
 // FIXME: this will need a way of knowing if the other side
 // actually cares about the request (without reinventing HTTP)
 class RequestResponse[Request: NioEncoder: NioDecoder, Response: NioEncoder: NioDecoder](
     networkDiscovery: NetworkDiscovery,
-    transports: Transports) {
+    transports: Transports)(implicit ec: ExecutionContext) {
 
   case class CorrelatedRequest(correlationId: UUID, from: NodeId, content: Request)
 
@@ -50,12 +51,27 @@ class RequestResponse[Request: NioEncoder: NioDecoder, Response: NioEncoder: Nio
   }
 
   def handleRequest(f: Request => Response): Unit = {
-    requestChannel.messageStream.foreach(correlatedRequest => {
+    requestChannel.messageStream.foreach(correlatedRequest => { // FIXME will need to handle exceptions
       val response = CorrelatedResponse(
         correlationId = correlatedRequest.correlationId,
         from = transports.peerInfo.nodeId,
         content = f(correlatedRequest.content))
       responseChannel.sendMessage(correlatedRequest.from, response)
+    })
+  }
+
+  def handleFutureRequest(f: Request => Future[Response]): Unit = {
+    requestChannel.messageStream.foreach(correlatedRequest => {
+      f(correlatedRequest.content).onComplete {
+        case Success(content) =>
+          val response = CorrelatedResponse(
+            correlationId = correlatedRequest.correlationId,
+            from = transports.peerInfo.nodeId,
+            content = content
+          )
+          responseChannel.sendMessage(correlatedRequest.from, response)
+        case Failure(exception) => ??? // FIXME
+      }
     })
   }
 }

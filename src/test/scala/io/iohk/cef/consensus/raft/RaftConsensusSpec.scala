@@ -81,7 +81,7 @@ class RaftConsensusSpec extends WordSpec {
     }
   }
   "Consensus module" should {
-    "Handles all client requests" when {
+    "Handle all client requests" when {
       "a client contacts a follower" should {
         "redirect to the leader" in new MockFixture {
           val raftNode = mock[RaftNode[String]]
@@ -707,7 +707,7 @@ trait MockFixture {
   val rpc3: RPC[Command] = mock[RPC[Command]]
   var appendCallback: EntriesToAppend[Command] => AppendEntriesResult = _
   var voteCallback: VoteRequested => RequestVoteResult = _
-  val rpcFactory: RPCFactory[Command] = (node, appendEntriesCallback, requestVoteCallback) => {
+  val rpcFactory: RPCFactory[Command] = (node, appendEntriesCallback, requestVoteCallback, _) => {
     appendCallback = appendEntriesCallback
     voteCallback = requestVoteCallback
     if (node == "i2")
@@ -831,7 +831,7 @@ trait IntegratedFixture {
       heartbeatTimer
     }
 
-    def localRpcFactory: RPCFactory[Command] = (nodeId, _, _) => {
+    def localRpcFactory: RPCFactory[Command] = (nodeId, _, _, _) => {
       new LocalRPC[Command](testNodes(nodeId).raftNode)
     }
 

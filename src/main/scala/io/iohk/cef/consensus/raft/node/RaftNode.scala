@@ -24,7 +24,7 @@ private[raft] class RaftNode[Command](
 
   val clusterTable: Map[String, RPC[Command]] = clusterMemberIds
     .filterNot(_ == nodeId)
-    .map(peerId => peerId -> rpcFactory(peerId, appendEntries, requestVote))
+    .map(peerId => peerId -> rpcFactory(peerId, appendEntries, requestVote, clientAppendEntries))
     .toMap
 
   val clusterMembers: Seq[RPC[Command]] = clusterTable.values.toSeq

@@ -20,12 +20,15 @@ package object raft {
       *                              implementers should invoke this function.
       * @param requestVoteCallback when a (remote) raft node makes an inbound requestVote call,
       *                            implementers should invoke this function.
-      * @return
+      * @param clientAppendEntriesCallback when a (remote) consensus module makes an inbound clientAppendEntries call,
+      *                                   implementers should invoke this function.
+      * @return an RPC implementation
       */
     def apply(
         nodeId: String,
         appendEntriesCallback: EntriesToAppend[Command] => AppendEntriesResult,
-        requestVoteCallback: VoteRequested => RequestVoteResult): RPC[Command]
+        requestVoteCallback: VoteRequested => RequestVoteResult,
+        clientAppendEntriesCallback: Seq[Command] => Future[Either[Redirect[Command], Unit]]): RPC[Command]
   }
 
   /**
@@ -213,6 +216,7 @@ package object raft {
 
   /**
     * Create and configure a raft node.
+    *
     * @param nodeId A unique identifier within the cluster.
     * @param clusterMemberIds the ids of the other cluster members.
     * @param rpcFactory as described above.

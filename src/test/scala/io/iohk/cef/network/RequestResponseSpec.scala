@@ -5,7 +5,7 @@ import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
-
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
 class RequestResponseSpec extends FlatSpec {
