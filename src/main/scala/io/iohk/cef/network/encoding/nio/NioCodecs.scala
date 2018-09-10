@@ -23,6 +23,10 @@ trait NioCodecs extends NativeCodecs with ProductCodecs with StreamCodecs with O
     def apply[T](implicit dec: NioDecoder[T]): NioDecoder[T] = dec
   }
 
+  object NioCodec {
+    def apply[T](implicit enc: NioEncoder[T], dec: NioDecoder[T]): NioCodec[T] = new Codec(enc, dec)
+  }
+
   def nioStreamCodec[T](implicit enc: NioEncoder[T], dec: NioStreamDecoder[T]): NioStreamCodec[T] =
     new NioStreamCodec[T](enc, dec)
 }
