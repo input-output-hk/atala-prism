@@ -6,7 +6,7 @@ import java.nio.ByteBuffer.allocate
 import io.iohk.cef.network.encoding.nio.CodecDecorators._
 import shapeless.{::, Generic, HList, HNil, Lazy}
 
-import scala.reflect.ClassTag
+import scala.reflect.runtime.universe._
 
 trait ProductCodecs {
 
@@ -43,12 +43,12 @@ trait ProductCodecs {
   implicit def genericEncoder[T, R](
       implicit gen: Generic.Aux[T, R],
       enc: Lazy[NioEncoder[R]],
-      ct: ClassTag[T]): NioEncoder[T] =
-    messageLengthEncoder(classCodeEncoder(t => enc.value.encode(gen.to(t))))
+      tt: WeakTypeTag[T]): NioEncoder[T] =
+    messageLengthEncoder(typeCodeEncoder(t => enc.value.encode(gen.to(t))))
 
   implicit def genericDecoder[T, R](
       implicit gen: Generic.Aux[T, R],
       dec: Lazy[NioDecoder[R]],
-      ct: ClassTag[T]): NioDecoder[T] =
-    messageLengthDecoder(classCodeDecoder((b: ByteBuffer) => dec.value.decode(b).map(gen.from)))
+      ct: WeakTypeTag[T]): NioDecoder[T] =
+    messageLengthDecoder(typeCodeDecoder((b: ByteBuffer) => dec.value.decode(b).map(gen.from)))
 }

@@ -7,8 +7,8 @@ import io.iohk.cef.network.encoding.nio._
 import io.iohk.cef.network.monixstream.MonixMessageStream
 import io.iohk.cef.network.transport.Transports.usesTcp
 import io.iohk.cef.network.transport._
-
 import monix.reactive.Observable
+import scala.reflect.runtime.universe._
 
 /**
   * Represents a conversational model of the network
@@ -22,7 +22,7 @@ import monix.reactive.Observable
   * @param networkDiscovery Encapsulates a routing table implementation.
   * @param transports helpers to obtain network transport instances.
   */
-class ConversationalNetwork[Message: NioEncoder: NioDecoder](
+class ConversationalNetwork[Message: NioEncoder: NioDecoder: WeakTypeTag](
     networkDiscovery: NetworkDiscovery,
     transports: Transports) {
 

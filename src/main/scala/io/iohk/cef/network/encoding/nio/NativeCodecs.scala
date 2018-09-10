@@ -7,6 +7,7 @@ import io.iohk.cef.network.encoding.nio.CodecDecorators._
 import io.iohk.cef.network.encoding.nio.ByteLength._
 
 import scala.reflect.ClassTag
+import scala.reflect.runtime.universe._
 
 trait NativeCodecs {
 
@@ -69,11 +70,11 @@ trait NativeCodecs {
 
   implicit val charDecoder: NioDecoder[Char] = (b: ByteBuffer) => Some(b.getChar())
 
-  implicit def arrayEncoder[T](implicit enc: NioEncoder[T], ct: ClassTag[T]): NioEncoder[Array[T]] =
-    messageLengthEncoder(classCodeEncoder(arrayEncoderImpl))
+  implicit def arrayEncoder[T](implicit enc: NioEncoder[T], tt: WeakTypeTag[T]): NioEncoder[Array[T]] =
+    messageLengthEncoder(typeCodeEncoder(arrayEncoderImpl))
 
-  implicit def arrayDecoder[T](implicit dec: NioDecoder[T], ct: ClassTag[T]): NioDecoder[Array[T]] =
-    messageLengthDecoder(classCodeDecoder(arrayDecoderImpl))
+  implicit def arrayDecoder[T](implicit dec: NioDecoder[T], tt: WeakTypeTag[T]): NioDecoder[Array[T]] =
+    messageLengthDecoder(typeCodeDecoder(arrayDecoderImpl))
 
   def arrayEncoderImpl[T](implicit enc: NioEncoder[T]): NioEncoder[Array[T]] =
     (a: Array[T]) => {
@@ -96,10 +97,10 @@ trait NativeCodecs {
       uberBuffer.flip().asInstanceOf[ByteBuffer]
     }
 
-  def arrayDecoderImpl[T](implicit dec: NioDecoder[T], ct: ClassTag[T]): NioDecoder[Array[T]] =
+  def arrayDecoderImpl[T](implicit dec: NioDecoder[T], tt: WeakTypeTag[T]): NioDecoder[Array[T]] =
     (b: ByteBuffer) => {
       val sizeElements = b.getInt()
-
+      implicit val ct: ClassTag[T] = typeToClassTag[T]
       val arr = new Array[T](sizeElements)
 
       Range(0, sizeElements).foreach(i => {

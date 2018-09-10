@@ -2,8 +2,9 @@ package io.iohk.cef.network
 import io.iohk.cef.network.discovery.NetworkDiscovery
 import io.iohk.cef.network.encoding.nio.{NioDecoder, NioEncoder}
 import io.iohk.cef.network.transport.Transports
+import scala.reflect.runtime.universe._
 
-class DisseminationalNetwork[Message: NioEncoder: NioDecoder](
+class DisseminationalNetwork[Message: NioEncoder: NioDecoder: WeakTypeTag](
     networkDiscovery: NetworkDiscovery,
     transports: Transports) {
 

@@ -2,7 +2,6 @@ package io.iohk.cef.network.encoding.nio
 import java.nio.{BufferUnderflowException, ByteBuffer}
 import java.security.MessageDigest
 
-import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 
 private[nio] object CodecDecorators {
@@ -35,7 +34,7 @@ private[nio] object CodecDecorators {
     }
   }
 
-  def typeCodeEncoder[T](enc: NioEncoder[T])(implicit tt: TypeTag[T]): NioEncoder[T] = (t: T) => {
+  def typeCodeEncoder[T](enc: NioEncoder[T])(implicit tt: WeakTypeTag[T]): NioEncoder[T] = (t: T) => {
     val hashBuff: ByteBuffer = arrayEncoderImpl[Byte].encode(typeCode[T])
     val messageBuff: ByteBuffer = enc.encode(t)
     ByteBuffer
@@ -46,41 +45,13 @@ private[nio] object CodecDecorators {
       .asInstanceOf[ByteBuffer]
   }
 
-  def typeCodeDecoder[T](dec: NioDecoder[T])(implicit tt: TypeTag[T]): NioDecoder[T] = new NioDecoder[T] {
+  def typeCodeDecoder[T](dec: NioDecoder[T])(implicit tt: WeakTypeTag[T]): NioDecoder[T] = new NioDecoder[T] {
     override def decode(b: ByteBuffer): Option[T] = {
 
       val actualTypeHashDec: Option[Array[Byte]] = arrayDecoderImpl[Byte].decode(b)
 
       val matchingTypeHash = actualTypeHashDec
         .exists(actualTypeHash => actualTypeHash.deep == typeCode[T].deep)
-
-      if (matchingTypeHash)
-        dec.decode(b)
-      else {
-        None
-      }
-    }
-  }
-
-  def classCodeEncoder[T](enc: NioEncoder[T])(implicit ct: ClassTag[T]): NioEncoder[T] = (t: T) => {
-    val hashBuff: ByteBuffer = arrayEncoderImpl[Byte].encode(classCode[T])
-    val messageBuff: ByteBuffer = enc.encode(t)
-
-    ByteBuffer
-      .allocate(hashBuff.capacity() + messageBuff.capacity())
-      .put(hashBuff)
-      .put(messageBuff)
-      .flip()
-      .asInstanceOf[ByteBuffer]
-  }
-
-  def classCodeDecoder[T](dec: NioDecoder[T])(implicit ct: ClassTag[T]): NioDecoder[T] = new NioDecoder[T] {
-    override def decode(b: ByteBuffer): Option[T] = {
-
-      val actualTypeHashDec: Option[Array[Byte]] = arrayDecoderImpl[Byte].decode(b)
-
-      val matchingTypeHash = actualTypeHashDec
-        .exists(actualTypeHash => actualTypeHash.deep == classCode[T].deep)
 
       if (matchingTypeHash)
         dec.decode(b)
@@ -115,11 +86,8 @@ private[nio] object CodecDecorators {
     result
   }
 
-  private def classCode[T](implicit ct: ClassTag[T]): Array[Byte] =
-    hash(ct.runtimeClass.getName)
-
-  private def typeCode[T](implicit tt: TypeTag[T]): Array[Byte] =
-    hash(typeTag[T].toString())
+  private def typeCode[T](implicit tt: WeakTypeTag[T]): Array[Byte] =
+    hash(tt.toString())
 
   private[nio] def hash(s: String): Array[Byte] = {
     MessageDigest.getInstance("MD5").digest(s.getBytes)
