@@ -3,7 +3,7 @@ import io.iohk.cef.LedgerId
 import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.ledger.{Block, BlockHeader, ByteStringSerializable, Transaction}
-import io.iohk.cef.network.{NetworkComponent, NodeId}
+import io.iohk.cef.network.NodeId
 import io.iohk.cef.transactionpool.TransactionPoolFutureInterface
 
 import scala.concurrent.{ExecutionContext, Future}
