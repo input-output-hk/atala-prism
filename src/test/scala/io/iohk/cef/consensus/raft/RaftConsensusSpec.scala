@@ -88,9 +88,11 @@ class RaftConsensusSpec extends WordSpec {
           val apparentLeaderRpc = mock[RPC[String]]
           val realLeaderRpc = mock[RPC[String]]
 
-          when(raftNode.getLeaderRPC).thenReturn(apparentLeaderRpc)
+          when(raftNode.getLeader).thenReturn("my-apparent-leader")
+          when(raftNode.getRPC("my-apparent-leader")).thenReturn(apparentLeaderRpc)
           when(apparentLeaderRpc.clientAppendEntries(any[Seq[String]]))
-            .thenReturn(Future(Left(Redirect(realLeaderRpc))))
+            .thenReturn(Future[Either[Redirect[String], Unit]](Left(Redirect("my-real-leader"))))
+          when(raftNode.getRPC("my-real-leader")).thenReturn(realLeaderRpc)
           when(realLeaderRpc.clientAppendEntries(any[Seq[String]])).thenReturn(Future(Right(())))
 
           val consensusModule = new RaftConsensus(raftNode)
@@ -106,7 +108,8 @@ class RaftConsensusSpec extends WordSpec {
         "handle the request" in new MockFixture {
           val raftNode = mock[RaftNode[String]]
           val leaderRpc = mock[RPC[String]]
-          when(raftNode.getLeaderRPC).thenReturn(leaderRpc)
+          when(raftNode.getLeader).thenReturn("my-leader")
+          when(raftNode.getRPC("my-leader")).thenReturn(leaderRpc)
           when(leaderRpc.clientAppendEntries(any[Seq[String]])).thenReturn(Future(Right(())))
 
           val consensusModule = new RaftConsensus(raftNode)

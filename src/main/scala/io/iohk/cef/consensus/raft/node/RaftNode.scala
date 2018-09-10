@@ -39,13 +39,16 @@ private[raft] class RaftNode[Command](
 
   val nodeFSM = new RaftFSM[Command](becomeFollower, becomeCandidate, becomeLeader)
 
-  def getLeaderRPC: RPC[Command] = {
+  def getRPC(nodeId: String): RPC[Command] =
+    clusterTable(nodeId)
+
+  def getLeader: String = {
     val ctx = raftState.single()
     if (ctx.leaderId.nonEmpty)
-      clusterTable(ctx.leaderId)
+      ctx.leaderId
     else {
       val (_, votedFor) = ctx.persistentState
-      clusterTable(votedFor)
+      votedFor
     }
   }
 

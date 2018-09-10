@@ -169,7 +169,7 @@ private[raft] class Follower[Command](raftNode: RaftNode[Command])(implicit ec: 
   override def clientAppendEntries(
       rc: RaftState[Command],
       entries: Seq[Command]): Future[(RaftState[Command], Either[Redirect[Command], Unit])] =
-    Future((rc, Left(Redirect(raftNode.getLeaderRPC))))
+    Future((rc, Left(Redirect(raftNode.getLeader))))
   override val stateCode: StateCode = Follower
 }
 
@@ -193,7 +193,7 @@ private[raft] class Candidate[Command](raftNode: RaftNode[Command])(implicit ec:
   override def clientAppendEntries(
       rc: RaftState[Command],
       entries: Seq[Command]): Future[(RaftState[Command], Either[Redirect[Command], Unit])] =
-    Future((rc, Left(Redirect(raftNode.getLeaderRPC))))
+    Future((rc, Left(Redirect(raftNode.getLeader))))
 
   override val stateCode: StateCode = Candidate
 }

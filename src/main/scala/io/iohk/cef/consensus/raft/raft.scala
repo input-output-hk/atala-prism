@@ -32,7 +32,7 @@ package object raft {
     * Redirect provides a way for nodes who receive append requests from clients
     * to redirect to their leader. Used by RPC below.
     */
-  case class Redirect[Command](leaderRPC: RPC[Command])
+  case class Redirect[Command](nodeId: String)
 
   /**
     * To be implemented by users of the module using whatever network technology suits them.
@@ -177,13 +177,14 @@ package object raft {
     // The leader handles all client requests
     // (if a client contacts a follower, the follower redirects it to the leader)
     def appendEntries(entries: Seq[Command]): Future[Unit] = {
-      appendEntries(raftNode.getLeaderRPC, entries)
+      appendEntries(raftNode.getLeader, entries)
     }
 
-    private def appendEntries(leaderRpc: RPC[Command], entries: Seq[Command]): Future[Unit] = {
-      leaderRpc.clientAppendEntries(entries).flatMap {
-        case Left(Redirect(nextLeaderRPC)) =>
-          appendEntries(nextLeaderRPC, entries)
+    private def appendEntries(leader: String, entries: Seq[Command]): Future[Unit] = {
+      val leaderRPC = raftNode.getRPC(leader)
+      leaderRPC.clientAppendEntries(entries).flatMap {
+        case Left(Redirect(nextLeaderId)) =>
+          appendEntries(nextLeaderId, entries)
         case Right(()) =>
           Future(())
       }
@@ -206,7 +207,8 @@ package object raft {
   }
 
   trait RaftNodeInterface[Command] {
-    def getLeaderRPC: RPC[Command]
+    def getLeader: String
+    def getRPC(nodeId: String): RPC[Command]
   }
 
   /**
