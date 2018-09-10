@@ -7,8 +7,8 @@ val commonSettings = Seq(
   organization := "io.iohk.cef",
   name := "network",
   version := "0.1-SNAPSHOT",
-  scalaVersion := scalaV,
-  addCompilerPlugin("io.tryp" % "splain" % "0.3.2" cross CrossVersion.patch)
+  scalaVersion := scalaV
+//  addCompilerPlugin("io.tryp" % "splain" % "0.3.1" cross CrossVersion.patch)
 )
 
 enablePlugins(FlywayPlugin)
@@ -63,6 +63,7 @@ val dep = {
     "com.chuusai" %% "shapeless" % "2.3.3",
     "org.scala-lang" % "scala-reflect" % scalaV,
     "com.zaxxer" % "HikariCP" % "3.1.0",
+    "com.beachape" %% "enumeratum" % "1.5.13",
     "io.monix" %% "monix" % "3.0.0-RC1"
   )
 }

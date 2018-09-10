@@ -46,7 +46,6 @@ class RequestResponseSpec extends FlatSpec {
         fail("Received an invalid request")
     })
 
-
     val response: Response = alicesSide.sendRequest(bobsNetwork.nodeId, alicesRequest).futureValue
 
     response shouldBe bobsResponse
