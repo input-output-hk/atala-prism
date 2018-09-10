@@ -3,7 +3,7 @@ import akka.util.{ByteString, Timeout}
 import io.iohk.cef.LedgerId
 import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.ledger.{Block, ByteStringSerializable}
-import io.iohk.cef.network.{NetworkError, NodeId}
+import io.iohk.cef.network.{NetworkComponent, NetworkError, NodeId}
 import io.iohk.cef.test.{DummyBlockHeader, DummyTransaction}
 import io.iohk.cef.transactionpool.TransactionPoolFutureInterface
 import org.mockito.Mockito._

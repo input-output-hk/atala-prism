@@ -63,7 +63,8 @@ val dep = {
     "com.chuusai" %% "shapeless" % "2.3.3",
     "org.scala-lang" % "scala-reflect" % scalaV,
     "com.zaxxer" % "HikariCP" % "3.1.0",
-    "com.beachape" %% "enumeratum" % "1.5.13"
+    "com.beachape" %% "enumeratum" % "1.5.13",
+    "io.monix" %% "monix" % "3.0.0-RC1"
   )
 }
 

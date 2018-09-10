@@ -34,7 +34,7 @@ class ConversationalNetworkSpec extends FlatSpec {
     alice.network.sendMessage(bob.nodeId, "Hi, Bob!")
 
     eventually {
-      verify(bob.messageHandler).apply(alice.nodeId, "Hi, Bob!")
+      verify(bob.messageHandler).apply("Hi, Bob!")
     }
   }
 
@@ -46,7 +46,7 @@ class ConversationalNetworkSpec extends FlatSpec {
 
     alice.network.sendMessage(bob.nodeId, "Hi, Bob!")
 
-    verify(bob.messageHandler, after(200).never()).apply(any[NodeId], any[String])
+    verify(bob.messageHandler, after(200).never()).apply(any[String])
   }
 
   it should "send a message to a peer using the peer's NATed address" in {
@@ -69,7 +69,7 @@ class ConversationalNetworkSpec extends FlatSpec {
     alice.network.sendMessage(bob.nodeId, "Hi, Bob!")
 
     eventually {
-      verify(bob.messageHandler).apply(alice.nodeId, "Hi, Bob!")
+      verify(bob.messageHandler).apply("Hi, Bob!")
     }
   }
 
@@ -84,7 +84,7 @@ class ConversationalNetworkSpec extends FlatSpec {
     alice.network.sendMessage(charlie.nodeId, "Hi, Charlie!")
 
     eventually {
-      verify(charlie.messageHandler).apply(alice.nodeId, "Hi, Charlie!")
+      verify(charlie.messageHandler).apply("Hi, Charlie!")
     }
   }
 
@@ -98,7 +98,7 @@ class ConversationalNetworkSpec extends FlatSpec {
 
     alice.network.sendMessage(charlie.nodeId, "Hi, Charlie!")
 
-    verify(charlie.messageHandler, after(200).never()).apply(any[NodeId], any[String])
+    verify(charlie.messageHandler, after(200).never()).apply(any[String])
   }
 
   it should "support the messaging of arbitrary user objects" in {
@@ -112,7 +112,7 @@ class ConversationalNetworkSpec extends FlatSpec {
     alice.network.sendMessage(bob.nodeId, OurMessage("Hi, Bob!"))
 
     eventually {
-      verify(bob.messageHandler).apply(alice.nodeId, OurMessage("Hi, Bob!"))
+      verify(bob.messageHandler).apply(OurMessage("Hi, Bob!"))
     }
   }
 
@@ -120,7 +120,7 @@ class ConversationalNetworkSpec extends FlatSpec {
       nodeId: NodeId,
       peerInfo: PeerInfo,
       networkDiscovery: NetworkDiscovery,
-      messageHandler: (NodeId, T) => Unit,
+      messageHandler: T => Unit,
       network: ConversationalNetwork[T])
 
   private def randomNetworkFixture[T: NioEncoder: NioDecoder](
@@ -132,12 +132,14 @@ class ConversationalNetworkSpec extends FlatSpec {
 
     val networkDiscovery: NetworkDiscovery = mock[NetworkDiscovery]
 
-    val messageHandler: (NodeId, T) => Unit = mock[(NodeId, T) => Unit]
+    val messageHandler: T => Unit = mock[T => Unit]
 
     val peerInfo = PeerInfo(nodeId, configuration)
 
     val network =
-      new ConversationalNetwork[T](messageHandler, networkDiscovery, new Transports(peerInfo))
+      new ConversationalNetwork[T](networkDiscovery, new Transports(peerInfo))
+
+    network.messageStream.foreach(messageHandler)
 
     NetworkFixture(nodeId, peerInfo, networkDiscovery, messageHandler, network)
   }

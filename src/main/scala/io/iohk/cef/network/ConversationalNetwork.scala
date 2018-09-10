@@ -1,10 +1,14 @@
 package io.iohk.cef.network
 
+import java.net.InetSocketAddress
+
 import io.iohk.cef.network.discovery.NetworkDiscovery
 import io.iohk.cef.network.encoding.nio._
+import io.iohk.cef.network.monixstream.MonixMessageStream
 import io.iohk.cef.network.transport.Transports.usesTcp
-import io.iohk.cef.network.transport.tcp.TcpNetworkTransport
 import io.iohk.cef.network.transport._
+
+import monix.reactive.Observable
 
 /**
   * Represents a conversational model of the network
@@ -15,12 +19,10 @@ import io.iohk.cef.network.transport._
   * by Van Jacobson, to distinguish from the 'disseminational'
   * networking style.
   *
-  * @param messageHandler The messageHandler receives inbound messages from remote peers.
   * @param networkDiscovery Encapsulates a routing table implementation.
   * @param transports helpers to obtain network transport instances.
   */
 class ConversationalNetwork[Message: NioEncoder: NioDecoder](
-    messageHandler: (NodeId, Message) => Unit,
     networkDiscovery: NetworkDiscovery,
     transports: Transports) {
 
@@ -41,28 +43,35 @@ class ConversationalNetwork[Message: NioEncoder: NioDecoder](
   def sendMessage(nodeId: NodeId, message: Message): Unit =
     sendMessage(Frame(FrameHeader(peerInfo.nodeId, nodeId, peerInfo.configuration.messageTtl), message))
 
-  private def frameHandler(frame: Frame[Message]): Unit = {
+  def messageStream: MessageStream[Message] =
+    if (usesTcp(peerInfo))
+      new MonixMessageStream(
+        tcpNetworkTransport.get.monixMessageStream.filter(frameHandler).map((frame: Frame[Message]) => frame.content))
+    else
+      new MonixMessageStream[Message](Observable.empty)
+
+  private def frameHandler(frame: Frame[Message]): Boolean = {
     if (thisNodeIsTheDest(frame)) {
-      messageHandler(frame.header.src, frame.content)
+      true
     } else { // the frame is for another node
       if (frame.header.ttl > 0) {
         // decrement the ttl and resend it.
         sendMessage(frame.copy(header = FrameHeader(frame.header.src, frame.header.dst, frame.header.ttl - 1)))
+        false
+      } else {
+        // else the ttl is zero, so discard the message
+        false
       }
-      // else the ttl is zero, so discard the message
     }
   }
 
   private def thisNodeIsTheDest(frame: Frame[Message]): Boolean =
     frame.header.dst == peerInfo.nodeId
 
-  private def liftedFrameHandler[Address]: (Address, Frame[Message]) => Unit =
-    (_, frame) => frameHandler(frame)
-
   private val frameCodec = new NioCodec[Frame[Message]](NioEncoder[Frame[Message]], NioDecoder[Frame[Message]])
 
-  private val tcpNetworkTransport: Option[TcpNetworkTransport[Frame[Message]]] =
-    transports.tcp(liftedFrameHandler)(frameCodec)
+  private val tcpNetworkTransport: Option[NetworkTransport[InetSocketAddress, Frame[Message]]] =
+    transports.tcp(frameCodec)
 
   private def sendMessage(frame: Frame[Message]): Unit = {
     networkDiscovery
