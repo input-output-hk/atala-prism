@@ -44,11 +44,11 @@ trait ProductCodecs {
       implicit gen: Generic.Aux[T, R],
       enc: Lazy[NioEncoder[R]],
       ct: ClassTag[T]): NioEncoder[T] =
-    messageLengthEncoder(typeCodeEncoder(t => enc.value.encode(gen.to(t))))
+    messageLengthEncoder(classCodeEncoder(t => enc.value.encode(gen.to(t))))
 
   implicit def genericDecoder[T, R](
       implicit gen: Generic.Aux[T, R],
       dec: Lazy[NioDecoder[R]],
       ct: ClassTag[T]): NioDecoder[T] =
-    messageLengthDecoder(typeCodeDecoder((b: ByteBuffer) => dec.value.decode(b).map(gen.from)))
+    messageLengthDecoder(classCodeDecoder((b: ByteBuffer) => dec.value.decode(b).map(gen.from)))
 }

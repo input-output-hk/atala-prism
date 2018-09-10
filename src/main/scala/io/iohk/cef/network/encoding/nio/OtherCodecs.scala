@@ -9,6 +9,12 @@ import scala.reflect.ClassTag
 
 trait OtherCodecs {
 
+  implicit def seqEncoder[T](implicit enc: NioEncoder[T], ct: ClassTag[T]): NioEncoder[Seq[T]] =
+    (l: Seq[T]) => arrayEncoder(enc, ct).encode(l.toArray)
+
+  implicit def seqDecoder[T](implicit dec: NioDecoder[T], ct: ClassTag[T]): NioDecoder[Seq[T]] =
+    (b: ByteBuffer) => arrayDecoder(dec, ct).decode(b).map(arr => Seq(arr: _*))
+
   implicit def listEncoder[T](implicit enc: NioEncoder[T], ct: ClassTag[T]): NioEncoder[List[T]] =
     (l: List[T]) => arrayEncoder(enc, ct).encode(l.toArray)
 

@@ -3,7 +3,7 @@ import java.nio.ByteBuffer
 
 import io.iohk.cef.network.encoding._
 
-trait NioCodecs extends NativeCodecs with ProductCodecs with StreamCodecs with OtherCodecs {
+trait NioCodecs extends NativeCodecs with ProductCodecs with StreamCodecs with OtherCodecs with CoproductCodecs {
 
   type NioEncoder[T] = Encoder[T, ByteBuffer]
 

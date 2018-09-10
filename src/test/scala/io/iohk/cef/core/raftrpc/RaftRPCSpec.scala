@@ -46,8 +46,9 @@ class RaftRPCSpec extends FlatSpec {
   private def rpc(
       node: NetworkFixture,
       appendEntriesCalled: EntriesToAppend[String] => AppendEntriesResult,
-      requestVoteCalled: VoteRequested => RequestVoteResult): RaftRPC[String] = {
-    val rpcFactory = new RaftRPCFactory[String](node.networkDiscovery, node.transports)
-    rpcFactory.apply(node.nodeId.toString, appendEntriesCalled, requestVoteCalled)
-  }
+      requestVoteCalled: VoteRequested => RequestVoteResult): RaftRPC[String] = ???
+//  {
+//    val rpcFactory = new RaftRPCFactory[String](node.networkDiscovery, node.transports)
+//    rpcFactory.apply(node.nodeId.toString, appendEntriesCalled, requestVoteCalled)
+//  }
 }

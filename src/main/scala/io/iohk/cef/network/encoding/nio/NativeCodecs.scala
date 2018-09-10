@@ -2,9 +2,7 @@ package io.iohk.cef.network.encoding.nio
 
 import java.nio.ByteBuffer
 import java.nio.ByteBuffer.allocate
-import java.util.UUID
 
-import akka.util.ByteString
 import io.iohk.cef.network.encoding.nio.CodecDecorators._
 import io.iohk.cef.network.encoding.nio.ByteLength._
 
@@ -72,10 +70,10 @@ trait NativeCodecs {
   implicit val charDecoder: NioDecoder[Char] = (b: ByteBuffer) => Some(b.getChar())
 
   implicit def arrayEncoder[T](implicit enc: NioEncoder[T], ct: ClassTag[T]): NioEncoder[Array[T]] =
-    messageLengthEncoder(typeCodeEncoder(arrayEncoderImpl))
+    messageLengthEncoder(classCodeEncoder(arrayEncoderImpl))
 
   implicit def arrayDecoder[T](implicit dec: NioDecoder[T], ct: ClassTag[T]): NioDecoder[Array[T]] =
-    messageLengthDecoder(typeCodeDecoder(arrayDecoderImpl))
+    messageLengthDecoder(classCodeDecoder(arrayDecoderImpl))
 
   def arrayEncoderImpl[T](implicit enc: NioEncoder[T]): NioEncoder[Array[T]] =
     (a: Array[T]) => {

@@ -90,10 +90,10 @@ object NetUtils {
   }
 
   case class NetworkFixture(
-                             nodeId: NodeId,
-                             peerInfo: PeerInfo,
-                             networkDiscovery: NetworkDiscovery,
-                             transports: Transports)
+      nodeId: NodeId,
+      peerInfo: PeerInfo,
+      networkDiscovery: NetworkDiscovery,
+      transports: Transports)
 
   def randomNetworkFixture(messageTtl: Int = FrameHeader.defaultTtl): NetworkFixture = {
 
