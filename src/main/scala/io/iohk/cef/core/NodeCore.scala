@@ -32,7 +32,6 @@ class NodeCore[State, Header <: BlockHeader, Tx <: Transaction[State]](
   blockNetwork.messageStream.foreach(blEnvelope => processBlock(blEnvelope, Future.successful(Right(()))))
   txNetwork.messageStream.foreach(txEnvelope => processTransaction(txEnvelope, Future.successful(Right(()))))
 
-
   def receiveTransaction(txEnvelope: Envelope[Tx]): Future[Either[ApplicationError, Unit]] = {
     processTransaction(txEnvelope, disseminate(txEnvelope, txNetwork))
   }
@@ -41,18 +40,24 @@ class NodeCore[State, Header <: BlockHeader, Tx <: Transaction[State]](
     processBlock(blEnvelope, disseminate(blEnvelope, blockNetwork))
   }
 
-  private def processTransaction(txEnvelope: Envelope[Tx], networkDissemination: Future[Either[ApplicationError, Unit]]) = {
+  private def processTransaction(
+      txEnvelope: Envelope[Tx],
+      networkDissemination: Future[Either[ApplicationError, Unit]]) = {
     process(txEnvelope, networkDissemination) { env =>
       val txPoolService = consensusMap(env.ledgerId)._1
       txPoolService.processTransaction(txEnvelope.content)
     }
   }
 
-  private def processBlock(blEnvelope: Envelope[Block[State, Header, Tx]], networkDissemination: Future[Either[ApplicationError, Unit]]) = {
+  private def processBlock(
+      blEnvelope: Envelope[Block[State, Header, Tx]],
+      networkDissemination: Future[Either[ApplicationError, Unit]]) = {
     process(blEnvelope, networkDissemination)(env => consensusMap(env.ledgerId)._2.process(env.content))
   }
 
-  private def disseminate[A](envelope: Envelope[A], network: Network[Envelope[A]]): Future[Either[ApplicationError, Unit]] =
+  private def disseminate[A](
+      envelope: Envelope[A],
+      network: Network[Envelope[A]]): Future[Either[ApplicationError, Unit]] =
     Future(Right(network.disseminateMessage(envelope)))
 
   private def thisIsDestination[A](envelope: Envelope[A]): Boolean = envelope.destinationDescriptor(me)
