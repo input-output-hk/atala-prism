@@ -123,7 +123,7 @@ class HashingSpec extends WordSpec with MustMatchers with PropertyChecks with Ei
     }
 
     "fail to decode hashes with unsupported algorithms" in {
-      val algorithm = "KECCAK256".flatMap(_.toByte :: 0.toByte :: Nil).toArray
+      val algorithm = "SHA256".flatMap(_.toByte :: 0.toByte :: Nil).toArray
       forAll { bytes: Array[Byte] =>
         val hash = hashBytes(ByteString(bytes))
 
@@ -132,7 +132,7 @@ class HashingSpec extends WordSpec with MustMatchers with PropertyChecks with Ei
         corruptedHashBytes(index) = 'X'.toByte
 
         val result = Hash.decodeFrom(ByteString(corruptedHashBytes))
-        val expected = HashDecodeError.UnsupportedAlgorithm("XECCAK256")
+        val expected = HashDecodeError.UnsupportedAlgorithm("XHA256")
         result.left.value must be(expected)
       }
     }

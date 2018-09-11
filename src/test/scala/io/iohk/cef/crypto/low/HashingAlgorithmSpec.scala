@@ -8,14 +8,14 @@ import org.scalatest.prop.PropertyChecks
 
 class HashingAlogorithmSpec extends FlatSpec with PropertyChecks {
 
-  "kec256" should "get the correct result for a ByteString" in {
-    hashBytes(HashAlgorithm.KEC256)(ByteString("a")) shouldBe Hex.decode(
-      "3ac225168df54212a25c1c01fd35bebfea408fdac2e31ddd6f80a4bbf9a5f1cb")
+  "sha256" should "get the correct result for a ByteString" in {
+    hashBytes(HashAlgorithm.SHA256)(ByteString("a")) shouldBe Hex.decode(
+      "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb")
   }
 
-  "kec256" should "generate hashes that are unique for each ByteString" in {
+  "sha256" should "generate hashes that are unique for each ByteString" in {
 
-    val algo = HashAlgorithm.KEC256
+    val algo = HashAlgorithm.SHA256
 
     forAll { (a: String, b: String) =>
       whenever(a != b) {

@@ -8,12 +8,12 @@ import akka.actor.typed.scaladsl.{ActorContext, Behaviors, StashBuffer, TimerSch
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.util.ByteString
 import io.iohk.cef.crypto.low._
-import io.iohk.cef.network.discovery.db.KnownNodeStorage
-import io.iohk.cef.network.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.NodeStatus.NodeState
 import io.iohk.cef.network.ServerStatus
+import io.iohk.cef.network.discovery.DiscoveryListener._
+import io.iohk.cef.network.discovery.db.KnownNodeStorage
+import io.iohk.cef.network.encoding.{Decoder, Encoder}
 import io.iohk.cef.utils.FiniteSizedMap
-import DiscoveryListener._
 import io.micrometer.core.instrument.MeterRegistry
 import org.bouncycastle.util.encoders.Hex
 
@@ -21,8 +21,8 @@ import scala.util.Random
 
 object DiscoveryManager {
 
-  import io.iohk.cef.network.discovery.db.KnownNode
   import io.iohk.cef.network.NodeInfo
+  import io.iohk.cef.network.discovery.db.KnownNode
 
   sealed trait DiscoveryRequest
 
@@ -280,5 +280,5 @@ object DiscoveryManager {
   def calculateMessageKey(
       encoder: Encoder[DiscoveryWireMessage, ByteString],
       message: DiscoveryWireMessage): ByteString =
-    hashBytes(HashAlgorithm.KEC256)(encoder.encode(message))
+    hashBytes(HashAlgorithm.SHA256)(encoder.encode(message))
 }

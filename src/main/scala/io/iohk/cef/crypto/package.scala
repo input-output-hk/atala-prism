@@ -18,7 +18,7 @@ package object crypto extends Crypto {
   protected override val hashingCollection: HashingAlgorithmsCollection =
     HashingAlgorithmsCollection()
   protected override val hashingType: hashingCollection.HashingAlgorithmType =
-    hashingCollection.HashingAlgorithmType.KECCAK256
+    hashingCollection.HashingAlgorithmType.SHA256
 
   protected override val encryptionAlgorithmsCollection: EncryptionAlgorithmsCollection =
     EncryptionAlgorithmsCollection(secureRandom)
