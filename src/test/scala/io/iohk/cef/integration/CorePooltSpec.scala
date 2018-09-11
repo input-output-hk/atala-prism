@@ -18,7 +18,7 @@ import scala.collection.immutable.Queue
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, _}
 
-class CorePoolIntegration
+class CorePooltSpec
     extends TestKit(ActorSystem("CorePoolIntegration"))
     with FlatSpecLike
     with MustMatchers
@@ -37,7 +37,7 @@ class CorePoolIntegration
     override def poolActor: ActorRef = testActorRef
   }
 
-  behavior of "NetworkPoolIntegration"
+  behavior of "CorePoolItSpec"
 
   it should "process a transaction" in {
     implicit val timeout = Timeout(10 seconds)
