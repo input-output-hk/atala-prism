@@ -24,6 +24,11 @@ trait Hashing {
       private[Hashing] val bytes: HashBytes) {
     def toByteString: ByteString =
       Hash.encodeInto(this).toByteString
+
+    override def equals(obj: scala.Any): Boolean = obj match {
+      case that: Hash => `type` == that.`type` && bytes == that.bytes
+      case _ => false
+    }
   }
 
   object Hash {
