@@ -2,7 +2,7 @@ package io.iohk.cef.frontend
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.{HttpEntity, StatusCode}
-import io.iohk.cef.frontend.client.IdentityClientActor.TransactionRequest
+import io.iohk.cef.frontend.client.TransactionClient.IdentityTransactionRequest
 import spray.json._
 
 import scala.reflect.ClassTag
@@ -28,6 +28,6 @@ trait DefaultJsonFormats extends DefaultJsonProtocol with SprayJsonSupport {
     def read(json: JsValue): A = ct.runtimeClass.newInstance().asInstanceOf[A]
   }
 
-  implicit val clientRequestJsonFormat = jsonFormat5(TransactionRequest)
+  implicit val clientRequestJsonFormat = jsonFormat5(IdentityTransactionRequest)
 
 }

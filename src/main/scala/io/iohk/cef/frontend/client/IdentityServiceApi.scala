@@ -6,7 +6,7 @@ import akka.http.scaladsl.server.{Directives, Route}
 import akka.pattern.ask
 import akka.util.Timeout
 import io.iohk.cef.frontend.DefaultJsonFormats
-import io.iohk.cef.frontend.client.IdentityClientActor._
+import io.iohk.cef.frontend.client.TransactionClient._
 import io.swagger.annotations._
 import javax.ws.rs.Path
 
@@ -21,8 +21,8 @@ class IdentityServiceApi(createActor: ActorRef)(implicit executionContext: Execu
 
   implicit val timeout = Timeout(2.seconds)
 
-  val route = createTransaction
-  @Path("/create")
+  val route = createIdentity
+  @Path("/identity")
   @ApiOperation(value = "Transaction Request", nickname = "Message Request", httpMethod = "POST")
   @ApiImplicitParams(
     Array(
@@ -30,18 +30,18 @@ class IdentityServiceApi(createActor: ActorRef)(implicit executionContext: Execu
         name = "body",
         value = "Message Request",
         required = true,
-        dataTypeClass = classOf[TransactionRequest],
+        dataTypeClass = classOf[IdentityTransactionRequest],
         paramType = "body")
     ))
   @ApiResponses(
     Array(
       new ApiResponse(code = 201, message = "Created"),
-      new ApiResponse(code = 500, message = "Internal server error")
+      new ApiResponse(code = 400, message = "BadRequest Malformed Json")
     ))
-  def createTransaction: Route =
-    path("transaction" / "create") {
+  def createIdentity: Route =
+    path("transaction" / "identity") {
       post {
-        entity(as[TransactionRequest]) { request =>
+        entity(as[IdentityTransactionRequest]) { request =>
           val responseHandler: Future[TransactionResponse] =
             (createActor ? request).mapTo[TransactionResponse]
           onSuccess(responseHandler) { response =>
