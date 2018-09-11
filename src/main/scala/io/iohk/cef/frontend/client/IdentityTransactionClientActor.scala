@@ -26,7 +26,7 @@ object TransactionClient {
       extends ClientRequest // Client Request to capture
 
   case class TransactionResponse(result: Either[ApplicationError, Unit]) extends ClientResponse
-  case class RequestFailed(status:String) extends ApplicationError
+  case class RequestFailed(status: String) extends ApplicationError
 
 }
 
@@ -45,7 +45,8 @@ class IdentityTransactionClientActor(nodeCore: NodeCore[Set[PublicKey], Identity
       processTransaction(request)(Link.apply).pipeTo(sender())
     case request @ IdentityTransactionRequest("unlink", _, _, _, _) =>
       processTransaction(request)(Unlink.apply).pipeTo(sender())
-    case _ => Future.successful(TransactionResponse(Left(RequestFailed("Invalid Identity Transaction Type")))).pipeTo(sender())
+    case _ =>
+      Future.successful(TransactionResponse(Left(RequestFailed("Invalid Identity Transaction Type")))).pipeTo(sender())
 
   }
 

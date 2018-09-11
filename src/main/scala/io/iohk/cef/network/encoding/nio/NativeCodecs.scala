@@ -2,6 +2,7 @@ package io.iohk.cef.network.encoding.nio
 
 import java.nio.ByteBuffer
 import java.nio.ByteBuffer.allocate
+import java.util.UUID
 
 import akka.util.ByteString
 import io.iohk.cef.network.encoding.nio.CodecDecorators._
@@ -128,6 +129,16 @@ trait NativeCodecs {
   implicit val byteStringDecoder: NioDecoder[ByteString] = new NioDecoder[ByteString] {
     override def decode(b: ByteBuffer): Option[ByteString] =
       arrayDecoder(byteDecoder, ClassTag(classOf[Byte])).decode(b).map(arr => ByteString(arr))
+  }
+
+  implicit val uuidEncoder: NioEncoder[UUID] = new NioEncoder[UUID] {
+    override def encode(u: UUID): ByteBuffer = stringEncoder.encode(u.toString)
+  }
+
+  implicit val uuidDecoder: NioDecoder[UUID] = new NioDecoder[UUID] {
+    override def decode(u: ByteBuffer): Option[UUID] = {
+      stringDecoder.decode(u).map(s => UUID.fromString(s))
+    }
   }
 }
 

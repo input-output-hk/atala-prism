@@ -1,4 +1,5 @@
 package io.iohk.cef.network
+
 import akka.util.ByteString
 import io.iohk.cef.core.Envelope
 import io.iohk.cef.ledger.ByteStringSerializable
