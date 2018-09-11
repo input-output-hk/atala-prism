@@ -3,9 +3,10 @@ import akka.util.{ByteString, Timeout}
 import io.iohk.cef.LedgerId
 import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.ledger.{Block, ByteStringSerializable}
-import io.iohk.cef.network.{Network, NodeId}
+import io.iohk.cef.network.{MessageStream, Network, NodeId}
 import io.iohk.cef.test.{DummyBlockHeader, DummyTransaction}
 import io.iohk.cef.transactionpool.TransactionPoolFutureInterface
+import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{AsyncFlatSpec, MustMatchers}
@@ -42,6 +43,12 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
     val consensusMap = Map(ledgerId -> (mockTxPoolFutureInterface, mockConsensus))
     val txDM = mockNetwork[Envelope[DummyTransaction]]
     val blockDM = mockNetwork[Envelope[Block[String, DummyBlockHeader, DummyTransaction]]]
+    val txMessageStream = mock[MessageStream[Envelope[DummyTransaction]]]
+    val blockMessageStream = mock[MessageStream[Envelope[Block[String, DummyBlockHeader, DummyTransaction]]]]
+    when(txDM.messageStream).thenReturn(txMessageStream)
+    when(blockDM.messageStream).thenReturn(blockMessageStream)
+    when(txMessageStream.foreach(ArgumentMatchers.any())).thenReturn(Future.successful(()))
+    when(blockMessageStream.foreach(ArgumentMatchers.any())).thenReturn(Future.successful(()))
     implicit val t = timeout
     (
       new NodeCore(

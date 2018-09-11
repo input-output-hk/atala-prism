@@ -83,7 +83,6 @@ class NodeInfoSpec extends FlatSpec {
 
     val parseResult = NodeInfo.fromUri(p2pUri, discoveryUri, capabilities)
 
-    println(parseResult)
     inside(parseResult) {
       case Failure(e: IllegalArgumentException) => e.getMessage shouldBe "hexBinary needs to be even-length: 1"
     }

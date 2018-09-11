@@ -18,7 +18,6 @@ class ScalaTimerSpec extends FlatSpec with MustMatchers {
     import ScalaTimer._
     timer.asScala.wrap {
       Thread.sleep(20)
-      println("Works")
     }
     timer.totalTime(TimeUnit.MILLISECONDS) must be > (20.0)
   }
