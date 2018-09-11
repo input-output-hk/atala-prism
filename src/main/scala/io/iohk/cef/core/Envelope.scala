@@ -18,7 +18,8 @@ case class Envelope[+D](content: D, ledgerId: LedgerId, destinationDescriptor: D
 object Envelope {
   import io.iohk.cef.utils.ProtoBufByteStringConversion._
 
-  implicit def envelopeSerializer[T](implicit contentSerializer: ByteStringSerializable[T]): ByteStringSerializable[Envelope[T]] =
+  implicit def envelopeSerializer[T](
+      implicit contentSerializer: ByteStringSerializable[T]): ByteStringSerializable[Envelope[T]] =
     new ByteStringSerializable[Envelope[T]] {
       override def serialize(t: Envelope[T]): ByteString = {
         val proto = EnvelopeProto(

@@ -33,16 +33,17 @@ case class Or(a: DestinationDescriptor, b: DestinationDescriptor) extends Destin
 
 object DestinationDescriptor {
   import io.iohk.cef.utils.ProtoBufByteStringConversion._
-  val destinationDescriptorSerializer: ByteStringSerializable[DestinationDescriptor] = new ByteStringSerializable[DestinationDescriptor] {
+  val destinationDescriptorSerializer: ByteStringSerializable[DestinationDescriptor] =
+    new ByteStringSerializable[DestinationDescriptor] {
 
-    override def serialize(t: DestinationDescriptor): ByteString = {
-      ByteString(toDestinationDescriptorProto(t).toByteArray)
-    }
+      override def serialize(t: DestinationDescriptor): ByteString = {
+        ByteString(toDestinationDescriptorProto(t).toByteArray)
+      }
 
-    override def deserialize(bytes: ByteString): DestinationDescriptor = {
-      fromDestinationDescriptorProto(DestinationDescriptorProto.parseFrom(bytes.toArray))
+      override def deserialize(bytes: ByteString): DestinationDescriptor = {
+        fromDestinationDescriptorProto(DestinationDescriptorProto.parseFrom(bytes.toArray))
+      }
     }
-  }
 
   def toDestinationDescriptorProto(t: DestinationDescriptor): DestinationDescriptorProto = {
     val predicate = t match {
@@ -58,21 +59,21 @@ object DestinationDescriptor {
   }
 
   def fromDestinationDescriptorProto(parsed: DestinationDescriptorProto): DestinationDescriptor = {
-    if(parsed.fragment.isAnyoneWrapper) {
+    if (parsed.fragment.isAnyoneWrapper) {
       Anyone()
-    } else if(parsed.fragment.isSingleNodeWrapper) {
+    } else if (parsed.fragment.isSingleNodeWrapper) {
       SingleNode(NodeId(parsed.getSingleNodeWrapper.nodeId))
-    } else if(parsed.fragment.isSetOfNodesWrapper) {
-      SetOfNodes(parsed.getSetOfNodesWrapper.nodeId.toSet.map((bs: com.google.protobuf.ByteString) =>
-        NodeId(bs)
-      ))
-    } else if(parsed.fragment.isNotWrapper) {
+    } else if (parsed.fragment.isSetOfNodesWrapper) {
+      SetOfNodes(parsed.getSetOfNodesWrapper.nodeId.toSet.map((bs: com.google.protobuf.ByteString) => NodeId(bs)))
+    } else if (parsed.fragment.isNotWrapper) {
       Not(fromDestinationDescriptorProto(parsed.getNotWrapper.destinationDescriptor))
-    } else if(parsed.fragment.isAndWrapper) {
-      And(fromDestinationDescriptorProto(parsed.getAndWrapper.left),
+    } else if (parsed.fragment.isAndWrapper) {
+      And(
+        fromDestinationDescriptorProto(parsed.getAndWrapper.left),
         fromDestinationDescriptorProto(parsed.getAndWrapper.right))
-    } else if(parsed.fragment.isOrWrapper) {
-      Or(fromDestinationDescriptorProto(parsed.getOrWrapper.left),
+    } else if (parsed.fragment.isOrWrapper) {
+      Or(
+        fromDestinationDescriptorProto(parsed.getOrWrapper.left),
         fromDestinationDescriptorProto(parsed.getOrWrapper.right))
     } else {
       throw new IllegalArgumentException(s"Unexpected parsed proto: ${parsed}")
