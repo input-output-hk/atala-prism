@@ -63,6 +63,7 @@ val dep = {
     "com.softwaremill.quicklens" %% "quicklens" % "1.4.11" % Test,
     "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test,
     "com.typesafe.akka" %% "akka-testkit-typed" % akkaVersion % Test,
+    "com.typesafe.akka" %% "akka-http-testkit" % "10.1.4" % Test,
 
     "io.netty" % "netty-all" % "4.1.28.Final",
     "com.chuusai" %% "shapeless" % "2.3.3",

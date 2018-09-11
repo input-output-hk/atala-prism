@@ -1,6 +1,8 @@
 package io.iohk.cef.frontend.client
 
 import java.security.PublicKey
+import java.util.Base64
+
 import akka.actor.Actor
 import akka.pattern.pipe
 import akka.util.ByteString
@@ -8,7 +10,6 @@ import io.iohk.cef.core.{Envelope, NodeCore}
 import io.iohk.cef.crypto.low.{DigitalSignature, decodePublicKey}
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.ledger.identity._
-import org.bouncycastle.util.encoders.Hex
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -25,6 +26,7 @@ object TransactionClient {
       extends ClientRequest // Client Request to capture
 
   case class TransactionResponse(result: Either[ApplicationError, Unit]) extends ClientResponse
+  case class RequestFailed(status:String) extends ApplicationError
 
 }
 
@@ -43,6 +45,7 @@ class IdentityTransactionClientActor(nodeCore: NodeCore[Set[PublicKey], Identity
       processTransaction(request)(Link.apply).pipeTo(sender())
     case request @ IdentityTransactionRequest("unlink", _, _, _, _) =>
       processTransaction(request)(Unlink.apply).pipeTo(sender())
+    case _ => Future.successful(TransactionResponse(Left(RequestFailed("Invalid Identity Transaction Type")))).pipeTo(sender())
 
   }
 
@@ -50,7 +53,7 @@ class IdentityTransactionClientActor(nodeCore: NodeCore[Set[PublicKey], Identity
       constructor: (String, PublicKey, DigitalSignature) => IdentityTransaction)(
       implicit ec: ExecutionContext): Future[TransactionResponse] = {
 
-    val key: PublicKey = decodePublicKey(Hex.decode(request.publicKey))
+    val key: PublicKey = decodePublicKey(Base64.getDecoder.decode(request.publicKey))
     val signature: DigitalSignature = new DigitalSignature(ByteString(request.signature))
     val envelope =
       Envelope(content = constructor(request.identity, key, signature), ledgerId = request.ledgerId, _ => true)

@@ -47,8 +47,12 @@ class IdentityServiceApi(createActor: ActorRef)(implicit executionContext: Execu
           onSuccess(responseHandler) { response =>
             complete(
               response.result match {
-                case Right(_) => StatusCodes.Created
-                case Left(_) => StatusCodes.Conflict
+                case Right(_) => {               println(response.result)
+                   StatusCodes.Created}
+                case Left(_) => {
+                  println(response.result)
+                  StatusCodes.BadRequest
+                }
               }
             )
           }

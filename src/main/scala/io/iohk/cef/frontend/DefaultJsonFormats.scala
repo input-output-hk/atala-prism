@@ -2,6 +2,7 @@ package io.iohk.cef.frontend
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import akka.http.scaladsl.model.{HttpEntity, StatusCode}
+import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.frontend.client.TransactionClient.IdentityTransactionRequest
 import spray.json._
 
@@ -13,7 +14,7 @@ import scala.reflect.ClassTag
   * @param responseStatus the status code
   * @param response the optional body
   */
-case class ErrorResponseException(responseStatus: StatusCode, response: Option[HttpEntity]) extends Exception
+case class ErrorResponseException(responseStatus: StatusCode, response: Option[HttpEntity]) extends ApplicationError
 
 trait DefaultJsonFormats extends DefaultJsonProtocol with SprayJsonSupport {
 
