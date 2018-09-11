@@ -1,4 +1,5 @@
 package io.iohk.cef.network.encoding
+
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 
