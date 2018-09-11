@@ -1,6 +1,3 @@
 package io.iohk.cef.network
 
-case class PeerInfo(
-    nodeId: NodeId,
-    configuration: ConversationalNetworkConfiguration,
-    capabilities: Capabilities = Capabilities(0))
+case class PeerInfo(nodeId: NodeId, configuration: NetworkConfiguration, capabilities: Capabilities = Capabilities(0))

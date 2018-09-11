@@ -22,9 +22,9 @@ class DisseminationalNetworkSpec extends FlatSpec {
   val message = "Hello, world!"
 
   val peer1 =
-    PeerInfo(aRandomNodeId(), ConversationalNetworkConfiguration(Some(TcpTransportConfiguration(aRandomAddress()))))
+    PeerInfo(aRandomNodeId(), NetworkConfiguration(Some(TcpTransportConfiguration(aRandomAddress()))))
   val peer2 =
-    PeerInfo(aRandomNodeId(), ConversationalNetworkConfiguration(Some(TcpTransportConfiguration(aRandomAddress()))))
+    PeerInfo(aRandomNodeId(), NetworkConfiguration(Some(TcpTransportConfiguration(aRandomAddress()))))
 
   it should "disseminate a message to its peers" in {
     val peers = List(peer1, peer2)
@@ -34,7 +34,7 @@ class DisseminationalNetworkSpec extends FlatSpec {
     peers.foreach(peer => when(discovery.nearestPeerTo(peer.nodeId)).thenReturn(Some(peer)))
     when(discovery.nearestNPeersTo(nodeId, Int.MaxValue)).thenReturn(peers)
     when(transports.peerInfo)
-      .thenReturn(PeerInfo(nodeId, ConversationalNetworkConfiguration(Some(TcpTransportConfiguration(address)))))
+      .thenReturn(PeerInfo(nodeId, NetworkConfiguration(Some(TcpTransportConfiguration(address)))))
     when(transports.tcp[Frame[String]](any())).thenReturn(Some(tcpTransport))
 
     val network = new DisseminationalNetwork[String](discovery, transports)

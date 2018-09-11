@@ -4,7 +4,7 @@ import java.io.OutputStream
 import java.net.{InetSocketAddress, ServerSocket, Socket}
 import java.nio.ByteBuffer
 
-import io.iohk.cef.network.{ConversationalNetworkConfiguration, NodeId, PeerInfo}
+import io.iohk.cef.network.{NetworkConfiguration, NodeId, PeerInfo}
 import io.iohk.cef.network.NodeId.nodeIdBytes
 import io.iohk.cef.network.discovery.NetworkDiscovery
 import io.iohk.cef.network.transport.{FrameHeader, Transports}
@@ -85,7 +85,7 @@ object NetUtils {
     } yield {
       val address = aRandomAddress()
       val messageTtl = FrameHeader.defaultTtl
-      PeerInfo(nodeId, ConversationalNetworkConfiguration(Some(TcpTransportConfiguration(address)), messageTtl))
+      PeerInfo(nodeId, NetworkConfiguration(Some(TcpTransportConfiguration(address)), messageTtl))
     }
   }
 
@@ -98,7 +98,7 @@ object NetUtils {
   def randomNetworkFixture(messageTtl: Int = FrameHeader.defaultTtl): NetworkFixture = {
 
     val tcpAddress: InetSocketAddress = aRandomAddress()
-    val configuration = ConversationalNetworkConfiguration(Some(TcpTransportConfiguration(tcpAddress)), messageTtl)
+    val configuration = NetworkConfiguration(Some(TcpTransportConfiguration(tcpAddress)), messageTtl)
 
     val nodeId = NodeId(randomBytes(NodeId.nodeIdBytes))
 
