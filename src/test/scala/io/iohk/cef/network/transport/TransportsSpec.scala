@@ -1,5 +1,4 @@
 package io.iohk.cef.network.transport
-import java.net.InetSocketAddress
 
 import io.iohk.cef.network.encoding.nio._
 import io.iohk.cef.network.transport.tcp.NetUtils.{aRandomAddress, aRandomNodeId}
@@ -58,7 +57,7 @@ class TransportsSpec extends FlatSpec {
 
     val transports = new Transports(peerInfo)
 
-    transports.tcp(mock[(InetSocketAddress, String) => Unit])(mock[NioCodec[String]]) shouldBe defined
+    transports.tcp(mock[NioCodec[String]]) shouldBe defined
   }
 
   it should "not return tcp if tcp is not configured" in {
@@ -66,6 +65,6 @@ class TransportsSpec extends FlatSpec {
 
     val transports = new Transports(peerInfo)
 
-    transports.tcp(mock[(InetSocketAddress, String) => Unit])(mock[NioCodec[String]]) shouldBe None
+    transports.tcp(mock[NioCodec[String]]) shouldBe None
   }
 }
