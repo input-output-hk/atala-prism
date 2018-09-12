@@ -128,50 +128,6 @@ package object raft {
   }
 
   /**
-    * Can be implemented by users of the module if they wish to provide a timer implementation.
-    */
-  trait RaftTimerFactory {
-
-    /**
-      * @param timeoutHandler this enables the Raft node to pass a function which the timer should
-      *                       call upon timeout.
-      * @return a RaftTimer implementation.
-      */
-    def apply(timeoutHandler: () => Unit): RaftTimer
-  }
-
-  /**
-    * A RaftTimer should implement a randomized, always on timer.
-    * That is,
-    * it should schedule a random timeout.
-    * when that timeout occurs it should invoke the timeout handler
-    * it should then reschedule another random timeout.
-    */
-  trait RaftTimer {
-
-    /**
-      * Reset causes the timer to cancel the current timeout and reschedule
-      * another one (without calling the timeoutHandler).
-      */
-    def reset(): Unit
-  }
-
-  /**
-    * A JDK based timer with random timeouts between 150 and 300 ms,
-    * generally suitable for LANs.
-    */
-  // FIXME: remove magic numbers.
-  val defaultElectionTimerFactory: RaftTimerFactory =
-    timeoutHandler => new BouncyTimer(150 millis, 300 millis)(timeoutHandler)
-
-  /**
-    * A JDK based timer with a fixed, 75 ms timeout.
-    */
-  // FIXME: remove magic numbers.
-  val defaultHeartbeatTimerFactory: RaftTimerFactory =
-    timeoutHandler => new BouncyTimer(75 millis, 75 millis)(timeoutHandler)
-
-  /**
     * From Figure 1. The Consensus module ensures client requests go to the leader.
     * This is the top-level interface used by clients.
     */
@@ -232,16 +188,16 @@ package object raft {
       nodeId: String,
       clusterMemberIds: Seq[String],
       rpcFactory: RPCFactory[Command],
-      electionTimerFactory: RaftTimerFactory = defaultElectionTimerFactory,
-      heartbeatTimerFactory: RaftTimerFactory = defaultHeartbeatTimerFactory,
+      electionTimeoutRange: (Duration, Duration),
+      heartbeatTimeoutRange: (Duration, Duration),
       stateMachine: Command => Unit,
       persistentStorage: PersistentStorage[Command])(implicit ec: ExecutionContext): RaftNodeInterface[Command] =
     new RaftNode[Command](
       nodeId,
       clusterMemberIds,
       rpcFactory,
-      electionTimerFactory,
-      heartbeatTimerFactory,
+      electionTimeoutRange,
+      heartbeatTimeoutRange,
       stateMachine,
       persistentStorage)
 }

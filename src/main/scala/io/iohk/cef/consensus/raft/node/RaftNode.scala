@@ -7,6 +7,8 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.stm.{Ref, Txn, atomic}
 import org.slf4j.LoggerFactory
 
+import scala.concurrent.duration.Duration
+
 /**
   * Raft node implementation.
   */
@@ -14,8 +16,8 @@ private[raft] class RaftNode[Command](
     val nodeId: String,
     clusterMemberIds: Seq[String],
     rpcFactory: RPCFactory[Command],
-    electionTimerFactory: RaftTimerFactory = defaultElectionTimerFactory,
-    heartbeatTimerFactory: RaftTimerFactory = defaultHeartbeatTimerFactory,
+    electionTimeoutRange: (Duration, Duration),
+    heartbeatTimeoutRange: (Duration, Duration),
     stateMachine: Command => Unit,
     persistentStorage: PersistentStorage[Command])(implicit ec: ExecutionContext)
     extends RaftNodeInterface[Command] {
@@ -33,9 +35,8 @@ private[raft] class RaftNode[Command](
 
   private val sequencer: Ref[Future[_]] = Ref(Future.unit)
 
-  private val electionTimer = electionTimerFactory(() => electionTimeout())
-
-  private val _ = heartbeatTimerFactory(() => heartbeatTimeout())
+  private val electionTimer = new RaftTimer(electionTimeoutRange._1, electionTimeoutRange._2)(() => electionTimeout())
+  private val _ = new RaftTimer(heartbeatTimeoutRange._1, heartbeatTimeoutRange._2)(() => heartbeatTimeout())
 
   val nodeFSM = new RaftFSM[Command](becomeFollower, becomeCandidate, becomeLeader)
 
@@ -130,12 +131,12 @@ private[raft] class RaftNode[Command](
     getVoteResult(rulesForServersAllServers2(rs, voteRequested.term), voteRequested)
   }
 
-  private def electionTimeout(): Unit = {
+  def electionTimeout(): Unit = {
     withState(rs => (nodeFSM.apply(rs, ElectionTimeout), ()))
     withFutureState(rs => requestVotes(rs))
   }
 
-  private def heartbeatTimeout(): Unit = {
+  def heartbeatTimeout(): Unit = {
     withFutureState(rs => sendHeartbeat(rs))
   }
 
