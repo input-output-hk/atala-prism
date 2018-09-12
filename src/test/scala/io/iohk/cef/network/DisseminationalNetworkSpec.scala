@@ -20,7 +20,7 @@ class DisseminationalNetworkSpec extends FlatSpec {
   behavior of "Disseminational Network"
 
   it should "disseminate a message to its peers" in {
-    forAll(listOfN(5, genPeerInfo)) { peers =>
+    forAll(listOfN(2, genPeerInfo)) { peers =>
       val message = "Hello, world!"
       val discovery = mock[NetworkDiscovery]
       val transports = mock[Transports]

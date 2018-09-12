@@ -7,7 +7,7 @@ val commonSettings = Seq(
   organization := "io.iohk.cef",
   name := "network",
   version := "0.1-SNAPSHOT",
-  scalaVersion := scalaV,
+  scalaVersion := scalaV
 //  addCompilerPlugin("io.tryp" % "splain" % "0.3.1" cross CrossVersion.patch)
 )
 
@@ -45,31 +45,29 @@ val dep = {
     "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
     "com.typesafe.akka" %% "akka-actor" % akkaVersion,
     "com.typesafe.akka" %% "akka-slf4j" % akkaVersion,
-  
     "org.bouncycastle" % "bcprov-jdk15on" % "1.59",
     "com.h2database" % "h2" % "1.4.197",
-
     "io.micrometer" % "micrometer-registry-datadog" % "0.12.0.RELEASE",
-
-    "org.scalikejdbc" %% "scalikejdbc"       % "3.2.2",
-    "ch.qos.logback"  %  "logback-classic"   % "1.2.3",
-    "org.scalikejdbc" %% "scalikejdbc-config"  % "3.2.2",
-    "org.scalikejdbc" %% "scalikejdbc-test"   % "3.2.2" % Test,
+    "org.scalikejdbc" %% "scalikejdbc" % "3.2.2",
+    "ch.qos.logback" % "logback-classic" % "1.2.3",
+    "org.scalikejdbc" %% "scalikejdbc-config" % "3.2.2",
+    "org.scalikejdbc" %% "scalikejdbc-test" % "3.2.2" % Test,
     "org.flywaydb" % "flyway-core" % "5.1.3",
-    
     "org.scalatest" %% "scalatest" % "3.0.1" % Test,
     "org.scalacheck" %% "scalacheck" % "1.13.4" % Test,
     "org.mockito" % "mockito-core" % "2.21.0" % Test,
     "com.softwaremill.quicklens" %% "quicklens" % "1.4.11" % Test,
     "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test,
     "com.typesafe.akka" %% "akka-testkit-typed" % akkaVersion % Test,
-
     "io.netty" % "netty-all" % "4.1.28.Final",
     "com.chuusai" %% "shapeless" % "2.3.3",
     "org.scala-lang" % "scala-reflect" % scalaV,
     "com.zaxxer" % "HikariCP" % "3.1.0",
-
-    "io.monix" %% "monix" % "3.0.0-RC1"
+    "com.beachape" %% "enumeratum" % "1.5.13",
+    "io.monix" %% "monix" % "3.0.0-RC1",
+    "org.scala-stm" %% "scala-stm" % "0.8",
+    "com.github.sbtourist" % "journalio" % "1.4.2",
+    "commons-io" % "commons-io" % "2.6" % Test
   )
 }
 
@@ -94,10 +92,12 @@ val compilerOptions = Seq(
   "-Ywarn-inaccessible",
   "-Ywarn-unused-import",
   "-Ypartial-unification",
-  "-encoding", "utf-8"
+  "-encoding",
+  "utf-8"
 )
 
-val root = project.in(file("."))
+val root = project
+  .in(file("."))
   .settings(commonSettings: _*)
   .settings(
     libraryDependencies ++= dep,

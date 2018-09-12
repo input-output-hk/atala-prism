@@ -6,17 +6,18 @@ import io.iohk.cef.network.encoding.nio._
 
 class CryptoSpec extends FlatSpec {
 
-  ignore should "work" in {
+  case class User(name: String, age: Int)
 
-    case class User(name: String, age: Int)
+  val user = User("Foo Bar", 42)
+  val user2 = User("Bar Foo", 24)
 
-    val user = User("Foo Bar", 42)
-    val user2 = User("Bar Foo", 24)
-
-    // Hashing
+  "hashing" should "work" in {
     val userHash = hashEntity(user)
     isValidHash(user, userHash) should be(true)
     isValidHash(user2, userHash) should be(false)
+  }
+
+  ignore should "also work" in {
 
     // Encryption
     val EncryptionKeyPair(pubEncryptionKey, privEncryptionKey) = generateEncryptionKeyPair

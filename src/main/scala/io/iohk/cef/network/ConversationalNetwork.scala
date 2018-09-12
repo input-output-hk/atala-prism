@@ -19,7 +19,6 @@ import monix.reactive.Observable
   * by Van Jacobson, to distinguish from the 'disseminational'
   * networking style.
   *
-  * @param messageHandler The messageHandler receives inbound messages from remote peers.
   * @param networkDiscovery Encapsulates a routing table implementation.
   * @param transports helpers to obtain network transport instances.
   */

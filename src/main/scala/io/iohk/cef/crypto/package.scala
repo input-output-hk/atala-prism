@@ -5,50 +5,52 @@ import io.iohk.cef.network.encoding.{Decoder => LowLevelDecoder}
 import io.iohk.cef.network.encoding.nio.NioEncoder
 import io.iohk.cef.network.encoding.nio.NioDecoder
 import akka.util.ByteString
+import io.iohk.cef.crypto.hashing.HashingAlgorithmsCollection
+import io.iohk.cef.crypto.signing.SigningAlgorithmsCollection
+import io.iohk.cef.crypto.encryption.EncryptionAlgorithmsCollection
 
-/**
-
-USAGE:
-  import io.iohk.cef.crypto._
-
-  case class User(name: String, age: Int)
-  implicit val userEncoder: Encoder[User] = ??? // Obtained using the appropriate tools/imports
-
-  val user = User("Foo Bar", 42)
-  val userHash = user.hash
-  val isValid = userHash.isHashOf(user)
-  val isNotValid = userHash.isHashOf(User("Bar Foo", 24))
-
-**/
 package object crypto extends Crypto {
 
   // CONFIGURATION
 
-//  private val secureRandom = new java.security.SecureRandom
-//
-//  override val hashCollection: HashAlgorithmsCollection =
-//    HashAlgorithmsCollection()
-//  override val hashAlgorithm: hashCollection.HashAlgorithmEntry =
-//    hashCollection.KEC256
-//
-//  override val cryptoCollection: CryptoAlgorithmsCollection =
-//    CryptoAlgorithmsCollection(secureRandom)
-//  override val cryptoAlgorithm: cryptoCollection.CryptoAlgorithmEntry =
-//    cryptoCollection.RSA
-//
-//  override val signCollection: SignAlgorithmsCollection =
-//    SignAlgorithmsCollection(secureRandom)
-//  override val signAlgorithm: signCollection.SignAlgorithmEntry =
-//    signCollection.RSA
+  private val secureRandom = new java.security.SecureRandom
 
-  // HELPERS
+  protected override val hashingCollection: HashingAlgorithmsCollection =
+    HashingAlgorithmsCollection()
+  protected override val hashingType: hashingCollection.HashingAlgorithmType =
+    hashingCollection.HashingAlgorithmType.KECCAK256
 
-  type Encoder[T] = LowLevelEncoder[T, ByteString]
-  type Decoder[T] = LowLevelDecoder[ByteString, T]
+  protected override val encryptionAlgorithmsCollection: EncryptionAlgorithmsCollection =
+    EncryptionAlgorithmsCollection(secureRandom)
+  protected override val defaultEncryptionType: encryptionAlgorithmsCollection.EncryptionAlgorithmType =
+    encryptionAlgorithmsCollection.EncryptionAlgorithmType.RSA
 
-  implicit def EncoderFromNIOEncoder[T](implicit nioEncoder: NioEncoder[T]): Encoder[T] =
-    (t: T) => ByteString(nioEncoder.encode(t))
+  protected override val signingAlgorithmsCollection: SigningAlgorithmsCollection =
+    SigningAlgorithmsCollection(secureRandom)
+  protected override val defaultSigningType: signingAlgorithmsCollection.SigningAlgorithmType =
+    signingAlgorithmsCollection.SigningAlgorithmType.SHA256withRSA
 
-  implicit def DecoderFromNIODecoder[T](implicit nioDecoder: NioDecoder[T]): Decoder[T] =
-    (u: ByteString) => nioDecoder.decode(u.toByteBuffer)
+}
+
+package crypto {
+
+  trait Crypto extends Hashing with Encryption with Signing with EncodingHelpers
+
+  trait EncodingHelpers {
+
+    type Encoder[T] = LowLevelEncoder[T, ByteString]
+    type Decoder[T] = LowLevelDecoder[ByteString, T]
+
+    implicit def EncoderFromNIOEncoder[T](implicit nioEncoder: NioEncoder[T]): Encoder[T] =
+      (t: T) => ByteString(nioEncoder.encode(t))
+
+    implicit def DecoderFromNIODecoder[T](implicit nioDecoder: NioDecoder[T]): Decoder[T] =
+      (u: ByteString) => nioDecoder.decode(u.toByteBuffer)
+
+  }
+
+  sealed trait KeyDecodingError
+  object KeyDecodingError {
+    case class UnderlayingImplementationError(description: String) extends KeyDecodingError
+  }
 }
