@@ -277,24 +277,24 @@ class RaftConsensusSpec extends WordSpec {
       }
     }
     "implemented by a Candidate" should {
-//      "stand down to follower if AppendEntries received from new leader" in new MockFixture {
-//        val persistentStorage =
-//          new InMemoryPersistentStorage[String](Vector(), currentTerm = 1, votedFor = "anyone")
-//
-//        val raftNode = aCandidate(persistentStorage)
-//
-//        val appendResult = appendCallback(
-//          EntriesToAppend(
-//            term = 2,
-//            leaderId = "i2",
-//            prevLogIndex = -1,
-//            prevLogTerm = 1,
-//            entries = List(),
-//            leaderCommitIndex = -1))
-//
-//        appendResult shouldBe AppendEntriesResult(term = 2, success = true)
-//        eventually { raftNode.getRole shouldBe Follower }
-//      }
+      "stand down to follower if AppendEntries received from new leader" in new MockFixture {
+        val persistentStorage =
+          new InMemoryPersistentStorage[String](Vector(), currentTerm = 1, votedFor = "anyone")
+
+        val raftNode = aCandidate(persistentStorage)
+
+        val appendResult = appendCallback(
+          EntriesToAppend(
+            term = 2,
+            leaderId = "i2",
+            prevLogIndex = -1,
+            prevLogTerm = 1,
+            entries = List(),
+            leaderCommitIndex = -1))
+
+        appendResult shouldBe AppendEntriesResult(term = 2, success = true)
+        raftNode.getRole shouldBe Follower
+      }
       "reject leader append entries calls from a leader with a lower term" in new MockFixture {
         val persistentStorage =
           new InMemoryPersistentStorage[String](Vector(), currentTerm = 2, votedFor = "anyone")

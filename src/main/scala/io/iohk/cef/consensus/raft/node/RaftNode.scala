@@ -74,7 +74,7 @@ private[raft] class RaftNode[Command](
       val initialContext = raftState()
       val (nextContext, result) = f(initialContext)
       raftState() = nextContext
-      Txn.afterCommit(_ => persistState(nextContext))
+      Txn.whileCommitting(_ => persistState(nextContext))
       result
     }
   }
