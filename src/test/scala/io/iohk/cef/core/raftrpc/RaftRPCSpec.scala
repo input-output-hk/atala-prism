@@ -9,10 +9,15 @@ import org.scalatest.mockito.MockitoSugar._
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 import org.scalatest.Matchers._
 import io.iohk.cef.network.encoding.nio._
+import org.scalatest.concurrent.ScalaFutures
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.concurrent.duration._
 
 class RaftRPCSpec extends FlatSpec {
+
+  private implicit val patienceConfig = ScalaFutures.PatienceConfig(timeout = 1 second)
 
   behavior of "RaftRPC"
 

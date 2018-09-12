@@ -189,7 +189,7 @@ package object raft {
         case Left(Redirect(nextLeaderId)) =>
           appendEntries(nextLeaderId, entries)
         case Right(()) =>
-          Future(())
+          Future.unit
       }
     }
   }

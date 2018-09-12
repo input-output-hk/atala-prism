@@ -31,7 +31,7 @@ private[raft] class RaftNode[Command](
 
   private val raftState: Ref[RaftState[Command]] = Ref(initialRaftState())
 
-  private val sequencer: Ref[Future[_]] = Ref(Future(()))
+  private val sequencer: Ref[Future[_]] = Ref(Future.unit)
 
   private val electionTimer = electionTimerFactory(() => electionTimeout())
 
