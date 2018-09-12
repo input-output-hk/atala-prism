@@ -3,12 +3,13 @@ import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.testkit.{TestActorRef, TestKit}
 import akka.util.Timeout
 import io.iohk.cef.consensus.Consensus
-import io.iohk.cef.core.{Envelope, NodeCore}
+import io.iohk.cef.core.{Anyone, Envelope, NodeCore}
 import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
-import io.iohk.cef.network.{NetworkComponent, NodeId}
+import io.iohk.cef.network.{MessageStream, Network, NodeId}
 import io.iohk.cef.test.{DummyBlockHeader, DummyBlockSerializable, DummyTransaction}
 import io.iohk.cef.transactionpool.{TransactionPoolActorModelInterface, TransactionPoolFutureInterface}
 import io.iohk.cef.utils.ByteSizeable
+import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{BeforeAndAfterAll, FlatSpecLike, MustMatchers}
@@ -36,7 +37,7 @@ class CorePoolIntegration
     override def poolActor: ActorRef = testActorRef
   }
 
-  behavior of "NetworkPoolIntegration"
+  behavior of "CorePoolIntegration"
 
   it should "process a transaction" in {
     implicit val timeout = Timeout(10 seconds)
@@ -49,16 +50,25 @@ class CorePoolIntegration
     val txPoolFutureInterface =
       new TransactionPoolFutureInterface[String, DummyBlockHeader, DummyTransaction](txPoolActorModelInterface)
     val consensus = mock[Consensus[String, DummyTransaction]]
-    val networkComponent = mock[NetworkComponent[String]]
+    val txNetwork = mock[Network[Envelope[DummyTransaction]]]
+    val blockNetwork = mock[Network[Envelope[Block[String, DummyBlockHeader, DummyTransaction]]]]
+    val txMessageStream = mock[MessageStream[Envelope[DummyTransaction]]]
+    val blockMessageStream = mock[MessageStream[Envelope[Block[String, DummyBlockHeader, DummyTransaction]]]]
+    when(txNetwork.messageStream).thenReturn(txMessageStream)
+    when(blockNetwork.messageStream).thenReturn(blockMessageStream)
+    when(txMessageStream.foreach(ArgumentMatchers.any())).thenReturn(Future.successful(()))
+    when(blockMessageStream.foreach(ArgumentMatchers.any())).thenReturn(Future.successful(()))
     val consensusMap = Map(1 -> (txPoolFutureInterface, consensus))
     val me = NodeId("3112")
-    val core = new NodeCore(consensusMap, networkComponent, me)(
-      DummyTransaction.serializable,
-      DummyBlockSerializable.serializable,
-      executionContext)
+    val envBlockSerializable = Envelope.envelopeSerializer(DummyBlockSerializable.serializable)
+    val envTxSerializable = Envelope.envelopeSerializer(DummyTransaction.serializable)
+    val core = new NodeCore(consensusMap, txNetwork, blockNetwork, me)(
+      envTxSerializable,
+      envBlockSerializable,
+      executionContext
+    )
     val testTransaction = DummyTransaction(5)
-    val envelope = Envelope(testTransaction, 1, _ => true)
-    when(networkComponent.disseminate(envelope)).thenReturn(Future.successful(Right(())))
+    val envelope = Envelope(testTransaction, 1, Anyone())
     val result = Await.result(core.receiveTransaction(envelope), 10 seconds)
     result mustBe Right(())
     val pool = txPoolActorModelInterface.testActorRef.underlyingActor.pool

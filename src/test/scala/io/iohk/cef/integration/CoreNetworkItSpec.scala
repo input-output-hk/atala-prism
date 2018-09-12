@@ -4,7 +4,7 @@ import org.scalatest.{FlatSpec, MustMatchers}
 
 class CoreNetworkItSpec extends FlatSpec with MustMatchers with PropertyChecks {
 
-  //Tests will come in a new PR 
+  //Tests will come in a new PR
 
   behavior of "CoreNetworkItSpec"
 

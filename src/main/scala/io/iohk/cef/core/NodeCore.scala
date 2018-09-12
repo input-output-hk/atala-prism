@@ -10,8 +10,11 @@ import scala.concurrent.{ExecutionContext, Future}
 
 /**
   * A NodeCore orchestrates the interaction between the frontend, network, transaction pool and the consensus.
+  * Important note: Currently it is assumed that the network is fully connected. If this assumption does not hold,
+  * the NodeCore's dissemination will not reach all nodes.
   * @param consensusMap The ledgers and their respective Consensus that this node supports.
-  * @param networkComponent
+  * @param txNetwork Network in charge of disseminating transactions
+  * @param blockNetwork Network in charge of disseminating blocks
   * @param me information about "me" (the node this core belongs to)
   * @param txSerializable
   * @param blockSerializable
