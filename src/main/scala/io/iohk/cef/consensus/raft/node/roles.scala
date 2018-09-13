@@ -2,6 +2,7 @@ package io.iohk.cef.consensus.raft.node
 
 import io.iohk.cef.consensus.raft.node.FutureOps.sequenceForgiving
 import io.iohk.cef.consensus.raft._
+import io.iohk.cef.consensus.raft.node.RaftNode.lastLogIndexAndTerm
 
 import scala.annotation.tailrec
 import scala.concurrent.{ExecutionContext, Future}
@@ -169,7 +170,7 @@ private[raft] class Follower[Command](raftNode: RaftNode[Command])(implicit ec: 
   override def clientAppendEntries(
       rc: RaftState[Command],
       entries: Seq[Command]): Future[(RaftState[Command], Either[Redirect[Command], Unit])] =
-    Future((rc, Left(Redirect(raftNode.getLeaderRPC))))
+    Future((rc, Left(Redirect(raftNode.getLeader))))
   override val stateCode: StateCode = Follower
 }
 
@@ -193,7 +194,7 @@ private[raft] class Candidate[Command](raftNode: RaftNode[Command])(implicit ec:
   override def clientAppendEntries(
       rc: RaftState[Command],
       entries: Seq[Command]): Future[(RaftState[Command], Either[Redirect[Command], Unit])] =
-    Future((rc, Left(Redirect(raftNode.getLeaderRPC))))
+    Future((rc, Left(Redirect(raftNode.getLeader))))
 
   override val stateCode: StateCode = Candidate
 }
@@ -221,7 +222,7 @@ private[raft] class Leader[Command](raftNode: RaftNode[Command])(implicit ec: Ex
       rc: RaftState[Command],
       entries: Seq[Command]): Future[(RaftState[Command], Either[Redirect[Command], Unit])] = {
     val log = rc.log
-    val (lastLogIndex, _) = raftNode.lastLogIndexAndTerm(log)
+    val (lastLogIndex, _) = lastLogIndexAndTerm(log)
     val (currentTerm, _) = rc.persistentState
 
     val (_, entriesToAppend) = entries.foldLeft((lastLogIndex, Vector[LogEntry[Command]]()))((acc, nextCommand) => {
@@ -241,7 +242,7 @@ private[raft] class Leader[Command](raftNode: RaftNode[Command])(implicit ec: Ex
     val (currentTerm, _) = rc.persistentState
     val commitIndex = rc.commonVolatileState.commitIndex
     val theLog = rc.log
-    val (lastLogIndex, _) = raftNode.lastLogIndexAndTerm(theLog)
+    val (lastLogIndex, _) = lastLogIndexAndTerm(theLog)
 
     val callFs: Seq[Future[(Int, Int)]] = raftNode.clusterMembers.indices.map(i =>
       sendAppendEntry(rc, nextIndexes(i), lastLogIndex, raftNode.clusterMembers(i)))
@@ -341,7 +342,7 @@ private[raft] class Leader[Command](raftNode: RaftNode[Command])(implicit ec: Ex
   }
   private def getHeartbeat(rc: RaftState[Command]): EntriesToAppend[Command] = {
     val (currentTerm, _) = rc.persistentState
-    val (prevLogIndex, prevLogTerm) = raftNode.lastLogIndexAndTerm(rc.log)
+    val (prevLogIndex, prevLogTerm) = lastLogIndexAndTerm(rc.log)
     val commitIndex = rc.commonVolatileState.commitIndex
     EntriesToAppend[Command](currentTerm, raftNode.nodeId, prevLogIndex, prevLogTerm, Seq(), commitIndex)
   }

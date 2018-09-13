@@ -48,6 +48,7 @@ class NativeCodecsSpec extends FlatSpec {
     variableLengthTest[List[String]]
     variableLengthTest[Array[Int]]
     variableLengthTest[List[Int]]
+    variableLengthTest[Seq[String]]
     variableLengthTest[ByteString]
   }
 
