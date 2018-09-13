@@ -1,14 +1,13 @@
 package io.iohk.cef.ledger.identity.storage.scalike
 
-import java.security.PublicKey
-
+import io.iohk.cef.crypto._
 import io.iohk.cef.ledger.identity.IdentityLedgerState
 import io.iohk.cef.ledger.identity.storage.scalike.dao.IdentityLedgerStateStorageDao
 import io.iohk.cef.ledger.storage.LedgerStateStorage
 import scalikejdbc._
 
 class IdentityLedgerStateStorageImpl(ledgerStateStorageDao: IdentityLedgerStateStorageDao)
-    extends LedgerStateStorage[Set[PublicKey]] {
+    extends LedgerStateStorage[Set[SigningPublicKey]] {
 
   override def slice(keys: Set[String]): IdentityLedgerState = {
     execInSession { implicit session =>

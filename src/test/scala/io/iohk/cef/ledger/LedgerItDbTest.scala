@@ -1,12 +1,11 @@
 package io.iohk.cef.ledger
 
-import java.security.PublicKey
 import java.time.{Clock, Instant}
 
 import akka.util.ByteString
-import io.iohk.cef.builder.RSAKeyGenerator
-import io.iohk.cef.crypto.low.DigitalSignature
-import io.iohk.cef.ledger.identity.{Claim, IdentityBlockHeader, IdentityTransaction, Link}
+import io.iohk.cef.builder.SigningKeyPairs
+import io.iohk.cef.crypto._
+import io.iohk.cef.ledger.identity._
 import io.iohk.cef.ledger.storage.Ledger
 import io.iohk.cef.ledger.storage.scalike.dao.{LedgerStateStorageDao, LedgerStorageDao}
 import io.iohk.cef.ledger.storage.scalike.{LedgerStateStorageImpl, LedgerStorageImpl}
@@ -15,18 +14,16 @@ import scalikejdbc.scalatest.AutoRollback
 
 import scala.util.Success
 
-trait LedgerItDbTest extends fixture.FlatSpec with AutoRollback with RSAKeyGenerator with MustMatchers {
+trait LedgerItDbTest extends fixture.FlatSpec with AutoRollback with SigningKeyPairs with MustMatchers {
+
+  import IdentityBlockSerializer._
+  import IdentityStateSerializer._
 
   behavior of "Ledger"
 
-  val dummySignature = new DigitalSignature(ByteString.empty)
-
   it should "apply a block using the generic constructs" in { implicit session =>
-    import identity.IdentityBlockSerializer._
-    import identity.IdentityStateSerializer._
-
     implicit val enabler = io.iohk.cef.utils.ForExpressionsEnabler.tryEnabler
-    val genericStateDao = new LedgerStateStorageDao[Set[PublicKey]]()
+    val genericStateDao = new LedgerStateStorageDao[Set[SigningPublicKey]]()
     val genericLedgerDao = new LedgerStorageDao(Clock.systemUTC())
     val genericStateImpl = new LedgerStateStorageImpl(1, genericStateDao) {
       override protected def execInSession[T](block: FixtureParam => T): T = block(session)
@@ -36,19 +33,16 @@ trait LedgerItDbTest extends fixture.FlatSpec with AutoRollback with RSAKeyGener
     }
     val ledger = Ledger(1, genericLedgerStorageImpl, genericStateImpl)
 
-    val pair1 = generateKeyPair
-    val pair2 = generateKeyPair
-
     val testTxs = List[IdentityTransaction](
-      Claim("carlos", pair1._1, IdentityTransaction.sign("carlos", pair1._1, pair1._2)),
-      Link("carlos", pair2._1, IdentityTransaction.sign("carlos", pair2._1, pair1._2))
+      Claim("carlos", alice.public, IdentityTransaction.sign("carlos", alice.public, alice.`private`)),
+      Link("carlos", bob.public, IdentityTransaction.sign("carlos", bob.public, alice.`private`))
     )
     val testBlock = Block(IdentityBlockHeader(ByteString("hash"), Instant.EPOCH, 1L), testTxs)
-    val emptyLs = LedgerState[Set[PublicKey]](Map())
+    val emptyLs = LedgerState[Set[SigningPublicKey]](Map())
     genericStateDao.slice(1, Set("carlos")) mustBe emptyLs
 
     ledger(testBlock) mustBe Right(Success(()))
     genericStateDao.slice(1, Set("carlos")) mustBe
-      LedgerState[Set[PublicKey]](Map("carlos" -> Set(pair1._1, pair2._1)))
+      LedgerState[Set[SigningPublicKey]](Map("carlos" -> Set(alice.public, bob.public)))
   }
 }

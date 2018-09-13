@@ -1,13 +1,13 @@
 package io.iohk.cef.ledger.identity
 
 import akka.util.ByteString
-import io.iohk.cef.builder.RSAKeyGenerator
+import io.iohk.cef.builder.SigningKeyPairs
 import io.iohk.cef.crypto.low.DigitalSignature
 import org.scalatest.{EitherValues, FlatSpec, MustMatchers, OptionValues}
 
 class IdentityTransactionSpec
     extends FlatSpec
-    with RSAKeyGenerator
+    with SigningKeyPairs
     with EitherValues
     with OptionValues
     with MustMatchers {
@@ -17,94 +17,75 @@ class IdentityTransactionSpec
   val dummySignature = new DigitalSignature(ByteString.empty)
 
   it should "throw an error when the tx is inconsistent with the state" in {
-    val pair1 = generateKeyPair
-    val pair2 = generateKeyPair
-    val pair3 = generateKeyPair
-
-    val state = IdentityLedgerState(Map("one" -> Set(pair1._1)))
-    val claim = Claim("one", pair1._1, IdentityTransaction.sign("one", pair1._1, pair1._2))
-    val link = Link("two", pair2._1, IdentityTransaction.sign("two", pair3._1, pair2._2))
-    val unlink1 = Unlink("one", pair2._1, IdentityTransaction.sign("one", pair2._1, pair1._2))
-    val unlink2 = Unlink("two", pair2._1, IdentityTransaction.sign("one", pair2._1, pair2._2))
+    val state = IdentityLedgerState(Map("one" -> Set(alice.public)))
+    val claim = Claim("one", alice.public, IdentityTransaction.sign("one", alice.public, alice.`private`))
+    val link = Link("two", bob.public, IdentityTransaction.sign("two", carlos.public, bob.`private`))
+    val unlink1 = Unlink("one", bob.public, IdentityTransaction.sign("one", bob.public, alice.`private`))
+    val unlink2 = Unlink("two", bob.public, IdentityTransaction.sign("one", bob.public, bob.`private`))
 
     claim(state).left.value mustBe IdentityTakenError("one")
     link(state).left.value mustBe IdentityNotClaimedError("two")
-    unlink1(state).left.value mustBe PublicKeyNotAssociatedWithIdentity("one", pair2._1)
+    unlink1(state).left.value mustBe PublicKeyNotAssociatedWithIdentity("one", bob.public)
     unlink2(state).left.value mustBe UnableToVerifySignatureError
   }
 
   it should "apply a claim" in {
-    val pair1 = generateKeyPair
-
     val state = IdentityLedgerState()
-    val claim = Claim("one", pair1._1, IdentityTransaction.sign("one", pair1._1, pair1._2))
+    val claim = Claim("one", alice.public, IdentityTransaction.sign("one", alice.public, alice.`private`))
     val newStateEither = claim(state)
 
     val newState = newStateEither.right.value
     newState.keys mustBe Set("one")
-    newState.get("one") mustBe Some(Set(pair1._1))
+    newState.get("one") mustBe Some(Set(alice.public))
     newState.contains("one") mustBe true
     newState.contains("two") mustBe false
   }
 
   it should "apply a link" in {
-    val pair1 = generateKeyPair
-    val pair2 = generateKeyPair
-
-    val state = IdentityLedgerState(Map("one" -> Set(pair1._1)))
-    val link = Link("one", pair2._1, IdentityTransaction.sign("one", pair2._1, pair1._2))
+    val state = IdentityLedgerState(Map("one" -> Set(alice.public)))
+    val link = Link("one", bob.public, IdentityTransaction.sign("one", bob.public, alice.`private`))
     val newStateEither = link(state)
 
     val newState = newStateEither.right.value
     newState.keys mustBe Set("one")
-    newState.get("one").value mustBe Set(pair1._1, pair2._1)
+    newState.get("one").value mustBe Set(alice.public, bob.public)
     newState.contains("one") mustBe true
     newState.contains("two") mustBe false
   }
 
   it should "fail to apply a claim if the signature can not be verified" in {
-    val pair1 = generateKeyPair
-
     val state = IdentityLedgerState(Map.empty)
-    val transaction = Claim("one", pair1._1, IdentityTransaction.sign("onee", pair1._1, pair1._2))
+    val transaction = Claim("one", alice.public, IdentityTransaction.sign("onee", alice.public, alice.`private`))
 
     val result = transaction(state).left.value
     result mustBe UnableToVerifySignatureError
   }
 
   it should "fail to apply a link if the signature can not be verified" in {
-    val pair1 = generateKeyPair
-    val pair2 = generateKeyPair
-
-    val state = IdentityLedgerState(Map("one" -> Set(pair1._1)))
-    val link = Link("one", pair2._1, IdentityTransaction.sign("one", pair2._1, pair2._2))
+    val state = IdentityLedgerState(Map("one" -> Set(alice.public)))
+    val link = Link("one", bob.public, IdentityTransaction.sign("one", bob.public, bob.`private`))
 
     val result = link(state).left.value
     result mustBe UnableToVerifySignatureError
   }
 
   it should "fail to apply an unlink if the signature can not be verified" in {
-    val pair1 = generateKeyPair
-
-    val state = IdentityLedgerState(Map("one" -> Set(pair1._1)))
-    val transaction = Unlink("one", pair1._1, IdentityTransaction.sign("onne", pair1._1, pair1._2))
+    val state = IdentityLedgerState(Map("one" -> Set(alice.public)))
+    val transaction = Unlink("one", alice.public, IdentityTransaction.sign("onne", alice.public, alice.`private`))
 
     val result = transaction(state).left.value
     result mustBe UnableToVerifySignatureError
   }
 
   it should "apply an unlink" in {
-    val pair0 = generateKeyPair
-    val pair1 = generateKeyPair
-
-    val state = IdentityLedgerState(Map("one" -> Set(pair0._1, pair1._1)))
-    val unlink1 = Unlink("one", pair0._1, IdentityTransaction.sign("one", pair0._1, pair0._2))
-    val unlink2 = Unlink("one", pair1._1, IdentityTransaction.sign("one", pair1._1, pair1._2))
+    val state = IdentityLedgerState(Map("one" -> Set(daniel.public, alice.public)))
+    val unlink1 = Unlink("one", daniel.public, IdentityTransaction.sign("one", daniel.public, daniel.`private`))
+    val unlink2 = Unlink("one", alice.public, IdentityTransaction.sign("one", alice.public, alice.`private`))
     val stateAfter1 = unlink1(state).right.value
     val stateAfter2 = unlink2(stateAfter1).right.value
 
     stateAfter1.keys mustBe Set("one")
-    stateAfter1.get("one").value mustBe Set(pair1._1)
+    stateAfter1.get("one").value mustBe Set(alice.public)
     stateAfter1.contains("one") mustBe true
     stateAfter1.contains("two") mustBe false
 
@@ -115,12 +96,9 @@ class IdentityTransactionSpec
   }
 
   it should "have the correct keys per tx" in {
-    val pair1 = generateKeyPair
-    val pair2 = generateKeyPair
-
-    val claim = Claim("one", pair1._1, IdentityTransaction.sign("one", pair1._1, pair1._2))
-    val link = Link("two", pair2._1, IdentityTransaction.sign("two", pair2._1, pair2._2))
-    val unlink = Unlink("two", pair2._1, IdentityTransaction.sign("two", pair2._1, pair2._2))
+    val claim = Claim("one", alice.public, IdentityTransaction.sign("one", alice.public, alice.`private`))
+    val link = Link("two", bob.public, IdentityTransaction.sign("two", bob.public, bob.`private`))
+    val unlink = Unlink("two", bob.public, IdentityTransaction.sign("two", bob.public, bob.`private`))
     claim.partitionIds mustBe Set(claim.identity)
     link.partitionIds mustBe Set(link.identity)
     unlink.partitionIds mustBe Set(unlink.identity)
