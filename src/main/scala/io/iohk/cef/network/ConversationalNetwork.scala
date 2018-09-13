@@ -7,7 +7,6 @@ import io.iohk.cef.network.encoding.nio._
 import io.iohk.cef.network.monixstream.MonixMessageStream
 import io.iohk.cef.network.transport.Transports.usesTcp
 import io.iohk.cef.network.transport._
-import monix.reactive.Observable
 import scala.reflect.runtime.universe._
 
 /**
@@ -48,7 +47,7 @@ class ConversationalNetwork[Message: NioEncoder: NioDecoder: WeakTypeTag](
       new MonixMessageStream(
         tcpNetworkTransport.get.monixMessageStream.filter(frameHandler).map((frame: Frame[Message]) => frame.content))
     else
-      new MonixMessageStream[Message](Observable.empty)
+      MonixMessageStream.empty()
 
   private def frameHandler(frame: Frame[Message]): Boolean = {
     if (thisNodeIsTheDest(frame)) {

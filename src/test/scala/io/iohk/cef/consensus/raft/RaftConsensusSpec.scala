@@ -472,7 +472,7 @@ class RaftConsensusSpec extends WordSpec {
         // On conversion to candidate
         raftNode.getPersistentState shouldBe (2, raftNode.nodeId) // 1. increment current term and 2. vote for self
 
-//        verify(electionTimer).reset() // 3. reset election timer
+        // 3. reset election timer. Done by inspection of the code:(
 
         val expectedVoteRequest = VoteRequested(2, "i1", -1, -1) // 4. send request vote RPCs to other servers
         eventually {
