@@ -1,11 +1,11 @@
 package io.iohk.cef.core
 import akka.util.{ByteString, Timeout}
 import io.iohk.cef.LedgerId
-import io.iohk.cef.consensus.Consensus
+import io.iohk.cef.consensus.{Consensus, MockingConsensus}
 import io.iohk.cef.ledger.{Block, ByteStringSerializable}
 import io.iohk.cef.network.{MessageStream, Network, NodeId}
 import io.iohk.cef.test.{DummyBlockHeader, DummyTransaction}
-import io.iohk.cef.transactionpool.TransactionPoolFutureInterface
+import io.iohk.cef.transactionpool.MockingTransactionPoolFutureInterface
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar
@@ -15,17 +15,16 @@ import scala.collection.immutable
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
-class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
+class NodeCoreSpec extends AsyncFlatSpec
+  with MustMatchers
+  with MockitoSugar
+  with MockingTransactionPoolFutureInterface[String, DummyBlockHeader, DummyTransaction]
+  with MockingConsensus[String, DummyTransaction] {
 
   type State = String
   type Header = DummyBlockHeader
   type Tx = DummyTransaction
   type BlockType = Block[State, Header, Tx]
-
-  def mockTxPoolFutureInterface: TransactionPoolFutureInterface[State, Header, Tx] =
-    mock[TransactionPoolFutureInterface[State, Header, Tx]]
-
-  def mockConsensus: Consensus[State, Tx] = mock[Consensus[State, Tx]]
 
   def mockNetwork[M]: Network[M] = mock[Network[M]]
 
