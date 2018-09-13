@@ -135,14 +135,13 @@ private[raft] class RaftNode[Command](
     getVoteResult(rulesForServersAllServers2(rs, voteRequested.term), voteRequested)
   }
 
-  def electionTimeout(): Unit = {
+  def electionTimeout(): Future[Unit] = {
     withState(rs => (nodeFSM.apply(rs, ElectionTimeout), ()))
     withFutureState(rs => requestVotes(rs))
   }
 
-  def heartbeatTimeout(): Unit = {
+  def heartbeatTimeout(): Future[Unit] =
     withFutureState(rs => sendHeartbeat(rs))
-  }
 
   private def sendHeartbeat(rs: RaftState[Command]): Future[(RaftState[Command], Unit)] = {
     rs.role.clientAppendEntries(rs, Seq()).map { case (ctx, _) => (ctx, ()) }

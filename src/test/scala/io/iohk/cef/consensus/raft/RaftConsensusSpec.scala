@@ -3,12 +3,11 @@ package io.iohk.cef.consensus.raft
 import io.iohk.cef.consensus.raft.node._
 import org.scalatest.WordSpec
 import org.scalatest.Matchers._
-import org.scalatest.concurrent.Eventually.eventually
 import org.scalatest.concurrent.ScalaFutures.{convertScalaFuture, whenReady}
 import org.scalatest.mockito.MockitoSugar._
 import org.mockito.Mockito.{inOrder, times, verify, when}
 import org.mockito.ArgumentMatchers.any
-import org.scalatest.concurrent.{Eventually, ScalaFutures}
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Millis, Seconds, Span}
 import scala.collection.mutable
 import scala.concurrent.{ExecutionContext, Future}
@@ -465,7 +464,7 @@ class RaftConsensusSpec extends WordSpec {
         when(rpc2.requestVote(any[VoteRequested])).thenReturn(Future(RequestVoteResult(term = 2, voteGranted = false)))
         when(rpc3.requestVote(any[VoteRequested])).thenReturn(Future(RequestVoteResult(term = 2, voteGranted = false)))
 
-        raftNode.electionTimeout()
+        raftNode.electionTimeout().futureValue
 
         raftNode.getRole shouldBe Candidate
 
@@ -475,10 +474,8 @@ class RaftConsensusSpec extends WordSpec {
         // 3. reset election timer. Done by inspection of the code:(
 
         val expectedVoteRequest = VoteRequested(2, "i1", -1, -1) // 4. send request vote RPCs to other servers
-        eventually {
-          verify(rpc2).requestVote(expectedVoteRequest)
-          verify(rpc3).requestVote(expectedVoteRequest)
-        }
+        verify(rpc2).requestVote(expectedVoteRequest)
+        verify(rpc3).requestVote(expectedVoteRequest)
       }
     }
   }
@@ -499,11 +496,9 @@ class RaftConsensusSpec extends WordSpec {
         when(rpc3.appendEntries(any[EntriesToAppend[Command]]))
           .thenReturn(Future(AppendEntriesResult(2, success = true)))
 
-        raftNode.electionTimeout()
+        raftNode.electionTimeout().futureValue
 
-        eventually { // after vote requests have come in
-          raftNode.getRole shouldBe Leader
-        }
+        raftNode.getRole shouldBe Leader
       }
     }
     "votes received from a minority" should {
@@ -544,12 +539,10 @@ class RaftConsensusSpec extends WordSpec {
           entries = Seq[LogEntry[String]](),
           leaderCommitIndex = -1)
 
-        raftNode.heartbeatTimeout()
-        raftNode.heartbeatTimeout()
-        eventually {
-          verify(rpc2, times(3)).appendEntries(expectedHeartbeat)
-          verify(rpc3, times(3)).appendEntries(expectedHeartbeat)
-        }
+        raftNode.heartbeatTimeout().futureValue
+        raftNode.heartbeatTimeout().futureValue
+        verify(rpc2, times(3)).appendEntries(expectedHeartbeat)
+        verify(rpc3, times(3)).appendEntries(expectedHeartbeat)
       }
     }
     "Receiving commands from a client" should {
@@ -629,10 +622,8 @@ class RaftConsensusSpec extends WordSpec {
         val s3 = new InMemoryPersistentStorage[String](Vector(), 1, "")
 
         val (t1, t2, t3) = anIntegratedCluster(s1, s2, s3)
-        t1.raftNode.electionTimeout()
-        eventually {
-          t1.raftNode.getRole shouldBe Leader
-        }
+        t1.raftNode.electionTimeout().futureValue
+        t1.raftNode.getRole shouldBe Leader
       }
       "replicate logs" in new IntegratedFixture {
         val s1 = new InMemoryPersistentStorage[String](Vector(), 1, "")
@@ -640,11 +631,9 @@ class RaftConsensusSpec extends WordSpec {
         val s3 = new InMemoryPersistentStorage[String](Vector(), 1, "")
 
         val (t1, t2, t3) = anIntegratedCluster(s1, s2, s3)
-        t1.raftNode.electionTimeout()
+        t1.raftNode.electionTimeout().futureValue
 
-        eventually {
-          t1.raftNode.getRole shouldBe Leader
-        }
+        t1.raftNode.getRole shouldBe Leader
 
         val appendResult = t1.raftNode.clientAppendEntries(Seq("A", "B", "C", "D", "E")).futureValue
 
@@ -674,17 +663,15 @@ class RaftConsensusSpec extends WordSpec {
           verify(t3.machine, times(0)).apply(command)
         })
 
-        t1.raftNode.heartbeatTimeout()
+        t1.raftNode.heartbeatTimeout().futureValue
 
-        eventually {
-          Seq("A", "B", "C", "D", "E").foreach(command => {
-            verify(t2.machine).apply(command)
-            verify(t3.machine).apply(command)
-          })
+        Seq("A", "B", "C", "D", "E").foreach(command => {
+          verify(t2.machine).apply(command)
+          verify(t3.machine).apply(command)
+        })
 
-          t2.raftNode.getCommonVolatileState shouldBe CommonVolatileState(4, 4)
-          t3.raftNode.getCommonVolatileState shouldBe CommonVolatileState(4, 4)
-        }
+        t2.raftNode.getCommonVolatileState shouldBe CommonVolatileState(4, 4)
+        t3.raftNode.getCommonVolatileState shouldBe CommonVolatileState(4, 4)
       }
     }
   }
@@ -695,8 +682,6 @@ trait MockFixture {
   implicit val ec: ExecutionContext = ExecutionContext.global
   val timeout = Span(5, Seconds)
   val span = Span(50, Millis)
-  implicit val eventuallyPatienceConfig: Eventually.PatienceConfig =
-    Eventually.PatienceConfig(timeout = timeout, interval = span)
   implicit val futuresPatienceConfig: ScalaFutures.PatienceConfig =
     ScalaFutures.PatienceConfig(timeout = timeout, interval = span)
 
@@ -751,10 +736,9 @@ trait MockFixture {
     when(rpc3.requestVote(any[VoteRequested]))
       .thenReturn(Future(RequestVoteResult(term = term + 1, voteGranted = false)))
 
-    raftNode.electionTimeout()
-    eventually {
-      raftNode.getRole shouldBe Candidate
-    }
+    raftNode.electionTimeout().futureValue
+
+    raftNode.getRole shouldBe Candidate
 
     raftNode
   }
@@ -774,11 +758,9 @@ trait MockFixture {
     when(rpc3.appendEntries(any[EntriesToAppend[Command]]))
       .thenReturn(Future(AppendEntriesResult(term + 1, success = true)))
 
-    raftNode.electionTimeout()
+    raftNode.electionTimeout().futureValue
 
-    eventually {
-      raftNode.getRole shouldBe Leader
-    }
+    raftNode.getRole shouldBe Leader
 
     raftNode
   }
@@ -792,8 +774,6 @@ trait IntegratedFixture {
   val timeout = Span(5, Seconds)
   val span = Span(50, Millis)
 
-  implicit val eventuallyPatienceConfig: Eventually.PatienceConfig =
-    Eventually.PatienceConfig(timeout = timeout, interval = span)
   implicit val futuresPatienceConfig: ScalaFutures.PatienceConfig =
     ScalaFutures.PatienceConfig(timeout = timeout, interval = span)
 
