@@ -1,6 +1,7 @@
 package io.iohk.cef.consensus.raft.node
 import io.iohk.cef.consensus.raft.node.FutureOps.sequenceForgiving
 import io.iohk.cef.consensus.raft._
+import io.iohk.cef.consensus.raft.node.RaftNode.lastLogIndexAndTerm
 
 import scala.annotation.tailrec
 import scala.concurrent.{ExecutionContext, Future}
@@ -54,16 +55,16 @@ private[raft] class RaftNode[Command](
   }
 
   def getRole: StateCode =
-    raftState.single().role.stateCode
+    readState(_.role.stateCode)
 
   def getPersistentState: (Int, String) =
-    raftState.single().persistentState
+    readState(_.persistentState)
 
   def getCommonVolatileState: CommonVolatileState[Command] =
-    raftState.single().commonVolatileState
+    readState(_.commonVolatileState)
 
   def getLeaderVolatileState: LeaderVolatileState =
-    raftState.single().leaderVolatileState
+    readState(_.leaderVolatileState)
 
   // Functions to atomically change the server state.
   // In the case of pure requests like appendEntries and requestVote,
@@ -79,6 +80,9 @@ private[raft] class RaftNode[Command](
       result
     }
   }
+
+  private[raft] def readState[T](f: RaftState[Command] => T): T =
+    withState(rc => (rc, f(rc)))
 
   // In the case of asynchronous entry points, where the answer returned depends
   // on responses from other nodes (clientAppendEntries and electionTimeout)
@@ -270,10 +274,6 @@ private[raft] class RaftNode[Command](
     votes.count(vote => vote.voteGranted && vote.term == term) + myOwnVote > (clusterMembers.size + myOwnVote) / 2
   }
 
-  def lastLogIndexAndTerm(log: IndexedSeq[LogEntry[Command]]): (Int, Int) = {
-    log.lastOption.map(lastLogEntry => (lastLogEntry.index, lastLogEntry.term)).getOrElse((-1, -1))
-  }
-
   private def becomeLeader(rs: RaftState[Command], event: NodeEvent): RaftState[Command] = {
     rs.copy(role = new Leader(this))
   }
@@ -286,6 +286,12 @@ private[raft] class RaftNode[Command](
     val (term, votedFor) = rs.persistentState
     persistentStorage.state(term, votedFor)
     persistentStorage.log(rs.deletes, rs.writes)
+  }
+}
+
+object RaftNode {
+  def lastLogIndexAndTerm[Command](log: IndexedSeq[LogEntry[Command]]): (Int, Int) = {
+    log.lastOption.map(lastLogEntry => (lastLogEntry.index, lastLogEntry.term)).getOrElse((-1, -1))
   }
 }
 
