@@ -7,6 +7,7 @@ import io.iohk.cef.protobuf.ChimericLedger._
 import io.iohk.cef.utils.DecimalProtoUtils
 
 import scala.collection.immutable
+import scala.util.Try
 
 object ChimericBlockSerializer {
 
@@ -34,37 +35,40 @@ object ChimericBlockSerializer {
   implicit val serializable: ByteStringSerializable[ChimericLedgerBlock] =
     new ByteStringSerializable[ChimericLedgerBlock] {
 
-      override def deserialize(bytes: ByteString): ChimericLedgerBlock = {
-        val proto = ChimericBlockProto.parseFrom(bytes.toArray)
-        val txs: immutable.Seq[ChimericTx] = proto.txs.toList
-          .map(txProto =>
-            txProto.txFragments.map { txFragment =>
-              if (txFragment.fragment.isCreateCurrencyWrapper) {
-                CreateCurrency(txFragment.fragment.createCurrencyWrapper.get.currency)
-              } else if (txFragment.fragment.isDepositWrapper) {
-                val deposit = txFragment.fragment.depositWrapper.get
-                Deposit(deposit.address, protoValueToValue(deposit.value))
-              } else if (txFragment.fragment.isFeeWrapper) {
-                Fee(protoValueToValue(txFragment.fragment.feeWrapper.get.value))
-              } else if (txFragment.fragment.isInputWrapper) {
-                val input = txFragment.fragment.inputWrapper.get
-                Input(protoTxOutRefToTxOutRef(input.txOutRef), protoValueToValue(input.value))
-              } else if (txFragment.fragment.isMintWrapper) {
-                Mint(protoValueToValue(txFragment.fragment.mintWrapper.get.value))
-              } else if (txFragment.fragment.isOutputWrapper) {
-                Output(protoValueToValue(txFragment.fragment.outputWrapper.get.value))
-              } else if (txFragment.fragment.isWithdrawalWrapper) {
-                val withdrawal = txFragment.fragment.withdrawalWrapper.get
-                Withdrawal(withdrawal.address, protoValueToValue(withdrawal.value), withdrawal.nonce)
-              } else {
-                throw new IllegalArgumentException(s"Invalid tx found in proto: ${txFragment.fragment}")
-              }
-          })
-          .map(x => ChimericTx(x))
-        Block(new ChimericBlockHeader, txs)
+      override def decode(bytes: ByteString): Option[ChimericLedgerBlock] = {
+        for {
+          proto <- Try(ChimericBlockProto.parseFrom(bytes.toArray)).toOption
+        } yield {
+          val txs: immutable.Seq[ChimericTx] = proto.txs.toList
+            .map(txProto =>
+              txProto.txFragments.map { txFragment =>
+                if (txFragment.fragment.isCreateCurrencyWrapper) {
+                  CreateCurrency(txFragment.fragment.createCurrencyWrapper.get.currency)
+                } else if (txFragment.fragment.isDepositWrapper) {
+                  val deposit = txFragment.fragment.depositWrapper.get
+                  Deposit(deposit.address, protoValueToValue(deposit.value))
+                } else if (txFragment.fragment.isFeeWrapper) {
+                  Fee(protoValueToValue(txFragment.fragment.feeWrapper.get.value))
+                } else if (txFragment.fragment.isInputWrapper) {
+                  val input = txFragment.fragment.inputWrapper.get
+                  Input(protoTxOutRefToTxOutRef(input.txOutRef), protoValueToValue(input.value))
+                } else if (txFragment.fragment.isMintWrapper) {
+                  Mint(protoValueToValue(txFragment.fragment.mintWrapper.get.value))
+                } else if (txFragment.fragment.isOutputWrapper) {
+                  Output(protoValueToValue(txFragment.fragment.outputWrapper.get.value))
+                } else if (txFragment.fragment.isWithdrawalWrapper) {
+                  val withdrawal = txFragment.fragment.withdrawalWrapper.get
+                  Withdrawal(withdrawal.address, protoValueToValue(withdrawal.value), withdrawal.nonce)
+                } else {
+                  throw new IllegalArgumentException(s"Invalid tx found in proto: ${txFragment.fragment}")
+                }
+            })
+            .map(x => ChimericTx(x))
+          Block(new ChimericBlockHeader, txs)
+        }
       }
 
-      override def serialize(t: ChimericLedgerBlock): ByteString = {
+      override def encode(t: ChimericLedgerBlock): ByteString = {
         val proto = ChimericBlockProto(
           ChimericBlockHeaderProto(),
           t.transactions.map(tx => {

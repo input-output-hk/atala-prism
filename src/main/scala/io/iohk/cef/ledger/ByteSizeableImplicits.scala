@@ -5,7 +5,7 @@ object ByteSizeableImplicits {
 
   implicit def byteSizeable[T](implicit serializer: ByteStringSerializable[T]): ByteSizeable[T] =
     new ByteSizeable[T] {
-      override def sizeInBytes(t: T): Int = serializer.serialize(t).size
+      override def sizeInBytes(t: T): Int = serializer.encode(t).size
     }
 
   implicit def blockByteSizeable[State, Header <: BlockHeader, Tx <: Transaction[State]](

@@ -12,7 +12,7 @@ class ChimericStateSerializerSpec extends FlatSpec with MustMatchers with Proper
     val serializer = ChimericStateSerializer.byteStringSerializable
     implicit val arb = Arbitrary(ChimericGenerators.StateValueGen)
     forAll { (state: ChimericStateValue) =>
-      serializer.deserialize(serializer.serialize(state)) mustBe state
+      serializer.decode(serializer.encode(state)) mustBe Some(state)
     }
   }
 
@@ -21,8 +21,8 @@ class ChimericStateSerializerSpec extends FlatSpec with MustMatchers with Proper
     val serializer = ChimericStateSerializer.byteStringSerializable
     def test(number: BigDecimal): scalatest.Assertion = {
       val state = ValueHolder(Value("CRC" -> number))
-      val serializedDecimal = serializer.serialize(state)
-      serializer.deserialize(serializedDecimal) mustBe state
+      val serializedDecimal = serializer.encode(state)
+      serializer.decode(serializedDecimal) mustBe Some(state)
     }
 
     test(BigDecimal(Double.MaxValue) + 0.1)

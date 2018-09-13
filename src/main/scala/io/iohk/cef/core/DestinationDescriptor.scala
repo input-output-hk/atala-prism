@@ -5,6 +5,8 @@ import io.iohk.cef.network.NodeId
 import io.iohk.cef.protobuf.DestinationDescriptor._
 import io.iohk.cef.protobuf.DestinationDescriptor.DestinationDescriptorProto.Fragment._
 
+import scala.util.Try
+
 sealed trait DestinationDescriptor extends (NodeId => Boolean)
 
 case class Anyone() extends DestinationDescriptor {
@@ -36,12 +38,12 @@ object DestinationDescriptor {
   val destinationDescriptorSerializer: ByteStringSerializable[DestinationDescriptor] =
     new ByteStringSerializable[DestinationDescriptor] {
 
-      override def serialize(t: DestinationDescriptor): ByteString = {
+      override def encode(t: DestinationDescriptor): ByteString = {
         ByteString(toDestinationDescriptorProto(t).toByteArray)
       }
 
-      override def deserialize(bytes: ByteString): DestinationDescriptor = {
-        fromDestinationDescriptorProto(DestinationDescriptorProto.parseFrom(bytes.toArray))
+      override def decode(bytes: ByteString): Option[DestinationDescriptor] = {
+        Try(fromDestinationDescriptorProto(DestinationDescriptorProto.parseFrom(bytes.toArray))).toOption
       }
     }
 

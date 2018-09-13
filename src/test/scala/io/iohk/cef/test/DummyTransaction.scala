@@ -3,6 +3,8 @@ import akka.util.ByteString
 import io.iohk.cef.ledger.{ByteStringSerializable, LedgerError, LedgerState, Transaction}
 import io.iohk.cef.utils.ByteSizeable
 
+import scala.util.Try
+
 trait TestTx extends Transaction[String]
 
 case class DummyTransaction(val size: Int) extends TestTx {
@@ -19,9 +21,10 @@ object DummyTransaction {
   }
 
   implicit val serializable = new ByteStringSerializable[DummyTransaction] {
-    override def deserialize(bytes: ByteString): DummyTransaction = DummyTransaction(BigInt(bytes.toArray).intValue())
+    override def decode(bytes: ByteString): Option[DummyTransaction] =
+      Try(DummyTransaction(BigInt(bytes.toArray).intValue())).toOption
 
-    override def serialize(t: DummyTransaction): ByteString =
+    override def encode(t: DummyTransaction): ByteString =
       ByteString(BigInt(t.size).toByteArray)
   }
 }

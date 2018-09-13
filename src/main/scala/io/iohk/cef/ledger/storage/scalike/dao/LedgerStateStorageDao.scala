@@ -17,8 +17,11 @@ class LedgerStateStorageDao[S] {
        where ${lst.ledgerStateId} = ${ledgerStateId} and
         ${lst.partitionId} in (${keys})
        """.map(rs => LedgerStateTable(lst.resultName)(rs)).list().apply()
-    val pairs = entries.map(entry => (entry.partitionId -> byteStringSerializable.deserialize(entry.data)))
-    LedgerState(Map(pairs: _*))
+    val pairs = entries.map(entry => (entry.partitionId -> byteStringSerializable.decode(entry.data)))
+    val flattenedPairs = pairs.collect { case (identity, Some(key)) => (identity, key) }
+    if (flattenedPairs.size != pairs.size)
+      throw new IllegalArgumentException(s"Could not parse all entries: ${pairs.filter(_._2.isEmpty).map(_._1)}")
+    LedgerState(Map(flattenedPairs: _*))
   }
 
   def update(ledgerStateId: Int, previousState: LedgerState[S], newState: LedgerState[S])(
@@ -30,9 +33,9 @@ class LedgerStateStorageDao[S] {
     } else {
       val actions = previousState.updateTo(newState)
       actions.actions.foreach(_ match {
-        case InsertStateAction(key, value) => insertEntry(ledgerStateId, key, byteStringSerializable.serialize(value))
+        case InsertStateAction(key, value) => insertEntry(ledgerStateId, key, byteStringSerializable.encode(value))
         case DeleteStateAction(key, _) => deleteEntry(ledgerStateId, key)
-        case UpdateStateAction(key, value) => updateEntry(ledgerStateId, key, byteStringSerializable.serialize(value))
+        case UpdateStateAction(key, value) => updateEntry(ledgerStateId, key, byteStringSerializable.encode(value))
       })
     }
   }

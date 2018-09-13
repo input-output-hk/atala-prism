@@ -44,9 +44,10 @@ trait LedgerStorageDaoDbTest
       .apply()
 
     val blockEntry = blockDataInDb.value
-    val dbBlock = IdentityBlockSerializer.serializable.deserialize(blockEntry.data)
-    dbBlock.header mustBe header
-    dbBlock.transactions mustBe txList
+    val dbBlock = IdentityBlockSerializer.serializable.decode(blockEntry.data)
+    dbBlock.isDefined mustBe true
+    dbBlock.get.header mustBe header
+    dbBlock.get.transactions mustBe txList
   }
 
 }

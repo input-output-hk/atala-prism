@@ -15,7 +15,7 @@ class LedgerStorageDao(clock: Clock) {
     val blockColumn = LedgerTable.column
     val lt = LedgerTable.syntax("bt")
 
-    val serializedBlock = blockSerializable.serialize(block)
+    val serializedBlock = blockSerializable.encode(block)
     val maxBlockNumber =
       sql"""select max(${blockColumn.blockNumber}) as max_block_number
             from ${LedgerTable as lt}

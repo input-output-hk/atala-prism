@@ -1,6 +1,7 @@
 package io.iohk.cef.network.encoding.nio
 import java.nio.ByteBuffer
 
+import akka.util.ByteString
 import io.iohk.cef.network.encoding._
 
 trait NioCodecs extends NativeCodecs with GenericCodecs with StreamCodecs {
@@ -25,6 +26,22 @@ trait NioCodecs extends NativeCodecs with GenericCodecs with StreamCodecs {
 
   def nioStreamCodec[T](implicit enc: NioEncoder[T], dec: NioStreamDecoder[T]): NioStreamCodec[T] =
     new NioStreamCodec[T](enc, dec)
+
+  val byteStringNioEncoder: NioEncoder[ByteString] = new NioEncoder[ByteString] {
+    override def encode(t: ByteString): ByteBuffer = t.toByteBuffer
+  }
+
+  val byteStringNioDecoder: NioDecoder[ByteString] = new NioDecoder[ByteString] {
+    override def decode(u: ByteBuffer): Option[ByteString] = Some(ByteString(u.array()))
+  }
+
+  implicit class ByteStringEncoderOps[T](encoder: Encoder[T, ByteString]) {
+    def toNioEncoder: NioEncoder[T] = encoder andThen byteStringNioEncoder
+  }
+
+  implicit class ByteStringDecoderOps[T](decoder: Decoder[ByteString, T]) {
+    def toNioDecoder: NioDecoder[T] = byteStringNioDecoder andThen decoder
+  }
 }
 
 object NioCodecs extends NioCodecs

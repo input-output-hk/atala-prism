@@ -12,7 +12,7 @@ class IdentityStateSerializerSpec extends FlatSpec with MustMatchers with RSAKey
     forAll { (values: List[Int]) =>
       val keys = values.map(_ => generateKeyPair._1).toSet
       val s = IdentityStateSerializer.byteStringSerializable
-      s.deserialize(s.serialize(keys)) mustBe keys
+      s.decode(s.encode(keys)) mustBe Some(keys)
     }
   }
 }

@@ -11,6 +11,8 @@ import io.iohk.cef.ledger.identity.storage.protobuf.identityLedger.{
 }
 import io.iohk.cef.ledger.{Block, ByteStringSerializable}
 
+import scala.util.Try
+
 object IdentityBlockSerializer {
 
   implicit val serializable: ByteStringSerializable[IdentityLedgerBlock] = {
@@ -20,29 +22,31 @@ object IdentityBlockSerializer {
       val LinkTxType = 2
       val UnlinkTxType = 3
 
-      override def deserialize(bytes: ByteString) = {
-        val proto = IdentityBlockProto.parseFrom(bytes.toArray)
-        Block(
-          IdentityBlockHeader(
-            ByteString(proto.header.hash.toByteArray),
-            Instant.ofEpochMilli(proto.header.createdEpochMilli),
-            proto.header.blockHeight),
-          proto.transactions
-            .map(ptx => {
-              val key = decodePublicKey(ptx.publicKey.toByteArray)
-              val signature = new DigitalSignature(ByteString(ptx.signature.toByteArray))
+      override def decode(bytes: ByteString): Option[IdentityLedgerBlock] = {
+        for {
+          proto <- Try(IdentityBlockProto.parseFrom(bytes.toArray)).toOption
+        } yield
+          Block(
+            IdentityBlockHeader(
+              ByteString(proto.header.hash.toByteArray),
+              Instant.ofEpochMilli(proto.header.createdEpochMilli),
+              proto.header.blockHeight),
+            proto.transactions
+              .map(ptx => {
+                val key = decodePublicKey(ptx.publicKey.toByteArray)
+                val signature = new DigitalSignature(ByteString(ptx.signature.toByteArray))
 
-              ptx.`type` match {
-                case ClaimTxType => Claim(ptx.identity, key, signature)
-                case LinkTxType => Link(ptx.identity, key, signature)
-                case UnlinkTxType => Unlink(ptx.identity, key, signature)
-              }
-            })
-            .toList
-        )
+                ptx.`type` match {
+                  case ClaimTxType => Claim(ptx.identity, key, signature)
+                  case LinkTxType => Link(ptx.identity, key, signature)
+                  case UnlinkTxType => Unlink(ptx.identity, key, signature)
+                }
+              })
+              .toList
+          )
       }
 
-      override def serialize(t: IdentityLedgerBlock): ByteString = {
+      override def encode(t: IdentityLedgerBlock): ByteString = {
         val proto = IdentityBlockProto(
           IdentityHeaderProto(
             com.google.protobuf.ByteString.copyFrom(t.header.hash.toArray),
