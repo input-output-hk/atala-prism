@@ -53,6 +53,10 @@ message CreateCurrencyProto {
     required string currency = 1;
 }
 
+message NonceProto {
+    required int32 nonce = 1;
+}
+
 message ChimericTxFragmentProto {
     oneof fragment {
         WithdrawalProto withdrawalWrapper = 1;

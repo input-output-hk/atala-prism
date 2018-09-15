@@ -1,10 +1,11 @@
 package io.iohk.cef.ledger.chimeric
 import akka.util.ByteString
 import io.iohk.cef.ledger.ByteStringSerializable
-import io.iohk.cef.protobuf.ChimericLedger.{ChimericStringValueProto, CreateCurrencyProto}
+import io.iohk.cef.protobuf.ChimericLedger.{ChimericStringValueProto, CreateCurrencyProto, NonceProto}
 import io.iohk.cef.protobuf.ChimericLedgerState.ChimericStateValueProto
 import io.iohk.cef.protobuf.ChimericLedgerState.ChimericStateValueProto.Value.{
   StringCreateCurrencyWrapper,
+  StringNonceWrapper,
   StringValueWrapper
 }
 
@@ -25,15 +26,19 @@ object ChimericStateSerializer {
     }
 
     override def serialize(t: ChimericStateValue): ByteString = {
-      val value = t match {
-        case ValueHolder(value) =>
-          StringValueWrapper(ChimericStringValueProto(value.iterator.map {
+      val proto = t match {
+        case ValueHolder(inner) =>
+          StringValueWrapper(ChimericStringValueProto(inner.iterator.map {
             case (key, value) => (key, value.toString())
           }.toMap))
+
+        case NonceHolder(nonce) => StringNonceWrapper(NonceProto(nonce))
+
         case CreateCurrencyHolder(createCurrency) =>
           StringCreateCurrencyWrapper(CreateCurrencyProto(createCurrency.currency))
       }
-      ByteString(ChimericStateValueProto(value).toByteArray)
+
+      ByteString(ChimericStateValueProto(proto).toByteArray)
     }
   }
 }
