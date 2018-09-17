@@ -68,7 +68,7 @@ class CoreNetworkItSpec extends FlatSpec
     val testTx = DummyTransaction(10)
     when(mockTxPoolIf2.processTransaction(testTx)).thenReturn(Future.successful(Right(())))
     when(mockTxPoolIf1.processTransaction(testTx)).thenReturn(Future.successful(Right(())))
-    val result = core2.receiveTransaction(Envelope(testTx, 1, Anyone()), Some(baseNetworkCore1.transports.peerInfo.nodeId))
+    val result = core2.receiveTransaction(Envelope(testTx, 1, Anyone()))
     Await.result(result, 1 minute) mustBe Right(())
     verify(mockTxPoolIf1, timeout(5000).times(1)).processTransaction(testTx)
   }
