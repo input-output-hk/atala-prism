@@ -10,6 +10,7 @@ import org.scalatest.prop.PropertyChecks
 import org.scalatest.{FlatSpec, MustMatchers}
 import org.mockito.Mockito._
 
+import scala.collection.immutable
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 
@@ -52,7 +53,7 @@ class CoreNetworkItSpec extends FlatSpec
     )
   }
 
-  it should "receive a transaction" in {
+  it should "receive a transaction and a block" in {
     val baseNetworkCore1 = randomBaseNetwork(None)
     val baseNetworkCore2 = randomBaseNetwork(Some(baseNetworkCore1))
     println(s"baseNetworkCore1: $baseNetworkCore1")
@@ -68,8 +69,16 @@ class CoreNetworkItSpec extends FlatSpec
     val testTx = DummyTransaction(10)
     when(mockTxPoolIf2.processTransaction(testTx)).thenReturn(Future.successful(Right(())))
     when(mockTxPoolIf1.processTransaction(testTx)).thenReturn(Future.successful(Right(())))
-    val result = core2.receiveTransaction(Envelope(testTx, 1, Anyone()))
-    Await.result(result, 1 minute) mustBe Right(())
+    val core2ProcessesTx = core2.receiveTransaction(Envelope(testTx, 1, Anyone()))
+    Await.result(core2ProcessesTx, 1 minute) mustBe Right(())
     verify(mockTxPoolIf1, timeout(5000).times(1)).processTransaction(testTx)
+
+    val testBlock = Block(DummyBlockHeader(10), immutable.Seq(testTx))
+
+    when(mockCons1.process(testBlock)).thenReturn(Future.successful(Right(())))
+    when(mockCons2.process(testBlock)).thenReturn(Future.successful(Right(())))
+    val core2ProcessesBlock = core2.receiveBlock(Envelope(testBlock, 1, Anyone()))
+    Await.result(core2ProcessesBlock, 1 minute) mustBe Right(())
+    verify(mockCons1, timeout(5000).times(1)).process(testBlock)
   }
 }
