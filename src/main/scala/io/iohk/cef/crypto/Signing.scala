@@ -1,10 +1,8 @@
 package io.iohk.cef.crypto
 
 import akka.util.ByteString
-import io.iohk.cef.crypto.signing.SigningAlgorithmsCollection
-import io.iohk.cef.crypto.encoding.TypedByteString
-import io.iohk.cef.crypto.encoding.TypedByteStringDecodingError
-import io.iohk.cef.crypto.signing._
+import io.iohk.cef.crypto.encoding.{TypedByteString, TypedByteStringDecodingError}
+import io.iohk.cef.crypto.signing.{SigningAlgorithmsCollection, _}
 
 trait Signing {
 
@@ -36,10 +34,22 @@ trait Signing {
     isValidSignatureOfBytes(encoder.encode(t), signature, key)
 
   trait SigningPublicKey {
+
     private[Signing] val `type`: signingAlgorithmsCollection.SigningAlgorithmType
+
     private[Signing] val lowlevelKey: `type`.algorithm.PublicKey
-    def toByteString: ByteString =
+
+    lazy val toByteString: ByteString =
       SigningPublicKey.encodeInto(this).toByteString
+
+    override def equals(obj: scala.Any): Boolean = obj match {
+      case that: SigningPublicKey =>
+        this.toByteString == that.toByteString
+
+      case _ => false
+    }
+
+    override def hashCode(): Int = this.toByteString.hashCode()
   }
 
   object SigningPublicKey {
@@ -126,8 +136,19 @@ trait Signing {
   class Signature(
       private[Signing] val `type`: signingAlgorithmsCollection.SigningAlgorithmType,
       private[Signing] val bytes: SignatureBytes) {
-    def toByteString: ByteString =
+
+    lazy val toByteString: ByteString =
       Signature.encodeInto(this).toByteString
+
+    override def equals(obj: scala.Any): Boolean = obj match {
+      case that: Signature =>
+        this.`type` == that.`type` &&
+          this.bytes == that.bytes
+
+      case _ => false
+    }
+
+    override def hashCode(): Int = (`type`, bytes).hashCode()
   }
 
   object Signature {

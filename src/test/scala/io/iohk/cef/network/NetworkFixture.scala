@@ -21,11 +21,11 @@ trait NetworkFixture {
 
   // Each network node should have a single instance of the Transports and
   // a single instance of discovery.
-  class BaseNetwork(val transports: Transports, val networkDiscovery: NetworkDiscovery)
+  protected class BaseNetwork(val transports: Transports, val networkDiscovery: NetworkDiscovery)
 
-  def randomBaseNetwork(bootstrap: Option[BaseNetwork]): BaseNetwork = {
+  protected def randomBaseNetwork(bootstrap: Option[BaseNetwork]): BaseNetwork = {
 
-    val configuration = ConversationalNetworkConfiguration(Some(TcpTransportConfiguration(aRandomAddress())))
+    val configuration = NetworkConfiguration(Some(TcpTransportConfiguration(aRandomAddress())))
 
     val peerInfo = PeerInfo(NodeId(NetUtils.randomBytes(NodeId.nodeIdBytes)), configuration)
 

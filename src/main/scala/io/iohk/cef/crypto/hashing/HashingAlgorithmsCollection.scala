@@ -13,7 +13,7 @@ class HashingAlgorithmsCollection {
 
     val values = findValues
 
-    case object KECCAK256 extends HashingAlgorithmType(algorithms.KECCAK256)
+    case object SHA256 extends HashingAlgorithmType(algorithms.SHA256)
   }
 
   def apply(identifier: String): Option[HashingAlgorithmType] =

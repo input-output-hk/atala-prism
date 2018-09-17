@@ -143,7 +143,7 @@ class DiscoveryManagerSpec extends FlatSpec with BeforeAndAfterAll {
 
       val ping = pingActor(actor, this)
 
-      val token = cryptolegacy.kec256(encoder.encode(ping))
+      val token = cryptolegacy.sha256(encoder.encode(ping))
       val sendMessage = discoveryListener.expectMessageType[SendMessage]
       sendMessage.message mustBe a[Pong]
       sendMessage.message.messageType mustBe Pong.messageType

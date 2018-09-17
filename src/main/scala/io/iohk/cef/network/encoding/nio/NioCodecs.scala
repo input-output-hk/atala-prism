@@ -4,7 +4,7 @@ import java.nio.ByteBuffer
 import akka.util.ByteString
 import io.iohk.cef.network.encoding._
 
-trait NioCodecs extends NativeCodecs with GenericCodecs with StreamCodecs {
+trait NioCodecs extends NativeCodecs with ProductCodecs with StreamCodecs with OtherCodecs with CoproductCodecs {
 
   type NioEncoder[T] = Encoder[T, ByteBuffer]
 
@@ -22,6 +22,10 @@ trait NioCodecs extends NativeCodecs with GenericCodecs with StreamCodecs {
 
   object NioDecoder {
     def apply[T](implicit dec: NioDecoder[T]): NioDecoder[T] = dec
+  }
+
+  object NioCodec {
+    def apply[T](implicit enc: NioEncoder[T], dec: NioDecoder[T]): NioCodec[T] = new Codec(enc, dec)
   }
 
   def nioStreamCodec[T](implicit enc: NioEncoder[T], dec: NioStreamDecoder[T]): NioStreamCodec[T] =

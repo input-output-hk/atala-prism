@@ -4,6 +4,9 @@ import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 import io.iohk.cef.network.encoding.nio._
 
+/**
+  * Validated examples on how the crypto module gets used
+  */
 class CryptoSpec extends FlatSpec {
 
   case class User(name: String, age: Int)
@@ -11,21 +14,20 @@ class CryptoSpec extends FlatSpec {
   val user = User("Foo Bar", 42)
   val user2 = User("Bar Foo", 24)
 
-  "hashing" should "work" in {
+  "this hashing examples" should "keep being valid" in {
     val userHash = hashEntity(user)
     isValidHash(user, userHash) should be(true)
     isValidHash(user2, userHash) should be(false)
   }
 
-  ignore should "also work" in {
-
-    // Encryption
+  "this encryption examples" should "keep being valid" in {
     val EncryptionKeyPair(pubEncryptionKey, privEncryptionKey) = generateEncryptionKeyPair
     val encrypted = encryptEntity(user, pubEncryptionKey)
     val decrypted = decryptEntity[User](encrypted, privEncryptionKey)
     decrypted should be(Right(user))
+  }
 
-    // Signature
+  "this signing examples" should "keep being valid" in {
     val SigningKeyPair(pubSigningKey, privSigningKey) = generateSigningKeyPair
     val signature = signEntity(user, privSigningKey)
     val isValidSign = isValidSignature(user, signature, pubSigningKey)

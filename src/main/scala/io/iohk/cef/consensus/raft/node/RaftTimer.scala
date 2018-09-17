@@ -1,22 +1,24 @@
 package io.iohk.cef.consensus.raft.node
 import java.util.{Timer, TimerTask}
 
-import io.iohk.cef.consensus.raft.RaftTimer
-
 import scala.concurrent.duration.Duration
 import scala.util.Random
 
-class BouncyTimer(minTimeout: Duration, maxTimeout: Duration)(timeoutFn: () => Unit) extends RaftTimer {
+private[raft] class RaftTimer(minTimeout: Duration, maxTimeout: Duration)(timeoutFn: () => Unit) {
 
   val timer = new Timer()
+  var currentTask: TimerTask = _
 
-  override def reset(): Unit = {
-    timer.cancel()
+  schedule()
+
+  def reset(): Unit = {
+    currentTask.cancel()
     schedule()
   }
 
-  private def schedule(): Unit = {
-    timer.schedule(new TimerTask { override def run(): Unit = timeout() }, nextRandom())
+  private def schedule(): Unit = this.synchronized {
+    currentTask = new TimerTask { override def run(): Unit = timeout() }
+    timer.schedule(currentTask, nextRandom())
   }
 
   private def timeout(): Unit = {
