@@ -35,12 +35,12 @@ trait NioCodecs extends NativeCodecs with GenericCodecs with StreamCodecs {
     override def decode(u: ByteBuffer): Option[ByteString] = Some(ByteString(u.array()))
   }
 
-  implicit def nioEncoderFromByteStringEncoder[T](implicit encoder: Encoder[T, ByteString]): NioEncoder[T] = {
-    encoder andThen byteStringNioEncoder
+  implicit class ByteStringEncoderOps[T](encoder: Encoder[T, ByteString]) {
+    def toNioEncoder: NioEncoder[T] = encoder andThen byteStringNioEncoder
   }
 
-  implicit def nioDecoderFromByteStringDecoder[T](implicit decoder: Decoder[ByteString, T]): NioDecoder[T] = {
-    byteStringNioDecoder andThen decoder
+  implicit class ByteStringDecoderOps[T](decoder: Decoder[ByteString, T]) {
+    def toNioDecoder: NioDecoder[T] = byteStringNioDecoder andThen decoder
   }
 }
 

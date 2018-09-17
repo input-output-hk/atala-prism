@@ -1,7 +1,7 @@
 package io.iohk.cef.core
 import akka.util.{ByteString, Timeout}
 import io.iohk.cef.LedgerId
-import io.iohk.cef.consensus.{Consensus, MockingConsensus}
+import io.iohk.cef.consensus.MockingConsensus
 import io.iohk.cef.ledger.{Block, ByteStringSerializable}
 import io.iohk.cef.network.{MessageStream, Network, NodeId}
 import io.iohk.cef.test.{DummyBlockHeader, DummyTransaction}
