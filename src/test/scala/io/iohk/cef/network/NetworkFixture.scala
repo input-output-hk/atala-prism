@@ -67,8 +67,8 @@ trait NetworkFixture {
   }
 
   private def discoveryManagerBehavior(
-                                        peerInfo: PeerInfo,
-                                        discoveryConfig: DiscoveryConfig): Behavior[DiscoveryRequest] = {
+      peerInfo: PeerInfo,
+      discoveryConfig: DiscoveryConfig): Behavior[DiscoveryRequest] = {
 
     val nodeInfo = peerInfo2NodeInfoHack(peerInfo)
 
@@ -100,10 +100,10 @@ trait NetworkFixture {
   }
 
   private def listenerFactory(
-                               discoveryConfig: DiscoveryConfig,
-                               encoder: Encoder[DiscoveryWireMessage, ByteString],
-                               decoder: Decoder[ByteString, DiscoveryWireMessage])(
-                               context: ActorContext[DiscoveryRequest]): ActorRef[DiscoveryListenerRequest] = {
+      discoveryConfig: DiscoveryConfig,
+      encoder: Encoder[DiscoveryWireMessage, ByteString],
+      decoder: Decoder[ByteString, DiscoveryWireMessage])(
+      context: ActorContext[DiscoveryRequest]): ActorRef[DiscoveryListenerRequest] = {
 
     context.spawn(
       DiscoveryListener.behavior(discoveryConfig, UDPBridge.creator(discoveryConfig, encoder, decoder)),
