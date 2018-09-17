@@ -7,8 +7,14 @@ import io.iohk.cef.network.encoding.nio._
 import org.scalatest.Matchers._
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{EitherValues, MustMatchers, WordSpec}
+import io.iohk.cef.test.ExtraScalacheckGenerators
 
-class SigningSpec extends WordSpec with MustMatchers with PropertyChecks with EitherValues {
+class SigningSpec
+    extends WordSpec
+    with MustMatchers
+    with PropertyChecks
+    with EitherValues
+    with ExtraScalacheckGenerators {
 
   case class User(name: String, age: Int)
 
@@ -34,9 +40,9 @@ class SigningSpec extends WordSpec with MustMatchers with PropertyChecks with Ei
 
   "signBytes" should {
     "generate a signature for any input" in {
-      forAll { input: Array[Byte] =>
+      forAll { input: ByteString =>
         val keys = generateSigningKeyPair()
-        val result = signBytes(ByteString(input), keys.`private`)
+        val result = signBytes(input, keys.`private`)
 
         result.toByteString mustNot be(empty)
       }
@@ -57,23 +63,23 @@ class SigningSpec extends WordSpec with MustMatchers with PropertyChecks with Ei
 
   "isValidSignatureOfBytes" should {
     "verify the signature with the right key" in {
-      forAll { input: Array[Byte] =>
+      forAll { input: ByteString =>
         val keys = generateSigningKeyPair()
-        val signature = signBytes(ByteString(input), keys.`private`)
-        val result = isValidSignatureOfBytes(ByteString(input), signature, keys.public)
+        val signature = signBytes(input, keys.`private`)
+        val result = isValidSignatureOfBytes(input, signature, keys.public)
 
         result must be(true)
       }
     }
 
     "fail to verify the signature with the wrong key" in {
-      forAll { input: Array[Byte] =>
+      forAll { input: ByteString =>
         val keys = generateSigningKeyPair()
-        val signature = signBytes(ByteString(input), keys.`private`)
+        val signature = signBytes(input, keys.`private`)
 
         forAll { _: Int =>
           val nested = generateSigningKeyPair().public
-          val result = isValidSignatureOfBytes(ByteString(input), signature, nested)
+          val result = isValidSignatureOfBytes(input, signature, nested)
           result must be(false)
         }
       }
@@ -110,9 +116,9 @@ class SigningSpec extends WordSpec with MustMatchers with PropertyChecks with Ei
 
   "Signature.decodeFrom" should {
     "decode valid signature" in {
-      forAll { input: Array[Byte] =>
+      forAll { input: ByteString =>
         val keys = generateSigningKeyPair()
-        val signature = signBytes(ByteString(input), keys.`private`)
+        val signature = signBytes(input, keys.`private`)
         val result = Signature.decodeFrom(signature.toByteString)
 
         result.right.value.toByteString.toArray mustNot be(empty)
@@ -122,8 +128,8 @@ class SigningSpec extends WordSpec with MustMatchers with PropertyChecks with Ei
     "fail to decode invalid signatures" in {
       pending
 
-      forAll { bytes: Array[Byte] =>
-        val result = Signature.decodeFrom(ByteString(bytes))
+      forAll { bytes: ByteString =>
+        val result = Signature.decodeFrom(bytes)
         val expected =
           SignatureDecodeError.DataExtractionError(TypedByteStringDecodingError.NioDecoderFailedToDecodeTBS)
 
@@ -134,15 +140,14 @@ class SigningSpec extends WordSpec with MustMatchers with PropertyChecks with Ei
     "fail to decode signatures with unsupported algorithms" in {
       val algorithm = "SHA256withRSA".flatMap(_.toByte :: 0.toByte :: Nil).toArray
 
-      forAll { input: Array[Byte] =>
+      forAll { input: ByteString =>
         val keys = generateSigningKeyPair()
-        val signature = signBytes(ByteString(input), keys.`private`)
+        val signature = signBytes(input, keys.`private`)
 
         val index = signature.toByteString.indexOfSlice(algorithm)
-        val corruptedBytes = signature.toByteString.toArray
-        corruptedBytes(index) = 'X'.toByte
+        val corruptedBytes = signature.toByteString.updated(index, 'X'.toByte)
 
-        val result = Signature.decodeFrom(ByteString(corruptedBytes))
+        val result = Signature.decodeFrom(corruptedBytes)
         val expected = SignatureDecodeError.UnsupportedAlgorithm("XHA256withRSA")
 
         result.left.value must be(expected)
@@ -163,8 +168,8 @@ class SigningSpec extends WordSpec with MustMatchers with PropertyChecks with Ei
     "fail to decode invalid public key" in {
       pending
 
-      forAll { bytes: Array[Byte] =>
-        val result = SigningPublicKey.decodeFrom(ByteString(bytes))
+      forAll { bytes: ByteString =>
+        val result = SigningPublicKey.decodeFrom(bytes)
         val expected = SigningPublicKeyDecodeError.DataExtractionError(NioDecoderFailedToDecodeTBS)
 
         result.left.value must be(expected)
@@ -178,10 +183,9 @@ class SigningSpec extends WordSpec with MustMatchers with PropertyChecks with Ei
         val key = generateSigningKeyPair().public
 
         val index = key.toByteString.indexOfSlice(algorithm)
-        val corruptedBytes = key.toByteString.toArray
-        corruptedBytes(index) = 'X'.toByte
+        val corruptedBytes = key.toByteString.updated(index, 'X'.toByte)
 
-        val result = SigningPublicKey.decodeFrom(ByteString(corruptedBytes))
+        val result = SigningPublicKey.decodeFrom(corruptedBytes)
         val expected = SigningPublicKeyDecodeError.UnsupportedAlgorithm("XHA256withRSA")
 
         result.left.value must be(expected)
@@ -202,8 +206,8 @@ class SigningSpec extends WordSpec with MustMatchers with PropertyChecks with Ei
     "fail to decode invalid private key" in {
       pending
 
-      forAll { bytes: Array[Byte] =>
-        val result = SigningPrivateKey.decodeFrom(ByteString(bytes))
+      forAll { bytes: ByteString =>
+        val result = SigningPrivateKey.decodeFrom(bytes)
         val expected = SigningPrivateKeyDecodeError.DataExtractionError(NioDecoderFailedToDecodeTBS)
 
         result.left.value must be(expected)
@@ -217,10 +221,9 @@ class SigningSpec extends WordSpec with MustMatchers with PropertyChecks with Ei
         val key = generateSigningKeyPair().`private`
 
         val index = key.toByteString.indexOfSlice(algorithm)
-        val corruptedBytes = key.toByteString.toArray
-        corruptedBytes(index) = 'X'.toByte
+        val corruptedBytes = key.toByteString.updated(index, 'X'.toByte)
 
-        val result = SigningPrivateKey.decodeFrom(ByteString(corruptedBytes))
+        val result = SigningPrivateKey.decodeFrom(corruptedBytes)
         val expected = SigningPrivateKeyDecodeError.UnsupportedAlgorithm("XHA256withRSA")
 
         result.left.value must be(expected)

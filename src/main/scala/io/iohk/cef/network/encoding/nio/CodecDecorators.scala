@@ -1,8 +1,8 @@
 package io.iohk.cef.network.encoding.nio
-import java.nio.ByteBuffer
+import java.nio.{BufferUnderflowException, ByteBuffer}
 import java.security.MessageDigest
 
-import scala.reflect.ClassTag
+import scala.reflect.runtime.universe._
 
 private[nio] object CodecDecorators {
 
@@ -34,10 +34,9 @@ private[nio] object CodecDecorators {
     }
   }
 
-  def typeCodeEncoder[T](enc: NioEncoder[T])(implicit ct: ClassTag[T]): NioEncoder[T] = (t: T) => {
+  def typeCodeEncoder[T](enc: NioEncoder[T])(implicit tt: WeakTypeTag[T]): NioEncoder[T] = (t: T) => {
     val hashBuff: ByteBuffer = arrayEncoderImpl[Byte].encode(typeCode[T])
     val messageBuff: ByteBuffer = enc.encode(t)
-
     ByteBuffer
       .allocate(hashBuff.capacity() + messageBuff.capacity())
       .put(hashBuff)
@@ -46,7 +45,7 @@ private[nio] object CodecDecorators {
       .asInstanceOf[ByteBuffer]
   }
 
-  def typeCodeDecoder[T](dec: NioDecoder[T])(implicit ct: ClassTag[T]): NioDecoder[T] = new NioDecoder[T] {
+  def typeCodeDecoder[T](dec: NioDecoder[T])(implicit tt: WeakTypeTag[T]): NioDecoder[T] = new NioDecoder[T] {
     override def decode(b: ByteBuffer): Option[T] = {
 
       val actualTypeHashDec: Option[Array[Byte]] = arrayDecoderImpl[Byte].decode(b)
@@ -62,6 +61,15 @@ private[nio] object CodecDecorators {
     }
   }
 
+  def decodeWithoutUnderflow[T](decode: => Option[T]): Option[T] = {
+    try {
+      decode
+    } catch {
+      case _: BufferUnderflowException =>
+        None
+    }
+  }
+
   private def verifyingRemaining[T](remaining: Int, b: ByteBuffer)(decode: => Option[T]): Option[T] = {
     if (b.remaining() < remaining)
       None
@@ -69,7 +77,7 @@ private[nio] object CodecDecorators {
       decode
   }
 
-  private def verifyingSuccess[T](b: ByteBuffer)(decode: => Option[T]): Option[T] = {
+  def verifyingSuccess[T](b: ByteBuffer)(decode: => Option[T]): Option[T] = {
     val initialPosition = b.position()
     val result = decode
     if (result.isEmpty)
@@ -78,8 +86,8 @@ private[nio] object CodecDecorators {
     result
   }
 
-  private def typeCode[T](implicit ct: ClassTag[T]): Array[Byte] =
-    hash(ct.runtimeClass.getName)
+  private def typeCode[T](implicit tt: WeakTypeTag[T]): Array[Byte] =
+    hash(tt.toString())
 
   private[nio] def hash(s: String): Array[Byte] = {
     MessageDigest.getInstance("MD5").digest(s.getBytes)

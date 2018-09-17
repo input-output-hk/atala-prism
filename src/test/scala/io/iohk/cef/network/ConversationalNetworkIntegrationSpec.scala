@@ -64,4 +64,5 @@ class ConversationalNetworkIntegrationSpec extends FlatSpec with NetworkFixture 
     conversationalNetwork.messageStream.foreach(msg => messageHandler(msg))
     conversationalNetwork
   }
+
 }
