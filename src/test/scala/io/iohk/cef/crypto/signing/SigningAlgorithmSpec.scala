@@ -1,4 +1,4 @@
-package io.iohk.cef.crypto.encryption
+package io.iohk.cef.crypto.signing
 
 import akka.util.ByteString
 import org.scalatest.FlatSpec
@@ -8,16 +8,12 @@ import io.iohk.cef.builder.SecureRandomBuilder
 import io.iohk.cef.test.ScalacheckExctensions
 import io.iohk.cef.crypto.KeyDecodingError
 
-class EncryptionAlogorithmSpec
-    extends FlatSpec
-    with PropertyChecks
-    with SecureRandomBuilder
-    with ScalacheckExctensions {
+class SigningAlogorithmSpec extends FlatSpec with PropertyChecks with SecureRandomBuilder with ScalacheckExctensions {
 
-  val encryptionCollection: EncryptionAlgorithmsCollection =
-    EncryptionAlgorithmsCollection(secureRandom)
+  val signingCollection: SigningAlgorithmsCollection =
+    SigningAlgorithmsCollection(secureRandom)
 
-  val all = encryptionCollection.EncryptionAlgorithmType.values
+  val all = signingCollection.SigningAlgorithmType.values
 
   all.foreach { `type` =>
     val description = `type`.algorithmIdentifier
@@ -27,7 +23,7 @@ class EncryptionAlogorithmSpec
     sharedTest(description, algorithm)
   }
 
-  protected def sharedTest(algorithmDescription: String, algorithm: EncryptionAlgorithm): Unit = {
+  protected def sharedTest(algorithmDescription: String, algorithm: SigningAlgorithm): Unit = {
 
     s"$algorithmDescription.generateKeyPair()" should "always generate different key pairs" in {
       (1 to MAX).foldLeft((Set.empty[ByteString], Set.empty[ByteString])) {
@@ -41,39 +37,6 @@ class EncryptionAlogorithmSpec
           privateKeys.contains(privBytes) should be(false)
 
           (publicKeys + pubBytes, privateKeys + privBytes)
-      }
-    }
-
-    s"$algorithmDescription.encrypt" should "encrypt any input" in {
-      val (pubKey, privKey) = algorithm.generateKeyPair()
-      forAll { input: ByteString =>
-        val result = algorithm.encrypt(input, pubKey)
-
-        result.bytes shouldNot be(empty)
-      }
-    }
-
-    s"$algorithmDescription.decrypt" should "decrypt with the right key" in {
-      val (pubKey, privKey) = algorithm.generateKeyPair()
-      forAll { input: ByteString =>
-        val encrypted = algorithm.encrypt(input, pubKey)
-        val Right(result) = algorithm.decrypt(encrypted, privKey)
-
-        result should be(input)
-      }
-    }
-
-    it should "fail to decrypt with the wrong key" in {
-      val (pubKey, privKey) = algorithm.generateKeyPair()
-      forAll { input: ByteString =>
-        val encrypted = algorithm.encrypt(input, pubKey)
-
-        eachTime {
-          val (_, wrongPrivKey) = algorithm.generateKeyPair()
-          val Left(result) = algorithm.decrypt(encrypted, wrongPrivKey)
-
-          result.isInstanceOf[DecryptError.UnderlayingImplementationError] should be(true)
-        }
       }
     }
 
@@ -110,6 +73,50 @@ class EncryptionAlogorithmSpec
         val Left(result) = algorithm.decodePrivateKey(PrivateKeyBytes(bytes))
 
         result.isInstanceOf[KeyDecodingError.UnderlayingImplementationError] should be(true)
+      }
+    }
+
+    s"$algorithmDescription.sign" should "generate a signature for any input" in {
+      forAll { input: ByteString =>
+        val (_, privateKey) = algorithm.generateKeyPair()
+        val result = algorithm.sign(input, privateKey)
+
+        result.bytes shouldNot be(empty)
+      }
+    }
+
+    s"$algorithmDescription.isSignatureValid" should "verify the signature with the right key" in {
+      forAll { input: ByteString =>
+        val (publicKey, privateKey) = algorithm.generateKeyPair()
+        val signature = algorithm.sign(input, privateKey)
+        val result = algorithm.isSignatureValid(signature, input, publicKey)
+
+        result should be(true)
+      }
+    }
+
+    it should "fail to verify the signature with the wrong key" in {
+      forAll { input: ByteString =>
+        val (publicKey, privateKey) = algorithm.generateKeyPair()
+        val signature = algorithm.sign(input, privateKey)
+
+        eachTime {
+          val (wrongPublicKey, wrongPrivateKey) = algorithm.generateKeyPair()
+          val result = algorithm.isSignatureValid(signature, input, wrongPublicKey)
+          result should be(false)
+        }
+      }
+    }
+
+    it should "fail to verify the wrong signature" in {
+      forAll { input: ByteString =>
+        val (publicKey, _) = algorithm.generateKeyPair()
+
+        forAll { wrongSignatureBytes: ByteString =>
+          val wrongSignature = SignatureBytes(wrongSignatureBytes)
+          val result = algorithm.isSignatureValid(wrongSignature, input, publicKey)
+          result should be(false)
+        }
       }
     }
 

@@ -7,14 +7,9 @@ import io.iohk.cef.network.encoding.nio._
 import org.scalatest.Matchers._
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{EitherValues, MustMatchers, WordSpec}
-import io.iohk.cef.test.ExtraScalacheckGenerators
+import io.iohk.cef.test.ScalacheckExctensions
 
-class SigningSpec
-    extends WordSpec
-    with MustMatchers
-    with PropertyChecks
-    with EitherValues
-    with ExtraScalacheckGenerators {
+class SigningSpec extends WordSpec with MustMatchers with PropertyChecks with EitherValues with ScalacheckExctensions {
 
   case class User(name: String, age: Int)
 
