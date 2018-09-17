@@ -1,11 +1,14 @@
 package io.iohk.cef.consensus.raft.node
 import io.iohk.cef.consensus.raft.node.FutureOps.sequenceForgiving
 import io.iohk.cef.consensus.raft._
+import io.iohk.cef.consensus.raft.node.RaftNode.lastLogIndexAndTerm
 
 import scala.annotation.tailrec
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.stm.{Ref, Txn, atomic}
 import org.slf4j.LoggerFactory
+
+import scala.concurrent.duration.Duration
 
 /**
   * Raft node implementation.
@@ -14,8 +17,8 @@ private[raft] class RaftNode[Command](
     val nodeId: String,
     clusterMemberIds: Seq[String],
     rpcFactory: RPCFactory[Command],
-    electionTimerFactory: RaftTimerFactory = defaultElectionTimerFactory,
-    heartbeatTimerFactory: RaftTimerFactory = defaultHeartbeatTimerFactory,
+    electionTimeoutRange: (Duration, Duration),
+    heartbeatTimeoutRange: (Duration, Duration),
     stateMachine: Command => Unit,
     persistentStorage: PersistentStorage[Command])(implicit ec: ExecutionContext)
     extends RaftNodeInterface[Command] {
@@ -24,42 +27,44 @@ private[raft] class RaftNode[Command](
 
   val clusterTable: Map[String, RPC[Command]] = clusterMemberIds
     .filterNot(_ == nodeId)
-    .map(peerId => peerId -> rpcFactory(peerId, appendEntries, requestVote))
+    .map(peerId => peerId -> rpcFactory(peerId, appendEntries, requestVote, clientAppendEntries))
     .toMap
 
   val clusterMembers: Seq[RPC[Command]] = clusterTable.values.toSeq
 
   private val raftState: Ref[RaftState[Command]] = Ref(initialRaftState())
 
-  private val sequencer: Ref[Future[_]] = Ref(Future(()))
+  private val sequencer: Ref[Future[_]] = Ref(Future.unit)
 
-  private val electionTimer = electionTimerFactory(() => electionTimeout())
-
-  private val _ = heartbeatTimerFactory(() => heartbeatTimeout())
+  private val electionTimer = new RaftTimer(electionTimeoutRange._1, electionTimeoutRange._2)(() => electionTimeout())
+  private val _ = new RaftTimer(heartbeatTimeoutRange._1, heartbeatTimeoutRange._2)(() => heartbeatTimeout())
 
   val nodeFSM = new RaftFSM[Command](becomeFollower, becomeCandidate, becomeLeader)
 
-  def getLeaderRPC: RPC[Command] = {
+  def getRPC(nodeId: String): RPC[Command] =
+    clusterTable(nodeId)
+
+  def getLeader: String = {
     val ctx = raftState.single()
     if (ctx.leaderId.nonEmpty)
-      clusterTable(ctx.leaderId)
+      ctx.leaderId
     else {
       val (_, votedFor) = ctx.persistentState
-      clusterTable(votedFor)
+      votedFor
     }
   }
 
   def getRole: StateCode =
-    raftState.single().role.stateCode
+    readState(_.role.stateCode)
 
   def getPersistentState: (Int, String) =
-    raftState.single().persistentState
+    readState(_.persistentState)
 
   def getCommonVolatileState: CommonVolatileState[Command] =
-    raftState.single().commonVolatileState
+    readState(_.commonVolatileState)
 
   def getLeaderVolatileState: LeaderVolatileState =
-    raftState.single().leaderVolatileState
+    readState(_.leaderVolatileState)
 
   // Functions to atomically change the server state.
   // In the case of pure requests like appendEntries and requestVote,
@@ -71,10 +76,13 @@ private[raft] class RaftNode[Command](
       val initialContext = raftState()
       val (nextContext, result) = f(initialContext)
       raftState() = nextContext
-      Txn.afterCommit(_ => persistState(nextContext))
+      Txn.whileCommitting(_ => persistState(nextContext))
       result
     }
   }
+
+  private[raft] def readState[T](f: RaftState[Command] => T): T =
+    withState(rc => (rc, f(rc)))
 
   // In the case of asynchronous entry points, where the answer returned depends
   // on responses from other nodes (clientAppendEntries and electionTimeout)
@@ -127,14 +135,13 @@ private[raft] class RaftNode[Command](
     getVoteResult(rulesForServersAllServers2(rs, voteRequested.term), voteRequested)
   }
 
-  private def electionTimeout(): Unit = {
+  def electionTimeout(): Future[Unit] = {
     withState(rs => (nodeFSM.apply(rs, ElectionTimeout), ()))
     withFutureState(rs => requestVotes(rs))
   }
 
-  private def heartbeatTimeout(): Unit = {
+  def heartbeatTimeout(): Future[Unit] =
     withFutureState(rs => sendHeartbeat(rs))
-  }
 
   private def sendHeartbeat(rs: RaftState[Command]): Future[(RaftState[Command], Unit)] = {
     rs.role.clientAppendEntries(rs, Seq()).map { case (ctx, _) => (ctx, ()) }
@@ -266,10 +273,6 @@ private[raft] class RaftNode[Command](
     votes.count(vote => vote.voteGranted && vote.term == term) + myOwnVote > (clusterMembers.size + myOwnVote) / 2
   }
 
-  def lastLogIndexAndTerm(log: IndexedSeq[LogEntry[Command]]): (Int, Int) = {
-    log.lastOption.map(lastLogEntry => (lastLogEntry.index, lastLogEntry.term)).getOrElse((-1, -1))
-  }
-
   private def becomeLeader(rs: RaftState[Command], event: NodeEvent): RaftState[Command] = {
     rs.copy(role = new Leader(this))
   }
@@ -282,6 +285,12 @@ private[raft] class RaftNode[Command](
     val (term, votedFor) = rs.persistentState
     persistentStorage.state(term, votedFor)
     persistentStorage.log(rs.deletes, rs.writes)
+  }
+}
+
+object RaftNode {
+  def lastLogIndexAndTerm[Command](log: IndexedSeq[LogEntry[Command]]): (Int, Int) = {
+    log.lastOption.map(lastLogEntry => (lastLogEntry.index, lastLogEntry.term)).getOrElse((-1, -1))
   }
 }
 

@@ -7,8 +7,14 @@ import io.iohk.cef.network.encoding.nio._
 import org.scalatest.Matchers._
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{EitherValues, MustMatchers, WordSpec}
+import io.iohk.cef.test.ExtraScalacheckGenerators
 
-class EncryptionSpec extends WordSpec with MustMatchers with PropertyChecks with EitherValues {
+class EncryptionSpec
+    extends WordSpec
+    with MustMatchers
+    with PropertyChecks
+    with EitherValues
+    with ExtraScalacheckGenerators {
 
   case class User(name: String, age: Int)
 
@@ -34,9 +40,9 @@ class EncryptionSpec extends WordSpec with MustMatchers with PropertyChecks with
 
   "encryptBytes" should {
     "encrypt any input" in {
-      forAll { input: Array[Byte] =>
+      forAll { input: ByteString =>
         val keys = generateEncryptionKeyPair()
-        val result = encryptBytes(ByteString(input), keys.public)
+        val result = encryptBytes(input, keys.public)
 
         result.toByteString mustNot be(empty)
       }
@@ -57,19 +63,19 @@ class EncryptionSpec extends WordSpec with MustMatchers with PropertyChecks with
 
   "decryptBytes" should {
     "decrypt with the right key" in {
-      forAll { input: Array[Byte] =>
+      forAll { input: ByteString =>
         val keys = generateEncryptionKeyPair()
-        val encrypted = encryptBytes(ByteString(input), keys.public)
+        val encrypted = encryptBytes(input, keys.public)
         val result = decryptBytes(encrypted, keys.`private`)
 
-        result.right.value.toArray must be(input)
+        result.right.value must be(input)
       }
     }
 
     "fail to decrypt with the wrong key" in {
-      forAll { input: Array[Byte] =>
+      forAll { input: ByteString =>
         val keys = generateEncryptionKeyPair()
-        val encrypted = encryptBytes(ByteString(input), keys.public)
+        val encrypted = encryptBytes(input, keys.public)
 
         forAll { _: Int =>
           val nested = generateEncryptionKeyPair().`private`
@@ -111,9 +117,9 @@ class EncryptionSpec extends WordSpec with MustMatchers with PropertyChecks with
 
   "EncryptedData.decodeFrom" should {
     "decode valid data" in {
-      forAll { input: Array[Byte] =>
+      forAll { input: ByteString =>
         val keys = generateEncryptionKeyPair()
-        val encrypted = encryptBytes(ByteString(input), keys.public)
+        val encrypted = encryptBytes(input, keys.public)
         val result = EncryptedData.decodeFrom(encrypted.toByteString)
 
         result.right.value.toByteString must be(encrypted.toByteString)
@@ -123,8 +129,8 @@ class EncryptionSpec extends WordSpec with MustMatchers with PropertyChecks with
     "fail to decode invalid data" in {
       pending
 
-      forAll { bytes: Array[Byte] =>
-        val result = EncryptedData.decodeFrom(ByteString(bytes))
+      forAll { bytes: ByteString =>
+        val result = EncryptedData.decodeFrom(bytes)
         val expected =
           EncryptedDataDecodeError.DataExtractionError(TypedByteStringDecodingError.NioDecoderFailedToDecodeTBS)
 
@@ -135,15 +141,14 @@ class EncryptionSpec extends WordSpec with MustMatchers with PropertyChecks with
     "fail to decode signatures with unsupported algorithms" in {
       val algorithm = "RSA".flatMap(_.toByte :: 0.toByte :: Nil).toArray
 
-      forAll { input: Array[Byte] =>
+      forAll { input: ByteString =>
         val keys = generateEncryptionKeyPair()
-        val encrypted = encryptBytes(ByteString(input), keys.public)
+        val encrypted = encryptBytes(input, keys.public)
 
         val index = encrypted.toByteString.indexOfSlice(algorithm)
-        val corruptedBytes = encrypted.toByteString.toArray
-        corruptedBytes(index) = 'X'.toByte
+        val corruptedBytes = encrypted.toByteString.updated(index, 'X'.toByte)
 
-        val result = EncryptedData.decodeFrom(ByteString(corruptedBytes))
+        val result = EncryptedData.decodeFrom(corruptedBytes)
         val expected = EncryptedDataDecodeError.UnsupportedAlgorithm("XSA")
 
         result.left.value must be(expected)
@@ -164,8 +169,8 @@ class EncryptionSpec extends WordSpec with MustMatchers with PropertyChecks with
     "fail to decode invalid public key" in {
       pending
 
-      forAll { bytes: Array[Byte] =>
-        val result = EncryptionPublicKey.decodeFrom(ByteString(bytes))
+      forAll { bytes: ByteString =>
+        val result = EncryptionPublicKey.decodeFrom(bytes)
         val expected = EncryptionPublicKeyDecodeError.DataExtractionError(NioDecoderFailedToDecodeTBS)
 
         result.left.value must be(expected)
@@ -179,10 +184,9 @@ class EncryptionSpec extends WordSpec with MustMatchers with PropertyChecks with
         val key = generateEncryptionKeyPair().public
 
         val index = key.toByteString.indexOfSlice(algorithm)
-        val corruptedBytes = key.toByteString.toArray
-        corruptedBytes(index) = 'X'.toByte
+        val corruptedBytes = key.toByteString.updated(index, 'X'.toByte)
 
-        val result = EncryptionPublicKey.decodeFrom(ByteString(corruptedBytes))
+        val result = EncryptionPublicKey.decodeFrom(corruptedBytes)
         val expected = EncryptionPublicKeyDecodeError.UnsupportedAlgorithm("XSA")
 
         result.left.value must be(expected)
@@ -203,8 +207,8 @@ class EncryptionSpec extends WordSpec with MustMatchers with PropertyChecks with
     "fail to decode invalid private key" in {
       pending
 
-      forAll { bytes: Array[Byte] =>
-        val result = EncryptionPrivateKey.decodeFrom(ByteString(bytes))
+      forAll { bytes: ByteString =>
+        val result = EncryptionPrivateKey.decodeFrom(bytes)
         val expected = EncryptionPrivateKeyDecodeError.DataExtractionError(NioDecoderFailedToDecodeTBS)
 
         result.left.value must be(expected)
@@ -218,10 +222,9 @@ class EncryptionSpec extends WordSpec with MustMatchers with PropertyChecks with
         val key = generateEncryptionKeyPair().`private`
 
         val index = key.toByteString.indexOfSlice(algorithm)
-        val corruptedBytes = key.toByteString.toArray
-        corruptedBytes(index) = 'X'.toByte
+        val corruptedBytes = key.toByteString.updated(index, 'X'.toByte)
 
-        val result = EncryptionPrivateKey.decodeFrom(ByteString(corruptedBytes))
+        val result = EncryptionPrivateKey.decodeFrom(corruptedBytes)
         val expected = EncryptionPrivateKeyDecodeError.UnsupportedAlgorithm("XSA")
 
         result.left.value must be(expected)

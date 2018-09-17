@@ -23,3 +23,7 @@ private[network] class MonixMessageStream[T](val o: Observable[T]) extends Messa
   override def foreach(f: T => Unit): Future[Unit] =
     o.foreach(f)
 }
+
+object MonixMessageStream {
+  def empty[T](): MonixMessageStream[T] = new MonixMessageStream[T](Observable.empty)
+}

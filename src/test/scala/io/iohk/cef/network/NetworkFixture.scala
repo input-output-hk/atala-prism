@@ -21,11 +21,11 @@ trait NetworkFixture {
 
   // Each network node should have a single instance of the Transports and
   // a single instance of discovery.
-  class BaseNetwork(val transports: Transports, val networkDiscovery: NetworkDiscovery)
+  protected class BaseNetwork(val transports: Transports, val networkDiscovery: NetworkDiscovery)
 
-  def randomBaseNetwork(bootstrap: Option[BaseNetwork]): BaseNetwork = {
+  protected def randomBaseNetwork(bootstrap: Option[BaseNetwork]): BaseNetwork = {
 
-    val configuration = ConversationalNetworkConfiguration(Some(TcpTransportConfiguration(aRandomAddress())))
+    val configuration = NetworkConfiguration(Some(TcpTransportConfiguration(aRandomAddress())))
 
     val peerInfo = PeerInfo(NodeId(NetUtils.randomBytes(NodeId.nodeIdBytes)), configuration)
 
@@ -67,8 +67,8 @@ trait NetworkFixture {
   }
 
   private def discoveryManagerBehavior(
-      peerInfo: PeerInfo,
-      discoveryConfig: DiscoveryConfig): Behavior[DiscoveryRequest] = {
+                                        peerInfo: PeerInfo,
+                                        discoveryConfig: DiscoveryConfig): Behavior[DiscoveryRequest] = {
 
     val nodeInfo = peerInfo2NodeInfoHack(peerInfo)
 
@@ -100,10 +100,10 @@ trait NetworkFixture {
   }
 
   private def listenerFactory(
-      discoveryConfig: DiscoveryConfig,
-      encoder: Encoder[DiscoveryWireMessage, ByteString],
-      decoder: Decoder[ByteString, DiscoveryWireMessage])(
-      context: ActorContext[DiscoveryRequest]): ActorRef[DiscoveryListenerRequest] = {
+                               discoveryConfig: DiscoveryConfig,
+                               encoder: Encoder[DiscoveryWireMessage, ByteString],
+                               decoder: Decoder[ByteString, DiscoveryWireMessage])(
+                               context: ActorContext[DiscoveryRequest]): ActorRef[DiscoveryListenerRequest] = {
 
     context.spawn(
       DiscoveryListener.behavior(discoveryConfig, UDPBridge.creator(discoveryConfig, encoder, decoder)),

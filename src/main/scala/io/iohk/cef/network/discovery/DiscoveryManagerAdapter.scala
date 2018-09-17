@@ -10,7 +10,7 @@ import io.iohk.cef.network.discovery.DiscoveryManager.{DiscoveredNodes, Discover
 import io.iohk.cef.network.discovery.db.KnownNode
 import io.iohk.cef.network.transport.FrameHeader
 import io.iohk.cef.network.transport.tcp.TcpTransportConfiguration
-import io.iohk.cef.network.{ConversationalNetworkConfiguration, NodeId, PeerInfo}
+import io.iohk.cef.network.{NetworkConfiguration, NodeId, PeerInfo}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
@@ -38,9 +38,7 @@ class DiscoveryManagerAdapter(discoveryManagerBehavior: Behavior[DiscoveryReques
   private def adaptToPeerInfo(knownNode: KnownNode): PeerInfo = {
     val itsNodeId = NodeId(knownNode.node.id)
     val itsConfiguration =
-      ConversationalNetworkConfiguration(
-        Some(TcpTransportConfiguration(knownNode.node.serverAddress)),
-        FrameHeader.defaultTtl)
+      NetworkConfiguration(Some(TcpTransportConfiguration(knownNode.node.serverAddress)), FrameHeader.defaultTtl)
     PeerInfo(itsNodeId, itsConfiguration)
   }
 

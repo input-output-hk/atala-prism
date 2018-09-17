@@ -1,7 +1,6 @@
 package io.iohk.cef.ledger.identity.storage.scalike.dao
 
-import java.security.PublicKey
-
+import io.iohk.cef.crypto._
 import io.iohk.cef.ledger.identity.IdentityLedgerState
 import io.iohk.cef.ledger.identity.storage.scalike.{IdentityLedgerStateTable, LedgerStateEntryMap}
 import io.iohk.cef.ledger.{DeleteStateAction, InsertStateAction, LedgerState, UpdateStateAction}
@@ -17,7 +16,7 @@ class IdentityLedgerStateStorageDao {
       select ${st.result.*} from ${IdentityLedgerStateTable as st}
        where ${st.identity} in (${keys})
       """.map(rs => IdentityLedgerStateTable(st.resultName)(rs)).list.apply()
-    val emptyEntries = LedgerStateEntryMap[String, PublicKey]()
+    val emptyEntries = LedgerStateEntryMap[String, SigningPublicKey]()
     val aggregatedEntries =
       pairs.foldLeft(emptyEntries)(_ aggregateWith _)
     LedgerState(aggregatedEntries.map)
@@ -42,19 +41,20 @@ class IdentityLedgerStateStorageDao {
     }
   }
 
-  def insert(identity: String, publicKey: PublicKey)(implicit session: DBSession): Int = {
+  def insert(identity: String, publicKey: SigningPublicKey)(implicit session: DBSession): Int = {
     val column = IdentityLedgerStateTable.column
     sql"""
       insert into ${IdentityLedgerStateTable.table} (${column.identity}, ${column.publicKey})
-        values (${identity}, ${publicKey.getEncoded})
+        values (${identity}, ${publicKey.toByteString.toArray})
       """.executeUpdate.apply()
   }
 
-  def remove(identity: String, publicKey: PublicKey)(implicit session: DBSession): Int = {
+  def remove(identity: String, publicKey: SigningPublicKey)(implicit session: DBSession): Int = {
     val column = IdentityLedgerStateTable.column
     sql"""
       delete from ${IdentityLedgerStateTable.table}
-       where ${column.identity} = ${identity} and ${column.publicKey} = ${Hex.toHexString(publicKey.getEncoded)}
+       where ${column.identity} = ${identity} and ${column.publicKey} = ${Hex.toHexString(
+      publicKey.toByteString.toArray)}
       """.executeUpdate.apply()
   }
 }

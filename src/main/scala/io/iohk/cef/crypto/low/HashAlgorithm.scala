@@ -1,10 +1,8 @@
 package io.iohk.cef.crypto.low
 
-import java.security.Security
+import java.security.MessageDigest
 
 import akka.util.ByteString
-import org.bouncycastle.crypto.digests.KeccakDigest
-import org.bouncycastle.jce.provider.BouncyCastleProvider
 
 /**
   * Contract all hashing algorithm implementations should follow
@@ -47,22 +45,17 @@ sealed trait ArrayBasedHashAlgorithm extends HashAlgorithm {
   */
 object HashAlgorithm {
 
-  Security.addProvider(new BouncyCastleProvider)
-
   /**
-    * Implementation of the `kec256` `HashAlgorithm`
+    * Implementation of the `SHA-256` `HashAlgorithm`
     */
-  case object KEC256 extends ArrayBasedHashAlgorithm {
+  case object SHA256 extends ArrayBasedHashAlgorithm {
 
     /** @inheritdoc */
     override final protected def hash(source: Array[Byte]): Array[Byte] = {
-      val digest = new KeccakDigest(256)
-      val output = Array.ofDim[Byte](digest.getDigestSize)
-
       // TODO: This is unsafe on huge inputs
-      digest.update(source, 0, source.length)
-      digest.doFinal(output, 0)
-      output
+      MessageDigest
+        .getInstance("SHA-256")
+        .digest(source)
     }
   }
 }

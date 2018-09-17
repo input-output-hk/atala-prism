@@ -126,7 +126,7 @@ class ConversationalNetworkSpec extends FlatSpec {
   private def randomNetworkFixture[T: NioEncoder: NioDecoder](
       messageTtl: Int = FrameHeader.defaultTtl): NetworkFixture[T] = {
     val tcpAddress: InetSocketAddress = aRandomAddress()
-    val configuration = ConversationalNetworkConfiguration(Some(TcpTransportConfiguration(tcpAddress)), messageTtl)
+    val configuration = NetworkConfiguration(Some(TcpTransportConfiguration(tcpAddress)), messageTtl)
 
     val nodeId = NodeId(randomBytes(nodeIdBytes))
 
