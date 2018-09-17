@@ -1,8 +1,6 @@
 package io.iohk.cef.ledger.identity
 
-import akka.util.ByteString
 import io.iohk.cef.builder.SigningKeyPairs
-import io.iohk.cef.crypto.low.DigitalSignature
 import org.scalatest.{EitherValues, FlatSpec, MustMatchers, OptionValues}
 
 class IdentityTransactionSpec
@@ -13,8 +11,6 @@ class IdentityTransactionSpec
     with MustMatchers {
 
   behavior of "IdentityTransaction"
-
-  val dummySignature = new DigitalSignature(ByteString.empty)
 
   it should "throw an error when the tx is inconsistent with the state" in {
     val state = IdentityLedgerState(Map("one" -> Set(alice.public)))

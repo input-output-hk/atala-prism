@@ -12,29 +12,29 @@ class HashingSpec extends WordSpec with MustMatchers with PropertyChecks with Ei
 
   case class User(name: String, age: Int)
 
-  "hashBytes" should {
-    "generate a hash" in {
-      val expectedLength = hashBytes(ByteString("abd")).toByteString.size
+  "hash" should {
+    "generate a hashedValue on ByteString" in {
+      val expectedLength = hash(ByteString("abd")).toByteString.size
       forAll { input: ByteString =>
-        val result = hashBytes(input)
+        val result = hash(input)
         result.toByteString.size must be(expectedLength)
       }
     }
 
     "return something different to the input" in {
       forAll { input: ByteString =>
-        val result = hashBytes(input)
+        val result = hash(input)
         result.toByteString.toArray mustNot be(input)
       }
     }
   }
 
-  "hashEntity" should {
-    "generate a hash" in {
-      val expectedLength = hashBytes(ByteString("abd")).toByteString.size
+  "hash" should {
+    "generate a hashedValue on Entity" in {
+      val expectedLength = hash(ByteString("abd")).toByteString.size
       forAll { (name: String, age: Int) =>
         val entity = User(name, age)
-        val result = hashEntity(entity)
+        val result = hash(entity)
         result.toByteString.size must be(expectedLength)
       }
     }
@@ -43,20 +43,20 @@ class HashingSpec extends WordSpec with MustMatchers with PropertyChecks with Ei
   "isValidHash bytes" should {
     "match the same bytes" in {
       forAll { input: ByteString =>
-        val hash = hashBytes(input)
-        val result = isValidHash(input, hash)
+        val hashedValue = hash(input)
+        val result = isValidHash(input, hashedValue)
         result must be(true)
       }
     }
 
     "not match different bytes" in {
       forAll { input: ByteString =>
-        val hash = hashBytes(input)
+        val hashedValue = hash(input)
 
         forAll { nested: ByteString =>
           // TODO: There should be a way to filter on the forAll
           if (!nested.sameElements(input)) {
-            val result = isValidHash(nested, hash)
+            val result = isValidHash(nested, hashedValue)
             result must be(false)
           }
         }
@@ -68,8 +68,8 @@ class HashingSpec extends WordSpec with MustMatchers with PropertyChecks with Ei
     "match the same bytes" in {
       forAll { (name: String, age: Int) =>
         val entity = User(name, age)
-        val hash = hashEntity(entity)
-        val result = isValidHash(entity, hash)
+        val hashedValue = hash(entity)
+        val result = isValidHash(entity, hashedValue)
         result must be(true)
       }
     }
@@ -77,13 +77,13 @@ class HashingSpec extends WordSpec with MustMatchers with PropertyChecks with Ei
     "not match different bytes" in {
       forAll { (name: String, age: Int) =>
         val entity = User(name, age)
-        val hash = hashEntity(entity)
+        val hashedValue = hash(entity)
 
         forAll { (innerName: String, innerAge: Int) =>
           // TODO: There should be a way to filter on the forAll
           if (innerName != name || innerAge != age) {
             val innerEntity = User(innerName, innerAge)
-            val result = isValidHash(innerEntity, hash)
+            val result = isValidHash(innerEntity, hashedValue)
             result must be(false)
           }
         }
@@ -91,12 +91,12 @@ class HashingSpec extends WordSpec with MustMatchers with PropertyChecks with Ei
       }
 
       forAll { input: ByteString =>
-        val hash = hashBytes(input)
+        val hashedValue = hash(input)
 
         forAll { nested: ByteString =>
           // TODO: There should be a way to filter on the forAll
           if (!nested.sameElements(input)) {
-            val result = isValidHash(nested, hash)
+            val result = isValidHash(nested, hashedValue)
             result must be(false)
           }
         }
@@ -105,15 +105,15 @@ class HashingSpec extends WordSpec with MustMatchers with PropertyChecks with Ei
   }
 
   "Hash.decodeFrom" should {
-    "decode valid hash" in {
+    "decode valid hashedValue" in {
       forAll { bytes: ByteString =>
-        val hash = hashBytes(bytes)
-        val result = Hash.decodeFrom(hash.toByteString)
-        result.right.value must be(hash)
+        val hashedValue = hash(bytes)
+        val result = Hash.decodeFrom(hashedValue.toByteString)
+        result.right.value must be(hashedValue)
       }
     }
 
-    "fail to decode invalid hashes" in {
+    "fail to decode invalid hashedValues" in {
       pending
 
       forAll { bytes: ByteString =>
@@ -123,13 +123,13 @@ class HashingSpec extends WordSpec with MustMatchers with PropertyChecks with Ei
       }
     }
 
-    "fail to decode hashes with unsupported algorithms" in {
+    "fail to decode hashedValues with unsupported algorithms" in {
       val algorithm = "SHA256".flatMap(_.toByte :: 0.toByte :: Nil).toArray
       forAll { bytes: Array[Byte] =>
-        val hash = hashBytes(ByteString(bytes))
+        val hashedValue = hash(ByteString(bytes))
 
-        val index = hash.toByteString.indexOfSlice(algorithm)
-        val corruptedHashBytes = hash.toByteString.updated(index, 'X'.toByte)
+        val index = hashedValue.toByteString.indexOfSlice(algorithm)
+        val corruptedHashBytes = hashedValue.toByteString.updated(index, 'X'.toByte)
 
         val result = Hash.decodeFrom(corruptedHashBytes)
         val expected = HashDecodeError.UnsupportedAlgorithm("XHA256")

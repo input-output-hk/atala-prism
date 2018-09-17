@@ -33,71 +33,67 @@ class SigningSpec extends WordSpec with MustMatchers with PropertyChecks with Ei
     }
   }
 
-  "signBytes" should {
-    "generate a signature for any input" in {
+  "sign" should {
+    "generate a signature for any ByteString input" in {
       forAll { input: ByteString =>
         val keys = generateSigningKeyPair()
-        val result = signBytes(input, keys.`private`)
+        val result = sign(input, keys.`private`)
 
         result.toByteString mustNot be(empty)
       }
     }
-  }
 
-  "signEntity" should {
-    "generate a signature for any input" in {
+    "generate a signature for any Entity input" in {
       forAll { (name: String, age: Int) =>
         val keys = generateSigningKeyPair()
         val entity = User(name, age)
-        val result = signEntity(entity, keys.`private`)
+        val result = sign(entity, keys.`private`)
 
         result.toByteString mustNot be(empty)
-      }
-    }
-  }
-
-  "isValidSignatureOfBytes" should {
-    "verify the signature with the right key" in {
-      forAll { input: ByteString =>
-        val keys = generateSigningKeyPair()
-        val signature = signBytes(input, keys.`private`)
-        val result = isValidSignatureOfBytes(input, signature, keys.public)
-
-        result must be(true)
-      }
-    }
-
-    "fail to verify the signature with the wrong key" in {
-      forAll { input: ByteString =>
-        val keys = generateSigningKeyPair()
-        val signature = signBytes(input, keys.`private`)
-
-        forAll { _: Int =>
-          val nested = generateSigningKeyPair().public
-          val result = isValidSignatureOfBytes(input, signature, nested)
-          result must be(false)
-        }
       }
     }
   }
 
   "isValidSignature" should {
-    "verify the signature with the right key" in {
+    "verify the signature of any ByteString with the right key" in {
+      forAll { input: ByteString =>
+        val keys = generateSigningKeyPair()
+        val signature = sign(input, keys.`private`)
+        val result = isValidSignature(input, signature, keys.public)
+
+        result must be(true)
+      }
+    }
+
+    "fail to verify the signature of any ByteString with the wrong key" in {
+      forAll { input: ByteString =>
+        val keys = generateSigningKeyPair()
+        val signature = sign(input, keys.`private`)
+
+        forAll { _: Int =>
+          val nested = generateSigningKeyPair().public
+          val result = isValidSignature(input, signature, nested)
+          result must be(false)
+        }
+      }
+    }
+
+    "verify the signature of any Entity with the right key" in {
       forAll { (name: String, age: Int) =>
         val keys = generateSigningKeyPair()
         val entity = User(name, age)
-        val signature = signEntity(entity, keys.`private`)
+        val signature = sign(entity, keys.`private`)
         val result = isValidSignature(entity, signature, keys.public)
 
         result must be(true)
       }
     }
 
-    "fail to verify the signature with the wrong key" in {
+    "fail to verify the signature of any Entity with the wrong key" in {
       forAll { (name: String, age: Int) =>
         val keys = generateSigningKeyPair()
         val entity = User(name, age)
-        val signature = signEntity(entity, keys.`private`)
+        val signature = sign(entity, keys.`private`)
 
         forAll { _: Int =>
           val nested = generateSigningKeyPair().public
@@ -113,7 +109,7 @@ class SigningSpec extends WordSpec with MustMatchers with PropertyChecks with Ei
     "decode valid signature" in {
       forAll { input: ByteString =>
         val keys = generateSigningKeyPair()
-        val signature = signBytes(input, keys.`private`)
+        val signature = sign(input, keys.`private`)
         val result = Signature.decodeFrom(signature.toByteString)
 
         result.right.value.toByteString.toArray mustNot be(empty)
@@ -137,7 +133,7 @@ class SigningSpec extends WordSpec with MustMatchers with PropertyChecks with Ei
 
       forAll { input: ByteString =>
         val keys = generateSigningKeyPair()
-        val signature = signBytes(input, keys.`private`)
+        val signature = sign(input, keys.`private`)
 
         val index = signature.toByteString.indexOfSlice(algorithm)
         val corruptedBytes = signature.toByteString.updated(index, 'X'.toByte)
