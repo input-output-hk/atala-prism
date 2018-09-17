@@ -138,7 +138,7 @@ class EncryptionSpec
       }
     }
 
-    "fail to decode signatures with unsupported algorithms" in {
+    "fail to decode data with unsupported algorithms" in {
       val algorithm = "RSA".flatMap(_.toByte :: 0.toByte :: Nil).toArray
 
       forAll { input: ByteString =>
