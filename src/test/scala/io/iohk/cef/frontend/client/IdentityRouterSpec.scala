@@ -1,23 +1,23 @@
 package io.iohk.cef.frontend.client
 
-//#test-top
-import java.security.PublicKey
 import java.util.Base64
 
 import akka.actor.{ActorRef, Props}
 import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import io.iohk.cef.builder.RSAKeyGenerator
+import akka.util.ByteString
 import io.iohk.cef.core.NodeCore
+import io.iohk.cef.crypto._
 import io.iohk.cef.frontend.DefaultJsonFormats
 import io.iohk.cef.frontend.client.TransactionClient.IdentityTransactionRequest
 import io.iohk.cef.ledger.identity.{IdentityBlockHeader, IdentityTransaction}
+import org.mockito.ArgumentMatchers._
+import org.mockito.Mockito._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mockito.MockitoSugar.mock
 import org.scalatest.{Matchers, WordSpec}
-import org.mockito.Mockito._
-import org.mockito.ArgumentMatchers._
+
 import scala.concurrent.Future
 
 class IdentityRouterSpec
@@ -25,10 +25,9 @@ class IdentityRouterSpec
     with Matchers
     with ScalaFutures
     with ScalatestRouteTest
-    with DefaultJsonFormats
-    with RSAKeyGenerator {
+    with DefaultJsonFormats {
 
-  val nodeCore = mock[NodeCore[Set[PublicKey], IdentityBlockHeader, IdentityTransaction]]
+  val nodeCore = mock[NodeCore[Set[SigningPublicKey], IdentityBlockHeader, IdentityTransaction]]
 
   when(nodeCore.receiveTransaction(any())).thenReturn(Future.successful(Right(())))
   val identityTransactionClientActor: ActorRef = system.actorOf(Props(new IdentityTransactionClientActor(nodeCore)))
@@ -38,11 +37,19 @@ class IdentityRouterSpec
   lazy val routes = identityService.createIdentity
 
   "IdentityRouter" should {
-    val (publicKey, _) = generateKeyPair
-    val publicKeyString = Base64.getEncoder.encodeToString(publicKey.getEncoded)
-    "be able to create identity claim transaction (POST /transaction/identity)" in {
+    val encoder = Base64.getEncoder
+    val pair = generateSigningKeyPair()
+    val publicKeyString = Base64.getEncoder.encodeToString(pair.public.toByteString.toArray)
 
-      val identity = IdentityTransactionRequest("claim", "id", publicKeyString, "signature", 1)
+    "be able to create identity claim transaction (POST /transaction/identity)" in {
+      val signature = sign(ByteString("id") ++ pair.public.toByteString, pair.`private`)
+      val identity = IdentityTransactionRequest(
+        "claim",
+        "id",
+        publicKeyString,
+        encoder.encodeToString(signature.toByteString.toArray),
+        1)
+
       val reqEntity = Marshal[IdentityTransactionRequest](identity).to[MessageEntity].futureValue
 
       val request = Post("/transaction/identity").withEntity(reqEntity)
@@ -53,8 +60,15 @@ class IdentityRouterSpec
     }
 
     "be able to create identity link transaction (POST /transaction/identity)" in {
+      val signature = sign(ByteString("id") ++ pair.public.toByteString, pair.`private`)
 
-      val identity = IdentityTransactionRequest("link", "id", publicKeyString, "signature", 1)
+      val identity = IdentityTransactionRequest(
+        "link",
+        "id",
+        publicKeyString,
+        encoder.encodeToString(signature.toByteString.toArray),
+        1)
+
       val reqEntity = Marshal[IdentityTransactionRequest](identity).to[MessageEntity].futureValue
 
       val request = Post("/transaction/identity").withEntity(reqEntity)
@@ -66,9 +80,14 @@ class IdentityRouterSpec
     }
 
     "be able to create identity unlink transaction (POST /transaction/identity)" in {
+      val signature = sign(ByteString("id") ++ pair.public.toByteString, pair.`private`)
 
-
-      val identity = IdentityTransactionRequest("unlink", "id", publicKeyString, "signature", 1)
+      val identity = IdentityTransactionRequest(
+        "unlink",
+        "id",
+        publicKeyString,
+        encoder.encodeToString(signature.toByteString.toArray),
+        1)
       val reqEntity = Marshal[IdentityTransactionRequest](identity).to[MessageEntity].futureValue
 
       val request = Post("/transaction/identity").withEntity(reqEntity)
@@ -90,7 +109,5 @@ class IdentityRouterSpec
         status should ===(StatusCodes.BadRequest)
       }
     }
-
   }
-
 }
