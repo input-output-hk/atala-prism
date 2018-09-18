@@ -3,7 +3,7 @@ package io.iohk.cef.network.discovery
 import io.iohk.cef.network.transport.Transports
 import io.iohk.cef.network.transport.tcp.NetUtils.{aRandomAddress, aRandomNodeId}
 import io.iohk.cef.network.transport.tcp.TcpTransportConfiguration
-import io.iohk.cef.network.{ConversationalNetworkConfiguration, PeerInfo}
+import io.iohk.cef.network.{NetworkConfiguration, PeerInfo}
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 
@@ -13,12 +13,12 @@ class MeshNetDiscoverySpec extends FlatSpec {
 
   ignore should "have an initial routing table containing itself and a bootstrap node" in {
     val peerInfo =
-      PeerInfo(aRandomNodeId(), ConversationalNetworkConfiguration(Some(TcpTransportConfiguration(aRandomAddress()))))
+      PeerInfo(aRandomNodeId(), NetworkConfiguration(Some(TcpTransportConfiguration(aRandomAddress()))))
 
     val transports = new Transports(peerInfo)
 
     val bootstrapPeerInfo =
-      PeerInfo(aRandomNodeId(), ConversationalNetworkConfiguration(Some(TcpTransportConfiguration(aRandomAddress()))))
+      PeerInfo(aRandomNodeId(), NetworkConfiguration(Some(TcpTransportConfiguration(aRandomAddress()))))
 
     val discovery = new MeshNetDiscovery(peerInfo, bootstrapPeerInfo, transports)
 

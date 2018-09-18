@@ -18,7 +18,7 @@ package object crypto extends Crypto {
   protected override val hashingCollection: HashingAlgorithmsCollection =
     HashingAlgorithmsCollection()
   protected override val hashingType: hashingCollection.HashingAlgorithmType =
-    hashingCollection.HashingAlgorithmType.KECCAK256
+    hashingCollection.HashingAlgorithmType.SHA256
 
   protected override val encryptionAlgorithmsCollection: EncryptionAlgorithmsCollection =
     EncryptionAlgorithmsCollection(secureRandom)
@@ -36,6 +36,7 @@ package crypto {
 
   trait Crypto extends Hashing with Encryption with Signing with EncodingHelpers
 
+  // FIXME: This extensions to the encoders library should go into the encoders package
   trait EncodingHelpers {
 
     type Encoder[T] = LowLevelEncoder[T, ByteString]
@@ -46,6 +47,10 @@ package crypto {
 
     implicit def DecoderFromNIODecoder[T](implicit nioDecoder: NioDecoder[T]): Decoder[T] =
       (u: ByteString) => nioDecoder.decode(u.toByteBuffer)
+
+    implicit val ByteStringIdentityEncoder: Encoder[ByteString] = (bs: ByteString) => bs
+
+    implicit val ByteStringIdentityDecoder: Decoder[ByteString] = (bs: ByteString) => Some(bs)
 
   }
 

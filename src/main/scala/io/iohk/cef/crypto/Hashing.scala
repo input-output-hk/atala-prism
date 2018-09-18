@@ -12,12 +12,14 @@ trait Hashing {
   protected val hashingCollection: HashingAlgorithmsCollection
   protected val hashingType: hashingCollection.HashingAlgorithmType
 
-  def hashBytes(bytes: ByteString): Hash = new Hash(hashingType, hashingType.algorithm.hash(bytes))
-  def hashEntity[T](entity: T)(implicit encoder: Encoder[T]): Hash = hashBytes(encoder.encode(entity))
+  def hash[T](entity: T)(implicit encoder: Encoder[T]): Hash =
+    new Hash(hashingType, hashingType.algorithm.hash(encoder.encode(entity)))
+
   def isValidHash(bytes: ByteString, hash: Hash): Boolean =
     hash.`type`.algorithm.hash(bytes) == hash.bytes
+
   def isValidHash[T](entity: T, hash: Hash)(implicit encoder: Encoder[T]): Boolean =
-    isValidHash(encoder.encode(entity), hash)
+    hash.`type`.algorithm.hash(encoder.encode(entity)) == hash.bytes
 
   class Hash(
       private[Hashing] val `type`: hashingCollection.HashingAlgorithmType,

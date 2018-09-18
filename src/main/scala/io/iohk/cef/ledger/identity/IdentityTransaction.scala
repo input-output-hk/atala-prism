@@ -1,38 +1,36 @@
 package io.iohk.cef.ledger.identity
 
-import java.security.{PrivateKey, PublicKey, SecureRandom}
-
 import akka.util.ByteString
-import io.iohk.cef.crypto.low.{DigitalSignature, SignAlgorithm}
+import io.iohk.cef.crypto.{sign => signBytes, _}
 import io.iohk.cef.ledger.{LedgerError, Transaction}
 
-sealed trait IdentityTransaction extends Transaction[Set[PublicKey]] {
+sealed trait IdentityTransaction extends Transaction[Set[SigningPublicKey]] {
   val identity: String
-  val key: PublicKey
-  val signature: DigitalSignature
+  val key: SigningPublicKey
+  val signature: Signature
 }
 
 object IdentityTransaction {
 
-  // TODO: allow to use other algorithms
-  private val algorithm = new SignAlgorithm.RSA(new SecureRandom())
-
-  def sign(identity: String, publicKey: PublicKey, privateKey: PrivateKey): DigitalSignature = {
+  def sign(identity: String, publicKey: SigningPublicKey, privateKey: SigningPrivateKey): Signature = {
     val source = serializeForSignature(identity, publicKey)
-    algorithm.sign(source, privateKey)
+    signBytes(source, privateKey)
   }
 
-  def isSignedWith(signKey: PublicKey, signature: DigitalSignature)(identity: String, publicKey: PublicKey): Boolean = {
+  def isSignedWith(signKey: SigningPublicKey, signature: Signature)(
+      identity: String,
+      publicKey: SigningPublicKey): Boolean = {
+
     val source = serializeForSignature(identity, publicKey)
-    algorithm.isSignatureValid(signature, source, signKey)
+    isValidSignature(source, signature, signKey)
   }
 
-  private def serializeForSignature(identity: String, publicKey: PublicKey): ByteString = {
-    ByteString(identity) ++ ByteString(publicKey.getEncoded)
+  private def serializeForSignature(identity: String, publicKey: SigningPublicKey): ByteString = {
+    ByteString(identity) ++ publicKey.toByteString
   }
 }
 
-case class Claim(identity: String, key: PublicKey, signature: DigitalSignature) extends IdentityTransaction {
+case class Claim(identity: String, key: SigningPublicKey, signature: Signature) extends IdentityTransaction {
 
   import IdentityTransaction._
 
@@ -59,7 +57,7 @@ case class Claim(identity: String, key: PublicKey, signature: DigitalSignature) 
   * @param signature a digital signature validating the transaction, it should be generated
   *                  from one of the existing keys on the given identity.
   */
-case class Link(identity: String, key: PublicKey, signature: DigitalSignature) extends IdentityTransaction {
+case class Link(identity: String, key: SigningPublicKey, signature: Signature) extends IdentityTransaction {
 
   import IdentityTransaction._
 
@@ -93,7 +91,7 @@ case class Link(identity: String, key: PublicKey, signature: DigitalSignature) e
   override def partitionIds: Set[String] = Set(identity)
 }
 
-case class Unlink(identity: String, key: PublicKey, signature: DigitalSignature) extends IdentityTransaction {
+case class Unlink(identity: String, key: SigningPublicKey, signature: Signature) extends IdentityTransaction {
 
   import IdentityTransaction._
 

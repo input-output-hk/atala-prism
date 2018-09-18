@@ -20,19 +20,22 @@ package object raft {
       *                              implementers should invoke this function.
       * @param requestVoteCallback when a (remote) raft node makes an inbound requestVote call,
       *                            implementers should invoke this function.
-      * @return
+      * @param clientAppendEntriesCallback when a (remote) consensus module makes an inbound clientAppendEntries call,
+      *                                   implementers should invoke this function.
+      * @return an RPC implementation
       */
     def apply(
         nodeId: String,
         appendEntriesCallback: EntriesToAppend[Command] => AppendEntriesResult,
-        requestVoteCallback: VoteRequested => RequestVoteResult): RPC[Command]
+        requestVoteCallback: VoteRequested => RequestVoteResult,
+        clientAppendEntriesCallback: Seq[Command] => Future[Either[Redirect[Command], Unit]]): RPC[Command]
   }
 
   /**
     * Redirect provides a way for nodes who receive append requests from clients
     * to redirect to their leader. Used by RPC below.
     */
-  case class Redirect[Command](leaderRPC: RPC[Command])
+  case class Redirect[Command](nodeId: String)
 
   /**
     * To be implemented by users of the module using whatever network technology suits them.
@@ -125,50 +128,6 @@ package object raft {
   }
 
   /**
-    * Can be implemented by users of the module if they wish to provide a timer implementation.
-    */
-  trait RaftTimerFactory {
-
-    /**
-      * @param timeoutHandler this enables the Raft node to pass a function which the timer should
-      *                       call upon timeout.
-      * @return a RaftTimer implementation.
-      */
-    def apply(timeoutHandler: () => Unit): RaftTimer
-  }
-
-  /**
-    * A RaftTimer should implement a randomized, always on timer.
-    * That is,
-    * it should schedule a random timeout.
-    * when that timeout occurs it should invoke the timeout handler
-    * it should then reschedule another random timeout.
-    */
-  trait RaftTimer {
-
-    /**
-      * Reset causes the timer to cancel the current timeout and reschedule
-      * another one (without calling the timeoutHandler).
-      */
-    def reset(): Unit
-  }
-
-  /**
-    * A JDK based timer with random timeouts between 150 and 300 ms,
-    * generally suitable for LANs.
-    */
-  // FIXME: remove magic numbers.
-  val defaultElectionTimerFactory: RaftTimerFactory =
-    timeoutHandler => new BouncyTimer(150 millis, 300 millis)(timeoutHandler)
-
-  /**
-    * A JDK based timer with a fixed, 75 ms timeout.
-    */
-  // FIXME: remove magic numbers.
-  val defaultHeartbeatTimerFactory: RaftTimerFactory =
-    timeoutHandler => new BouncyTimer(75 millis, 75 millis)(timeoutHandler)
-
-  /**
     * From Figure 1. The Consensus module ensures client requests go to the leader.
     * This is the top-level interface used by clients.
     */
@@ -177,15 +136,16 @@ package object raft {
     // The leader handles all client requests
     // (if a client contacts a follower, the follower redirects it to the leader)
     def appendEntries(entries: Seq[Command]): Future[Unit] = {
-      appendEntries(raftNode.getLeaderRPC, entries)
+      appendEntries(raftNode.getLeader, entries)
     }
 
-    private def appendEntries(leaderRpc: RPC[Command], entries: Seq[Command]): Future[Unit] = {
-      leaderRpc.clientAppendEntries(entries).flatMap {
-        case Left(Redirect(nextLeaderRPC)) =>
-          appendEntries(nextLeaderRPC, entries)
+    private def appendEntries(leader: String, entries: Seq[Command]): Future[Unit] = {
+      val leaderRPC = raftNode.getRPC(leader)
+      leaderRPC.clientAppendEntries(entries).flatMap {
+        case Left(Redirect(nextLeaderId)) =>
+          appendEntries(nextLeaderId, entries)
         case Right(()) =>
-          Future(())
+          Future.unit
       }
     }
   }
@@ -206,11 +166,13 @@ package object raft {
   }
 
   trait RaftNodeInterface[Command] {
-    def getLeaderRPC: RPC[Command]
+    def getLeader: String
+    def getRPC(nodeId: String): RPC[Command]
   }
 
   /**
     * Create and configure a raft node.
+    *
     * @param nodeId A unique identifier within the cluster.
     * @param clusterMemberIds the ids of the other cluster members.
     * @param rpcFactory as described above.
@@ -226,16 +188,16 @@ package object raft {
       nodeId: String,
       clusterMemberIds: Seq[String],
       rpcFactory: RPCFactory[Command],
-      electionTimerFactory: RaftTimerFactory = defaultElectionTimerFactory,
-      heartbeatTimerFactory: RaftTimerFactory = defaultHeartbeatTimerFactory,
+      electionTimeoutRange: (Duration, Duration),
+      heartbeatTimeoutRange: (Duration, Duration),
       stateMachine: Command => Unit,
       persistentStorage: PersistentStorage[Command])(implicit ec: ExecutionContext): RaftNodeInterface[Command] =
     new RaftNode[Command](
       nodeId,
       clusterMemberIds,
       rpcFactory,
-      electionTimerFactory,
-      heartbeatTimerFactory,
+      electionTimeoutRange,
+      heartbeatTimeoutRange,
       stateMachine,
       persistentStorage)
 }

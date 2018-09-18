@@ -12,6 +12,7 @@ import akka.testkit.{TestProbe => UntypedTestProbe}
 import akka.util.ByteString
 import akka.{actor => untyped}
 import io.iohk.cef.cryptolegacy
+import io.iohk.cef.crypto
 import io.iohk.cef.network.discovery.db.{DummyKnownNodesStorage, KnownNode}
 import io.iohk.cef.network.discovery.DiscoveryListener.{DiscoveryListenerRequest, Ready, SendMessage, Start}
 import io.iohk.cef.network.discovery.DiscoveryManager._
@@ -139,11 +140,12 @@ class DiscoveryManagerSpec extends FlatSpec with BeforeAndAfterAll {
   }
   it should "process a Ping message" in {
     new ListeningDiscoveryManager {
+      import crypto._
       val actor: ActorRef[DiscoveryRequest] = createActor
 
       val ping = pingActor(actor, this)
 
-      val token = cryptolegacy.kec256(encoder.encode(ping))
+      val token = hash(encoder.encode(ping)).toByteString
       val sendMessage = discoveryListener.expectMessageType[SendMessage]
       sendMessage.message mustBe a[Pong]
       sendMessage.message.messageType mustBe Pong.messageType

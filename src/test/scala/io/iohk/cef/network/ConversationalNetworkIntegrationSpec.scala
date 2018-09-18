@@ -90,7 +90,7 @@ class ConversationalNetworkIntegrationSpec extends FlatSpec {
 
   private def randomBaseNetwork(bootstrap: Option[BaseNetwork]): BaseNetwork = {
 
-    val configuration = ConversationalNetworkConfiguration(Some(TcpTransportConfiguration(aRandomAddress())))
+    val configuration = NetworkConfiguration(Some(TcpTransportConfiguration(aRandomAddress())))
 
     val peerInfo = PeerInfo(NodeId(NetUtils.randomBytes(NodeId.nodeIdBytes)), configuration)
 
