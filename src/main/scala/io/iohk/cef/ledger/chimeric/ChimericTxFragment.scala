@@ -107,7 +107,10 @@ case class Withdrawal(address: Address, value: Value, nonce: Int) extends TxInpu
   }
 
   override def txSpecificPartitionIds(txId: String, index: Int): Set[String] =
-    Set(ChimericLedgerState.getAddressValuePartitionId(address))
+    Set(
+      ChimericLedgerState.getAddressValuePartitionId(address),
+      ChimericLedgerState.getAddressNoncePartitionId(address)
+    )
 
   override def toString(): ChimericTxId = s"Withdrawal($address,$value)"
 }

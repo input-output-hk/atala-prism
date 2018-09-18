@@ -8,17 +8,34 @@ import scalikejdbc._
 
 class ChimericLedgerStateStorageDao {
 
+  import ChimericLedgerState._
+
   def slice(keys: Set[String])(implicit DBSession: DBSession): ChimericLedgerState = {
     val stateKeys = keys.map(ChimericLedgerState.toStateKey)
     val currencies = readCurrencies(stateKeys.collect { case ch: CurrencyKey => ch })
+      .map { createCurr =>
+        getCurrencyPartitionId(createCurr.currency) -> CreateCurrencyHolder(createCurr)
+      }
+
     val utxos = readUtxos(stateKeys.collect { case uh: UtxoValueKey => uh })
+      .map { utxoPair =>
+        getUtxoPartitionId(utxoPair._1) -> ValueHolder(utxoPair._2)
+      }
+
     val addresses = readAddresses(stateKeys.collect { case ad: AddressValueKey => ad })
-    val stateSequence: Seq[(String, ChimericStateValue)] =
-      currencies.map(createCurr =>
-        ChimericLedgerState.getCurrencyPartitionId(createCurr.currency) -> CreateCurrencyHolder(createCurr)) ++
-        utxos.map(utxoPair => ChimericLedgerState.getUtxoPartitionId(utxoPair._1) -> ValueHolder(utxoPair._2)) ++
-        addresses.map(addressPair =>
-          ChimericLedgerState.getAddressValuePartitionId(addressPair._1) -> ValueHolder(addressPair._2))
+      .map {
+        case (address, value) =>
+          getAddressValuePartitionId(address) -> ValueHolder(value)
+      }
+
+    val nonces = readNonces(stateKeys.collect { case key: AddressNonceKey => key })
+      .map {
+        case (address, nonce) =>
+          getAddressNoncePartitionId(address) -> NonceHolder(nonce)
+      }
+
+    val stateSequence = currencies ++ utxos ++ addresses ++ nonces
+
     LedgerState[ChimericStateValue](stateSequence.toMap)
   }
 
@@ -31,21 +48,24 @@ class ChimericLedgerStateStorageDao {
       updateActions.actions.foreach {
         case InsertStateAction(key: CurrencyKey, value: CreateCurrencyHolder) =>
           insertCurrency(key.currency -> value.createCurrency)
-
         case InsertStateAction(key: AddressValueKey, value: ValueHolder) =>
           insertAddress(key.address -> value.value)
-
         case InsertStateAction(key: AddressNonceKey, value: NonceHolder) =>
-          insertNonce(key.address -> value.nonce)
-
+          insertNonce(key.address, value.nonce)
         case InsertStateAction(key: UtxoValueKey, value: ValueHolder) =>
           insertUtxo(key.txOutRef -> value.value)
 
         case DeleteStateAction(key: AddressValueKey, _) => deleteAddress(key.address)
         case DeleteStateAction(key: UtxoValueKey, _) => deleteUtxo(key.txOutRef)
+        case DeleteStateAction(key: AddressNonceKey, _) => deleteNonce(key.address)
+
         case UpdateStateAction(key: AddressValueKey, value: ValueHolder) =>
           deleteAddress(key.address)
           insertAddress((key.address, value.value))
+        case UpdateStateAction(key: AddressNonceKey, value: NonceHolder) =>
+          deleteNonce(key.address)
+          insertNonce(key.address, value.nonce)
+
         case a => throw new IllegalArgumentException(s"Unexpected action: ${a}")
       }
     }
@@ -156,17 +176,6 @@ class ChimericLedgerStateStorageDao {
     insertValue(entryId, address._2)
   }
 
-  private def insertNonce(address: (Address, Int))(implicit DBSession: DBSession): Unit = {
-    // TODO: FIXME
-//    val column = ChimericLedgerStateAddressTable.column
-//    val entryId = insertStateEntry(ChimericLedgerState.getAddressNoncePartitionId(address._1))
-//    sql"""
-//       insert into ${ChimericLedgerStateAddressTable.table} (${column.id}, ${column.address})
-//       values (${entryId}, ${address._1})
-//       """.update().apply()
-//    insertValue(entryId, address._2)
-  }
-
   private def deleteAddress(address: Address)(implicit DBSession: DBSession): Unit = {
     val column = ChimericLedgerStateAddressTable.column
     val entryId =
@@ -178,6 +187,8 @@ class ChimericLedgerStateStorageDao {
        """.update().apply()
     deleteValue(entryId)
     deleteStateEntry(entryId)
+
+    // NOTE: Deleting the nonce here is problematic, updates are a delete and then insert, the nonce will be lost.
   }
 
   private def readValue(ledgerStateEntryId: Long)(implicit DBSession: DBSession): Value = {
@@ -208,5 +219,54 @@ class ChimericLedgerStateStorageDao {
       delete from ${ChimericValueEntryTable.table}
       where ${column.ledgerStateEntryId} = ${entryId}
     """.update().apply()
+  }
+
+  private def readNonces(keys: Set[AddressNonceKey])(implicit DBSession: DBSession): Set[(Address, Int)] = {
+    val nonceTable = ChimericLedgerStateNonceTable.syntax("nonce_table")
+    val entryTable = ChimericLedgerStateEntryTable.syntax("entry_table")
+
+    // TODO: optimize this
+    keys.flatMap { key =>
+      sql"""
+         SELECT ${nonceTable.result.*}
+         FROM ${ChimericLedgerStateNonceTable as nonceTable} JOIN
+              ${ChimericLedgerStateEntryTable as entryTable}
+              ON ${nonceTable.id} = ${entryTable.id}
+         WHERE ${entryTable.stringId} = ${getAddressNoncePartitionId(key.address)}
+         """
+        .map(ChimericLedgerStateNonceTable(nonceTable.resultName)(_))
+        .headOption()
+        .apply()
+        .map(key.address -> _.nonce)
+    }
+  }
+
+  private def deleteNonce(address: Address)(implicit DBSession: DBSession): Unit = {
+    val column = ChimericLedgerStateNonceTable.column
+    val entryId = getStateEntryId(getAddressNoncePartitionId(address))
+      .getOrElse(throw DataLayerException(s"address not found: $address"))
+
+    val _ = sql"""
+       DELETE FROM ${ChimericLedgerStateNonceTable.table}
+       WHERE ${column.id} = $entryId
+       """
+      .update()
+      .apply()
+
+    deleteStateEntry(entryId)
+  }
+
+  private def insertNonce(address: Address, nonce: Int)(implicit DBSession: DBSession): Unit = {
+    val column = ChimericLedgerStateNonceTable.column
+    val entryId = insertStateEntry(getAddressNoncePartitionId(address))
+
+    val _ = sql"""
+       INSERT INTO ${ChimericLedgerStateNonceTable.table}
+         (${column.id}, ${column.nonce})
+       VALUES
+         ($entryId, $nonce)
+       """
+      .update()
+      .apply()
   }
 }

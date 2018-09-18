@@ -55,6 +55,7 @@ trait ChimericLedgerItDbTest
         Output(value3 - singleFee),
         Fee(singleFee)
       ))
+
     val transactions = List[ChimericTx](
       ChimericTx(
         Seq(
@@ -75,8 +76,6 @@ trait ChimericLedgerItDbTest
     val header = new ChimericBlockHeader
     val block = Block(header, transactions)
     val result = ledger(block)
-    println(result)
-    result.isRight mustBe true
     result.right.value.isSuccess mustBe true
 
     val address1Key = ChimericLedgerState.getAddressValuePartitionId(address1)
@@ -93,6 +92,7 @@ trait ChimericLedgerItDbTest
         address1Key -> ValueHolder(value2 - value3),
         address2Key -> ValueHolder(value1 - multiFee)
       ))
+
     val block2 = Block(
       header,
       immutable.Seq(
@@ -100,14 +100,16 @@ trait ChimericLedgerItDbTest
           immutable.Seq(
             Input(TxOutRef(utxoTx.txId, 1), value3 - singleFee),
             Fee(value3 - singleFee),
-            Withdrawal(address1, value2 - value3, 1),
+            Withdrawal(address1, value2 - value3, 3),
             Fee(value2 - value3)
           ))
       )
     )
+
+    block2.partitionIds.foreach(println)
     val result2 = ledger(block2)
-    result2.isRight mustBe true
-    result2.right.get.isSuccess mustBe true
+
+    result2.right.value.isSuccess mustBe true
     stateStorage.slice(allKeys) mustBe LedgerState[ChimericStateValue](
       Map(
         currency1Key -> CreateCurrencyHolder(CreateCurrency(currency1)),
