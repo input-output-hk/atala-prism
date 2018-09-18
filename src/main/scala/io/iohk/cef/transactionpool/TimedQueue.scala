@@ -1,0 +1,44 @@
+package io.iohk.cef.transactionpool
+import java.time.{Clock, Duration, Instant}
+
+import scala.collection.immutable.Queue
+
+case class TimedQueue[T](clock: Clock = Clock.systemUTC(), q: Queue[(T, Instant)] = Queue()) {
+
+  def enqueue(t: T, duration: Duration): TimedQueue[T] = {
+    val expiration: Instant = clock.instant().plus(duration)
+    new TimedQueue[T](clock, cleanedQuery.enqueue((t, expiration)))
+  }
+
+  def enqueue(t: T, until: Instant): TimedQueue[T] = {
+    new TimedQueue[T](clock, cleanedQuery.enqueue((t, until)))
+  }
+
+  def dequeueOption: Option[(T, TimedQueue[T])] = {
+    for {
+      ((t, _), newQueue) <- cleanedQuery.dequeueOption
+    } yield (t, new TimedQueue[T](clock, newQueue))
+  }
+
+  def dequeue: (T, TimedQueue[T]) =
+    dequeueOption.getOrElse(throw new IllegalStateException("No more elements in the queue"))
+
+  def filter(predicate: T => Boolean): TimedQueue[T] =
+    new TimedQueue[T](clock, cleanedQuery.filter(value => predicate(value._1)))
+
+  def filterNot(predicate: T => Boolean): TimedQueue[T] =
+    new TimedQueue[T](clock, cleanedQuery.filterNot(value => predicate(value._1)))
+
+  def isEmpty: Boolean = cleanedQuery.isEmpty
+
+  def queue: Queue[T] = q.map(_._1)
+
+  def size: Int = queue.size
+
+  private def cleanedQuery: Queue[(T, Instant)] = removeExpired(q)
+
+  private def removeExpired(q: Queue[(T, Instant)]): Queue[(T, Instant)] = {
+    val now = clock.instant()
+    q.filter(_._2.isAfter(now))
+  }
+}

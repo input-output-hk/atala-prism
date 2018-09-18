@@ -15,11 +15,12 @@ import scala.collection.immutable
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
-class NodeCoreSpec extends AsyncFlatSpec
-  with MustMatchers
-  with MockitoSugar
-  with MockingTransactionPoolFutureInterface[String, DummyBlockHeader, DummyTransaction]
-  with MockingConsensus[String, DummyTransaction] {
+class NodeCoreSpec
+    extends AsyncFlatSpec
+    with MustMatchers
+    with MockitoSugar
+    with MockingTransactionPoolFutureInterface[String, DummyBlockHeader, DummyTransaction]
+    with MockingConsensus[String, DummyBlockHeader, DummyTransaction] {
 
   type State = String
   type Header = DummyBlockHeader

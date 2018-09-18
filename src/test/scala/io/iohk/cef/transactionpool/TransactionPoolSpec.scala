@@ -1,14 +1,24 @@
 package io.iohk.cef.transactionpool
+import java.time.Clock
+
+import io.iohk.cef.ledger.storage.dao.MockingLedgerStateStorage
 import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
 import io.iohk.cef.test.{DummyBlockHeader, DummyTransaction}
 import io.iohk.cef.utils.ByteSizeable
 import org.scalacheck.{Arbitrary, Gen}
+import org.scalatest.mockito.MockitoSugar
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{FlatSpec, MustMatchers}
 
 import scala.collection.immutable.Queue
+import scala.concurrent.duration._
 
-class TransactionPoolSpec extends FlatSpec with MustMatchers with PropertyChecks {
+class TransactionPoolSpec
+    extends FlatSpec
+    with MustMatchers
+    with PropertyChecks
+    with MockitoSugar
+    with MockingLedgerStateStorage[String] {
 
   behavior of "TransactionPool"
 
@@ -43,8 +53,15 @@ class TransactionPoolSpec extends FlatSpec with MustMatchers with PropertyChecks
 
   it should "not produce blocks larger than the max block size" in {
     forAll { (txs: Queue[DummyTransaction], header: DummyBlockHeader) =>
+      val defaultDuration = 1 minute
+      val clock = Clock.systemUTC()
+      val timedQueue = TimedQueue(
+        clock,
+        txs.map(tx => (tx, clock.instant().plus(java.time.Duration.ofMillis(defaultDuration.toMillis)))))
       val size = totalSize(txs.toList, header)
-      val pool = new TransactionPool(txs, (_: Seq[Transaction[String]]) => header, size)
+      val ledgerStateStorage = mockLedgerStateStorage
+      val pool =
+        new TransactionPool(timedQueue, (_: Seq[Transaction[String]]) => header, size, ledgerStateStorage, 1 minute)
       val (emptyPool, block) = pool.generateBlock()
       block.header mustBe header
       block.transactions mustBe txs
@@ -53,35 +70,39 @@ class TransactionPoolSpec extends FlatSpec with MustMatchers with PropertyChecks
       val (oneTxPool, block2) = largerPool.generateBlock()
       block2.header mustBe header
       block2.transactions mustBe txs
-      oneTxPool.queue.size mustBe 1
+      oneTxPool.timedQueue.size mustBe 1
       if (txs.isEmpty)
-        oneTxPool.generateBlock()._1.queue.size mustBe 1
+        oneTxPool.generateBlock()._1.timedQueue.size mustBe 1
       else
-        oneTxPool.generateBlock()._1.queue.size mustBe 0
+        oneTxPool.generateBlock()._1.timedQueue.size mustBe 0
     }
   }
 
   it should "process a transaction" in {
     val header = DummyBlockHeader(1)
-    val pool = new TransactionPool(Queue[DummyTransaction](), (_: Seq[Transaction[String]]) => header, 2)
+    val ledgerStateStorage = mockLedgerStateStorage
+    val pool =
+      new TransactionPool(TimedQueue(), (_: Seq[Transaction[String]]) => header, 2, ledgerStateStorage, 1 minute)
     val tx = DummyTransaction(2)
-    pool.queue.isEmpty mustBe true
+    pool.timedQueue.isEmpty mustBe true
     val newPool = pool.processTransaction(tx)
-    newPool.queue.size mustBe 1
-    newPool.queue.head mustBe tx
+    newPool.timedQueue.size mustBe 1
+    newPool.timedQueue.queue.head mustBe tx
   }
 
   it should "remove block transactions" in {
     val header = DummyBlockHeader(1)
-    val pool = new TransactionPool(Queue[DummyTransaction](), (_: Seq[Transaction[String]]) => header, 2)
+    val ledgerStateStorage = mockLedgerStateStorage
+    val pool =
+      new TransactionPool(TimedQueue(), (_: Seq[Transaction[String]]) => header, 2, ledgerStateStorage, 1 minute)
     val txs = List(DummyTransaction(2), DummyTransaction(3), DummyTransaction(4))
-    pool.queue.isEmpty mustBe true
+    pool.timedQueue.isEmpty mustBe true
     val newPool = txs.foldLeft(pool)(_.processTransaction(_))
-    newPool.queue.size mustBe 3
-    newPool.queue.toList mustBe txs
+    newPool.timedQueue.size mustBe 3
+    newPool.timedQueue.queue.toList mustBe txs
     val block = Block(header, txs.tail)
     val poolWithoutTxs = newPool.removeBlockTransactions(block)
-    poolWithoutTxs.queue.size mustBe 1
-    poolWithoutTxs.queue.dequeue._1 mustBe txs.head
+    poolWithoutTxs.timedQueue.size mustBe 1
+    poolWithoutTxs.timedQueue.dequeue._1 mustBe txs.head
   }
 }

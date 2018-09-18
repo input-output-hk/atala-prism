@@ -13,13 +13,14 @@ import org.mockito.Mockito._
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 
-class CoreNetworkItSpec extends FlatSpec
-  with MustMatchers
-  with PropertyChecks
-  with NetworkFixture
-  with MockitoSugar
-  with MockingTransactionPoolFutureInterface[String, DummyBlockHeader, DummyTransaction]
-  with MockingConsensus[String, DummyTransaction] {
+class CoreNetworkItSpec
+    extends FlatSpec
+    with MustMatchers
+    with PropertyChecks
+    with NetworkFixture
+    with MockitoSugar
+    with MockingTransactionPoolFutureInterface[String, DummyBlockHeader, DummyTransaction]
+    with MockingConsensus[String, DummyBlockHeader, DummyTransaction] {
 
   behavior of "CoreNetworkItSpec"
   import io.iohk.cef.network.encoding.nio.NioCodecs._
@@ -28,20 +29,25 @@ class CoreNetworkItSpec extends FlatSpec
   implicit val executionContext = scala.concurrent.ExecutionContext.global
 
   val txNetwork = 1
-  implicit val nioEncoder: NioEncoder[Envelope[DummyTransaction]] = implicitly[ByteStringSerializable[Envelope[DummyTransaction]]].toNioEncoder
-  implicit val nioDecoder: NioDecoder[Envelope[DummyTransaction]] = implicitly[ByteStringSerializable[Envelope[DummyTransaction]]].toNioDecoder
+  implicit val nioEncoder: NioEncoder[Envelope[DummyTransaction]] =
+    implicitly[ByteStringSerializable[Envelope[DummyTransaction]]].toNioEncoder
+  implicit val nioDecoder: NioDecoder[Envelope[DummyTransaction]] =
+    implicitly[ByteStringSerializable[Envelope[DummyTransaction]]].toNioDecoder
   implicit val blockNioEncoder: NioEncoder[Envelope[Block[String, DummyBlockHeader, DummyTransaction]]] =
     implicitly[ByteStringSerializable[Envelope[Block[String, DummyBlockHeader, DummyTransaction]]]].toNioEncoder
   implicit val blockNioDecoder: NioDecoder[Envelope[Block[String, DummyBlockHeader, DummyTransaction]]] =
     implicitly[ByteStringSerializable[Envelope[Block[String, DummyBlockHeader, DummyTransaction]]]].toNioDecoder
 
-  private def createCore(baseNetwork: BaseNetwork,
-                         me: NodeId,
-                         txPoolIf: TransactionPoolFutureInterface[String, DummyBlockHeader, DummyTransaction],
-                         consensus: Consensus[String, DummyTransaction]) = {
+  private def createCore(
+      baseNetwork: BaseNetwork,
+      me: NodeId,
+      txPoolIf: TransactionPoolFutureInterface[String, DummyBlockHeader, DummyTransaction],
+      consensus: Consensus[String, DummyBlockHeader, DummyTransaction]) = {
     val txNetwork = new Network[Envelope[DummyTransaction]](baseNetwork.networkDiscovery, baseNetwork.transports)
     val blockNetwork =
-      new Network[Envelope[Block[String, DummyBlockHeader, DummyTransaction]]](baseNetwork.networkDiscovery, baseNetwork.transports)
+      new Network[Envelope[Block[String, DummyBlockHeader, DummyTransaction]]](
+        baseNetwork.networkDiscovery,
+        baseNetwork.transports)
     val consensusMap = Map(1 -> (txPoolIf, consensus))
 
     new NodeCore[String, DummyBlockHeader, DummyTransaction](
@@ -68,7 +74,7 @@ class CoreNetworkItSpec extends FlatSpec
     val testTx = DummyTransaction(10)
     when(mockTxPoolIf2.processTransaction(testTx)).thenReturn(Future.successful(Right(())))
     when(mockTxPoolIf1.processTransaction(testTx)).thenReturn(Future.successful(Right(())))
-    val result = core2.receiveTransaction(Envelope(testTx, 1, Anyone()), Some(baseNetworkCore1.transports.peerInfo.nodeId))
+    val result = core2.receiveTransaction(Envelope(testTx, 1, Anyone()))
     Await.result(result, 1 minute) mustBe Right(())
     verify(mockTxPoolIf1, timeout(5000).times(1)).processTransaction(testTx)
   }

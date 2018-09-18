@@ -8,5 +8,4 @@ trait MockingTransactionPoolFutureInterface[State, Header <: BlockHeader, Tx <: 
   def mockTxPoolFutureInterface: TransactionPoolFutureInterface[State, Header, Tx] =
     mock[TransactionPoolFutureInterface[State, Header, Tx]]
 
-
 }
