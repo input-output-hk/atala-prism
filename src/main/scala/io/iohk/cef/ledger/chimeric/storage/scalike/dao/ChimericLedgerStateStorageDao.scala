@@ -57,7 +57,6 @@ class ChimericLedgerStateStorageDao {
 
         case DeleteStateAction(key: AddressValueKey, _) => deleteAddress(key.address)
         case DeleteStateAction(key: UtxoValueKey, _) => deleteUtxo(key.txOutRef)
-        case DeleteStateAction(key: AddressNonceKey, _) => deleteNonce(key.address)
 
         case UpdateStateAction(key: AddressValueKey, value: ValueHolder) =>
           deleteAddress(key.address)
