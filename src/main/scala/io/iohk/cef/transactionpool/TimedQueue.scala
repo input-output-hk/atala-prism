@@ -6,8 +6,11 @@ import scala.collection.immutable.Queue
 case class TimedQueue[T](clock: Clock = Clock.systemUTC(), q: Queue[(T, Instant)] = Queue()) {
 
   def enqueue(t: T, duration: Duration): TimedQueue[T] = {
-    val expiration: Instant = clock.instant().plus(duration)
-    new TimedQueue[T](clock, cleanedQuery.enqueue((t, expiration)))
+    enqueue(t, clock.instant().plus(duration))
+  }
+
+  def enqueue(t: T, duration: scala.concurrent.duration.Duration): TimedQueue[T] = {
+    enqueue(t, Duration.ofNanos(duration.toNanos))
   }
 
   def enqueue(t: T, until: Instant): TimedQueue[T] = {
@@ -29,11 +32,16 @@ case class TimedQueue[T](clock: Clock = Clock.systemUTC(), q: Queue[(T, Instant)
   def filterNot(predicate: T => Boolean): TimedQueue[T] =
     new TimedQueue[T](clock, cleanedQuery.filterNot(value => predicate(value._1)))
 
+  def foreach(f: T => Unit): Unit = cleanedQuery.foreach { case (t, _) => f(t) }
+
+  def foldLeft[S](state: S)(f: (S, T) => S): S =
+    cleanedQuery.foldLeft(state)((s, t) => f(s, t._1))
+
   def isEmpty: Boolean = cleanedQuery.isEmpty
 
-  def queue: Queue[T] = q.map(_._1)
+  def queue: Queue[T] = cleanedQuery.map(_._1)
 
-  def size: Int = queue.size
+  def size: Int = cleanedQuery.size
 
   private def cleanedQuery: Queue[(T, Instant)] = removeExpired(q)
 

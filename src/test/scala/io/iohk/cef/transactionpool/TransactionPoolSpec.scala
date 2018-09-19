@@ -1,10 +1,10 @@
 package io.iohk.cef.transactionpool
-import java.time.Clock
-
 import io.iohk.cef.ledger.storage.dao.MockingLedgerStateStorage
-import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
-import io.iohk.cef.test.{DummyBlockHeader, DummyTransaction}
+import io.iohk.cef.ledger.{Block, BlockHeader, LedgerState, Transaction}
+import io.iohk.cef.test.{DummyBlockHeader, DummyTransaction, TestClock}
 import io.iohk.cef.utils.ByteSizeable
+import org.mockito.ArgumentMatchers
+import org.mockito.Mockito._
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.prop.PropertyChecks
@@ -54,12 +54,13 @@ class TransactionPoolSpec
   it should "not produce blocks larger than the max block size" in {
     forAll { (txs: Queue[DummyTransaction], header: DummyBlockHeader) =>
       val defaultDuration = 1 minute
-      val clock = Clock.systemUTC()
+      val clock = TestClock()
       val timedQueue = TimedQueue(
         clock,
         txs.map(tx => (tx, clock.instant().plus(java.time.Duration.ofMillis(defaultDuration.toMillis)))))
       val size = totalSize(txs.toList, header)
       val ledgerStateStorage = mockLedgerStateStorage
+      when(ledgerStateStorage.slice(ArgumentMatchers.any())).thenReturn(LedgerState[String](Map()))
       val pool =
         new TransactionPool(timedQueue, (_: Seq[Transaction[String]]) => header, size, ledgerStateStorage, 1 minute)
       val (emptyPool, block) = pool.generateBlock()
