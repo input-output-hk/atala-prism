@@ -6,6 +6,7 @@ import io.iohk.cef.protobuf.ChimericLedgerState.ChimericStateValueProto
 import io.iohk.cef.protobuf.ChimericLedgerState.ChimericStateValueProto.Value.{
   Empty,
   StringCreateCurrencyWrapper,
+  StringNonceWrapper,
   StringValueWrapper
 }
 
@@ -23,6 +24,7 @@ object ChimericStateSerializer {
             ValueHolder(Value(valueStringWrapper.mapValues(BigDecimal(_))))
           case StringCreateCurrencyWrapper(CreateCurrencyProto(currency)) =>
             CreateCurrencyHolder(CreateCurrency(currency))
+          case StringNonceWrapper(NonceProto(nonce)) => NonceHolder(nonce)
           case Empty => throw new IllegalArgumentException("Expected a string state value wrapper but got Empty")
         }
       }
