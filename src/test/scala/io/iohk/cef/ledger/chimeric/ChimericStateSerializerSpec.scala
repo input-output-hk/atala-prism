@@ -22,7 +22,6 @@ class ChimericStateSerializerSpec extends FlatSpec with MustMatchers with Proper
     def test(number: BigDecimal): scalatest.Assertion = {
       val state = ValueHolder(Value("CRC" -> number))
       val serializedDecimal = serializer.serialize(state)
-      println(s"Decimal size: ${serializedDecimal.size}")
       serializer.deserialize(serializedDecimal) mustBe state
     }
 

@@ -18,7 +18,7 @@ import scala.collection.immutable.Queue
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, _}
 
-class CorePoolIntegration
+class CorePooltSpec
     extends TestKit(ActorSystem("CorePoolIntegration"))
     with FlatSpecLike
     with MustMatchers
@@ -37,7 +37,7 @@ class CorePoolIntegration
     override def poolActor: ActorRef = testActorRef
   }
 
-  behavior of "CorePoolIntegration"
+  behavior of "CorePoolItSpec"
 
   it should "process a transaction" in {
     implicit val timeout = Timeout(10 seconds)
@@ -52,19 +52,18 @@ class CorePoolIntegration
     val consensus = mock[Consensus[String, DummyTransaction]]
     val txNetwork = mock[Network[Envelope[DummyTransaction]]]
     val blockNetwork = mock[Network[Envelope[Block[String, DummyBlockHeader, DummyTransaction]]]]
-    val txMessageStream = mock[MessageStream[Envelope[DummyTransaction]]]
-    val blockMessageStream = mock[MessageStream[Envelope[Block[String, DummyBlockHeader, DummyTransaction]]]]
-    when(txNetwork.messageStream).thenReturn(txMessageStream)
-    when(blockNetwork.messageStream).thenReturn(blockMessageStream)
-    when(txMessageStream.foreach(ArgumentMatchers.any())).thenReturn(Future.successful(()))
-    when(blockMessageStream.foreach(ArgumentMatchers.any())).thenReturn(Future.successful(()))
     val consensusMap = Map(1 -> (txPoolFutureInterface, consensus))
     val me = NodeId("3112")
-    val envBlockSerializable = Envelope.envelopeSerializer(DummyBlockSerializable.serializable)
-    val envTxSerializable = Envelope.envelopeSerializer(DummyTransaction.serializable)
+    val mockTxMessageStream = mock[MessageStream[Envelope[DummyTransaction]]]
+    val mockBlockMessageStream =
+      mock[MessageStream[Envelope[Block[String, DummyBlockHeader, DummyTransaction]]]]
+    when(txNetwork.messageStream).thenReturn(mockTxMessageStream)
+    when(blockNetwork.messageStream).thenReturn(mockBlockMessageStream)
+    when(mockTxMessageStream.foreach(ArgumentMatchers.any())).thenReturn(Future.successful(()))
+    when(mockBlockMessageStream.foreach(ArgumentMatchers.any())).thenReturn(Future.successful(()))
     val core = new NodeCore(consensusMap, txNetwork, blockNetwork, me)(
-      envTxSerializable,
-      envBlockSerializable,
+      Envelope.envelopeSerializer(DummyTransaction.serializable),
+      Envelope.envelopeSerializer(DummyBlockSerializable.serializable),
       executionContext
     )
     val testTransaction = DummyTransaction(5)

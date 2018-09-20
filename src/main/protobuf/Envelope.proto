@@ -1,0 +1,10 @@
+syntax = "proto2";
+
+package io.iohk.cef.protobuf;
+import "DestinationDescriptor.proto";
+
+message EnvelopeProto {
+    required bytes content = 1;
+    required uint32 ledgerId = 2;
+    required DestinationDescriptorProto destinationDescriptor = 3;
+}

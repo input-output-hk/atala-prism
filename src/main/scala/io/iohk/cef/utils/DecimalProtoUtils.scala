@@ -23,10 +23,7 @@ object DecimalProtoUtils {
         s"Cannot represent BigDecimal in proto: ${bigDecimal}. Scale: ${bigDecimal.scale}"
       )
     }
-    println(s"intRepresentation: $intRepresentation")
     val hi = if (intRepresentation > MaxNumberLow) {
-      println(s"hi: ${(intRepresentation / (MaxNumberLow + 1))}")
-      println(s"hi - long: ${(intRepresentation / (MaxNumberLow + 1)).toLong}")
       (intRepresentation / (MaxNumberLow + 1)).toLong
     } else {
       0L

@@ -1,0 +1,38 @@
+syntax = "proto2";
+
+package io.iohk.cef.protobuf;
+
+message AnyoneProto {}
+
+message SingleNodeProto {
+    required bytes nodeId = 1;
+}
+
+message SetOfNodesProto {
+    repeated bytes nodeId = 1;
+}
+
+message NotProto {
+    required DestinationDescriptorProto destinationDescriptor = 1;
+}
+
+message AndProto {
+    required DestinationDescriptorProto left = 1;
+    required DestinationDescriptorProto right = 2;
+}
+
+message OrProto {
+    required DestinationDescriptorProto left = 1;
+    required DestinationDescriptorProto right = 2;
+}
+
+message DestinationDescriptorProto {
+    oneof fragment {
+        AnyoneProto anyoneWrapper = 1;
+        SingleNodeProto singleNodeWrapper = 2;
+        SetOfNodesProto setOfNodesWrapper = 3;
+        NotProto notWrapper = 4;
+        AndProto andWrapper = 5;
+        OrProto orWrapper = 6;
+    }
+}
