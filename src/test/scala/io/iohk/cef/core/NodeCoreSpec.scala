@@ -1,11 +1,11 @@
 package io.iohk.cef.core
 import akka.util.{ByteString, Timeout}
 import io.iohk.cef.LedgerId
-import io.iohk.cef.consensus.MockingConsensus
+import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.ledger.{Block, ByteStringSerializable}
 import io.iohk.cef.network.{MessageStream, Network, NodeId}
 import io.iohk.cef.test.{DummyBlockHeader, DummyTransaction}
-import io.iohk.cef.transactionpool.MockingTransactionPoolFutureInterface
+import io.iohk.cef.transactionpool.TransactionPoolFutureInterface
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar
@@ -18,9 +18,12 @@ import scala.concurrent.duration._
 class NodeCoreSpec
     extends AsyncFlatSpec
     with MustMatchers
-    with MockitoSugar
-    with MockingTransactionPoolFutureInterface[String, DummyBlockHeader, DummyTransaction]
-    with MockingConsensus[String, DummyTransaction] {
+    with MockitoSugar {
+
+  def mockConsensus: Consensus[String, DummyTransaction] = mock[Consensus[String, DummyTransaction]]
+
+  def mockTxPoolFutureInterface: TransactionPoolFutureInterface[String, DummyBlockHeader, DummyTransaction] =
+    mock[TransactionPoolFutureInterface[String, DummyBlockHeader, DummyTransaction]]
 
   type State = String
   type Header = DummyBlockHeader
