@@ -3,10 +3,7 @@ import akka.util.ByteString
 import io.iohk.cef.ledger.ByteStringSerializable
 import io.iohk.cef.protobuf.ChimericLedger.{ChimericStringValueProto, CreateCurrencyProto}
 import io.iohk.cef.protobuf.ChimericLedgerState.ChimericStateValueProto
-import io.iohk.cef.protobuf.ChimericLedgerState.ChimericStateValueProto.Value.{
-  StringCreateCurrencyWrapper,
-  StringValueWrapper
-}
+import io.iohk.cef.protobuf.ChimericLedgerState.ChimericStateValueProto.Value.{Empty, StringCreateCurrencyWrapper, StringValueWrapper}
 
 import scala.util.Try
 
@@ -17,14 +14,12 @@ object ChimericStateSerializer {
       for {
         parsed <- Try(ChimericStateValueProto.parseFrom(bytes.toArray)).toOption
       } yield {
-        if (parsed.value.isStringCreateCurrencyWrapper) {
-          CreateCurrencyHolder(CreateCurrency(parsed.value.stringCreateCurrencyWrapper.get.currency))
-        } else if (parsed.value.isStringValueWrapper) {
-          ValueHolder(
-            Value(parsed.value.stringValueWrapper.get.valueStringWrapper.mapValues(BigDecimal(_)))
-          )
-        } else {
-          throw new IllegalArgumentException(s"Unidentified value: ${parsed.value}")
+        parsed.value match {
+          case StringValueWrapper(ChimericStringValueProto(valueStringWrapper)) =>
+            ValueHolder(Value(valueStringWrapper.mapValues(BigDecimal(_))))
+          case StringCreateCurrencyWrapper(CreateCurrencyProto(currency)) =>
+            CreateCurrencyHolder(CreateCurrency(currency))
+          case Empty => throw new IllegalArgumentException("Expected a string state value wrapper but got Empty")
         }
       }
     }
