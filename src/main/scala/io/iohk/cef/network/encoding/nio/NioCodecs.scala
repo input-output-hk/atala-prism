@@ -36,7 +36,7 @@ trait NioCodecs extends NativeCodecs with ProductCodecs with StreamCodecs with O
   }
 
   val byteStringNioDecoder: NioDecoder[ByteString] = new NioDecoder[ByteString] {
-    override def decode(u: ByteBuffer): Option[ByteString] = Some(ByteString(u.array()))
+    override def decode(u: ByteBuffer): Option[ByteString] = Some(ByteString(u))
   }
 
   implicit class ByteStringEncoderOps[T](encoder: Encoder[T, ByteString]) {

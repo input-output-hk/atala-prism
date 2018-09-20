@@ -7,7 +7,9 @@ import io.iohk.cef.protobuf.DestinationDescriptor.DestinationDescriptorProto.Fra
 
 import scala.util.Try
 
-sealed trait DestinationDescriptor extends (NodeId => Boolean)
+sealed trait DestinationDescriptor {
+  def apply(v1: NodeId): Boolean
+}
 
 case object Everyone extends DestinationDescriptor {
   override def apply(v1: NodeId): Boolean = true

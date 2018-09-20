@@ -41,9 +41,7 @@ class IdentityRouterSpec
 
     "be able to create identity claim transaction" in {
       val signature = sign(ByteString("id") ++ pair.public.toByteString, pair.`private`)
-      val entity = IdentityTransactionRequest(
-        Claim("id", pair.public, signature),
-        1)
+      val entity = IdentityTransactionRequest(Claim("id", pair.public, signature), 1)
       val json = Marshal(entity).to[MessageEntity].futureValue
       val request = Post("/identities", json)
 
@@ -54,9 +52,7 @@ class IdentityRouterSpec
 
     "be able to create identity link transaction" in {
       val signature = sign(ByteString("id") ++ pair.public.toByteString, pair.`private`)
-      val entity = IdentityTransactionRequest(
-        Link("id", pair.public, signature),
-        1)
+      val entity = IdentityTransactionRequest(Link("id", pair.public, signature), 1)
       val json = Marshal(entity).to[MessageEntity].futureValue
       val request = Post("/identities").withEntity(json)
 
@@ -67,9 +63,7 @@ class IdentityRouterSpec
 
     "be able to create identity unlink transaction" in {
       val signature = sign(ByteString("id") ++ pair.public.toByteString, pair.`private`)
-      val entity = IdentityTransactionRequest(
-        Unlink("id", pair.public, signature),
-        1)
+      val entity = IdentityTransactionRequest(Unlink("id", pair.public, signature), 1)
       val json = Marshal(entity).to[MessageEntity].futureValue
       val request = Post("/identities").withEntity(json)
 
