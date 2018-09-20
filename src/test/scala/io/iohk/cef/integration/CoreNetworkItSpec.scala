@@ -14,12 +14,7 @@ import scala.collection.immutable
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
-class CoreNetworkItSpec
-    extends FlatSpec
-    with MustMatchers
-    with PropertyChecks
-    with NetworkFixture
-    with MockitoSugar {
+class CoreNetworkItSpec extends FlatSpec with MustMatchers with PropertyChecks with NetworkFixture with MockitoSugar {
 
   def mockConsensus: Consensus[String, DummyTransaction] = mock[Consensus[String, DummyTransaction]]
 

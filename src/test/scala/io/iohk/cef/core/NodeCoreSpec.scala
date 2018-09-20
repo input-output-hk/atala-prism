@@ -15,10 +15,7 @@ import scala.collection.immutable
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
-class NodeCoreSpec
-    extends AsyncFlatSpec
-    with MustMatchers
-    with MockitoSugar {
+class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
 
   def mockConsensus: Consensus[String, DummyTransaction] = mock[Consensus[String, DummyTransaction]]
 

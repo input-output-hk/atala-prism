@@ -23,18 +23,41 @@ trait Hashing {
   protected val hashingCollection: HashingAlgorithmsCollection
   protected val hashingType: hashingCollection.HashingAlgorithmType
 
+  /**
+    * Generates a hash for `entity`, using the default hashing algorithm
+    *
+    * @tparam T        the type of `entity`
+    *
+    * @param  entity   the entity that needs to be hashed
+    * @param  encoder  how to convert `entity` into a stream of bytes
+    *
+    * @return          a hash of `entity`
+    */
   def hash[T](entity: T)(implicit encoder: Encoder[T]): Hash =
     new Hash(hashingType, hashingType.algorithm.hash(encoder.encode(entity)))
 
-  def isValidHash(bytes: ByteString, hash: Hash): Boolean =
-    hash.`type`.algorithm.hash(bytes) == hash.bytes
-
+  /**
+    * Returns `true` if `hash` is a hash of `entity`, when using the hashing algorithm
+    * encoded in `hash`
+    *
+    * @tparam T          the type of `entity`
+    *
+    * @param  entity     the entity that needs to be checked
+    * @param  hash       the hash that needs to be checked. It also identifies the
+    *                    hashing algorithm to use
+    * @param  encoder    how to convert `entity` into a stream of bytes
+    *
+    * @return            `true` if `hash` is a valid hash of `entity`
+    */
   def isValidHash[T](entity: T, hash: Hash)(implicit encoder: Encoder[T]): Boolean =
     hash.`type`.algorithm.hash(encoder.encode(entity)) == hash.bytes
 
+  /** Data entity containing a hash and the identifier of the hashing algorithm used to generate it */
   class Hash(
       private[Hashing] val `type`: hashingCollection.HashingAlgorithmType,
       private[Hashing] val bytes: HashBytes) {
+
+    /** Encodes this hash, including the algorithm identifier, into a ByteString */
     def toByteString: ByteString =
       Hash.encodeInto(this).toByteString
 
@@ -61,6 +84,7 @@ trait Hashing {
       }
     }
 
+    /** Tries to restore a `Hash` from the content of the `bytes` ByteString */
     def decodeFrom(bytes: ByteString): Either[HashDecodeError, Hash] = {
       TypedByteString
         .decodeFrom(bytes)
@@ -70,9 +94,20 @@ trait Hashing {
     }
   }
 
+  /**
+    * ADT describing the types of error that can happen when trying to decode a hash
+    * from a ByteString
+    */
   sealed trait HashDecodeError
   object HashDecodeError {
+
+    /** Missing or wrong information in the ByteString */
     case class DataExtractionError(cause: TypedByteStringDecodingError) extends HashDecodeError
+
+    /**
+      * The `algorithmIdentifier` identifier recovered from the ByteString does not match any algorithm
+      * supported by the `crypto` package
+      */
     case class UnsupportedAlgorithm(algorithmIdentifier: String) extends HashDecodeError
   }
 
