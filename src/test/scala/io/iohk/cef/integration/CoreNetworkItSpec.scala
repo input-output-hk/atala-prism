@@ -1,10 +1,10 @@
 package io.iohk.cef.integration
-import io.iohk.cef.consensus.{Consensus, MockingConsensus}
+import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.core.{Envelope, Everyone, NodeCore}
 import io.iohk.cef.ledger.{Block, ByteStringSerializable}
 import io.iohk.cef.network.{Network, NetworkFixture, NodeId}
 import io.iohk.cef.test.{DummyBlockHeader, DummyTransaction}
-import io.iohk.cef.transactionpool.{MockingTransactionPoolFutureInterface, TransactionPoolFutureInterface}
+import io.iohk.cef.transactionpool.TransactionPoolFutureInterface
 import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.prop.PropertyChecks
@@ -14,14 +14,12 @@ import scala.collection.immutable
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
-class CoreNetworkItSpec
-    extends FlatSpec
-    with MustMatchers
-    with PropertyChecks
-    with NetworkFixture
-    with MockitoSugar
-    with MockingTransactionPoolFutureInterface[String, DummyBlockHeader, DummyTransaction]
-    with MockingConsensus[String, DummyTransaction] {
+class CoreNetworkItSpec extends FlatSpec with MustMatchers with PropertyChecks with NetworkFixture with MockitoSugar {
+
+  def mockConsensus: Consensus[String, DummyTransaction] = mock[Consensus[String, DummyTransaction]]
+
+  def mockTxPoolFutureInterface: TransactionPoolFutureInterface[String, DummyBlockHeader, DummyTransaction] =
+    mock[TransactionPoolFutureInterface[String, DummyBlockHeader, DummyTransaction]]
 
   behavior of "CoreNetworkItSpec"
   import io.iohk.cef.network.encoding.nio.NioCodecs._
@@ -62,8 +60,6 @@ class CoreNetworkItSpec
   it should "receive a transaction and a block" in {
     val baseNetworkCore1 = randomBaseNetwork(None)
     val baseNetworkCore2 = randomBaseNetwork(Some(baseNetworkCore1))
-    println(s"baseNetworkCore1: $baseNetworkCore1")
-    println(s"baseNetworkCore2: $baseNetworkCore2")
     val mockTxPoolIf1 = mockTxPoolFutureInterface
     val mockTxPoolIf2 = mockTxPoolFutureInterface
     val mockCons1 = mockConsensus
