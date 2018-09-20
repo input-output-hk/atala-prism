@@ -41,9 +41,11 @@ object ChimericBlockSerializer {
         } yield {
           val txs: immutable.Seq[ChimericTx] = proto.txs.toList
             .map(txProto =>
-              txProto.txFragments.map { _.fragment match {
+              txProto.txFragments.map {
+                _.fragment match {
                   case CreateCurrencyWrapper(CreateCurrencyProto(currency)) => CreateCurrency(currency)
-                  case DepositWrapper(DepositProto(address, valueProto)) => Deposit(address, protoValueToValue(valueProto))
+                  case DepositWrapper(DepositProto(address, valueProto)) =>
+                    Deposit(address, protoValueToValue(valueProto))
                   case FeeWrapper(FeeProto(valueProto)) => Fee(protoValueToValue(valueProto))
                   case InputWrapper(InputProto(txOutRefProto, valueProto)) =>
                     Input(protoTxOutRefToTxOutRef(txOutRefProto), protoValueToValue(valueProto))

@@ -32,3 +32,9 @@ create table cef.chimeric_value_entry(
     primary key(ledger_state_entry_id, currency),
     foreign key(ledger_state_entry_id) references cef.chimeric_ledger_state_entry(id)
 );
+
+create table cef.chimeric_ledger_state_nonce(
+    id bigint not null primary key,
+    nonce int not null,
+    foreign key (id) references cef.chimeric_ledger_state_entry(id)
+);

@@ -1,7 +1,7 @@
 package io.iohk.cef.ledger.identity
 
 import akka.util.ByteString
-import io.iohk.cef.crypto._
+import io.iohk.cef.crypto.{sign => signBytes, _}
 import io.iohk.cef.ledger.{LedgerError, Transaction}
 
 sealed trait IdentityTransaction extends Transaction[Set[SigningPublicKey]] {
@@ -22,7 +22,7 @@ object IdentityTransaction {
       publicKey: SigningPublicKey): Boolean = {
 
     val source = serializeForSignature(identity, publicKey)
-    isValidSignatureOfBytes(source, signature, signKey)
+    isValidSignature(source, signature, signKey)
   }
 
   private def serializeForSignature(identity: String, publicKey: SigningPublicKey): ByteString = {

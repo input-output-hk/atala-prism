@@ -3,13 +3,13 @@ package io.iohk.cef.ledger.chimeric
 import io.iohk.cef.ledger.LedgerState
 import org.scalacheck.Gen
 import org.scalatest.prop.PropertyChecks
-import org.scalatest.{FlatSpec, MustMatchers}
+import org.scalatest.{EitherValues, FlatSpec, MustMatchers}
 
 /**
   * This suite tests the tx fragments independently. For more real-life scenarios
   * involving several tx fragments, take a look at [[ChimericTxSpec]]
   */
-class ChimericTxFragmentSpec extends FlatSpec with MustMatchers with PropertyChecks {
+class ChimericTxFragmentSpec extends FlatSpec with MustMatchers with PropertyChecks with EitherValues {
 
   behavior of "ChimericTxFragment"
 
@@ -22,15 +22,18 @@ class ChimericTxFragmentSpec extends FlatSpec with MustMatchers with PropertyChe
       val state = LedgerState[ChimericStateValue](
         Map(
           ChimericLedgerState.getCurrencyPartitionId(currency) -> CreateCurrencyHolder(CreateCurrency(currency)),
-          ChimericLedgerState.getAddressPartitionId(address) -> ValueHolder(value)
+          ChimericLedgerState.getAddressValuePartitionId(address) -> ValueHolder(value)
         ))
+
       def newState(substractedValue: Value): ChimericLedgerState = {
         val currencyPair =
           Seq(ChimericLedgerState.getCurrencyPartitionId(currency) -> CreateCurrencyHolder(CreateCurrency(currency)))
         val valuePair = if (value == substractedValue) { Seq() } else {
-          Seq(ChimericLedgerState.getAddressPartitionId(address) -> ValueHolder(value - substractedValue))
+          Seq(ChimericLedgerState.getAddressValuePartitionId(address) -> ValueHolder(value - substractedValue))
         }
-        LedgerState[ChimericStateValue](Map((currencyPair ++ valuePair): _*))
+
+        val noncePair = Seq(ChimericLedgerState.getAddressNoncePartitionId(address) -> NonceHolder(1))
+        LedgerState[ChimericStateValue](Map(currencyPair ++ valuePair ++ noncePair: _*))
       }
       val moreThanValue = value + Value(currency -> BigDecimal(1))
       val lessThanValue = value - Value(currency -> BigDecimal(1))
@@ -41,6 +44,84 @@ class ChimericTxFragmentSpec extends FlatSpec with MustMatchers with PropertyChe
       withdrawalCorrect2(state, 1, "txId") mustBe Right(newState(withdrawalCorrect2.value))
       withdrawalIncorrect(state, 1, "txId") mustBe Left(InsufficientBalance(address, moreThanValue, value))
     }
+  }
+
+  it should "reject a Withdrawal when reusing the last nonce" in {
+    val decimal = BigDecimal(4.0)
+    val address: Address = "address"
+    val currency: Currency = "CRC"
+    val value = Value(currency -> decimal)
+    val nonce = 0
+
+    val state = LedgerState[ChimericStateValue](
+      Map(
+        ChimericLedgerState.getCurrencyPartitionId(currency) -> CreateCurrencyHolder(CreateCurrency(currency)),
+        ChimericLedgerState.getAddressValuePartitionId(address) -> ValueHolder(value),
+        ChimericLedgerState.getAddressNoncePartitionId(address) -> NonceHolder(nonce)
+      ))
+
+    val result = Withdrawal(address, value, nonce).apply(state, 1, "txid")
+    result.left.value mustBe InvalidNonce(1, nonce)
+  }
+
+  it should "reject a Withdrawal when nonce is greater than the expected one" in {
+    val decimal = BigDecimal(4.0)
+    val address: Address = "address"
+    val currency: Currency = "CRC"
+    val value = Value(currency -> decimal)
+    val lastNonce = 0
+    val nonce = lastNonce + 2
+
+    val state = LedgerState[ChimericStateValue](
+      Map(
+        ChimericLedgerState.getCurrencyPartitionId(currency) -> CreateCurrencyHolder(CreateCurrency(currency)),
+        ChimericLedgerState.getAddressValuePartitionId(address) -> ValueHolder(value),
+        ChimericLedgerState.getAddressNoncePartitionId(address) -> NonceHolder(lastNonce)
+      ))
+
+    val result = Withdrawal(address, value, nonce).apply(state, 2, "txid")
+    result.left.value mustBe InvalidNonce(lastNonce + 1, nonce)
+  }
+
+  it should "reject a Withdrawal when nonce is smaller than the expected one" in {
+    val decimal = BigDecimal(4.0)
+    val address: Address = "address"
+    val currency: Currency = "CRC"
+    val value = Value(currency -> decimal)
+    val lastNonce = 1
+    val nonce = lastNonce - 1
+
+    val state = LedgerState[ChimericStateValue](
+      Map(
+        ChimericLedgerState.getCurrencyPartitionId(currency) -> CreateCurrencyHolder(CreateCurrency(currency)),
+        ChimericLedgerState.getAddressValuePartitionId(address) -> ValueHolder(value),
+        ChimericLedgerState.getAddressNoncePartitionId(address) -> NonceHolder(lastNonce)
+      ))
+
+    val result = Withdrawal(address, value, nonce).apply(state, 2, "txid")
+    result.left.value mustBe InvalidNonce(lastNonce + 1, nonce)
+  }
+
+  it should "require incremental nonces to apply a Withdrawal" in {
+    val decimal = BigDecimal(4.0)
+    val address: Address = "address"
+    val currency: Currency = "CRC"
+    val value = Value(currency -> decimal)
+    val lastNonce = 1
+
+    val state = LedgerState[ChimericStateValue](
+      Map(
+        ChimericLedgerState.getCurrencyPartitionId(currency) -> CreateCurrencyHolder(CreateCurrency(currency)),
+        ChimericLedgerState.getAddressValuePartitionId(address) -> ValueHolder(value),
+        ChimericLedgerState.getAddressNoncePartitionId(address) -> NonceHolder(lastNonce)
+      ))
+
+    val newState = Withdrawal(address, Value(currency -> BigDecimal(2.0)), lastNonce + 1).apply(state, 2, "txid")
+    newState.isRight mustBe true
+
+    val result =
+      Withdrawal(address, Value(currency -> BigDecimal(1.0)), lastNonce + 2).apply(newState.right.value, 2, "txid")
+    result.isRight mustBe true
   }
 
   it should "apply a Mint & Fee" in {
@@ -119,12 +200,12 @@ class ChimericTxFragmentSpec extends FlatSpec with MustMatchers with PropertyChe
       val stateWithValue = LedgerState[ChimericStateValue](
         Map(
           ChimericLedgerState.getCurrencyPartitionId(currency) -> CreateCurrencyHolder(CreateCurrency(currency)),
-          ChimericLedgerState.getAddressPartitionId(address) -> ValueHolder(value)
+          ChimericLedgerState.getAddressValuePartitionId(address) -> ValueHolder(value)
         ))
       val stateWithValue2 = LedgerState[ChimericStateValue](
         Map(
           ChimericLedgerState.getCurrencyPartitionId(currency) -> CreateCurrencyHolder(CreateCurrency(currency)),
-          ChimericLedgerState.getAddressPartitionId(address) -> ValueHolder(value + value2)
+          ChimericLedgerState.getAddressValuePartitionId(address) -> ValueHolder(value + value2)
         ))
       Deposit(address, value)(emptyState, 1, "") mustBe Right(stateWithValue)
       Deposit(address, value2)(stateWithValue, 1, "") mustBe Right(stateWithValue2)

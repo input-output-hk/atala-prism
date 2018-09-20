@@ -9,7 +9,7 @@ import scala.util.Try
 
 sealed trait DestinationDescriptor extends (NodeId => Boolean)
 
-case class Anyone() extends DestinationDescriptor {
+case object Everyone extends DestinationDescriptor {
   override def apply(v1: NodeId): Boolean = true
 }
 
@@ -49,7 +49,7 @@ object DestinationDescriptor {
 
   def toDestinationDescriptorProto(t: DestinationDescriptor): DestinationDescriptorProto = {
     val predicate = t match {
-      case Anyone() => AnyoneWrapper(AnyoneProto())
+      case Everyone => EveryoneWrapper(EveryoneProto())
       case SingleNode(nodeId) => SingleNodeWrapper(SingleNodeProto(nodeId.id))
       case SetOfNodes(set) =>
         SetOfNodesWrapper(SetOfNodesProto(set.map(nodeId => akkaByteStringToProtoByteString(nodeId.id)).toSeq))
@@ -61,8 +61,8 @@ object DestinationDescriptor {
   }
 
   def fromDestinationDescriptorProto(parsed: DestinationDescriptorProto): DestinationDescriptor = {
-    if (parsed.fragment.isAnyoneWrapper) {
-      Anyone()
+    if (parsed.fragment.isEveryoneWrapper) {
+      Everyone
     } else if (parsed.fragment.isSingleNodeWrapper) {
       SingleNode(NodeId(parsed.getSingleNodeWrapper.nodeId))
     } else if (parsed.fragment.isSetOfNodesWrapper) {

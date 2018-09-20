@@ -5,19 +5,32 @@ import io.iohk.cef.crypto.hashing.HashingAlgorithmsCollection
 import io.iohk.cef.crypto.hashing.HashBytes
 import io.iohk.cef.crypto.encoding.TypedByteString
 import io.iohk.cef.crypto.encoding.TypedByteStringDecodingError
+import io.iohk.cef.utils._
 
+/**
+  * This is just an example on how sbt-doctest works. It's to be replaced with proper docs on CE-273
+  * {{{
+  *
+  * >>> import akka.util.ByteString
+  * >>> Hash.decodeFrom(ByteString("ABCD"))
+  * Left(DataExtractionError(NioDecoderFailedToDecodeTBS))
+  *
+  * }}}
+  */
 trait Hashing {
 
   // PARAMETERS
   protected val hashingCollection: HashingAlgorithmsCollection
   protected val hashingType: hashingCollection.HashingAlgorithmType
 
-  def hashBytes(bytes: ByteString): Hash = new Hash(hashingType, hashingType.algorithm.hash(bytes))
-  def hashEntity[T](entity: T)(implicit encoder: Encoder[T]): Hash = hashBytes(encoder.encode(entity))
+  def hash[T](entity: T)(implicit encoder: Encoder[T]): Hash =
+    new Hash(hashingType, hashingType.algorithm.hash(encoder.encode(entity)))
+
   def isValidHash(bytes: ByteString, hash: Hash): Boolean =
     hash.`type`.algorithm.hash(bytes) == hash.bytes
+
   def isValidHash[T](entity: T, hash: Hash)(implicit encoder: Encoder[T]): Boolean =
-    isValidHash(encoder.encode(entity), hash)
+    hash.`type`.algorithm.hash(encoder.encode(entity)) == hash.bytes
 
   class Hash(
       private[Hashing] val `type`: hashingCollection.HashingAlgorithmType,
@@ -29,6 +42,9 @@ trait Hashing {
       case that: Hash => `type` == that.`type` && bytes == that.bytes
       case _ => false
     }
+
+    override def toString(): String =
+      toByteString.toHex
   }
 
   object Hash {

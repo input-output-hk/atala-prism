@@ -6,7 +6,7 @@ import io.iohk.cef.crypto.signing.{SigningAlgorithmsCollection, _}
 
 trait Signing {
 
-//  // PARAMETERS
+  // PARAMETERS
 
   protected val signingAlgorithmsCollection: SigningAlgorithmsCollection
   protected val defaultSigningType: signingAlgorithmsCollection.SigningAlgorithmType
@@ -16,22 +16,16 @@ trait Signing {
     SigningKeyPair(SigningPublicKey(defaultSigningType)(llPub), SigningPrivateKey(defaultSigningType)(llPriv))
   }
 
-  def signBytes(bytes: ByteString, key: SigningPrivateKey): Signature = {
-    val signature = key.`type`.algorithm.sign(bytes, key.lowlevelKey)
+  def sign[T](t: T, key: SigningPrivateKey)(implicit encoder: Encoder[T]): Signature = {
+    val signature = key.`type`.algorithm.sign(encoder.encode(t), key.lowlevelKey)
     Signature(key.`type`, signature)
   }
 
-  def signEntity[T](t: T, key: SigningPrivateKey)(implicit encoder: Encoder[T]): Signature =
-    signBytes(encoder.encode(t), key)
-
-  def isValidSignatureOfBytes(bytes: ByteString, signature: Signature, key: SigningPublicKey): Boolean =
+  def isValidSignature[T](t: T, signature: Signature, key: SigningPublicKey)(implicit encoder: Encoder[T]): Boolean =
     if (key.`type` != signature.`type`)
       false
     else
-      key.`type`.algorithm.isSignatureValid(signature.bytes, bytes, key.lowlevelKey)
-
-  def isValidSignature[T](t: T, signature: Signature, key: SigningPublicKey)(implicit encoder: Encoder[T]): Boolean =
-    isValidSignatureOfBytes(encoder.encode(t), signature, key)
+      key.`type`.algorithm.isSignatureValid(signature.bytes, encoder.encode(t), key.lowlevelKey)
 
   trait SigningPublicKey {
 

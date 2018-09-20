@@ -2,7 +2,7 @@ syntax = "proto2";
 
 package io.iohk.cef.protobuf;
 
-message AnyoneProto {}
+message EveryoneProto {}
 
 message SingleNodeProto {
     required bytes nodeId = 1;
@@ -28,7 +28,7 @@ message OrProto {
 
 message DestinationDescriptorProto {
     oneof fragment {
-        AnyoneProto anyoneWrapper = 1;
+        EveryoneProto everyoneWrapper = 1;
         SingleNodeProto singleNodeWrapper = 2;
         SetOfNodesProto setOfNodesWrapper = 3;
         NotProto notWrapper = 4;
