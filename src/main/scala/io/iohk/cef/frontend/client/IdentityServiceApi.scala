@@ -20,8 +20,6 @@ class IdentityServiceApi(service: IdentityTransactionService)(implicit execution
 
   private implicit val timeout = Timeout(2.seconds)
 
-  private val route = createIdentity
-
   @Path("/")
   @ApiOperation(value = "Transaction Request", nickname = "Message Request", httpMethod = "POST")
   @ApiImplicitParams(
