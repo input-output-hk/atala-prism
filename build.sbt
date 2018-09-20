@@ -38,6 +38,9 @@ coverageFailOnMinimum := true
 scalafmtOnCompile in ThisBuild := true
 scalafmtTestOnCompile in ThisBuild := true
 
+// doctest
+doctestTestFramework := DoctestTestFramework.ScalaTest
+
 val dep = {
   val akkaVersion = "2.5.12"
 
@@ -53,8 +56,8 @@ val dep = {
     "org.scalikejdbc" %% "scalikejdbc-config" % "3.2.2",
     "org.scalikejdbc" %% "scalikejdbc-test" % "3.2.2" % Test,
     "org.flywaydb" % "flyway-core" % "5.1.3",
-    "org.scalatest" %% "scalatest" % "3.0.1" % Test,
-    "org.scalacheck" %% "scalacheck" % "1.13.4" % Test,
+    "org.scalatest" %% "scalatest" % "3.0.5" % Test,
+    "org.scalacheck" %% "scalacheck" % "1.14.0" % Test,
     "org.mockito" % "mockito-core" % "2.21.0" % Test,
     "com.softwaremill.quicklens" %% "quicklens" % "1.4.11" % Test,
     "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test,

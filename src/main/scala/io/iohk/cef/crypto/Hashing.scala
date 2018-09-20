@@ -5,7 +5,18 @@ import io.iohk.cef.crypto.hashing.HashingAlgorithmsCollection
 import io.iohk.cef.crypto.hashing.HashBytes
 import io.iohk.cef.crypto.encoding.TypedByteString
 import io.iohk.cef.crypto.encoding.TypedByteStringDecodingError
+import io.iohk.cef.utils._
 
+/**
+  * This is just an example on how sbt-doctest works. It's to be replaced with proper docs on CE-273
+  * {{{
+  *
+  * >>> import akka.util.ByteString
+  * >>> Hash.decodeFrom(ByteString("ABCD"))
+  * Left(DataExtractionError(NioDecoderFailedToDecodeTBS))
+  *
+  * }}}
+  */
 trait Hashing {
 
   // PARAMETERS
@@ -31,6 +42,9 @@ trait Hashing {
       case that: Hash => `type` == that.`type` && bytes == that.bytes
       case _ => false
     }
+
+    override def toString(): String =
+      toByteString.toHex
   }
 
   object Hash {
