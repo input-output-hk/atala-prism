@@ -23,7 +23,6 @@ trait Hashing {
   protected val hashingCollection: HashingAlgorithmsCollection
   protected val hashingType: hashingCollection.HashingAlgorithmType
 
-
   /**
     * Generates a hash for `entity`, using the default hashing algorithm
     *

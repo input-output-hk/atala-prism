@@ -190,7 +190,9 @@ trait Signing {
 
   object Signature {
 
-    private[Signing] def apply(tpe: signingAlgorithmsCollection.SigningAlgorithmType, bytes: SignatureBytes): Signature =
+    private[Signing] def apply(
+        tpe: signingAlgorithmsCollection.SigningAlgorithmType,
+        bytes: SignatureBytes): Signature =
       new Signature(tpe, bytes)
 
     private[Signing] def encodeInto(signature: Signature): TypedByteString =
@@ -216,7 +218,7 @@ trait Signing {
   }
 
   /** Contains a `public` signing key, and it's `private` counterpart */
-  case class SigningKeyPair private[Signing](public: SigningPublicKey, `private`: SigningPrivateKey)
+  case class SigningKeyPair private[Signing] (public: SigningPublicKey, `private`: SigningPrivateKey)
 
   /**
     * ADT describing the types of error that can happen when trying to decode a public signing key

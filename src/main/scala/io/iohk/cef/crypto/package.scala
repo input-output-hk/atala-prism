@@ -107,6 +107,7 @@ package crypto {
     */
   sealed trait KeyDecodingError
   object KeyDecodingError {
+
     /** Catch all, that contains a description of the problem the low level algorithm has found */
     case class UnderlayingImplementationError(description: String) extends KeyDecodingError
   }

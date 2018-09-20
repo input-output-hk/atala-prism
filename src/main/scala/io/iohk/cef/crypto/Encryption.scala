@@ -200,7 +200,9 @@ trait Encryption {
 
   object EncryptedData {
 
-    private[Encryption] def apply(tpe: encryptionAlgorithmsCollection.EncryptionAlgorithmType, bytes: EncryptedBytes): EncryptedData =
+    private[Encryption] def apply(
+        tpe: encryptionAlgorithmsCollection.EncryptionAlgorithmType,
+        bytes: EncryptedBytes): EncryptedData =
       new EncryptedData(tpe, bytes)
 
     private[Encryption] def encodeInto(signature: EncryptedData): TypedByteString =
@@ -262,7 +264,6 @@ trait Encryption {
       */
     case class KeyDecodingError(cause: io.iohk.cef.crypto.KeyDecodingError) extends EncryptionPublicKeyDecodeError
   }
-
 
   /**
     * ADT describing the types of error that can happen when trying to decode a private encryption key
