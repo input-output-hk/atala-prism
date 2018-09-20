@@ -59,7 +59,7 @@ object DestinationDescriptor {
   }
 
   def fromDestinationDescriptorProto(parsed: DestinationDescriptorProto): DestinationDescriptor = {
-    if (parsed.fragment.isAnyoneWrapper) {
+    if (parsed.fragment.isEveryoneWrapper) {
       Everyone
     } else if (parsed.fragment.isSingleNodeWrapper) {
       SingleNode(NodeId(parsed.getSingleNodeWrapper.nodeId))
