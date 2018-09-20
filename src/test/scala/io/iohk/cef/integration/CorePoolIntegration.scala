@@ -3,7 +3,7 @@ import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.testkit.{TestActorRef, TestKit}
 import akka.util.Timeout
 import io.iohk.cef.consensus.Consensus
-import io.iohk.cef.core.{Anyone, Envelope, NodeCore}
+import io.iohk.cef.core.{Everyone, Envelope, NodeCore}
 import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
 import io.iohk.cef.network.{MessageStream, Network, NodeId}
 import io.iohk.cef.test.{DummyBlockHeader, DummyBlockSerializable, DummyTransaction}
@@ -68,7 +68,7 @@ class CorePoolIntegration
       executionContext
     )
     val testTransaction = DummyTransaction(5)
-    val envelope = Envelope(testTransaction, 1, Anyone())
+    val envelope = Envelope(testTransaction, 1, Everyone)
     val result = Await.result(core.receiveTransaction(envelope), 10 seconds)
     result mustBe Right(())
     val pool = txPoolActorModelInterface.testActorRef.underlyingActor.pool

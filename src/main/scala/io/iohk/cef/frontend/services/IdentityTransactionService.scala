@@ -1,6 +1,6 @@
 package io.iohk.cef.frontend.services
 
-import io.iohk.cef.core.{Envelope, NodeCore}
+import io.iohk.cef.core.{Everyone, Envelope, NodeCore}
 import io.iohk.cef.crypto._
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.frontend.models.IdentityTransactionRequest
@@ -12,10 +12,8 @@ class IdentityTransactionService(nodeCore: NodeCore[Set[SigningPublicKey], Ident
 
   def process(request: IdentityTransactionRequest): Future[Either[ApplicationError, Unit]] = {
     val envelope =
-      Envelope(content = request.transaction, ledgerId = request.ledgerId, _ => true)
+      Envelope(content = request.transaction, ledgerId = request.ledgerId, Everyone)
 
     nodeCore.receiveTransaction(envelope)
   }
 }
-
-
