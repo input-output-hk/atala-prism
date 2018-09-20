@@ -20,17 +20,16 @@ trait Encryption {
       EncryptionPrivateKey(defaultEncryptionType)(llPriv))
   }
 
-  def encryptBytes(bytes: ByteString, key: EncryptionPublicKey): EncryptedData = {
+  def encrypt[T](entity: T, key: EncryptionPublicKey)(implicit encoder: Encoder[T]): EncryptedData = {
     val encryptedBytes =
-      key.`type`.algorithm.encrypt(bytes, key.lowlevelKey)
+      key.`type`.algorithm.encrypt(encoder.encode(entity), key.lowlevelKey)
 
     EncryptedData(key.`type`, encryptedBytes)
   }
 
-  def encryptEntity[T](entity: T, key: EncryptionPublicKey)(implicit encoder: Encoder[T]): EncryptedData =
-    encryptBytes(encoder.encode(entity), key)
-
-  def decryptBytes(encryptedData: EncryptedData, key: EncryptionPrivateKey): Either[DecryptError, ByteString] = {
+  private[crypto] def decryptBytes(
+      encryptedData: EncryptedData,
+      key: EncryptionPrivateKey): Either[DecryptError, ByteString] = {
     if (encryptedData.`type` != key.`type`)
       Left(
         DecryptError
@@ -42,8 +41,8 @@ trait Encryption {
       }
   }
 
-  def decryptEntity[T](encryptedData: EncryptedData, key: EncryptionPrivateKey)(
-      implicit decoder: Decoder[T]): Either[DecryptError, T] =
+  def decrypt[T](encryptedData: EncryptedData, key: EncryptionPrivateKey)(
+      implicit decoder: Decoder[T]): Either[DecryptError, T] = {
     decryptBytes(encryptedData, key)
       .flatMap { bytes =>
         decoder.decode(bytes) match {
@@ -51,6 +50,7 @@ trait Encryption {
           case None => Left(DecryptError.EntityCouldNotBeDecoded)
         }
       }
+  }
 
   trait EncryptionPublicKey {
     private[Encryption] val `type`: encryptionAlgorithmsCollection.EncryptionAlgorithmType

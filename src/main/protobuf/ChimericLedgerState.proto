@@ -7,5 +7,6 @@ message ChimericStateValueProto {
     oneof value {
         ChimericStringValueProto stringValueWrapper = 1;
         CreateCurrencyProto stringCreateCurrencyWrapper = 2;
+        NonceProto stringNonceWrapper = 3;
     }
 }

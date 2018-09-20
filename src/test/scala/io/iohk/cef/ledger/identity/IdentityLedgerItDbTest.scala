@@ -5,7 +5,6 @@ import java.time.{Clock, Instant}
 import akka.util.ByteString
 import io.iohk.cef.builder.SigningKeyPairs
 import io.iohk.cef.crypto._
-import io.iohk.cef.crypto.low.DigitalSignature
 import io.iohk.cef.ledger.Block
 import io.iohk.cef.ledger.identity.IdentityBlockSerializer._
 import io.iohk.cef.ledger.identity.storage.scalike.IdentityLedgerStateStorageImpl
@@ -27,8 +26,6 @@ trait IdentityLedgerItDbTest
     with SigningKeyPairs
     with EitherValues
     with IdentityLedgerStateStorageFixture {
-
-  val dummySignature = new DigitalSignature(ByteString.empty)
 
   def createLedger(ledgerStateStorageDao: IdentityLedgerStateStorageDao)(
       implicit dBSession: DBSession): Ledger[Try, Set[SigningPublicKey]] = {

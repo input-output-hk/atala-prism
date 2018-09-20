@@ -77,16 +77,29 @@ sealed trait TxOutputFragment extends ValueTxFragment
 
 case class Withdrawal(address: Address, value: Value, nonce: Int) extends TxInputFragment {
   override def exec(state: ChimericLedgerState, index: Int, txId: String): ChimericStateOrError = {
-    val addressKey = ChimericLedgerState.getAddressPartitionId(address)
+    val addressValueKey = ChimericLedgerState.getAddressValuePartitionId(address)
     val addressValue =
-      state.get(addressKey).collect { case ValueHolder(value) => value }.getOrElse(Value.Zero)
+      state.get(addressValueKey).collect { case ValueHolder(value) => value }.getOrElse(Value.Zero)
+
+    val addressNonceKey = ChimericLedgerState.getAddressNoncePartitionId(address)
+    val expectedNonce = 1 + state
+      .get(addressNonceKey)
+      .collect { case NonceHolder(x) => x }
+      .getOrElse(0)
+
     if (value.iterator.exists(BigDecimal(0) > _._2)) {
       Left(ValueNegative(value))
+    } else if (expectedNonce != nonce) {
+      Left(InvalidNonce(expectedNonce, nonce))
     } else if (addressValue >= value) {
+      val partialState = state.put(addressNonceKey, NonceHolder(nonce))
+
       if (addressValue == value) {
-        Right(state.remove(addressKey))
+        val newState = partialState.remove(addressValueKey)
+        Right(newState)
       } else {
-        Right(state.put(addressKey, ValueHolder(addressValue - value)))
+        val newState = partialState.put(addressValueKey, ValueHolder(addressValue - value))
+        Right(newState)
       }
     } else {
       Left(InsufficientBalance(address, value, addressValue))
@@ -94,7 +107,10 @@ case class Withdrawal(address: Address, value: Value, nonce: Int) extends TxInpu
   }
 
   override def txSpecificPartitionIds(txId: String, index: Int): Set[String] =
-    Set(ChimericLedgerState.getAddressPartitionId(address))
+    Set(
+      ChimericLedgerState.getAddressValuePartitionId(address),
+      ChimericLedgerState.getAddressNoncePartitionId(address)
+    )
 
   override def toString(): ChimericTxId = s"Withdrawal($address,$value)"
 }
@@ -162,7 +178,7 @@ case class Output(value: Value) extends TxOutputFragment {
 
 case class Deposit(address: Address, value: Value) extends TxOutputFragment {
   override def exec(state: ChimericLedgerState, index: Int, txId: String): ChimericStateOrError = {
-    val addressKey = ChimericLedgerState.getAddressPartitionId(address)
+    val addressKey = ChimericLedgerState.getAddressValuePartitionId(address)
     val addressValueOpt =
       state.get(addressKey).collect { case ValueHolder(value) => value }
     Right(state.put(addressKey, ValueHolder(addressValueOpt.getOrElse(Value.Zero) + value)))

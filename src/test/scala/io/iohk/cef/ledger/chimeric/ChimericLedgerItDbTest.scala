@@ -9,14 +9,19 @@ import io.iohk.cef.ledger.storage.Ledger
 import io.iohk.cef.ledger.storage.scalike.LedgerStorageImpl
 import io.iohk.cef.ledger.storage.scalike.dao.LedgerStorageDao
 import io.iohk.cef.ledger.{Block, LedgerFixture, LedgerState}
-import org.scalatest.{MustMatchers, fixture}
+import org.scalatest.{EitherValues, MustMatchers, fixture}
 import scalikejdbc._
 import scalikejdbc.scalatest.AutoRollback
 
 import scala.collection.immutable
 import scala.util.Try
 
-trait ChimericLedgerItDbTest extends fixture.FlatSpec with AutoRollback with MustMatchers with LedgerFixture {
+trait ChimericLedgerItDbTest
+    extends fixture.FlatSpec
+    with AutoRollback
+    with MustMatchers
+    with LedgerFixture
+    with EitherValues {
 
   def createLedger(ledgerStateStorageDao: ChimericLedgerStateStorageDao)(
       implicit dBSession: DBSession): Ledger[Try, ChimericStateValue] = {
@@ -46,10 +51,11 @@ trait ChimericLedgerItDbTest extends fixture.FlatSpec with AutoRollback with Mus
     val ledger = createLedger(stateStorage)
     val utxoTx = ChimericTx(
       Seq(
-        Withdrawal(address1, value3, 1),
+        Withdrawal(address1, value3, 2),
         Output(value3 - singleFee),
         Fee(singleFee)
       ))
+
     val transactions = List[ChimericTx](
       ChimericTx(
         Seq(
@@ -70,11 +76,10 @@ trait ChimericLedgerItDbTest extends fixture.FlatSpec with AutoRollback with Mus
     val header = new ChimericBlockHeader
     val block = Block(header, transactions)
     val result = ledger(block)
-    result.isRight mustBe true
-    result.right.get.isSuccess mustBe true
+    result.right.value.isSuccess mustBe true
 
-    val address1Key = ChimericLedgerState.getAddressPartitionId(address1)
-    val address2Key = ChimericLedgerState.getAddressPartitionId(address2)
+    val address1Key = ChimericLedgerState.getAddressValuePartitionId(address1)
+    val address2Key = ChimericLedgerState.getAddressValuePartitionId(address2)
     val currency1Key = ChimericLedgerState.getCurrencyPartitionId(currency1)
     val currency2Key = ChimericLedgerState.getCurrencyPartitionId(currency2)
     val utxoKey = ChimericLedgerState.getUtxoPartitionId(TxOutRef(utxoTx.txId, 1))
@@ -87,6 +92,7 @@ trait ChimericLedgerItDbTest extends fixture.FlatSpec with AutoRollback with Mus
         address1Key -> ValueHolder(value2 - value3),
         address2Key -> ValueHolder(value1 - multiFee)
       ))
+
     val block2 = Block(
       header,
       immutable.Seq(
@@ -94,14 +100,16 @@ trait ChimericLedgerItDbTest extends fixture.FlatSpec with AutoRollback with Mus
           immutable.Seq(
             Input(TxOutRef(utxoTx.txId, 1), value3 - singleFee),
             Fee(value3 - singleFee),
-            Withdrawal(address1, value2 - value3, 1),
+            Withdrawal(address1, value2 - value3, 3),
             Fee(value2 - value3)
           ))
       )
     )
+
+    block2.partitionIds.foreach(println)
     val result2 = ledger(block2)
-    result2.isRight mustBe true
-    result2.right.get.isSuccess mustBe true
+
+    result2.right.value.isSuccess mustBe true
     stateStorage.slice(allKeys) mustBe LedgerState[ChimericStateValue](
       Map(
         currency1Key -> CreateCurrencyHolder(CreateCurrency(currency1)),

@@ -62,3 +62,14 @@ object ChimericValueEntryTable extends SQLSyntaxSupport[ChimericValueEntryTable]
     }
   }
 }
+
+case class ChimericLedgerStateNonceTable(id: Long, nonce: Int)
+
+object ChimericLedgerStateNonceTable extends SQLSyntaxSupport[ChimericLedgerStateNonceTable] {
+
+  override def tableName: String = Schema.LedgerStateNonceTableName
+
+  def apply(rn: ResultName[ChimericLedgerStateNonceTable])(rs: WrappedResultSet): ChimericLedgerStateNonceTable = {
+    ChimericLedgerStateNonceTable(rs.long(rn.id), rs.int(rn.nonce))
+  }
+}

@@ -15,11 +15,12 @@ import scala.collection.immutable
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
-class NodeCoreSpec extends AsyncFlatSpec
-  with MustMatchers
-  with MockitoSugar
-  with MockingTransactionPoolFutureInterface[String, DummyBlockHeader, DummyTransaction]
-  with MockingConsensus[String, DummyTransaction] {
+class NodeCoreSpec
+    extends AsyncFlatSpec
+    with MustMatchers
+    with MockitoSugar
+    with MockingTransactionPoolFutureInterface[String, DummyBlockHeader, DummyTransaction]
+    with MockingConsensus[String, DummyTransaction] {
 
   type State = String
   type Header = DummyBlockHeader
@@ -66,7 +67,7 @@ class NodeCoreSpec extends AsyncFlatSpec
   it should "receive a transaction" in {
     val testTx = DummyTransaction(10)
     val ledgerId = 1
-    val testEnvelope = Envelope(testTx, 1, Anyone())
+    val testEnvelope = Envelope(testTx, 1, Everyone)
     implicit val bs1 = mockByteStringSerializable
     implicit val bs2 = mockBlockSerializable
     val (core, consensusMap, txDM, _) = setupTest(ledgerId)
@@ -84,7 +85,7 @@ class NodeCoreSpec extends AsyncFlatSpec
   it should "receive a block" in {
     val testBlock = Block(DummyBlockHeader(1), immutable.Seq(DummyTransaction(10)))
     val ledgerId = 1
-    val testEnvelope = Envelope(testBlock, 1, Anyone())
+    val testEnvelope = Envelope(testBlock, 1, Everyone)
     implicit val bs1 = mockByteStringSerializable
     implicit val bs2 = mockBlockSerializable
     val (core, consensusMap, _, blockDM) = setupTest(ledgerId)
@@ -105,7 +106,7 @@ class NodeCoreSpec extends AsyncFlatSpec
     val ledgerId = 1
     val me = NodeId(ByteString("Me"))
     val (core, consensusMap, _, blockDM) = setupTest(ledgerId, me)
-    val (testBlockEnvelope, _) = setupMissingCapabilitiesTest(ledgerId, core, Not(Anyone()), me)
+    val (testBlockEnvelope, _) = setupMissingCapabilitiesTest(ledgerId, core, Not(Everyone), me)
     for {
       rcv <- core.receiveBlock(testBlockEnvelope)
     } yield {
@@ -121,7 +122,7 @@ class NodeCoreSpec extends AsyncFlatSpec
     val ledgerId = 1
     val me = NodeId(ByteString("Me"))
     val (core, consensusMap, txDM, _) = setupTest(ledgerId, me)
-    val (_, testTxEnvelope) = setupMissingCapabilitiesTest(ledgerId, core, Not(Anyone()), me)
+    val (_, testTxEnvelope) = setupMissingCapabilitiesTest(ledgerId, core, Not(Everyone), me)
     for {
       rcv <- core.receiveTransaction(testTxEnvelope)
     } yield {
@@ -137,7 +138,7 @@ class NodeCoreSpec extends AsyncFlatSpec
     val ledgerId = 1
     val me = NodeId(ByteString("Me"))
     val (core, consensusMap, _, blockDM) = setupTest(ledgerId, me)
-    val (testBlockTxEnvelope, _) = setupMissingCapabilitiesTest(ledgerId, core, Anyone(), me)
+    val (testBlockTxEnvelope, _) = setupMissingCapabilitiesTest(ledgerId, core, Everyone, me)
     val newEnvelope = testBlockTxEnvelope.copy(ledgerId = ledgerId + 1)
     for {
       rcv <- core.receiveBlock(newEnvelope)
@@ -154,7 +155,7 @@ class NodeCoreSpec extends AsyncFlatSpec
     val ledgerId = 1
     val me = NodeId(ByteString("Me"))
     val (core, consensusMap, txDM, _) = setupTest(ledgerId, me)
-    val (_, testTxEnvelope) = setupMissingCapabilitiesTest(ledgerId, core, Anyone(), me)
+    val (_, testTxEnvelope) = setupMissingCapabilitiesTest(ledgerId, core, Everyone, me)
     val newEnvelope = testTxEnvelope.copy(ledgerId = ledgerId + 1)
     for {
       rcv <- core.receiveTransaction(newEnvelope)
