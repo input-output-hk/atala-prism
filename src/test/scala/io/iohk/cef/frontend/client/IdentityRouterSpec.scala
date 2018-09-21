@@ -23,8 +23,7 @@ class IdentityRouterSpec
     extends WordSpec
     with Matchers
     with ScalaFutures
-    with ScalatestRouteTest
-    with DefaultJsonFormats {
+    with ScalatestRouteTest {
 
   val nodeCore = mock[NodeCore[Set[SigningPublicKey], IdentityBlockHeader, IdentityTransaction]]
 

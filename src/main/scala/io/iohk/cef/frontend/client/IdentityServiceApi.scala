@@ -15,8 +15,7 @@ import scala.concurrent.duration._
 @Api(value = "transaction", produces = "application/json")
 @Path("/identities")
 class IdentityServiceApi(service: IdentityTransactionService)(implicit executionContext: ExecutionContext)
-    extends Directives
-    with DefaultJsonFormats {
+    extends Directives {
 
   private implicit val timeout = Timeout(2.seconds)
 
