@@ -5,13 +5,9 @@ import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 import org.scalatest.prop.PropertyChecks
 import io.iohk.cef.builder.SecureRandomBuilder
-import io.iohk.cef.test.ExtraScalacheckGenerators
+import io.iohk.cef.test.ScalacheckExctensions
 
-class HashingAlogorithmSpec
-    extends FlatSpec
-    with PropertyChecks
-    with SecureRandomBuilder
-    with ExtraScalacheckGenerators {
+class HashingAlogorithmSpec extends FlatSpec with PropertyChecks with SecureRandomBuilder with ScalacheckExctensions {
 
   val hashingCollection: HashingAlgorithmsCollection =
     HashingAlgorithmsCollection()

@@ -3,8 +3,10 @@ package hashing
 
 import akka.util.ByteString
 
+/** Defines a contract on how a hashing algorithm should be implemented */
 private[crypto] trait HashAlgorithm {
 
+  /** returns a hash of `source`, wrapped in a [[HashBytes]] entity */
   def hash(source: ByteString): HashBytes
 
 }

@@ -3,9 +3,8 @@ import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.testkit.{TestActorRef, TestKit}
 import akka.util.Timeout
 import io.iohk.cef.consensus.Consensus
-import io.iohk.cef.core.{Anyone, Envelope, NodeCore}
+import io.iohk.cef.core.{Envelope, Everyone, NodeCore}
 import io.iohk.cef.ledger.storage.LedgerStateStorage
-import io.iohk.cef.ledger.storage.dao.MockingLedgerStateStorage
 import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
 import io.iohk.cef.network.{MessageStream, Network, NodeId}
 import io.iohk.cef.test.{DummyBlockHeader, DummyBlockSerializable, DummyTransaction}
@@ -24,8 +23,9 @@ class CorePooltSpec
     with FlatSpecLike
     with MustMatchers
     with BeforeAndAfterAll
-    with MockitoSugar
-    with MockingLedgerStateStorage[String] {
+    with MockitoSugar {
+
+  private def mockLedgerStateStorage[State] = mock[LedgerStateStorage[State]]
 
   import io.iohk.cef.ledger.ByteSizeableImplicits._
   override def afterAll(): Unit = TestKit.shutdownActorSystem(system)
@@ -80,7 +80,7 @@ class CorePooltSpec
       executionContext
     )
     val testTransaction = DummyTransaction(5)
-    val envelope = Envelope(testTransaction, 1, Anyone())
+    val envelope = Envelope(testTransaction, 1, Everyone)
     val result = Await.result(core.receiveTransaction(envelope), 10 seconds)
     result mustBe Right(())
     val pool = txPoolActorModelInterface.testActorRef.underlyingActor.pool

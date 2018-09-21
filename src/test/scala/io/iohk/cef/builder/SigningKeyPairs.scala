@@ -1,7 +1,7 @@
 package io.iohk.cef.builder
 
 import akka.util.ByteString
-import io.iohk.cef.crypto.{generateSigningKeyPair, signBytes}
+import io.iohk.cef.crypto._
 
 trait SigningKeyPairs {
 
@@ -16,5 +16,5 @@ trait SigningKeyPairs {
   val hugo = generateSigningKeyPair()
 
   // a signature that no one can validate
-  val uselessSignature = signBytes(ByteString("input"), generateSigningKeyPair().`private`)
+  val uselessSignature = sign(ByteString("input"), generateSigningKeyPair().`private`)
 }

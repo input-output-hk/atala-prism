@@ -31,21 +31,22 @@ trait ChimericLedgerStateStorageDaoDbTest extends fixture.FlatSpec with AutoRoll
 
   private def insertKey(entryId: Long, key: String)(implicit DBSession: DBSession): Unit = {
     ChimericLedgerState.toStateKey(key) match {
-      case AddressHolder(address) =>
+      case AddressValueKey(address) =>
         val column = ChimericLedgerStateAddressTable.column
         sql"""
              insert into ${ChimericLedgerStateAddressTable.table}
               (${column.id}, ${column.address})
               values (${entryId}, ${address})
             """.update.apply()
-      case UtxoHolder(txOutRef) =>
+      case AddressNonceKey(address) => ???
+      case UtxoValueKey(txOutRef) =>
         val column = ChimericLedgerStateUtxoTable.column
         sql"""
              insert into ${ChimericLedgerStateUtxoTable.table}
               (${column.id}, ${column.txId}, ${column.index})
               values (${entryId}, ${txOutRef.txId}, ${txOutRef.index})
             """.update.apply()
-      case CurrencyHolder(currency) =>
+      case CurrencyKey(currency) =>
         val column = ChimericLedgerStateCurrencyTable.column
         sql"""
              insert into ${ChimericLedgerStateCurrencyTable.table}
@@ -67,6 +68,7 @@ trait ChimericLedgerStateStorageDaoDbTest extends fixture.FlatSpec with AutoRoll
               values (${entryId}, ${currency}, ${quantity})
             """.update.apply()
         }
+      case NonceHolder(_) => ()
       case CreateCurrencyHolder(_) => ()
     }
   }
@@ -84,11 +86,11 @@ trait ChimericLedgerStateStorageDaoDbTest extends fixture.FlatSpec with AutoRoll
         currency1 -> BigDecimal(2.99999),
         currency2 -> BigDecimal(3.5)
       ))
-    val addressKey = ChimericLedgerState.getAddressPartitionId(address)
+    val addressKey = ChimericLedgerState.getAddressValuePartitionId(address)
     val currency1Key = ChimericLedgerState.getCurrencyPartitionId(currency1)
     val currency2Key = ChimericLedgerState.getCurrencyPartitionId(currency2)
     val utxorefKey = ChimericLedgerState.getUtxoPartitionId(utxoref)
-    val missingKey = ChimericLedgerState.getAddressPartitionId("")
+    val missingKey = ChimericLedgerState.getAddressValuePartitionId("")
     val pairs = Seq(
       addressKey -> ValueHolder(addressValue),
       utxorefKey -> ValueHolder(utxorefValue),

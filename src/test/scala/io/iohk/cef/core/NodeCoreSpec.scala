@@ -1,11 +1,11 @@
 package io.iohk.cef.core
 import akka.util.{ByteString, Timeout}
 import io.iohk.cef.LedgerId
-import io.iohk.cef.consensus.MockingConsensus
+import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.ledger.{Block, ByteStringSerializable}
 import io.iohk.cef.network.{MessageStream, Network, NodeId}
 import io.iohk.cef.test.{DummyBlockHeader, DummyTransaction}
-import io.iohk.cef.transactionpool.MockingTransactionPoolFutureInterface
+import io.iohk.cef.transactionpool.TransactionPoolFutureInterface
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar
@@ -15,12 +15,13 @@ import scala.collection.immutable
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
-class NodeCoreSpec
-    extends AsyncFlatSpec
-    with MustMatchers
-    with MockitoSugar
-    with MockingTransactionPoolFutureInterface[String, DummyBlockHeader, DummyTransaction]
-    with MockingConsensus[String, DummyBlockHeader, DummyTransaction] {
+class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
+
+  def mockConsensus: Consensus[String, DummyBlockHeader, DummyTransaction] =
+    mock[Consensus[String, DummyBlockHeader, DummyTransaction]]
+
+  def mockTxPoolFutureInterface: TransactionPoolFutureInterface[String, DummyBlockHeader, DummyTransaction] =
+    mock[TransactionPoolFutureInterface[String, DummyBlockHeader, DummyTransaction]]
 
   type State = String
   type Header = DummyBlockHeader
@@ -67,7 +68,7 @@ class NodeCoreSpec
   it should "receive a transaction" in {
     val testTx = DummyTransaction(10)
     val ledgerId = 1
-    val testEnvelope = Envelope(testTx, 1, Anyone())
+    val testEnvelope = Envelope(testTx, 1, Everyone)
     implicit val bs1 = mockByteStringSerializable
     implicit val bs2 = mockBlockSerializable
     val (core, consensusMap, txDM, _) = setupTest(ledgerId)
@@ -85,7 +86,7 @@ class NodeCoreSpec
   it should "receive a block" in {
     val testBlock = Block(DummyBlockHeader(1), immutable.Seq(DummyTransaction(10)))
     val ledgerId = 1
-    val testEnvelope = Envelope(testBlock, 1, Anyone())
+    val testEnvelope = Envelope(testBlock, 1, Everyone)
     implicit val bs1 = mockByteStringSerializable
     implicit val bs2 = mockBlockSerializable
     val (core, consensusMap, _, blockDM) = setupTest(ledgerId)
@@ -106,7 +107,7 @@ class NodeCoreSpec
     val ledgerId = 1
     val me = NodeId(ByteString("Me"))
     val (core, consensusMap, _, blockDM) = setupTest(ledgerId, me)
-    val (testBlockEnvelope, _) = setupMissingCapabilitiesTest(ledgerId, core, Not(Anyone()), me)
+    val (testBlockEnvelope, _) = setupMissingCapabilitiesTest(ledgerId, core, Not(Everyone), me)
     for {
       rcv <- core.receiveBlock(testBlockEnvelope)
     } yield {
@@ -122,7 +123,7 @@ class NodeCoreSpec
     val ledgerId = 1
     val me = NodeId(ByteString("Me"))
     val (core, consensusMap, txDM, _) = setupTest(ledgerId, me)
-    val (_, testTxEnvelope) = setupMissingCapabilitiesTest(ledgerId, core, Not(Anyone()), me)
+    val (_, testTxEnvelope) = setupMissingCapabilitiesTest(ledgerId, core, Not(Everyone), me)
     for {
       rcv <- core.receiveTransaction(testTxEnvelope)
     } yield {
@@ -138,7 +139,7 @@ class NodeCoreSpec
     val ledgerId = 1
     val me = NodeId(ByteString("Me"))
     val (core, consensusMap, _, blockDM) = setupTest(ledgerId, me)
-    val (testBlockTxEnvelope, _) = setupMissingCapabilitiesTest(ledgerId, core, Anyone(), me)
+    val (testBlockTxEnvelope, _) = setupMissingCapabilitiesTest(ledgerId, core, Everyone, me)
     val newEnvelope = testBlockTxEnvelope.copy(ledgerId = ledgerId + 1)
     for {
       rcv <- core.receiveBlock(newEnvelope)
@@ -155,7 +156,7 @@ class NodeCoreSpec
     val ledgerId = 1
     val me = NodeId(ByteString("Me"))
     val (core, consensusMap, txDM, _) = setupTest(ledgerId, me)
-    val (_, testTxEnvelope) = setupMissingCapabilitiesTest(ledgerId, core, Anyone(), me)
+    val (_, testTxEnvelope) = setupMissingCapabilitiesTest(ledgerId, core, Everyone, me)
     val newEnvelope = testTxEnvelope.copy(ledgerId = ledgerId + 1)
     for {
       rcv <- core.receiveTransaction(newEnvelope)
