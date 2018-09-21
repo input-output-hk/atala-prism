@@ -27,12 +27,12 @@ class TransactionPool[State, Header <: BlockHeader, Tx <: Transaction[State]](
   type QueueType = TimedQueue[Tx]
   type BlockType = Block[State, Header, Tx]
 
-  def generateBlock(): (TransactionPool[State, Header, Tx], BlockType) = {
+  def generateBlock(): BlockType = {
     require(sizeInBytes(TimedQueue()) <= maxBlockSize)
     val blockTxs = getTxs(TimedQueue(), timedQueue, LedgerState(Map()))
     val header = headerGenerator(blockTxs.queue)
     val block = Block(header, blockTxs.queue)
-    (removeBlockTransactions(block), block)
+    block
   }
 
   def processTransaction(transaction: Tx): TransactionPool[State, Header, Tx] =

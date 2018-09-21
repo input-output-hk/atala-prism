@@ -63,19 +63,13 @@ class TransactionPoolSpec
       when(ledgerStateStorage.slice(ArgumentMatchers.any())).thenReturn(LedgerState[String](Map()))
       val pool =
         new TransactionPool(timedQueue, (_: Seq[Transaction[String]]) => header, size, ledgerStateStorage, 1 minute)
-      val (emptyPool, block) = pool.generateBlock()
+      val block = pool.generateBlock()
       block.header mustBe header
       block.transactions mustBe txs
-      emptyPool.generateBlock()._2.transactions.isEmpty mustBe true
       val largerPool = pool.processTransaction(DummyTransaction(1))
-      val (oneTxPool, block2) = largerPool.generateBlock()
+      val block2 = largerPool.generateBlock()
       block2.header mustBe header
       block2.transactions mustBe txs
-      oneTxPool.timedQueue.size mustBe 1
-      if (txs.isEmpty)
-        oneTxPool.generateBlock()._1.timedQueue.size mustBe 1
-      else
-        oneTxPool.generateBlock()._1.timedQueue.size mustBe 0
     }
   }
 

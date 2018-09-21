@@ -54,8 +54,7 @@ class TransactionPoolActorModelInterface[State, Header <: BlockHeader, Tx <: Tra
     }
 
     private def generateBlock(): Either[ApplicationError, BlockType] = {
-      val (newPool, block) = pool.generateBlock()
-      pool = newPool
+      val block = pool.generateBlock()
       val state = ledgerStateStorage.slice(block.partitionIds)
       block(state).map(_ => block)
     }
