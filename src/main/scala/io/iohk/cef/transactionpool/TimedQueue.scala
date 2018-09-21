@@ -79,7 +79,7 @@ case class TimedQueue[T](clock: Clock = Clock.systemUTC(), q: Queue[(T, Instant)
     * Executes the function f for each unexpired element.
     * @param f
     */
-  def foreach(f: T => Unit): Unit = removeExpired.foreach { case (t, _) => f(t) }
+  def foreach(f: T => Unit): Unit = cleanedQuery.foreach { case (t, _) => f(t) }
 
   /**
     * Executes a foldLeft on all unexpired elements and returns the resulting state.
@@ -97,13 +97,11 @@ case class TimedQueue[T](clock: Clock = Clock.systemUTC(), q: Queue[(T, Instant)
     * returns the underlying immutable queue of elements T.
     * @return
     */
-  def queue: Queue[T] = toQueue(removeExpired).map(_._1)
+  def queue: Queue[T] = cleanedQuery.map(_._1)
 
   def size: Int = cleanedQuery.size
 
-  private def cleanedQuery: Queue[(T, Instant)] = removeExpired(q)
-
-  private def removeExpired(q: Queue[(T, Instant)]): Queue[(T, Instant)] = {
+  private def cleanedQuery: Queue[(T, Instant)] = {
     val now = clock.instant()
     q.filter(_._2.isAfter(now))
   }
