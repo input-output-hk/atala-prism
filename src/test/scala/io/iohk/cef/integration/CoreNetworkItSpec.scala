@@ -61,8 +61,6 @@ class CoreNetworkItSpec
   it should "receive a transaction" in {
     val baseNetworkCore1 = randomBaseNetwork(None)
     val baseNetworkCore2 = randomBaseNetwork(Some(baseNetworkCore1))
-    println(s"baseNetworkCore1: $baseNetworkCore1")
-    println(s"baseNetworkCore2: $baseNetworkCore2")
     val mockTxPoolIf1 = mockTxPoolFutureInterface
     val mockTxPoolIf2 = mockTxPoolFutureInterface
     val mockCons1 = mockConsensus

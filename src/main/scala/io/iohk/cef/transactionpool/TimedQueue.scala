@@ -53,9 +53,9 @@ case class TimedQueue[T](clock: Clock = Clock.systemUTC(), q: Queue[(T, Instant)
 }
 
 object TimedQueue {
-  def apply[T](clock: Clock, q: Queue[(T, FiniteDuration)])(implicit dummyImplicit: DummyImplicit): TimedQueue[T] ={
+  def apply[T](clock: Clock, q: Queue[(T, FiniteDuration)])(implicit dummyImplicit: DummyImplicit): TimedQueue[T] = {
     val now = clock.instant()
     val getExpiration = (f: FiniteDuration) => now.plusNanos(f.toNanos)
-    new TimedQueue[T](clock, q.map{ case (t, duration) => (t, getExpiration(duration))})
+    new TimedQueue[T](clock, q.map { case (t, duration) => (t, getExpiration(duration)) })
   }
 }

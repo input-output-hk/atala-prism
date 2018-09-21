@@ -1,8 +1,9 @@
 package io.iohk.cef.transactionpool
-import akka.actor.Actor
-import io.iohk.cef.consensus.Consensus
+import akka.actor.{Actor, ActorLogging}
+import akka.pattern.pipe
+import io.iohk.cef.consensus.{Consensus, ConsensusError}
 import io.iohk.cef.ledger.{BlockHeader, Transaction}
-import io.iohk.cef.transactionpool.BlockCreator.CreateBlock
+import io.iohk.cef.transactionpool.BlockCreator.ConsensusResponse
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.FiniteDuration
@@ -12,18 +13,30 @@ class BlockCreator[State, Header <: BlockHeader, Tx <: Transaction[State]](
     consensus: Consensus[State, Header, Tx],
     initialDelay: FiniteDuration,
     interval: FiniteDuration)(implicit executionContext: ExecutionContext)
-    extends Actor {
+    extends Actor
+    with ActorLogging {
 
   context.system.scheduler.schedule(initialDelay, interval) {
-    self ! CreateBlock()
+    transactionPoolInterface.poolActor.tell(new transactionPoolInterface.GenerateBlock(), self)
   }
 
   override def receive: Receive = {
-    case CreateBlock() =>
-      transactionPoolInterface.poolActor ! new transactionPoolInterface.GenerateBlock()
+    case transactionPoolInterface.GenerateBlockResponse(result) =>
+      result match {
+        case Left(error) =>
+          log.error(s"Could not create block. Cause: ${error}")
+        case Right(block) =>
+          consensus.process(block).map(ConsensusResponse.apply) pipeTo self
+      }
+    case ConsensusResponse(response) =>
+      response match {
+        case Left(error) =>
+          log.error(s"Consensus could not process the block. Cause ${error}")
+        case Right(_) =>
+      }
   }
 }
 
 object BlockCreator {
-  case class CreateBlock()
+  case class ConsensusResponse(response: Either[ConsensusError, Unit])
 }

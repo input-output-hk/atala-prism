@@ -16,7 +16,6 @@ import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{BeforeAndAfterAll, FlatSpecLike, MustMatchers}
 
-import scala.collection.immutable.Queue
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, _}
 
@@ -86,6 +85,8 @@ class CorePooltSpec
     result mustBe Right(())
     val pool = txPoolActorModelInterface.testActorRef.underlyingActor.pool
     pool.timedQueue.size mustBe 1
-    pool.timedQueue.dequeue mustBe (testTransaction, Queue())
+    val (tx, timedQueue) = pool.timedQueue.dequeue
+    tx mustBe testTransaction
+    timedQueue.isEmpty mustBe true
   }
 }
