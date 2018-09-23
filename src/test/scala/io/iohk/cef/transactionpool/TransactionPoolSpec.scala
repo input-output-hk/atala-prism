@@ -1,4 +1,5 @@
 package io.iohk.cef.transactionpool
+import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.ledger.storage.dao.MockingLedgerStateStorage
 import io.iohk.cef.ledger.{Block, BlockHeader, LedgerState, Transaction}
 import io.iohk.cef.test.{DummyBlockHeader, DummyTransaction, TestClock}
@@ -67,10 +68,13 @@ class TransactionPoolSpec
       val block = pool.generateBlock()
       block.header mustBe header
       block.transactions mustBe txs
-      val largerPool = pool.processTransaction(DummyTransaction(1))
-      val block2 = largerPool.generateBlock()
-      block2.header mustBe header
-      block2.transactions mustBe txs
+      pool.processTransaction(DummyTransaction(1)) match {
+        case Left(error) => fail(s"Received message: $error, but expected Right(...)")
+        case Right(largerPool) =>
+          val block2 = largerPool.generateBlock()
+          block2.header mustBe header
+          block2.transactions mustBe txs
+       }
     }
   }
 
@@ -89,7 +93,7 @@ class TransactionPoolSpec
     val newPool = pool.processTransaction(tx)
     verify(timedQueue, times(1)).enqueue(tx, defaultExpiration)
     val tx2 = DummyTransaction(3)
-    newPool.processTransaction(tx2)
+    newPool.map(_.processTransaction(tx2))
     verify(oneTxTimedQueue, times(1)).enqueue(tx2, defaultExpiration)
   }
 
@@ -103,10 +107,15 @@ class TransactionPoolSpec
     val txs = List(DummyTransaction(2), DummyTransaction(3), DummyTransaction(4))
     when(timedQueue.enqueue(any(), ArgumentMatchers.eq(defaultExpiration))).thenReturn(timedQueue)
     when(timedQueue.filterNot(any())).thenReturn(timedQueue)
-    val newPool = txs.foldLeft(pool)(_.processTransaction(_))
+    val wrappedPool: Either[ApplicationError, TransactionPool[String, DummyBlockHeader, DummyTransaction]] = Right(pool)
+    val newPoolResult = txs.foldLeft(wrappedPool)((s, e) => s.flatMap(_.processTransaction(e)))
     val block = Block(header, txs.tail)
-    newPool.removeBlockTransactions(block)
-    txs.foreach(tx => verify(timedQueue, times(1)).enqueue(tx, defaultExpiration))
-    verify(timedQueue, times(1)).filterNot(ArgumentMatchers.any())
+    newPoolResult match {
+      case Right(newPool) =>
+        newPool.removeBlockTransactions(block)
+        txs.foreach(tx => verify(timedQueue, times(1)).enqueue(tx, defaultExpiration))
+        verify(timedQueue, times(1)).filterNot(ArgumentMatchers.any())
+      case Left(error) => fail(s"Received message: $error, but expected Right(...)")
+    }
   }
 }

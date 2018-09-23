@@ -3,7 +3,7 @@ import java.time.{Clock, Instant}
 
 import scala.collection.SeqView
 import scala.collection.immutable.Queue
-import scala.concurrent.duration.{Duration, FiniteDuration}
+import scala.concurrent.duration._
 
 /**
   * An immutable queue that automatically expires entries after a certain duration.
@@ -107,5 +107,9 @@ object TimedQueue {
     val now = clock.instant()
     val getExpiration = (f: FiniteDuration) => now.plusNanos(f.toNanos)
     new TimedQueue[T](clock, q.map { case (t, duration) => (t, getExpiration(duration)) })
+  }
+
+  def apply[T](clock: Clock, expirationTime: FiniteDuration, txs: Seq[T]): TimedQueue[T] = {
+    apply(clock, Queue(txs.map(tx => (tx, expirationTime)):_*))
   }
 }

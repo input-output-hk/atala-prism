@@ -1,11 +1,11 @@
 package io.iohk.cef.transactionpool
 
 import io.iohk.cef.ledger.storage.LedgerStateStorage
-import io.iohk.cef.ledger.{Block, BlockHeader, LedgerState, Transaction}
+import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
 import io.iohk.cef.utils.ByteSizeable
 
 import scala.annotation.tailrec
-import scala.concurrent.duration.Duration
+import scala.concurrent.duration._
 import scala.language.implicitConversions
 
 /**
@@ -24,19 +24,28 @@ class TransactionPool[State, Header <: BlockHeader, Tx <: Transaction[State]](
     maxBlockSize: Int,
     ledgerStateStorage: LedgerStateStorage[State],
     defaultTransactionExpiration: Duration)(implicit blockByteSizeable: ByteSizeable[Block[State, Header, Tx]]) {
-  require(sizeInBytes(TimedQueue()) <= maxBlockSize)
+  require(sizeInBytes(Seq()) <= maxBlockSize)
   type Q = TimedQueue[Tx]
   type B = Block[State, Header, Tx]
 
+  /**
+    * Generates a block out of this pool's transactions.
+    * @return Some block if the pool contains
+    */
   def generateBlock(): B = {
-    val blockTxs = getTxs(TimedQueue(), timedQueue, LedgerState(Map()))
+    val blockTxs = getTxs(TimedQueue(), timedQueue)
     val header = headerGenerator(blockTxs.queue)
     val block = Block(header, blockTxs.queue)
     block
   }
 
-  def processTransaction(transaction: Tx): TransactionPool[State, Header, Tx] =
-    copy(queue = timedQueue.enqueue(transaction, defaultTransactionExpiration))
+  def processTransaction(transaction: Tx): Either[TransactionPoolError, TransactionPool[State, Header, Tx]] = {
+    if(sizeInBytes(Seq(transaction)) > maxBlockSize) {
+      Left(TransactionLargerThanMaxBlockSize(transaction, maxBlockSize))
+    } else {
+      Right(copy(queue = timedQueue.enqueue(transaction, defaultTransactionExpiration)))
+    }
+  }
 
   def removeBlockTransactions(block: B): TransactionPool[State, Header, Tx] = {
     val blockTxs = block.transactions.toSet
@@ -49,13 +58,15 @@ class TransactionPool[State, Header <: BlockHeader, Tx <: Transaction[State]](
       maxBlockSize: Int = maxBlockSize): TransactionPool[State, Header, Tx] =
     new TransactionPool(queue, headerGenerator, maxBlockSize, ledgerStateStorage, defaultTransactionExpiration)
 
-  private def sizeInBytes(txs: Q): Int = {
-    val header = headerGenerator(txs.queue)
-    blockByteSizeable.sizeInBytes(Block(header, txs.queue))
+  private def sizeInBytes(txs: Q): Int = sizeInBytes(txs.queue)
+
+  private def sizeInBytes(txs: Seq[Tx]): Int = {
+    val header = headerGenerator(txs)
+    blockByteSizeable.sizeInBytes(Block(header, txs))
   }
 
   @tailrec
-  private def getTxs(blockTxs: Q, remainingQueue: Q, ledgerState: LedgerState[State]): Q = {
+  private def getTxs(blockTxs: Q, remainingQueue: Q): Q = {
     if (remainingQueue.isEmpty) {
       blockTxs
     } else {
@@ -69,9 +80,9 @@ class TransactionPool[State, Header <: BlockHeader, Tx <: Transaction[State]](
         val newLedgerState = ledgerStateStorage.slice(block.partitionIds)
         val applyResult = block(newLedgerState)
         if (applyResult.isLeft) {
-          getTxs(blockTxs, tailRemainingQueue, ledgerState)
+          getTxs(blockTxs, tailRemainingQueue)
         } else {
-          getTxs(nextBlockTxs, tailRemainingQueue, newLedgerState)
+          getTxs(nextBlockTxs, tailRemainingQueue)
         }
       }
     }

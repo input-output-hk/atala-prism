@@ -59,7 +59,7 @@ class CorePooltSpec
     val txPoolActorModelInterface =
       new TestableTransactionPoolActorModelInterface[String, DummyBlockHeader, DummyTransaction](
         txs => new DummyBlockHeader(txs.size),
-        10,
+        10000,
         ledgerStateStorage,
         1 minute,
         queue
@@ -88,9 +88,7 @@ class CorePooltSpec
     val result = Await.result(core.receiveTransaction(envelope), 10 seconds)
     result mustBe Right(())
     val pool = txPoolActorModelInterface.testActorRef.underlyingActor.pool
-    queue.size mustBe 1
-    val (tx, timedQueue) = queue.dequeue
-    tx mustBe testTransaction
-    timedQueue.isEmpty mustBe true
+    val block = pool.generateBlock()
+    block.transactions mustBe Seq(testTransaction)
   }
 }

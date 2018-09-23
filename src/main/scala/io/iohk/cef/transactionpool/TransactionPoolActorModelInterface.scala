@@ -61,9 +61,10 @@ class TransactionPoolActorModelInterface[State, Header <: BlockHeader, Tx <: Tra
     }
 
     private def processTransaction(transaction: Tx): Either[ApplicationError, Unit] = {
-      val newPool = pool.processTransaction(transaction)
-      pool = newPool
-      Right(())
+      pool.processTransaction(transaction).map{ newPool =>
+        pool = newPool
+        ()
+      }
     }
 
     private def removeBlockTransactions(block: Block[State, Header, Tx]): Either[ApplicationError, Unit] = {
