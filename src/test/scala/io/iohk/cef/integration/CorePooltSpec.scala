@@ -8,7 +8,7 @@ import io.iohk.cef.ledger.storage.LedgerStateStorage
 import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
 import io.iohk.cef.network.{MessageStream, Network, NodeId}
 import io.iohk.cef.test.{DummyBlockHeader, DummyBlockSerializable, DummyTransaction}
-import io.iohk.cef.transactionpool.{TransactionPoolActorModelInterface, TransactionPoolFutureInterface}
+import io.iohk.cef.transactionpool.{TimedQueue, TransactionPoolActorModelInterface, TransactionPoolFutureInterface}
 import io.iohk.cef.utils.ByteSizeable
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
@@ -34,13 +34,15 @@ class CorePooltSpec
       headerGenerator: Seq[Transaction[State]] => Header,
       maxTxSizeInBytes: Int,
       ledgerStateStorage: LedgerStateStorage[State],
-      defaultDurationTxs: Duration)(implicit blockByteSizeable: ByteSizeable[Block[State, Header, Tx]])
+      defaultDurationTxs: Duration,
+      timedQueue: TimedQueue[Tx])(implicit blockByteSizeable: ByteSizeable[Block[State, Header, Tx]])
       extends TransactionPoolActorModelInterface[State, Header, Tx](
         system.actorOf,
         headerGenerator,
         maxTxSizeInBytes,
         ledgerStateStorage,
-        defaultDurationTxs) {
+        defaultDurationTxs,
+        () => timedQueue) {
 
     lazy val testActorRef = TestActorRef[TransactionPoolActor](Props(new TransactionPoolActor()))
     override def poolActor: ActorRef = testActorRef
@@ -52,13 +54,15 @@ class CorePooltSpec
     implicit val timeout = Timeout(10 seconds)
     implicit val executionContext = ExecutionContext.global
     import DummyTransaction._
-    val ledgerStateStorage = mockLedgerStateStorage
+    val ledgerStateStorage = mockLedgerStateStorage[String]
+    val queue = TimedQueue[DummyTransaction]()
     val txPoolActorModelInterface =
       new TestableTransactionPoolActorModelInterface[String, DummyBlockHeader, DummyTransaction](
         txs => new DummyBlockHeader(txs.size),
         10,
-        mockLedgerStateStorage,
-        1 minute
+        ledgerStateStorage,
+        1 minute,
+        queue
       )
     val txPoolFutureInterface =
       new TransactionPoolFutureInterface[String, DummyBlockHeader, DummyTransaction](txPoolActorModelInterface)
@@ -84,8 +88,8 @@ class CorePooltSpec
     val result = Await.result(core.receiveTransaction(envelope), 10 seconds)
     result mustBe Right(())
     val pool = txPoolActorModelInterface.testActorRef.underlyingActor.pool
-    pool.timedQueue.size mustBe 1
-    val (tx, timedQueue) = pool.timedQueue.dequeue
+    queue.size mustBe 1
+    val (tx, timedQueue) = queue.dequeue
     tx mustBe testTransaction
     timedQueue.isEmpty mustBe true
   }

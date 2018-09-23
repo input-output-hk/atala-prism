@@ -9,6 +9,7 @@ import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{FlatSpec, MustMatchers}
+import org.mockito.ArgumentMatchers._
 
 import scala.collection.immutable.Queue
 import scala.concurrent.duration._
@@ -57,7 +58,7 @@ class TransactionPoolSpec
       val clock = TestClock()
       val timedQueue = TimedQueue(
         clock,
-        txs.map(tx => (tx, clock.instant().plus(java.time.Duration.ofMillis(defaultDuration.toMillis)))))
+        txs.map{tx => tx -> clock.instant().plus(java.time.Duration.ofMillis(defaultDuration.toMillis))})
       val size = totalSize(txs.toList, header)
       val ledgerStateStorage = mockLedgerStateStorage
       when(ledgerStateStorage.slice(ArgumentMatchers.any())).thenReturn(LedgerState[String](Map()))
@@ -76,28 +77,36 @@ class TransactionPoolSpec
   it should "process a transaction" in {
     val header = DummyBlockHeader(1)
     val ledgerStateStorage = mockLedgerStateStorage
+    val timedQueue = mock[TimedQueue[DummyTransaction]]
+    val oneTxTimedQueue = mock[TimedQueue[DummyTransaction]]
+    val twoTxTimedQueue = mock[TimedQueue[DummyTransaction]]
+    val defaultExpiration = 1 minute
     val pool =
-      new TransactionPool(TimedQueue(), (_: Seq[Transaction[String]]) => header, 2, ledgerStateStorage, 1 minute)
+      new TransactionPool(timedQueue, (_: Seq[Transaction[String]]) => header, 2, ledgerStateStorage, defaultExpiration)
     val tx = DummyTransaction(2)
-    pool.timedQueue.isEmpty mustBe true
+    when(timedQueue.enqueue(tx, defaultExpiration)).thenReturn(oneTxTimedQueue)
+    when(oneTxTimedQueue.enqueue(tx, defaultExpiration)).thenReturn(twoTxTimedQueue)
     val newPool = pool.processTransaction(tx)
-    newPool.timedQueue.size mustBe 1
-    newPool.timedQueue.queue.head mustBe tx
+    verify(timedQueue, times(1)).enqueue(tx, defaultExpiration)
+    val tx2 = DummyTransaction(3)
+    newPool.processTransaction(tx2)
+    verify(oneTxTimedQueue, times(1)).enqueue(tx2, defaultExpiration)
   }
 
   it should "remove block transactions" in {
     val header = DummyBlockHeader(1)
     val ledgerStateStorage = mockLedgerStateStorage
+    val timedQueue = mock[TimedQueue[DummyTransaction]]
+    val defaultExpiration = 1 minute
     val pool =
-      new TransactionPool(TimedQueue(), (_: Seq[Transaction[String]]) => header, 2, ledgerStateStorage, 1 minute)
+      new TransactionPool(timedQueue, (_: Seq[Transaction[String]]) => header, 2, ledgerStateStorage, defaultExpiration)
     val txs = List(DummyTransaction(2), DummyTransaction(3), DummyTransaction(4))
-    pool.timedQueue.isEmpty mustBe true
+    when(timedQueue.enqueue(any(), ArgumentMatchers.eq(defaultExpiration))).thenReturn(timedQueue)
+    when(timedQueue.filterNot(any())).thenReturn(timedQueue)
     val newPool = txs.foldLeft(pool)(_.processTransaction(_))
-    newPool.timedQueue.size mustBe 3
-    newPool.timedQueue.queue.toList mustBe txs
     val block = Block(header, txs.tail)
-    val poolWithoutTxs = newPool.removeBlockTransactions(block)
-    poolWithoutTxs.timedQueue.size mustBe 1
-    poolWithoutTxs.timedQueue.dequeue._1 mustBe txs.head
+    newPool.removeBlockTransactions(block)
+    txs.foreach(tx => verify(timedQueue, times(1)).enqueue(tx, defaultExpiration))
+    verify(timedQueue, times(1)).filterNot(ArgumentMatchers.any())
   }
 }

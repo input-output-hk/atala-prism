@@ -1,8 +1,9 @@
 package io.iohk.cef.transactionpool
-import java.time.{Clock, Duration, Instant}
+import java.time.{Clock, Instant}
 
+import scala.collection.SeqView
 import scala.collection.immutable.Queue
-import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.duration.{Duration, FiniteDuration}
 
 /**
   * An immutable queue that automatically expires entries after a certain duration.
@@ -10,7 +11,8 @@ import scala.concurrent.duration.FiniteDuration
   * @param q the underlying queue
   * @tparam T the type this queue is supposed to store
   */
-case class TimedQueue[T](clock: Clock = Clock.systemUTC(), q: Queue[(T, Instant)] = Queue()) {
+//FIXME Follow Scala's conventions regarding collections (CanBuildFrom...)
+case class TimedQueue[T](private val clock: Clock = Clock.systemUTC(), private val q: Queue[(T, Instant)] = Queue()) {
 
   /**
     * Queues an element
@@ -19,17 +21,7 @@ case class TimedQueue[T](clock: Clock = Clock.systemUTC(), q: Queue[(T, Instant)
     * @return a new TimedQueue with the element enqueued
     */
   def enqueue(t: T, duration: Duration): TimedQueue[T] = {
-    enqueue(t, clock.instant().plus(duration))
-  }
-
-  /**
-    * Queues an element
-    * @param t the element to be queued
-    * @param duration how long would it take for this element to become expired
-    * @return a new TimedQueue with the element enqueued
-    */
-  def enqueue(t: T, duration: scala.concurrent.duration.Duration): TimedQueue[T] = {
-    enqueue(t, Duration.ofNanos(duration.toNanos))
+    enqueue(t, clock.instant().plus(java.time.Duration.ofNanos(duration.toNanos)))
   }
 
   /**
@@ -39,7 +31,7 @@ case class TimedQueue[T](clock: Clock = Clock.systemUTC(), q: Queue[(T, Instant)
     * @return a new TimedQueue with the element enqueued
     */
   def enqueue(t: T, until: Instant): TimedQueue[T] = {
-    new TimedQueue[T](clock, cleanedQuery.enqueue((t, until)))
+    new TimedQueue[T](clock, cleanedQueue.enqueue((t, until)))
   }
 
   /**
@@ -48,7 +40,7 @@ case class TimedQueue[T](clock: Clock = Clock.systemUTC(), q: Queue[(T, Instant)
     */
   def dequeueOption: Option[(T, TimedQueue[T])] = {
     for {
-      ((t, _), newQueue) <- cleanedQuery.dequeueOption
+      ((t, _), newQueue) <- cleanedQueue.dequeueOption
     } yield (t, new TimedQueue[T](clock, newQueue))
   }
 
@@ -57,7 +49,7 @@ case class TimedQueue[T](clock: Clock = Clock.systemUTC(), q: Queue[(T, Instant)
     * @return the dequeued element and the resulting queue.
     */
   def dequeue: (T, TimedQueue[T]) =
-    dequeueOption.getOrElse(throw new IllegalStateException("No more elements in the queue"))
+    dequeueOption.getOrElse(throw new NoSuchElementException("No more elements in the queue"))
 
   /**
     * Returns a new queue with only unexpired elements that satisfy the predicate
@@ -65,7 +57,7 @@ case class TimedQueue[T](clock: Clock = Clock.systemUTC(), q: Queue[(T, Instant)
     * @return
     */
   def filter(predicate: T => Boolean): TimedQueue[T] =
-    new TimedQueue[T](clock, cleanedQuery.filter(value => predicate(value._1)))
+    new TimedQueue[T](clock, toQueue(cleanedView.filter(value => predicate(value._1))))
 
   /**
     * Returns a new queue with only unexpired elements that do not satisfy the predicate.
@@ -73,13 +65,13 @@ case class TimedQueue[T](clock: Clock = Clock.systemUTC(), q: Queue[(T, Instant)
     * @return
     */
   def filterNot(predicate: T => Boolean): TimedQueue[T] =
-    new TimedQueue[T](clock, cleanedQuery.filterNot(value => predicate(value._1)))
+    new TimedQueue[T](clock, toQueue(cleanedView.filterNot(value => predicate(value._1))))
 
   /**
     * Executes the function f for each unexpired element.
     * @param f
     */
-  def foreach(f: T => Unit): Unit = cleanedQuery.foreach { case (t, _) => f(t) }
+  def foreach(f: T => Unit): Unit = cleanedView.foreach { case (t, _) => f(t) }
 
   /**
     * Executes a foldLeft on all unexpired elements and returns the resulting state.
@@ -89,21 +81,24 @@ case class TimedQueue[T](clock: Clock = Clock.systemUTC(), q: Queue[(T, Instant)
     * @return
     */
   def foldLeft[S](state: S)(f: (S, T) => S): S =
-    cleanedQuery.foldLeft(state)((s, t) => f(s, t._1))
+    cleanedView.foldLeft(state)((s, t) => f(s, t._1))
 
-  def isEmpty: Boolean = cleanedQuery.isEmpty
+  def isEmpty: Boolean = cleanedQueue.isEmpty
 
   /**
     * returns the underlying immutable queue of elements T.
     * @return
     */
-  def queue: Queue[T] = cleanedQuery.map(_._1)
+  def queue: Queue[T] = toQueue(cleanedView.map(_._1))
 
-  def size: Int = cleanedQuery.size
+  def size: Int = cleanedView.size
 
-  private def cleanedQuery: Queue[(T, Instant)] = {
-    val now = clock.instant()
-    q.filter(_._2.isAfter(now))
+  private def toQueue[A](view: SeqView[A, _]): Queue[A] = Queue(view:_*)
+
+  private def cleanedQueue = Queue(cleanedView:_*)
+
+  private def cleanedView = {
+    q.view.filter(_._2.isAfter(clock.instant()))
   }
 }
 

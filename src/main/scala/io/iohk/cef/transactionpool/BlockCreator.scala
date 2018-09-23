@@ -21,13 +21,10 @@ class BlockCreator[State, Header <: BlockHeader, Tx <: Transaction[State]](
   }
 
   override def receive: Receive = {
-    case transactionPoolInterface.GenerateBlockResponse(result) =>
-      result match {
-        case Left(error) =>
-          log.error(s"Could not create block. Cause: ${error}")
-        case Right(block) =>
-          consensus.process(block).map(ConsensusResponse.apply) pipeTo self
-      }
+    case transactionPoolInterface.GenerateBlockResponse(Left(error)) =>
+      log.error(s"Could not create block. Cause: ${error}")
+    case transactionPoolInterface.GenerateBlockResponse(Right(block)) =>
+      consensus.process(block).map(ConsensusResponse.apply) pipeTo self
     case ConsensusResponse(response) =>
       response match {
         case Left(error) =>

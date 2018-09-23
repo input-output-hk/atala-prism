@@ -24,7 +24,8 @@ class TransactionPoolActorModelInterface[State, Header <: BlockHeader, Tx <: Tra
     headerGenerator: Seq[Transaction[State]] => Header,
     maxTxSizeInBytes: Int,
     ledgerStateStorage: LedgerStateStorage[State],
-    defaultTransactionExpiration: Duration)(implicit blockByteSizeable: ByteSizeable[Block[State, Header, Tx]]) {
+    defaultTransactionExpiration: Duration,
+    timedQueueConstructor: () => TimedQueue[Tx])(implicit blockByteSizeable: ByteSizeable[Block[State, Header, Tx]]) {
 
   type BlockType = Block[State, Header, Tx]
 
@@ -40,7 +41,7 @@ class TransactionPoolActorModelInterface[State, Header <: BlockHeader, Tx <: Tra
 
     var pool =
       new TransactionPool[State, Header, Tx](
-        TimedQueue(),
+        timedQueueConstructor(),
         headerGenerator,
         maxTxSizeInBytes,
         ledgerStateStorage,

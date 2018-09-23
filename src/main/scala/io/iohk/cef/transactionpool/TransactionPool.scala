@@ -19,16 +19,16 @@ import scala.language.implicitConversions
   * @tparam Header the block header type
   */
 class TransactionPool[State, Header <: BlockHeader, Tx <: Transaction[State]](
-    val timedQueue: TimedQueue[Tx] = new TimedQueue[Tx](),
+    timedQueue: TimedQueue[Tx] = new TimedQueue[Tx](),
     headerGenerator: Seq[Transaction[State]] => Header,
-    val maxBlockSize: Int,
+    maxBlockSize: Int,
     ledgerStateStorage: LedgerStateStorage[State],
     defaultTransactionExpiration: Duration)(implicit blockByteSizeable: ByteSizeable[Block[State, Header, Tx]]) {
-  type QueueType = TimedQueue[Tx]
-  type BlockType = Block[State, Header, Tx]
+  require(sizeInBytes(TimedQueue()) <= maxBlockSize)
+  type Q = TimedQueue[Tx]
+  type B = Block[State, Header, Tx]
 
-  def generateBlock(): BlockType = {
-    require(sizeInBytes(TimedQueue()) <= maxBlockSize)
+  def generateBlock(): B = {
     val blockTxs = getTxs(TimedQueue(), timedQueue, LedgerState(Map()))
     val header = headerGenerator(blockTxs.queue)
     val block = Block(header, blockTxs.queue)
@@ -38,24 +38,24 @@ class TransactionPool[State, Header <: BlockHeader, Tx <: Transaction[State]](
   def processTransaction(transaction: Tx): TransactionPool[State, Header, Tx] =
     copy(queue = timedQueue.enqueue(transaction, defaultTransactionExpiration))
 
-  def removeBlockTransactions(block: BlockType): TransactionPool[State, Header, Tx] = {
+  def removeBlockTransactions(block: B): TransactionPool[State, Header, Tx] = {
     val blockTxs = block.transactions.toSet
     copy(queue = timedQueue.filterNot(blockTxs.contains))
   }
 
-  def copy(
-      queue: QueueType = timedQueue,
+  private def copy(
+      queue: Q = timedQueue,
       headerGenerator: Seq[Transaction[State]] => Header = headerGenerator,
       maxBlockSize: Int = maxBlockSize): TransactionPool[State, Header, Tx] =
     new TransactionPool(queue, headerGenerator, maxBlockSize, ledgerStateStorage, defaultTransactionExpiration)
 
-  def sizeInBytes(txs: QueueType): Int = {
+  private def sizeInBytes(txs: Q): Int = {
     val header = headerGenerator(txs.queue)
     blockByteSizeable.sizeInBytes(Block(header, txs.queue))
   }
 
   @tailrec
-  private def getTxs(blockTxs: QueueType, remainingQueue: QueueType, ledgerState: LedgerState[State]): QueueType = {
+  private def getTxs(blockTxs: Q, remainingQueue: Q, ledgerState: LedgerState[State]): Q = {
     if (remainingQueue.isEmpty) {
       blockTxs
     } else {
@@ -75,10 +75,6 @@ class TransactionPool[State, Header <: BlockHeader, Tx <: Transaction[State]](
         }
       }
     }
-  }
-
-  private def mergeLedgerStates(a: LedgerState[State], b: LedgerState[State]) = {
-    new LedgerState[State](a.map ++ b.map)
   }
 
   implicit private def scalaDurationToJavaDuration(duration: Duration): java.time.Duration =
