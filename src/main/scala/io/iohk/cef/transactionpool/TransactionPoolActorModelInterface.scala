@@ -61,7 +61,7 @@ class TransactionPoolActorModelInterface[State, Header <: BlockHeader, Tx <: Tra
     }
 
     private def processTransaction(transaction: Tx): Either[ApplicationError, Unit] = {
-      pool.processTransaction(transaction).map{ newPool =>
+      pool.processTransaction(transaction).map { newPool =>
         pool = newPool
         ()
       }

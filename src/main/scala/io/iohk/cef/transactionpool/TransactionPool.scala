@@ -40,7 +40,7 @@ class TransactionPool[State, Header <: BlockHeader, Tx <: Transaction[State]](
   }
 
   def processTransaction(transaction: Tx): Either[TransactionPoolError, TransactionPool[State, Header, Tx]] = {
-    if(sizeInBytes(Seq(transaction)) > maxBlockSize) {
+    if (sizeInBytes(Seq(transaction)) > maxBlockSize) {
       Left(TransactionLargerThanMaxBlockSize(transaction, maxBlockSize))
     } else {
       Right(copy(queue = timedQueue.enqueue(transaction, defaultTransactionExpiration)))

@@ -57,9 +57,9 @@ class TransactionPoolSpec
     forAll { (txs: Queue[DummyTransaction], header: DummyBlockHeader) =>
       val defaultDuration = 1 minute
       val clock = TestClock()
-      val timedQueue = TimedQueue(
-        clock,
-        txs.map{tx => tx -> clock.instant().plus(java.time.Duration.ofMillis(defaultDuration.toMillis))})
+      val timedQueue = TimedQueue(clock, txs.map { tx =>
+        tx -> clock.instant().plus(java.time.Duration.ofMillis(defaultDuration.toMillis))
+      })
       val size = totalSize(txs.toList, header)
       val ledgerStateStorage = mockLedgerStateStorage
       when(ledgerStateStorage.slice(ArgumentMatchers.any())).thenReturn(LedgerState[String](Map()))
@@ -69,12 +69,13 @@ class TransactionPoolSpec
       block.header mustBe header
       block.transactions mustBe txs
       pool.processTransaction(DummyTransaction(1)) match {
+        case Left(_) if txs.isEmpty => succeed
         case Left(error) => fail(s"Received message: $error, but expected Right(...)")
         case Right(largerPool) =>
           val block2 = largerPool.generateBlock()
           block2.header mustBe header
           block2.transactions mustBe txs
-       }
+      }
     }
   }
 
@@ -86,14 +87,15 @@ class TransactionPoolSpec
     val twoTxTimedQueue = mock[TimedQueue[DummyTransaction]]
     val defaultExpiration = 1 minute
     val pool =
-      new TransactionPool(timedQueue, (_: Seq[Transaction[String]]) => header, 2, ledgerStateStorage, defaultExpiration)
+      new TransactionPool(timedQueue, (_: Seq[Transaction[String]]) => header, 4, ledgerStateStorage, defaultExpiration)
     val tx = DummyTransaction(2)
     when(timedQueue.enqueue(tx, defaultExpiration)).thenReturn(oneTxTimedQueue)
     when(oneTxTimedQueue.enqueue(tx, defaultExpiration)).thenReturn(twoTxTimedQueue)
     val newPool = pool.processTransaction(tx)
+    newPool.isRight mustBe true
     verify(timedQueue, times(1)).enqueue(tx, defaultExpiration)
     val tx2 = DummyTransaction(3)
-    newPool.map(_.processTransaction(tx2))
+    newPool.map(_.processTransaction(tx2)).isRight mustBe true
     verify(oneTxTimedQueue, times(1)).enqueue(tx2, defaultExpiration)
   }
 
@@ -103,7 +105,12 @@ class TransactionPoolSpec
     val timedQueue = mock[TimedQueue[DummyTransaction]]
     val defaultExpiration = 1 minute
     val pool =
-      new TransactionPool(timedQueue, (_: Seq[Transaction[String]]) => header, 2, ledgerStateStorage, defaultExpiration)
+      new TransactionPool(
+        timedQueue,
+        (_: Seq[Transaction[String]]) => header,
+        10,
+        ledgerStateStorage,
+        defaultExpiration)
     val txs = List(DummyTransaction(2), DummyTransaction(3), DummyTransaction(4))
     when(timedQueue.enqueue(any(), ArgumentMatchers.eq(defaultExpiration))).thenReturn(timedQueue)
     when(timedQueue.filterNot(any())).thenReturn(timedQueue)

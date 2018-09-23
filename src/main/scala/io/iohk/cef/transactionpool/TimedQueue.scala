@@ -93,9 +93,9 @@ case class TimedQueue[T](private val clock: Clock = Clock.systemUTC(), private v
 
   def size: Int = cleanedView.size
 
-  private def toQueue[A](view: SeqView[A, _]): Queue[A] = Queue(view:_*)
+  private def toQueue[A](view: SeqView[A, _]): Queue[A] = Queue(view: _*)
 
-  private def cleanedQueue = Queue(cleanedView:_*)
+  private def cleanedQueue = Queue(cleanedView: _*)
 
   private def cleanedView = {
     q.view.filter(_._2.isAfter(clock.instant()))
@@ -110,6 +110,6 @@ object TimedQueue {
   }
 
   def apply[T](clock: Clock, expirationTime: FiniteDuration, txs: Seq[T]): TimedQueue[T] = {
-    apply(clock, Queue(txs.map(tx => (tx, expirationTime)):_*))
+    apply(clock, Queue(txs.map(tx => (tx, expirationTime)): _*))
   }
 }
