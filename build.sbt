@@ -34,6 +34,8 @@ coverageEnabled := true
 coverageMinimum := 80
 coverageFailOnMinimum := true
 
+testOptions in Test += Tests.Argument(TestFrameworks.ScalaTest, "-oDT")
+
 // scalafmt
 scalafmtOnCompile in ThisBuild := true
 scalafmtTestOnCompile in ThisBuild := true
