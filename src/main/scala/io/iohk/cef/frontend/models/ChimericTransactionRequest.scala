@@ -206,48 +206,21 @@ object ChimericTransactionRequest extends DefaultJsonProtocol with SprayJsonSupp
       }
     }
 
-    override def write(obj: ChimericTxFragment): JsValue = obj match {
-      case fragment: Withdrawal =>
-        JsObject(
-          "type" -> JsString(WithdrawalType),
-          "fragment" -> fragment.toJson
-        )
+    override def write(obj: ChimericTxFragment): JsValue = {
+      val (tpe, json) = obj match {
+        case fragment: Withdrawal => (WithdrawalType, fragment.toJson)
+        case fragment: Mint => (MintType, fragment.toJson)
+        case fragment: Input => (InputType, fragment.toJson)
+        case fragment: Fee => (FeeType, fragment.toJson)
+        case fragment: Output => (OutputType, fragment.toJson)
+        case fragment: Deposit => (DepositType, fragment.toJson)
+        case fragment: CreateCurrency => (CreateCurrencyType, fragment.toJson)
+      }
 
-      case fragment: Mint =>
-        JsObject(
-          "type" -> JsString(MintType),
-          "fragment" -> fragment.toJson
-        )
-
-      case fragment: Input =>
-        JsObject(
-          "type" -> JsString(InputType),
-          "fragment" -> fragment.toJson
-        )
-
-      case fragment: Fee =>
-        JsObject(
-          "type" -> JsString(FeeType),
-          "fragment" -> fragment.toJson
-        )
-
-      case fragment: Output =>
-        JsObject(
-          "type" -> JsString(OutputType),
-          "fragment" -> fragment.toJson
-        )
-
-      case fragment: Deposit =>
-        JsObject(
-          "type" -> JsString(DepositType),
-          "fragment" -> fragment.toJson
-        )
-
-      case fragment: CreateCurrency =>
-        JsObject(
-          "type" -> JsString(CreateCurrencyType),
-          "fragment" -> fragment.toJson,
-        )
+      JsObject(
+        "type" -> JsString(tpe),
+        "fragment" -> json
+      )
     }
   }
 
