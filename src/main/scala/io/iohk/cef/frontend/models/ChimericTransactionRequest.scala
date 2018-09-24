@@ -1,12 +1,13 @@
 package io.iohk.cef.frontend.models
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
+import io.iohk.cef.LedgerId
 import io.iohk.cef.ledger.chimeric._
 import spray.json._
 
 import scala.collection.immutable.Map
 
-case class ChimericTransactionRequest(transaction: ChimericTx, ledgerId: Int)
+case class ChimericTransactionRequest(transaction: ChimericTx, ledgerId: LedgerId)
 
 object ChimericTransactionRequest extends DefaultJsonProtocol with SprayJsonSupport {
 
