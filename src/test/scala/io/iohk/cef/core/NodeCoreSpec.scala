@@ -17,7 +17,8 @@ import scala.concurrent.duration._
 
 class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
 
-  def mockConsensus: Consensus[String, DummyTransaction] = mock[Consensus[String, DummyTransaction]]
+  def mockConsensus: Consensus[String, DummyBlockHeader, DummyTransaction] =
+    mock[Consensus[String, DummyBlockHeader, DummyTransaction]]
 
   def mockTxPoolFutureInterface: TransactionPoolFutureInterface[String, DummyBlockHeader, DummyTransaction] =
     mock[TransactionPoolFutureInterface[String, DummyBlockHeader, DummyTransaction]]

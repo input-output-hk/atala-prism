@@ -24,7 +24,7 @@ import scala.concurrent.{ExecutionContext, Future}
   * @tparam Header
   */
 class NodeCore[State, Header <: BlockHeader, Tx <: Transaction[State]](
-    consensusMap: Map[LedgerId, (TransactionPoolFutureInterface[State, Header, Tx], Consensus[State, Tx])],
+    consensusMap: Map[LedgerId, (TransactionPoolFutureInterface[State, Header, Tx], Consensus[State, Header, Tx])],
     txNetwork: Network[Envelope[Tx]],
     blockNetwork: Network[Envelope[Block[State, Header, Tx]]],
     me: NodeId)(

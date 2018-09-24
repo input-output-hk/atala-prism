@@ -16,7 +16,8 @@ import scala.concurrent.{Await, Future}
 
 class CoreNetworkItSpec extends FlatSpec with MustMatchers with PropertyChecks with NetworkFixture with MockitoSugar {
 
-  def mockConsensus: Consensus[String, DummyTransaction] = mock[Consensus[String, DummyTransaction]]
+  def mockConsensus: Consensus[String, DummyBlockHeader, DummyTransaction] =
+    mock[Consensus[String, DummyBlockHeader, DummyTransaction]]
 
   def mockTxPoolFutureInterface: TransactionPoolFutureInterface[String, DummyBlockHeader, DummyTransaction] =
     mock[TransactionPoolFutureInterface[String, DummyBlockHeader, DummyTransaction]]
@@ -41,7 +42,7 @@ class CoreNetworkItSpec extends FlatSpec with MustMatchers with PropertyChecks w
       baseNetwork: BaseNetwork,
       me: NodeId,
       txPoolIf: TransactionPoolFutureInterface[String, DummyBlockHeader, DummyTransaction],
-      consensus: Consensus[String, DummyTransaction]) = {
+      consensus: Consensus[String, DummyBlockHeader, DummyTransaction]) = {
     val txNetwork = new Network[Envelope[DummyTransaction]](baseNetwork.networkDiscovery, baseNetwork.transports)
     val blockNetwork =
       new Network[Envelope[Block[String, DummyBlockHeader, DummyTransaction]]](
