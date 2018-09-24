@@ -1,7 +1,7 @@
 package io.iohk.cef.transactionpool
 import akka.util.Timeout
 import io.iohk.cef.error.ApplicationError
-import io.iohk.cef.ledger.{BlockHeader, Transaction}
+import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
 import akka.pattern.ask
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -19,5 +19,9 @@ class TransactionPoolFutureInterface[State, Header <: BlockHeader, Tx <: Transac
 
   def processTransaction(tx: Tx): Future[Either[ApplicationError, Unit]] = {
     (poolActor ? ProcessTransaction(tx)).mapTo[ProcessTransactionResponse].map(_.result)
+  }
+
+  def removeBlockTxs(block: Block[State, Header, Tx]): Future[Either[ApplicationError, Unit]] = {
+    (poolActor ? RemoveBlockTransactions(block)).mapTo[RemoveBlockTransactionsResponse].map(_.result)
   }
 }

@@ -23,30 +23,13 @@ class CorePooltSpec
     with FlatSpecLike
     with MustMatchers
     with BeforeAndAfterAll
-    with MockitoSugar {
+    with MockitoSugar
+    with TxPoolFixture {
 
   private def mockLedgerStateStorage[State] = mock[LedgerStateStorage[State]]
 
-  import io.iohk.cef.ledger.ByteSizeableImplicits._
   override def afterAll(): Unit = TestKit.shutdownActorSystem(system)
-
-  class TestableTransactionPoolActorModelInterface[State, Header <: BlockHeader, Tx <: Transaction[State]](
-      headerGenerator: Seq[Transaction[State]] => Header,
-      maxTxSizeInBytes: Int,
-      ledgerStateStorage: LedgerStateStorage[State],
-      defaultDurationTxs: Duration,
-      timedQueue: TimedQueue[Tx])(implicit blockByteSizeable: ByteSizeable[Block[State, Header, Tx]])
-      extends TransactionPoolActorModelInterface[State, Header, Tx](
-        system.actorOf,
-        headerGenerator,
-        maxTxSizeInBytes,
-        ledgerStateStorage,
-        defaultDurationTxs,
-        () => timedQueue) {
-
-    lazy val testActorRef = TestActorRef[TransactionPoolActor](Props(new TransactionPoolActor()))
-    override def poolActor: ActorRef = testActorRef
-  }
+  import io.iohk.cef.ledger.ByteSizeableImplicits._
 
   behavior of "CorePoolItSpec"
 
@@ -58,6 +41,7 @@ class CorePooltSpec
     val queue = TimedQueue[DummyTransaction]()
     val txPoolActorModelInterface =
       new TestableTransactionPoolActorModelInterface[String, DummyBlockHeader, DummyTransaction](
+        system,
         txs => new DummyBlockHeader(txs.size),
         10000,
         ledgerStateStorage,
