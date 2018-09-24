@@ -15,7 +15,7 @@ import org.scalatest.{MustMatchers, WordSpec}
 
 import scala.concurrent.Future
 
-class ChimericServiceApiSpec extends WordSpec with MustMatchers with ScalaFutures with ScalatestRouteTest  {
+class ChimericServiceApiSpec extends WordSpec with MustMatchers with ScalaFutures with ScalatestRouteTest {
 
   val nodeCore = mock[NodeCore[ChimericStateValue, ChimericBlockHeader, ChimericTx]]
   when(nodeCore.receiveTransaction(any())).thenReturn(Future.successful(Right(())))

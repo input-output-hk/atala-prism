@@ -19,11 +19,7 @@ import org.scalatest.{Matchers, WordSpec}
 
 import scala.concurrent.Future
 
-class IdentityRouterSpec
-    extends WordSpec
-    with Matchers
-    with ScalaFutures
-    with ScalatestRouteTest {
+class IdentityRouterSpec extends WordSpec with Matchers with ScalaFutures with ScalatestRouteTest {
 
   val nodeCore = mock[NodeCore[Set[SigningPublicKey], IdentityBlockHeader, IdentityTransaction]]
 
