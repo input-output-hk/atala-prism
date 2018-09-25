@@ -10,12 +10,11 @@ import scala.concurrent.duration.Duration
 
 trait TxPoolFixture {
 
-  class TestableTransactionPoolActorModelInterface[State, Header <: BlockHeader, Tx <: Transaction[State]]( system: ActorSystem,
-                                                                                                            headerGenerator: Seq[Transaction[State]] => Header,
+  class TestableTransactionPoolActorModelInterface[State, Header <: BlockHeader, Tx <: Transaction[State]]( headerGenerator: Seq[Transaction[State]] => Header,
                                                                                                             maxTxSizeInBytes: Int,
                                                                                                             ledgerStateStorage: LedgerStateStorage[State],
                                                                                                             defaultDurationTxs: Duration,
-                                                                                                            timedQueue: TimedQueue[Tx])(implicit blockByteSizeable: ByteSizeable[Block[State, Header, Tx]])
+                                                                                                            timedQueue: TimedQueue[Tx])(implicit blockByteSizeable: ByteSizeable[Block[State, Header, Tx]], system: ActorSystem)
     extends TransactionPoolActorModelInterface[State, Header, Tx](
       system.actorOf,
       headerGenerator,

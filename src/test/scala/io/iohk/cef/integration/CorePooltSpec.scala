@@ -1,15 +1,14 @@
 package io.iohk.cef.integration
-import akka.actor.{ActorRef, ActorSystem, Props}
-import akka.testkit.{TestActorRef, TestKit}
+import akka.actor.ActorSystem
+import akka.testkit.TestKit
 import akka.util.Timeout
 import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.core.{Envelope, Everyone, NodeCore}
+import io.iohk.cef.ledger.Block
 import io.iohk.cef.ledger.storage.LedgerStateStorage
-import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
 import io.iohk.cef.network.{MessageStream, Network, NodeId}
 import io.iohk.cef.test.{DummyBlockHeader, DummyBlockSerializable, DummyTransaction}
-import io.iohk.cef.transactionpool.{TimedQueue, TransactionPoolActorModelInterface, TransactionPoolFutureInterface}
-import io.iohk.cef.utils.ByteSizeable
+import io.iohk.cef.transactionpool.{TimedQueue, TransactionPoolFutureInterface}
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar
@@ -41,7 +40,6 @@ class CorePooltSpec
     val queue = TimedQueue[DummyTransaction]()
     val txPoolActorModelInterface =
       new TestableTransactionPoolActorModelInterface[String, DummyBlockHeader, DummyTransaction](
-        system,
         txs => new DummyBlockHeader(txs.size),
         10000,
         ledgerStateStorage,

@@ -1,20 +1,18 @@
 package io.iohk.cef.consensus.raft
 
 import io.iohk.cef.consensus.raft.node._
-import org.scalatest.WordSpec
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.{inOrder, times, verify, when}
 import org.scalatest.Matchers._
+import org.scalatest.WordSpec
 import org.scalatest.concurrent.ScalaFutures.{convertScalaFuture, whenReady}
 import org.scalatest.mockito.MockitoSugar._
-import org.mockito.Mockito.{inOrder, times, verify, when}
-import org.mockito.ArgumentMatchers.any
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.time.{Millis, Seconds, Span}
-import scala.collection.mutable
-import scala.concurrent.{ExecutionContext, Future}
+
+import scala.concurrent.Future
 
 class RaftConsensusSpec extends WordSpec {
   "Concurrency model" should {
-    "prevent multiple votes for the same candidate" in new MockFixture {
+    "prevent multiple votes for the same candidate" in new FakeRaftNode[String] {
       val persistentStorage =
         new InMemoryPersistentStorage[String](Vector(), currentTerm = 2, votedFor = "")
 
@@ -33,7 +31,7 @@ class RaftConsensusSpec extends WordSpec {
         voteResults.count(result => result.voteGranted) shouldBe 1
       }
     }
-    "provide sequencing of side effecting functions withRaftContext" in new MockFixture {
+    "provide sequencing of side effecting functions withRaftContext" in new FakeRaftNode[String] {
       val raftNode = aRaftNode(new InMemoryPersistentStorage[String](Vector(), currentTerm = 2, votedFor = ""))
       val nRequests = 10
       val sideEffect = mock[Int => Unit]
@@ -53,7 +51,7 @@ class RaftConsensusSpec extends WordSpec {
         results.sorted shouldBe Range(0, nRequests) // sorted since we don't know which of the test Futures 'hit' the node first.
       }
     }
-    "provide sequencing of side effecting Future functions with futureRaftContext" in new MockFixture {
+    "provide sequencing of side effecting Future functions with futureRaftContext" in new FakeRaftNode[String] {
 
       val raftNode = aRaftNode(new InMemoryPersistentStorage[String](Vector(), currentTerm = 0, votedFor = ""))
       val nRequests = 25
@@ -82,7 +80,7 @@ class RaftConsensusSpec extends WordSpec {
   "Consensus module" should {
     "Handle all client requests" when {
       "a client contacts a follower" should {
-        "redirect to the leader" in new MockFixture {
+        "redirect to the leader" in new FakeRaftNode[String] {
           val raftNode = mock[RaftNode[String]]
           val apparentLeaderRpc = mock[RPC[String]]
           val realLeaderRpc = mock[RPC[String]]
@@ -104,7 +102,7 @@ class RaftConsensusSpec extends WordSpec {
         }
       }
       "a client contacts the leader" should {
-        "handle the request" in new MockFixture {
+        "handle the request" in new FakeRaftNode[String] {
           val raftNode = mock[RaftNode[String]]
           val leaderRpc = mock[RPC[String]]
           when(raftNode.getLeader).thenReturn("my-leader")
@@ -125,7 +123,7 @@ class RaftConsensusSpec extends WordSpec {
   "AppendEntries RPC" when {
     "implemented by a Follower" should {
       "implement rule #1" should {
-        "reply false if term < currentTerm)" in new MockFixture {
+        "reply false if term < currentTerm)" in new FakeRaftNode[String] {
 
           val persistentStorage =
             new InMemoryPersistentStorage[String](Vector(), currentTerm = 1, votedFor = "anyone")
@@ -137,7 +135,7 @@ class RaftConsensusSpec extends WordSpec {
         }
       }
       "implement rule #2" should {
-        "reply false if log doesn't contain an entry at prevLogIndex" in new MockFixture {
+        "reply false if log doesn't contain an entry at prevLogIndex" in new FakeRaftNode[String] {
 
           val persistentStorage =
             new InMemoryPersistentStorage[String](
@@ -162,7 +160,7 @@ class RaftConsensusSpec extends WordSpec {
       "implement rule #3" should {
 
         "if an existing entry conflicts with a new one (same index but different term), " +
-          "delete the existing entry and those that follow it" in new MockFixture {
+          "delete the existing entry and those that follow it" in new FakeRaftNode[String] {
 
           val persistentStorage =
             new InMemoryPersistentStorage[String](
@@ -186,7 +184,7 @@ class RaftConsensusSpec extends WordSpec {
         }
       }
       "implement rule #4" should {
-        "append new entries not already in the log" in new MockFixture {
+        "append new entries not already in the log" in new FakeRaftNode[String] {
 
           val persistentStorage =
             new InMemoryPersistentStorage[String](
@@ -215,7 +213,7 @@ class RaftConsensusSpec extends WordSpec {
         }
       }
       "implement rule #5" should {
-        "if leaderCommit > commitIndex set commitIndex = min(leaderCommit, index of last new entry)" in new MockFixture {
+        "if leaderCommit > commitIndex set commitIndex = min(leaderCommit, index of last new entry)" in new FakeRaftNode[String] {
           // by 'Rules for servers', note for all servers,
           // if commitIndex > lastApplied, apply log[lastApplied] to state machine,
           // and
@@ -251,11 +249,11 @@ class RaftConsensusSpec extends WordSpec {
         }
       }
       "implement rules for servers" should {
-        "handle rule #1" in new MockFixture {
+        "handle rule #1" in new FakeRaftNode[String] {
           // verified in the rule #5 test above
         }
 
-        "handle rule #2 - if RPC request contains term T > currentTerm, set currentTerm = T" in new MockFixture {
+        "handle rule #2 - if RPC request contains term T > currentTerm, set currentTerm = T" in new FakeRaftNode[String] {
           val persistentStorage =
             new InMemoryPersistentStorage[String](Vector(), currentTerm = 1, votedFor = "anyone")
 
@@ -276,7 +274,7 @@ class RaftConsensusSpec extends WordSpec {
       }
     }
     "implemented by a Candidate" should {
-      "stand down to follower if AppendEntries received from new leader" in new MockFixture {
+      "stand down to follower if AppendEntries received from new leader" in new FakeRaftNode[String] {
         val persistentStorage =
           new InMemoryPersistentStorage[String](Vector(), currentTerm = 1, votedFor = "anyone")
 
@@ -294,7 +292,7 @@ class RaftConsensusSpec extends WordSpec {
         appendResult shouldBe AppendEntriesResult(term = 2, success = true)
         raftNode.getRole shouldBe Follower
       }
-      "reject leader append entries calls from a leader with a lower term" in new MockFixture {
+      "reject leader append entries calls from a leader with a lower term" in new FakeRaftNode[String] {
         val persistentStorage =
           new InMemoryPersistentStorage[String](Vector(), currentTerm = 2, votedFor = "anyone")
 
@@ -313,7 +311,7 @@ class RaftConsensusSpec extends WordSpec {
       }
     }
     "implemented by a Leader" should {
-      "stand down if append entries received from a new leader" in new MockFixture {
+      "stand down if append entries received from a new leader" in new FakeRaftNode[String] {
         val persistentStorage =
           new InMemoryPersistentStorage[String](Vector(), currentTerm = 2, votedFor = "anyone")
 
@@ -331,7 +329,7 @@ class RaftConsensusSpec extends WordSpec {
         raftNode.getRole shouldBe Follower
         appendResult shouldBe AppendEntriesResult(term = 3, success = true)
       }
-      "reject leader append entries calls from a candidate with a lower term" in new MockFixture {
+      "reject leader append entries calls from a candidate with a lower term" in new FakeRaftNode[String] {
         val persistentStorage =
           new InMemoryPersistentStorage[String](Vector(), currentTerm = 2, votedFor = "anyone")
 
@@ -354,7 +352,7 @@ class RaftConsensusSpec extends WordSpec {
   "RequestVote RPC" when {
     "implemented by any role" should {
       // NB: making use of the 'whitebox' knowledge that the RequestVote impl is common to all roles.
-      "implement rule #1, reply false if term < currentTerm (sec 5.1)" in new MockFixture {
+      "implement rule #1, reply false if term < currentTerm (sec 5.1)" in new FakeRaftNode[String] {
         val persistentStorage =
           new InMemoryPersistentStorage[String](Vector(), currentTerm = 2, votedFor = "i2")
 
@@ -367,7 +365,7 @@ class RaftConsensusSpec extends WordSpec {
       "implement rule #2" when {
 
         "votedFor is null and candidate's log is as up to date as the receiver's log" should {
-          "grant vote" in new MockFixture {
+          "grant vote" in new FakeRaftNode[String] {
             val persistentStorage =
               new InMemoryPersistentStorage[String](Vector(), currentTerm = 2, votedFor = "")
 
@@ -380,7 +378,7 @@ class RaftConsensusSpec extends WordSpec {
           }
         }
         "votedFor is candidateId and candidate's log is as up to date as the receiver's log" should {
-          "grant vote" in new MockFixture {
+          "grant vote" in new FakeRaftNode[String] {
             val persistentStorage =
               new InMemoryPersistentStorage[String](Vector(), currentTerm = 2, votedFor = "i2")
 
@@ -400,7 +398,7 @@ class RaftConsensusSpec extends WordSpec {
         more up-to-date
          */
         "candidate's log has lower term than the receiver's log" should {
-          "deny vote" in new MockFixture {
+          "deny vote" in new FakeRaftNode[String] {
             val persistentStorage =
               new InMemoryPersistentStorage[String](
                 Vector(LogEntry("A", 1, 0), LogEntry("B", 1, 1), LogEntry("C", 2, 2)),
@@ -416,7 +414,7 @@ class RaftConsensusSpec extends WordSpec {
           }
         }
         "candidate's log has lower lastLogLogIndex than the receiver's log" should {
-          "deny vote" in new MockFixture {
+          "deny vote" in new FakeRaftNode[String] {
             val persistentStorage =
               new InMemoryPersistentStorage[String](
                 Vector(LogEntry("A", 1, 0), LogEntry("B", 1, 1), LogEntry("C", 2, 2)),
@@ -432,7 +430,7 @@ class RaftConsensusSpec extends WordSpec {
           }
         }
         "votedFor is NOT candidateId" should {
-          "deny vote" in new MockFixture {
+          "deny vote" in new FakeRaftNode[String] {
             val persistentStorage =
               new InMemoryPersistentStorage[String](Vector(), currentTerm = 2, votedFor = "i3")
 
@@ -450,13 +448,13 @@ class RaftConsensusSpec extends WordSpec {
   // Rules for servers, followers, sec 5.2
   "Followers" when {
     "Receiving RPC requests" should {
-      "Respond" in new MockFixture {
+      "Respond" in new FakeRaftNode[String] {
         // verified elsewhere
       }
     }
 
     "Election timeouts occur" should {
-      "Implement Rules for Servers, Candidates conversion rules" in new MockFixture {
+      "Implement Rules for Servers, Candidates conversion rules" in new FakeRaftNode[String] {
         val persistentStorage =
           new InMemoryPersistentStorage[String](Vector(), currentTerm = 1, votedFor = "anyone")
 
@@ -481,7 +479,7 @@ class RaftConsensusSpec extends WordSpec {
   }
   "Candidates" when {
     "votes received from a majority" should {
-      "Implement Candidates note #2, become leader" in new MockFixture {
+      "Implement Candidates note #2, become leader" in new FakeRaftNode[String] {
         val persistentStorage =
           new InMemoryPersistentStorage[String](Vector(), currentTerm = 1, votedFor = "anyone")
 
@@ -491,9 +489,9 @@ class RaftConsensusSpec extends WordSpec {
         when(rpc2.requestVote(any[VoteRequested])).thenReturn(Future(RequestVoteResult(term = 2, voteGranted = true)))
         when(rpc3.requestVote(any[VoteRequested])).thenReturn(Future(RequestVoteResult(term = 2, voteGranted = false)))
 
-        when(rpc2.appendEntries(any[EntriesToAppend[Command]]))
+        when(rpc2.appendEntries(any[EntriesToAppend[String]]))
           .thenReturn(Future(AppendEntriesResult(2, success = true)))
-        when(rpc3.appendEntries(any[EntriesToAppend[Command]]))
+        when(rpc3.appendEntries(any[EntriesToAppend[String]]))
           .thenReturn(Future(AppendEntriesResult(2, success = true)))
 
         raftNode.electionTimeout().futureValue
@@ -502,7 +500,7 @@ class RaftConsensusSpec extends WordSpec {
       }
     }
     "votes received from a minority" should {
-      "Remain a candidate" in new MockFixture { // TODO is this correct?
+      "Remain a candidate" in new FakeRaftNode[String] { // TODO is this correct?
         val persistentStorage =
           new InMemoryPersistentStorage[String](Vector(), currentTerm = 1, votedFor = "anyone")
 
@@ -525,7 +523,7 @@ class RaftConsensusSpec extends WordSpec {
   }
   "Leaders" when {
     "Winning an election" should {
-      "Implement Leaders note #1, send initial empty AppendEntries RPCs to each server and repeat during idle periods" in new MockFixture {
+      "Implement Leaders note #1, send initial empty AppendEntries RPCs to each server and repeat during idle periods" in new FakeRaftNode[String] {
         val persistentStorage =
           new InMemoryPersistentStorage[String](Vector(), currentTerm = 2, votedFor = "i1")
 
@@ -546,15 +544,15 @@ class RaftConsensusSpec extends WordSpec {
       }
     }
     "Receiving commands from a client" should {
-      "Implement Leaders note #2, append entry to local log, apply to state machine and respond to client" in new MockFixture {
+      "Implement Leaders note #2, append entry to local log, apply to state machine and respond to client" in new FakeRaftNode[String] {
         val persistentStorage =
           new InMemoryPersistentStorage[String](Vector(), currentTerm = 2, votedFor = "i1")
 
         val raftNode = aLeader(persistentStorage)
 
-        when(rpc2.appendEntries(any[EntriesToAppend[Command]]))
+        when(rpc2.appendEntries(any[EntriesToAppend[String]]))
           .thenReturn(Future(AppendEntriesResult(3, success = true)))
-        when(rpc3.appendEntries(any[EntriesToAppend[Command]]))
+        when(rpc3.appendEntries(any[EntriesToAppend[String]]))
           .thenReturn(Future(AppendEntriesResult(3, success = true)))
 
         val response = raftNode.clientAppendEntries(Seq("A")).futureValue
@@ -565,7 +563,7 @@ class RaftConsensusSpec extends WordSpec {
       }
       "Implement Leaders note #3 and #4" when {
         "last log index >= nextIndex for a follower" should {
-          "send AppendEntries RPC with entries starting at nextIndex" in new MockFixture {
+          "send AppendEntries RPC with entries starting at nextIndex" in new FakeRaftNode[String] {
             val persistentStorage =
               new InMemoryPersistentStorage[String](
                 Vector(LogEntry[String]("A", 2, 0)),
@@ -614,229 +612,5 @@ class RaftConsensusSpec extends WordSpec {
       }
     }
   }
-  "In an integrated cluster" when {
-    "servers are started" should {
-      "elect a leader" in new IntegratedFixture {
-        val s1 = new InMemoryPersistentStorage[String](Vector(), 1, "")
-        val s2 = new InMemoryPersistentStorage[String](Vector(), 1, "")
-        val s3 = new InMemoryPersistentStorage[String](Vector(), 1, "")
 
-        val (t1, t2, t3) = anIntegratedCluster(s1, s2, s3)
-        t1.raftNode.electionTimeout().futureValue
-        t1.raftNode.getRole shouldBe Leader
-      }
-      "replicate logs" in new IntegratedFixture {
-        val s1 = new InMemoryPersistentStorage[String](Vector(), 1, "")
-        val s2 = new InMemoryPersistentStorage[String](Vector(), 1, "")
-        val s3 = new InMemoryPersistentStorage[String](Vector(), 1, "")
-
-        val (t1, t2, t3) = anIntegratedCluster(s1, s2, s3)
-        t1.raftNode.electionTimeout().futureValue
-
-        t1.raftNode.getRole shouldBe Leader
-
-        val appendResult = t1.raftNode.clientAppendEntries(Seq("A", "B", "C", "D", "E")).futureValue
-
-        appendResult shouldBe Right(())
-
-        val expectedEntries = Vector(
-          LogEntry("A", 2, 0),
-          LogEntry("B", 2, 1),
-          LogEntry("C", 2, 2),
-          LogEntry("D", 2, 3),
-          LogEntry("E", 2, 4))
-        s1.log shouldBe expectedEntries
-        s2.log shouldBe expectedEntries
-        s3.log shouldBe expectedEntries
-
-        t1.raftNode.getLeaderVolatileState shouldBe LeaderVolatileState(Seq(5, 5), Seq(4, 4))
-        t2.raftNode.getLeaderVolatileState shouldBe LeaderVolatileState(Seq(0, 0), Seq(-1, -1))
-        t3.raftNode.getLeaderVolatileState shouldBe LeaderVolatileState(Seq(0, 0), Seq(-1, -1))
-
-        t1.raftNode.getCommonVolatileState shouldBe CommonVolatileState(4, 4)
-        t2.raftNode.getCommonVolatileState shouldBe CommonVolatileState(-1, -1)
-        t3.raftNode.getCommonVolatileState shouldBe CommonVolatileState(-1, -1)
-
-        Seq("A", "B", "C", "D", "E").foreach(command => {
-          verify(t1.machine).apply(command)
-          verify(t2.machine, times(0)).apply(command)
-          verify(t3.machine, times(0)).apply(command)
-        })
-
-        t1.raftNode.heartbeatTimeout().futureValue
-
-        Seq("A", "B", "C", "D", "E").foreach(command => {
-          verify(t2.machine).apply(command)
-          verify(t3.machine).apply(command)
-        })
-
-        t2.raftNode.getCommonVolatileState shouldBe CommonVolatileState(4, 4)
-        t3.raftNode.getCommonVolatileState shouldBe CommonVolatileState(4, 4)
-      }
-    }
-  }
-}
-
-trait MockFixture {
-
-  implicit val ec: ExecutionContext = ExecutionContext.global
-  val timeout = Span(5, Seconds)
-  val span = Span(50, Millis)
-  implicit val futuresPatienceConfig: ScalaFutures.PatienceConfig =
-    ScalaFutures.PatienceConfig(timeout = timeout, interval = span)
-
-  type Command = String
-  val stateMachine: Command => Unit = mock[Command => Unit]
-  val peer: RaftNode[Command] = mock[RaftNode[Command]]
-  val rpc2: RPC[Command] = mock[RPC[Command]]
-  val rpc3: RPC[Command] = mock[RPC[Command]]
-  var appendCallback: EntriesToAppend[Command] => AppendEntriesResult = _
-  var voteCallback: VoteRequested => RequestVoteResult = _
-  val rpcFactory: RPCFactory[Command] = (node, appendEntriesCallback, requestVoteCallback, _) => {
-    appendCallback = appendEntriesCallback
-    voteCallback = requestVoteCallback
-    if (node == "i2")
-      rpc2
-    else if (node == "i3")
-      rpc3
-    else
-      fail("Test setup is wrong.")
-  }
-
-  def after[T](millis: Long)(t: => T): Future[T] = {
-    Future {
-      Thread.sleep(millis)
-    }.map(_ => t)
-  }
-
-  def aRaftNode(persistentStorage: PersistentStorage[Command]): RaftNode[Command] = {
-    import scala.concurrent.duration._
-    val neverTimeout = (100 days, 200 days)
-    new RaftNode[Command](
-      "i1",
-      Seq("i1", "i2", "i3"),
-      rpcFactory,
-      neverTimeout,
-      neverTimeout,
-      stateMachine,
-      persistentStorage)
-  }
-
-  def aFollower(persistentStorage: PersistentStorage[Command]): RaftNode[Command] =
-    aRaftNode(persistentStorage)
-
-  def aCandidate(persistentStorage: PersistentStorage[Command]): RaftNode[Command] = {
-
-    val raftNode = aRaftNode(persistentStorage)
-
-    val (term, _) = persistentStorage.state
-
-    when(rpc2.requestVote(any[VoteRequested]))
-      .thenReturn(Future(RequestVoteResult(term = term + 1, voteGranted = false)))
-    when(rpc3.requestVote(any[VoteRequested]))
-      .thenReturn(Future(RequestVoteResult(term = term + 1, voteGranted = false)))
-
-    raftNode.electionTimeout().futureValue
-
-    raftNode.getRole shouldBe Candidate
-
-    raftNode
-  }
-
-  def aLeader(persistentStorage: PersistentStorage[Command]): RaftNode[Command] = {
-    val raftNode = aRaftNode(persistentStorage)
-
-    val (term, _) = persistentStorage.state
-
-    when(rpc2.requestVote(any[VoteRequested]))
-      .thenReturn(Future(RequestVoteResult(term = term + 1, voteGranted = true)))
-    when(rpc3.requestVote(any[VoteRequested]))
-      .thenReturn(Future(RequestVoteResult(term = term + 1, voteGranted = true)))
-
-    when(rpc2.appendEntries(any[EntriesToAppend[Command]]))
-      .thenReturn(Future(AppendEntriesResult(term + 1, success = true)))
-    when(rpc3.appendEntries(any[EntriesToAppend[Command]]))
-      .thenReturn(Future(AppendEntriesResult(term + 1, success = true)))
-
-    raftNode.electionTimeout().futureValue
-
-    raftNode.getRole shouldBe Leader
-
-    raftNode
-  }
-
-}
-
-trait IntegratedFixture {
-
-  implicit val ec: ExecutionContext = ExecutionContext.global
-
-  val timeout = Span(5, Seconds)
-  val span = Span(50, Millis)
-
-  implicit val futuresPatienceConfig: ScalaFutures.PatienceConfig =
-    ScalaFutures.PatienceConfig(timeout = timeout, interval = span)
-
-  type Command = String
-
-  val testNodes = mutable.Map[String, TestNode]()
-
-  val clusterIds = Seq("i1", "i2", "i3")
-
-  class TestNode(nodeId: String, state: PersistentStorage[Command]) {
-
-    val machine: Command => Unit = mock[Command => Unit]
-
-    def localRpcFactory: RPCFactory[Command] = (nodeId, _, _, _) => {
-      new LocalRPC[Command](testNodes(nodeId).raftNode)
-    }
-    import scala.concurrent.duration._
-    val neverTimeout = (100 days, 200 days)
-
-    lazy val raftNode: RaftNode[Command] =
-      new RaftNode[Command](nodeId, clusterIds, localRpcFactory, neverTimeout, neverTimeout, machine, state)
-
-    testNodes.put(nodeId, this)
-  }
-
-  def anIntegratedCluster(
-      i1State: PersistentStorage[Command],
-      i2State: PersistentStorage[Command],
-      i3State: PersistentStorage[Command]): (TestNode, TestNode, TestNode) = {
-
-    val (t1, t2, t3) = (new TestNode("i1", i1State), new TestNode("i2", i2State), new TestNode("i3", i3State))
-    t1.raftNode
-    t2.raftNode
-    t3.raftNode
-    (t1, t2, t3)
-  }
-}
-
-class InMemoryPersistentStorage[T](var logEntries: Vector[LogEntry[T]], var currentTerm: Int, var votedFor: String)
-    extends PersistentStorage[T] {
-
-  override def state: (Int, String) = (currentTerm, votedFor)
-
-  override def log: Vector[LogEntry[T]] = logEntries
-
-  override def state(currentTerm: Int, votedFor: String): Unit = {
-    this.currentTerm = currentTerm
-    this.votedFor = votedFor
-  }
-  override def log(deletes: Int, writes: Seq[LogEntry[T]]): Unit = {
-    logEntries = logEntries.dropRight(deletes) ++ writes
-  }
-}
-
-class LocalRPC[T](peer: => RaftNode[T])(implicit ec: ExecutionContext) extends RPC[T] {
-
-  override def appendEntries(entriesToAppend: EntriesToAppend[T]): Future[AppendEntriesResult] = {
-    Future(peer.appendEntries(entriesToAppend))
-  }
-
-  override def requestVote(voteRequested: VoteRequested): Future[RequestVoteResult] =
-    Future(peer.requestVote(voteRequested))
-
-  override def clientAppendEntries(entries: Seq[T]): Future[Either[Redirect[T], Unit]] =
-    peer.clientAppendEntries(entries)
 }
