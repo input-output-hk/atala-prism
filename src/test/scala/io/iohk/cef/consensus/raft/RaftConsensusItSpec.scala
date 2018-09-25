@@ -11,20 +11,21 @@ class RaftConsensusItSpec extends WordSpec {
   "In an integrated cluster" when {
     "servers are started" should {
       "elect a leader" in new RealRaftNode[String] {
-        val s1 = new InMemoryPersistentStorage[String](Vector(), 1, "")
-        val s2 = new InMemoryPersistentStorage[String](Vector(), 1, "")
-        val s3 = new InMemoryPersistentStorage[String](Vector(), 1, "")
+        override def machineCallback: String => Unit = _ => ()
+        override def clusterIds: Seq[String] = Seq("i1", "i2", "i3")
+        val storages = clusterIds.map(_ => new InMemoryPersistentStorage[String](Vector(), 1, ""))
 
-        val (t1, t2, t3) = anIntegratedCluster(s1, s2, s3)
+        val Seq(t1, t2, t3) = anIntegratedCluster(storages.zip(clusterIds))
         t1.raftNode.electionTimeout().futureValue
         t1.raftNode.getRole shouldBe Leader
       }
       "replicate logs" in new RealRaftNode[String] {
-        val s1 = new InMemoryPersistentStorage[String](Vector(), 1, "")
-        val s2 = new InMemoryPersistentStorage[String](Vector(), 1, "")
-        val s3 = new InMemoryPersistentStorage[String](Vector(), 1, "")
+        override def machineCallback: String => Unit = _ => ()
+        override def clusterIds: Seq[String] = Seq("i1", "i2", "i3")
+        val storages = clusterIds.map(_ => new InMemoryPersistentStorage[String](Vector(), 1, ""))
+        val Seq(s1, s2, s3) = storages
 
-        val (t1, t2, t3) = anIntegratedCluster(s1, s2, s3)
+        val Seq(t1, t2, t3) = anIntegratedCluster(storages.zip(clusterIds))
         t1.raftNode.electionTimeout().futureValue
 
         t1.raftNode.getRole shouldBe Leader
