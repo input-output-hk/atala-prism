@@ -39,6 +39,8 @@ class TransactionPool[State, Header <: BlockHeader, Tx <: Transaction[State]](
     block
   }
 
+  def size: Int = timedQueue.size
+
   def processTransaction(transaction: Tx): Either[TransactionPoolError, TransactionPool[State, Header, Tx]] = {
     if (sizeInBytes(Seq(transaction)) > maxBlockSize) {
       Left(TransactionLargerThanMaxBlockSize(transaction, maxBlockSize))
