@@ -1,7 +1,13 @@
 package io.iohk.cef.main
-import io.iohk.cef.core.NodeCore
 import io.iohk.cef.ledger.{BlockHeader, Transaction}
-
+import io.iohk.cef.main.builder.base.{ConsensusBuilder, LedgerConfigBuilder, NetworkBuilder}
 trait NodeCoreBuilder[S, H <: BlockHeader, T <: Transaction[S]] {
-  val nodeCore: NodeCore[S, H, T]
+  self: NetworkBuilder[S, H, T] with LedgerConfigBuilder with ConsensusBuilder[S, H, T] =>
+
+//  val nodeCore: NodeCore[S, H, T] = new NodeCore(
+//    consensusMap,
+//    txNetwork,
+//    blockNetwork,
+//    nodeId
+//  )
 }

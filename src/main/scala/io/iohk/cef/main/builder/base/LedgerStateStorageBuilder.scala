@@ -1,4 +1,5 @@
-package io.iohk.cef.main
+package io.iohk.cef.main.builder.base
+
 import io.iohk.cef.crypto._
 import io.iohk.cef.ledger.identity.storage.scalike.IdentityLedgerStateStorageImpl
 import io.iohk.cef.ledger.identity.storage.scalike.dao.IdentityLedgerStateStorageDao
