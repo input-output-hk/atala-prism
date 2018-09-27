@@ -32,7 +32,7 @@ class ConsensusPoolItSpec
   behavior of "ConsensusPoolItSpec"
 
   it should "push periodical blocks to consensus" in new RealRaftNode[B] {
-
+    pending
     override def clusterIds: Seq[String] = Seq("i1", "i2", "s3")
     val storages = clusterIds.map(_ => new InMemoryPersistentStorage[B](Vector(), 1, ""))
     val Seq(s1, s2, s3) = storages
