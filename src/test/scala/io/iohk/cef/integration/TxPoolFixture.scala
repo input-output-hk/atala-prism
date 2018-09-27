@@ -10,18 +10,21 @@ import scala.concurrent.duration.Duration
 
 trait TxPoolFixture {
 
-  class TestableTransactionPoolActorModelInterface[State, Header <: BlockHeader, Tx <: Transaction[State]]( headerGenerator: Seq[Transaction[State]] => Header,
-                                                                                                            maxBlockSize: Int,
-                                                                                                            ledgerStateStorage: LedgerStateStorage[State],
-                                                                                                            defaultDurationTxs: Duration,
-                                                                                                            timedQueue: TimedQueue[Tx])(implicit blockByteSizeable: ByteSizeable[Block[State, Header, Tx]], system: ActorSystem)
-    extends TransactionPoolActorModelInterface[State, Header, Tx](
-      system.actorOf,
-      headerGenerator,
-      maxBlockSize,
-      ledgerStateStorage,
-      defaultDurationTxs,
-      () => timedQueue) {
+  class TestableTransactionPoolActorModelInterface[State, Header <: BlockHeader, Tx <: Transaction[State]](
+      headerGenerator: Seq[Transaction[State]] => Header,
+      maxBlockSize: Int,
+      ledgerStateStorage: LedgerStateStorage[State],
+      defaultDurationTxs: Duration,
+      timedQueue: TimedQueue[Tx])(
+      implicit blockByteSizeable: ByteSizeable[Block[State, Header, Tx]],
+      system: ActorSystem)
+      extends TransactionPoolActorModelInterface[State, Header, Tx](
+        system.actorOf,
+        headerGenerator,
+        maxBlockSize,
+        ledgerStateStorage,
+        defaultDurationTxs,
+        () => timedQueue) {
 
     lazy val testActorRef = TestActorRef[TransactionPoolActor](Props(new TransactionPoolActor()))
     override def poolActor: ActorRef = testActorRef

@@ -22,10 +22,9 @@ object DummyTransaction {
 
   implicit val serializable = new ByteStringSerializable[DummyTransaction] {
     override def decode(bytes: ByteString): Option[DummyTransaction] =
-      Try(
-        if(bytes.forall(_ == 1)) {
-          DummyTransaction(bytes.size)
-        } else throw new IllegalArgumentException("Invalid format for DummyTransaction")).toOption
+      Try(if (bytes.forall(_ == 1)) {
+        DummyTransaction(bytes.size)
+      } else throw new IllegalArgumentException("Invalid format for DummyTransaction")).toOption
 
     override def encode(t: DummyTransaction): ByteString =
       ByteString(Array.fill[Byte](t.size)(1))
