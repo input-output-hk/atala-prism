@@ -2,7 +2,6 @@ package io.iohk.cef.ledger
 
 import java.time.{Clock, Instant}
 
-import akka.util.ByteString
 import io.iohk.cef.builder.SigningKeyPairs
 import io.iohk.cef.crypto._
 import io.iohk.cef.ledger.identity._
@@ -37,7 +36,7 @@ trait LedgerItDbTest extends fixture.FlatSpec with AutoRollback with SigningKeyP
       Claim("carlos", alice.public, IdentityTransaction.sign("carlos", alice.public, alice.`private`)),
       Link("carlos", bob.public, IdentityTransaction.sign("carlos", bob.public, alice.`private`))
     )
-    val testBlock = Block(IdentityBlockHeader(ByteString("hash"), Instant.EPOCH, 1L), testTxs)
+    val testBlock = Block(IdentityBlockHeader(Instant.EPOCH), testTxs)
     val emptyLs = LedgerState[Set[SigningPublicKey]](Map())
     genericStateDao.slice(1, Set("carlos")) mustBe emptyLs
 

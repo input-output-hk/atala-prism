@@ -54,10 +54,7 @@ object IdentityBlockSerializer {
             result.toOption
           }.toList
           Block(
-            IdentityBlockHeader(
-              ByteString(proto.header.hash.toByteArray),
-              Instant.ofEpochMilli(proto.header.createdEpochMilli),
-              proto.header.blockHeight),
+            IdentityBlockHeader(Instant.ofEpochMilli(proto.header.createdEpochMilli)),
             transactions
           )
         }
@@ -65,10 +62,7 @@ object IdentityBlockSerializer {
 
       override def encode(t: IdentityLedgerBlock): ByteString = {
         val proto = IdentityBlockProto(
-          IdentityHeaderProto(
-            com.google.protobuf.ByteString.copyFrom(t.header.hash.toArray),
-            t.header.height,
-            t.header.created.toEpochMilli),
+          IdentityHeaderProto(t.header.created.toEpochMilli),
           t.transactions.map { tx =>
             val signature = com.google.protobuf.ByteString.copyFrom(tx.signature.toByteString.toArray)
 

@@ -2,7 +2,6 @@ package io.iohk.cef.ledger.identity
 
 import java.time.{Clock, Instant}
 
-import akka.util.ByteString
 import io.iohk.cef.builder.SigningKeyPairs
 import io.iohk.cef.crypto._
 import io.iohk.cef.ledger.Block
@@ -46,7 +45,7 @@ trait IdentityLedgerItDbTest
     val ledgerStateStorageDao = new IdentityLedgerStateStorageDao
     val ledger = createLedger(ledgerStateStorageDao)
     val now = Instant.now()
-    val header = IdentityBlockHeader(ByteString("header"), now, 1)
+    val header = IdentityBlockHeader(now)
     val block1 = Block(
       header,
       List[IdentityTransaction](
@@ -64,7 +63,7 @@ trait IdentityLedgerItDbTest
       IdentityLedgerState(Map("one" -> Set(alice.public), "two" -> Set(bob.public)))
 
     val block2 = Block(
-      header.copy(height = 2),
+      header,
       List[IdentityTransaction](
         Link("two", carlos.public, IdentityTransaction.sign("two", carlos.public, bob.`private`))))
 
@@ -76,7 +75,7 @@ trait IdentityLedgerItDbTest
       )
 
     val block3 = Block(
-      header.copy(height = 2),
+      header,
       List[IdentityTransaction](
         Link("three", carlos.public, IdentityTransaction.sign("three", carlos.public, bob.`private`))))
     val invalidResult = ledger(block3)

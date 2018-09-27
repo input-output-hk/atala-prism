@@ -2,7 +2,6 @@ package io.iohk.cef.ledger
 
 import java.time.Instant
 
-import akka.util.ByteString
 import io.iohk.cef.builder.SigningKeyPairs
 import io.iohk.cef.ledger.identity._
 import org.scalatest.{EitherValues, FlatSpec, MustMatchers}
@@ -19,7 +18,7 @@ class BlockSpec extends FlatSpec with MustMatchers with EitherValues with Signin
       Unlink("one", alice.public, IdentityTransaction.sign("one", alice.public, alice.`private`))
     )
 
-    val header = IdentityBlockHeader(ByteString("hash"), Instant.now, 1)
+    val header = IdentityBlockHeader(Instant.now)
     val block = Block(header, txs)
     val state = new IdentityLedgerState(Map())
     block(state).right.value mustBe IdentityLedgerState(Map())
@@ -42,7 +41,7 @@ class BlockSpec extends FlatSpec with MustMatchers with EitherValues with Signin
       Unlink("three", alice.public, uselessSignature)
     )
 
-    val header = IdentityBlockHeader(ByteString("hash"), Instant.now, 1)
+    val header = IdentityBlockHeader(Instant.now)
     val block = Block(header, txs)
     block.partitionIds mustBe Set("one", "two", "three")
   }
