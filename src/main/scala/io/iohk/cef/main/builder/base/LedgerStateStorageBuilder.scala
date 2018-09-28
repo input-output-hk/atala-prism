@@ -20,6 +20,7 @@ trait DefaultLedgerStateStorageBuilder[S] extends LedgerStateStorageBuilder[S] {
 }
 
 trait IdentityLedgerStateStorageBuilder extends LedgerStateStorageBuilder[Set[SigningPublicKey]] {
-  override def ledgerStateStorage(implicit byteStringSerializable: ByteStringSerializable[Set[SigningPublicKey]]): LedgerStateStorage[Set[SigningPublicKey]] =
+  override def ledgerStateStorage(implicit byteStringSerializable: ByteStringSerializable[Set[SigningPublicKey]])
+    : LedgerStateStorage[Set[SigningPublicKey]] =
     new IdentityLedgerStateStorageImpl(new IdentityLedgerStateStorageDao)
 }

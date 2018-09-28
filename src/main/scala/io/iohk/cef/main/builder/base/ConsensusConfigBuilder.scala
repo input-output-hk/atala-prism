@@ -3,9 +3,7 @@ import io.iohk.cef.consensus.raft.{PersistentStorage, RPCFactory}
 
 import scala.concurrent.duration.Duration
 
-trait ConsensusConfigBuilder {
-
-}
+trait ConsensusConfigBuilder {}
 
 trait RaftConsensusConfigBuilder[Command] extends ConsensusConfigBuilder {
   val nodeId: String

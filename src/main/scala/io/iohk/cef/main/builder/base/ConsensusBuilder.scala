@@ -3,21 +3,25 @@ import akka.util.Timeout
 import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.consensus.raft._
 import io.iohk.cef.ledger.{Block, BlockHeader, ByteStringSerializable, Transaction}
-import io.iohk.cef.main.builder.derived.TransactionPoolBuilder
-import scala.concurrent.ExecutionContext
+import io.iohk.cef.main.builder.derived.{LedgerBuilder, LogBuilder, TransactionPoolBuilder}
+import io.iohk.cef.utils.ForExpressionsEnabler
+
+import scala.concurrent.{ExecutionContext, Future}
 
 trait ConsensusBuilder[S, H <: BlockHeader, T <: Transaction[S]] {
   def consensus(
-                 implicit timeout: Timeout,
-                 executionContext: ExecutionContext,
-                 byteStringSerializable: ByteStringSerializable[Block[S, H, T]],
-                 sByteStringSerializable: ByteStringSerializable[S]): Consensus[S, H, T]
+      implicit timeout: Timeout,
+      executionContext: ExecutionContext,
+      byteStringSerializable: ByteStringSerializable[Block[S, H, T]],
+      sByteStringSerializable: ByteStringSerializable[S]): Consensus[S, H, T]
 }
 
 trait RaftConsensusBuilder[S, H <: BlockHeader, T <: Transaction[S]] extends ConsensusBuilder[S, H, T] {
   self: LedgerConfigBuilder
     with TransactionPoolBuilder[S, H, T]
-    with RaftConsensusConfigBuilder[Block[S, H, T]] =>
+    with RaftConsensusConfigBuilder[Block[S, H, T]]
+    with LedgerBuilder[Future, S, T]
+    with LogBuilder =>
   type B = Block[S, H, T]
 
   private def machineCallback(
@@ -25,12 +29,33 @@ trait RaftConsensusBuilder[S, H <: BlockHeader, T <: Transaction[S]] extends Con
       executionContext: ExecutionContext,
       byteStringSerializable: ByteStringSerializable[Block[S, H, T]],
       sByteStringSerializable: ByteStringSerializable[S]): B => Unit = {
-      val interface = txPoolFutureInterface
-      block => {
-        interface.removeBlockTxs(block)
-        //TODO: Log errors
+    implicit val enabler = ForExpressionsEnabler.futureEnabler
+    val interface = txPoolFutureInterface
+    val theLedger = ledger(ledgerId)
+    block =>
+      {
+        theLedger(block) match {
+          case Left(error) =>
+            log.error(s"Could not apply block ${block} to the ledger with id ${ledgerId}. Error: $error")
+            //TODO Crash the node
+          case Right(ledgerDatabaseResultFuture) =>
+            val result = for {
+              _ <- ledgerDatabaseResultFuture
+              txPoolResult <- interface.removeBlockTxs(block)
+            } yield txPoolResult
+            result onComplete {
+              case scala.util.Success(value) if value.isLeft =>
+                log.error(s"Could not apply block ${block} to the ledger with id ${ledgerId}. Error: $value")
+                //TODO Crash the node
+              case scala.util.Failure(exception) =>
+                log.error(s"Could not apply block ${block} to the ledger with id ${ledgerId}. Error: $exception")
+                //TODO Crash the node
+              case scala.util.Success(_) =>
+                log.info(s"Successfully applied block ${block} to the ledger with id ${ledgerId}")
+            }
+        }
       }
-    }
+  }
 
   private def raftNodeInterface(
       implicit timeout: Timeout,
@@ -45,7 +70,7 @@ trait RaftConsensusBuilder[S, H <: BlockHeader, T <: Transaction[S]] extends Con
       heartbeatTimeoutRange,
       machineCallback,
       storage
-      )
+    )
 
   private def raftConsensus(
       implicit timeout: Timeout,
@@ -54,9 +79,9 @@ trait RaftConsensusBuilder[S, H <: BlockHeader, T <: Transaction[S]] extends Con
       sByteStringSerializable: ByteStringSerializable[S]) = new RaftConsensus(raftNodeInterface)
 
   override def consensus(
-                          implicit timeout: Timeout,
-                          executionContext: ExecutionContext,
-                          byteStringSerializable: ByteStringSerializable[Block[S, H, T]],
-                          sByteStringSerializable: ByteStringSerializable[S]): Consensus[S, H, T] =
+      implicit timeout: Timeout,
+      executionContext: ExecutionContext,
+      byteStringSerializable: ByteStringSerializable[Block[S, H, T]],
+      sByteStringSerializable: ByteStringSerializable[S]): Consensus[S, H, T] =
     new RaftConsensusInterface[S, H, T](ledgerId, raftConsensus)
 }
