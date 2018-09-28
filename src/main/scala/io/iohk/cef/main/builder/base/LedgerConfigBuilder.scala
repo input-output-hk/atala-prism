@@ -2,8 +2,10 @@ package io.iohk.cef.main.builder.base
 import java.time.Clock
 
 import io.iohk.cef.LedgerId
-import io.iohk.cef.main.builder.helpers.LedgerConfig
+import io.iohk.cef.main.builder.helpers.{ConsensusConfig, LedgerConfig}
 import io.iohk.cef.network.NodeId
+import io.iohk.cef.network.discovery.NetworkDiscovery
+import io.iohk.cef.network.transport.Transports
 
 trait LedgerConfigBuilder {
   val clock: Clock
@@ -11,4 +13,10 @@ trait LedgerConfigBuilder {
   val ledgerId: LedgerId
 
   val ledgerConfig: LedgerConfig
+  //Network
+  val transports: Transports
+  val networkDiscovery: NetworkDiscovery
+
+  //Consensus
+  val consensusConfig: ConsensusConfig
 }

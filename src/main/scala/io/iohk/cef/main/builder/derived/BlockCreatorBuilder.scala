@@ -14,7 +14,8 @@ trait BlockCreatorBuilder[S, H <: BlockHeader, T <: Transaction[S]] {
 
   def blockCreator(
       implicit executionContext: ExecutionContext,
-      byteStringSerializable: ByteStringSerializable[Block[S, H, T]]): Props =
+      byteStringSerializable: ByteStringSerializable[Block[S, H, T]],
+      sByteStringSerializable: ByteStringSerializable[S]): Props =
     Props(
       new BlockCreator(
         txPoolActorModelInterface,

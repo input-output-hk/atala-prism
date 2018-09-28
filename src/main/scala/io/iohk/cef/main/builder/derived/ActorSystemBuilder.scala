@@ -1,4 +1,5 @@
-package io.iohk.cef.main.builder.base
+package io.iohk.cef.main.builder.derived
+
 import akka.actor.ActorSystem
 
 trait ActorSystemBuilder {
