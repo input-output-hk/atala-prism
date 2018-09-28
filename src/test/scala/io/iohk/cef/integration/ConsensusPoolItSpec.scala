@@ -4,7 +4,7 @@ import akka.testkit.{ImplicitSender, TestKit, TestProbe}
 import akka.util.Timeout
 import io.iohk.cef.LedgerId
 import io.iohk.cef.consensus.Consensus
-import io.iohk.cef.consensus.raft.{InMemoryPersistentStorage, RaftConsensusInterface, RealRaftNode}
+import io.iohk.cef.consensus.raft._
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.ledger.Block
 import io.iohk.cef.ledger.storage.LedgerStateStorage
@@ -68,7 +68,7 @@ class ConsensusPoolItSpec
     processAllTxs(block2Transactions, txPoolFutureInterface)
 
     val consensus: Consensus[String, DummyBlockHeader, DummyTransaction] =
-      new RaftConsensusInterface(ledgerId, t1.raftNode)
+      new RaftConsensusInterface(ledgerId, new RaftConsensus(t1.raftNode))
 
     val blockCreator =
       system.actorOf(
