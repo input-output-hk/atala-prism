@@ -672,6 +672,15 @@ class RaftConsensusSpec extends WordSpec {
 
         t2.raftNode.getCommonVolatileState shouldBe CommonVolatileState(4, 4)
         t3.raftNode.getCommonVolatileState shouldBe CommonVolatileState(4, 4)
+
+        t1.raftNode.clientAppendEntries(Seq("F", "G", "H")).futureValue
+        t1.raftNode.heartbeatTimeout().futureValue
+
+        Seq("F", "G", "H").foreach(command => {
+          verify(t1.machine).apply(command)
+          verify(t2.machine).apply(command)
+          verify(t3.machine).apply(command)
+        })
       }
     }
   }
