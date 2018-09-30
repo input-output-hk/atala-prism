@@ -232,7 +232,7 @@ private[raft] class Leader[Command](raftNode: RaftNode[Command])(implicit ec: Ex
       (nextLogIndex, entriesToAppend :+ nextEntry)
     })
 
-    val rc2 = rc.copy(writes = rc.writes ++ entriesToAppend)
+    val rc2 = rc.copy(writes = entriesToAppend)
 
     sendAppendEntries(rc2).map(rcf => (rcf, Right(())))
   }

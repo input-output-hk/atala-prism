@@ -1,4 +1,7 @@
 package io.iohk.cef.consensus.raft.node
+
+import java.util.UUID.randomUUID
+
 import io.iohk.cef.consensus.raft.node.FutureOps.sequenceForgiving
 import io.iohk.cef.consensus.raft._
 import io.iohk.cef.consensus.raft.node.RaftNode.lastLogIndexAndTerm
@@ -73,10 +76,9 @@ private[raft] class RaftNode[Command](
   // to a requestVote from a single candidate.
   private[raft] def withState[T](f: RaftState[Command] => (RaftState[Command], T)): T = this.synchronized {
     atomic { implicit txn =>
-      val initialContext = raftState()
-      val (nextContext, result) = f(initialContext)
-      raftState() = nextContext
-      Txn.whileCommitting(_ => persistState(nextContext))
+      val (nextState, result) = f(raftState())
+      raftState() = nextState.copy(baseLog = nextState.log, deletes = 0, writes = Seq.empty)
+      Txn.whileCommitting(_ => persistState(nextState))
       result
     }
   }
@@ -178,7 +180,7 @@ private[raft] class RaftNode[Command](
       votes =>
         if (hasMajority(term, votes)) {
           val rs2 = nodeFSM(rs, MajorityVoteReceived)
-          log(s"Changing state from ${rs.role.stateCode} to ${rs2.role.stateCode}")
+          log(s"Changing state from ${rs.role.stateCode} to ${rs2.role.stateCode}", rs)
           sendHeartbeat(rs2)
         } else
           Future((rs, ()))
@@ -245,12 +247,13 @@ private[raft] class RaftNode[Command](
       log,
       0,
       Seq(),
-      votedFor
+      votedFor,
+      randomUUID()
     )
   }
 
   private def becomeFollower(rs: RaftState[Command], event: NodeEvent): RaftState[Command] = {
-    log(s"Changing state from ${rs.role.stateCode} to $Follower")
+    log(s"Changing state from ${rs.role.stateCode} to $Follower", rs)
     rs.copy(role = new Follower(this))
   }
 
@@ -260,7 +263,7 @@ private[raft] class RaftNode[Command](
   // Reset election timer
   // Send RequestVote RPCs to all other servers
   private def becomeCandidate(rs: RaftState[Command], event: NodeEvent): RaftState[Command] = {
-    log(s"Changing state from ${rs.role.stateCode} to $Candidate")
+    log(s"Changing state from ${rs.role.stateCode} to $Candidate", rs)
     electionTimer.reset()
     val (currentTerm, _) = rs.persistentState
     val newTerm = currentTerm + 1
@@ -277,9 +280,8 @@ private[raft] class RaftNode[Command](
     rs.copy(role = new Leader(this))
   }
 
-  private def log(msg: String): Unit = {
-    logger.info(s"Node $nodeId - $msg")
-  }
+  def log(msg: String, raftState: RaftState[Command]): Unit =
+    logger.info(s"Node $nodeId - ${raftState.uuid} - $msg")
 
   private def persistState(rs: RaftState[Command]): Unit = {
     val (term, votedFor) = rs.persistentState
