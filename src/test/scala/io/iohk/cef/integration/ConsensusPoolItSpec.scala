@@ -6,11 +6,12 @@ import io.iohk.cef.ledger.storage.LedgerStateStorage
 import org.scalatest.FlatSpecLike
 import org.scalatest.mockito.MockitoSugar
 
-class ConsensusPoolItSpec extends TestKit(ActorSystem("testActorModel"))
-  with FlatSpecLike
-  with MockitoSugar
-  with TxPoolFixture
-  with RealRaftNode[String] {
+class ConsensusPoolItSpec
+    extends TestKit(ActorSystem("testActorModel"))
+    with FlatSpecLike
+    with MockitoSugar
+    with TxPoolFixture
+    with RealRaftNode[String] {
 
   private def mockLedgerStateStorage[State] = mock[LedgerStateStorage[State]]
   behavior of "ConsensusPoolItSpec"

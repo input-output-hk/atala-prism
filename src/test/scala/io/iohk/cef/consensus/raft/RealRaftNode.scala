@@ -38,9 +38,9 @@ trait RealRaftNode[Command] {
   }
 
   def anIntegratedCluster(
-                           i1State: PersistentStorage[Command],
-                           i2State: PersistentStorage[Command],
-                           i3State: PersistentStorage[Command]): (TestNode, TestNode, TestNode) = {
+      i1State: PersistentStorage[Command],
+      i2State: PersistentStorage[Command],
+      i3State: PersistentStorage[Command]): (TestNode, TestNode, TestNode) = {
 
     val (t1, t2, t3) = (new TestNode("i1", i1State), new TestNode("i2", i2State), new TestNode("i3", i3State))
     t1.raftNode
