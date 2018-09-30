@@ -78,7 +78,9 @@ class TransactionPoolActorModelInterface[State, Header <: BlockHeader, Tx <: Tra
   case class ProcessTransaction(tx: Tx)
   case class RemoveBlockTransactions(block: Block[State, Header, Tx])
 
-  case class GenerateBlockResponse(result: Either[ApplicationError, Block[State, Header, Tx]], requested: Option[ActorRef])
+  case class GenerateBlockResponse(
+      result: Either[ApplicationError, Block[State, Header, Tx]],
+      requested: Option[ActorRef])
   case class ProcessTransactionResponse(result: Either[ApplicationError, Unit])
   case class RemoveBlockTransactionsResponse(result: Either[ApplicationError, Unit])
 }

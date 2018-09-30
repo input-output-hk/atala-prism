@@ -12,11 +12,13 @@ class RaftConsensusInterface[State, Header <: BlockHeader, Tx <: Transaction[Sta
     raftNode: RaftNode[Block[State, Header, Tx]])
     extends Consensus[State, Header, Tx] {
 
-  override def process(block: Block[State, Header, Tx])(implicit executionContext: ExecutionContext)
-    : Future[Either[ConsensusError, Unit]] = {
-    raftNode.clientAppendEntries(Seq(block)).map(_ match {
-      case _: Left[_, _] => Left(UnableToProcessBlock(block.header))
-      case _ => Right(())
-    })
+  override def process(block: Block[State, Header, Tx])(
+      implicit executionContext: ExecutionContext): Future[Either[ConsensusError, Unit]] = {
+    raftNode
+      .clientAppendEntries(Seq(block))
+      .map(_ match {
+        case _: Left[_, _] => Left(UnableToProcessBlock(block.header))
+        case _ => Right(())
+      })
   }
 }

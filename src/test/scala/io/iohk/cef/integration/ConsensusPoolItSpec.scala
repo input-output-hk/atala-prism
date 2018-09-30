@@ -19,12 +19,13 @@ import org.scalatest.{FlatSpecLike, MustMatchers}
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 
-class ConsensusPoolItSpec extends TestKit(ActorSystem("testActorModel"))
-  with ImplicitSender
-  with FlatSpecLike
-  with MockitoSugar
-  with TxPoolFixture
-  with MustMatchers {
+class ConsensusPoolItSpec
+    extends TestKit(ActorSystem("testActorModel"))
+    with ImplicitSender
+    with FlatSpecLike
+    with MockitoSugar
+    with TxPoolFixture
+    with MustMatchers {
 
   private def mockLedgerStateStorage[State] = mock[LedgerStateStorage[State]]
   type B = Block[String, DummyBlockHeader, DummyTransaction]
@@ -70,12 +71,14 @@ class ConsensusPoolItSpec extends TestKit(ActorSystem("testActorModel"))
       new RaftConsensusInterface(ledgerId, t1.raftNode)
 
     val blockCreator =
-      system.actorOf(Props(new BlockCreator[String, DummyBlockHeader, DummyTransaction](
-        txPoolActorModelInterface,
-        consensus,
-        100 minutes,
-        100 minutes
-      )))
+      system.actorOf(
+        Props(
+          new BlockCreator[String, DummyBlockHeader, DummyTransaction](
+            txPoolActorModelInterface,
+            consensus,
+            100 minutes,
+            100 minutes
+          )))
     val (block1, block2, block3) = (
       Block(DummyBlockHeader(137), largeBlockTransactions),
       Block(DummyBlockHeader(13), block2Transactions),
@@ -102,8 +105,9 @@ class ConsensusPoolItSpec extends TestKit(ActorSystem("testActorModel"))
     txPoolActorModelInterface.testActorRef.underlyingActor.pool.size mustBe 0
   }
 
-  private def processAllTxs(txs: Seq[DummyTransaction],
-                            txPoolIf: TransactionPoolFutureInterface[String, DummyBlockHeader, DummyTransaction])(
+  private def processAllTxs(
+      txs: Seq[DummyTransaction],
+      txPoolIf: TransactionPoolFutureInterface[String, DummyBlockHeader, DummyTransaction])(
       implicit executionContext: ExecutionContext
   ) = {
     val result = Future.sequence(txs.map(txPoolIf.processTransaction))

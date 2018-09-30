@@ -213,7 +213,8 @@ class RaftConsensusSpec extends WordSpec {
         }
       }
       "implement rule #5" should {
-        "if leaderCommit > commitIndex set commitIndex = min(leaderCommit, index of last new entry)" in new FakeRaftNode[String] {
+        "if leaderCommit > commitIndex set commitIndex = min(leaderCommit, index of last new entry)" in new FakeRaftNode[
+          String] {
           // by 'Rules for servers', note for all servers,
           // if commitIndex > lastApplied, apply log[lastApplied] to state machine,
           // and
@@ -523,7 +524,8 @@ class RaftConsensusSpec extends WordSpec {
   }
   "Leaders" when {
     "Winning an election" should {
-      "Implement Leaders note #1, send initial empty AppendEntries RPCs to each server and repeat during idle periods" in new FakeRaftNode[String] {
+      "Implement Leaders note #1, send initial empty AppendEntries RPCs to each server and repeat during idle periods" in new FakeRaftNode[
+        String] {
         val persistentStorage =
           new InMemoryPersistentStorage[String](Vector(), currentTerm = 2, votedFor = "i1")
 
@@ -544,7 +546,8 @@ class RaftConsensusSpec extends WordSpec {
       }
     }
     "Receiving commands from a client" should {
-      "Implement Leaders note #2, append entry to local log, apply to state machine and respond to client" in new FakeRaftNode[String] {
+      "Implement Leaders note #2, append entry to local log, apply to state machine and respond to client" in new FakeRaftNode[
+        String] {
         val persistentStorage =
           new InMemoryPersistentStorage[String](Vector(), currentTerm = 2, votedFor = "i1")
 

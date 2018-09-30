@@ -39,7 +39,7 @@ trait RealRaftNode[Command] {
   }
 
   def anIntegratedCluster(nodeData: Seq[(PersistentStorage[Command], String)]): Seq[TestNode] = {
-    val nodes = nodeData.map{ case (storage, id) => new TestNode(id, storage)}
+    val nodes = nodeData.map { case (storage, id) => new TestNode(id, storage) }
     nodes.foreach(_.raftNode)
     nodes
   }
