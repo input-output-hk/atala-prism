@@ -5,8 +5,9 @@ import org.mockito.Mockito.{times, verify}
 import org.scalatest.Matchers._
 import org.scalatest.WordSpec
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
+import org.scalatest.mockito.MockitoSugar
 
-class RaftConsensusItSpec extends WordSpec {
+class RaftConsensusItSpec extends WordSpec with MockitoSugar {
 
   "In an integrated cluster" when {
     "servers are started" should {
@@ -20,7 +21,7 @@ class RaftConsensusItSpec extends WordSpec {
         t1.raftNode.getRole shouldBe Leader
       }
       "replicate logs" in new RealRaftNode[String] {
-        override def machineCallback: String => Unit = _ => ()
+        override def machineCallback: String => Unit = mock[String => Unit]
         override def clusterIds: Seq[String] = Seq("i1", "i2", "i3")
         val storages = clusterIds.map(_ => new InMemoryPersistentStorage[String](Vector(), 1, ""))
         val Seq(s1, s2, s3) = storages
