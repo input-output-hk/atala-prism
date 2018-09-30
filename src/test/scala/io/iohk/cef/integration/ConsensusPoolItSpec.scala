@@ -97,6 +97,9 @@ class ConsensusPoolItSpec
     blockCreator ! BlockCreator.Execute(Some(testProbe.ref))
     testProbe.expectMsg(30 seconds, Right[ApplicationError, Unit](()))
     s1.log.map(_.command) mustBe expectedLogEntries
+
+    t1.raftNode.clientAppendEntries(Seq())
+
     val inOrderExecution = Mockito.inOrder(testExecution)
     //one call per cluster node
     inOrderExecution.verify(testExecution, times(3)).apply(block1)
