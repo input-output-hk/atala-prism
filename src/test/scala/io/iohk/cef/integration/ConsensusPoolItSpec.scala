@@ -4,7 +4,7 @@ import akka.testkit.{ImplicitSender, TestKit, TestProbe}
 import akka.util.Timeout
 import io.iohk.cef.LedgerId
 import io.iohk.cef.consensus.Consensus
-import io.iohk.cef.consensus.raft.{InMemoryPersistentStorage, RaftConsensusInterface, RealRaftNode}
+import io.iohk.cef.consensus.raft.{InMemoryPersistentStorage, RaftConsensusInterface, RealRaftNodeFixture}
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.ledger.Block
 import io.iohk.cef.ledger.storage.LedgerStateStorage
@@ -31,7 +31,7 @@ class ConsensusPoolItSpec
   type B = Block[String, DummyBlockHeader, DummyTransaction]
   behavior of "ConsensusPoolItSpec"
 
-  it should "push periodical blocks to consensus" in new RealRaftNode[B] {
+  it should "push periodical blocks to consensus" in new RealRaftNodeFixture[B] {
 
     override def clusterIds: Seq[String] = Seq("i1", "i2", "s3")
     val storages = clusterIds.map(_ => new InMemoryPersistentStorage[B](Vector(), 1, ""))
