@@ -7,5 +7,5 @@ trait ActorSystemBuilder {
 }
 
 trait DefaultActorSystemBuilder extends ActorSystemBuilder {
-  override val actorSystem: ActorSystem = ActorSystem()
+  override val actorSystem: ActorSystem = ActorSystem("cef-system")
 }
