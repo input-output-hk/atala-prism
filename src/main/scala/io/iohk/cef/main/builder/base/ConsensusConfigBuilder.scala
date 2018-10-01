@@ -9,8 +9,7 @@ import scala.concurrent.duration.Duration
 trait ConsensusConfigBuilder {}
 
 trait RaftConsensusConfigBuilder[Command] extends ConsensusConfigBuilder {
-  def storage(
-      implicit commandSerializable: ByteStringSerializable[Command]): PersistentStorage[Command]
+  def storage(implicit commandSerializable: ByteStringSerializable[Command]): PersistentStorage[Command]
   val clusterMemberIds: Seq[String]
   val electionTimeoutRange: (Duration, Duration)
   val heartbeatTimeoutRange: (Duration, Duration)

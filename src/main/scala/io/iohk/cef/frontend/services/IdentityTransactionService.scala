@@ -12,7 +12,7 @@ class IdentityTransactionService(nodeCore: NodeCore[Set[SigningPublicKey], Ident
 
   def process(request: IdentityTransactionRequest): Future[Either[ApplicationError, Unit]] = {
     val envelope =
-      Envelope(content = request.transaction, ledgerId = request.ledgerId, NoOne)
+      Envelope(content = request.transaction, ledgerId = request.ledgerId, Not(Everyone))
 
     nodeCore.receiveTransaction(envelope)
   }

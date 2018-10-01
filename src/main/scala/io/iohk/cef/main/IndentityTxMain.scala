@@ -115,7 +115,8 @@ object IndentityTxMain extends App {
   trait DefaultRaftConsensusConfigBuilder[Command] extends RaftConsensusConfigBuilder[Command] {
     self: DefaultLedgerConfig =>
     import io.iohk.cef.network.encoding.array.ArrayCodecs._
-    override def storage(implicit
+    override def storage(
+        implicit
         commandSerializable: ByteStringSerializable[Command]): raft.PersistentStorage[Command] = {
       new OnDiskPersistentStorage[Command](nodeIdStr)
     }
@@ -151,7 +152,9 @@ object IndentityTxMain extends App {
     with DefaultActorSystemBuilder with CommonTypeAliases[S, H, T]
 
     //Identity Specific
-    with IdentityFrontendBuilder with IdentityTransactionServiceBuilder with IdentityLedgerHeaderGenerator {}
+    with IdentityFrontendBuilder
+    with IdentityTransactionServiceBuilder
+    with IdentityLedgerHeaderGenerator {}
     val bindingF = coreBuilder.bindingFuture
     (bindingF, coreBuilder.nodeCore)
   }

@@ -107,7 +107,8 @@ package object raft {
 
   object LogEntry {
 
-    implicit def logSerializable[B](implicit bSerializable: ByteStringSerializable[B]): ByteStringSerializable[LogEntry[B]] =
+    implicit def logSerializable[B](
+        implicit bSerializable: ByteStringSerializable[B]): ByteStringSerializable[LogEntry[B]] =
       new ByteStringSerializable[LogEntry[B]] {
         override def encode(t: LogEntry[B]): ByteString = {
           ByteString(
