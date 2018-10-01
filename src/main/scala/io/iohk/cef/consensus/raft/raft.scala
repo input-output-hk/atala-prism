@@ -1,6 +1,9 @@
 package io.iohk.cef.consensus
 
+import akka.util.ByteString
 import io.iohk.cef.consensus.raft.node._
+import io.iohk.cef.ledger.ByteStringSerializable
+import io.iohk.cef.protobuf.raftConsensus.LogEntryProto
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
@@ -101,6 +104,26 @@ package object raft {
     * or the algorithm.
     */
   case class LogEntry[Command](command: Command, term: Int, index: Int)
+
+  object LogEntry {
+
+    implicit def logSerializable[B](implicit bSerializable: ByteStringSerializable[B]): ByteStringSerializable[LogEntry[B]] =
+      new ByteStringSerializable[LogEntry[B]] {
+        override def encode(t: LogEntry[B]): ByteString = {
+          ByteString(
+            LogEntryProto(
+              com.google.protobuf.ByteString.copyFrom(bSerializable.encode(t.command).toArray),
+              t.term,
+              t.index).toByteArray)
+        }
+        override def decode(u: ByteString): Option[LogEntry[B]] = {
+          val parsed = LogEntryProto.parseFrom(u.toArray)
+          bSerializable
+            .decode(ByteString(parsed.command.toByteArray))
+            .map(block => LogEntry(block, parsed.term, parsed.index))
+        }
+      }
+  }
 
   /**
     * To be implemented by users of the module using whatever persistence technology suits them.

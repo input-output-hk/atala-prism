@@ -11,10 +11,9 @@ import akka.http.scaladsl.Http
 import akka.util.{ByteString, Timeout}
 import io.iohk.cef.LedgerId
 import io.iohk.cef.consensus.raft
-import io.iohk.cef.consensus.raft.LogEntry
 import io.iohk.cef.consensus.raft.node.OnDiskPersistentStorage
+import io.iohk.cef.core.NodeCore
 import io.iohk.cef.core.raftrpc.RaftRPCFactory
-import io.iohk.cef.core.{Envelope, NodeCore}
 import io.iohk.cef.crypto._
 import io.iohk.cef.ledger.identity.storage.protobuf.IdentityLedgerState.PublicKeyListProto
 import io.iohk.cef.ledger.identity.{IdentityBlockHeader, IdentityBlockSerializer, IdentityTransaction}
@@ -34,7 +33,6 @@ import io.iohk.cef.network.encoding.{Decoder, Encoder, rlp}
 import io.iohk.cef.network.telemetry.InMemoryTelemetry
 import io.iohk.cef.network.transport.Transports
 import io.iohk.cef.network.transport.tcp.TcpTransportConfiguration
-import io.iohk.cef.protobuf.raftConsensus.LogEntryProto
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext, Future}
@@ -117,8 +115,7 @@ object IndentityTxMain extends App {
   trait DefaultRaftConsensusConfigBuilder[Command] extends RaftConsensusConfigBuilder[Command] {
     self: DefaultLedgerConfig =>
     import io.iohk.cef.network.encoding.array.ArrayCodecs._
-    override def storage(
-        implicit logEntrySerializable: ByteStringSerializable[LogEntry[Command]],
+    override def storage(implicit
         commandSerializable: ByteStringSerializable[Command]): raft.PersistentStorage[Command] = {
       new OnDiskPersistentStorage[Command](nodeIdStr)
     }
@@ -138,41 +135,33 @@ object IndentityTxMain extends App {
   type H = IdentityBlockHeader
   type T = IdentityTransaction
   type B = Block[S, H, T]
-  type ET = Envelope[T]
-  type EB = Envelope[B]
 
   def identityCoreBuilder(
       implicit
-      txNetworkEncoder: NioEncoder[ET],
-      txNetworkDecoder: NioDecoder[ET],
-      blockNetworkEncoder: NioEncoder[EB],
-      blockNetworkDecoder: NioDecoder[EB],
       timeout: Timeout,
       executionContext: ExecutionContext,
       blockByteStringSerializable: ByteStringSerializable[B],
       stateyteStringSerializable: ByteStringSerializable[S],
-      ebByteStringSerializable: ByteStringSerializable[EB],
-      etStringSerializable: ByteStringSerializable[ET],
-      dByteStringSerializable: ByteStringSerializable[DiscoveryWireMessage],
-      lByteStringSerializable: ByteStringSerializable[LogEntry[B]]): (Future[Http.ServerBinding], NodeCore[S, H, T]) = {
+      txStringSerializable: ByteStringSerializable[T],
+      dByteStringSerializable: ByteStringSerializable[DiscoveryWireMessage])
+    : (Future[Http.ServerBinding], NodeCore[S, H, T]) = {
     val coreBuilder = new NodeCoreBuilder[S, H, T] with DefaultLedgerConfig with DefaultRaftConsensusConfigBuilder[B]
     with RaftConsensusBuilder[S, H, T] with TransactionPoolBuilder[S, H, T] with LedgerBuilder[Future, S, T]
     with LogBuilder with NetworkBuilder[S, H, T] with DefaultLedgerStateStorageBuilder[S] with LedgerStorageBuilder
     with DefaultActorSystemBuilder with CommonTypeAliases[S, H, T]
 
     //Identity Specific
-    with IdentityFrontendBuilder
-    with IdentityTransactionServiceBuilder
-    with IdentityLedgerHeaderGenerator {}
+    with IdentityFrontendBuilder with IdentityTransactionServiceBuilder with IdentityLedgerHeaderGenerator {}
     val bindingF = coreBuilder.bindingFuture
     (bindingF, coreBuilder.nodeCore)
   }
 
   //Starting up the server
+
   implicit val timeout: Timeout = 1 minute
   implicit val executionContext = scala.concurrent.ExecutionContext.global
-  implicit val txSerializable = IdentityBlockSerializer.txSerializable
   implicit val bSerializable = IdentityBlockSerializer.serializable
+  implicit val txSerializable = IdentityBlockSerializer.txSerializable
   implicit val sSerializable = new ByteStringSerializable[Set[SigningPublicKey]] {
     override def decode(u: ByteString): Option[Set[SigningPublicKey]] = {
       Some(
@@ -205,21 +194,10 @@ object IndentityTxMain extends App {
       }
     }
   implicit val dSerializable = discSerializable
-  def logSerializable(implicit bSerializable: ByteStringSerializable[B]): ByteStringSerializable[LogEntry[B]] = new ByteStringSerializable[LogEntry[B]] {
-    override def encode(t: LogEntry[B]): ByteString = {
-      ByteString(LogEntryProto(com.google.protobuf.ByteString.copyFrom(bSerializable.encode(t.command).toArray), t.term, t.index).toByteArray)
-    }
-    override def decode(u: ByteString): Option[LogEntry[B]] = {
-      val parsed = LogEntryProto.parseFrom(u.toArray)
-      bSerializable.decode(ByteString(parsed.command.toByteArray)).map(block =>
-        LogEntry(block, parsed.term, parsed.index)
-      )
-    }
-  }
-  implicit val lSerializable = logSerializable
-  implicit def nioEncoderFromByteStringSerializable[T](implicit serializable: ByteStringSerializable[T]) = serializable.toNioEncoder
-  implicit def nioDecoderFromByteStringSerializable[T](implicit serializable: ByteStringSerializable[T]) = serializable.toNioDecoder
-  import Envelope._
+  implicit def nioEncoderFromByteStringSerializable[T](implicit serializable: ByteStringSerializable[T]) =
+    serializable.toNioEncoder
+  implicit def nioDecoderFromByteStringSerializable[T](implicit serializable: ByteStringSerializable[T]) =
+    serializable.toNioDecoder
   val (serverBinding, core) = identityCoreBuilder
   StdIn.readLine() // let it run until user presses return
   Await.result(serverBinding.flatMap(_.unbind()), 1 minute) // trigger unbinding from the port

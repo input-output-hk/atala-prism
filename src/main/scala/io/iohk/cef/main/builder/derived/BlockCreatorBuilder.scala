@@ -3,7 +3,7 @@ import akka.actor.Props
 import akka.util.Timeout
 import io.iohk.cef.consensus.raft.LogEntry
 import io.iohk.cef.ledger.{Block, BlockHeader, ByteStringSerializable, Transaction}
-import io.iohk.cef.main.builder.base.{ConsensusBuilder, LedgerConfigBuilder}
+import io.iohk.cef.main.builder.base.{CommonTypeAliases, ConsensusBuilder, LedgerConfigBuilder}
 import io.iohk.cef.network.discovery.DiscoveryWireMessage
 import io.iohk.cef.transactionpool.BlockCreator
 
@@ -13,11 +13,12 @@ trait BlockCreatorBuilder[S, H <: BlockHeader, T <: Transaction[S]] {
   self: ConsensusBuilder[S, H, T]
     with TransactionPoolBuilder[S, H, T]
     with LedgerConfigBuilder
-    with ConsensusBuilder[S, H, T] =>
+    with ConsensusBuilder[S, H, T]
+    with CommonTypeAliases[S, H, T] =>
 
   def blockCreator(
       implicit executionContext: ExecutionContext,
-      byteStringSerializable: ByteStringSerializable[Block[S, H, T]],
+      byteStringSerializable: ByteStringSerializable[B],
       sByteStringSerializable: ByteStringSerializable[S],
       timeout: Timeout,
       dByteStringSerializable: ByteStringSerializable[DiscoveryWireMessage],

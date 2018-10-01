@@ -10,13 +10,13 @@ import io.iohk.cef.utils.ForExpressionsEnabler
 import scala.concurrent.{ExecutionContext, Future}
 
 trait ConsensusBuilder[S, H <: BlockHeader, T <: Transaction[S]] {
+  self: CommonTypeAliases[S, H, T] =>
   def consensus(
       implicit timeout: Timeout,
       executionContext: ExecutionContext,
-      byteStringSerializable: ByteStringSerializable[Block[S, H, T]],
+      byteStringSerializable: ByteStringSerializable[B],
       sByteStringSerializable: ByteStringSerializable[S],
-      dByteStringSerializable: ByteStringSerializable[DiscoveryWireMessage],
-      lByteStringSerializable: ByteStringSerializable[LogEntry[Block[S, H, T]]]): Consensus[S, H, T]
+      dByteStringSerializable: ByteStringSerializable[DiscoveryWireMessage]): Consensus[S, H, T]
 }
 
 trait RaftConsensusBuilder[S, H <: BlockHeader, T <: Transaction[S]] extends ConsensusBuilder[S, H, T] {
@@ -64,10 +64,9 @@ trait RaftConsensusBuilder[S, H <: BlockHeader, T <: Transaction[S]] extends Con
   private def raftNodeInterface(
       implicit timeout: Timeout,
       executionContext: ExecutionContext,
-      byteStringSerializable: ByteStringSerializable[Block[S, H, T]],
+      byteStringSerializable: ByteStringSerializable[B],
       sByteStringSerializable: ByteStringSerializable[S],
-      dByteStringSerializable: ByteStringSerializable[DiscoveryWireMessage],
-      lByteStringSerializable: ByteStringSerializable[LogEntry[Block[S, H, T]]]) =
+      dByteStringSerializable: ByteStringSerializable[DiscoveryWireMessage]) =
     raftNode[B](
       nodeIdStr,
       clusterMemberIds,
@@ -81,17 +80,15 @@ trait RaftConsensusBuilder[S, H <: BlockHeader, T <: Transaction[S]] extends Con
   private def raftConsensus(
       implicit timeout: Timeout,
       executionContext: ExecutionContext,
-      byteStringSerializable: ByteStringSerializable[Block[S, H, T]],
+      byteStringSerializable: ByteStringSerializable[B],
       sByteStringSerializable: ByteStringSerializable[S],
-      dByteStringSerializable: ByteStringSerializable[DiscoveryWireMessage],
-      lByteStringSerializable: ByteStringSerializable[LogEntry[Block[S, H, T]]]) = new RaftConsensus(raftNodeInterface)
+      dByteStringSerializable: ByteStringSerializable[DiscoveryWireMessage]) = new RaftConsensus(raftNodeInterface)
 
   override def consensus(
       implicit timeout: Timeout,
       executionContext: ExecutionContext,
-      byteStringSerializable: ByteStringSerializable[Block[S, H, T]],
+      byteStringSerializable: ByteStringSerializable[B],
       sByteStringSerializable: ByteStringSerializable[S],
-      dByteStringSerializable: ByteStringSerializable[DiscoveryWireMessage],
-      lByteStringSerializable: ByteStringSerializable[LogEntry[Block[S, H, T]]]): Consensus[S, H, T] =
+      dByteStringSerializable: ByteStringSerializable[DiscoveryWireMessage]): Consensus[S, H, T] =
     new RaftConsensusInterface[S, H, T](ledgerId, raftConsensus)
 }

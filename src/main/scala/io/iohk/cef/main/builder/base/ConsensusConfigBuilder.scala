@@ -1,5 +1,5 @@
 package io.iohk.cef.main.builder.base
-import io.iohk.cef.consensus.raft.{LogEntry, PersistentStorage, RPCFactory}
+import io.iohk.cef.consensus.raft.{PersistentStorage, RPCFactory}
 import io.iohk.cef.ledger.ByteStringSerializable
 import io.iohk.cef.network.discovery.DiscoveryWireMessage
 
@@ -10,8 +10,7 @@ trait ConsensusConfigBuilder {}
 
 trait RaftConsensusConfigBuilder[Command] extends ConsensusConfigBuilder {
   def storage(
-      implicit logEntrySerializable: ByteStringSerializable[LogEntry[Command]],
-      commandSerializable: ByteStringSerializable[Command]): PersistentStorage[Command]
+      implicit commandSerializable: ByteStringSerializable[Command]): PersistentStorage[Command]
   val clusterMemberIds: Seq[String]
   val electionTimeoutRange: (Duration, Duration)
   val heartbeatTimeoutRange: (Duration, Duration)

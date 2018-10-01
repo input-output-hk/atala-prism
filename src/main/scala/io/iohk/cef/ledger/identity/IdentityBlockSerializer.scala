@@ -20,8 +20,7 @@ object IdentityBlockSerializer {
 
       override def encode(t: IdentityTransaction): ByteString =
         ByteString(encodeIdentityTransaction(t).toByteArray)
-      override def decode(
-          u: ByteString): Option[IdentityTransaction] =
+      override def decode(u: ByteString): Option[IdentityTransaction] =
         decodeIdentityTransactionProto(IdentityTransactionProto.parseFrom(u.toArray))
     }
 
@@ -75,13 +74,15 @@ object IdentityBlockSerializer {
       key <- SigningPublicKey
         .decodeFrom(ByteString(ptx.publicKey.toByteArray))
         .left
-        .map { error => throw new RuntimeException(s"Unable to parse transaction public key: $error")
+        .map { error =>
+          throw new RuntimeException(s"Unable to parse transaction public key: $error")
         }
 
       signature <- Signature
         .decodeFrom(ByteString(ptx.signature.toByteArray))
         .left
-        .map { error => throw new RuntimeException(s"Unable to decode transaction signature: $error")
+        .map { error =>
+          throw new RuntimeException(s"Unable to decode transaction signature: $error")
         }
 
     } yield

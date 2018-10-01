@@ -31,13 +31,9 @@ trait NioCodecs extends NativeCodecs with ProductCodecs with StreamCodecs with O
   def nioStreamCodec[T](implicit enc: NioEncoder[T], dec: NioStreamDecoder[T]): NioStreamCodec[T] =
     new NioStreamCodec[T](enc, dec)
 
-  val byteStringNioEncoder: NioEncoder[ByteString] = new NioEncoder[ByteString] {
-    override def encode(t: ByteString): ByteBuffer = t.toByteBuffer
-  }
+  val byteStringNioEncoder: NioEncoder[ByteString] = _.toByteBuffer
 
-  val byteStringNioDecoder: NioDecoder[ByteString] = new NioDecoder[ByteString] {
-    override def decode(u: ByteBuffer): Option[ByteString] = Some(ByteString(u))
-  }
+  val byteStringNioDecoder: NioDecoder[ByteString] = x => Some(ByteString(x))
 
   implicit class ByteStringEncoderOps[T](encoder: Encoder[T, ByteString]) {
     def toNioEncoder: NioEncoder[T] = encoder andThen byteStringNioEncoder
