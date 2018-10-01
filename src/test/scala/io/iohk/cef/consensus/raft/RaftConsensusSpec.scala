@@ -672,6 +672,29 @@ class RaftConsensusSpec extends WordSpec {
 
         t2.raftNode.getCommonVolatileState shouldBe CommonVolatileState(4, 4)
         t3.raftNode.getCommonVolatileState shouldBe CommonVolatileState(4, 4)
+
+        t1.raftNode.clientAppendEntries(Seq("F", "G", "H")).futureValue
+        t1.raftNode.heartbeatTimeout().futureValue
+
+        Seq("F", "G", "H").foreach(command => {
+          verify(t1.machine).apply(command)
+          verify(t2.machine).apply(command)
+          verify(t3.machine).apply(command)
+        })
+
+        val expectedEntries2 = Vector(
+          LogEntry("A", 2, 0),
+          LogEntry("B", 2, 1),
+          LogEntry("C", 2, 2),
+          LogEntry("D", 2, 3),
+          LogEntry("E", 2, 4),
+          LogEntry("F", 2, 5),
+          LogEntry("G", 2, 6),
+          LogEntry("H", 2, 7))
+
+        s1.log shouldBe expectedEntries2
+        s2.log shouldBe expectedEntries2
+        s3.log shouldBe expectedEntries2
       }
     }
   }
