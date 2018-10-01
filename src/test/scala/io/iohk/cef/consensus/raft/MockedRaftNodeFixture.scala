@@ -10,7 +10,7 @@ import org.scalatest.time.{Millis, Seconds, Span}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait FakeRaftNode[Command] {
+trait MockedRaftNodeFixture[Command] {
 
   implicit val ec: ExecutionContext = ExecutionContext.global
   val timeout = Span(5, Seconds)

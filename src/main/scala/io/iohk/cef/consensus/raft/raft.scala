@@ -1,6 +1,8 @@
 package io.iohk.cef.consensus
 
 import akka.util.ByteString
+import java.util.UUID
+
 import io.iohk.cef.consensus.raft.node._
 import io.iohk.cef.ledger.ByteStringSerializable
 import io.iohk.cef.protobuf.raftConsensus.LogEntryProto
@@ -185,7 +187,8 @@ package object raft {
       baseLog: IndexedSeq[LogEntry[Command]],
       deletes: Int,
       writes: Seq[LogEntry[Command]],
-      leaderId: String) {
+      leaderId: String,
+      uuid: UUID) {
     val log = new VirtualVector(baseLog, deletes, writes)
   }
 
@@ -200,8 +203,8 @@ package object raft {
     * @param nodeId A unique identifier within the cluster.
     * @param clusterMemberIds the ids of the other cluster members.
     * @param rpcFactory as described above.
-    * @param electionTimerFactory as described above.
-    * @param heartbeatTimerFactory as described above.
+    * @param electionTimeoutRange range of values for the election timeout (see raft paper).
+    * @param heartbeatTimeoutRange range of values for the heartbeat timeout (see raft paper).
     * @param stateMachine the user 'state machine' to which committed log entries will be applied.
     * @param persistentStorage as described above.
     * @param ec an execution context for Futures.

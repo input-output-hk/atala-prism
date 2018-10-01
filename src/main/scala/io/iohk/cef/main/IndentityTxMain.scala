@@ -152,9 +152,7 @@ object IndentityTxMain extends App {
     with DefaultActorSystemBuilder with CommonTypeAliases[S, H, T]
 
     //Identity Specific
-    with IdentityFrontendBuilder
-    with IdentityTransactionServiceBuilder
-    with IdentityLedgerHeaderGenerator {}
+    with IdentityFrontendBuilder with IdentityTransactionServiceBuilder with IdentityLedgerHeaderGenerator {}
     val bindingF = coreBuilder.bindingFuture
     (bindingF, coreBuilder.nodeCore)
   }

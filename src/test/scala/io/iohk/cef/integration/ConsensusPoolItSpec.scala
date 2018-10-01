@@ -31,8 +31,8 @@ class ConsensusPoolItSpec
   type B = Block[String, DummyBlockHeader, DummyTransaction]
   behavior of "ConsensusPoolItSpec"
 
-  it should "push periodical blocks to consensus" in new RealRaftNode[B] {
-    pending
+  it should "push periodical blocks to consensus" in new RealRaftNodeFixture[B] {
+
     override def clusterIds: Seq[String] = Seq("i1", "i2", "s3")
     val storages = clusterIds.map(_ => new InMemoryPersistentStorage[B](Vector(), 1, ""))
     val Seq(s1, s2, s3) = storages
@@ -97,6 +97,9 @@ class ConsensusPoolItSpec
     blockCreator ! BlockCreator.Execute(Some(testProbe.ref))
     testProbe.expectMsg(30 seconds, Right[ApplicationError, Unit](()))
     s1.log.map(_.command) mustBe expectedLogEntries
+
+    t1.raftNode.clientAppendEntries(Seq())
+
     val inOrderExecution = Mockito.inOrder(testExecution)
     //one call per cluster node
     inOrderExecution.verify(testExecution, times(3)).apply(block1)
