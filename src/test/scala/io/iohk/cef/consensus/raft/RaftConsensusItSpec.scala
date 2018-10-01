@@ -10,7 +10,7 @@ class RaftConsensusItSpec extends WordSpec {
 
   "In an integrated cluster" when {
     "servers are started" should {
-      "elect a leader" in new RealRaftNode[String] {
+      "elect a leader" in new RealRaftNodeFixture[String] {
         val s1 = new InMemoryPersistentStorage[String](Vector(), 1, "")
         val s2 = new InMemoryPersistentStorage[String](Vector(), 1, "")
         val s3 = new InMemoryPersistentStorage[String](Vector(), 1, "")
@@ -19,7 +19,8 @@ class RaftConsensusItSpec extends WordSpec {
         t1.raftNode.electionTimeout().futureValue
         t1.raftNode.getRole shouldBe Leader
       }
-      "replicate logs" in new RealRaftNode[String] {
+
+      "replicate logs" in new RealRaftNodeFixture[String] {
         val s1 = new InMemoryPersistentStorage[String](Vector(), 1, "")
         val s2 = new InMemoryPersistentStorage[String](Vector(), 1, "")
         val s3 = new InMemoryPersistentStorage[String](Vector(), 1, "")
@@ -66,6 +67,29 @@ class RaftConsensusItSpec extends WordSpec {
 
         t2.raftNode.getCommonVolatileState shouldBe CommonVolatileState(4, 4)
         t3.raftNode.getCommonVolatileState shouldBe CommonVolatileState(4, 4)
+
+        t1.raftNode.clientAppendEntries(Seq("F", "G", "H")).futureValue
+        t1.raftNode.heartbeatTimeout().futureValue
+
+        Seq("F", "G", "H").foreach(command => {
+          verify(t1.machine).apply(command)
+          verify(t2.machine).apply(command)
+          verify(t3.machine).apply(command)
+        })
+
+        val expectedEntries2 = Vector(
+          LogEntry("A", 2, 0),
+          LogEntry("B", 2, 1),
+          LogEntry("C", 2, 2),
+          LogEntry("D", 2, 3),
+          LogEntry("E", 2, 4),
+          LogEntry("F", 2, 5),
+          LogEntry("G", 2, 6),
+          LogEntry("H", 2, 7))
+
+        s1.log shouldBe expectedEntries2
+        s2.log shouldBe expectedEntries2
+        s3.log shouldBe expectedEntries2
       }
     }
   }

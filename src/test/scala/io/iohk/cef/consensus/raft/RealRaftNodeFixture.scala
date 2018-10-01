@@ -7,7 +7,7 @@ import org.scalatest.time.{Millis, Seconds, Span}
 import scala.collection.mutable
 import scala.concurrent.ExecutionContext
 
-trait RealRaftNode[Command] {
+trait RealRaftNodeFixture[Command] {
 
   implicit val ec: ExecutionContext = ExecutionContext.global
 

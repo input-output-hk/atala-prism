@@ -1,7 +1,7 @@
 package io.iohk.cef.integration
 import akka.actor.ActorSystem
 import akka.testkit.TestKit
-import io.iohk.cef.consensus.raft.RealRaftNode
+import io.iohk.cef.consensus.raft.RealRaftNodeFixture
 import io.iohk.cef.ledger.storage.LedgerStateStorage
 import org.scalatest.FlatSpecLike
 import org.scalatest.mockito.MockitoSugar
@@ -11,7 +11,7 @@ class ConsensusPoolItSpec
     with FlatSpecLike
     with MockitoSugar
     with TxPoolFixture
-    with RealRaftNode[String] {
+    with RealRaftNodeFixture[String] {
 
   private def mockLedgerStateStorage[State] = mock[LedgerStateStorage[State]]
   behavior of "ConsensusPoolItSpec"
