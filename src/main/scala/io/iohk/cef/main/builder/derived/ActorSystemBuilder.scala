@@ -6,6 +6,6 @@ trait ActorSystemBuilder {
   val actorSystem: ActorSystem
 }
 
-class DefaultActorSystemBuilder extends ActorSystemBuilder {
+trait DefaultActorSystemBuilder extends ActorSystemBuilder {
   override val actorSystem: ActorSystem = ActorSystem()
 }

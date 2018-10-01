@@ -1,15 +1,22 @@
 package io.iohk.cef.main.builder.base
-import io.iohk.cef.consensus.raft.{PersistentStorage, RPCFactory}
+import io.iohk.cef.consensus.raft.{LogEntry, PersistentStorage, RPCFactory}
+import io.iohk.cef.ledger.ByteStringSerializable
+import io.iohk.cef.network.discovery.DiscoveryWireMessage
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.Duration
 
 trait ConsensusConfigBuilder {}
 
 trait RaftConsensusConfigBuilder[Command] extends ConsensusConfigBuilder {
-  val nodeId: String
-  val storage: PersistentStorage[Command]
+  def storage(
+      implicit logEntrySerializable: ByteStringSerializable[LogEntry[Command]],
+      commandSerializable: ByteStringSerializable[Command]): PersistentStorage[Command]
   val clusterMemberIds: Seq[String]
   val electionTimeoutRange: (Duration, Duration)
   val heartbeatTimeoutRange: (Duration, Duration)
-  val rpcFactory: RPCFactory[Command]
+  def rpcFactory(
+      implicit serializable: ByteStringSerializable[DiscoveryWireMessage],
+      commandSerializable: ByteStringSerializable[Command],
+      executionContext: ExecutionContext): RPCFactory[Command]
 }

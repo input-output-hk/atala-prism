@@ -1,6 +1,7 @@
 package io.iohk.cef.network.encoding.array
 import java.nio.ByteBuffer
 
+import akka.util.ByteString
 import io.iohk.cef.network.encoding._
 import io.iohk.cef.network.encoding.nio.NioCodecs
 
@@ -37,6 +38,16 @@ trait ArrayCodecs extends NioCodecs {
       nioDecoder.decode(byteBuffer)
     }
   }
+
+  val byteStringEncoderTranslation: Encoder[ByteString, Array[Byte]] = t => t.toArray
+
+  val byteStringDecoderTranslation: Decoder[Array[Byte], ByteString] = u => Some(ByteString(u))
+
+  implicit def byteStringArrayEncoder[T](implicit byteStringEncoder: Encoder[T, ByteString]): ArrayEncoder[T] =
+    byteStringEncoder andThen byteStringEncoderTranslation
+
+  implicit def byteStringArrayDecoder[T](implicit byteStringDecoder: Decoder[ByteString, T]): ArrayDecoder[T] =
+    byteStringDecoderTranslation andThen byteStringDecoder
 }
 
 object ArrayCodecs extends ArrayCodecs
