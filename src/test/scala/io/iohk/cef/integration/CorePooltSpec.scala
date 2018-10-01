@@ -1,15 +1,14 @@
 package io.iohk.cef.integration
-import akka.actor.{ActorRef, ActorSystem, Props}
-import akka.testkit.{TestActorRef, TestKit}
+import akka.actor.ActorSystem
+import akka.testkit.TestKit
 import akka.util.Timeout
 import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.core.{Envelope, Everyone, NodeCore}
+import io.iohk.cef.ledger.Block
 import io.iohk.cef.ledger.storage.LedgerStateStorage
-import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
 import io.iohk.cef.network.{MessageStream, Network, NodeId}
 import io.iohk.cef.test.{DummyBlockHeader, DummyBlockSerializable, DummyTransaction}
-import io.iohk.cef.transactionpool.{TimedQueue, TransactionPoolActorModelInterface, TransactionPoolFutureInterface}
-import io.iohk.cef.utils.ByteSizeable
+import io.iohk.cef.transactionpool.{TimedQueue, TransactionPoolFutureInterface}
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar
@@ -23,30 +22,13 @@ class CorePooltSpec
     with FlatSpecLike
     with MustMatchers
     with BeforeAndAfterAll
-    with MockitoSugar {
+    with MockitoSugar
+    with TxPoolFixture {
 
   private def mockLedgerStateStorage[State] = mock[LedgerStateStorage[State]]
 
-  import io.iohk.cef.ledger.ByteSizeableImplicits._
   override def afterAll(): Unit = TestKit.shutdownActorSystem(system)
-
-  class TestableTransactionPoolActorModelInterface[State, Header <: BlockHeader, Tx <: Transaction[State]](
-      headerGenerator: Seq[Transaction[State]] => Header,
-      maxTxSizeInBytes: Int,
-      ledgerStateStorage: LedgerStateStorage[State],
-      defaultDurationTxs: Duration,
-      timedQueue: TimedQueue[Tx])(implicit blockByteSizeable: ByteSizeable[Block[State, Header, Tx]])
-      extends TransactionPoolActorModelInterface[State, Header, Tx](
-        system.actorOf,
-        headerGenerator,
-        maxTxSizeInBytes,
-        ledgerStateStorage,
-        defaultDurationTxs,
-        () => timedQueue) {
-
-    lazy val testActorRef = TestActorRef[TransactionPoolActor](Props(new TransactionPoolActor()))
-    override def poolActor: ActorRef = testActorRef
-  }
+  import io.iohk.cef.ledger.ByteSizeableImplicits._
 
   behavior of "CorePoolItSpec"
 
