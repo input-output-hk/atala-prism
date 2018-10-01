@@ -35,6 +35,8 @@ case class Or(a: DestinationDescriptor, b: DestinationDescriptor) extends Destin
   override def apply(v1: NodeId): Boolean = a(v1) || b(v1)
 }
 
+case object NoOne extends Not(Everyone)
+
 object DestinationDescriptor {
   import io.iohk.cef.utils.ProtoBufByteStringConversion._
   val destinationDescriptorSerializer: ByteStringSerializable[DestinationDescriptor] =

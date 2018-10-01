@@ -19,7 +19,7 @@ import scala.concurrent.duration.Duration
   * @tparam State the ledger state type
   * @tparam Header the block header type
   */
-class TransactionPoolActorModelInterface[State, Header <: BlockHeader, Tx <: Transaction[State]](
+class  TransactionPoolActorModelInterface[State, Header <: BlockHeader, Tx <: Transaction[State]](
     actorCreator: Props => ActorRef,
     headerGenerator: Seq[Transaction[State]] => Header,
     maxBlockSize: Int,
