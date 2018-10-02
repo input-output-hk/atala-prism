@@ -1,4 +1,4 @@
-package io.iohk.cef.main.builder.base
+package io.iohk.cef.main.builder
 import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
 
 trait CommonTypeAliases[S, H <: BlockHeader, T <: Transaction[S]] {

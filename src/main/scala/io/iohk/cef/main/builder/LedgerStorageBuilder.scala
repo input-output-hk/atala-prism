@@ -1,8 +1,7 @@
-package io.iohk.cef.main.builder.derived
+package io.iohk.cef.main.builder
 import io.iohk.cef.ledger.storage.LedgerStorage
 import io.iohk.cef.ledger.storage.scalike.LedgerStorageImpl
 import io.iohk.cef.ledger.storage.scalike.dao.LedgerStorageDao
-import io.iohk.cef.main.builder.base.LedgerConfigBuilder
 
 trait LedgerStorageBuilder {
   self: LedgerConfigBuilder =>

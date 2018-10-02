@@ -1,4 +1,5 @@
-package io.iohk.cef.main.builder.base
+package io.iohk.cef.main.builder
+
 import io.iohk.cef.crypto._
 import io.iohk.cef.ledger.identity.IdentityBlockHeader
 import io.iohk.cef.ledger.{BlockHeader, Transaction}

@@ -1,22 +1,22 @@
-package io.iohk.cef.main.builder.base
+package io.iohk.cef.main.builder
+
 import java.security.SecureRandom
 import java.time.Clock
 
 import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.ActorContext
 import akka.util.ByteString
-import io.iohk.cef.ledger.ByteStringSerializable
-import io.iohk.cef.main.builder.helpers.LedgerConfig
+import io.iohk.cef.ledger.{ByteStringSerializable, LedgerConfig}
 import io.iohk.cef.network.NodeStatus.NodeState
+import io.iohk.cef.network._
 import io.iohk.cef.network.discovery.DiscoveryListener.DiscoveryListenerRequest
 import io.iohk.cef.network.discovery.DiscoveryManager.DiscoveryRequest
-import io.iohk.cef.network.discovery.db.DummyKnownNodesStorage
 import io.iohk.cef.network.discovery._
+import io.iohk.cef.network.discovery.db.DummyKnownNodesStorage
 import io.iohk.cef.network.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.telemetry.InMemoryTelemetry
 import io.iohk.cef.network.transport.Transports
 import io.iohk.cef.network.transport.tcp.TcpTransportConfiguration
-import io.iohk.cef.network._
 import org.bouncycastle.util.encoders.Hex
 
 trait LedgerConfigBuilder {

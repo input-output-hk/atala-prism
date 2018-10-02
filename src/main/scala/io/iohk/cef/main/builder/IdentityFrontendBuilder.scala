@@ -1,14 +1,12 @@
-package io.iohk.cef.main
+package io.iohk.cef.main.builder
 import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
 import akka.util.Timeout
-import io.iohk.cef.crypto._
 import io.iohk.cef.frontend.client.IdentityServiceApi
 import io.iohk.cef.ledger.ByteStringSerializable
 import io.iohk.cef.ledger.identity.{IdentityBlockHeader, IdentityTransaction}
-import io.iohk.cef.main.builder.base.{CommonTypeAliases, ConfigReaderBuilder}
-import io.iohk.cef.main.builder.derived.ActorSystemBuilder
 import io.iohk.cef.network.discovery.DiscoveryWireMessage
+import io.iohk.cef.crypto._
 
 import scala.concurrent.{ExecutionContext, Future}
 

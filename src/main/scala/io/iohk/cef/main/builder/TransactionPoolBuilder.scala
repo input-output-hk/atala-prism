@@ -1,7 +1,6 @@
-package io.iohk.cef.main.builder.derived
+package io.iohk.cef.main.builder
 import akka.util.Timeout
 import io.iohk.cef.ledger.{Block, BlockHeader, ByteStringSerializable, Transaction}
-import io.iohk.cef.main.builder.base.{HeaderGeneratorBuilder, LedgerConfigBuilder, LedgerStateStorageBuilder}
 import io.iohk.cef.transactionpool.{TimedQueue, TransactionPoolActorModelInterface, TransactionPoolFutureInterface}
 
 import scala.concurrent.ExecutionContext

@@ -9,8 +9,7 @@ import io.iohk.cef.crypto._
 import io.iohk.cef.ledger.identity.storage.protobuf.IdentityLedgerState.PublicKeyListProto
 import io.iohk.cef.ledger.identity.{IdentityBlockHeader, IdentityBlockSerializer, IdentityTransaction}
 import io.iohk.cef.ledger.{Block, ByteStringSerializable}
-import io.iohk.cef.main.builder.base.{ConfigReaderBuilder, _}
-import io.iohk.cef.main.builder.derived._
+import io.iohk.cef.main.builder._
 import io.iohk.cef.network.discovery._
 import io.iohk.cef.network.encoding.rlp
 import io.iohk.cef.network.encoding.rlp.RLPEncDec

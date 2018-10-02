@@ -1,4 +1,4 @@
-package io.iohk.cef.main.builder.derived
+package io.iohk.cef.main.builder
 
 import akka.actor.ActorSystem
 

@@ -1,10 +1,10 @@
-package io.iohk.cef.main
+package io.iohk.cef.main.builder
+
 import akka.util.Timeout
 import io.iohk.cef.crypto._
 import io.iohk.cef.frontend.services.IdentityTransactionService
 import io.iohk.cef.ledger.identity.{IdentityBlockHeader, IdentityTransaction}
 import io.iohk.cef.ledger.{BlockHeader, ByteStringSerializable, Transaction}
-import io.iohk.cef.main.builder.base.CommonTypeAliases
 import io.iohk.cef.network.discovery.DiscoveryWireMessage
 
 import scala.concurrent.ExecutionContext

@@ -1,4 +1,5 @@
-package io.iohk.cef.main.builder.helpers
+package io.iohk.cef.ledger
+
 import java.util.concurrent.TimeUnit
 
 import com.typesafe.config.Config

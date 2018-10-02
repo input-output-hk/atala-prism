@@ -1,8 +1,7 @@
-package io.iohk.cef.main.builder.derived
+package io.iohk.cef.main.builder
 import io.iohk.cef.LedgerId
-import io.iohk.cef.ledger.{ByteStringSerializable, Transaction}
 import io.iohk.cef.ledger.storage.Ledger
-import io.iohk.cef.main.builder.base.{LedgerConfigBuilder, LedgerStateStorageBuilder}
+import io.iohk.cef.ledger.{ByteStringSerializable, Transaction}
 import io.iohk.cef.utils.ForExpressionsEnabler
 
 import scala.language.higherKinds

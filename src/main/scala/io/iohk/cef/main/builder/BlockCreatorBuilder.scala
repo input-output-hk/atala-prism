@@ -1,9 +1,8 @@
-package io.iohk.cef.main.builder.derived
+package io.iohk.cef.main.builder
 import akka.actor.Props
 import akka.util.Timeout
 import io.iohk.cef.consensus.raft.LogEntry
 import io.iohk.cef.ledger.{Block, BlockHeader, ByteStringSerializable, Transaction}
-import io.iohk.cef.main.builder.base.{CommonTypeAliases, ConsensusBuilder, LedgerConfigBuilder}
 import io.iohk.cef.network.discovery.DiscoveryWireMessage
 import io.iohk.cef.transactionpool.BlockCreator
 

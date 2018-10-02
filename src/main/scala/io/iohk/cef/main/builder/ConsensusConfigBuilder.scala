@@ -1,4 +1,5 @@
-package io.iohk.cef.main.builder.base
+package io.iohk.cef.main.builder
+
 import io.iohk.cef.consensus.raft
 import io.iohk.cef.consensus.raft.node.OnDiskPersistentStorage
 import io.iohk.cef.consensus.raft.{PersistentStorage, RPCFactory, RaftConfig}

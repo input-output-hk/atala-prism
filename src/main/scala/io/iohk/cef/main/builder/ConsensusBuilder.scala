@@ -1,9 +1,9 @@
-package io.iohk.cef.main.builder.base
+package io.iohk.cef.main.builder
+
 import akka.util.Timeout
 import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.consensus.raft._
 import io.iohk.cef.ledger.{Block, BlockHeader, ByteStringSerializable, Transaction}
-import io.iohk.cef.main.builder.derived.{LedgerBuilder, LogBuilder, TransactionPoolBuilder}
 import io.iohk.cef.network.discovery.DiscoveryWireMessage
 import io.iohk.cef.utils.ForExpressionsEnabler
 
