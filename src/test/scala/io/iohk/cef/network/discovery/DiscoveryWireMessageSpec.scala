@@ -30,7 +30,7 @@ class DiscoveryWireMessageSpec extends FlatSpec with MustMatchers {
     Seek.seekRLPEncDec.decode(Seek.seekRLPEncDec.encode(seek)) mustBe seek
 
     Seq(ping, pong, neighbors, seek).foreach { m =>
-      DiscoveryWireMessage.RLPEncDec.decode(DiscoveryWireMessage.RLPEncDec.encode(m)) mustBe m
+      DiscoveryWireMessage.rlpEncDec.decode(DiscoveryWireMessage.rlpEncDec.encode(m)) mustBe m
     }
   }
 }

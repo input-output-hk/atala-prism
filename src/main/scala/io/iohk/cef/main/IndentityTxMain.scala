@@ -26,7 +26,6 @@ import io.iohk.cef.network.discovery.DiscoveryListener.DiscoveryListenerRequest
 import io.iohk.cef.network.discovery.DiscoveryManager.DiscoveryRequest
 import io.iohk.cef.network.discovery._
 import io.iohk.cef.network.discovery.db.DummyKnownNodesStorage
-import io.iohk.cef.network.encoding.nio.NioCodecs._
 import io.iohk.cef.network.encoding.rlp.RLPEncDec
 import io.iohk.cef.network.encoding.{Decoder, Encoder, rlp}
 import io.iohk.cef.network.telemetry.InMemoryTelemetry
@@ -108,8 +107,6 @@ object IndentityTxMain extends App {
         implicit serializable: ByteStringSerializable[DiscoveryWireMessage],
         commandSerializable: ByteStringSerializable[Command],
         executionContext: ExecutionContext): raft.RPCFactory[Command] = {
-      implicit val commandNioEncoder = commandSerializable.toNioEncoder
-      implicit val commandNioDecoder = commandSerializable.toNioDecoder
       new RaftRPCFactory[Command](networkDiscovery, transports)
     }
   }
@@ -177,10 +174,6 @@ object IndentityTxMain extends App {
       }
     }
   implicit val dSerializable = discSerializable
-  implicit def nioEncoderFromByteStringSerializable[T](implicit serializable: ByteStringSerializable[T]) =
-    serializable.toNioEncoder
-  implicit def nioDecoderFromByteStringSerializable[T](implicit serializable: ByteStringSerializable[T]) =
-    serializable.toNioDecoder
   val (serverBinding, core) = identityCoreBuilder
   StdIn.readLine() // let it run until user presses return
   Await.result(serverBinding.flatMap(_.unbind()), 1 minute) // trigger unbinding from the port
