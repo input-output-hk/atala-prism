@@ -5,7 +5,7 @@ import java.net.{Inet6Address, InetAddress, InetSocketAddress, URI}
 import akka.util.ByteString
 import io.iohk.cef.network.encoding.rlp.{RLPEncDec, RLPEncodeable, RLPException, RLPList}
 import javax.xml.bind.DatatypeConverter
-import org.bouncycastle.util.encoders.Hex
+import io.iohk.cef.utils.HexStringCodec._
 
 import scala.util.Try
 
@@ -21,8 +21,7 @@ case class NodeInfo(
 
   def getServerUri: URI = {
     val host = getHostName(serverAddress.getAddress)
-    new URI(
-      s"enode://${Hex.toHexString(id.toArray[Byte])}@$host:${serverAddress.getPort}?capabilities=${capabilities.byte.toHexString}")
+    new URI(s"enode://${toHexString(id)}@$host:${serverAddress.getPort}?capabilities=${capabilities.byte.toHexString}")
   }
 
   /**
@@ -68,7 +67,7 @@ object NodeInfo {
   }
 
   def fromUri(p2pUri: URI, discoveryUri: URI, capabilitiesHex: String): Try[NodeInfo] = Try {
-    val nodeId = ByteString(Hex.decode(p2pUri.getUserInfo))
+    val nodeId = fromHexString(p2pUri.getUserInfo)
     val p2pAddress = InetAddress.getByName(p2pUri.getHost)
     val udpAddress = InetAddress.getByName(discoveryUri.getHost)
     val p2pTcpPort = p2pUri.getPort

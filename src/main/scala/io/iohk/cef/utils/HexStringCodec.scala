@@ -7,6 +7,9 @@ object HexStringCodec {
   def toHexString(bs: ByteString): String =
     Hex.toHexString(bs.toArray)
 
+  def toHexString(ba: Array[Byte]): String =
+    Hex.toHexString(ba)
+
   def fromHexString(s: String): ByteString =
     ByteString(Hex.decode(s))
 }

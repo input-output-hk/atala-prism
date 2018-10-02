@@ -12,7 +12,7 @@ class HexStringCodecSpec extends FlatSpec {
 
   behavior of "HexCodec"
 
-  it should "encode and decode a ByteString as Hex" in forAll(byteStrings) {
-    b => HexStringCodec.fromHexString(HexStringCodec.toHexString(b)) shouldBe b
+  it should "encode and decode a ByteString as Hex" in forAll(byteStrings) { b =>
+    HexStringCodec.fromHexString(HexStringCodec.toHexString(b)) shouldBe b
   }
 }
