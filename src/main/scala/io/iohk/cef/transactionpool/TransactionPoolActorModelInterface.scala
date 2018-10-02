@@ -14,7 +14,7 @@ import scala.concurrent.duration.Duration
   * @param actorCreator a constructor for the TransactionPool actor. By providing a constructor, selecting the actor's
   *                     parent is delegated to another layer.
   * @param headerGenerator a generator for the block header based on the block's transactions
-  * @param maxTxSizeInBytes maximum size a block can have in bytes. Must be positive
+  * @param maxBlockSize maximum size a block can have in bytes. Must be positive
   * @param blockByteSizeable type class that allows a block to be measured in bytes
   * @tparam State the ledger state type
   * @tparam Header the block header type
@@ -22,7 +22,7 @@ import scala.concurrent.duration.Duration
 class TransactionPoolActorModelInterface[State, Header <: BlockHeader, Tx <: Transaction[State]](
     actorCreator: Props => ActorRef,
     headerGenerator: Seq[Transaction[State]] => Header,
-    maxTxSizeInBytes: Int,
+    maxBlockSize: Int,
     ledgerStateStorage: LedgerStateStorage[State],
     defaultTransactionExpiration: Duration,
     timedQueueConstructor: () => TimedQueue[Tx])(implicit blockByteSizeable: ByteSizeable[Block[State, Header, Tx]]) {
@@ -43,12 +43,12 @@ class TransactionPoolActorModelInterface[State, Header <: BlockHeader, Tx <: Tra
       new TransactionPool[State, Header, Tx](
         timedQueueConstructor(),
         headerGenerator,
-        maxTxSizeInBytes,
+        maxBlockSize,
         ledgerStateStorage,
         defaultTransactionExpiration)
 
     override def receive: Receive = {
-      case GenerateBlock() => sender() ! GenerateBlockResponse(generateBlock())
+      case GenerateBlock(requester) => sender() ! GenerateBlockResponse(generateBlock(), requester)
       case ProcessTransaction(tx) => sender() ! ProcessTransactionResponse(processTransaction(tx))
       case RemoveBlockTransactions(block) =>
         sender() ! RemoveBlockTransactionsResponse(removeBlockTransactions(block))
@@ -74,11 +74,13 @@ class TransactionPoolActorModelInterface[State, Header <: BlockHeader, Tx <: Tra
     }
   }
 
-  case class GenerateBlock()
+  case class GenerateBlock(requested: Option[ActorRef])
   case class ProcessTransaction(tx: Tx)
   case class RemoveBlockTransactions(block: Block[State, Header, Tx])
 
-  case class GenerateBlockResponse(result: Either[ApplicationError, Block[State, Header, Tx]])
+  case class GenerateBlockResponse(
+      result: Either[ApplicationError, Block[State, Header, Tx]],
+      requested: Option[ActorRef])
   case class ProcessTransactionResponse(result: Either[ApplicationError, Unit])
   case class RemoveBlockTransactionsResponse(result: Either[ApplicationError, Unit])
 }

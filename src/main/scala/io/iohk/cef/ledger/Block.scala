@@ -17,4 +17,6 @@ case class Block[S, Header <: BlockHeader, Tx <: Transaction[S]](
   def partitionIds: Set[String] = {
     transactions.foldLeft[Set[String]](Set())(_ ++ _.partitionIds)
   }
+
+  override def toString(): String = s"Block($header,$transactions)"
 }

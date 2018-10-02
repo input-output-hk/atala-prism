@@ -5,27 +5,28 @@ import org.mockito.Mockito.{times, verify}
 import org.scalatest.Matchers._
 import org.scalatest.WordSpec
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
+import org.scalatest.mockito.MockitoSugar
 
-class RaftConsensusItSpec extends WordSpec {
+class RaftConsensusItSpec extends WordSpec with MockitoSugar {
 
   "In an integrated cluster" when {
     "servers are started" should {
       "elect a leader" in new RealRaftNodeFixture[String] {
-        val s1 = new InMemoryPersistentStorage[String](Vector(), 1, "")
-        val s2 = new InMemoryPersistentStorage[String](Vector(), 1, "")
-        val s3 = new InMemoryPersistentStorage[String](Vector(), 1, "")
+        override def machineCallback: String => Unit = _ => ()
+        override def clusterIds: Seq[String] = Seq("i1", "i2", "i3")
+        val storages = clusterIds.map(_ => new InMemoryPersistentStorage[String](Vector(), 1, ""))
 
-        val (t1, t2, t3) = anIntegratedCluster(s1, s2, s3)
+        val Seq(t1, t2, t3) = anIntegratedCluster(storages.zip(clusterIds))
         t1.raftNode.electionTimeout().futureValue
         t1.raftNode.getRole shouldBe Leader
       }
-
       "replicate logs" in new RealRaftNodeFixture[String] {
-        val s1 = new InMemoryPersistentStorage[String](Vector(), 1, "")
-        val s2 = new InMemoryPersistentStorage[String](Vector(), 1, "")
-        val s3 = new InMemoryPersistentStorage[String](Vector(), 1, "")
+        override def machineCallback: String => Unit = mock[String => Unit]
+        override def clusterIds: Seq[String] = Seq("i1", "i2", "i3")
+        val storages = clusterIds.map(_ => new InMemoryPersistentStorage[String](Vector(), 1, ""))
+        val Seq(s1, s2, s3) = storages
 
-        val (t1, t2, t3) = anIntegratedCluster(s1, s2, s3)
+        val Seq(t1, t2, t3) = anIntegratedCluster(storages.zip(clusterIds))
 
         val consensus = new RaftConsensus(t1.raftNode)
 

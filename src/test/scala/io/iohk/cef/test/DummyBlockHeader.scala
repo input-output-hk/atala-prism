@@ -16,8 +16,10 @@ object DummyBlockHeader {
 
   implicit val serializable = new ByteStringSerializable[DummyBlockHeader] {
     override def decode(bytes: ByteString): Option[DummyBlockHeader] =
-      Try(DummyBlockHeader(BigInt(bytes.toArray).intValue())).toOption
+      Try(if (bytes.forall(_ == 2)) {
+        DummyBlockHeader(bytes.size)
+      } else throw new IllegalArgumentException("Invalid format for DummyBlockHeader")).toOption
 
-    override def encode(t: DummyBlockHeader): ByteString = ByteString(BigInt(t.sizeInBytes).toByteArray)
+    override def encode(t: DummyBlockHeader): ByteString = ByteString(Array.fill[Byte](t.sizeInBytes)(2))
   }
 }

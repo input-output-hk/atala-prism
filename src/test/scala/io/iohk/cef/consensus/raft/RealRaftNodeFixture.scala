@@ -1,7 +1,6 @@
 package io.iohk.cef.consensus.raft
 import io.iohk.cef.consensus.raft.node.{CallInMemory, RaftNode}
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mockito.MockitoSugar.mock
 import org.scalatest.time.{Millis, Seconds, Span}
 
 import scala.collection.mutable
@@ -19,11 +18,13 @@ trait RealRaftNodeFixture[Command] {
 
   val testNodes = mutable.Map[String, TestNode]()
 
-  val clusterIds: Seq[String] = Seq("i1", "i2", "i3")
+  def clusterIds: Seq[String]
+
+  def machineCallback: Command => Unit
 
   class TestNode(nodeId: String, state: PersistentStorage[Command]) {
 
-    val machine: Command => Unit = mock[Command => Unit]
+    val machine: Command => Unit = machineCallback
 
     def localRpcFactory: RPCFactory[Command] = (nodeId, _, _, _) => {
       new CallInMemory[Command](testNodes(nodeId).raftNode)
@@ -37,15 +38,9 @@ trait RealRaftNodeFixture[Command] {
     testNodes.put(nodeId, this)
   }
 
-  def anIntegratedCluster(
-      i1State: PersistentStorage[Command],
-      i2State: PersistentStorage[Command],
-      i3State: PersistentStorage[Command]): (TestNode, TestNode, TestNode) = {
-
-    val (t1, t2, t3) = (new TestNode("i1", i1State), new TestNode("i2", i2State), new TestNode("i3", i3State))
-    t1.raftNode
-    t2.raftNode
-    t3.raftNode
-    (t1, t2, t3)
+  def anIntegratedCluster(nodeData: Seq[(PersistentStorage[Command], String)]): Seq[TestNode] = {
+    val nodes = nodeData.map { case (storage, id) => new TestNode(id, storage) }
+    nodes.foreach(_.raftNode)
+    nodes
   }
 }

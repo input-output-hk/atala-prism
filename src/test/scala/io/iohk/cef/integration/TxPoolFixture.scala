@@ -12,7 +12,7 @@ trait TxPoolFixture {
 
   class TestableTransactionPoolActorModelInterface[State, Header <: BlockHeader, Tx <: Transaction[State]](
       headerGenerator: Seq[Transaction[State]] => Header,
-      maxTxSizeInBytes: Int,
+      maxBlockSize: Int,
       ledgerStateStorage: LedgerStateStorage[State],
       defaultDurationTxs: Duration,
       timedQueue: TimedQueue[Tx])(
@@ -21,7 +21,7 @@ trait TxPoolFixture {
       extends TransactionPoolActorModelInterface[State, Header, Tx](
         system.actorOf,
         headerGenerator,
-        maxTxSizeInBytes,
+        maxBlockSize,
         ledgerStateStorage,
         defaultDurationTxs,
         () => timedQueue) {
