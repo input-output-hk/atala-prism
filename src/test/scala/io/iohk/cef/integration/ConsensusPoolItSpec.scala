@@ -98,13 +98,13 @@ class ConsensusPoolItSpec
     testProbe.expectMsg(30 seconds, Right[ApplicationError, Unit](()))
     s1.log.map(_.command) mustBe expectedLogEntries
 
-    t1.raftNode.clientAppendEntries(Seq())
+    t1.raftNode.clientAppendEntries(Seq()).futureValue
 
     val inOrderExecution = Mockito.inOrder(testExecution)
     //one call per cluster node
     inOrderExecution.verify(testExecution, times(3)).apply(block1)
     //Raft is applying the block but it is not calling the callback.
-    inOrderExecution.verify(testExecution, atLeastOnce).apply(block2)
+    inOrderExecution.verify(testExecution, times(3)).apply(block2)
     txPoolActorModelInterface.testActorRef.underlyingActor.pool.size mustBe 0
   }
 
