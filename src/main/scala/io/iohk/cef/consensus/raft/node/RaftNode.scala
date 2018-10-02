@@ -35,7 +35,7 @@ private[raft] class RaftNode[Command](
 
   val clusterMembers: Seq[RPC[Command]] = clusterTable.values.toSeq
 
-  private val localRPC = new LocalRPC(this)
+  private val callInMemory = new CallInMemory(this)
 
   private val raftState: Ref[RaftState[Command]] = Ref(initialRaftState())
 
@@ -48,7 +48,7 @@ private[raft] class RaftNode[Command](
 
   def getRPC(nodeId: String): RPC[Command] = {
     if (nodeId == this.nodeId)
-      localRPC
+      callInMemory
     else
       clusterTable(nodeId)
   }

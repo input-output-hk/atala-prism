@@ -4,7 +4,7 @@ import io.iohk.cef.consensus.raft._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class LocalRPC[T](peer: => RaftNode[T])(implicit ec: ExecutionContext) extends RPC[T] {
+class CallInMemory[T](peer: => RaftNode[T])(implicit ec: ExecutionContext) extends RPC[T] {
 
   override def appendEntries(entriesToAppend: EntriesToAppend[T]): Future[AppendEntriesResult] = {
     Future(peer.appendEntries(entriesToAppend))
