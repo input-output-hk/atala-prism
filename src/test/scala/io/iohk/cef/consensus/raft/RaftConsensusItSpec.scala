@@ -27,13 +27,14 @@ class RaftConsensusItSpec extends WordSpec with MockitoSugar {
         val Seq(s1, s2, s3) = storages
 
         val Seq(t1, t2, t3) = anIntegratedCluster(storages.zip(clusterIds))
+
+        val consensus = new RaftConsensus(t1.raftNode)
+
         t1.raftNode.electionTimeout().futureValue
 
         t1.raftNode.getRole shouldBe Leader
 
-        val appendResult = t1.raftNode.clientAppendEntries(Seq("A", "B", "C", "D", "E")).futureValue
-
-        appendResult shouldBe Right(())
+        val appendResult = consensus.appendEntries(Seq("A", "B", "C", "D", "E")).futureValue
 
         val expectedEntries = Vector(
           LogEntry("A", 2, 0),
@@ -69,7 +70,7 @@ class RaftConsensusItSpec extends WordSpec with MockitoSugar {
         t2.raftNode.getCommonVolatileState shouldBe CommonVolatileState(4, 4)
         t3.raftNode.getCommonVolatileState shouldBe CommonVolatileState(4, 4)
 
-        t1.raftNode.clientAppendEntries(Seq("F", "G", "H")).futureValue
+        consensus.appendEntries(Seq("F", "G", "H")).futureValue
         t1.raftNode.heartbeatTimeout().futureValue
 
         Seq("F", "G", "H").foreach(command => {
