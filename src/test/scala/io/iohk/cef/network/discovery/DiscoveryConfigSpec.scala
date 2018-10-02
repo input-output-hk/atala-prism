@@ -50,7 +50,7 @@ class DiscoveryConfigSpec extends FlatSpec with MustMatchers {
                    |  blacklistDefaultDuration = $blacklistDuration
                    |}""".stripMargin
 
-    val dc = DiscoveryConfig(ConfigFactory.parseString(config))
+    val dc = DiscoveryConfig(ConfigFactory.parseString(config).getConfig("discovery"))
     dc.discoveryEnabled mustBe enabled
     dc.interface mustBe interface
     dc.port mustBe port

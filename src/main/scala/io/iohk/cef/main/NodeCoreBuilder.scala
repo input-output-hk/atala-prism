@@ -25,7 +25,7 @@ trait NodeCoreBuilder[S, H <: BlockHeader, T <: Transaction[S]] {
       stateyteStringSerializable: ByteStringSerializable[S],
       txStringSerializable: ByteStringSerializable[T],
       dByteStringSerializable: ByteStringSerializable[DiscoveryWireMessage]): NodeCore[S, H, T] = new NodeCore(
-    Map(ledgerId -> (txPoolFutureInterface, consensus)),
+    Map(ledgerConfig.id -> (txPoolFutureInterface, consensus)),
     txNetwork,
     blockNetwork,
     nodeId

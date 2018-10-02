@@ -15,7 +15,7 @@ sealed trait LedgerStateStorageBuilder[S] {
 trait DefaultLedgerStateStorageBuilder[S] extends LedgerStateStorageBuilder[S] {
   self: LedgerConfigBuilder =>
   override def ledgerStateStorage(implicit byteStringSerializable: ByteStringSerializable[S]): LedgerStateStorage[S] = {
-    new LedgerStateStorageImpl[S](ledgerId, new LedgerStateStorageDao)
+    new LedgerStateStorageImpl[S](ledgerConfig.id, new LedgerStateStorageDao)
   }
 }
 

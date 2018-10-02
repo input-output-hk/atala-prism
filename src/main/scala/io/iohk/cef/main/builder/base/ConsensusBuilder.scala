@@ -35,12 +35,12 @@ trait RaftConsensusBuilder[S, H <: BlockHeader, T <: Transaction[S]] extends Con
       sByteStringSerializable: ByteStringSerializable[S]): B => Unit = {
     implicit val enabler = ForExpressionsEnabler.futureEnabler
     val interface = txPoolFutureInterface
-    val theLedger = ledger(ledgerId)
+    val theLedger = ledger(ledgerConfig.id)
     block =>
       {
         theLedger(block) match {
           case Left(error) =>
-            log.error(s"Could not apply block ${block} to the ledger with id ${ledgerId}. Error: $error")
+            log.error(s"Could not apply block ${block} to the ledger with id ${ledgerConfig.id}. Error: $error")
           //TODO Crash the node
           case Right(ledgerDatabaseResultFuture) =>
             val result = for {
@@ -49,13 +49,13 @@ trait RaftConsensusBuilder[S, H <: BlockHeader, T <: Transaction[S]] extends Con
             } yield txPoolResult
             result onComplete {
               case scala.util.Success(value) if value.isLeft =>
-                log.error(s"Could not apply block ${block} to the ledger with id ${ledgerId}. Error: $value")
+                log.error(s"Could not apply block ${block} to the ledger with id ${ledgerConfig.id}. Error: $value")
               //TODO Crash the node
               case scala.util.Failure(exception) =>
-                log.error(s"Could not apply block ${block} to the ledger with id ${ledgerId}. Error: $exception")
+                log.error(s"Could not apply block ${block} to the ledger with id ${ledgerConfig.id}. Error: $exception")
               //TODO Crash the node
               case scala.util.Success(_) =>
-                log.info(s"Successfully applied block ${block} to the ledger with id ${ledgerId}")
+                log.info(s"Successfully applied block ${block} to the ledger with id ${ledgerConfig.id}")
             }
         }
       }
@@ -69,10 +69,10 @@ trait RaftConsensusBuilder[S, H <: BlockHeader, T <: Transaction[S]] extends Con
       dByteStringSerializable: ByteStringSerializable[DiscoveryWireMessage]) =
     raftNode[B](
       nodeIdStr,
-      clusterMemberIds,
+      raftConfig.clusterMemberIds.toSeq,
       rpcFactory,
-      electionTimeoutRange,
-      heartbeatTimeoutRange,
+      raftConfig.electionTimeoutRange,
+      raftConfig.heartbeatTimeoutRange,
       machineCallback,
       storage
     )
@@ -90,5 +90,5 @@ trait RaftConsensusBuilder[S, H <: BlockHeader, T <: Transaction[S]] extends Con
       byteStringSerializable: ByteStringSerializable[B],
       sByteStringSerializable: ByteStringSerializable[S],
       dByteStringSerializable: ByteStringSerializable[DiscoveryWireMessage]): Consensus[S, H, T] =
-    new RaftConsensusInterface[S, H, T](ledgerId, raftConsensus)
+    new RaftConsensusInterface[S, H, T](ledgerConfig.id, raftConsensus)
 }
