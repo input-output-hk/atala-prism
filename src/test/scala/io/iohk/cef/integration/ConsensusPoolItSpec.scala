@@ -104,7 +104,7 @@ class ConsensusPoolItSpec
     //one call per cluster node
     inOrderExecution.verify(testExecution, times(3)).apply(block1)
     //Raft is applying the block but it is not calling the callback.
-    inOrderExecution.verify(testExecution).apply(block2)
+    inOrderExecution.verify(testExecution, atLeastOnce).apply(block2)
     txPoolActorModelInterface.testActorRef.underlyingActor.pool.size mustBe 0
   }
 
