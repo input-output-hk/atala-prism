@@ -1,5 +1,6 @@
-package io.iohk.cef.consensus.raft
-import io.iohk.cef.consensus.raft.node.RaftNode
+package io.iohk.cef.consensus.raft.node
+
+import io.iohk.cef.consensus.raft._
 
 import scala.concurrent.{ExecutionContext, Future}
 

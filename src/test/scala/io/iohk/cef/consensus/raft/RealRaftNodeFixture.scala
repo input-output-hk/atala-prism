@@ -1,5 +1,5 @@
 package io.iohk.cef.consensus.raft
-import io.iohk.cef.consensus.raft.node.RaftNode
+import io.iohk.cef.consensus.raft.node.{LocalRPC, RaftNode}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mockito.MockitoSugar.mock
 import org.scalatest.time.{Millis, Seconds, Span}

@@ -35,6 +35,8 @@ private[raft] class RaftNode[Command](
 
   val clusterMembers: Seq[RPC[Command]] = clusterTable.values.toSeq
 
+  private val localRPC = new LocalRPC(this)
+
   private val raftState: Ref[RaftState[Command]] = Ref(initialRaftState())
 
   private val sequencer: Ref[Future[_]] = Ref(Future.unit)
@@ -44,8 +46,12 @@ private[raft] class RaftNode[Command](
 
   val nodeFSM = new RaftFSM[Command](becomeFollower, becomeCandidate, becomeLeader)
 
-  def getRPC(nodeId: String): RPC[Command] =
-    clusterTable(nodeId)
+  def getRPC(nodeId: String): RPC[Command] = {
+    if (nodeId == this.nodeId)
+      localRPC
+    else
+      clusterTable(nodeId)
+  }
 
   def getLeader: String = {
     val ctx = raftState.single()
