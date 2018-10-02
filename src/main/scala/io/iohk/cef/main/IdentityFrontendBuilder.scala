@@ -6,7 +6,7 @@ import io.iohk.cef.crypto._
 import io.iohk.cef.frontend.client.IdentityServiceApi
 import io.iohk.cef.ledger.ByteStringSerializable
 import io.iohk.cef.ledger.identity.{IdentityBlockHeader, IdentityTransaction}
-import io.iohk.cef.main.builder.base.CommonTypeAliases
+import io.iohk.cef.main.builder.base.{CommonTypeAliases, ConfigReaderBuilder}
 import io.iohk.cef.main.builder.derived.ActorSystemBuilder
 import io.iohk.cef.network.discovery.DiscoveryWireMessage
 
@@ -15,7 +15,8 @@ import scala.concurrent.{ExecutionContext, Future}
 trait IdentityFrontendBuilder {
   self: ActorSystemBuilder
     with IdentityTransactionServiceBuilder
-    with CommonTypeAliases[Set[SigningPublicKey], IdentityBlockHeader, IdentityTransaction] =>
+    with CommonTypeAliases[Set[SigningPublicKey], IdentityBlockHeader, IdentityTransaction]
+    with ConfigReaderBuilder =>
 
   implicit val system = actorSystem
   implicit val materializer = ActorMaterializer()
@@ -30,6 +31,6 @@ trait IdentityFrontendBuilder {
       dByteStringSerializable: ByteStringSerializable[DiscoveryWireMessage]): Future[Http.ServerBinding] = {
     val serviceApi = new IdentityServiceApi(service)
     val route = serviceApi.createIdentity
-    Http()(actorSystem).bindAndHandle(route, "localhost", 8888)
+    Http()(actorSystem).bindAndHandle(route, config.getString("frontend.rest.interface"), config.getInt("frontend.rest.port"))
   }
 }
