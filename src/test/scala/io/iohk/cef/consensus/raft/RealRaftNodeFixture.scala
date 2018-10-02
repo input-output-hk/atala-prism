@@ -1,5 +1,5 @@
 package io.iohk.cef.consensus.raft
-import io.iohk.cef.consensus.raft.node.RaftNode
+import io.iohk.cef.consensus.raft.node.{CallInMemory, RaftNode}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Millis, Seconds, Span}
 
@@ -27,7 +27,7 @@ trait RealRaftNodeFixture[Command] {
     val machine: Command => Unit = machineCallback
 
     def localRpcFactory: RPCFactory[Command] = (nodeId, _, _, _) => {
-      new LocalRPC[Command](testNodes(nodeId).raftNode)
+      new CallInMemory[Command](testNodes(nodeId).raftNode)
     }
     import scala.concurrent.duration._
     val neverTimeout = (100 days, 200 days)
