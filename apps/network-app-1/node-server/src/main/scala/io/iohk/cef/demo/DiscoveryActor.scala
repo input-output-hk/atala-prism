@@ -13,7 +13,7 @@ import io.iohk.cef.network.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.NodeStatus.NodeState
 import io.iohk.cef.network.{NodeInfo, ServerStatus}
 import io.iohk.cef.network.telemetry.DatadogTelemetry
-import org.bouncycastle.util.encoders.Hex
+import io.iohk.cef.utils.HexStringCodec._
 
 object DiscoveryActor extends DatadogTelemetry {
 
@@ -55,5 +55,5 @@ object DiscoveryActor extends DatadogTelemetry {
   private def discoveryPort(serverPort: Int): Int = serverPort + 1
 
   private def nodeId(nodeUri: URI): ByteString =
-    ByteString(Hex.decode(nodeUri.getUserInfo))
+    fromHexString(nodeUri.getUserInfo)
 }

@@ -8,7 +8,6 @@ import akka.actor.typed.{ActorRef, Behavior}
 import akka.io.Tcp.{Bind, Bound, CommandFailed}
 import akka.testkit.typed.scaladsl.TestProbe
 import akka.testkit.{TestActors, TestProbe => UntypedTestProbe}
-import akka.util.ByteString
 import akka.{actor => untyped}
 import io.iohk.cef.network.transport.rlpx.RLPxConnectionHandler.{
   ConnectTo,
@@ -19,7 +18,7 @@ import io.iohk.cef.network.transport.rlpx.RLPxConnectionHandler.{
 import io.iohk.cef.test.TestEncoderDecoder
 import io.iohk.cef.test.TestEncoderDecoder.TestMessage
 import io.iohk.cef.test.TypedTestProbeOps._
-import org.bouncycastle.util.encoders.Hex
+import io.iohk.cef.utils.HexStringCodec._
 import org.scalatest.{Assertion, BeforeAndAfterAll, FlatSpec}
 import org.scalatest.Matchers._
 
@@ -65,7 +64,7 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
     transportActor ! Connect(remoteUri, userActor.ref)
 
     rlpxConnectionHandler.expectMsg(ConnectTo(remoteUri))
-    rlpxConnectionHandler.reply(ConnectionEstablished(ByteString(Hex.decode(remotePubKey))))
+    rlpxConnectionHandler.reply(ConnectionEstablished(fromHexString(remotePubKey)))
 
     userActor.uponReceivingMessage {
       case Connected(nodeUri, _) =>
@@ -79,7 +78,7 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
     transportActor ! Connect(remoteUri, userActor.ref)
 
     rlpxConnectionHandler.expectMsg(ConnectTo(remoteUri))
-    rlpxConnectionHandler.reply(ConnectionEstablished(ByteString(Hex.decode(remotePubKey))))
+    rlpxConnectionHandler.reply(ConnectionEstablished(fromHexString(remotePubKey)))
 
     userActor.uponReceivingMessage {
       case Connected(nodeId, connection) =>
@@ -90,7 +89,7 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
         rlpxConnectionHandler.expectMsg(akka.io.Tcp.Close)
         rlpxConnectionHandler.reply(akka.io.Tcp.Closed)
 
-        rlpxConnectionHandler.reply(ConnectionEstablished(ByteString(Hex.decode(remotePubKey))))
+        rlpxConnectionHandler.reply(ConnectionEstablished(fromHexString(remotePubKey)))
 
         val connectionClosed = userActor.expectMessageType[ConnectionClosed]
         connectionClosed.address shouldBe remoteUri
@@ -145,7 +144,7 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
     val peerBridge = rlpxConnectionHandler.sender()
 
     // simulate rlpx handshake success
-    peerBridge ! ConnectionEstablished(ByteString(Hex.decode(remotePubKey)))
+    peerBridge ! ConnectionEstablished(fromHexString(remotePubKey))
 
     connectionEventProbe.uponReceivingMessage {
       case Connected(uri, _) =>
@@ -218,7 +217,7 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
     transportActor ! Connect(remoteUri, userActor.ref)
 
     rlpxConnectionHandler.expectMsg(ConnectTo(remoteUri))
-    rlpxConnectionHandler.reply(ConnectionEstablished(ByteString(Hex.decode(remotePubKey))))
+    rlpxConnectionHandler.reply(ConnectionEstablished(fromHexString(remotePubKey)))
 
     userActor.uponReceivingMessage {
       case Connected(_, connectionActor) =>
@@ -240,7 +239,7 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
 
     rlpxConnectionHandler.expectMsg(ConnectTo(remoteUri))
     val connectionBridge = rlpxConnectionHandler.sender()
-    rlpxConnectionHandler.reply(ConnectionEstablished(ByteString(Hex.decode(remotePubKey))))
+    rlpxConnectionHandler.reply(ConnectionEstablished(fromHexString(remotePubKey)))
 
     userActor.uponReceivingMessage {
       case Connected(_, _) =>
@@ -267,7 +266,7 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
     rlpxConnectionHandler.expectMsgType[HandleConnection]
     val peerBridge = rlpxConnectionHandler.sender()
 
-    peerBridge ! ConnectionEstablished(ByteString(Hex.decode(remotePubKey)))
+    peerBridge ! ConnectionEstablished(fromHexString(remotePubKey))
 
     connectionEventProbe.uponReceivingMessage {
       case Connected(_, connection) =>
@@ -296,7 +295,7 @@ class RLPxTransportProtocolSpec extends FlatSpec with BeforeAndAfterAll {
     rlpxConnectionHandler.expectMsgType[HandleConnection]
     val peerBridge = rlpxConnectionHandler.sender()
 
-    peerBridge ! ConnectionEstablished(ByteString(Hex.decode(remotePubKey)))
+    peerBridge ! ConnectionEstablished(fromHexString(remotePubKey))
 
     connectionEventProbe.uponReceivingMessage {
       case Connected(_, _) =>

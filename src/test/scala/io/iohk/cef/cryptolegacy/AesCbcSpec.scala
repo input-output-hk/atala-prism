@@ -3,7 +3,7 @@ package io.iohk.cef.cryptolegacy
 import java.nio.charset.StandardCharsets
 
 import akka.util.ByteString
-import org.bouncycastle.util.encoders.Hex
+import io.iohk.cef.utils.HexStringCodec._
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -22,7 +22,7 @@ class AesCbcSpec extends FlatSpec with Matchers with PropertyChecks {
       (
         "c286696d887c9aa0611bbb3e2025a45a",
         "562e17996d093d28ddb3ba695a2e6f58",
-        ByteString(Hex.decode("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f")),
+        fromHexString("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f"),
         "d296cd94c2cccf8a3a863028b5e1dc0a7586602d253cfff91b8266bea6d61ab1"),
       (
         "6c3ea0477630ce21a2ce334aa746c2cd",
@@ -32,15 +32,15 @@ class AesCbcSpec extends FlatSpec with Matchers with PropertyChecks {
       (
         "56e47a38c5598974bc46903dba290349",
         "8ce82eefbea0da3c44699ed7db51b7d9",
-        ByteString(Hex.decode(
-          "a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebfc0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf")),
+        fromHexString(
+          "a0a1a2a3a4a5a6a7a8a9aaabacadaeafb0b1b2b3b4b5b6b7b8b9babbbcbdbebfc0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedf"),
         "c30e32ffedc0774e6aff6af0869f71aa0f3af07a9a31a9c684db207eb0ef8e4e35907aa632c3ffdf868bb7b29d3d46ad83ce9f9a102ee99d49a53e87f4c3da55")
     )
 
     forAll(testVectors) { (k, i, plaintext, c) =>
-      val key = ByteString(Hex.decode(k))
-      val iv = ByteString(Hex.decode(i))
-      val ciphertext = ByteString(Hex.decode(c))
+      val key = fromHexString(k)
+      val iv = fromHexString(i)
+      val ciphertext = fromHexString(c)
 
       val encrypted = AES_CBC.encrypt(key, iv, plaintext)
 
