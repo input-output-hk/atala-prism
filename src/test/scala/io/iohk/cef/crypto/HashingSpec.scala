@@ -3,34 +3,29 @@ package io.iohk.cef.crypto
 import akka.util.ByteString
 import io.iohk.cef.crypto.encoding.TypedByteStringDecodingError
 import io.iohk.cef.network.encoding.nio._
-import org.scalatest.Matchers._
-import org.scalatest.prop.PropertyChecks
-import org.scalatest.{EitherValues, MustMatchers, WordSpec}
 import io.iohk.cef.test.ScalacheckExctensions
+import org.scalatest.WordSpec
+import org.scalatest.MustMatchers._
+import org.scalatest.prop.GeneratorDrivenPropertyChecks._
+import org.scalatest.EitherValues._
+import org.scalacheck.Arbitrary._
 
-class HashingSpec extends WordSpec with MustMatchers with PropertyChecks with EitherValues with ScalacheckExctensions {
+class HashingSpec extends WordSpec with ScalacheckExctensions {
 
   case class User(name: String, age: Int)
 
-  "hash" should {
-    "generate a hashedValue on ByteString" in {
-      val expectedLength = hash(ByteString("abd")).toByteString.size
-      forAll { input: ByteString =>
-        val result = hash(input)
-        result.toByteString.size must be(expectedLength)
-      }
-    }
+  private val userGen = for {
+    name <- arbitrary[String]
+    age <- arbitrary[Int]
+  } yield User(name, age)
 
-    "return something different to the input" in {
-      forAll { input: ByteString =>
-        val result = hash(input)
-        result.toByteString.toArray mustNot be(input)
-      }
-    }
-  }
+  private val userPairs = for {
+    user1: User <- userGen
+    user2: User <- userGen if user1 != user2
+  } yield (user1, user2)
 
   "hash" should {
-    "generate a hashedValue on Entity" in {
+    "generate a hashedValue" in {
       val expectedLength = hash(ByteString("abd")).toByteString.size
       forAll { (name: String, age: Int) =>
         val entity = User(name, age)
@@ -40,66 +35,24 @@ class HashingSpec extends WordSpec with MustMatchers with PropertyChecks with Ei
     }
   }
 
-  "isValidHash bytes" should {
+  "isValidHash" should {
     "match the same bytes" in {
-      forAll { input: ByteString =>
-        val hashedValue = hash(input)
-        val result = isValidHash(input, hashedValue)
+      forAll { (name: String, age: Int) =>
+        val user = User(name, age)
+        val hashedValue = hash(user)
+        val result = isValidHash(user, hashedValue)
         result must be(true)
       }
     }
 
     "not match different bytes" in {
-      forAll { input: ByteString =>
-        val hashedValue = hash(input)
+      forAll(userPairs) {
+        case (user1, user2) =>
+          val user1Hash = hash(user1)
 
-        forAll { nested: ByteString =>
-          // TODO: There should be a way to filter on the forAll
-          if (!nested.sameElements(input)) {
-            val result = isValidHash(nested, hashedValue)
-            result must be(false)
-          }
-        }
-      }
-    }
-  }
+          val result = isValidHash(user2, user1Hash)
 
-  "isValidHash entity" should {
-    "match the same bytes" in {
-      forAll { (name: String, age: Int) =>
-        val entity = User(name, age)
-        val hashedValue = hash(entity)
-        val result = isValidHash(entity, hashedValue)
-        result must be(true)
-      }
-    }
-
-    "not match different bytes" in {
-      forAll { (name: String, age: Int) =>
-        val entity = User(name, age)
-        val hashedValue = hash(entity)
-
-        forAll { (innerName: String, innerAge: Int) =>
-          // TODO: There should be a way to filter on the forAll
-          if (innerName != name || innerAge != age) {
-            val innerEntity = User(innerName, innerAge)
-            val result = isValidHash(innerEntity, hashedValue)
-            result must be(false)
-          }
-        }
-
-      }
-
-      forAll { input: ByteString =>
-        val hashedValue = hash(input)
-
-        forAll { nested: ByteString =>
-          // TODO: There should be a way to filter on the forAll
-          if (!nested.sameElements(input)) {
-            val result = isValidHash(nested, hashedValue)
-            result must be(false)
-          }
-        }
+          result must be(false)
       }
     }
   }
@@ -115,7 +68,6 @@ class HashingSpec extends WordSpec with MustMatchers with PropertyChecks with Ei
 
     "fail to decode invalid hashedValues" in {
       pending
-
       forAll { bytes: ByteString =>
         val result = Hash.decodeFrom(bytes)
         val expected = HashDecodeError.DataExtractionError(TypedByteStringDecodingError.NioDecoderFailedToDecodeTBS)
