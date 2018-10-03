@@ -5,12 +5,12 @@ import io.iohk.cef.crypto.encoding.TypedByteStringDecodingError
 import io.iohk.cef.crypto.encoding.TypedByteStringDecodingError.NioDecoderFailedToDecodeTBS
 import io.iohk.cef.network.encoding.nio._
 import io.iohk.cef.network.transport.tcp.NetUtils
-import org.scalatest.Matchers._
-import org.scalatest.prop.PropertyChecks
-import org.scalatest.{EitherValues, MustMatchers, WordSpec}
-import io.iohk.cef.test.ScalacheckExctensions
+import org.scalatest.EitherValues._
+import org.scalatest.MustMatchers._
+import org.scalatest.WordSpec
+import org.scalatest.prop.PropertyChecks._
 
-class SigningSpec extends WordSpec with MustMatchers with PropertyChecks with EitherValues with ScalacheckExctensions {
+class SigningSpec extends WordSpec {
 
   private val keypair1 = generateSigningKeyPair()
   private val keypair2 = generateSigningKeyPair()

@@ -3,20 +3,21 @@ package io.iohk.cef.test
 import org.scalacheck.{Arbitrary, Gen}
 import akka.util.ByteString
 
-trait ScalacheckExctensions {
+trait ScalacheckExtensions {
 
-  private val byteStringGenerator: Gen[ByteString] =
+  val byteStringGenerator: Gen[ByteString] =
     Arbitrary
       .arbitrary[Array[Byte]]
       .map(ByteString.apply _)
 
-  protected implicit val arbitraryByteStringGenerator: Arbitrary[ByteString] =
+  implicit val arbitraryByteStringGenerator: Arbitrary[ByteString] =
     Arbitrary(byteStringGenerator)
 
-  protected def MAX: Int = 30
+  def MAX: Int = 30
 
   def eachTime[T](f: => T): Unit = (1 to MAX).foreach { _ =>
     f
   }
-
 }
+
+object ScalacheckExtensions extends ScalacheckExtensions

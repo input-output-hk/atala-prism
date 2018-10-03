@@ -3,14 +3,14 @@ package io.iohk.cef.crypto
 import akka.util.ByteString
 import io.iohk.cef.crypto.encoding.TypedByteStringDecodingError
 import io.iohk.cef.network.encoding.nio._
-import io.iohk.cef.test.ScalacheckExctensions
+import io.iohk.cef.test.ScalacheckExtensions._
 import org.scalatest.WordSpec
 import org.scalatest.MustMatchers._
 import org.scalatest.prop.GeneratorDrivenPropertyChecks._
 import org.scalatest.EitherValues._
 import org.scalacheck.Arbitrary._
 
-class HashingSpec extends WordSpec with ScalacheckExctensions {
+class HashingSpec extends WordSpec {
 
   case class User(name: String, age: Int)
 

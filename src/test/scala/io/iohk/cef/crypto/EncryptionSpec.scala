@@ -4,17 +4,13 @@ import akka.util.ByteString
 import io.iohk.cef.crypto.encoding.TypedByteStringDecodingError
 import io.iohk.cef.crypto.encoding.TypedByteStringDecodingError.NioDecoderFailedToDecodeTBS
 import io.iohk.cef.network.encoding.nio._
-import org.scalatest.Matchers._
-import org.scalatest.prop.PropertyChecks
-import org.scalatest.{EitherValues, MustMatchers, WordSpec}
-import io.iohk.cef.test.ScalacheckExctensions
+import org.scalatest.MustMatchers._
+import org.scalatest.prop.PropertyChecks._
+import org.scalatest.EitherValues._
+import org.scalatest.WordSpec
+import io.iohk.cef.test.ScalacheckExtensions._
 
-class EncryptionSpec
-    extends WordSpec
-    with MustMatchers
-    with PropertyChecks
-    with EitherValues
-    with ScalacheckExctensions {
+class EncryptionSpec extends WordSpec {
 
   case class User(name: String, age: Int)
 
