@@ -1,7 +1,6 @@
 package io.iohk.cef.cryptolegacy
 
-import akka.util.ByteString
-import org.bouncycastle.util.encoders.Hex
+import io.iohk.cef.utils.HexStringCodec._
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -30,10 +29,10 @@ class AesCtrSpec extends FlatSpec with Matchers with PropertyChecks {
     )
 
     forAll(testVectors) { (k, i, p, c) =>
-      val key = ByteString(Hex.decode(k))
-      val iv = ByteString(Hex.decode(i))
-      val plaintext = ByteString(Hex.decode(p))
-      val ciphertext = ByteString(Hex.decode(c))
+      val key = fromHexString(k)
+      val iv = fromHexString(i)
+      val plaintext = fromHexString(p)
+      val ciphertext = fromHexString(c)
 
       AES_CTR.encrypt(key, iv, plaintext) shouldEqual ciphertext
       AES_CTR.decrypt(key, iv, ciphertext) shouldEqual Some(plaintext)

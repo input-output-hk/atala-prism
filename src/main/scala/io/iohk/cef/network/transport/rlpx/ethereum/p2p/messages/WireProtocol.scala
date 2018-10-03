@@ -5,7 +5,7 @@ import io.iohk.cef.network.transport.rlpx.ethereum.p2p.{Message, MessageSerializ
 import io.iohk.cef.network.transport.rlpx.ethereum.p2p.messages.WireProtocol.Disconnect.Reasons
 import io.iohk.cef.network.encoding.rlp.RLPImplicits._
 import io.iohk.cef.network.encoding.rlp._
-import org.bouncycastle.util.encoders.Hex
+import io.iohk.cef.utils.HexStringCodec._
 
 object WireProtocol {
 
@@ -86,7 +86,7 @@ object WireProtocol {
          |clientId: $clientId
          |capabilities: $capabilities
          |listenPort: $listenPort
-         |nodeId: ${Hex.toHexString(nodeId.toArray[Byte])}
+         |nodeId: ${toHexString(nodeId)}
          |}""".stripMargin
     }
   }

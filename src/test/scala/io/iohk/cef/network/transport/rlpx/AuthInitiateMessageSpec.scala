@@ -7,7 +7,7 @@ import io.iohk.cef.cryptolegacy._
 import org.scalatest.{FlatSpec, Matchers}
 import org.bouncycastle.crypto.generators.ECKeyPairGenerator
 import org.bouncycastle.crypto.params.{ECKeyGenerationParameters, ECPublicKeyParameters}
-import org.bouncycastle.util.encoders.Hex
+import io.iohk.cef.utils.HexStringCodec._
 
 class AuthInitiateMessageSpec extends FlatSpec with Matchers with SecureRandomBuilder {
 
@@ -42,14 +42,14 @@ class AuthInitiateMessageSpec extends FlatSpec with Matchers with SecureRandomBu
         s = BigInt("27900842753040147848386185004093503271309114686926362065982995477587410195214"),
         v = 27.toByte
       ),
-      ephemeralPublicHash = ByteString(Hex.decode("F30BAC135324F493AEEAF4C9B48DF0F1F9A28A3DEDF9B1D85AF45A27F7B6F054")),
-      publicKey = curve.getCurve.decodePoint(Hex.decode(
-        "046F8A80D14311C39F35F516FA664DEAAAA13E85B2F7493F37F6144D86991EC012937307647BD3B9A82ABE2974E1407241D54947BBB39763A4CAC9F77166AD92A0")),
-      nonce = ByteString(Hex.decode("CAE0187FD4EB042EB7A47EEDDA185CFEB59DEA550418D1D036B76E03A5BF74AC")),
+      ephemeralPublicHash = fromHexString("F30BAC135324F493AEEAF4C9B48DF0F1F9A28A3DEDF9B1D85AF45A27F7B6F054"),
+      publicKey = curve.getCurve.decodePoint(fromHexString(
+        "046F8A80D14311C39F35F516FA664DEAAAA13E85B2F7493F37F6144D86991EC012937307647BD3B9A82ABE2974E1407241D54947BBB39763A4CAC9F77166AD92A0").toArray),
+      nonce = fromHexString("CAE0187FD4EB042EB7A47EEDDA185CFEB59DEA550418D1D036B76E03A5BF74AC"),
       knownPeer = false
     )
 
-    val decoded = AuthInitiateMessage.decode(Hex.decode(inputHex))
+    val decoded = AuthInitiateMessage.decode(fromHexString(inputHex).toArray)
 
     decoded shouldBe expectedMsg
   }

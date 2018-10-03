@@ -3,7 +3,7 @@ package io.iohk.cef.cryptolegacy
 import java.nio.charset.StandardCharsets
 
 import akka.util.ByteString
-import org.bouncycastle.util.encoders.Hex
+import io.iohk.cef.utils.HexStringCodec._
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -46,7 +46,7 @@ class ScryptSpec extends FlatSpec with Matchers with PropertyChecks {
 
     forAll(testVectors) { (pass, s, n, r, p, dklen, dk) =>
       val salt = ByteString(s.getBytes(StandardCharsets.US_ASCII))
-      val derivedKey = ByteString(Hex.decode(dk))
+      val derivedKey = fromHexString(dk)
 
       scrypt(pass, salt, n, r, p, dklen) shouldEqual derivedKey
     }

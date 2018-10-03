@@ -4,7 +4,7 @@ import io.iohk.cef.crypto._
 import io.iohk.cef.ledger.identity.IdentityLedgerState
 import io.iohk.cef.ledger.identity.storage.scalike.{IdentityLedgerStateTable, LedgerStateEntryMap}
 import io.iohk.cef.ledger.{DeleteStateAction, InsertStateAction, LedgerState, UpdateStateAction}
-import org.bouncycastle.util.encoders.Hex
+import io.iohk.cef.utils.HexStringCodec._
 import scalikejdbc._
 
 class IdentityLedgerStateStorageDao {
@@ -53,8 +53,7 @@ class IdentityLedgerStateStorageDao {
     val column = IdentityLedgerStateTable.column
     sql"""
       delete from ${IdentityLedgerStateTable.table}
-       where ${column.identity} = ${identity} and ${column.publicKey} = ${Hex.toHexString(
-      publicKey.toByteString.toArray)}
+       where ${column.identity} = ${identity} and ${column.publicKey} = ${toHexString(publicKey.toByteString)}
       """.executeUpdate.apply()
   }
 }

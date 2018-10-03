@@ -3,7 +3,7 @@ package io.iohk.cef.cryptolegacy
 import java.nio.charset.StandardCharsets
 
 import akka.util.ByteString
-import org.bouncycastle.util.encoders.Hex
+import io.iohk.cef.utils.HexStringCodec._
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -32,7 +32,7 @@ class Pbkdf2HMacSha256Spec extends FlatSpec with Matchers with PropertyChecks {
 
     forAll(testVectors) { (pass, s, c, dklen, dk) =>
       val salt = ByteString(s.getBytes(StandardCharsets.US_ASCII))
-      val derivedKey = ByteString(Hex.decode(dk))
+      val derivedKey = fromHexString(dk)
 
       pbkdf2HMacSha256(pass, salt, c, dklen) shouldEqual derivedKey
     }

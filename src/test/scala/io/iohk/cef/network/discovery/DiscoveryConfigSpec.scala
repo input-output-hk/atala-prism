@@ -1,9 +1,8 @@
 package io.iohk.cef.network.discovery
 
-import akka.util.ByteString
 import com.typesafe.config.ConfigFactory
 import io.iohk.cef.network.Capabilities
-import org.bouncycastle.util.encoders.Hex
+import io.iohk.cef.utils.HexStringCodec._
 import org.scalatest.{FlatSpec, MustMatchers}
 
 class DiscoveryConfigSpec extends FlatSpec with MustMatchers {
@@ -56,7 +55,7 @@ class DiscoveryConfigSpec extends FlatSpec with MustMatchers {
     dc.port mustBe port
     dc.bootstrapNodes.size mustBe 1
     dc.bootstrapNodes.head.capabilities mustBe Capabilities(1)
-    dc.bootstrapNodes.head.id mustBe ByteString(Hex.decode(nodeId))
+    dc.bootstrapNodes.head.id mustBe fromHexString(nodeId)
     dc.bootstrapNodes.head.discoveryAddress.getAddress.getAddress.toSeq mustBe Seq[Byte](127, 0, 0, 2)
     dc.bootstrapNodes.head.discoveryAddress.getPort mustBe 3020
     dc.bootstrapNodes.head.serverAddress.getAddress.getAddress.toSeq mustBe Seq[Byte](127, 0, 0, 1)

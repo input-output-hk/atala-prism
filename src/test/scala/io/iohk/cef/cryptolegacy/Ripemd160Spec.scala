@@ -2,7 +2,7 @@ package io.iohk.cef.cryptolegacy
 
 import java.nio.charset.StandardCharsets
 
-import org.bouncycastle.util.encoders.Hex
+import io.iohk.cef.utils.HexStringCodec._
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{FunSuite, Matchers}
 
@@ -26,7 +26,7 @@ class Ripemd160Spec extends FunSuite with PropertyChecks with Matchers {
     forAll(examples) { (input, result) =>
       val inBytes = input.getBytes(StandardCharsets.US_ASCII)
       val hash = ripemd160(inBytes)
-      val encodedHash = Hex.toHexString(hash)
+      val encodedHash = toHexString(hash)
 
       encodedHash shouldEqual result
     }

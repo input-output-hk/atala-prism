@@ -19,7 +19,7 @@ import io.iohk.cef.network.transport.rlpx.RLPxConnectionHandler.{
   HandleConnection
 }
 import io.iohk.cef.network.transport.rlpx.ethereum.p2p.Message
-import org.bouncycastle.util.encoders.Hex
+import io.iohk.cef.utils.HexStringCodec._
 
 class RLPxTransportProtocol[T](
     encoder: Encoder[T, ByteString],
@@ -237,7 +237,7 @@ class RLPxTransportProtocol[T](
     }
 
     private def toUri(remoteAddr: InetSocketAddress, nodeId: ByteString): URI =
-      new URI(s"enode://${Hex.toHexString(nodeId.toArray)}@${remoteAddr.getHostName}:${remoteAddr.getPort}")
+      new URI(s"enode://${toHexString(nodeId)}@${remoteAddr.getHostName}:${remoteAddr.getPort}")
   }
 
   object PeerBridge {

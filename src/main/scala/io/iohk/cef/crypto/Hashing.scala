@@ -67,7 +67,7 @@ trait Hashing {
     }
 
     override def toString(): String =
-      toByteString.toHex
+      toByteString.hexDump
   }
 
   object Hash {
