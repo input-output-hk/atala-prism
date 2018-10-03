@@ -98,7 +98,7 @@ class ConsensusPoolItSpec
     testProbe.expectMsg(30 seconds, Right[ApplicationError, Unit](()))
     s1.log.map(_.command) mustBe expectedLogEntries
 
-    t1.raftNode.clientAppendEntries(Seq())
+    t1.raftNode.clientAppendEntries(Seq()).futureValue
 
     val inOrderExecution = Mockito.inOrder(testExecution)
     //one call per cluster node
