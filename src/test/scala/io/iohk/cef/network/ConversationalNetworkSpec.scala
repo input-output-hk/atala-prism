@@ -153,7 +153,7 @@ class ConversationalNetworkSpec extends FlatSpec with BeforeAndAfterAll {
     NetworkFixture(nodeId, peerInfo, networkDiscovery, messageHandler, transports, network)
   }
 
-  private def networks[T](fixtures: NetworkFixture[T]*)(testCode: (Seq[NetworkFixture[T]]) => Any): Unit = {
+  private def networks[T](fixtures: NetworkFixture[T]*)(testCode: Seq[NetworkFixture[T]] => Any): Unit = {
     try {
       testCode(fixtures)
     } finally {

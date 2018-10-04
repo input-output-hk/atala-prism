@@ -21,30 +21,32 @@ class ConversationalNetworkIntegrationSpec extends FlatSpec with NetworkFixture 
 
   behavior of "ConversationalNetwork"
 
-  it should "send a message to a peer" in {
+  private val bootstrapStack = randomBaseNetwork(None)
 
-    val bobsStack = randomBaseNetwork(None)
-    val bobsNodeId = bobsStack.transports.peerInfo.nodeId
+  it should "send a message to a peer" in networks(bootstrapStack, randomBaseNetwork(Some(bootstrapStack))) {
+    networks =>
+      val bobsStack = networks(0)
+      val bobsNodeId = bobsStack.transports.peerInfo.nodeId
 
-    val bobsAInbox = mockHandler[A]
-    val bobA = messageChannel(bobsStack, bobsAInbox)
+      val bobsAInbox = mockHandler[A]
+      val bobA = messageChannel(bobsStack, bobsAInbox)
 
-    val bobsBInbox = mockHandler[B]
-    val bobB = messageChannel(bobsStack, bobsBInbox)
+      val bobsBInbox = mockHandler[B]
+      val bobB = messageChannel(bobsStack, bobsBInbox)
 
-    val alicesStack = randomBaseNetwork(Some(bobsStack))
-    val alicesNodeId = alicesStack.transports.peerInfo.nodeId
+      val alicesStack = networks(1)
+      val alicesNodeId = alicesStack.transports.peerInfo.nodeId
 
-    val alicesAInbox = mockHandler[A]
-    val aliceA = messageChannel(alicesStack, alicesAInbox)
+      val alicesAInbox = mockHandler[A]
+      val aliceA = messageChannel(alicesStack, alicesAInbox)
 
-    val alicesBInbox = mockHandler[B]
-    val aliceB = messageChannel(alicesStack, alicesBInbox)
+      val alicesBInbox = mockHandler[B]
+      val aliceB = messageChannel(alicesStack, alicesBInbox)
 
-    eventually {
-      aliceA.sendMessage(bobsNodeId, A(1, "Hi Bob!"))
-      verify(bobsAInbox, atLeastOnce()).apply(A(1, "Hi Bob!"))
-    }
+      eventually {
+        aliceA.sendMessage(bobsNodeId, A(1, "Hi Bob!"))
+        verify(bobsAInbox, atLeastOnce()).apply(A(1, "Hi Bob!"))
+      }
   }
 
   private def mockHandler[T]: T => Unit =

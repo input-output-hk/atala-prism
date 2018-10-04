@@ -21,8 +21,7 @@ class RaftRPCSpec extends FlatSpec {
 
   behavior of "RaftRPC"
 
-  it should "support appendEntries" in {
-    val fixture = rpcFixture
+  it should "support appendEntries" in rpcFixture { fixture =>
     val entriesToAppend = EntriesToAppend(1, "leader", 1, 1, Seq(LogEntry("A", 1, 1)), 1)
     val appendResult = AppendEntriesResult(1, success = true)
 
@@ -33,8 +32,7 @@ class RaftRPCSpec extends FlatSpec {
     result shouldBe appendResult
   }
 
-  it should "support requestVote" in {
-    val fixture = rpcFixture
+  it should "support requestVote" in rpcFixture { fixture =>
     val voteRequested = VoteRequested(1, "candidate", 1, 1)
     val voteResult = RequestVoteResult(1, voteGranted = true)
 
@@ -45,8 +43,7 @@ class RaftRPCSpec extends FlatSpec {
     result shouldBe voteResult
   }
 
-  it should "support clientAppendEntries" in {
-    val fixture = rpcFixture
+  it should "support clientAppendEntries" in rpcFixture { fixture =>
     val clientEntries = Seq("A", "B", "C")
     val appendResult = Future(Right(()))
 
@@ -72,13 +69,15 @@ class RaftRPCSpec extends FlatSpec {
   }
 
   case class RPCFixture(
+      node1Fixture: NetworkFixture,
+      node2Fixture: NetworkFixture,
       node1RPC: RaftRPC[String],
       node2RPC: RaftRPC[String],
       node2AppendEntriesCalled: EntriesToAppend[String] => AppendEntriesResult,
       node2RequestVoteCalled: VoteRequested => RequestVoteResult,
       node2ClientAppendCalled: Seq[String] => Future[Either[Redirect[String], Unit]])
 
-  def rpcFixture: RPCFixture = {
+  def createRPCFixture(): RPCFixture = {
     val node1 = NetUtils.randomNetworkFixture()
     val node2 = NetUtils.randomNetworkFixture()
 
@@ -92,6 +91,23 @@ class RaftRPCSpec extends FlatSpec {
 
     val node2RPC = rpc(node2, node1, node2AppendEntriesCalled, node2RequestVoteCalled, node2ClientAppendCalled)
 
-    RPCFixture(node1RPC, node2RPC, node2AppendEntriesCalled, node2RequestVoteCalled, node2ClientAppendCalled)
+    RPCFixture(
+      node1,
+      node2,
+      node1RPC,
+      node2RPC,
+      node2AppendEntriesCalled,
+      node2RequestVoteCalled,
+      node2ClientAppendCalled)
+  }
+
+  def rpcFixture(testCode: RPCFixture => Any): Unit = {
+    val fixture = createRPCFixture()
+    try {
+      testCode(fixture)
+    } finally {
+      fixture.node1Fixture.transports.shutdown()
+      fixture.node2Fixture.transports.shutdown()
+    }
   }
 }

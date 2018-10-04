@@ -109,6 +109,13 @@ object NetUtils {
     NetworkFixture(nodeId, peerInfo, networkDiscovery, new Transports(peerInfo))
   }
 
+  def networkFixtures(fixtures: NetworkFixture*)(testCode: Seq[NetworkFixture] => Any): Unit = {
+    try {
+      testCode(fixtures)
+    } finally {
+      fixtures.foreach(fixture => fixture.transports.shutdown())
+    }
+  }
   def nodesArePeers(node1: NetworkFixture, node2: NetworkFixture): Unit = {
     when(node1.networkDiscovery.nearestPeerTo(node2.nodeId)).thenReturn(Some(node2.peerInfo))
     when(node2.networkDiscovery.nearestPeerTo(node1.nodeId)).thenReturn(Some(node1.peerInfo))
