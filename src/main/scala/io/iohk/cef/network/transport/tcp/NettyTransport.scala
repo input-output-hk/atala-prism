@@ -20,8 +20,15 @@ private[network] class NettyTransport(address: InetSocketAddress) {
 
   private val messageApplications = new ConcurrentHashMap[UUID, MessageApplication[InetSocketAddress]]().asScala
 
-  new ServerBootstrap()
-    .group(new NioEventLoopGroup, new NioEventLoopGroup)
+  private val workerGroup = new NioEventLoopGroup()
+
+  private val clientBootstrap = new Bootstrap()
+    .group(workerGroup)
+    .channel(classOf[NioSocketChannel])
+    .option[java.lang.Boolean](ChannelOption.SO_KEEPALIVE, true)
+
+  private val serverBootstrap = new ServerBootstrap()
+    .group(workerGroup)
     .channel(classOf[NioServerSocketChannel])
     .childHandler(new ChannelInitializer[SocketChannel]() {
       override def initChannel(ch: SocketChannel): Unit = {
@@ -46,28 +53,26 @@ private[network] class NettyTransport(address: InetSocketAddress) {
 
   def sendMessage(address: InetSocketAddress, message: ByteBuffer): Unit = {
 
-    val workerGroup = new NioEventLoopGroup()
-
     val activationAdapter = new ChannelInboundHandlerAdapter() {
       override def channelActive(ctx: ChannelHandlerContext): Unit = {
-        try {
-          ctx.writeAndFlush(Unpooled.wrappedBuffer(message))
-        } finally {
-          workerGroup.shutdownGracefully()
-        }
+        ctx
+          .writeAndFlush(Unpooled.wrappedBuffer(message))
+          .addListener((_: ChannelFuture) => ctx.channel().close())
       }
     }
 
-    new Bootstrap()
-      .group(workerGroup)
-      .channel(classOf[NioSocketChannel])
-      .option[java.lang.Boolean](ChannelOption.SO_KEEPALIVE, true)
+    clientBootstrap
       .handler(new ChannelInitializer[SocketChannel]() {
         def initChannel(ch: SocketChannel): Unit = {
           ch.pipeline().addLast(new NettyDecoder(), activationAdapter)
         }
       })
       .connect(address)
+  }
+
+  def shutdown(): Unit = {
+    serverBootstrap.channel().close()
+    workerGroup.shutdownGracefully()
   }
 
   private class NettyDecoder extends ChannelInboundHandlerAdapter {

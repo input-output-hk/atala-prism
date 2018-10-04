@@ -23,10 +23,17 @@ class PortForward(sourcePort: Int, dest: InetSocketAddress) {
 
   private val serverSocket: ServerSocket = new ServerSocket(sourcePort)
 
-  while (true) {
-    val clientSocket: Socket = serverSocket.accept()
-    val clientThread: ClientThread = new ClientThread(clientSocket, dest.getHostName, dest.getPort)
-    clientThread.start()
+  def start(): Unit = {
+    while (true) {
+      val clientSocket: Socket = serverSocket.accept()
+      val clientThread: ClientThread = new ClientThread(clientSocket, dest.getHostName, dest.getPort)
+      clientThread.start()
+    }
+  }
+
+  def stop(): Unit = {
+    println("stopping the forward")
+    serverSocket.close()
   }
 }
 
