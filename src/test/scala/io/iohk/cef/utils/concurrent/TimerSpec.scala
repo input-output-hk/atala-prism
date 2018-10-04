@@ -10,6 +10,7 @@ import scala.concurrent.{Await, TimeoutException}
 import scala.concurrent.duration._
 
 class TimerSpec extends FlatSpec {
+  
   behavior of "Timer"
 
   it should "run a task after a delay" in {
@@ -25,12 +26,12 @@ class TimerSpec extends FlatSpec {
 
   it should "cancel a task" in {
     val c = Timer
-      .schedule(10 millis) {
+      .schedule(50 millis) {
         println("Task completed. Oh dear!")
       }
 
     c.cancel()
 
-    a[TimeoutException] should be thrownBy Await.result(c, 50 millis)
+    a[TimeoutException] should be thrownBy Await.result(c, 100 millis)
   }
 }
