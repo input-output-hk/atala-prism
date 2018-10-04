@@ -1,7 +1,7 @@
 package io.iohk.cef.utils.concurrent
 import monix.execution.{CancelableFuture => MonixFuture}
 
-import scala.concurrent.{CanAwait, ExecutionContext, Future, TimeoutException}
+import scala.concurrent.{CanAwait, ExecutionContext, Future}
 import scala.concurrent.duration.Duration
 import scala.util.Try
 
