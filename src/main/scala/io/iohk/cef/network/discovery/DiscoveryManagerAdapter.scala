@@ -7,10 +7,7 @@ import akka.actor.typed.scaladsl.adapter._
 import akka.util.Timeout
 import akka.{actor => untyped}
 import io.iohk.cef.network.discovery.DiscoveryManager.{DiscoveredNodes, DiscoveryRequest, GetDiscoveredNodes}
-import io.iohk.cef.network.discovery.db.KnownNode
-import io.iohk.cef.network.transport.FrameHeader
-import io.iohk.cef.network.transport.tcp.TcpTransportConfiguration
-import io.iohk.cef.network.{NetworkConfiguration, NodeId, PeerInfo}
+import io.iohk.cef.network.{NodeId, PeerInfo}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
@@ -32,14 +29,7 @@ class DiscoveryManagerAdapter(discoveryManagerBehavior: Behavior[DiscoveryReques
 
     discoveredNodes.nodes
       .find(knownNode => NodeId(knownNode.node.id) == nodeId)
-      .map(adaptToPeerInfo)
-  }
-
-  private def adaptToPeerInfo(knownNode: KnownNode): PeerInfo = {
-    val itsNodeId = NodeId(knownNode.node.id)
-    val itsConfiguration =
-      NetworkConfiguration(Some(TcpTransportConfiguration(knownNode.node.serverAddress)), FrameHeader.defaultTtl)
-    PeerInfo(itsNodeId, itsConfiguration)
+      .map(_.node.toPeerInfo)
   }
 
   override def nearestNPeersTo(nodeId: NodeId, n: Int): Seq[PeerInfo] = {
@@ -47,6 +37,6 @@ class DiscoveryManagerAdapter(discoveryManagerBehavior: Behavior[DiscoveryReques
 
     val discoveredNodes: DiscoveredNodes = Await.result(futureResult, futureTimeout)
 
-    discoveredNodes.nodes.map(adaptToPeerInfo).take(n).toSeq
+    discoveredNodes.nodes.map(_.node.toPeerInfo).take(n).toSeq
   }
 }
