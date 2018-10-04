@@ -24,8 +24,10 @@ object CancellableFuture {
     override def transformWith[S](f: Try[T] => Future[S])(implicit executor: ExecutionContext): Future[S] =
       mf.transformWith(f)
 
-    override def ready(atMost: Duration)(implicit permit: CanAwait): this.type =
-      throw new TimeoutException("This CancelableFuture will never finish!")
+    override def ready(atMost: Duration)(implicit permit: CanAwait): this.type = {
+      mf.ready(atMost)
+      this
+    }
 
     override def result(atMost: Duration)(implicit permit: CanAwait): T =
       mf.result(atMost)
