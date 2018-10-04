@@ -24,15 +24,15 @@ trait DefaultRaftConsensusConfigBuilder[Command] extends RaftConsensusConfigBuil
   self: DefaultLedgerConfig with ConfigReaderBuilder =>
   import io.iohk.cef.network.encoding.array.ArrayCodecs._
   override def storage(
-                        implicit
-                        commandSerializable: ByteStringSerializable[Command]): raft.PersistentStorage[Command] = {
+      implicit
+      commandSerializable: ByteStringSerializable[Command]): raft.PersistentStorage[Command] = {
     new OnDiskPersistentStorage[Command](nodeIdStr)
   }
   override val raftConfig: RaftConfig = RaftConfig(config.getConfig("consensus.raft"))
   override def rpcFactory(
-                           implicit serializable: ByteStringSerializable[DiscoveryWireMessage],
-                           commandSerializable: ByteStringSerializable[Command],
-                           executionContext: ExecutionContext): raft.RPCFactory[Command] = {
+      implicit serializable: ByteStringSerializable[DiscoveryWireMessage],
+      commandSerializable: ByteStringSerializable[Command],
+      executionContext: ExecutionContext): raft.RPCFactory[Command] = {
     new RaftRPCFactory[Command](networkDiscovery, transports)
   }
 }

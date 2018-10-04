@@ -29,6 +29,7 @@ trait IdentityFrontendBuilder {
       dByteStringSerializable: ByteStringSerializable[DiscoveryWireMessage]): Future[Http.ServerBinding] = {
     val serviceApi = new IdentityServiceApi(service)
     val route = serviceApi.createIdentity
-    Http()(actorSystem).bindAndHandle(route, config.getString("frontend.rest.interface"), config.getInt("frontend.rest.port"))
+    Http()(actorSystem)
+      .bindAndHandle(route, config.getString("frontend.rest.interface"), config.getInt("frontend.rest.port"))
   }
 }

@@ -31,7 +31,6 @@ trait LedgerConfigBuilder {
   val networkDiscovery: NetworkDiscovery
 }
 
-
 trait DefaultLedgerConfig extends LedgerConfigBuilder {
   self: ConfigReaderBuilder =>
 
@@ -72,9 +71,9 @@ trait DefaultLedgerConfig extends LedgerConfigBuilder {
     )
 
   private def listenerFactory(
-                               encoder: Encoder[DiscoveryWireMessage, ByteString],
-                               decoder: Decoder[ByteString, DiscoveryWireMessage])(
-                               context: ActorContext[DiscoveryRequest]): ActorRef[DiscoveryListenerRequest] = {
+      encoder: Encoder[DiscoveryWireMessage, ByteString],
+      decoder: Decoder[ByteString, DiscoveryWireMessage])(
+      context: ActorContext[DiscoveryRequest]): ActorRef[DiscoveryListenerRequest] = {
 
     context.spawn(
       DiscoveryListener
