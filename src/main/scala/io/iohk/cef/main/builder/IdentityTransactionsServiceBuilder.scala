@@ -22,6 +22,6 @@ trait IdentityTransactionServiceBuilder {
       blockByteStringSerializable: ByteStringSerializable[B],
       txByteStringSerializable: ByteStringSerializable[IdentityTransaction],
       stateyteStringSerializable: ByteStringSerializable[Set[SigningPublicKey]],
-      dByteStringSerializable: ByteStringSerializable[DiscoveryWireMessage]) =
+      dByteStringSerializable: ByteStringSerializable[DiscoveryWireMessage]): IdentityTransactionService =
     new IdentityTransactionService(nodeCore)
 }
