@@ -1,10 +1,16 @@
 package io.iohk.cef.integration
 
 import akka.actor.{ActorRef, ActorSystem, Props}
+import akka.http.scaladsl.marshalling.Marshal
+import akka.http.scaladsl.model.{MessageEntity, StatusCodes}
+import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.testkit.{TestActorRef, TestKit}
 import akka.util.Timeout
 import io.iohk.cef.consensus.Consensus
-import io.iohk.cef.core.{Envelope, Everyone, NodeCore}
+import io.iohk.cef.core.{Envelope, NodeCore}
+import io.iohk.cef.frontend.client.ChimericServiceApi
+import io.iohk.cef.frontend.models.ChimericTransactionRequest
+import io.iohk.cef.frontend.services.ChimericTransactionService
 import io.iohk.cef.ledger.chimeric._
 import io.iohk.cef.ledger.storage.LedgerStateStorage
 import io.iohk.cef.ledger.{Block, ByteStringSerializable, Transaction}
@@ -21,12 +27,12 @@ import scala.concurrent.duration.{Duration, DurationInt}
 import scala.concurrent.{ExecutionContext, Future}
 
 class ChimericTransactionNodeCoreItSpec
-    extends TestKit(ActorSystem("ChimericTransactionNodeCore"))
-    with FlatSpecLike
+    extends FlatSpec
     with MustMatchers
     with BeforeAndAfterAll
     with ScalaFutures
-    with MockitoSugar {
+    with MockitoSugar
+    with ScalatestRouteTest {
 
   import ChimericTransactionNodeCoreItSpec._
 
@@ -34,9 +40,8 @@ class ChimericTransactionNodeCoreItSpec
 
   behavior of "ChimericTransactionNodeCoreItSpec"
 
-  it should "process a transaction" in {
+  def createNodeCore: NodeCore[ChimericStateValue, ChimericBlockHeader, ChimericTx] = {
     implicit val timeout = Timeout(10.seconds)
-    implicit val executionContext = ExecutionContext.global
     implicit val envelopeSerializable = mock[ByteStringSerializable[Envelope[TransactionType]]]
     implicit val blockSerializable = mock[ByteStringSerializable[Envelope[BlockType]]]
 
@@ -71,16 +76,30 @@ class ChimericTransactionNodeCoreItSpec
     val me = NodeId("3112")
 
     val core =
-      new NodeCore(consensusMap, txNetwork, blockNetwork, me)(envelopeSerializable, blockSerializable, executionContext)
+      new NodeCore(consensusMap, txNetwork, blockNetwork, me)(
+        envelopeSerializable,
+        blockSerializable,
+        ExecutionContext.global)
 
+    core.asInstanceOf[NodeCore[ChimericStateValue, ChimericBlockHeader, ChimericTx]]
+  }
+
+  it should "process a transaction" in {
     val testTransaction = ChimericTx(List(CreateCurrency("BTC")))
-    val envelope = Envelope(testTransaction, 1, Everyone)
-    val result = core.receiveTransaction(envelope).futureValue
-    result mustBe Right(())
 
-    val pool = txPoolActorModelInterface.testActorRef.underlyingActor.pool
-    val block = pool.generateBlock()
-    block.transactions mustBe Seq(testTransaction)
+    val node = createNodeCore
+    val service = new ChimericTransactionService(node)
+    val api = new ChimericServiceApi(service)
+    val routes = api.create
+
+    val entity = ChimericTransactionRequest(testTransaction, 1)
+    val json = Marshal(entity).to[MessageEntity].futureValue
+
+    val request = Post("/chimeric-transactions", json)
+
+    request ~> routes ~> check {
+      status must ===(StatusCodes.Created)
+    }
   }
 }
 
