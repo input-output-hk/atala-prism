@@ -14,7 +14,6 @@ import scalikejdbc._
 import scalikejdbc.scalatest.AutoRollback
 
 import scala.collection.immutable
-import scala.util.Try
 
 trait ChimericLedgerItDbTest
     extends fixture.FlatSpec
@@ -24,7 +23,7 @@ trait ChimericLedgerItDbTest
     with EitherValues {
 
   def createLedger(ledgerStateStorageDao: ChimericLedgerStateStorageDao)(
-      implicit dBSession: DBSession): Ledger[Try, ChimericStateValue] = {
+      implicit dBSession: DBSession): Ledger[ChimericStateValue] = {
     val ledgerStateStorage = new ChimericLedgerStateStorageImpl(ledgerStateStorageDao) {
       override def execInSession[T](block: DBSession => T): T = block(dBSession)
     }
@@ -76,7 +75,7 @@ trait ChimericLedgerItDbTest
     val header = new ChimericBlockHeader
     val block = Block(header, transactions)
     val result = ledger(block)
-    result.right.value.isSuccess mustBe true
+    result.isRight mustBe true
 
     val address1Key = ChimericLedgerState.getAddressValuePartitionId(address1)
     val address2Key = ChimericLedgerState.getAddressValuePartitionId(address2)
@@ -109,7 +108,7 @@ trait ChimericLedgerItDbTest
     block2.partitionIds.foreach(println)
     val result2 = ledger(block2)
 
-    result2.right.value.isSuccess mustBe true
+    result2.isRight mustBe true
     stateStorage.slice(allKeys) mustBe LedgerState[ChimericStateValue](
       Map(
         currency1Key -> CreateCurrencyHolder(CreateCurrency(currency1)),
