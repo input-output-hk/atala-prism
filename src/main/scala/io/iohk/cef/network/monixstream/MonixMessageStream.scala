@@ -1,9 +1,9 @@
 package io.iohk.cef.network.monixstream
 
 import io.iohk.cef.network.MessageStream
+import io.iohk.cef.utils.concurrent.CancellableFuture
 import monix.execution.Scheduler
 import monix.reactive.Observable
-import scala.concurrent.Future
 
 private[network] class MonixMessageStream[T](val o: Observable[T]) extends MessageStream[T] {
 
@@ -17,11 +17,11 @@ private[network] class MonixMessageStream[T](val o: Observable[T]) extends Messa
   override def filter(p: T => Boolean): MonixMessageStream[T] =
     new MonixMessageStream(o.filter(p))
 
-  override def fold[U](zero: U)(f: (U, T) => U): Future[U] =
-    o.foldLeftL(zero)(f).runAsync
+  override def fold[U](zero: U)(f: (U, T) => U): CancellableFuture[U] =
+    CancellableFuture(o.foldLeftL(zero)(f).runAsync)
 
-  override def foreach(f: T => Unit): Future[Unit] =
-    o.foreach(f)
+  override def foreach(f: T => Unit): CancellableFuture[Unit] =
+    CancellableFuture(o.foreach(f))
 }
 
 object MonixMessageStream {
