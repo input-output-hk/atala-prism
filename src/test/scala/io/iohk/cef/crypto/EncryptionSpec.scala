@@ -1,7 +1,6 @@
 package io.iohk.cef.crypto
 
 import akka.util.ByteString
-import io.iohk.cef.crypto.encoding.TypedByteStringDecodingError
 import io.iohk.cef.crypto.encoding.TypedByteStringDecodingError.NioDecoderFailedToDecodeTBS
 import io.iohk.cef.network.encoding.nio._
 import org.scalatest.MustMatchers._
@@ -13,6 +12,7 @@ import io.iohk.cef.test.ScalacheckExtensions._
 class EncryptionSpec extends WordSpec {
 
   case class User(name: String, age: Int)
+  private val keys = generateEncryptionKeyPair()
 
   "generateEncryptionKeyPair" should {
     "always generate different key pairs" in {
@@ -20,10 +20,10 @@ class EncryptionSpec extends WordSpec {
       var privateKeys = Set.empty[ByteString]
 
       forAll { _: Int =>
-        val result = generateEncryptionKeyPair()
+        val keys = generateEncryptionKeyPair()
 
-        val pub = result.public.toByteString
-        val priv = result.`private`.toByteString
+        val pub = keys.public.toByteString
+        val priv = keys.`private`.toByteString
 
         publicKeys.contains(pub) must be(false)
         privateKeys.contains(priv) must be(false)
@@ -37,7 +37,6 @@ class EncryptionSpec extends WordSpec {
   "encrypt" should {
     "encrypt any ByteString input" in {
       forAll { input: ByteString =>
-        val keys = generateEncryptionKeyPair()
         val result = encrypt(input, keys.public)
 
         result.toByteString mustNot be(empty)
@@ -46,7 +45,6 @@ class EncryptionSpec extends WordSpec {
 
     "encrypt any Entity input" in {
       forAll { (name: String, age: Int) =>
-        val keys = generateEncryptionKeyPair()
         val entity = User(name, age)
         val result = encrypt(entity, keys.public)
 
@@ -58,7 +56,6 @@ class EncryptionSpec extends WordSpec {
   "decrypt" should {
     "decrypt ByteStrings with the right key" in {
       forAll { input: ByteString =>
-        val keys = generateEncryptionKeyPair()
         val encrypted = encrypt(input, keys.public)
         val result = decrypt(encrypted, keys.`private`)
 
@@ -68,7 +65,6 @@ class EncryptionSpec extends WordSpec {
 
     "fail to decrypt ByteStrings with the wrong key" in {
       forAll { input: ByteString =>
-        val keys = generateEncryptionKeyPair()
         val encrypted = encrypt(input, keys.public)
 
         forAll { _: Int =>
@@ -83,7 +79,6 @@ class EncryptionSpec extends WordSpec {
     "decrypt Entities with the right key" in {
       forAll { (name: String, age: Int) =>
         val entity = User(name, age)
-        val keys = generateEncryptionKeyPair()
         val encrypted = encrypt(entity, keys.public)
         val result = decrypt[User](encrypted, keys.`private`)
 
@@ -94,7 +89,6 @@ class EncryptionSpec extends WordSpec {
     "fail to decrypt Entities with the wrong key" in {
       forAll { (name: String, age: Int) =>
         val entity = User(name, age)
-        val keys = generateEncryptionKeyPair()
         val encrypted = encrypt(entity, keys.public)
 
         forAll { _: Int =>
@@ -108,9 +102,10 @@ class EncryptionSpec extends WordSpec {
   }
 
   "EncryptedData.decodeFrom" should {
+
+    import io.iohk.cef.crypto.EncryptedDataDecodeError.DataExtractionError
     "decode valid data" in {
       forAll { input: ByteString =>
-        val keys = generateEncryptionKeyPair()
         val encrypted = encrypt(input, keys.public)
         val result = EncryptedData.decodeFrom(encrypted.toByteString)
 
@@ -120,12 +115,9 @@ class EncryptionSpec extends WordSpec {
 
     "fail to decode invalid data" in {
       pending
-
       forAll { bytes: ByteString =>
         val result = EncryptedData.decodeFrom(bytes)
-        val expected =
-          EncryptedDataDecodeError.DataExtractionError(TypedByteStringDecodingError.NioDecoderFailedToDecodeTBS)
-
+        val expected = DataExtractionError(NioDecoderFailedToDecodeTBS)
         result.left.value must be(expected)
       }
     }
@@ -134,7 +126,6 @@ class EncryptionSpec extends WordSpec {
       val algorithm = "RSA".flatMap(_.toByte :: 0.toByte :: Nil).toArray
 
       forAll { input: ByteString =>
-        val keys = generateEncryptionKeyPair()
         val encrypted = encrypt(input, keys.public)
 
         val index = encrypted.toByteString.indexOfSlice(algorithm)
