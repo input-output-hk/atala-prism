@@ -18,8 +18,8 @@ import io.iohk.cef.network.transport.rlpx.RLPxTransportProtocol
 import io.iohk.cef.network.{Capabilities, NodeInfo}
 import io.iohk.cef.network.telemetry.DatadogTelemetry
 import io.micrometer.core.instrument.{Counter, DistributionSummary}
+import io.iohk.cef.utils.HexStringCodec._
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair
-import org.bouncycastle.util.encoders.Hex
 
 import scala.concurrent.duration._
 import scala.util.Success
@@ -283,6 +283,6 @@ object SimpleNode3 {
 
     val (priv, _) = io.iohk.cef.crypto.keyPairToByteArrays(keyPair)
 
-    SimpleNode3(host, port, Hex.toHexString(priv), discoveryConfig, knownNodeStorage)
+    SimpleNode3(host, port, toHexString(priv), discoveryConfig, knownNodeStorage)
   }
 }

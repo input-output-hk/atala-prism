@@ -8,7 +8,7 @@ import akka.io.{IO, Tcp}
 import akka.util.ByteString
 import io.iohk.cef.network.transport.rlpx.ethereum.p2p.{Message, MessageDecoder, MessageSerializable}
 import io.iohk.cef.network.transport.rlpx.RLPxConnectionHandler.RLPxConfiguration
-import org.bouncycastle.util.encoders.Hex
+import io.iohk.cef.utils.HexStringCodec._
 
 import scala.collection.immutable.Queue
 import scala.concurrent.duration._
@@ -252,8 +252,7 @@ class RLPxConnectionHandler(
 
     def handleWriteFailed: Receive = {
       case CommandFailed(cmd: Write) =>
-        log.debug(
-          s"[Stopping Connection] Write to peer $peerId failed, trying to send ${Hex.toHexString(cmd.data.toArray[Byte])}")
+        log.debug(s"[Stopping Connection] Write to peer $peerId failed, trying to send ${toHexString(cmd.data)}")
         context stop self
     }
 

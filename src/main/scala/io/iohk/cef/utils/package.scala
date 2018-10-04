@@ -6,7 +6,7 @@ package object utils {
 
   // Borrowed from here: https://gist.github.com/mkiedys/4c431cfbe20add51e984
   implicit class ByteStringExtension(val bytes: ByteString) extends AnyVal {
-    def toHex: String = {
+    def hexDump: String = {
       def pos(i: Int) = f"$i%08x"
       def hex(b: Byte) = f" $b%02x"
 
@@ -39,5 +39,4 @@ package object utils {
       builder.result()
     }
   }
-
 }

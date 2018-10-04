@@ -15,7 +15,7 @@ import io.iohk.cef.network.discovery.db.KnownNodeStorage
 import io.iohk.cef.network.encoding.{Decoder, Encoder}
 import io.iohk.cef.utils.FiniteSizedMap
 import io.micrometer.core.instrument.MeterRegistry
-import org.bouncycastle.util.encoders.Hex
+import io.iohk.cef.utils.HexStringCodec._
 
 import scala.util.Random
 
@@ -147,7 +147,7 @@ object DiscoveryManager {
       // Eliminating the nodes that never answered.
       expired.foreach {
         case (id, pingInfo) => {
-          context.log.debug(s"Dropping node ${Hex.toHexString(id.toArray)}")
+          context.log.debug(s"Dropping node ${toHexString(id)}")
           pingedNodes -= id
           knownNodesStorage.remove(pingInfo.node)
           context.system.toUntyped.eventStream.publish(CompatibleNodeFound(pingInfo.node))
@@ -204,7 +204,7 @@ object DiscoveryManager {
           }
         case DiscoveryListener.MessageReceived(Pong(pingedNode, token, timestamp), from) =>
           if (hasNotExpired(timestamp)) {
-            context.log.debug(s"Received pong from $pingedNode with token ${Hex.encode(token.toArray)}")
+            context.log.debug(s"Received pong from $pingedNode with token ${toHexString(token)}")
             pingedNodes.get(token).foreach { _ =>
               context.log.debug(s"Received a pong message from ${from}")
               pingedNodes -= token

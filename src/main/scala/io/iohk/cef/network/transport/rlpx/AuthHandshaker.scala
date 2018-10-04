@@ -15,7 +15,7 @@ import io.iohk.cef.cryptolegacy.{ECDSASignature, ECIESCoder}
 import io.iohk.cef.network.encoding.rlp
 import io.iohk.cef.network.transport.rlpx.ByteUtils._
 import io.iohk.cef.cryptolegacy._
-import org.bouncycastle.util.encoders.Hex
+import io.iohk.cef.utils.HexStringCodec._
 
 import scala.util.Random
 
@@ -155,7 +155,7 @@ case class AuthHandshaker(
   }
 
   def publicKeyFromNodeId(nodeId: String): ECPoint = {
-    val bytes = ECDSASignature.uncompressedIndicator +: Hex.decode(nodeId)
+    val bytes = ECDSASignature.uncompressedIndicator +: fromHexString(nodeId).toArray
     curve.getCurve.decodePoint(bytes)
   }
 

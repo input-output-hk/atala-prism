@@ -9,7 +9,7 @@ import io.iohk.cef.network.transport.rlpx.{AuthHandshakeSuccess, AuthHandshaker,
 import AuthHandshaker._
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair
 import org.bouncycastle.crypto.params.ECPublicKeyParameters
-import org.bouncycastle.util.encoders.Hex
+import io.iohk.cef.utils.HexStringCodec._
 
 trait SecureChannelSetup extends SecureRandomBuilder {
 
@@ -17,7 +17,7 @@ trait SecureChannelSetup extends SecureRandomBuilder {
   val remoteEphemeralKey: AsymmetricCipherKeyPair = generateKeyPair(secureRandom)
   val remoteNonce: ByteString = randomNonce()
   val remoteNodeId: Array[Byte] = remoteNodeKey.getPublic.asInstanceOf[ECPublicKeyParameters].toNodeId
-  val remoteUri = new URI(s"enode://${Hex.toHexString(remoteNodeId)}@127.0.0.1:30303")
+  val remoteUri = new URI(s"enode://${toHexString(remoteNodeId)}@127.0.0.1:30303")
 
   val nodeKey: AsymmetricCipherKeyPair = generateKeyPair(secureRandom)
   val ephemeralKey: AsymmetricCipherKeyPair = generateKeyPair(secureRandom)

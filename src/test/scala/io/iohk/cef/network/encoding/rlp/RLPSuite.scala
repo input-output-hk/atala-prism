@@ -2,7 +2,7 @@ package io.iohk.cef.network.encoding.rlp
 
 import akka.util.ByteString
 import io.iohk.cef.network.encoding.rlp
-import org.bouncycastle.util.encoders.Hex
+import io.iohk.cef.utils.HexStringCodec._
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.FunSuite
 
@@ -435,7 +435,7 @@ class RLPSuite extends FunSuite {
     val bigInt = BigInt("100102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f", 16)
     val expected2 = "a0100102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f"
     val data2 = encodeToArray(bigInt)
-    assert(expected2 equals Hex.toHexString(data2))
+    assert(expected2 equals toHexString(data2))
     val dataObtained2 = decodeFromArray[BigInt](data2)
     val obtained2: BigInt = dataObtained2
     assert(bigInt == obtained2)
@@ -454,11 +454,11 @@ class RLPSuite extends FunSuite {
   test("Byte Array Encoding") {
     val byteArr =
       "ce73660a06626c1b3fda7b18ef7ba3ce17b6bf604f9541d3c6c654b7ae88b239407f659c78f419025d785727ed017b6add21952d7e12007373e321dbc31824ba"
-    val byteArray: Array[Byte] = Hex.decode(byteArr)
+    val byteArray: Array[Byte] = fromHexString(byteArr).toArray
     val expected = "b840" + byteArr
 
     val data = encodeToArray(byteArray)
-    assert(expected equals Hex.toHexString(data))
+    assert(expected equals toHexString(data))
     val dataObtained = decodeFromArray[Array[Byte]](data)
     val obtained: Array[Byte] = dataObtained
     assert(byteArray sameElements obtained)
@@ -505,7 +505,7 @@ class RLPSuite extends FunSuite {
   test("Encode Empty List") {
     val expected = "c0"
     val data = encodeToArray(Seq[String]())
-    assert(expected == Hex.toHexString(data))
+    assert(expected == toHexString(data))
 
     val dataObtained = decodeFromArray[Seq[String]](data)
     val obtained: Seq[String] = dataObtained
@@ -515,14 +515,14 @@ class RLPSuite extends FunSuite {
   test("Encode Short  List") {
     val expected = "c88363617483646f67"
     val data = encodeToArray(Seq("cat", "dog"))
-    assert(expected == Hex.toHexString(data))
+    assert(expected == toHexString(data))
     val dataObtained = decodeFromArray[Seq[String]](data)
     val obtained = dataObtained
     assert(Seq("cat", "dog") equals obtained)
 
     val expected2 = "cc83646f6783676f6483636174"
     val data2 = encodeToArray(Seq("dog", "god", "cat"))
-    assert(expected2 == Hex.toHexString(data2))
+    assert(expected2 == toHexString(data2))
     val dataObtained2 = decodeFromArray[Seq[String]](data2)
     val obtained2 = dataObtained2
     assert(Seq("dog", "god", "cat") equals obtained2)
@@ -533,7 +533,7 @@ class RLPSuite extends FunSuite {
     val expected =
       "f83e83636174b8384c6f72656d20697073756d20646f6c6f722073697420616d65742c20636f6e7365637465747572206164697069736963696e6720656c6974"
     val data = encodeToArray(list)
-    assert(expected == Hex.toHexString(data))
+    assert(expected == toHexString(data))
     val dataObtained = decodeFromArray[Seq[String]](data)
     val obtained = dataObtained
     assert(list equals obtained)
@@ -543,7 +543,7 @@ class RLPSuite extends FunSuite {
     val expected = "cc01c48363617483646f67c102"
     val multilist1 = MultiList1(1, Seq("cat"), "dog", Seq(2))
     val data = encodeToArray(multilist1)(MultiList1.encDec)
-    assert(expected == Hex.toHexString(data))
+    assert(expected == toHexString(data))
     val dataObtained = decodeFromArray[MultiList1](data)
     val obtained = dataObtained
     assert(multilist1 equals obtained)
@@ -551,7 +551,7 @@ class RLPSuite extends FunSuite {
     val multilist2 = MultiList2(Seq("cat", "dog"), Seq(1, 2))
     val expected2 = "cdc88363617483646f67c20102c0"
     val data2 = encodeToArray(multilist2)(MultiList2.encDec)
-    assert(expected2 == Hex.toHexString(data2))
+    assert(expected2 == toHexString(data2))
     val dataObtained2 = decodeFromArray[MultiList2](data2)
     val obtained2 = dataObtained2
     assert(multilist2 equals obtained2)
@@ -561,7 +561,7 @@ class RLPSuite extends FunSuite {
     val emptyListOfList = EmptyListOfList()
     val expected = "c4c2c0c0c0"
     val data = encodeToArray(emptyListOfList)(EmptyListOfList.encDec)
-    assert(expected == Hex.toHexString(data))
+    assert(expected == toHexString(data))
     val dataObtained = decodeFromArray[EmptyListOfList](data)
     val obtained = dataObtained
     assert(emptyListOfList equals obtained)
@@ -571,7 +571,7 @@ class RLPSuite extends FunSuite {
     val twoListOfList = RepOfTwoListOfList()
     val expected = "c7c0c1c0c3c0c1c0"
     val data = encodeToArray(twoListOfList)(RepOfTwoListOfList.encDec)
-    assert(expected == Hex.toHexString(data))
+    assert(expected == toHexString(data))
     val dataObtained = decodeFromArray[RepOfTwoListOfList](data)
     val obtained = dataObtained
     assert(twoListOfList equals obtained)
@@ -580,7 +580,7 @@ class RLPSuite extends FunSuite {
   test("https://github.com/ethereum/tests/blob/master/rlptest.txt") {
     for (input: (RLPEncodeable, String) <- rlpTestData) {
       val data = RLP.encode(input._1)
-      assert(input._2 == Hex.toHexString(data))
+      assert(input._2 == toHexString(data))
       val dataObtained = RLP.rawDecode(data)
       val obtained: RLPEncodeable = dataObtained
       val encodedAgain = RLP.encode(obtained)
@@ -601,7 +601,7 @@ class RLPSuite extends FunSuite {
 
   test("Partial Data Parse Test") {
     val hex: String = "000080c180000000000000000000000042699b1104e93abf0008be55f912c2ff"
-    val data = Hex.decode(hex)
+    val data = fromHexString(hex).toArray
     val decoded: Seq[Int] = decodeFromArray[Seq[Int]](data.splitAt(3)._2)
     assert(1 == decoded.length)
     assert(0 == decoded.head)

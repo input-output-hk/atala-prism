@@ -2,7 +2,7 @@ package io.iohk.cef.network.encoding
 
 import akka.util.ByteString
 import io.iohk.cef.ledger.ByteStringSerializable
-import org.bouncycastle.util.encoders.Hex
+import io.iohk.cef.utils.HexStringCodec._
 
 package object rlp {
 
@@ -15,7 +15,7 @@ package object rlp {
   }
 
   case class RLPValue(bytes: Array[Byte]) extends RLPEncodeable {
-    override def toString: String = s"RLPValue(${Hex.toHexString(bytes)})"
+    override def toString: String = s"RLPValue(${toHexString(bytes)})"
   }
 
   trait RLPEncDec[T] extends RLPEncoder[T] with RLPDecoder[T]

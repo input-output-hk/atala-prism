@@ -10,14 +10,14 @@ import AuthHandshaker._
 import org.scalatest.{FlatSpec, Matchers}
 import org.bouncycastle.crypto.params.{ECPrivateKeyParameters, ECPublicKeyParameters}
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair
-import org.bouncycastle.util.encoders.Hex
+import io.iohk.cef.utils.HexStringCodec._
 
 class AuthHandshakerSpec extends FlatSpec with Matchers with SecureRandomBuilder {
 
   val remoteNodeKey = new AsymmetricCipherKeyPair(
     new ECPublicKeyParameters(
-      curve.getCurve.decodePoint(Hex.decode(
-        "0491376c89ba75cc51fd6b63af01083e6cc11f5635620527e254a03374738e1eb344b2221470a4638e670a97a06f3b91c4f517ccc325561148b106407671d5c46d")),
+      curve.getCurve.decodePoint(fromHexString(
+        "0491376c89ba75cc51fd6b63af01083e6cc11f5635620527e254a03374738e1eb344b2221470a4638e670a97a06f3b91c4f517ccc325561148b106407671d5c46d").toArray),
       curve
     ),
     new ECPrivateKeyParameters(
@@ -27,8 +27,8 @@ class AuthHandshakerSpec extends FlatSpec with Matchers with SecureRandomBuilder
 
   val remoteEphemeralKey = new AsymmetricCipherKeyPair(
     new ECPublicKeyParameters(
-      curve.getCurve.decodePoint(Hex.decode(
-        "0404753378699da7678151e9a0605aa0b07ba4f31764b624c90d497d0c78b56f8fe47cd78e1eef35022d1241c7d2ee42eac74a9036f3ed0b8027ce484b556e789e")),
+      curve.getCurve.decodePoint(fromHexString(
+        "0404753378699da7678151e9a0605aa0b07ba4f31764b624c90d497d0c78b56f8fe47cd78e1eef35022d1241c7d2ee42eac74a9036f3ed0b8027ce484b556e789e").toArray),
       curve
     ),
     new ECPrivateKeyParameters(
@@ -39,12 +39,12 @@ class AuthHandshakerSpec extends FlatSpec with Matchers with SecureRandomBuilder
   val remoteNonce = ByteString(Array.fill[Byte](AuthHandshaker.NonceSize)(9.toByte))
 
   val remoteNodeId: Array[Byte] = remoteNodeKey.getPublic.asInstanceOf[ECPublicKeyParameters].toNodeId
-  val remoteUri = new URI(s"enode://${Hex.toHexString(remoteNodeId)}@127.0.0.1:30303")
+  val remoteUri = new URI(s"enode://${toHexString(remoteNodeId)}@127.0.0.1:30303")
 
   val nodeKey = new AsymmetricCipherKeyPair(
     new ECPublicKeyParameters(
-      curve.getCurve.decodePoint(Hex.decode(
-        "045a57761ca5e81288f32b4136e5a8f8d816a0b992b6dfea75312d2dd7618ee8f7e113aaa732dd77f901a7af43275280b985b9f539615733cdf7fbe06636813d4b")),
+      curve.getCurve.decodePoint(fromHexString(
+        "045a57761ca5e81288f32b4136e5a8f8d816a0b992b6dfea75312d2dd7618ee8f7e113aaa732dd77f901a7af43275280b985b9f539615733cdf7fbe06636813d4b").toArray),
       curve
     ),
     new ECPrivateKeyParameters(
@@ -54,8 +54,8 @@ class AuthHandshakerSpec extends FlatSpec with Matchers with SecureRandomBuilder
 
   val ephemeralKey = new AsymmetricCipherKeyPair(
     new ECPublicKeyParameters(
-      curve.getCurve.decodePoint(Hex.decode(
-        "04ead31caeaf59d1299991c16910f68cd61216a67e397111429d2800f58e849940fc0bf8c8f1df05c7de40cd21a2b0bed9d0c3c184034f9d5fd54c4476ddd8d6ed")),
+      curve.getCurve.decodePoint(fromHexString(
+        "04ead31caeaf59d1299991c16910f68cd61216a67e397111429d2800f58e849940fc0bf8c8f1df05c7de40cd21a2b0bed9d0c3c184034f9d5fd54c4476ddd8d6ed").toArray),
       curve
     ),
     new ECPrivateKeyParameters(
@@ -81,9 +81,9 @@ class AuthHandshakerSpec extends FlatSpec with Matchers with SecureRandomBuilder
 
     val AuthHandshakeSuccess(secrets: Secrets, _) = authHandshaker.handleResponseMessage(ByteString(encryptedResponse))
 
-    val expectedMacSecret = Hex.decode("50a782c6fedf88b829a6e5798da721dcbf5b46c117704e2ada985d5235ac192c")
-    val expectedSharedToken = Hex.decode("b1960fa5d529ee89f8032c8aeb0e4fda2bbf4d7eff0c5695173e27f382d8f5bb")
-    val expectedAesSecret = Hex.decode("55e7896a728e74650b3da1e4011823983551d1b5a5bfaf166627da9bea25a562")
+    val expectedMacSecret = fromHexString("50a782c6fedf88b829a6e5798da721dcbf5b46c117704e2ada985d5235ac192c").toArray
+    val expectedSharedToken = fromHexString("b1960fa5d529ee89f8032c8aeb0e4fda2bbf4d7eff0c5695173e27f382d8f5bb").toArray
+    val expectedAesSecret = fromHexString("55e7896a728e74650b3da1e4011823983551d1b5a5bfaf166627da9bea25a562").toArray
 
     secrets.mac shouldBe expectedMacSecret
     secrets.token shouldBe expectedSharedToken
