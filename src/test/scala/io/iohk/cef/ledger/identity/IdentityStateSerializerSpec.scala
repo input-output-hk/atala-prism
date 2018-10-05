@@ -6,13 +6,15 @@ import org.scalatest.{FlatSpec, MustMatchers}
 
 class IdentityStateSerializerSpec extends FlatSpec with MustMatchers with PropertyChecks {
 
+  private val key1 = generateSigningKeyPair().public
+  private val key2 = generateSigningKeyPair().public
+  private val s = IdentityStateSerializer.byteStringSerializable
+
   behavior of "IdentityStateSerializer"
 
   it should "serialize in a lossless way" in {
-    forAll { (values: List[Int]) =>
-      val keys = values.map(_ => generateSigningKeyPair().public).toSet
-      val s = IdentityStateSerializer.byteStringSerializable
-      s.decode(s.encode(keys)) mustBe Some(keys)
-    }
+    s.decode(s.encode(Set())) mustBe Some(Set())
+    s.decode(s.encode(Set(key1))) mustBe Some(Set(key1))
+    s.decode(s.encode(Set(key1, key2))) mustBe Some(Set(key1, key2))
   }
 }

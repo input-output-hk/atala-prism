@@ -23,7 +23,7 @@ trait NetworkFixture {
   // a single instance of discovery.
   protected class BaseNetwork(val transports: Transports, val networkDiscovery: NetworkDiscovery)
 
-  protected def randomBaseNetwork(bootstrap: Option[BaseNetwork]): BaseNetwork = {
+  def randomBaseNetwork(bootstrap: Option[BaseNetwork]): BaseNetwork = {
 
     val configuration = NetworkConfiguration(Some(TcpTransportConfiguration(aRandomAddress())))
 
@@ -34,6 +34,17 @@ trait NetworkFixture {
     val networkDiscovery: NetworkDiscovery = discovery(peerInfo, bootstrap.map(_.transports.peerInfo))
 
     new BaseNetwork(transports, networkDiscovery)
+  }
+
+  def networks(fixtures: BaseNetwork*)(testCode: Seq[BaseNetwork] => Any): Unit = {
+    try {
+      testCode(fixtures)
+    } finally {
+      fixtures.foreach { fixture =>
+        fixture.transports.shutdown()
+        fixture.networkDiscovery.shutdown()
+      }
+    }
   }
 
   private def discovery(peerInfo: PeerInfo, bootstrapNode: Option[PeerInfo]): NetworkDiscovery = {

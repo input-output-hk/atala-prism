@@ -11,8 +11,6 @@ import io.iohk.cef.ledger.storage.scalike.{LedgerStateStorageImpl, LedgerStorage
 import org.scalatest.{MustMatchers, fixture}
 import scalikejdbc.scalatest.AutoRollback
 
-import scala.util.Success
-
 trait LedgerItDbTest extends fixture.FlatSpec with AutoRollback with SigningKeyPairs with MustMatchers {
 
   import IdentityBlockSerializer._
@@ -21,7 +19,6 @@ trait LedgerItDbTest extends fixture.FlatSpec with AutoRollback with SigningKeyP
   behavior of "Ledger"
 
   it should "apply a block using the generic constructs" in { implicit session =>
-    implicit val enabler = io.iohk.cef.utils.ForExpressionsEnabler.tryEnabler
     val genericStateDao = new LedgerStateStorageDao[Set[SigningPublicKey]]()
     val genericLedgerDao = new LedgerStorageDao(Clock.systemUTC())
     val genericStateImpl = new LedgerStateStorageImpl(1, genericStateDao) {
@@ -40,7 +37,7 @@ trait LedgerItDbTest extends fixture.FlatSpec with AutoRollback with SigningKeyP
     val emptyLs = LedgerState[Set[SigningPublicKey]](Map())
     genericStateDao.slice(1, Set("carlos")) mustBe emptyLs
 
-    ledger(testBlock) mustBe Right(Success(()))
+    ledger(testBlock) mustBe Right(())
     genericStateDao.slice(1, Set("carlos")) mustBe
       LedgerState[Set[SigningPublicKey]](Map("carlos" -> Set(alice.public, bob.public)))
   }

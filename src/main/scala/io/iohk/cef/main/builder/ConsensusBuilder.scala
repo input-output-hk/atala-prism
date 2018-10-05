@@ -5,9 +5,9 @@ import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.consensus.raft._
 import io.iohk.cef.ledger.{Block, BlockHeader, ByteStringSerializable, Transaction}
 import io.iohk.cef.network.discovery.DiscoveryWireMessage
-import io.iohk.cef.utils.{ForExpressionsEnabler, Logger}
+import io.iohk.cef.utils.Logger
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 trait ConsensusBuilder[S, H <: BlockHeader, T <: Transaction[S]] {
   self: CommonTypeAliases[S, H, T] =>
@@ -24,7 +24,7 @@ trait RaftConsensusBuilder[S, H <: BlockHeader, T <: Transaction[S]] extends Con
     with TransactionPoolBuilder[S, H, T]
     with RaftConsensusConfigBuilder[Block[S, H, T]]
     with LedgerConfigBuilder
-    with LedgerBuilder[Future, S, T]
+    with LedgerBuilder[S, T]
     with Logger
     with CommonTypeAliases[S, H, T] =>
 
@@ -33,7 +33,6 @@ trait RaftConsensusBuilder[S, H <: BlockHeader, T <: Transaction[S]] extends Con
       executionContext: ExecutionContext,
       byteStringSerializable: ByteStringSerializable[Block[S, H, T]],
       sByteStringSerializable: ByteStringSerializable[S]): B => Unit = {
-    implicit val enabler = ForExpressionsEnabler.futureEnabler
     val interface = txPoolFutureInterface
     val theLedger = ledger(ledgerConfig.id)
     block =>
@@ -42,9 +41,8 @@ trait RaftConsensusBuilder[S, H <: BlockHeader, T <: Transaction[S]] extends Con
           case Left(error) =>
             log.error(s"Could not apply block ${block} to the ledger with id ${ledgerConfig.id}. Error: $error")
           //TODO Crash the node
-          case Right(ledgerDatabaseResultFuture) =>
+          case Right(()) =>
             val result = for {
-              _ <- ledgerDatabaseResultFuture
               txPoolResult <- interface.removeBlockTxs(block)
             } yield txPoolResult
             result onComplete {

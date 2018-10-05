@@ -2,25 +2,18 @@ package io.iohk.cef.ledger.storage
 
 import io.iohk.cef.LedgerId
 import io.iohk.cef.ledger._
-import io.iohk.cef.utils.ForExpressionsEnabler
 
-import scala.language.higherKinds
-
-case class Ledger[F[_], S](ledgerId: LedgerId, ledgerStorage: LedgerStorage, ledgerStateStorage: LedgerStateStorage[S])(
-    implicit adapter: ForExpressionsEnabler[F]) {
-
-  import adapter._
+case class Ledger[S](ledgerId: LedgerId, ledgerStorage: LedgerStorage, ledgerStateStorage: LedgerStateStorage[S]) {
 
   def apply[Header <: BlockHeader, Tx <: Transaction[S]](block: Block[S, Header, Tx])(
-      implicit serializer: ByteStringSerializable[Block[S, Header, Tx]]
-  ): Either[LedgerError, F[Unit]] = {
+      implicit serializer: ByteStringSerializable[Block[S, Header, Tx]]): Either[LedgerError, Unit] = {
+
     val state = ledgerStateStorage.slice(block.partitionIds)
     val either = block(state)
-    either.map(newState =>
-      for {
-        _ <- enableForExp(ledgerStateStorage.update(state, newState))
-        _ <- enableForExp(ledgerStorage.push(ledgerId, block))
-      } yield ())
+    either.map { newState =>
+      ledgerStateStorage.update(state, newState)
+      ledgerStorage.push(ledgerId, block)
+    }
   }
 
   def slice(keys: Set[String]): LedgerState[S] =

@@ -39,4 +39,7 @@ class DiscoveryManagerAdapter(discoveryManagerBehavior: Behavior[DiscoveryReques
 
     discoveredNodes.nodes.map(_.node.toPeerInfo).take(n).toSeq
   }
+
+  override def shutdown(): Unit =
+    discoveryActorSystem.terminate()
 }

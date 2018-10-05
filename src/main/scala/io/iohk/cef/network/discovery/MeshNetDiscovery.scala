@@ -20,6 +20,8 @@ class MeshNetDiscovery(peerInfo: PeerInfo, bootstrapPeerInfo: PeerInfo, transpor
   override def nearestPeerTo(nodeId: NodeId): Option[PeerInfo] = ???
 
   override def nearestNPeersTo(nodeId: NodeId, n: Int): Seq[PeerInfo] = ???
+
+  override def shutdown(): Unit = ???
 }
 
 object MeshNetDiscovery {

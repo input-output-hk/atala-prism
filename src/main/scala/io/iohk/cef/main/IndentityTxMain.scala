@@ -37,7 +37,7 @@ object IndentityTxMain extends App {
     : (Future[Http.ServerBinding], NodeCore[S, H, T]) = {
     val coreBuilder = new NodeCoreBuilder[S, H, T] with ConfigReaderBuilder with DefaultLedgerConfig
     with DefaultRaftConsensusConfigBuilder[B] with RaftConsensusBuilder[S, H, T] with TransactionPoolBuilder[S, H, T]
-    with LedgerBuilder[Future, S, T] with Logger with NetworkBuilder[S, H, T] with DefaultLedgerStateStorageBuilder[S]
+    with LedgerBuilder[S, T] with Logger with NetworkBuilder[S, H, T] with DefaultLedgerStateStorageBuilder[S]
     with LedgerStorageBuilder with DefaultActorSystemBuilder with CommonTypeAliases[S, H, T]
 
     //Identity Specific
