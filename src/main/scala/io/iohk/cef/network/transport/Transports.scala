@@ -37,6 +37,6 @@ class Transports(val peerInfo: PeerInfo) {
     netty().map(nettyTransport => new TcpNetworkTransport[T](nettyTransport)(codec.encoder, codec.decoder))
 
   def shutdown(): Unit = {
-    nettyTransportRef.map(nettyTransport => nettyTransport.shutdown())
+    nettyTransportRef.foreach(_.shutdown())
   }
 }
