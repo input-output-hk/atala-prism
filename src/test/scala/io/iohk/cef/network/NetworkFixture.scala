@@ -40,7 +40,10 @@ trait NetworkFixture {
     try {
       testCode(fixtures)
     } finally {
-      fixtures.foreach(fixture => fixture.transports.shutdown())
+      fixtures.foreach { fixture =>
+        fixture.transports.shutdown()
+        fixture.networkDiscovery.shutdown()
+      }
     }
   }
 

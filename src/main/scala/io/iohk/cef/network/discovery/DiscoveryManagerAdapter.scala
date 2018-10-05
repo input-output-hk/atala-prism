@@ -35,18 +35,21 @@ class DiscoveryManagerAdapter(discoveryManagerBehavior: Behavior[DiscoveryReques
       .map(adaptToPeerInfo)
   }
 
-  private def adaptToPeerInfo(knownNode: KnownNode): PeerInfo = {
-    val itsNodeId = NodeId(knownNode.node.id)
-    val itsConfiguration =
-      NetworkConfiguration(Some(TcpTransportConfiguration(knownNode.node.serverAddress)), FrameHeader.defaultTtl)
-    PeerInfo(itsNodeId, itsConfiguration)
-  }
-
   override def nearestNPeersTo(nodeId: NodeId, n: Int): Seq[PeerInfo] = {
     val futureResult: Future[DiscoveredNodes] = discoveryManager ? GetDiscoveredNodes
 
     val discoveredNodes: DiscoveredNodes = Await.result(futureResult, futureTimeout)
 
     discoveredNodes.nodes.map(adaptToPeerInfo).take(n).toSeq
+  }
+
+  override def shutdown(): Unit =
+    discoveryActorSystem.terminate()
+
+  private def adaptToPeerInfo(knownNode: KnownNode): PeerInfo = {
+    val itsNodeId = NodeId(knownNode.node.id)
+    val itsConfiguration =
+      NetworkConfiguration(Some(TcpTransportConfiguration(knownNode.node.serverAddress)), FrameHeader.defaultTtl)
+    PeerInfo(itsNodeId, itsConfiguration)
   }
 }

@@ -58,9 +58,10 @@ class CoreNetworkItSpec extends FlatSpec with MustMatchers with PropertyChecks w
     )
   }
 
-  it should "receive a transaction and a block" in {
-    val baseNetworkCore1 = randomBaseNetwork(None)
-    val baseNetworkCore2 = randomBaseNetwork(Some(baseNetworkCore1))
+  private val bootstrap = randomBaseNetwork(None)
+  it should "receive a transaction and a block" in networks(bootstrap, randomBaseNetwork(Some(bootstrap))) { networks =>
+    val baseNetworkCore1 = networks(0)
+    val baseNetworkCore2 = networks(1)
     val mockTxPoolIf1 = mockTxPoolFutureInterface
     val mockTxPoolIf2 = mockTxPoolFutureInterface
     val mockCons1 = mockConsensus
