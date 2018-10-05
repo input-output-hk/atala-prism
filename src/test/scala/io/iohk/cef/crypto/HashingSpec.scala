@@ -26,7 +26,6 @@ class HashingSpec extends WordSpec {
 
   "hash" should {
     "generate a hash with  same size" in {
-      val expectedLength = hash(ByteString("abd")).toByteString.size
       forAll { bytes: List[ByteString] =>
         whenever(bytes.nonEmpty) {
           val result = bytes.map(hash(_).toByteString.size).toSet
