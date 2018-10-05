@@ -7,8 +7,7 @@ import collection.JavaConverters._
 
 class NodeParserSpec extends FlatSpec with MustMatchers {
 
-  private val id =
-    "761d11916c0baf6632134cf5a55d3bdf821ee2e9f8b76ee4b7f8c7246d345fcf15099965c5f2d4adfaafbb9721202ee7b71eb3ccf1d96a1489f63506b498f1cb"
+  private val id = "abcd"
 
   behavior of "NodeParser"
 
@@ -54,11 +53,11 @@ class NodeParserSpec extends FlatSpec with MustMatchers {
   }
 
   it should "not parse a node with invalid p2p uri id" in {
-    val invalidId = id.drop(120)
+    val invalidId = "abcdabcd"
     val config = getConfigs("udp://127.0.0.1:1000", s"enode://$invalidId@127.0.0.2:3000", "01").head
 
     val parsed: Either[Set[NodeParser.Error], NodeInfo] = NodeParser.parseNodeInfo(config)
 
-    parsed.left.value mustBe Set(s"Invalid id length for '$invalidId'. It should be 128.")
+    parsed.isLeft mustBe true
   }
 }

@@ -1,6 +1,7 @@
 package io.iohk.cef.network.encoding
 
 import akka.util.ByteString
+import io.iohk.cef.ledger.ByteStringSerializable
 import io.iohk.cef.utils.HexStringCodec._
 
 package object rlp {
@@ -38,6 +39,13 @@ package object rlp {
   def rawDecode(input: Array[Byte]): RLPEncodeable = RLP.rawDecode(input)
 
   def rawEncode(input: RLPEncodeable): Array[Byte] = RLP.encode(input)
+
+  implicit def byteStringSerializable[T](implicit RLPEncDec: RLPEncDec[T]): ByteStringSerializable[T] = {
+    new ByteStringSerializable[T] {
+      override def decode(u: ByteString): Option[T] = Some(decodeFromArray(u.toArray))
+      override def encode(t: T): ByteString = ByteString(encodeToArray(t))
+    }
+  }
 
   /**
     * This function calculates the next element item based on a previous element starting position. It's meant to be

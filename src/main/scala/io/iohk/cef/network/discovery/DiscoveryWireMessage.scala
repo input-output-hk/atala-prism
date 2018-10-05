@@ -168,7 +168,7 @@ object Neighbors {
 object DiscoveryWireMessage {
 
   val ProtocolVersion = 1
-  implicit def RLPEncDec(
+  implicit def rlpEncDec(
       implicit
       byteEncDec: RLPEncDec[Byte],
       pingEncDec: RLPEncDec[Ping],

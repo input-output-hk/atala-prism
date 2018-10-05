@@ -1,7 +1,7 @@
 package io.iohk.cef.integration
 import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.core.{Envelope, Everyone, NodeCore}
-import io.iohk.cef.ledger.{Block, ByteStringSerializable}
+import io.iohk.cef.ledger.Block
 import io.iohk.cef.network.{Network, NetworkFixture, NodeId}
 import io.iohk.cef.test.{DummyBlockHeader, DummyTransaction}
 import io.iohk.cef.transactionpool.TransactionPoolFutureInterface
@@ -29,14 +29,6 @@ class CoreNetworkItSpec extends FlatSpec with MustMatchers with PropertyChecks w
   implicit val executionContext = scala.concurrent.ExecutionContext.global
 
   val txNetwork = 1
-  implicit val nioEncoder: NioEncoder[Envelope[DummyTransaction]] =
-    implicitly[ByteStringSerializable[Envelope[DummyTransaction]]].toNioEncoder
-  implicit val nioDecoder: NioDecoder[Envelope[DummyTransaction]] =
-    implicitly[ByteStringSerializable[Envelope[DummyTransaction]]].toNioDecoder
-  implicit val blockNioEncoder: NioEncoder[Envelope[Block[String, DummyBlockHeader, DummyTransaction]]] =
-    implicitly[ByteStringSerializable[Envelope[Block[String, DummyBlockHeader, DummyTransaction]]]].toNioEncoder
-  implicit val blockNioDecoder: NioDecoder[Envelope[Block[String, DummyBlockHeader, DummyTransaction]]] =
-    implicitly[ByteStringSerializable[Envelope[Block[String, DummyBlockHeader, DummyTransaction]]]].toNioDecoder
 
   private def createCore(
       baseNetwork: BaseNetwork,

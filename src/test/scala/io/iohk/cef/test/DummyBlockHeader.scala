@@ -20,6 +20,7 @@ object DummyBlockHeader {
         DummyBlockHeader(bytes.size)
       } else throw new IllegalArgumentException("Invalid format for DummyBlockHeader")).toOption
 
-    override def encode(t: DummyBlockHeader): ByteString = ByteString(Array.fill[Byte](t.sizeInBytes)(2))
+    override def encode(t: DummyBlockHeader): ByteString =
+      ByteString(Array.fill[Byte](t.sizeInBytes)(2))
   }
 }

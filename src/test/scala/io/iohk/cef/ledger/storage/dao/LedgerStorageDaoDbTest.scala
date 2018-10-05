@@ -2,7 +2,6 @@ package io.iohk.cef.ledger.storage.dao
 
 import java.time.{Clock, Instant}
 
-import akka.util.ByteString
 import io.iohk.cef.builder.SigningKeyPairs
 import io.iohk.cef.ledger.Block
 import io.iohk.cef.ledger.identity._
@@ -22,7 +21,7 @@ trait LedgerStorageDaoDbTest
   behavior of "LedgerStorageImpl"
 
   it should "update the ledger" in { implicit session =>
-    val header = IdentityBlockHeader(ByteString("hash"), Instant.now, 1)
+    val header = IdentityBlockHeader(Instant.now)
     val txList = List[IdentityTransaction](
       Claim("one", alice.public, uselessSignature),
       Link("two", bob.public, IdentityTransaction.sign("two", bob.public, bob.`private`)))

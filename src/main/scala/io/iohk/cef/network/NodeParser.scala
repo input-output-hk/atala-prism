@@ -2,15 +2,17 @@ package io.iohk.cef.network
 
 import java.net.{InetAddress, URI}
 
+import akka.util.ByteString
 import com.typesafe.config.Config
 import io.iohk.cef.utils.Logger
+import io.iohk.cef.utils.HexStringCodec._
 
 import scala.util.{Failure, Success, Try}
 
 object NodeParser extends Logger {
   val NodeScheme = "enode"
   val UdpScheme = "udp"
-  val NodeIdSize = 128
+  val NodeIdSize = NodeId.nodeIdBytes
 
   type Error = String
 
@@ -34,13 +36,13 @@ object NodeParser extends Logger {
   }
 
   private def validateNodeId(uri: URI): Either[Error, URI] = {
-    val nodeId: Either[String, Error] = Try(uri.getUserInfo) match {
-      case Success(id) => Right(id)
+    val nodeId: Either[Error, ByteString] = Try(uri.getUserInfo) match {
+      case Success(id) => Right(fromHexString(id))
       case Failure(_) => Left(s"Malformed nodeId for URI '${uri.toString}'.")
     }
 
     nodeId.flatMap(nodeId =>
-      Either.cond(nodeId.length == NodeIdSize, uri, s"Invalid id length for '$nodeId'. It should be $NodeIdSize."))
+      Either.cond(nodeId.size == NodeIdSize, uri, s"Invalid id length for '$nodeId'. It should be $NodeIdSize."))
   }
 
   private def validateUri(uriString: String): Either[Set[Error], URI] = {
