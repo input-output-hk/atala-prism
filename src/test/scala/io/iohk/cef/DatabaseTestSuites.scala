@@ -50,4 +50,7 @@ class DatabaseTestSuites
     super.beforeAll()
   }
 
+  override protected def afterAll(): Unit = {
+    ConnectionPool.closeAll()
+  }
 }
