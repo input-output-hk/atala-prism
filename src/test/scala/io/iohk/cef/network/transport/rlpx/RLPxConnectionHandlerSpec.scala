@@ -11,17 +11,18 @@ import io.iohk.cef.network.transport.rlpx.ethereum.p2p.Message.Version
 import io.iohk.cef.network.transport.rlpx.ethereum.p2p.messages.Versions
 import io.iohk.cef.network.transport.rlpx.ethereum.p2p.messages.WireProtocol.Ping
 import io.iohk.cef.network.transport.rlpx.ethereum.p2p.{MessageDecoder, MessageSerializable}
-import org.scalatest.mockito.MockitoSugar
+import org.scalatest.mockito.MockitoSugar._
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.concurrent.duration._
 
-import org.mockito.Mockito._
+import org.mockito.Mockito.when
 import org.mockito.ArgumentMatchers._
 
 class RLPxConnectionHandlerSpec extends FlatSpec with Matchers {
 
-  it should "write messages send to TCP connection" in new TestSetup {
+  it should "write messages send to TCP connection" in withTestSetup { testSetup =>
+    import testSetup._
 
     setupIncomingRLPxConnection()
 
@@ -31,7 +32,8 @@ class RLPxConnectionHandlerSpec extends FlatSpec with Matchers {
     connection.expectMsg(Tcp.Write(ByteString("ping encoded"), RLPxConnectionHandler.Ack))
   }
 
-  it should "write messages to TCP connection once all previous ACK were received" in new TestSetup {
+  it should "write messages to TCP connection once all previous ACK were received" in withTestSetup { testSetup =>
+    import testSetup._
 
     when(mockMessageCodec.encodeMessage(Ping(): MessageSerializable)).thenReturn(ByteString("ping encoded"))
 
@@ -50,7 +52,8 @@ class RLPxConnectionHandlerSpec extends FlatSpec with Matchers {
     connection.expectNoMessage()
   }
 
-  it should "accummulate messages and write them when receiving ACKs" in new TestSetup {
+  it should "accummulate messages and write them when receiving ACKs" in withTestSetup { testSetup =>
+    import testSetup._
 
     when(mockMessageCodec.encodeMessage(Ping(): MessageSerializable)).thenReturn(ByteString("ping encoded"))
 
@@ -76,7 +79,8 @@ class RLPxConnectionHandlerSpec extends FlatSpec with Matchers {
     connection.expectNoMessage()
   }
 
-  it should "close the connection when Ack timeout happens" in new TestSetup {
+  it should "close the connection when Ack timeout happens" in withTestSetup { testSetup =>
+    import testSetup._
     when(mockMessageCodec.encodeMessage(Ping(): MessageSerializable)).thenReturn(ByteString("ping encoded"))
 
     setupIncomingRLPxConnection()
@@ -90,7 +94,8 @@ class RLPxConnectionHandlerSpec extends FlatSpec with Matchers {
       max = rlpxConfiguration.waitForTcpAckTimeout + Timeouts.normalTimeout)
   }
 
-  it should "ignore timeout of old messages" in new TestSetup {
+  it should "ignore timeout of old messages" in withTestSetup { testSetup =>
+    import testSetup._
     when(mockMessageCodec.encodeMessage(Ping(): MessageSerializable)).thenReturn(ByteString("ping encoded"))
 
     setupIncomingRLPxConnection()
@@ -114,7 +119,8 @@ class RLPxConnectionHandlerSpec extends FlatSpec with Matchers {
     connection.expectMsg(Tcp.Write(ByteString("ping encoded"), RLPxConnectionHandler.Ack))
   }
 
-  it should "close the connection if the AuthHandshake init message's MAC is invalid" in new TestSetup {
+  it should "close the connection if the AuthHandshake init message's MAC is invalid" in withTestSetup { testSetup =>
+    import testSetup._
     //Incomming connection arrives
     rlpxConnection ! RLPxConnectionHandler.HandleConnection(connection.ref)
     connection.expectMsgClass(classOf[Tcp.Register])
@@ -129,30 +135,41 @@ class RLPxConnectionHandlerSpec extends FlatSpec with Matchers {
     rlpxConnectionParent.expectTerminated(rlpxConnection)
   }
 
-  it should "close the connection if the AuthHandshake response message's MAC is invalid" in new TestSetup {
-    //Outgoing connection request arrives
-    rlpxConnection ! RLPxConnectionHandler.ConnectTo(uri)
-    tcpActorProbe.expectMsg(Tcp.Connect(inetAddress))
+  it should "close the connection if the AuthHandshake response message's MAC is invalid" in withTestSetup {
+    testSetup =>
+      import testSetup._
+      //Outgoing connection request arrives
+      rlpxConnection ! RLPxConnectionHandler.ConnectTo(uri)
+      tcpActorProbe.expectMsg(Tcp.Connect(inetAddress))
 
-    //The TCP connection results are handled
-    val initPacket = ByteString("Init packet")
-    when(mockHandshaker.initiate(uri)).thenReturn(initPacket -> mockHandshaker)
+      //The TCP connection results are handled
+      val initPacket = ByteString("Init packet")
+      when(mockHandshaker.initiate(uri)).thenReturn(initPacket -> mockHandshaker)
 
-    tcpActorProbe.reply(Tcp.Connected(inetAddress, inetAddress))
-    tcpActorProbe.expectMsg(Tcp.Register(rlpxConnection))
-    tcpActorProbe.expectMsg(Tcp.Write(initPacket))
+      tcpActorProbe.reply(Tcp.Connected(inetAddress, inetAddress))
+      tcpActorProbe.expectMsg(Tcp.Register(rlpxConnection))
+      tcpActorProbe.expectMsg(Tcp.Write(initPacket))
 
-    //AuthHandshaker handles the response message (that throws an invalid MAC)
-    when(mockHandshaker.handleResponseMessage(any())).thenThrow(new RuntimeException("MAC invalid"))
-    when(mockHandshaker.handleResponseMessageV4(any())).thenThrow(new RuntimeException("MAC invalid"))
+      //AuthHandshaker handles the response message (that throws an invalid MAC)
+      when(mockHandshaker.handleResponseMessage(any())).thenThrow(new RuntimeException("MAC invalid"))
+      when(mockHandshaker.handleResponseMessageV4(any())).thenThrow(new RuntimeException("MAC invalid"))
 
-    val data = ByteString((0 until AuthHandshaker.ResponsePacketLength).map(_.toByte).toArray)
-    rlpxConnection ! Tcp.Received(data)
-    rlpxConnectionParent.expectMsg(RLPxConnectionHandler.ConnectionFailed)
-    rlpxConnectionParent.expectTerminated(rlpxConnection)
+      val data = ByteString((0 until AuthHandshaker.ResponsePacketLength).map(_.toByte).toArray)
+      rlpxConnection ! Tcp.Received(data)
+      rlpxConnectionParent.expectMsg(RLPxConnectionHandler.ConnectionFailed)
+      rlpxConnectionParent.expectTerminated(rlpxConnection)
   }
 
-  trait TestSetup extends MockitoSugar {
+  private def withTestSetup(testCode: TestSetup => Any): Unit = {
+    val testSetup = new TestSetup
+    try {
+      testCode(testSetup)
+    } finally {
+      testSetup.system.terminate()
+    }
+  }
+
+  private class TestSetup {
     implicit val system = ActorSystem("RLPxHandlerSpec_System")
 
     //Mock parameters for RLPxConnectionHandler
@@ -214,5 +231,4 @@ class RLPxConnectionHandlerSpec extends FlatSpec with Matchers {
       rlpxConnectionParent.expectMsgClass(classOf[RLPxConnectionHandler.ConnectionEstablished])
     }
   }
-
 }

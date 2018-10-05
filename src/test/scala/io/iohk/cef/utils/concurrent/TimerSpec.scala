@@ -10,7 +10,7 @@ import scala.concurrent.{Await, TimeoutException}
 import scala.concurrent.duration._
 
 class TimerSpec extends FlatSpec {
-  
+
   behavior of "Timer"
 
   it should "run a task after a delay" in {
