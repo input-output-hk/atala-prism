@@ -15,7 +15,7 @@ object NodeId {
   val nodeIdBits: Int = nodeIdBytes * 8
 
   def apply(idBytes: Seq[Byte]): NodeId =
-      NodeId(ByteString(idBytes.toArray))
+    NodeId(ByteString(idBytes.toArray))
 
   def apply(idHex: String): NodeId =
     NodeId(fromHexString(idHex))

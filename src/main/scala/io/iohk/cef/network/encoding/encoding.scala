@@ -6,11 +6,11 @@ package object encoding {
 
   class StreamCodec[T, U](val encoder: Encoder[T, U], val decoder: StreamDecoder[U, T])
 
-  trait EncDec[T, U] extends Encoder[T, U] with Decoder[U, T] {
-    def andThen[S](thatEncoder: Encoder[U, S], thatDecoder: Decoder[S, U]): EncDec[T, S] = {
+  trait EncoderDecoder[T, U] extends Encoder[T, U] with Decoder[U, T] {
+    def andThen[S](thatEncoder: Encoder[U, S], thatDecoder: Decoder[S, U]): EncoderDecoder[T, S] = {
       val newDecoder = thatDecoder andThen this
       val newEncoder = this andThen thatEncoder
-      new EncDec[T, S] {
+      new EncoderDecoder[T, S] {
         override def encode(t: T): S = newEncoder.encode(t)
         override def decode(s: S): Option[T] = newDecoder.decode(s)
       }

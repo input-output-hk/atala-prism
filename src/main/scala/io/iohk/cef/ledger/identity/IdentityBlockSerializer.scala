@@ -21,7 +21,7 @@ object IdentityBlockSerializer {
       override def encode(t: IdentityTransaction): ByteString =
         ByteString(encodeIdentityTransaction(t).toByteArray)
       override def decode(u: ByteString): Option[IdentityTransaction] =
-        decodeIdentityTransactionProto(IdentityTransactionProto.parseFrom(u.toArray))
+        Try(IdentityTransactionProto.parseFrom(u.toArray)).toOption.flatMap(decodeIdentityTransactionProto)
     }
 
   implicit val serializable: ByteStringSerializable[IdentityLedgerBlock] = {

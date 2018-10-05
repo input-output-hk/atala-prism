@@ -9,6 +9,7 @@ import io.iohk.cef.protobuf.raftConsensus.LogEntryProto
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
+import scala.util.Try
 
 package object raft {
 
@@ -120,10 +121,12 @@ package object raft {
               t.index).toByteArray)
         }
         override def decode(u: ByteString): Option[LogEntry[B]] = {
-          val parsed = LogEntryProto.parseFrom(u.toArray)
-          bSerializable
-            .decode(ByteString(parsed.command.toByteArray))
-            .map(block => LogEntry(block, parsed.term, parsed.index))
+          val parsed = Try(LogEntryProto.parseFrom(u.toArray)).toOption
+          parsed.flatMap(
+            p =>
+              bSerializable
+                .decode(ByteString(p.command.toByteArray))
+                .map(block => LogEntry(block, p.term, p.index)))
         }
       }
   }

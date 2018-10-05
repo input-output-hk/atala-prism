@@ -13,6 +13,7 @@ import io.iohk.cef.main.builder._
 import io.iohk.cef.network.discovery._
 import io.iohk.cef.network.encoding.rlp
 import io.iohk.cef.network.encoding.rlp.RLPEncDec
+import io.iohk.cef.utils.Logger
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext, Future}
@@ -36,9 +37,8 @@ object IndentityTxMain extends App {
     : (Future[Http.ServerBinding], NodeCore[S, H, T]) = {
     val coreBuilder = new NodeCoreBuilder[S, H, T] with ConfigReaderBuilder with DefaultLedgerConfig
     with DefaultRaftConsensusConfigBuilder[B] with RaftConsensusBuilder[S, H, T] with TransactionPoolBuilder[S, H, T]
-    with LedgerBuilder[Future, S, T] with LogBuilder with NetworkBuilder[S, H, T]
-    with DefaultLedgerStateStorageBuilder[S] with LedgerStorageBuilder with DefaultActorSystemBuilder
-    with CommonTypeAliases[S, H, T]
+    with LedgerBuilder[Future, S, T] with Logger with NetworkBuilder[S, H, T] with DefaultLedgerStateStorageBuilder[S]
+    with LedgerStorageBuilder with DefaultActorSystemBuilder with CommonTypeAliases[S, H, T]
 
     //Identity Specific
     with IdentityFrontendBuilder with IdentityTransactionServiceBuilder with IdentityLedgerHeaderGenerator {}

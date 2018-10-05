@@ -26,7 +26,7 @@ trait RealRaftNodeFixture[Command] {
 
     val machine: Command => Unit = machineCallback
 
-    def   localRpcFactory: RPCFactory[Command] = (nodeId, _, _, _) => {
+    def localRpcFactory: RPCFactory[Command] = (nodeId, _, _, _) => {
       new CallInMemory[Command](testNodes(nodeId).raftNode)
     }
     import scala.concurrent.duration._
