@@ -15,22 +15,10 @@ class EncryptionSpec extends WordSpec {
   private val keys = generateEncryptionKeyPair()
 
   "generateEncryptionKeyPair" should {
-    "always generate different key pairs" in {
-      var publicKeys = Set.empty[ByteString]
-      var privateKeys = Set.empty[ByteString]
-
-      forAll { _: Int =>
-        val keys = generateEncryptionKeyPair()
-
-        val pub = keys.public.toByteString
-        val priv = keys.`private`.toByteString
-
-        publicKeys.contains(pub) must be(false)
-        privateKeys.contains(priv) must be(false)
-
-        publicKeys += pub
-        privateKeys += priv
-      }
+    "generate different set of key pair each time" in {
+      val key1 = generateEncryptionKeyPair()
+      val key2 = generateEncryptionKeyPair()
+      key1 != key2 mustBe true
     }
   }
 
