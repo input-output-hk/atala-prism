@@ -1,5 +1,5 @@
 package io.iohk.cef.core
-import akka.util.{ByteString, Timeout}
+import akka.util.Timeout
 import io.iohk.cef.LedgerId
 import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.ledger.{Block, ByteStringSerializable}
@@ -38,7 +38,7 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
 
   val timeout = Timeout(1 minute)
 
-  private def setupTest(ledgerId: LedgerId, me: NodeId = NodeId(ByteString(1)))(
+  private def setupTest(ledgerId: LedgerId, me: NodeId = NodeId("abcd"))(
       implicit txSerializable: ByteStringSerializable[Envelope[Tx]],
       blockSerializable: ByteStringSerializable[Envelope[Block[State, Header, Tx]]]) = {
     val consensusMap = Map(ledgerId -> (mockTxPoolFutureInterface, mockConsensus))

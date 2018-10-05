@@ -53,11 +53,11 @@ class NodeParserSpec extends FlatSpec with MustMatchers {
   }
 
   it should "not parse a node with invalid p2p uri id" in {
-    val invalidId = NodeId("abcdabcd")
+    val invalidId = "abcdabcd"
     val config = getConfigs("udp://127.0.0.1:1000", s"enode://$invalidId@127.0.0.2:3000", "01").head
 
     val parsed: Either[Set[NodeParser.Error], NodeInfo] = NodeParser.parseNodeInfo(config)
 
-    parsed.left.value mustBe Set(s"Invalid id length for '$invalidId'. It should be 128.")
+    parsed.isLeft mustBe true
   }
 }
