@@ -59,7 +59,6 @@ class EncryptionSpec extends WordSpec {
     }
   }
 
-
   "Decrypting a encrypted input with wrong key" should {
     "fail to decrypt given ByteString " in {
       val privateKey = generateEncryptionKeyPair().`private`
@@ -83,8 +82,6 @@ class EncryptionSpec extends WordSpec {
       }
     }
   }
-
-
 
   "EncryptedData" should {
 
@@ -126,9 +123,9 @@ class EncryptionSpec extends WordSpec {
 
   "Encryption" should {
     "decode valid public key" in {
-        val key = keys.public
-        val result = EncryptionPublicKey.decodeFrom(key.toByteString)
-        result.right.value.toByteString must be(key.toByteString)
+      val key = keys.public
+      val result = EncryptionPublicKey.decodeFrom(key.toByteString)
+      result.right.value.toByteString must be(key.toByteString)
     }
 
     "fail to decode invalid public key" in {
@@ -144,20 +141,20 @@ class EncryptionSpec extends WordSpec {
 
     "fail to decode public keys with unsupported algorithms" in {
       val algorithm = "RSA".flatMap(_.toByte :: 0.toByte :: Nil).toArray
-        val key = keys.public
-        val index = key.toByteString.indexOfSlice(algorithm)
-        val corruptedBytes = key.toByteString.updated(index, 'X'.toByte)
-        val result = EncryptionPublicKey.decodeFrom(corruptedBytes)
-        val expected = EncryptionPublicKeyDecodeError.UnsupportedAlgorithm("XSA")
+      val key = keys.public
+      val index = key.toByteString.indexOfSlice(algorithm)
+      val corruptedBytes = key.toByteString.updated(index, 'X'.toByte)
+      val result = EncryptionPublicKey.decodeFrom(corruptedBytes)
+      val expected = EncryptionPublicKeyDecodeError.UnsupportedAlgorithm("XSA")
 
-        result.left.value must be(expected)
+      result.left.value must be(expected)
     }
 
     "decode valid private key" in {
-        val key = keys.`private`
-        val result = EncryptionPrivateKey.decodeFrom(key.toByteString)
+      val key = keys.`private`
+      val result = EncryptionPrivateKey.decodeFrom(key.toByteString)
 
-        result.right.value.toByteString must be(key.toByteString)
+      result.right.value.toByteString must be(key.toByteString)
     }
 
     "fail to decode invalid private key" in {
@@ -170,23 +167,20 @@ class EncryptionSpec extends WordSpec {
         result.left.value must be(expected)
       }
     }
-      "fail to decode private keys with unsupported algorithms" in {
-        val algorithm = "RSA".flatMap(_.toByte :: 0.toByte :: Nil).toArray
+    "fail to decode private keys with unsupported algorithms" in {
+      val algorithm = "RSA".flatMap(_.toByte :: 0.toByte :: Nil).toArray
 
-        val key = keys.`private`
+      val key = keys.`private`
 
-        val index = key.toByteString.indexOfSlice(algorithm)
-        val corruptedBytes = key.toByteString.updated(index, 'X'.toByte)
+      val index = key.toByteString.indexOfSlice(algorithm)
+      val corruptedBytes = key.toByteString.updated(index, 'X'.toByte)
 
-        val result = EncryptionPrivateKey.decodeFrom(corruptedBytes)
-        val expected = EncryptionPrivateKeyDecodeError.UnsupportedAlgorithm("XSA")
+      val result = EncryptionPrivateKey.decodeFrom(corruptedBytes)
+      val expected = EncryptionPrivateKeyDecodeError.UnsupportedAlgorithm("XSA")
 
-        result.left.value must be(expected)
+      result.left.value must be(expected)
 
-      }
+    }
   }
-
-
-
 
 }
