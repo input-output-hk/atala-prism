@@ -7,7 +7,7 @@ import io.iohk.cef.network.encoding._
 
 trait NioCodecs extends NativeCodecs with ProductCodecs with StreamCodecs with OtherCodecs with CoproductCodecs {
 
-  type NioEncDec[T] = EncDec[T, ByteBuffer]
+  type NioEncDec[T] = EncoderDecoder[T, ByteBuffer]
 
   type NioEncoder[T] = Encoder[T, ByteBuffer]
 
