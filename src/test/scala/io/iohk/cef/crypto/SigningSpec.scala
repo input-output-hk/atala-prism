@@ -102,7 +102,7 @@ class SigningSpec extends WordSpec {
     }
 
     "fail to decode invalid public key" in {
-      val bytes = ByteString(NetUtils.randomBytes(1024))
+      val bytes = ByteString(NetUtils.randomBytes(128))
       val expected = SigningPublicKeyDecodeError.DataExtractionError(NioDecoderFailedToDecodeTBS)
 
       val result = SigningPublicKey.decodeFrom(bytes)
