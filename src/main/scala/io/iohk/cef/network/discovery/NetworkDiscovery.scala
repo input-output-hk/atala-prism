@@ -20,4 +20,9 @@ trait NetworkDiscovery {
     * Results should be returned sorted ascending in the distance metric.
     */
   def nearestNPeersTo(nodeId: NodeId, n: Int): Seq[PeerInfo]
+
+  /**
+    * Stop the discovery instance and clean up.
+    */
+  def shutdown(): Unit
 }
