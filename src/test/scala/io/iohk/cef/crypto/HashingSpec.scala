@@ -25,12 +25,13 @@ class HashingSpec extends WordSpec {
   } yield (user1, user2)
 
   "hash" should {
-    "generate a hashedValue" in {
+    "generate a hash with  same size" in {
       val expectedLength = hash(ByteString("abd")).toByteString.size
-      forAll { (name: String, age: Int) =>
-        val entity = User(name, age)
-        val result = hash(entity)
-        result.toByteString.size must be(expectedLength)
+      forAll { bytes: List[ByteString] =>
+        whenever(bytes.nonEmpty) {
+          val result = bytes.map(hash(_).toByteString.size).toSet
+          result.size mustBe 1
+        }
       }
     }
   }

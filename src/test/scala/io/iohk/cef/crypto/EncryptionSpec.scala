@@ -53,53 +53,50 @@ class EncryptionSpec extends WordSpec {
     }
   }
 
-  "decrypt" should {
-    "decrypt ByteStrings with the right key" in {
+  "encryption / decryption with valid  keypair" should {
+    "encrypt ByteString input and decrypt" in {
       forAll { input: ByteString =>
         val encrypted = encrypt(input, keys.public)
-        val result = decrypt(encrypted, keys.`private`)
-
-        result.right.value must be(input)
+        val decrypted = decrypt(encrypted, keys.`private`)
+        decrypted.right.value mustBe input
       }
     }
+    "encrypt any Entity input and decrypt" in {
+      forAll { (name: String, age: Int) =>
+        val entity = User(name, age)
+        val encrypted = encrypt(entity, keys.public)
+        val decrypted = decrypt[User](encrypted, keys.`private`)
+        decrypted.right.value mustBe entity
+      }
+    }
+  }
 
-    "fail to decrypt ByteStrings with the wrong key" in {
+
+  "Decrypting a encrypted input with wrong key" should {
+    "fail to decrypt given ByteString " in {
+      val privateKey = generateEncryptionKeyPair().`private`
       forAll { input: ByteString =>
         val encrypted = encrypt(input, keys.public)
-
         forAll { _: Int =>
-          val nested = generateEncryptionKeyPair().`private`
-          val result = decrypt(encrypted, nested)
-
-          result.left.value.isInstanceOf[DecryptError.UnderlayingDecryptionError] must be(true)
+          val decrypted = decrypt(encrypted, privateKey)
+          decrypted.left.value.isInstanceOf[DecryptError.UnderlayingDecryptionError] must be(true)
         }
       }
     }
-
-    "decrypt Entities with the right key" in {
+    "fail to decrypt given Entity" in {
+      val privateKey = generateEncryptionKeyPair().`private`
       forAll { (name: String, age: Int) =>
         val entity = User(name, age)
         val encrypted = encrypt(entity, keys.public)
-        val result = decrypt[User](encrypted, keys.`private`)
-
-        result.right.value must be(entity)
-      }
-    }
-
-    "fail to decrypt Entities with the wrong key" in {
-      forAll { (name: String, age: Int) =>
-        val entity = User(name, age)
-        val encrypted = encrypt(entity, keys.public)
-
         forAll { _: Int =>
-          val nested = generateEncryptionKeyPair().`private`
-          val result = decrypt[User](encrypted, nested)
-
-          result.left.value.isInstanceOf[DecryptError.UnderlayingDecryptionError] must be(true)
+          val decrypted = decrypt[User](encrypted, privateKey)
+          decrypted.left.value.isInstanceOf[DecryptError.UnderlayingDecryptionError] must be(true)
         }
       }
     }
   }
+
+
 
   "EncryptedData.decodeFrom" should {
 
