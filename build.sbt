@@ -1,7 +1,9 @@
 import com.typesafe.config.ConfigFactory
 
+TaskKey[Unit]("fullGc", "") := System.gc()
+
 // Thus it begins.
-val scalaV = "2.12.5"
+val scalaV = "2.12.7"
 
 val commonSettings = Seq(
   organization := "io.iohk.cef",

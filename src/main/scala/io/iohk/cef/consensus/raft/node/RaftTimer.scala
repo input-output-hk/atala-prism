@@ -1,13 +1,14 @@
 package io.iohk.cef.consensus.raft.node
-import java.util.{Timer, TimerTask}
+
+import io.iohk.cef.utils.concurrent.{CancellableFuture, Timer}
 
 import scala.concurrent.duration.Duration
+import scala.concurrent.duration._
 import scala.util.Random
 
 private[raft] class RaftTimer(minTimeout: Duration, maxTimeout: Duration)(timeoutFn: () => Unit) {
 
-  val timer = new Timer()
-  var currentTask: TimerTask = _
+  private var currentTask: CancellableFuture[Unit] = _
 
   schedule()
 
@@ -17,8 +18,7 @@ private[raft] class RaftTimer(minTimeout: Duration, maxTimeout: Duration)(timeou
   }
 
   private def schedule(): Unit = this.synchronized {
-    currentTask = new TimerTask { override def run(): Unit = timeout() }
-    timer.schedule(currentTask, nextRandom())
+    currentTask = Timer.schedule(nextRandom() millis)(timeout())
   }
 
   private def timeout(): Unit = {

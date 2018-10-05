@@ -12,12 +12,9 @@ import io.iohk.cef.ledger.identity.storage.scalike.dao.IdentityLedgerStateStorag
 import io.iohk.cef.ledger.storage.Ledger
 import io.iohk.cef.ledger.storage.scalike.LedgerStorageImpl
 import io.iohk.cef.ledger.storage.scalike.dao.LedgerStorageDao
-import io.iohk.cef.utils.ForExpressionsEnabler
 import org.scalatest.{EitherValues, MustMatchers, fixture}
 import scalikejdbc._
 import scalikejdbc.scalatest.AutoRollback
-
-import scala.util.Try
 
 trait IdentityLedgerItDbTest
     extends fixture.FlatSpec
@@ -28,8 +25,7 @@ trait IdentityLedgerItDbTest
     with IdentityLedgerStateStorageFixture {
 
   def createLedger(ledgerStateStorageDao: IdentityLedgerStateStorageDao)(
-      implicit dBSession: DBSession): Ledger[Try, Set[SigningPublicKey]] = {
-    implicit val forExpEnabler = ForExpressionsEnabler.tryEnabler
+      implicit dBSession: DBSession): Ledger[Set[SigningPublicKey]] = {
     val ledgerStateStorage = new IdentityLedgerStateStorageImpl(ledgerStateStorageDao) {
       override def execInSession[T](block: DBSession => T): T = block(dBSession)
     }
@@ -55,7 +51,7 @@ trait IdentityLedgerItDbTest
       )
     )
 
-    ledger(block1).right.value.isSuccess mustBe true
+    ledger(block1).isRight mustBe true
 
     ledgerStateStorageDao.slice(Set("one")) mustBe IdentityLedgerState(Map("one" -> Set(alice.public)))
     ledgerStateStorageDao.slice(Set("two")) mustBe IdentityLedgerState(Map("two" -> Set(bob.public)))
@@ -68,7 +64,7 @@ trait IdentityLedgerItDbTest
       List[IdentityTransaction](
         Link("two", carlos.public, IdentityTransaction.sign("two", carlos.public, bob.`private`))))
 
-    ledger(block2).right.value.isSuccess mustBe true
+    ledger(block2).isRight mustBe true
 
     ledgerStateStorageDao.slice(Set("one", "two")) mustBe
       IdentityLedgerState(

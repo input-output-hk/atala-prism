@@ -3,7 +3,7 @@ package io.iohk.cef.cryptolegacy
 import akka.util.ByteString
 import io.iohk.cef.builder.SecureRandomBuilder
 import org.bouncycastle.crypto.params.ECPublicKeyParameters
-import org.bouncycastle.util.encoders.Hex
+import io.iohk.cef.utils.HexStringCodec._
 import org.scalacheck.Arbitrary
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.prop.PropertyChecks
@@ -12,9 +12,9 @@ import org.scalatest.{FlatSpec, Matchers}
 class ECDSASignatureSpec extends FlatSpec with Matchers with PropertyChecks with SecureRandomBuilder {
 
   "ECDSASignature" should "recover public key correctly for go ethereum transaction" in {
-    val bytesToSign = Hex.decode("5a1465f4683bf2c18fc72c0789239c0f52b3ceac666ca9551cf265a11abe912c")
-    val signatureRandom = ByteString(Hex.decode("f3af65a23fbf207b933d3c962381aa50e0ac19649c59c1af1655e592a8d95401"))
-    val signature = ByteString(Hex.decode("53629a403579f5ce57bcbefba2616b1c6156d308ddcd37372c94943fdabeda97"))
+    val bytesToSign = fromHexString("5a1465f4683bf2c18fc72c0789239c0f52b3ceac666ca9551cf265a11abe912c")
+    val signatureRandom = fromHexString("f3af65a23fbf207b933d3c962381aa50e0ac19649c59c1af1655e592a8d95401")
+    val signature = fromHexString("53629a403579f5ce57bcbefba2616b1c6156d308ddcd37372c94943fdabeda97")
     val pointSign = 28
 
     val sig =
@@ -24,9 +24,9 @@ class ECDSASignatureSpec extends FlatSpec with Matchers with PropertyChecks with
   }
 
   it should "recover public key correctly using ByteString apply method" in {
-    val bytesToSign = Hex.decode("5a1465f4683bf2c18fc72c0789239c0f52b3ceac666ca9551cf265a11abe912c")
-    val signatureRandom = ByteString(Hex.decode("f3af65a23fbf207b933d3c962381aa50e0ac19649c59c1af1655e592a8d95401"))
-    val signature = ByteString(Hex.decode("53629a403579f5ce57bcbefba2616b1c6156d308ddcd37372c94943fdabeda97"))
+    val bytesToSign = fromHexString("5a1465f4683bf2c18fc72c0789239c0f52b3ceac666ca9551cf265a11abe912c")
+    val signatureRandom = fromHexString("f3af65a23fbf207b933d3c962381aa50e0ac19649c59c1af1655e592a8d95401")
+    val signature = fromHexString("53629a403579f5ce57bcbefba2616b1c6156d308ddcd37372c94943fdabeda97")
     val pointSign = 28
 
     val sig = ECDSASignature(signatureRandom, signature, pointSign.toByte)
@@ -35,9 +35,9 @@ class ECDSASignatureSpec extends FlatSpec with Matchers with PropertyChecks with
   }
 
   it should "fail on case from transaction 74c45d0cf2332cc021bebdfee6b1c1da0b58e8f4154537adb79b025f722920a4" in {
-    val bytesToSign = Hex.decode("2bb3925f178aa22c11435c61899e134fb7b1227016274b5f7b9d85c4469130ba")
-    val signatureRandom = ByteString(Hex.decode("fbe3df0cf030655d817a89936850d1cc00c07c35d3b21be73cfe9a730ea8b753"))
-    val signature = ByteString(Hex.decode("62d73b6a92ac23ff514315fad795bbac6d485481d356329d71467e93c87dfa42"))
+    val bytesToSign = fromHexString("2bb3925f178aa22c11435c61899e134fb7b1227016274b5f7b9d85c4469130ba")
+    val signatureRandom = fromHexString("fbe3df0cf030655d817a89936850d1cc00c07c35d3b21be73cfe9a730ea8b753")
+    val signature = fromHexString("62d73b6a92ac23ff514315fad795bbac6d485481d356329d71467e93c87dfa42")
     val pointSign = 0x1f
 
     val sig =

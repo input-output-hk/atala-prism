@@ -1,13 +1,12 @@
 package io.iohk.cef.network
 import akka.util.ByteString
-import org.bouncycastle.util.encoders.Hex
-import org.bouncycastle.util.encoders.Hex.toHexString
+import io.iohk.cef.utils.HexStringCodec._
 
 /**
   * A node id represents an addressable identity on a cef network.
   */
 case class NodeId private[network] (id: ByteString) {
-  override def toString: String = toHexString(id.toArray)
+  override def toString: String = toHexString(id)
 }
 
 object NodeId {
@@ -22,5 +21,5 @@ object NodeId {
   }
 
   def apply(idHex: String): NodeId =
-    NodeId(Hex.decode(idHex))
+    NodeId(fromHexString(idHex))
 }

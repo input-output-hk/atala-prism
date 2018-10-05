@@ -5,7 +5,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import io.iohk.cef.network.NodeInfo
 import io.iohk.cef.network.telemetry.Telemetery
-import org.bouncycastle.util.encoders.Hex
+import io.iohk.cef.utils.HexStringCodec._
 import org.flywaydb.core.Flyway
 import scalikejdbc._
 import scalikejdbc.config._
@@ -44,7 +44,7 @@ class KnownNodeStorageImpl(clock: Clock, dbName: Symbol = 'default) extends Know
         ${blacklistColumn.blacklistSince},
         ${blacklistColumn.blacklistUntil}
       ) key(${blacklistColumn.nodeId})
-       values(${Hex.toHexString(nodeInfo.id.toArray)},
+       values(${toHexString(nodeInfo.id)},
        ${clock.instant()},
        ${until})""".update().apply()
     }
@@ -69,7 +69,7 @@ class KnownNodeStorageImpl(clock: Clock, dbName: Symbol = 'default) extends Know
       implicit session: DBSession
   ) = {
     sql"""
-           select ${kn.discovered} from ${KnownNodeTable as kn} where ${kn.id} = ${Hex.toHexString(nodeInfo.id.toArray)}
+           select ${kn.discovered} from ${KnownNodeTable as kn} where ${kn.id} = ${toHexString(nodeInfo.id)}
          """.map(_.timestamp(knownNodeColumn.discovered).toInstant).single().apply()
   }
 
@@ -91,9 +91,8 @@ class KnownNodeStorageImpl(clock: Clock, dbName: Symbol = 'default) extends Know
     val blacklistNodeColumn = BlacklistNodeTable.column
 
     val result = inTx { implicit session =>
-      sql"""delete from ${BlacklistNodeTable.table} where ${blacklistNodeColumn.nodeId} = ${Hex.toHexString(
-        nodeInfo.id.toArray)}""".executeUpdate.apply
-      sql"""delete from ${KnownNodeTable.table} where ${knownNodeColumn.id} = ${Hex.toHexString(nodeInfo.id.toArray)}""".executeUpdate.apply
+      sql"""delete from ${BlacklistNodeTable.table} where ${blacklistNodeColumn.nodeId} = ${toHexString(nodeInfo.id)}""".executeUpdate.apply
+      sql"""delete from ${KnownNodeTable.table} where ${knownNodeColumn.id} = ${toHexString(nodeInfo.id)}""".executeUpdate.apply
     }
     if (result > 0) trackingKnownNodes.decrementAndGet()
   }
@@ -136,10 +135,10 @@ class KnownNodeStorageImpl(clock: Clock, dbName: Symbol = 'default) extends Know
           ${nodeColumn.discovered}
 
        ) key (${nodeColumn.id})
-       values (${Hex.toHexString(nodeInfo.id.toArray)},
-         ${Hex.toHexString(nodeInfo.discoveryAddress.getAddress.getAddress)},
+       values (${toHexString(nodeInfo.id)},
+         ${toHexString(nodeInfo.discoveryAddress.getAddress.getAddress)},
          ${nodeInfo.discoveryAddress.getPort},
-         ${Hex.toHexString(nodeInfo.serverAddress.getAddress.getAddress)},
+         ${toHexString(nodeInfo.serverAddress.getAddress.getAddress)},
          ${nodeInfo.serverAddress.getPort},
          ${nodeInfo.capabilities.byte},
          ${clock.instant()},
