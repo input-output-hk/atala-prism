@@ -40,7 +40,7 @@ class ChimericTransactionNodeCoreItSpec
 
   behavior of "ChimericTransactionNodeCoreItSpec"
 
-  def createNodeCore: NodeCore[ChimericStateValue, ChimericBlockHeader, ChimericTx] = {
+  def createNodeCore: NodeCore[ChimericStateResult, ChimericBlockHeader, ChimericTx] = {
     implicit val timeout = Timeout(10.seconds)
     implicit val envelopeSerializable = mock[ByteStringSerializable[Envelope[TransactionType]]]
     implicit val blockSerializable = mock[ByteStringSerializable[Envelope[BlockType]]]
@@ -81,7 +81,7 @@ class ChimericTransactionNodeCoreItSpec
         blockSerializable,
         ExecutionContext.global)
 
-    core.asInstanceOf[NodeCore[ChimericStateValue, ChimericBlockHeader, ChimericTx]]
+    core.asInstanceOf[NodeCore[ChimericStateResult, ChimericBlockHeader, ChimericTx]]
   }
 
   it should "process a transaction" in {
@@ -105,7 +105,7 @@ class ChimericTransactionNodeCoreItSpec
 
 object ChimericTransactionNodeCoreItSpec {
 
-  type TransactionStateType = ChimericStateValue
+  type TransactionStateType = ChimericStateResult
   type BlockHeaderType = ChimericBlockHeader
   type TransactionType = Transaction[TransactionStateType]
   type BlockType = Block[TransactionStateType, BlockHeaderType, TransactionType]

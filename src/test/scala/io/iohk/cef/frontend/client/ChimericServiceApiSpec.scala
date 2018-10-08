@@ -3,6 +3,7 @@ package io.iohk.cef.frontend.client
 import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
+import io.iohk.cef.crypto._
 import io.iohk.cef.core.NodeCore
 import io.iohk.cef.frontend.models.ChimericTransactionRequest
 import io.iohk.cef.frontend.services.ChimericTransactionService
@@ -17,7 +18,7 @@ import scala.concurrent.Future
 
 class ChimericServiceApiSpec extends WordSpec with MustMatchers with ScalaFutures with ScalatestRouteTest {
 
-  val nodeCore = mock[NodeCore[ChimericStateValue, ChimericBlockHeader, ChimericTx]]
+  val nodeCore = mock[NodeCore[ChimericStateResult, ChimericBlockHeader, ChimericTx]]
   when(nodeCore.receiveTransaction(any())).thenReturn(Future.successful(Right(())))
 
   implicit val executionContext = system.dispatcher
@@ -25,7 +26,7 @@ class ChimericServiceApiSpec extends WordSpec with MustMatchers with ScalaFuture
   val service = new ChimericTransactionService(nodeCore)
   val api = new ChimericServiceApi(service)
   val routes = api.create
-
+  val signingKeyPair = generateSigningKeyPair()
   "POST /chimeric-transactions" should {
     "allow to submit a transaction" in {
       val fragments: List[ChimericTxFragment] = List(
@@ -33,8 +34,11 @@ class ChimericServiceApiSpec extends WordSpec with MustMatchers with ScalaFuture
         Mint(value = Value(Map("USD" -> BigDecimal(200)))),
         Input(txOutRef = TxOutRef("txid", 0), value = Value(Map("CAD" -> BigDecimal(200)))),
         Fee(value = Value(Map("GBP" -> BigDecimal(9990)))),
-        Output(Value(Map("EUR" -> BigDecimal(5)))),
-        Deposit(address = "another", value = Value(Map("PLN" -> BigDecimal(100000)))),
+        Output(Value(Map("EUR" -> BigDecimal(5))), signingKeyPair.public),
+        Deposit(
+          address = "another",
+          value = Value(Map("PLN" -> BigDecimal(100000))),
+          signingPublicKey = signingKeyPair.public),
         CreateCurrency(currency = "AUD")
       )
       val transaction = ChimericTx(fragments)

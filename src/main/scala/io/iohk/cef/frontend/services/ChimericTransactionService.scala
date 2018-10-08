@@ -3,11 +3,11 @@ package io.iohk.cef.frontend.services
 import io.iohk.cef.core.{Envelope, Everyone, NodeCore}
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.frontend.models.ChimericTransactionRequest
-import io.iohk.cef.ledger.chimeric.{ChimericBlockHeader, ChimericStateValue, ChimericTx}
+import io.iohk.cef.ledger.chimeric.{ChimericBlockHeader, ChimericStateResult, ChimericTx}
 
 import scala.concurrent.Future
 
-class ChimericTransactionService(nodeCore: NodeCore[ChimericStateValue, ChimericBlockHeader, ChimericTx]) {
+class ChimericTransactionService(nodeCore: NodeCore[ChimericStateResult, ChimericBlockHeader, ChimericTx]) {
 
   def process(request: ChimericTransactionRequest): Future[Either[ApplicationError, Unit]] = {
     val envelope: Envelope[ChimericTx] =

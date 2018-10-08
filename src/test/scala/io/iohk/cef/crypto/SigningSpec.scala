@@ -3,7 +3,6 @@ package io.iohk.cef.crypto
 import akka.util.ByteString
 import io.iohk.cef.crypto.encoding.TypedByteStringDecodingError
 import io.iohk.cef.crypto.encoding.TypedByteStringDecodingError.NioDecoderFailedToDecodeTBS
-import io.iohk.cef.network.encoding.nio._
 import org.scalatest.Matchers._
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{EitherValues, MustMatchers, WordSpec}
@@ -91,7 +90,7 @@ class SigningSpec extends WordSpec with MustMatchers with PropertyChecks with Ei
 
     "fail to verify the signature of any Entity with the wrong key" in {
       forAll { (name: String, age: Int) =>
-        val keys = generateSigningKeyPair()
+        val keys: SigningKeyPair = generateSigningKeyPair()
         val entity = User(name, age)
         val signature = sign(entity, keys.`private`)
 

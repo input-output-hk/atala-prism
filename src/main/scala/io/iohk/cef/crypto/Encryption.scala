@@ -39,7 +39,7 @@ trait Encryption {
     *
     * @return          an encrypted version of `entity`
     */
-  def encrypt[T](entity: T, key: EncryptionPublicKey)(implicit encoder: Encoder[T]): EncryptedData = {
+  def encrypt[T](entity: T, key: EncryptionPublicKey)(implicit encoder: CryptoEncoder[T]): EncryptedData = {
     val encryptedBytes =
       key.`type`.algorithm.encrypt(encoder.encode(entity), key.lowlevelKey)
 
@@ -75,7 +75,7 @@ trait Encryption {
     * @return                some sort of error or the restored entity of type `T`
     */
   def decrypt[T](encryptedData: EncryptedData, key: EncryptionPrivateKey)(
-      implicit decoder: Decoder[T]): Either[DecryptError, T] = {
+      implicit decoder: CryptoDecoder[T]): Either[DecryptError, T] = {
     decryptBytes(encryptedData, key)
       .flatMap { bytes =>
         decoder.decode(bytes) match {

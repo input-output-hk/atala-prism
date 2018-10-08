@@ -1,15 +1,43 @@
 package io.iohk.cef.frontend.models
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
+import akka.util.ByteString
 import io.iohk.cef.LedgerId
+import io.iohk.cef.crypto._
 import io.iohk.cef.ledger.chimeric._
-import spray.json._
+import org.bouncycastle.util.encoders.Hex
+import spray.json.{deserializationError, _}
 
 import scala.collection.immutable.Map
 
 case class ChimericTransactionRequest(transaction: ChimericTx, ledgerId: LedgerId)
 
 object ChimericTransactionRequest extends DefaultJsonProtocol with SprayJsonSupport {
+
+  implicit val signingPublicKeyJsonFormat: JsonFormat[SigningPublicKey] = new JsonFormat[SigningPublicKey] {
+    override def read(jsValue: JsValue): SigningPublicKey = {
+      SigningPublicKey
+        .decodeFrom(byteStringJsonFormat.read(jsValue))
+        .getOrElse(deserializationError(s"$jsValue is not a valid JSON encoding of SigningPublicKey"))
+    }
+
+    override def write(signingPublicKey: SigningPublicKey): JsValue =
+      byteStringJsonFormat.write(signingPublicKey.toByteString)
+  }
+
+  implicit val signatureJsonFormat: JsonFormat[Signature] = new JsonFormat[Signature] {
+    override def read(jsValue: JsValue): Signature = {
+      Signature
+        .decodeFrom(byteStringJsonFormat.read(jsValue))
+        .getOrElse(deserializationError(s"$jsValue is not a valid JSON encoding of crypto.Signature"))
+    }
+
+    override def write(signature: Signature): JsValue =
+      byteStringJsonFormat.write(signature.toByteString)
+  }
+
+  implicit val signatureTxFragmentJsonFormat: JsonFormat[SignatureTxFragment] =
+    jsonFormat1(SignatureTxFragment.apply)
 
   implicit object ValueJsonFormat extends JsonFormat[Value] {
     override def read(json: JsValue): Value = {
@@ -121,21 +149,37 @@ object ChimericTransactionRequest extends DefaultJsonProtocol with SprayJsonSupp
     }
   }
 
+  val byteStringJsonFormat: JsonFormat[ByteString] = new JsonFormat[ByteString] {
+    override def read(jsValue: JsValue): ByteString = jsValue match {
+      case JsString(value) =>
+        ByteString(Hex.decode(value))
+      case _ =>
+        deserializationError(s"Attempting to decode $jsValue as a JsString encoded binary.")
+    }
+
+    override def write(b: ByteString): JsValue =
+      JsString(Hex.toHexString(b.toArray))
+  }
+
   implicit object OutputJsonFormat extends JsonFormat[Output] {
     override def read(json: JsValue): Output = {
+
       val fields = json.asJsObject().fields
+      val valueField = fields("value")
+      val keyField = fields("signingPublicKey")
 
-      fields("value") match {
-        case obj: JsObject =>
-          val value = obj.convertTo[Value]
-          Output(value)
-
+      (valueField, keyField) match {
+        case (valueObj: JsObject, keyObj: JsString) =>
+          val value = valueObj.convertTo[Value]
+          val signingPublicKey = keyObj.convertTo[SigningPublicKey]
+          Output(value, signingPublicKey)
         case _ => deserializationError("Invalid output")
+
       }
     }
 
     override def write(obj: Output): JsValue = {
-      JsObject("value" -> obj.value.toJson)
+      JsObject("value" -> obj.value.toJson, "signingPublicKey" -> obj.signingPublicKey.toJson)
     }
   }
 
@@ -144,10 +188,11 @@ object ChimericTransactionRequest extends DefaultJsonProtocol with SprayJsonSupp
     override def read(json: JsValue): Deposit = {
       val fields = json.asJsObject().fields
 
-      (fields("address"), fields("value")) match {
-        case (JsString(address), valueJson) =>
+      (fields("address"), fields("value"), fields("signingPublicKey")) match {
+        case (JsString(address), valueJson, keyJson: JsString) =>
           val value = valueJson.convertTo[Value]
-          Deposit(address, value)
+          val signingPublicKey = keyJson.convertTo[SigningPublicKey]
+          Deposit(address, value, signingPublicKey)
 
         case _ => deserializationError("Invalid deposit")
       }
@@ -156,7 +201,8 @@ object ChimericTransactionRequest extends DefaultJsonProtocol with SprayJsonSupp
     override def write(obj: Deposit): JsValue = {
       JsObject(
         "address" -> JsString(obj.address),
-        "value" -> obj.value.toJson
+        "value" -> obj.value.toJson,
+        "signingPublicKey" -> obj.signingPublicKey.toJson
       )
     }
   }
@@ -190,6 +236,7 @@ object ChimericTransactionRequest extends DefaultJsonProtocol with SprayJsonSupp
     private val OutputType = "Output"
     private val DepositType = "Deposit"
     private val CreateCurrencyType = "CreateCurrency"
+    private val SignatureTxFragmentType = "SignatureTxFragment"
 
     override def read(json: JsValue): ChimericTxFragment = {
 
@@ -203,6 +250,8 @@ object ChimericTransactionRequest extends DefaultJsonProtocol with SprayJsonSupp
         case (Some(JsString(OutputType)), Some(fragment: JsObject)) => fragment.convertTo[Output]
         case (Some(JsString(DepositType)), Some(fragment: JsObject)) => fragment.convertTo[Deposit]
         case (Some(JsString(CreateCurrencyType)), Some(fragment: JsObject)) => fragment.convertTo[CreateCurrency]
+        case (Some(JsString(SignatureTxFragmentType)), Some(fragment: JsObject)) =>
+          fragment.convertTo[SignatureTxFragment]
         case _ => deserializationError("Invalid chimeric transaction request")
       }
     }
@@ -216,6 +265,7 @@ object ChimericTransactionRequest extends DefaultJsonProtocol with SprayJsonSupp
         case fragment: Output => (OutputType, fragment.toJson)
         case fragment: Deposit => (DepositType, fragment.toJson)
         case fragment: CreateCurrency => (CreateCurrencyType, fragment.toJson)
+        case fragment: SignatureTxFragment => (SignatureTxFragmentType, fragment.toJson)
       }
 
       JsObject(

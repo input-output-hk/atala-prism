@@ -3,7 +3,6 @@ package io.iohk.cef.crypto
 import akka.util.ByteString
 import io.iohk.cef.crypto.encoding.TypedByteStringDecodingError
 import io.iohk.cef.crypto.encoding.TypedByteStringDecodingError.NioDecoderFailedToDecodeTBS
-import io.iohk.cef.network.encoding.nio._
 import org.scalatest.Matchers._
 import org.scalatest.prop.PropertyChecks
 import org.scalatest.{EitherValues, MustMatchers, WordSpec}

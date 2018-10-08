@@ -33,7 +33,7 @@ trait Hashing {
     *
     * @return          a hash of `entity`
     */
-  def hash[T](entity: T)(implicit encoder: Encoder[T]): Hash =
+  def hash[T](entity: T)(implicit encoder: CryptoEncoder[T]): Hash =
     new Hash(hashingType, hashingType.algorithm.hash(encoder.encode(entity)))
 
   /**
@@ -49,7 +49,7 @@ trait Hashing {
     *
     * @return            `true` if `hash` is a valid hash of `entity`
     */
-  def isValidHash[T](entity: T, hash: Hash)(implicit encoder: Encoder[T]): Boolean =
+  def isValidHash[T](entity: T, hash: Hash)(implicit encoder: CryptoEncoder[T]): Boolean =
     hash.`type`.algorithm.hash(encoder.encode(entity)) == hash.bytes
 
   /** Data entity containing a hash and the identifier of the hashing algorithm used to generate it */

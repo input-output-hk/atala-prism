@@ -40,6 +40,16 @@ case class CurrenciesDoNotExist(currencies: Seq[Currency], txFragment: ChimericT
     s"Tx Fragment ${txFragment} references one or more currencies that doesn't exist: $currencies"
 }
 
+case object MissingSignature extends LedgerError {
+  override def toString: String =
+    s"Tx fragments require signatures for all inputs and withdrawals."
+}
+
+case object InvalidSignature extends LedgerError {
+  override def toString: String =
+    s"The transaction contained an invalid signature."
+}
+
 case class InvalidNonce(expected: Int, actual: Int) extends LedgerError {
   override def toString: String = s"An invalid nonce has been received, expected = $expected, actual = $actual"
 }

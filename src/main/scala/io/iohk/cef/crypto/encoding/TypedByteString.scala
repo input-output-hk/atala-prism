@@ -2,7 +2,6 @@ package io.iohk.cef.crypto
 package encoding
 
 import akka.util.ByteString
-import io.iohk.cef.network.encoding.nio._
 
 case class TypedByteString(`type`: String, bytes: ByteString) {
 

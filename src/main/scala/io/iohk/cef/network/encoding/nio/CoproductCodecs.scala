@@ -3,10 +3,40 @@ package io.iohk.cef.network.encoding.nio
 import java.nio.ByteBuffer
 
 import io.iohk.cef.network.encoding.nio.CodecDecorators._
+import shapeless.{:+:, CNil, Coproduct, Inl, Inr, Lazy}
 
 import scala.reflect.runtime.universe._
 
 trait CoproductCodecs {
+
+  implicit val cnilEncoder: NioEncoder[CNil] = new NioEncoder[CNil] {
+    override def encode(t: CNil): ByteBuffer = throw new Exception("Not possible.")
+  }
+
+  implicit def coproductEncoder[H, T <: Coproduct](
+      implicit hEnc: Lazy[NioEncoder[H]],
+      tEnc: NioEncoder[T]): NioEncoder[H :+: T] = new NioEncoder[H :+: T] {
+    override def encode(c: H :+: T): ByteBuffer = c match {
+      case Inl(h) => hEnc.value.encode(h)
+      case Inr(t) => tEnc.encode(t)
+    }
+  }
+
+  implicit val cnilDecoder: NioDecoder[CNil] = new NioDecoder[CNil] {
+    override def decode(u: ByteBuffer): Option[CNil] = None
+  }
+
+  implicit def coproductDecoder[H, T <: Coproduct](
+      implicit hDec: Lazy[NioDecoder[H]],
+      tDec: NioDecoder[T]): NioDecoder[H :+: T] = new NioDecoder[H :+: T] {
+    override def decode(b: ByteBuffer): Option[H :+: T] = {
+      val inL: Option[Inl[H, T]] = hDec.value.decode(b).map(h => Inl(h))
+
+      lazy val inR: Option[Inr[H, T]] = tDec.decode(b).map(t => Inr(t))
+
+      inL.orElse(inR)
+    }
+  }
 
   trait SafeNone[T]
 

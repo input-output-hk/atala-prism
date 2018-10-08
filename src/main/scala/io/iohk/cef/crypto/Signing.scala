@@ -35,7 +35,7 @@ trait Signing {
     *
     * @return          a signature of `t`
     */
-  def sign[T](t: T, key: SigningPrivateKey)(implicit encoder: Encoder[T]): Signature = {
+  def sign[T](t: T, key: SigningPrivateKey)(implicit encoder: CryptoEncoder[T]): Signature = {
     val signature = key.`type`.algorithm.sign(encoder.encode(t), key.lowlevelKey)
     Signature(key.`type`, signature)
   }
@@ -55,7 +55,8 @@ trait Signing {
     *
     * @return            `true` if `signature` is a valid signature of `t`
     */
-  def isValidSignature[T](t: T, signature: Signature, key: SigningPublicKey)(implicit encoder: Encoder[T]): Boolean =
+  def isValidSignature[T](t: T, signature: Signature, key: SigningPublicKey)(
+      implicit encoder: CryptoEncoder[T]): Boolean =
     if (key.`type` != signature.`type`)
       false
     else
