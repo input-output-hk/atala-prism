@@ -1,7 +1,5 @@
 package io.iohk.cef.crypto
 
-import java.nio.ByteBuffer
-
 import akka.util.ByteString
 import io.iohk.cef.network.encoding.nio.NioCodecs
 import io.iohk.cef.network.encoding.{Decoder => LowLevelDecoder, Encoder => LowLevelEncoder}
