@@ -9,7 +9,8 @@ import akka.util.Timeout
 import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.core.{Envelope, NodeCore}
 import io.iohk.cef.frontend.client.ChimericServiceApi
-import io.iohk.cef.frontend.models.ChimericTransactionRequest
+import io.iohk.cef.frontend.models.CreateChimericTransactionRequest
+import io.iohk.cef.frontend.models.CreateNonSignableChimericTransactionFragment
 import io.iohk.cef.frontend.services.ChimericTransactionService
 import io.iohk.cef.ledger.chimeric._
 import io.iohk.cef.ledger.storage.LedgerStateStorage
@@ -85,14 +86,14 @@ class ChimericTransactionNodeCoreItSpec
   }
 
   it should "process a transaction" in {
-    val testTransaction = ChimericTx(List(CreateCurrency("BTC")))
+    val fragments = Seq(CreateNonSignableChimericTransactionFragment(CreateCurrency("BTC")))
 
     val node = createNodeCore
     val service = new ChimericTransactionService(node)
     val api = new ChimericServiceApi(service)
     val routes = api.create
 
-    val entity = ChimericTransactionRequest(testTransaction, 1)
+    val entity = CreateChimericTransactionRequest(fragments, 1)
     val json = Marshal(entity).to[MessageEntity].futureValue
 
     val request = Post("/chimeric-transactions", json)

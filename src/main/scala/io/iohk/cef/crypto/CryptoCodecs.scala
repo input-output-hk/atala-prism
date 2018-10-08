@@ -25,16 +25,6 @@ trait CryptoCodecs extends NioCodecs {
   implicit def decoderFromNIODecoder[T](implicit nioDecoder: NioDecoder[T]): CryptoDecoder[T] =
     (u: ByteString) => nioDecoder.decode(u.toByteBuffer)
 
-  implicit val signatureEncoder: NioEncoder[Signature] = (s: Signature) => s.toByteString.toByteBuffer
-
-  implicit val signatureDecoder: NioDecoder[Signature] = (b: ByteBuffer) => Signature.decodeFrom(ByteString(b)).toOption
-
-  implicit val signingPublicKeyEncoder: NioEncoder[SigningPublicKey] = (s: SigningPublicKey) =>
-    s.toByteString.toByteBuffer
-
-  implicit val signingPublicKeyDecoder: NioDecoder[SigningPublicKey] = (b: ByteBuffer) =>
-    SigningPublicKey.decodeFrom(ByteString(b)).toOption
-
   implicit val ByteStringIdentityEncoder: CryptoEncoder[ByteString] = (bs: ByteString) => bs
 
   implicit val ByteStringIdentityDecoder: CryptoDecoder[ByteString] = (bs: ByteString) => Some(bs)

@@ -121,7 +121,7 @@ class SigningSpec extends WordSpec with MustMatchers with PropertyChecks with Ei
       forAll { bytes: ByteString =>
         val result = Signature.decodeFrom(bytes)
         val expected =
-          SignatureDecodeError.DataExtractionError(TypedByteStringDecodingError.NioDecoderFailedToDecodeTBS)
+          DecodeError.DataExtractionError[Signature](TypedByteStringDecodingError.NioDecoderFailedToDecodeTBS)
 
         result.left.value must be(expected)
       }
@@ -138,7 +138,7 @@ class SigningSpec extends WordSpec with MustMatchers with PropertyChecks with Ei
         val corruptedBytes = signature.toByteString.updated(index, 'X'.toByte)
 
         val result = Signature.decodeFrom(corruptedBytes)
-        val expected = SignatureDecodeError.UnsupportedAlgorithm("XHA256withRSA")
+        val expected = DecodeError.UnsupportedAlgorithm[Signature]("XHA256withRSA")
 
         result.left.value must be(expected)
       }
@@ -160,7 +160,7 @@ class SigningSpec extends WordSpec with MustMatchers with PropertyChecks with Ei
 
       forAll { bytes: ByteString =>
         val result = SigningPublicKey.decodeFrom(bytes)
-        val expected = SigningPublicKeyDecodeError.DataExtractionError(NioDecoderFailedToDecodeTBS)
+        val expected = KeyDecodeError.DataExtractionError[SigningPublicKey](NioDecoderFailedToDecodeTBS)
 
         result.left.value must be(expected)
       }
@@ -176,7 +176,7 @@ class SigningSpec extends WordSpec with MustMatchers with PropertyChecks with Ei
         val corruptedBytes = key.toByteString.updated(index, 'X'.toByte)
 
         val result = SigningPublicKey.decodeFrom(corruptedBytes)
-        val expected = SigningPublicKeyDecodeError.UnsupportedAlgorithm("XHA256withRSA")
+        val expected = KeyDecodeError.UnsupportedAlgorithm[SigningPublicKey]("XHA256withRSA")
 
         result.left.value must be(expected)
       }
@@ -198,7 +198,7 @@ class SigningSpec extends WordSpec with MustMatchers with PropertyChecks with Ei
 
       forAll { bytes: ByteString =>
         val result = SigningPrivateKey.decodeFrom(bytes)
-        val expected = SigningPrivateKeyDecodeError.DataExtractionError(NioDecoderFailedToDecodeTBS)
+        val expected = KeyDecodeError.DataExtractionError[SigningPrivateKey](NioDecoderFailedToDecodeTBS)
 
         result.left.value must be(expected)
       }
@@ -214,7 +214,7 @@ class SigningSpec extends WordSpec with MustMatchers with PropertyChecks with Ei
         val corruptedBytes = key.toByteString.updated(index, 'X'.toByte)
 
         val result = SigningPrivateKey.decodeFrom(corruptedBytes)
-        val expected = SigningPrivateKeyDecodeError.UnsupportedAlgorithm("XHA256withRSA")
+        val expected = KeyDecodeError.UnsupportedAlgorithm[SigningPrivateKey]("XHA256withRSA")
 
         result.left.value must be(expected)
       }

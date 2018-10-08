@@ -127,7 +127,7 @@ class EncryptionSpec
       forAll { bytes: ByteString =>
         val result = EncryptedData.decodeFrom(bytes)
         val expected =
-          EncryptedDataDecodeError.DataExtractionError(TypedByteStringDecodingError.NioDecoderFailedToDecodeTBS)
+          DecodeError.DataExtractionError[EncryptedData](TypedByteStringDecodingError.NioDecoderFailedToDecodeTBS)
 
         result.left.value must be(expected)
       }
@@ -144,7 +144,7 @@ class EncryptionSpec
         val corruptedBytes = encrypted.toByteString.updated(index, 'X'.toByte)
 
         val result = EncryptedData.decodeFrom(corruptedBytes)
-        val expected = EncryptedDataDecodeError.UnsupportedAlgorithm("XSA")
+        val expected = DecodeError.UnsupportedAlgorithm[EncryptedData]("XSA")
 
         result.left.value must be(expected)
       }
@@ -166,7 +166,7 @@ class EncryptionSpec
 
       forAll { bytes: ByteString =>
         val result = EncryptionPublicKey.decodeFrom(bytes)
-        val expected = EncryptionPublicKeyDecodeError.DataExtractionError(NioDecoderFailedToDecodeTBS)
+        val expected = KeyDecodeError.DataExtractionError[EncryptionPublicKey](NioDecoderFailedToDecodeTBS)
 
         result.left.value must be(expected)
       }
@@ -182,7 +182,7 @@ class EncryptionSpec
         val corruptedBytes = key.toByteString.updated(index, 'X'.toByte)
 
         val result = EncryptionPublicKey.decodeFrom(corruptedBytes)
-        val expected = EncryptionPublicKeyDecodeError.UnsupportedAlgorithm("XSA")
+        val expected = KeyDecodeError.UnsupportedAlgorithm[EncryptionPublicKey]("XSA")
 
         result.left.value must be(expected)
       }
@@ -204,7 +204,7 @@ class EncryptionSpec
 
       forAll { bytes: ByteString =>
         val result = EncryptionPrivateKey.decodeFrom(bytes)
-        val expected = EncryptionPrivateKeyDecodeError.DataExtractionError(NioDecoderFailedToDecodeTBS)
+        val expected = KeyDecodeError.DataExtractionError[EncryptionPrivateKey](NioDecoderFailedToDecodeTBS)
 
         result.left.value must be(expected)
       }
@@ -220,7 +220,7 @@ class EncryptionSpec
         val corruptedBytes = key.toByteString.updated(index, 'X'.toByte)
 
         val result = EncryptionPrivateKey.decodeFrom(corruptedBytes)
-        val expected = EncryptionPrivateKeyDecodeError.UnsupportedAlgorithm("XSA")
+        val expected = KeyDecodeError.UnsupportedAlgorithm[EncryptionPrivateKey]("XSA")
 
         result.left.value must be(expected)
       }

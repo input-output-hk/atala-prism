@@ -4,3 +4,4 @@ target/
 *.iml
 
 cef/network/db/
+local.sbt

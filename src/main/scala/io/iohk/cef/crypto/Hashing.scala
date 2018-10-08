@@ -4,19 +4,7 @@ import akka.util.ByteString
 import io.iohk.cef.crypto.hashing.HashingAlgorithmsCollection
 import io.iohk.cef.crypto.hashing.HashBytes
 import io.iohk.cef.crypto.encoding.TypedByteString
-import io.iohk.cef.crypto.encoding.TypedByteStringDecodingError
-import io.iohk.cef.utils._
 
-/**
-  * This is just an example on how sbt-doctest works. It's to be replaced with proper docs on CE-273
-  * {{{
-  *
-  * >>> import akka.util.ByteString
-  * >>> Hash.decodeFrom(ByteString("ABCD"))
-  * Left(DataExtractionError(NioDecoderFailedToDecodeTBS))
-  *
-  * }}}
-  */
 trait Hashing {
 
   // PARAMETERS
@@ -66,49 +54,42 @@ trait Hashing {
       case _ => false
     }
 
+    /**
+      * {{{
+      *
+      * >>> import akka.util.ByteString
+      * >>> hash(ByteString("ABC"))
+      * -----BEGIN HASH SHA256 BLOCK-----
+      *  00 00 00 60 00 00 00 10 A7 F1 59 E6 70 8B 88 34
+      *  57 37 55 A6 91 9F 54 68 00 00 00 06 00 53 00 48
+      *  00 41 00 32 00 35 00 36 00 00 00 38 00 00 00 10
+      *  0E BB 60 87 0B 23 D1 57 2A 23 C3 DB 6A AD 73 54
+      *  00 00 00 20 B5 D4 04 5C 3F 46 6F A9 1F E2 CC 6A
+      *  BE 79 23 2A 1A 57 CD F1 04 F7 A2 6E 71 6E 0A 1E
+      *  27 89 DF 78
+      * -----END HASH SHA256 BLOCK-----
+      *
+      * }}}
+      */
     override def toString(): String =
-      toByteString.hexDump
+      Hash.show(this)
   }
 
-  object Hash {
+  object Hash extends CryptoEntityCompanion[Hash] {
 
-    private[Hashing] def encodeInto(hash: Hash): TypedByteString =
+    override protected val title: String = "HASH"
+
+    private[crypto] def encodeInto(hash: Hash): TypedByteString =
       TypedByteString(hash.`type`.algorithmIdentifier, hash.bytes.bytes)
 
-    private[Hashing] def decodeFrom(tbs: TypedByteString): Either[HashDecodeError, Hash] = {
+    private[crypto] def decodeFrom(tbs: TypedByteString): Either[DecodeError[Hash], Hash] = {
       hashingCollection(tbs.`type`) match {
         case Some(hashingType) =>
           Right(new Hash(hashingType, HashBytes(tbs.bytes)))
         case None =>
-          Left(HashDecodeError.UnsupportedAlgorithm(tbs.`type`))
+          Left(DecodeError.UnsupportedAlgorithm(tbs.`type`))
       }
     }
-
-    /** Tries to restore a `Hash` from the content of the `bytes` ByteString */
-    def decodeFrom(bytes: ByteString): Either[HashDecodeError, Hash] = {
-      TypedByteString
-        .decodeFrom(bytes)
-        .left
-        .map(e => HashDecodeError.DataExtractionError(e))
-        .flatMap(decodeFrom)
-    }
-  }
-
-  /**
-    * ADT describing the types of error that can happen when trying to decode a hash
-    * from a ByteString
-    */
-  sealed trait HashDecodeError
-  object HashDecodeError {
-
-    /** Missing or wrong information in the ByteString */
-    case class DataExtractionError(cause: TypedByteStringDecodingError) extends HashDecodeError
-
-    /**
-      * The `algorithmIdentifier` identifier recovered from the ByteString does not match any algorithm
-      * supported by the `crypto` package
-      */
-    case class UnsupportedAlgorithm(algorithmIdentifier: String) extends HashDecodeError
   }
 
 }

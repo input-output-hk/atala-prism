@@ -117,7 +117,7 @@ class HashingSpec extends WordSpec with MustMatchers with PropertyChecks with Ei
 
       forAll { bytes: ByteString =>
         val result = Hash.decodeFrom(bytes)
-        val expected = HashDecodeError.DataExtractionError(TypedByteStringDecodingError.NioDecoderFailedToDecodeTBS)
+        val expected = DecodeError.DataExtractionError[Hash](TypedByteStringDecodingError.NioDecoderFailedToDecodeTBS)
         result.left.value must be(expected)
       }
     }
@@ -131,7 +131,7 @@ class HashingSpec extends WordSpec with MustMatchers with PropertyChecks with Ei
         val corruptedHashBytes = hashedValue.toByteString.updated(index, 'X'.toByte)
 
         val result = Hash.decodeFrom(corruptedHashBytes)
-        val expected = HashDecodeError.UnsupportedAlgorithm("XHA256")
+        val expected = DecodeError.UnsupportedAlgorithm[Hash]("XHA256")
         result.left.value must be(expected)
       }
     }

@@ -11,6 +11,9 @@ sealed trait ChimericTxFragment
   def partitionIds(txId: String, index: Int): Set[String]
 }
 
+sealed trait SignableChimericTxFragment extends ChimericTxFragment
+sealed trait NonSignableChimericTxFragment extends ChimericTxFragment
+
 /**
   * An Action tx does not hold or operates over values. Instead, it changes the data that is available in the ledger
   * For instance, creating currencies for other txs to utilize
@@ -78,7 +81,9 @@ sealed trait TxInputFragment extends ValueTxFragment
   */
 sealed trait TxOutputFragment extends ValueTxFragment
 
-case class Withdrawal(address: Address, value: Value, nonce: Int) extends TxInputFragment {
+case class Withdrawal(address: Address, value: Value, nonce: Int)
+    extends TxInputFragment
+    with SignableChimericTxFragment {
   override def exec(state: ChimericLedgerState, index: Int, txId: String): ChimericStateOrError = {
 
     val addressNonceKey = getAddressNoncePartitionId(address)
@@ -130,7 +135,7 @@ case class Withdrawal(address: Address, value: Value, nonce: Int) extends TxInpu
   override def toString(): ChimericTxId = s"Withdrawal($address,$value)"
 }
 
-case class Mint(value: Value) extends TxInputFragment {
+case class Mint(value: Value) extends TxInputFragment with NonSignableChimericTxFragment {
   override def exec(state: ChimericLedgerState, index: Int, txId: String): ChimericStateOrError = {
     Right(state)
   }
@@ -140,7 +145,7 @@ case class Mint(value: Value) extends TxInputFragment {
   override def toString(): ChimericTxId = s"Mint($value)"
 }
 
-case class Input(txOutRef: TxOutRef, value: Value) extends TxInputFragment {
+case class Input(txOutRef: TxOutRef, value: Value) extends TxInputFragment with SignableChimericTxFragment {
   override def exec(state: ChimericLedgerState, index: Int, txId: String): ChimericStateOrError = {
     val txOutKey = ChimericLedgerState.getUtxoPartitionId(txOutRef)
     val txOutValueOpt =
@@ -161,7 +166,7 @@ case class Input(txOutRef: TxOutRef, value: Value) extends TxInputFragment {
 }
 
 //FIXME: Where are the fees going? We need to setup somewhere who can spend this value in the future
-case class Fee(value: Value) extends TxOutputFragment {
+case class Fee(value: Value) extends TxOutputFragment with NonSignableChimericTxFragment {
   override def exec(state: ChimericLedgerState, index: Int, txId: String): ChimericStateOrError = {
     Right(state)
   }
@@ -171,7 +176,9 @@ case class Fee(value: Value) extends TxOutputFragment {
   override def toString(): ChimericTxId = s"Fee($value)"
 }
 
-case class Output(value: Value, signingPublicKey: SigningPublicKey) extends TxOutputFragment {
+case class Output(value: Value, signingPublicKey: SigningPublicKey)
+    extends TxOutputFragment
+    with NonSignableChimericTxFragment {
   override def exec(state: ChimericLedgerState, index: Int, txId: String): ChimericStateOrError = {
     val txOutRef = TxOutRef(txId, index)
     val txOutKey = ChimericLedgerState.getUtxoPartitionId(txOutRef)
@@ -192,7 +199,9 @@ case class Output(value: Value, signingPublicKey: SigningPublicKey) extends TxOu
   override def toString(): ChimericTxId = s"Output($value)"
 }
 
-case class Deposit(address: Address, value: Value, signingPublicKey: SigningPublicKey) extends TxOutputFragment {
+case class Deposit(address: Address, value: Value, signingPublicKey: SigningPublicKey)
+    extends TxOutputFragment
+    with NonSignableChimericTxFragment {
   override def exec(state: ChimericLedgerState, index: Int, txId: String): ChimericStateOrError = {
     val addressKey = getAddressPartitionId(address)
     val addressResultOpt: Option[AddressResult] =
@@ -206,7 +215,7 @@ case class Deposit(address: Address, value: Value, signingPublicKey: SigningPubl
   override def toString(): ChimericTxId = s"Deposit($address,$value)"
 }
 
-case class CreateCurrency(currency: Currency) extends ActionTxFragment {
+case class CreateCurrency(currency: Currency) extends ActionTxFragment with NonSignableChimericTxFragment {
   override def apply(state: ChimericLedgerState, index: Int, txId: String): ChimericStateOrError = {
     val createCurrencyKey = ChimericLedgerState.getCurrencyPartitionId(currency)
     state.get(createCurrencyKey) match {
@@ -221,7 +230,7 @@ case class CreateCurrency(currency: Currency) extends ActionTxFragment {
   override def toString(): ChimericTxId = s"CreateCurrency($currency)"
 }
 
-case class SignatureTxFragment(signature: Signature) extends ChimericTxFragment {
+case class SignatureTxFragment(signature: Signature) extends ChimericTxFragment with NonSignableChimericTxFragment {
   override def partitionIds(txId: String, index: Int): Set[String] = Set.empty
 
   override def apply(state: ChimericLedgerState, index: Int, txId: String): Either[LedgerError, ChimericLedgerState] = {

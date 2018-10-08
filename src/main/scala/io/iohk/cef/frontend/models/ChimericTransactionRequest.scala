@@ -1,297 +1,132 @@
 package io.iohk.cef.frontend.models
 
-import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-import akka.util.ByteString
 import io.iohk.cef.LedgerId
 import io.iohk.cef.crypto._
 import io.iohk.cef.ledger.chimeric._
-import org.bouncycastle.util.encoders.Hex
-import spray.json.{deserializationError, _}
+import spray.json._
 
-import scala.collection.immutable.Map
+trait ExtraJsonFormats extends ChimericTxFragmentFormat {
 
-case class ChimericTransactionRequest(transaction: ChimericTx, ledgerId: LedgerId)
+  protected case class HasSigningPrivateKey(signingPrivateKey: SigningPrivateKey)
+  protected implicit val HasSigningPrivateKeyJsonFormat: RootJsonFormat[HasSigningPrivateKey] =
+    jsonFormat1(HasSigningPrivateKey.apply)
 
-object ChimericTransactionRequest extends DefaultJsonProtocol with SprayJsonSupport {
+}
 
-  implicit val signingPublicKeyJsonFormat: JsonFormat[SigningPublicKey] = new JsonFormat[SigningPublicKey] {
-    override def read(jsValue: JsValue): SigningPublicKey = {
-      SigningPublicKey
-        .decodeFrom(byteStringJsonFormat.read(jsValue))
-        .getOrElse(deserializationError(s"$jsValue is not a valid JSON encoding of SigningPublicKey"))
-    }
+/**
+  * {{{
+  *
+  *   # Some setup
+  *   >>> import spray.json._
+  *   >>> import io.iohk.cef.ledger.chimeric._
+  *   >>> import io.iohk.cef.crypto._
+  *   >>> val SigningKeyPair(_, priv) = generateSigningKeyPair
+  *
+  *   # Convert a non signable fragment into json
+  *   >>> val ntx: CreateChimericTransactionFragment = CreateNonSignableChimericTransactionFragment(Mint(Value(Map("USD" -> BigDecimal(123)))))
+  *   >>> ntx.toJson
+  *   {"value":{"USD":123},"type":"Mint"}
+  *
+  *   # Recover a non signable fragment from a json
+  *   >>> """{"value":{"USD":123},"type":"Mint"}""".parseJson.convertTo[CreateChimericTransactionFragment]
+  *   CreateNonSignableChimericTransactionFragment(Mint(Value(Map(USD -> 123))))
+  *
+  *   # Round trip for a signable fragment
+  *   >>> val stx: CreateChimericTransactionFragment = {
+  *   ...   CreateSignableChimericTransactionFragment(Withdrawal("Address1", Value(Map("USD" -> BigDecimal(123))), 999), priv)}
+  *   >>> stx.toJson.convertTo[CreateChimericTransactionFragment] == stx
+  *   true
+  * }}}
+  */
+sealed trait CreateChimericTransactionFragment {
+  val fragment: ChimericTxFragment
 
-    override def write(signingPublicKey: SigningPublicKey): JsValue =
-      byteStringJsonFormat.write(signingPublicKey.toByteString)
-  }
+  def `type`: ChimericTransactionFragmentType
+}
 
-  implicit val signatureJsonFormat: JsonFormat[Signature] = new JsonFormat[Signature] {
-    override def read(jsValue: JsValue): Signature = {
-      Signature
-        .decodeFrom(byteStringJsonFormat.read(jsValue))
-        .getOrElse(deserializationError(s"$jsValue is not a valid JSON encoding of crypto.Signature"))
-    }
+object CreateChimericTransactionFragment extends ExtraJsonFormats {
 
-    override def write(signature: Signature): JsValue =
-      byteStringJsonFormat.write(signature.toByteString)
-  }
-
-  implicit val signatureTxFragmentJsonFormat: JsonFormat[SignatureTxFragment] =
-    jsonFormat1(SignatureTxFragment.apply)
-
-  implicit object ValueJsonFormat extends JsonFormat[Value] {
-    override def read(json: JsValue): Value = {
-      val map = json.convertTo[Map[String, BigDecimal]]
-      Value(map)
-    }
-
-    override def write(obj: Value): JsValue = {
-      obj.iterator.toMap.toJson
-    }
-  }
-
-  implicit object WithdrawalJsonFormat extends JsonFormat[Withdrawal] {
-
-    override def read(json: JsValue): Withdrawal = {
-      val fields = json.asJsObject().fields
-
-      (fields("address"), fields("value"), fields("nonce")) match {
-        case (JsString(address), valueJson, JsNumber(nonce)) =>
-          val value = valueJson.convertTo[Value]
-          Withdrawal(address, value, nonce.toIntExact)
-
-        case _ => deserializationError("Invalid withdrawal")
-      }
-    }
-
-    override def write(obj: Withdrawal): JsValue = {
-      JsObject(
-        "address" -> JsString(obj.address),
-        "value" -> obj.value.toJson,
-        "nonce" -> JsNumber(obj.nonce)
-      )
-    }
-  }
-
-  implicit object MintJsonFormat extends JsonFormat[Mint] {
-    override def read(json: JsValue): Mint = {
-      val fields = json.asJsObject().fields
-
-      fields("value") match {
-        case obj: JsObject =>
-          val value = obj.convertTo[Value]
-          Mint(value)
-
-        case _ => deserializationError("Invalid mint")
-      }
-    }
-
-    override def write(obj: Mint): JsValue = {
-      JsObject("value" -> obj.value.toJson)
-    }
-  }
-
-  implicit object TxOutRefJsonFormat extends JsonFormat[TxOutRef] {
-    override def read(json: JsValue): TxOutRef = {
-      val fields = json.asJsObject().fields
-
-      (fields("index"), fields("txid")) match {
-        case (JsNumber(index), JsString(txid)) =>
-          TxOutRef(txid, index.toIntExact)
-
-        case _ => deserializationError("Invalid TxOutRef")
-      }
-    }
-
-    override def write(obj: TxOutRef): JsValue = {
-      JsObject(
-        "index" -> JsNumber(obj.index),
-        "txid" -> JsString(obj.txId)
-      )
-    }
-  }
-
-  implicit object InputJsonFormat extends JsonFormat[Input] {
-    override def read(json: JsValue): Input = {
-      val fields = json.asJsObject().fields
-
-      (fields("txOutRef"), fields("value")) match {
-        case (txOutRef: JsObject, value: JsObject) =>
-          Input(txOutRef.convertTo[TxOutRef], value.convertTo[Value])
-
-        case _ => deserializationError("Invalid input")
-      }
-    }
-
-    override def write(obj: Input): JsValue = {
-      JsObject(
-        "txOutRef" -> obj.txOutRef.toJson,
-        "value" -> obj.value.toJson
-      )
-    }
-  }
-
-  implicit object FeeJsonFormat extends JsonFormat[Fee] {
-    override def read(json: JsValue): Fee = {
-      val fields = json.asJsObject().fields
-
-      fields("value") match {
-        case obj: JsObject =>
-          val value = obj.convertTo[Value]
-          Fee(value)
-
-        case _ => deserializationError("Invalid fee")
-      }
-    }
-
-    override def write(obj: Fee): JsValue = {
-      JsObject("value" -> obj.value.toJson)
-    }
-  }
-
-  val byteStringJsonFormat: JsonFormat[ByteString] = new JsonFormat[ByteString] {
-    override def read(jsValue: JsValue): ByteString = jsValue match {
-      case JsString(value) =>
-        ByteString(Hex.decode(value))
-      case _ =>
-        deserializationError(s"Attempting to decode $jsValue as a JsString encoded binary.")
-    }
-
-    override def write(b: ByteString): JsValue =
-      JsString(Hex.toHexString(b.toArray))
-  }
-
-  implicit object OutputJsonFormat extends JsonFormat[Output] {
-    override def read(json: JsValue): Output = {
-
-      val fields = json.asJsObject().fields
-      val valueField = fields("value")
-      val keyField = fields("signingPublicKey")
-
-      (valueField, keyField) match {
-        case (valueObj: JsObject, keyObj: JsString) =>
-          val value = valueObj.convertTo[Value]
-          val signingPublicKey = keyObj.convertTo[SigningPublicKey]
-          Output(value, signingPublicKey)
-        case _ => deserializationError("Invalid output")
-
-      }
-    }
-
-    override def write(obj: Output): JsValue = {
-      JsObject("value" -> obj.value.toJson, "signingPublicKey" -> obj.signingPublicKey.toJson)
-    }
-  }
-
-  implicit object DepositJsonFormat extends JsonFormat[Deposit] {
-
-    override def read(json: JsValue): Deposit = {
-      val fields = json.asJsObject().fields
-
-      (fields("address"), fields("value"), fields("signingPublicKey")) match {
-        case (JsString(address), valueJson, keyJson: JsString) =>
-          val value = valueJson.convertTo[Value]
-          val signingPublicKey = keyJson.convertTo[SigningPublicKey]
-          Deposit(address, value, signingPublicKey)
-
-        case _ => deserializationError("Invalid deposit")
-      }
-    }
-
-    override def write(obj: Deposit): JsValue = {
-      JsObject(
-        "address" -> JsString(obj.address),
-        "value" -> obj.value.toJson,
-        "signingPublicKey" -> obj.signingPublicKey.toJson
-      )
-    }
-  }
-
-  implicit object CreateCurrencyJsonFormat extends JsonFormat[CreateCurrency] {
-
-    override def read(json: JsValue): CreateCurrency = {
-      val fields = json.asJsObject().fields
-
-      fields("currency") match {
-        case JsString(currency) =>
-          CreateCurrency(currency)
-
-        case _ => deserializationError("Invalid create currency")
-      }
-    }
-
-    override def write(obj: CreateCurrency): JsValue = {
-      JsObject(
-        "currency" -> JsString(obj.currency)
-      )
-    }
-  }
-
-  implicit object ChimericTxFragmentJsonFormat extends JsonFormat[ChimericTxFragment] {
-
-    private val WithdrawalType = "Withdrawal"
-    private val MintType = "Mint"
-    private val InputType = "Input"
-    private val FeeType = "Fee"
-    private val OutputType = "Output"
-    private val DepositType = "Deposit"
-    private val CreateCurrencyType = "CreateCurrency"
-    private val SignatureTxFragmentType = "SignatureTxFragment"
-
-    override def read(json: JsValue): ChimericTxFragment = {
-
-      val fields = json.asJsObject().fields
-
-      (fields.get("type"), fields.get("fragment")) match {
-        case (Some(JsString(WithdrawalType)), Some(fragment: JsObject)) => fragment.convertTo[Withdrawal]
-        case (Some(JsString(MintType)), Some(fragment: JsObject)) => fragment.convertTo[Mint]
-        case (Some(JsString(InputType)), Some(fragment: JsObject)) => fragment.convertTo[Input]
-        case (Some(JsString(FeeType)), Some(fragment: JsObject)) => fragment.convertTo[Fee]
-        case (Some(JsString(OutputType)), Some(fragment: JsObject)) => fragment.convertTo[Output]
-        case (Some(JsString(DepositType)), Some(fragment: JsObject)) => fragment.convertTo[Deposit]
-        case (Some(JsString(CreateCurrencyType)), Some(fragment: JsObject)) => fragment.convertTo[CreateCurrency]
-        case (Some(JsString(SignatureTxFragmentType)), Some(fragment: JsObject)) =>
-          fragment.convertTo[SignatureTxFragment]
-        case _ => deserializationError("Invalid chimeric transaction request")
-      }
-    }
-
-    override def write(obj: ChimericTxFragment): JsValue = {
-      val (tpe, json) = obj match {
-        case fragment: Withdrawal => (WithdrawalType, fragment.toJson)
-        case fragment: Mint => (MintType, fragment.toJson)
-        case fragment: Input => (InputType, fragment.toJson)
-        case fragment: Fee => (FeeType, fragment.toJson)
-        case fragment: Output => (OutputType, fragment.toJson)
-        case fragment: Deposit => (DepositType, fragment.toJson)
-        case fragment: CreateCurrency => (CreateCurrencyType, fragment.toJson)
-        case fragment: SignatureTxFragment => (SignatureTxFragmentType, fragment.toJson)
+  implicit val createChimericTransactionFragmentJsonFormat: JsonFormat[CreateChimericTransactionFragment] =
+    new JsonFormat[CreateChimericTransactionFragment] {
+      def read(json: JsValue): CreateChimericTransactionFragment = {
+        json.convertTo[ChimericTxFragment] match {
+          case s: SignableChimericTxFragment =>
+            val key = json.convertTo[HasSigningPrivateKey].signingPrivateKey
+            CreateSignableChimericTransactionFragment(s, key)
+          case n: NonSignableChimericTxFragment =>
+            CreateNonSignableChimericTransactionFragment(n)
+        }
       }
 
-      JsObject(
-        "type" -> JsString(tpe),
-        "fragment" -> json
-      )
-    }
-  }
-
-  implicit object ChimericTxJsonFormat extends JsonFormat[ChimericTx] {
-    override def read(json: JsValue): ChimericTx = {
-      val fields = json.asJsObject().fields
-
-      val fragments = fields("fragments") match {
-        case array: JsArray => array.convertTo[List[ChimericTxFragment]]
-        case _ => deserializationError("Invalid chimeric tx")
+      def write(obj: CreateChimericTransactionFragment): JsValue = {
+        val part = obj.fragment.toJson
+        obj match {
+          case n: CreateNonSignableChimericTransactionFragment =>
+            part
+          case s: CreateSignableChimericTransactionFragment =>
+            val part2 = HasSigningPrivateKey(s.signingPrivateKey)
+            JsObject(part.asJsObject.fields ++ part2.toJson.asJsObject.fields)
+        }
       }
+    }
+}
 
-      ChimericTx(fragments)
+case class CreateNonSignableChimericTransactionFragment(override val fragment: NonSignableChimericTxFragment)
+    extends CreateChimericTransactionFragment {
+  override def `type`: NonSignableChimericTransactionFragmentType =
+    NonSignableChimericTransactionFragmentType.of(fragment)
+}
+
+case class CreateSignableChimericTransactionFragment(
+    override val fragment: SignableChimericTxFragment,
+    signingPrivateKey: SigningPrivateKey)
+    extends CreateChimericTransactionFragment {
+  override def `type`: SignableChimericTransactionFragmentType =
+    SignableChimericTransactionFragmentType.of(fragment)
+}
+
+/**
+  * {{{
+  *
+  *   # Some setup
+  *   >>> import spray.json._
+  *   >>> import io.iohk.cef.ledger.chimeric._
+  *
+  *   # Convert a value into json
+  *   >>> val tx: CreateChimericTransactionRequest = CreateChimericTransactionRequest(Seq(CreateNonSignableChimericTransactionFragment(Mint(Value(Map("USD" -> BigDecimal(123)))))), 890)
+  *   >>> tx.toJson
+  *   {"fragments":[{"value":{"USD":123},"type":"Mint"}],"ledgerId":890}
+  *
+  *   # Recover a value from a json
+  *   >>> """{"fragments":[{"value":{"USD":123},"type":"Mint"}],"ledgerId":890}""".parseJson.convertTo[CreateChimericTransactionRequest]
+  *   CreateChimericTransactionRequest(List(CreateNonSignableChimericTransactionFragment(Mint(Value(Map(USD -> 123))))),890)
+  * }}}
+  */
+case class CreateChimericTransactionRequest(fragments: Seq[CreateChimericTransactionFragment], ledgerId: LedgerId)
+
+object CreateChimericTransactionRequest extends ExtraJsonFormats {
+
+  implicit val createChimericTransactionRequestJsonFormat: RootJsonFormat[CreateChimericTransactionRequest] =
+    jsonFormat2(CreateChimericTransactionRequest.apply)
+
+}
+
+case class SubmitChimericTransactionFragment(fragment: ChimericTxFragment) {
+  def `type`: ChimericTransactionFragmentType =
+    ChimericTransactionFragmentType.of(fragment)
+}
+case class SubmitChimericTransactionRequest(fragments: Seq[SubmitChimericTransactionFragment], ledgerId: LedgerId)
+
+object ChimericTransactionRequest extends ExtraJsonFormats {
+  implicit val submitChimericTransactionFragmentJsonFormat: JsonFormat[SubmitChimericTransactionFragment] =
+    new JsonFormat[SubmitChimericTransactionFragment] {
+      def read(json: JsValue): SubmitChimericTransactionFragment =
+        SubmitChimericTransactionFragment(json.convertTo[ChimericTxFragment])
+
+      def write(obj: SubmitChimericTransactionFragment): JsValue =
+        obj.fragment.toJson
     }
 
-    override def write(obj: ChimericTx): JsValue = {
-      JsObject("fragments" -> obj.fragments.toJson)
-    }
-  }
-
-  implicit val chimericTransactionRequestJsonFormat: RootJsonFormat[ChimericTransactionRequest] = jsonFormat2(
-    ChimericTransactionRequest.apply)
+  implicit val submitChimericTransactionRequestJsonFormat: RootJsonFormat[SubmitChimericTransactionRequest] =
+    jsonFormat2(SubmitChimericTransactionRequest.apply)
 }
