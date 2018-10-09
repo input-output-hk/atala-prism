@@ -34,8 +34,8 @@ trait LedgerConfigBuilder {
 trait DefaultLedgerConfig extends LedgerConfigBuilder {
   self: ConfigReaderBuilder =>
 
-  import io.iohk.cef.encoding.rlp.RLPImplicits._
-  import io.iohk.cef.encoding.rlp._
+  import io.iohk.cef.network.encoding.rlp.RLPImplicits._
+  import io.iohk.cef.network.encoding.rlp._
   val discoveryMsgSerializer = implicitly[ByteStringSerializable[DiscoveryWireMessage]]
   override val clock: Clock = Clock.systemUTC()
   override val ledgerConfig: LedgerConfig = LedgerConfig(config)

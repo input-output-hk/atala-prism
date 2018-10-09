@@ -12,7 +12,7 @@ import org.bouncycastle.crypto.params.{ECPrivateKeyParameters, ECPublicKeyParame
 import org.bouncycastle.math.ec.ECPoint
 import AuthInitiateMessageV4._
 import io.iohk.cef.cryptolegacy.{ECDSASignature, ECIESCoder}
-import io.iohk.cef.encoding.rlp
+import io.iohk.cef.network.encoding.rlp
 import io.iohk.cef.network.transport.rlpx.ByteUtils._
 import io.iohk.cef.cryptolegacy._
 import io.iohk.cef.utils.HexStringCodec._

@@ -2,8 +2,8 @@ package io.iohk.cef.network.transport.rlpx
 
 import akka.util.ByteString
 import io.iohk.cef.cryptolegacy._
-import io.iohk.cef.encoding.rlp.RLPImplicits._
-import io.iohk.cef.encoding.rlp._
+import io.iohk.cef.network.encoding.rlp.RLPImplicits._
+import io.iohk.cef.network.encoding.rlp._
 import org.bouncycastle.math.ec.ECPoint
 
 object AuthResponseMessageV4 {

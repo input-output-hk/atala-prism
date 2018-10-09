@@ -1,10 +1,10 @@
-package io.iohk.cef.encoding.rlp
+package io.iohk.cef.network.encoding.rlp
 
 import java.net.{InetAddress, InetSocketAddress}
 
 import akka.util.ByteString
-import io.iohk.cef.encoding.rlp.BigIntExtensionMethods._
-import io.iohk.cef.encoding.rlp.RLP._
+import io.iohk.cef.network.encoding.rlp.BigIntExtensionMethods._
+import io.iohk.cef.network.encoding.rlp.RLP._
 
 object RLPImplicits {
 

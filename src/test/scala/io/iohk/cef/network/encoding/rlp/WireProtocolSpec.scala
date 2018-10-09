@@ -1,4 +1,4 @@
-package io.iohk.cef.encoding.rlp
+package io.iohk.cef.network.encoding.rlp
 
 import akka.util.ByteString
 import io.iohk.cef.network.transport.rlpx.ethereum.p2p.messages.WireProtocol

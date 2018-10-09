@@ -89,8 +89,8 @@ trait NetworkFixture {
       ServerStatus.Listening(nodeInfo.discoveryAddress),
       Capabilities(0))
 
-    import io.iohk.cef.encoding.rlp.RLPEncoders._
-    import io.iohk.cef.encoding.rlp.RLPImplicits._
+    import io.iohk.cef.network.encoding.rlp.RLPEncoders._
+    import io.iohk.cef.network.encoding.rlp.RLPImplicits._
 
     val encoder = implicitly[Encoder[DiscoveryWireMessage, ByteString]]
 

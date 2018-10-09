@@ -1,14 +1,14 @@
-package io.iohk.cef.encoding.rlp
+package io.iohk.cef.network.encoding.rlp
 
 import akka.util.ByteString
-import io.iohk.cef.encoding.rlp
+import io.iohk.cef.network.encoding.rlp
 import io.iohk.cef.utils.HexStringCodec._
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.FunSuite
 
 import scala.language.implicitConversions
 import scala.util.Try
-import io.iohk.cef.encoding.rlp.RLPImplicits._
+import io.iohk.cef.network.encoding.rlp.RLPImplicits._
 import org.scalatest.prop.GeneratorDrivenPropertyChecks._
 
 class RLPSuite extends FunSuite {

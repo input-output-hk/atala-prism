@@ -67,8 +67,8 @@ class DiscoveryManagerSpec extends FlatSpec with BeforeAndAfterAll {
         blacklistDefaultDuration = 30 seconds
       )
 
-    import io.iohk.cef.encoding.rlp.RLPEncoders._
-    import io.iohk.cef.encoding.rlp.RLPImplicits._
+    import io.iohk.cef.network.encoding.rlp.RLPEncoders._
+    import io.iohk.cef.network.encoding.rlp.RLPImplicits._
 
     val encoder = implicitly[Encoder[DiscoveryWireMessage, ByteString]]
 

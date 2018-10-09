@@ -2,11 +2,11 @@ package io.iohk.cef.network.transport.rlpx
 
 import akka.util.ByteString
 import io.iohk.cef.builder.SecureChannelSetup
-import io.iohk.cef.encoding.rlp._
-import io.iohk.cef.encoding.rlp.{RLPEncodeable, RLPList, RLPSerializable}
+import io.iohk.cef.network.encoding.rlp._
+import io.iohk.cef.network.encoding.rlp.{RLPEncodeable, RLPList, RLPSerializable}
 import io.iohk.cef.network.transport.rlpx.ethereum.p2p.{Message, MessageSerializable}
-import io.iohk.cef.encoding.rlp.RLPImplicits._
-import io.iohk.cef.encoding.rlp.RLPImplicitConversions._
+import io.iohk.cef.network.encoding.rlp.RLPImplicits._
+import io.iohk.cef.network.encoding.rlp.RLPImplicitConversions._
 import org.scalatest.{FlatSpec, Matchers}
 
 class FrameCodecSpec extends FlatSpec with Matchers {

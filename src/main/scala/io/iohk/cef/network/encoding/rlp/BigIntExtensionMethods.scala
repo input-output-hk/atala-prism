@@ -1,4 +1,4 @@
-package io.iohk.cef.encoding.rlp
+package io.iohk.cef.network.encoding.rlp
 
 object BigIntExtensionMethods {
   implicit class BigIntAsUnsigned(val srcBigInteger: BigInt) extends AnyVal {

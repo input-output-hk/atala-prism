@@ -3,8 +3,8 @@ package io.iohk.cef.network.transport.rlpx.ethereum.p2p.messages
 import akka.util.ByteString
 import io.iohk.cef.network.transport.rlpx.ethereum.p2p.{Message, MessageSerializableImplicit}
 import io.iohk.cef.network.transport.rlpx.ethereum.p2p.messages.WireProtocol.Disconnect.Reasons
-import io.iohk.cef.encoding.rlp.RLPImplicits._
-import io.iohk.cef.encoding.rlp._
+import io.iohk.cef.network.encoding.rlp.RLPImplicits._
+import io.iohk.cef.network.encoding.rlp._
 import io.iohk.cef.utils.HexStringCodec._
 
 object WireProtocol {

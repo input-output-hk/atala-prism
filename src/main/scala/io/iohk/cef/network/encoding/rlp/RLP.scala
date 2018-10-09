@@ -1,4 +1,4 @@
-package io.iohk.cef.encoding.rlp
+package io.iohk.cef.network.encoding.rlp
 
 import java.nio.ByteBuffer
 

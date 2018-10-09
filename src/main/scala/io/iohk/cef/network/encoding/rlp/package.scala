@@ -1,4 +1,4 @@
-package io.iohk.cef.encoding
+package io.iohk.cef.network.encoding
 
 import akka.util.ByteString
 import io.iohk.cef.ledger.ByteStringSerializable
