@@ -1,9 +1,8 @@
 package io.iohk.cef.crypto
 
 import akka.util.ByteString
+//import io.iohk.cef.crypto.DecodeError._
 import io.iohk.cef.crypto.encoding.TypedByteStringDecodingError.NioDecoderFailedToDecodeTBS
-import io.iohk.cef.crypto.EncryptedDataDecodeError.DataExtractionError
-import io.iohk.cef.network.encoding.nio._
 import org.scalatest.MustMatchers._
 import org.scalatest.prop.PropertyChecks._
 import org.scalatest.EitherValues._
@@ -70,7 +69,7 @@ class EncryptionSpec extends WordSpec {
       pending
       forAll { bytes: ByteString =>
         val result = EncryptedData.decodeFrom(bytes)
-        val expected = DataExtractionError(NioDecoderFailedToDecodeTBS)
+        val expected = DecodeError.DataExtractionError(NioDecoderFailedToDecodeTBS)
         result.left.value must be(expected)
       }
     }
@@ -84,7 +83,7 @@ class EncryptionSpec extends WordSpec {
         val corruptedBytes = encrypted.toByteString.updated(index, 'X'.toByte)
 
         val result = EncryptedData.decodeFrom(corruptedBytes)
-        val expected = EncryptedDataDecodeError.UnsupportedAlgorithm("XSA")
+        val expected = DecodeError.UnsupportedAlgorithm("XSA")
 
         result.left.value must be(expected)
       }
@@ -103,7 +102,7 @@ class EncryptionSpec extends WordSpec {
 
       forAll { bytes: ByteString =>
         val result = EncryptionPublicKey.decodeFrom(bytes)
-        val expected = EncryptionPublicKeyDecodeError.DataExtractionError(NioDecoderFailedToDecodeTBS)
+        val expected = DecodeError.DataExtractionError(NioDecoderFailedToDecodeTBS)
 
         result.left.value must be(expected)
       }
@@ -115,7 +114,7 @@ class EncryptionSpec extends WordSpec {
       val index = key.toByteString.indexOfSlice(algorithm)
       val corruptedBytes = key.toByteString.updated(index, 'X'.toByte)
       val result = EncryptionPublicKey.decodeFrom(corruptedBytes)
-      val expected = EncryptionPublicKeyDecodeError.UnsupportedAlgorithm("XSA")
+      val expected = KeyDecodeError.UnsupportedAlgorithm("XSA")
 
       result.left.value must be(expected)
     }
@@ -132,7 +131,7 @@ class EncryptionSpec extends WordSpec {
 
       forAll { bytes: ByteString =>
         val result = EncryptionPrivateKey.decodeFrom(bytes)
-        val expected = EncryptionPrivateKeyDecodeError.DataExtractionError(NioDecoderFailedToDecodeTBS)
+        val expected = DecodeError.DataExtractionError(NioDecoderFailedToDecodeTBS)
 
         result.left.value must be(expected)
       }
@@ -146,7 +145,7 @@ class EncryptionSpec extends WordSpec {
       val corruptedBytes = key.toByteString.updated(index, 'X'.toByte)
 
       val result = EncryptionPrivateKey.decodeFrom(corruptedBytes)
-      val expected = EncryptionPrivateKeyDecodeError.UnsupportedAlgorithm("XSA")
+      val expected = KeyDecodeError.UnsupportedAlgorithm("XSA")
 
       result.left.value must be(expected)
 

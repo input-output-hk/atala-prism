@@ -14,8 +14,7 @@ class DiscoveryConfigSpec extends FlatSpec with MustMatchers {
     val interface = "127.0.0.1"
     val port = 8090
     val bootstrapDiscUri = "udp://127.0.0.2:3020"
-    val nodeId =
-      "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678"
+    val nodeId = "abcd"
     val enode = s"enode://${nodeId}@127.0.0.1:3000"
     val capabilities = "01"
     val nodesLimit = 1
@@ -49,7 +48,7 @@ class DiscoveryConfigSpec extends FlatSpec with MustMatchers {
                    |  blacklistDefaultDuration = $blacklistDuration
                    |}""".stripMargin
 
-    val dc = DiscoveryConfig(ConfigFactory.parseString(config))
+    val dc = DiscoveryConfig(ConfigFactory.parseString(config).getConfig("discovery"))
     dc.discoveryEnabled mustBe enabled
     dc.interface mustBe interface
     dc.port mustBe port

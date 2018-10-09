@@ -1,5 +1,6 @@
 package io.iohk.cef.network.discovery
 
+import java.net.{InetAddress, InetSocketAddress}
 import java.util.concurrent.TimeUnit
 
 import io.iohk.cef.network.{NodeInfo, NodeParser}
@@ -19,12 +20,13 @@ case class DiscoveryConfig(
     messageExpiration: FiniteDuration,
     maxSeekResults: Int,
     multipleConnectionsPerAddress: Boolean,
-    blacklistDefaultDuration: FiniteDuration)
+    blacklistDefaultDuration: FiniteDuration) {
+  val discoveryAddress = new InetSocketAddress(InetAddress.getByName(interface), port)
+}
 
 object DiscoveryConfig {
-  def apply(etcClientConfig: com.typesafe.config.Config): DiscoveryConfig = {
+  def apply(discoveryConfig: com.typesafe.config.Config): DiscoveryConfig = {
     import scala.collection.JavaConverters._
-    val discoveryConfig = etcClientConfig.getConfig("discovery")
     val bootstrapNodes = NodeParser.parseNodeInfos(discoveryConfig.getConfigList("bootstrapNodes").asScala.toSet)
     val blacklistDuration = {
       val duration = discoveryConfig.getDuration("blacklistDefaultDuration")

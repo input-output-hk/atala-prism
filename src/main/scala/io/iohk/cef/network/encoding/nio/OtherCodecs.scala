@@ -10,6 +10,27 @@ import scala.reflect.runtime.universe._
 
 trait OtherCodecs {
 
+  implicit val bigDecimalEncoder: NioEncoder[BigDecimal] = new NioEncoder[BigDecimal] {
+    override def encode(b: BigDecimal): ByteBuffer = stringEncoder.encode(b.toString())
+  }
+
+  implicit val bigDecimalDecoder: NioDecoder[BigDecimal] = new NioDecoder[BigDecimal] {
+    override def decode(b: ByteBuffer): Option[BigDecimal] = stringDecoder.decode(b).map(BigDecimal(_))
+  }
+
+  implicit def mapEncoder[K, V](implicit enc: NioEncoder[(K, V)]): NioEncoder[Map[K, V]] =
+    new NioEncoder[Map[K, V]] {
+      override def encode(m: Map[K, V]): ByteBuffer =
+        listEncoder[(K, V)].encode(m.toList)
+    }
+
+  implicit def mapDecoder[K, V](implicit dec: NioDecoder[(K, V)]): NioDecoder[Map[K, V]] =
+    new NioDecoder[Map[K, V]] {
+      override def decode(b: ByteBuffer): Option[Map[K, V]] = {
+        listDecoder[(K, V)].decode(b).map(_.toMap)
+      }
+    }
+
   implicit def seqEncoder[T](implicit enc: NioEncoder[T], tt: WeakTypeTag[T]): NioEncoder[Seq[T]] = {
     implicit val ct: ClassTag[T] = typeToClassTag[T]
     l: Seq[T] =>

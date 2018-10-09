@@ -5,10 +5,10 @@ import java.util.Base64
 import akka.http.scaladsl.marshalling.Marshal
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import akka.util.ByteString
 import io.iohk.cef.core.NodeCore
 import io.iohk.cef.crypto._
-import io.iohk.cef.frontend.models.IdentityTransactionRequest
+import io.iohk.cef.frontend.models.CreateIdentityTransactionRequest
+import io.iohk.cef.frontend.models.IdentityTransactionType
 import io.iohk.cef.frontend.services.IdentityTransactionService
 import io.iohk.cef.ledger.identity._
 import org.mockito.ArgumentMatchers._
@@ -35,8 +35,13 @@ class IdentityRouterSpec extends WordSpec with Matchers with ScalaFutures with S
     val pair = generateSigningKeyPair()
 
     "be able to create identity claim transaction" in {
-      val signature = sign(ByteString("id") ++ pair.public.toByteString, pair.`private`)
-      val entity = IdentityTransactionRequest(Claim("id", pair.public, signature), 1)
+      val entity = CreateIdentityTransactionRequest(
+        `type` = IdentityTransactionType.Claim,
+        identity = "id",
+        ledgerId = 1,
+        publicKey = pair.public,
+        privateKey = pair.`private`)
+
       val json = Marshal(entity).to[MessageEntity].futureValue
       val request = Post("/identities", json)
 
@@ -46,10 +51,15 @@ class IdentityRouterSpec extends WordSpec with Matchers with ScalaFutures with S
     }
 
     "be able to create identity link transaction" in {
-      val signature = sign(ByteString("id") ++ pair.public.toByteString, pair.`private`)
-      val entity = IdentityTransactionRequest(Link("id", pair.public, signature), 1)
+      val entity = CreateIdentityTransactionRequest(
+        `type` = IdentityTransactionType.Link,
+        identity = "id",
+        ledgerId = 1,
+        publicKey = pair.public,
+        privateKey = pair.`private`)
+
       val json = Marshal(entity).to[MessageEntity].futureValue
-      val request = Post("/identities").withEntity(json)
+      val request = Post("/identities", json)
 
       request ~> routes ~> check {
         status should ===(StatusCodes.Created)
@@ -57,10 +67,15 @@ class IdentityRouterSpec extends WordSpec with Matchers with ScalaFutures with S
     }
 
     "be able to create identity unlink transaction" in {
-      val signature = sign(ByteString("id") ++ pair.public.toByteString, pair.`private`)
-      val entity = IdentityTransactionRequest(Unlink("id", pair.public, signature), 1)
+      val entity = CreateIdentityTransactionRequest(
+        `type` = IdentityTransactionType.Unlink,
+        identity = "id",
+        ledgerId = 1,
+        publicKey = pair.public,
+        privateKey = pair.`private`)
+
       val json = Marshal(entity).to[MessageEntity].futureValue
-      val request = Post("/identities").withEntity(json)
+      val request = Post("/identities", json)
 
       request ~> routes ~> check {
         status should ===(StatusCodes.Created)

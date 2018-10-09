@@ -11,9 +11,7 @@ message IdentityTransactionProto {
 }
 
 message IdentityHeaderProto {
-    required bytes hash = 1;
-    required int64 block_height = 2;
-    required int64 created_epoch_milli = 3;
+    required int64 created_epoch_milli = 1;
 }
 
 message IdentityBlockProto {

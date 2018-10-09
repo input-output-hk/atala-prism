@@ -1,7 +1,7 @@
 package io.iohk.cef.crypto
 
 import akka.util.ByteString
-import io.iohk.cef.crypto.encoding.{TypedByteString, TypedByteStringDecodingError}
+import io.iohk.cef.crypto.encoding.TypedByteString
 import io.iohk.cef.crypto.signing.{SigningAlgorithmsCollection, _}
 
 trait Signing {
@@ -35,7 +35,7 @@ trait Signing {
     *
     * @return          a signature of `t`
     */
-  def sign[T](t: T, key: SigningPrivateKey)(implicit encoder: Encoder[T]): Signature = {
+  def sign[T](t: T, key: SigningPrivateKey)(implicit encoder: CryptoEncoder[T]): Signature = {
     val signature = key.`type`.algorithm.sign(encoder.encode(t), key.lowlevelKey)
     Signature(key.`type`, signature)
   }
@@ -55,7 +55,8 @@ trait Signing {
     *
     * @return            `true` if `signature` is a valid signature of `t`
     */
-  def isValidSignature[T](t: T, signature: Signature, key: SigningPublicKey)(implicit encoder: Encoder[T]): Boolean =
+  def isValidSignature[T](t: T, signature: Signature, key: SigningPublicKey)(
+      implicit encoder: CryptoEncoder[T]): Boolean =
     if (key.`type` != signature.`type`)
       false
     else
@@ -80,9 +81,13 @@ trait Signing {
     }
 
     override def hashCode(): Int = this.toByteString.hashCode()
+
+    override def toString(): String = SigningPublicKey.show(this)
   }
 
-  object SigningPublicKey {
+  object SigningPublicKey extends KeyEntityCompanion[SigningPublicKey] {
+
+    override protected val title: String = "SIGNING PUBLIC KEY"
 
     private[Signing] def apply(tpe: signingAlgorithmsCollection.SigningAlgorithmType)(llk: tpe.algorithm.PublicKey) =
       new SigningPublicKey {
@@ -93,30 +98,22 @@ trait Signing {
           llk.asInstanceOf[`type`.algorithm.PublicKey]
       }
 
-    private[Signing] def encodeInto(key: SigningPublicKey): TypedByteString =
+    override private[crypto] def encodeInto(key: SigningPublicKey): TypedByteString =
       TypedByteString(key.`type`.algorithmIdentifier, key.`type`.algorithm.encodePublicKey(key.lowlevelKey).bytes)
 
-    private[Signing] def decodeFrom(tbs: TypedByteString): Either[SigningPublicKeyDecodeError, SigningPublicKey] = {
+    override private[crypto] def decodeFrom(
+        tbs: TypedByteString): Either[KeyDecodeError[SigningPublicKey], SigningPublicKey] = {
       signingAlgorithmsCollection(tbs.`type`) match {
         case Some(signingType) =>
           signingType.algorithm.decodePublicKey(PublicKeyBytes(tbs.bytes)) match {
             case Right(lowlevelKey) =>
               Right(SigningPublicKey(signingType)(lowlevelKey))
             case Left(decodingError) =>
-              Left(SigningPublicKeyDecodeError.KeyDecodingError(decodingError))
+              Left(KeyDecodeError.KeyDecodingError[SigningPublicKey](decodingError))
           }
         case None =>
-          Left(SigningPublicKeyDecodeError.UnsupportedAlgorithm(tbs.`type`))
+          Left(KeyDecodeError.UnsupportedAlgorithm[SigningPublicKey](tbs.`type`))
       }
-    }
-
-    /** Tries to restore a `SigningPublicKey` from the content of the `bytes` ByteString */
-    def decodeFrom(bytes: ByteString): Either[SigningPublicKeyDecodeError, SigningPublicKey] = {
-      TypedByteString
-        .decodeFrom(bytes)
-        .left
-        .map(e => SigningPublicKeyDecodeError.DataExtractionError(e))
-        .flatMap(decodeFrom)
     }
   }
 
@@ -128,9 +125,22 @@ trait Signing {
     /** Encodes this key, including the algorithm identifier, into a ByteString */
     def toByteString: ByteString =
       SigningPrivateKey.encodeInto(this).toByteString
+
+    override def equals(obj: scala.Any): Boolean = obj match {
+      case that: SigningPrivateKey =>
+        this.toByteString == that.toByteString
+
+      case _ => false
+    }
+
+    override def hashCode(): Int = this.toByteString.hashCode()
+
+    override def toString(): String = SigningPrivateKey.show(this)
   }
 
-  object SigningPrivateKey {
+  object SigningPrivateKey extends KeyEntityCompanion[SigningPrivateKey] {
+
+    override protected val title: String = "SIGNING PRIVATE KEY"
 
     private[Signing] def apply(tpe: signingAlgorithmsCollection.SigningAlgorithmType)(llk: tpe.algorithm.PrivateKey) =
       new SigningPrivateKey {
@@ -141,30 +151,22 @@ trait Signing {
           llk.asInstanceOf[`type`.algorithm.PrivateKey]
       }
 
-    private[Signing] def encodeInto(key: SigningPrivateKey): TypedByteString =
+    override private[crypto] def encodeInto(key: SigningPrivateKey): TypedByteString =
       TypedByteString(key.`type`.algorithmIdentifier, key.`type`.algorithm.encodePrivateKey(key.lowlevelKey).bytes)
 
-    private[Signing] def decodeFrom(tbs: TypedByteString): Either[SigningPrivateKeyDecodeError, SigningPrivateKey] = {
+    override private[crypto] def decodeFrom(
+        tbs: TypedByteString): Either[KeyDecodeError[SigningPrivateKey], SigningPrivateKey] = {
       signingAlgorithmsCollection(tbs.`type`) match {
         case Some(signingType) =>
           signingType.algorithm.decodePrivateKey(PrivateKeyBytes(tbs.bytes)) match {
             case Right(lowlevelKey) =>
               Right(SigningPrivateKey(signingType)(lowlevelKey))
             case Left(decodingError) =>
-              Left(SigningPrivateKeyDecodeError.KeyDecodingError(decodingError))
+              Left(KeyDecodeError.KeyDecodingError[SigningPrivateKey](decodingError))
           }
         case None =>
-          Left(SigningPrivateKeyDecodeError.UnsupportedAlgorithm(tbs.`type`))
+          Left(KeyDecodeError.UnsupportedAlgorithm[SigningPrivateKey](tbs.`type`))
       }
-    }
-
-    /** Tries to restore a `SigningPrivateKey` from the content of the `bytes` ByteString */
-    def decodeFrom(bytes: ByteString): Either[SigningPrivateKeyDecodeError, SigningPrivateKey] = {
-      TypedByteString
-        .decodeFrom(bytes)
-        .left
-        .map(e => SigningPrivateKeyDecodeError.DataExtractionError(e))
-        .flatMap(decodeFrom)
     }
   }
 
@@ -186,99 +188,36 @@ trait Signing {
     }
 
     override def hashCode(): Int = (`type`, bytes).hashCode()
+
+    override def toString(): String = Signature.show(this)
   }
 
-  object Signature {
+  object Signature extends CryptoEntityCompanion[Signature] {
+
+    override protected val title: String = "SIGNATURE"
 
     private[Signing] def apply(
         tpe: signingAlgorithmsCollection.SigningAlgorithmType,
         bytes: SignatureBytes): Signature =
       new Signature(tpe, bytes)
 
-    private[Signing] def encodeInto(signature: Signature): TypedByteString =
+    override private[crypto] def encodeInto(signature: Signature): TypedByteString =
       TypedByteString(signature.`type`.algorithmIdentifier, signature.bytes.bytes)
 
-    private[Signing] def decodeFrom(tbs: TypedByteString): Either[SignatureDecodeError, Signature] = {
+    override private[crypto] def decodeFrom(tbs: TypedByteString): Either[DecodeError[Signature], Signature] = {
       signingAlgorithmsCollection(tbs.`type`) match {
         case Some(signingType) =>
           Right(new Signature(signingType, SignatureBytes(tbs.bytes)))
         case None =>
-          Left(SignatureDecodeError.UnsupportedAlgorithm(tbs.`type`))
+          Left(DecodeError.UnsupportedAlgorithm[Signature](tbs.`type`))
       }
-    }
-
-    /** Tries to restore a `Signature` from the content of the `bytes` ByteString */
-    def decodeFrom(bytes: ByteString): Either[SignatureDecodeError, Signature] = {
-      TypedByteString
-        .decodeFrom(bytes)
-        .left
-        .map(e => SignatureDecodeError.DataExtractionError(e))
-        .flatMap(decodeFrom)
     }
   }
 
   /** Contains a `public` signing key, and it's `private` counterpart */
-  case class SigningKeyPair private[Signing] (public: SigningPublicKey, `private`: SigningPrivateKey)
-
-  /**
-    * ADT describing the types of error that can happen when trying to decode a public signing key
-    * from a ByteString
-    */
-  sealed trait SigningPublicKeyDecodeError
-  object SigningPublicKeyDecodeError {
-
-    /** Missing or wrong information in the ByteString */
-    case class DataExtractionError(cause: TypedByteStringDecodingError) extends SigningPublicKeyDecodeError
-
-    /**
-      * The `algorithmIdentifier` identifier recovered from the ByteString does not match any algorithm
-      * supported by the `crypto` package
-      */
-    case class UnsupportedAlgorithm(algorithmIdentifier: String) extends SigningPublicKeyDecodeError
-
-    /**
-      * The underlaying algorithm has not been able to convert the `bytes` into an actual `key`
-      */
-    case class KeyDecodingError(cause: io.iohk.cef.crypto.KeyDecodingError) extends SigningPublicKeyDecodeError
-  }
-
-  /**
-    * ADT describing the types of error that can happen when trying to decode a private signing key
-    * from a ByteString
-    */
-  sealed trait SigningPrivateKeyDecodeError
-  object SigningPrivateKeyDecodeError {
-
-    /** Missing or wrong information in the ByteString */
-    case class DataExtractionError(cause: TypedByteStringDecodingError) extends SigningPrivateKeyDecodeError
-
-    /**
-      * The `algorithmIdentifier` identifier recovered from the ByteString does not match any algorithm
-      * supported by the `crypto` package
-      */
-    case class UnsupportedAlgorithm(algorithmIdentifier: String) extends SigningPrivateKeyDecodeError
-
-    /**
-      * The underlaying algorithm has not been able to convert the `bytes` into an actual `key`
-      */
-    case class KeyDecodingError(cause: io.iohk.cef.crypto.KeyDecodingError) extends SigningPrivateKeyDecodeError
-  }
-
-  /**
-    * ADT describing the types of error that can happen when trying to decode a signature
-    * from a ByteString
-    */
-  sealed trait SignatureDecodeError
-  object SignatureDecodeError {
-
-    /** Missing or wrong information in the ByteString */
-    case class DataExtractionError(cause: TypedByteStringDecodingError) extends SignatureDecodeError
-
-    /**
-      * The `algorithmIdentifier` identifier recovered from the ByteString does not match any algorithm
-      * supported by the `crypto` package
-      */
-    case class UnsupportedAlgorithm(algorithmIdentifier: String) extends SignatureDecodeError
+  case class SigningKeyPair private[Signing] (public: SigningPublicKey, `private`: SigningPrivateKey) {
+    override def toString(): String =
+      s"$public\n${`private`}"
   }
 
 }

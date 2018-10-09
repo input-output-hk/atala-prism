@@ -1,12 +1,18 @@
 package io.iohk.cef.ledger.chimeric
 
+import io.iohk.cef.crypto._
 import io.iohk.cef.ledger.LedgerError
+import io.iohk.cef.crypto.SigningPublicKey
+import io.iohk.cef.ledger.chimeric.ChimericLedgerState.{getAddressNoncePartitionId, getAddressPartitionId}
 
 sealed trait ChimericTxFragment
     extends ((ChimericLedgerState, Int, String) => Either[LedgerError, ChimericLedgerState]) {
 
   def partitionIds(txId: String, index: Int): Set[String]
 }
+
+sealed trait SignableChimericTxFragment extends ChimericTxFragment
+sealed trait NonSignableChimericTxFragment extends ChimericTxFragment
 
 /**
   * An Action tx does not hold or operates over values. Instead, it changes the data that is available in the ledger
@@ -75,47 +81,61 @@ sealed trait TxInputFragment extends ValueTxFragment
   */
 sealed trait TxOutputFragment extends ValueTxFragment
 
-case class Withdrawal(address: Address, value: Value, nonce: Int) extends TxInputFragment {
+case class Withdrawal(address: Address, value: Value, nonce: Int)
+    extends TxInputFragment
+    with SignableChimericTxFragment {
   override def exec(state: ChimericLedgerState, index: Int, txId: String): ChimericStateOrError = {
-    val addressValueKey = ChimericLedgerState.getAddressValuePartitionId(address)
-    val addressValue =
-      state.get(addressValueKey).collect { case ValueHolder(value) => value }.getOrElse(Value.Zero)
 
-    val addressNonceKey = ChimericLedgerState.getAddressNoncePartitionId(address)
-    val expectedNonce = 1 + state
+    val addressNonceKey = getAddressNoncePartitionId(address)
+
+    val currentNonce = state
       .get(addressNonceKey)
-      .collect { case NonceHolder(x) => x }
+      .collect { case NonceResult(x) => x }
       .getOrElse(0)
 
-    if (value.iterator.exists(BigDecimal(0) > _._2)) {
-      Left(ValueNegative(value))
-    } else if (expectedNonce != nonce) {
-      Left(InvalidNonce(expectedNonce, nonce))
-    } else if (addressValue >= value) {
-      val partialState = state.put(addressNonceKey, NonceHolder(nonce))
+    val expectedNonce = 1 + currentNonce
 
-      if (addressValue == value) {
-        val newState = partialState.remove(addressValueKey)
-        Right(newState)
-      } else {
-        val newState = partialState.put(addressValueKey, ValueHolder(addressValue - value))
-        Right(newState)
-      }
-    } else {
-      Left(InsufficientBalance(address, value, addressValue))
+    if (expectedNonce != nonce)
+      Left(InvalidNonce(expectedNonce, nonce))
+    else {
+      val addressKey = getAddressPartitionId(address)
+
+      val maybeAddressResult = state.get(addressKey).collect { case a: AddressResult => a }
+
+      maybeAddressResult
+        .map { addressResult =>
+          val addressValue = addressResult.value
+          if (value.iterator.exists({ case (_, quantity) => BigDecimal(0) > quantity })) {
+            Left(ValueNegative(value))
+          } else if (addressValue >= value) {
+            val partialState = state.put(addressNonceKey, NonceResult(nonce))
+
+            if (addressValue == value) {
+              val newState = partialState.remove(addressKey)
+              Right(newState)
+            } else {
+              val newState =
+                partialState.put(addressKey, AddressResult(addressValue - value, addressResult.signingPublicKey))
+              Right(newState)
+            }
+          } else {
+            Left(InsufficientBalance(address, value, addressValue))
+          }
+        }
+        .getOrElse(Left(InsufficientBalance(address, value, Value.Zero)))
     }
   }
 
   override def txSpecificPartitionIds(txId: String, index: Int): Set[String] =
     Set(
-      ChimericLedgerState.getAddressValuePartitionId(address),
-      ChimericLedgerState.getAddressNoncePartitionId(address)
+      getAddressPartitionId(address),
+      getAddressNoncePartitionId(address)
     )
 
   override def toString(): ChimericTxId = s"Withdrawal($address,$value)"
 }
 
-case class Mint(value: Value) extends TxInputFragment {
+case class Mint(value: Value) extends TxInputFragment with NonSignableChimericTxFragment {
   override def exec(state: ChimericLedgerState, index: Int, txId: String): ChimericStateOrError = {
     Right(state)
   }
@@ -125,11 +145,11 @@ case class Mint(value: Value) extends TxInputFragment {
   override def toString(): ChimericTxId = s"Mint($value)"
 }
 
-case class Input(txOutRef: TxOutRef, value: Value) extends TxInputFragment {
+case class Input(txOutRef: TxOutRef, value: Value) extends TxInputFragment with SignableChimericTxFragment {
   override def exec(state: ChimericLedgerState, index: Int, txId: String): ChimericStateOrError = {
     val txOutKey = ChimericLedgerState.getUtxoPartitionId(txOutRef)
     val txOutValueOpt =
-      state.get(txOutKey).collect { case ValueHolder(value) => value }
+      state.get(txOutKey).collect { case UtxoResult(value, _) => value }
     if (txOutValueOpt.isEmpty) {
       Left(UnspentOutputNotFound(txOutRef))
     } else if (txOutValueOpt.get != value) {
@@ -144,8 +164,9 @@ case class Input(txOutRef: TxOutRef, value: Value) extends TxInputFragment {
 
   override def toString(): ChimericTxId = s"Input($txOutRef,$value)"
 }
+
 //FIXME: Where are the fees going? We need to setup somewhere who can spend this value in the future
-case class Fee(value: Value) extends TxOutputFragment {
+case class Fee(value: Value) extends TxOutputFragment with NonSignableChimericTxFragment {
   override def exec(state: ChimericLedgerState, index: Int, txId: String): ChimericStateOrError = {
     Right(state)
   }
@@ -154,17 +175,19 @@ case class Fee(value: Value) extends TxOutputFragment {
 
   override def toString(): ChimericTxId = s"Fee($value)"
 }
-//TODO: Add the identity concept here
-case class Output(value: Value) extends TxOutputFragment {
+
+case class Output(value: Value, signingPublicKey: SigningPublicKey)
+    extends TxOutputFragment
+    with NonSignableChimericTxFragment {
   override def exec(state: ChimericLedgerState, index: Int, txId: String): ChimericStateOrError = {
     val txOutRef = TxOutRef(txId, index)
     val txOutKey = ChimericLedgerState.getUtxoPartitionId(txOutRef)
     val txOutValueOpt =
-      state.get(txOutKey).collect { case ValueHolder(value) => value }
+      state.get(txOutKey).collect { case r: UtxoResult if r.value == value => r }
     if (txOutValueOpt.isDefined) {
       Left(UnspentOutputAlreadyExists(txOutRef))
     } else {
-      Right(state.put(ChimericLedgerState.getUtxoPartitionId(txOutRef), ValueHolder(value)))
+      Right(state.put(ChimericLedgerState.getUtxoPartitionId(txOutRef), UtxoResult(value, Some(signingPublicKey))))
     }
   }
 
@@ -176,12 +199,15 @@ case class Output(value: Value) extends TxOutputFragment {
   override def toString(): ChimericTxId = s"Output($value)"
 }
 
-case class Deposit(address: Address, value: Value) extends TxOutputFragment {
+case class Deposit(address: Address, value: Value, signingPublicKey: SigningPublicKey)
+    extends TxOutputFragment
+    with NonSignableChimericTxFragment {
   override def exec(state: ChimericLedgerState, index: Int, txId: String): ChimericStateOrError = {
-    val addressKey = ChimericLedgerState.getAddressValuePartitionId(address)
-    val addressValueOpt =
-      state.get(addressKey).collect { case ValueHolder(value) => value }
-    Right(state.put(addressKey, ValueHolder(addressValueOpt.getOrElse(Value.Zero) + value)))
+    val addressKey = getAddressPartitionId(address)
+    val addressResultOpt: Option[AddressResult] =
+      state.get(addressKey).collect { case a: AddressResult => a }
+    addressResultOpt.fold(Right(state.put(addressKey, AddressResult(value, Some(signingPublicKey)))))(addressResult =>
+      Right(state.put(addressKey, AddressResult(value + addressResult.value, Some(signingPublicKey)))))
   }
 
   override def txSpecificPartitionIds(txId: String, index: Int): Set[String] = Set()
@@ -189,7 +215,7 @@ case class Deposit(address: Address, value: Value) extends TxOutputFragment {
   override def toString(): ChimericTxId = s"Deposit($address,$value)"
 }
 
-case class CreateCurrency(currency: Currency) extends ActionTxFragment {
+case class CreateCurrency(currency: Currency) extends ActionTxFragment with NonSignableChimericTxFragment {
   override def apply(state: ChimericLedgerState, index: Int, txId: String): ChimericStateOrError = {
     val createCurrencyKey = ChimericLedgerState.getCurrencyPartitionId(currency)
     state.get(createCurrencyKey) match {
@@ -202,4 +228,27 @@ case class CreateCurrency(currency: Currency) extends ActionTxFragment {
     Set(ChimericLedgerState.getCurrencyPartitionId(currency))
 
   override def toString(): ChimericTxId = s"CreateCurrency($currency)"
+}
+
+case class SignatureTxFragment(signature: Signature) extends ChimericTxFragment with NonSignableChimericTxFragment {
+  override def partitionIds(txId: String, index: Int): Set[String] = Set.empty
+
+  override def apply(state: ChimericLedgerState, index: Int, txId: String): Either[LedgerError, ChimericLedgerState] = {
+    Right(state)
+  }
+}
+
+object SignatureTxFragment {
+
+  val nenc: NioEncoder[Seq[ChimericTxFragment]] = NioEncoder[Seq[ChimericTxFragment]]
+  val cenc: CryptoEncoder[Seq[ChimericTxFragment]] = encoderFromNIOEncoder(nenc)
+
+  def signFragments(
+      fragments: Seq[ChimericTxFragment],
+      signingPrivateKey: SigningPrivateKey): Seq[ChimericTxFragment] = {
+    fragments :+ SignatureTxFragment(sign(signable(fragments), signingPrivateKey)(cenc))
+  }
+
+  private def signable(fragments: Seq[ChimericTxFragment]): Seq[ChimericTxFragment] =
+    fragments.filterNot(_.isInstanceOf[SignatureTxFragment])
 }

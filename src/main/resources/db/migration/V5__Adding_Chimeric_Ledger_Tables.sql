@@ -7,6 +7,7 @@ create table cef.chimeric_ledger_state_entry(
 create table cef.chimeric_ledger_state_address(
     id bigint not null primary key,
     address varchar(max) not null,
+    signing_public_key binary(2000),
     foreign key (id) references cef.chimeric_ledger_state_entry(id)
 );
 
@@ -14,6 +15,7 @@ create table cef.chimeric_ledger_state_utxo(
     id bigint not null primary key,
     tx_id varchar(max) not null,
     index int not null,
+    signing_public_key binary(2000), /* TODO find out the correct size */
     unique (tx_id, index),
     foreign key (id) references cef.chimeric_ledger_state_entry(id)
 );

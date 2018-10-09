@@ -2,7 +2,6 @@ package io.iohk.cef.crypto
 
 import akka.util.ByteString
 import io.iohk.cef.crypto.encoding.TypedByteStringDecodingError
-import io.iohk.cef.network.encoding.nio._
 import io.iohk.cef.test.ScalacheckExtensions._
 import org.scalatest.WordSpec
 import org.scalatest.MustMatchers._
@@ -68,7 +67,7 @@ class HashingSpec extends WordSpec {
       pending
       forAll { bytes: ByteString =>
         val result = Hash.decodeFrom(bytes)
-        val expected = HashDecodeError.DataExtractionError(TypedByteStringDecodingError.NioDecoderFailedToDecodeTBS)
+        val expected = DecodeError.DataExtractionError(TypedByteStringDecodingError.NioDecoderFailedToDecodeTBS)
         result.left.value must be(expected)
       }
     }
@@ -82,7 +81,7 @@ class HashingSpec extends WordSpec {
         val corruptedHashBytes = hashedValue.toByteString.updated(index, 'X'.toByte)
 
         val result = Hash.decodeFrom(corruptedHashBytes)
-        val expected = HashDecodeError.UnsupportedAlgorithm("XHA256")
+        val expected = DecodeError.UnsupportedAlgorithm("XHA256")
         result.left.value must be(expected)
       }
     }

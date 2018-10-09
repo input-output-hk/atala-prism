@@ -3,7 +3,6 @@ package io.iohk.cef.crypto
 import akka.util.ByteString
 import io.iohk.cef.crypto.encoding.TypedByteStringDecodingError
 import io.iohk.cef.crypto.encoding.TypedByteStringDecodingError.NioDecoderFailedToDecodeTBS
-import io.iohk.cef.network.encoding.nio._
 import io.iohk.cef.network.transport.tcp.NetUtils
 import org.scalatest.EitherValues._
 import org.scalatest.MustMatchers._
@@ -70,7 +69,7 @@ class SigningSpec extends WordSpec {
       pending
       val bytes = ByteString(NetUtils.randomBytes(1024))
       val expected =
-        SignatureDecodeError.DataExtractionError(TypedByteStringDecodingError.NioDecoderFailedToDecodeTBS)
+        DecodeError.DataExtractionError(TypedByteStringDecodingError.NioDecoderFailedToDecodeTBS)
 
       val result = Signature.decodeFrom(bytes)
 
@@ -85,7 +84,7 @@ class SigningSpec extends WordSpec {
 
       val index = signature.toByteString.indexOfSlice(algorithm)
       val corruptedBytes = signature.toByteString.updated(index, 'X'.toByte)
-      val expected = SignatureDecodeError.UnsupportedAlgorithm("XHA256withRSA")
+      val expected = DecodeError.UnsupportedAlgorithm("XHA256withRSA")
 
       val result = Signature.decodeFrom(corruptedBytes)
 
@@ -104,7 +103,7 @@ class SigningSpec extends WordSpec {
 
     "fail to decode invalid public key" in {
       val bytes = ByteString()
-      val expected = SigningPublicKeyDecodeError.DataExtractionError(NioDecoderFailedToDecodeTBS)
+      val expected = KeyDecodeError.DataExtractionError(NioDecoderFailedToDecodeTBS)
 
       val result = SigningPublicKey.decodeFrom(bytes)
 
@@ -116,7 +115,7 @@ class SigningSpec extends WordSpec {
       val key = keypair1.public
       val index = key.toByteString.indexOfSlice(algorithm)
       val corruptedBytes = key.toByteString.updated(index, 'X'.toByte)
-      val expected = SigningPublicKeyDecodeError.UnsupportedAlgorithm("XHA256withRSA")
+      val expected = KeyDecodeError.UnsupportedAlgorithm("XHA256withRSA")
 
       val result = SigningPublicKey.decodeFrom(corruptedBytes)
 
@@ -137,7 +136,7 @@ class SigningSpec extends WordSpec {
       val bytes = ByteString()
 
       val result = SigningPrivateKey.decodeFrom(bytes)
-      val expected = SigningPrivateKeyDecodeError.DataExtractionError(NioDecoderFailedToDecodeTBS)
+      val expected = KeyDecodeError.DataExtractionError(NioDecoderFailedToDecodeTBS)
 
       result.left.value must be(expected)
     }
@@ -147,7 +146,7 @@ class SigningSpec extends WordSpec {
       val key = keypair1.`private`
       val index = key.toByteString.indexOfSlice(algorithm)
       val corruptedBytes = key.toByteString.updated(index, 'X'.toByte)
-      val expected = SigningPrivateKeyDecodeError.UnsupportedAlgorithm("XHA256withRSA")
+      val expected = KeyDecodeError.UnsupportedAlgorithm("XHA256withRSA")
 
       val result = SigningPrivateKey.decodeFrom(corruptedBytes)
 

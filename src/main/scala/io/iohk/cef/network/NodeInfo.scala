@@ -4,6 +4,8 @@ import java.net.{Inet6Address, InetAddress, InetSocketAddress, URI}
 
 import akka.util.ByteString
 import io.iohk.cef.network.encoding.rlp.{RLPEncDec, RLPEncodeable, RLPException, RLPList}
+import io.iohk.cef.network.transport.FrameHeader
+import io.iohk.cef.network.transport.tcp.TcpTransportConfiguration
 import javax.xml.bind.DatatypeConverter
 import io.iohk.cef.utils.HexStringCodec._
 
@@ -37,6 +39,13 @@ case class NodeInfo(
       case _: Inet6Address => s"[$hostName]"
       case _ => hostName
     }
+  }
+
+  def toPeerInfo: PeerInfo = {
+    val itsNodeId = NodeId(id)
+    val itsConfiguration =
+      NetworkConfiguration(Some(TcpTransportConfiguration(serverAddress)), FrameHeader.defaultTtl)
+    PeerInfo(itsNodeId, itsConfiguration)
   }
 }
 

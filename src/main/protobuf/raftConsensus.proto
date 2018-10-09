@@ -1,0 +1,9 @@
+syntax = "proto2";
+
+package io.iohk.cef.protobuf;
+
+message LogEntryProto {
+    required bytes command = 1;
+    required uint32 term = 2;
+    required uint32 index = 3;
+}

@@ -1,9 +1,12 @@
 package io.iohk.cef.ledger.chimeric.storage.scalike.dao
 
+import akka.util.ByteString
+import io.iohk.cef.ledger.{DeleteStateAction, InsertStateAction, LedgerState, UpdateStateAction}
 import io.iohk.cef.ledger.chimeric._
 import io.iohk.cef.ledger.chimeric.storage.scalike._
 import io.iohk.cef.ledger.storage.scalike.DataLayerException
 import io.iohk.cef.ledger.{DeleteStateAction, InsertStateAction, LedgerState, UpdateStateAction}
+import io.iohk.cef.crypto.SigningPublicKey
 import scalikejdbc._
 
 class ChimericLedgerStateStorageDao {
@@ -12,31 +15,32 @@ class ChimericLedgerStateStorageDao {
 
   def slice(keys: Set[String])(implicit DBSession: DBSession): ChimericLedgerState = {
     val stateKeys = keys.map(ChimericLedgerState.toStateKey)
-    val currencies = readCurrencies(stateKeys.collect { case ch: CurrencyKey => ch })
+
+    val currencies = readCurrencies(stateKeys.collect { case stateKey: CurrencyQuery => stateKey })
       .map { createCurr =>
         getCurrencyPartitionId(createCurr.currency) -> CreateCurrencyHolder(createCurr)
       }
 
-    val utxos = readUtxos(stateKeys.collect { case uh: UtxoValueKey => uh })
-      .map { utxoPair =>
-        getUtxoPartitionId(utxoPair._1) -> ValueHolder(utxoPair._2)
+    val utxos = readUtxos(stateKeys.collect { case stateKey: UtxoQuery => stateKey })
+      .map { utxoPair: (TxOutRef, UtxoResult) =>
+        ChimericLedgerState.getUtxoPartitionId(utxoPair._1) -> utxoPair._2
       }
 
-    val addresses = readAddresses(stateKeys.collect { case ad: AddressValueKey => ad })
+    val addresses = readAddresses(stateKeys.collect { case stateKey: AddressQuery => stateKey })
       .map {
-        case (address, value) =>
-          getAddressValuePartitionId(address) -> ValueHolder(value)
+        case (address, addressResult) =>
+          getAddressPartitionId(address) -> addressResult
       }
 
-    val nonces = readNonces(stateKeys.collect { case key: AddressNonceKey => key })
+    val nonces = readNonces(stateKeys.collect { case stateKey: AddressNonceQuery => stateKey })
       .map {
         case (address, nonce) =>
-          getAddressNoncePartitionId(address) -> NonceHolder(nonce)
+          getAddressNoncePartitionId(address) -> NonceResult(nonce)
       }
 
     val stateSequence = currencies ++ utxos ++ addresses ++ nonces
 
-    LedgerState[ChimericStateValue](stateSequence.toMap)
+    LedgerState[ChimericStateResult](stateSequence.toMap)
   }
 
   def update(previousState: ChimericLedgerState, newState: ChimericLedgerState)(implicit DBsession: DBSession): Unit = {
@@ -46,22 +50,21 @@ class ChimericLedgerStateStorageDao {
     } else {
       val updateActions = currentState.updateTo(newState).mapKeys(ChimericLedgerState.toStateKey)
       updateActions.actions.foreach {
-        case InsertStateAction(key: CurrencyKey, value: CreateCurrencyHolder) =>
+        case InsertStateAction(key: CurrencyQuery, value: CreateCurrencyHolder) =>
           insertCurrency(key.currency -> value.createCurrency)
-        case InsertStateAction(key: AddressValueKey, value: ValueHolder) =>
-          insertAddress(key.address -> value.value)
-        case InsertStateAction(key: AddressNonceKey, value: NonceHolder) =>
+        case InsertStateAction(key: AddressQuery, addressResult: AddressResult) =>
+          insertAddress(key.address, addressResult)
+        case InsertStateAction(key: UtxoQuery, utoxResult: UtxoResult) => insertUtxo(key.txOutRef, utoxResult)
+        case InsertStateAction(key: AddressNonceQuery, value: NonceResult) =>
           insertNonce(key.address, value.nonce)
-        case InsertStateAction(key: UtxoValueKey, value: ValueHolder) =>
-          insertUtxo(key.txOutRef -> value.value)
 
-        case DeleteStateAction(key: AddressValueKey, _) => deleteAddress(key.address)
-        case DeleteStateAction(key: UtxoValueKey, _) => deleteUtxo(key.txOutRef)
+        case DeleteStateAction(key: AddressQuery, _) => deleteAddress(key.address)
+        case DeleteStateAction(key: UtxoQuery, _) => deleteUtxo(key.txOutRef)
 
-        case UpdateStateAction(key: AddressValueKey, value: ValueHolder) =>
+        case UpdateStateAction(key: AddressQuery, addressResult: AddressResult) =>
           deleteAddress(key.address)
-          insertAddress((key.address, value.value))
-        case UpdateStateAction(key: AddressNonceKey, value: NonceHolder) =>
+          insertAddress(key.address, addressResult)
+        case UpdateStateAction(key: AddressNonceQuery, value: NonceResult) =>
           deleteNonce(key.address)
           insertNonce(key.address, value.nonce)
 
@@ -97,7 +100,7 @@ class ChimericLedgerStateStorageDao {
        """.update().apply()
   }
 
-  private def readCurrencies(currencyKeys: Set[CurrencyKey])(implicit DBSession: DBSession): Seq[CreateCurrency] = {
+  private def readCurrencies(currencyKeys: Set[CurrencyQuery])(implicit DBSession: DBSession): Seq[CreateCurrency] = {
     val cr = ChimericLedgerStateCurrencyTable.syntax("cr")
     val addresses =
       sql"""
@@ -117,10 +120,10 @@ class ChimericLedgerStateStorageDao {
       """.update().apply()
   }
 
-  private def readUtxos(stateKeys: Set[UtxoValueKey])(implicit DBSession: DBSession): Seq[(TxOutRef, Value)] =
-    stateKeys.toSeq.map(readUtxo(_).toSeq).flatten
+  private def readUtxos(stateKeys: Set[UtxoQuery])(implicit DBSession: DBSession): Seq[(TxOutRef, UtxoResult)] =
+    stateKeys.toSeq.flatMap(readUtxo(_).toSeq)
 
-  private def readUtxo(stateKeys: UtxoValueKey)(implicit DBSession: DBSession): Option[(TxOutRef, Value)] = {
+  private def readUtxo(stateKeys: UtxoQuery)(implicit DBSession: DBSession): Option[(TxOutRef, UtxoResult)] = {
     val ut = ChimericLedgerStateUtxoTable.syntax("ut")
     val utxo =
       sql"""
@@ -128,17 +131,28 @@ class ChimericLedgerStateStorageDao {
          from ${ChimericLedgerStateUtxoTable as ut}
          where ${ut.txId} = ${stateKeys.txOutRef.txId} and ${ut.index} = ${stateKeys.txOutRef.index}
          """.map(ChimericLedgerStateUtxoTable(ut.resultName)(_)).toOption().apply()
-    utxo.map(t => (TxOutRef(t.txId, t.index) -> readValue(t.id)))
+    utxo.map(t => TxOutRef(t.txId, t.index) -> UtxoResult(readValue(t.id), readKey(t.signingPublicKey)))
   }
 
-  private def insertUtxo(utxo: (TxOutRef, Value))(implicit DBSession: DBSession): Unit = {
+  private def readKey(maybeKeyBytes: Array[Byte]): Option[SigningPublicKey] = {
+    Option(maybeKeyBytes).map(
+      keyBytes =>
+        SigningPublicKey
+          .decodeFrom(ByteString(keyBytes))
+          .fold(
+            error => throw new IllegalStateException(s"Corrupted database value for signing key. $error"),
+            key => key))
+  }
+
+  private def insertUtxo(txOutRef: TxOutRef, utxoResult: UtxoResult)(implicit DBSession: DBSession): Unit = {
     val column = ChimericLedgerStateUtxoTable.column
-    val entryId = insertStateEntry(ChimericLedgerState.getUtxoPartitionId(utxo._1))
+    val entryId = insertStateEntry(ChimericLedgerState.getUtxoPartitionId(txOutRef))
+    val keyBytes = utxoResult.signingPublicKey.map(_.toByteString.toArray).orNull
     sql"""
-       insert into ${ChimericLedgerStateUtxoTable.table} (${column.id}, ${column.txId}, ${column.index})
-       values (${entryId}, ${utxo._1.txId}, ${utxo._1.index})
-       """.update().apply()
-    insertValue(entryId, utxo._2)
+       insert into ${ChimericLedgerStateUtxoTable.table} (${column.id}, ${column.txId}, ${column.index}, ${column.signingPublicKey})
+       values (${entryId}, ${txOutRef.txId}, ${txOutRef.index}, ${keyBytes})
+      """.update().apply()
+    insertValue(entryId, utxoResult.value)
   }
 
   private def deleteUtxo(utxo: TxOutRef)(implicit DBSession: DBSession): Unit = {
@@ -154,7 +168,8 @@ class ChimericLedgerStateStorageDao {
     deleteStateEntry(entryId)
   }
 
-  private def readAddresses(stateKeys: Set[AddressValueKey])(implicit DBSession: DBSession): Seq[(Address, Value)] = {
+  private def readAddresses(stateKeys: Set[AddressQuery])(
+      implicit DBSession: DBSession): Seq[(Address, AddressResult)] = {
     val ad = ChimericLedgerStateAddressTable.syntax("ad")
     val addresses =
       sql"""
@@ -162,23 +177,24 @@ class ChimericLedgerStateStorageDao {
          from ${ChimericLedgerStateAddressTable as ad}
          where ${ad.address} in (${stateKeys.map(_.address)})
          """.map(ChimericLedgerStateAddressTable(ad.resultName)(_)).list().apply()
-    addresses.map(t => (t.address, readValue(t.id)))
+    addresses.map(t => (t.address, AddressResult(readValue(t.id), readKey(t.signingPublicKey))))
   }
 
-  private def insertAddress(address: (Address, Value))(implicit DBSession: DBSession): Unit = {
+  private def insertAddress(address: Address, addressResult: AddressResult)(implicit DBSession: DBSession): Unit = {
     val column = ChimericLedgerStateAddressTable.column
-    val entryId = insertStateEntry(ChimericLedgerState.getAddressValuePartitionId(address._1))
+    val entryId = insertStateEntry(ChimericLedgerState.getAddressPartitionId(address))
+    val keyBytes = addressResult.signingPublicKey.map(_.toByteString.toArray).orNull
     sql"""
-       insert into ${ChimericLedgerStateAddressTable.table} (${column.id}, ${column.address})
-       values (${entryId}, ${address._1})
+       insert into ${ChimericLedgerStateAddressTable.table} (${column.id}, ${column.address}, ${column.signingPublicKey})
+       values (${entryId}, ${address}, ${keyBytes})
        """.update().apply()
-    insertValue(entryId, address._2)
+    insertValue(entryId, addressResult.value)
   }
 
   private def deleteAddress(address: Address)(implicit DBSession: DBSession): Unit = {
     val column = ChimericLedgerStateAddressTable.column
     val entryId =
-      getStateEntryId(ChimericLedgerState.getAddressValuePartitionId(address))
+      getStateEntryId(ChimericLedgerState.getAddressPartitionId(address))
         .getOrElse(throw new DataLayerException(s"address not found: ${address}"))
     sql"""
        delete from ${ChimericLedgerStateAddressTable.table}
@@ -200,7 +216,7 @@ class ChimericLedgerStateStorageDao {
     ChimericValueEntryTable.toValue(entryList)
   }
 
-  private def insertValue(entryId: Long, value: Value)(implicit DBSession: DBSession) = {
+  private def insertValue(entryId: Long, value: Value)(implicit DBSession: DBSession): Unit = {
     val column = ChimericValueEntryTable.column
     value.iterator.foreach {
       case (currency, quantity) =>
@@ -220,7 +236,7 @@ class ChimericLedgerStateStorageDao {
     """.update().apply()
   }
 
-  private def readNonces(keys: Set[AddressNonceKey])(implicit DBSession: DBSession): Set[(Address, Int)] = {
+  private def readNonces(keys: Set[AddressNonceQuery])(implicit DBSession: DBSession): Set[(Address, Int)] = {
     val nonceTable = ChimericLedgerStateNonceTable.syntax("nonce_table")
     val entryTable = ChimericLedgerStateEntryTable.syntax("entry_table")
 

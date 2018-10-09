@@ -1,17 +1,22 @@
 package io.iohk.cef.ledger.chimeric
 
+import io.iohk.cef.crypto._
 import io.iohk.cef.ledger.Transaction
+import io.iohk.cef.ledger.chimeric.ChimericLedgerState.{getAddressPartitionId, getUtxoPartitionId}
 
-case class ChimericTx(fragments: Seq[ChimericTxFragment]) extends Transaction[ChimericStateValue] {
+case class ChimericTx(fragments: Seq[ChimericTxFragment]) extends Transaction[ChimericStateResult] {
+
+  override def toString(): ChimericTxId = fragments.toString
 
   override def apply(currentState: ChimericLedgerState): ChimericStateOrError = {
     fragments.zipWithIndex
-      .foldLeft[ChimericStateOrError](testPreservationOfValue(Right(currentState)))((stateEither, current) => {
-        stateEither.flatMap(state => {
-          val (fragment, index) = current
-          fragment(state, index, txId)
+      .foldLeft[ChimericStateOrError](testSignatures(testPreservationOfValue(Right(currentState))))(
+        (stateEither, current) => {
+          stateEither.flatMap(state => {
+            val (fragment, index) = current
+            fragment(state, index, txId)
+          })
         })
-      })
   }
 
   override val partitionIds: Set[String] = {
@@ -21,13 +26,76 @@ case class ChimericTx(fragments: Seq[ChimericTxFragment]) extends Transaction[Ch
   //FIXME: This is a placeholder until we add hash functions.
   def txId: ChimericTxId = s"ChimericTx(${fragments})"
 
+  private def testSignatures(currentStateEither: ChimericStateOrError): ChimericStateOrError =
+    currentStateEither.flatMap { currentState =>
+      val signatureFragments: Seq[SignatureTxFragment] = fragments.collect { case s: SignatureTxFragment => s }
+      val signedFragments: Seq[ChimericTxFragment] = fragments.filterNot(_.isInstanceOf[SignatureTxFragment])
+      val signingKeys: Seq[SigningPublicKey] = fragments.collect {
+        case input: Input =>
+          extractSigningKey(currentState, input)
+        case withdrawal: Withdrawal =>
+          extractSigningKey(currentState, withdrawal)
+      }.flatten
+
+      if (signatureFragments.length == signingKeys.length)
+        testSignaturesCorrectness(currentState, signedFragments, signatureFragments, signingKeys)
+      else
+        Left(MissingSignature)
+    }
+
+  private def extractSigningKey(currentState: ChimericLedgerState, input: Input): Option[SigningPublicKey] = {
+
+    val txOutQuery = getUtxoPartitionId(input.txOutRef)
+
+    val maybeUtxoResult: Option[UtxoResult] =
+      currentState.get(txOutQuery).collect { case r: UtxoResult => r }
+
+    maybeUtxoResult.map(_.signingPublicKey).flatten
+  }
+
+  private def extractSigningKey(currentState: ChimericLedgerState, withdrawal: Withdrawal): Option[SigningPublicKey] = {
+
+    val addressQuery = getAddressPartitionId(withdrawal.address)
+
+    val maybeAddressResult: Option[AddressResult] =
+      currentState.get(addressQuery).collect { case a: AddressResult => a }
+
+    maybeAddressResult.map(_.signingPublicKey).flatten
+  }
+
+  private def testSignaturesCorrectness(
+      currentState: ChimericLedgerState,
+      fragments: Seq[ChimericTxFragment],
+      signatureFragments: Seq[SignatureTxFragment],
+      signingKeys: Seq[SigningPublicKey]): ChimericStateOrError = {
+
+    signatureFragments
+      .zip(signingKeys)
+      .foldLeft[ChimericStateOrError](Right(currentState))((stateEither, is) => {
+        val (signatureFragment, signingPublicKey) = is
+        stateEither.flatMap(state => testSignatureCorrectness(state, fragments, signatureFragment, signingPublicKey))
+      })
+  }
+
+  private def testSignatureCorrectness(
+      currentState: ChimericLedgerState,
+      fragments: Seq[ChimericTxFragment],
+      signatureFragment: SignatureTxFragment,
+      signingPublicKey: SigningPublicKey): ChimericStateOrError = {
+
+    if (isValidSignature(fragments, signatureFragment.signature, signingPublicKey))
+      Right(currentState)
+    else
+      Left(InvalidSignature)
+  }
+
   private def testPreservationOfValue(currentStateEither: ChimericStateOrError): ChimericStateOrError =
     currentStateEither.flatMap { currentState =>
       val totalValue = fragments.foldLeft(Value.Zero)((sum, current) =>
         current match {
           case input: TxInputFragment => sum + input.value
           case output: TxOutputFragment => sum - output.value
-          case _: ActionTxFragment => sum
+          case _ => sum
       })
       if (totalValue == Value.Zero) {
         Right(currentState)
