@@ -15,9 +15,7 @@ trait ScalacheckExtensions {
 
   def MAX: Int = 30
 
-  def eachTime[T](f: => T): Unit = (1 to MAX).foreach { _ =>
-    f
-  }
+  def eachTime[T](f: => T): Unit = (1 to MAX).foreach(_ => f)
 }
 
 object ScalacheckExtensions extends ScalacheckExtensions

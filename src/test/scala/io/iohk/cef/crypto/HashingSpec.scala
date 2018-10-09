@@ -8,7 +8,6 @@ import org.scalatest.MustMatchers._
 import org.scalatest.prop.GeneratorDrivenPropertyChecks._
 import org.scalatest.EitherValues._
 import org.scalacheck.Arbitrary._
-import org.scalacheck.Gen
 
 class HashingSpec extends WordSpec {
 
@@ -26,8 +25,8 @@ class HashingSpec extends WordSpec {
 
   "hash" should {
     "generate a hash with  same size" in {
-      forAll(Gen.listOfN(2, userGen)) { users =>
-        hash(users(0)).toByteString.size mustBe hash(users(1)).toByteString.size
+      forAll(userPairs) { users =>
+        hash(users._1).toByteString.size mustBe hash(users._2).toByteString.size
       }
     }
   }
