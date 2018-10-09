@@ -1,6 +1,6 @@
 package io.iohk.cef.network.transport
 
-import io.iohk.cef.network.encoding.nio._
+import io.iohk.cef.encoding.nio._
 import io.iohk.cef.network.transport.tcp.NetUtils.{aRandomAddress, aRandomNodeId}
 import io.iohk.cef.network.transport.tcp.TcpTransportConfiguration
 import io.iohk.cef.network.{NetworkConfiguration, PeerInfo}

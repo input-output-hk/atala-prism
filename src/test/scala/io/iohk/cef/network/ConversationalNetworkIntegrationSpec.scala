@@ -1,5 +1,5 @@
 package io.iohk.cef.network
-import io.iohk.cef.network.encoding.nio._
+import io.iohk.cef.encoding.nio._
 import org.mockito.Mockito.{atLeastOnce, verify}
 import org.scalatest.FlatSpec
 import org.scalatest.concurrent.Eventually._

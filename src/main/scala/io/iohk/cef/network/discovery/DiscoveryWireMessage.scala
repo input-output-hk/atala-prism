@@ -1,7 +1,7 @@
 package io.iohk.cef.network.discovery
 
 import akka.util.ByteString
-import io.iohk.cef.network.encoding.rlp._
+import io.iohk.cef.encoding.rlp._
 import io.iohk.cef.network.{Capabilities, NodeInfo}
 
 sealed trait DiscoveryWireMessage {

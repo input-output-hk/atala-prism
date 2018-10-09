@@ -15,7 +15,7 @@ class DiscoveryWireMessageSpec extends FlatSpec with MustMatchers {
     val addr2 = new InetSocketAddress(InetAddress.getByAddress(Array(6, 7, 8, 9)), 10)
     val node = NodeInfo(ByteString("node"), addr1, addr2, Capabilities(2))
 
-    import io.iohk.cef.network.encoding.rlp.RLPImplicits._
+    import io.iohk.cef.encoding.rlp.RLPImplicits._
 
     val ping = Ping(1, node, 3, ByteString("2"))
     Ping.pingRLPEncDec.decode(Ping.pingRLPEncDec.encode(ping)) mustBe ping

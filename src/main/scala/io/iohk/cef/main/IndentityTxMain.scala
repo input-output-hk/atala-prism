@@ -11,8 +11,8 @@ import io.iohk.cef.ledger.identity.{IdentityBlockHeader, IdentityBlockSerializer
 import io.iohk.cef.ledger.{Block, ByteStringSerializable}
 import io.iohk.cef.main.builder._
 import io.iohk.cef.network.discovery._
-import io.iohk.cef.network.encoding.rlp
-import io.iohk.cef.network.encoding.rlp.RLPEncDec
+import io.iohk.cef.encoding.rlp
+import io.iohk.cef.encoding.rlp.RLPEncDec
 import io.iohk.cef.utils.Logger
 
 import scala.concurrent.duration._
@@ -73,7 +73,7 @@ object IndentityTxMain extends App {
             .toSeq).toByteArray)
     }
   }
-  import io.iohk.cef.network.encoding.rlp.RLPImplicits._
+  import io.iohk.cef.encoding.rlp.RLPImplicits._
   def discSerializable(implicit encDec: RLPEncDec[DiscoveryWireMessage]): ByteStringSerializable[DiscoveryWireMessage] =
     new ByteStringSerializable[DiscoveryWireMessage] {
       override def encode(t: DiscoveryWireMessage): ByteString = {

@@ -5,8 +5,8 @@ import java.util.UUID.randomUUID
 import java.util.concurrent.ConcurrentHashMap
 
 import io.iohk.cef.network.discovery.NetworkDiscovery
-import io.iohk.cef.network.encoding.nio.{NioDecoder, NioEncoder}
-import io.iohk.cef.network.encoding.nio._
+import io.iohk.cef.encoding.nio.{NioDecoder, NioEncoder}
+import io.iohk.cef.encoding.nio._
 import io.iohk.cef.network.transport.Transports
 
 import scala.collection.JavaConverters._

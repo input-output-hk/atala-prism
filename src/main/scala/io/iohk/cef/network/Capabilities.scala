@@ -1,6 +1,6 @@
 package io.iohk.cef.network
 
-import io.iohk.cef.network.encoding.rlp._
+import io.iohk.cef.encoding.rlp._
 
 //How many ledgers do we need to support?
 case class Capabilities(byte: Byte) {

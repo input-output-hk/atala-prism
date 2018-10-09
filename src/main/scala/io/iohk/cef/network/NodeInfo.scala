@@ -3,7 +3,7 @@ package io.iohk.cef.network
 import java.net.{Inet6Address, InetAddress, InetSocketAddress, URI}
 
 import akka.util.ByteString
-import io.iohk.cef.network.encoding.rlp.{RLPEncDec, RLPEncodeable, RLPException, RLPList}
+import io.iohk.cef.encoding.rlp.{RLPEncDec, RLPEncodeable, RLPException, RLPList}
 import io.iohk.cef.network.transport.FrameHeader
 import io.iohk.cef.network.transport.tcp.TcpTransportConfiguration
 import javax.xml.bind.DatatypeConverter

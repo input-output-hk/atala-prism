@@ -13,7 +13,7 @@ import io.iohk.cef.network.discovery.DiscoveryListener.DiscoveryListenerRequest
 import io.iohk.cef.network.discovery.DiscoveryManager.DiscoveryRequest
 import io.iohk.cef.network.discovery._
 import io.iohk.cef.network.discovery.db.DummyKnownNodesStorage
-import io.iohk.cef.network.encoding.{Decoder, Encoder}
+import io.iohk.cef.encoding.{Decoder, Encoder}
 import io.iohk.cef.network.telemetry.InMemoryTelemetry
 import io.iohk.cef.network.transport.Transports
 import io.iohk.cef.network.transport.tcp.TcpTransportConfiguration
@@ -34,8 +34,8 @@ trait LedgerConfigBuilder {
 trait DefaultLedgerConfig extends LedgerConfigBuilder {
   self: ConfigReaderBuilder =>
 
-  import io.iohk.cef.network.encoding.rlp.RLPImplicits._
-  import io.iohk.cef.network.encoding.rlp._
+  import io.iohk.cef.encoding.rlp.RLPImplicits._
+  import io.iohk.cef.encoding.rlp._
   val discoveryMsgSerializer = implicitly[ByteStringSerializable[DiscoveryWireMessage]]
   override val clock: Clock = Clock.systemUTC()
   override val ledgerConfig: LedgerConfig = LedgerConfig(config)
