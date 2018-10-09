@@ -19,7 +19,8 @@ class SigningSpec extends WordSpec {
 
   "generateSigningKeyPair" should {
     "generate different key pairs" in {
-      keypair1 == keypair2 mustBe false
+      keypair1.public must not be keypair2.public
+      keypair1.`private` must not be keypair2.`private`
     }
   }
 
@@ -77,8 +78,8 @@ class SigningSpec extends WordSpec {
     }
 
     "fail to decode signatures with unsupported algorithms" in {
+      val input = ByteString()
       val algorithm = "SHA256withRSA".flatMap(_.toByte :: 0.toByte :: Nil).toArray
-      val input = ByteString(NetUtils.randomBytes(1024))
 
       val signature = sign(input, keypair1.`private`)
 
@@ -102,7 +103,7 @@ class SigningSpec extends WordSpec {
     }
 
     "fail to decode invalid public key" in {
-      val bytes = ByteString(NetUtils.randomBytes(128))
+      val bytes = ByteString()
       val expected = SigningPublicKeyDecodeError.DataExtractionError(NioDecoderFailedToDecodeTBS)
 
       val result = SigningPublicKey.decodeFrom(bytes)
@@ -133,7 +134,7 @@ class SigningSpec extends WordSpec {
     }
 
     "fail to decode invalid private key" in {
-      val bytes = ByteString(NetUtils.randomBytes(1024))
+      val bytes = ByteString()
 
       val result = SigningPrivateKey.decodeFrom(bytes)
       val expected = SigningPrivateKeyDecodeError.DataExtractionError(NioDecoderFailedToDecodeTBS)

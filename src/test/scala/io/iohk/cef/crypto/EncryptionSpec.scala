@@ -2,6 +2,7 @@ package io.iohk.cef.crypto
 
 import akka.util.ByteString
 import io.iohk.cef.crypto.encoding.TypedByteStringDecodingError.NioDecoderFailedToDecodeTBS
+import io.iohk.cef.crypto.EncryptedDataDecodeError.DataExtractionError
 import io.iohk.cef.network.encoding.nio._
 import org.scalatest.MustMatchers._
 import org.scalatest.prop.PropertyChecks._
@@ -13,24 +14,15 @@ class EncryptionSpec extends WordSpec {
 
   case class User(name: String, age: Int)
   private val keys = generateEncryptionKeyPair()
+  private val moreKeys = generateEncryptionKeyPair()
 
   "generateEncryptionKeyPair" should {
-    "generate different set of key pair each time" in {
-      val key1 = generateEncryptionKeyPair()
-      val key2 = generateEncryptionKeyPair()
-      key1 != key2 mustBe true
+    "generate a different key pair each time" in {
+      keys must not be moreKeys
     }
   }
 
   "encrypt" should {
-    "encrypt any ByteString input" in {
-      forAll { input: ByteString =>
-        val result = encrypt(input, keys.public)
-
-        result.toByteString mustNot be(empty)
-      }
-    }
-
     "encrypt any Entity input" in {
       forAll { (name: String, age: Int) =>
         val entity = User(name, age)
@@ -42,13 +34,6 @@ class EncryptionSpec extends WordSpec {
   }
 
   "encryption / decryption with valid  keypair" should {
-    "encrypt ByteString input and decrypt" in {
-      forAll { input: ByteString =>
-        val encrypted = encrypt(input, keys.public)
-        val decrypted = decrypt(encrypted, keys.`private`)
-        decrypted.right.value mustBe input
-      }
-    }
     "encrypt any Entity input and decrypt" in {
       forAll { (name: String, age: Int) =>
         val entity = User(name, age)
@@ -59,33 +44,19 @@ class EncryptionSpec extends WordSpec {
     }
   }
 
-  "Decrypting a encrypted input with wrong key" should {
-    "fail to decrypt given ByteString " in {
-      val privateKey = generateEncryptionKeyPair().`private`
-      forAll { input: ByteString =>
-        val encrypted = encrypt(input, keys.public)
-        forAll { _: Int =>
-          val decrypted = decrypt(encrypted, privateKey)
-          decrypted.left.value.isInstanceOf[DecryptError.UnderlayingDecryptionError] must be(true)
-        }
-      }
-    }
+  "Decrypting an encrypted input with wrong key" should {
     "fail to decrypt given Entity" in {
-      val privateKey = generateEncryptionKeyPair().`private`
       forAll { (name: String, age: Int) =>
         val entity = User(name, age)
         val encrypted = encrypt(entity, keys.public)
-        forAll { _: Int =>
-          val decrypted = decrypt[User](encrypted, privateKey)
-          decrypted.left.value.isInstanceOf[DecryptError.UnderlayingDecryptionError] must be(true)
-        }
+        val decrypted = decrypt[User](encrypted, moreKeys.`private`)
+        decrypted.left.value.isInstanceOf[DecryptError.UnderlayingDecryptionError] must be(true)
       }
     }
   }
 
   "EncryptedData" should {
 
-    import io.iohk.cef.crypto.EncryptedDataDecodeError.DataExtractionError
     "decode valid data" in {
       forAll { input: ByteString =>
         val encrypted = encrypt(input, keys.public)
@@ -106,7 +77,6 @@ class EncryptionSpec extends WordSpec {
 
     "fail to decode data with unsupported algorithms" in {
       val algorithm = "RSA".flatMap(_.toByte :: 0.toByte :: Nil).toArray
-
       forAll { input: ByteString =>
         val encrypted = encrypt(input, keys.public)
 
