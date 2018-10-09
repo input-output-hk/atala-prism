@@ -3,11 +3,11 @@ package io.iohk.cef.crypto.hashing
 import akka.util.ByteString
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
-import org.scalatest.prop.PropertyChecks
-import io.iohk.cef.builder.SecureRandomBuilder
-import io.iohk.cef.test.ScalacheckExctensions
+import org.scalatest.prop.PropertyChecks._
 
-class HashingAlogorithmSpec extends FlatSpec with PropertyChecks with SecureRandomBuilder with ScalacheckExctensions {
+import io.iohk.cef.test.ScalacheckExtensions._
+
+class HashingAlgorithmSpec extends FlatSpec {
 
   val hashingCollection: HashingAlgorithmsCollection =
     HashingAlgorithmsCollection()

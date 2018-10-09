@@ -6,3 +6,5 @@ trait SecureRandomBuilder {
   lazy val secureRandom: SecureRandom =
     Config.secureRandomAlgo.map(SecureRandom.getInstance).getOrElse(new SecureRandom())
 }
+
+object SecureRandomBuilder extends SecureRandomBuilder
