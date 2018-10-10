@@ -8,7 +8,7 @@ import org.scalatest.FlatSpec
 import org.scalatest.mockito.MockitoSugar._
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 import org.scalatest.Matchers._
-import io.iohk.cef.encoding.nio._
+import io.iohk.cef.codecs.nio._
 import org.scalatest.concurrent.ScalaFutures
 
 import scala.concurrent.ExecutionContext.Implicits.global

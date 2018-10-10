@@ -1,4 +1,4 @@
-package io.iohk.cef.encoding.nio
+package io.iohk.cef.codecs.nio
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._

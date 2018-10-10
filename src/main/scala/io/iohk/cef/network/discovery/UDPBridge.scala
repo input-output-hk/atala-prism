@@ -8,7 +8,7 @@ import akka.{actor => untyped}
 import akka.io.{IO, Udp}
 import akka.util.ByteString
 import io.iohk.cef.network.discovery.DiscoveryListener._
-import io.iohk.cef.encoding.{Decoder, Encoder}
+import io.iohk.cef.codecs.{Decoder, Encoder}
 import akka.actor.typed.scaladsl.adapter._
 
 class UDPBridge(

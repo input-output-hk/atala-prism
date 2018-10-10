@@ -1,4 +1,4 @@
-package io.iohk.cef.encoding.nio
+package io.iohk.cef.codecs.nio
 
 import java.nio.ByteBuffer
 import java.util.UUID

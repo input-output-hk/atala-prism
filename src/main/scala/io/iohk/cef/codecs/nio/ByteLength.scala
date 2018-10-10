@@ -1,4 +1,4 @@
-package io.iohk.cef.encoding.nio
+package io.iohk.cef.codecs.nio
 
 object ByteLength {
   val lengthBoolean: Int = 1

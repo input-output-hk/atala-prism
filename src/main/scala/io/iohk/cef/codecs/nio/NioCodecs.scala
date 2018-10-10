@@ -1,9 +1,9 @@
-package io.iohk.cef.encoding.nio
+package io.iohk.cef.codecs.nio
 import java.nio.ByteBuffer
 
 import akka.util.ByteString
 import io.iohk.cef.ledger.ByteStringSerializable
-import io.iohk.cef.encoding._
+import io.iohk.cef.codecs._
 
 trait NioCodecs extends NativeCodecs with ProductCodecs with StreamCodecs with OtherCodecs with CoproductCodecs {
 

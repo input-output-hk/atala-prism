@@ -7,7 +7,7 @@ import akka.testkit.typed.scaladsl.{BehaviorTestKit, TestInbox}
 import akka.util.ByteString
 import akka.{actor => untyped, testkit => untypedKit}
 import io.iohk.cef.network.discovery.DiscoveryListener._
-import io.iohk.cef.encoding.{Decoder, Encoder}
+import io.iohk.cef.codecs.{Decoder, Encoder}
 import io.iohk.cef.network.{Capabilities, NodeInfo}
 import io.iohk.cef.test.StopAfterAll
 import org.scalatest.WordSpecLike

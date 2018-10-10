@@ -2,7 +2,7 @@ package io.iohk.cef.main.builder
 import io.iohk.cef.ledger.{BlockHeader, ByteStringSerializable, Transaction}
 import io.iohk.cef.network.Network
 import io.iohk.cef.network.discovery.DiscoveryWireMessage
-import io.iohk.cef.encoding.nio.NioCodecs.{NioDecoder, NioEncoder}
+import io.iohk.cef.codecs.nio.NioCodecs.{NioDecoder, NioEncoder}
 
 trait NetworkBuilder[S, H <: BlockHeader, T <: Transaction[S]] {
   self: LedgerConfigBuilder with CommonTypeAliases[S, H, T] =>

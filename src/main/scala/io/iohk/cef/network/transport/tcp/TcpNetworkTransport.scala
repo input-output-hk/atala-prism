@@ -5,7 +5,7 @@ import java.nio.ByteBuffer
 import java.util.UUID
 
 import io.iohk.cef.network.MessageStream
-import io.iohk.cef.encoding.nio._
+import io.iohk.cef.codecs.nio._
 import io.iohk.cef.network.monixstream.MonixMessageStream
 import io.iohk.cef.network.transport.NetworkTransport
 import monix.execution.Cancelable

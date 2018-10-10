@@ -12,7 +12,7 @@ import io.iohk.cef.network.NodeStatus.NodeState
 import io.iohk.cef.network.ServerStatus
 import io.iohk.cef.network.discovery.DiscoveryListener._
 import io.iohk.cef.network.discovery.db.KnownNodeStorage
-import io.iohk.cef.encoding.{Decoder, Encoder}
+import io.iohk.cef.codecs.{Decoder, Encoder}
 import io.iohk.cef.utils.FiniteSizedMap
 import io.micrometer.core.instrument.MeterRegistry
 import io.iohk.cef.utils.HexStringCodec._

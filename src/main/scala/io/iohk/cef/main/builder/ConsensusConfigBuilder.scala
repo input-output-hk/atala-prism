@@ -22,7 +22,7 @@ trait RaftConsensusConfigBuilder[Command] extends ConsensusConfigBuilder {
 
 trait DefaultRaftConsensusConfigBuilder[Command] extends RaftConsensusConfigBuilder[Command] {
   self: DefaultLedgerConfig with ConfigReaderBuilder =>
-  import io.iohk.cef.encoding.array.ArrayCodecs._
+  import io.iohk.cef.codecs.array.ArrayCodecs._
   override def storage(
       implicit
       commandSerializable: ByteStringSerializable[Command]): raft.PersistentStorage[Command] = {

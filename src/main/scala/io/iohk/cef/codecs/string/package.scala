@@ -1,4 +1,4 @@
-package io.iohk.cef.encoding
+package io.iohk.cef.codecs
 
 package object string {
   type Show[T] = Encoder[T, String]
