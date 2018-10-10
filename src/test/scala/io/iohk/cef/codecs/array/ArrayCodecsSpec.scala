@@ -1,4 +1,4 @@
-package io.iohk.cef.network.encoding.array
+package io.iohk.cef.codecs.array
 
 import ArrayCodecs._
 import org.scalacheck.Arbitrary.arbitrary

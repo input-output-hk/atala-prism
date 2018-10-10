@@ -1,6 +1,6 @@
-package io.iohk.cef.network
+package io.iohk.cef
 
-package object encoding {
+package object codecs {
 
   class Codec[T, U](val encoder: Encoder[T, U], val decoder: Decoder[U, T])
 

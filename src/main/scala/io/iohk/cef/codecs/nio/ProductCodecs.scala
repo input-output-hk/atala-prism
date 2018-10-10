@@ -1,9 +1,9 @@
-package io.iohk.cef.network.encoding.nio
+package io.iohk.cef.codecs.nio
 
 import java.nio.ByteBuffer
 import java.nio.ByteBuffer.allocate
 
-import io.iohk.cef.network.encoding.nio.CodecDecorators._
+import io.iohk.cef.codecs.nio.CodecDecorators._
 import shapeless.{::, Generic, HList, HNil, Lazy}
 
 import scala.reflect.runtime.universe._

@@ -4,7 +4,7 @@ import scala.language.higherKinds
 
 import io.iohk.cef.crypto.encoding.TypedByteString
 import akka.util.ByteString
-import io.iohk.cef.network.encoding.string._
+import io.iohk.cef.codecs.string._
 import java.nio.ByteBuffer
 
 private[crypto] trait EntityCompanion[T, DE[_], PE[_]] {

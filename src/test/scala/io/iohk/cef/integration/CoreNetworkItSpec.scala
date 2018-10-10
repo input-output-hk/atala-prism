@@ -23,7 +23,7 @@ class CoreNetworkItSpec extends FlatSpec with MustMatchers with PropertyChecks w
     mock[TransactionPoolFutureInterface[String, DummyBlockHeader, DummyTransaction]]
 
   behavior of "CoreNetworkItSpec"
-  import io.iohk.cef.network.encoding.nio.NioCodecs._
+  import io.iohk.cef.codecs.nio.NioCodecs._
   import io.iohk.cef.test.DummyBlockSerializable._
 
   implicit val executionContext = scala.concurrent.ExecutionContext.global

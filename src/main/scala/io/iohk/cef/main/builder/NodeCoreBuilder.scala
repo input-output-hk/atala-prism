@@ -3,7 +3,7 @@ import akka.util.Timeout
 import io.iohk.cef.core.NodeCore
 import io.iohk.cef.ledger.{BlockHeader, ByteStringSerializable, Transaction}
 import io.iohk.cef.network.discovery.DiscoveryWireMessage
-import io.iohk.cef.network.encoding.nio.NioCodecs._
+import io.iohk.cef.codecs.nio.NioCodecs._
 
 import scala.concurrent.ExecutionContext
 

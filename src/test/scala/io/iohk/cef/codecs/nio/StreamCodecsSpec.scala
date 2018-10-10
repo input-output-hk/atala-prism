@@ -1,4 +1,4 @@
-package io.iohk.cef.network.encoding.nio
+package io.iohk.cef.codecs.nio
 import java.nio.ByteBuffer
 
 import io.iohk.cef.network.transport.tcp.NetUtils

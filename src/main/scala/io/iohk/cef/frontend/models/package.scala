@@ -2,7 +2,7 @@ package io.iohk.cef.frontend
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import spray.json._
-import io.iohk.cef.network.encoding.string._
+import io.iohk.cef.codecs.string._
 import scala.reflect._
 
 package object models extends DefaultJsonProtocol with SprayJsonSupport {

@@ -1,8 +1,8 @@
 package io.iohk.cef.crypto
 
 import akka.util.ByteString
-import io.iohk.cef.network.encoding.nio.NioCodecs
-import io.iohk.cef.network.encoding.{Decoder => LowLevelDecoder, Encoder => LowLevelEncoder}
+import io.iohk.cef.codecs.nio.NioCodecs
+import io.iohk.cef.codecs.{Decoder => LowLevelDecoder, Encoder => LowLevelEncoder}
 
 trait CryptoCodecs extends NioCodecs {
 

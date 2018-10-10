@@ -5,7 +5,7 @@ import java.net.InetSocketAddress
 import com.softwaremill.quicklens._
 import io.iohk.cef.network.NodeId.nodeIdBytes
 import io.iohk.cef.network.discovery.NetworkDiscovery
-import io.iohk.cef.network.encoding.nio.{NioDecoder, _}
+import io.iohk.cef.codecs.nio.{NioDecoder, _}
 import io.iohk.cef.network.transport.{FrameHeader, Transports}
 import io.iohk.cef.network.transport.tcp.NetUtils.{aRandomAddress, forwardPort, randomBytes}
 import io.iohk.cef.network.transport.tcp.TcpTransportConfiguration

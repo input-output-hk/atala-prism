@@ -1,8 +1,8 @@
-package io.iohk.cef.network.encoding.array
+package io.iohk.cef.codecs.array
 import java.nio.ByteBuffer
 
-import io.iohk.cef.network.encoding._
-import io.iohk.cef.network.encoding.nio.NioCodecs
+import io.iohk.cef.codecs._
+import io.iohk.cef.codecs.nio.NioCodecs
 
 trait ArrayCodecs extends NioCodecs {
 

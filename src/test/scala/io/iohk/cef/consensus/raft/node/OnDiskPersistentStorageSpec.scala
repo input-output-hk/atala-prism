@@ -1,6 +1,6 @@
 package io.iohk.cef.consensus.raft.node
 import io.iohk.cef.consensus.raft.LogEntry
-import io.iohk.cef.network.encoding.array.ArrayCodecs._
+import io.iohk.cef.codecs.array.ArrayCodecs._
 import org.apache.commons.io.FileUtils
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen._

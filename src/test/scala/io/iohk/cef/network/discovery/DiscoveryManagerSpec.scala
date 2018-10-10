@@ -16,7 +16,7 @@ import io.iohk.cef.crypto
 import io.iohk.cef.network.discovery.db.{DummyKnownNodesStorage, KnownNode}
 import io.iohk.cef.network.discovery.DiscoveryListener.{DiscoveryListenerRequest, Ready, SendMessage, Start}
 import io.iohk.cef.network.discovery.DiscoveryManager._
-import io.iohk.cef.network.encoding.{Decoder, Encoder}
+import io.iohk.cef.codecs.{Decoder, Encoder}
 import io.iohk.cef.network.{Capabilities, NodeInfo, NodeStatus, ServerStatus}
 import io.iohk.cef.network.telemetry.InMemoryTelemetry
 import io.iohk.cef.test.TestClock
