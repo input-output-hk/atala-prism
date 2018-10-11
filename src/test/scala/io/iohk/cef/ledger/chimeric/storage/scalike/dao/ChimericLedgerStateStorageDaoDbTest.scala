@@ -72,7 +72,7 @@ trait ChimericLedgerStateStorageDaoDbTest extends fixture.FlatSpec with AutoRoll
             """.update.apply()
         }
       case NonceResult(_) => ()
-      case CreateCurrencyHolder(_) => ()
+      case CreateCurrencyResult(_) => ()
       case UtxoResult(v, signingPublicKey) =>
         insertValue(entryId, ValueHolder(v))
         updateUtxoSigningPublicKey(entryId, signingPublicKey)
@@ -131,8 +131,8 @@ trait ChimericLedgerStateStorageDaoDbTest extends fixture.FlatSpec with AutoRoll
     val pairs = Seq(
       addressKey -> AddressResult(addressValue, signingPublicKey),
       utxorefKey -> utxoResult,
-      currency1Key -> CreateCurrencyHolder(CreateCurrency(currency1)),
-      currency2Key -> CreateCurrencyHolder(CreateCurrency(currency2))
+      currency1Key -> CreateCurrencyResult(CreateCurrency(currency1)),
+      currency2Key -> CreateCurrencyResult(CreateCurrency(currency2))
     )
     insertPairs(pairs)
     val dao = new ChimericLedgerStateStorageDao()
@@ -146,18 +146,18 @@ trait ChimericLedgerStateStorageDaoDbTest extends fixture.FlatSpec with AutoRoll
       ))
     dao.slice(Set(currency1Key)) mustBe LedgerState[ChimericStateResult](
       Map(
-        currency1Key -> CreateCurrencyHolder(CreateCurrency(currency1))
+        currency1Key -> CreateCurrencyResult(CreateCurrency(currency1))
       ))
     dao.slice(Set(currency2Key)) mustBe LedgerState[ChimericStateResult](
       Map(
-        currency2Key -> CreateCurrencyHolder(CreateCurrency(currency2))
+        currency2Key -> CreateCurrencyResult(CreateCurrency(currency2))
       ))
     dao.slice(Set(missingKey)) mustBe LedgerState[ChimericStateResult](Map())
     dao.slice(Set(addressKey, utxorefKey, currency1Key, missingKey)) mustBe LedgerState[ChimericStateResult](
       Map(
         addressKey -> AddressResult(addressValue, signingPublicKey),
         utxorefKey -> utxoResult,
-        currency1Key -> CreateCurrencyHolder(CreateCurrency(currency1))
+        currency1Key -> CreateCurrencyResult(CreateCurrency(currency1))
       ))
   }
 

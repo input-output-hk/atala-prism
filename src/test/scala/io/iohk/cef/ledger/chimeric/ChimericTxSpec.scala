@@ -31,7 +31,7 @@ class ChimericTxSpec extends FlatSpec with MustMatchers {
     val negativeTx = ChimericTx(Seq(Fee(value)))
     val emptyState = LedgerState[ChimericStateResult](
       Map(
-        getCurrencyPartitionId(currency) -> CreateCurrencyHolder(CreateCurrency(currency))
+        getCurrencyPartitionId(currency) -> CreateCurrencyResult(CreateCurrency(currency))
       ))
     positiveTx(emptyState) mustBe Left(ValueNotPreserved(value, positiveTx.fragments))
     negativeTx(emptyState) mustBe Left(ValueNotPreserved(-value, negativeTx.fragments))
@@ -43,7 +43,7 @@ class ChimericTxSpec extends FlatSpec with MustMatchers {
     val tx = ChimericTx(Seq(Input(txOutRef, value), Fee(value)))
     val state = LedgerState[ChimericStateResult](
       Map(
-        currencyPartitionId -> CreateCurrencyHolder(CreateCurrency(currency)),
+        currencyPartitionId -> CreateCurrencyResult(CreateCurrency(currency)),
         getUtxoPartitionId(txOutRef) -> UtxoResult(value, Some(signingKeyPair.public))
       ))
 
@@ -54,7 +54,7 @@ class ChimericTxSpec extends FlatSpec with MustMatchers {
     val tx = ChimericTx(Seq(Withdrawal(address, value, 1), Fee(value)))
     val state = LedgerState[ChimericStateResult](
       Map(
-        currencyPartitionId -> CreateCurrencyHolder(CreateCurrency(currency)),
+        currencyPartitionId -> CreateCurrencyResult(CreateCurrency(currency)),
         getAddressPartitionId(address) -> AddressResult(value, Some(signingKeyPair.public))
       ))
 
@@ -69,11 +69,11 @@ class ChimericTxSpec extends FlatSpec with MustMatchers {
 
     val state = LedgerState[ChimericStateResult](
       Map(
-        currencyPartitionId -> CreateCurrencyHolder(CreateCurrency(currency)),
+        currencyPartitionId -> CreateCurrencyResult(CreateCurrency(currency)),
         utxoPartitionId -> UtxoResult(value, Some(signingKeyPair.public))))
 
     tx.apply(state) mustBe Right(
-      LedgerState[ChimericStateResult](Map(currencyPartitionId -> CreateCurrencyHolder(CreateCurrency(currency)))))
+      LedgerState[ChimericStateResult](Map(currencyPartitionId -> CreateCurrencyResult(CreateCurrency(currency)))))
   }
 
   it should "validate txs have signatures for withdrawals" in new TestFixture {
@@ -84,13 +84,13 @@ class ChimericTxSpec extends FlatSpec with MustMatchers {
 
     val state = LedgerState[ChimericStateResult](
       Map(
-        currencyPartitionId -> CreateCurrencyHolder(CreateCurrency(currency)),
+        currencyPartitionId -> CreateCurrencyResult(CreateCurrency(currency)),
         addressPartitionId -> AddressResult(value, Some(signingKeyPair.public))))
 
     tx.apply(state) mustBe Right(
       LedgerState[ChimericStateResult](
         Map(
-          currencyPartitionId -> CreateCurrencyHolder(CreateCurrency(currency)),
+          currencyPartitionId -> CreateCurrencyResult(CreateCurrency(currency)),
           addressNoncePartitionId -> NonceResult(1))))
   }
 
@@ -109,7 +109,7 @@ class ChimericTxSpec extends FlatSpec with MustMatchers {
 
     val state = LedgerState[ChimericStateResult](
       Map(
-        currencyPartitionId -> CreateCurrencyHolder(CreateCurrency(currency)),
+        currencyPartitionId -> CreateCurrencyResult(CreateCurrency(currency)),
         utxoPartitionId -> UtxoResult(value, Some(key1.public)),
         addressPartitionId -> AddressResult(value, Some(key2.public))
       ))
@@ -117,7 +117,7 @@ class ChimericTxSpec extends FlatSpec with MustMatchers {
     tx.apply(state) mustBe Right(
       LedgerState[ChimericStateResult](
         Map(
-          currencyPartitionId -> CreateCurrencyHolder(CreateCurrency(currency)),
+          currencyPartitionId -> CreateCurrencyResult(CreateCurrency(currency)),
           addressNoncePartitionId -> NonceResult(1))))
   }
 }

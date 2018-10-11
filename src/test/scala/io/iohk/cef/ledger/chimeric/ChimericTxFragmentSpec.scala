@@ -25,12 +25,12 @@ class ChimericTxFragmentSpec extends FlatSpec with MustMatchers with PropertyChe
       val currency: Currency = "CRC"
       val value = Value(currency -> decimal)
       val state = stateFrom(
-        getCurrencyPartitionId(currency) -> CreateCurrencyHolder(CreateCurrency(currency)),
+        getCurrencyPartitionId(currency) -> CreateCurrencyResult(CreateCurrency(currency)),
         getAddressPartitionId(address) -> AddressResult(value, Some(signingPublicKey))
       )
 
       def newState(subtractedValue: Value): ChimericLedgerState = {
-        val currencyPair = getCurrencyPartitionId(currency) -> CreateCurrencyHolder(CreateCurrency(currency))
+        val currencyPair = getCurrencyPartitionId(currency) -> CreateCurrencyResult(CreateCurrency(currency))
         val noncePair = getAddressNoncePartitionId(address) -> NonceResult(1)
         val valuePair: List[(String, ChimericStateResult)] = List(value - subtractedValue)
           .filter(_ != Value.Zero)
@@ -60,7 +60,7 @@ class ChimericTxFragmentSpec extends FlatSpec with MustMatchers with PropertyChe
     val value = Value(currency -> decimal)
     val nonce = 0
     val state = stateFrom(
-      getCurrencyPartitionId(currency) -> CreateCurrencyHolder(CreateCurrency(currency)),
+      getCurrencyPartitionId(currency) -> CreateCurrencyResult(CreateCurrency(currency)),
       getAddressPartitionId(address) -> AddressResult(value, Some(signingPublicKey)),
       getAddressNoncePartitionId(address) -> NonceResult(nonce)
     )
@@ -77,7 +77,7 @@ class ChimericTxFragmentSpec extends FlatSpec with MustMatchers with PropertyChe
     val lastNonce = 0
     val nonce = lastNonce + 2
     val state = stateFrom(
-      getCurrencyPartitionId(currency) -> CreateCurrencyHolder(CreateCurrency(currency)),
+      getCurrencyPartitionId(currency) -> CreateCurrencyResult(CreateCurrency(currency)),
       getAddressPartitionId(address) -> AddressResult(value, Some(signingPublicKey)),
       getAddressNoncePartitionId(address) -> NonceResult(lastNonce)
     )
@@ -94,7 +94,7 @@ class ChimericTxFragmentSpec extends FlatSpec with MustMatchers with PropertyChe
     val lastNonce = 1
     val nonce = lastNonce - 1
     val state = stateFrom(
-      getCurrencyPartitionId(currency) -> CreateCurrencyHolder(CreateCurrency(currency)),
+      getCurrencyPartitionId(currency) -> CreateCurrencyResult(CreateCurrency(currency)),
       getAddressPartitionId(address) -> AddressResult(value, Some(signingPublicKey)),
       getAddressNoncePartitionId(address) -> NonceResult(lastNonce)
     )
@@ -110,7 +110,7 @@ class ChimericTxFragmentSpec extends FlatSpec with MustMatchers with PropertyChe
     val value = Value(currency -> decimal)
     val lastNonce = 1
     val state = stateFrom(
-      getCurrencyPartitionId(currency) -> CreateCurrencyHolder(CreateCurrency(currency)),
+      getCurrencyPartitionId(currency) -> CreateCurrencyResult(CreateCurrency(currency)),
       getAddressPartitionId(address) -> AddressResult(value, Some(signingPublicKey)),
       getAddressNoncePartitionId(address) -> NonceResult(lastNonce)
     )
@@ -128,7 +128,7 @@ class ChimericTxFragmentSpec extends FlatSpec with MustMatchers with PropertyChe
     forAll(ChimericGenerators.ValueGen, Gen.alphaNumStr, Gen.posNum[Int]) { (v: Value, txId: String, i: Int) =>
       val createCurrencyTxs = v.iterator.map {
         case (currency, _) =>
-          ChimericLedgerState.getCurrencyPartitionId(currency) -> CreateCurrencyHolder(CreateCurrency(currency))
+          ChimericLedgerState.getCurrencyPartitionId(currency) -> CreateCurrencyResult(CreateCurrency(currency))
       }.toSeq
 
       val s = stateFrom(createCurrencyTxs: _*)
@@ -144,7 +144,7 @@ class ChimericTxFragmentSpec extends FlatSpec with MustMatchers with PropertyChe
       val currency: Currency = "CRC"
       val value = Value(currency -> decimal)
       val state = stateFrom(
-        getCurrencyPartitionId(currency) -> CreateCurrencyHolder(CreateCurrency(currency)),
+        getCurrencyPartitionId(currency) -> CreateCurrencyResult(CreateCurrency(currency)),
         getUtxoPartitionId(txOutRef) -> UtxoResult(value, None)
       )
 
@@ -155,7 +155,7 @@ class ChimericTxFragmentSpec extends FlatSpec with MustMatchers with PropertyChe
       val wrongInput = input.copy(value = wrongValue)
 
       input(state, 1, "").right.value mustBe stateFrom(
-        getCurrencyPartitionId(currency) -> CreateCurrencyHolder(CreateCurrency(currency)))
+        getCurrencyPartitionId(currency) -> CreateCurrencyResult(CreateCurrency(currency)))
 
       missingInput(state, 1, "") mustBe Left(UnspentOutputNotFound(missingTxOutRef))
       wrongInput(state, 1, "") mustBe Left(UnspentOutputInvalidValue(txOutRef, wrongValue, value))
@@ -171,12 +171,12 @@ class ChimericTxFragmentSpec extends FlatSpec with MustMatchers with PropertyChe
       val value = Value(currency -> decimal)
       val value2 = Value(currency -> (decimal + 1))
       val state = stateFrom(
-        getCurrencyPartitionId(currency) -> CreateCurrencyHolder(CreateCurrency(currency)),
+        getCurrencyPartitionId(currency) -> CreateCurrencyResult(CreateCurrency(currency)),
         getUtxoPartitionId(txOutRef) -> UtxoResult(value, Some(signingPublicKey))
       )
 
       val newState = stateFrom(
-        getCurrencyPartitionId(currency) -> CreateCurrencyHolder(CreateCurrency(currency)),
+        getCurrencyPartitionId(currency) -> CreateCurrencyResult(CreateCurrency(currency)),
         getUtxoPartitionId(txOutRef) -> UtxoResult(value, Some(signingPublicKey)),
         getUtxoPartitionId(txOutRef2) -> UtxoResult(value2, Some(signingPublicKey))
       )
@@ -196,16 +196,16 @@ class ChimericTxFragmentSpec extends FlatSpec with MustMatchers with PropertyChe
       val value = Value(currency -> decimal)
       val value2 = Value(currency -> (decimal + 1))
       val emptyState = stateFrom(
-        getCurrencyPartitionId(currency) -> CreateCurrencyHolder(CreateCurrency(currency))
+        getCurrencyPartitionId(currency) -> CreateCurrencyResult(CreateCurrency(currency))
       )
 
       val stateWithValue = stateFrom(
-        getCurrencyPartitionId(currency) -> CreateCurrencyHolder(CreateCurrency(currency)),
+        getCurrencyPartitionId(currency) -> CreateCurrencyResult(CreateCurrency(currency)),
         getAddressPartitionId(address) -> AddressResult(value, Some(signingPublicKey))
       )
 
       val stateWithValue2 = stateFrom(
-        getCurrencyPartitionId(currency) -> CreateCurrencyHolder(CreateCurrency(currency)),
+        getCurrencyPartitionId(currency) -> CreateCurrencyResult(CreateCurrency(currency)),
         getAddressPartitionId(address) -> AddressResult(value + value2, Some(signingPublicKey))
       )
 
@@ -218,7 +218,7 @@ class ChimericTxFragmentSpec extends FlatSpec with MustMatchers with PropertyChe
     forAll { (currency: String) =>
       val emptyState = LedgerState[ChimericStateResult](Map.empty)
       val stateWithCurrency = stateFrom(
-        getCurrencyPartitionId(currency) -> CreateCurrencyHolder(CreateCurrency(currency))
+        getCurrencyPartitionId(currency) -> CreateCurrencyResult(CreateCurrency(currency))
       )
 
       CreateCurrency(currency)(emptyState, 1, "") mustBe Right(stateWithCurrency)

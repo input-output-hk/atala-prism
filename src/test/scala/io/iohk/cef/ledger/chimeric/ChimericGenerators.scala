@@ -16,9 +16,9 @@ object ChimericGenerators {
   } yield Value(Map(list.filter(_._2 != BigDecimal(0)): _*))
 
   val ValueHolderGen = ValueGen.map(ValueHolder.apply)
-  val CurrencyHolderGen = Gen.alphaNumStr.map(c => CreateCurrencyHolder(CreateCurrency(c)))
+  val CurrencyResultGen = Gen.alphaNumStr.map(c => CreateCurrencyResult(CreateCurrency(c)))
 
-  val StateValueGen = Gen.oneOf[ChimericStateResult](ValueHolderGen, CurrencyHolderGen)
+  val StateValueGen = Gen.oneOf[ChimericStateResult](ValueHolderGen, CurrencyResultGen)
 
   val StateEntryGen = for {
     key <- Gen.alphaNumStr

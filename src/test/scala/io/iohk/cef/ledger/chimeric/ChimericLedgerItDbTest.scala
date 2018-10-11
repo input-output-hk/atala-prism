@@ -92,8 +92,8 @@ trait ChimericLedgerItDbTest
     val allKeys = Set(address1Key, address2Key, currency1Key, currency2Key, utxoKey)
     stateStorage.slice(allKeys) mustBe LedgerState[ChimericStateResult](
       Map(
-        currency1Key -> CreateCurrencyHolder(CreateCurrency(currency1)),
-        currency2Key -> CreateCurrencyHolder(CreateCurrency(currency2)),
+        currency1Key -> CreateCurrencyResult(CreateCurrency(currency1)),
+        currency2Key -> CreateCurrencyResult(CreateCurrency(currency2)),
         utxoKey -> UtxoResult(value3 - singleFee, Some(signingPublicKey)),
         address1Key -> AddressResult(value2 - value3, Some(signingPublicKey)),
         address2Key -> AddressResult(value1 - multiFee, Some(signingPublicKey))
@@ -113,8 +113,8 @@ trait ChimericLedgerItDbTest
     result2.isRight mustBe true
     stateStorage.slice(allKeys) mustBe LedgerState[ChimericStateResult](
       Map(
-        currency1Key -> CreateCurrencyHolder(CreateCurrency(currency1)),
-        currency2Key -> CreateCurrencyHolder(CreateCurrency(currency2)),
+        currency1Key -> CreateCurrencyResult(CreateCurrency(currency1)),
+        currency2Key -> CreateCurrencyResult(CreateCurrency(currency2)),
         address2Key -> AddressResult(value1 - multiFee, Some(signingPublicKey))
       ))
   }

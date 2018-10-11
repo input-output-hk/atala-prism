@@ -18,7 +18,7 @@ class ChimericLedgerStateStorageDao {
 
     val currencies = readCurrencies(stateKeys.collect { case stateKey: CurrencyQuery => stateKey })
       .map { createCurr =>
-        getCurrencyPartitionId(createCurr.currency) -> CreateCurrencyHolder(createCurr)
+        getCurrencyPartitionId(createCurr.currency) -> CreateCurrencyResult(createCurr)
       }
 
     val utxos = readUtxos(stateKeys.collect { case stateKey: UtxoQuery => stateKey })
@@ -50,7 +50,7 @@ class ChimericLedgerStateStorageDao {
     } else {
       val updateActions = currentState.updateTo(newState).mapKeys(ChimericLedgerState.toStateKey)
       updateActions.actions.foreach {
-        case InsertStateAction(key: CurrencyQuery, value: CreateCurrencyHolder) =>
+        case InsertStateAction(key: CurrencyQuery, value: CreateCurrencyResult) =>
           insertCurrency(key.currency -> value.createCurrency)
         case InsertStateAction(key: AddressQuery, addressResult: AddressResult) =>
           insertAddress(key.address, addressResult)

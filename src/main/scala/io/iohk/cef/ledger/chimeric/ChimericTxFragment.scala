@@ -220,7 +220,7 @@ case class CreateCurrency(currency: Currency) extends ActionTxFragment with NonS
     val createCurrencyKey = ChimericLedgerState.getCurrencyPartitionId(currency)
     state.get(createCurrencyKey) match {
       case Some(_) => Left(CurrencyAlreadyExists(currency))
-      case None => Right(state.put(createCurrencyKey, CreateCurrencyHolder(this)))
+      case None => Right(state.put(createCurrencyKey, CreateCurrencyResult(this)))
     }
   }
 
