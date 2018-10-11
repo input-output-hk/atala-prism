@@ -1,5 +1,6 @@
 package io.iohk.cef.ledger.chimeric
 
+import io.iohk.cef.crypto._
 import io.iohk.cef.ledger.LedgerState
 import org.scalacheck.{Arbitrary, Gen}
 
@@ -15,10 +16,25 @@ object ChimericGenerators {
     list <- Gen.listOf(CurrencyQuantityGen)
   } yield Value(Map(list.filter(_._2 != BigDecimal(0)): _*))
 
-  val ValueHolderGen = ValueGen.map(ValueHolder.apply)
+  val PublicKeyGen = Gen.const(generateSigningKeyPair().public)
+
+  val PublicKeyOptionGen = Gen.option(PublicKeyGen)
+
+  val AddressResultGen = for {
+    value <- ValueGen
+    publicKey <- PublicKeyOptionGen
+  } yield AddressResult(value, publicKey)
+
+  val UtxoResultGen = for {
+    value <- ValueGen
+    publicKey <- PublicKeyOptionGen
+  } yield UtxoResult(value, publicKey)
+
   val CurrencyResultGen = Gen.alphaNumStr.map(c => CreateCurrencyResult(CreateCurrency(c)))
 
-  val StateValueGen = Gen.oneOf[ChimericStateResult](ValueHolderGen, CurrencyResultGen)
+  val NonceResultGen = Gen.posNum[Int].map(NonceResult.apply)
+
+  val StateValueGen = Gen.oneOf[ChimericStateResult](AddressResultGen, UtxoResultGen, CurrencyResultGen, NonceResultGen)
 
   val StateEntryGen = for {
     key <- Gen.alphaNumStr

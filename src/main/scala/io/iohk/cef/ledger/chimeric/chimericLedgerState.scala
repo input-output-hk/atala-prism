@@ -43,7 +43,6 @@ object ChimericLedgerState {
 //Values
 sealed trait ChimericStateResult
 
-case class ValueHolder(value: Value) extends ChimericStateResult
 case class CreateCurrencyResult(createCurrency: CreateCurrency) extends ChimericStateResult
 case class UtxoResult(value: Value, signingPublicKey: Option[SigningPublicKey]) extends ChimericStateResult
 case class AddressResult(value: Value, signingPublicKey: Option[SigningPublicKey]) extends ChimericStateResult

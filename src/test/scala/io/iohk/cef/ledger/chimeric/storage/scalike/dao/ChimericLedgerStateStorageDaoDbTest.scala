@@ -2,13 +2,12 @@ package io.iohk.cef.ledger.chimeric.storage.scalike.dao
 
 import io.iohk.cef.crypto
 import io.iohk.cef.crypto.SigningPublicKey
-
 import io.iohk.cef.ledger.LedgerState
 import io.iohk.cef.ledger.chimeric._
 import io.iohk.cef.ledger.chimeric.storage.scalike._
 import org.scalatest.{MustMatchers, fixture}
-import scalikejdbc.scalatest.AutoRollback
 import scalikejdbc._
+import scalikejdbc.scalatest.AutoRollback
 
 trait ChimericLedgerStateStorageDaoDbTest extends fixture.FlatSpec with AutoRollback with MustMatchers {
 
@@ -19,13 +18,13 @@ trait ChimericLedgerStateStorageDaoDbTest extends fixture.FlatSpec with AutoRoll
       val (key, value) = item
       sql"""
             insert into ${ChimericLedgerStateEntryTable.table} (${column.stringId})
-              values (${key})
+              values ($key)
             """.update.apply()
       val entryId =
         sql"""
            select ${se.result.*}
            from ${ChimericLedgerStateEntryTable as se}
-           where ${se.stringId} = ${key}
+           where ${se.stringId} = $key
            """.map(ChimericLedgerStateEntryTable(se.resultName)(_)).toOption().apply().get.id
       insertKey(entryId, key)
       insertValue(entryId, value)
@@ -59,25 +58,26 @@ trait ChimericLedgerStateStorageDaoDbTest extends fixture.FlatSpec with AutoRoll
     }
   }
 
-  private def insertValue(entryId: Long, value: ChimericStateResult)(implicit DBSession: DBSession): Unit = {
-    value match {
-      case ValueHolder(value) =>
-        val column = ChimericValueEntryTable.column
-        value.iterator.foreach {
-          case (currency, quantity) =>
-            sql"""
+  private def insertValueSQL(entryId: Long, value: Value)(implicit DBSession: DBSession) = {
+    val column = ChimericValueEntryTable.column
+    value.iterator.foreach {
+      case (currency, quantity) =>
+        sql"""
              insert into ${ChimericValueEntryTable.table}
               (${column.ledgerStateEntryId}, ${column.currency}, ${column.amount})
               values (${entryId}, ${currency}, ${quantity})
             """.update.apply()
-        }
+    }
+  }
+  private def insertValue(entryId: Long, value: ChimericStateResult)(implicit DBSession: DBSession): Unit = {
+    value match {
       case NonceResult(_) => ()
       case CreateCurrencyResult(_) => ()
       case UtxoResult(v, signingPublicKey) =>
-        insertValue(entryId, ValueHolder(v))
+        insertValueSQL(entryId, v)
         updateUtxoSigningPublicKey(entryId, signingPublicKey)
       case AddressResult(v, signingPublicKey) =>
-        insertValue(entryId, ValueHolder(v))
+        insertValueSQL(entryId, v)
         updateAddressSigningPublicKey(entryId, signingPublicKey)
     }
   }
