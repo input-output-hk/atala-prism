@@ -6,6 +6,7 @@ import akka.http.scaladsl.Http
 import akka.util.{ByteString, Timeout}
 import io.iohk.cef.core.NodeCore
 import io.iohk.cef.crypto._
+import io.iohk.cef.frontend.models.IdentityTransactionType
 import io.iohk.cef.ledger.identity.storage.protobuf.IdentityLedgerState.PublicKeyListProto
 import io.iohk.cef.ledger.identity.{IdentityBlockHeader, IdentityBlockSerializer, IdentityTransaction}
 import io.iohk.cef.ledger.{Block, ByteStringSerializable}
@@ -92,6 +93,6 @@ object IndentityTxMain extends App {
   val ed = Base64.getEncoder
   val encodedKey = ed.encodeToString(pair.public.toByteString.toArray)
   println(encodedKey)
-  val signature = IdentityTransaction.sign("carlos", pair.public, pair.`private`)
+  val signature = IdentityTransaction.sign("carlos", IdentityTransactionType.Claim, pair.public, pair.`private`)
   println(ed.encodeToString(signature.toByteString.toArray))
 }

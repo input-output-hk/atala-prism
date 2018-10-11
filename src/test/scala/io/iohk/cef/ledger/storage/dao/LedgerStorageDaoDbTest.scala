@@ -3,6 +3,7 @@ package io.iohk.cef.ledger.storage.dao
 import java.time.{Clock, Instant}
 
 import io.iohk.cef.builder.SigningKeyPairs
+import io.iohk.cef.frontend.models.IdentityTransactionType
 import io.iohk.cef.ledger.Block
 import io.iohk.cef.ledger.identity._
 import io.iohk.cef.ledger.storage.scalike.LedgerTable
@@ -24,7 +25,8 @@ trait LedgerStorageDaoDbTest
     val header = IdentityBlockHeader(Instant.now)
     val txList = List[IdentityTransaction](
       Claim("one", alice.public, uselessSignature),
-      Link("two", bob.public, IdentityTransaction.sign("two", bob.public, bob.`private`)))
+      Link("two", bob.public, IdentityTransaction.sign("two", IdentityTransactionType.Link, bob.public, bob.`private`))
+    )
     val block = Block(header, txList)
     val storage = new LedgerStorageDao(Clock.systemUTC())
     storage.push(1, block)(IdentityBlockSerializer.serializable, session)

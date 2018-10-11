@@ -18,7 +18,7 @@ class IdentityTransactionService(nodeCore: NodeCore[Set[SigningPublicKey], Ident
 
   def createIdentityTransaction(req: CreateIdentityTransactionRequest): Response[IdentityTransaction] = {
 
-    val signature = IdentityTransaction.sign(req.identity, req.publicKey, req.privateKey)
+    val signature = IdentityTransaction.sign(req.identity, req.`type`, req.publicKey, req.privateKey)
 
     val identityTransaction: IdentityTransaction =
       constructorType(req.`type`)(req.identity, req.publicKey, signature)
