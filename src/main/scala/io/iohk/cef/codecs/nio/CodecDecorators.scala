@@ -70,8 +70,8 @@ private[nio] object CodecDecorators {
     }
   }
 
-  private def verifyingRemaining[T](remaining: Int, b: ByteBuffer)(decode: => Option[T]): Option[T] = {
-    if (b.remaining() < remaining)
+  def verifyingRemaining[T](remaining: Int, b: ByteBuffer)(decode: => Option[T]): Option[T] = {
+    if (b.remaining() < remaining || remaining < 0)
       None
     else
       decode

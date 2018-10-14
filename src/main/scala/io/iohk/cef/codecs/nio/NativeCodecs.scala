@@ -99,19 +99,23 @@ trait NativeCodecs {
 
   def arrayDecoderImpl[T](implicit dec: NioDecoder[T], tt: WeakTypeTag[T]): NioDecoder[Array[T]] =
     (b: ByteBuffer) => {
-      val sizeElements = b.getInt()
-      implicit val ct: ClassTag[T] = typeToClassTag[T]
-      val arr = new Array[T](sizeElements)
+      verifyingRemaining(4, b) {
+        val sizeElements = b.getInt()
+        implicit val ct: ClassTag[T] = typeToClassTag[T]
+        val arr = new Array[T](sizeElements)
 
-      Range(0, sizeElements).foreach(i => {
-        dec
-          .decode(b)
-          .foreach(decodedElement => {
-            arr(i) = decodedElement
-          })
-      })
+        var i = 0
+        var r: Option[Array[T]] = Some(arr)
+        while (i < sizeElements && r.isDefined) {
+          dec.decode(b) match {
+            case None => r = None
+            case Some(e) => arr(i) = e
+          }
+          i += 1
+        }
 
-      Some(arr)
+        r
+      }
     }
 }
 

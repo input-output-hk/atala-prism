@@ -66,7 +66,6 @@ class EncryptionSpec extends WordSpec {
     }
 
     "fail to decode invalid data" in {
-      pending
       forAll { bytes: ByteString =>
         val result = EncryptedData.decodeFrom(bytes)
         val expected = DecodeError.DataExtractionError(NioDecoderFailedToDecodeTBS)
@@ -98,13 +97,14 @@ class EncryptionSpec extends WordSpec {
     }
 
     "fail to decode invalid public key" in {
-      pending
 
       forAll { bytes: ByteString =>
+        type T = KeyDecodeError[EncryptionPublicKey]
         val result = EncryptionPublicKey.decodeFrom(bytes)
-        val expected = DecodeError.DataExtractionError(NioDecoderFailedToDecodeTBS)
+        val expected: T = KeyDecodeError.DataExtractionError(NioDecoderFailedToDecodeTBS)
+        val response: T = result.left.value
 
-        result.left.value must be(expected)
+        response must ===(expected)
       }
     }
 
@@ -127,11 +127,10 @@ class EncryptionSpec extends WordSpec {
     }
 
     "fail to decode invalid private key" in {
-      pending
 
       forAll { bytes: ByteString =>
         val result = EncryptionPrivateKey.decodeFrom(bytes)
-        val expected = DecodeError.DataExtractionError(NioDecoderFailedToDecodeTBS)
+        val expected = KeyDecodeError.DataExtractionError(NioDecoderFailedToDecodeTBS)
 
         result.left.value must be(expected)
       }

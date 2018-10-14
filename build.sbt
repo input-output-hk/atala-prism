@@ -106,6 +106,10 @@ val compilerOptions = Seq(
   "utf-8"
 )
 
+// This allows `sbt console` import packages without a fatal warning due to unused imports
+// Normal compile keeps working like before
+scalacOptions in (Compile, console) ~= (_ filterNot (_ == "-Ywarn-unused-import"))
+
 val root = project
   .in(file("."))
   .settings(commonSettings: _*)

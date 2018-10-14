@@ -9,6 +9,8 @@ import org.scalatest.FlatSpec
 import org.scalatest.Inside._
 import org.scalatest.Matchers._
 import org.scalatest.prop.GeneratorDrivenPropertyChecks._
+import org.scalactic.Equivalence
+import org.scalatest.OptionValues._
 
 class NativeCodecsSpec extends FlatSpec {
 
@@ -26,6 +28,8 @@ class NativeCodecsSpec extends FlatSpec {
     encodeDecodeTest[Double]
     encodeDecodeTest[Char]
     encodeDecodeTest[String]
+    encodeDecodeTest[Array[Int]]
+    encodeDecodeTest[Array[Byte]]
     encodeDecodeTest[ByteString]
   }
 
@@ -65,8 +69,12 @@ class NativeCodecsSpec extends FlatSpec {
     unfulBufferTest[ByteString]
   }
 
-  def encodeDecodeTest[T](implicit encoder: NioEncoder[T], decoder: NioDecoder[T], a: Arbitrary[T]): Unit = {
-    forAll(arbitrary[T])(t => decoder.decode(encoder.encode(t)) shouldBe Some(t))
+  def encodeDecodeTest[T](
+      implicit encoder: NioEncoder[T],
+      decoder: NioDecoder[T],
+      a: Arbitrary[T],
+      eq: Equivalence[T]): Unit = {
+    forAll(arbitrary[T])(t => decoder.decode(encoder.encode(t)).value should equal(t))
   }
 
   def mistypeTest[T, U](implicit encoder: NioEncoder[T], decoder: NioDecoder[U], a: Arbitrary[T]): Unit = {
@@ -105,6 +113,19 @@ class NativeCodecsSpec extends FlatSpec {
   }
 
   def unfulBufferTest[T](implicit decoder: NioDecoder[T]): Unit = {
+
     decoder.decode(ByteBuffer.allocate(0)) shouldBe None
+
+    decoder.decode(ByteBuffer.allocate(5)) shouldBe None
+
+    val b = ByteBuffer.allocate(5)
+    b.put(-1.toByte)
+    b.put(-12.toByte)
+    b.put(-1.toByte)
+    b.put(-128.toByte)
+    b.put(-118.toByte)
+    b.position(0)
+    decoder.decode(b) shouldBe None
   }
+
 }

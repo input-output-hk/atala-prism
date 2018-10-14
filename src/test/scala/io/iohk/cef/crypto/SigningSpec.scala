@@ -66,7 +66,6 @@ class SigningSpec extends WordSpec {
     }
 
     "fail to decode invalid signatures" in {
-      pending
       val bytes = ByteString(NetUtils.randomBytes(1024))
       val expected =
         DecodeError.DataExtractionError(TypedByteStringDecodingError.NioDecoderFailedToDecodeTBS)

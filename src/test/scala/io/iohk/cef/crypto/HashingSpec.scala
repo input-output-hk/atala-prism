@@ -63,7 +63,6 @@ class HashingSpec extends WordSpec {
     }
 
     "fail to decode invalid hashedValues" in {
-      pending
       forAll { bytes: ByteString =>
         val result = Hash.decodeFrom(bytes)
         val expected = DecodeError.DataExtractionError(TypedByteStringDecodingError.NioDecoderFailedToDecodeTBS)
