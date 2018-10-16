@@ -43,7 +43,7 @@ class Table[I <: DataItem](tableId: TableId, tableStorage: TableStorage)(
 
   private def validateSignatures(dataItem: I): Seq[(Signature, Boolean)] = {
     val serializedDataItem = itemSerializable.encode(dataItem)
-    val signatureValidation = dataItem.whitnesses.map {
+    val signatureValidation = dataItem.witnesses.map {
       case (key, signature) =>
         (signature, isValidSignature(serializedDataItem, signature, key))
     }

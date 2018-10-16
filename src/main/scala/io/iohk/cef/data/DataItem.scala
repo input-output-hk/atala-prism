@@ -5,10 +5,10 @@ import io.iohk.cef.error.ApplicationError
 trait DataItem {
 
   /**
-    * Users/entities that whitnessed this item and signed it
+    * Users/entities that witnessed this item and signed it
     * @return
     */
-  def whitnesses: Seq[(SigningPublicKey, Signature)]
+  def witnesses: Seq[(SigningPublicKey, Signature)]
 
   /**
     * Users/entities with permission to eliminate this data item

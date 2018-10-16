@@ -76,7 +76,7 @@ class TableStorageDao {
 
   private def insertDataItemSignatures[I <: DataItem](dataItem: I, dataItemId: Long)(implicit session: DBSession) = {
     val sigColumn = DataItemSignatureTable.column
-    dataItem.whitnesses.foreach {
+    dataItem.witnesses.foreach {
       case (signature, key) =>
         sql"""insert into ${Schema.DataItemSignatureTableName}
               (${sigColumn.dataItemId},
