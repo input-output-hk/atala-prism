@@ -1,12 +1,47 @@
 package io.iohk.cef.data
 import io.iohk.cef.data.storage.TableStorage
 import io.iohk.cef.ledger.ByteStringSerializable
+import io.iohk.cef.crypto._
 
-class Table[I <: DataItem](tableId: TableId, tableStorage: TableStorage)(implicit itemSerializable: ByteStringSerializable[I]) {
+class Table[I <: DataItem](tableId: TableId, tableStorage: TableStorage)(
+    implicit itemSerializable: ByteStringSerializable[I]) {
 
-  def insert(dataItem: I): Unit =
-    tableStorage.insert(tableId, dataItem)
+  def validate(dataItem: I): Boolean = {
+    val signatureValidation = validateSignatures(dataItem)
+    signatureValidation.forall(_._2)
+  }
 
-  def delete(dataItem: I): Unit =
-    tableStorage.delete(tableId, dataItem)
+  def insert(dataItem: I): Either[TableError, Unit] = {
+    val signatureValidation = validateSignatures(dataItem)
+    val validationErrors = signatureValidation.filter(!_._2).map(_._1)
+    if (!validationErrors.isEmpty) {
+      val error = new InvalidSignaturesError(dataItem, validationErrors)
+      Left(error)
+    } else {
+      Right(tableStorage.insert(tableId, dataItem))
+    }
+  }
+
+  def delete(dataItem: I, deleteSignature: Signature)(
+      implicit actionSerializable: ByteStringSerializable[DataItemAction[I]]): Either[TableError, Unit] = {
+    val serializedAction = actionSerializable.encode(DataItemAction.Delete(dataItem))
+    val signatureValidation =
+      dataItem.owners.map(ownerKey => isValidSignature(serializedAction, deleteSignature, ownerKey))
+    val validSignature = signatureValidation.find(identity)
+    if (!dataItem.owners.isEmpty && validSignature.isEmpty) {
+      val error = new OwnerMustSignDelete(dataItem)
+      Left(error)
+    } else {
+      Right(tableStorage.delete(tableId, dataItem))
+    }
+  }
+
+  private def validateSignatures(dataItem: I): Seq[(Signature, Boolean)] = {
+    val serializedDataItem = itemSerializable.encode(dataItem)
+    val signatureValidation = dataItem.signatures.map {
+      case (key, signature) =>
+        (signature, isValidSignature(serializedDataItem, signature, key))
+    }
+    signatureValidation
+  }
 }

@@ -9,7 +9,7 @@ class TableStorageImpl[I <: DataItem](tableStorageDao: TableStorageDao) extends 
 
   override def insert[I <: DataItem](tableId: TableId, dataItem: I)(
       implicit itemSerializable: ByteStringSerializable[I]): Unit = {
-    execInSession{ implicit session =>
+    execInSession { implicit session =>
       tableStorageDao.insert(tableId, dataItem)
     }
   }
