@@ -4,15 +4,15 @@ import io.iohk.cef.ledger.ByteStringSerializable
 import io.iohk.cef.crypto._
 import io.iohk.cef.error.ApplicationError
 
-class Table[I <: DataItem](tableId: TableId, tableStorage: TableStorage)(
-    implicit itemSerializable: ByteStringSerializable[I]) {
+class Table(tableId: TableId, tableStorage: TableStorage) {
 
-  def validate(dataItem: I): Boolean = {
+  def validate[I <: DataItem](dataItem: I)(implicit itemSerializable: ByteStringSerializable[I]): Boolean = {
     val signatureValidation = validateSignatures(dataItem)
     dataItem().isRight && signatureValidation.forall(_._2)
   }
 
-  def insert(dataItem: I): Either[ApplicationError, Unit] = {
+  def insert[I <: DataItem](dataItem: I)(
+      implicit itemSerializable: ByteStringSerializable[I]): Either[ApplicationError, Unit] = {
     dataItem().flatMap { _ =>
       val signatureValidation = validateSignatures(dataItem)
       val validationErrors = signatureValidation.filter(!_._2).map(_._1)
@@ -25,8 +25,9 @@ class Table[I <: DataItem](tableId: TableId, tableStorage: TableStorage)(
     }
   }
 
-  def delete(dataItem: I, deleteSignature: Signature)(
-      implicit actionSerializable: ByteStringSerializable[DataItemAction[I]]): Either[ApplicationError, Unit] = {
+  def delete[I <: DataItem](dataItem: I, deleteSignature: Signature)(
+      implicit itemSerializable: ByteStringSerializable[I],
+      actionSerializable: ByteStringSerializable[DataItemAction[I]]): Either[ApplicationError, Unit] = {
     dataItem().flatMap { _ =>
       val serializedAction = actionSerializable.encode(DataItemAction.Delete(dataItem))
       val signatureValidation =
@@ -41,7 +42,8 @@ class Table[I <: DataItem](tableId: TableId, tableStorage: TableStorage)(
     }
   }
 
-  private def validateSignatures(dataItem: I): Seq[(Signature, Boolean)] = {
+  private def validateSignatures[I <: DataItem](dataItem: I)(
+      implicit itemSerializable: ByteStringSerializable[I]): Seq[(Signature, Boolean)] = {
     val serializedDataItem = itemSerializable.encode(dataItem)
     val signatureValidation = dataItem.witnesses.map {
       case (key, signature) =>
