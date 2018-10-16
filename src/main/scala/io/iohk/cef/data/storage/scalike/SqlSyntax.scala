@@ -21,7 +21,7 @@ case class DataItemSignatureTable(dataItemId: Long, signature: ByteString, signi
 object DataItemSignatureTable extends SQLSyntaxSupport[DataItemSignatureTable] {
   override val tableName = Schema.DataItemSignatureTableName
 
-  def appy(ln: ResultName[DataItemSignatureTable])(rs: WrappedResultSet): DataItemSignatureTable = {
+  def apply(ln: ResultName[DataItemSignatureTable])(rs: WrappedResultSet): DataItemSignatureTable = {
     DataItemSignatureTable(
       rs.long(ln.dataItemId),
       ByteString(rs.bytes(ln.signature)),
@@ -36,7 +36,7 @@ case class DataItemOwnerTable(dataItemId: Long, signingPublicKey: ByteString)
 object DataItemOwnerTable extends SQLSyntaxSupport[DataItemOwnerTable] {
   override val tableName = Schema.DataItemOwnerTableName
 
-  def appy(ln: ResultName[DataItemOwnerTable])(rs: WrappedResultSet): DataItemOwnerTable = {
+  def apply(ln: ResultName[DataItemOwnerTable])(rs: WrappedResultSet): DataItemOwnerTable = {
     DataItemOwnerTable(
       rs.long(ln.dataItemId),
       ByteString(rs.bytes(ln.signingPublicKey))

@@ -1,6 +1,5 @@
 package io.iohk.cef.data
 import io.iohk.cef.crypto._
-import io.iohk.cef.error.ApplicationError
 
 trait DataItem {
 
@@ -14,6 +13,7 @@ trait DataItem {
     * Users/entities with permission to eliminate this data item
     * @return
     */
+  //TODO we will need to replace Seq with a simple boolean AST to better express ownership
   def owners: Seq[SigningPublicKey]
 
   /**
@@ -21,5 +21,5 @@ trait DataItem {
     * Does it make sense to return something else?
     * @return
     */
-  def validate: Either[ApplicationError, Unit]
+  def apply(): Either[DataItemError, Unit]
 }
