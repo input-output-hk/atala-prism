@@ -26,8 +26,7 @@ This installs the `sbt-verify` library to your local repository.
 After installing the `sbt-verify` library to your local repository checkout this repository from github and, for example, type
 
 ```
-cd cef/network
-sbt test`
+sbt test
 ```
 
 in the root of the project.
