@@ -1,12 +1,15 @@
 package io.iohk.cef.crypto
 
 import io.iohk.cef.crypto.encoding._
+import io.iohk.cef.error.ApplicationError
+
+sealed trait CodecError extends ApplicationError
 
 /**
   * ADT describing the types of error that can happen when trying to decode a cryptographic entity of type
   * `T`, from a ByteString
   */
-sealed trait DecodeError[+T]
+sealed trait DecodeError[+T] extends CodecError
 
 object DecodeError {
 
@@ -25,7 +28,7 @@ object DecodeError {
   * ADT describing the types of error that can happen when trying to decode a cryptographic key of type
   * `T`, from a ByteString
   */
-sealed trait KeyDecodeError[+T]
+sealed trait KeyDecodeError[+T] extends CodecError
 
 object KeyDecodeError {
 
@@ -44,14 +47,14 @@ object KeyDecodeError {
   case class KeyDecodingError[T](cause: io.iohk.cef.crypto.KeyDecodingError) extends KeyDecodeError[T]
 }
 
-sealed trait ParseError[+T]
+sealed trait ParseError[+T] extends CodecError
 
 object ParseError {
   case class TextParsingError[T](e: TypedByteStringParsingError) extends ParseError[T]
   case class BytesDecodingError[T](e: DecodeError[T]) extends ParseError[T]
 }
 
-sealed trait KeyParseError[+T]
+sealed trait KeyParseError[+T] extends CodecError
 
 object KeyParseError {
   case class TextParsingError[T](e: TypedByteStringParsingError) extends KeyParseError[T]

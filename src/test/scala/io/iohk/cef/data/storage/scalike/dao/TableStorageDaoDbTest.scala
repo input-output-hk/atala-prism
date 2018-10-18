@@ -12,7 +12,11 @@ trait TableStorageDaoDbTest extends fixture.FlatSpec with AutoRollback with Must
 
   it should "insert data items" in { implicit s =>
     val ownerKeyPair = generateSigningKeyPair()
-    val dataItem =
-    val dataItems = Seq(DummyValidDataItem())
+    val ownerKeyPair2 = generateSigningKeyPair()
+    val dataItems = Seq(DummyValidDataItem(Seq(ownerKeyPair.public), Seq()),
+      DummyValidDataItem(Seq(ownerKeyPair2.public), Seq()))
+    val dao = new TableStorageDao
+    val tableId = "table"
+    dataItems.foreach(dao.insert(tableId, _))
   }
 }
