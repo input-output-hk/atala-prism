@@ -4,12 +4,12 @@ import java.nio.ByteBuffer
 import akka.util.ByteString
 import io.iohk.cef.codecs.nio.NioDecoder
 import io.iohk.cef.crypto._
-import io.iohk.cef.data.{DataItem, DataItemError}
+import io.iohk.cef.data.{DataItem, DataItemError, Owner, Witness}
 import io.iohk.cef.ledger.ByteStringSerializable
 
 case class TestDataItemError(something: Int) extends DataItemError
 
-case class DummyInvalidDataItem(error: TestDataItemError, owners: Seq[SigningPublicKey], witnesses: Seq[(SigningPublicKey, Signature)]) extends DataItem {
+case class DummyInvalidDataItem(id: String, error: TestDataItemError, owners: Seq[Owner], witnesses: Seq[Witness]) extends DataItem {
 
   override def apply(): Either[DataItemError, Unit] = Left(error)
 }
@@ -23,7 +23,7 @@ object DummyInvalidDataItem {
   }
 }
 
-case class DummyValidDataItem(owners: Seq[SigningPublicKey], witnesses: Seq[(SigningPublicKey, Signature)]) extends DataItem {
+case class DummyValidDataItem(id: String, owners: Seq[Owner], witnesses: Seq[Witness]) extends DataItem {
 
   override def apply(): Either[DataItemError, Unit] = Right(())
 }

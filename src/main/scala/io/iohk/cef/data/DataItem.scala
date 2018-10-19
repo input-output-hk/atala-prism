@@ -2,6 +2,8 @@ package io.iohk.cef.data
 
 trait DataItem {
 
+  def id: String
+
   /**
     * Users/entities that witnessed this item and signed it
     * @return

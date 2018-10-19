@@ -4,7 +4,7 @@ import io.iohk.cef.ledger.ByteStringSerializable
 import io.iohk.cef.crypto._
 import io.iohk.cef.error.ApplicationError
 
-class Table(tableId: TableId, tableStorage: TableStorage) {
+class Table(tableStorage: TableStorage) {
 
   def validate[I <: DataItem](dataItem: I)(implicit itemSerializable: ByteStringSerializable[I]): Boolean = {
     val signatureValidation = validateSignatures(dataItem)
@@ -20,7 +20,7 @@ class Table(tableId: TableId, tableStorage: TableStorage) {
         val error = new InvalidSignaturesError(dataItem, validationErrors)
         Left(error)
       } else {
-        Right(tableStorage.insert(tableId, dataItem))
+        Right(tableStorage.insert(dataItem))
       }
     }
   }
@@ -31,13 +31,13 @@ class Table(tableId: TableId, tableStorage: TableStorage) {
     dataItem().flatMap { _ =>
       val serializedAction = actionSerializable.encode(DataItemAction.Delete(dataItem))
       val signatureValidation =
-        dataItem.owners.map(ownerKey => isValidSignature(serializedAction, deleteSignature, ownerKey))
+        dataItem.owners.map(owner => isValidSignature(serializedAction, deleteSignature, owner.key))
       val validSignature = signatureValidation.find(identity)
       if (!dataItem.owners.isEmpty && validSignature.isEmpty) {
         val error = new OwnerMustSignDelete(dataItem)
         Left(error)
       } else {
-        Right(tableStorage.delete(tableId, dataItem))
+        Right(tableStorage.delete(dataItem))
       }
     }
   }
@@ -46,7 +46,7 @@ class Table(tableId: TableId, tableStorage: TableStorage) {
       implicit itemSerializable: ByteStringSerializable[I]): Seq[(Signature, Boolean)] = {
     val serializedDataItem = itemSerializable.encode(dataItem)
     val signatureValidation = dataItem.witnesses.map {
-      case (key, signature) =>
+      case Witness(key, signature) =>
         (signature, isValidSignature(serializedDataItem, signature, key))
     }
     signatureValidation
