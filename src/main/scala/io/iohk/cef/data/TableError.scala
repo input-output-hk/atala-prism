@@ -4,10 +4,10 @@ import io.iohk.cef.crypto._
 
 sealed trait TableError extends ApplicationError
 
-class InvalidSignaturesError(dataItem: DataItem, signature: Seq[Signature]) extends TableError {
-  override def toString: TableId = s"The signatures ${signature} are invalid for dataItem ${dataItem}"
+class InvalidSignaturesError[I <: DataItem](dataItem: I, signature: Seq[Signature]) extends TableError {
+  override def toString: DataItemId = s"The signatures ${signature} are invalid for dataItem ${dataItem}"
 }
 
-class OwnerMustSignDelete(dataItem: DataItem) extends TableError {
-  override def toString: TableId = s"No valid owner signature was provided for dataItem ${dataItem}"
+class OwnerMustSignDelete[I <: DataItem](dataItem: I) extends TableError {
+  override def toString: DataItemId = s"No valid owner signature was provided for dataItem ${dataItem}"
 }

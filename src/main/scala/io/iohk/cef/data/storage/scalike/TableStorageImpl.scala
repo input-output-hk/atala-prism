@@ -1,23 +1,23 @@
 package io.iohk.cef.data.storage.scalike
-import io.iohk.cef.data.{DataItem, TableId}
+import io.iohk.cef.data.DataItem
 import io.iohk.cef.data.storage.TableStorage
 import io.iohk.cef.data.storage.scalike.dao.TableStorageDao
 import io.iohk.cef.ledger.ByteStringSerializable
 import scalikejdbc.{ConnectionPool, DB, DBSession, using}
 
-class TableStorageImpl[I <: DataItem](tableStorageDao: TableStorageDao) extends TableStorage {
+class TableStorageImpl(tableStorageDao: TableStorageDao) extends TableStorage {
 
-  override def insert[I <: DataItem](tableId: TableId, dataItem: I)(
+  override def insert[I <: DataItem](dataItem: I)(
       implicit itemSerializable: ByteStringSerializable[I]): Unit = {
     execInSession { implicit session =>
-      tableStorageDao.insert(tableId, dataItem)
+      tableStorageDao.insert(dataItem)
     }
   }
 
-  override def delete[I <: DataItem](tableId: TableId, dataItem: I)(
+  override def delete[I <: DataItem](dataItem: I)(
       implicit itemSerializable: ByteStringSerializable[I]): Unit = {
     execInSession { implicit session =>
-      tableStorageDao.delete(tableId, dataItem)
+      tableStorageDao.delete(dataItem)
     }
   }
 
@@ -26,5 +26,4 @@ class TableStorageImpl[I <: DataItem](tableStorageDao: TableStorageDao) extends 
       DB(conn).localTx(block)
     }
   }
-
 }
