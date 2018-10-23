@@ -6,9 +6,8 @@ import scalikejdbc.{DBSession, _}
 
 class TableStorageDao {
 
-  def insert[I <: DataItem](dataItem: I)(
-      implicit itemSerializable: ByteStringSerializable[I],
-      session: DBSession): Unit = {
+  def insert[I <: DataItem](
+      dataItem: I)(implicit itemSerializable: ByteStringSerializable[I], session: DBSession): Unit = {
     val itemColumn = DataItemTable.column
 
     val serializedItem = itemSerializable.encode(dataItem)
@@ -23,9 +22,8 @@ class TableStorageDao {
     insertDataItemOwners(dataItem)
   }
 
-  def delete[I <: DataItem](dataItem: I)(
-      implicit itemSerializable: ByteStringSerializable[I],
-      session: DBSession): Unit = {
+  def delete[I <: DataItem](
+      dataItem: I)(implicit itemSerializable: ByteStringSerializable[I], session: DBSession): Unit = {
     val itemColumn = DataItemTable.column
     val sigColumn = DataItemSignatureTable.column
     val owColumn = DataItemOwnerTable.column

@@ -6,7 +6,6 @@ import io.iohk.cef.utils.ByteSizeable
 
 import scala.annotation.tailrec
 import scala.concurrent.duration._
-import scala.language.implicitConversions
 
 /**
   * A TransactionPool serves as a queue for transactions before being added to a blockchain.
@@ -33,6 +32,7 @@ class TransactionPool[State, Header <: BlockHeader, Tx <: Transaction[State]](
     * @return Some block if the pool contains
     */
   def generateBlock(): B = {
+
     val blockTxs = getTxs(TimedQueue(), timedQueue)
     val header = headerGenerator(blockTxs.queue)
     val block = Block(header, blockTxs.queue)
@@ -90,6 +90,4 @@ class TransactionPool[State, Header <: BlockHeader, Tx <: Transaction[State]](
     }
   }
 
-  implicit private def scalaDurationToJavaDuration(duration: Duration): java.time.Duration =
-    java.time.Duration.ofMillis(duration.toMillis)
 }

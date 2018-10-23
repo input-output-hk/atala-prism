@@ -4,7 +4,7 @@ import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.ledger.{Block, BlockHeader, ByteStringSerializable, Transaction}
 import io.iohk.cef.network.{Network, NodeId}
-import io.iohk.cef.transactionpool.TransactionPoolFutureInterface
+import io.iohk.cef.transactionpool.TransactionPoolInterface
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -24,7 +24,7 @@ import scala.concurrent.{ExecutionContext, Future}
   * @tparam Header
   */
 class NodeCore[State, Header <: BlockHeader, Tx <: Transaction[State]](
-    consensusMap: Map[LedgerId, (TransactionPoolFutureInterface[State, Header, Tx], Consensus[State, Header, Tx])],
+    consensusMap: Map[LedgerId, (TransactionPoolInterface[State, Header, Tx], Consensus[State, Header, Tx])],
     txNetwork: Network[Envelope[Tx]],
     blockNetwork: Network[Envelope[Block[State, Header, Tx]]],
     me: NodeId)(
@@ -48,7 +48,7 @@ class NodeCore[State, Header <: BlockHeader, Tx <: Transaction[State]](
       networkDissemination: Future[Either[ApplicationError, Unit]]) = {
     process(txEnvelope, networkDissemination) { env =>
       val txPoolService = consensusMap(env.ledgerId)._1
-      txPoolService.processTransaction(txEnvelope.content)
+      Future(txPoolService.processTransaction(txEnvelope.content))
     }
   }
 

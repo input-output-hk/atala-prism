@@ -7,15 +7,13 @@ import scalikejdbc.{ConnectionPool, DB, DBSession, using}
 
 class TableStorageImpl(tableStorageDao: TableStorageDao) extends TableStorage {
 
-  override def insert[I <: DataItem](dataItem: I)(
-      implicit itemSerializable: ByteStringSerializable[I]): Unit = {
+  override def insert[I <: DataItem](dataItem: I)(implicit itemSerializable: ByteStringSerializable[I]): Unit = {
     execInSession { implicit session =>
       tableStorageDao.insert(dataItem)
     }
   }
 
-  override def delete[I <: DataItem](dataItem: I)(
-      implicit itemSerializable: ByteStringSerializable[I]): Unit = {
+  override def delete[I <: DataItem](dataItem: I)(implicit itemSerializable: ByteStringSerializable[I]): Unit = {
     execInSession { implicit session =>
       tableStorageDao.delete(dataItem)
     }
