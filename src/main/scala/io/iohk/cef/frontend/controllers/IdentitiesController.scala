@@ -2,13 +2,10 @@ package io.iohk.cef.frontend.controllers
 
 import akka.http.scaladsl.model.StatusCodes
 import akka.stream.Materializer
-import com.alexitc.playsonify.core.FutureApplicationResult
-import com.alexitc.playsonify.models.{ErrorId, ServerError, ApplicationError => PlaysonifyError}
+import com.alexitc.playsonify.models.{ErrorId, ServerError}
 import io.iohk.cef.LedgerId
-import io.iohk.cef.error.{ApplicationError => CefError}
-import io.iohk.cef.frontend.client
 import io.iohk.cef.frontend.client.ServiceResponseExtensions
-import io.iohk.cef.frontend.controllers.common.{Codecs, CustomJsonController}
+import io.iohk.cef.frontend.controllers.common._
 import io.iohk.cef.frontend.models.{
   CreateIdentityTransactionRequest,
   IdentityTransactionType,
@@ -16,7 +13,6 @@ import io.iohk.cef.frontend.models.{
 }
 import io.iohk.cef.frontend.services.IdentityTransactionService
 import io.iohk.cef.ledger.identity.IdentityTransaction
-import org.scalactic.{Bad, Good}
 
 import scala.concurrent.ExecutionContext
 
@@ -38,7 +34,8 @@ class IdentitiesController(service: IdentityTransactionService)(implicit mat: Ma
             _ <- service.submitIdentityTransaction(submitTransaction).onFor
           } yield tx
 
-          fromFutureEither(result.res)
+          // The actual method call never fails but the type system says it could, we need this to be able to compile
+          fromFutureEither(result.res, IdentityTransactionCreationError())
         }
       }
     }
@@ -51,20 +48,6 @@ object IdentitiesController {
 
     override def cause: Option[Throwable] = None
 
-  }
-
-  private def fromFutureEither(value: client.Response[IdentityTransaction])(
-      implicit ec: ExecutionContext): FutureApplicationResult[IdentityTransaction] = {
-
-    value.map {
-      case Left(e) => Bad(fromCefError(e)).accumulating
-      case Right(result) => Good(result)
-    }
-  }
-
-  private def fromCefError(error: CefError): PlaysonifyError = {
-    // The actual method call never fails but the type system says it could, we need this to be able to compile
-    IdentityTransactionCreationError()
   }
 
   private def toSubmitRequest(it: IdentityTransaction, ledgerId: LedgerId): SubmitIdentityTransactionRequest = {
