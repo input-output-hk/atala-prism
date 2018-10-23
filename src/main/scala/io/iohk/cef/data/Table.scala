@@ -16,7 +16,7 @@ class Table(tableStorage: TableStorage) {
     dataItem().flatMap { _ =>
       val signatureValidation = validateSignatures(dataItem)
       val validationErrors = signatureValidation.filter(!_._2).map(_._1)
-      if (!validationErrors.isEmpty) {
+      if (validationErrors.nonEmpty) {
         val error = new InvalidSignaturesError(dataItem, validationErrors)
         Left(error)
       } else {
@@ -33,7 +33,7 @@ class Table(tableStorage: TableStorage) {
       val signatureValidation =
         dataItem.owners.map(owner => isValidSignature(serializedAction, deleteSignature, owner.key))
       val validSignature = signatureValidation.find(identity)
-      if (!dataItem.owners.isEmpty && validSignature.isEmpty) {
+      if (dataItem.owners.nonEmpty && validSignature.isEmpty) {
         val error = new OwnerMustSignDelete(dataItem)
         Left(error)
       } else {
