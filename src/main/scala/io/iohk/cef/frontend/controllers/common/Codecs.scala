@@ -20,24 +20,26 @@ import scala.util.Try
 
 object Codecs {
 
+  private def parseCryptoObject[A, B](json: JsValue, fieldName: String, f: ByteString => Either[B, A]) = {
+    json
+      .asOpt[String]
+      .map { string =>
+        Try(fromHex(string)).toOption
+          .map(f)
+          .flatMap(_.toOption)
+          .map(JsSuccess(_))
+          .getOrElse(JsError(s"Invalid $fieldName"))
+      }
+      .getOrElse(JsError(s"Missing $fieldName"))
+  }
+
   implicit lazy val signingPublicKeyFormat: Format[SigningPublicKey] = new Format[SigningPublicKey] {
     override def writes(o: SigningPublicKey): JsValue = {
       JsString(toCleanHex(o.toByteString))
     }
 
     override def reads(json: JsValue): JsResult[SigningPublicKey] = {
-      val maybe = json
-        .asOpt[String]
-        .flatMap { string =>
-          Try(fromHex(string)).toOption
-        }
-        .flatMap { bytes =>
-          SigningPublicKey.decodeFrom(bytes).toOption
-        }
-
-      maybe
-        .map(JsSuccess(_))
-        .getOrElse(JsError("Invalid or missing public key"))
+      parseCryptoObject(json, "public key", SigningPublicKey.decodeFrom)
     }
   }
 
@@ -47,18 +49,7 @@ object Codecs {
     }
 
     override def reads(json: JsValue): JsResult[SigningPrivateKey] = {
-      val maybe = json
-        .asOpt[String]
-        .flatMap { string =>
-          Try(fromHex(string)).toOption
-        }
-        .flatMap { bytes =>
-          SigningPrivateKey.decodeFrom(bytes).toOption
-        }
-
-      maybe
-        .map(JsSuccess(_))
-        .getOrElse(JsError("Invalid or missing private key"))
+      parseCryptoObject(json, "private key", SigningPrivateKey.decodeFrom)
     }
   }
 
@@ -68,18 +59,7 @@ object Codecs {
     }
 
     override def reads(json: JsValue): JsResult[Signature] = {
-      val maybe = json
-        .asOpt[String]
-        .flatMap { string =>
-          Try(fromHex(string)).toOption
-        }
-        .flatMap { bytes =>
-          Signature.decodeFrom(bytes).toOption
-        }
-
-      maybe
-        .map(JsSuccess(_))
-        .getOrElse(JsError("Invalid or missing signature"))
+      parseCryptoObject(json, "signature", Signature.decodeFrom)
     }
   }
 
@@ -248,30 +228,6 @@ object Codecs {
         .map(JsSuccess.apply(_))
         .getOrElse {
           JsError.apply("Invalid transaction type")
-        }
-    }
-  }
-
-  implicit val publicKeyReads: Reads[SigningPublicKey] = Reads { json =>
-    json.validate[String].flatMap { string =>
-      val byteString = fromHex(string)
-      SigningPublicKey
-        .decodeFrom(byteString)
-        .map(JsSuccess.apply(_))
-        .getOrElse {
-          JsError.apply("Invalid public key")
-        }
-    }
-  }
-
-  implicit val privateKeyReads: Reads[SigningPrivateKey] = Reads { json =>
-    json.validate[String].flatMap { string =>
-      val byteString = fromHex(string)
-      SigningPrivateKey
-        .decodeFrom(byteString)
-        .map(JsSuccess.apply(_))
-        .getOrElse {
-          JsError.apply("Invalid private key")
         }
     }
   }
