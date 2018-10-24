@@ -7,7 +7,7 @@ case class DataItemTable(dataItemId: String, dataItem: ByteString)
 object DataItemTable extends SQLSyntaxSupport[DataItemTable] {
   override val tableName = Schema.DataTableName
 
-  def appy(ln: ResultName[DataItemTable])(rs: WrappedResultSet): DataItemTable = {
+  def apply(ln: ResultName[DataItemTable])(rs: WrappedResultSet): DataItemTable = {
     DataItemTable(
       rs.string(ln.dataItemId),
       ByteString(rs.bytes(ln.dataItem))
