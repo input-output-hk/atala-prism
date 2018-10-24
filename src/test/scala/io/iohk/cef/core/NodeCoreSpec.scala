@@ -1,11 +1,10 @@
 package io.iohk.cef.core
-import akka.util.Timeout
 import io.iohk.cef.LedgerId
 import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.ledger.{Block, ByteStringSerializable}
 import io.iohk.cef.network.{MessageStream, Network, NodeId}
 import io.iohk.cef.test.{DummyBlockHeader, DummyTransaction}
-import io.iohk.cef.transactionpool.TransactionPoolFutureInterface
+import io.iohk.cef.transactionpool.TransactionPoolInterface
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar
@@ -13,15 +12,14 @@ import org.scalatest.{AsyncFlatSpec, MustMatchers}
 
 import scala.collection.immutable
 import scala.concurrent.Future
-import scala.concurrent.duration._
 
 class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
 
   def mockConsensus: Consensus[String, DummyBlockHeader, DummyTransaction] =
     mock[Consensus[String, DummyBlockHeader, DummyTransaction]]
 
-  def mockTxPoolFutureInterface: TransactionPoolFutureInterface[String, DummyBlockHeader, DummyTransaction] =
-    mock[TransactionPoolFutureInterface[String, DummyBlockHeader, DummyTransaction]]
+  def mockTxPoolFutureInterface: TransactionPoolInterface[String, DummyBlockHeader, DummyTransaction] =
+    mock[TransactionPoolInterface[String, DummyBlockHeader, DummyTransaction]]
 
   type State = String
   type Header = DummyBlockHeader
@@ -36,8 +34,6 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
   def mockBlockSerializable: ByteStringSerializable[Envelope[BlockType]] =
     mock[ByteStringSerializable[Envelope[BlockType]]]
 
-  val timeout = Timeout(1 minute)
-
   private def setupTest(ledgerId: LedgerId, me: NodeId = NodeId("abcd"))(
       implicit txSerializable: ByteStringSerializable[Envelope[Tx]],
       blockSerializable: ByteStringSerializable[Envelope[Block[State, Header, Tx]]]) = {
@@ -50,7 +46,6 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
     when(blockDM.messageStream).thenReturn(blockMessageStream)
     when(txMessageStream.foreach(ArgumentMatchers.any())).thenReturn(Future.successful(()))
     when(blockMessageStream.foreach(ArgumentMatchers.any())).thenReturn(Future.successful(()))
-    implicit val t = timeout
     (
       new NodeCore(
         consensusMap,
@@ -73,7 +68,7 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
     implicit val bs2 = mockBlockSerializable
     val (core, consensusMap, txDM, _) = setupTest(ledgerId)
     when(consensusMap(ledgerId)._1.processTransaction(testEnvelope.content))
-      .thenReturn(Future.successful(Right(())))
+      .thenReturn(Right(()))
     core
       .receiveTransaction(testEnvelope)
       .map(r => {

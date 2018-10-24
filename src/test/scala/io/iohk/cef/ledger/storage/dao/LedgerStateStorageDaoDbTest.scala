@@ -4,8 +4,8 @@ import io.iohk.cef.LedgerId
 import io.iohk.cef.ledger.storage.scalike.LedgerStateTable
 import io.iohk.cef.ledger.storage.scalike.dao.LedgerStateStorageDao
 import io.iohk.cef.ledger.{ByteStringSerializable, LedgerState}
-import org.scalatest.mockito.MockitoSugar
 import org.mockito.Mockito._
+import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{MustMatchers, fixture}
 import scalikejdbc._
 import scalikejdbc.scalatest.AutoRollback

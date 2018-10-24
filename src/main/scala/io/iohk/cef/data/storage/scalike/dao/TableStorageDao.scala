@@ -5,9 +5,8 @@ import io.iohk.cef.ledger.ByteStringSerializable
 import scalikejdbc.{DBSession, _}
 
 class TableStorageDao {
-  def insert[I <: DataItem](dataItem: I)(
-      implicit itemSerializable: ByteStringSerializable[I],
-      session: DBSession): Unit = {
+  def insert[I <: DataItem](
+      dataItem: I)(implicit itemSerializable: ByteStringSerializable[I], session: DBSession): Unit = {
     val itemColumn = DataItemTable.column
 
     val serializedItem = itemSerializable.encode(dataItem)
@@ -32,7 +31,9 @@ class TableStorageDao {
     sql"""delete from ${DataItemSignatureTable.table} where ${sigColumn.dataItemId} = ${dataItem.id}"""
       .executeUpdate()
       .apply()
-    sql"""delete from ${DataItemOwnerTable.table} where ${owColumn.dataItemId} = ${dataItem.id}""".executeUpdate().apply()
+    sql"""delete from ${DataItemOwnerTable.table} where ${owColumn.dataItemId} = ${dataItem.id}"""
+      .executeUpdate()
+      .apply()
     sql"""delete from ${DataItemTable.table} where ${itemColumn.dataItemId} = ${dataItem.id}"""
       .executeUpdate()
       .apply()

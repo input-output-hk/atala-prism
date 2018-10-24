@@ -45,6 +45,8 @@ scalafmtTestOnCompile in ThisBuild := true
 // doctest
 doctestTestFramework := DoctestTestFramework.ScalaTest
 
+val playsonifyVersion = "2.0.0-RC0"
+
 val dep = {
   val akkaVersion = "2.5.12"
 
@@ -77,7 +79,12 @@ val dep = {
     "io.monix" %% "monix" % "3.0.0-RC1",
     "org.scala-stm" %% "scala-stm" % "0.8",
     "com.github.sbtourist" % "journalio" % "1.4.2",
-    "commons-io" % "commons-io" % "2.6" % Test
+    "commons-io" % "commons-io" % "2.6" % Test,
+    // playsonify
+    "com.alexitc" %% "playsonify-core" % playsonifyVersion,
+    "com.alexitc" %% "playsonify-akka-http" % playsonifyVersion,
+    "com.typesafe.play" %% "play-json" % "2.6.10",
+    "de.heikoseeberger" %% "akka-http-play-json" % "1.22.0"
   )
 }
 

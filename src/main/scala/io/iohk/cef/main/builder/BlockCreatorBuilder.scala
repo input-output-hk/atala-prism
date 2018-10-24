@@ -1,5 +1,4 @@
 package io.iohk.cef.main.builder
-import akka.actor.Props
 import akka.util.Timeout
 import io.iohk.cef.consensus.raft.LogEntry
 import io.iohk.cef.ledger.{Block, BlockHeader, ByteStringSerializable, Transaction}
@@ -21,12 +20,11 @@ trait BlockCreatorBuilder[S, H <: BlockHeader, T <: Transaction[S]] {
       sByteStringSerializable: ByteStringSerializable[S],
       timeout: Timeout,
       dByteStringSerializable: ByteStringSerializable[DiscoveryWireMessage],
-      lByteStringSerializable: ByteStringSerializable[LogEntry[Block[S, H, T]]]): Props =
-    Props(
-      new BlockCreator(
-        txPoolActorModelInterface,
-        consensus,
-        ledgerConfig.blockCreatorInitialDelay,
-        ledgerConfig.blockCreatorInterval
-      ))
+      lByteStringSerializable: ByteStringSerializable[LogEntry[Block[S, H, T]]]): BlockCreator[S, H, T] =
+    new BlockCreator(
+      txPoolFutureInterface,
+      consensus,
+      ledgerConfig.blockCreatorInitialDelay,
+      ledgerConfig.blockCreatorInterval
+    )
 }
