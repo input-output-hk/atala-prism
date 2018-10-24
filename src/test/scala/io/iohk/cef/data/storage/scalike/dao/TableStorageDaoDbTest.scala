@@ -4,15 +4,48 @@ import io.iohk.cef.data.storage.scalike.{DataItemOwnerTable, DataItemSignatureTa
 import io.iohk.cef.data.{DataItem, DataItemId, Owner, Witness}
 import io.iohk.cef.test.DummyValidDataItem
 import org.scalatest.mockito.MockitoSugar
-import org.scalatest.{MustMatchers, fixture}
+import org.scalatest.{EitherValues, MustMatchers, fixture}
 import scalikejdbc._
 import scalikejdbc.scalatest.AutoRollback
 
-trait TableStorageDaoDbTest extends fixture.FlatSpec with AutoRollback with MustMatchers with MockitoSugar {
+trait TableStorageDaoDbTest extends fixture.FlatSpec with AutoRollback with MustMatchers with MockitoSugar with EitherValues {
 
+  behavior of "TableStorageDaoDbTest"
 
+  it should "insert data items" in { implicit s =>
+    val ownerKeyPair = generateSigningKeyPair()
+    val ownerKeyPair2 = generateSigningKeyPair()
+    val dataItems = Seq(DummyValidDataItem("valid", Seq(Owner(ownerKeyPair.public)), Seq()),
+      DummyValidDataItem("valid2", Seq(Owner(ownerKeyPair2.public)), Seq()))
+    val dao = new TableStorageDao
 
-  def selectAll[I <: DataItem](ids: Seq[DataItemId], dataItemCreator: (String, Seq[Owner], Seq[Witness]) => I)(
+    val itemsBefore = itemsFromDb(dataItems.map(_.id))
+    itemsBefore mustBe Right(Seq())
+    dataItems.foreach(dao.insert(_))
+    val itemsAfter = itemsFromDb(dataItems.map(_.id))
+    itemsAfter.isRight mustBe true
+    itemsAfter.right.value.sortBy(_.id) mustBe dataItems.sortBy(_.id)
+  }
+
+  it should "delete data items" in { implicit s =>
+    val ownerKeyPair = generateSigningKeyPair()
+    val ownerKeyPair2 = generateSigningKeyPair()
+    val dataItems = Seq(DummyValidDataItem("valid", Seq(Owner(ownerKeyPair.public)), Seq()),
+      DummyValidDataItem("valid2", Seq(Owner(ownerKeyPair2.public)), Seq()))
+    val dao = new TableStorageDao
+
+    val itemsBefore = itemsFromDb(dataItems.map(_.id))
+    itemsBefore mustBe Right(Seq())
+    dataItems.foreach(dao.insert(_))
+    val itemsMiddle = itemsFromDb(dataItems.map(_.id))
+    itemsMiddle.isRight mustBe true
+    itemsMiddle.right.value.sortBy(_.id) mustBe dataItems.sortBy(_.id)
+    dataItems.foreach(dao.delete(_))
+    val itemsAfter = itemsFromDb(dataItems.map(_.id))
+    itemsAfter mustBe Right(Seq())
+  }
+
+  private def selectAll[I <: DataItem](ids: Seq[DataItemId], dataItemCreator: (String, Seq[Owner], Seq[Witness]) => I)(
     implicit session: DBSession): Either[CodecError, Seq[I]] = {
     import io.iohk.cef.utils.EitherTransforms
     val di = DataItemTable.syntax("di")
@@ -41,13 +74,13 @@ trait TableStorageDaoDbTest extends fixture.FlatSpec with AutoRollback with Must
         from ${DataItemSignatureTable as dis}
         where ${dis.dataItemId} = ${dataItemId}
        """
-      .map(rs => {
+      .map{ rs =>
         val row = DataItemSignatureTable(dis.resultName)(rs)
         for {
           key <- SigningPublicKey.decodeFrom(row.signingPublicKey)
           sig <- Signature.decodeFrom(row.signature)
         } yield Witness(key, sig)
-      })
+      }
       .list()
       .apply()
   }
@@ -66,39 +99,4 @@ trait TableStorageDaoDbTest extends fixture.FlatSpec with AutoRollback with Must
 
   private def itemsFromDb(itemIds: Seq[String])(implicit session: DBSession) = selectAll(itemIds, (s, o, w) => DummyValidDataItem(s, o, w))
 
-
-  behavior of "TableStorageDaoDbTest"
-
-  it should "insert data items" in { implicit s =>
-    val ownerKeyPair = generateSigningKeyPair()
-    val ownerKeyPair2 = generateSigningKeyPair()
-    val dataItems = Seq(DummyValidDataItem("valid", Seq(Owner(ownerKeyPair.public)), Seq()),
-      DummyValidDataItem("valid2", Seq(Owner(ownerKeyPair2.public)), Seq()))
-    val dao = new TableStorageDao
-
-    val itemsBefore = itemsFromDb(dataItems.map(_.id))
-    itemsBefore mustBe Right(Seq())
-    dataItems.foreach(dao.insert(_))
-    val itemsAfter = itemsFromDb(dataItems.map(_.id))
-    itemsAfter.isRight mustBe true
-    itemsAfter.right.get.sortBy(_.id) mustBe dataItems.sortBy(_.id)
-  }
-
-  it should "delete data items" in { implicit s =>
-    val ownerKeyPair = generateSigningKeyPair()
-    val ownerKeyPair2 = generateSigningKeyPair()
-    val dataItems = Seq(DummyValidDataItem("valid", Seq(Owner(ownerKeyPair.public)), Seq()),
-      DummyValidDataItem("valid2", Seq(Owner(ownerKeyPair2.public)), Seq()))
-    val dao = new TableStorageDao
-
-    val itemsBefore = itemsFromDb(dataItems.map(_.id))
-    itemsBefore mustBe Right(Seq())
-    dataItems.foreach(dao.insert(_))
-    val itemsMiddle = itemsFromDb(dataItems.map(_.id))
-    itemsMiddle.isRight mustBe true
-    itemsMiddle.right.get.sortBy(_.id) mustBe dataItems.sortBy(_.id)
-    dataItems.foreach(dao.delete(_))
-    val itemsAfter = itemsFromDb(dataItems.map(_.id))
-    itemsAfter mustBe Right(Seq())
-  }
 }
