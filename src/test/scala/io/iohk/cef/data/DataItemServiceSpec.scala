@@ -13,7 +13,7 @@ class DataItemServiceSpec extends FlatSpec {
   private implicit val dataItemSerializable = mock[ByteStringSerializable[DataItem]]
   private implicit val actionSerializable = mock[ByteStringSerializable[DataItemAction[DataItem]]]
 
-  behavior of "Something"
+  behavior of "DataItemService"
 
   it should "insert a data item" in {
     val dataItem = mock[DataItem]
