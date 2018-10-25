@@ -6,12 +6,12 @@ import io.iohk.cef.error.ApplicationError
 
 class Table(tableStorage: TableStorage) {
 
-  def validate[I <: DataItem](dataItem: I)(implicit itemSerializable: ByteStringSerializable[I]): Boolean = {
+  def validate[I](dataItem: DataItem[I])(implicit itemSerializable: ByteStringSerializable[I]): Boolean = {
     val signatureValidation = validateSignatures(dataItem)
     dataItem().isRight && signatureValidation.forall(_._2)
   }
 
-  def insert[I <: DataItem](dataItem: I)(
+  def insert[I](dataItem: DataItem[I])(
       implicit itemSerializable: ByteStringSerializable[I]): Either[ApplicationError, Unit] = {
     dataItem().flatMap { _ =>
       val signatureValidation = validateSignatures(dataItem)
@@ -25,7 +25,7 @@ class Table(tableStorage: TableStorage) {
     }
   }
 
-  def delete[I <: DataItem](dataItem: I, deleteSignature: Signature)(
+  def delete[I](dataItem: DataItem[I], deleteSignature: Signature)(
       implicit itemSerializable: ByteStringSerializable[I],
       actionSerializable: ByteStringSerializable[DataItemAction[I]]): Either[ApplicationError, Unit] = {
     dataItem().flatMap { _ =>
@@ -42,12 +42,12 @@ class Table(tableStorage: TableStorage) {
     }
   }
 
-  private def validateSignatures[I <: DataItem](dataItem: I)(
+  private def validateSignatures[I](dataItem: DataItem[I])(
       implicit itemSerializable: ByteStringSerializable[I]): Seq[(Signature, Boolean)] = {
-    val serializedDataItem = itemSerializable.encode(dataItem)
+    val serializedDataItemData = itemSerializable.encode(dataItem.data)
     val signatureValidation = dataItem.witnesses.map {
       case Witness(key, signature) =>
-        (signature, isValidSignature(serializedDataItem, signature, key))
+        (signature, isValidSignature(serializedDataItemData, signature, key))
     }
     signatureValidation
   }

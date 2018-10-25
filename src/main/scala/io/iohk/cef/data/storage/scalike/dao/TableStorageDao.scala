@@ -5,11 +5,11 @@ import io.iohk.cef.ledger.ByteStringSerializable
 import scalikejdbc.{DBSession, _}
 
 class TableStorageDao {
-  def insert[I <: DataItem](
-      dataItem: I)(implicit itemSerializable: ByteStringSerializable[I], session: DBSession): Unit = {
+  def insert[I](
+      dataItem: DataItem[I])(implicit itemSerializable: ByteStringSerializable[I], session: DBSession): Unit = {
     val itemColumn = DataItemTable.column
 
-    val serializedItem = itemSerializable.encode(dataItem)
+    val serializedItem = itemSerializable.encode(dataItem.data)
     sql"""insert into ${DataItemTable.table} (
           ${itemColumn.dataItemId},
           ${itemColumn.dataItem}
@@ -21,13 +21,11 @@ class TableStorageDao {
     insertDataItemOwners(dataItem)
   }
 
-  def delete[I <: DataItem](
-      dataItem: I)(implicit itemSerializable: ByteStringSerializable[I], session: DBSession): Unit = {
+  def delete[I](dataItem: DataItem[I])(implicit session: DBSession): Unit = {
     val itemColumn = DataItemTable.column
     val sigColumn = DataItemSignatureTable.column
     val owColumn = DataItemOwnerTable.column
 
-    val serializedItem = itemSerializable.encode(dataItem)
     sql"""delete from ${DataItemSignatureTable.table} where ${sigColumn.dataItemId} = ${dataItem.id}"""
       .executeUpdate()
       .apply()
@@ -39,7 +37,7 @@ class TableStorageDao {
       .apply()
   }
 
-  private def insertDataItemOwners[I <: DataItem](dataItem: I)(implicit session: DBSession) = {
+  private def insertDataItemOwners[I](dataItem: DataItem[I])(implicit session: DBSession) = {
     val ownerColumn = DataItemOwnerTable.column
 
     dataItem.owners.foreach(owner => {
@@ -55,7 +53,7 @@ class TableStorageDao {
     })
   }
 
-  private def insertDataItemSignatures[I <: DataItem](dataItem: I)(implicit session: DBSession) = {
+  private def insertDataItemSignatures[I](dataItem: DataItem[I])(implicit session: DBSession) = {
     val sigColumn = DataItemSignatureTable.column
     dataItem.witnesses.foreach {
       case Witness(signature, key) =>

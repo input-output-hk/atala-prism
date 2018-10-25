@@ -1,6 +1,8 @@
 package io.iohk.cef.data
 
-trait DataItem {
+trait DataItem[T] {
+
+  def data: T
 
   def id: String
 
