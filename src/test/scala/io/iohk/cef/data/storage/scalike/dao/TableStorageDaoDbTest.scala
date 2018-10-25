@@ -2,6 +2,7 @@ package io.iohk.cef.data.storage.scalike.dao
 import io.iohk.cef.crypto._
 import io.iohk.cef.data.storage.scalike.{DataItemOwnerTable, DataItemSignatureTable, DataItemTable}
 import io.iohk.cef.data.{DataItem, DataItemId, Owner, Witness}
+import io.iohk.cef.ledger.ByteStringSerializable
 import io.iohk.cef.test.DummyValidDataItem
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{EitherValues, MustMatchers, fixture}
@@ -53,8 +54,9 @@ trait TableStorageDaoDbTest
     itemsAfter mustBe Right(Seq())
   }
 
-  private def selectAll[I](ids: Seq[DataItemId], dataItemCreator: (String, Seq[Owner], Seq[Witness]) => DataItem[I])(
-      implicit session: DBSession): Either[CodecError, Seq[DataItem[I]]] = {
+  private def selectAll[I](ids: Seq[DataItemId], dataItemCreator: (String, I, Seq[Owner], Seq[Witness]) => DataItem[I])(
+      implicit session: DBSession,
+      serializable: ByteStringSerializable[I]): Either[CodecError, Seq[DataItem[I]]] = {
     import io.iohk.cef.utils.EitherTransforms
     val di = DataItemTable.syntax("di")
     val dataItemRows = sql"""
@@ -70,7 +72,14 @@ trait TableStorageDaoDbTest
       for {
         owners <- ownerEither
         witnesses <- witnessEither
-      } yield dataItemCreator(dir.dataItemId, owners, witnesses)
+      } yield
+        dataItemCreator(
+          dir.dataItemId,
+          serializable
+            .decode(dir.dataItem)
+            .getOrElse(throw new IllegalStateException(s"Could not decode data item: ${dir}")),
+          owners,
+          witnesses)
     })
     dataItems.toEitherList
   }
@@ -106,6 +115,6 @@ trait TableStorageDaoDbTest
   }
 
   private def itemsFromDb(itemIds: Seq[String])(implicit session: DBSession) =
-    selectAll(itemIds, (s, o, w) => DummyValidDataItem(s, s, o, w))
+    selectAll(itemIds, (s, d, o, w) => DummyValidDataItem(s, d, o, w))
 
 }
