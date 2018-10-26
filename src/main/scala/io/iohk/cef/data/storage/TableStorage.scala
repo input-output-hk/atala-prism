@@ -1,6 +1,7 @@
 package io.iohk.cef.data.storage
 import io.iohk.cef.TableId
-import io.iohk.cef.data.DataItem
+import io.iohk.cef.data.{DataItem, DataItemFactory}
+import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.ledger.ByteStringSerializable
 
 trait TableStorage {
@@ -9,5 +10,7 @@ trait TableStorage {
 
   def delete[I](dataItem: DataItem[I]): Unit
 
-  def selectAll[I](tableId: TableId)(implicit itemSerializable: ByteStringSerializable[I]): Seq[DataItem[I]]
+  def selectAll[I](tableId: TableId)(
+      implicit diFactory: DataItemFactory[I],
+      itemSerializable: ByteStringSerializable[I]): Either[ApplicationError, Seq[DataItem[I]]]
 }

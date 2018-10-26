@@ -1,14 +1,16 @@
 package io.iohk.cef.data.storage.scalike
 import akka.util.ByteString
+import io.iohk.cef.TableId
 import scalikejdbc._
 
-case class DataItemTable(dataItemId: String, dataItem: ByteString)
+case class DataItemTable(tableId: TableId, dataItemId: String, dataItem: ByteString)
 
 object DataItemTable extends SQLSyntaxSupport[DataItemTable] {
   override val tableName = Schema.DataTableName
 
   def apply(ln: ResultName[DataItemTable])(rs: WrappedResultSet): DataItemTable = {
     DataItemTable(
+      rs.string(ln.tableId),
       rs.string(ln.dataItemId),
       ByteString(rs.bytes(ln.dataItem))
     )

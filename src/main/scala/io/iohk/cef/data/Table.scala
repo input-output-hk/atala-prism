@@ -13,9 +13,9 @@ class Table(tableStorage: TableStorage) {
   }
 
   def select[I](tableId: TableId)(
-      implicit itemSerializable: ByteStringSerializable[I]): Either[ApplicationError, Seq[DataItem[I]]] = {
-    //No errors?
-    Right(tableStorage.selectAll(tableId))
+      implicit dataItemFactory: DataItemFactory[I],
+      itemSerializable: ByteStringSerializable[I]): Either[ApplicationError, Seq[DataItem[I]]] = {
+    tableStorage.selectAll(tableId)
   }
 
   def insert[I](dataItem: DataItem[I])(

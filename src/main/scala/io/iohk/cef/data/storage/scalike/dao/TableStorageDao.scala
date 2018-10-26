@@ -2,7 +2,7 @@ package io.iohk.cef.data.storage.scalike.dao
 import io.iohk.cef.TableId
 import io.iohk.cef.crypto._
 import io.iohk.cef.data.storage.scalike.{DataItemOwnerTable, DataItemSignatureTable, DataItemTable}
-import io.iohk.cef.data.{DataItem, DataItemId, Owner, Witness}
+import io.iohk.cef.data._
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.ledger.ByteStringSerializable
 import scalikejdbc.{DBSession, _}
@@ -40,37 +40,41 @@ class TableStorageDao {
       .apply()
   }
 
-
-
-  def selectAll[I](tableId: TableId, dataItemCreator: (String, I, Seq[Owner], Seq[Witness]) => I)(
-    implicit session: DBSession, serializable: ByteStringSerializable[I]): Either[ApplicationError, Seq[I]] = {
+  def selectAll[I](tableId: TableId)(
+      implicit diFactory: DataItemFactory[I],
+      session: DBSession,
+      serializable: ByteStringSerializable[I]): Either[ApplicationError, Seq[DataItem[I]]] = {
     val di = DataItemTable.syntax("di")
     val dataItemRows = sql"""
         select ${di.result.*}
         from ${DataItemTable as di}
-        where ${di.dataItemId} in (${ids})
+        where ${di.tableId} = ${tableId}
        """.map(rs => DataItemTable(di.resultName)(rs)).list().apply()
     //Inefficient for large tables
-    val dataItems: Either[ApplicationError, Seq[I]] = transformListEither(dataItemRows.map{ dir =>
+    val dataItems: Either[ApplicationError, Seq[DataItem[I]]] = transformListEither(dataItemRows.map { dir =>
       for {
         owners <- transformListEither(selectDataItemOwners(dir.dataItemId))
         witnesses <- transformListEither(selectDataItemWitnesses(dir.dataItemId))
-        data <- serializable.decode(dir.dataItem).map[Either[ApplicationError, I]](Right.apply).getOrElse(Left(UnexpectedDecodingError()))
+        data <- serializable
+          .decode(dir.dataItem)
+          .map[Either[ApplicationError, I]](Right.apply)
+          .getOrElse(Left(UnexpectedDecodingError()))
       } yield {
-        dataItemCreator(dir.dataItemId, data,owners, witnesses)
+        diFactory(dir.dataItemId, data, owners, witnesses)
       }
     })
     dataItems
   }
 
-  private def selectDataItemWitnesses(dataItemId: DataItemId)(implicit session: DBSession): List[Either[CodecError, Witness]] = {
+  private def selectDataItemWitnesses(dataItemId: DataItemId)(
+      implicit session: DBSession): List[Either[CodecError, Witness]] = {
     val dis = DataItemSignatureTable.syntax("dis")
     sql"""
         select ${dis.result.*}
         from ${DataItemSignatureTable as dis}
         where ${dis.dataItemId} = ${dataItemId}
        """
-      .map{ rs =>
+      .map { rs =>
         val row = DataItemSignatureTable(dis.resultName)(rs)
         for {
           key <- SigningPublicKey.decodeFrom(row.signingPublicKey)
@@ -81,7 +85,8 @@ class TableStorageDao {
       .apply()
   }
 
-  private def selectDataItemOwners(dataItemId: DataItemId)(implicit session: DBSession): List[Either[CodecError, Owner]] = {
+  private def selectDataItemOwners(dataItemId: DataItemId)(
+      implicit session: DBSession): List[Either[CodecError, Owner]] = {
     val dio = DataItemOwnerTable.syntax("dio")
     sql"""
         select ${dio.result.*}
@@ -134,6 +139,5 @@ class TableStorageDao {
            """.executeUpdate().apply()
     }
   }
-
 
 }
