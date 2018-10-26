@@ -1,7 +1,7 @@
 package io.iohk.cef.data.query
 import io.iohk.cef.TableId
 
-sealed class Query[T, U] private (select: Select[T], projection: Projection[T, U]) {
+sealed class Query[T, U] private (val select: Select[T], val projection: Projection[T, U]) {
   final val languageVersion: Int = 1
 
   def tableId: TableId = select.tableId
