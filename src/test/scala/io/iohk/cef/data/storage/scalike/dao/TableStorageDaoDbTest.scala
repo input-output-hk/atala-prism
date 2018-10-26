@@ -15,7 +15,6 @@ trait TableStorageDaoDbTest
     with MustMatchers
     with MockitoSugar
     with EitherValues {
-  import io.iohk.cef.test.DummyDataItemImplicits._
 
   behavior of "TableStorageDaoDbTest"
 

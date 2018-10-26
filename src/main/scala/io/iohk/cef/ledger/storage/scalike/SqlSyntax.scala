@@ -20,7 +20,7 @@ object LedgerTable extends SQLSyntaxSupport[LedgerTable] {
 
   def apply(ln: ResultName[LedgerTable])(rs: WrappedResultSet): BlockEntry = {
     BlockEntry(
-      rs.int(ln.ledgerId),
+      rs.string(ln.ledgerId),
       rs.long(ln.blockNumber),
       rs.longOpt(ln.previousBlockId),
       rs.timestamp(ln.createdOn).toInstant,

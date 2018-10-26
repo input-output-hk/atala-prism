@@ -33,7 +33,7 @@ class ChimericTransactionRequestSpec extends WordSpec with MustMatchers {
         CreateNonSignableChimericTransactionFragment(CreateCurrency(currency = "AUD")),
         CreateNonSignableChimericTransactionFragment(SignatureTxFragment(sign("foo", signingKeyPair.`private`)))
       )
-      val request = CreateChimericTransactionRequest(fragments, 1)
+      val request = CreateChimericTransactionRequest(fragments, "1")
       val serialized = Json.toJson(request)
       val deserialized = serialized.as[CreateChimericTransactionRequest]
 
