@@ -41,7 +41,7 @@ class ConsensusPoolItSpec extends FlatSpecLike with MockitoSugar with MustMatche
       )
 
     val testExecution = mock[B => Unit]
-    val ledgerId: LedgerId = 1
+    val ledgerId: LedgerId = "1"
     override def machineCallback: B => Unit = block => {
       testExecution(block)
       txPoolFutureInterface.removeBlockTransactions(block)

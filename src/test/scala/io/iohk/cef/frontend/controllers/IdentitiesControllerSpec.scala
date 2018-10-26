@@ -49,7 +49,7 @@ class IdentitiesControllerSpec
            |{
            |    "type": "$txType",
            |    "identity": "$identity",
-           |    "ledgerId": 1,
+           |    "ledgerId": "1",
            |    "publicKey": "$publicKeyHex",
            |    "privateKey": "$privateKeyHex"
            |}
@@ -96,7 +96,7 @@ class IdentitiesControllerSpec
            |{
            |    "type": "none",
            |    "identity": 2,
-           |    "ledgerId": "none",
+           |    "ledgerId": 1,
            |    "publicKey": "1$publicKeyHex",
            |    "privateKey": "2$privateKeyHex"
            |}

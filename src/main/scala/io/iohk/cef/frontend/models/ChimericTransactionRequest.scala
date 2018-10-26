@@ -93,12 +93,12 @@ case class CreateSignableChimericTransactionFragment(
   *   >>> import io.iohk.cef.ledger.chimeric._
   *
   *   # Convert a value into json
-  *   >>> val tx: CreateChimericTransactionRequest = CreateChimericTransactionRequest(Seq(CreateNonSignableChimericTransactionFragment(Mint(Value(Map("USD" -> BigDecimal(123)))))), 890)
+  *   >>> val tx: CreateChimericTransactionRequest = CreateChimericTransactionRequest(Seq(CreateNonSignableChimericTransactionFragment(Mint(Value(Map("USD" -> BigDecimal(123)))))), "890")
   *   >>> tx.toJson
-  *   {"fragments":[{"value":{"USD":123},"type":"Mint"}],"ledgerId":890}
+  *   {"fragments":[{"value":{"USD":123},"type":"Mint"}],"ledgerId":"890"}
   *
   *   # Recover a value from a json
-  *   >>> """{"fragments":[{"value":{"USD":123},"type":"Mint"}],"ledgerId":890}""".parseJson.convertTo[CreateChimericTransactionRequest]
+  *   >>> """{"fragments":[{"value":{"USD":123},"type":"Mint"}],"ledgerId":"890"}""".parseJson.convertTo[CreateChimericTransactionRequest]
   *   CreateChimericTransactionRequest(List(CreateNonSignableChimericTransactionFragment(Mint(Value(Map(USD -> 123))))),890)
   * }}}
   */

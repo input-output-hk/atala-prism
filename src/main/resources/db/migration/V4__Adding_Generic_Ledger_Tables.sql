@@ -1,6 +1,6 @@
 create table if not exists cef.ledger_block (
     id bigint auto_increment not null primary key,
-    ledger_id int not null,
+    ledger_id varchar(512) not null,
     block_number bigint not null,
     previous_block_id bigint null,
     created_on timestamp not null,

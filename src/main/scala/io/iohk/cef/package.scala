@@ -1,5 +1,5 @@
 package io.iohk
 
 package object cef {
-  type LedgerId = Int
+  type LedgerId = String
 }

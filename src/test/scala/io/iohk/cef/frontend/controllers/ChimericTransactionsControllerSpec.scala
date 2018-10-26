@@ -57,7 +57,7 @@ class ChimericTransactionsControllerSpec
             signingPublicKey = signingKeyPair1.public)),
         CreateNonSignableChimericTransactionFragment(CreateCurrency(currency = "AUD"))
       )
-      val entity = CreateChimericTransactionRequest(fragments = fragments, 1)
+      val entity = CreateChimericTransactionRequest(fragments = fragments, "1")
 
       val json = Json.toJson(entity)
       val request = Post("/chimeric-transactions", json)
@@ -76,7 +76,7 @@ class ChimericTransactionsControllerSpec
           Input(txOutRef = TxOutRef("txid", 0), value = Value(Map("CAD" -> BigDecimal(200)))),
           signingKeyPair2.`private`)
       )
-      val entity = CreateChimericTransactionRequest(fragments = fragments, 1)
+      val entity = CreateChimericTransactionRequest(fragments = fragments, "1")
 
       val json = Json.toJson(entity)
       val request = Post("/chimeric-transactions", json)
@@ -105,7 +105,7 @@ class ChimericTransactionsControllerSpec
             signingPublicKey = signingKeyPair1.public)),
         CreateNonSignableChimericTransactionFragment(CreateCurrency(currency = "AUD"))
       )
-      val entity = CreateChimericTransactionRequest(fragments = fragments, 1)
+      val entity = CreateChimericTransactionRequest(fragments = fragments, "1")
 
       val json = Json.toJson(entity)
       val request = Post("/chimeric-transactions", json)

@@ -8,6 +8,6 @@ trait LedgerFixture {
   def createLedger[S](stateStorage: LedgerStateStorage[S], storage: LedgerStorage)(
       implicit dBSession: DBSession): Ledger[S] = {
 
-    Ledger(1, storage, stateStorage)
+    Ledger("1", storage, stateStorage)
   }
 }

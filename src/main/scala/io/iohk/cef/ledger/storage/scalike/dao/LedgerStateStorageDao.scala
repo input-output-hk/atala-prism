@@ -1,13 +1,14 @@
 package io.iohk.cef.ledger.storage.scalike.dao
 
 import akka.util.ByteString
+import io.iohk.cef.LedgerId
 import io.iohk.cef.ledger._
 import io.iohk.cef.ledger.storage.scalike.LedgerStateTable
 import scalikejdbc._
 
 class LedgerStateStorageDao[S] {
 
-  def slice(ledgerStateId: Int, keys: Set[String])(
+  def slice(ledgerStateId: LedgerId, keys: Set[String])(
       implicit byteStringSerializable: ByteStringSerializable[S],
       DBSession: DBSession): LedgerState[S] = {
     val lst = LedgerStateTable.syntax("lst")
@@ -24,7 +25,7 @@ class LedgerStateStorageDao[S] {
     LedgerState(Map(flattenedPairs: _*))
   }
 
-  def update(ledgerStateId: Int, previousState: LedgerState[S], newState: LedgerState[S])(
+  def update(ledgerStateId: LedgerId, previousState: LedgerState[S], newState: LedgerState[S])(
       implicit byteStringSerializable: ByteStringSerializable[S],
       DBSession: DBSession): Unit = {
     val currentState = slice(ledgerStateId, previousState.keys)
@@ -40,7 +41,7 @@ class LedgerStateStorageDao[S] {
     }
   }
 
-  private def insertEntry(ledgerStateId: Int, key: String, value: ByteString)(implicit DBSession: DBSession) = {
+  private def insertEntry(ledgerStateId: LedgerId, key: String, value: ByteString)(implicit DBSession: DBSession) = {
     val column = LedgerStateTable.column
     sql"""
        insert into ${LedgerStateTable.table}
@@ -49,7 +50,7 @@ class LedgerStateStorageDao[S] {
        """.update.apply
   }
 
-  private def deleteEntry(ledgerStateId: Int, key: String)(implicit DBSession: DBSession) = {
+  private def deleteEntry(ledgerStateId: LedgerId, key: String)(implicit DBSession: DBSession) = {
     val column = LedgerStateTable.column
     sql"""
        delete from ${LedgerStateTable.table}
@@ -57,7 +58,7 @@ class LedgerStateStorageDao[S] {
        """.update.apply()
   }
 
-  private def updateEntry(ledgerStateId: Int, key: String, value: ByteString)(implicit DBSession: DBSession) = {
+  private def updateEntry(ledgerStateId: LedgerId, key: String, value: ByteString)(implicit DBSession: DBSession) = {
     val column = LedgerStateTable.column
     sql"""
        update ${LedgerStateTable.table} set ${column.data} = ${value.toArray}

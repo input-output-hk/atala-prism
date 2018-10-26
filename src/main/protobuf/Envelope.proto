@@ -5,6 +5,6 @@ import "DestinationDescriptor.proto";
 
 message EnvelopeProto {
     required bytes content = 1;
-    required uint32 ledgerId = 2;
+    required string ledgerId = 2;
     required DestinationDescriptorProto destinationDescriptor = 3;
 }

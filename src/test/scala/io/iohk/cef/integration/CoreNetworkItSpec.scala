@@ -40,7 +40,7 @@ class CoreNetworkItSpec extends FlatSpec with MustMatchers with PropertyChecks w
       new Network[Envelope[Block[String, DummyBlockHeader, DummyTransaction]]](
         baseNetwork.networkDiscovery,
         baseNetwork.transports)
-    val consensusMap = Map(1 -> (txPoolIf, consensus))
+    val consensusMap = Map("1" -> (txPoolIf, consensus))
 
     new NodeCore[String, DummyBlockHeader, DummyTransaction](
       consensusMap,
@@ -65,7 +65,7 @@ class CoreNetworkItSpec extends FlatSpec with MustMatchers with PropertyChecks w
     val testTx = DummyTransaction(10)
     when(mockTxPoolIf2.processTransaction(testTx)).thenReturn(Right(()))
     when(mockTxPoolIf1.processTransaction(testTx)).thenReturn(Right(()))
-    val core2ProcessesTx = core2.receiveTransaction(Envelope(testTx, 1, Everyone))
+    val core2ProcessesTx = core2.receiveTransaction(Envelope(testTx, "1", Everyone))
     Await.result(core2ProcessesTx, 1 minute) mustBe Right(())
     verify(mockTxPoolIf1, timeout(5000).times(1)).processTransaction(testTx)
 
@@ -73,7 +73,7 @@ class CoreNetworkItSpec extends FlatSpec with MustMatchers with PropertyChecks w
 
     when(mockCons1.process(testBlock)).thenReturn(Future.successful(Right(())))
     when(mockCons2.process(testBlock)).thenReturn(Future.successful(Right(())))
-    val core2ProcessesBlock = core2.receiveBlock(Envelope(testBlock, 1, Everyone))
+    val core2ProcessesBlock = core2.receiveBlock(Envelope(testBlock, "1", Everyone))
     Await.result(core2ProcessesBlock, 1 minute) mustBe Right(())
     verify(mockCons1, timeout(5000).times(1)).process(testBlock)
   }

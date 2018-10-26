@@ -29,7 +29,7 @@ trait LedgerStorageDaoDbTest
     )
     val block = Block(header, txList)
     val storage = new LedgerStorageDao(Clock.systemUTC())
-    storage.push(1, block)(IdentityBlockSerializer.serializable, session)
+    storage.push("1", block)(IdentityBlockSerializer.serializable, session)
 
     val lt = LedgerTable.syntax("lt")
     val blockDataInDb = sql"""select ${lt.result.*} from ${LedgerTable as lt}"""

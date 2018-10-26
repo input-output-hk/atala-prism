@@ -1,10 +1,11 @@
 package io.iohk.cef.ledger.storage.scalike
+import io.iohk.cef.LedgerId
 import io.iohk.cef.ledger.storage.LedgerStateStorage
 import io.iohk.cef.ledger.storage.scalike.dao.LedgerStateStorageDao
 import io.iohk.cef.ledger.{ByteStringSerializable, LedgerState}
 import scalikejdbc.{ConnectionPool, DB, DBSession, using}
 
-case class LedgerStateStorageImpl[S](ledgerStateId: Int, ledgerStateDao: LedgerStateStorageDao[S])(
+case class LedgerStateStorageImpl[S](ledgerStateId: LedgerId, ledgerStateDao: LedgerStateStorageDao[S])(
     implicit serializer: ByteStringSerializable[S])
     extends LedgerStateStorage[S] {
 
