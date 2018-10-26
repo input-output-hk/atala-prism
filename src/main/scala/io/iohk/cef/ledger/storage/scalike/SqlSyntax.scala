@@ -30,14 +30,14 @@ object LedgerTable extends SQLSyntaxSupport[LedgerTable] {
 }
 
 //LedgerState
-case class LedgerStateTableEntry(ledgerStateId: Int, partitionId: String, data: ByteString)
+case class LedgerStateTableEntry(ledgerStateId: LedgerId, partitionId: String, data: ByteString)
 
 object LedgerStateTable extends SQLSyntaxSupport[LedgerStateTableEntry] {
   override def tableName: String = Schema.LedgerStateTableName
 
   def apply(lsr: ResultName[LedgerStateTableEntry])(rs: WrappedResultSet): LedgerStateTableEntry = {
     LedgerStateTableEntry(
-      rs.int(lsr.ledgerStateId),
+      rs.string(lsr.ledgerStateId),
       rs.string(lsr.partitionId),
       ByteString(rs.bytes(lsr.data))
     )
