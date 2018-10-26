@@ -4,7 +4,7 @@ import io.iohk.cef.ledger.ByteStringSerializable
 
 trait TableStorage {
 
-  def insert[I <: DataItem](dataItem: I)(implicit itemSerializable: ByteStringSerializable[I]): Unit
+  def insert[I](dataItem: DataItem[I])(implicit itemSerializable: ByteStringSerializable[I]): Unit
 
-  def delete[I <: DataItem](dataItem: I)(implicit itemSerializable: ByteStringSerializable[I]): Unit
+  def delete[I](dataItem: DataItem[I]): Unit
 }

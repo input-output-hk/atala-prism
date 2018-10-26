@@ -47,8 +47,10 @@ class ItemsGenericControllerSpec
 
 object ItemsGenericControllerSpec {
 
-  case class BirthCertificate(date: String, name: String) extends DataItem {
+  case class BirthCertificate(date: String, name: String) extends DataItem[(String, String)] {
     override def id: String = "birth-certificate"
+
+    override def data: (String, String) = (date, name)
 
     override def witnesses: Seq[Witness] = ???
 
