@@ -3,7 +3,6 @@ package io.iohk.cef.frontend.controllers
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
-import io.iohk.cef.data.DataItem
 import io.iohk.cef.frontend.controllers.common.CustomJsonController
 import org.scalactic.Good
 import play.api.libs.json.{Format, JsObject, JsString}
@@ -14,7 +13,7 @@ class ItemsGenericController(implicit ec: ExecutionContext, mat: Materializer) e
 
   import Context._
 
-  def routes[T <: DataItem](prefix: String)(implicit format: Format[T]): Route = {
+  def routes[T](prefix: String)(implicit format: Format[T]): Route = {
     pathPrefix(prefix) {
       pathEnd {
         post {

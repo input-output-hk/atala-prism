@@ -10,26 +10,26 @@ class DataItemServiceSpec extends FlatSpec {
 
   private val table = mock[Table]
   private val something = new DataItemService(table)
-  private implicit val dataItemSerializable = mock[ByteStringSerializable[DataItem]]
-  private implicit val actionSerializable = mock[ByteStringSerializable[DataItemAction[DataItem]]]
+  private implicit val dataItemSerializable = mock[ByteStringSerializable[String]]
+  private implicit val actionSerializable = mock[ByteStringSerializable[DataItemAction[String]]]
 
   behavior of "DataItemService"
 
   it should "insert a data item" in {
-    val dataItem = mock[DataItem]
+    val dataItem: DataItem[String] = mock[DataItem[String]]
     something.insert(dataItem)
     verify(table).insert(dataItem)
   }
 
   it should "delete a data item" in {
-    val dataItem = mock[DataItem]
+    val dataItem: DataItem[String] = mock[DataItem[String]]
     val signature = mock[Signature]
     something.delete(dataItem, signature)
     verify(table).delete(dataItem, signature)
   }
 
   it should "validate a data item" in {
-    val dataItem = mock[DataItem]
+    val dataItem: DataItem[String] = mock[DataItem[String]]
     something.validate(dataItem)
     verify(table).validate(dataItem)
   }
