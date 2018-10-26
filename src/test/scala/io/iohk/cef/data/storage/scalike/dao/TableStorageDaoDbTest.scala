@@ -8,14 +8,20 @@ import org.scalatest.{EitherValues, MustMatchers, fixture}
 import scalikejdbc._
 import scalikejdbc.scalatest.AutoRollback
 
-trait TableStorageDaoDbTest extends fixture.FlatSpec with AutoRollback with MustMatchers with MockitoSugar with EitherValues {
+trait TableStorageDaoDbTest
+    extends fixture.FlatSpec
+    with AutoRollback
+    with MustMatchers
+    with MockitoSugar
+    with EitherValues {
 
   behavior of "TableStorageDaoDbTest"
 
   it should "insert data items" in { implicit s =>
     val ownerKeyPair = generateSigningKeyPair()
     val ownerKeyPair2 = generateSigningKeyPair()
-    val dataItems = Seq(DummyValidDataItem("valid", Seq(Owner(ownerKeyPair.public)), Seq()),
+    val dataItems = Seq(
+      DummyValidDataItem("valid", Seq(Owner(ownerKeyPair.public)), Seq()),
       DummyValidDataItem("valid2", Seq(Owner(ownerKeyPair2.public)), Seq()))
     val dao = new TableStorageDao
 
@@ -30,7 +36,8 @@ trait TableStorageDaoDbTest extends fixture.FlatSpec with AutoRollback with Must
   it should "delete data items" in { implicit s =>
     val ownerKeyPair = generateSigningKeyPair()
     val ownerKeyPair2 = generateSigningKeyPair()
-    val dataItems = Seq(DummyValidDataItem("valid", Seq(Owner(ownerKeyPair.public)), Seq()),
+    val dataItems = Seq(
+      DummyValidDataItem("valid", Seq(Owner(ownerKeyPair.public)), Seq()),
       DummyValidDataItem("valid2", Seq(Owner(ownerKeyPair2.public)), Seq()))
     val dao = new TableStorageDao
 
@@ -46,7 +53,7 @@ trait TableStorageDaoDbTest extends fixture.FlatSpec with AutoRollback with Must
   }
 
   private def selectAll[I <: DataItem](ids: Seq[DataItemId], dataItemCreator: (String, Seq[Owner], Seq[Witness]) => I)(
-    implicit session: DBSession): Either[CodecError, Seq[I]] = {
+      implicit session: DBSession): Either[CodecError, Seq[I]] = {
     import io.iohk.cef.utils.EitherTransforms
     val di = DataItemTable.syntax("di")
     val dataItemRows = sql"""
@@ -62,7 +69,7 @@ trait TableStorageDaoDbTest extends fixture.FlatSpec with AutoRollback with Must
       for {
         owners <- ownerEither
         witnesses <- witnessEither
-      } yield dataItemCreator(dir.dataItemId ,owners, witnesses)
+      } yield dataItemCreator(dir.dataItemId, owners, witnesses)
     })
     dataItems.toEitherList
   }
@@ -74,7 +81,7 @@ trait TableStorageDaoDbTest extends fixture.FlatSpec with AutoRollback with Must
         from ${DataItemSignatureTable as dis}
         where ${dis.dataItemId} = ${dataItemId}
        """
-      .map{ rs =>
+      .map { rs =>
         val row = DataItemSignatureTable(dis.resultName)(rs)
         for {
           key <- SigningPublicKey.decodeFrom(row.signingPublicKey)
@@ -97,6 +104,7 @@ trait TableStorageDaoDbTest extends fixture.FlatSpec with AutoRollback with Must
       .apply()
   }
 
-  private def itemsFromDb(itemIds: Seq[String])(implicit session: DBSession) = selectAll(itemIds, (s, o, w) => DummyValidDataItem(s, o, w))
+  private def itemsFromDb(itemIds: Seq[String])(implicit session: DBSession) =
+    selectAll(itemIds, (s, o, w) => DummyValidDataItem(s, o, w))
 
 }

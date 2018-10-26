@@ -19,7 +19,7 @@ object LedgerConfig {
   def apply(config: Config): LedgerConfig = {
     val ledgerConfig = config.getConfig("ledger")
     new LedgerConfig(
-      ledgerConfig.getInt("id"),
+      ledgerConfig.getString("id"),
       ledgerConfig.getInt("maxBlockSizeInBytes"),
       Duration(ledgerConfig.getString("defaultTransactionExpiration")),
       FiniteDuration(ledgerConfig.getDuration("blockCreatorInitialDelay").toNanos, TimeUnit.NANOSECONDS),

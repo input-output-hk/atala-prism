@@ -9,7 +9,8 @@ import io.iohk.cef.ledger.ByteStringSerializable
 
 case class TestDataItemError(something: Int) extends DataItemError
 
-case class DummyInvalidDataItem(id: String, error: TestDataItemError, owners: Seq[Owner], witnesses: Seq[Witness]) extends DataItem {
+case class DummyInvalidDataItem(id: String, error: TestDataItemError, owners: Seq[Owner], witnesses: Seq[Witness])
+    extends DataItem {
 
   override def apply(): Either[DataItemError, Unit] = Left(error)
 }
@@ -17,10 +18,11 @@ case class DummyInvalidDataItem(id: String, error: TestDataItemError, owners: Se
 object DummyInvalidDataItem {
   private val encoder = implicitly[NioEncoder[DummyInvalidDataItem]]
   private val decoder = implicitly[NioDecoder[DummyInvalidDataItem]]
-  implicit val serializable: ByteStringSerializable[DummyInvalidDataItem] = new ByteStringSerializable[DummyInvalidDataItem] {
-    override def encode(t: DummyInvalidDataItem): ByteString = ByteString(encoder.encode(t))
-    override def decode(u: ByteString): Option[DummyInvalidDataItem] = decoder.decode(ByteBuffer.wrap(u.toArray))
-  }
+  implicit val serializable: ByteStringSerializable[DummyInvalidDataItem] =
+    new ByteStringSerializable[DummyInvalidDataItem] {
+      override def encode(t: DummyInvalidDataItem): ByteString = ByteString(encoder.encode(t))
+      override def decode(u: ByteString): Option[DummyInvalidDataItem] = decoder.decode(ByteBuffer.wrap(u.toArray))
+    }
 }
 
 case class DummyValidDataItem(id: String, owners: Seq[Owner], witnesses: Seq[Witness]) extends DataItem {

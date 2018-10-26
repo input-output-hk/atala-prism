@@ -76,7 +76,7 @@ class ChimericTransactionNodeCoreItSpec
     when(mockTxMessageStream.foreach(ArgumentMatchers.any())).thenReturn(Future.successful(()))
     when(mockBlockMessageStream.foreach(ArgumentMatchers.any())).thenReturn(Future.successful(()))
 
-    val consensusMap = Map(1 -> (txPoolInterface, consensus))
+    val consensusMap = Map("1" -> (txPoolInterface, consensus))
 
     val me = NodeId("3112")
 
@@ -97,7 +97,7 @@ class ChimericTransactionNodeCoreItSpec
     val api = new ChimericTransactionsController(service)
     val routes = api.routes
 
-    val entity = CreateChimericTransactionRequest(fragments, 1)
+    val entity = CreateChimericTransactionRequest(fragments, "1")
     val json = Json.toJson(entity)
 
     val request = Post("/chimeric-transactions", json)

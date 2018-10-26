@@ -39,7 +39,7 @@ class CorePooltSpec extends FlatSpecLike with MustMatchers with BeforeAndAfterAl
     val consensus = mock[Consensus[String, DummyBlockHeader, DummyTransaction]]
     val txNetwork = mock[Network[Envelope[DummyTransaction]]]
     val blockNetwork = mock[Network[Envelope[Block[String, DummyBlockHeader, DummyTransaction]]]]
-    val consensusMap = Map(1 -> (transactionPoolFutureInterface, consensus))
+    val consensusMap = Map("1" -> (transactionPoolFutureInterface, consensus))
     val me = NodeId("3112")
     val mockTxMessageStream = mock[MessageStream[Envelope[DummyTransaction]]]
     val mockBlockMessageStream =
@@ -54,7 +54,7 @@ class CorePooltSpec extends FlatSpecLike with MustMatchers with BeforeAndAfterAl
       executionContext
     )
     val testTransaction = DummyTransaction(5)
-    val envelope = Envelope(testTransaction, 1, Everyone)
+    val envelope = Envelope(testTransaction, "1", Everyone)
     val result = Await.result(core.receiveTransaction(envelope), 10 seconds)
     result mustBe Right(())
     val resultBlock = transactionPoolFutureInterface.generateBlock()

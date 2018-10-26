@@ -62,8 +62,8 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
 
   it should "receive a transaction" in {
     val testTx = DummyTransaction(10)
-    val ledgerId = 1
-    val testEnvelope = Envelope(testTx, 1, Everyone)
+    val ledgerId = "1"
+    val testEnvelope = Envelope(testTx, ledgerId, Everyone)
     implicit val bs1 = mockByteStringSerializable
     implicit val bs2 = mockBlockSerializable
     val (core, consensusMap, txDM, _) = setupTest(ledgerId)
@@ -80,8 +80,8 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
 
   it should "receive a block" in {
     val testBlock = Block(DummyBlockHeader(1), immutable.Seq(DummyTransaction(10)))
-    val ledgerId = 1
-    val testEnvelope = Envelope(testBlock, 1, Everyone)
+    val ledgerId = "1"
+    val testEnvelope = Envelope(testBlock, ledgerId, Everyone)
     implicit val bs1 = mockByteStringSerializable
     implicit val bs2 = mockBlockSerializable
     val (core, consensusMap, _, blockDM) = setupTest(ledgerId)
@@ -99,7 +99,7 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
   it should "avoid processing a block if this is not a receiver" in {
     implicit val bs1 = mockByteStringSerializable
     implicit val bs2 = mockBlockSerializable
-    val ledgerId = 1
+    val ledgerId = "1"
     val me = NodeId("abcd")
     val (core, consensusMap, _, blockDM) = setupTest(ledgerId, me)
     val (testBlockEnvelope, _) = setupMissingCapabilitiesTest(ledgerId, core, Not(Everyone), me)
@@ -115,7 +115,7 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
   it should "avoid processing a tx if this is not a receiver" in {
     implicit val bs1 = mockByteStringSerializable
     implicit val bs2 = mockBlockSerializable
-    val ledgerId = 1
+    val ledgerId = "1"
     val me = NodeId("abcd")
     val (core, consensusMap, txDM, _) = setupTest(ledgerId, me)
     val (_, testTxEnvelope) = setupMissingCapabilitiesTest(ledgerId, core, Not(Everyone), me)
@@ -131,7 +131,7 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
   it should "avoid processing a block if the node doesn't participate in consensus" in {
     implicit val bs1 = mockByteStringSerializable
     implicit val bs2 = mockBlockSerializable
-    val ledgerId = 1
+    val ledgerId = "1"
     val me = NodeId("abcd")
     val (core, consensusMap, _, blockDM) = setupTest(ledgerId, me)
     val (testBlockTxEnvelope, _) = setupMissingCapabilitiesTest(ledgerId, core, Everyone, me)
@@ -148,7 +148,7 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
   it should "avoid processing a tx if the node doesn't participate in consensus" in {
     implicit val bs1 = mockByteStringSerializable
     implicit val bs2 = mockBlockSerializable
-    val ledgerId = 1
+    val ledgerId = "1"
     val me = NodeId("abcd")
     val (core, consensusMap, txDM, _) = setupTest(ledgerId, me)
     val (_, testTxEnvelope) = setupMissingCapabilitiesTest(ledgerId, core, Everyone, me)
@@ -171,8 +171,8 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
       blockSerializable: ByteStringSerializable[Envelope[Block[State, Header, Tx]]]) = {
     val testTx = DummyTransaction(10)
     val testBlock = Block(DummyBlockHeader(1), immutable.Seq(testTx))
-    val testBlockEnvelope = Envelope(testBlock, 1, destinationDescriptor)
-    val testTxEnvelope = Envelope(testTx, 1, destinationDescriptor)
+    val testBlockEnvelope = Envelope(testBlock, "1", destinationDescriptor)
+    val testTxEnvelope = Envelope(testTx, "1", destinationDescriptor)
     (testBlockEnvelope, testTxEnvelope)
   }
 }

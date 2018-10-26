@@ -33,7 +33,7 @@ trait IdentityLedgerItDbTest
     val ledgerStorage = new LedgerStorageImpl(ledgerStorageDao) {
       override def execInSession[T](block: DBSession => T): T = block(dBSession)
     }
-    Ledger(1, ledgerStorage, ledgerStateStorage)
+    Ledger("1", ledgerStorage, ledgerStateStorage)
   }
 
   behavior of "IdentityLedgerIt"
