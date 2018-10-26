@@ -16,6 +16,8 @@ trait TableStorageDaoDbTest
     with MockitoSugar
     with EitherValues {
 
+  import io.iohk.cef.test.DummyDataItemImplicits._
+
   behavior of "TableStorageDaoDbTest"
 
   it should "insert data items" in { implicit s =>

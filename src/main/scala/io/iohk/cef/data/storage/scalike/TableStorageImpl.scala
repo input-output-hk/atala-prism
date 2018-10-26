@@ -1,4 +1,5 @@
 package io.iohk.cef.data.storage.scalike
+import io.iohk.cef.TableId
 import io.iohk.cef.data.DataItem
 import io.iohk.cef.data.storage.TableStorage
 import io.iohk.cef.data.storage.scalike.dao.TableStorageDao
@@ -16,6 +17,14 @@ class TableStorageImpl(tableStorageDao: TableStorageDao) extends TableStorage {
   override def delete[I](dataItem: DataItem[I]): Unit = {
     execInSession { implicit session =>
       tableStorageDao.delete(dataItem)
+    }
+  }
+
+  override def selectAll[I](tableId: TableId)(
+      implicit itemSerializable: ByteStringSerializable[I])
+    : Seq[DataItem[I]] = {
+    execInSession { implicit session =>
+      tableStorageDao.selectAll(tableId)
     }
   }
 

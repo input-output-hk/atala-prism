@@ -1,4 +1,5 @@
 package io.iohk.cef.data
+import io.iohk.cef.TableId
 import io.iohk.cef.data.storage.TableStorage
 import io.iohk.cef.ledger.ByteStringSerializable
 import io.iohk.cef.crypto._
@@ -9,6 +10,12 @@ class Table(tableStorage: TableStorage) {
   def validate[I](dataItem: DataItem[I])(implicit itemSerializable: ByteStringSerializable[I]): Boolean = {
     val signatureValidation = validateSignatures(dataItem)
     dataItem().isRight && signatureValidation.forall(_._2)
+  }
+
+  def select[I](tableId: TableId)(
+      implicit itemSerializable: ByteStringSerializable[I]): Either[ApplicationError, Seq[DataItem[I]]] = {
+    //No errors?
+    Right(tableStorage.selectAll(tableId))
   }
 
   def insert[I](dataItem: DataItem[I])(
