@@ -7,6 +7,7 @@ import com.alexitc.playsonify.core.I18nService
 import com.alexitc.playsonify.models.{GenericPublicError, InputValidationError, PublicError}
 import io.iohk.cef.data.{DataItem, DataItemService}
 import io.iohk.cef.frontend.controllers.common.{CustomJsonController, _}
+import io.iohk.cef.frontend.models.DataItemEnvelope
 import io.iohk.cef.ledger.ByteStringSerializable
 import play.api.libs.json.{JsObject, Reads}
 
@@ -18,13 +19,13 @@ class ItemsGenericController(service: DataItemService)(implicit ec: ExecutionCon
   import Context._
   import ItemsGenericController._
 
-  def routes[B, A <: DataItem[B]](
-      prefix: String)(implicit format: Reads[A], itemSerializable: ByteStringSerializable[B]): Route = {
+  def routes[B, A <: DataItem[B], E <: DataItemEnvelope[B, A]](
+      prefix: String)(implicit format: Reads[E], itemSerializable: ByteStringSerializable[B]): Route = {
     pathPrefix(prefix) {
       pathEnd {
         post {
-          publicInput(StatusCodes.Created) { ctx: HasModel[A] =>
-            val either = service.insert(ctx.model)
+          publicInput(StatusCodes.Created) { ctx: HasModel[E] =>
+            val either = service.insert(ctx.model.content)
             val result = fromEither(either, ItemCreationError)
               .map(_ => JsObject.empty)
 

@@ -6,6 +6,8 @@ import akka.util.ByteString
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import io.iohk.cef.data._
 import io.iohk.cef.error.ApplicationError
+import io.iohk.cef.frontend.controllers.common.Codecs
+import io.iohk.cef.frontend.models.DataItemEnvelope
 import io.iohk.cef.ledger.ByteStringSerializable
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{MustMatchers, WordSpec}
@@ -20,6 +22,7 @@ class ItemsGenericControllerSpec
     with ScalatestRouteTest
     with PlayJsonSupport {
 
+  import Codecs._
   import ItemsGenericControllerSpec._
 
   implicit val executionContext = system.dispatcher
@@ -34,16 +37,22 @@ class ItemsGenericControllerSpec
   val controller = new ItemsGenericController(service)
 
   "POST /certificates" should {
-
-    lazy val routes = controller.routes[BirthCertificate, BirthCertificateItem]("birth-certificates")
+    type Envelope = DataItemEnvelope[BirthCertificate, BirthCertificateItem]
+    lazy val routes = controller.routes[BirthCertificate, BirthCertificateItem, Envelope]("birth-certificates")
 
     "create an item" in {
       val body =
         """
           |{
-          |  "data": {
-          |    "date": "01/01/2015",
-          |    "name": "Input Output HK"
+          |  "content": {
+          |    "data": {
+          |      "date": "01/01/2015",
+          |      "name": "Input Output HK"
+          |    }
+          |  },
+          |  "destinationDescriptor": {
+          |    "type": "everyone",
+          |    "obj": {}
           |  }
           |}
         """.stripMargin
