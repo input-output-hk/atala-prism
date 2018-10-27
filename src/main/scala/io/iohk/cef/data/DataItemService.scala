@@ -1,5 +1,6 @@
 package io.iohk.cef.data
-import io.iohk.cef.crypto.Signature
+
+import io.iohk.cef.crypto._
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.ledger.ByteStringSerializable
 

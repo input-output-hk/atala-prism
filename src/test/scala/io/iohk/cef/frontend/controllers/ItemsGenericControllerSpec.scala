@@ -2,11 +2,16 @@ package io.iohk.cef.frontend.controllers
 
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
+import akka.util.ByteString
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
-import io.iohk.cef.data.{DataItem, DataItemError, Owner, Witness}
+import io.iohk.cef.data._
+import io.iohk.cef.error.ApplicationError
+import io.iohk.cef.ledger.ByteStringSerializable
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{MustMatchers, WordSpec}
 import play.api.libs.json.{Format, JsValue, Json}
+
+import scala.util.Try
 
 class ItemsGenericControllerSpec
     extends WordSpec
@@ -19,18 +24,27 @@ class ItemsGenericControllerSpec
 
   implicit val executionContext = system.dispatcher
 
-  val controller = new ItemsGenericController()
+  val service = new DataItemService(null) {
+    override def insert[I](dataItem: DataItem[I])(
+        implicit itemSerializable: ByteStringSerializable[I]): Either[ApplicationError, Unit] = {
+      Right(())
+    }
+  }
+
+  val controller = new ItemsGenericController(service)
 
   "POST /certificates" should {
 
-    lazy val routes = controller.routes[BirthCertificate]("birth-certificates")
+    lazy val routes = controller.routes[BirthCertificate, BirthCertificateItem]("birth-certificates")
 
-    "create a valid key-pair" in {
+    "create an item" in {
       val body =
         """
           |{
-          |  "date": "01/01/2015",
-          |  "name": "Input Output HK"
+          |  "data": {
+          |    "date": "01/01/2015",
+          |    "name": "Input Output HK"
+          |  }
           |}
         """.stripMargin
       val request = Post("/birth-certificates", HttpEntity(ContentTypes.`application/json`, body))
@@ -47,17 +61,35 @@ class ItemsGenericControllerSpec
 
 object ItemsGenericControllerSpec {
 
-  case class BirthCertificate(date: String, name: String) extends DataItem[(String, String)] {
+  case class BirthCertificate(date: String, name: String)
+
+  case class BirthCertificateItem(override val data: BirthCertificate) extends DataItem[BirthCertificate] {
     override def id: String = "birth-certificate"
 
-    override def data: (String, String) = (date, name)
+    override def witnesses: Seq[Witness] = Seq.empty
 
-    override def witnesses: Seq[Witness] = ???
+    override def owners: Seq[Owner] = Seq.empty
 
-    override def owners: Seq[Owner] = ???
-
-    override def apply(): Either[DataItemError, Unit] = ???
+    override def apply(): Either[DataItemError, Unit] = Right(())
   }
 
-  implicit val format: Format[BirthCertificate] = Json.format[BirthCertificate]
+  implicit val birthCertificateFormat: Format[BirthCertificate] = Json.format[BirthCertificate]
+
+  implicit val birthCertificateItemFormat: Format[BirthCertificateItem] = Json.format[BirthCertificateItem]
+
+  implicit val serializable: ByteStringSerializable[BirthCertificate] = new ByteStringSerializable[BirthCertificate] {
+    override def decode(u: ByteString): Option[BirthCertificate] = {
+      def f = Try {
+        Json.parse(new String(u.toArray)).asOpt[BirthCertificate]
+      }
+
+      f.toOption.flatten
+    }
+
+    override def encode(t: BirthCertificate): ByteString = {
+      val x = Json.toJson(t).toString().getBytes()
+      ByteString(x)
+    }
+  }
+
 }
