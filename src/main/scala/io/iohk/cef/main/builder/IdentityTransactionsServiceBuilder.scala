@@ -1,19 +1,24 @@
 package io.iohk.cef.main.builder
 
 import akka.util.Timeout
+import io.iohk.cef.consensus.raft.LogEntry
 import io.iohk.cef.crypto._
 import io.iohk.cef.frontend.services.IdentityTransactionService
 import io.iohk.cef.ledger.identity.{IdentityBlockHeader, IdentityTransaction}
 import io.iohk.cef.ledger.{BlockHeader, ByteStringSerializable, Transaction}
 import io.iohk.cef.network.discovery.DiscoveryWireMessage
+import io.iohk.cef.network.encoding.array.ArrayCodecs.{ArrayDecoder, ArrayEncoder}
 
 import scala.concurrent.ExecutionContext
 
 trait FrontendServiceBuilder[S, H <: BlockHeader, T <: Transaction[S]] {}
 
-trait IdentityTransactionServiceBuilder {
-  self: NodeCoreBuilder[Set[SigningPublicKey], IdentityBlockHeader, IdentityTransaction]
-    with CommonTypeAliases[Set[SigningPublicKey], IdentityBlockHeader, IdentityTransaction] =>
+class IdentityTransactionServiceBuilder(
+    nodeCoreBuilder: NodeCoreBuilder[Set[SigningPublicKey], IdentityBlockHeader, IdentityTransaction],
+    commonTypeAliases: CommonTypeAliases[Set[SigningPublicKey], IdentityBlockHeader, IdentityTransaction]) {
+
+  import commonTypeAliases._
+  import nodeCoreBuilder._
 
   def service(
       implicit
@@ -22,6 +27,10 @@ trait IdentityTransactionServiceBuilder {
       blockByteStringSerializable: ByteStringSerializable[B],
       txByteStringSerializable: ByteStringSerializable[IdentityTransaction],
       stateyteStringSerializable: ByteStringSerializable[Set[SigningPublicKey]],
-      dByteStringSerializable: ByteStringSerializable[DiscoveryWireMessage]): IdentityTransactionService =
+      dByteStringSerializable: ByteStringSerializable[DiscoveryWireMessage],
+      arrayEncoder: ArrayEncoder[B],
+      arrayDecoder: ArrayDecoder[B],
+      arrayLEncoder: ArrayEncoder[LogEntry[B]],
+      arrayLDecoder: ArrayDecoder[LogEntry[B]]): IdentityTransactionService =
     new IdentityTransactionService(nodeCore)
 }

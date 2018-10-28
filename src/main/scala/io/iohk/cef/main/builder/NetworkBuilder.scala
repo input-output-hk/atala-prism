@@ -4,8 +4,9 @@ import io.iohk.cef.network.Network
 import io.iohk.cef.network.discovery.DiscoveryWireMessage
 import io.iohk.cef.network.encoding.nio.NioCodecs.{NioDecoder, NioEncoder}
 
-trait NetworkBuilder[S, H <: BlockHeader, T <: Transaction[S]] {
-  self: LedgerConfigBuilder with CommonTypeAliases[S, H, T] =>
+class NetworkBuilder[S, H <: BlockHeader, T <: Transaction[S]](ledgerConfigBuilder: LedgerConfigBuilder) {
+  import ledgerConfigBuilder._
+
   def txNetwork[ET: NioEncoder: NioDecoder](
       implicit dByteStringSerializable: ByteStringSerializable[DiscoveryWireMessage]): Network[ET] =
     new Network[ET](networkDiscovery, transports)

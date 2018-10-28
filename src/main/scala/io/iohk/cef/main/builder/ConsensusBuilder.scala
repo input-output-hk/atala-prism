@@ -5,28 +5,41 @@ import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.consensus.raft._
 import io.iohk.cef.ledger.{Block, BlockHeader, ByteStringSerializable, Transaction}
 import io.iohk.cef.network.discovery.DiscoveryWireMessage
+import io.iohk.cef.network.encoding.array.ArrayCodecs.{ArrayDecoder, ArrayEncoder}
 import io.iohk.cef.utils.Logger
 
 import scala.concurrent.ExecutionContext
 
-trait ConsensusBuilder[S, H <: BlockHeader, T <: Transaction[S]] {
-  self: CommonTypeAliases[S, H, T] =>
+abstract class ConsensusBuilder[S, H <: BlockHeader, T <: Transaction[S]](
+    commonTypeAliases: CommonTypeAliases[S, H, T]) {
+  import commonTypeAliases._
   def consensus(
       implicit timeout: Timeout,
       executionContext: ExecutionContext,
       byteStringSerializable: ByteStringSerializable[B],
       sByteStringSerializable: ByteStringSerializable[S],
-      dByteStringSerializable: ByteStringSerializable[DiscoveryWireMessage]): Consensus[S, H, T]
+      dByteStringSerializable: ByteStringSerializable[DiscoveryWireMessage],
+      arrayEncoder: ArrayEncoder[B],
+      arrayDecoder: ArrayDecoder[B],
+      arrayLEncoder: ArrayEncoder[LogEntry[B]],
+      arrayLDecoder: ArrayDecoder[LogEntry[B]]): Consensus[S, H, T]
 }
 
-trait RaftConsensusBuilder[S, H <: BlockHeader, T <: Transaction[S]] extends ConsensusBuilder[S, H, T] {
-  self: LedgerConfigBuilder
-    with TransactionPoolBuilder[S, H, T]
-    with RaftConsensusConfigBuilder[Block[S, H, T]]
-    with LedgerConfigBuilder
-    with LedgerBuilder[S, T]
-    with Logger
-    with CommonTypeAliases[S, H, T] =>
+class RaftConsensusBuilder[S, H <: BlockHeader, T <: Transaction[S]](
+    ledgerConfigBuilder: LedgerConfigBuilder,
+    transactionPoolBuilder: TransactionPoolBuilder[S, H, T],
+    raftConsensusBuilder: RaftConsensusConfigBuilder[Block[S, H, T]],
+    ledgerBuilder: LedgerBuilder[S, T],
+    logger: Logger,
+    commonTypeAliases: CommonTypeAliases[S, H, T])
+    extends ConsensusBuilder[S, H, T](commonTypeAliases) {
+
+  import ledgerConfigBuilder._
+  import transactionPoolBuilder._
+  import raftConsensusBuilder._
+  import ledgerBuilder._
+  import logger._
+  import commonTypeAliases._
 
   private def machineCallback(
       implicit timeout: Timeout,
@@ -64,7 +77,11 @@ trait RaftConsensusBuilder[S, H <: BlockHeader, T <: Transaction[S]] extends Con
       executionContext: ExecutionContext,
       byteStringSerializable: ByteStringSerializable[B],
       sByteStringSerializable: ByteStringSerializable[S],
-      dByteStringSerializable: ByteStringSerializable[DiscoveryWireMessage]) =
+      dByteStringSerializable: ByteStringSerializable[DiscoveryWireMessage],
+      arrayEncoder: ArrayEncoder[B],
+      arrayDecoder: ArrayDecoder[B],
+      arrayLEncoder: ArrayEncoder[LogEntry[B]],
+      arrayLDecoder: ArrayDecoder[LogEntry[B]]) =
     raftNode[B](
       nodeIdStr,
       raftConfig.clusterMemberIds.toSeq,
@@ -80,13 +97,21 @@ trait RaftConsensusBuilder[S, H <: BlockHeader, T <: Transaction[S]] extends Con
       executionContext: ExecutionContext,
       byteStringSerializable: ByteStringSerializable[B],
       sByteStringSerializable: ByteStringSerializable[S],
-      dByteStringSerializable: ByteStringSerializable[DiscoveryWireMessage]) = new RaftConsensus(raftNodeInterface)
+      dByteStringSerializable: ByteStringSerializable[DiscoveryWireMessage],
+      arrayEncoder: ArrayEncoder[B],
+      arrayDecoder: ArrayDecoder[B],
+      arrayLEncoder: ArrayEncoder[LogEntry[B]],
+      arrayLDecoder: ArrayDecoder[LogEntry[B]]) = new RaftConsensus(raftNodeInterface)
 
   override def consensus(
       implicit timeout: Timeout,
       executionContext: ExecutionContext,
       byteStringSerializable: ByteStringSerializable[B],
       sByteStringSerializable: ByteStringSerializable[S],
-      dByteStringSerializable: ByteStringSerializable[DiscoveryWireMessage]): Consensus[S, H, T] =
+      dByteStringSerializable: ByteStringSerializable[DiscoveryWireMessage],
+      arrayEncoder: ArrayEncoder[B],
+      arrayDecoder: ArrayDecoder[B],
+      arrayLEncoder: ArrayEncoder[LogEntry[B]],
+      arrayLDecoder: ArrayDecoder[LogEntry[B]]): Consensus[S, H, T] =
     new RaftConsensusInterface[S, H, T](ledgerConfig.id, raftConsensus)
 }

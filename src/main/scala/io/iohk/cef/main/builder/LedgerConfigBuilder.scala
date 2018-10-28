@@ -31,8 +31,9 @@ trait LedgerConfigBuilder {
   val networkDiscovery: NetworkDiscovery
 }
 
-trait DefaultLedgerConfig extends LedgerConfigBuilder {
-  self: ConfigReaderBuilder =>
+class DefaultLedgerConfig(configReaderBuilder: ConfigReaderBuilder) extends LedgerConfigBuilder {
+
+  import configReaderBuilder._
 
   import io.iohk.cef.network.encoding.rlp.RLPImplicits._
   import io.iohk.cef.network.encoding.rlp._
