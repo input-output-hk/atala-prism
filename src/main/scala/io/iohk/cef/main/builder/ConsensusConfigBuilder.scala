@@ -4,7 +4,7 @@ import io.iohk.cef.consensus.raft
 import io.iohk.cef.consensus.raft.node.OnDiskPersistentStorage
 import io.iohk.cef.consensus.raft.{LogEntry, PersistentStorage, RPCFactory, RaftConfig}
 import io.iohk.cef.core.raftrpc.RaftRPCFactory
-import io.iohk.cef.ledger.ByteStringSerializable
+import io.iohk.cef.ledger.{Block, BlockHeader, ByteStringSerializable, Transaction}
 import io.iohk.cef.network.discovery.DiscoveryWireMessage
 import io.iohk.cef.network.encoding.array.ArrayCodecs._
 
@@ -25,10 +25,13 @@ abstract class RaftConsensusConfigBuilder[C] {
       executionContext: ExecutionContext): RPCFactory[C]
 }
 
-class DefaultRaftConsensusConfigBuilder[BB](
+class DefaultRaftConsensusConfigBuilder[S, H <: BlockHeader, T <: Transaction[S]](
     defaultConfig: DefaultLedgerConfig,
     configReaderBuilder: ConfigReaderBuilder)
-    extends RaftConsensusConfigBuilder[BB] {
+    extends RaftConsensusConfigBuilder[Block[S, H, T]] {
+
+  type BB = Block[S, H, T]
+
   import configReaderBuilder._
   import defaultConfig._
   override def storage(

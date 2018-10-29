@@ -90,7 +90,7 @@ object IndentityTxMain extends App {
   val configReaderBuilder = new ConfigReaderBuilder
   val ledgerConfigBuilder = new DefaultLedgerConfig(configReaderBuilder)
   val raftConsensusConfigBuilder =
-    new DefaultRaftConsensusConfigBuilder[commonTypeAliases.B](ledgerConfigBuilder, configReaderBuilder)
+    new DefaultRaftConsensusConfigBuilder[S, H, T](ledgerConfigBuilder, configReaderBuilder)
   val networkBuilder = new NetworkBuilder[S, H, T](ledgerConfigBuilder)
   val ledgerStorageBuilder = new LedgerStorageBuilder(ledgerConfigBuilder)
   val headerGeneratorBuilder = new IdentityLedgerHeaderGenerator(ledgerConfigBuilder)
