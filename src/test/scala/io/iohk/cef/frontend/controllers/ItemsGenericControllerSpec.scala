@@ -30,10 +30,15 @@ class ItemsGenericControllerSpec
 
     "create a valid key-pair" in {
       val body =
-        """
+        """{
+          |"id":"birth-cert",
+          |"data":
           |{
           |  "date": "01/01/2015",
           |  "name": "Input Output HK"
+          |},
+          |"witnesses":[],
+          |"owners":[]
           |}
         """.stripMargin
       val request = Post("/birth-certificates", HttpEntity(ContentTypes.`application/json`, body))
