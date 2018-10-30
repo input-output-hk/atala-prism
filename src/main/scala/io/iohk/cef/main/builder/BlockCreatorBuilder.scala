@@ -3,7 +3,7 @@ import akka.util.Timeout
 import io.iohk.cef.consensus.raft.LogEntry
 import io.iohk.cef.ledger.{Block, BlockHeader, ByteStringSerializable, Transaction}
 import io.iohk.cef.network.discovery.DiscoveryWireMessage
-import io.iohk.cef.network.encoding.array.ArrayCodecs.{ArrayDecoder, ArrayEncoder}
+import io.iohk.cef.codecs.array.ArrayCodecs._
 import io.iohk.cef.transactionpool.BlockCreator
 
 import scala.concurrent.ExecutionContext
@@ -29,12 +29,11 @@ class BlockCreatorBuilder[S, H <: BlockHeader, T <: Transaction[S]](
       arrayEncoder: ArrayEncoder[B],
       arrayDecoder: ArrayDecoder[B],
       arrayLEncoder: ArrayEncoder[LogEntry[B]],
-      arrayLDecoder: ArrayDecoder[LogEntry[B]]): Props =
-    Props(
+      arrayLDecoder: ArrayDecoder[LogEntry[B]]): BlockCreator[S, H, T] =
       new BlockCreator(
-        txPoolActorModelInterface,
+        txPoolFutureInterface,
         consensus,
         ledgerConfig.blockCreatorInitialDelay,
         ledgerConfig.blockCreatorInterval
-      ))
+      )
 }

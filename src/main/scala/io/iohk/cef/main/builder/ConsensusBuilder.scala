@@ -5,7 +5,7 @@ import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.consensus.raft._
 import io.iohk.cef.ledger.{Block, BlockHeader, ByteStringSerializable, Transaction}
 import io.iohk.cef.network.discovery.DiscoveryWireMessage
-import io.iohk.cef.network.encoding.array.ArrayCodecs.{ArrayDecoder, ArrayEncoder}
+import io.iohk.cef.codecs.array.ArrayCodecs._
 import io.iohk.cef.utils.Logger
 
 import scala.concurrent.ExecutionContext

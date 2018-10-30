@@ -8,13 +8,11 @@ import scala.concurrent.ExecutionContext
 class TransactionPoolBuilder[S, H <: BlockHeader, T <: Transaction[S]](
     headerGeneratorBuilder: LedgerHeaderGenerator[S, H],
     ledgerStateStorageBuilder: LedgerStateStorageBuilder[S],
-    defaultActorSystemBuilder: DefaultActorSystemBuilder,
     ledgerConfigBuilder: LedgerConfigBuilder
 ) {
   import headerGeneratorBuilder._
-  import ledgerStateStorageBuilder._
-  import defaultActorSystemBuilder._
   import ledgerConfigBuilder._
+  import ledgerStateStorageBuilder._
 
   private def queue = new TimedQueue[T](clock)
 
