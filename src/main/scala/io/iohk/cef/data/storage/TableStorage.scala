@@ -6,5 +6,5 @@ trait TableStorage {
 
   def insert[I](dataItem: DataItem[I])(implicit itemSerializable: ByteStringSerializable[I]): Unit
 
-  def delete[I](dataItem: DataItem[I]): Unit
+  def delete(dataItemId: String): Unit
 }

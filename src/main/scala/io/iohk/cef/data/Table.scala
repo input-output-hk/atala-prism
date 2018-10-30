@@ -37,7 +37,7 @@ class Table(tableStorage: TableStorage) {
         val error = new OwnerMustSignDelete(dataItem)
         Left(error)
       } else {
-        Right(tableStorage.delete(dataItem))
+        Right(tableStorage.delete(dataItem.id))
       }
     }
   }

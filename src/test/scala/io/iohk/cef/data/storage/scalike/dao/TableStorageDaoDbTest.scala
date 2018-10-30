@@ -49,7 +49,7 @@ trait TableStorageDaoDbTest
     val itemsMiddle = itemsFromDb(dataItems.map(_.id))
     itemsMiddle.isRight mustBe true
     itemsMiddle.right.value.sortBy(_.id) mustBe dataItems.sortBy(_.id)
-    dataItems.foreach(dao.delete(_))
+    dataItems.foreach(item => dao.delete(item.id))
     val itemsAfter = itemsFromDb(dataItems.map(_.id))
     itemsAfter mustBe Right(Seq())
   }

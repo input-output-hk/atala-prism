@@ -21,18 +21,18 @@ class TableStorageDao {
     insertDataItemOwners(dataItem)
   }
 
-  def delete[I](dataItem: DataItem[I])(implicit session: DBSession): Unit = {
+  def delete(dataItemId: String)(implicit session: DBSession): Unit = {
     val itemColumn = DataItemTable.column
     val sigColumn = DataItemSignatureTable.column
     val owColumn = DataItemOwnerTable.column
 
-    sql"""delete from ${DataItemSignatureTable.table} where ${sigColumn.dataItemId} = ${dataItem.id}"""
+    sql"""delete from ${DataItemSignatureTable.table} where ${sigColumn.dataItemId} = $dataItemId"""
       .executeUpdate()
       .apply()
-    sql"""delete from ${DataItemOwnerTable.table} where ${owColumn.dataItemId} = ${dataItem.id}"""
+    sql"""delete from ${DataItemOwnerTable.table} where ${owColumn.dataItemId} = $dataItemId"""
       .executeUpdate()
       .apply()
-    sql"""delete from ${DataItemTable.table} where ${itemColumn.dataItemId} = ${dataItem.id}"""
+    sql"""delete from ${DataItemTable.table} where ${itemColumn.dataItemId} = $dataItemId"""
       .executeUpdate()
       .apply()
   }
