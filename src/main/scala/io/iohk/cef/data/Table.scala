@@ -1,9 +1,8 @@
 package io.iohk.cef.data
-import io.iohk.cef.TableId
-import io.iohk.cef.data.storage.TableStorage
-import io.iohk.cef.ledger.ByteStringSerializable
 import io.iohk.cef.crypto._
+import io.iohk.cef.data.storage.TableStorage
 import io.iohk.cef.error.ApplicationError
+import io.iohk.cef.ledger.ByteStringSerializable
 
 class Table(tableStorage: TableStorage) {
 
@@ -18,7 +17,7 @@ class Table(tableStorage: TableStorage) {
     tableStorage.selectAll(tableId)
   }
 
-  def insert[I](dataItem: DataItem[I])(
+  def insert[I](tableId: TableId, dataItem: DataItem[I])(
       implicit itemSerializable: ByteStringSerializable[I]): Either[ApplicationError, Unit] = {
     dataItem().flatMap { _ =>
       val signatureValidation = validateSignatures(dataItem)
@@ -27,12 +26,12 @@ class Table(tableStorage: TableStorage) {
         val error = new InvalidSignaturesError(dataItem, validationErrors)
         Left(error)
       } else {
-        Right(tableStorage.insert(dataItem))
+        Right(tableStorage.insert(tableId, dataItem))
       }
     }
   }
 
-  def delete[I](dataItem: DataItem[I], deleteSignature: Signature)(
+  def delete[I](tableId: TableId, dataItem: DataItem[I], deleteSignature: Signature)(
       implicit itemSerializable: ByteStringSerializable[I],
       actionSerializable: ByteStringSerializable[DataItemAction[I]]): Either[ApplicationError, Unit] = {
     dataItem().flatMap { _ =>
@@ -44,7 +43,7 @@ class Table(tableStorage: TableStorage) {
         val error = new OwnerMustSignDelete(dataItem)
         Left(error)
       } else {
-        Right(tableStorage.delete(dataItem))
+        Right(tableStorage.delete(tableId, dataItem))
       }
     }
   }

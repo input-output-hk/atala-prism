@@ -8,36 +8,52 @@ import io.iohk.cef.ledger.ByteStringSerializable
 import scalikejdbc.{DBSession, _}
 
 class TableStorageDao {
-  def insert[I](
-      dataItem: DataItem[I])(implicit itemSerializable: ByteStringSerializable[I], session: DBSession): Unit = {
+  def insert[I](tableId: TableId,
+                dataItem: DataItem[I])(implicit itemSerializable: ByteStringSerializable[I], session: DBSession): Unit = {
     val itemColumn = DataItemTable.column
 
     val serializedItem = itemSerializable.encode(dataItem.data)
     sql"""insert into ${DataItemTable.table} (
+          ${itemColumn.dataTableId},
           ${itemColumn.dataItemId},
           ${itemColumn.dataItem}
     ) values (
+      ${tableId},
       ${dataItem.id},
       ${serializedItem.toArray}
     )""".executeUpdate().apply()
-    insertDataItemSignatures(dataItem)
-    insertDataItemOwners(dataItem)
+    val uniqueId = getUniqueId(tableId, dataItem.id)
+    insertDataItemSignatures(uniqueId, dataItem)
+    insertDataItemOwners(uniqueId, dataItem)
   }
 
-  def delete[I](dataItem: DataItem[I])(implicit session: DBSession): Unit = {
+  def delete[I](tableId: TableId, dataItem: DataItem[I])(implicit session: DBSession): Unit = {
     val itemColumn = DataItemTable.column
     val sigColumn = DataItemSignatureTable.column
     val owColumn = DataItemOwnerTable.column
 
-    sql"""delete from ${DataItemSignatureTable.table} where ${sigColumn.dataItemId} = ${dataItem.id}"""
+    val uniqueId = getUniqueId(tableId, dataItem.id)
+
+    sql"""delete from ${DataItemSignatureTable.table} where ${sigColumn.dataItemUniqueId} = ${uniqueId}"""
       .executeUpdate()
       .apply()
-    sql"""delete from ${DataItemOwnerTable.table} where ${owColumn.dataItemId} = ${dataItem.id}"""
+    sql"""delete from ${DataItemOwnerTable.table} where ${owColumn.dataItemUniqueId} = ${uniqueId}"""
       .executeUpdate()
       .apply()
-    sql"""delete from ${DataItemTable.table} where ${itemColumn.dataItemId} = ${dataItem.id}"""
+    sql"""delete from ${DataItemTable.table} where ${itemColumn.id} = ${uniqueId}"""
       .executeUpdate()
       .apply()
+  }
+
+  private def getUniqueId(tableId: TableId, dataItemId: DataItemId)(implicit DBSession: DBSession): Long = {
+    val it = DataItemTable.syntax("it")
+
+    sql"""
+      select ${it.result.id} from ${DataItemTable as it}
+       where ${it.dataTableId} = ${tableId} and ${it.dataItemId} = ${dataItemId}
+      """.map(rs => rs.long(it.resultName.id)).toOption().apply().getOrElse(
+      throw new IllegalStateException(s"Not found: dataItemId ${dataItemId}, tableId ${tableId}")
+    )
   }
 
   def selectAll[I](tableId: TableId)(
@@ -48,13 +64,13 @@ class TableStorageDao {
     val dataItemRows = sql"""
         select ${di.result.*}
         from ${DataItemTable as di}
-        where ${di.tableId} = ${tableId}
+        where ${di.dataTableId} = ${tableId}
        """.map(rs => DataItemTable(di.resultName)(rs)).list().apply()
     //Inefficient for large tables
     val dataItems: Either[ApplicationError, Seq[DataItem[I]]] = transformListEither(dataItemRows.map { dir =>
       for {
-        owners <- transformListEither(selectDataItemOwners(dir.dataItemId))
-        witnesses <- transformListEither(selectDataItemWitnesses(dir.dataItemId))
+        owners <- transformListEither(selectDataItemOwners(dir.id))
+        witnesses <- transformListEither(selectDataItemWitnesses(dir.id))
         data <- serializable
           .decode(dir.dataItem)
           .map[Either[ApplicationError, I]](Right.apply)
@@ -66,13 +82,13 @@ class TableStorageDao {
     dataItems
   }
 
-  private def selectDataItemWitnesses(dataItemId: DataItemId)(
+  private def selectDataItemWitnesses(dataItemUniqueId: Long)(
       implicit session: DBSession): List[Either[CodecError, Witness]] = {
     val dis = DataItemSignatureTable.syntax("dis")
     sql"""
         select ${dis.result.*}
         from ${DataItemSignatureTable as dis}
-        where ${dis.dataItemId} = ${dataItemId}
+        where ${dis.dataItemUniqueId} = ${dataItemUniqueId}
        """
       .map { rs =>
         val row = DataItemSignatureTable(dis.resultName)(rs)
@@ -85,13 +101,13 @@ class TableStorageDao {
       .apply()
   }
 
-  private def selectDataItemOwners(dataItemId: DataItemId)(
+  private def selectDataItemOwners(dataItemUniqueId: Long)(
       implicit session: DBSession): List[Either[CodecError, Owner]] = {
     val dio = DataItemOwnerTable.syntax("dio")
     sql"""
         select ${dio.result.*}
         from ${DataItemOwnerTable as dio}
-        where ${dio.dataItemId} = ${dataItemId}
+        where ${dio.dataItemUniqueId} = ${dataItemUniqueId}
        """
       .map(rs => SigningPublicKey.decodeFrom(DataItemOwnerTable(dio.resultName)(rs).signingPublicKey).map(Owner))
       .list()
@@ -107,32 +123,32 @@ class TableStorageDao {
     })
   }
 
-  private def insertDataItemOwners[I](dataItem: DataItem[I])(implicit session: DBSession) = {
+  private def insertDataItemOwners[I](dataItemUniqueId: Long, dataItem: DataItem[I])(implicit session: DBSession) = {
     val ownerColumn = DataItemOwnerTable.column
 
     dataItem.owners.foreach(owner => {
       sql"""
            insert into ${DataItemOwnerTable.table} (
-           ${ownerColumn.dataItemId},
+           ${ownerColumn.dataItemUniqueId},
            ${ownerColumn.signingPublicKey}
            ) values (
-            ${dataItem.id},
+            ${dataItemUniqueId},
             ${owner.key.toByteString.toArray}
            )
          """.executeUpdate().apply()
     })
   }
 
-  private def insertDataItemSignatures[I](dataItem: DataItem[I])(implicit session: DBSession) = {
+  private def insertDataItemSignatures[I](dataItemUniqueId: Long, dataItem: DataItem[I])(implicit session: DBSession) = {
     val sigColumn = DataItemSignatureTable.column
     dataItem.witnesses.foreach {
       case Witness(signature, key) =>
         sql"""insert into ${DataItemSignatureTable.table}
-              (${sigColumn.dataItemId},
+              (${sigColumn.dataItemUniqueId},
               ${sigColumn.signature},
               ${sigColumn.signingPublicKey})
               values (
-              ${dataItem.id},
+              ${dataItemUniqueId},
               ${signature.toByteString.toArray},
               ${key.toByteString.toArray}
               )
