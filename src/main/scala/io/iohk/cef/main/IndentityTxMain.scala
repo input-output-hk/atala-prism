@@ -95,10 +95,8 @@ object IndentityTxMain extends App {
   val networkBuilder = new NetworkBuilder[S, H, T](ledgerConfigBuilder)
   val ledgerStorageBuilder = new LedgerStorageBuilder(ledgerConfigBuilder)
   val headerGeneratorBuilder = new IdentityLedgerHeaderGenerator(ledgerConfigBuilder)
-  val transactionPoolBuilder = new TransactionPoolBuilder[S, H, T](
-    headerGeneratorBuilder,
-    ledgerStateStorageBuilder,
-    ledgerConfigBuilder)
+  val transactionPoolBuilder =
+    new TransactionPoolBuilder[S, H, T](headerGeneratorBuilder, ledgerStateStorageBuilder, ledgerConfigBuilder)
   val ledgerBuilder = new LedgerBuilder[S, T](ledgerStateStorageBuilder, ledgerStorageBuilder)
   val consensusBuilder = new RaftConsensusBuilder[S, H, T](
     ledgerConfigBuilder,

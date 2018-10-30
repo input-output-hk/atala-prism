@@ -30,24 +30,24 @@ class DefaultRaftConsensusConfigBuilder[S, H <: BlockHeader, T <: Transaction[S]
     configReaderBuilder: ConfigReaderBuilder)
     extends RaftConsensusConfigBuilder[Block[S, H, T]] {
 
-  type BB = Block[S, H, T]
+  type B = Block[S, H, T]
 
   import configReaderBuilder._
   import defaultConfig._
   override def storage(
       implicit
-      commandSerializable: ByteStringSerializable[BB],
-      arrayEncoder: ArrayEncoder[BB],
-      arrayDecoder: ArrayDecoder[BB],
-      arrayLEncoder: ArrayEncoder[LogEntry[BB]],
-      arrayLDecoder: ArrayDecoder[LogEntry[BB]]): raft.PersistentStorage[BB] = {
-    new OnDiskPersistentStorage[BB](nodeIdStr)
+      commandSerializable: ByteStringSerializable[B],
+      arrayEncoder: ArrayEncoder[B],
+      arrayDecoder: ArrayDecoder[B],
+      arrayLEncoder: ArrayEncoder[LogEntry[B]],
+      arrayLDecoder: ArrayDecoder[LogEntry[B]]): raft.PersistentStorage[B] = {
+    new OnDiskPersistentStorage[B](nodeIdStr)
   }
   override val raftConfig: RaftConfig = RaftConfig(config.getConfig("consensus.raft"))
   override def rpcFactory(
       implicit serializable: ByteStringSerializable[DiscoveryWireMessage],
-      commandSerializable: ByteStringSerializable[BB],
-      executionContext: ExecutionContext): raft.RPCFactory[BB] = {
-    new RaftRPCFactory[BB](networkDiscovery, transports)
+      commandSerializable: ByteStringSerializable[B],
+      executionContext: ExecutionContext): raft.RPCFactory[B] = {
+    new RaftRPCFactory[B](networkDiscovery, transports)
   }
 }

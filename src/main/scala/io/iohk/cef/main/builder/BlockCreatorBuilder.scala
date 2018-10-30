@@ -30,10 +30,10 @@ class BlockCreatorBuilder[S, H <: BlockHeader, T <: Transaction[S]](
       arrayDecoder: ArrayDecoder[B],
       arrayLEncoder: ArrayEncoder[LogEntry[B]],
       arrayLDecoder: ArrayDecoder[LogEntry[B]]): BlockCreator[S, H, T] =
-      new BlockCreator(
-        txPoolFutureInterface,
-        consensus,
-        ledgerConfig.blockCreatorInitialDelay,
-        ledgerConfig.blockCreatorInterval
-      )
+    new BlockCreator(
+      txPoolFutureInterface,
+      consensus,
+      ledgerConfig.blockCreatorInitialDelay,
+      ledgerConfig.blockCreatorInterval
+    )
 }
