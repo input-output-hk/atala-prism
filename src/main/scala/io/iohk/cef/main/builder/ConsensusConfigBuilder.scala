@@ -6,7 +6,7 @@ import io.iohk.cef.consensus.raft.{LogEntry, PersistentStorage, RPCFactory, Raft
 import io.iohk.cef.core.raftrpc.RaftRPCFactory
 import io.iohk.cef.ledger.{Block, BlockHeader, ByteStringSerializable, Transaction}
 import io.iohk.cef.network.discovery.DiscoveryWireMessage
-import io.iohk.cef.network.encoding.array.ArrayCodecs._
+import io.iohk.cef.codecs.array.ArrayCodecs._
 
 import scala.concurrent.ExecutionContext
 

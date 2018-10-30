@@ -55,21 +55,13 @@ class RaftConsensusBuilder[S, H <: BlockHeader, T <: Transaction[S]](
             log.error(s"Could not apply block ${block} to the ledger with id ${ledgerConfig.id}. Error: $error")
           //TODO Crash the node
           case Right(()) =>
-            val result = for {
-              txPoolResult <- interface.removeBlockTxs(block)
-            } yield txPoolResult
-            result onComplete {
-              case scala.util.Success(value) if value.isLeft =>
-                log.error(s"Could not apply block ${block} to the ledger with id ${ledgerConfig.id}. Error: $value")
-              //TODO Crash the node
-              case scala.util.Failure(exception) =>
-                log.error(s"Could not apply block ${block} to the ledger with id ${ledgerConfig.id}. Error: $exception")
-              //TODO Crash the node
-              case scala.util.Success(_) =>
-                log.info(s"Successfully applied block ${block} to the ledger with id ${ledgerConfig.id}")
+            val result = interface.removeBlockTransactions(block)
+            if (result.isLeft) {
+              log.error(s"Could not apply block ${block} to the ledger with id ${ledgerConfig.id}. Error: $result")
             }
         }
       }
+
   }
 
   private def raftNodeInterface(

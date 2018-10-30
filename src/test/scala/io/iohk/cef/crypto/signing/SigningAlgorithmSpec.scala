@@ -1,17 +1,18 @@
 package io.iohk.cef.crypto.signing
 
+import java.security.SecureRandom
+
 import akka.util.ByteString
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
-import org.scalatest.prop.PropertyChecks
-import io.iohk.cef.builder.SecureRandomBuilder
-import io.iohk.cef.test.ScalacheckExctensions
+import org.scalatest.prop.PropertyChecks._
+import io.iohk.cef.test.ScalacheckExtensions._
 import io.iohk.cef.crypto.KeyDecodingError
 
-class SigningAlogorithmSpec extends FlatSpec with PropertyChecks with SecureRandomBuilder with ScalacheckExctensions {
+class SigningAlgorithmSpec extends FlatSpec {
 
   val signingCollection: SigningAlgorithmsCollection =
-    SigningAlgorithmsCollection(secureRandom)
+    SigningAlgorithmsCollection(new SecureRandom)
 
   val all = signingCollection.SigningAlgorithmType.values
 

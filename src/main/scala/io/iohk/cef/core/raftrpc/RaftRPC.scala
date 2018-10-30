@@ -3,7 +3,7 @@ package io.iohk.cef.core.raftrpc
 import io.iohk.cef.consensus.raft
 import io.iohk.cef.consensus.raft._
 import io.iohk.cef.network.discovery.NetworkDiscovery
-import io.iohk.cef.network.encoding.nio._
+import io.iohk.cef.codecs.nio._
 import io.iohk.cef.network.transport.Transports
 import io.iohk.cef.network.{NodeId, RequestResponse}
 

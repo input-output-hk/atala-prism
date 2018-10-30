@@ -1,7 +1,8 @@
 package io.iohk.cef.network.encoding.rlp
 
 import akka.util.ByteString
-import io.iohk.cef.network.encoding.{Decoder, Encoder, rlp}
+import io.iohk.cef.network.encoding.rlp
+import io.iohk.cef.codecs.{Decoder, Encoder}
 
 trait RLPEncoders {
 

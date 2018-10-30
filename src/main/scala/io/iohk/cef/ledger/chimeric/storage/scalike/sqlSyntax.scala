@@ -12,22 +12,22 @@ object ChimericLedgerStateEntryTable extends SQLSyntaxSupport[ChimericLedgerStat
     ChimericLedgerStateEntryTable(rs.long(se.id), rs.string(se.stringId))
 }
 
-case class ChimericLedgerStateAddressTable(id: Long, address: String)
+case class ChimericLedgerStateAddressTable(id: Long, address: String, signingPublicKey: Array[Byte])
 
 object ChimericLedgerStateAddressTable extends SQLSyntaxSupport[ChimericLedgerStateAddressTable] {
   override def tableName: String = Schema.LedgerStateAddressTableName
 
   def apply(sa: ResultName[ChimericLedgerStateAddressTable])(rs: WrappedResultSet): ChimericLedgerStateAddressTable =
-    ChimericLedgerStateAddressTable(rs.long(sa.id), rs.string(sa.address))
+    ChimericLedgerStateAddressTable(rs.long(sa.id), rs.string(sa.address), rs.bytes(sa.signingPublicKey))
 }
 
-case class ChimericLedgerStateUtxoTable(id: Long, txId: String, index: Int)
+case class ChimericLedgerStateUtxoTable(id: Long, txId: String, index: Int, signingPublicKey: Array[Byte])
 
 object ChimericLedgerStateUtxoTable extends SQLSyntaxSupport[ChimericLedgerStateUtxoTable] {
   override def tableName: String = Schema.LedgerStateUtxoTableName
 
   def apply(su: ResultName[ChimericLedgerStateUtxoTable])(rs: WrappedResultSet): ChimericLedgerStateUtxoTable =
-    ChimericLedgerStateUtxoTable(rs.long(su.id), rs.string(su.txId), rs.int(su.index))
+    ChimericLedgerStateUtxoTable(rs.long(su.id), rs.string(su.txId), rs.int(su.index), rs.bytes(su.signingPublicKey))
 }
 
 case class ChimericLedgerStateCurrencyTable(id: Long, currency: String) {

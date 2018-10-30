@@ -1,5 +1,4 @@
 package io.iohk.cef.main.builder
-import akka.actor.Props
 import akka.util.Timeout
 import io.iohk.cef.consensus.raft.LogEntry
 import io.iohk.cef.ledger.{Block, BlockHeader, ByteStringSerializable, Transaction}

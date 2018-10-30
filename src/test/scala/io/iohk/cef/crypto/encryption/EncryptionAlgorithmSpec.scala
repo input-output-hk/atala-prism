@@ -3,16 +3,12 @@ package io.iohk.cef.crypto.encryption
 import akka.util.ByteString
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
-import org.scalatest.prop.PropertyChecks
-import io.iohk.cef.builder.SecureRandomBuilder
-import io.iohk.cef.test.ScalacheckExctensions
+import io.iohk.cef.test.ScalacheckExtensions._
 import io.iohk.cef.crypto.KeyDecodingError
+import org.scalatest.prop.PropertyChecks._
+import io.iohk.cef.builder.SecureRandomBuilder._
 
-class EncryptionAlogorithmSpec
-    extends FlatSpec
-    with PropertyChecks
-    with SecureRandomBuilder
-    with ScalacheckExctensions {
+class EncryptionAlgorithmSpec extends FlatSpec {
 
   val encryptionCollection: EncryptionAlgorithmsCollection =
     EncryptionAlgorithmsCollection(secureRandom)

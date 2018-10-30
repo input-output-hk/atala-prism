@@ -5,8 +5,19 @@ import "ChimericLedger.proto";
 
 message ChimericStateValueProto {
     oneof value {
-        ChimericStringValueProto stringValueWrapper = 1;
-        CreateCurrencyProto stringCreateCurrencyWrapper = 2;
-        NonceProto stringNonceWrapper = 3;
+        CreateCurrencyProto stringCreateCurrencyWrapper = 1;
+        AddressResultProto addressResultWrapper = 2;
+        UtxoResultProto utxoResultWrapper = 3;
+        NonceProto stringNonceWrapper = 4;
     }
+}
+
+message AddressResultProto {
+    required ChimericStringValueProto stringValueWrapper = 1;
+    required bytes publicKey = 2;
+}
+
+message UtxoResultProto {
+    required ChimericStringValueProto stringValueWrapper = 1;
+    required bytes publicKey = 2;
 }

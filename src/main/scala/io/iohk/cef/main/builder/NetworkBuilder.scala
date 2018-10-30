@@ -2,7 +2,7 @@ package io.iohk.cef.main.builder
 import io.iohk.cef.ledger.{BlockHeader, ByteStringSerializable, Transaction}
 import io.iohk.cef.network.Network
 import io.iohk.cef.network.discovery.DiscoveryWireMessage
-import io.iohk.cef.network.encoding.nio.NioCodecs.{NioDecoder, NioEncoder}
+import io.iohk.cef.codecs.nio.NioCodecs.{NioDecoder, NioEncoder}
 
 class NetworkBuilder[S, H <: BlockHeader, T <: Transaction[S]](ledgerConfigBuilder: LedgerConfigBuilder) {
   import ledgerConfigBuilder._

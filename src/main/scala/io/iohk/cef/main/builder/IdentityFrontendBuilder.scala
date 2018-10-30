@@ -3,12 +3,12 @@ import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
 import akka.util.Timeout
 import io.iohk.cef.consensus.raft.LogEntry
-import io.iohk.cef.frontend.client.IdentityServiceApi
 import io.iohk.cef.ledger.ByteStringSerializable
 import io.iohk.cef.ledger.identity.{IdentityBlockHeader, IdentityTransaction}
 import io.iohk.cef.network.discovery.DiscoveryWireMessage
 import io.iohk.cef.crypto._
-import io.iohk.cef.network.encoding.array.ArrayCodecs.{ArrayDecoder, ArrayEncoder}
+import io.iohk.cef.codecs.array.ArrayCodecs._
+import io.iohk.cef.frontend.controllers.IdentitiesController
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -38,8 +38,8 @@ class IdentityFrontendBuilder(
       arrayDecoder: ArrayDecoder[B],
       arrayLEncoder: ArrayEncoder[LogEntry[B]],
       arrayLDecoder: ArrayDecoder[LogEntry[B]]): Future[Http.ServerBinding] = {
-    val serviceApi = new IdentityServiceApi(service)
-    val route = serviceApi.createIdentity
+    val serviceApi = new IdentitiesController(service)
+    val route = serviceApi.routes
     Http()(actorSystem)
       .bindAndHandle(route, config.getString("frontend.rest.interface"), config.getInt("frontend.rest.port"))
   }

@@ -4,7 +4,6 @@ import akka.util.ByteString
 
 import io.iohk.cef.crypto.encryption._
 import io.iohk.cef.crypto.encoding.TypedByteString
-import io.iohk.cef.crypto.encoding.TypedByteStringDecodingError
 
 trait Encryption {
 
@@ -39,7 +38,7 @@ trait Encryption {
     *
     * @return          an encrypted version of `entity`
     */
-  def encrypt[T](entity: T, key: EncryptionPublicKey)(implicit encoder: Encoder[T]): EncryptedData = {
+  def encrypt[T](entity: T, key: EncryptionPublicKey)(implicit encoder: CryptoEncoder[T]): EncryptedData = {
     val encryptedBytes =
       key.`type`.algorithm.encrypt(encoder.encode(entity), key.lowlevelKey)
 
@@ -75,7 +74,7 @@ trait Encryption {
     * @return                some sort of error or the restored entity of type `T`
     */
   def decrypt[T](encryptedData: EncryptedData, key: EncryptionPrivateKey)(
-      implicit decoder: Decoder[T]): Either[DecryptError, T] = {
+      implicit decoder: CryptoDecoder[T]): Either[DecryptError, T] = {
     decryptBytes(encryptedData, key)
       .flatMap { bytes =>
         decoder.decode(bytes) match {
@@ -93,9 +92,14 @@ trait Encryption {
     /** Encodes this key, including the algorithm identifier, into a ByteString */
     def toByteString: ByteString =
       EncryptionPublicKey.encodeInto(this).toByteString
+
+    override def toString(): String =
+      EncryptionPublicKey.show(this)
   }
 
-  object EncryptionPublicKey {
+  object EncryptionPublicKey extends KeyEntityCompanion[EncryptionPublicKey] {
+
+    protected val title: String = "ENCRYPTION PUBLIC KEY"
 
     private[Encryption] def apply(tpe: encryptionAlgorithmsCollection.EncryptionAlgorithmType)(
         llk: tpe.algorithm.PublicKey) =
@@ -107,32 +111,24 @@ trait Encryption {
           llk.asInstanceOf[`type`.algorithm.PublicKey]
       }
 
-    private[Encryption] def encodeInto(key: EncryptionPublicKey): TypedByteString =
+    private[crypto] def encodeInto(key: EncryptionPublicKey): TypedByteString =
       TypedByteString(key.`type`.algorithmIdentifier, key.`type`.algorithm.encodePublicKey(key.lowlevelKey).bytes)
 
-    private[Encryption] def decodeFrom(
-        tbs: TypedByteString): Either[EncryptionPublicKeyDecodeError, EncryptionPublicKey] = {
+    private[crypto] def decodeFrom(
+        tbs: TypedByteString): Either[KeyDecodeError[EncryptionPublicKey], EncryptionPublicKey] = {
       encryptionAlgorithmsCollection(tbs.`type`) match {
         case Some(encryptionType) =>
           encryptionType.algorithm.decodePublicKey(PublicKeyBytes(tbs.bytes)) match {
             case Right(lowlevelKey) =>
               Right(EncryptionPublicKey(encryptionType)(lowlevelKey))
             case Left(decodingError) =>
-              Left(EncryptionPublicKeyDecodeError.KeyDecodingError(decodingError))
+              Left(KeyDecodeError.KeyDecodingError[EncryptionPublicKey](decodingError))
           }
         case None =>
-          Left(EncryptionPublicKeyDecodeError.UnsupportedAlgorithm(tbs.`type`))
+          Left(KeyDecodeError.UnsupportedAlgorithm[EncryptionPublicKey](tbs.`type`))
       }
     }
 
-    /** Tries to restore a `EncryptionPublicKey` from the content of the `bytes` ByteString */
-    def decodeFrom(bytes: ByteString): Either[EncryptionPublicKeyDecodeError, EncryptionPublicKey] = {
-      TypedByteString
-        .decodeFrom(bytes)
-        .left
-        .map(e => EncryptionPublicKeyDecodeError.DataExtractionError(e))
-        .flatMap(decodeFrom)
-    }
   }
 
   /** Data entity containing a encryption algorithm identifier and a private key for that algorithm */
@@ -143,9 +139,14 @@ trait Encryption {
     /** Encodes this key, including the algorithm identifier, into a ByteString */
     def toByteString: ByteString =
       EncryptionPrivateKey.encodeInto(this).toByteString
+
+    override def toString(): String =
+      EncryptionPrivateKey.show(this)
   }
 
-  object EncryptionPrivateKey {
+  object EncryptionPrivateKey extends KeyEntityCompanion[EncryptionPrivateKey] {
+
+    protected val title: String = "ENCRYPTION PRIVATE KEY"
 
     private[Encryption] def apply(tpe: encryptionAlgorithmsCollection.EncryptionAlgorithmType)(
         llk: tpe.algorithm.PrivateKey) =
@@ -157,32 +158,24 @@ trait Encryption {
           llk.asInstanceOf[`type`.algorithm.PrivateKey]
       }
 
-    private[Encryption] def encodeInto(key: EncryptionPrivateKey): TypedByteString =
+    private[crypto] def encodeInto(key: EncryptionPrivateKey): TypedByteString =
       TypedByteString(key.`type`.algorithmIdentifier, key.`type`.algorithm.encodePrivateKey(key.lowlevelKey).bytes)
 
-    private[Encryption] def decodeFrom(
-        tbs: TypedByteString): Either[EncryptionPrivateKeyDecodeError, EncryptionPrivateKey] = {
+    private[crypto] def decodeFrom(
+        tbs: TypedByteString): Either[KeyDecodeError[EncryptionPrivateKey], EncryptionPrivateKey] = {
       encryptionAlgorithmsCollection(tbs.`type`) match {
         case Some(encryptionType) =>
           encryptionType.algorithm.decodePrivateKey(PrivateKeyBytes(tbs.bytes)) match {
             case Right(lowlevelKey) =>
               Right(EncryptionPrivateKey(encryptionType)(lowlevelKey))
             case Left(decodingError) =>
-              Left(EncryptionPrivateKeyDecodeError.KeyDecodingError(decodingError))
+              Left(KeyDecodeError.KeyDecodingError[EncryptionPrivateKey](decodingError))
           }
         case None =>
-          Left(EncryptionPrivateKeyDecodeError.UnsupportedAlgorithm(tbs.`type`))
+          Left(KeyDecodeError.UnsupportedAlgorithm[EncryptionPrivateKey](tbs.`type`))
       }
     }
 
-    /** Tries to restore a `EncryptionPrivateKey` from the content of the `bytes` ByteString */
-    def decodeFrom(bytes: ByteString): Either[EncryptionPrivateKeyDecodeError, EncryptionPrivateKey] = {
-      TypedByteString
-        .decodeFrom(bytes)
-        .left
-        .map(e => EncryptionPrivateKeyDecodeError.DataExtractionError(e))
-        .flatMap(decodeFrom)
-    }
   }
 
   /** Contains a `public` encryption key, and it's `private` counterpart */
@@ -196,34 +189,30 @@ trait Encryption {
     /** Encodes this encrypted data, including the algorithm identifier, into a ByteString */
     def toByteString: ByteString =
       EncryptedData.encodeInto(this).toByteString
+
+    override def toString(): String =
+      EncryptedData.show(this)
   }
 
-  object EncryptedData {
+  object EncryptedData extends CryptoEntityCompanion[EncryptedData] {
+
+    protected val title: String = "ENCRYPTED DATA"
 
     private[Encryption] def apply(
         tpe: encryptionAlgorithmsCollection.EncryptionAlgorithmType,
         bytes: EncryptedBytes): EncryptedData =
       new EncryptedData(tpe, bytes)
 
-    private[Encryption] def encodeInto(signature: EncryptedData): TypedByteString =
+    private[crypto] def encodeInto(signature: EncryptedData): TypedByteString =
       TypedByteString(signature.`type`.algorithmIdentifier, signature.bytes.bytes)
 
-    private[Encryption] def decodeFrom(tbs: TypedByteString): Either[EncryptedDataDecodeError, EncryptedData] = {
+    private[crypto] def decodeFrom(tbs: TypedByteString): Either[DecodeError[EncryptedData], EncryptedData] = {
       encryptionAlgorithmsCollection(tbs.`type`) match {
         case Some(encryptionType) =>
           Right(new EncryptedData(encryptionType, EncryptedBytes(tbs.bytes)))
         case None =>
-          Left(EncryptedDataDecodeError.UnsupportedAlgorithm(tbs.`type`))
+          Left(DecodeError.UnsupportedAlgorithm[EncryptedData](tbs.`type`))
       }
-    }
-
-    /** Tries to restore an `EncryptedData` from the content of the `bytes` ByteString */
-    def decodeFrom(bytes: ByteString): Either[EncryptedDataDecodeError, EncryptedData] = {
-      TypedByteString
-        .decodeFrom(bytes)
-        .left
-        .map(e => EncryptedDataDecodeError.DataExtractionError(e))
-        .flatMap(decodeFrom)
     }
   }
 
@@ -241,67 +230,6 @@ trait Encryption {
 
     /** The Decoder has not been able to extract the entity from the decrypted bytes */
     case object EntityCouldNotBeDecoded extends DecryptError
-  }
-
-  /**
-    * ADT describing the types of error that can happen when trying to decode a public encryption key
-    * from a ByteString
-    */
-  sealed trait EncryptionPublicKeyDecodeError
-  object EncryptionPublicKeyDecodeError {
-
-    /** Missing or wrong information in the ByteString */
-    case class DataExtractionError(cause: TypedByteStringDecodingError) extends EncryptionPublicKeyDecodeError
-
-    /**
-      * The `algorithmIdentifier` identifier recovered from the ByteString does not match any algorithm
-      * supported by the `crypto` package
-      */
-    case class UnsupportedAlgorithm(algorithmIdentifier: String) extends EncryptionPublicKeyDecodeError
-
-    /**
-      * The underlaying algorithm has not been able to convert the `bytes` into an actual `key`
-      */
-    case class KeyDecodingError(cause: io.iohk.cef.crypto.KeyDecodingError) extends EncryptionPublicKeyDecodeError
-  }
-
-  /**
-    * ADT describing the types of error that can happen when trying to decode a private encryption key
-    * from a ByteString
-    */
-  sealed trait EncryptionPrivateKeyDecodeError
-  object EncryptionPrivateKeyDecodeError {
-
-    /** Missing or wrong information in the ByteString */
-    case class DataExtractionError(cause: TypedByteStringDecodingError) extends EncryptionPrivateKeyDecodeError
-
-    /**
-      * The `algorithmIdentifier` identifier recovered from the ByteString does not match any algorithm
-      * supported by the `crypto` package
-      */
-    case class UnsupportedAlgorithm(algorithmIdentifier: String) extends EncryptionPrivateKeyDecodeError
-
-    /**
-      * The underlaying algorithm has not been able to convert the `bytes` into an actual `key`
-      */
-    case class KeyDecodingError(cause: io.iohk.cef.crypto.KeyDecodingError) extends EncryptionPrivateKeyDecodeError
-  }
-
-  /**
-    * ADT describing the types of error that can happen when trying to decode an entity of type `EncryptedData`
-    * from a ByteString
-    */
-  sealed trait EncryptedDataDecodeError
-  object EncryptedDataDecodeError {
-
-    /** Missing or wrong information in the ByteString */
-    case class DataExtractionError(cause: TypedByteStringDecodingError) extends EncryptedDataDecodeError
-
-    /**
-      * The `algorithmIdentifier` identifier recovered from the ByteString does not match any algorithm
-      * supported by the `crypto` package
-      */
-    case class UnsupportedAlgorithm(algorithmIdentifier: String) extends EncryptedDataDecodeError
   }
 
 }

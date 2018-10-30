@@ -1,57 +1,45 @@
 package io.iohk.cef.integration
-import akka.actor.ActorSystem
-import akka.testkit.TestKit
-import akka.util.Timeout
 import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.core.{Envelope, Everyone, NodeCore}
 import io.iohk.cef.ledger.Block
 import io.iohk.cef.ledger.storage.LedgerStateStorage
 import io.iohk.cef.network.{MessageStream, Network, NodeId}
 import io.iohk.cef.test.{DummyBlockHeader, DummyBlockSerializable, DummyTransaction}
-import io.iohk.cef.transactionpool.{TimedQueue, TransactionPoolFutureInterface}
+import io.iohk.cef.transactionpool.{TimedQueue, TransactionPoolInterface}
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{BeforeAndAfterAll, FlatSpecLike, MustMatchers}
 
+import scala.collection.immutable.Queue
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, _}
 
-class CorePooltSpec
-    extends TestKit(ActorSystem("CorePoolIntegration"))
-    with FlatSpecLike
-    with MustMatchers
-    with BeforeAndAfterAll
-    with MockitoSugar
-    with TxPoolFixture {
+class CorePooltSpec extends FlatSpecLike with MustMatchers with BeforeAndAfterAll with MockitoSugar {
 
   private def mockLedgerStateStorage[State] = mock[LedgerStateStorage[State]]
 
-  override def afterAll(): Unit = TestKit.shutdownActorSystem(system)
   import io.iohk.cef.ledger.ByteSizeableImplicits._
 
   behavior of "CorePoolItSpec"
 
   it should "process a transaction" in {
-    implicit val timeout = Timeout(10 seconds)
     implicit val executionContext = ExecutionContext.global
     import DummyTransaction._
     val ledgerStateStorage = mockLedgerStateStorage[String]
     val queue = TimedQueue[DummyTransaction]()
-    val txPoolActorModelInterface =
-      new TestableTransactionPoolActorModelInterface[String, DummyBlockHeader, DummyTransaction](
+    val transactionPoolFutureInterface =
+      new TransactionPoolInterface[String, DummyBlockHeader, DummyTransaction](
         txs => new DummyBlockHeader(txs.size),
         10000,
         ledgerStateStorage,
         1 minute,
-        queue
+        () => queue
       )
-    val txPoolFutureInterface =
-      new TransactionPoolFutureInterface[String, DummyBlockHeader, DummyTransaction](txPoolActorModelInterface)
     val consensus = mock[Consensus[String, DummyBlockHeader, DummyTransaction]]
     val txNetwork = mock[Network[Envelope[DummyTransaction]]]
     val blockNetwork = mock[Network[Envelope[Block[String, DummyBlockHeader, DummyTransaction]]]]
-    val consensusMap = Map(1 -> (txPoolFutureInterface, consensus))
+    val consensusMap = Map("1" -> (transactionPoolFutureInterface, consensus))
     val me = NodeId("3112")
     val mockTxMessageStream = mock[MessageStream[Envelope[DummyTransaction]]]
     val mockBlockMessageStream =
@@ -66,11 +54,13 @@ class CorePooltSpec
       executionContext
     )
     val testTransaction = DummyTransaction(5)
-    val envelope = Envelope(testTransaction, 1, Everyone)
+    val envelope = Envelope(testTransaction, "1", Everyone)
     val result = Await.result(core.receiveTransaction(envelope), 10 seconds)
     result mustBe Right(())
-    val pool = txPoolActorModelInterface.testActorRef.underlyingActor.pool
-    val block = pool.generateBlock()
-    block.transactions mustBe Seq(testTransaction)
+    val resultBlock = transactionPoolFutureInterface.generateBlock()
+    resultBlock mustBe Right(Block(DummyBlockHeader(1), Queue(DummyTransaction(5))))
+    resultBlock.map {
+      _.transactions mustBe Seq(testTransaction)
+    }
   }
 }

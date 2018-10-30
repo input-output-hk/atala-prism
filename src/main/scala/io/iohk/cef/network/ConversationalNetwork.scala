@@ -3,7 +3,7 @@ package io.iohk.cef.network
 import java.net.InetSocketAddress
 
 import io.iohk.cef.network.discovery.NetworkDiscovery
-import io.iohk.cef.network.encoding.nio._
+import io.iohk.cef.codecs.nio._
 import io.iohk.cef.network.monixstream.MonixMessageStream
 import io.iohk.cef.network.transport.Transports.usesTcp
 import io.iohk.cef.network.transport._

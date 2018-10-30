@@ -1,5 +1,5 @@
 package io.iohk.cef.network
-import io.iohk.cef.network.encoding.nio._
+import io.iohk.cef.codecs.nio._
 import io.iohk.cef.network.transport.tcp.NetUtils
 import io.iohk.cef.network.transport.tcp.NetUtils.{nodesArePeers, randomNetworkFixture}
 import org.scalatest.FlatSpec

@@ -1,11 +1,10 @@
 package io.iohk.cef.main.builder
 import akka.util.Timeout
+import io.iohk.cef.codecs.array.ArrayCodecs._
 import io.iohk.cef.consensus.raft.LogEntry
 import io.iohk.cef.core.NodeCore
 import io.iohk.cef.ledger.{BlockHeader, ByteStringSerializable, Transaction}
 import io.iohk.cef.network.discovery.DiscoveryWireMessage
-import io.iohk.cef.network.encoding.array.ArrayCodecs.{ArrayDecoder, ArrayEncoder}
-import io.iohk.cef.network.encoding.nio.NioCodecs._
 
 import scala.concurrent.ExecutionContext
 
@@ -16,11 +15,11 @@ class NodeCoreBuilder[S, H <: BlockHeader, T <: Transaction[S]](
     consensusBuilder: ConsensusBuilder[S, H, T],
     commonTypeAliases: CommonTypeAliases[S, H, T]
 ) {
-  import networkBuilder._
   import commonTypeAliases._
-  import ledgerConfigBuilder._
-  import transactionPoolBuilder._
   import consensusBuilder._
+  import ledgerConfigBuilder._
+  import networkBuilder._
+  import transactionPoolBuilder._
 
   def nodeCore(
       implicit

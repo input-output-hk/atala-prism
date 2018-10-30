@@ -2,6 +2,7 @@ package io.iohk.cef.ledger.identity
 
 import akka.util.ByteString
 import io.iohk.cef.crypto.{sign => signBytes, _}
+import io.iohk.cef.frontend.models.IdentityTransactionType
 import io.iohk.cef.ledger.{LedgerError, Transaction}
 
 sealed trait IdentityTransaction extends Transaction[Set[SigningPublicKey]] {
@@ -12,21 +13,28 @@ sealed trait IdentityTransaction extends Transaction[Set[SigningPublicKey]] {
 
 object IdentityTransaction {
 
-  def sign(identity: String, publicKey: SigningPublicKey, privateKey: SigningPrivateKey): Signature = {
-    val source = serializeForSignature(identity, publicKey)
+  def sign(
+      identity: String,
+      `type`: IdentityTransactionType,
+      publicKey: SigningPublicKey,
+      privateKey: SigningPrivateKey): Signature = {
+    val source = serializeForSignature(identity, `type`, publicKey)
     signBytes(source, privateKey)
   }
 
-  def isSignedWith(signKey: SigningPublicKey, signature: Signature)(
-      identity: String,
-      publicKey: SigningPublicKey): Boolean = {
+  def isSignedWith(
+      signKey: SigningPublicKey,
+      signature: Signature)(identity: String, `type`: IdentityTransactionType, publicKey: SigningPublicKey): Boolean = {
 
-    val source = serializeForSignature(identity, publicKey)
+    val source = serializeForSignature(identity, `type`, publicKey)
     isValidSignature(source, signature, signKey)
   }
 
-  private def serializeForSignature(identity: String, publicKey: SigningPublicKey): ByteString = {
-    ByteString(identity) ++ publicKey.toByteString
+  private def serializeForSignature(
+      identity: String,
+      `type`: IdentityTransactionType,
+      publicKey: SigningPublicKey): ByteString = {
+    ByteString(identity) ++ ByteString(`type`.entryName) ++ publicKey.toByteString
   }
 }
 
@@ -35,7 +43,7 @@ case class Claim(identity: String, key: SigningPublicKey, signature: Signature) 
   import IdentityTransaction._
 
   override def apply(ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] = {
-    val validSignature = isSignedWith(key, signature)(identity, key)
+    val validSignature = isSignedWith(key, signature)(identity, IdentityTransactionType.Claim, key)
 
     if (!validSignature) {
       Left(UnableToVerifySignatureError)
@@ -75,7 +83,7 @@ case class Link(identity: String, key: SigningPublicKey, signature: Signature) e
       .get(identity)
       .getOrElse(Set.empty)
       .exists { signKey =>
-        isSignedWith(signKey, signature)(identity, key)
+        isSignedWith(signKey, signature)(identity, IdentityTransactionType.Link, key)
       }
 
     if (!ledgerState.contains(identity)) {
@@ -101,7 +109,7 @@ case class Unlink(identity: String, key: SigningPublicKey, signature: Signature)
       .get(identity)
       .getOrElse(Set.empty)
       .exists { signKey =>
-        isSignedWith(signKey, signature)(identity, key)
+        isSignedWith(signKey, signature)(identity, IdentityTransactionType.Unlink, key)
       }
 
     if (!validSignature) {

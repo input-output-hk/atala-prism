@@ -5,8 +5,8 @@ import java.nio.ByteBuffer
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
-import io.iohk.cef.network.encoding.nio.StreamCodecs.MessageApplication
-import io.iohk.cef.network.encoding.nio.{NioDecoder, _}
+import io.iohk.cef.codecs.nio.StreamCodecs.MessageApplication
+import io.iohk.cef.codecs.nio.{NioDecoder, _}
 import io.netty.bootstrap.{Bootstrap, ServerBootstrap}
 import io.netty.buffer.{ByteBuf, Unpooled}
 import io.netty.channel._

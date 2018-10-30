@@ -4,15 +4,16 @@ import java.util.Base64
 
 import akka.http.scaladsl.Http
 import akka.util.{ByteString, Timeout}
+import io.iohk.cef.codecs.array.ArrayCodecs._
 import io.iohk.cef.consensus.raft.LogEntry
 import io.iohk.cef.core.NodeCore
 import io.iohk.cef.crypto._
+import io.iohk.cef.frontend.models.IdentityTransactionType
 import io.iohk.cef.ledger.identity.storage.protobuf.IdentityLedgerState.PublicKeyListProto
 import io.iohk.cef.ledger.identity.{IdentityBlockHeader, IdentityBlockSerializer, IdentityTransaction}
 import io.iohk.cef.ledger.{Block, ByteStringSerializable}
 import io.iohk.cef.main.builder.{IdentityFrontendBuilder, _}
 import io.iohk.cef.network.discovery._
-import io.iohk.cef.network.encoding.array.ArrayCodecs.{ArrayDecoder, ArrayEncoder}
 import io.iohk.cef.network.encoding.rlp
 import io.iohk.cef.network.encoding.rlp.RLPEncDec
 import io.iohk.cef.utils.Logger
@@ -97,7 +98,6 @@ object IndentityTxMain extends App {
   val transactionPoolBuilder = new TransactionPoolBuilder[S, H, T](
     headerGeneratorBuilder,
     ledgerStateStorageBuilder,
-    actorSystemBuilder,
     ledgerConfigBuilder)
   val ledgerBuilder = new LedgerBuilder[S, T](ledgerStateStorageBuilder, ledgerStorageBuilder)
   val consensusBuilder = new RaftConsensusBuilder[S, H, T](
@@ -122,7 +122,7 @@ object IndentityTxMain extends App {
     commonTypeAliases,
     configReaderBuilder)
 
-  import io.iohk.cef.network.encoding.array.ArrayCodecs._
+  import io.iohk.cef.codecs.array.ArrayCodecs._
 
   val (serverBinding, core) = identityCoreBuilder(nodeCoreBuilder, frontendBuilder)
   StdIn.readLine() // let it run until user presses return
@@ -132,6 +132,6 @@ object IndentityTxMain extends App {
   val ed = Base64.getEncoder
   val encodedKey = ed.encodeToString(pair.public.toByteString.toArray)
   println(encodedKey)
-  val signature = IdentityTransaction.sign("carlos", pair.public, pair.`private`)
+  val signature = IdentityTransaction.sign("carlos", IdentityTransactionType.Claim, pair.public, pair.`private`)
   println(ed.encodeToString(signature.toByteString.toArray))
 }

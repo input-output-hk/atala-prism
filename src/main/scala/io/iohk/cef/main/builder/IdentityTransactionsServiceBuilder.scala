@@ -7,7 +7,7 @@ import io.iohk.cef.frontend.services.IdentityTransactionService
 import io.iohk.cef.ledger.identity.{IdentityBlockHeader, IdentityTransaction}
 import io.iohk.cef.ledger.{BlockHeader, ByteStringSerializable, Transaction}
 import io.iohk.cef.network.discovery.DiscoveryWireMessage
-import io.iohk.cef.network.encoding.array.ArrayCodecs.{ArrayDecoder, ArrayEncoder}
+import io.iohk.cef.codecs.array.ArrayCodecs._
 
 import scala.concurrent.ExecutionContext
 
