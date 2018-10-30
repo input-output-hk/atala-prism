@@ -6,14 +6,14 @@ import io.iohk.cef.error.ApplicationError
 
 class Table(tableStorage: TableStorage) {
 
-  def validate[I](dataItem: DataItem[I])(implicit itemSerializable: ByteStringSerializable[I]): Boolean = {
+  def validate[I](dataItem: DataItem[I])(implicit itemSerializable: ByteStringSerializable[I], canValidate: CanValidate[DataItem[I]]): Boolean = {
     val signatureValidation = validateSignatures(dataItem)
-    dataItem().isRight && signatureValidation.forall(_._2)
+    canValidate.validate(dataItem).isRight && signatureValidation.forall(_._2)
   }
 
   def insert[I](dataItem: DataItem[I])(
-      implicit itemSerializable: ByteStringSerializable[I]): Either[ApplicationError, Unit] = {
-    dataItem().flatMap { _ =>
+      implicit itemSerializable: ByteStringSerializable[I], canValidate: CanValidate[DataItem[I]]): Either[ApplicationError, Unit] = {
+    canValidate.validate(dataItem).flatMap { _ =>
       val signatureValidation = validateSignatures(dataItem)
       val validationErrors = signatureValidation.filter(!_._2).map(_._1)
       if (validationErrors.nonEmpty) {
@@ -27,8 +27,8 @@ class Table(tableStorage: TableStorage) {
 
   def delete[I](dataItem: DataItem[I], deleteSignature: Signature)(
       implicit itemSerializable: ByteStringSerializable[I],
-      actionSerializable: ByteStringSerializable[DataItemAction[I]]): Either[ApplicationError, Unit] = {
-    dataItem().flatMap { _ =>
+      actionSerializable: ByteStringSerializable[DataItemAction[I]], canValidate: CanValidate[DataItem[I]]): Either[ApplicationError, Unit] = {
+    canValidate.validate(dataItem).flatMap { _ =>
       val serializedAction = actionSerializable.encode(DataItemAction.Delete(dataItem))
       val signatureValidation =
         dataItem.owners.map(owner => isValidSignature(serializedAction, deleteSignature, owner.key))

@@ -3,10 +3,11 @@ package io.iohk.cef.frontend.controllers
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
-import io.iohk.cef.data.{DataItem, DataItemError, Owner, Witness}
+import io.iohk.cef.data.DataItem
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{MustMatchers, WordSpec}
-import play.api.libs.json.{Format, JsValue, Json}
+import play.api.libs.json._
+import io.iohk.cef.frontend.controllers.common.Codecs._
 
 class ItemsGenericControllerSpec
     extends WordSpec
@@ -15,15 +16,17 @@ class ItemsGenericControllerSpec
     with ScalatestRouteTest
     with PlayJsonSupport {
 
-  import ItemsGenericControllerSpec._
-
   implicit val executionContext = system.dispatcher
 
   val controller = new ItemsGenericController()
 
   "POST /certificates" should {
 
-    lazy val routes = controller.routes[BirthCertificate]("birth-certificates")
+    import ItemsGenericControllerSpec._
+
+    implicit val diFormat = dataItemFormat[BirthCertificate](Json.format[BirthCertificate])
+
+    lazy val routes = controller.routes[DataItem[BirthCertificate]]("birth-certificates")
 
     "create a valid key-pair" in {
       val body =
@@ -47,17 +50,5 @@ class ItemsGenericControllerSpec
 
 object ItemsGenericControllerSpec {
 
-  case class BirthCertificate(date: String, name: String) extends DataItem[(String, String)] {
-    override def id: String = "birth-certificate"
-
-    override def data: (String, String) = (date, name)
-
-    override def witnesses: Seq[Witness] = ???
-
-    override def owners: Seq[Owner] = ???
-
-    override def apply(): Either[DataItemError, Unit] = ???
-  }
-
-  implicit val format: Format[BirthCertificate] = Json.format[BirthCertificate]
+  case class BirthCertificate(date: String, name: String)
 }
