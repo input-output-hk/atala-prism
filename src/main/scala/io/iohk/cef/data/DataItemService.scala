@@ -7,12 +7,12 @@ class DataItemService(table: Table) {
   def validate[I](dataItem: DataItem[I])(implicit itemSerializable: ByteStringSerializable[I]): Boolean =
     table.validate(dataItem)
 
-  def insert[I](dataItem: DataItem[I])(
+  def insert[I](tableId: TableId, dataItem: DataItem[I])(
       implicit itemSerializable: ByteStringSerializable[I]): Either[ApplicationError, Unit] =
-    table.insert(dataItem)
+    table.insert(tableId, dataItem)
 
-  def delete[I](dataItem: DataItem[I], deleteSignature: Signature)(
+  def delete[I](tableId: TableId, dataItem: DataItem[I], deleteSignature: Signature)(
       implicit itemSerializable: ByteStringSerializable[I],
       actionSerializable: ByteStringSerializable[DataItemAction[I]]): Either[ApplicationError, Unit] =
-    table.delete(dataItem, deleteSignature)
+    table.delete(tableId, dataItem, deleteSignature)
 }

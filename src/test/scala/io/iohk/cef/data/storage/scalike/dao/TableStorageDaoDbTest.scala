@@ -1,7 +1,7 @@
 package io.iohk.cef.data.storage.scalike.dao
 import io.iohk.cef.crypto._
 import io.iohk.cef.data.storage.scalike.{DataItemOwnerTable, DataItemSignatureTable, DataItemTable}
-import io.iohk.cef.data.{DataItem, DataItemId, Owner, Witness}
+import io.iohk.cef.data._
 import io.iohk.cef.ledger.ByteStringSerializable
 import io.iohk.cef.test.DummyValidDataItem
 import org.scalatest.mockito.MockitoSugar
@@ -20,6 +20,7 @@ trait TableStorageDaoDbTest
   behavior of "TableStorageDaoDbTest"
 
   it should "insert data items" in { implicit s =>
+    val tableId: TableId = "TableId"
     val ownerKeyPair = generateSigningKeyPair()
     val ownerKeyPair2 = generateSigningKeyPair()
     val dataItems = Seq(
@@ -27,15 +28,16 @@ trait TableStorageDaoDbTest
       DummyValidDataItem("valid2", "data2", Seq(Owner(ownerKeyPair2.public)), Seq()))
     val dao = new TableStorageDao
 
-    val itemsBefore = itemsFromDb(dataItems.map(_.id))
+    val itemsBefore = itemsFromDb(tableId, dataItems.map(_.id))
     itemsBefore mustBe Right(Seq())
-    dataItems.foreach(dao.insert(_))
-    val itemsAfter = itemsFromDb(dataItems.map(_.id))
+    dataItems.foreach(dao.insert(tableId, _))
+    val itemsAfter = itemsFromDb(tableId, dataItems.map(_.id))
     itemsAfter.isRight mustBe true
     itemsAfter.right.value.sortBy(_.id) mustBe dataItems.sortBy(_.id)
   }
 
   it should "delete data items" in { implicit s =>
+    val tableId: TableId = "TableId"
     val ownerKeyPair = generateSigningKeyPair()
     val ownerKeyPair2 = generateSigningKeyPair()
     val dataItems = Seq(
@@ -43,18 +45,18 @@ trait TableStorageDaoDbTest
       DummyValidDataItem("valid2", "data2", Seq(Owner(ownerKeyPair2.public)), Seq()))
     val dao = new TableStorageDao
 
-    val itemsBefore = itemsFromDb(dataItems.map(_.id))
+    val itemsBefore = itemsFromDb(tableId, dataItems.map(_.id))
     itemsBefore mustBe Right(Seq())
-    dataItems.foreach(dao.insert(_))
-    val itemsMiddle = itemsFromDb(dataItems.map(_.id))
+    dataItems.foreach(dao.insert(tableId, _))
+    val itemsMiddle = itemsFromDb(tableId, dataItems.map(_.id))
     itemsMiddle.isRight mustBe true
     itemsMiddle.right.value.sortBy(_.id) mustBe dataItems.sortBy(_.id)
-    dataItems.foreach(dao.delete(_))
-    val itemsAfter = itemsFromDb(dataItems.map(_.id))
+    dataItems.foreach(dao.delete(tableId, _))
+    val itemsAfter = itemsFromDb(tableId, dataItems.map(_.id))
     itemsAfter mustBe Right(Seq())
   }
 
-  private def selectAll[I](ids: Seq[DataItemId], dataItemCreator: (String, I, Seq[Owner], Seq[Witness]) => DataItem[I])(
+  private def selectAll[I](tableId: TableId, ids: Seq[DataItemId], dataItemCreator: (String, I, Seq[Owner], Seq[Witness]) => DataItem[I])(
       implicit session: DBSession,
       serializable: ByteStringSerializable[I]): Either[CodecError, Seq[DataItem[I]]] = {
     import io.iohk.cef.utils.EitherTransforms
@@ -67,8 +69,9 @@ trait TableStorageDaoDbTest
     //Inefficient for large tables
     import EitherTransforms._
     val dataItems = dataItemRows.map(dir => {
-      val ownerEither = selectDataItemOwners(dir.dataItemId).toEitherList
-      val witnessEither = selectDataItemWitnesses(dir.dataItemId).toEitherList
+      val uniqueId = getUniqueId(tableId, dir.dataItemId)
+      val ownerEither = selectDataItemOwners(uniqueId).toEitherList
+      val witnessEither = selectDataItemWitnesses(uniqueId).toEitherList
       for {
         owners <- ownerEither
         witnesses <- witnessEither
@@ -84,12 +87,23 @@ trait TableStorageDaoDbTest
     dataItems.toEitherList
   }
 
-  private def selectDataItemWitnesses(dataItemId: DataItemId)(implicit session: DBSession) = {
+  private def getUniqueId(tableId: TableId, dataItemId: DataItemId)(implicit DBSession: DBSession): Long = {
+    val it = DataItemTable.syntax("it")
+
+    sql"""
+      select ${it.result.id} from ${DataItemTable as it}
+       where ${it.dataTableId} = ${tableId} and ${it.dataItemId} = ${dataItemId}
+      """.map(rs => rs.long(it.resultName.id)).toOption().apply().getOrElse(
+      throw new IllegalStateException(s"Not found: dataItemId ${dataItemId}, tableId ${tableId}")
+    )
+  }
+
+  private def selectDataItemWitnesses(dataItemUniqueId: Long)(implicit session: DBSession) = {
     val dis = DataItemSignatureTable.syntax("dis")
     sql"""
         select ${dis.result.*}
         from ${DataItemSignatureTable as dis}
-        where ${dis.dataItemId} = ${dataItemId}
+        where ${dis.dataItemUniqueId} = ${dataItemUniqueId}
        """
       .map { rs =>
         val row = DataItemSignatureTable(dis.resultName)(rs)
@@ -102,19 +116,19 @@ trait TableStorageDaoDbTest
       .apply()
   }
 
-  private def selectDataItemOwners(dataItemId: DataItemId)(implicit session: DBSession) = {
+  private def selectDataItemOwners(dataItemUniqueId: Long)(implicit session: DBSession) = {
     val dio = DataItemOwnerTable.syntax("dio")
     sql"""
         select ${dio.result.*}
         from ${DataItemOwnerTable as dio}
-        where ${dio.dataItemId} = ${dataItemId}
+        where ${dio.dataItemUniqueId} = ${dataItemUniqueId}
        """
       .map(rs => SigningPublicKey.decodeFrom(DataItemOwnerTable(dio.resultName)(rs).signingPublicKey).map(Owner))
       .list()
       .apply()
   }
 
-  private def itemsFromDb(itemIds: Seq[String])(implicit session: DBSession) =
-    selectAll(itemIds, (s, d, o, w) => DummyValidDataItem(s, d, o, w))
+  private def itemsFromDb(tableId: TableId, itemIds: Seq[String])(implicit session: DBSession) =
+    selectAll(tableId, itemIds, (s, d, o, w) => DummyValidDataItem(s, d, o, w))
 
 }
