@@ -12,14 +12,15 @@ sealed trait LedgerStateStorageBuilder[S] {
   def ledgerStateStorage(implicit byteStringSerializable: ByteStringSerializable[S]): LedgerStateStorage[S]
 }
 
-trait DefaultLedgerStateStorageBuilder[S] extends LedgerStateStorageBuilder[S] {
-  self: LedgerConfigBuilder =>
+class DefaultLedgerStateStorageBuilder[S](ledgerConfigBuilder: LedgerConfigBuilder)
+    extends LedgerStateStorageBuilder[S] {
+  import ledgerConfigBuilder._
   override def ledgerStateStorage(implicit byteStringSerializable: ByteStringSerializable[S]): LedgerStateStorage[S] = {
     new LedgerStateStorageImpl[S](ledgerConfig.id, new LedgerStateStorageDao)
   }
 }
 
-trait IdentityLedgerStateStorageBuilder extends LedgerStateStorageBuilder[Set[SigningPublicKey]] {
+class IdentityLedgerStateStorageBuilder extends LedgerStateStorageBuilder[Set[SigningPublicKey]] {
   override def ledgerStateStorage(implicit byteStringSerializable: ByteStringSerializable[Set[SigningPublicKey]])
     : LedgerStateStorage[Set[SigningPublicKey]] =
     new IdentityLedgerStateStorageImpl(new IdentityLedgerStateStorageDao)
