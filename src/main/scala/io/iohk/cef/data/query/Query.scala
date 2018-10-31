@@ -1,5 +1,5 @@
 package io.iohk.cef.data.query
-import io.iohk.cef.TableId
+import io.iohk.cef.data.TableId
 
 sealed class Query[T, U] private (val select: Select[T], val projection: Projection[T, U]) {
   final val languageVersion: Int = 1

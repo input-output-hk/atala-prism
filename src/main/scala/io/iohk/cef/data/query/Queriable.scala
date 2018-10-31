@@ -1,5 +1,9 @@
 package io.iohk.cef.data.query
 
-trait Queriable[T] {
+case class Field(index: Int)
 
+trait Queriable[T] {
+  def projectedFields: Set[]
+
+  
 }
