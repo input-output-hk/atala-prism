@@ -4,13 +4,15 @@ import java.util.Base64
 
 import akka.http.scaladsl.Http
 import akka.util.{ByteString, Timeout}
+import io.iohk.cef.codecs.array.ArrayCodecs._
+import io.iohk.cef.consensus.raft.LogEntry
 import io.iohk.cef.core.NodeCore
 import io.iohk.cef.crypto._
 import io.iohk.cef.frontend.models.IdentityTransactionType
 import io.iohk.cef.ledger.identity.storage.protobuf.IdentityLedgerState.PublicKeyListProto
 import io.iohk.cef.ledger.identity.{IdentityBlockHeader, IdentityBlockSerializer, IdentityTransaction}
 import io.iohk.cef.ledger.{Block, ByteStringSerializable}
-import io.iohk.cef.main.builder._
+import io.iohk.cef.main.builder.{IdentityFrontendBuilder, _}
 import io.iohk.cef.network.discovery._
 import io.iohk.cef.network.encoding.rlp
 import io.iohk.cef.network.encoding.rlp.RLPEncDec
@@ -27,23 +29,20 @@ object IndentityTxMain extends App {
   type T = IdentityTransaction
   type B = Block[S, H, T]
 
-  def identityCoreBuilder(
+  def identityCoreBuilder(coreBuilder: NodeCoreBuilder[S, H, T], frontendBuilder: IdentityFrontendBuilder)(
       implicit
       timeout: Timeout,
       executionContext: ExecutionContext,
       blockByteStringSerializable: ByteStringSerializable[B],
       stateyteStringSerializable: ByteStringSerializable[S],
       txStringSerializable: ByteStringSerializable[T],
-      dByteStringSerializable: ByteStringSerializable[DiscoveryWireMessage])
-    : (Future[Http.ServerBinding], NodeCore[S, H, T]) = {
-    val coreBuilder = new NodeCoreBuilder[S, H, T] with ConfigReaderBuilder with DefaultLedgerConfig
-    with DefaultRaftConsensusConfigBuilder[B] with RaftConsensusBuilder[S, H, T] with TransactionPoolBuilder[S, H, T]
-    with LedgerBuilder[S, T] with Logger with NetworkBuilder[S, H, T] with DefaultLedgerStateStorageBuilder[S]
-    with LedgerStorageBuilder with DefaultActorSystemBuilder with CommonTypeAliases[S, H, T]
+      dByteStringSerializable: ByteStringSerializable[DiscoveryWireMessage],
+      arrayEncoder: ArrayEncoder[B],
+      arrayDecoder: ArrayDecoder[B],
+      arrayLEncoder: ArrayEncoder[LogEntry[B]],
+      arrayLDecoder: ArrayDecoder[LogEntry[B]]): (Future[Http.ServerBinding], NodeCore[S, H, T]) = {
 
-    //Identity Specific
-    with IdentityFrontendBuilder with IdentityTransactionServiceBuilder with IdentityLedgerHeaderGenerator {}
-    val bindingF = coreBuilder.bindingFuture
+    val bindingF = frontendBuilder.bindingFuture
     (bindingF, coreBuilder.nodeCore)
   }
 
@@ -85,7 +84,45 @@ object IndentityTxMain extends App {
       }
     }
   implicit val dSerializable = discSerializable
-  val (serverBinding, core) = identityCoreBuilder
+  val actorSystemBuilder = new DefaultActorSystemBuilder
+  val logger = new Logger {}
+  val ledgerStateStorageBuilder = new IdentityLedgerStateStorageBuilder
+  val commonTypeAliases = new CommonTypeAliases[S, H, T]
+  val configReaderBuilder = new ConfigReaderBuilder
+  val ledgerConfigBuilder = new DefaultLedgerConfig(configReaderBuilder)
+  val raftConsensusConfigBuilder =
+    new DefaultRaftConsensusConfigBuilder[S, H, T](ledgerConfigBuilder, configReaderBuilder)
+  val networkBuilder = new NetworkBuilder[S, H, T](ledgerConfigBuilder)
+  val ledgerStorageBuilder = new LedgerStorageBuilder(ledgerConfigBuilder)
+  val headerGeneratorBuilder = new IdentityLedgerHeaderGenerator(ledgerConfigBuilder)
+  val transactionPoolBuilder =
+    new TransactionPoolBuilder[S, H, T](headerGeneratorBuilder, ledgerStateStorageBuilder, ledgerConfigBuilder)
+  val ledgerBuilder = new LedgerBuilder[S, T](ledgerStateStorageBuilder, ledgerStorageBuilder)
+  val consensusBuilder = new RaftConsensusBuilder[S, H, T](
+    ledgerConfigBuilder,
+    transactionPoolBuilder,
+    raftConsensusConfigBuilder,
+    ledgerBuilder,
+    logger,
+    commonTypeAliases)
+  val blockCreatorBuilder =
+    new BlockCreatorBuilder[S, H, T](consensusBuilder, transactionPoolBuilder, ledgerConfigBuilder, commonTypeAliases)
+  val nodeCoreBuilder = new NodeCoreBuilder[S, H, T](
+    networkBuilder,
+    ledgerConfigBuilder,
+    transactionPoolBuilder,
+    consensusBuilder,
+    commonTypeAliases)
+  val identityTransactionServiceBuilder = new IdentityTransactionServiceBuilder(nodeCoreBuilder, commonTypeAliases)
+  val frontendBuilder = new IdentityFrontendBuilder(
+    actorSystemBuilder,
+    identityTransactionServiceBuilder,
+    commonTypeAliases,
+    configReaderBuilder)
+
+  import io.iohk.cef.codecs.array.ArrayCodecs._
+
+  val (serverBinding, core) = identityCoreBuilder(nodeCoreBuilder, frontendBuilder)
   StdIn.readLine() // let it run until user presses return
   Await.result(serverBinding.flatMap(_.unbind()), 1 minute) // trigger unbinding from the port
 
