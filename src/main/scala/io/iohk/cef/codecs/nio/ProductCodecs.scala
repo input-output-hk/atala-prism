@@ -16,11 +16,18 @@ trait ProductCodecs {
 
   implicit def hListEncoder[H, T <: HList](
       implicit hEncoder: Lazy[NioEncoder[H]],
-      tEncoder: NioEncoder[T]): NioEncoder[H :: T] = {
-    case h :: t => {
-      val hEnc: ByteBuffer = hEncoder.value.encode(h)
-      val tEnc: ByteBuffer = tEncoder.encode(t)
-      allocate(hEnc.capacity() + tEnc.capacity()).put(hEnc).put(tEnc).flip().asInstanceOf[ByteBuffer]
+      tEncoder: NioEncoder[T]): NioEncoder[H :: T] = new NioEncoder[H :: T] {
+//    case h :: t => {
+//      val hEnc: ByteBuffer = hEncoder.value.encode(h)
+//      val tEnc: ByteBuffer = tEncoder.encode(t)
+//      allocate(hEnc.capacity() + tEnc.capacity()).put(hEnc).put(tEnc).flip().asInstanceOf[ByteBuffer]
+//    }
+    override def encode(hl: H :: T) = hl match {
+      case h :: t => {
+        val hEnc: ByteBuffer = hEncoder.value.encode(h)
+        val tEnc: ByteBuffer = tEncoder.encode(t)
+        allocate(hEnc.capacity() + tEnc.capacity()).put(hEnc).put(tEnc).flip().asInstanceOf[ByteBuffer]
+      }
     }
   }
 
