@@ -12,17 +12,16 @@ object UniversityDegreeData {
       implicit publicKeyStore: Map[String, SigningPublicKey],
       serializable: NioEncoder[UniversityDegreeData]): CanValidate[DataItem[UniversityDegreeData]] = {
     dataItem: DataItem[UniversityDegreeData] =>
-      {
-        mandatoryCheck(dataItem).map { d =>
-          getSigningPublicKey(d).map { key =>
-            if (isValidSignature(d.data, d.witnesses.head.signature, key)) {
-              Right(Unit)
-            } else {
-              Left(InvalidUniversitySignatureError(d.data.universityName, d.id))
-            }
+      mandatoryCheck(dataItem).map { d =>
+        getSigningPublicKey(d).map { key =>
+          if (isValidSignature(d.data, d.witnesses.head.signature, key)) {
+            Right(Unit)
+          } else {
+            Left(InvalidUniversitySignatureError(d.data.universityName, d.id))
           }
         }
       }
+
   }
 
   private def getSigningPublicKey(dataItem: DataItem[UniversityDegreeData])(
