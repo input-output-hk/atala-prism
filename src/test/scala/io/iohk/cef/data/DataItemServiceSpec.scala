@@ -14,8 +14,7 @@ class DataItemServiceSpec extends FlatSpec {
   private implicit val dataItemSerializable = mock[ByteStringSerializable[String]]
   private implicit val actionSerializable = mock[ByteStringSerializable[DataItemAction[String]]]
   private implicit val canValidate = new CanValidate[DataItem[String]] {
-    override def validate(t: DataItem[String])
-      : Either[ApplicationError, Unit] = Right(())
+    override def validate(t: DataItem[String]): Either[ApplicationError, Unit] = Right(())
   }
 
   behavior of "DataItemService"

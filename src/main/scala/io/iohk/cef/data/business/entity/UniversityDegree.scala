@@ -8,7 +8,7 @@ case class UniversityDegreeData(universityName: String, degree: String, studentN
 
 object UniversityDegreeData {
 
-  implicit def UniversityDegreeValidation(
+  implicit def universityDegreeValidation(
       implicit publicKeyStore: Map[String, SigningPublicKey],
       serializable: NioEncoder[UniversityDegreeData]): CanValidate[DataItem[UniversityDegreeData]] = {
     dataItem: DataItem[UniversityDegreeData] =>
