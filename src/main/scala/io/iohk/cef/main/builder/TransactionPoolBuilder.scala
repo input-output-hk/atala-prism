@@ -5,11 +5,14 @@ import io.iohk.cef.transactionpool.{TimedQueue, TransactionPoolInterface}
 
 import scala.concurrent.ExecutionContext
 
-trait TransactionPoolBuilder[S, H <: BlockHeader, T <: Transaction[S]] {
-  self: HeaderGeneratorBuilder[S, H]
-    with LedgerStateStorageBuilder[S]
-    with ActorSystemBuilder
-    with LedgerConfigBuilder =>
+class TransactionPoolBuilder[S, H <: BlockHeader, T <: Transaction[S]](
+    headerGeneratorBuilder: LedgerHeaderGenerator[S, H],
+    ledgerStateStorageBuilder: LedgerStateStorageBuilder[S],
+    ledgerConfigBuilder: LedgerConfigBuilder
+) {
+  import headerGeneratorBuilder._
+  import ledgerConfigBuilder._
+  import ledgerStateStorageBuilder._
 
   private def queue = new TimedQueue[T](clock)
 
