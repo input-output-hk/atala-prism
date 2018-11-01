@@ -135,7 +135,7 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
     val me = NodeId("abcd")
     val (core, consensusMap, _, blockDM) = setupTest(ledgerId, me)
     val (testBlockTxEnvelope, _) = setupMissingCapabilitiesTest(ledgerId, core, Everyone, me)
-    val newEnvelope = testBlockTxEnvelope.copy(ledgerId = ledgerId + 1)
+    val newEnvelope = testBlockTxEnvelope.copy(containerId = ledgerId + 1)
     for {
       rcv <- core.receiveBlock(newEnvelope)
     } yield {
@@ -152,7 +152,7 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
     val me = NodeId("abcd")
     val (core, consensusMap, txDM, _) = setupTest(ledgerId, me)
     val (_, testTxEnvelope) = setupMissingCapabilitiesTest(ledgerId, core, Everyone, me)
-    val newEnvelope = testTxEnvelope.copy(ledgerId = ledgerId + 1)
+    val newEnvelope = testTxEnvelope.copy(containerId = ledgerId + 1)
     for {
       rcv <- core.receiveTransaction(newEnvelope)
     } yield {

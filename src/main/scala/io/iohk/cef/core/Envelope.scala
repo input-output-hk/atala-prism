@@ -9,13 +9,18 @@ import scala.util.Try
 /**
   *
   * @param transaction
-  * @param ledgerId
+  * @param containerId
   * @param destinationDescriptor a function from NodeInfo to Boolean expressing which nodes are intended to process this tx
   *                              It is the user's responsibility to validate that the destination nodes can handle the
   *                              ledger with id ledgerId
   * @tparam State the ledgerState
   */
-case class Envelope[+D](content: D, ledgerId: LedgerId, destinationDescriptor: DestinationDescriptor)
+case class Envelope[+D](content: D, containerId: LedgerId, destinationDescriptor: DestinationDescriptor) {
+
+  def map[T](f: D => T): Envelope[T] = {
+    Envelope(f(content), containerId, destinationDescriptor)
+  }
+}
 
 object Envelope {
   import io.iohk.cef.utils.ProtoBufByteStringConversion._
@@ -26,7 +31,7 @@ object Envelope {
       override def encode(t: Envelope[T]): ByteString = {
         val proto = EnvelopeProto(
           contentSerializer.encode(t.content),
-          t.ledgerId,
+          t.containerId,
           DestinationDescriptor.toDestinationDescriptorProto(t.destinationDescriptor)
         )
         ByteString(proto.toByteArray)

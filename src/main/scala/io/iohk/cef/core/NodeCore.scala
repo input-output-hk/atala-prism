@@ -47,7 +47,7 @@ class NodeCore[State, Header <: BlockHeader, Tx <: Transaction[State]](
       txEnvelope: Envelope[Tx],
       networkDissemination: Future[Either[ApplicationError, Unit]]) = {
     process(txEnvelope, networkDissemination) { env =>
-      val txPoolService = consensusMap(env.ledgerId)._1
+      val txPoolService = consensusMap(env.containerId)._1
       Future(txPoolService.processTransaction(txEnvelope.content))
     }
   }
@@ -55,7 +55,7 @@ class NodeCore[State, Header <: BlockHeader, Tx <: Transaction[State]](
   private def processBlock(
       blEnvelope: Envelope[Block[State, Header, Tx]],
       networkDissemination: Future[Either[ApplicationError, Unit]]) = {
-    process(blEnvelope, networkDissemination)(env => consensusMap(env.ledgerId)._2.process(env.content))
+    process(blEnvelope, networkDissemination)(env => consensusMap(env.containerId)._2.process(env.content))
   }
 
   private def disseminate[A](
@@ -72,7 +72,7 @@ class NodeCore[State, Header <: BlockHeader, Tx <: Transaction[State]](
       implicit byteStringSerializable: ByteStringSerializable[Envelope[T]]): Future[Either[ApplicationError, Unit]] = {
     if (!thisIsDestination(txEnvelope)) {
       networkDissemination
-    } else if (!thisParticipatesInConsensus(txEnvelope.ledgerId)) {
+    } else if (!thisParticipatesInConsensus(txEnvelope.containerId)) {
       for {
         _ <- networkDissemination
       } yield {

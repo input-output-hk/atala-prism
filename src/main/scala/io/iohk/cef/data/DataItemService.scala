@@ -25,22 +25,24 @@ class DataItemService[T](table: Table, transports: Transports, networkDiscovery:
 
   inboundMessages.foreach(handleMessage)
 
-  def processDataItem(envelopeAction: Envelope[DataItemAction[T]]): Unit =
+  def insert(envelope: Envelope[DataItem[T]]): Either[ApplicationError, Unit] = {
+    val envelopeAction = envelope.map(Insert.apply)
     network.disseminateMessage(envelopeAction)
+    handleMessage(envelopeAction)
+  }
 
-  private def handleMessage(message: Envelope[DataItemAction[T]]): Unit = message match {
-    case Envelope(Insert(dataItem), id, destinationDescriptor) =>
-      insert(dataItem)
-    case Envelope(Delete(dataItem, deleteSignature), id, destinationDescriptor) =>
-      delete(dataItem, deleteSignature)
+  def delete(envelope: Envelope[DataItem[T]], deleteSignature: Signature): Either[ApplicationError, Unit] = {
+    val envelopeAction = envelope.map(x => Delete.apply(x, deleteSignature))
+    network.disseminateMessage(envelopeAction)
+    handleMessage(envelopeAction)
+  }
+
+  private def handleMessage(message: Envelope[DataItemAction[T]]): Either[ApplicationError, Unit] = message match {
+    case Envelope(Insert(dataItem), _, _) =>
+      table.insert(dataItem)
+    case Envelope(Delete(dataItem, deleteSignature), _, _) =>
+      table.delete(dataItem, deleteSignature)
     case _ =>
       throw new IllegalStateException("Unexpected data item message '$message'.")
   }
-
-  private def insert(dataItem: DataItem[T]): Either[ApplicationError, Unit] = {
-    table.insert(dataItem)
-  }
-
-  private def delete(dataItem: DataItem[T], deleteSignature: Signature): Either[ApplicationError, Unit] =
-    table.delete(dataItem, deleteSignature)
 }
