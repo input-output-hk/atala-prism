@@ -10,6 +10,7 @@ import io.iohk.cef.frontend.controllers.common.Codecs
 import io.iohk.cef.frontend.models.DataItemEnvelope
 import io.iohk.cef.ledger.ByteStringSerializable
 import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.mockito.MockitoSugar._
 import org.scalatest.{MustMatchers, WordSpec}
 import play.api.libs.json.{Format, JsValue, Json}
 
@@ -27,7 +28,7 @@ class ItemsGenericControllerSpec
 
   implicit val executionContext = system.dispatcher
 
-  val service = new DataItemService(null) {
+  val service = new DataItemService(mock[Table]) {
     override def insert[I](dataItem: DataItem[I])(
         implicit itemSerializable: ByteStringSerializable[I]): Either[ApplicationError, Unit] = {
       Right(())
