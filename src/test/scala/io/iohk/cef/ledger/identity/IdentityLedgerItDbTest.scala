@@ -43,7 +43,7 @@ trait IdentityLedgerItDbTest
     val ledger = createLedger(ledgerStateStorageDao)
     val now = Instant.now()
     val header = IdentityBlockHeader(now)
-    val block1 = Block(
+    val block1 = Block[Set[SigningPublicKey], IdentityBlockHeader, IdentityTransaction](
       header,
       List[IdentityTransaction](
         Claim(
@@ -65,7 +65,7 @@ trait IdentityLedgerItDbTest
     ledgerStateStorageDao.slice(Set("one", "two", "three")) mustBe
       IdentityLedgerState(Map("one" -> Set(alice.public), "two" -> Set(bob.public)))
 
-    val block2 = Block(
+    val block2 = Block[Set[SigningPublicKey], IdentityBlockHeader, IdentityTransaction](
       header,
       List[IdentityTransaction](
         Link(
@@ -80,7 +80,7 @@ trait IdentityLedgerItDbTest
         Map("one" -> Set(alice.public), "two" -> Set(bob.public, carlos.public))
       )
 
-    val block3 = Block(
+    val block3 = Block[Set[SigningPublicKey], IdentityBlockHeader, IdentityTransaction](
       header,
       List[IdentityTransaction](
         Link(

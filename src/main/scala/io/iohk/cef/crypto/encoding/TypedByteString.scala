@@ -1,16 +1,22 @@
-package io.iohk.cef.crypto
-package encoding
+package io.iohk.cef.crypto.encoding
 
 import akka.util.ByteString
 import io.iohk.cef.utils._
 
 case class TypedByteString(`type`: String, bytes: ByteString) {
 
+  import TypedByteString._
+
   def toByteString: ByteString = {
-    // FIXME: To implement directly, without using an external encoder
-    //        Maybe use the same technic used by multiformats
-    val nioEncoder: NioEncoder[TypedByteString] = implicitly
-    ByteString(nioEncoder.encode(this))
+    val typeBytes = `type`.getBytes("UTF-8")
+    val size = typeBytes.length + bytes.length + 8
+    val builder = ByteString.newBuilder
+    builder.sizeHint(size)
+    builder.putInt(typeBytes.length)
+    builder ++= typeBytes
+    builder.putInt(bytes.length)
+    builder ++= bytes
+    builder.result
   }
 
   /**
@@ -19,11 +25,7 @@ case class TypedByteString(`type`: String, bytes: ByteString) {
     * >>> import akka.util.ByteString
     * >>> TypedByteString("ABC", ByteString("ABC"))
     * -----BEGIN TYPED BYTE STRING ABC BLOCK-----
-    *  00 00 00 3D 00 00 00 10 A7 F1 59 E6 70 8B 88 34
-    *  57 37 55 A6 91 9F 54 68 00 00 00 03 00 41 00 42
-    *  00 43 00 00 00 1B 00 00 00 10 0E BB 60 87 0B 23
-    *  D1 57 2A 23 C3 DB 6A AD 73 54 00 00 00 03 41 42
-    *  43
+    *  00 00 00 03 41 42 43 00 00 00 03 41 42 43
     * -----END TYPED BYTE STRING ABC BLOCK-----
     *
     * }}}
@@ -41,14 +43,54 @@ case class TypedByteString(`type`: String, bytes: ByteString) {
 }
 
 object TypedByteString {
+
+  private implicit val byteOrder: java.nio.ByteOrder = java.nio.ByteOrder.BIG_ENDIAN
+
   def decodeFrom(bytes: ByteString): Either[TypedByteStringDecodingError, TypedByteString] = {
-    // FIXME: To implement directly, without using an external encoder
-    //        Maybe use the same technic used by multiformats
-    val nioDecoder: NioDecoder[TypedByteString] = implicitly
-    nioDecoder.decode(bytes.toByteBuffer) match {
-      case Some(entity) => Right(entity)
-      case None => Left(TypedByteStringDecodingError.NioDecoderFailedToDecodeTBS)
+    import java.nio.ByteBuffer
+    val b = ByteBuffer.wrap(bytes.toArray).order(byteOrder)
+
+    type E[T] = Either[TypedByteStringDecodingError, T]
+
+    def readInt(): E[Int] =
+      if (b.remaining < 4) {
+        Left(TypedByteStringDecodingError.NioDecoderFailedToDecodeTBS)
+      } else Right(b.getInt)
+
+    def readNat(): E[Int] =
+      readInt.flatMap {
+        case i if i >= 0 => Right(i)
+        case _ =>
+          Left(TypedByteStringDecodingError.NioDecoderFailedToDecodeTBS)
+      }
+
+    def readArray(size: Int): E[Array[Byte]] =
+      if (b.remaining < size) {
+        Left(TypedByteStringDecodingError.NioDecoderFailedToDecodeTBS)
+      } else {
+        val array = new Array[Byte](size)
+        b.get(array)
+        Right(array)
+      }
+
+    def readFullArray(): E[Array[Byte]] =
+      for {
+        size <- readNat
+        r <- readArray(size)
+      } yield r
+
+    def readString: E[String] =
+      readFullArray().map(bs => new String(bs, "UTF-8"))
+
+    b.position(0)
+
+    for {
+      `type` <- readString
+      bytes <- readFullArray
+    } yield {
+      TypedByteString(`type`, ByteString(bytes))
     }
+
   }
 
   /**
@@ -57,11 +99,7 @@ object TypedByteString {
     * >>> import akka.util.ByteString
     * >>> val text: String =
     * ...   """|-----BEGIN TYPED BYTE STRING ABC BLOCK-----
-    * ...      | 00 00 00 3D 00 00 00 10 A7 F1 59 E6 70 8B 88 34
-    * ...      | 57 37 55 A6 91 9F 54 68 00 00 00 03 00 41 00 42
-    * ...      | 00 43 00 00 00 1B 00 00 00 10 0E BB 60 87 0B 23
-    * ...      | D1 57 2A 23 C3 DB 6A AD 73 54 00 00 00 03 41 42
-    * ...      | 43
+    * ...      |  00 00 00 03 41 42 43 00 00 00 03 41 42 43
     * ...      |-----END TYPED BYTE STRING ABC BLOCK-----""".stripMargin
     * >>> TypedByteString.parseFrom(text) == Right(TypedByteString("ABC", ByteString("ABC")))
     * true

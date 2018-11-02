@@ -8,6 +8,7 @@ import org.scalatest.EitherValues._
 import org.scalatest.MustMatchers._
 import org.scalatest.WordSpec
 import org.scalatest.prop.PropertyChecks._
+import io.iohk.cef.codecs.nio.auto._
 
 class SigningSpec extends WordSpec {
 
@@ -77,7 +78,7 @@ class SigningSpec extends WordSpec {
 
     "fail to decode signatures with unsupported algorithms" in {
       val input = ByteString()
-      val algorithm = "SHA256withRSA".flatMap(_.toByte :: 0.toByte :: Nil).toArray
+      val algorithm = "SHA256withRSA".getBytes("UTF-8")
 
       val signature = sign(input, keypair1.`private`)
 
@@ -110,7 +111,7 @@ class SigningSpec extends WordSpec {
     }
 
     "fail to decode public keys with unsupported algorithms" in {
-      val algorithm = "SHA256withRSA".flatMap(_.toByte :: 0.toByte :: Nil).toArray
+      val algorithm = "SHA256withRSA".getBytes("UTF-8")
       val key = keypair1.public
       val index = key.toByteString.indexOfSlice(algorithm)
       val corruptedBytes = key.toByteString.updated(index, 'X'.toByte)
@@ -141,7 +142,7 @@ class SigningSpec extends WordSpec {
     }
 
     "fail to decode private keys with unsupported algorithms" in {
-      val algorithm = "SHA256withRSA".flatMap(_.toByte :: 0.toByte :: Nil).toArray
+      val algorithm = "SHA256withRSA".getBytes("UTF-8")
       val key = keypair1.`private`
       val index = key.toByteString.indexOfSlice(algorithm)
       val corruptedBytes = key.toByteString.updated(index, 'X'.toByte)

@@ -8,8 +8,8 @@ import com.alexitc.playsonify.models.{GenericPublicError, InputValidationError, 
 import io.iohk.cef.data.{DataItem, DataItemService}
 import io.iohk.cef.frontend.controllers.common.{CustomJsonController, _}
 import io.iohk.cef.frontend.models.DataItemEnvelope
-import io.iohk.cef.ledger.ByteStringSerializable
 import play.api.libs.json.{JsObject, Reads}
+import io.iohk.cef.codecs.nio._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -20,7 +20,7 @@ class ItemsGenericController(service: DataItemService)(implicit ec: ExecutionCon
   import ItemsGenericController._
 
   def routes[B, A <: DataItem[B], E <: DataItemEnvelope[B, A]](
-      prefix: String)(implicit format: Reads[E], itemSerializable: ByteStringSerializable[B]): Route = {
+      prefix: String)(implicit format: Reads[E], itemSerializable: NioEncDec[B]): Route = {
     pathPrefix(prefix) {
       pathEnd {
         post {

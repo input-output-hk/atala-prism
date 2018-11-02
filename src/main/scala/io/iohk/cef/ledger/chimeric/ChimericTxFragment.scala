@@ -240,13 +240,11 @@ case class SignatureTxFragment(signature: Signature) extends ChimericTxFragment 
 
 object SignatureTxFragment {
 
-  val nenc: NioEncoder[Seq[ChimericTxFragment]] = NioEncoder[Seq[ChimericTxFragment]]
-  val cenc: CryptoEncoder[Seq[ChimericTxFragment]] = encoderFromNIOEncoder(nenc)
-
   def signFragments(
       fragments: Seq[ChimericTxFragment],
       signingPrivateKey: SigningPrivateKey): Seq[ChimericTxFragment] = {
-    fragments :+ SignatureTxFragment(sign(signable(fragments), signingPrivateKey)(cenc))
+    import io.iohk.cef.codecs.nio.auto._
+    fragments :+ SignatureTxFragment(sign(signable(fragments), signingPrivateKey))
   }
 
   private def signable(fragments: Seq[ChimericTxFragment]): Seq[ChimericTxFragment] =

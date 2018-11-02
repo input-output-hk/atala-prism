@@ -2,19 +2,17 @@ package io.iohk.cef.frontend.controllers
 
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import akka.util.ByteString
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import io.iohk.cef.data._
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.frontend.controllers.common.Codecs
 import io.iohk.cef.frontend.models.DataItemEnvelope
-import io.iohk.cef.ledger.ByteStringSerializable
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mockito.MockitoSugar._
 import org.scalatest.{MustMatchers, WordSpec}
 import play.api.libs.json.{Format, JsValue, Json}
-
-import scala.util.Try
+import io.iohk.cef.codecs.nio._
+import io.iohk.cef.codecs.nio.auto._
 
 class ItemsGenericControllerSpec
     extends WordSpec
@@ -30,7 +28,7 @@ class ItemsGenericControllerSpec
 
   val service = new DataItemService(mock[Table]) {
     override def insert[I](dataItem: DataItem[I])(
-        implicit itemSerializable: ByteStringSerializable[I]): Either[ApplicationError, Unit] = {
+        implicit itemSerializable: NioEncDec[I]): Either[ApplicationError, Unit] = {
       Right(())
     }
   }
@@ -86,20 +84,5 @@ object ItemsGenericControllerSpec {
   implicit val birthCertificateFormat: Format[BirthCertificate] = Json.format[BirthCertificate]
 
   implicit val birthCertificateItemFormat: Format[BirthCertificateItem] = Json.format[BirthCertificateItem]
-
-  implicit val serializable: ByteStringSerializable[BirthCertificate] = new ByteStringSerializable[BirthCertificate] {
-    override def decode(u: ByteString): Option[BirthCertificate] = {
-      def f = Try {
-        Json.parse(new String(u.toArray)).asOpt[BirthCertificate]
-      }
-
-      f.toOption.flatten
-    }
-
-    override def encode(t: BirthCertificate): ByteString = {
-      val x = Json.toJson(t).toString().getBytes()
-      ByteString(x)
-    }
-  }
 
 }

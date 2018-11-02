@@ -1,7 +1,9 @@
 package io.iohk.cef.test
-import akka.util.ByteString
-import io.iohk.cef.ledger.{ByteStringSerializable, LedgerError, LedgerState, Transaction}
+import io.iohk.cef.ledger.{LedgerError, LedgerState, Transaction}
 import io.iohk.cef.utils.ByteSizeable
+import io.iohk.cef.codecs.nio._
+import io.iohk.cef.utils._
+import java.nio.ByteBuffer
 
 import scala.util.Try
 
@@ -16,17 +18,19 @@ case class DummyTransaction(val size: Int) extends TestTx {
 }
 
 object DummyTransaction {
-  implicit val sizeable = new ByteSizeable[DummyTransaction] {
+  implicit val sizeable: ByteSizeable[DummyTransaction] = new ByteSizeable[DummyTransaction] {
     override def sizeInBytes(t: DummyTransaction): Int = t.size
   }
 
-  implicit val serializable = new ByteStringSerializable[DummyTransaction] {
-    override def decode(bytes: ByteString): Option[DummyTransaction] =
-      Try(if (bytes.forall(_ == 1)) {
-        DummyTransaction(bytes.size)
-      } else throw new IllegalArgumentException("Invalid format for DummyTransaction")).toOption
-
-    override def encode(t: DummyTransaction): ByteString =
-      ByteString(Array.fill[Byte](t.size)(1))
+  private def decode(bb: ByteBuffer): Option[DummyTransaction] = {
+    val bytes = bb.toByteString
+    Try(if (bytes.forall(_ == 1)) {
+      DummyTransaction(bytes.size)
+    } else throw new IllegalArgumentException("Invalid format for DummyTransaction")).toOption
   }
+
+  private def encode(t: DummyTransaction): ByteBuffer =
+    Array.fill[Byte](t.size)(1).toByteBuffer
+
+  implicit val serializable: NioEncDec[DummyTransaction] = NioEncDec[DummyTransaction](encode _, decode _)
 }

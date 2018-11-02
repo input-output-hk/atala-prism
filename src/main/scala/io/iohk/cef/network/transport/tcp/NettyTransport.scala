@@ -5,8 +5,7 @@ import java.nio.ByteBuffer
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
-import io.iohk.cef.codecs.nio.StreamCodecs.MessageApplication
-import io.iohk.cef.codecs.nio.{NioDecoder, _}
+import io.iohk.cef.codecs.nio._
 import io.netty.bootstrap.{Bootstrap, ServerBootstrap}
 import io.netty.buffer.{ByteBuf, Unpooled}
 import io.netty.channel._
@@ -44,7 +43,7 @@ private[network] class NettyTransport(address: InetSocketAddress) {
       decoder: NioDecoder[Message],
       handler: (InetSocketAddress, Message) => Unit): UUID = {
     val uuid = UUID.randomUUID()
-    messageApplications.put(uuid, StreamCodecs.lazyMessageApplication(decoder, handler))
+    messageApplications.put(uuid, lazyMessageApplication(decoder, handler))
     uuid
   }
 
@@ -79,8 +78,7 @@ private[network] class NettyTransport(address: InetSocketAddress) {
     override def channelRead(ctx: ChannelHandlerContext, msg: Any): Unit = {
       val remoteAddress = ctx.channel().remoteAddress().asInstanceOf[InetSocketAddress]
 
-      StreamCodecs
-        .decodeStream(remoteAddress, msg.asInstanceOf[ByteBuf].nioBuffer(), messageApplications.values.toSeq)
+      decodeStream(remoteAddress, msg.asInstanceOf[ByteBuf].nioBuffer(), messageApplications.values.toSeq)
         .foreach(_.apply)
     }
   }

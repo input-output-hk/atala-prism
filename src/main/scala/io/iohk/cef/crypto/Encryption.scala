@@ -4,6 +4,8 @@ import akka.util.ByteString
 
 import io.iohk.cef.crypto.encryption._
 import io.iohk.cef.crypto.encoding.TypedByteString
+import io.iohk.cef.codecs.nio.{NioEncoder, NioDecoder}
+import io.iohk.cef.utils._
 
 trait Encryption {
 
@@ -38,9 +40,9 @@ trait Encryption {
     *
     * @return          an encrypted version of `entity`
     */
-  def encrypt[T](entity: T, key: EncryptionPublicKey)(implicit encoder: CryptoEncoder[T]): EncryptedData = {
+  def encrypt[T](entity: T, key: EncryptionPublicKey)(implicit encoder: NioEncoder[T]): EncryptedData = {
     val encryptedBytes =
-      key.`type`.algorithm.encrypt(encoder.encode(entity), key.lowlevelKey)
+      key.`type`.algorithm.encrypt(encoder.encode(entity).toByteString, key.lowlevelKey)
 
     EncryptedData(key.`type`, encryptedBytes)
   }
@@ -74,10 +76,10 @@ trait Encryption {
     * @return                some sort of error or the restored entity of type `T`
     */
   def decrypt[T](encryptedData: EncryptedData, key: EncryptionPrivateKey)(
-      implicit decoder: CryptoDecoder[T]): Either[DecryptError, T] = {
+      implicit decoder: NioDecoder[T]): Either[DecryptError, T] = {
     decryptBytes(encryptedData, key)
       .flatMap { bytes =>
-        decoder.decode(bytes) match {
+        decoder.decode(bytes.toByteBuffer) match {
           case Some(e) => Right(e)
           case None => Left(DecryptError.EntityCouldNotBeDecoded)
         }

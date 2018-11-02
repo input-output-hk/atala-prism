@@ -3,6 +3,7 @@ import java.time.LocalDate
 
 import io.iohk.cef.crypto._
 import io.iohk.cef.data.{DataItem, DataItemError, Owner, Witness}
+import io.iohk.cef.codecs.nio._
 
 case class UniversityDegreeData(universityName: String, degree: String, studentName: String, date: LocalDate)
 

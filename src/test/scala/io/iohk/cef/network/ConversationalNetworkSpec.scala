@@ -18,6 +18,7 @@ import org.scalatest.mockito.MockitoSugar._
 import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
+import io.iohk.cef.codecs.nio.auto._
 
 class ConversationalNetworkSpec extends FlatSpec with BeforeAndAfterAll {
 

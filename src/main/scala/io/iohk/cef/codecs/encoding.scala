@@ -16,6 +16,15 @@ package object codecs {
       }
     }
   }
+  object EncoderDecoder {
+    implicit def encoderDecoderFromEncoderAndDecoder[T, U](
+        implicit enc: Encoder[T, U],
+        dec: Decoder[U, T]): EncoderDecoder[T, U] =
+      new EncoderDecoder[T, U] {
+        override def encode(t: T): U = enc.encode(t)
+        override def decode(u: U): Option[T] = dec.decode(u)
+      }
+  }
 
   trait Encoder[T, U] {
     self =>
@@ -58,5 +67,4 @@ package object codecs {
   class EncodingException(cause: Throwable) extends RuntimeException(cause)
 
   class DecodingException(cause: Throwable) extends RuntimeException(cause)
-
 }

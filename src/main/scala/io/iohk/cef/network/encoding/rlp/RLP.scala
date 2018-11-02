@@ -4,6 +4,7 @@ import java.nio.ByteBuffer
 
 import scala.annotation.{switch, tailrec}
 import scala.collection.immutable.Queue
+import io.iohk.cef.utils._
 
 /**
   * Recursive Length Prefix (RLP) encoding.
@@ -187,7 +188,7 @@ private[rlp] object RLP {
     * @return value with leading byte that are zeroes striped
     */
   private def intToBytesNoLeadZeroes(value: Int): Array[Byte] =
-    ByteBuffer.allocate(Integer.BYTES).putInt(value).array().dropWhile(_ == (0: Byte))
+    ByteBuffer.allocate(Integer.BYTES).putInt(value).toArray.dropWhile(_ == (0: Byte))
 
   /**
     * Integer limitation goes up to 2&#94;31-1 so length can never be bigger than MAX_ITEM_LENGTH

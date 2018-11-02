@@ -3,7 +3,6 @@ package io.iohk.cef.ledger.chimeric
 import java.time.Clock
 
 import io.iohk.cef.crypto._
-import io.iohk.cef.ledger.chimeric.ChimericBlockSerializer._
 import io.iohk.cef.ledger.chimeric.SignatureTxFragment.signFragments
 import io.iohk.cef.ledger.chimeric.storage.scalike.ChimericLedgerStateStorageImpl
 import io.iohk.cef.ledger.chimeric.storage.scalike.dao.ChimericLedgerStateStorageDao
@@ -14,6 +13,7 @@ import io.iohk.cef.ledger.{Block, LedgerFixture, LedgerState}
 import org.scalatest.{EitherValues, MustMatchers, fixture}
 import scalikejdbc._
 import scalikejdbc.scalatest.AutoRollback
+import io.iohk.cef.codecs.nio.auto._
 
 trait ChimericLedgerItDbTest
     extends fixture.FlatSpec
@@ -80,7 +80,7 @@ trait ChimericLedgerItDbTest
       utxoTx
     )
     val header = new ChimericBlockHeader
-    val block = Block(header, transactions)
+    val block = Block[ChimericStateResult, ChimericBlockHeader, ChimericTx](header, transactions)
     val result = ledger(block)
     result.isRight mustBe true
 
@@ -107,7 +107,9 @@ trait ChimericLedgerItDbTest
     )
 
     val block2 =
-      Block(header, Seq(ChimericTx(signFragments(signFragments(txFragments, signingPrivateKey), signingPrivateKey))))
+      Block[ChimericStateResult, ChimericBlockHeader, ChimericTx](
+        header,
+        Seq(ChimericTx(signFragments(signFragments(txFragments, signingPrivateKey), signingPrivateKey))))
 
     val result2 = ledger(block2)
     result2.isRight mustBe true
