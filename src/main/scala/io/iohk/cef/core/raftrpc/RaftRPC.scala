@@ -3,7 +3,7 @@ package io.iohk.cef.core.raftrpc
 import io.iohk.cef.consensus.raft
 import io.iohk.cef.consensus.raft._
 import io.iohk.cef.network.discovery.NetworkDiscovery
-import io.iohk.cef.codecs.nio._
+import io.iohk.cef.codecs.nio.{NioEncoder, NioDecoder}
 import io.iohk.cef.network.transport.Transports
 import io.iohk.cef.network.{NodeId, RequestResponse}
 
@@ -29,7 +29,7 @@ class RaftRPCFactory[Command: NioEncoder: NioDecoder: WeakTypeTag](
       transports)
 }
 
-class RaftRPC[Command: NioEncoder: NioDecoder: WeakTypeTag](
+class RaftRPC[Command: NioEncoder: NioDecoder](
     nodeId: NodeId,
     appendEntriesCallback: EntriesToAppend[Command] => AppendEntriesResult,
     requestVoteCallback: VoteRequested => RequestVoteResult,
@@ -38,11 +38,16 @@ class RaftRPC[Command: NioEncoder: NioDecoder: WeakTypeTag](
     transports: Transports)(implicit ec: ExecutionContext)
     extends RPC[Command] {
 
-  private val voteHandler = new RequestResponse[VoteRequested, RequestVoteResult](networkDiscovery, transports)
-  private val appendHandler =
+  private val voteHandler = {
+    new RequestResponse[VoteRequested, RequestVoteResult](networkDiscovery, transports)
+  }
+  private val appendHandler = {
     new RequestResponse[EntriesToAppend[Command], AppendEntriesResult](networkDiscovery, transports)
-  private val clientAppendHandler =
+  }
+  private val clientAppendHandler = {
+    import io.iohk.cef.codecs.nio.auto._
     new RequestResponse[Seq[Command], Either[Redirect[Command], Unit]](networkDiscovery, transports)
+  }
 
   appendHandler.handleRequest(entriesToAppend => appendEntriesCallback(entriesToAppend))
   voteHandler.handleRequest(voteRequested => requestVoteCallback(voteRequested))

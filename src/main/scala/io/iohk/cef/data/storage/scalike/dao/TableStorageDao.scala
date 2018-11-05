@@ -1,12 +1,13 @@
 package io.iohk.cef.data.storage.scalike.dao
+import io.iohk.cef.codecs.nio.NioEncDec
 import io.iohk.cef.data.storage.scalike.{DataItemOwnerTable, DataItemSignatureTable, DataItemTable}
 import io.iohk.cef.data.{DataItem, DataItemId, TableId, Witness}
-import io.iohk.cef.ledger.ByteStringSerializable
+import io.iohk.cef.utils._
 import scalikejdbc.{DBSession, _}
 
 class TableStorageDao {
   def insert[I](tableId: TableId,
-                dataItem: DataItem[I])(implicit itemSerializable: ByteStringSerializable[I], session: DBSession): Unit = {
+                dataItem: DataItem[I])(implicit itemSerializable: NioEncDec[I], session: DBSession): Unit = {
     val itemColumn = DataItemTable.column
 
     val serializedItem = itemSerializable.encode(dataItem.data)

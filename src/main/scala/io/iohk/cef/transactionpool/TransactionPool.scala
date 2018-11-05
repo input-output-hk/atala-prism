@@ -35,7 +35,7 @@ class TransactionPool[State, Header <: BlockHeader, Tx <: Transaction[State]](
 
     val blockTxs = getTxs(TimedQueue(), timedQueue)
     val header = headerGenerator(blockTxs.queue)
-    val block = Block(header, blockTxs.queue)
+    val block = Block[State, Header, Tx](header, blockTxs.queue)
     block
   }
 
@@ -77,7 +77,7 @@ class TransactionPool[State, Header <: BlockHeader, Tx <: Transaction[State]](
       if (sizeInBytes(nextBlockTxs) > maxBlockSize) {
         blockTxs
       } else {
-        val block = Block(headerGenerator(nextBlockTxs.queue), nextBlockTxs.queue)
+        val block = Block[State, Header, Tx](headerGenerator(nextBlockTxs.queue), nextBlockTxs.queue)
         //Do we need to optimize this?
         val newLedgerState = ledgerStateStorage.slice(block.partitionIds)
         val applyResult = block(newLedgerState)

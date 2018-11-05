@@ -1,22 +1,26 @@
-package io.iohk.cef.codecs.nio
+package io.iohk.cef.codecs.nio.components
 import java.nio.{BufferUnderflowException, ByteBuffer}
 import java.security.MessageDigest
 
 import scala.reflect.runtime.universe._
+import io.iohk.cef.codecs.nio.{NioEncoder, NioDecoder}
+import io.iohk.cef.codecs.nio.ops._
 
 private[nio] object CodecDecorators {
 
   def messageLengthEncoder[T](enc: NioEncoder[T]): NioEncoder[T] = new NioEncoder[T] {
+    override val typeTag: TypeTag[T] = enc.typeTag
     override def encode(t: T): ByteBuffer = {
 
       val messageBuff: ByteBuffer = enc.encode(t)
       val messageSize = messageBuff.remaining()
 
-      ByteBuffer.allocate(messageSize + 4).putInt(messageSize).put(messageBuff).flip().asInstanceOf[ByteBuffer]
+      ByteBuffer.allocate(messageSize + 4).putInt(messageSize).put(messageBuff).back
     }
   }
 
   def messageLengthDecoder[T](dec: NioDecoder[T]): NioDecoder[T] = new NioDecoder[T] {
+    override val typeTag: TypeTag[T] = dec.typeTag
     override def decode(b: ByteBuffer): Option[T] = {
 
       verifyingSuccess(b) {
@@ -34,29 +38,33 @@ private[nio] object CodecDecorators {
     }
   }
 
-  def typeCodeEncoder[T](enc: NioEncoder[T])(implicit tt: WeakTypeTag[T]): NioEncoder[T] = (t: T) => {
-    val hashBuff: ByteBuffer = arrayEncoderImpl[Byte].encode(typeCode[T])
-    val messageBuff: ByteBuffer = enc.encode(t)
-    ByteBuffer
-      .allocate(hashBuff.capacity() + messageBuff.capacity())
-      .put(hashBuff)
-      .put(messageBuff)
-      .flip()
-      .asInstanceOf[ByteBuffer]
+  def typeCodeEncoder[T](enc: NioEncoder[T]): NioEncoder[T] = {
+    implicit val tt: TypeTag[T] = enc.typeTag
+    val bae = NativeCodecs.untaggedNativeArrayEncoder(1, identity)(_.put)
+    (t: T) =>
+      {
+        val hashBuff: ByteBuffer = bae.encode(typeCode[T])
+        val messageBuff: ByteBuffer = enc.encode(t)
+        ByteBuffer
+          .allocate(hashBuff.capacity() + messageBuff.capacity())
+          .put(hashBuff)
+          .put(messageBuff)
+          .back
+      }
   }
 
-  def typeCodeDecoder[T](dec: NioDecoder[T])(implicit tt: WeakTypeTag[T]): NioDecoder[T] = new NioDecoder[T] {
-    override def decode(b: ByteBuffer): Option[T] = {
-
-      val actualTypeHashDec: Option[Array[Byte]] = arrayDecoderImpl[Byte].decode(b)
-
-      val matchingTypeHash = actualTypeHashDec
-        .exists(actualTypeHash => actualTypeHash.deep == typeCode[T].deep)
-
-      if (matchingTypeHash)
-        dec.decode(b)
-      else {
-        None
+  def typeCodeDecoder[T](dec: NioDecoder[T]): NioDecoder[T] = {
+    implicit val tt: TypeTag[T] = dec.typeTag
+    val bad = NativeCodecs.untaggedNativeArrayDecoder(1, identity)(_.get)
+    new NioDecoder[T] {
+      override val typeTag: TypeTag[T] = dec.typeTag
+      override def decode(b: ByteBuffer): Option[T] = {
+        verifyingSuccess(b) {
+          for {
+            _ <- bad.decode(b).filter(_.deep == typeCode[T].deep)
+            r <- dec.decode(b)
+          } yield { r }
+        }
       }
     }
   }
@@ -86,8 +94,9 @@ private[nio] object CodecDecorators {
     result
   }
 
-  private def typeCode[T](implicit tt: WeakTypeTag[T]): Array[Byte] =
+  private def typeCode[T](implicit tt: TypeTag[T]): Array[Byte] = {
     hash(tt.toString())
+  }
 
   private[nio] def hash(s: String): Array[Byte] = {
     MessageDigest.getInstance("MD5").digest(s.getBytes)

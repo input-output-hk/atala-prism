@@ -1,11 +1,13 @@
 package io.iohk.cef.ledger
 import io.iohk.cef.utils.ByteSizeable
+import io.iohk.cef.codecs.nio._
+import io.iohk.cef.utils._
 
 object ByteSizeableImplicits {
 
-  implicit def byteSizeable[T](implicit serializer: ByteStringSerializable[T]): ByteSizeable[T] =
+  implicit def byteSizeable[T](implicit serializer: NioEncDec[T]): ByteSizeable[T] =
     new ByteSizeable[T] {
-      override def sizeInBytes(t: T): Int = serializer.encode(t).size
+      override def sizeInBytes(t: T): Int = serializer.encode(t).toArray.length
     }
 
   implicit def blockByteSizeable[State, Header <: BlockHeader, Tx <: Transaction[State]](

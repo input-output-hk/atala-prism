@@ -6,6 +6,7 @@ import org.scalatest.Matchers._
 import org.scalatest.WordSpec
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 import org.scalatest.mockito.MockitoSugar
+import io.iohk.cef.codecs.nio.auto._
 
 class RaftConsensusItSpec extends WordSpec with MockitoSugar {
 

@@ -3,11 +3,10 @@ package io.iohk.cef.network
 import java.net.InetSocketAddress
 
 import io.iohk.cef.network.discovery.NetworkDiscovery
-import io.iohk.cef.codecs.nio._
+import io.iohk.cef.codecs.nio.{NioEncoder, NioDecoder}
 import io.iohk.cef.network.monixstream.MonixMessageStream
 import io.iohk.cef.network.transport.Transports.usesTcp
 import io.iohk.cef.network.transport._
-import scala.reflect.runtime.universe._
 
 /**
   * Represents a conversational model of the network
@@ -21,9 +20,9 @@ import scala.reflect.runtime.universe._
   * @param networkDiscovery Encapsulates a routing table implementation.
   * @param transports helpers to obtain network transport instances.
   */
-class ConversationalNetwork[Message: NioEncoder: NioDecoder: WeakTypeTag](
-    networkDiscovery: NetworkDiscovery,
-    transports: Transports) {
+class ConversationalNetwork[Message](networkDiscovery: NetworkDiscovery, transports: Transports)(
+    implicit enc: NioEncoder[Frame[Message]],
+    dec: NioDecoder[Frame[Message]]) {
 
   val peerInfo: PeerInfo = transports.peerInfo
 
@@ -67,10 +66,8 @@ class ConversationalNetwork[Message: NioEncoder: NioDecoder: WeakTypeTag](
   private def thisNodeIsTheDest(frame: Frame[Message]): Boolean =
     frame.header.dst == peerInfo.nodeId
 
-  private val frameCodec = new NioCodec[Frame[Message]](NioEncoder[Frame[Message]], NioDecoder[Frame[Message]])
-
   private val tcpNetworkTransport: Option[NetworkTransport[InetSocketAddress, Frame[Message]]] =
-    transports.tcp(frameCodec)
+    transports.tcp[Frame[Message]]
 
   private def sendMessage(frame: Frame[Message]): Unit = {
     networkDiscovery

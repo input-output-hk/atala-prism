@@ -2,7 +2,7 @@ package io.iohk.cef
 
 import akka.util.ByteString
 
-package object utils {
+package object utils extends BufferConversionOps {
 
   implicit class ByteStringExtension(val bytes: ByteString) extends AnyVal {
 
