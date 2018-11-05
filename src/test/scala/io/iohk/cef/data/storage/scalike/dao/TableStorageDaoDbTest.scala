@@ -56,7 +56,10 @@ trait TableStorageDaoDbTest
     itemsAfter mustBe Right(Seq())
   }
 
-  private def selectAll[I](tableId: TableId, ids: Seq[DataItemId], dataItemCreator: (String, I, Seq[Owner], Seq[Witness]) => DataItem[I])(
+  private def selectAll[I](
+      tableId: TableId,
+      ids: Seq[DataItemId],
+      dataItemCreator: (String, I, Seq[Owner], Seq[Witness]) => DataItem[I])(
       implicit session: DBSession,
       serializable: NioEncDec[I]): Either[CodecError, Seq[DataItem[I]]] = {
     import io.iohk.cef.utils.EitherTransforms
@@ -94,9 +97,13 @@ trait TableStorageDaoDbTest
     sql"""
       select ${it.result.id} from ${DataItemTable as it}
        where ${it.dataTableId} = ${tableId} and ${it.dataItemId} = ${dataItemId}
-      """.map(rs => rs.long(it.resultName.id)).toOption().apply().getOrElse(
-      throw new IllegalStateException(s"Not found: dataItemId ${dataItemId}, tableId ${tableId}")
-    )
+      """
+      .map(rs => rs.long(it.resultName.id))
+      .toOption()
+      .apply()
+      .getOrElse(
+        throw new IllegalStateException(s"Not found: dataItemId ${dataItemId}, tableId ${tableId}")
+      )
   }
 
   private def selectDataItemWitnesses(dataItemUniqueId: Long)(implicit session: DBSession) = {
