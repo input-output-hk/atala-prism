@@ -48,9 +48,13 @@ class TableStorageDao {
     sql"""
       select ${it.result.id} from ${DataItemTable as it}
        where ${it.dataTableId} = ${tableId} and ${it.dataItemId} = ${dataItemId}
-      """.map(rs => rs.long(it.resultName.id)).toOption().apply().getOrElse(
-      throw new IllegalStateException(s"Not found: dataItemId ${dataItemId}, tableId ${tableId}")
-    )
+      """
+      .map(rs => rs.long(it.resultName.id))
+      .toOption()
+      .apply()
+      .getOrElse(
+        throw new IllegalStateException(s"Not found: dataItemId ${dataItemId}, tableId ${tableId}")
+      )
   }
 
   private def insertDataItemOwners[I](dataItemUniqueId: Long, dataItem: DataItem[I])(implicit session: DBSession) = {
@@ -69,7 +73,8 @@ class TableStorageDao {
     })
   }
 
-  private def insertDataItemSignatures[I](dataItemUniqueId: Long, dataItem: DataItem[I])(implicit session: DBSession) = {
+  private def insertDataItemSignatures[I](dataItemUniqueId: Long, dataItem: DataItem[I])(
+      implicit session: DBSession) = {
     val sigColumn = DataItemSignatureTable.column
     dataItem.witnesses.foreach {
       case Witness(signature, key) =>

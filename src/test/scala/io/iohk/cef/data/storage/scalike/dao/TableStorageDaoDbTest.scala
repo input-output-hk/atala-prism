@@ -99,9 +99,13 @@ trait TableStorageDaoDbTest
     sql"""
       select ${it.result.id} from ${DataItemTable as it}
        where ${it.dataTableId} = ${tableId} and ${it.dataItemId} = ${dataItemId}
-      """.map(rs => rs.long(it.resultName.id)).toOption().apply().getOrElse(
-      throw new IllegalStateException(s"Not found: dataItemId ${dataItemId}, tableId ${tableId}")
-    )
+      """
+      .map(rs => rs.long(it.resultName.id))
+      .toOption()
+      .apply()
+      .getOrElse(
+        throw new IllegalStateException(s"Not found: dataItemId ${dataItemId}, tableId ${tableId}")
+      )
   }
 
   private def selectDataItemWitnesses(dataItemUniqueId: Long)(implicit session: DBSession) = {
