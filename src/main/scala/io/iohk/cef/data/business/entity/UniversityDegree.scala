@@ -1,71 +1,58 @@
 package io.iohk.cef.data.business.entity
 import java.time.LocalDate
-
-import io.iohk.cef.crypto._
-import io.iohk.cef.data.{DataItem, DataItemError, Owner, Witness}
 import io.iohk.cef.codecs.nio._
-
+import io.iohk.cef.crypto._
+import io.iohk.cef.data.{DataItem, DataItemError, _}
 case class UniversityDegreeData(universityName: String, degree: String, studentName: String, date: LocalDate)
 
-/**
-  * @param id
-  * @param data university Degree Data
-  * @param universityWitness
-  * @param publicKeyStore publicKeyStore map with universityName <- publicKey.
-  *                       This is tactical solution since we don't have link with Identity Transaction
-  * @param serializable
-  */
-case class UniversityDegree(
-    id: String,
-    data: UniversityDegreeData,
-    universityWitness: Witness,
-    publicKeyStore: Map[String, SigningPublicKey])(implicit serializable: NioEncoder[UniversityDegreeData])
-    extends DataItem[UniversityDegreeData] {
+object UniversityDegreeData {
+  //import scala.language.implicitConversions
+  //implicit def localDateToInstant(date: LocalDate): Instant = date.atStartOfDay().toInstant(ZoneOffset.UTC)
 
-  /**
-    * Users/entities with permission to eliminate this data item
-    *
-    * @return
-    */
-  override def owners: Seq[Owner] = {
-    getSigningPublicKey(data.universityName) match {
-      case Right(o) => List(Owner(o))
-      case _ => List()
-    }
-  }
-
-  override def apply(): Either[DataItemError, Unit] = {
-
-    getSigningPublicKey(data.universityName).map { key =>
-      if (isValidSignature(data, universityWitness.signature, key)) {
-        Right(Unit)
-      } else
-        Left(InvalidUniversitySignatureError(data.universityName, id))
-    }
+  implicit def universityDegreeValidation(
+      implicit publicKeyStore: Map[String, SigningPublicKey],
+      serializable: NioEncDec[UniversityDegreeData]): CanValidate[DataItem[UniversityDegreeData]] = {
+    dataItem: DataItem[UniversityDegreeData] =>
+      mandatoryCheck(dataItem).map { d =>
+        getSigningPublicKey(d).map { key =>
+          if (isValidSignature(d.data, d.witnesses.head.signature, key)) {
+            Right(Unit)
+          } else {
+            Left(InvalidUniversitySignatureError(d.data.universityName, d.id))
+          }
+        }
+      }
 
   }
 
-  /**
-    * Users/entities that witnessed this item and signed it
-    *
-    * @return
-    */
-  override def witnesses: Seq[Witness] = List(universityWitness)
-
-  private def getSigningPublicKey(name: String): Either[DataItemError, SigningPublicKey] = {
-    publicKeyStore.get(name) match {
+  private def getSigningPublicKey(dataItem: DataItem[UniversityDegreeData])(
+      implicit publicKeyStore: Map[String, SigningPublicKey]): Either[DataItemError, SigningPublicKey] = {
+    publicKeyStore.get(dataItem.data.universityName) match {
       case Some(key) => Right(key)
-      case _ => Left(UniversityWitnessNotProvidedError(data.universityName, universityWitness, id))
+      case _ => Left(UniversityPublicKeyIsUnknown(dataItem.data.universityName, dataItem.witnesses.head, dataItem.id))
     }
   }
-
+  private def mandatoryCheck(
+      dataItem: DataItem[UniversityDegreeData]): Either[DataItemError, DataItem[UniversityDegreeData]] = {
+    if (dataItem.witnesses.isEmpty) Left(NoWitnessProvided(dataItem.data.universityName, dataItem.id))
+    else if (dataItem.owners.isEmpty) Left(NoOwnerProvided(dataItem.data.universityName, dataItem.id))
+    else Right(dataItem)
+  }
 }
 
 case class InvalidUniversitySignatureError(universityName: String, id: String) extends DataItemError {
   override def toString: String = s"Invalid signature was provided for university ${universityName} and data item ${id}"
 }
-case class UniversityWitnessNotProvidedError(universityName: String, witness: Witness, id: String)
-    extends DataItemError {
+
+case class NoWitnessProvided(universityName: String, id: String) extends DataItemError {
+  override def toString: String = s"Invalid signature was provided for university ${universityName} and data item ${id}"
+}
+
+case class NoOwnerProvided(universityName: String, id: String) extends DataItemError {
+  override def toString: String = s"Invalid signature was provided for university ${universityName} and data item ${id}"
+}
+
+case class UniversityPublicKeyIsUnknown(universityName: String, witness: Witness, id: String) extends DataItemError {
   override def toString: String =
     s"Expected the university's public key to match ${witness.key},but the public key provided is not from the university ${universityName} in data item ${id} "
 }

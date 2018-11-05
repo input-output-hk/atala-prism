@@ -50,6 +50,9 @@ class DataItemServiceSpec extends FlatSpec {
 
   println(enc)
 
+  private implicit val canValidate = new CanValidate[DataItem[String]] {
+    override def validate(t: DataItem[String]): Either[ApplicationError, Unit] = Right(())
+  }
   behavior of "DataItemService"
 
   it should "insert a data item" in forTwoArbitraryNetworkPeers(verifyInsert)

@@ -5,7 +5,7 @@ import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import com.alexitc.playsonify.core.I18nService
 import com.alexitc.playsonify.models.{GenericPublicError, InputValidationError, PublicError}
-import io.iohk.cef.data.{DataItem, DataItemService}
+import io.iohk.cef.data.{CanValidate, DataItem, DataItemService}
 import io.iohk.cef.frontend.controllers.common.{CustomJsonController, _}
 import io.iohk.cef.frontend.models.DataItemEnvelope
 import play.api.libs.json.{JsObject, Reads}
@@ -19,8 +19,10 @@ class ItemsGenericController(service: DataItemService)(implicit ec: ExecutionCon
   import Context._
   import ItemsGenericController._
 
-  def routes[B, A <: DataItem[B], E <: DataItemEnvelope[B, A]](
-      prefix: String)(implicit format: Reads[E], itemSerializable: NioEncDec[B]): Route = {
+  def routes[D, E <: DataItemEnvelope[DataItem[D]]](prefix: String)(
+      implicit format: Reads[E],
+      itemSerializable: NioEncDec[D],
+      canValidate: CanValidate[DataItem[D]]): Route = {
     pathPrefix(prefix) {
       pathEnd {
         post {

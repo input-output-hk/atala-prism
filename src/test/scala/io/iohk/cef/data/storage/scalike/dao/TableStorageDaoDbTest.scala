@@ -1,14 +1,16 @@
 package io.iohk.cef.data.storage.scalike.dao
+
 import io.iohk.cef.crypto._
 import io.iohk.cef.data.storage.scalike.{DataItemOwnerTable, DataItemSignatureTable, DataItemTable}
 import io.iohk.cef.data.{DataItem, DataItemId, Owner, Witness}
-import io.iohk.cef.test.DummyValidDataItem
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{EitherValues, MustMatchers, fixture}
 import scalikejdbc._
 import scalikejdbc.scalatest.AutoRollback
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.codecs.nio._
+
+import io.iohk.cef.test.{InvalidValidation, ValidValidation}
 
 trait TableStorageDaoDbTest
     extends fixture.FlatSpec
@@ -22,15 +24,18 @@ trait TableStorageDaoDbTest
   it should "insert data items" in { implicit s =>
     val ownerKeyPair = generateSigningKeyPair()
     val ownerKeyPair2 = generateSigningKeyPair()
+    val validValidation = new ValidValidation[String]
+    val invalidValidation = new InvalidValidation[String](10)
     val dataItems = Seq(
-      DummyValidDataItem("valid", "data", Seq(Owner(ownerKeyPair.public)), Seq()),
-      DummyValidDataItem("valid2", "data2", Seq(Owner(ownerKeyPair2.public)), Seq()))
+      DataItem("valid", "data", Seq(), Seq(Owner(ownerKeyPair.public))),
+      DataItem("valid2", "data2", Seq(), Seq(Owner(ownerKeyPair2.public))))
     val dao = new TableStorageDao
 
-    val itemsBefore = itemsFromDb(dataItems.map(_.id))
+    val itemsBefore = selectAll[String](dataItems.map(_.id))
     itemsBefore mustBe Right(Seq())
     dataItems.foreach(dao.insert(_))
-    val itemsAfter = itemsFromDb(dataItems.map(_.id))
+
+    val itemsAfter = selectAll[String](dataItems.map(_.id))
     itemsAfter.isRight mustBe true
     itemsAfter.right.value.sortBy(_.id) mustBe dataItems.sortBy(_.id)
   }
@@ -39,22 +44,22 @@ trait TableStorageDaoDbTest
     val ownerKeyPair = generateSigningKeyPair()
     val ownerKeyPair2 = generateSigningKeyPair()
     val dataItems = Seq(
-      DummyValidDataItem("valid", "data", Seq(Owner(ownerKeyPair.public)), Seq()),
-      DummyValidDataItem("valid2", "data2", Seq(Owner(ownerKeyPair2.public)), Seq()))
+      DataItem("valid", "data", Seq(), Seq(Owner(ownerKeyPair.public))),
+      DataItem("valid2", "data2", Seq(), Seq(Owner(ownerKeyPair2.public))))
     val dao = new TableStorageDao
 
-    val itemsBefore = itemsFromDb(dataItems.map(_.id))
+    val itemsBefore = selectAll[String](dataItems.map(_.id))
     itemsBefore mustBe Right(Seq())
     dataItems.foreach(dao.insert(_))
-    val itemsMiddle = itemsFromDb(dataItems.map(_.id))
+    val itemsMiddle = selectAll[String](dataItems.map(_.id))
     itemsMiddle.isRight mustBe true
     itemsMiddle.right.value.sortBy(_.id) mustBe dataItems.sortBy(_.id)
     dataItems.foreach(item => dao.delete(item.id))
-    val itemsAfter = itemsFromDb(dataItems.map(_.id))
+    val itemsAfter = selectAll[String](dataItems.map(_.id))
     itemsAfter mustBe Right(Seq())
   }
 
-  private def selectAll[I](ids: Seq[DataItemId], dataItemCreator: (String, I, Seq[Owner], Seq[Witness]) => DataItem[I])(
+  private def selectAll[I](ids: Seq[DataItemId])(
       implicit session: DBSession,
       serializable: NioEncDec[I]): Either[CodecError, Seq[DataItem[I]]] = {
     import io.iohk.cef.utils.EitherTransforms
@@ -73,13 +78,13 @@ trait TableStorageDaoDbTest
         owners <- ownerEither
         witnesses <- witnessEither
       } yield
-        dataItemCreator(
+        DataItem(
           dir.dataItemId,
           serializable
             .decode(dir.dataItem.toByteBuffer)
             .getOrElse(throw new IllegalStateException(s"Could not decode data item: ${dir}")),
-          owners,
-          witnesses
+          witnesses,
+          owners
         )
     })
     dataItems.toEitherList
@@ -114,8 +119,5 @@ trait TableStorageDaoDbTest
       .list()
       .apply()
   }
-
-  private def itemsFromDb(itemIds: Seq[String])(implicit session: DBSession) =
-    selectAll(itemIds, (s, d, o, w) => DummyValidDataItem(s, d, o, w))
 
 }

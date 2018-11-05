@@ -2,14 +2,15 @@ package io.iohk.cef.codecs.nio.components
 
 import java.nio.ByteBuffer
 import java.util.UUID
-import java.time.Instant
+import java.time.{Instant, LocalDate, LocalDateTime, ZoneOffset}
 
 import akka.util.ByteString
 
 import scala.reflect.runtime.universe.TypeTag
 import io.iohk.cef.utils._
+
 import scala.util.Try
-import io.iohk.cef.codecs.nio.{NioEncoder, NioDecoder}
+import io.iohk.cef.codecs.nio.{NioDecoder, NioEncoder}
 import io.iohk.cef.codecs.nio.ops._
 
 trait OtherCodecs {
@@ -91,5 +92,11 @@ trait OtherCodecs {
 
   implicit def instantDecoder(implicit dec: NioDecoder[(Long, Int)]): NioDecoder[Instant] =
     dec.map { case (l, i) => Instant.ofEpochSecond(l, i.toLong) }.packed
+
+  implicit def localDateEncoder(implicit enc: NioEncoder[Instant]): NioEncoder[LocalDate] =
+    enc.map[LocalDate](_.atStartOfDay().toInstant(ZoneOffset.UTC)).packed
+
+  implicit def localDateDecoder(implicit dec: NioDecoder[Instant]): NioDecoder[LocalDate] =
+    dec.map[LocalDate](LocalDateTime.ofInstant(_, ZoneOffset.UTC).toLocalDate).packed
 
 }
