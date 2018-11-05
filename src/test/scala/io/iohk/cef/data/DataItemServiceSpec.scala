@@ -1,14 +1,15 @@
 package io.iohk.cef.data
 
-import io.iohk.cef.crypto._
 import io.iohk.cef.core.{Envelope, Everyone}
-import io.iohk.cef.data.DataItemAction.{Delete, Insert}
+import io.iohk.cef.crypto._
+import io.iohk.cef.codecs.nio._
+import io.iohk.cef.data.DataItemAction.Insert
 import io.iohk.cef.network.NodeId
-import io.iohk.cef.network.transport.{Frame, FrameHeader}
 import io.iohk.cef.network.transport.tcp.NetUtils._
+import io.iohk.cef.network.transport.{Frame, FrameHeader}
+import org.mockito.Mockito.verify
 import org.scalatest.FlatSpec
 import org.scalatest.mockito.MockitoSugar._
-import org.mockito.Mockito.verify
 
 class DataItemServiceSpec extends FlatSpec {
 
@@ -30,13 +31,13 @@ class DataItemServiceSpec extends FlatSpec {
 //    override def encode(t: DataItem[String]) = ByteBuffer.
 //  }
 
-  val enc = NioEncoder[StringDataItem].encode(dataItem)
+  val enc = io.iohk.cef.codecs.nio.NioEncoder[StringDataItem].encode(dataItem)
 // : Frame[Envelope[DataItemAction[String]]]
-  val f = Frame(
-    FrameHeader(NodeId("957e"), NodeId("0b1a"), 5),
-    Envelope(Insert(StringDataItem("foo", "", List(), List())), "nothing", Everyone))
+  val envelope: Envelope[DataItemAction[String]] =
+    Envelope(Insert(StringDataItem("foo", "", List(), List())), "nothing", Everyone)
+  val f = Frame(FrameHeader(NodeId("957e"), NodeId("0b1a"), 5), envelope)
 
-  val fEnc = NioEncoder[Frame[Envelope[DataItemAction[String]]]]
+  val fEnc = io.iohk.cef.codecs.nio.NioEncoder[Frame[Envelope[DataItemAction[String]]]]
   val fenced = fEnc.encode(f)
   println(fenced)
 
@@ -55,7 +56,7 @@ class DataItemServiceSpec extends FlatSpec {
     val node1DataItemService = new DataItemService[String](node1Table, node1.transports, node1.networkDiscovery)
     val _ = new DataItemService[String](node2Table, node2.transports, node2.networkDiscovery)
 
-    node1DataItemService.processDataItem(Envelope(Insert(dataItem), "nothing", Everyone))
+    node1DataItemService.insert(Envelope(dataItem, "nothing", Everyone))
 
     verify(node1Table).insert(dataItem)
     verify(node2Table).insert(dataItem)
@@ -68,7 +69,7 @@ class DataItemServiceSpec extends FlatSpec {
     val node1DataItemService = new DataItemService[String](node1Table, node1.transports, node1.networkDiscovery)
     val _ = new DataItemService[String](node2Table, node2.transports, node2.networkDiscovery)
 
-    node1DataItemService.processDataItem(Envelope(Delete(dataItem, signature), "nothing", Everyone))
+    node1DataItemService.delete(Envelope(dataItem, "nothing", Everyone), signature)
 
     verify(node1Table).delete(dataItem, signature)
     verify(node2Table).delete(dataItem, signature)
