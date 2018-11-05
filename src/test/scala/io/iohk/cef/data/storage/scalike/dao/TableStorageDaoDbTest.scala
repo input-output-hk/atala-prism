@@ -22,6 +22,7 @@ trait TableStorageDaoDbTest
   behavior of "TableStorageDaoDbTest"
 
   it should "insert data items" in { implicit s =>
+    val tableId: TableId = "TableId"
     val ownerKeyPair = generateSigningKeyPair()
     val ownerKeyPair2 = generateSigningKeyPair()
     val validValidation = new ValidValidation[String]
@@ -41,6 +42,7 @@ trait TableStorageDaoDbTest
   }
 
   it should "delete data items" in { implicit s =>
+    val tableId: TableId = "TableId"
     val ownerKeyPair = generateSigningKeyPair()
     val ownerKeyPair2 = generateSigningKeyPair()
     val dataItems = Seq(
@@ -72,8 +74,9 @@ trait TableStorageDaoDbTest
     //Inefficient for large tables
     import EitherTransforms._
     val dataItems = dataItemRows.map(dir => {
-      val ownerEither = selectDataItemOwners(dir.dataItemId).toEitherList
-      val witnessEither = selectDataItemWitnesses(dir.dataItemId).toEitherList
+      val uniqueId = getUniqueId(tableId, dir.dataItemId)
+      val ownerEither = selectDataItemOwners(uniqueId).toEitherList
+      val witnessEither = selectDataItemWitnesses(uniqueId).toEitherList
       for {
         owners <- ownerEither
         witnesses <- witnessEither
@@ -90,12 +93,23 @@ trait TableStorageDaoDbTest
     dataItems.toEitherList
   }
 
-  private def selectDataItemWitnesses(dataItemId: DataItemId)(implicit session: DBSession) = {
+  private def getUniqueId(tableId: TableId, dataItemId: DataItemId)(implicit DBSession: DBSession): Long = {
+    val it = DataItemTable.syntax("it")
+
+    sql"""
+      select ${it.result.id} from ${DataItemTable as it}
+       where ${it.dataTableId} = ${tableId} and ${it.dataItemId} = ${dataItemId}
+      """.map(rs => rs.long(it.resultName.id)).toOption().apply().getOrElse(
+      throw new IllegalStateException(s"Not found: dataItemId ${dataItemId}, tableId ${tableId}")
+    )
+  }
+
+  private def selectDataItemWitnesses(dataItemUniqueId: Long)(implicit session: DBSession) = {
     val dis = DataItemSignatureTable.syntax("dis")
     sql"""
         select ${dis.result.*}
         from ${DataItemSignatureTable as dis}
-        where ${dis.dataItemId} = ${dataItemId}
+        where ${dis.dataItemUniqueId} = ${dataItemUniqueId}
        """
       .map { rs =>
         val row = DataItemSignatureTable(dis.resultName)(rs)
@@ -108,12 +122,12 @@ trait TableStorageDaoDbTest
       .apply()
   }
 
-  private def selectDataItemOwners(dataItemId: DataItemId)(implicit session: DBSession) = {
+  private def selectDataItemOwners(dataItemUniqueId: Long)(implicit session: DBSession) = {
     val dio = DataItemOwnerTable.syntax("dio")
     sql"""
         select ${dio.result.*}
         from ${DataItemOwnerTable as dio}
-        where ${dio.dataItemId} = ${dataItemId}
+        where ${dio.dataItemUniqueId} = ${dataItemUniqueId}
        """
       .map(rs => SigningPublicKey.decodeFrom(DataItemOwnerTable(dio.resultName)(rs).signingPublicKey).map(Owner))
       .list()

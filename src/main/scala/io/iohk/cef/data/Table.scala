@@ -1,5 +1,6 @@
 package io.iohk.cef.data
 import io.iohk.cef.codecs.nio._
+import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.crypto._
 import io.iohk.cef.data.storage.TableStorage
 import io.iohk.cef.error.ApplicationError
@@ -14,25 +15,25 @@ class Table(tableStorage: TableStorage) {
     canValidate.validate(dataItem).isRight && signatureValidation.forall(_._2)
   }
 
-  def insert[I](dataItem: DataItem[I])(implicit itemSerializable: NioEncDec[I], canValidate: CanValidate[DataItem[I]]): Either[ApplicationError, Unit] = {
+  def insert[I](tableId: TableId, dataItem: DataItem[I])(implicit itemSerializable: NioEncDec[I], canValidate: CanValidate[DataItem[I]]): Either[ApplicationError, Unit] = {
     canValidate.validate(dataItem).flatMap { _ =>
       val validationErrors = validateSignatures(dataItem).filter(!_._2).map(_._1)
       if (validationErrors.nonEmpty) {
         val error = new InvalidSignaturesError(dataItem, validationErrors)
         Left(error)
       } else {
-        Right(insert(dataItem))
+        Right(tableStorage.insert(tableId, dataItem))
       }
     }
   }
 
-  def delete[I](dataItem: DataItem[I], deleteSignature: Signature)(
+  def delete[I](tableId: TableId, dataItem: DataItem[I], deleteSignature: Signature)(
       implicit itemSerializable: NioEncDec[I],
       actionSerializable: NioEncDec[DataItemAction[I]],
       canValidate: CanValidate[DataItem[I]]): Either[ApplicationError, Unit] = {
     canValidate.validate(dataItem).flatMap { _ =>
-      import io.iohk.cef.codecs.nio.auto._
       val signatureValidation =
+        //TODO: Marc help
         dataItem.owners.map(owner => isValidSignature(dataItem, deleteSignature, owner.key))
 
       val validSignature = signatureValidation.find(identity)
@@ -41,7 +42,7 @@ class Table(tableStorage: TableStorage) {
         val error = new OwnerMustSignDelete(dataItem)
         Left(error)
       } else {
-        Right(tableStorage.delete(dataItem.id))
+        Right(tableStorage.delete(tableId, dataItem))
       }
     }
   }

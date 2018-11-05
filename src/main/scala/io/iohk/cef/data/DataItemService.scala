@@ -38,10 +38,10 @@ class DataItemService[T](table: Table, transports: Transports, networkDiscovery:
   }
 
   private def handleMessage(message: Envelope[DataItemAction[T]]): Either[ApplicationError, Unit] = message match {
-    case Envelope(Insert(dataItem), _, _) =>
-      table.insert(dataItem)
-    case Envelope(Delete(dataItem, deleteSignature), _, _) =>
-      table.delete(dataItem, deleteSignature)
+    case Envelope(Insert(dataItem), containerId, _) =>
+      table.insert(containerId, dataItem)
+    case Envelope(Delete(dataItem, deleteSignature), containerId, _) =>
+      table.delete(containerId, dataItem, deleteSignature)
     case _ =>
       throw new IllegalStateException("Unexpected data item message '$message'.")
   }

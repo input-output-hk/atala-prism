@@ -20,6 +20,7 @@ class DataItemServiceSpec extends FlatSpec {
   private val something = new DataItemService(table)
   private implicit val dataItemSerializable = mock[NioEncDec[String]]
   private implicit val actionSerializable = mock[NioEncDec[DataItemAction[String]]]
+  val tableId: TableId = "Table"
   case class StringDataItem(data: String, id: String = "", witnesses: Seq[Witness] = Seq(), owners: Seq[Owner] = Seq())
       extends DataItem[String] {
     override def apply(): Either[DataItemError, Unit] = Right(())
@@ -54,22 +55,18 @@ class DataItemServiceSpec extends FlatSpec {
     override def validate(t: DataItem[String]): Either[ApplicationError, Unit] = Right(())
   }
   behavior of "DataItemService"
+  
+  it should "insert a data item" in {
+    val dataItem: DataItem[String] = mock[DataItem[String]]
+    something.insert(tableId, dataItem)
+    verify(table).insert(tableId, dataItem)
+  }
 
-  it should "insert a data item" in forTwoArbitraryNetworkPeers(verifyInsert)
-
-//  it should "delete a data item" in forTwoArbitraryNetworkPeers(verifyDelete)
-
-  private def verifyInsert(node1: NetworkFixture, node2: NetworkFixture) = {
-    val node1Table = mock[Table]
-    val node2Table = mock[Table]
-
-    val node1DataItemService = new DataItemService[String](node1Table, node1.transports, node1.networkDiscovery)
-    val _ = new DataItemService[String](node2Table, node2.transports, node2.networkDiscovery)
-
-    node1DataItemService.insert(Envelope(dataItem, "nothing", Everyone))
-
-    verify(node1Table).insert(dataItem)
-    verify(node2Table).insert(dataItem)
+  it should "delete a data item" in {
+    val dataItem: DataItem[String] = mock[DataItem[String]]
+    val signature = mock[Signature]
+    something.delete(dataItem, signature)
+    verify(table).delete(dataItem, signature)
   }
 
   private def verifyDelete(node1: NetworkFixture, node2: NetworkFixture) = {
