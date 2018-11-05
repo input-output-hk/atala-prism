@@ -116,7 +116,7 @@ class TransactionPoolSpec
     when(timedQueue.filterNot(any())).thenReturn(timedQueue)
     val wrappedPool: Either[ApplicationError, TransactionPool[String, DummyBlockHeader, DummyTransaction]] = Right(pool)
     val newPoolResult = txs.foldLeft(wrappedPool)((s, e) => s.flatMap(_.processTransaction(e)))
-    val block = Block(header, txs.tail)
+    val block = Block[String, DummyBlockHeader, DummyTransaction](header, txs.tail)
     newPoolResult match {
       case Right(newPool) =>
         newPool.removeBlockTransactions(block)

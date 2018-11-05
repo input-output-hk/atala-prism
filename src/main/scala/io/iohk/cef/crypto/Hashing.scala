@@ -4,6 +4,8 @@ import akka.util.ByteString
 import io.iohk.cef.crypto.hashing.HashingAlgorithmsCollection
 import io.iohk.cef.crypto.hashing.HashBytes
 import io.iohk.cef.crypto.encoding.TypedByteString
+import io.iohk.cef.codecs.nio.NioEncoder
+import io.iohk.cef.utils._
 
 trait Hashing {
 
@@ -21,8 +23,8 @@ trait Hashing {
     *
     * @return          a hash of `entity`
     */
-  def hash[T](entity: T)(implicit encoder: CryptoEncoder[T]): Hash =
-    new Hash(hashingType, hashingType.algorithm.hash(encoder.encode(entity)))
+  def hash[T](entity: T)(implicit encoder: NioEncoder[T]): Hash =
+    new Hash(hashingType, hashingType.algorithm.hash(encoder.encode(entity).toByteString))
 
   /**
     * Returns `true` if `hash` is a hash of `entity`, when using the hashing algorithm
@@ -37,8 +39,8 @@ trait Hashing {
     *
     * @return            `true` if `hash` is a valid hash of `entity`
     */
-  def isValidHash[T](entity: T, hash: Hash)(implicit encoder: CryptoEncoder[T]): Boolean =
-    hash.`type`.algorithm.hash(encoder.encode(entity)) == hash.bytes
+  def isValidHash[T](entity: T, hash: Hash)(implicit encoder: NioEncoder[T]): Boolean =
+    hash.`type`.algorithm.hash(encoder.encode(entity).toByteString) == hash.bytes
 
   /** Data entity containing a hash and the identifier of the hashing algorithm used to generate it */
   class Hash(
@@ -58,15 +60,12 @@ trait Hashing {
       * {{{
       *
       * >>> import akka.util.ByteString
+      * >>> import io.iohk.cef.codecs.nio.auto._
       * >>> hash(ByteString("ABC"))
       * -----BEGIN HASH SHA256 BLOCK-----
-      *  00 00 00 60 00 00 00 10 A7 F1 59 E6 70 8B 88 34
-      *  57 37 55 A6 91 9F 54 68 00 00 00 06 00 53 00 48
-      *  00 41 00 32 00 35 00 36 00 00 00 38 00 00 00 10
-      *  0E BB 60 87 0B 23 D1 57 2A 23 C3 DB 6A AD 73 54
-      *  00 00 00 20 B5 D4 04 5C 3F 46 6F A9 1F E2 CC 6A
-      *  BE 79 23 2A 1A 57 CD F1 04 F7 A2 6E 71 6E 0A 1E
-      *  27 89 DF 78
+      *  00 00 00 06 53 48 41 32 35 36 00 00 00 20 26 57
+      *  20 F4 DF 20 FD 3D 58 9C BC C6 1A F9 52 AA 6D AA
+      *  B2 18 AA E4 84 11 4C 4F 84 8D 62 A7 F0 80
       * -----END HASH SHA256 BLOCK-----
       *
       * }}}

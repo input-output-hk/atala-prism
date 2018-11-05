@@ -6,6 +6,7 @@ import java.nio.{ByteBuffer, ByteOrder}
 import akka.util.ByteString
 
 import scala.util.Random
+import io.iohk.cef.utils._
 
 object ByteUtils {
 
@@ -76,7 +77,7 @@ object ByteUtils {
   def intsToBytes(ints: Array[Int]): Array[Byte] = {
     val buf = ByteBuffer.allocate(ints.length * 4).order(ByteOrder.LITTLE_ENDIAN)
     buf.asIntBuffer().put(ints)
-    buf.array()
+    buf.toArray
   }
 
   def getIntFromWord(arr: Array[Byte]): Int = {

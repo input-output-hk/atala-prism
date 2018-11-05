@@ -10,8 +10,7 @@ import io.iohk.cef.data.DataItemAction.{Delete, Insert}
 import io.iohk.cef.network.discovery.NetworkDiscovery
 
 class DataItemService[T](table: Table, transports: Transports, networkDiscovery: NetworkDiscovery)(
-    implicit enc: NioEncoder[T],
-    dec: NioDecoder[T]) {
+    implicit enc: NioEncDec[T]) {
 
   private implicit val actionEnc: NioEncoder[DataItemAction[T]] = NioEncoder[DataItemAction[T]]
   private implicit val destEnc: NioEncoder[DestinationDescriptor] = NioEncoder[DestinationDescriptor]

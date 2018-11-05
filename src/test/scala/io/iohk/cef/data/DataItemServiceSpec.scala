@@ -1,5 +1,6 @@
 package io.iohk.cef.data
 
+import io.iohk.cef.crypto.Signature
 import io.iohk.cef.core.{Envelope, Everyone}
 import io.iohk.cef.crypto._
 import io.iohk.cef.codecs.nio._
@@ -10,9 +11,15 @@ import io.iohk.cef.network.transport.{Frame, FrameHeader}
 import org.mockito.Mockito.verify
 import org.scalatest.FlatSpec
 import org.scalatest.mockito.MockitoSugar._
+import org.mockito.Mockito.verify
+import io.iohk.cef.codecs.nio._
 
 class DataItemServiceSpec extends FlatSpec {
 
+  private val table = mock[Table]
+  private val something = new DataItemService(table)
+  private implicit val dataItemSerializable = mock[NioEncDec[String]]
+  private implicit val actionSerializable = mock[NioEncDec[DataItemAction[String]]]
   case class StringDataItem(data: String, id: String = "", witnesses: Seq[Witness] = Seq(), owners: Seq[Owner] = Seq())
       extends DataItem[String] {
     override def apply(): Either[DataItemError, Unit] = Right(())

@@ -10,6 +10,7 @@ import org.scalatest.FlatSpec
 import org.scalatest.mockito.MockitoSugar._
 import org.scalatest.prop.GeneratorDrivenPropertyChecks._
 import org.scalatest.Matchers._
+import io.iohk.cef.codecs.nio.auto._
 
 import scala.util.Random
 

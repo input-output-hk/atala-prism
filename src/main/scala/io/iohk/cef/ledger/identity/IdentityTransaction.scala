@@ -18,6 +18,7 @@ object IdentityTransaction {
       `type`: IdentityTransactionType,
       publicKey: SigningPublicKey,
       privateKey: SigningPrivateKey): Signature = {
+    import io.iohk.cef.codecs.nio.auto._
     val source = serializeForSignature(identity, `type`, publicKey)
     signBytes(source, privateKey)
   }
@@ -25,6 +26,7 @@ object IdentityTransaction {
   def isSignedWith(
       signKey: SigningPublicKey,
       signature: Signature)(identity: String, `type`: IdentityTransactionType, publicKey: SigningPublicKey): Boolean = {
+    import io.iohk.cef.codecs.nio.auto._
 
     val source = serializeForSignature(identity, `type`, publicKey)
     isValidSignature(source, signature, signKey)

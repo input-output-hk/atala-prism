@@ -2,8 +2,9 @@ package io.iohk.cef.data.storage.scalike.dao
 import akka.util.ByteString
 import io.iohk.cef.data.storage.scalike.{DataItemOwnerTable, DataItemSignatureTable, DataItemTable}
 import io.iohk.cef.data.{DataItem, Witness}
-import io.iohk.cef.codecs.nio.NioEncoder
 import scalikejdbc.{DBSession, _}
+import io.iohk.cef.codecs.nio.NioEncDec
+import io.iohk.cef.utils._
 
 class TableStorageDao {
   def insert[I](dataItem: DataItem[I])(implicit session: DBSession, enc: NioEncoder[I]): Unit = {
@@ -21,18 +22,18 @@ class TableStorageDao {
     insertDataItemOwners(dataItem)
   }
 
-  def delete[I](dataItem: DataItem[I])(implicit session: DBSession): Unit = {
+  def delete(dataItemId: String)(implicit session: DBSession): Unit = {
     val itemColumn = DataItemTable.column
     val sigColumn = DataItemSignatureTable.column
     val owColumn = DataItemOwnerTable.column
 
-    sql"""delete from ${DataItemSignatureTable.table} where ${sigColumn.dataItemId} = ${dataItem.id}"""
+    sql"""delete from ${DataItemSignatureTable.table} where ${sigColumn.dataItemId} = $dataItemId"""
       .executeUpdate()
       .apply()
-    sql"""delete from ${DataItemOwnerTable.table} where ${owColumn.dataItemId} = ${dataItem.id}"""
+    sql"""delete from ${DataItemOwnerTable.table} where ${owColumn.dataItemId} = $dataItemId"""
       .executeUpdate()
       .apply()
-    sql"""delete from ${DataItemTable.table} where ${itemColumn.dataItemId} = ${dataItem.id}"""
+    sql"""delete from ${DataItemTable.table} where ${itemColumn.dataItemId} = $dataItemId"""
       .executeUpdate()
       .apply()
   }

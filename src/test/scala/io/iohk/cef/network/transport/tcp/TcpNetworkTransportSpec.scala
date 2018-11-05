@@ -2,7 +2,7 @@ package io.iohk.cef.network.transport.tcp
 
 import java.net.InetSocketAddress
 
-import io.iohk.cef.codecs.nio._
+import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.network.transport.tcp.NetUtils._
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._

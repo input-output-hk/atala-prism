@@ -57,7 +57,7 @@ class TransportsSpec extends FlatSpec {
 
     val transports = new Transports(peerInfo)
 
-    transports.tcp(mock[NioCodec[String]]) shouldBe defined
+    transports.tcp(mock[NioEncoder[String]], mock[NioDecoder[String]]) shouldBe defined
   }
 
   it should "not return tcp if tcp is not configured" in {
@@ -65,6 +65,6 @@ class TransportsSpec extends FlatSpec {
 
     val transports = new Transports(peerInfo)
 
-    transports.tcp(mock[NioCodec[String]]) shouldBe None
+    transports.tcp(mock[NioEncoder[String]], mock[NioDecoder[String]]) shouldBe None
   }
 }

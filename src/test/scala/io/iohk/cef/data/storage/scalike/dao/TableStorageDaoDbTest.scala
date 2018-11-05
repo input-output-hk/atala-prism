@@ -2,12 +2,13 @@ package io.iohk.cef.data.storage.scalike.dao
 import io.iohk.cef.crypto._
 import io.iohk.cef.data.storage.scalike.{DataItemOwnerTable, DataItemSignatureTable, DataItemTable}
 import io.iohk.cef.data.{DataItem, DataItemId, Owner, Witness}
-import io.iohk.cef.ledger.ByteStringSerializable
 import io.iohk.cef.test.DummyValidDataItem
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{EitherValues, MustMatchers, fixture}
 import scalikejdbc._
 import scalikejdbc.scalatest.AutoRollback
+import io.iohk.cef.codecs.nio.auto._
+import io.iohk.cef.codecs.nio._
 
 trait TableStorageDaoDbTest
     extends fixture.FlatSpec
@@ -15,7 +16,6 @@ trait TableStorageDaoDbTest
     with MustMatchers
     with MockitoSugar
     with EitherValues {
-  import io.iohk.cef.test.DummyDataItemImplicits._
 
   behavior of "TableStorageDaoDbTest"
 
@@ -49,14 +49,14 @@ trait TableStorageDaoDbTest
     val itemsMiddle = itemsFromDb(dataItems.map(_.id))
     itemsMiddle.isRight mustBe true
     itemsMiddle.right.value.sortBy(_.id) mustBe dataItems.sortBy(_.id)
-    dataItems.foreach(dao.delete(_))
+    dataItems.foreach(item => dao.delete(item.id))
     val itemsAfter = itemsFromDb(dataItems.map(_.id))
     itemsAfter mustBe Right(Seq())
   }
 
   private def selectAll[I](ids: Seq[DataItemId], dataItemCreator: (String, I, Seq[Owner], Seq[Witness]) => DataItem[I])(
       implicit session: DBSession,
-      serializable: ByteStringSerializable[I]): Either[CodecError, Seq[DataItem[I]]] = {
+      serializable: NioEncDec[I]): Either[CodecError, Seq[DataItem[I]]] = {
     import io.iohk.cef.utils.EitherTransforms
     val di = DataItemTable.syntax("di")
     val dataItemRows = sql"""
@@ -76,10 +76,11 @@ trait TableStorageDaoDbTest
         dataItemCreator(
           dir.dataItemId,
           serializable
-            .decode(dir.dataItem)
+            .decode(dir.dataItem.toByteBuffer)
             .getOrElse(throw new IllegalStateException(s"Could not decode data item: ${dir}")),
           owners,
-          witnesses)
+          witnesses
+        )
     })
     dataItems.toEitherList
   }

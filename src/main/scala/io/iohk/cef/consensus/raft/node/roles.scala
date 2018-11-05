@@ -3,6 +3,7 @@ package io.iohk.cef.consensus.raft.node
 import io.iohk.cef.consensus.raft.node.FutureOps.sequenceForgiving
 import io.iohk.cef.consensus.raft._
 import io.iohk.cef.consensus.raft.node.RaftNode.lastLogIndexAndTerm
+import io.iohk.cef.codecs.nio.NioEncDec
 
 import scala.annotation.tailrec
 import scala.concurrent.{ExecutionContext, Future}
@@ -199,7 +200,7 @@ private[raft] class Candidate[Command](raftNode: RaftNode[Command])(implicit ec:
   override val stateCode: StateCode = Candidate
 }
 
-private[raft] class Leader[Command](raftNode: RaftNode[Command])(implicit ec: ExecutionContext)
+private[raft] class Leader[Command: NioEncDec](raftNode: RaftNode[Command])(implicit ec: ExecutionContext)
     extends NodeRole[Command] {
 
   override val stateCode: StateCode = Leader

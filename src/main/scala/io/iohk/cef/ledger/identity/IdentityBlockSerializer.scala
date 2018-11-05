@@ -2,32 +2,37 @@ package io.iohk.cef.ledger.identity
 
 import java.time.Instant
 
-import akka.util.ByteString
 import io.iohk.cef.crypto._
 import io.iohk.cef.ledger.identity.storage.protobuf.identityLedger.{
   IdentityBlockProto,
   IdentityHeaderProto,
   IdentityTransactionProto
 }
-import io.iohk.cef.ledger.{Block, ByteStringSerializable}
+import io.iohk.cef.ledger.Block
 
+import io.iohk.cef.codecs.nio._
 import scala.util.Try
+import java.nio.ByteBuffer
+import io.iohk.cef.utils._
+import scala.reflect.runtime.universe.TypeTag
 
 object IdentityBlockSerializer {
 
-  implicit val txSerializable: ByteStringSerializable[IdentityTransaction] =
-    new ByteStringSerializable[IdentityTransaction] {
+  implicit val txSerializable: NioEncDec[IdentityTransaction] =
+    new NioEncDec[IdentityTransaction] {
+      override val typeTag: TypeTag[IdentityTransaction] = implicitly[TypeTag[IdentityTransaction]]
 
-      override def encode(t: IdentityTransaction): ByteString =
-        ByteString(encodeIdentityTransaction(t).toByteArray)
-      override def decode(u: ByteString): Option[IdentityTransaction] =
+      override def encode(t: IdentityTransaction): ByteBuffer =
+        encodeIdentityTransaction(t).toByteBuffer
+      override def decode(u: ByteBuffer): Option[IdentityTransaction] =
         Try(IdentityTransactionProto.parseFrom(u.toArray)).toOption.flatMap(decodeIdentityTransactionProto)
     }
 
-  implicit val serializable: ByteStringSerializable[IdentityLedgerBlock] = {
-    new ByteStringSerializable[IdentityLedgerBlock] {
+  implicit val serializable: NioEncDec[IdentityLedgerBlock] = {
+    new NioEncDec[IdentityLedgerBlock] {
+      override val typeTag: TypeTag[IdentityLedgerBlock] = implicitly[TypeTag[IdentityLedgerBlock]]
 
-      override def decode(bytes: ByteString): Option[IdentityLedgerBlock] = {
+      override def decode(bytes: ByteBuffer): Option[IdentityLedgerBlock] = {
         for {
           proto <- Try(IdentityBlockProto.parseFrom(bytes.toArray)).toOption
         } yield {
@@ -38,12 +43,12 @@ object IdentityBlockSerializer {
           )
         }
       }
-      override def encode(t: IdentityLedgerBlock): ByteString = {
+      override def encode(t: IdentityLedgerBlock): ByteBuffer = {
         val proto = IdentityBlockProto(
           IdentityHeaderProto(t.header.created.toEpochMilli),
           t.transactions.map(encodeIdentityTransaction)
         )
-        ByteString(proto.toByteArray)
+        proto.toByteBuffer
       }
     }
   }
@@ -72,14 +77,14 @@ object IdentityBlockSerializer {
     // TODO: what do we do with the error handling?
     val result = for {
       key <- SigningPublicKey
-        .decodeFrom(ByteString(ptx.publicKey.toByteArray))
+        .decodeFrom(ptx.publicKey.toByteString)
         .left
         .map { error =>
           throw new RuntimeException(s"Unable to parse transaction public key: $error")
         }
 
       signature <- Signature
-        .decodeFrom(ByteString(ptx.signature.toByteArray))
+        .decodeFrom(ptx.signature.toByteString)
         .left
         .map { error =>
           throw new RuntimeException(s"Unable to decode transaction signature: $error")

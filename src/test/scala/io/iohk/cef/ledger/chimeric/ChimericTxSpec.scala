@@ -9,6 +9,7 @@ import io.iohk.cef.ledger.chimeric.ChimericLedgerState.{
   getUtxoPartitionId
 }
 import org.scalatest.{FlatSpec, MustMatchers}
+import io.iohk.cef.codecs.nio.auto._
 
 class ChimericTxSpec extends FlatSpec with MustMatchers {
 

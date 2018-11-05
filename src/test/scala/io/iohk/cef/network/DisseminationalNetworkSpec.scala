@@ -3,7 +3,7 @@ package io.iohk.cef.network
 import java.net.InetSocketAddress
 
 import io.iohk.cef.network.discovery.NetworkDiscovery
-import io.iohk.cef.codecs.nio._
+import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.network.transport.tcp.NetUtils.{aRandomAddress, aRandomNodeId}
 import io.iohk.cef.network.transport.tcp.TcpTransportConfiguration
 import io.iohk.cef.network.transport.{Frame, FrameHeader, NetworkTransport, Transports}
@@ -35,7 +35,7 @@ class DisseminationalNetworkSpec extends FlatSpec {
     when(discovery.nearestNPeersTo(nodeId, Int.MaxValue)).thenReturn(peers)
     when(transports.peerInfo)
       .thenReturn(PeerInfo(nodeId, NetworkConfiguration(Some(TcpTransportConfiguration(address)))))
-    when(transports.tcp[Frame[String]](any())).thenReturn(Some(tcpTransport))
+    when(transports.tcp[Frame[String]](any(), any())).thenReturn(Some(tcpTransport))
 
     val network = new DisseminationalNetwork[String](discovery, transports)
 

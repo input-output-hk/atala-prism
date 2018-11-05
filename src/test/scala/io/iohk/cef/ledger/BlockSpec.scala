@@ -14,7 +14,7 @@ class BlockSpec extends FlatSpec with MustMatchers with EitherValues {
   )
 
   val header = DummyBlockHeader(txs.map(_.size).sum)
-  val block = Block(header, txs)
+  val block = Block[String, DummyBlockHeader, DummyTransaction](header, txs)
 
   it should "apply itself to a state" in {
     val state = new LedgerState[String](Map())

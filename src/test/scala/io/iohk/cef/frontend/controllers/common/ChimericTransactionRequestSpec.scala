@@ -9,6 +9,7 @@ import io.iohk.cef.frontend.models.{
 import io.iohk.cef.ledger.chimeric._
 import org.scalatest.{MustMatchers, WordSpec}
 import play.api.libs.json.Json
+import io.iohk.cef.codecs.nio.auto._
 
 class ChimericTransactionRequestSpec extends WordSpec with MustMatchers {
 
