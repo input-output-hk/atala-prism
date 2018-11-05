@@ -28,7 +28,7 @@ class ItemsGenericControllerSpec
 
   val service = new DataItemService(mock[Table]) {
     override def insert[I](tableId: TableId, dataItem: DataItem[I])(
-      implicit itemSerializable: NioEncDec[I]): Either[ApplicationError, Unit] = {
+        implicit itemSerializable: NioEncDec[I]): Either[ApplicationError, Unit] = {
       Right(())
     }
   }

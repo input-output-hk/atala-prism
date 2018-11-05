@@ -13,7 +13,7 @@ class DataItemService(table: Table) {
     table.insert(tableId, dataItem)
 
   def delete[I](tableId: TableId, dataItem: DataItem[I], deleteSignature: Signature)(
-    implicit itemSerializable: NioEncDec[I],
-    actionSerializable: NioEncDec[DataItemAction[I]]): Either[ApplicationError, Unit] =
+      implicit itemSerializable: NioEncDec[I],
+      actionSerializable: NioEncDec[DataItemAction[I]]): Either[ApplicationError, Unit] =
     table.delete(tableId, dataItem, deleteSignature)
 }

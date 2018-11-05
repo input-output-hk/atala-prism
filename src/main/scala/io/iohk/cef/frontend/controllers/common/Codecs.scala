@@ -4,7 +4,16 @@ import akka.util.ByteString
 import io.iohk.cef.core._
 import io.iohk.cef.crypto._
 import io.iohk.cef.data.{DataItem, TableId}
-import io.iohk.cef.frontend.models.{ChimericTransactionFragmentType, CreateChimericTransactionFragment, CreateChimericTransactionRequest, CreateIdentityTransactionRequest, CreateNonSignableChimericTransactionFragment, CreateSignableChimericTransactionFragment, DataItemEnvelope, IdentityTransactionType}
+import io.iohk.cef.frontend.models.{
+  ChimericTransactionFragmentType,
+  CreateChimericTransactionFragment,
+  CreateChimericTransactionRequest,
+  CreateIdentityTransactionRequest,
+  CreateNonSignableChimericTransactionFragment,
+  CreateSignableChimericTransactionFragment,
+  DataItemEnvelope,
+  IdentityTransactionType
+}
 import io.iohk.cef.ledger.chimeric._
 import io.iohk.cef.ledger.identity.{Claim, IdentityTransaction, Link, Unlink}
 import io.iohk.cef.network.NodeId
