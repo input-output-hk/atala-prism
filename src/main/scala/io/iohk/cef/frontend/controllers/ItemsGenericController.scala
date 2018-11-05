@@ -25,7 +25,7 @@ class ItemsGenericController(service: DataItemService)(implicit ec: ExecutionCon
       pathEnd {
         post {
           publicInput(StatusCodes.Created) { ctx: HasModel[E] =>
-            val either = service.insert(ctx.model.content)
+            val either = service.insert(ctx.model.tableId, ctx.model.content)
             val result = fromEither(either, ItemCreationError)
               .map(_ => JsObject.empty)
 

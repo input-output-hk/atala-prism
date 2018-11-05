@@ -3,17 +3,8 @@ package io.iohk.cef.frontend.controllers.common
 import akka.util.ByteString
 import io.iohk.cef.core._
 import io.iohk.cef.crypto._
-import io.iohk.cef.data.DataItem
-import io.iohk.cef.frontend.models.{
-  ChimericTransactionFragmentType,
-  CreateChimericTransactionFragment,
-  CreateChimericTransactionRequest,
-  CreateIdentityTransactionRequest,
-  CreateNonSignableChimericTransactionFragment,
-  CreateSignableChimericTransactionFragment,
-  DataItemEnvelope,
-  IdentityTransactionType
-}
+import io.iohk.cef.data.{DataItem, TableId}
+import io.iohk.cef.frontend.models.{ChimericTransactionFragmentType, CreateChimericTransactionFragment, CreateChimericTransactionRequest, CreateIdentityTransactionRequest, CreateNonSignableChimericTransactionFragment, CreateSignableChimericTransactionFragment, DataItemEnvelope, IdentityTransactionType}
 import io.iohk.cef.ledger.chimeric._
 import io.iohk.cef.ledger.identity.{Claim, IdentityTransaction, Link, Unlink}
 import io.iohk.cef.network.NodeId
@@ -333,6 +324,7 @@ object Codecs {
 
   implicit def format[B, A <: DataItem[B]](implicit format: Format[A]): Format[DataItemEnvelope[B, A]] = {
     val builder = (__ \ 'content).format[A] and
+      (__ \ 'tableId).format[TableId] and
       (__ \ 'destinationDescriptor).format[DestinationDescriptor]
 
     builder.apply(DataItemEnvelope.apply, unlift(DataItemEnvelope.unapply))

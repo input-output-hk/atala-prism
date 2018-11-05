@@ -25,6 +25,7 @@ class DataItemEnvelopeSpec extends WordSpec with MustMatchers {
       )
       val input = new Envelope(
         content = CustomItem("custom", Data("IOHK")),
+        tableId = "nothing",
         destinationDescriptor = destinationDescriptor
       )
 

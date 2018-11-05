@@ -1,68 +1,85 @@
 package io.iohk.cef.data.storage.scalike.dao
-import io.iohk.cef.data.storage.scalike.{DataItemOwnerTable, DataItemSignatureTable, DataItemTable}
-import io.iohk.cef.data.{DataItem, Witness}
-import scalikejdbc.{DBSession, _}
 import io.iohk.cef.codecs.nio.NioEncDec
+import io.iohk.cef.data.storage.scalike.{DataItemOwnerTable, DataItemSignatureTable, DataItemTable}
+import io.iohk.cef.data.{DataItem, DataItemId, TableId, Witness}
 import io.iohk.cef.utils._
+import scalikejdbc.{DBSession, _}
 
 class TableStorageDao {
-  def insert[I](dataItem: DataItem[I])(implicit itemSerializable: NioEncDec[I], session: DBSession): Unit = {
+  def insert[I](tableId: TableId,
+                dataItem: DataItem[I])(implicit itemSerializable: NioEncDec[I], session: DBSession): Unit = {
     val itemColumn = DataItemTable.column
 
     val serializedItem = itemSerializable.encode(dataItem.data)
     sql"""insert into ${DataItemTable.table} (
+          ${itemColumn.dataTableId},
           ${itemColumn.dataItemId},
           ${itemColumn.dataItem}
     ) values (
+      ${tableId},
       ${dataItem.id},
       ${serializedItem.toArray}
     )""".executeUpdate().apply()
-    insertDataItemSignatures(dataItem)
-    insertDataItemOwners(dataItem)
+    val uniqueId = getUniqueId(tableId, dataItem.id)
+    insertDataItemSignatures(uniqueId, dataItem)
+    insertDataItemOwners(uniqueId, dataItem)
   }
 
-  def delete(dataItemId: String)(implicit session: DBSession): Unit = {
+  def delete[I](tableId: TableId, dataItem: DataItem[I])(implicit session: DBSession): Unit = {
     val itemColumn = DataItemTable.column
     val sigColumn = DataItemSignatureTable.column
     val owColumn = DataItemOwnerTable.column
 
-    sql"""delete from ${DataItemSignatureTable.table} where ${sigColumn.dataItemId} = $dataItemId"""
+    val uniqueId = getUniqueId(tableId, dataItem.id)
+
+    sql"""delete from ${DataItemSignatureTable.table} where ${sigColumn.dataItemUniqueId} = ${uniqueId}"""
       .executeUpdate()
       .apply()
-    sql"""delete from ${DataItemOwnerTable.table} where ${owColumn.dataItemId} = $dataItemId"""
+    sql"""delete from ${DataItemOwnerTable.table} where ${owColumn.dataItemUniqueId} = ${uniqueId}"""
       .executeUpdate()
       .apply()
-    sql"""delete from ${DataItemTable.table} where ${itemColumn.dataItemId} = $dataItemId"""
+    sql"""delete from ${DataItemTable.table} where ${itemColumn.id} = ${uniqueId}"""
       .executeUpdate()
       .apply()
   }
 
-  private def insertDataItemOwners[I](dataItem: DataItem[I])(implicit session: DBSession) = {
+  private def getUniqueId(tableId: TableId, dataItemId: DataItemId)(implicit DBSession: DBSession): Long = {
+    val it = DataItemTable.syntax("it")
+
+    sql"""
+      select ${it.result.id} from ${DataItemTable as it}
+       where ${it.dataTableId} = ${tableId} and ${it.dataItemId} = ${dataItemId}
+      """.map(rs => rs.long(it.resultName.id)).toOption().apply().getOrElse(
+      throw new IllegalStateException(s"Not found: dataItemId ${dataItemId}, tableId ${tableId}")
+    )
+  }
+
+  private def insertDataItemOwners[I](dataItemUniqueId: Long, dataItem: DataItem[I])(implicit session: DBSession) = {
     val ownerColumn = DataItemOwnerTable.column
 
     dataItem.owners.foreach(owner => {
       sql"""
            insert into ${DataItemOwnerTable.table} (
-           ${ownerColumn.dataItemId},
+           ${ownerColumn.dataItemUniqueId},
            ${ownerColumn.signingPublicKey}
            ) values (
-            ${dataItem.id},
+            ${dataItemUniqueId},
             ${owner.key.toByteString.toArray}
            )
          """.executeUpdate().apply()
     })
   }
 
-  private def insertDataItemSignatures[I](dataItem: DataItem[I])(implicit session: DBSession) = {
+  private def insertDataItemSignatures[I](dataItemUniqueId: Long, dataItem: DataItem[I])(implicit session: DBSession) = {
     val sigColumn = DataItemSignatureTable.column
     dataItem.witnesses.foreach {
       case Witness(signature, key) =>
         sql"""insert into ${DataItemSignatureTable.table}
-              (${sigColumn.dataItemId},
+              (${sigColumn.dataItemUniqueId},
               ${sigColumn.signature},
               ${sigColumn.signingPublicKey})
               values (
-              ${dataItem.id},
+              ${dataItemUniqueId},
               ${signature.toByteString.toArray},
               ${key.toByteString.toArray}
               )

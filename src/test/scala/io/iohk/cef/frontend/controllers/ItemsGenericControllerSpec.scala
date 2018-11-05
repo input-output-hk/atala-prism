@@ -27,8 +27,8 @@ class ItemsGenericControllerSpec
   implicit val executionContext = system.dispatcher
 
   val service = new DataItemService(mock[Table]) {
-    override def insert[I](dataItem: DataItem[I])(
-        implicit itemSerializable: NioEncDec[I]): Either[ApplicationError, Unit] = {
+    override def insert[I](tableId: TableId, dataItem: DataItem[I])(
+      implicit itemSerializable: NioEncDec[I]): Either[ApplicationError, Unit] = {
       Right(())
     }
   }
@@ -49,6 +49,7 @@ class ItemsGenericControllerSpec
           |      "name": "Input Output HK"
           |    }
           |  },
+          |  "tableId": "nothing",
           |  "destinationDescriptor": {
           |    "type": "everyone",
           |    "obj": {}
