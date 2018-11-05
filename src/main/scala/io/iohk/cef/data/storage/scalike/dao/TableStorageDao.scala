@@ -3,8 +3,7 @@ import akka.util.ByteString
 import io.iohk.cef.data.storage.scalike.{DataItemOwnerTable, DataItemSignatureTable, DataItemTable}
 import io.iohk.cef.data.{DataItem, Witness}
 import scalikejdbc.{DBSession, _}
-import io.iohk.cef.codecs.nio.NioEncDec
-import io.iohk.cef.utils._
+import io.iohk.cef.codecs.nio._
 
 class TableStorageDao {
   def insert[I](dataItem: DataItem[I])(implicit session: DBSession, enc: NioEncoder[I]): Unit = {

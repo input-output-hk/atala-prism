@@ -5,12 +5,13 @@ import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.network.{MessageStream, Network}
 import io.iohk.cef.network.transport.Transports
 import io.iohk.cef.codecs.nio._
+import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.core.{DestinationDescriptor, Envelope}
 import io.iohk.cef.data.DataItemAction.{Delete, Insert}
 import io.iohk.cef.network.discovery.NetworkDiscovery
 
 class DataItemService[T](table: Table, transports: Transports, networkDiscovery: NetworkDiscovery)(
-    implicit enc: NioEncDec[T], canValidate: CanValidate[DataItem[I]]) {
+    implicit enc: NioEncDec[T], canValidate: CanValidate[DataItem[T]]) {
 
   private implicit val actionEnc: NioEncoder[DataItemAction[T]] = NioEncoder[DataItemAction[T]]
   private implicit val destEnc: NioEncoder[DestinationDescriptor] = NioEncoder[DestinationDescriptor]
