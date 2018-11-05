@@ -1,5 +1,6 @@
 package io.iohk.cef.network
 import io.iohk.cef.codecs.nio._
+import io.iohk.cef.codecs.nio.auto._
 import org.mockito.Mockito.{atLeastOnce, verify}
 import org.scalatest.FlatSpec
 import org.scalatest.concurrent.Eventually._

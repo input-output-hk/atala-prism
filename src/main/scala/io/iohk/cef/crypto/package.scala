@@ -11,8 +11,8 @@ import io.iohk.cef.crypto.signing.SigningAlgorithmsCollection
   * {{{
   *
   * >>> import io.iohk.cef.crypto._
-  *
-  * >>> case class User(name: String, age: Int)
+  * >>> import io.iohk.cef.codecs.nio.auto._
+  * >>> import io.iohk.cef.test.User
   *
   * >>> val user = User("Foo Bar", 42)
   * >>> val user2 = User("Bar Foo", 24)

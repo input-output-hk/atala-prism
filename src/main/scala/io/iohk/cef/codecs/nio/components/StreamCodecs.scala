@@ -1,8 +1,9 @@
-package io.iohk.cef.codecs.nio
+package io.iohk.cef.codecs.nio.components
 import java.nio.ByteBuffer
 
 import scala.annotation.tailrec
 import scala.language.implicitConversions
+import io.iohk.cef.codecs.nio.{NioDecoder, NioStreamDecoder}
 
 trait StreamCodecs {
 

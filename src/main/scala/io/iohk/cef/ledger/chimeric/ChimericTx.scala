@@ -82,6 +82,7 @@ case class ChimericTx(fragments: Seq[ChimericTxFragment]) extends Transaction[Ch
       fragments: Seq[ChimericTxFragment],
       signatureFragment: SignatureTxFragment,
       signingPublicKey: SigningPublicKey): ChimericStateOrError = {
+    import io.iohk.cef.codecs.nio.auto._
 
     if (isValidSignature(fragments, signatureFragment.signature, signingPublicKey))
       Right(currentState)

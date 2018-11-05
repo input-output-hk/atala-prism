@@ -1,13 +1,13 @@
 package io.iohk.cef.crypto
 
 import akka.util.ByteString
-//import io.iohk.cef.crypto.DecodeError._
 import io.iohk.cef.crypto.encoding.TypedByteStringDecodingError.NioDecoderFailedToDecodeTBS
 import org.scalatest.MustMatchers._
 import org.scalatest.prop.PropertyChecks._
 import org.scalatest.EitherValues._
 import org.scalatest.WordSpec
 import io.iohk.cef.test.ScalacheckExtensions._
+import io.iohk.cef.codecs.nio.auto._
 
 class EncryptionSpec extends WordSpec {
 
@@ -74,7 +74,7 @@ class EncryptionSpec extends WordSpec {
     }
 
     "fail to decode data with unsupported algorithms" in {
-      val algorithm = "RSA".flatMap(_.toByte :: 0.toByte :: Nil).toArray
+      val algorithm = "RSA".getBytes("UTF-8")
       forAll { input: ByteString =>
         val encrypted = encrypt(input, keys.public)
 
@@ -109,7 +109,7 @@ class EncryptionSpec extends WordSpec {
     }
 
     "fail to decode public keys with unsupported algorithms" in {
-      val algorithm = "RSA".flatMap(_.toByte :: 0.toByte :: Nil).toArray
+      val algorithm = "RSA".getBytes("UTF-8")
       val key = keys.public
       val index = key.toByteString.indexOfSlice(algorithm)
       val corruptedBytes = key.toByteString.updated(index, 'X'.toByte)
@@ -136,7 +136,7 @@ class EncryptionSpec extends WordSpec {
       }
     }
     "fail to decode private keys with unsupported algorithms" in {
-      val algorithm = "RSA".flatMap(_.toByte :: 0.toByte :: Nil).toArray
+      val algorithm = "RSA".getBytes("UTF-8")
 
       val key = keys.`private`
 

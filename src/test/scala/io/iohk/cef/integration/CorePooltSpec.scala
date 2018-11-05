@@ -4,7 +4,7 @@ import io.iohk.cef.core.{Envelope, Everyone, NodeCore}
 import io.iohk.cef.ledger.Block
 import io.iohk.cef.ledger.storage.LedgerStateStorage
 import io.iohk.cef.network.{MessageStream, Network, NodeId}
-import io.iohk.cef.test.{DummyBlockHeader, DummyBlockSerializable, DummyTransaction}
+import io.iohk.cef.test.{DummyBlockHeader, DummyTransaction}
 import io.iohk.cef.transactionpool.{TimedQueue, TransactionPoolInterface}
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
@@ -14,6 +14,7 @@ import org.scalatest.{BeforeAndAfterAll, FlatSpecLike, MustMatchers}
 import scala.collection.immutable.Queue
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, _}
+import io.iohk.cef.codecs.nio.auto._
 
 class CorePooltSpec extends FlatSpecLike with MustMatchers with BeforeAndAfterAll with MockitoSugar {
 
@@ -48,17 +49,14 @@ class CorePooltSpec extends FlatSpecLike with MustMatchers with BeforeAndAfterAl
     when(blockNetwork.messageStream).thenReturn(mockBlockMessageStream)
     when(mockTxMessageStream.foreach(ArgumentMatchers.any())).thenReturn(Future.successful(()))
     when(mockBlockMessageStream.foreach(ArgumentMatchers.any())).thenReturn(Future.successful(()))
-    val core = new NodeCore(consensusMap, txNetwork, blockNetwork, me)(
-      Envelope.envelopeSerializer(DummyTransaction.serializable),
-      Envelope.envelopeSerializer(DummyBlockSerializable.serializable),
-      executionContext
-    )
+    val core = new NodeCore(consensusMap, txNetwork, blockNetwork, me)
     val testTransaction = DummyTransaction(5)
     val envelope = Envelope(testTransaction, "1", Everyone)
     val result = Await.result(core.receiveTransaction(envelope), 10 seconds)
     result mustBe Right(())
     val resultBlock = transactionPoolFutureInterface.generateBlock()
-    resultBlock mustBe Right(Block(DummyBlockHeader(1), Queue(DummyTransaction(5))))
+    resultBlock mustBe Right(
+      Block[String, DummyBlockHeader, DummyTransaction](DummyBlockHeader(1), Queue(DummyTransaction(5))))
     resultBlock.map {
       _.transactions mustBe Seq(testTransaction)
     }

@@ -2,6 +2,7 @@ package io.iohk.cef.network
 
 import io.iohk.cef.network.NodeId.nodeIdBytes
 import io.iohk.cef.codecs.nio._
+import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.network.transport.tcp.NetUtils
 import io.iohk.cef.network.transport.{Frame, FrameHeader}
 import org.scalacheck.Arbitrary.arbitrary

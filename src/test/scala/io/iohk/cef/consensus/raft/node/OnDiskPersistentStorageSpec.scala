@@ -1,12 +1,12 @@
 package io.iohk.cef.consensus.raft.node
 import io.iohk.cef.consensus.raft.LogEntry
-import io.iohk.cef.codecs.array.ArrayCodecs._
 import org.apache.commons.io.FileUtils
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen._
 import org.scalatest.Matchers._
 import org.scalatest.prop.GeneratorDrivenPropertyChecks._
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FlatSpec, Suite}
+import io.iohk.cef.codecs.nio.auto._
 
 import scala.collection.immutable
 import scala.util.Random

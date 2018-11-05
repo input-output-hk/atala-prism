@@ -1,26 +1,27 @@
 package io.iohk.cef.main
 
+import java.nio.ByteBuffer
 import java.util.Base64
 
 import akka.http.scaladsl.Http
-import akka.util.{ByteString, Timeout}
-import io.iohk.cef.codecs.array.ArrayCodecs._
-import io.iohk.cef.consensus.raft.LogEntry
+import akka.util.Timeout
+import io.iohk.cef.codecs.nio._
+import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.core.NodeCore
 import io.iohk.cef.crypto._
 import io.iohk.cef.frontend.models.IdentityTransactionType
-import io.iohk.cef.ledger.identity.storage.protobuf.IdentityLedgerState.PublicKeyListProto
-import io.iohk.cef.ledger.identity.{IdentityBlockHeader, IdentityBlockSerializer, IdentityTransaction}
-import io.iohk.cef.ledger.{Block, ByteStringSerializable}
-import io.iohk.cef.main.builder.{IdentityFrontendBuilder, _}
+import io.iohk.cef.ledger.Block
+import io.iohk.cef.ledger.identity.{IdentityBlockHeader, IdentityTransaction}
+import io.iohk.cef.main.builder._
 import io.iohk.cef.network.discovery._
 import io.iohk.cef.network.encoding.rlp
 import io.iohk.cef.network.encoding.rlp.RLPEncDec
-import io.iohk.cef.utils.Logger
+import io.iohk.cef.utils.{Logger, _}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.io.StdIn
+import scala.reflect.runtime.universe.TypeTag
 
 object IndentityTxMain extends App {
 
@@ -33,14 +34,10 @@ object IndentityTxMain extends App {
       implicit
       timeout: Timeout,
       executionContext: ExecutionContext,
-      blockByteStringSerializable: ByteStringSerializable[B],
-      stateyteStringSerializable: ByteStringSerializable[S],
-      txStringSerializable: ByteStringSerializable[T],
-      dByteStringSerializable: ByteStringSerializable[DiscoveryWireMessage],
-      arrayEncoder: ArrayEncoder[B],
-      arrayDecoder: ArrayDecoder[B],
-      arrayLEncoder: ArrayEncoder[LogEntry[B]],
-      arrayLDecoder: ArrayDecoder[LogEntry[B]]): (Future[Http.ServerBinding], NodeCore[S, H, T]) = {
+      blockByteStringSerializable: NioEncDec[B],
+      stateyteStringSerializable: NioEncDec[S],
+      txStringSerializable: NioEncDec[T],
+      dByteStringSerializable: NioEncDec[DiscoveryWireMessage]): (Future[Http.ServerBinding], NodeCore[S, H, T]) = {
 
     val bindingF = frontendBuilder.bindingFuture
     (bindingF, coreBuilder.nodeCore)
@@ -50,36 +47,15 @@ object IndentityTxMain extends App {
 
   implicit val timeout: Timeout = 1 minute
   implicit val executionContext = scala.concurrent.ExecutionContext.global
-  implicit val bSerializable = IdentityBlockSerializer.serializable
-  implicit val txSerializable = IdentityBlockSerializer.txSerializable
-  implicit val sSerializable = new ByteStringSerializable[Set[SigningPublicKey]] {
-    override def decode(u: ByteString): Option[Set[SigningPublicKey]] = {
-      Some(
-        PublicKeyListProto
-          .parseFrom(u.toArray)
-          .publicKeys
-          .map(bytes =>
-            //TODO: error handling
-            SigningPublicKey.decodeFrom(ByteString(bytes.toByteArray)).right.get)
-          .toSet)
-    }
 
-    override def encode(t: Set[SigningPublicKey]): ByteString = {
-      ByteString(
-        PublicKeyListProto(
-          t.map(b => {
-              com.google.protobuf.ByteString.copyFrom(b.toByteString.toArray)
-            })
-            .toSeq).toByteArray)
-    }
-  }
   import io.iohk.cef.network.encoding.rlp.RLPImplicits._
-  def discSerializable(implicit encDec: RLPEncDec[DiscoveryWireMessage]): ByteStringSerializable[DiscoveryWireMessage] =
-    new ByteStringSerializable[DiscoveryWireMessage] {
-      override def encode(t: DiscoveryWireMessage): ByteString = {
-        ByteString(rlp.encodeToArray(t))
+  def discSerializable(implicit encDec: RLPEncDec[DiscoveryWireMessage]): NioEncDec[DiscoveryWireMessage] =
+    new NioEncDec[DiscoveryWireMessage] {
+      override val typeTag: TypeTag[DiscoveryWireMessage] = implicitly[TypeTag[DiscoveryWireMessage]]
+      override def encode(t: DiscoveryWireMessage): ByteBuffer = {
+        rlp.encodeToArray(t).toByteBuffer
       }
-      override def decode(u: ByteString): Option[DiscoveryWireMessage] = {
+      override def decode(u: ByteBuffer): Option[DiscoveryWireMessage] = {
         Some(rlp.decodeFromArray[DiscoveryWireMessage](u.toArray))
       }
     }
@@ -119,8 +95,6 @@ object IndentityTxMain extends App {
     identityTransactionServiceBuilder,
     commonTypeAliases,
     configReaderBuilder)
-
-  import io.iohk.cef.codecs.array.ArrayCodecs._
 
   val (serverBinding, core) = identityCoreBuilder(nodeCoreBuilder, frontendBuilder)
   StdIn.readLine() // let it run until user presses return

@@ -1,5 +1,5 @@
 package io.iohk.cef.utils
-import io.iohk.cef.ledger.ByteStringSerializable
+import io.iohk.cef.codecs.nio._
 
 trait ByteSizeable[T] {
   def sizeInBytes(t: T): Int
@@ -7,6 +7,7 @@ trait ByteSizeable[T] {
 
 object ByteSizeable {
 
-  implicit def txByteSizeable[T](implicit byteStringSerializable: ByteStringSerializable[T]): ByteSizeable[T] =
-    (t: T) => byteStringSerializable.encode(t).size
+  implicit def txByteSizeable[T](implicit byteStringSerializable: NioEncDec[T]): ByteSizeable[T] =
+    (t: T) => byteStringSerializable.encode(t).toArray.length
+
 }

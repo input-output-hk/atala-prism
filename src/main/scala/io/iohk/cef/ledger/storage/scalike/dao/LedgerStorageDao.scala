@@ -6,11 +6,13 @@ import io.iohk.cef.LedgerId
 import io.iohk.cef.ledger._
 import io.iohk.cef.ledger.storage.scalike.LedgerTable
 import scalikejdbc._
+import io.iohk.cef.codecs.nio._
+import io.iohk.cef.utils._
 
 class LedgerStorageDao(clock: Clock) {
 
   def push[S, Header <: BlockHeader, Tx <: Transaction[S]](ledgerId: LedgerId, block: Block[S, Header, Tx])(
-      implicit blockSerializable: ByteStringSerializable[Block[S, Header, Tx]],
+      implicit blockSerializable: NioEncDec[Block[S, Header, Tx]],
       session: DBSession): Int = {
     val blockColumn = LedgerTable.column
     val lt = LedgerTable.syntax("bt")

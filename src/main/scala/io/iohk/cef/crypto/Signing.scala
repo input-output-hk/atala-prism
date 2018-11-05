@@ -3,6 +3,8 @@ package io.iohk.cef.crypto
 import akka.util.ByteString
 import io.iohk.cef.crypto.encoding.TypedByteString
 import io.iohk.cef.crypto.signing.{SigningAlgorithmsCollection, _}
+import io.iohk.cef.codecs.nio.NioEncoder
+import io.iohk.cef.utils._
 
 trait Signing {
 
@@ -35,8 +37,8 @@ trait Signing {
     *
     * @return          a signature of `t`
     */
-  def sign[T](t: T, key: SigningPrivateKey)(implicit encoder: CryptoEncoder[T]): Signature = {
-    val signature = key.`type`.algorithm.sign(encoder.encode(t), key.lowlevelKey)
+  def sign[T](t: T, key: SigningPrivateKey)(implicit encoder: NioEncoder[T]): Signature = {
+    val signature = key.`type`.algorithm.sign(encoder.encode(t).toByteString, key.lowlevelKey)
     Signature(key.`type`, signature)
   }
 
@@ -55,12 +57,11 @@ trait Signing {
     *
     * @return            `true` if `signature` is a valid signature of `t`
     */
-  def isValidSignature[T](t: T, signature: Signature, key: SigningPublicKey)(
-      implicit encoder: CryptoEncoder[T]): Boolean =
+  def isValidSignature[T](t: T, signature: Signature, key: SigningPublicKey)(implicit encoder: NioEncoder[T]): Boolean =
     if (key.`type` != signature.`type`)
       false
     else
-      key.`type`.algorithm.isSignatureValid(signature.bytes, encoder.encode(t), key.lowlevelKey)
+      key.`type`.algorithm.isSignatureValid(signature.bytes, encoder.encode(t).toByteString, key.lowlevelKey)
 
   /** Data entity containing a signing algorithm identifier and a public key for that algorithm */
   trait SigningPublicKey {

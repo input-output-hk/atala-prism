@@ -1,5 +1,4 @@
 package io.iohk.cef.network
-import io.iohk.cef.codecs.nio._
 import io.iohk.cef.network.transport.tcp.NetUtils
 import io.iohk.cef.network.transport.tcp.NetUtils.{nodesArePeers, randomNetworkFixture}
 import org.scalatest.FlatSpec
@@ -9,6 +8,7 @@ import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
+import io.iohk.cef.codecs.nio.auto._
 
 class RequestResponseSpec extends FlatSpec {
 

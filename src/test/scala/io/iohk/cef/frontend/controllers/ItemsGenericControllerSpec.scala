@@ -3,11 +3,16 @@ package io.iohk.cef.frontend.controllers
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
-import io.iohk.cef.data.DataItem
+import io.iohk.cef.data.{CanValidate, DataItem, DataItemService, Table}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{MustMatchers, WordSpec}
-import play.api.libs.json._
-import io.iohk.cef.frontend.controllers.common.Codecs._
+import play.api.libs.json.{Format, JsValue, Json}
+import io.iohk.cef.codecs.nio._
+import io.iohk.cef.codecs.nio.auto._
+import io.iohk.cef.error.ApplicationError
+import io.iohk.cef.frontend.controllers.common.Codecs
+import io.iohk.cef.frontend.models.DataItemEnvelope
+import org.scalatest.mockito.MockitoSugar.mock
 
 class ItemsGenericControllerSpec
     extends WordSpec
@@ -16,29 +21,46 @@ class ItemsGenericControllerSpec
     with ScalatestRouteTest
     with PlayJsonSupport {
 
-  implicit val executionContext = system.dispatcher
+  import Codecs._
+  import ItemsGenericControllerSpec._
 
-  val controller = new ItemsGenericController()
+  implicit val executionContext = system.dispatcher
+  val service = new DataItemService(mock[Table]) {
+    override def insert[I](dataItem: DataItem[I])(
+        implicit itemSerializable: NioEncDec[I],
+        canValidate: CanValidate[DataItem[I]]): Either[ApplicationError, Unit] = {
+      Right(())
+    }
+  }
+
+  val controller = new ItemsGenericController(service)
 
   "POST /certificates" should {
 
-    import ItemsGenericControllerSpec._
+    implicit val canValidate = new CanValidate[DataItem[BirthCertificate]] {
+      override def validate(t: DataItem[BirthCertificate]): Either[ApplicationError, Unit] = Right(Unit)
+    }
+    lazy val routes =
+      controller.routes[BirthCertificate, DataItemEnvelope[DataItem[BirthCertificate]]]("birth-certificates")
 
-    implicit val diFormat = dataItemFormat[BirthCertificate](Json.format[BirthCertificate])
-
-    lazy val routes = controller.routes[DataItem[BirthCertificate]]("birth-certificates")
-
-    "create a valid key-pair" in {
+    "create an item" in {
       val body =
-        """{
-          |"id":"birth-cert",
-          |"data":
+        """
           |{
-          |  "date": "01/01/2015",
-          |  "name": "Input Output HK"
-          |},
-          |"witnesses":[],
-          |"owners":[]
+          | "content": {
+          |   "id":"birth-cert",
+          |   "data":
+          |     {
+          |       "date": "01/01/2015",
+          |       "name": "Input Output HK"
+          |     },
+          |   "witnesses":[],
+          |   "owners":[]
+          |  },
+          |  "destinationDescriptor": {
+          |    "type": "everyone",
+          |    "obj": {}
+          |  }
           |}
         """.stripMargin
       val request = Post("/birth-certificates", HttpEntity(ContentTypes.`application/json`, body))
@@ -56,4 +78,7 @@ class ItemsGenericControllerSpec
 object ItemsGenericControllerSpec {
 
   case class BirthCertificate(date: String, name: String)
+
+  implicit val birthCertificateFormat: Format[BirthCertificate] = Json.format[BirthCertificate]
+
 }

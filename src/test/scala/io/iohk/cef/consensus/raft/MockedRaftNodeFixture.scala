@@ -9,6 +9,7 @@ import org.scalatest.mockito.MockitoSugar.mock
 import org.scalatest.time.{Millis, Seconds, Span}
 
 import scala.concurrent.{ExecutionContext, Future}
+import io.iohk.cef.codecs.nio._
 
 trait MockedRaftNodeFixture[Command] {
 
@@ -41,7 +42,7 @@ trait MockedRaftNodeFixture[Command] {
     }.map(_ => t)
   }
 
-  def aRaftNode(persistentStorage: PersistentStorage[Command]): RaftNode[Command] = {
+  def aRaftNode(persistentStorage: PersistentStorage[Command])(implicit ed: NioEncDec[Command]): RaftNode[Command] = {
     import scala.concurrent.duration._
     val neverTimeout = (100 days, 200 days)
     new RaftNode[Command](
@@ -54,10 +55,10 @@ trait MockedRaftNodeFixture[Command] {
       persistentStorage)
   }
 
-  def aFollower(persistentStorage: PersistentStorage[Command]): RaftNode[Command] =
+  def aFollower(persistentStorage: PersistentStorage[Command])(implicit ed: NioEncDec[Command]): RaftNode[Command] =
     aRaftNode(persistentStorage)
 
-  def aCandidate(persistentStorage: PersistentStorage[Command]): RaftNode[Command] = {
+  def aCandidate(persistentStorage: PersistentStorage[Command])(implicit ed: NioEncDec[Command]): RaftNode[Command] = {
 
     val raftNode = aRaftNode(persistentStorage)
 
@@ -75,7 +76,7 @@ trait MockedRaftNodeFixture[Command] {
     raftNode
   }
 
-  def aLeader(persistentStorage: PersistentStorage[Command]): RaftNode[Command] = {
+  def aLeader(persistentStorage: PersistentStorage[Command])(implicit ed: NioEncDec[Command]): RaftNode[Command] = {
     val raftNode = aRaftNode(persistentStorage)
 
     val (term, _) = persistentStorage.state

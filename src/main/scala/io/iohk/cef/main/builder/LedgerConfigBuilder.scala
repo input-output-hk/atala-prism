@@ -5,19 +5,18 @@ import java.time.Clock
 
 import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.ActorContext
-import akka.util.ByteString
-import io.iohk.cef.ledger.{ByteStringSerializable, LedgerConfig}
+import io.iohk.cef.ledger.LedgerConfig
 import io.iohk.cef.network.NodeStatus.NodeState
 import io.iohk.cef.network._
 import io.iohk.cef.network.discovery.DiscoveryListener.DiscoveryListenerRequest
 import io.iohk.cef.network.discovery.DiscoveryManager.DiscoveryRequest
 import io.iohk.cef.network.discovery._
 import io.iohk.cef.network.discovery.db.DummyKnownNodesStorage
-import io.iohk.cef.codecs.{Decoder, Encoder}
 import io.iohk.cef.network.telemetry.InMemoryTelemetry
 import io.iohk.cef.network.transport.Transports
 import io.iohk.cef.network.transport.tcp.TcpTransportConfiguration
 import org.bouncycastle.util.encoders.Hex
+import io.iohk.cef.codecs.nio._
 
 trait LedgerConfigBuilder {
   val clock: Clock
@@ -37,7 +36,7 @@ class DefaultLedgerConfig(configReaderBuilder: ConfigReaderBuilder) extends Ledg
 
   import io.iohk.cef.network.encoding.rlp.RLPImplicits._
   import io.iohk.cef.network.encoding.rlp._
-  val discoveryMsgSerializer = implicitly[ByteStringSerializable[DiscoveryWireMessage]]
+  val discoveryMsgSerializer = implicitly[RLPEncDec[DiscoveryWireMessage]].asNio
   override val clock: Clock = Clock.systemUTC()
   override val ledgerConfig: LedgerConfig = LedgerConfig(config)
 
@@ -71,9 +70,7 @@ class DefaultLedgerConfig(configReaderBuilder: ConfigReaderBuilder) extends Ledg
       InMemoryTelemetry.registry
     )
 
-  private def listenerFactory(
-      encoder: Encoder[DiscoveryWireMessage, ByteString],
-      decoder: Decoder[ByteString, DiscoveryWireMessage])(
+  private def listenerFactory(encoder: NioEncoder[DiscoveryWireMessage], decoder: NioDecoder[DiscoveryWireMessage])(
       context: ActorContext[DiscoveryRequest]): ActorRef[DiscoveryListenerRequest] = {
 
     context.spawn(

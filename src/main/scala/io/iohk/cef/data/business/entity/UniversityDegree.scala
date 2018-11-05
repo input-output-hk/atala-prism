@@ -1,16 +1,17 @@
 package io.iohk.cef.data.business.entity
 import java.time.LocalDate
-
+import io.iohk.cef.codecs.nio._
 import io.iohk.cef.crypto._
 import io.iohk.cef.data.{DataItem, DataItemError, _}
-
 case class UniversityDegreeData(universityName: String, degree: String, studentName: String, date: LocalDate)
 
 object UniversityDegreeData {
+  //import scala.language.implicitConversions
+  //implicit def localDateToInstant(date: LocalDate): Instant = date.atStartOfDay().toInstant(ZoneOffset.UTC)
 
   implicit def universityDegreeValidation(
       implicit publicKeyStore: Map[String, SigningPublicKey],
-      serializable: NioEncoder[UniversityDegreeData]): CanValidate[DataItem[UniversityDegreeData]] = {
+      serializable: NioEncDec[UniversityDegreeData]): CanValidate[DataItem[UniversityDegreeData]] = {
     dataItem: DataItem[UniversityDegreeData] =>
       mandatoryCheck(dataItem).map { d =>
         getSigningPublicKey(d).map { key =>

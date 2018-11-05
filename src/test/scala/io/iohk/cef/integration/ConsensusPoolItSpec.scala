@@ -4,7 +4,7 @@ import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.consensus.raft._
 import io.iohk.cef.ledger.Block
 import io.iohk.cef.ledger.storage.LedgerStateStorage
-import io.iohk.cef.test.{DummyBlockHeader, DummyBlockSerializable, DummyTransaction}
+import io.iohk.cef.test.{DummyBlockHeader, DummyTransaction}
 import io.iohk.cef.transactionpool.{BlockCreator, TimedQueue, TransactionPoolInterface}
 import org.scalatest.concurrent.Eventually
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
@@ -14,6 +14,8 @@ import org.scalatest.{FlatSpecLike, MustMatchers}
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
+import io.iohk.cef.codecs.nio.auto._
+import io.iohk.cef.utils.ByteSizeable
 
 class ConsensusPoolItSpec extends FlatSpecLike with MockitoSugar with MustMatchers with Eventually {
 
@@ -28,9 +30,16 @@ class ConsensusPoolItSpec extends FlatSpecLike with MockitoSugar with MustMatche
     val Seq(s1, s2, s3) = storages
     implicit val patienceConfig =
       PatienceConfig(timeout = scaled(Span(2, Seconds)), interval = scaled(Span(5, Millis)))
-    implicit val encoders = DummyBlockSerializable.serializable
     val ledgerStateStorage = mockLedgerStateStorage[String]
     val queue = TimedQueue[DummyTransaction]()
+    val blockSizeable = new ByteSizeable[Block[String, DummyBlockHeader, DummyTransaction]] {
+      override def sizeInBytes(t: Block[String, DummyBlockHeader, DummyTransaction]): Int = {
+        val size = DummyBlockHeader.sizeable.sizeInBytes(t.header) +
+          t.transactions.foldLeft(0)((s, c) => s + DummyTransaction.sizeable.sizeInBytes(c))
+        size
+      }
+    }
+
     val txPoolFutureInterface =
       new TransactionPoolInterface[String, DummyBlockHeader, DummyTransaction](
         txs => new DummyBlockHeader(txs.size),
@@ -38,7 +47,7 @@ class ConsensusPoolItSpec extends FlatSpecLike with MockitoSugar with MustMatche
         ledgerStateStorage,
         1 minute,
         () => queue
-      )
+      )(blockSizeable, implicitly[ExecutionContext])
 
     val testExecution = mock[B => Unit]
     val ledgerId: LedgerId = "1"
@@ -49,9 +58,9 @@ class ConsensusPoolItSpec extends FlatSpecLike with MockitoSugar with MustMatche
 
     val Seq(t1, t2, t3) = anIntegratedCluster(storages.zip(clusterIds))
     t1.raftNode.electionTimeout().futureValue
-    val largeBlockTransactions = (1 to 137).map(DummyTransaction.apply)
-    val block2Transactions = (138 to 150).map(DummyTransaction.apply)
-    val block3Transactions = (151 to 160).map(DummyTransaction.apply)
+    val largeBlockTransactions = (1 to 139).map(DummyTransaction.apply)
+    val block2Transactions = (140 to 155).map(DummyTransaction.apply)
+    val block3Transactions = (156 to 166).map(DummyTransaction.apply)
 
     processAllTxs(largeBlockTransactions, txPoolFutureInterface)
     processAllTxs(block2Transactions, txPoolFutureInterface)
@@ -68,9 +77,11 @@ class ConsensusPoolItSpec extends FlatSpecLike with MockitoSugar with MustMatche
       )
 
     val (block1, block2, block3) = (
-      Block(DummyBlockHeader(137), largeBlockTransactions),
-      Block(DummyBlockHeader(13), block2Transactions),
-      Block(DummyBlockHeader(9), block3Transactions)
+      Block[String, DummyBlockHeader, DummyTransaction](
+        DummyBlockHeader(largeBlockTransactions.size),
+        largeBlockTransactions),
+      Block[String, DummyBlockHeader, DummyTransaction](DummyBlockHeader(block2Transactions.size), block2Transactions),
+      Block[String, DummyBlockHeader, DummyTransaction](DummyBlockHeader(block3Transactions.size), block3Transactions)
     )
     val expectedLogEntries = Seq(block1, block2)
     eventually(s1.log.map(_.command) mustBe Seq(expectedLogEntries.head))
@@ -80,7 +91,9 @@ class ConsensusPoolItSpec extends FlatSpecLike with MockitoSugar with MustMatche
 
     // this proves the queue in transaction pool is empty
     // since we don't have any duplicate transactions
-    eventually(s1.log.map(_.command).flatMap(_.transactions).toSet.size mustBe 160)
+    eventually(
+      s1.log.map(_.command).flatMap(_.transactions).toSet.size mustBe
+        largeBlockTransactions.size + block2Transactions.size + block3Transactions.size)
 
   }
 

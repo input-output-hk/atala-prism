@@ -4,6 +4,7 @@ import io.iohk.cef.ledger.chimeric._
 import io.iohk.cef.crypto._
 import org.scalatest.{MustMatchers, WordSpec}
 import spray.json._
+import io.iohk.cef.codecs.nio.auto._
 
 class ChimericTransactionRequestSpec extends WordSpec with MustMatchers {
 

@@ -8,6 +8,7 @@ import org.scalatest.MustMatchers._
 import org.scalatest.prop.GeneratorDrivenPropertyChecks._
 import org.scalatest.EitherValues._
 import org.scalacheck.Arbitrary._
+import io.iohk.cef.codecs.nio.auto._
 
 class HashingSpec extends WordSpec {
 
@@ -71,7 +72,7 @@ class HashingSpec extends WordSpec {
     }
 
     "fail to decode hashedValues with unsupported algorithms" in {
-      val algorithm = "SHA256".flatMap(_.toByte :: 0.toByte :: Nil).toArray
+      val algorithm = "SHA256".getBytes("UTF-8")
       forAll { bytes: Array[Byte] =>
         val hashedValue = hash(ByteString(bytes))
 

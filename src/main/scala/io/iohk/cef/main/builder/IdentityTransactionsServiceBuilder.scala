@@ -1,13 +1,12 @@
 package io.iohk.cef.main.builder
 
 import akka.util.Timeout
-import io.iohk.cef.consensus.raft.LogEntry
+import io.iohk.cef.codecs.nio._
 import io.iohk.cef.crypto._
 import io.iohk.cef.frontend.services.IdentityTransactionService
 import io.iohk.cef.ledger.identity.{IdentityBlockHeader, IdentityTransaction}
-import io.iohk.cef.ledger.{BlockHeader, ByteStringSerializable, Transaction}
+import io.iohk.cef.ledger.{BlockHeader, Transaction}
 import io.iohk.cef.network.discovery.DiscoveryWireMessage
-import io.iohk.cef.codecs.array.ArrayCodecs._
 
 import scala.concurrent.ExecutionContext
 
@@ -24,13 +23,9 @@ class IdentityTransactionServiceBuilder(
       implicit
       timeout: Timeout,
       executionContext: ExecutionContext,
-      blockByteStringSerializable: ByteStringSerializable[B],
-      txByteStringSerializable: ByteStringSerializable[IdentityTransaction],
-      stateyteStringSerializable: ByteStringSerializable[Set[SigningPublicKey]],
-      dByteStringSerializable: ByteStringSerializable[DiscoveryWireMessage],
-      arrayEncoder: ArrayEncoder[B],
-      arrayDecoder: ArrayDecoder[B],
-      arrayLEncoder: ArrayEncoder[LogEntry[B]],
-      arrayLDecoder: ArrayDecoder[LogEntry[B]]): IdentityTransactionService =
+      blockByteStringSerializable: NioEncDec[B],
+      txByteStringSerializable: NioEncDec[IdentityTransaction],
+      stateyteStringSerializable: NioEncDec[Set[SigningPublicKey]],
+      dByteStringSerializable: NioEncDec[DiscoveryWireMessage]): IdentityTransactionService =
     new IdentityTransactionService(nodeCore)
 }
