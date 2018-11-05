@@ -13,8 +13,7 @@ import io.iohk.cef.core.Envelope
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class ItemsGenericController(implicit ec: ExecutionContext, mat: Materializer)
-    extends CustomJsonController {
+class ItemsGenericController(implicit ec: ExecutionContext, mat: Materializer) extends CustomJsonController {
 
   import Context._
   import ItemsGenericController._

@@ -15,7 +15,9 @@ class Table(tableStorage: TableStorage) {
     canValidate.validate(dataItem).isRight && signatureValidation.forall(_._2)
   }
 
-  def insert[I](tableId: TableId, dataItem: DataItem[I])(implicit itemSerializable: NioEncDec[I], canValidate: CanValidate[DataItem[I]]): Either[ApplicationError, Unit] = {
+  def insert[I](tableId: TableId, dataItem: DataItem[I])(
+      implicit itemSerializable: NioEncDec[I],
+      canValidate: CanValidate[DataItem[I]]): Either[ApplicationError, Unit] = {
     canValidate.validate(dataItem).flatMap { _ =>
       val validationErrors = validateSignatures(dataItem).filter(!_._2).map(_._1)
       if (validationErrors.nonEmpty) {
