@@ -6,21 +6,20 @@ import io.iohk.cef.data.{DataItem, DataItemError, _}
 case class UniversityDegreeData(universityName: String, degree: String, studentName: String, date: LocalDate)
 
 object UniversityDegreeData {
-  //import scala.language.implicitConversions
-  //implicit def localDateToInstant(date: LocalDate): Instant = date.atStartOfDay().toInstant(ZoneOffset.UTC)
 
   implicit def universityDegreeValidation(
       implicit publicKeyStore: Map[String, SigningPublicKey],
       serializable: NioEncDec[UniversityDegreeData]): CanValidate[DataItem[UniversityDegreeData]] = {
     dataItem: DataItem[UniversityDegreeData] =>
-      mandatoryCheck(dataItem).map { d =>
-        getSigningPublicKey(d).map { key =>
+      mandatoryCheck(dataItem).flatMap { d =>
+        getSigningPublicKey(d).flatMap { key =>
           if (isValidSignature(d.data, d.witnesses.head.signature, key)) {
             Right(Unit)
           } else {
             Left(InvalidUniversitySignatureError(d.data.universityName, d.id))
           }
         }
+
       }
 
   }

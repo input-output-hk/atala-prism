@@ -20,6 +20,9 @@ class DataItemServiceSpec extends FlatSpec {
   private val something = new DataItemService(table)
   private implicit val dataItemSerializable = mock[NioEncDec[String]]
   private implicit val actionSerializable = mock[NioEncDec[DataItemAction[String]]]
+  private implicit val canValidate = new CanValidate[DataItem[String]] {
+    override def validate(t: DataItem[String]): Either[ApplicationError, Unit] = Right(())
+  }
   val tableId: TableId = "Table"
   case class StringDataItem(data: String, id: String = "", witnesses: Seq[Witness] = Seq(), owners: Seq[Owner] = Seq())
       extends DataItem[String] {

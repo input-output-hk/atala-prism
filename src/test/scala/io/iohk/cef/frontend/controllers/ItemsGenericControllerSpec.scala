@@ -3,7 +3,7 @@ package io.iohk.cef.frontend.controllers
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
-import io.iohk.cef.data.{CanValidate, DataItem, DataItemService, Table}
+import io.iohk.cef.data._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{MustMatchers, WordSpec}
 import play.api.libs.json.{Format, JsValue, Json}
@@ -26,7 +26,7 @@ class ItemsGenericControllerSpec
 
   implicit val executionContext = system.dispatcher
   val service = new DataItemService(mock[Table]) {
-    override def insert[I](dataItem: DataItem[I])(
+    override def insert[I](tableId: TableId, dataItem: DataItem[I])(
         implicit itemSerializable: NioEncDec[I],
         canValidate: CanValidate[DataItem[I]]): Either[ApplicationError, Unit] = {
       Right(())

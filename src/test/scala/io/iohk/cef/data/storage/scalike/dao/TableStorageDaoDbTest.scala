@@ -2,13 +2,15 @@ package io.iohk.cef.data.storage.scalike.dao
 
 import io.iohk.cef.crypto._
 import io.iohk.cef.data.storage.scalike.{DataItemOwnerTable, DataItemSignatureTable, DataItemTable}
-import io.iohk.cef.data.{DataItem, DataItemId, Owner, Witness}
+import io.iohk.cef.data._
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{EitherValues, MustMatchers, fixture}
 import scalikejdbc._
 import scalikejdbc.scalatest.AutoRollback
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.codecs.nio._
+import io.iohk.cef.test.{InvalidValidation, ValidValidation}
+import io.iohk.cef.data._
 
 import io.iohk.cef.test.{InvalidValidation, ValidValidation}
 
@@ -32,11 +34,11 @@ trait TableStorageDaoDbTest
       DataItem("valid2", "data2", Seq(), Seq(Owner(ownerKeyPair2.public))))
     val dao = new TableStorageDao
 
-    val itemsBefore = selectAll[String](dataItems.map(_.id))
+    val itemsBefore = selectAll[String](tableId, dataItems.map(_.id))
     itemsBefore mustBe Right(Seq())
-    dataItems.foreach(dao.insert(_))
+    dataItems.foreach(dao.insert(tableId, _))
 
-    val itemsAfter = selectAll[String](dataItems.map(_.id))
+    val itemsAfter = selectAll[String](tableId, dataItems.map(_.id))
     itemsAfter.isRight mustBe true
     itemsAfter.right.value.sortBy(_.id) mustBe dataItems.sortBy(_.id)
   }
@@ -50,18 +52,18 @@ trait TableStorageDaoDbTest
       DataItem("valid2", "data2", Seq(), Seq(Owner(ownerKeyPair2.public))))
     val dao = new TableStorageDao
 
-    val itemsBefore = selectAll[String](dataItems.map(_.id))
+    val itemsBefore = selectAll[String](tableId, dataItems.map(_.id))
     itemsBefore mustBe Right(Seq())
-    dataItems.foreach(dao.insert(_))
-    val itemsMiddle = selectAll[String](dataItems.map(_.id))
+    dataItems.foreach(dao.insert(tableId, _))
+    val itemsMiddle = selectAll[String](tableId, dataItems.map(_.id))
     itemsMiddle.isRight mustBe true
     itemsMiddle.right.value.sortBy(_.id) mustBe dataItems.sortBy(_.id)
-    dataItems.foreach(item => dao.delete(item.id))
-    val itemsAfter = selectAll[String](dataItems.map(_.id))
+    dataItems.foreach(item => dao.delete(tableId, item))
+    val itemsAfter = selectAll[String](tableId, dataItems.map(_.id))
     itemsAfter mustBe Right(Seq())
   }
 
-  private def selectAll[I](ids: Seq[DataItemId])(
+  private def selectAll[I](tableId: TableId, ids: Seq[DataItemId])(
       implicit session: DBSession,
       serializable: NioEncDec[I]): Either[CodecError, Seq[DataItem[I]]] = {
     import io.iohk.cef.utils.EitherTransforms
