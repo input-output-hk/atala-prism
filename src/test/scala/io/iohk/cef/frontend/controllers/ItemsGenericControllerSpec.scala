@@ -53,7 +53,7 @@ class ItemsGenericControllerSpec
           |   "witnesses":[],
           |   "owners":[]
           |  },
-          |  "tableId": "nothing",
+          |  "containerId": "nothing",
           |  "destinationDescriptor": {
           |    "type": "everyone",
           |    "obj": {}

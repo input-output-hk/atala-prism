@@ -35,7 +35,6 @@ class Table(tableStorage: TableStorage) {
       canValidate: CanValidate[DataItem[I]]): Either[ApplicationError, Unit] = {
     canValidate.validate(dataItem).flatMap { _ =>
       val signatureValidation =
-        //TODO: Marc help
         dataItem.owners.map(owner => isValidSignature(dataItem, deleteSignature, owner.key))
 
       val validSignature = signatureValidation.find(identity)

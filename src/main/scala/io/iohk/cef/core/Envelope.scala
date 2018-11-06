@@ -1,6 +1,7 @@
 package io.iohk.cef.core
-import io.iohk.cef.LedgerId
+import io.iohk.cef.ContainerId
 import io.iohk.cef.codecs.nio._
+
 import scala.reflect.runtime.universe.TypeTag
 
 /**
@@ -12,7 +13,7 @@ import scala.reflect.runtime.universe.TypeTag
   *                              ledger with id ledgerId
   * @tparam State the ledgerState
   */
-case class Envelope[+D](content: D, containerId: LedgerId, destinationDescriptor: DestinationDescriptor) {
+case class Envelope[+D](content: D, containerId: ContainerId, destinationDescriptor: DestinationDescriptor) {
 
   def map[T](f: D => T): Envelope[T] = {
     Envelope(f(content), containerId, destinationDescriptor)
@@ -20,7 +21,7 @@ case class Envelope[+D](content: D, containerId: LedgerId, destinationDescriptor
 }
 
 object Envelope {
-  implicit def EnvelopeEncDec[D: NioEncDec]: NioEncDec[Envelope[D]] = {
+  implicit def envelopeEncDec[D: NioEncDec]: NioEncDec[Envelope[D]] = {
     import io.iohk.cef.codecs.nio.auto._
     implicit val ttd: TypeTag[D] = NioEncDec[D].typeTag
     val e: NioEncoder[Envelope[D]] = genericEncoder
