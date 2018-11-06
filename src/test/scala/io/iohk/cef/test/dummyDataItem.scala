@@ -1,22 +1,13 @@
 package io.iohk.cef.test
-
-import io.iohk.cef.data.{DataItem, DataItemError, Owner, Witness}
+import io.iohk.cef.data._
+import io.iohk.cef.error.ApplicationError
 
 case class TestDataItemError(something: Int) extends DataItemError
 
-case class DummyInvalidDataItem(
-    id: String,
-    data: String,
-    error: TestDataItemError,
-    owners: Seq[Owner],
-    witnesses: Seq[Witness])
-    extends DataItem[String] {
-
-  override def apply(): Either[DataItemError, Unit] = Left(error)
+class InvalidValidation[T](something: Int) extends CanValidate[T] {
+  override def validate(t: T): Either[ApplicationError, Unit] = Right(TestDataItemError(something))
 }
 
-case class DummyValidDataItem(id: String, data: String, owners: Seq[Owner], witnesses: Seq[Witness])
-    extends DataItem[String] {
-
-  override def apply(): Either[DataItemError, Unit] = Right(())
+class ValidValidation[T] extends CanValidate[T] {
+  override def validate(t: T): Either[ApplicationError, Unit] = Right(())
 }

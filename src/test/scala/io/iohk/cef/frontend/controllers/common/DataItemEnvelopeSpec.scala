@@ -1,7 +1,7 @@
 package io.iohk.cef.frontend.controllers.common
 
 import io.iohk.cef.core._
-import io.iohk.cef.data.{DataItem, DataItemError, Owner, Witness}
+import io.iohk.cef.data.{DataItem, Owner, Witness}
 import io.iohk.cef.frontend.models.DataItemEnvelope
 import io.iohk.cef.network.NodeId
 import org.scalatest.{MustMatchers, WordSpec}
@@ -14,7 +14,7 @@ class DataItemEnvelopeSpec extends WordSpec with MustMatchers {
 
   "DataItemEnvelopeFormat" should {
     "serialize and deserialize" in {
-      type Envelope = DataItemEnvelope[Data, CustomItem]
+      type Envelope = DataItemEnvelope[DataItem[Data]]
 
       val destinationDescriptor: DestinationDescriptor = Or(
         a = Not(Everyone),
@@ -23,8 +23,9 @@ class DataItemEnvelopeSpec extends WordSpec with MustMatchers {
           b = SetOfNodes(Set(NodeId("IO".getBytes())))
         )
       )
+      val dataItem = DataItem("custom", Data("IOHK"), Seq.empty[Witness], Seq.empty[Owner])
       val input = new Envelope(
-        content = CustomItem("custom", Data("IOHK")),
+        content = dataItem,
         tableId = "nothing",
         destinationDescriptor = destinationDescriptor
       )
@@ -39,15 +40,6 @@ class DataItemEnvelopeSpec extends WordSpec with MustMatchers {
 object DataItemEnvelopeSpec {
 
   case class Data(name: String)
-  case class CustomItem(override val id: String, override val data: Data) extends DataItem[Data] {
-
-    override def witnesses: Seq[Witness] = Seq.empty
-
-    override def owners: Seq[Owner] = Seq.empty
-
-    override def apply(): Either[DataItemError, Unit] = Right(())
-  }
 
   implicit val dataFormat: Format[Data] = Json.format[Data]
-  implicit val customItemFormat: Format[CustomItem] = Json.format[CustomItem]
 }

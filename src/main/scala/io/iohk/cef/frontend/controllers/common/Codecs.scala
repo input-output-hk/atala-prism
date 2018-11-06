@@ -3,7 +3,7 @@ package io.iohk.cef.frontend.controllers.common
 import akka.util.ByteString
 import io.iohk.cef.core._
 import io.iohk.cef.crypto._
-import io.iohk.cef.data.{DataItem, TableId}
+import io.iohk.cef.data.{DataItem, Owner, Witness, TableId}
 import io.iohk.cef.frontend.models.{
   ChimericTransactionFragmentType,
   CreateChimericTransactionFragment,
@@ -237,6 +237,12 @@ object Codecs {
     }
   }
 
+  implicit val witnessFormat: Format[Witness] = Json.format[Witness]
+
+  implicit val ownerFormat: Format[Owner] = Json.format[Owner]
+
+  implicit def dataItemFormat[T](implicit tFormat: Format[T]): Format[DataItem[T]] = Json.format[DataItem[T]]
+
   implicit val requestReads: Reads[CreateIdentityTransactionRequest] = Json.reads[CreateIdentityTransactionRequest]
 
   implicit val responseWrites: Writes[IdentityTransaction] = Writes[IdentityTransaction] { obj =>
@@ -331,7 +337,7 @@ object Codecs {
     }
   }
 
-  implicit def format[B, A <: DataItem[B]](implicit format: Format[A]): Format[DataItemEnvelope[B, A]] = {
+  implicit def format[A](implicit format: Format[A]): Format[DataItemEnvelope[A]] = {
     val builder = (__ \ 'content).format[A] and
       (__ \ 'tableId).format[TableId] and
       (__ \ 'destinationDescriptor).format[DestinationDescriptor]

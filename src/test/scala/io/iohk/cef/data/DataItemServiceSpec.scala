@@ -1,6 +1,7 @@
 package io.iohk.cef.data
 
 import io.iohk.cef.crypto.Signature
+import io.iohk.cef.error.ApplicationError
 import org.scalatest.FlatSpec
 import org.scalatest.mockito.MockitoSugar._
 import org.mockito.Mockito.verify
@@ -12,6 +13,9 @@ class DataItemServiceSpec extends FlatSpec {
   private val something = new DataItemService(table)
   private implicit val dataItemSerializable = mock[NioEncDec[String]]
   private implicit val actionSerializable = mock[NioEncDec[DataItemAction[String]]]
+  private implicit val canValidate = new CanValidate[DataItem[String]] {
+    override def validate(t: DataItem[String]): Either[ApplicationError, Unit] = Right(())
+  }
   val tableId: TableId = "Table"
 
   behavior of "DataItemService"
