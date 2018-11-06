@@ -1,6 +1,5 @@
 package io.iohk.cef.data
 import io.iohk.cef.codecs.nio._
-import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.crypto._
 import io.iohk.cef.data.storage.TableStorage
 import io.iohk.cef.error.ApplicationError
@@ -31,7 +30,8 @@ class Table(tableStorage: TableStorage) {
   }
 
   def delete[I](tableId: TableId, dataItem: DataItem[I], deleteSignature: Signature)(
-      implicit itemSerializable: NioEncDec[I],
+      implicit dataSerializable: NioEncDec[I],
+      dataItemSerializable: NioEncDec[DataItem[I]],
       actionSerializable: NioEncDec[DataItemAction[I]],
       canValidate: CanValidate[DataItem[I]]): Either[ApplicationError, Unit] = {
     implicit val ttI: TypeTag[I] = itemSerializable.typeTag

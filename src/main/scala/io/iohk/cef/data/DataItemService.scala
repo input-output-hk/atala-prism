@@ -20,6 +20,8 @@ class DataItemService[T](table: Table, transports: Transports, networkDiscovery:
   private implicit val actionDec: NioDecoder[DataItemAction[T]] = NioDecoder[DataItemAction[T]]
   private implicit val destDec: NioDecoder[DestinationDescriptor] = NioDecoder[DestinationDescriptor]
 
+  private implicit val dataItemEncDec: NioEncDec[DataItem[T]] = NioEncDec[DataItem[T]]
+
   private val network = new Network[Envelope[DataItemAction[T]]](networkDiscovery, transports)
 
   private val inboundMessages: MessageStream[Envelope[DataItemAction[T]]] = network.messageStream
