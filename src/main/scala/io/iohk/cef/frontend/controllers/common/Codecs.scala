@@ -328,7 +328,7 @@ object Codecs {
     }
   }
 
-  implicit def format[A](implicit format: Format[A]): Format[Envelope[A]] = {
+  implicit def formatEnvelope[A](implicit format: Format[A]): Format[Envelope[A]] = {
     val builder = (__ \ 'content).format[A] and
       (__ \ 'containerId).format[TableId] and
       (__ \ 'destinationDescriptor).format[DestinationDescriptor]

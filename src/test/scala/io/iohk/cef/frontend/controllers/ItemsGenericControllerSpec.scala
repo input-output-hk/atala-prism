@@ -3,16 +3,16 @@ package io.iohk.cef.frontend.controllers
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
-import io.iohk.cef.data._
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{MustMatchers, WordSpec}
-import play.api.libs.json.{Format, JsValue, Json}
-import io.iohk.cef.codecs.nio._
 import io.iohk.cef.codecs.nio.auto._
+import io.iohk.cef.data._
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.frontend.controllers.common.Codecs
-import io.iohk.cef.frontend.models.DataItemEnvelope
+import org.mockito.ArgumentMatchers._
+import org.mockito.Mockito._
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mockito.MockitoSugar.mock
+import org.scalatest.{MustMatchers, WordSpec}
+import play.api.libs.json.{Format, JsValue, Json}
 
 class ItemsGenericControllerSpec
     extends WordSpec
@@ -25,15 +25,11 @@ class ItemsGenericControllerSpec
   import ItemsGenericControllerSpec._
 
   implicit val executionContext = system.dispatcher
-  val service = new DataItemService(mock[Table]) {
-    override def insert[I](tableId: TableId, dataItem: DataItem[I])(
-        implicit itemSerializable: NioEncDec[I],
-        canValidate: CanValidate[DataItem[I]]): Either[ApplicationError, Unit] = {
-      Right(())
-    }
-  }
+  val service = mock[DataItemService[BirthCertificate]]
 
-  val controller = new ItemsGenericController(service)
+  when(service.insert(any())).thenReturn(Right(()))
+
+  val controller = new ItemsGenericController
 
   "POST /certificates" should {
 
@@ -41,7 +37,7 @@ class ItemsGenericControllerSpec
       override def validate(t: DataItem[BirthCertificate]): Either[ApplicationError, Unit] = Right(Unit)
     }
     lazy val routes =
-      controller.routes[BirthCertificate, DataItemEnvelope[DataItem[BirthCertificate]]]("birth-certificates")
+      controller.routes[BirthCertificate]("birth-certificates", service)
 
     "create an item" in {
       val body =
