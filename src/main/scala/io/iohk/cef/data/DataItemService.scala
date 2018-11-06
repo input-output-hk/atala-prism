@@ -12,15 +12,10 @@ import io.iohk.cef.network.discovery.NetworkDiscovery
 
 class DataItemService[T](table: Table, transports: Transports, networkDiscovery: NetworkDiscovery)(
     implicit enc: NioEncDec[T],
+    actionEncDec: NioEncDec[DataItemAction[T]],
+    destinationDescriptorEncDec: NioEncDec[DestinationDescriptor],
+    itemEncDec: NioEncDec[DataItem[T]],
     canValidate: CanValidate[DataItem[T]]) {
-
-  private implicit val actionEnc: NioEncoder[DataItemAction[T]] = NioEncoder[DataItemAction[T]]
-  private implicit val destEnc: NioEncoder[DestinationDescriptor] = NioEncoder[DestinationDescriptor]
-
-  private implicit val actionDec: NioDecoder[DataItemAction[T]] = NioDecoder[DataItemAction[T]]
-  private implicit val destDec: NioDecoder[DestinationDescriptor] = NioDecoder[DestinationDescriptor]
-
-  private implicit val dataItemEncDec: NioEncDec[DataItem[T]] = NioEncDec[DataItem[T]]
 
   private val network = new Network[Envelope[DataItemAction[T]]](networkDiscovery, transports)
 
