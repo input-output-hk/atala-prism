@@ -4,6 +4,7 @@ import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.crypto._
 import io.iohk.cef.data.storage.TableStorage
 import io.iohk.cef.error.ApplicationError
+import scala.reflect.runtime.universe.TypeTag
 
 // TODO will probably want to type Table[T] since tableStorage should be typed.
 class Table(tableStorage: TableStorage) {
@@ -33,6 +34,7 @@ class Table(tableStorage: TableStorage) {
       implicit itemSerializable: NioEncDec[I],
       actionSerializable: NioEncDec[DataItemAction[I]],
       canValidate: CanValidate[DataItem[I]]): Either[ApplicationError, Unit] = {
+    implicit val ttI: TypeTag[I] = itemSerializable.typeTag
     canValidate.validate(dataItem).flatMap { _ =>
       val signatureValidation =
         //TODO: Marc help
