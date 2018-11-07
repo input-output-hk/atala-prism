@@ -5,7 +5,6 @@ import scala.language.higherKinds
 import io.iohk.cef.crypto.encoding.TypedByteString
 import akka.util.ByteString
 import io.iohk.cef.codecs.string._
-import java.nio.ByteBuffer
 import io.iohk.cef.codecs.nio.{NioEncoder, NioDecoder}
 import scala.reflect.runtime.universe.TypeTag
 
@@ -30,16 +29,10 @@ private[crypto] trait EntityCompanion[T, DE[_], PE[_]] {
   }
 
   implicit def cryptoEntityEncoder(implicit tt: TypeTag[T]): NioEncoder[T] =
-    NioEncoder { (t: T) =>
-      val r = encodeInto(t).toByteString.toByteBuffer
-      r.position(0)
-      r
-    }
+    TypedByteString.TypedByteStringNioEncoder.map[T](encodeInto)
 
   implicit def cryptoEntityDecoder(implicit tt: TypeTag[T]): NioDecoder[T] =
-    NioDecoder { (b: ByteBuffer) =>
-      decodeFrom(ByteString(b)).toOption
-    }
+    TypedByteString.TypedByteStringNioDecoder.mapOpt[T]((tbs: TypedByteString) => decodeFrom(tbs).toOption)
 
 }
 

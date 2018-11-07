@@ -1,46 +1,23 @@
 package io.iohk.cef.crypto
 
-import org.scalacheck.Arbitrary.arbitrary
-import org.scalacheck.Gen
-import org.scalacheck.Arbitrary
 import io.iohk.cef.codecs.nio.auto._
 import org.scalatest.FlatSpec
 import io.iohk.cef.codecs.nio.CodecTestingHelpers
-import io.iohk.cef.builder.SigningKeyPairs
-import io.iohk.cef.builder.EncryptionKeyPairs
+import io.iohk.cef.crypto.encoding.TypedByteString
 
-class EntityCodecsSpec extends FlatSpec with CodecTestingHelpers {
+class EntityCodecsSpec extends FlatSpec with CodecTestingHelpers with CryptoEntityArbitraries {
 
   behavior of "CryptoEntities Codecs"
 
-  object SigningKeyPairArbitraries extends SigningKeyPairs {
-    implicit lazy val signingKeyPairArbitrary: Arbitrary[SigningKeyPair] =
-      Arbitrary(Gen.oneOf(alice, bob, carlos, daniel, elena, francisco, german, hugo))
-
-    implicit lazy val signingPublicKeyArbitrary: Arbitrary[SigningPublicKey] =
-      Arbitrary(arbitrary[SigningKeyPair].map(_.public))
-
-    implicit lazy val signingPrivateKeyArbitrary: Arbitrary[SigningPrivateKey] =
-      Arbitrary(arbitrary[SigningKeyPair].map(_.`private`))
-  }
-
-  object EncryptionKeyPairArbitraries extends EncryptionKeyPairs {
-    implicit lazy val encryptionKeyPairArbitrary: Arbitrary[EncryptionKeyPair] =
-      Arbitrary(Gen.oneOf(alice, bob, carlos, daniel, elena, francisco, german, hugo))
-
-    implicit lazy val encryptionPublicKeyArbitrary: Arbitrary[EncryptionPublicKey] =
-      Arbitrary(arbitrary[EncryptionKeyPair].map(_.public))
-
-    implicit lazy val encryptionPrivateKeyArbitrary: Arbitrary[EncryptionPrivateKey] =
-      Arbitrary(arbitrary[EncryptionKeyPair].map(_.`private`))
-  }
-
-  import SigningKeyPairArbitraries._
-  import EncryptionKeyPairArbitraries._
-
+  it should "work correctly with TypedByteString" in { testWhenNotEncodingType[TypedByteString] }
   it should "work correctly with SigningPublicKey" in { testWhenNotEncodingType[SigningPublicKey] }
   it should "work correctly with SigningPrivateKey" in { testWhenNotEncodingType[SigningPrivateKey] }
-  it should "work correctly with EncryptionPublicKey" in { pending; testWhenNotEncodingType[EncryptionPublicKey] }
-  it should "work correctly with EncryptionPrivateKey" in { pending; testWhenNotEncodingType[EncryptionPrivateKey] }
+  it should "work correctly with SigningKeyPair" in { testWhenNotEncodingType[SigningKeyPair] }
+  it should "work correctly with EncryptionPublicKey" in { testWhenNotEncodingType[EncryptionPublicKey] }
+  it should "work correctly with EncryptionPrivateKey" in { testWhenNotEncodingType[EncryptionPrivateKey] }
+  it should "work correctly with EncryptionKeyPair" in { testWhenNotEncodingType[EncryptionKeyPair] }
+  it should "work correctly with Hash" in { testWhenNotEncodingType[Hash] }
+  it should "work correctly with Signature" in { testWhenNotEncodingType[Signature] }
+  it should "work correctly with EncryptedData" in { testWhenNotEncodingType[EncryptedData] }
 
 }

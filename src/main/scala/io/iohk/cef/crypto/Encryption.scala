@@ -97,6 +97,15 @@ trait Encryption {
 
     override def toString(): String =
       EncryptionPublicKey.show(this)
+
+    override def equals(obj: scala.Any): Boolean = obj match {
+      case that: EncryptionPublicKey =>
+        this.toByteString == that.toByteString
+
+      case _ => false
+    }
+
+    override def hashCode(): Int = this.toByteString.hashCode()
   }
 
   object EncryptionPublicKey extends KeyEntityCompanion[EncryptionPublicKey] {
@@ -144,6 +153,15 @@ trait Encryption {
 
     override def toString(): String =
       EncryptionPrivateKey.show(this)
+
+    override def equals(obj: scala.Any): Boolean = obj match {
+      case that: EncryptionPrivateKey =>
+        this.toByteString == that.toByteString
+
+      case _ => false
+    }
+
+    override def hashCode(): Int = this.toByteString.hashCode()
   }
 
   object EncryptionPrivateKey extends KeyEntityCompanion[EncryptionPrivateKey] {
@@ -194,6 +212,15 @@ trait Encryption {
 
     override def toString(): String =
       EncryptedData.show(this)
+
+    override def equals(obj: scala.Any): Boolean = obj match {
+      case that: EncryptedData =>
+        this.`type` == that.`type` && this.bytes == that.bytes
+
+      case _ => false
+    }
+
+    override def hashCode(): Int = this.toByteString.hashCode()
   }
 
   object EncryptedData extends CryptoEntityCompanion[EncryptedData] {
