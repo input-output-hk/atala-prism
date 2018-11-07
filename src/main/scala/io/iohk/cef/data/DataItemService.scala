@@ -1,23 +1,19 @@
 package io.iohk.cef.data
 
-import io.iohk.cef.crypto.Signature
-import io.iohk.cef.error.ApplicationError
-import io.iohk.cef.network.{MessageStream, Network}
-import io.iohk.cef.network.transport.Transports
 import io.iohk.cef.codecs.nio._
 import io.iohk.cef.core.{DestinationDescriptor, Envelope}
+import io.iohk.cef.crypto.Signature
 import io.iohk.cef.data.DataItemAction.{Delete, Insert}
-import io.iohk.cef.network.discovery.NetworkDiscovery
+import io.iohk.cef.error.ApplicationError
+import io.iohk.cef.network.{MessageStream, Network}
 
-class DataItemService[T](table: Table, transports: Transports, networkDiscovery: NetworkDiscovery)(
+class DataItemService[T](table: Table, network: Network[Envelope[DataItemAction[T]]])(
     implicit enc: NioEncDec[T],
     actionEncDec: NioEncDec[DataItemAction[T]],
     destinationDescriptorEncDec: NioEncDec[DestinationDescriptor],
     itemEncDec: NioEncDec[DataItem[T]],
     canValidate: CanValidate[DataItem[T]],
     frameCodec: NioEncDec[Envelope[DataItemAction[T]]]) {
-
-  private val network = new Network[Envelope[DataItemAction[T]]](networkDiscovery, transports)
 
   private val inboundMessages: MessageStream[Envelope[DataItemAction[T]]] = network.messageStream
 
