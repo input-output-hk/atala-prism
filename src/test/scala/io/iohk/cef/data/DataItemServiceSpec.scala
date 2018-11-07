@@ -21,6 +21,7 @@ class DataItemServiceSpec extends FlatSpec with NetworkFixture {
       implicit encDec: NioEncDec[T],
       itemEncDec: NioEncDec[DataItem[T]],
       actionEncDec: NioEncDec[DataItemAction[T]],
+      actionEnvelopeEncDec: NioEncDec[Envelope[DataItemAction[T]]],
       canValidate: CanValidate[DataItem[T]]) =
     new DataItemService[T](table, transports, networkDiscovery)
   private implicit val dataItemSerializable = mock[NioEncDec[String]]
@@ -28,7 +29,6 @@ class DataItemServiceSpec extends FlatSpec with NetworkFixture {
   private implicit val canValidate = new CanValidate[DataItem[String]] {
     override def validate(t: DataItem[String]): Either[ApplicationError, Unit] = Right(())
   }
-  val tableId: TableId = "Table"
 
   private val dataItem = DataItem("id", "foo", Seq(), Seq())
 
@@ -44,14 +44,12 @@ class DataItemServiceSpec extends FlatSpec with NetworkFixture {
 //    override def encode(t: DataItem[String]) = ByteBuffer.
 //  }
 
-  val enc = io.iohk.cef.codecs.nio.NioEncoder[DataItem[String]].encode(dataItem)
+  private def enc(implicit itemEncDec: NioEncDec[DataItem[String]]) = itemEncDec.encode(dataItem)
 // : Frame[Envelope[DataItemAction[String]]]
   val envelopeAction: Envelope[DataItemAction[String]] =
     Envelope(Insert(DataItem("foo", "", List(), List())), "nothing", Everyone)
   val f = Frame(FrameHeader(NodeId("957e"), NodeId("0b1a"), 5), envelopeAction)
-
-  val fEnc = io.iohk.cef.codecs.nio.NioEncoder[Frame[Envelope[DataItemAction[String]]]]
-  val fenced = fEnc.encode(f)
+  private def fenced(implicit ed: NioEncDec[Frame[Envelope[DataItemAction[String]]]]) = ed.encode(f)
   behavior of "DataItemService"
 
   val bootstrap = randomBaseNetwork(None)

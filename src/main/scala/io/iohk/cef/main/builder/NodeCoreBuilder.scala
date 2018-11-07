@@ -1,8 +1,8 @@
 package io.iohk.cef.main.builder
 import akka.util.Timeout
 import io.iohk.cef.codecs.nio._
-import io.iohk.cef.core.NodeCore
-import io.iohk.cef.ledger.{BlockHeader, Transaction}
+import io.iohk.cef.core.{Envelope, NodeCore}
+import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
 import io.iohk.cef.network.discovery.DiscoveryWireMessage
 
 import scala.concurrent.ExecutionContext
@@ -27,10 +27,12 @@ class NodeCoreBuilder[S, H <: BlockHeader, T <: Transaction[S]](
       blockByteStringSerializable: NioEncDec[B],
       stateyteStringSerializable: NioEncDec[S],
       txStringSerializable: NioEncDec[T],
+      envelopeTxNetwork: NioEncDec[Envelope[T]],
+      blockTxNetwork: NioEncDec[Envelope[Block[S, H, T]]],
       dByteStringSerializable: NioEncDec[DiscoveryWireMessage]): NodeCore[S, H, T] = new NodeCore(
     Map(ledgerConfig.id -> (txPoolFutureInterface, consensus)),
-    txNetwork,
-    blockNetwork,
+    txNetwork[Envelope[T]],
+    blockNetwork[Envelope[Block[S, H, T]]],
     nodeId
   )
 }

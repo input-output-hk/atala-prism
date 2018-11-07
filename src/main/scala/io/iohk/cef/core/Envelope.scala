@@ -1,8 +1,5 @@
 package io.iohk.cef.core
 import io.iohk.cef.ContainerId
-import io.iohk.cef.codecs.nio._
-
-import scala.reflect.runtime.universe.TypeTag
 
 /**
   *
@@ -17,15 +14,5 @@ case class Envelope[+D](content: D, containerId: ContainerId, destinationDescrip
 
   def map[T](f: D => T): Envelope[T] = {
     Envelope(f(content), containerId, destinationDescriptor)
-  }
-}
-
-object Envelope {
-  implicit def envelopeEncDec[D: NioEncDec]: NioEncDec[Envelope[D]] = {
-    import io.iohk.cef.codecs.nio.auto._
-    implicit val ttd: TypeTag[D] = NioEncDec[D].typeTag
-    val e: NioEncoder[Envelope[D]] = genericEncoder
-    val d: NioDecoder[Envelope[D]] = genericDecoder
-    NioEncDec(e, d)
   }
 }

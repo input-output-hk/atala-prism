@@ -3,6 +3,7 @@ import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
 import akka.util.Timeout
 import io.iohk.cef.codecs.nio._
+import io.iohk.cef.core.Envelope
 import io.iohk.cef.crypto._
 import io.iohk.cef.frontend.controllers.IdentitiesController
 import io.iohk.cef.ledger.identity.{IdentityBlockHeader, IdentityTransaction}
@@ -31,6 +32,8 @@ class IdentityFrontendBuilder(
       blockByteStringSerializable: NioEncDec[B],
       stateyteStringSerializable: NioEncDec[Set[SigningPublicKey]],
       ebByteStringSerializable: NioEncDec[IdentityTransaction],
+      envelopeTxNetwork: NioEncDec[Envelope[IdentityTransaction]],
+      blockTxNetwork: NioEncDec[Envelope[B]],
       dByteStringSerializable: NioEncDec[DiscoveryWireMessage]): Future[Http.ServerBinding] = {
     val serviceApi = new IdentitiesController(service)
     val route = serviceApi.routes
