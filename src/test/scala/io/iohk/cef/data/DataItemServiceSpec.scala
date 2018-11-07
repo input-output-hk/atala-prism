@@ -1,7 +1,6 @@
 package io.iohk.cef.data
 
 import io.iohk.cef.codecs.nio._
-import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.core.{Envelope, Everyone}
 import io.iohk.cef.crypto.{Signature, _}
 import io.iohk.cef.data.DataItemAction.Insert
@@ -27,6 +26,8 @@ class DataItemServiceSpec extends FlatSpec with MockitoSugar {
     new DataItemService[T](table, network)
   private implicit val dataItemSerializable = mock[NioEncDec[String]]
   private implicit val actionSerializable = mock[NioEncDec[DataItemAction[String]]]
+  private implicit val enveloperDataItemEncDec = mock[NioEncDec[Envelope[DataItemAction[String]]]]
+  private implicit val dataItemEncDec = mock[NioEncDec[DataItem[String]]]
   private implicit val canValidate = new CanValidate[DataItem[String]] {
     override def validate(t: DataItem[String]): Either[ApplicationError, Unit] = Right(())
   }
