@@ -9,8 +9,6 @@ case class IdentityBlockHeader(created: Instant) extends BlockHeader
 object IdentityBlockHeader {
   implicit val IdentityBlockHeaderEncDec: NioEncDec[IdentityBlockHeader] = {
     import io.iohk.cef.codecs.nio.auto._
-    val e: NioEncoder[IdentityBlockHeader] = genericEncoder
-    val d: NioDecoder[IdentityBlockHeader] = genericDecoder
-    NioEncDec(e, d)
+    genericEncDec
   }
 }

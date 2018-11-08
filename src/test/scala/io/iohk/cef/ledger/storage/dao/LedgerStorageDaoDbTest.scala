@@ -12,6 +12,8 @@ import org.scalatest.{MustMatchers, OptionValues, fixture}
 import scalikejdbc._
 import scalikejdbc.scalatest.AutoRollback
 import io.iohk.cef.crypto.SigningPublicKey
+import io.iohk.cef.codecs.nio._
+import io.iohk.cef.codecs.nio.auto._
 
 trait LedgerStorageDaoDbTest
     extends fixture.FlatSpec
@@ -30,7 +32,7 @@ trait LedgerStorageDaoDbTest
     )
     val block = Block[Set[SigningPublicKey], IdentityBlockHeader, IdentityTransaction](header, txList)
     val storage = new LedgerStorageDao(Clock.systemUTC())
-    storage.push("1", block)(IdentityBlockSerializer.serializable, session)
+    storage.push("1", block)
 
     val lt = LedgerTable.syntax("lt")
     val blockDataInDb = sql"""select ${lt.result.*} from ${LedgerTable as lt}"""
@@ -39,7 +41,7 @@ trait LedgerStorageDaoDbTest
       .apply()
 
     val blockEntry = blockDataInDb.value
-    val dbBlock = IdentityBlockSerializer.serializable.decode(blockEntry.data.toByteBuffer)
+    val dbBlock = NioEncDec[IdentityLedgerBlock].decode(blockEntry.data.toByteBuffer)
     dbBlock.isDefined mustBe true
     dbBlock.get.header mustBe header
     dbBlock.get.transactions mustBe txList
