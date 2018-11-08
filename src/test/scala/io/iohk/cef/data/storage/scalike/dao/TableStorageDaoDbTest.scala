@@ -3,7 +3,6 @@ package io.iohk.cef.data.storage.scalike.dao
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.crypto._
 import io.iohk.cef.data._
-import io.iohk.cef.test.{InvalidValidation, ValidValidation}
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{EitherValues, MustMatchers, fixture}
 import scalikejdbc.scalatest.AutoRollback
