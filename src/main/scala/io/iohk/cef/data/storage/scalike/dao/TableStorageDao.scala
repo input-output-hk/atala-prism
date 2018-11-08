@@ -1,8 +1,9 @@
 package io.iohk.cef.data.storage.scalike.dao
 import akka.util.ByteString
 import io.iohk.cef.codecs.nio._
+import io.iohk.cef.crypto._
 import io.iohk.cef.data.storage.scalike.{DataItemOwnerTable, DataItemSignatureTable, DataItemTable}
-import io.iohk.cef.data.{DataItem, DataItemId, TableId, Witness}
+import io.iohk.cef.data._
 import scalikejdbc.{DBSession, _}
 
 class TableStorageDao {
@@ -89,5 +90,72 @@ class TableStorageDao {
               )
            """.executeUpdate().apply()
     }
+  }
+
+  def selectSingle[I](tableId: TableId, dataItemId: DataItemId)(
+    implicit session: DBSession,
+    serializable: NioEncDec[I]): Either[CodecError, Option[DataItem[I]]] =
+    selectAll[I](tableId, Seq(dataItemId)).map(_.headOption)
+
+  def selectAll[I](tableId: TableId, ids: Seq[DataItemId])(
+    implicit session: DBSession,
+    serializable: NioEncDec[I]): Either[CodecError, Seq[DataItem[I]]] = {
+    import io.iohk.cef.utils.EitherTransforms
+    val di = DataItemTable.syntax("di")
+    val dataItemRows = sql"""
+        select ${di.result.*}
+        from ${DataItemTable as di}
+        where ${di.dataItemId} in (${ids}) and ${di.dataTableId} = ${tableId}
+       """.map(rs => DataItemTable(di.resultName)(rs)).list().apply()
+    //Inefficient for large tables
+    import EitherTransforms._
+    val dataItems = dataItemRows.map(dir => {
+      val uniqueId = getUniqueId(tableId, dir.dataItemId)
+      val ownerEither = selectDataItemOwners(uniqueId).toEitherList
+      val witnessEither = selectDataItemWitnesses(uniqueId).toEitherList
+      for {
+        owners <- ownerEither
+        witnesses <- witnessEither
+      } yield
+        DataItem(
+          dir.dataItemId,
+          serializable
+            .decode(dir.dataItem.toByteBuffer)
+            .getOrElse(throw new IllegalStateException(s"Could not decode data item: ${dir}")),
+          witnesses,
+          owners
+        )
+    })
+    dataItems.toEitherList
+  }
+
+  private def selectDataItemWitnesses(dataItemUniqueId: Long)(implicit session: DBSession) = {
+    val dis = DataItemSignatureTable.syntax("dis")
+    sql"""
+        select ${dis.result.*}
+        from ${DataItemSignatureTable as dis}
+        where ${dis.dataItemUniqueId} = ${dataItemUniqueId}
+       """
+      .map { rs =>
+        val row = DataItemSignatureTable(dis.resultName)(rs)
+        for {
+          key <- SigningPublicKey.decodeFrom(row.signingPublicKey)
+          sig <- Signature.decodeFrom(row.signature)
+        } yield Witness(key, sig)
+      }
+      .list()
+      .apply()
+  }
+
+  private def selectDataItemOwners(dataItemUniqueId: Long)(implicit session: DBSession) = {
+    val dio = DataItemOwnerTable.syntax("dio")
+    sql"""
+        select ${dio.result.*}
+        from ${DataItemOwnerTable as dio}
+        where ${dio.dataItemUniqueId} = ${dataItemUniqueId}
+       """
+      .map(rs => SigningPublicKey.decodeFrom(DataItemOwnerTable(dio.resultName)(rs).signingPublicKey).map(Owner))
+      .list()
+      .apply()
   }
 }
