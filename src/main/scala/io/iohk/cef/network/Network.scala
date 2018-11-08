@@ -1,6 +1,6 @@
 package io.iohk.cef.network
 import io.iohk.cef.network.discovery.NetworkDiscovery
-import io.iohk.cef.codecs.nio.{NioDecoder, NioEncoder}
+import io.iohk.cef.codecs.nio.NioEncDec
 import io.iohk.cef.network.transport.Transports
 import scala.reflect.runtime.universe._
 import io.iohk.cef.network.transport.Frame
@@ -10,9 +10,9 @@ import io.iohk.cef.network.transport.Frame
   * @param transports an application wide instance that holds the actual network resources.
   * @tparam Message the user message type.
   */
-class Network[Message: /*NioEncoder: NioDecoder:*/ WeakTypeTag](
+class Network[Message: WeakTypeTag](
     networkDiscovery: NetworkDiscovery,
-    transports: Transports)(implicit enc: NioEncoder[Frame[Message]], dec: NioDecoder[Frame[Message]]) {
+    transports: Transports)(implicit enc: NioEncDec[Frame[Message]]) {
 
   private val conversationalNetwork = new ConversationalNetwork[Message](networkDiscovery, transports)
   private val disseminationalNetwork = new DisseminationalNetwork[Message](networkDiscovery, transports)

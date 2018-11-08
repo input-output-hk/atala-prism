@@ -7,27 +7,26 @@ import com.alexitc.playsonify.core.I18nService
 import com.alexitc.playsonify.models.{GenericPublicError, InputValidationError, PublicError}
 import io.iohk.cef.data.{CanValidate, DataItem, DataItemService}
 import io.iohk.cef.frontend.controllers.common.{CustomJsonController, _}
-import io.iohk.cef.frontend.models.DataItemEnvelope
 import play.api.libs.json.{JsObject, Reads}
 import io.iohk.cef.codecs.nio._
+import io.iohk.cef.core.Envelope
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class ItemsGenericController(service: DataItemService)(implicit ec: ExecutionContext, mat: Materializer)
-    extends CustomJsonController {
+class ItemsGenericController(implicit ec: ExecutionContext, mat: Materializer) extends CustomJsonController {
 
   import Context._
   import ItemsGenericController._
 
-  def routes[D, E <: DataItemEnvelope[DataItem[D]]](prefix: String)(
-      implicit format: Reads[E],
+  def routes[D](prefix: String, service: DataItemService[D])(
+      implicit format: Reads[Envelope[DataItem[D]]],
       itemSerializable: NioEncDec[D],
       canValidate: CanValidate[DataItem[D]]): Route = {
     pathPrefix(prefix) {
       pathEnd {
         post {
-          publicInput(StatusCodes.Created) { ctx: HasModel[E] =>
-            val either = service.insert(ctx.model.tableId, ctx.model.content)
+          publicInput(StatusCodes.Created) { ctx: HasModel[Envelope[DataItem[D]]] =>
+            val either = service.insert(ctx.model)
             val result = fromEither(either, ItemCreationError)
               .map(_ => JsObject.empty)
 

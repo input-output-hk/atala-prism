@@ -1,9 +1,10 @@
 package io.iohk.cef.data
-import io.iohk.cef.data.storage.TableStorage
-import io.iohk.cef.crypto._
-import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.codecs.nio._
+import io.iohk.cef.crypto._
+import io.iohk.cef.data.storage.TableStorage
+import io.iohk.cef.error.ApplicationError
 
+// TODO will probably want to type Table[T] since tableStorage should be typed.
 class Table(tableStorage: TableStorage) {
 
   def validate[I](dataItem: DataItem[I])(
@@ -17,8 +18,7 @@ class Table(tableStorage: TableStorage) {
       implicit itemSerializable: NioEncDec[I],
       canValidate: CanValidate[DataItem[I]]): Either[ApplicationError, Unit] = {
     canValidate.validate(dataItem).flatMap { _ =>
-      val signatureValidation = validateSignatures(dataItem)
-      val validationErrors = signatureValidation.filter(!_._2).map(_._1)
+      val validationErrors = validateSignatures(dataItem).filter(!_._2).map(_._1)
       if (validationErrors.nonEmpty) {
         val error = new InvalidSignaturesError(dataItem, validationErrors)
         Left(error)
@@ -29,16 +29,16 @@ class Table(tableStorage: TableStorage) {
   }
 
   def delete[I](tableId: TableId, dataItem: DataItem[I], deleteSignature: Signature)(
-      implicit itemSerializable: NioEncDec[I],
+      implicit dataSerializable: NioEncDec[I],
+      dataItemSerializable: NioEncDec[DataItem[I]],
       actionSerializable: NioEncDec[DataItemAction[I]],
       canValidate: CanValidate[DataItem[I]]): Either[ApplicationError, Unit] = {
     canValidate.validate(dataItem).flatMap { _ =>
-      import io.iohk.cef.codecs.nio.auto._
-
-      val serializedAction = actionSerializable.encode(DataItemAction.Delete(dataItem))
       val signatureValidation =
-        dataItem.owners.map(owner => isValidSignature(serializedAction, deleteSignature, owner.key))
+        dataItem.owners.map(owner => isValidSignature(dataItem, deleteSignature, owner.key))
+
       val validSignature = signatureValidation.find(identity)
+
       if (dataItem.owners.nonEmpty && validSignature.isEmpty) {
         val error = new OwnerMustSignDelete(dataItem)
         Left(error)

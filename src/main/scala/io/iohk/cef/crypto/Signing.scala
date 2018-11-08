@@ -3,7 +3,7 @@ package io.iohk.cef.crypto
 import akka.util.ByteString
 import io.iohk.cef.crypto.encoding.TypedByteString
 import io.iohk.cef.crypto.signing.{SigningAlgorithmsCollection, _}
-import io.iohk.cef.codecs.nio.NioEncoder
+import io.iohk.cef.codecs.nio._
 import io.iohk.cef.utils._
 
 trait Signing {
@@ -57,7 +57,7 @@ trait Signing {
     *
     * @return            `true` if `signature` is a valid signature of `t`
     */
-  def isValidSignature[T](t: T, signature: Signature, key: SigningPublicKey)(implicit encoder: NioEncoder[T]): Boolean =
+  def isValidSignature[T](t: T, signature: Signature, key: SigningPublicKey)(implicit encoder: NioEncDec[T]): Boolean =
     if (key.`type` != signature.`type`)
       false
     else

@@ -1,17 +1,15 @@
 package io.iohk.cef.data.storage.scalike.dao
-import io.iohk.cef.codecs.nio.NioEncDec
+import akka.util.ByteString
+import io.iohk.cef.codecs.nio._
 import io.iohk.cef.data.storage.scalike.{DataItemOwnerTable, DataItemSignatureTable, DataItemTable}
 import io.iohk.cef.data.{DataItem, DataItemId, TableId, Witness}
-import io.iohk.cef.utils._
 import scalikejdbc.{DBSession, _}
 
 class TableStorageDao {
-  def insert[I](tableId: TableId, dataItem: DataItem[I])(
-      implicit itemSerializable: NioEncDec[I],
-      session: DBSession): Unit = {
+  def insert[I](tableId: TableId, dataItem: DataItem[I])(implicit session: DBSession, enc: NioEncoder[I]): Unit = {
     val itemColumn = DataItemTable.column
 
-    val serializedItem = itemSerializable.encode(dataItem.data)
+    val serializedItem = ByteString(enc.encode(dataItem.data))
     sql"""insert into ${DataItemTable.table} (
           ${itemColumn.dataTableId},
           ${itemColumn.dataItemId},

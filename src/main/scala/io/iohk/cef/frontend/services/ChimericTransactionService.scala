@@ -35,7 +35,7 @@ class ChimericTransactionService(nodeCore: NodeCore[ChimericStateResult, Chimeri
 
     val chimericTx = ChimericTx(req.fragments.map(_.fragment))
     val envelope =
-      Envelope(content = chimericTx, ledgerId = req.ledgerId, Everyone)
+      Envelope(content = chimericTx, containerId = req.ledgerId, Everyone)
 
     nodeCore.receiveTransaction(envelope)
   }

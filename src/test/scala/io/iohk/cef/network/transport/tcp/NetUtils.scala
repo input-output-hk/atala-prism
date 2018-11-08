@@ -8,6 +8,7 @@ import io.iohk.cef.network.{NetworkConfiguration, NodeId, PeerInfo}
 import io.iohk.cef.network.NodeId.nodeIdBytes
 import io.iohk.cef.network.discovery.NetworkDiscovery
 import io.iohk.cef.network.transport.{FrameHeader, Transports}
+import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.when
 import org.scalacheck.Gen
 import org.scalacheck.Arbitrary._
@@ -116,8 +117,18 @@ object NetUtils {
       fixtures.foreach(fixture => fixture.transports.shutdown())
     }
   }
+
+  def forTwoArbitraryNetworkPeers(testCode: (NetworkFixture, NetworkFixture) => Any): Unit = {
+    val bootstrapNode = randomNetworkFixture()
+    val otherNode = randomNetworkFixture()
+    nodesArePeers(bootstrapNode, otherNode)
+    networkFixtures(bootstrapNode, otherNode)(_ => testCode(bootstrapNode, otherNode))
+  }
+
   def nodesArePeers(node1: NetworkFixture, node2: NetworkFixture): Unit = {
     when(node1.networkDiscovery.nearestPeerTo(node2.nodeId)).thenReturn(Some(node2.peerInfo))
     when(node2.networkDiscovery.nearestPeerTo(node1.nodeId)).thenReturn(Some(node1.peerInfo))
+    when(node1.networkDiscovery.nearestNPeersTo(meq[NodeId](node1.nodeId), any[Int])).thenReturn(Seq(node2.peerInfo))
+    when(node2.networkDiscovery.nearestNPeersTo(meq[NodeId](node2.nodeId), any[Int])).thenReturn(Seq(node1.peerInfo))
   }
 }

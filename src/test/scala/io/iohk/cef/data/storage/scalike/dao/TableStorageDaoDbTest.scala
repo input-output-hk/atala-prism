@@ -12,6 +12,8 @@ import io.iohk.cef.codecs.nio._
 import io.iohk.cef.test.{InvalidValidation, ValidValidation}
 import io.iohk.cef.data._
 
+import io.iohk.cef.test.{InvalidValidation, ValidValidation}
+
 trait TableStorageDaoDbTest
     extends fixture.FlatSpec
     with AutoRollback
