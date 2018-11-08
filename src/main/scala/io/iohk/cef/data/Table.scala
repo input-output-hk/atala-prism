@@ -32,7 +32,7 @@ class Table(tableStorage: TableStorage) {
   def delete[I](tableId: TableId, dataItemId: DataItemId, deleteSignature: Signature)(
       implicit dataSerializable: NioEncDec[I],
       dataItemSerializable: NioEncDec[DataItem[I]],
-      actionSerializable: NioEncDec[DataItemAction[I]],
+      actionSerializable: NioEncDec[DeleteSignatureWrapper[I]],
       canValidate: CanValidate[DataItem[I]]): Either[ApplicationError, Unit] = {
     for {
     dataItemOption <- tableStorage.selectSingle[I](tableId, dataItemId)
@@ -40,7 +40,7 @@ class Table(tableStorage: TableStorage) {
     _ <- canValidate.validate(dataItem)
     } yield {
       val signatureValidation =
-        dataItem.owners.map(owner => isValidSignature(dataItem, deleteSignature, owner.key))
+        dataItem.owners.map(owner => isValidSignature(DeleteSignatureWrapper(dataItem), deleteSignature, owner.key))
 
       val validSignature = signatureValidation.find(identity)
 

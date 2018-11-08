@@ -20,12 +20,12 @@ class DataItemServiceSpec extends FlatSpec with MockitoSugar {
   private def newService[T](network:  Network[Envelope[DataItemAction[T]]])(
       implicit encDec: NioEncDec[T],
       itemEncDec: NioEncDec[DataItem[T]],
-      actionEncDec: NioEncDec[DataItemAction[T]],
+      actionEncDec: NioEncDec[DeleteSignatureWrapper[T]],
       actionEnvelopeEncDec: NioEncDec[Envelope[DataItemAction[T]]],
       canValidate: CanValidate[DataItem[T]]) =
     new DataItemService[T](table, network)
   private implicit val dataItemSerializable = mock[NioEncDec[String]]
-  private implicit val actionSerializable = mock[NioEncDec[DataItemAction[String]]]
+  private implicit val actionSerializable = mock[NioEncDec[DeleteSignatureWrapper[String]]]
   private implicit val enveloperDataItemEncDec = mock[NioEncDec[Envelope[DataItemAction[String]]]]
   private implicit val dataItemEncDec = mock[NioEncDec[DataItem[String]]]
   private implicit val canValidate = new CanValidate[DataItem[String]] {

@@ -8,7 +8,7 @@ import io.iohk.cef.network.{MessageStream, Network}
 
 class DataItemService[T](table: Table, network: Network[Envelope[DataItemAction[T]]])(
     implicit enc: NioEncDec[T],
-    actionEncDec: NioEncDec[DataItemAction[T]],
+    actionEncDec: NioEncDec[DeleteSignatureWrapper[T]],
     destinationDescriptorEncDec: NioEncDec[DestinationDescriptor],
     itemEncDec: NioEncDec[DataItem[T]],
     canValidate: CanValidate[DataItem[T]],
