@@ -6,7 +6,7 @@ import java.nio.ByteBuffer.allocate
 import shapeless.{::, Generic, HList, HNil, Lazy}
 
 import scala.reflect.runtime.universe._
-import io.iohk.cef.codecs.nio.{NioEncoder, NioDecoder}
+import io.iohk.cef.codecs.nio.{NioEncoder, NioDecoder, NioEncDec}
 import io.iohk.cef.codecs.nio.ops._
 
 trait ProductCodecs {
@@ -58,5 +58,14 @@ trait ProductCodecs {
       implicit gen: Generic.Aux[T, R],
       dec: Lazy[NioDecoder[R]]): NioDecoder[T] = {
     dec.value.map[T](gen from _).packed
+  }
+
+  def genericEncDec[T: TypeTag, R](
+      implicit gen: Generic.Aux[T, R],
+      dec: Lazy[NioDecoder[R]],
+      enc: Lazy[NioEncoder[R]]): NioEncDec[T] = {
+    val e: NioEncoder[T] = genericEncoder
+    val d: NioDecoder[T] = genericDecoder
+    NioEncDec(e, d)
   }
 }
