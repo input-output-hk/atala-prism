@@ -9,5 +9,6 @@ trait TableStorage {
 
   def delete[I](tableId: TableId, dataItem: DataItem[I]): Unit
 
-  def selectSingle[I](tableId: TableId, dataItemId: DataItemId)(implicit itemSerializable: NioEncDec[I]): Either[ApplicationError, Option[DataItem[I]]]
+  def selectSingle[I](tableId: TableId, dataItemId: DataItemId)(
+      implicit itemSerializable: NioEncDec[I]): Either[ApplicationError, Option[DataItem[I]]]
 }

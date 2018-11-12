@@ -93,13 +93,13 @@ class TableStorageDao {
   }
 
   def selectSingle[I](tableId: TableId, dataItemId: DataItemId)(
-    implicit session: DBSession,
-    serializable: NioEncDec[I]): Either[CodecError, Option[DataItem[I]]] =
+      implicit session: DBSession,
+      serializable: NioEncDec[I]): Either[CodecError, Option[DataItem[I]]] =
     selectAll[I](tableId, Seq(dataItemId)).map(_.headOption)
 
   def selectAll[I](tableId: TableId, ids: Seq[DataItemId])(
-    implicit session: DBSession,
-    serializable: NioEncDec[I]): Either[CodecError, Seq[DataItem[I]]] = {
+      implicit session: DBSession,
+      serializable: NioEncDec[I]): Either[CodecError, Seq[DataItem[I]]] = {
     import io.iohk.cef.utils.EitherTransforms
     val di = DataItemTable.syntax("di")
     val dataItemRows = sql"""

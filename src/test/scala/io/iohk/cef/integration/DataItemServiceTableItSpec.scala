@@ -16,11 +16,11 @@ import scalikejdbc.scalatest.AutoRollback
 import scala.concurrent.Future
 
 trait DataItemServiceTableDbItSpec
-  extends fixture.FlatSpec
+    extends fixture.FlatSpec
     with AutoRollback
     with MustMatchers
     with MockitoSugar
-    with EitherValues{
+    with EitherValues {
 
   behavior of "DataItemServiceTableIt"
 
@@ -35,9 +35,7 @@ trait DataItemServiceTableDbItSpec
     val ownerKeyPair = generateSigningKeyPair()
     val ownerKeyPair2 = generateSigningKeyPair()
     val firstDataItem = DataItem("id1", "data1", Seq(), Seq(Owner(ownerKeyPair.public)))
-    val dataItems = Seq(
-      firstDataItem,
-      DataItem("id2", "data2", Seq(), Seq(Owner(ownerKeyPair2.public))))
+    val dataItems = Seq(firstDataItem, DataItem("id2", "data2", Seq(), Seq(Owner(ownerKeyPair2.public))))
 
     val dao = new TableStorageDao
 
@@ -48,30 +46,28 @@ trait DataItemServiceTableDbItSpec
     val table = new Table(tableStorage)
 
     implicit val canValidate = new CanValidate[DataItem[String]] {
-      override def validate(t: DataItem[String])
-        : Either[ApplicationError, Unit] = Right(())
+      override def validate(t: DataItem[String]): Either[ApplicationError, Unit] = Right(())
     }
 
     val service = new DataItemService(table, mockedNetwork)
 
     val envelopes = dataItems.map(di => Envelope(DataItemAction.Insert(di), tableId, Everyone))
 
-    envelopes.foreach(e => when(mockedNetwork.disseminateMessage(e)).thenReturn(()))
-
     val results = envelopes.map(service.processAction)
     envelopes.foreach(e => verify(mockedNetwork, times(1)).disseminateMessage(e))
     results.foreach(result => result mustBe Right(()))
 
     val itemsAfter = dao.selectAll[String](tableId, dataItems.map(_.id))
-    itemsAfter mustBe Right(envelopes.map(_.content.dataItem))
+    itemsAfter.map(_.toSet) mustBe Right(envelopes.map(_.content.dataItem).toSet)
 
     val deleteSignature = DeleteSignatureWrapper(firstDataItem)
-    val deleteAction: DataItemAction[String] = DataItemAction.Delete(firstDataItem.id, sign(deleteSignature, ownerKeyPair.`private`))
+    val deleteAction: DataItemAction[String] =
+      DataItemAction.Delete(firstDataItem.id, sign(deleteSignature, ownerKeyPair.`private`))
     val deleteResult = service.processAction(Envelope(deleteAction, tableId, Everyone))
     deleteResult mustBe Right(())
 
     val itemsAfterDelete = dao.selectAll[String](tableId, dataItems.map(_.id))
-    itemsAfterDelete mustBe Right(envelopes.tail.map(_.content.dataItem))
+    itemsAfterDelete.map(_.toSet) mustBe Right(envelopes.tail.map(_.content.dataItem).toSet)
 
   }
 }

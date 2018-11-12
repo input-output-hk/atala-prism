@@ -68,6 +68,7 @@ class DataItemServiceSpec extends FlatSpec with MockitoSugar {
     when(messageStream.foreach(any())).thenReturn(Future.successful(()))
     val service = newService[String](network)
     service.processAction(envelopeDelete)
-    verify(table).delete[String](envelopeDelete.containerId, envelopeDelete.content.itemId, envelopeDelete.content.deleteSignature)
+    verify(table)
+      .delete[String](envelopeDelete.containerId, envelopeDelete.content.itemId, envelopeDelete.content.deleteSignature)
   }
 }
