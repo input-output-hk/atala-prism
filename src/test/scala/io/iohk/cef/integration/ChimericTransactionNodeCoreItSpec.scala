@@ -15,7 +15,7 @@ import io.iohk.cef.ledger.chimeric._
 import io.iohk.cef.ledger.storage.LedgerStateStorage
 import io.iohk.cef.ledger.{Block, Transaction}
 import io.iohk.cef.network.{MessageStream, Network, NodeId}
-import io.iohk.cef.transactionpool.{TimedQueue, TransactionPoolInterface}
+import io.iohk.cef.transactionpool.TransactionPoolInterface
 import io.iohk.cef.utils.ByteSizeable
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.when
@@ -57,10 +57,9 @@ class ChimericTransactionNodeCoreItSpec
       override def sizeInBytes(t: BlockType): Int = 1
     }
     val ledgerStateStorage = mock[LedgerStateStorageType]
-    val queue = new TimedQueueType()
 
     val txPoolInterface =
-      new TransactionPoolInterface(generateHeader, 10000, ledgerStateStorage, 10.minutes, () => queue)
+      TransactionPoolInterface(generateHeader, 10000, ledgerStateStorage, 10.minutes)
 
     val consensus = mock[ConsensusType]
     val blockNetwork = mock[Network[Envelope[BlockType]]]
@@ -120,7 +119,6 @@ object ChimericTransactionNodeCoreItSpec {
     TransactionPoolInterface[TransactionStateType, BlockHeaderType, TransactionType]
 
   type LedgerStateStorageType = LedgerStateStorage[TransactionStateType]
-  type TimedQueueType = TimedQueue[TransactionType]
 
   type ByteSizeableType = ByteSizeable[BlockType]
 

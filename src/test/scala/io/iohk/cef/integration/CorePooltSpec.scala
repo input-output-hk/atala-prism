@@ -1,11 +1,11 @@
 package io.iohk.cef.integration
 import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.core.{Envelope, Everyone, NodeCore}
-import io.iohk.cef.ledger.Block
+import io.iohk.cef.ledger.{Block, Transaction}
 import io.iohk.cef.ledger.storage.LedgerStateStorage
 import io.iohk.cef.network.{MessageStream, Network, NodeId}
 import io.iohk.cef.test.{DummyBlockHeader, DummyTransaction}
-import io.iohk.cef.transactionpool.{TimedQueue, TransactionPoolInterface}
+import io.iohk.cef.transactionpool.TransactionPoolInterface
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar
@@ -28,14 +28,12 @@ class CorePooltSpec extends FlatSpecLike with MustMatchers with BeforeAndAfterAl
     implicit val executionContext = ExecutionContext.global
     import DummyTransaction._
     val ledgerStateStorage = mockLedgerStateStorage[String]
-    val queue = TimedQueue[DummyTransaction]()
     val transactionPoolFutureInterface =
-      new TransactionPoolInterface[String, DummyBlockHeader, DummyTransaction](
-        txs => new DummyBlockHeader(txs.size),
+      TransactionPoolInterface[String, DummyBlockHeader, DummyTransaction](
+        (txs: Seq[Transaction[String]]) => new DummyBlockHeader(txs.size),
         10000,
         ledgerStateStorage,
-        1 minute,
-        () => queue
+        1 minute
       )
     val consensus = mock[Consensus[String, DummyBlockHeader, DummyTransaction]]
     val txNetwork = mock[Network[Envelope[DummyTransaction]]]

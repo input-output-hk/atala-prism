@@ -11,8 +11,11 @@ import scala.concurrent.duration._
   * @param q the underlying queue
   * @tparam T the type this queue is supposed to store
   */
-//FIXME Follow Scala's conventions regarding collections (CanBuildFrom...)
-case class TimedQueue[T](private val clock: Clock = Clock.systemUTC(), private val q: Queue[(T, Instant)] = Queue()) {
+//Can't make it follow Scala's conventions regarding collections (CanBuildFrom...), given that
+//CanBuildFrom is not compatible with the concept of the clock and the internal timestamps
+private[transactionpool] case class TimedQueue[T](
+    private val clock: Clock = Clock.systemUTC(),
+    private val q: Queue[(T, Instant)] = Queue()) {
 
   /**
     * Queues an element
