@@ -3,7 +3,7 @@ package io.iohk.cef.data
 import io.iohk.cef.codecs.nio._
 import io.iohk.cef.core.{Envelope, Everyone}
 import io.iohk.cef.crypto.{Signature, _}
-import io.iohk.cef.data.DataItemAction.Insert
+import io.iohk.cef.data.DataItemAction.{Delete, Insert}
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.network.transport.{Frame, FrameHeader}
 import io.iohk.cef.network.{MessageStream, Network, NodeId}
@@ -20,12 +20,12 @@ class DataItemServiceSpec extends FlatSpec with MockitoSugar {
   private def newService[T](network: Network[Envelope[DataItemAction[T]]])(
       implicit encDec: NioEncDec[T],
       itemEncDec: NioEncDec[DataItem[T]],
-      actionEncDec: NioEncDec[DataItemAction[T]],
+      actionEncDec: NioEncDec[DeleteSignatureWrapper[T]],
       actionEnvelopeEncDec: NioEncDec[Envelope[DataItemAction[T]]],
       canValidate: CanValidate[DataItem[T]]) =
     new DataItemService[T](table, network)
   private implicit val dataItemSerializable = mock[NioEncDec[String]]
-  private implicit val actionSerializable = mock[NioEncDec[DataItemAction[String]]]
+  private implicit val actionSerializable = mock[NioEncDec[DeleteSignatureWrapper[String]]]
   private implicit val enveloperDataItemEncDec = mock[NioEncDec[Envelope[DataItemAction[String]]]]
   private implicit val dataItemEncDec = mock[NioEncDec[DataItem[String]]]
   private implicit val canValidate = new CanValidate[DataItem[String]] {
@@ -40,9 +40,14 @@ class DataItemServiceSpec extends FlatSpec with MockitoSugar {
     sign(dataItem, keypair.`private`)
 
   private def enc(implicit itemEncDec: NioEncDec[DataItem[String]]) = itemEncDec.encode(dataItem)
-  val envelopeAction: Envelope[DataItemAction[String]] =
-    Envelope(Insert(DataItem("foo", "", List(), List())), "nothing", Everyone)
-  val f = Frame(FrameHeader(NodeId("957e"), NodeId("0b1a"), 5), envelopeAction)
+
+  val envelopeInsert: Envelope[DataItemAction[String]] =
+    Envelope(Insert(dataItem), "nothing", Everyone)
+
+  val signature = mock[Signature]
+  val envelopeDelete: Envelope[DataItemAction.Delete[String]] =
+    Envelope(Delete(dataItem.id, signature), "nothing", Everyone)
+  val f = Frame(FrameHeader(NodeId("957e"), NodeId("0b1a"), 5), envelopeInsert)
   private def fenced(implicit ed: NioEncDec[Frame[Envelope[DataItemAction[String]]]]) = ed.encode(f)
   behavior of "DataItemService"
 
@@ -52,18 +57,17 @@ class DataItemServiceSpec extends FlatSpec with MockitoSugar {
     when(network.messageStream).thenReturn(messageStream)
     when(messageStream.foreach(any())).thenReturn(Future.successful(()))
     val service = newService[String](network)
-    service.insert(envelopeAction.map(_.dataItem))
-    verify(table).insert(envelopeAction.containerId, envelopeAction.content.dataItem)
+    service.processAction(envelopeInsert)
+    verify(table).insert(envelopeInsert.containerId, dataItem)
   }
 
   it should "delete a data item" in {
-    val signature = mock[Signature]
     val network = mock[Network[Envelope[DataItemAction[String]]]]
     val messageStream = mock[MessageStream[Envelope[DataItemAction[String]]]]
     when(network.messageStream).thenReturn(messageStream)
     when(messageStream.foreach(any())).thenReturn(Future.successful(()))
     val service = newService[String](network)
-    service.delete(envelopeAction.map(_.dataItem), signature)
-    verify(table).delete(envelopeAction.containerId, envelopeAction.content.dataItem, signature)
+    service.processAction(envelopeDelete)
+    verify(table).delete[String](envelopeDelete.containerId, envelopeDelete.content.itemId, envelopeDelete.content.deleteSignature)
   }
 }
