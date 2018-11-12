@@ -1,27 +1,30 @@
 package io.iohk.cef.data
+import io.iohk.cef.codecs.nio._
 import io.iohk.cef.crypto._
 import io.iohk.cef.data.storage.TableStorage
 import io.iohk.cef.error.ApplicationError
-import io.iohk.cef.ledger.ByteStringSerializable
 
+// TODO will probably want to type Table[T] since tableStorage should be typed.
 class Table(tableStorage: TableStorage) {
 
-  def validate[I](dataItem: DataItem[I])(implicit itemSerializable: ByteStringSerializable[I]): Boolean = {
+  def validate[I](dataItem: DataItem[I])(
+      implicit itemSerializable: NioEncDec[I],
+      canValidate: CanValidate[DataItem[I]]): Boolean = {
     val signatureValidation = validateSignatures(dataItem)
-    dataItem().isRight && signatureValidation.forall(_._2)
+    canValidate.validate(dataItem).isRight && signatureValidation.forall(_._2)
   }
 
   def select[I](tableId: TableId)(
       implicit dataItemFactory: DataItemFactory[I],
-      itemSerializable: ByteStringSerializable[I]): Either[ApplicationError, Seq[DataItem[I]]] = {
+      itemSerializable: NioEncDec[I]): Either[ApplicationError, Seq[DataItem[I]]] = {
     tableStorage.selectAll(tableId)
   }
 
   def insert[I](tableId: TableId, dataItem: DataItem[I])(
-      implicit itemSerializable: ByteStringSerializable[I]): Either[ApplicationError, Unit] = {
-    dataItem().flatMap { _ =>
-      val signatureValidation = validateSignatures(dataItem)
-      val validationErrors = signatureValidation.filter(!_._2).map(_._1)
+      implicit itemSerializable: NioEncDec[I],
+      canValidate: CanValidate[DataItem[I]]): Either[ApplicationError, Unit] = {
+    canValidate.validate(dataItem).flatMap { _ =>
+      val validationErrors = validateSignatures(dataItem).filter(!_._2).map(_._1)
       if (validationErrors.nonEmpty) {
         val error = new InvalidSignaturesError(dataItem, validationErrors)
         Left(error)
@@ -32,13 +35,16 @@ class Table(tableStorage: TableStorage) {
   }
 
   def delete[I](tableId: TableId, dataItem: DataItem[I], deleteSignature: Signature)(
-      implicit itemSerializable: ByteStringSerializable[I],
-      actionSerializable: ByteStringSerializable[DataItemAction[I]]): Either[ApplicationError, Unit] = {
-    dataItem().flatMap { _ =>
-      val serializedAction = actionSerializable.encode(DataItemAction.Delete(dataItem))
+      implicit dataSerializable: NioEncDec[I],
+      dataItemSerializable: NioEncDec[DataItem[I]],
+      actionSerializable: NioEncDec[DataItemAction[I]],
+      canValidate: CanValidate[DataItem[I]]): Either[ApplicationError, Unit] = {
+    canValidate.validate(dataItem).flatMap { _ =>
       val signatureValidation =
-        dataItem.owners.map(owner => isValidSignature(serializedAction, deleteSignature, owner.key))
+        dataItem.owners.map(owner => isValidSignature(dataItem, deleteSignature, owner.key))
+
       val validSignature = signatureValidation.find(identity)
+
       if (dataItem.owners.nonEmpty && validSignature.isEmpty) {
         val error = new OwnerMustSignDelete(dataItem)
         Left(error)
@@ -49,10 +55,11 @@ class Table(tableStorage: TableStorage) {
   }
 
   private def validateSignatures[I](dataItem: DataItem[I])(
-      implicit itemSerializable: ByteStringSerializable[I]): Seq[(Signature, Boolean)] = {
+      implicit itemSerializable: NioEncDec[I]): Seq[(Signature, Boolean)] = {
     val serializedDataItemData = itemSerializable.encode(dataItem.data)
     val signatureValidation = dataItem.witnesses.map {
       case Witness(key, signature) =>
+        import io.iohk.cef.codecs.nio.auto._
         (signature, isValidSignature(serializedDataItemData, signature, key))
     }
     signatureValidation

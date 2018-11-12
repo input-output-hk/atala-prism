@@ -5,11 +5,13 @@ import io.iohk.cef.LedgerId
 import io.iohk.cef.ledger._
 import io.iohk.cef.ledger.storage.scalike.LedgerStateTable
 import scalikejdbc._
+import io.iohk.cef.codecs.nio._
+import io.iohk.cef.utils._
 
 class LedgerStateStorageDao[S] {
 
   def slice(ledgerStateId: LedgerId, keys: Set[String])(
-      implicit byteStringSerializable: ByteStringSerializable[S],
+      implicit byteStringSerializable: NioEncDec[S],
       DBSession: DBSession): LedgerState[S] = {
     val lst = LedgerStateTable.syntax("lst")
     val entries = sql"""
@@ -18,7 +20,7 @@ class LedgerStateStorageDao[S] {
        where ${lst.ledgerStateId} = ${ledgerStateId} and
         ${lst.partitionId} in (${keys})
        """.map(rs => LedgerStateTable(lst.resultName)(rs)).list().apply()
-    val pairs = entries.map(entry => (entry.partitionId -> byteStringSerializable.decode(entry.data)))
+    val pairs = entries.map(entry => (entry.partitionId -> byteStringSerializable.decode(entry.data.toByteBuffer)))
     val flattenedPairs = pairs.collect { case (identity, Some(key)) => (identity, key) }
     if (flattenedPairs.size != pairs.size)
       throw new IllegalArgumentException(s"Could not parse all entries: ${pairs.filter(_._2.isEmpty).map(_._1)}")
@@ -26,7 +28,7 @@ class LedgerStateStorageDao[S] {
   }
 
   def update(ledgerStateId: LedgerId, previousState: LedgerState[S], newState: LedgerState[S])(
-      implicit byteStringSerializable: ByteStringSerializable[S],
+      implicit byteStringSerializable: NioEncDec[S],
       DBSession: DBSession): Unit = {
     val currentState = slice(ledgerStateId, previousState.keys)
     if (previousState != currentState) {
@@ -34,9 +36,11 @@ class LedgerStateStorageDao[S] {
     } else {
       val actions = previousState.updateTo(newState)
       actions.actions.foreach(_ match {
-        case InsertStateAction(key, value) => insertEntry(ledgerStateId, key, byteStringSerializable.encode(value))
+        case InsertStateAction(key, value) =>
+          insertEntry(ledgerStateId, key, byteStringSerializable.encode(value).toByteString)
         case DeleteStateAction(key, _) => deleteEntry(ledgerStateId, key)
-        case UpdateStateAction(key, value) => updateEntry(ledgerStateId, key, byteStringSerializable.encode(value))
+        case UpdateStateAction(key, value) =>
+          updateEntry(ledgerStateId, key, byteStringSerializable.encode(value).toByteString)
       })
     }
   }

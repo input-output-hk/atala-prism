@@ -13,9 +13,9 @@ import io.iohk.cef.frontend.models.{CreateChimericTransactionRequest, CreateNonS
 import io.iohk.cef.frontend.services.ChimericTransactionService
 import io.iohk.cef.ledger.chimeric._
 import io.iohk.cef.ledger.storage.LedgerStateStorage
-import io.iohk.cef.ledger.{Block, ByteStringSerializable, Transaction}
+import io.iohk.cef.ledger.{Block, Transaction}
 import io.iohk.cef.network.{MessageStream, Network, NodeId}
-import io.iohk.cef.transactionpool.{TimedQueue, TransactionPoolInterface}
+import io.iohk.cef.transactionpool.TransactionPoolInterface
 import io.iohk.cef.utils.ByteSizeable
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.when
@@ -26,6 +26,7 @@ import play.api.libs.json.Json
 
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
+import io.iohk.cef.codecs.nio._
 
 class ChimericTransactionNodeCoreItSpec
     extends FlatSpec
@@ -45,21 +46,20 @@ class ChimericTransactionNodeCoreItSpec
 
   def createNodeCore: NodeCore[ChimericStateResult, ChimericBlockHeader, ChimericTx] = {
     implicit val timeout = Timeout(10.seconds)
-    implicit val envelopeSerializable = mock[ByteStringSerializable[Envelope[TransactionType]]]
-    implicit val blockSerializable = mock[ByteStringSerializable[Envelope[BlockType]]]
+    implicit val envelopeSerializable = mock[NioEncDec[Envelope[TransactionType]]]
+    implicit val blockSerializable = mock[NioEncDec[Envelope[BlockType]]]
 
     def generateHeader(transactions: Seq[TransactionType]) = {
       new ChimericBlockHeader
     }
-    implicit val blockSerializable2 = mock[ByteStringSerializable[BlockType]]
+    implicit val blockSerializable2 = mock[NioEncDec[BlockType]]
     implicit val blockSizeable = new ByteSizeable[BlockType] {
       override def sizeInBytes(t: BlockType): Int = 1
     }
     val ledgerStateStorage = mock[LedgerStateStorageType]
-    val queue = new TimedQueueType()
 
     val txPoolInterface =
-      new TransactionPoolInterface(generateHeader, 10000, ledgerStateStorage, 10.minutes, () => queue)
+      TransactionPoolInterface(generateHeader, 10000, ledgerStateStorage, 10.minutes)
 
     val consensus = mock[ConsensusType]
     val blockNetwork = mock[Network[Envelope[BlockType]]]
@@ -119,7 +119,6 @@ object ChimericTransactionNodeCoreItSpec {
     TransactionPoolInterface[TransactionStateType, BlockHeaderType, TransactionType]
 
   type LedgerStateStorageType = LedgerStateStorage[TransactionStateType]
-  type TimedQueueType = TimedQueue[TransactionType]
 
   type ByteSizeableType = ByteSizeable[BlockType]
 

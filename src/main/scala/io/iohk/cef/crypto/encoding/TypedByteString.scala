@@ -1,16 +1,15 @@
-package io.iohk.cef.crypto
-package encoding
+package io.iohk.cef.crypto.encoding
 
 import akka.util.ByteString
 import io.iohk.cef.utils._
+import io.iohk.cef.codecs.nio._
 
 case class TypedByteString(`type`: String, bytes: ByteString) {
 
+  import TypedByteString._
+
   def toByteString: ByteString = {
-    // FIXME: To implement directly, without using an external encoder
-    //        Maybe use the same technic used by multiformats
-    val nioEncoder: NioEncoder[TypedByteString] = implicitly
-    ByteString(nioEncoder.encode(this))
+    TypedByteStringNioEncDec.encode(this).toByteString
   }
 
   /**
@@ -19,11 +18,15 @@ case class TypedByteString(`type`: String, bytes: ByteString) {
     * >>> import akka.util.ByteString
     * >>> TypedByteString("ABC", ByteString("ABC"))
     * -----BEGIN TYPED BYTE STRING ABC BLOCK-----
-    *  00 00 00 3D 00 00 00 10 A7 F1 59 E6 70 8B 88 34
-    *  57 37 55 A6 91 9F 54 68 00 00 00 03 00 41 00 42
-    *  00 43 00 00 00 1B 00 00 00 10 0E BB 60 87 0B 23
-    *  D1 57 2A 23 C3 DB 6A AD 73 54 00 00 00 03 41 42
-    *  43
+    *  00 00 00 82 00 00 00 10 A7 F1 59 E6 70 8B 88 34
+    *  57 37 55 A6 91 9F 54 68 00 00 00 33 00 00 00 10
+    *  B2 45 CF DD AA 64 58 7E 8F 28 A2 A3 F9 FD EF 2D
+    *  00 00 00 1B 00 00 00 10 CB D3 1B A7 45 A2 FA D4
+    *  46 EE F1 19 99 61 2C E7 00 00 00 03 41 42 43 00
+    *  00 00 33 00 00 00 10 B4 16 0B AA E3 62 AD 83 3D
+    *  AE 50 13 56 1B 64 A8 00 00 00 1B 00 00 00 10 CB
+    *  D3 1B A7 45 A2 FA D4 46 EE F1 19 99 61 2C E7 00
+    *  00 00 03 41 42 43
     * -----END TYPED BYTE STRING ABC BLOCK-----
     *
     * }}}
@@ -41,12 +44,23 @@ case class TypedByteString(`type`: String, bytes: ByteString) {
 }
 
 object TypedByteString {
+
+  private[crypto] val TypedByteStringNioEncDec: NioEncDec[TypedByteString] = {
+    import io.iohk.cef.codecs.nio.auto._
+    val e: NioEncoder[TypedByteString] = genericEncoder
+    val d: NioDecoder[TypedByteString] = genericDecoder
+    NioEncDec(e, d)
+  }
+  private[crypto] val TypedByteStringNioEncoder: NioEncoder[TypedByteString] =
+    TypedByteStringNioEncDec
+  private[crypto] val TypedByteStringNioDecoder: NioDecoder[TypedByteString] =
+    TypedByteStringNioEncDec
+
+  private implicit val byteOrder: java.nio.ByteOrder = java.nio.ByteOrder.BIG_ENDIAN
+
   def decodeFrom(bytes: ByteString): Either[TypedByteStringDecodingError, TypedByteString] = {
-    // FIXME: To implement directly, without using an external encoder
-    //        Maybe use the same technic used by multiformats
-    val nioDecoder: NioDecoder[TypedByteString] = implicitly
-    nioDecoder.decode(bytes.toByteBuffer) match {
-      case Some(entity) => Right(entity)
+    TypedByteStringNioEncDec.decode(bytes.toByteBuffer) match {
+      case Some(tbs) => Right(tbs)
       case None => Left(TypedByteStringDecodingError.NioDecoderFailedToDecodeTBS)
     }
   }
@@ -57,11 +71,15 @@ object TypedByteString {
     * >>> import akka.util.ByteString
     * >>> val text: String =
     * ...   """|-----BEGIN TYPED BYTE STRING ABC BLOCK-----
-    * ...      | 00 00 00 3D 00 00 00 10 A7 F1 59 E6 70 8B 88 34
-    * ...      | 57 37 55 A6 91 9F 54 68 00 00 00 03 00 41 00 42
-    * ...      | 00 43 00 00 00 1B 00 00 00 10 0E BB 60 87 0B 23
-    * ...      | D1 57 2A 23 C3 DB 6A AD 73 54 00 00 00 03 41 42
-    * ...      | 43
+    * ...      | 00 00 00 82 00 00 00 10 A7 F1 59 E6 70 8B 88 34
+    * ...      | 57 37 55 A6 91 9F 54 68 00 00 00 33 00 00 00 10
+    * ...      | B2 45 CF DD AA 64 58 7E 8F 28 A2 A3 F9 FD EF 2D
+    * ...      | 00 00 00 1B 00 00 00 10 CB D3 1B A7 45 A2 FA D4
+    * ...      | 46 EE F1 19 99 61 2C E7 00 00 00 03 41 42 43 00
+    * ...      | 00 00 33 00 00 00 10 B4 16 0B AA E3 62 AD 83 3D
+    * ...      | AE 50 13 56 1B 64 A8 00 00 00 1B 00 00 00 10 CB
+    * ...      | D3 1B A7 45 A2 FA D4 46 EE F1 19 99 61 2C E7 00
+    * ...      | 00 00 03 41 42 43
     * ...      |-----END TYPED BYTE STRING ABC BLOCK-----""".stripMargin
     * >>> TypedByteString.parseFrom(text) == Right(TypedByteString("ABC", ByteString("ABC")))
     * true

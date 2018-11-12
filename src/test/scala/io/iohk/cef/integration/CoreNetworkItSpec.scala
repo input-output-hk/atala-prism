@@ -23,8 +23,7 @@ class CoreNetworkItSpec extends FlatSpec with MustMatchers with PropertyChecks w
     mock[TransactionPoolInterface[String, DummyBlockHeader, DummyTransaction]]
 
   behavior of "CoreNetworkItSpec"
-  import io.iohk.cef.codecs.nio.NioCodecs._
-  import io.iohk.cef.test.DummyBlockSerializable._
+  import io.iohk.cef.codecs.nio.auto._
 
   implicit val executionContext = scala.concurrent.ExecutionContext.global
 
@@ -69,7 +68,7 @@ class CoreNetworkItSpec extends FlatSpec with MustMatchers with PropertyChecks w
     Await.result(core2ProcessesTx, 1 minute) mustBe Right(())
     verify(mockTxPoolIf1, timeout(5000).times(1)).processTransaction(testTx)
 
-    val testBlock = Block(DummyBlockHeader(10), immutable.Seq(testTx))
+    val testBlock = Block[String, DummyBlockHeader, DummyTransaction](DummyBlockHeader(10), immutable.Seq(testTx))
 
     when(mockCons1.process(testBlock)).thenReturn(Future.successful(Right(())))
     when(mockCons2.process(testBlock)).thenReturn(Future.successful(Right(())))

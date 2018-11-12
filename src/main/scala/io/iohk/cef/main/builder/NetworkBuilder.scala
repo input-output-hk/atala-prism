@@ -1,16 +1,16 @@
 package io.iohk.cef.main.builder
-import io.iohk.cef.ledger.{BlockHeader, ByteStringSerializable, Transaction}
+import io.iohk.cef.ledger.{BlockHeader, Transaction}
 import io.iohk.cef.network.Network
 import io.iohk.cef.network.discovery.DiscoveryWireMessage
-import io.iohk.cef.codecs.nio.NioCodecs.{NioDecoder, NioEncoder}
+import io.iohk.cef.codecs.nio._
 
-trait NetworkBuilder[S, H <: BlockHeader, T <: Transaction[S]] {
-  self: LedgerConfigBuilder with CommonTypeAliases[S, H, T] =>
+class NetworkBuilder[S, H <: BlockHeader, T <: Transaction[S]](ledgerConfigBuilder: LedgerConfigBuilder) {
+  import ledgerConfigBuilder._
+
   def txNetwork[ET: NioEncoder: NioDecoder](
-      implicit dByteStringSerializable: ByteStringSerializable[DiscoveryWireMessage]): Network[ET] =
+      implicit dByteStringSerializable: NioEncDec[DiscoveryWireMessage]): Network[ET] =
     new Network[ET](networkDiscovery, transports)
 
-  def blockNetwork[EB: NioEncoder: NioDecoder](
-      implicit dByteStringSerializable: ByteStringSerializable[DiscoveryWireMessage]): Network[EB] =
+  def blockNetwork[EB: NioEncoder: NioDecoder](implicit dNioEncDec: NioEncDec[DiscoveryWireMessage]): Network[EB] =
     new Network[EB](networkDiscovery, transports)
 }

@@ -31,7 +31,8 @@ class VirtualVectorSpec extends FlatSpec {
   }
 
   it should "support map" in {
-    new VirtualVector[String](Vector("A", "B", "C"), 1, Seq("D")).map(s => s) shouldBe Seq("A", "B", "D")
+    new VirtualVector[String](Vector("A", "B", "C"), 1, Seq("D"))
+      .map(s => s) shouldBe new VirtualVector[String](Vector("A", "B", "D"), 0, Seq.empty)
     new VirtualVector[String](Vector("A", "B", "C"), 1, Seq("D")).toSeq shouldBe Seq("A", "B", "D")
   }
 

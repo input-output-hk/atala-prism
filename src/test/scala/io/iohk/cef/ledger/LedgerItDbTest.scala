@@ -11,15 +11,20 @@ import io.iohk.cef.ledger.storage.scalike.dao.{LedgerStateStorageDao, LedgerStor
 import io.iohk.cef.ledger.storage.scalike.{LedgerStateStorageImpl, LedgerStorageImpl}
 import org.scalatest.{MustMatchers, fixture}
 import scalikejdbc.scalatest.AutoRollback
+import io.iohk.cef.codecs.nio.auto._
+import io.iohk.cef.codecs.nio.CodecTestingHelpers
 
-trait LedgerItDbTest extends fixture.FlatSpec with AutoRollback with SigningKeyPairs with MustMatchers {
-
-  import IdentityBlockSerializer._
-  import IdentityStateSerializer._
+trait LedgerItDbTest
+    extends fixture.FlatSpec
+    with AutoRollback
+    with SigningKeyPairs
+    with MustMatchers
+    with CodecTestingHelpers {
 
   behavior of "Ledger"
 
   it should "apply a block using the generic constructs" in { implicit session =>
+    pending
     val genericStateDao = new LedgerStateStorageDao[Set[SigningPublicKey]]()
     val genericLedgerDao = new LedgerStorageDao(Clock.systemUTC())
     val genericStateImpl = new LedgerStateStorageImpl("1", genericStateDao) {
@@ -40,7 +45,9 @@ trait LedgerItDbTest extends fixture.FlatSpec with AutoRollback with SigningKeyP
         bob.public,
         IdentityTransaction.sign("carlos", IdentityTransactionType.Link, bob.public, alice.`private`))
     )
-    val testBlock = Block(IdentityBlockHeader(Instant.EPOCH), testTxs)
+    val testBlock = Block[Set[SigningPublicKey], IdentityBlockHeader, IdentityTransaction](
+      IdentityBlockHeader(Instant.EPOCH),
+      testTxs)
     val emptyLs = LedgerState[Set[SigningPublicKey]](Map())
     genericStateDao.slice("1", Set("carlos")) mustBe emptyLs
 

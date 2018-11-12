@@ -1,7 +1,7 @@
 package io.iohk.cef.core
 import io.iohk.cef.LedgerId
 import io.iohk.cef.consensus.Consensus
-import io.iohk.cef.ledger.{Block, ByteStringSerializable}
+import io.iohk.cef.ledger.{Block}
 import io.iohk.cef.network.{MessageStream, Network, NodeId}
 import io.iohk.cef.test.{DummyBlockHeader, DummyTransaction}
 import io.iohk.cef.transactionpool.TransactionPoolInterface
@@ -12,6 +12,7 @@ import org.scalatest.{AsyncFlatSpec, MustMatchers}
 
 import scala.collection.immutable
 import scala.concurrent.Future
+import io.iohk.cef.codecs.nio._
 
 class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
 
@@ -28,15 +29,15 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
 
   def mockNetwork[M]: Network[M] = mock[Network[M]]
 
-  def mockByteStringSerializable: ByteStringSerializable[Envelope[Tx]] =
-    mock[ByteStringSerializable[Envelope[Tx]]]
+  def mockNioEncDec: NioEncDec[Envelope[Tx]] =
+    mock[NioEncDec[Envelope[Tx]]]
 
-  def mockBlockSerializable: ByteStringSerializable[Envelope[BlockType]] =
-    mock[ByteStringSerializable[Envelope[BlockType]]]
+  def mockBlockSerializable: NioEncDec[Envelope[BlockType]] =
+    mock[NioEncDec[Envelope[BlockType]]]
 
   private def setupTest(ledgerId: LedgerId, me: NodeId = NodeId("abcd"))(
-      implicit txSerializable: ByteStringSerializable[Envelope[Tx]],
-      blockSerializable: ByteStringSerializable[Envelope[Block[State, Header, Tx]]]) = {
+      implicit txSerializable: NioEncDec[Envelope[Tx]],
+      blockSerializable: NioEncDec[Envelope[Block[State, Header, Tx]]]) = {
     val consensusMap = Map(ledgerId -> (mockTxPoolFutureInterface, mockConsensus))
     val txDM = mockNetwork[Envelope[DummyTransaction]]
     val blockDM = mockNetwork[Envelope[Block[String, DummyBlockHeader, DummyTransaction]]]
@@ -64,7 +65,7 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
     val testTx = DummyTransaction(10)
     val ledgerId = "1"
     val testEnvelope = Envelope(testTx, ledgerId, Everyone)
-    implicit val bs1 = mockByteStringSerializable
+    implicit val bs1 = mockNioEncDec
     implicit val bs2 = mockBlockSerializable
     val (core, consensusMap, txDM, _) = setupTest(ledgerId)
     when(consensusMap(ledgerId)._1.processTransaction(testEnvelope.content))
@@ -79,10 +80,11 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
   }
 
   it should "receive a block" in {
-    val testBlock = Block(DummyBlockHeader(1), immutable.Seq(DummyTransaction(10)))
+    val testBlock =
+      Block[String, DummyBlockHeader, DummyTransaction](DummyBlockHeader(1), immutable.Seq(DummyTransaction(10)))
     val ledgerId = "1"
     val testEnvelope = Envelope(testBlock, ledgerId, Everyone)
-    implicit val bs1 = mockByteStringSerializable
+    implicit val bs1 = mockNioEncDec
     implicit val bs2 = mockBlockSerializable
     val (core, consensusMap, _, blockDM) = setupTest(ledgerId)
     when(consensusMap(ledgerId)._2.process(testEnvelope.content))
@@ -97,7 +99,7 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
   }
 
   it should "avoid processing a block if this is not a receiver" in {
-    implicit val bs1 = mockByteStringSerializable
+    implicit val bs1 = mockNioEncDec
     implicit val bs2 = mockBlockSerializable
     val ledgerId = "1"
     val me = NodeId("abcd")
@@ -113,7 +115,7 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
   }
 
   it should "avoid processing a tx if this is not a receiver" in {
-    implicit val bs1 = mockByteStringSerializable
+    implicit val bs1 = mockNioEncDec
     implicit val bs2 = mockBlockSerializable
     val ledgerId = "1"
     val me = NodeId("abcd")
@@ -129,13 +131,13 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
   }
 
   it should "avoid processing a block if the node doesn't participate in consensus" in {
-    implicit val bs1 = mockByteStringSerializable
+    implicit val bs1 = mockNioEncDec
     implicit val bs2 = mockBlockSerializable
     val ledgerId = "1"
     val me = NodeId("abcd")
     val (core, consensusMap, _, blockDM) = setupTest(ledgerId, me)
     val (testBlockTxEnvelope, _) = setupMissingCapabilitiesTest(ledgerId, core, Everyone, me)
-    val newEnvelope = testBlockTxEnvelope.copy(ledgerId = ledgerId + 1)
+    val newEnvelope = testBlockTxEnvelope.copy(containerId = ledgerId + 1)
     for {
       rcv <- core.receiveBlock(newEnvelope)
     } yield {
@@ -146,13 +148,13 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
   }
 
   it should "avoid processing a tx if the node doesn't participate in consensus" in {
-    implicit val bs1 = mockByteStringSerializable
+    implicit val bs1 = mockNioEncDec
     implicit val bs2 = mockBlockSerializable
     val ledgerId = "1"
     val me = NodeId("abcd")
     val (core, consensusMap, txDM, _) = setupTest(ledgerId, me)
     val (_, testTxEnvelope) = setupMissingCapabilitiesTest(ledgerId, core, Everyone, me)
-    val newEnvelope = testTxEnvelope.copy(ledgerId = ledgerId + 1)
+    val newEnvelope = testTxEnvelope.copy(containerId = ledgerId + 1)
     for {
       rcv <- core.receiveTransaction(newEnvelope)
     } yield {
@@ -167,10 +169,10 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
       core: NodeCore[String, DummyBlockHeader, DummyTransaction],
       destinationDescriptor: DestinationDescriptor,
       me: NodeId)(
-      implicit txSerializable: ByteStringSerializable[Envelope[Tx]],
-      blockSerializable: ByteStringSerializable[Envelope[Block[State, Header, Tx]]]) = {
+      implicit txSerializable: NioEncDec[Envelope[Tx]],
+      blockSerializable: NioEncDec[Envelope[Block[State, Header, Tx]]]) = {
     val testTx = DummyTransaction(10)
-    val testBlock = Block(DummyBlockHeader(1), immutable.Seq(testTx))
+    val testBlock = Block[String, DummyBlockHeader, DummyTransaction](DummyBlockHeader(1), immutable.Seq(testTx))
     val testBlockEnvelope = Envelope(testBlock, "1", destinationDescriptor)
     val testTxEnvelope = Envelope(testTx, "1", destinationDescriptor)
     (testBlockEnvelope, testTxEnvelope)

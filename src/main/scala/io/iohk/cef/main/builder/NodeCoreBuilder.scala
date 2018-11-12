@@ -1,30 +1,38 @@
 package io.iohk.cef.main.builder
 import akka.util.Timeout
-import io.iohk.cef.core.NodeCore
-import io.iohk.cef.ledger.{BlockHeader, ByteStringSerializable, Transaction}
+import io.iohk.cef.codecs.nio._
+import io.iohk.cef.core.{Envelope, NodeCore}
+import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
 import io.iohk.cef.network.discovery.DiscoveryWireMessage
-import io.iohk.cef.codecs.nio.NioCodecs._
 
 import scala.concurrent.ExecutionContext
 
-trait NodeCoreBuilder[S, H <: BlockHeader, T <: Transaction[S]] {
-  self: NetworkBuilder[S, H, T]
-    with LedgerConfigBuilder
-    with TransactionPoolBuilder[S, H, T]
-    with ConsensusBuilder[S, H, T]
-    with CommonTypeAliases[S, H, T] =>
+class NodeCoreBuilder[S, H <: BlockHeader, T <: Transaction[S]](
+    networkBuilder: NetworkBuilder[S, H, T],
+    ledgerConfigBuilder: LedgerConfigBuilder,
+    transactionPoolBuilder: TransactionPoolBuilder[S, H, T],
+    consensusBuilder: ConsensusBuilder[S, H, T],
+    commonTypeAliases: CommonTypeAliases[S, H, T]
+) {
+  import commonTypeAliases._
+  import consensusBuilder._
+  import ledgerConfigBuilder._
+  import networkBuilder._
+  import transactionPoolBuilder._
 
   def nodeCore(
       implicit
       timeout: Timeout,
       executionContext: ExecutionContext,
-      blockByteStringSerializable: ByteStringSerializable[B],
-      stateyteStringSerializable: ByteStringSerializable[S],
-      txStringSerializable: ByteStringSerializable[T],
-      dByteStringSerializable: ByteStringSerializable[DiscoveryWireMessage]): NodeCore[S, H, T] = new NodeCore(
+      blockByteStringSerializable: NioEncDec[B],
+      stateyteStringSerializable: NioEncDec[S],
+      txStringSerializable: NioEncDec[T],
+      envelopeTxNetwork: NioEncDec[Envelope[T]],
+      blockTxNetwork: NioEncDec[Envelope[Block[S, H, T]]],
+      dByteStringSerializable: NioEncDec[DiscoveryWireMessage]): NodeCore[S, H, T] = new NodeCore(
     Map(ledgerConfig.id -> (txPoolFutureInterface, consensus)),
-    txNetwork,
-    blockNetwork,
+    txNetwork[Envelope[T]],
+    blockNetwork[Envelope[Block[S, H, T]]],
     nodeId
   )
 }

@@ -1,7 +1,7 @@
 package io.iohk.cef.frontend.services
 
 import io.iohk.cef.core._
-import io.iohk.cef.crypto._
+import io.iohk.cef.crypto.sign
 import io.iohk.cef.frontend.client.Response
 import io.iohk.cef.frontend.models.{
   CreateChimericTransactionRequest,
@@ -17,6 +17,7 @@ class ChimericTransactionService(nodeCore: NodeCore[ChimericStateResult, Chimeri
     implicit ec: ExecutionContext) {
 
   def createChimericTransaction(req: CreateChimericTransactionRequest): Response[ChimericTx] = {
+    import io.iohk.cef.codecs.nio.auto._
 
     val signableFragments = req.fragments.collect {
       case signableFragments: CreateSignableChimericTransactionFragment => signableFragments
@@ -34,7 +35,7 @@ class ChimericTransactionService(nodeCore: NodeCore[ChimericStateResult, Chimeri
 
     val chimericTx = ChimericTx(req.fragments.map(_.fragment))
     val envelope =
-      Envelope(content = chimericTx, ledgerId = req.ledgerId, Everyone)
+      Envelope(content = chimericTx, containerId = req.ledgerId, Everyone)
 
     nodeCore.receiveTransaction(envelope)
   }

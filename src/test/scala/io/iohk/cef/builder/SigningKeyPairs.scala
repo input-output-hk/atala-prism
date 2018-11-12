@@ -2,19 +2,34 @@ package io.iohk.cef.builder
 
 import akka.util.ByteString
 import io.iohk.cef.crypto._
+import io.iohk.cef.codecs.nio.auto._
 
-trait SigningKeyPairs {
+trait KeyPairs[T] {
+
+  def gen(): T
 
   // a set of pre defined keys
-  val alice = generateSigningKeyPair()
-  val bob = generateSigningKeyPair()
-  val carlos = generateSigningKeyPair()
-  val daniel = generateSigningKeyPair()
-  val elena = generateSigningKeyPair()
-  val francisco = generateSigningKeyPair()
-  val german = generateSigningKeyPair()
-  val hugo = generateSigningKeyPair()
+  val alice = gen()
+  val bob = gen()
+  val carlos = gen()
+  val daniel = gen()
+  val elena = gen()
+  val francisco = gen()
+  val german = gen()
+  val hugo = gen()
+}
+
+trait SigningKeyPairs extends KeyPairs[SigningKeyPair] {
+
+  // a set of pre defined keys
+  override def gen() = generateSigningKeyPair()
 
   // a signature that no one can validate
   val uselessSignature = sign(ByteString("input"), generateSigningKeyPair().`private`)
+}
+
+trait EncryptionKeyPairs extends KeyPairs[EncryptionKeyPair] {
+
+  // a set of pre defined keys
+  override def gen() = generateEncryptionKeyPair()
 }

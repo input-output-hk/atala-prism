@@ -4,6 +4,8 @@ import akka.util.ByteString
 
 import io.iohk.cef.crypto.encryption._
 import io.iohk.cef.crypto.encoding.TypedByteString
+import io.iohk.cef.codecs.nio.{NioEncoder, NioDecoder}
+import io.iohk.cef.utils._
 
 trait Encryption {
 
@@ -38,9 +40,9 @@ trait Encryption {
     *
     * @return          an encrypted version of `entity`
     */
-  def encrypt[T](entity: T, key: EncryptionPublicKey)(implicit encoder: CryptoEncoder[T]): EncryptedData = {
+  def encrypt[T](entity: T, key: EncryptionPublicKey)(implicit encoder: NioEncoder[T]): EncryptedData = {
     val encryptedBytes =
-      key.`type`.algorithm.encrypt(encoder.encode(entity), key.lowlevelKey)
+      key.`type`.algorithm.encrypt(encoder.encode(entity).toByteString, key.lowlevelKey)
 
     EncryptedData(key.`type`, encryptedBytes)
   }
@@ -74,10 +76,10 @@ trait Encryption {
     * @return                some sort of error or the restored entity of type `T`
     */
   def decrypt[T](encryptedData: EncryptedData, key: EncryptionPrivateKey)(
-      implicit decoder: CryptoDecoder[T]): Either[DecryptError, T] = {
+      implicit decoder: NioDecoder[T]): Either[DecryptError, T] = {
     decryptBytes(encryptedData, key)
       .flatMap { bytes =>
-        decoder.decode(bytes) match {
+        decoder.decode(bytes.toByteBuffer) match {
           case Some(e) => Right(e)
           case None => Left(DecryptError.EntityCouldNotBeDecoded)
         }
@@ -95,6 +97,15 @@ trait Encryption {
 
     override def toString(): String =
       EncryptionPublicKey.show(this)
+
+    override def equals(obj: scala.Any): Boolean = obj match {
+      case that: EncryptionPublicKey =>
+        this.toByteString == that.toByteString
+
+      case _ => false
+    }
+
+    override def hashCode(): Int = this.toByteString.hashCode()
   }
 
   object EncryptionPublicKey extends KeyEntityCompanion[EncryptionPublicKey] {
@@ -142,6 +153,15 @@ trait Encryption {
 
     override def toString(): String =
       EncryptionPrivateKey.show(this)
+
+    override def equals(obj: scala.Any): Boolean = obj match {
+      case that: EncryptionPrivateKey =>
+        this.toByteString == that.toByteString
+
+      case _ => false
+    }
+
+    override def hashCode(): Int = this.toByteString.hashCode()
   }
 
   object EncryptionPrivateKey extends KeyEntityCompanion[EncryptionPrivateKey] {
@@ -192,6 +212,15 @@ trait Encryption {
 
     override def toString(): String =
       EncryptedData.show(this)
+
+    override def equals(obj: scala.Any): Boolean = obj match {
+      case that: EncryptedData =>
+        this.`type` == that.`type` && this.bytes == that.bytes
+
+      case _ => false
+    }
+
+    override def hashCode(): Int = this.toByteString.hashCode()
   }
 
   object EncryptedData extends CryptoEntityCompanion[EncryptedData] {

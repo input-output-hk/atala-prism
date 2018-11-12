@@ -9,7 +9,7 @@ import akka.testkit.typed.scaladsl.TestProbe
 import akka.util.ByteString
 import akka.{testkit => untypedKit}
 import io.iohk.cef.network.discovery.DiscoveryListener._
-import io.iohk.cef.codecs.{Decoder, Encoder}
+import io.iohk.cef.codecs.nio.{NioDecoder, NioEncoder}
 import io.iohk.cef.network.{Capabilities, NodeInfo}
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{FlatSpec, MustMatchers}
@@ -22,8 +22,8 @@ class UDPBridgeSpec extends FlatSpec with MustMatchers with MockitoSugar {
   implicit val system = ActorSystem.wrap(untypedSystem)
 
   class UdpTestHelper {
-    val encoder = mock[Encoder[DiscoveryWireMessage, ByteString]]
-    val decoder = mock[Decoder[ByteString, DiscoveryWireMessage]]
+    val encoder = mock[NioEncoder[DiscoveryWireMessage]]
+    val decoder = mock[NioDecoder[DiscoveryWireMessage]]
     val listenerInbox = TestProbe[DiscoveryListenerRequest]()
 
     val bridge = untypedKit.TestActorRef(new UDPBridge(listenerInbox.ref, encoder, decoder, _ => ()))
@@ -55,7 +55,7 @@ class UDPBridgeSpec extends FlatSpec with MustMatchers with MockitoSugar {
     val addr2 = new InetSocketAddress(1001)
     val data = Ping(1, node, 0L, ByteString("nonce"))
     val encodedData = ByteString("Ping")
-    when(encoder.encode(any())).thenReturn(encodedData)
+    when(encoder.encode(any())).thenReturn(encodedData.toByteBuffer)
     bridge ! SendMessage(data, addr2)
 
     socket.expectMsg(Udp.Send(encodedData, addr2))

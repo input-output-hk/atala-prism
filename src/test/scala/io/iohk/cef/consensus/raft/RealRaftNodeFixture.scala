@@ -5,6 +5,7 @@ import org.scalatest.time.{Millis, Seconds, Span}
 
 import scala.collection.mutable
 import scala.concurrent.ExecutionContext
+import io.iohk.cef.codecs.nio._
 
 trait RealRaftNodeFixture[Command] {
 
@@ -22,7 +23,7 @@ trait RealRaftNodeFixture[Command] {
 
   def machineCallback: Command => Unit
 
-  class TestNode(nodeId: String, state: PersistentStorage[Command]) {
+  class TestNode(nodeId: String, state: PersistentStorage[Command])(implicit ed: NioEncDec[Command]) {
 
     val machine: Command => Unit = machineCallback
 
@@ -38,7 +39,8 @@ trait RealRaftNodeFixture[Command] {
     testNodes.put(nodeId, this)
   }
 
-  def anIntegratedCluster(nodeData: Seq[(PersistentStorage[Command], String)]): Seq[TestNode] = {
+  def anIntegratedCluster(nodeData: Seq[(PersistentStorage[Command], String)])(
+      implicit ed: NioEncDec[Command]): Seq[TestNode] = {
     val nodes = nodeData.map { case (storage, id) => new TestNode(id, storage) }
     nodes.foreach(_.raftNode)
     nodes

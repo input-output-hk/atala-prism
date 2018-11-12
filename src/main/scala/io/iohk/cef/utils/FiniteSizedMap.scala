@@ -16,6 +16,8 @@ import scala.concurrent.duration.FiniteDuration
   * @tparam K
   * @tparam V
   */
+//Can't make it follow Scala's conventions regarding collections (CanBuildFrom...), given that
+//CanBuildFrom is not compatible with the concept of the clock and the internal timestamps
 case class FiniteSizedMap[K, V](maxSize: Int, expiration: FiniteDuration, clock: Clock) {
 
   case class Expiring(value: V, expirationTimestamp: Instant) {

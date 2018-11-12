@@ -6,15 +6,15 @@ import akka.actor.typed.ActorRef
 import akka.actor.typed.scaladsl.ActorContext
 import akka.{actor => untyped}
 import akka.io.{IO, Udp}
-import akka.util.ByteString
 import io.iohk.cef.network.discovery.DiscoveryListener._
-import io.iohk.cef.codecs.{Decoder, Encoder}
+import io.iohk.cef.codecs.nio.{NioDecoder, NioEncoder}
 import akka.actor.typed.scaladsl.adapter._
+import io.iohk.cef.utils._
 
 class UDPBridge(
     discoveryListener: ActorRef[DiscoveryListenerRequest],
-    encoder: Encoder[DiscoveryWireMessage, ByteString],
-    decoder: Decoder[ByteString, DiscoveryWireMessage],
+    encoder: NioEncoder[DiscoveryWireMessage],
+    decoder: NioDecoder[DiscoveryWireMessage],
     udpBinder: untyped.ActorContext => Unit)
     extends untyped.Actor {
 
@@ -28,10 +28,10 @@ class UDPBridge(
 
   private def ready(socket: untyped.ActorRef): Receive = {
     case Udp.Received(data, remote) =>
-      decoder.decode(data).foreach(packet => discoveryListener ! Forward(MessageReceived(packet, remote)))
+      decoder.decode(data.toByteBuffer).foreach(packet => discoveryListener ! Forward(MessageReceived(packet, remote)))
 
     case SendMessage(packet, to) =>
-      val encodedPacket = encoder.encode(packet)
+      val encodedPacket = encoder.encode(packet).toByteString
       socket ! Udp.Send(encodedPacket, to)
   }
 }
@@ -39,9 +39,8 @@ class UDPBridge(
 object UDPBridge {
   def creator(
       config: DiscoveryConfig,
-      encoder: Encoder[DiscoveryWireMessage, ByteString],
-      decoder: Decoder[ByteString, DiscoveryWireMessage])(
-      context: ActorContext[DiscoveryListenerRequest]): untyped.ActorRef =
+      encoder: NioEncoder[DiscoveryWireMessage],
+      decoder: NioDecoder[DiscoveryWireMessage])(context: ActorContext[DiscoveryListenerRequest]): untyped.ActorRef =
     context.actorOf(
       untyped.Props(new UDPBridge(
         context.asScala.self,

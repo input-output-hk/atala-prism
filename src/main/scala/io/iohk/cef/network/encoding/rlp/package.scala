@@ -1,8 +1,11 @@
 package io.iohk.cef.network.encoding
 
 import akka.util.ByteString
-import io.iohk.cef.ledger.ByteStringSerializable
 import io.iohk.cef.utils.HexStringCodec._
+import io.iohk.cef.codecs.nio._
+import io.iohk.cef.utils._
+import java.nio.ByteBuffer
+import scala.reflect.runtime.universe.TypeTag
 
 package object rlp {
 
@@ -18,7 +21,24 @@ package object rlp {
     override def toString: String = s"RLPValue(${toHexString(bytes)})"
   }
 
-  trait RLPEncDec[T] extends RLPEncoder[T] with RLPDecoder[T]
+  trait RLPEncDec[T] extends RLPEncoder[T] with RLPDecoder[T] { rlpEncDec =>
+    def asNio(implicit tt: TypeTag[T]): NioEncDec[T] =
+      new NioEncDec[T] {
+        override val typeTag: TypeTag[T] = tt
+        override def decode(u: ByteBuffer): Option[T] = Some(decodeFromArray(u.toArray)(rlpEncDec))
+        override def encode(t: T): ByteBuffer = encodeToArray(t)(rlpEncDec).toByteBuffer
+      }
+  }
+  object RLPEncDec {
+    def apply[T](implicit ed: RLPEncDec[T]): RLPEncDec[T] = ed
+    def apply[T](e: RLPEncoder[T], d: RLPDecoder[T]): RLPEncDec[T] =
+      new RLPEncDec[T] {
+        override def encode(t: T): RLPEncodeable = e.encode(t)
+        override def decode(b: RLPEncodeable): T = d.decode(b)
+      }
+    implicit def RLPEncDecFromEncoderAndDecoder[T](implicit e: RLPEncoder[T], d: RLPDecoder[T]): RLPEncDec[T] =
+      apply[T](e, d)
+  }
 
   trait RLPEncoder[T] {
     def encode(obj: T): RLPEncodeable
@@ -39,13 +59,6 @@ package object rlp {
   def rawDecode(input: Array[Byte]): RLPEncodeable = RLP.rawDecode(input)
 
   def rawEncode(input: RLPEncodeable): Array[Byte] = RLP.encode(input)
-
-  implicit def byteStringSerializable[T](implicit RLPEncDec: RLPEncDec[T]): ByteStringSerializable[T] = {
-    new ByteStringSerializable[T] {
-      override def decode(u: ByteString): Option[T] = Some(decodeFromArray(u.toArray))
-      override def encode(t: T): ByteString = ByteString(encodeToArray(t))
-    }
-  }
 
   /**
     * This function calculates the next element item based on a previous element starting position. It's meant to be

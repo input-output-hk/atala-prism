@@ -2,11 +2,12 @@ package io.iohk.cef.ledger.storage.scalike
 import io.iohk.cef.LedgerId
 import io.iohk.cef.ledger.storage.LedgerStateStorage
 import io.iohk.cef.ledger.storage.scalike.dao.LedgerStateStorageDao
-import io.iohk.cef.ledger.{ByteStringSerializable, LedgerState}
+import io.iohk.cef.ledger.LedgerState
 import scalikejdbc.{ConnectionPool, DB, DBSession, using}
+import io.iohk.cef.codecs.nio._
 
 case class LedgerStateStorageImpl[S](ledgerStateId: LedgerId, ledgerStateDao: LedgerStateStorageDao[S])(
-    implicit serializer: ByteStringSerializable[S])
+    implicit serializer: NioEncDec[S])
     extends LedgerStateStorage[S] {
 
   override def slice(keys: Set[String]): LedgerState[S] =

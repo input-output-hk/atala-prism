@@ -1,19 +1,15 @@
 package io.iohk.cef.frontend.controllers.common
 
 import akka.util.ByteString
+import io.iohk.cef.core._
 import io.iohk.cef.crypto._
-import io.iohk.cef.frontend.models.{
-  ChimericTransactionFragmentType,
-  CreateChimericTransactionFragment,
-  CreateChimericTransactionRequest,
-  CreateIdentityTransactionRequest,
-  CreateNonSignableChimericTransactionFragment,
-  CreateSignableChimericTransactionFragment,
-  IdentityTransactionType
-}
+import io.iohk.cef.data.{DataItem, Owner, TableId, Witness}
+import io.iohk.cef.frontend.models._
 import io.iohk.cef.ledger.chimeric._
 import io.iohk.cef.ledger.identity.{Claim, IdentityTransaction, Link, Unlink}
+import io.iohk.cef.network.NodeId
 import io.iohk.cef.utils.ByteStringExtension
+import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
 import scala.util.Try
@@ -232,6 +228,12 @@ object Codecs {
     }
   }
 
+  implicit val witnessFormat: Format[Witness] = Json.format[Witness]
+
+  implicit val ownerFormat: Format[Owner] = Json.format[Owner]
+
+  implicit def dataItemFormat[T](implicit tFormat: Format[T]): Format[DataItem[T]] = Json.format[DataItem[T]]
+
   implicit val requestReads: Reads[CreateIdentityTransactionRequest] = Json.reads[CreateIdentityTransactionRequest]
 
   implicit val responseWrites: Writes[IdentityTransaction] = Writes[IdentityTransaction] { obj =>
@@ -266,5 +268,71 @@ object Codecs {
     byteString.toHex
       .replace("\n", "")
       .replace(" ", "")
+  }
+
+  implicit val nodeIdFormat: Format[NodeId] = new Format[NodeId] {
+
+    override def writes(o: NodeId): JsValue = {
+      val hex = toCleanHex(o.id)
+      JsString(hex)
+    }
+
+    override def reads(json: JsValue): JsResult[NodeId] = {
+      json
+        .asOpt[String]
+        .map { string =>
+          Try(NodeId.apply(string))
+            .map(JsSuccess(_))
+            .getOrElse(JsError("Invalid nodeId"))
+        }
+        .getOrElse(JsError("Missing nodeId"))
+    }
+  }
+
+  implicit lazy val singleNodeFormat: Format[SingleNode] = Json.format[SingleNode]
+  implicit lazy val setOfNodesFormat: Format[SetOfNodes] = Json.format[SetOfNodes]
+  implicit lazy val orFormat: Format[Or] = Json.format[Or]
+  implicit lazy val andFormat: Format[And] = Json.format[And]
+  implicit lazy val notFormat: Format[Not] = Json.format[Not]
+
+  implicit lazy val destinationDescriptorFormat: Format[DestinationDescriptor] = new Format[DestinationDescriptor] {
+    override def writes(o: DestinationDescriptor): JsValue = {
+      val (tpe, json) = o match {
+        case Everyone => ("everyone", JsObject.empty)
+        case x: SingleNode => ("singleNode", Json.toJson(x)(singleNodeFormat))
+        case x: SetOfNodes => ("setOfNodes", Json.toJson(x)(setOfNodesFormat))
+        case x: Not => ("not", Json.toJson(x)(notFormat))
+        case x: And => ("and", Json.toJson(x)(andFormat))
+        case x: Or => ("or", Json.toJson(x)(orFormat))
+      }
+
+      val map = Map("type" -> JsString(tpe), "obj" -> json)
+      JsObject(map)
+    }
+
+    override def reads(json: JsValue): JsResult[DestinationDescriptor] = {
+      val obj = json \ "obj"
+      (json \ "type")
+        .asOpt[String]
+        .flatMap {
+          case "everyone" => Some(Everyone)
+          case "singleNode" => obj.asOpt[SingleNode]
+          case "setOfNodes" => obj.asOpt[SetOfNodes]
+          case "not" => obj.asOpt[Not]
+          case "and" => obj.asOpt[And]
+          case "or" => obj.asOpt[Or]
+          case _ => None
+        }
+        .map(JsSuccess(_))
+        .getOrElse(JsError("Missing or invalid destinationDescriptor"))
+    }
+  }
+
+  implicit def formatEnvelope[A](implicit format: Format[A]): Format[Envelope[A]] = {
+    val builder = (__ \ 'content).format[A] and
+      (__ \ 'containerId).format[TableId] and
+      (__ \ 'destinationDescriptor).format[DestinationDescriptor]
+
+    builder.apply(Envelope.apply, unlift(Envelope.unapply))
   }
 }

@@ -6,7 +6,6 @@ import io.iohk.cef.builder.SigningKeyPairs
 import io.iohk.cef.crypto._
 import io.iohk.cef.frontend.models.IdentityTransactionType
 import io.iohk.cef.ledger.Block
-import io.iohk.cef.ledger.identity.IdentityBlockSerializer._
 import io.iohk.cef.ledger.identity.storage.scalike.IdentityLedgerStateStorageImpl
 import io.iohk.cef.ledger.identity.storage.scalike.dao.IdentityLedgerStateStorageDao
 import io.iohk.cef.ledger.storage.Ledger
@@ -15,6 +14,7 @@ import io.iohk.cef.ledger.storage.scalike.dao.LedgerStorageDao
 import org.scalatest.{EitherValues, MustMatchers, fixture}
 import scalikejdbc._
 import scalikejdbc.scalatest.AutoRollback
+import io.iohk.cef.codecs.nio.auto._
 
 trait IdentityLedgerItDbTest
     extends fixture.FlatSpec
@@ -43,7 +43,7 @@ trait IdentityLedgerItDbTest
     val ledger = createLedger(ledgerStateStorageDao)
     val now = Instant.now()
     val header = IdentityBlockHeader(now)
-    val block1 = Block(
+    val block1 = Block[Set[SigningPublicKey], IdentityBlockHeader, IdentityTransaction](
       header,
       List[IdentityTransaction](
         Claim(
@@ -65,7 +65,7 @@ trait IdentityLedgerItDbTest
     ledgerStateStorageDao.slice(Set("one", "two", "three")) mustBe
       IdentityLedgerState(Map("one" -> Set(alice.public), "two" -> Set(bob.public)))
 
-    val block2 = Block(
+    val block2 = Block[Set[SigningPublicKey], IdentityBlockHeader, IdentityTransaction](
       header,
       List[IdentityTransaction](
         Link(
@@ -80,7 +80,7 @@ trait IdentityLedgerItDbTest
         Map("one" -> Set(alice.public), "two" -> Set(bob.public, carlos.public))
       )
 
-    val block3 = Block(
+    val block3 = Block[Set[SigningPublicKey], IdentityBlockHeader, IdentityTransaction](
       header,
       List[IdentityTransaction](
         Link(

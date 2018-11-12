@@ -40,7 +40,7 @@ trait ChimericLedgerStateStorageDaoDbTest extends fixture.FlatSpec with AutoRoll
               (${column.id}, ${column.address})
               values (${entryId}, ${address})
             """.update.apply()
-      case AddressNonceQuery(address) => ???
+      case AddressNonceQuery(address) => ()
       case UtxoQuery(txOutRef) =>
         val column = ChimericLedgerStateUtxoTable.column
         sql"""
@@ -71,7 +71,14 @@ trait ChimericLedgerStateStorageDaoDbTest extends fixture.FlatSpec with AutoRoll
   }
   private def insertValue(entryId: Long, value: ChimericStateResult)(implicit DBSession: DBSession): Unit = {
     value match {
-      case NonceResult(_) => ()
+      case NonceResult(nonce) =>
+        val column = ChimericLedgerStateNonceTable.column
+        sql"""
+             insert into ${ChimericLedgerStateNonceTable.table}
+              (${column.id}, ${column.nonce})
+              values ($entryId, $nonce)
+            """.update.apply()
+        ()
       case CreateCurrencyResult(_) => ()
       case UtxoResult(v, signingPublicKey) =>
         insertValueSQL(entryId, v)
@@ -124,21 +131,24 @@ trait ChimericLedgerStateStorageDaoDbTest extends fixture.FlatSpec with AutoRoll
     val signingPublicKey = Some(crypto.generateSigningKeyPair().public)
     val utxoResult = UtxoResult(utxorefValue, signingPublicKey)
     val addressKey = ChimericLedgerState.getAddressPartitionId(address)
+    val addressNonceKey = ChimericLedgerState.getAddressNoncePartitionId(address)
     val currency1Key = ChimericLedgerState.getCurrencyPartitionId(currency1)
     val currency2Key = ChimericLedgerState.getCurrencyPartitionId(currency2)
     val utxorefKey = ChimericLedgerState.getUtxoPartitionId(utxoref)
     val missingKey = ChimericLedgerState.getAddressPartitionId("")
     val pairs = Seq(
       addressKey -> AddressResult(addressValue, signingPublicKey),
+      addressNonceKey -> NonceResult(1),
       utxorefKey -> utxoResult,
       currency1Key -> CreateCurrencyResult(CreateCurrency(currency1)),
       currency2Key -> CreateCurrencyResult(CreateCurrency(currency2))
     )
     insertPairs(pairs)
     val dao = new ChimericLedgerStateStorageDao()
-    dao.slice(Set(addressKey)) mustBe LedgerState[ChimericStateResult](
+    dao.slice(Set(addressKey, addressNonceKey)) mustBe LedgerState[ChimericStateResult](
       Map(
-        addressKey -> AddressResult(addressValue, signingPublicKey)
+        addressKey -> AddressResult(addressValue, signingPublicKey),
+        addressNonceKey -> NonceResult(1)
       ))
     dao.slice(Set(utxorefKey)) mustBe LedgerState[ChimericStateResult](
       Map(

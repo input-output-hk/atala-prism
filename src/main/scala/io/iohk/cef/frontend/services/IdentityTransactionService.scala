@@ -31,7 +31,7 @@ class IdentityTransactionService(nodeCore: NodeCore[Set[SigningPublicKey], Ident
       constructorType(req.`type`)(req.identity, req.publicKey, req.signature)
 
     val envelope =
-      Envelope(content = identityTransaction, ledgerId = req.ledgerId, Not(Everyone))
+      Envelope(content = identityTransaction, containerId = req.ledgerId, Not(Everyone))
 
     nodeCore.receiveTransaction(envelope)
 

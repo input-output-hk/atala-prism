@@ -16,6 +16,7 @@ import io.iohk.cef.network.encoding.rlp
 import io.iohk.cef.network.transport.rlpx.ByteUtils._
 import io.iohk.cef.cryptolegacy._
 import io.iohk.cef.utils.HexStringCodec._
+import io.iohk.cef.utils._
 
 import scala.util.Random
 
@@ -74,7 +75,7 @@ case class AuthHandshaker(
     val encoded: Array[Byte] = message.toBytes
     val padded = encoded ++ randomBytes(Random.nextInt(MaxPadding - MinPadding) + MinPadding)
     val encryptedSize = padded.length + ECIESCoder.OverheadSize
-    val sizePrefix = ByteBuffer.allocate(2).putShort(encryptedSize.toShort).array
+    val sizePrefix = ByteBuffer.allocate(2).putShort(encryptedSize.toShort).toArray
     val encryptedPayload = ECIESCoder.encrypt(remotePubKey, secureRandom, padded, Some(sizePrefix))
     val packet = ByteString(sizePrefix ++ encryptedPayload)
 
@@ -141,7 +142,7 @@ case class AuthHandshaker(
     val encodedResponse = rlp.encodeToArray(response)
 
     val encryptedSize = encodedResponse.length + ECIESCoder.OverheadSize
-    val sizePrefix = ByteBuffer.allocate(2).putShort(encryptedSize.toShort).array
+    val sizePrefix = ByteBuffer.allocate(2).putShort(encryptedSize.toShort).toArray
     val encryptedResponsePayload =
       ECIESCoder.encrypt(message.publicKey, secureRandom, encodedResponse, Some(sizePrefix))
     val packet = ByteString(sizePrefix ++ encryptedResponsePayload)

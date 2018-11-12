@@ -1,14 +1,14 @@
 package io.iohk.cef.data.storage.scalike
-import io.iohk.cef.data.{DataItem, DataItemFactory, TableId}
+import io.iohk.cef.codecs.nio.NioEncDec
 import io.iohk.cef.data.storage.TableStorage
 import io.iohk.cef.data.storage.scalike.dao.TableStorageDao
+import io.iohk.cef.data.{DataItem, DataItemFactory, TableId}
 import io.iohk.cef.error.ApplicationError
-import io.iohk.cef.ledger.ByteStringSerializable
 import scalikejdbc.{ConnectionPool, DB, DBSession, using}
 
 class TableStorageImpl(tableStorageDao: TableStorageDao) extends TableStorage {
 
-  override def insert[I](tableId: TableId, dataItem: DataItem[I])(implicit itemSerializable: ByteStringSerializable[I]): Unit = {
+  override def insert[I](tableId: TableId, dataItem: DataItem[I])(implicit itemSerializable: NioEncDec[I]): Unit = {
     execInSession { implicit session =>
       tableStorageDao.insert(tableId, dataItem)
     }
@@ -22,7 +22,7 @@ class TableStorageImpl(tableStorageDao: TableStorageDao) extends TableStorage {
 
   override def selectAll[I](tableId: TableId)(
       implicit diFactory: DataItemFactory[I],
-      itemSerializable: ByteStringSerializable[I]): Either[ApplicationError, Seq[DataItem[I]]] = {
+      itemSerializable: NioEncDec[I]): Either[ApplicationError, Seq[DataItem[I]]] = {
     execInSession { implicit session =>
       tableStorageDao.selectAll(tableId)
     }

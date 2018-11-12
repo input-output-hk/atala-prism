@@ -2,11 +2,12 @@ package io.iohk.cef.core
 import io.iohk.cef.LedgerId
 import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.error.ApplicationError
-import io.iohk.cef.ledger.{Block, BlockHeader, ByteStringSerializable, Transaction}
+import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
 import io.iohk.cef.network.{Network, NodeId}
 import io.iohk.cef.transactionpool.TransactionPoolInterface
 
 import scala.concurrent.{ExecutionContext, Future}
+import io.iohk.cef.codecs.nio._
 
 /**
   * A NodeCore orchestrates the interaction between the frontend, network, transaction pool and the consensus.
@@ -28,8 +29,8 @@ class NodeCore[State, Header <: BlockHeader, Tx <: Transaction[State]](
     txNetwork: Network[Envelope[Tx]],
     blockNetwork: Network[Envelope[Block[State, Header, Tx]]],
     me: NodeId)(
-    implicit txSerializable: ByteStringSerializable[Envelope[Tx]],
-    blockSerializable: ByteStringSerializable[Envelope[Block[State, Header, Tx]]],
+    implicit txSerializable: NioEncDec[Envelope[Tx]],
+    blockSerializable: NioEncDec[Envelope[Block[State, Header, Tx]]],
     executionContext: ExecutionContext) {
 
   blockNetwork.messageStream.foreach(blEnvelope => processBlock(blEnvelope, Future.successful(Right(()))))
@@ -47,7 +48,7 @@ class NodeCore[State, Header <: BlockHeader, Tx <: Transaction[State]](
       txEnvelope: Envelope[Tx],
       networkDissemination: Future[Either[ApplicationError, Unit]]) = {
     process(txEnvelope, networkDissemination) { env =>
-      val txPoolService = consensusMap(env.ledgerId)._1
+      val txPoolService = consensusMap(env.containerId)._1
       Future(txPoolService.processTransaction(txEnvelope.content))
     }
   }
@@ -55,7 +56,7 @@ class NodeCore[State, Header <: BlockHeader, Tx <: Transaction[State]](
   private def processBlock(
       blEnvelope: Envelope[Block[State, Header, Tx]],
       networkDissemination: Future[Either[ApplicationError, Unit]]) = {
-    process(blEnvelope, networkDissemination)(env => consensusMap(env.ledgerId)._2.process(env.content))
+    process(blEnvelope, networkDissemination)(env => consensusMap(env.containerId)._2.process(env.content))
   }
 
   private def disseminate[A](
@@ -69,10 +70,10 @@ class NodeCore[State, Header <: BlockHeader, Tx <: Transaction[State]](
 
   private def process[T](txEnvelope: Envelope[T], networkDissemination: Future[Either[ApplicationError, Unit]])(
       submit: Envelope[T] => Future[Either[ApplicationError, Unit]])(
-      implicit byteStringSerializable: ByteStringSerializable[Envelope[T]]): Future[Either[ApplicationError, Unit]] = {
+      implicit byteStringSerializable: NioEncDec[Envelope[T]]): Future[Either[ApplicationError, Unit]] = {
     if (!thisIsDestination(txEnvelope)) {
       networkDissemination
-    } else if (!thisParticipatesInConsensus(txEnvelope.ledgerId)) {
+    } else if (!thisParticipatesInConsensus(txEnvelope.containerId)) {
       for {
         _ <- networkDissemination
       } yield {

@@ -11,16 +11,38 @@ import javax.crypto.Cipher
 
 class RSA(secureRandom: SecureRandom) extends EncryptionAlgorithm {
 
+  private val BLOCK_SIZE = 245
+  private val DECRYPT_BLOCK_SIZE = 256
+
   type PublicKey = java.security.PublicKey
   type PrivateKey = java.security.PrivateKey
 
   def encrypt(source: ByteString, key: PublicKey): EncryptedBytes = {
-    val cipher = Cipher.getInstance("RSA")
-    cipher.init(Cipher.ENCRYPT_MODE, key)
+    if (source.size == 0) {
+      val cipher = Cipher.getInstance("RSA")
+      cipher.init(Cipher.ENCRYPT_MODE, key)
 
-    // TODO: Find a way to use buffers in order to not crash on huge inputs
-    val data = cipher.doFinal(source.toArray)
-    EncryptedBytes(ByteString(data))
+      val result = cipher.doFinal(source.toArray)
+
+      EncryptedBytes(ByteString(result))
+    } else {
+      val cipher = Cipher.getInstance("RSA")
+      cipher.init(Cipher.ENCRYPT_MODE, key)
+
+      val l = source.size
+      var pointer = 0
+      val builder = ByteString.newBuilder
+      while (pointer < l) {
+        val delta = BLOCK_SIZE min (l - pointer)
+        val targetLength = cipher.getOutputSize(delta)
+        val fragment = new Array[Byte](targetLength)
+        cipher.doFinal(source.drop(pointer).take(delta).toArray, 0, delta, fragment, 0)
+        pointer += BLOCK_SIZE
+        builder ++= fragment
+      }
+
+      EncryptedBytes(builder.result)
+    }
   }
 
   def decrypt(source: EncryptedBytes, key: PrivateKey): Either[DecryptError, ByteString] = {
@@ -28,11 +50,20 @@ class RSA(secureRandom: SecureRandom) extends EncryptionAlgorithm {
       val cipher = Cipher.getInstance("RSA")
       cipher.init(Cipher.DECRYPT_MODE, key)
 
-      // TODO: Find a way to use buffers in order to not crash on huge inputs
-      val result = cipher.doFinal(source.bytes.toArray)
-      Right(ByteString(result))
+      val l = source.bytes.size
+      var pointer = 0
+      val builder = ByteString.newBuilder
+      while (pointer < l) {
+        val delta = DECRYPT_BLOCK_SIZE min (l - pointer)
+        val fragment = cipher.doFinal(source.bytes.drop(pointer).take(delta).toArray, 0, DECRYPT_BLOCK_SIZE)
+        pointer += DECRYPT_BLOCK_SIZE
+        builder ++= fragment
+      }
+
+      Right(builder.result)
     } catch {
-      case t: Throwable => Left(DecryptError.UnderlayingImplementationError(t.getMessage))
+      case t: Throwable =>
+        Left(DecryptError.UnderlayingImplementationError(t.getMessage))
     }
   }
 

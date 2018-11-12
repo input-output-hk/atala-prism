@@ -3,7 +3,7 @@ package io.iohk.cef.network.transport
 import java.net.InetSocketAddress
 
 import io.iohk.cef.network.PeerInfo
-import io.iohk.cef.codecs.nio._
+import io.iohk.cef.codecs.nio.{NioEncoder, NioDecoder}
 import io.iohk.cef.network.transport.tcp.{NettyTransport, TcpNetworkTransport}
 
 object Transports {
@@ -33,8 +33,8 @@ class Transports(val peerInfo: PeerInfo) {
     })
   }
 
-  def tcp[T](implicit codec: NioCodec[T]): Option[NetworkTransport[InetSocketAddress, T]] =
-    netty().map(nettyTransport => new TcpNetworkTransport[T](nettyTransport)(codec.encoder, codec.decoder))
+  def tcp[T: NioEncoder: NioDecoder]: Option[NetworkTransport[InetSocketAddress, T]] =
+    netty().map(nettyTransport => new TcpNetworkTransport[T](nettyTransport))
 
   def shutdown(): Unit = {
     nettyTransportRef.foreach(_.shutdown())

@@ -1,18 +1,17 @@
 package io.iohk.cef.data.storage.scalike.dao
-import io.iohk.cef.TableId
+import akka.util.ByteString
+import io.iohk.cef.codecs.nio._
 import io.iohk.cef.crypto._
 import io.iohk.cef.data.storage.scalike.{DataItemOwnerTable, DataItemSignatureTable, DataItemTable}
-import io.iohk.cef.data._
+import io.iohk.cef.data.{DataItem, DataItemId, TableId, Witness, _}
 import io.iohk.cef.error.ApplicationError
-import io.iohk.cef.ledger.ByteStringSerializable
 import scalikejdbc.{DBSession, _}
 
 class TableStorageDao {
-  def insert[I](tableId: TableId,
-                dataItem: DataItem[I])(implicit itemSerializable: ByteStringSerializable[I], session: DBSession): Unit = {
+  def insert[I](tableId: TableId, dataItem: DataItem[I])(implicit session: DBSession, enc: NioEncoder[I]): Unit = {
     val itemColumn = DataItemTable.column
 
-    val serializedItem = itemSerializable.encode(dataItem.data)
+    val serializedItem = ByteString(enc.encode(dataItem.data))
     sql"""insert into ${DataItemTable.table} (
           ${itemColumn.dataTableId},
           ${itemColumn.dataItemId},
@@ -51,15 +50,19 @@ class TableStorageDao {
     sql"""
       select ${it.result.id} from ${DataItemTable as it}
        where ${it.dataTableId} = ${tableId} and ${it.dataItemId} = ${dataItemId}
-      """.map(rs => rs.long(it.resultName.id)).toOption().apply().getOrElse(
-      throw new IllegalStateException(s"Not found: dataItemId ${dataItemId}, tableId ${tableId}")
-    )
+      """
+      .map(rs => rs.long(it.resultName.id))
+      .toOption()
+      .apply()
+      .getOrElse(
+        throw new IllegalStateException(s"Not found: dataItemId ${dataItemId}, tableId ${tableId}")
+      )
   }
 
   def selectAll[I](tableId: TableId)(
       implicit diFactory: DataItemFactory[I],
       session: DBSession,
-      serializable: ByteStringSerializable[I]): Either[ApplicationError, Seq[DataItem[I]]] = {
+      serializable: NioEncDec[I]): Either[ApplicationError, Seq[DataItem[I]]] = {
     val di = DataItemTable.syntax("di")
     val dataItemRows = sql"""
         select ${di.result.*}
@@ -139,7 +142,8 @@ class TableStorageDao {
     })
   }
 
-  private def insertDataItemSignatures[I](dataItemUniqueId: Long, dataItem: DataItem[I])(implicit session: DBSession) = {
+  private def insertDataItemSignatures[I](dataItemUniqueId: Long, dataItem: DataItem[I])(
+      implicit session: DBSession) = {
     val sigColumn = DataItemSignatureTable.column
     dataItem.witnesses.foreach {
       case Witness(signature, key) =>

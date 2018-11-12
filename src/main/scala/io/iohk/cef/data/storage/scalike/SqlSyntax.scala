@@ -1,9 +1,11 @@
 package io.iohk.cef.data.storage.scalike
+import java.nio.ByteBuffer
+
 import akka.util.ByteString
 import io.iohk.cef.data.{DataItemId, TableId}
 import scalikejdbc._
 
-case class DataItemTable(id: Long, dataTableId: TableId, dataItemId: DataItemId, dataItem: ByteString)
+case class DataItemTable(id: Long, dataTableId: TableId, dataItemId: DataItemId, dataItem: ByteBuffer)
 
 object DataItemTable extends SQLSyntaxSupport[DataItemTable] {
   override val tableName = Schema.DataTableName
@@ -13,7 +15,7 @@ object DataItemTable extends SQLSyntaxSupport[DataItemTable] {
       rs.long(ln.id),
       rs.string(ln.dataTableId),
       rs.string(ln.dataItemId),
-      ByteString(rs.bytes(ln.dataItem))
+      ByteBuffer.wrap(rs.bytes(ln.dataItem))
     )
   }
 }

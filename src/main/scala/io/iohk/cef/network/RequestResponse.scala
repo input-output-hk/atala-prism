@@ -12,6 +12,7 @@ import io.iohk.cef.network.transport.Transports
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.util.{Failure, Success}
+import scala.reflect.runtime.universe.TypeTag
 
 // FIXME: this will need a way of knowing if the other side
 // actually cares about the request (without reinventing HTTP)
@@ -19,21 +20,20 @@ class RequestResponse[Request: NioEncoder: NioDecoder, Response: NioEncoder: Nio
     networkDiscovery: NetworkDiscovery,
     transports: Transports)(implicit ec: ExecutionContext) {
 
-  case class CorrelatedRequest(correlationId: UUID, from: NodeId, content: Request)
-
-  case class CorrelatedResponse(correlationId: UUID, from: NodeId, content: Response)
+  private implicit val requestTypeTag: TypeTag[Request] = NioEncoder[Request].typeTag
+  private implicit val responseTypeTag: TypeTag[Response] = NioEncoder[Response].typeTag
 
   private val correlationMap = new ConcurrentHashMap[UUID, Promise[Response]]().asScala
 
-  private val requestChannel: ConversationalNetwork[CorrelatedRequest] =
-    new ConversationalNetwork[CorrelatedRequest](networkDiscovery, transports)
+  private val requestChannel: ConversationalNetwork[Correlated[Request]] =
+    new ConversationalNetwork[Correlated[Request]](networkDiscovery, transports)
 
-  private val responseChannel: ConversationalNetwork[CorrelatedResponse] =
-    new ConversationalNetwork[CorrelatedResponse](networkDiscovery, transports)
+  private val responseChannel: ConversationalNetwork[Correlated[Response]] =
+    new ConversationalNetwork[Correlated[Response]](networkDiscovery, transports)
 
   responseChannel.messageStream.foreach(processResponse)
 
-  private def processResponse(response: CorrelatedResponse): Unit = {
+  private def processResponse(response: Correlated[Response]): Unit = {
     correlationMap
       .get(response.correlationId)
       .foreach(promisedResponse => {
@@ -46,13 +46,13 @@ class RequestResponse[Request: NioEncoder: NioDecoder, Response: NioEncoder: Nio
     val correlationId = randomUUID()
     val responsePromise = Promise[Response]()
     correlationMap.put(correlationId, responsePromise)
-    requestChannel.sendMessage(nodeId, CorrelatedRequest(correlationId, transports.peerInfo.nodeId, request))
+    requestChannel.sendMessage(nodeId, Correlated(correlationId, transports.peerInfo.nodeId, request))
     responsePromise.future
   }
 
   def handleRequest(f: Request => Response): Unit = {
     requestChannel.messageStream.foreach(correlatedRequest => { // FIXME will need to handle exceptions
-      val response = CorrelatedResponse(
+      val response = Correlated(
         correlationId = correlatedRequest.correlationId,
         from = transports.peerInfo.nodeId,
         content = f(correlatedRequest.content))
@@ -64,7 +64,7 @@ class RequestResponse[Request: NioEncoder: NioDecoder, Response: NioEncoder: Nio
     requestChannel.messageStream.foreach(correlatedRequest => {
       f(correlatedRequest.content).onComplete {
         case Success(content) =>
-          val response = CorrelatedResponse(
+          val response = Correlated(
             correlationId = correlatedRequest.correlationId,
             from = transports.peerInfo.nodeId,
             content = content
@@ -73,5 +73,16 @@ class RequestResponse[Request: NioEncoder: NioDecoder, Response: NioEncoder: Nio
         case Failure(exception) => ??? // FIXME
       }
     })
+  }
+}
+
+case class Correlated[T](correlationId: UUID, from: NodeId, content: T)
+object Correlated {
+  implicit def CorrelatedEncDec[T: NioEncDec]: NioEncDec[Correlated[T]] = {
+    import io.iohk.cef.codecs.nio.auto._
+    implicit val ttt: TypeTag[T] = NioEncDec[T].typeTag
+    val e: NioEncoder[Correlated[T]] = genericEncoder
+    val d: NioDecoder[Correlated[T]] = genericDecoder
+    NioEncDec(e, d)
   }
 }

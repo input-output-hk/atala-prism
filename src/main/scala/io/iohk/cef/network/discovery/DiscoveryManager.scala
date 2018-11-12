@@ -12,7 +12,7 @@ import io.iohk.cef.network.NodeStatus.NodeState
 import io.iohk.cef.network.ServerStatus
 import io.iohk.cef.network.discovery.DiscoveryListener._
 import io.iohk.cef.network.discovery.db.KnownNodeStorage
-import io.iohk.cef.codecs.{Decoder, Encoder}
+import io.iohk.cef.codecs.nio.{NioDecoder, NioEncoder}
 import io.iohk.cef.utils.FiniteSizedMap
 import io.micrometer.core.instrument.MeterRegistry
 import io.iohk.cef.utils.HexStringCodec._
@@ -54,8 +54,8 @@ object DiscoveryManager {
       knownNodesStorage: KnownNodeStorage,
       nodeState: NodeState,
       clock: Clock,
-      encoder: Encoder[DiscoveryWireMessage, ByteString],
-      decoder: Decoder[ByteString, DiscoveryWireMessage],
+      encoder: NioEncoder[DiscoveryWireMessage],
+      decoder: NioDecoder[DiscoveryWireMessage],
       discoveryListenerFactory: ActorContext[DiscoveryRequest] => ActorRef[DiscoveryListenerRequest],
       randomSource: SecureRandom,
       registry: MeterRegistry): Behavior[DiscoveryRequest] = Behaviors.setup { context =>
@@ -277,8 +277,6 @@ object DiscoveryManager {
     Behaviors.withTimers(startListening)
   }
 
-  def calculateMessageKey(
-      encoder: Encoder[DiscoveryWireMessage, ByteString],
-      message: DiscoveryWireMessage): ByteString =
+  def calculateMessageKey(encoder: NioEncoder[DiscoveryWireMessage], message: DiscoveryWireMessage): ByteString =
     hash(message)(encoder).toByteString
 }

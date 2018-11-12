@@ -5,13 +5,12 @@ import java.time.Clock
 
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.ActorContext
-import akka.util.ByteString
 import io.iohk.cef.network.NodeStatus.NodeState
 import io.iohk.cef.network.discovery.DiscoveryListener.DiscoveryListenerRequest
 import io.iohk.cef.network.discovery.DiscoveryManager.DiscoveryRequest
 import io.iohk.cef.network.discovery.db.DummyKnownNodesStorage
 import io.iohk.cef.network.discovery._
-import io.iohk.cef.codecs.{Decoder, Encoder}
+import io.iohk.cef.codecs.nio.{NioEncoder, NioDecoder}
 import io.iohk.cef.network.telemetry.InMemoryTelemetry
 import io.iohk.cef.network.transport.Transports
 import io.iohk.cef.network.transport.tcp.NetUtils.aRandomAddress
@@ -89,12 +88,14 @@ trait NetworkFixture {
       ServerStatus.Listening(nodeInfo.discoveryAddress),
       Capabilities(0))
 
-    import io.iohk.cef.network.encoding.rlp.RLPEncoders._
-    import io.iohk.cef.network.encoding.rlp.RLPImplicits._
+    val (encoder, decoder) = {
+      import io.iohk.cef.network.encoding.rlp._
+      import io.iohk.cef.network.encoding.rlp.RLPImplicits._
 
-    val encoder = implicitly[Encoder[DiscoveryWireMessage, ByteString]]
+      val encdec = RLPEncDec[DiscoveryWireMessage].asNio
 
-    val decoder = implicitly[Decoder[ByteString, DiscoveryWireMessage]]
+      (encdec, encdec)
+    }
 
     val discoveryBehavior = DiscoveryManager.behaviour(
       discoveryConfig,
@@ -112,8 +113,8 @@ trait NetworkFixture {
 
   private def listenerFactory(
       discoveryConfig: DiscoveryConfig,
-      encoder: Encoder[DiscoveryWireMessage, ByteString],
-      decoder: Decoder[ByteString, DiscoveryWireMessage])(
+      encoder: NioEncoder[DiscoveryWireMessage],
+      decoder: NioDecoder[DiscoveryWireMessage])(
       context: ActorContext[DiscoveryRequest]): ActorRef[DiscoveryListenerRequest] = {
 
     context.spawn(

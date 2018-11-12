@@ -7,6 +7,7 @@ import io.iohk.cef.utils.ByteSizeable
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.Duration
 import scala.concurrent.stm.{Ref, atomic}
+import java.time.Clock
 
 /**
   * Interface for non actor model
@@ -73,4 +74,34 @@ class TransactionPoolInterface[State, Header <: BlockHeader, Tx <: Transaction[S
       Right(())
     }
   }
+}
+
+object TransactionPoolInterface {
+  def apply[State, Header <: BlockHeader, Tx <: Transaction[State]](
+      headerGenerator: Seq[Transaction[State]] => Header,
+      maxBlockSize: Int,
+      ledgerStateStorage: LedgerStateStorage[State],
+      defaultTransactionExpiration: Duration,
+      clock: Clock)(
+      implicit blockByteSizeable: ByteSizeable[Block[State, Header, Tx]],
+      executionContext: ExecutionContext): TransactionPoolInterface[State, Header, Tx] =
+    new TransactionPoolInterface(
+      headerGenerator,
+      maxBlockSize,
+      ledgerStateStorage,
+      defaultTransactionExpiration,
+      () => new TimedQueue[Tx](clock))
+  def apply[State, Header <: BlockHeader, Tx <: Transaction[State]](
+      headerGenerator: Seq[Transaction[State]] => Header,
+      maxBlockSize: Int,
+      ledgerStateStorage: LedgerStateStorage[State],
+      defaultTransactionExpiration: Duration)(
+      implicit blockByteSizeable: ByteSizeable[Block[State, Header, Tx]],
+      executionContext: ExecutionContext): TransactionPoolInterface[State, Header, Tx] =
+    new TransactionPoolInterface(
+      headerGenerator,
+      maxBlockSize,
+      ledgerStateStorage,
+      defaultTransactionExpiration,
+      () => new TimedQueue[Tx]())
 }

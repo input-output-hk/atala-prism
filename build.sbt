@@ -132,11 +132,5 @@ val root = project
       warnOnUnverifiedFiles = false,
       warnOnUnusedVerifications = false
     ),
-    scalacOptions ++= compilerOptions,
-    coverageExcludedPackages :=
-      "<empty>;io.iohk.cef.ledger.identity.storage.protobuf.*;io.iohk.cef.protobuf.*"
+    scalacOptions ++= compilerOptions
   )
-
-PB.targets in Compile := Seq(
-  scalapb.gen() -> (sourceManaged in Compile).value
-)
