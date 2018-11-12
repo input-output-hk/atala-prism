@@ -36,7 +36,7 @@ class Table(tableStorage: TableStorage) {
       canValidate: CanValidate[DataItem[I]]): Either[ApplicationError, Unit] = {
     for {
     dataItemOption <- tableStorage.selectSingle[I](tableId, dataItemId)
-    dataItem <- Either.cond(dataItemOption.isDefined, dataItemOption.get, new DataItemNotFound(tableId, dataItemId))
+    dataItem <- dataItemOption.toRight(new DataItemNotFound(tableId, dataItemId))
     _ <- canValidate.validate(dataItem)
     } yield {
       val signatureValidation =
