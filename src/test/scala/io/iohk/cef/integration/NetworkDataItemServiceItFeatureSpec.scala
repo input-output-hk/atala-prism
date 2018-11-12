@@ -8,9 +8,10 @@ import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{FeatureSpec, GivenWhenThen, MustMatchers}
 import io.iohk.cef.codecs.nio.auto._
+import io.iohk.cef.data.DataItemAction.Insert
 import org.mockito.ArgumentMatchers._
 class NetworkDataItemServiceItFeatureSpec
-  extends FeatureSpec
+    extends FeatureSpec
     with GivenWhenThen
     with MustMatchers
     with NetworkFixture
@@ -19,12 +20,12 @@ class NetworkDataItemServiceItFeatureSpec
   private val bootstrap = randomBaseNetwork(None)
 
   private def createDataItemService(table: Table, baseNetwork: BaseNetwork)(
-    implicit enc: NioEncDec[String],
-    actionEncDec: NioEncDec[DataItemAction[String]],
-    destinationDescriptorEncDec: NioEncDec[DestinationDescriptor],
-    itemEncDec: NioEncDec[DataItem[String]],
-    canValidate: CanValidate[DataItem[String]],
-    frameCodec: NioEncDec[Envelope[DataItemAction[String]]]) = {
+      implicit enc: NioEncDec[String],
+      actionEncDec: NioEncDec[DataItemAction[String]],
+      destinationDescriptorEncDec: NioEncDec[DestinationDescriptor],
+      itemEncDec: NioEncDec[DataItem[String]],
+      canValidate: CanValidate[DataItem[String]],
+      frameCodec: NioEncDec[Envelope[DataItemAction[String]]]) = {
 
     val txNetwork = new Network[Envelope[DataItemAction[String]]](baseNetwork.networkDiscovery, baseNetwork.transports)
     new DataItemService[String](table, txNetwork)
@@ -51,9 +52,9 @@ class NetworkDataItemServiceItFeatureSpec
 
         Then("the DataItemService should insert the table on the network 1")
 
-        val input: Envelope[DataItem[String]] = setUpInsertData()
+        val input: Envelope[DataItemAction[String]] = setUpInsertData()
 
-        dataItemService.insert(input) mustBe Right(())
+        dataItemService.processAction(input) mustBe Right(())
 
         And("the  DataItemService insert the table on the network 2")
 
@@ -64,13 +65,14 @@ class NetworkDataItemServiceItFeatureSpec
 
   }
 
-  private def setUpInsertData(): Envelope[DataItem[String]] = {
+  private def setUpInsertData(): Envelope[DataItemAction[String]] = {
     val data = "test-data"
     val itemId = "item-id"
     val containerId = "1"
     val dataItem = DataItem[String](itemId, data, Seq.empty[Witness], Seq.empty[Owner])
+    val insert = Insert(dataItem)
     val input = Envelope(
-      content = dataItem,
+      content = insert,
       containerId = containerId,
       destinationDescriptor = Everyone
     )
