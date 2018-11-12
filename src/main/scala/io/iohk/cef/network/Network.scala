@@ -10,9 +10,8 @@ import io.iohk.cef.network.transport.Frame
   * @param transports an application wide instance that holds the actual network resources.
   * @tparam Message the user message type.
   */
-class Network[Message: WeakTypeTag](
-    networkDiscovery: NetworkDiscovery,
-    transports: Transports)(implicit enc: NioEncDec[Frame[Message]]) {
+class Network[Message: WeakTypeTag](networkDiscovery: NetworkDiscovery, transports: Transports)(
+    implicit enc: NioEncDec[Frame[Message]]) {
 
   private val conversationalNetwork = new ConversationalNetwork[Message](networkDiscovery, transports)
   private val disseminationalNetwork = new DisseminationalNetwork[Message](networkDiscovery, transports)

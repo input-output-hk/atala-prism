@@ -6,7 +6,6 @@ import io.iohk.cef.builder.SigningKeyPairs
 import io.iohk.cef.crypto._
 import io.iohk.cef.frontend.models.IdentityTransactionType
 import io.iohk.cef.ledger.Block
-import io.iohk.cef.ledger.identity.IdentityBlockSerializer._
 import io.iohk.cef.ledger.identity.storage.scalike.IdentityLedgerStateStorageImpl
 import io.iohk.cef.ledger.identity.storage.scalike.dao.IdentityLedgerStateStorageDao
 import io.iohk.cef.ledger.storage.Ledger
@@ -15,6 +14,7 @@ import io.iohk.cef.ledger.storage.scalike.dao.LedgerStorageDao
 import org.scalatest.{EitherValues, MustMatchers, fixture}
 import scalikejdbc._
 import scalikejdbc.scalatest.AutoRollback
+import io.iohk.cef.codecs.nio.auto._
 
 trait IdentityLedgerItDbTest
     extends fixture.FlatSpec

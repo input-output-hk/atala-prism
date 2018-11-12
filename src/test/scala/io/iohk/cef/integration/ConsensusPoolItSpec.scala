@@ -2,10 +2,10 @@ package io.iohk.cef.integration
 import io.iohk.cef.LedgerId
 import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.consensus.raft._
-import io.iohk.cef.ledger.Block
+import io.iohk.cef.ledger.{Block, Transaction}
 import io.iohk.cef.ledger.storage.LedgerStateStorage
 import io.iohk.cef.test.{DummyBlockHeader, DummyTransaction}
-import io.iohk.cef.transactionpool.{BlockCreator, TimedQueue, TransactionPoolInterface}
+import io.iohk.cef.transactionpool.{BlockCreator, TransactionPoolInterface}
 import org.scalatest.concurrent.Eventually
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 import org.scalatest.mockito.MockitoSugar
@@ -31,7 +31,6 @@ class ConsensusPoolItSpec extends FlatSpecLike with MockitoSugar with MustMatche
     implicit val patienceConfig =
       PatienceConfig(timeout = scaled(Span(2, Seconds)), interval = scaled(Span(5, Millis)))
     val ledgerStateStorage = mockLedgerStateStorage[String]
-    val queue = TimedQueue[DummyTransaction]()
     val blockSizeable = new ByteSizeable[Block[String, DummyBlockHeader, DummyTransaction]] {
       override def sizeInBytes(t: Block[String, DummyBlockHeader, DummyTransaction]): Int = {
         val size = DummyBlockHeader.sizeable.sizeInBytes(t.header) +
@@ -41,12 +40,11 @@ class ConsensusPoolItSpec extends FlatSpecLike with MockitoSugar with MustMatche
     }
 
     val txPoolFutureInterface =
-      new TransactionPoolInterface[String, DummyBlockHeader, DummyTransaction](
-        txs => new DummyBlockHeader(txs.size),
+      TransactionPoolInterface[String, DummyBlockHeader, DummyTransaction](
+        (txs: Seq[Transaction[String]]) => new DummyBlockHeader(txs.size),
         10000,
         ledgerStateStorage,
-        1 minute,
-        () => queue
+        1 minute
       )(blockSizeable, implicitly[ExecutionContext])
 
     val testExecution = mock[B => Unit]

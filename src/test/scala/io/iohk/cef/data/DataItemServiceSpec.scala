@@ -17,7 +17,7 @@ import scala.concurrent.Future
 class DataItemServiceSpec extends FlatSpec with MockitoSugar {
 
   private val table = mock[Table]
-  private def newService[T](network:  Network[Envelope[DataItemAction[T]]])(
+  private def newService[T](network: Network[Envelope[DataItemAction[T]]])(
       implicit encDec: NioEncDec[T],
       itemEncDec: NioEncDec[DataItem[T]],
       actionEncDec: NioEncDec[DeleteSignatureWrapper[T]],
