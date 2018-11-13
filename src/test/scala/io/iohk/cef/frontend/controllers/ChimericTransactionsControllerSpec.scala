@@ -33,7 +33,7 @@ class ChimericTransactionsControllerSpec
 
   import Codecs._
 
-  val nodeCore = mock[NodeCore[ChimericStateResult, ChimericBlockHeader, ChimericTx]]
+  val nodeCore = mock[NodeCore[ChimericStateResult, ChimericTx]]
   when(nodeCore.receiveTransaction(any())).thenReturn(Future.successful(Right(())))
 
   implicit val executionContext = system.dispatcher

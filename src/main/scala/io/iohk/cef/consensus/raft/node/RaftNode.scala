@@ -270,7 +270,9 @@ private[raft] class RaftNode[Command: NioEncDec](
   // Reset election timer
   // Send RequestVote RPCs to all other servers
   private def becomeCandidate(rs: RaftState[Command], event: NodeEvent): RaftState[Command] = {
-    log(s"Changing state from ${rs.role.stateCode} to $Candidate", rs)
+    if (rs.role.stateCode != Candidate)
+      log(s"Changing state from ${rs.role.stateCode} to $Candidate", rs)
+
     electionTimer.reset()
     val (currentTerm, _) = rs.persistentState
     val newTerm = currentTerm + 1

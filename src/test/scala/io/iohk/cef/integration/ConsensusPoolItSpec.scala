@@ -2,9 +2,9 @@ package io.iohk.cef.integration
 import io.iohk.cef.LedgerId
 import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.consensus.raft._
-import io.iohk.cef.ledger.{Block, Transaction}
+import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
 import io.iohk.cef.ledger.storage.LedgerStateStorage
-import io.iohk.cef.test.{DummyBlockHeader, DummyTransaction}
+import io.iohk.cef.test.DummyTransaction
 import io.iohk.cef.transactionpool.{BlockCreator, TransactionPoolInterface}
 import org.scalatest.concurrent.Eventually
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
@@ -15,12 +15,12 @@ import org.scalatest.{FlatSpecLike, MustMatchers}
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 import io.iohk.cef.codecs.nio.auto._
-import io.iohk.cef.utils.ByteSizeable
+import io.iohk.cef.core.raft.RaftConsensusInterface
 
 class ConsensusPoolItSpec extends FlatSpecLike with MockitoSugar with MustMatchers with Eventually {
 
   private def mockLedgerStateStorage[State] = mock[LedgerStateStorage[State]]
-  type B = Block[String, DummyBlockHeader, DummyTransaction]
+  type B = Block[String, DummyTransaction]
   behavior of "ConsensusPoolItSpec"
 
   it should "push periodical blocks to consensus" in new RealRaftNodeFixture[B] {
@@ -31,21 +31,15 @@ class ConsensusPoolItSpec extends FlatSpecLike with MockitoSugar with MustMatche
     implicit val patienceConfig =
       PatienceConfig(timeout = scaled(Span(2, Seconds)), interval = scaled(Span(5, Millis)))
     val ledgerStateStorage = mockLedgerStateStorage[String]
-    val blockSizeable = new ByteSizeable[Block[String, DummyBlockHeader, DummyTransaction]] {
-      override def sizeInBytes(t: Block[String, DummyBlockHeader, DummyTransaction]): Int = {
-        val size = DummyBlockHeader.sizeable.sizeInBytes(t.header) +
-          t.transactions.foldLeft(0)((s, c) => s + DummyTransaction.sizeable.sizeInBytes(c))
-        size
-      }
-    }
+    val generateHeader: Seq[Transaction[String]] => BlockHeader = _ => BlockHeader()
 
     val txPoolFutureInterface =
-      TransactionPoolInterface[String, DummyBlockHeader, DummyTransaction](
-        (txs: Seq[Transaction[String]]) => new DummyBlockHeader(txs.size),
-        10000,
+      TransactionPoolInterface[String, DummyTransaction](
+        generateHeader,
+        maxBlockSize = 3,
         ledgerStateStorage,
         1 minute
-      )(blockSizeable, implicitly[ExecutionContext])
+      )(implicitly[ExecutionContext])
 
     val testExecution = mock[B => Unit]
     val ledgerId: LedgerId = "1"
@@ -56,18 +50,18 @@ class ConsensusPoolItSpec extends FlatSpecLike with MockitoSugar with MustMatche
 
     val Seq(t1, t2, t3) = anIntegratedCluster(storages.zip(clusterIds))
     t1.raftNode.electionTimeout().futureValue
-    val largeBlockTransactions = (1 to 139).map(DummyTransaction.apply)
-    val block2Transactions = (140 to 155).map(DummyTransaction.apply)
-    val block3Transactions = (156 to 166).map(DummyTransaction.apply)
+    val block1Transactions = (1 to 3).map(DummyTransaction)
+    val block2Transactions = (4 to 5).map(DummyTransaction)
+    val block3Transactions = (6 to 7).map(DummyTransaction)
 
-    processAllTxs(largeBlockTransactions, txPoolFutureInterface)
+    processAllTxs(block1Transactions, txPoolFutureInterface)
     processAllTxs(block2Transactions, txPoolFutureInterface)
 
-    val consensus: Consensus[String, DummyBlockHeader, DummyTransaction] =
+    val consensus: Consensus[String, DummyTransaction] =
       new RaftConsensusInterface(ledgerId, new RaftConsensus(t1.raftNode))
 
     val blockCreator =
-      new BlockCreator[String, DummyBlockHeader, DummyTransaction](
+      new BlockCreator[String, DummyTransaction](
         txPoolFutureInterface,
         consensus,
         0 seconds,
@@ -75,15 +69,11 @@ class ConsensusPoolItSpec extends FlatSpecLike with MockitoSugar with MustMatche
       )
 
     val (block1, block2, block3) = (
-      Block[String, DummyBlockHeader, DummyTransaction](
-        DummyBlockHeader(largeBlockTransactions.size),
-        largeBlockTransactions),
-      Block[String, DummyBlockHeader, DummyTransaction](DummyBlockHeader(block2Transactions.size), block2Transactions),
-      Block[String, DummyBlockHeader, DummyTransaction](DummyBlockHeader(block3Transactions.size), block3Transactions)
+      Block[String, DummyTransaction](BlockHeader(), block1Transactions),
+      Block[String, DummyTransaction](BlockHeader(), block2Transactions),
+      Block[String, DummyTransaction](BlockHeader(), block3Transactions)
     )
-    val expectedLogEntries = Seq(block1, block2)
-    eventually(s1.log.map(_.command) mustBe Seq(expectedLogEntries.head))
-    eventually(s1.log.map(_.command) mustBe expectedLogEntries)
+    eventually(s1.log.map(_.command) mustBe Vector(block1, block2))
 
     processAllTxs(block3Transactions, txPoolFutureInterface)
 
@@ -91,13 +81,10 @@ class ConsensusPoolItSpec extends FlatSpecLike with MockitoSugar with MustMatche
     // since we don't have any duplicate transactions
     eventually(
       s1.log.map(_.command).flatMap(_.transactions).toSet.size mustBe
-        largeBlockTransactions.size + block2Transactions.size + block3Transactions.size)
-
+        block1Transactions.size + block2Transactions.size + block3Transactions.size)
   }
 
-  private def processAllTxs(
-      txs: Seq[DummyTransaction],
-      txPoolIf: TransactionPoolInterface[String, DummyBlockHeader, DummyTransaction])(
+  private def processAllTxs(txs: Seq[DummyTransaction], txPoolIf: TransactionPoolInterface[String, DummyTransaction])(
       implicit executionContext: ExecutionContext
   ) = {
     val result = txs.map(txPoolIf.processTransaction)

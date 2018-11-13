@@ -2,8 +2,7 @@ package io.iohk.cef.transactionpool
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.ledger.storage.dao.MockingLedgerStateStorage
 import io.iohk.cef.ledger.{Block, BlockHeader, LedgerState, Transaction}
-import io.iohk.cef.test.{DummyBlockHeader, DummyTransaction, TestClock}
-import io.iohk.cef.utils.ByteSizeable
+import io.iohk.cef.test.{DummyTransaction, TestClock}
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import org.scalacheck.{Arbitrary, Gen}
@@ -26,45 +25,26 @@ class TransactionPoolSpec
 
   val emptyHeaderGenerator: Seq[Transaction[String]] => BlockHeader = _ => new BlockHeader {}
 
-  def headerGenerator(size: Int): Seq[Transaction[String]] => BlockHeader = { _ =>
-    new DummyBlockHeader(size)
-  }
-
-  val sizeableHeaderGenerator: Gen[DummyBlockHeader] = for {
-    size <- Gen.posNum[Int]
-  } yield DummyBlockHeader(size)
+  def headerGenerator(size: Int): Seq[Transaction[String]] => BlockHeader = _ => BlockHeader()
 
   val sizeableTransactionGenerator: Gen[DummyTransaction] = for {
     size <- Gen.posNum[Int]
   } yield DummyTransaction(size)
 
-  implicit val sizeableHeaderArbitrary = Arbitrary(sizeableHeaderGenerator)
   implicit val sizeableTxArbitrary = Arbitrary(sizeableTransactionGenerator)
 
-  implicit val dummyBlockSerializer: ByteSizeable[Block[String, DummyBlockHeader, DummyTransaction]] =
-    new ByteSizeable[Block[String, DummyBlockHeader, DummyTransaction]] {
-      override def sizeInBytes(t: Block[String, DummyBlockHeader, DummyTransaction]): Int =
-        t.transactions.foldLeft(0)(_ + _.size) + t.header.sizeInBytes
-    }
-
-  def totalSize(txs: List[DummyTransaction], header: DummyBlockHeader)(
-      implicit txSizeable: ByteSizeable[DummyTransaction],
-      headerSizeable: ByteSizeable[DummyBlockHeader]): Int = {
-    txs.map(txSizeable.sizeInBytes).foldLeft(0)(_ + _) + headerSizeable.sizeInBytes(header)
-  }
-
   it should "not produce blocks larger than the max block size" in {
-    forAll { (txs: Queue[DummyTransaction], header: DummyBlockHeader) =>
+    forAll { txs: Queue[DummyTransaction] =>
+      val header = BlockHeader()
       val defaultDuration = 1 minute
       val clock = TestClock()
       val timedQueue = TimedQueue(clock, txs.map { tx =>
         tx -> clock.instant().plus(java.time.Duration.ofMillis(defaultDuration.toMillis))
       })
-      val size = totalSize(txs.toList, header)
       val ledgerStateStorage = mockLedgerStateStorage
       when(ledgerStateStorage.slice(ArgumentMatchers.any())).thenReturn(LedgerState[String](Map()))
       val pool =
-        new TransactionPool(timedQueue, (_: Seq[Transaction[String]]) => header, size, ledgerStateStorage, 1 minute)
+        new TransactionPool(timedQueue, (_: Seq[Transaction[String]]) => header, txs.size, ledgerStateStorage, 1 minute)
       val block = pool.generateBlock()
       block.header mustBe header
       block.transactions mustBe txs
@@ -80,7 +60,7 @@ class TransactionPoolSpec
   }
 
   it should "process a transaction" in {
-    val header = DummyBlockHeader(1)
+    val header = BlockHeader()
     val ledgerStateStorage = mockLedgerStateStorage
     val timedQueue = mock[TimedQueue[DummyTransaction]]
     val oneTxTimedQueue = mock[TimedQueue[DummyTransaction]]
@@ -100,7 +80,7 @@ class TransactionPoolSpec
   }
 
   it should "remove block transactions" in {
-    val header = DummyBlockHeader(1)
+    val header = BlockHeader()
     val ledgerStateStorage = mockLedgerStateStorage
     val timedQueue = mock[TimedQueue[DummyTransaction]]
     val defaultExpiration = 1 minute
@@ -114,9 +94,9 @@ class TransactionPoolSpec
     val txs = List(DummyTransaction(2), DummyTransaction(3), DummyTransaction(4))
     when(timedQueue.enqueue(any(), ArgumentMatchers.eq(defaultExpiration))).thenReturn(timedQueue)
     when(timedQueue.filterNot(any())).thenReturn(timedQueue)
-    val wrappedPool: Either[ApplicationError, TransactionPool[String, DummyBlockHeader, DummyTransaction]] = Right(pool)
+    val wrappedPool: Either[ApplicationError, TransactionPool[String, DummyTransaction]] = Right(pool)
     val newPoolResult = txs.foldLeft(wrappedPool)((s, e) => s.flatMap(_.processTransaction(e)))
-    val block = Block[String, DummyBlockHeader, DummyTransaction](header, txs.tail)
+    val block = Block[String, DummyTransaction](header, txs.tail)
     newPoolResult match {
       case Right(newPool) =>
         newPool.removeBlockTransactions(block)

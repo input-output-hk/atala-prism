@@ -13,10 +13,9 @@ import io.iohk.cef.frontend.models.{CreateChimericTransactionRequest, CreateNonS
 import io.iohk.cef.frontend.services.ChimericTransactionService
 import io.iohk.cef.ledger.chimeric._
 import io.iohk.cef.ledger.storage.LedgerStateStorage
-import io.iohk.cef.ledger.{Block, Transaction}
+import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
 import io.iohk.cef.network.{MessageStream, Network, NodeId}
 import io.iohk.cef.transactionpool.TransactionPoolInterface
-import io.iohk.cef.utils.ByteSizeable
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.when
 import org.scalatest._
@@ -44,22 +43,22 @@ class ChimericTransactionNodeCoreItSpec
 
   behavior of "ChimericTransactionNodeCoreItSpec"
 
-  def createNodeCore: NodeCore[ChimericStateResult, ChimericBlockHeader, ChimericTx] = {
+  def createNodeCore: NodeCore[ChimericStateResult, ChimericTx] = {
     implicit val timeout = Timeout(10.seconds)
     implicit val envelopeSerializable = mock[NioEncDec[Envelope[TransactionType]]]
     implicit val blockSerializable = mock[NioEncDec[Envelope[BlockType]]]
 
-    def generateHeader(transactions: Seq[TransactionType]) = {
-      new ChimericBlockHeader
-    }
+    val generateHeader: Seq[TransactionType] => BlockHeader = _ => BlockHeader()
+
     implicit val blockSerializable2 = mock[NioEncDec[BlockType]]
-    implicit val blockSizeable = new ByteSizeable[BlockType] {
-      override def sizeInBytes(t: BlockType): Int = 1
-    }
     val ledgerStateStorage = mock[LedgerStateStorageType]
 
     val txPoolInterface =
-      TransactionPoolInterface(generateHeader, 10000, ledgerStateStorage, 10.minutes)
+      TransactionPoolInterface[TransactionStateType, TransactionType](
+        generateHeader,
+        10000,
+        ledgerStateStorage,
+        10.minutes)
 
     val consensus = mock[ConsensusType]
     val blockNetwork = mock[Network[Envelope[BlockType]]]
@@ -86,7 +85,7 @@ class ChimericTransactionNodeCoreItSpec
         blockSerializable,
         ExecutionContext.global)
 
-    core.asInstanceOf[NodeCore[ChimericStateResult, ChimericBlockHeader, ChimericTx]]
+    core.asInstanceOf[NodeCore[ChimericStateResult, ChimericTx]]
   }
 
   it should "process a transaction" in {
@@ -111,17 +110,10 @@ class ChimericTransactionNodeCoreItSpec
 object ChimericTransactionNodeCoreItSpec {
 
   type TransactionStateType = ChimericStateResult
-  type BlockHeaderType = ChimericBlockHeader
   type TransactionType = Transaction[TransactionStateType]
-  type BlockType = Block[TransactionStateType, BlockHeaderType, TransactionType]
-
-  type TransactionPoolInterfaceType =
-    TransactionPoolInterface[TransactionStateType, BlockHeaderType, TransactionType]
+  type BlockType = Block[TransactionStateType, TransactionType]
 
   type LedgerStateStorageType = LedgerStateStorage[TransactionStateType]
 
-  type ByteSizeableType = ByteSizeable[BlockType]
-
-  type ConsensusType = Consensus[TransactionStateType, BlockHeaderType, TransactionType]
-
+  type ConsensusType = Consensus[TransactionStateType, TransactionType]
 }

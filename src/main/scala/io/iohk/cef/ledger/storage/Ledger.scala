@@ -6,8 +6,8 @@ import io.iohk.cef.codecs.nio._
 
 case class Ledger[S](ledgerId: LedgerId, ledgerStorage: LedgerStorage, ledgerStateStorage: LedgerStateStorage[S]) {
 
-  def apply[Header <: BlockHeader, Tx <: Transaction[S]](block: Block[S, Header, Tx])(
-      implicit serializer: NioEncDec[Block[S, Header, Tx]]): Either[LedgerError, Unit] = {
+  def apply[Tx <: Transaction[S]](block: Block[S, Tx])(
+      implicit serializer: NioEncDec[Block[S, Tx]]): Either[LedgerError, Unit] = {
 
     val state = ledgerStateStorage.slice(block.partitionIds)
     val either = block(state)

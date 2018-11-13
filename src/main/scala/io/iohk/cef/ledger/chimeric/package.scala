@@ -1,7 +1,7 @@
 package io.iohk.cef.ledger
 
 package object chimeric {
-  type ChimericLedgerBlock = Block[ChimericStateResult, ChimericBlockHeader, ChimericTx]
+  type ChimericLedgerBlock = Block[ChimericStateResult, ChimericTx]
   type ChimericLedgerState = LedgerState[ChimericStateResult]
   type ChimericStateOrError = Either[LedgerError, ChimericLedgerState]
 

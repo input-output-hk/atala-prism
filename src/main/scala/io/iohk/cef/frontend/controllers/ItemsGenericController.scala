@@ -26,7 +26,9 @@ class ItemsGenericController(implicit ec: ExecutionContext, mat: Materializer) e
       pathEnd {
         post {
           publicInput(StatusCodes.Created) { ctx: HasModel[Envelope[DataItem[D]]] =>
-            val either = service.processAction(ctx.model.map(DataItemAction.Insert.apply))
+            val insertAction: Envelope[DataItemAction[D]] =
+              ctx.model.copy(content = DataItemAction.Insert(ctx.model.content))
+            val either = service.processAction(insertAction)
             val result = fromEither(either, ItemCreationError)
               .map(_ => JsObject.empty)
 

@@ -9,15 +9,13 @@ import io.iohk.cef.frontend.models.{
   SubmitChimericTransactionRequest
 }
 import io.iohk.cef.ledger.chimeric.SignatureTxFragment
-
+import io.iohk.cef.codecs.nio.auto._
 import scala.concurrent.{ExecutionContext, Future}
-import io.iohk.cef.ledger.chimeric.{ChimericBlockHeader, ChimericStateResult, ChimericTx}
+import io.iohk.cef.ledger.chimeric.{ChimericStateResult, ChimericTx}
 
-class ChimericTransactionService(nodeCore: NodeCore[ChimericStateResult, ChimericBlockHeader, ChimericTx])(
-    implicit ec: ExecutionContext) {
+class ChimericTransactionService(nodeCore: NodeCore[ChimericStateResult, ChimericTx])(implicit ec: ExecutionContext) {
 
   def createChimericTransaction(req: CreateChimericTransactionRequest): Response[ChimericTx] = {
-    import io.iohk.cef.codecs.nio.auto._
 
     val signableFragments = req.fragments.collect {
       case signableFragments: CreateSignableChimericTransactionFragment => signableFragments

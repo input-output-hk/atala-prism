@@ -1,17 +1,8 @@
 package io.iohk.cef.core
 import io.iohk.cef.network.NodeId
-import io.iohk.cef.codecs.nio._
 
 sealed trait DestinationDescriptor {
   def apply(v1: NodeId): Boolean
-}
-object DestinationDescriptor {
-  implicit val DestinationDescriptorNioEncDec: NioEncDec[DestinationDescriptor] = {
-    import io.iohk.cef.codecs.nio.auto._
-    val e: NioEncoder[DestinationDescriptor] = genericEncoder
-    val d: NioDecoder[DestinationDescriptor] = genericDecoder
-    NioEncDec(e, d)
-  }
 }
 
 case object Everyone extends DestinationDescriptor {

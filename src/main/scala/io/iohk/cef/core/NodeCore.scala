@@ -2,7 +2,7 @@ package io.iohk.cef.core
 import io.iohk.cef.LedgerId
 import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.error.ApplicationError
-import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
+import io.iohk.cef.ledger.{Block, Transaction}
 import io.iohk.cef.network.{Network, NodeId}
 import io.iohk.cef.transactionpool.TransactionPoolInterface
 
@@ -24,13 +24,13 @@ import io.iohk.cef.codecs.nio._
   * @tparam State
   * @tparam Header
   */
-class NodeCore[State, Header <: BlockHeader, Tx <: Transaction[State]](
-    consensusMap: Map[LedgerId, (TransactionPoolInterface[State, Header, Tx], Consensus[State, Header, Tx])],
+class NodeCore[State, Tx <: Transaction[State]](
+    consensusMap: Map[LedgerId, (TransactionPoolInterface[State, Tx], Consensus[State, Tx])],
     txNetwork: Network[Envelope[Tx]],
-    blockNetwork: Network[Envelope[Block[State, Header, Tx]]],
+    blockNetwork: Network[Envelope[Block[State, Tx]]],
     me: NodeId)(
     implicit txSerializable: NioEncDec[Envelope[Tx]],
-    blockSerializable: NioEncDec[Envelope[Block[State, Header, Tx]]],
+    blockSerializable: NioEncDec[Envelope[Block[State, Tx]]],
     executionContext: ExecutionContext) {
 
   blockNetwork.messageStream.foreach(blEnvelope => processBlock(blEnvelope, Future.successful(Right(()))))
@@ -40,7 +40,7 @@ class NodeCore[State, Header <: BlockHeader, Tx <: Transaction[State]](
     processTransaction(txEnvelope, disseminate(txEnvelope, txNetwork))
   }
 
-  def receiveBlock(blEnvelope: Envelope[Block[State, Header, Tx]]): Future[Either[ApplicationError, Unit]] = {
+  def receiveBlock(blEnvelope: Envelope[Block[State, Tx]]): Future[Either[ApplicationError, Unit]] = {
     processBlock(blEnvelope, disseminate(blEnvelope, blockNetwork))
   }
 
@@ -54,7 +54,7 @@ class NodeCore[State, Header <: BlockHeader, Tx <: Transaction[State]](
   }
 
   private def processBlock(
-      blEnvelope: Envelope[Block[State, Header, Tx]],
+      blEnvelope: Envelope[Block[State, Tx]],
       networkDissemination: Future[Either[ApplicationError, Unit]]) = {
     process(blEnvelope, networkDissemination)(env => consensusMap(env.containerId)._2.process(env.content))
   }

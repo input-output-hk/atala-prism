@@ -45,9 +45,7 @@ trait LedgerItDbTest
         bob.public,
         IdentityTransaction.sign("carlos", IdentityTransactionType.Link, bob.public, alice.`private`))
     )
-    val testBlock = Block[Set[SigningPublicKey], IdentityBlockHeader, IdentityTransaction](
-      IdentityBlockHeader(Instant.EPOCH),
-      testTxs)
+    val testBlock = Block[Set[SigningPublicKey], IdentityTransaction](BlockHeader(Instant.EPOCH), testTxs)
     val emptyLs = LedgerState[Set[SigningPublicKey]](Map())
     genericStateDao.slice("1", Set("carlos")) mustBe emptyLs
 

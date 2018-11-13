@@ -1,5 +1,5 @@
 package io.iohk.cef.network.discovery
-import io.iohk.cef.network.{NodeId, PeerInfo}
+import io.iohk.cef.network.{NodeId, PeerConfig}
 
 trait NetworkDiscovery {
 
@@ -13,13 +13,13 @@ trait NetworkDiscovery {
     *         b) the info of a peer 'nearest to' the nodeId using some distance metric.
     *            This enables the next hop for message propagation.
     */
-  def nearestPeerTo(nodeId: NodeId): Option[PeerInfo] = nearestNPeersTo(nodeId, 1).headOption
+  def nearestPeerTo(nodeId: NodeId): Option[PeerConfig] = nearestNPeersTo(nodeId, 1).headOption
 
   /**
     * Enable structured gossip by selecting the nearest N known peers to the given node id.
     * Results should be returned sorted ascending in the distance metric.
     */
-  def nearestNPeersTo(nodeId: NodeId, n: Int): Seq[PeerInfo]
+  def nearestNPeersTo(nodeId: NodeId, n: Int): Seq[PeerConfig]
 
   /**
     * Stop the discovery instance and clean up.

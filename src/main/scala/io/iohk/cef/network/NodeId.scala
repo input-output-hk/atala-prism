@@ -1,7 +1,6 @@
 package io.iohk.cef.network
 import akka.util.ByteString
 import io.iohk.cef.utils.HexStringCodec._
-import io.iohk.cef.codecs.nio._
 
 /**
   * A node id represents an addressable identity on a cef network.
@@ -20,11 +19,4 @@ object NodeId {
 
   def apply(idHex: String): NodeId =
     NodeId(fromHexString(idHex))
-
-  implicit val NodeIdEncDec: NioEncDec[NodeId] = {
-    import io.iohk.cef.codecs.nio.auto._
-    val e: NioEncoder[NodeId] = genericEncoder
-    val d: NioDecoder[NodeId] = genericDecoder
-    NioEncDec(e, d)
-  }
 }

@@ -70,7 +70,7 @@ class NetworkDataItemServiceItFeatureSpec
     val itemId = "item-id"
     val containerId = "1"
     val dataItem = DataItem[String](itemId, data, Seq.empty[Witness], Seq.empty[Owner])
-    val insert = Insert(dataItem)
+    val insert: DataItemAction[String] = Insert(dataItem)
     val input = Envelope(
       content = insert,
       containerId = containerId,

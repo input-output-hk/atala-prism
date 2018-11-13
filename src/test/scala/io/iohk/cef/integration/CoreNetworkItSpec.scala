@@ -1,9 +1,9 @@
 package io.iohk.cef.integration
 import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.core.{Envelope, Everyone, NodeCore}
-import io.iohk.cef.ledger.Block
+import io.iohk.cef.ledger.{Block, BlockHeader}
 import io.iohk.cef.network.{Network, NetworkFixture, NodeId}
-import io.iohk.cef.test.{DummyBlockHeader, DummyTransaction}
+import io.iohk.cef.test.DummyTransaction
 import io.iohk.cef.transactionpool.TransactionPoolInterface
 import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar
@@ -16,11 +16,11 @@ import scala.concurrent.{Await, Future}
 
 class CoreNetworkItSpec extends FlatSpec with MustMatchers with PropertyChecks with NetworkFixture with MockitoSugar {
 
-  def mockConsensus: Consensus[String, DummyBlockHeader, DummyTransaction] =
-    mock[Consensus[String, DummyBlockHeader, DummyTransaction]]
+  def mockConsensus: Consensus[String, DummyTransaction] =
+    mock[Consensus[String, DummyTransaction]]
 
-  def mockTxPoolFutureInterface: TransactionPoolInterface[String, DummyBlockHeader, DummyTransaction] =
-    mock[TransactionPoolInterface[String, DummyBlockHeader, DummyTransaction]]
+  def mockTxPoolFutureInterface: TransactionPoolInterface[String, DummyTransaction] =
+    mock[TransactionPoolInterface[String, DummyTransaction]]
 
   behavior of "CoreNetworkItSpec"
   import io.iohk.cef.codecs.nio.auto._
@@ -32,20 +32,18 @@ class CoreNetworkItSpec extends FlatSpec with MustMatchers with PropertyChecks w
   private def createCore(
       baseNetwork: BaseNetwork,
       me: NodeId,
-      txPoolIf: TransactionPoolInterface[String, DummyBlockHeader, DummyTransaction],
-      consensus: Consensus[String, DummyBlockHeader, DummyTransaction]) = {
+      txPoolIf: TransactionPoolInterface[String, DummyTransaction],
+      consensus: Consensus[String, DummyTransaction]) = {
     val txNetwork = new Network[Envelope[DummyTransaction]](baseNetwork.networkDiscovery, baseNetwork.transports)
     val blockNetwork =
-      new Network[Envelope[Block[String, DummyBlockHeader, DummyTransaction]]](
-        baseNetwork.networkDiscovery,
-        baseNetwork.transports)
+      new Network[Envelope[Block[String, DummyTransaction]]](baseNetwork.networkDiscovery, baseNetwork.transports)
     val consensusMap = Map("1" -> (txPoolIf, consensus))
 
-    new NodeCore[String, DummyBlockHeader, DummyTransaction](
+    new NodeCore[String, DummyTransaction](
       consensusMap,
       txNetwork,
       blockNetwork,
-      baseNetwork.transports.peerInfo.nodeId
+      baseNetwork.transports.peerConfig.nodeId
     )
   }
 
@@ -68,7 +66,7 @@ class CoreNetworkItSpec extends FlatSpec with MustMatchers with PropertyChecks w
     Await.result(core2ProcessesTx, 1 minute) mustBe Right(())
     verify(mockTxPoolIf1, timeout(5000).times(1)).processTransaction(testTx)
 
-    val testBlock = Block[String, DummyBlockHeader, DummyTransaction](DummyBlockHeader(10), immutable.Seq(testTx))
+    val testBlock = Block[String, DummyTransaction](BlockHeader(), immutable.Seq(testTx))
 
     when(mockCons1.process(testBlock)).thenReturn(Future.successful(Right(())))
     when(mockCons2.process(testBlock)).thenReturn(Future.successful(Right(())))

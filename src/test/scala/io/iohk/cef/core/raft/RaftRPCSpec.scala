@@ -1,4 +1,4 @@
-package io.iohk.cef.core.raftrpc
+package io.iohk.cef.core.raft
 
 import io.iohk.cef.consensus.raft._
 import io.iohk.cef.network.transport.tcp.NetUtils

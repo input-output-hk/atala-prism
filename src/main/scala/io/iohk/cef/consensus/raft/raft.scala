@@ -7,9 +7,8 @@ import io.iohk.cef.consensus.raft.node._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 import io.iohk.cef.codecs.nio._
-import scala.reflect.runtime.universe.TypeTag
 
-package raft {
+package object raft {
 
   /**
     * To be implemented by users of the module to provide their desired RPC implementation.
@@ -40,15 +39,6 @@ package raft {
     * to redirect to their leader. Used by RPC below.
     */
   case class Redirect[Command](nodeId: String)
-  object Redirect {
-    implicit def RedirectCodec[Command: NioEncDec]: NioEncDec[Redirect[Command]] = {
-      import io.iohk.cef.codecs.nio.auto._
-      implicit val ttc: TypeTag[Command] = NioEncoder[Command].typeTag
-      val e: NioEncoder[Redirect[Command]] = genericEncoder
-      val d: NioDecoder[Redirect[Command]] = genericDecoder
-      NioEncDec(e, d)
-    }
-  }
 
   /**
     * To be implemented by users of the module using whatever network technology suits them.
@@ -93,69 +83,27 @@ package raft {
       prevLogTerm: Int,
       entries: Seq[LogEntry[Command]],
       leaderCommitIndex: Int)
-  object EntriesToAppend {
-    implicit def EntriesToAppendCodec[Command: NioEncDec]: NioEncDec[EntriesToAppend[Command]] = {
-      import io.iohk.cef.codecs.nio.auto._
-      implicit val ttc: TypeTag[Command] = NioEncoder[Command].typeTag
-      val e: NioEncoder[EntriesToAppend[Command]] = genericEncoder
-      val d: NioDecoder[EntriesToAppend[Command]] = genericDecoder
-      NioEncDec(e, d)
-    }
-  }
 
   /**
     * AppendEntries RPC response
     */
   case class AppendEntriesResult(term: Int, success: Boolean)
-  object AppendEntriesResult {
-    implicit val AppendEntriesResultCodec: NioEncDec[AppendEntriesResult] = {
-      import io.iohk.cef.codecs.nio.auto._
-      val e: NioEncoder[AppendEntriesResult] = genericEncoder
-      val d: NioDecoder[AppendEntriesResult] = genericDecoder
-      NioEncDec(e, d)
-    }
-  }
 
   /**
     * RequestVote RPC request made by candidates for other nodes.
     */
   case class VoteRequested(term: Int, candidateId: String, lastLogIndex: Int, lastLogTerm: Int)
-  object VoteRequested {
-    implicit val VoteRequestedCodec: NioEncDec[VoteRequested] = {
-      import io.iohk.cef.codecs.nio.auto._
-      val e: NioEncoder[VoteRequested] = genericEncoder
-      val d: NioDecoder[VoteRequested] = genericDecoder
-      NioEncDec(e, d)
-    }
-  }
 
   /**
     * RequestVote RPC response
     */
   case class RequestVoteResult(term: Int, voteGranted: Boolean)
-  object RequestVoteResult {
-    implicit val RequestVoteResultCodec: NioEncDec[RequestVoteResult] = {
-      import io.iohk.cef.codecs.nio.auto._
-      val e: NioEncoder[RequestVoteResult] = genericEncoder
-      val d: NioDecoder[RequestVoteResult] = genericDecoder
-      NioEncDec(e, d)
-    }
-  }
 
   /**
     * LogEntry provides a wrapper around user commands with metadata essential to the working
     * or the algorithm.
     */
   case class LogEntry[Command](command: Command, term: Int, index: Int)
-  object LogEntry {
-    implicit def LogEntryCodec[Command: NioEncDec]: NioEncDec[LogEntry[Command]] = {
-      import io.iohk.cef.codecs.nio.auto._
-      implicit val ttc: TypeTag[Command] = NioEncoder[Command].typeTag
-      val e: NioEncoder[LogEntry[Command]] = genericEncoder
-      val d: NioDecoder[LogEntry[Command]] = genericDecoder
-      NioEncDec(e, d)
-    }
-  }
 
   /**
     * To be implemented by users of the module using whatever persistence technology suits them.
@@ -225,10 +173,6 @@ package raft {
     def getLeader: String
     def getRPC(nodeId: String): RPC[Command]
   }
-
-}
-
-package object raft {
 
   /**
     * Create and configure a raft node.

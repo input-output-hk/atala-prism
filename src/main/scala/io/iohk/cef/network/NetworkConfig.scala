@@ -1,14 +1,8 @@
 package io.iohk.cef.network
-import com.typesafe.config.Config
-import io.iohk.cef.network.discovery.DiscoveryConfig
+import io.iohk.cef.network.transport.tcp.TcpTransportConfig
 
-class NetworkConfig(
-    val discoveryConfig: DiscoveryConfig,
-    val serverConfig: ServerConfig
-)
-
-object NetworkConfig {
-  def apply(config: Config): NetworkConfig = {
-    new NetworkConfig(DiscoveryConfig(config.getConfig("discovery")), ServerConfig(config.getConfig("server")))
-  }
-}
+/**
+  * @param tcpTransportConfig The configuration of the TcpTransport, if one should be used.
+  * @param messageTtl The number of network hops before discarding a message.
+  */
+case class NetworkConfig(tcpTransportConfig: Option[TcpTransportConfig], messageTtl: Int = 5)

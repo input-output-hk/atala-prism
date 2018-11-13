@@ -4,4 +4,4 @@ import io.iohk.cef.ledger.BlockHeader
 
 sealed trait ConsensusError extends ApplicationError
 
-case class UnableToProcessBlock[Header <: BlockHeader](header: Header) extends ConsensusError
+case class UnableToProcessBlock(header: BlockHeader) extends ConsensusError

@@ -7,6 +7,7 @@ import org.scalatest.concurrent.Eventually._
 import org.scalatest.mockito.MockitoSugar._
 
 import scala.collection.mutable
+import scala.reflect.runtime.universe._
 import scala.concurrent.duration._
 
 class ConversationalNetworkIntegrationSpec extends FlatSpec with NetworkFixture {
@@ -27,7 +28,7 @@ class ConversationalNetworkIntegrationSpec extends FlatSpec with NetworkFixture 
   it should "send a message to a peer" in networks(bootstrapStack, randomBaseNetwork(Some(bootstrapStack))) {
     networks =>
       val bobsStack = networks(0)
-      val bobsNodeId = bobsStack.transports.peerInfo.nodeId
+      val bobsNodeId = bobsStack.transports.peerConfig.nodeId
 
       val bobsAInbox = mockHandler[A]
       val bobA = messageChannel(bobsStack, bobsAInbox)
@@ -36,7 +37,7 @@ class ConversationalNetworkIntegrationSpec extends FlatSpec with NetworkFixture 
       val bobB = messageChannel(bobsStack, bobsBInbox)
 
       val alicesStack = networks(1)
-      val alicesNodeId = alicesStack.transports.peerInfo.nodeId
+      val alicesNodeId = alicesStack.transports.peerConfig.nodeId
 
       val alicesAInbox = mockHandler[A]
       val aliceA = messageChannel(alicesStack, alicesAInbox)
@@ -60,7 +61,7 @@ class ConversationalNetworkIntegrationSpec extends FlatSpec with NetworkFixture 
   }
 
   // Create a typed message channel on top of a base network instance
-  private def messageChannel[T: NioEncoder: NioDecoder](
+  private def messageChannel[T: NioEncDec: TypeTag](
       baseNetwork: BaseNetwork,
       messageHandler: T => Unit): ConversationalNetwork[T] = {
     val conversationalNetwork = new ConversationalNetwork[T](baseNetwork.networkDiscovery, baseNetwork.transports)
