@@ -3,7 +3,6 @@ package io.iohk.cef.network
 import java.net.{Inet6Address, InetAddress, InetSocketAddress, URI}
 
 import akka.util.ByteString
-import io.iohk.cef.network.encoding.rlp.{RLPEncDec, RLPEncodeable, RLPException, RLPList}
 import io.iohk.cef.network.transport.FrameHeader
 import io.iohk.cef.network.transport.tcp.TcpTransportConfig
 import javax.xml.bind.DatatypeConverter
@@ -51,28 +50,13 @@ case class NodeInfo(
 
 object NodeInfo {
 
-  implicit def nodeRlpEncDec(
-      implicit
-      byteStrEncDec: RLPEncDec[ByteString],
-      capEncDec: RLPEncDec[Capabilities],
-      inetSocketAddrEncDec: RLPEncDec[InetSocketAddress]) = new RLPEncDec[NodeInfo] {
-    override def encode(obj: NodeInfo): RLPEncodeable =
-      RLPList(
-        byteStrEncDec.encode(obj.id),
-        inetSocketAddrEncDec.encode(obj.discoveryAddress),
-        inetSocketAddrEncDec.encode(obj.serverAddress),
-        capEncDec.encode(obj.capabilities)
-      )
+  import io.iohk.cef.codecs.nio._
+  implicit val NodeInfoEncDec: NioEncDec[NodeInfo] = {
+    import io.iohk.cef.codecs.nio.auto._
 
-    override def decode(rlp: RLPEncodeable): NodeInfo = rlp match {
-      case RLPList(id, discoveryAddr, serverAddr, cap) =>
-        NodeInfo(
-          byteStrEncDec.decode(id),
-          inetSocketAddrEncDec.decode(discoveryAddr),
-          inetSocketAddrEncDec.decode(serverAddr),
-          capEncDec.decode(cap))
-      case _ => throw new RLPException("src is not a Node")
-    }
+    val e: NioEncoder[NodeInfo] = genericEncoder
+    val d: NioDecoder[NodeInfo] = genericDecoder
+    NioEncDec(e, d)
   }
 
   def fromUri(p2pUri: URI, discoveryUri: URI, capabilitiesHex: String): Try[NodeInfo] = Try {

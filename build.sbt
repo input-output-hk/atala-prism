@@ -117,5 +117,7 @@ val root = project
       warnOnUnverifiedFiles = false,
       warnOnUnusedVerifications = false
     ),
-    scalacOptions ++= compilerOptions
+    scalacOptions ++= compilerOptions,
+    coverageExcludedPackages :=
+      "<empty>;io.iohk.cef.ledger.chimeric.errors.*"
   )

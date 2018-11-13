@@ -32,12 +32,11 @@ object NetworkServices {
       Capabilities(0))
 
     val (encoder, decoder) = {
-      import io.iohk.cef.network.encoding.rlp._
-      import io.iohk.cef.network.encoding.rlp.RLPImplicits._
+      import io.iohk.cef.codecs.nio.auto._
 
-      val encdec = RLPEncDec[DiscoveryWireMessage].asNio
-
-      (encdec, encdec)
+      val e: NioEncoder[DiscoveryWireMessage] = genericEncoder
+      val d: NioDecoder[DiscoveryWireMessage] = genericDecoder
+      (e, d)
     }
 
     val discoveryBehavior = DiscoveryManager.behaviour(

@@ -1,4 +1,5 @@
 package io.iohk.cef.ledger.chimeric
+package errors
 
 import io.iohk.cef.ledger.LedgerError
 
