@@ -7,7 +7,6 @@ import io.iohk.cef.ledger.storage.LedgerStateStorage
 import io.iohk.cef.test.DummyTransaction
 import io.iohk.cef.transactionpool.{BlockCreator, TransactionPoolInterface}
 import org.scalatest.concurrent.Eventually
-import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{FlatSpecLike, MustMatchers}
@@ -49,7 +48,7 @@ class ConsensusPoolItSpec extends FlatSpecLike with MockitoSugar with MustMatche
     }
 
     val Seq(t1, t2, t3) = anIntegratedCluster(storages.zip(clusterIds))
-    t1.raftNode.electionTimeout().futureValue
+    t1.raftNode.electionTimer.timeout()
     val block1Transactions = (1 to 3).map(DummyTransaction)
     val block2Transactions = (4 to 5).map(DummyTransaction)
     val block3Transactions = (6 to 7).map(DummyTransaction)
