@@ -42,8 +42,8 @@ private[raft] class RaftNode[Command: NioEncDec](
 
   private val sequencer: Ref[Future[_]] = Ref(Future.unit)
 
-  private val electionTimer = new RaftTimer(electionTimeoutRange._1, electionTimeoutRange._2)(() => electionTimeout())
-  private val _ = new RaftTimer(heartbeatTimeoutRange._1, heartbeatTimeoutRange._2)(() => heartbeatTimeout())
+  val electionTimer = new RaftTimer(electionTimeoutRange._1, electionTimeoutRange._2)(() => electionTimeout())
+  val heartbeatTimer = new RaftTimer(heartbeatTimeoutRange._1, heartbeatTimeoutRange._2)(() => heartbeatTimeout())
 
   val nodeFSM = new RaftFSM[Command](becomeFollower, becomeCandidate, becomeLeader)
 
@@ -75,6 +75,22 @@ private[raft] class RaftNode[Command: NioEncDec](
 
   def getLeaderVolatileState: LeaderVolatileState =
     readState(_.leaderVolatileState)
+
+  // How this works.
+  // Every request to the raft node is synchronized (see entry points below for list of requests).
+  // This means state changes are isolated and atomic.
+  // When handling a request the node will
+  // a. read the current state
+  // b. do stuff, calculating a new state
+  // c. install the new state
+  //
+  // There is a gotcha here for when writing test cases where eventually blocks can break things.
+  // If you forcibly read the node state from a eventually block
+  // Scala STM thinks there is another transaction running and may decide
+  // to abort and replay the process above. If the eventually retries, STM may retry
+  // and so on, until the eventually fails.
+  // The readState function above handles this situation and makes sure that testcases only
+  // read the state _after_ step c above.
 
   // Functions to atomically change the server state.
   // In the case of pure requests like appendEntries and requestVote,
@@ -144,12 +160,10 @@ private[raft] class RaftNode[Command: NioEncDec](
     getVoteResult(rulesForServersAllServers2(rs, voteRequested.term), voteRequested)
   }
 
-  def electionTimeout(): Future[Unit] = {
+  private def electionTimeout(): Unit =
     withState(rs => (nodeFSM.apply(rs, ElectionTimeout), ()))
-    withFutureState(rs => requestVotes(rs))
-  }
 
-  def heartbeatTimeout(): Future[Unit] =
+  private def heartbeatTimeout(): Future[Unit] =
     withFutureState(rs => sendHeartbeat(rs))
 
   private def sendHeartbeat(rs: RaftState[Command]): Future[(RaftState[Command], Unit)] = {
@@ -277,7 +291,11 @@ private[raft] class RaftNode[Command: NioEncDec](
     val (currentTerm, _) = rs.persistentState
     val newTerm = currentTerm + 1
     val nextPersistentState = (newTerm, nodeId)
-    rs.copy(role = new Candidate(this), persistentState = nextPersistentState)
+    try {
+      rs.copy(role = new Candidate(this), persistentState = nextPersistentState)
+    } finally {
+      Future(withFutureState(requestVotes))
+    }
   }
 
   private def hasMajority(term: Int, votes: Seq[RequestVoteResult]): Boolean = {
