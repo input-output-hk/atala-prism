@@ -1,5 +1,6 @@
 package io.iohk.cef.ledger.chimeric
 
+import io.iohk.cef.ledger.chimeric.errors._
 import io.iohk.cef.crypto
 import io.iohk.cef.ledger.LedgerState
 import org.scalacheck.Gen

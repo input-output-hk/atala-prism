@@ -4,7 +4,7 @@ import java.io.OutputStream
 import java.net.{InetSocketAddress, ServerSocket, Socket}
 import java.nio.ByteBuffer
 
-import io.iohk.cef.network.{NetworkConfiguration, NodeId, PeerInfo}
+import io.iohk.cef.network.{NetworkConfig, NodeId, PeerConfig}
 import io.iohk.cef.network.NodeId.nodeIdBytes
 import io.iohk.cef.network.discovery.NetworkDiscovery
 import io.iohk.cef.network.transport.{FrameHeader, Transports}
@@ -81,33 +81,33 @@ object NetUtils {
   object NetUtilsGen {
     val genNodeId: Gen[NodeId] = Gen.listOfN(NodeId.nodeIdBytes, arbitrary[Byte]).map(NodeId(_))
 
-    val genPeerInfo: Gen[PeerInfo] = for {
+    val genPeerInfo: Gen[PeerConfig] = for {
       nodeId <- genNodeId
     } yield {
       val address = aRandomAddress()
       val messageTtl = FrameHeader.defaultTtl
-      PeerInfo(nodeId, NetworkConfiguration(Some(TcpTransportConfiguration(address)), messageTtl))
+      PeerConfig(nodeId, NetworkConfig(Some(TcpTransportConfig(address)), messageTtl))
     }
   }
 
   case class NetworkFixture(
       nodeId: NodeId,
-      peerInfo: PeerInfo,
+      peerConfig: PeerConfig,
       networkDiscovery: NetworkDiscovery,
       transports: Transports)
 
   def randomNetworkFixture(messageTtl: Int = FrameHeader.defaultTtl): NetworkFixture = {
 
     val tcpAddress: InetSocketAddress = aRandomAddress()
-    val configuration = NetworkConfiguration(Some(TcpTransportConfiguration(tcpAddress)), messageTtl)
+    val configuration = NetworkConfig(Some(TcpTransportConfig(tcpAddress)), messageTtl)
 
     val nodeId = NodeId(randomBytes(NodeId.nodeIdBytes))
 
     val networkDiscovery: NetworkDiscovery = mock[NetworkDiscovery]
 
-    val peerInfo = PeerInfo(nodeId, configuration)
+    val peerConfig = PeerConfig(nodeId, configuration)
 
-    NetworkFixture(nodeId, peerInfo, networkDiscovery, new Transports(peerInfo))
+    NetworkFixture(nodeId, peerConfig, networkDiscovery, new Transports(peerConfig))
   }
 
   def networkFixtures(fixtures: NetworkFixture*)(testCode: Seq[NetworkFixture] => Any): Unit = {
@@ -126,9 +126,9 @@ object NetUtils {
   }
 
   def nodesArePeers(node1: NetworkFixture, node2: NetworkFixture): Unit = {
-    when(node1.networkDiscovery.nearestPeerTo(node2.nodeId)).thenReturn(Some(node2.peerInfo))
-    when(node2.networkDiscovery.nearestPeerTo(node1.nodeId)).thenReturn(Some(node1.peerInfo))
-    when(node1.networkDiscovery.nearestNPeersTo(meq[NodeId](node1.nodeId), any[Int])).thenReturn(Seq(node2.peerInfo))
-    when(node2.networkDiscovery.nearestNPeersTo(meq[NodeId](node2.nodeId), any[Int])).thenReturn(Seq(node1.peerInfo))
+    when(node1.networkDiscovery.nearestPeerTo(node2.nodeId)).thenReturn(Some(node2.peerConfig))
+    when(node2.networkDiscovery.nearestPeerTo(node1.nodeId)).thenReturn(Some(node1.peerConfig))
+    when(node1.networkDiscovery.nearestNPeersTo(meq[NodeId](node1.nodeId), any[Int])).thenReturn(Seq(node2.peerConfig))
+    when(node2.networkDiscovery.nearestNPeersTo(meq[NodeId](node2.nodeId), any[Int])).thenReturn(Seq(node1.peerConfig))
   }
 }

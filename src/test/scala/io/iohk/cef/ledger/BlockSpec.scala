@@ -1,6 +1,6 @@
 package io.iohk.cef.ledger
 
-import io.iohk.cef.test.{DummyBlockHeader, DummyTransaction}
+import io.iohk.cef.test.DummyTransaction
 import org.scalatest.{EitherValues, FlatSpec, MustMatchers}
 
 class BlockSpec extends FlatSpec with MustMatchers with EitherValues {
@@ -13,8 +13,8 @@ class BlockSpec extends FlatSpec with MustMatchers with EitherValues {
     DummyTransaction(20)
   )
 
-  val header = DummyBlockHeader(txs.map(_.size).sum)
-  val block = Block[String, DummyBlockHeader, DummyTransaction](header, txs)
+  val header = BlockHeader()
+  val block = Block[String, DummyTransaction](header, txs)
 
   it should "apply itself to a state" in {
     val state = new LedgerState[String](Map())

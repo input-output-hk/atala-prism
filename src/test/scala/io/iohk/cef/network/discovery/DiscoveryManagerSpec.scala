@@ -11,14 +11,13 @@ import akka.testkit.typed.scaladsl.{BehaviorTestKit, TestInbox, TestProbe}
 import akka.testkit.{TestProbe => UntypedTestProbe}
 import akka.util.ByteString
 import akka.{actor => untyped}
-import io.iohk.cef.{crypto, cryptolegacy}
+import io.iohk.cef.crypto
 import io.iohk.cef.network.discovery.DiscoveryListener.{DiscoveryListenerRequest, Ready, SendMessage, Start}
 import io.iohk.cef.network.discovery.DiscoveryManager._
 import io.iohk.cef.network.discovery.db.{DummyKnownNodesStorage, KnownNode}
 import io.iohk.cef.network.telemetry.InMemoryTelemetry
 import io.iohk.cef.network.{Capabilities, NodeInfo, NodeStatus, ServerStatus}
 import io.iohk.cef.test.TestClock
-import io.iohk.cef.utils._
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import org.scalatest.MustMatchers._
 import org.scalatest.{BeforeAndAfterAll, FlatSpec}
@@ -67,12 +66,14 @@ class DiscoveryManagerSpec extends FlatSpec with BeforeAndAfterAll {
       )
 
     import io.iohk.cef.codecs.nio._
-    import io.iohk.cef.network.encoding.rlp._
-    import io.iohk.cef.network.encoding.rlp.RLPImplicits._
 
-    val encdec = RLPEncDec[DiscoveryWireMessage].asNio
-    val encoder: NioEncoder[DiscoveryWireMessage] = encdec
-    val decoder: NioDecoder[DiscoveryWireMessage] = encdec
+    val (encoder, decoder) = {
+      import io.iohk.cef.codecs.nio.auto._
+
+      val e: NioEncoder[DiscoveryWireMessage] = genericEncoder
+      val d: NioDecoder[DiscoveryWireMessage] = genericDecoder
+      (e, d)
+    }
 
     val discoveryListener = TestProbe[DiscoveryListenerRequest]
 
@@ -193,7 +194,6 @@ class DiscoveryManagerSpec extends FlatSpec with BeforeAndAfterAll {
       val node = NodeInfo(nodeState.nodeId, discoveryAddress, serverAddress, Capabilities(1))
       val expiration = mockClock.instant().getEpochSecond + 1
       val seek = Seek(Capabilities(1), 10, expiration, ByteString())
-      val token = cryptolegacy.kec256(encoder.encode(seek).toByteString)
 
       actor ! DiscoveryResponseWrapper(DiscoveryListener.MessageReceived(seek, discoveryAddress))
 

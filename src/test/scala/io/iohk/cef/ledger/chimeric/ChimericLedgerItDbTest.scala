@@ -9,7 +9,7 @@ import io.iohk.cef.ledger.chimeric.storage.scalike.dao.ChimericLedgerStateStorag
 import io.iohk.cef.ledger.storage.Ledger
 import io.iohk.cef.ledger.storage.scalike.LedgerStorageImpl
 import io.iohk.cef.ledger.storage.scalike.dao.LedgerStorageDao
-import io.iohk.cef.ledger.{Block, LedgerFixture, LedgerState}
+import io.iohk.cef.ledger.{Block, BlockHeader, LedgerFixture, LedgerState}
 import org.scalatest.{EitherValues, MustMatchers, fixture}
 import scalikejdbc._
 import scalikejdbc.scalatest.AutoRollback
@@ -79,8 +79,8 @@ trait ChimericLedgerItDbTest
           signingPrivateKey)),
       utxoTx
     )
-    val header = new ChimericBlockHeader
-    val block = Block[ChimericStateResult, ChimericBlockHeader, ChimericTx](header, transactions)
+    val header = BlockHeader()
+    val block = Block[ChimericStateResult, ChimericTx](header, transactions)
     val result = ledger(block)
     result.isRight mustBe true
 
@@ -107,7 +107,7 @@ trait ChimericLedgerItDbTest
     )
 
     val block2 =
-      Block[ChimericStateResult, ChimericBlockHeader, ChimericTx](
+      Block[ChimericStateResult, ChimericTx](
         header,
         Seq(ChimericTx(signFragments(signFragments(txFragments, signingPrivateKey), signingPrivateKey))))
 

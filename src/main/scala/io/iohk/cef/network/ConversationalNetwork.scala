@@ -24,7 +24,7 @@ class ConversationalNetwork[Message](networkDiscovery: NetworkDiscovery, transpo
     implicit enc: NioEncoder[Frame[Message]],
     dec: NioDecoder[Frame[Message]]) {
 
-  val peerInfo: PeerInfo = transports.peerInfo
+  val peerConfig: PeerConfig = transports.peerConfig
 
   /**
     * Send a message to another network address.
@@ -39,10 +39,10 @@ class ConversationalNetwork[Message](networkDiscovery: NetworkDiscovery, transpo
     * @param message the message body itself.
     */
   def sendMessage(nodeId: NodeId, message: Message): Unit =
-    sendMessage(Frame(FrameHeader(peerInfo.nodeId, nodeId, peerInfo.configuration.messageTtl), message))
+    sendMessage(Frame(FrameHeader(peerConfig.nodeId, nodeId, peerConfig.networkConfig.messageTtl), message))
 
   def messageStream: MessageStream[Message] =
-    if (usesTcp(peerInfo))
+    if (usesTcp(peerConfig))
       new MonixMessageStream(
         tcpNetworkTransport.get.monixMessageStream.filter(frameHandler).map((frame: Frame[Message]) => frame.content))
     else
@@ -64,7 +64,7 @@ class ConversationalNetwork[Message](networkDiscovery: NetworkDiscovery, transpo
   }
 
   private def thisNodeIsTheDest(frame: Frame[Message]): Boolean =
-    frame.header.dst == peerInfo.nodeId
+    frame.header.dst == peerConfig.nodeId
 
   private val tcpNetworkTransport: Option[NetworkTransport[InetSocketAddress, Frame[Message]]] =
     transports.tcp[Frame[Message]]
@@ -73,9 +73,9 @@ class ConversationalNetwork[Message](networkDiscovery: NetworkDiscovery, transpo
     networkDiscovery
       .nearestPeerTo(frame.header.dst)
       .foreach(remotePeerInfo => {
-        if (usesTcp(peerInfo) && usesTcp(remotePeerInfo))
+        if (usesTcp(peerConfig) && usesTcp(remotePeerInfo))
           tcpNetworkTransport.get
-            .sendMessage(remotePeerInfo.configuration.tcpTransportConfiguration.get.natAddress, frame)
+            .sendMessage(remotePeerInfo.networkConfig.tcpTransportConfig.get.natAddress, frame)
         else
           ()
       })

@@ -7,7 +7,7 @@ import akka.actor.typed.scaladsl.adapter._
 import akka.util.Timeout
 import akka.{actor => untyped}
 import io.iohk.cef.network.discovery.DiscoveryManager.{DiscoveredNodes, DiscoveryRequest, GetDiscoveredNodes}
-import io.iohk.cef.network.{NodeId, PeerInfo}
+import io.iohk.cef.network.{NodeId, PeerConfig}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
@@ -22,7 +22,7 @@ class DiscoveryManagerAdapter(discoveryManagerBehavior: Behavior[DiscoveryReques
 
   private val discoveryManager = discoveryActorSystem.spawn(discoveryManagerBehavior, "discoveryManager")
 
-  override def nearestPeerTo(nodeId: NodeId): Option[PeerInfo] = {
+  override def nearestPeerTo(nodeId: NodeId): Option[PeerConfig] = {
     val futureResult: Future[DiscoveredNodes] = discoveryManager ? GetDiscoveredNodes
 
     val discoveredNodes: DiscoveredNodes = Await.result(futureResult, futureTimeout)
@@ -32,7 +32,7 @@ class DiscoveryManagerAdapter(discoveryManagerBehavior: Behavior[DiscoveryReques
       .map(_.node.toPeerInfo)
   }
 
-  override def nearestNPeersTo(nodeId: NodeId, n: Int): Seq[PeerInfo] = {
+  override def nearestNPeersTo(nodeId: NodeId, n: Int): Seq[PeerConfig] = {
     val futureResult: Future[DiscoveredNodes] = discoveryManager ? GetDiscoveredNodes
 
     val discoveredNodes: DiscoveredNodes = Await.result(futureResult, futureTimeout)

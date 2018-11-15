@@ -5,7 +5,7 @@ import java.net.InetSocketAddress
 import io.iohk.cef.network.discovery.NetworkDiscovery
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.network.transport.tcp.NetUtils.{aRandomAddress, aRandomNodeId}
-import io.iohk.cef.network.transport.tcp.TcpTransportConfiguration
+import io.iohk.cef.network.transport.tcp.TcpTransportConfig
 import io.iohk.cef.network.transport.{Frame, FrameHeader, NetworkTransport, Transports}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{verify, when}
@@ -22,9 +22,9 @@ class DisseminationalNetworkSpec extends FlatSpec {
   val message = "Hello, world!"
 
   val peer1 =
-    PeerInfo(aRandomNodeId(), NetworkConfiguration(Some(TcpTransportConfiguration(aRandomAddress()))))
+    PeerConfig(aRandomNodeId(), NetworkConfig(Some(TcpTransportConfig(aRandomAddress()))))
   val peer2 =
-    PeerInfo(aRandomNodeId(), NetworkConfiguration(Some(TcpTransportConfiguration(aRandomAddress()))))
+    PeerConfig(aRandomNodeId(), NetworkConfig(Some(TcpTransportConfig(aRandomAddress()))))
 
   it should "disseminate a message to its peers" in {
     val peers = List(peer1, peer2)
@@ -33,8 +33,8 @@ class DisseminationalNetworkSpec extends FlatSpec {
     //    println(peers)
     peers.foreach(peer => when(discovery.nearestPeerTo(peer.nodeId)).thenReturn(Some(peer)))
     when(discovery.nearestNPeersTo(nodeId, Int.MaxValue)).thenReturn(peers)
-    when(transports.peerInfo)
-      .thenReturn(PeerInfo(nodeId, NetworkConfiguration(Some(TcpTransportConfiguration(address)))))
+    when(transports.peerConfig)
+      .thenReturn(PeerConfig(nodeId, NetworkConfig(Some(TcpTransportConfig(address)))))
     when(transports.tcp[Frame[String]](any(), any())).thenReturn(Some(tcpTransport))
 
     val network = new DisseminationalNetwork[String](discovery, transports)
@@ -44,7 +44,7 @@ class DisseminationalNetworkSpec extends FlatSpec {
     peers.foreach(peer => {
       val expectedMessageFrame = Frame(FrameHeader(nodeId, peer.nodeId), message)
       verify(tcpTransport)
-        .sendMessage(peer.configuration.tcpTransportConfiguration.get.bindAddress, expectedMessageFrame)
+        .sendMessage(peer.networkConfig.tcpTransportConfig.get.bindAddress, expectedMessageFrame)
     })
   }
 

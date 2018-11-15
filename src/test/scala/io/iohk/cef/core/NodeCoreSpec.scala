@@ -1,9 +1,9 @@
 package io.iohk.cef.core
 import io.iohk.cef.LedgerId
 import io.iohk.cef.consensus.Consensus
-import io.iohk.cef.ledger.{Block}
+import io.iohk.cef.ledger.{Block, BlockHeader}
 import io.iohk.cef.network.{MessageStream, Network, NodeId}
-import io.iohk.cef.test.{DummyBlockHeader, DummyTransaction}
+import io.iohk.cef.test.DummyTransaction
 import io.iohk.cef.transactionpool.TransactionPoolInterface
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
@@ -16,16 +16,15 @@ import io.iohk.cef.codecs.nio._
 
 class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
 
-  def mockConsensus: Consensus[String, DummyBlockHeader, DummyTransaction] =
-    mock[Consensus[String, DummyBlockHeader, DummyTransaction]]
+  def mockConsensus: Consensus[String, DummyTransaction] =
+    mock[Consensus[String, DummyTransaction]]
 
-  def mockTxPoolFutureInterface: TransactionPoolInterface[String, DummyBlockHeader, DummyTransaction] =
-    mock[TransactionPoolInterface[String, DummyBlockHeader, DummyTransaction]]
+  def mockTxPoolFutureInterface: TransactionPoolInterface[String, DummyTransaction] =
+    mock[TransactionPoolInterface[String, DummyTransaction]]
 
   type State = String
-  type Header = DummyBlockHeader
   type Tx = DummyTransaction
-  type BlockType = Block[State, Header, Tx]
+  type BlockType = Block[State, Tx]
 
   def mockNetwork[M]: Network[M] = mock[Network[M]]
 
@@ -37,12 +36,12 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
 
   private def setupTest(ledgerId: LedgerId, me: NodeId = NodeId("abcd"))(
       implicit txSerializable: NioEncDec[Envelope[Tx]],
-      blockSerializable: NioEncDec[Envelope[Block[State, Header, Tx]]]) = {
+      blockSerializable: NioEncDec[Envelope[Block[State, Tx]]]) = {
     val consensusMap = Map(ledgerId -> (mockTxPoolFutureInterface, mockConsensus))
     val txDM = mockNetwork[Envelope[DummyTransaction]]
-    val blockDM = mockNetwork[Envelope[Block[String, DummyBlockHeader, DummyTransaction]]]
+    val blockDM = mockNetwork[Envelope[Block[String, DummyTransaction]]]
     val txMessageStream = mock[MessageStream[Envelope[DummyTransaction]]]
-    val blockMessageStream = mock[MessageStream[Envelope[Block[String, DummyBlockHeader, DummyTransaction]]]]
+    val blockMessageStream = mock[MessageStream[Envelope[Block[String, DummyTransaction]]]]
     when(txDM.messageStream).thenReturn(txMessageStream)
     when(blockDM.messageStream).thenReturn(blockMessageStream)
     when(txMessageStream.foreach(ArgumentMatchers.any())).thenReturn(Future.successful(()))
@@ -81,7 +80,7 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
 
   it should "receive a block" in {
     val testBlock =
-      Block[String, DummyBlockHeader, DummyTransaction](DummyBlockHeader(1), immutable.Seq(DummyTransaction(10)))
+      Block[String, DummyTransaction](BlockHeader(), immutable.Seq(DummyTransaction(10)))
     val ledgerId = "1"
     val testEnvelope = Envelope(testBlock, ledgerId, Everyone)
     implicit val bs1 = mockNioEncDec
@@ -166,13 +165,13 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
 
   private def setupMissingCapabilitiesTest(
       ledgerId: LedgerId,
-      core: NodeCore[String, DummyBlockHeader, DummyTransaction],
+      core: NodeCore[String, DummyTransaction],
       destinationDescriptor: DestinationDescriptor,
       me: NodeId)(
       implicit txSerializable: NioEncDec[Envelope[Tx]],
-      blockSerializable: NioEncDec[Envelope[Block[State, Header, Tx]]]) = {
+      blockSerializable: NioEncDec[Envelope[Block[State, Tx]]]) = {
     val testTx = DummyTransaction(10)
-    val testBlock = Block[String, DummyBlockHeader, DummyTransaction](DummyBlockHeader(1), immutable.Seq(testTx))
+    val testBlock = Block[String, DummyTransaction](BlockHeader(), immutable.Seq(testTx))
     val testBlockEnvelope = Envelope(testBlock, "1", destinationDescriptor)
     val testTxEnvelope = Envelope(testTx, "1", destinationDescriptor)
     (testBlockEnvelope, testTxEnvelope)

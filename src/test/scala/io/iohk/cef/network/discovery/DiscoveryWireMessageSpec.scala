@@ -5,6 +5,9 @@ import java.net.{InetAddress, InetSocketAddress}
 import akka.util.ByteString
 import io.iohk.cef.network.{Capabilities, NodeInfo}
 import org.scalatest.{FlatSpec, MustMatchers}
+import io.iohk.cef.codecs.nio._
+import io.iohk.cef.codecs.nio.auto._
+import org.scalatest.OptionValues._
 
 class DiscoveryWireMessageSpec extends FlatSpec with MustMatchers {
 
@@ -15,22 +18,20 @@ class DiscoveryWireMessageSpec extends FlatSpec with MustMatchers {
     val addr2 = new InetSocketAddress(InetAddress.getByAddress(Array(6, 7, 8, 9)), 10)
     val node = NodeInfo(ByteString("node"), addr1, addr2, Capabilities(2))
 
-    import io.iohk.cef.network.encoding.rlp.RLPImplicits._
-
     val ping = Ping(1, node, 3, ByteString("2"))
-    Ping.pingRLPEncDec.decode(Ping.pingRLPEncDec.encode(ping)) mustBe ping
+    NioEncDec[Ping].decode(NioEncDec[Ping].encode(ping)).value mustBe ping
 
     val pong = Pong(node, ByteString("1"), 2)
-    Pong.pongRLPEncDec.decode(Pong.pongRLPEncDec.encode(pong)) mustBe pong
+    NioEncDec[Pong].decode(NioEncDec[Pong].encode(pong)).value mustBe pong
 
     val neighbors = Neighbors(Capabilities(1), ByteString("token"), 2, Seq(node, node), 3)
-    Neighbors.neighborsRLPEncDec.decode(Neighbors.neighborsRLPEncDec.encode(neighbors)) mustBe neighbors
+    NioEncDec[Neighbors].decode(NioEncDec[Neighbors].encode(neighbors)).value mustBe neighbors
 
     val seek = Seek(Capabilities(2), 3, 4, ByteString("nonce"))
-    Seek.seekRLPEncDec.decode(Seek.seekRLPEncDec.encode(seek)) mustBe seek
+    NioEncDec[Seek].decode(NioEncDec[Seek].encode(seek)).value mustBe seek
 
     Seq(ping, pong, neighbors, seek).foreach { m =>
-      DiscoveryWireMessage.rlpEncDec.decode(DiscoveryWireMessage.rlpEncDec.encode(m)) mustBe m
+      NioEncDec[DiscoveryWireMessage].decode(NioEncDec[DiscoveryWireMessage].encode(m)).value mustBe m
     }
   }
 }

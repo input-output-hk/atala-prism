@@ -1,6 +1,6 @@
 package io.iohk.cef.codecs.nio.components
 
-import io.iohk.cef.codecs.nio.{NioEncoder, NioDecoder}
+import io.iohk.cef.codecs.nio.{NioEncoder, NioDecoder, NioEncDec}
 import CodecDecorators._
 import scala.reflect.runtime.universe.TypeTag
 import scala.reflect.ClassTag
@@ -26,6 +26,15 @@ trait Extensions {
         messageLengthDecoder(decoder)
       def packed: NioDecoder[T] =
         messageLengthDecoder(typeCodeDecoder(decoder))
+    }
+
+    implicit class NioEncDecExtension[T](val ed: NioEncDec[T]) {
+      def tagged: NioEncDec[T] =
+        NioEncDec(typeCodeEncoder(ed), typeCodeDecoder(ed))
+      def sized: NioEncDec[T] =
+        NioEncDec(messageLengthEncoder(ed), messageLengthDecoder(ed))
+      def packed: NioEncDec[T] =
+        tagged.sized
     }
 
     implicit class ByteBufferExtension(val b: ByteBuffer) {

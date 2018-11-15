@@ -2,26 +2,26 @@ package io.iohk.cef.network.transport
 
 import java.net.InetSocketAddress
 
-import io.iohk.cef.network.PeerInfo
+import io.iohk.cef.network.PeerConfig
 import io.iohk.cef.codecs.nio.{NioEncoder, NioDecoder}
 import io.iohk.cef.network.transport.tcp.{NettyTransport, TcpNetworkTransport}
 
 object Transports {
-  def usesTcp(peerInfo: PeerInfo): Boolean =
-    peerInfo.configuration.tcpTransportConfiguration.isDefined
+  def usesTcp(peerConfig: PeerConfig): Boolean =
+    peerConfig.networkConfig.tcpTransportConfig.isDefined
 }
 
 /**
   * Encapsulates the networking resources held by the node (tcp ports, etc).
   * You only want one of these objects in most application configurations.
-  * @param peerInfo configuration data for the node.
+  * @param peerConfig configuration data for the node.
   */
-class Transports(val peerInfo: PeerInfo) {
+class Transports(val peerConfig: PeerConfig) {
 
   private var nettyTransportRef: Option[NettyTransport] = None
 
   def netty(): Option[NettyTransport] = this.synchronized { // AtomicRef does not work for side-effecting fns
-    peerInfo.configuration.tcpTransportConfiguration.map(tcpConfiguration => {
+    peerConfig.networkConfig.tcpTransportConfig.map(tcpConfiguration => {
       nettyTransportRef match {
         case Some(nettyTransport) =>
           nettyTransport

@@ -7,11 +7,10 @@ import org.scalatest.Matchers._
 import io.iohk.cef.network.transport.tcp.NetUtils
 import io.iohk.cef.network.transport.{Frame, FrameHeader}
 import io.iohk.cef.test.DummyTransaction
-import io.iohk.cef.test.DummyBlockHeader
 import io.iohk.cef.core.DestinationDescriptor
 import io.iohk.cef.core.Everyone
 import io.iohk.cef.core.Envelope
-import io.iohk.cef.ledger.Block
+import io.iohk.cef.ledger.{Block, BlockHeader}
 
 class FrameEnvelopeCodecSpec extends FlatSpec {
   behavior of "FrameEnvelopeEncoder"
@@ -20,16 +19,15 @@ class FrameEnvelopeCodecSpec extends FlatSpec {
     val testTx = DummyTransaction(10)
 
     test(testTx)
-    DestinationDescriptor
     test(Everyone: DestinationDescriptor)
     test("1")
     val envelope = Envelope(testTx, "1", Everyone)
     test(envelope)
     test(Frame(FrameHeader(NetUtils.aRandomNodeId(), NetUtils.aRandomNodeId()), envelope))
-    val h = DummyBlockHeader(20)
+    val h = BlockHeader()
     test(h)
     test(List(testTx))
-    val b: Block[String, DummyBlockHeader, DummyTransaction] = Block(h, Seq(testTx))
+    val b: Block[String, DummyTransaction] = Block(h, Seq(testTx))
     test(b)
     test(Envelope(b, "1", Everyone))
     test(Frame(FrameHeader(NetUtils.aRandomNodeId(), NetUtils.aRandomNodeId()), Envelope(b, "1", Everyone)))

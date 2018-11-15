@@ -1,6 +1,6 @@
 package io.iohk.cef.consensus.raft
 import io.iohk.cef.consensus.raft.node.{CallInMemory, RaftNode}
-import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.concurrent.{Eventually, ScalaFutures}
 import org.scalatest.time.{Millis, Seconds, Span}
 
 import scala.collection.mutable
@@ -16,6 +16,9 @@ trait RealRaftNodeFixture[Command] {
 
   implicit val futuresPatienceConfig: ScalaFutures.PatienceConfig =
     ScalaFutures.PatienceConfig(timeout = timeout, interval = span)
+
+  implicit val eventuallyPatienceConfig: Eventually.PatienceConfig =
+    Eventually.PatienceConfig(timeout = timeout, interval = span)
 
   val testNodes = mutable.Map[String, TestNode]()
 

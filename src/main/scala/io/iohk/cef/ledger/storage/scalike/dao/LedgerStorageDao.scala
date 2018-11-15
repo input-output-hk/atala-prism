@@ -11,8 +11,8 @@ import io.iohk.cef.utils._
 
 class LedgerStorageDao(clock: Clock) {
 
-  def push[S, Header <: BlockHeader, Tx <: Transaction[S]](ledgerId: LedgerId, block: Block[S, Header, Tx])(
-      implicit blockSerializable: NioEncDec[Block[S, Header, Tx]],
+  def push[S, Tx <: Transaction[S]](ledgerId: LedgerId, block: Block[S, Tx])(
+      implicit blockSerializable: NioEncDec[Block[S, Tx]],
       session: DBSession): Int = {
     val blockColumn = LedgerTable.column
     val lt = LedgerTable.syntax("bt")

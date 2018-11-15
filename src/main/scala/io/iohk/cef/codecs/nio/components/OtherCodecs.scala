@@ -10,8 +10,10 @@ import scala.reflect.runtime.universe.TypeTag
 import io.iohk.cef.utils._
 
 import scala.util.Try
-import io.iohk.cef.codecs.nio.{NioDecoder, NioEncoder}
+import io.iohk.cef.codecs.nio.{NioDecoder, NioEncoder, NioEncDec}
 import io.iohk.cef.codecs.nio.ops._
+
+import java.net.{InetAddress, InetSocketAddress}
 
 trait OtherCodecs {
 
@@ -98,5 +100,16 @@ trait OtherCodecs {
 
   implicit def localDateDecoder(implicit dec: NioDecoder[Instant]): NioDecoder[LocalDate] =
     dec.map[LocalDate](LocalDateTime.ofInstant(_, ZoneOffset.UTC).toLocalDate).packed
+
+  implicit def inetAddressEncDec(implicit ed: NioEncDec[Array[Byte]]): NioEncDec[InetAddress] =
+    ed.mapOpt(
+        (ia: InetAddress) => ia.getAddress,
+        (bs: Array[Byte]) => scala.util.Try(InetAddress.getByAddress(bs)).toOption)
+      .packed
+
+  implicit def inetSocketAddressEncDec(implicit ed: NioEncDec[(InetAddress, Int)]): NioEncDec[InetSocketAddress] =
+    ed.mapOpt((isa: InetSocketAddress) => (isa.getAddress, isa.getPort), {
+      case (ia, p) => scala.util.Try(new InetSocketAddress(ia, p)).toOption
+    })
 
 }

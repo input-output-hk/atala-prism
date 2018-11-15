@@ -2,8 +2,8 @@ package io.iohk.cef.network.discovery
 
 import io.iohk.cef.network.transport.Transports
 import io.iohk.cef.network.transport.tcp.NetUtils.{aRandomAddress, aRandomNodeId}
-import io.iohk.cef.network.transport.tcp.TcpTransportConfiguration
-import io.iohk.cef.network.{NetworkConfiguration, PeerInfo}
+import io.iohk.cef.network.transport.tcp.TcpTransportConfig
+import io.iohk.cef.network.{NetworkConfig, PeerConfig}
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 
@@ -12,17 +12,17 @@ class MeshNetDiscoverySpec extends FlatSpec {
   behavior of "MeshNetworkDiscovery"
 
   ignore should "have an initial routing table containing itself and a bootstrap node" in {
-    val peerInfo =
-      PeerInfo(aRandomNodeId(), NetworkConfiguration(Some(TcpTransportConfiguration(aRandomAddress()))))
+    val peerConfig =
+      PeerConfig(aRandomNodeId(), NetworkConfig(Some(TcpTransportConfig(aRandomAddress()))))
 
-    val transports = new Transports(peerInfo)
+    val transports = new Transports(peerConfig)
 
     val bootstrapPeerInfo =
-      PeerInfo(aRandomNodeId(), NetworkConfiguration(Some(TcpTransportConfiguration(aRandomAddress()))))
+      PeerConfig(aRandomNodeId(), NetworkConfig(Some(TcpTransportConfig(aRandomAddress()))))
 
-    val discovery = new MeshNetDiscovery(peerInfo, bootstrapPeerInfo, transports)
+    val discovery = new MeshNetDiscovery(peerConfig, bootstrapPeerInfo, transports)
 
-    discovery.nearestPeerTo(peerInfo.nodeId) shouldBe Some(peerInfo)
+    discovery.nearestPeerTo(peerConfig.nodeId) shouldBe Some(peerConfig)
     discovery.nearestPeerTo(bootstrapPeerInfo.nodeId) shouldBe Some(bootstrapPeerInfo)
   }
 

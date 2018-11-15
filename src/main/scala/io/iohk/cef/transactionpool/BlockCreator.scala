@@ -4,21 +4,21 @@ import java.util.concurrent.TimeUnit
 
 import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.error.ApplicationError
-import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
+import io.iohk.cef.ledger.{Block, Transaction}
 import monix.execution.Scheduler.{global => scheduler}
 import org.slf4j.LoggerFactory
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.implicitConversions
-class BlockCreator[State, Header <: BlockHeader, Tx <: Transaction[State]](
-    transactionPoolInterface: TransactionPoolInterface[State, Header, Tx],
-    consensus: Consensus[State, Header, Tx],
+class BlockCreator[State, Tx <: Transaction[State]](
+    transactionPoolInterface: TransactionPoolInterface[State, Tx],
+    consensus: Consensus[State, Tx],
     initialDelay: FiniteDuration,
     interval: FiniteDuration)(implicit executionContext: ExecutionContext) {
 
-  private val logger = LoggerFactory.getLogger(classOf[BlockCreator[State, Header, Tx]])
+  private val logger = LoggerFactory.getLogger(classOf[BlockCreator[State, Tx]])
 
-  type BlockType = Block[State, Header, Tx]
+  type BlockType = Block[State, Tx]
 
   implicit def toSeconds(finiteDuration: FiniteDuration): Long = finiteDuration.toSeconds
 
