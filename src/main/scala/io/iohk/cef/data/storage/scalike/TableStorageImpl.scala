@@ -21,7 +21,7 @@ class TableStorageImpl(tableStorageDao: TableStorageDao) extends TableStorage {
   }
 
   override def selectSingle[I](tableId: TableId, dataItemId: DataItemId)(
-      implicit itemSerializable: NioEncDec[I]): Either[ApplicationError, Option[DataItem[I]]] = {
+      implicit itemSerializable: NioEncDec[I]): Either[ApplicationError, DataItem[I]] = {
     execInSession { implicit session =>
       tableStorageDao.selectSingle[I](tableId, dataItemId)
     }

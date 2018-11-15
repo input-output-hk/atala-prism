@@ -1,7 +1,7 @@
 package io.iohk.cef.data
 import io.iohk.cef.codecs.nio._
 import io.iohk.cef.crypto._
-import io.iohk.cef.data.error.{DataItemNotFound, InvalidSignaturesError, OwnerMustSignDelete}
+import io.iohk.cef.data.error.{InvalidSignaturesError, OwnerMustSignDelete}
 import io.iohk.cef.data.storage.TableStorage
 import io.iohk.cef.error.ApplicationError
 
@@ -35,8 +35,7 @@ class Table(tableStorage: TableStorage) {
       actionSerializable: NioEncDec[DeleteSignatureWrapper[I]],
       canValidate: CanValidate[DataItem[I]]): Either[ApplicationError, Unit] = {
     for {
-      dataItemOption <- tableStorage.selectSingle[I](tableId, dataItemId)
-      dataItem <- dataItemOption.toRight(new DataItemNotFound(tableId, dataItemId))
+      dataItem <- tableStorage.selectSingle[I](tableId, dataItemId)
       _ <- canValidate.validate(dataItem)
     } yield {
       val signatureValidation =
