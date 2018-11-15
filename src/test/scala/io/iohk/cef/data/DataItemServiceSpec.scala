@@ -1,7 +1,6 @@
 package io.iohk.cef.data
 
 import io.iohk.cef.codecs.nio._
-import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.core.{Envelope, Everyone}
 import io.iohk.cef.crypto.Signature
 import io.iohk.cef.data.DataItemAction.{Delete, Insert}
@@ -49,8 +48,7 @@ class DataItemServiceSpec extends FlatSpec {
     val messageStream = mock[MessageStream[Envelope[DataItemAction[String]]]]
     when(network.messageStream).thenReturn(messageStream)
     when(messageStream.foreach(any())).thenReturn(Future.successful(()))
-
-    val service = new DataItemService(table, network)
+    val service: DataItemService[String] = new DataItemService(table, network)
 
     service.processAction(Envelope(Delete(dataItem.id, signature), containerId, Everyone))
 

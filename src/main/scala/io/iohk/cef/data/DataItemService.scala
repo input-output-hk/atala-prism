@@ -1,7 +1,7 @@
 package io.iohk.cef.data
 
 import io.iohk.cef.codecs.nio._
-import io.iohk.cef.core.{DestinationDescriptor, Envelope}
+import io.iohk.cef.core.Envelope
 import io.iohk.cef.data.DataItemAction.{Delete, Insert}
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.network.{MessageStream, Network}
@@ -9,7 +9,6 @@ import io.iohk.cef.network.{MessageStream, Network}
 class DataItemService[T](table: Table, network: Network[Envelope[DataItemAction[T]]])(
     implicit enc: NioEncDec[T],
     actionEncDec: NioEncDec[DeleteSignatureWrapper[T]],
-    destinationDescriptorEncDec: NioEncDec[DestinationDescriptor],
     itemEncDec: NioEncDec[DataItem[T]],
     canValidate: CanValidate[DataItem[T]],
     frameCodec: NioEncDec[Envelope[DataItemAction[T]]]) {

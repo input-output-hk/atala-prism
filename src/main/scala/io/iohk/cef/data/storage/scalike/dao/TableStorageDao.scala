@@ -4,6 +4,8 @@ import io.iohk.cef.codecs.nio._
 import io.iohk.cef.crypto._
 import io.iohk.cef.data.storage.scalike.{DataItemOwnerTable, DataItemSignatureTable, DataItemTable}
 import io.iohk.cef.data._
+import io.iohk.cef.data.error.DataItemNotFound
+import io.iohk.cef.error.ApplicationError
 import scalikejdbc.{DBSession, _}
 
 class TableStorageDao {
@@ -94,8 +96,8 @@ class TableStorageDao {
 
   def selectSingle[I](tableId: TableId, dataItemId: DataItemId)(
       implicit session: DBSession,
-      serializable: NioEncDec[I]): Either[CodecError, Option[DataItem[I]]] =
-    selectAll[I](tableId, Seq(dataItemId)).map(_.headOption)
+      serializable: NioEncDec[I]): Either[ApplicationError, DataItem[I]] =
+    selectAll[I](tableId, Seq(dataItemId)).flatMap(_.headOption.toRight(new DataItemNotFound(tableId, dataItemId)))
 
   def selectAll[I](tableId: TableId, ids: Seq[DataItemId])(
       implicit session: DBSession,
