@@ -8,7 +8,15 @@ trait NioCodecs extends Extensions with StreamCodecs {
 
   object auto extends NativeCodecs with ProductCodecs with OtherCodecs with CoproductCodecs
 
-  trait NioEncDec[T] extends NioEncoder[T] with NioDecoder[T] with EncoderDecoder[T, ByteBuffer]
+  trait NioEncDec[T] extends NioEncoder[T] with NioDecoder[T] with EncoderDecoder[T, ByteBuffer] { self =>
+    def mapOpt[U: TypeTag](ef: U => T, df: T => Option[U]): NioEncDec[U] = new NioEncDec[U] {
+      override val typeTag: TypeTag[U] = implicitly[TypeTag[U]]
+      override def encode(u: U): ByteBuffer = self.encode(ef(u))
+      override def decode(b: ByteBuffer): Option[U] = self.decode(b).flatMap(df)
+    }
+    def map[U: TypeTag](ef: U => T, df: T => U): NioEncDec[U] =
+      mapOpt(ef, (t: T) => Some(df(t)))
+  }
   object NioEncDec {
     def apply[T](implicit ed: NioEncDec[T]): NioEncDec[T] = ed
     def apply[T](e: NioEncoder[T], d: NioDecoder[T]): NioEncDec[T] =

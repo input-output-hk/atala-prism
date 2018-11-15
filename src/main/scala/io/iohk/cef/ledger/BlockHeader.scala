@@ -1,3 +1,4 @@
 package io.iohk.cef.ledger
+import java.time.Instant
 
-trait BlockHeader
+case class BlockHeader(created: Instant = Instant.ofEpochMilli(0))

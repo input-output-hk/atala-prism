@@ -1,5 +1,6 @@
 package io.iohk.cef.test
 import io.iohk.cef.data._
+import io.iohk.cef.data.error.DataItemError
 import io.iohk.cef.error.ApplicationError
 
 case class TestDataItemError(something: Int) extends DataItemError

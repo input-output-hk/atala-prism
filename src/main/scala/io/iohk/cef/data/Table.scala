@@ -1,6 +1,7 @@
 package io.iohk.cef.data
 import io.iohk.cef.codecs.nio._
 import io.iohk.cef.crypto._
+import io.iohk.cef.data.error.{InvalidSignaturesError, OwnerMustSignDelete}
 import io.iohk.cef.data.storage.TableStorage
 import io.iohk.cef.error.ApplicationError
 
@@ -34,14 +35,17 @@ class Table(tableStorage: TableStorage) {
     }
   }
 
-  def delete[I](tableId: TableId, dataItem: DataItem[I], deleteSignature: Signature)(
+  def delete[I](tableId: TableId, dataItemId: DataItemId, deleteSignature: Signature)(
       implicit dataSerializable: NioEncDec[I],
       dataItemSerializable: NioEncDec[DataItem[I]],
-      actionSerializable: NioEncDec[DataItemAction[I]],
+      actionSerializable: NioEncDec[DeleteSignatureWrapper[I]],
       canValidate: CanValidate[DataItem[I]]): Either[ApplicationError, Unit] = {
-    canValidate.validate(dataItem).flatMap { _ =>
+    for {
+      dataItem <- tableStorage.selectSingle[I](tableId, dataItemId)
+      _ <- canValidate.validate(dataItem)
+    } yield {
       val signatureValidation =
-        dataItem.owners.map(owner => isValidSignature(dataItem, deleteSignature, owner.key))
+        dataItem.owners.map(owner => isValidSignature(DeleteSignatureWrapper(dataItem), deleteSignature, owner.key))
 
       val validSignature = signatureValidation.find(identity)
 

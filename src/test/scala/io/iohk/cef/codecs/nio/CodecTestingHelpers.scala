@@ -9,17 +9,12 @@ import org.scalatest.Matchers._
 import org.scalatest.prop.GeneratorDrivenPropertyChecks._
 import org.scalactic.Equivalence
 import org.scalatest.OptionValues._
+import auto._
 
 trait CodecTestingHelpers {
 
   case class UnexpectedThing()
   object UnexpectedThing {
-    implicit val UnexpectedThingEncDec: NioEncDec[UnexpectedThing] = {
-      import io.iohk.cef.codecs.nio.auto._
-      val e: NioEncoder[UnexpectedThing] = genericEncoder
-      val d: NioDecoder[UnexpectedThing] = genericDecoder
-      NioEncDec(e, d)
-    }
     implicit val UnexpectedThingArbitrary: Arbitrary[UnexpectedThing] =
       Arbitrary(arbitrary[Unit].map(_ => UnexpectedThing()))
   }

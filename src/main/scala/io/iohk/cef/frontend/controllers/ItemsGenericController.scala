@@ -5,7 +5,7 @@ import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import com.alexitc.playsonify.core.I18nService
 import com.alexitc.playsonify.models.{GenericPublicError, InputValidationError, PublicError}
-import io.iohk.cef.data.{CanValidate, DataItem, DataItemService}
+import io.iohk.cef.data.{CanValidate, DataItem, DataItemAction, DataItemService}
 import io.iohk.cef.frontend.controllers.common.{CustomJsonController, _}
 import play.api.libs.json.{JsObject, Reads}
 import io.iohk.cef.codecs.nio._
@@ -26,7 +26,9 @@ class ItemsGenericController(implicit ec: ExecutionContext, mat: Materializer) e
       pathEnd {
         post {
           publicInput(StatusCodes.Created) { ctx: HasModel[Envelope[DataItem[D]]] =>
-            val either = service.insert(ctx.model)
+            val insertAction: Envelope[DataItemAction[D]] =
+              ctx.model.copy(content = DataItemAction.Insert(ctx.model.content))
+            val either = service.processAction(insertAction)
             val result = fromEither(either, ItemCreationError)
               .map(_ => JsObject.empty)
 

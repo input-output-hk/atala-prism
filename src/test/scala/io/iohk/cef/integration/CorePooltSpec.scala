@@ -1,10 +1,11 @@
 package io.iohk.cef.integration
+
 import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.core.{Envelope, Everyone, NodeCore}
-import io.iohk.cef.ledger.{Block, Transaction}
+import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
 import io.iohk.cef.ledger.storage.LedgerStateStorage
 import io.iohk.cef.network.{MessageStream, Network, NodeId}
-import io.iohk.cef.test.{DummyBlockHeader, DummyTransaction}
+import io.iohk.cef.test.DummyTransaction
 import io.iohk.cef.transactionpool.TransactionPoolInterface
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
@@ -20,29 +21,27 @@ class CorePooltSpec extends FlatSpecLike with MustMatchers with BeforeAndAfterAl
 
   private def mockLedgerStateStorage[State] = mock[LedgerStateStorage[State]]
 
-  import io.iohk.cef.ledger.ByteSizeableImplicits._
-
   behavior of "CorePoolItSpec"
 
   it should "process a transaction" in {
     implicit val executionContext = ExecutionContext.global
-    import DummyTransaction._
     val ledgerStateStorage = mockLedgerStateStorage[String]
+    val generateHeader: Seq[Transaction[String]] => BlockHeader = _ => BlockHeader()
     val transactionPoolFutureInterface =
-      TransactionPoolInterface[String, DummyBlockHeader, DummyTransaction](
-        (txs: Seq[Transaction[String]]) => new DummyBlockHeader(txs.size),
-        10000,
+      TransactionPoolInterface[String, DummyTransaction](
+        generateHeader,
+        3,
         ledgerStateStorage,
         1 minute
       )
-    val consensus = mock[Consensus[String, DummyBlockHeader, DummyTransaction]]
+    val consensus = mock[Consensus[String, DummyTransaction]]
     val txNetwork = mock[Network[Envelope[DummyTransaction]]]
-    val blockNetwork = mock[Network[Envelope[Block[String, DummyBlockHeader, DummyTransaction]]]]
+    val blockNetwork = mock[Network[Envelope[Block[String, DummyTransaction]]]]
     val consensusMap = Map("1" -> (transactionPoolFutureInterface, consensus))
     val me = NodeId("3112")
     val mockTxMessageStream = mock[MessageStream[Envelope[DummyTransaction]]]
     val mockBlockMessageStream =
-      mock[MessageStream[Envelope[Block[String, DummyBlockHeader, DummyTransaction]]]]
+      mock[MessageStream[Envelope[Block[String, DummyTransaction]]]]
     when(txNetwork.messageStream).thenReturn(mockTxMessageStream)
     when(blockNetwork.messageStream).thenReturn(mockBlockMessageStream)
     when(mockTxMessageStream.foreach(ArgumentMatchers.any())).thenReturn(Future.successful(()))
@@ -53,8 +52,7 @@ class CorePooltSpec extends FlatSpecLike with MustMatchers with BeforeAndAfterAl
     val result = Await.result(core.receiveTransaction(envelope), 10 seconds)
     result mustBe Right(())
     val resultBlock = transactionPoolFutureInterface.generateBlock()
-    resultBlock mustBe Right(
-      Block[String, DummyBlockHeader, DummyTransaction](DummyBlockHeader(1), Queue(DummyTransaction(5))))
+    resultBlock mustBe Right(Block[String, DummyTransaction](BlockHeader(), Queue(DummyTransaction(5))))
     resultBlock.map {
       _.transactions mustBe Seq(testTransaction)
     }

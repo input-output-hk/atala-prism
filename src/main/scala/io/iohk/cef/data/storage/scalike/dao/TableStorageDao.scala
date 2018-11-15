@@ -3,7 +3,8 @@ import akka.util.ByteString
 import io.iohk.cef.codecs.nio._
 import io.iohk.cef.crypto._
 import io.iohk.cef.data.storage.scalike.{DataItemOwnerTable, DataItemSignatureTable, DataItemTable}
-import io.iohk.cef.data.{DataItem, DataItemId, TableId, Witness, _}
+import io.iohk.cef.data._
+import io.iohk.cef.data.error.DataItemNotFound
 import io.iohk.cef.error.ApplicationError
 import scalikejdbc.{DBSession, _}
 
@@ -60,8 +61,7 @@ class TableStorageDao {
   }
 
   def selectAll[I](tableId: TableId)(
-      implicit diFactory: DataItemFactory[I],
-      session: DBSession,
+      implicit session: DBSession,
       serializable: NioEncDec[I]): Either[ApplicationError, Seq[DataItem[I]]] = {
     val di = DataItemTable.syntax("di")
     val dataItemRows = sql"""
@@ -79,7 +79,7 @@ class TableStorageDao {
           .map[Either[ApplicationError, I]](Right.apply)
           .getOrElse(Left(UnexpectedDecodingError()))
       } yield {
-        diFactory(dir.dataItemId, data, owners, witnesses)
+        DataItem(dir.dataItemId, data, witnesses, owners)
       }
     })
     dataItems
@@ -160,4 +160,40 @@ class TableStorageDao {
     }
   }
 
+  def selectSingle[I](tableId: TableId, dataItemId: DataItemId)(
+      implicit session: DBSession,
+      serializable: NioEncDec[I]): Either[ApplicationError, DataItem[I]] =
+    selectAll[I](tableId, Seq(dataItemId)).flatMap(_.headOption.toRight(new DataItemNotFound(tableId, dataItemId)))
+
+  def selectAll[I](tableId: TableId, ids: Seq[DataItemId])(
+      implicit session: DBSession,
+      serializable: NioEncDec[I]): Either[CodecError, Seq[DataItem[I]]] = {
+    import io.iohk.cef.utils.EitherTransforms
+    val di = DataItemTable.syntax("di")
+    val dataItemRows = sql"""
+        select ${di.result.*}
+        from ${DataItemTable as di}
+        where ${di.dataItemId} in (${ids}) and ${di.dataTableId} = ${tableId}
+       """.map(rs => DataItemTable(di.resultName)(rs)).list().apply()
+    //Inefficient for large tables
+    import EitherTransforms._
+    val dataItems = dataItemRows.map(dir => {
+      val uniqueId = getUniqueId(tableId, dir.dataItemId)
+      val ownerEither = selectDataItemOwners(uniqueId).toEitherList
+      val witnessEither = selectDataItemWitnesses(uniqueId).toEitherList
+      for {
+        owners <- ownerEither
+        witnesses <- witnessEither
+      } yield
+        DataItem(
+          dir.dataItemId,
+          serializable
+            .decode(dir.dataItem)
+            .getOrElse(throw new IllegalStateException(s"Could not decode data item: ${dir}")),
+          witnesses,
+          owners
+        )
+    })
+    dataItems.toEitherList
+  }
 }

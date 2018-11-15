@@ -14,7 +14,7 @@ import io.iohk.cef.codecs.nio.{NioEncoder, NioDecoder}
 import io.iohk.cef.network.telemetry.InMemoryTelemetry
 import io.iohk.cef.network.transport.Transports
 import io.iohk.cef.network.transport.tcp.NetUtils.aRandomAddress
-import io.iohk.cef.network.transport.tcp.{NetUtils, TcpTransportConfiguration}
+import io.iohk.cef.network.transport.tcp.{NetUtils, TcpTransportConfig}
 
 trait NetworkFixture {
 
@@ -24,13 +24,13 @@ trait NetworkFixture {
 
   def randomBaseNetwork(bootstrap: Option[BaseNetwork]): BaseNetwork = {
 
-    val configuration = NetworkConfiguration(Some(TcpTransportConfiguration(aRandomAddress())))
+    val configuration = NetworkConfig(Some(TcpTransportConfig(aRandomAddress())))
 
-    val peerInfo = PeerInfo(NodeId(NetUtils.randomBytes(NodeId.nodeIdBytes)), configuration)
+    val peerConfig = PeerConfig(NodeId(NetUtils.randomBytes(NodeId.nodeIdBytes)), configuration)
 
-    val transports = new Transports(peerInfo)
+    val transports = new Transports(peerConfig)
 
-    val networkDiscovery: NetworkDiscovery = discovery(peerInfo, bootstrap.map(_.transports.peerInfo))
+    val networkDiscovery: NetworkDiscovery = discovery(peerConfig, bootstrap.map(_.transports.peerConfig))
 
     new BaseNetwork(transports, networkDiscovery)
   }
@@ -46,13 +46,13 @@ trait NetworkFixture {
     }
   }
 
-  private def discovery(peerInfo: PeerInfo, bootstrapNode: Option[PeerInfo]): NetworkDiscovery = {
+  private def discovery(peerConfig: PeerConfig, bootstrapNode: Option[PeerConfig]): NetworkDiscovery = {
 
     import scala.concurrent.duration._
 
-    val bootstrapNodes = bootstrapNode.map(peerInfo2NodeInfoHack).toSet
+    val bootstrapNodes = bootstrapNode.map(peerConfig2NodeInfoHack).toSet
 
-    val nodeInfo = peerInfo2NodeInfoHack(peerInfo)
+    val nodeInfo = peerConfig2NodeInfoHack(peerConfig)
 
     val discoveryConfig = DiscoveryConfig(
       discoveryEnabled = true,
@@ -71,16 +71,16 @@ trait NetworkFixture {
     )
 
     val discoveryBehavior: Behavior[DiscoveryRequest] =
-      discoveryManagerBehavior(peerInfo, discoveryConfig)
+      discoveryManagerBehavior(peerConfig, discoveryConfig)
 
     new DiscoveryManagerAdapter(discoveryBehavior)
   }
 
   private def discoveryManagerBehavior(
-      peerInfo: PeerInfo,
+      peerConfig: PeerConfig,
       discoveryConfig: DiscoveryConfig): Behavior[DiscoveryRequest] = {
 
-    val nodeInfo = peerInfo2NodeInfoHack(peerInfo)
+    val nodeInfo = peerConfig2NodeInfoHack(peerConfig)
 
     val nodeState = NodeState(
       nodeInfo.id,
@@ -89,12 +89,12 @@ trait NetworkFixture {
       Capabilities(0))
 
     val (encoder, decoder) = {
-      import io.iohk.cef.network.encoding.rlp._
-      import io.iohk.cef.network.encoding.rlp.RLPImplicits._
+      import io.iohk.cef.codecs.nio.auto._
 
-      val encdec = RLPEncDec[DiscoveryWireMessage].asNio
+      val e: NioEncoder[DiscoveryWireMessage] = genericEncoder
+      val d: NioDecoder[DiscoveryWireMessage] = genericDecoder
 
-      (encdec, encdec)
+      (e, d)
     }
 
     val discoveryBehavior = DiscoveryManager.behaviour(
@@ -123,13 +123,13 @@ trait NetworkFixture {
   }
 
   // FIXME Get rid of NodeInfo
-  private def peerInfo2NodeInfoHack(peerInfo: PeerInfo): NodeInfo = {
+  private def peerConfig2NodeInfoHack(peerConfig: PeerConfig): NodeInfo = {
     val discoveryAddress =
-      new InetSocketAddress("localhost", peerInfo.configuration.tcpTransportConfiguration.get.bindAddress.getPort + 1)
+      new InetSocketAddress("localhost", peerConfig.networkConfig.tcpTransportConfig.get.bindAddress.getPort + 1)
 
-    val serverAddress = peerInfo.configuration.tcpTransportConfiguration.get.natAddress
+    val serverAddress = peerConfig.networkConfig.tcpTransportConfig.get.natAddress
 
-    NodeInfo(peerInfo.nodeId.id, discoveryAddress, serverAddress, Capabilities(0))
+    NodeInfo(peerConfig.nodeId.id, discoveryAddress, serverAddress, Capabilities(0))
   }
 
   private def clock(): Clock = Clock.systemUTC()

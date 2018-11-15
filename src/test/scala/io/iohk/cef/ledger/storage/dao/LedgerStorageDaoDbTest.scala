@@ -4,7 +4,7 @@ import java.time.{Clock, Instant}
 
 import io.iohk.cef.builder.SigningKeyPairs
 import io.iohk.cef.frontend.models.IdentityTransactionType
-import io.iohk.cef.ledger.Block
+import io.iohk.cef.ledger.{Block, BlockHeader}
 import io.iohk.cef.ledger.identity._
 import io.iohk.cef.ledger.storage.scalike.LedgerTable
 import io.iohk.cef.ledger.storage.scalike.dao.LedgerStorageDao
@@ -25,12 +25,13 @@ trait LedgerStorageDaoDbTest
   behavior of "LedgerStorageImpl"
 
   it should "update the ledger" in { implicit session =>
-    val header = IdentityBlockHeader(Instant.now)
+    implicit val codec = NioEncDec[Block[Set[SigningPublicKey], IdentityTransaction]]
+    val header = BlockHeader(Instant.now)
     val txList = List[IdentityTransaction](
       Claim("one", alice.public, uselessSignature),
       Link("two", bob.public, IdentityTransaction.sign("two", IdentityTransactionType.Link, bob.public, bob.`private`))
     )
-    val block = Block[Set[SigningPublicKey], IdentityBlockHeader, IdentityTransaction](header, txList)
+    val block = Block[Set[SigningPublicKey], IdentityTransaction](header, txList)
     val storage = new LedgerStorageDao(Clock.systemUTC())
     storage.push("1", block)
 
@@ -41,7 +42,7 @@ trait LedgerStorageDaoDbTest
       .apply()
 
     val blockEntry = blockDataInDb.value
-    val dbBlock = NioEncDec[IdentityLedgerBlock].decode(blockEntry.data.toByteBuffer)
+    val dbBlock = codec.decode(blockEntry.data.toByteBuffer)
     dbBlock.isDefined mustBe true
     dbBlock.get.header mustBe header
     dbBlock.get.transactions mustBe txList

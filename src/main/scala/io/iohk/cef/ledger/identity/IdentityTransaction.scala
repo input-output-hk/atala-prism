@@ -4,7 +4,6 @@ import akka.util.ByteString
 import io.iohk.cef.crypto.{sign => signBytes, _}
 import io.iohk.cef.frontend.models.IdentityTransactionType
 import io.iohk.cef.ledger.{LedgerError, Transaction}
-import io.iohk.cef.codecs.nio._
 
 sealed trait IdentityTransaction extends Transaction[Set[SigningPublicKey]] {
   val identity: String
@@ -13,11 +12,6 @@ sealed trait IdentityTransaction extends Transaction[Set[SigningPublicKey]] {
 }
 
 object IdentityTransaction {
-
-  implicit val IdentityTransactionNioEncDec: NioEncDec[IdentityTransaction] = {
-    import io.iohk.cef.codecs.nio.auto._
-    genericEncDec
-  }
 
   def sign(
       identity: String,

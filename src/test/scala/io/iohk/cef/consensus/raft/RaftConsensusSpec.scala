@@ -6,6 +6,7 @@ import org.mockito.Mockito.{inOrder, times, verify, when}
 import org.scalatest.Matchers._
 import org.scalatest.WordSpec
 import org.scalatest.concurrent.ScalaFutures.{convertScalaFuture, whenReady}
+import org.scalatest.concurrent.Eventually.eventually
 import org.scalatest.mockito.MockitoSugar._
 import io.iohk.cef.codecs.nio.auto._
 
@@ -467,18 +468,20 @@ class RaftConsensusSpec extends WordSpec {
         when(rpc3.requestVote(any[VoteRequested]))
           .thenReturn(Future(RequestVoteResult(term = 2, voteGranted = false)))
 
-        raftNode.electionTimeout().futureValue
+        raftNode.electionTimer.timeout()
 
-        raftNode.getRole shouldBe Candidate
+        eventually {
+          raftNode.getRole shouldBe Candidate
 
-        // On conversion to candidate
-        raftNode.getPersistentState shouldBe (2, raftNode.nodeId) // 1. increment current term and 2. vote for self
+          // On conversion to candidate
+          raftNode.getPersistentState shouldBe (2, raftNode.nodeId) // 1. increment current term and 2. vote for self
 
-        // 3. reset election timer. Done by inspection of the code:(
+          // 3. reset election timer. Done by inspection of the code:(
 
-        val expectedVoteRequest = VoteRequested(2, "i1", -1, -1) // 4. send request vote RPCs to other servers
-        verify(rpc2).requestVote(expectedVoteRequest)
-        verify(rpc3).requestVote(expectedVoteRequest)
+          val expectedVoteRequest = VoteRequested(2, "i1", -1, -1) // 4. send request vote RPCs to other servers
+          verify(rpc2).requestVote(expectedVoteRequest)
+          verify(rpc3).requestVote(expectedVoteRequest)
+        }
       }
     }
   }
@@ -500,9 +503,9 @@ class RaftConsensusSpec extends WordSpec {
         when(rpc3.appendEntries(any[EntriesToAppend[String]]))
           .thenReturn(Future(AppendEntriesResult(2, success = true)))
 
-        raftNode.electionTimeout().futureValue
+        raftNode.electionTimer.timeout()
 
-        raftNode.getRole shouldBe Leader
+        eventually(raftNode.getRole shouldBe Leader)
       }
     }
     "votes received from a minority" should {
@@ -518,7 +521,7 @@ class RaftConsensusSpec extends WordSpec {
         when(rpc3.requestVote(any[VoteRequested]))
           .thenReturn(Future(RequestVoteResult(term = 2, voteGranted = false)))
 
-        raftNode.electionTimeout()
+        raftNode.electionTimer.timeout()
 
         after(500) {
           raftNode.getRole shouldBe Candidate
@@ -544,10 +547,13 @@ class RaftConsensusSpec extends WordSpec {
           entries = Seq[LogEntry[String]](),
           leaderCommitIndex = -1)
 
-        raftNode.heartbeatTimeout().futureValue
-        raftNode.heartbeatTimeout().futureValue
-        verify(rpc2, times(3)).appendEntries(expectedHeartbeat)
-        verify(rpc3, times(3)).appendEntries(expectedHeartbeat)
+        raftNode.heartbeatTimer.timeout()
+        raftNode.heartbeatTimer.timeout()
+
+        eventually {
+          verify(rpc2, times(3)).appendEntries(expectedHeartbeat)
+          verify(rpc3, times(3)).appendEntries(expectedHeartbeat)
+        }
       }
     }
     "Receiving commands from a client" should {

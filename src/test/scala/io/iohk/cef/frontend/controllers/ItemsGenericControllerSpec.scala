@@ -27,7 +27,7 @@ class ItemsGenericControllerSpec
   implicit val executionContext = system.dispatcher
   val service = mock[DataItemService[BirthCertificate]]
 
-  when(service.insert(any())).thenReturn(Right(()))
+  when(service.processAction(any())).thenReturn(Right(()))
 
   val controller = new ItemsGenericController
 

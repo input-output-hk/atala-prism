@@ -2,7 +2,7 @@ package io.iohk.cef.network.discovery
 import java.net.InetSocketAddress
 
 import io.iohk.cef.network.transport.Transports
-import io.iohk.cef.network.{NodeId, PeerInfo}
+import io.iohk.cef.network.{NodeId, PeerConfig}
 
 /**
   * Implements a mesh overlay that selects peers within a
@@ -10,16 +10,16 @@ import io.iohk.cef.network.{NodeId, PeerInfo}
   * This table is then allows an implementation of the peer lookup
   * that will eventually converge to the destination.
   *
-  * @param peerInfo This is the nodes own peerInfo
-  * @param bootstrapPeerInfo This is the peerInfo of a bootstrap node.
+  * @param peerConfig This is the nodes own peerConfig
+  * @param bootstrapPeerConfig This is the peerConfig of a bootstrap node.
   * @param transports helpers to obtain network transport instances.
   */
-class MeshNetDiscovery(peerInfo: PeerInfo, bootstrapPeerInfo: PeerInfo, transports: Transports)
+class MeshNetDiscovery(peerConfig: PeerConfig, bootstrapPeerConfig: PeerConfig, transports: Transports)
     extends NetworkDiscovery {
 
-  override def nearestPeerTo(nodeId: NodeId): Option[PeerInfo] = ???
+  override def nearestPeerTo(nodeId: NodeId): Option[PeerConfig] = ???
 
-  override def nearestNPeersTo(nodeId: NodeId, n: Int): Seq[PeerInfo] = ???
+  override def nearestNPeersTo(nodeId: NodeId, n: Int): Seq[PeerConfig] = ???
 
   override def shutdown(): Unit = ???
 }
@@ -30,7 +30,7 @@ object MeshNetDiscovery {
 
   def pingHandler(address: InetSocketAddress, message: Ping): Unit = ???
 
-  case class Ping(peerInfo: PeerInfo)
+  case class Ping(peerConfig: PeerConfig)
 
   case class FindNodes(nodeId: NodeId)
 }

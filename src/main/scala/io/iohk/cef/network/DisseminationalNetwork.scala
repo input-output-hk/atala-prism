@@ -19,7 +19,7 @@ class DisseminationalNetwork[Message: /*NioEncoder: NioDecoder:*/ WeakTypeTag](
     */
   def disseminateMessage(message: Message): Unit =
     networkDiscovery
-      .nearestNPeersTo(transports.peerInfo.nodeId, Int.MaxValue)
+      .nearestNPeersTo(transports.peerConfig.nodeId, Int.MaxValue)
       .foreach(peer => {
         conversationalNetwork.sendMessage(peer.nodeId, message)
       })

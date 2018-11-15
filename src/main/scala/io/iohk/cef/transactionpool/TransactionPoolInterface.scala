@@ -2,7 +2,6 @@ package io.iohk.cef.transactionpool
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.ledger.storage.LedgerStateStorage
 import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
-import io.iohk.cef.utils.ByteSizeable
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.Duration
@@ -27,21 +26,19 @@ import java.time.Clock
   * @tparam Header
   * @tparam Tx
   */
-class TransactionPoolInterface[State, Header <: BlockHeader, Tx <: Transaction[State]](
-    headerGenerator: Seq[Transaction[State]] => Header,
+class TransactionPoolInterface[State, Tx <: Transaction[State]](
+    headerGenerator: Seq[Transaction[State]] => BlockHeader,
     maxBlockSize: Int,
     ledgerStateStorage: LedgerStateStorage[State],
     defaultTransactionExpiration: Duration,
-    timedQueueConstructor: () => TimedQueue[Tx])(
-    implicit blockByteSizeable: ByteSizeable[Block[State, Header, Tx]],
-    executionContext: ExecutionContext) {
+    timedQueueConstructor: () => TimedQueue[Tx])(implicit executionContext: ExecutionContext) {
 
-  type BlockType = Block[State, Header, Tx]
+  type BlockType = Block[State, Tx]
 
-  private val mutableTransactionPool: Ref[TransactionPool[State, Header, Tx]] = Ref(initializePool())
+  private val mutableTransactionPool: Ref[TransactionPool[State, Tx]] = Ref(initializePool())
 
-  private def initializePool(): TransactionPool[State, Header, Tx] = {
-    new TransactionPool[State, Header, Tx](
+  private def initializePool(): TransactionPool[State, Tx] = {
+    new TransactionPool[State, Tx](
       timedQueueConstructor(),
       headerGenerator,
       maxBlockSize,
@@ -66,7 +63,7 @@ class TransactionPoolInterface[State, Header <: BlockHeader, Tx <: Transaction[S
     }
   }
 
-  def removeBlockTransactions(block: Block[State, Header, Tx]): Either[ApplicationError, Unit] = {
+  def removeBlockTransactions(block: Block[State, Tx]): Either[ApplicationError, Unit] = {
     atomic { implicit txn =>
       val pool = mutableTransactionPool.single()
       val newPool = pool.removeBlockTransactions(block)
@@ -77,27 +74,24 @@ class TransactionPoolInterface[State, Header <: BlockHeader, Tx <: Transaction[S
 }
 
 object TransactionPoolInterface {
-  def apply[State, Header <: BlockHeader, Tx <: Transaction[State]](
-      headerGenerator: Seq[Transaction[State]] => Header,
+  def apply[State, Tx <: Transaction[State]](
+      headerGenerator: Seq[Transaction[State]] => BlockHeader,
       maxBlockSize: Int,
       ledgerStateStorage: LedgerStateStorage[State],
       defaultTransactionExpiration: Duration,
-      clock: Clock)(
-      implicit blockByteSizeable: ByteSizeable[Block[State, Header, Tx]],
-      executionContext: ExecutionContext): TransactionPoolInterface[State, Header, Tx] =
+      clock: Clock)(implicit executionContext: ExecutionContext): TransactionPoolInterface[State, Tx] =
     new TransactionPoolInterface(
       headerGenerator,
       maxBlockSize,
       ledgerStateStorage,
       defaultTransactionExpiration,
       () => new TimedQueue[Tx](clock))
-  def apply[State, Header <: BlockHeader, Tx <: Transaction[State]](
-      headerGenerator: Seq[Transaction[State]] => Header,
+  def apply[State, Tx <: Transaction[State]](
+      headerGenerator: Seq[Transaction[State]] => BlockHeader,
       maxBlockSize: Int,
       ledgerStateStorage: LedgerStateStorage[State],
       defaultTransactionExpiration: Duration)(
-      implicit blockByteSizeable: ByteSizeable[Block[State, Header, Tx]],
-      executionContext: ExecutionContext): TransactionPoolInterface[State, Header, Tx] =
+      implicit executionContext: ExecutionContext): TransactionPoolInterface[State, Tx] =
     new TransactionPoolInterface(
       headerGenerator,
       maxBlockSize,

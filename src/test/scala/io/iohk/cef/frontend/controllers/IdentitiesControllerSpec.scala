@@ -27,7 +27,7 @@ class IdentitiesControllerSpec
 
   import Codecs._
 
-  val nodeCore = mock[NodeCore[Set[SigningPublicKey], IdentityBlockHeader, IdentityTransaction]]
+  val nodeCore = mock[NodeCore[Set[SigningPublicKey], IdentityTransaction]]
 
   when(nodeCore.receiveTransaction(any())).thenReturn(Future.successful(Right(())))
   implicit val executionContext = system.dispatcher

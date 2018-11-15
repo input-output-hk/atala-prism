@@ -1,8 +1,8 @@
 package io.iohk.cef.data.storage.scalike
-import io.iohk.cef.codecs.nio.NioEncDec
+import io.iohk.cef.codecs.nio._
 import io.iohk.cef.data.storage.TableStorage
 import io.iohk.cef.data.storage.scalike.dao.TableStorageDao
-import io.iohk.cef.data.{DataItem, DataItemFactory, TableId}
+import io.iohk.cef.data.{DataItem, DataItemId, TableId}
 import io.iohk.cef.error.ApplicationError
 import scalikejdbc.{ConnectionPool, DB, DBSession, using}
 
@@ -20,8 +20,14 @@ class TableStorageImpl(tableStorageDao: TableStorageDao) extends TableStorage {
     }
   }
 
-  override def selectAll[I](tableId: TableId)(
-      implicit diFactory: DataItemFactory[I],
+  override def selectSingle[I](tableId: TableId, dataItemId: DataItemId)(
+      implicit itemSerializable: NioEncDec[I]): Either[ApplicationError, DataItem[I]] = {
+    execInSession { implicit session =>
+      tableStorageDao.selectSingle[I](tableId, dataItemId)
+    }
+  }
+
+  override def selectAll[I](tableId: TableId)(implicit
       itemSerializable: NioEncDec[I]): Either[ApplicationError, Seq[DataItem[I]]] = {
     execInSession { implicit session =>
       tableStorageDao.selectAll(tableId)

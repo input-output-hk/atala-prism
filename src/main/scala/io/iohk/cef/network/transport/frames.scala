@@ -1,8 +1,6 @@
 package io.iohk.cef.network.transport
 
 import io.iohk.cef.network.NodeId
-import io.iohk.cef.codecs.nio.{NioEncoder, NioDecoder, NioEncDec}
-import scala.reflect.runtime.universe.TypeTag
 
 object FrameHeader {
   val defaultTtl = 5
@@ -15,12 +13,3 @@ object FrameHeader {
 case class FrameHeader(src: NodeId, dst: NodeId, ttl: Int)
 
 case class Frame[Message](header: FrameHeader, content: Message)
-object Frame {
-  implicit def FrameEncDec[M: NioEncDec]: NioEncDec[Frame[M]] = {
-    import io.iohk.cef.codecs.nio.auto._
-    implicit val ttt: TypeTag[M] = NioEncDec[M].typeTag
-    val e: NioEncoder[Frame[M]] = genericEncoder
-    val d: NioDecoder[Frame[M]] = genericDecoder
-    NioEncDec(e, d)
-  }
-}
