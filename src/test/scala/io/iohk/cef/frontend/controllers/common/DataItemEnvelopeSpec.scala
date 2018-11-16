@@ -1,6 +1,6 @@
 package io.iohk.cef.frontend.controllers.common
 
-import io.iohk.cef.core._
+import io.iohk.cef.transactionservice._
 import io.iohk.cef.data.{DataItem, Owner, Witness}
 import io.iohk.cef.network.NodeId
 import org.scalatest.{MustMatchers, WordSpec}

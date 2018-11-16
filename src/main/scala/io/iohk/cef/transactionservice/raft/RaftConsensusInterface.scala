@@ -1,4 +1,4 @@
-package io.iohk.cef.core.raft
+package io.iohk.cef.transactionservice.raft
 
 import io.iohk.cef.LedgerId
 import io.iohk.cef.consensus.raft.RaftConsensus

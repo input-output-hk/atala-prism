@@ -1,4 +1,4 @@
-package io.iohk.cef.core
+package io.iohk.cef.transactionservice
 import io.iohk.cef.LedgerId
 import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.error.ApplicationError
@@ -10,13 +10,13 @@ import scala.concurrent.{ExecutionContext, Future}
 import io.iohk.cef.codecs.nio._
 
 /**
-  * A NodeCore orchestrates the interaction between the frontend, network, transaction pool and the consensus.
+  * A NodeTransactionService orchestrates the interaction between the frontend, network, transaction pool and the consensus.
   * Important note: Currently it is assumed that the network is fully connected. If this assumption does not hold,
-  * the NodeCore's dissemination will not reach all nodes.
+  * the NodeTransactionService's dissemination will not reach all nodes.
   * @param consensusMap The ledgers and their respective Consensus that this node supports.
   * @param txNetwork Network in charge of disseminating transactions
   * @param blockNetwork Network in charge of disseminating blocks
-  * @param me information about "me" (the node this core belongs to)
+  * @param me information about "me" (the node this transactionservice belongs to)
   * @param txSerializable
   * @param blockSerializable
   * @param timeout
@@ -24,7 +24,7 @@ import io.iohk.cef.codecs.nio._
   * @tparam State
   * @tparam Header
   */
-class NodeCore[State, Tx <: Transaction[State]](
+class NodeTransactionService[State, Tx <: Transaction[State]](
     consensusMap: Map[LedgerId, (TransactionPoolInterface[State, Tx], Consensus[State, Tx])],
     txNetwork: Network[Envelope[Tx]],
     blockNetwork: Network[Envelope[Block[State, Tx]]],

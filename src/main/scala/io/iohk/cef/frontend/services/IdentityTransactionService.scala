@@ -1,6 +1,6 @@
 package io.iohk.cef.frontend.services
 
-import io.iohk.cef.core._
+import io.iohk.cef.transactionservice._
 import io.iohk.cef.crypto._
 import io.iohk.cef.frontend.client.Response
 import io.iohk.cef.frontend.models.IdentityTransactionType
@@ -11,7 +11,8 @@ import io.iohk.cef.frontend.models._
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext
 
-class IdentityTransactionService(nodeCore: NodeCore[Set[SigningPublicKey], IdentityTransaction])(
+class IdentityTransactionService(
+    nodeTransactionService: NodeTransactionService[Set[SigningPublicKey], IdentityTransaction])(
     implicit ec: ExecutionContext) {
 
   type IdentityTransactionConstructor = (String, SigningPublicKey, Signature) => IdentityTransaction
@@ -33,7 +34,7 @@ class IdentityTransactionService(nodeCore: NodeCore[Set[SigningPublicKey], Ident
     val envelope =
       Envelope(content = identityTransaction, containerId = req.ledgerId, Not(Everyone))
 
-    nodeCore.receiveTransaction(envelope)
+    nodeTransactionService.receiveTransaction(envelope)
 
   }
 

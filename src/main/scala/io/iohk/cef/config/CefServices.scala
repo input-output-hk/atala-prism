@@ -6,8 +6,8 @@ import io.iohk.cef.codecs.nio._
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.consensus.raft.node.OnDiskPersistentStorage
 import io.iohk.cef.consensus.{Consensus, raft}
-import io.iohk.cef.core.raft.{RaftConsensusInterface, RaftRPCFactory}
-import io.iohk.cef.core.{Envelope, NodeCore}
+import io.iohk.cef.transactionservice.raft.{RaftConsensusInterface, RaftRPCFactory}
+import io.iohk.cef.transactionservice.{Envelope, NodeTransactionService}
 import io.iohk.cef.ledger.storage.scalike.dao.{LedgerStateStorageDao, LedgerStorageDao}
 import io.iohk.cef.ledger.storage.scalike.{LedgerStateStorageImpl, LedgerStorageImpl}
 import io.iohk.cef.ledger.storage.{Ledger, LedgerStorage}
@@ -21,14 +21,14 @@ import scala.concurrent.ExecutionContext
 import scala.reflect.runtime.universe._
 
 object CefServices {
-  def cefCoreChannel[State, Tx <: Transaction[State]](cefConfig: CefConfig)(
+  def cefTransactionServiceChannel[State, Tx <: Transaction[State]](cefConfig: CefConfig)(
       implicit stateCodec: NioEncDec[State],
       stateTypeTag: TypeTag[State],
       txCodec: NioEncDec[Tx],
       txTypeTag: TypeTag[Tx],
-      ec: ExecutionContext): NodeCore[State, Tx] = {
+      ec: ExecutionContext): NodeTransactionService[State, Tx] = {
 
-    new CefServices(cefConfig).cefCoreChannel()
+    new CefServices(cefConfig).cefTransactionServiceChannel()
   }
 }
 
@@ -43,14 +43,14 @@ private[config] class CefServices(cefConfig: CefConfig) {
   private val networkDiscovery =
     NetworkServices.networkDiscovery(clock, cefConfig.peerConfig, cefConfig.discoveryConfig)
 
-  def cefCoreChannel[State, Tx <: Transaction[State]]()(
+  def cefTransactionServiceChannel[State, Tx <: Transaction[State]]()(
       implicit stateCodec: NioEncDec[State],
       stateTypeTag: TypeTag[State],
       txCodec: NioEncDec[Tx],
       txTypeTag: TypeTag[Tx],
-      ec: ExecutionContext): NodeCore[State, Tx] = {
+      ec: ExecutionContext): NodeTransactionService[State, Tx] = {
 
-    new NodeCore[State, Tx](
+    new NodeTransactionService[State, Tx](
       consensusMap[State, Tx],
       txNetwork[State, Tx],
       blockNetwork[State, Tx],
