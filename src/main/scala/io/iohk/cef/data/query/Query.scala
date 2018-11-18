@@ -13,6 +13,7 @@ sealed trait Query {
 
 object Query {
   case object SelectAll extends Query
+
   /**
     * A very basic query type just to get us started. It represents a query on a specific table where
     * the predicates are all Equality predicates and they are joined by ands
