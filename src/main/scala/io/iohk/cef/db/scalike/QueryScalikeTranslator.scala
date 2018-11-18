@@ -1,6 +1,7 @@
 package io.iohk.cef.db.scalike
-import io.iohk.cef.data.query.{AndEqQuery, Query, QueryTranslator}
-import io.iohk.cef.data.storage.scalike.ParameterBinderFactoryImplicits._
+import io.iohk.cef.data.query.Query.{AndEqQuery, SelectAll}
+import io.iohk.cef.data.query.{Query, QueryTranslator}
+import io.iohk.cef.db.scalike.ParameterBinderFactoryImplicits._
 import scalikejdbc._
 
 object QueryScalikeTranslator {
@@ -12,6 +13,7 @@ object QueryScalikeTranslator {
       override def translatePredicates[Table](q: Query): Option[SQLSyntax] = {
         q match {
           case and: AndEqQuery => andEqQueryTranslator(fieldGetter, syntaxProvider).translatePredicates(and)
+          case _: SelectAll.type => None
           case _ => throw new IllegalArgumentException("Unexpected query type. Not able to translate.")
         }
       }

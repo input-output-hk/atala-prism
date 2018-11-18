@@ -5,6 +5,7 @@ import io.iohk.cef.crypto._
 import io.iohk.cef.data._
 import io.iohk.cef.data.error.DataItemNotFound
 import io.iohk.cef.data.query.Query
+import io.iohk.cef.data.query.Query.SelectAll
 import io.iohk.cef.data.storage.scalike.{DataItemOwnerTable, DataItemSignatureTable, DataItemTable}
 import io.iohk.cef.db.scalike.{QueryScalikeTranslator, SqlTable}
 import io.iohk.cef.error.ApplicationError
@@ -98,27 +99,7 @@ class TableStorageDao {
 
   def selectAll[I](tableId: TableId)(
       implicit session: DBSession,
-      serializable: NioEncDec[I]): Either[ApplicationError, Seq[DataItem[I]]] = {
-    val dataItemRows = sql"""
-        select ${dataItemSyntaxProvider.result.*}
-        from ${DataItemTable as dataItemSyntaxProvider}
-        where ${dataItemSyntaxProvider.dataTableId} = ${tableId}
-       """.map(rs => DataItemTable(dataItemSyntaxProvider.resultName)(rs)).list().apply()
-    //Inefficient for large tables
-    val dataItems: Either[ApplicationError, Seq[DataItem[I]]] = seqEitherToEitherSeq(dataItemRows.map { dir =>
-      for {
-        owners <- seqEitherToEitherSeq(selectDataItemOwners(dir.id))
-        witnesses <- seqEitherToEitherSeq(selectDataItemWitnesses(dir.id))
-        data <- serializable
-          .decode(dir.dataItem)
-          .map[Either[ApplicationError, I]](Right.apply)
-          .getOrElse(Left(UnexpectedDecodingError()))
-      } yield {
-        DataItem(dir.dataItemId, data, witnesses, owners)
-      }
-    })
-    dataItems
-  }
+      serializable: NioEncDec[I]): Either[ApplicationError, Seq[DataItem[I]]] = selectWithQuery(tableId, SelectAll)
 
   private def selectDataItemWitnesses(dataItemUniqueId: Long)(
       implicit session: DBSession): List[Either[CodecError, Witness]] = {

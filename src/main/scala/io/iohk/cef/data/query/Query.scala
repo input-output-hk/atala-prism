@@ -1,5 +1,4 @@
 package io.iohk.cef.data.query
-import io.iohk.cef.data.TableId
 
 /**
   * The queries should be defined with an AST in which every component is serializable. This means,
@@ -12,13 +11,17 @@ sealed trait Query {
   final val languageVersion: Int = 1
 }
 
-/**
-  * A very basic query type just to get us started. It represents a query on a specific table where
-  * the predicates are all Equality predicates and they are joined by ands
-  * @param tableId
-  * @param eqPredicates
-  */
-class AndEqQuery(val tableId: TableId, val eqPredicates: Seq[Predicate.Eq]) extends Query
+object Query {
+  case object SelectAll extends Query
+  /**
+    * A very basic query type just to get us started. It represents a query on a specific table where
+    * the predicates are all Equality predicates and they are joined by ands
+    * @param tableId
+    * @param eqPredicates
+    */
+  case class AndEqQuery(val eqPredicates: Seq[Predicate.Eq]) extends Query
+
+}
 
 sealed trait Predicate
 object Predicate {

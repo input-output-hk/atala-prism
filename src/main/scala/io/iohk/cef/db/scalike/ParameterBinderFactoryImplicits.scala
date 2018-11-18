@@ -1,7 +1,7 @@
-package io.iohk.cef.data.storage.scalike
+package io.iohk.cef.db.scalike
 import io.iohk.cef.data.query.Ref
-import scalikejdbc._
-import Ref._
+import io.iohk.cef.data.query.Ref._
+import scalikejdbc.ParameterBinderFactory
 
 /**
   * We need to teach ScalikeJDBC how to bind parameters of type Ref in a safe way.
