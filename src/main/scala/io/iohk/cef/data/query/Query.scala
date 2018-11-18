@@ -1,19 +1,29 @@
 package io.iohk.cef.data.query
 import io.iohk.cef.data.TableId
 
-sealed class Query[T, U] private (val select: Select[T], val projection: Projection[T, U]) {
+sealed trait Query[T] {
   final val languageVersion: Int = 1
-
-  def tableId: TableId = select.tableId
 }
 
-object Query {
-  def apply[T, U](select: Select[T], projection: Projection[T, U]): Query[T, U] =
-    new Query(select, projection)
+class BasicQuery(val tableId: TableId, val eqPredicates: Seq[Eq])
 
-  def apply[T](select: Select[T]): Query[T, T] =
-    new Query[T, T](select, new Projection[T, T](identity))
+sealed trait Predicate
+case class Eq(a: Field, b: Value)
+
+case class Value(ref: Ref)
+
+case class Field(index: Int)
+
+sealed trait Ref
+
+object Ref {
+  case class DoubleRef(value: Double) extends Ref
+  case class FloatRef(value: Float) extends Ref
+  case class LongRef(value: Long) extends Ref
+  case class IntRef(value: Int) extends Ref
+  case class ShortRef(value: Short) extends Ref
+  case class ByteRef(value: Byte) extends Ref
+  case class BooleanRef(value: Boolean) extends Ref
+  case class CharRef(value: Char) extends Ref
+  case class StringRef(value: String) extends Ref
 }
-
-sealed class Projection[T, U](val f: T => U)
-sealed class Select[T](val tableId: TableId, val predicate: T => Boolean)

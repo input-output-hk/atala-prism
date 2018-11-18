@@ -1,29 +1,25 @@
 package io.iohk.cef.data.query
-import io.iohk.cef.data.{DataItem, DataItemFactory, Table}
-import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.codecs.nio._
+import io.iohk.cef.data.{DataItem, Table, TableId}
+import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.network.NetworkFacade
 
 import scala.concurrent.duration.FiniteDuration
 
 class QueryEngine(networkFacade: NetworkFacade, table: Table, timeout: FiniteDuration) {
 
-  def process[I, U](query: Query[DataItem[I], U])(
-      implicit dataItemFactory: DataItemFactory[I],
-      itemSerializable: NioEncDec[I]): Either[ApplicationError, Seq[U]] = {
+  def process[I](tableId: TableId, query: Query[I])(
+      implicit itemSerializable: NioEncDec[I]): Either[ApplicationError, Seq[DataItem[I]]] = {
     for {
-      local <- processLocally(query)
-      network <- processNetwork[DataItem[I], U]
+      network <- processNetwork[I]
+      local <- processLocally(tableId, query)
     } yield local ++ network
   }
 
-  private def processNetwork[I, U]: Either[ApplicationError, Seq[U]] = ???
+  private def processNetwork[I]: Either[ApplicationError, Seq[DataItem[I]]] = ??? //Send query, wait for answers or timeout whichever is first
 
-  private def processLocally[I, U](query: Query[DataItem[I], U])(
-      implicit dataItemFactory: DataItemFactory[I],
-      itemSerializable: NioEncDec[I]): Either[ApplicationError, Seq[U]] = {
-    for {
-      elements <- table.select(query.tableId)
-    } yield elements.filter(query.select.predicate).map(query.projection.f)
+  private def processLocally[I](tableId: TableId, query: Query[I])(
+      implicit itemSerializable: NioEncDec[I]): Either[ApplicationError, Seq[DataItem[I]]] = {
+    table.select(tableId, query.asInstanceOf[BasicQuery])
   }
 }

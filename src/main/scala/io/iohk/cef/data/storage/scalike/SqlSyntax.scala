@@ -18,6 +18,11 @@ object DataItemTable extends SQLSyntaxSupport[DataItemTable] {
       ByteBuffer.wrap(rs.bytes(ln.dataItem))
     )
   }
+
+  def getField(index: Int, di: QuerySQLSyntaxProvider[SQLSyntaxSupport[DataItemTable], DataItemTable]): SQLSyntax = index match {
+    case 0 => di.dataItemId
+    case 1 => di.dataItem
+  }
 }
 
 case class DataItemSignatureTable(dataItemUniqueId: Long, signature: ByteString, signingPublicKey: ByteString)

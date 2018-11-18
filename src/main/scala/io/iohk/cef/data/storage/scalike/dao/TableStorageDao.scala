@@ -2,11 +2,13 @@ package io.iohk.cef.data.storage.scalike.dao
 import akka.util.ByteString
 import io.iohk.cef.codecs.nio._
 import io.iohk.cef.crypto._
-import io.iohk.cef.data.storage.scalike.{DataItemOwnerTable, DataItemSignatureTable, DataItemTable}
 import io.iohk.cef.data._
 import io.iohk.cef.data.error.DataItemNotFound
+import io.iohk.cef.data.query.BasicQuery
+import io.iohk.cef.data.storage.scalike.{DataItemOwnerTable, DataItemSignatureTable, DataItemTable}
 import io.iohk.cef.error.ApplicationError
 import scalikejdbc.{DBSession, _}
+import io.iohk.cef.data.storage.scalike.ParameterBinderFactoryImplicits._
 
 class TableStorageDao {
   def insert[I](tableId: TableId, dataItem: DataItem[I])(implicit session: DBSession, enc: NioEncoder[I]): Unit = {
@@ -58,6 +60,38 @@ class TableStorageDao {
       .getOrElse(
         throw new IllegalStateException(s"Not found: dataItemId ${dataItemId}, tableId ${tableId}")
       )
+  }
+
+  def selectWithQuery[I](tableId: TableId, query: BasicQuery)(
+      implicit session: DBSession,
+      nioEncDec: NioEncDec[I]
+  ): Either[ApplicationError, Seq[DataItem[I]]] = {
+    val di = DataItemTable.syntax("di")
+    val dir = withSQL {
+      select
+        .from(DataItemTable as di)
+        .where(sqls.joinWithAnd(
+          Seq(sqls.eq(di.dataTableId, tableId)) ++
+          query.eqPredicates.map(c =>
+            sqls.eq(DataItemTable.getField(c.a.index, di), c.b.ref)
+          ):_*
+        ))
+      }
+    val dataItemRows = dir.map(rs => DataItemTable(di.resultName)(rs)).list().apply()
+    //Inefficient for large tables
+    val dataItems: Either[ApplicationError, Seq[DataItem[I]]] = transformListEither(dataItemRows.map { dir =>
+      for {
+        owners <- transformListEither(selectDataItemOwners(dir.id))
+        witnesses <- transformListEither(selectDataItemWitnesses(dir.id))
+        data <- nioEncDec
+          .decode(dir.dataItem)
+          .map[Either[ApplicationError, I]](Right.apply)
+          .getOrElse(Left(UnexpectedDecodingError()))
+      } yield {
+        DataItem(dir.dataItemId, data, witnesses, owners)
+      }
+    })
+    dataItems
   }
 
   def selectAll[I](tableId: TableId)(

@@ -1,9 +1,6 @@
 package io.iohk.cef.data.query
 
-case class Field(index: Int)
-//
-//trait Queriable[T] {
-//  def projectedFields: Set[]
-//
-//
-//}
+trait Queriable[T] {
+  val fieldCount: Int
+  def applyPredicate(t: T, index: Int, value: String): Boolean
+}

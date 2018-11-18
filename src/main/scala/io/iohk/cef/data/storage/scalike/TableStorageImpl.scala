@@ -1,5 +1,6 @@
 package io.iohk.cef.data.storage.scalike
 import io.iohk.cef.codecs.nio._
+import io.iohk.cef.data.query.BasicQuery
 import io.iohk.cef.data.storage.TableStorage
 import io.iohk.cef.data.storage.scalike.dao.TableStorageDao
 import io.iohk.cef.data.{DataItem, DataItemId, TableId}
@@ -20,6 +21,14 @@ class TableStorageImpl(tableStorageDao: TableStorageDao) extends TableStorage {
     }
   }
 
+  override def select[I](tableId: TableId, query: BasicQuery)(
+      implicit nioEncDec: NioEncDec[I])
+    : Either[ApplicationError, Seq[DataItem[I]]] = {
+    execInSession { implicit session =>
+      tableStorageDao.selectWithQuery[I](tableId, query)
+    }
+  }
+
   override def selectSingle[I](tableId: TableId, dataItemId: DataItemId)(
       implicit itemSerializable: NioEncDec[I]): Either[ApplicationError, DataItem[I]] = {
     execInSession { implicit session =>
@@ -27,7 +36,8 @@ class TableStorageImpl(tableStorageDao: TableStorageDao) extends TableStorage {
     }
   }
 
-  override def selectAll[I](tableId: TableId)(implicit
+  override def selectAll[I](tableId: TableId)(
+      implicit
       itemSerializable: NioEncDec[I]): Either[ApplicationError, Seq[DataItem[I]]] = {
     execInSession { implicit session =>
       tableStorageDao.selectAll(tableId)

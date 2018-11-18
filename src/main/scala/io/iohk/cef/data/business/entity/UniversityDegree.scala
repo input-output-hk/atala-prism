@@ -5,9 +5,22 @@ import io.iohk.cef.codecs.nio._
 import io.iohk.cef.crypto._
 import io.iohk.cef.data.{CanValidate, DataItem, Witness}
 import io.iohk.cef.data.error.DataItemError
+import io.iohk.cef.data.query.Queriable
+
 case class UniversityDegreeData(universityName: String, degree: String, studentName: String, date: LocalDate)
 
 object UniversityDegreeData {
+
+  implicit val queriableUniversityDegree: Queriable[UniversityDegreeData] = new Queriable[UniversityDegreeData] {
+    override val fieldCount: Int = 4
+    override def applyPredicate(t: UniversityDegreeData, index: Int, value: String): Boolean = index match {
+      case 0 => t.universityName == value
+      case 1 => t.degree == value
+      case 2 => t.studentName == value
+      case 3 => t.date == LocalDate.parse(value)
+      case _ => throw new IllegalArgumentException("Invalid index provided on query")
+    }
+  }
 
   implicit def universityDegreeValidation(
       implicit publicKeyStore: Map[String, SigningPublicKey],
