@@ -6,11 +6,18 @@ import io.iohk.cef.data._
 import io.iohk.cef.data.error.DataItemNotFound
 import io.iohk.cef.data.query.Query
 import io.iohk.cef.data.storage.scalike.{DataItemOwnerTable, DataItemSignatureTable, DataItemTable}
-import io.iohk.cef.db.scalike.QueryScalikeTranslator
+import io.iohk.cef.db.scalike.{QueryScalikeTranslator, SqlTable}
 import io.iohk.cef.error.ApplicationError
 import scalikejdbc.{DBSession, _}
 
 class TableStorageDao {
+
+  private def translator[Table](table: SqlTable[Table], ss: QuerySQLSyntaxProvider[SQLSyntaxSupport[Table], Table]) =
+    QueryScalikeTranslator.queryTranslator(table, ss)
+
+  private val dataItemSyntaxProvider = DataItemTable.syntax("di")
+  private val dataItemTranslator = translator(DataItemTable, dataItemSyntaxProvider)
+
   def insert[I](tableId: TableId, dataItem: DataItem[I])(implicit session: DBSession, enc: NioEncoder[I]): Unit = {
     val itemColumn = DataItemTable.column
 
@@ -64,17 +71,15 @@ class TableStorageDao {
 
   def selectWithQuery[I, Q <: Query](tableId: TableId, query: Q)(
       implicit session: DBSession,
-      translator: QueryScalikeTranslator[Q],
       nioEncDec: NioEncDec[I]
   ): Either[ApplicationError, Seq[DataItem[I]]] = {
-    val di = DataItemTable.syntax("di")
     val dataItemRows = withSQL {
       select
-        .from(DataItemTable as di)
+        .from(DataItemTable as dataItemSyntaxProvider)
         .where
-        .eq(di.dataTableId, tableId)
-        .and(translator.translatePredicates(query, DataItemTable, di))
-      }.map(rs => DataItemTable(di.resultName)(rs)).list().apply()
+        .eq(dataItemSyntaxProvider.dataTableId, tableId)
+        .and(dataItemTranslator.translatePredicates(query))
+    }.map(rs => DataItemTable(dataItemSyntaxProvider.resultName)(rs)).list().apply()
     val dataItems: Either[ApplicationError, Seq[DataItem[I]]] = seqEitherToEitherSeq(dataItemRows.map { dir =>
       for {
         owners <- seqEitherToEitherSeq(selectDataItemOwners(dir.id))
@@ -94,12 +99,11 @@ class TableStorageDao {
   def selectAll[I](tableId: TableId)(
       implicit session: DBSession,
       serializable: NioEncDec[I]): Either[ApplicationError, Seq[DataItem[I]]] = {
-    val di = DataItemTable.syntax("di")
     val dataItemRows = sql"""
-        select ${di.result.*}
-        from ${DataItemTable as di}
-        where ${di.dataTableId} = ${tableId}
-       """.map(rs => DataItemTable(di.resultName)(rs)).list().apply()
+        select ${dataItemSyntaxProvider.result.*}
+        from ${DataItemTable as dataItemSyntaxProvider}
+        where ${dataItemSyntaxProvider.dataTableId} = ${tableId}
+       """.map(rs => DataItemTable(dataItemSyntaxProvider.resultName)(rs)).list().apply()
     //Inefficient for large tables
     val dataItems: Either[ApplicationError, Seq[DataItem[I]]] = seqEitherToEitherSeq(dataItemRows.map { dir =>
       for {
@@ -200,12 +204,11 @@ class TableStorageDao {
       implicit session: DBSession,
       serializable: NioEncDec[I]): Either[CodecError, Seq[DataItem[I]]] = {
     import io.iohk.cef.utils.EitherTransforms
-    val di = DataItemTable.syntax("di")
     val dataItemRows = sql"""
-        select ${di.result.*}
-        from ${DataItemTable as di}
-        where ${di.dataItemId} in (${ids}) and ${di.dataTableId} = ${tableId}
-       """.map(rs => DataItemTable(di.resultName)(rs)).list().apply()
+        select ${dataItemSyntaxProvider.result.*}
+        from ${DataItemTable as dataItemSyntaxProvider}
+        where ${dataItemSyntaxProvider.dataItemId} in (${ids}) and ${dataItemSyntaxProvider.dataTableId} = ${tableId}
+       """.map(rs => DataItemTable(dataItemSyntaxProvider.resultName)(rs)).list().apply()
     //Inefficient for large tables
     import EitherTransforms._
     val dataItems = dataItemRows.map(dir => {

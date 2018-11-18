@@ -6,7 +6,6 @@ import io.iohk.cef.data.storage.scalike.dao.TableStorageDao
 import io.iohk.cef.data.{DataItem, DataItemId, TableId}
 import io.iohk.cef.error.ApplicationError
 import scalikejdbc._
-import io.iohk.cef.db.scalike.QueryScalikeTranslator._
 
 class TableStorageImpl(tableStorageDao: TableStorageDao) extends TableStorage {
 
@@ -23,8 +22,7 @@ class TableStorageImpl(tableStorageDao: TableStorageDao) extends TableStorage {
   }
 
   override def select[I](tableId: TableId, query: Query)(
-      implicit nioEncDec: NioEncDec[I])
-    : Either[ApplicationError, Seq[DataItem[I]]] = {
+      implicit nioEncDec: NioEncDec[I]): Either[ApplicationError, Seq[DataItem[I]]] = {
     execInSession { implicit session =>
       tableStorageDao.selectWithQuery(tableId, query)
     }

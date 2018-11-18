@@ -16,7 +16,8 @@ class QueryEngine(networkFacade: NetworkFacade, table: Table, timeout: FiniteDur
     } yield local ++ network
   }
 
-  private def processNetwork[I]: Either[ApplicationError, Seq[DataItem[I]]] = ??? //Send query, wait for answers or timeout whichever is first
+  private def processNetwork[I]: Either[ApplicationError, Seq[DataItem[I]]] =
+    ??? //Send query, wait for answers or timeout whichever is first
 
   private def processLocally[I](tableId: TableId, query: Query)(
       implicit itemSerializable: NioEncDec[I]): Either[ApplicationError, Seq[DataItem[I]]] = {

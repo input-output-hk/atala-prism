@@ -3,6 +3,10 @@ import io.iohk.cef.data.query.Ref
 import scalikejdbc._
 import Ref._
 
+/**
+  * We need to teach ScalikeJDBC how to bind parameters of type Ref in a safe way.
+  * That's the purpose of this object.
+  */
 object ParameterBinderFactoryImplicits {
 
   implicit val parameterBinderFactoryAnyVal: ParameterBinderFactory[Ref] = createParameterBinderFactoryAnyVal
@@ -27,5 +31,5 @@ object ParameterBinderFactoryImplicits {
         case BooleanRef(value) => pBoolean(value)
         case CharRef(value) => pString(value.toString)
         case StringRef(value) => pString(value)
-      }
+    }
 }
