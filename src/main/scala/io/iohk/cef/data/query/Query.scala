@@ -1,11 +1,11 @@
 package io.iohk.cef.data.query
 import io.iohk.cef.data.TableId
 
-sealed trait Query[T] {
+sealed trait Query {
   final val languageVersion: Int = 1
 }
 
-class BasicQuery(val tableId: TableId, val eqPredicates: Seq[Eq])
+class AndEqQuery(val tableId: TableId, val eqPredicates: Seq[Eq]) extends Query
 
 sealed trait Predicate
 case class Eq(a: Field, b: Value)

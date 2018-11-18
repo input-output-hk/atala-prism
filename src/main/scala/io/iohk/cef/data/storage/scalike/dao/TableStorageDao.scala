@@ -4,11 +4,11 @@ import io.iohk.cef.codecs.nio._
 import io.iohk.cef.crypto._
 import io.iohk.cef.data._
 import io.iohk.cef.data.error.DataItemNotFound
-import io.iohk.cef.data.query.BasicQuery
+import io.iohk.cef.data.query.Query
 import io.iohk.cef.data.storage.scalike.{DataItemOwnerTable, DataItemSignatureTable, DataItemTable}
+import io.iohk.cef.db.scalike.QueryScalikeTranslator
 import io.iohk.cef.error.ApplicationError
 import scalikejdbc.{DBSession, _}
-import io.iohk.cef.data.storage.scalike.ParameterBinderFactoryImplicits._
 
 class TableStorageDao {
   def insert[I](tableId: TableId, dataItem: DataItem[I])(implicit session: DBSession, enc: NioEncoder[I]): Unit = {
@@ -62,30 +62,27 @@ class TableStorageDao {
       )
   }
 
-  def selectWithQuery[I](tableId: TableId, query: BasicQuery)(
+  def selectWithQuery[I, Q <: Query](tableId: TableId, query: Q)(
       implicit session: DBSession,
+      translator: QueryScalikeTranslator[Q],
       nioEncDec: NioEncDec[I]
   ): Either[ApplicationError, Seq[DataItem[I]]] = {
     val di = DataItemTable.syntax("di")
-    val dir = withSQL {
+    val dataItemRows = withSQL {
       select
         .from(DataItemTable as di)
-        .where(sqls.joinWithAnd(
-          Seq(sqls.eq(di.dataTableId, tableId)) ++
-          query.eqPredicates.map(c =>
-            sqls.eq(DataItemTable.getField(c.a.index, di), c.b.ref)
-          ):_*
-        ))
-      }
-    val dataItemRows = dir.map(rs => DataItemTable(di.resultName)(rs)).list().apply()
-    //Inefficient for large tables
-    val dataItems: Either[ApplicationError, Seq[DataItem[I]]] = transformListEither(dataItemRows.map { dir =>
+        .where
+        .eq(di.dataTableId, tableId)
+        .and(translator.translatePredicates(query, DataItemTable, di))
+      }.map(rs => DataItemTable(di.resultName)(rs)).list().apply()
+    val dataItems: Either[ApplicationError, Seq[DataItem[I]]] = seqEitherToEitherSeq(dataItemRows.map { dir =>
       for {
-        owners <- transformListEither(selectDataItemOwners(dir.id))
-        witnesses <- transformListEither(selectDataItemWitnesses(dir.id))
+        owners <- seqEitherToEitherSeq(selectDataItemOwners(dir.id))
+        witnesses <- seqEitherToEitherSeq(selectDataItemWitnesses(dir.id))
         data <- nioEncDec
           .decode(dir.dataItem)
           .map[Either[ApplicationError, I]](Right.apply)
+          //TODO: Should be a specific error. If only decoders returned Either[...]
           .getOrElse(Left(UnexpectedDecodingError()))
       } yield {
         DataItem(dir.dataItemId, data, witnesses, owners)
@@ -104,10 +101,10 @@ class TableStorageDao {
         where ${di.dataTableId} = ${tableId}
        """.map(rs => DataItemTable(di.resultName)(rs)).list().apply()
     //Inefficient for large tables
-    val dataItems: Either[ApplicationError, Seq[DataItem[I]]] = transformListEither(dataItemRows.map { dir =>
+    val dataItems: Either[ApplicationError, Seq[DataItem[I]]] = seqEitherToEitherSeq(dataItemRows.map { dir =>
       for {
-        owners <- transformListEither(selectDataItemOwners(dir.id))
-        witnesses <- transformListEither(selectDataItemWitnesses(dir.id))
+        owners <- seqEitherToEitherSeq(selectDataItemOwners(dir.id))
+        witnesses <- seqEitherToEitherSeq(selectDataItemWitnesses(dir.id))
         data <- serializable
           .decode(dir.dataItem)
           .map[Either[ApplicationError, I]](Right.apply)
@@ -151,7 +148,7 @@ class TableStorageDao {
       .apply()
   }
 
-  private def transformListEither[A, B](list: Seq[Either[A, B]]): Either[A, Seq[B]] = {
+  private def seqEitherToEitherSeq[A, B](list: Seq[Either[A, B]]): Either[A, Seq[B]] = {
     list.foldLeft[Either[A, Seq[B]]](Right(Seq()))((state, curr) => {
       for {
         s <- state
