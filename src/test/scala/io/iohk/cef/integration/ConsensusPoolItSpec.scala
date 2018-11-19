@@ -19,7 +19,7 @@ import io.iohk.cef.transactionservice.raft.RaftConsensusInterface
 
 class ConsensusPoolItSpec extends FlatSpecLike with MockitoSugar with MustMatchers with Eventually {
 
-  private def mockLedgerStateStorage[State] = mock[LedgerStateStorage[State]]
+  private def mockLedgerStateStorage = mock[LedgerStateStorage]
   type B = Block[String, DummyTransaction]
   behavior of "ConsensusPoolItSpec"
 
@@ -30,7 +30,7 @@ class ConsensusPoolItSpec extends FlatSpecLike with MockitoSugar with MustMatche
     val Seq(s1, s2, s3) = storages
     implicit val patienceConfig =
       PatienceConfig(timeout = scaled(Span(2, Seconds)), interval = scaled(Span(5, Millis)))
-    val ledgerStateStorage = mockLedgerStateStorage[String]
+    val ledgerStateStorage = mockLedgerStateStorage
     val generateHeader: Seq[Transaction[String]] => BlockHeader = _ => BlockHeader()
 
     val txPoolFutureInterface =
@@ -39,7 +39,7 @@ class ConsensusPoolItSpec extends FlatSpecLike with MockitoSugar with MustMatche
         maxBlockSize = 3,
         ledgerStateStorage,
         1 minute
-      )(implicitly[ExecutionContext])
+      )
 
     val testExecution = mock[B => Unit]
     val ledgerId: LedgerId = "1"

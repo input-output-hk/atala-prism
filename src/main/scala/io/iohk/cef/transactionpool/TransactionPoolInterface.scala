@@ -2,6 +2,7 @@ package io.iohk.cef.transactionpool
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.ledger.storage.LedgerStateStorage
 import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
+import io.iohk.cef.codecs.nio.NioEncDec
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.Duration
@@ -26,10 +27,10 @@ import java.time.Clock
   * @tparam Header
   * @tparam Tx
   */
-class TransactionPoolInterface[State, Tx <: Transaction[State]](
+class TransactionPoolInterface[State: NioEncDec, Tx <: Transaction[State]](
     headerGenerator: Seq[Transaction[State]] => BlockHeader,
     maxBlockSize: Int,
-    ledgerStateStorage: LedgerStateStorage[State],
+    ledgerStateStorage: LedgerStateStorage,
     defaultTransactionExpiration: Duration,
     timedQueueConstructor: () => TimedQueue[Tx])(implicit executionContext: ExecutionContext) {
 
@@ -74,10 +75,10 @@ class TransactionPoolInterface[State, Tx <: Transaction[State]](
 }
 
 object TransactionPoolInterface {
-  def apply[State, Tx <: Transaction[State]](
+  def apply[State: NioEncDec, Tx <: Transaction[State]](
       headerGenerator: Seq[Transaction[State]] => BlockHeader,
       maxBlockSize: Int,
-      ledgerStateStorage: LedgerStateStorage[State],
+      ledgerStateStorage: LedgerStateStorage,
       defaultTransactionExpiration: Duration,
       clock: Clock)(implicit executionContext: ExecutionContext): TransactionPoolInterface[State, Tx] =
     new TransactionPoolInterface(
@@ -86,10 +87,10 @@ object TransactionPoolInterface {
       ledgerStateStorage,
       defaultTransactionExpiration,
       () => new TimedQueue[Tx](clock))
-  def apply[State, Tx <: Transaction[State]](
+  def apply[State: NioEncDec, Tx <: Transaction[State]](
       headerGenerator: Seq[Transaction[State]] => BlockHeader,
       maxBlockSize: Int,
-      ledgerStateStorage: LedgerStateStorage[State],
+      ledgerStateStorage: LedgerStateStorage,
       defaultTransactionExpiration: Duration)(
       implicit executionContext: ExecutionContext): TransactionPoolInterface[State, Tx] =
     new TransactionPoolInterface(

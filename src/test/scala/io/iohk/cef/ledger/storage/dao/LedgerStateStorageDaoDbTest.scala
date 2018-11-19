@@ -38,13 +38,13 @@ trait LedgerStateStorageDaoDbTest extends fixture.FlatSpec with AutoRollback wit
     when(byteStringSerializable.encode(publicKeys)).thenReturn(serializedKeys.toByteBuffer)
     when(byteStringSerializable.decode(serializedKeys.toByteBuffer)).thenReturn(Some(publicKeys))
     insertPairs("1", Seq(identityName -> serializedKeys, otherIdentity -> otherSerializedKeys))
-    val dao = new LedgerStateStorageDao[Set[ByteString]]()
+    val dao = new LedgerStateStorageDao()
     implicit val bsSerializable = byteStringSerializable
-    dao.slice("1", Set(identityName)) mustBe LedgerState(Map(identityName -> publicKeys))
-    dao.slice("1", Set(identityName, "unexistent")) mustBe LedgerState(Map(identityName -> publicKeys))
+    dao.slice[Set[ByteString]]("1", Set(identityName)) mustBe LedgerState(Map(identityName -> publicKeys))
+    dao.slice[Set[ByteString]]("1", Set(identityName, "unexistent")) mustBe LedgerState(Map(identityName -> publicKeys))
     when(byteStringSerializable.encode(otherPublicKeys)).thenReturn(otherSerializedKeys.toByteBuffer)
     when(byteStringSerializable.decode(otherSerializedKeys.toByteBuffer)).thenReturn(Some(otherPublicKeys))
-    dao.slice("1", Set(identityName, otherIdentity)) mustBe
+    dao.slice[Set[ByteString]]("1", Set(identityName, otherIdentity)) mustBe
       LedgerState(Map(identityName -> publicKeys, otherIdentity -> otherPublicKeys))
   }
 
@@ -62,30 +62,30 @@ trait LedgerStateStorageDaoDbTest extends fixture.FlatSpec with AutoRollback wit
     when(byteStringSerializable.decode(serializedKeys.toByteBuffer)).thenReturn(Some(publicKeys))
     when(byteStringSerializable.encode(publicKey1Set)).thenReturn(serializedPublicKey1Set.toByteBuffer)
     when(byteStringSerializable.decode(serializedPublicKey1Set.toByteBuffer)).thenReturn(Some(publicKey1Set))
-    val dao = new LedgerStateStorageDao[Set[ByteString]]()
+    val dao = new LedgerStateStorageDao()
     implicit val bsSerializable = byteStringSerializable
     val emptyLs = LedgerState[Set[ByteString]](Map())
-    dao.slice("1", Set(identityName)) mustBe emptyLs
+    dao.slice[Set[ByteString]]("1", Set(identityName)) mustBe emptyLs
     val firstLs = LedgerState(Map(identityName -> publicKey1Set))
-    dao.update("1", emptyLs, firstLs)
+    dao.update[Set[ByteString]]("1", emptyLs, firstLs)
 
-    dao.slice("1", Set(identityName)) mustBe LedgerState(Map(identityName -> publicKey1Set))
+    dao.slice[Set[ByteString]]("1", Set(identityName)) mustBe LedgerState(Map(identityName -> publicKey1Set))
     val secondLs = LedgerState(Map(identityName -> publicKeys))
-    dao.update("1", firstLs, secondLs)
+    dao.update[Set[ByteString]]("1", firstLs, secondLs)
 
-    dao.slice("1", Set(identityName)) mustBe LedgerState(Map(identityName -> publicKeys))
+    dao.slice[Set[ByteString]]("1", Set(identityName)) mustBe LedgerState(Map(identityName -> publicKeys))
     val thirdLs = LedgerState(Map(identityName -> publicKey1Set, otherIdentity -> publicKey1Set))
-    dao.update("1", secondLs, thirdLs)
+    dao.update[Set[ByteString]]("1", secondLs, thirdLs)
 
-    dao.slice("1", Set(identityName, otherIdentity)) mustBe
+    dao.slice[Set[ByteString]]("1", Set(identityName, otherIdentity)) mustBe
       LedgerState(Map(identityName -> publicKey1Set, otherIdentity -> publicKey1Set))
     val fourthLs = LedgerState(Map(identityName -> publicKey1Set))
-    dao.update("1", thirdLs, fourthLs)
+    dao.update[Set[ByteString]]("1", thirdLs, fourthLs)
 
-    dao.slice("1", Set(identityName, otherIdentity)) mustBe
+    dao.slice[Set[ByteString]]("1", Set(identityName, otherIdentity)) mustBe
       LedgerState(Map(identityName -> publicKey1Set))
     intercept[IllegalArgumentException] {
-      dao.update("1", secondLs, thirdLs)
+      dao.update[Set[ByteString]]("1", secondLs, thirdLs)
     }
   }
 }

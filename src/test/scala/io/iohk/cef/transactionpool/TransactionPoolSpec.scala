@@ -13,13 +13,14 @@ import org.mockito.ArgumentMatchers._
 
 import scala.collection.immutable.Queue
 import scala.concurrent.duration._
+import io.iohk.cef.codecs.nio.auto._
 
 class TransactionPoolSpec
     extends FlatSpec
     with MustMatchers
     with PropertyChecks
     with MockitoSugar
-    with MockingLedgerStateStorage[String] {
+    with MockingLedgerStateStorage {
 
   behavior of "TransactionPool"
 
@@ -42,7 +43,8 @@ class TransactionPoolSpec
         tx -> clock.instant().plus(java.time.Duration.ofMillis(defaultDuration.toMillis))
       })
       val ledgerStateStorage = mockLedgerStateStorage
-      when(ledgerStateStorage.slice(ArgumentMatchers.any())).thenReturn(LedgerState[String](Map()))
+      when(ledgerStateStorage.slice[String](ArgumentMatchers.any())(ArgumentMatchers.any()))
+        .thenReturn(LedgerState[String](Map()))
       val pool =
         new TransactionPool(timedQueue, (_: Seq[Transaction[String]]) => header, txs.size, ledgerStateStorage, 1 minute)
       val block = pool.generateBlock()

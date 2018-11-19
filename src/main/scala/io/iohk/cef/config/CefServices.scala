@@ -71,11 +71,11 @@ private[config] class CefServices(cefConfig: CefConfig) {
     val headerGenerator: Seq[Transaction[State]] => BlockHeader = _ => BlockHeader(clock.instant())
 
     val ledgerStateStorage =
-      new LedgerStateStorageImpl[State](ledgerConfig.id, new LedgerStateStorageDao[State])
+      new LedgerStateStorageImpl(ledgerConfig.id, new LedgerStateStorageDao)
 
     val ledgerStorage: LedgerStorage = new LedgerStorageImpl(new LedgerStorageDao(clock))
 
-    val ledger: Ledger[State] = Ledger(ledgerConfig.id, ledgerStorage, ledgerStateStorage)
+    val ledger: Ledger = Ledger(ledgerConfig.id, ledgerStorage, ledgerStateStorage)
 
     val txPool = TransactionPoolInterface[State, Tx](
       headerGenerator,
@@ -101,7 +101,7 @@ private[config] class CefServices(cefConfig: CefConfig) {
   }
 
   private def stateMachineCallback[State, Tx <: Transaction[State]](
-      ledger: Ledger[State],
+      ledger: Ledger,
       txPool: TransactionPoolInterface[State, Tx])(block: Block[State, Tx])(
       implicit stateCodec: NioEncDec[State],
       stateTypeTag: TypeTag[State],
