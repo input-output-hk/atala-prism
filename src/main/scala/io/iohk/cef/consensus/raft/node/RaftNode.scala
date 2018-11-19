@@ -42,8 +42,8 @@ private[raft] class RaftNode[Command: NioEncDec](
 
   private val sequencer: Ref[Future[_]] = Ref(Future.unit)
 
-  val electionTimer = new RaftTimer(electionTimeoutRange._1, electionTimeoutRange._2)(() => electionTimeout())
-  val heartbeatTimer = new RaftTimer(heartbeatTimeoutRange._1, heartbeatTimeoutRange._2)(() => heartbeatTimeout())
+  private val electionTimer = new RaftTimer(electionTimeoutRange._1, electionTimeoutRange._2)(() => electionTimeout())
+  private val _ = new RaftTimer(heartbeatTimeoutRange._1, heartbeatTimeoutRange._2)(() => heartbeatTimeout())
 
   val nodeFSM = new RaftFSM[Command](becomeFollower, becomeCandidate, becomeLeader)
 
@@ -78,19 +78,22 @@ private[raft] class RaftNode[Command: NioEncDec](
 
   // How this works.
   // Every request to the raft node is synchronized (see entry points below for list of requests).
-  // This means state changes are isolated and atomic.
+  // This means state changes are unique (e.g. a node will never reply true to two concurrent requestVote RPCs).
   // When handling a request the node will
   // a. read the current state
   // b. do stuff, calculating a new state
   // c. install the new state
+  // d. move onto the next request
   //
-  // There is a gotcha here for when writing test cases where eventually blocks can break things.
-  // If you forcibly read the node state from a eventually block
+  // This mechanism is enforced via the withState method.
+  //
+  // If you read state from the node any other way, without it being committed you will get unpredictable results
+  // (and flaky tests/behaviour).
+  // This is because if you read the uncommitted node state (e.g. in an eventually block)
   // Scala STM thinks there is another transaction running and may decide
-  // to abort and replay the process above. If the eventually retries, STM may retry
+  // to abort and replay the node's running transaction. If the eventually retries, STM may retry
   // and so on, until the eventually fails.
-  // The readState function above handles this situation and makes sure that testcases only
-  // read the state _after_ step c above.
+  // It's a hard problem to debug so beware. Make sure any getters use readState.
 
   // Functions to atomically change the server state.
   // In the case of pure requests like appendEntries and requestVote,
@@ -160,10 +163,12 @@ private[raft] class RaftNode[Command: NioEncDec](
     getVoteResult(rulesForServersAllServers2(rs, voteRequested.term), voteRequested)
   }
 
-  private def electionTimeout(): Unit =
+  def electionTimeout(): Future[Unit] = {
     withState(rs => (nodeFSM.apply(rs, ElectionTimeout), ()))
+    withFutureState(rs => rs.role.handleElectionTimeout(rs))
+  }
 
-  private def heartbeatTimeout(): Future[Unit] =
+  def heartbeatTimeout(): Future[Unit] =
     withFutureState(rs => sendHeartbeat(rs))
 
   private def sendHeartbeat(rs: RaftState[Command]): Future[(RaftState[Command], Unit)] = {
@@ -194,7 +199,7 @@ private[raft] class RaftNode[Command: NioEncDec](
     sequenceForgiving(rpcFutures)
   }
 
-  private def requestVotes(rs: RaftState[Command]): Future[(RaftState[Command], Unit)] = {
+  def requestVotes(rs: RaftState[Command]): Future[(RaftState[Command], Unit)] = {
     val (term, _) = rs.persistentState
     val (lastLogIndex, lastLogTerm) = lastLogIndexAndTerm(rs.log)
     requestVotes(VoteRequested(term, nodeId, lastLogIndex, lastLogTerm)).flatMap(
@@ -291,11 +296,7 @@ private[raft] class RaftNode[Command: NioEncDec](
     val (currentTerm, _) = rs.persistentState
     val newTerm = currentTerm + 1
     val nextPersistentState = (newTerm, nodeId)
-    try {
-      rs.copy(role = new Candidate(this), persistentState = nextPersistentState)
-    } finally {
-      Future(withFutureState(requestVotes))
-    }
+    rs.copy(role = new Candidate(this), persistentState = nextPersistentState)
   }
 
   private def hasMajority(term: Int, votes: Seq[RequestVoteResult]): Boolean = {

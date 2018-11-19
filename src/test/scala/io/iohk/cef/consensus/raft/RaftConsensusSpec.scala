@@ -2,11 +2,10 @@ package io.iohk.cef.consensus.raft
 
 import io.iohk.cef.consensus.raft.node._
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.{inOrder, times, verify, when}
+import org.mockito.Mockito.{inOrder, times, verify, when, verifyNoMoreInteractions}
 import org.scalatest.Matchers._
 import org.scalatest.WordSpec
 import org.scalatest.concurrent.ScalaFutures.{convertScalaFuture, whenReady}
-import org.scalatest.concurrent.Eventually.eventually
 import org.scalatest.mockito.MockitoSugar._
 import io.iohk.cef.codecs.nio.auto._
 
@@ -468,20 +467,18 @@ class RaftConsensusSpec extends WordSpec {
         when(rpc3.requestVote(any[VoteRequested]))
           .thenReturn(Future(RequestVoteResult(term = 2, voteGranted = false)))
 
-        raftNode.electionTimer.timeout()
+        raftNode.electionTimeout().futureValue
 
-        eventually {
-          raftNode.getRole shouldBe Candidate
+        raftNode.getRole shouldBe Candidate
 
-          // On conversion to candidate
-          raftNode.getPersistentState shouldBe (2, raftNode.nodeId) // 1. increment current term and 2. vote for self
+        // On conversion to candidate
+        raftNode.getPersistentState shouldBe (2, raftNode.nodeId) // 1. increment current term and 2. vote for self
 
-          // 3. reset election timer. Done by inspection of the code:(
+        // 3. reset election timer. Done by inspection of the code:(
 
-          val expectedVoteRequest = VoteRequested(2, "i1", -1, -1) // 4. send request vote RPCs to other servers
-          verify(rpc2).requestVote(expectedVoteRequest)
-          verify(rpc3).requestVote(expectedVoteRequest)
-        }
+        val expectedVoteRequest = VoteRequested(2, "i1", -1, -1) // 4. send request vote RPCs to other servers
+        verify(rpc2).requestVote(expectedVoteRequest)
+        verify(rpc3).requestVote(expectedVoteRequest)
       }
     }
   }
@@ -503,9 +500,9 @@ class RaftConsensusSpec extends WordSpec {
         when(rpc3.appendEntries(any[EntriesToAppend[String]]))
           .thenReturn(Future(AppendEntriesResult(2, success = true)))
 
-        raftNode.electionTimer.timeout()
+        raftNode.electionTimeout().futureValue
 
-        eventually(raftNode.getRole shouldBe Leader)
+        raftNode.getRole shouldBe Leader
       }
     }
     "votes received from a minority" should {
@@ -521,7 +518,7 @@ class RaftConsensusSpec extends WordSpec {
         when(rpc3.requestVote(any[VoteRequested]))
           .thenReturn(Future(RequestVoteResult(term = 2, voteGranted = false)))
 
-        raftNode.electionTimer.timeout()
+        raftNode.electionTimeout()
 
         after(500) {
           raftNode.getRole shouldBe Candidate
@@ -547,13 +544,26 @@ class RaftConsensusSpec extends WordSpec {
           entries = Seq[LogEntry[String]](),
           leaderCommitIndex = -1)
 
-        raftNode.heartbeatTimer.timeout()
-        raftNode.heartbeatTimer.timeout()
+        raftNode.heartbeatTimeout().futureValue
+        raftNode.heartbeatTimeout().futureValue
+        verify(rpc2, times(3)).appendEntries(expectedHeartbeat)
+        verify(rpc3, times(3)).appendEntries(expectedHeartbeat)
+      }
+    }
+    "Having won an election" should {
+      "Not restart the election process after an election timeout" in new MockedRaftNodeFixture[String] {
+        val persistentStorage =
+          new InMemoryPersistentStorage[String](Vector(), currentTerm = 2, votedFor = "i1")
 
-        eventually {
-          verify(rpc2, times(3)).appendEntries(expectedHeartbeat)
-          verify(rpc3, times(3)).appendEntries(expectedHeartbeat)
-        }
+        val raftNode = aLeader(persistentStorage)
+        verify(rpc2, times(1)).requestVote(any[VoteRequested])
+        verify(rpc3, times(1)).requestVote(any[VoteRequested])
+        verify(rpc2, times(1)).appendEntries(any[EntriesToAppend[String]])
+        verify(rpc3, times(1)).appendEntries(any[EntriesToAppend[String]])
+
+        raftNode.electionTimeout().futureValue
+
+        verifyNoMoreInteractions(rpc2, rpc3)
       }
     }
     "Receiving commands from a client" should {
