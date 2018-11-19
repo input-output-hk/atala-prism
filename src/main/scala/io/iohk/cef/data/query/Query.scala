@@ -1,5 +1,7 @@
 package io.iohk.cef.data.query
 
+import io.iohk.cef.data.query.Query.Predicate
+
 import scala.language.implicitConversions
 
 /**
@@ -16,24 +18,16 @@ sealed trait Query {
 object Query {
   case object NoPredicateQuery extends Query
 
-  /**
-    * A very basic query type just to get us started. It represents a query on a specific table with only the predicate
-    * component
-    */
-  case class BasicQuery(predicate: Predicate) extends Query
+  sealed trait Predicate extends Query {
+    def and(that: Predicate): Predicate.And = Predicate.And(Seq(this, that))
+    def or(that: Predicate): Predicate.Or = Predicate.Or(Seq(this, that))
+  }
+  object Predicate {
+    case class Eq(field: Field, value: Value) extends Predicate
+    case class And(predicates: Seq[Predicate]) extends Predicate
+    case class Or(predicates: Seq[Predicate]) extends Predicate
+  }
 
-  implicit def basicQueryWrap(predicate: Predicate): BasicQuery = BasicQuery(predicate)
-
-}
-
-sealed trait Predicate {
-  def and(that: Predicate): Predicate.And = Predicate.And(Seq(this, that))
-  def or(that: Predicate): Predicate.Or = Predicate.Or(Seq(this, that))
-}
-object Predicate {
-  case class Eq(field: Field, value: Value) extends Predicate
-  case class And(predicates: Seq[Predicate]) extends Predicate
-  case class Or(predicates: Seq[Predicate]) extends Predicate
 }
 
 case class Field(index: Int) {
@@ -55,12 +49,12 @@ object Value {
 
   //implicit conversions to ease out the usage of values
   implicit def doubleRefConv(value: Double): DoubleRef = DoubleRef(value)
-  implicit def floatRef(value: Float): FloatRef = FloatRef(value)
-  implicit def longRef(value: Long): LongRef = LongRef(value)
-  implicit def intRef(value: Int): IntRef = IntRef(value)
-  implicit def shortRef(value: Short): ShortRef = ShortRef(value)
-  implicit def byteRef(value: Byte): ByteRef = ByteRef(value)
-  implicit def booleanRef(value: Boolean): BooleanRef = BooleanRef(value)
-  implicit def charRef(value: Char): CharRef = CharRef(value)
-  implicit def stringRef(value: String): StringRef = StringRef(value)
+  implicit def floatRefConv(value: Float): FloatRef = FloatRef(value)
+  implicit def longRefConv(value: Long): LongRef = LongRef(value)
+  implicit def intRefConv(value: Int): IntRef = IntRef(value)
+  implicit def shortRefConv(value: Short): ShortRef = ShortRef(value)
+  implicit def byteRefConv(value: Byte): ByteRef = ByteRef(value)
+  implicit def booleanRefConv(value: Boolean): BooleanRef = BooleanRef(value)
+  implicit def charRefConv(value: Char): CharRef = CharRef(value)
+  implicit def stringRefConv(value: String): StringRef = StringRef(value)
 }

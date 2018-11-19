@@ -1,6 +1,6 @@
 package io.iohk.cef.db.scalike
 import io.iohk.cef.data.DataItem
-import io.iohk.cef.data.query.Query.{BasicQuery, NoPredicateQuery}
+import io.iohk.cef.data.query.Query.{NoPredicateQuery, Predicate}
 import io.iohk.cef.data.query._
 import io.iohk.cef.data.storage.scalike.DataItemTable
 import io.iohk.cef.db.scalike.ParameterBinderFactoryImplicits._
@@ -14,7 +14,7 @@ object QueryScalikeTranslator {
     {
       val predTranslator = predicateTranslator(fieldGetter, syntaxProvider)
       q match {
-        case BasicQuery(predicate) => predTranslator.translate(predicate)
+        case p: Predicate => predTranslator.translate(p)
         case _: NoPredicateQuery.type => None
         case _ => throw new IllegalArgumentException("Unexpected query type. Not able to translate.")
       }
