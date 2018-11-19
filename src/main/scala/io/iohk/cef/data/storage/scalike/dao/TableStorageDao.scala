@@ -4,19 +4,22 @@ import io.iohk.cef.codecs.nio._
 import io.iohk.cef.crypto._
 import io.iohk.cef.data._
 import io.iohk.cef.data.error.DataItemNotFound
-import io.iohk.cef.data.query.{Field, Query}
+import io.iohk.cef.data.query.{Field, FieldGetter, Query}
 import io.iohk.cef.data.storage.scalike.{DataItemOwnerTable, DataItemSignatureTable, DataItemTable}
-import io.iohk.cef.db.scalike.{QueryScalikeTranslator, SqlTable}
+import io.iohk.cef.db.scalike.{FieldScalikeGetter, QueryScalikeTranslator}
 import io.iohk.cef.error.ApplicationError
 import scalikejdbc.{DBSession, _}
 
 class TableStorageDao {
 
-  private def translator[Table](table: SqlTable[Table], ss: QuerySQLSyntaxProvider[SQLSyntaxSupport[Table], Table]) =
-    QueryScalikeTranslator.queryPredicateTranslator(table, ss)
+  private def translator[Table](
+      getter: FieldGetter[SQLSyntax],
+      ss: QuerySQLSyntaxProvider[SQLSyntaxSupport[Table], Table]) =
+    QueryScalikeTranslator.queryPredicateTranslator(getter, ss)
 
   private val dataItemSyntaxProvider = DataItemTable.syntax("di")
-  private val dataItemTranslator = translator(DataItemTable, dataItemSyntaxProvider)
+  private val dataItemTranslator =
+    translator(FieldScalikeGetter.dataItemFieldGetter(dataItemSyntaxProvider), dataItemSyntaxProvider)
 
   def insert[I](tableId: TableId, dataItem: DataItem[I])(implicit session: DBSession, enc: NioEncoder[I]): Unit = {
     val itemColumn = DataItemTable.column
@@ -174,6 +177,6 @@ class TableStorageDao {
   def selectSingle[I](tableId: TableId, dataItemId: DataItemId)(
       implicit session: DBSession,
       serializable: NioEncDec[I]): Either[ApplicationError, DataItem[I]] =
-    selectWithQuery(tableId, Field(0) #== dataItemId)
+    selectWithQuery(tableId, Field(DataItem.FieldIds.DataItemId) #== dataItemId)
       .flatMap(_.headOption.toRight(new DataItemNotFound(tableId, dataItemId)))
 }

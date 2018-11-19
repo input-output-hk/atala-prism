@@ -3,12 +3,11 @@ import java.nio.ByteBuffer
 
 import akka.util.ByteString
 import io.iohk.cef.data.{DataItemId, TableId}
-import io.iohk.cef.db.scalike.SqlTable
 import scalikejdbc._
 
 case class DataItemTable(id: Long, dataTableId: TableId, dataItemId: DataItemId, dataItem: ByteBuffer)
 
-object DataItemTable extends SqlTable[DataItemTable] {
+object DataItemTable extends SQLSyntaxSupport[DataItemTable] {
   override val tableName = Schema.DataTableName
 
   def apply(ln: ResultName[DataItemTable])(rs: WrappedResultSet): DataItemTable = {
@@ -18,13 +17,6 @@ object DataItemTable extends SqlTable[DataItemTable] {
       rs.string(ln.dataItemId),
       ByteBuffer.wrap(rs.bytes(ln.dataItem))
     )
-  }
-
-  override def getField(
-      index: Int,
-      di: QuerySQLSyntaxProvider[SQLSyntaxSupport[DataItemTable], DataItemTable]): SQLSyntax = index match {
-    case 0 => di.dataItemId
-    case 1 => di.dataItem
   }
 }
 

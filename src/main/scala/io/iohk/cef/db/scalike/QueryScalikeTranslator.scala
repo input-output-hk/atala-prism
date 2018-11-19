@@ -7,21 +7,20 @@ import scalikejdbc._
 object QueryScalikeTranslator {
 
   def queryPredicateTranslator[Table](
-      fieldGetter: SqlFieldGetter[Table],
-      syntaxProvider: QuerySQLSyntaxProvider[SQLSyntaxSupport[Table], Table]): Translator[Query, SQLSyntax] = {
-    q =>
-      {
-        val predTranslator = predicateTranslator(fieldGetter, syntaxProvider)
-        q match {
-          case BasicQuery(predicate) => predTranslator.translate(predicate)
-          case _: NoPredicateQuery.type => None
-          case _ => throw new IllegalArgumentException("Unexpected query type. Not able to translate.")
-        }
+      fieldGetter: FieldGetter[SQLSyntax],
+      syntaxProvider: QuerySQLSyntaxProvider[SQLSyntaxSupport[Table], Table]): Translator[Query, SQLSyntax] = { q =>
+    {
+      val predTranslator = predicateTranslator(fieldGetter, syntaxProvider)
+      q match {
+        case BasicQuery(predicate) => predTranslator.translate(predicate)
+        case _: NoPredicateQuery.type => None
+        case _ => throw new IllegalArgumentException("Unexpected query type. Not able to translate.")
       }
+    }
   }
 
   def predicateTranslator[Table](
-      fieldGetter: SqlFieldGetter[Table],
+      fieldGetter: FieldGetter[SQLSyntax],
       syntaxProvider: scalikejdbc.QuerySQLSyntaxProvider[scalikejdbc.SQLSyntaxSupport[Table], Table])
     : Translator[Predicate, SQLSyntax] =
     pc => {
@@ -36,7 +35,7 @@ object QueryScalikeTranslator {
     }
 
   def orPredicateComposerTranslator[Table](
-      fieldGetter: SqlFieldGetter[Table],
+      fieldGetter: FieldGetter[SQLSyntax],
       syntaxProvider: scalikejdbc.QuerySQLSyntaxProvider[scalikejdbc.SQLSyntaxSupport[Table], Table])
     : Translator[Predicate.Or, SQLSyntax] =
     pc => {
@@ -45,7 +44,7 @@ object QueryScalikeTranslator {
     }
 
   def andPredicateComposerTranslator[Table](
-      fieldGetter: SqlFieldGetter[Table],
+      fieldGetter: FieldGetter[SQLSyntax],
       syntaxProvider: scalikejdbc.QuerySQLSyntaxProvider[scalikejdbc.SQLSyntaxSupport[Table], Table])
     : Translator[Predicate.And, SQLSyntax] =
     pc => {
@@ -54,8 +53,8 @@ object QueryScalikeTranslator {
     }
 
   def eqPredicateTranslator[Table](
-      fieldGetter: SqlFieldGetter[Table],
+      fieldGetter: FieldGetter[SQLSyntax],
       syntaxProvider: scalikejdbc.QuerySQLSyntaxProvider[scalikejdbc.SQLSyntaxSupport[Table], Table])
     : Translator[Predicate.Eq, SQLSyntax] =
-    p => Some(sqls.eq(fieldGetter.getField(p.field.index, syntaxProvider), p.value))
+    p => Some(sqls.eq(fieldGetter.getField(p.field), p.value))
 }
