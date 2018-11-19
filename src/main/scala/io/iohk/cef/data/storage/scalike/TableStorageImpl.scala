@@ -1,10 +1,11 @@
 package io.iohk.cef.data.storage.scalike
-import io.iohk.cef.data.{DataItem, DataItemId, TableId}
+import io.iohk.cef.codecs.nio._
+import io.iohk.cef.data.query.Query
 import io.iohk.cef.data.storage.TableStorage
 import io.iohk.cef.data.storage.scalike.dao.TableStorageDao
-import scalikejdbc.{ConnectionPool, DB, DBSession, using}
-import io.iohk.cef.codecs.nio._
+import io.iohk.cef.data.{DataItem, DataItemId, TableId}
 import io.iohk.cef.error.ApplicationError
+import scalikejdbc._
 
 class TableStorageImpl(tableStorageDao: TableStorageDao) extends TableStorage {
 
@@ -17,6 +18,13 @@ class TableStorageImpl(tableStorageDao: TableStorageDao) extends TableStorage {
   override def delete[I](tableId: TableId, dataItem: DataItem[I]): Unit = {
     execInSession { implicit session =>
       tableStorageDao.delete(tableId, dataItem)
+    }
+  }
+
+  override def select[I](tableId: TableId, query: Query)(
+      implicit nioEncDec: NioEncDec[I]): Either[ApplicationError, Seq[DataItem[I]]] = {
+    execInSession { implicit session =>
+      tableStorageDao.selectWithQuery(tableId, query)
     }
   }
 

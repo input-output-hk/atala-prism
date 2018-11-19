@@ -5,6 +5,9 @@ import io.iohk.cef.error.ApplicationError
 
 sealed trait CodecError extends ApplicationError
 
+//Temporary until decoders can return errors instead of Option
+case class UnexpectedDecodingError() extends CodecError
+
 /**
   * ADT describing the types of error that can happen when trying to decode a cryptographic entity of type
   * `T`, from a ByteString

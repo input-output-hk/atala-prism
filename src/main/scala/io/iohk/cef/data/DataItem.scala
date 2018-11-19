@@ -10,3 +10,10 @@ package io.iohk.cef.data
   */
 //TODO we will need to replace Seq with a simple boolean AST to better express ownership
 case class DataItem[T](id: String, data: T, witnesses: Seq[Witness], owners: Seq[Owner])
+
+object DataItem {
+  object FieldIds {
+    val DataItemId = 0
+    val DataTableId = 1
+  }
+}

@@ -2,13 +2,25 @@ package io.iohk.cef.data.storage.scalike.dao
 import akka.util.ByteString
 import io.iohk.cef.codecs.nio._
 import io.iohk.cef.crypto._
-import io.iohk.cef.data.storage.scalike.{DataItemOwnerTable, DataItemSignatureTable, DataItemTable}
 import io.iohk.cef.data._
 import io.iohk.cef.data.error.DataItemNotFound
+import io.iohk.cef.data.query.{Field, Query, Translator}
+import io.iohk.cef.data.storage.scalike.{DataItemOwnerTable, DataItemSignatureTable, DataItemTable}
+import io.iohk.cef.db.scalike.QueryScalikeTranslator
 import io.iohk.cef.error.ApplicationError
 import scalikejdbc.{DBSession, _}
 
 class TableStorageDao {
+
+  private def translator[Table](
+      getter: Translator[Field, SQLSyntax],
+      ss: QuerySQLSyntaxProvider[SQLSyntaxSupport[Table], Table]) =
+    QueryScalikeTranslator.queryPredicateTranslator(getter, ss)
+
+  private val dataItemSyntaxProvider = DataItemTable.syntax("di")
+  private val dataItemTranslator =
+    translator(QueryScalikeTranslator.dataItemFieldTranslator(dataItemSyntaxProvider), dataItemSyntaxProvider)
+
   def insert[I](tableId: TableId, dataItem: DataItem[I])(implicit session: DBSession, enc: NioEncoder[I]): Unit = {
     val itemColumn = DataItemTable.column
 
@@ -60,6 +72,74 @@ class TableStorageDao {
       )
   }
 
+  def selectWithQuery[I](tableId: TableId, query: Query)(
+      implicit session: DBSession,
+      nioEncDec: NioEncDec[I]
+  ): Either[ApplicationError, Seq[DataItem[I]]] = {
+    val dataItemRows = withSQL {
+      select
+        .from(DataItemTable as dataItemSyntaxProvider)
+        .where
+        .eq(dataItemSyntaxProvider.dataTableId, tableId)
+        .and(dataItemTranslator.translate(query))
+    }.map(rs => DataItemTable(dataItemSyntaxProvider.resultName)(rs)).list().apply()
+    val dataItems: Either[ApplicationError, Seq[DataItem[I]]] = seqEitherToEitherSeq(dataItemRows.map { dir =>
+      for {
+        owners <- seqEitherToEitherSeq(selectDataItemOwners(dir.id))
+        witnesses <- seqEitherToEitherSeq(selectDataItemWitnesses(dir.id))
+        data <- nioEncDec
+          .decode(dir.dataItem)
+          .map[Either[ApplicationError, I]](Right.apply)
+          //TODO: Should be a specific error. If only decoders returned Either[...]
+          .getOrElse(Left(UnexpectedDecodingError()))
+      } yield {
+        DataItem(dir.dataItemId, data, witnesses, owners)
+      }
+    })
+    dataItems
+  }
+
+  private def selectDataItemWitnesses(dataItemUniqueId: Long)(
+      implicit session: DBSession): List[Either[CodecError, Witness]] = {
+    val dis = DataItemSignatureTable.syntax("dis")
+    sql"""
+        select ${dis.result.*}
+        from ${DataItemSignatureTable as dis}
+        where ${dis.dataItemUniqueId} = ${dataItemUniqueId}
+       """
+      .map { rs =>
+        val row = DataItemSignatureTable(dis.resultName)(rs)
+        for {
+          key <- SigningPublicKey.decodeFrom(row.signingPublicKey)
+          sig <- Signature.decodeFrom(row.signature)
+        } yield Witness(key, sig)
+      }
+      .list()
+      .apply()
+  }
+
+  private def selectDataItemOwners(dataItemUniqueId: Long)(
+      implicit session: DBSession): List[Either[CodecError, Owner]] = {
+    val dio = DataItemOwnerTable.syntax("dio")
+    sql"""
+        select ${dio.result.*}
+        from ${DataItemOwnerTable as dio}
+        where ${dio.dataItemUniqueId} = ${dataItemUniqueId}
+       """
+      .map(rs => SigningPublicKey.decodeFrom(DataItemOwnerTable(dio.resultName)(rs).signingPublicKey).map(Owner))
+      .list()
+      .apply()
+  }
+
+  private def seqEitherToEitherSeq[A, B](list: Seq[Either[A, B]]): Either[A, Seq[B]] = {
+    list.foldLeft[Either[A, Seq[B]]](Right(Seq()))((state, curr) => {
+      for {
+        s <- state
+        c <- curr
+      } yield c +: s
+    })
+  }
+
   private def insertDataItemOwners[I](dataItemUniqueId: Long, dataItem: DataItem[I])(implicit session: DBSession) = {
     val ownerColumn = DataItemOwnerTable.column
 
@@ -97,67 +177,6 @@ class TableStorageDao {
   def selectSingle[I](tableId: TableId, dataItemId: DataItemId)(
       implicit session: DBSession,
       serializable: NioEncDec[I]): Either[ApplicationError, DataItem[I]] =
-    selectAll[I](tableId, Seq(dataItemId)).flatMap(_.headOption.toRight(new DataItemNotFound(tableId, dataItemId)))
-
-  def selectAll[I](tableId: TableId, ids: Seq[DataItemId])(
-      implicit session: DBSession,
-      serializable: NioEncDec[I]): Either[CodecError, Seq[DataItem[I]]] = {
-    import io.iohk.cef.utils.EitherTransforms
-    val di = DataItemTable.syntax("di")
-    val dataItemRows = sql"""
-        select ${di.result.*}
-        from ${DataItemTable as di}
-        where ${di.dataItemId} in (${ids}) and ${di.dataTableId} = ${tableId}
-       """.map(rs => DataItemTable(di.resultName)(rs)).list().apply()
-    //Inefficient for large tables
-    import EitherTransforms._
-    val dataItems = dataItemRows.map(dir => {
-      val uniqueId = getUniqueId(tableId, dir.dataItemId)
-      val ownerEither = selectDataItemOwners(uniqueId).toEitherList
-      val witnessEither = selectDataItemWitnesses(uniqueId).toEitherList
-      for {
-        owners <- ownerEither
-        witnesses <- witnessEither
-      } yield
-        DataItem(
-          dir.dataItemId,
-          serializable
-            .decode(dir.dataItem.toByteBuffer)
-            .getOrElse(throw new IllegalStateException(s"Could not decode data item: ${dir}")),
-          witnesses,
-          owners
-        )
-    })
-    dataItems.toEitherList
-  }
-
-  private def selectDataItemWitnesses(dataItemUniqueId: Long)(implicit session: DBSession) = {
-    val dis = DataItemSignatureTable.syntax("dis")
-    sql"""
-        select ${dis.result.*}
-        from ${DataItemSignatureTable as dis}
-        where ${dis.dataItemUniqueId} = ${dataItemUniqueId}
-       """
-      .map { rs =>
-        val row = DataItemSignatureTable(dis.resultName)(rs)
-        for {
-          key <- SigningPublicKey.decodeFrom(row.signingPublicKey)
-          sig <- Signature.decodeFrom(row.signature)
-        } yield Witness(key, sig)
-      }
-      .list()
-      .apply()
-  }
-
-  private def selectDataItemOwners(dataItemUniqueId: Long)(implicit session: DBSession) = {
-    val dio = DataItemOwnerTable.syntax("dio")
-    sql"""
-        select ${dio.result.*}
-        from ${DataItemOwnerTable as dio}
-        where ${dio.dataItemUniqueId} = ${dataItemUniqueId}
-       """
-      .map(rs => SigningPublicKey.decodeFrom(DataItemOwnerTable(dio.resultName)(rs).signingPublicKey).map(Owner))
-      .list()
-      .apply()
-  }
+    selectWithQuery(tableId, Field(DataItem.FieldIds.DataItemId) #== dataItemId)
+      .flatMap(_.headOption.toRight(new DataItemNotFound(tableId, dataItemId)))
 }

@@ -3,8 +3,9 @@ import java.time.LocalDate
 
 import io.iohk.cef.codecs.nio._
 import io.iohk.cef.crypto._
-import io.iohk.cef.data.{CanValidate, DataItem, Witness}
 import io.iohk.cef.data.error.DataItemError
+import io.iohk.cef.data.{CanValidate, DataItem, Witness}
+
 case class UniversityDegreeData(universityName: String, degree: String, studentName: String, date: LocalDate)
 
 object UniversityDegreeData {
