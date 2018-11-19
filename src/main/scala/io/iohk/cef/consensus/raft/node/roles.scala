@@ -16,6 +16,7 @@ private[raft] sealed trait NodeRole[Command] {
   def clientAppendEntries(
       rc: RaftState[Command],
       entries: Seq[Command]): Future[(RaftState[Command], Either[Redirect[Command], Unit])]
+  def handleElectionTimeout(rs: RaftState[Command]): Future[(RaftState[Command], Unit)]
 }
 
 case object Follower extends StateCode
@@ -26,9 +27,9 @@ private[raft] class Follower[Command](raftNode: RaftNode[Command])(implicit ec: 
     extends NodeRole[Command] {
 
   override def appendEntries(
-      rc: RaftState[Command],
+      rs: RaftState[Command],
       entriesToAppend: EntriesToAppend[Command]): (RaftState[Command], AppendEntriesResult) = {
-    applyAppendEntriesRules1To5(rc, entriesToAppend)
+    applyAppendEntriesRules1To5(rs, entriesToAppend)
   }
 
   // AppendEntries RPC receiver implementation (figure 2), rules 1-5
@@ -173,6 +174,9 @@ private[raft] class Follower[Command](raftNode: RaftNode[Command])(implicit ec: 
       entries: Seq[Command]): Future[(RaftState[Command], Either[Redirect[Command], Unit])] =
     Future((rc, Left(Redirect(raftNode.getLeader))))
   override val stateCode: StateCode = Follower
+
+  override def handleElectionTimeout(rs: RaftState[Command]): Future[(RaftState[Command], Unit)] =
+    raftNode.requestVotes(rs)
 }
 
 private[raft] class Candidate[Command](raftNode: RaftNode[Command])(implicit ec: ExecutionContext)
@@ -198,6 +202,9 @@ private[raft] class Candidate[Command](raftNode: RaftNode[Command])(implicit ec:
     Future((rc, Left(Redirect(raftNode.getLeader))))
 
   override val stateCode: StateCode = Candidate
+
+  override def handleElectionTimeout(rs: RaftState[Command]): Future[(RaftState[Command], Unit)] =
+    raftNode.requestVotes(rs)
 }
 
 private[raft] class Leader[Command: NioEncDec](raftNode: RaftNode[Command])(implicit ec: ExecutionContext)
@@ -347,4 +354,6 @@ private[raft] class Leader[Command: NioEncDec](raftNode: RaftNode[Command])(impl
     val commitIndex = rc.commonVolatileState.commitIndex
     EntriesToAppend[Command](currentTerm, raftNode.nodeId, prevLogIndex, prevLogTerm, Seq(), commitIndex)
   }
+
+  override def handleElectionTimeout(rs: RaftState[Command]): Future[(RaftState[Command], Unit)] = Future((rs, ()))
 }

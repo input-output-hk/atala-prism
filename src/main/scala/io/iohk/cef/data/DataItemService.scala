@@ -1,7 +1,7 @@
 package io.iohk.cef.data
 
 import io.iohk.cef.codecs.nio._
-import io.iohk.cef.core.Envelope
+import io.iohk.cef.transactionservice.Envelope
 import io.iohk.cef.data.DataItemAction.{Delete, Insert}
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.network.{MessageStream, Network}

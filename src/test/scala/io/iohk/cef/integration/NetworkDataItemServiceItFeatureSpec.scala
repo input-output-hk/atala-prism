@@ -1,7 +1,7 @@
 package io.iohk.cef.integration
 
 import io.iohk.cef.codecs.nio._
-import io.iohk.cef.core.{DestinationDescriptor, Envelope, Everyone}
+import io.iohk.cef.transactionservice.{DestinationDescriptor, Envelope, Everyone}
 import io.iohk.cef.data._
 import io.iohk.cef.network.{Network, NetworkFixture}
 import org.mockito.Mockito._

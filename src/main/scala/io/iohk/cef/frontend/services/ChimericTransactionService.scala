@@ -1,6 +1,6 @@
 package io.iohk.cef.frontend.services
 
-import io.iohk.cef.core._
+import io.iohk.cef.transactionservice._
 import io.iohk.cef.crypto.sign
 import io.iohk.cef.frontend.client.Response
 import io.iohk.cef.frontend.models.{
@@ -13,7 +13,8 @@ import io.iohk.cef.codecs.nio.auto._
 import scala.concurrent.{ExecutionContext, Future}
 import io.iohk.cef.ledger.chimeric.{ChimericStateResult, ChimericTx}
 
-class ChimericTransactionService(nodeCore: NodeCore[ChimericStateResult, ChimericTx])(implicit ec: ExecutionContext) {
+class ChimericTransactionService(nodeTransactionService: NodeTransactionService[ChimericStateResult, ChimericTx])(
+    implicit ec: ExecutionContext) {
 
   def createChimericTransaction(req: CreateChimericTransactionRequest): Response[ChimericTx] = {
 
@@ -35,7 +36,7 @@ class ChimericTransactionService(nodeCore: NodeCore[ChimericStateResult, Chimeri
     val envelope =
       Envelope(content = chimericTx, containerId = req.ledgerId, Everyone)
 
-    nodeCore.receiveTransaction(envelope)
+    nodeTransactionService.receiveTransaction(envelope)
   }
 
 }

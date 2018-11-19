@@ -1,6 +1,6 @@
 package io.iohk.cef.integration
 import io.iohk.cef.codecs.nio.auto._
-import io.iohk.cef.core.{Envelope, Everyone}
+import io.iohk.cef.transactionservice.{Envelope, Everyone}
 import io.iohk.cef.crypto._
 import io.iohk.cef.data._
 import io.iohk.cef.data.query.Query.NoPredicateQuery

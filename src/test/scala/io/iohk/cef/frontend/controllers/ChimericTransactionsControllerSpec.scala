@@ -4,7 +4,7 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import com.alexitc.playsonify.akka.PublicErrorRenderer
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
-import io.iohk.cef.core.NodeCore
+import io.iohk.cef.transactionservice.NodeTransactionService
 import io.iohk.cef.crypto._
 import io.iohk.cef.frontend.controllers.common.Codecs
 import io.iohk.cef.frontend.models.{
@@ -33,11 +33,11 @@ class ChimericTransactionsControllerSpec
 
   import Codecs._
 
-  val nodeCore = mock[NodeCore[ChimericStateResult, ChimericTx]]
-  when(nodeCore.receiveTransaction(any())).thenReturn(Future.successful(Right(())))
+  val nodeTransactionService = mock[NodeTransactionService[ChimericStateResult, ChimericTx]]
+  when(nodeTransactionService.receiveTransaction(any())).thenReturn(Future.successful(Right(())))
 
   implicit val executionContext = system.dispatcher
-  val service = new ChimericTransactionService(nodeCore)
+  val service = new ChimericTransactionService(nodeTransactionService)
   val api = new ChimericTransactionsController(service)
   val routes = api.routes
   val signingKeyPair1 = generateSigningKeyPair()

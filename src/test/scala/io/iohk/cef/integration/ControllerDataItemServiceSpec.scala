@@ -5,7 +5,7 @@ import akka.http.scaladsl.testkit.ScalatestRouteTest
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import io.iohk.cef.codecs.nio._
 import io.iohk.cef.codecs.nio.auto._
-import io.iohk.cef.core.Envelope
+import io.iohk.cef.transactionservice.Envelope
 import io.iohk.cef.data._
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.frontend.controllers.ItemsGenericController

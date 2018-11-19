@@ -17,11 +17,11 @@ private[raft] class RaftTimer(minTimeout: Duration, maxTimeout: Duration)(timeou
     schedule()
   }
 
-  def schedule(): Unit = this.synchronized {
+  private def schedule(): Unit = this.synchronized {
     currentTask = Timer.schedule(nextRandom() millis)(timeout())
   }
 
-  def timeout(): Unit = {
+  private def timeout(): Unit = {
     timeoutFn()
     schedule()
   }

@@ -6,7 +6,7 @@ import akka.testkit.TestKit
 import akka.util.Timeout
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import io.iohk.cef.consensus.Consensus
-import io.iohk.cef.core.{Envelope, NodeCore}
+import io.iohk.cef.transactionservice.{Envelope, NodeTransactionService}
 import io.iohk.cef.frontend.controllers.ChimericTransactionsController
 import io.iohk.cef.frontend.controllers.common.Codecs
 import io.iohk.cef.frontend.models.{CreateChimericTransactionRequest, CreateNonSignableChimericTransactionFragment}
@@ -27,7 +27,7 @@ import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
 import io.iohk.cef.codecs.nio._
 
-class ChimericTransactionNodeCoreItSpec
+class ChimericTransactionNodeTransactionServiceItSpec
     extends FlatSpec
     with MustMatchers
     with BeforeAndAfterAll
@@ -36,14 +36,14 @@ class ChimericTransactionNodeCoreItSpec
     with ScalatestRouteTest
     with PlayJsonSupport {
 
-  import ChimericTransactionNodeCoreItSpec._
+  import ChimericTransactionNodeTransactionServiceItSpec._
   import Codecs._
 
   override def afterAll(): Unit = TestKit.shutdownActorSystem(system)
 
-  behavior of "ChimericTransactionNodeCoreItSpec"
+  behavior of "ChimericTransactionNodeTransactionServiceItSpec"
 
-  def createNodeCore: NodeCore[ChimericStateResult, ChimericTx] = {
+  def createNodeTransactionService: NodeTransactionService[ChimericStateResult, ChimericTx] = {
     implicit val timeout = Timeout(10.seconds)
     implicit val envelopeSerializable = mock[NioEncDec[Envelope[TransactionType]]]
     implicit val blockSerializable = mock[NioEncDec[Envelope[BlockType]]]
@@ -79,19 +79,19 @@ class ChimericTransactionNodeCoreItSpec
 
     val me = NodeId("3112")
 
-    val core =
-      new NodeCore(consensusMap, txNetwork, blockNetwork, me)(
+    val transactionservice =
+      new NodeTransactionService(consensusMap, txNetwork, blockNetwork, me)(
         envelopeSerializable,
         blockSerializable,
         ExecutionContext.global)
 
-    core.asInstanceOf[NodeCore[ChimericStateResult, ChimericTx]]
+    transactionservice.asInstanceOf[NodeTransactionService[ChimericStateResult, ChimericTx]]
   }
 
   it should "process a transaction" in {
     val fragments = Seq(CreateNonSignableChimericTransactionFragment(CreateCurrency("BTC")))
 
-    val node = createNodeCore
+    val node = createNodeTransactionService
     val service = new ChimericTransactionService(node)
     val api = new ChimericTransactionsController(service)
     val routes = api.routes
@@ -107,7 +107,7 @@ class ChimericTransactionNodeCoreItSpec
   }
 }
 
-object ChimericTransactionNodeCoreItSpec {
+object ChimericTransactionNodeTransactionServiceItSpec {
 
   type TransactionStateType = ChimericStateResult
   type TransactionType = Transaction[TransactionStateType]

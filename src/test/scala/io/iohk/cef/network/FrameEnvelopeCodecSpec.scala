@@ -7,9 +7,9 @@ import org.scalatest.Matchers._
 import io.iohk.cef.network.transport.tcp.NetUtils
 import io.iohk.cef.network.transport.{Frame, FrameHeader}
 import io.iohk.cef.test.DummyTransaction
-import io.iohk.cef.core.DestinationDescriptor
-import io.iohk.cef.core.Everyone
-import io.iohk.cef.core.Envelope
+import io.iohk.cef.transactionservice.DestinationDescriptor
+import io.iohk.cef.transactionservice.Everyone
+import io.iohk.cef.transactionservice.Envelope
 import io.iohk.cef.ledger.{Block, BlockHeader}
 
 class FrameEnvelopeCodecSpec extends FlatSpec {
