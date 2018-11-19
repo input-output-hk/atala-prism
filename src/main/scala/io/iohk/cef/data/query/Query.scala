@@ -22,9 +22,14 @@ object Query {
     */
   case class BasicQuery(predicate: Predicate) extends Query
 
+  implicit def basicQueryWrap(predicate: Predicate): BasicQuery = BasicQuery(predicate)
+
 }
 
-sealed trait Predicate
+sealed trait Predicate {
+  def and(that: Predicate): Predicate.And = Predicate.And(Seq(this, that))
+  def or(that: Predicate): Predicate.Or = Predicate.Or(Seq(this, that))
+}
 object Predicate {
   case class Eq(field: Field, value: Value) extends Predicate
   case class And(predicates: Seq[Predicate]) extends Predicate

@@ -4,9 +4,7 @@ import io.iohk.cef.codecs.nio._
 import io.iohk.cef.crypto._
 import io.iohk.cef.data._
 import io.iohk.cef.data.error.DataItemNotFound
-import io.iohk.cef.data.query.{Field, Predicate, Query}
-import io.iohk.cef.data.query.Query.BasicQuery
-import io.iohk.cef.data.query.Value.StringRef
+import io.iohk.cef.data.query.{Field, Query}
 import io.iohk.cef.data.storage.scalike.{DataItemOwnerTable, DataItemSignatureTable, DataItemTable}
 import io.iohk.cef.db.scalike.{QueryScalikeTranslator, SqlTable}
 import io.iohk.cef.error.ApplicationError
@@ -176,6 +174,6 @@ class TableStorageDao {
   def selectSingle[I](tableId: TableId, dataItemId: DataItemId)(
       implicit session: DBSession,
       serializable: NioEncDec[I]): Either[ApplicationError, DataItem[I]] =
-    selectWithQuery(tableId, BasicQuery(Predicate.Eq(Field(0), StringRef(dataItemId))))
+    selectWithQuery(tableId, Field(0) #== dataItemId)
       .flatMap(_.headOption.toRight(new DataItemNotFound(tableId, dataItemId)))
 }
