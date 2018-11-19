@@ -2,7 +2,7 @@ package io.iohk.cef.consensus.raft
 
 import io.iohk.cef.consensus.raft.node._
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.{inOrder, times, verify, when}
+import org.mockito.Mockito.{inOrder, times, verify, when, verifyNoMoreInteractions}
 import org.scalatest.Matchers._
 import org.scalatest.WordSpec
 import org.scalatest.concurrent.ScalaFutures.{convertScalaFuture, whenReady}
@@ -548,6 +548,22 @@ class RaftConsensusSpec extends WordSpec {
         raftNode.heartbeatTimeout().futureValue
         verify(rpc2, times(3)).appendEntries(expectedHeartbeat)
         verify(rpc3, times(3)).appendEntries(expectedHeartbeat)
+      }
+    }
+    "Having won an election" should {
+      "Not restart the election process after an election timeout" in new MockedRaftNodeFixture[String] {
+        val persistentStorage =
+          new InMemoryPersistentStorage[String](Vector(), currentTerm = 2, votedFor = "i1")
+
+        val raftNode = aLeader(persistentStorage)
+        verify(rpc2, times(1)).requestVote(any[VoteRequested])
+        verify(rpc3, times(1)).requestVote(any[VoteRequested])
+        verify(rpc2, times(1)).appendEntries(any[EntriesToAppend[String]])
+        verify(rpc3, times(1)).appendEntries(any[EntriesToAppend[String]])
+
+        raftNode.electionTimeout().futureValue
+
+        verifyNoMoreInteractions(rpc2, rpc3)
       }
     }
     "Receiving commands from a client" should {
