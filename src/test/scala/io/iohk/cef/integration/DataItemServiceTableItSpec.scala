@@ -45,7 +45,7 @@ trait DataItemServiceTableDbItSpec
   }
 
   def getItems(dao: TableStorageDao, tableId: TableId)(implicit session: DBSession) =
-    dao.selectWithQuery[String, NoPredicateQuery.type](tableId, NoPredicateQuery)
+    dao.selectWithQuery[String](tableId, NoPredicateQuery)
 
   it should "insert and delete items in the database" in { implicit s =>
     new RealTableFixture {

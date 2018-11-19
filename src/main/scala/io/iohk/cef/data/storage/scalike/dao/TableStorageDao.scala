@@ -71,7 +71,7 @@ class TableStorageDao {
       )
   }
 
-  def selectWithQuery[I, Q <: Query](tableId: TableId, query: Q)(
+  def selectWithQuery[I](tableId: TableId, query: Query)(
       implicit session: DBSession,
       nioEncDec: NioEncDec[I]
   ): Either[ApplicationError, Seq[DataItem[I]]] = {

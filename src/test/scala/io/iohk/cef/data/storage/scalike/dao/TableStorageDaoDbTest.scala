@@ -17,7 +17,7 @@ trait TableStorageDaoDbTest
     with EitherValues {
 
   def getItems(dao: TableStorageDao, tableId: TableId)(implicit dBSession: DBSession) =
-    dao.selectWithQuery[String, NoPredicateQuery.type](tableId, NoPredicateQuery)
+    dao.selectWithQuery[String](tableId, NoPredicateQuery)
 
   behavior of "TableStorageDaoDbTest"
 
