@@ -6,6 +6,6 @@ package io.iohk.cef.data.query
   * @tparam Q
   * @tparam Predicate
   */
-trait QueryTranslator[Q <: Query, Predicate] {
-  def translatePredicates[Table](q: Q): Option[Predicate]
+trait PredicateTranslator[P, LowLvlPredicate] {
+  def translate(p: P): Option[LowLvlPredicate]
 }

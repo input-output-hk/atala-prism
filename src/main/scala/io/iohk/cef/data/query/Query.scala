@@ -1,10 +1,12 @@
 package io.iohk.cef.data.query
 
+import scala.language.implicitConversions
+
 /**
   * The queries should be defined with an AST in which every component is serializable. This means,
-  * no node/class/type can receive functions as parameters.
+  * no node/class/type can receive functions as parameters or can *be* functions.
   * The AST can be made as complex as necessary in the future.
-  * The code should only reference this type. This way we make ourselves sure that we can extend the AST in the future.
+  * The code should only reference the Query type. This way we make ourselves sure that we can extend the AST in the future.
   * Specific treatment for subclasses (translation and serialization) will be handled by type classes.
   */
 sealed trait Query {
@@ -12,37 +14,48 @@ sealed trait Query {
 }
 
 object Query {
-  case object SelectAll extends Query
+  case object NoPredicateQuery extends Query
 
   /**
-    * A very basic query type just to get us started. It represents a query on a specific table where
-    * the predicates are all Equality predicates and they are joined by ands
-    * @param tableId
-    * @param eqPredicates
+    * A very basic query type just to get us started. It represents a query on a specific table with only the predicate
+    * component
     */
-  case class AndEqQuery(val eqPredicates: Seq[Predicate.Eq]) extends Query
+  case class BasicQuery(predicate: Predicate) extends Query
 
 }
 
 sealed trait Predicate
 object Predicate {
   case class Eq(field: Field, value: Value) extends Predicate
+  case class And(predicates: Seq[Predicate]) extends Predicate
+  case class Or(predicates: Seq[Predicate]) extends Predicate
 }
 
-case class Value(ref: Ref)
+case class Field(index: Int) {
+  def #==(value: Value): Predicate.Eq = Predicate.Eq(this, value)
+}
 
-case class Field(index: Int)
+sealed trait Value
 
-sealed trait Ref
+object Value {
+  case class DoubleRef(value: Double) extends Value
+  case class FloatRef(value: Float) extends Value
+  case class LongRef(value: Long) extends Value
+  case class IntRef(value: Int) extends Value
+  case class ShortRef(value: Short) extends Value
+  case class ByteRef(value: Byte) extends Value
+  case class BooleanRef(value: Boolean) extends Value
+  case class CharRef(value: Char) extends Value
+  case class StringRef(value: String) extends Value
 
-object Ref {
-  case class DoubleRef(value: Double) extends Ref
-  case class FloatRef(value: Float) extends Ref
-  case class LongRef(value: Long) extends Ref
-  case class IntRef(value: Int) extends Ref
-  case class ShortRef(value: Short) extends Ref
-  case class ByteRef(value: Byte) extends Ref
-  case class BooleanRef(value: Boolean) extends Ref
-  case class CharRef(value: Char) extends Ref
-  case class StringRef(value: String) extends Ref
+  //implicit conversions to ease out the usage of values
+  implicit def doubleRefConv(value: Double): DoubleRef = DoubleRef(value)
+  implicit def floatRef(value: Float): FloatRef = FloatRef(value)
+  implicit def longRef(value: Long): LongRef = LongRef(value)
+  implicit def intRef(value: Int): IntRef = IntRef(value)
+  implicit def shortRef(value: Short): ShortRef = ShortRef(value)
+  implicit def byteRef(value: Byte): ByteRef = ByteRef(value)
+  implicit def booleanRef(value: Boolean): BooleanRef = BooleanRef(value)
+  implicit def charRef(value: Char): CharRef = CharRef(value)
+  implicit def stringRef(value: String): StringRef = StringRef(value)
 }

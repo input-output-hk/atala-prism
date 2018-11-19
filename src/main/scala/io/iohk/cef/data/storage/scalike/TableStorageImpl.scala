@@ -35,14 +35,6 @@ class TableStorageImpl(tableStorageDao: TableStorageDao) extends TableStorage {
     }
   }
 
-  override def selectAll[I](tableId: TableId)(
-      implicit
-      itemSerializable: NioEncDec[I]): Either[ApplicationError, Seq[DataItem[I]]] = {
-    execInSession { implicit session =>
-      tableStorageDao.selectAll(tableId)
-    }
-  }
-
   protected def execInSession[T](block: DBSession => T): T = {
     using(ConnectionPool.borrow()) { conn =>
       DB(conn).localTx(block)

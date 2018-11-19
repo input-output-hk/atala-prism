@@ -4,8 +4,9 @@ import io.iohk.cef.codecs.nio._
 import io.iohk.cef.crypto._
 import io.iohk.cef.data._
 import io.iohk.cef.data.error.DataItemNotFound
-import io.iohk.cef.data.query.Query
-import io.iohk.cef.data.query.Query.SelectAll
+import io.iohk.cef.data.query.{Field, Predicate, Query}
+import io.iohk.cef.data.query.Query.BasicQuery
+import io.iohk.cef.data.query.Value.StringRef
 import io.iohk.cef.data.storage.scalike.{DataItemOwnerTable, DataItemSignatureTable, DataItemTable}
 import io.iohk.cef.db.scalike.{QueryScalikeTranslator, SqlTable}
 import io.iohk.cef.error.ApplicationError
@@ -14,7 +15,7 @@ import scalikejdbc.{DBSession, _}
 class TableStorageDao {
 
   private def translator[Table](table: SqlTable[Table], ss: QuerySQLSyntaxProvider[SQLSyntaxSupport[Table], Table]) =
-    QueryScalikeTranslator.queryTranslator(table, ss)
+    QueryScalikeTranslator.queryPredicateTranslator(table, ss)
 
   private val dataItemSyntaxProvider = DataItemTable.syntax("di")
   private val dataItemTranslator = translator(DataItemTable, dataItemSyntaxProvider)
@@ -79,7 +80,7 @@ class TableStorageDao {
         .from(DataItemTable as dataItemSyntaxProvider)
         .where
         .eq(dataItemSyntaxProvider.dataTableId, tableId)
-        .and(dataItemTranslator.translatePredicates(query))
+        .and(dataItemTranslator.translate(query))
     }.map(rs => DataItemTable(dataItemSyntaxProvider.resultName)(rs)).list().apply()
     val dataItems: Either[ApplicationError, Seq[DataItem[I]]] = seqEitherToEitherSeq(dataItemRows.map { dir =>
       for {
@@ -96,10 +97,6 @@ class TableStorageDao {
     })
     dataItems
   }
-
-  def selectAll[I](tableId: TableId)(
-      implicit session: DBSession,
-      serializable: NioEncDec[I]): Either[ApplicationError, Seq[DataItem[I]]] = selectWithQuery(tableId, SelectAll)
 
   private def selectDataItemWitnesses(dataItemUniqueId: Long)(
       implicit session: DBSession): List[Either[CodecError, Witness]] = {
@@ -179,36 +176,6 @@ class TableStorageDao {
   def selectSingle[I](tableId: TableId, dataItemId: DataItemId)(
       implicit session: DBSession,
       serializable: NioEncDec[I]): Either[ApplicationError, DataItem[I]] =
-    selectAll[I](tableId, Seq(dataItemId)).flatMap(_.headOption.toRight(new DataItemNotFound(tableId, dataItemId)))
-
-  def selectAll[I](tableId: TableId, ids: Seq[DataItemId])(
-      implicit session: DBSession,
-      serializable: NioEncDec[I]): Either[CodecError, Seq[DataItem[I]]] = {
-    import io.iohk.cef.utils.EitherTransforms
-    val dataItemRows = sql"""
-        select ${dataItemSyntaxProvider.result.*}
-        from ${DataItemTable as dataItemSyntaxProvider}
-        where ${dataItemSyntaxProvider.dataItemId} in (${ids}) and ${dataItemSyntaxProvider.dataTableId} = ${tableId}
-       """.map(rs => DataItemTable(dataItemSyntaxProvider.resultName)(rs)).list().apply()
-    //Inefficient for large tables
-    import EitherTransforms._
-    val dataItems = dataItemRows.map(dir => {
-      val uniqueId = getUniqueId(tableId, dir.dataItemId)
-      val ownerEither = selectDataItemOwners(uniqueId).toEitherList
-      val witnessEither = selectDataItemWitnesses(uniqueId).toEitherList
-      for {
-        owners <- ownerEither
-        witnesses <- witnessEither
-      } yield
-        DataItem(
-          dir.dataItemId,
-          serializable
-            .decode(dir.dataItem)
-            .getOrElse(throw new IllegalStateException(s"Could not decode data item: ${dir}")),
-          witnesses,
-          owners
-        )
-    })
-    dataItems.toEitherList
-  }
+    selectWithQuery(tableId, BasicQuery(Predicate.Eq(Field(0), StringRef(dataItemId))))
+      .flatMap(_.headOption.toRight(new DataItemNotFound(tableId, dataItemId)))
 }

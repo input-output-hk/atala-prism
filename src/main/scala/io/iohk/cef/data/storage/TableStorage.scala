@@ -15,8 +15,4 @@ trait TableStorage {
 
   def selectSingle[I](tableId: TableId, dataItemId: DataItemId)(
       implicit itemSerializable: NioEncDec[I]): Either[ApplicationError, DataItem[I]]
-
-  def selectAll[I](tableId: TableId)(
-      implicit
-      itemSerializable: NioEncDec[I]): Either[ApplicationError, Seq[DataItem[I]]]
 }

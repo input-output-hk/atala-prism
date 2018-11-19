@@ -1,6 +1,6 @@
 package io.iohk.cef.db.scalike
-import io.iohk.cef.data.query.Ref
-import io.iohk.cef.data.query.Ref._
+import io.iohk.cef.data.query.Value
+import io.iohk.cef.data.query.Value._
 import scalikejdbc.ParameterBinderFactory
 
 /**
@@ -9,7 +9,7 @@ import scalikejdbc.ParameterBinderFactory
   */
 object ParameterBinderFactoryImplicits {
 
-  implicit val parameterBinderFactoryAnyVal: ParameterBinderFactory[Ref] = createParameterBinderFactoryAnyVal
+  implicit val parameterBinderFactoryAnyVal: ParameterBinderFactory[Value] = createParameterBinderFactoryAnyVal
 
   def createParameterBinderFactoryAnyVal(
       implicit pInt: ParameterBinderFactory[Int],
@@ -19,7 +19,7 @@ object ParameterBinderFactoryImplicits {
       pShort: ParameterBinderFactory[Short],
       pByte: ParameterBinderFactory[Byte],
       pBoolean: ParameterBinderFactory[Boolean],
-      pString: ParameterBinderFactory[String]): ParameterBinderFactory[Ref] =
+      pString: ParameterBinderFactory[String]): ParameterBinderFactory[Value] =
     value =>
       value match {
         case DoubleRef(value) => pDouble(value)
