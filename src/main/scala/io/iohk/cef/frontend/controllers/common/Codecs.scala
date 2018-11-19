@@ -1,7 +1,7 @@
 package io.iohk.cef.frontend.controllers.common
 
 import akka.util.ByteString
-import io.iohk.cef.core._
+import io.iohk.cef.transactionservice._
 import io.iohk.cef.crypto._
 import io.iohk.cef.data.{DataItem, Owner, TableId, Witness}
 import io.iohk.cef.frontend.models._

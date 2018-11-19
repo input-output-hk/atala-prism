@@ -13,7 +13,7 @@ import java.time.Clock
   *
   */
 /**
-  * Interface for generating block and processing transaction received from node core
+  * Interface for generating block and processing transaction received from node transactionservice
   * @param headerGenerator
   * @param maxBlockSize
   * @param ledgerStateStorage

@@ -1,4 +1,4 @@
-package io.iohk.cef.core
+package io.iohk.cef.transactionservice
 import io.iohk.cef.LedgerId
 import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.ledger.{Block, BlockHeader}
@@ -14,7 +14,7 @@ import scala.collection.immutable
 import scala.concurrent.Future
 import io.iohk.cef.codecs.nio._
 
-class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
+class NodeTransactionServiceSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
 
   def mockConsensus: Consensus[String, DummyTransaction] =
     mock[Consensus[String, DummyTransaction]]
@@ -47,7 +47,7 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
     when(txMessageStream.foreach(ArgumentMatchers.any())).thenReturn(Future.successful(()))
     when(blockMessageStream.foreach(ArgumentMatchers.any())).thenReturn(Future.successful(()))
     (
-      new NodeCore(
+      new NodeTransactionService(
         consensusMap,
         txDM,
         blockDM,
@@ -66,10 +66,10 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
     val testEnvelope = Envelope(testTx, ledgerId, Everyone)
     implicit val bs1 = mockNioEncDec
     implicit val bs2 = mockBlockSerializable
-    val (core, consensusMap, txDM, _) = setupTest(ledgerId)
+    val (transactionservice, consensusMap, txDM, _) = setupTest(ledgerId)
     when(consensusMap(ledgerId)._1.processTransaction(testEnvelope.content))
       .thenReturn(Right(()))
-    core
+    transactionservice
       .receiveTransaction(testEnvelope)
       .map(r => {
         verify(txDM, times(1)).disseminateMessage(testEnvelope)
@@ -85,10 +85,10 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
     val testEnvelope = Envelope(testBlock, ledgerId, Everyone)
     implicit val bs1 = mockNioEncDec
     implicit val bs2 = mockBlockSerializable
-    val (core, consensusMap, _, blockDM) = setupTest(ledgerId)
+    val (transactionservice, consensusMap, _, blockDM) = setupTest(ledgerId)
     when(consensusMap(ledgerId)._2.process(testEnvelope.content))
       .thenReturn(Future.successful(Right(())))
-    core
+    transactionservice
       .receiveBlock(testEnvelope)
       .map(r => {
         verify(blockDM, times(1)).disseminateMessage(testEnvelope)
@@ -102,10 +102,10 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
     implicit val bs2 = mockBlockSerializable
     val ledgerId = "1"
     val me = NodeId("abcd")
-    val (core, consensusMap, _, blockDM) = setupTest(ledgerId, me)
-    val (testBlockEnvelope, _) = setupMissingCapabilitiesTest(ledgerId, core, Not(Everyone), me)
+    val (transactionservice, consensusMap, _, blockDM) = setupTest(ledgerId, me)
+    val (testBlockEnvelope, _) = setupMissingCapabilitiesTest(ledgerId, transactionservice, Not(Everyone), me)
     for {
-      rcv <- core.receiveBlock(testBlockEnvelope)
+      rcv <- transactionservice.receiveBlock(testBlockEnvelope)
     } yield {
       verify(blockDM, times(1)).disseminateMessage(testBlockEnvelope)
       verify(consensusMap(ledgerId)._2, times(0)).process(testBlockEnvelope.content)
@@ -118,10 +118,10 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
     implicit val bs2 = mockBlockSerializable
     val ledgerId = "1"
     val me = NodeId("abcd")
-    val (core, consensusMap, txDM, _) = setupTest(ledgerId, me)
-    val (_, testTxEnvelope) = setupMissingCapabilitiesTest(ledgerId, core, Not(Everyone), me)
+    val (transactionservice, consensusMap, txDM, _) = setupTest(ledgerId, me)
+    val (_, testTxEnvelope) = setupMissingCapabilitiesTest(ledgerId, transactionservice, Not(Everyone), me)
     for {
-      rcv <- core.receiveTransaction(testTxEnvelope)
+      rcv <- transactionservice.receiveTransaction(testTxEnvelope)
     } yield {
       verify(txDM, times(1)).disseminateMessage(testTxEnvelope)
       verify(consensusMap(ledgerId)._1, times(0)).processTransaction(testTxEnvelope.content)
@@ -134,11 +134,11 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
     implicit val bs2 = mockBlockSerializable
     val ledgerId = "1"
     val me = NodeId("abcd")
-    val (core, consensusMap, _, blockDM) = setupTest(ledgerId, me)
-    val (testBlockTxEnvelope, _) = setupMissingCapabilitiesTest(ledgerId, core, Everyone, me)
+    val (transactionservice, consensusMap, _, blockDM) = setupTest(ledgerId, me)
+    val (testBlockTxEnvelope, _) = setupMissingCapabilitiesTest(ledgerId, transactionservice, Everyone, me)
     val newEnvelope = testBlockTxEnvelope.copy(containerId = ledgerId + 1)
     for {
-      rcv <- core.receiveBlock(newEnvelope)
+      rcv <- transactionservice.receiveBlock(newEnvelope)
     } yield {
       verify(blockDM, times(1)).disseminateMessage(newEnvelope)
       verify(consensusMap(ledgerId)._2, times(0)).process(newEnvelope.content)
@@ -151,11 +151,11 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
     implicit val bs2 = mockBlockSerializable
     val ledgerId = "1"
     val me = NodeId("abcd")
-    val (core, consensusMap, txDM, _) = setupTest(ledgerId, me)
-    val (_, testTxEnvelope) = setupMissingCapabilitiesTest(ledgerId, core, Everyone, me)
+    val (transactionservice, consensusMap, txDM, _) = setupTest(ledgerId, me)
+    val (_, testTxEnvelope) = setupMissingCapabilitiesTest(ledgerId, transactionservice, Everyone, me)
     val newEnvelope = testTxEnvelope.copy(containerId = ledgerId + 1)
     for {
-      rcv <- core.receiveTransaction(newEnvelope)
+      rcv <- transactionservice.receiveTransaction(newEnvelope)
     } yield {
       verify(txDM, times(1)).disseminateMessage(newEnvelope)
       verify(consensusMap(ledgerId)._1, times(0)).processTransaction(newEnvelope.content)
@@ -165,7 +165,7 @@ class NodeCoreSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
 
   private def setupMissingCapabilitiesTest(
       ledgerId: LedgerId,
-      core: NodeCore[String, DummyTransaction],
+      transactionservice: NodeTransactionService[String, DummyTransaction],
       destinationDescriptor: DestinationDescriptor,
       me: NodeId)(
       implicit txSerializable: NioEncDec[Envelope[Tx]],

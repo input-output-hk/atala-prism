@@ -9,7 +9,7 @@ import io.iohk.cef.data.{CanValidate, DataItem, DataItemAction, DataItemService}
 import io.iohk.cef.frontend.controllers.common.{CustomJsonController, _}
 import play.api.libs.json.{JsObject, Reads}
 import io.iohk.cef.codecs.nio._
-import io.iohk.cef.core.Envelope
+import io.iohk.cef.transactionservice.Envelope
 
 import scala.concurrent.{ExecutionContext, Future}
 

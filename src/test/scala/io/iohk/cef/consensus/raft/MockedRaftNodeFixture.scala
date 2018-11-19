@@ -3,8 +3,8 @@ import io.iohk.cef.consensus.raft.node.{RaftNode, _}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatest.Matchers.{fail, _}
-import org.scalatest.concurrent.{Eventually, ScalaFutures}
-import org.scalatest.concurrent.Eventually.eventually
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 import org.scalatest.mockito.MockitoSugar.mock
 import org.scalatest.time.{Millis, Seconds, Span}
 
@@ -18,8 +18,6 @@ trait MockedRaftNodeFixture[Command] {
   val span = Span(50, Millis)
   implicit val futuresPatienceConfig: ScalaFutures.PatienceConfig =
     ScalaFutures.PatienceConfig(timeout = timeout, interval = span)
-  implicit val eventuallyPatienceConfig: Eventually.PatienceConfig =
-    Eventually.PatienceConfig(timeout = timeout, interval = span)
 
   val stateMachine: Command => Unit = mock[Command => Unit]
   val peer: RaftNode[Command] = mock[RaftNode[Command]]
@@ -71,9 +69,9 @@ trait MockedRaftNodeFixture[Command] {
     when(rpc3.requestVote(any[VoteRequested]))
       .thenReturn(Future(RequestVoteResult(term = term + 1, voteGranted = false)))
 
-    raftNode.electionTimer.timeout()
+    raftNode.electionTimeout().futureValue
 
-    eventually(raftNode.getRole shouldBe Candidate)
+    raftNode.getRole shouldBe Candidate
 
     raftNode
   }
@@ -93,9 +91,9 @@ trait MockedRaftNodeFixture[Command] {
     when(rpc3.appendEntries(any[EntriesToAppend[Command]]))
       .thenReturn(Future(AppendEntriesResult(term + 1, success = true)))
 
-    raftNode.electionTimer.timeout()
+    raftNode.electionTimeout().futureValue
 
-    eventually(raftNode.getRole shouldBe Leader)
+    raftNode.getRole shouldBe Leader
 
     raftNode
   }

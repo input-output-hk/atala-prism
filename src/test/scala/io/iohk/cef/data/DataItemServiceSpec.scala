@@ -1,7 +1,7 @@
 package io.iohk.cef.data
 
 import io.iohk.cef.codecs.nio._
-import io.iohk.cef.core.{Envelope, Everyone}
+import io.iohk.cef.transactionservice.{Envelope, Everyone}
 import io.iohk.cef.crypto.Signature
 import io.iohk.cef.data.DataItemAction.{Delete, Insert}
 import io.iohk.cef.error.ApplicationError

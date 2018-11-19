@@ -37,8 +37,8 @@ object IdentityTxMain extends App {
   implicit val actorSystem = ActorSystem("id-tx-system")
   implicit val materializer = ActorMaterializer()
 
-  val nodeCore = CefServices.cefCoreChannel[S, T](cefConfig)
-  val identityTransactionService = new IdentityTransactionService(nodeCore)
+  val nodeTransactionService = CefServices.cefTransactionServiceChannel[S, T](cefConfig)
+  val identityTransactionService = new IdentityTransactionService(nodeTransactionService)
 
   val serviceApi = new IdentitiesController(identityTransactionService)
   val bindAddress = cefConfig.peerConfig.networkConfig.tcpTransportConfig.get.bindAddress

@@ -5,7 +5,6 @@ import org.mockito.Mockito.{times, verify}
 import org.scalatest.Matchers._
 import org.scalatest.WordSpec
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
-import org.scalatest.concurrent.Eventually.eventually
 import org.scalatest.mockito.MockitoSugar
 import io.iohk.cef.codecs.nio.auto._
 
@@ -19,8 +18,8 @@ class RaftConsensusItSpec extends WordSpec with MockitoSugar {
         val storages = clusterIds.map(_ => new InMemoryPersistentStorage[String](Vector(), 1, ""))
 
         val Seq(t1, t2, t3) = anIntegratedCluster(storages.zip(clusterIds))
-        t1.raftNode.electionTimer.timeout()
-        eventually(t1.raftNode.getRole shouldBe Leader)
+        t1.raftNode.electionTimeout().futureValue
+        t1.raftNode.getRole shouldBe Leader
       }
       "replicate logs" in new RealRaftNodeFixture[String] {
         override def machineCallback: String => Unit = mock[String => Unit]
@@ -32,9 +31,9 @@ class RaftConsensusItSpec extends WordSpec with MockitoSugar {
 
         val consensus = new RaftConsensus(t1.raftNode)
 
-        t1.raftNode.electionTimer.timeout()
+        t1.raftNode.electionTimeout().futureValue
 
-        eventually(t1.raftNode.getRole shouldBe Leader)
+        t1.raftNode.getRole shouldBe Leader
 
         val appendResult = consensus.appendEntries(Seq("A", "B", "C", "D", "E")).futureValue
 
@@ -62,28 +61,24 @@ class RaftConsensusItSpec extends WordSpec with MockitoSugar {
           verify(t3.machine, times(0)).apply(command)
         })
 
-        t1.raftNode.heartbeatTimer.timeout()
+        t1.raftNode.heartbeatTimeout().futureValue
 
-        eventually {
-          Seq("A", "B", "C", "D", "E").foreach(command => {
-            verify(t2.machine).apply(command)
-            verify(t3.machine).apply(command)
-          })
-        }
+        Seq("A", "B", "C", "D", "E").foreach(command => {
+          verify(t2.machine).apply(command)
+          verify(t3.machine).apply(command)
+        })
 
         t2.raftNode.getCommonVolatileState shouldBe CommonVolatileState(4, 4)
         t3.raftNode.getCommonVolatileState shouldBe CommonVolatileState(4, 4)
 
         consensus.appendEntries(Seq("F", "G", "H")).futureValue
-        t1.raftNode.heartbeatTimer.timeout()
+        t1.raftNode.heartbeatTimeout().futureValue
 
-        eventually {
-          Seq("F", "G", "H").foreach(command => {
-            verify(t1.machine).apply(command)
-            verify(t2.machine).apply(command)
-            verify(t3.machine).apply(command)
-          })
-        }
+        Seq("F", "G", "H").foreach(command => {
+          verify(t1.machine).apply(command)
+          verify(t2.machine).apply(command)
+          verify(t3.machine).apply(command)
+        })
 
         val expectedEntries2 = Vector(
           LogEntry("A", 2, 0),
