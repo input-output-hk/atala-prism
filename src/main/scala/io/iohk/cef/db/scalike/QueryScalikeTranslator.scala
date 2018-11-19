@@ -1,13 +1,15 @@
 package io.iohk.cef.db.scalike
+import io.iohk.cef.data.DataItem
 import io.iohk.cef.data.query.Query.{BasicQuery, NoPredicateQuery}
 import io.iohk.cef.data.query._
+import io.iohk.cef.data.storage.scalike.DataItemTable
 import io.iohk.cef.db.scalike.ParameterBinderFactoryImplicits._
 import scalikejdbc._
 
 object QueryScalikeTranslator {
 
   def queryPredicateTranslator[Table](
-      fieldGetter: FieldGetter[SQLSyntax],
+      fieldGetter: Translator[Field, SQLSyntax],
       syntaxProvider: QuerySQLSyntaxProvider[SQLSyntaxSupport[Table], Table]): Translator[Query, SQLSyntax] = { q =>
     {
       val predTranslator = predicateTranslator(fieldGetter, syntaxProvider)
@@ -20,7 +22,7 @@ object QueryScalikeTranslator {
   }
 
   def predicateTranslator[Table](
-      fieldGetter: FieldGetter[SQLSyntax],
+      fieldGetter: Translator[Field, SQLSyntax],
       syntaxProvider: scalikejdbc.QuerySQLSyntaxProvider[scalikejdbc.SQLSyntaxSupport[Table], Table])
     : Translator[Predicate, SQLSyntax] =
     pc => {
@@ -35,7 +37,7 @@ object QueryScalikeTranslator {
     }
 
   def orPredicateComposerTranslator[Table](
-      fieldGetter: FieldGetter[SQLSyntax],
+      fieldGetter: Translator[Field, SQLSyntax],
       syntaxProvider: scalikejdbc.QuerySQLSyntaxProvider[scalikejdbc.SQLSyntaxSupport[Table], Table])
     : Translator[Predicate.Or, SQLSyntax] =
     pc => {
@@ -44,7 +46,7 @@ object QueryScalikeTranslator {
     }
 
   def andPredicateComposerTranslator[Table](
-      fieldGetter: FieldGetter[SQLSyntax],
+      fieldGetter: Translator[Field, SQLSyntax],
       syntaxProvider: scalikejdbc.QuerySQLSyntaxProvider[scalikejdbc.SQLSyntaxSupport[Table], Table])
     : Translator[Predicate.And, SQLSyntax] =
     pc => {
@@ -53,8 +55,17 @@ object QueryScalikeTranslator {
     }
 
   def eqPredicateTranslator[Table](
-      fieldGetter: FieldGetter[SQLSyntax],
+      fieldGetter: Translator[Field, SQLSyntax],
       syntaxProvider: scalikejdbc.QuerySQLSyntaxProvider[scalikejdbc.SQLSyntaxSupport[Table], Table])
     : Translator[Predicate.Eq, SQLSyntax] =
-    p => Some(sqls.eq(fieldGetter.getField(p.field), p.value))
+    p => fieldGetter.translate(p.field).map(f => sqls.eq(f, p.value))
+
+  def dataItemFieldTranslator[T](
+      di: QuerySQLSyntaxProvider[SQLSyntaxSupport[DataItemTable], DataItemTable]): Translator[Field, SQLSyntax] =
+    f => {
+      f.index match {
+        case DataItem.FieldIds.DataItemId => Some(di.dataItemId)
+        case DataItem.FieldIds.DataTableId => Some(di.dataTableId)
+      }
+    }
 }
