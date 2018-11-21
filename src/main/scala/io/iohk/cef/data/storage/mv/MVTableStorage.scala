@@ -12,6 +12,7 @@ import org.h2.mvstore.{MVMap, MVStore}
 import java.util.concurrent.ConcurrentHashMap
 
 import io.iohk.cef.data.error.DataItemNotFound
+import io.iohk.cef.data.query.Query.queryCata
 
 import scala.collection.JavaConverters._
 import scala.reflect.runtime.universe._
@@ -40,7 +41,7 @@ class MVTableStorage(storageFile: Path) extends TableStorage {
 
     val table = tables(tableId)
 
-    Right(Query.queryCata[Seq[DataItem[I]]](decode(table.values().asScala), _ => Seq(), query))
+    Right(queryCata(decode(table.values().asScala), _ => Seq(), query))
   }
 
   override def selectSingle[I: NioEncDec: TypeTag](
