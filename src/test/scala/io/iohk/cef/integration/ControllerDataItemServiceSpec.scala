@@ -17,6 +17,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mockito.MockitoSugar.mock
 import org.scalatest.{MustMatchers, WordSpec}
 import play.api.libs.json.{Format, Json}
+import scala.reflect.runtime.universe.TypeTag
 
 class ControllerDataItemServiceSpec
     extends WordSpec
@@ -35,7 +36,11 @@ class ControllerDataItemServiceSpec
   implicit val canValidate = new CanValidate[DataItem[BirthCertificate]] {
     override def validate(t: DataItem[BirthCertificate]): Either[ApplicationError, Unit] = Right(Unit)
   }
-  when(table.insert(any(), any())(any[NioEncDec[BirthCertificate]], any[CanValidate[DataItem[BirthCertificate]]]()))
+  when(
+    table.insert(any(), any())(
+      any[NioEncDec[BirthCertificate]],
+      any[TypeTag[BirthCertificate]],
+      any[CanValidate[DataItem[BirthCertificate]]]()))
     .thenReturn(Right(()))
   val messageStream = mock[MessageStream[Envelope[DataItemAction[BirthCertificate]]]]
   when(network.messageStream).thenReturn(messageStream)
@@ -75,7 +80,7 @@ class ControllerDataItemServiceSpec
       request ~> routes ~> check {
         status must ===(StatusCodes.Created)
       }
-      verify(table, times(1)).insert(any(), any())(any(), any())
+      verify(table, times(1)).insert(any(), any())(any(), any(), any())
       verify(network, times(1)).disseminateMessage(any())
 
     }

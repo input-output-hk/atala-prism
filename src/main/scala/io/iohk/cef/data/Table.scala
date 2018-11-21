@@ -5,6 +5,7 @@ import io.iohk.cef.data.error.{InvalidSignaturesError, OwnerMustSignDelete}
 import io.iohk.cef.data.query.Query
 import io.iohk.cef.data.storage.TableStorage
 import io.iohk.cef.error.ApplicationError
+import scala.reflect.runtime.universe.TypeTag
 
 // TODO will probably want to type Table[T] since tableStorage should be typed.
 class Table(tableStorage: TableStorage) {
@@ -16,13 +17,13 @@ class Table(tableStorage: TableStorage) {
     canValidate.validate(dataItem).isRight && signatureValidation.forall(_._2)
   }
 
-  def select[I](tableId: TableId, query: Query)(
-      implicit itemSerializable: NioEncDec[I]): Either[ApplicationError, Seq[DataItem[I]]] = {
+  def select[I: NioEncDec: TypeTag](tableId: TableId, query: Query): Either[ApplicationError, Seq[DataItem[I]]] = {
     tableStorage.select(tableId, query)
   }
 
   def insert[I](tableId: TableId, dataItem: DataItem[I])(
-      implicit itemSerializable: NioEncDec[I],
+      implicit codec: NioEncDec[I],
+      typeTag: TypeTag[I],
       canValidate: CanValidate[DataItem[I]]): Either[ApplicationError, Unit] = {
     canValidate.validate(dataItem).flatMap { _ =>
       val validationErrors = validateSignatures(dataItem).filter(!_._2).map(_._1)
@@ -37,6 +38,7 @@ class Table(tableStorage: TableStorage) {
 
   def delete[I](tableId: TableId, dataItemId: DataItemId, deleteSignature: Signature)(
       implicit dataSerializable: NioEncDec[I],
+      typeTag: TypeTag[I],
       dataItemSerializable: NioEncDec[DataItem[I]],
       actionSerializable: NioEncDec[DeleteSignatureWrapper[I]],
       canValidate: CanValidate[DataItem[I]]): Either[ApplicationError, Unit] = {

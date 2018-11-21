@@ -4,11 +4,11 @@ import io.iohk.cef.data.{DataItem, Table, TableId}
 import io.iohk.cef.error.ApplicationError
 
 import scala.concurrent.duration.FiniteDuration
+import scala.reflect.runtime.universe.TypeTag
 
 class QueryEngine(table: Table, timeout: FiniteDuration) {
 
-  def process[I](tableId: TableId, query: Query)(
-      implicit itemSerializable: NioEncDec[I]): Either[ApplicationError, Seq[DataItem[I]]] = {
+  def process[I: NioEncDec: TypeTag](tableId: TableId, query: Query): Either[ApplicationError, Seq[DataItem[I]]] = {
     for {
       network <- processNetwork[I]
       local <- processLocally(tableId, query)
@@ -18,8 +18,9 @@ class QueryEngine(table: Table, timeout: FiniteDuration) {
   private def processNetwork[I]: Either[ApplicationError, Seq[DataItem[I]]] =
     ??? //Send query, wait for answers or timeout whichever is first
 
-  private def processLocally[I](tableId: TableId, query: Query)(
-      implicit itemSerializable: NioEncDec[I]): Either[ApplicationError, Seq[DataItem[I]]] = {
+  private def processLocally[I: NioEncDec: TypeTag](
+      tableId: TableId,
+      query: Query): Either[ApplicationError, Seq[DataItem[I]]] = {
     table.select(tableId, query)
   }
 }

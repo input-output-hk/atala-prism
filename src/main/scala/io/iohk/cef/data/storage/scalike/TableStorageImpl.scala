@@ -6,10 +6,11 @@ import io.iohk.cef.data.storage.scalike.dao.TableStorageDao
 import io.iohk.cef.data.{DataItem, DataItemId, TableId}
 import io.iohk.cef.error.ApplicationError
 import scalikejdbc._
+import scala.reflect.runtime.universe._
 
 class TableStorageImpl(tableStorageDao: TableStorageDao) extends TableStorage {
 
-  override def insert[I](tableId: TableId, dataItem: DataItem[I])(implicit itemSerializable: NioEncDec[I]): Unit = {
+  override def insert[I: NioEncDec: TypeTag](tableId: TableId, dataItem: DataItem[I]): Unit = {
     execInSession { implicit session =>
       tableStorageDao.insert(tableId, dataItem)
     }
@@ -21,15 +22,17 @@ class TableStorageImpl(tableStorageDao: TableStorageDao) extends TableStorage {
     }
   }
 
-  override def select[I](tableId: TableId, query: Query)(
-      implicit nioEncDec: NioEncDec[I]): Either[ApplicationError, Seq[DataItem[I]]] = {
+  override def select[I: NioEncDec: TypeTag](
+      tableId: TableId,
+      query: Query): Either[ApplicationError, Seq[DataItem[I]]] = {
     execInSession { implicit session =>
       tableStorageDao.selectWithQuery(tableId, query)
     }
   }
 
-  override def selectSingle[I](tableId: TableId, dataItemId: DataItemId)(
-      implicit itemSerializable: NioEncDec[I]): Either[ApplicationError, DataItem[I]] = {
+  override def selectSingle[I: NioEncDec: TypeTag](
+      tableId: TableId,
+      dataItemId: DataItemId): Either[ApplicationError, DataItem[I]] = {
     execInSession { implicit session =>
       tableStorageDao.selectSingle[I](tableId, dataItemId)
     }

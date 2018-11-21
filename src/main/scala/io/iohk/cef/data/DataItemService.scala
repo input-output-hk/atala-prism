@@ -1,17 +1,17 @@
 package io.iohk.cef.data
 
 import io.iohk.cef.codecs.nio._
+import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.transactionservice.Envelope
 import io.iohk.cef.data.DataItemAction.{Delete, Insert}
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.network.{MessageStream, Network}
+import scala.reflect.runtime.universe.TypeTag
 
 class DataItemService[T](table: Table, network: Network[Envelope[DataItemAction[T]]])(
     implicit enc: NioEncDec[T],
-    actionEncDec: NioEncDec[DeleteSignatureWrapper[T]],
-    itemEncDec: NioEncDec[DataItem[T]],
-    canValidate: CanValidate[DataItem[T]],
-    frameCodec: NioEncDec[Envelope[DataItemAction[T]]]) {
+    typeTag: TypeTag[T],
+    canValidate: CanValidate[DataItem[T]]) {
 
   private val inboundMessages: MessageStream[Envelope[DataItemAction[T]]] = network.messageStream
 

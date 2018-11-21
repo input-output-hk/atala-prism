@@ -10,6 +10,8 @@ import org.scalatest.{FeatureSpec, GivenWhenThen, MustMatchers}
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.data.DataItemAction.Insert
 import org.mockito.ArgumentMatchers._
+import scala.reflect.runtime.universe.TypeTag
+
 class NetworkDataItemServiceItFeatureSpec
     extends FeatureSpec
     with GivenWhenThen
@@ -47,7 +49,9 @@ class NetworkDataItemServiceItFeatureSpec
         val dataItemService = createDataItemService(table, baseNetworkNode1)
         createDataItemService(table2, baseNetworkNode2)
 
-        when(table.insert(any(), any())(any[NioEncDec[String]], any[CanValidate[DataItem[String]]]()))
+        when(
+          table
+            .insert(any(), any())(any[NioEncDec[String]], any[TypeTag[String]], any[CanValidate[DataItem[String]]]()))
           .thenReturn(Right(()))
 
         Then("the DataItemService should insert the table on the network 1")
@@ -59,7 +63,7 @@ class NetworkDataItemServiceItFeatureSpec
         And("the  DataItemService insert the table on the network 2")
 
         verify(table2, timeout(5000).times(1))
-          .insert(any(), any())(any[NioEncDec[String]], any[CanValidate[DataItem[String]]]())
+          .insert(any(), any())(any[NioEncDec[String]], any[TypeTag[String]], any[CanValidate[DataItem[String]]]())
       }
     }
 

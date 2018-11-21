@@ -4,15 +4,17 @@ import io.iohk.cef.data.query.Query
 import io.iohk.cef.data.{DataItem, DataItemId, TableId}
 import io.iohk.cef.error.ApplicationError
 
+import scala.reflect.runtime.universe.TypeTag
+
 trait TableStorage {
 
-  def insert[I](tableId: TableId, dataItem: DataItem[I])(implicit itemSerializable: NioEncDec[I]): Unit
+  def insert[I: NioEncDec: TypeTag](tableId: TableId, dataItem: DataItem[I]): Unit
 
   def delete[I](tableId: TableId, dataItem: DataItem[I]): Unit
 
-  def select[I](tableId: TableId, query: Query)(
-      implicit nioEncDec: NioEncDec[I]): Either[ApplicationError, Seq[DataItem[I]]]
+  def select[I: NioEncDec: TypeTag](tableId: TableId, query: Query): Either[ApplicationError, Seq[DataItem[I]]]
 
-  def selectSingle[I](tableId: TableId, dataItemId: DataItemId)(
-      implicit itemSerializable: NioEncDec[I]): Either[ApplicationError, DataItem[I]]
+  def selectSingle[I: NioEncDec: TypeTag](
+      tableId: TableId,
+      dataItemId: DataItemId): Either[ApplicationError, DataItem[I]]
 }
