@@ -1,0 +1,23 @@
+#!/bin/bash
+
+ROOT=`pwd`
+
+
+BAZEL_DEPS="./bazel-deps/"
+
+if [ -e $BAZEL_DEPS ]; then
+    if [ ! -d $BAZEL_DEPS ]; then
+        echo "'deps' expects to find 'bazel-deps' in the './bazel-deps' folder"
+        echo "or to clone it there. But right now something that is not a directory"
+        echo "exists there"
+        exit 1
+    fi
+    cd bazel-deps
+else
+    git clone https://github.com/johnynek/bazel-deps.git
+    cd bazel-deps
+    git checkout 1af8921d52f053fad575f26762533a3823b4a847
+fi
+
+bazel run //:parse -- generate -r $ROOT -s 3rdparty/workspace.bzl -d dependencies.yaml
+

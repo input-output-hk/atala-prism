@@ -5,3 +5,4 @@ target/
 
 cef/network/db/
 local.sbt
+bazel-*

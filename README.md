@@ -35,6 +35,34 @@ in the root of the project.
 
 Two main branches will be maintained: `develop` and `master`. `master` contains the latest version of the code that was tested end-to-end. `develop` contains the latest version of the code that runs all the tests (unit and integration tests). Integration tests don't test all the integrations. Hence, any version in `develop` might have bugs when deployed for an end-to-end test.
 
+#### Using Bazel (Experimental)
+
+You can try to use bazel to build and test cardano-enterprise. The main codebase live in the target 'cef' and the tests in the 'cef_test' target.
+
+To build the main codebase, you can run:
+
+```bash
+bazel build cef
+```
+
+To build the tests, you can run (this will also build the main codebase if needed):
+
+```bash
+bazel build cef_test
+```
+
+To run the tests, you can run (this will also build the main codebase and the tests if needed):
+
+```bash
+bazel test cef_test
+```
+
+Bazel, by default writes the output of running the tests into a file but not to the screen. If you want to also see the results in the screen directly, you can run:
+
+```bash
+bazel test cef_test --test_output=all
+```
+
 #### Sample application
 
 A sample application is provided that configures and starts up an Identity Ledger. It is located in `io.iohk.cef.main.IndentityTxMain`. To run this application, simply execute `sbt "runMain io.iohk.cef.main.IndentityTxMain"`.
