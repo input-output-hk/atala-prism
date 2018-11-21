@@ -2,8 +2,10 @@ package io.iohk.cef.integration
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.transactionservice.{Envelope, Everyone}
 import io.iohk.cef.crypto._
+import io.iohk.cef.data.DataItemAction.InsertAction
 import io.iohk.cef.data._
 import io.iohk.cef.data.query.Query.NoPredicateQuery
+import io.iohk.cef.data.query.QueryEngine
 import io.iohk.cef.data.storage.scalike.dao.TableStorageDao
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.network.{MessageStream, Network}
@@ -38,7 +40,7 @@ trait DataItemServiceTableDbItSpec
   val secondDataItem = DataItem("id2", "data2", Seq(), Seq(Owner(ownerKeyPair2.public)))
   val dataItems = Seq(firstDataItem, secondDataItem)
 
-  val envelopes = dataItems.map(di => Envelope(DataItemAction.Insert(di), testTableId, Everyone))
+  val envelopes = dataItems.map(di => Envelope(DataItemAction.insert(di), testTableId, Everyone))
 
   implicit val canValidate = new CanValidate[DataItem[String]] {
     override def validate(t: DataItem[String]): Either[ApplicationError, Unit] = Right(())
@@ -54,23 +56,29 @@ trait DataItemServiceTableDbItSpec
       val itemsBefore = getItems(dao, tableId)
       itemsBefore mustBe Right(Seq())
 
-      val service = new DataItemService(table, mockedNetwork)
+      val service = new DataItemService(table, mockedNetwork, mock[QueryEngine[String]])
 
       val results = envelopes.map(service.processAction)
       envelopes.foreach(e => verify(mockedNetwork, times(1)).disseminateMessage(e))
       results.foreach(result => result mustBe Right(()))
 
       val itemsAfter = getItems(dao, tableId)
-      itemsAfter.map(_.toSet) mustBe Right(envelopes.map(_.content.dataItem).toSet)
+      itemsAfter.map(_.toSet) mustBe Right(envelopes.map {
+        case Envelope(InsertAction(di), _, _) => di
+        case other => fail(s"Unexpected action received. Expected Insert but got ${other}")
+      }.toSet)
 
       val deleteSignature = DeleteSignatureWrapper(firstDataItem)
       val deleteAction: DataItemAction[String] =
-        DataItemAction.Delete(firstDataItem.id, sign(deleteSignature, ownerKeyPair.`private`))
+        DataItemAction.DeleteAction(firstDataItem.id, sign(deleteSignature, ownerKeyPair.`private`))
       val deleteResult = service.processAction(Envelope(deleteAction, tableId, Everyone))
       deleteResult mustBe Right(())
 
       val itemsAfterDelete = getItems(dao, tableId)
-      itemsAfterDelete.map(_.toSet) mustBe Right(envelopes.tail.map(_.content.dataItem).toSet)
+      itemsAfterDelete.map(_.toSet) mustBe Right(envelopes.tail.map {
+        case Envelope(InsertAction(di), _, _) => di
+        case other => fail(s"Unexpected action received. Expected Insert but got ${other}")
+      }.toSet)
     }
   }
 }
