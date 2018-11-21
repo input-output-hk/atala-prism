@@ -28,7 +28,7 @@ class Table(tableStorage: TableStorage) {
     canValidate.validate(dataItem).flatMap { _ =>
       val validationErrors = validateSignatures(dataItem).filter(!_._2).map(_._1)
       if (validationErrors.nonEmpty) {
-        val error = new InvalidSignaturesError(dataItem, validationErrors)
+        val error = InvalidSignaturesError(dataItem, validationErrors)
         Left(error)
       } else {
         Right(tableStorage.insert(tableId, dataItem))
@@ -52,7 +52,7 @@ class Table(tableStorage: TableStorage) {
       val validSignature = signatureValidation.find(identity)
 
       if (dataItem.owners.nonEmpty && validSignature.isEmpty) {
-        val error = new OwnerMustSignDelete(dataItem)
+        val error = OwnerMustSignDelete(dataItem)
         Left(error)
       } else {
         Right(tableStorage.delete(tableId, dataItem))

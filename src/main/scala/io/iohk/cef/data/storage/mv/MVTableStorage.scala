@@ -26,11 +26,22 @@ class MVTableStorage(storageFile: Path) extends TableStorage {
     table(tableId).put(dataItem.id, NioEncDec[DataItem[I]].encode(dataItem))
   }
 
-  override def delete[I](tableId: TableId, dataItem: DataItem[I]): Unit = ???
+  override def delete[I](tableId: TableId, dataItem: DataItem[I]): Unit =
+    table(tableId).remove(dataItem.id)
+
+  def decode[I: NioEncDec: TypeTag](buffers: Iterable[ByteBuffer]): Seq[DataItem[I]] = {
+    val codec = NioEncDec[DataItem[I]]
+    buffers.flatMap(buffer => codec.decode(buffer)).toSeq
+  }
 
   override def select[I: NioEncDec: TypeTag](
       tableId: TableId,
-      query: Query): Either[ApplicationError, Seq[DataItem[I]]] = ???
+      query: Query): Either[ApplicationError, Seq[DataItem[I]]] = {
+
+    val table = tables(tableId)
+
+    Right(Query.queryCata[Seq[DataItem[I]]](decode(table.values().asScala), _ => Seq(), query))
+  }
 
   override def selectSingle[I: NioEncDec: TypeTag](
       tableId: TableId,
@@ -38,9 +49,10 @@ class MVTableStorage(storageFile: Path) extends TableStorage {
     Option(table(tableId).get(dataItemId))
       .flatMap(NioEncDec[DataItem[I]].decode(_))
       .map(Right(_))
-      .getOrElse(Left(new DataItemNotFound(tableId, dataItemId)))
+      .getOrElse(Left(DataItemNotFound(tableId, dataItemId)))
   }
 
-  private def table(tableId: TableId): MVMap[String, ByteBuffer] =
+  private def table(tableId: TableId): MVMap[String, ByteBuffer] = {
     tables.getOrElseUpdate(tableId, storage.openMap(tableId))
+  }
 }

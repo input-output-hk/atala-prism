@@ -178,5 +178,5 @@ class TableStorageDao {
       implicit session: DBSession,
       serializable: NioEncDec[I]): Either[ApplicationError, DataItem[I]] =
     selectWithQuery(tableId, Field(DataItem.FieldIds.DataItemId) #== dataItemId)
-      .flatMap(_.headOption.toRight(new DataItemNotFound(tableId, dataItemId)))
+      .flatMap(_.headOption.toRight(DataItemNotFound(tableId, dataItemId)))
 }
