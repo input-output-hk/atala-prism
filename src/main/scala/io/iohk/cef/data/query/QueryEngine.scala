@@ -4,11 +4,11 @@ import java.util.UUID
 import io.iohk.cef.codecs.nio._
 import io.iohk.cef.data.{DataItem, Table, TableId}
 import io.iohk.cef.error.ApplicationError
-import io.iohk.cef.network.{Network, NodeId}
+import io.iohk.cef.network.{MessageStream, Network, NodeId}
 import io.iohk.cef.transactionservice.{Envelope, Everyone}
 import io.iohk.cef.utils.Logger
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.FiniteDuration
 
 class QueryEngine[I](
@@ -21,9 +21,11 @@ class QueryEngine[I](
     executionContext: ExecutionContext)
     extends Logger {
 
-  def process(tableId: TableId, query: Query): Future[Either[ApplicationError, Seq[DataItem[I]]]] = {
-    val networkFuture = networkProcessing(tableId, query)
-    networkFuture.map(networkEither => {
+  requestNetwork.messageStream.foreach(processFromNetwork)
+
+  def process(tableId: TableId, query: Query): MessageStream[Either[ApplicationError, Seq[DataItem[I]]]] = {
+    val responseStream = networkProcessing(tableId, query)
+    responseStream.map(networkEither => {
       for {
         local <- localProcessing(tableId, query)
         network <- networkEither
@@ -31,19 +33,12 @@ class QueryEngine[I](
     })
   }
 
-  private def networkProcessing(tableId: TableId, query: Query): Future[Either[ApplicationError, Seq[DataItem[I]]]] = {
+  private def networkProcessing(tableId: TableId, query: Query): MessageStream[Either[ApplicationError, Seq[DataItem[I]]]] = {
     val queryId = UUID.randomUUID().toString
     requestNetwork.disseminateMessage(Envelope(QueryRequest(queryId, query, nodeId), tableId, Everyone))
-    val responses = responseNetwork.messageStream
+    responseNetwork.messageStream
       .filter(_.queryId == queryId)
       .map(_.result)
-      .fold[Either[ApplicationError, Seq[DataItem[I]]]](Right(Seq()))((state, current) => {
-        for {
-          s <- state
-          c <- current
-        } yield c ++ s
-      })
-    responses
   }
 
   private def localProcessing(tableId: TableId, query: Query): Either[ApplicationError, Seq[DataItem[I]]] = {
