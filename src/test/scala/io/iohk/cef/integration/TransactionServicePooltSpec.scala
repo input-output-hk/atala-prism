@@ -19,13 +19,13 @@ import io.iohk.cef.codecs.nio.auto._
 
 class TransactionServicePooltSpec extends FlatSpecLike with MustMatchers with BeforeAndAfterAll with MockitoSugar {
 
-  private def mockLedgerStateStorage[State] = mock[LedgerStateStorage[State]]
+  private def mockLedgerStateStorage = mock[LedgerStateStorage]
 
   behavior of "TransactionServicePoolItSpec"
 
   it should "process a transaction" in {
     implicit val executionContext = ExecutionContext.global
-    val ledgerStateStorage = mockLedgerStateStorage[String]
+    val ledgerStateStorage = mockLedgerStateStorage
     val generateHeader: Seq[Transaction[String]] => BlockHeader = _ => BlockHeader()
     val transactionPoolFutureInterface =
       TransactionPoolInterface[String, DummyTransaction](

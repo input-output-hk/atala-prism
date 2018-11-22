@@ -5,8 +5,7 @@ import scalikejdbc._
 
 trait LedgerFixture {
 
-  def createLedger[S](stateStorage: LedgerStateStorage[S], storage: LedgerStorage)(
-      implicit dBSession: DBSession): Ledger[S] = {
+  def createLedger(stateStorage: LedgerStateStorage, storage: LedgerStorage)(implicit dBSession: DBSession): Ledger = {
 
     Ledger("1", storage, stateStorage)
   }

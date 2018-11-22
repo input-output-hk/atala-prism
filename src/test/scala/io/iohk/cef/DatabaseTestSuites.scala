@@ -3,11 +3,9 @@ package io.iohk.cef
 import io.iohk.cef.data.storage.scalike.dao.TableStorageDaoDbTest
 import io.iohk.cef.db.scalike.HikariConnPoolFactory
 import io.iohk.cef.integration.DataItemServiceTableDbItSpec
-import io.iohk.cef.ledger.LedgerItDbTest
 import io.iohk.cef.ledger.chimeric.ChimericLedgerItDbTest
-import io.iohk.cef.ledger.chimeric.storage.scalike.dao.ChimericLedgerStateStorageDaoDbTest
 import io.iohk.cef.ledger.identity.IdentityLedgerItDbTest
-import io.iohk.cef.ledger.identity.storage.IdentityLedgerStateStorageDaoDbTest
+import io.iohk.cef.ledger.LedgerItDbTest
 import io.iohk.cef.ledger.storage.dao.{LedgerStateStorageDaoDbTest, LedgerStorageDaoDbTest}
 import io.iohk.cef.network.discovery.db.KnownNodeStorageImplDbTest
 import org.flywaydb.core.Flyway
@@ -18,11 +16,9 @@ import scalikejdbc.{ConnectionPool, JDBCSettings}
 class DatabaseTestSuites
     extends Suites(
       new KnownNodeStorageImplDbTest {},
-      new IdentityLedgerStateStorageDaoDbTest {},
       new IdentityLedgerItDbTest {},
       new LedgerStorageDaoDbTest {},
       new LedgerItDbTest {},
-      new ChimericLedgerStateStorageDaoDbTest {},
       new ChimericLedgerItDbTest {},
       new LedgerStateStorageDaoDbTest {},
       new TableStorageDaoDbTest {},

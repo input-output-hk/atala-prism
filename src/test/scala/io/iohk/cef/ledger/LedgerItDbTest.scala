@@ -25,7 +25,7 @@ trait LedgerItDbTest
 
   it should "apply a block using the generic constructs" in { implicit session =>
     pending
-    val genericStateDao = new LedgerStateStorageDao[Set[SigningPublicKey]]()
+    val genericStateDao = new LedgerStateStorageDao()
     val genericLedgerDao = new LedgerStorageDao(Clock.systemUTC())
     val genericStateImpl = new LedgerStateStorageImpl("1", genericStateDao) {
       override protected def execInSession[T](block: FixtureParam => T): T = block(session)
@@ -47,10 +47,10 @@ trait LedgerItDbTest
     )
     val testBlock = Block[Set[SigningPublicKey], IdentityTransaction](BlockHeader(Instant.EPOCH), testTxs)
     val emptyLs = LedgerState[Set[SigningPublicKey]](Map())
-    genericStateDao.slice("1", Set("carlos")) mustBe emptyLs
+    genericStateDao.slice[Set[SigningPublicKey]]("1", Set("carlos")) mustBe emptyLs
 
     ledger(testBlock) mustBe Right(())
-    genericStateDao.slice("1", Set("carlos")) mustBe
+    genericStateDao.slice[Set[SigningPublicKey]]("1", Set("carlos")) mustBe
       LedgerState[Set[SigningPublicKey]](Map("carlos" -> Set(alice.public, bob.public)))
   }
 }

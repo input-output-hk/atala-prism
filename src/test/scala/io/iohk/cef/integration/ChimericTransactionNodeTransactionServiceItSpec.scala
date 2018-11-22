@@ -52,6 +52,7 @@ class ChimericTransactionNodeTransactionServiceItSpec
 
     implicit val blockSerializable2 = mock[NioEncDec[BlockType]]
     val ledgerStateStorage = mock[LedgerStateStorageType]
+    implicit val transactionStateTypeEncDec = mock[NioEncDec[TransactionStateType]]
 
     val txPoolInterface =
       TransactionPoolInterface[TransactionStateType, TransactionType](
@@ -69,7 +70,8 @@ class ChimericTransactionNodeTransactionServiceItSpec
 
     val txNetwork = mock[Network[Envelope[TransactionType]]]
 
-    when(ledgerStateStorage.slice(ArgumentMatchers.any())).thenReturn(new ChimericLedgerState(Map.empty))
+    when(ledgerStateStorage.slice[TransactionStateType](ArgumentMatchers.any())(ArgumentMatchers.any()))
+      .thenReturn(new ChimericLedgerState(Map.empty))
     when(txNetwork.messageStream).thenReturn(mockTxMessageStream)
     when(blockNetwork.messageStream).thenReturn(mockBlockMessageStream)
     when(mockTxMessageStream.foreach(ArgumentMatchers.any())).thenReturn(Future.successful(()))
@@ -113,7 +115,7 @@ object ChimericTransactionNodeTransactionServiceItSpec {
   type TransactionType = Transaction[TransactionStateType]
   type BlockType = Block[TransactionStateType, TransactionType]
 
-  type LedgerStateStorageType = LedgerStateStorage[TransactionStateType]
+  type LedgerStateStorageType = LedgerStateStorage
 
   type ConsensusType = Consensus[TransactionStateType, TransactionType]
 }

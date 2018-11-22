@@ -4,8 +4,8 @@ import java.time.Clock
 
 import io.iohk.cef.crypto._
 import io.iohk.cef.ledger.chimeric.SignatureTxFragment.signFragments
-import io.iohk.cef.ledger.chimeric.storage.scalike.ChimericLedgerStateStorageImpl
-import io.iohk.cef.ledger.chimeric.storage.scalike.dao.ChimericLedgerStateStorageDao
+import io.iohk.cef.ledger.storage.scalike.LedgerStateStorageImpl
+import io.iohk.cef.ledger.storage.scalike.dao.LedgerStateStorageDao
 import io.iohk.cef.ledger.storage.Ledger
 import io.iohk.cef.ledger.storage.scalike.LedgerStorageImpl
 import io.iohk.cef.ledger.storage.scalike.dao.LedgerStorageDao
@@ -22,9 +22,8 @@ trait ChimericLedgerItDbTest
     with LedgerFixture
     with EitherValues {
 
-  def createLedger(ledgerStateStorageDao: ChimericLedgerStateStorageDao)(
-      implicit dBSession: DBSession): Ledger[ChimericStateResult] = {
-    val ledgerStateStorage = new ChimericLedgerStateStorageImpl(ledgerStateStorageDao) {
+  def createLedger(ledgerStateStorageDao: LedgerStateStorageDao)(implicit dBSession: DBSession): Ledger = {
+    val ledgerStateStorage = new LedgerStateStorageImpl("chimericLedger", ledgerStateStorageDao) {
       override def execInSession[T](block: DBSession => T): T = block(dBSession)
     }
     val ledgerStorageDao = new LedgerStorageDao(Clock.systemUTC())
@@ -41,7 +40,11 @@ trait ChimericLedgerItDbTest
   behavior of "ChimericLedger"
 
   it should "store transactions" in { implicit s =>
-    val stateStorage = new ChimericLedgerStateStorageDao
+    val stateStorage = new LedgerStateStorageDao
+
+    def slice(keys: Set[String]): LedgerState[ChimericStateResult] =
+      stateStorage.slice[ChimericStateResult]("chimericLedger", keys)
+
     val address1 = "address1"
     val address2 = "address2"
     val currency1 = "currency1"
@@ -90,7 +93,7 @@ trait ChimericLedgerItDbTest
     val currency2Key = ChimericLedgerState.getCurrencyPartitionId(currency2)
     val utxoKey = ChimericLedgerState.getUtxoPartitionId(TxOutRef(utxoTx.txId, 1))
     val allKeys = Set(address1Key, address2Key, currency1Key, currency2Key, utxoKey)
-    stateStorage.slice(allKeys) mustBe LedgerState[ChimericStateResult](
+    slice(allKeys) mustBe LedgerState[ChimericStateResult](
       Map(
         currency1Key -> CreateCurrencyResult(CreateCurrency(currency1)),
         currency2Key -> CreateCurrencyResult(CreateCurrency(currency2)),
@@ -113,7 +116,7 @@ trait ChimericLedgerItDbTest
 
     val result2 = ledger(block2)
     result2.isRight mustBe true
-    stateStorage.slice(allKeys) mustBe LedgerState[ChimericStateResult](
+    slice(allKeys) mustBe LedgerState[ChimericStateResult](
       Map(
         currency1Key -> CreateCurrencyResult(CreateCurrency(currency1)),
         currency2Key -> CreateCurrencyResult(CreateCurrency(currency2)),

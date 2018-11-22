@@ -169,7 +169,7 @@ trait NativeCodecs extends LowPriorityNativeCodecs {
         val arraySize = arrayLength * tSize
         verifyingRemaining(arraySize, b) {
           val r = new Array[T](arrayLength)
-          val oldPosition = b.position
+          val oldPosition: Int = b.position
           get(as(b))(r)
           b.position(oldPosition + arraySize)
           Some(r)

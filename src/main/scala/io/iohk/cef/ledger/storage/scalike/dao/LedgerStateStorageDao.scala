@@ -8,9 +8,9 @@ import scalikejdbc._
 import io.iohk.cef.codecs.nio._
 import io.iohk.cef.utils._
 
-class LedgerStateStorageDao[S] {
+class LedgerStateStorageDao {
 
-  def slice(ledgerStateId: LedgerId, keys: Set[String])(
+  def slice[S](ledgerStateId: LedgerId, keys: Set[String])(
       implicit byteStringSerializable: NioEncDec[S],
       DBSession: DBSession): LedgerState[S] = {
     val lst = LedgerStateTable.syntax("lst")
@@ -27,10 +27,10 @@ class LedgerStateStorageDao[S] {
     LedgerState(Map(flattenedPairs: _*))
   }
 
-  def update(ledgerStateId: LedgerId, previousState: LedgerState[S], newState: LedgerState[S])(
+  def update[S](ledgerStateId: LedgerId, previousState: LedgerState[S], newState: LedgerState[S])(
       implicit byteStringSerializable: NioEncDec[S],
       DBSession: DBSession): Unit = {
-    val currentState = slice(ledgerStateId, previousState.keys)
+    val currentState = slice[S](ledgerStateId, previousState.keys)
     if (previousState != currentState) {
       throw new IllegalArgumentException("Provided previous state must be equal to the current state")
     } else {
