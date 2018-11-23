@@ -14,7 +14,7 @@ class IdentityTransactionSpec
   behavior of "IdentityTransaction"
 
   it should "throw an error when the tx is inconsistent with the state" in {
-    val state = IdentityLedgerState(Map("one" -> Set(alice.public)))
+    val state = IdentityLedgerState(Map("one" -> IdentityData.forKeys(alice.public)))
     val claim = Claim(
       "one",
       alice.public,
@@ -48,13 +48,13 @@ class IdentityTransactionSpec
 
     val newState = newStateEither.right.value
     newState.keys mustBe Set("one")
-    newState.get("one") mustBe Some(Set(alice.public))
+    newState.get("one") mustBe Some(IdentityData.forKeys(alice.public))
     newState.contains("one") mustBe true
     newState.contains("two") mustBe false
   }
 
   it should "apply a link" in {
-    val state = IdentityLedgerState(Map("one" -> Set(alice.public)))
+    val state = IdentityLedgerState(Map("one" -> IdentityData.forKeys(alice.public)))
     val link = Link(
       "one",
       bob.public,
@@ -63,7 +63,7 @@ class IdentityTransactionSpec
 
     val newState = newStateEither.right.value
     newState.keys mustBe Set("one")
-    newState.get("one").value mustBe Set(alice.public, bob.public)
+    newState.get("one").value mustBe IdentityData.forKeys(alice.public, bob.public)
     newState.contains("one") mustBe true
     newState.contains("two") mustBe false
   }
@@ -80,7 +80,7 @@ class IdentityTransactionSpec
   }
 
   it should "fail to apply a link if the signature can not be verified" in {
-    val state = IdentityLedgerState(Map("one" -> Set(alice.public)))
+    val state = IdentityLedgerState(Map("one" -> IdentityData.forKeys(alice.public)))
     val link =
       Link("one", bob.public, IdentityTransaction.sign("one", IdentityTransactionType.Link, bob.public, bob.`private`))
 
@@ -89,7 +89,7 @@ class IdentityTransactionSpec
   }
 
   it should "fail to apply an unlink if the signature can not be verified" in {
-    val state = IdentityLedgerState(Map("one" -> Set(alice.public)))
+    val state = IdentityLedgerState(Map("one" -> IdentityData.forKeys(alice.public)))
     val transaction = Unlink(
       "one",
       alice.public,
@@ -100,7 +100,7 @@ class IdentityTransactionSpec
   }
 
   it should "apply an unlink" in {
-    val state = IdentityLedgerState(Map("one" -> Set(daniel.public, alice.public)))
+    val state = IdentityLedgerState(Map("one" -> IdentityData.forKeys(daniel.public, alice.public)))
     val unlink1 = Unlink(
       "one",
       daniel.public,
@@ -113,7 +113,7 @@ class IdentityTransactionSpec
     val stateAfter2 = unlink2(stateAfter1).right.value
 
     stateAfter1.keys mustBe Set("one")
-    stateAfter1.get("one").value mustBe Set(alice.public)
+    stateAfter1.get("one").value mustBe IdentityData.forKeys(alice.public)
     stateAfter1.contains("one") mustBe true
     stateAfter1.contains("two") mustBe false
 

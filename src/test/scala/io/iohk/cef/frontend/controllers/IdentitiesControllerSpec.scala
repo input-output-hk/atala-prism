@@ -27,7 +27,7 @@ class IdentitiesControllerSpec
 
   import Codecs._
 
-  val nodeTransactionService = mock[NodeTransactionService[Set[SigningPublicKey], IdentityTransaction]]
+  val nodeTransactionService = mock[NodeTransactionService[IdentityData, IdentityTransaction]]
 
   when(nodeTransactionService.receiveTransaction(any())).thenReturn(Future.successful(Right(())))
   implicit val executionContext = system.dispatcher

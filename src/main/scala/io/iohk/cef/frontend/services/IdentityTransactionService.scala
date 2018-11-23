@@ -5,14 +5,13 @@ import io.iohk.cef.crypto._
 import io.iohk.cef.frontend.client.Response
 import io.iohk.cef.frontend.models.IdentityTransactionType
 import io.iohk.cef.ledger.identity.{Claim, Link, Unlink}
-import io.iohk.cef.ledger.identity.IdentityTransaction
+import io.iohk.cef.ledger.identity.{IdentityTransaction, IdentityData}
 import io.iohk.cef.frontend.models._
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext
 
-class IdentityTransactionService(
-    nodeTransactionService: NodeTransactionService[Set[SigningPublicKey], IdentityTransaction])(
+class IdentityTransactionService(nodeTransactionService: NodeTransactionService[IdentityData, IdentityTransaction])(
     implicit ec: ExecutionContext) {
 
   type IdentityTransactionConstructor = (String, SigningPublicKey, Signature) => IdentityTransaction
