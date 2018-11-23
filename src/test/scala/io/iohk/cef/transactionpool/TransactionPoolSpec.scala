@@ -43,7 +43,7 @@ class TransactionPoolSpec
         tx -> clock.instant().plus(java.time.Duration.ofMillis(defaultDuration.toMillis))
       })
       val ledgerStateStorage = mockLedgerStateStorage
-      when(ledgerStateStorage.slice[String](ArgumentMatchers.any())(ArgumentMatchers.any()))
+      when(ledgerStateStorage.slice[String](any())(any(), any()))
         .thenReturn(LedgerState[String](Map()))
       val pool =
         new TransactionPool(timedQueue, (_: Seq[Transaction[String]]) => header, txs.size, ledgerStateStorage, 1 minute)
@@ -103,7 +103,7 @@ class TransactionPoolSpec
       case Right(newPool) =>
         newPool.removeBlockTransactions(block)
         txs.foreach(tx => verify(timedQueue, times(1)).enqueue(tx, defaultExpiration))
-        verify(timedQueue, times(1)).filterNot(ArgumentMatchers.any())
+        verify(timedQueue, times(1)).filterNot(any())
       case Left(error) => fail(s"Received message: $error, but expected Right(...)")
     }
   }

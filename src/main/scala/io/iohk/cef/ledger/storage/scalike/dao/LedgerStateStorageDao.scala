@@ -3,10 +3,12 @@ package io.iohk.cef.ledger.storage.scalike.dao
 import akka.util.ByteString
 import io.iohk.cef.LedgerId
 import io.iohk.cef.ledger._
-import io.iohk.cef.ledger.storage.scalike.LedgerStateTable
+import io.iohk.cef.ledger.storage.scalike.{LedgerStateTable, LedgerStateTableEntry}
 import scalikejdbc._
 import io.iohk.cef.codecs.nio._
 import io.iohk.cef.utils._
+
+import scala.collection.immutable
 
 class LedgerStateStorageDao {
 
@@ -14,14 +16,15 @@ class LedgerStateStorageDao {
       implicit byteStringSerializable: NioEncDec[S],
       DBSession: DBSession): LedgerState[S] = {
     val lst = LedgerStateTable.syntax("lst")
-    val entries = sql"""
+    val entries: immutable.Seq[LedgerStateTableEntry] = sql"""
        select ${lst.result.*}
        from ${LedgerStateTable as lst}
        where ${lst.ledgerStateId} = ${ledgerStateId} and
         ${lst.partitionId} in (${keys})
        """.map(rs => LedgerStateTable(lst.resultName)(rs)).list().apply()
-    val pairs = entries.map(entry => (entry.partitionId -> byteStringSerializable.decode(entry.data.toByteBuffer)))
-    val flattenedPairs = pairs.collect { case (identity, Some(key)) => (identity, key) }
+    val pairs: immutable.Seq[(String, Option[S])] =
+      entries.map(entry => (entry.partitionId -> byteStringSerializable.decode(entry.data.toByteBuffer)))
+    val flattenedPairs: immutable.Seq[(String, S)] = pairs.collect { case (identity, Some(key)) => (identity, key) }
     if (flattenedPairs.size != pairs.size)
       throw new IllegalArgumentException(s"Could not parse all entries: ${pairs.filter(_._2.isEmpty).map(_._1)}")
     LedgerState(Map(flattenedPairs: _*))

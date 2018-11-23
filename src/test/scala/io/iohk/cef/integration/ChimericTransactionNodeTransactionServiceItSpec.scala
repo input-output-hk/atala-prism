@@ -16,7 +16,6 @@ import io.iohk.cef.ledger.storage.LedgerStateStorage
 import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
 import io.iohk.cef.network.{MessageStream, Network, NodeId}
 import io.iohk.cef.transactionpool.TransactionPoolInterface
-import org.mockito.ArgumentMatchers
 import org.mockito.Mockito.when
 import org.scalatest._
 import org.scalatest.concurrent.ScalaFutures
@@ -26,6 +25,7 @@ import play.api.libs.json.Json
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
 import io.iohk.cef.codecs.nio._
+import org.mockito.ArgumentMatchers.any
 
 class ChimericTransactionNodeTransactionServiceItSpec
     extends FlatSpec
@@ -70,12 +70,12 @@ class ChimericTransactionNodeTransactionServiceItSpec
 
     val txNetwork = mock[Network[Envelope[TransactionType]]]
 
-    when(ledgerStateStorage.slice[TransactionStateType](ArgumentMatchers.any())(ArgumentMatchers.any()))
+    when(ledgerStateStorage.slice[TransactionStateType](any())(any(), any()))
       .thenReturn(new ChimericLedgerState(Map.empty))
     when(txNetwork.messageStream).thenReturn(mockTxMessageStream)
     when(blockNetwork.messageStream).thenReturn(mockBlockMessageStream)
-    when(mockTxMessageStream.foreach(ArgumentMatchers.any())).thenReturn(Future.successful(()))
-    when(mockBlockMessageStream.foreach(ArgumentMatchers.any())).thenReturn(Future.successful(()))
+    when(mockTxMessageStream.foreach(any())).thenReturn(Future.successful(()))
+    when(mockBlockMessageStream.foreach(any())).thenReturn(Future.successful(()))
 
     val consensusMap = Map("1" -> (txPoolInterface, consensus))
 

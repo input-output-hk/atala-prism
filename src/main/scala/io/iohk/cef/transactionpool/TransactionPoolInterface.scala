@@ -8,6 +8,7 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.Duration
 import scala.concurrent.stm.{Ref, atomic}
 import java.time.Clock
+import scala.reflect.runtime.universe.TypeTag
 
 /**
   * Interface for non actor model
@@ -27,7 +28,7 @@ import java.time.Clock
   * @tparam Header
   * @tparam Tx
   */
-class TransactionPoolInterface[State: NioEncDec, Tx <: Transaction[State]](
+class TransactionPoolInterface[State: NioEncDec: TypeTag, Tx <: Transaction[State]](
     headerGenerator: Seq[Transaction[State]] => BlockHeader,
     maxBlockSize: Int,
     ledgerStateStorage: LedgerStateStorage,
@@ -75,7 +76,7 @@ class TransactionPoolInterface[State: NioEncDec, Tx <: Transaction[State]](
 }
 
 object TransactionPoolInterface {
-  def apply[State: NioEncDec, Tx <: Transaction[State]](
+  def apply[State: NioEncDec: TypeTag, Tx <: Transaction[State]](
       headerGenerator: Seq[Transaction[State]] => BlockHeader,
       maxBlockSize: Int,
       ledgerStateStorage: LedgerStateStorage,
@@ -87,7 +88,7 @@ object TransactionPoolInterface {
       ledgerStateStorage,
       defaultTransactionExpiration,
       () => new TimedQueue[Tx](clock))
-  def apply[State: NioEncDec, Tx <: Transaction[State]](
+  def apply[State: NioEncDec: TypeTag, Tx <: Transaction[State]](
       headerGenerator: Seq[Transaction[State]] => BlockHeader,
       maxBlockSize: Int,
       ledgerStateStorage: LedgerStateStorage,

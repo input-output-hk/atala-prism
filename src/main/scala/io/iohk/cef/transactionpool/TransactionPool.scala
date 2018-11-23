@@ -6,6 +6,7 @@ import io.iohk.cef.codecs.nio.NioEncDec
 
 import scala.annotation.tailrec
 import scala.concurrent.duration._
+import scala.reflect.runtime.universe.TypeTag
 
 /**
   * A TransactionPool serves as a queue for transactions before being added to a blockchain.
@@ -15,7 +16,7 @@ import scala.concurrent.duration._
   * @param maxBlockSize maximum block size in bytes
   * @tparam State the ledger state type
   */
-class TransactionPool[State: NioEncDec, Tx <: Transaction[State]](
+class TransactionPool[State: NioEncDec: TypeTag, Tx <: Transaction[State]](
     timedQueue: TimedQueue[Tx] = new TimedQueue[Tx](),
     headerGenerator: Seq[Transaction[State]] => BlockHeader,
     maxBlockSize: Int,
