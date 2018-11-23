@@ -8,20 +8,18 @@ import io.iohk.cef.data.query.Query
 import io.iohk.cef.data.storage.TableStorage
 import io.iohk.cef.data.{DataItem, DataItemId, TableId}
 import io.iohk.cef.error.ApplicationError
-import org.h2.mvstore.{MVMap, MVStore}
-import java.util.concurrent.ConcurrentHashMap
+import org.h2.mvstore.MVMap
 
 import io.iohk.cef.data.error.DataItemNotFound
 import io.iohk.cef.data.query.Query.queryCata
+import io.iohk.cef.utils.mv.MVTables
 
 import scala.collection.JavaConverters._
 import scala.reflect.runtime.universe._
 
 class MVTableStorage(storageFile: Path) extends TableStorage {
 
-  private val storage: MVStore = new MVStore.Builder().fileName(storageFile.toAbsolutePath.toString).open()
-
-  private val tables = new ConcurrentHashMap[TableId, MVMap[String, ByteBuffer]]().asScala
+  private val mvTables = new MVTables(storageFile)
 
   override def insert[I: NioEncDec: TypeTag](tableId: TableId, dataItem: DataItem[I]): Unit = {
     table(tableId).put(dataItem.id, NioEncDec[DataItem[I]].encode(dataItem))
@@ -39,9 +37,7 @@ class MVTableStorage(storageFile: Path) extends TableStorage {
       tableId: TableId,
       query: Query): Either[ApplicationError, Seq[DataItem[I]]] = {
 
-    val table = tables(tableId)
-
-    Right(queryCata(decode(table.values().asScala), _ => Seq(), query))
+    Right(queryCata(decode(table(tableId).values().asScala), _ => Seq(), query))
   }
 
   override def selectSingle[I: NioEncDec: TypeTag](
@@ -53,7 +49,6 @@ class MVTableStorage(storageFile: Path) extends TableStorage {
       .getOrElse(Left(DataItemNotFound(tableId, dataItemId)))
   }
 
-  private def table(tableId: TableId): MVMap[String, ByteBuffer] = {
-    tables.getOrElseUpdate(tableId, storage.openMap(tableId))
-  }
+  private def table(tableId: TableId): MVMap[String, ByteBuffer] =
+    mvTables.table(tableId)
 }
