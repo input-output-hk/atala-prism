@@ -1,19 +1,18 @@
 package io.iohk.cef.ledger.chimeric
 
-import java.time.Clock
+import java.nio.file.Files
 
 import io.iohk.cef.crypto._
 import io.iohk.cef.ledger.chimeric.SignatureTxFragment.signFragments
 import io.iohk.cef.ledger.storage.scalike.LedgerStateStorageImpl
 import io.iohk.cef.ledger.storage.scalike.dao.LedgerStateStorageDao
 import io.iohk.cef.ledger.storage.Ledger
-import io.iohk.cef.ledger.storage.scalike.LedgerStorageImpl
-import io.iohk.cef.ledger.storage.scalike.dao.LedgerStorageDao
 import io.iohk.cef.ledger.{Block, BlockHeader, LedgerFixture, LedgerState}
 import org.scalatest.{EitherValues, MustMatchers, fixture}
 import scalikejdbc._
 import scalikejdbc.scalatest.AutoRollback
 import io.iohk.cef.codecs.nio.auto._
+import io.iohk.cef.ledger.storage.mv.MVLedgerStorage
 
 trait ChimericLedgerItDbTest
     extends fixture.FlatSpec
@@ -26,10 +25,7 @@ trait ChimericLedgerItDbTest
     val ledgerStateStorage = new LedgerStateStorageImpl("chimericLedger", ledgerStateStorageDao) {
       override def execInSession[T](block: DBSession => T): T = block(dBSession)
     }
-    val ledgerStorageDao = new LedgerStorageDao(Clock.systemUTC())
-    val ledgerStorage = new LedgerStorageImpl(ledgerStorageDao) {
-      override def execInSession[T](block: DBSession => T): T = block(dBSession)
-    }
+    val ledgerStorage = new MVLedgerStorage(Files.createTempFile("", "").toAbsolutePath)
     createLedger(ledgerStateStorage, ledgerStorage)
   }
 

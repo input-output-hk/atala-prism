@@ -1,7 +1,7 @@
 package io.iohk.cef.ledger.storage
 
 import io.iohk.cef.ledger.LedgerState
-import io.iohk.cef.codecs.nio.NioEncDec
+import io.iohk.cef.codecs.nio._
 
 trait LedgerStateStorage {
 

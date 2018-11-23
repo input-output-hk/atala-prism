@@ -1,6 +1,7 @@
 package io.iohk.cef.ledger.identity
 
-import java.time.{Clock, Instant}
+import java.nio.file.Files
+import java.time.Instant
 
 import io.iohk.cef.builder.SigningKeyPairs
 import io.iohk.cef.crypto._
@@ -9,12 +10,11 @@ import io.iohk.cef.ledger.storage.scalike.dao.LedgerStateStorageDao
 import io.iohk.cef.frontend.models.IdentityTransactionType
 import io.iohk.cef.ledger.{Block, BlockHeader, LedgerState}
 import io.iohk.cef.ledger.storage.Ledger
-import io.iohk.cef.ledger.storage.scalike.LedgerStorageImpl
-import io.iohk.cef.ledger.storage.scalike.dao.LedgerStorageDao
 import org.scalatest.{EitherValues, MustMatchers, fixture}
 import scalikejdbc._
 import scalikejdbc.scalatest.AutoRollback
 import io.iohk.cef.codecs.nio.auto._
+import io.iohk.cef.ledger.storage.mv.MVLedgerStorage
 
 trait IdentityLedgerItDbTest
     extends fixture.FlatSpec
@@ -28,10 +28,7 @@ trait IdentityLedgerItDbTest
     val ledgerStateStorage = new LedgerStateStorageImpl("identityLedger", ledgerStateStorageDao) {
       override def execInSession[T](block: DBSession => T): T = block(dBSession)
     }
-    val ledgerStorageDao = new LedgerStorageDao(Clock.systemUTC())
-    val ledgerStorage = new LedgerStorageImpl(ledgerStorageDao) {
-      override def execInSession[T](block: DBSession => T): T = block(dBSession)
-    }
+    val ledgerStorage = new MVLedgerStorage(Files.createTempFile("", "").toAbsolutePath)
     Ledger("1", ledgerStorage, ledgerStateStorage)
   }
 

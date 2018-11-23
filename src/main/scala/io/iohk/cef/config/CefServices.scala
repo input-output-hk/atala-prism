@@ -1,4 +1,5 @@
 package io.iohk.cef.config
+import java.nio.file.Files
 import java.time.Clock
 
 import io.iohk.cef.LedgerId
@@ -6,15 +7,16 @@ import io.iohk.cef.codecs.nio._
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.consensus.raft.node.OnDiskPersistentStorage
 import io.iohk.cef.consensus.{Consensus, raft}
+import io.iohk.cef.ledger.storage.mv.MVLedgerStorage
 import io.iohk.cef.transactionservice.raft.{RaftConsensusInterface, RaftRPCFactory}
 import io.iohk.cef.transactionservice.{Envelope, NodeTransactionService}
-import io.iohk.cef.ledger.storage.scalike.dao.{LedgerStateStorageDao, LedgerStorageDao}
-import io.iohk.cef.ledger.storage.scalike.{LedgerStateStorageImpl, LedgerStorageImpl}
+import io.iohk.cef.ledger.storage.scalike.dao.LedgerStateStorageDao
+import io.iohk.cef.ledger.storage.scalike.LedgerStateStorageImpl
 import io.iohk.cef.ledger.storage.{Ledger, LedgerStorage}
 import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
 import io.iohk.cef.network.transport.Transports
 import io.iohk.cef.network.{Network, NetworkServices}
-import io.iohk.cef.transactionpool.{TransactionPoolInterface}
+import io.iohk.cef.transactionpool.TransactionPoolInterface
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext
@@ -73,7 +75,8 @@ private[config] class CefServices(cefConfig: CefConfig) {
     val ledgerStateStorage =
       new LedgerStateStorageImpl(ledgerConfig.id, new LedgerStateStorageDao)
 
-    val ledgerStorage: LedgerStorage = new LedgerStorageImpl(new LedgerStorageDao(clock))
+    val ledgerStorage: LedgerStorage = new MVLedgerStorage(
+      Files.createTempFile(s"ledger_${ledgerConfig.id}", "").toAbsolutePath)
 
     val ledger: Ledger = Ledger(ledgerConfig.id, ledgerStorage, ledgerStateStorage)
 

@@ -6,7 +6,7 @@ import io.iohk.cef.ledger.LedgerState
 import scalikejdbc.{ConnectionPool, DB, DBSession, using}
 import io.iohk.cef.codecs.nio._
 
-case class LedgerStateStorageImpl(ledgerStateId: LedgerId, ledgerStateDao: LedgerStateStorageDao)
+class LedgerStateStorageImpl(ledgerStateId: LedgerId, ledgerStateDao: LedgerStateStorageDao)
     extends LedgerStateStorage {
 
   override def slice[S: NioEncDec](keys: Set[String]): LedgerState[S] =

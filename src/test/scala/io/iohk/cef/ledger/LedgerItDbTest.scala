@@ -1,18 +1,20 @@
 package io.iohk.cef.ledger
 
-import java.time.{Clock, Instant}
+import java.nio.file.Files
+import java.time.Instant
 
 import io.iohk.cef.builder.SigningKeyPairs
 import io.iohk.cef.crypto._
 import io.iohk.cef.frontend.models.IdentityTransactionType
 import io.iohk.cef.ledger.identity._
 import io.iohk.cef.ledger.storage.Ledger
-import io.iohk.cef.ledger.storage.scalike.dao.{LedgerStateStorageDao, LedgerStorageDao}
-import io.iohk.cef.ledger.storage.scalike.{LedgerStateStorageImpl, LedgerStorageImpl}
+import io.iohk.cef.ledger.storage.scalike.dao.LedgerStateStorageDao
+import io.iohk.cef.ledger.storage.scalike.LedgerStateStorageImpl
 import org.scalatest.{MustMatchers, fixture}
 import scalikejdbc.scalatest.AutoRollback
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.codecs.nio.CodecTestingHelpers
+import io.iohk.cef.ledger.storage.mv.MVLedgerStorage
 
 trait LedgerItDbTest
     extends fixture.FlatSpec
@@ -26,13 +28,11 @@ trait LedgerItDbTest
   it should "apply a block using the generic constructs" in { implicit session =>
     pending
     val genericStateDao = new LedgerStateStorageDao()
-    val genericLedgerDao = new LedgerStorageDao(Clock.systemUTC())
     val genericStateImpl = new LedgerStateStorageImpl("1", genericStateDao) {
       override protected def execInSession[T](block: FixtureParam => T): T = block(session)
     }
-    val genericLedgerStorageImpl = new LedgerStorageImpl(genericLedgerDao) {
-      override protected def execInSession[T](block: FixtureParam => T): T = block(session)
-    }
+    val genericLedgerStorageImpl = new MVLedgerStorage(Files.createTempFile("", "").toAbsolutePath)
+
     val ledger = Ledger("1", genericLedgerStorageImpl, genericStateImpl)
 
     val testTxs = List[IdentityTransaction](
