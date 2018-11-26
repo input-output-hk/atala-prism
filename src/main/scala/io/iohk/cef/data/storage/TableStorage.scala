@@ -10,7 +10,7 @@ trait TableStorage {
 
   def insert[I: NioEncDec: TypeTag](tableId: TableId, dataItem: DataItem[I]): Unit
 
-  def delete[I](tableId: TableId, dataItem: DataItem[I]): Unit
+  def delete[I: NioEncDec: TypeTag](tableId: TableId, dataItem: DataItem[I]): Unit
 
   def select[I: NioEncDec: TypeTag](tableId: TableId, query: Query): Either[ApplicationError, Seq[DataItem[I]]]
 

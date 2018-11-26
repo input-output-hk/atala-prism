@@ -1,5 +1,4 @@
 package io.iohk.cef.data.storage.mv
-import java.nio.ByteBuffer
 import java.nio.file.Path
 
 import io.iohk.cef.codecs.nio._
@@ -22,33 +21,28 @@ class MVTableStorage(storageFile: Path) extends TableStorage {
   private val mvTables = new MVTables(storageFile)
 
   override def insert[I: NioEncDec: TypeTag](tableId: TableId, dataItem: DataItem[I]): Unit = {
-    table(tableId).put(dataItem.id, NioEncDec[DataItem[I]].encode(dataItem))
+    table[DataItem[I]](tableId).put(dataItem.id, dataItem)
   }
 
-  override def delete[I](tableId: TableId, dataItem: DataItem[I]): Unit =
-    table(tableId).remove(dataItem.id)
-
-  def decode[I: NioEncDec: TypeTag](buffers: Iterable[ByteBuffer]): Seq[DataItem[I]] = {
-    val codec = NioEncDec[DataItem[I]]
-    buffers.flatMap(buffer => codec.decode(buffer)).toSeq
-  }
+  override def delete[I: NioEncDec: TypeTag](tableId: TableId, dataItem: DataItem[I]): Unit =
+    table[DataItem[I]](tableId).remove(dataItem.id)
 
   override def select[I: NioEncDec: TypeTag](
       tableId: TableId,
       query: Query): Either[ApplicationError, Seq[DataItem[I]]] = {
 
-    Right(queryCata(decode(table(tableId).values().asScala), _ => Seq(), query))
+    val tableValues = table[DataItem[I]](tableId).values().asScala.toSeq
+    Right(queryCata(tableValues, _ => Seq[DataItem[I]](), query))
   }
 
   override def selectSingle[I: NioEncDec: TypeTag](
       tableId: TableId,
       dataItemId: DataItemId): Either[ApplicationError, DataItem[I]] = {
-    Option(table(tableId).get(dataItemId))
-      .flatMap(NioEncDec[DataItem[I]].decode(_))
+    Option(table[DataItem[I]](tableId).get(dataItemId))
       .map(Right(_))
       .getOrElse(Left(DataItemNotFound(tableId, dataItemId)))
   }
 
-  private def table(tableId: TableId): MVMap[String, ByteBuffer] =
-    mvTables.table(tableId)
+  private def table[I: NioEncDec: TypeTag](tableId: TableId): MVMap[String, I] =
+    mvTables.table(tableId, NioEncDec[I])
 }

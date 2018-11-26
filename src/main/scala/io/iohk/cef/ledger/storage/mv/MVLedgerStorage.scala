@@ -1,6 +1,5 @@
 package io.iohk.cef.ledger.storage.mv
 
-import java.nio.ByteBuffer
 import java.nio.file.Path
 import java.util.UUID
 
@@ -18,7 +17,8 @@ class MVLedgerStorage(storageFile: Path) extends LedgerStorage {
 
   override def push[S, Tx <: Transaction[S]](ledgerId: LedgerId, block: Block[S, Tx])(
       implicit codec: NioEncDec[Block[S, Tx]]): Unit =
-    mvTables.table(ledgerId).put(UUID.randomUUID().toString, codec.encode(block))
+    mvTables.table[Block[S, Tx]](ledgerId, codec).put(UUID.randomUUID().toString, block)
 
-  def values(ledgerId: LedgerId): Iterable[ByteBuffer] = mvTables.table(ledgerId).values().asScala
+  def values[T](ledgerId: LedgerId, codec: NioEncDec[T]): Iterable[T] =
+    mvTables.table[T](ledgerId, codec).values().asScala
 }

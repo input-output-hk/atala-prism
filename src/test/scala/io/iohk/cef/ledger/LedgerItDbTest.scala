@@ -8,13 +8,11 @@ import io.iohk.cef.crypto._
 import io.iohk.cef.frontend.models.IdentityTransactionType
 import io.iohk.cef.ledger.identity._
 import io.iohk.cef.ledger.storage.Ledger
-import io.iohk.cef.ledger.storage.scalike.dao.LedgerStateStorageDao
-import io.iohk.cef.ledger.storage.scalike.LedgerStateStorageImpl
 import org.scalatest.{MustMatchers, fixture}
 import scalikejdbc.scalatest.AutoRollback
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.codecs.nio.CodecTestingHelpers
-import io.iohk.cef.ledger.storage.mv.MVLedgerStorage
+import io.iohk.cef.ledger.storage.mv.{MVLedgerStateStorage, MVLedgerStorage}
 
 trait LedgerItDbTest
     extends fixture.FlatSpec
@@ -27,10 +25,7 @@ trait LedgerItDbTest
 
   it should "apply a block using the generic constructs" in { implicit session =>
     pending
-    val genericStateDao = new LedgerStateStorageDao()
-    val genericStateImpl = new LedgerStateStorageImpl("1", genericStateDao) {
-      override protected def execInSession[T](block: FixtureParam => T): T = block(session)
-    }
+    val genericStateImpl = new MVLedgerStateStorage("1", Files.createTempFile("", "").toAbsolutePath)
     val genericLedgerStorageImpl = new MVLedgerStorage(Files.createTempFile("", "").toAbsolutePath)
 
     val ledger = Ledger("1", genericLedgerStorageImpl, genericStateImpl)
@@ -47,10 +42,10 @@ trait LedgerItDbTest
     )
     val testBlock = Block[Set[SigningPublicKey], IdentityTransaction](BlockHeader(Instant.EPOCH), testTxs)
     val emptyLs = LedgerState[Set[SigningPublicKey]](Map())
-    genericStateDao.slice[Set[SigningPublicKey]]("1", Set("carlos")) mustBe emptyLs
+    ledger.slice[Set[SigningPublicKey]](Set("carlos")) mustBe emptyLs
 
     ledger(testBlock) mustBe Right(())
-    genericStateDao.slice[Set[SigningPublicKey]]("1", Set("carlos")) mustBe
+    ledger.slice[Set[SigningPublicKey]](Set("carlos")) mustBe
       LedgerState[Set[SigningPublicKey]](Map("carlos" -> Set(alice.public, bob.public)))
   }
 }

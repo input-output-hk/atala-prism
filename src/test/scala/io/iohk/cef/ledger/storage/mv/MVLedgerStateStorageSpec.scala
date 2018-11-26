@@ -12,25 +12,48 @@ class MVLedgerStateStorageSpec extends FlatSpec {
 
   behavior of "MVLedgerStateStorage"
 
+  it should "retrieve an initial state" in testStorage { storage =>
+    // given
+
+    // when
+    val slice = storage.slice[UUID](Set("non-existent-key"))
+
+    // then
+    slice shouldBe LedgerState(Map())
+  }
+
   it should "update and retrieve a state" in testStorage { storage =>
     // given
     val entry1 = ("A", randomUUID())
     val entry2 = ("B", randomUUID())
     val entry3 = ("C", randomUUID())
-
     val ledgerState: LedgerState[UUID] = LedgerState(Map(entry1, entry2, entry3))
 
     // when
     storage.update(LedgerState(Map.empty), ledgerState)
-    val slice = storage.slice[UUID](Set("A", "B"))
+    val slice1 = storage.slice[UUID](Set("A", "B"))
+//    val slice2 = storage.slice[UUID](Set("C"))
 
     // then
-    slice shouldBe LedgerState(Map(entry1, entry2))
+    slice1 shouldBe LedgerState(Map(entry1, entry2))
+//    slice2 shouldBe LedgerState(Map(entry3))
+  }
+
+  it should "ignore slices of the wrong type" in testStorage { storage =>
+    // given
+    val ledgerState: LedgerState[UUID] = LedgerState(Map(("A", randomUUID())))
+    storage.update(LedgerState(Map.empty), ledgerState)
+
+    // when
+    val slice = storage.slice[String](Set("A", "B"))
+
+    // then
+    slice shouldBe LedgerState(Map())
   }
 
   def testStorage(testCode: MVLedgerStateStorage => Any): Unit = {
     val tempFile: Path = Files.createTempFile("", "")
-    val storage = new MVLedgerStateStorage(tempFile)
+    val storage = new MVLedgerStateStorage("ledger-id", tempFile)
     try {
       testCode(storage)
     } finally {

@@ -5,16 +5,13 @@ import java.time.Instant
 
 import io.iohk.cef.builder.SigningKeyPairs
 import io.iohk.cef.crypto._
-import io.iohk.cef.ledger.storage.scalike.LedgerStateStorageImpl
-import io.iohk.cef.ledger.storage.scalike.dao.LedgerStateStorageDao
 import io.iohk.cef.frontend.models.IdentityTransactionType
-import io.iohk.cef.ledger.{Block, BlockHeader, LedgerState}
+import io.iohk.cef.ledger.{Block, BlockHeader}
 import io.iohk.cef.ledger.storage.Ledger
 import org.scalatest.{EitherValues, MustMatchers, fixture}
-import scalikejdbc._
 import scalikejdbc.scalatest.AutoRollback
 import io.iohk.cef.codecs.nio.auto._
-import io.iohk.cef.ledger.storage.mv.MVLedgerStorage
+import io.iohk.cef.ledger.storage.mv.{MVLedgerStateStorage, MVLedgerStorage}
 
 trait IdentityLedgerItDbTest
     extends fixture.FlatSpec
@@ -24,10 +21,8 @@ trait IdentityLedgerItDbTest
     with EitherValues
     with IdentityLedgerStateStorageFixture {
 
-  def createLedger(ledgerStateStorageDao: LedgerStateStorageDao)(implicit dBSession: DBSession): Ledger = {
-    val ledgerStateStorage = new LedgerStateStorageImpl("identityLedger", ledgerStateStorageDao) {
-      override def execInSession[T](block: DBSession => T): T = block(dBSession)
-    }
+  def createLedger(): Ledger = {
+    val ledgerStateStorage = new MVLedgerStateStorage("identityLedger", Files.createTempFile("", "").toAbsolutePath)
     val ledgerStorage = new MVLedgerStorage(Files.createTempFile("", "").toAbsolutePath)
     Ledger("1", ledgerStorage, ledgerStateStorage)
   }
@@ -35,11 +30,7 @@ trait IdentityLedgerItDbTest
   behavior of "IdentityLedgerIt"
 
   it should "throw an error when the tx is inconsistent with the state" in { implicit session =>
-    val ledgerStateStorageDao = new LedgerStateStorageDao
-    def slice(keys: Set[String]): LedgerState[Set[SigningPublicKey]] =
-      ledgerStateStorageDao.slice[Set[SigningPublicKey]]("identityLedger", keys)
-
-    val ledger = createLedger(ledgerStateStorageDao)
+    val ledger: Ledger = createLedger()
     val now = Instant.now()
     val header = BlockHeader(now)
     val block1 = Block[Set[SigningPublicKey], IdentityTransaction](
@@ -56,12 +47,12 @@ trait IdentityLedgerItDbTest
       )
     )
 
-    ledger(block1).isRight mustBe true
+    ledger.apply[Set[SigningPublicKey], IdentityTransaction](block1).isRight mustBe true
 
-    slice(Set("one")) mustBe IdentityLedgerState(Map("one" -> Set(alice.public)))
-    slice(Set("two")) mustBe IdentityLedgerState(Map("two" -> Set(bob.public)))
-    slice(Set("three")) mustBe IdentityLedgerState()
-    slice(Set("one", "two", "three")) mustBe
+    ledger.slice[Set[SigningPublicKey]](Set("one")) mustBe IdentityLedgerState(Map("one" -> Set(alice.public)))
+    ledger.slice[Set[SigningPublicKey]](Set("two")) mustBe IdentityLedgerState(Map("two" -> Set(bob.public)))
+    ledger.slice[Set[SigningPublicKey]](Set("three")) mustBe IdentityLedgerState()
+    ledger.slice[Set[SigningPublicKey]](Set("one", "two", "three")) mustBe
       IdentityLedgerState(Map("one" -> Set(alice.public), "two" -> Set(bob.public)))
 
     val block2 = Block[Set[SigningPublicKey], IdentityTransaction](
@@ -74,7 +65,7 @@ trait IdentityLedgerItDbTest
 
     ledger(block2).isRight mustBe true
 
-    slice(Set("one", "two")) mustBe
+    ledger.slice[Set[SigningPublicKey]](Set("one", "two")) mustBe
       IdentityLedgerState(
         Map("one" -> Set(alice.public), "two" -> Set(bob.public, carlos.public))
       )

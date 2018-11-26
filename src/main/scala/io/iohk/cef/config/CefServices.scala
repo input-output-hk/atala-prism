@@ -7,11 +7,9 @@ import io.iohk.cef.codecs.nio._
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.consensus.raft.node.OnDiskPersistentStorage
 import io.iohk.cef.consensus.{Consensus, raft}
-import io.iohk.cef.ledger.storage.mv.MVLedgerStorage
+import io.iohk.cef.ledger.storage.mv.{MVLedgerStateStorage, MVLedgerStorage}
 import io.iohk.cef.transactionservice.raft.{RaftConsensusInterface, RaftRPCFactory}
 import io.iohk.cef.transactionservice.{Envelope, NodeTransactionService}
-import io.iohk.cef.ledger.storage.scalike.dao.LedgerStateStorageDao
-import io.iohk.cef.ledger.storage.scalike.LedgerStateStorageImpl
 import io.iohk.cef.ledger.storage.{Ledger, LedgerStorage}
 import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
 import io.iohk.cef.network.transport.Transports
@@ -72,11 +70,11 @@ private[config] class CefServices(cefConfig: CefConfig) {
 
     val headerGenerator: Seq[Transaction[State]] => BlockHeader = _ => BlockHeader(clock.instant())
 
-    val ledgerStateStorage =
-      new LedgerStateStorageImpl(ledgerConfig.id, new LedgerStateStorageDao)
+    val ledgerStoragePath = Files.createTempFile(s"ledger_${ledgerConfig.id}", "").toAbsolutePath
 
-    val ledgerStorage: LedgerStorage = new MVLedgerStorage(
-      Files.createTempFile(s"ledger_${ledgerConfig.id}", "").toAbsolutePath)
+    val ledgerStateStorage = new MVLedgerStateStorage(ledgerConfig.id, ledgerStoragePath)
+
+    val ledgerStorage: LedgerStorage = new MVLedgerStorage(ledgerStoragePath)
 
     val ledger: Ledger = Ledger(ledgerConfig.id, ledgerStorage, ledgerStateStorage)
 

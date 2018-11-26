@@ -1,6 +1,5 @@
 package io.iohk.cef.transactionpool
 import io.iohk.cef.error.ApplicationError
-import io.iohk.cef.ledger.storage.dao.MockingLedgerStateStorage
 import io.iohk.cef.ledger.{Block, BlockHeader, LedgerState, Transaction}
 import io.iohk.cef.test.{DummyTransaction, TestClock}
 import org.mockito.ArgumentMatchers
@@ -14,16 +13,13 @@ import org.mockito.ArgumentMatchers._
 import scala.collection.immutable.Queue
 import scala.concurrent.duration._
 import io.iohk.cef.codecs.nio.auto._
+import io.iohk.cef.ledger.storage.LedgerStateStorage
 
-class TransactionPoolSpec
-    extends FlatSpec
-    with MustMatchers
-    with PropertyChecks
-    with MockitoSugar
-    with MockingLedgerStateStorage {
+class TransactionPoolSpec extends FlatSpec with MustMatchers with PropertyChecks with MockitoSugar {
 
   behavior of "TransactionPool"
 
+  val mockLedgerStateStorage: LedgerStateStorage = mock[LedgerStateStorage]
   val emptyHeaderGenerator: Seq[Transaction[String]] => BlockHeader = _ => new BlockHeader {}
 
   def headerGenerator(size: Int): Seq[Transaction[String]] => BlockHeader = _ => BlockHeader()

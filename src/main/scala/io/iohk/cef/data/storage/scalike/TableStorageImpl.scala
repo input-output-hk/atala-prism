@@ -16,7 +16,7 @@ class TableStorageImpl(tableStorageDao: TableStorageDao) extends TableStorage {
     }
   }
 
-  override def delete[I](tableId: TableId, dataItem: DataItem[I]): Unit = {
+  override def delete[I: NioEncDec: TypeTag](tableId: TableId, dataItem: DataItem[I]): Unit = {
     execInSession { implicit session =>
       tableStorageDao.delete(tableId, dataItem)
     }

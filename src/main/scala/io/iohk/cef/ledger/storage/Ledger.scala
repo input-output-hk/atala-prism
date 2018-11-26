@@ -12,6 +12,7 @@ case class Ledger(ledgerId: LedgerId, ledgerStorage: LedgerStorage, ledgerStateS
 
     val state = ledgerStateStorage.slice[S](block.partitionIds)
     val either = block(state)
+
     either.map { newState =>
       ledgerStateStorage.update(state, newState)
       ledgerStorage.push(ledgerId, block)

@@ -26,7 +26,7 @@ class MVLedgerStorageSpec extends FlatSpec {
 
     // TODO LedgerStorage has no retrieval or iteration mechanism.
     // then
-    storage.mvTables.table(ledgerId).values().asScala.toList shouldBe List(blockCodec.encode(block))
+    storage.mvTables.table(ledgerId, blockCodec).values().asScala.toList shouldBe List(block)
   }
 
   def testStorage(testCode: MVLedgerStorage => Any): Unit = {
