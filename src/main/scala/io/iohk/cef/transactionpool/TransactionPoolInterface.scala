@@ -31,7 +31,7 @@ import scala.reflect.runtime.universe.TypeTag
 class TransactionPoolInterface[State: NioEncDec: TypeTag, Tx <: Transaction[State]](
     headerGenerator: Seq[Transaction[State]] => BlockHeader,
     maxBlockSize: Int,
-    ledgerStateStorage: LedgerStateStorage,
+    ledgerStateStorage: LedgerStateStorage[State],
     defaultTransactionExpiration: Duration,
     timedQueueConstructor: () => TimedQueue[Tx])(implicit executionContext: ExecutionContext) {
 
@@ -79,7 +79,7 @@ object TransactionPoolInterface {
   def apply[State: NioEncDec: TypeTag, Tx <: Transaction[State]](
       headerGenerator: Seq[Transaction[State]] => BlockHeader,
       maxBlockSize: Int,
-      ledgerStateStorage: LedgerStateStorage,
+      ledgerStateStorage: LedgerStateStorage[State],
       defaultTransactionExpiration: Duration,
       clock: Clock)(implicit executionContext: ExecutionContext): TransactionPoolInterface[State, Tx] =
     new TransactionPoolInterface(
@@ -91,7 +91,7 @@ object TransactionPoolInterface {
   def apply[State: NioEncDec: TypeTag, Tx <: Transaction[State]](
       headerGenerator: Seq[Transaction[State]] => BlockHeader,
       maxBlockSize: Int,
-      ledgerStateStorage: LedgerStateStorage,
+      ledgerStateStorage: LedgerStateStorage[State],
       defaultTransactionExpiration: Duration)(
       implicit executionContext: ExecutionContext): TransactionPoolInterface[State, Tx] =
     new TransactionPoolInterface(

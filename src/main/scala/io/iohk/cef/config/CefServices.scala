@@ -72,11 +72,11 @@ private[config] class CefServices(cefConfig: CefConfig) {
 
     val ledgerStoragePath = Files.createTempFile(s"ledger_${ledgerConfig.id}", "").toAbsolutePath
 
-    val ledgerStateStorage = new MVLedgerStateStorage(ledgerConfig.id, ledgerStoragePath)
+    val ledgerStateStorage = new MVLedgerStateStorage[State](ledgerConfig.id, ledgerStoragePath)
 
     val ledgerStorage: LedgerStorage = new MVLedgerStorage(ledgerStoragePath)
 
-    val ledger: Ledger = Ledger(ledgerConfig.id, ledgerStorage, ledgerStateStorage)
+    val ledger: Ledger[State, Tx] = Ledger(ledgerConfig.id, ledgerStorage, ledgerStateStorage)
 
     val txPool = TransactionPoolInterface[State, Tx](
       headerGenerator,
@@ -102,7 +102,7 @@ private[config] class CefServices(cefConfig: CefConfig) {
   }
 
   private def stateMachineCallback[State, Tx <: Transaction[State]](
-      ledger: Ledger,
+      ledger: Ledger[State, Tx],
       txPool: TransactionPoolInterface[State, Tx])(block: Block[State, Tx])(
       implicit stateCodec: NioEncDec[State],
       stateTypeTag: TypeTag[State],

@@ -25,10 +25,11 @@ trait LedgerItDbTest
 
   it should "apply a block using the generic constructs" in { implicit session =>
     pending
-    val genericStateImpl = new MVLedgerStateStorage("1", Files.createTempFile("", "").toAbsolutePath)
+    val genericStateImpl =
+      new MVLedgerStateStorage[Set[SigningPublicKey]]("1", Files.createTempFile("", "").toAbsolutePath)
     val genericLedgerStorageImpl = new MVLedgerStorage(Files.createTempFile("", "").toAbsolutePath)
 
-    val ledger = Ledger("1", genericLedgerStorageImpl, genericStateImpl)
+    val ledger = Ledger[Set[SigningPublicKey], IdentityTransaction]("1", genericLedgerStorageImpl, genericStateImpl)
 
     val testTxs = List[IdentityTransaction](
       Claim(
@@ -42,10 +43,10 @@ trait LedgerItDbTest
     )
     val testBlock = Block[Set[SigningPublicKey], IdentityTransaction](BlockHeader(Instant.EPOCH), testTxs)
     val emptyLs = LedgerState[Set[SigningPublicKey]](Map())
-    ledger.slice[Set[SigningPublicKey]](Set("carlos")) mustBe emptyLs
+    ledger.slice(Set("carlos")) mustBe emptyLs
 
     ledger(testBlock) mustBe Right(())
-    ledger.slice[Set[SigningPublicKey]](Set("carlos")) mustBe
+    ledger.slice(Set("carlos")) mustBe
       LedgerState[Set[SigningPublicKey]](Map("carlos" -> Set(alice.public, bob.public)))
   }
 }

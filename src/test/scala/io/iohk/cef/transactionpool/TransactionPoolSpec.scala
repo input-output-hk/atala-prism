@@ -19,7 +19,7 @@ class TransactionPoolSpec extends FlatSpec with MustMatchers with PropertyChecks
 
   behavior of "TransactionPool"
 
-  val mockLedgerStateStorage: LedgerStateStorage = mock[LedgerStateStorage]
+  val mockLedgerStateStorage: LedgerStateStorage[String] = mock[LedgerStateStorage[String]]
   val emptyHeaderGenerator: Seq[Transaction[String]] => BlockHeader = _ => new BlockHeader {}
 
   def headerGenerator(size: Int): Seq[Transaction[String]] => BlockHeader = _ => BlockHeader()
@@ -39,8 +39,7 @@ class TransactionPoolSpec extends FlatSpec with MustMatchers with PropertyChecks
         tx -> clock.instant().plus(java.time.Duration.ofMillis(defaultDuration.toMillis))
       })
       val ledgerStateStorage = mockLedgerStateStorage
-      when(ledgerStateStorage.slice[String](any())(any(), any()))
-        .thenReturn(LedgerState[String](Map()))
+      when(ledgerStateStorage.slice(any())).thenReturn(LedgerState[String](Map()))
       val pool =
         new TransactionPool(timedQueue, (_: Seq[Transaction[String]]) => header, txs.size, ledgerStateStorage, 1 minute)
       val block = pool.generateBlock()

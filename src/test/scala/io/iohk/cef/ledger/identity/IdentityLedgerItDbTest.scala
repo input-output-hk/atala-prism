@@ -21,8 +21,9 @@ trait IdentityLedgerItDbTest
     with EitherValues
     with IdentityLedgerStateStorageFixture {
 
-  def createLedger(): Ledger = {
-    val ledgerStateStorage = new MVLedgerStateStorage("identityLedger", Files.createTempFile("", "").toAbsolutePath)
+  def createLedger(): Ledger[Set[SigningPublicKey], IdentityTransaction] = {
+    val ledgerStateStorage =
+      new MVLedgerStateStorage[Set[SigningPublicKey]]("identityLedger", Files.createTempFile("", "").toAbsolutePath)
     val ledgerStorage = new MVLedgerStorage(Files.createTempFile("", "").toAbsolutePath)
     Ledger("1", ledgerStorage, ledgerStateStorage)
   }
@@ -30,7 +31,7 @@ trait IdentityLedgerItDbTest
   behavior of "IdentityLedgerIt"
 
   it should "throw an error when the tx is inconsistent with the state" in { implicit session =>
-    val ledger: Ledger = createLedger()
+    val ledger: Ledger[Set[SigningPublicKey], IdentityTransaction] = createLedger()
     val now = Instant.now()
     val header = BlockHeader(now)
     val block1 = Block[Set[SigningPublicKey], IdentityTransaction](
@@ -47,12 +48,12 @@ trait IdentityLedgerItDbTest
       )
     )
 
-    ledger.apply[Set[SigningPublicKey], IdentityTransaction](block1).isRight mustBe true
+    ledger.apply(block1).isRight mustBe true
 
-    ledger.slice[Set[SigningPublicKey]](Set("one")) mustBe IdentityLedgerState(Map("one" -> Set(alice.public)))
-    ledger.slice[Set[SigningPublicKey]](Set("two")) mustBe IdentityLedgerState(Map("two" -> Set(bob.public)))
-    ledger.slice[Set[SigningPublicKey]](Set("three")) mustBe IdentityLedgerState()
-    ledger.slice[Set[SigningPublicKey]](Set("one", "two", "three")) mustBe
+    ledger.slice(Set("one")) mustBe IdentityLedgerState(Map("one" -> Set(alice.public)))
+    ledger.slice(Set("two")) mustBe IdentityLedgerState(Map("two" -> Set(bob.public)))
+    ledger.slice(Set("three")) mustBe IdentityLedgerState()
+    ledger.slice(Set("one", "two", "three")) mustBe
       IdentityLedgerState(Map("one" -> Set(alice.public), "two" -> Set(bob.public)))
 
     val block2 = Block[Set[SigningPublicKey], IdentityTransaction](
@@ -65,7 +66,7 @@ trait IdentityLedgerItDbTest
 
     ledger(block2).isRight mustBe true
 
-    ledger.slice[Set[SigningPublicKey]](Set("one", "two")) mustBe
+    ledger.slice(Set("one", "two")) mustBe
       IdentityLedgerState(
         Map("one" -> Set(alice.public), "two" -> Set(bob.public, carlos.public))
       )
