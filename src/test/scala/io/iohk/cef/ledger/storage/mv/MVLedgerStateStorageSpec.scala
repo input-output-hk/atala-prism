@@ -13,13 +13,11 @@ class MVLedgerStateStorageSpec extends FlatSpec {
   behavior of "MVLedgerStateStorage"
 
   it should "retrieve an initial state" in testStorage { storage =>
-    // given
-
     // when
     val slice = storage.slice(Set("non-existent-key"))
 
     // then
-    slice shouldBe LedgerState(Map())
+    slice shouldBe LedgerState()
   }
 
   it should "update and retrieve a state" in testStorage { storage =>
@@ -32,23 +30,13 @@ class MVLedgerStateStorageSpec extends FlatSpec {
     // when
     storage.update(ledgerState)
     val slice1 = storage.slice(Set("A", "B"))
-//    val slice2 = storage.slice[UUID](Set("C"))
+    val slice2 = storage.slice(Set("C"))
+    val slice3 = storage.slice(Set("D"))
 
     // then
     slice1 shouldBe LedgerState(Map(entry1, entry2))
-//    slice2 shouldBe LedgerState(Map(entry3))
-  }
-
-  it should "ignore slices of the wrong type" in testStorage { storage =>
-    // given
-    val ledgerState: LedgerState[UUID] = LedgerState(Map(("A", randomUUID())))
-    storage.update(ledgerState)
-
-    // when
-    val slice = storage.slice(Set("A", "B"))
-
-    // then
-    slice shouldBe LedgerState(Map())
+    slice2 shouldBe LedgerState(Map(entry3))
+    slice3 shouldBe LedgerState()
   }
 
   def testStorage(testCode: MVLedgerStateStorage[UUID] => Any): Unit = {

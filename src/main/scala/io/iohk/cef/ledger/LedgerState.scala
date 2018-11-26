@@ -21,15 +21,27 @@ case class LedgerState[S](map: Map[String, S]) {
   def remove(key: String): LedgerState[S] = LedgerState(map - key)
   def keys: Set[String] = map.keySet
 
-  def updateTo(that: LedgerState[S]): LedgerStateUpdateActions[String, S] = {
-    val keysToAdd = (that.keys diff this.keys).map(key => InsertStateAction(key, that.get(key).get))
-    val keysToRemove = (this.keys diff that.keys).map(key => DeleteStateAction(key, this.get(key).get))
-    val keysToUpdate =
-      (that.keys intersect this.keys)
-        .filterNot(key => that.get(key) == this.get(key))
-        .map(key => UpdateStateAction(key, that.get(key).get))
-    val actions: Seq[LedgerStateUpdateAction[String, S]] =
-      keysToAdd.toSeq ++ keysToRemove ++ keysToUpdate
-    LedgerStateUpdateActions[String, S](actions)
+  def update(from: LedgerState[S], to: LedgerState[S]): LedgerState[S] = {
+    val keysBefore = from.keys
+    val keysAfter = to.keys
+
+    val keysToAdd = keysAfter diff keysBefore // elements in keysAfter that are not in keysBefore
+    val keysToRemove = keysBefore diff keysAfter // elements in keysBefore that are not in keysAfter
+    val keysToUpdate = keysAfter intersect keysBefore // elements in before and after
+
+    val additions: Map[String, S] =
+      keysToAdd.foldLeft[Map[String, S]](this.map)((acc, s) => acc + (s -> to.map(s)))
+
+    val additionsAndUpdates: Map[String, S] =
+      keysToUpdate.foldLeft[Map[String, S]](additions)((acc, s) => acc + (s -> to.map(s)))
+
+    val additionsAndUpdatesAndRemovals: Map[String, S] =
+      keysToRemove.foldLeft[Map[String, S]](additionsAndUpdates)((acc, s) => acc - s)
+
+    LedgerState(additionsAndUpdatesAndRemovals)
   }
+}
+
+object LedgerState {
+  def apply[S](elems: (String, S)*): LedgerState[S] = new LedgerState(Map(elems: _*))
 }

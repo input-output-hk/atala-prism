@@ -74,7 +74,7 @@ private[config] class CefServices(cefConfig: CefConfig) {
 
     val ledgerStateStorage = new MVLedgerStateStorage[State](ledgerConfig.id, ledgerStoragePath)
 
-    val ledgerStorage: LedgerStorage = new MVLedgerStorage(ledgerStoragePath)
+    val ledgerStorage: LedgerStorage[State, Tx] = new MVLedgerStorage[State, Tx](ledgerConfig.id, ledgerStoragePath)
 
     val ledger: Ledger[State, Tx] = Ledger(ledgerConfig.id, ledgerStorage, ledgerStateStorage)
 

@@ -2,16 +2,14 @@ package io.iohk.cef.ledger.chimeric
 
 import java.nio.file.Files
 
+import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.crypto._
+import io.iohk.cef.ledger._
 import io.iohk.cef.ledger.chimeric.SignatureTxFragment.signFragments
 import io.iohk.cef.ledger.storage.Ledger
-import io.iohk.cef.ledger._
+import io.iohk.cef.ledger.storage.mv.{MVLedgerStateStorage, MVLedgerStorage}
 import org.scalatest.{EitherValues, MustMatchers, fixture}
 import scalikejdbc.scalatest.AutoRollback
-import io.iohk.cef.codecs.nio._
-import io.iohk.cef.codecs.nio.auto._
-import scala.reflect.runtime.universe.TypeTag
-import io.iohk.cef.ledger.storage.mv.{MVLedgerStateStorage, MVLedgerStorage}
 
 trait ChimericLedgerItDbTest
     extends fixture.FlatSpec
@@ -20,9 +18,12 @@ trait ChimericLedgerItDbTest
     with LedgerFixture
     with EitherValues {
 
-  def createLedger[S: NioEncDec: TypeTag, Tx <: Transaction[S]](): Ledger[S, Tx] = {
-    val ledgerStateStorage = new MVLedgerStateStorage[S]("chimericLedger", Files.createTempFile("", "").toAbsolutePath)
-    val ledgerStorage = new MVLedgerStorage(Files.createTempFile("", "").toAbsolutePath)
+  def createLedger(): Ledger[ChimericStateResult, ChimericTx] = {
+    val ledgerStateStorage =
+      new MVLedgerStateStorage[ChimericStateResult]("chimericLedger", Files.createTempFile("", "").toAbsolutePath)
+    val ledgerStorage = new MVLedgerStorage[ChimericStateResult, ChimericTx](
+      "chimericLedger",
+      Files.createTempFile("", "").toAbsolutePath)
     createLedger(ledgerStateStorage, ledgerStorage)
   }
 
@@ -42,7 +43,8 @@ trait ChimericLedgerItDbTest
     val value3 = Value(Map(currency1 -> BigDecimal(2)))
     val singleFee = Value(Map(currency1 -> BigDecimal(1)))
     val multiFee = Value(Map(currency1 -> BigDecimal(1), currency2 -> BigDecimal(2)))
-    val ledger = createLedger[ChimericStateResult, ChimericTx]()
+    val ledger: Ledger[ChimericStateResult, ChimericTx] = createLedger()
+
     val utxoTx = ChimericTx(
       signFragments(
         Seq(

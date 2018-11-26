@@ -1,7 +1,6 @@
 package io.iohk.cef.ledger.storage.mv
 
 import io.iohk.cef.ledger.{Block, BlockHeader}
-import io.iohk.cef.codecs.nio._
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.test.DummyTransaction
 
@@ -17,21 +16,19 @@ class MVLedgerStorageSpec extends FlatSpec {
 
   it should "push a block" in testStorage { storage =>
     // given
-    val ledgerId = "A"
     val block = Block[String, DummyTransaction](BlockHeader(), Seq())
-    val blockCodec = NioEncDec[Block[String, DummyTransaction]]
 
     // when
-    storage.push(ledgerId, block)
+    storage.push(block)
 
     // TODO LedgerStorage has no retrieval or iteration mechanism.
     // then
-    storage.mvTables.table(ledgerId, blockCodec).values().asScala.toList shouldBe List(block)
+    storage.mvTable.table.values().asScala.toList shouldBe List(block)
   }
 
-  def testStorage(testCode: MVLedgerStorage => Any): Unit = {
+  def testStorage(testCode: MVLedgerStorage[String, DummyTransaction] => Any): Unit = {
     val tempFile: Path = Files.createTempFile("", "")
-    val storage = new MVLedgerStorage(tempFile)
+    val storage = new MVLedgerStorage[String, DummyTransaction]("A", tempFile)
     try {
       testCode(storage)
     } finally {

@@ -24,7 +24,9 @@ trait IdentityLedgerItDbTest
   def createLedger(): Ledger[Set[SigningPublicKey], IdentityTransaction] = {
     val ledgerStateStorage =
       new MVLedgerStateStorage[Set[SigningPublicKey]]("identityLedger", Files.createTempFile("", "").toAbsolutePath)
-    val ledgerStorage = new MVLedgerStorage(Files.createTempFile("", "").toAbsolutePath)
+    val ledgerStorage = new MVLedgerStorage[Set[SigningPublicKey], IdentityTransaction](
+      "identityLedger",
+      Files.createTempFile("", "").toAbsolutePath)
     Ledger("1", ledgerStorage, ledgerStateStorage)
   }
 

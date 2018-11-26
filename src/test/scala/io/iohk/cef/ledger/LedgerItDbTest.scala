@@ -27,7 +27,8 @@ trait LedgerItDbTest
     pending
     val genericStateImpl =
       new MVLedgerStateStorage[Set[SigningPublicKey]]("1", Files.createTempFile("", "").toAbsolutePath)
-    val genericLedgerStorageImpl = new MVLedgerStorage(Files.createTempFile("", "").toAbsolutePath)
+    val genericLedgerStorageImpl =
+      new MVLedgerStorage[Set[SigningPublicKey], IdentityTransaction]("1", Files.createTempFile("", "").toAbsolutePath)
 
     val ledger = Ledger[Set[SigningPublicKey], IdentityTransaction]("1", genericLedgerStorageImpl, genericStateImpl)
 
@@ -42,8 +43,7 @@ trait LedgerItDbTest
         IdentityTransaction.sign("carlos", IdentityTransactionType.Link, bob.public, alice.`private`))
     )
     val testBlock = Block[Set[SigningPublicKey], IdentityTransaction](BlockHeader(Instant.EPOCH), testTxs)
-    val emptyLs = LedgerState[Set[SigningPublicKey]](Map())
-    ledger.slice(Set("carlos")) mustBe emptyLs
+    ledger.slice(Set("carlos")) mustBe LedgerState()
 
     ledger(testBlock) mustBe Right(())
     ledger.slice(Set("carlos")) mustBe

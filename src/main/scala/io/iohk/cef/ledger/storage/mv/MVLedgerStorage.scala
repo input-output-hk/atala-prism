@@ -3,22 +3,27 @@ package io.iohk.cef.ledger.storage.mv
 import java.nio.file.Path
 import java.util.UUID
 
+import io.iohk.cef.utils.mv.MVTable
+
 import io.iohk.cef.LedgerId
 import io.iohk.cef.ledger.{Block, Transaction}
 import io.iohk.cef.ledger.storage.LedgerStorage
 import io.iohk.cef.codecs.nio._
-import io.iohk.cef.utils.mv.MVTables
 
 import scala.collection.JavaConverters._
 
-class MVLedgerStorage(storageFile: Path) extends LedgerStorage {
+class MVLedgerStorage[S, Tx <: Transaction[S]](ledgerId: LedgerId, storageFile: Path)(
+    implicit codec: NioEncDec[Block[S, Tx]])
+    extends LedgerStorage[S, Tx](ledgerId) {
 
-  val mvTables = new MVTables(storageFile)
+  val mvTable = new MVTable[Block[S, Tx]](ledgerId, storageFile, codec)
 
-  override def push[S, Tx <: Transaction[S]](ledgerId: LedgerId, block: Block[S, Tx])(
-      implicit codec: NioEncDec[Block[S, Tx]]): Unit =
-    mvTables.table[Block[S, Tx]](ledgerId, codec).put(UUID.randomUUID().toString, block)
+  override def push(block: Block[S, Tx]): Unit =
+    mvTable.table.put(UUID.randomUUID().toString, block)
 
-  def values[T](ledgerId: LedgerId, codec: NioEncDec[T]): Iterable[T] =
-    mvTables.table[T](ledgerId, codec).values().asScala
+  def values: Iterable[Block[S, Tx]] =
+    mvTable.table.values().asScala
+
+  override def toString: LedgerId =
+    s"${values.mkString("\n")}"
 }
