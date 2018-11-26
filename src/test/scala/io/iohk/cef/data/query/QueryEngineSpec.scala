@@ -46,7 +46,8 @@ class QueryEngineSpec extends FlatSpec with MustMatchers {
     when(table.select(tableId, query)).thenReturn(Right(Seq()))
     val streamResult = engine.process(tableId, query)
     //verify query was disseminated
-    verify(requestNetwork, times(1)).disseminateMessage(Envelope(QueryRequest("query1",query,nodeId), tableId, Everyone))
+    verify(requestNetwork, times(1))
+      .disseminateMessage(Envelope(QueryRequest("query1", query, nodeId), tableId, Everyone))
     verify(table, times(1)).select(tableId, query)
 
     val validation: (Seq[DataItem[String]] => Unit) = mock[Seq[DataItem[String]] => Unit]

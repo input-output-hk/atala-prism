@@ -9,7 +9,6 @@ class DummyMessageStream[T](val o: Observable[T], scheduler: TestScheduler) exte
   type S[A] = DummyMessageStream[A]
   implicit val s = scheduler
 
-
   override def map[U](f: T => U): DummyMessageStream[U] =
     new DummyMessageStream(o.map(f), scheduler)
 

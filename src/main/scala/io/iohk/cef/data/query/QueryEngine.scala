@@ -11,14 +11,13 @@ class QueryEngine[I](
     table: Table,
     requestNetwork: Network[Envelope[QueryRequest]],
     responseNetwork: Network[Envelope[QueryResponse[I]]],
-    queryIdGenerator: () => String)(
-    implicit itemSerializable: NioEncDec[I])
+    queryIdGenerator: () => String)(implicit itemSerializable: NioEncDec[I])
     extends Logger {
 
   requestNetwork.messageStream.foreach(processFromNetwork)
 
   def process(tableId: TableId, query: Query)(
-    implicit itemSerializable: NioEncDec[I]): MessageStream[Either[ApplicationError, Seq[DataItem[I]]]] = {
+      implicit itemSerializable: NioEncDec[I]): MessageStream[Either[ApplicationError, Seq[DataItem[I]]]] = {
     val responseStream = networkProcessing(tableId, query)
     val localProcessingEither = localProcessing(tableId, query)
     responseStream.map(networkEither => {
@@ -29,7 +28,9 @@ class QueryEngine[I](
     })
   }
 
-  private def networkProcessing(tableId: TableId, query: Query): MessageStream[Either[ApplicationError, Seq[DataItem[I]]]] = {
+  private def networkProcessing(
+      tableId: TableId,
+      query: Query): MessageStream[Either[ApplicationError, Seq[DataItem[I]]]] = {
     val queryId = queryIdGenerator()
     requestNetwork.disseminateMessage(Envelope(QueryRequest(queryId, query, nodeId), tableId, Everyone))
     responseNetwork.messageStream
@@ -38,12 +39,14 @@ class QueryEngine[I](
   }
 
   private def localProcessing(tableId: TableId, query: Query)(
-    implicit itemSerializable: NioEncDec[I]): Either[ApplicationError, Seq[DataItem[I]]] = {
+      implicit itemSerializable: NioEncDec[I]): Either[ApplicationError, Seq[DataItem[I]]] = {
     table.select[I](tableId, query)
   }
 
   private def processFromNetwork(envelope: Envelope[QueryRequest]): Unit = {
     val localQueryResult = localProcessing(envelope.containerId, envelope.content.query)
-    responseNetwork.sendMessage(envelope.content.replyTo, Envelope(QueryResponse[I](envelope.content.id, localQueryResult), envelope.containerId, Everyone))
+    responseNetwork.sendMessage(
+      envelope.content.replyTo,
+      Envelope(QueryResponse[I](envelope.content.id, localQueryResult), envelope.containerId, Everyone))
   }
 }
