@@ -6,6 +6,7 @@ import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.transactionservice.Envelope
 import io.iohk.cef.data._
+import io.iohk.cef.data.query.QueryEngine
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.frontend.controllers.ItemsGenericController
 import io.iohk.cef.frontend.controllers.common.Codecs
@@ -37,7 +38,7 @@ class ControllerDataItemServiceSpec
   when(table.insert(any[DataItem[BirthCertificate]])(any())).thenReturn(Right(()))
   val messageStream = mock[MessageStream[Envelope[DataItemAction[BirthCertificate]]]]
   when(network.messageStream).thenReturn(messageStream)
-  val service = new DataItemService[BirthCertificate](table, network)
+  val service = new DataItemService[BirthCertificate](table, network, mock[QueryEngine[BirthCertificate]])
 
   val controller = new ItemsGenericController
 

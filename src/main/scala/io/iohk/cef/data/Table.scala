@@ -8,7 +8,7 @@ import io.iohk.cef.data.storage.TableStorage
 import io.iohk.cef.error.ApplicationError
 import scala.reflect.runtime.universe.TypeTag
 
-class Table[I: NioEncDec: TypeTag](tableId: TableId, tableStorage: TableStorage[I]) {
+class Table[I: NioEncDec: TypeTag](val tableId: TableId, tableStorage: TableStorage[I]) {
 
   def validate(dataItem: DataItem[I])(implicit canValidate: CanValidate[DataItem[I]]): Boolean = {
     val signatureValidation = validateSignatures(dataItem)

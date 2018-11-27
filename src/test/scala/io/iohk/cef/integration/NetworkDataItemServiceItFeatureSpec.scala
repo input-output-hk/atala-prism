@@ -8,7 +8,8 @@ import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{FeatureSpec, GivenWhenThen, MustMatchers}
 import io.iohk.cef.codecs.nio.auto._
-import io.iohk.cef.data.DataItemAction.Insert
+import io.iohk.cef.data.DataItemAction.InsertAction
+import io.iohk.cef.data.query.QueryEngine
 import org.mockito.ArgumentMatchers._
 
 class NetworkDataItemServiceItFeatureSpec
@@ -29,7 +30,7 @@ class NetworkDataItemServiceItFeatureSpec
       frameCodec: NioEncDec[Envelope[DataItemAction[String]]]) = {
 
     val txNetwork = new Network[Envelope[DataItemAction[String]]](baseNetwork.networkDiscovery, baseNetwork.transports)
-    new DataItemService[String](table, txNetwork)
+    new DataItemService[String](table, txNetwork, mock[QueryEngine[String]])
   }
 
   feature("Network DataItemService Integration") {
@@ -69,7 +70,7 @@ class NetworkDataItemServiceItFeatureSpec
     val itemId = "item-id"
     val containerId = "1"
     val dataItem = DataItem[String](itemId, data, Seq.empty[Witness], Seq.empty[Owner])
-    val insert: DataItemAction[String] = Insert(dataItem)
+    val insert: DataItemAction[String] = InsertAction(dataItem)
     val input = Envelope(
       content = insert,
       containerId = containerId,
