@@ -5,7 +5,7 @@ import io.iohk.cef.transactionservice.{Envelope, Everyone}
 import io.iohk.cef.crypto.Signature
 import io.iohk.cef.data.DataItemAction.{Delete, Insert}
 import io.iohk.cef.network.{MessageStream, Network}
-import org.mockito.ArgumentMatchers.{any, eq => meq}
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{verify, when}
 
 import org.scalatest.FlatSpec
@@ -15,7 +15,7 @@ import scala.concurrent.Future
 
 class DataItemServiceSpec extends FlatSpec {
 
-  private val table = mock[Table]
+  private val table = mock[Table[String]]
   private implicit val canValidate: CanValidate[DataItem[String]] = _ => Right(())
 
   private val dataItem: DataItem[String] = DataItem("id", "foo", Seq(), Seq())
@@ -32,7 +32,7 @@ class DataItemServiceSpec extends FlatSpec {
 
     service.processAction(Envelope(Insert(dataItem), containerId, Everyone))
 
-    verify(table).insert(meq(containerId), meq(dataItem))(any(), any(), any())
+    verify(table).insert(dataItem)
   }
 
   it should "delete a data item" in {
@@ -45,6 +45,6 @@ class DataItemServiceSpec extends FlatSpec {
 
     service.processAction(Envelope(Delete(dataItem.id, signature), containerId, Everyone))
 
-    verify(table).delete[String](meq(containerId), meq(dataItem.id), meq(signature))(any(), any(), any(), any(), any())
+    verify(table).delete(dataItem.id, signature)
   }
 }

@@ -6,21 +6,19 @@ import io.iohk.cef.error.ApplicationError
 import scala.concurrent.duration.FiniteDuration
 import scala.reflect.runtime.universe.TypeTag
 
-class QueryEngine(table: Table, timeout: FiniteDuration) {
+class QueryEngine[I: NioEncDec: TypeTag](table: Table[I], timeout: FiniteDuration) {
 
-  def process[I: NioEncDec: TypeTag](tableId: TableId, query: Query): Either[ApplicationError, Seq[DataItem[I]]] = {
+  def process(tableId: TableId, query: Query): Either[ApplicationError, Seq[DataItem[I]]] = {
     for {
-      network <- processNetwork[I]
-      local <- processLocally(tableId, query)
+      network <- processNetwork
+      local <- processLocally(query)
     } yield local ++ network
   }
 
-  private def processNetwork[I]: Either[ApplicationError, Seq[DataItem[I]]] =
+  private def processNetwork: Either[ApplicationError, Seq[DataItem[I]]] =
     ??? //Send query, wait for answers or timeout whichever is first
 
-  private def processLocally[I: NioEncDec: TypeTag](
-      tableId: TableId,
-      query: Query): Either[ApplicationError, Seq[DataItem[I]]] = {
-    table.select(tableId, query)
+  private def processLocally(query: Query): Either[ApplicationError, Seq[DataItem[I]]] = {
+    table.select(query)
   }
 }

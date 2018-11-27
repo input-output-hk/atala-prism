@@ -50,11 +50,11 @@ trait DataItemServiceTableDbItSpec
   it should "insert and delete items in the database" in { implicit s =>
     new RealTableFixture {
       override val tableId: TableId = testTableId
-
+      val table = new Table[String](tableId, tableStorage)
       val itemsBefore = getItems(dao, tableId)
       itemsBefore mustBe Right(Seq())
 
-      val service = new DataItemService(table, mockedNetwork)
+      val service: DataItemService[String] = new DataItemService(table, mockedNetwork)
 
       val results = envelopes.map(service.processAction)
       envelopes.foreach(e => verify(mockedNetwork, times(1)).disseminateMessage(e))

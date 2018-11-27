@@ -7,5 +7,4 @@ trait RealTableFixture {
   val dao = new TableStorageDao
 
   val tableStorage = new TableStorageImpl(dao)
-  val table = new Table(tableStorage)
 }

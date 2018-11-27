@@ -1,14 +1,13 @@
 package io.iohk.cef.data
 
 import io.iohk.cef.codecs.nio._
-import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.transactionservice.Envelope
 import io.iohk.cef.data.DataItemAction.{Delete, Insert}
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.network.{MessageStream, Network}
 import scala.reflect.runtime.universe.TypeTag
 
-class DataItemService[T](table: Table, network: Network[Envelope[DataItemAction[T]]])(
+class DataItemService[T](table: Table[T], network: Network[Envelope[DataItemAction[T]]])(
     implicit enc: NioEncDec[T],
     typeTag: TypeTag[T],
     canValidate: CanValidate[DataItem[T]]) {
@@ -23,10 +22,13 @@ class DataItemService[T](table: Table, network: Network[Envelope[DataItemAction[
   }
 
   private def handleMessage(message: Envelope[DataItemAction[T]]): Either[ApplicationError, Unit] = message match {
-    case Envelope(Insert(dataItem), containerId, _) =>
-      table.insert(containerId, dataItem)
+    // TODO since 'table' maps to 'case class'
+    // TODO there should be a way to map the inbound
+    // TODO envelope to a specific marshaller/deserializer for the case class type
+    case Envelope(Insert(dataItem), _, _) =>
+      table.insert(dataItem)
     case Envelope(Delete(dataItemId, signature), containerId, _) =>
-      table.delete[T](containerId, dataItemId, signature)
+      table.delete(dataItemId, signature)
     case _ =>
       throw new IllegalStateException("Unexpected data item message '$message'.")
   }
