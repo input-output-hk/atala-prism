@@ -1,8 +1,6 @@
 package io.iohk.cef
 
-import io.iohk.cef.data.storage.scalike.dao.TableStorageDaoDbTest
 import io.iohk.cef.db.scalike.HikariConnPoolFactory
-import io.iohk.cef.integration.DataItemServiceTableDbItSpec
 import io.iohk.cef.ledger.chimeric.ChimericLedgerItDbTest
 import io.iohk.cef.ledger.identity.IdentityLedgerItDbTest
 import io.iohk.cef.ledger.LedgerItDbTest
@@ -17,9 +15,7 @@ class DatabaseTestSuites
       new KnownNodeStorageImplDbTest {},
       new IdentityLedgerItDbTest {},
       new LedgerItDbTest {},
-      new ChimericLedgerItDbTest {},
-      new TableStorageDaoDbTest {},
-      new DataItemServiceTableDbItSpec {}
+      new ChimericLedgerItDbTest {}
     )
     with BeforeAndAfterAll {
 

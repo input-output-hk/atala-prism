@@ -8,7 +8,7 @@ import io.iohk.cef.data.storage.TableStorage
 import io.iohk.cef.error.ApplicationError
 import scala.reflect.runtime.universe.TypeTag
 
-class Table[I: NioEncDec: TypeTag](tableId: TableId, tableStorage: TableStorage) {
+class Table[I: NioEncDec: TypeTag](tableId: TableId, tableStorage: TableStorage[I]) {
 
   def validate(dataItem: DataItem[I])(implicit canValidate: CanValidate[DataItem[I]]): Boolean = {
     val signatureValidation = validateSignatures(dataItem)
@@ -16,7 +16,7 @@ class Table[I: NioEncDec: TypeTag](tableId: TableId, tableStorage: TableStorage)
   }
 
   def select(query: Query): Either[ApplicationError, Seq[DataItem[I]]] = {
-    tableStorage.select(tableId, query)
+    tableStorage.select(query)
   }
 
   def insert(dataItem: DataItem[I])(implicit canValidate: CanValidate[DataItem[I]]): Either[ApplicationError, Unit] = {
@@ -26,7 +26,7 @@ class Table[I: NioEncDec: TypeTag](tableId: TableId, tableStorage: TableStorage)
         val error = InvalidSignaturesError(dataItem, validationErrors)
         Left(error)
       } else {
-        Right(tableStorage.insert(tableId, dataItem))
+        Right(tableStorage.insert(dataItem))
       }
     }
   }
@@ -34,7 +34,7 @@ class Table[I: NioEncDec: TypeTag](tableId: TableId, tableStorage: TableStorage)
   def delete(dataItemId: DataItemId, deleteSignature: Signature)(
       implicit canValidate: CanValidate[DataItem[I]]): Either[ApplicationError, Unit] = {
     for {
-      dataItem <- tableStorage.selectSingle[I](tableId, dataItemId)
+      dataItem <- tableStorage.selectSingle(dataItemId)
       _ <- canValidate.validate(dataItem)
     } yield {
       val signatureValidation =
@@ -46,7 +46,7 @@ class Table[I: NioEncDec: TypeTag](tableId: TableId, tableStorage: TableStorage)
         val error = OwnerMustSignDelete(dataItem)
         Left(error)
       } else {
-        Right(tableStorage.delete(tableId, dataItem))
+        Right(tableStorage.delete(dataItem))
       }
     }
   }

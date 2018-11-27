@@ -21,8 +21,8 @@ class MVTableStorageSpec extends FlatSpec {
     val expectedDataItem = DataItem("A", Random.nextString(28), Seq(), Seq())
 
     // when
-    storage.insert("tableId", expectedDataItem)
-    val actualDataItem = storage.selectSingle[String]("tableId", "A").right.value
+    storage.insert(expectedDataItem)
+    val actualDataItem = storage.selectSingle("A").right.value
 
     // then
     actualDataItem shouldBe expectedDataItem
@@ -33,9 +33,9 @@ class MVTableStorageSpec extends FlatSpec {
     val dataItem = DataItem("A", Random.nextString(28), Seq(), Seq())
 
     // when
-    storage.insert("tableId", dataItem)
-    storage.delete("tableId", dataItem)
-    val selectionResult = storage.selectSingle[String]("tableId", "A").left.value
+    storage.insert(dataItem)
+    storage.delete(dataItem)
+    val selectionResult = storage.selectSingle("A").left.value
 
     // then
     selectionResult shouldBe DataItemNotFound("tableId", dataItem.id)
@@ -44,30 +44,18 @@ class MVTableStorageSpec extends FlatSpec {
   it should "support a NoPredicate query" in testStorage { storage =>
     // given
     val dataItem = DataItem("A", Random.nextString(28), Seq(), Seq())
-    storage.insert("tableId", dataItem)
+    storage.insert(dataItem)
 
     // when
-    val selectionResult = storage.select[String]("tableId", NoPredicateQuery).right.value
+    val selectionResult = storage.select(NoPredicateQuery).right.value
 
     // then
     selectionResult shouldBe Seq(dataItem)
   }
 
-  it should "not select from the wrong table" in testStorage { storage =>
-    // given
-    val expectedDataItem = DataItem("A", Random.nextString(28), Seq(), Seq())
-
-    // when
-    storage.insert("tableId", expectedDataItem)
-    val actualDataItem = storage.selectSingle[String]("another-tableId", "A").left.value
-
-    // then
-    actualDataItem shouldBe DataItemNotFound("another-tableId", expectedDataItem.id)
-  }
-
-  private def testStorage(testCode: MVTableStorage => Any): Unit = {
+  private def testStorage(testCode: MVTableStorage[String] => Any): Unit = {
     val tempFile: Path = Files.createTempFile("", "")
-    val storage = new MVTableStorage(tempFile)
+    val storage = new MVTableStorage[String]("tableId", tempFile)
     try {
       testCode(storage)
     } finally {

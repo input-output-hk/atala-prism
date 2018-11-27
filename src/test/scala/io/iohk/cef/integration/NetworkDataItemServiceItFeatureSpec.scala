@@ -48,7 +48,7 @@ class NetworkDataItemServiceItFeatureSpec
         val dataItemService = createDataItemService(table, baseNetworkNode1)
         createDataItemService(table2, baseNetworkNode2)
 
-        when(table.insert(any())).thenReturn(Right(()))
+        when(table.insert(any())(any())).thenReturn(Right(()))
 
         Then("the DataItemService should insert the table on the network 1")
 
@@ -58,7 +58,7 @@ class NetworkDataItemServiceItFeatureSpec
 
         And("the  DataItemService insert the table on the network 2")
 
-        verify(table2, timeout(5000).times(1)).insert(any())
+        verify(table2, timeout(5000).times(1)).insert(any())(any())
       }
     }
 

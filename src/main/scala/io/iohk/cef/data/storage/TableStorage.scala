@@ -6,15 +6,13 @@ import io.iohk.cef.error.ApplicationError
 
 import scala.reflect.runtime.universe.TypeTag
 
-trait TableStorage {
+abstract class TableStorage[I: NioEncDec: TypeTag](tableId: TableId) {
 
-  def insert[I: NioEncDec: TypeTag](tableId: TableId, dataItem: DataItem[I]): Unit
+  def insert(dataItem: DataItem[I]): Unit
 
-  def delete[I: NioEncDec: TypeTag](tableId: TableId, dataItem: DataItem[I]): Unit
+  def delete(dataItem: DataItem[I]): Unit
 
-  def select[I: NioEncDec: TypeTag](tableId: TableId, query: Query): Either[ApplicationError, Seq[DataItem[I]]]
+  def select(query: Query): Either[ApplicationError, Seq[DataItem[I]]]
 
-  def selectSingle[I: NioEncDec: TypeTag](
-      tableId: TableId,
-      dataItemId: DataItemId): Either[ApplicationError, DataItem[I]]
+  def selectSingle(dataItemId: DataItemId): Either[ApplicationError, DataItem[I]]
 }
