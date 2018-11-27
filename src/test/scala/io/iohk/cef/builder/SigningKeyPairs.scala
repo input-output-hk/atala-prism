@@ -28,8 +28,12 @@ trait SigningKeyPairs extends KeyPairs[SigningKeyPair] {
   val uselessSignature = sign(ByteString("input"), generateSigningKeyPair().`private`)
 }
 
+object SigningKeyPairs extends SigningKeyPairs
+
 trait EncryptionKeyPairs extends KeyPairs[EncryptionKeyPair] {
 
   // a set of pre defined keys
   override def gen() = generateEncryptionKeyPair()
 }
+
+object EncryptionKeyPairs extends EncryptionKeyPairs

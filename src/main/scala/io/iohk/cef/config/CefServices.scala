@@ -70,10 +70,10 @@ private[config] class CefServices(cefConfig: CefConfig) {
 
     val headerGenerator: Seq[Transaction[State]] => BlockHeader = _ => BlockHeader(clock.instant())
 
-    val ledgerStoragePath = Files.createTempFile(s"ledger_${ledgerConfig.id}", "").toAbsolutePath
+    val ledgerStateStoragePath = Files.createTempFile(s"state-storage-${ledgerConfig.id}", "").toAbsolutePath
+    val ledgerStateStorage = new MVLedgerStateStorage[State](ledgerConfig.id, ledgerStateStoragePath)
 
-    val ledgerStateStorage = new MVLedgerStateStorage[State](ledgerConfig.id, ledgerStoragePath)
-
+    val ledgerStoragePath = Files.createTempFile(s"ledger-storage-${ledgerConfig.id}", "").toAbsolutePath
     val ledgerStorage: LedgerStorage[State, Tx] = new MVLedgerStorage[State, Tx](ledgerConfig.id, ledgerStoragePath)
 
     val ledger: Ledger[State, Tx] = Ledger(ledgerConfig.id, ledgerStorage, ledgerStateStorage)

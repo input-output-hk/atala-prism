@@ -1,31 +1,14 @@
 package io.iohk.cef.ledger.chimeric
 
-import java.nio.file.Files
-
+import io.iohk.cef.DatabaseTestSuites.withLedger
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.crypto._
 import io.iohk.cef.ledger._
 import io.iohk.cef.ledger.chimeric.SignatureTxFragment.signFragments
-import io.iohk.cef.ledger.storage.Ledger
-import io.iohk.cef.ledger.storage.mv.{MVLedgerStateStorage, MVLedgerStorage}
-import org.scalatest.{EitherValues, MustMatchers, fixture}
-import scalikejdbc.scalatest.AutoRollback
+import org.scalatest.MustMatchers._
+import org.scalatest.FlatSpec
 
-trait ChimericLedgerItDbTest
-    extends fixture.FlatSpec
-    with AutoRollback
-    with MustMatchers
-    with LedgerFixture
-    with EitherValues {
-
-  def createLedger(): Ledger[ChimericStateResult, ChimericTx] = {
-    val ledgerStateStorage =
-      new MVLedgerStateStorage[ChimericStateResult]("chimericLedger", Files.createTempFile("", "").toAbsolutePath)
-    val ledgerStorage = new MVLedgerStorage[ChimericStateResult, ChimericTx](
-      "chimericLedger",
-      Files.createTempFile("", "").toAbsolutePath)
-    createLedger(ledgerStateStorage, ledgerStorage)
-  }
+class ChimericLedgerItDbTest extends FlatSpec {
 
   val signingKeyPair = generateSigningKeyPair()
   val signingPublicKey = signingKeyPair.public
@@ -33,7 +16,7 @@ trait ChimericLedgerItDbTest
 
   behavior of "ChimericLedger"
 
-  it should "store transactions" in { implicit s =>
+  it should "store transactions" in withLedger[ChimericStateResult, ChimericTx]("chimericLedger") { ledger =>
     val address1 = "address1"
     val address2 = "address2"
     val currency1 = "currency1"
@@ -43,7 +26,6 @@ trait ChimericLedgerItDbTest
     val value3 = Value(Map(currency1 -> BigDecimal(2)))
     val singleFee = Value(Map(currency1 -> BigDecimal(1)))
     val multiFee = Value(Map(currency1 -> BigDecimal(1), currency2 -> BigDecimal(2)))
-    val ledger: Ledger[ChimericStateResult, ChimericTx] = createLedger()
 
     val utxoTx = ChimericTx(
       signFragments(

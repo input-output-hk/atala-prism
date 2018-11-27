@@ -1,38 +1,21 @@
 package io.iohk.cef.ledger.identity
 
-import java.nio.file.Files
 import java.time.Instant
 
-import io.iohk.cef.builder.SigningKeyPairs
+import io.iohk.cef.DatabaseTestSuites.withLedger
 import io.iohk.cef.frontend.models.IdentityTransactionType
 import io.iohk.cef.ledger.{Block, BlockHeader}
-import io.iohk.cef.ledger.storage.Ledger
-import org.scalatest.{EitherValues, MustMatchers, fixture}
-import scalikejdbc.scalatest.AutoRollback
 import io.iohk.cef.codecs.nio.auto._
-import io.iohk.cef.ledger.storage.mv.{MVLedgerStateStorage, MVLedgerStorage}
+import org.scalatest.FlatSpec
+import org.scalatest.MustMatchers._
+import io.iohk.cef.builder.SigningKeyPairs._
 
-trait IdentityLedgerItDbTest
-    extends fixture.FlatSpec
-    with AutoRollback
-    with MustMatchers
-    with SigningKeyPairs
-    with EitherValues
-    with IdentityLedgerStateStorageFixture {
-
-  def createLedger(): Ledger[IdentityData, IdentityTransaction] = {
-    val ledgerStateStorage =
-      new MVLedgerStateStorage[IdentityData]("identityLedger", Files.createTempFile("", "").toAbsolutePath)
-    val ledgerStorage = new MVLedgerStorage[IdentityData, IdentityTransaction](
-      "identityLedger",
-      Files.createTempFile("", "").toAbsolutePath)
-    Ledger("1", ledgerStorage, ledgerStateStorage)
-  }
+class IdentityLedgerItDbTest extends FlatSpec {
 
   behavior of "IdentityLedgerIt"
 
-  it should "throw an error when the tx is inconsistent with the state" in { implicit session =>
-    val ledger: Ledger[IdentityData, IdentityTransaction] = createLedger()
+  it should "error when the tx is inconsistent with the state" in withLedger[IdentityData, IdentityTransaction](
+    "identityLedger") { ledger =>
     val now = Instant.now()
     val header = BlockHeader(now)
     val block1 = Block[IdentityData, IdentityTransaction](
