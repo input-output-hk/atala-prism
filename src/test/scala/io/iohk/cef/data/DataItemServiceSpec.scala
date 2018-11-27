@@ -3,7 +3,8 @@ package io.iohk.cef.data
 import io.iohk.cef.codecs.nio._
 import io.iohk.cef.transactionservice.{Envelope, Everyone}
 import io.iohk.cef.crypto.Signature
-import io.iohk.cef.data.DataItemAction.{Delete, Insert}
+import io.iohk.cef.data.DataItemAction.{DeleteAction, InsertAction}
+import io.iohk.cef.data.query.QueryEngine
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.network.{MessageStream, Network}
 import org.mockito.ArgumentMatchers._
@@ -35,9 +36,9 @@ class DataItemServiceSpec extends FlatSpec {
     val messageStream = mock[MessageStream[Envelope[DataItemAction[String]]]]
     when(network.messageStream).thenReturn(messageStream)
     when(messageStream.foreach(any())).thenReturn(Future.successful(()))
-    val service: DataItemService[String] = new DataItemService(table, network)
+    val service: DataItemService[String] = new DataItemService(table, network, mock[QueryEngine[String]])
 
-    service.processAction(Envelope(Insert(dataItem), containerId, Everyone))
+    service.processAction(Envelope(InsertAction(dataItem), containerId, Everyone))
 
     verify(table).insert(containerId, dataItem)
   }
@@ -48,9 +49,9 @@ class DataItemServiceSpec extends FlatSpec {
     val messageStream = mock[MessageStream[Envelope[DataItemAction[String]]]]
     when(network.messageStream).thenReturn(messageStream)
     when(messageStream.foreach(any())).thenReturn(Future.successful(()))
-    val service: DataItemService[String] = new DataItemService(table, network)
+    val service: DataItemService[String] = new DataItemService(table, network, mock[QueryEngine[String]])
 
-    service.processAction(Envelope(Delete(dataItem.id, signature), containerId, Everyone))
+    service.processAction(Envelope(DeleteAction(dataItem.id, signature), containerId, Everyone))
 
     verify(table).delete[String](containerId, dataItem.id, signature)
   }

@@ -10,4 +10,4 @@ import io.iohk.cef.ContainerId
   *                              ledger with id ledgerId
   * @tparam D the type of the wrapped content.
   */
-case class Envelope[+D](content: D, containerId: ContainerId, destinationDescriptor: DestinationDescriptor)
+case class Envelope[D](content: D, containerId: ContainerId, destinationDescriptor: DestinationDescriptor)
