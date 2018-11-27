@@ -72,9 +72,14 @@ trait IdentityLedgerItDbTest
         Link(
           "two",
           carlos.public,
-          IdentityTransaction.sign("two", IdentityTransactionType.Link, carlos.public, bob.`private`))))
+          IdentityTransaction.sign("two", IdentityTransactionType.Link, carlos.public, bob.`private`),
+          IdentityTransaction.sign("two", IdentityTransactionType.Link, carlos.public, carlos.`private`)
+        ))
+    )
 
-    ledger(block2).isRight mustBe true
+    val x = ledger(block2)
+
+    x.isRight mustBe true
 
     slice(Set("one", "two")) mustBe
       IdentityLedgerState(
@@ -87,7 +92,9 @@ trait IdentityLedgerItDbTest
         Link(
           "three",
           carlos.public,
-          IdentityTransaction.sign("three", IdentityTransactionType.Link, carlos.public, bob.`private`)))
+          IdentityTransaction.sign("three", IdentityTransactionType.Link, carlos.public, bob.`private`),
+          IdentityTransaction.sign("three", IdentityTransactionType.Link, carlos.public, carlos.`private`)
+        ))
     )
     val invalidResult = ledger(block3)
 

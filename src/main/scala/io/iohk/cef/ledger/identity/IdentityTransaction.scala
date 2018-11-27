@@ -66,8 +66,11 @@ case class Claim(identity: String, key: SigningPublicKey, signature: Signature) 
   * @param key the public key to link to the given identity
   * @param signature a digital signature validating the transaction, it should be generated
   *                  from one of the existing keys on the given identity.
+  * @param linkingIdentitySignature a digital signature validating the transaction, it should be generated
+  *   *                  from the public key on the given identity.
   */
-case class Link(identity: String, key: SigningPublicKey, signature: Signature) extends IdentityTransaction {
+case class Link(identity: String, key: SigningPublicKey, signature: Signature, linkingIdentitySignature: Signature)
+    extends IdentityTransaction {
 
   import IdentityTransaction._
 
@@ -89,10 +92,15 @@ case class Link(identity: String, key: SigningPublicKey, signature: Signature) e
         isSignedWith(signKey, signature)(identity, IdentityTransactionType.Link, key)
       }
 
+    lazy val validSignatureToLink =
+      isSignedWith(key, linkingIdentitySignature)(identity, IdentityTransactionType.Link, key)
+
     if (!ledgerState.contains(identity)) {
       Left(IdentityNotClaimedError(identity))
     } else if (!validSignature) {
       Left(UnableToVerifySignatureError)
+    } else if (!validSignatureToLink) {
+      Left(UnableToVerifyLinkingIdentitySignatureError(identity, key))
     } else {
       val prev: IdentityData = ledgerState.get(identity).getOrElse(IdentityData.empty)
       val result = ledgerState.put(identity, prev addKey key)

@@ -5,7 +5,7 @@ import java.time.{Clock, Instant}
 import io.iohk.cef.builder.SigningKeyPairs
 import io.iohk.cef.frontend.models.IdentityTransactionType
 import io.iohk.cef.ledger.{Block, BlockHeader}
-import io.iohk.cef.ledger.identity._
+import io.iohk.cef.ledger.identity.{IdentityTransaction, _}
 import io.iohk.cef.ledger.storage.scalike.LedgerTable
 import io.iohk.cef.ledger.storage.scalike.dao.LedgerStorageDao
 import org.scalatest.{MustMatchers, OptionValues, fixture}
@@ -28,7 +28,12 @@ trait LedgerStorageDaoDbTest
     val header = BlockHeader(Instant.now)
     val txList = List[IdentityTransaction](
       Claim("one", alice.public, uselessSignature),
-      Link("two", bob.public, IdentityTransaction.sign("two", IdentityTransactionType.Link, bob.public, bob.`private`))
+      Link(
+        "two",
+        bob.public,
+        IdentityTransaction.sign("two", IdentityTransactionType.Link, bob.public, bob.`private`),
+        IdentityTransaction.sign("two", IdentityTransactionType.Link, bob.public, bob.`private`)
+      )
     )
     val block = Block[IdentityData, IdentityTransaction](header, txList)
     val storage = new LedgerStorageDao(Clock.systemUTC())

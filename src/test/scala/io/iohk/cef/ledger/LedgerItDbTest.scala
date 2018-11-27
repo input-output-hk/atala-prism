@@ -42,7 +42,9 @@ trait LedgerItDbTest
       Link(
         "carlos",
         bob.public,
-        IdentityTransaction.sign("carlos", IdentityTransactionType.Link, bob.public, alice.`private`))
+        IdentityTransaction.sign("carlos", IdentityTransactionType.Link, bob.public, alice.`private`),
+        IdentityTransaction.sign("carlos", IdentityTransactionType.Link, bob.public, bob.`private`)
+      )
     )
     val testBlock = Block[IdentityData, IdentityTransaction](BlockHeader(Instant.EPOCH), testTxs)
     val emptyLs = LedgerState[IdentityData](Map())
