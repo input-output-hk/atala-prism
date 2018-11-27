@@ -4,7 +4,6 @@ import java.nio.file.Files
 import java.time.Instant
 
 import io.iohk.cef.builder.SigningKeyPairs
-import io.iohk.cef.crypto._
 import io.iohk.cef.frontend.models.IdentityTransactionType
 import io.iohk.cef.ledger.identity._
 import io.iohk.cef.ledger.storage.Ledger
@@ -26,11 +25,11 @@ trait LedgerItDbTest
   it should "apply a block using the generic constructs" in { implicit session =>
     pending
     val genericStateImpl =
-      new MVLedgerStateStorage[Set[SigningPublicKey]]("1", Files.createTempFile("", "").toAbsolutePath)
+      new MVLedgerStateStorage[IdentityData]("1", Files.createTempFile("", "").toAbsolutePath)
     val genericLedgerStorageImpl =
-      new MVLedgerStorage[Set[SigningPublicKey], IdentityTransaction]("1", Files.createTempFile("", "").toAbsolutePath)
+      new MVLedgerStorage[IdentityData, IdentityTransaction]("1", Files.createTempFile("", "").toAbsolutePath)
 
-    val ledger = Ledger[Set[SigningPublicKey], IdentityTransaction]("1", genericLedgerStorageImpl, genericStateImpl)
+    val ledger = Ledger[IdentityData, IdentityTransaction]("1", genericLedgerStorageImpl, genericStateImpl)
 
     val testTxs = List[IdentityTransaction](
       Claim(
@@ -42,11 +41,11 @@ trait LedgerItDbTest
         bob.public,
         IdentityTransaction.sign("carlos", IdentityTransactionType.Link, bob.public, alice.`private`))
     )
-    val testBlock = Block[Set[SigningPublicKey], IdentityTransaction](BlockHeader(Instant.EPOCH), testTxs)
+    val testBlock = Block[IdentityData, IdentityTransaction](BlockHeader(Instant.EPOCH), testTxs)
     ledger.slice(Set("carlos")) mustBe LedgerState()
 
     ledger(testBlock) mustBe Right(())
     ledger.slice(Set("carlos")) mustBe
-      LedgerState[Set[SigningPublicKey]](Map("carlos" -> Set(alice.public, bob.public)))
+      LedgerState[IdentityData](Map("carlos" -> IdentityData.forKeys(alice.public, bob.public)))
   }
 }

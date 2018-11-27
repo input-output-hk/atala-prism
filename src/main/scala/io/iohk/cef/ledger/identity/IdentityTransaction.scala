@@ -5,7 +5,7 @@ import io.iohk.cef.crypto.{sign => signBytes, _}
 import io.iohk.cef.frontend.models.IdentityTransactionType
 import io.iohk.cef.ledger.{LedgerError, Transaction}
 
-sealed trait IdentityTransaction extends Transaction[Set[SigningPublicKey]] {
+sealed trait IdentityTransaction extends Transaction[IdentityData] {
   val identity: String
   val key: SigningPublicKey
   val signature: Signature
@@ -52,7 +52,7 @@ case class Claim(identity: String, key: SigningPublicKey, signature: Signature) 
     } else if (ledgerState.contains(identity)) {
       Left(IdentityTakenError(identity))
     } else {
-      Right(ledgerState.put(identity, Set(key)))
+      Right(ledgerState.put(identity, IdentityData.forKeys(key)))
     }
   }
 
@@ -83,6 +83,7 @@ case class Link(identity: String, key: SigningPublicKey, signature: Signature) e
     // TODO: Go directly to the expected key
     lazy val validSignature: Boolean = ledgerState
       .get(identity)
+      .map(_.keys)
       .getOrElse(Set.empty)
       .exists { signKey =>
         isSignedWith(signKey, signature)(identity, IdentityTransactionType.Link, key)
@@ -93,7 +94,8 @@ case class Link(identity: String, key: SigningPublicKey, signature: Signature) e
     } else if (!validSignature) {
       Left(UnableToVerifySignatureError)
     } else {
-      val result = ledgerState.put(identity, ledgerState.get(identity).getOrElse(Set()) + key)
+      val prev: IdentityData = ledgerState.get(identity).getOrElse(IdentityData.empty)
+      val result = ledgerState.put(identity, prev addKey key)
       Right(result)
     }
   }
@@ -109,6 +111,7 @@ case class Unlink(identity: String, key: SigningPublicKey, signature: Signature)
     // TODO: Go directly to the expected key
     lazy val validSignature: Boolean = ledgerState
       .get(identity)
+      .map(_.keys)
       .getOrElse(Set.empty)
       .exists { signKey =>
         isSignedWith(signKey, signature)(identity, IdentityTransactionType.Unlink, key)
@@ -116,14 +119,19 @@ case class Unlink(identity: String, key: SigningPublicKey, signature: Signature)
 
     if (!validSignature) {
       Left(UnableToVerifySignatureError)
-    } else if (!ledgerState.contains(identity) || !ledgerState.get(identity).getOrElse(Set()).contains(key)) {
+    } else if (!ledgerState.contains(identity) || !ledgerState
+        .get(identity)
+        .map(_.keys)
+        .getOrElse(Set())
+        .contains(key)) {
       Left(PublicKeyNotAssociatedWithIdentity(identity, key))
     } else {
-      val newKeys = ledgerState.get(identity).getOrElse(Set()) - key
-      if (newKeys.isEmpty) {
+      val prev: IdentityData = ledgerState.get(identity).getOrElse(IdentityData.empty)
+      val newData = prev removeKey key
+      if (newData.isEmpty) {
         Right(ledgerState.remove(identity))
       } else {
-        Right(ledgerState.put(identity, newKeys))
+        Right(ledgerState.put(identity, newData))
       }
     }
   }
