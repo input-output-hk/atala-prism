@@ -9,11 +9,12 @@ case class CreateIdentityTransactionRequest(
     identity: String,
     ledgerId: LedgerId,
     publicKey: SigningPublicKey,
-    privateKey: SigningPrivateKey)
+    privateKey: SigningPrivateKey,
+    linkingIdentityPrivateKey: Option[SigningPrivateKey] = None)
 
 object CreateIdentityTransactionRequest {
   implicit val sprayJsonFormat: RootJsonFormat[CreateIdentityTransactionRequest] =
-    jsonFormat5(CreateIdentityTransactionRequest.apply)
+    jsonFormat6(CreateIdentityTransactionRequest.apply)
 }
 
 case class SubmitIdentityTransactionRequest(
@@ -21,4 +22,5 @@ case class SubmitIdentityTransactionRequest(
     identity: String,
     ledgerId: LedgerId,
     publicKey: SigningPublicKey,
-    signature: Signature)
+    signature: Signature,
+    linkingIdentitySignature: Option[Signature] = None)

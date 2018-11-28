@@ -3,7 +3,6 @@ package io.iohk.cef.ledger
 import java.time.{Clock, Instant}
 
 import io.iohk.cef.builder.SigningKeyPairs
-import io.iohk.cef.crypto._
 import io.iohk.cef.frontend.models.IdentityTransactionType
 import io.iohk.cef.ledger.identity._
 import io.iohk.cef.ledger.storage.Ledger
@@ -43,14 +42,16 @@ trait LedgerItDbTest
       Link(
         "carlos",
         bob.public,
-        IdentityTransaction.sign("carlos", IdentityTransactionType.Link, bob.public, alice.`private`))
+        IdentityTransaction.sign("carlos", IdentityTransactionType.Link, bob.public, alice.`private`),
+        IdentityTransaction.sign("carlos", IdentityTransactionType.Link, bob.public, bob.`private`)
+      )
     )
-    val testBlock = Block[Set[SigningPublicKey], IdentityTransaction](BlockHeader(Instant.EPOCH), testTxs)
-    val emptyLs = LedgerState[Set[SigningPublicKey]](Map())
-    genericStateDao.slice[Set[SigningPublicKey]]("1", Set("carlos")) mustBe emptyLs
+    val testBlock = Block[IdentityData, IdentityTransaction](BlockHeader(Instant.EPOCH), testTxs)
+    val emptyLs = LedgerState[IdentityData](Map())
+    genericStateDao.slice[IdentityData]("1", Set("carlos")) mustBe emptyLs
 
     ledger(testBlock) mustBe Right(())
-    genericStateDao.slice[Set[SigningPublicKey]]("1", Set("carlos")) mustBe
-      LedgerState[Set[SigningPublicKey]](Map("carlos" -> Set(alice.public, bob.public)))
+    genericStateDao.slice[IdentityData]("1", Set("carlos")) mustBe
+      LedgerState[IdentityData](Map("carlos" -> IdentityData.forKeys(alice.public, bob.public)))
   }
 }

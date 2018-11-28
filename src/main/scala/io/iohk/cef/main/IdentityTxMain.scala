@@ -14,7 +14,7 @@ import io.iohk.cef.frontend.controllers.IdentitiesController
 import io.iohk.cef.frontend.models.IdentityTransactionType
 import io.iohk.cef.frontend.services.IdentityTransactionService
 import io.iohk.cef.ledger.Block
-import io.iohk.cef.ledger.identity.IdentityTransaction
+import io.iohk.cef.ledger.identity.{IdentityTransaction, IdentityData}
 import pureconfig.generic.auto._
 import io.iohk.cef.config.ConfigReaderExtensions._
 
@@ -28,7 +28,7 @@ object IdentityTxMain extends App {
   val identityTxMainConfig: IdentityTxMainConfig =
     pureconfig.loadConfigOrThrow[IdentityTxMainConfig](ConfigFactory.load("identity-tx-main"))
 
-  type S = Set[SigningPublicKey]
+  type S = IdentityData
   type T = IdentityTransaction
   type B = Block[S, T]
 

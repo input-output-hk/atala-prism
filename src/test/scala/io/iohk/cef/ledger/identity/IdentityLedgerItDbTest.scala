@@ -3,7 +3,6 @@ package io.iohk.cef.ledger.identity
 import java.time.{Clock, Instant}
 
 import io.iohk.cef.builder.SigningKeyPairs
-import io.iohk.cef.crypto._
 import io.iohk.cef.ledger.storage.scalike.LedgerStateStorageImpl
 import io.iohk.cef.ledger.storage.scalike.dao.LedgerStateStorageDao
 import io.iohk.cef.frontend.models.IdentityTransactionType
@@ -39,13 +38,13 @@ trait IdentityLedgerItDbTest
 
   it should "throw an error when the tx is inconsistent with the state" in { implicit session =>
     val ledgerStateStorageDao = new LedgerStateStorageDao
-    def slice(keys: Set[String]): LedgerState[Set[SigningPublicKey]] =
-      ledgerStateStorageDao.slice[Set[SigningPublicKey]]("identityLedger", keys)
+    def slice(keys: Set[String]): LedgerState[IdentityData] =
+      ledgerStateStorageDao.slice[IdentityData]("identityLedger", keys)
 
     val ledger = createLedger(ledgerStateStorageDao)
     val now = Instant.now()
     val header = BlockHeader(now)
-    val block1 = Block[Set[SigningPublicKey], IdentityTransaction](
+    val block1 = Block[IdentityData, IdentityTransaction](
       header,
       List[IdentityTransaction](
         Claim(
@@ -61,34 +60,41 @@ trait IdentityLedgerItDbTest
 
     ledger(block1).isRight mustBe true
 
-    slice(Set("one")) mustBe IdentityLedgerState(Map("one" -> Set(alice.public)))
-    slice(Set("two")) mustBe IdentityLedgerState(Map("two" -> Set(bob.public)))
+    slice(Set("one")) mustBe IdentityLedgerState(Map("one" -> IdentityData.forKeys(alice.public)))
+    slice(Set("two")) mustBe IdentityLedgerState(Map("two" -> IdentityData.forKeys(bob.public)))
     slice(Set("three")) mustBe IdentityLedgerState()
     slice(Set("one", "two", "three")) mustBe
-      IdentityLedgerState(Map("one" -> Set(alice.public), "two" -> Set(bob.public)))
+      IdentityLedgerState(Map("one" -> IdentityData.forKeys(alice.public), "two" -> IdentityData.forKeys(bob.public)))
 
-    val block2 = Block[Set[SigningPublicKey], IdentityTransaction](
+    val block2 = Block[IdentityData, IdentityTransaction](
       header,
       List[IdentityTransaction](
         Link(
           "two",
           carlos.public,
-          IdentityTransaction.sign("two", IdentityTransactionType.Link, carlos.public, bob.`private`))))
+          IdentityTransaction.sign("two", IdentityTransactionType.Link, carlos.public, bob.`private`),
+          IdentityTransaction.sign("two", IdentityTransactionType.Link, carlos.public, carlos.`private`)
+        ))
+    )
 
-    ledger(block2).isRight mustBe true
+    val x = ledger(block2)
+
+    x.isRight mustBe true
 
     slice(Set("one", "two")) mustBe
       IdentityLedgerState(
-        Map("one" -> Set(alice.public), "two" -> Set(bob.public, carlos.public))
+        Map("one" -> IdentityData.forKeys(alice.public), "two" -> IdentityData.forKeys(bob.public, carlos.public))
       )
 
-    val block3 = Block[Set[SigningPublicKey], IdentityTransaction](
+    val block3 = Block[IdentityData, IdentityTransaction](
       header,
       List[IdentityTransaction](
         Link(
           "three",
           carlos.public,
-          IdentityTransaction.sign("three", IdentityTransactionType.Link, carlos.public, bob.`private`)))
+          IdentityTransaction.sign("three", IdentityTransactionType.Link, carlos.public, bob.`private`),
+          IdentityTransaction.sign("three", IdentityTransactionType.Link, carlos.public, carlos.`private`)
+        ))
     )
     val invalidResult = ledger(block3)
 
