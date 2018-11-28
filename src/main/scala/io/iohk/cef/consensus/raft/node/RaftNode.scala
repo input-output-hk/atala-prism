@@ -103,7 +103,7 @@ private[raft] class RaftNode[Command: NioEncDec](
   private[raft] def withState[T](f: RaftState[Command] => (RaftState[Command], T)): T = this.synchronized {
     atomic { implicit txn =>
       val (nextState, result) = f(raftState())
-      raftState() = nextState.copy(baseLog = nextState.log, deletes = 0, writes = Seq.empty)
+      raftState() = nextState.copy(baseLog = nextState.log, deletes = 0, writes = IndexedSeq.empty)
       Txn.whileCommitting(_ => persistState(nextState))
       result
     }
@@ -272,7 +272,7 @@ private[raft] class RaftNode[Command: NioEncDec](
       (currentTerm, votedFor),
       log,
       0,
-      Seq(),
+      IndexedSeq(),
       votedFor,
       randomUUID()
     )
