@@ -2,7 +2,7 @@ package io.iohk.cef
 
 import io.iohk.cef.data.storage.scalike.dao.TableStorageDaoDbTest
 import io.iohk.cef.db.scalike.HikariConnPoolFactory
-import io.iohk.cef.integration.DataItemServiceTableDbItSpec
+import io.iohk.cef.integration.{DataItemServiceTableDbItSpec, QueryEngineTableItDbTest}
 import io.iohk.cef.ledger.chimeric.ChimericLedgerItDbTest
 import io.iohk.cef.ledger.identity.IdentityLedgerItDbTest
 import io.iohk.cef.ledger.LedgerItDbTest
@@ -23,6 +23,7 @@ class DatabaseTestSuites
       new LedgerStateStorageDaoDbTest {},
       new TableStorageDaoDbTest {},
       new DataItemServiceTableDbItSpec {},
+      new QueryEngineTableItDbTest {},
     )
     with BeforeAndAfterAll {
 
