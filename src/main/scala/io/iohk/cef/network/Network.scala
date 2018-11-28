@@ -21,13 +21,14 @@ trait Network[Message] {
 
 object Network {
   def apply[Message: WeakTypeTag](networkDiscovery: NetworkDiscovery, transports: Transports)(
-    implicit enc: NioEncDec[Frame[Message]]
+      implicit enc: NioEncDec[Frame[Message]]
   ): Network[Message] =
     new NetworkImpl[Message](networkDiscovery, transports)
 }
 
 class NetworkImpl[Message: WeakTypeTag](networkDiscovery: NetworkDiscovery, transports: Transports)(
-  implicit enc: NioEncDec[Frame[Message]]) extends Network[Message] {
+    implicit enc: NioEncDec[Frame[Message]])
+    extends Network[Message] {
 
   private val conversationalNetwork = new ConversationalNetwork[Message](networkDiscovery, transports)
   private val disseminationalNetwork = new DisseminationalNetwork[Message](networkDiscovery, transports)

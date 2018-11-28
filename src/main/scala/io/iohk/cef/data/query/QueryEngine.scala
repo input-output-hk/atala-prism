@@ -20,12 +20,7 @@ class QueryEngine[I](
       implicit itemSerializable: NioEncDec[I]): MessageStream[Either[ApplicationError, Seq[DataItem[I]]]] = {
     val responseStream = networkProcessing(tableId, query)
     val localProcessingEither = localProcessing(tableId, query)
-    responseStream.map(networkEither => {
-      for {
-        local <- localProcessingEither
-        network <- networkEither
-      } yield local ++ network
-    })
+    responseStream.prepend(localProcessingEither)
   }
 
   private def networkProcessing(

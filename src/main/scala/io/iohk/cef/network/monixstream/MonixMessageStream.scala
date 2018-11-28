@@ -22,6 +22,9 @@ private[network] class MonixMessageStream[T](val o: Observable[T]) extends Messa
 
   override def foreach(f: T => Unit): CancellableFuture[Unit] =
     CancellableFuture(o.foreach(f))
+
+  override def prepend(t: T): MessageStream[T] =
+    new MonixMessageStream(Observable.cons(t, o))
 }
 
 object MonixMessageStream {
