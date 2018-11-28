@@ -159,7 +159,7 @@ case class RaftState[Command](
     persistentState: (Int, String),
     baseLog: IndexedSeq[LogEntry[Command]],
     deletes: Int,
-    writes: Seq[LogEntry[Command]],
+    writes: IndexedSeq[LogEntry[Command]],
     leaderId: String,
     uuid: UUID) {
   val log = new VirtualVector(baseLog, deletes, writes)

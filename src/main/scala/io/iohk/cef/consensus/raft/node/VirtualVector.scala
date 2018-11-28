@@ -14,17 +14,31 @@ import mutable.Builder
   * @param writes a Seq of additional entries to append.
   * @tparam T any type.
   */
-class VirtualVector[+T](base: IndexedSeq[T], deletes: Int, writes: Seq[T])
+class VirtualVector[+T](base: IndexedSeq[T], deletes: Int, writes: IndexedSeq[T])
     extends IndexedSeq[T]
     with GenericTraversableTemplate[T, VirtualVector] {
+
+  private val shallowBase = shallowWrap(base)
+
+  private val shallowWrites = shallowWrap(writes)
+
   override def companion: GenericCompanion[VirtualVector] = VirtualVector
-  override def length: Int = base.size - deletes + writes.size
+
+  override def length: Int = shallowBase.length - deletes + shallowWrites.size
+
   override def apply(idx: Int): T = {
-    if (idx < base.size - deletes) {
-      base(idx)
+    if (idx < shallowBase.length - deletes) {
+      shallowBase(idx)
     } else {
-      writes(idx - base.size + deletes)
+      shallowWrites(idx - shallowBase.length + deletes)
     }
+  }
+
+  private def shallowWrap[I](is: IndexedSeq[I]): IndexedSeq[I] = is match {
+    case vv: VirtualVector[I] =>
+      Vector(is: _*)
+    case _ =>
+      is
   }
 }
 
@@ -37,7 +51,7 @@ object VirtualVector extends IndexedSeqFactory[VirtualVector] {
   def newBuilder[T]: Builder[T, VirtualVector[T]] = new Builder[T, VirtualVector[T]] {
     private val internal = immutable.IndexedSeq.newBuilder[T]
     def clear(): Unit = internal.clear()
-    def result(): VirtualVector[T] = new VirtualVector(internal.result(), 0, Seq.empty)
+    def result(): VirtualVector[T] = new VirtualVector(internal.result(), 0, IndexedSeq.empty)
     def +=(elem: T): this.type = {
       internal += elem
       this
