@@ -1,6 +1,7 @@
 package io.iohk.cef.data.error
 
 import io.iohk.cef.crypto._
+import io.iohk.cef.data.query.Field
 import io.iohk.cef.data.{DataItem, DataItemId, TableId}
 import io.iohk.cef.error.ApplicationError
 
@@ -16,4 +17,8 @@ case class OwnerMustSignDelete[I](dataItem: DataItem[I]) extends TableError {
 
 case class DataItemNotFound(tableId: TableId, dataItemId: DataItemId) extends TableError {
   override def toString: String = s"Data item ${dataItemId} not found on table ${tableId}"
+}
+
+case class InvalidQueryError(tableId: TableId, field: Field) extends TableError {
+  override def toString: String = s"Error in query. Unable to access field '$field' on table '$tableId'."
 }
