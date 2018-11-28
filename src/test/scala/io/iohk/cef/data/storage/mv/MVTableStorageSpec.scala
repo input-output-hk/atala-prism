@@ -5,7 +5,9 @@ import java.nio.file.{Files, Path}
 import io.iohk.cef.data.DataItem
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.data.error.DataItemNotFound
-import io.iohk.cef.data.query.Query.NoPredicateQuery
+import io.iohk.cef.data.query.Field
+import io.iohk.cef.data.query.Query._
+import io.iohk.cef.data.query.Value.StringRef
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 import org.scalatest.EitherValues._
@@ -48,6 +50,19 @@ class MVTableStorageSpec extends FlatSpec {
 
     // when
     val selectionResult = storage.select(NoPredicateQuery).right.value
+
+    // then
+    selectionResult shouldBe Seq(dataItem)
+  }
+
+  it should "support a simple field query" in testStorage { storage =>
+    // given
+    val dataItem = DataItem("A", Random.nextString(28), Seq(), Seq())
+    storage.insert(dataItem)
+    val query = Field(0) #== StringRef("A")
+
+    // when
+    val selectionResult = storage.select(query).right.value
 
     // then
     selectionResult shouldBe Seq(dataItem)

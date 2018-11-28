@@ -21,10 +21,8 @@ class ByteBufferDataType[T](codec: NioEncDec[T]) extends DataType {
   override def write(buff: WriteBuffer, obj: Any): Unit =
     buff.put(codec.encode(obj.asInstanceOf[T]))
 
-  override def write(buff: WriteBuffer, obj: Array[AnyRef], len: Int, key: Boolean): Unit = {
-    require(!key)
+  override def write(buff: WriteBuffer, obj: Array[AnyRef], len: Int, key: Boolean): Unit =
     (0 until len).foreach(i => write(buff, obj(i)))
-  }
 
   override def read(buff: ByteBuffer): AnyRef =
     codec
@@ -32,8 +30,6 @@ class ByteBufferDataType[T](codec: NioEncDec[T]) extends DataType {
       .getOrElse(throw new IllegalStateException("Decoding error in underlying storage"))
       .asInstanceOf[AnyRef]
 
-  override def read(buff: ByteBuffer, obj: Array[AnyRef], len: Int, key: Boolean): Unit = {
-    require(!key)
+  override def read(buff: ByteBuffer, obj: Array[AnyRef], len: Int, key: Boolean): Unit =
     (0 until len).foreach(i => obj(i) = read(buff))
-  }
 }

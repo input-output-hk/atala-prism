@@ -46,6 +46,15 @@ object Query {
           val ts: Seq[T] = predicates.map(p => predicateCata(fEq, fAnd, fOr, p))
           fOr(ts)
       }
+
+    def toPredicateFn[T](fieldAccessor: (T, Field) => Value, predicate: Predicate): T => Boolean = {
+      predicateCata[T => Boolean](
+        fEq = (field, value) => t => fieldAccessor(t, field) == value,
+        fAnd = predicates => t => predicates.forall(_.apply(t)),
+        fOr = predicates => t => predicates.exists(_.apply(t)),
+        predicate = predicate
+      )
+    }
   }
 }
 
