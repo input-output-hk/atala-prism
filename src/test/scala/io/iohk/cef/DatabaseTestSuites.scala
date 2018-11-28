@@ -9,25 +9,18 @@ import io.iohk.cef.ledger.LedgerItDbTest
 import io.iohk.cef.ledger.storage.dao.{LedgerStateStorageDaoDbTest, LedgerStorageDaoDbTest}
 import io.iohk.cef.network.discovery.db.KnownNodeStorageImplDbTest
 import org.flywaydb.core.Flyway
-import org.scalatest.{BeforeAndAfterAll, Suites}
+import org.scalatest.{BeforeAndAfterAll, Suites, Suite}
 import scalikejdbc.config.DBs
 import scalikejdbc.{ConnectionPool, JDBCSettings}
 
-class DatabaseTestSuites
-    extends Suites(
-      new KnownNodeStorageImplDbTest {},
-      new IdentityLedgerItDbTest {},
-      new LedgerStorageDaoDbTest {},
-      new LedgerItDbTest {},
-      new ChimericLedgerItDbTest {},
-      new LedgerStateStorageDaoDbTest {},
-      new TableStorageDaoDbTest {},
-      new DataItemServiceTableDbItSpec {},
-    )
-    with BeforeAndAfterAll {
+class DatabaseTestSuites extends Suite with BeforeAndAfterAll {
 
-  val flyway = new Flyway()
-  val settings: JDBCSettings = DBs.readJDBCSettings('default)
+  val settings: JDBCSettings =
+    DBs.readJDBCSettings('default)
+
+  val flyway =
+    new Flyway()
+
   flyway.setDataSource(settings.url, settings.user, settings.password)
   if (!settings.url.endsWith("test")) {
     throw new IllegalStateException(
@@ -53,4 +46,17 @@ class DatabaseTestSuites
   override protected def afterAll(): Unit = {
     ConnectionPool.closeAll()
   }
+
+  override val nestedSuites: collection.immutable.IndexedSeq[Suite] =
+    Suites(
+      new KnownNodeStorageImplDbTest {},
+      new IdentityLedgerItDbTest {},
+      new LedgerStorageDaoDbTest {},
+      new LedgerItDbTest {},
+      new ChimericLedgerItDbTest {},
+      new LedgerStateStorageDaoDbTest {},
+      new TableStorageDaoDbTest {},
+      new DataItemServiceTableDbItSpec {},
+    ).nestedSuites
+
 }

@@ -90,6 +90,10 @@ scala_test(
     "//3rdparty/jvm/com/alexitc:playsonify_akka_http",
     "//3rdparty/jvm/com/typesafe/play:play_json",
     "//3rdparty/jvm/de/heikoseeberger:akka_http_play_json",
+    "//3rdparty/jvm/javax/xml/bind:jaxb_api",
+    "//3rdparty/jvm/com/sun/xml/bind:jaxb_core",
+    "//3rdparty/jvm/com/sun/xml/bind:jaxb_impl",
+    "//3rdparty/jvm/javax/activation:activation",
     ],
     visibility = ["//visibility:public"],
 )
