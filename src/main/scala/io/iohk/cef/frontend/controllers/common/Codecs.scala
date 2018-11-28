@@ -243,6 +243,10 @@ object Codecs {
       case _: Unlink => IdentityTransactionType.Unlink
     }
 
+    val linkingIdentitySignatureMayBe = obj match {
+      case l: Link => Map("linkingIdentitySignature" -> JsString(toCleanHex(l.linkingIdentitySignature.toByteString)))
+      case _ => Map.empty[String, JsString]
+    }
     val map = Map(
       "type" -> JsString(tpe.toString),
       "key" -> JsString(toCleanHex(obj.key.toByteString)),
@@ -250,7 +254,7 @@ object Codecs {
       "identity" -> JsString(obj.identity)
     )
 
-    JsObject(map)
+    JsObject(map ++ linkingIdentitySignatureMayBe)
   }
 
   // TODO: Move to the util package and test it

@@ -22,7 +22,10 @@ class IdentityTransactionSpec
     val link = Link(
       "two",
       bob.public,
-      IdentityTransaction.sign("two", IdentityTransactionType.Link, carlos.public, bob.`private`))
+      IdentityTransaction.sign("two", IdentityTransactionType.Link, carlos.public, bob.`private`),
+      IdentityTransaction.sign("two", IdentityTransactionType.Link, carlos.public, carlos.`private`)
+    )
+
     val unlink1 = Unlink(
       "one",
       bob.public,
@@ -58,7 +61,10 @@ class IdentityTransactionSpec
     val link = Link(
       "one",
       bob.public,
-      IdentityTransaction.sign("one", IdentityTransactionType.Link, bob.public, alice.`private`))
+      IdentityTransaction.sign("one", IdentityTransactionType.Link, bob.public, alice.`private`),
+      IdentityTransaction.sign("one", IdentityTransactionType.Link, bob.public, bob.`private`)
+    )
+
     val newStateEither = link(state)
 
     val newState = newStateEither.right.value
@@ -82,10 +88,29 @@ class IdentityTransactionSpec
   it should "fail to apply a link if the signature can not be verified" in {
     val state = IdentityLedgerState(Map("one" -> IdentityData.forKeys(alice.public)))
     val link =
-      Link("one", bob.public, IdentityTransaction.sign("one", IdentityTransactionType.Link, bob.public, bob.`private`))
+      Link(
+        "one",
+        bob.public,
+        IdentityTransaction.sign("one", IdentityTransactionType.Link, bob.public, bob.`private`),
+        IdentityTransaction.sign("one", IdentityTransactionType.Link, bob.public, bob.`private`)
+      )
 
     val result = link(state).left.value
     result mustBe UnableToVerifySignatureError
+  }
+
+  it should "fail to apply a link if the link identity signature can not be verified" in {
+    val state = IdentityLedgerState(Map("one" -> IdentityData.forKeys(alice.public)))
+    val link =
+      Link(
+        "one",
+        bob.public,
+        IdentityTransaction.sign("one", IdentityTransactionType.Link, bob.public, alice.`private`),
+        IdentityTransaction.sign("one", IdentityTransactionType.Link, bob.public, alice.`private`)
+      )
+
+    val result = link(state).left.value
+    result mustBe UnableToVerifyLinkingIdentitySignatureError("one", bob.public)
   }
 
   it should "fail to apply an unlink if the signature can not be verified" in {
@@ -129,7 +154,12 @@ class IdentityTransactionSpec
       alice.public,
       IdentityTransaction.sign("one", IdentityTransactionType.Claim, alice.public, alice.`private`))
     val link =
-      Link("two", bob.public, IdentityTransaction.sign("two", IdentityTransactionType.Link, bob.public, bob.`private`))
+      Link(
+        "two",
+        bob.public,
+        IdentityTransaction.sign("two", IdentityTransactionType.Link, bob.public, bob.`private`),
+        IdentityTransaction.sign("two", IdentityTransactionType.Link, bob.public, bob.`private`)
+      )
     val unlink = Unlink(
       "two",
       bob.public,

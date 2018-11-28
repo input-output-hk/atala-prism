@@ -68,6 +68,41 @@ class IdentitiesControllerSpec
       }
     }
 
+    def testTransactionLinkType(txType: String) = {
+
+      val pairLink = generateSigningKeyPair()
+      val publicKeyLinkHex = toCleanHex(pairLink.public.toByteString)
+      val privateKeyLinkHex = toCleanHex(pairLink.`private`.toByteString)
+
+      val identity = "iohk"
+
+      val body =
+        s"""
+           |{
+           |    "type": "$txType",
+           |    "identity": "$identity",
+           |    "ledgerId": "1",
+           |    "publicKey": "$publicKeyLinkHex",
+           |    "privateKey": "$privateKeyHex",
+           |    "linkingIdentityPrivateKey": "$privateKeyLinkHex"
+           |
+           |}
+         """.stripMargin
+
+      val request = Post("/identities", jsonEntity(body))
+
+      request ~> routes ~> check {
+        status must ===(StatusCodes.Created)
+        val json = responseAs[JsValue]
+        (json \ "type").as[String] must be(txType)
+        (json \ "key").as[String] must be(publicKeyLinkHex)
+        (json \ "signature").as[String] mustNot be(empty)
+        (json \ "identity").as[String] must be(identity)
+        (json \ "linkingIdentitySignature").as[String] mustNot be(empty)
+
+      }
+    }
+
     def validateErrorResponse(json: JsValue) = {
       val errors = (json \ "errors").as[List[JsValue]]
       errors.size must be(5)
@@ -83,7 +118,7 @@ class IdentitiesControllerSpec
     }
 
     "be able to create identity link transaction" in {
-      testTransactionType("Link")
+      testTransactionLinkType("Link")
     }
 
     "be able to create identity unlink transaction" in {
