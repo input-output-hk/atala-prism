@@ -16,6 +16,7 @@ import scalikejdbc.scalatest.AutoRollback
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
+import org.scalatest.concurrent.ScalaFutures._
 
 trait QueryEngineTableItDbTest extends fixture.FlatSpec with AutoRollback with MustMatchers with EitherValues {
 
@@ -35,10 +36,7 @@ trait QueryEngineTableItDbTest extends fixture.FlatSpec with AutoRollback with M
     val realEngine =
       new QueryEngine(nodeId, realTable, requestNetwork, responseNetwork, () => UUID.randomUUID().toString)
 
-    implicit val canValidate = new CanValidate[DataItem[String]] {
-      override def validate(t: DataItem[String]): Either[ApplicationError, Unit] =
-        Right(())
-    }
+    implicit val canValidate: CanValidate[DataItem[String]] = _ => Right(())
 
     val service = new DataItemService(realTable, fakeDataItemNetwork, realEngine)
 
@@ -65,7 +63,7 @@ trait QueryEngineTableItDbTest extends fixture.FlatSpec with AutoRollback with M
             current <- c
             state <- s
           } yield current ++ state)
-      Await.result(fold, 10 seconds)
+      fold.futureValue
     }
 
     scheduler.tick()
