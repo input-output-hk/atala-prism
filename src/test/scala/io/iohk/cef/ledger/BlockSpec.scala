@@ -19,7 +19,7 @@ class BlockSpec extends FlatSpec with MustMatchers with EitherValues {
   it should "apply itself to a state" in {
     val state = new LedgerState[String](Map())
 
-    block(state).right.value mustBe LedgerState(Map())
+    block(state).right.value mustBe LedgerState()
   }
 
   it should "calculate keys correctly" in {

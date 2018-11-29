@@ -3,7 +3,6 @@ package io.iohk.cef.integration
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
-import io.iohk.cef.codecs.nio._
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.transactionservice.Envelope
 import io.iohk.cef.data._
@@ -30,14 +29,13 @@ class ControllerDataItemServiceSpec
   import Codecs._
   import ControllerDataItemServiceSpec._
 
-  val table: Table = mock[Table]
+  val table: Table[BirthCertificate] = mock[Table[BirthCertificate]]
   val network: Network[Envelope[DataItemAction[BirthCertificate]]] =
     mock[Network[Envelope[DataItemAction[BirthCertificate]]]]
   implicit val canValidate = new CanValidate[DataItem[BirthCertificate]] {
     override def validate(t: DataItem[BirthCertificate]): Either[ApplicationError, Unit] = Right(Unit)
   }
-  when(table.insert(any(), any())(any[NioEncDec[BirthCertificate]], any[CanValidate[DataItem[BirthCertificate]]]()))
-    .thenReturn(Right(()))
+  when(table.insert(any[DataItem[BirthCertificate]])(any())).thenReturn(Right(()))
   val messageStream = mock[MessageStream[Envelope[DataItemAction[BirthCertificate]]]]
   when(network.messageStream).thenReturn(messageStream)
   val service = new DataItemService[BirthCertificate](table, network, mock[QueryEngine[BirthCertificate]])
@@ -76,7 +74,7 @@ class ControllerDataItemServiceSpec
       request ~> routes ~> check {
         status must ===(StatusCodes.Created)
       }
-      verify(table, times(1)).insert(any(), any())(any(), any())
+      verify(table, times(1)).insert(any())(any())
       verify(network, times(1)).disseminateMessage(any())
 
     }

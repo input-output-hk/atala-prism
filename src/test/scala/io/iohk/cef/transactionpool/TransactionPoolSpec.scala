@@ -1,6 +1,5 @@
 package io.iohk.cef.transactionpool
 import io.iohk.cef.error.ApplicationError
-import io.iohk.cef.ledger.storage.dao.MockingLedgerStateStorage
 import io.iohk.cef.ledger.{Block, BlockHeader, LedgerState, Transaction}
 import io.iohk.cef.test.{DummyTransaction, TestClock}
 import org.mockito.ArgumentMatchers
@@ -14,16 +13,13 @@ import org.mockito.ArgumentMatchers._
 import scala.collection.immutable.Queue
 import scala.concurrent.duration._
 import io.iohk.cef.codecs.nio.auto._
+import io.iohk.cef.ledger.storage.LedgerStateStorage
 
-class TransactionPoolSpec
-    extends FlatSpec
-    with MustMatchers
-    with PropertyChecks
-    with MockitoSugar
-    with MockingLedgerStateStorage {
+class TransactionPoolSpec extends FlatSpec with MustMatchers with PropertyChecks with MockitoSugar {
 
   behavior of "TransactionPool"
 
+  val mockLedgerStateStorage: LedgerStateStorage[String] = mock[LedgerStateStorage[String]]
   val emptyHeaderGenerator: Seq[Transaction[String]] => BlockHeader = _ => new BlockHeader {}
 
   def headerGenerator(size: Int): Seq[Transaction[String]] => BlockHeader = _ => BlockHeader()
@@ -43,8 +39,7 @@ class TransactionPoolSpec
         tx -> clock.instant().plus(java.time.Duration.ofMillis(defaultDuration.toMillis))
       })
       val ledgerStateStorage = mockLedgerStateStorage
-      when(ledgerStateStorage.slice[String](ArgumentMatchers.any())(ArgumentMatchers.any()))
-        .thenReturn(LedgerState[String](Map()))
+      when(ledgerStateStorage.slice(any())).thenReturn(LedgerState[String]())
       val pool =
         new TransactionPool(timedQueue, (_: Seq[Transaction[String]]) => header, txs.size, ledgerStateStorage, 1 minute)
       val block = pool.generateBlock()
@@ -103,7 +98,7 @@ class TransactionPoolSpec
       case Right(newPool) =>
         newPool.removeBlockTransactions(block)
         txs.foreach(tx => verify(timedQueue, times(1)).enqueue(tx, defaultExpiration))
-        verify(timedQueue, times(1)).filterNot(ArgumentMatchers.any())
+        verify(timedQueue, times(1)).filterNot(any())
       case Left(error) => fail(s"Received message: $error, but expected Right(...)")
     }
   }

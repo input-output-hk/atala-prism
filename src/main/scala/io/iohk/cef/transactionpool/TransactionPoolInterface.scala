@@ -8,6 +8,7 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.Duration
 import scala.concurrent.stm.{Ref, atomic}
 import java.time.Clock
+import scala.reflect.runtime.universe.TypeTag
 
 /**
   * Interface for non actor model
@@ -27,10 +28,10 @@ import java.time.Clock
   * @tparam Header
   * @tparam Tx
   */
-class TransactionPoolInterface[State: NioEncDec, Tx <: Transaction[State]](
+class TransactionPoolInterface[State: NioEncDec: TypeTag, Tx <: Transaction[State]](
     headerGenerator: Seq[Transaction[State]] => BlockHeader,
     maxBlockSize: Int,
-    ledgerStateStorage: LedgerStateStorage,
+    ledgerStateStorage: LedgerStateStorage[State],
     defaultTransactionExpiration: Duration,
     timedQueueConstructor: () => TimedQueue[Tx])(implicit executionContext: ExecutionContext) {
 
@@ -75,10 +76,10 @@ class TransactionPoolInterface[State: NioEncDec, Tx <: Transaction[State]](
 }
 
 object TransactionPoolInterface {
-  def apply[State: NioEncDec, Tx <: Transaction[State]](
+  def apply[State: NioEncDec: TypeTag, Tx <: Transaction[State]](
       headerGenerator: Seq[Transaction[State]] => BlockHeader,
       maxBlockSize: Int,
-      ledgerStateStorage: LedgerStateStorage,
+      ledgerStateStorage: LedgerStateStorage[State],
       defaultTransactionExpiration: Duration,
       clock: Clock)(implicit executionContext: ExecutionContext): TransactionPoolInterface[State, Tx] =
     new TransactionPoolInterface(
@@ -87,10 +88,10 @@ object TransactionPoolInterface {
       ledgerStateStorage,
       defaultTransactionExpiration,
       () => new TimedQueue[Tx](clock))
-  def apply[State: NioEncDec, Tx <: Transaction[State]](
+  def apply[State: NioEncDec: TypeTag, Tx <: Transaction[State]](
       headerGenerator: Seq[Transaction[State]] => BlockHeader,
       maxBlockSize: Int,
-      ledgerStateStorage: LedgerStateStorage,
+      ledgerStateStorage: LedgerStateStorage[State],
       defaultTransactionExpiration: Duration)(
       implicit executionContext: ExecutionContext): TransactionPoolInterface[State, Tx] =
     new TransactionPoolInterface(

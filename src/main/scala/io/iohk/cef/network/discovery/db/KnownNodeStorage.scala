@@ -12,7 +12,7 @@ trait KnownNodeStorage {
     * @param nodeInfo
     * @return
     */
-  def insert(nodeInfo: NodeInfo): Long
+  def insert(nodeInfo: NodeInfo): Unit
 
   def remove(nodeInfo: NodeInfo): Unit
 

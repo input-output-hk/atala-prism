@@ -6,6 +6,7 @@ import io.iohk.cef.codecs.nio.NioEncDec
 
 import scala.annotation.tailrec
 import scala.concurrent.duration._
+import scala.reflect.runtime.universe.TypeTag
 
 /**
   * A TransactionPool serves as a queue for transactions before being added to a blockchain.
@@ -15,11 +16,11 @@ import scala.concurrent.duration._
   * @param maxBlockSize maximum block size in bytes
   * @tparam State the ledger state type
   */
-class TransactionPool[State: NioEncDec, Tx <: Transaction[State]](
+class TransactionPool[State: NioEncDec: TypeTag, Tx <: Transaction[State]](
     timedQueue: TimedQueue[Tx] = new TimedQueue[Tx](),
     headerGenerator: Seq[Transaction[State]] => BlockHeader,
     maxBlockSize: Int,
-    ledgerStateStorage: LedgerStateStorage,
+    ledgerStateStorage: LedgerStateStorage[State],
     defaultTransactionExpiration: Duration) {
   require(0 <= maxBlockSize)
   type Q = TimedQueue[Tx]
@@ -74,7 +75,7 @@ class TransactionPool[State: NioEncDec, Tx <: Transaction[State]](
       } else {
         val block = Block[State, Tx](headerGenerator(nextBlockTxs.queue), nextBlockTxs.queue)
         //Do we need to optimize this?
-        val newLedgerState = ledgerStateStorage.slice[State](block.partitionIds)
+        val newLedgerState = ledgerStateStorage.slice(block.partitionIds)
         val applyResult = block(newLedgerState)
         if (applyResult.isLeft) {
           getTxs(blockTxs, tailRemainingQueue)

@@ -9,8 +9,8 @@ import io.iohk.cef.network.telemetry.Telemetery
 
 import scala.concurrent.duration.FiniteDuration
 
-//Implementation only for demo-ing purposes
-class DummyKnownNodesStorage(clock: Clock) extends KnownNodeStorage {
+// Implementation only for demo-ing purposes
+class DummyKnownNodeStorage(clock: Clock) extends KnownNodeStorage {
   self: Telemetery =>
 
   var nodeMap: Map[ByteString, KnownNode] = Map.empty
@@ -20,11 +20,11 @@ class DummyKnownNodesStorage(clock: Clock) extends KnownNodeStorage {
 
   override def getAll(): Set[KnownNode] = nodeMap.values.toSet
 
-  override def insert(nodeInfo: NodeInfo): Long = {
+  override def insert(nodeInfo: NodeInfo): Unit = {
     val updatedNode = nodeMap.get(nodeInfo.id).map(_.copy(node = nodeInfo, lastSeen = clock.instant()))
     nodeMap = nodeMap + ((nodeInfo.id, updatedNode.getOrElse(KnownNode(nodeInfo, clock.instant(), clock.instant()))))
-    if (updatedNode.isEmpty) trackingKnownNodes.incrementAndGet()
-    0L
+    if (updatedNode.isEmpty)
+      trackingKnownNodes.incrementAndGet()
   }
 
   override def remove(nodeInfo: NodeInfo): Unit = {
