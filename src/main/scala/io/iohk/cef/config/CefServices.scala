@@ -123,12 +123,12 @@ private[config] class CefServices(cefConfig: CefConfig) {
       implicit
       txCodec: NioEncDec[Tx],
       txTypeTag: TypeTag[Tx]): Network[Envelope[Tx]] =
-    new Network[Envelope[Tx]](networkDiscovery, transports)
+    Network[Envelope[Tx]](networkDiscovery, transports)
 
   private def blockNetwork[State, Tx <: Transaction[State]](
       implicit stateCodec: NioEncDec[State],
       stateTypeTag: TypeTag[State],
       txCodec: NioEncDec[Tx],
       txTypeTag: TypeTag[Tx]): Network[Envelope[Block[State, Tx]]] =
-    new Network[Envelope[Block[State, Tx]]](networkDiscovery, transports)
+    Network[Envelope[Block[State, Tx]]](networkDiscovery, transports)
 }

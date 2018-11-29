@@ -39,9 +39,9 @@ class TransactionServiceNetworkItSpec
       me: NodeId,
       txPoolIf: TransactionPoolInterface[String, DummyTransaction],
       consensus: Consensus[String, DummyTransaction]) = {
-    val txNetwork = new Network[Envelope[DummyTransaction]](baseNetwork.networkDiscovery, baseNetwork.transports)
+    val txNetwork = Network[Envelope[DummyTransaction]](baseNetwork.networkDiscovery, baseNetwork.transports)
     val blockNetwork =
-      new Network[Envelope[Block[String, DummyTransaction]]](baseNetwork.networkDiscovery, baseNetwork.transports)
+      Network[Envelope[Block[String, DummyTransaction]]](baseNetwork.networkDiscovery, baseNetwork.transports)
     val consensusMap = Map("1" -> (txPoolIf, consensus))
 
     new NodeTransactionService[String, DummyTransaction](
