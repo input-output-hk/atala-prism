@@ -18,16 +18,44 @@ sealed trait Query {
 object Query {
   case object NoPredicateQuery extends Query
 
+  def queryCata[T](fNoPred: => T, fPred: Predicate => T, query: Query): T = query match {
+    case NoPredicateQuery =>
+      fNoPred
+    case p: Predicate =>
+      fPred(p)
+  }
+
   sealed trait Predicate extends Query {
     def and(that: Predicate): Predicate.And = Predicate.And(Seq(this, that))
     def or(that: Predicate): Predicate.Or = Predicate.Or(Seq(this, that))
   }
+
   object Predicate {
     case class Eq(field: Field, value: Value) extends Predicate
     case class And(predicates: Seq[Predicate]) extends Predicate
     case class Or(predicates: Seq[Predicate]) extends Predicate
-  }
 
+    def predicateCata[T](fEq: (Field, Value) => T, fAnd: Seq[T] => T, fOr: Seq[T] => T, predicate: Predicate): T =
+      predicate match {
+        case Eq(field, value) =>
+          fEq(field, value)
+        case And(predicates) =>
+          val ts: Seq[T] = predicates.map(p => predicateCata(fEq, fAnd, fOr, p))
+          fAnd(ts)
+        case Or(predicates) =>
+          val ts: Seq[T] = predicates.map(p => predicateCata(fEq, fAnd, fOr, p))
+          fOr(ts)
+      }
+
+    def toPredicateFn[T](fieldAccessor: (T, Field) => Value, predicate: Predicate): T => Boolean = {
+      predicateCata[T => Boolean](
+        fEq = (field, value) => t => fieldAccessor(t, field) == value,
+        fAnd = predicates => t => predicates.forall(_.apply(t)),
+        fOr = predicates => t => predicates.exists(_.apply(t)),
+        predicate = predicate
+      )
+    }
+  }
 }
 
 case class Field(index: Int) {

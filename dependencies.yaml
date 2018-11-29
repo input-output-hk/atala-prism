@@ -12,6 +12,21 @@ options:
   versionConflictPolicy: highest
 
 dependencies:
+
+
+  javax.xml.bind:
+    jaxb-api:
+      version: "2.2.11"
+      lang: "java"
+  com.sun.xml.bind:
+    jaxb:
+      version: "2.2.11"
+      lang: "java"
+      modules: [core, impl]
+  javax.activation:
+    activation:
+      version: "1.1.1"
+      lang: "java"
   com.github.pureconfig:
     pureconfig:
       lang: scala

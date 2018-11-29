@@ -14,7 +14,7 @@ import akka.{actor => untyped}
 import io.iohk.cef.crypto
 import io.iohk.cef.network.discovery.DiscoveryListener.{DiscoveryListenerRequest, Ready, SendMessage, Start}
 import io.iohk.cef.network.discovery.DiscoveryManager._
-import io.iohk.cef.network.discovery.db.{DummyKnownNodesStorage, KnownNode}
+import io.iohk.cef.network.discovery.db.{DummyKnownNodeStorage, KnownNode}
 import io.iohk.cef.network.telemetry.InMemoryTelemetry
 import io.iohk.cef.network.{Capabilities, NodeInfo, NodeStatus, ServerStatus}
 import io.iohk.cef.test.TestClock
@@ -33,7 +33,7 @@ class DiscoveryManagerSpec extends FlatSpec with BeforeAndAfterAll {
 
     val mockClock = new TestClock
 
-    val knownNodeStorage = new DummyKnownNodesStorage(mockClock) with InMemoryTelemetry
+    val knownNodeStorage = new DummyKnownNodeStorage(mockClock) with InMemoryTelemetry
 
     val address: Array[Byte] = Array(127.toByte, 0, 0, 1)
     val localhost = InetAddress.getByAddress("", address)

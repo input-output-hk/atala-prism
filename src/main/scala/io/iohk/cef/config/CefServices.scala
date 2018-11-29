@@ -1,4 +1,5 @@
 package io.iohk.cef.config
+import java.nio.file.Files
 import java.time.Clock
 
 import io.iohk.cef.LedgerId
@@ -6,15 +7,14 @@ import io.iohk.cef.codecs.nio._
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.consensus.raft.node.OnDiskPersistentStorage
 import io.iohk.cef.consensus.{Consensus, raft}
+import io.iohk.cef.ledger.storage.mv.{MVLedgerStateStorage, MVLedgerStorage}
 import io.iohk.cef.transactionservice.raft.{RaftConsensusInterface, RaftRPCFactory}
 import io.iohk.cef.transactionservice.{Envelope, NodeTransactionService}
-import io.iohk.cef.ledger.storage.scalike.dao.{LedgerStateStorageDao, LedgerStorageDao}
-import io.iohk.cef.ledger.storage.scalike.{LedgerStateStorageImpl, LedgerStorageImpl}
 import io.iohk.cef.ledger.storage.{Ledger, LedgerStorage}
 import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
 import io.iohk.cef.network.transport.Transports
 import io.iohk.cef.network.{Network, NetworkServices}
-import io.iohk.cef.transactionpool.{TransactionPoolInterface}
+import io.iohk.cef.transactionpool.TransactionPoolInterface
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext
@@ -70,12 +70,13 @@ private[config] class CefServices(cefConfig: CefConfig) {
 
     val headerGenerator: Seq[Transaction[State]] => BlockHeader = _ => BlockHeader(clock.instant())
 
-    val ledgerStateStorage =
-      new LedgerStateStorageImpl(ledgerConfig.id, new LedgerStateStorageDao)
+    val ledgerStateStoragePath = Files.createTempFile(s"state-storage-${ledgerConfig.id}", "").toAbsolutePath
+    val ledgerStateStorage = new MVLedgerStateStorage[State](ledgerConfig.id, ledgerStateStoragePath)
 
-    val ledgerStorage: LedgerStorage = new LedgerStorageImpl(new LedgerStorageDao(clock))
+    val ledgerStoragePath = Files.createTempFile(s"ledger-storage-${ledgerConfig.id}", "").toAbsolutePath
+    val ledgerStorage: LedgerStorage[State, Tx] = new MVLedgerStorage[State, Tx](ledgerConfig.id, ledgerStoragePath)
 
-    val ledger: Ledger = Ledger(ledgerConfig.id, ledgerStorage, ledgerStateStorage)
+    val ledger: Ledger[State, Tx] = Ledger(ledgerConfig.id, ledgerStorage, ledgerStateStorage)
 
     val txPool = TransactionPoolInterface[State, Tx](
       headerGenerator,
@@ -101,7 +102,7 @@ private[config] class CefServices(cefConfig: CefConfig) {
   }
 
   private def stateMachineCallback[State, Tx <: Transaction[State]](
-      ledger: Ledger,
+      ledger: Ledger[State, Tx],
       txPool: TransactionPoolInterface[State, Tx])(block: Block[State, Tx])(
       implicit stateCodec: NioEncDec[State],
       stateTypeTag: TypeTag[State],

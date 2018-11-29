@@ -3,20 +3,28 @@ package io.iohk.cef.ledger.storage
 import io.iohk.cef.LedgerId
 import io.iohk.cef.ledger._
 import io.iohk.cef.codecs.nio._
+import scala.reflect.runtime.universe.TypeTag
 
-case class Ledger(ledgerId: LedgerId, ledgerStorage: LedgerStorage, ledgerStateStorage: LedgerStateStorage) {
+case class Ledger[S: NioEncDec: TypeTag, Tx <: Transaction[S]](
+    ledgerId: LedgerId,
+    ledgerStorage: LedgerStorage[S, Tx],
+    ledgerStateStorage: LedgerStateStorage[S]) {
 
-  def apply[S: NioEncDec, Tx <: Transaction[S]](block: Block[S, Tx])(
-      implicit serializer: NioEncDec[Block[S, Tx]]): Either[LedgerError, Unit] = {
+  def apply(
+      block: Block[S, Tx])(implicit codec: NioEncDec[Block[S, Tx]], typeTag: TypeTag[S]): Either[LedgerError, Unit] = {
 
-    val state = ledgerStateStorage.slice[S](block.partitionIds)
-    val either = block(state)
-    either.map { newState =>
-      ledgerStateStorage.update(state, newState)
-      ledgerStorage.push(ledgerId, block)
+    val preAppliedState: LedgerState[S] = slice(block.partitionIds)
+
+    block.apply(preAppliedState).map { postAppliedState =>
+      ledgerStateStorage.update(preAppliedState, postAppliedState)
+      ledgerStorage.push(block)
     }
   }
 
-  def slice[S: NioEncDec](keys: Set[String]): LedgerState[S] =
+  def slice(keys: Set[String]): LedgerState[S] =
     ledgerStateStorage.slice(keys)
+
+  override def toString: LedgerId = {
+    s"Ledger($ledgerStorage) -> $ledgerStateStorage"
+  }
 }

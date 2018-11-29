@@ -19,7 +19,7 @@ import io.iohk.cef.codecs.nio.auto._
 
 class TransactionServicePooltSpec extends FlatSpecLike with MustMatchers with BeforeAndAfterAll with MockitoSugar {
 
-  private def mockLedgerStateStorage = mock[LedgerStateStorage]
+  private def mockLedgerStateStorage = mock[LedgerStateStorage[String]]
 
   behavior of "TransactionServicePoolItSpec"
 

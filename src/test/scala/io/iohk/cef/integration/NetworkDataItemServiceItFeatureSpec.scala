@@ -11,6 +11,7 @@ import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.data.DataItemAction.InsertAction
 import io.iohk.cef.data.query.QueryEngine
 import org.mockito.ArgumentMatchers._
+
 class NetworkDataItemServiceItFeatureSpec
     extends FeatureSpec
     with GivenWhenThen
@@ -20,7 +21,7 @@ class NetworkDataItemServiceItFeatureSpec
   private implicit val executionContext = scala.concurrent.ExecutionContext.global
   private val bootstrap = randomBaseNetwork(None)
 
-  private def createDataItemService(table: Table, baseNetwork: BaseNetwork)(
+  private def createDataItemService(table: Table[String], baseNetwork: BaseNetwork)(
       implicit enc: NioEncDec[String],
       actionEncDec: NioEncDec[DataItemAction[String]],
       destinationDescriptorEncDec: NioEncDec[DestinationDescriptor],
@@ -41,15 +42,14 @@ class NetworkDataItemServiceItFeatureSpec
 
         When("the DataItemService created for the network")
 
-        val table = mock[Table]
-        val table2 = mock[Table]
+        val table = mock[Table[String]]
+        val table2 = mock[Table[String]]
         implicit val canValidate: CanValidate[DataItem[String]] = (t: DataItem[String]) => Right(())
 
         val dataItemService = createDataItemService(table, baseNetworkNode1)
         createDataItemService(table2, baseNetworkNode2)
 
-        when(table.insert(any(), any())(any[NioEncDec[String]], any[CanValidate[DataItem[String]]]()))
-          .thenReturn(Right(()))
+        when(table.insert(any())(any())).thenReturn(Right(()))
 
         Then("the DataItemService should insert the table on the network 1")
 
@@ -59,8 +59,7 @@ class NetworkDataItemServiceItFeatureSpec
 
         And("the  DataItemService insert the table on the network 2")
 
-        verify(table2, timeout(5000).times(1))
-          .insert(any(), any())(any[NioEncDec[String]], any[CanValidate[DataItem[String]]]())
+        verify(table2, timeout(5000).times(1)).insert(any())(any())
       }
     }
 

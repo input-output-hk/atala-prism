@@ -216,13 +216,12 @@ class ChimericTxFragmentSpec extends FlatSpec with MustMatchers with PropertyChe
   }
 
   it should "apply a CreateCurrency" in {
-    forAll { (currency: String) =>
-      val emptyState = LedgerState[ChimericStateResult](Map.empty)
+    forAll { currency: String =>
       val stateWithCurrency = stateFrom(
         getCurrencyPartitionId(currency) -> CreateCurrencyResult(CreateCurrency(currency))
       )
 
-      CreateCurrency(currency)(emptyState, 1, "") mustBe Right(stateWithCurrency)
+      CreateCurrency(currency)(LedgerState(), 1, "") mustBe Right(stateWithCurrency)
       CreateCurrency(currency)(stateWithCurrency, 1, "") mustBe Left(CurrencyAlreadyExists(currency))
     }
   }

@@ -1,11 +1,14 @@
 package io.iohk.cef.ledger.storage
 
+import io.iohk.cef.LedgerId
 import io.iohk.cef.ledger.LedgerState
-import io.iohk.cef.codecs.nio.NioEncDec
+import io.iohk.cef.codecs.nio._
 
-trait LedgerStateStorage {
+import scala.reflect.runtime.universe.TypeTag
 
-  def slice[S: NioEncDec](keys: Set[String]): LedgerState[S]
+abstract class LedgerStateStorage[S: NioEncDec: TypeTag](ledgerId: LedgerId) {
 
-  def update[S: NioEncDec](previousState: LedgerState[S], newState: LedgerState[S]): Unit
+  def slice(keys: Set[String]): LedgerState[S]
+
+  def update(oldState: LedgerState[S], newState: LedgerState[S]): Unit
 }

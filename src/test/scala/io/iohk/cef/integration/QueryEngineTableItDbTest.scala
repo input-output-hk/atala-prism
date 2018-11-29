@@ -1,33 +1,31 @@
 package io.iohk.cef.integration
+import java.nio.file.Files
 import java.util.UUID
 
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.data._
 import io.iohk.cef.data.query.{Field, QueryEngine, QueryRequest, QueryResponse}
-import io.iohk.cef.data.storage.scalike.TableStorageImpl
-import io.iohk.cef.data.storage.scalike.dao.TableStorageDao
+import io.iohk.cef.data.storage.mv.MVTableStorage
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.network.{MessageStream, NodeId}
 import io.iohk.cef.test.DummyNoMessageNetwork
 import io.iohk.cef.transactionservice.{Envelope, Everyone}
 import monix.execution.schedulers.TestScheduler
-import org.scalatest.{EitherValues, MustMatchers, fixture}
-import scalikejdbc.scalatest.AutoRollback
-
-import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
 import org.scalatest.concurrent.ScalaFutures._
+import org.scalatest.{EitherValues, FlatSpec, MustMatchers}
 
-trait QueryEngineTableItDbTest extends fixture.FlatSpec with AutoRollback with MustMatchers with EitherValues {
+import scala.concurrent.Future
+
+class QueryEngineTableItDbTest extends FlatSpec with MustMatchers with EitherValues {
 
   behavior of "QueryEngineTableItDbTest"
 
-  it should "query existing data items" in { implicit s =>
+  it should "query existing data items" in {
     val nodeId = NodeId("1111")
     val tableId = "table"
-    val dao = new TableStorageDao
-    val storage = new TableStorageImpl(dao)
-    val realTable = new Table(storage)
+    val path = Files.createTempFile("", "QueryEngineTableItDbTest")
+    val storage = new MVTableStorage[String](tableId, path)
+    val realTable = new Table[String](tableId, storage)
     implicit val scheduler = TestScheduler()
     val requestNetwork = new DummyNoMessageNetwork[Envelope[QueryRequest]]
     val responseNetwork = new DummyNoMessageNetwork[Envelope[QueryResponse[String]]]
@@ -55,7 +53,7 @@ trait QueryEngineTableItDbTest extends fixture.FlatSpec with AutoRollback with M
     val query3 = Field(0) #== "insert3"
 
     def foldStream(stream: MessageStream[Either[ApplicationError, Seq[DataItem[String]]]])
-    : Either[ApplicationError, Seq[DataItem[String]]] = {
+      : Either[ApplicationError, Seq[DataItem[String]]] = {
       stream.foreach(println(_))
       val fold: Future[Either[ApplicationError, Seq[DataItem[String]]]] =
         stream.fold[Either[ApplicationError, Seq[DataItem[String]]]](Right(Seq()))((c, s) =>

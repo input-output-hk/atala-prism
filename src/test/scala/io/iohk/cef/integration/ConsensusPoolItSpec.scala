@@ -19,7 +19,7 @@ import io.iohk.cef.transactionservice.raft.RaftConsensusInterface
 
 class ConsensusPoolItSpec extends FlatSpecLike with MockitoSugar with MustMatchers with Eventually {
 
-  private def mockLedgerStateStorage = mock[LedgerStateStorage]
+  private def mockLedgerStateStorage = mock[LedgerStateStorage[String]]
   type B = Block[String, DummyTransaction]
   behavior of "ConsensusPoolItSpec"
 

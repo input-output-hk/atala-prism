@@ -9,7 +9,7 @@ import io.iohk.cef.codecs.nio._
 import io.iohk.cef.network.NodeStatus.NodeState
 import io.iohk.cef.network.discovery.DiscoveryListener.DiscoveryListenerRequest
 import io.iohk.cef.network.discovery.DiscoveryManager.DiscoveryRequest
-import io.iohk.cef.network.discovery.db.DummyKnownNodesStorage
+import io.iohk.cef.network.discovery.db.DummyKnownNodeStorage
 import io.iohk.cef.network.discovery._
 import io.iohk.cef.network.telemetry.InMemoryTelemetry
 
@@ -41,7 +41,7 @@ object NetworkServices {
 
     val discoveryBehavior = DiscoveryManager.behaviour(
       discoveryConfig,
-      new DummyKnownNodesStorage(clock) with InMemoryTelemetry,
+      new DummyKnownNodeStorage(clock) with InMemoryTelemetry,
       nodeState,
       clock,
       encoder,

@@ -1,57 +1,33 @@
 package io.iohk.cef
 
-import io.iohk.cef.data.storage.scalike.dao.TableStorageDaoDbTest
-import io.iohk.cef.db.scalike.HikariConnPoolFactory
-import io.iohk.cef.integration.{DataItemServiceTableDbItSpec, QueryEngineTableItDbTest}
-import io.iohk.cef.ledger.chimeric.ChimericLedgerItDbTest
-import io.iohk.cef.ledger.identity.IdentityLedgerItDbTest
-import io.iohk.cef.ledger.LedgerItDbTest
-import io.iohk.cef.ledger.storage.dao.{LedgerStateStorageDaoDbTest, LedgerStorageDaoDbTest}
-import io.iohk.cef.network.discovery.db.KnownNodeStorageImplDbTest
-import org.flywaydb.core.Flyway
-import org.scalatest.{BeforeAndAfterAll, Suites}
-import scalikejdbc.config.DBs
-import scalikejdbc.{ConnectionPool, JDBCSettings}
+import java.nio.file.Files
 
-class DatabaseTestSuites
-    extends Suites(
-      new KnownNodeStorageImplDbTest {},
-      new IdentityLedgerItDbTest {},
-      new LedgerStorageDaoDbTest {},
-      new LedgerItDbTest {},
-      new ChimericLedgerItDbTest {},
-      new LedgerStateStorageDaoDbTest {},
-      new TableStorageDaoDbTest {},
-      new DataItemServiceTableDbItSpec {},
-      new QueryEngineTableItDbTest {},
-    )
-    with BeforeAndAfterAll {
+import io.iohk.cef.codecs.nio._
+import io.iohk.cef.ledger.storage.Ledger
+import io.iohk.cef.ledger.storage.mv.{MVLedgerStateStorage, MVLedgerStorage}
+import io.iohk.cef.ledger.{Block, Transaction}
 
-  val flyway = new Flyway()
-  val settings: JDBCSettings = DBs.readJDBCSettings('default)
-  flyway.setDataSource(settings.url, settings.user, settings.password)
-  if (!settings.url.endsWith("test")) {
-    throw new IllegalStateException(
-      "Test databases' name should end with 'test'. " +
-        "Please check that you are using the correct database for testing.")
-  }
+import scala.reflect.runtime.universe.TypeTag
 
-  def setupDB(): Unit = {
-    implicit val factory = HikariConnPoolFactory(settings.url, settings.user, settings.password)
-    ConnectionPool.add('default, settings.url, settings.user, settings.password)
-    flyway.migrate()
-  }
+object DatabaseTestSuites {
+  def withLedger[S, Tx <: Transaction[S]](ledgerId: LedgerId)(testCode: Ledger[S, Tx] => Any)(
+      implicit sCodec: NioEncDec[S],
+      sTypeTag: TypeTag[S],
+      blockCodec: NioEncDec[Block[S, Tx]]): Unit = {
 
-  def tearDownDB(): Unit = {
-    flyway.clean()
-  }
+    val stateStoragePath = Files.createTempFile(s"ledger-state-$ledgerId", "").toAbsolutePath
+    val ledgerStoragePath = Files.createTempFile(s"ledger-$ledgerId", "").toAbsolutePath
 
-  override def beforeAll(): Unit = {
-    setupDB()
-    super.beforeAll()
-  }
+    val ledgerStateStorage = new MVLedgerStateStorage[S](ledgerId, stateStoragePath)
+    val ledgerStorage = new MVLedgerStorage[S, Tx](ledgerId, ledgerStoragePath)
 
-  override protected def afterAll(): Unit = {
-    ConnectionPool.closeAll()
+    val ledger = Ledger[S, Tx](ledgerId, ledgerStorage, ledgerStateStorage)
+
+    try {
+      testCode(ledger)
+    } finally {
+      Files.delete(stateStoragePath)
+      Files.delete(ledgerStoragePath)
+    }
   }
 }
