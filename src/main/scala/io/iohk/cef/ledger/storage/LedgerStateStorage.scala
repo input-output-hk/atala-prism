@@ -8,9 +8,7 @@ import scala.reflect.runtime.universe.TypeTag
 
 abstract class LedgerStateStorage[S: NioEncDec: TypeTag](ledgerId: LedgerId) {
 
-  def getState: LedgerState[S]
-
   def slice(keys: Set[String]): LedgerState[S]
 
-  def update(newState: LedgerState[S]): Unit
+  def update(oldState: LedgerState[S], newState: LedgerState[S]): Unit
 }

@@ -28,7 +28,7 @@ class MVLedgerStateStorageSpec extends FlatSpec {
     val ledgerState: LedgerState[UUID] = LedgerState(Map(entry1, entry2, entry3))
 
     // when
-    storage.update(ledgerState)
+    storage.update(LedgerState.empty, ledgerState)
     val slice1 = storage.slice(Set("A", "B"))
     val slice2 = storage.slice(Set("C"))
     val slice3 = storage.slice(Set("D"))

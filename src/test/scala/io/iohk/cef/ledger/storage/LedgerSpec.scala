@@ -15,18 +15,11 @@ class LedgerSpec extends FlatSpec {
 
   it should "apply state changes correctly" in {
     // given
-    when(ledgerStateStorage.getState).thenReturn(
-      LedgerState[String](
-        "A" -> "initial-value-for-A",
-        "B" -> "initial-value-for-B",
-        "C" -> "initial-value-for-C"
-      ))
-
-    when(ledgerStateStorage.slice(Set("A", "B"))).thenReturn(
-      LedgerState[String](
-        "A" -> "initial-value-for-A",
-        "B" -> "initial-value-for-B"
-      ))
+    val s0 = LedgerState[String](
+      "A" -> "initial-value-for-A",
+      "B" -> "initial-value-for-B"
+    )
+    when(ledgerStateStorage.slice(Set("A", "B"))).thenReturn(s0)
 
     val ledger = Ledger("ledger-id", ledgerStorage, ledgerStateStorage)
 
@@ -41,7 +34,7 @@ class LedgerSpec extends FlatSpec {
     ledger.apply(block)
 
     // then
-    verify(ledgerStateStorage).update(LedgerState[String]("A" -> "new-value-for-A", "C" -> "initial-value-for-C"))
+    verify(ledgerStateStorage).update(s0, LedgerState[String]("A" -> "new-value-for-A"))
   }
 }
 

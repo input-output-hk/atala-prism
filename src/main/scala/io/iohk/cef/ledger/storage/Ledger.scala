@@ -13,12 +13,10 @@ case class Ledger[S: NioEncDec: TypeTag, Tx <: Transaction[S]](
   def apply(
       block: Block[S, Tx])(implicit codec: NioEncDec[Block[S, Tx]], typeTag: TypeTag[S]): Either[LedgerError, Unit] = {
 
-    val state: LedgerState[S] = slice(block.partitionIds)
-    val either = block(state)
+    val preAppliedState: LedgerState[S] = slice(block.partitionIds)
 
-    either.map { blockState =>
-      val nextState = ledgerStateStorage.getState.update(state, blockState)
-      ledgerStateStorage.update(nextState)
+    block.apply(preAppliedState).map { postAppliedState =>
+      ledgerStateStorage.update(preAppliedState, postAppliedState)
       ledgerStorage.push(block)
     }
   }
