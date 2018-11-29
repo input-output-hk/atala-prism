@@ -12,7 +12,7 @@ class MVTable[T](tableId: String, storageFile: Path, codec: NioEncDec[T]) {
   val table: MVMap[String, T] =
     storage.openMap(tableId, new MVMap.Builder[String, T]().valueType(new ByteBufferDataType[T](codec)))
 
-  def update(block: MVMap[String, T] => Any): Unit = {
+  def update(block: MVMap[String, T] => Unit): Unit = {
     try {
       block(table)
     } finally {
