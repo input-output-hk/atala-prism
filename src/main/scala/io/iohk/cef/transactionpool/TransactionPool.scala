@@ -2,7 +2,7 @@ package io.iohk.cef.transactionpool
 
 import io.iohk.cef.ledger.storage.LedgerStateStorage
 import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
-import io.iohk.cef.codecs.nio.NioEncDec
+import io.iohk.cef.codecs.nio.NioCodec
 
 import scala.annotation.tailrec
 import scala.concurrent.duration._
@@ -16,7 +16,7 @@ import scala.reflect.runtime.universe.TypeTag
   * @param maxBlockSize maximum block size in bytes
   * @tparam State the ledger state type
   */
-class TransactionPool[State: NioEncDec: TypeTag, Tx <: Transaction[State]](
+class TransactionPool[State: NioCodec: TypeTag, Tx <: Transaction[State]](
     timedQueue: TimedQueue[Tx] = new TimedQueue[Tx](),
     headerGenerator: Seq[Transaction[State]] => BlockHeader,
     maxBlockSize: Int,

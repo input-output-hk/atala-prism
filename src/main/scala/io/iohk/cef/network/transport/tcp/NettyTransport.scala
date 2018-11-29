@@ -39,11 +39,9 @@ private[network] class NettyTransport(address: InetSocketAddress) {
     .bind(address)
     .await()
 
-  def withMessageApplication[Message](
-      decoder: NioDecoder[Message],
-      handler: (InetSocketAddress, Message) => Unit): UUID = {
+  def withMessageApplication[Message](codec: NioCodec[Message], handler: (InetSocketAddress, Message) => Unit): UUID = {
     val uuid = UUID.randomUUID()
-    messageApplications.put(uuid, lazyMessageApplication(decoder, handler))
+    messageApplications.put(uuid, lazyMessageApplication(codec, handler))
     uuid
   }
 

@@ -12,9 +12,7 @@ import monix.execution.Cancelable
 import monix.reactive.observers.Subscriber
 import monix.reactive.{Observable, OverflowStrategy}
 
-private[transport] class TcpNetworkTransport[Message](nettyTransport: NettyTransport)(
-    implicit encoder: NioEncoder[Message],
-    decoder: NioDecoder[Message])
+private[transport] class TcpNetworkTransport[Message](nettyTransport: NettyTransport)(implicit codec: NioCodec[Message])
     extends NetworkTransport[InetSocketAddress, Message] {
 
   val monixMessageStream: Observable[Message] =
@@ -23,7 +21,7 @@ private[transport] class TcpNetworkTransport[Message](nettyTransport: NettyTrans
       def msgHandler(address: InetSocketAddress, message: Message): Unit =
         subscriber.onNext(message)
 
-      val applicationId = nettyTransport.withMessageApplication(decoder, msgHandler)
+      val applicationId = nettyTransport.withMessageApplication(codec, msgHandler)
 
       cancelableMessageApplication(applicationId)
     })
@@ -37,5 +35,5 @@ private[transport] class TcpNetworkTransport[Message](nettyTransport: NettyTrans
     () => nettyTransport.cancelMessageApplication(applicationId)
 
   private def encode(message: Message): ByteBuffer =
-    encoder.encode(message)
+    codec.encode(message)
 }

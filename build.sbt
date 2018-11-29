@@ -7,8 +7,8 @@ val commonSettings = Seq(
   organization := "io.iohk.cef",
   name := "network",
   version := "0.1-SNAPSHOT",
-  scalaVersion := scalaV //,
-//  addCompilerPlugin("io.tryp" % "splain" % "0.3.3" cross CrossVersion.patch)
+  scalaVersion := scalaV,
+  addCompilerPlugin("io.tryp" % "splain" % "0.3.3" cross CrossVersion.patch)
 )
 
 import org.scoverage.coveralls.Imports.CoverallsKeys._
@@ -16,7 +16,7 @@ import org.scoverage.coveralls.Imports.CoverallsKeys._
 coverallsToken := sys.env.get("COVERALLS_REPO_TOKEN")
 coverallsGitRepoLocation := Some("../../")
 
-coverageEnabled := true
+coverageEnabled := false
 coverageMinimum := 80
 coverageFailOnMinimum := true
 

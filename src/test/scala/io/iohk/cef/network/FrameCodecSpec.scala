@@ -24,23 +24,21 @@ class FrameCodecSpec extends FlatSpec {
 
   private val genFrames: Gen[List[Frame[Int]]] = listOfN(2, genFrame)
 
-  private val encoder = NioEncoder[Frame[Int]]
-  private val decoder = NioDecoder[Frame[Int]]
+  private val codec = NioCodec[Frame[Int]]
 
   behavior of "FrameEncoder"
 
   forAll(genFrame) { frame: Frame[Int] =>
     it should s"encode and decode single frame $frame" in {
-      decoder.decodeStream(encoder.encode(frame)) shouldBe Seq(frame)
+      codec.decodeStream(codec.encode(frame)) shouldBe Seq(frame)
     }
   }
 
   forAll(genFrames) { frames: List[Frame[Int]] =>
     it should s"encode and decode multiple frames: $frames" in {
-      val buffs = frames.map(encoder.encode)
+      val buffs = frames.map(codec.encode)
       val bigBuff = NetUtils.concatenate(buffs)
-      decoder.decodeStream(bigBuff) shouldBe frames
+      codec.decodeStream(bigBuff) shouldBe frames
     }
   }
-
 }

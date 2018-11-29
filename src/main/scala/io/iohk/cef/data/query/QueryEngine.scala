@@ -11,13 +11,13 @@ class QueryEngine[I](
     table: Table[I],
     requestNetwork: Network[Envelope[QueryRequest]],
     responseNetwork: Network[Envelope[QueryResponse[I]]],
-    queryIdGenerator: () => String)(implicit itemSerializable: NioEncDec[I])
+    queryIdGenerator: () => String)(implicit itemSerializable: NioCodec[I])
     extends Logger {
 
   requestNetwork.messageStream.foreach(processFromNetwork)
 
   def process(query: Query)(
-      implicit itemSerializable: NioEncDec[I]): MessageStream[Either[ApplicationError, Seq[DataItem[I]]]] = {
+      implicit itemSerializable: NioCodec[I]): MessageStream[Either[ApplicationError, Seq[DataItem[I]]]] = {
     val responseStream = networkProcessing(query)
     val localProcessingEither = localProcessing(query)
     responseStream.map(networkEither => {
@@ -37,7 +37,7 @@ class QueryEngine[I](
   }
 
   private def localProcessing(query: Query)(
-      implicit itemSerializable: NioEncDec[I]): Either[ApplicationError, Seq[DataItem[I]]] = {
+      implicit itemSerializable: NioCodec[I]): Either[ApplicationError, Seq[DataItem[I]]] = {
     table.select(query)
   }
 

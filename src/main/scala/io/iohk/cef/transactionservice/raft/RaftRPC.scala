@@ -2,7 +2,7 @@ package io.iohk.cef.transactionservice.raft
 
 import io.iohk.cef.consensus.raft._
 import io.iohk.cef.network.discovery.NetworkDiscovery
-import io.iohk.cef.codecs.nio.NioEncDec
+import io.iohk.cef.codecs.nio.NioCodec
 import io.iohk.cef.network.transport.Transports
 import io.iohk.cef.network.{NodeId, RequestResponse}
 import io.iohk.cef.codecs.nio.auto._
@@ -10,7 +10,7 @@ import io.iohk.cef.codecs.nio.auto._
 import scala.reflect.runtime.universe._
 import scala.concurrent.{ExecutionContext, Future}
 
-class RaftRPCFactory[Command: NioEncDec: TypeTag](networkDiscovery: NetworkDiscovery, transports: Transports)(
+class RaftRPCFactory[Command: NioCodec: TypeTag](networkDiscovery: NetworkDiscovery, transports: Transports)(
     implicit ec: ExecutionContext)
     extends RPCFactory[Command] {
 
@@ -28,7 +28,7 @@ class RaftRPCFactory[Command: NioEncDec: TypeTag](networkDiscovery: NetworkDisco
       transports)
 }
 
-class RaftRPC[Command: NioEncDec: TypeTag](
+class RaftRPC[Command: NioCodec: TypeTag](
     nodeId: NodeId,
     appendEntriesCallback: EntriesToAppend[Command] => AppendEntriesResult,
     requestVoteCallback: VoteRequested => RequestVoteResult,

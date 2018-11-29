@@ -67,12 +67,9 @@ class DiscoveryManagerSpec extends FlatSpec with BeforeAndAfterAll {
 
     import io.iohk.cef.codecs.nio._
 
-    val (encoder, decoder) = {
+    val codec = {
       import io.iohk.cef.codecs.nio.auto._
-
-      val e: NioEncoder[DiscoveryWireMessage] = genericEncoder
-      val d: NioDecoder[DiscoveryWireMessage] = genericDecoder
-      (e, d)
+      NioCodec[DiscoveryWireMessage]
     }
 
     val discoveryListener = TestProbe[DiscoveryListenerRequest]
@@ -89,8 +86,7 @@ class DiscoveryManagerSpec extends FlatSpec with BeforeAndAfterAll {
         knownNodeStorage,
         nodeState,
         mockClock,
-        encoder,
-        decoder,
+        codec,
         listenerMaker,
         secureRandom,
         new SimpleMeterRegistry())
@@ -139,6 +135,9 @@ class DiscoveryManagerSpec extends FlatSpec with BeforeAndAfterAll {
       createActor
     }
   }
+  it should "encode dwm" in {
+//    DiscoveryManager.calculateMessageKey()
+  }
   it should "process a Ping message" in {
     new ListeningDiscoveryManager {
       import crypto._
@@ -146,7 +145,7 @@ class DiscoveryManagerSpec extends FlatSpec with BeforeAndAfterAll {
 
       val ping = pingActor(actor, this)
 
-      val token = hash[DiscoveryWireMessage](ping)(encoder).toByteString
+      val token = hash[DiscoveryWireMessage](ping)(codec).toByteString
       val sendMessage = discoveryListener.expectMessageType[SendMessage]
       sendMessage.message mustBe a[Pong]
       sendMessage.message.messageType mustBe Pong.messageType
@@ -166,7 +165,7 @@ class DiscoveryManagerSpec extends FlatSpec with BeforeAndAfterAll {
 
       actor ! FetchNeighbors(node)
       val ping = discoveryListener.expectMessageType[SendMessage].message.asInstanceOf[Ping]
-      val token = calculateMessageKey(encoder, ping)
+      val token = calculateMessageKey(codec, ping)
 
       val expiration = ping.timestamp
       val pong = Pong(node, token, expiration)
@@ -223,13 +222,13 @@ class DiscoveryManagerSpec extends FlatSpec with BeforeAndAfterAll {
       val firstPing = discoveryListener.expectMessageType[DiscoveryListener.SendMessage](5 second)
       firstPing.message mustBe a[Ping]
       firstPing.to mustBe nodeA.discoveryAddress
-      val pongA = Pong(nodeA, calculateMessageKey(encoder, firstPing.message), mockClock.instant().getEpochSecond + 10)
+      val pongA = Pong(nodeA, calculateMessageKey(codec, firstPing.message), mockClock.instant().getEpochSecond + 10)
       actor ! DiscoveryResponseWrapper(DiscoveryListener.MessageReceived(pongA, discoveryAddress))
       val seek = discoveryListener.expectMessageType[DiscoveryListener.SendMessage]
       seek.message mustBe a[Seek]
       seek.to mustBe nodeA.discoveryAddress
       val neighbors =
-        Neighbors(Capabilities(1), calculateMessageKey(encoder, seek.message), 10, Seq(nodeB, nodeA), expiration)
+        Neighbors(Capabilities(1), calculateMessageKey(codec, seek.message), 10, Seq(nodeB, nodeA), expiration)
       actor ! DiscoveryResponseWrapper(DiscoveryListener.MessageReceived(neighbors, discoveryAddress))
       val pingB = discoveryListener.expectMessageType[DiscoveryListener.SendMessage]
 

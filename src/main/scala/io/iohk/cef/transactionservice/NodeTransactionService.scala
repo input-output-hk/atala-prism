@@ -29,8 +29,8 @@ class NodeTransactionService[State, Tx <: Transaction[State]](
     txNetwork: Network[Envelope[Tx]],
     blockNetwork: Network[Envelope[Block[State, Tx]]],
     me: NodeId)(
-    implicit txSerializable: NioEncDec[Envelope[Tx]],
-    blockSerializable: NioEncDec[Envelope[Block[State, Tx]]],
+    implicit txSerializable: NioCodec[Envelope[Tx]],
+    blockSerializable: NioCodec[Envelope[Block[State, Tx]]],
     executionContext: ExecutionContext) {
 
   blockNetwork.messageStream.foreach(blEnvelope => processBlock(blEnvelope, Future.successful(Right(()))))
@@ -70,7 +70,7 @@ class NodeTransactionService[State, Tx <: Transaction[State]](
 
   private def process[T](txEnvelope: Envelope[T], networkDissemination: Future[Either[ApplicationError, Unit]])(
       submit: Envelope[T] => Future[Either[ApplicationError, Unit]])(
-      implicit byteStringSerializable: NioEncDec[Envelope[T]]): Future[Either[ApplicationError, Unit]] = {
+      implicit byteStringSerializable: NioCodec[Envelope[T]]): Future[Either[ApplicationError, Unit]] = {
     if (!thisIsDestination(txEnvelope)) {
       networkDissemination
     } else if (!thisParticipatesInConsensus(txEnvelope.containerId)) {

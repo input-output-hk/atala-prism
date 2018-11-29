@@ -4,7 +4,7 @@ import akka.util.ByteString
 import io.iohk.cef.crypto.hashing.HashingAlgorithmsCollection
 import io.iohk.cef.crypto.hashing.HashBytes
 import io.iohk.cef.crypto.encoding.TypedByteString
-import io.iohk.cef.codecs.nio.NioEncoder
+import io.iohk.cef.codecs.nio.NioCodec
 import io.iohk.cef.utils._
 
 trait Hashing {
@@ -19,12 +19,12 @@ trait Hashing {
     * @tparam T        the type of `entity`
     *
     * @param  entity   the entity that needs to be hashed
-    * @param  encoder  how to convert `entity` into a stream of bytes
+    * @param  codec  how to convert `entity` into a stream of bytes
     *
     * @return          a hash of `entity`
     */
-  def hash[T](entity: T)(implicit encoder: NioEncoder[T]): Hash =
-    new Hash(hashingType, hashingType.algorithm.hash(encoder.encode(entity).toByteString))
+  def hash[T](entity: T)(implicit codec: NioCodec[T]): Hash =
+    new Hash(hashingType, hashingType.algorithm.hash(codec.encode(entity).toByteString))
 
   /**
     * Returns `true` if `hash` is a hash of `entity`, when using the hashing algorithm
@@ -35,12 +35,12 @@ trait Hashing {
     * @param  entity     the entity that needs to be checked
     * @param  hash       the hash that needs to be checked. It also identifies the
     *                    hashing algorithm to use
-    * @param  encoder    how to convert `entity` into a stream of bytes
+    * @param  codec    how to convert `entity` into a stream of bytes
     *
     * @return            `true` if `hash` is a valid hash of `entity`
     */
-  def isValidHash[T](entity: T, hash: Hash)(implicit encoder: NioEncoder[T]): Boolean =
-    hash.`type`.algorithm.hash(encoder.encode(entity).toByteString) == hash.bytes
+  def isValidHash[T](entity: T, hash: Hash)(implicit codec: NioCodec[T]): Boolean =
+    hash.`type`.algorithm.hash(codec.encode(entity).toByteString) == hash.bytes
 
   /** Data entity containing a hash and the identifier of the hashing algorithm used to generate it */
   class Hash(

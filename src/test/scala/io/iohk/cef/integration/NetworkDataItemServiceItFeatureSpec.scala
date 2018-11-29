@@ -22,12 +22,11 @@ class NetworkDataItemServiceItFeatureSpec
   private val bootstrap = randomBaseNetwork(None)
 
   private def createDataItemService(table: Table[String], baseNetwork: BaseNetwork)(
-      implicit enc: NioEncDec[String],
-      actionEncDec: NioEncDec[DataItemAction[String]],
-      destinationDescriptorEncDec: NioEncDec[DestinationDescriptor],
-      itemEncDec: NioEncDec[DataItem[String]],
+      implicit actionEncDec: NioCodec[DataItemAction[String]],
+      destinationDescriptorEncDec: NioCodec[DestinationDescriptor],
+      itemEncDec: NioCodec[DataItem[String]],
       canValidate: CanValidate[DataItem[String]],
-      frameCodec: NioEncDec[Envelope[DataItemAction[String]]]) = {
+      frameCodec: NioCodec[Envelope[DataItemAction[String]]]) = {
 
     val txNetwork = new Network[Envelope[DataItemAction[String]]](baseNetwork.networkDiscovery, baseNetwork.transports)
     new DataItemService[String](table, txNetwork, mock[QueryEngine[String]])

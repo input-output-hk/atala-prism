@@ -13,7 +13,7 @@ import io.iohk.cef.codecs.nio._
 import scala.collection.JavaConverters._
 
 class MVLedgerStorage[S, Tx <: Transaction[S]](ledgerId: LedgerId, storageFile: Path)(
-    implicit codec: NioEncDec[Block[S, Tx]])
+    implicit codec: NioCodec[Block[S, Tx]])
     extends LedgerStorage[S, Tx](ledgerId) {
 
   val mvTable = new MVTable[Block[S, Tx]](ledgerId, storageFile, codec)
