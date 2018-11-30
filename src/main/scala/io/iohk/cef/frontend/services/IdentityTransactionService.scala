@@ -46,6 +46,8 @@ class IdentityTransactionService(nodeTransactionService: NodeTransactionService[
       case IdentityTransactionType.Claim => claim
       case IdentityTransactionType.Link => link
       case IdentityTransactionType.Unlink => unlink
+      case IdentityTransactionType.Endorse => ???
+
     }
   }
 

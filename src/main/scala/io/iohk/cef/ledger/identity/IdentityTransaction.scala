@@ -3,6 +3,7 @@ package io.iohk.cef.ledger.identity
 import akka.util.ByteString
 import io.iohk.cef.crypto.{sign => signBytes, _}
 import io.iohk.cef.frontend.models.IdentityTransactionType
+import io.iohk.cef.ledger.identity.IdentityTransaction.isSignedWith
 import io.iohk.cef.ledger.{LedgerError, Transaction}
 
 sealed trait IdentityTransaction extends Transaction[IdentityData] {
@@ -145,4 +146,49 @@ case class Unlink(identity: String, key: SigningPublicKey, signature: Signature)
   }
 
   override def partitionIds: Set[String] = Set(identity)
+}
+
+/**
+  *  A transaction to endorse a already claimed identity.
+  * @param identity endorser's identity should be already claimed identity
+  * @param key PublicKey used by endorser signature.
+  * @param signature endorser's digital signature validating the transaction.
+  * @param endorsedIdentity identity to endorse should be already claimed identity.
+  */
+case class Endorse(identity: Identity, key: SigningPublicKey, signature: Signature, endorsedIdentity: String)
+    extends IdentityTransaction {
+
+  def apply(ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] = {
+
+    lazy val validateKey: Boolean = ledgerState
+      .get(identity)
+      .map(_.keys)
+      .getOrElse(Set.empty)
+      .contains(key)
+
+    lazy val validSignature =
+      isSignedWith(key, signature)(identity, IdentityTransactionType.Endorse, key)
+
+    if (!ledgerState.contains(endorsedIdentity)) {
+      Left(UnknownEndorsedIdentityError(endorsedIdentity))
+    } else if (!ledgerState.contains(identity)) {
+      Left(UnknownEndorserIdentityError(identity))
+    } else if (!validSignature) {
+      Left(UnableToVerifyEndorserSignatureError(identity, signature))
+    } else if (!validateKey) {
+      Left(PublicKeyNotAssociatedWithIdentity(identity, key))
+    } else {
+      val prev: IdentityData = ledgerState.get(endorsedIdentity).getOrElse(IdentityData.empty)
+      val result = ledgerState.put(endorsedIdentity, prev endorse identity)
+      Right(result)
+    }
+  }
+
+  /**
+    * The ids of the state partitions that need to be retrieved for this tx.
+    * See [[io.iohk.cef.ledger.LedgerState]] for more detail.
+    *
+    * @return Set[String]
+    */
+  override def partitionIds: Set[String] = Set(identity, endorsedIdentity)
 }

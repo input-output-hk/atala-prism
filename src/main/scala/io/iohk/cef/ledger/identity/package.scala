@@ -8,6 +8,8 @@ package identity {
       copy(keys = keys + key)
     def removeKey(key: SigningPublicKey): IdentityData =
       copy(keys = keys - key)
+    def endorse(identity: Identity): IdentityData =
+      copy(endorsers = endorsers + identity)
     def isEmpty: Boolean =
       this == IdentityData.empty // I do this instead of checking the inidividual fields to make it future proof
   }
