@@ -1,5 +1,7 @@
 package io.iohk.cef.codecs.nio.components
 
+import java.net.{InetAddress, InetSocketAddress}
+
 import io.iohk.cef.codecs.nio._
 import io.iohk.cef.codecs.nio.components.Ops._
 import io.iohk.cef.utils._
@@ -103,4 +105,17 @@ private[components] object OtherCodecComponents {
 
   def localDateDecoder(implicit dec: NioDecoder[Instant]): NioDecoder[LocalDate] =
     dec.map[LocalDate](LocalDateTime.ofInstant(_, ZoneOffset.UTC).toLocalDate).packed
+
+  val inetAddressEncoder: NioEncoder[InetAddress] =
+    byteArrayEncoder.map[InetAddress](ia => ia.getAddress).packed
+
+  val inetAddressDecoder: NioDecoder[InetAddress] =
+    byteArrayDecoder.mapOpt((bs: Array[Byte]) => Try(InetAddress.getByAddress(bs)).toOption).packed
+
+  def inetSocketAddressEncoder(implicit e: NioEncoder[(InetAddress, Int)]): NioEncoder[InetSocketAddress] =
+    e.map[InetSocketAddress](addr => (addr.getAddress, addr.getPort))
+
+  def inetSocketAddressDecoder(implicit d: NioDecoder[(InetAddress, Int)]): NioDecoder[InetSocketAddress] =
+    d.mapOpt { case (ia, p) => Try(new InetSocketAddress(ia, p)).toOption }
+
 }

@@ -7,7 +7,6 @@ import java.time.{Instant, LocalDate}
 import akka.util.ByteString
 
 import io.iohk.cef.codecs.nio._
-import io.iohk.cef.codecs.nio.components.Ops._
 import OtherCodecComponents._
 
 import java.net.{InetAddress, InetSocketAddress}
@@ -46,14 +45,9 @@ trait OtherCodecs {
   implicit def localDateNioCodec(implicit enc: NioCodec[Instant]): NioCodec[LocalDate] =
     NioCodec(localDateEncoder, localDateDecoder)
 
-  implicit def inetAddressCodec(implicit ed: NioCodec[Array[Byte]]): NioCodec[InetAddress] =
-    ed.mapOpt(
-        (ia: InetAddress) => ia.getAddress,
-        (bs: Array[Byte]) => scala.util.Try(InetAddress.getByAddress(bs)).toOption)
-      .packed
+  implicit val inetAddressCodec: NioCodec[InetAddress] =
+    NioCodec(inetAddressEncoder, inetAddressDecoder)
 
   implicit def inetSocketAddressCodec(implicit ed: NioCodec[(InetAddress, Int)]): NioCodec[InetSocketAddress] =
-    ed.mapOpt((isa: InetSocketAddress) => (isa.getAddress, isa.getPort), {
-      case (ia, p) => scala.util.Try(new InetSocketAddress(ia, p)).toOption
-    })
+    NioCodec(inetSocketAddressEncoder, inetSocketAddressDecoder)
 }
