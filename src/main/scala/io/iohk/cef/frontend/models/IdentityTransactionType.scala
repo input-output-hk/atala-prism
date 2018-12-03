@@ -25,7 +25,7 @@ import io.iohk.cef.ledger.identity._
   *   ... } catch {
   *   ...   case t: Throwable => t.getMessage
   *   ... }
-  *   Expected one of 'claim, link, unlink, endorse', but got 'Link' instead
+  *   Expected one of 'claim, link, unlink, endorse, grant', but got 'Link' instead
   * }}}
   */
 sealed abstract class IdentityTransactionType extends EnumEntry with Lowercase
