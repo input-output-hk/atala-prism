@@ -25,7 +25,7 @@ import io.iohk.cef.ledger.identity._
   *   ... } catch {
   *   ...   case t: Throwable => t.getMessage
   *   ... }
-  *   Expected one of 'claim, link, unlink, endorse', but got 'Link' instead
+  *   Expected one of 'claim, link, unlink, endorse, revoke', but got 'Link' instead
   * }}}
   */
 sealed abstract class IdentityTransactionType extends EnumEntry with Lowercase
@@ -38,6 +38,7 @@ object IdentityTransactionType extends Enum[IdentityTransactionType] with SprayJ
   case object Link extends IdentityTransactionType
   case object Unlink extends IdentityTransactionType
   case object Endorse extends IdentityTransactionType
+  case object Revoke extends IdentityTransactionType
 
   def of(it: IdentityTransaction): IdentityTransactionType =
     it match {
@@ -45,6 +46,7 @@ object IdentityTransactionType extends Enum[IdentityTransactionType] with SprayJ
       case _: identity.Link => Link
       case _: identity.Unlink => Unlink
       case _: identity.Endorse => Endorse
+      case _: identity.RevokeEndorsement => Revoke
 
     }
 }

@@ -192,3 +192,56 @@ case class Endorse(identity: Identity, key: SigningPublicKey, signature: Signatu
     */
   override def partitionIds: Set[String] = Set(identity, endorsedIdentity)
 }
+
+/**
+  *  A transaction to revoke  an already endorsed identity.
+  * @param identity endorser's identity should be already claimed identity
+  * @param key PublicKey used by endorser signature.
+  * @param signature endorser's digital signature validating the transaction.
+  * @param endorsedIdentity identity to revoke should be already endorsed identity.
+  */
+case class RevokeEndorsement(identity: Identity, key: SigningPublicKey, signature: Signature, endorsedIdentity: String)
+    extends IdentityTransaction {
+
+  def apply(ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] = {
+
+    lazy val validateKey: Boolean = ledgerState
+      .get(identity)
+      .map(_.keys)
+      .getOrElse(Set.empty)
+      .contains(key)
+
+    lazy val validSignature =
+      isSignedWith(key, signature)(identity, IdentityTransactionType.Revoke, key)
+
+    lazy val validEndorsement: Boolean = ledgerState
+      .get(endorsedIdentity)
+      .map(_.endorsers)
+      .getOrElse(Set.empty)
+      .contains(identity)
+
+    if (!ledgerState.contains(identity)) {
+      Left(UnknownEndorserIdentityError(identity))
+    } else if (!ledgerState.contains(endorsedIdentity)) {
+      Left(UnknownEndorsedIdentityError(endorsedIdentity))
+    } else if (!validSignature) {
+      Left(UnableToVerifyEndorserSignatureError(identity, signature))
+    } else if (!validateKey) {
+      Left(PublicKeyNotAssociatedWithIdentity(identity, key))
+    } else if (!validEndorsement) {
+      Left(EndorsementNotAssociatedWithIdentityError(identity, endorsedIdentity))
+    } else {
+      val prev: IdentityData = ledgerState.get(endorsedIdentity).getOrElse(IdentityData.empty)
+      val result = ledgerState.put(endorsedIdentity, prev revoke identity)
+      Right(result)
+    }
+  }
+
+  /**
+    * The ids of the state partitions that need to be retrieved for this tx.
+    * See [[io.iohk.cef.ledger.LedgerState]] for more detail.
+    *
+    * @return Set[String]
+    */
+  override def partitionIds: Set[String] = Set(identity, endorsedIdentity)
+}
