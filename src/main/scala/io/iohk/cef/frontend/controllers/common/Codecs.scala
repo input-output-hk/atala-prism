@@ -234,6 +234,13 @@ object Codecs {
 
   implicit def dataItemFormat[T](implicit tFormat: Format[T]): Format[DataItem[T]] = Json.format[DataItem[T]]
 
+  implicit val claimDataFormats = Json.format[ClaimData]
+  implicit val linkDataFormats = Json.format[LinkData]
+  implicit val unlinkDataFormats = Json.format[UnlinkData]
+  implicit val endorseDataFormats = Json.format[EndorseData]
+
+  implicit val identityTxDataFormats = Json.format[IdentityTransactionData]
+
   implicit val requestReads: Reads[CreateIdentityTransactionRequest] = Json.reads[CreateIdentityTransactionRequest]
 
   implicit val responseWrites: Writes[IdentityTransaction] = Writes[IdentityTransaction] { obj =>
@@ -251,9 +258,8 @@ object Codecs {
     }
     val map = Map(
       "type" -> JsString(tpe.toString),
-      "key" -> JsString(toCleanHex(obj.key.toByteString)),
-      "signature" -> JsString(toCleanHex(obj.signature.toByteString)),
-      "identity" -> JsString(obj.identity)
+      "data" -> identityTxDataFormats.writes(obj.data),
+      "signature" -> JsString(toCleanHex(obj.signature.toByteString))
     )
 
     JsObject(map ++ linkingIdentitySignatureMayBe)

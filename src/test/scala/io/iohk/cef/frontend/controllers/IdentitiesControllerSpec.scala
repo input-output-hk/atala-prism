@@ -13,7 +13,7 @@ import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mockito.MockitoSugar.mock
-import org.scalatest.{MustMatchers, WordSpec}
+import org.scalatest.{Assertion, MustMatchers, WordSpec}
 import play.api.libs.json.JsValue
 
 import scala.concurrent.Future
@@ -41,7 +41,7 @@ class IdentitiesControllerSpec
     val publicKeyHex = toCleanHex(pair.public.toByteString)
     val privateKeyHex = toCleanHex(pair.`private`.toByteString)
 
-    def testTransactionType(txType: String) = {
+    def testTransactionType(txType: String, dataType: String): Assertion = {
       val identity = "iohk"
 
       val body =
@@ -49,6 +49,11 @@ class IdentitiesControllerSpec
            |{
            |    "type": "$txType",
            |    "identity": "$identity",
+           |    "data": {
+           |      "_type":"$dataType",
+           |      "identity": "$identity",
+           |      "key": "$publicKeyHex"
+           |      },
            |    "ledgerId": "1",
            |    "publicKey": "$publicKeyHex",
            |    "privateKey": "$privateKeyHex"
@@ -62,13 +67,13 @@ class IdentitiesControllerSpec
 
         val json = responseAs[JsValue]
         (json \ "type").as[String] must be(txType)
-        (json \ "key").as[String] must be(publicKeyHex)
+        (json \ "data" \ "identity").as[String] must be(identity)
+        (json \ "data" \ "key").as[String] must be(publicKeyHex)
         (json \ "signature").as[String] mustNot be(empty)
-        (json \ "identity").as[String] must be(identity)
       }
     }
 
-    def testTransactionLinkType(txType: String) = {
+    def testTransactionLinkType(txType: String): Assertion = {
 
       val pairLink = generateSigningKeyPair()
       val publicKeyLinkHex = toCleanHex(pairLink.public.toByteString)
@@ -80,9 +85,12 @@ class IdentitiesControllerSpec
         s"""
            |{
            |    "type": "$txType",
-           |    "identity": "$identity",
+           |    "data": {
+           |      "_type":"io.iohk.cef.ledger.identity.LinkData",
+           |      "identity": "$identity",
+           |      "key": "$publicKeyHex"
+           |    },
            |    "ledgerId": "1",
-           |    "publicKey": "$publicKeyLinkHex",
            |    "privateKey": "$privateKeyHex",
            |    "linkingIdentityPrivateKey": "$privateKeyLinkHex"
            |
@@ -95,17 +103,17 @@ class IdentitiesControllerSpec
         status must ===(StatusCodes.Created)
         val json = responseAs[JsValue]
         (json \ "type").as[String] must be(txType)
-        (json \ "key").as[String] must be(publicKeyLinkHex)
+        (json \ "data" \ "key").as[String] must be(publicKeyHex)
+        (json \ "data" \ "identity").as[String] must be(identity)
         (json \ "signature").as[String] mustNot be(empty)
-        (json \ "identity").as[String] must be(identity)
         (json \ "linkingIdentitySignature").as[String] mustNot be(empty)
 
       }
     }
 
-    def validateErrorResponse(json: JsValue) = {
+    def validateErrorResponse(json: JsValue): Unit = {
       val errors = (json \ "errors").as[List[JsValue]]
-      errors.size must be(5)
+      errors.size must be(3)
       errors.foreach { error =>
         (error \ "type").as[String] must be(PublicErrorRenderer.FieldValidationErrorType)
         (error \ "message").as[String] mustNot be(empty)
@@ -114,7 +122,7 @@ class IdentitiesControllerSpec
     }
 
     "be able to create identity claim transaction" in {
-      testTransactionType("Claim")
+      testTransactionType("Claim", "io.iohk.cef.ledger.identity.ClaimData")
     }
 
     "be able to create identity link transaction" in {
@@ -122,7 +130,7 @@ class IdentitiesControllerSpec
     }
 
     "be able to create identity unlink transaction" in {
-      testTransactionType("Unlink")
+      testTransactionType("Unlink", "io.iohk.cef.ledger.identity.UnlinkData")
     }
 
     "return validation errors" in {
@@ -132,7 +140,7 @@ class IdentitiesControllerSpec
            |    "type": "none",
            |    "identity": 2,
            |    "ledgerId": 1,
-           |    "publicKey": "1$publicKeyHex",
+           |    "data": "1$publicKeyHex",
            |    "privateKey": "2$privateKeyHex"
            |}
          """.stripMargin

@@ -1,63 +1,48 @@
 package io.iohk.cef.ledger.identity
 
-import akka.util.ByteString
+import io.iohk.cef.codecs.nio._
+import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.crypto.{sign => signBytes, _}
-import io.iohk.cef.frontend.models.IdentityTransactionType
-import io.iohk.cef.ledger.identity.IdentityTransaction.isSignedWith
 import io.iohk.cef.ledger.{LedgerError, Transaction}
 
 sealed trait IdentityTransaction extends Transaction[IdentityData] {
-  val identity: String
-  val key: SigningPublicKey
+  val data: IdentityTransactionData
   val signature: Signature
 }
 
 object IdentityTransaction {
 
-  def sign(
-      identity: String,
-      `type`: IdentityTransactionType,
-      publicKey: SigningPublicKey,
-      privateKey: SigningPrivateKey): Signature = {
-    import io.iohk.cef.codecs.nio.auto._
-    val source = serializeForSignature(identity, `type`, publicKey)
-    signBytes(source, privateKey)
+  def sign(data: IdentityTransactionData, privateKey: SigningPrivateKey): Signature = {
+    signBytes(data, privateKey)
   }
 
-  def isSignedWith(
-      signKey: SigningPublicKey,
-      signature: Signature)(identity: String, `type`: IdentityTransactionType, publicKey: SigningPublicKey): Boolean = {
-    import io.iohk.cef.codecs.nio.auto._
+  def isDataSignedWith[D <: IdentityTransactionData: NioEncDec](data: D, publicKey: SigningPublicKey, signature: Signature): Boolean =
+    isValidSignature(data, signature, publicKey)
 
-    val source = serializeForSignature(identity, `type`, publicKey)
-    isValidSignature(source, signature, signKey)
-  }
-
-  private def serializeForSignature(
-      identity: String,
-      `type`: IdentityTransactionType,
-      publicKey: SigningPublicKey): ByteString = {
-    ByteString(identity) ++ ByteString(`type`.entryName) ++ publicKey.toByteString
+  def isDataSignedWithIdentity[D <: IdentityTransactionData: NioEncDec](data: D, identity: Identity, state: IdentityLedgerState, signature: Signature): Boolean = {
+    // TODO: Go directly to the expected key
+    state
+      .get(identity)
+      .map(_.keys)
+      .getOrElse(Set.empty)
+      .exists(isDataSignedWith(data, _, signature))
   }
 }
 
-case class Claim(identity: String, key: SigningPublicKey, signature: Signature) extends IdentityTransaction {
-
-  import IdentityTransaction._
+case class Claim(data: ClaimData, signature: Signature) extends IdentityTransaction {
 
   override def apply(ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] = {
-    val validSignature = isSignedWith(key, signature)(identity, IdentityTransactionType.Claim, key)
 
-    if (!validSignature) {
+    if (!isValidSignature(data, signature, data.key)) {
       Left(UnableToVerifySignatureError)
-    } else if (ledgerState.contains(identity)) {
-      Left(IdentityTakenError(identity))
+    } else if (ledgerState.contains(data.identity)) {
+      Left(IdentityTakenError(data.identity))
     } else {
-      Right(ledgerState.put(identity, IdentityData.forKeys(key)))
+      Right(ledgerState.put(data.identity, IdentityData.forKeys(data.key)))
     }
   }
 
-  override def partitionIds: Set[String] = Set(identity)
+  override def partitionIds: Set[String] = Set(data.identity)
 }
 
 /**
@@ -70,10 +55,8 @@ case class Claim(identity: String, key: SigningPublicKey, signature: Signature) 
   * @param linkingIdentitySignature a digital signature validating the transaction, it should be generated
   *   *                  from the public key on the given identity.
   */
-case class Link(identity: String, key: SigningPublicKey, signature: Signature, linkingIdentitySignature: Signature)
+case class Link(data: LinkData, signature: Signature, linkingIdentitySignature: Signature)
     extends IdentityTransaction {
-
-  import IdentityTransaction._
 
   /**
     * Apply this transaction to the given state
@@ -84,68 +67,50 @@ case class Link(identity: String, key: SigningPublicKey, signature: Signature, l
     *         - the signature can't be validated
     */
   override def apply(ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] = {
-    // TODO: Go directly to the expected key
-    lazy val validSignature: Boolean = ledgerState
-      .get(identity)
-      .map(_.keys)
-      .getOrElse(Set.empty)
-      .exists { signKey =>
-        isSignedWith(signKey, signature)(identity, IdentityTransactionType.Link, key)
-      }
+    lazy val providedPublicKeySignatureValid =
+      isValidSignature(data, linkingIdentitySignature, data.key)
+    lazy val identitySignatureValid =
+      IdentityTransaction.isDataSignedWithIdentity(data, data.identity, ledgerState, signature)
 
-    lazy val validSignatureToLink =
-      isSignedWith(key, linkingIdentitySignature)(identity, IdentityTransactionType.Link, key)
-
-    if (!ledgerState.contains(identity)) {
-      Left(IdentityNotClaimedError(identity))
-    } else if (!validSignature) {
+    if (!ledgerState.contains(data.identity)) {
+      Left(IdentityNotClaimedError(data.identity))
+    } else if (!identitySignatureValid) {
       Left(UnableToVerifySignatureError)
-    } else if (!validSignatureToLink) {
-      Left(UnableToVerifyLinkingIdentitySignatureError(identity, key))
+    } else if (!providedPublicKeySignatureValid) {
+      Left(UnableToVerifyLinkingIdentitySignatureError(data.identity, data.key))
     } else {
-      val prev: IdentityData = ledgerState.get(identity).getOrElse(IdentityData.empty)
-      val result = ledgerState.put(identity, prev addKey key)
+      val prev: IdentityData = ledgerState.get(data.identity).getOrElse(IdentityData.empty)
+      val result = ledgerState.put(data.identity, prev addKey data.key)
       Right(result)
     }
   }
 
-  override def partitionIds: Set[String] = Set(identity)
+  override def partitionIds: Set[String] = Set(data.identity)
 }
 
-case class Unlink(identity: String, key: SigningPublicKey, signature: Signature) extends IdentityTransaction {
-
-  import IdentityTransaction._
+case class Unlink(data: UnlinkData, signature: Signature) extends IdentityTransaction {
 
   override def apply(ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] = {
-    // TODO: Go directly to the expected key
-    lazy val validSignature: Boolean = ledgerState
-      .get(identity)
-      .map(_.keys)
-      .getOrElse(Set.empty)
-      .exists { signKey =>
-        isSignedWith(signKey, signature)(identity, IdentityTransactionType.Unlink, key)
-      }
-
-    if (!validSignature) {
+    if (!IdentityTransaction.isDataSignedWithIdentity(data, data.identity, ledgerState, signature)) {
       Left(UnableToVerifySignatureError)
-    } else if (!ledgerState.contains(identity) || !ledgerState
-        .get(identity)
+    } else if (!ledgerState.contains(data.identity) || !ledgerState
+        .get(data.identity)
         .map(_.keys)
         .getOrElse(Set())
-        .contains(key)) {
-      Left(PublicKeyNotAssociatedWithIdentity(identity, key))
+        .contains(data.key)) {
+      Left(PublicKeyNotAssociatedWithIdentity(data.identity, data.key))
     } else {
-      val prev: IdentityData = ledgerState.get(identity).getOrElse(IdentityData.empty)
-      val newData = prev removeKey key
+      val prev: IdentityData = ledgerState.get(data.identity).getOrElse(IdentityData.empty)
+      val newData = prev removeKey data.key
       if (newData.isEmpty) {
-        Right(ledgerState.remove(identity))
+        Right(ledgerState.remove(data.identity))
       } else {
-        Right(ledgerState.put(identity, newData))
+        Right(ledgerState.put(data.identity, newData))
       }
     }
   }
 
-  override def partitionIds: Set[String] = Set(identity)
+  override def partitionIds: Set[String] = Set(data.identity)
 }
 
 /**
@@ -155,31 +120,20 @@ case class Unlink(identity: String, key: SigningPublicKey, signature: Signature)
   * @param signature endorser's digital signature validating the transaction.
   * @param endorsedIdentity identity to endorse should be already claimed identity.
   */
-case class Endorse(identity: Identity, key: SigningPublicKey, signature: Signature, endorsedIdentity: String)
+case class Endorse(data: EndorseData, signature: Signature)
     extends IdentityTransaction {
 
   def apply(ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] = {
 
-    lazy val validateKey: Boolean = ledgerState
-      .get(identity)
-      .map(_.keys)
-      .getOrElse(Set.empty)
-      .contains(key)
-
-    lazy val validSignature =
-      isSignedWith(key, signature)(identity, IdentityTransactionType.Endorse, key)
-
-    if (!ledgerState.contains(endorsedIdentity)) {
-      Left(UnknownEndorsedIdentityError(endorsedIdentity))
-    } else if (!ledgerState.contains(identity)) {
-      Left(UnknownEndorserIdentityError(identity))
-    } else if (!validSignature) {
-      Left(UnableToVerifyEndorserSignatureError(identity, signature))
-    } else if (!validateKey) {
-      Left(PublicKeyNotAssociatedWithIdentity(identity, key))
+    if (!ledgerState.contains(data.endorsedIdentity)) {
+      Left(UnknownEndorsedIdentityError(data.endorsedIdentity))
+    } else if (!ledgerState.contains(data.endorsingIdentity)) {
+      Left(UnknownEndorserIdentityError(data.endorsingIdentity))
+    } else if (!IdentityTransaction.isDataSignedWithIdentity(data, data.endorsingIdentity, ledgerState, signature)) {
+      Left(UnableToVerifyEndorserSignatureError(data.endorsingIdentity, signature))
     } else {
-      val prev: IdentityData = ledgerState.get(endorsedIdentity).getOrElse(IdentityData.empty)
-      val result = ledgerState.put(endorsedIdentity, prev endorse identity)
+      val prev: IdentityData = ledgerState.get(data.endorsedIdentity).getOrElse(IdentityData.empty)
+      val result = ledgerState.put(data.endorsedIdentity, prev endorse data.endorsingIdentity)
       Right(result)
     }
   }
@@ -190,5 +144,5 @@ case class Endorse(identity: Identity, key: SigningPublicKey, signature: Signatu
     *
     * @return Set[String]
     */
-  override def partitionIds: Set[String] = Set(identity, endorsedIdentity)
+  override def partitionIds: Set[String] = Set(data.endorsingIdentity, data.endorsedIdentity)
 }
