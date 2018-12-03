@@ -113,7 +113,7 @@ class IdentitiesControllerSpec
 
     def validateErrorResponse(json: JsValue): Unit = {
       val errors = (json \ "errors").as[List[JsValue]]
-      errors.size must be(3)
+      errors.size must be(4)
       errors.foreach { error =>
         (error \ "type").as[String] must be(PublicErrorRenderer.FieldValidationErrorType)
         (error \ "message").as[String] mustNot be(empty)

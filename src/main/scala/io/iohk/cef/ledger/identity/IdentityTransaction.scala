@@ -16,10 +16,17 @@ object IdentityTransaction {
     signBytes(data, privateKey)
   }
 
-  def isDataSignedWith[D <: IdentityTransactionData: NioEncDec](data: D, publicKey: SigningPublicKey, signature: Signature): Boolean =
+  def isDataSignedWith[D <: IdentityTransactionData: NioEncDec](
+      data: D,
+      publicKey: SigningPublicKey,
+      signature: Signature): Boolean =
     isValidSignature(data, signature, publicKey)
 
-  def isDataSignedWithIdentity[D <: IdentityTransactionData: NioEncDec](data: D, identity: Identity, state: IdentityLedgerState, signature: Signature): Boolean = {
+  def isDataSignedWithIdentity[D <: IdentityTransactionData: NioEncDec](
+      data: D,
+      identity: Identity,
+      state: IdentityLedgerState,
+      signature: Signature): Boolean = {
     // TODO: Go directly to the expected key
     state
       .get(identity)
@@ -55,8 +62,7 @@ case class Claim(data: ClaimData, signature: Signature) extends IdentityTransact
   * @param linkingIdentitySignature a digital signature validating the transaction, it should be generated
   *   *                  from the public key on the given identity.
   */
-case class Link(data: LinkData, signature: Signature, linkingIdentitySignature: Signature)
-    extends IdentityTransaction {
+case class Link(data: LinkData, signature: Signature, linkingIdentitySignature: Signature) extends IdentityTransaction {
 
   /**
     * Apply this transaction to the given state
@@ -120,8 +126,7 @@ case class Unlink(data: UnlinkData, signature: Signature) extends IdentityTransa
   * @param signature endorser's digital signature validating the transaction.
   * @param endorsedIdentity identity to endorse should be already claimed identity.
   */
-case class Endorse(data: EndorseData, signature: Signature)
-    extends IdentityTransaction {
+case class Endorse(data: EndorseData, signature: Signature) extends IdentityTransaction {
 
   def apply(ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] = {
 
