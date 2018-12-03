@@ -238,6 +238,7 @@ object Codecs {
   implicit val linkDataFormats = Json.format[LinkData]
   implicit val unlinkDataFormats = Json.format[UnlinkData]
   implicit val endorseDataFormats = Json.format[EndorseData]
+  implicit val grantDataFormats = Json.format[GrantData]
 
   implicit val identityTxDataFormats = Json.format[IdentityTransactionData]
 
@@ -249,7 +250,7 @@ object Codecs {
       case _: Link => IdentityTransactionType.Link
       case _: Unlink => IdentityTransactionType.Unlink
       case _: Endorse => IdentityTransactionType.Endorse
-
+      case _: Grant => IdentityTransactionType.Grant
     }
 
     val linkingIdentitySignatureMayBe = obj match {

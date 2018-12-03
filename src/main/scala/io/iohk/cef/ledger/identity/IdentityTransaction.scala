@@ -34,6 +34,8 @@ object IdentityTransaction {
       .getOrElse(Set.empty)
       .exists(isDataSignedWith(data, _, signature))
   }
+
+  def grantingAuthorities: Set[Identity] = Set()
 }
 
 case class Claim(data: ClaimData, signature: Signature) extends IdentityTransaction {
@@ -150,4 +152,20 @@ case class Endorse(data: EndorseData, signature: Signature) extends IdentityTran
     * @return Set[String]
     */
   override def partitionIds: Set[String] = Set(data.endorsingIdentity, data.endorsedIdentity)
+}
+
+case class Grant(data: GrantData, signature: Signature, claimSignature: Signature, endorseSignature: Signature)
+  extends IdentityTransaction{
+  private val underlyingClaim = Claim(data.underlyingClaimData, claimSignature)
+  private val underlyingEndorse = Endorse(data.underlyingEndorseData, endorseSignature)
+  val txs: Seq[Transaction[IdentityData]] = Seq(underlyingClaim, underlyingEndorse)
+  override def apply(ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] = {
+    if(!IdentityTransaction.grantingAuthorities.contains(data.grantingIdentity)) {
+      Left(IdentityIsNotAGrantingAuthorityError(data.grantingIdentity))
+    } else {
+      txs.foldLeft[Either[LedgerError, IdentityLedgerState]](Right(ledgerState))((stateEither, tx) =>
+        stateEither.flatMap(state => tx(state)))
+    }
+  }
+  override def partitionIds: Set[String] = Set(data.grantingIdentity) ++ txs.foldLeft(Set[String]())(_ union _.partitionIds)
 }

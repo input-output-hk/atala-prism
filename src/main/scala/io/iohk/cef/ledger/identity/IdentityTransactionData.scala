@@ -18,3 +18,13 @@ case class EndorseData(endorsingIdentity: Identity, endorsedIdentity: Identity) 
   def toTransaction(endorsingIdentityPrivateKey: SigningPrivateKey): Endorse =
     Endorse(this, sign(this, endorsingIdentityPrivateKey))
 }
+case class GrantData(grantingIdentity: Identity, grantedIdentity: Identity, grantedIdentityPublicKey: SigningPublicKey) extends IdentityTransactionData {
+  val underlyingClaimData = ClaimData(grantedIdentity, grantedIdentityPublicKey)
+  val underlyingEndorseData = EndorseData(grantingIdentity, grantedIdentity)
+  def toTransaction(grantingIdentityPrivateKey: SigningPrivateKey, grantedIdentityPrivateKey: SigningPrivateKey): Grant = {
+    val grantSignature = sign(this, grantingIdentityPrivateKey)
+    val claimSignature = sign(underlyingClaimData, grantedIdentityPrivateKey)
+    val endorseSignature = sign(underlyingEndorseData, grantingIdentityPrivateKey)
+    Grant(this, grantSignature, claimSignature, endorseSignature)
+  }
+}
