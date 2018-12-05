@@ -12,7 +12,7 @@ import io.iohk.cef.frontend.models.{
   SubmitIdentityTransactionRequest
 }
 import io.iohk.cef.frontend.services.IdentityTransactionService
-import io.iohk.cef.ledger.identity.{IdentityTransaction, Link}
+import io.iohk.cef.ledger.identity.{Grant, IdentityTransaction, Link}
 
 import scala.concurrent.ExecutionContext
 
@@ -57,12 +57,19 @@ object IdentitiesController {
       case _ => None
     }
 
+    val (thirdSignatureMaybe, fourthSignatureMaybe) = it match {
+      case x: Grant => (Option(x.claimSignature), Option(x.endorseSignature))
+      case _ => (None, None)
+    }
+
     SubmitIdentityTransactionRequest(
       `type` = IdentityTransactionType.of(it),
       data = it.data,
       ledgerId = ledgerId,
       signature = it.signature,
-      linkingIdentitySignature = secondSignatureMaybe
+      linkingIdentitySignature = secondSignatureMaybe,
+      claimSignature = thirdSignatureMaybe,
+      endorseSignature = fourthSignatureMaybe
     )
   }
 }

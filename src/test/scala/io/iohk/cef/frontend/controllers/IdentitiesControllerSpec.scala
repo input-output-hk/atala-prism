@@ -73,10 +73,44 @@ class IdentitiesControllerSpec
       }
     }
 
-    def testTransactionLinkType(txType: String): Assertion = {
+    def testTransactionGrantType(txType: String): Assertion = {
+      val pairLink = generateSigningKeyPair()
+      val privateKeyLinkHex = toCleanHex(pairLink.`private`.toByteString)
+      val grantedIdentity = "granted"
+      val grantingIdentity = "granting"
+
+      val body =
+        s"""
+           |{
+           |    "type": "$txType",
+           |    "data": {
+           |      "_type":"io.iohk.cef.ledger.identity.GrantData",
+           |      "grantingIdentity": "$grantingIdentity",
+           |      "grantedIdentity" : "$grantedIdentity",
+           |      "grantedIdentityPublicKey": "${publicKeyHex}"
+           |      },
+           |    "ledgerId": "1",
+           |    "privateKey": "$privateKeyHex",
+           |    "linkingIdentityPrivateKey": "$privateKeyLinkHex"
+           |}
+         """.stripMargin
+
+      val request = Post("/identities", jsonEntity(body))
+
+      request ~> routes ~> check {
+        status must ===(StatusCodes.Created)
+
+        val json = responseAs[JsValue]
+        (json \ "type").as[String] must be(txType)
+        (json \ "data" \ "grantingIdentity").as[String] must be(grantingIdentity)
+        (json \ "data" \ "grantedIdentity").as[String] must be(grantedIdentity)
+        (json \ "data" \ "grantedIdentityPublicKey").as[String] must be(publicKeyHex)
+      }
+    }
+
+    def testTransactionLinkType(txType: String, txDataType: String): Assertion = {
 
       val pairLink = generateSigningKeyPair()
-      val publicKeyLinkHex = toCleanHex(pairLink.public.toByteString)
       val privateKeyLinkHex = toCleanHex(pairLink.`private`.toByteString)
 
       val identity = "iohk"
@@ -86,7 +120,7 @@ class IdentitiesControllerSpec
            |{
            |    "type": "$txType",
            |    "data": {
-           |      "_type":"io.iohk.cef.ledger.identity.LinkData",
+           |      "_type":"$txDataType",
            |      "identity": "$identity",
            |      "key": "$publicKeyHex"
            |    },
@@ -126,11 +160,15 @@ class IdentitiesControllerSpec
     }
 
     "be able to create identity link transaction" in {
-      testTransactionLinkType("Link")
+      testTransactionLinkType("Link", "io.iohk.cef.ledger.identity.LinkData")
     }
 
     "be able to create identity unlink transaction" in {
       testTransactionType("Unlink", "io.iohk.cef.ledger.identity.UnlinkData")
+    }
+
+    "be able to create a grant transaction" in {
+      testTransactionGrantType("Grant")
     }
 
     "return validation errors" in {
