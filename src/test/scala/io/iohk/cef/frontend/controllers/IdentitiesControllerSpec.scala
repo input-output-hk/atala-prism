@@ -74,7 +74,7 @@ class IdentitiesControllerSpec
     }
 
     def testEndorseType(
-        endorsingIdentity: String,
+        endorserIdentity: String,
         endorsedIdentity: String,
         privateKey: SigningPrivateKey): Assertion = {
       val txType = "Endorse"
@@ -86,7 +86,7 @@ class IdentitiesControllerSpec
            |    "type": "$txType",
            |    "data": {
            |      "_type":"io.iohk.cef.ledger.identity.EndorseData",
-           |      "endorsingIdentity": "$endorsingIdentity",
+           |      "endorserIdentity": "$endorserIdentity",
            |      "endorsedIdentity": "$endorsedIdentity"
            |    },
            |    "ledgerId": "1",
@@ -101,7 +101,7 @@ class IdentitiesControllerSpec
         status must ===(StatusCodes.Created)
         val json = responseAs[JsValue]
         (json \ "type").as[String] must be(txType)
-        (json \ "data" \ "endorsingIdentity").as[String] must be(endorsingIdentity)
+        (json \ "data" \ "endorserIdentity").as[String] must be(endorserIdentity)
         (json \ "data" \ "endorsedIdentity").as[String] must be(endorsedIdentity)
         (json \ "signature").as[String] mustNot be(empty)
       }

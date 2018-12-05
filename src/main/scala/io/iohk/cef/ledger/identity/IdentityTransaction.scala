@@ -134,13 +134,13 @@ case class Endorse(data: EndorseData, signature: Signature) extends IdentityTran
 
     if (!ledgerState.contains(data.endorsedIdentity)) {
       Left(UnknownEndorsedIdentityError(data.endorsedIdentity))
-    } else if (!ledgerState.contains(data.endorsingIdentity)) {
-      Left(UnknownEndorserIdentityError(data.endorsingIdentity))
-    } else if (!IdentityTransaction.isDataSignedWithIdentity(data, data.endorsingIdentity, ledgerState, signature)) {
-      Left(UnableToVerifyEndorserSignatureError(data.endorsingIdentity, signature))
+    } else if (!ledgerState.contains(data.endorserIdentity)) {
+      Left(UnknownEndorserIdentityError(data.endorserIdentity))
+    } else if (!IdentityTransaction.isDataSignedWithIdentity(data, data.endorserIdentity, ledgerState, signature)) {
+      Left(UnableToVerifyEndorserSignatureError(data.endorserIdentity, signature))
     } else {
       val prev: IdentityData = ledgerState.get(data.endorsedIdentity).getOrElse(IdentityData.empty)
-      val result = ledgerState.put(data.endorsedIdentity, prev endorse data.endorsingIdentity)
+      val result = ledgerState.put(data.endorsedIdentity, prev endorse data.endorserIdentity)
       Right(result)
     }
   }
@@ -151,7 +151,7 @@ case class Endorse(data: EndorseData, signature: Signature) extends IdentityTran
     *
     * @return Set[String]
     */
-  override def partitionIds: Set[String] = Set(data.endorsingIdentity, data.endorsedIdentity)
+  override def partitionIds: Set[String] = Set(data.endorserIdentity, data.endorsedIdentity)
 }
 
 case class Grant(data: GrantData, signature: Signature, claimSignature: Signature, endorseSignature: Signature)
