@@ -249,6 +249,7 @@ object Codecs {
       case _: Link => IdentityTransactionType.Link
       case _: Unlink => IdentityTransactionType.Unlink
       case _: Endorse => IdentityTransactionType.Endorse
+      case _: RevokeEndorsement => IdentityTransactionType.Revoke
 
     }
 
