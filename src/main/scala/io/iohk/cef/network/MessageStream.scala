@@ -10,4 +10,5 @@ trait MessageStream[T] {
   def filter(p: T => Boolean): S[T]
   def fold[U](zero: U)(f: (U, T) => U): Future[U]
   def foreach(f: T => Unit): Future[Unit]
+  def prepend(t: T): MessageStream[T]
 }

@@ -27,15 +27,15 @@ class QueryEngineSpec extends FlatSpec with MustMatchers {
     val queryResponsesEnvelope = Envelope(queryResponse, tableId, Everyone)
 
     val queryIdsIterator = Seq(queryId).iterator
-    val scheduler = TestScheduler()
+    implicit val scheduler = TestScheduler()
     val envResponsesIt = Seq(queryResponsesEnvelope).iterator
     val observableRequest: Observable[Envelope[QueryRequest]] = Observable.empty
     val observableResponse: Observable[Envelope[QueryResponse[String]]] = Observable.eval(envResponsesIt.next())
 
-    val requestMessageStream = new DummyMessageStream[Envelope[QueryRequest]](observableRequest, scheduler)
+    val requestMessageStream = new DummyMessageStream[Envelope[QueryRequest]](observableRequest)
     val requestNetwork = mock[Network[Envelope[QueryRequest]]]
     val responseNetwork: Network[Envelope[QueryResponse[String]]] = mock[Network[Envelope[QueryResponse[String]]]]
-    val responseMessageStream = new DummyMessageStream[Envelope[QueryResponse[String]]](observableResponse, scheduler)
+    val responseMessageStream = new DummyMessageStream[Envelope[QueryResponse[String]]](observableResponse)
     implicit val s = mock[NioCodec[String]]
 
     when(table.tableId).thenReturn(tableId)

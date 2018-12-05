@@ -9,7 +9,6 @@ import io.iohk.cef.data._
 import io.iohk.cef.data.query.Query.NoPredicateQuery
 import io.iohk.cef.data.query.QueryEngine
 import io.iohk.cef.data.storage.mv.MVTableStorage
-import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.network.{MessageStream, Network}
 import io.iohk.cef.transactionservice.{Envelope, Everyone}
 import org.mockito.ArgumentMatchers._
@@ -40,9 +39,7 @@ class DataItemServiceTableItSpec extends FlatSpec {
   private val envelopes: Seq[Envelope[DataItemAction[DataItemId]]] =
     dataItems.map(di => Envelope(InsertAction(di): DataItemAction[DataItemId], testTableId, Everyone))
 
-  implicit val canValidate = new CanValidate[DataItem[String]] {
-    override def validate(t: DataItem[String]): Either[ApplicationError, Unit] = Right(())
-  }
+  implicit val canValidate: CanValidate[DataItem[String]] = _ => Right(())
 
   it should "insert and delete items in the database" in testStorage { storage =>
     val table = new Table[String](testTableId, storage)

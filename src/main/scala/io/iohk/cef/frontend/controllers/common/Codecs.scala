@@ -6,7 +6,7 @@ import io.iohk.cef.crypto._
 import io.iohk.cef.data.{DataItem, Owner, TableId, Witness}
 import io.iohk.cef.frontend.models._
 import io.iohk.cef.ledger.chimeric._
-import io.iohk.cef.ledger.identity.{Claim, IdentityTransaction, Link, Unlink}
+import io.iohk.cef.ledger.identity._
 import io.iohk.cef.network.NodeId
 import io.iohk.cef.utils.ByteStringExtension
 import play.api.libs.functional.syntax._
@@ -241,6 +241,9 @@ object Codecs {
       case _: Claim => IdentityTransactionType.Claim
       case _: Link => IdentityTransactionType.Link
       case _: Unlink => IdentityTransactionType.Unlink
+      case _: Endorse => IdentityTransactionType.Endorse
+      case _: RevokeEndorsement => IdentityTransactionType.Revoke
+
     }
 
     val linkingIdentitySignatureMayBe = obj match {
