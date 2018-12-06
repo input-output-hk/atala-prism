@@ -24,6 +24,7 @@ class IdentityTransactionService(nodeTransactionService: NodeTransactionService[
           .toRight(CorrespondingPrivateKeyRequiredForLinkingIdentityError)
       case data: UnlinkData => Right(data.toTransaction(req.privateKey))
       case data: EndorseData => Right(data.toTransaction(req.privateKey))
+      case data: RevokeEndorsementData => Right(data.toTransaction(req.privateKey))
       case data: GrantData =>
         req.linkingIdentityPrivateKey
           .map(pk => data.toTransaction(req.privateKey, pk))

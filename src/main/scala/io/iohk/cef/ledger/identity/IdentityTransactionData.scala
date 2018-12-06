@@ -14,14 +14,22 @@ case class LinkData(identity: Identity, key: SigningPublicKey) extends IdentityT
 case class UnlinkData(identity: Identity, key: SigningPublicKey) extends IdentityTransactionData {
   def toTransaction(privateKey: SigningPrivateKey): Unlink = Unlink(this, sign(this, privateKey))
 }
-case class EndorseData(endorsingIdentity: Identity, endorsedIdentity: Identity) extends IdentityTransactionData {
+case class EndorseData(endorserIdentity: Identity, endorsedIdentity: Identity) extends IdentityTransactionData {
   def toTransaction(endorsingIdentityPrivateKey: SigningPrivateKey): Endorse =
     Endorse(this, sign(this, endorsingIdentityPrivateKey))
 }
-case class GrantData(grantingIdentity: Identity, grantedIdentity: Identity, grantedIdentityPublicKey: SigningPublicKey) extends IdentityTransactionData {
+case class RevokeEndorsementData(endorserIdentity: Identity, endorsedIdentity: Identity)
+    extends IdentityTransactionData {
+  def toTransaction(endorsingIdentityPrivateKey: SigningPrivateKey): RevokeEndorsement =
+    RevokeEndorsement(this, sign(this, endorsingIdentityPrivateKey))
+}
+case class GrantData(grantingIdentity: Identity, grantedIdentity: Identity, grantedIdentityPublicKey: SigningPublicKey)
+    extends IdentityTransactionData {
   val underlyingClaimData = ClaimData(grantedIdentity, grantedIdentityPublicKey)
   val underlyingEndorseData = EndorseData(grantingIdentity, grantedIdentity)
-  def toTransaction(grantingIdentityPrivateKey: SigningPrivateKey, grantedIdentityPrivateKey: SigningPrivateKey): Grant = {
+  def toTransaction(
+      grantingIdentityPrivateKey: SigningPrivateKey,
+      grantedIdentityPrivateKey: SigningPrivateKey): Grant = {
     val grantSignature = sign(this, grantingIdentityPrivateKey)
     val claimSignature = sign(underlyingClaimData, grantedIdentityPrivateKey)
     val endorseSignature = sign(underlyingEndorseData, grantingIdentityPrivateKey)
