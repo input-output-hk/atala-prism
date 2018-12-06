@@ -15,8 +15,8 @@ case class UnlinkData(identity: Identity, key: SigningPublicKey) extends Identit
   def toTransaction(privateKey: SigningPrivateKey): Unlink = Unlink(this, sign(this, privateKey))
 }
 case class EndorseData(endorserIdentity: Identity, endorsedIdentity: Identity) extends IdentityTransactionData {
-  def toTransaction(endorsingIdentityPrivateKey: SigningPrivateKey): Endorse =
-    Endorse(this, sign(this, endorsingIdentityPrivateKey))
+  def toTransaction(endorserIdentityPrivateKey: SigningPrivateKey): Endorse =
+    Endorse(this, sign(this, endorserIdentityPrivateKey))
 }
 case class RevokeEndorsementData(endorserIdentity: Identity, endorsedIdentity: Identity)
     extends IdentityTransactionData {
