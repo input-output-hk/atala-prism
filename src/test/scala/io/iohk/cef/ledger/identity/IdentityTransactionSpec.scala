@@ -176,11 +176,10 @@ class IdentityTransactionSpec
         Map(
           "one" -> IdentityData(Set(alice.public), Set("two")),
           "two" -> IdentityData.forKeys(bob.public)))
-    val endorse = RevokeEndorsement(
+    val endorse = RevokeEndorsementData(
       "two",
-      bob.public,
-      IdentityTransaction.sign("two", IdentityTransactionType.Revoke, bob.public, bob.`private`),
-      "one")
+      "one"
+    ).toTransaction(bob.`private`)
 
     val newStateEither = endorse(state)
     val newState = newStateEither.right.value
@@ -192,11 +191,10 @@ class IdentityTransactionSpec
   it should "fail to revoke a endorse identity if the identity is not claimed" in {
     val state =
       IdentityLedgerState(Map("two" -> IdentityData.forKeys(bob.public)))
-    val transaction = RevokeEndorsement(
+    val transaction = RevokeEndorsementData(
       "two",
-      bob.public,
-      IdentityTransaction.sign("two", IdentityTransactionType.Revoke, bob.public, bob.`private`),
-      "one")
+      "one"
+    ).toTransaction(bob.`private`)
 
     val result = transaction(state).left.value
     result mustBe UnknownEndorsedIdentityError("one")
@@ -205,11 +203,10 @@ class IdentityTransactionSpec
   it should "fail to revoke a identity if the endorser identity is not claimed" in {
     val state =
       IdentityLedgerState(Map("two" -> IdentityData.forKeys(bob.public)))
-    val transaction = Endorse(
+    val transaction = EndorseData(
       "three",
-      bob.public,
-      IdentityTransaction.sign("three", IdentityTransactionType.Revoke, bob.public, bob.`private`),
-      "two")
+      "two"
+    ).toTransaction(bob.`private`)
 
     val result = transaction(state).left.value
     result mustBe UnknownEndorserIdentityError("three")
@@ -218,18 +215,16 @@ class IdentityTransactionSpec
   it should "fail to revoke identity if the endorser signature is not valid" in {
     val state =
       IdentityLedgerState(Map("one" -> IdentityData.forKeys(alice.public), "two" -> IdentityData.forKeys(bob.public)))
-    val signature = IdentityTransaction.sign("two", IdentityTransactionType.Revoke, bob.public, alice.`private`)
-    val transaction = RevokeEndorsement("two", bob.public, signature, "one")
+    val transaction = RevokeEndorsementData("two", "one").toTransaction(alice.`private`)
 
     val result = transaction(state).left.value
-    result mustBe UnableToVerifyEndorserSignatureError("two", signature)
+    result mustBe UnableToVerifyEndorserSignatureError("two", transaction.signature)
   }
 
   it should "fail to revoke identity if the endorser key is not valid" in {
     val state =
       IdentityLedgerState(Map("one" -> IdentityData.forKeys(alice.public), "two" -> IdentityData.forKeys(bob.public)))
-    val signature = IdentityTransaction.sign("two", IdentityTransactionType.Revoke, daniel.public, daniel.`private`)
-    val transaction = RevokeEndorsement("two", daniel.public, signature, "one")
+    val transaction = RevokeEndorsementData("two", "one").toTransaction(daniel.`private`)
 
     val result = transaction(state).left.value
     result mustBe PublicKeyNotAssociatedWithIdentity("two", daniel.public)
@@ -241,11 +236,9 @@ class IdentityTransactionSpec
         Map(
           "one" -> IdentityData(Set(alice.public), Set("three")),
           "two" -> IdentityData.forKeys(bob.public)))
-    val transaction = RevokeEndorsement(
+    val transaction = RevokeEndorsementData(
       "two",
-      bob.public,
-      IdentityTransaction.sign("two", IdentityTransactionType.Revoke, bob.public, bob.`private`),
-      "one")
+      "one").toTransaction(bob.`private`)
     val result = transaction(state).left.value
     result mustBe EndorsementNotAssociatedWithIdentityError("two", "one")
 

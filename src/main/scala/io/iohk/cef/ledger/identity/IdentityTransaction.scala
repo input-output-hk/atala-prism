@@ -132,13 +132,13 @@ case class Endorse(data: EndorseData, signature: Signature) extends IdentityTran
 
     if (!ledgerState.contains(data.endorsedIdentity)) {
       Left(UnknownEndorsedIdentityError(data.endorsedIdentity))
-    } else if (!ledgerState.contains(data.endorsingIdentity)) {
-      Left(UnknownEndorserIdentityError(data.endorsingIdentity))
-    } else if (!IdentityTransaction.isDataSignedWithIdentity(data, data.endorsingIdentity, ledgerState, signature)) {
-      Left(UnableToVerifyEndorserSignatureError(data.endorsingIdentity, signature))
+    } else if (!ledgerState.contains(data.endorserIdentity)) {
+      Left(UnknownEndorserIdentityError(data.endorserIdentity))
+    } else if (!IdentityTransaction.isDataSignedWithIdentity(data, data.endorserIdentity, ledgerState, signature)) {
+      Left(UnableToVerifyEndorserSignatureError(data.endorserIdentity, signature))
     } else {
       val prev: IdentityData = ledgerState.get(data.endorsedIdentity).getOrElse(IdentityData.empty)
-      val result = ledgerState.put(data.endorsedIdentity, prev endorse data.endorsingIdentity)
+      val result = ledgerState.put(data.endorsedIdentity, prev endorse data.endorserIdentity)
       Right(result)
     }
   }
@@ -149,7 +149,7 @@ case class Endorse(data: EndorseData, signature: Signature) extends IdentityTran
     *
     * @return Set[String]
     */
-  override def partitionIds: Set[String] = Set(data.endorsingIdentity, data.endorsedIdentity)
+  override def partitionIds: Set[String] = Set(data.endorserIdentity, data.endorsedIdentity)
 }
 
 /**
@@ -159,39 +159,28 @@ case class Endorse(data: EndorseData, signature: Signature) extends IdentityTran
   * @param signature endorser's digital signature validating the transaction.
   * @param endorsedIdentity identity to revoke should be already endorsed identity.
   */
-case class RevokeEndorsement(identity: Identity, key: SigningPublicKey, signature: Signature, endorsedIdentity: String)
+case class RevokeEndorsement(data: RevokeEndorsementData, signature: Signature)
     extends IdentityTransaction {
 
   def apply(ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] = {
 
-    lazy val validateKey: Boolean = ledgerState
-      .get(identity)
-      .map(_.keys)
-      .getOrElse(Set.empty)
-      .contains(key)
-
-    lazy val validSignature =
-      isSignedWith(key, signature)(identity, IdentityTransactionType.Revoke, key)
-
     lazy val validEndorsement: Boolean = ledgerState
-      .get(endorsedIdentity)
+      .get(data.endorsedIdentity)
       .map(_.endorsers)
       .getOrElse(Set.empty)
-      .contains(identity)
+      .contains(data.endorserIdentity)
 
-    if (!ledgerState.contains(identity)) {
-      Left(UnknownEndorserIdentityError(identity))
-    } else if (!ledgerState.contains(endorsedIdentity)) {
-      Left(UnknownEndorsedIdentityError(endorsedIdentity))
-    } else if (!validSignature) {
-      Left(UnableToVerifyEndorserSignatureError(identity, signature))
-    } else if (!validateKey) {
-      Left(PublicKeyNotAssociatedWithIdentity(identity, key))
+    if (!ledgerState.contains(data.endorserIdentity)) {
+      Left(UnknownEndorserIdentityError(data.endorserIdentity))
+    } else if (!ledgerState.contains(data.endorsedIdentity)) {
+      Left(UnknownEndorsedIdentityError(data.endorsedIdentity))
+    } else if (!IdentityTransaction.isDataSignedWithIdentity(data, data.endorserIdentity, ledgerState, signature)) {
+      Left(UnableToVerifyEndorserSignatureError(data.endorserIdentity, signature))
     } else if (!validEndorsement) {
-      Left(EndorsementNotAssociatedWithIdentityError(identity, endorsedIdentity))
+      Left(EndorsementNotAssociatedWithIdentityError(data.endorserIdentity, data.endorsedIdentity))
     } else {
-      val prev: IdentityData = ledgerState.get(endorsedIdentity).getOrElse(IdentityData.empty)
-      val result = ledgerState.put(endorsedIdentity, prev revoke identity)
+      val prev: IdentityData = ledgerState.get(data.endorsedIdentity).getOrElse(IdentityData.empty)
+      val result = ledgerState.put(data.endorsedIdentity, prev revoke data.endorserIdentity)
       Right(result)
     }
   }
@@ -202,5 +191,5 @@ case class RevokeEndorsement(identity: Identity, key: SigningPublicKey, signatur
     *
     * @return Set[String]
     */
-  override def partitionIds: Set[String] = Set(identity, endorsedIdentity)
+  override def partitionIds: Set[String] = Set(data.endorserIdentity, data.endorsedIdentity)
 }

@@ -238,6 +238,7 @@ object Codecs {
   implicit val linkDataFormats = Json.format[LinkData]
   implicit val unlinkDataFormats = Json.format[UnlinkData]
   implicit val endorseDataFormats = Json.format[EndorseData]
+  implicit val revokeEndorsementDataFormats = Json.format[RevokeEndorsementData]
 
   implicit val identityTxDataFormats = Json.format[IdentityTransactionData]
 
