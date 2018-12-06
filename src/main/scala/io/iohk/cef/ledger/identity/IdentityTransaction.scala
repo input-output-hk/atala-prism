@@ -154,6 +154,47 @@ case class Endorse(data: EndorseData, signature: Signature) extends IdentityTran
   override def partitionIds: Set[String] = Set(data.endorserIdentity, data.endorsedIdentity)
 }
 
+/**
+  *  A transaction to revoke  an already endorsed identity.
+  * @param identity endorser's identity should be already claimed identity
+  * @param key PublicKey used by endorser signature.
+  * @param signature endorser's digital signature validating the transaction.
+  * @param endorsedIdentity identity to revoke should be already endorsed identity.
+  */
+case class RevokeEndorsement(data: RevokeEndorsementData, signature: Signature) extends IdentityTransaction {
+
+  def apply(ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] = {
+
+    lazy val validEndorsement: Boolean = ledgerState
+      .get(data.endorsedIdentity)
+      .map(_.endorsers)
+      .getOrElse(Set.empty)
+      .contains(data.endorserIdentity)
+
+    if (!ledgerState.contains(data.endorserIdentity)) {
+      Left(UnknownEndorserIdentityError(data.endorserIdentity))
+    } else if (!ledgerState.contains(data.endorsedIdentity)) {
+      Left(UnknownEndorsedIdentityError(data.endorsedIdentity))
+    } else if (!IdentityTransaction.isDataSignedWithIdentity(data, data.endorserIdentity, ledgerState, signature)) {
+      Left(UnableToVerifyEndorserSignatureError(data.endorserIdentity, signature))
+    } else if (!validEndorsement) {
+      Left(EndorsementNotAssociatedWithIdentityError(data.endorserIdentity, data.endorsedIdentity))
+    } else {
+      val prev: IdentityData = ledgerState.get(data.endorsedIdentity).getOrElse(IdentityData.empty)
+      val result = ledgerState.put(data.endorsedIdentity, prev revoke data.endorserIdentity)
+      Right(result)
+    }
+  }
+
+  /**
+    * The ids of the state partitions that need to be retrieved for this tx.
+    * See [[io.iohk.cef.ledger.LedgerState]] for more detail.
+    *
+    * @return Set[String]
+    */
+  override def partitionIds: Set[String] = Set(data.endorserIdentity, data.endorsedIdentity)
+}
+
 case class Grant(data: GrantData, signature: Signature, claimSignature: Signature, endorseSignature: Signature)
     extends IdentityTransaction {
   private val underlyingClaim = Claim(data.underlyingClaimData, claimSignature)
@@ -168,5 +209,5 @@ case class Grant(data: GrantData, signature: Signature, claimSignature: Signatur
     }
   }
   override def partitionIds: Set[String] =
-    Set(data.grantingIdentity) ++ txs.foldLeft(Set[String]())(_ union _.partitionIds)
+    txs.foldLeft(Set(data.grantingIdentity))(_ union _.partitionIds)
 }
