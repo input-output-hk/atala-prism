@@ -39,7 +39,8 @@ case class PublicKeyNotAssociatedWithIdentity(identity: String, publicKey: Signi
   override def toString: String =
     s"Mapping doesn't exist: $identity -> ${toHexString(publicKey.toByteString)}"
 }
-case class EndorsementNotAssociatedWithIdentityError(identity: Identity, endorsedIdentity: Identity) extends LedgerError {
+case class EndorsementNotAssociatedWithIdentityError(identity: Identity, endorsedIdentity: Identity)
+    extends LedgerError {
   override def toString: String =
     s"Endorsement Mapping doesn't exist: $identity -> $endorsedIdentity"
 }
@@ -47,4 +48,9 @@ case class EndorsementNotAssociatedWithIdentityError(identity: Identity, endorse
 case class LinkingIdentitySignatureRequiredError(identity: String, publicKey: SigningPublicKey) extends LedgerError {
   override def toString: String =
     s"Signature required for linking identity: $identity -> ${toHexString(publicKey.toByteString)}"
+}
+
+case class IdentityIsNotAGrantingAuthorityError(identity: Identity) extends LedgerError {
+  override def toString: String =
+    s"Identity ${identity} provided must be a granting authority to perform this action."
 }

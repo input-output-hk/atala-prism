@@ -16,7 +16,6 @@ class IdentityTransactionSpec
   private def bobUnlinkData(identity: String) = UnlinkData(identity, bob.public)
   private def danielUnlinkData(identity: String) = UnlinkData(identity, daniel.public)
 
-
   behavior of "IdentityTransaction"
 
   it should "throw an error when the tx is inconsistent with the state" in {
@@ -173,9 +172,7 @@ class IdentityTransactionSpec
   it should "apply a Revoke" in {
     val state =
       IdentityLedgerState(
-        Map(
-          "one" -> IdentityData(Set(alice.public), Set("two")),
-          "two" -> IdentityData.forKeys(bob.public)))
+        Map("one" -> IdentityData(Set(alice.public), Set("two")), "two" -> IdentityData.forKeys(bob.public)))
     val endorse = RevokeEndorsementData(
       "two",
       "one"
@@ -224,12 +221,8 @@ class IdentityTransactionSpec
   it should "fail to revoke identity if the endorser has not endorsed this identity" in {
     val state =
       IdentityLedgerState(
-        Map(
-          "one" -> IdentityData(Set(alice.public), Set("three")),
-          "two" -> IdentityData.forKeys(bob.public)))
-    val transaction = RevokeEndorsementData(
-      "two",
-      "one").toTransaction(bob.`private`)
+        Map("one" -> IdentityData(Set(alice.public), Set("three")), "two" -> IdentityData.forKeys(bob.public)))
+    val transaction = RevokeEndorsementData("two", "one").toTransaction(bob.`private`)
     val result = transaction(state).left.value
     result mustBe EndorsementNotAssociatedWithIdentityError("two", "one")
 

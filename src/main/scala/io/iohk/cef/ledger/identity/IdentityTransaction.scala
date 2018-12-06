@@ -34,6 +34,8 @@ object IdentityTransaction {
       .getOrElse(Set.empty)
       .exists(isDataSignedWith(data, _, signature))
   }
+
+  def grantingAuthorities: Set[Identity] = Set()
 }
 
 case class Claim(data: ClaimData, signature: Signature) extends IdentityTransaction {
@@ -159,8 +161,7 @@ case class Endorse(data: EndorseData, signature: Signature) extends IdentityTran
   * @param signature endorser's digital signature validating the transaction.
   * @param endorsedIdentity identity to revoke should be already endorsed identity.
   */
-case class RevokeEndorsement(data: RevokeEndorsementData, signature: Signature)
-    extends IdentityTransaction {
+case class RevokeEndorsement(data: RevokeEndorsementData, signature: Signature) extends IdentityTransaction {
 
   def apply(ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] = {
 
@@ -192,4 +193,21 @@ case class RevokeEndorsement(data: RevokeEndorsementData, signature: Signature)
     * @return Set[String]
     */
   override def partitionIds: Set[String] = Set(data.endorserIdentity, data.endorsedIdentity)
+}
+
+case class Grant(data: GrantData, signature: Signature, claimSignature: Signature, endorseSignature: Signature)
+    extends IdentityTransaction {
+  private val underlyingClaim = Claim(data.underlyingClaimData, claimSignature)
+  private val underlyingEndorse = Endorse(data.underlyingEndorseData, endorseSignature)
+  val txs: Seq[Transaction[IdentityData]] = Seq(underlyingClaim, underlyingEndorse)
+  override def apply(ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] = {
+    if (!IdentityTransaction.grantingAuthorities.contains(data.grantingIdentity)) {
+      Left(IdentityIsNotAGrantingAuthorityError(data.grantingIdentity))
+    } else {
+      txs.foldLeft[Either[LedgerError, IdentityLedgerState]](Right(ledgerState))((stateEither, tx) =>
+        stateEither.flatMap(state => tx(state)))
+    }
+  }
+  override def partitionIds: Set[String] =
+    txs.foldLeft(Set(data.grantingIdentity))(_ union _.partitionIds)
 }
