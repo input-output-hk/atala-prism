@@ -209,5 +209,5 @@ case class Grant(data: GrantData, signature: Signature, claimSignature: Signatur
     }
   }
   override def partitionIds: Set[String] =
-    Set(data.grantingIdentity) ++ txs.foldLeft(Set[String]())(_ union _.partitionIds)
+    txs.foldLeft(Set(data.grantingIdentity))(_ union _.partitionIds)
 }
