@@ -11,10 +11,9 @@ import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.config.{CefConfig, CefServices}
 import io.iohk.cef.crypto._
 import io.iohk.cef.frontend.controllers.IdentitiesController
-import io.iohk.cef.frontend.models.IdentityTransactionType
 import io.iohk.cef.frontend.services.IdentityTransactionService
 import io.iohk.cef.ledger.Block
-import io.iohk.cef.ledger.identity.{IdentityTransaction, IdentityData}
+import io.iohk.cef.ledger.identity.{ClaimData, IdentityData, IdentityTransaction}
 import pureconfig.generic.auto._
 import io.iohk.cef.config.ConfigReaderExtensions._
 
@@ -52,7 +51,7 @@ object IdentityTxMain extends App {
   val pair = generateSigningKeyPair()
   val ed = Base64.getEncoder
   val encodedKey = ed.encodeToString(pair.public.toByteString.toArray)
-  val signature = IdentityTransaction.sign("carlos", IdentityTransactionType.Claim, pair.public, pair.`private`)
+  val signature = IdentityTransaction.sign(ClaimData("carlos", pair.public), pair.`private`)
   println(encodedKey)
   println(ed.encodeToString(signature.toByteString.toArray))
 }

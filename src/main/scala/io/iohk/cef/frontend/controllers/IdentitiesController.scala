@@ -59,9 +59,8 @@ object IdentitiesController {
 
     SubmitIdentityTransactionRequest(
       `type` = IdentityTransactionType.of(it),
-      identity = it.identity,
+      data = it.data,
       ledgerId = ledgerId,
-      publicKey = it.key,
       signature = it.signature,
       linkingIdentitySignature = secondSignatureMaybe
     )
