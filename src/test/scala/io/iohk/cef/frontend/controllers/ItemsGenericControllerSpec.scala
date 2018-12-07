@@ -13,6 +13,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mockito.MockitoSugar.mock
 import org.scalatest.{MustMatchers, WordSpec}
 import play.api.libs.json.{Format, JsValue, Json}
+import scala.concurrent.duration._
 
 class ItemsGenericControllerSpec
     extends WordSpec
@@ -37,7 +38,7 @@ class ItemsGenericControllerSpec
       override def validate(t: DataItem[BirthCertificate]): Either[ApplicationError, Unit] = Right(Unit)
     }
     lazy val routes =
-      controller.routes[BirthCertificate]("birth-certificates", service)
+      controller.routes[BirthCertificate]("birth-certificates", service, 30 seconds)
 
     "create an item" in {
       val body =

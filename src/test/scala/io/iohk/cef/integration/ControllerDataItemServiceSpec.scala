@@ -17,6 +17,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mockito.MockitoSugar.mock
 import org.scalatest.{MustMatchers, WordSpec}
 import play.api.libs.json.{Format, Json}
+import scala.concurrent.duration._
 
 class ControllerDataItemServiceSpec
     extends WordSpec
@@ -45,7 +46,7 @@ class ControllerDataItemServiceSpec
   "POST /certificate" should {
 
     lazy val routes =
-      controller.routes[BirthCertificate]("certificate", service)
+      controller.routes[BirthCertificate]("certificate", service, 30 seconds)
 
     "create an item" in {
       val body =

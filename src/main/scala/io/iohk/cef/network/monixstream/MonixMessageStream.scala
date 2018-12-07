@@ -5,6 +5,8 @@ import io.iohk.cef.utils.concurrent.CancellableFuture
 import monix.execution.Scheduler
 import monix.reactive.Observable
 
+import scala.concurrent.duration.FiniteDuration
+
 private[network] class MonixMessageStream[T](val o: Observable[T]) extends MessageStream[T] {
 
   type S[A] = MonixMessageStream[A]
@@ -25,6 +27,10 @@ private[network] class MonixMessageStream[T](val o: Observable[T]) extends Messa
 
   override def prepend(t: T): MessageStream[T] =
     new MonixMessageStream(Observable.cons(t, o))
+
+  override def withTimeout(
+      d: FiniteDuration): MessageStream[T] =
+    new MonixMessageStream[T](o.takeByTimespan(d))
 }
 
 object MonixMessageStream {
