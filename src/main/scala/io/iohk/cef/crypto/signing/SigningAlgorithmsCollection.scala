@@ -2,6 +2,7 @@ package io.iohk.cef.crypto
 package signing
 
 import java.security.SecureRandom
+
 import enumeratum._
 
 class SigningAlgorithmsCollection(secureRandom: SecureRandom) {
@@ -19,6 +20,11 @@ class SigningAlgorithmsCollection(secureRandom: SecureRandom) {
 
   def apply(identifier: String): Option[SigningAlgorithmType] =
     SigningAlgorithmType.withNameOption(identifier)
+
+  def from(obj: AnyRef): Option[SigningAlgorithmType] = {
+    SigningAlgorithmType.values
+      .find(_.algorithm.toPublicKey(obj).isDefined)
+  }
 }
 
 object SigningAlgorithmsCollection {

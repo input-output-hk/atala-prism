@@ -2,14 +2,14 @@ package io.iohk.cef.crypto
 package signing
 package algorithms
 
-import io.iohk.cef.crypto.KeyDecodingError
-import java.security.{SecureRandom, Signature => JSignature, KeyPairGenerator, KeyFactory}
+import java.security.spec.{PKCS8EncodedKeySpec, X509EncodedKeySpec}
+import java.security.{KeyFactory, KeyPairGenerator, SecureRandom, Signature => JSignature}
+
 import akka.util.ByteString
-import java.security.spec.X509EncodedKeySpec
-import java.security.spec.PKCS8EncodedKeySpec
 
 class SHA256withRSA(secureRandom: SecureRandom) extends SigningAlgorithm {
 
+  private val KeyAlgorithm = "RSA"
   private val Algorithm = "SHA256withRSA"
 
   type PublicKey = java.security.PublicKey
@@ -76,4 +76,8 @@ class SHA256withRSA(secureRandom: SecureRandom) extends SigningAlgorithm {
     }
   }
 
+  override def toPublicKey(obj: AnyRef): Option[PublicKey] = obj match {
+    case key: PublicKey if key.getAlgorithm == KeyAlgorithm => Some(key)
+    case _ => None
+  }
 }

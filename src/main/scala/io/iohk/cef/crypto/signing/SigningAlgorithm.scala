@@ -34,6 +34,7 @@ private[crypto] trait SigningAlgorithm {
   /** returns a decoded version of a [[PrivateKey]], or an error if the bytes don't hold the proper information */
   def decodePrivateKey(bytes: PrivateKeyBytes): Either[KeyDecodingError, PrivateKey]
 
+  def toPublicKey(obj: AnyRef): Option[PublicKey]
 }
 
 case class SignatureBytes(bytes: ByteString)

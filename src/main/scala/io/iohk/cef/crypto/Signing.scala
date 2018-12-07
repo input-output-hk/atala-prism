@@ -63,6 +63,13 @@ trait Signing {
     else
       key.`type`.algorithm.isSignatureValid(signature.bytes, encoder.encode(t).toByteString, key.lowlevelKey)
 
+  def toSigningPublicKey(obj: AnyRef): Option[SigningPublicKey] = {
+    for {
+      tpe <- signingAlgorithmsCollection.from(obj)
+      key <- tpe.algorithm.toPublicKey(obj)
+    } yield SigningPublicKey.apply(tpe)(key)
+  }
+
   /** Data entity containing a signing algorithm identifier and a public key for that algorithm */
   trait SigningPublicKey {
 
@@ -90,7 +97,7 @@ trait Signing {
 
     override protected val title: String = "SIGNING PUBLIC KEY"
 
-    private[Signing] def apply(tpe: signingAlgorithmsCollection.SigningAlgorithmType)(llk: tpe.algorithm.PublicKey) =
+    private[crypto] def apply(tpe: signingAlgorithmsCollection.SigningAlgorithmType)(llk: tpe.algorithm.PublicKey) =
       new SigningPublicKey {
         override private[Signing] val `type`: signingAlgorithmsCollection.SigningAlgorithmType =
           tpe
