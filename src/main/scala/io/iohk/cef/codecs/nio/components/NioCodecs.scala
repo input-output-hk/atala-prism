@@ -24,8 +24,6 @@ trait NioCodecs extends StreamCodecs {
         override def encode(t: T): ByteBuffer = e.encode(t)
         override def decode(b: ByteBuffer): Option[T] = d.decode(b)
       }
-//    implicit def NioEncDecFromEncoderAndDecoder[T](implicit e: NioEncoder[T], d: NioDecoder[T]): NioCodec[T] =
-//      apply[T](e, d)
   }
 
   trait NioEncoder[T] extends Encoder[T, ByteBuffer] { self =>

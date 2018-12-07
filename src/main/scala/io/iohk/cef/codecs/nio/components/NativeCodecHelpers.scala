@@ -29,7 +29,7 @@ private[components] object NativeCodecHelpers {
         val b = ByteBuffer.allocate(size)
         b.putInt(sa.length)
         put(as(b))(sa)
-        b.back
+        b.back()
       }
     NioEncoder(inner)
   }
@@ -75,7 +75,7 @@ private[components] object NativeCodecHelpers {
 
       buffers.foreach(buffer => uberBuffer.put(buffer))
 
-      uberBuffer.back
+      uberBuffer.back()
     })
   }
 

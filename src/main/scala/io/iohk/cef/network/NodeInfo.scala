@@ -51,10 +51,7 @@ case class NodeInfo(
 object NodeInfo {
 
   import io.iohk.cef.codecs.nio._
-  implicit val NodeInfoEncDec: NioCodec[NodeInfo] = {
-//    import auto._
-    NioCodec[NodeInfo]
-  }
+  implicit val NodeInfoEncDec: NioCodec[NodeInfo] = NioCodec[NodeInfo]
 
   def fromUri(p2pUri: URI, discoveryUri: URI, capabilitiesHex: String): Try[NodeInfo] = Try {
     val nodeId = fromHexString(p2pUri.getUserInfo)

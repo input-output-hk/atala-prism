@@ -51,7 +51,7 @@ private[components] object CoproductCodecComponents {
     }
   }
 
-  trait SafeNone[T]
+  sealed trait SafeNone[T]
 
   private def noneEncoder[T: TypeTag]: NioEncoder[SafeNone[T]] = {
     val inner: NioEncoder[SafeNone[T]] = NioEncoder((_: SafeNone[T]) => ByteBuffer.allocate(0))
