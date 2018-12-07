@@ -8,7 +8,7 @@ import io.iohk.cef.data.storage.TableStorage
 import io.iohk.cef.error.ApplicationError
 import scala.reflect.runtime.universe.TypeTag
 
-class Table[I: NioEncDec: TypeTag](val tableId: TableId, tableStorage: TableStorage[I]) {
+class Table[I: NioCodec: TypeTag](val tableId: TableId, tableStorage: TableStorage[I]) {
 
   def validate(dataItem: DataItem[I])(implicit canValidate: CanValidate[DataItem[I]]): Boolean = {
     val signatureValidation = validateSignatures(dataItem)
@@ -52,7 +52,7 @@ class Table[I: NioEncDec: TypeTag](val tableId: TableId, tableStorage: TableStor
   }
 
   private def validateSignatures(dataItem: DataItem[I]): Seq[(Signature, Boolean)] = {
-    val serializedDataItemData = NioEncDec[I].encode(dataItem.data)
+    val serializedDataItemData = NioCodec[I].encode(dataItem.data)
     val signatureValidation = dataItem.witnesses.map {
       case Witness(key, signature) =>
         import io.iohk.cef.codecs.nio.auto._

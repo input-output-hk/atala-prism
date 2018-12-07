@@ -4,22 +4,20 @@ import java.nio.file.{Files, Path, Paths}
 
 import io.iohk.cef.consensus.raft.{LogEntry, PersistentStorage}
 import io.iohk.cef.codecs.nio._
+import io.iohk.cef.codecs.nio.auto._
 import journal.io.api.Journal.WriteType
 import journal.io.api.{Journal, JournalBuilder, Location}
 
 import scala.collection.JavaConverters._
 import io.iohk.cef.utils._
 
-class OnDiskPersistentStorage[T: NioEncoder: NioDecoder](nodeId: String)(
-    implicit enc: NioEncoder[LogEntry[T]],
-    dec: NioDecoder[LogEntry[T]])
+class OnDiskPersistentStorage[T: NioCodec](nodeId: String)(implicit codec: NioCodec[LogEntry[T]])
     extends PersistentStorage[T] {
 
   val storageDir: Path = Paths.get(getProperty("java.io.tmpdir"), "raft", nodeId)
   val logDir: Path = storageDir.resolve("log")
   val stateFile: Path = storageDir.resolve("state")
-  val stateEncoder = { import auto._; NioEncoder[(Int, String)] }
-  val stateDecoder = { import auto._; NioDecoder[(Int, String)] }
+  val stateCodec: NioCodec[(Int, String)] = NioCodec[(Int, String)]
 
   initializeStorage()
 
@@ -36,15 +34,15 @@ class OnDiskPersistentStorage[T: NioEncoder: NioDecoder](nodeId: String)(
   }
 
   private def readState: (Int, String) =
-    stateDecoder
+    stateCodec
       .decode(Files.readAllBytes(stateFile).toByteBuffer)
       .getOrElse(throw new IllegalStateException("The state file has become corrupted."))
 
   private def writeState(term: Int, votedFor: String): Path =
-    Files.write(stateFile, stateEncoder.encode(term, votedFor).toArray)
+    Files.write(stateFile, stateCodec.encode(term, votedFor).toArray)
 
   private def readLog: Vector[LogEntry[T]] = {
-    journal.redo().asScala.flatMap(location => dec.decode(location.getData.toByteBuffer)).toVector
+    journal.redo().asScala.flatMap(location => codec.decode(location.getData.toByteBuffer)).toVector
   }
 
   private def initializeStorage(): Unit = {
@@ -63,6 +61,6 @@ class OnDiskPersistentStorage[T: NioEncoder: NioDecoder](nodeId: String)(
 
   override def log(deletes: Int, writes: Seq[LogEntry[T]]): Unit = {
     journal.undo().asScala.takeRight(deletes).foreach((entry: Location) => journal.delete(entry))
-    writes.foreach(write => journal.write(enc.encode(write).toArray, WriteType.SYNC))
+    writes.foreach(write => journal.write(codec.encode(write).toArray, WriteType.SYNC))
   }
 }

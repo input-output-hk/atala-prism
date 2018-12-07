@@ -6,6 +6,7 @@ import java.time.Clock
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.ActorContext
 import io.iohk.cef.codecs.nio._
+import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.network.NodeStatus.NodeState
 import io.iohk.cef.network.discovery.DiscoveryListener.DiscoveryListenerRequest
 import io.iohk.cef.network.discovery.DiscoveryManager.DiscoveryRequest
@@ -31,36 +32,26 @@ object NetworkServices {
       ServerStatus.Listening(nodeInfo.discoveryAddress),
       Capabilities(0))
 
-    val (encoder, decoder) = {
-      import io.iohk.cef.codecs.nio.auto._
-
-      val e: NioEncoder[DiscoveryWireMessage] = genericEncoder
-      val d: NioDecoder[DiscoveryWireMessage] = genericDecoder
-      (e, d)
-    }
+    val codec: NioCodec[DiscoveryWireMessage] = NioCodec[DiscoveryWireMessage]
 
     val discoveryBehavior = DiscoveryManager.behaviour(
       discoveryConfig,
       new DummyKnownNodeStorage(clock) with InMemoryTelemetry,
       nodeState,
       clock,
-      encoder,
-      decoder,
-      listenerFactory(discoveryConfig, encoder, decoder),
+      codec,
+      listenerFactory(discoveryConfig, codec),
       new SecureRandom(),
       InMemoryTelemetry.registry
     )
     discoveryBehavior
   }
 
-  private def listenerFactory(
-      discoveryConfig: DiscoveryConfig,
-      encoder: NioEncoder[DiscoveryWireMessage],
-      decoder: NioDecoder[DiscoveryWireMessage])(
+  private def listenerFactory(discoveryConfig: DiscoveryConfig, codec: NioCodec[DiscoveryWireMessage])(
       context: ActorContext[DiscoveryRequest]): ActorRef[DiscoveryListenerRequest] = {
 
     context.spawn(
-      DiscoveryListener.behavior(discoveryConfig, UDPBridge.creator(discoveryConfig, encoder, decoder)),
+      DiscoveryListener.behavior(discoveryConfig, UDPBridge.creator(discoveryConfig, codec)),
       "DiscoveryListener")
   }
 

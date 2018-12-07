@@ -3,10 +3,10 @@ import java.nio.{BufferUnderflowException, ByteBuffer}
 import java.security.MessageDigest
 
 import scala.reflect.runtime.universe._
-import io.iohk.cef.codecs.nio.{NioEncoder, NioDecoder}
-import io.iohk.cef.codecs.nio.ops._
+import io.iohk.cef.codecs.nio._
+import io.iohk.cef.codecs.nio.components.Ops._
 
-private[nio] object CodecDecorators {
+private[components] object CodecDecorators {
 
   def messageLengthEncoder[T](enc: NioEncoder[T]): NioEncoder[T] = new NioEncoder[T] {
     override val typeTag: TypeTag[T] = enc.typeTag
@@ -15,7 +15,7 @@ private[nio] object CodecDecorators {
       val messageBuff: ByteBuffer = enc.encode(t)
       val messageSize = messageBuff.remaining()
 
-      ByteBuffer.allocate(messageSize + 4).putInt(messageSize).put(messageBuff).back
+      ByteBuffer.allocate(messageSize + 4).putInt(messageSize).put(messageBuff).back()
     }
   }
 
@@ -40,22 +40,21 @@ private[nio] object CodecDecorators {
 
   def typeCodeEncoder[T](enc: NioEncoder[T]): NioEncoder[T] = {
     implicit val tt: TypeTag[T] = enc.typeTag
-    val bae = NativeCodecs.untaggedNativeArrayEncoder(1, identity)(_.put)
-    (t: T) =>
-      {
-        val hashBuff: ByteBuffer = bae.encode(typeCode[T])
-        val messageBuff: ByteBuffer = enc.encode(t)
-        ByteBuffer
-          .allocate(hashBuff.capacity() + messageBuff.capacity())
-          .put(hashBuff)
-          .put(messageBuff)
-          .back
-      }
+    val bae = NativeCodecHelpers.untaggedNativeArrayEncoder(1, identity)(_.put)
+    NioEncoder((t: T) => {
+      val hashBuff: ByteBuffer = bae.encode(typeCode[T])
+      val messageBuff: ByteBuffer = enc.encode(t)
+      ByteBuffer
+        .allocate(hashBuff.capacity() + messageBuff.capacity())
+        .put(hashBuff)
+        .put(messageBuff)
+        .back()
+    })
   }
 
   def typeCodeDecoder[T](dec: NioDecoder[T]): NioDecoder[T] = {
     implicit val tt: TypeTag[T] = dec.typeTag
-    val bad = NativeCodecs.untaggedNativeArrayDecoder(1, identity)(_.get)
+    val bad = NativeCodecHelpers.untaggedNativeArrayDecoder(1, identity)(_.get)
     new NioDecoder[T] {
       override val typeTag: TypeTag[T] = dec.typeTag
       override def decode(b: ByteBuffer): Option[T] = {

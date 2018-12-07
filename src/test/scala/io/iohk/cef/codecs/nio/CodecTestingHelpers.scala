@@ -82,7 +82,7 @@ trait CodecTestingHelpers {
     decoder.decode(b) shouldBe None
   }
 
-  def testFull[T: NioEncDec: Arbitrary]: Unit = {
+  def testFull[T: NioCodec: Arbitrary]: Unit = {
     encodeDecodeTest[T]
     bufferPositionTest[T]
     variableLengthTest[T]
@@ -90,7 +90,7 @@ trait CodecTestingHelpers {
     mistypeTest[T, UnexpectedThing]
     mistypeTest[UnexpectedThing, T]
   }
-  def testWhenNotEncodingType[T: NioEncDec: Arbitrary]: Unit = {
+  def testWhenNotEncodingType[T: NioCodec: Arbitrary]: Unit = {
     encodeDecodeTest[T]
     bufferPositionTest[T]
     variableLengthTest[T]

@@ -71,9 +71,9 @@ class StreamCodecsSpec extends FlatSpec {
     val bHandler = mock[(String, B) => Unit]
     val cHandler = mock[(String, C) => Unit]
 
-    val aDecoderFn = strictMessageApplication(NioDecoder[A], aHandler)
-    val bDecoderFn = strictMessageApplication(NioDecoder[B], bHandler)
-    val cDecoderFn = strictMessageApplication(NioDecoder[C], cHandler)
+    val aCodecFn = strictMessageApplication(NioCodec[A], aHandler)
+    val bCodecFn = strictMessageApplication(NioCodec[B], bHandler)
+    val cCodecFn = strictMessageApplication(NioCodec[C], cHandler)
 
     TestData(
       sourceAddress,
@@ -85,9 +85,9 @@ class StreamCodecsSpec extends FlatSpec {
       aHandler,
       bHandler,
       cHandler,
-      aDecoderFn,
-      bDecoderFn,
-      cDecoderFn)
+      aCodecFn,
+      bCodecFn,
+      cCodecFn)
   }
 
   behavior of "StreamCodec"
@@ -100,9 +100,9 @@ class StreamCodecsSpec extends FlatSpec {
         address,
         netBuffer,
         List(
-          strictMessageApplication(NioDecoder[A], aHandler),
-          strictMessageApplication(NioDecoder[B], bHandler),
-          strictMessageApplication(NioDecoder[C], cHandler))
+          strictMessageApplication(NioCodec[A], aHandler),
+          strictMessageApplication(NioCodec[B], bHandler),
+          strictMessageApplication(NioCodec[C], cHandler))
       )
 
       as.foreach(a => verify(aHandler, atLeastOnce()).apply(address, a))
@@ -119,9 +119,9 @@ class StreamCodecsSpec extends FlatSpec {
         address,
         netBuffer,
         List(
-          lazyMessageApplication(NioDecoder[A], aHandler),
-          lazyMessageApplication(NioDecoder[B], bHandler),
-          lazyMessageApplication(NioDecoder[C], cHandler))
+          lazyMessageApplication(NioCodec[A], aHandler),
+          lazyMessageApplication(NioCodec[B], bHandler),
+          lazyMessageApplication(NioCodec[C], cHandler))
       )
 
       verifyZeroInteractions(aHandler)

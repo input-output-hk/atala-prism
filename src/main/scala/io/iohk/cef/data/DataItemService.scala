@@ -9,7 +9,7 @@ import io.iohk.cef.data.query.{Query, QueryEngine}
 import scala.reflect.runtime.universe.TypeTag
 
 class DataItemService[T](table: Table[T], network: Network[Envelope[DataItemAction[T]]], queryEngine: QueryEngine[T])(
-    implicit enc: NioEncDec[T],
+    implicit enc: NioCodec[T],
     typeTag: TypeTag[T],
     canValidate: CanValidate[DataItem[T]]) {
 

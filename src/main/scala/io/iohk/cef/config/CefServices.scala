@@ -22,9 +22,9 @@ import scala.reflect.runtime.universe._
 
 object CefServices {
   def cefTransactionServiceChannel[State, Tx <: Transaction[State]](cefConfig: CefConfig)(
-      implicit stateCodec: NioEncDec[State],
+      implicit stateCodec: NioCodec[State],
       stateTypeTag: TypeTag[State],
-      txCodec: NioEncDec[Tx],
+      txCodec: NioCodec[Tx],
       txTypeTag: TypeTag[Tx],
       ec: ExecutionContext): NodeTransactionService[State, Tx] = {
 
@@ -44,9 +44,9 @@ private[config] class CefServices(cefConfig: CefConfig) {
     NetworkServices.networkDiscovery(clock, cefConfig.peerConfig, cefConfig.discoveryConfig)
 
   def cefTransactionServiceChannel[State, Tx <: Transaction[State]]()(
-      implicit stateCodec: NioEncDec[State],
+      implicit stateCodec: NioCodec[State],
       stateTypeTag: TypeTag[State],
-      txCodec: NioEncDec[Tx],
+      txCodec: NioCodec[Tx],
       txTypeTag: TypeTag[Tx],
       ec: ExecutionContext): NodeTransactionService[State, Tx] = {
 
@@ -59,9 +59,9 @@ private[config] class CefServices(cefConfig: CefConfig) {
   }
 
   private def consensusMap[State, Tx <: Transaction[State]]()(
-      implicit stateCodec: NioEncDec[State],
+      implicit stateCodec: NioCodec[State],
       stateTypeTag: TypeTag[State],
-      txCodec: NioEncDec[Tx],
+      txCodec: NioCodec[Tx],
       txTypeTag: TypeTag[Tx],
       ec: ExecutionContext): Map[LedgerId, (TransactionPoolInterface[State, Tx], Consensus[State, Tx])] = {
 
@@ -104,9 +104,9 @@ private[config] class CefServices(cefConfig: CefConfig) {
   private def stateMachineCallback[State, Tx <: Transaction[State]](
       ledger: Ledger[State, Tx],
       txPool: TransactionPoolInterface[State, Tx])(block: Block[State, Tx])(
-      implicit stateCodec: NioEncDec[State],
+      implicit stateCodec: NioCodec[State],
       stateTypeTag: TypeTag[State],
-      txCodec: NioEncDec[Tx],
+      txCodec: NioCodec[Tx],
       txTypeTag: TypeTag[Tx]): Unit = {
     ledger(block) match {
       case Left(error) =>
@@ -121,14 +121,14 @@ private[config] class CefServices(cefConfig: CefConfig) {
 
   private def txNetwork[State, Tx <: Transaction[State]](
       implicit
-      txCodec: NioEncDec[Tx],
+      txCodec: NioCodec[Tx],
       txTypeTag: TypeTag[Tx]): Network[Envelope[Tx]] =
     Network[Envelope[Tx]](networkDiscovery, transports)
 
   private def blockNetwork[State, Tx <: Transaction[State]](
-      implicit stateCodec: NioEncDec[State],
+      implicit stateCodec: NioCodec[State],
       stateTypeTag: TypeTag[State],
-      txCodec: NioEncDec[Tx],
+      txCodec: NioCodec[Tx],
       txTypeTag: TypeTag[Tx]): Network[Envelope[Block[State, Tx]]] =
     Network[Envelope[Block[State, Tx]]](networkDiscovery, transports)
 }

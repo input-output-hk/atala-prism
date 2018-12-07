@@ -1,6 +1,6 @@
 package io.iohk.cef.codecs.nio.components
 
-object ByteLength {
+private[components] object ByteLength {
   val lengthBoolean: Int = 1
   val lengthByte: Int = 1
   val lengthShort: Int = 2

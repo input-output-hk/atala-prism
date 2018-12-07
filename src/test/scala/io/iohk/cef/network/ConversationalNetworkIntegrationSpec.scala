@@ -61,7 +61,7 @@ class ConversationalNetworkIntegrationSpec extends FlatSpec with NetworkFixture 
   }
 
   // Create a typed message channel on top of a base network instance
-  private def messageChannel[T: NioEncDec: TypeTag](
+  private def messageChannel[T: NioCodec: TypeTag](
       baseNetwork: BaseNetwork,
       messageHandler: T => Unit): ConversationalNetwork[T] = {
     val conversationalNetwork = new ConversationalNetwork[T](baseNetwork.networkDiscovery, baseNetwork.transports)

@@ -10,10 +10,10 @@ import org.h2.mvstore.MVMap
 import scala.collection.JavaConverters._
 import scala.reflect.runtime.universe.TypeTag
 
-class MVLedgerStateStorage[S: NioEncDec: TypeTag](ledgerId: LedgerId, storageFile: Path)
+class MVLedgerStateStorage[S: NioCodec: TypeTag](ledgerId: LedgerId, storageFile: Path)
     extends LedgerStateStorage[S](ledgerId) {
 
-  private val mvTable = new MVTable(ledgerId, storageFile, NioEncDec[S])
+  private val mvTable = new MVTable(ledgerId, storageFile, NioCodec[S])
 
   override def slice(keys: Set[String]): LedgerState[S] = {
     val filteredResult: Map[String, S] = mvTable.table.asScala.filterKeys(key => keys.contains(key)).toMap
