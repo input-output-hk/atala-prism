@@ -1,5 +1,4 @@
 package io.iohk.cef.data.query
 import io.iohk.cef.data.DataItem
-import io.iohk.cef.error.ApplicationError
 
-case class QueryResponse[I](queryId: String, result: Either[ApplicationError, Seq[DataItem[I]]])
+case class QueryResponse[I](queryId: String, result: Either[QueryError, Seq[DataItem[I]]])

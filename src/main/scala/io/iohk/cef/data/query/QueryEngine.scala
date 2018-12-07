@@ -32,7 +32,7 @@ class QueryEngine[I](
   }
 
   private def localProcessing(query: Query)(
-      implicit itemSerializable: NioEncDec[I]): Either[ApplicationError, Seq[DataItem[I]]] = {
+      implicit itemSerializable: NioEncDec[I]): Either[QueryError, Seq[DataItem[I]]] = {
     table.select(query)
   }
 

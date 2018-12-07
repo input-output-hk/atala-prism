@@ -1,0 +1,9 @@
+package io.iohk.cef.data.query
+import io.iohk.cef.data.TableId
+import io.iohk.cef.error.ApplicationError
+
+sealed trait QueryError extends ApplicationError
+
+case class InvalidQueryError(tableId: TableId, field: Field) extends QueryError {
+  override def toString: String = s"Error in query. Unable to access field '$field' on table '$tableId'."
+}
