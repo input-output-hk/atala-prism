@@ -7,8 +7,8 @@ val commonSettings = Seq(
   organization := "io.iohk.cef",
   name := "network",
   version := "0.1-SNAPSHOT",
-  scalaVersion := scalaV //,
-//  addCompilerPlugin("io.tryp" % "splain" % "0.3.3" cross CrossVersion.patch)
+  scalaVersion := scalaV,
+  addCompilerPlugin("io.tryp" % "splain" % "0.3.3" cross CrossVersion.patch)
 )
 
 import org.scoverage.coveralls.Imports.CoverallsKeys._

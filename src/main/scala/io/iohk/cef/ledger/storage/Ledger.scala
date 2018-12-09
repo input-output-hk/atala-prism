@@ -5,13 +5,13 @@ import io.iohk.cef.ledger._
 import io.iohk.cef.codecs.nio._
 import scala.reflect.runtime.universe.TypeTag
 
-case class Ledger[S: NioEncDec: TypeTag, Tx <: Transaction[S]](
+case class Ledger[S: NioCodec: TypeTag, Tx <: Transaction[S]](
     ledgerId: LedgerId,
     ledgerStorage: LedgerStorage[S, Tx],
     ledgerStateStorage: LedgerStateStorage[S]) {
 
   def apply(
-      block: Block[S, Tx])(implicit codec: NioEncDec[Block[S, Tx]], typeTag: TypeTag[S]): Either[LedgerError, Unit] = {
+      block: Block[S, Tx])(implicit codec: NioCodec[Block[S, Tx]], typeTag: TypeTag[S]): Either[LedgerError, Unit] = {
 
     val preAppliedState: LedgerState[S] = slice(block.partitionIds)
 

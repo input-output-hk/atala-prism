@@ -35,7 +35,7 @@ class DisseminationalNetworkSpec extends FlatSpec {
     when(discovery.nearestNPeersTo(nodeId, Int.MaxValue)).thenReturn(peers)
     when(transports.peerConfig)
       .thenReturn(PeerConfig(nodeId, NetworkConfig(Some(TcpTransportConfig(address)))))
-    when(transports.tcp[Frame[String]](any(), any())).thenReturn(Some(tcpTransport))
+    when(transports.tcp[Frame[String]](any())).thenReturn(Some(tcpTransport))
 
     val network = new DisseminationalNetwork[String](discovery, transports)
 

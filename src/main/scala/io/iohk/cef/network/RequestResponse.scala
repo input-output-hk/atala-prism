@@ -18,9 +18,9 @@ import scala.reflect.runtime.universe.TypeTag
 // actually cares about the request (without reinventing HTTP)
 class RequestResponse[Request, Response](networkDiscovery: NetworkDiscovery, transports: Transports)(
     implicit ec: ExecutionContext,
-    reqCodec: NioEncDec[Request],
+    reqCodec: NioCodec[Request],
     reqTt: TypeTag[Request],
-    resCodec: NioEncDec[Response],
+    resCodec: NioCodec[Response],
     resTt: TypeTag[Response]) {
 
   private val correlationMap = new ConcurrentHashMap[UUID, Promise[Response]]().asScala

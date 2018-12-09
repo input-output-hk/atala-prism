@@ -6,7 +6,7 @@ import io.iohk.cef.error.ApplicationError
 
 import scala.reflect.runtime.universe.TypeTag
 
-abstract class TableStorage[I: NioEncDec: TypeTag](tableId: TableId) {
+abstract class TableStorage[I: NioCodec: TypeTag](tableId: TableId) {
 
   def insert(dataItem: DataItem[I]): Unit
 

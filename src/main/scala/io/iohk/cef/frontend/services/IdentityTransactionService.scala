@@ -43,6 +43,7 @@ class IdentityTransactionService(nodeTransactionService: NodeTransactionService[
           .toRight(CorrespondingPrivateKeyRequiredForLinkingIdentityError)
       case data: UnlinkData => Right(Unlink(data, req.signature))
       case data: EndorseData => Right(Endorse(data, req.signature))
+      case data: RevokeEndorsementData => Right(RevokeEndorsement(data, req.signature))
       case _ => Left(UnsupportedDataTypeError(req.data))
     }
 

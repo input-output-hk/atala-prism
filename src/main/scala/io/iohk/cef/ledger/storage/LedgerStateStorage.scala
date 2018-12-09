@@ -6,7 +6,7 @@ import io.iohk.cef.codecs.nio._
 
 import scala.reflect.runtime.universe.TypeTag
 
-abstract class LedgerStateStorage[S: NioEncDec: TypeTag](ledgerId: LedgerId) {
+abstract class LedgerStateStorage[S: NioCodec: TypeTag](ledgerId: LedgerId) {
 
   def slice(keys: Set[String]): LedgerState[S]
 

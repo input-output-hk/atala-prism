@@ -45,14 +45,14 @@ class ChimericTransactionNodeTransactionServiceItSpec
 
   def createNodeTransactionService: NodeTransactionService[ChimericStateResult, ChimericTx] = {
     implicit val timeout = Timeout(10.seconds)
-    implicit val envelopeSerializable = mock[NioEncDec[Envelope[TransactionType]]]
-    implicit val blockSerializable = mock[NioEncDec[Envelope[BlockType]]]
+    implicit val envelopeSerializable = mock[NioCodec[Envelope[TransactionType]]]
+    implicit val blockSerializable = mock[NioCodec[Envelope[BlockType]]]
 
     val generateHeader: Seq[TransactionType] => BlockHeader = _ => BlockHeader()
 
-    implicit val blockSerializable2 = mock[NioEncDec[BlockType]]
+    implicit val blockSerializable2 = mock[NioCodec[BlockType]]
     val ledgerStateStorage = mock[LedgerStateStorageType[TransactionStateType]]
-    implicit val transactionStateTypeEncDec = mock[NioEncDec[TransactionStateType]]
+    implicit val transactionStateTypeEncDec = mock[NioCodec[TransactionStateType]]
 
     val txPoolInterface =
       TransactionPoolInterface[TransactionStateType, TransactionType](
