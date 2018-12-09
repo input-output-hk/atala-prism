@@ -18,7 +18,6 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class ItemsGenericController(implicit ec: ExecutionContext, mat: Materializer) extends CustomJsonController {
 
-
   import Context._
   import ItemsGenericController._
 
@@ -26,7 +25,7 @@ class ItemsGenericController(implicit ec: ExecutionContext, mat: Materializer) e
       implicit format: Reads[Envelope[DataItem[D]]],
       queryFormat: Reads[Envelope[Query]],
       queryResponseFormat: Writes[Seq[DataItem[D]]],
-      itemSerializable: NioEncDec[D],
+      itemSerializable: NioCodec[D],
       canValidate: CanValidate[DataItem[D]]): Route = {
     pathPrefix(prefix) {
       pathEnd {
@@ -43,7 +42,8 @@ class ItemsGenericController(implicit ec: ExecutionContext, mat: Materializer) e
         }
         get {
           publicInput(StatusCodes.OK) { ctx: HasModel[Envelope[Query]] =>
-            val futureEither = service.processQuery(ctx.model)
+            val futureEither = service
+              .processQuery(ctx.model)
               .withTimeout(queryResultTimeout)
               .fold[Either[ApplicationError, Seq[DataItem[D]]]](Right(Seq()))((state, current) =>
                 for {
@@ -51,7 +51,7 @@ class ItemsGenericController(implicit ec: ExecutionContext, mat: Materializer) e
                   c <- current
                 } yield c ++ s)
 
-            futureEither.map{either =>
+            futureEither.map { either =>
               fromEither(either, QueryEngineError)
             }
           }

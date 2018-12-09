@@ -5,7 +5,7 @@ import java.nio.file.Path
 import io.iohk.cef.codecs.nio._
 import org.h2.mvstore.{MVMap, MVStore}
 
-class MVTable[T](tableId: String, storageFile: Path, codec: NioEncDec[T]) {
+class MVTable[T](tableId: String, storageFile: Path, codec: NioCodec[T]) {
 
   private val storage: MVStore = new MVStore.Builder().fileName(storageFile.toAbsolutePath.toString).open()
 

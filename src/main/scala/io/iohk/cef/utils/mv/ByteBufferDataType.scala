@@ -6,7 +6,7 @@ import org.h2.mvstore.`type`.DataType
 
 import io.iohk.cef.codecs.nio._
 
-class ByteBufferDataType[T](codec: NioEncDec[T]) extends DataType {
+class ByteBufferDataType[T](codec: NioCodec[T]) extends DataType {
 
   override def compare(a: Any, b: Any): Int = {
     if (!a.isInstanceOf[Ordered[T]]) {

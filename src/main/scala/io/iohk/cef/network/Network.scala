@@ -1,9 +1,10 @@
 package io.iohk.cef.network
 import io.iohk.cef.network.discovery.NetworkDiscovery
-import io.iohk.cef.codecs.nio.NioEncDec
+import io.iohk.cef.codecs.nio._
+import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.network.transport.Transports
+
 import scala.reflect.runtime.universe._
-import io.iohk.cef.network.transport.Frame
 
 /**
   * Represents a (lightweight) resource for type-safe sending, receiving and disseminating messages.
@@ -20,14 +21,11 @@ trait Network[Message] {
 }
 
 object Network {
-  def apply[Message: WeakTypeTag](networkDiscovery: NetworkDiscovery, transports: Transports)(
-      implicit enc: NioEncDec[Frame[Message]]
-  ): Network[Message] =
+  def apply[Message: NioCodec: TypeTag](networkDiscovery: NetworkDiscovery, transports: Transports): Network[Message] =
     new NetworkImpl[Message](networkDiscovery, transports)
 }
 
-class NetworkImpl[Message: WeakTypeTag](networkDiscovery: NetworkDiscovery, transports: Transports)(
-    implicit enc: NioEncDec[Frame[Message]])
+class NetworkImpl[Message: NioCodec: TypeTag](networkDiscovery: NetworkDiscovery, transports: Transports)
     extends Network[Message] {
 
   private val conversationalNetwork = new ConversationalNetwork[Message](networkDiscovery, transports)

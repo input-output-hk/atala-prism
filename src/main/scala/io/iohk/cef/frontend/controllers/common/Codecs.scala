@@ -18,8 +18,7 @@ import scala.util.Try
 object Codecs {
 
   implicit val queryFormat: Format[Query] = new Format[Query] {
-    override def reads(json: JsValue)
-    : JsResult[Query] = ???
+    override def reads(json: JsValue): JsResult[Query] = ???
 
     override def writes(o: Query): JsValue = ???
   }

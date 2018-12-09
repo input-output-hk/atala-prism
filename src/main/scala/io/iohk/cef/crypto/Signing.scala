@@ -33,12 +33,12 @@ trait Signing {
     * @param  t        the entity that needs to be signed
     * @param  key      the key to be used. It also identifies the signing algorithm
     *                  to use
-    * @param  encoder  how to convert `t` into a stream of bytes
+    * @param  codec  how to convert `t` into a stream of bytes
     *
     * @return          a signature of `t`
     */
-  def sign[T](t: T, key: SigningPrivateKey)(implicit encoder: NioEncoder[T]): Signature = {
-    val signature = key.`type`.algorithm.sign(encoder.encode(t).toByteString, key.lowlevelKey)
+  def sign[T](t: T, key: SigningPrivateKey)(implicit codec: NioCodec[T]): Signature = {
+    val signature = key.`type`.algorithm.sign(codec.encode(t).toByteString, key.lowlevelKey)
     Signature(key.`type`, signature)
   }
 
@@ -57,11 +57,18 @@ trait Signing {
     *
     * @return            `true` if `signature` is a valid signature of `t`
     */
-  def isValidSignature[T](t: T, signature: Signature, key: SigningPublicKey)(implicit encoder: NioEncDec[T]): Boolean =
+  def isValidSignature[T](t: T, signature: Signature, key: SigningPublicKey)(implicit encoder: NioCodec[T]): Boolean =
     if (key.`type` != signature.`type`)
       false
     else
       key.`type`.algorithm.isSignatureValid(signature.bytes, encoder.encode(t).toByteString, key.lowlevelKey)
+
+  def toSigningPublicKey(obj: AnyRef): Option[SigningPublicKey] = {
+    for {
+      tpe <- signingAlgorithmsCollection.from(obj)
+      key <- tpe.algorithm.toPublicKey(obj)
+    } yield SigningPublicKey.apply(tpe)(key)
+  }
 
   /** Data entity containing a signing algorithm identifier and a public key for that algorithm */
   trait SigningPublicKey {
@@ -90,7 +97,7 @@ trait Signing {
 
     override protected val title: String = "SIGNING PUBLIC KEY"
 
-    private[Signing] def apply(tpe: signingAlgorithmsCollection.SigningAlgorithmType)(llk: tpe.algorithm.PublicKey) =
+    private[crypto] def apply(tpe: signingAlgorithmsCollection.SigningAlgorithmType)(llk: tpe.algorithm.PublicKey) =
       new SigningPublicKey {
         override private[Signing] val `type`: signingAlgorithmsCollection.SigningAlgorithmType =
           tpe

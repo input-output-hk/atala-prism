@@ -17,9 +17,9 @@ import io.iohk.cef.utils.mv.MVTable
 import scala.collection.JavaConverters._
 import scala.reflect.runtime.universe._
 
-class MVTableStorage[I: NioEncDec: TypeTag](tableId: TableId, storageFile: Path) extends TableStorage[I](tableId) {
+class MVTableStorage[I: NioCodec: TypeTag](tableId: TableId, storageFile: Path) extends TableStorage[I](tableId) {
 
-  private val mvTable = new MVTable(tableId, storageFile, NioEncDec[DataItem[I]])
+  private val mvTable = new MVTable(tableId, storageFile, NioCodec[DataItem[I]])
 
   override def insert(dataItem: DataItem[I]): Unit = {
     mvTable.update(_.put(dataItem.id, dataItem))

@@ -3,13 +3,14 @@ package io.iohk.cef.crypto.encoding
 import akka.util.ByteString
 import io.iohk.cef.utils._
 import io.iohk.cef.codecs.nio._
+import io.iohk.cef.codecs.nio.auto._
 
 case class TypedByteString(`type`: String, bytes: ByteString) {
 
   import TypedByteString._
 
   def toByteString: ByteString = {
-    TypedByteStringNioEncDec.encode(this).toByteString
+    TypedByteStringNioCodec.encode(this).toByteString
   }
 
   /**
@@ -45,21 +46,12 @@ case class TypedByteString(`type`: String, bytes: ByteString) {
 
 object TypedByteString {
 
-  private[crypto] val TypedByteStringNioEncDec: NioEncDec[TypedByteString] = {
-    import io.iohk.cef.codecs.nio.auto._
-    val e: NioEncoder[TypedByteString] = genericEncoder
-    val d: NioDecoder[TypedByteString] = genericDecoder
-    NioEncDec(e, d)
-  }
-  private[crypto] val TypedByteStringNioEncoder: NioEncoder[TypedByteString] =
-    TypedByteStringNioEncDec
-  private[crypto] val TypedByteStringNioDecoder: NioDecoder[TypedByteString] =
-    TypedByteStringNioEncDec
+  private[crypto] val TypedByteStringNioCodec: NioCodec[TypedByteString] = NioCodec[TypedByteString]
 
   private implicit val byteOrder: java.nio.ByteOrder = java.nio.ByteOrder.BIG_ENDIAN
 
   def decodeFrom(bytes: ByteString): Either[TypedByteStringDecodingError, TypedByteString] = {
-    TypedByteStringNioEncDec.decode(bytes.toByteBuffer) match {
+    TypedByteStringNioCodec.decode(bytes.toByteBuffer) match {
       case Some(tbs) => Right(tbs)
       case None => Left(TypedByteStringDecodingError.NioDecoderFailedToDecodeTBS)
     }

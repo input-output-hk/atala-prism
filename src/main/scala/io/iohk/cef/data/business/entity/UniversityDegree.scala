@@ -12,7 +12,7 @@ object UniversityDegreeData {
 
   implicit def universityDegreeValidation(
       implicit publicKeyStore: Map[String, SigningPublicKey],
-      serializable: NioEncDec[UniversityDegreeData]): CanValidate[DataItem[UniversityDegreeData]] = {
+      serializable: NioCodec[UniversityDegreeData]): CanValidate[DataItem[UniversityDegreeData]] = {
     dataItem: DataItem[UniversityDegreeData] =>
       mandatoryCheck(dataItem).flatMap { d =>
         getSigningPublicKey(d).flatMap { key =>

@@ -2,7 +2,7 @@ package io.iohk.cef.transactionpool
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.ledger.storage.LedgerStateStorage
 import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
-import io.iohk.cef.codecs.nio.NioEncDec
+import io.iohk.cef.codecs.nio.NioCodec
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.Duration
@@ -28,7 +28,7 @@ import scala.reflect.runtime.universe.TypeTag
   * @tparam Header
   * @tparam Tx
   */
-class TransactionPoolInterface[State: NioEncDec: TypeTag, Tx <: Transaction[State]](
+class TransactionPoolInterface[State: NioCodec: TypeTag, Tx <: Transaction[State]](
     headerGenerator: Seq[Transaction[State]] => BlockHeader,
     maxBlockSize: Int,
     ledgerStateStorage: LedgerStateStorage[State],
@@ -76,7 +76,7 @@ class TransactionPoolInterface[State: NioEncDec: TypeTag, Tx <: Transaction[Stat
 }
 
 object TransactionPoolInterface {
-  def apply[State: NioEncDec: TypeTag, Tx <: Transaction[State]](
+  def apply[State: NioCodec: TypeTag, Tx <: Transaction[State]](
       headerGenerator: Seq[Transaction[State]] => BlockHeader,
       maxBlockSize: Int,
       ledgerStateStorage: LedgerStateStorage[State],
@@ -88,7 +88,7 @@ object TransactionPoolInterface {
       ledgerStateStorage,
       defaultTransactionExpiration,
       () => new TimedQueue[Tx](clock))
-  def apply[State: NioEncDec: TypeTag, Tx <: Transaction[State]](
+  def apply[State: NioCodec: TypeTag, Tx <: Transaction[State]](
       headerGenerator: Seq[Transaction[State]] => BlockHeader,
       maxBlockSize: Int,
       ledgerStateStorage: LedgerStateStorage[State],

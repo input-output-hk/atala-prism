@@ -28,8 +28,7 @@ private[network] class MonixMessageStream[T](val o: Observable[T]) extends Messa
   override def prepend(t: T): MessageStream[T] =
     new MonixMessageStream(Observable.cons(t, o))
 
-  override def withTimeout(
-      d: FiniteDuration): MessageStream[T] =
+  override def withTimeout(d: FiniteDuration): MessageStream[T] =
     new MonixMessageStream[T](o.takeByTimespan(d))
 }
 

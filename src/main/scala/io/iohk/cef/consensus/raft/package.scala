@@ -22,7 +22,7 @@ package object raft {
     * @tparam Command the user command type.
     * @return a raft node implementation.
     */
-  def raftNode[Command: NioEncDec](
+  def raftNode[Command: NioCodec](
       nodeId: String,
       clusterMemberIds: Seq[String],
       rpcFactory: RPCFactory[Command],

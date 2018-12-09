@@ -1,11 +1,11 @@
 package io.iohk.cef.crypto
 
 import scala.language.higherKinds
-
 import io.iohk.cef.crypto.encoding.TypedByteString
 import akka.util.ByteString
 import io.iohk.cef.codecs.string._
-import io.iohk.cef.codecs.nio.{NioEncoder, NioDecoder}
+import io.iohk.cef.codecs.nio._
+
 import scala.reflect.runtime.universe.TypeTag
 
 private[crypto] trait EntityCompanion[T, DE[_], PE[_]] {
@@ -28,12 +28,8 @@ private[crypto] trait EntityCompanion[T, DE[_], PE[_]] {
     def encode(t: T): String = show(t)
   }
 
-  implicit def cryptoEntityEncoder(implicit tt: TypeTag[T]): NioEncoder[T] =
-    TypedByteString.TypedByteStringNioEncoder.map[T](encodeInto)
-
-  implicit def cryptoEntityDecoder(implicit tt: TypeTag[T]): NioDecoder[T] =
-    TypedByteString.TypedByteStringNioDecoder.mapOpt[T]((tbs: TypedByteString) => decodeFrom(tbs).toOption)
-
+  implicit def cryptoEntityCodec(implicit tt: TypeTag[T]): NioCodec[T] =
+    TypedByteString.TypedByteStringNioCodec.mapOpt[T](encodeInto(_), (tbs: TypedByteString) => decodeFrom(tbs).toOption)
 }
 
 private[crypto] trait KeyEntityCompanion[T] extends EntityCompanion[T, KeyDecodeError, KeyParseError] {

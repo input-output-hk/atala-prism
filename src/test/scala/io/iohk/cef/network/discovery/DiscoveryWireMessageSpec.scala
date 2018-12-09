@@ -19,19 +19,25 @@ class DiscoveryWireMessageSpec extends FlatSpec with MustMatchers {
     val node = NodeInfo(ByteString("node"), addr1, addr2, Capabilities(2))
 
     val ping = Ping(1, node, 3, ByteString("2"))
-    NioEncDec[Ping].decode(NioEncDec[Ping].encode(ping)).value mustBe ping
+    val pingCodec = NioCodec[Ping]
+    pingCodec.decode(pingCodec.encode(ping)).value mustBe ping
 
     val pong = Pong(node, ByteString("1"), 2)
-    NioEncDec[Pong].decode(NioEncDec[Pong].encode(pong)).value mustBe pong
+    val pongCodec = NioCodec[Pong]
+
+    pongCodec.decode(pongCodec.encode(pong)).value mustBe pong
 
     val neighbors = Neighbors(Capabilities(1), ByteString("token"), 2, Seq(node, node), 3)
-    NioEncDec[Neighbors].decode(NioEncDec[Neighbors].encode(neighbors)).value mustBe neighbors
+    val neighborsCodec = NioCodec[Neighbors]
+    neighborsCodec.decode(neighborsCodec.encode(neighbors)).value mustBe neighbors
 
     val seek = Seek(Capabilities(2), 3, 4, ByteString("nonce"))
-    NioEncDec[Seek].decode(NioEncDec[Seek].encode(seek)).value mustBe seek
+    val seekCodec = NioCodec[Seek]
+    seekCodec.decode(seekCodec.encode(seek)).value mustBe seek
 
+    val wireMessageCodec = NioCodec[DiscoveryWireMessage]
     Seq(ping, pong, neighbors, seek).foreach { m =>
-      NioEncDec[DiscoveryWireMessage].decode(NioEncDec[DiscoveryWireMessage].encode(m)).value mustBe m
+      wireMessageCodec.decode(wireMessageCodec.encode(m)).value mustBe m
     }
   }
 }
