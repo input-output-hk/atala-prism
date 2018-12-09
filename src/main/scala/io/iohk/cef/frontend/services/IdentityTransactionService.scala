@@ -44,6 +44,13 @@ class IdentityTransactionService(nodeTransactionService: NodeTransactionService[
       case data: UnlinkData => Right(Unlink(data, req.signature))
       case data: EndorseData => Right(Endorse(data, req.signature))
       case data: RevokeEndorsementData => Right(RevokeEndorsement(data, req.signature))
+      case data: GrantData =>
+        (for {
+          claimSignature <- req.claimSignature
+          endorseSignature <- req.endorseSignature
+        } yield
+          Right[ApplicationError, IdentityTransaction](Grant(data, req.signature, claimSignature, endorseSignature)))
+          .getOrElse(Left(CorrespondingPrivateKeyRequiredForLinkingIdentityError))
       case _ => Left(UnsupportedDataTypeError(req.data))
     }
 
