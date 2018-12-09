@@ -3,11 +3,13 @@ package io.iohk.cef.crypto.signing
 import java.security.SecureRandom
 
 import akka.util.ByteString
+import io.iohk.cef.crypto.KeyDecodingError
+import io.iohk.cef.crypto.signing.algorithms.SHA256withRSA
+import io.iohk.cef.test.ScalacheckExtensions._
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
+import org.scalatest.OptionValues._
 import org.scalatest.prop.PropertyChecks._
-import io.iohk.cef.test.ScalacheckExtensions._
-import io.iohk.cef.crypto.KeyDecodingError
 
 class SigningAlgorithmSpec extends FlatSpec {
 
@@ -121,6 +123,19 @@ class SigningAlgorithmSpec extends FlatSpec {
       }
     }
 
+    s"$algorithmDescription.toPublicKey" should "be able to map a valid key" in {
+      val publicKey = generatePublickey(algorithm)
+
+      algorithm.toPublicKey(publicKey).value should be(publicKey)
+    }
+
+    s"$algorithmDescription.toPublicKey" should "fail to map an invalid key" in {
+
+      algorithm.toPublicKey(new Object) should be(empty)
+    }
   }
 
+  private def generatePublickey(algorithm: SigningAlgorithm): AnyRef = algorithm match {
+    case _: SHA256withRSA => algorithm.generateKeyPair()._1.asInstanceOf[java.security.PublicKey]
+  }
 }

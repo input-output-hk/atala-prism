@@ -1,14 +1,8 @@
 package io.iohk.cef.codecs
 
-import scala.reflect.ClassTag
-import scala.reflect.runtime.universe._
-import io.iohk.cef.codecs.nio.components.NioCodecs
+import io.iohk.cef.codecs.nio.components._
 
 package object nio extends NioCodecs {
-  private[codecs] def typeToClassTag[T](implicit tt: TypeTag[T]): ClassTag[T] = {
-    val tpe = tt.tpe
-    val rc = tt.mirror.runtimeClass(tpe)
-    ClassTag[T](rc)
-  }
 
+  object auto extends NativeCodecs with ProductCodecs with OtherCodecs with CoproductCodecs
 }

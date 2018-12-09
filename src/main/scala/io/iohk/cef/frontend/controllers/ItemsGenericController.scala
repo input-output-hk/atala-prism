@@ -20,7 +20,7 @@ class ItemsGenericController(implicit ec: ExecutionContext, mat: Materializer) e
 
   def routes[D](prefix: String, service: DataItemService[D])(
       implicit format: Reads[Envelope[DataItem[D]]],
-      itemSerializable: NioEncDec[D],
+      itemSerializable: NioCodec[D],
       canValidate: CanValidate[DataItem[D]]): Route = {
     pathPrefix(prefix) {
       pathEnd {

@@ -5,7 +5,7 @@ import java.util.UUID.randomUUID
 import io.iohk.cef.consensus.raft.node.FutureOps.sequenceForgiving
 import io.iohk.cef.consensus.raft._
 import io.iohk.cef.consensus.raft.node.RaftNode.lastLogIndexAndTerm
-import io.iohk.cef.codecs.nio.NioEncDec
+import io.iohk.cef.codecs.nio.NioCodec
 
 import scala.annotation.tailrec
 import scala.concurrent.{ExecutionContext, Future}
@@ -17,7 +17,7 @@ import scala.concurrent.duration.Duration
 /**
   * Raft node implementation.
   */
-private[raft] class RaftNode[Command: NioEncDec](
+private[raft] class RaftNode[Command: NioCodec](
     val nodeId: String,
     clusterMemberIds: Seq[String],
     rpcFactory: RPCFactory[Command],

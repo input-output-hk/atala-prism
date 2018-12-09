@@ -16,13 +16,13 @@ object IdentityTransaction {
     signBytes(data, privateKey)
   }
 
-  def isDataSignedWith[D <: IdentityTransactionData: NioEncDec](
+  def isDataSignedWith[D <: IdentityTransactionData: NioCodec](
       data: D,
       publicKey: SigningPublicKey,
       signature: Signature): Boolean =
     isValidSignature(data, signature, publicKey)
 
-  def isDataSignedWithIdentity[D <: IdentityTransactionData: NioEncDec](
+  def isDataSignedWithIdentity[D <: IdentityTransactionData: NioCodec](
       data: D,
       identity: Identity,
       state: IdentityLedgerState,

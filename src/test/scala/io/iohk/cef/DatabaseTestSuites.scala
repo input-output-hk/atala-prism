@@ -11,9 +11,9 @@ import scala.reflect.runtime.universe.TypeTag
 
 object DatabaseTestSuites {
   def withLedger[S, Tx <: Transaction[S]](ledgerId: LedgerId)(testCode: Ledger[S, Tx] => Any)(
-      implicit sCodec: NioEncDec[S],
+      implicit sCodec: NioCodec[S],
       sTypeTag: TypeTag[S],
-      blockCodec: NioEncDec[Block[S, Tx]]): Unit = {
+      blockCodec: NioCodec[Block[S, Tx]]): Unit = {
 
     val stateStoragePath = Files.createTempFile(s"ledger-state-$ledgerId", "").toAbsolutePath
     val ledgerStoragePath = Files.createTempFile(s"ledger-$ledgerId", "").toAbsolutePath

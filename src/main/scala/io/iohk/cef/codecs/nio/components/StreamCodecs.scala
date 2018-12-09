@@ -3,18 +3,18 @@ import java.nio.ByteBuffer
 
 import scala.annotation.tailrec
 import scala.language.implicitConversions
-import io.iohk.cef.codecs.nio.{NioDecoder, NioStreamDecoder}
+import io.iohk.cef.codecs.nio.{NioCodec, NioStreamDecoder}
 
 trait StreamCodecs {
 
   /**
     * Turn a standard decoder into StreamDecoder with decodeStream.
     */
-  implicit def streamDecoderAdapter[T](dec: NioDecoder[T]): NioStreamDecoder[T] = new NioStreamDecoder[T] {
+  implicit def streamDecoderAdapter[T](codec: NioCodec[T]): NioStreamDecoder[T] = new NioStreamDecoder[T] {
     override def decodeStream(b: ByteBuffer): Seq[T] = {
       @annotation.tailrec
       def loop(acc: Seq[T]): Seq[T] = {
-        dec.decode(b) match {
+        codec.decode(b) match {
           case None => acc
           case Some(frame) => loop(acc :+ frame)
         }
@@ -27,15 +27,15 @@ trait StreamCodecs {
   type MessageApplication[Address] = (Address, ByteBuffer) => Seq[ApplicableMessage]
 
   def lazyMessageApplication[Address, Message, R](
-      decoder: NioDecoder[Message],
+      codec: NioCodec[Message],
       handler: (Address, Message) => Unit): MessageApplication[Address] =
-    (address, byteBuffer) => decoder.decodeStream(byteBuffer).map(message => () => handler(address, message))
+    (address, byteBuffer) => codec.decodeStream(byteBuffer).map(message => () => handler(address, message))
 
   def strictMessageApplication[Address, Message, R](
-      decoder: NioDecoder[Message],
+      codec: NioCodec[Message],
       handler: (Address, Message) => Unit): MessageApplication[Address] =
     (address, byteBuffer) =>
-      decoder
+      codec
         .decodeStream(byteBuffer)
         .map(message => {
           handler(address, message)

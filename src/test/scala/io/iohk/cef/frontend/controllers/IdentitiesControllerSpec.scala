@@ -73,6 +73,40 @@ class IdentitiesControllerSpec
       }
     }
 
+    def testEndorseType(
+        endorserIdentity: String,
+        endorsedIdentity: String,
+        privateKey: SigningPrivateKey): Assertion = {
+      val txType = "Endorse"
+      val privateKeyHex = toCleanHex(privateKey.toByteString)
+
+      val body =
+        s"""
+           |{
+           |    "type": "$txType",
+           |    "data": {
+           |      "_type":"io.iohk.cef.ledger.identity.EndorseData",
+           |      "endorserIdentity": "$endorserIdentity",
+           |      "endorsedIdentity": "$endorsedIdentity"
+           |    },
+           |    "ledgerId": "1",
+           |    "privateKey": "$privateKeyHex"
+           |
+           |}
+         """.stripMargin
+
+      val request = Post("/identities", jsonEntity(body))
+
+      request ~> routes ~> check {
+        status must ===(StatusCodes.Created)
+        val json = responseAs[JsValue]
+        (json \ "type").as[String] must be(txType)
+        (json \ "data" \ "endorserIdentity").as[String] must be(endorserIdentity)
+        (json \ "data" \ "endorsedIdentity").as[String] must be(endorsedIdentity)
+        (json \ "signature").as[String] mustNot be(empty)
+      }
+    }
+
     def testTransactionGrantType(txType: String): Assertion = {
       val pairLink = generateSigningKeyPair()
       val privateKeyLinkHex = toCleanHex(pairLink.`private`.toByteString)
@@ -145,6 +179,37 @@ class IdentitiesControllerSpec
       }
     }
 
+    def testRevokeType(endorserIdentity: String, endorsedIdentity: String, privateKey: SigningPrivateKey): Assertion = {
+      val txType = "Revoke"
+      val privateKeyHex = toCleanHex(privateKey.toByteString)
+
+      val body =
+        s"""
+           |{
+           |    "type": "$txType",
+           |    "data": {
+           |      "_type":"io.iohk.cef.ledger.identity.RevokeEndorsementData",
+           |      "endorserIdentity": "$endorserIdentity",
+           |      "endorsedIdentity": "$endorsedIdentity"
+           |    },
+           |    "ledgerId": "1",
+           |    "privateKey": "$privateKeyHex"
+           |
+           |}
+         """.stripMargin
+
+      val request = Post("/identities", jsonEntity(body))
+
+      request ~> routes ~> check {
+        status must ===(StatusCodes.Created)
+        val json = responseAs[JsValue]
+        (json \ "type").as[String] must be(txType)
+        (json \ "data" \ "endorserIdentity").as[String] must be(endorserIdentity)
+        (json \ "data" \ "endorsedIdentity").as[String] must be(endorsedIdentity)
+        (json \ "signature").as[String] mustNot be(empty)
+      }
+    }
+
     def validateErrorResponse(json: JsValue): Unit = {
       val errors = (json \ "errors").as[List[JsValue]]
       errors.size must be(4)
@@ -169,6 +234,14 @@ class IdentitiesControllerSpec
 
     "be able to create a grant transaction" in {
       testTransactionGrantType("Grant")
+    }
+
+    "be able to create an endorse transaction" in {
+      testEndorseType("endorsing", "endorsed", pair.`private`)
+    }
+
+    "be able to create an revoke transaction" in {
+      testRevokeType("endorsing", "endorsed", pair.`private`)
     }
 
     "return validation errors" in {

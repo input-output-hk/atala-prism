@@ -10,7 +10,7 @@ import io.iohk.cef.network.discovery.DiscoveryListener.DiscoveryListenerRequest
 import io.iohk.cef.network.discovery.DiscoveryManager.DiscoveryRequest
 import io.iohk.cef.network.discovery.db.DummyKnownNodeStorage
 import io.iohk.cef.network.discovery._
-import io.iohk.cef.codecs.nio.{NioEncoder, NioDecoder}
+import io.iohk.cef.codecs.nio.NioCodec
 import io.iohk.cef.network.telemetry.InMemoryTelemetry
 import io.iohk.cef.network.transport.Transports
 import io.iohk.cef.network.transport.tcp.NetUtils.aRandomAddress
@@ -88,13 +88,9 @@ trait NetworkFixture {
       ServerStatus.Listening(nodeInfo.discoveryAddress),
       Capabilities(0))
 
-    val (encoder, decoder) = {
+    val codec = {
       import io.iohk.cef.codecs.nio.auto._
-
-      val e: NioEncoder[DiscoveryWireMessage] = genericEncoder
-      val d: NioDecoder[DiscoveryWireMessage] = genericDecoder
-
-      (e, d)
+      NioCodec[DiscoveryWireMessage]
     }
 
     val discoveryBehavior = DiscoveryManager.behaviour(
@@ -102,23 +98,19 @@ trait NetworkFixture {
       new DummyKnownNodeStorage(clock()) with InMemoryTelemetry,
       nodeState,
       clock(),
-      encoder,
-      decoder,
-      listenerFactory(discoveryConfig, encoder, decoder),
+      codec,
+      listenerFactory(discoveryConfig, codec),
       new SecureRandom(),
       InMemoryTelemetry.registry
     )
     discoveryBehavior
   }
 
-  private def listenerFactory(
-      discoveryConfig: DiscoveryConfig,
-      encoder: NioEncoder[DiscoveryWireMessage],
-      decoder: NioDecoder[DiscoveryWireMessage])(
+  private def listenerFactory(discoveryConfig: DiscoveryConfig, codec: NioCodec[DiscoveryWireMessage])(
       context: ActorContext[DiscoveryRequest]): ActorRef[DiscoveryListenerRequest] = {
 
     context.spawn(
-      DiscoveryListener.behavior(discoveryConfig, UDPBridge.creator(discoveryConfig, encoder, decoder)),
+      DiscoveryListener.behavior(discoveryConfig, UDPBridge.creator(discoveryConfig, codec)),
       "DiscoveryListener")
   }
 

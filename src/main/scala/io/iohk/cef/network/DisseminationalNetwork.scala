@@ -1,13 +1,13 @@
 package io.iohk.cef.network
-import io.iohk.cef.network.discovery.NetworkDiscovery
-import io.iohk.cef.codecs.nio.{NioDecoder, NioEncoder}
-import io.iohk.cef.network.transport.Transports
-import scala.reflect.runtime.universe._
-import io.iohk.cef.network.transport.Frame
 
-class DisseminationalNetwork[Message: /*NioEncoder: NioDecoder:*/ WeakTypeTag](
-    networkDiscovery: NetworkDiscovery,
-    transports: Transports)(implicit enc: NioEncoder[Frame[Message]], dec: NioDecoder[Frame[Message]]) {
+import io.iohk.cef.network.discovery.NetworkDiscovery
+import io.iohk.cef.codecs.nio.NioCodec
+import io.iohk.cef.network.transport.Transports
+import io.iohk.cef.network.transport.Frame
+import scala.reflect.runtime.universe._
+
+class DisseminationalNetwork[Message: TypeTag](networkDiscovery: NetworkDiscovery, transports: Transports)(
+    implicit codec: NioCodec[Frame[Message]]) {
 
   private val conversationalNetwork =
     new ConversationalNetwork[Message](networkDiscovery, transports)
