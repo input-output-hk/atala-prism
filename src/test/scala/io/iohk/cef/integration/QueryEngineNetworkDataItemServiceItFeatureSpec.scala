@@ -28,7 +28,7 @@ class QueryEngineNetworkDataItemServiceItFeatureSpec
   private val bootstrap = randomBaseNetwork(None)
 
   private def createDataItemService(table: Table[String], baseNetwork: BaseNetwork)(
-      implicit enc: NioCodec[String],
+      implicit
       actionEncDec: NioCodec[DataItemAction[String]],
       destinationDescriptorEncDec: NioCodec[DestinationDescriptor],
       itemEncDec: NioCodec[DataItem[String]],
@@ -36,7 +36,8 @@ class QueryEngineNetworkDataItemServiceItFeatureSpec
       frameCodec: NioCodec[Envelope[DataItemAction[String]]]) = {
 
     val txNetwork = Network[Envelope[DataItemAction[String]]](baseNetwork.networkDiscovery, baseNetwork.transports)
-    val queryRequestNetwork = Network[Envelope[QueryRequest]](baseNetwork.networkDiscovery, baseNetwork.transports)
+    val queryRequestNetwork =
+      Network[Envelope[QueryRequest]](baseNetwork.networkDiscovery, baseNetwork.transports)
     val queryResponseNetwork =
       Network[Envelope[QueryResponse[String]]](baseNetwork.networkDiscovery, baseNetwork.transports)
     val queryEngine =
