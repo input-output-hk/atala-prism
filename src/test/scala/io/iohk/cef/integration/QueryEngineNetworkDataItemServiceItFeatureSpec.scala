@@ -37,14 +37,15 @@ class QueryEngineNetworkDataItemServiceItFeatureSpec
 
     val txNetwork = Network[Envelope[DataItemAction[String]]](baseNetwork.networkDiscovery, baseNetwork.transports)
     val queryRequestNetwork = Network[Envelope[QueryRequest]](baseNetwork.networkDiscovery, baseNetwork.transports)
-    val queryResponseNetwork = Network[Envelope[QueryResponse[String]]](baseNetwork.networkDiscovery, baseNetwork.transports)
+    val queryResponseNetwork =
+      Network[Envelope[QueryResponse[String]]](baseNetwork.networkDiscovery, baseNetwork.transports)
     val queryEngine =
-      new QueryEngine[String](baseNetwork.transports.peerConfig.nodeId,
+      new QueryEngine[String](
+        baseNetwork.transports.peerConfig.nodeId,
         table,
         queryRequestNetwork,
         queryResponseNetwork,
-        () => UUID.randomUUID().toString
-      )
+        () => UUID.randomUUID().toString)
     new DataItemService[String](table, txNetwork, queryEngine)
   }
 
@@ -83,8 +84,8 @@ class QueryEngineNetworkDataItemServiceItFeatureSpec
 
         val query = Field(0) #== itemId
 
-        val dummyResultDataItem1 = DataItem[String]("id1","data1",Seq(),Seq())
-        val dummyResultDataItem2 = DataItem[String]("id2","data2",Seq(),Seq())
+        val dummyResultDataItem1 = DataItem[String]("id1", "data1", Seq(), Seq())
+        val dummyResultDataItem2 = DataItem[String]("id2", "data2", Seq(), Seq())
 
         when(table.select(query)).thenReturn(Right(Seq(dummyResultDataItem1)))
         when(table2.select(query)).thenReturn(Right(Seq(dummyResultDataItem2)))
@@ -92,10 +93,13 @@ class QueryEngineNetworkDataItemServiceItFeatureSpec
         val stream =
           dataItemService.processQuery(Envelope(query, table.tableId, Everyone)).withTimeout(1 seconds)
 
-        val responses = Await.result(stream.fold[Either[ApplicationError, Seq[DataItem[String]]]](Right(Seq()))((s, c) => for {
-          seq <- c
-          state <- s
-        } yield state ++ seq), 30 seconds)
+        val responses = Await.result(
+          stream.fold[Either[ApplicationError, Seq[DataItem[String]]]](Right(Seq()))((s, c) =>
+            for {
+              seq <- c
+              state <- s
+            } yield state ++ seq),
+          30 seconds)
 
         responses mustBe
           Right(Seq(dummyResultDataItem1, dummyResultDataItem2))
