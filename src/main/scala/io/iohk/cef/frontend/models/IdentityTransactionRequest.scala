@@ -16,4 +16,6 @@ case class SubmitIdentityTransactionRequest(
     data: IdentityTransactionData,
     ledgerId: LedgerId,
     signature: Signature,
-    linkingIdentitySignature: Option[Signature] = None)
+    linkingIdentitySignature: Option[Signature] = None,
+    claimSignature: Option[Signature] = None,
+    endorseSignature: Option[Signature] = None)

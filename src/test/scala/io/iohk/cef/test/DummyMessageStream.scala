@@ -25,8 +25,7 @@ class DummyMessageStream[T](val o: Observable[T])(implicit scheduler: Scheduler)
   override def prepend(t: T): MessageStream[T] =
     new DummyMessageStream(Observable.cons(t, o))
 
-  override def withTimeout(
-      d: FiniteDuration): MessageStream[T] =
+  override def withTimeout(d: FiniteDuration): MessageStream[T] =
     new DummyMessageStream[T](o.takeByTimespan(d))
 
 }
