@@ -2,15 +2,15 @@ package io.iohk.cef.data.storage.mv
 
 import java.nio.file.{Files, Path}
 
-import io.iohk.cef.data.DataItem
 import io.iohk.cef.codecs.nio.auto._
-import io.iohk.cef.data.error.{DataItemNotFound, InvalidQueryError}
-import io.iohk.cef.data.query.Field
+import io.iohk.cef.data.DataItem
+import io.iohk.cef.data.error.DataItemNotFound
+import io.iohk.cef.data.query.{Field, InvalidQueryError}
 import io.iohk.cef.data.query.Query._
 import io.iohk.cef.data.query.Value.StringRef
+import org.scalatest.EitherValues._
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
-import org.scalatest.EitherValues._
 
 import scala.util.Random
 

@@ -28,7 +28,7 @@ class NodeTransactionServiceSpec extends AsyncFlatSpec with MustMatchers with Mo
 
   def mockNetwork[M]: Network[M] = mock[Network[M]]
 
-  def mockNioEncDec: NioCodec[Envelope[Tx]] =
+  def mockNioCodec: NioCodec[Envelope[Tx]] =
     mock[NioCodec[Envelope[Tx]]]
 
   def mockBlockSerializable: NioCodec[Envelope[BlockType]] =
@@ -64,7 +64,7 @@ class NodeTransactionServiceSpec extends AsyncFlatSpec with MustMatchers with Mo
     val testTx = DummyTransaction(10)
     val ledgerId = "1"
     val testEnvelope = Envelope(testTx, ledgerId, Everyone)
-    implicit val bs1 = mockNioEncDec
+    implicit val bs1 = mockNioCodec
     implicit val bs2 = mockBlockSerializable
     val (transactionservice, consensusMap, txDM, _) = setupTest(ledgerId)
     when(consensusMap(ledgerId)._1.processTransaction(testEnvelope.content))
@@ -83,7 +83,7 @@ class NodeTransactionServiceSpec extends AsyncFlatSpec with MustMatchers with Mo
       Block[String, DummyTransaction](BlockHeader(), immutable.Seq(DummyTransaction(10)))
     val ledgerId = "1"
     val testEnvelope = Envelope(testBlock, ledgerId, Everyone)
-    implicit val bs1 = mockNioEncDec
+    implicit val bs1 = mockNioCodec
     implicit val bs2 = mockBlockSerializable
     val (transactionservice, consensusMap, _, blockDM) = setupTest(ledgerId)
     when(consensusMap(ledgerId)._2.process(testEnvelope.content))
@@ -98,7 +98,7 @@ class NodeTransactionServiceSpec extends AsyncFlatSpec with MustMatchers with Mo
   }
 
   it should "avoid processing a block if this is not a receiver" in {
-    implicit val bs1 = mockNioEncDec
+    implicit val bs1 = mockNioCodec
     implicit val bs2 = mockBlockSerializable
     val ledgerId = "1"
     val me = NodeId("abcd")
@@ -114,7 +114,7 @@ class NodeTransactionServiceSpec extends AsyncFlatSpec with MustMatchers with Mo
   }
 
   it should "avoid processing a tx if this is not a receiver" in {
-    implicit val bs1 = mockNioEncDec
+    implicit val bs1 = mockNioCodec
     implicit val bs2 = mockBlockSerializable
     val ledgerId = "1"
     val me = NodeId("abcd")
@@ -130,7 +130,7 @@ class NodeTransactionServiceSpec extends AsyncFlatSpec with MustMatchers with Mo
   }
 
   it should "avoid processing a block if the node doesn't participate in consensus" in {
-    implicit val bs1 = mockNioEncDec
+    implicit val bs1 = mockNioCodec
     implicit val bs2 = mockBlockSerializable
     val ledgerId = "1"
     val me = NodeId("abcd")
@@ -147,7 +147,7 @@ class NodeTransactionServiceSpec extends AsyncFlatSpec with MustMatchers with Mo
   }
 
   it should "avoid processing a tx if the node doesn't participate in consensus" in {
-    implicit val bs1 = mockNioEncDec
+    implicit val bs1 = mockNioCodec
     implicit val bs2 = mockBlockSerializable
     val ledgerId = "1"
     val me = NodeId("abcd")
