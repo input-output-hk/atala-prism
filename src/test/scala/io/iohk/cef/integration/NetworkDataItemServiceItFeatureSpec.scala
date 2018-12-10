@@ -54,7 +54,7 @@ class NetworkDataItemServiceItFeatureSpec
 
         val input: Envelope[DataItemAction[String]] = setUpInsertData()
 
-        dataItemService.processAction(input) mustBe Right(())
+        dataItemService.processAction(input) mustBe Right(DataItemServiceResponse.DIUnit)
 
         And("the  DataItemService insert the table on the network 2")
 

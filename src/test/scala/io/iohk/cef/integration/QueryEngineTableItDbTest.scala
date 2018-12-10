@@ -41,11 +41,11 @@ class QueryEngineTableItDbTest extends FlatSpec with MustMatchers with EitherVal
     //Given -- there are data items
     val di1 = DataItem("insert1", "value1", Seq(), Seq())
     val di2 = DataItem("insert2", "value2", Seq(), Seq())
-    val insert1 = Envelope(DataItemAction.insert(di1), tableId, Everyone)
-    val insert2 = Envelope(DataItemAction.insert(di2), tableId, Everyone)
+    val insert1 = Envelope(DataItemAction.InsertAction(di1), tableId, Everyone)
+    val insert2 = Envelope(DataItemAction.InsertAction(di2), tableId, Everyone)
 
-    service.processAction(insert1) mustBe Right(())
-    service.processAction(insert2) mustBe Right(())
+    service.processAction(insert1) mustBe Right(DataItemServiceResponse.DIUnit)
+    service.processAction(insert2) mustBe Right(DataItemServiceResponse.DIUnit)
 
     //When -- user queries for id
     val query1 = Field(0) #== "insert1"

@@ -68,7 +68,7 @@ class IdentitiesControllerSpec
         val json = responseAs[JsValue]
         (json \ "type").as[String] must be(txType)
         (json \ "data" \ "identity").as[String] must be(identity)
-        (json \ "data" \ "key").as[String] must be(publicKeyHex)
+        (json \ "data" \ "key").as[String] must be(pair.public.toString)
         (json \ "signature").as[String] mustNot be(empty)
       }
     }
@@ -171,7 +171,7 @@ class IdentitiesControllerSpec
         status must ===(StatusCodes.Created)
         val json = responseAs[JsValue]
         (json \ "type").as[String] must be(txType)
-        (json \ "data" \ "key").as[String] must be(publicKeyHex)
+        (json \ "data" \ "key").as[String] must be(pair.public.toString)
         (json \ "data" \ "identity").as[String] must be(identity)
         (json \ "signature").as[String] mustNot be(empty)
         (json \ "linkingIdentitySignature").as[String] mustNot be(empty)

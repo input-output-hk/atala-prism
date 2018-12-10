@@ -87,16 +87,12 @@ trait Encryption {
   }
 
   /** Data entity containing a encryption algorithm identifier and a public key for that algorithm */
-  trait EncryptionPublicKey {
+  trait EncryptionPublicKey extends KeyEntity[EncryptionPublicKey, EncryptionPublicKey.type] {
     private[Encryption] val `type`: encryptionAlgorithmsCollection.EncryptionAlgorithmType
     private[Encryption] val lowlevelKey: `type`.algorithm.PublicKey
 
-    /** Encodes this key, including the algorithm identifier, into a ByteString */
-    def toByteString: ByteString =
-      EncryptionPublicKey.encodeInto(this).toByteString
-
-    override def toString(): String =
-      EncryptionPublicKey.show(this)
+    private[crypto] val companion: EncryptionPublicKey.type = EncryptionPublicKey
+    protected val self: EncryptionPublicKey = this
 
     override def equals(obj: scala.Any): Boolean = obj match {
       case that: EncryptionPublicKey =>
@@ -105,7 +101,6 @@ trait Encryption {
       case _ => false
     }
 
-    override def hashCode(): Int = this.toByteString.hashCode()
   }
 
   object EncryptionPublicKey extends KeyEntityCompanion[EncryptionPublicKey] {
@@ -143,16 +138,12 @@ trait Encryption {
   }
 
   /** Data entity containing a encryption algorithm identifier and a private key for that algorithm */
-  trait EncryptionPrivateKey {
+  trait EncryptionPrivateKey extends KeyEntity[EncryptionPrivateKey, EncryptionPrivateKey.type] {
     private[Encryption] val `type`: encryptionAlgorithmsCollection.EncryptionAlgorithmType
     private[Encryption] val lowlevelKey: `type`.algorithm.PrivateKey
 
-    /** Encodes this key, including the algorithm identifier, into a ByteString */
-    def toByteString: ByteString =
-      EncryptionPrivateKey.encodeInto(this).toByteString
-
-    override def toString(): String =
-      EncryptionPrivateKey.show(this)
+    private[crypto] val companion: EncryptionPrivateKey.type = EncryptionPrivateKey
+    protected val self: EncryptionPrivateKey = this
 
     override def equals(obj: scala.Any): Boolean = obj match {
       case that: EncryptionPrivateKey =>
@@ -160,8 +151,6 @@ trait Encryption {
 
       case _ => false
     }
-
-    override def hashCode(): Int = this.toByteString.hashCode()
   }
 
   object EncryptionPrivateKey extends KeyEntityCompanion[EncryptionPrivateKey] {
@@ -204,11 +193,11 @@ trait Encryption {
   /** Data entity containing some encrypted data and the identifier of the encryption algorithm used to generate it */
   class EncryptedData(
       private[Encryption] val `type`: encryptionAlgorithmsCollection.EncryptionAlgorithmType,
-      private[Encryption] val bytes: EncryptedBytes) {
+      private[Encryption] val bytes: EncryptedBytes)
+      extends CryptoEntity[EncryptedData, EncryptedData.type] {
 
-    /** Encodes this encrypted data, including the algorithm identifier, into a ByteString */
-    def toByteString: ByteString =
-      EncryptedData.encodeInto(this).toByteString
+    private[crypto] val companion: EncryptedData.type = EncryptedData
+    protected val self: EncryptedData = this
 
     override def toString(): String =
       EncryptedData.show(this)
@@ -219,8 +208,6 @@ trait Encryption {
 
       case _ => false
     }
-
-    override def hashCode(): Int = this.toByteString.hashCode()
   }
 
   object EncryptedData extends CryptoEntityCompanion[EncryptedData] {

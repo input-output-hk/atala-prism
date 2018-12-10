@@ -3,7 +3,7 @@ package io.iohk.cef.frontend.controllers.common
 import akka.util.ByteString
 import io.iohk.cef.transactionservice._
 import io.iohk.cef.crypto._
-import io.iohk.cef.data.{DataItem, Owner, TableId, Witness}
+import io.iohk.cef.data.{DataItem, Owner, TableId, Witness, DataItemServiceResponse}
 import io.iohk.cef.frontend.models._
 import io.iohk.cef.ledger.chimeric._
 import io.iohk.cef.ledger.identity._
@@ -16,53 +16,12 @@ import scala.util.Try
 
 object Codecs {
 
-  private def parseCryptoObject[A, B](json: JsValue, fieldName: String, f: ByteString => Either[B, A]) = {
-    json
-      .asOpt[String]
-      .map { string =>
-        Try(fromHex(string)).toOption
-          .map(f)
-          .flatMap(_.toOption)
-          .map(JsSuccess(_))
-          .getOrElse(JsError(s"Invalid $fieldName"))
-      }
-      .getOrElse(JsError(s"Missing $fieldName"))
-  }
-
-  implicit lazy val signingPublicKeyFormat: Format[SigningPublicKey] = new Format[SigningPublicKey] {
-    override def writes(o: SigningPublicKey): JsValue = {
-      JsString(toCleanHex(o.toByteString))
-    }
-
-    override def reads(json: JsValue): JsResult[SigningPublicKey] = {
-      parseCryptoObject(json, "public key", SigningPublicKey.decodeFrom)
-    }
-  }
-
-  implicit lazy val signingPrivateKeyFormat: Format[SigningPrivateKey] = new Format[SigningPrivateKey] {
-    override def writes(o: SigningPrivateKey): JsValue = {
-      JsString(toCleanHex(o.toByteString))
-    }
-
-    override def reads(json: JsValue): JsResult[SigningPrivateKey] = {
-      parseCryptoObject(json, "private key", SigningPrivateKey.decodeFrom)
-    }
-  }
-
-  implicit lazy val signatureFormat: Format[Signature] = new Format[Signature] {
-    override def writes(o: Signature): JsValue = {
-      JsString(toCleanHex(o.toByteString))
-    }
-
-    override def reads(json: JsValue): JsResult[Signature] = {
-      parseCryptoObject(json, "signature", Signature.decodeFrom)
-    }
-  }
-
-  implicit val signingKeyPairWrites: Writes[SigningKeyPair] = Writes { obj =>
+  implicit def signingKeyPairWrites(
+      implicit pub: Writes[SigningPublicKey],
+      priv: Writes[SigningPrivateKey]): Writes[SigningKeyPair] = Writes { obj =>
     val map = Map(
-      "publicKey" -> JsString(toCleanHex(obj.public.toByteString)),
-      "privateKey" -> JsString(toCleanHex(obj.`private`.toByteString))
+      "publicKey" -> pub.writes(obj.public),
+      "privateKey" -> priv.writes(obj.`private`)
     )
 
     JsObject(map)
@@ -351,4 +310,15 @@ object Codecs {
 
     builder.apply(Envelope.apply, unlift(Envelope.unapply))
   }
+
+  private val DataItemServiceResponseValidationFormat: Format[DataItemServiceResponse.Validation] =
+    Json.format[DataItemServiceResponse.Validation]
+
+  implicit val DataItemServiceResponseWrites: Writes[DataItemServiceResponse] = new Writes[DataItemServiceResponse] {
+    override def writes(o: DataItemServiceResponse): JsValue = o match {
+      case DataItemServiceResponse.DIUnit => JsObject.empty
+      case v: DataItemServiceResponse.Validation => DataItemServiceResponseValidationFormat.writes(v)
+    }
+  }
+
 }

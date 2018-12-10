@@ -49,7 +49,7 @@ class DataItemServiceTableItSpec extends FlatSpec {
 
     val results = envelopes.map(service.processAction)
     envelopes.foreach(e => verify(mockedNetwork, times(1)).disseminateMessage(e))
-    results.foreach(result => result mustBe Right(()))
+    results.foreach(result => result mustBe Right(DataItemServiceResponse.DIUnit))
 
     val itemsAfter = table.select(NoPredicateQuery)
     itemsAfter.map(_.toSet) mustBe Right(envelopes.map {
@@ -61,7 +61,7 @@ class DataItemServiceTableItSpec extends FlatSpec {
     val deleteAction: DataItemAction[String] =
       DataItemAction.DeleteAction(firstDataItem.id, sign(deleteSignature, ownerKeyPair.`private`))
     val deleteResult = service.processAction(Envelope(deleteAction, testTableId, Everyone))
-    deleteResult mustBe Right(())
+    deleteResult mustBe Right(DataItemServiceResponse.DIUnit)
 
     val itemsAfterDelete = table.select(NoPredicateQuery)
     itemsAfterDelete.map(_.toSet) mustBe Right(envelopes.tail.map {

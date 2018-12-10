@@ -1,6 +1,5 @@
 package io.iohk.cef.crypto
 
-import akka.util.ByteString
 import io.iohk.cef.crypto.encoding.TypedByteString
 import io.iohk.cef.crypto.signing.{SigningAlgorithmsCollection, _}
 import io.iohk.cef.codecs.nio._
@@ -71,15 +70,13 @@ trait Signing {
   }
 
   /** Data entity containing a signing algorithm identifier and a public key for that algorithm */
-  trait SigningPublicKey {
+  trait SigningPublicKey extends KeyEntity[SigningPublicKey, SigningPublicKey.type] {
 
     private[Signing] val `type`: signingAlgorithmsCollection.SigningAlgorithmType
-
     private[Signing] val lowlevelKey: `type`.algorithm.PublicKey
 
-    /** Encodes this key, including the algorithm identifier, into a ByteString */
-    lazy val toByteString: ByteString =
-      SigningPublicKey.encodeInto(this).toByteString
+    private[crypto] val companion: SigningPublicKey.type = SigningPublicKey
+    protected val self: SigningPublicKey = this
 
     override def equals(obj: scala.Any): Boolean = obj match {
       case that: SigningPublicKey =>
@@ -87,10 +84,6 @@ trait Signing {
 
       case _ => false
     }
-
-    override def hashCode(): Int = this.toByteString.hashCode()
-
-    override def toString(): String = SigningPublicKey.show(this)
   }
 
   object SigningPublicKey extends KeyEntityCompanion[SigningPublicKey] {
@@ -126,13 +119,12 @@ trait Signing {
   }
 
   /** Data entity containing a signing algorithm identifier and a private key for that algorithm */
-  trait SigningPrivateKey {
+  trait SigningPrivateKey extends KeyEntity[SigningPrivateKey, SigningPrivateKey.type] {
     private[Signing] val `type`: signingAlgorithmsCollection.SigningAlgorithmType
     private[Signing] val lowlevelKey: `type`.algorithm.PrivateKey
 
-    /** Encodes this key, including the algorithm identifier, into a ByteString */
-    def toByteString: ByteString =
-      SigningPrivateKey.encodeInto(this).toByteString
+    private[crypto] val companion: SigningPrivateKey.type = SigningPrivateKey
+    protected val self: SigningPrivateKey = this
 
     override def equals(obj: scala.Any): Boolean = obj match {
       case that: SigningPrivateKey =>
@@ -140,10 +132,6 @@ trait Signing {
 
       case _ => false
     }
-
-    override def hashCode(): Int = this.toByteString.hashCode()
-
-    override def toString(): String = SigningPrivateKey.show(this)
   }
 
   object SigningPrivateKey extends KeyEntityCompanion[SigningPrivateKey] {
@@ -181,11 +169,11 @@ trait Signing {
   /** Data entity containing a signature and the identifier of the signing algorithm used to generate it */
   class Signature(
       private[Signing] val `type`: signingAlgorithmsCollection.SigningAlgorithmType,
-      private[Signing] val bytes: SignatureBytes) {
+      private[Signing] val bytes: SignatureBytes)
+      extends CryptoEntity[Signature, Signature.type] {
 
-    /** Encodes this signature, including the algorithm identifier, into a ByteString */
-    lazy val toByteString: ByteString =
-      Signature.encodeInto(this).toByteString
+    private[crypto] val companion: Signature.type = Signature
+    protected val self: Signature = this
 
     override def equals(obj: scala.Any): Boolean = obj match {
       case that: Signature =>
@@ -194,10 +182,6 @@ trait Signing {
 
       case _ => false
     }
-
-    override def hashCode(): Int = (`type`, bytes).hashCode()
-
-    override def toString(): String = Signature.show(this)
   }
 
   object Signature extends CryptoEntityCompanion[Signature] {
