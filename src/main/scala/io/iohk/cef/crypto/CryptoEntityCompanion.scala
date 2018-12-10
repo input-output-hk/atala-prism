@@ -8,7 +8,40 @@ import io.iohk.cef.codecs.nio._
 
 import scala.reflect.runtime.universe.TypeTag
 
-private[crypto] trait EntityCompanion[T, DE[_], PE[_]] {
+/**
+  * Base trait of all the crypto entities
+  *
+  * @tparam T   type of the entity extending this trait. That is, `trait Foo extends Entity[Foo, ...]`
+  * @tparam DE  type of the errors when trying to decode an instance of T from a ByteString
+  * @tparam PE  type of the errors when trying to parse an instance of T from a String
+  * @tparam C   type of the companion object of T
+  */
+trait Entity[T, DE[_], PE[_], +C <: EntityCompanion[T, DE, PE]] {
+
+  private[crypto] val companion: C
+  protected val self: T
+
+  lazy val toByteString: ByteString =
+    companion.encodeInto(self).toByteString
+
+  override def hashCode(): Int = toByteString.hashCode()
+
+  override def toString(): String = companion.show(self)
+  final def toCompactString(): String = companion.showCompact(self)
+}
+
+trait KeyEntity[T, +C <: KeyEntityCompanion[T]] extends Entity[T, KeyDecodeError, KeyParseError, C]
+trait CryptoEntity[T, +C <: CryptoEntityCompanion[T]] extends Entity[T, DecodeError, ParseError, C]
+
+/**
+  * Base trait of the companion objects of all crypto entities
+  *
+  * @tparam T   type of the entity this object is companion of
+  * @tparam DE  type of the errors when trying to decode an instance of T from a ByteString
+  * @tparam PE  type of the errors when trying to parse an instance of T from a String
+  */
+private[crypto] abstract class EntityCompanion[T, DE[_], PE[_]](
+    implicit ev: T <:< Entity[T, DE, PE, EntityCompanion[T, DE, PE]]) {
 
   protected val title: String
 
@@ -18,6 +51,9 @@ private[crypto] trait EntityCompanion[T, DE[_], PE[_]] {
 
   private[crypto] final def show(t: T): String =
     encodeInto(t).toString(title)
+
+  private[crypto] final def showCompact(t: T): String =
+    encodeInto(t).toCompactString
 
   def decodeFrom(bytes: ByteString): Either[DE[T], T]
 
@@ -32,7 +68,8 @@ private[crypto] trait EntityCompanion[T, DE[_], PE[_]] {
     TypedByteString.TypedByteStringNioCodec.mapOpt[T](encodeInto(_), (tbs: TypedByteString) => decodeFrom(tbs).toOption)
 }
 
-private[crypto] trait KeyEntityCompanion[T] extends EntityCompanion[T, KeyDecodeError, KeyParseError] {
+private[crypto] abstract class KeyEntityCompanion[T](implicit ev: T <:< KeyEntity[T, KeyEntityCompanion[T]])
+    extends EntityCompanion[T, KeyDecodeError, KeyParseError]()(ev) {
 
   def decodeFrom(bytes: ByteString): Either[KeyDecodeError[T], T] =
     TypedByteString
@@ -51,7 +88,8 @@ private[crypto] trait KeyEntityCompanion[T] extends EntityCompanion[T, KeyDecode
           .map(e => KeyParseError.BytesDecodingError(e)))
 }
 
-private[crypto] trait CryptoEntityCompanion[T] extends EntityCompanion[T, DecodeError, ParseError] {
+private[crypto] abstract class CryptoEntityCompanion[T](implicit ev: T <:< CryptoEntity[T, CryptoEntityCompanion[T]])
+    extends EntityCompanion[T, DecodeError, ParseError]()(ev) {
 
   def decodeFrom(bytes: ByteString): Either[DecodeError[T], T] =
     TypedByteString

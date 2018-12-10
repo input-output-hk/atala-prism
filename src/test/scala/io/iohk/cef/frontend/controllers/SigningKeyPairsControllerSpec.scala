@@ -4,7 +4,6 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import io.iohk.cef.crypto._
-import io.iohk.cef.frontend.controllers.common.Codecs
 import io.iohk.cef.frontend.services.CryptoService
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{MustMatchers, WordSpec}
@@ -16,8 +15,6 @@ class SigningKeyPairsControllerSpec
     with ScalaFutures
     with ScalatestRouteTest
     with PlayJsonSupport {
-
-  import Codecs._
 
   implicit val executionContext = system.dispatcher
 
@@ -37,8 +34,8 @@ class SigningKeyPairsControllerSpec
         val publicKey = (json \ "publicKey").as[String]
         val privateKey = (json \ "privateKey").as[String]
 
-        SigningPublicKey.decodeFrom(fromHex(publicKey)).isRight must be(true)
-        SigningPrivateKey.decodeFrom(fromHex(privateKey)).isRight must be(true)
+        SigningPublicKey.parseFrom(publicKey).isRight must be(true)
+        SigningPrivateKey.parseFrom(privateKey).isRight must be(true)
       }
     }
   }

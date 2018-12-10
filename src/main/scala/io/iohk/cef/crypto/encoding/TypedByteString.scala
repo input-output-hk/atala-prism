@@ -35,6 +35,9 @@ case class TypedByteString(`type`: String, bytes: ByteString) {
   override def toString: String =
     toString("typed byte string")
 
+  final def toCompactString: String =
+    toByteString.toHex.replaceAll("\n", "")
+
   def toString(title: String): String = {
     val full = s"$title ${`type`}".toUpperCase
     s"""|-----BEGIN $full BLOCK-----
@@ -74,6 +77,10 @@ object TypedByteString {
     * ...      | 00 00 03 41 42 43
     * ...      |-----END TYPED BYTE STRING ABC BLOCK-----""".stripMargin
     * >>> TypedByteString.parseFrom(text) == Right(TypedByteString("ABC", ByteString("ABC")))
+    * true
+    *
+    * >>> val textCompact: String = text.split("\n").drop(1).take(9).mkString.trim
+    * >>> TypedByteString.parseFrom(textCompact) == Right(TypedByteString("ABC", ByteString("ABC")))
     * true
     *
     * >>> TypedByteString.parseFrom(
