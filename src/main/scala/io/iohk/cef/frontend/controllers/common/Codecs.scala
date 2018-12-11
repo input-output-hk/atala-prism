@@ -16,7 +16,7 @@ import io.iohk.cef.data.query.Value.{
   ShortRef,
   StringRef
 }
-import io.iohk.cef.data.query.{Field, Query}
+import io.iohk.cef.data.query.{Field, Query, Value}
 import io.iohk.cef.frontend.models._
 import io.iohk.cef.ledger.chimeric._
 import io.iohk.cef.ledger.identity._
@@ -87,16 +87,48 @@ object Codecs {
   implicit val eqPredicateQueryFormat = Json.format[Query.Predicate.Eq]
   implicit val andPredicateQueryFormat = Json.format[Query.Predicate.And]
   implicit val orPredicateQueryFormat = Json.format[Query.Predicate.Or]
-  implicit val predicateQueryFOrmat = new Format[Predicate] {
-    override def reads(json: JsValue): JsResult[Predicate] = ???
+  implicit val predicateQueryFormat = new Format[Predicate] {
+    override def reads(json: JsValue)
+    : JsResult[Predicate] = {
+      (json \ "type").asOpt[String] match {
+        case Some("eqPredicate") => json.validate[Predicate.Eq]
+        case Some("orPredicate") => json.validate[Predicate.Or]
+        case Some("andPredicate") => json.validate[Predicate.And]
+      }
+    }
 
-    override def writes(o: Predicate): JsValue = ???
+    override def writes(o: Predicate): JsValue = {
+      val (tpe, json) = o match {
+        case x: Predicate.Eq => ("eqPredicate", Json.toJson(x)(eqPredicateQueryFormat))
+        case x: Predicate.Or => ("orPredicate", Json.toJson(x)(orPredicateQueryFormat))
+        case x: Predicate.And => ("andPredicate", Json.toJson(x)(andPredicateQueryFormat))
+      }
+      val map = Map("type" -> JsString(tpe), "fragment" -> json)
+
+      JsObject(map)
+    }
   }
 
   implicit val queryFormat: Format[Query] = new Format[Query] {
-    override def reads(json: JsValue): JsResult[Query] = ???
+    override def reads(json: JsValue)
+    : JsResult[Query] = {
+      (json \ "type").asOpt[String] match {
+        case Some("noPredicateQuery") => JsSuccess(NoPredicateQuery)
+        case Some("predicateQuery") => json.validate[Predicate]
+        case _ => JsError("Invalid Query")
+      }
+    }
 
-    override def writes(o: Query): JsValue = ???
+    override def writes(o: Query): JsValue = {
+      val (tpe, json) = o match {
+        case NoPredicateQuery => ("noPredicateQuery", JsNull)
+        case p: Predicate => ("predicateQuery", Json.toJson(p)(predicateQueryFormat))
+      }
+
+      val map = Map("type" -> JsString(tpe), "fragment" -> json)
+
+      JsObject(map)
+    }
   }
 
   implicit def signingKeyPairWrites(
