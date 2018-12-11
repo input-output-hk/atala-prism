@@ -5,6 +5,7 @@ import java.util.UUID
 import io.iohk.cef.codecs.nio._
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.data.DataItemAction.InsertAction
+import io.iohk.cef.data.DataItemServiceResponse.DIUnit
 import io.iohk.cef.data._
 import io.iohk.cef.data.query.{Field, QueryEngine, QueryRequest, QueryResponse}
 import io.iohk.cef.error.ApplicationError
@@ -75,7 +76,7 @@ class QueryEngineNetworkDataItemServiceItFeatureSpec
         val itemId = "item-id"
         val input: Envelope[DataItemAction[String]] = setUpInsertData(itemId)
 
-        dataItemService.processAction(input) mustBe Right(())
+        dataItemService.processAction(input) mustBe Right(DIUnit)
 
         And("the  DataItemService insert the table on the network 2")
 
