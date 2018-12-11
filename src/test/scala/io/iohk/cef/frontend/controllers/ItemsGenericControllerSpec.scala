@@ -91,11 +91,10 @@ class ItemsGenericControllerSpec
   "DELETE /certificates" should {
 
     implicit val canValidate: CanValidate[DataItem[BirthCertificate]] =
-      (t: DataItem[BirthCertificate]) => Right(())
+      _ => Right(())
 
     lazy val routes =
       controller.routes[BirthCertificate]("birth-certificates", service, 30 seconds)
-    )
 
     "delete an item" in {
       val ownerKeyPair = bob
