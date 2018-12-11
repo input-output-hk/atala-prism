@@ -21,7 +21,7 @@ class SigningAlgorithmsCollection(secureRandom: SecureRandom) {
   def apply(identifier: String): Option[SigningAlgorithmType] =
     SigningAlgorithmType.withNameOption(identifier)
 
-  def from(obj: AnyRef): Option[SigningAlgorithmType] = {
+  def fromPublicKey(obj: AnyRef): Option[SigningAlgorithmType] = {
     SigningAlgorithmType.values
       .find(_.algorithm.toPublicKey(obj).isDefined)
   }

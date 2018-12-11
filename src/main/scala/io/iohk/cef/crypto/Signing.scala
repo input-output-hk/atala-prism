@@ -64,7 +64,7 @@ trait Signing {
 
   def toSigningPublicKey(obj: AnyRef): Option[SigningPublicKey] = {
     for {
-      tpe <- signingAlgorithmsCollection.from(obj)
+      tpe <- signingAlgorithmsCollection.fromPublicKey(obj)
       key <- tpe.algorithm.toPublicKey(obj)
     } yield SigningPublicKey.apply(tpe)(key)
   }
