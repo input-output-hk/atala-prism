@@ -94,7 +94,8 @@ class ItemsGenericControllerSpec
       (t: DataItem[BirthCertificate]) => Right(())
 
     lazy val routes =
-      controller.routes[BirthCertificate]("birth-certificates", service)
+      controller.routes[BirthCertificate]("birth-certificates", service, 30 seconds)
+    )
 
     "delete an item" in {
       val ownerKeyPair = bob
