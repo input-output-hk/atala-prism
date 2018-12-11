@@ -2,8 +2,21 @@ package io.iohk.cef.frontend.controllers.common
 
 import akka.util.ByteString
 import io.iohk.cef.crypto._
-import io.iohk.cef.data.{DataItem, Owner, TableId, Witness, DataItemServiceResponse}
-import io.iohk.cef.data.query.Query
+import io.iohk.cef.data._
+import io.iohk.cef.data.query.Query._
+import io.iohk.cef.data.query.{Value => ValueRef}
+import io.iohk.cef.data.query.Value.{
+  BooleanRef,
+  ByteRef,
+  CharRef,
+  DoubleRef,
+  FloatRef,
+  IntRef,
+  LongRef,
+  ShortRef,
+  StringRef
+}
+import io.iohk.cef.data.query.{Field, Query}
 import io.iohk.cef.frontend.models._
 import io.iohk.cef.ledger.chimeric._
 import io.iohk.cef.ledger.identity._
@@ -17,8 +30,72 @@ import scala.util.Try
 
 object Codecs {
 
+  implicit val fieldQueryFormat = Json.format[Field]
+  implicit val doubleRefQueryFormat = Json.format[DoubleRef]
+  implicit val floatRefQueryFormat = Json.format[FloatRef]
+  implicit val longRefQueryFormat = Json.format[LongRef]
+  implicit val intRefQueryFormat = Json.format[IntRef]
+  implicit val shortRefQueryFormat = Json.format[ShortRef]
+  implicit val byteRefQueryFormat = Json.format[ByteRef]
+  implicit val booleanRefQueryFormat = Json.format[BooleanRef]
+  implicit val stringRefQueryFormat = Json.format[StringRef]
+  implicit val charRefQueryFormat = new Format[CharRef] {
+    override def reads(json: JsValue): JsResult[CharRef] = (json \ "value").asOpt[String] match {
+      case Some(str) if str.size == 1 => JsSuccess(CharRef(str.toCharArray.head))
+      case _ => JsError("Invalid length char")
+    }
+
+    override def writes(o: CharRef): JsValue = {
+      JsObject(Map("value" -> JsString(o.value.toString)))
+    }
+  }
+
+  implicit val valueQueryFormat = new Format[ValueRef] {
+    override def reads(json: JsValue): JsResult[ValueRef] = {
+      (json \ "type").asOpt[String] match {
+        case Some("doubleRef") => json.validate[DoubleRef]
+        case Some("floatRef") => json.validate[FloatRef]
+        case Some("longRef") => json.validate[LongRef]
+        case Some("intRef") => json.validate[IntRef]
+        case Some("shortRef") => json.validate[ShortRef]
+        case Some("byteRef") => json.validate[ByteRef]
+        case Some("booleanRef") => json.validate[BooleanRef]
+        case Some("charRef") => json.validate[CharRef]
+        case Some("stringRef") => json.validate[StringRef]
+        case _ => JsError("Invalid Query Value")
+      }
+    }
+
+    override def writes(o: ValueRef): JsValue = {
+      val (tpe, json) = o match {
+        case x: DoubleRef => ("doubleRef", Json.toJson(x)(doubleRefQueryFormat))
+        case x: FloatRef => ("floatRef", Json.toJson(x)(floatRefQueryFormat))
+        case x: LongRef => ("longRef", Json.toJson(x)(longRefQueryFormat))
+        case x: IntRef => ("intRef", Json.toJson(x)(intRefQueryFormat))
+        case x: ShortRef => ("shortRef", Json.toJson(x)(shortRefQueryFormat))
+        case x: ByteRef => ("byteRef", Json.toJson(x)(byteRefQueryFormat))
+        case x: BooleanRef => ("booleanRef", Json.toJson(x)(booleanRefQueryFormat))
+        case x: CharRef => ("charRef", Json.toJson(x)(charRefQueryFormat))
+        case x: StringRef => ("stringRef", Json.toJson(x)(stringRefQueryFormat))
+      }
+
+      val map = Map("type" -> JsString(tpe), "fragment" -> json)
+
+      JsObject(map)
+    }
+  }
+  implicit val eqPredicateQueryFormat = Json.format[Query.Predicate.Eq]
+  implicit val andPredicateQueryFormat = Json.format[Query.Predicate.And]
+  implicit val orPredicateQueryFormat = Json.format[Query.Predicate.Or]
+  implicit val predicateQueryFOrmat = new Format[Predicate] {
+    override def reads(json: JsValue): JsResult[Predicate] = ???
+
+    override def writes(o: Predicate): JsValue = ???
+  }
+
   implicit val queryFormat: Format[Query] = new Format[Query] {
     override def reads(json: JsValue): JsResult[Query] = ???
+
     override def writes(o: Query): JsValue = ???
   }
 
