@@ -16,7 +16,7 @@ import io.iohk.cef.data.query.Value.{
   ShortRef,
   StringRef
 }
-import io.iohk.cef.data.query.{Field, Query, Value}
+import io.iohk.cef.data.query.{Field, Query}
 import io.iohk.cef.frontend.models._
 import io.iohk.cef.ledger.chimeric._
 import io.iohk.cef.ledger.identity._
@@ -29,6 +29,27 @@ import play.api.libs.json._
 import scala.util.Try
 
 object Codecs {
+
+  implicit def seqFormat[T](implicit tFormat: Format[T]): Format[Seq[T]] = new Format[Seq[T]] {
+    override def reads(json: JsValue): JsResult[Seq[T]] = {
+      val seqResult = json match {
+        case JsArray(values) =>
+          values.map(_.validate[T](tFormat)).foldLeft[JsResult[List[T]]](JsSuccess(List())) { (state, current) =>
+            for {
+              s <- state
+              c <- current
+            } yield c :: s
+          }
+        case _ => JsError("Invalid sequence detected")
+      }
+      seqResult.map(_.reverse)
+    }
+
+    override def writes(o: Seq[T]): JsValue = {
+      val jsonSeq = o.map(Json.toJson(_))
+      JsArray(jsonSeq)
+    }
+  }
 
   implicit val fieldQueryFormat = Json.format[Field]
   implicit val doubleRefQueryFormat = Json.format[DoubleRef]
@@ -85,15 +106,34 @@ object Codecs {
     }
   }
   implicit val eqPredicateQueryFormat = Json.format[Query.Predicate.Eq]
-  implicit val andPredicateQueryFormat = Json.format[Query.Predicate.And]
-  implicit val orPredicateQueryFormat = Json.format[Query.Predicate.Or]
-  implicit val predicateQueryFormat = new Format[Predicate] {
-    override def reads(json: JsValue)
-    : JsResult[Predicate] = {
+  implicit val andPredicateQueryFormat = new Format[Predicate.And] {
+    val pqf: Format[Predicate] = createPredicateQueryFormat
+    val seqpf: Format[Seq[Predicate]] = seqFormat(pqf)
+    override def reads(json: JsValue): JsResult[Predicate.And] =
+      seqpf.reads(json).map(Predicate.And)
+
+    override def writes(o: Predicate.And): JsValue =
+      seqpf.writes(o.predicates)
+  }
+
+  implicit val orPredicateQueryFormat = new Format[Predicate.Or] {
+    val pqf: Format[Predicate] = createPredicateQueryFormat
+    val seqpf: Format[Seq[Predicate]] = seqFormat(pqf)
+    override def reads(json: JsValue): JsResult[Predicate.Or] =
+      seqpf.reads(json).map(Predicate.Or)
+
+    override def writes(o: Predicate.Or): JsValue = {
+      seqpf.writes(o.predicates)
+    }
+  }
+
+  def createPredicateQueryFormat: Format[Query.Predicate] = new Format[Predicate] {
+    override def reads(json: JsValue): JsResult[Predicate] = {
       (json \ "type").asOpt[String] match {
         case Some("eqPredicate") => json.validate[Predicate.Eq]
         case Some("orPredicate") => json.validate[Predicate.Or]
         case Some("andPredicate") => json.validate[Predicate.And]
+        case _ => JsError("Invalid predicate")
       }
     }
 
@@ -109,9 +149,10 @@ object Codecs {
     }
   }
 
+  implicit val predicateQueryFormat = createPredicateQueryFormat
+
   implicit val queryFormat: Format[Query] = new Format[Query] {
-    override def reads(json: JsValue)
-    : JsResult[Query] = {
+    override def reads(json: JsValue): JsResult[Query] = {
       (json \ "type").asOpt[String] match {
         case Some("noPredicateQuery") => JsSuccess(NoPredicateQuery)
         case Some("predicateQuery") => json.validate[Predicate]
