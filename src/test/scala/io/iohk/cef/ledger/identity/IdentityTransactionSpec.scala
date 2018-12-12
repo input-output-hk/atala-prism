@@ -1,14 +1,16 @@
 package io.iohk.cef.ledger.identity
 
 import io.iohk.cef.builder.SigningKeyPairs
-import org.scalatest.{EitherValues, FlatSpec, MustMatchers, OptionValues}
+import io.iohk.cef.crypto._
+import io.iohk.cef.crypto.certificates.{CachedCertificatePair, _}
+import org.scalatest.EitherValues._
+import org.scalatest.FlatSpec
+import org.scalatest.MustMatchers._
+import org.scalatest.OptionValues._
 
-class IdentityTransactionSpec
-    extends FlatSpec
-    with SigningKeyPairs
-    with EitherValues
-    with OptionValues
-    with MustMatchers {
+class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
+
+  import ExampleCertificates._
 
   private def aliceClaimData(identity: String) = ClaimData(identity, alice.public)
   private def aliceUnlinkData(identity: String) = UnlinkData(identity, alice.public)
@@ -226,5 +228,154 @@ class IdentityTransactionSpec
     val result = transaction(state).left.value
     result mustBe EndorsementNotAssociatedWithIdentityError("two", "one")
 
+  }
+
+  it should "apply a LinkCertificate" in {
+    val pem = twoChainedCertsPEM
+    val pair = CachedCertificatePair.decode(pem).value
+    val keys = generateSigningKeyPair()
+    val state = IdentityLedgerState(
+      Map(
+        pair.target.identity -> IdentityData.forKeys(keys.public),
+        pair.issuer.identity -> IdentityData.forKeys(pair.issuer.publicKey)))
+
+    val certificateKey = toSigningPrivateKey(validCertPrivateKey).value
+    val data = LinkCertificateData(pair.target.identity, pem)
+    val tx = data.toTransaction(keys.`private`, certificateKey)
+
+    val result = tx.apply(state).right.value
+
+    val newData = result.get(pair.target.identity).value
+    newData.endorsers must contain(pair.issuer.identity)
+    newData.keys must contain(pair.target.publicKey)
+  }
+
+  it should "fail to apply a LinkCertificate when the linkingIdentity doesn't match the one from the certificate" in {
+    val pem = twoChainedCertsPEM
+    val pair = CachedCertificatePair.decode(pem).value
+    val keys = generateSigningKeyPair()
+    val state = IdentityLedgerState(
+      Map(
+        pair.target.identity -> IdentityData.forKeys(keys.public),
+        pair.issuer.identity -> IdentityData.forKeys(pair.issuer.publicKey)))
+
+    val certificateKey = toSigningPrivateKey(validCertPrivateKey).value
+    val linkingIdentity = pair.target.identity + "XXX"
+    val data = LinkCertificateData(linkingIdentity, pem)
+    val tx = data.toTransaction(keys.`private`, certificateKey)
+
+    val result = tx.apply(state).left.value
+
+    result must be(IdentityNotMatchingCertificate(linkingIdentity, pair.target.identity))
+  }
+
+  it should "fail to apply a LinkCertificate when the authority is not registered" in {
+    val pem = twoChainedCertsPEM
+    val pair = CachedCertificatePair.decode(pem).value
+    val keys = generateSigningKeyPair()
+    val state = IdentityLedgerState(Map(pair.target.identity -> IdentityData.forKeys(keys.public)))
+
+    val certificateKey = toSigningPrivateKey(validCertPrivateKey).value
+    val data = LinkCertificateData(pair.target.identity, pem)
+    val tx = data.toTransaction(keys.`private`, certificateKey)
+
+    val result = tx.apply(state).left.value
+
+    result must be(IdentityNotClaimedError(pair.issuer.identity))
+  }
+
+  it should "fail to apply a LinkCertificate when the linking identity is not registered" in {
+    val pem = twoChainedCertsPEM
+    val pair = CachedCertificatePair.decode(pem).value
+    val keys = generateSigningKeyPair()
+    val state = IdentityLedgerState(Map(pair.issuer.identity -> IdentityData.forKeys(pair.issuer.publicKey)))
+
+    val certificateKey = toSigningPrivateKey(validCertPrivateKey).value
+    val data = LinkCertificateData(pair.target.identity, pem)
+    val tx = data.toTransaction(keys.`private`, certificateKey)
+
+    val result = tx.apply(state).left.value
+
+    result must be(IdentityNotClaimedError(pair.target.identity))
+  }
+
+  it should "fail to apply a LinkCertificate when authority key is not registered" in {
+    val pem = twoChainedCertsPEM
+    val pair = CachedCertificatePair.decode(pem).value
+    val keys = generateSigningKeyPair()
+    val state = IdentityLedgerState(
+      Map(pair.target.identity -> IdentityData.forKeys(keys.public), pair.issuer.identity -> IdentityData.empty))
+
+    val certificateKey = toSigningPrivateKey(validCertPrivateKey).value
+    val data = LinkCertificateData(pair.target.identity, pem)
+    val tx = data.toTransaction(keys.`private`, certificateKey)
+    val result = tx.apply(state).left.value
+
+    result must be(PublicKeyNotAssociatedWithIdentity(pair.issuer.identity, pair.issuer.publicKey))
+  }
+
+  it should "fail to apply a LinkCertificate when linking identity signs with a key that is not registered" in {
+    val pem = twoChainedCertsPEM
+    val pair = CachedCertificatePair.decode(pem).value
+    val keys = generateSigningKeyPair()
+    val state = IdentityLedgerState(
+      Map(
+        pair.target.identity -> IdentityData.forKeys(pair.issuer.publicKey),
+        pair.issuer.identity -> IdentityData.forKeys(pair.issuer.publicKey)))
+
+    val certificateKey = toSigningPrivateKey(validCertPrivateKey).value
+    val data = LinkCertificateData(pair.target.identity, pem)
+    val tx = data.toTransaction(keys.`private`, certificateKey)
+    val result = tx.apply(state).left.value
+
+    result must be(UnableToVerifySignatureError)
+  }
+
+  it should "fail to apply a LinkCertificate when linking identity doesn't sign with its certificate key" in {
+    val pem = twoChainedCertsPEM
+    val pair = CachedCertificatePair.decode(pem).value
+    val keys = generateSigningKeyPair()
+    val state = IdentityLedgerState(
+      Map(
+        pair.target.identity -> IdentityData.forKeys(keys.public),
+        pair.issuer.identity -> IdentityData.forKeys(pair.issuer.publicKey)))
+
+    val data = LinkCertificateData(pair.target.identity, pem)
+    val tx = data.toTransaction(keys.`private`, keys.`private`)
+    val result = tx.apply(state).left.value
+
+    result must be(UnableToVerifyLinkingIdentitySignatureError(pair.target.identity, pair.target.publicKey))
+  }
+
+  it should "fail to apply a LinkCertificate when the pem authority didn't signed the certificate" in {
+    val pem = twoUnchainedCertsPEM
+    val pair = CachedCertificatePair.decode(pem).value
+    val keys = generateSigningKeyPair()
+    val state = IdentityLedgerState(
+      Map(
+        pair.target.identity -> IdentityData.forKeys(keys.public),
+        pair.issuer.identity -> IdentityData.forKeys(pair.issuer.publicKey)))
+
+    val certificateKey = toSigningPrivateKey(validCertPrivateKey).value
+    val data = LinkCertificateData(pair.target.identity, pem)
+    val tx = data.toTransaction(keys.`private`, certificateKey)
+
+    val result = tx.apply(state).left.value
+
+    result must be(UnableToVerifyLinkingIdentitySignatureError(pair.issuer.identity, pair.issuer.publicKey))
+  }
+
+  it should "fail to apply a LinkCertificate when the pem isn't valid" in {
+    val pem = "xxx"
+    val keys = generateSigningKeyPair()
+    val state = IdentityLedgerState(Map.empty)
+    val pair = CachedCertificatePair.decode(twoUnchainedCertsPEM).value
+
+    val certificateKey = toSigningPrivateKey(validCertPrivateKey).value
+    val data = LinkCertificateData(pair.target.identity, pem)
+    val tx = data.toTransaction(keys.`private`, certificateKey)
+    val result = tx.apply(state).left.value
+
+    result must be(InvalidCertificateError)
   }
 }

@@ -29,6 +29,7 @@ class IdentityTransactionService(nodeTransactionService: NodeTransactionService[
         req.linkingIdentityPrivateKey
           .map(pk => data.toTransaction(req.privateKey, pk))
           .toRight(CorrespondingPrivateKeyRequiredForLinkingIdentityError)
+      case _: LinkCertificateData => ???
     }
     Future(identityTransaction)
   }

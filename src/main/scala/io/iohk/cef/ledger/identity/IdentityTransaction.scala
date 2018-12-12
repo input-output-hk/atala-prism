@@ -2,6 +2,7 @@ package io.iohk.cef.ledger.identity
 
 import io.iohk.cef.codecs.nio._
 import io.iohk.cef.codecs.nio.auto._
+import io.iohk.cef.crypto.certificates.{CachedCertificate, CachedCertificatePair}
 import io.iohk.cef.crypto.{sign => signBytes, _}
 import io.iohk.cef.ledger.{LedgerError, Transaction}
 
@@ -210,4 +211,128 @@ case class Grant(data: GrantData, signature: Signature, claimSignature: Signatur
   }
   override def partitionIds: Set[String] =
     txs.foldLeft(Set(data.grantingIdentity))(_ union _.partitionIds)
+}
+
+/**
+  * The following signatures are required:
+  * - The linking identity must sign with an existing key, this ensures that the linking identity is authorized the transaction.
+  * - The linking identity must sign with the key that belongs to its certificate, this ensures that it could use the certificate key.
+  * - The certificate issuer signs the linking certificate, this ensures that the issuer is actually endorsing the linking identity.
+  *
+  * @param data the transaction data
+  * @param signature the signature from a key that belongs to the linkingIdentity
+  * @param signatureFromCertificate the signature from the linking certificate
+  */
+case class LinkCertificate(data: LinkCertificateData, signature: Signature, signatureFromCertificate: Signature)
+    extends IdentityTransaction {
+
+  private val decodedPairResult = CachedCertificatePair.decode(data.pem)
+
+  override def apply(ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] = {
+    decodedPairResult
+      .map { apply(_, ledgerState) }
+      .getOrElse { Left(InvalidCertificateError) }
+  }
+
+  override val partitionIds: Set[String] = {
+    decodedPairResult
+      .map { pair =>
+        Set(pair.target.identity, pair.issuer.identity)
+      }
+      .getOrElse(Set.empty)
+  }
+
+  private def apply(
+      pair: CachedCertificatePair,
+      ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] = {
+
+    for {
+      linkingIdentityData <- extractData(ledgerState, pair.issuer.identity) // the linking identity exists
+      _ <- extractData(ledgerState, pair.target.identity) // the issuer exists
+
+      _ <- ensureIdentityMatchesCertificate(ledgerState, data.linkingIdentity, pair.target)
+
+      // the signing key from the issuer is registered
+      _ <- ensureKeyBelongsToIdentity(ledgerState, pair.issuer.identity, pair.issuer.publicKey)
+
+      // the issuer actually signed the linking certificate
+      _ <- ensureCertificateSignedProperly(pair)
+
+      // the linking identity created the transaction
+      _ <- ensureIdentitySigned(ledgerState, data.linkingIdentity, signature)
+
+      // the certificate key belongs to the linking identity
+      _ <- ensureIdentitySignedWith(ledgerState, pair.target.identity, pair.target.publicKey, signatureFromCertificate)
+    } yield {
+      val newIdentity = linkingIdentityData
+        .addKey(pair.target.publicKey)
+        .endorse(pair.issuer.identity)
+
+      ledgerState.put(pair.target.identity, newIdentity)
+    }
+  }
+
+  private def extractData(ledgerState: IdentityLedgerState, identity: Identity): Either[LedgerError, IdentityData] = {
+    ledgerState
+      .get(identity)
+      .toRight { IdentityNotClaimedError(identity) }
+  }
+
+  private def ensureIdentityMatchesCertificate(
+      ledgerState: IdentityLedgerState,
+      identity: Identity,
+      certificate: CachedCertificate): Either[LedgerError, _] = {
+
+    if (certificate.identity == identity) {
+      Right(())
+    } else {
+      Left(IdentityNotMatchingCertificate(identity, certificate.identity))
+    }
+  }
+
+  private def ensureKeyBelongsToIdentity(
+      ledgerState: IdentityLedgerState,
+      identity: Identity,
+      publicKey: SigningPublicKey): Either[LedgerError, _] = {
+    ledgerState
+      .get(identity)
+      .map(_.keys)
+      .filter(_ contains publicKey)
+      .toRight(PublicKeyNotAssociatedWithIdentity(identity, publicKey))
+  }
+
+  private def ensureCertificateSignedProperly(pair: CachedCertificatePair): Either[LedgerError, _] = {
+    if (pair.isSignatureValid) {
+      Right(())
+    } else {
+      Left(UnableToVerifyLinkingIdentitySignatureError(pair.issuer.identity, pair.issuer.publicKey))
+    }
+  }
+
+  private def ensureIdentitySigned(
+      ledgerState: IdentityLedgerState,
+      identity: Identity,
+      signature: Signature): Either[LedgerError, _] = {
+
+    val signed = IdentityTransaction.isDataSignedWithIdentity(data, identity, ledgerState, signature)
+    if (signed) {
+      Right(())
+    } else {
+      Left(UnableToVerifySignatureError)
+    }
+  }
+
+  private def ensureIdentitySignedWith(
+      ledgerState: IdentityLedgerState,
+      identity: Identity,
+      publicKey: SigningPublicKey,
+      signature: Signature): Either[LedgerError, _] = {
+
+    val signed = IdentityTransaction.isDataSignedWith(data, publicKey, signatureFromCertificate)
+    if (signed) {
+      Right(())
+    } else {
+      Left(UnableToVerifyLinkingIdentitySignatureError(identity, publicKey))
+    }
+  }
 }
