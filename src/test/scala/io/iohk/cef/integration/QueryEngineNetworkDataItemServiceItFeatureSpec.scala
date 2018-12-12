@@ -75,7 +75,7 @@ class QueryEngineNetworkDataItemServiceItFeatureSpec
         val itemId = "item-id"
         val input: Envelope[DataItemAction[String]] = setUpInsertData(itemId)
 
-        dataItemService.processAction(input) mustBe Right(())
+        dataItemService.processAction(input) mustBe Right(DataItemServiceResponse.DIUnit)
 
         And("the  DataItemService insert the table on the network 2")
 
