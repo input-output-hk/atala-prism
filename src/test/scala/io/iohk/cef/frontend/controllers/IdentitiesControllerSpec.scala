@@ -138,7 +138,7 @@ class IdentitiesControllerSpec
         (json \ "type").as[String] must be(txType)
         (json \ "data" \ "grantingIdentity").as[String] must be(grantingIdentity)
         (json \ "data" \ "grantedIdentity").as[String] must be(grantedIdentity)
-        (json \ "data" \ "grantedIdentityPublicKey").as[String] must be(publicKeyHex)
+        (json \ "data" \ "grantedIdentityPublicKey").as[String] must be(pair.public.toString)
       }
     }
 
