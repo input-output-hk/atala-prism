@@ -61,10 +61,8 @@ object Codecs {
   implicit val booleanRefQueryFormat = Json.format[BooleanRef]
   implicit val stringRefQueryFormat = Json.format[StringRef]
   implicit val charRefQueryFormat = new Format[CharRef] {
-    override def reads(json: JsValue): JsResult[CharRef] = (json \ "value").asOpt[String] match {
-      case Some(str) if str.size == 1 => JsSuccess(CharRef(str.toCharArray.head))
-      case _ => JsError("Invalid length char")
-    }
+    override def reads(json: JsValue): JsResult[CharRef] =
+      (json \ "value").validate[String].filter(JsError("Invalid length char"))(_.size == 1).map(_.toCharArray.head)
 
     override def writes(o: CharRef): JsValue = {
       JsObject(Map("value" -> JsString(o.value.toString)))
@@ -73,17 +71,18 @@ object Codecs {
 
   implicit val valueQueryFormat = new Format[ValueRef] {
     override def reads(json: JsValue): JsResult[ValueRef] = {
-      (json \ "type").asOpt[String] match {
-        case Some("doubleRef") => json.validate[DoubleRef]
-        case Some("floatRef") => json.validate[FloatRef]
-        case Some("longRef") => json.validate[LongRef]
-        case Some("intRef") => json.validate[IntRef]
-        case Some("shortRef") => json.validate[ShortRef]
-        case Some("byteRef") => json.validate[ByteRef]
-        case Some("booleanRef") => json.validate[BooleanRef]
-        case Some("charRef") => json.validate[CharRef]
-        case Some("stringRef") => json.validate[StringRef]
-        case _ => JsError("Invalid Query Value")
+      (json \ "type").validate[String] match {
+        case JsSuccess("doubleRef", _) => json.validate[DoubleRef]
+        case JsSuccess("floatRef", _) => json.validate[FloatRef]
+        case JsSuccess("longRef", _) => json.validate[LongRef]
+        case JsSuccess("intRef", _) => json.validate[IntRef]
+        case JsSuccess("shortRef", _) => json.validate[ShortRef]
+        case JsSuccess("byteRef", _) => json.validate[ByteRef]
+        case JsSuccess("booleanRef", _) => json.validate[BooleanRef]
+        case JsSuccess("charRef", _) => json.validate[CharRef]
+        case JsSuccess("stringRef", _) => json.validate[StringRef]
+        case JsSuccess(_, _) => JsError("Invalid Query Value")
+        case x: JsError => x
       }
     }
 
@@ -129,11 +128,12 @@ object Codecs {
 
   def createPredicateQueryFormat: Format[Query.Predicate] = new Format[Predicate] {
     override def reads(json: JsValue): JsResult[Predicate] = {
-      (json \ "type").asOpt[String] match {
-        case Some("eqPredicate") => json.validate[Predicate.Eq]
-        case Some("orPredicate") => json.validate[Predicate.Or]
-        case Some("andPredicate") => json.validate[Predicate.And]
-        case _ => JsError("Invalid predicate")
+      (json \ "type").validate[String] match {
+        case JsSuccess("eqPredicate", _) => json.validate[Predicate.Eq]
+        case JsSuccess("orPredicate", _) => json.validate[Predicate.Or]
+        case JsSuccess("andPredicate", _) => json.validate[Predicate.And]
+        case JsSuccess(_, _) => JsError("Invalid predicate")
+        case x: JsError => x
       }
     }
 
@@ -153,10 +153,11 @@ object Codecs {
 
   implicit val queryFormat: Format[Query] = new Format[Query] {
     override def reads(json: JsValue): JsResult[Query] = {
-      (json \ "type").asOpt[String] match {
-        case Some("noPredicateQuery") => JsSuccess(NoPredicateQuery)
-        case Some("predicateQuery") => json.validate[Predicate]
-        case _ => JsError("Invalid Query")
+      (json \ "type").validate[String] match {
+        case JsSuccess("noPredicateQuery", _) => JsSuccess(NoPredicateQuery)
+        case JsSuccess("predicateQuery", _) => json.validate[Predicate]
+        case JsSuccess(_, _) => JsError("Invalid Query")
+        case x: JsError => x
       }
     }
 
@@ -207,23 +208,22 @@ object Codecs {
         case x: SignatureTxFragment => ("signatureTxFragment", Json.toJson(x)(signatureTxFragmentFormat))
       }
 
-      val map = Map("type" -> JsString(tpe), "fragment" -> json)
-
-      JsObject(map)
+      Json.obj("type" -> JsString(tpe), "fragment" -> json)
     }
 
     override def reads(json: JsValue): JsResult[ChimericTxFragment] = {
       val fragment = json \ "fragment"
 
-      (json \ "type").asOpt[String] match {
-        case Some("withdrawal") => fragment.validate[Withdrawal]
-        case Some("mint") => fragment.validate[Mint]
-        case Some("fee") => fragment.validate[Fee]
-        case Some("output") => fragment.validate[Output]
-        case Some("createCurrency") => fragment.validate[CreateCurrency]
-        case Some("deposit") => fragment.validate[Deposit]
-        case Some("signatureTxFragment") => fragment.validate[SignatureTxFragment]
-        case _ => JsError("Invalid ChimericTxFragment")
+      (json \ "type").validate[String] match {
+        case JsSuccess("withdrawal", _) => fragment.validate[Withdrawal]
+        case JsSuccess("mint", _) => fragment.validate[Mint]
+        case JsSuccess("fee", _) => fragment.validate[Fee]
+        case JsSuccess("output", _) => fragment.validate[Output]
+        case JsSuccess("createCurrency", _) => fragment.validate[CreateCurrency]
+        case JsSuccess("deposit", _) => fragment.validate[Deposit]
+        case JsSuccess("signatureTxFragment", _) => fragment.validate[SignatureTxFragment]
+        case JsSuccess(_, _) => JsError("Invalid ChimericTxFragment")
+        case x: JsError => x
       }
     }
   }
@@ -237,14 +237,15 @@ object Codecs {
       override def reads(json: JsValue): JsResult[NonSignableChimericTxFragment] = {
         val fragment = json \ "fragment"
 
-        (json \ "type").asOpt[String] match {
-          case Some("mint") => fragment.validate[Mint]
-          case Some("fee") => fragment.validate[Fee]
-          case Some("output") => fragment.validate[Output]
-          case Some("createCurrency") => fragment.validate[CreateCurrency]
-          case Some("deposit") => fragment.validate[Deposit]
-          case Some("signatureTxFragment") => fragment.validate[SignatureTxFragment]
-          case _ => JsError("Missing or invalid NonSignableChimericTxFragment")
+        (json \ "type").validate[String] match {
+          case JsSuccess("mint", _) => fragment.validate[Mint]
+          case JsSuccess("fee", _) => fragment.validate[Fee]
+          case JsSuccess("output", _) => fragment.validate[Output]
+          case JsSuccess("createCurrency", _) => fragment.validate[CreateCurrency]
+          case JsSuccess("deposit", _) => fragment.validate[Deposit]
+          case JsSuccess("signatureTxFragment", _) => fragment.validate[SignatureTxFragment]
+          case JsSuccess(_, _) => JsError("Missing or invalid NonSignableChimericTxFragment")
+          case x: JsError => x
         }
       }
     }

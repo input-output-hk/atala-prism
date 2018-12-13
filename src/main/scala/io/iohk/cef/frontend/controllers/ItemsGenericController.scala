@@ -115,7 +115,7 @@ object ItemsGenericController {
 
   case object QueryEngineError extends ServerError {
     //TODO Define error Ids and handling
-    override def id: ErrorId = ErrorId("QueryEngineError")
+    override def id: ErrorId = ErrorId.create
 
     override def cause: Option[Throwable] = None
   }
