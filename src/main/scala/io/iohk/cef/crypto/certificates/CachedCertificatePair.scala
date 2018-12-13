@@ -9,9 +9,11 @@ import scala.collection.JavaConverters.asScalaBufferConverter
 import scala.util.Try
 
 /**
-  * Currently, we support chains of two certificates, being one the [[target]] and the other one its [[issuer]].
+  * Currently, we support paths of two certificates, being one the [[target]] and the other one its [[issuer]].
   *
   * We assume identity uniqueness across the whole application instead of uniqueness across a certificate authority.
+  *
+  * FIXME: Support longer paths
   */
 class CachedCertificatePair private (val target: CachedCertificate, val issuer: CachedCertificate) {
 
