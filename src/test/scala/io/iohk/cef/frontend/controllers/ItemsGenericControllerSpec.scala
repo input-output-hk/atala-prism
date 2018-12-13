@@ -17,6 +17,7 @@ import org.scalatest.{MustMatchers, WordSpec}
 import play.api.libs.json.{Format, JsValue, Json}
 import io.iohk.cef.builder.SigningKeyPairs
 import io.iohk.cef.transactionservice.Envelope
+import scala.concurrent.duration._
 
 class ItemsGenericControllerSpec
     extends WordSpec
@@ -53,7 +54,7 @@ class ItemsGenericControllerSpec
       override def validate(t: DataItem[BirthCertificate]): Either[ApplicationError, Unit] = Right(Unit)
     }
     lazy val routes =
-      controller.routes[BirthCertificate]("birth-certificates", service)
+      controller.routes[BirthCertificate]("birth-certificates", service, 30 seconds)
 
     "create an item" in {
       val body =
@@ -90,10 +91,10 @@ class ItemsGenericControllerSpec
   "DELETE /certificates" should {
 
     implicit val canValidate: CanValidate[DataItem[BirthCertificate]] =
-      (t: DataItem[BirthCertificate]) => Right(())
+      _ => Right(())
 
     lazy val routes =
-      controller.routes[BirthCertificate]("birth-certificates", service)
+      controller.routes[BirthCertificate]("birth-certificates", service, 30 seconds)
 
     "delete an item" in {
       val ownerKeyPair = bob
