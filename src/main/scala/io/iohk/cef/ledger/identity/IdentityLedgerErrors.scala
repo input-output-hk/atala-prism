@@ -54,3 +54,14 @@ case class IdentityIsNotAGrantingAuthorityError(identity: Identity) extends Ledg
   override def toString: String =
     s"Identity ${identity} provided must be a granting authority to perform this action."
 }
+
+case object InvalidCertificateError extends LedgerError {
+  override def toString: Identity =
+    "The given certificate is invalid, it must have two certificates with different identities"
+}
+
+case class IdentityNotMatchingCertificate(linkingIdentity: Identity, certificateIdentity: Identity)
+    extends LedgerError {
+  override def toString: Identity =
+    s"The linking identity = [$linkingIdentity] doesn't match the certificate = [$certificateIdentity]"
+}

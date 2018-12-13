@@ -133,9 +133,24 @@ class SigningAlgorithmSpec extends FlatSpec {
 
       algorithm.toPublicKey(new Object) should be(empty)
     }
+
+    s"$algorithmDescription.toPrivateKey" should "be able to map a valid key" in {
+      val publicKey = generatePrivatekey(algorithm)
+
+      algorithm.toPrivateKey(publicKey).value should be(publicKey)
+    }
+
+    s"$algorithmDescription.toPrivateKey" should "fail to map an invalid key" in {
+
+      algorithm.toPrivateKey(new Object) should be(empty)
+    }
   }
 
   private def generatePublickey(algorithm: SigningAlgorithm): AnyRef = algorithm match {
     case _: SHA256withRSA => algorithm.generateKeyPair()._1.asInstanceOf[java.security.PublicKey]
+  }
+
+  private def generatePrivatekey(algorithm: SigningAlgorithm): AnyRef = algorithm match {
+    case _: SHA256withRSA => algorithm.generateKeyPair()._2.asInstanceOf[java.security.PrivateKey]
   }
 }

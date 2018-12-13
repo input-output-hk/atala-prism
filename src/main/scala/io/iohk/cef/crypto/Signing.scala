@@ -1,8 +1,8 @@
 package io.iohk.cef.crypto
 
+import io.iohk.cef.codecs.nio._
 import io.iohk.cef.crypto.encoding.TypedByteString
 import io.iohk.cef.crypto.signing.{SigningAlgorithmsCollection, _}
-import io.iohk.cef.codecs.nio._
 import io.iohk.cef.utils._
 
 trait Signing {
@@ -64,15 +64,23 @@ trait Signing {
 
   def toSigningPublicKey(obj: AnyRef): Option[SigningPublicKey] = {
     for {
-      tpe <- signingAlgorithmsCollection.from(obj)
+      tpe <- signingAlgorithmsCollection.fromPublicKey(obj)
       key <- tpe.algorithm.toPublicKey(obj)
     } yield SigningPublicKey.apply(tpe)(key)
+  }
+
+  def toSigningPrivateKey(obj: AnyRef): Option[SigningPrivateKey] = {
+    for {
+      tpe <- signingAlgorithmsCollection.fromPrivateKey(obj)
+      key <- tpe.algorithm.toPrivateKey(obj)
+    } yield SigningPrivateKey.apply(tpe)(key)
   }
 
   /** Data entity containing a signing algorithm identifier and a public key for that algorithm */
   trait SigningPublicKey extends KeyEntity[SigningPublicKey, SigningPublicKey.type] {
 
     private[Signing] val `type`: signingAlgorithmsCollection.SigningAlgorithmType
+
     private[Signing] val lowlevelKey: `type`.algorithm.PublicKey
 
     private[crypto] val companion: SigningPublicKey.type = SigningPublicKey

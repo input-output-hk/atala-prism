@@ -80,4 +80,9 @@ class SHA256withRSA(secureRandom: SecureRandom) extends SigningAlgorithm {
     case key: PublicKey if key.getAlgorithm == KeyAlgorithm => Some(key)
     case _ => None
   }
+
+  override def toPrivateKey(obj: AnyRef): Option[PrivateKey] = obj match {
+    case key: PrivateKey if key.getAlgorithm == KeyAlgorithm => Some(key)
+    case _ => None
+  }
 }

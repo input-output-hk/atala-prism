@@ -1,7 +1,6 @@
 package io.iohk.cef.crypto
 package signing
 
-import io.iohk.cef.crypto.KeyDecodingError
 import akka.util.ByteString
 
 /** Defines a contract on how a signing algorithm should be implemented */
@@ -35,6 +34,8 @@ private[crypto] trait SigningAlgorithm {
   def decodePrivateKey(bytes: PrivateKeyBytes): Either[KeyDecodingError, PrivateKey]
 
   def toPublicKey(obj: AnyRef): Option[PublicKey]
+
+  def toPrivateKey(obj: AnyRef): Option[PrivateKey]
 }
 
 case class SignatureBytes(bytes: ByteString)

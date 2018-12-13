@@ -2,6 +2,7 @@ package io.iohk.cef.ledger.identity
 
 import io.iohk.cef.codecs.nio._
 import io.iohk.cef.codecs.nio.auto._
+import io.iohk.cef.crypto.certificates.CachedCertificatePair
 import io.iohk.cef.crypto.{sign => signBytes, _}
 import io.iohk.cef.ledger.{LedgerError, Transaction}
 
@@ -210,4 +211,86 @@ case class Grant(data: GrantData, signature: Signature, claimSignature: Signatur
   }
   override def partitionIds: Set[String] =
     txs.foldLeft(Set(data.grantingIdentity))(_ union _.partitionIds)
+}
+
+/**
+  * The following signatures are required:
+  * - The linking identity must sign with a secret key associated with one of their stored public keys, this ensures that
+  *    the linking identity has authorized the transaction.
+  * - The linking identity must sign with the secret key that associated with its public key from the certificate, this
+  *    ensures that it could use the certificate key.
+  * - The certificate issuer signs the linking certificate with a secret key that is linked to its identity, this ensures
+  *    that the issuer is actually allowed to endorse the linking identity.
+  *
+  * @param data the transaction data
+  * @param signature signature using the secret key associated with a public key that belongs to the linking linkingIdentity
+  * @param signatureFromCertificate signature using secret key associated with the public key of the linking certificate
+  */
+case class LinkCertificate(data: LinkCertificateData, signature: Signature, signatureFromCertificate: Signature)
+    extends IdentityTransaction {
+
+  private val decodedPairResult = CachedCertificatePair.decode(data.pem)
+
+  override def apply(ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] = {
+    decodedPairResult
+      .map { apply(_, ledgerState) }
+      .getOrElse { Left(InvalidCertificateError) }
+  }
+
+  override val partitionIds: Set[String] = {
+    decodedPairResult
+      .map { pair =>
+        Set(pair.target.identity, pair.issuer.identity)
+      }
+      .getOrElse(Set.empty)
+  }
+
+  private def apply(
+      pair: CachedCertificatePair,
+      ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] = {
+
+    val authorityIdentityDataMaybe = ledgerState.get(pair.issuer.identity)
+    val linkingIdentityDataMaybe = ledgerState.get(pair.target.identity)
+
+    val keyBelongsToAuthority = authorityIdentityDataMaybe
+      .map(_.keys)
+      .getOrElse(Set.empty)
+      .contains(pair.issuer.publicKey)
+
+    lazy val linkingCertificateSignatureValid =
+      IdentityTransaction.isDataSignedWith(data, pair.target.publicKey, signatureFromCertificate)
+
+    lazy val existingKeySignatureValid =
+      IdentityTransaction.isDataSignedWithIdentity(data, pair.target.identity, ledgerState, signature)
+
+    lazy val certificateSignatureValid = pair.isSignatureValid
+
+    (authorityIdentityDataMaybe, linkingIdentityDataMaybe) match {
+      case (None, _) => Left(IdentityNotClaimedError(pair.issuer.identity))
+      case (_, None) => Left(IdentityNotClaimedError(pair.target.identity))
+
+      case _ if data.linkingIdentity != pair.target.identity =>
+        Left(IdentityNotMatchingCertificate(data.linkingIdentity, pair.target.identity))
+
+      case _ if !keyBelongsToAuthority =>
+        Left(PublicKeyNotAssociatedWithIdentity(pair.issuer.identity, pair.issuer.publicKey))
+
+      case _ if !certificateSignatureValid =>
+        Left(UnableToVerifyLinkingIdentitySignatureError(pair.issuer.identity, pair.issuer.publicKey))
+
+      case _ if !existingKeySignatureValid =>
+        Left(UnableToVerifySignatureError)
+
+      case _ if !linkingCertificateSignatureValid =>
+        Left(UnableToVerifyLinkingIdentitySignatureError(pair.target.identity, pair.target.publicKey))
+
+      case (Some(_), Some(linkingIdentityData)) =>
+        val newIdentity = linkingIdentityData
+          .addKey(pair.target.publicKey)
+          .endorse(pair.issuer.identity)
+
+        val result = ledgerState.put(pair.target.identity, newIdentity)
+        Right(result)
+    }
+  }
 }

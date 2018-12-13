@@ -356,6 +356,7 @@ object Codecs {
   implicit val endorseDataFormats = Json.format[EndorseData]
   implicit val grantDataFormats = Json.format[GrantData]
   implicit val revokeEndorsementDataFormats = Json.format[RevokeEndorsementData]
+  implicit val linkCertificateDataFormat = Json.format[LinkCertificateData]
 
   implicit val identityTxDataFormats = Json.format[IdentityTransactionData]
 
@@ -369,13 +370,14 @@ object Codecs {
       case _: Endorse => IdentityTransactionType.Endorse
       case _: Grant => IdentityTransactionType.Grant
       case _: RevokeEndorsement => IdentityTransactionType.Revoke
-
+      case _: LinkCertificate => IdentityTransactionType.LinkCertificate
     }
 
     val linkingIdentitySignatureMayBe = obj match {
       case l: Link => Map("linkingIdentitySignature" -> JsString(toCleanHex(l.linkingIdentitySignature.toByteString)))
       case _ => Map.empty[String, JsString]
     }
+
     val map = Map(
       "type" -> JsString(tpe.toString),
       "data" -> identityTxDataFormats.writes(obj.data),

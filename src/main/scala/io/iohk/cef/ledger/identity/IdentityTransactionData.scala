@@ -1,7 +1,7 @@
 package io.iohk.cef.ledger.identity
 
-import io.iohk.cef.crypto._
 import io.iohk.cef.codecs.nio.auto._
+import io.iohk.cef.crypto._
 
 sealed trait IdentityTransactionData
 case class ClaimData(identity: Identity, key: SigningPublicKey) extends IdentityTransactionData {
@@ -34,5 +34,15 @@ case class GrantData(grantingIdentity: Identity, grantedIdentity: Identity, gran
     val claimSignature = sign(underlyingClaimData, grantedIdentityPrivateKey)
     val endorseSignature = sign(underlyingEndorseData, grantingIdentityPrivateKey)
     Grant(this, grantSignature, claimSignature, endorseSignature)
+  }
+}
+
+case class LinkCertificateData(linkingIdentity: Identity, pem: String) extends IdentityTransactionData {
+
+  def toTransaction(existingKey: SigningPrivateKey, certificateKey: SigningPrivateKey): LinkCertificate = {
+    LinkCertificate(
+      data = this,
+      signature = sign(this, existingKey),
+      signatureFromCertificate = sign(this, certificateKey))
   }
 }
