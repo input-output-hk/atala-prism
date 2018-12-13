@@ -2,7 +2,7 @@ package io.iohk.cef.ledger.identity
 
 import io.iohk.cef.codecs.nio._
 import io.iohk.cef.codecs.nio.auto._
-import io.iohk.cef.crypto.certificates.{CachedCertificate, CachedCertificatePair}
+import io.iohk.cef.crypto.certificates.CachedCertificatePair
 import io.iohk.cef.crypto.{sign => signBytes, _}
 import io.iohk.cef.ledger.{LedgerError, Transaction}
 
@@ -246,93 +246,48 @@ case class LinkCertificate(data: LinkCertificateData, signature: Signature, sign
       pair: CachedCertificatePair,
       ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] = {
 
-    for {
-      linkingIdentityData <- extractData(ledgerState, pair.issuer.identity) // the linking identity exists
-      _ <- extractData(ledgerState, pair.target.identity) // the issuer exists
+    val authorityIdentityDataMaybe = ledgerState.get(pair.issuer.identity)
+    val linkingIdentityDataMaybe = ledgerState.get(pair.target.identity)
 
-      _ <- ensureIdentityMatchesCertificate(ledgerState, data.linkingIdentity, pair.target)
-
-      // the signing key from the issuer is registered
-      _ <- ensureKeyBelongsToIdentity(ledgerState, pair.issuer.identity, pair.issuer.publicKey)
-
-      // the issuer actually signed the linking certificate
-      _ <- ensureCertificateSignedProperly(pair)
-
-      // the linking identity created the transaction
-      _ <- ensureIdentitySigned(ledgerState, data.linkingIdentity, signature)
-
-      // the certificate key belongs to the linking identity
-      _ <- ensureIdentitySignedWith(ledgerState, pair.target.identity, pair.target.publicKey, signatureFromCertificate)
-    } yield {
-      val newIdentity = linkingIdentityData
-        .addKey(pair.target.publicKey)
-        .endorse(pair.issuer.identity)
-
-      ledgerState.put(pair.target.identity, newIdentity)
-    }
-  }
-
-  private def extractData(ledgerState: IdentityLedgerState, identity: Identity): Either[LedgerError, IdentityData] = {
-    ledgerState
-      .get(identity)
-      .toRight { IdentityNotClaimedError(identity) }
-  }
-
-  private def ensureIdentityMatchesCertificate(
-      ledgerState: IdentityLedgerState,
-      identity: Identity,
-      certificate: CachedCertificate): Either[LedgerError, _] = {
-
-    if (certificate.identity == identity) {
-      Right(())
-    } else {
-      Left(IdentityNotMatchingCertificate(identity, certificate.identity))
-    }
-  }
-
-  private def ensureKeyBelongsToIdentity(
-      ledgerState: IdentityLedgerState,
-      identity: Identity,
-      publicKey: SigningPublicKey): Either[LedgerError, _] = {
-    ledgerState
-      .get(identity)
+    val keyBelongsToAuthority = authorityIdentityDataMaybe
       .map(_.keys)
-      .filter(_ contains publicKey)
-      .toRight(PublicKeyNotAssociatedWithIdentity(identity, publicKey))
-  }
+      .getOrElse(Set.empty)
+      .contains(pair.issuer.publicKey)
 
-  private def ensureCertificateSignedProperly(pair: CachedCertificatePair): Either[LedgerError, _] = {
-    if (pair.isSignatureValid) {
-      Right(())
-    } else {
-      Left(UnableToVerifyLinkingIdentitySignatureError(pair.issuer.identity, pair.issuer.publicKey))
-    }
-  }
+    lazy val linkingCertificateSignatureValid =
+      IdentityTransaction.isDataSignedWith(data, pair.target.publicKey, signatureFromCertificate)
 
-  private def ensureIdentitySigned(
-      ledgerState: IdentityLedgerState,
-      identity: Identity,
-      signature: Signature): Either[LedgerError, _] = {
+    lazy val existingKeySignatureValid =
+      IdentityTransaction.isDataSignedWithIdentity(data, pair.target.identity, ledgerState, signature)
 
-    val signed = IdentityTransaction.isDataSignedWithIdentity(data, identity, ledgerState, signature)
-    if (signed) {
-      Right(())
-    } else {
-      Left(UnableToVerifySignatureError)
-    }
-  }
+    lazy val certificateSignatureValid = pair.isSignatureValid
 
-  private def ensureIdentitySignedWith(
-      ledgerState: IdentityLedgerState,
-      identity: Identity,
-      publicKey: SigningPublicKey,
-      signature: Signature): Either[LedgerError, _] = {
+    (authorityIdentityDataMaybe, linkingIdentityDataMaybe) match {
+      case (None, _) => Left(IdentityNotClaimedError(pair.issuer.identity))
+      case (_, None) => Left(IdentityNotClaimedError(pair.target.identity))
 
-    val signed = IdentityTransaction.isDataSignedWith(data, publicKey, signatureFromCertificate)
-    if (signed) {
-      Right(())
-    } else {
-      Left(UnableToVerifyLinkingIdentitySignatureError(identity, publicKey))
+      case _ if data.linkingIdentity != pair.target.identity =>
+        Left(IdentityNotMatchingCertificate(data.linkingIdentity, pair.target.identity))
+
+      case _ if !keyBelongsToAuthority =>
+        Left(PublicKeyNotAssociatedWithIdentity(pair.issuer.identity, pair.issuer.publicKey))
+
+      case _ if !certificateSignatureValid =>
+        Left(UnableToVerifyLinkingIdentitySignatureError(pair.issuer.identity, pair.issuer.publicKey))
+
+      case _ if !existingKeySignatureValid =>
+        Left(UnableToVerifySignatureError)
+
+      case _ if !linkingCertificateSignatureValid =>
+        Left(UnableToVerifyLinkingIdentitySignatureError(pair.target.identity, pair.target.publicKey))
+
+      case (Some(_), Some(linkingIdentityData)) =>
+        val newIdentity = linkingIdentityData
+          .addKey(pair.target.publicKey)
+          .endorse(pair.issuer.identity)
+
+        val result = ledgerState.put(pair.target.identity, newIdentity)
+        Right(result)
     }
   }
 }
