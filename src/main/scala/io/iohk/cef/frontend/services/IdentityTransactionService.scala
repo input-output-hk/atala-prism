@@ -29,7 +29,10 @@ class IdentityTransactionService(nodeTransactionService: NodeTransactionService[
         req.linkingIdentityPrivateKey
           .map(pk => data.toTransaction(req.privateKey, pk))
           .toRight(CorrespondingPrivateKeyRequiredForLinkingIdentityError)
-      case _: LinkCertificateData => ???
+      case data: LinkCertificateData =>
+        req.linkingIdentityPrivateKey
+          .map(pk => data.toTransaction(req.privateKey, pk))
+          .toRight(CorrespondingPrivateKeyRequiredForLinkingIdentityError)
     }
     Future(identityTransaction)
   }
@@ -41,7 +44,7 @@ class IdentityTransactionService(nodeTransactionService: NodeTransactionService[
       case data: LinkData =>
         req.linkingIdentitySignature
           .map(sig => Link(data, req.signature, sig))
-          .toRight(CorrespondingPrivateKeyRequiredForLinkingIdentityError)
+          .toRight(CorrespondingSignatureRequiredForLinkingIdentityError)
       case data: UnlinkData => Right(Unlink(data, req.signature))
       case data: EndorseData => Right(Endorse(data, req.signature))
       case data: RevokeEndorsementData => Right(RevokeEndorsement(data, req.signature))
@@ -51,7 +54,11 @@ class IdentityTransactionService(nodeTransactionService: NodeTransactionService[
           endorseSignature <- req.endorseSignature
         } yield
           Right[ApplicationError, IdentityTransaction](Grant(data, req.signature, claimSignature, endorseSignature)))
-          .getOrElse(Left(CorrespondingPrivateKeyRequiredForLinkingIdentityError))
+          .getOrElse(Left(CorrespondingSignatureRequiredForLinkingIdentityError))
+      case data: LinkCertificateData =>
+        req.signatureFromCertificate
+          .map(sig => LinkCertificate(data, req.signature, sig))
+          .toRight(CorrespondingSignatureRequiredForLinkingIdentityError)
       case _ => Left(UnsupportedDataTypeError(req.data))
     }
 
@@ -68,6 +75,9 @@ class IdentityTransactionService(nodeTransactionService: NodeTransactionService[
   }
   case object CorrespondingPrivateKeyRequiredForLinkingIdentityError extends ApplicationError {
     override def toString: String = s"Corresponding private key for the associated Public key is required:"
+  }
+  case object CorrespondingSignatureRequiredForLinkingIdentityError extends ApplicationError {
+    override def toString: String = s"Corresponding signature key for the associated Public key is required:"
   }
   case class UnsupportedDataTypeError(data: IdentityTransactionData) extends ApplicationError {
     override def toString: Identity = s"The data type $data is not supported"

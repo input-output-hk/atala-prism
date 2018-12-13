@@ -1,6 +1,7 @@
 package io.iohk.cef.frontend.controllers.common
 
 import akka.util.ByteString
+import io.iohk.cef.transactionservice._
 import io.iohk.cef.crypto._
 import io.iohk.cef.data._
 import io.iohk.cef.data.query.Query._
@@ -356,7 +357,22 @@ object Codecs {
   implicit val endorseDataFormats = Json.format[EndorseData]
   implicit val grantDataFormats = Json.format[GrantData]
   implicit val revokeEndorsementDataFormats = Json.format[RevokeEndorsementData]
-  implicit val linkCertificateDataFormat = Json.format[LinkCertificateData]
+  implicit val linkCertificateDataFormat: Format[LinkCertificateData] = new Format[LinkCertificateData] {
+    override def writes(o: LinkCertificateData): JsValue = {
+      Json.obj(
+        "linkingIdentity" -> o.linkingIdentity,
+        "pem" -> ByteString(o.pem).utf8String
+      )
+    }
+    override def reads(json: JsValue): JsResult[LinkCertificateData] = {
+      for {
+        linkingIdentity <- json.\("linkingIdentity").validate[String]
+        pem <- json.\("pem").validate[String]
+      } yield {
+        LinkCertificateData(linkingIdentity, fromHex(pem).utf8String)
+      }
+    }
+  }
 
   implicit val identityTxDataFormats = Json.format[IdentityTransactionData]
 
@@ -375,6 +391,8 @@ object Codecs {
 
     val linkingIdentitySignatureMayBe = obj match {
       case l: Link => Map("linkingIdentitySignature" -> JsString(toCleanHex(l.linkingIdentitySignature.toByteString)))
+      case l: LinkCertificate =>
+        Map("signatureFromCertificate" -> JsString(toCleanHex(l.signatureFromCertificate.toByteString)))
       case _ => Map.empty[String, JsString]
     }
 
