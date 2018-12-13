@@ -215,13 +215,16 @@ case class Grant(data: GrantData, signature: Signature, claimSignature: Signatur
 
 /**
   * The following signatures are required:
-  * - The linking identity must sign with an existing key, this ensures that the linking identity is authorized the transaction.
-  * - The linking identity must sign with the key that belongs to its certificate, this ensures that it could use the certificate key.
-  * - The certificate issuer signs the linking certificate, this ensures that the issuer is actually endorsing the linking identity.
+  * - The linking identity must sign with a secret key associated with one of their stored public keys, this ensures that
+  *    the linking identity has authorized the transaction.
+  * - The linking identity must sign with the secret key that associated with its public key from the certificate, this
+  *    ensures that it could use the certificate key.
+  * - The certificate issuer signs the linking certificate with a secret key that is linked to its identity, this ensures
+  *    that the issuer is actually allowed to endorse the linking identity.
   *
   * @param data the transaction data
-  * @param signature the signature from a key that belongs to the linkingIdentity
-  * @param signatureFromCertificate the signature from the linking certificate
+  * @param signature signature using the secret key associated with a public key that belongs to the linking linkingIdentity
+  * @param signatureFromCertificate signature using secret key associated with the public key of the linking certificate
   */
 case class LinkCertificate(data: LinkCertificateData, signature: Signature, signatureFromCertificate: Signature)
     extends IdentityTransaction {
