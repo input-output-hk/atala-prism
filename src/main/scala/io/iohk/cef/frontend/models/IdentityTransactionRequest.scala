@@ -18,4 +18,5 @@ case class SubmitIdentityTransactionRequest(
     signature: Signature,
     linkingIdentitySignature: Option[Signature] = None,
     claimSignature: Option[Signature] = None,
-    endorseSignature: Option[Signature] = None)
+    endorseSignature: Option[Signature] = None,
+    signatureFromCertificate: Option[Signature] = None)

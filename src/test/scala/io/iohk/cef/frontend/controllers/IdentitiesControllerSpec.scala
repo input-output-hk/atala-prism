@@ -2,10 +2,12 @@ package io.iohk.cef.frontend.controllers
 
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
+import akka.util.ByteString
 import com.alexitc.playsonify.akka.PublicErrorRenderer
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import io.iohk.cef.transactionservice.NodeTransactionService
 import io.iohk.cef.crypto._
+import io.iohk.cef.crypto.certificates.ExampleCertificates.twoChainedCertsPEM
 import io.iohk.cef.frontend.controllers.common.Codecs
 import io.iohk.cef.frontend.services.IdentityTransactionService
 import io.iohk.cef.ledger.identity._
@@ -210,6 +212,45 @@ class IdentitiesControllerSpec
       }
     }
 
+    def testTransactionLinkCertificate(txType: String, txDataType: String): Assertion = {
+      val pem = twoChainedCertsPEM
+      val pemHex = toCleanHex(ByteString(twoChainedCertsPEM))
+
+      val pairLink = generateSigningKeyPair()
+      val privateKeyLinkHex = toCleanHex(pairLink.`private`.toByteString)
+
+      val identity = "iohk"
+
+      val body =
+        s"""
+           |{
+           |    "type": "$txType",
+           |    "data": {
+           |      "_type":"$txDataType",
+           |      "linkingIdentity": "$identity",
+           |      "pem": "$pemHex"
+           |    },
+           |    "ledgerId": "1",
+           |    "privateKey": "$privateKeyHex",
+           |    "linkingIdentityPrivateKey": "$privateKeyLinkHex"
+           |
+           |}
+         """.stripMargin
+
+      val request = Post("/identities", jsonEntity(body))
+
+      request ~> routes ~> check {
+        status must ===(StatusCodes.Created)
+        val json = responseAs[JsValue]
+        (json \ "type").as[String] must be(txType)
+        (json \ "data" \ "pem").as[String] must be(pem)
+        (json \ "data" \ "linkingIdentity").as[String] must be(identity)
+        (json \ "signature").as[String] mustNot be(empty)
+        (json \ "signatureFromCertificate").as[String] mustNot be(empty)
+
+      }
+    }
+
     def validateErrorResponse(json: JsValue): Unit = {
       val errors = (json \ "errors").as[List[JsValue]]
       errors.size must be(4)
@@ -242,6 +283,10 @@ class IdentitiesControllerSpec
 
     "be able to create an revoke transaction" in {
       testRevokeType("endorsing", "endorsed", pair.`private`)
+    }
+
+    "be able to create an LinkCertificate transaction" in {
+      testTransactionLinkCertificate("LinkCertificate", "io.iohk.cef.ledger.identity.LinkCertificateData")
     }
 
     "return validation errors" in {
