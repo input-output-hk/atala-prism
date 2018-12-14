@@ -2,15 +2,14 @@ package io.iohk.cef.ledger.identity
 
 import io.iohk.cef.builder.SigningKeyPairs
 import io.iohk.cef.crypto._
-import io.iohk.cef.crypto.certificates.{CachedCertificatePair, _}
+import io.iohk.cef.crypto.certificates._
+import io.iohk.cef.crypto.certificates.test.data.ExampleCertificates._
 import org.scalatest.EitherValues._
 import org.scalatest.FlatSpec
 import org.scalatest.MustMatchers._
 import org.scalatest.OptionValues._
 
 class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
-
-  import ExampleCertificates._
 
   private def aliceClaimData(identity: String) = ClaimData(identity, alice.public)
   private def aliceUnlinkData(identity: String) = UnlinkData(identity, alice.public)

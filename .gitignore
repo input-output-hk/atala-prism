@@ -1,4 +1,5 @@
 .idea/
+.ijwb/
 target/
 *.log
 *.iml
@@ -6,3 +7,5 @@ target/
 cef/network/db/
 local.sbt
 bazel-*
+.bazel-*
+.dazel_run

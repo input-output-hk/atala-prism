@@ -1,3 +1,5 @@
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
 rules_scala_version="b537bddc58a77318b34165812a0311ef52806318"
 http_archive(
              name = "io_bazel_rules_scala",
@@ -15,10 +17,6 @@ scala_repositories(("2.12.7", {
 
 load("@io_bazel_rules_scala//scala:toolchains.bzl", "scala_register_toolchains")
 register_toolchains("//toolchains:cef_scala_toolchain")
-
-#load("//scala:deps.bzl", "maven_dependencies")
-#
-#maven_dependencies()
 
 load("//3rdparty:workspace.bzl", "maven_dependencies")
 

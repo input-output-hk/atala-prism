@@ -26,7 +26,7 @@ scala_import(
         "//external:jar/com/beachape/enumeratum_macros_2_12"
     ],
     visibility = [
-        "//3rdparty/jvm:__subpackages__"
+        "//visibility:public"
     ]
 )
 

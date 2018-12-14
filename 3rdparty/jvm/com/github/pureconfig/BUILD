@@ -54,9 +54,7 @@ scala_import(
 scala_import(
     name = "pureconfig_macros",
     exports = [
-        "//3rdparty/jvm/org/scala_lang:scala_compiler",
-        "//3rdparty/jvm/org/scala_lang:scala_library",
-        "//3rdparty/jvm/org/scala_lang:scala_reflect"
+        "//3rdparty/jvm/org/scala_lang:scala_library"
     ],
     jars = [
         "//external:jar/com/github/pureconfig/pureconfig_macros_2_12"

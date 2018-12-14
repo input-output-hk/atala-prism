@@ -3,69 +3,106 @@ The Cardano Enterprise Framework and Reference Applications
 
 [![CircleCI](https://circleci.com/gh/input-output-hk/cardano-enterprise/tree/develop.svg?style=svg&circle-token=1a9dcf544cec8cb581fa377d8524d2854cfb10e9)](https://circleci.com/gh/input-output-hk/cardano-enterprise/tree/develop)
 
-#### Working with the codebase
 
-To be able to build or test the codebase, `sbt-verify` needs to be properly setup.
-
-`sbt-verify` is used in order to check the validity of the checksums of all the downloaded libraries.
-
-`sbt-verify` can be downloaded from our read only repository by typing
-
- `git clone  https://github.com/input-output-hk/sbt-verify`
-
-Then in order to make `sbt-verify` available to our build type
-
-```
-cd sbt-verify
-git checkout sbt-1.x
-sbt publishLocal
-```
-
-This installs the `sbt-verify` library to your local repository.
-
-After installing the `sbt-verify` library to your local repository checkout this repository from github and, for example, type
-
-```
-sbt test
-```
-
-in the root of the project.
-
-#### Branches
+## Branches
 
 Two main branches will be maintained: `develop` and `master`. `master` contains the latest version of the code that was tested end-to-end. `develop` contains the latest version of the code that runs all the tests (unit and integration tests). Integration tests don't test all the integrations. Hence, any version in `develop` might have bugs when deployed for an end-to-end test.
 
-#### Using Bazel (Experimental)
 
-You can try to use bazel to build and test cardano-enterprise. The main codebase live in the target 'cef' and the tests in the 'cef_test' target.
+## Working with the codebase
 
-To build the main codebase, you can run:
+To build the codebase, we use [bazel](https://bazel.build/).
 
-```bash
-bazel build cef
+### A note on bazel
+
+Bazel distributes the codebase in two types of entities:
+ - **package**: a folder containing a `BUILD` file. A package is a collection of files and *rules*
+ - **rule**: a rule is something that can be built. A rule is a pure function (in the more 'functional programming' sense) that given some inputs (tipically source files and some kind of compiler(s)) produces an output (an executable, a library, the result of running some tests...). It's important to note that rules are **pure**, that is, given some concrete inputs the whole thing can be replaced with what bazel would build. That is, bazel caches what it produces and if nothing in the input changes it's always going to use the cached version. And that's why tests in bazel must be _idempotent_.
+
+Note: The BUILD file lists the rules of a package (usually one library and/or binary, and a test suite). If you want to see what a package can build, just look at the BUILD file.
+
+Note 2: Bazel is designed from the grown-up for absolutelly reproducible builds, that is: once you have built something you should **_NEVER_** want/need to clean. You can clean (with `bazel clean`, or it's extreme version `bazel clean --expunge`), but you shouldn't.
+
+### Using Bazel from the terminal
+
+I'm going to explain different things that can be done, using this sample situation: we have a build file in `main/io/iohk/cef/codecs/BUILD`, with two rules, an scala library named `codecs` and a set of tests named `tests`. Where the `main` folder is a subfolder of the `workspace`. The workspace is the folder containing the `WORKSPACE` file.
+
+All rules in bazel have a label (similar to a full name in Java/Scala). This labels when writen in full are something like this:
+
+```
+//<package_name>:<rule_name>
 ```
 
-To build the tests, you can run (this will also build the main codebase if needed):
+Where `package_name` is the path containing the `BUILD` file. In our example the package_name of our package is `main/io/iohk/cef/codecs`. So the label for the `codecs` rule is `//main/io/iohk/cef/codecs:codecs`. And the label for the `tests` rule is `//main/io/iohk/cef/codecs:tests`.
+
+If the last bit of `package_name` (that is `codecs` in our example) is the same than the rule name, the rule name can be omited. That is, we can label our two packages `//main/io/iohk/cef/codecs` and `//main/io/iohk/cef/codecs:tests` which is quite clean.
+
+There are three relevant command in bazel `build`, `run` and `test`. Usually run this way:
 
 ```bash
-bazel build cef_test
+bazel <command> <label> [<label>...]
 ```
 
-To run the tests, you can run (this will also build the main codebase and the tests if needed):
+For example, to build `codecs` you need to run this:
 
 ```bash
-bazel test cef_test
+bazel build //main/io/iohk/cef/codecs
 ```
 
-Bazel, by default writes the output of running the tests into a file but not to the screen. If you want to also see the results in the screen directly, you can run:
+Or, to run it's associated tests (that is the rule `tests`)
 
 ```bash
-bazel test cef_test --test_output=all
+bazel test //main/io/iohk/cef/codecs
 ```
 
-#### Sample application
+Note that, by default only shows a summary of the test results, but not the whole thing. If you want the whole thing, you need this:
 
-A sample application is provided that configures and starts up an Identity Ledger. It is located in `io.iohk.cef.main.IndentityTxMain`. To run this application, simply execute `sbt "runMain io.iohk.cef.main.IndentityTxMain"`.
+```bash
+bazel test //main/io/iohk/cef/codecs --test_output=all
+```
+
+Or, if you are only interested on the tests that fail:
+
+```bash
+bazel test //main/io/iohk/cef/codecs --test_output=errors
+```
+
+The `run` command only accepts one label:
+
+```bash
+bazel run src/main/scala/io/iohk/cef/main
+```
+
+But the other two accept as many as you need. Or even better, you can use the `...` wildcard. This will run all the tests below `main` (recursively):
+
+```bash
+bazel test //main/...
+```
+
+Or this will build and test everything:
+
+```bash
+bazel test //...
+```
+
+#### Locality
+
+One nice thing about bazel is that you don't need to work from the workspace folder. Using the same example than before, you can do this things:
+
+```bash
+cd main/io/iohk/cef/codecs
+bazel build codecs   # No need to specify the whole label in here
+bazel test tests     # The first `test` is the command, followed by the rule name `tests`
+vim package.scala    # Edit something local
+bazel test tests     # and test again
+```
+
+
+## Sample application
+
+NOTE: This bit of the documentation needs to be improved/corrected
+
+A sample application is provided that configures and starts up an Identity Ledger. It is located in `io.iohk.cef.main.IndentityTxMain`. To run this application, simply execute `bazel run src/main/scala/io/iohk/cef/main`.
 
 When setting up a cluster, you need to configure each node's properties. 
 The configuration files used in `IndentityTxMain` are 

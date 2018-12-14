@@ -72,7 +72,7 @@ object NetUtils {
 
     val b0 = ByteBuffer.allocate(allocSize)
 
-    buffs.foldLeft(b0)((accBuff, nextBuff) => accBuff.put(nextBuff)).flip().asInstanceOf[ByteBuffer]
+    (buffs.foldLeft(b0)((accBuff, nextBuff) => accBuff.put(nextBuff)): java.nio.Buffer).flip().asInstanceOf[ByteBuffer]
   }
 
   def forwardPort(srcPort: Int, dst: InetSocketAddress): PortForward =

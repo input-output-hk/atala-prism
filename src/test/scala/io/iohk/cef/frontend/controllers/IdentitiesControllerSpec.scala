@@ -7,7 +7,7 @@ import com.alexitc.playsonify.akka.PublicErrorRenderer
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import io.iohk.cef.transactionservice.NodeTransactionService
 import io.iohk.cef.crypto._
-import io.iohk.cef.crypto.certificates.ExampleCertificates.twoChainedCertsPEM
+import io.iohk.cef.crypto.certificates.test.data.ExampleCertificates.twoChainedCertsPEM
 import io.iohk.cef.frontend.controllers.common.Codecs
 import io.iohk.cef.frontend.services.IdentityTransactionService
 import io.iohk.cef.ledger.identity._

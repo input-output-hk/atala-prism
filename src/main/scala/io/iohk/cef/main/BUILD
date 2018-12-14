@@ -1,0 +1,49 @@
+load("@io_bazel_rules_scala//scala:scala.bzl", "scala_binary")
+
+scala_binary(
+    name = "main",
+    srcs = glob(["**/*.scala"], exclude=["test/**/*"]),
+    scalac_jvm_flags = [
+       "-Xmx1536M",
+       "-Xms1536M",
+       "-Xss5M",
+       "-XX:MaxMetaspaceSize=512m",
+    ],
+    deps = [
+    "//:cef",
+    "//main/io/iohk/cef/network",
+    "//main/io/iohk/cef/crypto",
+    "//main/io/iohk/cef/codecs",
+    "//main/io/iohk/cef/error",
+    "//main/io/iohk/cef/utils",
+    "//3rdparty/jvm/com/github/pureconfig:pureconfig",
+    "//3rdparty/jvm/com/typesafe/akka:akka_actor_typed",
+    "//3rdparty/jvm/com/typesafe/akka:akka_actor",
+    "//3rdparty/jvm/com/typesafe/akka:akka_slf4j",
+    "//3rdparty/jvm/com/typesafe/akka:akka_http_spray_json",
+
+    "//3rdparty/jvm/io/spray:spray_json",
+    "//3rdparty/jvm/org/bouncycastle:bcprov_jdk15on",
+    "//3rdparty/jvm/com/h2database:h2",
+    "//3rdparty/jvm/io/micrometer:micrometer_registry_datadog",
+    "//3rdparty/jvm/org/scalikejdbc:scalikejdbc",
+    "//3rdparty/jvm/ch/qos/logback:logback_classic",
+    "//3rdparty/jvm/org/scalikejdbc:scalikejdbc_config",
+    "//3rdparty/jvm/org/flywaydb:flyway_core",
+    "//3rdparty/jvm/io/netty:netty_all",
+    "//3rdparty/jvm/com/chuusai:shapeless",
+    "//3rdparty/jvm/com/github/swagger_akka_http:swagger_akka_http",
+    "//3rdparty/jvm/com/zaxxer:HikariCP",
+    "//3rdparty/jvm/com/beachape:enumeratum",
+    "//3rdparty/jvm/io/monix:monix",
+    "//3rdparty/jvm/org/scala_stm:scala_stm",
+    "//3rdparty/jvm/com/github/sbtourist:journalio",
+    "//3rdparty/jvm/com/alexitc:playsonify_core",
+    "//3rdparty/jvm/com/alexitc:playsonify_akka_http",
+    "//3rdparty/jvm/com/typesafe/play:play_json",
+    "//3rdparty/jvm/de/heikoseeberger:akka_http_play_json",
+    ],
+    main_class = "io.iohk.cef.main.IdentityTxMain",
+    visibility = ["//visibility:public"]
+)
+
