@@ -1,8 +1,7 @@
-load("@io_bazel_rules_scala//scala:scala.bzl", "scala_library", "scala_test")
+load("//scala:rules.bzl", "scala_library", "scala_test")
 
 scala_library(
     name = "network",
-    srcs = glob(["**/*.scala"], exclude=["test/**/*"]),
     deps = [ "//main/io/iohk/cef/utils",
              "//main/io/iohk/cef/codecs",
              "//main/io/iohk/cef/error",
@@ -12,7 +11,6 @@ scala_library(
              "//3rdparty/jvm/io/micrometer:micrometer_registry_datadog",
              "//3rdparty/jvm/com/typesafe/akka:akka_actor_typed",
              "//3rdparty/jvm/com/typesafe/akka:akka_actor" ],
-    visibility = ["//visibility:public"]
 )
 
 #scala_test(

@@ -1,4 +1,4 @@
-load("@io_bazel_rules_scala//scala:scala.bzl", "scala_library", "scala_binary", "scala_test")
+load("//scala:rules.bzl", "scala_library", "scala_test")
 
 scala_library(
     name = "cef",
@@ -37,8 +37,6 @@ scala_library(
     "//3rdparty/jvm/com/typesafe/play:play_json",
     "//3rdparty/jvm/de/heikoseeberger:akka_http_play_json",
     ],
-    #main_class = "io.iohk.cef.main.IndentityTxMain",
-    visibility = ["//visibility:public"],
 )
 
 scala_test(
@@ -97,7 +95,6 @@ scala_test(
     "//3rdparty/jvm/com/sun/xml/bind:jaxb_impl",
     "//3rdparty/jvm/javax/activation:activation",
     ],
-    visibility = ["//visibility:public"],
 )
 
 

@@ -1,8 +1,7 @@
-load("@io_bazel_rules_scala//scala:scala.bzl", "scala_library", "scala_test")
+load("//scala:rules.bzl", "scala_library", "scala_test")
 
 scala_library(
     name = "encoding",
-    srcs = glob(["**/*.scala"], exclude=["test/**/*"]),
     deps = [ "//main/io/iohk/cef/codecs",
              "//main/io/iohk/cef/utils",
              "//main/io/iohk/cef/error",
@@ -14,7 +13,6 @@ scala_library(
 
 scala_test(
     name = "tests",
-    srcs = glob(["test/**/*"]),
     deps = [ "encoding",
              "//main/io/iohk/cef/test",
              "//3rdparty/jvm/org/scalacheck:scalacheck",

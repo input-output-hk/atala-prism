@@ -85,6 +85,20 @@ Or this will build and test everything:
 bazel test //...
 ```
 
+#### Running the scala repl with bazel
+
+To start a repl with the content of an `scala_library` or an `scala_binary`, you only need to run an special rule created automaticaly for all of them. This rule has the same name than the library/binary with `_repl` added at the end. For example, to run the repl for `main/io/iohk/cef/codecs` you would run:
+
+```bash
+bazel run //main/io/iohk/cef/codecs:codecs_repl
+```
+
+Or, if you want to run the repl for `cef` (the library that contains almost everything), you would run:
+
+```bash
+bazel run //:cef_repl
+```
+
 #### Locality
 
 One nice thing about bazel is that you don't need to work from the workspace folder. Using the same example than before, you can do this things:

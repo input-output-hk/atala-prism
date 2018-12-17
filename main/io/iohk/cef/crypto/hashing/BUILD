@@ -1,8 +1,7 @@
-load("@io_bazel_rules_scala//scala:scala.bzl", "scala_library", "scala_test")
+load("//scala:rules.bzl", "scala_library", "scala_test")
 
 scala_library(
     name = "hashing",
-    srcs = glob(["**/*.scala"], exclude=["test/**/*"]),
     deps = [ "//3rdparty/jvm/com/typesafe/akka:akka_actor",
              "//3rdparty/jvm/com/beachape:enumeratum",
              "//3rdparty/jvm/com/beachape:enumeratum_macros",
@@ -12,7 +11,6 @@ scala_library(
 
 scala_test(
     name = "tests",
-    srcs = glob(["test/**/*"]),
     deps = [ "hashing",
              "//main/io/iohk/cef/test",
              "//3rdparty/jvm/org/scalacheck:scalacheck",

@@ -1,14 +1,7 @@
-load("@io_bazel_rules_scala//scala:scala.bzl", "scala_binary")
+load("//scala:rules.bzl", "scala_binary")
 
 scala_binary(
     name = "main",
-    srcs = glob(["**/*.scala"], exclude=["test/**/*"]),
-    scalac_jvm_flags = [
-       "-Xmx1536M",
-       "-Xms1536M",
-       "-Xss5M",
-       "-XX:MaxMetaspaceSize=512m",
-    ],
     deps = [
     "//:cef",
     "//main/io/iohk/cef/network",
@@ -44,6 +37,5 @@ scala_binary(
     "//3rdparty/jvm/de/heikoseeberger:akka_http_play_json",
     ],
     main_class = "io.iohk.cef.main.IdentityTxMain",
-    visibility = ["//visibility:public"]
 )
 

@@ -1,27 +1,13 @@
-load("@io_bazel_rules_scala//scala:scala.bzl", "scala_library", "scala_test")
+load("//scala:rules.bzl", "scala_library", "scala_test")
 
 scala_library(
     name = "config",
-    srcs = glob(["**/*.scala"], exclude=["test/**/*"]),
-    scalac_jvm_flags = [
-      "-Xmx1536M",
-      "-Xms1536M",
-      "-Xss5M",
-      "-XX:MaxMetaspaceSize=512m",
-    ],
     deps = [ ],
-    visibility = ["//visibility:public"]
 )
 
 scala_test(
     name = "tests",
     srcs = glob(["test/**/*"]),
-    scalac_jvm_flags = [
-      "-Xmx1536M",
-      "-Xms1536M",
-      "-Xss5M",
-      "-XX:MaxMetaspaceSize=512m",
-    ],
     deps = [ "config",
              "//:cef",
              "//main/io/iohk/cef/codecs",
