@@ -78,7 +78,7 @@ dependencies:
       lang: scala
   com.alexitc:
     playsonify:
-      version: "2.0.0-RC0"
+      version: "2.0.0"
       lang: scala
       modules: [core, akka-http]
   com.typesafe.play:

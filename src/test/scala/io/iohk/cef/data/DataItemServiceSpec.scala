@@ -1,17 +1,17 @@
 package io.iohk.cef.data
 
 import io.iohk.cef.codecs.nio.auto._
-import io.iohk.cef.transactionservice.{Envelope, Everyone}
-import io.iohk.cef.crypto.Signature
+import io.iohk.cef.crypto.{Signature, _}
 import io.iohk.cef.data.DataItemAction._
 import io.iohk.cef.data.query.QueryEngine
 import io.iohk.cef.network.{MessageStream, Network}
+import io.iohk.cef.transactionservice.{Envelope, Everyone}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{verify, when}
-
+import org.scalactic.Every
 import org.scalatest.FlatSpec
-import org.scalatest.mockito.MockitoSugar._
 import org.scalatest.MustMatchers._
+import org.scalatest.mockito.MockitoSugar._
 
 import scala.concurrent.Future
 
@@ -20,7 +20,8 @@ class DataItemServiceSpec extends FlatSpec {
   private val table = mock[Table[String]]
   private implicit val canValidate: CanValidate[DataItem[String]] = _ => Right(())
 
-  private val dataItem: DataItem[String] = DataItem("id", "foo", Seq(), Seq())
+  private val defaultOwner = Owner(generateSigningKeyPair().public)
+  private val dataItem: DataItem[String] = DataItem("id", "foo", Seq(), Every(defaultOwner))
   private val containerId = "container-id"
 
   behavior of "DataItemService"

@@ -1,8 +1,10 @@
 package io.iohk.cef.integration
+
 import java.nio.file.Files
 import java.util.UUID
 
 import io.iohk.cef.codecs.nio.auto._
+import io.iohk.cef.crypto.generateSigningKeyPair
 import io.iohk.cef.data._
 import io.iohk.cef.data.query.{Field, QueryEngine, QueryRequest, QueryResponse}
 import io.iohk.cef.data.storage.mv.MVTableStorage
@@ -11,6 +13,7 @@ import io.iohk.cef.network.{MessageStream, NodeId}
 import io.iohk.cef.test.DummyNoMessageNetwork
 import io.iohk.cef.transactionservice.{Envelope, Everyone}
 import monix.execution.schedulers.TestScheduler
+import org.scalactic.Every
 import org.scalatest.concurrent.ScalaFutures._
 import org.scalatest.{EitherValues, FlatSpec, MustMatchers}
 
@@ -18,6 +21,7 @@ import scala.concurrent.Future
 
 class QueryEngineTableItDbTest extends FlatSpec with MustMatchers with EitherValues {
 
+  private val defaultOwner = Owner(generateSigningKeyPair().public)
   behavior of "QueryEngineTableItDbTest"
 
   it should "query existing data items" in {
@@ -39,8 +43,8 @@ class QueryEngineTableItDbTest extends FlatSpec with MustMatchers with EitherVal
     val service = new DataItemService(realTable, fakeDataItemNetwork, realEngine)
 
     //Given -- there are data items
-    val di1 = DataItem("insert1", "value1", Seq(), Seq())
-    val di2 = DataItem("insert2", "value2", Seq(), Seq())
+    val di1 = DataItem("insert1", "value1", Seq(), Every(defaultOwner))
+    val di2 = DataItem("insert2", "value2", Seq(), Every(defaultOwner))
     val insert1 = Envelope(DataItemAction.InsertAction(di1), tableId, Everyone)
     val insert2 = Envelope(DataItemAction.InsertAction(di2), tableId, Everyone)
 

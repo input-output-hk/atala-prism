@@ -4,6 +4,7 @@ import java.util.UUID
 
 import io.iohk.cef.codecs.nio._
 import io.iohk.cef.codecs.nio.auto._
+import io.iohk.cef.crypto.generateSigningKeyPair
 import io.iohk.cef.data.DataItemAction.InsertAction
 import io.iohk.cef.data.DataItemServiceResponse.DIUnit
 import io.iohk.cef.data._
@@ -13,6 +14,7 @@ import io.iohk.cef.network.{Network, NetworkFixture}
 import io.iohk.cef.transactionservice.{DestinationDescriptor, Envelope, Everyone}
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
+import org.scalactic.Every
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{FeatureSpec, GivenWhenThen, MustMatchers}
 
@@ -25,6 +27,8 @@ class QueryEngineNetworkDataItemServiceItFeatureSpec
     with MustMatchers
     with NetworkFixture
     with MockitoSugar {
+
+  private val defaultOwner = Owner(generateSigningKeyPair().public)
   private implicit val executionContext = scala.concurrent.ExecutionContext.global
   private val bootstrap = randomBaseNetwork(None)
 
@@ -86,8 +90,8 @@ class QueryEngineNetworkDataItemServiceItFeatureSpec
 
         val query = Field(0) #== itemId
 
-        val dummyResultDataItem1 = DataItem[String]("id1", "data1", Seq(), Seq())
-        val dummyResultDataItem2 = DataItem[String]("id2", "data2", Seq(), Seq())
+        val dummyResultDataItem1 = DataItem[String]("id1", "data1", Seq(), Every(defaultOwner))
+        val dummyResultDataItem2 = DataItem[String]("id2", "data2", Seq(), Every(defaultOwner))
 
         when(table.select(query)).thenReturn(Right(Seq(dummyResultDataItem1)))
         when(table2.select(query)).thenReturn(Right(Seq(dummyResultDataItem2)))
@@ -118,7 +122,7 @@ class QueryEngineNetworkDataItemServiceItFeatureSpec
   private def setUpInsertData(itemId: DataItemId): Envelope[DataItemAction[String]] = {
     val data = "test-data"
     val containerId = "1"
-    val dataItem = DataItem[String](itemId, data, Seq.empty[Witness], Seq.empty[Owner])
+    val dataItem = DataItem[String](itemId, data, Seq.empty[Witness], Every(defaultOwner))
     val insert: DataItemAction[String] = InsertAction(dataItem)
     val input = Envelope(
       content = insert,

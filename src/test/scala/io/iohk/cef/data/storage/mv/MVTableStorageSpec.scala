@@ -3,11 +3,13 @@ package io.iohk.cef.data.storage.mv
 import java.nio.file.{Files, Path}
 
 import io.iohk.cef.codecs.nio.auto._
-import io.iohk.cef.data.DataItem
+import io.iohk.cef.crypto.generateSigningKeyPair
 import io.iohk.cef.data.error.DataItemNotFound
-import io.iohk.cef.data.query.{Field, InvalidQueryError}
 import io.iohk.cef.data.query.Query._
 import io.iohk.cef.data.query.Value.StringRef
+import io.iohk.cef.data.query.{Field, InvalidQueryError}
+import io.iohk.cef.data.{DataItem, Owner}
+import org.scalactic.Every
 import org.scalatest.EitherValues._
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
@@ -16,11 +18,13 @@ import scala.util.Random
 
 class MVTableStorageSpec extends FlatSpec {
 
+  private val defaultOwner = Owner(generateSigningKeyPair().public)
+
   behavior of "MVTableStorage"
 
   it should "insert and select a data item" in testStorage { storage =>
     // given
-    val expectedDataItem = DataItem("A", Random.nextString(28), Seq(), Seq())
+    val expectedDataItem = DataItem("A", Random.nextString(28), Seq(), Every(defaultOwner))
 
     // when
     storage.insert(expectedDataItem)
@@ -32,7 +36,7 @@ class MVTableStorageSpec extends FlatSpec {
 
   it should "delete a data item" in testStorage { storage =>
     // given
-    val dataItem = DataItem("A", Random.nextString(28), Seq(), Seq())
+    val dataItem = DataItem("A", Random.nextString(28), Seq(), Every(defaultOwner))
 
     // when
     storage.insert(dataItem)
@@ -45,7 +49,7 @@ class MVTableStorageSpec extends FlatSpec {
 
   it should "support a NoPredicate query" in testStorage { storage =>
     // given
-    val dataItem = DataItem("A", Random.nextString(28), Seq(), Seq())
+    val dataItem = DataItem("A", Random.nextString(28), Seq(), Every(defaultOwner))
     storage.insert(dataItem)
 
     // when
@@ -57,7 +61,7 @@ class MVTableStorageSpec extends FlatSpec {
 
   it should "support a simple field query" in testStorage { storage =>
     // given
-    val dataItem = DataItem("A", Random.nextString(28), Seq(), Seq())
+    val dataItem = DataItem("A", Random.nextString(28), Seq(), Every(defaultOwner))
     storage.insert(dataItem)
     val query = Field(0) #== StringRef("A")
 
@@ -70,7 +74,7 @@ class MVTableStorageSpec extends FlatSpec {
 
   it should "support a simple field query, negative case" in testStorage { storage =>
     // given
-    val dataItem = DataItem("A", Random.nextString(28), Seq(), Seq())
+    val dataItem = DataItem("A", Random.nextString(28), Seq(), Every(defaultOwner))
     storage.insert(dataItem)
     val query = Field(0) #== StringRef("B")
 
@@ -83,7 +87,7 @@ class MVTableStorageSpec extends FlatSpec {
 
   it should "return Right for an invalid query" in testStorage { storage =>
     // given
-    val dataItem = DataItem("A", Random.nextString(28), Seq(), Seq()) // mildly annoying that data is required
+    val dataItem = DataItem("A", Random.nextString(28), Seq(), Every(defaultOwner)) // mildly annoying that data is required
     storage.insert(dataItem)
     val query = Field(999) #== StringRef("A")
 
@@ -96,8 +100,8 @@ class MVTableStorageSpec extends FlatSpec {
 
   it should "support an and query" in testStorage { storage =>
     // given
-    val dataItemA = DataItem("A", Random.nextString(28), Seq(), Seq())
-    val dataItemB = DataItem("B", Random.nextString(28), Seq(), Seq())
+    val dataItemA = DataItem("A", Random.nextString(28), Seq(), Every(defaultOwner))
+    val dataItemB = DataItem("B", Random.nextString(28), Seq(), Every(defaultOwner))
     storage.insert(dataItemA)
     storage.insert(dataItemB)
     val query = (Field(0) #== StringRef("A")) and (Field(0) #== StringRef("B"))
@@ -111,8 +115,8 @@ class MVTableStorageSpec extends FlatSpec {
 
   it should "support an or query" in testStorage { storage =>
     // given
-    val dataItemA = DataItem("A", Random.nextString(28), Seq(), Seq())
-    val dataItemB = DataItem("B", Random.nextString(28), Seq(), Seq())
+    val dataItemA = DataItem("A", Random.nextString(28), Seq(), Every(defaultOwner))
+    val dataItemB = DataItem("B", Random.nextString(28), Seq(), Every(defaultOwner))
     storage.insert(dataItemA)
     storage.insert(dataItemB)
     val query = (Field(0) #== StringRef("A")) or (Field(0) #== StringRef("B"))

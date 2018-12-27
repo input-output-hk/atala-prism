@@ -3,20 +3,22 @@ package io.iohk.cef.frontend.controllers
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
+import io.iohk.cef.builder.SigningKeyPairs
 import io.iohk.cef.codecs.nio.auto._
+import io.iohk.cef.crypto.generateSigningKeyPair
 import io.iohk.cef.data._
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.frontend.controllers.common.Codecs
+import io.iohk.cef.transactionservice.Envelope
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
-import org.mockito.stubbing.Answer
 import org.mockito.invocation.InvocationOnMock
+import org.mockito.stubbing.Answer
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mockito.MockitoSugar.mock
 import org.scalatest.{MustMatchers, WordSpec}
 import play.api.libs.json.{Format, JsValue, Json}
-import io.iohk.cef.builder.SigningKeyPairs
-import io.iohk.cef.transactionservice.Envelope
+
 import scala.concurrent.duration._
 
 class ItemsGenericControllerSpec
@@ -30,6 +32,7 @@ class ItemsGenericControllerSpec
   import Codecs._
   import ItemsGenericControllerSpec._
 
+  private val defaultOwner = Owner(generateSigningKeyPair().public)
   implicit val executionContext = system.dispatcher
   val service = mock[DataItemService[BirthCertificate]]
 
@@ -57,8 +60,9 @@ class ItemsGenericControllerSpec
       controller.routes[BirthCertificate]("birth-certificates", service, 30 seconds)
 
     "create an item" in {
+      val owner = generateSigningKeyPair()
       val body =
-        """
+        s"""
           |{
           | "content": {
           |   "id":"birth-cert",
@@ -67,8 +71,10 @@ class ItemsGenericControllerSpec
           |       "date": "01/01/2015",
           |       "name": "Input Output HK"
           |     },
-          |   "witnesses":[],
-          |   "owners":[]
+          |   "witnesses": [],
+          |   "owners": [
+          |     { "key": "${owner.public.toCompactString()}" }
+          |   ]
           |  },
           |  "containerId": "nothing",
           |  "destinationDescriptor": {

@@ -1,18 +1,22 @@
 package io.iohk.cef.data.query
 import io.iohk.cef.codecs.nio._
+import io.iohk.cef.crypto._
 import io.iohk.cef.data.query.Query.NoPredicateQuery
-import io.iohk.cef.data.{DataItem, Table}
+import io.iohk.cef.data.{DataItem, Owner, Table}
 import io.iohk.cef.network.{Network, NodeId}
 import io.iohk.cef.test.DummyMessageStream
 import io.iohk.cef.transactionservice.{Envelope, Everyone}
 import monix.execution.schedulers.TestScheduler
 import monix.reactive.Observable
 import org.mockito.Mockito.{times, verify, when}
+import org.scalactic.Every
 import org.scalatest.concurrent.Eventually._
 import org.scalatest.mockito.MockitoSugar._
 import org.scalatest.{FlatSpec, MustMatchers}
 
 class QueryEngineSpec extends FlatSpec with MustMatchers {
+
+  private val defaultOwner = Owner(generateSigningKeyPair().public)
 
   behavior of "QueryEngine"
 
@@ -21,7 +25,7 @@ class QueryEngineSpec extends FlatSpec with MustMatchers {
     val tableId = "table"
     val table = mock[Table[String]]
     val queryId = "query1"
-    val queryResult = Seq(DataItem("1", "dataItem1", Seq(), Seq()))
+    val queryResult = Seq(DataItem("1", "dataItem1", Seq(), Every(defaultOwner)))
     val queries = Seq(NoPredicateQuery)
     val queryResponse = QueryResponse(queryId, Right(queryResult))
     val queryResponsesEnvelope = Envelope(queryResponse, tableId, Everyone)
