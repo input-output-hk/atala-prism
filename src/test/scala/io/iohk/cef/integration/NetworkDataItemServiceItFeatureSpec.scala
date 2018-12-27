@@ -38,6 +38,7 @@ class NetworkDataItemServiceItFeatureSpec
 
   feature("Network DataItemService Integration") {
     scenario("Insert DataItem into the table on the network") {
+      pending
       Given("a network created with 2 nodes")
       networks(bootstrap, randomBaseNetwork(Some(bootstrap))) { networks =>
         val baseNetworkNode1 = networks(0)
