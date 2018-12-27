@@ -1,4 +1,5 @@
 package io.iohk.cef.data
+
 import io.iohk.cef.codecs.nio._
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.crypto._
@@ -53,12 +54,25 @@ class Table[I: NioCodec: TypeTag](val tableId: TableId, tableStorage: TableStora
   }
 
   private def validateSignatures(dataItem: DataItem[I]): Seq[(Signature, Boolean)] = {
-    val serializedDataItemData = NioCodec[I].encode(dataItem.data)
-    val signatureValidation = dataItem.witnesses.map {
-      case Witness(key, signature) =>
-        import io.iohk.cef.codecs.nio.auto._
-        (signature, isValidSignature(serializedDataItemData, signature, key))
+    validateWitnesses(dataItem) ++ validateOwners(dataItem)
+  }
+
+  private def validateOwners(dataItem: DataItem[I]): Seq[(Signature, Boolean)] = {
+    val labeledItem = LabeledItem("create", dataItem.data)
+    val ownersValidation = dataItem.owners.map {
+      case Owner(key, signature) =>
+        (signature, isValidSignature(labeledItem, signature, key))
     }
-    signatureValidation
+
+    ownersValidation
+  }
+
+  private def validateWitnesses(dataItem: DataItem[I]): Seq[(Signature, Boolean)] = {
+    val witnessesValidation = dataItem.witnesses.map {
+      case Witness(key, signature) =>
+        (signature, isValidSignature(dataItem.data, signature, key))
+    }
+
+    witnessesValidation
   }
 }

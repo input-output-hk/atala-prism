@@ -1,9 +1,9 @@
 package io.iohk.cef.data.query
 
-import io.iohk.cef.codecs.nio._
+import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.crypto._
 import io.iohk.cef.data.query.Query.NoPredicateQuery
-import io.iohk.cef.data.{DataItem, NonEmptyList, Owner, Table}
+import io.iohk.cef.data._
 import io.iohk.cef.network.{Network, NodeId}
 import io.iohk.cef.test.DummyMessageStream
 import io.iohk.cef.transactionservice.{Envelope, Everyone}
@@ -16,8 +16,6 @@ import org.scalatest.{FlatSpec, MustMatchers}
 
 class QueryEngineSpec extends FlatSpec with MustMatchers {
 
-  private val defaultOwner = Owner(generateSigningKeyPair().public)
-
   behavior of "QueryEngine"
 
   it should "process a query" in {
@@ -25,7 +23,10 @@ class QueryEngineSpec extends FlatSpec with MustMatchers {
     val tableId = "table"
     val table = mock[Table[String]]
     val queryId = "query1"
-    val queryResult = Seq(DataItem("1", "dataItem1", Seq(), NonEmptyList(defaultOwner)))
+    val data = "dataItem1"
+    val keys = generateSigningKeyPair()
+    val owner = Owner(keys.public, sign(LabeledItem("create", data), keys.`private`))
+    val queryResult = Seq(DataItem("1", data, Seq(), NonEmptyList(owner)))
     val queries = Seq(NoPredicateQuery)
     val queryResponse = QueryResponse(queryId, Right(queryResult))
     val queryResponsesEnvelope = Envelope(queryResponse, tableId, Everyone)
@@ -40,7 +41,6 @@ class QueryEngineSpec extends FlatSpec with MustMatchers {
     val requestNetwork = mock[Network[Envelope[QueryRequest]]]
     val responseNetwork: Network[Envelope[QueryResponse[String]]] = mock[Network[Envelope[QueryResponse[String]]]]
     val responseMessageStream = new DummyMessageStream[Envelope[QueryResponse[String]]](observableResponse)
-    implicit val s = mock[NioCodec[String]]
 
     when(table.tableId).thenReturn(tableId)
     when(requestNetwork.messageStream).thenReturn(requestMessageStream)

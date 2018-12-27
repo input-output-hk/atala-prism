@@ -4,7 +4,7 @@ import java.util.UUID
 
 import io.iohk.cef.codecs.nio._
 import io.iohk.cef.codecs.nio.auto._
-import io.iohk.cef.crypto.generateSigningKeyPair
+import io.iohk.cef.crypto._
 import io.iohk.cef.data.DataItemAction.InsertAction
 import io.iohk.cef.data.DataItemServiceResponse.DIUnit
 import io.iohk.cef.data._
@@ -27,7 +27,6 @@ class QueryEngineNetworkDataItemServiceItFeatureSpec
     with NetworkFixture
     with MockitoSugar {
 
-  private val defaultOwner = Owner(generateSigningKeyPair().public)
   private implicit val executionContext = scala.concurrent.ExecutionContext.global
   private val bootstrap = randomBaseNetwork(None)
 
@@ -90,8 +89,13 @@ class QueryEngineNetworkDataItemServiceItFeatureSpec
 
         val query = Field(0) #== itemId
 
-        val dummyResultDataItem1 = DataItem[String]("id1", "data1", Seq(), NonEmptyList(defaultOwner))
-        val dummyResultDataItem2 = DataItem[String]("id2", "data2", Seq(), NonEmptyList(defaultOwner))
+        val data1 = "data1"
+        val data2 = "data2"
+        val keys = generateSigningKeyPair()
+        val owner1 = Owner(keys.public, sign(LabeledItem("create", data1), keys.`private`))
+        val owner2 = Owner(keys.public, sign(LabeledItem("create", data2), keys.`private`))
+        val dummyResultDataItem1 = DataItem[String]("id1", "data1", Seq(), NonEmptyList(owner1))
+        val dummyResultDataItem2 = DataItem[String]("id2", "data2", Seq(), NonEmptyList(owner2))
 
         when(table.select(query)).thenReturn(Right(Seq(dummyResultDataItem1)))
         when(table2.select(query)).thenReturn(Right(Seq(dummyResultDataItem2)))
@@ -121,7 +125,9 @@ class QueryEngineNetworkDataItemServiceItFeatureSpec
   private def setUpInsertData(itemId: DataItemId): Envelope[DataItemAction[String]] = {
     val data = "test-data"
     val containerId = "1"
-    val dataItem = DataItem[String](itemId, data, Seq.empty[Witness], NonEmptyList(defaultOwner))
+    val keys = generateSigningKeyPair()
+    val owner = Owner(keys.public, sign(LabeledItem("create", data), keys.`private`))
+    val dataItem = DataItem[String](itemId, data, Seq.empty[Witness], NonEmptyList(owner))
     val insert: DataItemAction[String] = InsertAction(dataItem)
     val input = Envelope(
       content = insert,

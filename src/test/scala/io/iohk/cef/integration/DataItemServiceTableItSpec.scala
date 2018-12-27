@@ -23,7 +23,6 @@ class DataItemServiceTableItSpec extends FlatSpec {
 
   behavior of "DataItemServiceTableIt"
 
-  private val defaultOwner = Owner(generateSigningKeyPair().public)
   private val mockedNetwork = mock[Network[Envelope[DataItemAction[String]]]]
   private val mockMessageStream = mock[MessageStream[Envelope[DataItemAction[String]]]]
 
@@ -33,8 +32,14 @@ class DataItemServiceTableItSpec extends FlatSpec {
   private val testTableId = "TableId"
   private val ownerKeyPair = generateSigningKeyPair()
   private val ownerKeyPair2 = generateSigningKeyPair()
-  private val firstDataItem = DataItem("id1", "data1", Seq(), NonEmptyList(Owner(ownerKeyPair.public)))
-  private val secondDataItem = DataItem("id2", "data2", Seq(), NonEmptyList(Owner(ownerKeyPair2.public)))
+  private val data = "data1"
+  private val data2 = "data2"
+  private val labeledItem = LabeledItem("create", data)
+  private val labeledItem2 = LabeledItem("create", data2)
+  private val owner = Owner(ownerKeyPair.public, sign(labeledItem, ownerKeyPair.`private`))
+  private val owner2 = Owner(ownerKeyPair2.public, sign(labeledItem2, ownerKeyPair2.`private`))
+  private val firstDataItem = DataItem("id1", data, Seq(), NonEmptyList(owner))
+  private val secondDataItem = DataItem("id2", data2, Seq(), NonEmptyList(owner2))
   private val dataItems: Seq[DataItem[DataItemId]] = Seq(firstDataItem, secondDataItem)
 
   private val envelopes: Seq[Envelope[DataItemAction[DataItemId]]] =

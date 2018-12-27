@@ -51,20 +51,24 @@ class ControllerDataItemServiceSpec
       controller.routes[BirthCertificate]("certificate", service, 30 seconds)
 
     "create an item" in {
-      val owner = generateSigningKeyPair()
+      val keys = generateSigningKeyPair()
+      val data = BirthCertificate("01/01/2015", "Input Output HK")
+      val signature = sign(LabeledItem("create", data), keys.`private`)
       val body =
         s"""
           |{
           | "content": {
           |   "id":"birth-cert",
-          |   "data":
-          |     {
-          |       "date": "01/01/2015",
-          |       "name": "Input Output HK"
-          |     },
+          |   "data": {
+          |       "date": "${data.date}",
+          |       "name": "${data.name}"
+          |   },
           |   "witnesses":[],
           |   "owners": [
-          |     { "key": "${owner.public.toCompactString()}" }
+          |     {
+          |       "key": "${keys.public.toCompactString()}",
+          |       "signature": "${signature.toCompactString()}"
+          |     }
           |   ]
           |  },
           |  "containerId": "nothing",

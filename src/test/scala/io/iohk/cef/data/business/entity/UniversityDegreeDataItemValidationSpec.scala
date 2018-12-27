@@ -11,7 +11,6 @@ class UniversityDegreeDataItemValidationSpec extends WordSpec with MustMatchers 
 
   val keyPair = generateSigningKeyPair()
   val newKeyPair = generateSigningKeyPair()
-  private val defaultOwner = Owner(generateSigningKeyPair().public)
 
   private implicit val publicKeyStore: Map[String, SigningPublicKey] = Map("UniversityA" -> keyPair.public)
 
@@ -21,7 +20,7 @@ class UniversityDegreeDataItemValidationSpec extends WordSpec with MustMatchers 
       val data = UniversityDegreeData("UniversityA", "BSC", "Joe Bloc", LocalDate.now())
       val witnessSignature = sign(data, keyPair.`private`)
       val witness = Witness(keyPair.public, witnessSignature)
-      val owner = Owner(keyPair.public)
+      val owner = Owner(keyPair.public, sign(LabeledItem("create", data), keyPair.`private`))
       val dataItem: DataItem[UniversityDegreeData] = DataItem("universityId", data, List(witness), NonEmptyList(owner))
       UniversityDegreeData.universityDegreeValidation.validate(dataItem) mustBe Right(())
     }
@@ -30,7 +29,7 @@ class UniversityDegreeDataItemValidationSpec extends WordSpec with MustMatchers 
       val data = UniversityDegreeData("UniversityA", "BSC", "Joe Bloc", LocalDate.now())
       val witnessSignature = sign(data, newKeyPair.`private`)
       val witness = Witness(keyPair.public, witnessSignature)
-      val owner = Owner(keyPair.public)
+      val owner = Owner(keyPair.public, sign(LabeledItem("create", data), keyPair.`private`))
       val dataItem: DataItem[UniversityDegreeData] = DataItem("universityId", data, List(witness), NonEmptyList(owner))
       UniversityDegreeData.universityDegreeValidation.validate(dataItem) mustBe Left(
         InvalidUniversitySignatureError("UniversityA", "universityId"))
@@ -38,9 +37,7 @@ class UniversityDegreeDataItemValidationSpec extends WordSpec with MustMatchers 
 
     "fail with NoWitnessProvided" in {
       val data = UniversityDegreeData("UniversityA", "BSC", "Joe Bloc", LocalDate.now())
-      val witnessSignature = sign(data, keyPair.`private`)
-      //val witness = Witness(keyPair.public, witnessSignature)
-      val owner = Owner(keyPair.public)
+      val owner = Owner(keyPair.public, sign(LabeledItem("create", data), keyPair.`private`))
       val dataItem: DataItem[UniversityDegreeData] = DataItem("universityId", data, List.empty[Witness], NonEmptyList(owner))
       UniversityDegreeData.universityDegreeValidation.validate(dataItem) mustBe Left(
         NoWitnessProvided("UniversityA", "universityId"))
@@ -50,7 +47,7 @@ class UniversityDegreeDataItemValidationSpec extends WordSpec with MustMatchers 
       val data = UniversityDegreeData("UniversityA", "BSC", "Joe Bloc", LocalDate.now())
       val witnessSignature = sign(data, newKeyPair.`private`)
       val witness = Witness(keyPair.public, witnessSignature)
-      val owner = Owner(keyPair.public)
+      val owner = Owner(keyPair.public, sign(LabeledItem("create", data), keyPair.`private`))
       implicit val publicKeyStore: Map[String, SigningPublicKey] = Map("UniversityB" -> keyPair.public)
 
       val dataItem: DataItem[UniversityDegreeData] = DataItem("universityId", data, List(witness), NonEmptyList(owner))
