@@ -1,0 +1,21 @@
+load("//scala:rules.bzl", "scala_library", "scala_test")
+
+scala_library(
+    name = "agreements",
+#    srcs = [],
+    deps = [ "//main/io/iohk/cef/codecs",
+             "//main/io/iohk/cef/network",
+             "//main/io/iohk/cef/crypto" ],
+    exports = [],
+)
+
+scala_test(
+    name = "tests",
+    deps = [ "agreements",
+             "//main/io/iohk/cef/test",
+             "//main/io/iohk/cef/codecs",
+             "//main/io/iohk/cef/codecs/nio/test/utils",
+             "//main/io/iohk/cef/network",
+             "//3rdparty/jvm/org/scalatest:scalatest",
+             "//3rdparty/jvm/org/mockito:mockito_core"]
+)
