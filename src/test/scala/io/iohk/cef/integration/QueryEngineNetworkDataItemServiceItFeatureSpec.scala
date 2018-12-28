@@ -14,7 +14,6 @@ import io.iohk.cef.network.{Network, NetworkFixture}
 import io.iohk.cef.transactionservice.{DestinationDescriptor, Envelope, Everyone}
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
-import org.scalactic.Every
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{FeatureSpec, GivenWhenThen, MustMatchers}
 
@@ -91,8 +90,8 @@ class QueryEngineNetworkDataItemServiceItFeatureSpec
 
         val query = Field(0) #== itemId
 
-        val dummyResultDataItem1 = DataItem[String]("id1", "data1", Seq(), Every(defaultOwner))
-        val dummyResultDataItem2 = DataItem[String]("id2", "data2", Seq(), Every(defaultOwner))
+        val dummyResultDataItem1 = DataItem[String]("id1", "data1", Seq(), NonEmptyList(defaultOwner))
+        val dummyResultDataItem2 = DataItem[String]("id2", "data2", Seq(), NonEmptyList(defaultOwner))
 
         when(table.select(query)).thenReturn(Right(Seq(dummyResultDataItem1)))
         when(table2.select(query)).thenReturn(Right(Seq(dummyResultDataItem2)))
@@ -122,7 +121,7 @@ class QueryEngineNetworkDataItemServiceItFeatureSpec
   private def setUpInsertData(itemId: DataItemId): Envelope[DataItemAction[String]] = {
     val data = "test-data"
     val containerId = "1"
-    val dataItem = DataItem[String](itemId, data, Seq.empty[Witness], Every(defaultOwner))
+    val dataItem = DataItem[String](itemId, data, Seq.empty[Witness], NonEmptyList(defaultOwner))
     val insert: DataItemAction[String] = InsertAction(dataItem)
     val input = Envelope(
       content = insert,

@@ -2,17 +2,16 @@ package io.iohk.cef.frontend.controllers.common
 
 import akka.util.ByteString
 import io.iohk.cef.crypto._
-import io.iohk.cef.data._
 import io.iohk.cef.data.query.Query._
 import io.iohk.cef.data.query.Value.{BooleanRef, ByteRef, CharRef, DoubleRef, FloatRef, IntRef, LongRef, ShortRef, StringRef}
 import io.iohk.cef.data.query.{Field, Query, Value => ValueRef}
+import io.iohk.cef.data.{NonEmptyList, _}
 import io.iohk.cef.frontend.models._
 import io.iohk.cef.ledger.chimeric._
 import io.iohk.cef.ledger.identity._
 import io.iohk.cef.network.NodeId
 import io.iohk.cef.transactionservice._
 import io.iohk.cef.utils.ByteStringExtension
-import org.scalactic.Every
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
@@ -487,12 +486,12 @@ object Codecs {
     }
   }
 
-  implicit def everyFormat[T](implicit formatT: Format[T]): Format[Every[T]] = new Format[Every[T]] {
-    override def reads(json: JsValue): JsResult[Every[T]] = {
+  implicit def nonEmptyListFormat[T](implicit formatT: Format[T]): Format[NonEmptyList[T]] = new Format[NonEmptyList[T]] {
+    override def reads(json: JsValue): JsResult[NonEmptyList[T]] = {
       json
           .validate[List[T]]
           .flatMap { list =>
-            Every.from(list)
+            NonEmptyList.from(list)
                 .map(JsSuccess.apply(_))
                 .getOrElse {
                   JsError.apply("A non-empty list is expected")
@@ -500,8 +499,8 @@ object Codecs {
           }
     }
 
-    override def writes(o: Every[T]): JsValue = {
-      Json.toJson(o.toList)
+    override def writes(o: NonEmptyList[T]): JsValue = {
+      Json.toJson(o: List[T])
     }
   }
 }

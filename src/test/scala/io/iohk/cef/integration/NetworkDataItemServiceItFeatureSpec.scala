@@ -10,7 +10,6 @@ import io.iohk.cef.network.{Network, NetworkFixture}
 import io.iohk.cef.transactionservice.{DestinationDescriptor, Envelope, Everyone}
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
-import org.scalactic.Every
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{FeatureSpec, GivenWhenThen, MustMatchers}
 
@@ -73,7 +72,7 @@ class NetworkDataItemServiceItFeatureSpec
     val data = "test-data"
     val itemId = "item-id"
     val containerId = "1"
-    val dataItem = DataItem[String](itemId, data, Seq.empty[Witness], Every(defaultOwner))
+    val dataItem = DataItem[String](itemId, data, Seq.empty[Witness], NonEmptyList(defaultOwner))
     val insert: DataItemAction[String] = InsertAction(dataItem)
     val input = Envelope(
       content = insert,

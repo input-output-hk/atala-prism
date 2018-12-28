@@ -5,7 +5,6 @@ import java.time.LocalDate
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.crypto._
 import io.iohk.cef.data._
-import org.scalactic.Every
 import org.scalatest.{MustMatchers, WordSpec}
 
 class UniversityDegreeDataItemValidationSpec extends WordSpec with MustMatchers {
@@ -23,7 +22,7 @@ class UniversityDegreeDataItemValidationSpec extends WordSpec with MustMatchers 
       val witnessSignature = sign(data, keyPair.`private`)
       val witness = Witness(keyPair.public, witnessSignature)
       val owner = Owner(keyPair.public)
-      val dataItem: DataItem[UniversityDegreeData] = DataItem("universityId", data, List(witness), Every(owner))
+      val dataItem: DataItem[UniversityDegreeData] = DataItem("universityId", data, List(witness), NonEmptyList(owner))
       UniversityDegreeData.universityDegreeValidation.validate(dataItem) mustBe Right(())
     }
 
@@ -32,7 +31,7 @@ class UniversityDegreeDataItemValidationSpec extends WordSpec with MustMatchers 
       val witnessSignature = sign(data, newKeyPair.`private`)
       val witness = Witness(keyPair.public, witnessSignature)
       val owner = Owner(keyPair.public)
-      val dataItem: DataItem[UniversityDegreeData] = DataItem("universityId", data, List(witness), Every(owner))
+      val dataItem: DataItem[UniversityDegreeData] = DataItem("universityId", data, List(witness), NonEmptyList(owner))
       UniversityDegreeData.universityDegreeValidation.validate(dataItem) mustBe Left(
         InvalidUniversitySignatureError("UniversityA", "universityId"))
     }
@@ -42,7 +41,7 @@ class UniversityDegreeDataItemValidationSpec extends WordSpec with MustMatchers 
       val witnessSignature = sign(data, keyPair.`private`)
       //val witness = Witness(keyPair.public, witnessSignature)
       val owner = Owner(keyPair.public)
-      val dataItem: DataItem[UniversityDegreeData] = DataItem("universityId", data, List.empty[Witness], Every(owner))
+      val dataItem: DataItem[UniversityDegreeData] = DataItem("universityId", data, List.empty[Witness], NonEmptyList(owner))
       UniversityDegreeData.universityDegreeValidation.validate(dataItem) mustBe Left(
         NoWitnessProvided("UniversityA", "universityId"))
     }
@@ -54,7 +53,7 @@ class UniversityDegreeDataItemValidationSpec extends WordSpec with MustMatchers 
       val owner = Owner(keyPair.public)
       implicit val publicKeyStore: Map[String, SigningPublicKey] = Map("UniversityB" -> keyPair.public)
 
-      val dataItem: DataItem[UniversityDegreeData] = DataItem("universityId", data, List(witness), Every(owner))
+      val dataItem: DataItem[UniversityDegreeData] = DataItem("universityId", data, List(witness), NonEmptyList(owner))
       UniversityDegreeData.universityDegreeValidation.validate(dataItem) mustBe Left(
         UniversityPublicKeyIsUnknown("UniversityA", witness, "universityId"))
     }

@@ -13,7 +13,6 @@ import io.iohk.cef.network.{MessageStream, NodeId}
 import io.iohk.cef.test.DummyNoMessageNetwork
 import io.iohk.cef.transactionservice.{Envelope, Everyone}
 import monix.execution.schedulers.TestScheduler
-import org.scalactic.Every
 import org.scalatest.concurrent.ScalaFutures._
 import org.scalatest.{EitherValues, FlatSpec, MustMatchers}
 
@@ -43,8 +42,8 @@ class QueryEngineTableItDbTest extends FlatSpec with MustMatchers with EitherVal
     val service = new DataItemService(realTable, fakeDataItemNetwork, realEngine)
 
     //Given -- there are data items
-    val di1 = DataItem("insert1", "value1", Seq(), Every(defaultOwner))
-    val di2 = DataItem("insert2", "value2", Seq(), Every(defaultOwner))
+    val di1 = DataItem("insert1", "value1", Seq(), NonEmptyList(defaultOwner))
+    val di2 = DataItem("insert2", "value2", Seq(), NonEmptyList(defaultOwner))
     val insert1 = Envelope(DataItemAction.InsertAction(di1), tableId, Everyone)
     val insert2 = Envelope(DataItemAction.InsertAction(di2), tableId, Everyone)
 

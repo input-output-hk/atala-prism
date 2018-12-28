@@ -8,7 +8,6 @@ import io.iohk.cef.network.{MessageStream, Network}
 import io.iohk.cef.transactionservice.{Envelope, Everyone}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{verify, when}
-import org.scalactic.Every
 import org.scalatest.FlatSpec
 import org.scalatest.MustMatchers._
 import org.scalatest.mockito.MockitoSugar._
@@ -21,7 +20,7 @@ class DataItemServiceSpec extends FlatSpec {
   private implicit val canValidate: CanValidate[DataItem[String]] = _ => Right(())
 
   private val defaultOwner = Owner(generateSigningKeyPair().public)
-  private val dataItem: DataItem[String] = DataItem("id", "foo", Seq(), Every(defaultOwner))
+  private val dataItem: DataItem[String] = DataItem("id", "foo", Seq(), NonEmptyList(defaultOwner))
   private val containerId = "container-id"
 
   behavior of "DataItemService"
