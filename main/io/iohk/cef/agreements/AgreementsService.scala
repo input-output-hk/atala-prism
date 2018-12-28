@@ -2,9 +2,7 @@ package io.iohk.cef.agreements
 import java.util.concurrent.Future
 
 import io.iohk.cef.codecs.nio._
-import io.iohk.cef.network.{MessageStream, NodeId, PeerConfig}
-
-import AgreementsService._
+import io.iohk.cef.network.{MessageStream, PeerConfig}
 
 class AgreementsService[T: NioCodec](peerConfig: PeerConfig) {
   // Send agreement to a list of userId who you wish to agree something
@@ -18,8 +16,4 @@ class AgreementsService[T: NioCodec](peerConfig: PeerConfig) {
 
   // receive notifications of proposals and agreements
   val agreementEvents: MessageStream[AgreementMessage[T]] = ???
-}
-
-object AgreementsService {
-  type UserId = NodeId
 }
