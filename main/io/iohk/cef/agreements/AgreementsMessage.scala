@@ -1,7 +1,5 @@
 package io.iohk.cef.agreements
 
-import io.iohk.cef.agreements.AgreementsService.UserId
-
 sealed trait AgreementMessage[T]
 
 object AgreementsMessage {
