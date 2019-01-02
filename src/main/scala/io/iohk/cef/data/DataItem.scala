@@ -9,7 +9,7 @@ package io.iohk.cef.data
   * @tparam T
   */
 //TODO we will need to replace Seq with a simple boolean AST to better express ownership
-case class DataItem[T](id: String, data: T, witnesses: Seq[Witness], owners: Seq[Owner])
+case class DataItem[T](id: String, data: T, witnesses: Seq[Witness], owners: NonEmptyList[Owner])
 
 object DataItem {
   object FieldIds {

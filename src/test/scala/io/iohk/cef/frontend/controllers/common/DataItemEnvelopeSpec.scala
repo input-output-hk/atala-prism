@@ -1,15 +1,18 @@
 package io.iohk.cef.frontend.controllers.common
 
-import io.iohk.cef.transactionservice._
-import io.iohk.cef.data.{DataItem, Owner, Witness}
+import io.iohk.cef.crypto._
+import io.iohk.cef.data.{DataItem, NonEmptyList, Owner, Witness}
 import io.iohk.cef.network.NodeId
+import io.iohk.cef.transactionservice._
 import org.scalatest.{MustMatchers, WordSpec}
 import play.api.libs.json.{Format, Json}
 
 class DataItemEnvelopeSpec extends WordSpec with MustMatchers {
 
-  import DataItemEnvelopeSpec._
   import Codecs._
+  import DataItemEnvelopeSpec._
+
+  private val defaultOwner = Owner(generateSigningKeyPair().public)
 
   "DataItemEnvelopeFormat" should {
     "serialize and deserialize" in {
@@ -21,7 +24,7 @@ class DataItemEnvelopeSpec extends WordSpec with MustMatchers {
           b = SetOfNodes(Set(NodeId("IO".getBytes())))
         )
       )
-      val dataItem = DataItem("custom", Data("IOHK"), Seq.empty[Witness], Seq.empty[Owner])
+      val dataItem = DataItem("custom", Data("IOHK"), Seq.empty[Witness], NonEmptyList(defaultOwner))
       val input = Envelope(
         content = dataItem,
         containerId = "nothing",
