@@ -62,7 +62,7 @@ private[config] class CefServices(cefConfig: CefConfig) {
       .cefDataItemServiceChannel()
 
   def cefAgreementsServiceChannel[T: NioCodec: TypeTag](): AgreementsService[T] =
-    new AgreementsServiceConfig(cefConfig)
+    new AgreementsServiceConfig(cefConfig,transports,networkDiscovery)
       .cefAgreementsServiceChannel()
 
   def shutdown(): Unit =
