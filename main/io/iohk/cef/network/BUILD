@@ -20,7 +20,6 @@ scala_test(
     visibility = ["//visibility:public"],
     deps = [
         "network",
-        "//:cef",
         "//3rdparty/jvm/com/softwaremill/quicklens",
         "//3rdparty/jvm/com/typesafe/akka:akka_actor",
         "//3rdparty/jvm/com/typesafe/akka:akka_actor_typed",
