@@ -47,7 +47,7 @@ scala_test(
         "//:cef",
         "//main/io/iohk/cef/test",
         "//main/io/iohk/cef/network",
-        "//main/io/iohk/cef/network:network_tests",
+        "//main/io/iohk/cef/network:tests",
         "//main/io/iohk/cef/crypto",
         "//main/io/iohk/cef/crypto/certificates/test/data",
         "//main/io/iohk/cef/codecs",

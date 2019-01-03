@@ -16,7 +16,7 @@ scala_library(
 )
 
 scala_test(
-    name = "network_tests",
+    name = "tests",
     visibility = ["//visibility:public"],
     deps = [
         "network",
