@@ -4,19 +4,21 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import io.iohk.cef.codecs.nio.auto._
-import io.iohk.cef.transactionservice.Envelope
+import io.iohk.cef.crypto._
 import io.iohk.cef.data._
 import io.iohk.cef.data.query.QueryEngine
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.frontend.controllers.ItemsGenericController
 import io.iohk.cef.frontend.controllers.common.Codecs
 import io.iohk.cef.network.{MessageStream, Network}
+import io.iohk.cef.transactionservice.Envelope
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mockito.MockitoSugar.mock
 import org.scalatest.{MustMatchers, WordSpec}
 import play.api.libs.json.{Format, Json}
+
 import scala.concurrent.duration._
 
 class ControllerDataItemServiceSpec
@@ -49,8 +51,9 @@ class ControllerDataItemServiceSpec
       controller.routes[BirthCertificate]("certificate", service, 30 seconds)
 
     "create an item" in {
+      val owner = generateSigningKeyPair()
       val body =
-        """
+        s"""
           |{
           | "content": {
           |   "id":"birth-cert",
@@ -60,7 +63,9 @@ class ControllerDataItemServiceSpec
           |       "name": "Input Output HK"
           |     },
           |   "witnesses":[],
-          |   "owners":[]
+          |   "owners": [
+          |     { "key": "${owner.public.toCompactString()}" }
+          |   ]
           |  },
           |  "containerId": "nothing",
           |  "destinationDescriptor": {
