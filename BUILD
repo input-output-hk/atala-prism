@@ -30,12 +30,12 @@ scala_library(
         "//3rdparty/jvm/org/scala_stm",
         "//3rdparty/jvm/org/scalikejdbc",
         "//3rdparty/jvm/org/scalikejdbc:scalikejdbc_config",
+        "//main/io/iohk/cef/agreements",
         "//main/io/iohk/cef/codecs",
         "//main/io/iohk/cef/crypto",
         "//main/io/iohk/cef/error",
         "//main/io/iohk/cef/network",
         "//main/io/iohk/cef/utils",
-        "//main/io/iohk/cef/agreements"
     ],
 )
 
@@ -54,6 +54,7 @@ scala_test(
         "//main/io/iohk/cef/codecs",
         "//main/io/iohk/cef/error",
         "//main/io/iohk/cef/utils",
+        "//main/io/iohk/cef/agreements",
         "//3rdparty/jvm/com/github/pureconfig",
         "//3rdparty/jvm/com/typesafe/akka:akka_actor_typed",
         "//3rdparty/jvm/com/typesafe/akka:akka_actor",
