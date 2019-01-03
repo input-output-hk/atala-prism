@@ -3,6 +3,7 @@ import java.nio.file.Path
 import java.time.Clock
 import java.util.concurrent.ConcurrentHashMap
 
+import io.iohk.cef.agreements.AgreementsService
 import io.iohk.cef.codecs.nio._
 import io.iohk.cef.data.{DataItemService, TableId}
 import io.iohk.cef.ledger.Transaction
@@ -31,6 +32,10 @@ object CefServices {
       tableId: TableId,
       storagePath: Path): DataItemService[T] =
     services.getOrElseUpdate(cefConfig, new CefServices(cefConfig)).cefDataItemServiceChannel(tableId,storagePath)
+
+  def cefAgreementsServiceChannel[T: NioCodec: TypeTag](
+                                                       cefConfig: CefConfig): AgreementsService[T] =
+    services.getOrElseUpdate(cefConfig, new CefServices(cefConfig)).cefDataItemServiceChannel(tableId,storagePath)
 }
 
 private[config] class CefServices(cefConfig: CefConfig) {
@@ -55,6 +60,10 @@ private[config] class CefServices(cefConfig: CefConfig) {
   def cefDataItemServiceChannel[T: NioCodec: TypeTag](tableId: TableId, storagePath: Path): DataItemService[T] =
     new DataItemServiceConfig(cefConfig, tableId, storagePath, clock, transports, networkDiscovery)
       .cefDataItemServiceChannel()
+
+  def cefAgreementsServiceChannel[T: NioCodec: TypeTag](tableId: TableId, storagePath: Path): AgreementsService[T] =
+    new AgreementsServiceConfig(cefConfig)
+      .cefAgreementsServiceChannel()
 
   def shutdown(): Unit =
     transports.shutdown()
