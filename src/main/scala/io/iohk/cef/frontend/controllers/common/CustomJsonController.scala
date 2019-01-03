@@ -25,7 +25,7 @@ object CustomJsonController {
 
   class CustomJsonComponents extends JsonControllerComponents[Nothing] {
 
-    override def i18nService: SingleLangService = new SingleLangService
+    override def i18nService: SingleLangService = SingleLangService.Default
 
     override def publicErrorRenderer: PublicErrorRenderer = new PublicErrorRenderer
 
