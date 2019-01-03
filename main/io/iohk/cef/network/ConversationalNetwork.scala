@@ -3,7 +3,9 @@ package io.iohk.cef.network
 import java.net.InetSocketAddress
 
 import io.iohk.cef.network.discovery.NetworkDiscovery
-import io.iohk.cef.codecs.nio.NioCodec
+import io.iohk.cef.codecs.nio._
+import io.iohk.cef.codecs.nio.auto._
+import scala.reflect.runtime.universe.TypeTag
 import io.iohk.cef.network.monixstream.MonixMessageStream
 import io.iohk.cef.network.transport.Transports.usesTcp
 import io.iohk.cef.network.transport._
@@ -20,8 +22,7 @@ import io.iohk.cef.network.transport._
   * @param networkDiscovery Encapsulates a routing table implementation.
   * @param transports helpers to obtain network transport instances.
   */
-class ConversationalNetwork[Message](networkDiscovery: NetworkDiscovery, transports: Transports)(
-    implicit codec: NioCodec[Frame[Message]]) {
+class ConversationalNetwork[Message: NioCodec: TypeTag](networkDiscovery: NetworkDiscovery, transports: Transports) {
 
   val peerConfig: PeerConfig = transports.peerConfig
 
