@@ -35,7 +35,7 @@ object CefServices {
 
   def cefAgreementsServiceChannel[T: NioCodec: TypeTag](
                                                        cefConfig: CefConfig): AgreementsService[T] =
-    services.getOrElseUpdate(cefConfig, new CefServices(cefConfig)).cefDataItemServiceChannel(tableId,storagePath)
+    services.getOrElseUpdate(cefConfig, new CefServices(cefConfig)).cefAgreementsServiceChannel()
 }
 
 private[config] class CefServices(cefConfig: CefConfig) {
@@ -61,7 +61,7 @@ private[config] class CefServices(cefConfig: CefConfig) {
     new DataItemServiceConfig(cefConfig, tableId, storagePath, clock, transports, networkDiscovery)
       .cefDataItemServiceChannel()
 
-  def cefAgreementsServiceChannel[T: NioCodec: TypeTag](tableId: TableId, storagePath: Path): AgreementsService[T] =
+  def cefAgreementsServiceChannel[T: NioCodec: TypeTag](): AgreementsService[T] =
     new AgreementsServiceConfig(cefConfig)
       .cefAgreementsServiceChannel()
 
