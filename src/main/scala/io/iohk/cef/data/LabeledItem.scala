@@ -1,3 +1,9 @@
 package io.iohk.cef.data
 
-case class LabeledItem[+T](label: String, item: T)
+sealed trait LabeledItem
+
+object LabeledItem {
+
+  final case class Create[+T](item: T) extends LabeledItem
+  final case class Delete[+T](item: T) extends LabeledItem
+}

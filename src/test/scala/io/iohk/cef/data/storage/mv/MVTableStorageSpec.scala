@@ -23,7 +23,7 @@ class MVTableStorageSpec extends FlatSpec {
     // given
     val data = Random.nextString(28)
     val keys = generateSigningKeyPair()
-    val owner = Owner(keys.public, sign(LabeledItem("create", data), keys.`private`))
+    val owner = Owner(keys.public, sign(LabeledItem.Create(data), keys.`private`))
     val expectedDataItem = DataItem("A", data, Seq(), NonEmptyList(owner))
 
     // when
@@ -38,7 +38,7 @@ class MVTableStorageSpec extends FlatSpec {
     // given
     val data = Random.nextString(28)
     val keys = generateSigningKeyPair()
-    val owner = Owner(keys.public, sign(LabeledItem("create", data), keys.`private`))
+    val owner = Owner(keys.public, sign(LabeledItem.Create(data), keys.`private`))
     val dataItem = DataItem("A", data, Seq(), NonEmptyList(owner))
 
     // when
@@ -54,7 +54,7 @@ class MVTableStorageSpec extends FlatSpec {
     // given
     val data = Random.nextString(28)
     val keys = generateSigningKeyPair()
-    val owner = Owner(keys.public, sign(LabeledItem("create", data), keys.`private`))
+    val owner = Owner(keys.public, sign(LabeledItem.Create(data), keys.`private`))
     val dataItem = DataItem("A", data, Seq(), NonEmptyList(owner))
     storage.insert(dataItem)
 
@@ -69,7 +69,7 @@ class MVTableStorageSpec extends FlatSpec {
     // given
     val data = Random.nextString(28)
     val keys = generateSigningKeyPair()
-    val owner = Owner(keys.public, sign(LabeledItem("create", data), keys.`private`))
+    val owner = Owner(keys.public, sign(LabeledItem.Create(data), keys.`private`))
     val dataItem = DataItem("A", data, Seq(), NonEmptyList(owner))
     storage.insert(dataItem)
     val query = Field(0) #== StringRef("A")
@@ -85,7 +85,7 @@ class MVTableStorageSpec extends FlatSpec {
     // given
     val data = Random.nextString(28)
     val keys = generateSigningKeyPair()
-    val owner = Owner(keys.public, sign(LabeledItem("create", data), keys.`private`))
+    val owner = Owner(keys.public, sign(LabeledItem.Create(data), keys.`private`))
     val dataItem = DataItem("A", data, Seq(), NonEmptyList(owner))
     storage.insert(dataItem)
     val query = Field(0) #== StringRef("B")
@@ -101,7 +101,7 @@ class MVTableStorageSpec extends FlatSpec {
     // given
     val data = Random.nextString(28)
     val keys = generateSigningKeyPair()
-    val owner = Owner(keys.public, sign(LabeledItem("create", data), keys.`private`))
+    val owner = Owner(keys.public, sign(LabeledItem.Create(data), keys.`private`))
     val dataItem = DataItem("A", data, Seq(), NonEmptyList(owner)) // mildly annoying that data is required
     storage.insert(dataItem)
     val query = Field(999) #== StringRef("A")
@@ -118,7 +118,7 @@ class MVTableStorageSpec extends FlatSpec {
     val data = Random.nextString(28)
     val data2 = Random.nextString(28)
     val keys = generateSigningKeyPair()
-    val owner = Owner(keys.public, sign(LabeledItem("create", data), keys.`private`))
+    val owner = Owner(keys.public, sign(LabeledItem.Create(data), keys.`private`))
     val owner2 = Owner(keys.public, sign(data2, keys.`private`))
     val dataItemA = DataItem("A", data, Seq(), NonEmptyList(owner))
     val dataItemB = DataItem("B", data2, Seq(), NonEmptyList(owner2))
@@ -138,8 +138,8 @@ class MVTableStorageSpec extends FlatSpec {
     val data = Random.nextString(28)
     val data2 = Random.nextString(28)
     val keys = generateSigningKeyPair()
-    val owner = Owner(keys.public, sign(LabeledItem("create", data), keys.`private`))
-    val owner2 = Owner(keys.public, sign(LabeledItem("create", data2), keys.`private`))
+    val owner = Owner(keys.public, sign(LabeledItem.Create(data), keys.`private`))
+    val owner2 = Owner(keys.public, sign(LabeledItem.Create(data2), keys.`private`))
     val dataItemA = DataItem("A", data, Seq(), NonEmptyList(owner))
     val dataItemB = DataItem("B", data2, Seq(), NonEmptyList(owner2))
     storage.insert(dataItemA)

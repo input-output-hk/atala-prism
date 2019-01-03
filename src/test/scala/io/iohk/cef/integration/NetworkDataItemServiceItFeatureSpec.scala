@@ -72,7 +72,7 @@ class NetworkDataItemServiceItFeatureSpec
     val itemId = "item-id"
     val containerId = "1"
     val keys = generateSigningKeyPair()
-    val owner = Owner(keys.public, sign(LabeledItem("create", data), keys.`private`))
+    val owner = Owner(keys.public, sign(LabeledItem.Create(data), keys.`private`))
     val dataItem = DataItem[String](itemId, data, Seq.empty[Witness], NonEmptyList(owner))
     val insert: DataItemAction[String] = InsertAction(dataItem)
     val input = Envelope(

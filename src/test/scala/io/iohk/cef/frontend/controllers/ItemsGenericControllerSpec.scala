@@ -61,7 +61,7 @@ class ItemsGenericControllerSpec
     "create an item" in {
       val keys = alice
       val data = BirthCertificate("01/01/2015", "Input Output HK")
-      val signature = sign(LabeledItem("create", data), keys.`private`)
+      val signature = sign(LabeledItem.Create(data), keys.`private`)
       val body =
         s"""
           |{
@@ -141,7 +141,7 @@ class ItemsGenericControllerSpec
     "validate an item" in {
       val keys = bob
       val data = BirthCertificate("01/01/2015", "Input Output HK")
-      val signature = sign(LabeledItem("create", data), keys.`private`)
+      val signature = sign(LabeledItem.Create(data), keys.`private`)
       val body =
         s"""
            |{

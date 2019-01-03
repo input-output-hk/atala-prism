@@ -24,7 +24,7 @@ class TableSpec extends WordSpec {
     "succeed with a valid item with the correct signatures" in {
       val data = "data"
       val witnesses = List(Witness(keys.public, sign(data, keys.`private`)))
-      val owners = NonEmptyList(Owner(keys.public, sign(LabeledItem("create", data), keys.`private`)))
+      val owners = NonEmptyList(Owner(keys.public, sign(LabeledItem.Create(data), keys.`private`)))
       val item = DataItem("id", data, witnesses, owners)
       val result = table.insert(item)
 
@@ -35,7 +35,7 @@ class TableSpec extends WordSpec {
       val data = "data"
       val invalidSignature = sign(data*2, keys.`private`)
       val witnesses = List(Witness(keys.public, invalidSignature))
-      val owners = NonEmptyList(Owner(keys.public, sign(LabeledItem("create", data), keys.`private`)))
+      val owners = NonEmptyList(Owner(keys.public, sign(LabeledItem.Create(data), keys.`private`)))
       val item = DataItem("id", data, witnesses, owners)
       val result = table.insert(item)
 

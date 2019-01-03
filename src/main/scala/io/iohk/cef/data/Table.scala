@@ -58,7 +58,7 @@ class Table[I: NioCodec: TypeTag](val tableId: TableId, tableStorage: TableStora
   }
 
   private def validateOwners(dataItem: DataItem[I]): Seq[(Signature, Boolean)] = {
-    val labeledItem = LabeledItem("create", dataItem.data)
+    val labeledItem = LabeledItem.Create(dataItem.data)
     val ownersValidation = dataItem.owners.map {
       case Owner(key, signature) =>
         (signature, isValidSignature(labeledItem, signature, key))

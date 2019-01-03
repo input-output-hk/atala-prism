@@ -25,7 +25,7 @@ class DataItemEnvelopeSpec extends WordSpec with MustMatchers {
       )
       val data = Data("IOHK")
       val keys = generateSigningKeyPair()
-      val owner = Owner(keys.public, sign(LabeledItem("create", data), keys.`private`))
+      val owner = Owner(keys.public, sign(LabeledItem.Create(data), keys.`private`))
       val dataItem = DataItem("custom", data, Seq.empty[Witness], NonEmptyList(owner))
       val input = Envelope(
         content = dataItem,

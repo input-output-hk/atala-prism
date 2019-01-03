@@ -92,8 +92,8 @@ class QueryEngineNetworkDataItemServiceItFeatureSpec
         val data1 = "data1"
         val data2 = "data2"
         val keys = generateSigningKeyPair()
-        val owner1 = Owner(keys.public, sign(LabeledItem("create", data1), keys.`private`))
-        val owner2 = Owner(keys.public, sign(LabeledItem("create", data2), keys.`private`))
+        val owner1 = Owner(keys.public, sign(LabeledItem.Create(data1), keys.`private`))
+        val owner2 = Owner(keys.public, sign(LabeledItem.Create(data2), keys.`private`))
         val dummyResultDataItem1 = DataItem[String]("id1", "data1", Seq(), NonEmptyList(owner1))
         val dummyResultDataItem2 = DataItem[String]("id2", "data2", Seq(), NonEmptyList(owner2))
 
@@ -126,7 +126,7 @@ class QueryEngineNetworkDataItemServiceItFeatureSpec
     val data = "test-data"
     val containerId = "1"
     val keys = generateSigningKeyPair()
-    val owner = Owner(keys.public, sign(LabeledItem("create", data), keys.`private`))
+    val owner = Owner(keys.public, sign(LabeledItem.Create(data), keys.`private`))
     val dataItem = DataItem[String](itemId, data, Seq.empty[Witness], NonEmptyList(owner))
     val insert: DataItemAction[String] = InsertAction(dataItem)
     val input = Envelope(

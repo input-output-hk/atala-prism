@@ -25,7 +25,7 @@ class QueryEngineSpec extends FlatSpec with MustMatchers {
     val queryId = "query1"
     val data = "dataItem1"
     val keys = generateSigningKeyPair()
-    val owner = Owner(keys.public, sign(LabeledItem("create", data), keys.`private`))
+    val owner = Owner(keys.public, sign(LabeledItem.Create(data), keys.`private`))
     val queryResult = Seq(DataItem("1", data, Seq(), NonEmptyList(owner)))
     val queries = Seq(NoPredicateQuery)
     val queryResponse = QueryResponse(queryId, Right(queryResult))

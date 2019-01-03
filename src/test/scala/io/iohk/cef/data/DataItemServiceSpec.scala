@@ -22,7 +22,7 @@ class DataItemServiceSpec extends FlatSpec {
   private val defaultKeys = generateSigningKeyPair()
   private val defaultItemId = "id"
   private val defaultItemData = "foo"
-  private val defaultSignature = sign(LabeledItem("create", defaultItemData), defaultKeys.`private`)
+  private val defaultSignature = sign(LabeledItem.Create(defaultItemData), defaultKeys.`private`)
   private val defaultOwner = Owner(defaultKeys.public, defaultSignature)
   private val dataItem: DataItem[String] = DataItem(defaultItemId, defaultItemData, Seq(), NonEmptyList(defaultOwner))
   private val containerId = "container-id"

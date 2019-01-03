@@ -34,8 +34,8 @@ class DataItemServiceTableItSpec extends FlatSpec {
   private val ownerKeyPair2 = generateSigningKeyPair()
   private val data = "data1"
   private val data2 = "data2"
-  private val labeledItem = LabeledItem("create", data)
-  private val labeledItem2 = LabeledItem("create", data2)
+  private val labeledItem = LabeledItem.Create(data)
+  private val labeledItem2 = LabeledItem.Create(data2)
   private val owner = Owner(ownerKeyPair.public, sign(labeledItem, ownerKeyPair.`private`))
   private val owner2 = Owner(ownerKeyPair2.public, sign(labeledItem2, ownerKeyPair2.`private`))
   private val firstDataItem = DataItem("id1", data, Seq(), NonEmptyList(owner))

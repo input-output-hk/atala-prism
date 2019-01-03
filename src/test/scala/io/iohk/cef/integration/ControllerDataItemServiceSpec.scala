@@ -53,7 +53,7 @@ class ControllerDataItemServiceSpec
     "create an item" in {
       val keys = generateSigningKeyPair()
       val data = BirthCertificate("01/01/2015", "Input Output HK")
-      val signature = sign(LabeledItem("create", data), keys.`private`)
+      val signature = sign(LabeledItem.Create(data), keys.`private`)
       val body =
         s"""
           |{

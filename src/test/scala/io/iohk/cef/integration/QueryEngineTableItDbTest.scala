@@ -46,8 +46,8 @@ class QueryEngineTableItDbTest extends FlatSpec with MustMatchers with EitherVal
     val data1 = "value1"
     val data2 = "value2"
 
-    val labeledItem1 = LabeledItem("create", data1)
-    val labeledItem2 = LabeledItem("create", data2)
+    val labeledItem1 = LabeledItem.Create(data1)
+    val labeledItem2 = LabeledItem.Create(data2)
 
     val owner1 = Owner(keys.public, sign(labeledItem1, keys.`private`))
     val owner2 = Owner(keys.public, sign(labeledItem2, keys.`private`))
