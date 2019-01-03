@@ -63,7 +63,7 @@ class DataItemServiceTableItSpec extends FlatSpec {
       case other => fail(s"Unexpected action received. Expected Insert but got ${other}")
     }.toSet)
 
-    val deleteSignature = DeleteSignatureWrapper(firstDataItem)
+    val deleteSignature = LabeledItem.Delete(firstDataItem)
     val deleteAction: DataItemAction[String] =
       DataItemAction.DeleteAction(firstDataItem.id, sign(deleteSignature, ownerKeyPair.`private`))
     val deleteResult = service.processAction(Envelope(deleteAction, testTableId, Everyone))

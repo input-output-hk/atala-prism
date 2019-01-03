@@ -40,7 +40,7 @@ class Table[I: NioCodec: TypeTag](val tableId: TableId, tableStorage: TableStora
       _ <- canValidate.validate(dataItem)
     } yield {
       val signatureValidation =
-        dataItem.owners.map(owner => isValidSignature(DeleteSignatureWrapper(dataItem), deleteSignature, owner.key))
+        dataItem.owners.map(owner => isValidSignature(LabeledItem.Delete(dataItem), deleteSignature, owner.key))
 
       val validSignature = signatureValidation.find(identity)
 
