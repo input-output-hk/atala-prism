@@ -6,6 +6,9 @@ import akka.util.ByteString
 import io.iohk.cef.codecs.string._
 import io.iohk.cef.codecs.nio._
 
+import pureconfig._
+import pureconfig.error._
+
 import scala.reflect.runtime.universe.TypeTag
 
 /**
@@ -66,6 +69,15 @@ private[crypto] abstract class EntityCompanion[T, DE[_], PE[_]](
 
   implicit def cryptoEntityCodec(implicit tt: TypeTag[T]): NioCodec[T] =
     TypedByteString.TypedByteStringNioCodec.mapOpt[T](encodeInto(_), (tbs: TypedByteString) => decodeFrom(tbs).toOption)
+
+  implicit def cryptoEntityConfigReader(implicit tt: TypeTag[T]): ConfigReader[T] = ConfigReader.fromCursor[T] { cur =>
+    cur.asString.flatMap { str =>
+      parseFrom(str) match {
+        case Right(ce) => Right(ce)
+        case Left(e) => cur.failed(CannotConvert(str, tt.tpe.toString, e.toString))
+      }
+    }
+  }
 }
 
 private[crypto] abstract class KeyEntityCompanion[T](implicit ev: T <:< KeyEntity[T, KeyEntityCompanion[T]])
