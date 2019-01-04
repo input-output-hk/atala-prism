@@ -2,20 +2,28 @@ load("//scala:rules.bzl", "scala_library", "scala_test")
 
 scala_library(
     name = "agreements",
-#    srcs = [],
-    deps = [ "//main/io/iohk/cef/codecs",
-             "//main/io/iohk/cef/network",
-             "//main/io/iohk/cef/crypto" ],
     exports = [],
+    deps = [
+        "//3rdparty/jvm/com/typesafe/akka:akka_actor",
+        "//3rdparty/jvm/org/slf4j:slf4j_api",
+        "//main/io/iohk/cef/codecs",
+        "//main/io/iohk/cef/crypto",
+        "//main/io/iohk/cef/network",
+    ],
 )
 
 scala_test(
     name = "tests",
-    deps = [ "agreements",
-             "//main/io/iohk/cef/test",
-             "//main/io/iohk/cef/codecs",
-             "//main/io/iohk/cef/codecs/nio/test/utils",
-             "//main/io/iohk/cef/network",
-             "//3rdparty/jvm/org/scalatest:scalatest",
-             "//3rdparty/jvm/org/mockito:mockito_core"]
+    deps = [
+        "agreements",
+        "//3rdparty/jvm/ch/qos/logback:logback_classic",
+        "//3rdparty/jvm/ch/qos/logback:logback_core",
+        "//3rdparty/jvm/org/mockito:mockito_core",
+        "//3rdparty/jvm/org/scalatest",
+        "//main/io/iohk/cef/codecs",
+        "//main/io/iohk/cef/codecs/nio/test/utils",
+        "//main/io/iohk/cef/network",
+        "//main/io/iohk/cef/network:tests",
+        "//main/io/iohk/cef/test",
+    ],
 )
