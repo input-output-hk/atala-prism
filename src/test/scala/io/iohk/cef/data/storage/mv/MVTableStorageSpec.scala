@@ -3,12 +3,12 @@ package io.iohk.cef.data.storage.mv
 import java.nio.file.{Files, Path}
 
 import io.iohk.cef.codecs.nio.auto._
-import io.iohk.cef.crypto.generateSigningKeyPair
+import io.iohk.cef.crypto._
 import io.iohk.cef.data.error.DataItemNotFound
 import io.iohk.cef.data.query.Query._
 import io.iohk.cef.data.query.Value.StringRef
 import io.iohk.cef.data.query.{Field, InvalidQueryError}
-import io.iohk.cef.data.{DataItem, NonEmptyList, Owner}
+import io.iohk.cef.data._
 import org.scalatest.EitherValues._
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
@@ -17,13 +17,14 @@ import scala.util.Random
 
 class MVTableStorageSpec extends FlatSpec {
 
-  private val defaultOwner = Owner(generateSigningKeyPair().public)
-
   behavior of "MVTableStorage"
 
   it should "insert and select a data item" in testStorage { storage =>
     // given
-    val expectedDataItem = DataItem("A", Random.nextString(28), Seq(), NonEmptyList(defaultOwner))
+    val data = Random.nextString(28)
+    val keys = generateSigningKeyPair()
+    val owner = Owner(keys.public, sign(LabeledItem.Create(data), keys.`private`))
+    val expectedDataItem = DataItem("A", data, Seq(), NonEmptyList(owner))
 
     // when
     storage.insert(expectedDataItem)
@@ -35,7 +36,10 @@ class MVTableStorageSpec extends FlatSpec {
 
   it should "delete a data item" in testStorage { storage =>
     // given
-    val dataItem = DataItem("A", Random.nextString(28), Seq(), NonEmptyList(defaultOwner))
+    val data = Random.nextString(28)
+    val keys = generateSigningKeyPair()
+    val owner = Owner(keys.public, sign(LabeledItem.Create(data), keys.`private`))
+    val dataItem = DataItem("A", data, Seq(), NonEmptyList(owner))
 
     // when
     storage.insert(dataItem)
@@ -48,7 +52,10 @@ class MVTableStorageSpec extends FlatSpec {
 
   it should "support a NoPredicate query" in testStorage { storage =>
     // given
-    val dataItem = DataItem("A", Random.nextString(28), Seq(), NonEmptyList(defaultOwner))
+    val data = Random.nextString(28)
+    val keys = generateSigningKeyPair()
+    val owner = Owner(keys.public, sign(LabeledItem.Create(data), keys.`private`))
+    val dataItem = DataItem("A", data, Seq(), NonEmptyList(owner))
     storage.insert(dataItem)
 
     // when
@@ -60,7 +67,10 @@ class MVTableStorageSpec extends FlatSpec {
 
   it should "support a simple field query" in testStorage { storage =>
     // given
-    val dataItem = DataItem("A", Random.nextString(28), Seq(), NonEmptyList(defaultOwner))
+    val data = Random.nextString(28)
+    val keys = generateSigningKeyPair()
+    val owner = Owner(keys.public, sign(LabeledItem.Create(data), keys.`private`))
+    val dataItem = DataItem("A", data, Seq(), NonEmptyList(owner))
     storage.insert(dataItem)
     val query = Field(0) #== StringRef("A")
 
@@ -73,7 +83,10 @@ class MVTableStorageSpec extends FlatSpec {
 
   it should "support a simple field query, negative case" in testStorage { storage =>
     // given
-    val dataItem = DataItem("A", Random.nextString(28), Seq(), NonEmptyList(defaultOwner))
+    val data = Random.nextString(28)
+    val keys = generateSigningKeyPair()
+    val owner = Owner(keys.public, sign(LabeledItem.Create(data), keys.`private`))
+    val dataItem = DataItem("A", data, Seq(), NonEmptyList(owner))
     storage.insert(dataItem)
     val query = Field(0) #== StringRef("B")
 
@@ -86,7 +99,10 @@ class MVTableStorageSpec extends FlatSpec {
 
   it should "return Right for an invalid query" in testStorage { storage =>
     // given
-    val dataItem = DataItem("A", Random.nextString(28), Seq(), NonEmptyList(defaultOwner)) // mildly annoying that data is required
+    val data = Random.nextString(28)
+    val keys = generateSigningKeyPair()
+    val owner = Owner(keys.public, sign(LabeledItem.Create(data), keys.`private`))
+    val dataItem = DataItem("A", data, Seq(), NonEmptyList(owner)) // mildly annoying that data is required
     storage.insert(dataItem)
     val query = Field(999) #== StringRef("A")
 
@@ -99,8 +115,13 @@ class MVTableStorageSpec extends FlatSpec {
 
   it should "support an and query" in testStorage { storage =>
     // given
-    val dataItemA = DataItem("A", Random.nextString(28), Seq(), NonEmptyList(defaultOwner))
-    val dataItemB = DataItem("B", Random.nextString(28), Seq(), NonEmptyList(defaultOwner))
+    val data = Random.nextString(28)
+    val data2 = Random.nextString(28)
+    val keys = generateSigningKeyPair()
+    val owner = Owner(keys.public, sign(LabeledItem.Create(data), keys.`private`))
+    val owner2 = Owner(keys.public, sign(data2, keys.`private`))
+    val dataItemA = DataItem("A", data, Seq(), NonEmptyList(owner))
+    val dataItemB = DataItem("B", data2, Seq(), NonEmptyList(owner2))
     storage.insert(dataItemA)
     storage.insert(dataItemB)
     val query = (Field(0) #== StringRef("A")) and (Field(0) #== StringRef("B"))
@@ -114,8 +135,13 @@ class MVTableStorageSpec extends FlatSpec {
 
   it should "support an or query" in testStorage { storage =>
     // given
-    val dataItemA = DataItem("A", Random.nextString(28), Seq(), NonEmptyList(defaultOwner))
-    val dataItemB = DataItem("B", Random.nextString(28), Seq(), NonEmptyList(defaultOwner))
+    val data = Random.nextString(28)
+    val data2 = Random.nextString(28)
+    val keys = generateSigningKeyPair()
+    val owner = Owner(keys.public, sign(LabeledItem.Create(data), keys.`private`))
+    val owner2 = Owner(keys.public, sign(LabeledItem.Create(data2), keys.`private`))
+    val dataItemA = DataItem("A", data, Seq(), NonEmptyList(owner))
+    val dataItemB = DataItem("B", data2, Seq(), NonEmptyList(owner2))
     storage.insert(dataItemA)
     storage.insert(dataItemB)
     val query = (Field(0) #== StringRef("A")) or (Field(0) #== StringRef("B"))

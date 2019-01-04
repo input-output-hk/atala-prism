@@ -2,7 +2,7 @@ package io.iohk.cef.integration
 
 import io.iohk.cef.codecs.nio._
 import io.iohk.cef.codecs.nio.auto._
-import io.iohk.cef.crypto.generateSigningKeyPair
+import io.iohk.cef.crypto._
 import io.iohk.cef.data.DataItemAction.InsertAction
 import io.iohk.cef.data._
 import io.iohk.cef.data.query.QueryEngine
@@ -20,7 +20,6 @@ class NetworkDataItemServiceItFeatureSpec
     with NetworkFixture
     with MockitoSugar {
 
-  private val defaultOwner = Owner(generateSigningKeyPair().public)
   private implicit val executionContext = scala.concurrent.ExecutionContext.global
   private val bootstrap = randomBaseNetwork(None)
 
@@ -72,7 +71,9 @@ class NetworkDataItemServiceItFeatureSpec
     val data = "test-data"
     val itemId = "item-id"
     val containerId = "1"
-    val dataItem = DataItem[String](itemId, data, Seq.empty[Witness], NonEmptyList(defaultOwner))
+    val keys = generateSigningKeyPair()
+    val owner = Owner(keys.public, sign(LabeledItem.Create(data), keys.`private`))
+    val dataItem = DataItem[String](itemId, data, Seq.empty[Witness], NonEmptyList(owner))
     val insert: DataItemAction[String] = InsertAction(dataItem)
     val input = Envelope(
       content = insert,

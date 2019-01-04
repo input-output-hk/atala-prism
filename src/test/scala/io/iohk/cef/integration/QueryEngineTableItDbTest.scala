@@ -4,7 +4,7 @@ import java.nio.file.Files
 import java.util.UUID
 
 import io.iohk.cef.codecs.nio.auto._
-import io.iohk.cef.crypto.generateSigningKeyPair
+import io.iohk.cef.crypto._
 import io.iohk.cef.data._
 import io.iohk.cef.data.query.{Field, QueryEngine, QueryRequest, QueryResponse}
 import io.iohk.cef.data.storage.mv.MVTableStorage
@@ -20,7 +20,6 @@ import scala.concurrent.Future
 
 class QueryEngineTableItDbTest extends FlatSpec with MustMatchers with EitherValues {
 
-  private val defaultOwner = Owner(generateSigningKeyPair().public)
   behavior of "QueryEngineTableItDbTest"
 
   it should "query existing data items" in {
@@ -42,8 +41,21 @@ class QueryEngineTableItDbTest extends FlatSpec with MustMatchers with EitherVal
     val service = new DataItemService(realTable, fakeDataItemNetwork, realEngine)
 
     //Given -- there are data items
-    val di1 = DataItem("insert1", "value1", Seq(), NonEmptyList(defaultOwner))
-    val di2 = DataItem("insert2", "value2", Seq(), NonEmptyList(defaultOwner))
+    val keys = generateSigningKeyPair()
+
+    val data1 = "value1"
+    val data2 = "value2"
+
+    val labeledItem1 = LabeledItem.Create(data1)
+    val labeledItem2 = LabeledItem.Create(data2)
+
+    val owner1 = Owner(keys.public, sign(labeledItem1, keys.`private`))
+    val owner2 = Owner(keys.public, sign(labeledItem2, keys.`private`))
+
+    val witness1 = Witness(owner1.key, sign(data1, keys.`private`))
+    val di1 = DataItem("insert1", data1, Seq(witness1), NonEmptyList(owner1))
+    val di2 = DataItem("insert2", data2, Seq(), NonEmptyList(owner2))
+
     val insert1 = Envelope(DataItemAction.InsertAction(di1), tableId, Everyone)
     val insert2 = Envelope(DataItemAction.InsertAction(di2), tableId, Everyone)
 
