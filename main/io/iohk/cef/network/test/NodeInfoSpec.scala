@@ -3,7 +3,6 @@ package io.iohk.cef.network
 import java.net.{Inet6Address, InetSocketAddress, URI}
 
 import io.iohk.cef.utils.HexStringCodec._
-import org.bouncycastle.util.encoders.DecoderException
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 import org.scalatest.Inside._
@@ -70,7 +69,7 @@ class NodeInfoSpec extends FlatSpec {
     val parseResult = NodeInfo.fromUri(p2pUri, discoveryUri, capabilities)
 
     inside(parseResult) {
-      case Failure(e: DecoderException) =>
+      case Failure(e: Exception) =>
         e.getMessage shouldBe "exception decoding Hex string: invalid characters encountered in Hex string"
     }
   }
