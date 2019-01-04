@@ -5,10 +5,12 @@ import java.net.InetSocketAddress
 import io.iohk.cef.network.discovery.NetworkDiscovery
 import io.iohk.cef.codecs.nio._
 import io.iohk.cef.codecs.nio.auto._
+
 import scala.reflect.runtime.universe.TypeTag
 import io.iohk.cef.network.monixstream.MonixMessageStream
 import io.iohk.cef.network.transport.Transports.usesTcp
 import io.iohk.cef.network.transport._
+import org.slf4j.LoggerFactory
 
 /**
   * Represents a conversational model of the network
@@ -23,7 +25,7 @@ import io.iohk.cef.network.transport._
   * @param transports helpers to obtain network transport instances.
   */
 class ConversationalNetwork[Message: NioCodec: TypeTag](networkDiscovery: NetworkDiscovery, transports: Transports) {
-
+  private val log = LoggerFactory.getLogger(classOf[ConversationalNetwork[Message]])
   val peerConfig: PeerConfig = transports.peerConfig
 
   /**
@@ -70,6 +72,7 @@ class ConversationalNetwork[Message: NioCodec: TypeTag](networkDiscovery: Networ
     transports.tcp[Frame[Message]]
 
   private def sendMessage(frame: Frame[Message]): Unit = {
+    log.debug(s"Sending message $frame")
     networkDiscovery
       .nearestPeerTo(frame.header.dst)
       .foreach(remotePeerInfo => {
