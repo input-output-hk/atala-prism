@@ -16,7 +16,7 @@ import io.iohk.cef.transactionservice.Envelope
 
 import scala.reflect.runtime.universe._
 
-private[config] class DataItemServiceConfig(
+private[config] class DataItemServiceBuilder(
     cefConfig: CefConfig,
     tableId: TableId,
     storagePath:Path,

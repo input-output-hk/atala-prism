@@ -34,14 +34,14 @@ private[config] class CefServices(cefConfig: CefConfig) {
       txCodec: NioCodec[Tx],
       txTypeTag: TypeTag[Tx],
       ec: ExecutionContext): NodeTransactionService[State, Tx] = {
-    new TransactionServiceConfig(cefConfig, log, clock, transports, networkDiscovery).cefTransactionServiceChannel()
+    new TransactionServiceBuilder(cefConfig, log, clock, transports, networkDiscovery).cefTransactionServiceChannel()
   }
   def cefDataItemServiceChannel[T](tableId: TableId, storagePath: Path )(implicit codec:NioCodec[T], typeTag: TypeTag[T] ,canValidate:CanValidate[DataItem[T]]): DataItemService[T] =
-    new DataItemServiceConfig(cefConfig, tableId, storagePath, clock, transports, networkDiscovery)
+    new DataItemServiceBuilder(cefConfig, tableId, storagePath, clock, transports, networkDiscovery)
       .cefDataItemServiceChannel()
 
   def cefAgreementsServiceChannel[T: NioCodec: TypeTag](): AgreementsService[T] =
-    new AgreementsServiceConfig(cefConfig,transports,networkDiscovery)
+    new AgreementsServiceBuilder(cefConfig,transports,networkDiscovery)
       .cefAgreementsServiceChannel()
 
   def shutdown(): Unit =
