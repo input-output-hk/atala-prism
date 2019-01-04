@@ -35,6 +35,7 @@ scala_library(
         "//main/io/iohk/cef/error",
         "//main/io/iohk/cef/network",
         "//main/io/iohk/cef/utils",
+        "//main/io/iohk/cef/agreements"
     ],
 )
 
