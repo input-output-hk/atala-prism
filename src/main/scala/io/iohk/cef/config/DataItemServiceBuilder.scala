@@ -17,17 +17,20 @@ import io.iohk.cef.transactionservice.Envelope
 import scala.reflect.runtime.universe._
 
 private[config] class DataItemServiceBuilder(
-    cefConfig: CefConfig,
-    tableId: TableId,
-    storagePath:Path,
-    clock: Clock,
-    transports: Transports,
-    networkDiscovery: NetworkDiscovery) {
+                                              cefConfig: CefConfig,
+                                              tableId: TableId,
+                                              storagePath: Path,
+                                              clock: Clock,
+                                              transports: Transports,
+                                              networkDiscovery: NetworkDiscovery) {
 
-  def cefDataItemServiceChannel[T]()(implicit codec:NioCodec[T], typeTag: TypeTag[T] ,canValidate:CanValidate[DataItem[T]]): DataItemService[T] = {
+  def cefDataItemServiceChannel[T]()(
+    implicit codec: NioCodec[T],
+    typeTag: TypeTag[T],
+    canValidate: CanValidate[DataItem[T]]): DataItemService[T] = {
 
-    val tableStorage = new MVTableStorage[T](tableId,storagePath)
-    val table = new Table(tableId,tableStorage)
+    val tableStorage = new MVTableStorage[T](tableId, storagePath)
+    val table = new Table(tableId, tableStorage)
     val network = Network[Envelope[DataItemAction[T]]](networkDiscovery, transports)
     val requestNetwork = Network[Envelope[QueryRequest]](networkDiscovery, transports)
     val responseNetwork = Network[Envelope[QueryResponse[T]]](networkDiscovery, transports)
@@ -35,6 +38,6 @@ private[config] class DataItemServiceBuilder(
     val queryEngine =
       new QueryEngine(cefConfig.peerConfig.nodeId, table, requestNetwork, responseNetwork, () => UUID.randomUUID().toString)
 
-    new DataItemService[T](table, network,queryEngine)
+    new DataItemService[T](table, network, queryEngine)
   }
 }
