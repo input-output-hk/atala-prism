@@ -5,7 +5,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 import io.iohk.cef.agreements.AgreementsService
 import io.iohk.cef.codecs.nio._
-import io.iohk.cef.data.{DataItemService, TableId}
+import io.iohk.cef.data.{CanValidate, DataItem, DataItemService, TableId}
 import io.iohk.cef.ledger.Transaction
 import io.iohk.cef.network.NetworkServices
 import io.iohk.cef.network.transport.Transports
@@ -16,27 +16,6 @@ import scala.collection.JavaConverters._
 import scala.concurrent.ExecutionContext
 import scala.reflect.runtime.universe._
 
-object CefServices {
-  private val services = new ConcurrentHashMap[CefConfig, CefServices]().asScala
-
-  def cefTransactionServiceChannel[State, Tx <: Transaction[State]](cefConfig: CefConfig)(
-      implicit stateCodec: NioCodec[State],
-      stateTypeTag: TypeTag[State],
-      txCodec: NioCodec[Tx],
-      txTypeTag: TypeTag[Tx],
-      ec: ExecutionContext): NodeTransactionService[State, Tx] = {
-    services.getOrElseUpdate(cefConfig, new CefServices(cefConfig)).cefTransactionServiceChannel()
-  }
-  def cefDataItemServiceChannel[T: NioCodec: TypeTag](
-      cefConfig: CefConfig,
-      tableId: TableId,
-      storagePath: Path): DataItemService[T] =
-    services.getOrElseUpdate(cefConfig, new CefServices(cefConfig)).cefDataItemServiceChannel(tableId,storagePath)
-
-  def cefAgreementsServiceChannel[T: NioCodec: TypeTag](
-                                                       cefConfig: CefConfig): AgreementsService[T] =
-    services.getOrElseUpdate(cefConfig, new CefServices(cefConfig)).cefAgreementsServiceChannel()
-}
 
 private[config] class CefServices(cefConfig: CefConfig) {
 
@@ -57,7 +36,7 @@ private[config] class CefServices(cefConfig: CefConfig) {
       ec: ExecutionContext): NodeTransactionService[State, Tx] = {
     new TransactionServiceConfig(cefConfig, log, clock, transports, networkDiscovery).cefTransactionServiceChannel()
   }
-  def cefDataItemServiceChannel[T: NioCodec: TypeTag](tableId: TableId, storagePath: Path): DataItemService[T] =
+  def cefDataItemServiceChannel[T](tableId: TableId, storagePath: Path )(implicit codec:NioCodec[T], typeTag: TypeTag[T] ,canValidate:CanValidate[DataItem[T]]): DataItemService[T] =
     new DataItemServiceConfig(cefConfig, tableId, storagePath, clock, transports, networkDiscovery)
       .cefDataItemServiceChannel()
 
@@ -67,4 +46,26 @@ private[config] class CefServices(cefConfig: CefConfig) {
 
   def shutdown(): Unit =
     transports.shutdown()
+}
+
+object CefServices {
+  private val services = new ConcurrentHashMap[CefConfig, CefServices]().asScala
+
+  def cefTransactionServiceChannel[State, Tx <: Transaction[State]](cefConfig: CefConfig)(
+    implicit stateCodec: NioCodec[State],
+    stateTypeTag: TypeTag[State],
+    txCodec: NioCodec[Tx],
+    txTypeTag: TypeTag[Tx],
+    ec: ExecutionContext): NodeTransactionService[State, Tx] = {
+    services.getOrElseUpdate(cefConfig, new CefServices(cefConfig)).cefTransactionServiceChannel()
+  }
+  def cefDataItemServiceChannel[T: NioCodec: TypeTag](
+                                                       cefConfig: CefConfig,
+                                                       tableId: TableId,
+                                                       storagePath: Path)(implicit canValidate:CanValidate[DataItem[T]]): DataItemService[T] =
+    services.getOrElseUpdate(cefConfig, new CefServices(cefConfig)).cefDataItemServiceChannel(tableId,storagePath)
+
+  def cefAgreementsServiceChannel[T: NioCodec: TypeTag](
+                                                         cefConfig: CefConfig): AgreementsService[T] =
+    services.getOrElseUpdate(cefConfig, new CefServices(cefConfig)).cefAgreementsServiceChannel()
 }

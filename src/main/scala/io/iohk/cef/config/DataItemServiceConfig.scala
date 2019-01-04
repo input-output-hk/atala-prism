@@ -9,7 +9,6 @@ import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.data._
 import io.iohk.cef.data.query.{QueryEngine, QueryRequest, QueryResponse}
 import io.iohk.cef.data.storage.mv.MVTableStorage
-import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.network.Network
 import io.iohk.cef.network.discovery.NetworkDiscovery
 import io.iohk.cef.network.transport.Transports
@@ -25,11 +24,7 @@ private[config] class DataItemServiceConfig(
     transports: Transports,
     networkDiscovery: NetworkDiscovery) {
 
-  def cefDataItemServiceChannel[T: NioCodec: TypeTag](): DataItemService[T] = {
-
-    implicit val canValidate = new CanValidate[DataItem[T]] {
-      override def validate(t: DataItem[T]): Either[ApplicationError, Unit] = Right(())
-    }
+  def cefDataItemServiceChannel[T]()(implicit codec:NioCodec[T], typeTag: TypeTag[T] ,canValidate:CanValidate[DataItem[T]]): DataItemService[T] = {
 
     val tableStorage = new MVTableStorage[T](tableId,storagePath)
     val table = new Table(tableId,tableStorage)
