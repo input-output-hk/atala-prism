@@ -68,4 +68,9 @@ object CefServices {
   def cefAgreementsServiceChannel[T: NioCodec: TypeTag](
                                                          cefConfig: CefConfig): AgreementsService[T] =
     services.getOrElseUpdate(cefConfig, new CefServices(cefConfig)).cefAgreementsServiceChannel()
+
+  def shutdown: Unit = {
+    services.map(_._2).foreach(_.shutdown())
+    }
+  }
 }
