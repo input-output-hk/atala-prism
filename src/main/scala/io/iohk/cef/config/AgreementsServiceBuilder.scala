@@ -7,7 +7,7 @@ import io.iohk.cef.network.transport.Transports
 
 import scala.reflect.runtime.universe._
 
-private[config] class AgreementsServiceConfig(
+private[config] class AgreementsServiceBuilder(
     cefConfig: CefConfig,
     transports: Transports,
     networkDiscovery: NetworkDiscovery) {

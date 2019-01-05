@@ -5,7 +5,7 @@ import akka.http.scaladsl.testkit.ScalatestRouteTest
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import io.iohk.cef.builder.SigningKeyPairs
 import io.iohk.cef.codecs.nio.auto._
-import io.iohk.cef.crypto.generateSigningKeyPair
+import io.iohk.cef.crypto._
 import io.iohk.cef.data._
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.frontend.controllers.common.Codecs
@@ -32,7 +32,6 @@ class ItemsGenericControllerSpec
   import Codecs._
   import ItemsGenericControllerSpec._
 
-  private val defaultOwner = Owner(generateSigningKeyPair().public)
   implicit val executionContext = system.dispatcher
   val service = mock[DataItemService[BirthCertificate]]
 
@@ -60,20 +59,24 @@ class ItemsGenericControllerSpec
       controller.routes[BirthCertificate]("birth-certificates", service, 30 seconds)
 
     "create an item" in {
-      val owner = generateSigningKeyPair()
+      val keys = alice
+      val data = BirthCertificate("01/01/2015", "Input Output HK")
+      val signature = sign(LabeledItem.Create(data), keys.`private`)
       val body =
         s"""
           |{
           | "content": {
           |   "id":"birth-cert",
-          |   "data":
-          |     {
-          |       "date": "01/01/2015",
-          |       "name": "Input Output HK"
-          |     },
+          |   "data": {
+          |       "date": "${data.date}",
+          |       "name": "${data.name}"
+          |   },
           |   "witnesses": [],
           |   "owners": [
-          |     { "key": "${owner.public.toCompactString()}" }
+          |     {
+          |       "key": "${keys.public.toCompactString()}",
+          |       "signature": "${signature.toCompactString()}"
+          |     }
           |   ]
           |  },
           |  "containerId": "nothing",
@@ -128,7 +131,6 @@ class ItemsGenericControllerSpec
       val deleteRequest = Post("/birth-certificates/delete", HttpEntity(ContentTypes.`application/json`, deleteBody))
 
       deleteRequest ~> routes ~> check {
-
         val json = responseAs[JsValue]
         status must ===(StatusCodes.OK)
         json.toString must ===("{}")
@@ -137,26 +139,32 @@ class ItemsGenericControllerSpec
     }
 
     "validate an item" in {
-      val ownerKeyPair = bob
+      val keys = bob
+      val data = BirthCertificate("01/01/2015", "Input Output HK")
+      val signature = sign(LabeledItem.Create(data), keys.`private`)
       val body =
         s"""
-          |{
-          | "content": {
-          |   "id":"birth-cert",
-          |   "data":
-          |     {
-          |       "date": "01/01/2015",
-          |       "name": "Input Output HK"
-          |     },
-          |   "witnesses":[],
-          |   "owners":[{"key": "${ownerKeyPair.public.toCompactString}"}]
-          |  },
-          |  "containerId": "nothing",
-          |  "destinationDescriptor": {
-          |    "type": "everyone",
-          |    "obj": {}
-          |  }
-          |}
+           |{
+           | "content": {
+           |   "id":"birth-cert",
+           |   "data": {
+           |       "date": "${data.date}",
+           |       "name": "${data.name}"
+           |   },
+           |   "witnesses": [],
+           |   "owners": [
+           |     {
+           |       "key": "${keys.public.toCompactString()}",
+           |       "signature": "${signature.toCompactString()}"
+           |     }
+           |   ]
+           |  },
+           |  "containerId": "nothing",
+           |  "destinationDescriptor": {
+           |    "type": "everyone",
+           |    "obj": {}
+           |  }
+           |}
         """.stripMargin
       val validateRequest = Post("/birth-certificates/validation", HttpEntity(ContentTypes.`application/json`, body))
 

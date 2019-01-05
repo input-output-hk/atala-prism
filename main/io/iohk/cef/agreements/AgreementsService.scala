@@ -17,5 +17,5 @@ class AgreementsService[T: NioCodec](networkDiscovery: NetworkDiscovery, transpo
   def agree(correlationId: String, data: T): Future[Unit] = ???
 
   // receive notifications of proposals and agreements
-  val agreementEvents: MessageStream[AgreementMessage[T]] = ???
+  def agreementEvents: MessageStream[AgreementMessage[T]] = ???
 }

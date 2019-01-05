@@ -22,7 +22,7 @@ import org.slf4j.Logger
 import scala.concurrent.ExecutionContext
 import scala.reflect.runtime.universe._
 
-private[config] class TransactionServiceConfig(
+private[config] class TransactionServiceBuilder(
     cefConfig: CefConfig,
     logger: Logger,
     clock: Clock,

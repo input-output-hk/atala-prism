@@ -1,7 +1,7 @@
 package io.iohk.cef.data
 
 import io.iohk.cef.codecs.nio.auto._
-import io.iohk.cef.crypto.{Signature, _}
+import io.iohk.cef.crypto._
 import io.iohk.cef.data.DataItemAction._
 import io.iohk.cef.data.query.QueryEngine
 import io.iohk.cef.network.{MessageStream, Network}
@@ -19,8 +19,12 @@ class DataItemServiceSpec extends FlatSpec {
   private val table = mock[Table[String]]
   private implicit val canValidate: CanValidate[DataItem[String]] = _ => Right(())
 
-  private val defaultOwner = Owner(generateSigningKeyPair().public)
-  private val dataItem: DataItem[String] = DataItem("id", "foo", Seq(), NonEmptyList(defaultOwner))
+  private val defaultKeys = generateSigningKeyPair()
+  private val defaultItemId = "id"
+  private val defaultItemData = "foo"
+  private val defaultSignature = sign(LabeledItem.Create(defaultItemData), defaultKeys.`private`)
+  private val defaultOwner = Owner(defaultKeys.public, defaultSignature)
+  private val dataItem: DataItem[String] = DataItem(defaultItemId, defaultItemData, Seq(), NonEmptyList(defaultOwner))
   private val containerId = "container-id"
 
   behavior of "DataItemService"
