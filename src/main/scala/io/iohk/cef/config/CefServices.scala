@@ -71,6 +71,5 @@ object CefServices {
 
   def shutdown: Unit = {
     services.map(_._2).foreach(_.shutdown())
-    }
   }
 }
