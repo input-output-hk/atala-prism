@@ -2,9 +2,9 @@ package io.iohk.cef.frontend.controllers.common
 
 import akka.util.ByteString
 import io.iohk.cef.crypto._
-import io.iohk.cef.data.query.Query._
+import io.iohk.cef.data.query.DataItemQuery._
 import io.iohk.cef.data.query.Value.{BooleanRef, ByteRef, CharRef, DoubleRef, FloatRef, IntRef, LongRef, ShortRef, StringRef}
-import io.iohk.cef.data.query.{Field, Query, Value => ValueRef}
+import io.iohk.cef.data.query.{Field, DataItemQuery, Value => ValueRef}
 import io.iohk.cef.data.{NonEmptyList, _}
 import io.iohk.cef.frontend.models._
 import io.iohk.cef.ledger.chimeric._
@@ -93,7 +93,7 @@ object Codecs {
       JsObject(map)
     }
   }
-  implicit val eqPredicateQueryFormat = Json.format[Query.Predicate.Eq]
+  implicit val eqPredicateQueryFormat = Json.format[DataItemQuery.Predicate.Eq]
   implicit val andPredicateQueryFormat = new Format[Predicate.And] {
     val pqf: Format[Predicate] = createPredicateQueryFormat
     val seqpf: Format[Seq[Predicate]] = seqFormat(pqf)
@@ -115,7 +115,7 @@ object Codecs {
     }
   }
 
-  def createPredicateQueryFormat: Format[Query.Predicate] = new Format[Predicate] {
+  def createPredicateQueryFormat: Format[DataItemQuery.Predicate] = new Format[Predicate] {
     override def reads(json: JsValue): JsResult[Predicate] = {
       (json \ "type").validate[String] match {
         case JsSuccess("eqPredicate", _) => json.validate[Predicate.Eq]
@@ -140,19 +140,19 @@ object Codecs {
 
   implicit val predicateQueryFormat = createPredicateQueryFormat
 
-  implicit val queryFormat: Format[Query] = new Format[Query] {
-    override def reads(json: JsValue): JsResult[Query] = {
+  implicit val queryFormat: Format[DataItemQuery] = new Format[DataItemQuery] {
+    override def reads(json: JsValue): JsResult[DataItemQuery] = {
       (json \ "type").validate[String] match {
-        case JsSuccess("noPredicateQuery", _) => JsSuccess(NoPredicateQuery)
+        case JsSuccess("noPredicateQuery", _) => JsSuccess(NoPredicateDataItemQuery)
         case JsSuccess("predicateQuery", _) => json.validate[Predicate]
         case JsSuccess(_, _) => JsError("Invalid Query")
         case x: JsError => x
       }
     }
 
-    override def writes(o: Query): JsValue = {
+    override def writes(o: DataItemQuery): JsValue = {
       val (tpe, json) = o match {
-        case NoPredicateQuery => ("noPredicateQuery", JsNull)
+        case NoPredicateDataItemQuery => ("noPredicateQuery", JsNull)
         case p: Predicate => ("predicateQuery", Json.toJson(p)(predicateQueryFormat))
       }
 

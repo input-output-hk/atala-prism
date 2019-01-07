@@ -6,7 +6,7 @@ import akka.stream.Materializer
 import com.alexitc.playsonify.core.I18nService
 import com.alexitc.playsonify.models.{GenericPublicError, InputValidationError, PublicError, _}
 import io.iohk.cef.codecs.nio._
-import io.iohk.cef.data.query.Query
+import io.iohk.cef.data.query.DataItemQuery
 import io.iohk.cef.data.{CanValidate, DataItem, DataItemAction, DataItemService}
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.frontend.controllers.common.Codecs.DataItemServiceResponseWrites
@@ -24,12 +24,12 @@ class ItemsGenericController(implicit ec: ExecutionContext, mat: Materializer) e
   import ItemsGenericController._
 
   def routes[D](prefix: String, service: DataItemService[D], queryResultTimeout: FiniteDuration)(
-      implicit format: Reads[Envelope[DataItem[D]]],
-      queryFormat: Reads[Envelope[Query]],
-      queryResponseFormat: Writes[Seq[DataItem[D]]],
-      identifierFormat: Reads[Envelope[DataItemIdentifier]],
-      itemSerializable: NioCodec[D],
-      canValidate: CanValidate[DataItem[D]]): Route = {
+    implicit format: Reads[Envelope[DataItem[D]]],
+    queryFormat: Reads[Envelope[DataItemQuery]],
+    queryResponseFormat: Writes[Seq[DataItem[D]]],
+    identifierFormat: Reads[Envelope[DataItemIdentifier]],
+    itemSerializable: NioCodec[D],
+    canValidate: CanValidate[DataItem[D]]): Route = {
     pathPrefix(prefix) {
       path("validation") {
         post {
@@ -67,7 +67,7 @@ class ItemsGenericController(implicit ec: ExecutionContext, mat: Materializer) e
             }
           } ~
             get {
-              publicInput(StatusCodes.OK) { ctx: HasModel[Envelope[Query]] =>
+              publicInput(StatusCodes.OK) { ctx: HasModel[Envelope[DataItemQuery]] =>
                 val futureEither = service
                   .processQuery(ctx.model)
                   .withTimeout(queryResultTimeout)

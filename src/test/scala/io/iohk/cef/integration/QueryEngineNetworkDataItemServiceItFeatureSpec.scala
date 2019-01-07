@@ -8,7 +8,7 @@ import io.iohk.cef.crypto._
 import io.iohk.cef.data.DataItemAction.InsertAction
 import io.iohk.cef.data.DataItemServiceResponse.DIUnit
 import io.iohk.cef.data._
-import io.iohk.cef.data.query.{Field, QueryEngine, QueryRequest, QueryResponse}
+import io.iohk.cef.data.query.{Field, DataItemQueryEngine, DataItemQueryRequest, DataItemQueryResponse}
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.network.{Network, NetworkFixture}
 import io.iohk.cef.transactionservice.{DestinationDescriptor, Envelope, Everyone}
@@ -40,11 +40,11 @@ class QueryEngineNetworkDataItemServiceItFeatureSpec
 
     val txNetwork = Network[Envelope[DataItemAction[String]]](baseNetwork.networkDiscovery, baseNetwork.transports)
     val queryRequestNetwork =
-      Network[Envelope[QueryRequest]](baseNetwork.networkDiscovery, baseNetwork.transports)
+      Network[Envelope[DataItemQueryRequest]](baseNetwork.networkDiscovery, baseNetwork.transports)
     val queryResponseNetwork =
-      Network[Envelope[QueryResponse[String]]](baseNetwork.networkDiscovery, baseNetwork.transports)
+      Network[Envelope[DataItemQueryResponse[String]]](baseNetwork.networkDiscovery, baseNetwork.transports)
     val queryEngine =
-      new QueryEngine[String](
+      new DataItemQueryEngine[String](
         baseNetwork.transports.peerConfig.nodeId,
         table,
         queryRequestNetwork,
