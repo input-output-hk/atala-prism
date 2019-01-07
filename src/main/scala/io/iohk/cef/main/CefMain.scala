@@ -8,20 +8,21 @@ import akka.stream.ActorMaterializer
 import akka.util.Timeout
 import io.iohk.cef.config.CefServices
 import io.iohk.cef.ledger.Transaction
+import io.iohk.cef.utils.Logger
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 
 class CefMain[S, T <: Transaction[S]] private(bindingFuture: Future[Http.ServerBinding])
                                              (implicit executionContext: ExecutionContext,
-                                              system: ActorSystem) {
+                                              system: ActorSystem) extends Logger {
 
   CoordinatedShutdown(system).addTask(
     CoordinatedShutdown.PhaseServiceUnbind, "http_shutdown") { () =>
-    println("...Shutting down CEF...")
+    log.info("Shutting down CEF")
     bindingFuture.flatMap(_.terminate(hardDeadline = 1.minute)).map { _ =>
       CefServices.shutdown
-      println("Shut down complete")
+      log.info("Shut down complete")
       Done
     }
   }
