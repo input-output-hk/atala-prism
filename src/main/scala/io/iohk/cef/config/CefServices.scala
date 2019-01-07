@@ -69,7 +69,7 @@ object CefServices {
                                                          cefConfig: CefConfig): AgreementsService[T] =
     services.getOrElseUpdate(cefConfig, new CefServices(cefConfig)).cefAgreementsServiceChannel()
 
-  def shutdown: Unit = {
-    services.map(_._2).foreach(_.shutdown())
+  def shutdown(): Unit = {
+    services.foreach { case(_, service) => service.shutdown() }
   }
 }
