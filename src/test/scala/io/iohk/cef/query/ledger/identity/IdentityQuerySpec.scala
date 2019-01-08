@@ -7,6 +7,7 @@ import io.iohk.cef.crypto._
 import io.iohk.cef.ledger.LedgerState
 import io.iohk.cef.query.Query
 import io.iohk.cef.query.ledger.LedgerQueryEngine
+import io.iohk.cef.query.ledger.identity.IdentityQuery.{ExistsIdentity, RetrieveIdentityKeys}
 import org.mockito.Mockito.when
 
 class IdentityQuerySpec extends FlatSpec with MustMatchers {
