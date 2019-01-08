@@ -1,7 +1,7 @@
-package io.iohk.query.ledger
+package io.iohk.cef.query.ledger
 
 import io.iohk.cef.ledger.storage.LedgerStateStorage
-import io.iohk.query.QueryEngine
+import io.iohk.cef.query.QueryEngine
 
 case class LedgerQueryEngine[S](ledgerStateStorage: LedgerStateStorage[S]) extends QueryEngine {
   def get(partitionId: String): Option[S] = ledgerStateStorage.slice(Set(partitionId)).get(partitionId)

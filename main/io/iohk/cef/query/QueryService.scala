@@ -1,4 +1,4 @@
-package io.iohk.query
+package io.iohk.cef.query
 
 /** Public API for the **internal** access to perform a query */
 trait QueryService[QE <: QueryEngine, Q <: Query[QE]] {
