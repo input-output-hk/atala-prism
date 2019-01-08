@@ -9,7 +9,10 @@ import io.iohk.cef.crypto._
 import io.iohk.cef.data._
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.frontend.controllers.common.Codecs
+import io.iohk.cef.test.DummyMessageStream
 import io.iohk.cef.transactionservice.Envelope
+import monix.execution.schedulers.TestScheduler
+import monix.reactive.Observable
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
 import org.mockito.invocation.InvocationOnMock
@@ -178,6 +181,55 @@ class ItemsGenericControllerSpec
 
   }
 
+  "GET /certificates" should {
+    implicit val canValidate: CanValidate[DataItem[BirthCertificate]] = _ => Right(Unit)
+    lazy val routes =
+      controller.routes[BirthCertificate]("birth-certificates", service, 30 seconds)
+
+    val emptyObservable = Observable.empty[Either[ApplicationError, Seq[DataItem[BirthCertificate]]]]
+    val monixScheduler: TestScheduler = TestScheduler.apply()
+    val queryResult = new DummyMessageStream(emptyObservable)(monixScheduler)
+    when(service.processQuery(any())).thenReturn(queryResult)
+
+    "succeed" in {
+      val queryBody =
+        """
+          |{
+          |  "type": "predicateQuery",
+          |  "value": {
+          |        "type" : "eqPredicate",
+          |        "value" : {
+          |          "field" : {
+          |            "index" : 2
+          |          },
+          |          "value" : {
+          |            "type" : "stringRef",
+          |            "value" : {
+          |              "value" : "string"
+          |            }
+          |          }
+          |        }
+          |      }
+          |}
+          """.stripMargin
+
+      val body =
+        s"""
+          |{
+          |  "containerId": "1",
+          |  "destinationDescriptor": {
+          |    "type": "everyone",
+          |    "obj": {}
+          |  },
+          |  "content": $queryBody
+          |}
+        """.stripMargin
+      val request = Get("/birth-certificates", HttpEntity(ContentTypes.`application/json`, body))
+      request ~> routes ~> check {
+        status must ===(StatusCodes.OK)
+      }
+    }
+  }
 }
 
 object ItemsGenericControllerSpec {
