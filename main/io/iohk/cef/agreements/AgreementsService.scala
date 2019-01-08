@@ -3,52 +3,54 @@ package io.iohk.cef.agreements
 import java.util.concurrent.ConcurrentHashMap
 
 import io.iohk.cef.agreements.AgreementsMessage._
-import io.iohk.cef.codecs.nio._
-import io.iohk.cef.codecs.nio.auto._
-import io.iohk.cef.network.discovery.NetworkDiscovery
-import io.iohk.cef.network.transport.Transports
 import io.iohk.cef.network.{ConversationalNetwork, MessageStream}
 
 import scala.collection.JavaConverters._
-import scala.reflect.runtime.universe._
 
-class AgreementsService[T: NioCodec: TypeTag](networkDiscovery: NetworkDiscovery, transports: Transports) {
+class AgreementsService[T](network: ConversationalNetwork[AgreementMessage[T]]) {
 
-  private val activeProposals = new ConcurrentHashMap[String, Propose[T]]().asScala
-
-  private val networkChannel = new ConversationalNetwork[AgreementMessage[T]](networkDiscovery, transports)
+  private val proposalsReceived = new ConcurrentHashMap[String, Propose[T]]().asScala
 
   // aliased to NodeId until the network can address Identities.
-  private val userId: UserId = transports.peerConfig.nodeId
+  private val userId: UserId = network.peerConfig.nodeId
 
   // receive notifications of proposals and agreements
-  val agreementEvents: MessageStream[AgreementMessage[T]] = networkChannel.messageStream.map {
+  val agreementEvents: MessageStream[AgreementMessage[T]] = network.messageStream.map {
     case p:Propose[T] =>
-      activeProposals.put(p.correlationId, p)
+      proposalsReceived.put(p.correlationId, p)
       p
-    case m:AgreementMessage[T] =>
-      activeProposals.remove(m.correlationId)
-      m
+    case e => e
   }
 
   // Send agreement to a list of userId who you wish to agree something
   // Successful execution should guarantee that all parties have received the Proposal.
   def propose(correlationId: String, data: T, to: List[UserId]): Unit = {
     val proposal = Propose(correlationId, userId, data)
-    to.foreach(recipient => networkChannel.sendMessage(recipient, proposal))
+    to.foreach(recipient => network.sendMessage(recipient, proposal))
   }
 
   // agree to a proposal
   // return an Agreement to the proposer containing the data agreed to
   // (NB: this might be different to the data in the proposal
   def agree(correlationId: String, data: T): Unit = {
-    val agreement = Agree(correlationId, userId, data)
-    activeProposals.get(correlationId).foreach(proposal => networkChannel.sendMessage(proposal.proposedBy, agreement))
+    val proposal = proposalReceived(correlationId)
+    try {
+      network.sendMessage(proposal.proposedBy, Agree(correlationId, userId, data))
+    } finally {
+      proposalsReceived.remove(correlationId)
+    }
   }
 
   // turn down a proposal
   def decline(correlationId: String): Unit = {
-    val decline = Decline[T](correlationId, userId)
-    activeProposals.get(correlationId).foreach(proposal => networkChannel.sendMessage(proposal.proposedBy, decline))
+    val proposal = proposalReceived(correlationId)
+    try {
+      network.sendMessage(proposal.proposedBy, Decline[T](correlationId, userId))
+    } finally {
+      proposalsReceived.remove(correlationId)
+    }
   }
+
+  private def proposalReceived(correlationId: String): Propose[T] =
+    proposalsReceived.getOrElse(correlationId, throw new IllegalArgumentException(s"Unknown correlationId '$correlationId'."))
 }

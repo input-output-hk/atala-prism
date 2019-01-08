@@ -42,7 +42,7 @@ private[network] class NettyTransport(address: InetSocketAddress) {
     .bind(address)
     .await()
 
-  println(s"Bound to address $address")
+  log.debug(s"Bound to address $address")
 
   def withMessageApplication[Message](codec: NioCodec[Message], handler: (InetSocketAddress, Message) => Unit): UUID = {
     val uuid = UUID.randomUUID()
