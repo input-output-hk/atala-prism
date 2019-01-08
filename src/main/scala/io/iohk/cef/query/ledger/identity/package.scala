@@ -1,4 +1,4 @@
-package io.iohk.query.ledger
+package io.iohk.cef.query.ledger
 
 import io.iohk.cef.crypto._
 
