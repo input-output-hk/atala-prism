@@ -13,7 +13,7 @@ class IdentityQuerySpec extends FlatSpec with MustMatchers {
 
   behavior of "IdentityQuery"
 
-  it should "query for the identity kesy" in {
+  it should "query for the identity keys" in {
     val stateStorage = mock[LedgerStateStorage[Set[SigningPublicKey]]]
     val mockKey = mock[SigningPublicKey]
     val engine = LedgerQueryEngine(stateStorage)
