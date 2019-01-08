@@ -36,6 +36,7 @@ scala_library(
         "//main/io/iohk/cef/error",
         "//main/io/iohk/cef/network",
         "//main/io/iohk/cef/utils",
+        "//main/io/iohk/cef/query",
     ],
 )
 
@@ -94,5 +95,6 @@ scala_test(
         "//3rdparty/jvm/com/sun/xml/bind:jaxb_core",
         "//3rdparty/jvm/com/sun/xml/bind:jaxb_impl",
         "//3rdparty/jvm/javax/activation",
+        "//main/io/iohk/cef/query",
     ],
 )

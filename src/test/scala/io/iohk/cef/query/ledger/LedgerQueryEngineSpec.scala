@@ -2,10 +2,9 @@ package io.iohk.cef.query.ledger
 
 import io.iohk.cef.ledger.LedgerState
 import io.iohk.cef.ledger.storage.LedgerStateStorage
-import io.iohk.query.ledger.LedgerQueryEngine
-import org.scalatest.{FlatSpec, MustMatchers}
+import org.mockito.Mockito.when
 import org.scalatest.mockito.MockitoSugar._
-import org.mockito.Mockito.{when}
+import org.scalatest.{FlatSpec, MustMatchers}
 
 class LedgerQueryEngineSpec extends FlatSpec with MustMatchers {
 
