@@ -4,7 +4,7 @@ import akka.util.ByteString
 import io.iohk.cef.crypto._
 import io.iohk.cef.data.query.DataItemQuery._
 import io.iohk.cef.data.query.Value.{BooleanRef, ByteRef, CharRef, DoubleRef, FloatRef, IntRef, LongRef, ShortRef, StringRef}
-import io.iohk.cef.data.query.{Field, DataItemQuery, Value => ValueRef}
+import io.iohk.cef.data.query.{DataItemQuery, Field, Value => ValueRef}
 import io.iohk.cef.data.{NonEmptyList, _}
 import io.iohk.cef.frontend.models._
 import io.iohk.cef.ledger.chimeric._
@@ -60,16 +60,17 @@ object Codecs {
 
   implicit val valueQueryFormat = new Format[ValueRef] {
     override def reads(json: JsValue): JsResult[ValueRef] = {
+      val value = json \ "value"
       (json \ "type").validate[String] match {
-        case JsSuccess("doubleRef", _) => json.validate[DoubleRef]
-        case JsSuccess("floatRef", _) => json.validate[FloatRef]
-        case JsSuccess("longRef", _) => json.validate[LongRef]
-        case JsSuccess("intRef", _) => json.validate[IntRef]
-        case JsSuccess("shortRef", _) => json.validate[ShortRef]
-        case JsSuccess("byteRef", _) => json.validate[ByteRef]
-        case JsSuccess("booleanRef", _) => json.validate[BooleanRef]
-        case JsSuccess("charRef", _) => json.validate[CharRef]
-        case JsSuccess("stringRef", _) => json.validate[StringRef]
+        case JsSuccess("doubleRef", _) => value.validate[DoubleRef]
+        case JsSuccess("floatRef", _) => value.validate[FloatRef]
+        case JsSuccess("longRef", _) => value.validate[LongRef]
+        case JsSuccess("intRef", _) => value.validate[IntRef]
+        case JsSuccess("shortRef", _) => value.validate[ShortRef]
+        case JsSuccess("byteRef", _) => value.validate[ByteRef]
+        case JsSuccess("booleanRef", _) => value.validate[BooleanRef]
+        case JsSuccess("charRef", _) => value.validate[CharRef]
+        case JsSuccess("stringRef", _) => value.validate[StringRef]
         case JsSuccess(_, _) => JsError("Invalid Query Value")
         case x: JsError => x
       }
@@ -88,7 +89,7 @@ object Codecs {
         case x: StringRef => ("stringRef", Json.toJson(x)(stringRefQueryFormat))
       }
 
-      val map = Map("type" -> JsString(tpe), "fragment" -> json)
+      val map = Map("type" -> JsString(tpe), "value" -> json)
 
       JsObject(map)
     }
@@ -117,10 +118,11 @@ object Codecs {
 
   def createPredicateQueryFormat: Format[DataItemQuery.Predicate] = new Format[Predicate] {
     override def reads(json: JsValue): JsResult[Predicate] = {
+      val value = json \ "value"
       (json \ "type").validate[String] match {
-        case JsSuccess("eqPredicate", _) => json.validate[Predicate.Eq]
-        case JsSuccess("orPredicate", _) => json.validate[Predicate.Or]
-        case JsSuccess("andPredicate", _) => json.validate[Predicate.And]
+        case JsSuccess("eqPredicate", _) => value.validate[Predicate.Eq]
+        case JsSuccess("orPredicate", _) => value.validate[Predicate.Or]
+        case JsSuccess("andPredicate", _) => value.validate[Predicate.And]
         case JsSuccess(_, _) => JsError("Invalid predicate")
         case x: JsError => x
       }
@@ -132,7 +134,7 @@ object Codecs {
         case x: Predicate.Or => ("orPredicate", Json.toJson(x)(orPredicateQueryFormat))
         case x: Predicate.And => ("andPredicate", Json.toJson(x)(andPredicateQueryFormat))
       }
-      val map = Map("type" -> JsString(tpe), "fragment" -> json)
+      val map = Map("type" -> JsString(tpe), "value" -> json)
 
       JsObject(map)
     }
@@ -142,9 +144,10 @@ object Codecs {
 
   implicit val queryFormat: Format[DataItemQuery] = new Format[DataItemQuery] {
     override def reads(json: JsValue): JsResult[DataItemQuery] = {
+      val value = json \ "value"
       (json \ "type").validate[String] match {
         case JsSuccess("noPredicateQuery", _) => JsSuccess(NoPredicateDataItemQuery)
-        case JsSuccess("predicateQuery", _) => json.validate[Predicate]
+        case JsSuccess("predicateQuery", _) => value.validate[Predicate]
         case JsSuccess(_, _) => JsError("Invalid Query")
         case x: JsError => x
       }
@@ -156,7 +159,7 @@ object Codecs {
         case p: Predicate => ("predicateQuery", Json.toJson(p)(predicateQueryFormat))
       }
 
-      val map = Map("type" -> JsString(tpe), "fragment" -> json)
+      val map = Map("type" -> JsString(tpe), "value" -> json)
 
       JsObject(map)
     }
