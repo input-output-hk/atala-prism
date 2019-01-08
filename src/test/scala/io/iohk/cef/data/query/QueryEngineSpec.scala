@@ -2,7 +2,7 @@ package io.iohk.cef.data.query
 
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.crypto._
-import io.iohk.cef.data.query.Query.NoPredicateQuery
+import io.iohk.cef.data.query.DataItemQuery.NoPredicateDataItemQuery
 import io.iohk.cef.data._
 import io.iohk.cef.network.{Network, NodeId}
 import io.iohk.cef.test.DummyMessageStream
@@ -27,32 +27,32 @@ class QueryEngineSpec extends FlatSpec with MustMatchers {
     val keys = generateSigningKeyPair()
     val owner = Owner(keys.public, sign(LabeledItem.Create(data), keys.`private`))
     val queryResult = Seq(DataItem("1", data, Seq(), NonEmptyList(owner)))
-    val queries = Seq(NoPredicateQuery)
-    val queryResponse = QueryResponse(queryId, Right(queryResult))
+    val queries = Seq(NoPredicateDataItemQuery)
+    val queryResponse = DataItemQueryResponse(queryId, Right(queryResult))
     val queryResponsesEnvelope = Envelope(queryResponse, tableId, Everyone)
 
     val queryIdsIterator = Seq(queryId).iterator
     implicit val scheduler = TestScheduler()
     val envResponsesIt = Seq(queryResponsesEnvelope).iterator
-    val observableRequest: Observable[Envelope[QueryRequest]] = Observable.empty
-    val observableResponse: Observable[Envelope[QueryResponse[String]]] = Observable.eval(envResponsesIt.next())
+    val observableRequest: Observable[Envelope[DataItemQueryRequest]] = Observable.empty
+    val observableResponse: Observable[Envelope[DataItemQueryResponse[String]]] = Observable.eval(envResponsesIt.next())
 
-    val requestMessageStream = new DummyMessageStream[Envelope[QueryRequest]](observableRequest)
-    val requestNetwork = mock[Network[Envelope[QueryRequest]]]
-    val responseNetwork: Network[Envelope[QueryResponse[String]]] = mock[Network[Envelope[QueryResponse[String]]]]
-    val responseMessageStream = new DummyMessageStream[Envelope[QueryResponse[String]]](observableResponse)
+    val requestMessageStream = new DummyMessageStream[Envelope[DataItemQueryRequest]](observableRequest)
+    val requestNetwork = mock[Network[Envelope[DataItemQueryRequest]]]
+    val responseNetwork: Network[Envelope[DataItemQueryResponse[String]]] = mock[Network[Envelope[DataItemQueryResponse[String]]]]
+    val responseMessageStream = new DummyMessageStream[Envelope[DataItemQueryResponse[String]]](observableResponse)
 
     when(table.tableId).thenReturn(tableId)
     when(requestNetwork.messageStream).thenReturn(requestMessageStream)
     when(responseNetwork.messageStream).thenReturn(responseMessageStream)
 
-    val engine = new QueryEngine(nodeId, table, requestNetwork, responseNetwork, () => queryIdsIterator.next())
+    val engine = new DataItemQueryEngine(nodeId, table, requestNetwork, responseNetwork, () => queryIdsIterator.next())
     val query = queries.head
     when(table.select(query)).thenReturn(Right(Seq()))
     val streamResult = engine.process(query)
     //verify query was disseminated
     verify(requestNetwork, times(1))
-      .disseminateMessage(Envelope(QueryRequest("query1", query, nodeId), tableId, Everyone))
+      .disseminateMessage(Envelope(DataItemQueryRequest("query1", query, nodeId), tableId, Everyone))
     verify(table, times(1)).select(query)
 
     val validation: Seq[DataItem[String]] => Unit = mock[Seq[DataItem[String]] => Unit]

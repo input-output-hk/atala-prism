@@ -3,14 +3,14 @@ package io.iohk.cef.data
 import io.iohk.cef.codecs.nio._
 import io.iohk.cef.transactionservice.Envelope
 import io.iohk.cef.data.DataItemAction._
-import io.iohk.cef.data.query.{Query, QueryEngine}
+import io.iohk.cef.data.query.{DataItemQuery, DataItemQueryEngine}
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.network.{MessageStream, Network}
 import io.iohk.cef.data.DataItemAction.{DeleteAction, InsertAction}
-import io.iohk.cef.data.query.{Query, QueryEngine}
+import io.iohk.cef.data.query.{DataItemQuery, DataItemQueryEngine}
 import scala.reflect.runtime.universe.TypeTag
 
-class DataItemService[T](table: Table[T], network: Network[Envelope[DataItemAction[T]]], queryEngine: QueryEngine[T])(
+class DataItemService[T](table: Table[T], network: Network[Envelope[DataItemAction[T]]], queryEngine: DataItemQueryEngine[T])(
     implicit enc: NioCodec[T],
     typeTag: TypeTag[T],
     canValidate: CanValidate[DataItem[T]]) {
@@ -24,7 +24,7 @@ class DataItemService[T](table: Table[T], network: Network[Envelope[DataItemActi
     handleMessage(envelope)
   }
 
-  def processQuery(envelope: Envelope[Query]): MessageStream[Either[ApplicationError, Seq[DataItem[T]]]] =
+  def processQuery(envelope: Envelope[DataItemQuery]): MessageStream[Either[ApplicationError, Seq[DataItem[T]]]] =
     queryEngine.process(envelope.content)
 
   private def handleMessage(message: Envelope[DataItemAction[T]]): Either[ApplicationError, DataItemServiceResponse] =

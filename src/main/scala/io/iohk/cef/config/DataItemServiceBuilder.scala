@@ -7,7 +7,7 @@ import java.util.UUID
 import io.iohk.cef.codecs.nio._
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.data._
-import io.iohk.cef.data.query.{QueryEngine, QueryRequest, QueryResponse}
+import io.iohk.cef.data.query.{DataItemQueryEngine, DataItemQueryRequest, DataItemQueryResponse}
 import io.iohk.cef.data.storage.mv.MVTableStorage
 import io.iohk.cef.network.Network
 import io.iohk.cef.network.discovery.NetworkDiscovery
@@ -32,11 +32,11 @@ private[config] class DataItemServiceBuilder(
     val tableStorage = new MVTableStorage[T](tableId, storagePath)
     val table = new Table(tableId, tableStorage)
     val network = Network[Envelope[DataItemAction[T]]](networkDiscovery, transports)
-    val requestNetwork = Network[Envelope[QueryRequest]](networkDiscovery, transports)
-    val responseNetwork = Network[Envelope[QueryResponse[T]]](networkDiscovery, transports)
+    val requestNetwork = Network[Envelope[DataItemQueryRequest]](networkDiscovery, transports)
+    val responseNetwork = Network[Envelope[DataItemQueryResponse[T]]](networkDiscovery, transports)
 
     val queryEngine =
-      new QueryEngine(cefConfig.peerConfig.nodeId, table, requestNetwork, responseNetwork, () => UUID.randomUUID().toString)
+      new DataItemQueryEngine(cefConfig.peerConfig.nodeId, table, requestNetwork, responseNetwork, () => UUID.randomUUID().toString)
 
     new DataItemService[T](table, network, queryEngine)
   }

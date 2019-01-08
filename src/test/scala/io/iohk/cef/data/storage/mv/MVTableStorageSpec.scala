@@ -5,9 +5,9 @@ import java.nio.file.{Files, Path}
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.crypto._
 import io.iohk.cef.data.error.DataItemNotFound
-import io.iohk.cef.data.query.Query._
+import io.iohk.cef.data.query.DataItemQuery._
 import io.iohk.cef.data.query.Value.StringRef
-import io.iohk.cef.data.query.{Field, InvalidQueryError}
+import io.iohk.cef.data.query.{Field, InvalidDataItemQueryError}
 import io.iohk.cef.data._
 import org.scalatest.EitherValues._
 import org.scalatest.FlatSpec
@@ -59,7 +59,7 @@ class MVTableStorageSpec extends FlatSpec {
     storage.insert(dataItem)
 
     // when
-    val selectionResult = storage.select(NoPredicateQuery).right.value
+    val selectionResult = storage.select(NoPredicateDataItemQuery).right.value
 
     // then
     selectionResult shouldBe Seq(dataItem)
@@ -110,7 +110,7 @@ class MVTableStorageSpec extends FlatSpec {
     val selectionResult = storage.select(query).left.value
 
     // then
-    selectionResult shouldBe InvalidQueryError("tableId", Field(999))
+    selectionResult shouldBe InvalidDataItemQueryError("tableId", Field(999))
   }
 
   it should "support an and query" in testStorage { storage =>

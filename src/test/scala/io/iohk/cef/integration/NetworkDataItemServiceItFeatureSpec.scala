@@ -5,7 +5,7 @@ import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.crypto._
 import io.iohk.cef.data.DataItemAction.InsertAction
 import io.iohk.cef.data._
-import io.iohk.cef.data.query.QueryEngine
+import io.iohk.cef.data.query.DataItemQueryEngine
 import io.iohk.cef.network.{Network, NetworkFixture}
 import io.iohk.cef.transactionservice.{DestinationDescriptor, Envelope, Everyone}
 import org.mockito.ArgumentMatchers._
@@ -31,7 +31,7 @@ class NetworkDataItemServiceItFeatureSpec
       frameCodec: NioCodec[Envelope[DataItemAction[String]]]) = {
 
     val txNetwork = Network[Envelope[DataItemAction[String]]](baseNetwork.networkDiscovery, baseNetwork.transports)
-    new DataItemService[String](table, txNetwork, mock[QueryEngine[String]])
+    new DataItemService[String](table, txNetwork, mock[DataItemQueryEngine[String]])
   }
 
   feature("Network DataItemService Integration") {

@@ -4,8 +4,8 @@ import java.nio.file.Path
 import io.iohk.cef.codecs.nio._
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.data.error.DataItemNotFound
-import io.iohk.cef.data.query.Query.Predicate.toPredicateFn
-import io.iohk.cef.data.query.Query.{Predicate, queryCata}
+import io.iohk.cef.data.query.DataItemQuery.Predicate.toPredicateFn
+import io.iohk.cef.data.query.DataItemQuery.{Predicate, queryCata}
 import io.iohk.cef.data.query.Value.StringRef
 import io.iohk.cef.data.query._
 import io.iohk.cef.data.storage.TableStorage
@@ -28,11 +28,11 @@ class MVTableStorage[I: NioCodec: TypeTag](tableId: TableId, storageFile: Path) 
   override def delete(dataItem: DataItem[I]): Unit =
     mvTable.update(_.remove(dataItem.id))
 
-  override def select(query: Query): Either[QueryError, Seq[DataItem[I]]] =
+  override def select(query: DataItemQuery): Either[DataItemQueryError, Seq[DataItem[I]]] =
     try {
       Right(runSearch(query))
     } catch {
-      case Error(e: InvalidQueryError) =>
+      case Error(e: InvalidDataItemQueryError) =>
         Left(e)
     }
 
@@ -42,7 +42,7 @@ class MVTableStorage[I: NioCodec: TypeTag](tableId: TableId, storageFile: Path) 
       .getOrElse(Left(DataItemNotFound(tableId, dataItemId)))
   }
 
-  private def runSearch(query: Query): Seq[DataItem[I]] =
+  private def runSearch(query: DataItemQuery): Seq[DataItem[I]] =
     queryCata(
       fNoPred = noPredicateResult,
       fPred = evaluatePredicate,
@@ -56,7 +56,7 @@ class MVTableStorage[I: NioCodec: TypeTag](tableId: TableId, storageFile: Path) 
 
   private def accessField(dataItem: DataItem[I], field: Field): Value = field match {
     case Field(0) => StringRef(dataItem.id)
-    case _ => throw Error(InvalidQueryError(tableId, field))
+    case _ => throw Error(InvalidDataItemQueryError(tableId, field))
   }
 
   private def evaluatePredicate(predicate: Predicate): Seq[DataItem[I]] =

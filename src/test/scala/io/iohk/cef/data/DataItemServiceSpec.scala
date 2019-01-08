@@ -3,7 +3,7 @@ package io.iohk.cef.data
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.crypto._
 import io.iohk.cef.data.DataItemAction._
-import io.iohk.cef.data.query.QueryEngine
+import io.iohk.cef.data.query.DataItemQueryEngine
 import io.iohk.cef.network.{MessageStream, Network}
 import io.iohk.cef.transactionservice.{Envelope, Everyone}
 import org.mockito.ArgumentMatchers.any
@@ -34,7 +34,7 @@ class DataItemServiceSpec extends FlatSpec {
     val messageStream = mock[MessageStream[Envelope[DataItemAction[String]]]]
     when(network.messageStream).thenReturn(messageStream)
     when(messageStream.foreach(any())).thenReturn(Future.successful(()))
-    val service: DataItemService[String] = new DataItemService(table, network, mock[QueryEngine[String]])
+    val service: DataItemService[String] = new DataItemService(table, network, mock[DataItemQueryEngine[String]])
     when(table.insert(any())(any())).thenReturn(Right(()))
 
     service.processAction(Envelope(InsertAction(dataItem), containerId, Everyone))
@@ -47,7 +47,7 @@ class DataItemServiceSpec extends FlatSpec {
     val messageStream = mock[MessageStream[Envelope[DataItemAction[String]]]]
     when(network.messageStream).thenReturn(messageStream)
     when(messageStream.foreach(any())).thenReturn(Future.successful(()))
-    val service: DataItemService[String] = new DataItemService(table, network, mock[QueryEngine[String]])
+    val service: DataItemService[String] = new DataItemService(table, network, mock[DataItemQueryEngine[String]])
 
     when(table.validate(any())(any())).thenReturn(true)
 
@@ -67,7 +67,7 @@ class DataItemServiceSpec extends FlatSpec {
     val messageStream = mock[MessageStream[Envelope[DataItemAction[String]]]]
     when(network.messageStream).thenReturn(messageStream)
     when(messageStream.foreach(any())).thenReturn(Future.successful(()))
-    val service: DataItemService[String] = new DataItemService(table, network, mock[QueryEngine[String]])
+    val service: DataItemService[String] = new DataItemService(table, network, mock[DataItemQueryEngine[String]])
     when(table.delete(any(), any())(any())).thenReturn(Right(()))
 
     service.processAction(Envelope(DeleteAction(dataItem.id, signature), containerId, Everyone))
