@@ -1,4 +1,4 @@
-package io.iohk.cef.query.chimeric
+package io.iohk.cef.query.ledger.chimeric
 
 import io.iohk.cef.query.ledger.LedgerQueryService
 

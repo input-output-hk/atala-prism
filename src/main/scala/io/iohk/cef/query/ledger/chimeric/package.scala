@@ -1,7 +1,6 @@
-package io.iohk.cef.query
+package io.iohk.cef.query.ledger
 
 import io.iohk.cef.ledger.chimeric.ChimericStateResult
-import io.iohk.cef.query.ledger.{LedgerQueryEngine, LedgerQueryService}
 
 package object chimeric {
   type ChimericPartition = ChimericStateResult
