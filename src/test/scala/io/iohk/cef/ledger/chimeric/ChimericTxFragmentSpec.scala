@@ -156,7 +156,8 @@ class ChimericTxFragmentSpec extends FlatSpec with MustMatchers with PropertyChe
       val wrongInput = input.copy(value = wrongValue)
 
       input(state, 1, "").right.value mustBe stateFrom(
-        getCurrencyPartitionId(currency) -> CreateCurrencyResult(CreateCurrency(currency)))
+        getCurrencyPartitionId(currency) -> CreateCurrencyResult(CreateCurrency(currency))
+      )
 
       missingInput(state, 1, "") mustBe Left(UnspentOutputNotFound(missingTxOutRef))
       wrongInput(state, 1, "") mustBe Left(UnspentOutputInvalidValue(txOutRef, wrongValue, value))
@@ -183,7 +184,8 @@ class ChimericTxFragmentSpec extends FlatSpec with MustMatchers with PropertyChe
       )
 
       Output(value, signingPublicKey)(state, txOutRef.index, txOutRef.txId) mustBe Left(
-        UnspentOutputAlreadyExists(txOutRef))
+        UnspentOutputAlreadyExists(txOutRef)
+      )
       Output(value2, signingPublicKey)(state, txOutRef2.index, txOutRef2.txId) mustBe Right(newState)
     }
   }

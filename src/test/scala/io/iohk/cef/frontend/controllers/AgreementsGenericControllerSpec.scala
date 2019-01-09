@@ -13,10 +13,7 @@ import org.scalatest.WordSpec
 import org.scalatest.mockito.MockitoSugar._
 import play.api.libs.json.{Format, Json}
 
-class AgreementsGenericControllerSpec
-    extends WordSpec
-    with ScalatestRouteTest
-    with PlayJsonSupport {
+class AgreementsGenericControllerSpec extends WordSpec with ScalatestRouteTest with PlayJsonSupport {
 
   import AgreementsGenericControllerSpec._
   import io.iohk.cef.frontend.controllers.common.Codecs._

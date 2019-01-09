@@ -19,7 +19,8 @@ object ProductCodecComponents {
   def hListEncoder[H, T <: HList](
       implicit hEncoder: Lazy[NioEncoder[H]],
       tEncoder: NioEncoder[T],
-      hlistTT: TypeTag[H :: T]): NioEncoder[H :: T] = {
+      hlistTT: TypeTag[H :: T]
+  ): NioEncoder[H :: T] = {
     new NioEncoder[H :: T] {
       val typeTag: TypeTag[H :: T] = hlistTT
       def encode(l: H :: T): ByteBuffer = l match {
@@ -35,7 +36,8 @@ object ProductCodecComponents {
   def hListDecoder[H, T <: HList](
       implicit hDecoder: Lazy[NioDecoder[H]],
       tDecoder: NioDecoder[T],
-      hlistTT: TypeTag[H :: T]): NioDecoder[H :: T] =
+      hlistTT: TypeTag[H :: T]
+  ): NioDecoder[H :: T] =
     NioDecoder({ b: ByteBuffer =>
       {
         val initPosition = (b: java.nio.Buffer).position()

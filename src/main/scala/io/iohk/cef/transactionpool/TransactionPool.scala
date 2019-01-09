@@ -21,7 +21,8 @@ class TransactionPool[State: NioCodec: TypeTag, Tx <: Transaction[State]](
     headerGenerator: Seq[Transaction[State]] => BlockHeader,
     maxBlockSize: Int,
     ledgerStateStorage: LedgerStateStorage[State],
-    defaultTransactionExpiration: Duration) {
+    defaultTransactionExpiration: Duration
+) {
   require(0 <= maxBlockSize)
   type Q = TimedQueue[Tx]
   type B = Block[State, Tx]
@@ -56,7 +57,8 @@ class TransactionPool[State: NioCodec: TypeTag, Tx <: Transaction[State]](
   private def copy(
       queue: Q = timedQueue,
       headerGenerator: Seq[Transaction[State]] => BlockHeader = headerGenerator,
-      maxBlockSize: Int = maxBlockSize): TransactionPool[State, Tx] =
+      maxBlockSize: Int = maxBlockSize
+  ): TransactionPool[State, Tx] =
     new TransactionPool(queue, headerGenerator, maxBlockSize, ledgerStateStorage, defaultTransactionExpiration)
 
   private def size(txs: Q): Int = txs.queue.size

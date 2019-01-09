@@ -34,7 +34,9 @@ class ChimericLedgerItDbTest extends FlatSpec {
           Output(value3 - singleFee, signingPublicKey),
           Fee(singleFee)
         ),
-        signingPrivateKey))
+        signingPrivateKey
+      )
+    )
     val transactions = List[ChimericTx](
       ChimericTx(
         Seq(
@@ -43,7 +45,8 @@ class ChimericLedgerItDbTest extends FlatSpec {
           Mint(value1),
           Mint(value2),
           Deposit(address1, value1 + value2, signingPublicKey)
-        )),
+        )
+      ),
       ChimericTx(
         signFragments(
           Seq(
@@ -51,7 +54,9 @@ class ChimericLedgerItDbTest extends FlatSpec {
             Deposit(address2, value1 - multiFee, signingPublicKey),
             Fee(multiFee)
           ),
-          signingPrivateKey)),
+          signingPrivateKey
+        )
+      ),
       utxoTx
     )
     val header = BlockHeader()
@@ -72,7 +77,8 @@ class ChimericLedgerItDbTest extends FlatSpec {
         utxoKey -> UtxoResult(value3 - singleFee, Some(signingPublicKey)),
         address1Key -> AddressResult(value2 - value3, Some(signingPublicKey)),
         address2Key -> AddressResult(value1 - multiFee, Some(signingPublicKey))
-      ))
+      )
+    )
 
     val txFragments: Seq[ChimericTxFragment] = Seq(
       Input(TxOutRef(utxoTx.txId, 1), value3 - singleFee),
@@ -84,7 +90,8 @@ class ChimericLedgerItDbTest extends FlatSpec {
     val block2 =
       Block[ChimericStateResult, ChimericTx](
         header,
-        Seq(ChimericTx(signFragments(signFragments(txFragments, signingPrivateKey), signingPrivateKey))))
+        Seq(ChimericTx(signFragments(signFragments(txFragments, signingPrivateKey), signingPrivateKey)))
+      )
 
     val result2 = ledger(block2)
     result2.isRight mustBe true
@@ -93,6 +100,7 @@ class ChimericLedgerItDbTest extends FlatSpec {
         currency1Key -> CreateCurrencyResult(CreateCurrency(currency1)),
         currency2Key -> CreateCurrencyResult(CreateCurrency(currency2)),
         address2Key -> AddressResult(value1 - multiFee, Some(signingPublicKey))
-      ))
+      )
+    )
   }
 }

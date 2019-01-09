@@ -49,12 +49,15 @@ class ChimericTransactionsControllerSpec
         CreateNonSignableChimericTransactionFragment(Mint(value = Value(Map("USD" -> BigDecimal(200))))),
         CreateNonSignableChimericTransactionFragment(Fee(value = Value(Map("GBP" -> BigDecimal(9990))))),
         CreateNonSignableChimericTransactionFragment(
-          Output(Value(Map("EUR" -> BigDecimal(5))), signingKeyPair1.public)),
+          Output(Value(Map("EUR" -> BigDecimal(5))), signingKeyPair1.public)
+        ),
         CreateNonSignableChimericTransactionFragment(
           Deposit(
             address = "another",
             value = Value(Map("PLN" -> BigDecimal(100000))),
-            signingPublicKey = signingKeyPair1.public)),
+            signingPublicKey = signingKeyPair1.public
+          )
+        ),
         CreateNonSignableChimericTransactionFragment(CreateCurrency(currency = "AUD"))
       )
       val entity = CreateChimericTransactionRequest(fragments = fragments, "1")
@@ -71,10 +74,12 @@ class ChimericTransactionsControllerSpec
       val fragments: Seq[CreateChimericTransactionFragment] = Seq(
         CreateSignableChimericTransactionFragment(
           Withdrawal(address = "dummy", value = Value(Map("MXN" -> BigDecimal(10))), nonce = 1),
-          signingKeyPair1.`private`),
+          signingKeyPair1.`private`
+        ),
         CreateSignableChimericTransactionFragment(
           Input(txOutRef = TxOutRef("txid", 0), value = Value(Map("CAD" -> BigDecimal(200)))),
-          signingKeyPair2.`private`)
+          signingKeyPair2.`private`
+        )
       )
       val entity = CreateChimericTransactionRequest(fragments = fragments, "1")
 
@@ -90,19 +95,24 @@ class ChimericTransactionsControllerSpec
       val fragments: Seq[CreateChimericTransactionFragment] = Seq(
         CreateSignableChimericTransactionFragment(
           Withdrawal(address = "dummy", value = Value(Map("MXN" -> BigDecimal(10))), nonce = 1),
-          signingKeyPair1.`private`),
+          signingKeyPair1.`private`
+        ),
         CreateSignableChimericTransactionFragment(
           Input(txOutRef = TxOutRef("txid", 0), value = Value(Map("CAD" -> BigDecimal(200)))),
-          signingKeyPair2.`private`),
+          signingKeyPair2.`private`
+        ),
         CreateNonSignableChimericTransactionFragment(Mint(value = Value(Map("USD" -> BigDecimal(200))))),
         CreateNonSignableChimericTransactionFragment(Fee(value = Value(Map("GBP" -> BigDecimal(9990))))),
         CreateNonSignableChimericTransactionFragment(
-          Output(Value(Map("EUR" -> BigDecimal(5))), signingKeyPair1.public)),
+          Output(Value(Map("EUR" -> BigDecimal(5))), signingKeyPair1.public)
+        ),
         CreateNonSignableChimericTransactionFragment(
           Deposit(
             address = "another",
             value = Value(Map("PLN" -> BigDecimal(100000))),
-            signingPublicKey = signingKeyPair1.public)),
+            signingPublicKey = signingKeyPair1.public
+          )
+        ),
         CreateNonSignableChimericTransactionFragment(CreateCurrency(currency = "AUD"))
       )
       val entity = CreateChimericTransactionRequest(fragments = fragments, "1")

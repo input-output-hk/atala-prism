@@ -13,7 +13,7 @@ class DataItemCodecSpec extends FlatSpec with CodecTestingHelpers with CryptoEnt
   behavior of "CryptoEntities Codecs"
 
   implicit def arbitraryNonEmptyList[T: Arbitrary]: Arbitrary[NonEmptyList[T]] =
-    Arbitrary(arbitrary[List[T]].filter(_.nonEmpty).map{_.asInstanceOf[NonEmptyList[T]]})
+    Arbitrary(arbitrary[List[T]].filter(_.nonEmpty).map { _.asInstanceOf[NonEmptyList[T]] })
 
   implicit val arbitraryWitness: Arbitrary[Witness] = Arbitrary(Gen.resultOf(Witness.apply _))
   implicit val arbitraryOwner: Arbitrary[Owner] = Arbitrary(Gen.resultOf(Owner.apply _))

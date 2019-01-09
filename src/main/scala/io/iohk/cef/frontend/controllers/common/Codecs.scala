@@ -3,7 +3,17 @@ package io.iohk.cef.frontend.controllers.common
 import akka.util.ByteString
 import io.iohk.cef.crypto._
 import io.iohk.cef.data.query.DataItemQuery._
-import io.iohk.cef.data.query.Value.{BooleanRef, ByteRef, CharRef, DoubleRef, FloatRef, IntRef, LongRef, ShortRef, StringRef}
+import io.iohk.cef.data.query.Value.{
+  BooleanRef,
+  ByteRef,
+  CharRef,
+  DoubleRef,
+  FloatRef,
+  IntRef,
+  LongRef,
+  ShortRef,
+  StringRef
+}
 import io.iohk.cef.data.query.{DataItemQuery, Field, Value => ValueRef}
 import io.iohk.cef.data.{NonEmptyList, _}
 import io.iohk.cef.frontend.models._
@@ -40,13 +50,14 @@ object Codecs {
     }
   }
 
-  private def formatWrappedT[Wrapped : Format, Wrapper](
+  private def formatWrappedT[Wrapped: Format, Wrapper](
       unwrap: Wrapper => Wrapped,
-      wrap: Wrapped => Wrapper): Format[Wrapper] = new Format[Wrapper] {
+      wrap: Wrapped => Wrapper
+  ): Format[Wrapper] = new Format[Wrapper] {
     override def reads(json: JsValue): JsResult[Wrapper] = {
       json
-          .validate[Wrapped]
-          .map(wrap)
+        .validate[Wrapped]
+        .map(wrap)
     }
 
     override def writes(o: Wrapper): JsValue = {
@@ -55,19 +66,23 @@ object Codecs {
   }
 
   implicit val fieldQueryFormat: Format[Field] = formatWrappedT[Int, Field](x => x.index, x => Field(x))
-  implicit val doubleRefQueryFormat: Format[DoubleRef] = formatWrappedT[Double, DoubleRef](x => x.value, x => DoubleRef(x))
+  implicit val doubleRefQueryFormat: Format[DoubleRef] =
+    formatWrappedT[Double, DoubleRef](x => x.value, x => DoubleRef(x))
   implicit val floatRefQueryFormat: Format[FloatRef] = formatWrappedT[Float, FloatRef](x => x.value, x => FloatRef(x))
   implicit val longRefQueryFormat: Format[LongRef] = formatWrappedT[Long, LongRef](x => x.value, x => LongRef(x))
   implicit val intRefQueryFormat: Format[IntRef] = formatWrappedT[Int, IntRef](x => x.value, x => IntRef(x))
   implicit val shortRefQueryFormat: Format[ShortRef] = formatWrappedT[Short, ShortRef](x => x.value, x => ShortRef(x))
   implicit val byteRefQueryFormat: Format[ByteRef] = formatWrappedT[Byte, ByteRef](x => x.value, x => ByteRef(x))
-  implicit val booleanRefQueryFormat: Format[BooleanRef] = formatWrappedT[Boolean, BooleanRef](x => x.value, x => BooleanRef(x))
-  implicit val stringRefQueryFormat: Format[StringRef] = formatWrappedT[String, StringRef](x => x.value, x => StringRef(x))
+  implicit val booleanRefQueryFormat: Format[BooleanRef] =
+    formatWrappedT[Boolean, BooleanRef](x => x.value, x => BooleanRef(x))
+  implicit val stringRefQueryFormat: Format[StringRef] =
+    formatWrappedT[String, StringRef](x => x.value, x => StringRef(x))
   implicit val charRefQueryFormat: Format[CharRef] = new Format[CharRef] {
     override def reads(json: JsValue): JsResult[CharRef] =
-      json.validate[String].
-          filter(JsError("Invalid char length"))(_.size == 1)
-          .map(_.charAt(0))
+      json
+        .validate[String]
+        .filter(JsError("Invalid char length"))(_.size == 1)
+        .map(_.charAt(0))
 
     override def writes(o: CharRef): JsValue = {
       JsString(o.value.toString)
@@ -105,9 +120,7 @@ object Codecs {
         case x: StringRef => ("stringRef", Json.toJson(x)(stringRefQueryFormat))
       }
 
-      Json.obj(
-        "type" -> JsString(tpe),
-        "value" -> json)
+      Json.obj("type" -> JsString(tpe), "value" -> json)
     }
   }
 
@@ -152,9 +165,7 @@ object Codecs {
         case x: Predicate.And => ("andPredicate", Json.toJson(x)(andPredicateQueryFormat))
       }
 
-      Json.obj(
-        "type" -> JsString(tpe),
-        "value" -> json)
+      Json.obj("type" -> JsString(tpe), "value" -> json)
     }
   }
 
@@ -177,15 +188,14 @@ object Codecs {
         case p: Predicate => ("predicateQuery", Json.toJson(p)(predicateQueryFormat))
       }
 
-      Json.obj(
-        "type" -> JsString(tpe),
-        "value" -> json)
+      Json.obj("type" -> JsString(tpe), "value" -> json)
     }
   }
 
   implicit def signingKeyPairWrites(
       implicit pub: Writes[SigningPublicKey],
-      priv: Writes[SigningPrivateKey]): Writes[SigningKeyPair] = Writes { obj =>
+      priv: Writes[SigningPrivateKey]
+  ): Writes[SigningKeyPair] = Writes { obj =>
     val map = Map(
       "publicKey" -> pub.writes(obj.public),
       "privateKey" -> priv.writes(obj.`private`)
@@ -301,7 +311,7 @@ object Codecs {
     }
 
   implicit lazy val createNonSignableChimericTransactionFragmentFormat
-    : Format[CreateNonSignableChimericTransactionFragment] = Json.format[CreateNonSignableChimericTransactionFragment]
+      : Format[CreateNonSignableChimericTransactionFragment] = Json.format[CreateNonSignableChimericTransactionFragment]
 
   implicit lazy val createSignableChimericTransactionFragmentFormat: Format[CreateSignableChimericTransactionFragment] =
     Json.format[CreateSignableChimericTransactionFragment]
@@ -313,11 +323,13 @@ object Codecs {
           case x: CreateNonSignableChimericTransactionFragment =>
             (
               "createNonSignableChimericTransactionFragment",
-              Json.toJson(x)(createNonSignableChimericTransactionFragmentFormat))
+              Json.toJson(x)(createNonSignableChimericTransactionFragmentFormat)
+            )
           case x: CreateSignableChimericTransactionFragment =>
             (
               "createSignableChimericTransactionFragment",
-              Json.toJson(x)(createSignableChimericTransactionFragmentFormat))
+              Json.toJson(x)(createSignableChimericTransactionFragmentFormat)
+            )
         }
 
         val map = Map(
@@ -507,21 +519,23 @@ object Codecs {
     }
   }
 
-  implicit def nonEmptyListFormat[T](implicit formatT: Format[T]): Format[NonEmptyList[T]] = new Format[NonEmptyList[T]] {
-    override def reads(json: JsValue): JsResult[NonEmptyList[T]] = {
-      json
+  implicit def nonEmptyListFormat[T](implicit formatT: Format[T]): Format[NonEmptyList[T]] =
+    new Format[NonEmptyList[T]] {
+      override def reads(json: JsValue): JsResult[NonEmptyList[T]] = {
+        json
           .validate[List[T]]
           .flatMap { list =>
-            NonEmptyList.from(list)
-                .map(JsSuccess.apply(_))
-                .getOrElse {
-                  JsError.apply("A non-empty list is expected")
-                }
+            NonEmptyList
+              .from(list)
+              .map(JsSuccess.apply(_))
+              .getOrElse {
+                JsError.apply("A non-empty list is expected")
+              }
           }
-    }
+      }
 
-    override def writes(o: NonEmptyList[T]): JsValue = {
-      Json.toJson(o: List[T])
+      override def writes(o: NonEmptyList[T]): JsValue = {
+        Json.toJson(o: List[T])
+      }
     }
-  }
 }

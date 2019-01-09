@@ -52,7 +52,8 @@ trait MockedRaftNodeFixture[Command] {
       neverTimeout,
       neverTimeout,
       stateMachine,
-      persistentStorage)
+      persistentStorage
+    )
   }
 
   def aFollower(persistentStorage: PersistentStorage[Command])(implicit ed: NioCodec[Command]): RaftNode[Command] =

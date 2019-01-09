@@ -63,7 +63,8 @@ class RaftRPCSpec extends FlatSpec {
       remoteNode: NetworkFixture,
       appendEntriesCalled: EntriesToAppend[String] => AppendEntriesResult,
       requestVoteCalled: VoteRequested => RequestVoteResult,
-      clientAppendCalled: Seq[String] => Future[Either[Redirect[String], Unit]]): RaftRPC[String] = {
+      clientAppendCalled: Seq[String] => Future[Either[Redirect[String], Unit]]
+  ): RaftRPC[String] = {
     val rpcFactory = new RaftRPCFactory[String](homeNode.networkDiscovery, homeNode.transports)
     rpcFactory.apply(remoteNode.nodeId.toString, appendEntriesCalled, requestVoteCalled, clientAppendCalled)
   }
@@ -75,7 +76,8 @@ class RaftRPCSpec extends FlatSpec {
       node2RPC: RaftRPC[String],
       node2AppendEntriesCalled: EntriesToAppend[String] => AppendEntriesResult,
       node2RequestVoteCalled: VoteRequested => RequestVoteResult,
-      node2ClientAppendCalled: Seq[String] => Future[Either[Redirect[String], Unit]])
+      node2ClientAppendCalled: Seq[String] => Future[Either[Redirect[String], Unit]]
+  )
 
   def createRPCFixture(): RPCFixture = {
     val node1 = NetUtils.randomNetworkFixture()
@@ -98,7 +100,8 @@ class RaftRPCSpec extends FlatSpec {
       node2RPC,
       node2AppendEntriesCalled,
       node2RequestVoteCalled,
-      node2ClientAppendCalled)
+      node2ClientAppendCalled
+    )
   }
 
   def rpcFixture(testCode: RPCFixture => Any): Unit = {

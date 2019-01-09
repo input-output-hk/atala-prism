@@ -16,7 +16,7 @@ class AgreementsService[T](network: ConversationalNetwork[AgreementMessage[T]]) 
 
   // receive notifications of proposals and agreements
   val agreementEvents: MessageStream[AgreementMessage[T]] = network.messageStream.map {
-    case p:Propose[T] =>
+    case p: Propose[T] =>
       proposalsReceived.put(p.correlationId, p)
       p
     case e => e
@@ -52,5 +52,8 @@ class AgreementsService[T](network: ConversationalNetwork[AgreementMessage[T]]) 
   }
 
   private def proposalReceived(correlationId: String): Propose[T] =
-    proposalsReceived.getOrElse(correlationId, throw new IllegalArgumentException(s"Unknown correlationId '$correlationId'."))
+    proposalsReceived.getOrElse(
+      correlationId,
+      throw new IllegalArgumentException(s"Unknown correlationId '$correlationId'.")
+    )
 }

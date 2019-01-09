@@ -34,7 +34,8 @@ class Table[I: NioCodec: TypeTag](val tableId: TableId, tableStorage: TableStora
   }
 
   def delete(dataItemId: DataItemId, deleteSignature: Signature)(
-      implicit canValidate: CanValidate[DataItem[I]]): Either[ApplicationError, Unit] = {
+      implicit canValidate: CanValidate[DataItem[I]]
+  ): Either[ApplicationError, Unit] = {
     for {
       dataItem <- tableStorage.selectSingle(dataItemId)
       _ <- canValidate.validate(dataItem)

@@ -9,11 +9,12 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class RaftConsensusInterface[State, Tx <: Transaction[State]](
     val ledgerId: LedgerId,
-    raftConsensus: RaftConsensus[Block[State, Tx]])
-    extends Consensus[State, Tx] {
+    raftConsensus: RaftConsensus[Block[State, Tx]]
+) extends Consensus[State, Tx] {
 
-  override def process(block: Block[State, Tx])(
-      implicit executionContext: ExecutionContext): Future[Either[ConsensusError, Unit]] = {
+  override def process(
+      block: Block[State, Tx]
+  )(implicit executionContext: ExecutionContext): Future[Either[ConsensusError, Unit]] = {
     raftConsensus.appendEntries(Seq(block)).map(_ => Right(()))
   }
 }

@@ -28,10 +28,12 @@ class NodeTransactionService[State, Tx <: Transaction[State]](
     consensusMap: Map[LedgerId, (TransactionPoolInterface[State, Tx], Consensus[State, Tx])],
     txNetwork: Network[Envelope[Tx]],
     blockNetwork: Network[Envelope[Block[State, Tx]]],
-    me: NodeId)(
+    me: NodeId
+)(
     implicit txSerializable: NioCodec[Envelope[Tx]],
     blockSerializable: NioCodec[Envelope[Block[State, Tx]]],
-    executionContext: ExecutionContext) {
+    executionContext: ExecutionContext
+) {
 
   blockNetwork.messageStream.foreach(blEnvelope => processBlock(blEnvelope, Future.successful(Right(()))))
   txNetwork.messageStream.foreach(txEnvelope => processTransaction(txEnvelope, Future.successful(Right(()))))
@@ -46,7 +48,8 @@ class NodeTransactionService[State, Tx <: Transaction[State]](
 
   private def processTransaction(
       txEnvelope: Envelope[Tx],
-      networkDissemination: Future[Either[ApplicationError, Unit]]) = {
+      networkDissemination: Future[Either[ApplicationError, Unit]]
+  ) = {
     process(txEnvelope, networkDissemination) { env =>
       val txPoolService = consensusMap(env.containerId)._1
       Future(txPoolService.processTransaction(txEnvelope.content))
@@ -55,13 +58,15 @@ class NodeTransactionService[State, Tx <: Transaction[State]](
 
   private def processBlock(
       blEnvelope: Envelope[Block[State, Tx]],
-      networkDissemination: Future[Either[ApplicationError, Unit]]) = {
+      networkDissemination: Future[Either[ApplicationError, Unit]]
+  ) = {
     process(blEnvelope, networkDissemination)(env => consensusMap(env.containerId)._2.process(env.content))
   }
 
   private def disseminate[A](
       envelope: Envelope[A],
-      network: Network[Envelope[A]]): Future[Either[ApplicationError, Unit]] =
+      network: Network[Envelope[A]]
+  ): Future[Either[ApplicationError, Unit]] =
     Future(Right(network.disseminateMessage(envelope)))
 
   private def thisIsDestination[A](envelope: Envelope[A]): Boolean = envelope.destinationDescriptor(me)
@@ -69,8 +74,8 @@ class NodeTransactionService[State, Tx <: Transaction[State]](
   private def thisParticipatesInConsensus(ledgerId: LedgerId): Boolean = consensusMap.contains(ledgerId)
 
   private def process[T](txEnvelope: Envelope[T], networkDissemination: Future[Either[ApplicationError, Unit]])(
-      submit: Envelope[T] => Future[Either[ApplicationError, Unit]])(
-      implicit byteStringSerializable: NioCodec[Envelope[T]]): Future[Either[ApplicationError, Unit]] = {
+      submit: Envelope[T] => Future[Either[ApplicationError, Unit]]
+  )(implicit byteStringSerializable: NioCodec[Envelope[T]]): Future[Either[ApplicationError, Unit]] = {
     if (!thisIsDestination(txEnvelope)) {
       networkDissemination
     } else if (!thisParticipatesInConsensus(txEnvelope.containerId)) {
