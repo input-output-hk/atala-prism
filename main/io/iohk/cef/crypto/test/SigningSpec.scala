@@ -3,7 +3,7 @@ package io.iohk.cef.crypto
 import akka.util.ByteString
 import io.iohk.cef.crypto.encoding._
 import TypedByteStringDecodingError.NioDecoderFailedToDecodeTBS
-import io.iohk.cef.test
+import io.iohk.cef.test.randomBytes
 import org.scalatest.EitherValues._
 import org.scalatest.MustMatchers._
 import org.scalatest.WordSpec
@@ -67,7 +67,7 @@ class SigningSpec extends WordSpec {
     }
 
     "fail to decode invalid signatures" in {
-      val bytes = ByteString(test.randomBytes(1024))
+      val bytes = ByteString(randomBytes(1024))
       val expected =
         DecodeError.DataExtractionError(TypedByteStringDecodingError.NioDecoderFailedToDecodeTBS)
 

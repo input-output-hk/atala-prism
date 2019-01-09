@@ -9,6 +9,7 @@ import org.scalatest.prop.GeneratorDrivenPropertyChecks._
 import org.scalatest.Matchers._
 import org.scalatest.Inside._
 import org.scalactic.Equivalence
+import io.iohk.cef.crypto.test.utils.CryptoEntityArbitraries
 
 class EntityConfigSpec extends FlatSpec with CryptoEntityArbitraries {
 

@@ -10,6 +10,8 @@ import scala.reflect.runtime.universe.TypeTag
 import io.iohk.cef.network.monixstream.MonixMessageStream
 import io.iohk.cef.network.transport.Transports.usesTcp
 import io.iohk.cef.network.transport._
+import io.iohk.cef.codecs.nio.auto._
+import scala.reflect.runtime.universe._
 import org.slf4j.LoggerFactory
 
 /**

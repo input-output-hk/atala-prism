@@ -34,6 +34,7 @@ scala_test(
              "//main/io/iohk/cef/test",
              "//main/io/iohk/cef/codecs",
              "//main/io/iohk/cef/error",
+             "//main/io/iohk/cef/crypto/test/utils",
              "//main/io/iohk/cef/codecs/nio/test/utils",
              "//3rdparty/jvm/com/github/pureconfig:pureconfig",
              "//3rdparty/jvm/org/scalacheck:scalacheck",
