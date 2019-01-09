@@ -1,7 +1,6 @@
 package io.iohk.cef.network
 import io.iohk.cef.network.discovery.NetworkDiscovery
 import io.iohk.cef.codecs.nio._
-import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.network.transport.Transports
 
 import scala.reflect.runtime.universe._

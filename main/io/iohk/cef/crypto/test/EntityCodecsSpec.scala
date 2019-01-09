@@ -4,6 +4,7 @@ import io.iohk.cef.codecs.nio.auto._
 import org.scalatest.FlatSpec
 import io.iohk.cef.codecs.nio.test.utils.CodecTestingHelpers
 import io.iohk.cef.crypto.encoding.TypedByteString
+import io.iohk.cef.crypto.test.utils.CryptoEntityArbitraries
 
 class EntityCodecsSpec extends FlatSpec with CodecTestingHelpers with CryptoEntityArbitraries {
 

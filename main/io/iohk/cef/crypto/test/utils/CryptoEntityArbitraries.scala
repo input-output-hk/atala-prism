@@ -1,4 +1,5 @@
 package io.iohk.cef.crypto
+package test.utils
 
 import io.iohk.cef.crypto.encoding.TypedByteString
 import akka.util.ByteString

@@ -7,13 +7,14 @@ import io.iohk.cef.crypto._
 import io.iohk.cef.ledger.LedgerState
 import io.iohk.cef.query.Query
 import io.iohk.cef.query.ledger.LedgerQueryEngine
+import io.iohk.cef.query.ledger.identity.IdentityQuery.{ExistsIdentity, RetrieveIdentityKeys}
 import org.mockito.Mockito.when
 
 class IdentityQuerySpec extends FlatSpec with MustMatchers {
 
   behavior of "IdentityQuery"
 
-  it should "query for the identity kesy" in {
+  it should "query for the identity keys" in {
     val stateStorage = mock[LedgerStateStorage[Set[SigningPublicKey]]]
     val mockKey = mock[SigningPublicKey]
     val engine = LedgerQueryEngine(stateStorage)

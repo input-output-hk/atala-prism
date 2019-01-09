@@ -55,7 +55,6 @@ class QueryEngineNetworkDataItemServiceItFeatureSpec
 
   feature("Network DataItemService QueryEngine Integration") {
     scenario("Query DataItem after insertion into the table on the network") {
-      pending
       Given("a network created with 2 nodes")
       networks(bootstrap, randomBaseNetwork(Some(bootstrap))) { networks =>
         val baseNetworkNode1 = networks(0)
