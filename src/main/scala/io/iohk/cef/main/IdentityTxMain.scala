@@ -35,7 +35,7 @@ object IdentityTxMain extends App {
   val identityTransactionService = new IdentityTransactionService(nodeTransactionService)
   val serviceApi = new IdentitiesController(identityTransactionService)
 
-  val transactionMain = CefMain[S, T](
+  val transactionMain = CefMain(
     serviceApi.routes,
     identityTxMainConfig
   )
