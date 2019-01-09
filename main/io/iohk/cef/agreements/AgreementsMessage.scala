@@ -1,6 +1,8 @@
 package io.iohk.cef.agreements
 
-sealed trait AgreementMessage[T]
+sealed trait AgreementMessage[T] {
+  val correlationId: String
+}
 
 object AgreementsMessage {
 

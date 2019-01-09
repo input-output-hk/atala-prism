@@ -1,18 +1,16 @@
 package io.iohk.cef.frontend.controllers
 
-import java.util.concurrent.{CompletableFuture, Future => JavaFuture}
-
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
-import io.iohk.cef.agreements.{AgreementsService, UserId}
-import io.iohk.cef.codecs.nio.NioCodec
+import io.iohk.cef.agreements.AgreementsService
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.crypto._
 import io.iohk.cef.data.DataItem
 import io.iohk.cef.ledger.chimeric.{ChimericTx, CreateCurrency}
 import org.scalatest.MustMatchers._
 import org.scalatest.WordSpec
+import org.scalatest.mockito.MockitoSugar._
 import play.api.libs.json.{Format, Json}
 
 class AgreementsGenericControllerSpec
@@ -25,15 +23,7 @@ class AgreementsGenericControllerSpec
 
   implicit val executionContext = system.dispatcher
 
-  def dummyService[T](implicit codec: NioCodec[T]) = new AgreementsService[T](null, null) {
-    override def agree(correlationId: String, data: T): JavaFuture[Unit] = {
-      CompletableFuture.completedFuture(())
-    }
-
-    override def propose(correlationId: String, data: T, to: List[UserId]): JavaFuture[Unit] = {
-      CompletableFuture.completedFuture(())
-    }
-  }
+  def dummyService[T]: AgreementsService[T] = mock[AgreementsService[T]]
 
   val keys = generateSigningKeyPair()
   val controller = new AgreementsGenericController

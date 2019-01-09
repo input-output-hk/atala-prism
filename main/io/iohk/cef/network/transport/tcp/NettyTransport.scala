@@ -12,10 +12,13 @@ import io.netty.channel._
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.SocketChannel
 import io.netty.channel.socket.nio.{NioServerSocketChannel, NioSocketChannel}
+import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
 
 private[network] class NettyTransport(address: InetSocketAddress) {
+
+  private val log = LoggerFactory.getLogger(classOf[NettyTransport])
 
   private val messageApplications = new ConcurrentHashMap[UUID, MessageApplication[InetSocketAddress]]().asScala
 
@@ -38,6 +41,8 @@ private[network] class NettyTransport(address: InetSocketAddress) {
     .childOption[java.lang.Boolean](ChannelOption.SO_KEEPALIVE, true)
     .bind(address)
     .await()
+
+  log.debug(s"Bound to address $address")
 
   def withMessageApplication[Message](codec: NioCodec[Message], handler: (InetSocketAddress, Message) => Unit): UUID = {
     val uuid = UUID.randomUUID()
