@@ -131,4 +131,22 @@ object NetUtils {
     when(node1.networkDiscovery.nearestNPeersTo(meq[NodeId](node1.nodeId), any[Int])).thenReturn(Seq(node2.peerConfig))
     when(node2.networkDiscovery.nearestNPeersTo(meq[NodeId](node2.nodeId), any[Int])).thenReturn(Seq(node1.peerConfig))
   }
+
+  def nodesArePeers(nodes: List[NetworkFixture]): Unit = {
+    nodes.foreach { node =>
+      val neighbours = nodes.filterNot(n => n == node)
+      when(node.networkDiscovery.nearestNPeersTo(meq[NodeId](node.nodeId), any[Int])).thenReturn(neighbours.map(_.peerConfig))
+
+      neighbours.foreach { neighbour =>
+        when(neighbour.networkDiscovery.nearestPeerTo(node.nodeId)).thenReturn(Some(node.peerConfig))
+      }
+    }
+  }
+
+  def forNArbitraryNetworkPeers(n: Int)(testCode: Seq[NetworkFixture] => Any): Unit = {
+    val nodes = Range.inclusive(1, n).map(_ => randomNetworkFixture()).toList
+    nodesArePeers(nodes)
+    networkFixtures(nodes: _*)(_ => testCode(nodes))
+  }
+
 }

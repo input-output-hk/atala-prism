@@ -60,7 +60,6 @@ private[network] class NettyTransport(address: InetSocketAddress) {
     messageApplications.remove(applicationId).fold(false)(_ => true)
 
   def sendMessage(address: InetSocketAddress, message: ByteBuffer): Unit = {
-
     val activationAdapter = new ChannelInboundHandlerAdapter() {
       override def channelActive(ctx: ChannelHandlerContext): Unit = {
         ctx
