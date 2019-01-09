@@ -197,19 +197,15 @@ class ItemsGenericControllerSpec
           |{
           |  "type": "predicateQuery",
           |  "value": {
-          |        "type" : "eqPredicate",
-          |        "value" : {
-          |          "field" : {
-          |            "index" : 2
-          |          },
-          |          "value" : {
-          |            "type" : "stringRef",
-          |            "value" : {
-          |              "value" : "string"
-          |            }
-          |          }
-          |        }
+          |    "type" : "eqPredicate",
+          |    "value" : {
+          |      "field" : 2,
+          |      "value" : {
+          |        "type" : "stringRef",
+          |        "value" : "string"
           |      }
+          |    }
+          |  }
           |}
           """.stripMargin
 

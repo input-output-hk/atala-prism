@@ -40,25 +40,41 @@ object Codecs {
     }
   }
 
-  implicit val fieldQueryFormat = Json.format[Field]
-  implicit val doubleRefQueryFormat = Json.format[DoubleRef]
-  implicit val floatRefQueryFormat = Json.format[FloatRef]
-  implicit val longRefQueryFormat = Json.format[LongRef]
-  implicit val intRefQueryFormat = Json.format[IntRef]
-  implicit val shortRefQueryFormat = Json.format[ShortRef]
-  implicit val byteRefQueryFormat = Json.format[ByteRef]
-  implicit val booleanRefQueryFormat = Json.format[BooleanRef]
-  implicit val stringRefQueryFormat = Json.format[StringRef]
-  implicit val charRefQueryFormat = new Format[CharRef] {
-    override def reads(json: JsValue): JsResult[CharRef] =
-      (json \ "value").validate[String].filter(JsError("Invalid length char"))(_.size == 1).map(_.toCharArray.head)
+  private def formatWrappedT[Wrapped : Format, Wrapper](
+      unwrap: Wrapper => Wrapped,
+      wrap: Wrapped => Wrapper): Format[Wrapper] = new Format[Wrapper] {
+    override def reads(json: JsValue): JsResult[Wrapper] = {
+      json
+          .validate[Wrapped]
+          .map(wrap)
+    }
 
-    override def writes(o: CharRef): JsValue = {
-      JsObject(Map("value" -> JsString(o.value.toString)))
+    override def writes(o: Wrapper): JsValue = {
+      Json.toJson(unwrap(o))
     }
   }
 
-  implicit val valueQueryFormat = new Format[ValueRef] {
+  implicit val fieldQueryFormat: Format[Field] = formatWrappedT[Int, Field](x => x.index, x => Field(x))
+  implicit val doubleRefQueryFormat: Format[DoubleRef] = formatWrappedT[Double, DoubleRef](x => x.value, x => DoubleRef(x))
+  implicit val floatRefQueryFormat: Format[FloatRef] = formatWrappedT[Float, FloatRef](x => x.value, x => FloatRef(x))
+  implicit val longRefQueryFormat: Format[LongRef] = formatWrappedT[Long, LongRef](x => x.value, x => LongRef(x))
+  implicit val intRefQueryFormat: Format[IntRef] = formatWrappedT[Int, IntRef](x => x.value, x => IntRef(x))
+  implicit val shortRefQueryFormat: Format[ShortRef] = formatWrappedT[Short, ShortRef](x => x.value, x => ShortRef(x))
+  implicit val byteRefQueryFormat: Format[ByteRef] = formatWrappedT[Byte, ByteRef](x => x.value, x => ByteRef(x))
+  implicit val booleanRefQueryFormat: Format[BooleanRef] = formatWrappedT[Boolean, BooleanRef](x => x.value, x => BooleanRef(x))
+  implicit val stringRefQueryFormat: Format[StringRef] = formatWrappedT[String, StringRef](x => x.value, x => StringRef(x))
+  implicit val charRefQueryFormat: Format[CharRef] = new Format[CharRef] {
+    override def reads(json: JsValue): JsResult[CharRef] =
+      json.validate[String].
+          filter(JsError("Invalid char length"))(_.size == 1)
+          .map(_.charAt(0))
+
+    override def writes(o: CharRef): JsValue = {
+      JsString(o.value.toString)
+    }
+  }
+
+  implicit val valueQueryFormat: Format[ValueRef] = new Format[ValueRef] {
     override def reads(json: JsValue): JsResult[ValueRef] = {
       val value = json \ "value"
       (json \ "type").validate[String] match {
@@ -89,11 +105,12 @@ object Codecs {
         case x: StringRef => ("stringRef", Json.toJson(x)(stringRefQueryFormat))
       }
 
-      val map = Map("type" -> JsString(tpe), "value" -> json)
-
-      JsObject(map)
+      Json.obj(
+        "type" -> JsString(tpe),
+        "value" -> json)
     }
   }
+
   implicit val eqPredicateQueryFormat = Json.format[DataItemQuery.Predicate.Eq]
   implicit val andPredicateQueryFormat = new Format[Predicate.And] {
     val pqf: Format[Predicate] = createPredicateQueryFormat
@@ -134,9 +151,10 @@ object Codecs {
         case x: Predicate.Or => ("orPredicate", Json.toJson(x)(orPredicateQueryFormat))
         case x: Predicate.And => ("andPredicate", Json.toJson(x)(andPredicateQueryFormat))
       }
-      val map = Map("type" -> JsString(tpe), "value" -> json)
 
-      JsObject(map)
+      Json.obj(
+        "type" -> JsString(tpe),
+        "value" -> json)
     }
   }
 
@@ -159,9 +177,9 @@ object Codecs {
         case p: Predicate => ("predicateQuery", Json.toJson(p)(predicateQueryFormat))
       }
 
-      val map = Map("type" -> JsString(tpe), "value" -> json)
-
-      JsObject(map)
+      Json.obj(
+        "type" -> JsString(tpe),
+        "value" -> json)
     }
   }
 
