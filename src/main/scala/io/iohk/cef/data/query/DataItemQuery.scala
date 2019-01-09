@@ -1,6 +1,6 @@
 package io.iohk.cef.data.query
 
-import io.iohk.cef.data.query.Query.Predicate
+import io.iohk.cef.data.query.DataItemQuery.Predicate
 
 import scala.language.implicitConversions
 
@@ -11,21 +11,21 @@ import scala.language.implicitConversions
   * The code should only reference the Query type. This way we make ourselves sure that we can extend the AST in the future.
   * Specific treatment for subclasses (translation and serialization) will be handled by type classes.
   */
-sealed trait Query {
+sealed trait DataItemQuery {
   final val languageVersion: Int = 1
 }
 
-object Query {
-  case object NoPredicateQuery extends Query
+object DataItemQuery {
+  case object NoPredicateDataItemQuery extends DataItemQuery
 
-  def queryCata[T](fNoPred: => T, fPred: Predicate => T, query: Query): T = query match {
-    case NoPredicateQuery =>
+  def queryCata[T](fNoPred: => T, fPred: Predicate => T, query: DataItemQuery): T = query match {
+    case NoPredicateDataItemQuery =>
       fNoPred
     case p: Predicate =>
       fPred(p)
   }
 
-  sealed trait Predicate extends Query {
+  sealed trait Predicate extends DataItemQuery {
     def and(that: Predicate): Predicate.And = Predicate.And(Seq(this, that))
     def or(that: Predicate): Predicate.Or = Predicate.Or(Seq(this, that))
   }

@@ -6,8 +6,8 @@ import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.crypto._
 import io.iohk.cef.data.DataItemAction.InsertAction
 import io.iohk.cef.data._
-import io.iohk.cef.data.query.Query.NoPredicateQuery
-import io.iohk.cef.data.query.QueryEngine
+import io.iohk.cef.data.query.DataItemQuery.NoPredicateDataItemQuery
+import io.iohk.cef.data.query.DataItemQueryEngine
 import io.iohk.cef.data.storage.mv.MVTableStorage
 import io.iohk.cef.network.{MessageStream, Network}
 import io.iohk.cef.transactionservice.{Envelope, Everyone}
@@ -49,15 +49,15 @@ class DataItemServiceTableItSpec extends FlatSpec {
 
   it should "insert and delete items in the database" in testStorage { storage =>
     val table = new Table[String](testTableId, storage)
-    table.select(NoPredicateQuery) mustBe Right(Seq())
+    table.select(NoPredicateDataItemQuery) mustBe Right(Seq())
 
-    val service = new DataItemService[String](table, mockedNetwork, mock[QueryEngine[String]])
+    val service = new DataItemService[String](table, mockedNetwork, mock[DataItemQueryEngine[String]])
 
     val results = envelopes.map(service.processAction)
     envelopes.foreach(e => verify(mockedNetwork, times(1)).disseminateMessage(e))
     results.foreach(result => result mustBe Right(DataItemServiceResponse.DIUnit))
 
-    val itemsAfter = table.select(NoPredicateQuery)
+    val itemsAfter = table.select(NoPredicateDataItemQuery)
     itemsAfter.map(_.toSet) mustBe Right(envelopes.map {
       case Envelope(InsertAction(di), _, _) => di
       case other => fail(s"Unexpected action received. Expected Insert but got ${other}")
@@ -69,7 +69,7 @@ class DataItemServiceTableItSpec extends FlatSpec {
     val deleteResult = service.processAction(Envelope(deleteAction, testTableId, Everyone))
     deleteResult mustBe Right(DataItemServiceResponse.DIUnit)
 
-    val itemsAfterDelete = table.select(NoPredicateQuery)
+    val itemsAfterDelete = table.select(NoPredicateDataItemQuery)
     itemsAfterDelete.map(_.toSet) mustBe Right(envelopes.tail.map {
       case Envelope(InsertAction(di), _, _) => di
       case other => fail(s"Unexpected action received. Expected Insert but got ${other}")

@@ -6,7 +6,7 @@ import java.util.UUID
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.crypto._
 import io.iohk.cef.data._
-import io.iohk.cef.data.query.{Field, QueryEngine, QueryRequest, QueryResponse}
+import io.iohk.cef.data.query.{Field, DataItemQueryEngine, DataItemQueryRequest, DataItemQueryResponse}
 import io.iohk.cef.data.storage.mv.MVTableStorage
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.network.{MessageStream, NodeId}
@@ -29,12 +29,12 @@ class QueryEngineTableItDbTest extends FlatSpec with MustMatchers with EitherVal
     val storage = new MVTableStorage[String](tableId, path)
     val realTable = new Table[String](tableId, storage)
     implicit val scheduler = TestScheduler()
-    val requestNetwork = new DummyNoMessageNetwork[Envelope[QueryRequest]]
-    val responseNetwork = new DummyNoMessageNetwork[Envelope[QueryResponse[String]]]
+    val requestNetwork = new DummyNoMessageNetwork[Envelope[DataItemQueryRequest]]
+    val responseNetwork = new DummyNoMessageNetwork[Envelope[DataItemQueryResponse[String]]]
     val fakeDataItemNetwork = new DummyNoMessageNetwork[Envelope[DataItemAction[String]]]
 
     val realEngine =
-      new QueryEngine(nodeId, realTable, requestNetwork, responseNetwork, () => UUID.randomUUID().toString)
+      new DataItemQueryEngine(nodeId, realTable, requestNetwork, responseNetwork, () => UUID.randomUUID().toString)
 
     implicit val canValidate: CanValidate[DataItem[String]] = _ => Right(())
 

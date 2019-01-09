@@ -4,7 +4,7 @@ import io.iohk.cef.codecs.nio._
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.crypto._
 import io.iohk.cef.data.error.{InvalidSignaturesError, OwnerMustSignDelete}
-import io.iohk.cef.data.query.{Query, QueryError}
+import io.iohk.cef.data.query.{DataItemQuery, DataItemQueryError}
 import io.iohk.cef.data.storage.TableStorage
 import io.iohk.cef.error.ApplicationError
 
@@ -17,7 +17,7 @@ class Table[I: NioCodec: TypeTag](val tableId: TableId, tableStorage: TableStora
     canValidate.validate(dataItem).isRight && signatureValidation.forall(_._2)
   }
 
-  def select(query: Query): Either[QueryError, Seq[DataItem[I]]] = {
+  def select(query: DataItemQuery): Either[DataItemQueryError, Seq[DataItem[I]]] = {
     tableStorage.select(query)
   }
 
