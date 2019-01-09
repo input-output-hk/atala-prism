@@ -31,4 +31,6 @@ class DummyMessageStream[T](val o: Observable[T])(implicit scheduler: Scheduler)
   override def take(n: Long): MessageStream[T] = new DummyMessageStream(o.take(n))
 
   override def takeWhile(predicate: T => Boolean): MessageStream[T] = new DummyMessageStream(o.takeWhile(predicate))
+
+  override def head(): CancellableFuture[T] = CancellableFuture(o.headL.runAsync)
 }

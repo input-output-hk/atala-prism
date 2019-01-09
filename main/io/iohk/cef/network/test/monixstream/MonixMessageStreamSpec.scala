@@ -81,4 +81,10 @@ class MonixMessageStreamSpec extends FlatSpec {
 
     fold.futureValue shouldBe Vector(0, 1, 1)
   }
+
+  it should "support head" in {
+    val stream = new MonixMessageStream[Int](Observable.fromIterable(List(1, 2, 3)))
+
+    stream.head().futureValue shouldBe 1
+  }
 }

@@ -5,16 +5,17 @@ import io.iohk.cef.agreements.AgreementsMessage.{Propose, messageCata}
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.crypto._
 import io.iohk.cef.data.{DataItem, NonEmptyList, Owner, Witness}
-import io.iohk.cef.utils.concurrent.CancellableFuture
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
-import org.scalatest.concurrent.ScalaFutures.{whenReady, PatienceConfig}
+import org.scalatest.concurrent.ScalaFutures.{PatienceConfig, whenReady}
 import org.scalatest.time.{Seconds, Span}
+
+import scala.concurrent.Future
 
 
 class AgreementDataItemAcceptanceSpec extends FlatSpec {
 
-  behavior of "AgreementService"
+  behavior of "AgreementsService"
 
   implicit val patienceConfig =
     PatienceConfig(timeout =  Span(5, Seconds), interval = Span(1, Seconds))
@@ -35,12 +36,11 @@ class AgreementDataItemAcceptanceSpec extends FlatSpec {
     // given
     val data = "it rained on 01/12/2018 in Wollongong"
     val dataItem = aWitnessedDataItem(data, alice.keyPair)
-    dataItem.witnesses should contain(witness(data, alice.keyPair))
-    willWitnessAndAgree(dataItem, bob)
-    willWitnessAndAgree(dataItem, charlie)
+    willWitnessAndAgree(bob)
+    willWitnessAndAgree(charlie)
 
     // when
-    val collation: CancellableFuture[DataItem[String]] = alice.agreementsService.agreementEvents.take(2).fold(dataItem)(collateSignatures)
+    val collation: Future[DataItem[String]] = alice.agreementsService.agreementEvents.take(2).fold(dataItem)(collateSignatures)
     alice.agreementsService.propose("correlation-id", dataItem, List(bob.nodeId, charlie.nodeId))
 
     // then
@@ -58,7 +58,7 @@ class AgreementDataItemAcceptanceSpec extends FlatSpec {
       fDecline = _ => acc)(next)
   }
 
-  private def willWitnessAndAgree(dataItem: DataItem[String], agreementFixture: AgreementFixture[DataItem[String]]): Unit = {
+  private def willWitnessAndAgree(agreementFixture: AgreementFixture[DataItem[String]]): Unit = {
     def agreeToProposal(proposal: Propose[DataItem[String]]): Unit = {
       agreementFixture.agreementsService.agree(proposal.correlationId, witnessDataItem(proposal.data, agreementFixture.keyPair))
     }

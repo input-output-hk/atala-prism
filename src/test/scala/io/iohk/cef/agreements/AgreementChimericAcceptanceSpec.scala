@@ -2,10 +2,24 @@ package io.iohk.cef.agreements
 
 import io.iohk.cef.agreements.AgreementFixture._
 import io.iohk.cef.codecs.nio.auto._
-import io.iohk.cef.ledger.chimeric.ChimericTx
+import io.iohk.cef.agreements.AgreementsMessage._
+import io.iohk.cef.crypto._
+import io.iohk.cef.ledger.chimeric.SignatureTxFragment.signFragments
+import io.iohk.cef.ledger.chimeric.{SignatureTxFragment, _}
 import org.scalatest.FlatSpec
+import org.scalatest.Matchers._
+import org.scalatest.concurrent.ScalaFutures.{PatienceConfig, whenReady}
+import org.scalatest.time.{Seconds, Span}
+
+import scala.concurrent.Future
 
 class AgreementChimericAcceptanceSpec extends FlatSpec {
+
+  behavior of "AgreementsService"
+
+  implicit val patienceConfig =
+    PatienceConfig(timeout =  Span(5, Seconds), interval = Span(1, Seconds))
+
   /*
   Smart Agreements in the Chimeric Ledger:
   User A and User B want to exchange with each other 10 C1 coins for 20 C2 coins, and the exchange should happen atomically.
@@ -25,6 +39,36 @@ class AgreementChimericAcceptanceSpec extends FlatSpec {
   User A adds it to the ledger.
    */
   it should "support the creation of a ChimericTx" in forTwoArbitraryAgreementPeers[ChimericTx] { (alice, bob) =>
+    // given
+    val tx = ChimericTx(signFragments(List(
+      Input(TxOutRef("OutA", 0), Value("C1" -> BigDecimal("10"))),
+      Input(TxOutRef("OutB", 0), Value("C2" -> BigDecimal("20"))),
+      Output(Value("C1" -> BigDecimal("10")), bob.keyPair.public),
+      Output(Value("C2" -> BigDecimal("20")), alice.keyPair.public)
+    ), alice.keyPair.`private`))
 
+    willSign(bob)
+
+    // when
+    val bobsAgreement: Future[Agree[ChimericTx]] = alice.agreementsService.agreementEvents.map(_.asInstanceOf[Agree[ChimericTx]]).head()
+    alice.agreementsService.propose("correlation-id", tx, List(bob.nodeId))
+
+    whenReady(bobsAgreement) { agreement =>
+      val signatureFragments = agreement.data.fragments.collect { case s: SignatureTxFragment => s }
+
+      signatureFragments(0) shouldBe SignatureTxFragment(tx.fragments, alice.keyPair.`private`)
+      signatureFragments(1) shouldBe SignatureTxFragment(tx.fragments, bob.keyPair.`private`)
+    }
   }
+
+  private def willSign(agreementFixture: AgreementFixture[ChimericTx]): Unit = {
+    def agreeToProposal(proposal: Propose[ChimericTx]): Unit = {
+      agreementFixture.agreementsService.agree(proposal.correlationId, signTx(proposal.data, agreementFixture.keyPair))
+    }
+    agreementFixture.agreementsService.agreementEvents.foreach(message => AgreementsMessage.messageCata[ChimericTx, Unit](agreeToProposal, _ => (), _ => ())(message))
+  }
+
+  private def signTx(tx: ChimericTx, keyPair: SigningKeyPair): ChimericTx =
+    ChimericTx(signFragments(tx.fragments, keyPair.`private`))
+
 }

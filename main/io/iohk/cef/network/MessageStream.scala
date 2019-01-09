@@ -17,4 +17,5 @@ trait MessageStream[T] {
   def withTimeout(d: FiniteDuration): MessageStream[T]
   def take(n: Long): MessageStream[T]
   def takeWhile(predicate: T => Boolean): MessageStream[T]
+  def head(): CancellableFuture[T]
 }
