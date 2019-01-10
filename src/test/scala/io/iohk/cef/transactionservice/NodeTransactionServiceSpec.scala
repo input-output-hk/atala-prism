@@ -34,9 +34,10 @@ class NodeTransactionServiceSpec extends AsyncFlatSpec with MustMatchers with Mo
   def mockBlockSerializable: NioCodec[Envelope[BlockType]] =
     mock[NioCodec[Envelope[BlockType]]]
 
-  private def setupTest(ledgerId: LedgerId, me: NodeId = NodeId("abcd"))(
-      implicit txSerializable: NioCodec[Envelope[Tx]],
-      blockSerializable: NioCodec[Envelope[Block[State, Tx]]]) = {
+  private def setupTest(
+      ledgerId: LedgerId,
+      me: NodeId = NodeId("abcd")
+  )(implicit txSerializable: NioCodec[Envelope[Tx]], blockSerializable: NioCodec[Envelope[Block[State, Tx]]]) = {
     val consensusMap = Map(ledgerId -> (mockTxPoolFutureInterface, mockConsensus))
     val txDM = mockNetwork[Envelope[DummyTransaction]]
     val blockDM = mockNetwork[Envelope[Block[String, DummyTransaction]]]
@@ -55,7 +56,8 @@ class NodeTransactionServiceSpec extends AsyncFlatSpec with MustMatchers with Mo
       ),
       consensusMap,
       txDM,
-      blockDM)
+      blockDM
+    )
   }
 
   behavior of "NodeSpec"
@@ -167,9 +169,8 @@ class NodeTransactionServiceSpec extends AsyncFlatSpec with MustMatchers with Mo
       ledgerId: LedgerId,
       transactionservice: NodeTransactionService[String, DummyTransaction],
       destinationDescriptor: DestinationDescriptor,
-      me: NodeId)(
-      implicit txSerializable: NioCodec[Envelope[Tx]],
-      blockSerializable: NioCodec[Envelope[Block[State, Tx]]]) = {
+      me: NodeId
+  )(implicit txSerializable: NioCodec[Envelope[Tx]], blockSerializable: NioCodec[Envelope[Block[State, Tx]]]) = {
     val testTx = DummyTransaction(10)
     val testBlock = Block[String, DummyTransaction](BlockHeader(), immutable.Seq(testTx))
     val testBlockEnvelope = Envelope(testBlock, "1", destinationDescriptor)

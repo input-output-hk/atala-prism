@@ -207,8 +207,9 @@ case class Deposit(address: Address, value: Value, signingPublicKey: SigningPubl
     val addressKey = getAddressPartitionId(address)
     val addressResultOpt: Option[AddressResult] =
       state.get(addressKey).collect { case a: AddressResult => a }
-    addressResultOpt.fold(Right(state.put(addressKey, AddressResult(value, Some(signingPublicKey)))))(addressResult =>
-      Right(state.put(addressKey, AddressResult(value + addressResult.value, Some(signingPublicKey)))))
+    addressResultOpt.fold(Right(state.put(addressKey, AddressResult(value, Some(signingPublicKey)))))(
+      addressResult => Right(state.put(addressKey, AddressResult(value + addressResult.value, Some(signingPublicKey))))
+    )
   }
 
   override def txSpecificPartitionIds(txId: String, index: Int): Set[String] = Set()
@@ -243,7 +244,8 @@ object SignatureTxFragment {
 
   def signFragments(
       fragments: Seq[ChimericTxFragment],
-      signingPrivateKey: SigningPrivateKey): Seq[ChimericTxFragment] = {
+      signingPrivateKey: SigningPrivateKey
+  ): Seq[ChimericTxFragment] = {
     import io.iohk.cef.codecs.nio.auto._
     fragments :+ SignatureTxFragment(sign(signable(fragments), signingPrivateKey))
   }

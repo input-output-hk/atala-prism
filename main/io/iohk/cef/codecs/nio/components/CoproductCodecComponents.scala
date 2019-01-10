@@ -23,7 +23,8 @@ private[components] object CoproductCodecComponents {
   def coproductEncoder[H, T <: Coproduct](
       implicit hEnc: Lazy[NioEncoder[H]],
       tEnc: NioEncoder[T],
-      ttc: TypeTag[H :+: T]): NioEncoder[H :+: T] = {
+      ttc: TypeTag[H :+: T]
+  ): NioEncoder[H :+: T] = {
     new NioEncoder[H :+: T] {
       override val typeTag: TypeTag[H :+: T] = ttc
       override def encode(c: H :+: T): ByteBuffer = c match {
@@ -36,7 +37,8 @@ private[components] object CoproductCodecComponents {
   def coproductDecoder[H, T <: Coproduct](
       implicit hDec: Lazy[NioDecoder[H]],
       tDec: NioDecoder[T],
-      ttc: TypeTag[H :+: T]): NioDecoder[H :+: T] = {
+      ttc: TypeTag[H :+: T]
+  ): NioDecoder[H :+: T] = {
     new NioDecoder[H :+: T] {
       override val typeTag: TypeTag[H :+: T] = ttc
       override def decode(b: ByteBuffer): Option[H :+: T] = {

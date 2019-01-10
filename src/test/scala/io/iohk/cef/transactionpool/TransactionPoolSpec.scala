@@ -87,7 +87,8 @@ class TransactionPoolSpec extends FlatSpec with MustMatchers with PropertyChecks
         (_: Seq[Transaction[String]]) => header,
         10,
         ledgerStateStorage,
-        defaultExpiration)
+        defaultExpiration
+      )
     val txs = List(DummyTransaction(2), DummyTransaction(3), DummyTransaction(4))
     when(timedQueue.enqueue(any(), ArgumentMatchers.eq(defaultExpiration))).thenReturn(timedQueue)
     when(timedQueue.filterNot(any())).thenReturn(timedQueue)

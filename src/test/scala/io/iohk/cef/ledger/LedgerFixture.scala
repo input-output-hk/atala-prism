@@ -7,6 +7,7 @@ import io.iohk.cef.codecs.nio._
 trait LedgerFixture {
   def createLedger[S: NioCodec: TypeTag, Tx <: Transaction[S]](
       stateStorage: LedgerStateStorage[S],
-      storage: LedgerStorage[S, Tx]): Ledger[S, Tx] =
+      storage: LedgerStorage[S, Tx]
+  ): Ledger[S, Tx] =
     Ledger("1", storage, stateStorage)
 }

@@ -9,4 +9,5 @@ case class LedgerConfig(
     maxBlockSize: Int,
     defaultTransactionExpiration: Duration,
     blockCreatorInitialDelay: Duration,
-    blockCreatorInterval: Duration)
+    blockCreatorInterval: Duration
+)

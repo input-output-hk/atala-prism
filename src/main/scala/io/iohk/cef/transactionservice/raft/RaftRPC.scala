@@ -11,21 +11,23 @@ import scala.reflect.runtime.universe._
 import scala.concurrent.{ExecutionContext, Future}
 
 class RaftRPCFactory[Command: NioCodec: TypeTag](networkDiscovery: NetworkDiscovery, transports: Transports)(
-    implicit ec: ExecutionContext)
-    extends RPCFactory[Command] {
+    implicit ec: ExecutionContext
+) extends RPCFactory[Command] {
 
   override def apply(
       nodeId: String,
       appendEntriesCallback: EntriesToAppend[Command] => AppendEntriesResult,
       requestVoteCallback: VoteRequested => RequestVoteResult,
-      clientAppendEntriesCallback: Seq[Command] => Future[Either[Redirect[Command], Unit]]): RaftRPC[Command] =
+      clientAppendEntriesCallback: Seq[Command] => Future[Either[Redirect[Command], Unit]]
+  ): RaftRPC[Command] =
     new RaftRPC[Command](
       NodeId(nodeId),
       appendEntriesCallback,
       requestVoteCallback,
       clientAppendEntriesCallback,
       networkDiscovery,
-      transports)
+      transports
+    )
 }
 
 class RaftRPC[Command: NioCodec: TypeTag](
@@ -34,7 +36,8 @@ class RaftRPC[Command: NioCodec: TypeTag](
     requestVoteCallback: VoteRequested => RequestVoteResult,
     clientAppendEntriesCallback: Seq[Command] => Future[Either[Redirect[Command], Unit]],
     networkDiscovery: NetworkDiscovery,
-    transports: Transports)(implicit ec: ExecutionContext)
+    transports: Transports
+)(implicit ec: ExecutionContext)
     extends RPC[Command] {
 
   private val voteHandler =

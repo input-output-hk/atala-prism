@@ -8,10 +8,12 @@ import scala.reflect.runtime.universe.TypeTag
 case class Ledger[S: NioCodec: TypeTag, Tx <: Transaction[S]](
     ledgerId: LedgerId,
     ledgerStorage: LedgerStorage[S, Tx],
-    ledgerStateStorage: LedgerStateStorage[S]) {
+    ledgerStateStorage: LedgerStateStorage[S]
+) {
 
   def apply(
-      block: Block[S, Tx])(implicit codec: NioCodec[Block[S, Tx]], typeTag: TypeTag[S]): Either[LedgerError, Unit] = {
+      block: Block[S, Tx]
+  )(implicit codec: NioCodec[Block[S, Tx]], typeTag: TypeTag[S]): Either[LedgerError, Unit] = {
 
     val preAppliedState: LedgerState[S] = slice(block.partitionIds)
 

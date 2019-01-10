@@ -78,7 +78,8 @@ class IdentitiesControllerSpec
     def testEndorseType(
         endorserIdentity: String,
         endorsedIdentity: String,
-        privateKey: SigningPrivateKey): Assertion = {
+        privateKey: SigningPrivateKey
+    ): Assertion = {
       val txType = "Endorse"
       val privateKeyHex = toCleanHex(privateKey.toByteString)
 

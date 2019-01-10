@@ -44,7 +44,8 @@ trait CryptoEntity[T, +C <: CryptoEntityCompanion[T]] extends Entity[T, DecodeEr
   * @tparam PE  type of the errors when trying to parse an instance of T from a String
   */
 private[crypto] abstract class EntityCompanion[T, DE[_], PE[_]](
-    implicit ev: T <:< Entity[T, DE, PE, EntityCompanion[T, DE, PE]]) {
+    implicit ev: T <:< Entity[T, DE, PE, EntityCompanion[T, DE, PE]]
+) {
 
   protected val title: String
 
@@ -95,9 +96,11 @@ private[crypto] abstract class KeyEntityCompanion[T](implicit ev: T <:< KeyEntit
       .parseFrom(text)
       .left
       .map(e => KeyParseError.TextParsingError(e))
-      .flatMap(tbs =>
-        decodeFrom(tbs).left
-          .map(e => KeyParseError.BytesDecodingError(e)))
+      .flatMap(
+        tbs =>
+          decodeFrom(tbs).left
+            .map(e => KeyParseError.BytesDecodingError(e))
+      )
 }
 
 private[crypto] abstract class CryptoEntityCompanion[T](implicit ev: T <:< CryptoEntity[T, CryptoEntityCompanion[T]])
@@ -115,7 +118,9 @@ private[crypto] abstract class CryptoEntityCompanion[T](implicit ev: T <:< Crypt
       .parseFrom(text)
       .left
       .map(e => ParseError.TextParsingError(e))
-      .flatMap(tbs =>
-        decodeFrom(tbs).left
-          .map(e => ParseError.BytesDecodingError(e)))
+      .flatMap(
+        tbs =>
+          decodeFrom(tbs).left
+            .map(e => ParseError.BytesDecodingError(e))
+      )
 }

@@ -51,7 +51,8 @@ class StreamCodecsSpec extends FlatSpec {
       cHandler: (String, C) => Unit,
       aDecoderFn: MessageApplication[String],
       bDecoderFn: MessageApplication[String],
-      cDecoderFn: MessageApplication[String])
+      cDecoderFn: MessageApplication[String]
+  )
 
   private val genTestData: Gen[TestData] = for {
     sourceAddress <- alphaStr
@@ -87,7 +88,8 @@ class StreamCodecsSpec extends FlatSpec {
       cHandler,
       aCodecFn,
       bCodecFn,
-      cCodecFn)
+      cCodecFn
+    )
   }
 
   behavior of "StreamCodec"
@@ -102,7 +104,8 @@ class StreamCodecsSpec extends FlatSpec {
         List(
           strictMessageApplication(NioCodec[A], aHandler),
           strictMessageApplication(NioCodec[B], bHandler),
-          strictMessageApplication(NioCodec[C], cHandler))
+          strictMessageApplication(NioCodec[C], cHandler)
+        )
       )
 
       as.foreach(a => verify(aHandler, atLeastOnce()).apply(address, a))
@@ -121,7 +124,8 @@ class StreamCodecsSpec extends FlatSpec {
         List(
           lazyMessageApplication(NioCodec[A], aHandler),
           lazyMessageApplication(NioCodec[B], bHandler),
-          lazyMessageApplication(NioCodec[C], cHandler))
+          lazyMessageApplication(NioCodec[C], cHandler)
+        )
       )
 
       verifyZeroInteractions(aHandler)

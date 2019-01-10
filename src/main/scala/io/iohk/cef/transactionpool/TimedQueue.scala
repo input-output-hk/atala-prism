@@ -15,7 +15,8 @@ import scala.concurrent.duration._
 //CanBuildFrom is not compatible with the concept of the clock and the internal timestamps
 private[transactionpool] case class TimedQueue[T](
     private val clock: Clock = Clock.systemUTC(),
-    private val q: Queue[(T, Instant)] = Queue()) {
+    private val q: Queue[(T, Instant)] = Queue()
+) {
 
   /**
     * Queues an element

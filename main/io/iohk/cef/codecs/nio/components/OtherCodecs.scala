@@ -18,7 +18,8 @@ trait OtherCodecs {
   implicit def mapCodec[K, V](
       implicit listCodec: NioCodec[List[(K, V)]],
       keyCodec: NioCodec[K],
-      valueCodec: NioCodec[V]): NioCodec[Map[K, V]] =
+      valueCodec: NioCodec[V]
+  ): NioCodec[Map[K, V]] =
     NioCodec(mapEncoder, mapDecoder)
 
   implicit def seqCodec[T](implicit arrayCodec: NioCodec[Array[T]], tCodec: NioCodec[T]): NioCodec[Seq[T]] =

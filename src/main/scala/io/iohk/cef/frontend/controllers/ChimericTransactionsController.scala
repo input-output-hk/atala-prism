@@ -19,8 +19,8 @@ import scala.concurrent.ExecutionContext
 
 class ChimericTransactionsController(service: ChimericTransactionService)(
     implicit ec: ExecutionContext,
-    mat: Materializer)
-    extends CustomJsonController {
+    mat: Materializer
+) extends CustomJsonController {
 
   import ChimericTransactionsController._
   import Codecs._

@@ -24,7 +24,8 @@ trait CodecTestingHelpers {
       implicit encoder: NioEncoder[T],
       decoder: NioDecoder[T],
       a: Arbitrary[T],
-      eq: Equivalence[T]): Unit = {
+      eq: Equivalence[T]
+  ): Unit = {
     forAll(arbitrary[T]) { t =>
       val e = encoder.encode(t)
       decoder.decode(e).value should equal(t)

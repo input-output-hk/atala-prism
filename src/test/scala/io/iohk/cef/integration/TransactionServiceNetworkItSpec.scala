@@ -38,7 +38,8 @@ class TransactionServiceNetworkItSpec
       baseNetwork: BaseNetwork,
       me: NodeId,
       txPoolIf: TransactionPoolInterface[String, DummyTransaction],
-      consensus: Consensus[String, DummyTransaction]) = {
+      consensus: Consensus[String, DummyTransaction]
+  ) = {
     val txNetwork = Network[Envelope[DummyTransaction]](baseNetwork.networkDiscovery, baseNetwork.transports)
     val blockNetwork =
       Network[Envelope[Block[String, DummyTransaction]]](baseNetwork.networkDiscovery, baseNetwork.transports)

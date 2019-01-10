@@ -18,7 +18,8 @@ object RaftFSM {
 class RaftFSM[Command](
     becomeFollower: Transition[Command],
     becomeCandidate: Transition[Command],
-    becomeLeader: Transition[Command]) {
+    becomeLeader: Transition[Command]
+) {
 
   private val identity: Transition[Command] = (rc, _) => rc
 
@@ -30,7 +31,8 @@ class RaftFSM[Command](
     eventCatamorphism(
       electionTimeout = becomeCandidate,
       majorityVoteReceived = becomeLeader,
-      leaderDiscovered = becomeFollower)
+      leaderDiscovered = becomeFollower
+    )
 
   private val leaderState: Transition[Command] = eventCatamorphism(nodeWithHigherTermDiscovered = becomeFollower)
 
@@ -44,7 +46,8 @@ class RaftFSM[Command](
       electionTimeout: Transition[Command] = identity,
       majorityVoteReceived: Transition[Command] = identity,
       nodeWithHigherTermDiscovered: Transition[Command] = identity,
-      leaderDiscovered: Transition[Command] = identity)(rc: RaftState[Command], e: NodeEvent): RaftState[Command] =
+      leaderDiscovered: Transition[Command] = identity
+  )(rc: RaftState[Command], e: NodeEvent): RaftState[Command] =
     e match {
       case ElectionTimeout =>
         electionTimeout(rc, e)

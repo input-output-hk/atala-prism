@@ -34,7 +34,8 @@ class ChimericTxSpec extends FlatSpec with MustMatchers {
     val emptyState = LedgerState[ChimericStateResult](
       Map(
         getCurrencyPartitionId(currency) -> CreateCurrencyResult(CreateCurrency(currency))
-      ))
+      )
+    )
     positiveTx(emptyState) mustBe Left(ValueNotPreserved(value, positiveTx.fragments))
     negativeTx(emptyState) mustBe Left(ValueNotPreserved(-value, negativeTx.fragments))
     val validTx = ChimericTx(Seq(Mint(value), Fee(value)))
@@ -47,7 +48,8 @@ class ChimericTxSpec extends FlatSpec with MustMatchers {
       Map(
         currencyPartitionId -> CreateCurrencyResult(CreateCurrency(currency)),
         getUtxoPartitionId(txOutRef) -> UtxoResult(value, Some(signingKeyPair.public))
-      ))
+      )
+    )
 
     tx.apply(state) mustBe Left(MissingSignature)
   }
@@ -58,7 +60,8 @@ class ChimericTxSpec extends FlatSpec with MustMatchers {
       Map(
         currencyPartitionId -> CreateCurrencyResult(CreateCurrency(currency)),
         getAddressPartitionId(address) -> AddressResult(value, Some(signingKeyPair.public))
-      ))
+      )
+    )
 
     tx.apply(state) mustBe Left(MissingSignature)
   }
@@ -72,10 +75,13 @@ class ChimericTxSpec extends FlatSpec with MustMatchers {
     val state = LedgerState[ChimericStateResult](
       Map(
         currencyPartitionId -> CreateCurrencyResult(CreateCurrency(currency)),
-        utxoPartitionId -> UtxoResult(value, Some(signingKeyPair.public))))
+        utxoPartitionId -> UtxoResult(value, Some(signingKeyPair.public))
+      )
+    )
 
     tx.apply(state) mustBe Right(
-      LedgerState[ChimericStateResult](Map(currencyPartitionId -> CreateCurrencyResult(CreateCurrency(currency)))))
+      LedgerState[ChimericStateResult](Map(currencyPartitionId -> CreateCurrencyResult(CreateCurrency(currency))))
+    )
   }
 
   it should "validate txs have signatures for withdrawals" in new TestFixture {
@@ -87,13 +93,18 @@ class ChimericTxSpec extends FlatSpec with MustMatchers {
     val state = LedgerState[ChimericStateResult](
       Map(
         currencyPartitionId -> CreateCurrencyResult(CreateCurrency(currency)),
-        addressPartitionId -> AddressResult(value, Some(signingKeyPair.public))))
+        addressPartitionId -> AddressResult(value, Some(signingKeyPair.public))
+      )
+    )
 
     tx.apply(state) mustBe Right(
       LedgerState[ChimericStateResult](
         Map(
           currencyPartitionId -> CreateCurrencyResult(CreateCurrency(currency)),
-          addressNoncePartitionId -> NonceResult(1))))
+          addressNoncePartitionId -> NonceResult(1)
+        )
+      )
+    )
   }
 
   it should "validate txs that have input and withdrawal signatures using different keys" in new TestFixture {
@@ -107,19 +118,24 @@ class ChimericTxSpec extends FlatSpec with MustMatchers {
       ChimericTx(
         signableFragments :+
           SignatureTxFragment(sign(signableFragments, key1.`private`)) :+
-          SignatureTxFragment(sign(signableFragments, key2.`private`)))
+          SignatureTxFragment(sign(signableFragments, key2.`private`))
+      )
 
     val state = LedgerState[ChimericStateResult](
       Map(
         currencyPartitionId -> CreateCurrencyResult(CreateCurrency(currency)),
         utxoPartitionId -> UtxoResult(value, Some(key1.public)),
         addressPartitionId -> AddressResult(value, Some(key2.public))
-      ))
+      )
+    )
 
     tx.apply(state) mustBe Right(
       LedgerState[ChimericStateResult](
         Map(
           currencyPartitionId -> CreateCurrencyResult(CreateCurrency(currency)),
-          addressNoncePartitionId -> NonceResult(1))))
+          addressNoncePartitionId -> NonceResult(1)
+        )
+      )
+    )
   }
 }

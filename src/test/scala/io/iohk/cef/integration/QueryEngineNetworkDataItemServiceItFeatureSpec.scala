@@ -36,7 +36,8 @@ class QueryEngineNetworkDataItemServiceItFeatureSpec
       destinationDescriptorEncDec: NioCodec[DestinationDescriptor],
       itemEncDec: NioCodec[DataItem[String]],
       canValidate: CanValidate[DataItem[String]],
-      frameCodec: NioCodec[Envelope[DataItemAction[String]]]) = {
+      frameCodec: NioCodec[Envelope[DataItemAction[String]]]
+  ) = {
 
     val txNetwork = Network[Envelope[DataItemAction[String]]](baseNetwork.networkDiscovery, baseNetwork.transports)
     val queryRequestNetwork =
@@ -49,7 +50,8 @@ class QueryEngineNetworkDataItemServiceItFeatureSpec
         table,
         queryRequestNetwork,
         queryResponseNetwork,
-        () => UUID.randomUUID().toString)
+        () => UUID.randomUUID().toString
+      )
     new DataItemService[String](table, txNetwork, queryEngine)
   }
 
@@ -103,12 +105,15 @@ class QueryEngineNetworkDataItemServiceItFeatureSpec
           dataItemService.processQuery(Envelope(query, table.tableId, Everyone)).withTimeout(1 seconds)
 
         val responses = Await.result(
-          stream.fold[Either[ApplicationError, Seq[DataItem[String]]]](Right(Seq()))((s, c) =>
-            for {
-              seq <- c
-              state <- s
-            } yield state ++ seq),
-          30 seconds)
+          stream.fold[Either[ApplicationError, Seq[DataItem[String]]]](Right(Seq()))(
+            (s, c) =>
+              for {
+                seq <- c
+                state <- s
+              } yield state ++ seq
+          ),
+          30 seconds
+        )
 
         responses mustBe
           Right(Seq(dummyResultDataItem1, dummyResultDataItem2))

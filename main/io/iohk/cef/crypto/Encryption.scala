@@ -25,7 +25,8 @@ trait Encryption {
     val (llPub, llPriv) = defaultEncryptionType.algorithm.generateKeyPair()
     EncryptionKeyPair(
       EncryptionPublicKey(defaultEncryptionType)(llPub),
-      EncryptionPrivateKey(defaultEncryptionType)(llPriv))
+      EncryptionPrivateKey(defaultEncryptionType)(llPriv)
+    )
   }
 
   /**
@@ -50,11 +51,13 @@ trait Encryption {
 
   private[crypto] def decryptBytes(
       encryptedData: EncryptedData,
-      key: EncryptionPrivateKey): Either[DecryptError, ByteString] = {
+      key: EncryptionPrivateKey
+  ): Either[DecryptError, ByteString] = {
     if (encryptedData.`type` != key.`type`)
       Left(
         DecryptError
-          .IncompatibleEncryptionAlgorithm(key.`type`.algorithmIdentifier, encryptedData.`type`.algorithmIdentifier))
+          .IncompatibleEncryptionAlgorithm(key.`type`.algorithmIdentifier, encryptedData.`type`.algorithmIdentifier)
+      )
     else
       key.`type`.algorithm.decrypt(encryptedData.bytes, key.lowlevelKey) match {
         case Left(e) => Left(DecryptError.UnderlayingDecryptionError(e))
@@ -77,7 +80,8 @@ trait Encryption {
     * @return                some sort of error or the restored entity of type `T`
     */
   def decrypt[T](encryptedData: EncryptedData, key: EncryptionPrivateKey)(
-      implicit codec: NioCodec[T]): Either[DecryptError, T] = {
+      implicit codec: NioCodec[T]
+  ): Either[DecryptError, T] = {
     decryptBytes(encryptedData, key)
       .flatMap { bytes =>
         codec.decode(bytes.toByteBuffer) match {
@@ -108,8 +112,9 @@ trait Encryption {
 
     protected val title: String = "ENCRYPTION PUBLIC KEY"
 
-    private[Encryption] def apply(tpe: encryptionAlgorithmsCollection.EncryptionAlgorithmType)(
-        llk: tpe.algorithm.PublicKey) =
+    private[Encryption] def apply(
+        tpe: encryptionAlgorithmsCollection.EncryptionAlgorithmType
+    )(llk: tpe.algorithm.PublicKey) =
       new EncryptionPublicKey {
         override private[Encryption] val `type`: encryptionAlgorithmsCollection.EncryptionAlgorithmType =
           tpe
@@ -122,7 +127,8 @@ trait Encryption {
       TypedByteString(key.`type`.algorithmIdentifier, key.`type`.algorithm.encodePublicKey(key.lowlevelKey).bytes)
 
     private[crypto] def decodeFrom(
-        tbs: TypedByteString): Either[KeyDecodeError[EncryptionPublicKey], EncryptionPublicKey] = {
+        tbs: TypedByteString
+    ): Either[KeyDecodeError[EncryptionPublicKey], EncryptionPublicKey] = {
       encryptionAlgorithmsCollection(tbs.`type`) match {
         case Some(encryptionType) =>
           encryptionType.algorithm.decodePublicKey(PublicKeyBytes(tbs.bytes)) match {
@@ -158,8 +164,9 @@ trait Encryption {
 
     protected val title: String = "ENCRYPTION PRIVATE KEY"
 
-    private[Encryption] def apply(tpe: encryptionAlgorithmsCollection.EncryptionAlgorithmType)(
-        llk: tpe.algorithm.PrivateKey) =
+    private[Encryption] def apply(
+        tpe: encryptionAlgorithmsCollection.EncryptionAlgorithmType
+    )(llk: tpe.algorithm.PrivateKey) =
       new EncryptionPrivateKey {
         override private[Encryption] val `type`: encryptionAlgorithmsCollection.EncryptionAlgorithmType =
           tpe
@@ -172,7 +179,8 @@ trait Encryption {
       TypedByteString(key.`type`.algorithmIdentifier, key.`type`.algorithm.encodePrivateKey(key.lowlevelKey).bytes)
 
     private[crypto] def decodeFrom(
-        tbs: TypedByteString): Either[KeyDecodeError[EncryptionPrivateKey], EncryptionPrivateKey] = {
+        tbs: TypedByteString
+    ): Either[KeyDecodeError[EncryptionPrivateKey], EncryptionPrivateKey] = {
       encryptionAlgorithmsCollection(tbs.`type`) match {
         case Some(encryptionType) =>
           encryptionType.algorithm.decodePrivateKey(PrivateKeyBytes(tbs.bytes)) match {
@@ -194,8 +202,8 @@ trait Encryption {
   /** Data entity containing some encrypted data and the identifier of the encryption algorithm used to generate it */
   class EncryptedData(
       private[Encryption] val `type`: encryptionAlgorithmsCollection.EncryptionAlgorithmType,
-      private[Encryption] val bytes: EncryptedBytes)
-      extends CryptoEntity[EncryptedData, EncryptedData.type] {
+      private[Encryption] val bytes: EncryptedBytes
+  ) extends CryptoEntity[EncryptedData, EncryptedData.type] {
 
     private[crypto] val companion: EncryptedData.type = EncryptedData
     protected val self: EncryptedData = this
@@ -217,7 +225,8 @@ trait Encryption {
 
     private[Encryption] def apply(
         tpe: encryptionAlgorithmsCollection.EncryptionAlgorithmType,
-        bytes: EncryptedBytes): EncryptedData =
+        bytes: EncryptedBytes
+    ): EncryptedData =
       new EncryptedData(tpe, bytes)
 
     private[crypto] def encodeInto(signature: EncryptedData): TypedByteString =

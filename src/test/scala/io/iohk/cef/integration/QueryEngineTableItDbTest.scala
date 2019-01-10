@@ -67,15 +67,18 @@ class QueryEngineTableItDbTest extends FlatSpec with MustMatchers with EitherVal
     val query2 = Field(0) #== "insert2"
     val query3 = Field(0) #== "insert3"
 
-    def foldStream(stream: MessageStream[Either[ApplicationError, Seq[DataItem[String]]]])
-      : Either[ApplicationError, Seq[DataItem[String]]] = {
+    def foldStream(
+        stream: MessageStream[Either[ApplicationError, Seq[DataItem[String]]]]
+    ): Either[ApplicationError, Seq[DataItem[String]]] = {
       stream.foreach(println(_))
       val fold: Future[Either[ApplicationError, Seq[DataItem[String]]]] =
-        stream.fold[Either[ApplicationError, Seq[DataItem[String]]]](Right(Seq()))((c, s) =>
-          for {
-            current <- c
-            state <- s
-          } yield current ++ state)
+        stream.fold[Either[ApplicationError, Seq[DataItem[String]]]](Right(Seq()))(
+          (c, s) =>
+            for {
+              current <- c
+              state <- s
+            } yield current ++ state
+        )
       fold.futureValue
     }
 

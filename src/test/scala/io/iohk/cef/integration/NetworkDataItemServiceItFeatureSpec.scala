@@ -28,7 +28,8 @@ class NetworkDataItemServiceItFeatureSpec
       destinationDescriptorEncDec: NioCodec[DestinationDescriptor],
       itemEncDec: NioCodec[DataItem[String]],
       canValidate: CanValidate[DataItem[String]],
-      frameCodec: NioCodec[Envelope[DataItemAction[String]]]) = {
+      frameCodec: NioCodec[Envelope[DataItemAction[String]]]
+  ) = {
 
     val txNetwork = Network[Envelope[DataItemAction[String]]](baseNetwork.networkDiscovery, baseNetwork.transports)
     new DataItemService[String](table, txNetwork, mock[DataItemQueryEngine[String]])

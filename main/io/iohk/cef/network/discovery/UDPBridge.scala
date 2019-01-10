@@ -14,8 +14,8 @@ import io.iohk.cef.utils._
 class UDPBridge(
     discoveryListener: ActorRef[DiscoveryListenerRequest],
     codec: NioCodec[DiscoveryWireMessage],
-    udpBinder: untyped.ActorContext => Unit)
-    extends untyped.Actor {
+    udpBinder: untyped.ActorContext => Unit
+) extends untyped.Actor {
 
   udpBinder(context)
 
@@ -37,13 +37,17 @@ class UDPBridge(
 
 object UDPBridge {
   def creator(config: DiscoveryConfig, codec: NioCodec[DiscoveryWireMessage])(
-      context: ActorContext[DiscoveryListenerRequest]): untyped.ActorRef =
+      context: ActorContext[DiscoveryListenerRequest]
+  ): untyped.ActorRef =
     context.actorOf(
-      untyped.Props(new UDPBridge(
-        context.asScala.self,
-        codec,
-        context =>
-          IO(Udp)(context.system)
-            .tell(Udp.Bind(context.self, new InetSocketAddress(config.interface, config.port)), context.self)
-      )))
+      untyped.Props(
+        new UDPBridge(
+          context.asScala.self,
+          codec,
+          context =>
+            IO(Udp)(context.system)
+              .tell(Udp.Bind(context.self, new InetSocketAddress(config.interface, config.port)), context.self)
+        )
+      )
+    )
 }

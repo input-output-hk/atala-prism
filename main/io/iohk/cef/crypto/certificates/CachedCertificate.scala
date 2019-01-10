@@ -22,7 +22,8 @@ import scala.util.Try
 class CachedCertificate private (
     val identity: String,
     val publicKey: SigningPublicKey,
-    private[certificates] val x509: X509Certificate) {
+    private[certificates] val x509: X509Certificate
+) {
 
   override def equals(obj: scala.Any): Boolean = obj match {
     case that: CachedCertificate =>

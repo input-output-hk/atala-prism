@@ -33,7 +33,8 @@ class TransactionPoolInterface[State: NioCodec: TypeTag, Tx <: Transaction[State
     maxBlockSize: Int,
     ledgerStateStorage: LedgerStateStorage[State],
     defaultTransactionExpiration: Duration,
-    timedQueueConstructor: () => TimedQueue[Tx])(implicit executionContext: ExecutionContext) {
+    timedQueueConstructor: () => TimedQueue[Tx]
+)(implicit executionContext: ExecutionContext) {
 
   type BlockType = Block[State, Tx]
 
@@ -45,7 +46,8 @@ class TransactionPoolInterface[State: NioCodec: TypeTag, Tx <: Transaction[State
       headerGenerator,
       maxBlockSize,
       ledgerStateStorage,
-      defaultTransactionExpiration)
+      defaultTransactionExpiration
+    )
   }
 
   def generateBlock(): Either[ApplicationError, BlockType] = {
@@ -81,23 +83,26 @@ object TransactionPoolInterface {
       maxBlockSize: Int,
       ledgerStateStorage: LedgerStateStorage[State],
       defaultTransactionExpiration: Duration,
-      clock: Clock)(implicit executionContext: ExecutionContext): TransactionPoolInterface[State, Tx] =
+      clock: Clock
+  )(implicit executionContext: ExecutionContext): TransactionPoolInterface[State, Tx] =
     new TransactionPoolInterface(
       headerGenerator,
       maxBlockSize,
       ledgerStateStorage,
       defaultTransactionExpiration,
-      () => new TimedQueue[Tx](clock))
+      () => new TimedQueue[Tx](clock)
+    )
   def apply[State: NioCodec: TypeTag, Tx <: Transaction[State]](
       headerGenerator: Seq[Transaction[State]] => BlockHeader,
       maxBlockSize: Int,
       ledgerStateStorage: LedgerStateStorage[State],
-      defaultTransactionExpiration: Duration)(
-      implicit executionContext: ExecutionContext): TransactionPoolInterface[State, Tx] =
+      defaultTransactionExpiration: Duration
+  )(implicit executionContext: ExecutionContext): TransactionPoolInterface[State, Tx] =
     new TransactionPoolInterface(
       headerGenerator,
       maxBlockSize,
       ledgerStateStorage,
       defaultTransactionExpiration,
-      () => new TimedQueue[Tx]())
+      () => new TimedQueue[Tx]()
+    )
 }

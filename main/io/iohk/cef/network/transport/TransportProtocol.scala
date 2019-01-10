@@ -44,8 +44,8 @@ private[network] trait TransportProtocol {
   case class CreateListener(
       address: AddressType,
       listener: ActorRef[ListenerEvent],
-      connectionFactory: () => ActorRef[ConnectionEvent])
-      extends TransportCommand
+      connectionFactory: () => ActorRef[ConnectionEvent]
+  ) extends TransportCommand
 
   /**
     * ListenerCommand supports the setup of listeners on a specific address.
