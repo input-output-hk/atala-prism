@@ -242,14 +242,18 @@ case class SignatureTxFragment(signature: Signature) extends ChimericTxFragment 
 
 object SignatureTxFragment {
 
+  import io.iohk.cef.codecs.nio.auto._
+
   def signFragments(
       fragments: Seq[ChimericTxFragment],
       signingPrivateKey: SigningPrivateKey
   ): Seq[ChimericTxFragment] = {
-    import io.iohk.cef.codecs.nio.auto._
-    fragments :+ SignatureTxFragment(sign(signable(fragments), signingPrivateKey))
+    fragments :+ SignatureTxFragment(fragments, signingPrivateKey)
   }
 
-  private def signable(fragments: Seq[ChimericTxFragment]): Seq[ChimericTxFragment] =
+  def apply(fragments: Seq[ChimericTxFragment], signingPrivateKey: SigningPrivateKey): SignatureTxFragment =
+    SignatureTxFragment(sign(signable(fragments), signingPrivateKey))
+
+  def signable(fragments: Seq[ChimericTxFragment]): Seq[ChimericTxFragment] =
     fragments.filterNot(_.isInstanceOf[SignatureTxFragment])
 }

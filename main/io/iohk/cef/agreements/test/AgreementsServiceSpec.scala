@@ -2,11 +2,9 @@ package io.iohk.cef.agreements
 
 import java.util.UUID
 
+import io.iohk.cef.agreements.AgreementFixture._
 import io.iohk.cef.agreements.AgreementsMessage._
-import io.iohk.cef.codecs.nio._
 import io.iohk.cef.codecs.nio.auto._
-import io.iohk.cef.network.{ConversationalNetwork, NodeId}
-import io.iohk.cef.network.transport.tcp.NetUtils
 import org.mockito.Mockito.verify
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
@@ -14,7 +12,6 @@ import org.scalatest.concurrent.Eventually._
 import org.scalatest.mockito.MockitoSugar.mock
 
 import scala.concurrent.duration._
-import scala.reflect.runtime.universe._
 
 class AgreementsServiceSpec extends FlatSpec {
 
@@ -89,24 +86,5 @@ class AgreementsServiceSpec extends FlatSpec {
 
     // then
     exception.getMessage shouldBe "Unknown correlationId 'foo'."
-  }
-
-  case class AgreementFixture[T](nodeId: NodeId, agreementsService: AgreementsService[T])
-
-  def forTwoArbitraryAgreementPeers[T: NioCodec: TypeTag](
-      testCode: (AgreementFixture[T], AgreementFixture[T]) => Any
-  ): Unit = {
-    NetUtils.forTwoArbitraryNetworkPeers { (aliceFix, bobFix) =>
-      val aliceNet = new ConversationalNetwork[AgreementMessage[T]](aliceFix.networkDiscovery, aliceFix.transports)
-      val aliceAgreementService = new AgreementsService[T](aliceNet)
-
-      val bobNet = new ConversationalNetwork[AgreementMessage[T]](bobFix.networkDiscovery, bobFix.transports)
-      val bobAgreementService = new AgreementsService[T](bobNet)
-
-      testCode(
-        AgreementFixture(aliceFix.nodeId, aliceAgreementService),
-        AgreementFixture(bobFix.nodeId, bobAgreementService)
-      )
-    }
   }
 }
