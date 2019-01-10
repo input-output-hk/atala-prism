@@ -13,31 +13,51 @@ import io.iohk.cef.frontend.models.{
 }
 import io.iohk.cef.frontend.services.IdentityTransactionService
 import io.iohk.cef.ledger.identity.{Grant, IdentityTransaction, Link, LinkCertificate}
+import io.iohk.cef.query.ledger.identity.{IdentityQuery, IdentityQueryService}
+import org.scalactic.Good
+import play.api.libs.json._
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
-class IdentitiesController(service: IdentityTransactionService)(implicit mat: Materializer, ec: ExecutionContext)
-    extends CustomJsonController {
+class IdentitiesController(queryService: IdentityQueryService, service: IdentityTransactionService)(
+    implicit mat: Materializer,
+    ec: ExecutionContext
+) extends CustomJsonController {
 
   import Codecs._
   import Context._
   import IdentitiesController._
 
   lazy val routes = {
-    path("identities") {
-      post {
-        publicInput(StatusCodes.Created) { ctx: HasModel[CreateIdentityTransactionRequest] =>
-          val result = for {
-            tx <- service.createIdentityTransaction(ctx.model).onFor
+    pathPrefix("identities") {
+      (get & pathPrefix(Segment)) { identity =>
+        path("exists") {
+          public { _ =>
+            val query = IdentityQuery.ExistsIdentity(identity)
+            val exists = queryService.perform(query)
+            val result = Json.obj("exists" -> JsBoolean(exists))
+            Future.successful(Good(result))
+          }
+        } ~
+          public { _ =>
+            val query = IdentityQuery.RetrieveIdentityKeys(identity)
+            val keys = queryService.perform(query)
+            Future.successful(Good(keys))
+          }
+      } ~
+        post {
+          publicInput(StatusCodes.Created) { ctx: HasModel[CreateIdentityTransactionRequest] =>
+            val result = for {
+              tx <- service.createIdentityTransaction(ctx.model).onFor
 
-            submitTransaction = toSubmitRequest(tx, ctx.model.ledgerId)
-            _ <- service.submitIdentityTransaction(submitTransaction).onFor
-          } yield tx
+              submitTransaction = toSubmitRequest(tx, ctx.model.ledgerId)
+              _ <- service.submitIdentityTransaction(submitTransaction).onFor
+            } yield tx
 
-          // The actual method call never fails but the type system says it could, we need this to be able to compile
-          fromFutureEither(result.res, IdentityTransactionCreationError())
+            // The actual method call never fails but the type system says it could, we need this to be able to compile
+            fromFutureEither(result.res, IdentityTransactionCreationError())
+          }
         }
-      }
     }
   }
 }

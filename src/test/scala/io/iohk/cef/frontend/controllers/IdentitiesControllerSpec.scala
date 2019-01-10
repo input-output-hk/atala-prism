@@ -5,12 +5,13 @@ import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.util.ByteString
 import com.alexitc.playsonify.akka.PublicErrorRenderer
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
-import io.iohk.cef.transactionservice.NodeTransactionService
 import io.iohk.cef.crypto._
 import io.iohk.cef.crypto.certificates.test.data.ExampleCertificates.twoChainedCertsPEM
 import io.iohk.cef.frontend.controllers.common.Codecs
 import io.iohk.cef.frontend.services.IdentityTransactionService
 import io.iohk.cef.ledger.identity._
+import io.iohk.cef.query.ledger.identity.{IdentityQueryEngine, IdentityQueryService}
+import io.iohk.cef.transactionservice.NodeTransactionService
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
 import org.scalatest.concurrent.ScalaFutures
@@ -34,9 +35,46 @@ class IdentitiesControllerSpec
   when(nodeTransactionService.receiveTransaction(any())).thenReturn(Future.successful(Right(())))
   implicit val executionContext = system.dispatcher
 
+  val queryEngine = mock[IdentityQueryEngine]
+  val queryService = new IdentityQueryService(queryEngine)
   val service = new IdentityTransactionService(nodeTransactionService)
-  val controller = new IdentitiesController(service)
+  val controller = new IdentitiesController(queryService, service)
   lazy val routes = controller.routes
+
+  "GET /identities/:identity" should {
+    "return the identity keys" in {
+      val identity = "iohk"
+      val key = generateSigningKeyPair().public
+      when(queryEngine.get(anyString())).thenReturn(Option(IdentityData.forKeys(key)))
+
+      val request = Get(s"/identities/$identity")
+
+      request ~> routes ~> check {
+        status must ===(StatusCodes.OK)
+
+        val json = responseAs[JsValue]
+        val list = json.as[List[JsValue]]
+        list.size must be(1)
+        list.head.as[String] must be(key.toString())
+      }
+    }
+  }
+
+  "GET /identities/:identity/exists" should {
+    "return whether the identity exists" in {
+      val identity = "iohk"
+      when(queryEngine.contains(identity)).thenReturn(true)
+
+      val request = Get(s"/identities/$identity/exists")
+
+      request ~> routes ~> check {
+        status must ===(StatusCodes.OK)
+
+        val json = responseAs[JsValue]
+        (json \ "exists").as[Boolean] must be(true)
+      }
+    }
+  }
 
   "POST /identities" should {
     val pair = generateSigningKeyPair()
