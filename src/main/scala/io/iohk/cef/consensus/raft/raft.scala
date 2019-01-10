@@ -27,7 +27,8 @@ trait RPCFactory[Command] {
       nodeId: String,
       appendEntriesCallback: EntriesToAppend[Command] => AppendEntriesResult,
       requestVoteCallback: VoteRequested => RequestVoteResult,
-      clientAppendEntriesCallback: Seq[Command] => Future[Either[Redirect[Command], Unit]]): RPC[Command]
+      clientAppendEntriesCallback: Seq[Command] => Future[Either[Redirect[Command], Unit]]
+  ): RPC[Command]
 }
 
 /**
@@ -78,7 +79,8 @@ case class EntriesToAppend[Command](
     prevLogIndex: Int,
     prevLogTerm: Int,
     entries: Seq[LogEntry[Command]],
-    leaderCommitIndex: Int)
+    leaderCommitIndex: Int
+)
 
 /**
   * AppendEntries RPC response
@@ -161,7 +163,8 @@ case class RaftState[Command](
     deletes: Int,
     writes: IndexedSeq[LogEntry[Command]],
     leaderId: String,
-    uuid: UUID) {
+    uuid: UUID
+) {
   val log = new VirtualVector(baseLog, deletes, writes)
 }
 

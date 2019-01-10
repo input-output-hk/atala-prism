@@ -18,8 +18,8 @@ object NodeStatus {
       key: ByteString,
       serverStatus: ServerStatus,
       discoveryStatus: ServerStatus,
-      capabilities: Capabilities)
-      extends {
+      capabilities: Capabilities
+  ) extends {
 
     val nodeId = key
   }

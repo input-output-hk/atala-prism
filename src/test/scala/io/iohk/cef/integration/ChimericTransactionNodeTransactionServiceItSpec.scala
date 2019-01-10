@@ -59,7 +59,8 @@ class ChimericTransactionNodeTransactionServiceItSpec
         generateHeader,
         10000,
         ledgerStateStorage,
-        10.minutes)
+        10.minutes
+      )
 
     val consensus = mock[ConsensusType]
     val blockNetwork = mock[Network[Envelope[BlockType]]]
@@ -84,7 +85,8 @@ class ChimericTransactionNodeTransactionServiceItSpec
       new NodeTransactionService(consensusMap, txNetwork, blockNetwork, me)(
         envelopeSerializable,
         blockSerializable,
-        ExecutionContext.global)
+        ExecutionContext.global
+      )
 
     transactionservice.asInstanceOf[NodeTransactionService[ChimericStateResult, ChimericTx]]
   }

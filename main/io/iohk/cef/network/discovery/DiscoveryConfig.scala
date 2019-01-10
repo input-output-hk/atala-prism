@@ -20,7 +20,8 @@ case class DiscoveryConfig(
     messageExpiration: FiniteDuration,
     maxSeekResults: Int,
     multipleConnectionsPerAddress: Boolean,
-    blacklistDefaultDuration: FiniteDuration) {
+    blacklistDefaultDuration: FiniteDuration
+) {
   val discoveryAddress = new InetSocketAddress(InetAddress.getByName(interface), port)
 }
 

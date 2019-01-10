@@ -48,7 +48,8 @@ class ConversationalNetwork[Message: NioCodec: TypeTag](networkDiscovery: Networ
   def messageStream: MessageStream[Message] =
     if (usesTcp(peerConfig))
       new MonixMessageStream(
-        tcpNetworkTransport.get.monixMessageStream.filter(frameHandler).map((frame: Frame[Message]) => frame.content))
+        tcpNetworkTransport.get.monixMessageStream.filter(frameHandler).map((frame: Frame[Message]) => frame.content)
+      )
     else
       MonixMessageStream.empty()
 

@@ -135,5 +135,6 @@ class TimedQueueSpec extends FlatSpec with MustMatchers with PropertyChecks {
   case class TestFixture(
       shuffledEntries: Seq[(String, FiniteDuration)],
       fullQueue: TimedQueue[String],
-      expectedRemaining: Seq[(String, FiniteDuration)])
+      expectedRemaining: Seq[(String, FiniteDuration)]
+  )
 }

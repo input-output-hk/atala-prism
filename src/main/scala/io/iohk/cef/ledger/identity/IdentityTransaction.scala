@@ -20,14 +20,16 @@ object IdentityTransaction {
   def isDataSignedWith[D <: IdentityTransactionData: NioCodec](
       data: D,
       publicKey: SigningPublicKey,
-      signature: Signature): Boolean =
+      signature: Signature
+  ): Boolean =
     isValidSignature(data, signature, publicKey)
 
   def isDataSignedWithIdentity[D <: IdentityTransactionData: NioCodec](
       data: D,
       identity: Identity,
       state: IdentityLedgerState,
-      signature: Signature): Boolean = {
+      signature: Signature
+  ): Boolean = {
     // TODO: Go directly to the expected key
     state
       .get(identity)
@@ -205,8 +207,9 @@ case class Grant(data: GrantData, signature: Signature, claimSignature: Signatur
     if (!IdentityTransaction.grantingAuthorities.contains(data.grantingIdentity)) {
       Left(IdentityIsNotAGrantingAuthorityError(data.grantingIdentity))
     } else {
-      txs.foldLeft[Either[LedgerError, IdentityLedgerState]](Right(ledgerState))((stateEither, tx) =>
-        stateEither.flatMap(state => tx(state)))
+      txs.foldLeft[Either[LedgerError, IdentityLedgerState]](Right(ledgerState))(
+        (stateEither, tx) => stateEither.flatMap(state => tx(state))
+      )
     }
   }
   override def partitionIds: Set[String] =
@@ -247,7 +250,8 @@ case class LinkCertificate(data: LinkCertificateData, signature: Signature, sign
 
   private def apply(
       pair: CachedCertificatePair,
-      ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] = {
+      ledgerState: IdentityLedgerState
+  ): Either[LedgerError, IdentityLedgerState] = {
 
     val authorityIdentityDataMaybe = ledgerState.get(pair.issuer.identity)
     val linkingIdentityDataMaybe = ledgerState.get(pair.target.identity)

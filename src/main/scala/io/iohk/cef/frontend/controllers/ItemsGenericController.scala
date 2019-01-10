@@ -24,12 +24,13 @@ class ItemsGenericController(implicit ec: ExecutionContext, mat: Materializer) e
   import ItemsGenericController._
 
   def routes[D](prefix: String, service: DataItemService[D], queryResultTimeout: FiniteDuration)(
-    implicit format: Reads[Envelope[DataItem[D]]],
-    queryFormat: Reads[Envelope[DataItemQuery]],
-    queryResponseFormat: Writes[Seq[DataItem[D]]],
-    identifierFormat: Reads[Envelope[DataItemIdentifier]],
-    itemSerializable: NioCodec[D],
-    canValidate: CanValidate[DataItem[D]]): Route = {
+      implicit format: Reads[Envelope[DataItem[D]]],
+      queryFormat: Reads[Envelope[DataItemQuery]],
+      queryResponseFormat: Writes[Seq[DataItem[D]]],
+      identifierFormat: Reads[Envelope[DataItemIdentifier]],
+      itemSerializable: NioCodec[D],
+      canValidate: CanValidate[DataItem[D]]
+  ): Route = {
     pathPrefix(prefix) {
       path("validation") {
         post {
@@ -71,11 +72,13 @@ class ItemsGenericController(implicit ec: ExecutionContext, mat: Materializer) e
                 val futureEither = service
                   .processQuery(ctx.model)
                   .withTimeout(queryResultTimeout)
-                  .fold[Either[ApplicationError, Seq[DataItem[D]]]](Right(Seq()))((state, current) =>
-                    for {
-                      s <- state
-                      c <- current
-                    } yield c ++ s)
+                  .fold[Either[ApplicationError, Seq[DataItem[D]]]](Right(Seq()))(
+                    (state, current) =>
+                      for {
+                        s <- state
+                        c <- current
+                      } yield c ++ s
+                  )
 
                 futureEither.map { either =>
                   fromEither(either, QueryEngineError)

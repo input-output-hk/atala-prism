@@ -22,7 +22,8 @@ object NetworkServices {
   private def discoveryManagerBehavior(
       clock: Clock,
       peerConfig: PeerConfig,
-      discoveryConfig: DiscoveryConfig): Behavior[DiscoveryRequest] = {
+      discoveryConfig: DiscoveryConfig
+  ): Behavior[DiscoveryRequest] = {
 
     val nodeInfo = peerConfig2NodeInfoHack(peerConfig)
 
@@ -30,7 +31,8 @@ object NetworkServices {
       nodeInfo.id,
       ServerStatus.Listening(nodeInfo.serverAddress),
       ServerStatus.Listening(nodeInfo.discoveryAddress),
-      Capabilities(0))
+      Capabilities(0)
+    )
 
     val codec: NioCodec[DiscoveryWireMessage] = NioCodec[DiscoveryWireMessage]
 
@@ -48,11 +50,13 @@ object NetworkServices {
   }
 
   private def listenerFactory(discoveryConfig: DiscoveryConfig, codec: NioCodec[DiscoveryWireMessage])(
-      context: ActorContext[DiscoveryRequest]): ActorRef[DiscoveryListenerRequest] = {
+      context: ActorContext[DiscoveryRequest]
+  ): ActorRef[DiscoveryListenerRequest] = {
 
     context.spawn(
       DiscoveryListener.behavior(discoveryConfig, UDPBridge.creator(discoveryConfig, codec)),
-      "DiscoveryListener")
+      "DiscoveryListener"
+    )
   }
 
   // FIXME Get rid of NodeInfo

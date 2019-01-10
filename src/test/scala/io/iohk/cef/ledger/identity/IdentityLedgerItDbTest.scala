@@ -14,7 +14,8 @@ class IdentityLedgerItDbTest extends FlatSpec {
   behavior of "IdentityLedgerIt"
 
   it should "error when the tx is inconsistent with the state" in withLedger[IdentityData, IdentityTransaction](
-    "identityLedger") { ledger =>
+    "identityLedger"
+  ) { ledger =>
     val now = Instant.now()
     val header = BlockHeader(now)
     val firstClaimData = ClaimData("one", alice.public)

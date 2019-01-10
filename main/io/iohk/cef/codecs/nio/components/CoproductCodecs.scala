@@ -14,7 +14,8 @@ trait CoproductCodecs {
   implicit def coproductCodec[H, T <: Coproduct](
       implicit hC: Lazy[NioCodec[H]],
       tC: NioCodec[T],
-      ttc: TypeTag[H :+: T]): NioCodec[H :+: T] =
+      ttc: TypeTag[H :+: T]
+  ): NioCodec[H :+: T] =
     NioCodec(coproductEncoder, coproductDecoder)
 
   implicit def optionCodec[T: NioCodec]: NioCodec[Option[T]] =

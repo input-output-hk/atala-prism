@@ -12,30 +12,32 @@ object UniversityDegreeData {
 
   implicit def universityDegreeValidation(
       implicit publicKeyStore: Map[String, SigningPublicKey],
-      serializable: NioCodec[UniversityDegreeData]): CanValidate[DataItem[UniversityDegreeData]] = {
-    dataItem: DataItem[UniversityDegreeData] =>
-      mandatoryCheck(dataItem).flatMap { d =>
-        getSigningPublicKey(d).flatMap { key =>
-          if (isValidSignature(d.data, d.witnesses.head.signature, key)) {
-            Right(Unit)
-          } else {
-            Left(InvalidUniversitySignatureError(d.data.universityName, d.id))
-          }
+      serializable: NioCodec[UniversityDegreeData]
+  ): CanValidate[DataItem[UniversityDegreeData]] = { dataItem: DataItem[UniversityDegreeData] =>
+    mandatoryCheck(dataItem).flatMap { d =>
+      getSigningPublicKey(d).flatMap { key =>
+        if (isValidSignature(d.data, d.witnesses.head.signature, key)) {
+          Right(Unit)
+        } else {
+          Left(InvalidUniversitySignatureError(d.data.universityName, d.id))
         }
-
       }
+
+    }
 
   }
 
-  private def getSigningPublicKey(dataItem: DataItem[UniversityDegreeData])(
-      implicit publicKeyStore: Map[String, SigningPublicKey]): Either[DataItemError, SigningPublicKey] = {
+  private def getSigningPublicKey(
+      dataItem: DataItem[UniversityDegreeData]
+  )(implicit publicKeyStore: Map[String, SigningPublicKey]): Either[DataItemError, SigningPublicKey] = {
     publicKeyStore.get(dataItem.data.universityName) match {
       case Some(key) => Right(key)
       case _ => Left(UniversityPublicKeyIsUnknown(dataItem.data.universityName, dataItem.witnesses.head, dataItem.id))
     }
   }
   private def mandatoryCheck(
-      dataItem: DataItem[UniversityDegreeData]): Either[DataItemError, DataItem[UniversityDegreeData]] = {
+      dataItem: DataItem[UniversityDegreeData]
+  ): Either[DataItemError, DataItem[UniversityDegreeData]] = {
     if (dataItem.witnesses.isEmpty) Left(NoWitnessProvided(dataItem.data.universityName, dataItem.id))
     else if (dataItem.owners.isEmpty) Left(NoOwnerProvided(dataItem.data.universityName, dataItem.id))
     else Right(dataItem)

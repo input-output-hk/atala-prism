@@ -24,7 +24,8 @@ private[raft] class RaftNode[Command: NioCodec](
     electionTimeoutRange: (Duration, Duration),
     heartbeatTimeoutRange: (Duration, Duration),
     stateMachine: Command => Unit,
-    persistentStorage: PersistentStorage[Command])(implicit ec: ExecutionContext)
+    persistentStorage: PersistentStorage[Command]
+)(implicit ec: ExecutionContext)
     extends RaftNodeInterface[Command] {
 
   private val logger = LoggerFactory.getLogger(classOf[RaftNode[Command]])
@@ -177,7 +178,8 @@ private[raft] class RaftNode[Command: NioCodec](
 
   private def getVoteResult(
       rs: RaftState[Command],
-      voteRequested: VoteRequested): (RaftState[Command], RequestVoteResult) = {
+      voteRequested: VoteRequested
+  ): (RaftState[Command], RequestVoteResult) = {
 
     val (currentTerm, votedFor) = rs.persistentState
     val (lastLogIndex, lastLogTerm) = lastLogIndexAndTerm(rs.log)
@@ -188,7 +190,8 @@ private[raft] class RaftNode[Command: NioCodec](
       && ((lastLogTerm <= voteRequested.lastLogTerm) && (lastLogIndex <= voteRequested.lastLogIndex))) {
       (
         rs.copy(persistentState = (voteRequested.term, voteRequested.candidateId)),
-        RequestVoteResult(voteRequested.term, voteGranted = true))
+        RequestVoteResult(voteRequested.term, voteGranted = true)
+      )
     } else {
       (rs, RequestVoteResult(currentTerm, voteGranted = false))
     }
