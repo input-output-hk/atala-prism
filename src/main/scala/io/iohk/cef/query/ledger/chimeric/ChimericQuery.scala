@@ -7,7 +7,7 @@ sealed trait ChimericQuery extends LedgerQuery[ChimericPartition]
 
 object ChimericQuery {
 
-  case class CreatedCurrencyQuery(currency: Currency) extends ChimericQuery {
+  case class CreatedCurrency(currency: Currency) extends ChimericQuery {
     type Response = Option[CreateCurrency]
 
     override protected def perform(queryEngine: ChimericQueryEngine): Response =
@@ -17,7 +17,7 @@ object ChimericQuery {
       }
   }
 
-  case class UtxoBalanceQuery(txOutRef: TxOutRef) extends ChimericQuery {
+  case class UtxoBalance(txOutRef: TxOutRef) extends ChimericQuery {
     type Response = Option[UtxoResult]
 
     override protected def perform(queryEngine: ChimericQueryEngine): Response =
@@ -27,7 +27,7 @@ object ChimericQuery {
       }
   }
 
-  case class AddressBalanceQuery(address: Address) extends ChimericQuery {
+  case class AddressBalance(address: Address) extends ChimericQuery {
     type Response = Option[AddressResult]
 
     override protected def perform(queryEngine: ChimericQueryEngine): Response =
@@ -37,7 +37,7 @@ object ChimericQuery {
       }
   }
 
-  case class AddressNonceQuery(address: Address) extends ChimericQuery {
+  case class AddressNonce(address: Address) extends ChimericQuery {
     type Response = Option[Int]
 
     override protected def perform(queryEngine: ChimericQueryEngine): Response =

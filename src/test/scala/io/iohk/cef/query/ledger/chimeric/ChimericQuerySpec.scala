@@ -12,7 +12,7 @@ import org.scalatest.{FlatSpec, MustMatchers}
 
 class ChimericQuerySpec extends FlatSpec with MustMatchers {
 
-  behavior of "IdentityQuery"
+  behavior of "ChimericQuery"
 
   it should "query for created currencies" in {
     val stateStorage = mock[LedgerStateStorage[ChimericStateResult]]
@@ -26,8 +26,8 @@ class ChimericQuerySpec extends FlatSpec with MustMatchers {
     when(stateStorage.slice(Set(createdCurrencyPartitionId))).thenReturn(ledgerState)
     when(stateStorage.slice(Set(nonCreatedCurrencyPartitionId))).thenReturn(ledgerState)
 
-    val queryForCurrency = CreatedCurrencyQuery(currency)
-    val queryForNotACurrency = CreatedCurrencyQuery(notACurrency)
+    val queryForCurrency = CreatedCurrency(currency)
+    val queryForNotACurrency = CreatedCurrency(notACurrency)
     Query.performer(queryForCurrency, engine) mustBe Some(CreateCurrency(currency))
     Query.performer(queryForNotACurrency, engine) mustBe None
   }
@@ -44,8 +44,8 @@ class ChimericQuerySpec extends FlatSpec with MustMatchers {
     when(stateStorage.slice(Set(utxoBalancePartitionId))).thenReturn(ledgerState)
     when(stateStorage.slice(Set(nonExistentUtxoPartitionId))).thenReturn(ledgerState)
 
-    val queryWithResult = UtxoBalanceQuery(utxo)
-    val queryWithoutResult = UtxoBalanceQuery(nonExistentUtxo)
+    val queryWithResult = UtxoBalance(utxo)
+    val queryWithoutResult = UtxoBalance(nonExistentUtxo)
     Query.performer(queryWithResult, engine) mustBe Some(utxoBalancePartition)
     Query.performer(queryWithoutResult, engine) mustBe None
   }
@@ -62,8 +62,8 @@ class ChimericQuerySpec extends FlatSpec with MustMatchers {
     when(stateStorage.slice(Set(addressBalancePartitionId))).thenReturn(ledgerState)
     when(stateStorage.slice(Set(addressWithougBalancePartitionId))).thenReturn(ledgerState)
 
-    val queryWithResult = AddressBalanceQuery(addressWithBalance)
-    val queryWithoutResult = AddressBalanceQuery(addressWithoutBalance)
+    val queryWithResult = AddressBalance(addressWithBalance)
+    val queryWithoutResult = AddressBalance(addressWithoutBalance)
     Query.performer(queryWithResult, engine) mustBe Some(addressBalancePartition)
     Query.performer(queryWithoutResult, engine) mustBe None
   }
@@ -80,8 +80,8 @@ class ChimericQuerySpec extends FlatSpec with MustMatchers {
     when(stateStorage.slice(Set(addressNoncePartitionId))).thenReturn(ledgerState)
     when(stateStorage.slice(Set(addressWithoutNoncePartitionId))).thenReturn(ledgerState)
 
-    val queryWithResult = ChimericQuery.AddressNonceQuery(addressWithNonce)
-    val queryWithoutResult = ChimericQuery.AddressNonceQuery(addressWithoutNonce)
+    val queryWithResult = ChimericQuery.AddressNonce(addressWithNonce)
+    val queryWithoutResult = ChimericQuery.AddressNonce(addressWithoutNonce)
     Query.performer(queryWithResult, engine) mustBe Some(100)
     Query.performer(queryWithoutResult, engine) mustBe None
   }
