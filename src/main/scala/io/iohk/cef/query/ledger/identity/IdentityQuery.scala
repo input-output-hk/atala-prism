@@ -10,8 +10,12 @@ object IdentityQuery {
   case class RetrieveIdentityKeys(identity: String) extends IdentityQuery {
     type Response = Set[SigningPublicKey]
 
-    override protected def perform(queryEngine: IdentityQueryEngine): Response =
-      queryEngine.get(identity).getOrElse(Set.empty)
+    override protected def perform(queryEngine: IdentityQueryEngine): Response = {
+      queryEngine
+        .get(identity)
+        .map(_.keys)
+        .getOrElse(Set.empty)
+    }
   }
 
   case class ExistsIdentity(identity: String) extends IdentityQuery {
