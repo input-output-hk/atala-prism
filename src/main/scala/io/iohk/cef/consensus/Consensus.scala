@@ -8,5 +8,6 @@ trait Consensus[State, Tx <: Transaction[State]] {
   def ledgerId: LedgerId
 
   def process(block: Block[State, Tx])(
-      implicit executionContext: ExecutionContext): Future[Either[ConsensusError, Unit]]
+      implicit executionContext: ExecutionContext
+  ): Future[Either[ConsensusError, Unit]]
 }

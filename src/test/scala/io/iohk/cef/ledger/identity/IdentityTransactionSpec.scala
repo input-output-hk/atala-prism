@@ -173,7 +173,8 @@ class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
   it should "apply a Revoke" in {
     val state =
       IdentityLedgerState(
-        Map("one" -> IdentityData(Set(alice.public), Set("two")), "two" -> IdentityData.forKeys(bob.public)))
+        Map("one" -> IdentityData(Set(alice.public), Set("two")), "two" -> IdentityData.forKeys(bob.public))
+      )
     val endorse = RevokeEndorsementData(
       "two",
       "one"
@@ -222,7 +223,8 @@ class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
   it should "fail to revoke identity if the endorser has not endorsed this identity" in {
     val state =
       IdentityLedgerState(
-        Map("one" -> IdentityData(Set(alice.public), Set("three")), "two" -> IdentityData.forKeys(bob.public)))
+        Map("one" -> IdentityData(Set(alice.public), Set("three")), "two" -> IdentityData.forKeys(bob.public))
+      )
     val transaction = RevokeEndorsementData("two", "one").toTransaction(bob.`private`)
     val result = transaction(state).left.value
     result mustBe EndorsementNotAssociatedWithIdentityError("two", "one")
@@ -236,7 +238,9 @@ class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
     val state = IdentityLedgerState(
       Map(
         pair.target.identity -> IdentityData.forKeys(keys.public),
-        pair.issuer.identity -> IdentityData.forKeys(pair.issuer.publicKey)))
+        pair.issuer.identity -> IdentityData.forKeys(pair.issuer.publicKey)
+      )
+    )
 
     val certificateKey = toSigningPrivateKey(validCertPrivateKey).value
     val data = LinkCertificateData(pair.target.identity, pem)
@@ -256,7 +260,9 @@ class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
     val state = IdentityLedgerState(
       Map(
         pair.target.identity -> IdentityData.forKeys(keys.public),
-        pair.issuer.identity -> IdentityData.forKeys(pair.issuer.publicKey)))
+        pair.issuer.identity -> IdentityData.forKeys(pair.issuer.publicKey)
+      )
+    )
 
     val certificateKey = toSigningPrivateKey(validCertPrivateKey).value
     val linkingIdentity = pair.target.identity + "XXX"
@@ -303,7 +309,8 @@ class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
     val pair = CachedCertificatePair.decode(pem).value
     val keys = generateSigningKeyPair()
     val state = IdentityLedgerState(
-      Map(pair.target.identity -> IdentityData.forKeys(keys.public), pair.issuer.identity -> IdentityData.empty))
+      Map(pair.target.identity -> IdentityData.forKeys(keys.public), pair.issuer.identity -> IdentityData.empty)
+    )
 
     val certificateKey = toSigningPrivateKey(validCertPrivateKey).value
     val data = LinkCertificateData(pair.target.identity, pem)
@@ -320,7 +327,9 @@ class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
     val state = IdentityLedgerState(
       Map(
         pair.target.identity -> IdentityData.forKeys(pair.issuer.publicKey),
-        pair.issuer.identity -> IdentityData.forKeys(pair.issuer.publicKey)))
+        pair.issuer.identity -> IdentityData.forKeys(pair.issuer.publicKey)
+      )
+    )
 
     val certificateKey = toSigningPrivateKey(validCertPrivateKey).value
     val data = LinkCertificateData(pair.target.identity, pem)
@@ -337,7 +346,9 @@ class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
     val state = IdentityLedgerState(
       Map(
         pair.target.identity -> IdentityData.forKeys(keys.public),
-        pair.issuer.identity -> IdentityData.forKeys(pair.issuer.publicKey)))
+        pair.issuer.identity -> IdentityData.forKeys(pair.issuer.publicKey)
+      )
+    )
 
     val data = LinkCertificateData(pair.target.identity, pem)
     val tx = data.toTransaction(keys.`private`, keys.`private`)
@@ -353,7 +364,9 @@ class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
     val state = IdentityLedgerState(
       Map(
         pair.target.identity -> IdentityData.forKeys(keys.public),
-        pair.issuer.identity -> IdentityData.forKeys(pair.issuer.publicKey)))
+        pair.issuer.identity -> IdentityData.forKeys(pair.issuer.publicKey)
+      )
+    )
 
     val certificateKey = toSigningPrivateKey(validCertPrivateKey).value
     val data = LinkCertificateData(pair.target.identity, pem)

@@ -24,8 +24,8 @@ private[cef] object DiscoveryListener {
 
   def behavior(
       discoveryConfig: DiscoveryConfig,
-      udpBridgeCreator: (ActorContext[DiscoveryListenerRequest]) => untyped.ActorRef)
-    : Behavior[DiscoveryListenerRequest] = {
+      udpBridgeCreator: (ActorContext[DiscoveryListenerRequest]) => untyped.ActorRef
+  ): Behavior[DiscoveryListenerRequest] = {
 
     def initialState: Behavior[DiscoveryListenerRequest] = Behaviors.receivePartial {
       case (context, Start(replyTo)) => {
@@ -36,20 +36,23 @@ private[cef] object DiscoveryListener {
         context.log.warning(
           s"Ignoring discovery listener request $msg. " +
             s"The discovery listener is not yet initialzed. " +
-            s"You need to send a Start message.")
+            s"You need to send a Start message."
+        )
         Behavior.same
       }
     }
 
     def startingState(
         replyTo: ActorRef[DiscoveryListenerResponse],
-        udpBridge: untyped.ActorRef): Behavior[DiscoveryListenerRequest] =
+        udpBridge: untyped.ActorRef
+    ): Behavior[DiscoveryListenerRequest] =
       Behaviors.setup { context =>
         Behaviors.receiveMessage {
           case Start(_) =>
             throw new IllegalStateException(
               s"Start has already been invoked on this listener by actor $replyTo. " +
-                s"You can do this only once.")
+                s"You can do this only once."
+            )
 
           case Forward(ready: Ready) =>
             replyTo ! ready
@@ -59,14 +62,16 @@ private[cef] object DiscoveryListener {
             context.log.warning(
               s"Ignoring discovery listener request $x. " +
                 s"The discovery listener is starting. " +
-                s"You need to await the Ready message.")
+                s"You need to await the Ready message."
+            )
             Behavior.same
         }
       }
 
     def readyState(
         replyTo: ActorRef[DiscoveryListenerResponse],
-        udpBridge: untyped.ActorRef): Behavior[DiscoveryListenerRequest] =
+        udpBridge: untyped.ActorRef
+    ): Behavior[DiscoveryListenerRequest] =
       Behaviors.setup { context =>
         Behaviors.receiveMessage {
           case Forward(messageReceived: MessageReceived) =>
@@ -78,7 +83,8 @@ private[cef] object DiscoveryListener {
           case x =>
             context.log.warning(
               s"Ignoring discovery listener request $x. " +
-                s"The discovery listener is already listening and ready.")
+                s"The discovery listener is already listening and ready."
+            )
             Behaviors.same
         }
       }

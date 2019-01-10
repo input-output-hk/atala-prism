@@ -14,7 +14,8 @@ import scala.concurrent.{ExecutionContext, Future}
 import io.iohk.cef.ledger.chimeric.{ChimericStateResult, ChimericTx}
 
 class ChimericTransactionService(nodeTransactionService: NodeTransactionService[ChimericStateResult, ChimericTx])(
-    implicit ec: ExecutionContext) {
+    implicit ec: ExecutionContext
+) {
 
   def createChimericTransaction(req: CreateChimericTransactionRequest): Response[ChimericTx] = {
 

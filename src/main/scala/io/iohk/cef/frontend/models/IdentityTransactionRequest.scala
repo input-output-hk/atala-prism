@@ -9,7 +9,8 @@ case class CreateIdentityTransactionRequest(
     data: IdentityTransactionData,
     ledgerId: LedgerId,
     privateKey: SigningPrivateKey,
-    linkingIdentityPrivateKey: Option[SigningPrivateKey] = None)
+    linkingIdentityPrivateKey: Option[SigningPrivateKey] = None
+)
 
 case class SubmitIdentityTransactionRequest(
     `type`: IdentityTransactionType,
@@ -19,4 +20,5 @@ case class SubmitIdentityTransactionRequest(
     linkingIdentitySignature: Option[Signature] = None,
     claimSignature: Option[Signature] = None,
     endorseSignature: Option[Signature] = None,
-    signatureFromCertificate: Option[Signature] = None)
+    signatureFromCertificate: Option[Signature] = None
+)

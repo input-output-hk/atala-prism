@@ -81,7 +81,8 @@ class ConsensusPoolItSpec extends FlatSpecLike with MockitoSugar with MustMatche
     // since we don't have any duplicate transactions
     eventually(
       s1.log.map(_.command).flatMap(_.transactions).toSet.size mustBe
-        block1Transactions.size + block2Transactions.size + block3Transactions.size)
+        block1Transactions.size + block2Transactions.size + block3Transactions.size
+    )
   }
 
   private def processAllTxs(txs: Seq[DummyTransaction], txPoolIf: TransactionPoolInterface[String, DummyTransaction])(

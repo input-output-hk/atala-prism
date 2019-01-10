@@ -27,14 +27,16 @@ private[config] class TransactionServiceBuilder(
     logger: Logger,
     clock: Clock,
     transports: Transports,
-    networkDiscovery: NetworkDiscovery) {
+    networkDiscovery: NetworkDiscovery
+) {
 
   def cefTransactionServiceChannel[State, Tx <: Transaction[State]]()(
       implicit stateCodec: NioCodec[State],
       stateTypeTag: TypeTag[State],
       txCodec: NioCodec[Tx],
       txTypeTag: TypeTag[Tx],
-      ec: ExecutionContext): NodeTransactionService[State, Tx] = {
+      ec: ExecutionContext
+  ): NodeTransactionService[State, Tx] = {
 
     new NodeTransactionService[State, Tx](
       consensusMap[State, Tx],
@@ -49,7 +51,8 @@ private[config] class TransactionServiceBuilder(
       stateTypeTag: TypeTag[State],
       txCodec: NioCodec[Tx],
       txTypeTag: TypeTag[Tx],
-      ec: ExecutionContext): Map[LedgerId, (TransactionPoolInterface[State, Tx], Consensus[State, Tx])] = {
+      ec: ExecutionContext
+  ): Map[LedgerId, (TransactionPoolInterface[State, Tx], Consensus[State, Tx])] = {
 
     val raftConfig = cefConfig.consensusConfig.raftConfig.get
     val ledgerConfig = cefConfig.ledgerConfig
@@ -68,7 +71,8 @@ private[config] class TransactionServiceBuilder(
       headerGenerator,
       ledgerConfig.maxBlockSize,
       ledgerStateStorage,
-      ledgerConfig.defaultTransactionExpiration)
+      ledgerConfig.defaultTransactionExpiration
+    )
 
     val raftNode = raft.raftNode(
       raftConfig.nodeId,
@@ -89,11 +93,13 @@ private[config] class TransactionServiceBuilder(
 
   private def stateMachineCallback[State, Tx <: Transaction[State]](
       ledger: Ledger[State, Tx],
-      txPool: TransactionPoolInterface[State, Tx])(block: Block[State, Tx])(
+      txPool: TransactionPoolInterface[State, Tx]
+  )(block: Block[State, Tx])(
       implicit stateCodec: NioCodec[State],
       stateTypeTag: TypeTag[State],
       txCodec: NioCodec[Tx],
-      txTypeTag: TypeTag[Tx]): Unit = {
+      txTypeTag: TypeTag[Tx]
+  ): Unit = {
     ledger(block) match {
       case Left(error) =>
         logger.error(s"Could not apply block $block to the ledger with id ${ledger.ledgerId}. Error: $error")
@@ -108,13 +114,15 @@ private[config] class TransactionServiceBuilder(
   private def txNetwork[State, Tx <: Transaction[State]](
       implicit
       txCodec: NioCodec[Tx],
-      txTypeTag: TypeTag[Tx]): Network[Envelope[Tx]] =
+      txTypeTag: TypeTag[Tx]
+  ): Network[Envelope[Tx]] =
     Network[Envelope[Tx]](networkDiscovery, transports)
 
   private def blockNetwork[State, Tx <: Transaction[State]](
       implicit stateCodec: NioCodec[State],
       stateTypeTag: TypeTag[State],
       txCodec: NioCodec[Tx],
-      txTypeTag: TypeTag[Tx]): Network[Envelope[Block[State, Tx]]] =
+      txTypeTag: TypeTag[Tx]
+  ): Network[Envelope[Block[State, Tx]]] =
     Network[Envelope[Block[State, Tx]]](networkDiscovery, transports)
 }

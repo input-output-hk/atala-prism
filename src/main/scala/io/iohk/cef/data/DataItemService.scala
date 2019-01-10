@@ -10,10 +10,11 @@ import io.iohk.cef.data.DataItemAction.{DeleteAction, InsertAction}
 import io.iohk.cef.data.query.{DataItemQuery, DataItemQueryEngine}
 import scala.reflect.runtime.universe.TypeTag
 
-class DataItemService[T](table: Table[T], network: Network[Envelope[DataItemAction[T]]], queryEngine: DataItemQueryEngine[T])(
-    implicit enc: NioCodec[T],
-    typeTag: TypeTag[T],
-    canValidate: CanValidate[DataItem[T]]) {
+class DataItemService[T](
+    table: Table[T],
+    network: Network[Envelope[DataItemAction[T]]],
+    queryEngine: DataItemQueryEngine[T]
+)(implicit enc: NioCodec[T], typeTag: TypeTag[T], canValidate: CanValidate[DataItem[T]]) {
 
   private val inboundMessages: MessageStream[Envelope[DataItemAction[T]]] = network.messageStream
 

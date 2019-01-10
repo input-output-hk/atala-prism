@@ -14,8 +14,8 @@ import scala.concurrent.duration._
 case class TestClock(
     private var currentTime: Instant = Instant.ofEpochMilli(0),
     private val tickOnReturn: Boolean = false,
-    private val defaultTickSize: FiniteDuration = 1.milli)
-    extends Clock {
+    private val defaultTickSize: FiniteDuration = 1.milli
+) extends Clock {
 
   override def withZone(zone: ZoneId): Clock = ???
 

@@ -21,7 +21,8 @@ class RequestResponse[Request, Response](networkDiscovery: NetworkDiscovery, tra
     reqCodec: NioCodec[Request],
     reqTt: TypeTag[Request],
     resCodec: NioCodec[Response],
-    resTt: TypeTag[Response]) {
+    resTt: TypeTag[Response]
+) {
 
   private val correlationMap = new ConcurrentHashMap[UUID, Promise[Response]]().asScala
 
@@ -55,7 +56,8 @@ class RequestResponse[Request, Response](networkDiscovery: NetworkDiscovery, tra
       val response = Correlated(
         correlationId = correlatedRequest.correlationId,
         from = transports.peerConfig.nodeId,
-        content = f(correlatedRequest.content))
+        content = f(correlatedRequest.content)
+      )
       responseChannel.sendMessage(correlatedRequest.from, response)
     })
   }

@@ -12,10 +12,12 @@ private[raft] sealed trait NodeRole[Command] {
   val stateCode: StateCode
   def appendEntries(
       rc: RaftState[Command],
-      entriesToAppend: EntriesToAppend[Command]): (RaftState[Command], AppendEntriesResult)
+      entriesToAppend: EntriesToAppend[Command]
+  ): (RaftState[Command], AppendEntriesResult)
   def clientAppendEntries(
       rc: RaftState[Command],
-      entries: Seq[Command]): Future[(RaftState[Command], Either[Redirect[Command], Unit])]
+      entries: Seq[Command]
+  ): Future[(RaftState[Command], Either[Redirect[Command], Unit])]
   def handleElectionTimeout(rs: RaftState[Command]): Future[(RaftState[Command], Unit)]
 }
 
@@ -28,14 +30,16 @@ private[raft] class Follower[Command](raftNode: RaftNode[Command])(implicit ec: 
 
   override def appendEntries(
       rs: RaftState[Command],
-      entriesToAppend: EntriesToAppend[Command]): (RaftState[Command], AppendEntriesResult) = {
+      entriesToAppend: EntriesToAppend[Command]
+  ): (RaftState[Command], AppendEntriesResult) = {
     applyAppendEntriesRules1To5(rs, entriesToAppend)
   }
 
   // AppendEntries RPC receiver implementation (figure 2), rules 1-5
   private def applyAppendEntriesRules1To5(
       rc: RaftState[Command],
-      entriesToAppend: EntriesToAppend[Command]): (RaftState[Command], AppendEntriesResult) = {
+      entriesToAppend: EntriesToAppend[Command]
+  ): (RaftState[Command], AppendEntriesResult) = {
 
     val log = rc.log
     val (currentTerm, _) = rc.persistentState
@@ -84,7 +88,8 @@ private[raft] class Follower[Command](raftNode: RaftNode[Command])(implicit ec: 
   // AppendEntries summary note #3 (Sec 5.3 deleting inconsistent log entries)
   private def appendEntriesConflictSearch(
       log: IndexedSeq[LogEntry[Command]],
-      entriesToAppend: EntriesToAppend[Command]): Int = {
+      entriesToAppend: EntriesToAppend[Command]
+  ): Int = {
 
     val logSz = log.size
 
@@ -103,8 +108,9 @@ private[raft] class Follower[Command](raftNode: RaftNode[Command])(implicit ec: 
         } else {
           // same index but different terms check
           val maybeConflictingEntry: Option[LogEntry[Command]] =
-            entriesToAppend.entries.find(entryToAppend =>
-              current.index == entryToAppend.index && current.term != entryToAppend.term)
+            entriesToAppend.entries.find(
+              entryToAppend => current.index == entryToAppend.index && current.term != entryToAppend.term
+            )
 
           if (maybeConflictingEntry.isDefined)
             loop(i - 1, i)
@@ -122,7 +128,8 @@ private[raft] class Follower[Command](raftNode: RaftNode[Command])(implicit ec: 
   // AppendEntries summary note #4 (append new entries not already in the log)
   private def appendEntriesAdditions(
       log: IndexedSeq[LogEntry[Command]],
-      entriesToAppend: EntriesToAppend[Command]): Seq[LogEntry[Command]] = {
+      entriesToAppend: EntriesToAppend[Command]
+  ): Seq[LogEntry[Command]] = {
 
     val logSz = log.size
 
@@ -160,7 +167,8 @@ private[raft] class Follower[Command](raftNode: RaftNode[Command])(implicit ec: 
   private def appendEntriesCommitIndexCheck(
       rc: RaftState[Command],
       leaderCommitIndex: Int,
-      iLastNewEntry: Int): RaftState[Command] = {
+      iLastNewEntry: Int
+  ): RaftState[Command] = {
     val commitIndex = Math.min(leaderCommitIndex, iLastNewEntry)
 
     if (leaderCommitIndex > rc.commonVolatileState.commitIndex) {
@@ -171,7 +179,8 @@ private[raft] class Follower[Command](raftNode: RaftNode[Command])(implicit ec: 
   }
   override def clientAppendEntries(
       rc: RaftState[Command],
-      entries: Seq[Command]): Future[(RaftState[Command], Either[Redirect[Command], Unit])] =
+      entries: Seq[Command]
+  ): Future[(RaftState[Command], Either[Redirect[Command], Unit])] =
     Future((rc, Left(Redirect(raftNode.getLeader))))
   override val stateCode: StateCode = Follower
 
@@ -183,7 +192,8 @@ private[raft] class Candidate[Command](raftNode: RaftNode[Command])(implicit ec:
     extends NodeRole[Command] {
   override def appendEntries(
       rc: RaftState[Command],
-      entriesToAppend: EntriesToAppend[Command]): (RaftState[Command], AppendEntriesResult) = {
+      entriesToAppend: EntriesToAppend[Command]
+  ): (RaftState[Command], AppendEntriesResult) = {
     // rules for servers, candidates
     // if append entries rpc received from new leader, convert to follower
     val prospectiveLeaderTerm = entriesToAppend.term
@@ -198,7 +208,8 @@ private[raft] class Candidate[Command](raftNode: RaftNode[Command])(implicit ec:
   }
   override def clientAppendEntries(
       rc: RaftState[Command],
-      entries: Seq[Command]): Future[(RaftState[Command], Either[Redirect[Command], Unit])] =
+      entries: Seq[Command]
+  ): Future[(RaftState[Command], Either[Redirect[Command], Unit])] =
     Future((rc, Left(Redirect(raftNode.getLeader))))
 
   override val stateCode: StateCode = Candidate
@@ -214,7 +225,8 @@ private[raft] class Leader[Command: NioCodec](raftNode: RaftNode[Command])(impli
 
   override def appendEntries(
       rc: RaftState[Command],
-      entriesToAppend: EntriesToAppend[Command]): (RaftState[Command], AppendEntriesResult) = {
+      entriesToAppend: EntriesToAppend[Command]
+  ): (RaftState[Command], AppendEntriesResult) = {
     val prospectiveLeaderTerm = entriesToAppend.term
     val (currentTerm, _) = rc.persistentState
     if (prospectiveLeaderTerm >= currentTerm) {
@@ -228,7 +240,8 @@ private[raft] class Leader[Command: NioCodec](raftNode: RaftNode[Command])(impli
 
   override def clientAppendEntries(
       rc: RaftState[Command],
-      entries: Seq[Command]): Future[(RaftState[Command], Either[Redirect[Command], Unit])] = {
+      entries: Seq[Command]
+  ): Future[(RaftState[Command], Either[Redirect[Command], Unit])] = {
     val log = rc.log
     val (lastLogIndex, _) = lastLogIndexAndTerm(log)
     val (currentTerm, _) = rc.persistentState
@@ -252,8 +265,8 @@ private[raft] class Leader[Command: NioCodec](raftNode: RaftNode[Command])(impli
     val theLog = rc.log
     val (lastLogIndex, _) = lastLogIndexAndTerm(theLog)
 
-    val callFs: Seq[Future[(Int, Int)]] = raftNode.clusterMembers.indices.map(i =>
-      sendAppendEntry(rc, nextIndexes(i), lastLogIndex, raftNode.clusterMembers(i)))
+    val callFs: Seq[Future[(Int, Int)]] = raftNode.clusterMembers.indices
+      .map(i => sendAppendEntry(rc, nextIndexes(i), lastLogIndex, raftNode.clusterMembers(i)))
 
     val indicesF: Future[(Seq[Int], Seq[Int])] =
       sequenceForgiving(callFs).map((indices: Seq[(Int, Int)]) => indices.unzip)
@@ -277,7 +290,8 @@ private[raft] class Leader[Command: NioCodec](raftNode: RaftNode[Command])(impli
       rc: RaftState[Command],
       nextIndex: Int,
       lastLogIndex: Int,
-      memberRPC: RPC[Command]): Future[(Int, Int)] = {
+      memberRPC: RPC[Command]
+  ): Future[(Int, Int)] = {
     val commitIndex = rc.commonVolatileState.commitIndex
 
     val (currentTerm, _) = rc.persistentState
@@ -302,7 +316,8 @@ private[raft] class Leader[Command: NioCodec](raftNode: RaftNode[Command])(impli
       currentTerm: Int,
       lastLogIndex: Int,
       peerRpc: RPC[Command],
-      heartbeat: EntriesToAppend[Command]): Future[AppendEntriesResult] = {
+      heartbeat: EntriesToAppend[Command]
+  ): Future[AppendEntriesResult] = {
 
     if (lastLogIndex >= nextIndex) { // Rules for servers, leaders, note #3.
       val entries = theLog.slice(nextIndex, theLog.size) // NB: will break after impl of log compaction
@@ -325,7 +340,8 @@ private[raft] class Leader[Command: NioCodec](raftNode: RaftNode[Command])(impli
       log: IndexedSeq[LogEntry[Command]],
       currentTerm: Int,
       commitIndex: Int,
-      matchIndex: Seq[Int]): Option[Int] = {
+      matchIndex: Seq[Int]
+  ): Option[Int] = {
     @tailrec
     def loop(successN: List[Int], tryN: Int): List[Int] = {
       if (log.size > tryN) {

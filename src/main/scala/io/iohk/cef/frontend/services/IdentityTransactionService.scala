@@ -10,7 +10,8 @@ import io.iohk.cef.transactionservice._
 import scala.concurrent.{ExecutionContext, Future}
 
 class IdentityTransactionService(nodeTransactionService: NodeTransactionService[IdentityData, IdentityTransaction])(
-    implicit ec: ExecutionContext) {
+    implicit ec: ExecutionContext
+) {
 
   type IdentityTransactionConstructor = (String, SigningPublicKey, Signature) => IdentityTransaction
 

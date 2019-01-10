@@ -42,7 +42,8 @@ class RaftConsensusItSpec extends WordSpec with MockitoSugar {
           LogEntry("B", 2, 1),
           LogEntry("C", 2, 2),
           LogEntry("D", 2, 3),
-          LogEntry("E", 2, 4))
+          LogEntry("E", 2, 4)
+        )
         s1.log shouldBe expectedEntries
         s2.log shouldBe expectedEntries
         s3.log shouldBe expectedEntries
@@ -88,7 +89,8 @@ class RaftConsensusItSpec extends WordSpec with MockitoSugar {
           LogEntry("E", 2, 4),
           LogEntry("F", 2, 5),
           LogEntry("G", 2, 6),
-          LogEntry("H", 2, 7))
+          LogEntry("H", 2, 7)
+        )
 
         s1.log shouldBe expectedEntries2
         s2.log shouldBe expectedEntries2

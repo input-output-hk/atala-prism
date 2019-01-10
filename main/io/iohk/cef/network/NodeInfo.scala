@@ -18,7 +18,8 @@ case class NodeInfo(
     id: ByteString,
     discoveryAddress: InetSocketAddress,
     serverAddress: InetSocketAddress,
-    capabilities: Capabilities) {
+    capabilities: Capabilities
+) {
 
   def getServerUri: URI = {
     val host = getHostName(serverAddress.getAddress)
@@ -65,6 +66,7 @@ object NodeInfo {
       nodeId,
       new InetSocketAddress(udpAddress, udpPort),
       new InetSocketAddress(p2pAddress, p2pTcpPort),
-      Capabilities(capabilities))
+      Capabilities(capabilities)
+    )
   }
 }

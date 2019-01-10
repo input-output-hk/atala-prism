@@ -77,7 +77,7 @@ class AgreementsServiceSpec extends FlatSpec {
 
   it should "throw when agreeing to a non-existent proposal" in forTwoArbitraryAgreementPeers[String] { (alice, _) =>
     // when
-    val exception = the [IllegalArgumentException] thrownBy alice.agreementsService.agree("foo", "anything")
+    val exception = the[IllegalArgumentException] thrownBy alice.agreementsService.agree("foo", "anything")
 
     // then
     exception.getMessage shouldBe "Unknown correlationId 'foo'."
@@ -85,16 +85,17 @@ class AgreementsServiceSpec extends FlatSpec {
 
   it should "throw when declining a non-existent proposal" in forTwoArbitraryAgreementPeers[String] { (alice, _) =>
     // when
-    val exception = the [IllegalArgumentException] thrownBy alice.agreementsService.decline("foo")
+    val exception = the[IllegalArgumentException] thrownBy alice.agreementsService.decline("foo")
 
     // then
     exception.getMessage shouldBe "Unknown correlationId 'foo'."
   }
 
-
   case class AgreementFixture[T](nodeId: NodeId, agreementsService: AgreementsService[T])
 
-  def forTwoArbitraryAgreementPeers[T: NioCodec : TypeTag](testCode: (AgreementFixture[T], AgreementFixture[T]) => Any): Unit = {
+  def forTwoArbitraryAgreementPeers[T: NioCodec: TypeTag](
+      testCode: (AgreementFixture[T], AgreementFixture[T]) => Any
+  ): Unit = {
     NetUtils.forTwoArbitraryNetworkPeers { (aliceFix, bobFix) =>
       val aliceNet = new ConversationalNetwork[AgreementMessage[T]](aliceFix.networkDiscovery, aliceFix.transports)
       val aliceAgreementService = new AgreementsService[T](aliceNet)
@@ -102,7 +103,10 @@ class AgreementsServiceSpec extends FlatSpec {
       val bobNet = new ConversationalNetwork[AgreementMessage[T]](bobFix.networkDiscovery, bobFix.transports)
       val bobAgreementService = new AgreementsService[T](bobNet)
 
-      testCode(AgreementFixture(aliceFix.nodeId, aliceAgreementService), AgreementFixture(bobFix.nodeId, bobAgreementService))
+      testCode(
+        AgreementFixture(aliceFix.nodeId, aliceAgreementService),
+        AgreementFixture(bobFix.nodeId, bobAgreementService)
+      )
     }
   }
 }

@@ -29,7 +29,8 @@ package object raft {
       electionTimeoutRange: (Duration, Duration),
       heartbeatTimeoutRange: (Duration, Duration),
       stateMachine: Command => Unit,
-      persistentStorage: PersistentStorage[Command])(implicit ec: ExecutionContext): RaftNodeInterface[Command] =
+      persistentStorage: PersistentStorage[Command]
+  )(implicit ec: ExecutionContext): RaftNodeInterface[Command] =
     new RaftNode[Command](
       nodeId,
       clusterMemberIds,
@@ -37,6 +38,7 @@ package object raft {
       electionTimeoutRange,
       heartbeatTimeoutRange,
       stateMachine,
-      persistentStorage)
+      persistentStorage
+    )
 
 }

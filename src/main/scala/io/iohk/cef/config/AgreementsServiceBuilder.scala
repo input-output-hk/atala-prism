@@ -12,7 +12,8 @@ import scala.reflect.runtime.universe._
 private[config] class AgreementsServiceBuilder(
     cefConfig: CefConfig,
     transports: Transports,
-    networkDiscovery: NetworkDiscovery) {
+    networkDiscovery: NetworkDiscovery
+) {
 
   def cefAgreementsServiceChannel[T: NioCodec: TypeTag](): AgreementsService[T] = {
     new AgreementsService[T](new ConversationalNetwork[AgreementMessage[T]](networkDiscovery, transports))

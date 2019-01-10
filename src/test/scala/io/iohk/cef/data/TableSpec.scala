@@ -33,7 +33,7 @@ class TableSpec extends WordSpec {
 
     "reject an item when the witnesses signature can't be verified" in {
       val data = "data"
-      val invalidSignature = sign(data*2, keys.`private`)
+      val invalidSignature = sign(data * 2, keys.`private`)
       val witnesses = List(Witness(keys.public, invalidSignature))
       val owners = NonEmptyList(Owner(keys.public, sign(LabeledItem.Create(data), keys.`private`)))
       val item = DataItem("id", data, witnesses, owners)

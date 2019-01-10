@@ -89,7 +89,8 @@ class DiscoveryManagerSpec extends FlatSpec with BeforeAndAfterAll {
         codec,
         listenerMaker,
         secureRandom,
-        new SimpleMeterRegistry())
+        new SimpleMeterRegistry()
+      )
 
     def createActor: ActorRef[DiscoveryRequest] = {
       val behavior = createBehavior
@@ -108,7 +109,8 @@ class DiscoveryManagerSpec extends FlatSpec with BeforeAndAfterAll {
         ByteString(id),
         new InetSocketAddress(localhost, discoveryPort),
         new InetSocketAddress(localhost, serverPort),
-        capabilities)
+        capabilities
+      )
   }
 
   private def getNode(listeningDiscoveryManager: ListeningDiscoveryManager): NodeInfo = {
@@ -126,7 +128,8 @@ class DiscoveryManagerSpec extends FlatSpec with BeforeAndAfterAll {
   def pingActor(actor: ActorRef[DiscoveryRequest], listeningDiscoveryManager: ListeningDiscoveryManager): Ping = {
     val ping = getPing(listeningDiscoveryManager)
     actor ! DiscoveryResponseWrapper(
-      DiscoveryListener.MessageReceived(ping, listeningDiscoveryManager.discoveryAddress))
+      DiscoveryListener.MessageReceived(ping, listeningDiscoveryManager.discoveryAddress)
+    )
     ping
   }
 
@@ -286,7 +289,10 @@ class DiscoveryManagerSpec extends FlatSpec with BeforeAndAfterAll {
         DiscoveredNodes(
           Set(
             KnownNode(nodeA, mockClock.instant(), mockClock.instant()),
-            KnownNode(nodeB, mockClock.instant(), mockClock.instant()))))
+            KnownNode(nodeB, mockClock.instant(), mockClock.instant())
+          )
+        )
+      )
     }
   }
   it should "blacklist nodes" in {

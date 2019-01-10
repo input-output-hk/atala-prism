@@ -17,7 +17,8 @@ case class ChimericTx(fragments: Seq[ChimericTxFragment]) extends Transaction[Ch
             val (fragment, index) = current
             fragment(state, index, txId)
           })
-        })
+        }
+      )
   }
 
   override val partitionIds: Set[String] = {
@@ -68,7 +69,8 @@ case class ChimericTx(fragments: Seq[ChimericTxFragment]) extends Transaction[Ch
       currentState: ChimericLedgerState,
       fragments: Seq[ChimericTxFragment],
       signatureFragments: Seq[SignatureTxFragment],
-      signingKeys: Seq[SigningPublicKey]): ChimericStateOrError = {
+      signingKeys: Seq[SigningPublicKey]
+  ): ChimericStateOrError = {
 
     signatureFragments
       .zip(signingKeys)
@@ -82,7 +84,8 @@ case class ChimericTx(fragments: Seq[ChimericTxFragment]) extends Transaction[Ch
       currentState: ChimericLedgerState,
       fragments: Seq[ChimericTxFragment],
       signatureFragment: SignatureTxFragment,
-      signingPublicKey: SigningPublicKey): ChimericStateOrError = {
+      signingPublicKey: SigningPublicKey
+  ): ChimericStateOrError = {
     import io.iohk.cef.codecs.nio.auto._
 
     if (isValidSignature(fragments, signatureFragment.signature, signingPublicKey))
@@ -93,12 +96,14 @@ case class ChimericTx(fragments: Seq[ChimericTxFragment]) extends Transaction[Ch
 
   private def testPreservationOfValue(currentStateEither: ChimericStateOrError): ChimericStateOrError =
     currentStateEither.flatMap { currentState =>
-      val totalValue = fragments.foldLeft(Value.Zero)((sum, current) =>
-        current match {
-          case input: TxInputFragment => sum + input.value
-          case output: TxOutputFragment => sum - output.value
-          case _ => sum
-      })
+      val totalValue = fragments.foldLeft(Value.Zero)(
+        (sum, current) =>
+          current match {
+            case input: TxInputFragment => sum + input.value
+            case output: TxOutputFragment => sum - output.value
+            case _ => sum
+          }
+      )
       if (totalValue == Value.Zero) {
         Right(currentState)
       } else {

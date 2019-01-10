@@ -79,8 +79,8 @@ case class CreateNonSignableChimericTransactionFragment(override val fragment: N
 
 case class CreateSignableChimericTransactionFragment(
     override val fragment: SignableChimericTxFragment,
-    signingPrivateKey: SigningPrivateKey)
-    extends CreateChimericTransactionFragment {
+    signingPrivateKey: SigningPrivateKey
+) extends CreateChimericTransactionFragment {
   override def `type`: SignableChimericTransactionFragmentType =
     SignableChimericTransactionFragmentType.of(fragment)
 }
