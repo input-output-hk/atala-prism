@@ -39,8 +39,8 @@ case class Neighbors(
     token: ByteString,
     neighborsWithCapabilities: Int,
     neighbors: Seq[NodeInfo],
-    timestamp: Long)
-    extends DiscoveryWireMessage {
+    timestamp: Long
+) extends DiscoveryWireMessage {
   override def messageType: Byte = Neighbors.messageType
 }
 

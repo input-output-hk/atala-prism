@@ -8,7 +8,8 @@ import scala.util.{Failure, Success}
 object PipeTypedSupport {
   implicit class PipeableFuture[T](future: Future[T]) {
     def pipeTo[U](successRecipient: ActorRef[T], failureRecipient: ActorRef[U], t: Throwable => U)(
-        implicit executionContext: ExecutionContext): Future[T] = {
+        implicit executionContext: ExecutionContext
+    ): Future[T] = {
       future.andThen {
         case Success(s) => successRecipient ! s
         case Failure(f) => failureRecipient ! t(f)
@@ -16,7 +17,8 @@ object PipeTypedSupport {
     }
 
     def pipeTo(successRecipient: ActorRef[T], failureRecipient: ActorRef[Throwable])(
-        implicit executionContext: ExecutionContext): Future[T] = {
+        implicit executionContext: ExecutionContext
+    ): Future[T] = {
       pipeTo(successRecipient, failureRecipient, x => x)
     }
 

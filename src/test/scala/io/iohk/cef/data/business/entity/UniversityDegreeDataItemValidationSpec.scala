@@ -32,15 +32,18 @@ class UniversityDegreeDataItemValidationSpec extends WordSpec with MustMatchers 
       val owner = Owner(keyPair.public, sign(LabeledItem.Create(data), keyPair.`private`))
       val dataItem: DataItem[UniversityDegreeData] = DataItem("universityId", data, List(witness), NonEmptyList(owner))
       UniversityDegreeData.universityDegreeValidation.validate(dataItem) mustBe Left(
-        InvalidUniversitySignatureError("UniversityA", "universityId"))
+        InvalidUniversitySignatureError("UniversityA", "universityId")
+      )
     }
 
     "fail with NoWitnessProvided" in {
       val data = UniversityDegreeData("UniversityA", "BSC", "Joe Bloc", LocalDate.now())
       val owner = Owner(keyPair.public, sign(LabeledItem.Create(data), keyPair.`private`))
-      val dataItem: DataItem[UniversityDegreeData] = DataItem("universityId", data, List.empty[Witness], NonEmptyList(owner))
+      val dataItem: DataItem[UniversityDegreeData] =
+        DataItem("universityId", data, List.empty[Witness], NonEmptyList(owner))
       UniversityDegreeData.universityDegreeValidation.validate(dataItem) mustBe Left(
-        NoWitnessProvided("UniversityA", "universityId"))
+        NoWitnessProvided("UniversityA", "universityId")
+      )
     }
 
     "fail with UniversityPublicKeyIsUnknown" in {
@@ -52,7 +55,8 @@ class UniversityDegreeDataItemValidationSpec extends WordSpec with MustMatchers 
 
       val dataItem: DataItem[UniversityDegreeData] = DataItem("universityId", data, List(witness), NonEmptyList(owner))
       UniversityDegreeData.universityDegreeValidation.validate(dataItem) mustBe Left(
-        UniversityPublicKeyIsUnknown("UniversityA", witness, "universityId"))
+        UniversityPublicKeyIsUnknown("UniversityA", witness, "universityId")
+      )
     }
   }
 }

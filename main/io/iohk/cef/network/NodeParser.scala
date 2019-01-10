@@ -31,7 +31,8 @@ object NodeParser extends Logger {
       Either.cond(
         uri.getScheme == expectedScheme,
         uri,
-        s"Invalid node scheme '$scheme'. It should be '$expectedScheme'.")
+        s"Invalid node scheme '$scheme'. It should be '$expectedScheme'."
+      )
     }
   }
 
@@ -41,8 +42,10 @@ object NodeParser extends Logger {
       case Failure(_) => Left(s"Malformed nodeId for URI '${uri.toString}'.")
     }
 
-    nodeId.flatMap(nodeId =>
-      Either.cond(nodeId.size == NodeIdSize, uri, s"Invalid id length for '$nodeId'. It should be $NodeIdSize."))
+    nodeId.flatMap(
+      nodeId =>
+        Either.cond(nodeId.size == NodeIdSize, uri, s"Invalid id length for '$nodeId'. It should be $NodeIdSize.")
+    )
   }
 
   private def validateUri(uriString: String): Either[Set[Error], URI] = {

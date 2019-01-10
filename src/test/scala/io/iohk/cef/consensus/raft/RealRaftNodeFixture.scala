@@ -39,8 +39,9 @@ trait RealRaftNodeFixture[Command] {
     testNodes.put(nodeId, this)
   }
 
-  def anIntegratedCluster(nodeData: Seq[(PersistentStorage[Command], String)])(
-      implicit ed: NioCodec[Command]): Seq[TestNode] = {
+  def anIntegratedCluster(
+      nodeData: Seq[(PersistentStorage[Command], String)]
+  )(implicit ed: NioCodec[Command]): Seq[TestNode] = {
     val nodes = nodeData.map { case (storage, id) => new TestNode(id, storage) }
     nodes.foreach(_.raftNode)
     nodes

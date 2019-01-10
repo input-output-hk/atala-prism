@@ -28,7 +28,8 @@ class LedgerSpec extends FlatSpec {
       Seq(
         Add("A", "new-value-for-A"),
         Remove("B")
-      ))
+      )
+    )
 
     // when
     ledger.apply(block)

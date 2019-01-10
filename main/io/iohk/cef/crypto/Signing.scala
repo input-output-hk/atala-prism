@@ -112,7 +112,8 @@ trait Signing {
       TypedByteString(key.`type`.algorithmIdentifier, key.`type`.algorithm.encodePublicKey(key.lowlevelKey).bytes)
 
     override private[crypto] def decodeFrom(
-        tbs: TypedByteString): Either[KeyDecodeError[SigningPublicKey], SigningPublicKey] = {
+        tbs: TypedByteString
+    ): Either[KeyDecodeError[SigningPublicKey], SigningPublicKey] = {
       signingAlgorithmsCollection(tbs.`type`) match {
         case Some(signingType) =>
           signingType.algorithm.decodePublicKey(PublicKeyBytes(tbs.bytes)) match {
@@ -160,7 +161,8 @@ trait Signing {
       TypedByteString(key.`type`.algorithmIdentifier, key.`type`.algorithm.encodePrivateKey(key.lowlevelKey).bytes)
 
     override private[crypto] def decodeFrom(
-        tbs: TypedByteString): Either[KeyDecodeError[SigningPrivateKey], SigningPrivateKey] = {
+        tbs: TypedByteString
+    ): Either[KeyDecodeError[SigningPrivateKey], SigningPrivateKey] = {
       signingAlgorithmsCollection(tbs.`type`) match {
         case Some(signingType) =>
           signingType.algorithm.decodePrivateKey(PrivateKeyBytes(tbs.bytes)) match {
@@ -178,8 +180,8 @@ trait Signing {
   /** Data entity containing a signature and the identifier of the signing algorithm used to generate it */
   class Signature(
       private[Signing] val `type`: signingAlgorithmsCollection.SigningAlgorithmType,
-      private[Signing] val bytes: SignatureBytes)
-      extends CryptoEntity[Signature, Signature.type] {
+      private[Signing] val bytes: SignatureBytes
+  ) extends CryptoEntity[Signature, Signature.type] {
 
     private[crypto] val companion: Signature.type = Signature
     protected val self: Signature = this
@@ -199,7 +201,8 @@ trait Signing {
 
     private[Signing] def apply(
         tpe: signingAlgorithmsCollection.SigningAlgorithmType,
-        bytes: SignatureBytes): Signature =
+        bytes: SignatureBytes
+    ): Signature =
       new Signature(tpe, bytes)
 
     override private[crypto] def encodeInto(signature: Signature): TypedByteString =

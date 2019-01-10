@@ -29,7 +29,8 @@ case class GrantData(grantingIdentity: Identity, grantedIdentity: Identity, gran
   val underlyingEndorseData = EndorseData(grantingIdentity, grantedIdentity)
   def toTransaction(
       grantingIdentityPrivateKey: SigningPrivateKey,
-      grantedIdentityPrivateKey: SigningPrivateKey): Grant = {
+      grantedIdentityPrivateKey: SigningPrivateKey
+  ): Grant = {
     val grantSignature = sign(this, grantingIdentityPrivateKey)
     val claimSignature = sign(underlyingClaimData, grantedIdentityPrivateKey)
     val endorseSignature = sign(underlyingEndorseData, grantingIdentityPrivateKey)
@@ -43,6 +44,7 @@ case class LinkCertificateData(linkingIdentity: Identity, pem: String) extends I
     LinkCertificate(
       data = this,
       signature = sign(this, existingKey),
-      signatureFromCertificate = sign(this, certificateKey))
+      signatureFromCertificate = sign(this, certificateKey)
+    )
   }
 }

@@ -74,7 +74,7 @@ class AgreementsServiceSpec extends FlatSpec {
 
   it should "throw when agreeing to a non-existent proposal" in forTwoArbitraryAgreementPeers[String] { (alice, _) =>
     // when
-    val exception = the [IllegalArgumentException] thrownBy alice.agreementsService.agree("foo", "anything")
+    val exception = the[IllegalArgumentException] thrownBy alice.agreementsService.agree("foo", "anything")
 
     // then
     exception.getMessage shouldBe "Unknown correlationId 'foo'."
@@ -82,7 +82,7 @@ class AgreementsServiceSpec extends FlatSpec {
 
   it should "throw when declining a non-existent proposal" in forTwoArbitraryAgreementPeers[String] { (alice, _) =>
     // when
-    val exception = the [IllegalArgumentException] thrownBy alice.agreementsService.decline("foo")
+    val exception = the[IllegalArgumentException] thrownBy alice.agreementsService.decline("foo")
 
     // then
     exception.getMessage shouldBe "Unknown correlationId 'foo'."

@@ -52,12 +52,14 @@ class DataItemServiceSpec extends FlatSpec {
     when(table.validate(any())(any())).thenReturn(true)
 
     service.processAction(Envelope(ValidateAction(dataItem), containerId, Everyone)) must ===(
-      Right(DataItemServiceResponse.Validation(true)))
+      Right(DataItemServiceResponse.Validation(true))
+    )
 
     when(table.validate(any())(any())).thenReturn(false)
 
     service.processAction(Envelope(ValidateAction(dataItem), containerId, Everyone)) must ===(
-      Right(DataItemServiceResponse.Validation(false)))
+      Right(DataItemServiceResponse.Validation(false))
+    )
 
   }
 

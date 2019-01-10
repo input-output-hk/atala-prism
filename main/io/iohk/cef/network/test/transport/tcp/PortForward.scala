@@ -85,7 +85,8 @@ object PortForward {
             clientSocket.getInetAddress.getHostAddress +
             ":" + clientSocket.getPort + " <--> " +
             serverSocket.getInetAddress.getHostAddress +
-            ":" + serverSocket.getPort + " started.");
+            ":" + serverSocket.getPort + " started."
+        );
 
       } catch {
         case _: IOException =>
@@ -94,7 +95,8 @@ object PortForward {
               clientSocket.getInetAddress.getHostAddress
               + ":" + clientSocket.getPort + " <--> " +
               serverSocket.getInetAddress.getHostAddress
-              + ":" + serverSocket.getPort + " stopped.")
+              + ":" + serverSocket.getPort + " stopped."
+          )
           forwardingActive = false
           serverSocket.close()
           clientSocket.close()

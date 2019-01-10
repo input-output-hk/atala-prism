@@ -57,7 +57,8 @@ object DiscoveryManager {
       codec: NioCodec[DiscoveryWireMessage],
       discoveryListenerFactory: ActorContext[DiscoveryRequest] => ActorRef[DiscoveryListenerRequest],
       randomSource: SecureRandom,
-      registry: MeterRegistry): Behavior[DiscoveryRequest] = Behaviors.setup { context =>
+      registry: MeterRegistry
+  ): Behavior[DiscoveryRequest] = Behaviors.setup { context =>
     import akka.actor.typed.scaladsl.adapter._
 
     val pingedNodes: FiniteSizedMap[ByteString, Pinged] =
@@ -80,7 +81,8 @@ object DiscoveryManager {
           case DiscoveryResponseWrapper(Ready(address)) =>
             context.log.debug(
               s"UDP address $address bound successfully. " +
-                s"Pinging ${discoveryConfig.bootstrapNodes.size} bootstrap Nodes.")
+                s"Pinging ${discoveryConfig.bootstrapNodes.size} bootstrap Nodes."
+            )
 
             discoveryConfig.bootstrapNodes.foreach(node => sendPing(discoveryListener, address, node))
 
@@ -124,7 +126,8 @@ object DiscoveryManager {
     def sendPing(
         listener: ActorRef[DiscoveryListenerRequest],
         listeningAddress: InetSocketAddress,
-        node: NodeInfo): Unit = {
+        node: NodeInfo
+    ): Unit = {
       context.log.debug(s"Sending ping to ${node.discoveryAddress}")
       val nonce = new Array[Byte](nonceSize)
       randomSource.nextBytes(nonce)
@@ -196,7 +199,8 @@ object DiscoveryManager {
               context.log.debug(s"New discovered list: ${knownNodesStorage.getAll().map(_.node.discoveryAddress)}")
             }
             context.log.debug(
-              s"Sending pong message with capabilities ${pong.node.capabilities}, to: ${sourceNode.discoveryAddress}")
+              s"Sending pong message with capabilities ${pong.node.capabilities}, to: ${sourceNode.discoveryAddress}"
+            )
             discoveryListener ! DiscoveryListener.SendMessage(pong, sourceNode.discoveryAddress)
           } else {
             context.log.warning(s"Received an invalid Ping message")
@@ -249,20 +253,23 @@ object DiscoveryManager {
             val discoveredNodes = knownNodesStorage.getAll().map(_.node).union(pingedNodes.values.map(_.node).toSet)
             soughtNodes.get(token).foreach { _ =>
               val newNodes = if (discoveryConfig.multipleConnectionsPerAddress) {
-                val nodeEndpoints = discoveredNodes.map(dn =>
-                  (ByteString(dn.discoveryAddress.getAddress.getAddress), dn.discoveryAddress.getPort))
+                val nodeEndpoints = discoveredNodes
+                  .map(dn => (ByteString(dn.discoveryAddress.getAddress.getAddress), dn.discoveryAddress.getPort))
                 neighbors.filterNot(
                   node =>
                     nodeEndpoints.contains(
-                      (ByteString(node.discoveryAddress.getAddress.getAddress), node.discoveryAddress.getPort)))
+                      (ByteString(node.discoveryAddress.getAddress.getAddress), node.discoveryAddress.getPort)
+                    )
+                )
               } else {
                 val nodeEndpoints = discoveredNodes.map(dn => ByteString(dn.discoveryAddress.getAddress.getAddress))
-                neighbors.filterNot(node =>
-                  nodeEndpoints.contains(ByteString(node.discoveryAddress.getAddress.getAddress)))
+                neighbors
+                  .filterNot(node => nodeEndpoints.contains(ByteString(node.discoveryAddress.getAddress.getAddress)))
               }
               val newNodesWithoutMe = newNodes.filterNot(_.id == nodeState.nodeId)
               context.log.debug(
-                s"Sending ping to ${newNodesWithoutMe.size} nodes. Nodes: ${newNodesWithoutMe.map(_.discoveryAddress)}")
+                s"Sending ping to ${newNodesWithoutMe.size} nodes. Nodes: ${newNodesWithoutMe.map(_.discoveryAddress)}"
+              )
               newNodesWithoutMe.foreach(node => {
                 sendPing(discoveryListener, address, node)
               })

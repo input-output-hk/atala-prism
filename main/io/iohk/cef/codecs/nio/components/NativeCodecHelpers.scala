@@ -18,11 +18,13 @@ private[components] object NativeCodecHelpers {
     NioEncoder((t: T) => new ByteBufferExtension(put(allocate(size))(t)).back())
 
   def nativeArrayEncoder[T: TypeTag, TB](tSize: Int, as: ByteBuffer => TB)(
-      put: TB => Array[T] => TB): NioEncoder[Array[T]] =
+      put: TB => Array[T] => TB
+  ): NioEncoder[Array[T]] =
     untaggedNativeArrayEncoder(tSize, as)(put).packed
 
   def untaggedNativeArrayEncoder[T: TypeTag, TB](tSize: Int, as: ByteBuffer => TB)(
-      put: TB => Array[T] => TB): NioEncoder[Array[T]] = {
+      put: TB => Array[T] => TB
+  ): NioEncoder[Array[T]] = {
     val inner =
       (sa: Array[T]) => {
         val size = 4 + sa.length * tSize
@@ -35,11 +37,13 @@ private[components] object NativeCodecHelpers {
   }
 
   def nativeArrayDecoder[T: TypeTag, TB](tSize: Int, as: ByteBuffer => TB)(
-      get: TB => Array[T] => TB): NioDecoder[Array[T]] =
+      get: TB => Array[T] => TB
+  ): NioDecoder[Array[T]] =
     untaggedNativeArrayDecoder(tSize, as)(get).packed
 
   def untaggedNativeArrayDecoder[T: TypeTag, TB](tSize: Int, as: ByteBuffer => TB)(
-      get: TB => Array[T] => TB): NioDecoder[Array[T]] = {
+      get: TB => Array[T] => TB
+  ): NioDecoder[Array[T]] = {
     val inner = { b: ByteBuffer =>
       verifyingRemaining(lengthInt, b) {
         val arrayLength = b.getInt

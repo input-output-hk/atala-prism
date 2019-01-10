@@ -11,7 +11,8 @@ import scala.concurrent.ExecutionContext
 package object common {
 
   def fromFutureEither[T](value: client.Response[T], playsonifyError: PlaysonifyError)(
-      implicit ec: ExecutionContext): FutureApplicationResult[T] = {
+      implicit ec: ExecutionContext
+  ): FutureApplicationResult[T] = {
 
     value.map {
       case Left(_) => Bad(playsonifyError).accumulating

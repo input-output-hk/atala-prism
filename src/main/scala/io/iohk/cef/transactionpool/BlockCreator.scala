@@ -14,7 +14,8 @@ class BlockCreator[State, Tx <: Transaction[State]](
     transactionPoolInterface: TransactionPoolInterface[State, Tx],
     consensus: Consensus[State, Tx],
     initialDelay: FiniteDuration,
-    interval: FiniteDuration)(implicit executionContext: ExecutionContext) {
+    interval: FiniteDuration
+)(implicit executionContext: ExecutionContext) {
 
   private val logger = LoggerFactory.getLogger(classOf[BlockCreator[State, Tx]])
 

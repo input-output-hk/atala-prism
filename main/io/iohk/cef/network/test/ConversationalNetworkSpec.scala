@@ -132,7 +132,8 @@ class ConversationalNetworkSpec extends FlatSpec with BeforeAndAfterAll {
       networkDiscovery: NetworkDiscovery,
       messageHandler: T => Unit,
       transports: Transports,
-      network: ConversationalNetwork[T])
+      network: ConversationalNetwork[T]
+  )
 
   private def randomNetwork[T: NioCodec: TypeTag](messageTtl: Int = FrameHeader.defaultTtl): NetworkFixture[T] = {
     val tcpAddress: InetSocketAddress = aRandomAddress()

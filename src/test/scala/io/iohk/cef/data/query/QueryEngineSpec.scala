@@ -39,7 +39,8 @@ class QueryEngineSpec extends FlatSpec with MustMatchers {
 
     val requestMessageStream = new DummyMessageStream[Envelope[DataItemQueryRequest]](observableRequest)
     val requestNetwork = mock[Network[Envelope[DataItemQueryRequest]]]
-    val responseNetwork: Network[Envelope[DataItemQueryResponse[String]]] = mock[Network[Envelope[DataItemQueryResponse[String]]]]
+    val responseNetwork: Network[Envelope[DataItemQueryResponse[String]]] =
+      mock[Network[Envelope[DataItemQueryResponse[String]]]]
     val responseMessageStream = new DummyMessageStream[Envelope[DataItemQueryResponse[String]]](observableResponse)
 
     when(table.tableId).thenReturn(tableId)

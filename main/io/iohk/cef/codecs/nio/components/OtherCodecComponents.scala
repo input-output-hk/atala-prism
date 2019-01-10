@@ -31,7 +31,8 @@ private[components] object OtherCodecComponents {
   def mapEncoder[K, V](
       implicit enc: NioEncoder[List[(K, V)]],
       encK: NioEncoder[K],
-      encV: NioEncoder[V]): NioEncoder[Map[K, V]] = {
+      encV: NioEncoder[V]
+  ): NioEncoder[Map[K, V]] = {
     implicit val ttk: TypeTag[K] = encK.typeTag
     implicit val ttv: TypeTag[V] = encV.typeTag
     enc.map[Map[K, V]](_.toList).packed
@@ -40,7 +41,8 @@ private[components] object OtherCodecComponents {
   def mapDecoder[K, V](
       implicit dec: NioDecoder[List[(K, V)]],
       encK: NioDecoder[K],
-      encV: NioDecoder[V]): NioDecoder[Map[K, V]] = {
+      encV: NioDecoder[V]
+  ): NioDecoder[Map[K, V]] = {
     implicit val ttk: TypeTag[K] = encK.typeTag
     implicit val ttv: TypeTag[V] = encV.typeTag
     dec.map[Map[K, V]](_.toMap).packed

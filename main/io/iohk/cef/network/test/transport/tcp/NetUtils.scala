@@ -94,7 +94,8 @@ object NetUtils {
       nodeId: NodeId,
       peerConfig: PeerConfig,
       networkDiscovery: NetworkDiscovery,
-      transports: Transports)
+      transports: Transports
+  )
 
   def randomNetworkFixture(messageTtl: Int = FrameHeader.defaultTtl): NetworkFixture = {
 

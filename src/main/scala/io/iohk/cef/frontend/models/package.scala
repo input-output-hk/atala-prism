@@ -16,7 +16,8 @@ object Spray {
         implicit sf: JsonFormat[String],
         es: Show[T],
         ep: Parse[T],
-        ct: ClassTag[T]): JsonFormat[T] = new JsonFormat[T] {
+        ct: ClassTag[T]
+    ): JsonFormat[T] = new JsonFormat[T] {
       override def read(json: JsValue): T = {
         ep.decode(sf.read(json)) match {
           case Some(t) =>
@@ -45,7 +46,8 @@ object PlayJson {
         implicit sf: Format[String],
         es: Show[T],
         ep: Parse[T],
-        ct: ClassTag[T]): Format[T] = new Format[T] {
+        ct: ClassTag[T]
+    ): Format[T] = new Format[T] {
       def reads(json: JsValue): JsResult[T] =
         sf.reads(json) flatMap { s =>
           ep.decode(s) match {

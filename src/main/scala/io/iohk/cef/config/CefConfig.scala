@@ -8,4 +8,5 @@ case class CefConfig(
     peerConfig: PeerConfig,
     discoveryConfig: DiscoveryConfig,
     consensusConfig: ConsensusConfig,
-    ledgerConfig: LedgerConfig)
+    ledgerConfig: LedgerConfig
+)

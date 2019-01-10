@@ -28,19 +28,20 @@ trait StreamCodecs {
 
   def lazyMessageApplication[Address, Message, R](
       codec: NioCodec[Message],
-      handler: (Address, Message) => Unit): MessageApplication[Address] =
+      handler: (Address, Message) => Unit
+  ): MessageApplication[Address] =
     (address, byteBuffer) => codec.decodeStream(byteBuffer).map(message => () => handler(address, message))
 
   def strictMessageApplication[Address, Message, R](
       codec: NioCodec[Message],
-      handler: (Address, Message) => Unit): MessageApplication[Address] =
+      handler: (Address, Message) => Unit
+  ): MessageApplication[Address] =
     (address, byteBuffer) =>
       codec
         .decodeStream(byteBuffer)
         .map(message => {
           handler(address, message)
-          () =>
-            ()
+          () => ()
         })
 
   /**
@@ -62,7 +63,8 @@ trait StreamCodecs {
   def decodeStream[Address](
       address: Address,
       b: ByteBuffer,
-      messageAppliers: Seq[MessageApplication[Address]]): Seq[ApplicableMessage] = {
+      messageAppliers: Seq[MessageApplication[Address]]
+  ): Seq[ApplicableMessage] = {
 
     @tailrec
     def bufferLoop(acc: Vector[ApplicableMessage]): Seq[ApplicableMessage] = {

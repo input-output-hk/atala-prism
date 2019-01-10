@@ -15,10 +15,7 @@ class AgreementsGenericController(implicit ec: ExecutionContext, mat: Materializ
   import AgreementsGenericController._
   import Context._
 
-  def routes[T](
-      prefix: String,
-      service: AgreementsService[T])(
-      implicit readsT: Reads[T]): Route = {
+  def routes[T](prefix: String, service: AgreementsService[T])(implicit readsT: Reads[T]): Route = {
 
     pathPrefix("agreements" / prefix) {
       path("agree") {
@@ -26,19 +23,19 @@ class AgreementsGenericController(implicit ec: ExecutionContext, mat: Materializ
           publicInput { ctx: HasModel[AgreeRequest[T]] =>
             // TODO: Remove Future wrapper when the service returns a scala Future
             Future { service.agree(ctx.model.correlationId, ctx.model.data) }
-                .map(_ => Good(JsObject.empty))
+              .map(_ => Good(JsObject.empty))
           }
         }
       } ~
-      path("propose") {
-        post {
-          publicInput { ctx: HasModel[ProposeRequest[T]] =>
-            // TODO: Remove Future wrapper when the service returns a scala Future
-            Future { service.propose(ctx.model.correlationId, ctx.model.data, ctx.model.recipients) }
+        path("propose") {
+          post {
+            publicInput { ctx: HasModel[ProposeRequest[T]] =>
+              // TODO: Remove Future wrapper when the service returns a scala Future
+              Future { service.propose(ctx.model.correlationId, ctx.model.data, ctx.model.recipients) }
                 .map(_ => Good(JsObject.empty))
+            }
           }
         }
-      }
     }
   }
 }
@@ -53,5 +50,6 @@ object AgreementsGenericController {
 
   implicit def agreeRequestReads[T](implicit readsT: Reads[T]): Reads[AgreeRequest[T]] = Json.reads[AgreeRequest[T]]
 
-  implicit def proposeRequestReads[T](implicit readsT: Reads[T]): Reads[ProposeRequest[T]] = Json.reads[ProposeRequest[T]]
+  implicit def proposeRequestReads[T](implicit readsT: Reads[T]): Reads[ProposeRequest[T]] =
+    Json.reads[ProposeRequest[T]]
 }
