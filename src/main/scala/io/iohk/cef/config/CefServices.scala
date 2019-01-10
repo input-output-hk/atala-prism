@@ -7,6 +7,7 @@ import io.iohk.cef.agreements.AgreementsService
 import io.iohk.cef.codecs.nio._
 import io.iohk.cef.data.{CanValidate, DataItem, DataItemService, TableId}
 import io.iohk.cef.ledger.Transaction
+import io.iohk.cef.ledger.storage.{LedgerStateStorage, LedgerStorage}
 import io.iohk.cef.network.NetworkServices
 import io.iohk.cef.network.transport.Transports
 import io.iohk.cef.transactionservice.NodeTransactionService
@@ -27,15 +28,20 @@ private[config] class CefServices(cefConfig: CefConfig) {
   private val networkDiscovery =
     NetworkServices.networkDiscovery(clock, cefConfig.peerConfig, cefConfig.discoveryConfig)
 
-  def cefTransactionServiceChannel[State, Tx <: Transaction[State]]()(
+  def cefTransactionServiceChannel[State, Tx <: Transaction[State]](
+      ledgerStateStorage: LedgerStateStorage[State],
+      ledgerStorage: LedgerStorage[State, Tx]
+  )(
       implicit stateCodec: NioCodec[State],
       stateTypeTag: TypeTag[State],
       txCodec: NioCodec[Tx],
       txTypeTag: TypeTag[Tx],
       ec: ExecutionContext
   ): NodeTransactionService[State, Tx] = {
-    new TransactionServiceBuilder(cefConfig, log, clock, transports, networkDiscovery).cefTransactionServiceChannel()
+    new TransactionServiceBuilder(cefConfig, log, clock, transports, networkDiscovery)
+      .cefTransactionServiceChannel(ledgerStateStorage, ledgerStorage)
   }
+
   def cefDataItemServiceChannel[T](
       tableId: TableId,
       storagePath: Path
@@ -54,14 +60,20 @@ private[config] class CefServices(cefConfig: CefConfig) {
 object CefServices {
   private val services = new ConcurrentHashMap[CefConfig, CefServices]().asScala
 
-  def cefTransactionServiceChannel[State, Tx <: Transaction[State]](cefConfig: CefConfig)(
+  def cefTransactionServiceChannel[State, Tx <: Transaction[State]](
+      cefConfig: CefConfig,
+      ledgerStateStorage: LedgerStateStorage[State],
+      ledgerStorage: LedgerStorage[State, Tx]
+  )(
       implicit stateCodec: NioCodec[State],
       stateTypeTag: TypeTag[State],
       txCodec: NioCodec[Tx],
       txTypeTag: TypeTag[Tx],
       ec: ExecutionContext
   ): NodeTransactionService[State, Tx] = {
-    services.getOrElseUpdate(cefConfig, new CefServices(cefConfig)).cefTransactionServiceChannel()
+    services
+      .getOrElseUpdate(cefConfig, new CefServices(cefConfig))
+      .cefTransactionServiceChannel(ledgerStateStorage, ledgerStorage)
   }
   def cefDataItemServiceChannel[T: NioCodec: TypeTag](cefConfig: CefConfig, tableId: TableId, storagePath: Path)(
       implicit canValidate: CanValidate[DataItem[T]]
