@@ -18,9 +18,15 @@ import scala.concurrent.duration._
 
 object AgreementsMain extends App {
 
-  val cefConfig: CefConfig = pureconfig.loadConfigOrThrow[CefConfig](ConfigFactory.defaultReference())
+  val (a, b) =
+    if (args.length > 0)
+      (ConfigFactory.load("reference-b"), ConfigFactory.load("agreements-main-b"))
+    else
+      (ConfigFactory.load("reference"), ConfigFactory.load("agreements-main"))
+
+  val cefConfig: CefConfig = pureconfig.loadConfigOrThrow[CefConfig](a)
   val agreementsMainConfig: FrontendConfig =
-    pureconfig.loadConfigOrThrow[FrontendConfig](ConfigFactory.load("agreements-main"))
+    pureconfig.loadConfigOrThrow[FrontendConfig](b)
 
   case class Certificate(id: String, date: String)
   implicit val format: Format[Certificate] = Json.format[Certificate]
@@ -34,7 +40,7 @@ object AgreementsMain extends App {
   val serviceApi = new AgreementsGenericController()
   val prefix = "certificates"
   val agreementsMain = CefMain(
-    serviceApi.routes(prefix,agreementsService),
+    serviceApi.routes(prefix, agreementsService),
     agreementsMainConfig
   )
 }
