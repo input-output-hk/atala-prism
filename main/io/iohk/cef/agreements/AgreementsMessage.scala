@@ -12,7 +12,7 @@ object AgreementsMessage {
 
   case class Decline[T](correlationId: String, declinedBy: UserId) extends AgreementMessage[T]
 
-  def messageCata[T, R](fPropose: Propose[T] => R, fAgree: Agree[T] => R, fDecline: Decline[T] => R)(
+  def catamorphism[T, R](fPropose: Propose[T] => R, fAgree: Agree[T] => R, fDecline: Decline[T] => R)(
       message: AgreementMessage[T]
   ): R = message match {
 
