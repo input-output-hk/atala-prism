@@ -71,7 +71,9 @@ class AgreementDataItemAcceptanceSpec extends FlatSpec {
         .agree(proposal.correlationId, witnessDataItem(proposal.data, agreementFixture.keyPair))
     }
     agreementFixture.agreementsService.agreementEvents
-      .foreach(message => AgreementsMessage.catamorphism[DataItem[String], Unit](agreeToProposal, _ => (), _ => ())(message))
+      .foreach(
+        message => AgreementsMessage.catamorphism[DataItem[String], Unit](agreeToProposal, _ => (), _ => ())(message)
+      )
   }
 
   private def aWitnessedDataItem(data: String, keyPair: SigningKeyPair): DataItem[String] = {

@@ -34,7 +34,7 @@ class AgreementChimericAcceptanceSpec extends FlatSpec {
 
   The transaction is now currently incomplete and invalid, because input InB requires a signature from user B.
   User A sends the incomplete transaction to user B.
-  
+
   User B adds another transaction fragment signing the input InB, thereby completing the transaction.
   (NB: User B might not be party to the ledger. We assume that User A is party to the ledger because they initiated the interaction).
 
