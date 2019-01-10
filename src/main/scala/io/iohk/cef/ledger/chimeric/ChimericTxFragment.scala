@@ -246,7 +246,8 @@ object SignatureTxFragment {
 
   def signFragments(
       fragments: Seq[ChimericTxFragment],
-      signingPrivateKey: SigningPrivateKey): Seq[ChimericTxFragment] = {
+      signingPrivateKey: SigningPrivateKey
+  ): Seq[ChimericTxFragment] = {
     fragments :+ SignatureTxFragment(fragments, signingPrivateKey)
   }
 

@@ -65,19 +65,25 @@ class MonixMessageStreamSpec extends FlatSpec {
   }
 
   it should "takeWhile a condition is true and then terminate" in {
-    lazy val fibonacci: Stream[Int] = 0 #:: 1 #:: (fibonacci zip fibonacci.tail).map{ t => t._1 + t._2 }
+    lazy val fibonacci: Stream[Int] = 0 #:: 1 #:: (fibonacci zip fibonacci.tail).map { t =>
+      t._1 + t._2
+    }
     val fibonacciStream = new MonixMessageStream[Int](Observable.fromIterable(fibonacci))
 
-    val fold: CancellableFuture[Vector[Int]] = fibonacciStream.takeWhile(_ < 2).fold(Vector.empty[Int])((acc, next) => acc :+ next)
+    val fold: CancellableFuture[Vector[Int]] =
+      fibonacciStream.takeWhile(_ < 2).fold(Vector.empty[Int])((acc, next) => acc :+ next)
 
     fold.futureValue shouldBe Vector(0, 1, 1)
   }
 
   it should "take n and then terminate" in {
-    lazy val fibonacci: Stream[Int] = 0 #:: 1 #:: (fibonacci zip fibonacci.tail).map{ t => t._1 + t._2 }
+    lazy val fibonacci: Stream[Int] = 0 #:: 1 #:: (fibonacci zip fibonacci.tail).map { t =>
+      t._1 + t._2
+    }
     val fibonacciStream = new MonixMessageStream[Int](Observable.fromIterable(fibonacci))
 
-    val fold: CancellableFuture[Vector[Int]] = fibonacciStream.take(3).fold(Vector.empty[Int])((acc, next) => acc :+ next)
+    val fold: CancellableFuture[Vector[Int]] =
+      fibonacciStream.take(3).fold(Vector.empty[Int])((acc, next) => acc :+ next)
 
     fold.futureValue shouldBe Vector(0, 1, 1)
   }

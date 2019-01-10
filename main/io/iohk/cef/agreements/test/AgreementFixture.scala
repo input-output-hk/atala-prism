@@ -8,11 +8,12 @@ import io.iohk.cef.network.transport.tcp.NetUtils.NetworkFixture
 import io.iohk.cef.crypto._
 import scala.reflect.runtime.universe.TypeTag
 
-
 case class AgreementFixture[T](nodeId: NodeId, keyPair: SigningKeyPair, agreementsService: AgreementsService[T])
 
 object AgreementFixture {
-  def forTwoArbitraryAgreementPeers[T: NioCodec : TypeTag](testCode: (AgreementFixture[T], AgreementFixture[T]) => Any): Unit = {
+  def forTwoArbitraryAgreementPeers[T: NioCodec: TypeTag](
+      testCode: (AgreementFixture[T], AgreementFixture[T]) => Any
+  ): Unit = {
 
     NetUtils.forTwoArbitraryNetworkPeers { (aliceFix, bobFix) =>
       val aliceNet = new ConversationalNetwork[AgreementMessage[T]](aliceFix.networkDiscovery, aliceFix.transports)
@@ -23,11 +24,14 @@ object AgreementFixture {
 
       testCode(
         AgreementFixture(aliceFix.nodeId, generateSigningKeyPair(), aliceAgreementService),
-        AgreementFixture(bobFix.nodeId, generateSigningKeyPair(), bobAgreementService))
+        AgreementFixture(bobFix.nodeId, generateSigningKeyPair(), bobAgreementService)
+      )
     }
   }
 
-  def forThreeArbitraryAgreementPeers[T: NioCodec: TypeTag](testCode: (AgreementFixture[T], AgreementFixture[T], AgreementFixture[T]) => Any): Unit = {
+  def forThreeArbitraryAgreementPeers[T: NioCodec: TypeTag](
+      testCode: (AgreementFixture[T], AgreementFixture[T], AgreementFixture[T]) => Any
+  ): Unit = {
     NetUtils.forNArbitraryNetworkPeers(3) { peers =>
       val aliceFix: NetworkFixture = peers(0)
       val aliceNet = new ConversationalNetwork[AgreementMessage[T]](aliceFix.networkDiscovery, aliceFix.transports)
@@ -38,13 +42,15 @@ object AgreementFixture {
       val bobAgreementService = new AgreementsService[T](bobNet)
 
       val charlieFix: NetworkFixture = peers(2)
-      val charlieNet = new ConversationalNetwork[AgreementMessage[T]](charlieFix.networkDiscovery, charlieFix.transports)
+      val charlieNet =
+        new ConversationalNetwork[AgreementMessage[T]](charlieFix.networkDiscovery, charlieFix.transports)
       val charlieAgreementService = new AgreementsService[T](charlieNet)
 
       testCode(
         AgreementFixture(aliceFix.nodeId, generateSigningKeyPair(), aliceAgreementService),
         AgreementFixture(bobFix.nodeId, generateSigningKeyPair(), bobAgreementService),
-        AgreementFixture(charlieFix.nodeId, generateSigningKeyPair(), charlieAgreementService))
+        AgreementFixture(charlieFix.nodeId, generateSigningKeyPair(), charlieAgreementService)
+      )
     }
 
   }

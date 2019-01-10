@@ -12,13 +12,12 @@ import org.scalatest.time.{Seconds, Span}
 
 import scala.concurrent.Future
 
-
 class AgreementDataItemAcceptanceSpec extends FlatSpec {
 
   behavior of "AgreementsService"
 
   implicit val patienceConfig =
-    PatienceConfig(timeout =  Span(5, Seconds), interval = Span(1, Seconds))
+    PatienceConfig(timeout = Span(5, Seconds), interval = Span(1, Seconds))
 
   /*
   Smart Agreements in the Data Item Framework:
@@ -32,37 +31,42 @@ class AgreementDataItemAcceptanceSpec extends FlatSpec {
   A collates the the signatures into a version of the original data item that contains all the required signatures.
   A can now file the data item.
    */
-  it should "support the creation of DataItems" in forThreeArbitraryAgreementPeers[DataItem[String]] { (alice, bob, charlie) =>
-    // given
-    val data = "it rained on 01/12/2018 in Wollongong"
-    val dataItem = aWitnessedDataItem(data, alice.keyPair)
-    willWitnessAndAgree(bob)
-    willWitnessAndAgree(charlie)
+  it should "support the creation of DataItems" in forThreeArbitraryAgreementPeers[DataItem[String]] {
+    (alice, bob, charlie) =>
+      // given
+      val data = "it rained on 01/12/2018 in Wollongong"
+      val dataItem = aWitnessedDataItem(data, alice.keyPair)
+      willWitnessAndAgree(bob)
+      willWitnessAndAgree(charlie)
 
-    // when
-    val collation: Future[DataItem[String]] = alice.agreementsService.agreementEvents.take(2).fold(dataItem)(collateSignatures)
-    alice.agreementsService.propose("correlation-id", dataItem, List(bob.nodeId, charlie.nodeId))
+      // when
+      val collation: Future[DataItem[String]] =
+        alice.agreementsService.agreementEvents.take(2).fold(dataItem)(collateSignatures)
+      alice.agreementsService.propose("correlation-id", dataItem, List(bob.nodeId, charlie.nodeId))
 
-    // then
-    whenReady(collation) { agreedDataItem =>
-      agreedDataItem.witnesses should contain(witness(data, alice.keyPair))
-      agreedDataItem.witnesses should contain(witness(data, bob.keyPair))
-      agreedDataItem.witnesses should contain(witness(data, charlie.keyPair))
-    }
+      // then
+      whenReady(collation) { agreedDataItem =>
+        agreedDataItem.witnesses should contain(witness(data, alice.keyPair))
+        agreedDataItem.witnesses should contain(witness(data, bob.keyPair))
+        agreedDataItem.witnesses should contain(witness(data, charlie.keyPair))
+      }
   }
 
   private def collateSignatures(acc: DataItem[String], next: AgreementMessage[DataItem[String]]): DataItem[String] = {
     messageCata[DataItem[String], DataItem[String]](
       fPropose = _ => acc,
       fAgree = agree => acc.copy(witnesses = agree.data.witnesses.head :: acc.witnesses.toList),
-      fDecline = _ => acc)(next)
+      fDecline = _ => acc
+    )(next)
   }
 
   private def willWitnessAndAgree(agreementFixture: AgreementFixture[DataItem[String]]): Unit = {
     def agreeToProposal(proposal: Propose[DataItem[String]]): Unit = {
-      agreementFixture.agreementsService.agree(proposal.correlationId, witnessDataItem(proposal.data, agreementFixture.keyPair))
+      agreementFixture.agreementsService
+        .agree(proposal.correlationId, witnessDataItem(proposal.data, agreementFixture.keyPair))
     }
-    agreementFixture.agreementsService.agreementEvents.foreach(message => messageCata[DataItem[String], Unit](agreeToProposal, _ => (), _ => ())(message))
+    agreementFixture.agreementsService.agreementEvents
+      .foreach(message => messageCata[DataItem[String], Unit](agreeToProposal, _ => (), _ => ())(message))
   }
 
   private def aWitnessedDataItem(data: String, keyPair: SigningKeyPair): DataItem[String] = {

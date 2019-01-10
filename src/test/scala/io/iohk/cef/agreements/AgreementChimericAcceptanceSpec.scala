@@ -18,7 +18,7 @@ class AgreementChimericAcceptanceSpec extends FlatSpec {
   behavior of "AgreementsService"
 
   implicit val patienceConfig =
-    PatienceConfig(timeout =  Span(5, Seconds), interval = Span(1, Seconds))
+    PatienceConfig(timeout = Span(5, Seconds), interval = Span(1, Seconds))
 
   /*
   Smart Agreements in the Chimeric Ledger:
@@ -40,17 +40,23 @@ class AgreementChimericAcceptanceSpec extends FlatSpec {
    */
   it should "support the creation of a ChimericTx" in forTwoArbitraryAgreementPeers[ChimericTx] { (alice, bob) =>
     // given
-    val tx = ChimericTx(signFragments(List(
-      Input(TxOutRef("OutA", 0), Value("C1" -> BigDecimal("10"))),
-      Input(TxOutRef("OutB", 0), Value("C2" -> BigDecimal("20"))),
-      Output(Value("C1" -> BigDecimal("10")), bob.keyPair.public),
-      Output(Value("C2" -> BigDecimal("20")), alice.keyPair.public)
-    ), alice.keyPair.`private`))
+    val tx = ChimericTx(
+      signFragments(
+        List(
+          Input(TxOutRef("OutA", 0), Value("C1" -> BigDecimal("10"))),
+          Input(TxOutRef("OutB", 0), Value("C2" -> BigDecimal("20"))),
+          Output(Value("C1" -> BigDecimal("10")), bob.keyPair.public),
+          Output(Value("C2" -> BigDecimal("20")), alice.keyPair.public)
+        ),
+        alice.keyPair.`private`
+      )
+    )
 
     willSign(bob)
 
     // when
-    val bobsAgreement: Future[Agree[ChimericTx]] = alice.agreementsService.agreementEvents.map(_.asInstanceOf[Agree[ChimericTx]]).head()
+    val bobsAgreement: Future[Agree[ChimericTx]] =
+      alice.agreementsService.agreementEvents.map(_.asInstanceOf[Agree[ChimericTx]]).head()
     alice.agreementsService.propose("correlation-id", tx, List(bob.nodeId))
 
     whenReady(bobsAgreement) { agreement =>
@@ -65,7 +71,8 @@ class AgreementChimericAcceptanceSpec extends FlatSpec {
     def agreeToProposal(proposal: Propose[ChimericTx]): Unit = {
       agreementFixture.agreementsService.agree(proposal.correlationId, signTx(proposal.data, agreementFixture.keyPair))
     }
-    agreementFixture.agreementsService.agreementEvents.foreach(message => AgreementsMessage.messageCata[ChimericTx, Unit](agreeToProposal, _ => (), _ => ())(message))
+    agreementFixture.agreementsService.agreementEvents
+      .foreach(message => AgreementsMessage.messageCata[ChimericTx, Unit](agreeToProposal, _ => (), _ => ())(message))
   }
 
   private def signTx(tx: ChimericTx, keyPair: SigningKeyPair): ChimericTx =

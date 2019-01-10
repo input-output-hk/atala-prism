@@ -136,7 +136,8 @@ object NetUtils {
   def nodesArePeers(nodes: List[NetworkFixture]): Unit = {
     nodes.foreach { node =>
       val neighbours = nodes.filterNot(n => n == node)
-      when(node.networkDiscovery.nearestNPeersTo(meq[NodeId](node.nodeId), any[Int])).thenReturn(neighbours.map(_.peerConfig))
+      when(node.networkDiscovery.nearestNPeersTo(meq[NodeId](node.nodeId), any[Int]))
+        .thenReturn(neighbours.map(_.peerConfig))
 
       neighbours.foreach { neighbour =>
         when(neighbour.networkDiscovery.nearestPeerTo(node.nodeId)).thenReturn(Some(node.peerConfig))
