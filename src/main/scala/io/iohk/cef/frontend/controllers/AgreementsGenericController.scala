@@ -34,7 +34,7 @@ class AgreementsGenericController(implicit ec: ExecutionContext, mat: Materializ
         post {
           publicInput { ctx: HasModel[ProposeRequest[T]] =>
             // TODO: Remove Future wrapper when the service returns a scala Future
-            Future { service.propose(ctx.model.correlationId, ctx.model.data, ctx.model.recipients) }
+            Future { service.propose(ctx.model.correlationId, ctx.model.data, ctx.model.to) }
                 .map(_ => Good(JsObject.empty))
           }
         }
@@ -49,7 +49,7 @@ object AgreementsGenericController {
   import io.iohk.cef.frontend.controllers.common.Codecs.{nodeIdFormat, nonEmptyListFormat}
 
   case class AgreeRequest[T](correlationId: String, data: T)
-  case class ProposeRequest[T](correlationId: String, data: T, recipients: NonEmptyList[UserId])
+  case class ProposeRequest[T](correlationId: String, data: T, to: NonEmptyList[UserId])
 
   implicit def agreeRequestReads[T](implicit readsT: Reads[T]): Reads[AgreeRequest[T]] = Json.reads[AgreeRequest[T]]
 

@@ -1,0 +1,1 @@
+{"correlationId": "agreementId","data": "it is raining","to": ["2222"]}
