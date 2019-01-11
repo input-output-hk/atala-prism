@@ -209,6 +209,9 @@ bazel run -- //src/main/scala/io/iohk/cef/main:AgreementsMain agreements-node-1-
 
 bazel run -- //src/main/scala/io/iohk/cef/main:AgreementsMain agreements-node-2-app
 
+bazel run -- //src/main/scala/io/iohk/cef/main:AgreementsMain agreements-node-3-app
+
+
 ```
 ## curl request for Agreements Demo
 ```

@@ -5,7 +5,6 @@ import akka.stream.ActorMaterializer
 import akka.util.Timeout
 import com.typesafe.config.ConfigFactory
 import io.iohk.cef.agreements.AgreementsMessage.{Agree, Decline, Propose}
-import io.iohk.cef.network.NodeId
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.config.ConfigReaderExtensions._
 import io.iohk.cef.config.{CefConfig, CefServices}
@@ -33,7 +32,7 @@ object AgreementsMain extends App {
     case a: Agree[String] =>
       println(s"Node '${cefConfig.peerConfig.nodeId}' has received agreements '$a'")
     case d: Decline[String] =>
-      println(s"Node '${cefConfig.peerConfig.nodeId}' has declined proposal '$d'")
+      println(s"Node '${cefConfig.peerConfig.nodeId}' proposal is declined '$d'")
     case _ => ()
   })
 
