@@ -12,12 +12,12 @@ import io.iohk.cef.utils.Logger
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 
-class CefMain private(bindingFuture: Future[Http.ServerBinding])
-                                             (implicit executionContext: ExecutionContext,
-                                              system: ActorSystem) extends Logger {
+class CefMain private (bindingFuture: Future[Http.ServerBinding])(
+    implicit executionContext: ExecutionContext,
+    system: ActorSystem)
+    extends Logger {
 
-  CoordinatedShutdown(system).addTask(
-    CoordinatedShutdown.PhaseServiceUnbind, "http_shutdown") { () =>
+  CoordinatedShutdown(system).addTask(CoordinatedShutdown.PhaseServiceUnbind, "http_shutdown") { () =>
     log.info("Shutting down CEF")
     bindingFuture.flatMap(_.terminate(hardDeadline = 1.minute)).map { _ =>
       CefServices.shutdown
@@ -28,12 +28,11 @@ class CefMain private(bindingFuture: Future[Http.ServerBinding])
 }
 
 object CefMain {
-  def apply(route: Route,
-    frontendConfig: FrontendConfig)
-  (implicit actorSystem: ActorSystem,
-  executionContext: ExecutionContext,
-  timeout: Timeout,
-  materializer: ActorMaterializer): CefMain = {
+  def apply(route: Route, frontendConfig: FrontendConfig)(
+      implicit actorSystem: ActorSystem,
+      executionContext: ExecutionContext,
+      timeout: Timeout,
+      materializer: ActorMaterializer): CefMain = {
 
     val binding = Http()(actorSystem)
       .bindAndHandle(route, frontendConfig.bindAddress.getHostName, frontendConfig.bindAddress.getPort)

@@ -30,11 +30,11 @@ object AgreementsMain extends App {
   val agreementsService = CefServices.cefAgreementsServiceChannel[String](cefConfig)
   // our simple app will print proposals received.
   agreementsService.agreementEvents.foreach({
-    case p:Propose[String] =>
+    case p: Propose[String] =>
       println(s"Node '${cefConfig.peerConfig.nodeId}' has received proposal '$p'")
       //For testing without curl
-      if(p.data == "hello there") agreementsService.agree(p.correlationId, p.data)
-    case a:Agree[String] =>
+      if (p.data == "hello there") agreementsService.agree(p.correlationId, p.data)
+    case a: Agree[String] =>
       println(s"Node '${cefConfig.peerConfig.nodeId}' has received agreements '$a'")
     case _ => ()
   })
@@ -42,7 +42,7 @@ object AgreementsMain extends App {
   val serviceApi = new AgreementsGenericController()
   val prefix = "weather"
   val agreementsMain = CefMain(
-    serviceApi.routes(prefix,agreementsService),
+    serviceApi.routes(prefix, agreementsService),
     agreementsMainConfig
   )
   Thread.sleep(2000)
