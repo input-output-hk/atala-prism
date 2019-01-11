@@ -30,6 +30,12 @@ private[network] class MonixMessageStream[T](val o: Observable[T]) extends Messa
 
   override def withTimeout(d: FiniteDuration): MessageStream[T] =
     new MonixMessageStream[T](o.takeByTimespan(d))
+
+  override def take(n: Long): MessageStream[T] = new MonixMessageStream[T](o.take(n))
+
+  override def takeWhile(predicate: T => Boolean): MessageStream[T] = new MonixMessageStream[T](o.takeWhile(predicate))
+
+  override def head(): CancellableFuture[T] = CancellableFuture(o.headL.runAsync)
 }
 
 object MonixMessageStream {

@@ -16,6 +16,7 @@ import io.iohk.cef.data.query.Value.{
 }
 import io.iohk.cef.data.query.{DataItemQuery, Field, Value => ValueRef}
 import io.iohk.cef.data.{NonEmptyList, _}
+import io.iohk.cef.frontend.PlayJson
 import io.iohk.cef.frontend.models._
 import io.iohk.cef.ledger.chimeric._
 import io.iohk.cef.ledger.identity._
@@ -27,7 +28,7 @@ import play.api.libs.json._
 
 import scala.util.Try
 
-object Codecs {
+object Codecs extends PlayJson.Formats {
 
   implicit def seqFormat[T](implicit tFormat: Format[T]): Format[Seq[T]] = new Format[Seq[T]] {
     override def reads(json: JsValue): JsResult[Seq[T]] = {

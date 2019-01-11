@@ -8,6 +8,7 @@ scala_binary(
     "//main/io/iohk/cef/crypto",
     "//main/io/iohk/cef/codecs",
     "//main/io/iohk/cef/error",
+    "//main/io/iohk/cef/query",
     "//main/io/iohk/cef/utils",
     "//main/io/iohk/cef/agreements",
     "//3rdparty/jvm/com/github/pureconfig:pureconfig",
