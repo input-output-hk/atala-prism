@@ -32,8 +32,8 @@ object AgreementsMain extends App {
       println(s"Node '${cefConfig.peerConfig.nodeId}' has received proposal '$p'")
     case a: Agree[String] =>
       println(s"Node '${cefConfig.peerConfig.nodeId}' has received agreements '$a'")
-    case a: Decline[String] =>
-      println(s"Node '${cefConfig.peerConfig.nodeId}' has declined proposal '$a'")
+    case d: Decline[String] =>
+      println(s"Node '${cefConfig.peerConfig.nodeId}' has declined proposal '$d'")
     case _ => ()
   })
 
