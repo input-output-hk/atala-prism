@@ -19,7 +19,6 @@ private[transport] class TcpNetworkTransport[Message](nettyTransport: NettyTrans
     Observable.create(overflowStrategy = OverflowStrategy.Unbounded)((subscriber: Subscriber.Sync[Message]) => {
 
       def msgHandler(address: InetSocketAddress, message: Message): Unit = {
-        println("Mesage*************************" + message)
         subscriber.onNext(message)
       }
       val applicationId = nettyTransport.withMessageApplication(codec, msgHandler)

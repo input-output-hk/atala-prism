@@ -6,15 +6,12 @@ import akka.util.Timeout
 import com.typesafe.config.ConfigFactory
 import io.iohk.cef.agreements.AgreementsMessage.Agree
 import io.iohk.cef.network.NodeId
-//import com.typesafe.config.ConfigFactory
 import io.iohk.cef.agreements.AgreementsMessage.Propose
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.config.ConfigReaderExtensions._
 import io.iohk.cef.config.{CefConfig, CefServices}
 import io.iohk.cef.frontend.controllers.AgreementsGenericController
-//import play.api.libs.json.{Format, Json}
 import pureconfig.generic.auto._
-//import io.iohk.cef.frontend.controllers.common.Codecs._
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
@@ -35,7 +32,8 @@ object AgreementsMain extends App {
   agreementsService.agreementEvents.foreach({
     case p:Propose[String] =>
       println(s"Node '${cefConfig.peerConfig.nodeId}' has received proposal '$p'")
-      agreementsService.agree(p.correlationId, p.data)
+      //For testing without curl
+      if(p.data == "hello there") agreementsService.agree(p.correlationId, p.data)
     case a:Agree[String] =>
       println(s"Node '${cefConfig.peerConfig.nodeId}' has received agreements '$a'")
     case _ => ()
