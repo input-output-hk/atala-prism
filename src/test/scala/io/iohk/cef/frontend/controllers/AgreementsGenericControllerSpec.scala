@@ -46,7 +46,7 @@ class AgreementsGenericControllerSpec extends WordSpec with ScalatestRouteTest w
           |      }
           |    ]
           |  },
-          |  "recipients": ["1111", "2222"]
+          |  "to": ["1111", "2222"]
           |}
         """.stripMargin
 
@@ -101,7 +101,7 @@ class AgreementsGenericControllerSpec extends WordSpec with ScalatestRouteTest w
            |{
            |  "correlationId": "agreementId",
            |  "data": ${Json.toJson(tx).toString()},
-           |  "recipients": ["1111", "2222"]
+           |  "to": ["1111", "2222"]
            |}
         """.stripMargin
 
