@@ -202,3 +202,18 @@ consensus-config {
   }
 }
 ```
+## Agreements Demo
+For agreements demo you need to run minimum 2 nodes
+```bash
+bazel run -- //src/main/scala/io/iohk/cef/main:AgreementsMain agreements-node-1-app
+
+bazel run -- //src/main/scala/io/iohk/cef/main:AgreementsMain agreements-node-2-app
+
+```
+## curl request for Agreements Demo
+```
+curl -d '{"correlationId": "agreementId","data": "it is raining","to": ["2222"]}' -XPOST -H "Content-Type: application/json" http://localhost:8000/agreements/weather/propose
+   
+curl -d '{"correlationId": "agreementId","data": "it is raining"}' -XPOST -H "Content-Type: application/json" http://localhost:9000/agreements/weather/agree
+
+```
