@@ -26,7 +26,7 @@ object AgreementsMain extends App {
 
   val agreementsService = CefServices.cefAgreementsServiceChannel[String](cefConfig)
   // our simple app will print proposals received.
-  agreementsService.agreementEvents.foreach({
+  agreementsService.agreementEvents.foreach {
     case p: Propose[String] =>
       println(s"Node '${cefConfig.peerConfig.nodeId}' has received proposal '$p'")
     case a: Agree[String] =>
@@ -34,7 +34,7 @@ object AgreementsMain extends App {
     case d: Decline[String] =>
       println(s"Node '${cefConfig.peerConfig.nodeId}' proposal is declined '$d'")
     case _ => ()
-  })
+  }
 
   val serviceApi = new AgreementsGenericController()
   val prefix = "weather"
