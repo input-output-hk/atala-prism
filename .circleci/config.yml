@@ -83,4 +83,4 @@ workflows:
             - build
           filters:
             branches:
-              only: develop
+              only: ce-484-deploy-jar
