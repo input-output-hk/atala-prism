@@ -24,7 +24,6 @@ class AgreementsGenericController(implicit ec: ExecutionContext, mat: Materializ
       path("agree") {
         post {
           publicInput { ctx: HasModel[AgreeRequest[T]] =>
-            // TODO: Remove Future wrapper when the service returns a scala Future
             Future { service.agree(ctx.model.correlationId, ctx.model.data) }
                 .map(_ => Good(JsObject.empty))
           }
@@ -33,7 +32,6 @@ class AgreementsGenericController(implicit ec: ExecutionContext, mat: Materializ
       path("propose") {
         post {
           publicInput { ctx: HasModel[ProposeRequest[T]] =>
-            // TODO: Remove Future wrapper when the service returns a scala Future
             Future { service.propose(ctx.model.correlationId, ctx.model.data, ctx.model.to) }
                 .map(_ => Good(JsObject.empty))
           }
@@ -42,7 +40,6 @@ class AgreementsGenericController(implicit ec: ExecutionContext, mat: Materializ
         path("decline") {
           post {
             publicInput { ctx: HasModel[DeclineRequest[T]] =>
-              // TODO: Remove Future wrapper when the service returns a scala Future
               Future { service.decline(ctx.model.correlationId) }
                 .map(_ => Good(JsObject.empty))
             }
