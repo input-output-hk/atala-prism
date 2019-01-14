@@ -45,6 +45,7 @@ jobs:
             bazel \
               --host_jvm_args=-Dbazel.DigestFunction=sha256 \
               test \
+              --jobs=2 \
               --spawn_strategy=standalone \
               --strategy=Javac=standalone \
               --genrule_strategy=standalone \
