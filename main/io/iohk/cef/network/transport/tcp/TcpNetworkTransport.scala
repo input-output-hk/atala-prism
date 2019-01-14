@@ -18,9 +18,9 @@ private[transport] class TcpNetworkTransport[Message](nettyTransport: NettyTrans
   val monixMessageStream: Observable[Message] =
     Observable.create(overflowStrategy = OverflowStrategy.Unbounded)((subscriber: Subscriber.Sync[Message]) => {
 
-      def msgHandler(address: InetSocketAddress, message: Message): Unit =
+      def msgHandler(address: InetSocketAddress, message: Message): Unit = {
         subscriber.onNext(message)
-
+      }
       val applicationId = nettyTransport.withMessageApplication(codec, msgHandler)
 
       cancelableMessageApplication(applicationId)

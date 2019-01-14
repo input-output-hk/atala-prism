@@ -46,7 +46,7 @@ class AgreementsGenericControllerSpec extends WordSpec with ScalatestRouteTest w
           |      }
           |    ]
           |  },
-          |  "recipients": ["1111", "2222"]
+          |  "to": ["1111", "2222"]
           |}
         """.stripMargin
 
@@ -101,13 +101,32 @@ class AgreementsGenericControllerSpec extends WordSpec with ScalatestRouteTest w
            |{
            |  "correlationId": "agreementId",
            |  "data": ${Json.toJson(tx).toString()},
-           |  "recipients": ["1111", "2222"]
+           |  "to": ["1111", "2222"]
            |}
         """.stripMargin
 
       val request = Post("/agreements/chimeric/propose", HttpEntity(ContentTypes.`application/json`, body))
 
       request ~> chimericRoutes ~> check {
+        status must ===(StatusCodes.OK)
+      }
+    }
+  }
+
+  "POST /agreements/certificates/decline" should {
+    "decline to an item" in {
+      val certificate = Certificate("certificateId", "2019/Jan/01")
+      val signature = sign(certificate, keys.`private`)
+      val body =
+        s"""
+           |{
+           |  "correlationId": "agreementId"
+           |}
+        """.stripMargin
+
+      val request = Post("/agreements/certificates/decline", HttpEntity(ContentTypes.`application/json`, body))
+
+      request ~> certificateRoutes ~> check {
         status must ===(StatusCodes.OK)
       }
     }

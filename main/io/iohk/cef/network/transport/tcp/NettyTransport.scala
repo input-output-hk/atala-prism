@@ -78,6 +78,7 @@ private[network] class NettyTransport(address: InetSocketAddress) {
         }
       })
       .connect(address)
+
   }
 
   def shutdown(): Unit = {

@@ -21,7 +21,6 @@ class AgreementsGenericController(implicit ec: ExecutionContext, mat: Materializ
       path("agree") {
         post {
           publicInput { ctx: HasModel[AgreeRequest[T]] =>
-            // TODO: Remove Future wrapper when the service returns a scala Future
             Future { service.agree(ctx.model.correlationId, ctx.model.data) }
               .map(_ => Good(JsObject.empty))
           }
@@ -30,8 +29,15 @@ class AgreementsGenericController(implicit ec: ExecutionContext, mat: Materializ
         path("propose") {
           post {
             publicInput { ctx: HasModel[ProposeRequest[T]] =>
-              // TODO: Remove Future wrapper when the service returns a scala Future
-              Future { service.propose(ctx.model.correlationId, ctx.model.data, ctx.model.recipients) }
+              Future { service.propose(ctx.model.correlationId, ctx.model.data, ctx.model.to) }
+                .map(_ => Good(JsObject.empty))
+            }
+          }
+        } ~
+        path("decline") {
+          post {
+            publicInput { ctx: HasModel[DeclineRequest[T]] =>
+              Future { service.decline(ctx.model.correlationId) }
                 .map(_ => Good(JsObject.empty))
             }
           }
@@ -46,10 +52,15 @@ object AgreementsGenericController {
   import io.iohk.cef.frontend.controllers.common.Codecs.{nodeIdFormat, nonEmptyListFormat}
 
   case class AgreeRequest[T](correlationId: String, data: T)
-  case class ProposeRequest[T](correlationId: String, data: T, recipients: NonEmptyList[UserId])
+  case class ProposeRequest[T](correlationId: String, data: T, to: NonEmptyList[UserId])
+  case class DeclineRequest[T](correlationId: String)
 
   implicit def agreeRequestReads[T](implicit readsT: Reads[T]): Reads[AgreeRequest[T]] = Json.reads[AgreeRequest[T]]
 
   implicit def proposeRequestReads[T](implicit readsT: Reads[T]): Reads[ProposeRequest[T]] =
     Json.reads[ProposeRequest[T]]
+
+  implicit def declineRequestReads[T](implicit readsT: Reads[T]): Reads[DeclineRequest[T]] =
+    Json.reads[DeclineRequest[T]]
+
 }
