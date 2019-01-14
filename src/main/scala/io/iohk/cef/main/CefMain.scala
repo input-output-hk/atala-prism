@@ -14,8 +14,8 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class CefMain private (bindingFuture: Future[Http.ServerBinding])(
     implicit executionContext: ExecutionContext,
-    system: ActorSystem)
-    extends Logger {
+    system: ActorSystem
+) extends Logger {
 
   CoordinatedShutdown(system).addTask(CoordinatedShutdown.PhaseServiceUnbind, "http_shutdown") { () =>
     log.info("Shutting down CEF")
@@ -32,7 +32,8 @@ object CefMain {
       implicit actorSystem: ActorSystem,
       executionContext: ExecutionContext,
       timeout: Timeout,
-      materializer: ActorMaterializer): CefMain = {
+      materializer: ActorMaterializer
+  ): CefMain = {
 
     val binding = Http()(actorSystem)
       .bindAndHandle(route, frontendConfig.bindAddress.getHostName, frontendConfig.bindAddress.getPort)
