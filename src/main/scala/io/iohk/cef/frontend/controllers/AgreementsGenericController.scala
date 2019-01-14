@@ -15,28 +15,25 @@ class AgreementsGenericController(implicit ec: ExecutionContext, mat: Materializ
   import AgreementsGenericController._
   import Context._
 
-  def routes[T](
-      prefix: String,
-      service: AgreementsService[T])(
-      implicit readsT: Reads[T]): Route = {
+  def routes[T](prefix: String, service: AgreementsService[T])(implicit readsT: Reads[T]): Route = {
 
     pathPrefix("agreements" / prefix) {
       path("agree") {
         post {
           publicInput { ctx: HasModel[AgreeRequest[T]] =>
             Future { service.agree(ctx.model.correlationId, ctx.model.data) }
-                .map(_ => Good(JsObject.empty))
+              .map(_ => Good(JsObject.empty))
           }
         }
       } ~
-      path("propose") {
-        post {
-          publicInput { ctx: HasModel[ProposeRequest[T]] =>
-            Future { service.propose(ctx.model.correlationId, ctx.model.data, ctx.model.to) }
+        path("propose") {
+          post {
+            publicInput { ctx: HasModel[ProposeRequest[T]] =>
+              Future { service.propose(ctx.model.correlationId, ctx.model.data, ctx.model.to) }
                 .map(_ => Good(JsObject.empty))
+            }
           }
-        }
-      } ~
+        } ~
         path("decline") {
           post {
             publicInput { ctx: HasModel[DeclineRequest[T]] =>
@@ -60,8 +57,10 @@ object AgreementsGenericController {
 
   implicit def agreeRequestReads[T](implicit readsT: Reads[T]): Reads[AgreeRequest[T]] = Json.reads[AgreeRequest[T]]
 
-  implicit def proposeRequestReads[T](implicit readsT: Reads[T]): Reads[ProposeRequest[T]] = Json.reads[ProposeRequest[T]]
+  implicit def proposeRequestReads[T](implicit readsT: Reads[T]): Reads[ProposeRequest[T]] =
+    Json.reads[ProposeRequest[T]]
 
-  implicit def declineRequestReads[T](implicit readsT: Reads[T]): Reads[DeclineRequest[T]] = Json.reads[DeclineRequest[T]]
+  implicit def declineRequestReads[T](implicit readsT: Reads[T]): Reads[DeclineRequest[T]] =
+    Json.reads[DeclineRequest[T]]
 
 }
