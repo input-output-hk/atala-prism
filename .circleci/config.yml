@@ -55,6 +55,9 @@ jobs:
       - run:
           name: check that the code is formatted properly
           command: ./scalafmt --test
+      - run:
+          name: create library jar
+          command: bazel build //src/main/scala/io/iohk/cef/main:main_deploy.jar
   deploy:
     docker:
       - image: circleci/python:2.7-jessie
@@ -77,4 +80,4 @@ workflows:
             - build
           filters:
             branches:
-              only: master
+              only: develop
