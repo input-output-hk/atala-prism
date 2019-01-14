@@ -97,4 +97,4 @@ workflows:
             - build
           filters:
             branches:
-              only: ce-484-deploy-jar
+              only: master
