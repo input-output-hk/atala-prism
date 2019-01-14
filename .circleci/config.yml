@@ -68,6 +68,8 @@ jobs:
 
       - persist_to_workspace:
           root: /tmp/workspace
+          paths:
+            - main_deploy.jar
   deploy:
     docker:
       - image: circleci/python:2.7-jessie
