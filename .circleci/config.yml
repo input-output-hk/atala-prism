@@ -5,6 +5,8 @@ jobs:
       - image: openjdk:8
     working_directory: ~/repo
     steps:
+      - run: mkdir -p workspace
+
       - checkout
 
       - run:
@@ -55,14 +57,24 @@ jobs:
       - run:
           name: check that the code is formatted properly
           command: ./scalafmt --test
+
       - run:
           name: create library jar
           command: bazel build //src/main/scala/io/iohk/cef/main:main_deploy.jar
+
+      - run:
+          name: move library jar to workspace
+          command: mv bazel-bin/src/main/scala/io/iohk/cef/main/main_deploy.jar ~/workspace/
+
+      - persist_to_workspace:
+          root: workspace
   deploy:
     docker:
       - image: circleci/python:2.7-jessie
     working_directory: ~/repo
     steps:
+      - attach_workspace:
+          at: /home/circleci/repo/workspace
       - run:
           name: tests
           command: pwd;ls -R
@@ -71,7 +83,7 @@ jobs:
           command: sudo pip install awscli
       - run:
           name: Deploy to S3
-          command: aws s3 cp bazel-bin/src/main/scala/io/iohk/cef/main/main_deploy.jar s3://cef-circle-ci/
+          command: aws s3 cp ~/repo/workspace/main_deploy.jar s3://cef-circle-ci/
 
 workflows:
   version: 2
