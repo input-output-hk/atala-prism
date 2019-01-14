@@ -64,6 +64,9 @@ jobs:
     working_directory: ~/repo
     steps:
       - run:
+          name: tests
+          command: pwd;ls -R
+      - run:
           name: Install awscli
           command: sudo pip install awscli
       - run:
