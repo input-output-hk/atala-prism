@@ -23,9 +23,10 @@ import scala.concurrent.duration._
 
 object IdentityTxMain extends App {
 
-  val cefConfig: CefConfig = pureconfig.loadConfigOrThrow[CefConfig](ConfigFactory.defaultReference())
-  val identityTxMainConfig: FrontendConfig =
-    pureconfig.loadConfigOrThrow[FrontendConfig](ConfigFactory.load("identity-tx-main"))
+  val typesafeConfig = ConfigFactory.defaultReference()
+  val cefConfig: CefConfig = pureconfig.loadConfigOrThrow[CefConfig](typesafeConfig)
+  val identityTxMainConfig: FrontendConfig = pureconfig
+    .loadConfigOrThrow[FrontendConfig](ConfigFactory.load("identity-tx-main"))
 
   type S = IdentityData
   type T = IdentityTransaction

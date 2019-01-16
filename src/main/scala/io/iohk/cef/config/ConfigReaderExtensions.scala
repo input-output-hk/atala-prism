@@ -1,4 +1,5 @@
 package io.iohk.cef.config
+
 import java.net.{InetSocketAddress, URI}
 
 import akka.util.ByteString
