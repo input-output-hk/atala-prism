@@ -1,6 +1,6 @@
 package io.iohk.cef.ledger.identity
 
-import io.iohk.cef.builder.SigningKeyPairs
+import io.iohk.cef.test.builder.SigningKeyPairs
 import io.iohk.cef.crypto._
 import io.iohk.cef.crypto.certificates._
 import io.iohk.cef.crypto.certificates.test.data.ExampleCertificates._

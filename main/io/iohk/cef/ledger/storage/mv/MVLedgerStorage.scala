@@ -5,7 +5,7 @@ import java.util.UUID
 
 import io.iohk.cef.utils.mv.MVTable
 
-import io.iohk.cef.LedgerId
+import io.iohk.cef.ledger.LedgerId
 import io.iohk.cef.ledger.{Block, Transaction}
 import io.iohk.cef.ledger.storage.LedgerStorage
 import io.iohk.cef.codecs.nio._

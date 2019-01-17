@@ -1,5 +1,5 @@
 package io.iohk.cef.consensus
-import io.iohk.cef.LedgerId
+import io.iohk.cef.ledger.LedgerId
 import io.iohk.cef.ledger.{Block, Transaction}
 
 import scala.concurrent.{ExecutionContext, Future}

@@ -1,7 +1,7 @@
 package io.iohk.cef.ledger.storage.mv
 import java.nio.file.Path
 
-import io.iohk.cef.LedgerId
+import io.iohk.cef.ledger.LedgerId
 import io.iohk.cef.codecs.nio._
 import io.iohk.cef.utils.mv.MVTable
 import io.iohk.cef.ledger._

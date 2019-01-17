@@ -1,6 +1,6 @@
 package io.iohk.cef.test
 
-import akka.testkit.typed.scaladsl.TestProbe
+import akka.actor.testkit.typed.scaladsl.TestProbe
 import org.scalatest.Matchers._
 
 import scala.reflect.ClassTag

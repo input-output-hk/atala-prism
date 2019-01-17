@@ -1,5 +1,5 @@
 package io.iohk.cef.integration
-import io.iohk.cef.LedgerId
+import io.iohk.cef.ledger.LedgerId
 import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.consensus.raft._
 import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}

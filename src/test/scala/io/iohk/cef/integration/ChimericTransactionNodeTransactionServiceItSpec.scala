@@ -95,7 +95,7 @@ class ChimericTransactionNodeTransactionServiceItSpec
     val fragments = Seq(CreateNonSignableChimericTransactionFragment(CreateCurrency("BTC")))
 
     val node = createNodeTransactionService
-    val service = new ChimericTransactionService(node)
+    val service = new ChimericTransactionService(node, null)
     val api = new ChimericTransactionsController(service)
     val routes = api.routes
 

@@ -1,6 +1,6 @@
 package io.iohk.cef.transactionservice.raft
 
-import io.iohk.cef.LedgerId
+import io.iohk.cef.ledger.LedgerId
 import io.iohk.cef.consensus.raft.RaftConsensus
 import io.iohk.cef.consensus.{Consensus, ConsensusError}
 import io.iohk.cef.ledger.{Block, Transaction}

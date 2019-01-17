@@ -1,5 +1,5 @@
 package io.iohk.cef.transactionservice
-import io.iohk.cef.LedgerId
+import io.iohk.cef.ledger.LedgerId
 import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.ledger.{Block, BlockHeader}
 import io.iohk.cef.network.{MessageStream, Network, NodeId}

@@ -53,7 +53,7 @@ trait ChimericTxFragmentFormat {
     * }}}
     */
   implicit val TxOutRefJsonFormat: RootJsonFormat[TxOutRef] =
-    jsonFormat2(TxOutRef)
+    jsonFormat2(TxOutRef.apply)
 
   implicit val signatureTxFragmentJsonFormat: JsonFormat[SignatureTxFragment] =
     jsonFormat1(SignatureTxFragment.apply)

@@ -1,6 +1,6 @@
 package io.iohk.cef.ledger.chimeric
 
-import io.iohk.cef.DatabaseTestSuites.withLedger
+import io.iohk.cef.test.DatabaseTestSuites.withLedger
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.crypto._
 import io.iohk.cef.ledger._

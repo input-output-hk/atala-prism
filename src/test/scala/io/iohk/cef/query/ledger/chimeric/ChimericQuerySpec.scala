@@ -28,7 +28,7 @@ class ChimericQuerySpec extends FlatSpec with MustMatchers {
 
     val queryForCurrency = CreatedCurrency(currency)
     val queryForNotACurrency = CreatedCurrency(notACurrency)
-    Query.performer(queryForCurrency, engine) mustBe Some(CreateCurrency(currency))
+    Query.performer(queryForCurrency, engine) mustBe Some(CurrencyQuery(currency))
     Query.performer(queryForNotACurrency, engine) mustBe None
   }
 
@@ -82,7 +82,7 @@ class ChimericQuerySpec extends FlatSpec with MustMatchers {
 
     val queryWithResult = ChimericQuery.AddressNonce(addressWithNonce)
     val queryWithoutResult = ChimericQuery.AddressNonce(addressWithoutNonce)
-    Query.performer(queryWithResult, engine) mustBe Some(100)
+    Query.performer(queryWithResult, engine) mustBe Some(NonceResult(100))
     Query.performer(queryWithoutResult, engine) mustBe None
   }
 

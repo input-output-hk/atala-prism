@@ -8,12 +8,24 @@ import io.iohk.cef.frontend.models.{
   CreateSignableChimericTransactionFragment,
   SubmitChimericTransactionRequest
 }
-import io.iohk.cef.ledger.chimeric.SignatureTxFragment
+import io.iohk.cef.ledger.chimeric.{
+  TxOutRef,
+  UtxoResult,
+  AddressResult,
+  NonceResult,
+  SignatureTxFragment,
+  CurrencyQuery
+}
+import io.iohk.cef.query.ledger.chimeric._
+
 import io.iohk.cef.codecs.nio.auto._
 import scala.concurrent.{ExecutionContext, Future}
 import io.iohk.cef.ledger.chimeric.{ChimericStateResult, ChimericTx}
 
-class ChimericTransactionService(nodeTransactionService: NodeTransactionService[ChimericStateResult, ChimericTx])(
+class ChimericTransactionService(
+    nodeTransactionService: NodeTransactionService[ChimericStateResult, ChimericTx],
+    queryService: ChimericQueryService
+)(
     implicit ec: ExecutionContext
 ) {
 
@@ -39,5 +51,33 @@ class ChimericTransactionService(nodeTransactionService: NodeTransactionService[
 
     nodeTransactionService.receiveTransaction(envelope)
   }
+
+  def queryCreatedCurrency(currency: String): Response[Option[CurrencyQuery]] =
+    Future.successful(
+      Right(
+        queryService.perform(ChimericQuery.CreatedCurrency(currency))
+      )
+    )
+
+  def queryUtxoBalance(txOutRef: TxOutRef): Response[Option[UtxoResult]] =
+    Future.successful(
+      Right(
+        queryService.perform(ChimericQuery.UtxoBalance(txOutRef))
+      )
+    )
+
+  def queryAddressBalance(address: String): Response[Option[AddressResult]] =
+    Future.successful(
+      Right(
+        queryService.perform(ChimericQuery.AddressBalance(address))
+      )
+    )
+
+  def queryAddressNonce(address: String): Response[Option[NonceResult]] =
+    Future.successful(
+      Right(
+        queryService.perform(ChimericQuery.AddressNonce(address))
+      )
+    )
 
 }

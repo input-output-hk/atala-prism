@@ -1,4 +1,4 @@
-package io.iohk.cef.builder
+package io.iohk.cef.test.builder
 
 import akka.util.ByteString
 import io.iohk.cef.crypto._

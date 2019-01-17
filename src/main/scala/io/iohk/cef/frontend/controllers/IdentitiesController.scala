@@ -3,7 +3,7 @@ package io.iohk.cef.frontend.controllers
 import akka.http.scaladsl.model.StatusCodes
 import akka.stream.Materializer
 import com.alexitc.playsonify.models.{ErrorId, ServerError}
-import io.iohk.cef.LedgerId
+import io.iohk.cef.ledger.LedgerId
 import io.iohk.cef.frontend.client.ServiceResponseExtensions
 import io.iohk.cef.frontend.controllers.common._
 import io.iohk.cef.frontend.models.{

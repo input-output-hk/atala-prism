@@ -11,6 +11,7 @@ scala_test(
     deps = [ "config",
              "//:cef",
              "//main/io/iohk/cef/codecs",
+             "//main/io/iohk/cef/ledger",
              "//main/io/iohk/cef/test",
              "//main/io/iohk/cef/network",
              "//main/io/iohk/cef/codecs/nio/test/utils",

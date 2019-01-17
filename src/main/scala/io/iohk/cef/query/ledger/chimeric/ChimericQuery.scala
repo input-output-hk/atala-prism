@@ -8,11 +8,11 @@ sealed trait ChimericQuery extends LedgerQuery[ChimericPartition]
 object ChimericQuery {
 
   case class CreatedCurrency(currency: Currency) extends ChimericQuery {
-    type Response = Option[CreateCurrency]
+    type Response = Option[CurrencyQuery]
 
     override protected def perform(queryEngine: ChimericQueryEngine): Response =
       queryEngine.get(ChimericLedgerState.getCurrencyPartitionId(currency)) match {
-        case Some(CreateCurrencyResult(currency)) => Some(currency)
+        case Some(CreateCurrencyResult(CreateCurrency(currency))) => Some(CurrencyQuery(currency))
         case _ => None
       }
   }
@@ -38,11 +38,11 @@ object ChimericQuery {
   }
 
   case class AddressNonce(address: Address) extends ChimericQuery {
-    type Response = Option[Int]
+    type Response = Option[NonceResult]
 
     override protected def perform(queryEngine: ChimericQueryEngine): Response =
       queryEngine.get(ChimericLedgerState.getAddressNoncePartitionId(address)) match {
-        case Some(NonceResult(nonce)) => Some(nonce)
+        case Some(nonce: NonceResult) => Some(nonce)
         case _ => None
       }
   }

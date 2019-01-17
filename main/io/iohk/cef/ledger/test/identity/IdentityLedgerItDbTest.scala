@@ -2,8 +2,8 @@ package io.iohk.cef.ledger.identity
 
 import java.time.Instant
 
-import io.iohk.cef.DatabaseTestSuites.withLedger
-import io.iohk.cef.builder.SigningKeyPairs._
+import io.iohk.cef.test.DatabaseTestSuites.withLedger
+import io.iohk.cef.test.builder.SigningKeyPairs._
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.ledger.{Block, BlockHeader}
 import org.scalatest.FlatSpec

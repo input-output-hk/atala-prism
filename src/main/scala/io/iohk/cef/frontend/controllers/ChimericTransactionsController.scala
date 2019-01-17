@@ -3,8 +3,16 @@ package io.iohk.cef.frontend.controllers
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
-import com.alexitc.playsonify.models.{ErrorId, ServerError}
-import io.iohk.cef.LedgerId
+import com.alexitc.playsonify.models.{
+  ErrorId,
+  ServerError,
+  NotFoundError,
+  InputValidationError,
+  PublicError,
+  FieldValidationError
+}
+import com.alexitc.playsonify.core.I18nService
+import io.iohk.cef.ledger.LedgerId
 import io.iohk.cef.frontend.client.ServiceResponseExtensions
 import io.iohk.cef.frontend.controllers.common._
 import io.iohk.cef.frontend.models.{
@@ -13,9 +21,11 @@ import io.iohk.cef.frontend.models.{
   SubmitChimericTransactionRequest
 }
 import io.iohk.cef.frontend.services.ChimericTransactionService
-import io.iohk.cef.ledger.chimeric.ChimericTx
-
-import scala.concurrent.ExecutionContext
+import io.iohk.cef.ledger.chimeric.{TxOutRef, ChimericTx, Address}
+import play.api.libs.json._
+import org.scalactic.{Bad, Good, Every}
+import scala.concurrent.{Future, ExecutionContext}
+import io.iohk.cef.frontend.models.PlayJsonFormatForEncodingFormat
 
 class ChimericTransactionsController(service: ChimericTransactionService)(
     implicit ec: ExecutionContext,
@@ -27,30 +37,110 @@ class ChimericTransactionsController(service: ChimericTransactionService)(
   import Context._
 
   lazy val routes: Route = {
-    path("chimeric-transactions") {
-      post {
-        publicInput(StatusCodes.Created) { ctx: HasModel[CreateChimericTransactionRequest] =>
-          val result = for {
-            createResult <- service.createChimericTransaction(ctx.model).onFor
-
-            submitRequest = toSubmitRequest(createResult, ctx.model.ledgerId)
-            _ <- service.submitChimericTransaction(submitRequest).onFor
-          } yield createResult
-
-          // The actual method call never fails but the type system says it could, we need this to be able to compile
-          fromFutureEither(result.res, ChimericTransactionCreationError())
+    path("chimeric-transactions" / "currencies" / Segment) { currency =>
+      get {
+        public { _ =>
+          service.queryCreatedCurrency(currency).map {
+            case Right(Some(c)) => Good(Json.toJson(c))
+            case Right(None) => Bad(Every(CurrencyNotFound(currency)))
+            case Left(_) => Bad(Every(QueryCreatedCurrencyError))
+          }
         }
       }
-    }
+    } ~
+      path("chimeric-transactions" / "utxos" / Segment / "balance") { txOutRefCandidate =>
+        get {
+          public { _ =>
+            TxOutRef.parse(txOutRefCandidate) match {
+              case None => Future.successful(Bad(Every(InvalidTxOutRef(txOutRefCandidate))))
+              case Some(txOutRef) =>
+                service.queryUtxoBalance(txOutRef).map {
+                  case Right(Some(response)) => Good(response)
+                  case Right(None) => Bad(Every(TxOutRefNotFound(txOutRef)))
+                  case Left(_) => Bad(Every(QueryUtxoBalanceError))
+                }
+            }
+          }
+        }
+      } ~
+      path("chimeric-transactions" / "addresses" / Segment / "balance") { address =>
+        get {
+          public { _ =>
+            service.queryAddressBalance(address).map {
+              case Right(Some(response)) => Good(response)
+              case Right(None) => Bad(Every(AddressNotFound(address)))
+              case Left(_) => Bad(Every(QueryAddressBalanceError))
+            }
+          }
+        }
+      } ~
+      path("chimeric-transactions" / "addresses" / Segment / "nonce") { address =>
+        get {
+          public { _ =>
+            service.queryAddressNonce(address).map {
+              case Right(Some(response)) => Good(Json.toJson(response))
+              case Right(None) => Bad(Every(AddressNotFound(address)))
+              case Left(_) => Bad(Every(QueryAddressNonceError))
+            }
+          }
+        }
+      } ~
+      path("chimeric-transactions") {
+        post {
+          publicInput(StatusCodes.Created) { ctx: HasModel[CreateChimericTransactionRequest] =>
+            val result = for {
+              createResult <- service.createChimericTransaction(ctx.model).onFor
+
+              submitRequest = toSubmitRequest(createResult, ctx.model.ledgerId)
+              _ <- service.submitChimericTransaction(submitRequest).onFor
+            } yield createResult
+
+            // The actual method call never fails but the type system says it could, we need this to be able to compile
+            fromFutureEither(result.res, ChimericTransactionCreationError)
+          }
+        }
+      }
   }
 }
 
 object ChimericTransactionsController {
 
-  final case class ChimericTransactionCreationError(id: ErrorId = ErrorId.create) extends ServerError {
-
+  trait SimpleInternalServerError extends ServerError {
+    override val id: ErrorId = ErrorId.create
     override def cause: Option[Throwable] = None
+  }
 
+  final case object ChimericTransactionCreationError extends SimpleInternalServerError
+  final case object QueryCreatedCurrencyError extends SimpleInternalServerError
+  final case object QueryUtxoBalanceError extends SimpleInternalServerError
+  final case object QueryAddressBalanceError extends SimpleInternalServerError
+  final case object QueryAddressNonceError extends SimpleInternalServerError
+
+  private def notFound(field: String): List[PublicError] = {
+    val message = s"No results found"
+    List(FieldValidationError(field, message))
+  }
+
+  final case class CurrencyNotFound(missingCurrency: String) extends NotFoundError {
+    override def toPublicErrorList[L](i18nService: I18nService[L])(implicit lang: L): List[PublicError] =
+      notFound("currency")
+  }
+
+  final case class TxOutRefNotFound(missingTxOutRef: TxOutRef) extends NotFoundError {
+    override def toPublicErrorList[L](i18nService: I18nService[L])(implicit lang: L): List[PublicError] =
+      notFound("utxo")
+  }
+
+  final case class AddressNotFound(missingAddress: Address) extends NotFoundError {
+    override def toPublicErrorList[L](i18nService: I18nService[L])(implicit lang: L): List[PublicError] =
+      notFound("address")
+  }
+
+  final case class InvalidTxOutRef(txOutRefCandidate: String) extends InputValidationError {
+    override def toPublicErrorList[L](i18nService: I18nService[L])(implicit lang: L): List[PublicError] = {
+      val error = FieldValidationError("txOutRef", "The txOutRef should be formatted as 'transactionID(index)'")
+      List(error)
+    }
   }
 
   private def toSubmitRequest(ct: ChimericTx, ledgerId: LedgerId): SubmitChimericTransactionRequest = {
@@ -60,4 +150,5 @@ object ChimericTransactionsController {
 
     SubmitChimericTransactionRequest(fragments = fragments, ledgerId = ledgerId)
   }
+
 }
