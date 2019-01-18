@@ -1,7 +1,7 @@
 package io.iohk.cef.frontend.models
 
-import spray.json._
 import io.iohk.cef.ledger.chimeric._
+import play.api.libs.json._
 
 trait ChimericTxFragmentFormat {
 
@@ -23,16 +23,7 @@ trait ChimericTxFragmentFormat {
     *   Value(Map(USD -> 123))
     * }}}
     */
-  implicit object ValueJsonFormat extends JsonFormat[Value] {
-    override def read(json: JsValue): Value = {
-      val map = json.convertTo[Map[String, BigDecimal]]
-      Value(map)
-    }
-
-    override def write(obj: Value): JsValue = {
-      obj.iterator.toMap.toJson
-    }
-  }
+  implicit val valueJsonFormat = Json.format[Value]
 
   /**
     * {{{
@@ -52,36 +43,26 @@ trait ChimericTxFragmentFormat {
     *   TxOutRef(abc,456)
     * }}}
     */
-  implicit val TxOutRefJsonFormat: RootJsonFormat[TxOutRef] =
-    jsonFormat2(TxOutRef.apply)
+  implicit val TxOutRefJsonFormat: OFormat[TxOutRef] = Json.format
 
-  implicit val signatureTxFragmentJsonFormat: JsonFormat[SignatureTxFragment] =
-    jsonFormat1(SignatureTxFragment.apply)
+  implicit val SignatureTxFragmentJsonFormat: OFormat[SignatureTxFragment] = Json.format
 
-  implicit val WithdrawalJsonFormat: RootJsonFormat[Withdrawal] =
-    jsonFormat3(Withdrawal)
+  implicit val WithdrawalJsonFormat: OFormat[Withdrawal] = Json.format
 
-  implicit val MintJsonFormat: RootJsonFormat[Mint] =
-    jsonFormat1(Mint)
+  implicit val MintJsonFormat: OFormat[Mint] = Json.format
 
-  implicit val InputJsonFormat: RootJsonFormat[Input] =
-    jsonFormat2(Input)
+  implicit val InputJsonFormat: OFormat[Input] = Json.format
 
-  implicit val FeeJsonFormat: RootJsonFormat[Fee] =
-    jsonFormat1(Fee)
+  implicit val FeeJsonFormat: OFormat[Fee] = Json.format
 
-  implicit val OutputJsonFormat: RootJsonFormat[Output] =
-    jsonFormat2(Output)
+  implicit val OutputJsonFormat: OFormat[Output] = Json.format
 
-  implicit val DepositJsonFormat: RootJsonFormat[Deposit] =
-    jsonFormat3(Deposit)
+  implicit val DepositJsonFormat: OFormat[Deposit] = Json.format
 
-  implicit val CreateCurrencyJsonFormat: RootJsonFormat[CreateCurrency] =
-    jsonFormat1(CreateCurrency)
+  implicit val CreateCurrencyJsonFormat: OFormat[CreateCurrency] = Json.format
 
   protected case class HasTxFragmentType(`type`: ChimericTransactionFragmentType)
-  protected implicit val HasTxFragmentTypeJsonFormat: RootJsonFormat[HasTxFragmentType] =
-    jsonFormat1(HasTxFragmentType.apply _)
+  protected implicit val HasTxFragmentTypeJsonFormat: OFormat[HasTxFragmentType] = Json.format
 
   /**
     * {{{
@@ -102,37 +83,41 @@ trait ChimericTxFragmentFormat {
     *   Mint(Value(Map(USD -> 123)))
     * }}}
     */
-  implicit val ChimericTxFragmentJsonFormat: JsonFormat[ChimericTxFragment] =
-    new JsonFormat[ChimericTxFragment] {
-      override def read(json: JsValue): ChimericTxFragment = {
-        json.convertTo[HasTxFragmentType].`type` match {
-          case ChimericTransactionFragmentType.Withdrawal => json.convertTo[Withdrawal]
-          case ChimericTransactionFragmentType.Input => json.convertTo[Input]
-          case ChimericTransactionFragmentType.Mint => json.convertTo[Mint]
-          case ChimericTransactionFragmentType.Fee => json.convertTo[Fee]
-          case ChimericTransactionFragmentType.Output => json.convertTo[Output]
-          case ChimericTransactionFragmentType.Deposit => json.convertTo[Deposit]
-          case ChimericTransactionFragmentType.CreateCurrency => json.convertTo[CreateCurrency]
-          case ChimericTransactionFragmentType.SignatureTxFragment => json.convertTo[SignatureTxFragment]
-        }
-      }
+  implicit val ChimericTxFragmentJsonFormat: OFormat[ChimericTxFragment] =
+    new OFormat[ChimericTxFragment] {
+      override def reads(json: JsValue): JsResult[ChimericTxFragment] =
+        for {
+          hasValue <- HasTxFragmentTypeJsonFormat.reads(json)
+          result <- hasValue.`type` match {
+            case ChimericTransactionFragmentType.Withdrawal => WithdrawalJsonFormat.reads(json)
+            case ChimericTransactionFragmentType.Input => InputJsonFormat.reads(json)
+            case ChimericTransactionFragmentType.Mint => MintJsonFormat.reads(json)
+            case ChimericTransactionFragmentType.Fee => FeeJsonFormat.reads(json)
+            case ChimericTransactionFragmentType.Output => OutputJsonFormat.reads(json)
+            case ChimericTransactionFragmentType.Deposit => DepositJsonFormat.reads(json)
+            case ChimericTransactionFragmentType.CreateCurrency => CreateCurrencyJsonFormat.reads(json)
+            case ChimericTransactionFragmentType.SignatureTxFragment => SignatureTxFragmentJsonFormat.reads(json)
+          }
+        } yield result
 
-      override def write(obj: ChimericTxFragment): JsValue = {
+      override def writes(obj: ChimericTxFragment): JsObject = {
         val `type` = ChimericTransactionFragmentType.of(obj)
         val json = obj match {
-          case f: Withdrawal => f.toJson
-          case f: Mint => f.toJson
-          case f: Input => f.toJson
-          case f: Fee => f.toJson
-          case f: Output => f.toJson
-          case f: Deposit => f.toJson
-          case f: CreateCurrency => f.toJson
-          case f: SignatureTxFragment => f.toJson
+          case f: Withdrawal => WithdrawalJsonFormat.writes(f)
+          case f: Mint => MintJsonFormat.writes(f)
+          case f: Input => InputJsonFormat.writes(f)
+          case f: Fee => FeeJsonFormat.writes(f)
+          case f: Output => OutputJsonFormat.writes(f)
+          case f: Deposit => DepositJsonFormat.writes(f)
+          case f: CreateCurrency => CreateCurrencyJsonFormat.writes(f)
+          case f: SignatureTxFragment => SignatureTxFragmentJsonFormat.writes(f)
         }
 
         val part = HasTxFragmentType(`type`)
 
-        JsObject(json.asJsObject.fields ++ part.toJson.asJsObject.fields)
+        val baseObj = HasTxFragmentTypeJsonFormat.writes(part)
+
+        baseObj ++ json
       }
     }
 

@@ -8,9 +8,7 @@ sealed abstract class ChimericTransactionFragmentType extends EnumEntry
 sealed abstract class SignableChimericTransactionFragmentType extends ChimericTransactionFragmentType
 sealed abstract class NonSignableChimericTransactionFragmentType extends ChimericTransactionFragmentType
 
-object ChimericTransactionFragmentType
-    extends Enum[ChimericTransactionFragmentType]
-    with SprayJsonEnum[ChimericTransactionFragmentType] {
+object ChimericTransactionFragmentType extends Enum[ChimericTransactionFragmentType] {
 
   val values = findValues
 

@@ -3,39 +3,7 @@ package io.iohk.cef.frontend
 import io.iohk.cef.codecs.string._
 import scala.reflect._
 
-package object models extends Spray.Formats with PlayJson.Formats
-
-object Spray {
-
-  import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
-  import spray.json._
-
-  trait Formats extends DefaultJsonProtocol with SprayJsonSupport {
-
-    implicit def SprayJsonFormatForEncodingFormat[T](
-        implicit sf: JsonFormat[String],
-        es: Show[T],
-        ep: Parse[T],
-        ct: ClassTag[T]
-    ): JsonFormat[T] = new JsonFormat[T] {
-      override def read(json: JsValue): T = {
-        ep.decode(sf.read(json)) match {
-          case Some(t) =>
-            t
-          case None =>
-            val name = ct.runtimeClass.getSimpleName
-            // This is horrible, it throws an exception. Maybe use some other json library?
-            deserializationError(s"Error trying to convert '$json' into a '$name'")
-        }
-      }
-
-      override def write(t: T): JsValue =
-        sf.write(es.encode(t))
-    }
-
-  }
-
-}
+package object models extends PlayJson.Formats
 
 object PlayJson {
 

@@ -3,13 +3,15 @@ package io.iohk.cef.frontend.models
 import io.iohk.cef.ledger.LedgerId
 import io.iohk.cef.crypto._
 import io.iohk.cef.ledger.chimeric._
-import spray.json._
+import play.api.libs.json._
 
 trait ExtraJsonFormats extends ChimericTxFragmentFormat {
 
   protected case class HasSigningPrivateKey(signingPrivateKey: SigningPrivateKey)
-  protected implicit val HasSigningPrivateKeyJsonFormat: RootJsonFormat[HasSigningPrivateKey] =
-    jsonFormat1(HasSigningPrivateKey.apply)
+  protected implicit val HasSigningPrivateKeyJsonFormat: OFormat[HasSigningPrivateKey] = Json.format
+
+  protected case class CouldHaveSigningPrivateKey(signingPrivateKey: Option[SigningPrivateKey])
+  protected implicit val CouldHaveSigningPrivateKeyJsonFormat: OFormat[CouldHaveSigningPrivateKey] = Json.format
 
 }
 
@@ -46,26 +48,30 @@ sealed trait CreateChimericTransactionFragment {
 
 object CreateChimericTransactionFragment extends ExtraJsonFormats {
 
-  implicit val createChimericTransactionFragmentJsonFormat: JsonFormat[CreateChimericTransactionFragment] =
-    new JsonFormat[CreateChimericTransactionFragment] {
-      def read(json: JsValue): CreateChimericTransactionFragment = {
-        json.convertTo[ChimericTxFragment] match {
-          case s: SignableChimericTxFragment =>
-            val key = json.convertTo[HasSigningPrivateKey].signingPrivateKey
-            CreateSignableChimericTransactionFragment(s, key)
-          case n: NonSignableChimericTxFragment =>
-            CreateNonSignableChimericTransactionFragment(n)
-        }
-      }
+  implicit val createChimericTransactionFragmentJsonFormat: OFormat[CreateChimericTransactionFragment] =
+    new OFormat[CreateChimericTransactionFragment] {
+      def read(json: JsValue): JsResult[CreateChimericTransactionFragment] =
+        for {
+          fragment <- ChimericTxFragmentJsonFormat.reads(json)
+          keyOpt <- CouldHaveSigningPrivateKeyJsonFormat.reads(json)
+          result <- fragment match {
+            case s: SignableChimericTxFragment if keyOpt.signingPrivateKey.isDefined =>
+              CreateSignableChimericTransactionFragment(s, keyOpt.signingPrivateKey.get)
+            case _: SignableChimericTxFragment if keyOpt.signingPrivateKey.isEmpty =>
+              JsError(s"Missing signingPrivateKey")
+            case n: NonSignableChimericTxFragment =>
+              CreateNonSignableChimericTransactionFragment(n)
+          }
+        } yield result
 
-      def write(obj: CreateChimericTransactionFragment): JsValue = {
-        val part = obj.fragment.toJson
+      def write(obj: CreateChimericTransactionFragment): JsObject = {
+        val base = ChimericTxFragmentJsonFormat.writes(obj.fragment)
         obj match {
-          case n: CreateNonSignableChimericTransactionFragment =>
-            part
+          case _: CreateNonSignableChimericTransactionFragment =>
+            base
           case s: CreateSignableChimericTransactionFragment =>
-            val part2 = HasSigningPrivateKey(s.signingPrivateKey)
-            JsObject(part.asJsObject.fields ++ part2.toJson.asJsObject.fields)
+            val signature = HasSigningPrivateKeyJsonFormat.writes(HasSigningPrivateKey(s.signingPrivateKey))
+            base ++ signature
         }
       }
     }
@@ -106,8 +112,7 @@ case class CreateChimericTransactionRequest(fragments: Seq[CreateChimericTransac
 
 object CreateChimericTransactionRequest extends ExtraJsonFormats {
 
-  implicit val createChimericTransactionRequestJsonFormat: RootJsonFormat[CreateChimericTransactionRequest] =
-    jsonFormat2(CreateChimericTransactionRequest.apply)
+  implicit val createChimericTransactionRequestJsonFormat: OFormat[CreateChimericTransactionRequest] = Json.format
 
 }
 
@@ -118,15 +123,14 @@ case class SubmitChimericTransactionFragment(fragment: ChimericTxFragment) {
 case class SubmitChimericTransactionRequest(fragments: Seq[SubmitChimericTransactionFragment], ledgerId: LedgerId)
 
 object ChimericTransactionRequest extends ExtraJsonFormats {
-  implicit val submitChimericTransactionFragmentJsonFormat: JsonFormat[SubmitChimericTransactionFragment] =
-    new JsonFormat[SubmitChimericTransactionFragment] {
-      def read(json: JsValue): SubmitChimericTransactionFragment =
+  implicit val submitChimericTransactionFragmentJsonFormat: OFormat[SubmitChimericTransactionFragment] =
+    new OFormat[SubmitChimericTransactionFragment] {
+      def reads(json: JsValue): JsResult[SubmitChimericTransactionFragment] =
         SubmitChimericTransactionFragment(json.convertTo[ChimericTxFragment])
 
-      def write(obj: SubmitChimericTransactionFragment): JsValue =
+      def writes(obj: SubmitChimericTransactionFragment): JsValue =
         obj.fragment.toJson
     }
 
-  implicit val submitChimericTransactionRequestJsonFormat: RootJsonFormat[SubmitChimericTransactionRequest] =
-    jsonFormat2(SubmitChimericTransactionRequest.apply)
+  implicit val submitChimericTransactionRequestJsonFormat: OFormat[SubmitChimericTransactionRequest] = Json.format
 }
