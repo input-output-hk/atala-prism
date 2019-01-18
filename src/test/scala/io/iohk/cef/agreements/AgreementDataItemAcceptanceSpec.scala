@@ -4,7 +4,8 @@ import io.iohk.cef.agreements.AgreementFixture._
 import io.iohk.cef.agreements.AgreementsMessage.Propose
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.crypto._
-import io.iohk.cef.data.{DataItem, NonEmptyList, Owner, Witness}
+import io.iohk.cef.utils.NonEmptyList
+import io.iohk.cef.data.{DataItem, Owner, Witness}
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 import org.scalatest.concurrent.ScalaFutures.{PatienceConfig, whenReady}
