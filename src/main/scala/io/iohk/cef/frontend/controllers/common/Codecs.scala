@@ -15,7 +15,8 @@ import io.iohk.cef.data.query.Value.{
   StringRef
 }
 import io.iohk.cef.data.query.{DataItemQuery, Field, Value => ValueRef}
-import io.iohk.cef.data.{NonEmptyList, _}
+import io.iohk.cef.utils.NonEmptyList
+import io.iohk.cef.data._
 import io.iohk.cef.frontend.PlayJson
 import io.iohk.cef.frontend.models._
 import io.iohk.cef.ledger.chimeric._
