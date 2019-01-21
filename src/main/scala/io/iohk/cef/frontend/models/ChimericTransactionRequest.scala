@@ -50,21 +50,21 @@ object CreateChimericTransactionFragment extends ExtraJsonFormats {
 
   implicit val createChimericTransactionFragmentJsonFormat: OFormat[CreateChimericTransactionFragment] =
     new OFormat[CreateChimericTransactionFragment] {
-      def read(json: JsValue): JsResult[CreateChimericTransactionFragment] =
+      override def reads(json: JsValue): JsResult[CreateChimericTransactionFragment] =
         for {
           fragment <- ChimericTxFragmentJsonFormat.reads(json)
           keyOpt <- CouldHaveSigningPrivateKeyJsonFormat.reads(json)
           result <- fragment match {
             case s: SignableChimericTxFragment if keyOpt.signingPrivateKey.isDefined =>
-              CreateSignableChimericTransactionFragment(s, keyOpt.signingPrivateKey.get)
+              JsSuccess(CreateSignableChimericTransactionFragment(s, keyOpt.signingPrivateKey.get))
             case _: SignableChimericTxFragment if keyOpt.signingPrivateKey.isEmpty =>
               JsError(s"Missing signingPrivateKey")
             case n: NonSignableChimericTxFragment =>
-              CreateNonSignableChimericTransactionFragment(n)
+              JsSuccess(CreateNonSignableChimericTransactionFragment(n))
           }
         } yield result
 
-      def write(obj: CreateChimericTransactionFragment): JsObject = {
+      override def writes(obj: CreateChimericTransactionFragment): JsObject = {
         val base = ChimericTxFragmentJsonFormat.writes(obj.fragment)
         obj match {
           case _: CreateNonSignableChimericTransactionFragment =>
@@ -125,11 +125,13 @@ case class SubmitChimericTransactionRequest(fragments: Seq[SubmitChimericTransac
 object ChimericTransactionRequest extends ExtraJsonFormats {
   implicit val submitChimericTransactionFragmentJsonFormat: OFormat[SubmitChimericTransactionFragment] =
     new OFormat[SubmitChimericTransactionFragment] {
-      def reads(json: JsValue): JsResult[SubmitChimericTransactionFragment] =
-        SubmitChimericTransactionFragment(json.convertTo[ChimericTxFragment])
+      override def reads(json: JsValue): JsResult[SubmitChimericTransactionFragment] =
+        for {
+          fragment <- ChimericTxFragmentJsonFormat.reads(json)
+        } yield SubmitChimericTransactionFragment(fragment)
 
-      def writes(obj: SubmitChimericTransactionFragment): JsValue =
-        obj.fragment.toJson
+      override def writes(obj: SubmitChimericTransactionFragment): JsObject =
+        ChimericTxFragmentJsonFormat.writes(obj.fragment)
     }
 
   implicit val submitChimericTransactionRequestJsonFormat: OFormat[SubmitChimericTransactionRequest] = Json.format

@@ -4,6 +4,7 @@ import io.iohk.cef.ledger.chimeric._
 import io.iohk.cef.crypto._
 import org.scalatest.{MustMatchers, WordSpec}
 import io.iohk.cef.codecs.nio.auto._
+import play.api.libs.json.Json
 
 class ChimericTransactionRequestSpec extends WordSpec with MustMatchers {
 
@@ -30,8 +31,8 @@ class ChimericTransactionRequestSpec extends WordSpec with MustMatchers {
         CreateNonSignableChimericTransactionFragment(SignatureTxFragment(sign("foo", signingKeyPair.`private`)))
       )
       val request = CreateChimericTransactionRequest(fragments, "1")
-      val serialized = request.toJson
-      val deserialized = serialized.convertTo[CreateChimericTransactionRequest]
+      val serialized = Json.toJson(request)
+      val deserialized = Json.parse(serialized.toString())
 
       deserialized mustEqual request
     }

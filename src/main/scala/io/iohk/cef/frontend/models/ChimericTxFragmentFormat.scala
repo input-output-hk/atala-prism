@@ -61,6 +61,24 @@ trait ChimericTxFragmentFormat {
 
   implicit val CreateCurrencyJsonFormat: OFormat[CreateCurrency] = Json.format
 
+  case class ChimericTransactionFragmentTypeHolder(fragmentType: String)
+  implicit val ChimericTransactionFragmentTypeHolderFormat: OFormat[ChimericTransactionFragmentTypeHolder] = Json.format
+
+  implicit val ChimericTransactionFragmentTypeFormat: OFormat[ChimericTransactionFragmentType] =
+    new OFormat[ChimericTransactionFragmentType] {
+      val variableName = "fragmentType"
+      override def writes(o: ChimericTransactionFragmentType): JsObject = {
+        JsObject(Map("fragmentType" -> JsString(o.entryName)))
+      }
+
+      override def reads(json: JsValue): JsResult[ChimericTransactionFragmentType] =
+        for {
+          entryName <- json.validate[ChimericTransactionFragmentTypeHolder]
+          value = ChimericTransactionFragmentType.namesToValuesMap.get(entryName.fragmentType)
+          result <- value.map(tpe => JsSuccess(tpe)).getOrElse(JsError("Invalid ChimericTransactionFragmentType"))
+        } yield result
+    }
+
   protected case class HasTxFragmentType(`type`: ChimericTransactionFragmentType)
   protected implicit val HasTxFragmentTypeJsonFormat: OFormat[HasTxFragmentType] = Json.format
 
