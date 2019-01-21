@@ -3,7 +3,7 @@ package io.iohk.cef.frontend.controllers
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import io.iohk.cef.agreements.AgreementsService
-import io.iohk.cef.data.NonEmptyList
+import io.iohk.cef.utils.NonEmptyList
 import io.iohk.cef.frontend.controllers.common.CustomJsonController
 import org.scalactic.Good
 import play.api.libs.json.{JsObject, Json, Reads}

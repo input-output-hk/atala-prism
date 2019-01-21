@@ -8,10 +8,11 @@ import io.iohk.cef.crypto._
 import io.iohk.cef.data.DataItemAction.InsertAction
 import io.iohk.cef.data.DataItemServiceResponse.DIUnit
 import io.iohk.cef.data._
-import io.iohk.cef.data.query.{Field, DataItemQueryEngine, DataItemQueryRequest, DataItemQueryResponse}
+import io.iohk.cef.data.query.{DataItemQueryEngine, DataItemQueryRequest, DataItemQueryResponse, Field}
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.network.{Network, NetworkFixture}
 import io.iohk.cef.transactionservice.{DestinationDescriptor, Envelope, Everyone}
+import io.iohk.cef.utils.NonEmptyList
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar

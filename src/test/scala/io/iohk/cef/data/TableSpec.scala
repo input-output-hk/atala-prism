@@ -4,6 +4,7 @@ import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.crypto._
 import io.iohk.cef.data.error.InvalidSignaturesError
 import io.iohk.cef.data.storage.DummyTableStorage
+import io.iohk.cef.utils.NonEmptyList
 import org.scalatest.EitherValues._
 import org.scalatest.MustMatchers._
 import org.scalatest.WordSpec

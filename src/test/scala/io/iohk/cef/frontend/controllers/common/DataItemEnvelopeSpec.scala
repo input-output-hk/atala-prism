@@ -5,6 +5,7 @@ import io.iohk.cef.crypto._
 import io.iohk.cef.data._
 import io.iohk.cef.network.NodeId
 import io.iohk.cef.transactionservice._
+import io.iohk.cef.utils.NonEmptyList
 import org.scalatest.{MustMatchers, WordSpec}
 import play.api.libs.json.{Format, Json}
 
