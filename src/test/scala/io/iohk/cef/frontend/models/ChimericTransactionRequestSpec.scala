@@ -32,9 +32,11 @@ class ChimericTransactionRequestSpec extends WordSpec with MustMatchers {
       )
       val request = CreateChimericTransactionRequest(fragments, "1")
       val serialized = Json.toJson(request)
-      val deserialized = Json.parse(serialized.toString())
+      val deserialized = serialized.validate[CreateChimericTransactionRequest]
 
-      deserialized mustEqual request
+      deserialized.isSuccess mustBe true
+
+      deserialized.get mustEqual request
     }
   }
 }
