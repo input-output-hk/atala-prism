@@ -60,7 +60,7 @@ class AgreementChimericAcceptanceSpec extends FlatSpec {
     // when
     val bobsAgreement: Future[Agree[ChimericTx]] =
       alice.agreementsService.agreementEvents.map(_.asInstanceOf[Agree[ChimericTx]]).head()
-    alice.agreementsService.propose("correlation-id", tx, List(bob.nodeId))
+    alice.agreementsService.propose("correlation-id", tx, Set(bob.nodeId))
 
     whenReady(bobsAgreement) { agreement =>
       val signatureFragments = agreement.data.fragments.collect { case s: SignatureTxFragment => s }

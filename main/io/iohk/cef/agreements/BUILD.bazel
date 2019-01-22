@@ -28,5 +28,6 @@ scala_test(
         "//main/io/iohk/cef/network",
         "//main/io/iohk/cef/network:tests",
         "//main/io/iohk/cef/test",
+        "//3rdparty/jvm/io/monix",
     ],
 )
