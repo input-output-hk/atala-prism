@@ -15,7 +15,6 @@ import io.iohk.cef.transactionservice.{Envelope, NodeTransactionService}
 import org.slf4j.Logger
 
 import scala.concurrent.ExecutionContext
-import scala.concurrent.duration.DurationLong
 import scala.reflect.runtime.universe._
 
 private[config] class TransactionServiceBuilder(
@@ -81,7 +80,11 @@ private[config] class TransactionServiceBuilder(
 
     val consensus = new RaftConsensusInterface[State, Tx](cefConfig.ledgerConfig.id, raftConsensus)
 
-    val _ = new BlockCreator(txPool, consensus, 10.seconds, 20.seconds)
+    val _ = new BlockCreator(
+      txPool,
+      consensus,
+      cefConfig.ledgerConfig.blockCreatorInitialDelay,
+      cefConfig.ledgerConfig.blockCreatorInterval)
 
     Map(cefConfig.ledgerConfig.id -> (txPool, consensus))
   }
