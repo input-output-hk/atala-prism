@@ -12,8 +12,8 @@ import org.scalatest.MustMatchers._
 import org.scalatest.WordSpec
 import org.scalatest.mockito.MockitoSugar._
 import play.api.libs.json.{Format, Json}
-import org.mockito.Mockito.when
 import org.mockito.ArgumentMatchers._
+import org.mockito.Mockito
 
 class AgreementsGenericControllerSpec extends WordSpec with ScalatestRouteTest with PlayJsonSupport {
 
@@ -88,31 +88,22 @@ class AgreementsGenericControllerSpec extends WordSpec with ScalatestRouteTest w
         status must ===(StatusCodes.OK)
       }
     }
+  }
+
+  "POST /agreements/whatever/agree" should {
     "reject an unknown correlation id" in {
-      def dummyAgreementService[T]: AgreementsService[T] = mock[AgreementsService[T]]
-      val routes = controller.routes("certificates", dummyAgreementService[DataItem[Certificate]])
-      val certificate = Certificate("certificateId", "2019/Jan/01")
-      val signature = sign(certificate, keys.`private`)
-      when(dummyAgreementService.agree(any(), any())).thenThrow(new IllegalArgumentException("exception"))
+      def dummyAgreementService = mock[AgreementsService[String]]
+      val routes = controller.routes("generic", dummyAgreementService)
+      Mockito.doThrow(new IllegalArgumentException("exception")).when(dummyAgreementService).agree(any(), any())
       val body =
         s"""
            |{
            |  "correlationId": "agreementId",
-           |  "data": {
-           |    "id": "itemId",
-           |    "data": ${Json.toJson(certificate)},
-           |    "witnesses": [],
-           |    "owners": [
-           |      {
-           |        "key": "${keys.public.toCompactString()}",
-           |        "signature": "${signature.toCompactString()}"
-           |      }
-           |    ]
-           |  }
+           |  "data": "test"
            |}
         """.stripMargin
 
-      val request = Post("/agreements/certificates/agree", HttpEntity(ContentTypes.`application/json`, body))
+      val request = Post("/agreements/generic/agree", HttpEntity(ContentTypes.`application/json`, body))
 
       request ~> routes ~> check {
         status must ===(StatusCodes.BadRequest)
