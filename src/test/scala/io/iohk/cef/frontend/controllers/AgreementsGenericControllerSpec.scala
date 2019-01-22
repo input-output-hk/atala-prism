@@ -104,7 +104,7 @@ class AgreementsGenericControllerSpec extends WordSpec with ScalatestRouteTest w
         override def decline(correlationId: String): Unit = ???
 
         override val agreementEvents: MessageStream[AgreementMessage[String]] =
-          new DummyMessageStream(Observable.empty)(new TestScheduler())
+          new DummyMessageStream(Observable.empty)(TestScheduler())
       }
       val routes = controller.routes("generic", dummyAgreementService)
       val body =
