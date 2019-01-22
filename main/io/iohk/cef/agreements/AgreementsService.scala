@@ -33,6 +33,7 @@ class AgreementsService[T](network: ConversationalNetwork[AgreementMessage[T]]) 
   // return an Agreement to the proposer containing the data agreed to
   // (NB: this might be different to the data in the proposal
   def agree(correlationId: String, data: T): Unit = {
+    require(proposalsReceived.contains(correlationId), s"Unknown correlationId '${correlationId}'.")
     val proposal = proposalReceived(correlationId)
     try {
       network.sendMessage(proposal.proposedBy, Agree(correlationId, userId, data))

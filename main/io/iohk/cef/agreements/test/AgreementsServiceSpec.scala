@@ -77,7 +77,7 @@ class AgreementsServiceSpec extends FlatSpec {
     val exception = the[IllegalArgumentException] thrownBy alice.agreementsService.agree("foo", "anything")
 
     // then
-    exception.getMessage shouldBe "Unknown correlationId 'foo'."
+    exception.getMessage shouldBe "requirement failed: Unknown correlationId 'foo'."
   }
 
   it should "throw when declining a non-existent proposal" in forTwoArbitraryAgreementPeers[String] { (alice, _) =>
