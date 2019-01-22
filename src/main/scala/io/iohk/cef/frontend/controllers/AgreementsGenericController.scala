@@ -29,7 +29,7 @@ class AgreementsGenericController(implicit ec: ExecutionContext, mat: Materializ
         path("propose") {
           post {
             publicInput { ctx: HasModel[ProposeRequest[T]] =>
-              Future { service.propose(ctx.model.correlationId, ctx.model.data, ctx.model.to) }
+              Future { service.propose(ctx.model.correlationId, ctx.model.data, ctx.model.to.toSet) }
                 .map(_ => Good(JsObject.empty))
             }
           }

@@ -48,7 +48,7 @@ class AgreementDataItemAcceptanceSpec extends FlatSpec {
       // when
       val collation: Future[DataItem[String]] =
         alice.agreementsService.agreementEvents.take(2).fold(dataItem)(collateSignatures)
-      alice.agreementsService.propose("correlation-id", dataItem, List(bob.nodeId, charlie.nodeId))
+      alice.agreementsService.propose("correlation-id", dataItem, Set(bob.nodeId, charlie.nodeId))
 
       // then
       whenReady(collation) { agreedDataItem =>
