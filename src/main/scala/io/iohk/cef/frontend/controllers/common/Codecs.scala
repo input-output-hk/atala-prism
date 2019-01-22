@@ -269,7 +269,7 @@ object Codecs extends PlayJson.Formats with LowerPriorityCodecs {
     }
 
   implicit lazy val createNonSignableChimericTransactionFragmentFormat
-    : Format[CreateNonSignableChimericTransactionFragment] = Json.format[CreateNonSignableChimericTransactionFragment]
+      : Format[CreateNonSignableChimericTransactionFragment] = Json.format[CreateNonSignableChimericTransactionFragment]
 
   implicit lazy val createSignableChimericTransactionFragmentFormat: Format[CreateSignableChimericTransactionFragment] =
     Json.format[CreateSignableChimericTransactionFragment]
