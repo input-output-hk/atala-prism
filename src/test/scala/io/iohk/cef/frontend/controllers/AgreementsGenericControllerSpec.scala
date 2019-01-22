@@ -3,11 +3,12 @@ package io.iohk.cef.frontend.controllers
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
-import io.iohk.cef.agreements.{AgreementsService, UserId}
+import io.iohk.cef.agreements.{AgreementMessage, AgreementsService, UserId}
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.crypto._
 import io.iohk.cef.data.DataItem
 import io.iohk.cef.ledger.chimeric.{ChimericTx, CreateCurrency}
+import io.iohk.cef.network.MessageStream
 import org.scalatest.MustMatchers._
 import org.scalatest.WordSpec
 import org.scalatest.mockito.MockitoSugar._
@@ -98,6 +99,8 @@ class AgreementsGenericControllerSpec extends WordSpec with ScalatestRouteTest w
         }
 
         override def decline(correlationId: String): Unit = ???
+
+        override val agreementEvents: MessageStream[AgreementMessage[String]] = ???
       }
       val routes = controller.routes("generic", dummyAgreementService)
       val body =
