@@ -3,7 +3,7 @@ package io.iohk.cef.frontend.controllers
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
-import io.iohk.cef.agreements.AgreementsService
+import io.iohk.cef.agreements.{AgreementsService, UserId}
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.crypto._
 import io.iohk.cef.data.DataItem
@@ -12,8 +12,6 @@ import org.scalatest.MustMatchers._
 import org.scalatest.WordSpec
 import org.scalatest.mockito.MockitoSugar._
 import play.api.libs.json.{Format, Json}
-import org.mockito.ArgumentMatchers._
-import org.mockito.Mockito
 
 class AgreementsGenericControllerSpec extends WordSpec with ScalatestRouteTest with PlayJsonSupport {
 
@@ -92,9 +90,16 @@ class AgreementsGenericControllerSpec extends WordSpec with ScalatestRouteTest w
 
   "POST /agreements/whatever/agree" should {
     "reject an unknown correlation id" in {
-      def dummyAgreementService = mock[AgreementsService[String]]
+      def dummyAgreementService: AgreementsService[String] = new AgreementsService[String] {
+        override def propose(correlationId: String, data: String, to: List[UserId]): Unit = ???
+
+        override def agree(correlationId: String, data: String): Unit = {
+          throw new IllegalArgumentException("exception")
+        }
+
+        override def decline(correlationId: String): Unit = ???
+      }
       val routes = controller.routes("generic", dummyAgreementService)
-      Mockito.doThrow(new IllegalArgumentException("exception")).when(dummyAgreementService).agree(any(), any())
       val body =
         s"""
            |{
