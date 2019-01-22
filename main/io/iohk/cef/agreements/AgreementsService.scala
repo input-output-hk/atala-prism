@@ -25,6 +25,8 @@ class AgreementsService[T](network: ConversationalNetwork[AgreementMessage[T]]) 
   // Send agreement to a list of userId who you wish to agree something
   // Successful execution should guarantee that all parties have received the Proposal.
   def propose(correlationId: String, data: T, to: List[UserId]): Unit = {
+    //No duplicated users
+    require(to.toSet.size == to.size, "Recipient list ('to') cannot have duplicated users")
     val proposal = Propose(correlationId, userId, data)
     to.foreach(recipient => network.sendMessage(recipient, proposal))
   }
