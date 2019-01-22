@@ -180,7 +180,8 @@ class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
         "two",
         "one"
       ),
-      bob.`private`)
+      bob.`private`
+    )
 
     val newStateEither = endorse(state)
     val newState = newStateEither.right.value
@@ -197,7 +198,8 @@ class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
         "two",
         "one"
       ),
-      bob.`private`)
+      bob.`private`
+    )
 
     val result = transaction(state).left.value
     result mustBe UnknownEndorsedIdentityError("one")
@@ -211,7 +213,8 @@ class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
         "three",
         "two"
       ),
-      bob.`private`)
+      bob.`private`
+    )
 
     val result = transaction(state).left.value
     result mustBe UnknownEndorserIdentityError("three")

@@ -109,7 +109,8 @@ object Link {
   def apply(
       data: LinkData,
       identityPrivateKey: SigningPrivateKey,
-      providedKeyPrivateCounterpart: SigningPrivateKey): Link =
+      providedKeyPrivateCounterpart: SigningPrivateKey
+  ): Link =
     Link(data, signBytes(data, identityPrivateKey), signBytes(data, providedKeyPrivateCounterpart))
 }
 
@@ -249,7 +250,8 @@ object Grant {
   def apply(
       data: GrantData,
       grantingIdentityPrivateKey: SigningPrivateKey,
-      grantedIdentityPrivateKey: SigningPrivateKey): Grant = {
+      grantedIdentityPrivateKey: SigningPrivateKey
+  ): Grant = {
     val grantSignature = signBytes(data, grantingIdentityPrivateKey)
     val claimSignature = signBytes(data.underlyingClaimData, grantedIdentityPrivateKey)
     val endorseSignature = signBytes(data.underlyingEndorseData, grantingIdentityPrivateKey)
@@ -344,7 +346,8 @@ object LinkCertificate {
   def apply(
       data: LinkCertificateData,
       existingKey: SigningPrivateKey,
-      certificateKey: SigningPrivateKey): LinkCertificate = {
+      certificateKey: SigningPrivateKey
+  ): LinkCertificate = {
     LinkCertificate(
       data = data,
       signature = signBytes(data, existingKey),
