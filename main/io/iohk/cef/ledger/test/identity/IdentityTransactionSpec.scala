@@ -21,10 +21,10 @@ class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
 
   it should "throw an error when the tx is inconsistent with the state" in {
     val state = IdentityLedgerState(Map("one" -> IdentityData.forKeys(alice.public)))
-    val claim = aliceClaimData("one").toTransaction(alice.`private`)
-    val link = bobLinkData("two").toTransaction(bob.`private`, carlos.`private`)
-    val unlink1 = bobUnlinkData("one").toTransaction(alice.`private`)
-    val unlink2 = bobUnlinkData("two").toTransaction(bob.`private`)
+    val claim = Claim(aliceClaimData("one"), alice.`private`)
+    val link = Link(bobLinkData("two"), bob.`private`, carlos.`private`)
+    val unlink1 = Unlink(bobUnlinkData("one"), alice.`private`)
+    val unlink2 = Unlink(bobUnlinkData("two"), bob.`private`)
 
     claim(state).left.value mustBe IdentityTakenError("one")
     link(state).left.value mustBe IdentityNotClaimedError("two")
@@ -34,7 +34,7 @@ class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
 
   it should "apply a claim" in {
     val state = IdentityLedgerState()
-    val claim = aliceClaimData("one").toTransaction(alice.`private`)
+    val claim = Claim(aliceClaimData("one"), alice.`private`)
     val newStateEither = claim(state)
 
     val newState = newStateEither.right.value
@@ -46,7 +46,7 @@ class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
 
   it should "apply a link" in {
     val state = IdentityLedgerState(Map("one" -> IdentityData.forKeys(alice.public)))
-    val link = bobLinkData("one").toTransaction(alice.`private`, bob.`private`)
+    val link = Link(bobLinkData("one"), alice.`private`, bob.`private`)
 
     val newStateEither = link(state)
 
@@ -59,7 +59,7 @@ class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
 
   it should "fail to apply a claim if the signature can not be verified" in {
     val state = IdentityLedgerState(Map.empty)
-    val transaction = aliceClaimData("one").toTransaction(bob.`private`)
+    val transaction = Claim(aliceClaimData("one"), bob.`private`)
 
     val result = transaction(state).left.value
     result mustBe UnableToVerifySignatureError
@@ -67,7 +67,7 @@ class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
 
   it should "fail to apply a link if the signature can not be verified" in {
     val state = IdentityLedgerState(Map("one" -> IdentityData.forKeys(alice.public)))
-    val link = bobLinkData("one").toTransaction(bob.`private`, bob.`private`)
+    val link = Link(bobLinkData("one"), bob.`private`, bob.`private`)
 
     val result = link(state).left.value
     result mustBe UnableToVerifySignatureError
@@ -75,7 +75,7 @@ class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
 
   it should "fail to apply a link if the link identity signature can not be verified" in {
     val state = IdentityLedgerState(Map("one" -> IdentityData.forKeys(alice.public)))
-    val link = bobLinkData("one").toTransaction(alice.`private`, alice.`private`)
+    val link = Link(bobLinkData("one"), alice.`private`, alice.`private`)
 
     val result = link(state).left.value
     result mustBe UnableToVerifyLinkingIdentitySignatureError("one", bob.public)
@@ -83,7 +83,7 @@ class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
 
   it should "fail to apply an unlink if the signature can not be verified" in {
     val state = IdentityLedgerState(Map("one" -> IdentityData.forKeys(alice.public)))
-    val transaction = aliceUnlinkData("one").toTransaction(bob.`private`)
+    val transaction = Unlink(aliceUnlinkData("one"), bob.`private`)
 
     val result = transaction(state).left.value
     result mustBe UnableToVerifySignatureError
@@ -91,8 +91,8 @@ class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
 
   it should "apply an unlink" in {
     val state = IdentityLedgerState(Map("one" -> IdentityData.forKeys(daniel.public, alice.public)))
-    val unlink1 = danielUnlinkData("one").toTransaction(daniel.`private`)
-    val unlink2 = aliceUnlinkData("one").toTransaction(alice.`private`)
+    val unlink1 = Unlink(danielUnlinkData("one"), daniel.`private`)
+    val unlink2 = Unlink(aliceUnlinkData("one"), alice.`private`)
     val stateAfter1 = unlink1(state).right.value
     val stateAfter2 = unlink2(stateAfter1).right.value
 
@@ -108,9 +108,9 @@ class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
   }
 
   it should "have the correct keys per tx" in {
-    val claim = aliceClaimData("one").toTransaction(alice.`private`)
-    val link = bobLinkData("two").toTransaction(bob.`private`, bob.`private`)
-    val unlink = bobUnlinkData("two").toTransaction(bob.`private`)
+    val claim = Claim(aliceClaimData("one"), alice.`private`)
+    val link = Link(bobLinkData("two"), bob.`private`, bob.`private`)
+    val unlink = Unlink(bobUnlinkData("two"), bob.`private`)
     claim.partitionIds mustBe Set(claim.data.identity)
     link.partitionIds mustBe Set(link.data.identity)
     unlink.partitionIds mustBe Set(unlink.data.identity)
@@ -120,7 +120,7 @@ class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
     val state =
       IdentityLedgerState(Map("one" -> IdentityData.forKeys(alice.public), "two" -> IdentityData.forKeys(bob.public)))
     val endorseData = EndorseData("two", "one")
-    val endorse = endorseData.toTransaction(bob.`private`)
+    val endorse = Endorse(endorseData, bob.`private`)
 
     val newStateEither = endorse(state)
     val newState = newStateEither.right.value
@@ -134,7 +134,7 @@ class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
     val state =
       IdentityLedgerState(Map("two" -> IdentityData.forKeys(bob.public)))
     val endorseData = EndorseData("two", "one")
-    val transaction = endorseData.toTransaction(bob.`private`)
+    val transaction = Endorse(endorseData, bob.`private`)
 
     val result = transaction(state).left.value
     result mustBe UnknownEndorsedIdentityError("one")
@@ -144,7 +144,7 @@ class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
     val state =
       IdentityLedgerState(Map("two" -> IdentityData.forKeys(bob.public)))
     val endorseData = EndorseData("three", "two")
-    val transaction = endorseData.toTransaction(bob.`private`)
+    val transaction = Endorse(endorseData, bob.`private`)
 
     val result = transaction(state).left.value
     result mustBe UnknownEndorserIdentityError("three")
@@ -154,7 +154,7 @@ class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
     val state =
       IdentityLedgerState(Map("one" -> IdentityData.forKeys(alice.public), "two" -> IdentityData.forKeys(bob.public)))
     val endorseData = EndorseData("two", "one")
-    val transaction = endorseData.toTransaction(alice.`private`)
+    val transaction = Endorse(endorseData, alice.`private`)
 
     val result = transaction(state).left.value
     result mustBe UnableToVerifyEndorserSignatureError("two", transaction.signature)
@@ -164,7 +164,7 @@ class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
     val state =
       IdentityLedgerState(Map("one" -> IdentityData.forKeys(alice.public), "two" -> IdentityData.forKeys(bob.public)))
     val endorseData = EndorseData("two", "one")
-    val transaction = endorseData.toTransaction(daniel.`private`)
+    val transaction = Endorse(endorseData, daniel.`private`)
 
     val result = transaction(state).left.value
     result mustBe UnableToVerifyEndorserSignatureError("two", transaction.signature)
@@ -175,10 +175,12 @@ class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
       IdentityLedgerState(
         Map("one" -> IdentityData(Set(alice.public), Set("two")), "two" -> IdentityData.forKeys(bob.public))
       )
-    val endorse = RevokeEndorsementData(
-      "two",
-      "one"
-    ).toTransaction(bob.`private`)
+    val endorse = RevokeEndorsement(
+      RevokeEndorsementData(
+        "two",
+        "one"
+      ),
+      bob.`private`)
 
     val newStateEither = endorse(state)
     val newState = newStateEither.right.value
@@ -190,10 +192,12 @@ class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
   it should "fail to revoke a endorse identity if the identity is not claimed" in {
     val state =
       IdentityLedgerState(Map("two" -> IdentityData.forKeys(bob.public)))
-    val transaction = RevokeEndorsementData(
-      "two",
-      "one"
-    ).toTransaction(bob.`private`)
+    val transaction = RevokeEndorsement(
+      RevokeEndorsementData(
+        "two",
+        "one"
+      ),
+      bob.`private`)
 
     val result = transaction(state).left.value
     result mustBe UnknownEndorsedIdentityError("one")
@@ -202,10 +206,12 @@ class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
   it should "fail to revoke a identity if the endorser identity is not claimed" in {
     val state =
       IdentityLedgerState(Map("two" -> IdentityData.forKeys(bob.public)))
-    val transaction = EndorseData(
-      "three",
-      "two"
-    ).toTransaction(bob.`private`)
+    val transaction = Endorse(
+      EndorseData(
+        "three",
+        "two"
+      ),
+      bob.`private`)
 
     val result = transaction(state).left.value
     result mustBe UnknownEndorserIdentityError("three")
@@ -214,7 +220,7 @@ class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
   it should "fail to revoke identity if the endorser signature is not valid" in {
     val state =
       IdentityLedgerState(Map("one" -> IdentityData.forKeys(alice.public), "two" -> IdentityData.forKeys(bob.public)))
-    val transaction = RevokeEndorsementData("two", "one").toTransaction(alice.`private`)
+    val transaction = RevokeEndorsement(RevokeEndorsementData("two", "one"), alice.`private`)
 
     val result = transaction(state).left.value
     result mustBe UnableToVerifyEndorserSignatureError("two", transaction.signature)
@@ -225,7 +231,7 @@ class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
       IdentityLedgerState(
         Map("one" -> IdentityData(Set(alice.public), Set("three")), "two" -> IdentityData.forKeys(bob.public))
       )
-    val transaction = RevokeEndorsementData("two", "one").toTransaction(bob.`private`)
+    val transaction = RevokeEndorsement(RevokeEndorsementData("two", "one"), bob.`private`)
     val result = transaction(state).left.value
     result mustBe EndorsementNotAssociatedWithIdentityError("two", "one")
 
@@ -244,7 +250,7 @@ class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
 
     val certificateKey = toSigningPrivateKey(validCertPrivateKey).value
     val data = LinkCertificateData(pair.target.identity, pem)
-    val tx = data.toTransaction(keys.`private`, certificateKey)
+    val tx = LinkCertificate(data, keys.`private`, certificateKey)
 
     val result = tx.apply(state).right.value
 
@@ -267,7 +273,7 @@ class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
     val certificateKey = toSigningPrivateKey(validCertPrivateKey).value
     val linkingIdentity = pair.target.identity + "XXX"
     val data = LinkCertificateData(linkingIdentity, pem)
-    val tx = data.toTransaction(keys.`private`, certificateKey)
+    val tx = LinkCertificate(data, keys.`private`, certificateKey)
 
     val result = tx.apply(state).left.value
 
@@ -282,7 +288,7 @@ class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
 
     val certificateKey = toSigningPrivateKey(validCertPrivateKey).value
     val data = LinkCertificateData(pair.target.identity, pem)
-    val tx = data.toTransaction(keys.`private`, certificateKey)
+    val tx = LinkCertificate(data, keys.`private`, certificateKey)
 
     val result = tx.apply(state).left.value
 
@@ -297,7 +303,7 @@ class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
 
     val certificateKey = toSigningPrivateKey(validCertPrivateKey).value
     val data = LinkCertificateData(pair.target.identity, pem)
-    val tx = data.toTransaction(keys.`private`, certificateKey)
+    val tx = LinkCertificate(data, keys.`private`, certificateKey)
 
     val result = tx.apply(state).left.value
 
@@ -314,7 +320,7 @@ class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
 
     val certificateKey = toSigningPrivateKey(validCertPrivateKey).value
     val data = LinkCertificateData(pair.target.identity, pem)
-    val tx = data.toTransaction(keys.`private`, certificateKey)
+    val tx = LinkCertificate(data, keys.`private`, certificateKey)
     val result = tx.apply(state).left.value
 
     result must be(PublicKeyNotAssociatedWithIdentity(pair.issuer.identity, pair.issuer.publicKey))
@@ -333,7 +339,7 @@ class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
 
     val certificateKey = toSigningPrivateKey(validCertPrivateKey).value
     val data = LinkCertificateData(pair.target.identity, pem)
-    val tx = data.toTransaction(keys.`private`, certificateKey)
+    val tx = LinkCertificate(data, keys.`private`, certificateKey)
     val result = tx.apply(state).left.value
 
     result must be(UnableToVerifySignatureError)
@@ -351,7 +357,7 @@ class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
     )
 
     val data = LinkCertificateData(pair.target.identity, pem)
-    val tx = data.toTransaction(keys.`private`, keys.`private`)
+    val tx = LinkCertificate(data, keys.`private`, keys.`private`)
     val result = tx.apply(state).left.value
 
     result must be(UnableToVerifyLinkingIdentitySignatureError(pair.target.identity, pair.target.publicKey))
@@ -370,7 +376,7 @@ class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
 
     val certificateKey = toSigningPrivateKey(validCertPrivateKey).value
     val data = LinkCertificateData(pair.target.identity, pem)
-    val tx = data.toTransaction(keys.`private`, certificateKey)
+    val tx = LinkCertificate(data, keys.`private`, certificateKey)
 
     val result = tx.apply(state).left.value
 
@@ -385,7 +391,7 @@ class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
 
     val certificateKey = toSigningPrivateKey(validCertPrivateKey).value
     val data = LinkCertificateData(pair.target.identity, pem)
-    val tx = data.toTransaction(keys.`private`, certificateKey)
+    val tx = LinkCertificate(data, keys.`private`, certificateKey)
     val result = tx.apply(state).left.value
 
     result must be(InvalidCertificateError)

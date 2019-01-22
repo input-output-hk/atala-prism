@@ -19,8 +19,8 @@ class LedgerItDbTest extends FlatSpec {
       val linkData = LinkData("carlos", bob.public)
       val testTxs =
         List[IdentityTransaction](
-          claimData.toTransaction(alice.`private`),
-          linkData.toTransaction(alice.`private`, bob.`private`)
+          Claim(claimData, alice.`private`),
+          Link(linkData, alice.`private`, bob.`private`)
         )
       val testBlock = Block[IdentityData, IdentityTransaction](BlockHeader(Instant.EPOCH), testTxs)
       ledger.slice(Set("carlos")) mustBe LedgerState()
