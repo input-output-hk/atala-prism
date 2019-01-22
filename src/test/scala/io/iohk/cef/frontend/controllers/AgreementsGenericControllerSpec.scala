@@ -9,6 +9,9 @@ import io.iohk.cef.crypto._
 import io.iohk.cef.data.DataItem
 import io.iohk.cef.ledger.chimeric.{ChimericTx, CreateCurrency}
 import io.iohk.cef.network.MessageStream
+import io.iohk.cef.test.DummyMessageStream
+import monix.execution.schedulers.TestScheduler
+import monix.reactive.Observable
 import org.scalatest.MustMatchers._
 import org.scalatest.WordSpec
 import org.scalatest.mockito.MockitoSugar._
@@ -100,7 +103,8 @@ class AgreementsGenericControllerSpec extends WordSpec with ScalatestRouteTest w
 
         override def decline(correlationId: String): Unit = ???
 
-        override val agreementEvents: MessageStream[AgreementMessage[String]] = _
+        override val agreementEvents: MessageStream[AgreementMessage[String]] =
+          new DummyMessageStream(Observable.empty)(new TestScheduler())
       }
       val routes = controller.routes("generic", dummyAgreementService)
       val body =
