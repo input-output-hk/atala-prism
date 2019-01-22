@@ -84,7 +84,8 @@ private[config] class TransactionServiceBuilder(
       txPool,
       consensus,
       cefConfig.ledgerConfig.blockCreatorInitialDelay,
-      cefConfig.ledgerConfig.blockCreatorInterval)
+      cefConfig.ledgerConfig.blockCreatorInterval
+    )
 
     Map(cefConfig.ledgerConfig.id -> (txPool, consensus))
   }
