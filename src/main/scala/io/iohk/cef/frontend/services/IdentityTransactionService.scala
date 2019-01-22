@@ -66,7 +66,7 @@ class IdentityTransactionService(nodeTransactionService: NodeTransactionService[
     identityTransaction match {
       case Right(tx) => {
         val envelope =
-          Envelope(content = tx, containerId = req.ledgerId, Not(Everyone))
+          Envelope(content = tx, containerId = req.ledgerId, Everyone)
         nodeTransactionService.receiveTransaction(envelope)
       }
       case Left(error) => Future(Left(error))
