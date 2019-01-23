@@ -1,5 +1,7 @@
 package io.iohk.cef.frontend.controllers
 
+import java.util.UUID
+
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
@@ -34,7 +36,7 @@ class AgreementsGenericControllerSpec extends WordSpec with ScalatestRouteTest w
       val body =
         s"""
           |{
-          |  "correlationId": "agreementId",
+          |  "correlationId": "${UUID.randomUUID()}",
           |  "data": {
           |    "id": "itemId",
           |    "data": ${Json.toJson(certificate)},
@@ -65,7 +67,7 @@ class AgreementsGenericControllerSpec extends WordSpec with ScalatestRouteTest w
       val body =
         s"""
            |{
-           |  "correlationId": "agreementId",
+           |  "correlationId": "${UUID.randomUUID()}",
            |  "data": {
            |    "id": "itemId",
            |    "data": ${Json.toJson(certificate)},
@@ -99,7 +101,7 @@ class AgreementsGenericControllerSpec extends WordSpec with ScalatestRouteTest w
       val body =
         s"""
            |{
-           |  "correlationId": "agreementId",
+           |  "correlationId": "${UUID.randomUUID()}",
            |  "data": ${Json.toJson(tx).toString()},
            |  "to": ["1111", "2222"]
            |}
@@ -120,7 +122,7 @@ class AgreementsGenericControllerSpec extends WordSpec with ScalatestRouteTest w
       val body =
         s"""
            |{
-           |  "correlationId": "agreementId"
+           |  "correlationId": "${UUID.randomUUID()}"
            |}
         """.stripMargin
 
@@ -143,7 +145,7 @@ class AgreementsGenericControllerSpec extends WordSpec with ScalatestRouteTest w
       val body =
         s"""
            |{
-           |  "correlationId": "agreementId",
+           |  "correlationId": "${UUID.randomUUID()}",
            |  "data": ${Json.toJson(tx).toString()}
            |}
         """.stripMargin
