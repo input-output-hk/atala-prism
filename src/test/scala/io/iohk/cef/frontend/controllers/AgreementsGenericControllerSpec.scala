@@ -127,7 +127,7 @@ class AgreementsGenericControllerSpec extends WordSpec with ScalatestRouteTest w
         """.stripMargin
 
       val requestDecline =
-        Post("/agreements/certificates/decline", HttpEntity(ContentTypes.`application/json`, decline))
+        Post("/agreements/whatever/decline", HttpEntity(ContentTypes.`application/json`, decline))
 
       requestDecline ~> certificateRoutes ~> check {
         status must ===(StatusCodes.BadRequest)
@@ -143,7 +143,7 @@ class AgreementsGenericControllerSpec extends WordSpec with ScalatestRouteTest w
            |}
         """.stripMargin
       val requestPropose =
-        Post("/agreements/certificates/propose", HttpEntity(ContentTypes.`application/json`, propose))
+        Post("/agreements/whatever/propose", HttpEntity(ContentTypes.`application/json`, propose))
       requestPropose ~> certificateRoutes ~> check {
         status must ===(StatusCodes.BadRequest)
       }
@@ -158,7 +158,7 @@ class AgreementsGenericControllerSpec extends WordSpec with ScalatestRouteTest w
            |}
         """.stripMargin
 
-      val requestAgree = Post("/agreements/certificates/agree", HttpEntity(ContentTypes.`application/json`, agree))
+      val requestAgree = Post("/agreements/whatever/agree", HttpEntity(ContentTypes.`application/json`, agree))
       requestAgree ~> certificateRoutes ~> check {
         status must ===(StatusCodes.BadRequest)
       }
