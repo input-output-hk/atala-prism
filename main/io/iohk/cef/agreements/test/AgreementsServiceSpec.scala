@@ -85,6 +85,6 @@ class AgreementsServiceSpec extends FlatSpec {
     val exception = the[IllegalArgumentException] thrownBy alice.agreementsService.decline("foo")
 
     // then
-    exception.getMessage shouldBe "Unknown correlationId 'foo'."
+    exception.getMessage shouldBe "requirement failed: Unknown correlationId 'foo'."
   }
 }
