@@ -44,6 +44,7 @@ class AgreementsServiceImpl[T](network: ConversationalNetwork[AgreementMessage[T
 
   // turn down a proposal
   override def decline(correlationId: String): Unit = {
+    require(proposalsReceived.contains(correlationId), s"Unknown correlationId '${correlationId}'.")
     val proposal = proposalReceived(correlationId)
     try {
       network.sendMessage(proposal.proposedBy, Decline[T](correlationId, userId))

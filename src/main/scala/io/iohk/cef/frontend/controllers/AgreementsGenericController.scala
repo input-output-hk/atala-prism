@@ -44,6 +44,9 @@ class AgreementsGenericController(implicit ec: ExecutionContext, mat: Materializ
             publicInput { ctx: HasModel[DeclineRequest[T]] =>
               Future { service.decline(ctx.model.correlationId) }
                 .map(_ => Good(JsObject.empty))
+                .recover {
+                  case e: IllegalArgumentException => Bad(Every(PreconditionGenericError(e)))
+                }
             }
           }
         }
