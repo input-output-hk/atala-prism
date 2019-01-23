@@ -2,6 +2,7 @@ package io.iohk.cef.ledger.chimeric
 
 import io.iohk.cef.ledger.chimeric.errors._
 import io.iohk.cef.crypto._
+import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.ledger.Transaction
 import io.iohk.cef.ledger.chimeric.ChimericLedgerState.{getAddressPartitionId, getUtxoPartitionId}
 
@@ -25,8 +26,7 @@ case class ChimericTx(fragments: Seq[ChimericTxFragment]) extends Transaction[Ch
     fragments.zipWithIndex.map { case (fragment, index) => fragment.partitionIds(txId, index) }.toSet.flatten
   }
 
-  //FIXME: This is a placeholder until we add hash functions.
-  def txId: ChimericTxId = s"ChimericTx(${fragments})"
+  val txId: ChimericTxId = hash(this).toCompactString().replace(" ", "")
 
   private def testSignatures(currentStateEither: ChimericStateOrError): ChimericStateOrError =
     currentStateEither.flatMap { currentState =>
@@ -102,7 +102,7 @@ case class ChimericTx(fragments: Seq[ChimericTxFragment]) extends Transaction[Ch
             case input: TxInputFragment => sum + input.value
             case output: TxOutputFragment => sum - output.value
             case _ => sum
-          }
+        }
       )
       if (totalValue == Value.Zero) {
         Right(currentState)

@@ -2,7 +2,7 @@ package io.iohk.cef.ledger.chimeric
 
 import scala.collection.mutable
 
-case class Value(m: Map[Currency, Quantity]) extends PartiallyOrdered[Value] {
+case class Value(private val m: Map[Currency, Quantity]) extends PartiallyOrdered[Value] {
   require(m.forall(_._2 != BigDecimal(0)))
 
   def +(entry: (Currency, Quantity)): Value = {
@@ -18,6 +18,8 @@ case class Value(m: Map[Currency, Quantity]) extends PartiallyOrdered[Value] {
   def apply(currency: Currency): Quantity = m.get(currency).getOrElse(BigDecimal(0))
 
   def iterator: Iterator[(Currency, Quantity)] = m.iterator
+
+  def keySet: Set[Currency] = m.keySet
 
   override def tryCompareTo[B >: Value](that: B)(implicit evidence$1: B => PartiallyOrdered[B]): Option[Int] =
     that match {
