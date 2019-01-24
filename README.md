@@ -116,7 +116,17 @@ vim package.scala    # Edit something local
 bazel test tests     # and test again
 ```
 
+#### Bazel on windows
 
+Bazel does not really work on windows. You can however build the source on windows using a tool called `dazel`.
+Dazel runs a docker container with bazel.
+
+If you are using a professional or enterprise edition of Windows, the steps are fairly straightforward. You install
+docker then install and run dazel (https://github.com/nadirizr/dazel).
+
+If you using a home edition of windows, there is no virtualization support and you should use the legacy `docker toolbox`
+from [https://docs.docker.com/toolbox/toolbox_install_windows/].
+  
 ## Sample application
 
 NOTE: This bit of the documentation needs to be improved/corrected

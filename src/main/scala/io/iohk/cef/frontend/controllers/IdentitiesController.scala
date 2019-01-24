@@ -16,6 +16,7 @@ import io.iohk.cef.ledger.identity.{Grant, IdentityTransaction, Link, LinkCertif
 import io.iohk.cef.query.ledger.identity.{IdentityQuery, IdentityQueryService}
 import org.scalactic.Good
 import play.api.libs.json._
+import Codecs._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -24,7 +25,6 @@ class IdentitiesController(queryService: IdentityQueryService, service: Identity
     ec: ExecutionContext
 ) extends CustomJsonController {
 
-  import Codecs._
   import Context._
   import IdentitiesController._
 

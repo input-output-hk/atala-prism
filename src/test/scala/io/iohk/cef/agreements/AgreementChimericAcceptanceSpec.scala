@@ -1,5 +1,7 @@
 package io.iohk.cef.agreements
 
+import java.util.UUID
+
 import io.iohk.cef.agreements.AgreementFixture._
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.agreements.AgreementsMessage._
@@ -60,7 +62,7 @@ class AgreementChimericAcceptanceSpec extends FlatSpec {
     // when
     val bobsAgreement: Future[Agree[ChimericTx]] =
       alice.agreementsService.agreementEvents.map(_.asInstanceOf[Agree[ChimericTx]]).head()
-    alice.agreementsService.propose("correlation-id", tx, List(bob.nodeId))
+    alice.agreementsService.propose(UUID.randomUUID(), tx, List(bob.nodeId))
 
     whenReady(bobsAgreement) { agreement =>
       val signatureFragments = agreement.data.fragments.collect { case s: SignatureTxFragment => s }

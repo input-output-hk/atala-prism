@@ -57,6 +57,12 @@ case class Claim(data: ClaimData, signature: Signature) extends IdentityTransact
   override def partitionIds: Set[String] = Set(data.identity)
 }
 
+object Claim {
+  def apply(data: ClaimData, privateKey: SigningPrivateKey): Claim = {
+    Claim(data, signBytes(data, privateKey))
+  }
+}
+
 /**
   * A transaction to link a new key with an existing identity.
   *
@@ -99,6 +105,15 @@ case class Link(data: LinkData, signature: Signature, linkingIdentitySignature: 
   override def partitionIds: Set[String] = Set(data.identity)
 }
 
+object Link {
+  def apply(
+      data: LinkData,
+      identityPrivateKey: SigningPrivateKey,
+      providedKeyPrivateCounterpart: SigningPrivateKey
+  ): Link =
+    Link(data, signBytes(data, identityPrivateKey), signBytes(data, providedKeyPrivateCounterpart))
+}
+
 case class Unlink(data: UnlinkData, signature: Signature) extends IdentityTransaction {
 
   override def apply(ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] = {
@@ -122,6 +137,11 @@ case class Unlink(data: UnlinkData, signature: Signature) extends IdentityTransa
   }
 
   override def partitionIds: Set[String] = Set(data.identity)
+}
+
+object Unlink {
+  def apply(data: UnlinkData, privateKey: SigningPrivateKey): Unlink =
+    Unlink(data, signBytes(data, privateKey))
 }
 
 /**
@@ -155,6 +175,11 @@ case class Endorse(data: EndorseData, signature: Signature) extends IdentityTran
     * @return Set[String]
     */
   override def partitionIds: Set[String] = Set(data.endorserIdentity, data.endorsedIdentity)
+}
+
+object Endorse {
+  def apply(data: EndorseData, endorserIdentityPrivateKey: SigningPrivateKey): Endorse =
+    Endorse(data, signBytes(data, endorserIdentityPrivateKey))
 }
 
 /**
@@ -198,6 +223,11 @@ case class RevokeEndorsement(data: RevokeEndorsementData, signature: Signature) 
   override def partitionIds: Set[String] = Set(data.endorserIdentity, data.endorsedIdentity)
 }
 
+object RevokeEndorsement {
+  def apply(data: RevokeEndorsementData, endorsingIdentityPrivateKey: SigningPrivateKey): RevokeEndorsement =
+    RevokeEndorsement(data, signBytes(data, endorsingIdentityPrivateKey))
+}
+
 case class Grant(data: GrantData, signature: Signature, claimSignature: Signature, endorseSignature: Signature)
     extends IdentityTransaction {
   private val underlyingClaim = Claim(data.underlyingClaimData, claimSignature)
@@ -214,6 +244,19 @@ case class Grant(data: GrantData, signature: Signature, claimSignature: Signatur
   }
   override def partitionIds: Set[String] =
     txs.foldLeft(Set(data.grantingIdentity))(_ union _.partitionIds)
+}
+
+object Grant {
+  def apply(
+      data: GrantData,
+      grantingIdentityPrivateKey: SigningPrivateKey,
+      grantedIdentityPrivateKey: SigningPrivateKey
+  ): Grant = {
+    val grantSignature = signBytes(data, grantingIdentityPrivateKey)
+    val claimSignature = signBytes(data.underlyingClaimData, grantedIdentityPrivateKey)
+    val endorseSignature = signBytes(data.underlyingEndorseData, grantingIdentityPrivateKey)
+    Grant(data, grantSignature, claimSignature, endorseSignature)
+  }
 }
 
 /**
@@ -296,5 +339,19 @@ case class LinkCertificate(data: LinkCertificateData, signature: Signature, sign
         val result = ledgerState.put(pair.target.identity, newIdentity)
         Right(result)
     }
+  }
+}
+
+object LinkCertificate {
+  def apply(
+      data: LinkCertificateData,
+      existingKey: SigningPrivateKey,
+      certificateKey: SigningPrivateKey
+  ): LinkCertificate = {
+    LinkCertificate(
+      data = data,
+      signature = signBytes(data, existingKey),
+      signatureFromCertificate = signBytes(data, certificateKey)
+    )
   }
 }

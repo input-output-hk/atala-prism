@@ -1,5 +1,7 @@
 package io.iohk.cef.frontend.controllers
 
+import java.util.UUID
+
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
@@ -38,7 +40,7 @@ class AgreementsGenericControllerSpec extends WordSpec with ScalatestRouteTest w
       val body =
         s"""
           |{
-          |  "correlationId": "agreementId",
+          |  "correlationId": "${UUID.randomUUID()}",
           |  "data": {
           |    "id": "itemId",
           |    "data": ${Json.toJson(certificate)},
@@ -69,7 +71,7 @@ class AgreementsGenericControllerSpec extends WordSpec with ScalatestRouteTest w
       val body =
         s"""
            |{
-           |  "correlationId": "agreementId",
+           |  "correlationId": "${UUID.randomUUID()}",
            |  "data": {
            |    "id": "itemId",
            |    "data": ${Json.toJson(certificate)},
@@ -134,7 +136,7 @@ class AgreementsGenericControllerSpec extends WordSpec with ScalatestRouteTest w
       val body =
         s"""
            |{
-           |  "correlationId": "agreementId",
+           |  "correlationId": "${UUID.randomUUID()}",
            |  "data": ${Json.toJson(tx).toString()},
            |  "to": ["1111", "2222"]
            |}
@@ -148,6 +150,56 @@ class AgreementsGenericControllerSpec extends WordSpec with ScalatestRouteTest w
     }
   }
 
+  "POST /agreements/whatever/whatever" should {
+    val controller = new AgreementsGenericController
+    val certificateRoutes = controller.routes("whatever", dummyService[String])
+    "reject an empty correlationId when declining" in {
+      val decline =
+        s"""
+           |{
+           |  "correlationId": ""
+           |}
+        """.stripMargin
+
+      val requestDecline =
+        Post("/agreements/whatever/decline", HttpEntity(ContentTypes.`application/json`, decline))
+
+      requestDecline ~> certificateRoutes ~> check {
+        status must ===(StatusCodes.BadRequest)
+      }
+    }
+    "reject an empty correlationId when proposing" in {
+      val propose =
+        s"""
+           |{
+           |  "correlationId": "",
+           |  "data": "HelloWorld",
+           |  "to": ["1111", "2222"]
+           |}
+        """.stripMargin
+      val requestPropose =
+        Post("/agreements/whatever/propose", HttpEntity(ContentTypes.`application/json`, propose))
+      requestPropose ~> certificateRoutes ~> check {
+        status must ===(StatusCodes.BadRequest)
+      }
+
+    }
+    "reject an empty correlationId when agreeing" in {
+      val agree =
+        s"""
+           |{
+           |  "correlationId": "",
+           |  "data": "HelloWorld"
+           |}
+        """.stripMargin
+
+      val requestAgree = Post("/agreements/whatever/agree", HttpEntity(ContentTypes.`application/json`, agree))
+      requestAgree ~> certificateRoutes ~> check {
+        status must ===(StatusCodes.BadRequest)
+      }
+    }
+  }
+
   "POST /agreements/certificates/decline" should {
     "decline to an item" in {
       val certificate = Certificate("certificateId", "2019/Jan/01")
@@ -155,7 +207,7 @@ class AgreementsGenericControllerSpec extends WordSpec with ScalatestRouteTest w
       val body =
         s"""
            |{
-           |  "correlationId": "agreementId"
+           |  "correlationId": "${UUID.randomUUID()}"
            |}
         """.stripMargin
 
@@ -178,7 +230,7 @@ class AgreementsGenericControllerSpec extends WordSpec with ScalatestRouteTest w
       val body =
         s"""
            |{
-           |  "correlationId": "agreementId",
+           |  "correlationId": "${UUID.randomUUID()}",
            |  "data": ${Json.toJson(tx).toString()}
            |}
         """.stripMargin

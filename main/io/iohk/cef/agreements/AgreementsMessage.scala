@@ -1,16 +1,18 @@
 package io.iohk.cef.agreements
 
+import java.util.UUID
+
 sealed trait AgreementMessage[T] {
-  val correlationId: String
+  val correlationId: UUID
 }
 
 object AgreementsMessage {
 
-  case class Propose[T](correlationId: String, proposedBy: UserId, data: T) extends AgreementMessage[T]
+  case class Propose[T](correlationId: UUID, proposedBy: UserId, data: T) extends AgreementMessage[T]
 
-  case class Agree[T](correlationId: String, agreedBy: UserId, data: T) extends AgreementMessage[T]
+  case class Agree[T](correlationId: UUID, agreedBy: UserId, data: T) extends AgreementMessage[T]
 
-  case class Decline[T](correlationId: String, declinedBy: UserId) extends AgreementMessage[T]
+  case class Decline[T](correlationId: UUID, declinedBy: UserId) extends AgreementMessage[T]
 
   def catamorphism[T, R](fPropose: Propose[T] => R, fAgree: Agree[T] => R, fDecline: Decline[T] => R)(
       message: AgreementMessage[T]
