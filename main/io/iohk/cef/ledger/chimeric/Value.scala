@@ -2,7 +2,7 @@ package io.iohk.cef.ledger.chimeric
 
 import scala.collection.mutable
 
-case class Value(private val m: Map[Currency, Quantity]) extends PartiallyOrdered[Value] {
+case class Value(m: Map[Currency, Quantity]) extends PartiallyOrdered[Value] {
   require(m.forall(_._2 != BigDecimal(0)))
 
   def +(entry: (Currency, Quantity)): Value = {

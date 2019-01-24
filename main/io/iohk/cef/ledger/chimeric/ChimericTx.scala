@@ -26,7 +26,7 @@ case class ChimericTx(fragments: Seq[ChimericTxFragment]) extends Transaction[Ch
     fragments.zipWithIndex.map { case (fragment, index) => fragment.partitionIds(txId, index) }.toSet.flatten
   }
 
-  val txId: ChimericTxId = hash(this).toCompactString().replace(" ", "")
+  val txId: ChimericTxId = hash(fragments).toCompactString().replace(" ", "")
 
   private def testSignatures(currentStateEither: ChimericStateOrError): ChimericStateOrError =
     currentStateEither.flatMap { currentState =>
