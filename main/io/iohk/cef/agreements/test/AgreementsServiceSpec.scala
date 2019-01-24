@@ -23,7 +23,7 @@ class AgreementsServiceSpec extends FlatSpec {
 
   it should "support proposals" in forTwoArbitraryAgreementPeers[String] { (alice, bob) =>
     // given
-    val id = UUID.randomUUID().toString
+    val id = UUID.randomUUID()
     val data = "it rained on Saturday"
     val bobsHandler: AgreementMessage[String] => Unit = mock[AgreementMessage[String] => Unit]
 
@@ -39,7 +39,7 @@ class AgreementsServiceSpec extends FlatSpec {
 
   it should "support agreeing to a proposal" in forTwoArbitraryAgreementPeers[String] { (alice, bob) =>
     // given
-    val id = UUID.randomUUID().toString
+    val id = UUID.randomUUID()
     val proposedData = "it rained on Saturday"
     val agreedData = "it rained on Saturday and Sunday"
     val aliceHandler = mock[AgreementMessage[String] => Unit]
@@ -59,7 +59,7 @@ class AgreementsServiceSpec extends FlatSpec {
 
   it should "support declining a proposal" in forTwoArbitraryAgreementPeers[String] { (alice, bob) =>
     // given
-    val id = UUID.randomUUID().toString
+    val id = UUID.randomUUID()
     val proposedData = "it rained on Saturday"
     val aliceHandler = mock[AgreementMessage[String] => Unit]
 
@@ -85,18 +85,22 @@ class AgreementsServiceSpec extends FlatSpec {
   }
 
   it should "throw when agreeing to a non-existent proposal" in forTwoArbitraryAgreementPeers[String] { (alice, _) =>
+    val id = UUID.randomUUID()
+
     // when
-    val exception = the[IllegalArgumentException] thrownBy alice.agreementsService.agree("foo", "anything")
+    val exception = the[IllegalArgumentException] thrownBy alice.agreementsService.agree(id, "anything")
 
     // then
-    exception.getMessage shouldBe "Unknown correlationId 'foo'."
+    exception.getMessage shouldBe s"Unknown correlationId '${id}'."
   }
 
   it should "throw when declining a non-existent proposal" in forTwoArbitraryAgreementPeers[String] { (alice, _) =>
+    val id = UUID.randomUUID()
+
     // when
-    val exception = the[IllegalArgumentException] thrownBy alice.agreementsService.decline("foo")
+    val exception = the[IllegalArgumentException] thrownBy alice.agreementsService.decline(id)
 
     // then
-    exception.getMessage shouldBe "Unknown correlationId 'foo'."
+    exception.getMessage shouldBe s"Unknown correlationId '${id}'."
   }
 }
