@@ -97,13 +97,13 @@ class AgreementsGenericControllerSpec extends WordSpec with ScalatestRouteTest w
   "POST /agreements/whatever/agree" should {
     "reject an unknown correlation id" in {
       def dummyAgreementService: AgreementsService[String] = new AgreementsService[String] {
-        override def propose(correlationId: String, data: String, to: List[UserId]): Unit = ???
+        override def propose(correlationId: UUID, data: String, to: Set[UserId]): Unit = ???
 
-        override def agree(correlationId: String, data: String): Unit = {
+        override def agree(correlationId: UUID, data: String): Unit = {
           throw new IllegalArgumentException("exception")
         }
 
-        override def decline(correlationId: String): Unit = ???
+        override def decline(correlationId: UUID): Unit = ???
 
         override val agreementEvents: MessageStream[AgreementMessage[String]] =
           new DummyMessageStream(Observable.empty)(TestScheduler())
