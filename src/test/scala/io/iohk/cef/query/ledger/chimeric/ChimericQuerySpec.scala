@@ -86,4 +86,17 @@ class ChimericQuerySpec extends FlatSpec with MustMatchers {
     Query.performer(queryWithoutResult, engine) mustBe None
   }
 
+  it should "query for all currencies" in {
+    val stateStorage = mock[LedgerStateStorage[ChimericStateResult]]
+    val engine = LedgerQueryEngine(stateStorage)
+    val currency1 = "currency1"
+    val currency2 = "currency2"
+    val currencies = Set(currency1, currency2)
+    val currenciesPartitionIds = currencies.map(ChimericLedgerState.getCurrencyPartitionId)
+    when(stateStorage.keys).thenReturn(currenciesPartitionIds)
+
+    val queryForCurrencies = AllCurrencies
+    Query.performer(queryForCurrencies, engine) mustBe Set(currency1, currency2)
+  }
+
 }
