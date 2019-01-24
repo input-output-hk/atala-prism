@@ -25,8 +25,8 @@ class IdentityLedgerItDbTest extends FlatSpec {
     val block1 = Block[IdentityData, IdentityTransaction](
       header,
       List[IdentityTransaction](
-        firstClaimData.toTransaction(alice.`private`),
-        secondClaimData.toTransaction(bob.`private`)
+        Claim(firstClaimData, alice.`private`),
+        Claim(secondClaimData, bob.`private`)
       )
     )
 
@@ -40,7 +40,7 @@ class IdentityLedgerItDbTest extends FlatSpec {
 
     val block2 = Block[IdentityData, IdentityTransaction](
       header,
-      List[IdentityTransaction](linkData.toTransaction(bob.`private`, carlos.`private`))
+      List[IdentityTransaction](Link(linkData, bob.`private`, carlos.`private`))
     )
 
     val x = ledger(block2)
@@ -54,7 +54,7 @@ class IdentityLedgerItDbTest extends FlatSpec {
 
     val block3 = Block[IdentityData, IdentityTransaction](
       header,
-      List[IdentityTransaction](secondLinkData.toTransaction(bob.`private`, carlos.`private`))
+      List[IdentityTransaction](Link(secondLinkData, bob.`private`, carlos.`private`))
     )
     val invalidResult = ledger(block3)
 
