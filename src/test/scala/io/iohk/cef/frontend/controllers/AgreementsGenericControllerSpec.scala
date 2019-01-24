@@ -5,11 +5,15 @@ import java.util.UUID
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
-import io.iohk.cef.agreements.AgreementsService
+import io.iohk.cef.agreements.{AgreementMessage, AgreementsService, UserId}
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.crypto._
 import io.iohk.cef.data.DataItem
 import io.iohk.cef.ledger.chimeric.{ChimericTx, CreateCurrency}
+import io.iohk.cef.network.MessageStream
+import io.iohk.cef.test.DummyMessageStream
+import monix.execution.schedulers.TestScheduler
+import monix.reactive.Observable
 import org.scalatest.MustMatchers._
 import org.scalatest.WordSpec
 import org.scalatest.mockito.MockitoSugar._
@@ -86,6 +90,37 @@ class AgreementsGenericControllerSpec extends WordSpec with ScalatestRouteTest w
 
       request ~> certificateRoutes ~> check {
         status must ===(StatusCodes.OK)
+      }
+    }
+  }
+
+  "POST /agreements/whatever/agree" should {
+    "reject an unknown correlation id" in {
+      def dummyAgreementService: AgreementsService[String] = new AgreementsService[String] {
+        override def propose(correlationId: UUID, data: String, to: Set[UserId]): Unit = ???
+
+        override def agree(correlationId: UUID, data: String): Unit = {
+          throw new IllegalArgumentException("exception")
+        }
+
+        override def decline(correlationId: UUID): Unit = ???
+
+        override val agreementEvents: MessageStream[AgreementMessage[String]] =
+          new DummyMessageStream(Observable.empty)(TestScheduler())
+      }
+      val routes = controller.routes("generic", dummyAgreementService)
+      val body =
+        s"""
+           |{
+           |  "correlationId": "agreementId",
+           |  "data": "test"
+           |}
+        """.stripMargin
+
+      val request = Post("/agreements/generic/agree", HttpEntity(ContentTypes.`application/json`, body))
+
+      request ~> routes ~> check {
+        status must ===(StatusCodes.BadRequest)
       }
     }
   }

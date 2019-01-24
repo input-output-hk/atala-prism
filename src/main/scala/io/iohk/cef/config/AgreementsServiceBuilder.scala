@@ -1,6 +1,6 @@
 package io.iohk.cef.config
 
-import io.iohk.cef.agreements.{AgreementMessage, AgreementsService}
+import io.iohk.cef.agreements.{AgreementMessage, AgreementsService, AgreementsServiceImpl}
 import io.iohk.cef.codecs.nio._
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.network.{ConversationalNetwork, NetworkConfig}
@@ -12,6 +12,6 @@ private[config] class AgreementsServiceBuilder(networkConfig: NetworkConfig) {
   def cefAgreementsServiceChannel[T: NioCodec: TypeTag](): AgreementsService[T] = {
     val conversationalNetwork =
       new ConversationalNetwork[AgreementMessage[T]](networkConfig.discovery, networkConfig.transports)
-    new AgreementsService[T](conversationalNetwork)
+    new AgreementsServiceImpl[T](conversationalNetwork)
   }
 }

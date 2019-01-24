@@ -77,7 +77,7 @@ class AgreementsServiceSpec extends FlatSpec {
   it should "throw an exception if the proposal''s recipient list is empty" in {
     implicit val scheduler = TestScheduler()
     val network = new DummyNoMessageConversationalNetwork[AgreementMessage[String]]()
-    val service = new AgreementsService[String](network)
+    val service = new AgreementsServiceImpl[String](network)
 
     intercept[IllegalArgumentException] {
       service.propose(UUID.randomUUID(), "data", Set())
@@ -91,7 +91,7 @@ class AgreementsServiceSpec extends FlatSpec {
     val exception = the[IllegalArgumentException] thrownBy alice.agreementsService.agree(id, "anything")
 
     // then
-    exception.getMessage shouldBe s"Unknown correlationId '${id}'."
+    exception.getMessage shouldBe s"requirement failed: Unknown correlationId '${id}'."
   }
 
   it should "throw when declining a non-existent proposal" in forTwoArbitraryAgreementPeers[String] { (alice, _) =>

@@ -4,9 +4,11 @@ import java.util.UUID
 
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
+import com.alexitc.playsonify.core.I18nService
+import com.alexitc.playsonify.models._
 import io.iohk.cef.agreements.AgreementsService
 import io.iohk.cef.frontend.controllers.common.CustomJsonController
-import org.scalactic.Good
+import org.scalactic.{Bad, Every, Good}
 import play.api.libs.json.{JsObject, Json, Reads}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -24,6 +26,9 @@ class AgreementsGenericController(implicit ec: ExecutionContext, mat: Materializ
           publicInput { ctx: HasModel[AgreeRequest[T]] =>
             Future { service.agree(ctx.model.correlationId, ctx.model.data) }
               .map(_ => Good(JsObject.empty))
+              .recover {
+                case e: IllegalArgumentException => Bad(Every(PreconditionGenericError(e)))
+              }
           }
         }
       } ~
@@ -64,4 +69,8 @@ object AgreementsGenericController {
   implicit def declineRequestReads[T](implicit readsT: Reads[T]): Reads[DeclineRequest[T]] =
     Json.reads[DeclineRequest[T]]
 
+  final case class PreconditionGenericError(exception: IllegalArgumentException) extends InputValidationError {
+    override def toPublicErrorList[L](i18nService: I18nService[L])(implicit lang: L): List[PublicError] =
+      List(PublicError.genericError(exception.getMessage))
+  }
 }

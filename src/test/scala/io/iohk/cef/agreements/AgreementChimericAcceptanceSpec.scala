@@ -74,7 +74,8 @@ class AgreementChimericAcceptanceSpec extends FlatSpec {
 
   private def willSign(agreementFixture: AgreementFixture[ChimericTx]): Unit = {
     def agreeToProposal(proposal: Propose[ChimericTx]): Unit = {
-      agreementFixture.agreementsService.agree(proposal.correlationId, signTx(proposal.data, agreementFixture.keyPair))
+      agreementFixture.agreementsService
+        .agree(proposal.correlationId, signTx(proposal.data, agreementFixture.keyPair))
     }
     agreementFixture.agreementsService.agreementEvents
       .foreach(message => AgreementsMessage.catamorphism[ChimericTx, Unit](agreeToProposal, _ => (), _ => ())(message))
