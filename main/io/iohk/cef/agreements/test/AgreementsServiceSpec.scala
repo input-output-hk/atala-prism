@@ -5,6 +5,8 @@ import java.util.UUID
 import io.iohk.cef.agreements.AgreementFixture._
 import io.iohk.cef.agreements.AgreementsMessage._
 import io.iohk.cef.codecs.nio.auto._
+import io.iohk.cef.test.DummyNoMessageConversationalNetwork
+import monix.execution.schedulers.TestScheduler
 import org.mockito.Mockito.verify
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
@@ -27,7 +29,7 @@ class AgreementsServiceSpec extends FlatSpec {
 
     // when
     bob.agreementsService.agreementEvents.foreach(event => bobsHandler(event))
-    alice.agreementsService.propose(id, data, List(bob.nodeId))
+    alice.agreementsService.propose(id, data, Set(bob.nodeId))
 
     // then
     eventually {
@@ -47,7 +49,7 @@ class AgreementsServiceSpec extends FlatSpec {
     bob.agreementsService.agreementEvents.foreach(event => {
       bob.agreementsService.agree(event.correlationId, agreedData)
     })
-    alice.agreementsService.propose(id, proposedData, List(bob.nodeId))
+    alice.agreementsService.propose(id, proposedData, Set(bob.nodeId))
 
     // then
     eventually {
@@ -64,11 +66,21 @@ class AgreementsServiceSpec extends FlatSpec {
     // when
     alice.agreementsService.agreementEvents.foreach(event => aliceHandler(event))
     bob.agreementsService.agreementEvents.foreach(event => bob.agreementsService.decline(event.correlationId))
-    alice.agreementsService.propose(id, proposedData, List(bob.nodeId))
+    alice.agreementsService.propose(id, proposedData, Set(bob.nodeId))
 
     // then
     eventually {
       verify(aliceHandler).apply(Decline(id, bob.nodeId))
+    }
+  }
+
+  it should "throw an exception if the proposal''s recipient list is empty" in {
+    implicit val scheduler = TestScheduler()
+    val network = new DummyNoMessageConversationalNetwork[AgreementMessage[String]]()
+    val service = new AgreementsService[String](network)
+
+    intercept[IllegalArgumentException] {
+      service.propose(UUID.randomUUID(), "data", Set())
     }
   }
 
