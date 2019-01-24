@@ -27,7 +27,7 @@ class AgreementsServiceSpec extends FlatSpec {
 
     // when
     bob.agreementsService.agreementEvents.foreach(event => bobsHandler(event))
-    alice.agreementsService.propose(id, data, List(bob.nodeId))
+    alice.agreementsService.propose(id, data, Set(bob.nodeId))
 
     // then
     eventually {
@@ -47,7 +47,7 @@ class AgreementsServiceSpec extends FlatSpec {
     bob.agreementsService.agreementEvents.foreach(event => {
       bob.agreementsService.agree(event.correlationId, agreedData)
     })
-    alice.agreementsService.propose(id, proposedData, List(bob.nodeId))
+    alice.agreementsService.propose(id, proposedData, Set(bob.nodeId))
 
     // then
     eventually {
@@ -64,7 +64,7 @@ class AgreementsServiceSpec extends FlatSpec {
     // when
     alice.agreementsService.agreementEvents.foreach(event => aliceHandler(event))
     bob.agreementsService.agreementEvents.foreach(event => bob.agreementsService.decline(event.correlationId))
-    alice.agreementsService.propose(id, proposedData, List(bob.nodeId))
+    alice.agreementsService.propose(id, proposedData, Set(bob.nodeId))
 
     // then
     eventually {
