@@ -11,4 +11,6 @@ abstract class LedgerStateStorage[S: NioCodec: TypeTag](ledgerId: LedgerId) {
   def slice(keys: Set[String]): LedgerState[S]
 
   def update(oldState: LedgerState[S], newState: LedgerState[S]): Unit
+
+  def keys: Set[String]
 }

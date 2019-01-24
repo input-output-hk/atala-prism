@@ -25,4 +25,6 @@ class MVLedgerStateStorage[S: NioCodec: TypeTag](ledgerId: LedgerId, storageFile
       oldState.map.foreach { case (k, _) => storageMap.remove(k) }
       newState.map.foreach { case (k, v) => storageMap.put(k, v) }
     }
+
+  override def keys: Set[String] = mvTable.table.keySet().asScala.toSet
 }

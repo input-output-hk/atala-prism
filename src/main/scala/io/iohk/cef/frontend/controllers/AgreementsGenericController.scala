@@ -1,5 +1,7 @@
 package io.iohk.cef.frontend.controllers
 
+import java.util.UUID
+
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import com.alexitc.playsonify.core.I18nService
@@ -59,9 +61,9 @@ object AgreementsGenericController {
   import io.iohk.cef.agreements.UserId
   import io.iohk.cef.frontend.controllers.common.Codecs.{nodeIdFormat, nonEmptyListFormat}
 
-  case class AgreeRequest[T](correlationId: String, data: T)
-  case class ProposeRequest[T](correlationId: String, data: T, to: NonEmptyList[UserId])
-  case class DeclineRequest[T](correlationId: String)
+  case class AgreeRequest[T](correlationId: UUID, data: T)
+  case class ProposeRequest[T](correlationId: UUID, data: T, to: NonEmptyList[UserId])
+  case class DeclineRequest[T](correlationId: UUID)
 
   implicit def agreeRequestReads[T](implicit readsT: Reads[T]): Reads[AgreeRequest[T]] = Json.reads[AgreeRequest[T]]
 

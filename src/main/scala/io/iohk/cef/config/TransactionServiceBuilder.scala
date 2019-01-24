@@ -9,7 +9,7 @@ import io.iohk.cef.consensus.{Consensus, raft}
 import io.iohk.cef.ledger.storage.{Ledger, LedgerStateStorage, LedgerStorage}
 import io.iohk.cef.ledger.{Block, BlockHeader, LedgerId, Transaction}
 import io.iohk.cef.network.Network
-import io.iohk.cef.transactionpool.TransactionPoolInterface
+import io.iohk.cef.transactionpool.{BlockCreator, TransactionPoolInterface}
 import io.iohk.cef.transactionservice.raft.{RaftConsensusInterface, RaftRPCFactory}
 import io.iohk.cef.transactionservice.{Envelope, NodeTransactionService}
 import org.slf4j.Logger
@@ -79,6 +79,13 @@ private[config] class TransactionServiceBuilder(
     val raftConsensus: raft.RaftConsensus[Block[State, Tx]] = new raft.RaftConsensus(raftNode)
 
     val consensus = new RaftConsensusInterface[State, Tx](cefConfig.ledgerConfig.id, raftConsensus)
+
+    val _ = new BlockCreator(
+      txPool,
+      consensus,
+      cefConfig.ledgerConfig.blockCreatorInitialDelay,
+      cefConfig.ledgerConfig.blockCreatorInterval
+    )
 
     Map(cefConfig.ledgerConfig.id -> (txPool, consensus))
   }
