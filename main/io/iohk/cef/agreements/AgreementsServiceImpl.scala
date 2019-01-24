@@ -26,6 +26,7 @@ class AgreementsServiceImpl[T](network: ConversationalNetwork[AgreementMessage[T
   // Send agreement to a list of userId who you wish to agree something
   // Successful execution should guarantee that all parties have received the Proposal.
   override def propose(correlationId: UUID, data: T, to: Set[UserId]): Unit = {
+    require(!to.isEmpty, "The recipient list cannot be empty when proposing an agreement.")
     val proposal = Propose(correlationId, userId, data)
     to.foreach(recipient => network.sendMessage(recipient, proposal))
   }

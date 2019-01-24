@@ -5,6 +5,8 @@ import java.util.UUID
 import io.iohk.cef.agreements.AgreementFixture._
 import io.iohk.cef.agreements.AgreementsMessage._
 import io.iohk.cef.codecs.nio.auto._
+import io.iohk.cef.test.DummyNoMessageConversationalNetwork
+import monix.execution.schedulers.TestScheduler
 import org.mockito.Mockito.verify
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
@@ -69,6 +71,16 @@ class AgreementsServiceSpec extends FlatSpec {
     // then
     eventually {
       verify(aliceHandler).apply(Decline(id, bob.nodeId))
+    }
+  }
+
+  it should "throw an exception if the proposal''s recipient list is empty" in {
+    implicit val scheduler = TestScheduler()
+    val network = new DummyNoMessageConversationalNetwork[AgreementMessage[String]]()
+    val service = new AgreementsService[String](network)
+
+    intercept[IllegalArgumentException] {
+      service.propose(UUID.randomUUID(), "data", Set())
     }
   }
 
