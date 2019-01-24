@@ -94,21 +94,21 @@ class AgreementsGenericControllerSpec extends WordSpec with ScalatestRouteTest w
     }
   }
 
-  "POST /agreements/whatever/agree" should {
-    "reject an unknown correlation id" in {
-      def dummyAgreementService: AgreementsService[String] = new AgreementsService[String] {
-        override def propose(correlationId: UUID, data: String, to: Set[UserId]): Unit = ???
+  "POST /agreements/whatever/whatever" should {
+    def dummyAgreementService: AgreementsService[String] = new AgreementsService[String] {
+      override def propose(correlationId: UUID, data: String, to: Set[UserId]): Unit = ???
 
-        override def agree(correlationId: UUID, data: String): Unit = {
-          throw new IllegalArgumentException("exception")
-        }
-
-        override def decline(correlationId: UUID): Unit = ???
-
-        override val agreementEvents: MessageStream[AgreementMessage[String]] =
-          new DummyMessageStream(Observable.empty)(TestScheduler())
+      override def agree(correlationId: UUID, data: String): Unit = {
+        throw new IllegalArgumentException("exception")
       }
-      val routes = controller.routes("generic", dummyAgreementService)
+
+      override def decline(correlationId: UUID): Unit = ???
+
+      override val agreementEvents: MessageStream[AgreementMessage[String]] =
+        new DummyMessageStream(Observable.empty)(TestScheduler())
+    }
+    val routes = controller.routes("generic", dummyAgreementService)
+    "reject an unknown correlation id when agreeing" in {
       val body =
         s"""
            |{
@@ -118,6 +118,20 @@ class AgreementsGenericControllerSpec extends WordSpec with ScalatestRouteTest w
         """.stripMargin
 
       val request = Post("/agreements/generic/agree", HttpEntity(ContentTypes.`application/json`, body))
+
+      request ~> routes ~> check {
+        status must ===(StatusCodes.BadRequest)
+      }
+    }
+    "reject an unknown correlation id when declining" in {
+      val body =
+        s"""
+           |{
+           |  "correlationId": "agreementId",
+           |}
+        """.stripMargin
+
+      val request = Post("/agreements/generic/decline", HttpEntity(ContentTypes.`application/json`, body))
 
       request ~> routes ~> check {
         status must ===(StatusCodes.BadRequest)
