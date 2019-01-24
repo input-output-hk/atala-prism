@@ -67,7 +67,7 @@ sealed trait ValueTxFragment extends ChimericTxFragment {
   }
 
   final override def partitionIds(txId: String, index: Int): Set[String] = {
-    value.iterator.map { case (currency, _) => ChimericLedgerState.getCurrencyPartitionId(currency) }.toSet ++
+    value.keySet.map(ChimericLedgerState.getCurrencyPartitionId) ++
       txSpecificPartitionIds(txId, index)
   }
 }
