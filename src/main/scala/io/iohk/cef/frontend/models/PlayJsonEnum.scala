@@ -16,7 +16,6 @@ trait PlayJsonEnum[T <: EnumEntry] { self: Enum[T] =>
             case Some(u: U) =>
               JsSuccess(u)
             case _ =>
-              // This is horrible, it throws an exception. Maybe use some other json library?
               JsError(s"Expected one of '${values.map(_.entryName).mkString(", ")}', but got '$u' instead")
           }
         } yield result
