@@ -8,7 +8,6 @@ import com.alexitc.playsonify.core.I18nService
 import com.alexitc.playsonify.models._
 import io.iohk.cef.agreements.AgreementsService
 import io.iohk.cef.frontend.controllers.common.CustomJsonController
-import io.iohk.cef.utils.NonEmptyList
 import org.scalactic.{Bad, Every, Good}
 import play.api.libs.json.{JsObject, Json, Reads}
 
