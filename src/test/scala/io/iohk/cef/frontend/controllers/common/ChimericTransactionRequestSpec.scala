@@ -1,5 +1,6 @@
 package io.iohk.cef.frontend.controllers.common
 
+import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.crypto._
 import io.iohk.cef.frontend.models.{
   CreateChimericTransactionRequest,
@@ -9,7 +10,6 @@ import io.iohk.cef.frontend.models.{
 import io.iohk.cef.ledger.chimeric._
 import org.scalatest.{MustMatchers, WordSpec}
 import play.api.libs.json.Json
-import io.iohk.cef.codecs.nio.auto._
 
 class ChimericTransactionRequestSpec extends WordSpec with MustMatchers {
 

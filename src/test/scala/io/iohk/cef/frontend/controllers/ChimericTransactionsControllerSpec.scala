@@ -5,8 +5,8 @@ import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import com.alexitc.playsonify.akka.PublicErrorRenderer
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
-import io.iohk.cef.transactionservice.NodeTransactionService
 import io.iohk.cef.crypto._
+import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.frontend.controllers.common.Codecs
 import io.iohk.cef.frontend.models.{
   CreateChimericTransactionFragment,
@@ -16,13 +16,13 @@ import io.iohk.cef.frontend.models.{
 }
 import io.iohk.cef.frontend.services.ChimericTransactionService
 import io.iohk.cef.ledger.chimeric._
+import io.iohk.cef.transactionservice.NodeTransactionService
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mockito.MockitoSugar.mock
 import org.scalatest.{MustMatchers, WordSpec}
 import play.api.libs.json.{JsValue, Json}
-import io.iohk.cef.error.ApplicationError
 
 import scala.concurrent.Future
 
@@ -192,7 +192,7 @@ class ChimericTransactionsControllerSpec
         status must ===(StatusCodes.OK)
 
         val json = responseAs[JsValue]
-        (json \ "value" \ "m" \ "GBP").as[BigDecimal] must be(BigDecimal(12))
+        (json \ "value" \ "GBP").as[BigDecimal] must be(BigDecimal(12))
       }
     }
 
@@ -238,7 +238,7 @@ class ChimericTransactionsControllerSpec
         status must ===(StatusCodes.OK)
 
         val json = responseAs[JsValue]
-        (json \ "value" \ "m" \ "GBP").as[BigDecimal] must be(BigDecimal(12))
+        (json \ "value" \ "GBP").as[BigDecimal] must be(BigDecimal(12))
       }
     }
 
