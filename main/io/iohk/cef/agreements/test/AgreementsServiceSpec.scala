@@ -77,7 +77,7 @@ class AgreementsServiceSpec extends FlatSpec {
   it should "throw an exception if the proposal''s recipient list is empty" in {
     implicit val scheduler = TestScheduler()
     val network = new DummyNoMessageConversationalNetwork[AgreementMessage[String]]()
-    val service = new AgreementsService[String](network)
+    val service = new AgreementsServiceImpl[String](network)
 
     intercept[IllegalArgumentException] {
       service.propose(UUID.randomUUID(), "data", Set())
