@@ -80,7 +80,7 @@ class AgreementsServiceSpec extends FlatSpec {
     val service = new AgreementsService[String](network)
 
     intercept[IllegalArgumentException] {
-      service.propose("id", "data", Set())
+      service.propose(UUID.randomUUID(), "data", Set())
     }
   }
 
