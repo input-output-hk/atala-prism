@@ -6,17 +6,20 @@ import play.api.libs.json._
 
 trait ChimericCodecs {
 
-  implicit val valueFormat: Format[Value] = new Format[Value] {
-    override def writes(o: Value): JsValue = {
-      Json.toJson(o.m)
+  private def createWrapperFormat[A, B](unwrap: A => B, wrap: B => A)(implicit format: Format[B]): Format[A] =
+    new Format[A] {
+      override def writes(o: A): JsValue = {
+        Json.toJson(unwrap(o))
+      }
+
+      override def reads(json: JsValue): JsResult[A] = {
+        json
+          .validate[B]
+          .map(wrap)
+      }
     }
 
-    override def reads(json: JsValue): JsResult[Value] = {
-      json
-        .validate[Map[Currency, Quantity]]
-        .map(Value.apply)
-    }
-  }
+  implicit val valueFormat: Format[Value] = createWrapperFormat[Value, Map[Currency, Quantity]](_.m, Value.apply)
 
   implicit val withdrawalFormat: Format[Withdrawal] = Json.format[Withdrawal]
 
@@ -24,49 +27,15 @@ trait ChimericCodecs {
 
   implicit val depositFormat: Format[Deposit] = Json.format[Deposit]
 
-  implicit val mintFormat: Format[Mint] = new Format[Mint] {
-    override def writes(o: Mint): JsValue = {
-      Json.toJson(o.value)(valueFormat)
-    }
+  implicit val mintFormat: Format[Mint] = createWrapperFormat[Mint, Value](_.value, Mint.apply)
 
-    override def reads(json: JsValue): JsResult[Mint] = {
-      json
-        .validate[Value](valueFormat)
-        .map(Mint.apply)
-    }
-  }
+  implicit val feeFormat: Format[Fee] = createWrapperFormat[Fee, Value](_.value, Fee.apply)
 
-  implicit val feeFormat: Format[Fee] = new Format[Fee] {
-    override def writes(o: Fee): JsValue = {
-      Json.toJson(o.value)(valueFormat)
-    }
+  implicit val createCurrencyFormat: Format[CreateCurrency] =
+    createWrapperFormat[CreateCurrency, Currency](_.currency, CreateCurrency.apply)
 
-    override def reads(json: JsValue): JsResult[Fee] = {
-      json
-        .validate[Value](valueFormat)
-        .map(Fee.apply)
-    }
-  }
-
-  implicit val createCurrencyFormat: Format[CreateCurrency] = new Format[CreateCurrency] {
-    override def writes(o: CreateCurrency): JsValue = {
-      JsString(o.currency)
-    }
-
-    override def reads(json: JsValue): JsResult[CreateCurrency] = {
-      json.validate[String].map(CreateCurrency.apply)
-    }
-  }
-
-  implicit val signatureTxFragmentFormat: Format[SignatureTxFragment] = new Format[SignatureTxFragment] {
-    override def writes(o: SignatureTxFragment): JsValue = {
-      Json.toJson(o.signature)
-    }
-
-    override def reads(json: JsValue): JsResult[SignatureTxFragment] = {
-      json.validate[Signature].map(SignatureTxFragment.apply)
-    }
-  }
+  implicit val signatureTxFragmentFormat: Format[SignatureTxFragment] =
+    createWrapperFormat[SignatureTxFragment, Signature](_.signature, SignatureTxFragment.apply)
 
   implicit val inputFormat: Format[Input] = new Format[Input] {
     override def writes(o: Input): JsValue = {
