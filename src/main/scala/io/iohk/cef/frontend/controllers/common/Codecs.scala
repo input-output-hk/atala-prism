@@ -313,15 +313,19 @@ object Codecs extends PlayJson.Formats with LowerPriorityCodecs {
       }
     }
 
-  implicit val transactionTypeReads: Reads[IdentityTransactionType] = Reads { json =>
-    json.validate[String].flatMap { string =>
-      IdentityTransactionType
-        .withNameInsensitiveOption(string)
-        .map(JsSuccess.apply(_))
-        .getOrElse {
-          JsError.apply("Invalid transaction type")
-        }
+  implicit val transactionTypeReads: Format[IdentityTransactionType] = new Format[IdentityTransactionType] {
+    override def reads(json: JsValue): JsResult[IdentityTransactionType] = {
+      json.validate[String].flatMap { string =>
+        IdentityTransactionType
+          .withNameInsensitiveOption(string)
+          .map(JsSuccess.apply(_))
+          .getOrElse {
+            JsError.apply("Invalid transaction type")
+          }
+      }
     }
+
+    override def writes(o: IdentityTransactionType): JsValue = JsString(o.entryName)
   }
 
   implicit val witnessFormat: Format[Witness] = Json.format[Witness]
@@ -353,11 +357,12 @@ object Codecs extends PlayJson.Formats with LowerPriorityCodecs {
     }
   }
 
-  implicit val identityTxDataFormats = Json.format[IdentityTransactionData]
+  implicit val identityTxDataFormats: OFormat[IdentityTransactionData] = Json.format[IdentityTransactionData]
 
-  implicit val requestReads: Reads[CreateIdentityTransactionRequest] = Json.reads[CreateIdentityTransactionRequest]
+  implicit val requestReads: OFormat[CreateIdentityTransactionRequest] = Json.format[CreateIdentityTransactionRequest]
 
-  implicit val responseWrites: Writes[IdentityTransaction] = Writes[IdentityTransaction] { obj =>
+  implicit val responseWrites: OWrites[IdentityTransaction] = OWrites[IdentityTransaction] { obj =>
+    val signatureWrites = implicitly[Writes[Signature]]
     val tpe = obj match {
       case _: Claim => IdentityTransactionType.Claim
       case _: Link => IdentityTransactionType.Link
@@ -369,16 +374,16 @@ object Codecs extends PlayJson.Formats with LowerPriorityCodecs {
     }
 
     val linkingIdentitySignatureMayBe = obj match {
-      case l: Link => Map("linkingIdentitySignature" -> JsString(toCleanHex(l.linkingIdentitySignature.toByteString)))
+      case l: Link => Map("linkingIdentitySignature" -> signatureWrites.writes(l.linkingIdentitySignature))
       case l: LinkCertificate =>
-        Map("signatureFromCertificate" -> JsString(toCleanHex(l.signatureFromCertificate.toByteString)))
+        Map("signatureFromCertificate" -> signatureWrites.writes(l.signatureFromCertificate))
       case _ => Map.empty[String, JsString]
     }
 
     val map = Map(
       "type" -> JsString(tpe.toString),
       "data" -> identityTxDataFormats.writes(obj.data),
-      "signature" -> JsString(toCleanHex(obj.signature.toByteString))
+      "signature" -> signatureWrites.writes(obj.signature)
     )
 
     JsObject(map ++ linkingIdentitySignatureMayBe)
