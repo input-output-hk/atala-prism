@@ -31,7 +31,7 @@ class AgreementsGenericController(implicit ec: ExecutionContext, mat: Materializ
         path("propose") {
           post {
             publicInput { ctx: HasModel[ProposeRequest[T]] =>
-              Future { service.propose(ctx.model.correlationId, ctx.model.data, ctx.model.to.toSet) }
+              Future { service.propose(ctx.model.correlationId, ctx.model.data, ctx.model.to) }
                 .map(_ => Good(JsObject.empty))
             }
           }
@@ -54,7 +54,7 @@ object AgreementsGenericController {
   import io.iohk.cef.frontend.controllers.common.Codecs.{nodeIdFormat, nonEmptyListFormat}
 
   case class AgreeRequest[T](correlationId: UUID, data: T)
-  case class ProposeRequest[T](correlationId: UUID, data: T, to: NonEmptyList[UserId])
+  case class ProposeRequest[T](correlationId: UUID, data: T, to: Set[UserId])
   case class DeclineRequest[T](correlationId: UUID)
 
   implicit def agreeRequestReads[T](implicit readsT: Reads[T]): Reads[AgreeRequest[T]] = Json.reads[AgreeRequest[T]]
