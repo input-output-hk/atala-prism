@@ -1,10 +1,13 @@
 package io.iohk.cef.agreements
 
+import java.util.UUID
+
 import io.iohk.cef.agreements.AgreementFixture._
 import io.iohk.cef.agreements.AgreementsMessage.Propose
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.crypto._
-import io.iohk.cef.data.{DataItem, NonEmptyList, Owner, Witness}
+import io.iohk.cef.utils.NonEmptyList
+import io.iohk.cef.data.{DataItem, Owner, Witness}
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 import org.scalatest.concurrent.ScalaFutures.{PatienceConfig, whenReady}
@@ -47,7 +50,7 @@ class AgreementDataItemAcceptanceSpec extends FlatSpec {
       // when
       val collation: Future[DataItem[String]] =
         alice.agreementsService.agreementEvents.take(2).fold(dataItem)(collateSignatures)
-      alice.agreementsService.propose("correlation-id", dataItem, List(bob.nodeId, charlie.nodeId))
+      alice.agreementsService.propose(UUID.randomUUID(), dataItem, Set(bob.nodeId, charlie.nodeId))
 
       // then
       whenReady(collation) { agreedDataItem =>

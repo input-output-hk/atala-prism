@@ -1,13 +1,19 @@
 package io.iohk.cef.frontend.controllers
 
+import java.util.UUID
+
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
-import io.iohk.cef.agreements.AgreementsService
+import io.iohk.cef.agreements.{AgreementMessage, AgreementsService, UserId}
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.crypto._
 import io.iohk.cef.data.DataItem
 import io.iohk.cef.ledger.chimeric.{ChimericTx, CreateCurrency}
+import io.iohk.cef.network.MessageStream
+import io.iohk.cef.test.DummyMessageStream
+import monix.execution.schedulers.TestScheduler
+import monix.reactive.Observable
 import org.scalatest.MustMatchers._
 import org.scalatest.WordSpec
 import org.scalatest.mockito.MockitoSugar._
@@ -34,7 +40,7 @@ class AgreementsGenericControllerSpec extends WordSpec with ScalatestRouteTest w
       val body =
         s"""
           |{
-          |  "correlationId": "agreementId",
+          |  "correlationId": "${UUID.randomUUID()}",
           |  "data": {
           |    "id": "itemId",
           |    "data": ${Json.toJson(certificate)},
@@ -65,7 +71,7 @@ class AgreementsGenericControllerSpec extends WordSpec with ScalatestRouteTest w
       val body =
         s"""
            |{
-           |  "correlationId": "agreementId",
+           |  "correlationId": "${UUID.randomUUID()}",
            |  "data": {
            |    "id": "itemId",
            |    "data": ${Json.toJson(certificate)},
@@ -88,6 +94,51 @@ class AgreementsGenericControllerSpec extends WordSpec with ScalatestRouteTest w
     }
   }
 
+  "POST /agreements/whatever/whatever" should {
+    def dummyAgreementService: AgreementsService[String] = new AgreementsService[String] {
+      override def propose(correlationId: UUID, data: String, to: Set[UserId]): Unit = ???
+
+      override def agree(correlationId: UUID, data: String): Unit = {
+        throw new IllegalArgumentException("exception")
+      }
+
+      override def decline(correlationId: UUID): Unit = ???
+
+      override val agreementEvents: MessageStream[AgreementMessage[String]] =
+        new DummyMessageStream(Observable.empty)(TestScheduler())
+    }
+    val routes = controller.routes("generic", dummyAgreementService)
+    "reject an unknown correlation id when agreeing" in {
+      val body =
+        s"""
+           |{
+           |  "correlationId": "agreementId",
+           |  "data": "test"
+           |}
+        """.stripMargin
+
+      val request = Post("/agreements/generic/agree", HttpEntity(ContentTypes.`application/json`, body))
+
+      request ~> routes ~> check {
+        status must ===(StatusCodes.BadRequest)
+      }
+    }
+    "reject an unknown correlation id when declining" in {
+      val body =
+        s"""
+           |{
+           |  "correlationId": "agreementId",
+           |}
+        """.stripMargin
+
+      val request = Post("/agreements/generic/decline", HttpEntity(ContentTypes.`application/json`, body))
+
+      request ~> routes ~> check {
+        status must ===(StatusCodes.BadRequest)
+      }
+    }
+  }
+
   "POST /agreements/chimeric/propose" should {
     "propose a chimeric transaction" in {
       val tx = ChimericTx(
@@ -99,7 +150,7 @@ class AgreementsGenericControllerSpec extends WordSpec with ScalatestRouteTest w
       val body =
         s"""
            |{
-           |  "correlationId": "agreementId",
+           |  "correlationId": "${UUID.randomUUID()}",
            |  "data": ${Json.toJson(tx).toString()},
            |  "to": ["1111", "2222"]
            |}
@@ -113,6 +164,56 @@ class AgreementsGenericControllerSpec extends WordSpec with ScalatestRouteTest w
     }
   }
 
+  "POST /agreements/whatever/whatever" should {
+    val controller = new AgreementsGenericController
+    val certificateRoutes = controller.routes("whatever", dummyService[String])
+    "reject an empty correlationId when declining" in {
+      val decline =
+        s"""
+           |{
+           |  "correlationId": ""
+           |}
+        """.stripMargin
+
+      val requestDecline =
+        Post("/agreements/whatever/decline", HttpEntity(ContentTypes.`application/json`, decline))
+
+      requestDecline ~> certificateRoutes ~> check {
+        status must ===(StatusCodes.BadRequest)
+      }
+    }
+    "reject an empty correlationId when proposing" in {
+      val propose =
+        s"""
+           |{
+           |  "correlationId": "",
+           |  "data": "HelloWorld",
+           |  "to": ["1111", "2222"]
+           |}
+        """.stripMargin
+      val requestPropose =
+        Post("/agreements/whatever/propose", HttpEntity(ContentTypes.`application/json`, propose))
+      requestPropose ~> certificateRoutes ~> check {
+        status must ===(StatusCodes.BadRequest)
+      }
+
+    }
+    "reject an empty correlationId when agreeing" in {
+      val agree =
+        s"""
+           |{
+           |  "correlationId": "",
+           |  "data": "HelloWorld"
+           |}
+        """.stripMargin
+
+      val requestAgree = Post("/agreements/whatever/agree", HttpEntity(ContentTypes.`application/json`, agree))
+      requestAgree ~> certificateRoutes ~> check {
+        status must ===(StatusCodes.BadRequest)
+      }
+    }
+  }
+
   "POST /agreements/certificates/decline" should {
     "decline to an item" in {
       val certificate = Certificate("certificateId", "2019/Jan/01")
@@ -120,7 +221,7 @@ class AgreementsGenericControllerSpec extends WordSpec with ScalatestRouteTest w
       val body =
         s"""
            |{
-           |  "correlationId": "agreementId"
+           |  "correlationId": "${UUID.randomUUID()}"
            |}
         """.stripMargin
 
@@ -143,7 +244,7 @@ class AgreementsGenericControllerSpec extends WordSpec with ScalatestRouteTest w
       val body =
         s"""
            |{
-           |  "correlationId": "agreementId",
+           |  "correlationId": "${UUID.randomUUID()}",
            |  "data": ${Json.toJson(tx).toString()}
            |}
         """.stripMargin

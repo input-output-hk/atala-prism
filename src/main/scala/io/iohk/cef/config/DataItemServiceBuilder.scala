@@ -1,7 +1,6 @@
 package io.iohk.cef.config
 
 import java.nio.file.Path
-import java.time.Clock
 import java.util.UUID
 
 import io.iohk.cef.codecs.nio._
@@ -9,20 +8,15 @@ import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.data._
 import io.iohk.cef.data.query.{DataItemQueryEngine, DataItemQueryRequest, DataItemQueryResponse}
 import io.iohk.cef.data.storage.mv.MVTableStorage
-import io.iohk.cef.network.Network
-import io.iohk.cef.network.discovery.NetworkDiscovery
-import io.iohk.cef.network.transport.Transports
+import io.iohk.cef.network.{Network, NetworkConfig}
 import io.iohk.cef.transactionservice.Envelope
 
 import scala.reflect.runtime.universe._
 
 private[config] class DataItemServiceBuilder(
-    cefConfig: CefConfig,
+    networkConfig: NetworkConfig,
     tableId: TableId,
-    storagePath: Path,
-    clock: Clock,
-    transports: Transports,
-    networkDiscovery: NetworkDiscovery
+    storagePath: Path
 ) {
 
   def cefDataItemServiceChannel[T]()(
@@ -33,13 +27,13 @@ private[config] class DataItemServiceBuilder(
 
     val tableStorage = new MVTableStorage[T](tableId, storagePath)
     val table = new Table(tableId, tableStorage)
-    val network = Network[Envelope[DataItemAction[T]]](networkDiscovery, transports)
-    val requestNetwork = Network[Envelope[DataItemQueryRequest]](networkDiscovery, transports)
-    val responseNetwork = Network[Envelope[DataItemQueryResponse[T]]](networkDiscovery, transports)
+    val network = Network[Envelope[DataItemAction[T]]](networkConfig.discovery, networkConfig.transports)
+    val requestNetwork = Network[Envelope[DataItemQueryRequest]](networkConfig.discovery, networkConfig.transports)
+    val responseNetwork = Network[Envelope[DataItemQueryResponse[T]]](networkConfig.discovery, networkConfig.transports)
 
     val queryEngine =
       new DataItemQueryEngine(
-        cefConfig.peerConfig.nodeId,
+        networkConfig.peerConfig.nodeId,
         table,
         requestNetwork,
         responseNetwork,

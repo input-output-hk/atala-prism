@@ -2,17 +2,14 @@ package io.iohk.cef.config
 
 import java.time.Clock
 
-import io.iohk.cef.ledger.LedgerId
 import io.iohk.cef.codecs.nio._
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.consensus.raft.node.OnDiskPersistentStorage
 import io.iohk.cef.consensus.{Consensus, raft}
 import io.iohk.cef.ledger.storage.{Ledger, LedgerStateStorage, LedgerStorage}
-import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
+import io.iohk.cef.ledger.{Block, BlockHeader, LedgerId, Transaction}
 import io.iohk.cef.network.Network
-import io.iohk.cef.network.discovery.NetworkDiscovery
-import io.iohk.cef.network.transport.Transports
-import io.iohk.cef.transactionpool.TransactionPoolInterface
+import io.iohk.cef.transactionpool.{BlockCreator, TransactionPoolInterface}
 import io.iohk.cef.transactionservice.raft.{RaftConsensusInterface, RaftRPCFactory}
 import io.iohk.cef.transactionservice.{Envelope, NodeTransactionService}
 import org.slf4j.Logger
@@ -23,9 +20,7 @@ import scala.reflect.runtime.universe._
 private[config] class TransactionServiceBuilder(
     cefConfig: CefConfig,
     logger: Logger,
-    clock: Clock,
-    transports: Transports,
-    networkDiscovery: NetworkDiscovery
+    clock: Clock
 ) {
 
   def cefTransactionServiceChannel[State, Tx <: Transaction[State]](
@@ -43,7 +38,7 @@ private[config] class TransactionServiceBuilder(
       consensusMap[State, Tx](ledgerStateStorage, ledgerStorage),
       txNetwork[State, Tx],
       blockNetwork[State, Tx],
-      cefConfig.peerConfig.nodeId
+      cefConfig.networkConfig.peerConfig.nodeId
     )
   }
 
@@ -74,7 +69,7 @@ private[config] class TransactionServiceBuilder(
     val raftNode = raft.raftNode(
       raftConfig.nodeId,
       raftConfig.clusterMemberIds,
-      new RaftRPCFactory[Block[State, Tx]](networkDiscovery, transports),
+      new RaftRPCFactory[Block[State, Tx]](cefConfig.networkConfig.discovery, cefConfig.networkConfig.transports),
       raftConfig.electionTimeoutRange,
       raftConfig.heartbeatTimeoutRange,
       stateMachineCallback(ledger, txPool),
@@ -84,6 +79,13 @@ private[config] class TransactionServiceBuilder(
     val raftConsensus: raft.RaftConsensus[Block[State, Tx]] = new raft.RaftConsensus(raftNode)
 
     val consensus = new RaftConsensusInterface[State, Tx](cefConfig.ledgerConfig.id, raftConsensus)
+
+    val _ = new BlockCreator(
+      txPool,
+      consensus,
+      cefConfig.ledgerConfig.blockCreatorInitialDelay,
+      cefConfig.ledgerConfig.blockCreatorInterval
+    )
 
     Map(cefConfig.ledgerConfig.id -> (txPool, consensus))
   }
@@ -113,13 +115,15 @@ private[config] class TransactionServiceBuilder(
       txCodec: NioCodec[Tx],
       txTypeTag: TypeTag[Tx]
   ): Network[Envelope[Tx]] =
-    Network[Envelope[Tx]](networkDiscovery, transports)
+    Network[Envelope[Tx]](cefConfig.networkConfig.discovery, cefConfig.networkConfig.transports)
 
   private def blockNetwork[State, Tx <: Transaction[State]](
       implicit stateCodec: NioCodec[State],
       stateTypeTag: TypeTag[State],
       txCodec: NioCodec[Tx],
       txTypeTag: TypeTag[Tx]
-  ): Network[Envelope[Block[State, Tx]]] =
-    Network[Envelope[Block[State, Tx]]](networkDiscovery, transports)
+  ): Network[Envelope[Block[State, Tx]]] = {
+
+    Network[Envelope[Block[State, Tx]]](cefConfig.networkConfig.discovery, cefConfig.networkConfig.transports)
+  }
 }

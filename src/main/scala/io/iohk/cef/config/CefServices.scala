@@ -8,8 +8,6 @@ import io.iohk.cef.codecs.nio._
 import io.iohk.cef.data.{CanValidate, DataItem, DataItemService, TableId}
 import io.iohk.cef.ledger.Transaction
 import io.iohk.cef.ledger.storage.{LedgerStateStorage, LedgerStorage}
-import io.iohk.cef.network.NetworkServices
-import io.iohk.cef.network.transport.Transports
 import io.iohk.cef.transactionservice.NodeTransactionService
 import org.slf4j.LoggerFactory
 
@@ -23,11 +21,6 @@ private[config] class CefServices(cefConfig: CefConfig) {
   private val log = LoggerFactory.getLogger("cef")
   private val clock = Clock.systemUTC()
 
-  private val transports = new Transports(cefConfig.peerConfig)
-
-  private val networkDiscovery =
-    NetworkServices.networkDiscovery(clock, cefConfig.peerConfig, cefConfig.discoveryConfig)
-
   def cefTransactionServiceChannel[State, Tx <: Transaction[State]](
       ledgerStateStorage: LedgerStateStorage[State],
       ledgerStorage: LedgerStorage[State, Tx]
@@ -38,26 +31,32 @@ private[config] class CefServices(cefConfig: CefConfig) {
       txTypeTag: TypeTag[Tx],
       ec: ExecutionContext
   ): NodeTransactionService[State, Tx] = {
-    new TransactionServiceBuilder(cefConfig, log, clock, transports, networkDiscovery)
+
+    new TransactionServiceBuilder(cefConfig, log, clock)
       .cefTransactionServiceChannel(ledgerStateStorage, ledgerStorage)
   }
 
   def cefDataItemServiceChannel[T](
       tableId: TableId,
       storagePath: Path
-  )(implicit codec: NioCodec[T], typeTag: TypeTag[T], canValidate: CanValidate[DataItem[T]]): DataItemService[T] =
-    new DataItemServiceBuilder(cefConfig, tableId, storagePath, clock, transports, networkDiscovery)
+  )(implicit codec: NioCodec[T], typeTag: TypeTag[T], canValidate: CanValidate[DataItem[T]]): DataItemService[T] = {
+
+    new DataItemServiceBuilder(cefConfig.networkConfig, tableId, storagePath)
       .cefDataItemServiceChannel()
+  }
 
-  def cefAgreementsServiceChannel[T: NioCodec: TypeTag](): AgreementsService[T] =
-    new AgreementsServiceBuilder(cefConfig, transports, networkDiscovery)
+  def cefAgreementsServiceChannel[T: NioCodec: TypeTag](): AgreementsService[T] = {
+    new AgreementsServiceBuilder(cefConfig.networkConfig)
       .cefAgreementsServiceChannel()
+  }
 
-  def shutdown(): Unit =
-    transports.shutdown()
+  def shutdown(): Unit = {
+    cefConfig.networkConfig.transports.shutdown()
+  }
 }
 
 object CefServices {
+
   private val services = new ConcurrentHashMap[CefConfig, CefServices]().asScala
 
   def cefTransactionServiceChannel[State, Tx <: Transaction[State]](
@@ -71,17 +70,29 @@ object CefServices {
       txTypeTag: TypeTag[Tx],
       ec: ExecutionContext
   ): NodeTransactionService[State, Tx] = {
+
     services
       .getOrElseUpdate(cefConfig, new CefServices(cefConfig))
       .cefTransactionServiceChannel(ledgerStateStorage, ledgerStorage)
   }
-  def cefDataItemServiceChannel[T: NioCodec: TypeTag](cefConfig: CefConfig, tableId: TableId, storagePath: Path)(
-      implicit canValidate: CanValidate[DataItem[T]]
-  ): DataItemService[T] =
-    services.getOrElseUpdate(cefConfig, new CefServices(cefConfig)).cefDataItemServiceChannel(tableId, storagePath)
 
-  def cefAgreementsServiceChannel[T: NioCodec: TypeTag](cefConfig: CefConfig): AgreementsService[T] =
-    services.getOrElseUpdate(cefConfig, new CefServices(cefConfig)).cefAgreementsServiceChannel()
+  def cefDataItemServiceChannel[T: NioCodec: TypeTag](
+      cefConfig: CefConfig,
+      tableId: TableId,
+      storagePath: Path
+  )(implicit canValidate: CanValidate[DataItem[T]]): DataItemService[T] = {
+
+    services
+      .getOrElseUpdate(cefConfig, new CefServices(cefConfig))
+      .cefDataItemServiceChannel(tableId, storagePath)
+  }
+
+  def cefAgreementsServiceChannel[T: NioCodec: TypeTag](cefConfig: CefConfig): AgreementsService[T] = {
+
+    services
+      .getOrElseUpdate(cefConfig, new CefServices(cefConfig))
+      .cefAgreementsServiceChannel()
+  }
 
   def shutdown(): Unit = {
     services.foreach { case (_, service) => service.shutdown() }

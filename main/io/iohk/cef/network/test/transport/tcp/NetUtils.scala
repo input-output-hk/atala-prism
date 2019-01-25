@@ -4,20 +4,21 @@ import java.io.OutputStream
 import java.net.{InetSocketAddress, ServerSocket, Socket}
 import java.nio.ByteBuffer
 
-import io.iohk.cef.network.{NetworkConfig, NodeId, PeerConfig}
 import io.iohk.cef.network.NodeId.nodeIdBytes
 import io.iohk.cef.network.discovery.NetworkDiscovery
 import io.iohk.cef.network.transport.{FrameHeader, Transports}
+import io.iohk.cef.network.{NodeId, PeerConfig, TransportConfig}
 import org.mockito.ArgumentMatchers.{any, eq => meq}
 import org.mockito.Mockito.when
-import org.scalacheck.Gen
 import org.scalacheck.Arbitrary._
+import org.scalacheck.Gen
 import org.scalatest.mockito.MockitoSugar.mock
 
 import scala.collection.mutable
 import scala.util.Random
 
 object NetUtils {
+
   def writeTo(address: InetSocketAddress, bytes: Array[Byte]): Unit = {
     val socket = new Socket(address.getHostName, address.getPort)
     val out: OutputStream = socket.getOutputStream
@@ -86,7 +87,7 @@ object NetUtils {
     } yield {
       val address = aRandomAddress()
       val messageTtl = FrameHeader.defaultTtl
-      PeerConfig(nodeId, NetworkConfig(Some(TcpTransportConfig(address)), messageTtl))
+      PeerConfig(nodeId, TransportConfig(Some(TcpTransportConfig(address)), messageTtl))
     }
   }
 
@@ -100,7 +101,7 @@ object NetUtils {
   def randomNetworkFixture(messageTtl: Int = FrameHeader.defaultTtl): NetworkFixture = {
 
     val tcpAddress: InetSocketAddress = aRandomAddress()
-    val configuration = NetworkConfig(Some(TcpTransportConfig(tcpAddress)), messageTtl)
+    val configuration = TransportConfig(Some(TcpTransportConfig(tcpAddress)), messageTtl)
 
     val nodeId = NodeId(randomBytes(NodeId.nodeIdBytes))
 

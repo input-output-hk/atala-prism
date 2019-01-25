@@ -18,21 +18,21 @@ class IdentityTransactionService(nodeTransactionService: NodeTransactionService[
   def createIdentityTransaction(req: CreateIdentityTransactionRequest): Response[IdentityTransaction] = {
 
     val identityTransaction = req.data match {
-      case data: ClaimData => Right(data.toTransaction(req.privateKey))
+      case data: ClaimData => Right(Claim(data, req.privateKey))
       case data: LinkData =>
         req.linkingIdentityPrivateKey
-          .map(pk => data.toTransaction(req.privateKey, pk))
+          .map(pk => Link(data, req.privateKey, pk))
           .toRight(CorrespondingPrivateKeyRequiredForLinkingIdentityError)
-      case data: UnlinkData => Right(data.toTransaction(req.privateKey))
-      case data: EndorseData => Right(data.toTransaction(req.privateKey))
-      case data: RevokeEndorsementData => Right(data.toTransaction(req.privateKey))
+      case data: UnlinkData => Right(Unlink(data, req.privateKey))
+      case data: EndorseData => Right(Endorse(data, req.privateKey))
+      case data: RevokeEndorsementData => Right(RevokeEndorsement(data, req.privateKey))
       case data: GrantData =>
         req.linkingIdentityPrivateKey
-          .map(pk => data.toTransaction(req.privateKey, pk))
+          .map(pk => Grant(data, req.privateKey, pk))
           .toRight(CorrespondingPrivateKeyRequiredForLinkingIdentityError)
       case data: LinkCertificateData =>
         req.linkingIdentityPrivateKey
-          .map(pk => data.toTransaction(req.privateKey, pk))
+          .map(pk => LinkCertificate(data, req.privateKey, pk))
           .toRight(CorrespondingPrivateKeyRequiredForLinkingIdentityError)
     }
     Future(identityTransaction)
@@ -66,7 +66,7 @@ class IdentityTransactionService(nodeTransactionService: NodeTransactionService[
     identityTransaction match {
       case Right(tx) => {
         val envelope =
-          Envelope(content = tx, containerId = req.ledgerId, Not(Everyone))
+          Envelope(content = tx, containerId = req.ledgerId, Everyone)
         nodeTransactionService.receiveTransaction(envelope)
       }
       case Left(error) => Future(Left(error))

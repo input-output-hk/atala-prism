@@ -1,5 +1,7 @@
 package io.iohk.cef.data
 
+import io.iohk.cef.utils.NonEmptyList
+
 /**
   *
   * @param id

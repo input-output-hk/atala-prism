@@ -5,6 +5,7 @@ import java.time.LocalDate
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.crypto._
 import io.iohk.cef.data._
+import io.iohk.cef.utils.NonEmptyList
 import org.scalatest.{MustMatchers, WordSpec}
 
 class UniversityDegreeDataItemValidationSpec extends WordSpec with MustMatchers {

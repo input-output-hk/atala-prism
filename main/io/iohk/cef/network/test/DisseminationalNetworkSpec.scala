@@ -2,8 +2,8 @@ package io.iohk.cef.network
 
 import java.net.InetSocketAddress
 
-import io.iohk.cef.network.discovery.NetworkDiscovery
 import io.iohk.cef.codecs.nio.auto._
+import io.iohk.cef.network.discovery.NetworkDiscovery
 import io.iohk.cef.network.transport.tcp.NetUtils.{aRandomAddress, aRandomNodeId}
 import io.iohk.cef.network.transport.tcp.TcpTransportConfig
 import io.iohk.cef.network.transport.{Frame, FrameHeader, NetworkTransport, Transports}
@@ -22,9 +22,9 @@ class DisseminationalNetworkSpec extends FlatSpec {
   val message = "Hello, world!"
 
   val peer1 =
-    PeerConfig(aRandomNodeId(), NetworkConfig(Some(TcpTransportConfig(aRandomAddress()))))
+    PeerConfig(aRandomNodeId(), TransportConfig(Some(TcpTransportConfig(aRandomAddress()))))
   val peer2 =
-    PeerConfig(aRandomNodeId(), NetworkConfig(Some(TcpTransportConfig(aRandomAddress()))))
+    PeerConfig(aRandomNodeId(), TransportConfig(Some(TcpTransportConfig(aRandomAddress()))))
 
   it should "disseminate a message to its peers" in {
     val peers = List(peer1, peer2)
@@ -34,7 +34,7 @@ class DisseminationalNetworkSpec extends FlatSpec {
     peers.foreach(peer => when(discovery.nearestPeerTo(peer.nodeId)).thenReturn(Some(peer)))
     when(discovery.nearestNPeersTo(nodeId, Int.MaxValue)).thenReturn(peers)
     when(transports.peerConfig)
-      .thenReturn(PeerConfig(nodeId, NetworkConfig(Some(TcpTransportConfig(address)))))
+      .thenReturn(PeerConfig(nodeId, TransportConfig(Some(TcpTransportConfig(address)))))
     when(transports.tcp[Frame[String]](any())).thenReturn(Some(tcpTransport))
 
     val network = new DisseminationalNetwork[String](discovery, transports)
@@ -44,7 +44,7 @@ class DisseminationalNetworkSpec extends FlatSpec {
     peers.foreach(peer => {
       val expectedMessageFrame = Frame(FrameHeader(nodeId, peer.nodeId), message)
       verify(tcpTransport)
-        .sendMessage(peer.networkConfig.tcpTransportConfig.get.bindAddress, expectedMessageFrame)
+        .sendMessage(peer.transportConfig.tcpTransportConfig.get.bindAddress, expectedMessageFrame)
     })
   }
 

@@ -6,12 +6,13 @@ import java.util.UUID
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.crypto._
 import io.iohk.cef.data._
-import io.iohk.cef.data.query.{Field, DataItemQueryEngine, DataItemQueryRequest, DataItemQueryResponse}
+import io.iohk.cef.data.query.{DataItemQueryEngine, DataItemQueryRequest, DataItemQueryResponse, Field}
 import io.iohk.cef.data.storage.mv.MVTableStorage
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.network.{MessageStream, NodeId}
 import io.iohk.cef.test.DummyNoMessageNetwork
 import io.iohk.cef.transactionservice.{Envelope, Everyone}
+import io.iohk.cef.utils.NonEmptyList
 import monix.execution.schedulers.TestScheduler
 import org.scalatest.concurrent.ScalaFutures._
 import org.scalatest.{EitherValues, FlatSpec, MustMatchers}

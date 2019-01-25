@@ -1,16 +1,17 @@
 package io.iohk.cef.network
+
 import java.net.InetSocketAddress
 import java.security.SecureRandom
 import java.time.Clock
 
-import akka.actor.typed.{ActorRef, Behavior}
 import akka.actor.typed.scaladsl.ActorContext
+import akka.actor.typed.{ActorRef, Behavior}
+import io.iohk.cef.codecs.nio.NioCodec
 import io.iohk.cef.network.NodeStatus.NodeState
 import io.iohk.cef.network.discovery.DiscoveryListener.DiscoveryListenerRequest
 import io.iohk.cef.network.discovery.DiscoveryManager.DiscoveryRequest
-import io.iohk.cef.network.discovery.db.DummyKnownNodeStorage
 import io.iohk.cef.network.discovery._
-import io.iohk.cef.codecs.nio.NioCodec
+import io.iohk.cef.network.discovery.db.DummyKnownNodeStorage
 import io.iohk.cef.network.telemetry.InMemoryTelemetry
 import io.iohk.cef.network.transport.Transports
 import io.iohk.cef.network.transport.tcp.NetUtils.aRandomAddress
@@ -24,7 +25,7 @@ trait NetworkFixture {
 
   def randomBaseNetwork(bootstrap: Option[BaseNetwork]): BaseNetwork = {
 
-    val configuration = NetworkConfig(Some(TcpTransportConfig(aRandomAddress())))
+    val configuration = TransportConfig(Some(TcpTransportConfig(aRandomAddress())))
 
     val peerConfig = PeerConfig(NodeId(NetUtils.randomBytes(NodeId.nodeIdBytes)), configuration)
 
@@ -121,9 +122,9 @@ trait NetworkFixture {
   // FIXME Get rid of NodeInfo
   private def peerConfig2NodeInfoHack(peerConfig: PeerConfig): NodeInfo = {
     val discoveryAddress =
-      new InetSocketAddress("localhost", peerConfig.networkConfig.tcpTransportConfig.get.bindAddress.getPort + 1)
+      new InetSocketAddress("localhost", peerConfig.transportConfig.tcpTransportConfig.get.bindAddress.getPort + 1)
 
-    val serverAddress = peerConfig.networkConfig.tcpTransportConfig.get.natAddress
+    val serverAddress = peerConfig.transportConfig.tcpTransportConfig.get.natAddress
 
     NodeInfo(peerConfig.nodeId.id, discoveryAddress, serverAddress, Capabilities(0))
   }

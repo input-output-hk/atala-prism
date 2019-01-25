@@ -3,23 +3,23 @@ package io.iohk.cef.network
 import java.net.InetSocketAddress
 
 import com.softwaremill.quicklens._
-import io.iohk.cef.network.NodeId.nodeIdBytes
-import io.iohk.cef.network.discovery.NetworkDiscovery
 import io.iohk.cef.codecs.nio._
 import io.iohk.cef.codecs.nio.auto._
-import io.iohk.cef.network.transport.{FrameHeader, Transports}
+import io.iohk.cef.network.NodeId.nodeIdBytes
+import io.iohk.cef.network.discovery.NetworkDiscovery
 import io.iohk.cef.network.transport.tcp.NetUtils.{aRandomAddress, forwardPort, randomBytes}
 import io.iohk.cef.network.transport.tcp.TcpTransportConfig
+import io.iohk.cef.network.transport.{FrameHeader, Transports}
 import org.mockito.ArgumentMatchers._
-import org.scalatest.{BeforeAndAfterAll, FlatSpec}
-import org.scalatest.concurrent.Eventually._
 import org.mockito.Mockito.{after, verify, when}
+import org.scalatest.concurrent.Eventually._
 import org.scalatest.mockito.MockitoSugar._
+import org.scalatest.{BeforeAndAfterAll, FlatSpec}
 
-import scala.concurrent.Future
-import scala.reflect.runtime.universe._
-import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+import scala.concurrent.duration._
+import scala.reflect.runtime.universe._
 
 class ConversationalNetworkSpec extends FlatSpec with BeforeAndAfterAll {
 
@@ -57,13 +57,13 @@ class ConversationalNetworkSpec extends FlatSpec with BeforeAndAfterAll {
     networks(randomNetwork[String](), randomNetwork[String]()) { networks =>
       val alice = networks(0)
       val bob = networks(1)
-      val bobsTransportConfig = bob.peerConfig.networkConfig.tcpTransportConfig.get
+      val bobsTransportConfig = bob.peerConfig.transportConfig.tcpTransportConfig.get
 
       // by resetting the bind address, we guarantee that attempting to talk to it will break the test.
       val bobsNattedConfig =
         TcpTransportConfig(bindAddress = new InetSocketAddress(0), natAddress = aRandomAddress())
       val bobsNattedPeerInfo =
-        bob.peerConfig.modify(_.networkConfig.tcpTransportConfig).setTo(Option(bobsNattedConfig))
+        bob.peerConfig.modify(_.transportConfig.tcpTransportConfig).setTo(Option(bobsNattedConfig))
 
       val portForward = forwardPort(bobsNattedConfig.natAddress.getPort, bobsTransportConfig.bindAddress)
       val _ = Future {
@@ -137,7 +137,7 @@ class ConversationalNetworkSpec extends FlatSpec with BeforeAndAfterAll {
 
   private def randomNetwork[T: NioCodec: TypeTag](messageTtl: Int = FrameHeader.defaultTtl): NetworkFixture[T] = {
     val tcpAddress: InetSocketAddress = aRandomAddress()
-    val configuration = NetworkConfig(Some(TcpTransportConfig(tcpAddress)), messageTtl)
+    val configuration = TransportConfig(Some(TcpTransportConfig(tcpAddress)), messageTtl)
 
     val nodeId = NodeId(randomBytes(nodeIdBytes))
 

@@ -9,6 +9,7 @@ import io.iohk.cef.data.query.DataItemQuery._
 import io.iohk.cef.data.query.Value.StringRef
 import io.iohk.cef.data.query.{Field, InvalidDataItemQueryError}
 import io.iohk.cef.data._
+import io.iohk.cef.utils.NonEmptyList
 import org.scalatest.EitherValues._
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._

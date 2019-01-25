@@ -7,6 +7,7 @@ import org.scalacheck.Arbitrary
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
 import io.iohk.cef.crypto.test.utils.CryptoEntityArbitraries
+import io.iohk.cef.utils.NonEmptyList
 
 class DataItemCodecSpec extends FlatSpec with CodecTestingHelpers with CryptoEntityArbitraries {
 

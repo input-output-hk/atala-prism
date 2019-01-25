@@ -2,6 +2,7 @@ package io.iohk.cef.frontend.controllers.common
 
 import akka.util.ByteString
 import io.iohk.cef.crypto._
+import io.iohk.cef.data._
 import io.iohk.cef.data.query.DataItemQuery._
 import io.iohk.cef.data.query.Value.{
   BooleanRef,
@@ -15,20 +16,19 @@ import io.iohk.cef.data.query.Value.{
   StringRef
 }
 import io.iohk.cef.data.query.{DataItemQuery, Field, Value => ValueRef}
-import io.iohk.cef.data.{NonEmptyList, _}
 import io.iohk.cef.frontend.PlayJson
 import io.iohk.cef.frontend.models._
 import io.iohk.cef.ledger.chimeric._
 import io.iohk.cef.ledger.identity._
 import io.iohk.cef.network.NodeId
 import io.iohk.cef.transactionservice._
-import io.iohk.cef.utils.ByteStringExtension
+import io.iohk.cef.utils.{ByteStringExtension, NonEmptyList}
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
 import scala.util.Try
 
-object Codecs extends PlayJson.Formats with LowerPriorityCodecs {
+object Codecs extends PlayJson.Formats with ChimericCodecs {
 
   implicit def seqFormat[T](implicit tFormat: Format[T]): Format[Seq[T]] = new Format[Seq[T]] {
     override def reads(json: JsValue): JsResult[Seq[T]] = {
@@ -193,45 +193,6 @@ object Codecs extends PlayJson.Formats with LowerPriorityCodecs {
     }
   }
 
-  implicit val nonSignableChimericTxFragmentFormat: Format[NonSignableChimericTxFragment] =
-    new Format[NonSignableChimericTxFragment] {
-      override def writes(o: NonSignableChimericTxFragment): JsValue = {
-        Json.toJson(o)(chimericTxFragmentFormat)
-      }
-
-      override def reads(json: JsValue): JsResult[NonSignableChimericTxFragment] = {
-        val fragment = json \ "fragment"
-
-        (json \ "type").validate[String] match {
-          case JsSuccess("mint", _) => fragment.validate[Mint]
-          case JsSuccess("fee", _) => fragment.validate[Fee]
-          case JsSuccess("output", _) => fragment.validate[Output]
-          case JsSuccess("createCurrency", _) => fragment.validate[CreateCurrency]
-          case JsSuccess("deposit", _) => fragment.validate[Deposit]
-          case JsSuccess("signatureTxFragment", _) => fragment.validate[SignatureTxFragment]
-          case JsSuccess(_, _) => JsError("Missing or invalid NonSignableChimericTxFragment")
-          case x: JsError => x
-        }
-      }
-    }
-
-  implicit val signableChimericTxFragmentFormat: Format[SignableChimericTxFragment] =
-    new Format[SignableChimericTxFragment] {
-      override def writes(o: SignableChimericTxFragment): JsValue = {
-        Json.toJson(o)(chimericTxFragmentFormat)
-      }
-
-      override def reads(json: JsValue): JsResult[SignableChimericTxFragment] = {
-        val fragment = json \ "fragment"
-
-        (json \ "type").asOpt[String] match {
-          case Some("input") => fragment.validate[Input]
-          case Some("withdrawal") => fragment.validate[Withdrawal]
-          case _ => JsError("Missing or invalid SignableChimericTxFragment")
-        }
-      }
-    }
-
   implicit def signingKeyPairWrites(
       implicit pub: Writes[SigningPublicKey],
       priv: Writes[SigningPrivateKey]
@@ -244,83 +205,19 @@ object Codecs extends PlayJson.Formats with LowerPriorityCodecs {
     JsObject(map)
   }
 
-  implicit lazy val chimericTxFormat: Format[ChimericTx] = Json.format[ChimericTx]
-  implicit lazy val createChimericTransactionRequestFormat: Format[CreateChimericTransactionRequest] =
-    Json.format[CreateChimericTransactionRequest]
-
-  implicit lazy val chimericTransactionFragmentType: Format[ChimericTransactionFragmentType] =
-    new Format[ChimericTransactionFragmentType] {
-      override def writes(o: ChimericTransactionFragmentType): JsValue = {
-        JsString(o.toString)
-      }
-
-      override def reads(json: JsValue): JsResult[ChimericTransactionFragmentType] = {
-        val maybe = json
-          .asOpt[String]
-          .flatMap { string =>
-            ChimericTransactionFragmentType.withNameInsensitiveOption(string)
+  implicit val transactionTypeReads: Format[IdentityTransactionType] = new Format[IdentityTransactionType] {
+    override def reads(json: JsValue): JsResult[IdentityTransactionType] = {
+      json.validate[String].flatMap { string =>
+        IdentityTransactionType
+          .withNameInsensitiveOption(string)
+          .map(JsSuccess.apply(_))
+          .getOrElse {
+            JsError.apply("Invalid transaction type")
           }
-
-        maybe
-          .map(JsSuccess(_))
-          .getOrElse(JsError("Invalid or missing chimeric transaction fragment type"))
       }
     }
 
-  implicit lazy val createNonSignableChimericTransactionFragmentFormat
-      : Format[CreateNonSignableChimericTransactionFragment] = Json.format[CreateNonSignableChimericTransactionFragment]
-
-  implicit lazy val createSignableChimericTransactionFragmentFormat: Format[CreateSignableChimericTransactionFragment] =
-    Json.format[CreateSignableChimericTransactionFragment]
-
-  implicit lazy val createChimericTransactionFragmentFormat: Format[CreateChimericTransactionFragment] =
-    new Format[CreateChimericTransactionFragment] {
-      override def writes(o: CreateChimericTransactionFragment): JsValue = {
-        val (tpe, json) = o match {
-          case x: CreateNonSignableChimericTransactionFragment =>
-            (
-              "createNonSignableChimericTransactionFragment",
-              Json.toJson(x)(createNonSignableChimericTransactionFragmentFormat)
-            )
-          case x: CreateSignableChimericTransactionFragment =>
-            (
-              "createSignableChimericTransactionFragment",
-              Json.toJson(x)(createSignableChimericTransactionFragmentFormat)
-            )
-        }
-
-        val map = Map(
-          "type" -> JsString(tpe),
-          "obj" -> json
-        )
-
-        JsObject(map)
-      }
-
-      override def reads(json: JsValue): JsResult[CreateChimericTransactionFragment] = {
-        val obj = json \ "obj"
-        (json \ "type")
-          .asOpt[String]
-          .flatMap {
-            case "createNonSignableChimericTransactionFragment" =>
-              obj.asOpt[CreateNonSignableChimericTransactionFragment]
-            case "createSignableChimericTransactionFragment" => obj.asOpt[CreateSignableChimericTransactionFragment]
-            case _ => None
-          }
-          .map(JsSuccess(_))
-          .getOrElse(JsError("Missing or invalid create chimeric transaction fragment"))
-      }
-    }
-
-  implicit val transactionTypeReads: Reads[IdentityTransactionType] = Reads { json =>
-    json.validate[String].flatMap { string =>
-      IdentityTransactionType
-        .withNameInsensitiveOption(string)
-        .map(JsSuccess.apply(_))
-        .getOrElse {
-          JsError.apply("Invalid transaction type")
-        }
-    }
+    override def writes(o: IdentityTransactionType): JsValue = JsString(o.entryName)
   }
 
   implicit val witnessFormat: Format[Witness] = Json.format[Witness]
@@ -352,11 +249,12 @@ object Codecs extends PlayJson.Formats with LowerPriorityCodecs {
     }
   }
 
-  implicit val identityTxDataFormats = Json.format[IdentityTransactionData]
+  implicit val identityTxDataFormats: OFormat[IdentityTransactionData] = Json.format[IdentityTransactionData]
 
-  implicit val requestReads: Reads[CreateIdentityTransactionRequest] = Json.reads[CreateIdentityTransactionRequest]
+  implicit val requestReads: OFormat[CreateIdentityTransactionRequest] = Json.format[CreateIdentityTransactionRequest]
 
-  implicit val responseWrites: Writes[IdentityTransaction] = Writes[IdentityTransaction] { obj =>
+  implicit val responseWrites: OWrites[IdentityTransaction] = OWrites[IdentityTransaction] { obj =>
+    val signatureWrites = implicitly[Writes[Signature]]
     val tpe = obj match {
       case _: Claim => IdentityTransactionType.Claim
       case _: Link => IdentityTransactionType.Link
@@ -368,16 +266,16 @@ object Codecs extends PlayJson.Formats with LowerPriorityCodecs {
     }
 
     val linkingIdentitySignatureMayBe = obj match {
-      case l: Link => Map("linkingIdentitySignature" -> JsString(toCleanHex(l.linkingIdentitySignature.toByteString)))
+      case l: Link => Map("linkingIdentitySignature" -> signatureWrites.writes(l.linkingIdentitySignature))
       case l: LinkCertificate =>
-        Map("signatureFromCertificate" -> JsString(toCleanHex(l.signatureFromCertificate.toByteString)))
+        Map("signatureFromCertificate" -> signatureWrites.writes(l.signatureFromCertificate))
       case _ => Map.empty[String, JsString]
     }
 
     val map = Map(
       "type" -> JsString(tpe.toString),
       "data" -> identityTxDataFormats.writes(obj.data),
-      "signature" -> JsString(toCleanHex(obj.signature.toByteString))
+      "signature" -> signatureWrites.writes(obj.signature)
     )
 
     JsObject(map ++ linkingIdentitySignatureMayBe)
@@ -500,54 +398,4 @@ object Codecs extends PlayJson.Formats with LowerPriorityCodecs {
   implicit val AddressResultFormat: Format[AddressResult] = Json.format[AddressResult]
   implicit val NonceResultFormat: Format[NonceResult] = Json.format[NonceResult]
   implicit val CurrencyQueryFormat: Format[CurrencyQuery] = Json.format[CurrencyQuery]
-}
-
-trait LowerPriorityCodecs extends LowestPriorityCodecs {
-
-  implicit lazy val chimericTxFragmentFormat: Format[ChimericTxFragment] = new Format[ChimericTxFragment] {
-    override def writes(o: ChimericTxFragment): JsValue = {
-      val (tpe, json) = o match {
-        case x: Withdrawal => ("withdrawal", Json.toJson(x)(withdrawalFormat))
-        case x: Mint => ("mint", Json.toJson(x)(mintFormat))
-        case x: Input => ("input", Json.toJson(x)(inputFormat))
-        case x: Fee => ("fee", Json.toJson(x)(feeFormat))
-        case x: Output => ("output", Json.toJson(x)(outputFormat))
-        case x: CreateCurrency => ("createCurrency", Json.toJson(x)(createCurrencyFormat))
-        case x: Deposit => ("deposit", Json.toJson(x)(depositFormat))
-        case x: SignatureTxFragment => ("signatureTxFragment", Json.toJson(x)(signatureTxFragmentFormat))
-      }
-
-      Json.obj("type" -> JsString(tpe), "fragment" -> json)
-    }
-
-    override def reads(json: JsValue): JsResult[ChimericTxFragment] = {
-      val fragment = json \ "fragment"
-
-      (json \ "type").validate[String] match {
-        case JsSuccess("withdrawal", _) => fragment.validate[Withdrawal]
-        case JsSuccess("mint", _) => fragment.validate[Mint]
-        case JsSuccess("fee", _) => fragment.validate[Fee]
-        case JsSuccess("output", _) => fragment.validate[Output]
-        case JsSuccess("createCurrency", _) => fragment.validate[CreateCurrency]
-        case JsSuccess("deposit", _) => fragment.validate[Deposit]
-        case JsSuccess("signatureTxFragment", _) => fragment.validate[SignatureTxFragment]
-        case JsSuccess(_, _) => JsError("Invalid ChimericTxFragment")
-        case x: JsError => x
-      }
-    }
-  }
-
-}
-
-trait LowestPriorityCodecs {
-  implicit lazy val valueFormat: Format[Value] = Json.format[Value]
-  implicit lazy val withdrawalFormat: Format[Withdrawal] = Json.format[Withdrawal]
-  implicit lazy val mintFormat: Format[Mint] = Json.format[Mint]
-  implicit lazy val txOutRefFormat: Format[TxOutRef] = Json.format[TxOutRef]
-  implicit lazy val inputFormat: Format[Input] = Json.format[Input]
-  implicit lazy val feeFormat: Format[Fee] = Json.format[Fee]
-  implicit lazy val outputFormat: Format[Output] = Json.format[Output]
-  implicit lazy val createCurrencyFormat: Format[CreateCurrency] = Json.format[CreateCurrency]
-  implicit lazy val depositFormat: Format[Deposit] = Json.format[Deposit]
-  implicit lazy val signatureTxFragmentFormat: Format[SignatureTxFragment] = Json.format[SignatureTxFragment]
 }
