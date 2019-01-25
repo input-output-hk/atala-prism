@@ -96,8 +96,6 @@ scala_binary(
     "//3rdparty/jvm/com/typesafe/akka:akka_actor_typed",
     "//3rdparty/jvm/com/typesafe/akka:akka_actor",
     "//3rdparty/jvm/com/typesafe/akka:akka_slf4j",
-    "//3rdparty/jvm/com/typesafe/akka:akka_http_spray_json",
-    "//3rdparty/jvm/io/spray:spray_json",
     "//3rdparty/jvm/org/bouncycastle:bcprov_jdk15on",
     "//3rdparty/jvm/com/h2database:h2",
     "//3rdparty/jvm/io/micrometer:micrometer_registry_datadog",
