@@ -30,7 +30,7 @@ import io.iohk.cef.ledger.identity._
   */
 sealed abstract class IdentityTransactionType extends EnumEntry with Lowercase
 
-object IdentityTransactionType extends Enum[IdentityTransactionType] with SprayJsonEnum[IdentityTransactionType] {
+object IdentityTransactionType extends Enum[IdentityTransactionType] with PlayJsonEnum[IdentityTransactionType] {
 
   val values = findValues
 

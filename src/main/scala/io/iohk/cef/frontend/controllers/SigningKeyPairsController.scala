@@ -4,7 +4,6 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import io.iohk.cef.frontend.controllers.common.{Codecs, CustomJsonController}
-import io.iohk.cef.frontend.models._
 import io.iohk.cef.frontend.services.CryptoService
 import org.scalactic.Good
 
