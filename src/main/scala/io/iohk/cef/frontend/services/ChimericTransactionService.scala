@@ -1,6 +1,6 @@
 package io.iohk.cef.frontend.services
 
-import io.iohk.cef.transactionservice._
+import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.crypto.sign
 import io.iohk.cef.frontend.client.Response
 import io.iohk.cef.frontend.models.{
@@ -8,19 +8,11 @@ import io.iohk.cef.frontend.models.{
   CreateSignableChimericTransactionFragment,
   SubmitChimericTransactionRequest
 }
-import io.iohk.cef.ledger.chimeric.{
-  TxOutRef,
-  UtxoResult,
-  AddressResult,
-  NonceResult,
-  SignatureTxFragment,
-  CurrencyQuery
-}
+import io.iohk.cef.ledger.chimeric._
 import io.iohk.cef.query.ledger.chimeric._
+import io.iohk.cef.transactionservice._
 
-import io.iohk.cef.codecs.nio.auto._
 import scala.concurrent.{ExecutionContext, Future}
-import io.iohk.cef.ledger.chimeric.{ChimericStateResult, ChimericTx}
 
 class ChimericTransactionService(
     nodeTransactionService: NodeTransactionService[ChimericStateResult, ChimericTx],
@@ -80,4 +72,8 @@ class ChimericTransactionService(
       )
     )
 
+  def queryAllCurrencies(): Response[Set[Currency]] = {
+    val result = queryService.perform(ChimericQuery.AllCurrencies)
+    Future.successful(Right(result))
+  }
 }

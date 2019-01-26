@@ -139,6 +139,23 @@ class ChimericTransactionsControllerSpec
     }
   }
 
+  "GET /chimeric-transactions/currencies" should {
+    "return the existing currency" in {
+      val (service, routes) = prepare()
+      val currencies = List("ADA", "BTC", "MXN")
+      when(service.queryAllCurrencies()).thenReturn(Future.successful(Right(currencies.toSet)))
+
+      val request = Get("/chimeric-transactions/currencies")
+
+      request ~> routes ~> check {
+        status must ===(StatusCodes.OK)
+
+        val json = responseAs[JsValue]
+        (json \ "data").as[List[String]] must be(currencies)
+      }
+    }
+  }
+
   "GET /chimeric-transactions/currencies/:currency" should {
     "query an existing currency" in {
       val (service, routes) = prepare()

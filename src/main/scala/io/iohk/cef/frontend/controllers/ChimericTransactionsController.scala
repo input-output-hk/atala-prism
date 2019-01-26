@@ -3,16 +3,8 @@ package io.iohk.cef.frontend.controllers
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
-import com.alexitc.playsonify.models.{
-  ErrorId,
-  ServerError,
-  NotFoundError,
-  InputValidationError,
-  PublicError,
-  FieldValidationError
-}
 import com.alexitc.playsonify.core.I18nService
-import io.iohk.cef.ledger.LedgerId
+import com.alexitc.playsonify.models._
 import io.iohk.cef.frontend.client.ServiceResponseExtensions
 import io.iohk.cef.frontend.controllers.common._
 import io.iohk.cef.frontend.models.{
@@ -21,11 +13,12 @@ import io.iohk.cef.frontend.models.{
   SubmitChimericTransactionRequest
 }
 import io.iohk.cef.frontend.services.ChimericTransactionService
-import io.iohk.cef.ledger.chimeric.{TxOutRef, ChimericTx, Address}
+import io.iohk.cef.ledger.LedgerId
+import io.iohk.cef.ledger.chimeric.{Address, ChimericTx, TxOutRef}
+import org.scalactic.{Bad, Every, Good}
 import play.api.libs.json._
-import org.scalactic.{Bad, Good, Every}
-import scala.concurrent.{Future, ExecutionContext}
-import io.iohk.cef.frontend.models.PlayJsonFormatForEncodingFormat
+
+import scala.concurrent.{ExecutionContext, Future}
 
 class ChimericTransactionsController(service: ChimericTransactionService)(
     implicit ec: ExecutionContext,
@@ -37,16 +30,29 @@ class ChimericTransactionsController(service: ChimericTransactionService)(
   import Context._
 
   lazy val routes: Route = {
-    path("chimeric-transactions" / "currencies" / Segment) { currency =>
-      get {
-        public { _ =>
-          service.queryCreatedCurrency(currency).map {
-            case Right(Some(c)) => Good(Json.toJson(c))
-            case Right(None) => Bad(Every(CurrencyNotFound(currency)))
-            case Left(_) => Bad(Every(QueryCreatedCurrencyError))
+    pathPrefix("chimeric-transactions" / "currencies") {
+      pathEnd {
+        get {
+          public { _ =>
+            service.queryAllCurrencies().map {
+              case Right(x) => Good(Json.obj("data" -> x))
+              // The method never returns a Left, this is required to compile
+              case Left(_) => Bad(Every(QueryCreatedCurrencyError))
+            }
           }
         }
-      }
+      } ~
+        path(Segment) { currency =>
+          get {
+            public { _ =>
+              service.queryCreatedCurrency(currency).map {
+                case Right(Some(c)) => Good(Json.toJson(c))
+                case Right(None) => Bad(Every(CurrencyNotFound(currency)))
+                case Left(_) => Bad(Every(QueryCreatedCurrencyError))
+              }
+            }
+          }
+        }
     } ~
       path("chimeric-transactions" / "utxos" / Segment / "balance") { txOutRefCandidate =>
         get {
