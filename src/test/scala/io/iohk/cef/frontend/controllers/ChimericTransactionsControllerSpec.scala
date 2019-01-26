@@ -137,7 +137,9 @@ class ChimericTransactionsControllerSpec
         validateErrorResponse(json, 2)
       }
     }
+  }
 
+  "GET /chimeric-transactions/currencies/:currency" should {
     "query an existing currency" in {
       val (service, routes) = prepare()
       when(service.queryCreatedCurrency("GBP")).thenReturn(Future.successful(Right(Some(CurrencyQuery("GBP")))))
@@ -180,7 +182,9 @@ class ChimericTransactionsControllerSpec
         (errors(0) \ "type").as[String] must be("server-error")
       }
     }
+  }
 
+  "GET chimeric-transactions/utxos/:utxo/balance" should {
     "query the balance of an existing utxo" in {
       val (service, routes) = prepare()
       when(service.queryUtxoBalance(TxOutRef("foo", 123)))
@@ -226,7 +230,9 @@ class ChimericTransactionsControllerSpec
         (errors(0) \ "type").as[String] must be("server-error")
       }
     }
+  }
 
+  "GET /chimeric-transactions/addresses/:address/balance" should {
     "query the balance of an existing address" in {
       val (service, routes) = prepare()
       when(service.queryAddressBalance("myaddress"))
@@ -272,7 +278,9 @@ class ChimericTransactionsControllerSpec
         (errors(0) \ "type").as[String] must be("server-error")
       }
     }
+  }
 
+  "GET /chimeric-transactions/addresses/:address/nonce" should {
     "query the nonce of an existing address" in {
       val (service, routes) = prepare()
       when(service.queryAddressNonce("myaddress")).thenReturn(Future.successful(Right(Some(NonceResult(123)))))
