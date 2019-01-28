@@ -55,9 +55,8 @@ class ChimericTransactionsControllerSpec
         ),
         CreateNonSignableChimericTransactionFragment(
           Deposit(
-            address = "another",
-            value = Value(Map("PLN" -> BigDecimal(100000))),
-            signingPublicKey = signingKeyPair1.public
+            address = signingKeyPair1.public,
+            value = Value(Map("PLN" -> BigDecimal(100000)))
           )
         ),
         CreateNonSignableChimericTransactionFragment(CreateCurrency(currency = "AUD"))
@@ -75,7 +74,7 @@ class ChimericTransactionsControllerSpec
     "allow to submit a Signable transaction" in {
       val fragments: Seq[CreateChimericTransactionFragment] = Seq(
         CreateSignableChimericTransactionFragment(
-          Withdrawal(address = "dummy", value = Value(Map("MXN" -> BigDecimal(10))), nonce = 1),
+          Withdrawal(address = signingKeyPair1.public, value = Value(Map("MXN" -> BigDecimal(10))), nonce = 1),
           signingKeyPair1.`private`
         ),
         CreateSignableChimericTransactionFragment(
@@ -96,7 +95,7 @@ class ChimericTransactionsControllerSpec
     "allow to submit a Signable and Non Signable transaction" in {
       val fragments: Seq[CreateChimericTransactionFragment] = Seq(
         CreateSignableChimericTransactionFragment(
-          Withdrawal(address = "dummy", value = Value(Map("MXN" -> BigDecimal(10))), nonce = 1),
+          Withdrawal(signingKeyPair1.public, value = Value(Map("MXN" -> BigDecimal(10))), nonce = 1),
           signingKeyPair1.`private`
         ),
         CreateSignableChimericTransactionFragment(
@@ -110,9 +109,8 @@ class ChimericTransactionsControllerSpec
         ),
         CreateNonSignableChimericTransactionFragment(
           Deposit(
-            address = "another",
-            value = Value(Map("PLN" -> BigDecimal(100000))),
-            signingPublicKey = signingKeyPair1.public
+            address = signingKeyPair1.public,
+            value = Value(Map("PLN" -> BigDecimal(100000)))
           )
         ),
         CreateNonSignableChimericTransactionFragment(CreateCurrency(currency = "AUD"))
@@ -305,7 +303,7 @@ class ChimericTransactionsControllerSpec
 
     "handle a failed address nonce query" in {
       val (service, routes) = prepare()
-      when(service.queryAddressNonce("myaddress"))
+      when(service.queryAddressNonce(signingKeyPair1.public))
         .thenReturn(Future.successful(Left(FakeApplicationError("something gone wrong"))))
 
       val request = Get("/chimeric-transactions/addresses/myaddress/nonce")

@@ -1,10 +1,10 @@
 package io.iohk.cef.ledger.chimeric
 
-import io.iohk.cef.ledger.chimeric.errors._
-import io.iohk.cef.crypto._
 import io.iohk.cef.codecs.nio.auto._
+import io.iohk.cef.crypto._
 import io.iohk.cef.ledger.Transaction
-import io.iohk.cef.ledger.chimeric.ChimericLedgerState.{getAddressPartitionId, getUtxoPartitionId}
+import io.iohk.cef.ledger.chimeric.ChimericLedgerState.getUtxoPartitionId
+import io.iohk.cef.ledger.chimeric.errors._
 
 case class ChimericTx(fragments: Seq[ChimericTxFragment]) extends Transaction[ChimericStateResult] {
 
@@ -35,8 +35,7 @@ case class ChimericTx(fragments: Seq[ChimericTxFragment]) extends Transaction[Ch
       val signingKeys: Seq[SigningPublicKey] = fragments.collect {
         case input: Input =>
           extractSigningKey(currentState, input)
-        case withdrawal: Withdrawal =>
-          extractSigningKey(currentState, withdrawal)
+        case withdrawal: Withdrawal => Some(withdrawal.address)
       }.flatten
 
       if (signatureFragments.length == signingKeys.length)
@@ -52,17 +51,7 @@ case class ChimericTx(fragments: Seq[ChimericTxFragment]) extends Transaction[Ch
     val maybeUtxoResult: Option[UtxoResult] =
       currentState.get(txOutQuery).collect { case r: UtxoResult => r }
 
-    maybeUtxoResult.map(_.signingPublicKey).flatten
-  }
-
-  private def extractSigningKey(currentState: ChimericLedgerState, withdrawal: Withdrawal): Option[SigningPublicKey] = {
-
-    val addressQuery = getAddressPartitionId(withdrawal.address)
-
-    val maybeAddressResult: Option[AddressResult] =
-      currentState.get(addressQuery).collect { case a: AddressResult => a }
-
-    maybeAddressResult.map(_.signingPublicKey).flatten
+    maybeUtxoResult.map(_.signingPublicKey)
   }
 
   private def testSignaturesCorrectness(
@@ -102,7 +91,7 @@ case class ChimericTx(fragments: Seq[ChimericTxFragment]) extends Transaction[Ch
             case input: TxInputFragment => sum + input.value
             case output: TxOutputFragment => sum - output.value
             case _ => sum
-          }
+        }
       )
       if (totalValue == Value.Zero) {
         Right(currentState)

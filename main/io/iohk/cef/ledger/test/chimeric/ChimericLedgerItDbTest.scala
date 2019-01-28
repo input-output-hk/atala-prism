@@ -14,11 +14,15 @@ class ChimericLedgerItDbTest extends FlatSpec {
   val signingPublicKey = signingKeyPair.public
   val signingPrivateKey = signingKeyPair.`private`
 
-  behavior of "ChimericLedger"
+  val signingKeyPair2 = generateSigningKeyPair()
+  val signingPublicKey2 = signingKeyPair.public
+  val signingPrivateKey2 = signingKeyPair.`private`
+
+  behavior of "ChimericLedgerItDbTest"
 
   it should "store transactions" in withLedger[ChimericStateResult, ChimericTx]("chimericLedger") { ledger =>
-    val address1 = "address1"
-    val address2 = "address2"
+    val address1 = signingPublicKey
+    val address2 = signingPublicKey2
     val currency1 = "currency1"
     val currency2 = "currency2"
     val value1 = Value(Map(currency1 -> BigDecimal(10), currency2 -> BigDecimal(20)))
@@ -44,14 +48,14 @@ class ChimericLedgerItDbTest extends FlatSpec {
           CreateCurrency(currency2),
           Mint(value1),
           Mint(value2),
-          Deposit(address1, value1 + value2, signingPublicKey)
+          Deposit(address1, value1 + value2)
         )
       ),
       ChimericTx(
         signFragments(
           Seq(
             Withdrawal(address1, value1, 1),
-            Deposit(address2, value1 - multiFee, signingPublicKey),
+            Deposit(address2, value1 - multiFee),
             Fee(multiFee)
           ),
           signingPrivateKey
@@ -74,9 +78,9 @@ class ChimericLedgerItDbTest extends FlatSpec {
       Map(
         currency1Key -> CreateCurrencyResult(CreateCurrency(currency1)),
         currency2Key -> CreateCurrencyResult(CreateCurrency(currency2)),
-        utxoKey -> UtxoResult(value3 - singleFee, Some(signingPublicKey)),
-        address1Key -> AddressResult(value2 - value3, Some(signingPublicKey)),
-        address2Key -> AddressResult(value1 - multiFee, Some(signingPublicKey))
+        utxoKey -> UtxoResult(value3 - singleFee, signingPublicKey),
+        address1Key -> AddressResult(value2 - value3),
+        address2Key -> AddressResult(value1 - multiFee)
       )
     )
 
@@ -99,7 +103,7 @@ class ChimericLedgerItDbTest extends FlatSpec {
       Map(
         currency1Key -> CreateCurrencyResult(CreateCurrency(currency1)),
         currency2Key -> CreateCurrencyResult(CreateCurrency(currency2)),
-        address2Key -> AddressResult(value1 - multiFee, Some(signingPublicKey))
+        address2Key -> AddressResult(value1 - multiFee)
       )
     )
   }

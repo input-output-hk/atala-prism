@@ -1,5 +1,7 @@
 package io.iohk.cef.ledger
 
+import io.iohk.cef.crypto._
+
 package object chimeric {
   type ChimericLedgerBlock = Block[ChimericStateResult, ChimericTx]
   type ChimericLedgerState = LedgerState[ChimericStateResult]
@@ -8,5 +10,5 @@ package object chimeric {
   type Currency = String
   type Quantity = BigDecimal
   type ChimericTxId = String
-  type Address = String
+  type Address = SigningPublicKey
 }

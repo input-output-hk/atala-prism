@@ -21,11 +21,12 @@ object ChimericLedgerState {
   def getCurrencyPartitionId(currency: Currency): String = s"$CurrencyPrefix$currency"
 
   def toStateKey(partitionId: String): ChimericStateQuery = partitionId.take(PrefixLength) match {
-    case AddressPrefix =>
-      AddressQuery(partitionId.drop(PrefixLength))
-
-    case AddressNoncePrefix =>
-      AddressNonceQuery(partitionId.drop(PrefixLength))
+    case AddressPrefix | AddressNoncePrefix =>
+      val keyAsString = partitionId.drop(PrefixLength)
+      val parseResult = SigningPublicKey.parseFrom(keyAsString)
+      val key =
+        parseResult.getOrElse(throw new IllegalArgumentException(s"Wrong adress format ${keyAsString}"))
+      AddressQuery(key)
 
     case TxOutRefPrefix =>
       val utxo = partitionId.drop(PrefixLength).split(Delimiter)
@@ -44,8 +45,8 @@ object ChimericLedgerState {
 sealed trait ChimericStateResult
 
 case class CreateCurrencyResult(createCurrency: CreateCurrency) extends ChimericStateResult
-case class UtxoResult(value: Value, signingPublicKey: Option[SigningPublicKey]) extends ChimericStateResult
-case class AddressResult(value: Value, signingPublicKey: Option[SigningPublicKey]) extends ChimericStateResult
+case class UtxoResult(value: Value, signingPublicKey: SigningPublicKey) extends ChimericStateResult
+case class AddressResult(value: Value) extends ChimericStateResult
 case class NonceResult(nonce: Int) extends ChimericStateResult
 
 //Keys

@@ -1,5 +1,6 @@
 package io.iohk.cef.query.ledger.chimeric
 
+import io.iohk.cef.crypto.generateSigningKeyPair
 import io.iohk.cef.ledger.LedgerState
 import io.iohk.cef.ledger.chimeric._
 import io.iohk.cef.ledger.storage.LedgerStateStorage
@@ -11,6 +12,8 @@ import org.scalatest.mockito.MockitoSugar._
 import org.scalatest.{FlatSpec, MustMatchers}
 
 class ChimericQuerySpec extends FlatSpec with MustMatchers {
+  val signingKeyPair = generateSigningKeyPair()
+  val signingKeyPair2 = generateSigningKeyPair()
 
   behavior of "ChimericQuery"
 
@@ -39,7 +42,7 @@ class ChimericQuerySpec extends FlatSpec with MustMatchers {
     val nonExistentUtxo = TxOutRef("id2", 0)
     val utxoBalancePartitionId = ChimericLedgerState.getUtxoPartitionId(utxo)
     val nonExistentUtxoPartitionId = ChimericLedgerState.getUtxoPartitionId(nonExistentUtxo)
-    val utxoBalancePartition: ChimericStateResult = UtxoResult(Value(("CRC", BigDecimal(10))), None)
+    val utxoBalancePartition: ChimericStateResult = UtxoResult(Value(("CRC", BigDecimal(10))), signingKeyPair.public)
     val ledgerState = LedgerState(utxoBalancePartitionId -> utxoBalancePartition)
     when(stateStorage.slice(Set(utxoBalancePartitionId))).thenReturn(ledgerState)
     when(stateStorage.slice(Set(nonExistentUtxoPartitionId))).thenReturn(ledgerState)
@@ -53,11 +56,11 @@ class ChimericQuerySpec extends FlatSpec with MustMatchers {
   it should "query for address balances" in {
     val stateStorage = mock[LedgerStateStorage[ChimericStateResult]]
     val engine = LedgerQueryEngine(stateStorage)
-    val addressWithBalance = "address"
-    val addressWithoutBalance = "address2"
+    val addressWithBalance = signingKeyPair.public
+    val addressWithoutBalance = signingKeyPair2.public
     val addressBalancePartitionId = ChimericLedgerState.getAddressPartitionId(addressWithBalance)
     val addressWithougBalancePartitionId = ChimericLedgerState.getAddressPartitionId(addressWithoutBalance)
-    val addressBalancePartition: ChimericStateResult = AddressResult(Value(("CRC", BigDecimal(10))), None)
+    val addressBalancePartition: ChimericStateResult = AddressResult(Value(("CRC", BigDecimal(10))))
     val ledgerState = LedgerState(addressBalancePartitionId -> addressBalancePartition)
     when(stateStorage.slice(Set(addressBalancePartitionId))).thenReturn(ledgerState)
     when(stateStorage.slice(Set(addressWithougBalancePartitionId))).thenReturn(ledgerState)
@@ -71,8 +74,8 @@ class ChimericQuerySpec extends FlatSpec with MustMatchers {
   it should "query for address nonces" in {
     val stateStorage = mock[LedgerStateStorage[ChimericStateResult]]
     val engine = LedgerQueryEngine(stateStorage)
-    val addressWithNonce = "address"
-    val addressWithoutNonce = "address2"
+    val addressWithNonce = signingKeyPair.public
+    val addressWithoutNonce = signingKeyPair2.public
     val addressNoncePartitionId = ChimericLedgerState.getAddressNoncePartitionId(addressWithNonce)
     val addressWithoutNoncePartitionId = ChimericLedgerState.getAddressNoncePartitionId(addressWithoutNonce)
     val addressNoncePartition: ChimericStateResult = NonceResult(100)

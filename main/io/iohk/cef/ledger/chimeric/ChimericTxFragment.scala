@@ -116,7 +116,7 @@ case class Withdrawal(address: Address, value: Value, nonce: Int)
               Right(newState)
             } else {
               val newState =
-                partialState.put(addressKey, AddressResult(addressValue - value, addressResult.signingPublicKey))
+                partialState.put(addressKey, AddressResult(addressValue - value))
               Right(newState)
             }
           } else {
@@ -188,7 +188,7 @@ case class Output(value: Value, signingPublicKey: SigningPublicKey)
     if (txOutValueOpt.isDefined) {
       Left(UnspentOutputAlreadyExists(txOutRef))
     } else {
-      Right(state.put(ChimericLedgerState.getUtxoPartitionId(txOutRef), UtxoResult(value, Some(signingPublicKey))))
+      Right(state.put(ChimericLedgerState.getUtxoPartitionId(txOutRef), UtxoResult(value, signingPublicKey)))
     }
   }
 
@@ -200,15 +200,13 @@ case class Output(value: Value, signingPublicKey: SigningPublicKey)
   override def toString(): ChimericTxId = s"Output($value)"
 }
 
-case class Deposit(address: Address, value: Value, signingPublicKey: SigningPublicKey)
-    extends TxOutputFragment
-    with NonSignableChimericTxFragment {
+case class Deposit(address: Address, value: Value) extends TxOutputFragment with NonSignableChimericTxFragment {
   override def exec(state: ChimericLedgerState, index: Int, txId: String): ChimericStateOrError = {
     val addressKey = getAddressPartitionId(address)
     val addressResultOpt: Option[AddressResult] =
       state.get(addressKey).collect { case a: AddressResult => a }
-    addressResultOpt.fold(Right(state.put(addressKey, AddressResult(value, Some(signingPublicKey)))))(
-      addressResult => Right(state.put(addressKey, AddressResult(value + addressResult.value, Some(signingPublicKey))))
+    addressResultOpt.fold(Right(state.put(addressKey, AddressResult(value))))(
+      addressResult => Right(state.put(addressKey, AddressResult(value + addressResult.value)))
     )
   }
 
