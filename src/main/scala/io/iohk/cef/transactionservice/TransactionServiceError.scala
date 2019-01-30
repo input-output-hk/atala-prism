@@ -1,6 +1,6 @@
 package io.iohk.cef.transactionservice
 import io.iohk.cef.error.ApplicationError
-import io.iohk.cef.network.NodeId
+import io.iohk.cef.network.{Envelope, NodeId}
 
 sealed trait TransactionServiceError extends ApplicationError
 

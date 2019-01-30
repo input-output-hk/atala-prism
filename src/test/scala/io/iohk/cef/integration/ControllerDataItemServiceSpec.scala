@@ -10,8 +10,7 @@ import io.iohk.cef.data.query.DataItemQueryEngine
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.frontend.controllers.ItemsGenericController
 import io.iohk.cef.frontend.controllers.common.Codecs
-import io.iohk.cef.network.{MessageStream, Network}
-import io.iohk.cef.transactionservice.Envelope
+import io.iohk.cef.network.{Envelope, MessageStream, Network}
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
 import org.scalatest.concurrent.ScalaFutures

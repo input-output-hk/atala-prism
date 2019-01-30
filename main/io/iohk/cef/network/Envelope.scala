@@ -1,5 +1,4 @@
-package io.iohk.cef.transactionservice
-import io.iohk.cef.ContainerId
+package io.iohk.cef.network
 
 /**
   *

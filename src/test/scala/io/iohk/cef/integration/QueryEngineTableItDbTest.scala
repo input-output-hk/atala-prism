@@ -9,9 +9,9 @@ import io.iohk.cef.data._
 import io.iohk.cef.data.query.{DataItemQueryEngine, DataItemQueryRequest, DataItemQueryResponse, Field}
 import io.iohk.cef.data.storage.mv.MVTableStorage
 import io.iohk.cef.error.ApplicationError
-import io.iohk.cef.network.{MessageStream, NodeId}
+import io.iohk.cef.network.{Envelope, MessageStream, NodeId}
 import io.iohk.cef.test.DummyNoMessageNetwork
-import io.iohk.cef.transactionservice.{Envelope, Everyone}
+import io.iohk.cef.network.Everyone
 import io.iohk.cef.utils.NonEmptyList
 import monix.execution.schedulers.TestScheduler
 import org.scalatest.concurrent.ScalaFutures._

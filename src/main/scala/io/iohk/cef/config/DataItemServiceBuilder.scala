@@ -8,8 +8,7 @@ import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.data._
 import io.iohk.cef.data.query.{DataItemQueryEngine, DataItemQueryRequest, DataItemQueryResponse}
 import io.iohk.cef.data.storage.mv.MVTableStorage
-import io.iohk.cef.network.{Network, NetworkConfig}
-import io.iohk.cef.transactionservice.Envelope
+import io.iohk.cef.network.{Envelope, Network, NetworkConfig}
 
 import scala.reflect.runtime.universe._
 

@@ -4,9 +4,9 @@ import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.crypto._
 import io.iohk.cef.data.query.DataItemQuery.NoPredicateDataItemQuery
 import io.iohk.cef.data._
-import io.iohk.cef.network.{Network, NodeId}
+import io.iohk.cef.network.{Envelope, Network, NodeId}
 import io.iohk.cef.test.DummyMessageStream
-import io.iohk.cef.transactionservice.{Envelope, Everyone}
+import io.iohk.cef.network.Everyone
 import io.iohk.cef.utils.NonEmptyList
 import monix.execution.schedulers.TestScheduler
 import monix.reactive.Observable

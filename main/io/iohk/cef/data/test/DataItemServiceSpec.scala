@@ -4,8 +4,8 @@ import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.crypto._
 import io.iohk.cef.data.DataItemAction._
 import io.iohk.cef.data.query.DataItemQueryEngine
-import io.iohk.cef.network.{MessageStream, Network}
-import io.iohk.cef.transactionservice.{Envelope, Everyone}
+import io.iohk.cef.network.{Envelope, MessageStream, Network}
+import io.iohk.cef.network.Everyone
 import io.iohk.cef.utils.NonEmptyList
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{verify, when}

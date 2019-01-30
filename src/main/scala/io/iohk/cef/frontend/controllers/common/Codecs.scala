@@ -20,8 +20,7 @@ import io.iohk.cef.frontend.PlayJson
 import io.iohk.cef.frontend.models._
 import io.iohk.cef.ledger.chimeric._
 import io.iohk.cef.ledger.identity._
-import io.iohk.cef.network.NodeId
-import io.iohk.cef.transactionservice._
+import io.iohk.cef.network._
 import io.iohk.cef.utils.{ByteStringExtension, NonEmptyList}
 import play.api.libs.functional.syntax._
 import play.api.libs.json._

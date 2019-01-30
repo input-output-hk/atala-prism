@@ -6,7 +6,7 @@ import akka.testkit.TestKit
 import akka.util.Timeout
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import io.iohk.cef.consensus.Consensus
-import io.iohk.cef.transactionservice.{Envelope, NodeTransactionService}
+import io.iohk.cef.transactionservice.NodeTransactionService
 import io.iohk.cef.frontend.controllers.ChimericTransactionsController
 import io.iohk.cef.frontend.controllers.common.Codecs
 import io.iohk.cef.frontend.models.{CreateChimericTransactionRequest, CreateNonSignableChimericTransactionFragment}
@@ -14,7 +14,7 @@ import io.iohk.cef.frontend.services.ChimericTransactionService
 import io.iohk.cef.ledger.chimeric._
 import io.iohk.cef.ledger.storage.LedgerStateStorage
 import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
-import io.iohk.cef.network.{MessageStream, Network, NodeId}
+import io.iohk.cef.network.{Envelope, MessageStream, Network, NodeId}
 import io.iohk.cef.transactionpool.TransactionPoolInterface
 import org.mockito.Mockito.when
 import org.scalatest._

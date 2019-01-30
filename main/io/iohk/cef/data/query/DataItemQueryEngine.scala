@@ -2,8 +2,8 @@ package io.iohk.cef.data.query
 import io.iohk.cef.codecs.nio._
 import io.iohk.cef.data.{DataItem, Table}
 import io.iohk.cef.error.ApplicationError
-import io.iohk.cef.network.{MessageStream, Network, NodeId}
-import io.iohk.cef.transactionservice.{Envelope, Everyone}
+import io.iohk.cef.network.{Envelope, MessageStream, Network, NodeId}
+import io.iohk.cef.network.Everyone
 import io.iohk.cef.utils.Logger
 
 class DataItemQueryEngine[I](
