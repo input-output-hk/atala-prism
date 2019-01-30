@@ -1,5 +1,8 @@
 package io.iohk.cef.ledger.chimeric
 
+import java.util.Base64
+
+import akka.util.ByteString
 import io.iohk.cef.crypto.SigningPublicKey
 
 object ChimericLedgerState {
@@ -15,17 +18,21 @@ object ChimericLedgerState {
     require(prefix.size == PrefixLength)
   }
 
-  def getAddressPartitionId(address: Address): String = s"$AddressPrefix$address"
-  def getAddressNoncePartitionId(address: Address): String = s"$AddressNoncePrefix$address"
+  private def addressEncoder(address: Address): String = Base64.getEncoder.encodeToString(address.toByteString.toArray)
+  private def addressDecoder(addressStr: String): Address =
+    SigningPublicKey
+      .decodeFrom(ByteString(Base64.getDecoder.decode(addressStr)))
+      .getOrElse(throw new IllegalArgumentException(s"Wrong adress format ${addressStr}"))
+
+  def getAddressPartitionId(address: Address): String = s"$AddressPrefix${addressEncoder(address)}"
+  def getAddressNoncePartitionId(address: Address): String = s"$AddressNoncePrefix${addressEncoder(address)}"
   def getUtxoPartitionId(txOutRef: TxOutRef): String = s"$TxOutRefPrefix${txOutRef.txId}${Delimiter}${txOutRef.index}"
   def getCurrencyPartitionId(currency: Currency): String = s"$CurrencyPrefix$currency"
 
   def toStateKey(partitionId: String): ChimericStateQuery = partitionId.take(PrefixLength) match {
     case AddressPrefix | AddressNoncePrefix =>
       val keyAsString = partitionId.drop(PrefixLength)
-      val parseResult = SigningPublicKey.parseFrom(keyAsString)
-      val key =
-        parseResult.getOrElse(throw new IllegalArgumentException(s"Wrong adress format ${keyAsString}"))
+      val key = addressDecoder(keyAsString)
       AddressQuery(key)
 
     case TxOutRefPrefix =>

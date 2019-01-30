@@ -15,8 +15,8 @@ class ChimericLedgerItDbTest extends FlatSpec {
   val signingPrivateKey = signingKeyPair.`private`
 
   val signingKeyPair2 = generateSigningKeyPair()
-  val signingPublicKey2 = signingKeyPair.public
-  val signingPrivateKey2 = signingKeyPair.`private`
+  val signingPublicKey2 = signingKeyPair2.public
+  val signingPrivateKey2 = signingKeyPair2.`private`
 
   behavior of "ChimericLedgerItDbTest"
 
@@ -54,7 +54,7 @@ class ChimericLedgerItDbTest extends FlatSpec {
       ChimericTx(
         signFragments(
           Seq(
-            Withdrawal(address1, value1, 1),
+            Withdrawal(address1, value1, nonce = 1),
             Deposit(address2, value1 - multiFee),
             Fee(multiFee)
           ),
@@ -87,7 +87,7 @@ class ChimericLedgerItDbTest extends FlatSpec {
     val txFragments: Seq[ChimericTxFragment] = Seq(
       Input(TxOutRef(utxoTx.txId, 1), value3 - singleFee),
       Fee(value3 - singleFee),
-      Withdrawal(address1, value2 - value3, 3),
+      Withdrawal(address1, value2 - value3, nonce = 3),
       Fee(value2 - value3)
     )
 

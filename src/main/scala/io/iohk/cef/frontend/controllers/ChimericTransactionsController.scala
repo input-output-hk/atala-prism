@@ -1,8 +1,11 @@
 package io.iohk.cef.frontend.controllers
 
+import java.util.Base64
+
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
+import akka.util.ByteString
 import com.alexitc.playsonify.models.{
   ErrorId,
   FieldValidationError,
@@ -68,8 +71,7 @@ class ChimericTransactionsController(service: ChimericTransactionService)(
       path("chimeric-transactions" / "addresses" / Segment / "balance") { addressStr =>
         get {
           public { _ =>
-            SigningPublicKey
-              .parseFrom(addressStr)
+            decodeAddress(addressStr)
               .map { address =>
                 service.queryAddressBalance(address).map {
                   case Right(Some(response)) => Good(response)
@@ -84,8 +86,7 @@ class ChimericTransactionsController(service: ChimericTransactionService)(
       path("chimeric-transactions" / "addresses" / Segment / "nonce") { addressStr =>
         get {
           public { _ =>
-            SigningPublicKey
-              .parseFrom(addressStr)
+            decodeAddress(addressStr)
               .map { address =>
                 service.queryAddressNonce(address).map {
                   case Right(Some(response)) => Good(Json.toJson(response))
@@ -112,6 +113,10 @@ class ChimericTransactionsController(service: ChimericTransactionService)(
           }
         }
       }
+  }
+
+  private def decodeAddress(address: String) = {
+    SigningPublicKey.decodeFrom(ByteString(Base64.getUrlDecoder().decode(address)))
   }
 }
 
