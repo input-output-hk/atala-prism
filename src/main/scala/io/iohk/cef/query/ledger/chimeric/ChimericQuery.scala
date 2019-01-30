@@ -1,7 +1,9 @@
 package io.iohk.cef.query.ledger.chimeric
 
 import io.iohk.cef.ledger.chimeric._
+import io.iohk.cef.query.Query
 import io.iohk.cef.query.ledger.{LedgerQuery, LedgerQueryEngine}
+import io.iohk.cef.crypto._
 
 sealed trait ChimericQuery extends LedgerQuery[ChimericPartition]
 
@@ -54,6 +56,21 @@ object ChimericQuery {
       queryEngine.keys().map(ChimericLedgerState.toStateKey).collect {
         case c: CurrencyQuery => c.currency
       }
+    }
+  }
+
+  case class UtxosByPublicKey(publicKey: SigningPublicKey) extends ChimericQuery {
+    override type Response = Set[TxOutRef]
+
+    override protected def perform(queryEngine: LedgerQueryEngine[ChimericPartition]): Set[TxOutRef] = {
+      val relevantKeys = queryEngine.keys().map(ChimericLedgerState.toStateKey).collect { case u: UtxoQuery => u }
+      val balances = relevantKeys.view.map { key =>
+        val balanceOpt = Query.performer(UtxoBalance(key.txOutRef), queryEngine)
+        balanceOpt.map(balance => (key.txOutRef, balance))
+      }
+      balances.collect {
+        case Some((txOutRef, UtxoResult(_, Some(pk)))) if publicKey == pk => txOutRef
+      }.toSet
     }
   }
 

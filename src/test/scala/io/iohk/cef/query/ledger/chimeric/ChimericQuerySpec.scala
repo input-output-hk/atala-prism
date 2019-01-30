@@ -2,6 +2,7 @@ package io.iohk.cef.query.ledger.chimeric
 
 import io.iohk.cef.ledger.LedgerState
 import io.iohk.cef.ledger.chimeric._
+import io.iohk.cef.crypto._
 import io.iohk.cef.ledger.storage.LedgerStateStorage
 import io.iohk.cef.query.Query
 import io.iohk.cef.query.ledger.LedgerQueryEngine
@@ -97,6 +98,36 @@ class ChimericQuerySpec extends FlatSpec with MustMatchers {
 
     val queryForCurrencies = AllCurrencies
     Query.performer(queryForCurrencies, engine) mustBe Set(currency1, currency2)
+  }
+
+  it should "query utxos by public key" in {
+    val stateStorage = mock[LedgerStateStorage[ChimericStateResult]]
+    val engine = LedgerQueryEngine(stateStorage)
+    val keys1 = generateSigningKeyPair()
+    val keys2 = generateSigningKeyPair()
+    val keys3 = generateSigningKeyPair()
+    val txOutRef1 = TxOutRef("a", 1)
+    val txOutRef2 = TxOutRef("a", 2)
+    val txOutRef3 = TxOutRef("a", 3)
+    val state = Map(
+      ChimericLedgerState
+        .getUtxoPartitionId(txOutRef1) -> UtxoResult(Value("crc" -> BigDecimal(10)), Some(keys1.public)),
+      ChimericLedgerState
+        .getUtxoPartitionId(txOutRef2) -> UtxoResult(Value("crc" -> BigDecimal(7)), Some(keys2.public)),
+      ChimericLedgerState.getUtxoPartitionId(txOutRef3) -> UtxoResult(Value("crc" -> BigDecimal(4)), Some(keys1.public))
+    )
+    when(stateStorage.keys).thenReturn(state.map(_._1).toSet)
+    state.foreach {
+      case (key, value) =>
+        when(stateStorage.slice(Set(key))).thenReturn(LedgerState[ChimericStateResult](Map(key -> value)))
+    }
+
+    val queryForUtxos1 = UtxosByPublicKey(keys1.public)
+    val queryForUtxos2 = UtxosByPublicKey(keys2.public)
+    val queryForUtxos3 = UtxosByPublicKey(keys3.public)
+    Query.performer(queryForUtxos1, engine) mustBe Set(txOutRef1, txOutRef3)
+    Query.performer(queryForUtxos2, engine) mustBe Set(txOutRef2)
+    Query.performer(queryForUtxos3, engine) mustBe Set()
   }
 
 }
