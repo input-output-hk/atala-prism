@@ -1,5 +1,4 @@
-package io.iohk.cef.transactionservice
-import io.iohk.cef.network.NodeId
+package io.iohk.cef.network
 
 sealed trait DestinationDescriptor {
   def apply(v1: NodeId): Boolean

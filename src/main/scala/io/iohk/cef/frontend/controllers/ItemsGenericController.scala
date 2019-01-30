@@ -12,7 +12,7 @@ import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.frontend.controllers.common.Codecs.DataItemServiceResponseWrites
 import io.iohk.cef.frontend.controllers.common.{CustomJsonController, _}
 import io.iohk.cef.frontend.models.DataItemIdentifier
-import io.iohk.cef.transactionservice.Envelope
+import io.iohk.cef.network.Envelope
 import play.api.libs.json.{Reads, Writes}
 
 import scala.concurrent.duration.FiniteDuration

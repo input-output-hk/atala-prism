@@ -9,8 +9,8 @@ import io.iohk.cef.data._
 import io.iohk.cef.data.query.DataItemQuery.NoPredicateDataItemQuery
 import io.iohk.cef.data.query.DataItemQueryEngine
 import io.iohk.cef.data.storage.mv.MVTableStorage
-import io.iohk.cef.network.{MessageStream, Network}
-import io.iohk.cef.transactionservice.{Envelope, Everyone}
+import io.iohk.cef.network.{Envelope, MessageStream, Network}
+import io.iohk.cef.network.Everyone
 import io.iohk.cef.utils.NonEmptyList
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito.{times, verify, when}

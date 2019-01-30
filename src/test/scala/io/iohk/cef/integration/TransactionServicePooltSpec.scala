@@ -1,12 +1,13 @@
 package io.iohk.cef.integration
 
+import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.consensus.Consensus
-import io.iohk.cef.transactionservice.{Envelope, Everyone, NodeTransactionService}
-import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
 import io.iohk.cef.ledger.storage.LedgerStateStorage
-import io.iohk.cef.network.{MessageStream, Network, NodeId}
+import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
+import io.iohk.cef.network._
 import io.iohk.cef.test.DummyTransaction
 import io.iohk.cef.transactionpool.TransactionPoolInterface
+import io.iohk.cef.transactionservice.NodeTransactionService
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar
@@ -15,7 +16,6 @@ import org.scalatest.{BeforeAndAfterAll, FlatSpecLike, MustMatchers}
 import scala.collection.immutable.Queue
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, _}
-import io.iohk.cef.codecs.nio.auto._
 
 class TransactionServicePooltSpec extends FlatSpecLike with MustMatchers with BeforeAndAfterAll with MockitoSugar {
 

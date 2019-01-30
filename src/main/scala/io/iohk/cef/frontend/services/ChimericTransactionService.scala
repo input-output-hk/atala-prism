@@ -9,6 +9,7 @@ import io.iohk.cef.frontend.models.{
   SubmitChimericTransactionRequest
 }
 import io.iohk.cef.ledger.chimeric._
+import io.iohk.cef.network.{Envelope, Everyone}
 import io.iohk.cef.query.ledger.chimeric._
 import io.iohk.cef.transactionservice._
 

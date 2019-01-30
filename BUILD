@@ -37,6 +37,7 @@ scala_library(
         "//main/io/iohk/cef/utils/mv",
         "//main/io/iohk/cef/query",
         "//main/io/iohk/cef/ledger",
+        "//main/io/iohk/cef/data",
     ],
 )
 
@@ -99,5 +100,6 @@ scala_test(
         "//3rdparty/jvm/com/sun/xml/bind:jaxb_impl",
         "//3rdparty/jvm/javax/activation",
         "//main/io/iohk/cef/query",
+        "//main/io/iohk/cef/data",
     ],
 )

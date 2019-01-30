@@ -9,8 +9,8 @@ import io.iohk.cef.crypto._
 import io.iohk.cef.data._
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.frontend.controllers.common.Codecs
+import io.iohk.cef.network.Envelope
 import io.iohk.cef.test.DummyMessageStream
-import io.iohk.cef.transactionservice.Envelope
 import monix.execution.schedulers.TestScheduler
 import monix.reactive.Observable
 import org.mockito.ArgumentMatchers._

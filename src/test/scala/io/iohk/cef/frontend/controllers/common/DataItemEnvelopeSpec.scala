@@ -3,8 +3,7 @@ package io.iohk.cef.frontend.controllers.common
 import io.iohk.cef.codecs.nio.auto._
 import io.iohk.cef.crypto._
 import io.iohk.cef.data._
-import io.iohk.cef.network.NodeId
-import io.iohk.cef.transactionservice._
+import io.iohk.cef.network._
 import io.iohk.cef.utils.NonEmptyList
 import org.scalatest.{MustMatchers, WordSpec}
 import play.api.libs.json.{Format, Json}
