@@ -9,6 +9,7 @@ scala_library(
         "//main/io/iohk/cef/error",
         "//main/io/iohk/cef/crypto",
         "//main/io/iohk/cef/codecs",
+        "//main/io/iohk/cef/consensus",
         "//3rdparty/jvm/com/typesafe:config",
         "//3rdparty/jvm/com/typesafe/akka:akka_actor",
         "//3rdparty/jvm/com/typesafe/akka:akka_actor_typed",

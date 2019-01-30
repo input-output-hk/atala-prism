@@ -7,6 +7,7 @@ import org.scalatest.WordSpec
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 import org.scalatest.mockito.MockitoSugar
 import io.iohk.cef.codecs.nio.auto._
+import io.iohk.cef.consensus.raft.testlib.{InMemoryPersistentStorage, RealRaftNodeFixture}
 
 class RaftConsensusItSpec extends WordSpec with MockitoSugar {
 

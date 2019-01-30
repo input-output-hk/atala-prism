@@ -1,4 +1,4 @@
-package io.iohk.cef.consensus.raft
+package io.iohk.cef.consensus.raft.testlib
 import io.iohk.cef.consensus.raft.node.{RaftNode, _}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
@@ -10,6 +10,7 @@ import org.scalatest.time.{Millis, Seconds, Span}
 
 import scala.concurrent.{ExecutionContext, Future}
 import io.iohk.cef.codecs.nio._
+import io.iohk.cef.consensus.raft._
 
 trait MockedRaftNodeFixture[Command] {
 
