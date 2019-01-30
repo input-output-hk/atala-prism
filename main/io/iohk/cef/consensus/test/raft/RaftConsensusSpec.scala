@@ -329,7 +329,8 @@ class RaftConsensusSpec extends WordSpec {
             prevLogTerm = 1,
             entries = List(),
             leaderCommitIndex = -1
-          ))
+          )
+        )
 
         appendResult shouldBe AppendEntriesResult(term = 3, success = false)
       }
@@ -349,7 +350,8 @@ class RaftConsensusSpec extends WordSpec {
             prevLogTerm = 1,
             entries = List(),
             leaderCommitIndex = -1
-          ))
+          )
+        )
 
         raftNode.getRole shouldBe Follower
         appendResult shouldBe AppendEntriesResult(term = 3, success = true)
@@ -368,7 +370,8 @@ class RaftConsensusSpec extends WordSpec {
             prevLogTerm = 1,
             entries = List(),
             leaderCommitIndex = -1
-          ))
+          )
+        )
 
         raftNode.getRole shouldBe Leader
         appendResult shouldBe AppendEntriesResult(term = 3, success = false)
