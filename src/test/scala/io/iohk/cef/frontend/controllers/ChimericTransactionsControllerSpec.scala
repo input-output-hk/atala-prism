@@ -206,7 +206,8 @@ class ChimericTransactionsControllerSpec
       val (service, routes) = prepare()
       when(service.queryUtxoBalance(TxOutRef("foo", 123)))
         .thenReturn(
-          Future.successful(Right(Some(UtxoResult(Value(Map("GBP" -> BigDecimal(12))), signingKeyPair1.public)))))
+          Future.successful(Right(Some(UtxoResult(Value(Map("GBP" -> BigDecimal(12))), signingKeyPair1.public))))
+        )
 
       val request = Get("/chimeric-transactions/utxos/foo(123)/balance")
 

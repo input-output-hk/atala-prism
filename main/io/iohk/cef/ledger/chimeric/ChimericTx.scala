@@ -91,7 +91,7 @@ case class ChimericTx(fragments: Seq[ChimericTxFragment]) extends Transaction[Ch
             case input: TxInputFragment => sum + input.value
             case output: TxOutputFragment => sum - output.value
             case _ => sum
-        }
+          }
       )
       if (totalValue == Value.Zero) {
         Right(currentState)
