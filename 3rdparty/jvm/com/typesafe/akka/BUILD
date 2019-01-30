@@ -83,23 +83,6 @@ scala_import(
 
 
 scala_import(
-    name = "akka_http_spray_json",
-    exports = [
-        "//3rdparty/jvm/io/spray:spray_json",
-        "//3rdparty/jvm/org/scala_lang:scala_library",
-        ":akka_http"
-    ],
-    jars = [
-        "//external:jar/com/typesafe/akka/akka_http_spray_json_2_12"
-    ],
-    visibility = [
-        "//visibility:public"
-    ]
-)
-
-
-
-scala_import(
     name = "akka_http_testkit",
     exports = [
         "//3rdparty/jvm/org/scala_lang:scala_library",

@@ -137,7 +137,26 @@ class ChimericTransactionsControllerSpec
         validateErrorResponse(json, 2)
       }
     }
+  }
 
+  "GET /chimeric-transactions/currencies" should {
+    "return the existing currency" in {
+      val (service, routes) = prepare()
+      val currencies = List("ADA", "BTC", "MXN")
+      when(service.queryAllCurrencies()).thenReturn(Future.successful(Right(currencies.toSet)))
+
+      val request = Get("/chimeric-transactions/currencies")
+
+      request ~> routes ~> check {
+        status must ===(StatusCodes.OK)
+
+        val json = responseAs[JsValue]
+        (json \ "data").as[List[String]] must be(currencies)
+      }
+    }
+  }
+
+  "GET /chimeric-transactions/currencies/:currency" should {
     "query an existing currency" in {
       val (service, routes) = prepare()
       when(service.queryCreatedCurrency("GBP")).thenReturn(Future.successful(Right(Some(CurrencyQuery("GBP")))))
@@ -180,7 +199,9 @@ class ChimericTransactionsControllerSpec
         (errors(0) \ "type").as[String] must be("server-error")
       }
     }
+  }
 
+  "GET chimeric-transactions/utxos/:utxo/balance" should {
     "query the balance of an existing utxo" in {
       val (service, routes) = prepare()
       when(service.queryUtxoBalance(TxOutRef("foo", 123)))
@@ -227,7 +248,9 @@ class ChimericTransactionsControllerSpec
         (errors(0) \ "type").as[String] must be("server-error")
       }
     }
+  }
 
+  "GET /chimeric-transactions/addresses/:address/balance" should {
     "query the balance of an existing address" in {
       val (service, routes) = prepare()
       val urlAddress = Base64.getUrlEncoder().encodeToString(signingKeyPair1.public.toByteString.toArray)
@@ -276,7 +299,9 @@ class ChimericTransactionsControllerSpec
         (errors(0) \ "type").as[String] must be("server-error")
       }
     }
+  }
 
+  "GET /chimeric-transactions/addresses/:address/nonce" should {
     "query the nonce of an existing address" in {
       val (service, routes) = prepare()
       val urlAddress = Base64.getUrlEncoder().encodeToString(signingKeyPair1.public.toByteString.toArray)
