@@ -2,12 +2,13 @@ package io.iohk.cef.consensus.raft
 
 import io.iohk.cef.consensus.raft.node._
 import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.{inOrder, times, verify, when, verifyNoMoreInteractions}
+import org.mockito.Mockito.{inOrder, times, verify, verifyNoMoreInteractions, when}
 import org.scalatest.Matchers._
 import org.scalatest.WordSpec
 import org.scalatest.concurrent.ScalaFutures.{convertScalaFuture, whenReady}
 import org.scalatest.mockito.MockitoSugar._
 import io.iohk.cef.codecs.nio.auto._
+import io.iohk.cef.consensus.raft.testlib.{InMemoryPersistentStorage, MockedRaftNodeFixture}
 
 import scala.concurrent.Future
 

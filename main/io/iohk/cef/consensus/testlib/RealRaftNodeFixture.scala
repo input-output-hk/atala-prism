@@ -1,11 +1,13 @@
-package io.iohk.cef.consensus.raft
+package io.iohk.cef.consensus.raft.testlib
+
 import io.iohk.cef.consensus.raft.node.{CallInMemory, RaftNode}
+import io.iohk.cef.codecs.nio.NioCodec
+import io.iohk.cef.consensus.raft.{PersistentStorage, RPCFactory}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Millis, Seconds, Span}
 
 import scala.collection.mutable
 import scala.concurrent.ExecutionContext
-import io.iohk.cef.codecs.nio._
 
 trait RealRaftNodeFixture[Command] {
 

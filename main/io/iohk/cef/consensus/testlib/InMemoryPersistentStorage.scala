@@ -1,4 +1,6 @@
-package io.iohk.cef.consensus.raft
+package io.iohk.cef.consensus.raft.testlib
+
+import io.iohk.cef.consensus.raft.{LogEntry, PersistentStorage}
 
 class InMemoryPersistentStorage[T](var logEntries: Vector[LogEntry[T]], var currentTerm: Int, var votedFor: String)
     extends PersistentStorage[T] {

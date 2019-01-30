@@ -38,6 +38,7 @@ scala_library(
         "//main/io/iohk/cef/query",
         "//main/io/iohk/cef/ledger",
         "//main/io/iohk/cef/data",
+        "//main/io/iohk/cef/consensus",
     ],
 )
 
@@ -101,5 +102,7 @@ scala_test(
         "//3rdparty/jvm/javax/activation",
         "//main/io/iohk/cef/query",
         "//main/io/iohk/cef/data",
+        "//main/io/iohk/cef/consensus",
+        "//main/io/iohk/cef/consensus/testlib",
     ],
 )

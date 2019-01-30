@@ -18,5 +18,6 @@ scala_test(
              "//3rdparty/jvm/com/github/pureconfig:pureconfig",
              "//3rdparty/jvm/org/scalacheck:scalacheck",
              "//3rdparty/jvm/org/mockito:mockito_core",
-             "//3rdparty/jvm/com/typesafe/akka:akka_actor" ]
+             "//3rdparty/jvm/com/typesafe/akka:akka_actor",
+             "//main/io/iohk/cef/consensus", ]
 )
