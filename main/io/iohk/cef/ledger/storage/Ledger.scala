@@ -2,7 +2,7 @@ package io.iohk.cef.ledger.storage
 
 import io.iohk.cef.ledger.LedgerId
 import io.iohk.cef.ledger._
-import io.iohk.cef.codecs.nio._
+import io.iohk.codecs.nio._
 import scala.reflect.runtime.universe.TypeTag
 
 case class Ledger[S: NioCodec: TypeTag, Tx <: Transaction[S]](

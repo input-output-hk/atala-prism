@@ -1,5 +1,5 @@
 package io.iohk.cef.test
-import io.iohk.cef.network.{MessageStream, Network, NodeId}
+import io.iohk.network.{MessageStream, Network, NodeId}
 import monix.execution.Scheduler
 import monix.reactive.Observable
 

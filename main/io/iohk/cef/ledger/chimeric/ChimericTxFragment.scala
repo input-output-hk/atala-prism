@@ -1,9 +1,9 @@
 package io.iohk.cef.ledger.chimeric
 
 import io.iohk.cef.ledger.chimeric.errors._
-import io.iohk.cef.crypto._
+import io.iohk.crypto._
 import io.iohk.cef.ledger.LedgerError
-import io.iohk.cef.crypto.SigningPublicKey
+import io.iohk.crypto.SigningPublicKey
 import io.iohk.cef.ledger.chimeric.ChimericLedgerState.{getAddressNoncePartitionId, getAddressPartitionId}
 
 sealed trait ChimericTxFragment
@@ -242,7 +242,7 @@ case class SignatureTxFragment(signature: Signature) extends ChimericTxFragment 
 
 object SignatureTxFragment {
 
-  import io.iohk.cef.codecs.nio.auto._
+  import io.iohk.codecs.nio.auto._
 
   def signFragments(
       fragments: Seq[ChimericTxFragment],

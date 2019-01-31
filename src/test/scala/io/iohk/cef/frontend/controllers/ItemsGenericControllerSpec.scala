@@ -4,12 +4,12 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import io.iohk.cef.test.builder.SigningKeyPairs
-import io.iohk.cef.codecs.nio.auto._
-import io.iohk.cef.crypto._
+import io.iohk.codecs.nio.auto._
+import io.iohk.crypto._
 import io.iohk.cef.data._
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.frontend.controllers.common.Codecs
-import io.iohk.cef.network.Envelope
+import io.iohk.network.Envelope
 import io.iohk.cef.test.DummyMessageStream
 import monix.execution.schedulers.TestScheduler
 import monix.reactive.Observable
@@ -111,7 +111,7 @@ class ItemsGenericControllerSpec
     "delete an item" in {
       val ownerKeyPair = bob
       val signature = {
-        import io.iohk.cef.crypto._
+        import io.iohk.crypto._
         val unsigned: BirthCertificate =
           BirthCertificate("01/01/2015", "Input Output HK")
         sign(unsigned, ownerKeyPair.`private`).toCompactString

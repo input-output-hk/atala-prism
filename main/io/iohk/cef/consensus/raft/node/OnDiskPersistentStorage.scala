@@ -3,8 +3,8 @@ import java.lang.System.getProperty
 import java.nio.file.{Files, Path, Paths}
 
 import io.iohk.cef.consensus.raft.{LogEntry, PersistentStorage}
-import io.iohk.cef.codecs.nio._
-import io.iohk.cef.codecs.nio.auto._
+import io.iohk.codecs.nio._
+import io.iohk.codecs.nio.auto._
 import journal.io.api.Journal.WriteType
 import journal.io.api.{Journal, JournalBuilder, Location}
 

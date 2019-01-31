@@ -1,6 +1,6 @@
 package io.iohk.cef.agreements
 
-import io.iohk.cef.network.MessageStream
+import io.iohk.network.MessageStream
 import java.util.UUID
 
 trait AgreementsService[T] {

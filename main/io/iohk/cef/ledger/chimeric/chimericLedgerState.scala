@@ -1,6 +1,6 @@
 package io.iohk.cef.ledger.chimeric
 
-import io.iohk.cef.crypto.SigningPublicKey
+import io.iohk.crypto.SigningPublicKey
 
 object ChimericLedgerState {
 

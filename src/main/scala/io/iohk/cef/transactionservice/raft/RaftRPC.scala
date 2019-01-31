@@ -1,11 +1,11 @@
 package io.iohk.cef.transactionservice.raft
 
 import io.iohk.cef.consensus.raft._
-import io.iohk.cef.network.discovery.NetworkDiscovery
-import io.iohk.cef.codecs.nio.NioCodec
-import io.iohk.cef.network.transport.Transports
-import io.iohk.cef.network.{NodeId, RequestResponse}
-import io.iohk.cef.codecs.nio.auto._
+import io.iohk.network.discovery.NetworkDiscovery
+import io.iohk.codecs.nio.NioCodec
+import io.iohk.network.transport.Transports
+import io.iohk.network.{NodeId, RequestResponse}
+import io.iohk.codecs.nio.auto._
 
 import scala.reflect.runtime.universe._
 import scala.concurrent.{ExecutionContext, Future}

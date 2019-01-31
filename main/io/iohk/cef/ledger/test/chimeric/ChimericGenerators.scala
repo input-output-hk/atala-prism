@@ -1,6 +1,6 @@
 package io.iohk.cef.ledger.chimeric
 
-import io.iohk.cef.crypto._
+import io.iohk.crypto._
 import io.iohk.cef.ledger.LedgerState
 import org.scalacheck.{Arbitrary, Gen}
 

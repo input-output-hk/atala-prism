@@ -1,7 +1,7 @@
 package io.iohk.cef.frontend.controllers.common
 
-import io.iohk.cef.codecs.nio.auto._
-import io.iohk.cef.crypto._
+import io.iohk.codecs.nio.auto._
+import io.iohk.crypto._
 import io.iohk.cef.frontend.models.{
   CreateChimericTransactionRequest,
   CreateNonSignableChimericTransactionFragment,

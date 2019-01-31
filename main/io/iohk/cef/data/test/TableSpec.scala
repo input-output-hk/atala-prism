@@ -1,7 +1,7 @@
 package io.iohk.cef.data
 
-import io.iohk.cef.codecs.nio.auto._
-import io.iohk.cef.crypto._
+import io.iohk.codecs.nio.auto._
+import io.iohk.crypto._
 import io.iohk.cef.data.error.InvalidSignaturesError
 import io.iohk.cef.data.storage.DummyTableStorage
 import io.iohk.cef.utils.NonEmptyList

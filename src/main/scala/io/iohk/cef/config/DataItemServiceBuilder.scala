@@ -3,12 +3,12 @@ package io.iohk.cef.config
 import java.nio.file.Path
 import java.util.UUID
 
-import io.iohk.cef.codecs.nio._
-import io.iohk.cef.codecs.nio.auto._
+import io.iohk.codecs.nio._
+import io.iohk.codecs.nio.auto._
 import io.iohk.cef.data._
 import io.iohk.cef.data.query.{DataItemQueryEngine, DataItemQueryRequest, DataItemQueryResponse}
 import io.iohk.cef.data.storage.mv.MVTableStorage
-import io.iohk.cef.network.{Envelope, Network, NetworkConfig}
+import io.iohk.network.{Envelope, Network, NetworkConfig}
 
 import scala.reflect.runtime.universe._
 

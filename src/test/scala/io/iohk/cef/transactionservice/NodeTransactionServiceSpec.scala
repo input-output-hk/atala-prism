@@ -2,7 +2,7 @@ package io.iohk.cef.transactionservice
 import io.iohk.cef.ledger.LedgerId
 import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.ledger.{Block, BlockHeader}
-import io.iohk.cef.network._
+import io.iohk.network._
 import io.iohk.cef.test.DummyTransaction
 import io.iohk.cef.transactionpool.TransactionPoolInterface
 import org.mockito.ArgumentMatchers
@@ -12,7 +12,7 @@ import org.scalatest.{AsyncFlatSpec, MustMatchers}
 
 import scala.collection.immutable
 import scala.concurrent.Future
-import io.iohk.cef.codecs.nio._
+import io.iohk.codecs.nio._
 
 class NodeTransactionServiceSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
 

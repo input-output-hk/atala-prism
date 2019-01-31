@@ -1,12 +1,12 @@
 package io.iohk.cef.data
 
-import io.iohk.cef.codecs.nio.auto._
+import io.iohk.codecs.nio.auto._
 import org.scalatest.FlatSpec
-import io.iohk.cef.codecs.nio.test.utils.CodecTestingHelpers
+import io.iohk.codecs.nio.test.utils.CodecTestingHelpers
 import org.scalacheck.Arbitrary
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.Gen
-import io.iohk.cef.crypto.test.utils.CryptoEntityArbitraries
+import io.iohk.crypto.test.utils.CryptoEntityArbitraries
 import io.iohk.cef.utils.NonEmptyList
 
 class DataItemCodecSpec extends FlatSpec with CodecTestingHelpers with CryptoEntityArbitraries {

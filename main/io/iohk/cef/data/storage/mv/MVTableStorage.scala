@@ -1,8 +1,8 @@
 package io.iohk.cef.data.storage.mv
 import java.nio.file.Path
 
-import io.iohk.cef.codecs.nio._
-import io.iohk.cef.codecs.nio.auto._
+import io.iohk.codecs.nio._
+import io.iohk.codecs.nio.auto._
 import io.iohk.cef.data.error.DataItemNotFound
 import io.iohk.cef.data.query.DataItemQuery.Predicate.toPredicateFn
 import io.iohk.cef.data.query.DataItemQuery.{Predicate, queryCata}

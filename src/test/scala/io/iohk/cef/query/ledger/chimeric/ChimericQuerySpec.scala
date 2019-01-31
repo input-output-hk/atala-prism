@@ -2,7 +2,7 @@ package io.iohk.cef.query.ledger.chimeric
 
 import io.iohk.cef.ledger.LedgerState
 import io.iohk.cef.ledger.chimeric._
-import io.iohk.cef.crypto._
+import io.iohk.crypto._
 import io.iohk.cef.ledger.storage.LedgerStateStorage
 import io.iohk.cef.query.Query
 import io.iohk.cef.query.ledger.LedgerQueryEngine

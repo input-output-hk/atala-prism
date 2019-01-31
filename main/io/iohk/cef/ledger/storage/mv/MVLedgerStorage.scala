@@ -8,7 +8,7 @@ import io.iohk.cef.utils.mv.MVTable
 import io.iohk.cef.ledger.LedgerId
 import io.iohk.cef.ledger.{Block, Transaction}
 import io.iohk.cef.ledger.storage.LedgerStorage
-import io.iohk.cef.codecs.nio._
+import io.iohk.codecs.nio._
 
 import scala.collection.JavaConverters._
 

@@ -1,6 +1,6 @@
 package io.iohk.cef.ledger.storage
 
-import io.iohk.cef.codecs.nio.auto._
+import io.iohk.codecs.nio.auto._
 import io.iohk.cef.ledger._
 import org.scalatest.FlatSpec
 import org.scalatest.mockito.MockitoSugar._

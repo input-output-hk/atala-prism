@@ -1,9 +1,9 @@
 package io.iohk.cef.ledger.identity
 
 import io.iohk.cef.test.builder.SigningKeyPairs
-import io.iohk.cef.crypto._
-import io.iohk.cef.crypto.certificates._
-import io.iohk.cef.crypto.certificates.test.data.ExampleCertificates._
+import io.iohk.crypto._
+import io.iohk.crypto.certificates._
+import io.iohk.crypto.certificates.test.data.ExampleCertificates._
 import org.scalatest.EitherValues._
 import org.scalatest.FlatSpec
 import org.scalatest.MustMatchers._

@@ -1,6 +1,6 @@
 package io.iohk.cef.frontend
 
-import io.iohk.cef.codecs.string._
+import io.iohk.codecs.string._
 import scala.reflect._
 
 package object models extends PlayJson.Formats

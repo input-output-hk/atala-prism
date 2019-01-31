@@ -1,7 +1,7 @@
 package io.iohk.cef.frontend.models
 
 import io.iohk.cef.ledger.LedgerId
-import io.iohk.cef.crypto._
+import io.iohk.crypto._
 import io.iohk.cef.ledger.identity.IdentityTransactionData
 
 case class CreateIdentityTransactionRequest(

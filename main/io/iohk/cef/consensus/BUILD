@@ -2,9 +2,9 @@ load("//scala:rules.bzl", "scala_library", "scala_test")
 
 scala_library(
     name = "consensus",
-    deps = [
-             "//main/io/iohk/cef/codecs",
-             "//main/io/iohk/cef/ledger",
+    deps = ["@codecs//src/io/iohk/codecs",
+            "//main/io/iohk/cef/ledger",
+            "@crypto//src/io/iohk/crypto",
              "//main/io/iohk/cef/error",
              "//main/io/iohk/cef/utils",
              "//3rdparty/jvm/com/typesafe/akka:akka_slf4j",
@@ -17,7 +17,7 @@ scala_test(
     name = "tests",
     deps = [ "consensus",
             "//main/io/iohk/cef/consensus/testlib",
-            "//main/io/iohk/cef/codecs",
+            "@codecs//src/io/iohk/codecs",
             "//main/io/iohk/cef/test",
             "//3rdparty/jvm/org/mockito:mockito_core",
             "//3rdparty/jvm/org/scalacheck",

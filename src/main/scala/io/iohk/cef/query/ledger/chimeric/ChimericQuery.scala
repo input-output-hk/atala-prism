@@ -3,7 +3,7 @@ package io.iohk.cef.query.ledger.chimeric
 import io.iohk.cef.ledger.chimeric._
 import io.iohk.cef.query.Query
 import io.iohk.cef.query.ledger.{LedgerQuery, LedgerQueryEngine}
-import io.iohk.cef.crypto._
+import io.iohk.crypto._
 
 sealed trait ChimericQuery extends LedgerQuery[ChimericPartition]
 

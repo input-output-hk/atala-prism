@@ -1,6 +1,6 @@
 package io.iohk.cef.ledger.identity
 
-import io.iohk.cef.crypto._
+import io.iohk.crypto._
 import io.iohk.cef.ledger.LedgerError
 import io.iohk.cef.utils.HexStringCodec._
 

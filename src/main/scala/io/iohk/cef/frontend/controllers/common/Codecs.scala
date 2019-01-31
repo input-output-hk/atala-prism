@@ -1,7 +1,7 @@
 package io.iohk.cef.frontend.controllers.common
 
 import akka.util.ByteString
-import io.iohk.cef.crypto._
+import io.iohk.crypto._
 import io.iohk.cef.data._
 import io.iohk.cef.data.query.DataItemQuery._
 import io.iohk.cef.data.query.Value.{
@@ -20,7 +20,7 @@ import io.iohk.cef.frontend.PlayJson
 import io.iohk.cef.frontend.models._
 import io.iohk.cef.ledger.chimeric._
 import io.iohk.cef.ledger.identity._
-import io.iohk.cef.network._
+import io.iohk.network._
 import io.iohk.cef.utils.{ByteStringExtension, NonEmptyList}
 import play.api.libs.functional.syntax._
 import play.api.libs.json._

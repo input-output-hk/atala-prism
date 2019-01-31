@@ -14,7 +14,7 @@ import io.iohk.cef.frontend.services.ChimericTransactionService
 import io.iohk.cef.ledger.chimeric._
 import io.iohk.cef.ledger.storage.LedgerStateStorage
 import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
-import io.iohk.cef.network.{Envelope, MessageStream, Network, NodeId}
+import io.iohk.network.{Envelope, MessageStream, Network, NodeId}
 import io.iohk.cef.transactionpool.TransactionPoolInterface
 import org.mockito.Mockito.when
 import org.scalatest._
@@ -24,7 +24,7 @@ import play.api.libs.json.Json
 
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
-import io.iohk.cef.codecs.nio._
+import io.iohk.codecs.nio._
 import org.mockito.ArgumentMatchers.any
 
 class ChimericTransactionNodeTransactionServiceItSpec

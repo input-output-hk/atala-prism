@@ -6,7 +6,7 @@ import org.scalacheck.Gen._
 import org.scalatest.Matchers._
 import org.scalatest.prop.GeneratorDrivenPropertyChecks._
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FlatSpec, Suite}
-import io.iohk.cef.codecs.nio.auto._
+import io.iohk.codecs.nio.auto._
 
 import scala.collection.immutable
 import scala.util.Random

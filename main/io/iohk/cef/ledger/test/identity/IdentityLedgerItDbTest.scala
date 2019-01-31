@@ -4,7 +4,7 @@ import java.time.Instant
 
 import io.iohk.cef.test.DatabaseTestSuites.withLedger
 import io.iohk.cef.test.builder.SigningKeyPairs._
-import io.iohk.cef.codecs.nio.auto._
+import io.iohk.codecs.nio.auto._
 import io.iohk.cef.ledger.{Block, BlockHeader}
 import org.scalatest.FlatSpec
 import org.scalatest.MustMatchers._

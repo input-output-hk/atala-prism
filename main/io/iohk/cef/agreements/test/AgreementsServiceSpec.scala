@@ -4,7 +4,7 @@ import java.util.UUID
 
 import io.iohk.cef.agreements.AgreementFixture._
 import io.iohk.cef.agreements.AgreementsMessage._
-import io.iohk.cef.codecs.nio.auto._
+import io.iohk.codecs.nio.auto._
 import io.iohk.cef.test.DummyNoMessageConversationalNetwork
 import monix.execution.schedulers.TestScheduler
 import org.mockito.Mockito.verify

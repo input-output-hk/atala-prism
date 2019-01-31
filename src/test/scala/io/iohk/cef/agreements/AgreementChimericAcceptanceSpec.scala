@@ -3,9 +3,9 @@ package io.iohk.cef.agreements
 import java.util.UUID
 
 import io.iohk.cef.agreements.AgreementFixture._
-import io.iohk.cef.codecs.nio.auto._
+import io.iohk.codecs.nio.auto._
 import io.iohk.cef.agreements.AgreementsMessage._
-import io.iohk.cef.crypto._
+import io.iohk.crypto._
 import io.iohk.cef.ledger.chimeric.SignatureTxFragment.signFragments
 import io.iohk.cef.ledger.chimeric.{SignatureTxFragment, _}
 import org.scalatest.FlatSpec

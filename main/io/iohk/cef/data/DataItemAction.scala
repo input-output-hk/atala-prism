@@ -1,6 +1,6 @@
 package io.iohk.cef.data
 
-import io.iohk.cef.crypto.Signature
+import io.iohk.crypto.Signature
 
 sealed trait DataItemAction[+I]
 

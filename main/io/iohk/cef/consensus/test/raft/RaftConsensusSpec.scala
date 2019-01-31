@@ -7,7 +7,7 @@ import org.scalatest.Matchers._
 import org.scalatest.WordSpec
 import org.scalatest.concurrent.ScalaFutures.{convertScalaFuture, whenReady}
 import org.scalatest.mockito.MockitoSugar._
-import io.iohk.cef.codecs.nio.auto._
+import io.iohk.codecs.nio.auto._
 import io.iohk.cef.consensus.raft.testlib.{InMemoryPersistentStorage, MockedRaftNodeFixture}
 
 import scala.concurrent.Future

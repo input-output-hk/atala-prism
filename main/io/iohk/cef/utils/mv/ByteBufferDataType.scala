@@ -4,7 +4,7 @@ import java.nio.ByteBuffer
 import org.h2.mvstore.WriteBuffer
 import org.h2.mvstore.`type`.DataType
 
-import io.iohk.cef.codecs.nio._
+import io.iohk.codecs.nio._
 
 class ByteBufferDataType[T](codec: NioCodec[T]) extends DataType {
 

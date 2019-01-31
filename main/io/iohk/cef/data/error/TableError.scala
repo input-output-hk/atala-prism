@@ -1,6 +1,6 @@
 package io.iohk.cef.data.error
 
-import io.iohk.cef.crypto._
+import io.iohk.crypto._
 import io.iohk.cef.data.{DataItem, DataItemId, TableId}
 import io.iohk.cef.error.ApplicationError
 

@@ -3,11 +3,11 @@ import io.iohk.cef.ledger.LedgerId
 import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.ledger.{Block, Transaction}
-import io.iohk.cef.network.{Envelope, Network, NodeId}
+import io.iohk.network.{Envelope, Network, NodeId}
 import io.iohk.cef.transactionpool.TransactionPoolInterface
 
 import scala.concurrent.{ExecutionContext, Future}
-import io.iohk.cef.codecs.nio._
+import io.iohk.codecs.nio._
 
 /**
   * A NodeTransactionService orchestrates the interaction between the frontend, network, transaction pool and the consensus.

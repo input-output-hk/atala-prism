@@ -3,15 +3,15 @@ package io.iohk.cef.integration
 import java.nio.file.Files
 import java.util.UUID
 
-import io.iohk.cef.codecs.nio.auto._
-import io.iohk.cef.crypto._
+import io.iohk.codecs.nio.auto._
+import io.iohk.crypto._
 import io.iohk.cef.data._
 import io.iohk.cef.data.query.{DataItemQueryEngine, DataItemQueryRequest, DataItemQueryResponse, Field}
 import io.iohk.cef.data.storage.mv.MVTableStorage
 import io.iohk.cef.error.ApplicationError
-import io.iohk.cef.network.{Envelope, MessageStream, NodeId}
+import io.iohk.network.{Envelope, MessageStream, NodeId}
 import io.iohk.cef.test.DummyNoMessageNetwork
-import io.iohk.cef.network.Everyone
+import io.iohk.network.Everyone
 import io.iohk.cef.utils.NonEmptyList
 import monix.execution.schedulers.TestScheduler
 import org.scalatest.concurrent.ScalaFutures._

@@ -1,8 +1,8 @@
 package io.iohk.cef.test.builder
 
 import akka.util.ByteString
-import io.iohk.cef.crypto._
-import io.iohk.cef.codecs.nio.auto._
+import io.iohk.crypto._
+import io.iohk.codecs.nio.auto._
 
 trait KeyPairs[T] {
 

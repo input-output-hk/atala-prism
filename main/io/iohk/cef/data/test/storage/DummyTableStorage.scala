@@ -1,6 +1,6 @@
 package io.iohk.cef.data.storage
 
-import io.iohk.cef.codecs.nio._
+import io.iohk.codecs.nio._
 import io.iohk.cef.data.query.{DataItemQuery, DataItemQueryError}
 import io.iohk.cef.data.{DataItem, DataItemId}
 import io.iohk.cef.error.ApplicationError

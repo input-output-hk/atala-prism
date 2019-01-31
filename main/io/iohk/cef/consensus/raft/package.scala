@@ -4,7 +4,7 @@ import io.iohk.cef.consensus.raft.node._
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
-import io.iohk.cef.codecs.nio._
+import io.iohk.codecs.nio._
 
 package object raft {
 

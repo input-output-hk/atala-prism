@@ -1,9 +1,9 @@
 package io.iohk.cef.ledger.identity
 
-import io.iohk.cef.codecs.nio._
-import io.iohk.cef.codecs.nio.auto._
-import io.iohk.cef.crypto.certificates.CachedCertificatePair
-import io.iohk.cef.crypto.{sign => signBytes, _}
+import io.iohk.codecs.nio._
+import io.iohk.codecs.nio.auto._
+import io.iohk.crypto.certificates.CachedCertificatePair
+import io.iohk.crypto.{sign => signBytes, _}
 import io.iohk.cef.ledger.{LedgerError, Transaction}
 
 sealed trait IdentityTransaction extends Transaction[IdentityData] {

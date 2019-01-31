@@ -1,6 +1,6 @@
 package io.iohk.cef.query.ledger.identity
 
-import io.iohk.cef.crypto._
+import io.iohk.crypto._
 import io.iohk.cef.ledger.LedgerState
 import io.iohk.cef.ledger.identity.IdentityData
 import io.iohk.cef.ledger.storage.LedgerStateStorage

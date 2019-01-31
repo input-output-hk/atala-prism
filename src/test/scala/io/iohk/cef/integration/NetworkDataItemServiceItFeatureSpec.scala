@@ -1,12 +1,12 @@
 package io.iohk.cef.integration
 
-import io.iohk.cef.codecs.nio._
-import io.iohk.cef.codecs.nio.auto._
-import io.iohk.cef.crypto._
+import io.iohk.codecs.nio._
+import io.iohk.codecs.nio.auto._
+import io.iohk.crypto._
 import io.iohk.cef.data.DataItemAction.InsertAction
 import io.iohk.cef.data._
 import io.iohk.cef.data.query.DataItemQueryEngine
-import io.iohk.cef.network._
+import io.iohk.network._
 import io.iohk.cef.utils.NonEmptyList
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._

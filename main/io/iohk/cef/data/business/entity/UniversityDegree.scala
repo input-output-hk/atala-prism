@@ -1,8 +1,8 @@
 package io.iohk.cef.data.business.entity
 import java.time.LocalDate
 
-import io.iohk.cef.codecs.nio._
-import io.iohk.cef.crypto._
+import io.iohk.codecs.nio._
+import io.iohk.crypto._
 import io.iohk.cef.data.error.DataItemError
 import io.iohk.cef.data.{CanValidate, DataItem, Witness}
 

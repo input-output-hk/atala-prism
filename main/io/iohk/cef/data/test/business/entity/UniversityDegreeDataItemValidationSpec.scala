@@ -2,8 +2,8 @@ package io.iohk.cef.data.business.entity
 
 import java.time.LocalDate
 
-import io.iohk.cef.codecs.nio.auto._
-import io.iohk.cef.crypto._
+import io.iohk.codecs.nio.auto._
+import io.iohk.crypto._
 import io.iohk.cef.data._
 import io.iohk.cef.utils.NonEmptyList
 import org.scalatest.{MustMatchers, WordSpec}

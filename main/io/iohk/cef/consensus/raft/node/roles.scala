@@ -3,7 +3,7 @@ package io.iohk.cef.consensus.raft.node
 import io.iohk.cef.consensus.raft.node.FutureOps.sequenceForgiving
 import io.iohk.cef.consensus.raft._
 import io.iohk.cef.consensus.raft.node.RaftNode.lastLogIndexAndTerm
-import io.iohk.cef.codecs.nio.NioCodec
+import io.iohk.codecs.nio.NioCodec
 
 import scala.annotation.tailrec
 import scala.concurrent.{ExecutionContext, Future}

@@ -1,10 +1,10 @@
 package io.iohk.cef.data
 
-import io.iohk.cef.codecs.nio._
+import io.iohk.codecs.nio._
 import io.iohk.cef.data.DataItemAction._
 import io.iohk.cef.data.query.{DataItemQuery, DataItemQueryEngine}
 import io.iohk.cef.error.ApplicationError
-import io.iohk.cef.network.{Envelope, MessageStream, Network}
+import io.iohk.network.{Envelope, MessageStream, Network}
 import io.iohk.cef.data.DataItemAction.{DeleteAction, InsertAction}
 import io.iohk.cef.data.query.{DataItemQuery, DataItemQueryEngine}
 

@@ -1,6 +1,6 @@
 package io.iohk.cef.test
-import io.iohk.cef.network.MessageStream
-import io.iohk.cef.utils.concurrent.CancellableFuture
+import io.iohk.network.MessageStream
+import io.iohk.network.utils.concurrent.CancellableFuture
 import monix.execution.Scheduler
 import monix.reactive.Observable
 

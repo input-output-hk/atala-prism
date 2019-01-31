@@ -2,7 +2,7 @@ package io.iohk.cef.utils.mv
 
 import java.nio.file.Path
 
-import io.iohk.cef.codecs.nio._
+import io.iohk.codecs.nio._
 import org.h2.mvstore.{MVMap, MVStore}
 
 class MVTable[T](tableId: String, storageFile: Path, codec: NioCodec[T]) {

@@ -1,6 +1,6 @@
 package io.iohk.cef.frontend.models
 
-import io.iohk.cef.crypto.Signature
+import io.iohk.crypto.Signature
 import io.iohk.cef.data.DataItemId
 import play.api.libs.json.{Format, Json}
 

@@ -1,7 +1,7 @@
 package io.iohk.cef.integration
 import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.ledger.{Block, BlockHeader}
-import io.iohk.cef.network._
+import io.iohk.network._
 import io.iohk.cef.test.DummyTransaction
 import io.iohk.cef.transactionpool.TransactionPoolInterface
 import io.iohk.cef.transactionservice.NodeTransactionService
@@ -28,7 +28,7 @@ class TransactionServiceNetworkItSpec
     mock[TransactionPoolInterface[String, DummyTransaction]]
 
   behavior of "TransactionServiceNetworkItSpec"
-  import io.iohk.cef.codecs.nio.auto._
+  import io.iohk.codecs.nio.auto._
 
   implicit val executionContext = scala.concurrent.ExecutionContext.global
 

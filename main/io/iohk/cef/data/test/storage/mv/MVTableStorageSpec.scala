@@ -2,8 +2,8 @@ package io.iohk.cef.data.storage.mv
 
 import java.nio.file.{Files, Path}
 
-import io.iohk.cef.codecs.nio.auto._
-import io.iohk.cef.crypto._
+import io.iohk.codecs.nio.auto._
+import io.iohk.crypto._
 import io.iohk.cef.data.error.DataItemNotFound
 import io.iohk.cef.data.query.DataItemQuery._
 import io.iohk.cef.data.query.Value.StringRef
