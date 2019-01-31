@@ -87,6 +87,22 @@ jobs:
           name: Deploy to S3
           command: aws s3 cp /tmp/workspace/main_deploy.jar s3://cef-circle-ci/
 
+  build-enterprise-web:
+    working_directory: ~/repo
+    docker:
+      - image: circleci/node:8-browsers
+    steps:
+      - checkout
+      - restore_cache:
+          key: my-project-{{ .Branch }}-{{ checksum "enterprise-web/package-lock.json" }}
+      - run: cd enterprise-web && npm install
+      - save_cache:
+          key: my-project-{{ .Branch }}-{{ checksum "enterprise-web/package-lock.json" }}
+          paths:
+            - "enterprise-web/node_modules"
+      - run: cd enterprise-web && npm run test -- --no-watch --no-progress --browsers=ChromeHeadlessCI
+      - run: cd enterprise-web && npm run e2e -- --protractor-config=e2e/protractor-ci.conf.js
+
 workflows:
   version: 2
   build-and-deploy:
@@ -98,3 +114,4 @@ workflows:
           filters:
             branches:
               only: master
+      - build-enterprise-web
