@@ -1,14 +1,14 @@
 package io.iohk.cef.transactionservice.raft
 
 import io.iohk.cef.consensus.raft._
-import io.iohk.cef.network.transport.tcp.NetUtils
-import io.iohk.cef.network.transport.tcp.NetUtils.{NetworkFixture, nodesArePeers}
+import io.iohk.network.transport.tcp.NetUtils
+import io.iohk.network.transport.tcp.NetUtils.{NetworkFixture, nodesArePeers}
 import org.mockito.Mockito.when
 import org.scalatest.FlatSpec
 import org.scalatest.mockito.MockitoSugar._
 import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
 import org.scalatest.Matchers._
-import io.iohk.cef.codecs.nio.auto._
+import io.iohk.codecs.nio.auto._
 import org.scalatest.concurrent.ScalaFutures
 
 import scala.concurrent.ExecutionContext.Implicits.global

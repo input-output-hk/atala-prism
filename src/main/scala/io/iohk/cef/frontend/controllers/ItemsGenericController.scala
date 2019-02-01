@@ -5,14 +5,14 @@ import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import com.alexitc.playsonify.core.I18nService
 import com.alexitc.playsonify.models.{GenericPublicError, InputValidationError, PublicError, _}
-import io.iohk.cef.codecs.nio._
+import io.iohk.codecs.nio._
 import io.iohk.cef.data.query.DataItemQuery
 import io.iohk.cef.data.{CanValidate, DataItem, DataItemAction, DataItemService}
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.frontend.controllers.common.Codecs.DataItemServiceResponseWrites
 import io.iohk.cef.frontend.controllers.common.{CustomJsonController, _}
 import io.iohk.cef.frontend.models.DataItemIdentifier
-import io.iohk.cef.transactionservice.Envelope
+import io.iohk.network.Envelope
 import play.api.libs.json.{Reads, Writes}
 
 import scala.concurrent.duration.FiniteDuration

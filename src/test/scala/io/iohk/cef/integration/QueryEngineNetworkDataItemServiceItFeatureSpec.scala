@@ -2,16 +2,15 @@ package io.iohk.cef.integration
 
 import java.util.UUID
 
-import io.iohk.cef.codecs.nio._
-import io.iohk.cef.codecs.nio.auto._
-import io.iohk.cef.crypto._
+import io.iohk.codecs.nio._
+import io.iohk.codecs.nio.auto._
+import io.iohk.crypto._
 import io.iohk.cef.data.DataItemAction.InsertAction
 import io.iohk.cef.data.DataItemServiceResponse.DIUnit
 import io.iohk.cef.data._
 import io.iohk.cef.data.query.{DataItemQueryEngine, DataItemQueryRequest, DataItemQueryResponse, Field}
 import io.iohk.cef.error.ApplicationError
-import io.iohk.cef.network.{Network, NetworkFixture}
-import io.iohk.cef.transactionservice.{DestinationDescriptor, Envelope, Everyone}
+import io.iohk.network._
 import io.iohk.cef.utils.NonEmptyList
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._

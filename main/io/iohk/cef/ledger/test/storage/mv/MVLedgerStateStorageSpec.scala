@@ -4,7 +4,7 @@ import java.util.UUID
 import java.util.UUID.randomUUID
 
 import io.iohk.cef.ledger.LedgerState
-import io.iohk.cef.codecs.nio.auto._
+import io.iohk.codecs.nio.auto._
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 

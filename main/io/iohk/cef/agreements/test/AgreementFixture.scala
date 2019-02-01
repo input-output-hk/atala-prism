@@ -1,11 +1,11 @@
 package io.iohk.cef.agreements
 
-import io.iohk.cef.network.{ConversationalNetwork, NodeId}
-import io.iohk.cef.network.transport.tcp.NetUtils
-import io.iohk.cef.codecs.nio._
-import io.iohk.cef.codecs.nio.auto._
-import io.iohk.cef.network.transport.tcp.NetUtils.NetworkFixture
-import io.iohk.cef.crypto._
+import io.iohk.network.{ConversationalNetwork, NodeId}
+import io.iohk.network.transport.tcp.NetUtils
+import io.iohk.codecs.nio._
+import io.iohk.codecs.nio.auto._
+import io.iohk.network.transport.tcp.NetUtils.NetworkFixture
+import io.iohk.crypto._
 import scala.reflect.runtime.universe.TypeTag
 
 case class AgreementFixture[T](nodeId: NodeId, keyPair: SigningKeyPair, agreementsService: AgreementsService[T])

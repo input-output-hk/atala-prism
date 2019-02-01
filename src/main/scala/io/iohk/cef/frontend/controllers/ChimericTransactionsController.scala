@@ -8,7 +8,7 @@ import akka.stream.Materializer
 import akka.util.ByteString
 import com.alexitc.playsonify.core.I18nService
 import com.alexitc.playsonify.models._
-import io.iohk.cef.crypto._
+import io.iohk.crypto._
 import io.iohk.cef.frontend.client.ServiceResponseExtensions
 import io.iohk.cef.frontend.controllers.common._
 import io.iohk.cef.frontend.models.{

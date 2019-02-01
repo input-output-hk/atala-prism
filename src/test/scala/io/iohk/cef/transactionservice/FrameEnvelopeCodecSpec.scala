@@ -1,10 +1,11 @@
 package io.iohk.cef.transactionservice
 
-import io.iohk.cef.codecs.nio._
-import io.iohk.cef.codecs.nio.auto._
+import io.iohk.codecs.nio._
+import io.iohk.codecs.nio.auto._
 import io.iohk.cef.ledger.{Block, BlockHeader}
-import io.iohk.cef.network.transport.tcp.NetUtils
-import io.iohk.cef.network.transport.{Frame, FrameHeader}
+import io.iohk.network.{DestinationDescriptor, Envelope, Everyone}
+import io.iohk.network.transport.tcp.NetUtils
+import io.iohk.network.transport.{Frame, FrameHeader}
 import io.iohk.cef.test.DummyTransaction
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._

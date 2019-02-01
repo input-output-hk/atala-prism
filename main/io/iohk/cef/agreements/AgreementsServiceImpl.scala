@@ -4,7 +4,7 @@ import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
 import io.iohk.cef.agreements.AgreementsMessage._
-import io.iohk.cef.network.{ConversationalNetwork, MessageStream}
+import io.iohk.network.{ConversationalNetwork, MessageStream}
 
 import scala.collection.JavaConverters._
 

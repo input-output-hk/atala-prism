@@ -3,8 +3,8 @@ package io.iohk.cef.config
 import java.net.{InetSocketAddress, URI}
 
 import akka.util.ByteString
-import io.iohk.cef.network.{Capabilities, NodeId}
-import io.iohk.cef.utils.HexStringCodec.fromHexString
+import io.iohk.network.{Capabilities, NodeId}
+import io.iohk.network.utils.HexStringCodec.fromHexString
 import pureconfig.ConfigReader
 import pureconfig.error.CannotConvert
 

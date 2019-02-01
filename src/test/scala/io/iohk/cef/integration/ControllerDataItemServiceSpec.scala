@@ -3,15 +3,14 @@ package io.iohk.cef.integration
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
-import io.iohk.cef.codecs.nio.auto._
-import io.iohk.cef.crypto._
+import io.iohk.codecs.nio.auto._
+import io.iohk.crypto._
 import io.iohk.cef.data._
 import io.iohk.cef.data.query.DataItemQueryEngine
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.frontend.controllers.ItemsGenericController
 import io.iohk.cef.frontend.controllers.common.Codecs
-import io.iohk.cef.network.{MessageStream, Network}
-import io.iohk.cef.transactionservice.Envelope
+import io.iohk.network.{Envelope, MessageStream, Network}
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
 import org.scalatest.concurrent.ScalaFutures

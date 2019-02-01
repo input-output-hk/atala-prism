@@ -1,10 +1,11 @@
 package io.iohk.cef.frontend.services
 
-import io.iohk.cef.crypto._
+import io.iohk.crypto._
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.frontend.client.Response
 import io.iohk.cef.frontend.models._
 import io.iohk.cef.ledger.identity.{Claim, IdentityData, IdentityTransaction, Link, Unlink, _}
+import io.iohk.network.{Envelope, Everyone}
 import io.iohk.cef.transactionservice._
 
 import scala.concurrent.{ExecutionContext, Future}

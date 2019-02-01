@@ -2,16 +2,16 @@ package io.iohk.cef.config
 
 import java.time.Clock
 
-import io.iohk.cef.codecs.nio._
-import io.iohk.cef.codecs.nio.auto._
+import io.iohk.codecs.nio._
+import io.iohk.codecs.nio.auto._
 import io.iohk.cef.consensus.raft.node.OnDiskPersistentStorage
 import io.iohk.cef.consensus.{Consensus, raft}
 import io.iohk.cef.ledger.storage.{Ledger, LedgerStateStorage, LedgerStorage}
 import io.iohk.cef.ledger.{Block, BlockHeader, LedgerId, Transaction}
-import io.iohk.cef.network.Network
+import io.iohk.network.{Envelope, Network}
 import io.iohk.cef.transactionpool.{BlockCreator, TransactionPoolInterface}
 import io.iohk.cef.transactionservice.raft.{RaftConsensusInterface, RaftRPCFactory}
-import io.iohk.cef.transactionservice.{Envelope, NodeTransactionService}
+import io.iohk.cef.transactionservice.NodeTransactionService
 import org.slf4j.Logger
 
 import scala.concurrent.ExecutionContext

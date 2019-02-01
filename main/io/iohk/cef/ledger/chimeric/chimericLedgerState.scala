@@ -3,7 +3,7 @@ package io.iohk.cef.ledger.chimeric
 import java.util.Base64
 
 import akka.util.ByteString
-import io.iohk.cef.crypto.SigningPublicKey
+import io.iohk.crypto._
 
 object ChimericLedgerState {
 

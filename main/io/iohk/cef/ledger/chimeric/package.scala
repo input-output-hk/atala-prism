@@ -1,6 +1,6 @@
 package io.iohk.cef.ledger
 
-import io.iohk.cef.crypto._
+import io.iohk.crypto._
 
 package object chimeric {
   type ChimericLedgerBlock = Block[ChimericStateResult, ChimericTx]

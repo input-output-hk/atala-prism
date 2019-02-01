@@ -2,7 +2,7 @@ package io.iohk.cef.test
 
 import java.nio.file.Files
 
-import io.iohk.cef.codecs.nio._
+import io.iohk.codecs.nio._
 import io.iohk.cef.ledger.storage.Ledger
 import io.iohk.cef.ledger.storage.mv.{MVLedgerStateStorage, MVLedgerStorage}
 import io.iohk.cef.ledger.{Block, Transaction, LedgerId}

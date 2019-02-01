@@ -1,7 +1,7 @@
 package io.iohk.cef.ledger.chimeric
 
-import io.iohk.cef.codecs.nio.auto._
-import io.iohk.cef.crypto._
+import io.iohk.cef.ledger.chimeric.errors._
+import io.iohk.crypto._
 import io.iohk.cef.ledger.LedgerState
 import io.iohk.cef.ledger.chimeric.ChimericLedgerState.{
   getAddressNoncePartitionId,
@@ -11,6 +11,7 @@ import io.iohk.cef.ledger.chimeric.ChimericLedgerState.{
 }
 import io.iohk.cef.ledger.chimeric.errors._
 import org.scalatest.{FlatSpec, MustMatchers}
+import io.iohk.codecs.nio.auto._
 
 class ChimericTxSpec extends FlatSpec with MustMatchers {
 

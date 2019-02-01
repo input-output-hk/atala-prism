@@ -1,7 +1,8 @@
 package io.iohk.cef.utils
+
 import akka.util.ByteString
-import org.scalacheck.Gen.listOf
 import org.scalacheck.Arbitrary._
+import org.scalacheck.Gen.listOf
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 import org.scalatest.prop.GeneratorDrivenPropertyChecks._

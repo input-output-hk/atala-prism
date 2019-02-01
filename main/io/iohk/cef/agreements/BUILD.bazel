@@ -6,9 +6,9 @@ scala_library(
     deps = [
         "//3rdparty/jvm/com/typesafe/akka:akka_actor",
         "//3rdparty/jvm/org/slf4j:slf4j_api",
-        "//main/io/iohk/cef/codecs",
-        "//main/io/iohk/cef/crypto",
-        "//main/io/iohk/cef/network",
+        "@codecs//src/io/iohk/codecs",
+        "@crypto//src/io/iohk/crypto",
+        "@network//src/io/iohk/network"
     ],
 )
 
@@ -22,11 +22,11 @@ scala_test(
         "//3rdparty/jvm/com/typesafe/akka:akka_actor",
         "//3rdparty/jvm/org/mockito:mockito_core",
         "//3rdparty/jvm/org/scalatest",
-        "//main/io/iohk/cef/codecs",
-        "//main/io/iohk/cef/codecs/nio/test/utils",
-        "//main/io/iohk/cef/crypto",
-        "//main/io/iohk/cef/network",
-        "//main/io/iohk/cef/network:tests",
+        "@codecs//src/io/iohk/codecs",
+        "@crypto//src/io/iohk/crypto",
+        "@network//src/io/iohk/network",
+        "@codecs//src/io/iohk/codecs/nio/test/utils",
+        "@network//src/io/iohk/network:tests",
         "//main/io/iohk/cef/test",
         "//3rdparty/jvm/io/monix",
     ],

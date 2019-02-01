@@ -2,7 +2,7 @@ package io.iohk.cef.transactionpool
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.ledger.storage.LedgerStateStorage
 import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
-import io.iohk.cef.codecs.nio.NioCodec
+import io.iohk.codecs.nio.NioCodec
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.Duration

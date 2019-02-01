@@ -1,6 +1,6 @@
 package io.iohk.cef.frontend.services
 
-import io.iohk.cef.crypto._
+import io.iohk.crypto._
 
 class CryptoService() {
 

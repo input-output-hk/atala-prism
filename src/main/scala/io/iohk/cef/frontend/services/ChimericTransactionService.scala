@@ -1,7 +1,7 @@
 package io.iohk.cef.frontend.services
 
-import io.iohk.cef.codecs.nio.auto._
-import io.iohk.cef.crypto.sign
+import io.iohk.codecs.nio.auto._
+import io.iohk.crypto.sign
 import io.iohk.cef.frontend.client.Response
 import io.iohk.cef.frontend.models.{
   CreateChimericTransactionRequest,
@@ -9,9 +9,10 @@ import io.iohk.cef.frontend.models.{
   SubmitChimericTransactionRequest
 }
 import io.iohk.cef.ledger.chimeric._
+import io.iohk.network.{Envelope, Everyone}
 import io.iohk.cef.query.ledger.chimeric._
-import io.iohk.cef.codecs.nio.auto._
-import io.iohk.cef.transactionservice.{Envelope, Everyone, NodeTransactionService}
+import io.iohk.codecs.nio.auto._
+import io.iohk.cef.transactionservice.NodeTransactionService
 
 import scala.concurrent.{ExecutionContext, Future}
 

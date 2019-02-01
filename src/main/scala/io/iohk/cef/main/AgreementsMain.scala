@@ -5,7 +5,7 @@ import akka.stream.ActorMaterializer
 import akka.util.Timeout
 import com.typesafe.config.ConfigFactory
 import io.iohk.cef.agreements.AgreementsMessage.{Agree, Decline, Propose}
-import io.iohk.cef.codecs.nio.auto._
+import io.iohk.codecs.nio.auto._
 import io.iohk.cef.config.ConfigReaderExtensions._
 import io.iohk.cef.config.{CefConfig, CefServices}
 import io.iohk.cef.frontend.controllers.AgreementsGenericController

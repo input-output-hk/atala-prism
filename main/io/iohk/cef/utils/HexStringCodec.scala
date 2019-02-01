@@ -1,4 +1,5 @@
 package io.iohk.cef.utils
+
 import akka.util.ByteString
 import org.bouncycastle.util.encoders.Hex
 

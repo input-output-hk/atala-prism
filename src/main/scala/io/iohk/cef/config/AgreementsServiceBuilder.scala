@@ -1,9 +1,9 @@
 package io.iohk.cef.config
 
 import io.iohk.cef.agreements.{AgreementMessage, AgreementsService, AgreementsServiceImpl}
-import io.iohk.cef.codecs.nio._
-import io.iohk.cef.codecs.nio.auto._
-import io.iohk.cef.network.{ConversationalNetwork, NetworkConfig}
+import io.iohk.codecs.nio._
+import io.iohk.codecs.nio.auto._
+import io.iohk.network.{ConversationalNetwork, NetworkConfig}
 
 import scala.reflect.runtime.universe._
 

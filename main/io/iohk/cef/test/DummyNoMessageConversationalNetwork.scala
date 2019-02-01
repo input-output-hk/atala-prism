@@ -1,9 +1,9 @@
 package io.iohk.cef.test
 
-import io.iohk.cef.codecs.nio._
-import io.iohk.cef.network._
-import io.iohk.cef.network.discovery.NetworkDiscovery
-import io.iohk.cef.network.transport.Transports
+import io.iohk.codecs.nio._
+import io.iohk.network._
+import io.iohk.network.discovery.NetworkDiscovery
+import io.iohk.network.transport.Transports
 import monix.execution.Scheduler
 import monix.reactive.Observable
 import org.scalatest.mockito.MockitoSugar._

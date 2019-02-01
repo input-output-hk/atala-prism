@@ -1,7 +1,7 @@
 package io.iohk.cef.ledger.storage.mv
 
 import io.iohk.cef.ledger.{Block, BlockHeader}
-import io.iohk.cef.codecs.nio.auto._
+import io.iohk.codecs.nio.auto._
 import io.iohk.cef.test.DummyTransaction
 
 import scala.collection.JavaConverters._

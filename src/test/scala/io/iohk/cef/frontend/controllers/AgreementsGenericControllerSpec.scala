@@ -6,11 +6,11 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import io.iohk.cef.agreements.{AgreementMessage, AgreementsService, UserId}
-import io.iohk.cef.codecs.nio.auto._
-import io.iohk.cef.crypto._
+import io.iohk.codecs.nio.auto._
+import io.iohk.crypto._
 import io.iohk.cef.data.DataItem
 import io.iohk.cef.ledger.chimeric.{ChimericTx, CreateCurrency}
-import io.iohk.cef.network.MessageStream
+import io.iohk.network.MessageStream
 import io.iohk.cef.test.DummyMessageStream
 import monix.execution.schedulers.TestScheduler
 import monix.reactive.Observable

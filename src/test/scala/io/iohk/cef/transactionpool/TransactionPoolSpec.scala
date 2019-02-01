@@ -12,7 +12,7 @@ import org.mockito.ArgumentMatchers._
 
 import scala.collection.immutable.Queue
 import scala.concurrent.duration._
-import io.iohk.cef.codecs.nio.auto._
+import io.iohk.codecs.nio.auto._
 import io.iohk.cef.ledger.storage.LedgerStateStorage
 
 class TransactionPoolSpec extends FlatSpec with MustMatchers with PropertyChecks with MockitoSugar {

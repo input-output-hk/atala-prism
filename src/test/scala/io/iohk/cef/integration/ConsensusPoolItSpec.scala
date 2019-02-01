@@ -14,7 +14,9 @@ import org.scalatest.{FlatSpecLike, MustMatchers}
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
-import io.iohk.cef.codecs.nio.auto._
+import io.iohk.codecs.nio.auto._
+import io.iohk.codecs.nio.auto._
+import io.iohk.cef.consensus.raft.testlib.{InMemoryPersistentStorage, RealRaftNodeFixture}
 import io.iohk.cef.transactionservice.raft.RaftConsensusInterface
 
 class ConsensusPoolItSpec extends FlatSpecLike with MockitoSugar with MustMatchers with Eventually {

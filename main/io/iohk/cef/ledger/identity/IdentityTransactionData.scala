@@ -1,6 +1,6 @@
 package io.iohk.cef.ledger.identity
 
-import io.iohk.cef.crypto._
+import io.iohk.crypto._
 
 sealed trait IdentityTransactionData
 case class ClaimData(identity: Identity, key: SigningPublicKey) extends IdentityTransactionData
