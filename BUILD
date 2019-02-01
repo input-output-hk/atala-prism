@@ -40,6 +40,7 @@ scala_library(
         "//main/io/iohk/cef/ledger",
         "//main/io/iohk/cef/data",
         "//main/io/iohk/cef/consensus",
+        "//main/io/iohk/cef/transactionpool",
     ],
 )
 
@@ -106,5 +107,6 @@ scala_test(
         "//main/io/iohk/cef/data",
         "//main/io/iohk/cef/consensus",
         "//main/io/iohk/cef/consensus/testlib",
+        "//main/io/iohk/cef/transactionpool",
     ],
 )
