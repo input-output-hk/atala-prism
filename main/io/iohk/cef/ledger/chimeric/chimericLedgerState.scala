@@ -18,21 +18,21 @@ object ChimericLedgerState {
     require(prefix.size == PrefixLength)
   }
 
-  private def addressEncoder(address: Address): String = Base64.getEncoder.encodeToString(address.toByteString.toArray)
-  private def addressDecoder(addressStr: String): Address =
+  private def encodeAddress(address: Address): String = Base64.getEncoder.encodeToString(address.toByteString.toArray)
+  private def decodeAddress(addressStr: String): Address =
     SigningPublicKey
       .decodeFrom(ByteString(Base64.getDecoder.decode(addressStr)))
       .getOrElse(throw new IllegalArgumentException(s"Wrong adress format ${addressStr}"))
 
-  def getAddressPartitionId(address: Address): String = s"$AddressPrefix${addressEncoder(address)}"
-  def getAddressNoncePartitionId(address: Address): String = s"$AddressNoncePrefix${addressEncoder(address)}"
+  def getAddressPartitionId(address: Address): String = s"$AddressPrefix${encodeAddress(address)}"
+  def getAddressNoncePartitionId(address: Address): String = s"$AddressNoncePrefix${encodeAddress(address)}"
   def getUtxoPartitionId(txOutRef: TxOutRef): String = s"$TxOutRefPrefix${txOutRef.txId}${Delimiter}${txOutRef.index}"
   def getCurrencyPartitionId(currency: Currency): String = s"$CurrencyPrefix$currency"
 
   def toStateKey(partitionId: String): ChimericStateQuery = partitionId.take(PrefixLength) match {
     case AddressPrefix | AddressNoncePrefix =>
       val keyAsString = partitionId.drop(PrefixLength)
-      val key = addressDecoder(keyAsString)
+      val key = decodeAddress(keyAsString)
       AddressQuery(key)
 
     case TxOutRefPrefix =>

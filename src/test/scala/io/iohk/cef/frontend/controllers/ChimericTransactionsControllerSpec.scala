@@ -47,6 +47,8 @@ class ChimericTransactionsControllerSpec
   val signingKeyPair1 = generateSigningKeyPair()
   val signingKeyPair2 = generateSigningKeyPair()
 
+  def encodeAddress(key: SigningPublicKey): String = Base64.getUrlEncoder.encodeToString(key.toByteString.toArray)
+
   "POST /chimeric-transactions" should {
     "allow to submit a Non Signable transaction" in {
       val fragments: Seq[CreateChimericTransactionFragment] = Seq(
@@ -254,7 +256,7 @@ class ChimericTransactionsControllerSpec
   "GET /chimeric-transactions/addresses/:address/balance" should {
     "query the balance of an existing address" in {
       val (service, routes) = prepare()
-      val urlAddress = Base64.getUrlEncoder().encodeToString(signingKeyPair1.public.toByteString.toArray)
+      val urlAddress = encodeAddress(signingKeyPair1.public)
       when(service.queryAddressBalance(signingKeyPair1.public))
         .thenReturn(Future.successful(Right(Some(AddressResult(Value(Map("GBP" -> BigDecimal(12))))))))
 
@@ -270,7 +272,7 @@ class ChimericTransactionsControllerSpec
 
     "query the balance of a non existing address" in {
       val (service, routes) = prepare()
-      val urlAddress = Base64.getUrlEncoder().encodeToString(signingKeyPair1.public.toByteString.toArray)
+      val urlAddress = encodeAddress(signingKeyPair1.public)
       when(service.queryAddressBalance(signingKeyPair1.public)).thenReturn(Future.successful(Right(None)))
 
       val request = Get(s"/chimeric-transactions/addresses/${urlAddress}/balance")
@@ -287,7 +289,7 @@ class ChimericTransactionsControllerSpec
 
     "handle a failed address balance query" in {
       val (service, routes) = prepare()
-      val urlAddress = Base64.getUrlEncoder().encodeToString(signingKeyPair1.public.toByteString.toArray)
+      val urlAddress = encodeAddress(signingKeyPair1.public)
       when(service.queryAddressBalance(signingKeyPair1.public))
         .thenReturn(Future.successful(Left(FakeApplicationError("something gone wrong"))))
 
@@ -305,7 +307,7 @@ class ChimericTransactionsControllerSpec
   "GET /chimeric-transactions/addresses/:address/nonce" should {
     "query the nonce of an existing address" in {
       val (service, routes) = prepare()
-      val urlAddress = Base64.getUrlEncoder().encodeToString(signingKeyPair1.public.toByteString.toArray)
+      val urlAddress = encodeAddress(signingKeyPair1.public)
       when(service.queryAddressNonce(signingKeyPair1.public))
         .thenReturn(Future.successful(Right(Some(NonceResult(123)))))
 
@@ -321,7 +323,7 @@ class ChimericTransactionsControllerSpec
 
     "query the nonce of a non existing address" in {
       val (service, routes) = prepare()
-      val urlAddress = Base64.getUrlEncoder().encodeToString(signingKeyPair1.public.toByteString.toArray)
+      val urlAddress = encodeAddress(signingKeyPair1.public)
       when(service.queryAddressNonce(signingKeyPair1.public)).thenReturn(Future.successful(Right(None)))
 
       val request = Get(s"/chimeric-transactions/addresses/${urlAddress}/nonce")
@@ -338,7 +340,7 @@ class ChimericTransactionsControllerSpec
 
     "handle a failed address nonce query" in {
       val (service, routes) = prepare()
-      val urlAddress = Base64.getUrlEncoder().encodeToString(signingKeyPair1.public.toByteString.toArray)
+      val urlAddress = encodeAddress(signingKeyPair1.public)
 
       when(service.queryAddressNonce(signingKeyPair1.public))
         .thenReturn(Future.successful(Left(FakeApplicationError("something gone wrong"))))

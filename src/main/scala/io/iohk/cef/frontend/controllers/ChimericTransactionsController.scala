@@ -167,7 +167,7 @@ object ChimericTransactionsController {
 
   final case class InvalidAddress(addressCandidate: String) extends InputValidationError {
     override def toPublicErrorList[L](i18nService: I18nService[L])(implicit lang: L): List[PublicError] = {
-      val error = FieldValidationError("adress", "The address should be formatted as a valid signing public key.")
+      val error = FieldValidationError("address", "The address should be formatted as a valid signing public key.")
       List(error)
     }
   }
