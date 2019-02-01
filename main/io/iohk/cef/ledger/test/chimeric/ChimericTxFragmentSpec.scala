@@ -22,12 +22,12 @@ class ChimericTxFragmentSpec extends FlatSpec with MustMatchers with PropertyChe
   it should "apply a withdrawal" in {
     forAll(Gen.posNum[Double]) { (d: Double) =>
       val decimal = BigDecimal(d + 1.0)
-      val address: Address = "address"
+      val address: Address = signingPublicKey
       val currency: Currency = "CRC"
       val value = Value(currency -> decimal)
       val state = stateFrom(
         getCurrencyPartitionId(currency) -> CreateCurrencyResult(CreateCurrency(currency)),
-        getAddressPartitionId(address) -> AddressResult(value, Some(signingPublicKey))
+        getAddressPartitionId(address) -> AddressResult(value)
       )
 
       def newState(subtractedValue: Value): ChimericLedgerState = {
@@ -36,7 +36,7 @@ class ChimericTxFragmentSpec extends FlatSpec with MustMatchers with PropertyChe
         val valuePair: List[(String, ChimericStateResult)] = List(value - subtractedValue)
           .filter(_ != Value.Zero)
           .map { x =>
-            getAddressPartitionId(address) -> AddressResult(x, Some(signingPublicKey))
+            getAddressPartitionId(address) -> AddressResult(x)
           }
 
         stateFrom(currencyPair :: noncePair :: valuePair: _*)
@@ -56,13 +56,13 @@ class ChimericTxFragmentSpec extends FlatSpec with MustMatchers with PropertyChe
 
   it should "reject a Withdrawal when reusing the last nonce" in {
     val decimal = BigDecimal(4.0)
-    val address: Address = "address"
+    val address: Address = signingPublicKey
     val currency: Currency = "CRC"
     val value = Value(currency -> decimal)
     val nonce = 0
     val state = stateFrom(
       getCurrencyPartitionId(currency) -> CreateCurrencyResult(CreateCurrency(currency)),
-      getAddressPartitionId(address) -> AddressResult(value, Some(signingPublicKey)),
+      getAddressPartitionId(address) -> AddressResult(value),
       getAddressNoncePartitionId(address) -> NonceResult(nonce)
     )
 
@@ -72,14 +72,14 @@ class ChimericTxFragmentSpec extends FlatSpec with MustMatchers with PropertyChe
 
   it should "reject a Withdrawal when nonce is greater than the expected one" in {
     val decimal = BigDecimal(4.0)
-    val address: Address = "address"
+    val address: Address = signingPublicKey
     val currency: Currency = "CRC"
     val value = Value(currency -> decimal)
     val lastNonce = 0
     val nonce = lastNonce + 2
     val state = stateFrom(
       getCurrencyPartitionId(currency) -> CreateCurrencyResult(CreateCurrency(currency)),
-      getAddressPartitionId(address) -> AddressResult(value, Some(signingPublicKey)),
+      getAddressPartitionId(address) -> AddressResult(value),
       getAddressNoncePartitionId(address) -> NonceResult(lastNonce)
     )
 
@@ -89,14 +89,14 @@ class ChimericTxFragmentSpec extends FlatSpec with MustMatchers with PropertyChe
 
   it should "reject a Withdrawal when nonce is smaller than the expected one" in {
     val decimal = BigDecimal(4.0)
-    val address: Address = "address"
+    val address: Address = signingPublicKey
     val currency: Currency = "CRC"
     val value = Value(currency -> decimal)
     val lastNonce = 1
     val nonce = lastNonce - 1
     val state = stateFrom(
       getCurrencyPartitionId(currency) -> CreateCurrencyResult(CreateCurrency(currency)),
-      getAddressPartitionId(address) -> AddressResult(value, Some(signingPublicKey)),
+      getAddressPartitionId(address) -> AddressResult(value),
       getAddressNoncePartitionId(address) -> NonceResult(lastNonce)
     )
 
@@ -106,13 +106,13 @@ class ChimericTxFragmentSpec extends FlatSpec with MustMatchers with PropertyChe
 
   it should "require incremental nonces to apply a Withdrawal" in {
     val decimal = BigDecimal(4.0)
-    val address: Address = "address"
+    val address: Address = signingPublicKey
     val currency: Currency = "CRC"
     val value = Value(currency -> decimal)
     val lastNonce = 1
     val state = stateFrom(
       getCurrencyPartitionId(currency) -> CreateCurrencyResult(CreateCurrency(currency)),
-      getAddressPartitionId(address) -> AddressResult(value, Some(signingPublicKey)),
+      getAddressPartitionId(address) -> AddressResult(value),
       getAddressNoncePartitionId(address) -> NonceResult(lastNonce)
     )
 
@@ -146,7 +146,7 @@ class ChimericTxFragmentSpec extends FlatSpec with MustMatchers with PropertyChe
       val value = Value(currency -> decimal)
       val state = stateFrom(
         getCurrencyPartitionId(currency) -> CreateCurrencyResult(CreateCurrency(currency)),
-        getUtxoPartitionId(txOutRef) -> UtxoResult(value, None)
+        getUtxoPartitionId(txOutRef) -> UtxoResult(value, signingPublicKey)
       )
 
       val input = Input(txOutRef, value)
@@ -174,13 +174,13 @@ class ChimericTxFragmentSpec extends FlatSpec with MustMatchers with PropertyChe
       val value2 = Value(currency -> (decimal + 1))
       val state = stateFrom(
         getCurrencyPartitionId(currency) -> CreateCurrencyResult(CreateCurrency(currency)),
-        getUtxoPartitionId(txOutRef) -> UtxoResult(value, Some(signingPublicKey))
+        getUtxoPartitionId(txOutRef) -> UtxoResult(value, signingPublicKey)
       )
 
       val newState = stateFrom(
         getCurrencyPartitionId(currency) -> CreateCurrencyResult(CreateCurrency(currency)),
-        getUtxoPartitionId(txOutRef) -> UtxoResult(value, Some(signingPublicKey)),
-        getUtxoPartitionId(txOutRef2) -> UtxoResult(value2, Some(signingPublicKey))
+        getUtxoPartitionId(txOutRef) -> UtxoResult(value, signingPublicKey),
+        getUtxoPartitionId(txOutRef2) -> UtxoResult(value2, signingPublicKey)
       )
 
       Output(value, signingPublicKey)(state, txOutRef.index, txOutRef.txId) mustBe Left(
@@ -194,7 +194,7 @@ class ChimericTxFragmentSpec extends FlatSpec with MustMatchers with PropertyChe
     forAll(Gen.posNum[Double]) { (d: Double) =>
       val signingPublicKey = crypto.generateSigningKeyPair().public
       val decimal = BigDecimal(d)
-      val address = "address"
+      val address = signingPublicKey
       val currency: Currency = "CRC"
       val value = Value(currency -> decimal)
       val value2 = Value(currency -> (decimal + 1))
@@ -204,16 +204,16 @@ class ChimericTxFragmentSpec extends FlatSpec with MustMatchers with PropertyChe
 
       val stateWithValue = stateFrom(
         getCurrencyPartitionId(currency) -> CreateCurrencyResult(CreateCurrency(currency)),
-        getAddressPartitionId(address) -> AddressResult(value, Some(signingPublicKey))
+        getAddressPartitionId(address) -> AddressResult(value)
       )
 
       val stateWithValue2 = stateFrom(
         getCurrencyPartitionId(currency) -> CreateCurrencyResult(CreateCurrency(currency)),
-        getAddressPartitionId(address) -> AddressResult(value + value2, Some(signingPublicKey))
+        getAddressPartitionId(address) -> AddressResult(value + value2)
       )
 
-      Deposit(address, value, signingPublicKey)(emptyState, 1, "") mustBe Right(stateWithValue)
-      Deposit(address, value2, signingPublicKey)(stateWithValue, 1, "") mustBe Right(stateWithValue2)
+      Deposit(address, value)(emptyState, 1, "") mustBe Right(stateWithValue)
+      Deposit(address, value2)(stateWithValue, 1, "") mustBe Right(stateWithValue2)
     }
   }
 

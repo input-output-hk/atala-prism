@@ -11,7 +11,8 @@ import io.iohk.cef.frontend.models.{
 import io.iohk.cef.ledger.chimeric._
 import io.iohk.network.{Envelope, Everyone}
 import io.iohk.cef.query.ledger.chimeric._
-import io.iohk.cef.transactionservice._
+import io.iohk.codecs.nio.auto._
+import io.iohk.cef.transactionservice.NodeTransactionService
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -45,7 +46,7 @@ class ChimericTransactionService(
     nodeTransactionService.receiveTransaction(envelope)
   }
 
-  def queryCreatedCurrency(currency: String): Response[Option[CurrencyQuery]] =
+  def queryCreatedCurrency(currency: Currency): Response[Option[CurrencyQuery]] =
     Future.successful(
       Right(
         queryService.perform(ChimericQuery.CreatedCurrency(currency))
@@ -59,14 +60,14 @@ class ChimericTransactionService(
       )
     )
 
-  def queryAddressBalance(address: String): Response[Option[AddressResult]] =
+  def queryAddressBalance(address: Address): Response[Option[AddressResult]] =
     Future.successful(
       Right(
         queryService.perform(ChimericQuery.AddressBalance(address))
       )
     )
 
-  def queryAddressNonce(address: String): Response[Option[NonceResult]] =
+  def queryAddressNonce(address: Address): Response[Option[NonceResult]] =
     Future.successful(
       Right(
         queryService.perform(ChimericQuery.AddressNonce(address))

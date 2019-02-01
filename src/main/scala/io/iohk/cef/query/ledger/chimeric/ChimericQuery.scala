@@ -69,7 +69,7 @@ object ChimericQuery {
         balanceOpt.map(balance => (key.txOutRef, balance))
       }
       balances.collect {
-        case Some((txOutRef, UtxoResult(_, Some(pk)))) if publicKey == pk => txOutRef
+        case Some((txOutRef, UtxoResult(_, pk))) if publicKey == pk => txOutRef
       }.toSet
     }
   }

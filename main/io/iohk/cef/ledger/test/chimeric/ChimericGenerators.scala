@@ -23,11 +23,11 @@ object ChimericGenerators {
   val AddressResultGen = for {
     value <- ValueGen
     publicKey <- PublicKeyOptionGen
-  } yield AddressResult(value, publicKey)
+  } yield AddressResult(value)
 
   val UtxoResultGen = for {
     value <- ValueGen
-    publicKey <- PublicKeyOptionGen
+    publicKey <- PublicKeyGen
   } yield UtxoResult(value, publicKey)
 
   val CurrencyResultGen = Gen.alphaNumStr.map(c => CreateCurrencyResult(CreateCurrency(c)))

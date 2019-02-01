@@ -1,10 +1,14 @@
 package io.iohk.cef.frontend.controllers
 
+import java.util.Base64
+
 import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
+import akka.util.ByteString
 import com.alexitc.playsonify.core.I18nService
 import com.alexitc.playsonify.models._
+import io.iohk.crypto._
 import io.iohk.cef.frontend.client.ServiceResponseExtensions
 import io.iohk.cef.frontend.controllers.common._
 import io.iohk.cef.frontend.models.{
@@ -69,25 +73,33 @@ class ChimericTransactionsController(service: ChimericTransactionService)(
           }
         }
       } ~
-      path("chimeric-transactions" / "addresses" / Segment / "balance") { address =>
+      path("chimeric-transactions" / "addresses" / Segment / "balance") { addressStr =>
         get {
           public { _ =>
-            service.queryAddressBalance(address).map {
-              case Right(Some(response)) => Good(response)
-              case Right(None) => Bad(Every(AddressNotFound(address)))
-              case Left(_) => Bad(Every(QueryAddressBalanceError))
-            }
+            decodeAddress(addressStr)
+              .map { address =>
+                service.queryAddressBalance(address).map {
+                  case Right(Some(response)) => Good(response)
+                  case Right(None) => Bad(Every(AddressNotFound(address)))
+                  case Left(_) => Bad(Every(QueryAddressBalanceError))
+                }
+              }
+              .getOrElse(Future.successful(Bad(Every(InvalidAddress(addressStr)))))
           }
         }
       } ~
-      path("chimeric-transactions" / "addresses" / Segment / "nonce") { address =>
+      path("chimeric-transactions" / "addresses" / Segment / "nonce") { addressStr =>
         get {
           public { _ =>
-            service.queryAddressNonce(address).map {
-              case Right(Some(response)) => Good(Json.toJson(response))
-              case Right(None) => Bad(Every(AddressNotFound(address)))
-              case Left(_) => Bad(Every(QueryAddressNonceError))
-            }
+            decodeAddress(addressStr)
+              .map { address =>
+                service.queryAddressNonce(address).map {
+                  case Right(Some(response)) => Good(Json.toJson(response))
+                  case Right(None) => Bad(Every(AddressNotFound(address)))
+                  case Left(_) => Bad(Every(QueryAddressNonceError))
+                }
+              }
+              .getOrElse(Future.successful(Bad(Every(InvalidAddress(addressStr)))))
           }
         }
       } ~
@@ -106,6 +118,10 @@ class ChimericTransactionsController(service: ChimericTransactionService)(
           }
         }
       }
+  }
+
+  private def decodeAddress(address: String) = {
+    SigningPublicKey.decodeFrom(ByteString(Base64.getUrlDecoder().decode(address)))
   }
 }
 
@@ -145,6 +161,13 @@ object ChimericTransactionsController {
   final case class InvalidTxOutRef(txOutRefCandidate: String) extends InputValidationError {
     override def toPublicErrorList[L](i18nService: I18nService[L])(implicit lang: L): List[PublicError] = {
       val error = FieldValidationError("txOutRef", "The txOutRef should be formatted as 'transactionID(index)'")
+      List(error)
+    }
+  }
+
+  final case class InvalidAddress(addressCandidate: String) extends InputValidationError {
+    override def toPublicErrorList[L](i18nService: I18nService[L])(implicit lang: L): List[PublicError] = {
+      val error = FieldValidationError("address", "The address should be formatted as a valid signing public key.")
       List(error)
     }
   }

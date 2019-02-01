@@ -9,6 +9,7 @@ import io.iohk.cef.ledger.chimeric.ChimericLedgerState.{
   getCurrencyPartitionId,
   getUtxoPartitionId
 }
+import io.iohk.cef.ledger.chimeric.errors._
 import org.scalatest.{FlatSpec, MustMatchers}
 import io.iohk.codecs.nio.auto._
 
@@ -22,7 +23,7 @@ class ChimericTxSpec extends FlatSpec with MustMatchers {
     val signingKeyPair = generateSigningKeyPair()
     val txOutRef = TxOutRef("txId", 0)
     val utxoPartitionId = getUtxoPartitionId(txOutRef)
-    val address: Address = "an-address"
+    val address: Address = signingKeyPair.public
     val addressPartitionId = getAddressPartitionId(address)
     val addressNoncePartitionId = getAddressNoncePartitionId(address)
     val value = Value(Map(currency -> BigDecimal(1)))
@@ -47,7 +48,7 @@ class ChimericTxSpec extends FlatSpec with MustMatchers {
     val state = LedgerState[ChimericStateResult](
       Map(
         currencyPartitionId -> CreateCurrencyResult(CreateCurrency(currency)),
-        getUtxoPartitionId(txOutRef) -> UtxoResult(value, Some(signingKeyPair.public))
+        getUtxoPartitionId(txOutRef) -> UtxoResult(value, signingKeyPair.public)
       )
     )
 
@@ -59,7 +60,7 @@ class ChimericTxSpec extends FlatSpec with MustMatchers {
     val state = LedgerState[ChimericStateResult](
       Map(
         currencyPartitionId -> CreateCurrencyResult(CreateCurrency(currency)),
-        getAddressPartitionId(address) -> AddressResult(value, Some(signingKeyPair.public))
+        getAddressPartitionId(address) -> AddressResult(value)
       )
     )
 
@@ -75,7 +76,7 @@ class ChimericTxSpec extends FlatSpec with MustMatchers {
     val state = LedgerState[ChimericStateResult](
       Map(
         currencyPartitionId -> CreateCurrencyResult(CreateCurrency(currency)),
-        utxoPartitionId -> UtxoResult(value, Some(signingKeyPair.public))
+        utxoPartitionId -> UtxoResult(value, signingKeyPair.public)
       )
     )
 
@@ -93,7 +94,7 @@ class ChimericTxSpec extends FlatSpec with MustMatchers {
     val state = LedgerState[ChimericStateResult](
       Map(
         currencyPartitionId -> CreateCurrencyResult(CreateCurrency(currency)),
-        addressPartitionId -> AddressResult(value, Some(signingKeyPair.public))
+        addressPartitionId -> AddressResult(value)
       )
     )
 
@@ -108,8 +109,6 @@ class ChimericTxSpec extends FlatSpec with MustMatchers {
   }
 
   it should "validate txs that have input and withdrawal signatures using different keys" in new TestFixture {
-    val key1: SigningKeyPair = generateSigningKeyPair()
-    val key2: SigningKeyPair = generateSigningKeyPair()
 
     val signableFragments: Seq[ChimericTxFragment] =
       Seq(Input(txOutRef, value), Fee(value), Withdrawal(address, value, 1), Fee(value))
@@ -117,15 +116,15 @@ class ChimericTxSpec extends FlatSpec with MustMatchers {
     val tx =
       ChimericTx(
         signableFragments :+
-          SignatureTxFragment(sign(signableFragments, key1.`private`)) :+
-          SignatureTxFragment(sign(signableFragments, key2.`private`))
+          SignatureTxFragment(sign(signableFragments, signingKeyPair.`private`)) :+
+          SignatureTxFragment(sign(signableFragments, signingKeyPair.`private`))
       )
 
     val state = LedgerState[ChimericStateResult](
       Map(
         currencyPartitionId -> CreateCurrencyResult(CreateCurrency(currency)),
-        utxoPartitionId -> UtxoResult(value, Some(key1.public)),
-        addressPartitionId -> AddressResult(value, Some(key2.public))
+        utxoPartitionId -> UtxoResult(value, signingKeyPair.public),
+        addressPartitionId -> AddressResult(value)
       )
     )
 

@@ -1,6 +1,9 @@
 package io.iohk.cef.ledger.chimeric
 
-import io.iohk.crypto.SigningPublicKey
+import java.util.Base64
+
+import akka.util.ByteString
+import io.iohk.crypto._
 
 object ChimericLedgerState {
 
@@ -15,17 +18,22 @@ object ChimericLedgerState {
     require(prefix.size == PrefixLength)
   }
 
-  def getAddressPartitionId(address: Address): String = s"$AddressPrefix$address"
-  def getAddressNoncePartitionId(address: Address): String = s"$AddressNoncePrefix$address"
+  private def encodeAddress(address: Address): String = Base64.getEncoder.encodeToString(address.toByteString.toArray)
+  private def decodeAddress(addressStr: String): Address =
+    SigningPublicKey
+      .decodeFrom(ByteString(Base64.getDecoder.decode(addressStr)))
+      .getOrElse(throw new IllegalArgumentException(s"Wrong adress format ${addressStr}"))
+
+  def getAddressPartitionId(address: Address): String = s"$AddressPrefix${encodeAddress(address)}"
+  def getAddressNoncePartitionId(address: Address): String = s"$AddressNoncePrefix${encodeAddress(address)}"
   def getUtxoPartitionId(txOutRef: TxOutRef): String = s"$TxOutRefPrefix${txOutRef.txId}${Delimiter}${txOutRef.index}"
   def getCurrencyPartitionId(currency: Currency): String = s"$CurrencyPrefix$currency"
 
   def toStateKey(partitionId: String): ChimericStateQuery = partitionId.take(PrefixLength) match {
-    case AddressPrefix =>
-      AddressQuery(partitionId.drop(PrefixLength))
-
-    case AddressNoncePrefix =>
-      AddressNonceQuery(partitionId.drop(PrefixLength))
+    case AddressPrefix | AddressNoncePrefix =>
+      val keyAsString = partitionId.drop(PrefixLength)
+      val key = decodeAddress(keyAsString)
+      AddressQuery(key)
 
     case TxOutRefPrefix =>
       val utxo = partitionId.drop(PrefixLength).split(Delimiter)
@@ -44,8 +52,8 @@ object ChimericLedgerState {
 sealed trait ChimericStateResult
 
 case class CreateCurrencyResult(createCurrency: CreateCurrency) extends ChimericStateResult
-case class UtxoResult(value: Value, signingPublicKey: Option[SigningPublicKey]) extends ChimericStateResult
-case class AddressResult(value: Value, signingPublicKey: Option[SigningPublicKey]) extends ChimericStateResult
+case class UtxoResult(value: Value, signingPublicKey: SigningPublicKey) extends ChimericStateResult
+case class AddressResult(value: Value) extends ChimericStateResult
 case class NonceResult(nonce: Int) extends ChimericStateResult
 
 //Keys

@@ -16,12 +16,13 @@ class ChimericTransactionRequestSpec extends WordSpec with MustMatchers {
   import Codecs._
 
   val signingKeyPair = generateSigningKeyPair()
+  val signingKeyPair2 = generateSigningKeyPair()
 
   "chimericTransactionRequestJsonFormat" should {
     "be able to serialize and deserialize a transaction including all fragment types" in {
       val fragments = List(
         CreateSignableChimericTransactionFragment(
-          Withdrawal(address = "dummy", value = Value(Map("MXN" -> BigDecimal(10))), nonce = 1),
+          Withdrawal(address = signingKeyPair.public, value = Value(Map("MXN" -> BigDecimal(10))), nonce = 1),
           signingKeyPair.`private`
         ),
         CreateNonSignableChimericTransactionFragment(Mint(value = Value(Map("USD" -> BigDecimal(200))))),
@@ -32,7 +33,7 @@ class ChimericTransactionRequestSpec extends WordSpec with MustMatchers {
         CreateNonSignableChimericTransactionFragment(Fee(value = Value(Map("GBP" -> BigDecimal(9990))))),
         CreateNonSignableChimericTransactionFragment(Output(Value(Map("EUR" -> BigDecimal(5))), signingKeyPair.public)),
         CreateNonSignableChimericTransactionFragment(
-          Deposit(address = "another", value = Value(Map("PLN" -> BigDecimal(100000))), signingKeyPair.public)
+          Deposit(address = signingKeyPair2.public, value = Value(Map("PLN" -> BigDecimal(100000))))
         ),
         CreateNonSignableChimericTransactionFragment(CreateCurrency(currency = "AUD")),
         CreateNonSignableChimericTransactionFragment(SignatureTxFragment(sign("foo", signingKeyPair.`private`)))
