@@ -1,0 +1,9 @@
+.confirmed {
+  animation: blinker 3s linear;
+}
+
+@keyframes blinker {
+  50% {
+    background-color: rgb(22, 253, 22);
+  }
+}

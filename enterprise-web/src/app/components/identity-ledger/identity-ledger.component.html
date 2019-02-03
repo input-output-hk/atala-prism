@@ -1,0 +1,44 @@
+<div>
+  <div class="list-group col-md-3">
+    <h2>Identities</h2>
+  </div>
+
+  <form
+    [formGroup]="form"
+    (ngSubmit)="claim()"
+    class="form"
+    novalidate>
+
+    <div class="form-row">
+      <div class="col-md-4">
+        <div class="col-md-8">
+          <input type="text" class="form-control" formControlName="data.identity" placeholder="Identity">
+        </div>
+        <div [hidden]="!errorService.hasWrongValue(form, 'data.identity')" class="col-md-4">
+          {{errorService.getFieldError(form, 'data.identity')}}
+        </div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="col-md-4">
+        <button class="btn btn-primary" type="submit">Claim</button>
+      </div>
+    </div>
+  </form>
+
+  <div class="list-group col-md-3">
+    <button *ngFor="let item of identityRepository.getUnconfirmedIdentities()" type="button" class="list-group-item list-group-item-action">
+      {{item.identity}} - unconfirmed
+    </button>
+  </div>
+  <div class="list-group col-md-3">
+    <button *ngFor="let item of identityRepository.getConfirmedIdentities()" (click)="select(item.identity)" [ngClass]="{ 'confirmed': isConfirmed(item.identity) }" type="button" class="list-group-item list-group-item-action">
+      {{item.identity}}
+    </button>
+  </div>
+
+  <!-- TODO: Allow to do something with the identity -->
+  <div [hidden]="selectedIdentity == null">
+    {{selectedIdentity}}
+  </div>
+</div>
