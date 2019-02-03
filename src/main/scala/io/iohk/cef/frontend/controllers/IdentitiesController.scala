@@ -28,7 +28,7 @@ class IdentitiesController(queryService: IdentityQueryService, service: Identity
   import Context._
   import IdentitiesController._
 
-  lazy val routes = {
+  lazy val routes = corsHandler {
     pathPrefix("identities") {
       (get & pathPrefix(Segment)) { identity =>
         path("exists") {

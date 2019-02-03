@@ -33,7 +33,7 @@ class ChimericTransactionsController(service: ChimericTransactionService)(
   import Codecs._
   import Context._
 
-  lazy val routes: Route = {
+  lazy val routes: Route = corsHandler {
     pathPrefix("chimeric-transactions" / "currencies") {
       pathEnd {
         get {

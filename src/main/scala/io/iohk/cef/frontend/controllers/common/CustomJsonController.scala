@@ -5,7 +5,9 @@ import com.alexitc.playsonify.akka._
 import com.alexitc.playsonify.models.{ErrorId, ServerError}
 import org.slf4j.LoggerFactory
 
-abstract class CustomJsonController extends AbstractJsonController(new CustomJsonController.CustomJsonComponents) {
+abstract class CustomJsonController
+    extends AbstractJsonController(new CustomJsonController.CustomJsonComponents)
+    with CORSHandler {
 
   protected val logger = LoggerFactory.getLogger(this.getClass)
 
