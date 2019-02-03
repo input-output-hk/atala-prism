@@ -37,6 +37,7 @@ scala_binary(
     "//3rdparty/jvm/com/alexitc:playsonify_akka_http",
     "//3rdparty/jvm/com/typesafe/play:play_json",
     "//3rdparty/jvm/de/heikoseeberger:akka_http_play_json",
+    "//main/io/iohk/cef/transactionservice",
     ],
     main_class = "io.iohk.cef.main.IdentityTxMain",
 )
@@ -79,6 +80,7 @@ scala_binary(
     "//3rdparty/jvm/com/alexitc:playsonify_akka_http",
     "//3rdparty/jvm/com/typesafe/play:play_json",
     "//3rdparty/jvm/de/heikoseeberger:akka_http_play_json",
+    "//main/io/iohk/cef/transactionservice",
     ],
     main_class = "io.iohk.cef.main.AgreementsMain",
 )
@@ -121,6 +123,7 @@ scala_binary(
     "//3rdparty/jvm/com/alexitc:playsonify_akka_http",
     "//3rdparty/jvm/com/typesafe/play:play_json",
     "//3rdparty/jvm/de/heikoseeberger:akka_http_play_json",
+    "//main/io/iohk/cef/transactionservice",
     ],
     main_class = "io.iohk.cef.main.ChimericMain",
 )
