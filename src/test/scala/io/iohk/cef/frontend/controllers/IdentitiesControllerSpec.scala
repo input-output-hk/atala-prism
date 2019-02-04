@@ -5,13 +5,13 @@ import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.util.ByteString
 import com.alexitc.playsonify.akka.PublicErrorRenderer
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
-import io.iohk.crypto._
-import io.iohk.crypto.certificates.test.data.ExampleCertificates.twoChainedCertsPEM
 import io.iohk.cef.frontend.controllers.common.Codecs
 import io.iohk.cef.frontend.services.IdentityTransactionService
 import io.iohk.cef.ledger.identity._
 import io.iohk.cef.query.ledger.identity.{IdentityQueryEngine, IdentityQueryService}
 import io.iohk.cef.transactionservice.NodeTransactionService
+import io.iohk.crypto._
+import io.iohk.crypto.certificates.test.data.ExampleCertificates.twoChainedCertsPEM
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
 import org.scalatest.concurrent.ScalaFutures
@@ -81,121 +81,97 @@ class IdentitiesControllerSpec
     val publicKeyHex = toCleanHex(pair.public.toByteString)
     val privateKeyHex = toCleanHex(pair.`private`.toByteString)
 
-    def testTransactionType(txType: String, dataType: String): Assertion = {
-      val identity = "iohk"
-
-      val body =
-        s"""
-           |{
-           |    "type": "$txType",
-           |    "identity": "$identity",
-           |    "data": {
-           |      "_type":"$dataType",
-           |      "identity": "$identity",
-           |      "key": "$publicKeyHex"
-           |      },
-           |    "ledgerId": "1",
-           |    "publicKey": "$publicKeyHex",
-           |    "privateKey": "$privateKeyHex"
-           |}
-         """.stripMargin
-
-      val request = Post("/identities", jsonEntity(body))
-
-      request ~> routes ~> check {
-        status must ===(StatusCodes.Created)
-
-        val json = responseAs[JsValue]
-        (json \ "type").as[String] must be(txType)
-        (json \ "data" \ "identity").as[String] must be(identity)
-        (json \ "data" \ "key").as[String] must be(pair.public.toString)
-        (json \ "signature").as[String] mustNot be(empty)
-      }
-    }
-
-    def testEndorseType(
-        endorserIdentity: String,
-        endorsedIdentity: String,
-        privateKey: SigningPrivateKey
+    def testTransactionType(
+        txType: String,
+        privateKey: SigningPrivateKey,
+        identity: Option[String] = None,
+        key: Option[SigningPublicKey] = None,
+        endorserIdentity: Option[String] = None,
+        endorsedIdentity: Option[String] = None,
+        grantingIdentity: Option[String] = None,
+        grantedIdentity: Option[String] = None,
+        grantedIdentityPublicKey: Option[SigningPublicKey] = None,
+        linkingIdentityPrivateKey: Option[SigningPrivateKey] = None
     ): Assertion = {
-      val txType = "Endorse"
-      val privateKeyHex = toCleanHex(privateKey.toByteString)
 
-      val body =
+      val identityString = identity.getOrElse("")
+      val keyString = key.map(_.toByteString).map(toCleanHex).getOrElse("")
+
+      val endorserIdentityString = endorserIdentity.getOrElse("")
+      val endorsedIdentityString = endorsedIdentity.getOrElse("")
+
+      val grantingIdentityString = grantingIdentity.getOrElse("")
+      val grantedIdentityString = grantedIdentity.getOrElse("")
+      val grantedIdentityPublicKeyString = grantedIdentityPublicKey.map(_.toByteString).map(toCleanHex).getOrElse("")
+
+      val privateKeyString = toCleanHex(privateKey.toByteString)
+      val partialBody =
         s"""
-           |{
            |    "type": "$txType",
            |    "data": {
-           |      "_type":"io.iohk.cef.ledger.identity.EndorseData",
-           |      "endorserIdentity": "$endorserIdentity",
-           |      "endorsedIdentity": "$endorsedIdentity"
+           |      "identity": "$identityString",
+           |      "key": "$keyString",
+           |
+           |      "endorserIdentity": "$endorserIdentityString",
+           |      "endorsedIdentity": "$endorsedIdentityString",
+           |
+           |      "grantingIdentity": "$grantingIdentityString",
+           |      "grantedIdentity" : "$grantedIdentityString",
+           |      "grantedIdentityPublicKey": "$grantedIdentityPublicKeyString"
            |    },
            |    "ledgerId": "1",
-           |    "privateKey": "$privateKeyHex"
-           |
-           |}
+           |    "privateKey": "$privateKeyString"
          """.stripMargin
+
+      val body = linkingIdentityPrivateKey
+        .map { key =>
+          val linkingIdentityPrivateKeyString = toCleanHex(key.toByteString)
+
+          s"""
+               |{
+               |$partialBody,
+               |  "linkingIdentityPrivateKey": "$linkingIdentityPrivateKeyString"
+               |}
+             """.stripMargin
+        }
+        .getOrElse(s"{$partialBody}")
 
       val request = Post("/identities", jsonEntity(body))
 
       request ~> routes ~> check {
         status must ===(StatusCodes.Created)
+
         val json = responseAs[JsValue]
-        (json \ "type").as[String] must be(txType)
-        (json \ "data" \ "endorserIdentity").as[String] must be(endorserIdentity)
-        (json \ "data" \ "endorsedIdentity").as[String] must be(endorsedIdentity)
+
+        identity.foreach { (json \ "data" \ "identity").as[String] must be(_) }
+        key.foreach { k =>
+          (json \ "data" \ "key").as[String] must be(k.toString)
+        }
+
+        endorserIdentity.foreach { (json \ "data" \ "endorserIdentity").as[String] must be(_) }
+        endorsedIdentity.foreach { (json \ "data" \ "endorsedIdentity").as[String] must be(_) }
+
+        grantingIdentity.foreach { (json \ "data" \ "grantingIdentity").as[String] must be(_) }
+        grantedIdentity.foreach { (json \ "data" \ "grantedIdentity").as[String] must be(_) }
+        grantedIdentityPublicKey.foreach { k =>
+          (json \ "data" \ "grantedIdentityPublicKey").as[String] must be(k.toString)
+        }
+
+        (json \ "type").as[String].toLowerCase must be(txType.toLowerCase)
         (json \ "signature").as[String] mustNot be(empty)
       }
     }
 
-    def testTransactionGrantType(txType: String): Assertion = {
-      val pairLink = generateSigningKeyPair()
-      val privateKeyLinkHex = toCleanHex(pairLink.`private`.toByteString)
-      val grantedIdentity = "granted"
-      val grantingIdentity = "granting"
-
-      val body =
-        s"""
-           |{
-           |    "type": "$txType",
-           |    "data": {
-           |      "_type":"io.iohk.cef.ledger.identity.GrantData",
-           |      "grantingIdentity": "$grantingIdentity",
-           |      "grantedIdentity" : "$grantedIdentity",
-           |      "grantedIdentityPublicKey": "${publicKeyHex}"
-           |      },
-           |    "ledgerId": "1",
-           |    "privateKey": "$privateKeyHex",
-           |    "linkingIdentityPrivateKey": "$privateKeyLinkHex"
-           |}
-         """.stripMargin
-
-      val request = Post("/identities", jsonEntity(body))
-
-      request ~> routes ~> check {
-        status must ===(StatusCodes.Created)
-
-        val json = responseAs[JsValue]
-        (json \ "type").as[String] must be(txType)
-        (json \ "data" \ "grantingIdentity").as[String] must be(grantingIdentity)
-        (json \ "data" \ "grantedIdentity").as[String] must be(grantedIdentity)
-        (json \ "data" \ "grantedIdentityPublicKey").as[String] must be(pair.public.toString)
-      }
-    }
-
-    def testTransactionLinkType(txType: String, txDataType: String): Assertion = {
-
+    def testTransactionLinkType(txType: String): Assertion = {
       val pairLink = generateSigningKeyPair()
       val privateKeyLinkHex = toCleanHex(pairLink.`private`.toByteString)
 
       val identity = "iohk"
-
       val body =
         s"""
            |{
            |    "type": "$txType",
            |    "data": {
-           |      "_type":"$txDataType",
            |      "identity": "$identity",
            |      "key": "$publicKeyHex"
            |    },
@@ -216,7 +192,6 @@ class IdentitiesControllerSpec
         (json \ "data" \ "identity").as[String] must be(identity)
         (json \ "signature").as[String] mustNot be(empty)
         (json \ "linkingIdentitySignature").as[String] mustNot be(empty)
-
       }
     }
 
@@ -229,7 +204,6 @@ class IdentitiesControllerSpec
            |{
            |    "type": "$txType",
            |    "data": {
-           |      "_type":"io.iohk.cef.ledger.identity.RevokeEndorsementData",
            |      "endorserIdentity": "$endorserIdentity",
            |      "endorsedIdentity": "$endorsedIdentity"
            |    },
@@ -251,7 +225,7 @@ class IdentitiesControllerSpec
       }
     }
 
-    def testTransactionLinkCertificate(txType: String, txDataType: String): Assertion = {
+    def testTransactionLinkCertificate(txType: String): Assertion = {
       val pem = twoChainedCertsPEM
       val pemHex = toCleanHex(ByteString(twoChainedCertsPEM))
 
@@ -265,7 +239,6 @@ class IdentitiesControllerSpec
            |{
            |    "type": "$txType",
            |    "data": {
-           |      "_type":"$txDataType",
            |      "linkingIdentity": "$identity",
            |      "pem": "$pemHex"
            |    },
@@ -286,38 +259,40 @@ class IdentitiesControllerSpec
         (json \ "data" \ "linkingIdentity").as[String] must be(identity)
         (json \ "signature").as[String] mustNot be(empty)
         (json \ "signatureFromCertificate").as[String] mustNot be(empty)
-
-      }
-    }
-
-    def validateErrorResponse(json: JsValue): Unit = {
-      val errors = (json \ "errors").as[List[JsValue]]
-      errors.size must be(4)
-      errors.foreach { error =>
-        (error \ "type").as[String] must be(PublicErrorRenderer.FieldValidationErrorType)
-        (error \ "message").as[String] mustNot be(empty)
-        (error \ "field").as[String] mustNot be(empty)
       }
     }
 
     "be able to create identity claim transaction" in {
-      testTransactionType("Claim", "io.iohk.cef.ledger.identity.ClaimData")
+      testTransactionType("Claim", pair.`private`, identity = Some("iohk"), key = Some(pair.public))
     }
 
     "be able to create identity link transaction" in {
-      testTransactionLinkType("Link", "io.iohk.cef.ledger.identity.LinkData")
+      testTransactionLinkType("Link")
     }
 
     "be able to create identity unlink transaction" in {
-      testTransactionType("Unlink", "io.iohk.cef.ledger.identity.UnlinkData")
+      testTransactionType("Unlink", pair.`private`, identity = Some("iohk"), key = Some(pair.public))
     }
 
     "be able to create a grant transaction" in {
-      testTransactionGrantType("Grant")
+      val keys = generateSigningKeyPair()
+      testTransactionType(
+        "Grant",
+        pair.`private`,
+        grantedIdentity = Some("granted"),
+        grantingIdentity = Some("granting"),
+        grantedIdentityPublicKey = Some(keys.public),
+        linkingIdentityPrivateKey = Some(keys.`private`)
+      )
     }
 
     "be able to create an endorse transaction" in {
-      testEndorseType("endorsing", "endorsed", pair.`private`)
+      testTransactionType(
+        "endorse",
+        pair.`private`,
+        endorserIdentity = Some("endorsing"),
+        endorsedIdentity = Some("endorsed")
+      )
     }
 
     "be able to create an revoke transaction" in {
@@ -325,7 +300,7 @@ class IdentitiesControllerSpec
     }
 
     "be able to create an LinkCertificate transaction" in {
-      testTransactionLinkCertificate("LinkCertificate", "io.iohk.cef.ledger.identity.LinkCertificateData")
+      testTransactionLinkCertificate("LinkCertificate")
     }
 
     "return validation errors" in {
@@ -346,7 +321,29 @@ class IdentitiesControllerSpec
         status must ===(StatusCodes.BadRequest)
 
         val json = responseAs[JsValue]
-        validateErrorResponse(json)
+        validateErrorResponse(json, 1)
+      }
+    }
+
+    "return data errors" in {
+      val body =
+        s"""
+           |{
+           |    "type": "claim",
+           |    "identity": "x",
+           |    "ledgerId": "1",
+           |    "data": {},
+           |    "privateKey": "$privateKeyHex"
+           |}
+         """.stripMargin
+
+      val request = Post("/identities", jsonEntity(body))
+
+      request ~> routes ~> check {
+        status must ===(StatusCodes.BadRequest)
+
+        val json = responseAs[JsValue]
+        validateErrorResponse(json, 2)
       }
     }
 
@@ -357,8 +354,18 @@ class IdentitiesControllerSpec
         status must ===(StatusCodes.BadRequest)
 
         val json = responseAs[JsValue]
-        validateErrorResponse(json)
+        validateErrorResponse(json, 1)
       }
+    }
+  }
+
+  private def validateErrorResponse(json: JsValue, size: Int): Unit = {
+    val errors = (json \ "errors").as[List[JsValue]]
+    errors.size must be(size)
+    errors.foreach { error =>
+      (error \ "type").as[String] must be(PublicErrorRenderer.FieldValidationErrorType)
+      (error \ "message").as[String] mustNot be(empty)
+      (error \ "field").as[String] mustNot be(empty)
     }
   }
 
