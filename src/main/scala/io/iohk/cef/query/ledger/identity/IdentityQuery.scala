@@ -26,4 +26,14 @@ object IdentityQuery {
       queryEngine.contains(identity)
   }
 
+  case class RetrieveEndorsers(identity: Identity) extends IdentityQuery {
+    override type Response = Set[Identity]
+
+    override protected def perform(queryEngine: IdentityQueryEngine): Response = {
+      queryEngine
+        .get(identity)
+        .map(_.endorsers)
+        .getOrElse(Set.empty)
+    }
+  }
 }
