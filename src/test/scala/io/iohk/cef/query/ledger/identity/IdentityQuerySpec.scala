@@ -5,7 +5,12 @@ import io.iohk.cef.ledger.identity.IdentityData
 import io.iohk.cef.ledger.storage.LedgerStateStorage
 import io.iohk.cef.query.Query
 import io.iohk.cef.query.ledger.LedgerQueryEngine
-import io.iohk.cef.query.ledger.identity.IdentityQuery.{ExistsIdentity, RetrieveEndorsers, RetrieveIdentityKeys}
+import io.iohk.cef.query.ledger.identity.IdentityQuery.{
+  ExistsIdentity,
+  RetrieveEndorsements,
+  RetrieveEndorsers,
+  RetrieveIdentityKeys
+}
 import io.iohk.crypto._
 import org.mockito.Mockito.when
 import org.scalatest.mockito.MockitoSugar._
@@ -57,5 +62,25 @@ class IdentityQuerySpec extends FlatSpec with MustMatchers {
 
     Query.performer(RetrieveEndorsers(endorsedIdentity), engine) mustBe endorsedBy
     Query.performer(RetrieveEndorsers(identityWithoutEndorsements), engine) mustBe empty
+  }
+
+  it should "query the identity endorsements" in {
+    val identity = "x"
+    val endorsements = Set("a", "c")
+
+    val stateStorage = mock[LedgerStateStorage[IdentityPartition]]
+    def prepareState(key: String, data: IdentityData) = {
+      when(stateStorage.slice(Set(key))).thenReturn(LedgerState(key -> data))
+    }
+    when(stateStorage.keys).thenReturn(Set("x", "a", "b", "c"))
+
+    val engine = LedgerQueryEngine(stateStorage)
+    prepareState(identity, IdentityData.empty.copy(endorsers = Set("a")))
+    prepareState("a", IdentityData.empty.copy(endorsers = Set(identity, "b")))
+    prepareState("b", IdentityData.empty.copy(endorsers = Set("c", "a")))
+    prepareState("c", IdentityData.empty.copy(endorsers = Set(identity)))
+
+    Query.performer(RetrieveEndorsements(identity), engine) mustBe endorsements
+    Query.performer(RetrieveEndorsements("b"), engine) mustBe Set("a")
   }
 }
