@@ -76,6 +76,25 @@ class IdentitiesControllerSpec
     }
   }
 
+  "GET /identities/:identity/endorsers" should {
+    "return the identity keys" in {
+      val identity = "iohk"
+      val endorsers = Set("a", "b")
+      val data = IdentityData.empty.copy(endorsers = endorsers)
+      when(queryEngine.get(anyString())).thenReturn(Option(data))
+
+      val request = Get(s"/identities/$identity/endorsers")
+
+      request ~> routes ~> check {
+        status must ===(StatusCodes.OK)
+
+        val json = responseAs[JsValue]
+        val result = json.as[Set[String]]
+        result must be(endorsers)
+      }
+    }
+  }
+
   "POST /identities" should {
     val pair = generateSigningKeyPair()
     val publicKeyHex = toCleanHex(pair.public.toByteString)

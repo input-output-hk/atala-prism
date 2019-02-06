@@ -3,8 +3,8 @@ package io.iohk.cef.frontend.controllers
 import akka.http.scaladsl.model.StatusCodes
 import akka.stream.Materializer
 import com.alexitc.playsonify.models.{ErrorId, ServerError}
-import io.iohk.cef.ledger.LedgerId
 import io.iohk.cef.frontend.client.ServiceResponseExtensions
+import io.iohk.cef.frontend.controllers.common.Codecs._
 import io.iohk.cef.frontend.controllers.common._
 import io.iohk.cef.frontend.models.{
   CreateIdentityTransactionRequest,
@@ -12,11 +12,11 @@ import io.iohk.cef.frontend.models.{
   SubmitIdentityTransactionRequest
 }
 import io.iohk.cef.frontend.services.IdentityTransactionService
+import io.iohk.cef.ledger.LedgerId
 import io.iohk.cef.ledger.identity.{Grant, IdentityTransaction, Link, LinkCertificate}
 import io.iohk.cef.query.ledger.identity.{IdentityQuery, IdentityQueryService}
 import org.scalactic.Good
 import play.api.libs.json._
-import Codecs._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -39,6 +39,13 @@ class IdentitiesController(queryService: IdentityQueryService, service: Identity
             Future.successful(Good(result))
           }
         } ~
+          path("endorsers") {
+            public { _ =>
+              val query = IdentityQuery.RetrieveEndorsers(identity)
+              val result = queryService.perform(query)
+              Future.successful(Good(result))
+            }
+          } ~
           public { _ =>
             val query = IdentityQuery.RetrieveIdentityKeys(identity)
             val keys = queryService.perform(query)
