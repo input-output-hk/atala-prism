@@ -77,7 +77,7 @@ class IdentitiesControllerSpec
   }
 
   "GET /identities/:identity/endorsers" should {
-    "return the identity keys" in {
+    "return the identities that endorsed another identity" in {
       val identity = "iohk"
       val endorsers = Set("a", "b")
       val data = IdentityData.empty.copy(endorsers = endorsers)
@@ -91,6 +91,29 @@ class IdentitiesControllerSpec
         val json = responseAs[JsValue]
         val result = json.as[Set[String]]
         result must be(endorsers)
+      }
+    }
+  }
+
+  "GET /identities/:identity/endorsements" should {
+    "return the identities that an identity has endorsed" in {
+      val identity = "iohk"
+      val endorsements = Set("a", "b")
+
+      when(queryEngine.keys()).thenReturn(Set(identity, "a", "b", "c"))
+      when(queryEngine.get(identity)).thenReturn(Option(IdentityData.empty))
+      when(queryEngine.get("a")).thenReturn(Option(IdentityData.empty.copy(endorsers = Set("b", identity))))
+      when(queryEngine.get("b")).thenReturn(Option(IdentityData.empty.copy(endorsers = Set("a", identity))))
+      when(queryEngine.get("c")).thenReturn(Option(IdentityData.empty.copy(endorsers = Set("b", "a"))))
+
+      val request = Get(s"/identities/$identity/endorsements")
+
+      request ~> routes ~> check {
+        status must ===(StatusCodes.OK)
+
+        val json = responseAs[JsValue]
+        val result = json.as[Set[String]]
+        result must be(endorsements)
       }
     }
   }

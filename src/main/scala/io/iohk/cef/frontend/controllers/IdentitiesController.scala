@@ -46,6 +46,13 @@ class IdentitiesController(queryService: IdentityQueryService, service: Identity
               Future.successful(Good(result))
             }
           } ~
+          path("endorsements") {
+            public { _ =>
+              val query = IdentityQuery.RetrieveEndorsements(identity)
+              val result = queryService.perform(query)
+              Future.successful(Good(result))
+            }
+          } ~
           public { _ =>
             val query = IdentityQuery.RetrieveIdentityKeys(identity)
             val keys = queryService.perform(query)
