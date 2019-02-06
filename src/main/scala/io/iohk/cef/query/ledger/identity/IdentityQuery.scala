@@ -1,13 +1,14 @@
 package io.iohk.cef.query.ledger.identity
 
-import io.iohk.crypto._
+import io.iohk.cef.ledger.identity.Identity
 import io.iohk.cef.query.ledger.LedgerQuery
+import io.iohk.crypto._
 
 sealed trait IdentityQuery extends LedgerQuery[IdentityPartition]
 
 object IdentityQuery {
 
-  case class RetrieveIdentityKeys(identity: String) extends IdentityQuery {
+  case class RetrieveIdentityKeys(identity: Identity) extends IdentityQuery {
     type Response = Set[SigningPublicKey]
 
     override protected def perform(queryEngine: IdentityQueryEngine): Response = {
@@ -18,7 +19,7 @@ object IdentityQuery {
     }
   }
 
-  case class ExistsIdentity(identity: String) extends IdentityQuery {
+  case class ExistsIdentity(identity: Identity) extends IdentityQuery {
     type Response = Boolean
 
     override protected def perform(queryEngine: IdentityQueryEngine): Response =
