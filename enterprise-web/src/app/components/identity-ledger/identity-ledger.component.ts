@@ -102,4 +102,8 @@ export class IdentityLedgerComponent implements OnInit, OnDestroy {
   select(identity: string): void {
     this.selectedIdentity = identity;
   }
+
+  isSelected(identity: string): boolean {
+    return this.selectedIdentity === identity;
+  }
 }

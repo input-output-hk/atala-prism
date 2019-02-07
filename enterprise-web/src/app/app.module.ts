@@ -17,6 +17,7 @@ import { KeyPairsService } from './services/key-pairs.service';
 import { ErrorService } from './services/error.service';
 import { NotificationService } from './services/notification.service';
 import { IdentityRepository } from './services/identity.repository';
+import { IdentityDetailsComponent } from './components/identity-details/identity-details.component';
 
 @NgModule({
   declarations: [
@@ -24,7 +25,8 @@ import { IdentityRepository } from './services/identity.repository';
     NavbarComponent,
     FooterComponent,
     HomeComponent,
-    IdentityLedgerComponent
+    IdentityLedgerComponent,
+    IdentityDetailsComponent
   ],
   imports: [
     BrowserModule,

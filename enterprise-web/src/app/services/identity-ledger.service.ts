@@ -41,4 +41,14 @@ export class IdentityLedgerService {
     };
     return this.http.post(url, body, httpOptions);
   }
+
+  getEndorsers(identity: string): Observable<string[]> {
+    const url = `${this.baseUrl}/${identity}/endorsers`;
+    return this.http.get<string[]>(url);
+  }
+
+  getEndorsements(identity: string): Observable<string[]> {
+    const url = `${this.baseUrl}/${identity}/endorsements`;
+    return this.http.get<string[]>(url);
+  }
 }
