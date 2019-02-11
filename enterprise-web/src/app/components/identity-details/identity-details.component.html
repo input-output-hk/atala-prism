@@ -1,0 +1,24 @@
+<div class="row">
+  <div class="col-6">
+    <div>
+      <h3>Endorsers</h3>
+    </div>
+    <div class="list-group col">
+      <button *ngFor="let item of endorsers$ | async" type="button" class="list-group-item list-group-item-action">
+        {{item}}
+      </button>
+    </div>
+  </div>
+
+  <div class="col-6">
+    <div>
+      <h3>Endorsements</h3>
+    </div>
+    <div class="list-group col">
+      <button *ngFor="let item of endorsements$ | async" type="button" class="list-group-item list-group-item-action">
+        {{item}}
+      </button>
+    </div>
+  </div>
+</div>
+

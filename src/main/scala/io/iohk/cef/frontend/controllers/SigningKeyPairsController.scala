@@ -14,7 +14,7 @@ class SigningKeyPairsController(service: CryptoService)(implicit ec: ExecutionCo
 
   import Codecs._
 
-  lazy val routes: Route = {
+  lazy val routes: Route = corsHandler {
     path("signing-key-pairs") {
       post {
         public(StatusCodes.Created) { _ =>

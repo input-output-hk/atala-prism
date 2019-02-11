@@ -30,7 +30,7 @@ class ItemsGenericController(implicit ec: ExecutionContext, mat: Materializer) e
       identifierFormat: Reads[Envelope[DataItemIdentifier]],
       itemSerializable: NioCodec[D],
       canValidate: CanValidate[DataItem[D]]
-  ): Route = {
+  ): Route = corsHandler {
     pathPrefix(prefix) {
       path("validation") {
         post {

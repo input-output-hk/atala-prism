@@ -3,14 +3,15 @@ package io.iohk.cef.main
 import java.nio.file.Files
 
 import akka.actor.ActorSystem
+import akka.http.scaladsl.server.RouteConcatenation
 import akka.stream.ActorMaterializer
 import akka.util.Timeout
 import com.typesafe.config.ConfigFactory
 import io.iohk.codecs.nio.auto._
 import io.iohk.cef.config.ConfigReaderExtensions._
 import io.iohk.cef.config.{CefConfig, CefServices}
-import io.iohk.cef.frontend.controllers.IdentitiesController
-import io.iohk.cef.frontend.services.IdentityTransactionService
+import io.iohk.cef.frontend.controllers.{IdentitiesController, SigningKeyPairsController}
+import io.iohk.cef.frontend.services.{CryptoService, IdentityTransactionService}
 import io.iohk.cef.ledger.Block
 import io.iohk.cef.ledger.identity.{IdentityData, IdentityTransaction}
 import io.iohk.cef.ledger.storage.LedgerStorage
@@ -53,8 +54,10 @@ object IdentityTxMain extends App {
   val identityQueryService = new IdentityQueryService(identityQueryEngine)
   val serviceApi = new IdentitiesController(identityQueryService, identityTransactionService)
 
+  val signingKeyPairsController = new SigningKeyPairsController(new CryptoService)
+
   val transactionMain = CefMain(
-    serviceApi.routes,
+    RouteConcatenation.concat(serviceApi.routes, signingKeyPairsController.routes),
     identityTxMainConfig
   )
 }

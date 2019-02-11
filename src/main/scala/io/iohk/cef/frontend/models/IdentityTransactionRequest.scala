@@ -5,7 +5,6 @@ import io.iohk.crypto._
 import io.iohk.cef.ledger.identity.IdentityTransactionData
 
 case class CreateIdentityTransactionRequest(
-    `type`: IdentityTransactionType,
     data: IdentityTransactionData,
     ledgerId: LedgerId,
     privateKey: SigningPrivateKey,

@@ -18,7 +18,7 @@ class AgreementsGenericController(implicit ec: ExecutionContext, mat: Materializ
   import AgreementsGenericController._
   import Context._
 
-  def routes[T](prefix: String, service: AgreementsService[T])(implicit readsT: Reads[T]): Route = {
+  def routes[T](prefix: String, service: AgreementsService[T])(implicit readsT: Reads[T]): Route = corsHandler {
 
     pathPrefix("agreements" / prefix) {
       path("agree") {

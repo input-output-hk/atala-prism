@@ -1,7 +1,6 @@
 package io.iohk.cef.frontend.controllers.common
 
 import akka.util.ByteString
-import io.iohk.crypto._
 import io.iohk.cef.data._
 import io.iohk.cef.data.query.DataItemQuery._
 import io.iohk.cef.data.query.Value.{
@@ -19,15 +18,15 @@ import io.iohk.cef.data.query.{DataItemQuery, Field, Value => ValueRef}
 import io.iohk.cef.frontend.PlayJson
 import io.iohk.cef.frontend.models._
 import io.iohk.cef.ledger.chimeric._
-import io.iohk.cef.ledger.identity._
-import io.iohk.network._
 import io.iohk.cef.utils.{ByteStringExtension, NonEmptyList}
+import io.iohk.crypto._
+import io.iohk.network._
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
 import scala.util.Try
 
-object Codecs extends PlayJson.Formats with ChimericCodecs {
+object Codecs extends PlayJson.Formats with ChimericCodecs with IdentityCodecs {
 
   implicit def seqFormat[T](implicit tFormat: Format[T]): Format[Seq[T]] = new Format[Seq[T]] {
     override def reads(json: JsValue): JsResult[Seq[T]] = {
@@ -204,81 +203,11 @@ object Codecs extends PlayJson.Formats with ChimericCodecs {
     JsObject(map)
   }
 
-  implicit val transactionTypeReads: Format[IdentityTransactionType] = new Format[IdentityTransactionType] {
-    override def reads(json: JsValue): JsResult[IdentityTransactionType] = {
-      json.validate[String].flatMap { string =>
-        IdentityTransactionType
-          .withNameInsensitiveOption(string)
-          .map(JsSuccess.apply(_))
-          .getOrElse {
-            JsError.apply("Invalid transaction type")
-          }
-      }
-    }
-
-    override def writes(o: IdentityTransactionType): JsValue = JsString(o.entryName)
-  }
-
   implicit val witnessFormat: Format[Witness] = Json.format[Witness]
 
   implicit val ownerFormat: Format[Owner] = Json.format[Owner]
 
   implicit def dataItemFormat[T](implicit tFormat: Format[T]): Format[DataItem[T]] = Json.format[DataItem[T]]
-
-  implicit val claimDataFormats = Json.format[ClaimData]
-  implicit val linkDataFormats = Json.format[LinkData]
-  implicit val unlinkDataFormats = Json.format[UnlinkData]
-  implicit val endorseDataFormats = Json.format[EndorseData]
-  implicit val grantDataFormats = Json.format[GrantData]
-  implicit val revokeEndorsementDataFormats = Json.format[RevokeEndorsementData]
-  implicit val linkCertificateDataFormat: Format[LinkCertificateData] = new Format[LinkCertificateData] {
-    override def writes(o: LinkCertificateData): JsValue = {
-      Json.obj(
-        "linkingIdentity" -> o.linkingIdentity,
-        "pem" -> ByteString(o.pem).utf8String
-      )
-    }
-    override def reads(json: JsValue): JsResult[LinkCertificateData] = {
-      for {
-        linkingIdentity <- json.\("linkingIdentity").validate[String]
-        pem <- json.\("pem").validate[String]
-      } yield {
-        LinkCertificateData(linkingIdentity, fromHex(pem).utf8String)
-      }
-    }
-  }
-
-  implicit val identityTxDataFormats: OFormat[IdentityTransactionData] = Json.format[IdentityTransactionData]
-
-  implicit val requestReads: OFormat[CreateIdentityTransactionRequest] = Json.format[CreateIdentityTransactionRequest]
-
-  implicit val responseWrites: OWrites[IdentityTransaction] = OWrites[IdentityTransaction] { obj =>
-    val signatureWrites = implicitly[Writes[Signature]]
-    val tpe = obj match {
-      case _: Claim => IdentityTransactionType.Claim
-      case _: Link => IdentityTransactionType.Link
-      case _: Unlink => IdentityTransactionType.Unlink
-      case _: Endorse => IdentityTransactionType.Endorse
-      case _: Grant => IdentityTransactionType.Grant
-      case _: RevokeEndorsement => IdentityTransactionType.Revoke
-      case _: LinkCertificate => IdentityTransactionType.LinkCertificate
-    }
-
-    val linkingIdentitySignatureMayBe = obj match {
-      case l: Link => Map("linkingIdentitySignature" -> signatureWrites.writes(l.linkingIdentitySignature))
-      case l: LinkCertificate =>
-        Map("signatureFromCertificate" -> signatureWrites.writes(l.signatureFromCertificate))
-      case _ => Map.empty[String, JsString]
-    }
-
-    val map = Map(
-      "type" -> JsString(tpe.toString),
-      "data" -> identityTxDataFormats.writes(obj.data),
-      "signature" -> signatureWrites.writes(obj.signature)
-    )
-
-    JsObject(map ++ linkingIdentitySignatureMayBe)
-  }
 
   // TODO: Move to the util package and test it
   def fromHex(hex: String): ByteString = {
