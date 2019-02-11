@@ -16,6 +16,6 @@ object Query {
 
   /** Helper method allowing `QueryService` invoke the different queries,  without having to
       make the apply method on `Query` public **/
-  private[query] def performer[QE <: QueryEngine, Q <: Query[QE]](query: Q, queryEngine: QE): query.Response =
+  def performer[QE <: QueryEngine, Q <: Query[QE]](query: Q, queryEngine: QE): query.Response =
     query.perform(queryEngine)
 }

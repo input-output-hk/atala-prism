@@ -1,4 +1,4 @@
-package io.iohk.cef.query.ledger
+package io.iohk.cef.ledger.query
 
 import io.iohk.cef.ledger.LedgerState
 import io.iohk.cef.ledger.storage.LedgerStateStorage

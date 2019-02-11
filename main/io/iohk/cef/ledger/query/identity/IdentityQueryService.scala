@@ -1,6 +1,6 @@
-package io.iohk.cef.query.ledger.identity
+package io.iohk.cef.ledger.query.identity
 
-import io.iohk.cef.query.ledger.LedgerQueryService
+import io.iohk.cef.ledger.query.LedgerQueryService
 
 object IdentityQueryService {
   def apply(engine: IdentityQueryEngine): IdentityQueryService =

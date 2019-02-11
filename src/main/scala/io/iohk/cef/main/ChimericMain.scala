@@ -15,7 +15,7 @@ import io.iohk.cef.ledger.{Block, LedgerConfig}
 import io.iohk.cef.ledger.chimeric.{ChimericStateResult, ChimericTx}
 import io.iohk.cef.ledger.storage.LedgerStorage
 import io.iohk.cef.ledger.storage.mv.{MVLedgerStateStorage, MVLedgerStorage}
-import io.iohk.cef.query.ledger.chimeric.{ChimericQueryEngine, ChimericQueryService}
+import io.iohk.cef.ledger.query.chimeric.{ChimericQueryEngine, ChimericQueryService}
 import pureconfig.generic.auto._
 
 import scala.concurrent.ExecutionContext
