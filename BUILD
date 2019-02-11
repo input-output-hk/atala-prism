@@ -112,5 +112,6 @@ scala_test(
         "//main/io/iohk/cef/transactionpool",
         "//main/io/iohk/cef/config",
         "//main/io/iohk/cef/transactionservice",
+        "//main/io/iohk/cef/frontend",
     ],
 )
