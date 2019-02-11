@@ -27,7 +27,7 @@ scala_test(
         "@network//src/io/iohk/network",
         "@codecs//src/io/iohk/codecs/nio/test/utils",
         "@network//src/io/iohk/network:tests",
-        "//main/io/iohk/cef/test",
+        "//main/io/iohk/cef/testlib",
         "//3rdparty/jvm/io/monix",
     ],
 )

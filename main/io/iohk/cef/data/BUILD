@@ -33,7 +33,7 @@ scala_test(
             "//main/io/iohk/cef/error",
             "//main/io/iohk/cef/utils",
             "//main/io/iohk/cef/utils/mv",
-            "//main/io/iohk/cef/test",
+            "//main/io/iohk/cef/testlib",
              "//3rdparty/jvm/io/monix:monix",
            ],
 )

@@ -29,7 +29,7 @@ scala_test(
               "@codecs//src/io/iohk/codecs",
               "@network//src/io/iohk/network",
               "//main/io/iohk/cef/ledger",
-              "//main/io/iohk/cef/test",
+              "//main/io/iohk/cef/testlib",
               "@codecs//src/io/iohk/codecs/nio/test/utils",
               "//3rdparty/jvm/com/github/pureconfig:pureconfig",
               "//3rdparty/jvm/org/scalacheck:scalacheck",

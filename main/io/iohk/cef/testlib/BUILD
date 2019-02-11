@@ -1,7 +1,7 @@
 load("//scala:rules.bzl", "scala_library", "scala_test")
 
 scala_library(
-    name = "test",
+    name = "testlib",
     deps = [
         "@network//src/io/iohk/network",
         "//main/io/iohk/cef/utils",

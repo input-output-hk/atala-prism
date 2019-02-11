@@ -18,7 +18,7 @@ scala_test(
     deps = [ "consensus",
             "//main/io/iohk/cef/consensus/testlib",
             "@codecs//src/io/iohk/codecs",
-            "//main/io/iohk/cef/test",
+            "//main/io/iohk/cef/testlib",
             "//3rdparty/jvm/org/mockito:mockito_core",
             "//3rdparty/jvm/org/scalacheck",
             "//3rdparty/jvm/org/scalatest",

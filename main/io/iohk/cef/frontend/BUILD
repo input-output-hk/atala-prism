@@ -36,7 +36,7 @@ scala_test(
              "//main/io/iohk/cef/transactionservice",
              "//main/io/iohk/cef/error",
              "//main/io/iohk/cef/utils",
-             "//main/io/iohk/cef/test",
+             "//main/io/iohk/cef/testlib",
              "@codecs//src/io/iohk/codecs",
              "@crypto//src/io/iohk/crypto",
              "@crypto//src/io/iohk/crypto/error",

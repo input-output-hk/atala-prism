@@ -12,7 +12,7 @@ scala_library(
 scala_test(
     name = "tests",
     deps = [ "utils",
-             "//main/io/iohk/cef/test",
+             "//main/io/iohk/cef/testlib",
              "//3rdparty/jvm/org/scalacheck:scalacheck",
              "//3rdparty/jvm/com/typesafe/akka:akka_actor" ]
 )
