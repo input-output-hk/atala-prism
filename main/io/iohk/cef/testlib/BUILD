@@ -6,6 +6,7 @@ scala_library(
         "@network//src/io/iohk/network",
         "//main/io/iohk/cef/utils",
         "//main/io/iohk/cef/ledger",
+        "//main/io/iohk/cef/data",
         "//main/io/iohk/cef/error",
         "@codecs//src/io/iohk/codecs",
         "@crypto//src/io/iohk/crypto",
