@@ -16,7 +16,7 @@ import io.iohk.cef.ledger.Block
 import io.iohk.cef.ledger.identity.{IdentityData, IdentityTransaction}
 import io.iohk.cef.ledger.storage.LedgerStorage
 import io.iohk.cef.ledger.storage.mv.{MVLedgerStateStorage, MVLedgerStorage}
-import io.iohk.cef.query.ledger.identity.{IdentityQueryEngine, IdentityQueryService}
+import io.iohk.cef.ledger.query.identity.{IdentityQueryEngine, IdentityQueryService}
 import pureconfig.generic.auto._
 
 import scala.concurrent.ExecutionContext

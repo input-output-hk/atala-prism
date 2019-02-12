@@ -14,7 +14,7 @@ import io.iohk.cef.frontend.models.{
 import io.iohk.cef.frontend.services.IdentityTransactionService
 import io.iohk.cef.ledger.LedgerId
 import io.iohk.cef.ledger.identity.{Grant, IdentityTransaction, Link, LinkCertificate}
-import io.iohk.cef.query.ledger.identity.{IdentityQuery, IdentityQueryService}
+import io.iohk.cef.ledger.query.identity.{IdentityQuery, IdentityQueryService}
 import org.scalactic.Good
 import play.api.libs.json._
 

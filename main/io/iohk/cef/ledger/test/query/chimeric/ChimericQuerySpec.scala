@@ -1,12 +1,12 @@
-package io.iohk.cef.query.ledger.chimeric
+package io.iohk.cef.ledger.query.chimeric
 
 import io.iohk.cef.ledger.LedgerState
 import io.iohk.cef.ledger.chimeric._
 import io.iohk.crypto._
 import io.iohk.cef.ledger.storage.LedgerStateStorage
 import io.iohk.cef.query.Query
-import io.iohk.cef.query.ledger.LedgerQueryEngine
-import io.iohk.cef.query.ledger.chimeric.ChimericQuery._
+import io.iohk.cef.ledger.query.LedgerQueryEngine
+import io.iohk.cef.ledger.query.chimeric.ChimericQuery._
 import org.mockito.Mockito.when
 import org.scalatest.mockito.MockitoSugar._
 import org.scalatest.{FlatSpec, MustMatchers}

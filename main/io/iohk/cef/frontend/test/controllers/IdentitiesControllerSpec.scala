@@ -8,7 +8,7 @@ import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import io.iohk.cef.frontend.controllers.common.Codecs
 import io.iohk.cef.frontend.services.IdentityTransactionService
 import io.iohk.cef.ledger.identity._
-import io.iohk.cef.query.ledger.identity.{IdentityQueryEngine, IdentityQueryService}
+import io.iohk.cef.ledger.query.identity.{IdentityQueryEngine, IdentityQueryService}
 import io.iohk.cef.transactionservice.NodeTransactionService
 import io.iohk.crypto._
 import io.iohk.crypto.certificates.test.data.ExampleCertificates.twoChainedCertsPEM

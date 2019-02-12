@@ -1,11 +1,11 @@
-package io.iohk.cef.query.ledger.identity
+package io.iohk.cef.ledger.query.identity
 
 import io.iohk.cef.ledger.LedgerState
 import io.iohk.cef.ledger.identity.IdentityData
 import io.iohk.cef.ledger.storage.LedgerStateStorage
 import io.iohk.cef.query.Query
-import io.iohk.cef.query.ledger.LedgerQueryEngine
-import io.iohk.cef.query.ledger.identity.IdentityQuery.{
+import io.iohk.cef.ledger.query.LedgerQueryEngine
+import io.iohk.cef.ledger.query.identity.IdentityQuery.{
   ExistsIdentity,
   RetrieveEndorsements,
   RetrieveEndorsers,

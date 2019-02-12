@@ -1,7 +1,7 @@
-package io.iohk.cef.query.ledger.identity
+package io.iohk.cef.ledger.query.identity
 
 import io.iohk.cef.ledger.identity.Identity
-import io.iohk.cef.query.ledger.LedgerQuery
+import io.iohk.cef.ledger.query.LedgerQuery
 import io.iohk.crypto._
 
 sealed trait IdentityQuery extends LedgerQuery[IdentityPartition]

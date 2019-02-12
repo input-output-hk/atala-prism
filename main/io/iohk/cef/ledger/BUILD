@@ -11,6 +11,7 @@ scala_library(
         "@crypto//src/io/iohk/crypto/error",
         "//main/io/iohk/cef/error",
         "//main/io/iohk/cef/utils",
+        "//main/io/iohk/cef/query",
         "//main/io/iohk/cef/utils/mv",
     ],
 )
@@ -31,6 +32,7 @@ scala_test(
         "@crypto//src/io/iohk/crypto",
         "@crypto//src/io/iohk/crypto/error",
         "//main/io/iohk/cef/error",
+        "//main/io/iohk/cef/query",
         "@crypto//src/io/iohk/crypto/certificates/test/data",
     ],
 )

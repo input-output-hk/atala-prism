@@ -10,7 +10,7 @@ import io.iohk.cef.frontend.models.{
 }
 import io.iohk.cef.ledger.chimeric._
 import io.iohk.network.{Envelope, Everyone}
-import io.iohk.cef.query.ledger.chimeric._
+import io.iohk.cef.ledger.query.chimeric._
 import io.iohk.codecs.nio.auto._
 import io.iohk.cef.transactionservice.NodeTransactionService
 
