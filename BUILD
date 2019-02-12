@@ -41,6 +41,7 @@ scala_library(
         "//main/io/iohk/cef/data",
         "//main/io/iohk/cef/consensus",
         "//main/io/iohk/cef/transactionpool",
+        "//main/io/iohk/cef/config",
         "//main/io/iohk/cef/transactionservice",
     ],
 )
@@ -109,6 +110,7 @@ scala_test(
         "//main/io/iohk/cef/consensus",
         "//main/io/iohk/cef/consensus/testlib",
         "//main/io/iohk/cef/transactionpool",
+        "//main/io/iohk/cef/config",
         "//main/io/iohk/cef/transactionservice",
     ],
 )
