@@ -60,11 +60,11 @@ jobs:
 
       - run:
           name: create library jar
-          command: bazel build //src/main/scala/io/iohk/cef/main:main_deploy.jar
+          command: bazel build //main/io/iohk/cef/main:main_deploy.jar
 
       - run:
           name: move library jar to workspace
-          command: mv bazel-bin/src/main/scala/io/iohk/cef/main/main_deploy.jar /tmp/workspace/
+          command: mv bazel-bin/main/io/iohk/cef/main/main_deploy.jar /tmp/workspace/
 
       - persist_to_workspace:
           root: /tmp/workspace
