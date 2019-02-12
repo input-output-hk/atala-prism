@@ -44,7 +44,6 @@ export class ErrorService {
     // field found && user changed it && it doesn't hold a wrong value
     const isCorrect = control && !control.pristine && !this.hasWrongValue(form, fieldName);
 
-    console.log(`hasCorrectValue(${fieldName}) = ${isCorrect}`);
     return isCorrect;
   }
 
@@ -56,7 +55,6 @@ export class ErrorService {
   getFieldErrors(form: FormGroup, fieldName: string): string[] {
     const control = this.findFieldControl(form, fieldName);
     if (control && control.touched && control.errors) {
-      console.log(`getFieldError(${fieldName}) = ${this.getErrors(control)}`);
       return this.getErrors(control);
     } else {
       return [];
@@ -68,7 +66,6 @@ export class ErrorService {
       .filter((error: any) => control.errors[error])
       .map((error: any) => {
         const params = control.errors[error];
-        console.log(`params(${error}) = ${params}`);
         return error;
       });
   }
@@ -76,7 +73,6 @@ export class ErrorService {
   private hasFieldName(form: FormGroup, fieldName: string): boolean {
     const control = this.findFieldControl(form, fieldName);
 
-    console.log(`hasFieldName(${fieldName}) = ${control != null}`);
     return control != null;
   }
 
@@ -84,8 +80,6 @@ export class ErrorService {
     const control = this.findFieldControl(form, fieldName);
     const errors = { [message]: true };
     control.setErrors(errors);
-    console.log(`setFieldError(${fieldName})`);
-    console.log(errors);
   }
 
   private findFieldControl(form: FormGroup, fieldName: string): AbstractControl {
