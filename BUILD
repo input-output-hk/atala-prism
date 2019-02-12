@@ -53,7 +53,7 @@ scala_test(
     resources = glob(["src/test/resources/**/*"]),
     deps = [
         "//:cef",
-        "//main/io/iohk/cef/test",
+        "//main/io/iohk/cef/testlib",
         "@network//src/io/iohk/network",
         "@network//src/io/iohk/network:tests",
         "@crypto//src/io/iohk/crypto",

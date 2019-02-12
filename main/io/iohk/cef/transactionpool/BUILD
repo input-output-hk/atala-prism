@@ -22,6 +22,6 @@ scala_test(
              "//3rdparty/jvm/org/scalacheck",
              "//3rdparty/jvm/org/scalatest",
              "@codecs//src/io/iohk/codecs",
-             "//main/io/iohk/cef/test",
+             "//main/io/iohk/cef/testlib",
            ],
 )

@@ -26,6 +26,6 @@ scala_test(
              "@network//src/io/iohk/network",
              "@network//src/io/iohk/network:tests",
              "//3rdparty/jvm/com/typesafe/akka:akka_actor",
-              "//main/io/iohk/cef/test",
+              "//main/io/iohk/cef/testlib",
            ],
 )
