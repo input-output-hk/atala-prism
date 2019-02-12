@@ -8,7 +8,7 @@
     <button *ngFor="let item of identityRepository.getUnconfirmedIdentities()" type="button" class="list-group-item list-group-item-action">
       {{item.identity}} - unconfirmed
     </button>
-    <button *ngFor="let item of identityRepository.getConfirmedIdentities()" (click)="select(item.identity)" [ngClass]="{ 'confirmed': isConfirmed(item.identity), 'active': isSelected(item.identity) }"
+    <button *ngFor="let item of identityRepository.getConfirmedIdentities()" (click)="select(item)" [ngClass]="{ 'confirmed': isConfirmed(item.identity), 'active': isSelected(item) }"
       type="button" class="list-group-item list-group-item-action">
       {{item.identity}}
     </button>

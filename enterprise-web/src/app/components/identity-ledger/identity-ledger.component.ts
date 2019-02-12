@@ -17,7 +17,7 @@ const identityField = 'data.identity';
 export class IdentityLedgerComponent implements OnInit, OnDestroy {
 
   form: FormGroup;
-  selectedIdentity: string;
+  selectedIdentity: Identity;
 
   private timer = null;
   private confirmed: string[] = [];
@@ -99,11 +99,11 @@ export class IdentityLedgerComponent implements OnInit, OnDestroy {
     this.errorService.renderServerErrors(this.form, response);
   }
 
-  select(identity: string): void {
+  select(identity: Identity): void {
     this.selectedIdentity = identity;
   }
 
-  isSelected(identity: string): boolean {
+  isSelected(identity: Identity): boolean {
     return this.selectedIdentity === identity;
   }
 }

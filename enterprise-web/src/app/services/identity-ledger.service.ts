@@ -34,9 +34,22 @@ export class IdentityLedgerService {
       ledgerId: config.identityLedger,
       privateKey: identity.keyPair.privateKey,
       data: {
-        _type: 'io.iohk.cef.ledger.identity.ClaimData',
         identity: identity.identity,
         key: identity.keyPair.publicKey
+      }
+    };
+    return this.http.post(url, body, httpOptions);
+  }
+
+  endorse(endorser: Identity, endorsedIdentity: string): Observable<any> {
+    const url = `${this.baseUrl}`;
+    const body = {
+      type: 'endorse',
+      ledgerId: config.identityLedger,
+      privateKey: endorser.keyPair.privateKey,
+      data: {
+        endorserIdentity: endorser.identity,
+        endorsedIdentity: endorsedIdentity,
       }
     };
     return this.http.post(url, body, httpOptions);

@@ -19,6 +19,17 @@
         {{item}}
       </button>
     </div>
+    <form [formGroup]="form" (ngSubmit)="endorse()" class="form row" novalidate>
+      <div class="col-12">
+        <input type="text" class="form-control" formControlName="{{endorsedIdentityField}}" placeholder="Endorse identity">
+      </div>
+      <div class="col">
+        <button type="submit" class="btn btn-primary">Endorse</button>
+      </div>
+      <div class="col" [hidden]="!errorService.hasWrongValue(form, endorseIdentityField)">
+        {{errorService.getFieldError(form, endorsedIdentityField)}}
+      </div>
+    </form>
   </div>
 </div>
 

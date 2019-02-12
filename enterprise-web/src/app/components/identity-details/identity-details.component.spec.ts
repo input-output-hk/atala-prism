@@ -1,6 +1,9 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { NO_ERRORS_SCHEMA, } from '@angular/core';
 
 import { IdentityDetailsComponent } from './identity-details.component';
+
+import { FormBuilder } from '@angular/forms';
 
 import { providers } from '../../testing/spies';
 
@@ -11,7 +14,11 @@ describe('IdentityDetailsComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ IdentityDetailsComponent ],
-      providers: providers
+      providers: [
+        FormBuilder,
+        ...providers
+      ],
+      schemas: [NO_ERRORS_SCHEMA]
     })
     .compileComponents();
   }));
