@@ -55,6 +55,20 @@ export class IdentityLedgerService {
     return this.http.post(url, body, httpOptions);
   }
 
+  revokeEndorsement(endorser: Identity, endorsedIdentity: string): Observable<any> {
+    const url = `${this.baseUrl}`;
+    const body = {
+      type: 'revoke',
+      ledgerId: config.identityLedger,
+      privateKey: endorser.keyPair.privateKey,
+      data: {
+        endorserIdentity: endorser.identity,
+        endorsedIdentity: endorsedIdentity,
+      }
+    };
+    return this.http.post(url, body, httpOptions);
+  }
+
   getEndorsers(identity: string): Observable<string[]> {
     const url = `${this.baseUrl}/${identity}/endorsers`;
     return this.http.get<string[]>(url);
