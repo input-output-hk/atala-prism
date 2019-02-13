@@ -4,14 +4,14 @@
   </div>
 
   <div class="w-100"></div>
-  <div class="list-group col-12 col-md-3">
-    <button *ngFor="let item of identityRepository.getUnconfirmedIdentities()" type="button" class="list-group-item list-group-item-action">
+  <ul class="list-group col-12 col-md-3">
+    <li *ngFor="let item of identityRepository.getUnconfirmedIdentities()" type="button" class="list-group-item list-group-item-action">
       {{item.identity}} - unconfirmed
-    </button>
-    <button *ngFor="let item of identityRepository.getConfirmedIdentities()" (click)="select(item)" [ngClass]="{ 'confirmed': isConfirmed(item.identity), 'active': isSelected(item) }"
-      type="button" class="list-group-item list-group-item-action">
+    </li>
+    <li *ngFor="let item of identityRepository.getConfirmedIdentities()" (click)="select(item)" [ngClass]="{ 'confirmed': isConfirmed(item.identity), 'active': isSelected(item) }"
+        type="button" class="list-group-item list-group-item-action">
       {{item.identity}}
-    </button>
+    </li>
 
     <form [formGroup]="form" (ngSubmit)="claim()" class="form row" novalidate>
       <div class="col-12">
@@ -24,7 +24,7 @@
         {{errorService.getFieldError(form, 'data.identity')}}
       </div>
     </form>
-  </div>
+  </ul>
 
   <div *ngIf="selectedIdentity != null" class="col">
     <app-identity-details [identity]="selectedIdentity"></app-identity-details>
