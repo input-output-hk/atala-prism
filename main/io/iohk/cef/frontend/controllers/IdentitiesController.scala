@@ -63,7 +63,6 @@ class IdentitiesController(queryService: IdentityQueryService, service: Identity
           publicInput(StatusCodes.Created) { ctx: HasModel[CreateIdentityTransactionRequest] =>
             val result = for {
               tx <- service.createIdentityTransaction(ctx.model).onFor
-
               submitTransaction = toSubmitRequest(tx, ctx.model.ledgerId)
               _ <- service.submitIdentityTransaction(submitTransaction).onFor
             } yield tx
