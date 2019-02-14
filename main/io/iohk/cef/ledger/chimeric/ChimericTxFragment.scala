@@ -28,6 +28,9 @@ sealed trait ActionTxFragment extends ChimericTxFragment
   */
 sealed trait ValueTxFragment extends ChimericTxFragment {
   def value: Value
+  //require all values are positive
+  require(value.iterator.forall { case (_, quantity) => quantity >= BigDecimal(0) },
+    s"Value provided cannot be negative ($value).")
 
   def exec(state: ChimericLedgerState, index: Int, txId: String): ChimericStateOrError
 
@@ -40,10 +43,7 @@ sealed trait ValueTxFragment extends ChimericTxFragment {
     } yield result
 
   private def validateState(state: ChimericLedgerState): ChimericStateOrError =
-    for {
-      currencyExists <- validateCurrencyExists(state)
-      positiveValues <- validatePositiveValues(currencyExists)
-    } yield positiveValues
+    validateCurrencyExists(state)
 
   private def validateCurrencyExists(state: ChimericLedgerState): ChimericStateOrError = {
     val missingCurrencies =
@@ -55,14 +55,6 @@ sealed trait ValueTxFragment extends ChimericTxFragment {
       Right(state)
     } else {
       Left(CurrenciesDoNotExist(missingCurrencies.map(_._1), this))
-    }
-  }
-
-  private def validatePositiveValues(state: ChimericLedgerState): ChimericStateOrError = {
-    if (value.iterator.exists { case (_, quantity) => quantity < BigDecimal(0) }) {
-      Left(ValueNegative(value))
-    } else {
-      Right(state)
     }
   }
 
@@ -85,6 +77,8 @@ sealed trait TxOutputFragment extends ValueTxFragment
 case class Withdrawal(address: Address, value: Value, nonce: Int)
     extends TxInputFragment
     with SignableChimericTxFragment {
+
+
   override def exec(state: ChimericLedgerState, index: Int, txId: String): ChimericStateOrError = {
 
     val addressNonceKey = getAddressNoncePartitionId(address)
@@ -106,9 +100,7 @@ case class Withdrawal(address: Address, value: Value, nonce: Int)
       maybeAddressResult
         .map { addressResult =>
           val addressValue = addressResult.value
-          if (value.iterator.exists({ case (_, quantity) => BigDecimal(0) > quantity })) {
-            Left(ValueNegative(value))
-          } else if (addressValue >= value) {
+          if (addressValue >= value) {
             val partialState = state.put(addressNonceKey, NonceResult(nonce))
 
             if (addressValue == value) {

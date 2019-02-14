@@ -8,12 +8,13 @@ import io.iohk.cef.ledger.chimeric.ChimericLedgerState.getUtxoPartitionId
 import io.iohk.cef.ledger.chimeric.errors._
 
 case class ChimericTx(fragments: Seq[ChimericTxFragment]) extends Transaction[ChimericStateResult] {
+  require(isValuePreserved(), s"Value is not preserved")
 
   override def toString(): ChimericTxId = fragments.toString
 
   override def apply(currentState: ChimericLedgerState): ChimericStateOrError = {
     fragments.zipWithIndex
-      .foldLeft[ChimericStateOrError](testSignatures(testPreservationOfValue(Right(currentState))))(
+      .foldLeft[ChimericStateOrError](testSignatures(Right(currentState)))(
         (stateEither, current) => {
           stateEither.flatMap(state => {
             val (fragment, index) = current
@@ -84,20 +85,15 @@ case class ChimericTx(fragments: Seq[ChimericTxFragment]) extends Transaction[Ch
       Left(InvalidSignature)
   }
 
-  private def testPreservationOfValue(currentStateEither: ChimericStateOrError): ChimericStateOrError =
-    currentStateEither.flatMap { currentState =>
-      val totalValue = fragments.foldLeft(Value.Zero)(
-        (sum, current) =>
-          current match {
-            case input: TxInputFragment => sum + input.value
-            case output: TxOutputFragment => sum - output.value
-            case _ => sum
-          }
-      )
-      if (totalValue == Value.Zero) {
-        Right(currentState)
-      } else {
-        Left(ValueNotPreserved(totalValue, fragments))
-      }
-    }
+  private def isValuePreserved(): Boolean = {
+    val totalValue = fragments.foldLeft(Value.Zero)(
+      (sum, current) =>
+        current match {
+          case input: TxInputFragment => sum + input.value
+          case output: TxOutputFragment => sum - output.value
+          case _ => sum
+        }
+    )
+    totalValue == Value.Zero
+  }
 }
