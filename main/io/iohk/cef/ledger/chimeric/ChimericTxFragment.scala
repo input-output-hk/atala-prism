@@ -29,8 +29,10 @@ sealed trait ActionTxFragment extends ChimericTxFragment
 sealed trait ValueTxFragment extends ChimericTxFragment {
   def value: Value
   //require all values are positive
-  require(value.iterator.forall { case (_, quantity) => quantity >= BigDecimal(0) },
-    s"Value provided cannot be negative ($value).")
+  require(
+    value.iterator.forall { case (_, quantity) => quantity >= BigDecimal(0) },
+    s"Value provided cannot be negative ($value)."
+  )
 
   def exec(state: ChimericLedgerState, index: Int, txId: String): ChimericStateOrError
 
@@ -77,7 +79,6 @@ sealed trait TxOutputFragment extends ValueTxFragment
 case class Withdrawal(address: Address, value: Value, nonce: Int)
     extends TxInputFragment
     with SignableChimericTxFragment {
-
 
   override def exec(state: ChimericLedgerState, index: Int, txId: String): ChimericStateOrError = {
 
