@@ -280,10 +280,14 @@ case class LinkCertificate(data: LinkCertificateData, signature: Signature, sign
     opt.get
   }
   require(pair.isSignatureValid, s"Provided Certificate signature is invalid.")
-  require(IdentityTransaction.isDataSignedWith(data, pair.target.publicKey, signatureFromCertificate),
-    s"The given identity: ${pair.target.identity} , signature can't be verified with the associated public key : ${pair.target.publicKey}")
-  require(data.linkingIdentity == pair.target.identity,
-    s"Identity ${data.linkingIdentity} provided must be a granting authority to perform this action.")
+  require(
+    IdentityTransaction.isDataSignedWith(data, pair.target.publicKey, signatureFromCertificate),
+    s"The given identity: ${pair.target.identity} , signature can't be verified with the associated public key : ${pair.target.publicKey}"
+  )
+  require(
+    data.linkingIdentity == pair.target.identity,
+    s"Identity ${data.linkingIdentity} provided must be a granting authority to perform this action."
+  )
 
   override val partitionIds: Set[String] =
     Set(pair.target.identity, pair.issuer.identity)
@@ -297,7 +301,6 @@ case class LinkCertificate(data: LinkCertificateData, signature: Signature, sign
       .map(_.keys)
       .getOrElse(Set.empty)
       .contains(pair.issuer.publicKey)
-
 
     lazy val existingKeySignatureValid =
       IdentityTransaction.isDataSignedWithIdentity(data, pair.target.identity, ledgerState, signature)
