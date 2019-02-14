@@ -208,7 +208,7 @@ class IdentitiesControllerSpec
     def testTransactionLinkType(txType: String): Assertion = {
       val pairLink = generateSigningKeyPair()
       val privateKeyLinkHex = toCleanHex(pairLink.`private`.toByteString)
-      val publicKeyLinkHex = toCleanHex(pairLink.`private`.toByteString)
+      val publicKeyLinkHex = toCleanHex(pairLink.public.toByteString)
 
       val identity = "iohk"
       val body =
@@ -232,7 +232,7 @@ class IdentitiesControllerSpec
         status must ===(StatusCodes.Created)
         val json = responseAs[JsValue]
         (json \ "type").as[String] must be(txType)
-        (json \ "data" \ "key").as[String] must be(pair.public.toString)
+        (json \ "data" \ "key").as[String] must be(pairLink.public.toString)
         (json \ "data" \ "identity").as[String] must be(identity)
         (json \ "signature").as[String] mustNot be(empty)
         (json \ "linkingIdentitySignature").as[String] mustNot be(empty)
