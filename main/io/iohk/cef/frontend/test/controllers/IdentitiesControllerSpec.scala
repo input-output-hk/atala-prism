@@ -11,13 +11,14 @@ import io.iohk.cef.ledger.identity._
 import io.iohk.cef.ledger.query.identity.{IdentityQueryEngine, IdentityQueryService}
 import io.iohk.cef.transactionservice.NodeTransactionService
 import io.iohk.crypto._
-import io.iohk.crypto.certificates.test.data.ExampleCertificates.twoChainedCertsPEM
+import io.iohk.crypto.certificates.test.data.ExampleCertificates._
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mockito.MockitoSugar.mock
 import org.scalatest.{Assertion, MustMatchers, WordSpec}
 import play.api.libs.json.JsValue
+import org.scalatest.OptionValues._
 
 import scala.concurrent.Future
 
@@ -207,6 +208,7 @@ class IdentitiesControllerSpec
     def testTransactionLinkType(txType: String): Assertion = {
       val pairLink = generateSigningKeyPair()
       val privateKeyLinkHex = toCleanHex(pairLink.`private`.toByteString)
+      val publicKeyLinkHex = toCleanHex(pairLink.`private`.toByteString)
 
       val identity = "iohk"
       val body =
@@ -215,7 +217,7 @@ class IdentitiesControllerSpec
            |    "type": "$txType",
            |    "data": {
            |      "identity": "$identity",
-           |      "key": "$publicKeyHex"
+           |      "key": "$publicKeyLinkHex"
            |    },
            |    "ledgerId": "1",
            |    "privateKey": "$privateKeyHex",
@@ -270,11 +272,9 @@ class IdentitiesControllerSpec
     def testTransactionLinkCertificate(txType: String): Assertion = {
       val pem = twoChainedCertsPEM
       val pemHex = toCleanHex(ByteString(twoChainedCertsPEM))
+      val privateKeyLinkHex = toCleanHex(toSigningPrivateKey(validCertPrivateKey).value.toByteString)
 
-      val pairLink = generateSigningKeyPair()
-      val privateKeyLinkHex = toCleanHex(pairLink.`private`.toByteString)
-
-      val identity = "iohk"
+      val identity = "valid"
 
       val body =
         s"""
