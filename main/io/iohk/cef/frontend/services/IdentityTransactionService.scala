@@ -12,7 +12,9 @@ import io.iohk.cef.transactionservice._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class IdentityTransactionService(nodeTransactionService: NodeTransactionService[IdentityData, IdentityTransaction, IdentityQuery])(
+class IdentityTransactionService(
+    nodeTransactionService: NodeTransactionService[IdentityData, IdentityTransaction, IdentityQuery]
+)(
     implicit ec: ExecutionContext
 ) {
 
@@ -88,7 +90,8 @@ class IdentityTransactionService(nodeTransactionService: NodeTransactionService[
 
   //FIXME. Hack. Currently the frontend only supports one ledger per type
   def ledgerId: LedgerId = {
-    nodeTransactionService.supportedLedgerIds.headOption.getOrElse(throw new IllegalStateException("No ledger Ids found in this service"))
+    nodeTransactionService.supportedLedgerIds.headOption
+      .getOrElse(throw new IllegalStateException("No ledger Ids found in this service"))
   }
 
   case object CorrespondingPrivateKeyRequiredForLinkingIdentityError extends ApplicationError {

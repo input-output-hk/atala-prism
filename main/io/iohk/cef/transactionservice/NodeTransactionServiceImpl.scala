@@ -11,7 +11,10 @@ import scala.concurrent.{ExecutionContext, Future}
 import io.iohk.codecs.nio._
 
 class NodeTransactionServiceImpl[State, Tx <: Transaction[State], Q <: LedgerQuery[State]](
-    consensusMap: Map[LedgerId, (TransactionPoolInterface[State, Tx], Consensus[State, Tx], LedgerQueryService[State, Q])],
+    consensusMap: Map[
+      LedgerId,
+      (TransactionPoolInterface[State, Tx], Consensus[State, Tx], LedgerQueryService[State, Q])
+    ],
     txNetwork: Network[Envelope[Tx]],
     blockNetwork: Network[Envelope[Block[State, Tx]]],
     me: NodeId
@@ -42,9 +45,9 @@ class NodeTransactionServiceImpl[State, Tx <: Transaction[State], Q <: LedgerQue
   }
 
   private def processTransaction(
-                                  txEnvelope: Envelope[Tx],
-                                  networkDissemination: Future[Either[ApplicationError, Unit]]
-                                ) = {
+      txEnvelope: Envelope[Tx],
+      networkDissemination: Future[Either[ApplicationError, Unit]]
+  ) = {
     process(txEnvelope, networkDissemination) { env =>
       val txPoolService = consensusMap(env.containerId)._1
       Future(txPoolService.processTransaction(txEnvelope.content))

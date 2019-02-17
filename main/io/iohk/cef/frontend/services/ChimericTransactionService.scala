@@ -3,7 +3,11 @@ package io.iohk.cef.frontend.services
 import io.iohk.codecs.nio.auto._
 import io.iohk.crypto.sign
 import io.iohk.cef.frontend.client.Response
-import io.iohk.cef.frontend.models.{CreateChimericTransactionRequest, CreateSignableChimericTransactionFragment, SubmitChimericTransactionRequest}
+import io.iohk.cef.frontend.models.{
+  CreateChimericTransactionRequest,
+  CreateSignableChimericTransactionFragment,
+  SubmitChimericTransactionRequest
+}
 import io.iohk.cef.ledger.LedgerId
 import io.iohk.cef.ledger.chimeric._
 import io.iohk.network.{Envelope, Everyone}

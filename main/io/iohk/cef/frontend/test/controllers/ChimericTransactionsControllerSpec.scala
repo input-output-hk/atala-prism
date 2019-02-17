@@ -9,7 +9,13 @@ import com.alexitc.playsonify.akka.PublicErrorRenderer
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.frontend.controllers.common.Codecs
-import io.iohk.cef.frontend.models.{CreateChimericTransactionFragment, CreateChimericTransactionRequest, CreateNonSignableChimericTransactionFragment, CreateSignableChimericTransactionFragment, SubmitChimericTransactionRequest}
+import io.iohk.cef.frontend.models.{
+  CreateChimericTransactionFragment,
+  CreateChimericTransactionRequest,
+  CreateNonSignableChimericTransactionFragment,
+  CreateSignableChimericTransactionFragment,
+  SubmitChimericTransactionRequest
+}
 import io.iohk.cef.frontend.services.ChimericTransactionService
 import io.iohk.cef.ledger.chimeric._
 import io.iohk.cef.ledger.query.chimeric.ChimericQuery
@@ -64,7 +70,8 @@ class ChimericTransactionsControllerSpec
       val dummyChimericTx = ChimericTx(Seq())
 
       when(service.createChimericTransaction(entity)).thenReturn(Future.successful(Right(dummyChimericTx)))
-      when(service.submitChimericTransaction(SubmitChimericTransactionRequest(Seq(), ledgerId))).thenReturn(Future.successful(Right(())))
+      when(service.submitChimericTransaction(SubmitChimericTransactionRequest(Seq(), ledgerId)))
+        .thenReturn(Future.successful(Right(())))
 
       request ~> routes ~> check {
         status must ===(StatusCodes.Created)
@@ -88,7 +95,8 @@ class ChimericTransactionsControllerSpec
       val dummyChimericTx = ChimericTx(Seq())
 
       when(service.createChimericTransaction(entity)).thenReturn(Future.successful(Right(dummyChimericTx)))
-      when(service.submitChimericTransaction(SubmitChimericTransactionRequest(Seq(), ledgerId))).thenReturn(Future.successful(Right(())))
+      when(service.submitChimericTransaction(SubmitChimericTransactionRequest(Seq(), ledgerId)))
+        .thenReturn(Future.successful(Right(())))
 
       val json = Json.toJson(entity)
       val request = Post("/chimeric-transactions", json)
@@ -127,7 +135,8 @@ class ChimericTransactionsControllerSpec
       val dummyChimericTx = ChimericTx(Seq())
 
       when(service.createChimericTransaction(entity)).thenReturn(Future.successful(Right(dummyChimericTx)))
-      when(service.submitChimericTransaction(SubmitChimericTransactionRequest(Seq(), ledgerId))).thenReturn(Future.successful(Right(())))
+      when(service.submitChimericTransaction(SubmitChimericTransactionRequest(Seq(), ledgerId)))
+        .thenReturn(Future.successful(Right(())))
 
       val json = Json.toJson(entity)
       val request = Post("/chimeric-transactions", json)

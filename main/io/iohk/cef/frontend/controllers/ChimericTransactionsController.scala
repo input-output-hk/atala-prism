@@ -11,7 +11,12 @@ import com.alexitc.playsonify.models._
 import io.iohk.crypto._
 import io.iohk.cef.frontend.client.ServiceResponseExtensions
 import io.iohk.cef.frontend.controllers.common._
-import io.iohk.cef.frontend.models.{CreateChimericTransactionRequest, SubmitChimericTransactionFragment, SubmitChimericTransactionRequest, UnsupportedLedgerIdError}
+import io.iohk.cef.frontend.models.{
+  CreateChimericTransactionRequest,
+  SubmitChimericTransactionFragment,
+  SubmitChimericTransactionRequest,
+  UnsupportedLedgerIdError
+}
 import io.iohk.cef.frontend.services.ChimericTransactionService
 import io.iohk.cef.ledger.LedgerId
 import io.iohk.cef.ledger.chimeric.{Address, ChimericTx, TxOutRef}
@@ -30,7 +35,10 @@ class ChimericTransactionsController(service: ChimericTransactionService)(
   import Codecs._
   import Context._
 
-  private def applyValiations[A](ledgerId: LedgerId, result: => Future[A Or Every[ApplicationError]]): Future[A Or Every[ApplicationError]] = {
+  private def applyValiations[A](
+      ledgerId: LedgerId,
+      result: => Future[A Or Every[ApplicationError]]
+  ): Future[A Or Every[ApplicationError]] = {
     if (!service.isLedgerSupported(ledgerId))
       Future.successful(Bad(Every(UnsupportedLedgerIdError(ledgerId))))
     else
@@ -44,12 +52,14 @@ class ChimericTransactionsController(service: ChimericTransactionService)(
           public { _ =>
             //replace with query string
             def ledgerId = service.ledgerId
-            applyValiations(ledgerId,
+            applyValiations(
+              ledgerId,
               service.executeQuery(ledgerId, ChimericQuery.AllCurrencies).map {
-              case Right(x) => Good(Json.obj("data" -> x))
-              // The method never returns a Left, this is required to compile
-              case Left(_) => Bad(Every(QueryCreatedCurrencyError))
-            })
+                case Right(x) => Good(Json.obj("data" -> x))
+                // The method never returns a Left, this is required to compile
+                case Left(_) => Bad(Every(QueryCreatedCurrencyError))
+              }
+            )
           }
         }
       } ~
@@ -58,7 +68,8 @@ class ChimericTransactionsController(service: ChimericTransactionService)(
             public { _ =>
               //replace with query string
               def ledgerId = service.ledgerId
-              applyValiations(ledgerId,
+              applyValiations(
+                ledgerId,
                 service.executeQuery(ledgerId, ChimericQuery.CreatedCurrency(currency)).map {
                   case Right(Some(c)) => Good(Json.toJson(c))
                   case Right(None) => Bad(Every(CurrencyNotFound(currency)))
@@ -77,7 +88,8 @@ class ChimericTransactionsController(service: ChimericTransactionService)(
               case Some(txOutRef) =>
                 //replace with query string
                 def ledgerId = service.ledgerId
-                applyValiations(ledgerId,
+                applyValiations(
+                  ledgerId,
                   service.executeQuery(ledgerId, ChimericQuery.UtxoBalance(txOutRef)).map {
                     case Right(Some(response)) => Good(response)
                     case Right(None) => Bad(Every(TxOutRefNotFound(txOutRef)))
@@ -95,7 +107,8 @@ class ChimericTransactionsController(service: ChimericTransactionService)(
               .map { address =>
                 //replace with query string
                 def ledgerId = service.ledgerId
-                applyValiations(ledgerId,
+                applyValiations(
+                  ledgerId,
                   service.executeQuery(ledgerId, ChimericQuery.AddressBalance(address)).map {
                     case Right(Some(response)) => Good(response)
                     case Right(None) => Bad(Every(AddressNotFound(address)))
@@ -114,7 +127,8 @@ class ChimericTransactionsController(service: ChimericTransactionService)(
               .map { address =>
                 //replace with query string
                 def ledgerId = service.ledgerId
-                applyValiations(ledgerId,
+                applyValiations(
+                  ledgerId,
                   service.executeQuery(ledgerId, ChimericQuery.AddressNonce(address)).map {
                     case Right(Some(response)) => Good(Json.toJson(response))
                     case Right(None) => Bad(Every(AddressNotFound(address)))
@@ -131,17 +145,16 @@ class ChimericTransactionsController(service: ChimericTransactionService)(
           publicInput(StatusCodes.Created) { ctx: HasModel[CreateChimericTransactionRequest] =>
             //replace with query string
             def ledgerId = service.ledgerId
-            def result = for {
-              createResult <- service.createChimericTransaction(ctx.model).onFor
+            def result =
+              for {
+                createResult <- service.createChimericTransaction(ctx.model).onFor
 
-              submitRequest = toSubmitRequest(createResult, ctx.model.ledgerId)
-              _ <- service.submitChimericTransaction(submitRequest).onFor
-            } yield createResult
+                submitRequest = toSubmitRequest(createResult, ctx.model.ledgerId)
+                _ <- service.submitChimericTransaction(submitRequest).onFor
+              } yield createResult
 
             // The actual method call never fails but the type system says it could, we need this to be able to compile
-            applyValiations(ledgerId,
-              fromFutureEither(result.res, ChimericTransactionCreationError)
-            )
+            applyValiations(ledgerId, fromFutureEither(result.res, ChimericTransactionCreationError))
           }
         }
       }

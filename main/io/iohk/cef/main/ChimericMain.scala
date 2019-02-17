@@ -51,7 +51,12 @@ object ChimericMain extends App {
   val chimericQueryEngine = new ChimericQueryEngine(chimericLedgerStateStorage)
   val chimericQueryService = new ChimericQueryService(chimericQueryEngine)
   val chimericNodeService =
-    CefServices.cefTransactionServiceChannel(cefConfig, chimericLedgerStateStorage, chimericLedgerStorage, chimericQueryService)
+    CefServices.cefTransactionServiceChannel(
+      cefConfig,
+      chimericLedgerStateStorage,
+      chimericLedgerStorage,
+      chimericQueryService
+    )
   val chimericService = new ChimericTransactionService(chimericNodeService)
   val chimericServiceApi = new ChimericTransactionsController(chimericService)
 

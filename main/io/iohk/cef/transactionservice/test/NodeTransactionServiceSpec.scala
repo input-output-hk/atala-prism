@@ -23,7 +23,8 @@ class NodeTransactionServiceSpec extends AsyncFlatSpec with MustMatchers with Mo
   def mockTxPoolFutureInterface: TransactionPoolInterface[String, DummyTransaction] =
     mock[TransactionPoolInterface[String, DummyTransaction]]
 
-  def mockQueryService: LedgerQueryService[String, DummyLedgerQuery] = mock[LedgerQueryService[String, DummyLedgerQuery]]
+  def mockQueryService: LedgerQueryService[String, DummyLedgerQuery] =
+    mock[LedgerQueryService[String, DummyLedgerQuery]]
 
   type State = String
   type Tx = DummyTransaction

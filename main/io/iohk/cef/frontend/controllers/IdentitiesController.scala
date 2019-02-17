@@ -7,7 +7,12 @@ import com.alexitc.playsonify.models.{ErrorId, ServerError}
 import io.iohk.cef.frontend.client.ServiceResponseExtensions
 import io.iohk.cef.frontend.controllers.common.Codecs._
 import io.iohk.cef.frontend.controllers.common._
-import io.iohk.cef.frontend.models.{CreateIdentityTransactionRequest, IdentityTransactionType, SubmitIdentityTransactionRequest, UnsupportedLedgerIdError}
+import io.iohk.cef.frontend.models.{
+  CreateIdentityTransactionRequest,
+  IdentityTransactionType,
+  SubmitIdentityTransactionRequest,
+  UnsupportedLedgerIdError
+}
 import io.iohk.cef.frontend.services.IdentityTransactionService
 import io.iohk.cef.ledger.LedgerId
 import io.iohk.cef.ledger.identity.{Grant, IdentityTransaction, Link, LinkCertificate}
@@ -25,7 +30,10 @@ class IdentitiesController(service: IdentityTransactionService)(
   import Context._
   import IdentitiesController._
 
-  private def applyValidations[A](ledgerId: LedgerId, result: => FutureApplicationResult[A]): FutureApplicationResult[A] = {
+  private def applyValidations[A](
+      ledgerId: LedgerId,
+      result: => FutureApplicationResult[A]
+  ): FutureApplicationResult[A] = {
     if (!service.isLedgerSupported(ledgerId))
       Future.successful(Bad(Every(UnsupportedLedgerIdError(ledgerId))))
     else

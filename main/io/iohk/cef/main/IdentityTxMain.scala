@@ -51,7 +51,12 @@ object IdentityTxMain extends App {
   val identityQueryService = new IdentityQueryService(identityQueryEngine)
 
   val nodeTransactionService =
-    CefServices.cefTransactionServiceChannel[S, T, Q](cefConfig, ledgerStateStorage, ledgerStorage, identityQueryService)
+    CefServices.cefTransactionServiceChannel[S, T, Q](
+      cefConfig,
+      ledgerStateStorage,
+      ledgerStorage,
+      identityQueryService
+    )
   val identityTransactionService = new IdentityTransactionService(nodeTransactionService)
   val serviceApi = new IdentitiesController(identityTransactionService)
 
