@@ -1,9 +1,10 @@
 package io.iohk.cef.transactionservice
 import io.iohk.cef.ledger.LedgerId
 import io.iohk.cef.consensus.Consensus
+import io.iohk.cef.ledger.query.LedgerQueryService
 import io.iohk.cef.ledger.{Block, BlockHeader}
 import io.iohk.network._
-import io.iohk.cef.test.DummyTransaction
+import io.iohk.cef.test.{DummyLedgerQuery, DummyTransaction}
 import io.iohk.cef.transactionpool.TransactionPoolInterface
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
@@ -22,6 +23,8 @@ class NodeTransactionServiceSpec extends AsyncFlatSpec with MustMatchers with Mo
   def mockTxPoolFutureInterface: TransactionPoolInterface[String, DummyTransaction] =
     mock[TransactionPoolInterface[String, DummyTransaction]]
 
+  def mockQueryService: LedgerQueryService[String, DummyLedgerQuery] = mock[LedgerQueryService[String, DummyLedgerQuery]]
+
   type State = String
   type Tx = DummyTransaction
   type BlockType = Block[State, Tx]
@@ -38,7 +41,7 @@ class NodeTransactionServiceSpec extends AsyncFlatSpec with MustMatchers with Mo
       ledgerId: LedgerId,
       me: NodeId = NodeId("abcd")
   )(implicit txSerializable: NioCodec[Envelope[Tx]], blockSerializable: NioCodec[Envelope[Block[State, Tx]]]) = {
-    val consensusMap = Map(ledgerId -> (mockTxPoolFutureInterface, mockConsensus))
+    val consensusMap = Map(ledgerId -> (mockTxPoolFutureInterface, mockConsensus, mockQueryService))
     val txDM = mockNetwork[Envelope[DummyTransaction]]
     val blockDM = mockNetwork[Envelope[Block[String, DummyTransaction]]]
     val txMessageStream = mock[MessageStream[Envelope[DummyTransaction]]]
@@ -48,7 +51,7 @@ class NodeTransactionServiceSpec extends AsyncFlatSpec with MustMatchers with Mo
     when(txMessageStream.foreach(ArgumentMatchers.any())).thenReturn(Future.successful(()))
     when(blockMessageStream.foreach(ArgumentMatchers.any())).thenReturn(Future.successful(()))
     (
-      new NodeTransactionService(
+      new NodeTransactionServiceImpl(
         consensusMap,
         txDM,
         blockDM,
@@ -167,7 +170,7 @@ class NodeTransactionServiceSpec extends AsyncFlatSpec with MustMatchers with Mo
 
   private def setupMissingCapabilitiesTest(
       ledgerId: LedgerId,
-      transactionservice: NodeTransactionService[String, DummyTransaction],
+      transactionservice: NodeTransactionService[String, DummyTransaction, DummyLedgerQuery],
       destinationDescriptor: DestinationDescriptor,
       me: NodeId
   )(implicit txSerializable: NioCodec[Envelope[Tx]], blockSerializable: NioCodec[Envelope[Block[State, Tx]]]) = {

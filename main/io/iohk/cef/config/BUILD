@@ -11,6 +11,7 @@ scala_library(
              "//main/io/iohk/cef/transactionservice",
              "//main/io/iohk/cef/error",
              "//main/io/iohk/cef/utils",
+             "//main/io/iohk/cef/query",
              "@codecs//src/io/iohk/codecs",
              "@crypto//src/io/iohk/crypto",
              "@crypto//src/io/iohk/crypto/error",

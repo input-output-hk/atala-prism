@@ -8,6 +8,7 @@ scala_library(
              "//main/io/iohk/cef/ledger",
              "//main/io/iohk/cef/error",
              "//main/io/iohk/cef/consensus",
+             "//main/io/iohk/cef/query",
              "//main/io/iohk/cef/transactionpool",
            ],
 )
@@ -26,6 +27,7 @@ scala_test(
              "@network//src/io/iohk/network",
              "@network//src/io/iohk/network:tests",
              "//3rdparty/jvm/com/typesafe/akka:akka_actor",
-              "//main/io/iohk/cef/testlib",
+             "//main/io/iohk/cef/testlib",
+             "//main/io/iohk/cef/query",
            ],
 )

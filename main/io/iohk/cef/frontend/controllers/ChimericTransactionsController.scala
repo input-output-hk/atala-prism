@@ -11,15 +11,12 @@ import com.alexitc.playsonify.models._
 import io.iohk.crypto._
 import io.iohk.cef.frontend.client.ServiceResponseExtensions
 import io.iohk.cef.frontend.controllers.common._
-import io.iohk.cef.frontend.models.{
-  CreateChimericTransactionRequest,
-  SubmitChimericTransactionFragment,
-  SubmitChimericTransactionRequest
-}
+import io.iohk.cef.frontend.models.{CreateChimericTransactionRequest, SubmitChimericTransactionFragment, SubmitChimericTransactionRequest, UnsupportedLedgerIdError}
 import io.iohk.cef.frontend.services.ChimericTransactionService
 import io.iohk.cef.ledger.LedgerId
 import io.iohk.cef.ledger.chimeric.{Address, ChimericTx, TxOutRef}
-import org.scalactic.{Bad, Every, Good}
+import io.iohk.cef.ledger.query.chimeric.ChimericQuery
+import org.scalactic.{Bad, Every, Good, Or}
 import play.api.libs.json._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -33,27 +30,41 @@ class ChimericTransactionsController(service: ChimericTransactionService)(
   import Codecs._
   import Context._
 
+  private def applyValiations[A](ledgerId: LedgerId, result: => Future[A Or Every[ApplicationError]]): Future[A Or Every[ApplicationError]] = {
+    if (!service.isLedgerSupported(ledgerId))
+      Future.successful(Bad(Every(UnsupportedLedgerIdError(ledgerId))))
+    else
+      result
+  }
+
   lazy val routes: Route = corsHandler {
     pathPrefix("chimeric-transactions" / "currencies") {
       pathEnd {
         get {
           public { _ =>
-            service.queryAllCurrencies().map {
+            //replace with query string
+            def ledgerId = service.ledgerId
+            applyValiations(ledgerId,
+              service.executeQuery(ledgerId, ChimericQuery.AllCurrencies).map {
               case Right(x) => Good(Json.obj("data" -> x))
               // The method never returns a Left, this is required to compile
               case Left(_) => Bad(Every(QueryCreatedCurrencyError))
-            }
+            })
           }
         }
       } ~
         path(Segment) { currency =>
           get {
             public { _ =>
-              service.queryCreatedCurrency(currency).map {
-                case Right(Some(c)) => Good(Json.toJson(c))
-                case Right(None) => Bad(Every(CurrencyNotFound(currency)))
-                case Left(_) => Bad(Every(QueryCreatedCurrencyError))
-              }
+              //replace with query string
+              def ledgerId = service.ledgerId
+              applyValiations(ledgerId,
+                service.executeQuery(ledgerId, ChimericQuery.CreatedCurrency(currency)).map {
+                  case Right(Some(c)) => Good(Json.toJson(c))
+                  case Right(None) => Bad(Every(CurrencyNotFound(currency)))
+                  case Left(_) => Bad(Every(QueryCreatedCurrencyError))
+                }
+              )
             }
           }
         }
@@ -64,11 +75,15 @@ class ChimericTransactionsController(service: ChimericTransactionService)(
             TxOutRef.parse(txOutRefCandidate) match {
               case None => Future.successful(Bad(Every(InvalidTxOutRef(txOutRefCandidate))))
               case Some(txOutRef) =>
-                service.queryUtxoBalance(txOutRef).map {
-                  case Right(Some(response)) => Good(response)
-                  case Right(None) => Bad(Every(TxOutRefNotFound(txOutRef)))
-                  case Left(_) => Bad(Every(QueryUtxoBalanceError))
-                }
+                //replace with query string
+                def ledgerId = service.ledgerId
+                applyValiations(ledgerId,
+                  service.executeQuery(ledgerId, ChimericQuery.UtxoBalance(txOutRef)).map {
+                    case Right(Some(response)) => Good(response)
+                    case Right(None) => Bad(Every(TxOutRefNotFound(txOutRef)))
+                    case Left(_) => Bad(Every(QueryUtxoBalanceError))
+                  }
+                )
             }
           }
         }
@@ -78,11 +93,15 @@ class ChimericTransactionsController(service: ChimericTransactionService)(
           public { _ =>
             decodeAddress(addressStr)
               .map { address =>
-                service.queryAddressBalance(address).map {
-                  case Right(Some(response)) => Good(response)
-                  case Right(None) => Bad(Every(AddressNotFound(address)))
-                  case Left(_) => Bad(Every(QueryAddressBalanceError))
-                }
+                //replace with query string
+                def ledgerId = service.ledgerId
+                applyValiations(ledgerId,
+                  service.executeQuery(ledgerId, ChimericQuery.AddressBalance(address)).map {
+                    case Right(Some(response)) => Good(response)
+                    case Right(None) => Bad(Every(AddressNotFound(address)))
+                    case Left(_) => Bad(Every(QueryAddressBalanceError))
+                  }
+                )
               }
               .getOrElse(Future.successful(Bad(Every(InvalidAddress(addressStr)))))
           }
@@ -93,11 +112,15 @@ class ChimericTransactionsController(service: ChimericTransactionService)(
           public { _ =>
             decodeAddress(addressStr)
               .map { address =>
-                service.queryAddressNonce(address).map {
-                  case Right(Some(response)) => Good(Json.toJson(response))
-                  case Right(None) => Bad(Every(AddressNotFound(address)))
-                  case Left(_) => Bad(Every(QueryAddressNonceError))
-                }
+                //replace with query string
+                def ledgerId = service.ledgerId
+                applyValiations(ledgerId,
+                  service.executeQuery(ledgerId, ChimericQuery.AddressNonce(address)).map {
+                    case Right(Some(response)) => Good(Json.toJson(response))
+                    case Right(None) => Bad(Every(AddressNotFound(address)))
+                    case Left(_) => Bad(Every(QueryAddressNonceError))
+                  }
+                )
               }
               .getOrElse(Future.successful(Bad(Every(InvalidAddress(addressStr)))))
           }
@@ -106,7 +129,9 @@ class ChimericTransactionsController(service: ChimericTransactionService)(
       path("chimeric-transactions") {
         post {
           publicInput(StatusCodes.Created) { ctx: HasModel[CreateChimericTransactionRequest] =>
-            val result = for {
+            //replace with query string
+            def ledgerId = service.ledgerId
+            def result = for {
               createResult <- service.createChimericTransaction(ctx.model).onFor
 
               submitRequest = toSubmitRequest(createResult, ctx.model.ledgerId)
@@ -114,7 +139,9 @@ class ChimericTransactionsController(service: ChimericTransactionService)(
             } yield createResult
 
             // The actual method call never fails but the type system says it could, we need this to be able to compile
-            fromFutureEither(result.res, ChimericTransactionCreationError)
+            applyValiations(ledgerId,
+              fromFutureEither(result.res, ChimericTransactionCreationError)
+            )
           }
         }
       }
@@ -179,5 +206,4 @@ object ChimericTransactionsController {
 
     SubmitChimericTransactionRequest(fragments = fragments, ledgerId = ledgerId)
   }
-
 }

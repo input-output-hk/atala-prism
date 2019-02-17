@@ -47,12 +47,12 @@ object ChimericMain extends App {
     Files.createTempFile(s"chimeric-ledger-storage-${chimericLedgerConfig.id}", "").toAbsolutePath
   val chimericLedgerStorage: LedgerStorage[S, T] =
     new MVLedgerStorage[S, T](chimericLedgerConfig.id, chimericLedgerStoragePath)
-  val chimericNodeService =
-    CefServices.cefTransactionServiceChannel(cefConfig, chimericLedgerStateStorage, chimericLedgerStorage)
 
   val chimericQueryEngine = new ChimericQueryEngine(chimericLedgerStateStorage)
   val chimericQueryService = new ChimericQueryService(chimericQueryEngine)
-  val chimericService = new ChimericTransactionService(chimericNodeService, chimericQueryService)
+  val chimericNodeService =
+    CefServices.cefTransactionServiceChannel(cefConfig, chimericLedgerStateStorage, chimericLedgerStorage, chimericQueryService)
+  val chimericService = new ChimericTransactionService(chimericNodeService)
   val chimericServiceApi = new ChimericTransactionsController(chimericService)
 
   val routes = chimericServiceApi.routes
