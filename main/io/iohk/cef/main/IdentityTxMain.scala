@@ -16,7 +16,7 @@ import io.iohk.cef.ledger.Block
 import io.iohk.cef.ledger.identity.{IdentityData, IdentityTransaction}
 import io.iohk.cef.ledger.storage.LedgerStorage
 import io.iohk.cef.ledger.storage.mv.{MVLedgerStateStorage, MVLedgerStorage}
-import io.iohk.cef.ledger.query.identity.{IdentityQueryEngine, IdentityQueryService}
+import io.iohk.cef.ledger.query.identity.{IdentityQuery, IdentityQueryEngine, IdentityQueryService}
 import pureconfig.generic.auto._
 
 import scala.concurrent.ExecutionContext
@@ -32,6 +32,7 @@ object IdentityTxMain extends App {
   type S = IdentityData
   type T = IdentityTransaction
   type B = Block[S, T]
+  type Q = IdentityQuery
 
   implicit val timeout: Timeout = 1 minute
   implicit val executionContext: ExecutionContext = scala.concurrent.ExecutionContext.global
@@ -46,13 +47,13 @@ object IdentityTxMain extends App {
   val ledgerStoragePath = Files.createTempFile(s"ledger-storage-${ledgerConfig.id}", "").toAbsolutePath
   val ledgerStorage: LedgerStorage[S, T] = new MVLedgerStorage[S, T](ledgerConfig.id, ledgerStoragePath)
 
-  val nodeTransactionService =
-    CefServices.cefTransactionServiceChannel[S, T](cefConfig, ledgerStateStorage, ledgerStorage)
-  val identityTransactionService = new IdentityTransactionService(nodeTransactionService)
-
   val identityQueryEngine = new IdentityQueryEngine(ledgerStateStorage)
   val identityQueryService = new IdentityQueryService(identityQueryEngine)
-  val serviceApi = new IdentitiesController(identityQueryService, identityTransactionService)
+
+  val nodeTransactionService =
+    CefServices.cefTransactionServiceChannel[S, T, Q](cefConfig, ledgerStateStorage, ledgerStorage, identityQueryService)
+  val identityTransactionService = new IdentityTransactionService(nodeTransactionService)
+  val serviceApi = new IdentitiesController(identityTransactionService)
 
   val signingKeyPairsController = new SigningKeyPairsController(new CryptoService)
 

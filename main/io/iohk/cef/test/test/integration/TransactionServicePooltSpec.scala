@@ -1,13 +1,14 @@
 package io.iohk.cef.integration
 
-import io.iohk.codecs.nio.auto._
 import io.iohk.cef.consensus.Consensus
+import io.iohk.cef.ledger.query.LedgerQueryService
 import io.iohk.cef.ledger.storage.LedgerStateStorage
 import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
-import io.iohk.network._
-import io.iohk.cef.test.DummyTransaction
+import io.iohk.cef.test.{DummyLedgerQuery, DummyTransaction}
 import io.iohk.cef.transactionpool.TransactionPoolInterface
-import io.iohk.cef.transactionservice.NodeTransactionService
+import io.iohk.cef.transactionservice.NodeTransactionServiceImpl
+import io.iohk.codecs.nio.auto._
+import io.iohk.network._
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar
@@ -37,7 +38,8 @@ class TransactionServicePooltSpec extends FlatSpecLike with MustMatchers with Be
     val consensus = mock[Consensus[String, DummyTransaction]]
     val txNetwork = mock[Network[Envelope[DummyTransaction]]]
     val blockNetwork = mock[Network[Envelope[Block[String, DummyTransaction]]]]
-    val consensusMap = Map("1" -> (transactionPoolFutureInterface, consensus))
+    val queryService = mock[LedgerQueryService[String, DummyLedgerQuery]]
+    val consensusMap = Map("1" -> (transactionPoolFutureInterface, consensus, queryService))
     val me = NodeId("3112")
     val mockTxMessageStream = mock[MessageStream[Envelope[DummyTransaction]]]
     val mockBlockMessageStream =
@@ -46,7 +48,7 @@ class TransactionServicePooltSpec extends FlatSpecLike with MustMatchers with Be
     when(blockNetwork.messageStream).thenReturn(mockBlockMessageStream)
     when(mockTxMessageStream.foreach(ArgumentMatchers.any())).thenReturn(Future.successful(()))
     when(mockBlockMessageStream.foreach(ArgumentMatchers.any())).thenReturn(Future.successful(()))
-    val transactionservice = new NodeTransactionService(consensusMap, txNetwork, blockNetwork, me)
+    val transactionservice = new NodeTransactionServiceImpl(consensusMap, txNetwork, blockNetwork, me)
     val testTransaction = DummyTransaction(5)
     val envelope = Envelope(testTransaction, "1", Everyone)
     val result = Await.result(transactionservice.receiveTransaction(envelope), 10 seconds)

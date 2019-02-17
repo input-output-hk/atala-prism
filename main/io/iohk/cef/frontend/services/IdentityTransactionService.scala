@@ -87,7 +87,9 @@ class IdentityTransactionService(nodeTransactionService: NodeTransactionService[
   def isLedgerSupported(ledgerId: LedgerId): Boolean = nodeTransactionService.supportedLedgerIds.contains(ledgerId)
 
   //FIXME. Hack. Currently the frontend only supports one ledger per type
-  def ledgerId: LedgerId = nodeTransactionService.supportedLedgerIds.head
+  def ledgerId: LedgerId = {
+    nodeTransactionService.supportedLedgerIds.headOption.getOrElse(throw new IllegalStateException("No ledger Ids found in this service"))
+  }
 
   case object CorrespondingPrivateKeyRequiredForLinkingIdentityError extends ApplicationError {
     override def toString: String = s"Corresponding private key for the associated Public key is required:"

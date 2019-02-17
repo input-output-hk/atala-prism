@@ -8,7 +8,7 @@ import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import io.iohk.cef.frontend.controllers.common.Codecs
 import io.iohk.cef.frontend.services.IdentityTransactionService
 import io.iohk.cef.ledger.identity._
-import io.iohk.cef.ledger.query.identity.{IdentityQueryEngine, IdentityQueryService}
+import io.iohk.cef.ledger.query.identity.{IdentityQuery, IdentityQueryEngine, IdentityQueryService}
 import io.iohk.cef.transactionservice.NodeTransactionService
 import io.iohk.crypto._
 import io.iohk.crypto.certificates.test.data.ExampleCertificates.twoChainedCertsPEM
@@ -30,15 +30,18 @@ class IdentitiesControllerSpec
 
   import Codecs._
 
-  val nodeTransactionService = mock[NodeTransactionService[IdentityData, IdentityTransaction]]
+  val nodeTransactionService = mock[NodeTransactionService[IdentityData, IdentityTransaction, IdentityQuery]]
+  val ledgerId = "1"
 
   when(nodeTransactionService.receiveTransaction(any())).thenReturn(Future.successful(Right(())))
-  implicit val executionContext = system.dispatcher
-
+  when(nodeTransactionService.supportedLedgerIds).thenReturn(Set(ledgerId))
   val queryEngine = mock[IdentityQueryEngine]
   val queryService = new IdentityQueryService(queryEngine)
+  when(nodeTransactionService.getQueryService(ledgerId)).thenReturn(queryService)
+  implicit val executionContext = system.dispatcher
+
   val service = new IdentityTransactionService(nodeTransactionService)
-  val controller = new IdentitiesController(queryService, service)
+  val controller = new IdentitiesController(service)
   lazy val routes = controller.routes
 
   "GET /identities/:identity" should {
@@ -161,7 +164,7 @@ class IdentitiesControllerSpec
            |      "grantedIdentity" : "$grantedIdentityString",
            |      "grantedIdentityPublicKey": "$grantedIdentityPublicKeyString"
            |    },
-           |    "ledgerId": "1",
+           |    "ledgerId": "${ledgerId}",
            |    "privateKey": "$privateKeyString"
          """.stripMargin
 
@@ -217,7 +220,7 @@ class IdentitiesControllerSpec
            |      "identity": "$identity",
            |      "key": "$publicKeyHex"
            |    },
-           |    "ledgerId": "1",
+           |    "ledgerId": "${ledgerId}",
            |    "privateKey": "$privateKeyHex",
            |    "linkingIdentityPrivateKey": "$privateKeyLinkHex"
            |
@@ -249,7 +252,7 @@ class IdentitiesControllerSpec
            |      "endorserIdentity": "$endorserIdentity",
            |      "endorsedIdentity": "$endorsedIdentity"
            |    },
-           |    "ledgerId": "1",
+           |    "ledgerId": "${ledgerId}",
            |    "privateKey": "$privateKeyHex"
            |
            |}
@@ -284,7 +287,7 @@ class IdentitiesControllerSpec
            |      "linkingIdentity": "$identity",
            |      "pem": "$pemHex"
            |    },
-           |    "ledgerId": "1",
+           |    "ledgerId": "${ledgerId}",
            |    "privateKey": "$privateKeyHex",
            |    "linkingIdentityPrivateKey": "$privateKeyLinkHex"
            |
@@ -373,7 +376,7 @@ class IdentitiesControllerSpec
            |{
            |    "type": "claim",
            |    "identity": "x",
-           |    "ledgerId": "1",
+           |    "ledgerId": "${ledgerId}",
            |    "data": {},
            |    "privateKey": "$privateKeyHex"
            |}

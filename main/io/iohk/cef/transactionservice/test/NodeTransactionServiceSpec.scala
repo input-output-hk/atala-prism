@@ -139,16 +139,13 @@ class NodeTransactionServiceSpec extends AsyncFlatSpec with MustMatchers with Mo
     implicit val bs2 = mockBlockSerializable
     val ledgerId = "1"
     val me = NodeId("abcd")
-    val (transactionservice, consensusMap, _, blockDM) = setupTest(ledgerId, me)
+    val (transactionservice, _, _, _) = setupTest(ledgerId, me)
     val (testBlockTxEnvelope, _) = setupMissingCapabilitiesTest(ledgerId, transactionservice, Everyone, me)
     val newEnvelope = testBlockTxEnvelope.copy(containerId = ledgerId + 1)
-    for {
-      rcv <- transactionservice.receiveBlock(newEnvelope)
-    } yield {
-      verify(blockDM, times(1)).disseminateMessage(newEnvelope)
-      verify(consensusMap(ledgerId)._2, times(0)).process(newEnvelope.content)
-      rcv mustBe Left(MissingCapabilitiesForTx(me, newEnvelope))
+    intercept[IllegalArgumentException] {
+      transactionservice.receiveBlock(newEnvelope)
     }
+    succeed
   }
 
   it should "avoid processing a tx if the node doesn't participate in consensus" in {
@@ -156,16 +153,13 @@ class NodeTransactionServiceSpec extends AsyncFlatSpec with MustMatchers with Mo
     implicit val bs2 = mockBlockSerializable
     val ledgerId = "1"
     val me = NodeId("abcd")
-    val (transactionservice, consensusMap, txDM, _) = setupTest(ledgerId, me)
+    val (transactionservice, _, _, _) = setupTest(ledgerId, me)
     val (_, testTxEnvelope) = setupMissingCapabilitiesTest(ledgerId, transactionservice, Everyone, me)
     val newEnvelope = testTxEnvelope.copy(containerId = ledgerId + 1)
-    for {
-      rcv <- transactionservice.receiveTransaction(newEnvelope)
-    } yield {
-      verify(txDM, times(1)).disseminateMessage(newEnvelope)
-      verify(consensusMap(ledgerId)._1, times(0)).processTransaction(newEnvelope.content)
-      rcv mustBe Left(MissingCapabilitiesForTx(me, newEnvelope))
+    intercept[IllegalArgumentException] {
+      transactionservice.receiveTransaction(newEnvelope)
     }
+    succeed
   }
 
   private def setupMissingCapabilitiesTest(
