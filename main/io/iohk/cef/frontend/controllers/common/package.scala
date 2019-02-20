@@ -14,10 +14,7 @@ package object common {
       implicit ec: ExecutionContext
   ): FutureApplicationResult[T] = {
 
-    value.map {
-      case Left(_) => Bad(playsonifyError).accumulating
-      case Right(result) => Good(result)
-    }
+    value.map { fromEither(_, playsonifyError) }
   }
 
   def fromEither[T](value: Either[CefError, T], playsonifyError: PlaysonifyError) = value match {

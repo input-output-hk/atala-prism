@@ -14,11 +14,11 @@ import io.iohk.crypto._
 import io.iohk.crypto.certificates.test.data.ExampleCertificates._
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
+import org.scalatest.OptionValues._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mockito.MockitoSugar.mock
 import org.scalatest.{Assertion, MustMatchers, WordSpec}
 import play.api.libs.json.JsValue
-import org.scalatest.OptionValues._
 
 import scala.concurrent.Future
 
@@ -121,8 +121,7 @@ class IdentitiesControllerSpec
 
   "POST /identities" should {
     val pair = generateSigningKeyPair()
-    val publicKeyHex = toCleanHex(pair.public.toByteString)
-    val privateKeyHex = toCleanHex(pair.`private`.toByteString)
+    val pair2 = generateSigningKeyPair()
 
     def testTransactionType(
         txType: String,
@@ -134,7 +133,8 @@ class IdentitiesControllerSpec
         grantingIdentity: Option[String] = None,
         grantedIdentity: Option[String] = None,
         grantedIdentityPublicKey: Option[SigningPublicKey] = None,
-        linkingIdentityPrivateKey: Option[SigningPrivateKey] = None
+        linkingIdentityPrivateKey: Option[SigningPrivateKey] = None,
+        expectedResult: StatusCode = StatusCodes.Created
     ): Assertion = {
 
       val identityString = identity.getOrElse("")
@@ -182,34 +182,44 @@ class IdentitiesControllerSpec
       val request = Post("/identities", jsonEntity(body))
 
       request ~> routes ~> check {
-        status must ===(StatusCodes.Created)
+        status must ===(expectedResult)
 
         val json = responseAs[JsValue]
 
-        identity.foreach { (json \ "data" \ "identity").as[String] must be(_) }
-        key.foreach { k =>
-          (json \ "data" \ "key").as[String] must be(k.toString)
+        if (expectedResult == StatusCodes.Created) {
+          identity.foreach { (json \ "data" \ "identity").as[String] must be(_) }
+          key.foreach { k =>
+            (json \ "data" \ "key").as[String] must be(k.toString)
+          }
+
+          endorserIdentity.foreach { (json \ "data" \ "endorserIdentity").as[String] must be(_) }
+          endorsedIdentity.foreach { (json \ "data" \ "endorsedIdentity").as[String] must be(_) }
+
+          grantingIdentity.foreach { (json \ "data" \ "grantingIdentity").as[String] must be(_) }
+          grantedIdentity.foreach { (json \ "data" \ "grantedIdentity").as[String] must be(_) }
+          grantedIdentityPublicKey.foreach { k =>
+            (json \ "data" \ "grantedIdentityPublicKey").as[String] must be(k.toString)
+          }
+
+          (json \ "type").as[String].toLowerCase must be(txType.toLowerCase)
+          (json \ "signature").as[String] mustNot be(empty)
+        } else {
+          (json \ "errors").as[List[JsValue]] mustNot be(empty)
         }
-
-        endorserIdentity.foreach { (json \ "data" \ "endorserIdentity").as[String] must be(_) }
-        endorsedIdentity.foreach { (json \ "data" \ "endorsedIdentity").as[String] must be(_) }
-
-        grantingIdentity.foreach { (json \ "data" \ "grantingIdentity").as[String] must be(_) }
-        grantedIdentity.foreach { (json \ "data" \ "grantedIdentity").as[String] must be(_) }
-        grantedIdentityPublicKey.foreach { k =>
-          (json \ "data" \ "grantedIdentityPublicKey").as[String] must be(k.toString)
-        }
-
-        (json \ "type").as[String].toLowerCase must be(txType.toLowerCase)
-        (json \ "signature").as[String] mustNot be(empty)
       }
     }
 
-    def testTransactionLinkType(txType: String): Assertion = {
-      val pairLink = generateSigningKeyPair()
-      val privateKeyLinkHex = toCleanHex(pairLink.`private`.toByteString)
-      val publicKeyLinkHex = toCleanHex(pairLink.public.toByteString)
+    def testTransactionLinkType(
+        linkingIdentityPrivateKey: SigningPrivateKey,
+        linkingIdentityPublicKey: SigningPublicKey,
+        privateKey: SigningPrivateKey,
+        expectedResult: StatusCode = StatusCodes.Created
+    ): Assertion = {
 
+      val privateKeyLinkHex = toCleanHex(linkingIdentityPrivateKey.toByteString)
+      val publicKeyLinkHex = toCleanHex(linkingIdentityPublicKey.toByteString)
+      val privateKeyHex = toCleanHex(privateKey.toByteString)
+      val txType = "Link"
       val identity = "iohk"
       val body =
         s"""
@@ -229,17 +239,26 @@ class IdentitiesControllerSpec
       val request = Post("/identities", jsonEntity(body))
 
       request ~> routes ~> check {
-        status must ===(StatusCodes.Created)
+        status must ===(expectedResult)
         val json = responseAs[JsValue]
-        (json \ "type").as[String] must be(txType)
-        (json \ "data" \ "key").as[String] must be(pairLink.public.toString)
-        (json \ "data" \ "identity").as[String] must be(identity)
-        (json \ "signature").as[String] mustNot be(empty)
-        (json \ "linkingIdentitySignature").as[String] mustNot be(empty)
+        if (expectedResult == StatusCodes.Created) {
+          (json \ "type").as[String] must be(txType)
+          (json \ "data" \ "key").as[String] must be(linkingIdentityPublicKey.toString)
+          (json \ "data" \ "identity").as[String] must be(identity)
+          (json \ "signature").as[String] mustNot be(empty)
+          (json \ "linkingIdentitySignature").as[String] mustNot be(empty)
+        } else {
+          (json \ "errors").as[List[JsValue]] mustNot be(empty)
+        }
       }
     }
 
-    def testRevokeType(endorserIdentity: String, endorsedIdentity: String, privateKey: SigningPrivateKey): Assertion = {
+    def testRevokeType(
+        endorserIdentity: String,
+        endorsedIdentity: String,
+        privateKey: SigningPrivateKey,
+        expectedResult: StatusCode = StatusCodes.Created
+    ): Assertion = {
       val txType = "Revoke"
       val privateKeyHex = toCleanHex(privateKey.toByteString)
 
@@ -269,12 +288,17 @@ class IdentitiesControllerSpec
       }
     }
 
-    def testTransactionLinkCertificate(txType: String): Assertion = {
+    def testTransactionLinkCertificate(
+        privateKey: SigningPrivateKey,
+        certificatePrivateKey: SigningPrivateKey,
+        expectedResult: StatusCode = StatusCodes.Created
+    ): Assertion = {
       val pem = twoChainedCertsPEM
       val pemHex = toCleanHex(ByteString(twoChainedCertsPEM))
-      val privateKeyLinkHex = toCleanHex(toSigningPrivateKey(validCertPrivateKey).value.toByteString)
-
+      val privateKeyLinkHex = toCleanHex(certificatePrivateKey.toByteString)
+      val privateKeyHex = toCleanHex(privateKey.toByteString)
       val identity = "valid"
+      val txType = "LinkCertificate"
 
       val body =
         s"""
@@ -294,13 +318,17 @@ class IdentitiesControllerSpec
       val request = Post("/identities", jsonEntity(body))
 
       request ~> routes ~> check {
-        status must ===(StatusCodes.Created)
+        status must ===(expectedResult)
         val json = responseAs[JsValue]
-        (json \ "type").as[String] must be(txType)
-        (json \ "data" \ "pem").as[String] must be(pem)
-        (json \ "data" \ "linkingIdentity").as[String] must be(identity)
-        (json \ "signature").as[String] mustNot be(empty)
-        (json \ "signatureFromCertificate").as[String] mustNot be(empty)
+        if (expectedResult == StatusCodes.Created) {
+          (json \ "type").as[String] must be(txType)
+          (json \ "data" \ "pem").as[String] must be(pem)
+          (json \ "data" \ "linkingIdentity").as[String] must be(identity)
+          (json \ "signature").as[String] mustNot be(empty)
+          (json \ "signatureFromCertificate").as[String] mustNot be(empty)
+        } else {
+          (json \ "errors").as[List[JsValue]] mustNot be(empty)
+        }
       }
     }
 
@@ -308,8 +336,26 @@ class IdentitiesControllerSpec
       testTransactionType("Claim", pair.`private`, identity = Some("iohk"), key = Some(pair.public))
     }
 
+    "fail to create identity claim transaction when the keys don't correspond each other" in {
+      testTransactionType(
+        "Claim",
+        pair.`private`,
+        identity = Some("iohk"),
+        key = Some(pair2.public),
+        expectedResult = StatusCodes.BadRequest
+      )
+    }
+
     "be able to create identity link transaction" in {
-      testTransactionLinkType("Link")
+      testTransactionLinkType(
+        linkingIdentityPrivateKey = pair.`private`,
+        linkingIdentityPublicKey = pair.public,
+        privateKey = pair2.`private`
+      )
+    }
+
+    "fail to create identity link transaction when the keys don't correspond each other" in {
+      testTransactionLinkType(pair2.`private`, pair.public, pair2.`private`, expectedResult = StatusCodes.BadRequest)
     }
 
     "be able to create identity unlink transaction" in {
@@ -328,6 +374,18 @@ class IdentitiesControllerSpec
       )
     }
 
+    "fail to create identity grant transaction when the keys don't correspond each other" in {
+      testTransactionType(
+        "Grant",
+        pair.`private`,
+        grantedIdentity = Some("granted"),
+        grantingIdentity = Some("granting"),
+        grantedIdentityPublicKey = Some(pair2.public),
+        linkingIdentityPrivateKey = Some(pair.`private`),
+        expectedResult = StatusCodes.BadRequest
+      )
+    }
+
     "be able to create an endorse transaction" in {
       testTransactionType(
         "endorse",
@@ -342,10 +400,16 @@ class IdentitiesControllerSpec
     }
 
     "be able to create an LinkCertificate transaction" in {
-      testTransactionLinkCertificate("LinkCertificate")
+      testTransactionLinkCertificate(pair.`private`, toSigningPrivateKey(validCertPrivateKey).value)
+    }
+
+    "fail to create identity LinkCertificate transaction when the keys don't correspond each other" in {
+      testTransactionLinkCertificate(pair2.`private`, pair.`private`, expectedResult = StatusCodes.BadRequest)
     }
 
     "return validation errors" in {
+      val publicKeyHex = toCleanHex(pair.public.toByteString)
+      val privateKeyHex = toCleanHex(pair.`private`.toByteString)
       val body =
         s"""
            |{
@@ -368,6 +432,7 @@ class IdentitiesControllerSpec
     }
 
     "return data errors" in {
+      val privateKeyHex = toCleanHex(pair.`private`.toByteString)
       val body =
         s"""
            |{
