@@ -45,3 +45,12 @@ case object InvalidSignature extends LedgerError {
 case class InvalidNonce(expected: Int, actual: Int) extends LedgerError {
   override def toString: String = s"An invalid nonce has been received, expected = $expected, actual = $actual"
 }
+
+//Intrinsic errors
+case class ValueNegative(value: Value)
+    extends IllegalArgumentException(s"Value provided must be positive for all currencies ($value).")
+
+case class ValueNotPreserved(totalValue: Value, fragments: Seq[ChimericTxFragment])
+    extends IllegalArgumentException(
+      s"Value is not preserved: ${totalValue} should be zero for all currencies. Fragments: $fragments"
+    )

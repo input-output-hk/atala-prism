@@ -8,7 +8,7 @@ import io.iohk.cef.ledger.chimeric.ChimericLedgerState.getUtxoPartitionId
 import io.iohk.cef.ledger.chimeric.errors._
 
 case class ChimericTx(fragments: Seq[ChimericTxFragment]) extends Transaction[ChimericStateResult] {
-  require(isValuePreserved(), s"Value is not preserved")
+  require(totalValue == Value.Zero, throw new ValueNotPreserved(totalValue, fragments))
 
   override def toString(): ChimericTxId = fragments.toString
 
@@ -85,8 +85,8 @@ case class ChimericTx(fragments: Seq[ChimericTxFragment]) extends Transaction[Ch
       Left(InvalidSignature)
   }
 
-  private def isValuePreserved(): Boolean = {
-    val totalValue = fragments.foldLeft(Value.Zero)(
+  private def totalValue: Value =
+    fragments.foldLeft(Value.Zero)(
       (sum, current) =>
         current match {
           case input: TxInputFragment => sum + input.value
@@ -94,6 +94,4 @@ case class ChimericTx(fragments: Seq[ChimericTxFragment]) extends Transaction[Ch
           case _ => sum
         }
     )
-    totalValue == Value.Zero
-  }
 }
