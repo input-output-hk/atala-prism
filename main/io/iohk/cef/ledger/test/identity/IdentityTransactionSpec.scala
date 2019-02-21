@@ -22,7 +22,7 @@ class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
   it should "throw an error when the tx is inconsistent with the state" in {
     val state = IdentityLedgerState(Map("one" -> IdentityData.forKeys(alice.public)))
     val claim = Claim(aliceClaimData("one"), alice.`private`)
-    val link = Link(bobLinkData("two"), bob.`private`, carlos.`private`)
+    val link = Link(bobLinkData("two"), carlos.`private`, bob.`private`)
     val unlink1 = Unlink(bobUnlinkData("one"), alice.`private`)
     val unlink2 = Unlink(bobUnlinkData("two"), bob.`private`)
 
@@ -59,10 +59,9 @@ class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
 
   it should "fail to apply a claim if the signature can not be verified" in {
     val state = IdentityLedgerState(Map.empty)
-    val transaction = Claim(aliceClaimData("one"), bob.`private`)
-
-    val result = transaction(state).left.value
-    result mustBe UnableToVerifySignatureError
+    intercept[IllegalArgumentException] {
+      Claim(aliceClaimData("one"), bob.`private`)
+    }
   }
 
   it should "fail to apply a link if the signature can not be verified" in {
@@ -74,11 +73,9 @@ class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
   }
 
   it should "fail to apply a link if the link identity signature can not be verified" in {
-    val state = IdentityLedgerState(Map("one" -> IdentityData.forKeys(alice.public)))
-    val link = Link(bobLinkData("one"), alice.`private`, alice.`private`)
-
-    val result = link(state).left.value
-    result mustBe UnableToVerifyLinkingIdentitySignatureError("one", bob.public)
+    intercept[IllegalArgumentException] {
+      Link(bobLinkData("one"), alice.`private`, alice.`private`)
+    }
   }
 
   it should "fail to apply an unlink if the signature can not be verified" in {
@@ -276,11 +273,9 @@ class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
     val certificateKey = toSigningPrivateKey(validCertPrivateKey).value
     val linkingIdentity = pair.target.identity + "XXX"
     val data = LinkCertificateData(linkingIdentity, pem)
-    val tx = LinkCertificate(data, keys.`private`, certificateKey)
-
-    val result = tx.apply(state).left.value
-
-    result must be(IdentityNotMatchingCertificate(linkingIdentity, pair.target.identity))
+    intercept[IllegalArgumentException] {
+      LinkCertificate(data, keys.`private`, certificateKey)
+    }
   }
 
   it should "fail to apply a LinkCertificate when the authority is not registered" in {
@@ -352,51 +347,34 @@ class IdentityTransactionSpec extends FlatSpec with SigningKeyPairs {
     val pem = twoChainedCertsPEM
     val pair = CachedCertificatePair.decode(pem).value
     val keys = generateSigningKeyPair()
-    val state = IdentityLedgerState(
-      Map(
-        pair.target.identity -> IdentityData.forKeys(keys.public),
-        pair.issuer.identity -> IdentityData.forKeys(pair.issuer.publicKey)
-      )
-    )
 
     val data = LinkCertificateData(pair.target.identity, pem)
-    val tx = LinkCertificate(data, keys.`private`, keys.`private`)
-    val result = tx.apply(state).left.value
-
-    result must be(UnableToVerifyLinkingIdentitySignatureError(pair.target.identity, pair.target.publicKey))
+    intercept[IllegalArgumentException] {
+      LinkCertificate(data, keys.`private`, keys.`private`)
+    }
   }
 
   it should "fail to apply a LinkCertificate when the pem authority didn't signed the certificate" in {
     val pem = twoUnchainedCertsPEM
     val pair = CachedCertificatePair.decode(pem).value
     val keys = generateSigningKeyPair()
-    val state = IdentityLedgerState(
-      Map(
-        pair.target.identity -> IdentityData.forKeys(keys.public),
-        pair.issuer.identity -> IdentityData.forKeys(pair.issuer.publicKey)
-      )
-    )
 
     val certificateKey = toSigningPrivateKey(validCertPrivateKey).value
     val data = LinkCertificateData(pair.target.identity, pem)
-    val tx = LinkCertificate(data, keys.`private`, certificateKey)
-
-    val result = tx.apply(state).left.value
-
-    result must be(UnableToVerifyLinkingIdentitySignatureError(pair.issuer.identity, pair.issuer.publicKey))
+    intercept[IllegalArgumentException] {
+      LinkCertificate(data, keys.`private`, certificateKey)
+    }
   }
 
   it should "fail to apply a LinkCertificate when the pem isn't valid" in {
     val pem = "xxx"
     val keys = generateSigningKeyPair()
-    val state = IdentityLedgerState(Map.empty)
     val pair = CachedCertificatePair.decode(twoUnchainedCertsPEM).value
 
     val certificateKey = toSigningPrivateKey(validCertPrivateKey).value
     val data = LinkCertificateData(pair.target.identity, pem)
-    val tx = LinkCertificate(data, keys.`private`, certificateKey)
-    val result = tx.apply(state).left.value
-
-    result must be(InvalidCertificateError)
+    intercept[IllegalArgumentException] {
+      LinkCertificate(data, keys.`private`, certificateKey)
+    }
   }
 }

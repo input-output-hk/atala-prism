@@ -25,12 +25,6 @@ case object UnableToVerifySignatureError extends LedgerError {
   override def toString: String = s"The given signature can't be verified"
 }
 
-case class UnableToVerifyLinkingIdentitySignatureError(identity: String, publicKey: SigningPublicKey)
-    extends LedgerError {
-  override def toString: String =
-    s"The given identity: ${identity} , signature can't be verified with the associated public key : ${toHexString(publicKey.toByteString)}"
-}
-
 case class IdentityTakenError(identity: String) extends LedgerError {
   override def toString: String = s"Identity already taken: ${identity}"
 }
@@ -55,13 +49,21 @@ case class IdentityIsNotAGrantingAuthorityError(identity: Identity) extends Ledg
     s"Identity ${identity} provided must be a granting authority to perform this action."
 }
 
-case object InvalidCertificateError extends LedgerError {
-  override def toString: Identity =
-    "The given certificate is invalid, it must have two certificates with different identities"
-}
+//Intrinsic validation errors
 
-case class IdentityNotMatchingCertificate(linkingIdentity: Identity, certificateIdentity: Identity)
-    extends LedgerError {
-  override def toString: Identity =
-    s"The linking identity = [$linkingIdentity] doesn't match the certificate = [$certificateIdentity]"
-}
+case class UnableToVerifySignatureException(identity: String)
+    extends IllegalArgumentException(
+      s"The given identity: ${identity} , signature can't be verified with the associated public key."
+    )
+
+case class InvalidCertificateException()
+    extends IllegalArgumentException(
+      "The given certificate is invalid, it must have two certificates with different identities"
+    )
+
+case class IdentityNotMatchingCertificateException(linkingIdentity: Identity, certificateIdentity: Identity)
+    extends IllegalArgumentException(
+      s"The linking identity = [$linkingIdentity] doesn't match the certificate = [$certificateIdentity]"
+    )
+
+case class InvalidSignatureException() extends IllegalArgumentException(s"The provided signature is invalid.")

@@ -3,6 +3,7 @@ package io.iohk.cef.frontend.services
 import io.iohk.crypto._
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.frontend.client.Response
+import io.iohk.cef.frontend.controllers.common.IntrinsicValidationViolation
 import io.iohk.cef.frontend.models._
 import io.iohk.cef.ledger.LedgerId
 import io.iohk.cef.ledger.identity.{Claim, IdentityData, IdentityTransaction, Link, Unlink, _}
@@ -26,7 +27,7 @@ class IdentityTransactionService(
   def createIdentityTransaction(req: CreateIdentityTransactionRequest): Response[IdentityTransaction] = {
     require(nodeTransactionService.supportedLedgerIds.contains(req.ledgerId))
 
-    val identityTransaction = req.data match {
+    lazy val identityTransaction = req.data match {
       case data: ClaimData => Right(Claim(data, req.privateKey))
       case data: LinkData =>
         req.linkingIdentityPrivateKey
@@ -44,7 +45,9 @@ class IdentityTransactionService(
           .map(pk => LinkCertificate(data, req.privateKey, pk))
           .toRight(CorrespondingPrivateKeyRequiredForLinkingIdentityError)
     }
-    Future(identityTransaction)
+    Future(identityTransaction).recover {
+      case e: IllegalArgumentException => Left(IntrinsicValidationViolation(e.getMessage))
+    }
   }
 
   def submitIdentityTransaction(req: SubmitIdentityTransactionRequest): Response[Unit] = {

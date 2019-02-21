@@ -3,6 +3,7 @@ package io.iohk.cef.frontend.services
 import io.iohk.codecs.nio.auto._
 import io.iohk.crypto.sign
 import io.iohk.cef.frontend.client.Response
+import io.iohk.cef.frontend.controllers.common.IntrinsicValidationViolation
 import io.iohk.cef.frontend.models.{
   CreateChimericTransactionRequest,
   CreateSignableChimericTransactionFragment,
@@ -36,7 +37,9 @@ class ChimericTransactionService(
     val signedTransactionFragments =
       signableFragments.map(x => SignatureTxFragment(sign(chimericTransactionFragments, x.signingPrivateKey)))
 
-    Future(Right(ChimericTx(chimericTransactionFragments ++ signedTransactionFragments)))
+    Future(Right(ChimericTx(chimericTransactionFragments ++ signedTransactionFragments))).recover {
+      case e: IllegalArgumentException => Left(IntrinsicValidationViolation(e.getMessage))
+    }
 
   }
 

@@ -30,15 +30,15 @@ class ChimericTxSpec extends FlatSpec with MustMatchers {
   }
 
   it should "validate a tx's preservation of value" in new TestFixture {
-    val positiveTx = ChimericTx(Seq(Mint(value)))
-    val negativeTx = ChimericTx(Seq(Fee(value)))
+    intercept[IllegalArgumentException] {
+      ChimericTx(Seq(Mint(value))) //positive
+      ChimericTx(Seq(Fee(value))) //negative
+    }
     val emptyState = LedgerState[ChimericStateResult](
       Map(
         getCurrencyPartitionId(currency) -> CreateCurrencyResult(CreateCurrency(currency))
       )
     )
-    positiveTx(emptyState) mustBe Left(ValueNotPreserved(value, positiveTx.fragments))
-    negativeTx(emptyState) mustBe Left(ValueNotPreserved(-value, negativeTx.fragments))
     val validTx = ChimericTx(Seq(Mint(value), Fee(value)))
     validTx(emptyState) mustBe Right(emptyState)
   }
