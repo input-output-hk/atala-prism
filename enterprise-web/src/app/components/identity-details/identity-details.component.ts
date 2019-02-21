@@ -58,6 +58,11 @@ export class IdentityDetailsComponent implements OnInit {
     }
   }
 
+  revokeEndorsement(endorsedIdentity: string) {
+    this.identityLedger.revokeEndorsement(this.identity, endorsedIdentity)
+      .subscribe(_ => alert('The endorsement will be revoken soon'), response => this.onError(response));
+  }
+
   private doEndorse(endorsedIdentity: string) {
     const endorser = this.identity;
     this.identityLedger.endorse(endorser, endorsedIdentity).subscribe(_ => {

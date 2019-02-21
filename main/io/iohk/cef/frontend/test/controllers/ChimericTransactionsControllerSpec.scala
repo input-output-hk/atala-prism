@@ -53,14 +53,14 @@ class ChimericTransactionsControllerSpec
     "allow to submit a Non Signable transaction" in {
       val fragments: Seq[CreateChimericTransactionFragment] = Seq(
         CreateNonSignableChimericTransactionFragment(Mint(value = Value(Map("USD" -> BigDecimal(200))))),
-        CreateNonSignableChimericTransactionFragment(Fee(value = Value(Map("GBP" -> BigDecimal(9990))))),
+        CreateNonSignableChimericTransactionFragment(Mint(value = Value(Map("GBP" -> BigDecimal(9990))))),
         CreateNonSignableChimericTransactionFragment(
-          Output(Value(Map("EUR" -> BigDecimal(5))), signingKeyPair1.public)
+          Output(Value(Map("USD" -> BigDecimal(200))), signingKeyPair1.public)
         ),
         CreateNonSignableChimericTransactionFragment(
           Deposit(
             address = signingKeyPair1.public,
-            value = Value(Map("PLN" -> BigDecimal(100000)))
+            value = Value(Map("GBP" -> BigDecimal(9990)))
           )
         ),
         CreateNonSignableChimericTransactionFragment(CreateCurrency(currency = "AUD"))
@@ -84,6 +84,9 @@ class ChimericTransactionsControllerSpec
         CreateSignableChimericTransactionFragment(
           Input(txOutRef = TxOutRef("txid", 0), value = Value(Map("CAD" -> BigDecimal(200)))),
           signingKeyPair2.`private`
+        ),
+        CreateNonSignableChimericTransactionFragment(
+          Fee(Value(Map("MXN" -> BigDecimal(10), "CAD" -> BigDecimal(200))))
         )
       )
       val entity = CreateChimericTransactionRequest(fragments = fragments, "1")
@@ -107,14 +110,14 @@ class ChimericTransactionsControllerSpec
           signingKeyPair2.`private`
         ),
         CreateNonSignableChimericTransactionFragment(Mint(value = Value(Map("USD" -> BigDecimal(200))))),
-        CreateNonSignableChimericTransactionFragment(Fee(value = Value(Map("GBP" -> BigDecimal(9990))))),
+        CreateNonSignableChimericTransactionFragment(Fee(value = Value(Map("MXN" -> BigDecimal(10))))),
         CreateNonSignableChimericTransactionFragment(
-          Output(Value(Map("EUR" -> BigDecimal(5))), signingKeyPair1.public)
+          Output(Value(Map("CAD" -> BigDecimal(200))), signingKeyPair1.public)
         ),
         CreateNonSignableChimericTransactionFragment(
           Deposit(
             address = signingKeyPair1.public,
-            value = Value(Map("PLN" -> BigDecimal(100000)))
+            value = Value(Map("USD" -> BigDecimal(200)))
           )
         ),
         CreateNonSignableChimericTransactionFragment(CreateCurrency(currency = "AUD"))
