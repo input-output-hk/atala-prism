@@ -42,8 +42,7 @@ object IdentityTransaction {
 }
 
 case class Claim(data: ClaimData, signature: Signature) extends IdentityTransaction {
-  require(isValidSignature(data, signature, data.key),
-    throw new InvalidSignatureException())
+  require(isValidSignature(data, signature, data.key), throw new InvalidSignatureException())
 
   override def apply(ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] = {
 
@@ -277,8 +276,7 @@ case class LinkCertificate(data: LinkCertificateData, signature: Signature, sign
 
   private val pair = {
     val opt = CachedCertificatePair.decode(data.pem)
-    require(opt.isDefined,
-      throw new InvalidCertificateException)
+    require(opt.isDefined, throw new InvalidCertificateException)
     opt.get
   }
   require(pair.isSignatureValid, throw new InvalidSignatureException())

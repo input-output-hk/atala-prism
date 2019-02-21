@@ -52,13 +52,18 @@ case class IdentityIsNotAGrantingAuthorityError(identity: Identity) extends Ledg
 //Intrinsic validation errors
 
 case class UnableToVerifySignatureException(identity: String)
-  extends IllegalArgumentException(s"The given identity: ${identity} , signature can't be verified with the associated public key.")
+    extends IllegalArgumentException(
+      s"The given identity: ${identity} , signature can't be verified with the associated public key."
+    )
 
 case class InvalidCertificateException()
-  extends IllegalArgumentException("The given certificate is invalid, it must have two certificates with different identities")
+    extends IllegalArgumentException(
+      "The given certificate is invalid, it must have two certificates with different identities"
+    )
 
 case class IdentityNotMatchingCertificateException(linkingIdentity: Identity, certificateIdentity: Identity)
-  extends IllegalArgumentException(s"The linking identity = [$linkingIdentity] doesn't match the certificate = [$certificateIdentity]")
+    extends IllegalArgumentException(
+      s"The linking identity = [$linkingIdentity] doesn't match the certificate = [$certificateIdentity]"
+    )
 
-case class InvalidSignatureException()
-  extends IllegalArgumentException(s"The provided signature is invalid.")
+case class InvalidSignatureException() extends IllegalArgumentException(s"The provided signature is invalid.")
