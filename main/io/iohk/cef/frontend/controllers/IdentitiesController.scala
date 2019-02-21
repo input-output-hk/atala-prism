@@ -58,7 +58,7 @@ class IdentitiesController(service: IdentityTransactionService)(
               //FIXME replace with query string
               def ledgerId = service.ledgerId
               val result = for {
-                _ <- Future.successful(applyLedgerValidation(ledgerId, service)).toFutureOr
+                _ <- applyLedgerValidation(ledgerId, service).toFutureOr
                 x <- queryResult.toFutureOr
               } yield x
               result.future
@@ -74,7 +74,7 @@ class IdentitiesController(service: IdentityTransactionService)(
               //FIXME replace with query string
               def ledgerId = service.ledgerId
               val result = for {
-                _ <- Future.successful(applyLedgerValidation(ledgerId, service)).toFutureOr
+                _ <- applyLedgerValidation(ledgerId, service).toFutureOr
                 x <- queryResult.toFutureOr
               } yield x
               result.future
@@ -89,7 +89,7 @@ class IdentitiesController(service: IdentityTransactionService)(
             //FIXME replace with query string
             def ledgerId = service.ledgerId
             val result = for {
-              _ <- Future.successful(applyLedgerValidation(ledgerId, service)).toFutureOr
+              _ <- applyLedgerValidation(ledgerId, service).toFutureOr
               x <- queryResult.toFutureOr
             } yield x
             result.future
@@ -112,7 +112,7 @@ class IdentitiesController(service: IdentityTransactionService)(
             //FIXME replace with query string
             def ledgerId = service.ledgerId
             val result = for {
-              _ <- Future.successful(applyLedgerValidation(ledgerId, service)).toFutureOr
+              _ <- applyLedgerValidation(ledgerId, service).toFutureOr
               x <- queryResult.toFutureOr
             } yield x
             result.future
