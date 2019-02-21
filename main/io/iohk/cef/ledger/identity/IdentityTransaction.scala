@@ -42,7 +42,8 @@ object IdentityTransaction {
 }
 
 case class Claim(data: ClaimData, signature: Signature) extends IdentityTransaction {
-  require(isValidSignature(data, signature, data.key), "Claim signature is invalid.")
+  require(isValidSignature(data, signature, data.key),
+    throw new InvalidSignatureException())
 
   override def apply(ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] = {
 
@@ -75,7 +76,7 @@ object Claim {
 case class Link(data: LinkData, signature: Signature, linkingIdentitySignature: Signature) extends IdentityTransaction {
   require(
     isValidSignature(data, linkingIdentitySignature, data.key),
-    s"The given identity: ${data.identity} , signature can't be verified with the associated public key : ${data.key}"
+    throw new UnableToVerifySignatureException(data.identity)
   )
 
   /**
@@ -276,17 +277,18 @@ case class LinkCertificate(data: LinkCertificateData, signature: Signature, sign
 
   private val pair = {
     val opt = CachedCertificatePair.decode(data.pem)
-    require(opt.isDefined, "The given certificate is invalid, it must have two certificates with different identities")
+    require(opt.isDefined,
+      throw new InvalidCertificateException)
     opt.get
   }
-  require(pair.isSignatureValid, s"Provided Certificate signature is invalid.")
+  require(pair.isSignatureValid, throw new InvalidSignatureException())
   require(
     IdentityTransaction.isDataSignedWith(data, pair.target.publicKey, signatureFromCertificate),
-    s"The given identity: ${pair.target.identity} , signature can't be verified with the associated public key : ${pair.target.publicKey}"
+    throw new UnableToVerifySignatureException(pair.target.identity)
   )
   require(
     data.linkingIdentity == pair.target.identity,
-    s"Identity ${data.linkingIdentity} provided must be a granting authority to perform this action."
+    throw new IdentityNotMatchingCertificateException(data.linkingIdentity, pair.target.identity)
   )
 
   override val partitionIds: Set[String] =
