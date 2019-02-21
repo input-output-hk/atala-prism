@@ -13,10 +13,13 @@ import io.iohk.cef.transactionservice._
 import scala.concurrent.{ExecutionContext, Future}
 
 class IdentityTransactionService(
-    nodeTransactionService: NodeTransactionService[IdentityData, IdentityTransaction, IdentityQuery]
+    service: NodeTransactionService[IdentityData, IdentityTransaction, IdentityQuery]
 )(
     implicit ec: ExecutionContext
-) {
+) extends LedgerService[IdentityData, IdentityTransaction, IdentityQuery] {
+
+  override def nodeTransactionService: NodeTransactionService[IdentityData, IdentityTransaction, IdentityQuery] =
+    service
 
   type IdentityTransactionConstructor = (String, SigningPublicKey, Signature) => IdentityTransaction
 
@@ -84,14 +87,6 @@ class IdentityTransactionService(
 
   def executeQuery(ledgerId: LedgerId, query: IdentityQuery): Response[query.Response] = {
     Future(Right(nodeTransactionService.getQueryService(ledgerId).perform(query)))
-  }
-
-  def isLedgerSupported(ledgerId: LedgerId): Boolean = nodeTransactionService.supportedLedgerIds.contains(ledgerId)
-
-  //FIXME. Hack. Currently the frontend only supports one ledger per type
-  def ledgerId: LedgerId = {
-    nodeTransactionService.supportedLedgerIds.headOption
-      .getOrElse(throw new IllegalStateException("No ledger Ids found in this service"))
   }
 
   case object CorrespondingPrivateKeyRequiredForLinkingIdentityError extends ApplicationError {

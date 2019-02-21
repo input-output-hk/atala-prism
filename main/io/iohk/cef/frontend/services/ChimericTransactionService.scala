@@ -18,15 +18,13 @@ import io.iohk.cef.transactionservice.NodeTransactionService
 import scala.concurrent.{ExecutionContext, Future}
 
 class ChimericTransactionService(
-    nodeTransactionService: NodeTransactionService[ChimericStateResult, ChimericTx, ChimericQuery]
+    service: NodeTransactionService[ChimericStateResult, ChimericTx, ChimericQuery]
 )(
     implicit ec: ExecutionContext
-) {
+) extends LedgerService[ChimericStateResult, ChimericTx, ChimericQuery] {
 
-  def isLedgerSupported(ledgerId: LedgerId): Boolean = nodeTransactionService.supportedLedgerIds.contains(ledgerId)
-
-  //FIXME: Hack. See CE-592
-  def ledgerId: LedgerId = nodeTransactionService.supportedLedgerIds.head
+  override protected def nodeTransactionService: NodeTransactionService[ChimericPartition, ChimericTx, ChimericQuery] =
+    service
 
   def createChimericTransaction(req: CreateChimericTransactionRequest): Response[ChimericTx] = {
 
