@@ -1,10 +1,11 @@
 package io.iohk.cef.integration
 import io.iohk.cef.consensus.Consensus
+import io.iohk.cef.ledger.query.LedgerQueryService
 import io.iohk.cef.ledger.{Block, BlockHeader}
-import io.iohk.network._
-import io.iohk.cef.test.DummyTransaction
+import io.iohk.cef.test.{DummyLedgerQuery, DummyTransaction}
 import io.iohk.cef.transactionpool.TransactionPoolInterface
-import io.iohk.cef.transactionservice.NodeTransactionService
+import io.iohk.cef.transactionservice.NodeTransactionServiceImpl
+import io.iohk.network._
 import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.prop.PropertyChecks
@@ -43,9 +44,10 @@ class TransactionServiceNetworkItSpec
     val txNetwork = Network[Envelope[DummyTransaction]](baseNetwork.networkDiscovery, baseNetwork.transports)
     val blockNetwork =
       Network[Envelope[Block[String, DummyTransaction]]](baseNetwork.networkDiscovery, baseNetwork.transports)
-    val consensusMap = Map("1" -> (txPoolIf, consensus))
+    val queryService = mock[LedgerQueryService[String, DummyLedgerQuery]]
+    val consensusMap = Map("1" -> (txPoolIf, consensus, queryService))
 
-    new NodeTransactionService[String, DummyTransaction](
+    new NodeTransactionServiceImpl[String, DummyTransaction, DummyLedgerQuery](
       consensusMap,
       txNetwork,
       blockNetwork,

@@ -7,19 +7,19 @@ import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import com.alexitc.playsonify.akka.PublicErrorRenderer
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
-import io.iohk.crypto._
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.frontend.controllers.common.Codecs
 import io.iohk.cef.frontend.models.{
   CreateChimericTransactionFragment,
   CreateChimericTransactionRequest,
   CreateNonSignableChimericTransactionFragment,
-  CreateSignableChimericTransactionFragment
+  CreateSignableChimericTransactionFragment,
+  SubmitChimericTransactionRequest
 }
 import io.iohk.cef.frontend.services.ChimericTransactionService
 import io.iohk.cef.ledger.chimeric._
-import io.iohk.cef.transactionservice.NodeTransactionService
-import org.mockito.ArgumentMatchers.any
+import io.iohk.cef.ledger.query.chimeric.ChimericQuery
+import io.iohk.crypto._
 import org.mockito.Mockito.when
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mockito.MockitoSugar.mock
@@ -37,13 +37,9 @@ class ChimericTransactionsControllerSpec
 
   import Codecs._
 
-  val nodeTransactionService = mock[NodeTransactionService[ChimericStateResult, ChimericTx]]
-  when(nodeTransactionService.receiveTransaction(any())).thenReturn(Future.successful(Right(())))
+  val ledgerId = "1"
 
   implicit val executionContext = system.dispatcher
-  val service = new ChimericTransactionService(nodeTransactionService, null)
-  val api = new ChimericTransactionsController(service)
-  val routes = api.routes
   val signingKeyPair1 = generateSigningKeyPair()
   val signingKeyPair2 = generateSigningKeyPair()
 
@@ -51,6 +47,7 @@ class ChimericTransactionsControllerSpec
 
   "POST /chimeric-transactions" should {
     "allow to submit a Non Signable transaction" in {
+      val (service, routes) = prepare()
       val fragments: Seq[CreateChimericTransactionFragment] = Seq(
         CreateNonSignableChimericTransactionFragment(Mint(value = Value(Map("USD" -> BigDecimal(200))))),
         CreateNonSignableChimericTransactionFragment(Mint(value = Value(Map("GBP" -> BigDecimal(9990))))),
@@ -65,10 +62,16 @@ class ChimericTransactionsControllerSpec
         ),
         CreateNonSignableChimericTransactionFragment(CreateCurrency(currency = "AUD"))
       )
-      val entity = CreateChimericTransactionRequest(fragments = fragments, "1")
+      val entity = CreateChimericTransactionRequest(fragments = fragments, ledgerId)
 
       val json = Json.toJson(entity)
       val request = Post("/chimeric-transactions", json)
+
+      val dummyChimericTx = ChimericTx(Seq())
+
+      when(service.createChimericTransaction(entity)).thenReturn(Future.successful(Right(dummyChimericTx)))
+      when(service.submitChimericTransaction(SubmitChimericTransactionRequest(Seq(), ledgerId)))
+        .thenReturn(Future.successful(Right(())))
 
       request ~> routes ~> check {
         status must ===(StatusCodes.Created)
@@ -76,6 +79,7 @@ class ChimericTransactionsControllerSpec
     }
 
     "allow to submit a Signable transaction" in {
+      val (service, routes) = prepare()
       val fragments: Seq[CreateChimericTransactionFragment] = Seq(
         CreateSignableChimericTransactionFragment(
           Withdrawal(address = signingKeyPair1.public, value = Value(Map("MXN" -> BigDecimal(10))), nonce = 1),
@@ -89,7 +93,13 @@ class ChimericTransactionsControllerSpec
           Fee(Value(Map("MXN" -> BigDecimal(10), "CAD" -> BigDecimal(200))))
         )
       )
-      val entity = CreateChimericTransactionRequest(fragments = fragments, "1")
+      val entity = CreateChimericTransactionRequest(fragments = fragments, ledgerId)
+
+      val dummyChimericTx = ChimericTx(Seq())
+
+      when(service.createChimericTransaction(entity)).thenReturn(Future.successful(Right(dummyChimericTx)))
+      when(service.submitChimericTransaction(SubmitChimericTransactionRequest(Seq(), ledgerId)))
+        .thenReturn(Future.successful(Right(())))
 
       val json = Json.toJson(entity)
       val request = Post("/chimeric-transactions", json)
@@ -100,6 +110,7 @@ class ChimericTransactionsControllerSpec
     }
 
     "allow to submit a Signable and Non Signable transaction" in {
+      val (service, routes) = prepare()
       val fragments: Seq[CreateChimericTransactionFragment] = Seq(
         CreateSignableChimericTransactionFragment(
           Withdrawal(signingKeyPair1.public, value = Value(Map("MXN" -> BigDecimal(10))), nonce = 1),
@@ -122,7 +133,13 @@ class ChimericTransactionsControllerSpec
         ),
         CreateNonSignableChimericTransactionFragment(CreateCurrency(currency = "AUD"))
       )
-      val entity = CreateChimericTransactionRequest(fragments = fragments, "1")
+      val entity = CreateChimericTransactionRequest(fragments = fragments, ledgerId)
+
+      val dummyChimericTx = ChimericTx(Seq())
+
+      when(service.createChimericTransaction(entity)).thenReturn(Future.successful(Right(dummyChimericTx)))
+      when(service.submitChimericTransaction(SubmitChimericTransactionRequest(Seq(), ledgerId)))
+        .thenReturn(Future.successful(Right(())))
 
       val json = Json.toJson(entity)
       val request = Post("/chimeric-transactions", json)
@@ -133,6 +150,7 @@ class ChimericTransactionsControllerSpec
     }
 
     "return missing top-level field errors" in {
+      val (service, routes) = prepare()
       val request = Post("/chimeric-transactions", HttpEntity(ContentTypes.`application/json`, "{}"))
 
       request ~> routes ~> check {
@@ -148,7 +166,11 @@ class ChimericTransactionsControllerSpec
     "return the existing currency" in {
       val (service, routes) = prepare()
       val currencies = List("ADA", "BTC", "MXN")
-      when(service.queryAllCurrencies()).thenReturn(Future.successful(Right(currencies.toSet)))
+
+      when(service.ledgerId).thenReturn(ledgerId)
+
+      when(service.executeQuery(ledgerId, ChimericQuery.AllCurrencies))
+        .thenReturn(Future.successful(Right(currencies.toSet)))
 
       val request = Get("/chimeric-transactions/currencies")
 
@@ -164,7 +186,11 @@ class ChimericTransactionsControllerSpec
   "GET /chimeric-transactions/currencies/:currency" should {
     "query an existing currency" in {
       val (service, routes) = prepare()
-      when(service.queryCreatedCurrency("GBP")).thenReturn(Future.successful(Right(Some(CurrencyQuery("GBP")))))
+
+      when(service.ledgerId).thenReturn(ledgerId)
+
+      when(service.executeQuery(ledgerId, ChimericQuery.CreatedCurrency("GBP")))
+        .thenReturn(Future.successful(Right(Some(CurrencyQuery("GBP")))))
 
       val request = Get("/chimeric-transactions/currencies/GBP")
 
@@ -178,7 +204,11 @@ class ChimericTransactionsControllerSpec
 
     "query a non existing currency" in {
       val (service, routes) = prepare()
-      when(service.queryCreatedCurrency("GBP")).thenReturn(Future.successful(Right(None)))
+
+      when(service.ledgerId).thenReturn(ledgerId)
+
+      when(service.executeQuery(ledgerId, ChimericQuery.CreatedCurrency("GBP")))
+        .thenReturn(Future.successful(Right(None)))
       val request = Get("/chimeric-transactions/currencies/GBP")
 
       request ~> routes ~> check {
@@ -193,7 +223,10 @@ class ChimericTransactionsControllerSpec
 
     "handle a failed currency query" in {
       val (service, routes) = prepare()
-      when(service.queryCreatedCurrency("GBP"))
+
+      when(service.ledgerId).thenReturn(ledgerId)
+
+      when(service.executeQuery(ledgerId, ChimericQuery.CreatedCurrency("GBP")))
         .thenReturn(Future.successful(Left(FakeApplicationError("something gone wrong"))))
       val request = Get("/chimeric-transactions/currencies/GBP")
 
@@ -209,7 +242,10 @@ class ChimericTransactionsControllerSpec
   "GET chimeric-transactions/utxos/:utxo/balance" should {
     "query the balance of an existing utxo" in {
       val (service, routes) = prepare()
-      when(service.queryUtxoBalance(TxOutRef("foo", 123)))
+
+      when(service.ledgerId).thenReturn(ledgerId)
+
+      when(service.executeQuery(ledgerId, ChimericQuery.UtxoBalance(TxOutRef("foo", 123))))
         .thenReturn(
           Future.successful(Right(Some(UtxoResult(Value(Map("GBP" -> BigDecimal(12))), signingKeyPair1.public))))
         )
@@ -226,7 +262,11 @@ class ChimericTransactionsControllerSpec
 
     "query the balance of a non existing utxo" in {
       val (service, routes) = prepare()
-      when(service.queryUtxoBalance(TxOutRef("foo", 123))).thenReturn(Future.successful(Right(None)))
+
+      when(service.ledgerId).thenReturn(ledgerId)
+
+      when(service.executeQuery(ledgerId, ChimericQuery.UtxoBalance(TxOutRef("foo", 123))))
+        .thenReturn(Future.successful(Right(None)))
 
       val request = Get("/chimeric-transactions/utxos/foo(123)/balance")
 
@@ -242,7 +282,10 @@ class ChimericTransactionsControllerSpec
 
     "handle a failed utxo balance query" in {
       val (service, routes) = prepare()
-      when(service.queryUtxoBalance(TxOutRef("foo", 123)))
+
+      when(service.ledgerId).thenReturn(ledgerId)
+
+      when(service.executeQuery(ledgerId, ChimericQuery.UtxoBalance(TxOutRef("foo", 123))))
         .thenReturn(Future.successful(Left(FakeApplicationError("something gone wrong"))))
 
       val request = Get("/chimeric-transactions/utxos/foo(123)/balance")
@@ -260,7 +303,10 @@ class ChimericTransactionsControllerSpec
     "query the balance of an existing address" in {
       val (service, routes) = prepare()
       val urlAddress = encodeAddress(signingKeyPair1.public)
-      when(service.queryAddressBalance(signingKeyPair1.public))
+
+      when(service.ledgerId).thenReturn(ledgerId)
+
+      when(service.executeQuery(ledgerId, ChimericQuery.AddressBalance(signingKeyPair1.public)))
         .thenReturn(Future.successful(Right(Some(AddressResult(Value(Map("GBP" -> BigDecimal(12))))))))
 
       val request = Get(s"/chimeric-transactions/addresses/${urlAddress}/balance")
@@ -276,7 +322,11 @@ class ChimericTransactionsControllerSpec
     "query the balance of a non existing address" in {
       val (service, routes) = prepare()
       val urlAddress = encodeAddress(signingKeyPair1.public)
-      when(service.queryAddressBalance(signingKeyPair1.public)).thenReturn(Future.successful(Right(None)))
+
+      when(service.ledgerId).thenReturn(ledgerId)
+
+      when(service.executeQuery(ledgerId, ChimericQuery.AddressBalance(signingKeyPair1.public)))
+        .thenReturn(Future.successful(Right(None)))
 
       val request = Get(s"/chimeric-transactions/addresses/${urlAddress}/balance")
 
@@ -293,7 +343,10 @@ class ChimericTransactionsControllerSpec
     "handle a failed address balance query" in {
       val (service, routes) = prepare()
       val urlAddress = encodeAddress(signingKeyPair1.public)
-      when(service.queryAddressBalance(signingKeyPair1.public))
+
+      when(service.ledgerId).thenReturn(ledgerId)
+
+      when(service.executeQuery(ledgerId, ChimericQuery.AddressBalance(signingKeyPair1.public)))
         .thenReturn(Future.successful(Left(FakeApplicationError("something gone wrong"))))
 
       val request = Get(s"/chimeric-transactions/addresses/${urlAddress}/balance")
@@ -311,7 +364,10 @@ class ChimericTransactionsControllerSpec
     "query the nonce of an existing address" in {
       val (service, routes) = prepare()
       val urlAddress = encodeAddress(signingKeyPair1.public)
-      when(service.queryAddressNonce(signingKeyPair1.public))
+
+      when(service.ledgerId).thenReturn(ledgerId)
+
+      when(service.executeQuery(ledgerId, ChimericQuery.AddressNonce(signingKeyPair1.public)))
         .thenReturn(Future.successful(Right(Some(NonceResult(123)))))
 
       val request = Get(s"/chimeric-transactions/addresses/${urlAddress}/nonce")
@@ -327,7 +383,11 @@ class ChimericTransactionsControllerSpec
     "query the nonce of a non existing address" in {
       val (service, routes) = prepare()
       val urlAddress = encodeAddress(signingKeyPair1.public)
-      when(service.queryAddressNonce(signingKeyPair1.public)).thenReturn(Future.successful(Right(None)))
+
+      when(service.ledgerId).thenReturn(ledgerId)
+
+      when(service.executeQuery(ledgerId, ChimericQuery.AddressNonce(signingKeyPair1.public)))
+        .thenReturn(Future.successful(Right(None)))
 
       val request = Get(s"/chimeric-transactions/addresses/${urlAddress}/nonce")
 
@@ -345,7 +405,9 @@ class ChimericTransactionsControllerSpec
       val (service, routes) = prepare()
       val urlAddress = encodeAddress(signingKeyPair1.public)
 
-      when(service.queryAddressNonce(signingKeyPair1.public))
+      when(service.ledgerId).thenReturn(ledgerId)
+
+      when(service.executeQuery(ledgerId, ChimericQuery.AddressNonce(signingKeyPair1.public)))
         .thenReturn(Future.successful(Left(FakeApplicationError("something gone wrong"))))
 
       val request = Get(s"/chimeric-transactions/addresses/${urlAddress}/nonce")
@@ -361,6 +423,8 @@ class ChimericTransactionsControllerSpec
 
   def prepare(): (ChimericTransactionService, Route) = {
     val service = mock[ChimericTransactionService]
+    when(service.ledgerId).thenReturn(ledgerId)
+    when(service.isLedgerSupported(ledgerId)).thenReturn(true)
     val api = new ChimericTransactionsController(service)
     val routes = api.routes
     (service, routes)

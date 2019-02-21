@@ -5,19 +5,27 @@ import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.frontend.client.Response
 import io.iohk.cef.frontend.controllers.common.IntrinsicValidationViolation
 import io.iohk.cef.frontend.models._
+import io.iohk.cef.ledger.LedgerId
 import io.iohk.cef.ledger.identity.{Claim, IdentityData, IdentityTransaction, Link, Unlink, _}
+import io.iohk.cef.ledger.query.identity.IdentityQuery
 import io.iohk.network.{Envelope, Everyone}
 import io.iohk.cef.transactionservice._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class IdentityTransactionService(nodeTransactionService: NodeTransactionService[IdentityData, IdentityTransaction])(
+class IdentityTransactionService(
+    service: NodeTransactionService[IdentityData, IdentityTransaction, IdentityQuery]
+)(
     implicit ec: ExecutionContext
-) {
+) extends LedgerService[IdentityData, IdentityTransaction, IdentityQuery] {
+
+  override def nodeTransactionService: NodeTransactionService[IdentityData, IdentityTransaction, IdentityQuery] =
+    service
 
   type IdentityTransactionConstructor = (String, SigningPublicKey, Signature) => IdentityTransaction
 
   def createIdentityTransaction(req: CreateIdentityTransactionRequest): Response[IdentityTransaction] = {
+    require(nodeTransactionService.supportedLedgerIds.contains(req.ledgerId))
 
     lazy val identityTransaction = req.data match {
       case data: ClaimData => Right(Claim(data, req.privateKey))
@@ -43,6 +51,7 @@ class IdentityTransactionService(nodeTransactionService: NodeTransactionService[
   }
 
   def submitIdentityTransaction(req: SubmitIdentityTransactionRequest): Response[Unit] = {
+    require(nodeTransactionService.supportedLedgerIds.contains(req.ledgerId))
 
     val identityTransaction: Either[ApplicationError, IdentityTransaction] = req.data match {
       case data: ClaimData => Right(Claim(data, req.signature))
@@ -78,6 +87,11 @@ class IdentityTransactionService(nodeTransactionService: NodeTransactionService[
     }
 
   }
+
+  def executeQuery(ledgerId: LedgerId, query: IdentityQuery): Response[query.Response] = {
+    Future(Right(nodeTransactionService.getQueryService(ledgerId).perform(query)))
+  }
+
   case object CorrespondingPrivateKeyRequiredForLinkingIdentityError extends ApplicationError {
     override def toString: String = s"Corresponding private key for the associated Public key is required:"
   }

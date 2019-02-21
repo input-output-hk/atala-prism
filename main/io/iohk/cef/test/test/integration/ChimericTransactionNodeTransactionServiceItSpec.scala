@@ -6,12 +6,14 @@ import akka.testkit.TestKit
 import akka.util.Timeout
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import io.iohk.cef.consensus.Consensus
-import io.iohk.cef.transactionservice.NodeTransactionService
+import io.iohk.cef.transactionservice.{NodeTransactionService, NodeTransactionServiceImpl}
 import io.iohk.cef.frontend.controllers.ChimericTransactionsController
 import io.iohk.cef.frontend.controllers.common.Codecs
 import io.iohk.cef.frontend.models.{CreateChimericTransactionRequest, CreateNonSignableChimericTransactionFragment}
 import io.iohk.cef.frontend.services.ChimericTransactionService
 import io.iohk.cef.ledger.chimeric._
+import io.iohk.cef.ledger.query.LedgerQueryService
+import io.iohk.cef.ledger.query.chimeric.ChimericQuery
 import io.iohk.cef.ledger.storage.LedgerStateStorage
 import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
 import io.iohk.network.{Envelope, MessageStream, Network, NodeId}
@@ -43,7 +45,7 @@ class ChimericTransactionNodeTransactionServiceItSpec
 
   behavior of "ChimericTransactionNodeTransactionServiceItSpec"
 
-  def createNodeTransactionService: NodeTransactionService[ChimericStateResult, ChimericTx] = {
+  def createNodeTransactionService: NodeTransactionService[ChimericStateResult, ChimericTx, ChimericQuery] = {
     implicit val timeout = Timeout(10.seconds)
     implicit val envelopeSerializable = mock[NioCodec[Envelope[TransactionType]]]
     implicit val blockSerializable = mock[NioCodec[Envelope[BlockType]]]
@@ -71,31 +73,33 @@ class ChimericTransactionNodeTransactionServiceItSpec
 
     val txNetwork = mock[Network[Envelope[TransactionType]]]
 
+    val queryService = mock[LedgerQueryService[ChimericStateResult, ChimericQuery]]
+
     when(ledgerStateStorage.slice(any())).thenReturn(new ChimericLedgerState(Map.empty))
     when(txNetwork.messageStream).thenReturn(mockTxMessageStream)
     when(blockNetwork.messageStream).thenReturn(mockBlockMessageStream)
     when(mockTxMessageStream.foreach(any())).thenReturn(Future.successful(()))
     when(mockBlockMessageStream.foreach(any())).thenReturn(Future.successful(()))
 
-    val consensusMap = Map("1" -> (txPoolInterface, consensus))
+    val consensusMap = Map("1" -> (txPoolInterface, consensus, queryService))
 
     val me = NodeId("3112")
 
     val transactionservice =
-      new NodeTransactionService(consensusMap, txNetwork, blockNetwork, me)(
+      new NodeTransactionServiceImpl(consensusMap, txNetwork, blockNetwork, me)(
         envelopeSerializable,
         blockSerializable,
         ExecutionContext.global
       )
 
-    transactionservice.asInstanceOf[NodeTransactionService[ChimericStateResult, ChimericTx]]
+    transactionservice.asInstanceOf[NodeTransactionService[ChimericStateResult, ChimericTx, ChimericQuery]]
   }
 
   it should "process a transaction" in {
     val fragments = Seq(CreateNonSignableChimericTransactionFragment(CreateCurrency("BTC")))
 
     val node = createNodeTransactionService
-    val service = new ChimericTransactionService(node, null)
+    val service = new ChimericTransactionService(node)
     val api = new ChimericTransactionsController(service)
     val routes = api.routes
 

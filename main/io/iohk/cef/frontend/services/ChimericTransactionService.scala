@@ -9,6 +9,7 @@ import io.iohk.cef.frontend.models.{
   CreateSignableChimericTransactionFragment,
   SubmitChimericTransactionRequest
 }
+import io.iohk.cef.ledger.LedgerId
 import io.iohk.cef.ledger.chimeric._
 import io.iohk.network.{Envelope, Everyone}
 import io.iohk.cef.ledger.query.chimeric._
@@ -18,11 +19,13 @@ import io.iohk.cef.transactionservice.NodeTransactionService
 import scala.concurrent.{ExecutionContext, Future}
 
 class ChimericTransactionService(
-    nodeTransactionService: NodeTransactionService[ChimericStateResult, ChimericTx],
-    queryService: ChimericQueryService
+    service: NodeTransactionService[ChimericStateResult, ChimericTx, ChimericQuery]
 )(
     implicit ec: ExecutionContext
-) {
+) extends LedgerService[ChimericStateResult, ChimericTx, ChimericQuery] {
+
+  override protected def nodeTransactionService: NodeTransactionService[ChimericPartition, ChimericTx, ChimericQuery] =
+    service
 
   def createChimericTransaction(req: CreateChimericTransactionRequest): Response[ChimericTx] = {
 
@@ -49,36 +52,7 @@ class ChimericTransactionService(
     nodeTransactionService.receiveTransaction(envelope)
   }
 
-  def queryCreatedCurrency(currency: Currency): Response[Option[CurrencyQuery]] =
-    Future.successful(
-      Right(
-        queryService.perform(ChimericQuery.CreatedCurrency(currency))
-      )
-    )
-
-  def queryUtxoBalance(txOutRef: TxOutRef): Response[Option[UtxoResult]] =
-    Future.successful(
-      Right(
-        queryService.perform(ChimericQuery.UtxoBalance(txOutRef))
-      )
-    )
-
-  def queryAddressBalance(address: Address): Response[Option[AddressResult]] =
-    Future.successful(
-      Right(
-        queryService.perform(ChimericQuery.AddressBalance(address))
-      )
-    )
-
-  def queryAddressNonce(address: Address): Response[Option[NonceResult]] =
-    Future.successful(
-      Right(
-        queryService.perform(ChimericQuery.AddressNonce(address))
-      )
-    )
-
-  def queryAllCurrencies(): Response[Set[Currency]] = {
-    val result = queryService.perform(ChimericQuery.AllCurrencies)
-    Future.successful(Right(result))
+  def executeQuery(ledgerId: LedgerId, query: ChimericQuery): Response[query.Response] = {
+    Future(Right(nodeTransactionService.getQueryService(ledgerId).perform(query)))
   }
 }
