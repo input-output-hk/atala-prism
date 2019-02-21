@@ -17,19 +17,10 @@ case class UnspentOutputAlreadyExists(txOutRef: TxOutRef) extends LedgerError {
     s"UTXO ${txOutRef} already exists in the ledger state"
 }
 
-case class ValueNotPreserved(totalValue: Value, fragments: Seq[ChimericTxFragment]) extends LedgerError {
-  override def toString: String =
-    s"Value is not preserved: ${totalValue} should be zero for all currencies. Fragments: $fragments"
-}
-
 case class InsufficientBalance(address: Address, requested: Value, found: Value) extends LedgerError {
   override def toString(): String =
     s"Insufficient balance to withdraw from address ${address}." +
       s"Requested ${requested}, but found ${found}"
-}
-
-case class ValueNegative(value: Value) extends LedgerError {
-  override def toString(): String = s"Value provided cannot be negative ($value)."
 }
 
 case class CurrencyAlreadyExists(currency: Currency) extends LedgerError {
@@ -54,3 +45,12 @@ case object InvalidSignature extends LedgerError {
 case class InvalidNonce(expected: Int, actual: Int) extends LedgerError {
   override def toString: String = s"An invalid nonce has been received, expected = $expected, actual = $actual"
 }
+
+//Intrinsic errors
+case class ValueNegative(value: Value)
+    extends IllegalArgumentException(s"Value provided must be positive for all currencies ($value).")
+
+case class ValueNotPreserved(totalValue: Value, fragments: Seq[ChimericTxFragment])
+    extends IllegalArgumentException(
+      s"Value is not preserved: ${totalValue} should be zero for all currencies. Fragments: $fragments"
+    )
