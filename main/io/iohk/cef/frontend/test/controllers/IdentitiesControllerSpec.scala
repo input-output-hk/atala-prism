@@ -213,13 +213,13 @@ class IdentitiesControllerSpec
     }
 
     def testTransactionLinkType(
-        linkingIdentityPrivateKey: SigningPrivateKey,
+        linkingIdentityPrivateKey: Option[SigningPrivateKey],
         linkingIdentityPublicKey: SigningPublicKey,
         privateKey: SigningPrivateKey,
         expectedResult: StatusCode = StatusCodes.Created
     ): Assertion = {
 
-      val privateKeyLinkHex = toCleanHex(linkingIdentityPrivateKey.toByteString)
+      val privateKeyLinkHex = linkingIdentityPrivateKey.map(_.toByteString).map(toCleanHex)
       val publicKeyLinkHex = toCleanHex(linkingIdentityPublicKey.toByteString)
       val privateKeyHex = toCleanHex(privateKey.toByteString)
       val txType = "Link"
@@ -234,7 +234,7 @@ class IdentitiesControllerSpec
            |    },
            |    "ledgerId": "${ledgerId}",
            |    "privateKey": "$privateKeyHex",
-           |    "linkingIdentityPrivateKey": "$privateKeyLinkHex"
+           |    "linkingIdentityPrivateKey": "${privateKeyLinkHex.getOrElse("")}"
            |
            |}
          """.stripMargin
@@ -351,14 +351,28 @@ class IdentitiesControllerSpec
 
     "be able to create identity link transaction" in {
       testTransactionLinkType(
-        linkingIdentityPrivateKey = pair.`private`,
+        linkingIdentityPrivateKey = Option(pair.`private`),
         linkingIdentityPublicKey = pair.public,
         privateKey = pair2.`private`
       )
     }
 
+    "fail to create identity link transaction when linkingIdentityPrivateKey is missing" in {
+      testTransactionLinkType(
+        linkingIdentityPrivateKey = None,
+        linkingIdentityPublicKey = pair.public,
+        privateKey = pair2.`private`,
+        expectedResult = StatusCodes.BadRequest
+      )
+    }
+
     "fail to create identity link transaction when the keys don't correspond each other" in {
-      testTransactionLinkType(pair2.`private`, pair.public, pair2.`private`, expectedResult = StatusCodes.BadRequest)
+      testTransactionLinkType(
+        Option(pair2.`private`),
+        pair.public,
+        pair2.`private`,
+        expectedResult = StatusCodes.BadRequest
+      )
     }
 
     "be able to create identity unlink transaction" in {

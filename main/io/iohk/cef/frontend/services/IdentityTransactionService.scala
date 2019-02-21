@@ -19,6 +19,8 @@ class IdentityTransactionService(
     implicit ec: ExecutionContext
 ) extends LedgerService[IdentityData, IdentityTransaction, IdentityQuery] {
 
+  import IdentityTransactionService._
+
   override def nodeTransactionService: NodeTransactionService[IdentityData, IdentityTransaction, IdentityQuery] =
     service
 
@@ -91,7 +93,9 @@ class IdentityTransactionService(
   def executeQuery(ledgerId: LedgerId, query: IdentityQuery): Response[query.Response] = {
     Future(Right(nodeTransactionService.getQueryService(ledgerId).perform(query)))
   }
+}
 
+object IdentityTransactionService {
   case object CorrespondingPrivateKeyRequiredForLinkingIdentityError extends ApplicationError {
     override def toString: String = s"Corresponding private key for the associated Public key is required:"
   }
