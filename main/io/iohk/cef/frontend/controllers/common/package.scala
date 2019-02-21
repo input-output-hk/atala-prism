@@ -21,6 +21,7 @@ package object common {
   }
 
   def fromEither[T](value: Either[CefError, T], playsonifyError: PlaysonifyError) = value match {
+    case Left(e: IntrinsicValidationViolation) => Bad(e).accumulating
     case Left(_) => Bad(playsonifyError).accumulating
     case Right(result) => Good(result)
   }

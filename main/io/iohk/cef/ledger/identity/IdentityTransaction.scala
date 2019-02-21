@@ -42,12 +42,11 @@ object IdentityTransaction {
 }
 
 case class Claim(data: ClaimData, signature: Signature) extends IdentityTransaction {
+  require(isValidSignature(data, signature, data.key), throw new InvalidSignatureException())
 
   override def apply(ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] = {
 
-    if (!isValidSignature(data, signature, data.key)) {
-      Left(UnableToVerifySignatureError)
-    } else if (ledgerState.contains(data.identity)) {
+    if (ledgerState.contains(data.identity)) {
       Left(IdentityTakenError(data.identity))
     } else {
       Right(ledgerState.put(data.identity, IdentityData.forKeys(data.key)))
@@ -74,6 +73,10 @@ object Claim {
   *   *                  from the public key on the given identity.
   */
 case class Link(data: LinkData, signature: Signature, linkingIdentitySignature: Signature) extends IdentityTransaction {
+  require(
+    isValidSignature(data, linkingIdentitySignature, data.key),
+    throw new UnableToVerifySignatureException(data.identity)
+  )
 
   /**
     * Apply this transaction to the given state
@@ -84,8 +87,6 @@ case class Link(data: LinkData, signature: Signature, linkingIdentitySignature: 
     *         - the signature can't be validated
     */
   override def apply(ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] = {
-    lazy val providedPublicKeySignatureValid =
-      isValidSignature(data, linkingIdentitySignature, data.key)
     lazy val identitySignatureValid =
       IdentityTransaction.isDataSignedWithIdentity(data, data.identity, ledgerState, signature)
 
@@ -93,8 +94,6 @@ case class Link(data: LinkData, signature: Signature, linkingIdentitySignature: 
       Left(IdentityNotClaimedError(data.identity))
     } else if (!identitySignatureValid) {
       Left(UnableToVerifySignatureError)
-    } else if (!providedPublicKeySignatureValid) {
-      Left(UnableToVerifyLinkingIdentitySignatureError(data.identity, data.key))
     } else {
       val prev: IdentityData = ledgerState.get(data.identity).getOrElse(IdentityData.empty)
       val result = ledgerState.put(data.identity, prev addKey data.key)
@@ -275,26 +274,25 @@ object Grant {
 case class LinkCertificate(data: LinkCertificateData, signature: Signature, signatureFromCertificate: Signature)
     extends IdentityTransaction {
 
-  private val decodedPairResult = CachedCertificatePair.decode(data.pem)
+  private val pair = {
+    val opt = CachedCertificatePair.decode(data.pem)
+    require(opt.isDefined, throw new InvalidCertificateException)
+    opt.get
+  }
+  require(pair.isSignatureValid, throw new InvalidSignatureException())
+  require(
+    IdentityTransaction.isDataSignedWith(data, pair.target.publicKey, signatureFromCertificate),
+    throw new UnableToVerifySignatureException(pair.target.identity)
+  )
+  require(
+    data.linkingIdentity == pair.target.identity,
+    throw new IdentityNotMatchingCertificateException(data.linkingIdentity, pair.target.identity)
+  )
+
+  override val partitionIds: Set[String] =
+    Set(pair.target.identity, pair.issuer.identity)
 
   override def apply(ledgerState: IdentityLedgerState): Either[LedgerError, IdentityLedgerState] = {
-    decodedPairResult
-      .map { apply(_, ledgerState) }
-      .getOrElse { Left(InvalidCertificateError) }
-  }
-
-  override val partitionIds: Set[String] = {
-    decodedPairResult
-      .map { pair =>
-        Set(pair.target.identity, pair.issuer.identity)
-      }
-      .getOrElse(Set.empty)
-  }
-
-  private def apply(
-      pair: CachedCertificatePair,
-      ledgerState: IdentityLedgerState
-  ): Either[LedgerError, IdentityLedgerState] = {
 
     val authorityIdentityDataMaybe = ledgerState.get(pair.issuer.identity)
     val linkingIdentityDataMaybe = ledgerState.get(pair.target.identity)
@@ -304,32 +302,18 @@ case class LinkCertificate(data: LinkCertificateData, signature: Signature, sign
       .getOrElse(Set.empty)
       .contains(pair.issuer.publicKey)
 
-    lazy val linkingCertificateSignatureValid =
-      IdentityTransaction.isDataSignedWith(data, pair.target.publicKey, signatureFromCertificate)
-
     lazy val existingKeySignatureValid =
       IdentityTransaction.isDataSignedWithIdentity(data, pair.target.identity, ledgerState, signature)
-
-    lazy val certificateSignatureValid = pair.isSignatureValid
 
     (authorityIdentityDataMaybe, linkingIdentityDataMaybe) match {
       case (None, _) => Left(IdentityNotClaimedError(pair.issuer.identity))
       case (_, None) => Left(IdentityNotClaimedError(pair.target.identity))
 
-      case _ if data.linkingIdentity != pair.target.identity =>
-        Left(IdentityNotMatchingCertificate(data.linkingIdentity, pair.target.identity))
-
       case _ if !keyBelongsToAuthority =>
         Left(PublicKeyNotAssociatedWithIdentity(pair.issuer.identity, pair.issuer.publicKey))
 
-      case _ if !certificateSignatureValid =>
-        Left(UnableToVerifyLinkingIdentitySignatureError(pair.issuer.identity, pair.issuer.publicKey))
-
       case _ if !existingKeySignatureValid =>
         Left(UnableToVerifySignatureError)
-
-      case _ if !linkingCertificateSignatureValid =>
-        Left(UnableToVerifyLinkingIdentitySignatureError(pair.target.identity, pair.target.publicKey))
 
       case (Some(_), Some(linkingIdentityData)) =>
         val newIdentity = linkingIdentityData
