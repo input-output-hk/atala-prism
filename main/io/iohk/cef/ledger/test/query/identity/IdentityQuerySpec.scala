@@ -2,15 +2,10 @@ package io.iohk.cef.ledger.query.identity
 
 import io.iohk.cef.ledger.LedgerState
 import io.iohk.cef.ledger.identity.IdentityData
+import io.iohk.cef.ledger.query.LedgerQueryEngine
+import io.iohk.cef.ledger.query.identity.IdentityQuery._
 import io.iohk.cef.ledger.storage.LedgerStateStorage
 import io.iohk.cef.query.Query
-import io.iohk.cef.ledger.query.LedgerQueryEngine
-import io.iohk.cef.ledger.query.identity.IdentityQuery.{
-  ExistsIdentity,
-  RetrieveEndorsements,
-  RetrieveEndorsers,
-  RetrieveIdentityKeys
-}
 import io.iohk.crypto._
 import org.mockito.Mockito.when
 import org.scalatest.mockito.MockitoSugar._
@@ -82,5 +77,16 @@ class IdentityQuerySpec extends FlatSpec with MustMatchers {
 
     Query.performer(RetrieveEndorsements(identity), engine) mustBe endorsements
     Query.performer(RetrieveEndorsements("b"), engine) mustBe Set("a")
+  }
+
+  it should "query the identities" in {
+    val identities = Set("x", "a", "b", "c")
+
+    val stateStorage = mock[LedgerStateStorage[IdentityPartition]]
+    when(stateStorage.keys).thenReturn(identities)
+
+    val engine = LedgerQueryEngine(stateStorage)
+
+    Query.performer(RetrieveIdentities, engine) mustBe identities
   }
 }

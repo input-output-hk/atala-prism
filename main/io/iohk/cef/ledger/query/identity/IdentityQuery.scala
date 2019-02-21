@@ -52,4 +52,12 @@ object IdentityQuery {
         .map(_._1)
     }
   }
+
+  case object RetrieveIdentities extends IdentityQuery {
+    override type Response = Set[Identity]
+
+    override protected def perform(queryEngine: IdentityQueryEngine): Set[Identity] = {
+      queryEngine.keys()
+    }
+  }
 }
