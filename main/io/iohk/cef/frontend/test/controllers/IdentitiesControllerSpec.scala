@@ -45,6 +45,23 @@ class IdentitiesControllerSpec
   val controller = new IdentitiesController(service)
   lazy val routes = controller.routes
 
+  "GET /identities" should {
+    "return the existing identities" in {
+      val identities = Set("iohk", "IOHK", "ioHK")
+      when(queryEngine.keys()).thenReturn(identities)
+
+      val request = Get(s"/identities")
+
+      request ~> routes ~> check {
+        status must ===(StatusCodes.OK)
+
+        val json = responseAs[JsValue]
+        val result = json.as[Set[String]]
+        result must be(identities)
+      }
+    }
+  }
+
   "GET /identities/:identity" should {
     "return the identity keys" in {
       val identity = "iohk"
