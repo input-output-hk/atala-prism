@@ -5,7 +5,7 @@
 
   <div class="w-100"></div>
   <ul class="list-group col-12 col-md-3">
-    <li *ngFor="let item of schema" (click)="select(item)"
+    <li *ngFor="let item of schema$ | async" (click)="select(item)"
       [class.active]="isSelected(item)" type="button"
       class="list-group-item list-group-item-action">
       {{item.name}}

@@ -1,61 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 
-// TODO: Retrieve schema from the server
-const SCHEMA = [
-  {
-    name: 'University Degree',
-    url: 'university-degrees',
-    fields: [
-      {
-        id: 'university',
-        name: 'University name',
-        type: 'string',
-        mandatory: true
-      },
-      {
-        id: 'name',
-        name: 'Full name',
-        type: 'string',
-        mandatory: true
-      },
-      {
-        id: 'graduationYear',
-        name: 'Graduation year',
-        type: 'integer',
-        mandatory: true
-      }
-    ]
-  },
-  {
-    name: 'Mexican Id',
-    url: 'mexican-identifications',
-    fields: [
-      {
-        id: 'name',
-        name: 'Full name',
-        type: 'string',
-        mandatory: true
-      },
-      {
-        id: 'address',
-        name: 'Address',
-        type: 'string'
-      },
-      {
-        id: 'gender',
-        name: 'Gender',
-        type: 'string',
-        mandatory: true
-      },
-      {
-        id: 'expirationYear',
-        name: 'Expiration year',
-        type: 'integer',
-        mandatory: true
-      }
-    ]
-  }
-];
+import { DataItemsService } from '../../services/data-items.service';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-data-items',
@@ -64,12 +10,13 @@ const SCHEMA = [
 })
 export class DataItemsComponent implements OnInit {
 
-  schema = SCHEMA;
+  schema$: Observable<any[]>;
   selectedItem = null;
 
-  constructor() { }
+  constructor(private dataItems: DataItemsService) { }
 
   ngOnInit() {
+    this.schema$ = this.dataItems.getSchema();
   }
 
   select(item) {

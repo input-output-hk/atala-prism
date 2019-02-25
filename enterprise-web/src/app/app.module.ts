@@ -14,6 +14,7 @@ import { IdentityLedgerComponent } from './components/identity-ledger/identity-l
 
 import { IdentityLedgerService } from './services/identity-ledger.service';
 import { KeyPairsService } from './services/key-pairs.service';
+import { DataItemsService } from './services/data-items.service';
 import { ErrorService } from './services/error.service';
 import { NotificationService } from './services/notification.service';
 import { IdentityRepository } from './services/identity.repository';
@@ -45,7 +46,8 @@ import { DataItemDetailsComponent } from './components/data-item-details/data-it
     ErrorService,
     IdentityRepository,
     IdentityLedgerService,
-    KeyPairsService
+    KeyPairsService,
+    DataItemsService
   ],
   bootstrap: [AppComponent]
 })
