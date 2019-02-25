@@ -15,7 +15,7 @@ import { Observable } from 'rxjs';
 })
 export class IdentityDetailsComponent implements OnInit {
 
-  private _identity: Identity;
+  private _identity: string;
   endorsers$: Observable<string[]>;
   endorsements$: Observable<string[]>;
 
@@ -39,13 +39,13 @@ export class IdentityDetailsComponent implements OnInit {
   }
 
   @Input()
-  set identity(_identity: Identity) {
+  set identity(_identity: string) {
     this._identity = _identity;
-    this.endorsers$ = this.identityLedger.getEndorsements(this.identity.identity);
-    this.endorsements$ = this.identityLedger.getEndorsers(this.identity.identity);
+    this.endorsers$ = this.identityLedger.getEndorsements(this.identity);
+    this.endorsements$ = this.identityLedger.getEndorsers(this.identity);
   }
 
-  get identity(): Identity {
+  get identity(): string {
     return this._identity;
   }
 
@@ -59,12 +59,17 @@ export class IdentityDetailsComponent implements OnInit {
   }
 
   revokeEndorsement(endorsedIdentity: string) {
-    this.identityLedger.revokeEndorsement(this.identity, endorsedIdentity)
+    const identity = this.identityRepository.get(this.identity);
+    this.identityLedger.revokeEndorsement(identity, endorsedIdentity)
       .subscribe(_ => alert('The endorsement will be revoken soon'), response => this.onError(response));
   }
 
+  belongsToMe(identity: string): boolean {
+    return this.identityRepository.get(identity) != null;
+  }
+
   private doEndorse(endorsedIdentity: string) {
-    const endorser = this.identity;
+    const endorser = this.identityRepository.get(this.identity);
     this.identityLedger.endorse(endorser, endorsedIdentity).subscribe(_ => {
       alert('Transaction submitted, it must be applied in some minutes');
     }, error => this.onError(error));

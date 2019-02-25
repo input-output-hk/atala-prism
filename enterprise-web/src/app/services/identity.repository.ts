@@ -10,6 +10,10 @@ export class IdentityRepository {
     this.values = this.getAll();
   }
 
+  get(identity: string): Identity {
+    return this.values.map(x => x[0]).find(x => x.identity === identity);
+  }
+
   getUnconfirmedIdentities() {
     return this.values.filter(x => x[1] === false).map(x => x[0]);
   }

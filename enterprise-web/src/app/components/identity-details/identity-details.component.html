@@ -16,10 +16,10 @@
     </div>
     <ul class="list-group col">
       <li *ngFor="let item of endorsements$ | async" type="button" class="list-group-item list-group-item-action">
-        {{item}} <button type="button" class="btn btn-danger" (click)="revokeEndorsement(item)">X</button>
+        {{item}} <button *ngIf="belongsToMe(identity)" type="button" class="btn btn-danger" (click)="revokeEndorsement(item)">X</button>
       </li>
     </ul>
-    <form [formGroup]="form" (ngSubmit)="endorse()" class="form row" novalidate>
+    <form *ngIf="belongsToMe(identity)" [formGroup]="form" (ngSubmit)="endorse()" class="form row" novalidate>
       <div class="col-12">
         <input type="text" class="form-control" formControlName="{{endorsedIdentityField}}" placeholder="Endorse identity">
       </div>

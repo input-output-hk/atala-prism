@@ -22,6 +22,11 @@ export class IdentityLedgerService {
     return this.http.get<string>(url);
   }
 
+  getAll(): Observable<string[]> {
+    const url = `${this.baseUrl}`;
+    return this.http.get<string[]>(url);
+  }
+
   exists(identity: string): Observable<any> {
     const url = `${this.baseUrl}/${identity}/exists`;
     return this.http.get<any>(url);

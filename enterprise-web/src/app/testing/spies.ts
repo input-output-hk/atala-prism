@@ -8,9 +8,10 @@ export const spies = {
     'renderErrors',
     'hasWrongValue',
     'getFieldError']),
-  identityLedgerService: jasmine.createSpyObj('IdentityLedgerService', ['claim']),
+  identityLedgerService: jasmine.createSpyObj('IdentityLedgerService', ['getAll', 'claim']),
   keyPairsService: jasmine.createSpyObj('KeyPairsService', ['create']),
   identityRepository: jasmine.createSpyObj('IdentityRepository', [
+    'get',
     'getUnconfirmedIdentities',
     'getConfirmedIdentities'])
 };

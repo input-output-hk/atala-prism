@@ -8,9 +8,14 @@
     <li *ngFor="let item of identityRepository.getUnconfirmedIdentities()" type="button" class="list-group-item list-group-item-action">
       {{item.identity}} - unconfirmed
     </li>
-    <li *ngFor="let item of identityRepository.getConfirmedIdentities()" (click)="select(item)" [ngClass]="{ 'confirmed': isConfirmed(item.identity), 'active': isSelected(item) }"
-        type="button" class="list-group-item list-group-item-action">
-      {{item.identity}}
+    <li *ngFor="let item of identities$ | async"
+        (click)="select(item)"
+        [class.my-identity]="belongsToMe(item)"
+        [class.confirmed]="isConfirmed(item)"
+        [class.active]="isSelected(item)"
+        type="button"
+        class="list-group-item list-group-item-action">
+      {{item}}
     </li>
 
     <form [formGroup]="form" (ngSubmit)="claim()" class="form row" novalidate>

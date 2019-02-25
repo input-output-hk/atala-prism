@@ -6,6 +6,7 @@ import { KeyPairsService } from '../../services/key-pairs.service';
 import { ErrorService } from '../../services/error.service';
 import { IdentityRepository } from '../../services/identity.repository';
 import { Identity } from '../../models/identity';
+import { Observable } from 'rxjs';
 
 const identityField = 'data.identity';
 
@@ -17,7 +18,8 @@ const identityField = 'data.identity';
 export class IdentityLedgerComponent implements OnInit, OnDestroy {
 
   form: FormGroup;
-  selectedIdentity: Identity;
+  identities$: Observable<string[]>;
+  selectedIdentity: string;
 
   private timer = null;
   private confirmed: string[] = [];
@@ -39,10 +41,12 @@ export class IdentityLedgerComponent implements OnInit, OnDestroy {
         this.checkAvailability(identity.identity, () => {}, () => {
           this.confirmed.push(identity.identity);
           this.identityRepository.confirm(identity);
+          this.identities$ = this.identityLedger.getAll();
         });
       });
     };
     this.timer = setInterval(confirmIdentities, 5000);
+    this.identities$ = this.identityLedger.getAll();
   }
 
   ngOnDestroy() {
@@ -99,11 +103,15 @@ export class IdentityLedgerComponent implements OnInit, OnDestroy {
     this.errorService.renderServerErrors(this.form, response);
   }
 
-  select(identity: Identity): void {
+  select(identity: string): void {
     this.selectedIdentity = identity;
   }
 
-  isSelected(identity: Identity): boolean {
+  isSelected(identity: string): boolean {
     return this.selectedIdentity === identity;
+  }
+
+  belongsToMe(identity: string): boolean {
+    return this.identityRepository.get(identity) != null;
   }
 }
