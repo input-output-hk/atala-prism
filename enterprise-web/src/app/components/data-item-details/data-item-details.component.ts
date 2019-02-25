@@ -1,7 +1,8 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
-import { ErrorService } from '../..//services/error.service';
+import { ErrorService } from '../../services/error.service';
+import { DataItemsService } from '../../services/data-items.service';
 
 @Component({
   selector: 'app-data-item-details',
@@ -15,7 +16,8 @@ export class DataItemDetailsComponent implements OnInit {
 
   constructor(
     public errorService: ErrorService,
-    private formBuilder: FormBuilder) { }
+    private formBuilder: FormBuilder,
+    private dataItems: DataItemsService) { }
 
   ngOnInit() {
   }
@@ -63,7 +65,9 @@ export class DataItemDetailsComponent implements OnInit {
       item[field.id] = this.form.controls[field.id].value;
     });
 
+    const id = 'item-id' // TODO: how to generate it?
     console.log('trying to create item');
     console.log(item);
+    this.dataItems.create(this._dataItem.path, id, item).subscribe(response => console.log(response));
   }
 }

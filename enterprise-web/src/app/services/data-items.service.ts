@@ -64,6 +64,8 @@ const httpOptions = {
   headers: new HttpHeaders({ 'Content-Type': 'application/json' })
 };
 
+const containerId = 'container';
+
 @Injectable()
 export class DataItemsService {
 
@@ -76,8 +78,26 @@ export class DataItemsService {
     return of(SCHEMA);
   }
 
-  create(path: string, item: any): Observable<any> {
+  create(path: string, id: string, item: any): Observable<any> {
     const url = `${this.baseUrl}/${path}`;
-    return this.http.post(url, item, httpOptions);
+    // TODO: fix me
+    const owner = {
+      key: '',
+      signature: ''
+    };
+    const body = {
+      containerId: containerId,
+      content: {
+        id: id,
+        owners: [owner],
+        witnesses: [],
+        data: item
+      },
+      destinationDescriptor: {
+        type: 'everyone',
+        obj: {}
+      }
+    };
+    return this.http.post(url, body, httpOptions);
   }
 }
