@@ -18,6 +18,8 @@ import { ErrorService } from './services/error.service';
 import { NotificationService } from './services/notification.service';
 import { IdentityRepository } from './services/identity.repository';
 import { IdentityDetailsComponent } from './components/identity-details/identity-details.component';
+import { DataItemsComponent } from './components/data-items/data-items.component';
+import { DataItemDetailsComponent } from './components/data-item-details/data-item-details.component';
 
 @NgModule({
   declarations: [
@@ -26,7 +28,9 @@ import { IdentityDetailsComponent } from './components/identity-details/identity
     FooterComponent,
     HomeComponent,
     IdentityLedgerComponent,
-    IdentityDetailsComponent
+    IdentityDetailsComponent,
+    DataItemsComponent,
+    DataItemDetailsComponent
   ],
   imports: [
     BrowserModule,
