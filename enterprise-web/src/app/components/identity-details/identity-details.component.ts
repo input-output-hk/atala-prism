@@ -4,9 +4,9 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { IdentityLedgerService } from '../../services/identity-ledger.service';
 import { ErrorService } from '../../services/error.service';
 import { IdentityRepository } from '../../services/identity.repository';
-import { Identity } from '../../models/identity';
 
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-identity-details',
@@ -18,6 +18,7 @@ export class IdentityDetailsComponent implements OnInit {
   private _identity: string;
   endorsers$: Observable<string[]>;
   endorsements$: Observable<string[]>;
+  publicKey$: Observable<string>;
 
   form: FormGroup;
   endorsedIdentityField = 'data.endorsedIdentity';
@@ -43,6 +44,10 @@ export class IdentityDetailsComponent implements OnInit {
     this._identity = _identity;
     this.endorsers$ = this.identityLedger.getEndorsements(this.identity);
     this.endorsements$ = this.identityLedger.getEndorsers(this.identity);
+    this.publicKey$ = this.identityLedger.getKeys(this.identity)
+      .pipe(
+        map(x => x[0])
+      );
   }
 
   get identity(): string {
