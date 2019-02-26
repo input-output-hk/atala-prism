@@ -3,9 +3,6 @@ load("//scala:rules.bzl", "scala_library", "scala_test")
 scala_library(
     name = "ledger",
     deps = [
-        "//3rdparty/jvm/com/typesafe/akka:akka_actor",
-        "//3rdparty/jvm/com/github/pureconfig",
-        "//3rdparty/jvm/com/h2database:h2",
         "@codecs//src/io/iohk/codecs",
         "@crypto//src/io/iohk/crypto",
         "@crypto//src/io/iohk/crypto/error",
@@ -14,25 +11,32 @@ scala_library(
         "//main/io/iohk/cef/query",
         "//main/io/iohk/cef/utils/mv",
     ],
+    external = [
+      "com.typesafe.akka:akka-actor%",
+      "com.github.pureconfig:pureconfig%",
+      "com.h2database:h2",
+    ],
+    exports = [
+      "@codecs//src/io/iohk/codecs",
+      "@crypto//src/io/iohk/crypto",
+      "@crypto//src/io/iohk/crypto/error",
+    ]
 )
 
 scala_test(
     name = "tests",
     deps = [
         "ledger",
-        "//3rdparty/jvm/org/mockito:mockito_core",
-        "//3rdparty/jvm/com/github/pureconfig",
-        "//3rdparty/jvm/org/scalacheck",
-        "//3rdparty/jvm/org/scalatest",
-        "//3rdparty/jvm/com/h2database:h2",
         "//main/io/iohk/cef/testlib",
         "//main/io/iohk/cef/utils",
         "//main/io/iohk/cef/utils/mv",
-        "@codecs//src/io/iohk/codecs",
-        "@crypto//src/io/iohk/crypto",
-        "@crypto//src/io/iohk/crypto/error",
         "//main/io/iohk/cef/error",
         "//main/io/iohk/cef/query",
         "@crypto//src/io/iohk/crypto/certificates/test/data",
+    ],
+    external = [
+      "org.mockito:mockito-core",
+      "org.scalacheck:scalacheck%",
+      "org.scalatest:scalatest%",
     ],
 )

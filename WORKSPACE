@@ -28,17 +28,17 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 git_repository(
     name = "codecs",
     remote = "https://github.com/input-output-hk/decco.git",
-    commit = "3e486abeac552fb6fcc20a3a94effb0f8ca1d419"
+    commit = "3232f341ae0695d576ecc20746dffccbb7f120b1"
 )
 
 git_repository(
     name = "crypto",
     remote = "https://github.com/input-output-hk/multicrypto.git",
-    commit = "90c2e4001d4c44b9b87acae1a218d5c9093d8703"
+    commit = "d957f4f43e8bfbf767805c1ceda6b8035cb22c33"
 )
 
 git_repository(
     name = "network",
     remote = "https://github.com/input-output-hk/scalanet.git",
-    commit = "d522eb97a7a167fc07dcbaccc6cf1b86f114724f"
+    commit = "2417be602ce76cc420f5f8acf8b71ac4c902216a"
 )
