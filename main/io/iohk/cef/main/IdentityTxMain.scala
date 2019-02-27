@@ -17,12 +17,17 @@ import io.iohk.cef.ledger.identity.{IdentityData, IdentityTransaction}
 import io.iohk.cef.ledger.storage.LedgerStorage
 import io.iohk.cef.ledger.storage.mv.{MVLedgerStateStorage, MVLedgerStorage}
 import io.iohk.cef.ledger.query.identity.{IdentityQuery, IdentityQueryEngine, IdentityQueryService}
+import monix.reactive.MulticastStrategy
+import monix.reactive.subjects.ConcurrentSubject
+import org.slf4j.LoggerFactory
 import pureconfig.generic.auto._
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 
 object IdentityTxMain extends App {
+
+  val logger = LoggerFactory.getLogger(this.getClass)
 
   val typesafeConfig = ConfigFactory.defaultReference()
   val cefConfig: CefConfig = pureconfig.loadConfigOrThrow[CefConfig](typesafeConfig)
@@ -47,6 +52,15 @@ object IdentityTxMain extends App {
   val ledgerStoragePath = Files.createTempFile(s"ledger-storage-${ledgerConfig.id}", "").toAbsolutePath
   val ledgerStorage: LedgerStorage[S, T] = new MVLedgerStorage[S, T](ledgerConfig.id, ledgerStoragePath)
 
+  import monix.execution.Scheduler.Implicits.global
+  val newBlockChannel = ConcurrentSubject[Block[S, T]](MulticastStrategy.publish)
+
+  newBlockChannel
+    .filter(_.transactions.nonEmpty)
+    .foreach { newBlock =>
+      logger.info(s"New block found, transactions = ${newBlock.transactions.size}")
+    }
+
   val identityQueryEngine = new IdentityQueryEngine(ledgerStateStorage)
   val identityQueryService = new IdentityQueryService(identityQueryEngine)
 
@@ -55,7 +69,8 @@ object IdentityTxMain extends App {
       cefConfig,
       ledgerStateStorage,
       ledgerStorage,
-      identityQueryService
+      identityQueryService,
+      newBlockChannel
     )
   val identityTransactionService = new IdentityTransactionService(nodeTransactionService)
   val serviceApi = new IdentitiesController(identityTransactionService)

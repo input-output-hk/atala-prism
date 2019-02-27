@@ -13,6 +13,7 @@ import io.iohk.cef.transactionservice.{NodeTransactionService, NodeTransactionSe
 import io.iohk.codecs.nio._
 import io.iohk.codecs.nio.auto._
 import io.iohk.network.{Envelope, Network}
+import monix.reactive.subjects.ConcurrentSubject
 import org.slf4j.Logger
 
 import scala.concurrent.ExecutionContext
@@ -27,7 +28,8 @@ private[config] class TransactionServiceBuilder(
   def cefTransactionServiceChannel[State, Tx <: Transaction[State], Q <: LedgerQuery[State]](
       ledgerStateStorage: LedgerStateStorage[State],
       ledgerStorage: LedgerStorage[State, Tx],
-      queryService: LedgerQueryService[State, Q]
+      queryService: LedgerQueryService[State, Q],
+      newBlockChannel: ConcurrentSubject[Block[State, Tx], Block[State, Tx]]
   )(
       implicit stateCodec: NioCodec[State],
       stateTypeTag: TypeTag[State],
@@ -37,7 +39,7 @@ private[config] class TransactionServiceBuilder(
   ): NodeTransactionService[State, Tx, Q] = {
 
     new NodeTransactionServiceImpl[State, Tx, Q](
-      consensusMap[State, Tx, Q](ledgerStateStorage, ledgerStorage, queryService),
+      consensusMap[State, Tx, Q](ledgerStateStorage, ledgerStorage, queryService, newBlockChannel),
       txNetwork[State, Tx],
       blockNetwork[State, Tx],
       cefConfig.networkConfig.peerConfig.nodeId
@@ -47,7 +49,8 @@ private[config] class TransactionServiceBuilder(
   private def consensusMap[State, Tx <: Transaction[State], Q <: LedgerQuery[State]](
       ledgerStateStorage: LedgerStateStorage[State],
       ledgerStorage: LedgerStorage[State, Tx],
-      queryService: LedgerQueryService[State, Q]
+      queryService: LedgerQueryService[State, Q],
+      newBlockChannel: ConcurrentSubject[Block[State, Tx], Block[State, Tx]]
   )(
       implicit stateCodec: NioCodec[State],
       stateTypeTag: TypeTag[State],
@@ -86,6 +89,7 @@ private[config] class TransactionServiceBuilder(
     val _ = new BlockCreator(
       txPool,
       consensus,
+      newBlockChannel,
       cefConfig.ledgerConfig.blockCreatorInitialDelay,
       cefConfig.ledgerConfig.blockCreatorInterval
     )

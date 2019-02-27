@@ -10,9 +10,13 @@ import org.slf4j.LoggerFactory
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.implicitConversions
+
+import monix.reactive.subjects.ConcurrentSubject
+
 class BlockCreator[State, Tx <: Transaction[State]](
     transactionPoolInterface: TransactionPoolInterface[State, Tx],
     consensus: Consensus[State, Tx],
+    newBlockChannel: ConcurrentSubject[Block[State, Tx], Block[State, Tx]],
     initialDelay: FiniteDuration,
     interval: FiniteDuration
 )(implicit executionContext: ExecutionContext) {
@@ -47,7 +51,9 @@ class BlockCreator[State, Tx <: Transaction[State]](
       case Left(error) =>
         logger.error(s"Consensus could not process the block. Cause ${error}")
         Left[ApplicationError, Unit](error)
-      case Right(()) => Right[ApplicationError, Unit](())
+      case Right(()) =>
+        val _ = newBlockChannel.onNext(block)
+        Right[ApplicationError, Unit](())
     }
   }
 

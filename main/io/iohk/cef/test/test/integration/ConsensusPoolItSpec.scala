@@ -1,4 +1,5 @@
 package io.iohk.cef.integration
+
 import io.iohk.cef.ledger.LedgerId
 import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.consensus.raft._
@@ -18,6 +19,8 @@ import io.iohk.codecs.nio.auto._
 import io.iohk.codecs.nio.auto._
 import io.iohk.cef.consensus.raft.testlib.{InMemoryPersistentStorage, RealRaftNodeFixture}
 import io.iohk.cef.transactionservice.raft.RaftConsensusInterface
+import monix.reactive.MulticastStrategy
+import monix.reactive.subjects.ConcurrentSubject
 
 class ConsensusPoolItSpec extends FlatSpecLike with MockitoSugar with MustMatchers with Eventually {
 
@@ -62,10 +65,15 @@ class ConsensusPoolItSpec extends FlatSpecLike with MockitoSugar with MustMatche
     val consensus: Consensus[String, DummyTransaction] =
       new RaftConsensusInterface(ledgerId, new RaftConsensus(t1.raftNode))
 
+    import monix.execution.Scheduler.Implicits.global
+
+    val newBlockChannel = ConcurrentSubject[Block[String, DummyTransaction]](MulticastStrategy.publish)
+
     val blockCreator =
       new BlockCreator[String, DummyTransaction](
         txPoolFutureInterface,
         consensus,
+        newBlockChannel,
         0 seconds,
         1 seconds
       )

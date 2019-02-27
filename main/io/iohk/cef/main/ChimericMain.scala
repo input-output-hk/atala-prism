@@ -16,6 +16,8 @@ import io.iohk.cef.ledger.chimeric.{ChimericStateResult, ChimericTx}
 import io.iohk.cef.ledger.storage.LedgerStorage
 import io.iohk.cef.ledger.storage.mv.{MVLedgerStateStorage, MVLedgerStorage}
 import io.iohk.cef.ledger.query.chimeric.{ChimericQueryEngine, ChimericQueryService}
+import monix.reactive.MulticastStrategy
+import monix.reactive.subjects.ConcurrentSubject
 import pureconfig.generic.auto._
 
 import scala.concurrent.ExecutionContext
@@ -50,13 +52,25 @@ object ChimericMain extends App {
 
   val chimericQueryEngine = new ChimericQueryEngine(chimericLedgerStateStorage)
   val chimericQueryService = new ChimericQueryService(chimericQueryEngine)
+
+  import monix.execution.Scheduler.Implicits.global
+  val newBlockChannel = ConcurrentSubject[Block[S, T]](MulticastStrategy.publish)
+
   val chimericNodeService =
     CefServices.cefTransactionServiceChannel(
       cefConfig,
       chimericLedgerStateStorage,
       chimericLedgerStorage,
-      chimericQueryService
+      chimericQueryService,
+      newBlockChannel
     )
+
+  newBlockChannel
+    .filter(_.transactions.nonEmpty)
+    .foreach { newBlock =>
+      println(s"New block found, transactions = ${newBlock.transactions.size}")
+    }
+
   val chimericService = new ChimericTransactionService(chimericNodeService)
   val chimericServiceApi = new ChimericTransactionsController(chimericService)
 
