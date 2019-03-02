@@ -6,7 +6,6 @@ import akka.testkit.TestKit
 import akka.util.Timeout
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
 import io.iohk.cef.consensus.Consensus
-import io.iohk.cef.transactionservice.{NodeTransactionService, NodeTransactionServiceImpl}
 import io.iohk.cef.frontend.controllers.ChimericTransactionsController
 import io.iohk.cef.frontend.controllers.common.Codecs
 import io.iohk.cef.frontend.models.{CreateChimericTransactionRequest, CreateNonSignableChimericTransactionFragment}
@@ -16,8 +15,16 @@ import io.iohk.cef.ledger.query.LedgerQueryService
 import io.iohk.cef.ledger.query.chimeric.ChimericQuery
 import io.iohk.cef.ledger.storage.LedgerStateStorage
 import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
-import io.iohk.network.{Envelope, MessageStream, Network, NodeId}
 import io.iohk.cef.transactionpool.TransactionPoolInterface
+import io.iohk.cef.transactionservice.{
+  LedgerServices,
+  NodeTransactionService,
+  NodeTransactionServiceImpl,
+  TransactionChannel
+}
+import io.iohk.codecs.nio._
+import io.iohk.network.{Envelope, MessageStream, Network, NodeId}
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatest._
 import org.scalatest.concurrent.ScalaFutures
@@ -26,8 +33,6 @@ import play.api.libs.json.Json
 
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
-import io.iohk.codecs.nio._
-import org.mockito.ArgumentMatchers.any
 
 class ChimericTransactionNodeTransactionServiceItSpec
     extends FlatSpec
@@ -56,12 +61,15 @@ class ChimericTransactionNodeTransactionServiceItSpec
     val ledgerStateStorage = mock[LedgerStateStorageType[TransactionStateType]]
     implicit val transactionStateTypeEncDec = mock[NioCodec[TransactionStateType]]
 
+    val transactionChannelMock = mock[TransactionChannel[TransactionType]]
+
     val txPoolInterface =
       TransactionPoolInterface[TransactionStateType, TransactionType](
         generateHeader,
         10000,
         ledgerStateStorage,
-        10.minutes
+        10.minutes,
+        transactionChannelMock
       )
 
     val consensus = mock[ConsensusType]
@@ -81,7 +89,7 @@ class ChimericTransactionNodeTransactionServiceItSpec
     when(mockTxMessageStream.foreach(any())).thenReturn(Future.successful(()))
     when(mockBlockMessageStream.foreach(any())).thenReturn(Future.successful(()))
 
-    val consensusMap = Map("1" -> (txPoolInterface, consensus, queryService))
+    val consensusMap = Map("1" -> LedgerServices(transactionChannelMock, consensus, queryService))
 
     val me = NodeId("3112")
 

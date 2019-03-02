@@ -1,11 +1,12 @@
 package io.iohk.cef.transactionservice
-import io.iohk.cef.ledger.LedgerId
+
 import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.ledger.query.LedgerQueryService
-import io.iohk.cef.ledger.{Block, BlockHeader}
-import io.iohk.network._
+import io.iohk.cef.ledger.{Block, BlockHeader, LedgerId}
 import io.iohk.cef.test.{DummyLedgerQuery, DummyTransaction}
-import io.iohk.cef.transactionpool.TransactionPoolInterface
+import io.iohk.codecs.nio._
+import io.iohk.network._
+import monix.execution.Ack
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar
@@ -13,15 +14,11 @@ import org.scalatest.{AsyncFlatSpec, MustMatchers}
 
 import scala.collection.immutable
 import scala.concurrent.Future
-import io.iohk.codecs.nio._
 
 class NodeTransactionServiceSpec extends AsyncFlatSpec with MustMatchers with MockitoSugar {
 
   def mockConsensus: Consensus[String, DummyTransaction] =
     mock[Consensus[String, DummyTransaction]]
-
-  def mockTxPoolFutureInterface: TransactionPoolInterface[String, DummyTransaction] =
-    mock[TransactionPoolInterface[String, DummyTransaction]]
 
   def mockQueryService: LedgerQueryService[String, DummyLedgerQuery] =
     mock[LedgerQueryService[String, DummyLedgerQuery]]
@@ -38,11 +35,14 @@ class NodeTransactionServiceSpec extends AsyncFlatSpec with MustMatchers with Mo
   def mockBlockSerializable: NioCodec[Envelope[BlockType]] =
     mock[NioCodec[Envelope[BlockType]]]
 
+  def mockTransactionChannel: TransactionChannel[Tx] = mock[TransactionChannel[Tx]]
+
   private def setupTest(
       ledgerId: LedgerId,
       me: NodeId = NodeId("abcd")
   )(implicit txSerializable: NioCodec[Envelope[Tx]], blockSerializable: NioCodec[Envelope[Block[State, Tx]]]) = {
-    val consensusMap = Map(ledgerId -> (mockTxPoolFutureInterface, mockConsensus, mockQueryService))
+    val ledgerServices = LedgerServices(mockTransactionChannel, mockConsensus, mockQueryService)
+    val consensusMap = Map(ledgerId -> ledgerServices)
     val txDM = mockNetwork[Envelope[DummyTransaction]]
     val blockDM = mockNetwork[Envelope[Block[String, DummyTransaction]]]
     val txMessageStream = mock[MessageStream[Envelope[DummyTransaction]]]
@@ -73,13 +73,13 @@ class NodeTransactionServiceSpec extends AsyncFlatSpec with MustMatchers with Mo
     implicit val bs1 = mockNioCodec
     implicit val bs2 = mockBlockSerializable
     val (transactionservice, consensusMap, txDM, _) = setupTest(ledgerId)
-    when(consensusMap(ledgerId)._1.processTransaction(testEnvelope.content))
-      .thenReturn(Right(()))
+    when(consensusMap(ledgerId).transactionChannel.onNext(testEnvelope.content))
+      .thenReturn(Ack.Continue)
     transactionservice
       .receiveTransaction(testEnvelope)
       .map(r => {
         verify(txDM, times(1)).disseminateMessage(testEnvelope)
-        verify(consensusMap(ledgerId)._1, times(1)).processTransaction(testEnvelope.content)
+        verify(consensusMap(ledgerId).transactionChannel, times(1)).onNext(testEnvelope.content)
         r mustBe Right(())
       })
   }
@@ -92,13 +92,13 @@ class NodeTransactionServiceSpec extends AsyncFlatSpec with MustMatchers with Mo
     implicit val bs1 = mockNioCodec
     implicit val bs2 = mockBlockSerializable
     val (transactionservice, consensusMap, _, blockDM) = setupTest(ledgerId)
-    when(consensusMap(ledgerId)._2.process(testEnvelope.content))
+    when(consensusMap(ledgerId).consensus.process(testEnvelope.content))
       .thenReturn(Future.successful(Right(())))
     transactionservice
       .receiveBlock(testEnvelope)
       .map(r => {
         verify(blockDM, times(1)).disseminateMessage(testEnvelope)
-        verify(consensusMap(ledgerId)._2, times(1)).process(testEnvelope.content)
+        verify(consensusMap(ledgerId).consensus, times(1)).process(testEnvelope.content)
         r mustBe Right(())
       })
   }
@@ -114,7 +114,7 @@ class NodeTransactionServiceSpec extends AsyncFlatSpec with MustMatchers with Mo
       rcv <- transactionservice.receiveBlock(testBlockEnvelope)
     } yield {
       verify(blockDM, times(1)).disseminateMessage(testBlockEnvelope)
-      verify(consensusMap(ledgerId)._2, times(0)).process(testBlockEnvelope.content)
+      verify(consensusMap(ledgerId).consensus, times(0)).process(testBlockEnvelope.content)
       rcv mustBe Right(())
     }
   }
@@ -130,7 +130,7 @@ class NodeTransactionServiceSpec extends AsyncFlatSpec with MustMatchers with Mo
       rcv <- transactionservice.receiveTransaction(testTxEnvelope)
     } yield {
       verify(txDM, times(1)).disseminateMessage(testTxEnvelope)
-      verify(consensusMap(ledgerId)._1, times(0)).processTransaction(testTxEnvelope.content)
+      verify(consensusMap(ledgerId).transactionChannel, times(0)).onNext(testTxEnvelope.content)
       rcv mustBe Right(())
     }
   }

@@ -1,20 +1,25 @@
 package io.iohk.cef.transactionservice
-import io.iohk.cef.ledger.LedgerId
-import io.iohk.cef.consensus.Consensus
+
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.ledger.query.{LedgerQuery, LedgerQueryService}
-import io.iohk.cef.ledger.{Block, Transaction}
+import io.iohk.cef.ledger.{Block, LedgerId, Transaction}
+import io.iohk.codecs.nio._
 import io.iohk.network.{Envelope, Network, NodeId}
-import io.iohk.cef.transactionpool.TransactionPoolInterface
 
 import scala.concurrent.{ExecutionContext, Future}
-import io.iohk.codecs.nio._
 
+/**
+  * A NodeTransactionService orchestrates the interaction between the frontend, network, transaction pool and the consensus.
+  * Important note: Currently it is assumed that the network is fully connected. If this assumption does not hold,
+  * the NodeTransactionService's dissemination will not reach all nodes.
+  *
+  * @param consensusMap The ledgers and their respective Consensus that this node supports.
+  * @param txNetwork Network in charge of disseminating transactions
+  * @param blockNetwork Network in charge of disseminating blocks
+  * @param me information about "me" (the node this transactionservice belongs to)
+  */
 class NodeTransactionServiceImpl[State, Tx <: Transaction[State], Q <: LedgerQuery[State]](
-    consensusMap: Map[
-      LedgerId,
-      (TransactionPoolInterface[State, Tx], Consensus[State, Tx], LedgerQueryService[State, Q])
-    ],
+    consensusMap: LedgerServicesMap[State, Tx, Q],
     txNetwork: Network[Envelope[Tx]],
     blockNetwork: Network[Envelope[Block[State, Tx]]],
     me: NodeId
@@ -25,8 +30,11 @@ class NodeTransactionServiceImpl[State, Tx <: Transaction[State], Q <: LedgerQue
 ) extends NodeTransactionService[State, Tx, Q] {
 
   blockNetwork.messageStream.foreach(blEnvelope => processBlock(blEnvelope, Future.successful(Right(()))))
+
+  // receives tx from other nodes, they replicate the tx pool
   txNetwork.messageStream.foreach(txEnvelope => processTransaction(txEnvelope, Future.successful(Right(()))))
 
+  // receives tx from users (like a UI)
   override def receiveTransaction(txEnvelope: Envelope[Tx]): Future[Either[ApplicationError, Unit]] = {
     require(supportedLedgerIds.contains(txEnvelope.containerId))
     processTransaction(txEnvelope, disseminate(txEnvelope, txNetwork))
@@ -41,7 +49,7 @@ class NodeTransactionServiceImpl[State, Tx <: Transaction[State], Q <: LedgerQue
 
   override def getQueryService(ledgerId: LedgerId): LedgerQueryService[State, Q] = {
     require(supportedLedgerIds.contains(ledgerId))
-    consensusMap(ledgerId)._3
+    consensusMap(ledgerId).ledgerQueryService
   }
 
   private def processTransaction(
@@ -49,8 +57,9 @@ class NodeTransactionServiceImpl[State, Tx <: Transaction[State], Q <: LedgerQue
       networkDissemination: Future[Either[ApplicationError, Unit]]
   ) = {
     process(txEnvelope, networkDissemination) { env =>
-      val txPoolService = consensusMap(env.containerId)._1
-      Future(txPoolService.processTransaction(txEnvelope.content))
+      val channel = consensusMap(env.containerId).transactionChannel
+      val _ = channel.onNext(txEnvelope.content)
+      Future.successful(Right(()))
     }
   }
 
@@ -58,7 +67,10 @@ class NodeTransactionServiceImpl[State, Tx <: Transaction[State], Q <: LedgerQue
       blEnvelope: Envelope[Block[State, Tx]],
       networkDissemination: Future[Either[ApplicationError, Unit]]
   ) = {
-    process(blEnvelope, networkDissemination)(env => consensusMap(env.containerId)._2.process(env.content))
+    process(blEnvelope, networkDissemination) { env =>
+      consensusMap(env.containerId).consensus
+        .process(env.content)
+    }
   }
 
   private def disseminate[A](

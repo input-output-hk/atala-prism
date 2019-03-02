@@ -6,11 +6,15 @@ import io.iohk.cef.ledger.storage.LedgerStateStorage
 import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
 import io.iohk.cef.test.{DummyLedgerQuery, DummyTransaction}
 import io.iohk.cef.transactionpool.TransactionPoolInterface
-import io.iohk.cef.transactionservice.NodeTransactionServiceImpl
+import io.iohk.cef.transactionservice.{LedgerServices, NodeTransactionServiceImpl}
 import io.iohk.codecs.nio.auto._
 import io.iohk.network._
+import monix.reactive.MulticastStrategy
+import monix.reactive.subjects.ConcurrentSubject
 import org.mockito.ArgumentMatchers
 import org.mockito.Mockito._
+import org.scalatest.EitherValues._
+import org.scalatest.concurrent.Eventually._
 import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{BeforeAndAfterAll, FlatSpecLike, MustMatchers}
 
@@ -27,19 +31,24 @@ class TransactionServicePooltSpec extends FlatSpecLike with MustMatchers with Be
   it should "process a transaction" in {
     implicit val executionContext = ExecutionContext.global
     val ledgerStateStorage = mockLedgerStateStorage
+
+    val transactionChannel =
+      ConcurrentSubject[DummyTransaction](MulticastStrategy.publish)(monix.execution.Scheduler.global)
     val generateHeader: Seq[Transaction[String]] => BlockHeader = _ => BlockHeader()
     val transactionPoolFutureInterface =
-      TransactionPoolInterface[String, DummyTransaction](
+      TransactionPoolInterface.apply[String, DummyTransaction](
         generateHeader,
         3,
         ledgerStateStorage,
-        1 minute
+        1 minute,
+        transactionChannel
       )
+
     val consensus = mock[Consensus[String, DummyTransaction]]
     val txNetwork = mock[Network[Envelope[DummyTransaction]]]
     val blockNetwork = mock[Network[Envelope[Block[String, DummyTransaction]]]]
     val queryService = mock[LedgerQueryService[String, DummyLedgerQuery]]
-    val consensusMap = Map("1" -> (transactionPoolFutureInterface, consensus, queryService))
+    val consensusMap = Map("1" -> LedgerServices(transactionChannel, consensus, queryService))
     val me = NodeId("3112")
     val mockTxMessageStream = mock[MessageStream[Envelope[DummyTransaction]]]
     val mockBlockMessageStream =
@@ -48,15 +57,17 @@ class TransactionServicePooltSpec extends FlatSpecLike with MustMatchers with Be
     when(blockNetwork.messageStream).thenReturn(mockBlockMessageStream)
     when(mockTxMessageStream.foreach(ArgumentMatchers.any())).thenReturn(Future.successful(()))
     when(mockBlockMessageStream.foreach(ArgumentMatchers.any())).thenReturn(Future.successful(()))
+
     val transactionservice = new NodeTransactionServiceImpl(consensusMap, txNetwork, blockNetwork, me)
     val testTransaction = DummyTransaction(5)
     val envelope = Envelope(testTransaction, "1", Everyone)
     val result = Await.result(transactionservice.receiveTransaction(envelope), 10 seconds)
     result mustBe Right(())
-    val resultBlock = transactionPoolFutureInterface.generateBlock()
-    resultBlock mustBe Right(Block[String, DummyTransaction](BlockHeader(), Queue(DummyTransaction(5))))
-    resultBlock.map {
-      _.transactions mustBe Seq(testTransaction)
+
+    eventually {
+      val resultBlock = transactionPoolFutureInterface.generateBlock().right.value
+      resultBlock mustBe Block[String, DummyTransaction](BlockHeader(), Queue(DummyTransaction(5)))
+      resultBlock.transactions mustBe Seq(testTransaction)
     }
   }
 }
