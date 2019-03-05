@@ -47,7 +47,8 @@ class TransactionServicePooltSpec extends FlatSpecLike with MustMatchers with Be
         3,
         ledgerStateStorage,
         1 minute,
-        proposedTransactionsSubject
+        proposedTransactionsSubject,
+        appliedBlocksSubject
       )
 
     val consensus = mock[Consensus[String, DummyTransaction]]

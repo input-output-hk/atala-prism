@@ -80,7 +80,8 @@ private[config] class TransactionServiceBuilder(cefConfig: CefConfig, logger: Lo
       ledgerConfig.maxBlockSize,
       ledgerStateStorage,
       ledgerConfig.defaultTransactionExpiration,
-      proposedTransactionsSubject
+      proposedTransactionsSubject,
+      appliedBlocksSubject
     )
 
     val raftNode = raft.raftNode(
@@ -95,19 +96,19 @@ private[config] class TransactionServiceBuilder(cefConfig: CefConfig, logger: Lo
 
     val raftConsensus: raft.RaftConsensus[Block[State, Tx]] = new raft.RaftConsensus(raftNode)
 
-    val consensus = new RaftConsensusInterface[State, Tx](
-      cefConfig.ledgerConfig.id,
-      raftConsensus,
-      proposedBlocksObservable = proposedBlocksSubject,
-      appliedBlocksObserver = appliedBlocksSubject
-    )
-
-    val _ = new BlockCreator(
-      txPool,
-      consensus,
-      proposedBlocksSubject,
-      cefConfig.ledgerConfig.blockCreatorInitialDelay,
-      cefConfig.ledgerConfig.blockCreatorInterval
+    val _ = (
+      new RaftConsensusInterface[State, Tx](
+        cefConfig.ledgerConfig.id,
+        raftConsensus,
+        proposedBlocksObservable = proposedBlocksSubject,
+        appliedBlocksObserver = appliedBlocksSubject
+      ),
+      new BlockCreator(
+        txPool,
+        proposedBlocksSubject,
+        cefConfig.ledgerConfig.blockCreatorInitialDelay,
+        cefConfig.ledgerConfig.blockCreatorInterval
+      )
     )
 
     val services = new LedgerServices(
@@ -133,10 +134,6 @@ private[config] class TransactionServiceBuilder(cefConfig: CefConfig, logger: Lo
       case Left(error) =>
         logger.error(s"Could not apply block $block to the ledger with id ${ledger.ledgerId}. Error: $error")
       case Right(()) =>
-        val result = txPool.removeBlockTransactions(block)
-        if (result.isLeft) {
-          logger.error(s"Could not apply block $block to the ledger with id ${ledger.ledgerId}. Error: $result")
-        }
     }
   }
 

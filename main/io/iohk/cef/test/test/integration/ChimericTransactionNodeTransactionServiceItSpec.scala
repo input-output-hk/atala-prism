@@ -66,7 +66,8 @@ class ChimericTransactionNodeTransactionServiceItSpec
         10000,
         ledgerStateStorage,
         10.minutes,
-        proposedTransactionsSubjectMock
+        proposedTransactionsSubjectMock,
+        appliedBlocksSubjectMock
       )
 
     val consensus = mock[ConsensusType]

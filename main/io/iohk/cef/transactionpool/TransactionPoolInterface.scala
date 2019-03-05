@@ -3,10 +3,9 @@ package io.iohk.cef.transactionpool
 import java.time.Clock
 
 import io.iohk.cef.error.ApplicationError
+import io.iohk.cef.ledger._
 import io.iohk.cef.ledger.storage.LedgerStateStorage
-import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
 import io.iohk.codecs.nio.NioCodec
-import monix.reactive.subjects.ConcurrentSubject
 
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration.Duration
@@ -33,13 +32,18 @@ class TransactionPoolInterface[State: NioCodec: TypeTag, Tx <: Transaction[State
     ledgerStateStorage: LedgerStateStorage[State],
     defaultTransactionExpiration: Duration,
     timedQueueConstructor: () => TimedQueue[Tx],
-    proposedTransactionsChannel: ConcurrentSubject[Tx, Tx]
+    proposedTransactionsObservable: ProposedTransactionsObservable[Tx],
+    appliedBlocksObservable: AppliedBlocksObservable[State, Tx]
 )(implicit executionContext: ExecutionContext) {
 
   import monix.execution.Scheduler.Implicits.global
 
-  val _ = proposedTransactionsChannel.foreach { tx =>
+  val _ = proposedTransactionsObservable.foreach { tx =>
     processTransaction(tx)
+  }
+
+  appliedBlocksObservable.foreach { appliedBlock =>
+    removeBlockTransactions(appliedBlock)
   }
 
   private type BlockType = Block[State, Tx]
@@ -73,12 +77,11 @@ class TransactionPoolInterface[State: NioCodec: TypeTag, Tx <: Transaction[State
     }
   }
 
-  def removeBlockTransactions(block: Block[State, Tx]): Either[ApplicationError, Unit] = {
+  private def removeBlockTransactions(block: Block[State, Tx]): Unit = {
     atomic { implicit txn =>
       val pool = mutableTransactionPool.single()
       val newPool = pool.removeBlockTransactions(block)
       mutableTransactionPool() = newPool
-      Right(())
     }
   }
 }
@@ -90,7 +93,8 @@ object TransactionPoolInterface {
       ledgerStateStorage: LedgerStateStorage[State],
       defaultTransactionExpiration: Duration,
       clock: Clock,
-      proposedTransactionsChannel: ConcurrentSubject[Tx, Tx]
+      proposedTransactionsObservable: ProposedTransactionsObservable[Tx],
+      appliedBlocksObservable: AppliedBlocksObservable[State, Tx]
   )(implicit executionContext: ExecutionContext): TransactionPoolInterface[State, Tx] = {
     new TransactionPoolInterface(
       headerGenerator,
@@ -98,7 +102,8 @@ object TransactionPoolInterface {
       ledgerStateStorage,
       defaultTransactionExpiration,
       () => new TimedQueue[Tx](clock),
-      proposedTransactionsChannel
+      proposedTransactionsObservable,
+      appliedBlocksObservable
     )
   }
 
@@ -107,7 +112,8 @@ object TransactionPoolInterface {
       maxBlockSize: Int,
       ledgerStateStorage: LedgerStateStorage[State],
       defaultTransactionExpiration: Duration,
-      proposedTransactionsChannel: ConcurrentSubject[Tx, Tx]
+      proposedTransactionsObservable: ProposedTransactionsObservable[Tx],
+      appliedBlocksObservable: AppliedBlocksObservable[State, Tx]
   )(implicit executionContext: ExecutionContext): TransactionPoolInterface[State, Tx] = {
     new TransactionPoolInterface(
       headerGenerator,
@@ -115,7 +121,8 @@ object TransactionPoolInterface {
       ledgerStateStorage,
       defaultTransactionExpiration,
       () => new TimedQueue[Tx](),
-      proposedTransactionsChannel
+      proposedTransactionsObservable,
+      appliedBlocksObservable
     )
   }
 }

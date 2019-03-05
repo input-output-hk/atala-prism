@@ -2,7 +2,6 @@ package io.iohk.cef.transactionpool
 
 import java.util.concurrent.TimeUnit
 
-import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.ledger.{ProposedBlocksObserver, Transaction}
 import monix.execution.Scheduler.{global => scheduler}
@@ -14,7 +13,6 @@ import scala.language.implicitConversions
 
 class BlockCreator[State, Tx <: Transaction[State]](
     transactionPoolInterface: TransactionPoolInterface[State, Tx],
-    consensus: Consensus[State, Tx],
     proposedBlocksObserver: ProposedBlocksObserver[State, Tx],
     initialDelay: FiniteDuration,
     interval: FiniteDuration

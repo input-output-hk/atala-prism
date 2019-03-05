@@ -40,11 +40,9 @@ class ConsensusPoolItSpec extends FlatSpecLike with MockitoSugar with MustMatche
 
     import monix.execution.Scheduler.Implicits.global
 
-    val proposedTransactionsSubjet =
-      ConcurrentSubject[DummyTransaction](MulticastStrategy.publish)(monix.execution.Scheduler.global)
-
     val proposedTransactionsSubject =
       ConcurrentSubject[DummyTransaction](MulticastStrategy.publish)(monix.execution.Scheduler.global)
+
     val proposedBlocksSubject =
       ConcurrentSubject[BlockType](MulticastStrategy.publish)(monix.execution.Scheduler.global)
     val appliedBlocksSubject = ConcurrentSubject[BlockType](MulticastStrategy.publish)(monix.execution.Scheduler.global)
@@ -55,14 +53,14 @@ class ConsensusPoolItSpec extends FlatSpecLike with MockitoSugar with MustMatche
         maxBlockSize = 3,
         ledgerStateStorage,
         1 minute,
-        proposedTransactionsSubjet
+        proposedTransactionsSubject,
+        appliedBlocksSubject
       )
 
     val testExecution = mock[B => Unit]
     val ledgerId: LedgerId = "1"
     override def machineCallback: B => Unit = block => {
       testExecution(block)
-      txPoolFutureInterface.removeBlockTransactions(block)
     }
 
     val Seq(t1, t2, t3) = anIntegratedCluster(storages.zip(clusterIds))
@@ -71,8 +69,8 @@ class ConsensusPoolItSpec extends FlatSpecLike with MockitoSugar with MustMatche
     val block2Transactions = (4 to 5).map(DummyTransaction)
     val block3Transactions = (6 to 7).map(DummyTransaction)
 
-    processAllTxs(block1Transactions, proposedTransactionsSubjet)
-    processAllTxs(block2Transactions, proposedTransactionsSubjet)
+    processAllTxs(block1Transactions, proposedTransactionsSubject)
+    processAllTxs(block2Transactions, proposedTransactionsSubject)
 
     val consensus: Consensus[String, DummyTransaction] = new RaftConsensusInterface(
       ledgerId,
@@ -84,7 +82,6 @@ class ConsensusPoolItSpec extends FlatSpecLike with MockitoSugar with MustMatche
     val blockCreator =
       new BlockCreator[String, DummyTransaction](
         txPoolFutureInterface,
-        consensus,
         proposedBlocksSubject,
         0 seconds,
         1 seconds
@@ -102,7 +99,7 @@ class ConsensusPoolItSpec extends FlatSpecLike with MockitoSugar with MustMatche
       existingTransactions mustBe expectedTransactions
     }
 
-    processAllTxs(block3Transactions, proposedTransactionsSubjet)
+    processAllTxs(block3Transactions, proposedTransactionsSubject)
 
     // this proves the queue in transaction pool is empty
     // since we don't have any duplicate transactions
