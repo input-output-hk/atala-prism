@@ -1,8 +1,8 @@
 package io.iohk.cef.transactionservice
 
 import io.iohk.cef.consensus.Consensus
+import io.iohk.cef.ledger._
 import io.iohk.cef.ledger.query.LedgerQueryService
-import io.iohk.cef.ledger.{Block, BlockHeader, LedgerId}
 import io.iohk.cef.test.{DummyLedgerQuery, DummyTransaction}
 import io.iohk.codecs.nio._
 import io.iohk.network._
@@ -35,13 +35,21 @@ class NodeTransactionServiceSpec extends AsyncFlatSpec with MustMatchers with Mo
   def mockBlockSerializable: NioCodec[Envelope[BlockType]] =
     mock[NioCodec[Envelope[BlockType]]]
 
-  def mockTransactionChannel: TransactionChannel[Tx] = mock[TransactionChannel[Tx]]
+  def mockProposedTransactionsSubject: ProposedTransactionsSubject[Tx] = mock[ProposedTransactionsSubject[Tx]]
+  def mockProposedBlocksSubject: ProposedBlocksSubject[State, Tx] = mock[ProposedBlocksSubject[State, Tx]]
+  def mockAppliedBlocksSubject: AppliedBlocksSubject[State, Tx] = mock[AppliedBlocksSubject[State, Tx]]
 
   private def setupTest(
       ledgerId: LedgerId,
       me: NodeId = NodeId("abcd")
   )(implicit txSerializable: NioCodec[Envelope[Tx]], blockSerializable: NioCodec[Envelope[Block[State, Tx]]]) = {
-    val ledgerServices = LedgerServices(mockTransactionChannel, mockConsensus, mockQueryService)
+    val ledgerServices = new LedgerServices(
+      proposedTransactionsSubject = mockProposedTransactionsSubject,
+      proposedBlocksSubject = mockProposedBlocksSubject,
+      appliedBlocksSubject = mockAppliedBlocksSubject,
+      mockQueryService
+    )
+
     val consensusMap = Map(ledgerId -> ledgerServices)
     val txDM = mockNetwork[Envelope[DummyTransaction]]
     val blockDM = mockNetwork[Envelope[Block[String, DummyTransaction]]]
@@ -73,13 +81,13 @@ class NodeTransactionServiceSpec extends AsyncFlatSpec with MustMatchers with Mo
     implicit val bs1 = mockNioCodec
     implicit val bs2 = mockBlockSerializable
     val (transactionservice, consensusMap, txDM, _) = setupTest(ledgerId)
-    when(consensusMap(ledgerId).transactionChannel.onNext(testEnvelope.content))
+    when(consensusMap(ledgerId).proposedTransactionsObserver.onNext(testEnvelope.content))
       .thenReturn(Ack.Continue)
     transactionservice
       .receiveTransaction(testEnvelope)
       .map(r => {
         verify(txDM, times(1)).disseminateMessage(testEnvelope)
-        verify(consensusMap(ledgerId).transactionChannel, times(1)).onNext(testEnvelope.content)
+        verify(consensusMap(ledgerId).proposedTransactionsObserver, times(1)).onNext(testEnvelope.content)
         r mustBe Right(())
       })
   }
@@ -92,13 +100,13 @@ class NodeTransactionServiceSpec extends AsyncFlatSpec with MustMatchers with Mo
     implicit val bs1 = mockNioCodec
     implicit val bs2 = mockBlockSerializable
     val (transactionservice, consensusMap, _, blockDM) = setupTest(ledgerId)
-    when(consensusMap(ledgerId).consensus.process(testEnvelope.content))
-      .thenReturn(Future.successful(Right(())))
+    when(consensusMap(ledgerId).proposedBlocksObserver.onNext(testEnvelope.content))
+      .thenReturn(Future.successful(monix.execution.Ack.Continue))
     transactionservice
       .receiveBlock(testEnvelope)
       .map(r => {
         verify(blockDM, times(1)).disseminateMessage(testEnvelope)
-        verify(consensusMap(ledgerId).consensus, times(1)).process(testEnvelope.content)
+        verify(consensusMap(ledgerId).proposedBlocksObserver, times(1)).onNext(testEnvelope.content)
         r mustBe Right(())
       })
   }
@@ -114,7 +122,7 @@ class NodeTransactionServiceSpec extends AsyncFlatSpec with MustMatchers with Mo
       rcv <- transactionservice.receiveBlock(testBlockEnvelope)
     } yield {
       verify(blockDM, times(1)).disseminateMessage(testBlockEnvelope)
-      verify(consensusMap(ledgerId).consensus, times(0)).process(testBlockEnvelope.content)
+      verify(consensusMap(ledgerId).proposedBlocksObserver, times(0)).onNext(testBlockEnvelope.content)
       rcv mustBe Right(())
     }
   }
@@ -130,7 +138,7 @@ class NodeTransactionServiceSpec extends AsyncFlatSpec with MustMatchers with Mo
       rcv <- transactionservice.receiveTransaction(testTxEnvelope)
     } yield {
       verify(txDM, times(1)).disseminateMessage(testTxEnvelope)
-      verify(consensusMap(ledgerId).transactionChannel, times(0)).onNext(testTxEnvelope.content)
+      verify(consensusMap(ledgerId).proposedTransactionsObserver, times(0)).onNext(testTxEnvelope.content)
       rcv mustBe Right(())
     }
   }

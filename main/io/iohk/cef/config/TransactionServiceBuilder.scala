@@ -4,32 +4,29 @@ import java.time.Clock
 
 import io.iohk.cef.consensus.raft
 import io.iohk.cef.consensus.raft.node.OnDiskPersistentStorage
+import io.iohk.cef.ledger._
 import io.iohk.cef.ledger.query.{LedgerQuery, LedgerQueryService}
 import io.iohk.cef.ledger.storage.{Ledger, LedgerStateStorage, LedgerStorage}
-import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
 import io.iohk.cef.transactionpool.{BlockCreator, TransactionPoolInterface}
 import io.iohk.cef.transactionservice._
 import io.iohk.cef.transactionservice.raft.{RaftConsensusInterface, RaftRPCFactory}
 import io.iohk.codecs.nio._
 import io.iohk.codecs.nio.auto._
 import io.iohk.network.{Envelope, Network}
+import monix.reactive.MulticastStrategy
 import monix.reactive.subjects.ConcurrentSubject
 import org.slf4j.Logger
 
 import scala.concurrent.ExecutionContext
-import scala.reflect.runtime.universe._
+import scala.reflect.runtime.universe.TypeTag
 
-private[config] class TransactionServiceBuilder(
-    cefConfig: CefConfig,
-    logger: Logger,
-    clock: Clock
-) {
+private[config] class TransactionServiceBuilder(cefConfig: CefConfig, logger: Logger, clock: Clock) {
 
   def cefTransactionServiceChannel[State, Tx <: Transaction[State], Q <: LedgerQuery[State]](
       ledgerStateStorage: LedgerStateStorage[State],
       ledgerStorage: LedgerStorage[State, Tx],
       queryService: LedgerQueryService[State, Q],
-      newBlockChannel: ConcurrentSubject[Block[State, Tx], Block[State, Tx]]
+      appliedBlocksSubject: AppliedBlocksSubject[State, Tx]
   )(
       implicit stateCodec: NioCodec[State],
       stateTypeTag: TypeTag[State],
@@ -38,14 +35,18 @@ private[config] class TransactionServiceBuilder(
       ec: ExecutionContext
   ): NodeTransactionService[State, Tx, Q] = {
 
-    val transactionChannel: TransactionChannel[Tx] = ???
+    import monix.execution.Scheduler.Implicits.global
+
+    val proposedBlocksSubject = ConcurrentSubject[Block[State, Tx]](MulticastStrategy.publish)
+    val proposedTransactionsSubject = ConcurrentSubject[Tx](MulticastStrategy.publish)
     new NodeTransactionServiceImpl[State, Tx, Q](
       createLedgerServicesMap[State, Tx, Q](
         ledgerStateStorage,
         ledgerStorage,
         queryService,
-        newBlockChannel,
-        transactionChannel
+        appliedBlocksSubject = appliedBlocksSubject,
+        proposedBlocksSubject = proposedBlocksSubject,
+        proposedTransactionsSubject = proposedTransactionsSubject
       ),
       txNetwork[State, Tx],
       blockNetwork[State, Tx],
@@ -57,8 +58,9 @@ private[config] class TransactionServiceBuilder(
       ledgerStateStorage: LedgerStateStorage[State],
       ledgerStorage: LedgerStorage[State, Tx],
       queryService: LedgerQueryService[State, Q],
-      newBlockChannel: ConcurrentSubject[Block[State, Tx], Block[State, Tx]],
-      transactionChannel: TransactionChannel[Tx]
+      appliedBlocksSubject: AppliedBlocksSubject[State, Tx],
+      proposedBlocksSubject: ProposedBlocksSubject[State, Tx],
+      proposedTransactionsSubject: ProposedTransactionsSubject[Tx]
   )(
       implicit stateCodec: NioCodec[State],
       stateTypeTag: TypeTag[State],
@@ -78,7 +80,7 @@ private[config] class TransactionServiceBuilder(
       ledgerConfig.maxBlockSize,
       ledgerStateStorage,
       ledgerConfig.defaultTransactionExpiration,
-      transactionChannel
+      proposedTransactionsSubject
     )
 
     val raftNode = raft.raftNode(
@@ -93,17 +95,29 @@ private[config] class TransactionServiceBuilder(
 
     val raftConsensus: raft.RaftConsensus[Block[State, Tx]] = new raft.RaftConsensus(raftNode)
 
-    val consensus = new RaftConsensusInterface[State, Tx](cefConfig.ledgerConfig.id, raftConsensus)
+    val consensus = new RaftConsensusInterface[State, Tx](
+      cefConfig.ledgerConfig.id,
+      raftConsensus,
+      proposedBlocksObservable = proposedBlocksSubject,
+      appliedBlocksObserver = appliedBlocksSubject
+    )
 
     val _ = new BlockCreator(
       txPool,
       consensus,
-      newBlockChannel,
+      proposedBlocksSubject,
       cefConfig.ledgerConfig.blockCreatorInitialDelay,
       cefConfig.ledgerConfig.blockCreatorInterval
     )
 
-    Map(cefConfig.ledgerConfig.id -> LedgerServices(transactionChannel, consensus, queryService))
+    val services = new LedgerServices(
+      proposedTransactionsSubject = proposedTransactionsSubject,
+      proposedBlocksSubject = proposedBlocksSubject,
+      appliedBlocksSubject = appliedBlocksSubject,
+      queryService
+    )
+
+    Map(cefConfig.ledgerConfig.id -> services)
   }
 
   private def stateMachineCallback[State, Tx <: Transaction[State]](
@@ -130,8 +144,9 @@ private[config] class TransactionServiceBuilder(
       implicit
       txCodec: NioCodec[Tx],
       txTypeTag: TypeTag[Tx]
-  ): Network[Envelope[Tx]] =
+  ): Network[Envelope[Tx]] = {
     Network[Envelope[Tx]](cefConfig.networkConfig.discovery, cefConfig.networkConfig.transports)
+  }
 
   private def blockNetwork[State, Tx <: Transaction[State]](
       implicit stateCodec: NioCodec[State],

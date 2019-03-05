@@ -10,18 +10,13 @@ import io.iohk.cef.frontend.controllers.ChimericTransactionsController
 import io.iohk.cef.frontend.controllers.common.Codecs
 import io.iohk.cef.frontend.models.{CreateChimericTransactionRequest, CreateNonSignableChimericTransactionFragment}
 import io.iohk.cef.frontend.services.ChimericTransactionService
+import io.iohk.cef.ledger._
 import io.iohk.cef.ledger.chimeric._
 import io.iohk.cef.ledger.query.LedgerQueryService
 import io.iohk.cef.ledger.query.chimeric.ChimericQuery
 import io.iohk.cef.ledger.storage.LedgerStateStorage
-import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
 import io.iohk.cef.transactionpool.TransactionPoolInterface
-import io.iohk.cef.transactionservice.{
-  LedgerServices,
-  NodeTransactionService,
-  NodeTransactionServiceImpl,
-  TransactionChannel
-}
+import io.iohk.cef.transactionservice.{NodeTransactionService, NodeTransactionServiceImpl}
 import io.iohk.codecs.nio._
 import io.iohk.network.{Envelope, MessageStream, Network, NodeId}
 import org.mockito.ArgumentMatchers.any
@@ -61,7 +56,9 @@ class ChimericTransactionNodeTransactionServiceItSpec
     val ledgerStateStorage = mock[LedgerStateStorageType[TransactionStateType]]
     implicit val transactionStateTypeEncDec = mock[NioCodec[TransactionStateType]]
 
-    val transactionChannelMock = mock[TransactionChannel[TransactionType]]
+    val proposedTransactionsSubjectMock = mock[ProposedTransactionsSubject[TransactionType]]
+    val proposedBlocksSubjectMock = mock[ProposedBlocksSubject[TransactionStateType, TransactionType]]
+    val appliedBlocksSubjectMock = mock[AppliedBlocksSubject[TransactionStateType, TransactionType]]
 
     val txPoolInterface =
       TransactionPoolInterface[TransactionStateType, TransactionType](
@@ -69,7 +66,7 @@ class ChimericTransactionNodeTransactionServiceItSpec
         10000,
         ledgerStateStorage,
         10.minutes,
-        transactionChannelMock
+        proposedTransactionsSubjectMock
       )
 
     val consensus = mock[ConsensusType]
@@ -89,7 +86,14 @@ class ChimericTransactionNodeTransactionServiceItSpec
     when(mockTxMessageStream.foreach(any())).thenReturn(Future.successful(()))
     when(mockBlockMessageStream.foreach(any())).thenReturn(Future.successful(()))
 
-    val consensusMap = Map("1" -> LedgerServices(transactionChannelMock, consensus, queryService))
+    val consensusMap = Map(
+      "1" -> new LedgerServices(
+        proposedTransactionsSubject = proposedTransactionsSubjectMock,
+        proposedBlocksSubject = proposedBlocksSubjectMock,
+        appliedBlocksSubject = appliedBlocksSubjectMock,
+        queryService
+      )
+    )
 
     val me = NodeId("3112")
 

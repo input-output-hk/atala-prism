@@ -4,26 +4,23 @@ import java.util.concurrent.TimeUnit
 
 import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.error.ApplicationError
-import io.iohk.cef.ledger.{Block, Transaction}
+import io.iohk.cef.ledger.{ProposedBlocksObserver, Transaction}
 import monix.execution.Scheduler.{global => scheduler}
 import org.slf4j.LoggerFactory
-import scala.concurrent.duration.FiniteDuration
-import scala.concurrent.{ExecutionContext, Future}
-import scala.language.implicitConversions
 
-import monix.reactive.subjects.ConcurrentSubject
+import scala.concurrent.ExecutionContext
+import scala.concurrent.duration.FiniteDuration
+import scala.language.implicitConversions
 
 class BlockCreator[State, Tx <: Transaction[State]](
     transactionPoolInterface: TransactionPoolInterface[State, Tx],
     consensus: Consensus[State, Tx],
-    newBlockChannel: ConcurrentSubject[Block[State, Tx], Block[State, Tx]],
+    proposedBlocksObserver: ProposedBlocksObserver[State, Tx],
     initialDelay: FiniteDuration,
     interval: FiniteDuration
 )(implicit executionContext: ExecutionContext) {
 
   private val logger = LoggerFactory.getLogger(classOf[BlockCreator[State, Tx]])
-
-  type BlockType = Block[State, Tx]
 
   implicit def toSeconds(finiteDuration: FiniteDuration): Long = finiteDuration.toSeconds
 
@@ -37,24 +34,14 @@ class BlockCreator[State, Tx <: Transaction[State]](
     generateBlock()
   })
 
-  private[transactionpool] def generateBlock(): Future[Either[ApplicationError, Unit]] = {
+  private[transactionpool] def generateBlock(): Either[ApplicationError, Unit] = {
     transactionPoolInterface.generateBlock() match {
       case Left(error) =>
-        logger.error(s"Could not create block. Cause: ${error}")
-        Future.successful(Left[ApplicationError, Unit](error))
-      case Right(block) => processConsensus(block)
-    }
-  }
-
-  private[transactionpool] def processConsensus(block: BlockType): Future[Either[ApplicationError, Unit]] = {
-    consensus.process(block) map {
-      case Left(error) =>
-        logger.error(s"Consensus could not process the block. Cause ${error}")
+        logger.error(s"Could not create block. Cause: $error")
         Left[ApplicationError, Unit](error)
-      case Right(()) =>
-        val _ = newBlockChannel.onNext(block)
-        Right[ApplicationError, Unit](())
+      case Right(block) =>
+        val _ = proposedBlocksObserver.onNext(block)
+        Right(())
     }
   }
-
 }

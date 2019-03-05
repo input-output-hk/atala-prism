@@ -2,7 +2,7 @@ package io.iohk.cef.transactionservice
 
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.ledger.query.{LedgerQuery, LedgerQueryService}
-import io.iohk.cef.ledger.{Block, LedgerId, Transaction}
+import io.iohk.cef.ledger.{Block, LedgerId, LedgerServicesMap, Transaction}
 import io.iohk.codecs.nio._
 import io.iohk.network.{Envelope, Network, NodeId}
 
@@ -31,6 +31,7 @@ class NodeTransactionServiceImpl[State, Tx <: Transaction[State], Q <: LedgerQue
 
   blockNetwork.messageStream.foreach(blEnvelope => processBlock(blEnvelope, Future.successful(Right(()))))
 
+  // FIXME: When scalanet exposes the monix stream, mere it with the consensusMap(env.containerId).transactionChannel
   // receives tx from other nodes, they replicate the tx pool
   txNetwork.messageStream.foreach(txEnvelope => processTransaction(txEnvelope, Future.successful(Right(()))))
 
@@ -57,7 +58,7 @@ class NodeTransactionServiceImpl[State, Tx <: Transaction[State], Q <: LedgerQue
       networkDissemination: Future[Either[ApplicationError, Unit]]
   ) = {
     process(txEnvelope, networkDissemination) { env =>
-      val channel = consensusMap(env.containerId).transactionChannel
+      val channel = consensusMap(env.containerId).proposedTransactionsObserver
       val _ = channel.onNext(txEnvelope.content)
       Future.successful(Right(()))
     }
@@ -68,8 +69,10 @@ class NodeTransactionServiceImpl[State, Tx <: Transaction[State], Q <: LedgerQue
       networkDissemination: Future[Either[ApplicationError, Unit]]
   ) = {
     process(blEnvelope, networkDissemination) { env =>
-      consensusMap(env.containerId).consensus
-        .process(env.content)
+      val _ = consensusMap(env.containerId).proposedBlocksObserver
+        .onNext(env.content)
+
+      Future.successful(Right(()))
     }
   }
 

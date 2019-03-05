@@ -3,10 +3,10 @@ package io.iohk.cef.integration
 import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.ledger.query.LedgerQueryService
 import io.iohk.cef.ledger.storage.LedgerStateStorage
-import io.iohk.cef.ledger.{Block, BlockHeader, Transaction}
+import io.iohk.cef.ledger.{Block, BlockHeader, LedgerServices, Transaction}
 import io.iohk.cef.test.{DummyLedgerQuery, DummyTransaction}
 import io.iohk.cef.transactionpool.TransactionPoolInterface
-import io.iohk.cef.transactionservice.{LedgerServices, NodeTransactionServiceImpl}
+import io.iohk.cef.transactionservice.NodeTransactionServiceImpl
 import io.iohk.codecs.nio.auto._
 import io.iohk.network._
 import monix.reactive.MulticastStrategy
@@ -29,11 +29,17 @@ class TransactionServicePooltSpec extends FlatSpecLike with MustMatchers with Be
   behavior of "TransactionServicePoolItSpec"
 
   it should "process a transaction" in {
+    type BlockType = Block[String, DummyTransaction]
+
     implicit val executionContext = ExecutionContext.global
     val ledgerStateStorage = mockLedgerStateStorage
 
-    val transactionChannel =
+    val proposedTransactionsSubject =
       ConcurrentSubject[DummyTransaction](MulticastStrategy.publish)(monix.execution.Scheduler.global)
+    val proposedBlocksSubject =
+      ConcurrentSubject[BlockType](MulticastStrategy.publish)(monix.execution.Scheduler.global)
+    val appliedBlocksSubject = ConcurrentSubject[BlockType](MulticastStrategy.publish)(monix.execution.Scheduler.global)
+
     val generateHeader: Seq[Transaction[String]] => BlockHeader = _ => BlockHeader()
     val transactionPoolFutureInterface =
       TransactionPoolInterface.apply[String, DummyTransaction](
@@ -41,14 +47,22 @@ class TransactionServicePooltSpec extends FlatSpecLike with MustMatchers with Be
         3,
         ledgerStateStorage,
         1 minute,
-        transactionChannel
+        proposedTransactionsSubject
       )
 
     val consensus = mock[Consensus[String, DummyTransaction]]
     val txNetwork = mock[Network[Envelope[DummyTransaction]]]
     val blockNetwork = mock[Network[Envelope[Block[String, DummyTransaction]]]]
     val queryService = mock[LedgerQueryService[String, DummyLedgerQuery]]
-    val consensusMap = Map("1" -> LedgerServices(transactionChannel, consensus, queryService))
+    val consensusMap = Map(
+      "1" -> new LedgerServices(
+        proposedTransactionsSubject = proposedTransactionsSubject,
+        proposedBlocksSubject = proposedBlocksSubject,
+        appliedBlocksSubject = appliedBlocksSubject,
+        queryService
+      )
+    )
+
     val me = NodeId("3112")
     val mockTxMessageStream = mock[MessageStream[Envelope[DummyTransaction]]]
     val mockBlockMessageStream =

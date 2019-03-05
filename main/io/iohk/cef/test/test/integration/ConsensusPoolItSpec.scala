@@ -3,11 +3,10 @@ package io.iohk.cef.integration
 import io.iohk.cef.consensus.Consensus
 import io.iohk.cef.consensus.raft._
 import io.iohk.cef.consensus.raft.testlib.{InMemoryPersistentStorage, RealRaftNodeFixture}
+import io.iohk.cef.ledger._
 import io.iohk.cef.ledger.storage.LedgerStateStorage
-import io.iohk.cef.ledger.{Block, BlockHeader, LedgerId, Transaction}
 import io.iohk.cef.test.DummyTransaction
 import io.iohk.cef.transactionpool.{BlockCreator, TransactionPoolInterface}
-import io.iohk.cef.transactionservice.TransactionChannel
 import io.iohk.cef.transactionservice.raft.RaftConsensusInterface
 import io.iohk.codecs.nio.auto._
 import monix.reactive.MulticastStrategy
@@ -29,6 +28,8 @@ class ConsensusPoolItSpec extends FlatSpecLike with MockitoSugar with MustMatche
 
   it should "push periodical blocks to consensus" in new RealRaftNodeFixture[B] {
 
+    type BlockType = Block[String, DummyTransaction]
+
     override def clusterIds: Seq[String] = Seq("i1", "i2", "s3")
     val storages = clusterIds.map(_ => new InMemoryPersistentStorage[B](Vector(), 1, ""))
     val Seq(s1, s2, s3) = storages
@@ -37,15 +38,24 @@ class ConsensusPoolItSpec extends FlatSpecLike with MockitoSugar with MustMatche
     val ledgerStateStorage = mockLedgerStateStorage
     val generateHeader: Seq[Transaction[String]] => BlockHeader = _ => BlockHeader()
 
-    val transactionChannel =
+    import monix.execution.Scheduler.Implicits.global
+
+    val proposedTransactionsSubjet =
       ConcurrentSubject[DummyTransaction](MulticastStrategy.publish)(monix.execution.Scheduler.global)
+
+    val proposedTransactionsSubject =
+      ConcurrentSubject[DummyTransaction](MulticastStrategy.publish)(monix.execution.Scheduler.global)
+    val proposedBlocksSubject =
+      ConcurrentSubject[BlockType](MulticastStrategy.publish)(monix.execution.Scheduler.global)
+    val appliedBlocksSubject = ConcurrentSubject[BlockType](MulticastStrategy.publish)(monix.execution.Scheduler.global)
+
     val txPoolFutureInterface =
       TransactionPoolInterface[String, DummyTransaction](
         generateHeader,
         maxBlockSize = 3,
         ledgerStateStorage,
         1 minute,
-        transactionChannel
+        proposedTransactionsSubjet
       )
 
     val testExecution = mock[B => Unit]
@@ -61,21 +71,21 @@ class ConsensusPoolItSpec extends FlatSpecLike with MockitoSugar with MustMatche
     val block2Transactions = (4 to 5).map(DummyTransaction)
     val block3Transactions = (6 to 7).map(DummyTransaction)
 
-    processAllTxs(block1Transactions, transactionChannel)
-    processAllTxs(block2Transactions, transactionChannel)
+    processAllTxs(block1Transactions, proposedTransactionsSubjet)
+    processAllTxs(block2Transactions, proposedTransactionsSubjet)
 
-    val consensus: Consensus[String, DummyTransaction] =
-      new RaftConsensusInterface(ledgerId, new RaftConsensus(t1.raftNode))
-
-    import monix.execution.Scheduler.Implicits.global
-
-    val newBlockChannel = ConcurrentSubject[Block[String, DummyTransaction]](MulticastStrategy.publish)
+    val consensus: Consensus[String, DummyTransaction] = new RaftConsensusInterface(
+      ledgerId,
+      new RaftConsensus(t1.raftNode),
+      proposedBlocksObservable = proposedBlocksSubject,
+      appliedBlocksObserver = appliedBlocksSubject
+    )
 
     val blockCreator =
       new BlockCreator[String, DummyTransaction](
         txPoolFutureInterface,
         consensus,
-        newBlockChannel,
+        proposedBlocksSubject,
         0 seconds,
         1 seconds
       )
@@ -92,7 +102,7 @@ class ConsensusPoolItSpec extends FlatSpecLike with MockitoSugar with MustMatche
       existingTransactions mustBe expectedTransactions
     }
 
-    processAllTxs(block3Transactions, transactionChannel)
+    processAllTxs(block3Transactions, proposedTransactionsSubjet)
 
     // this proves the queue in transaction pool is empty
     // since we don't have any duplicate transactions
@@ -102,7 +112,10 @@ class ConsensusPoolItSpec extends FlatSpecLike with MockitoSugar with MustMatche
     )
   }
 
-  private def processAllTxs(txs: Seq[DummyTransaction], transactionChannel: TransactionChannel[DummyTransaction])(
+  private def processAllTxs(
+      txs: Seq[DummyTransaction],
+      transactionChannel: ProposedTransactionsObserver[DummyTransaction]
+  )(
       implicit executionContext: ExecutionContext
   ) = {
     txs.foreach(transactionChannel.onNext)
