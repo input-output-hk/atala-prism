@@ -1,7 +1,5 @@
 package io.iohk.cef.frontend.services
 
-import io.iohk.codecs.nio.auto._
-import io.iohk.crypto.sign
 import io.iohk.cef.frontend.client.Response
 import io.iohk.cef.frontend.controllers.common.IntrinsicValidationViolation
 import io.iohk.cef.frontend.models.{
@@ -11,21 +9,19 @@ import io.iohk.cef.frontend.models.{
 }
 import io.iohk.cef.ledger.LedgerId
 import io.iohk.cef.ledger.chimeric._
-import io.iohk.network.{Envelope, Everyone}
 import io.iohk.cef.ledger.query.chimeric._
-import io.iohk.codecs.nio.auto._
 import io.iohk.cef.transactionservice.NodeTransactionService
+import io.iohk.codecs.nio.auto._
+import io.iohk.crypto.sign
+import io.iohk.network.{Envelope, Everyone}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class ChimericTransactionService(
-    service: NodeTransactionService[ChimericStateResult, ChimericTx, ChimericQuery]
+    nodeTransactionService: NodeTransactionService[ChimericStateResult, ChimericTx, ChimericQuery]
 )(
     implicit ec: ExecutionContext
-) extends LedgerService[ChimericStateResult, ChimericTx, ChimericQuery] {
-
-  override protected def nodeTransactionService: NodeTransactionService[ChimericPartition, ChimericTx, ChimericQuery] =
-    service
+) {
 
   def createChimericTransaction(req: CreateChimericTransactionRequest): Response[ChimericTx] = {
 

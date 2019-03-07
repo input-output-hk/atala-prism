@@ -18,6 +18,24 @@ import scala.concurrent.ExecutionContext
 
 package object common {
 
+  val exceptionHandler: PartialFunction[Throwable, PlaysonifyError] = {
+    case _: UnsupportedLedgerException =>
+      val error = fieldValidationError("ledgerId", "Unsupported ledger")
+      error
+  }
+
+  def handlingException[T](
+      futureApplicationResult: FutureApplicationResult[T]
+  )(implicit ec: ExecutionContext): FutureApplicationResult[T] = {
+
+    futureApplicationResult
+      .recover {
+        case ex: Throwable if exceptionHandler.isDefinedAt(ex) =>
+          val error = exceptionHandler.apply(ex)
+          Bad(error).accumulating
+      }
+  }
+
   def fromFutureEither[T](value: client.Response[T], playsonifyError: PlaysonifyError)(
       implicit ec: ExecutionContext
   ): FutureApplicationResult[T] = {
@@ -25,8 +43,8 @@ package object common {
     value
       .map { fromEither(_, playsonifyError) }
       .recover {
-        case _: UnsupportedLedgerException =>
-          val error = fieldValidationError("ledgerId", "Unsupported ledger")
+        case ex: Throwable if exceptionHandler.isDefinedAt(ex) =>
+          val error = exceptionHandler.apply(ex)
           Bad(error).accumulating
       }
   }

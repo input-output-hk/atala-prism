@@ -6,7 +6,7 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import com.alexitc.playsonify.akka.PublicErrorRenderer
-import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
+import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport._
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.frontend.controllers.common.Codecs
 import io.iohk.cef.frontend.models.{
@@ -17,23 +17,19 @@ import io.iohk.cef.frontend.models.{
   SubmitChimericTransactionRequest
 }
 import io.iohk.cef.frontend.services.ChimericTransactionService
+import io.iohk.cef.ledger.UnsupportedLedgerException
 import io.iohk.cef.ledger.chimeric._
 import io.iohk.cef.ledger.query.chimeric.ChimericQuery
 import io.iohk.crypto._
 import org.mockito.Mockito.when
-import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.MustMatchers._
+import org.scalatest.WordSpec
 import org.scalatest.mockito.MockitoSugar.mock
-import org.scalatest.{MustMatchers, WordSpec}
 import play.api.libs.json.{JsValue, Json}
 
 import scala.concurrent.Future
 
-class ChimericTransactionsControllerSpec
-    extends WordSpec
-    with MustMatchers
-    with ScalaFutures
-    with ScalatestRouteTest
-    with PlayJsonSupport {
+class ChimericTransactionsControllerSpec extends WordSpec with ScalatestRouteTest {
 
   import Codecs._
 
@@ -62,10 +58,10 @@ class ChimericTransactionsControllerSpec
         ),
         CreateNonSignableChimericTransactionFragment(CreateCurrency(currency = "AUD"))
       )
-      val entity = CreateChimericTransactionRequest(fragments = fragments, ledgerId)
+      val entity = CreateChimericTransactionRequest(fragments = fragments)
 
       val json = Json.toJson(entity)
-      val request = Post("/chimeric-transactions", json)
+      val request = Post(withLedgerId("/chimeric-transactions"), json)
 
       val dummyChimericTx = ChimericTx(Seq())
 
@@ -93,7 +89,7 @@ class ChimericTransactionsControllerSpec
           Fee(Value(Map("MXN" -> BigDecimal(10), "CAD" -> BigDecimal(200))))
         )
       )
-      val entity = CreateChimericTransactionRequest(fragments = fragments, ledgerId)
+      val entity = CreateChimericTransactionRequest(fragments = fragments)
 
       val dummyChimericTx = ChimericTx(Seq())
 
@@ -102,7 +98,7 @@ class ChimericTransactionsControllerSpec
         .thenReturn(Future.successful(Right(())))
 
       val json = Json.toJson(entity)
-      val request = Post("/chimeric-transactions", json)
+      val request = Post(withLedgerId("/chimeric-transactions"), json)
 
       request ~> routes ~> check {
         status must ===(StatusCodes.Created)
@@ -133,7 +129,7 @@ class ChimericTransactionsControllerSpec
         ),
         CreateNonSignableChimericTransactionFragment(CreateCurrency(currency = "AUD"))
       )
-      val entity = CreateChimericTransactionRequest(fragments = fragments, ledgerId)
+      val entity = CreateChimericTransactionRequest(fragments = fragments)
 
       val dummyChimericTx = ChimericTx(Seq())
 
@@ -142,7 +138,7 @@ class ChimericTransactionsControllerSpec
         .thenReturn(Future.successful(Right(())))
 
       val json = Json.toJson(entity)
-      val request = Post("/chimeric-transactions", json)
+      val request = Post(withLedgerId("/chimeric-transactions"), json)
 
       request ~> routes ~> check {
         status must ===(StatusCodes.Created)
@@ -150,15 +146,19 @@ class ChimericTransactionsControllerSpec
     }
 
     "return missing top-level field errors" in {
-      val (service, routes) = prepare()
-      val request = Post("/chimeric-transactions", HttpEntity(ContentTypes.`application/json`, "{}"))
+      val (_, routes) = prepare()
+      val request = Post(withLedgerId("/chimeric-transactions"), HttpEntity(ContentTypes.`application/json`, "{}"))
 
       request ~> routes ~> check {
         status must ===(StatusCodes.BadRequest)
 
         val json = responseAs[JsValue]
-        validateErrorResponse(json, 2)
+        validateErrorResponse(json, 1)
       }
+    }
+
+    "fail on unknown ledger id" in {
+      testUnknownLedgerId("/chimeric-transactions", Some("{}"))
     }
   }
 
@@ -167,12 +167,10 @@ class ChimericTransactionsControllerSpec
       val (service, routes) = prepare()
       val currencies = List("ADA", "BTC", "MXN")
 
-      when(service.ledgerId).thenReturn(ledgerId)
-
       when(service.executeQuery(ledgerId, ChimericQuery.AllCurrencies))
         .thenReturn(Future.successful(Right(currencies.toSet)))
 
-      val request = Get("/chimeric-transactions/currencies")
+      val request = Get(withLedgerId("/chimeric-transactions/currencies"))
 
       request ~> routes ~> check {
         status must ===(StatusCodes.OK)
@@ -181,18 +179,20 @@ class ChimericTransactionsControllerSpec
         (json \ "data").as[List[String]] must be(currencies)
       }
     }
+
+    "fail on unknown ledger id" in {
+      testUnknownLedgerId("/chimeric-transactions/currencies")
+    }
   }
 
   "GET /chimeric-transactions/currencies/:currency" should {
     "query an existing currency" in {
       val (service, routes) = prepare()
 
-      when(service.ledgerId).thenReturn(ledgerId)
-
       when(service.executeQuery(ledgerId, ChimericQuery.CreatedCurrency("GBP")))
         .thenReturn(Future.successful(Right(Some(CurrencyQuery("GBP")))))
 
-      val request = Get("/chimeric-transactions/currencies/GBP")
+      val request = Get(withLedgerId("/chimeric-transactions/currencies/GBP"))
 
       request ~> routes ~> check {
         status must ===(StatusCodes.OK)
@@ -205,11 +205,9 @@ class ChimericTransactionsControllerSpec
     "query a non existing currency" in {
       val (service, routes) = prepare()
 
-      when(service.ledgerId).thenReturn(ledgerId)
-
       when(service.executeQuery(ledgerId, ChimericQuery.CreatedCurrency("GBP")))
         .thenReturn(Future.successful(Right(None)))
-      val request = Get("/chimeric-transactions/currencies/GBP")
+      val request = Get(withLedgerId("/chimeric-transactions/currencies/GBP"))
 
       request ~> routes ~> check {
         status must ===(StatusCodes.NotFound)
@@ -224,11 +222,9 @@ class ChimericTransactionsControllerSpec
     "handle a failed currency query" in {
       val (service, routes) = prepare()
 
-      when(service.ledgerId).thenReturn(ledgerId)
-
       when(service.executeQuery(ledgerId, ChimericQuery.CreatedCurrency("GBP")))
         .thenReturn(Future.successful(Left(FakeApplicationError("something gone wrong"))))
-      val request = Get("/chimeric-transactions/currencies/GBP")
+      val request = Get(withLedgerId("/chimeric-transactions/currencies/GBP"))
 
       request ~> routes ~> check {
         status must ===(StatusCodes.InternalServerError)
@@ -237,20 +233,22 @@ class ChimericTransactionsControllerSpec
         (errors(0) \ "type").as[String] must be("server-error")
       }
     }
+
+    "fail on unknown ledger id" in {
+      testUnknownLedgerId("/chimeric-transactions/currencies/GBP")
+    }
   }
 
   "GET chimeric-transactions/utxos/:utxo/balance" should {
     "query the balance of an existing utxo" in {
       val (service, routes) = prepare()
 
-      when(service.ledgerId).thenReturn(ledgerId)
-
       when(service.executeQuery(ledgerId, ChimericQuery.UtxoBalance(TxOutRef("foo", 123))))
         .thenReturn(
           Future.successful(Right(Some(UtxoResult(Value(Map("GBP" -> BigDecimal(12))), signingKeyPair1.public))))
         )
 
-      val request = Get("/chimeric-transactions/utxos/foo(123)/balance")
+      val request = Get(withLedgerId("/chimeric-transactions/utxos/foo(123)/balance"))
 
       request ~> routes ~> check {
         status must ===(StatusCodes.OK)
@@ -263,12 +261,10 @@ class ChimericTransactionsControllerSpec
     "query the balance of a non existing utxo" in {
       val (service, routes) = prepare()
 
-      when(service.ledgerId).thenReturn(ledgerId)
-
       when(service.executeQuery(ledgerId, ChimericQuery.UtxoBalance(TxOutRef("foo", 123))))
         .thenReturn(Future.successful(Right(None)))
 
-      val request = Get("/chimeric-transactions/utxos/foo(123)/balance")
+      val request = Get(withLedgerId("/chimeric-transactions/utxos/foo(123)/balance"))
 
       request ~> routes ~> check {
         status must ===(StatusCodes.NotFound)
@@ -283,12 +279,10 @@ class ChimericTransactionsControllerSpec
     "handle a failed utxo balance query" in {
       val (service, routes) = prepare()
 
-      when(service.ledgerId).thenReturn(ledgerId)
-
       when(service.executeQuery(ledgerId, ChimericQuery.UtxoBalance(TxOutRef("foo", 123))))
         .thenReturn(Future.successful(Left(FakeApplicationError("something gone wrong"))))
 
-      val request = Get("/chimeric-transactions/utxos/foo(123)/balance")
+      val request = Get(withLedgerId("/chimeric-transactions/utxos/foo(123)/balance"))
 
       request ~> routes ~> check {
         status must ===(StatusCodes.InternalServerError)
@@ -297,6 +291,10 @@ class ChimericTransactionsControllerSpec
         (errors(0) \ "type").as[String] must be("server-error")
       }
     }
+
+    "fail on unknown ledger id" in {
+      testUnknownLedgerId("/chimeric-transactions/utxos/foo(123)/balance")
+    }
   }
 
   "GET /chimeric-transactions/addresses/:address/balance" should {
@@ -304,12 +302,10 @@ class ChimericTransactionsControllerSpec
       val (service, routes) = prepare()
       val urlAddress = encodeAddress(signingKeyPair1.public)
 
-      when(service.ledgerId).thenReturn(ledgerId)
-
       when(service.executeQuery(ledgerId, ChimericQuery.AddressBalance(signingKeyPair1.public)))
         .thenReturn(Future.successful(Right(Some(AddressResult(Value(Map("GBP" -> BigDecimal(12))))))))
 
-      val request = Get(s"/chimeric-transactions/addresses/${urlAddress}/balance")
+      val request = Get(withLedgerId(s"/chimeric-transactions/addresses/$urlAddress/balance"))
 
       request ~> routes ~> check {
         status must ===(StatusCodes.OK)
@@ -323,12 +319,10 @@ class ChimericTransactionsControllerSpec
       val (service, routes) = prepare()
       val urlAddress = encodeAddress(signingKeyPair1.public)
 
-      when(service.ledgerId).thenReturn(ledgerId)
-
       when(service.executeQuery(ledgerId, ChimericQuery.AddressBalance(signingKeyPair1.public)))
         .thenReturn(Future.successful(Right(None)))
 
-      val request = Get(s"/chimeric-transactions/addresses/${urlAddress}/balance")
+      val request = Get(withLedgerId(s"/chimeric-transactions/addresses/$urlAddress/balance"))
 
       request ~> routes ~> check {
         status must ===(StatusCodes.NotFound)
@@ -340,16 +334,14 @@ class ChimericTransactionsControllerSpec
       }
     }
 
+    val urlAddress = encodeAddress(signingKeyPair1.public)
     "handle a failed address balance query" in {
       val (service, routes) = prepare()
-      val urlAddress = encodeAddress(signingKeyPair1.public)
-
-      when(service.ledgerId).thenReturn(ledgerId)
 
       when(service.executeQuery(ledgerId, ChimericQuery.AddressBalance(signingKeyPair1.public)))
         .thenReturn(Future.successful(Left(FakeApplicationError("something gone wrong"))))
 
-      val request = Get(s"/chimeric-transactions/addresses/${urlAddress}/balance")
+      val request = Get(withLedgerId(s"/chimeric-transactions/addresses/$urlAddress/balance"))
 
       request ~> routes ~> check {
         status must ===(StatusCodes.InternalServerError)
@@ -358,6 +350,10 @@ class ChimericTransactionsControllerSpec
         (errors(0) \ "type").as[String] must be("server-error")
       }
     }
+
+    "fail on unknown ledger id" in {
+      testUnknownLedgerId(s"/chimeric-transactions/addresses/$urlAddress/balance")
+    }
   }
 
   "GET /chimeric-transactions/addresses/:address/nonce" should {
@@ -365,12 +361,10 @@ class ChimericTransactionsControllerSpec
       val (service, routes) = prepare()
       val urlAddress = encodeAddress(signingKeyPair1.public)
 
-      when(service.ledgerId).thenReturn(ledgerId)
-
       when(service.executeQuery(ledgerId, ChimericQuery.AddressNonce(signingKeyPair1.public)))
         .thenReturn(Future.successful(Right(Some(NonceResult(123)))))
 
-      val request = Get(s"/chimeric-transactions/addresses/${urlAddress}/nonce")
+      val request = Get(withLedgerId(s"/chimeric-transactions/addresses/$urlAddress/nonce"))
 
       request ~> routes ~> check {
         status must ===(StatusCodes.OK)
@@ -384,12 +378,10 @@ class ChimericTransactionsControllerSpec
       val (service, routes) = prepare()
       val urlAddress = encodeAddress(signingKeyPair1.public)
 
-      when(service.ledgerId).thenReturn(ledgerId)
-
       when(service.executeQuery(ledgerId, ChimericQuery.AddressNonce(signingKeyPair1.public)))
         .thenReturn(Future.successful(Right(None)))
 
-      val request = Get(s"/chimeric-transactions/addresses/${urlAddress}/nonce")
+      val request = Get(withLedgerId(s"/chimeric-transactions/addresses/$urlAddress/nonce"))
 
       request ~> routes ~> check {
         status must ===(StatusCodes.NotFound)
@@ -401,16 +393,14 @@ class ChimericTransactionsControllerSpec
       }
     }
 
+    val urlAddress = encodeAddress(signingKeyPair1.public)
     "handle a failed address nonce query" in {
       val (service, routes) = prepare()
-      val urlAddress = encodeAddress(signingKeyPair1.public)
-
-      when(service.ledgerId).thenReturn(ledgerId)
 
       when(service.executeQuery(ledgerId, ChimericQuery.AddressNonce(signingKeyPair1.public)))
         .thenReturn(Future.successful(Left(FakeApplicationError("something gone wrong"))))
 
-      val request = Get(s"/chimeric-transactions/addresses/${urlAddress}/nonce")
+      val request = Get(withLedgerId(s"/chimeric-transactions/addresses/$urlAddress/nonce"))
 
       request ~> routes ~> check {
         status must ===(StatusCodes.InternalServerError)
@@ -419,12 +409,14 @@ class ChimericTransactionsControllerSpec
         (errors(0) \ "type").as[String] must be("server-error")
       }
     }
+
+    "fail on unknown ledger id" in {
+      testUnknownLedgerId(s"/chimeric-transactions/addresses/$urlAddress/nonce")
+    }
   }
 
   def prepare(): (ChimericTransactionService, Route) = {
     val service = mock[ChimericTransactionService]
-    when(service.ledgerId).thenReturn(ledgerId)
-    when(service.isLedgerSupported(ledgerId)).thenReturn(true)
     val api = new ChimericTransactionsController(service)
     val routes = api.routes
     (service, routes)
@@ -439,6 +431,34 @@ class ChimericTransactionsControllerSpec
       (error \ "field").as[String] mustNot be(empty)
     }
   }
+
+  def testUnknownLedgerId(path: String, body: Option[String] = None) = {
+    val request = {
+      body
+        .map { bodyStr =>
+          Post(s"/ledgers/unknown$path", HttpEntity(ContentTypes.`application/json`, bodyStr))
+        }
+        .getOrElse {
+          Get(s"/ledgers/unknown$path")
+        }
+    }
+
+    import org.mockito.ArgumentMatchers._
+
+    val service = mock[ChimericTransactionService]
+    when(service.executeQuery(anyString, any[ChimericQuery]))
+      .thenReturn(Future.failed(UnsupportedLedgerException("ledgerId")))
+    val api = new ChimericTransactionsController(service)
+    val routes = api.routes
+    request ~> routes ~> check {
+      status must ===(StatusCodes.BadRequest)
+
+      val json = responseAs[JsValue]
+      validateErrorResponse(json, 1)
+    }
+  }
+
+  private def withLedgerId(path: String) = s"/ledgers/$ledgerId$path"
 
   case class FakeApplicationError(message: String) extends ApplicationError
 }

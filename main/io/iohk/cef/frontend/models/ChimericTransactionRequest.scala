@@ -1,8 +1,8 @@
 package io.iohk.cef.frontend.models
 
-import io.iohk.crypto._
 import io.iohk.cef.ledger.LedgerId
 import io.iohk.cef.ledger.chimeric._
+import io.iohk.crypto._
 
 sealed trait CreateChimericTransactionFragment {
 
@@ -17,7 +17,7 @@ case class CreateSignableChimericTransactionFragment(
     signingPrivateKey: SigningPrivateKey
 ) extends CreateChimericTransactionFragment
 
-case class CreateChimericTransactionRequest(fragments: Seq[CreateChimericTransactionFragment], ledgerId: LedgerId)
+case class CreateChimericTransactionRequest(fragments: Seq[CreateChimericTransactionFragment])
 
 case class SubmitChimericTransactionFragment(fragment: ChimericTxFragment)
 

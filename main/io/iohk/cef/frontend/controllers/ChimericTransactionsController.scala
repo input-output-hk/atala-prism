@@ -6,7 +6,6 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import akka.util.ByteString
-import com.alexitc.playsonify.core.FutureOr.Implicits._
 import com.alexitc.playsonify.core.I18nService
 import com.alexitc.playsonify.models._
 import io.iohk.cef.frontend.client.ServiceResponseExtensions
@@ -29,145 +28,113 @@ import scala.concurrent.{ExecutionContext, Future}
 class ChimericTransactionsController(service: ChimericTransactionService)(
     implicit ec: ExecutionContext,
     mat: Materializer
-) extends CustomJsonController
-    with LedgerController {
+) extends CustomJsonController {
 
   import ChimericTransactionsController._
   import Codecs._
   import Context._
 
   lazy val routes: Route = corsHandler {
-    pathPrefix("chimeric-transactions" / "currencies") {
-      pathEnd {
-        get {
-          public { _ =>
-            def queryResult = service.executeQuery(ledgerId, ChimericQuery.AllCurrencies).map {
-              case Right(x) => Good(Json.obj("data" -> x))
-              // The method never returns a Left, this is required to compile
-              case Left(_) => Bad(Every(QueryCreatedCurrencyError))
-            }
-            //FIXME replace with query string
-            def ledgerId = service.ledgerId
-            val result = for {
-              _ <- applyLedgerValidation(ledgerId, service).toFutureOr
-              x <- queryResult.toFutureOr
-            } yield x
-            result.future
-          }
-        }
-      } ~
-        path(Segment) { currency =>
+    (pathPrefix("ledgers") & pathPrefix(Segment)) { ledgerId =>
+      pathPrefix("chimeric-transactions" / "currencies") {
+        pathEnd {
           get {
             public { _ =>
-              def queryResult = service.executeQuery(ledgerId, ChimericQuery.CreatedCurrency(currency)).map {
-                case Right(Some(c)) => Good(Json.toJson(c))
-                case Right(None) => Bad(Every(CurrencyNotFound(currency)))
+              val result = service.executeQuery(ledgerId, ChimericQuery.AllCurrencies).map {
+                case Right(x) => Good(Json.obj("data" -> x))
+                // The method never returns a Left, this is required to compile
                 case Left(_) => Bad(Every(QueryCreatedCurrencyError))
               }
-              //FIXME replace with query string
-              def ledgerId = service.ledgerId
+
+              handlingException(result)
+            }
+          }
+        } ~
+          path(Segment) { currency =>
+            get {
+              public { _ =>
+                val result = service.executeQuery(ledgerId, ChimericQuery.CreatedCurrency(currency)).map {
+                  case Right(Some(c)) => Good(Json.toJson(c))
+                  case Right(None) => Bad(Every(CurrencyNotFound(currency)))
+                  case Left(_) => Bad(Every(QueryCreatedCurrencyError))
+                }
+
+                handlingException(result)
+              }
+            }
+          }
+      } ~
+        path("chimeric-transactions" / "utxos" / Segment / "balance") { txOutRefCandidate =>
+          get {
+            public { _ =>
+              val result = TxOutRef.parse(txOutRefCandidate) match {
+                case None => Future.successful(Bad(Every(InvalidTxOutRef(txOutRefCandidate))))
+                case Some(txOutRef) =>
+                  service.executeQuery(ledgerId, ChimericQuery.UtxoBalance(txOutRef)).map {
+                    case Right(Some(response)) => Good(response)
+                    case Right(None) => Bad(Every(TxOutRefNotFound(txOutRef)))
+                    case Left(_) => Bad(Every(QueryUtxoBalanceError))
+                  }
+              }
+
+              handlingException(result)
+            }
+          }
+        } ~
+        path("chimeric-transactions" / "addresses" / Segment / "balance") { addressStr =>
+          get {
+            public { _ =>
+              val result = decodeAddress(addressStr)
+                .map { address =>
+                  service.executeQuery(ledgerId, ChimericQuery.AddressBalance(address)).map {
+                    case Right(Some(response)) => Good(response)
+                    case Right(None) => Bad(Every(AddressNotFound(address)))
+                    case Left(_) => Bad(Every(QueryAddressBalanceError))
+                  }
+                }
+                .getOrElse(Future.successful(Bad(Every(InvalidAddress(addressStr)))))
+
+              handlingException(result)
+            }
+          }
+        } ~
+        path("chimeric-transactions" / "addresses" / Segment / "nonce") { addressStr =>
+          get {
+            public { _ =>
+              val result = decodeAddress(addressStr)
+                .map { address =>
+                  service.executeQuery(ledgerId, ChimericQuery.AddressNonce(address)).map {
+                    case Right(Some(response)) => Good(Json.toJson(response))
+                    case Right(None) => Bad(Every(AddressNotFound(address)))
+                    case Left(_) => Bad(Every(QueryAddressNonceError))
+                  }
+                }
+                .getOrElse(Future.successful(Bad(Every(InvalidAddress(addressStr)))))
+
+              handlingException(result)
+            }
+          }
+        } ~
+        path("chimeric-transactions") {
+          post {
+            publicInput(StatusCodes.Created) { ctx: HasModel[CreateChimericTransactionRequest] =>
               val result = for {
-                _ <- applyLedgerValidation(ledgerId, service).toFutureOr
-                x <- queryResult.toFutureOr
-              } yield x
-              result.future
-            }
-          }
-        }
-    } ~
-      path("chimeric-transactions" / "utxos" / Segment / "balance") { txOutRefCandidate =>
-        get {
-          public { _ =>
-            TxOutRef.parse(txOutRefCandidate) match {
-              case None => Future.successful(Bad(Every(InvalidTxOutRef(txOutRefCandidate))))
-              case Some(txOutRef) =>
-                def queryResult = service.executeQuery(ledgerId, ChimericQuery.UtxoBalance(txOutRef)).map {
-                  case Right(Some(response)) => Good(response)
-                  case Right(None) => Bad(Every(TxOutRefNotFound(txOutRef)))
-                  case Left(_) => Bad(Every(QueryUtxoBalanceError))
-                }
-                //FIXME replace with query string
-                def ledgerId = service.ledgerId
-                val result = for {
-                  _ <- applyLedgerValidation(ledgerId, service).toFutureOr
-                  x <- queryResult.toFutureOr
-                } yield x
-                result.future
-            }
-          }
-        }
-      } ~
-      path("chimeric-transactions" / "addresses" / Segment / "balance") { addressStr =>
-        get {
-          public { _ =>
-            decodeAddress(addressStr)
-              .map { address =>
-                def queryResult = service.executeQuery(ledgerId, ChimericQuery.AddressBalance(address)).map {
-                  case Right(Some(response)) => Good(response)
-                  case Right(None) => Bad(Every(AddressNotFound(address)))
-                  case Left(_) => Bad(Every(QueryAddressBalanceError))
-                }
-                //FIXME replace with query string
-                def ledgerId = service.ledgerId
-                val result = for {
-                  _ <- applyLedgerValidation(ledgerId, service).toFutureOr
-                  x <- queryResult.toFutureOr
-                } yield x
-                result.future
-              }
-              .getOrElse(Future.successful(Bad(Every(InvalidAddress(addressStr)))))
-          }
-        }
-      } ~
-      path("chimeric-transactions" / "addresses" / Segment / "nonce") { addressStr =>
-        get {
-          public { _ =>
-            decodeAddress(addressStr)
-              .map { address =>
-                def queryResult = service.executeQuery(ledgerId, ChimericQuery.AddressNonce(address)).map {
-                  case Right(Some(response)) => Good(Json.toJson(response))
-                  case Right(None) => Bad(Every(AddressNotFound(address)))
-                  case Left(_) => Bad(Every(QueryAddressNonceError))
-                }
-                //FIXME replace with query string
-                def ledgerId = service.ledgerId
-                val result = for {
-                  _ <- applyLedgerValidation(ledgerId, service).toFutureOr
-                  x <- queryResult.toFutureOr
-                } yield x
-                result.future
-              }
-              .getOrElse(Future.successful(Bad(Every(InvalidAddress(addressStr)))))
-          }
-        }
-      } ~
-      path("chimeric-transactions") {
-        post {
-          publicInput(StatusCodes.Created) { ctx: HasModel[CreateChimericTransactionRequest] =>
-            //replace with query string
-            def ledgerId = service.ledgerId
-            def queryResult =
-              for {
                 createResult <- service.createChimericTransaction(ctx.model).onFor
 
-                submitRequest = toSubmitRequest(createResult, ctx.model.ledgerId)
+                submitRequest = toSubmitRequest(createResult, ledgerId)
                 _ <- service.submitChimericTransaction(submitRequest).onFor
               } yield createResult
 
-            // The actual method call never fails but the type system says it could, we need this to be able to compile
-            val result = for {
-              _ <- applyLedgerValidation(ledgerId, service).toFutureOr
-              x <- fromFutureEither(queryResult.res, ChimericTransactionCreationError).toFutureOr
-            } yield x
-
-            result.future
+              // The actual method call never fails but the type system says it could, we need this to be able to compile
+              fromFutureEither(result.res, ChimericTransactionCreationError)
+            }
           }
         }
-      }
+    }
   }
 
   private def decodeAddress(address: String) = {
-    SigningPublicKey.decodeFrom(ByteString(Base64.getUrlDecoder().decode(address)))
+    SigningPublicKey.decodeFrom(ByteString(Base64.getUrlDecoder.decode(address)))
   }
 }
 

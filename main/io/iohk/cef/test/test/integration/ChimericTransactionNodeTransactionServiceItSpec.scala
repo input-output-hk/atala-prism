@@ -116,10 +116,10 @@ class ChimericTransactionNodeTransactionServiceItSpec
     val api = new ChimericTransactionsController(service)
     val routes = api.routes
 
-    val entity = CreateChimericTransactionRequest(fragments, "1")
+    val entity = CreateChimericTransactionRequest(fragments)
     val json = Json.toJson(entity)
 
-    val request = Post("/chimeric-transactions", json)
+    val request = Post("/ledgers/1/chimeric-transactions", json)
 
     request ~> routes ~> check {
       status must ===(StatusCodes.Created)
