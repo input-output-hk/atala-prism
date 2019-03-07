@@ -2,7 +2,7 @@ package io.iohk.cef.transactionservice
 
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.ledger.query.{LedgerQuery, LedgerQueryService}
-import io.iohk.cef.ledger.{Block, LedgerId, LedgerServicesMap, Transaction}
+import io.iohk.cef.ledger._
 import io.iohk.codecs.nio._
 import io.iohk.network.{Envelope, Network, NodeId}
 
@@ -37,19 +37,19 @@ class NodeTransactionServiceImpl[State, Tx <: Transaction[State], Q <: LedgerQue
 
   // receives tx from users (like a UI)
   override def receiveTransaction(txEnvelope: Envelope[Tx]): Future[Either[ApplicationError, Unit]] = {
-    require(supportedLedgerIds.contains(txEnvelope.containerId))
+    validateSupportedLedger(txEnvelope.containerId)
     processTransaction(txEnvelope, disseminate(txEnvelope, txNetwork))
   }
 
   override def receiveBlock(blEnvelope: Envelope[Block[State, Tx]]): Future[Either[ApplicationError, Unit]] = {
-    require(supportedLedgerIds.contains(blEnvelope.containerId))
+    validateSupportedLedger(blEnvelope.containerId)
     processBlock(blEnvelope, disseminate(blEnvelope, blockNetwork))
   }
 
   override def supportedLedgerIds: Set[LedgerId] = consensusMap.keySet
 
   override def getQueryService(ledgerId: LedgerId): LedgerQueryService[State, Q] = {
-    require(supportedLedgerIds.contains(ledgerId))
+    validateSupportedLedger(ledgerId)
     consensusMap(ledgerId).ledgerQueryService
   }
 
@@ -104,5 +104,9 @@ class NodeTransactionServiceImpl[State, Tx <: Transaction[State], Q <: LedgerQue
       } yield {
         dissemination.flatMap(_ => txProcess)
       }
+  }
+
+  private def validateSupportedLedger(ledgerId: LedgerId): Unit = {
+    require(supportedLedgerIds contains ledgerId, throw UnsupportedLedgerException(ledgerId))
   }
 }
