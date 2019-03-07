@@ -1,12 +1,11 @@
 package io.iohk.cef.frontend.models
 
 import io.iohk.cef.ledger.LedgerId
-import io.iohk.crypto._
 import io.iohk.cef.ledger.identity.IdentityTransactionData
+import io.iohk.crypto._
 
 case class CreateIdentityTransactionRequest(
     data: IdentityTransactionData,
-    ledgerId: LedgerId,
     privateKey: SigningPrivateKey,
     linkingIdentityPrivateKey: Option[SigningPrivateKey] = None
 )

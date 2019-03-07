@@ -2,7 +2,6 @@ package io.iohk.cef.frontend.controllers
 
 import akka.http.scaladsl.model.StatusCodes
 import akka.stream.Materializer
-import com.alexitc.playsonify.core.FutureOr.Implicits._
 import com.alexitc.playsonify.models.{ErrorId, ServerError}
 import io.iohk.cef.frontend.client.ServiceResponseExtensions
 import io.iohk.cef.frontend.controllers.common.Codecs._
@@ -18,115 +17,68 @@ import io.iohk.cef.ledger.identity.{Grant, IdentityTransaction, Link, LinkCertif
 import io.iohk.cef.ledger.query.identity.IdentityQuery
 import play.api.libs.json._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class IdentitiesController(service: IdentityTransactionService)(
     implicit mat: Materializer,
     ec: ExecutionContext
-) extends CustomJsonController
-    with LedgerController {
+) extends CustomJsonController {
 
   import Context._
   import IdentitiesController._
 
   lazy val routes = corsHandler {
-    pathPrefix("identities") {
-      (get & pathEnd) {
-        public { _ =>
-          val query = IdentityQuery.RetrieveIdentities
-          // FIXME replace with query string
-          val result = service.executeQuery(service.ledgerId, query)
-          fromFutureEither(result, IdentityQueryExecutionException())
-        }
-      } ~
-        (get & pathPrefix(Segment)) { identity =>
-          path("exists") {
-            public { _ =>
-              def queryResult = {
+    (pathPrefix("ledgers") & pathPrefix(Segment)) { ledgerId =>
+      pathPrefix("identities") {
+        (get & pathEnd) {
+          public { _ =>
+            val query = IdentityQuery.RetrieveIdentities
+            val result = service.executeQuery(ledgerId, query)
+            fromFutureEither(result, IdentityQueryExecutionException())
+          }
+        } ~
+          (get & pathPrefix(Segment)) { identity =>
+            path("exists") {
+              public { _ =>
                 val query = IdentityQuery.ExistsIdentity(identity)
-                // FIXME replace with query string
-                val exists = service.executeQuery(service.ledgerId, query)
+                val exists = service.executeQuery(ledgerId, query)
                 val result = exists.map(x => x.map(exists => Json.obj("exists" -> JsBoolean(exists))))
                 fromFutureEither(result, IdentityQueryExecutionException())
               }
-              //FIXME replace with query string
-              def ledgerId = service.ledgerId
-              val result = for {
-                _ <- Future.successful(applyLedgerValidation(ledgerId, service)).toFutureOr
-                x <- queryResult.toFutureOr
-              } yield x
-              result.future
-            }
-          } ~
-            path("endorsers") {
-              public { _ =>
-                def queryResult = {
-                  val query = IdentityQuery.RetrieveEndorsers(identity)
-                  fromFutureEither(service.executeQuery(service.ledgerId, query), IdentityQueryExecutionException())
-                }
-                //FIXME replace with query string
-                def ledgerId = service.ledgerId
-                val result = for {
-                  _ <- applyLedgerValidation(ledgerId, service).toFutureOr
-                  x <- queryResult.toFutureOr
-                } yield x
-                result.future
-              }
             } ~
-            path("endorsements") {
-              public { _ =>
-                def queryResult = {
+              path("endorsers") {
+                public { _ =>
+                  val query = IdentityQuery.RetrieveEndorsers(identity)
+                  fromFutureEither(service.executeQuery(ledgerId, query), IdentityQueryExecutionException())
+                }
+              } ~
+              path("endorsements") {
+                public { _ =>
                   val query = IdentityQuery.RetrieveEndorsements(identity)
-                  val result = service.executeQuery(service.ledgerId, query)
+                  val result = service.executeQuery(ledgerId, query)
                   fromFutureEither(result, IdentityQueryExecutionException())
                 }
-                //FIXME replace with query string
-                def ledgerId = service.ledgerId
-                val result = for {
-                  _ <- applyLedgerValidation(ledgerId, service).toFutureOr
-                  x <- queryResult.toFutureOr
-                } yield x
-                result.future
-              }
-            } ~
-            public { _ =>
-              def queryResult = {
+              } ~
+              public { _ =>
                 val query = IdentityQuery.RetrieveIdentityKeys(identity)
-                val keys = service.executeQuery(service.ledgerId, query)
+                val keys = service.executeQuery(ledgerId, query)
                 fromFutureEither(keys, IdentityQueryExecutionException())
               }
-              //FIXME replace with query string
-              def ledgerId = service.ledgerId
-              val result = for {
-                _ <- applyLedgerValidation(ledgerId, service).toFutureOr
-                x <- queryResult.toFutureOr
-              } yield x
-              result.future
-            }
-        } ~
-        post {
-          publicInput(StatusCodes.Created) { ctx: HasModel[CreateIdentityTransactionRequest] =>
-            def queryResult = {
+          } ~
+          post {
+            publicInput(StatusCodes.Created) { ctx: HasModel[CreateIdentityTransactionRequest] =>
               val query = for {
                 tx <- service.createIdentityTransaction(ctx.model).onFor
 
-                submitTransaction = toSubmitRequest(tx, ctx.model.ledgerId)
+                submitTransaction = toSubmitRequest(tx, ledgerId)
                 _ <- service.submitIdentityTransaction(submitTransaction).onFor
               } yield tx
 
               // The actual method call never fails but the type system says it could, we need this to be able to compile
-
               fromFutureEither(query.res, IdentityTransactionCreationError())
             }
-            //FIXME replace with query string
-            def ledgerId = service.ledgerId
-            val result = for {
-              _ <- applyLedgerValidation(ledgerId, service).toFutureOr
-              x <- queryResult.toFutureOr
-            } yield x
-            result.future
           }
-        }
+      }
     }
   }
 }

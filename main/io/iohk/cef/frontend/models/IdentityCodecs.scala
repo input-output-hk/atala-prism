@@ -2,7 +2,6 @@ package io.iohk.cef.frontend.models
 
 import akka.util.ByteString
 import io.iohk.cef.frontend.controllers.common.Codecs.fromHex
-import io.iohk.cef.ledger.LedgerId
 import io.iohk.cef.ledger.identity._
 import io.iohk.crypto._
 import play.api.libs.json._
@@ -87,7 +86,6 @@ trait IdentityCodecs {
       override def writes(o: CreateIdentityTransactionRequest): JsObject = {
         val data = identityTransactionDataFormat.writes(o.data)
         val json = Json.obj(
-          "ledgerId" -> Json.toJson(o.ledgerId),
           "privateKey" -> Json.toJson(o.privateKey),
           "linkingIdentityPrivateKey" -> Json.toJson(o.linkingIdentityPrivateKey)
         )
@@ -97,11 +95,10 @@ trait IdentityCodecs {
 
       override def reads(json: JsValue): JsResult[CreateIdentityTransactionRequest] = {
         for {
-          ledgerId <- (__ \ "ledgerId").read[LedgerId].reads(json)
           privateKey <- (__ \ "privateKey").read[SigningPrivateKey].reads(json)
           linkingIdentityPrivateKey <- (__ \ "linkingIdentityPrivateKey").readNullable[SigningPrivateKey].reads(json)
           data <- identityTransactionDataFormat.reads(json)
-        } yield CreateIdentityTransactionRequest(data, ledgerId, privateKey, linkingIdentityPrivateKey)
+        } yield CreateIdentityTransactionRequest(data, privateKey, linkingIdentityPrivateKey)
       }
     }
 

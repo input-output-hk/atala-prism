@@ -1,58 +1,89 @@
 package io.iohk.cef.frontend.controllers
 
 import akka.http.scaladsl.model._
-import akka.http.scaladsl.testkit.ScalatestRouteTest
+import akka.http.scaladsl.testkit.{RouteTestTimeout, ScalatestRouteTest}
 import akka.util.ByteString
 import com.alexitc.playsonify.akka.PublicErrorRenderer
-import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
+import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport._
+import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.frontend.controllers.common.Codecs
 import io.iohk.cef.frontend.services.IdentityTransactionService
 import io.iohk.cef.ledger.identity._
-import io.iohk.cef.ledger.query.identity.{IdentityQuery, IdentityQueryEngine, IdentityQueryService}
+import io.iohk.cef.ledger.query.identity.{IdentityPartition, IdentityQuery, IdentityQueryEngine, IdentityQueryService}
+import io.iohk.cef.ledger.query.{LedgerQuery, LedgerQueryService}
+import io.iohk.cef.ledger.{Block, LedgerId, Transaction, UnsupportedLedgerException}
 import io.iohk.cef.transactionservice.NodeTransactionService
 import io.iohk.crypto._
 import io.iohk.crypto.certificates.test.data.ExampleCertificates._
-import org.mockito.ArgumentMatchers._
-import org.mockito.Mockito._
+import io.iohk.network.Envelope
+import org.scalatest.MustMatchers._
 import org.scalatest.OptionValues._
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.mockito.MockitoSugar.mock
-import org.scalatest.{Assertion, MustMatchers, WordSpec}
+import org.scalatest.{Assertion, WordSpec}
 import play.api.libs.json.JsValue
 
 import scala.concurrent.Future
+import scala.concurrent.duration.DurationDouble
 
-class IdentitiesControllerSpec
-    extends WordSpec
-    with MustMatchers
-    with ScalaFutures
-    with ScalatestRouteTest
-    with PlayJsonSupport {
+class IdentitiesControllerSpec extends WordSpec with ScalatestRouteTest {
 
   import Codecs._
+  import IdentitiesControllerSpec._
 
-  val nodeTransactionService = mock[NodeTransactionService[IdentityData, IdentityTransaction, IdentityQuery]]
+  implicit val executionContext = system.dispatcher
+  implicit val timeout = RouteTestTimeout(5.seconds)
+
   val ledgerId = "1"
 
-  when(nodeTransactionService.receiveTransaction(any())).thenReturn(Future.successful(Right(())))
-  when(nodeTransactionService.supportedLedgerIds).thenReturn(Set(ledgerId))
-  val queryEngine = mock[IdentityQueryEngine]
-  val queryService = new IdentityQueryService(queryEngine)
-  when(nodeTransactionService.getQueryService(ledgerId)).thenReturn(queryService)
-  implicit val executionContext = system.dispatcher
+  def transactionService(queryEngine: IdentityQueryEngine) =
+    new DummyNodeTransactionService[IdentityData, IdentityTransaction, IdentityQuery] {
+      override def receiveTransaction(
+          txEnvelope: Envelope[IdentityTransaction]
+      ): Future[Either[ApplicationError, Unit]] = {
+        Future.successful(Right(()))
+      }
 
-  val service = new IdentityTransactionService(nodeTransactionService)
-  val controller = new IdentitiesController(service)
-  lazy val routes = controller.routes
+      override def supportedLedgerIds: Set[LedgerId] = {
+        Set(ledgerId)
+      }
+
+      override def getQueryService(ledgerId: LedgerId): LedgerQueryService[IdentityData, IdentityQuery] = {
+        if (supportedLedgerIds contains ledgerId)
+          new IdentityQueryService(queryEngine)
+        else
+          throw UnsupportedLedgerException(ledgerId)
+      }
+    }
+
+  val defaultQueryEngine = new InMemoryIdentityQueryEngine(Map.empty)
+  val defaultTransactionService = transactionService(defaultQueryEngine)
+
+  def routes(
+      transactionService: NodeTransactionService[IdentityData, IdentityTransaction, IdentityQuery] =
+        defaultTransactionService
+  ) = {
+
+    val service = new IdentityTransactionService(transactionService)
+    val controller = new IdentitiesController(service)
+    controller.routes
+  }
+
+  def routes(queryEngine: IdentityQueryEngine) = {
+    val service = new IdentityTransactionService(transactionService(queryEngine))
+    val controller = new IdentitiesController(service)
+    controller.routes
+  }
+
+  private def withLedgerId(path: String) = s"/ledgers/$ledgerId$path"
 
   "GET /identities" should {
     "return the existing identities" in {
       val identities = Set("iohk", "IOHK", "ioHK")
-      when(queryEngine.keys()).thenReturn(identities)
+      val map = identities.map(_ -> IdentityData.empty).toMap
+      val queryEngine = new InMemoryIdentityQueryEngine(map)
 
-      val request = Get(s"/identities")
+      val request = Get(withLedgerId(s"/identities"))
 
-      request ~> routes ~> check {
+      request ~> routes(queryEngine) ~> check {
         status must ===(StatusCodes.OK)
 
         val json = responseAs[JsValue]
@@ -60,17 +91,23 @@ class IdentitiesControllerSpec
         result must be(identities)
       }
     }
+
+    "fail on unknown ledger id" in {
+      testUnknownLedgerId("/identities")
+    }
   }
 
   "GET /identities/:identity" should {
+    val identity = "iohk"
+
     "return the identity keys" in {
-      val identity = "iohk"
       val key = generateSigningKeyPair().public
-      when(queryEngine.get(anyString())).thenReturn(Option(IdentityData.forKeys(key)))
+      val map = Map(identity -> IdentityData.forKeys(key))
+      val queryEngine = new InMemoryIdentityQueryEngine(map)
 
-      val request = Get(s"/identities/$identity")
+      val request = Get(withLedgerId(s"/identities/$identity"))
 
-      request ~> routes ~> check {
+      request ~> routes(queryEngine) ~> check {
         status must ===(StatusCodes.OK)
 
         val json = responseAs[JsValue]
@@ -79,34 +116,46 @@ class IdentitiesControllerSpec
         list.head.as[String] must be(key.toString())
       }
     }
+
+    "fail on unknown ledger id" in {
+      testUnknownLedgerId(s"/identities/$identity")
+    }
   }
 
   "GET /identities/:identity/exists" should {
+    val identity = "iohk"
+
     "return whether the identity exists" in {
-      val identity = "iohk"
-      when(queryEngine.contains(identity)).thenReturn(true)
+      val map = Map(identity -> IdentityData.empty)
+      val queryEngine = new InMemoryIdentityQueryEngine(map)
 
-      val request = Get(s"/identities/$identity/exists")
+      val request = Get(withLedgerId(s"/identities/$identity/exists"))
 
-      request ~> routes ~> check {
+      request ~> routes(queryEngine) ~> check {
         status must ===(StatusCodes.OK)
 
         val json = responseAs[JsValue]
         (json \ "exists").as[Boolean] must be(true)
       }
     }
+
+    "fail on unknown ledger id" in {
+      testUnknownLedgerId(s"/identities/$identity/exists")
+    }
   }
 
   "GET /identities/:identity/endorsers" should {
+    val identity = "iohk"
+
     "return the identities that endorsed another identity" in {
-      val identity = "iohk"
       val endorsers = Set("a", "b")
       val data = IdentityData.empty.copy(endorsers = endorsers)
-      when(queryEngine.get(anyString())).thenReturn(Option(data))
+      val map = Map(identity -> data)
+      val queryEngine = new InMemoryIdentityQueryEngine(map)
 
-      val request = Get(s"/identities/$identity/endorsers")
+      val request = Get(withLedgerId(s"/identities/$identity/endorsers"))
 
-      request ~> routes ~> check {
+      request ~> routes(queryEngine) ~> check {
         status must ===(StatusCodes.OK)
 
         val json = responseAs[JsValue]
@@ -114,28 +163,40 @@ class IdentitiesControllerSpec
         result must be(endorsers)
       }
     }
+
+    "fail on unknown ledger id" in {
+      testUnknownLedgerId(s"/identities/$identity/endorsers")
+    }
   }
 
   "GET /identities/:identity/endorsements" should {
+    val identity = "iohk"
+
     "return the identities that an identity has endorsed" in {
-      val identity = "iohk"
       val endorsements = Set("a", "b")
 
-      when(queryEngine.keys()).thenReturn(Set(identity, "a", "b", "c"))
-      when(queryEngine.get(identity)).thenReturn(Option(IdentityData.empty))
-      when(queryEngine.get("a")).thenReturn(Option(IdentityData.empty.copy(endorsers = Set("b", identity))))
-      when(queryEngine.get("b")).thenReturn(Option(IdentityData.empty.copy(endorsers = Set("a", identity))))
-      when(queryEngine.get("c")).thenReturn(Option(IdentityData.empty.copy(endorsers = Set("b", "a"))))
+      val map = Map(
+        identity -> IdentityData.empty,
+        "a" -> IdentityData.empty.endorse("a").endorse(identity),
+        "b" -> IdentityData.empty.endorse("b").endorse(identity),
+        "c" -> IdentityData.empty.endorse("a").endorse("b")
+      )
 
-      val request = Get(s"/identities/$identity/endorsements")
+      val queryEngine = new InMemoryIdentityQueryEngine(map)
 
-      request ~> routes ~> check {
+      val request = Get(withLedgerId(s"/identities/$identity/endorsements"))
+
+      request ~> routes(queryEngine) ~> check {
         status must ===(StatusCodes.OK)
 
         val json = responseAs[JsValue]
         val result = json.as[Set[String]]
         result must be(endorsements)
       }
+    }
+
+    "fail on unknown ledger id" in {
+      testUnknownLedgerId(s"/identities/$identity/endorsements")
     }
   }
 
@@ -182,7 +243,6 @@ class IdentitiesControllerSpec
            |      "grantedIdentity" : "$grantedIdentityString",
            |      "grantedIdentityPublicKey": "$grantedIdentityPublicKeyString"
            |    },
-           |    "ledgerId": "${ledgerId}",
            |    "privateKey": "$privateKeyString"
          """.stripMargin
 
@@ -199,9 +259,9 @@ class IdentitiesControllerSpec
         }
         .getOrElse(s"{$partialBody}")
 
-      val request = Post("/identities", jsonEntity(body))
+      val request = Post(withLedgerId("/identities"), jsonEntity(body))
 
-      request ~> routes ~> check {
+      request ~> routes() ~> check {
         status must ===(expectedResult)
 
         val json = responseAs[JsValue]
@@ -249,16 +309,15 @@ class IdentitiesControllerSpec
            |      "identity": "$identity",
            |      "key": "$publicKeyLinkHex"
            |    },
-           |    "ledgerId": "${ledgerId}",
            |    "privateKey": "$privateKeyHex",
            |    "linkingIdentityPrivateKey": "${privateKeyLinkHex.getOrElse("")}"
            |
            |}
          """.stripMargin
 
-      val request = Post("/identities", jsonEntity(body))
+      val request = Post(withLedgerId("/identities"), jsonEntity(body))
 
-      request ~> routes ~> check {
+      request ~> routes() ~> check {
         status must ===(expectedResult)
         val json = responseAs[JsValue]
         if (expectedResult == StatusCodes.Created) {
@@ -290,15 +349,14 @@ class IdentitiesControllerSpec
            |      "endorserIdentity": "$endorserIdentity",
            |      "endorsedIdentity": "$endorsedIdentity"
            |    },
-           |    "ledgerId": "${ledgerId}",
            |    "privateKey": "$privateKeyHex"
            |
            |}
          """.stripMargin
 
-      val request = Post("/identities", jsonEntity(body))
+      val request = Post(withLedgerId("/identities"), jsonEntity(body))
 
-      request ~> routes ~> check {
+      request ~> routes() ~> check {
         status must ===(StatusCodes.Created)
         val json = responseAs[JsValue]
         (json \ "type").as[String] must be(txType)
@@ -328,16 +386,15 @@ class IdentitiesControllerSpec
            |      "linkingIdentity": "$identity",
            |      "pem": "$pemHex"
            |    },
-           |    "ledgerId": "${ledgerId}",
            |    "privateKey": "$privateKeyHex",
            |    "linkingIdentityPrivateKey": "$privateKeyLinkHex"
            |
            |}
          """.stripMargin
 
-      val request = Post("/identities", jsonEntity(body))
+      val request = Post(withLedgerId("/identities"), jsonEntity(body))
 
-      request ~> routes ~> check {
+      request ~> routes() ~> check {
         status must ===(expectedResult)
         val json = responseAs[JsValue]
         if (expectedResult == StatusCodes.Created) {
@@ -449,15 +506,14 @@ class IdentitiesControllerSpec
            |{
            |    "type": "none",
            |    "identity": 2,
-           |    "ledgerId": 1,
            |    "data": "1$publicKeyHex",
            |    "privateKey": "2$privateKeyHex"
            |}
          """.stripMargin
 
-      val request = Post("/identities", jsonEntity(body))
+      val request = Post(withLedgerId("/identities"), jsonEntity(body))
 
-      request ~> routes ~> check {
+      request ~> routes() ~> check {
         status must ===(StatusCodes.BadRequest)
 
         val json = responseAs[JsValue]
@@ -472,15 +528,14 @@ class IdentitiesControllerSpec
            |{
            |    "type": "claim",
            |    "identity": "x",
-           |    "ledgerId": "${ledgerId}",
            |    "data": {},
            |    "privateKey": "$privateKeyHex"
            |}
          """.stripMargin
 
-      val request = Post("/identities", jsonEntity(body))
+      val request = Post(withLedgerId("/identities"), jsonEntity(body))
 
-      request ~> routes ~> check {
+      request ~> routes() ~> check {
         status must ===(StatusCodes.BadRequest)
 
         val json = responseAs[JsValue]
@@ -489,14 +544,37 @@ class IdentitiesControllerSpec
     }
 
     "return missing field errors" in {
-      val request = Post("/identities", jsonEntity("{}"))
+      val request = Post(withLedgerId("/identities"), jsonEntity("{}"))
 
-      request ~> routes ~> check {
+      request ~> routes() ~> check {
         status must ===(StatusCodes.BadRequest)
 
         val json = responseAs[JsValue]
         validateErrorResponse(json, 1)
       }
+    }
+
+    "fail on unknown ledger id" in {
+      testUnknownLedgerId(s"/identities", Option("{}"))
+    }
+  }
+
+  def testUnknownLedgerId(path: String, body: Option[String] = None) = {
+    val request = {
+      body
+        .map { bodyStr =>
+          Post(s"/ledgers/unknown$path", jsonEntity(bodyStr))
+        }
+        .getOrElse {
+          Get(s"/ledgers/unknown$path")
+        }
+    }
+
+    request ~> routes() ~> check {
+      status must ===(StatusCodes.BadRequest)
+
+      val json = responseAs[JsValue]
+      validateErrorResponse(json, 1)
     }
   }
 
@@ -511,4 +589,25 @@ class IdentitiesControllerSpec
   }
 
   private def jsonEntity(body: String) = HttpEntity(ContentTypes.`application/json`, body)
+}
+
+object IdentitiesControllerSpec {
+  class DummyNodeTransactionService[State, Tx <: Transaction[State], Q <: LedgerQuery[State]]
+      extends NodeTransactionService[State, Tx, Q] {
+    override def getQueryService(ledgerId: LedgerId): LedgerQueryService[State, Q] = ???
+
+    override def receiveBlock(blEnvelope: Envelope[Block[State, Tx]]): Future[Either[ApplicationError, Unit]] = ???
+
+    override def receiveTransaction(txEnvelope: Envelope[Tx]): Future[Either[ApplicationError, Unit]] = ???
+
+    override def supportedLedgerIds: Set[LedgerId] = ???
+  }
+
+  class InMemoryIdentityQueryEngine(map: Map[String, IdentityPartition]) extends IdentityQueryEngine(null) {
+    override def keys(): Set[String] = map.keys.toSet
+
+    override def contains(partitionId: String): Boolean = map.contains(partitionId)
+
+    override def get(partitionId: String): Option[IdentityPartition] = map.get(partitionId)
+  }
 }
