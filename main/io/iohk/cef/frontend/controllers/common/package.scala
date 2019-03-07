@@ -1,7 +1,8 @@
 package io.iohk.cef.frontend.controllers
 
-import com.alexitc.playsonify.core.{FutureApplicationResult, I18nService}
+import com.alexitc.playsonify.core.{ApplicationResult, FutureApplicationResult, I18nService}
 import com.alexitc.playsonify.models.{
+  FieldValidationError,
   GenericPublicError,
   InputValidationError,
   PublicError,
@@ -10,6 +11,7 @@ import com.alexitc.playsonify.models.{
 import io.iohk.cef.error.{ApplicationError => CefError}
 import io.iohk.cef.frontend.client
 import io.iohk.cef.frontend.services.IdentityTransactionService
+import io.iohk.cef.ledger.UnsupportedLedgerException
 import org.scalactic.{Bad, Good}
 
 import scala.concurrent.ExecutionContext
@@ -20,10 +22,16 @@ package object common {
       implicit ec: ExecutionContext
   ): FutureApplicationResult[T] = {
 
-    value.map { fromEither(_, playsonifyError) }
+    value
+      .map { fromEither(_, playsonifyError) }
+      .recover {
+        case _: UnsupportedLedgerException =>
+          val error = fieldValidationError("ledgerId", "Unsupported ledger")
+          Bad(error).accumulating
+      }
   }
 
-  def fromEither[T](value: Either[CefError, T], playsonifyError: PlaysonifyError) = value match {
+  def fromEither[T](value: Either[CefError, T], playsonifyError: PlaysonifyError): ApplicationResult[T] = value match {
     case Left(e: IntrinsicValidationViolation) => Bad(e).accumulating
     case Left(x: IdentityTransactionService.CorrespondingPrivateKeyRequiredForLinkingIdentityError.type) =>
       Bad(genericError(x.toString)).accumulating
@@ -37,6 +45,14 @@ package object common {
     new InputValidationError {
       override def toPublicErrorList[L](i18nService: I18nService[L])(implicit lang: L): List[PublicError] = {
         List(GenericPublicError(message))
+      }
+    }
+  }
+
+  private def fieldValidationError(field: String, message: String): InputValidationError = {
+    new InputValidationError {
+      override def toPublicErrorList[L](i18nService: I18nService[L])(implicit lang: L): List[PublicError] = {
+        List(FieldValidationError(field, message))
       }
     }
   }
