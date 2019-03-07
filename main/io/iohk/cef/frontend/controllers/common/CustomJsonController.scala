@@ -17,8 +17,8 @@ abstract class CustomJsonController
         logger.error(s"Server error: $error, id = ${error.id}")
         None
       }
-      .foreach { _ =>
-        logger.error(s"Server error: $error, id = $id")
+      .foreach { ex =>
+        logger.error(s"Server error: $error, id = $id", ex)
       }
   }
 }
