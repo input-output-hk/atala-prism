@@ -415,6 +415,57 @@ class ChimericTransactionsControllerSpec extends WordSpec with ScalatestRouteTes
     }
   }
 
+  "GET /chimeric-transactions/addresses/:address/utxos" should {
+    val urlAddress = encodeAddress(signingKeyPair1.public)
+
+    "query the utxos" in {
+      val (service, routes) = prepare()
+      val utxos = Set(
+        TxOutRef("txid1", 0),
+        TxOutRef("txid1", 1),
+        TxOutRef("txid2", 1)
+      )
+
+      when(service.executeQuery(ledgerId, ChimericQuery.UtxosByPublicKey(signingKeyPair1.public)))
+        .thenReturn(Future.successful(Right(utxos)))
+
+      val request = Get(withLedgerId(s"/chimeric-transactions/addresses/$urlAddress/utxos"))
+
+      request ~> routes ~> check {
+        status must ===(StatusCodes.OK)
+
+        val list = responseAs[List[JsValue]]
+        val result = list.map { json =>
+          val txid = (json \ "txId").as[String]
+          val index = (json \ "index").as[Int]
+          TxOutRef(txid, index)
+        }
+        result.toSet must be(utxos)
+      }
+    }
+
+    "handle invalid address" in {
+      val (_, routes) = prepare()
+      val request = Get(withLedgerId(s"/chimeric-transactions/addresses/xx/utxos"))
+
+      request ~> routes ~> check {
+        status must ===(StatusCodes.BadRequest)
+        val json = responseAs[JsValue]
+        val errors = (json \ "errors").as[List[JsValue]]
+        errors.size must be(1)
+
+        val error = errors.head
+        (error \ "type").as[String] must be(PublicErrorRenderer.FieldValidationErrorType)
+        (error \ "field").as[String] must be("address")
+        (error \ "message").as[String] mustNot be(empty)
+      }
+    }
+
+    "fail on unknown ledger id" in {
+      testUnknownLedgerId(s"/chimeric-transactions/addresses/$urlAddress/balance")
+    }
+  }
+
   def prepare(): (ChimericTransactionService, Route) = {
     val service = mock[ChimericTransactionService]
     val api = new ChimericTransactionsController(service)

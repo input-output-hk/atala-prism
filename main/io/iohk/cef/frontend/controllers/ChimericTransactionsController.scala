@@ -10,11 +10,7 @@ import com.alexitc.playsonify.core.I18nService
 import com.alexitc.playsonify.models._
 import io.iohk.cef.frontend.client.ServiceResponseExtensions
 import io.iohk.cef.frontend.controllers.common._
-import io.iohk.cef.frontend.models.{
-  CreateChimericTransactionRequest,
-  SubmitChimericTransactionFragment,
-  SubmitChimericTransactionRequest
-}
+import io.iohk.cef.frontend.models._
 import io.iohk.cef.frontend.services.ChimericTransactionService
 import io.iohk.cef.ledger.LedgerId
 import io.iohk.cef.ledger.chimeric.{Address, ChimericTx, TxOutRef}
@@ -81,8 +77,8 @@ class ChimericTransactionsController(service: ChimericTransactionService)(
             }
           }
         } ~
-        path("chimeric-transactions" / "addresses" / Segment / "balance") { addressStr =>
-          get {
+        pathPrefix("chimeric-transactions" / "addresses" / Segment) { addressStr =>
+          (path("balance") & get) {
             public { _ =>
               val result = decodeAddress(addressStr)
                 .map { address =>
@@ -96,24 +92,36 @@ class ChimericTransactionsController(service: ChimericTransactionService)(
 
               handlingException(result)
             }
-          }
-        } ~
-        path("chimeric-transactions" / "addresses" / Segment / "nonce") { addressStr =>
-          get {
-            public { _ =>
-              val result = decodeAddress(addressStr)
-                .map { address =>
-                  service.executeQuery(ledgerId, ChimericQuery.AddressNonce(address)).map {
-                    case Right(Some(response)) => Good(Json.toJson(response))
-                    case Right(None) => Bad(Every(AddressNotFound(address)))
-                    case Left(_) => Bad(Every(QueryAddressNonceError))
+          } ~
+            (path("nonce") & get) {
+              public { _ =>
+                val result = decodeAddress(addressStr)
+                  .map { address =>
+                    service.executeQuery(ledgerId, ChimericQuery.AddressNonce(address)).map {
+                      case Right(Some(response)) => Good(response)
+                      case Right(None) => Bad(Every(AddressNotFound(address)))
+                      case Left(_) => Bad(Every(QueryAddressNonceError))
+                    }
                   }
-                }
-                .getOrElse(Future.successful(Bad(Every(InvalidAddress(addressStr)))))
+                  .getOrElse(Future.successful(Bad(Every(InvalidAddress(addressStr)))))
 
-              handlingException(result)
+                handlingException(result)
+              }
+            } ~
+            (path("utxos") & get) {
+              public { _ =>
+                val result = decodeAddress(addressStr)
+                  .map { address =>
+                    service.executeQuery(ledgerId, ChimericQuery.UtxosByPublicKey(address)).map {
+                      case Right(response) => Good(response)
+                      case Left(_) => Bad(Every(QueryAddressUtxosError))
+                    }
+                  }
+                  .getOrElse(Future.successful(Bad(Every(InvalidAddress(addressStr)))))
+
+                handlingException(result)
+              }
             }
-          }
         } ~
         path("chimeric-transactions") {
           post {
@@ -150,6 +158,7 @@ object ChimericTransactionsController {
   final case object QueryUtxoBalanceError extends SimpleInternalServerError
   final case object QueryAddressBalanceError extends SimpleInternalServerError
   final case object QueryAddressNonceError extends SimpleInternalServerError
+  final case object QueryAddressUtxosError extends SimpleInternalServerError
 
   private def notFound(field: String): List[PublicError] = {
     val message = s"No results found"
