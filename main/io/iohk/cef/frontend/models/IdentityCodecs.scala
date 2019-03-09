@@ -1,8 +1,8 @@
 package io.iohk.cef.frontend.models
 
 import akka.util.ByteString
-import io.iohk.cef.frontend.controllers.common.Codecs.fromHex
 import io.iohk.cef.ledger.identity._
+import io.iohk.cef.utils.HexStringCodec
 import io.iohk.crypto._
 import play.api.libs.json._
 
@@ -42,7 +42,7 @@ trait IdentityCodecs {
         linkingIdentity <- json.\("linkingIdentity").validate[String]
         pem <- json.\("pem").validate[String]
       } yield {
-        LinkCertificateData(linkingIdentity, fromHex(pem).utf8String)
+        LinkCertificateData(linkingIdentity, HexStringCodec.fromHexString(pem).utf8String)
       }
     }
   }

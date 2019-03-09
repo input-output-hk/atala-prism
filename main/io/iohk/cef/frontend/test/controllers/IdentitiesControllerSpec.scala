@@ -6,13 +6,13 @@ import akka.util.ByteString
 import com.alexitc.playsonify.akka.PublicErrorRenderer
 import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport._
 import io.iohk.cef.error.ApplicationError
-import io.iohk.cef.frontend.controllers.common.Codecs
 import io.iohk.cef.frontend.services.IdentityTransactionService
 import io.iohk.cef.ledger.identity._
 import io.iohk.cef.ledger.query.identity.{IdentityPartition, IdentityQuery, IdentityQueryEngine, IdentityQueryService}
 import io.iohk.cef.ledger.query.{LedgerQuery, LedgerQueryService}
 import io.iohk.cef.ledger.{Block, LedgerId, Transaction, UnsupportedLedgerException}
 import io.iohk.cef.transactionservice.NodeTransactionService
+import io.iohk.cef.utils.HexStringCodec
 import io.iohk.crypto._
 import io.iohk.crypto.certificates.test.data.ExampleCertificates._
 import io.iohk.network.Envelope
@@ -26,7 +26,6 @@ import scala.concurrent.duration.DurationDouble
 
 class IdentitiesControllerSpec extends WordSpec with ScalatestRouteTest {
 
-  import Codecs._
   import IdentitiesControllerSpec._
 
   implicit val executionContext = system.dispatcher
@@ -219,16 +218,17 @@ class IdentitiesControllerSpec extends WordSpec with ScalatestRouteTest {
     ): Assertion = {
 
       val identityString = identity.getOrElse("")
-      val keyString = key.map(_.toByteString).map(toCleanHex).getOrElse("")
+      val keyString = key.map(_.toByteString).map(HexStringCodec.toHexString).getOrElse("")
 
       val endorserIdentityString = endorserIdentity.getOrElse("")
       val endorsedIdentityString = endorsedIdentity.getOrElse("")
 
       val grantingIdentityString = grantingIdentity.getOrElse("")
       val grantedIdentityString = grantedIdentity.getOrElse("")
-      val grantedIdentityPublicKeyString = grantedIdentityPublicKey.map(_.toByteString).map(toCleanHex).getOrElse("")
+      val grantedIdentityPublicKeyString =
+        grantedIdentityPublicKey.map(_.toByteString).map(HexStringCodec.toHexString).getOrElse("")
 
-      val privateKeyString = toCleanHex(privateKey.toByteString)
+      val privateKeyString = HexStringCodec.toHexString(privateKey.toByteString)
       val partialBody =
         s"""
            |    "type": "$txType",
@@ -248,7 +248,7 @@ class IdentitiesControllerSpec extends WordSpec with ScalatestRouteTest {
 
       val body = linkingIdentityPrivateKey
         .map { key =>
-          val linkingIdentityPrivateKeyString = toCleanHex(key.toByteString)
+          val linkingIdentityPrivateKeyString = HexStringCodec.toHexString(key.toByteString)
 
           s"""
                |{
@@ -296,9 +296,9 @@ class IdentitiesControllerSpec extends WordSpec with ScalatestRouteTest {
         expectedResult: StatusCode = StatusCodes.Created
     ): Assertion = {
 
-      val privateKeyLinkHex = linkingIdentityPrivateKey.map(_.toByteString).map(toCleanHex)
-      val publicKeyLinkHex = toCleanHex(linkingIdentityPublicKey.toByteString)
-      val privateKeyHex = toCleanHex(privateKey.toByteString)
+      val privateKeyLinkHex = linkingIdentityPrivateKey.map(_.toByteString).map(HexStringCodec.toHexString)
+      val publicKeyLinkHex = HexStringCodec.toHexString(linkingIdentityPublicKey.toByteString)
+      val privateKeyHex = HexStringCodec.toHexString(privateKey.toByteString)
       val txType = "Link"
       val identity = "iohk"
       val body =
@@ -339,7 +339,7 @@ class IdentitiesControllerSpec extends WordSpec with ScalatestRouteTest {
         expectedResult: StatusCode = StatusCodes.Created
     ): Assertion = {
       val txType = "Revoke"
-      val privateKeyHex = toCleanHex(privateKey.toByteString)
+      val privateKeyHex = HexStringCodec.toHexString(privateKey.toByteString)
 
       val body =
         s"""
@@ -372,9 +372,9 @@ class IdentitiesControllerSpec extends WordSpec with ScalatestRouteTest {
         expectedResult: StatusCode = StatusCodes.Created
     ): Assertion = {
       val pem = twoChainedCertsPEM
-      val pemHex = toCleanHex(ByteString(twoChainedCertsPEM))
-      val privateKeyLinkHex = toCleanHex(certificatePrivateKey.toByteString)
-      val privateKeyHex = toCleanHex(privateKey.toByteString)
+      val pemHex = HexStringCodec.toHexString(ByteString(twoChainedCertsPEM))
+      val privateKeyLinkHex = HexStringCodec.toHexString(certificatePrivateKey.toByteString)
+      val privateKeyHex = HexStringCodec.toHexString(privateKey.toByteString)
       val identity = "valid"
       val txType = "LinkCertificate"
 
@@ -499,8 +499,8 @@ class IdentitiesControllerSpec extends WordSpec with ScalatestRouteTest {
     }
 
     "return validation errors" in {
-      val publicKeyHex = toCleanHex(pair.public.toByteString)
-      val privateKeyHex = toCleanHex(pair.`private`.toByteString)
+      val publicKeyHex = HexStringCodec.toHexString(pair.public.toByteString)
+      val privateKeyHex = HexStringCodec.toHexString(pair.`private`.toByteString)
       val body =
         s"""
            |{
@@ -522,7 +522,7 @@ class IdentitiesControllerSpec extends WordSpec with ScalatestRouteTest {
     }
 
     "return data errors" in {
-      val privateKeyHex = toCleanHex(pair.`private`.toByteString)
+      val privateKeyHex = HexStringCodec.toHexString(pair.`private`.toByteString)
       val body =
         s"""
            |{
