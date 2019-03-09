@@ -2,47 +2,15 @@ package io.iohk.cef.frontend.controllers.common
 
 import io.iohk.cef.data._
 import io.iohk.cef.data.query.DataItemQuery._
-import io.iohk.cef.data.query.Value.{
-  BooleanRef,
-  ByteRef,
-  CharRef,
-  DoubleRef,
-  FloatRef,
-  IntRef,
-  LongRef,
-  ShortRef,
-  StringRef
-}
+import io.iohk.cef.data.query.Value._
 import io.iohk.cef.data.query.{DataItemQuery, Field, Value => ValueRef}
 import io.iohk.cef.frontend.PlayJson
 import io.iohk.cef.frontend.models._
 import io.iohk.cef.ledger.chimeric._
-import io.iohk.cef.utils.NonEmptyList
 import io.iohk.crypto._
 import play.api.libs.json._
 
-object Codecs extends PlayJson.Formats with ChimericCodecs with IdentityCodecs with NetworkCodecs {
-
-  implicit def seqFormat[T](implicit tFormat: Format[T]): Format[Seq[T]] = new Format[Seq[T]] {
-    override def reads(json: JsValue): JsResult[Seq[T]] = {
-      val seqResult = json match {
-        case JsArray(values) =>
-          values.map(_.validate[T](tFormat)).foldLeft[JsResult[List[T]]](JsSuccess(List())) { (state, current) =>
-            for {
-              s <- state
-              c <- current
-            } yield c :: s
-          }
-        case _ => JsError("Invalid sequence detected")
-      }
-      seqResult.map(_.reverse)
-    }
-
-    override def writes(o: Seq[T]): JsValue = {
-      val jsonSeq = o.map(Json.toJson(_))
-      JsArray(jsonSeq)
-    }
-  }
+object Codecs extends PlayJson.Formats with CommonCodecs with ChimericCodecs with IdentityCodecs with NetworkCodecs {
 
   private def formatWrappedT[Wrapped: Format, Wrapper](
       unwrap: Wrapper => Wrapped,
@@ -213,26 +181,6 @@ object Codecs extends PlayJson.Formats with ChimericCodecs with IdentityCodecs w
       case v: DataItemServiceResponse.Validation => DataItemServiceResponseValidationFormat.writes(v)
     }
   }
-
-  implicit def nonEmptyListFormat[T](implicit formatT: Format[T]): Format[NonEmptyList[T]] =
-    new Format[NonEmptyList[T]] {
-      override def reads(json: JsValue): JsResult[NonEmptyList[T]] = {
-        json
-          .validate[List[T]]
-          .flatMap { list =>
-            NonEmptyList
-              .from(list)
-              .map(JsSuccess.apply(_))
-              .getOrElse {
-                JsError.apply("A non-empty list is expected")
-              }
-          }
-      }
-
-      override def writes(o: NonEmptyList[T]): JsValue = {
-        Json.toJson(o: List[T])
-      }
-    }
 
   implicit val UtxoResultFormat: Format[UtxoResult] = Json.format[UtxoResult]
   implicit val AddressResultFormat: Format[AddressResult] = Json.format[AddressResult]
