@@ -173,4 +173,9 @@ trait ChimericCodecs {
 
   implicit val createChimericTransactionRequestFormat: Format[CreateChimericTransactionRequest] =
     Json.format[CreateChimericTransactionRequest]
+
+  implicit val UtxoResultFormat: Format[UtxoResult] = Json.format[UtxoResult]
+  implicit val AddressResultFormat: Format[AddressResult] = Json.format[AddressResult]
+  implicit val NonceResultFormat: Format[NonceResult] = Json.format[NonceResult]
+  implicit val CurrencyQueryFormat: Format[CurrencyQuery] = Json.format[CurrencyQuery]
 }
