@@ -25,6 +25,27 @@ trait NetworkCodecs {
     }
   }
 
+  private def formatWrappedT2[Left: Format, Right: Format, Wrapper](
+      unwrapLeft: Wrapper => Left,
+      unwrapRight: Wrapper => Right,
+      wrap: (Left, Right) => Wrapper
+  ): Format[Wrapper] = new Format[Wrapper] {
+
+    override def reads(json: JsValue): JsResult[Wrapper] = {
+      for {
+        left <- (json \ "left").validate[Left]
+        right <- (json \ "right").validate[Right]
+      } yield wrap(left, right)
+    }
+
+    override def writes(o: Wrapper): JsValue = {
+      Json.obj(
+        "left" -> unwrapLeft(o),
+        "right" -> unwrapRight(o)
+      )
+    }
+  }
+
   implicit val nodeIdFormat: Format[NodeId] = new Format[NodeId] {
 
     override def writes(o: NodeId): JsValue = {
@@ -44,11 +65,16 @@ trait NetworkCodecs {
     }
   }
 
-  implicit lazy val singleNodeFormat: Format[SingleNode] = Json.format[SingleNode]
-  implicit lazy val setOfNodesFormat: Format[SetOfNodes] = Json.format[SetOfNodes]
-  implicit lazy val orFormat: Format[Or] = Json.format[Or]
-  implicit lazy val andFormat: Format[And] = Json.format[And]
-  implicit lazy val notFormat: Format[Not] = Json.format[Not]
+  implicit lazy val singleNodeFormat: Format[SingleNode] =
+    formatWrappedT[NodeId, SingleNode](_.nodeId, SingleNode.apply)
+  implicit lazy val setOfNodesFormat: Format[SetOfNodes] =
+    formatWrappedT[Set[NodeId], SetOfNodes](_.set, SetOfNodes.apply)
+  implicit lazy val orFormat: Format[Or] =
+    formatWrappedT2[DestinationDescriptor, DestinationDescriptor, Or](_.a, _.b, Or.apply)
+  implicit lazy val andFormat: Format[And] =
+    formatWrappedT2[DestinationDescriptor, DestinationDescriptor, And](_.a, _.b, And.apply)
+  implicit lazy val notFormat: Format[Not] =
+    formatWrappedT[DestinationDescriptor, Not](_.destinationDescriptor, Not.apply)
 
   implicit lazy val destinationDescriptorFormat: Format[DestinationDescriptor] = new Format[DestinationDescriptor] {
     override def writes(o: DestinationDescriptor): JsValue = {
