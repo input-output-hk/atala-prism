@@ -1,12 +1,11 @@
 package io.iohk.cef.data
 
-import io.iohk.codecs.nio.auto._
-import io.iohk.crypto._
 import io.iohk.cef.data.DataItemAction._
 import io.iohk.cef.data.query.DataItemQueryEngine
-import io.iohk.network.{Envelope, MessageStream, Network}
-import io.iohk.network.Everyone
 import io.iohk.cef.utils.NonEmptyList
+import io.iohk.codecs.nio.auto._
+import io.iohk.crypto._
+import io.iohk.network.{Envelope, Everyone, MessageStream, Network}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.{verify, when}
 import org.scalatest.FlatSpec
@@ -21,11 +20,10 @@ class DataItemServiceSpec extends FlatSpec {
   private implicit val canValidate: CanValidate[DataItem[String]] = _ => Right(())
 
   private val defaultKeys = generateSigningKeyPair()
-  private val defaultItemId = "id"
   private val defaultItemData = "foo"
   private val defaultSignature = sign(LabeledItem.Create(defaultItemData), defaultKeys.`private`)
   private val defaultOwner = Owner(defaultKeys.public, defaultSignature)
-  private val dataItem: DataItem[String] = DataItem(defaultItemId, defaultItemData, Seq(), NonEmptyList(defaultOwner))
+  private val dataItem: DataItem[String] = DataItem(defaultItemData, Seq(), NonEmptyList(defaultOwner))
   private val containerId = "container-id"
 
   behavior of "DataItemService"
@@ -73,8 +71,8 @@ class DataItemServiceSpec extends FlatSpec {
     val service: DataItemService[String] = new DataItemService(table, network, mock[DataItemQueryEngine[String]])
     when(table.delete(any(), any())(any())).thenReturn(Right(()))
 
-    service.processAction(Envelope(DeleteAction(dataItem.id, signature), containerId, Everyone))
+    service.processAction(Envelope(DeleteAction(DataItem.id(dataItem), signature), containerId, Everyone))
 
-    verify(table).delete(dataItem.id, signature)
+    verify(table).delete(DataItem.id(dataItem), signature)
   }
 }

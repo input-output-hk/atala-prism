@@ -3,16 +3,15 @@ package io.iohk.cef.integration
 import java.nio.file.Files
 import java.util.UUID
 
-import io.iohk.codecs.nio.auto._
-import io.iohk.crypto._
 import io.iohk.cef.data._
 import io.iohk.cef.data.query.{DataItemQueryEngine, DataItemQueryRequest, DataItemQueryResponse, Field}
 import io.iohk.cef.data.storage.mv.MVTableStorage
 import io.iohk.cef.error.ApplicationError
-import io.iohk.network.{Envelope, MessageStream, NodeId}
 import io.iohk.cef.test.DummyNoMessageNetwork
-import io.iohk.network.Everyone
 import io.iohk.cef.utils.NonEmptyList
+import io.iohk.codecs.nio.auto._
+import io.iohk.crypto._
+import io.iohk.network.{Envelope, Everyone, MessageStream, NodeId}
 import monix.execution.schedulers.TestScheduler
 import org.scalatest.concurrent.ScalaFutures._
 import org.scalatest.{EitherValues, FlatSpec, MustMatchers}
@@ -54,8 +53,8 @@ class QueryEngineTableItDbTest extends FlatSpec with MustMatchers with EitherVal
     val owner2 = Owner(keys.public, sign(labeledItem2, keys.`private`))
 
     val witness1 = Witness(owner1.key, sign(data1, keys.`private`))
-    val di1 = DataItem("insert1", data1, Seq(witness1), NonEmptyList(owner1))
-    val di2 = DataItem("insert2", data2, Seq(), NonEmptyList(owner2))
+    val di1 = DataItem(data1, Seq(witness1), NonEmptyList(owner1))
+    val di2 = DataItem(data2, Seq(), NonEmptyList(owner2))
 
     val insert1 = Envelope(DataItemAction.InsertAction(di1), tableId, Everyone)
     val insert2 = Envelope(DataItemAction.InsertAction(di2), tableId, Everyone)
@@ -64,8 +63,8 @@ class QueryEngineTableItDbTest extends FlatSpec with MustMatchers with EitherVal
     service.processAction(insert2) mustBe Right(DataItemServiceResponse.DIUnit)
 
     //When -- user queries for id
-    val query1 = Field(0) #== "insert1"
-    val query2 = Field(0) #== "insert2"
+    val query1 = Field(0) #== DataItem.id(di1)
+    val query2 = Field(0) #== DataItem.id(di2)
     val query3 = Field(0) #== "insert3"
 
     def foldStream(

@@ -1,8 +1,7 @@
 package io.iohk.cef.data.storage.mv
+
 import java.nio.file.Path
 
-import io.iohk.codecs.nio._
-import io.iohk.codecs.nio.auto._
 import io.iohk.cef.data.error.DataItemNotFound
 import io.iohk.cef.data.query.DataItemQuery.Predicate.toPredicateFn
 import io.iohk.cef.data.query.DataItemQuery.{Predicate, queryCata}
@@ -12,6 +11,8 @@ import io.iohk.cef.data.storage.TableStorage
 import io.iohk.cef.data.{DataItem, DataItemId, TableId}
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.utils.mv.MVTable
+import io.iohk.codecs.nio._
+import io.iohk.codecs.nio.auto._
 import org.h2.mvstore.MVMap
 
 import scala.collection.JavaConverters._
@@ -22,11 +23,11 @@ class MVTableStorage[I: NioCodec: TypeTag](tableId: TableId, storageFile: Path) 
   private val mvTable = new MVTable(tableId, storageFile, NioCodec[DataItem[I]])
 
   override def insert(dataItem: DataItem[I]): Unit = {
-    mvTable.update(_.put(dataItem.id, dataItem))
+    mvTable.update(_.put(DataItem.id(dataItem), dataItem))
   }
 
   override def delete(dataItem: DataItem[I]): Unit =
-    mvTable.update(_.remove(dataItem.id))
+    mvTable.update(_.remove(DataItem.id(dataItem)))
 
   override def select(query: DataItemQuery): Either[DataItemQueryError, Seq[DataItem[I]]] =
     try {
@@ -55,7 +56,7 @@ class MVTableStorage[I: NioCodec: TypeTag](tableId: TableId, storageFile: Path) 
     table.values().asScala.toSeq
 
   private def accessField(dataItem: DataItem[I], field: Field): Value = field match {
-    case Field(0) => StringRef(dataItem.id)
+    case Field(0) => StringRef(DataItem.id(dataItem))
     case _ => throw Error(InvalidDataItemQueryError(tableId, field))
   }
 

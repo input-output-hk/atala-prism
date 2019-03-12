@@ -2,16 +2,16 @@ package io.iohk.cef.integration
 
 import java.util.UUID
 
-import io.iohk.codecs.nio._
-import io.iohk.codecs.nio.auto._
-import io.iohk.crypto._
 import io.iohk.cef.data.DataItemAction.InsertAction
 import io.iohk.cef.data.DataItemServiceResponse.DIUnit
 import io.iohk.cef.data._
 import io.iohk.cef.data.query.{DataItemQueryEngine, DataItemQueryRequest, DataItemQueryResponse, Field}
 import io.iohk.cef.error.ApplicationError
-import io.iohk.network._
 import io.iohk.cef.utils.NonEmptyList
+import io.iohk.codecs.nio._
+import io.iohk.codecs.nio.auto._
+import io.iohk.crypto._
+import io.iohk.network._
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar
@@ -77,8 +77,8 @@ class QueryEngineNetworkDataItemServiceItFeatureSpec
 
         Then("the DataItemService should insert the table on the network 1")
 
-        val itemId = "item-id"
-        val input: Envelope[DataItemAction[String]] = setUpInsertData(itemId)
+        val data = "data"
+        val input: Envelope[InsertAction[String]] = setUpInsertData(data)
 
         dataItemService.processAction(input) mustBe Right(DIUnit)
 
@@ -88,15 +88,15 @@ class QueryEngineNetworkDataItemServiceItFeatureSpec
 
         Then("the DataItemService should return the data item with a query")
 
-        val query = Field(0) #== itemId
+        val query = Field(0) #== DataItem.id(input.content.dataItem)
 
         val data1 = "data1"
         val data2 = "data2"
         val keys = generateSigningKeyPair()
         val owner1 = Owner(keys.public, sign(LabeledItem.Create(data1), keys.`private`))
         val owner2 = Owner(keys.public, sign(LabeledItem.Create(data2), keys.`private`))
-        val dummyResultDataItem1 = DataItem[String]("id1", "data1", Seq(), NonEmptyList(owner1))
-        val dummyResultDataItem2 = DataItem[String]("id2", "data2", Seq(), NonEmptyList(owner2))
+        val dummyResultDataItem1 = DataItem[String]("data1", Seq(), NonEmptyList(owner1))
+        val dummyResultDataItem2 = DataItem[String]("data2", Seq(), NonEmptyList(owner2))
 
         when(table.select(query)).thenReturn(Right(Seq(dummyResultDataItem1)))
         when(table2.select(query)).thenReturn(Right(Seq(dummyResultDataItem2)))
@@ -126,13 +126,12 @@ class QueryEngineNetworkDataItemServiceItFeatureSpec
     }
   }
 
-  private def setUpInsertData(itemId: DataItemId): Envelope[DataItemAction[String]] = {
-    val data = "test-data"
+  private def setUpInsertData(data: String): Envelope[InsertAction[String]] = {
     val containerId = "1"
     val keys = generateSigningKeyPair()
     val owner = Owner(keys.public, sign(LabeledItem.Create(data), keys.`private`))
-    val dataItem = DataItem[String](itemId, data, Seq.empty[Witness], NonEmptyList(owner))
-    val insert: DataItemAction[String] = InsertAction(dataItem)
+    val dataItem = DataItem[String](data, Seq.empty[Witness], NonEmptyList(owner))
+    val insert: InsertAction[String] = InsertAction(dataItem)
     val input = Envelope(
       content = insert,
       containerId = containerId,

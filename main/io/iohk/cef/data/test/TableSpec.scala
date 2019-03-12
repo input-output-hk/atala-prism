@@ -1,10 +1,10 @@
 package io.iohk.cef.data
 
-import io.iohk.codecs.nio.auto._
-import io.iohk.crypto._
 import io.iohk.cef.data.error.InvalidSignaturesError
 import io.iohk.cef.data.storage.DummyTableStorage
 import io.iohk.cef.utils.NonEmptyList
+import io.iohk.codecs.nio.auto._
+import io.iohk.crypto._
 import org.scalatest.EitherValues._
 import org.scalatest.MustMatchers._
 import org.scalatest.WordSpec
@@ -26,7 +26,7 @@ class TableSpec extends WordSpec {
       val data = "data"
       val witnesses = List(Witness(keys.public, sign(data, keys.`private`)))
       val owners = NonEmptyList(Owner(keys.public, sign(LabeledItem.Create(data), keys.`private`)))
-      val item = DataItem("id", data, witnesses, owners)
+      val item = DataItem(data, witnesses, owners)
       val result = table.insert(item)
 
       result.right.value must be(())
@@ -37,7 +37,7 @@ class TableSpec extends WordSpec {
       val invalidSignature = sign(data * 2, keys.`private`)
       val witnesses = List(Witness(keys.public, invalidSignature))
       val owners = NonEmptyList(Owner(keys.public, sign(LabeledItem.Create(data), keys.`private`)))
-      val item = DataItem("id", data, witnesses, owners)
+      val item = DataItem(data, witnesses, owners)
       val result = table.insert(item)
 
       result.left.value must be(InvalidSignaturesError(item, List(invalidSignature)))
@@ -48,7 +48,7 @@ class TableSpec extends WordSpec {
       val invalidSignature = sign(data, keys.`private`)
       val witnesses = List(Witness(keys.public, sign(data, keys.`private`)))
       val owners = NonEmptyList(Owner(keys.public, invalidSignature))
-      val item = DataItem("id", data, witnesses, owners)
+      val item = DataItem(data, witnesses, owners)
       val result = table.insert(item)
 
       result.left.value must be(InvalidSignaturesError(item, List(invalidSignature)))

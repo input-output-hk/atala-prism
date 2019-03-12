@@ -2,35 +2,28 @@ package io.iohk.cef.frontend.controllers
 
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.testkit.ScalatestRouteTest
-import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport
-import io.iohk.cef.test.builder.SigningKeyPairs
-import io.iohk.codecs.nio.auto._
-import io.iohk.crypto._
+import de.heikoseeberger.akkahttpplayjson.PlayJsonSupport._
 import io.iohk.cef.data._
 import io.iohk.cef.error.ApplicationError
 import io.iohk.cef.frontend.controllers.common.Codecs
-import io.iohk.network.Envelope
 import io.iohk.cef.test.DummyMessageStream
+import io.iohk.cef.test.builder.SigningKeyPairs
+import io.iohk.codecs.nio.auto._
+import io.iohk.crypto._
+import io.iohk.network.Envelope
 import monix.execution.schedulers.TestScheduler
 import monix.reactive.Observable
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
 import org.mockito.invocation.InvocationOnMock
-import org.mockito.stubbing.Answer
-import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.MustMatchers._
+import org.scalatest.WordSpec
 import org.scalatest.mockito.MockitoSugar.mock
-import org.scalatest.{MustMatchers, WordSpec}
 import play.api.libs.json.{Format, JsValue, Json}
 
 import scala.concurrent.duration._
 
-class ItemsGenericControllerSpec
-    extends WordSpec
-    with MustMatchers
-    with ScalaFutures
-    with ScalatestRouteTest
-    with PlayJsonSupport
-    with SigningKeyPairs {
+class ItemsGenericControllerSpec extends WordSpec with ScalatestRouteTest with SigningKeyPairs {
 
   import Codecs._
   import ItemsGenericControllerSpec._
@@ -39,8 +32,8 @@ class ItemsGenericControllerSpec
   val service = mock[DataItemService[BirthCertificate]]
 
   when(service.processAction(any()))
-    .thenAnswer(new Answer[Either[ApplicationError, DataItemServiceResponse]] {
-      override def answer(i: InvocationOnMock): Either[ApplicationError, DataItemServiceResponse] =
+    .thenAnswer(
+      (i: InvocationOnMock) =>
         i.getArguments()(0) match {
           case Envelope(_: DataItemAction.InsertAction[_], _, _) =>
             Right(DataItemServiceResponse.DIUnit)
@@ -49,7 +42,7 @@ class ItemsGenericControllerSpec
           case Envelope(_: DataItemAction.DeleteAction[_], _, _) =>
             Right(DataItemServiceResponse.DIUnit)
         }
-    })
+    )
 
   val controller = new ItemsGenericController
 
@@ -69,7 +62,6 @@ class ItemsGenericControllerSpec
         s"""
           |{
           | "content": {
-          |   "id":"birth-cert",
           |   "data": {
           |       "date": "${data.date}",
           |       "name": "${data.name}"
@@ -149,7 +141,6 @@ class ItemsGenericControllerSpec
         s"""
            |{
            | "content": {
-           |   "id":"birth-cert",
            |   "data": {
            |       "date": "${data.date}",
            |       "name": "${data.name}"

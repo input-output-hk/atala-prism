@@ -2,16 +2,15 @@ package io.iohk.cef.integration
 
 import java.nio.file.{Files, Path}
 
-import io.iohk.codecs.nio.auto._
-import io.iohk.crypto._
 import io.iohk.cef.data.DataItemAction.InsertAction
 import io.iohk.cef.data._
 import io.iohk.cef.data.query.DataItemQuery.NoPredicateDataItemQuery
 import io.iohk.cef.data.query.DataItemQueryEngine
 import io.iohk.cef.data.storage.mv.MVTableStorage
-import io.iohk.network.{Envelope, MessageStream, Network}
-import io.iohk.network.Everyone
 import io.iohk.cef.utils.NonEmptyList
+import io.iohk.codecs.nio.auto._
+import io.iohk.crypto._
+import io.iohk.network.{Envelope, Everyone, MessageStream, Network}
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito.{times, verify, when}
 import org.scalatest.FlatSpec
@@ -39,8 +38,8 @@ class DataItemServiceTableItSpec extends FlatSpec {
   private val labeledItem2 = LabeledItem.Create(data2)
   private val owner = Owner(ownerKeyPair.public, sign(labeledItem, ownerKeyPair.`private`))
   private val owner2 = Owner(ownerKeyPair2.public, sign(labeledItem2, ownerKeyPair2.`private`))
-  private val firstDataItem = DataItem("id1", data, Seq(), NonEmptyList(owner))
-  private val secondDataItem = DataItem("id2", data2, Seq(), NonEmptyList(owner2))
+  private val firstDataItem = DataItem(data, Seq(), NonEmptyList(owner))
+  private val secondDataItem = DataItem(data2, Seq(), NonEmptyList(owner2))
   private val dataItems: Seq[DataItem[DataItemId]] = Seq(firstDataItem, secondDataItem)
 
   private val envelopes: Seq[Envelope[DataItemAction[DataItemId]]] =
@@ -66,7 +65,7 @@ class DataItemServiceTableItSpec extends FlatSpec {
 
     val deleteSignature = LabeledItem.Delete(firstDataItem)
     val deleteAction: DataItemAction[String] =
-      DataItemAction.DeleteAction(firstDataItem.id, sign(deleteSignature, ownerKeyPair.`private`))
+      DataItemAction.DeleteAction(DataItem.id(firstDataItem), sign(deleteSignature, ownerKeyPair.`private`))
     val deleteResult = service.processAction(Envelope(deleteAction, testTableId, Everyone))
     deleteResult mustBe Right(DataItemServiceResponse.DIUnit)
 

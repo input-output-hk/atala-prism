@@ -2,14 +2,14 @@ package io.iohk.cef.data.storage.mv
 
 import java.nio.file.{Files, Path}
 
-import io.iohk.codecs.nio.auto._
-import io.iohk.crypto._
+import io.iohk.cef.data._
 import io.iohk.cef.data.error.DataItemNotFound
 import io.iohk.cef.data.query.DataItemQuery._
 import io.iohk.cef.data.query.Value.StringRef
 import io.iohk.cef.data.query.{Field, InvalidDataItemQueryError}
-import io.iohk.cef.data._
 import io.iohk.cef.utils.NonEmptyList
+import io.iohk.codecs.nio.auto._
+import io.iohk.crypto._
 import org.scalatest.EitherValues._
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
@@ -25,11 +25,11 @@ class MVTableStorageSpec extends FlatSpec {
     val data = Random.nextString(28)
     val keys = generateSigningKeyPair()
     val owner = Owner(keys.public, sign(LabeledItem.Create(data), keys.`private`))
-    val expectedDataItem = DataItem("A", data, Seq(), NonEmptyList(owner))
-
+    val expectedDataItem = DataItem(data, Seq(), NonEmptyList(owner))
+    val expectedDataItemId = DataItem.id(expectedDataItem)
     // when
     storage.insert(expectedDataItem)
-    val actualDataItem = storage.selectSingle("A").right.value
+    val actualDataItem = storage.selectSingle(expectedDataItemId).right.value
 
     // then
     actualDataItem shouldBe expectedDataItem
@@ -40,15 +40,16 @@ class MVTableStorageSpec extends FlatSpec {
     val data = Random.nextString(28)
     val keys = generateSigningKeyPair()
     val owner = Owner(keys.public, sign(LabeledItem.Create(data), keys.`private`))
-    val dataItem = DataItem("A", data, Seq(), NonEmptyList(owner))
+    val dataItem = DataItem(data, Seq(), NonEmptyList(owner))
+    val dataItemId = DataItem.id(dataItem)
 
     // when
     storage.insert(dataItem)
     storage.delete(dataItem)
-    val selectionResult = storage.selectSingle("A").left.value
+    val selectionResult = storage.selectSingle(dataItemId).left.value
 
     // then
-    selectionResult shouldBe DataItemNotFound("tableId", dataItem.id)
+    selectionResult shouldBe DataItemNotFound("tableId", dataItemId)
   }
 
   it should "support a NoPredicate query" in testStorage { storage =>
@@ -56,7 +57,7 @@ class MVTableStorageSpec extends FlatSpec {
     val data = Random.nextString(28)
     val keys = generateSigningKeyPair()
     val owner = Owner(keys.public, sign(LabeledItem.Create(data), keys.`private`))
-    val dataItem = DataItem("A", data, Seq(), NonEmptyList(owner))
+    val dataItem = DataItem(data, Seq(), NonEmptyList(owner))
     storage.insert(dataItem)
 
     // when
@@ -71,9 +72,11 @@ class MVTableStorageSpec extends FlatSpec {
     val data = Random.nextString(28)
     val keys = generateSigningKeyPair()
     val owner = Owner(keys.public, sign(LabeledItem.Create(data), keys.`private`))
-    val dataItem = DataItem("A", data, Seq(), NonEmptyList(owner))
+    val dataItem = DataItem(data, Seq(), NonEmptyList(owner))
+    val dataItemId = DataItem.id(dataItem)
+
     storage.insert(dataItem)
-    val query = Field(0) #== StringRef("A")
+    val query = Field(0) #== StringRef(dataItemId)
 
     // when
     val selectionResult = storage.select(query).right.value
@@ -87,9 +90,10 @@ class MVTableStorageSpec extends FlatSpec {
     val data = Random.nextString(28)
     val keys = generateSigningKeyPair()
     val owner = Owner(keys.public, sign(LabeledItem.Create(data), keys.`private`))
-    val dataItem = DataItem("A", data, Seq(), NonEmptyList(owner))
+    val dataItem = DataItem(data, Seq(), NonEmptyList(owner))
+
     storage.insert(dataItem)
-    val query = Field(0) #== StringRef("B")
+    val query = Field(0) #== StringRef("unknown")
 
     // when
     val selectionResult = storage.select(query).right.value
@@ -103,9 +107,11 @@ class MVTableStorageSpec extends FlatSpec {
     val data = Random.nextString(28)
     val keys = generateSigningKeyPair()
     val owner = Owner(keys.public, sign(LabeledItem.Create(data), keys.`private`))
-    val dataItem = DataItem("A", data, Seq(), NonEmptyList(owner)) // mildly annoying that data is required
+    val dataItem = DataItem(data, Seq(), NonEmptyList(owner)) // mildly annoying that data is required
+    val dataItemId = DataItem.id(dataItem)
+
     storage.insert(dataItem)
-    val query = Field(999) #== StringRef("A")
+    val query = Field(999) #== StringRef(dataItemId)
 
     // when
     val selectionResult = storage.select(query).left.value
@@ -121,11 +127,15 @@ class MVTableStorageSpec extends FlatSpec {
     val keys = generateSigningKeyPair()
     val owner = Owner(keys.public, sign(LabeledItem.Create(data), keys.`private`))
     val owner2 = Owner(keys.public, sign(data2, keys.`private`))
-    val dataItemA = DataItem("A", data, Seq(), NonEmptyList(owner))
-    val dataItemB = DataItem("B", data2, Seq(), NonEmptyList(owner2))
+    val dataItemA = DataItem(data, Seq(), NonEmptyList(owner))
+    val dataItemAId = DataItem.id(dataItemA)
+
+    val dataItemB = DataItem(data2, Seq(), NonEmptyList(owner2))
+    val dataItemBId = DataItem.id(dataItemB)
+
     storage.insert(dataItemA)
     storage.insert(dataItemB)
-    val query = (Field(0) #== StringRef("A")) and (Field(0) #== StringRef("B"))
+    val query = (Field(0) #== StringRef(dataItemAId)) and (Field(0) #== StringRef(dataItemBId))
 
     // when
     val selectionResult = storage.select(query).right.value
@@ -141,17 +151,21 @@ class MVTableStorageSpec extends FlatSpec {
     val keys = generateSigningKeyPair()
     val owner = Owner(keys.public, sign(LabeledItem.Create(data), keys.`private`))
     val owner2 = Owner(keys.public, sign(LabeledItem.Create(data2), keys.`private`))
-    val dataItemA = DataItem("A", data, Seq(), NonEmptyList(owner))
-    val dataItemB = DataItem("B", data2, Seq(), NonEmptyList(owner2))
+    val dataItemA = DataItem(data, Seq(), NonEmptyList(owner))
+    val dataItemB = DataItem(data2, Seq(), NonEmptyList(owner2))
+
+    val dataItemAId = DataItem.id(dataItemA)
+    val dataItemBId = DataItem.id(dataItemB)
+
     storage.insert(dataItemA)
     storage.insert(dataItemB)
-    val query = (Field(0) #== StringRef("A")) or (Field(0) #== StringRef("B"))
+    val query = (Field(0) #== StringRef(dataItemAId)) or (Field(0) #== StringRef(dataItemBId))
 
     // when
     val selectionResult = storage.select(query).right.value
 
     // then
-    selectionResult shouldBe Seq(dataItemA, dataItemB)
+    selectionResult.toSet shouldBe Set(dataItemA, dataItemB)
   }
 
   private def testStorage(testCode: MVTableStorage[String] => Any): Unit = {

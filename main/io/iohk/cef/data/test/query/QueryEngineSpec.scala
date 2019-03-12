@@ -1,13 +1,12 @@
 package io.iohk.cef.data.query
 
+import io.iohk.cef.data._
+import io.iohk.cef.data.query.DataItemQuery.NoPredicateDataItemQuery
+import io.iohk.cef.test.DummyMessageStream
+import io.iohk.cef.utils.NonEmptyList
 import io.iohk.codecs.nio.auto._
 import io.iohk.crypto._
-import io.iohk.cef.data.query.DataItemQuery.NoPredicateDataItemQuery
-import io.iohk.cef.data._
-import io.iohk.network.{Envelope, Network, NodeId}
-import io.iohk.cef.test.DummyMessageStream
-import io.iohk.network.Everyone
-import io.iohk.cef.utils.NonEmptyList
+import io.iohk.network.{Envelope, Everyone, Network, NodeId}
 import monix.execution.schedulers.TestScheduler
 import monix.reactive.Observable
 import org.mockito.Mockito.{times, verify, when}
@@ -27,7 +26,7 @@ class QueryEngineSpec extends FlatSpec with MustMatchers {
     val data = "dataItem1"
     val keys = generateSigningKeyPair()
     val owner = Owner(keys.public, sign(LabeledItem.Create(data), keys.`private`))
-    val queryResult = Seq(DataItem("1", data, Seq(), NonEmptyList(owner)))
+    val queryResult = Seq(DataItem(data, Seq(), NonEmptyList(owner)))
     val queries = Seq(NoPredicateDataItemQuery)
     val queryResponse = DataItemQueryResponse(queryId, Right(queryResult))
     val queryResponsesEnvelope = Envelope(queryResponse, tableId, Everyone)

@@ -4,10 +4,10 @@ import java.util.UUID
 
 import io.iohk.cef.agreements.AgreementFixture._
 import io.iohk.cef.agreements.AgreementsMessage.Propose
+import io.iohk.cef.data.{DataItem, Owner, Witness}
+import io.iohk.cef.utils.NonEmptyList
 import io.iohk.codecs.nio.auto._
 import io.iohk.crypto._
-import io.iohk.cef.utils.NonEmptyList
-import io.iohk.cef.data.{DataItem, Owner, Witness}
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 import org.scalatest.concurrent.ScalaFutures.{PatienceConfig, whenReady}
@@ -80,12 +80,11 @@ class AgreementDataItemAcceptanceSpec extends FlatSpec {
   }
 
   private def aWitnessedDataItem(data: String, keyPair: SigningKeyPair): DataItem[String] = {
-    val itemId = "item-id"
     val signature = sign(data, keyPair.`private`)
     val aw = Witness(keyPair.public, signature)
     val owner = Owner(keyPair.public, signature)
 
-    new DataItem[String](itemId, data, Seq(aw), NonEmptyList(owner))
+    new DataItem[String](data, Seq(aw), NonEmptyList(owner))
   }
 
   private def witnessDataItem(dataItem: DataItem[String], keyPair: SigningKeyPair): DataItem[String] =

@@ -1,13 +1,13 @@
 package io.iohk.cef.integration
 
-import io.iohk.codecs.nio._
-import io.iohk.codecs.nio.auto._
-import io.iohk.crypto._
 import io.iohk.cef.data.DataItemAction.InsertAction
 import io.iohk.cef.data._
 import io.iohk.cef.data.query.DataItemQueryEngine
-import io.iohk.network._
 import io.iohk.cef.utils.NonEmptyList
+import io.iohk.codecs.nio._
+import io.iohk.codecs.nio.auto._
+import io.iohk.crypto._
+import io.iohk.network._
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
 import org.scalatest.mockito.MockitoSugar
@@ -69,11 +69,10 @@ class NetworkDataItemServiceItFeatureSpec
 
   private def setUpInsertData(): Envelope[DataItemAction[String]] = {
     val data = "test-data"
-    val itemId = "item-id"
     val containerId = "1"
     val keys = generateSigningKeyPair()
     val owner = Owner(keys.public, sign(LabeledItem.Create(data), keys.`private`))
-    val dataItem = DataItem[String](itemId, data, Seq.empty[Witness], NonEmptyList(owner))
+    val dataItem = DataItem[String](data, Seq.empty[Witness], NonEmptyList(owner))
     val insert: DataItemAction[String] = InsertAction(dataItem)
     val input = Envelope(
       content = insert,

@@ -1,10 +1,10 @@
 package io.iohk.cef.frontend.controllers.common
 
+import io.iohk.cef.data._
+import io.iohk.cef.utils.NonEmptyList
 import io.iohk.codecs.nio.auto._
 import io.iohk.crypto._
-import io.iohk.cef.data._
 import io.iohk.network._
-import io.iohk.cef.utils.NonEmptyList
 import org.scalatest.{MustMatchers, WordSpec}
 import play.api.libs.json.{Format, Json}
 
@@ -26,7 +26,7 @@ class DataItemEnvelopeSpec extends WordSpec with MustMatchers {
       val data = Data("IOHK")
       val keys = generateSigningKeyPair()
       val owner = Owner(keys.public, sign(LabeledItem.Create(data), keys.`private`))
-      val dataItem = DataItem("custom", data, Seq.empty[Witness], NonEmptyList(owner))
+      val dataItem = DataItem(data, Seq.empty[Witness], NonEmptyList(owner))
       val input = Envelope(
         content = dataItem,
         containerId = "nothing",
