@@ -13,7 +13,7 @@ const httpOptions = {
 @Injectable()
 export class IdentityLedgerService {
 
-  private baseUrl = environment.api.url + '/identities';
+  private baseUrl = `${environment.api.url}/ledgers/${config.identityLedger}/identities`;
 
   constructor(private http: HttpClient) { }
 
@@ -36,7 +36,6 @@ export class IdentityLedgerService {
     const url = `${this.baseUrl}`;
     const body = {
       type: 'claim',
-      ledgerId: config.identityLedger,
       privateKey: identity.keyPair.privateKey,
       data: {
         identity: identity.identity,
@@ -50,7 +49,6 @@ export class IdentityLedgerService {
     const url = `${this.baseUrl}`;
     const body = {
       type: 'endorse',
-      ledgerId: config.identityLedger,
       privateKey: endorser.keyPair.privateKey,
       data: {
         endorserIdentity: endorser.identity,
@@ -64,7 +62,6 @@ export class IdentityLedgerService {
     const url = `${this.baseUrl}`;
     const body = {
       type: 'revoke',
-      ledgerId: config.identityLedger,
       privateKey: endorser.keyPair.privateKey,
       data: {
         endorserIdentity: endorser.identity,
