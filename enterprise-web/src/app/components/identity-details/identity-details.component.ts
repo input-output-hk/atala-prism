@@ -42,8 +42,8 @@ export class IdentityDetailsComponent implements OnInit {
   @Input()
   set identity(_identity: string) {
     this._identity = _identity;
-    this.endorsers$ = this.identityLedger.getEndorsements(this.identity);
-    this.endorsements$ = this.identityLedger.getEndorsers(this.identity);
+    this.endorsements$ = this.identityLedger.getEndorsements(this.identity);
+    this.endorsers$ = this.identityLedger.getEndorsers(this.identity);
     this.publicKey$ = this.identityLedger.getKeys(this.identity)
       .pipe(
         map(x => x[0])
