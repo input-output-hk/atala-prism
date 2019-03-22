@@ -1,6 +1,7 @@
 package obft
 
 import obft.blockchain._
+import obft.mempool._
 
 import monix.reactive._
 import monix.execution.Scheduler.Implicits.global

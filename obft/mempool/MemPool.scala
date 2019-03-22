@@ -1,4 +1,4 @@
-package obft
+package obft.mempool
 
 class MemPool[Tx](u: Int) {
 
@@ -7,20 +7,23 @@ class MemPool[Tx](u: Int) {
   private val data: Array[List[Tx]] = Array.fill(u)(Nil)
   private var current: Int = 0
 
+  /** Signals the mempool that the clock has advanced one time slot */
   def advance(): Unit = {
     current = current.next
     data(current) = Nil
   }
 
+  /** Adds one transaction into the mempool */
   def add(tx: Tx): Unit =
     data(current) = tx :: data(current)
 
+  /** Retrives all the transactions currently stored in the mempool */
   def collect(): List[Tx] = {
     var r = List.empty[Tx]
-    var i = current.next
+    var i = current
     do {
-      r = data(current).foldRight(r)((tx, a) => tx :: a)
       i = i.next
+      r = data(i).foldRight(r)((tx, a) => tx :: a)
     } while (i != current)
 
     r.reverse // `reverse` puts the older Tx at index 0 and the newer at index r.length - 1
