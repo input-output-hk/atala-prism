@@ -1,4 +1,4 @@
-package obft
+package obft.fakes
 
 sealed abstract class PublicKey(val identifier: String) {
   override def equals(that: Any): Boolean =
@@ -21,8 +21,8 @@ sealed abstract class PrivateKey(val identifier: String) {
 }
 
 case class KeyPair private (identifier: String) {
-  case object PublicKey extends obft.PublicKey(identifier)
-  case object PrivateKey extends obft.PrivateKey(identifier)
+  case object PublicKey extends obft.fakes.PublicKey(identifier)
+  case object PrivateKey extends obft.fakes.PrivateKey(identifier)
 }
 
 object KeyPair {

@@ -1,4 +1,4 @@
-package obft
+package obft.clock
 
 import scala.concurrent.duration._
 

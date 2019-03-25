@@ -3,14 +3,10 @@ package obft.blockchain
 // format: off
 
 import scala.annotation.tailrec
-import obft._
+import obft.fakes._
+import obft.clock._
 
-case class StateSnapshot[S](
-    computedState: S,
-    snapshotTimestamp: TimeSlot // That is, the timestamp of the last transaction this snapshot includes
-)
-
-class Blockchain[Tx](validator: SegmentValidator, storage: BlockStorage[Tx])(keys: List[PublicKey], maxNumOfAdversaries: Int) { blockchain =>
+class Blockchain[Tx](validator: SegmentValidator, private[blockchain] val storage: BlockStorage[Tx])(keys: List[PublicKey], maxNumOfAdversaries: Int) { blockchain =>
 
   private[blockchain] case class BlockPointer(
     at: Hash[AnyBlock[Tx]],
@@ -20,7 +16,7 @@ class Blockchain[Tx](validator: SegmentValidator, storage: BlockStorage[Tx])(key
       forceGetFromStorage(at)
   }
 
-  private var headPointer: BlockPointer = {
+  private[blockchain] var headPointer: BlockPointer = {
     val gb = GenesisBlock[Tx](keys)
     val hgb = Hash(gb)
     storage.put(hgb, gb)
