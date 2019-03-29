@@ -1,4 +1,4 @@
-load("//scala:rules.bzl", "scala_binary")
+load("//scala:rules.bzl", "scala_binary", "scala_test")
 
 scala_binary(
   name = "obft",
@@ -13,3 +13,17 @@ scala_binary(
   main_class = "obft.Obft",
 )
 
+scala_test(
+  name = "tests",
+  deps = [
+    "obft",
+    "//obft/blockchain",
+    "//obft/clock",
+    "//obft/mempool",
+    "//obft/fakes",
+  ],
+  external = [
+    "io.monix:monix%",
+    "org.scalacheck:scalacheck%",
+  ],
+)
