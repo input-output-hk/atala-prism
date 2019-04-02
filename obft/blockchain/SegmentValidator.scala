@@ -3,7 +3,7 @@ package obft.blockchain
 // format: off
 
 import scala.annotation.tailrec
-import obft._
+import obft.fakes._
 
 // This validates that a segment of a Blockchain is correct (following the rules specified in the paper)
 // This does not perform any kind of business logic of the data stored within Tx (or the Ledger for that matter)
@@ -71,12 +71,15 @@ class SegmentValidator(keys: List[PublicKey]) {
       chainSegment match {
         case Nil =>
           true
-        case h :: t =>
+        case h :: Nil =>
           // A segment is valid if ...
-          isValid(h, hashPreviousBlock) && // ... the head is valid
-          isSegmentValid(t, Hash(h))       // ... and the tail (another chain segment) is valid
-                                           // NOTE: the tail, to be valid, has to accept the hash
-                                           //       of the head as valid
+          isValid(h, hashPreviousBlock)
+        case h :: h2 :: t =>
+          // A segment is valid if ...
+          isValid(h, Hash(h2)) &&                    // ... the head is valid
+          isSegmentValid(h2 :: t, hashPreviousBlock) // ... and the tail (another chain segment) is valid
+                                                     // NOTE: the tail, to be valid, has to accept the hash
+                                                     //       of the head as valid
       }
 
     isSegmentValid(chainSegment, hashPreviousBlock)

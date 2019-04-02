@@ -1,6 +1,7 @@
 package obft.blockchain
 
-import obft._
+import obft.fakes._
+import obft.clock._
 
 // format: off
 

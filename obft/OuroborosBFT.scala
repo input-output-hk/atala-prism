@@ -1,5 +1,7 @@
 package obft
 
+import obft.fakes._
+import obft.clock._
 import obft.blockchain._
 import obft.mempool._
 
@@ -53,10 +55,23 @@ class OuroborosBFT[Tx](blockchain: Blockchain[Tx], mempool: MemPool[Tx])(
   }
 
   def unsafeRunAllTransactions[S](initialState: S, transactionExecutor: (S, Tx) => Option[S]): S =
-    blockchain.unsafeRunAllTransactions[S](initialState, transactionExecutor)
+    blockchain.unsafeRunAllTransactions(initialState, transactionExecutor)
+
+  def unsafeRunTransactionsFromPreviousStateSnapshot[S](
+      snapshot: StateSnapshot[S],
+      transactionExecutor: (S, Tx) => Option[S]
+  ): S =
+    blockchain.unsafeRunTransactionsFromPreviousStateSnapshot(snapshot, transactionExecutor)
 
   def runAllFinalizedTransactions[S](now: TimeSlot, initialState: S, transactionExecutor: (S, Tx) => Option[S]): S =
-    blockchain.runAllFinalizedTransactions[S](now: TimeSlot, initialState, transactionExecutor)
+    blockchain.runAllFinalizedTransactions(now, initialState, transactionExecutor)
+
+  def runFinalizedTransactionsFromPreviousStateSnapshot[S](
+      now: TimeSlot,
+      snapshot: StateSnapshot[S],
+      transactionExecutor: (S, Tx) => Option[S]
+  ): S =
+    blockchain.runFinalizedTransactionsFromPreviousStateSnapshot(now, snapshot, transactionExecutor)
 
   val ouroborosStream = {
     Observable

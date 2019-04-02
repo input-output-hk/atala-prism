@@ -1,10 +1,10 @@
 package obft.blockchain
 
-import obft._
+import obft.fakes._
 
 class BlockStorage[Tx]() {
 
-  private var data: Map[Hash[AnyBlock[Tx]], AnyBlock[Tx]] = Map.empty
+  private[blockchain] var data: Map[Hash[AnyBlock[Tx]], AnyBlock[Tx]] = Map.empty
 
   def get(id: Hash[AnyBlock[Tx]]): Option[AnyBlock[Tx]] =
     data.get(id)
