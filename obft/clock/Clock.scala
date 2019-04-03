@@ -22,10 +22,12 @@ object TimeSlot {
 }
 
 object Clock {
-  private val initialTime: Long =
-    Clock.synchronized {
-      System.currentTimeMillis()
-    }
+
+  /**
+    * NOTE: This allows all the servers to have the same initial time but leads to the first slot to be N instead of 0.
+    *       Which shouldn't be a problem at all.
+    */
+  private val initialTime: Long = 0L
 
   def currentSlot(slotDuration: Long): TimeSlot =
     Clock.synchronized {
