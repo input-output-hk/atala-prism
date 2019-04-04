@@ -29,12 +29,11 @@ object Clock {
     */
   private val initialTime: Long = 0L
 
-  def currentSlot(slotDuration: Long): TimeSlot =
-    Clock.synchronized {
-      val current = System.currentTimeMillis()
-      val delta = current - initialTime
-      TimeSlot((delta / slotDuration).toInt)
-    }
+  def currentSlot(slotDuration: Long): TimeSlot = {
+    val current = System.currentTimeMillis()
+    val delta = current - initialTime
+    TimeSlot((delta / slotDuration).toInt)
+  }
 
   def currentSlot(slotDuration: Duration): TimeSlot =
     currentSlot(slotDuration.toMillis)
