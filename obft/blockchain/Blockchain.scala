@@ -2,11 +2,14 @@ package obft.blockchain
 
 // format: off
 
-import scala.annotation.tailrec
 import io.iohk.multicrypto._
-import obft.clock._
 import io.iohk.decco.auto._
 import io.iohk.decco._
+
+import obft.blockchain.storage.{BlockStorage, InMemoryBlockStorage}
+import obft.clock._
+
+import scala.annotation.tailrec
 
 class Blockchain[Tx: Codec](validator: SegmentValidator, private[blockchain] val storage: BlockStorage[Tx])(keys: List[SigningPublicKey], maxNumOfAdversaries: Int) { blockchain =>
 
@@ -152,6 +155,6 @@ class Blockchain[Tx: Codec](validator: SegmentValidator, private[blockchain] val
 object Blockchain {
 
   def apply[Tx: Codec](keys: List[SigningPublicKey], maxNumOfAdversaries: Int): Blockchain[Tx] =
-    new Blockchain[Tx](new SegmentValidator(keys), BlockStorage[Tx]())(keys, maxNumOfAdversaries)
+    new Blockchain[Tx](new SegmentValidator(keys), new InMemoryBlockStorage[Tx]())(keys, maxNumOfAdversaries)
 
 }

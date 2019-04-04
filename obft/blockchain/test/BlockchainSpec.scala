@@ -8,6 +8,8 @@ import io.iohk.multicrypto.encoding.implicits._
 import io.iohk.multicrypto.test.utils.CryptoEntityArbitraries
 import io.iohk.decco.auto._
 import io.iohk.decco._
+
+import obft.blockchain.storage.InMemoryBlockStorage
 import obft.clock._
 
 import io.iohk.decco.test.utils.CodecTestingHelpers._
@@ -20,8 +22,6 @@ import org.scalatest.WordSpec
 import org.scalatest.MustMatchers
 
 class BlockchainSpec extends WordSpec with MustMatchers with CryptoEntityArbitraries {
-
-  type InMemoryBlockStorage[Tx] = BlockStorage.InMemory[Tx]
 
   implicit def genesisBlockArbitrary[T: Arbitrary]: Arbitrary[GenesisBlock[T]] =
     Arbitrary(
