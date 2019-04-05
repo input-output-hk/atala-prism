@@ -4,7 +4,8 @@ package test
 // format: off
 
 import obft.clock._
-import obft.fakes._
+import io.iohk.multicrypto._
+import io.iohk.decco.auto._
 
 import org.scalatest.WordSpec
 import org.scalatest.MustMatchers
@@ -18,33 +19,33 @@ class SegmentValidatorSpec extends WordSpec with MustMatchers {
     }
 
     "reject a Block with an incorrect previous hash" in {
-      segmentValidator.isValid(validBlock, Mock.Hash("bad")) mustBe false
+      segmentValidator.isValid(validBlock, hash("bad")) mustBe false
     }
 
     "reject a Block with the timeSlot signed by the wrong key" in {
       val block =
-        validBlock.copy(body = validBlock.body.copy(timeSlotSignature = Signature.sign(TimeSlot(1230), wrongKeys.PrivateKey)))
+        validBlock.copy(body = validBlock.body.copy(timeSlotSignature = sign(TimeSlot(1230), wrongKeys.`private`)))
 
       segmentValidator.isValid(block, block.body.hash) mustBe false
     }
 
     "reject a Block with the timeSlotSignature signing the incorrect timeSlot" in {
       val block =
-        validBlock.copy(body = validBlock.body.copy(timeSlotSignature = Signature.sign(TimeSlot(1122), validSigningKey)))
+        validBlock.copy(body = validBlock.body.copy(timeSlotSignature = sign(TimeSlot(1122), validSigningKey)))
 
       segmentValidator.isValid(block, block.body.hash) mustBe false
     }
 
     "reject a Block whose body is signed with the wrong key" in {
       val block =
-        validBlock.copy(signature = Signature.sign(validBlock.body, wrongKeys.PrivateKey))
+        validBlock.copy(signature = sign(validBlock.body, wrongKeys.`private`))
 
       segmentValidator.isValid(block, block.body.hash) mustBe false
     }
 
     "reject a Block whose signature is signing an incorrect body" in {
-      val block =
-        validBlock.copy(signature = Signature.sign(validBlock.body.copy(delta = Nil), validSigningKey))
+      val block: Block[String] =
+        validBlock.copy(signature = sign(validBlock.body.copy(delta = List.empty[String]), validSigningKey))
 
       segmentValidator.isValid(block, block.body.hash) mustBe false
     }
@@ -58,7 +59,7 @@ class SegmentValidatorSpec extends WordSpec with MustMatchers {
     }
 
     "accept an empty segment" in {
-      segmentValidator.isValid(Nil, validHash) mustBe true
+      segmentValidator.isValid[String](Nil, validHash) mustBe true
     }
 
     "accept a segment with a single block, that is valid" in {
@@ -71,7 +72,7 @@ class SegmentValidatorSpec extends WordSpec with MustMatchers {
           .zipWithIndex
           .map{
             case (b, 5) =>
-              b.copy(signature = Signature.sign(b.body, wrongKeys.PrivateKey))
+              b.copy(signature = sign(b.body, wrongKeys.`private`))
             case (b, _) => b
           }
       segmentValidator.isValid(invalidSegment, validHash) mustBe false
@@ -79,12 +80,12 @@ class SegmentValidatorSpec extends WordSpec with MustMatchers {
 
     "reject a segment that doesn't end with the requested hash" in {
       val invalidSegment = segment(10)
-      segmentValidator.isValid(invalidSegment, Mock.Hash("The real good hash")) mustBe false
+      segmentValidator.isValid(invalidSegment, hash("The real good hash")) mustBe false
     }
 
     "reject a segment with a single block, that is invalid" in {
       val block =
-        validBlock.copy(signature = Signature.sign(validBlock.body.copy(delta = Nil), validSigningKey))
+        validBlock.copy(signature = sign(validBlock.body.copy(delta = List.empty[String]), validSigningKey))
       segmentValidator.isValid(block :: Nil, validHash) mustBe false
     }
   }
@@ -92,18 +93,21 @@ class SegmentValidatorSpec extends WordSpec with MustMatchers {
 
   // HELPERS
 
-  private def block(keys: List[KeyPair], j: Int, previous: Option[Block[String]] = None): Block[String] = {
+  private def block(keys: List[SigningKeyPair], j: Int, previous: Option[Block[String]] = None): Block[String] = {
     val ts = TimeSlot(j)
-    val privateKeys = keys.map(_.PrivateKey)
-    val signingKey: PrivateKey = privateKeys(ts.leader(keys.length) - 1)
+    val privateKeys = keys.map(_.`private`)
+    val publicKeys = keys.map(_.public)
+    val signingKey: SigningPrivateKey = privateKeys(ts.leader(keys.length) - 1)
+    val signingPublicKey: SigningPublicKey = publicKeys(ts.leader(keys.length) - 1)
+    val timeSlotSignature = sign(ts, signingKey)
     val body =
       BlockBody[String](
-        hash = previous.map(b => Hash(b)).getOrElse(validHash),
+        hash = previous.map(b => hash(b)).getOrElse(validHash),
         delta = List("ABC", "DEF"),
         timeSlot = ts,
-        timeSlotSignature = Signature.sign(ts, signingKey)
+        timeSlotSignature = timeSlotSignature
       )
-    Block(body, Signature.sign(body, signingKey))
+    Block(body, sign(body, signingKey))
   }
 
   private def segment(n: Int, j: Int = 1230): List[Block[String]] =
@@ -117,18 +121,19 @@ class SegmentValidatorSpec extends WordSpec with MustMatchers {
         head :: tail
     }
 
-  private def segval(n: Int) : (SegmentValidator, List[KeyPair]) = {
-    val keys = List.fill(n)(KeyPair.gen)
-    (new SegmentValidator(keys.map(_.PublicKey)), keys)
+  private def segval(n: Int) : (SegmentValidator, List[SigningKeyPair]) = {
+    val keys = List.fill(n)(generateSigningKeyPair)
+    (new SegmentValidator(keys.map(_.public)), keys)
   }
 
-  private val validHash: Hash[AnyBlock[String]] = Mock.Hash("good")
+  private val validHash: Hash = hash("good")
   private val (segmentValidator, keyPairs) = segval(7)
-  private val privateKeys = keyPairs.map(_.PrivateKey)
-  private val validBlock = block(keyPairs, 1230)
+  private val privateKeys = keyPairs.map(_.`private`)
+  private val validBlock: Block[String] = block(keyPairs, 1230)
   private val validTimeSlot = validBlock.body.timeSlot
-  private val validSigningKey: PrivateKey = privateKeys(validTimeSlot.leader(privateKeys.length) - 1)
-  private val wrongKeys = KeyPair.gen()
+  private val validLeader: Int = validTimeSlot.leader(privateKeys.length)
+  private val validSigningKey: SigningPrivateKey = privateKeys(validLeader - 1)
+  private val wrongKeys = generateSigningKeyPair()
 }
 
 

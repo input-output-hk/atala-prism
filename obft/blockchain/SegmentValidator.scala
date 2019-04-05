@@ -3,14 +3,16 @@ package obft.blockchain
 // format: off
 
 import scala.annotation.tailrec
-import obft.fakes._
+import io.iohk.multicrypto._
+import io.iohk.decco.auto._
+import io.iohk.decco._
 
 // This validates that a segment of a Blockchain is correct (following the rules specified in the paper)
 // This does not perform any kind of business logic of the data stored within Tx (or the Ledger for that matter)
-class SegmentValidator(keys: List[PublicKey]) {
+class SegmentValidator(keys: List[SigningPublicKey]) {
 
   // Checks that the content of a single (non genesis) block is valid
-  def isValid[Tx](block: Block[Tx], hashPreviousBlock: Hash[AnyBlock[Tx]]): Boolean = {
+  def isValid[Tx : Codec](block: Block[Tx], hashPreviousBlock: Hash): Boolean = {
 
     // > [...] h is the hash of the previous block [...]
     val body = block.body
@@ -26,11 +28,11 @@ class SegmentValidator(keys: List[PublicKey]) {
     val leaderKey = keys(leaderIndex - 1) // `leaderIndex` is 1-indexed
 
     // > [...] contains proper signatures - one for time slot slj [...]
-    if (!body.timeSlotSignature.isSignatureOf(body.timeSlot, leaderKey))
+    if (!isValidSignature(body.timeSlot, body.timeSlotSignature, leaderKey))
       return false
 
     // > [...] contains proper signatures - [...] and one for the entire block [...]
-    if (!block.signature.isSignatureOf(body, leaderKey))
+    if (!isValidSignature(body, block.signature, leaderKey))
       return false
 
     // NOTE: The paper also contains this fragment:
@@ -58,16 +60,16 @@ class SegmentValidator(keys: List[PublicKey]) {
     return true
   }
 
-  def isValid[Tx](
+  def isValid[Tx : Codec](
     chainSegment:      List[Block[Tx]],
-    hashPreviousBlock: Hash[AnyBlock[Tx]]    // This is the hash of the block that `chainSegment` would follow if
-                                             // chainSegment happened to be valid
+    hashPreviousBlock: Hash               // This is the hash of the block that `chainSegment` would follow if
+                                          // chainSegment happened to be valid
   ): Boolean = {
 
     // This is implemented as a nested method because otherwise the @tailrec annotation only works on final or private
     // methods. And marking the external method as either private or final, would hinder unit testing.
     @tailrec
-    def isSegmentValid(chainSegment: List[Block[Tx]], hashPreviousBlock: Hash[AnyBlock[Tx]]): Boolean =
+    def isSegmentValid(chainSegment: List[Block[Tx]], hashPreviousBlock: Hash): Boolean =
       chainSegment match {
         case Nil =>
           true
@@ -76,7 +78,7 @@ class SegmentValidator(keys: List[PublicKey]) {
           isValid(h, hashPreviousBlock)
         case h :: h2 :: t =>
           // A segment is valid if ...
-          isValid(h, Hash(h2)) &&                    // ... the head is valid
+          isValid(h, hash(h2)) &&                    // ... the head is valid
           isSegmentValid(h2 :: t, hashPreviousBlock) // ... and the tail (another chain segment) is valid
                                                      // NOTE: the tail, to be valid, has to accept the hash
                                                      //       of the head as valid

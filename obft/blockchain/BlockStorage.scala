@@ -1,18 +1,18 @@
 package obft.blockchain
 
-import obft.fakes._
+import io.iohk.multicrypto._
 
 class BlockStorage[Tx]() {
 
-  private[blockchain] var data: Map[Hash[AnyBlock[Tx]], AnyBlock[Tx]] = Map.empty
+  private[blockchain] var data: Map[Hash, AnyBlock[Tx]] = Map.empty
 
-  def get(id: Hash[AnyBlock[Tx]]): Option[AnyBlock[Tx]] =
+  def get(id: Hash): Option[AnyBlock[Tx]] =
     data.get(id)
 
-  def put(id: Hash[AnyBlock[Tx]], block: AnyBlock[Tx]): Unit =
+  def put(id: Hash, block: AnyBlock[Tx]): Unit =
     data += (id -> block)
 
-  def remove(id: Hash[AnyBlock[Tx]]): Unit =
+  def remove(id: Hash): Unit =
     data -= id
 
 }

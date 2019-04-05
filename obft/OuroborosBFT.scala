@@ -1,12 +1,13 @@
 package obft
 
-import obft.fakes._
+import io.iohk.multicrypto._
 import obft.clock._
 import obft.blockchain._
 import obft.mempool._
 
 import monix.reactive._
 import monix.execution.Scheduler.Implicits.global
+import io.iohk.decco.Codec
 
 final case class Tick(timeSlot: TimeSlot)
 
@@ -18,9 +19,9 @@ object Message {
 
 }
 
-class OuroborosBFT[Tx](blockchain: Blockchain[Tx], mempool: MemPool[Tx])(
+class OuroborosBFT[Tx: Codec](blockchain: Blockchain[Tx], mempool: MemPool[Tx])(
     i: Int,
-    keyPair: KeyPair,
+    keyPair: SigningKeyPair,
     clusterSize: Int, // AKA 'n' in the paper
     inputStreamClockSignals: Observable[Tick],
     inputStreamMessages: Observable[Message[Tx]],
@@ -40,7 +41,7 @@ class OuroborosBFT[Tx](blockchain: Blockchain[Tx], mempool: MemPool[Tx])(
     if (IamLeader(tick.timeSlot)) {
       val transactions = mempool.collect()
       if (transactions.nonEmpty) {
-        val blockData = blockchain.createBlockData(transactions, tick.timeSlot, keyPair.PrivateKey)
+        val blockData = blockchain.createBlockData(transactions, tick.timeSlot, keyPair.`private`)
         val segment = List(blockData)
 
         blockchain.add(segment)
@@ -95,12 +96,12 @@ class OuroborosBFT[Tx](blockchain: Blockchain[Tx], mempool: MemPool[Tx])(
 }
 
 object OuroborosBFT {
-  def apply[Tx](
+  def apply[Tx: Codec](
       i: Int,
-      keyPair: KeyPair,
+      keyPair: SigningKeyPair,
       maxNumOfAdversaries: Int, // AKA 't' in the paper
       transactionTTL: Int, // AKA 'u' in the paper
-      genesisKeys: List[PublicKey],
+      genesisKeys: List[SigningPublicKey],
       inputStreamClockSignals: Observable[Tick],
       inputStreamMessages: Observable[Message[Tx]],
       outputStreamDiffuseToRestOfCluster: Observer[Message.AddBlockchainSegment[Tx]]
