@@ -125,7 +125,10 @@ object OuroborosBFTSpec {
   val maxNumOfAdversaries = 0
 
   class FakeBlockchain(genesisKeys: List[SigningPublicKey])
-      extends Blockchain[Tx](new SegmentValidator(genesisKeys), BlockStorage.apply[Tx]())(genesisKeys, maxNumOfAdversaries) {
+      extends Blockchain[Tx](new SegmentValidator(genesisKeys), BlockStorage.apply[Tx]())(
+        genesisKeys,
+        maxNumOfAdversaries
+      ) {
 
     var level = 0
 

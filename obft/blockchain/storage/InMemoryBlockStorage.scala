@@ -1,8 +1,7 @@
 package obft.blockchain.storage
 
-import obft.blockchain.AnyBlock
-
 import io.iohk.multicrypto._
+import obft.blockchain.AnyBlock
 
 class InMemoryBlockStorage[Tx] extends BlockStorage[Tx] {
 

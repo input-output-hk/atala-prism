@@ -8,7 +8,6 @@ scala_toolchain(
        "-language:postfixOps",
        "-deprecation",
        "-feature",
-       "-Xfatal-warnings",
        "-Xlint:unsound-match",
        "-Ywarn-inaccessible",
        "-Ywarn-unused-import",
