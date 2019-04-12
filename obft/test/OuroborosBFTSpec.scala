@@ -6,7 +6,7 @@ import monix.reactive.MulticastStrategy
 import monix.reactive.subjects.ConcurrentSubject
 import obft.blockchain._
 import obft.clock.TimeSlot
-import obft.fakes.{KeyPair, PublicKey}
+import io.iohk.multicrypto._
 import obft.mempool.MemPool
 import org.scalatest.EitherValues._
 import org.scalatest.MustMatchers._
@@ -23,8 +23,8 @@ class OuroborosBFTSpec extends WordSpec {
 
   val clusterSize = 5
   val myId = 3
-  val clusterKeyPairs = (1 to clusterSize).map(_ => KeyPair.gen()).toList
-  val genesisKeys = clusterKeyPairs.map(_.PublicKey)
+  val clusterKeyPairs = (1 to clusterSize).map(_ => generateSigningKeyPair()).toList
+  val genesisKeys = clusterKeyPairs.map(_.public)
   val myKeyPair = clusterKeyPairs(myId)
 
   "getting a clock signal" should {
@@ -97,7 +97,7 @@ class OuroborosBFTSpec extends WordSpec {
       val transaction = "example"
       val tick = Tick(TimeSlot(myId))
 
-      val blockData = data.blockchain.createBlockData(List(transaction), tick.timeSlot, myKeyPair.PrivateKey)
+      val blockData = data.blockchain.createBlockData(List(transaction), tick.timeSlot, myKeyPair.`private`)
       val segment = List(blockData)
       val old = data.blockchain.level
 
@@ -114,6 +114,8 @@ class OuroborosBFTSpec extends WordSpec {
 
 object OuroborosBFTSpec {
 
+  import io.iohk.decco.auto._
+
   type Tx = String
 
   def multicastStrategy[A] = MulticastStrategy.replay[A]
@@ -121,7 +123,7 @@ object OuroborosBFTSpec {
   val transactionTTL = 2
   val maxNumOfAdversaries = 0
 
-  class FakeBlockchain(genesisKeys: List[PublicKey])
+  class FakeBlockchain(genesisKeys: List[SigningPublicKey])
       extends Blockchain[Tx](new SegmentValidator(genesisKeys), new BlockStorage)(genesisKeys, maxNumOfAdversaries) {
 
     var level = 0
@@ -153,7 +155,7 @@ object OuroborosBFTSpec {
       ]]
   )
 
-  def create(myId: Int, myKeyPair: KeyPair, genesisKeys: List[PublicKey]): Data = {
+  def create(myId: Int, myKeyPair: SigningKeyPair, genesisKeys: List[SigningPublicKey]): Data = {
 
     val inputStreamClockSignals = ConcurrentSubject[Tick](multicastStrategy)
     val inputStreamMessages = ConcurrentSubject[Message[Tx]](multicastStrategy)

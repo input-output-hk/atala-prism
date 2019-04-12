@@ -3,13 +3,15 @@ package obft.blockchain
 // format: off
 
 import scala.annotation.tailrec
-import obft.fakes._
+import io.iohk.multicrypto._
 import obft.clock._
+import io.iohk.decco.auto._
+import io.iohk.decco._
 
-class Blockchain[Tx](validator: SegmentValidator, private[blockchain] val storage: BlockStorage[Tx])(keys: List[PublicKey], maxNumOfAdversaries: Int) { blockchain =>
+class Blockchain[Tx: Codec](validator: SegmentValidator, private[blockchain] val storage: BlockStorage[Tx])(keys: List[SigningPublicKey], maxNumOfAdversaries: Int) { blockchain =>
 
   private[blockchain] case class BlockPointer(
-    at: Hash[AnyBlock[Tx]],
+    at: Hash,
     blockchainLength: Int // I wonder if this should be a Long
   ) {
     def forceGetPointedBlockFromStorage: AnyBlock[Tx] =
@@ -17,8 +19,8 @@ class Blockchain[Tx](validator: SegmentValidator, private[blockchain] val storag
   }
 
   private[blockchain] var headPointer: BlockPointer = {
-    val gb = GenesisBlock[Tx](keys)
-    val hgb = Hash(gb)
+    val gb: AnyBlock[Tx] = GenesisBlock[Tx](keys)
+    val hgb = hash(gb)
     storage.put(hgb, gb)
     BlockPointer(hgb, 0)
   }
@@ -82,7 +84,7 @@ class Blockchain[Tx](validator: SegmentValidator, private[blockchain] val storag
     val reversedSegment = chainSegment.reverse
 
     @tailrec
-    def findBlocksToRemove(from: Hash[AnyBlock[Tx]], previous: Hash[AnyBlock[Tx]], accum: List[Hash[AnyBlock[Tx]]]): List[Hash[AnyBlock[Tx]]] =
+    def findBlocksToRemove(from: Hash, previous: Hash, accum: List[Hash]): List[Hash] =
       if (from == previous)
         accum
       else
@@ -112,9 +114,9 @@ class Blockchain[Tx](validator: SegmentValidator, private[blockchain] val storag
                           //            B0 B'1 ... B's with s > l, it replaces its local chain with this
                           //            new chain provided it is valid
 
-              chainSegment.foreach(b => storage.put(Hash(b), b))
+              chainSegment.foreach(b => storage.put(hash(b), b))
               blocksToRemove.foreach(storage.remove)
-              headPointer = BlockPointer(Hash(chainSegment.head), s)
+              headPointer = BlockPointer(hash(chainSegment.head), s)
             }
         }
     }
@@ -122,22 +124,22 @@ class Blockchain[Tx](validator: SegmentValidator, private[blockchain] val storag
 
   }
 
-  def createBlockData(transactions: List[Tx], timeSlot: TimeSlot, key: PrivateKey): Block[Tx] = {
+  def createBlockData(transactions: List[Tx], timeSlot: TimeSlot, key: SigningPrivateKey): Block[Tx] = {
     val body =
       BlockBody[Tx](
-        Hash(head),
+        hash(head),
         transactions,
         timeSlot,
-        Signature.sign(timeSlot, key)
+        sign(timeSlot, key)
       )
 
     Block[Tx](
       body,
-      Signature.sign(body, key)
+      sign(body, key)
     )
   }
 
-  private def forceGetFromStorage(id: Hash[AnyBlock[Tx]]): AnyBlock[Tx] =
+  private def forceGetFromStorage(id: Hash): AnyBlock[Tx] =
     storage.get(id) match {
       case None =>
         throw new Error("FATAL: A block that in theory was already stored in the blockchain could not be recovered")
@@ -149,7 +151,7 @@ class Blockchain[Tx](validator: SegmentValidator, private[blockchain] val storag
 
 object Blockchain {
 
-  def apply[Tx](keys: List[PublicKey], maxNumOfAdversaries: Int): Blockchain[Tx] =
+  def apply[Tx: Codec](keys: List[SigningPublicKey], maxNumOfAdversaries: Int): Blockchain[Tx] =
     new Blockchain[Tx](new SegmentValidator(keys), BlockStorage[Tx]())(keys, maxNumOfAdversaries)
 
 }

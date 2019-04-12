@@ -1,6 +1,6 @@
 package obft.blockchain
 
-import obft.fakes._
+import io.iohk.multicrypto._
 import obft.clock._
 
 // format: off
@@ -21,7 +21,7 @@ sealed trait AnyBlock[Tx]
 // Quoting the paper:
 //   > [...] beginning with a special "genesis" block B0 which contains the servers'
 //   > public-keys (vk1,...,vkn).
-final case class GenesisBlock[Tx](keys: List[PublicKey]) extends AnyBlock[Tx]
+final case class GenesisBlock[Tx](keys: List[SigningPublicKey]) extends AnyBlock[Tx]
 
 
 
@@ -38,8 +38,8 @@ final case class GenesisBlock[Tx](keys: List[PublicKey]) extends AnyBlock[Tx]
 // and `Block` contains that and the signature of that.
 final case class Block[Tx](
     body: BlockBody[Tx],
-    signature: Signature[BlockBody[Tx]]              // AKA σblock in the paper.
-                                                     //   > σblock is a signature (of the entire block).
+    signature: Signature              // AKA σblock in the paper.
+                                      //   > σblock is a signature (of the entire block).
 ) extends AnyBlock[Tx]
 
 
@@ -48,7 +48,7 @@ final case class Block[Tx](
 // This contains all the data of a Block, except it's signature
 final case class BlockBody[Tx](
 
-    hash: Hash[AnyBlock[Tx]],                        // AKA h in the paper.
+    hash: Hash,                                      // AKA h in the paper.
                                                      //   > h is the hash of the previous block
 
     delta: List[Tx],                                 // AKA d in the paper.
@@ -57,6 +57,6 @@ final case class BlockBody[Tx](
     timeSlot: TimeSlot,                              // AKA sl in the paper.
                                                      //   > sl is a (slot) time-stamp
 
-    timeSlotSignature: Signature[TimeSlot]           // AKA σsl in the paper.
+    timeSlotSignature: Signature                     // AKA σsl in the paper.
                                                      //   > σsl is a signature of the slot number
 )

@@ -1,28 +1,30 @@
 package obft
 
-import obft.fakes._
 import obft.clock._
+
+import io.iohk.multicrypto._
 
 import monix.execution.Scheduler.Implicits.global
 import monix.reactive._
 import monix.reactive.subjects.ConcurrentSubject
 import monix.reactive.{MulticastStrategy, Observer}
 
-import io.StdIn.readLine
+import scala.io.StdIn.readLine
 import scala.concurrent.duration._
+import io.iohk.decco.Codec
 
-case class Server[Tx](
+case class Server[Tx: Codec](
     i: Int,
-    private val keyPair: KeyPair,
+    private val keyPair: SigningKeyPair,
     clusterSize: Int, // AKA 'n' in the paper
     maxNumOfAdversaries: Int, // AKA 't' in the paper
     transactionTTL: Int // AKA 'u' in the paper
 )(
-    genesisKeys: => List[PublicKey],
+    genesisKeys: => List[SigningPublicKey],
     otherServers: => Set[Server[Tx]]
 ) {
 
-  def publicKey: PublicKey = keyPair.PublicKey
+  def publicKey: SigningPublicKey = keyPair.public
 
   def recieveTransaction(tx: Tx): Unit = {
     val m = Message.AddTransaction[Tx](tx)
@@ -77,13 +79,19 @@ case class Server[Tx](
     )
 }
 
-case class Cluster[Tx](n: Int, u: Int) {
+case class Cluster[Tx: Codec](n: Int, u: Int) {
 
   import Obft.StringExtraOps
 
   private val servers: List[Server[Tx]] =
     (1 to n).toList
-      .map(i => Server[Tx](i, KeyPair.gen(), n, n / 3, u)(servers.map(_.publicKey), servers.filterNot(_.i == i).toSet))
+      .map(
+        i =>
+          Server[Tx](i, generateSigningKeyPair(), n, n / 3, u)(
+            servers.map(_.publicKey),
+            servers.filterNot(_.i == i).toSet
+          )
+      )
 
   private def aServer(): Server[Tx] =
     servers(util.Random.nextInt(servers.length))
@@ -132,6 +140,7 @@ object Obft extends App {
     throw new Exception("Impossible")
   }
 
+  import io.iohk.decco.auto._
   val cluster = Cluster[(Int, String)](7, 5)
 
   cluster.start()
