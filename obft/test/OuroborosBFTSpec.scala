@@ -1,13 +1,15 @@
 package obft
 package test
 
+import java.nio.file.{Files, Path}
+
+import io.iohk.multicrypto._
 import monix.execution.Scheduler.Implicits.global
 import monix.reactive.MulticastStrategy
 import monix.reactive.subjects.ConcurrentSubject
 import obft.blockchain._
 import obft.blockchain.storage._
 import obft.clock.TimeSlot
-import io.iohk.multicrypto._
 import obft.mempool.MemPool
 import org.scalatest.EitherValues._
 import org.scalatest.MustMatchers._
@@ -124,8 +126,8 @@ object OuroborosBFTSpec {
   val transactionTTL = 2
   val maxNumOfAdversaries = 0
 
-  class FakeBlockchain(genesisKeys: List[SigningPublicKey])
-      extends Blockchain[Tx](new SegmentValidator(genesisKeys), BlockStorage.apply[Tx]())(
+  class FakeBlockchain(genesisKeys: List[SigningPublicKey], storageFile: Path)
+      extends Blockchain[Tx](new SegmentValidator(genesisKeys), new MVBlockStorage[Tx](storageFile))(
         genesisKeys,
         maxNumOfAdversaries
       ) {
@@ -165,7 +167,8 @@ object OuroborosBFTSpec {
     val inputStreamMessages = ConcurrentSubject[Message[Tx]](multicastStrategy)
     val outputStreamDiffuseToRestOfCluster = ConcurrentSubject[Message.AddBlockchainSegment[Tx]](multicastStrategy)
 
-    val blockchain = new FakeBlockchain(genesisKeys)
+    val storageFile = Files.createTempFile("iohk", "obft")
+    val blockchain = new FakeBlockchain(genesisKeys, storageFile)
     val mempool = new FakeMemPool
     val obft: OuroborosBFT[Tx] = new OuroborosBFT(blockchain, mempool)(
       i = myId,

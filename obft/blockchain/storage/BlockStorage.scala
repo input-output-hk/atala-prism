@@ -11,8 +11,3 @@ trait BlockStorage[Tx] {
 
   def remove(id: Hash): Unit
 }
-
-object BlockStorage {
-
-  def apply[Tx](): BlockStorage[Tx] = new InMemoryBlockStorage[Tx]
-}
