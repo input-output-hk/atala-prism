@@ -3,23 +3,18 @@ package test
 
 // format: off
 
+import io.iohk.decco._
+import io.iohk.decco.auto._
+import io.iohk.decco.test.utils.CodecTestingHelpers._
 import io.iohk.multicrypto._
 import io.iohk.multicrypto.encoding.implicits._
 import io.iohk.multicrypto.test.utils.CryptoEntityArbitraries
-import io.iohk.decco.auto._
-import io.iohk.decco._
-
 import obft.blockchain.storage.InMemoryBlockStorage
 import obft.clock._
-
-import io.iohk.decco.test.utils.CodecTestingHelpers._
-import org.scalatest.prop.GeneratorDrivenPropertyChecks._
-import org.scalacheck.Gen
 import org.scalacheck.Arbitrary.arbitrary
-import org.scalacheck.Arbitrary
-
-import org.scalatest.WordSpec
-import org.scalatest.MustMatchers
+import org.scalacheck.{Arbitrary, Gen}
+import org.scalatest.{MustMatchers, WordSpec}
+import org.scalatest.prop.GeneratorDrivenPropertyChecks._
 
 class BlockchainSpec extends WordSpec with MustMatchers with CryptoEntityArbitraries {
 
@@ -83,7 +78,7 @@ class BlockchainSpec extends WordSpec with MustMatchers with CryptoEntityArbitra
 
     "create a valid Block when all the parameters are correct" in {
       // GIVEN
-      val blockchain = Blockchain[String](publicKeys, 1)
+      val blockchain = new Blockchain[String](new SegmentValidator(publicKeys), new InMemoryBlockStorage)(publicKeys, 1)
 
       // WHEN
       val block = blockchain.createBlockData(List("A", "B"), TimeSlot(3), keyPair1.`private`)
@@ -179,7 +174,8 @@ class BlockchainSpec extends WordSpec with MustMatchers with CryptoEntityArbitra
 
     "use all transactions when invoking unsafeRunAllTransactions" in {
       // GIVEN
-      val blockchain = Blockchain[String](publicKeys, 1)
+      val blockchain = new Blockchain[String](new SegmentValidator(publicKeys), new InMemoryBlockStorage)(publicKeys, 1)
+
       def block(ts: Int, previousBlock: AnyBlock[String]): Block[String] = {
         val keyPair = keys((ts - 1) % keys.length)
         val key = keyPair.`private`
@@ -202,7 +198,7 @@ class BlockchainSpec extends WordSpec with MustMatchers with CryptoEntityArbitra
 
     "use only finalized transactions when invoking runAllFinalizedTransactions" in {
       // GIVEN
-      val blockchain = Blockchain[String](publicKeys, 1)
+      val blockchain = new Blockchain[String](new SegmentValidator(publicKeys), new InMemoryBlockStorage)(publicKeys, 1)
       def block(ts: Int, previousBlock: AnyBlock[String]): Block[String] = {
         val keyPair = keys((ts - 1) % keys.length)
         val key = keyPair.`private`
@@ -225,7 +221,7 @@ class BlockchainSpec extends WordSpec with MustMatchers with CryptoEntityArbitra
 
     "use all transactions from after the snapshot when invoking unsafeRunTransactionsFromPreviousStateSnapshot" in {
       // GIVEN
-      val blockchain = Blockchain[String](publicKeys, 1)
+      val blockchain = new Blockchain[String](new SegmentValidator(publicKeys), new InMemoryBlockStorage)(publicKeys, 1)
       def block(ts: Int, previousBlock: AnyBlock[String]): Block[String] = {
         val keyPair = keys((ts - 1) % keys.length)
         val key = keyPair.`private`
@@ -249,7 +245,7 @@ class BlockchainSpec extends WordSpec with MustMatchers with CryptoEntityArbitra
 
     "use only finalized transactions from after the snapshot when invoking runFinalizedTransactionsFromPreviousStateSnapshot" in {
       // GIVEN
-      val blockchain = Blockchain[String](publicKeys, 1)
+      val blockchain = new Blockchain[String](new SegmentValidator(publicKeys), new InMemoryBlockStorage)(publicKeys, 1)
       def block(ts: Int, previousBlock: AnyBlock[String]): Block[String] = {
         val keyPair = keys((ts - 1) % keys.length)
         val key = keyPair.`private`

@@ -1,24 +1,24 @@
 package obft
 
+import java.nio.file.{Files, Path}
+
+import io.iohk.decco.Codec
+import io.iohk.multicrypto._
+import monix.execution.Scheduler.Implicits.global
+import monix.reactive.subjects.ConcurrentSubject
+import monix.reactive.{MulticastStrategy, Observer, _}
 import obft.clock._
 
-import io.iohk.multicrypto._
-
-import monix.execution.Scheduler.Implicits.global
-import monix.reactive._
-import monix.reactive.subjects.ConcurrentSubject
-import monix.reactive.{MulticastStrategy, Observer}
-
-import scala.io.StdIn.readLine
 import scala.concurrent.duration._
-import io.iohk.decco.Codec
+import scala.io.StdIn.readLine
 
 case class Server[Tx: Codec](
     i: Int,
     private val keyPair: SigningKeyPair,
     clusterSize: Int, // AKA 'n' in the paper
     maxNumOfAdversaries: Int, // AKA 't' in the paper
-    transactionTTL: Int // AKA 'u' in the paper
+    transactionTTL: Int, // AKA 'u' in the paper
+    storageFile: Path
 )(
     genesisKeys: => List[SigningPublicKey],
     otherServers: => Set[Server[Tx]]
@@ -75,7 +75,8 @@ case class Server[Tx: Codec](
       genesisKeys,
       clockSignalsStream,
       inputNetwork,
-      difusingNetworkInput
+      difusingNetworkInput,
+      storageFile
     )
 }
 
@@ -85,13 +86,13 @@ case class Cluster[Tx: Codec](n: Int, u: Int) {
 
   private val servers: List[Server[Tx]] =
     (1 to n).toList
-      .map(
-        i =>
-          Server[Tx](i, generateSigningKeyPair(), n, n / 3, u)(
-            servers.map(_.publicKey),
-            servers.filterNot(_.i == i).toSet
-          )
-      )
+      .map { i =>
+        val storageFile = Files.createTempFile("iohk", i.toString)
+        Server[Tx](i, generateSigningKeyPair(), n, n / 3, u, storageFile)(
+          servers.map(_.publicKey),
+          servers.filterNot(_.i == i).toSet
+        )
+      }
 
   private def aServer(): Server[Tx] =
     servers(util.Random.nextInt(servers.length))
