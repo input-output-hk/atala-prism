@@ -1,13 +1,14 @@
 package obft
 
-import io.iohk.multicrypto._
-import obft.clock._
-import obft.blockchain._
-import obft.mempool._
+import java.nio.file.Path
 
-import monix.reactive._
-import monix.execution.Scheduler.Implicits.global
 import io.iohk.decco.Codec
+import io.iohk.multicrypto._
+import monix.execution.Scheduler.Implicits.global
+import monix.reactive._
+import obft.blockchain._
+import obft.clock._
+import obft.mempool._
 
 final case class Tick(timeSlot: TimeSlot)
 
@@ -104,9 +105,10 @@ object OuroborosBFT {
       genesisKeys: List[SigningPublicKey],
       inputStreamClockSignals: Observable[Tick],
       inputStreamMessages: Observable[Message[Tx]],
-      outputStreamDiffuseToRestOfCluster: Observer[Message.AddBlockchainSegment[Tx]]
+      outputStreamDiffuseToRestOfCluster: Observer[Message.AddBlockchainSegment[Tx]],
+      storageFile: Path
   ): OuroborosBFT[Tx] = {
-    val blockchain = Blockchain[Tx](genesisKeys, maxNumOfAdversaries)
+    val blockchain = Blockchain[Tx](genesisKeys, maxNumOfAdversaries, storageFile)
     val mempool: MemPool[Tx] = MemPool[Tx](transactionTTL)
     val clusterSize = genesisKeys.length // AKA 'n' in the paper
     new OuroborosBFT[Tx](blockchain, mempool)(

@@ -9,7 +9,9 @@ scala_library(
     "@decco//src/io/iohk/decco",
     "@decco//src/io/iohk/decco/auto",
   ],
-  external = [ ],
+  external = [
+    "com.h2database:h2"
+  ],
 )
 
 scala_test(

@@ -3,21 +3,18 @@ package test
 
 // format: off
 
+import io.iohk.decco._
+import io.iohk.decco.auto._
+import io.iohk.decco.test.utils.CodecTestingHelpers._
 import io.iohk.multicrypto._
 import io.iohk.multicrypto.encoding.implicits._
 import io.iohk.multicrypto.test.utils.CryptoEntityArbitraries
-import io.iohk.decco.auto._
-import io.iohk.decco._
+import obft.blockchain.storage.InMemoryBlockStorage
 import obft.clock._
-
-import io.iohk.decco.test.utils.CodecTestingHelpers._
-import org.scalatest.prop.GeneratorDrivenPropertyChecks._
-import org.scalacheck.Gen
 import org.scalacheck.Arbitrary.arbitrary
-import org.scalacheck.Arbitrary
-
-import org.scalatest.WordSpec
-import org.scalatest.MustMatchers
+import org.scalacheck.{Arbitrary, Gen}
+import org.scalatest.{MustMatchers, WordSpec}
+import org.scalatest.prop.GeneratorDrivenPropertyChecks._
 
 class BlockchainSpec extends WordSpec with MustMatchers with CryptoEntityArbitraries {
 
@@ -81,7 +78,7 @@ class BlockchainSpec extends WordSpec with MustMatchers with CryptoEntityArbitra
 
     "create a valid Block when all the parameters are correct" in {
       // GIVEN
-      val blockchain = Blockchain[String](publicKeys, 1)
+      val blockchain = new Blockchain[String](new SegmentValidator(publicKeys), new InMemoryBlockStorage)(publicKeys, 1)
 
       // WHEN
       val block = blockchain.createBlockData(List("A", "B"), TimeSlot(3), keyPair1.`private`)
@@ -100,19 +97,22 @@ class BlockchainSpec extends WordSpec with MustMatchers with CryptoEntityArbitra
 
     "do nothing when the segment is empty" in {
       // GIVEN
-      val blockchain = Blockchain[String](publicKeys, 1)
+      val storage = new InMemoryBlockStorage[String]
+      val blockchain = new Blockchain[String](new SegmentValidator(publicKeys), storage)(publicKeys, 1)
 
       //WHEN
       blockchain.add(Nil)
 
       //THEN
-      blockchain.storage.data mustBe Map(hash(genesisBlock) -> genesisBlock)
+      storage.data mustBe Map(hash(genesisBlock) -> genesisBlock)
       blockchain.headPointer mustBe blockchain.BlockPointer(hash(genesisBlock), 0)
     }
 
     "add a block, when the segment contains just that block (and it's valid)" in {
       // GIVEN
-      val blockchain = Blockchain[String](publicKeys, 1)
+      val storage = new InMemoryBlockStorage[String]
+      val blockchain = new Blockchain[String](new SegmentValidator(publicKeys), storage)(publicKeys, 1)
+
       val body = BlockBody(hash(genesisBlock), List("A", "B"), TimeSlot(3), sign(TimeSlot(3), keyPair1.`private`))
       val block = Block(body, sign(body, keyPair1.`private`))
 
@@ -120,14 +120,16 @@ class BlockchainSpec extends WordSpec with MustMatchers with CryptoEntityArbitra
       blockchain.add(block :: Nil)
 
       //THEN
-      blockchain.storage.data mustBe Map(hash(genesisBlock) -> genesisBlock, hash(block: AnyBlock[String]) -> block)
+      storage.data mustBe Map(hash(genesisBlock) -> genesisBlock, hash(block: AnyBlock[String]) -> block)
       blockchain.headPointer mustBe blockchain.BlockPointer(hash(block: AnyBlock[String]), 1)
     }
 
 
     "add all the blocks of the segment, when the whole segment is valid" in {
       // GIVEN
-      val blockchain = Blockchain[String](publicKeys, 1)
+      val storage = new InMemoryBlockStorage[String]
+      val blockchain = new Blockchain[String](new SegmentValidator(publicKeys), storage)(publicKeys, 1)
+
       def block(ts: Int, previousBlock: AnyBlock[String]): Block[String] = {
         val keyPair = keys((ts - 1) % keys.length)
         val key = keyPair.`private`
@@ -145,14 +147,16 @@ class BlockchainSpec extends WordSpec with MustMatchers with CryptoEntityArbitra
       //THEN
       val targetBlockchain = segment ++ List(genesisBlock)
       val targetStorage = targetBlockchain.map(b => hash(b : AnyBlock[String]) -> b).toMap
-      blockchain.storage.data.size mustBe targetStorage.size
-      blockchain.storage.data mustBe targetStorage
+      storage.data.size mustBe targetStorage.size
+      storage.data mustBe targetStorage
       blockchain.headPointer mustBe blockchain.BlockPointer(hash(b3), 3)
     }
 
     "change nothing, when the segment contains just one block (and it's invalid)" in {
       // GIVEN
-      val blockchain = Blockchain[String](publicKeys, 1)
+      val storage = new InMemoryBlockStorage[String]
+      val blockchain = new Blockchain[String](new SegmentValidator(publicKeys), storage)(publicKeys, 1)
+
       val body = BlockBody(hash(genesisBlock), List("A", "B"), TimeSlot(3), sign(TimeSlot(5), keyPair1.`private`))
       val block = Block(body, sign(body, keyPair1.`private`))
 
@@ -160,7 +164,7 @@ class BlockchainSpec extends WordSpec with MustMatchers with CryptoEntityArbitra
       blockchain.add(block :: Nil)
 
       //THEN
-      blockchain.storage.data mustBe Map(hash(genesisBlock) -> genesisBlock)
+      storage.data mustBe Map(hash(genesisBlock) -> genesisBlock)
       blockchain.headPointer mustBe blockchain.BlockPointer(hash(genesisBlock), 0)
     }
 
@@ -170,7 +174,8 @@ class BlockchainSpec extends WordSpec with MustMatchers with CryptoEntityArbitra
 
     "use all transactions when invoking unsafeRunAllTransactions" in {
       // GIVEN
-      val blockchain = Blockchain[String](publicKeys, 1)
+      val blockchain = new Blockchain[String](new SegmentValidator(publicKeys), new InMemoryBlockStorage)(publicKeys, 1)
+
       def block(ts: Int, previousBlock: AnyBlock[String]): Block[String] = {
         val keyPair = keys((ts - 1) % keys.length)
         val key = keyPair.`private`
@@ -193,7 +198,7 @@ class BlockchainSpec extends WordSpec with MustMatchers with CryptoEntityArbitra
 
     "use only finalized transactions when invoking runAllFinalizedTransactions" in {
       // GIVEN
-      val blockchain = Blockchain[String](publicKeys, 1)
+      val blockchain = new Blockchain[String](new SegmentValidator(publicKeys), new InMemoryBlockStorage)(publicKeys, 1)
       def block(ts: Int, previousBlock: AnyBlock[String]): Block[String] = {
         val keyPair = keys((ts - 1) % keys.length)
         val key = keyPair.`private`
@@ -216,7 +221,7 @@ class BlockchainSpec extends WordSpec with MustMatchers with CryptoEntityArbitra
 
     "use all transactions from after the snapshot when invoking unsafeRunTransactionsFromPreviousStateSnapshot" in {
       // GIVEN
-      val blockchain = Blockchain[String](publicKeys, 1)
+      val blockchain = new Blockchain[String](new SegmentValidator(publicKeys), new InMemoryBlockStorage)(publicKeys, 1)
       def block(ts: Int, previousBlock: AnyBlock[String]): Block[String] = {
         val keyPair = keys((ts - 1) % keys.length)
         val key = keyPair.`private`
@@ -240,7 +245,7 @@ class BlockchainSpec extends WordSpec with MustMatchers with CryptoEntityArbitra
 
     "use only finalized transactions from after the snapshot when invoking runFinalizedTransactionsFromPreviousStateSnapshot" in {
       // GIVEN
-      val blockchain = Blockchain[String](publicKeys, 1)
+      val blockchain = new Blockchain[String](new SegmentValidator(publicKeys), new InMemoryBlockStorage)(publicKeys, 1)
       def block(ts: Int, previousBlock: AnyBlock[String]): Block[String] = {
         val keyPair = keys((ts - 1) % keys.length)
         val key = keyPair.`private`
