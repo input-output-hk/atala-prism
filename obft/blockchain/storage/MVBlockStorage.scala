@@ -5,12 +5,13 @@ import java.nio.file.Path
 
 import io.iohk.decco.BufferInstantiator.global.HeapByteBuffer
 import io.iohk.decco.Codec
+import io.iohk.decco.auto._
 import io.iohk.multicrypto._
 import obft.blockchain.AnyBlock
 import org.h2.mvstore.`type`.DataType
 import org.h2.mvstore.{MVMap, MVStore, WriteBuffer}
 
-class MVBlockStorage[Tx](storageFile: Path)(implicit codec: Codec[AnyBlock[Tx]]) extends BlockStorage[Tx] {
+class MVBlockStorage[Tx](storageFile: Path)(implicit codec: Codec[Tx]) extends BlockStorage[Tx] {
 
   import MVBlockStorage._
 
