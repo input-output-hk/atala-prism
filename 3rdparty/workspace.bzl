@@ -1183,6 +1183,25 @@ def maven_dependencies():
   )
 
   java_import_external(
+      name = "org___slf4j_and_slf4j_ds_simple",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/org/slf4j/slf4j-simple/1.7.25/slf4j-simple-1.7.25.jar"
+      ],
+      jar_sha256 = "0966e86fffa5be52d3d9e7b89dd674d98a03eed0a454fbaf7c1bd9493bd9d874",
+      neverlink=0
+  )
+  java_import_external(
+      name = "org___slf4j_and_slf4j_ds_simple__NEVERLINK",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/org/slf4j/slf4j-simple/1.7.25/slf4j-simple-1.7.25.jar"
+      ],
+      jar_sha256 = "0966e86fffa5be52d3d9e7b89dd674d98a03eed0a454fbaf7c1bd9493bd9d874",
+      neverlink=1
+  )
+
+  java_import_external(
       name = "javax___validation_and_validation_ds_api",
       licenses = ["notice"],
       jar_urls = [

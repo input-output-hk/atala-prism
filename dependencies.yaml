@@ -130,6 +130,6 @@ dependencies:
     slf4j:
       version: "1.7.25"
       lang: "java"
-      modules: [api]
+      modules: [api, simple]
 
 
