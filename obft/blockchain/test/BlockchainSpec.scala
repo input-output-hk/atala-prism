@@ -9,12 +9,13 @@ import io.iohk.decco.test.utils.CodecTestingHelpers._
 import io.iohk.multicrypto._
 import io.iohk.multicrypto.encoding.implicits._
 import io.iohk.multicrypto.test.utils.CryptoEntityArbitraries
+import obft.blockchain.models._
 import obft.blockchain.storage.InMemoryBlockStorage
 import obft.clock._
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
-import org.scalatest.{MustMatchers, WordSpec}
 import org.scalatest.prop.GeneratorDrivenPropertyChecks._
+import org.scalatest.{MustMatchers, WordSpec}
 
 class BlockchainSpec extends WordSpec with MustMatchers with CryptoEntityArbitraries {
 

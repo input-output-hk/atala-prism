@@ -7,6 +7,7 @@ import java.nio.file.Path
 import io.iohk.decco._
 import io.iohk.decco.auto._
 import io.iohk.multicrypto._
+import obft.blockchain.models._
 import obft.blockchain.storage.{BlockStorage, MVBlockStorage}
 import obft.clock._
 

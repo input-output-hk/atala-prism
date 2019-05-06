@@ -4,6 +4,7 @@ import io.iohk.decco.auto._
 import io.iohk.multicrypto._
 import obft.blockchain.storage.MVBlockStorage
 import obft.clock.TimeSlot
+import obft.blockchain.models._
 import org.scalatest.MustMatchers._
 import org.scalatest.OptionValues._
 import org.scalatest.WordSpec

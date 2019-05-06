@@ -2,10 +2,12 @@ package obft.blockchain
 
 // format: off
 
-import scala.annotation.tailrec
-import io.iohk.multicrypto._
-import io.iohk.decco.auto._
 import io.iohk.decco._
+import io.iohk.decco.auto._
+import io.iohk.multicrypto._
+import obft.blockchain.models._
+
+import scala.annotation.tailrec
 
 // This validates that a segment of a Blockchain is correct (following the rules specified in the paper)
 // This does not perform any kind of business logic of the data stored within Tx (or the Ledger for that matter)
