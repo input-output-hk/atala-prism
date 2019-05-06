@@ -3,10 +3,10 @@ load("//scala:rules.bzl", "scala_library", "scala_test")
 scala_library(
     name = "blockchain",
     external = [
-        "com.h2database:h2",
     ],
     deps = [
         "//obft/blockchain/models",
+        "//obft/blockchain/storage",
         "//obft/clock",
         "@decco//src/io/iohk/decco",
         "@decco//src/io/iohk/decco/auto",
@@ -23,6 +23,7 @@ scala_test(
     deps = [
         "blockchain",
         "//obft/blockchain/models",
+        "//obft/blockchain/storage",
         "//obft/clock",
         "@decco//src/io/iohk/decco",
         "@decco//src/io/iohk/decco/auto",
