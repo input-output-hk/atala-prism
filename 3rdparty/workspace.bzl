@@ -27,18 +27,18 @@ def maven_dependencies():
       name = "org___typelevel_and_cats_ds_core__2___12__EXTERNAL",
       licenses = ["notice"],
       jar_urls = [
-          "https://repo1.maven.org/maven2/org/typelevel/cats-core_2.12/1.0.1/cats-core_2.12-1.0.1.jar"
+          "https://repo1.maven.org/maven2/org/typelevel/cats-core_2.12/1.4.0/cats-core_2.12-1.4.0.jar"
       ],
-      jar_sha256 = "9e1d264f3366f6090b17ebdf4fab7488c9491a7c82bc400b1f6ec05f39755b63",
+      jar_sha256 = "ab9eeca930b3e51bd063d45c1ec51097a41dd6f61d155d880f5f14be0ab14f35",
       neverlink=0
   )
   java_import_external(
       name = "org___typelevel_and_cats_ds_core__2___12__EXTERNAL__NEVERLINK",
       licenses = ["notice"],
       jar_urls = [
-          "https://repo1.maven.org/maven2/org/typelevel/cats-core_2.12/1.0.1/cats-core_2.12-1.0.1.jar"
+          "https://repo1.maven.org/maven2/org/typelevel/cats-core_2.12/1.4.0/cats-core_2.12-1.4.0.jar"
       ],
-      jar_sha256 = "9e1d264f3366f6090b17ebdf4fab7488c9491a7c82bc400b1f6ec05f39755b63",
+      jar_sha256 = "ab9eeca930b3e51bd063d45c1ec51097a41dd6f61d155d880f5f14be0ab14f35",
       neverlink=1
   )
 
@@ -134,25 +134,6 @@ def maven_dependencies():
           "https://repo1.maven.org/maven2/com/beachape/enumeratum_2.12/1.5.13/enumeratum_2.12-1.5.13.jar"
       ],
       jar_sha256 = "dbfdbacaa0a70d8080fc1ca5e2775b4be143678fa2ac47af0b6c7ac529f1d954",
-      neverlink=1
-  )
-
-  java_import_external(
-      name = "org___typelevel_and_machinist__2___12__EXTERNAL",
-      licenses = ["notice"],
-      jar_urls = [
-          "https://repo1.maven.org/maven2/org/typelevel/machinist_2.12/0.6.2/machinist_2.12-0.6.2.jar"
-      ],
-      jar_sha256 = "b7e97638fa25ba02414b9b8387e9ecc2ea2fce4c9d9068ac3108ee5718b477a9",
-      neverlink=0
-  )
-  java_import_external(
-      name = "org___typelevel_and_machinist__2___12__EXTERNAL__NEVERLINK",
-      licenses = ["notice"],
-      jar_urls = [
-          "https://repo1.maven.org/maven2/org/typelevel/machinist_2.12/0.6.2/machinist_2.12-0.6.2.jar"
-      ],
-      jar_sha256 = "b7e97638fa25ba02414b9b8387e9ecc2ea2fce4c9d9068ac3108ee5718b477a9",
       neverlink=1
   )
 
@@ -271,6 +252,25 @@ def maven_dependencies():
   )
 
   java_import_external(
+      name = "org___typelevel_and_machinist__2___12__EXTERNAL",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/org/typelevel/machinist_2.12/0.6.5/machinist_2.12-0.6.5.jar"
+      ],
+      jar_sha256 = "9b449314637d967b8acf1bcb744b605e118fe6ac6c7d08e8db68b7f39267d8e5",
+      neverlink=0
+  )
+  java_import_external(
+      name = "org___typelevel_and_machinist__2___12__EXTERNAL__NEVERLINK",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/org/typelevel/machinist_2.12/0.6.5/machinist_2.12-0.6.5.jar"
+      ],
+      jar_sha256 = "9b449314637d967b8acf1bcb744b605e118fe6ac6c7d08e8db68b7f39267d8e5",
+      neverlink=1
+  )
+
+  java_import_external(
       name = "org___scalikejdbc_and_scalikejdbc__2___12__EXTERNAL",
       licenses = ["notice"],
       jar_urls = [
@@ -305,6 +305,25 @@ def maven_dependencies():
           "https://repo1.maven.org/maven2/com/github/pureconfig/pureconfig_2.12/0.10.1/pureconfig_2.12-0.10.1.jar"
       ],
       jar_sha256 = "cf4ba55a25a453eebff8671a7527012a5125daa902dd90cf6c8e4e2b9c108f8a",
+      neverlink=1
+  )
+
+  java_import_external(
+      name = "org___typelevel_and_cats_ds_kernel__2___12__EXTERNAL",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/org/typelevel/cats-kernel_2.12/1.4.0/cats-kernel_2.12-1.4.0.jar"
+      ],
+      jar_sha256 = "118074e737f810edd004588f0c681efb7d0d216ae9c481e3c952a07e47d3578b",
+      neverlink=0
+  )
+  java_import_external(
+      name = "org___typelevel_and_cats_ds_kernel__2___12__EXTERNAL__NEVERLINK",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/org/typelevel/cats-kernel_2.12/1.4.0/cats-kernel_2.12-1.4.0.jar"
+      ],
+      jar_sha256 = "118074e737f810edd004588f0c681efb7d0d216ae9c481e3c952a07e47d3578b",
       neverlink=1
   )
 
@@ -385,25 +404,6 @@ def maven_dependencies():
   )
 
   java_import_external(
-      name = "org___typelevel_and_cats_ds_effect__2___12__EXTERNAL",
-      licenses = ["notice"],
-      jar_urls = [
-          "https://repo1.maven.org/maven2/org/typelevel/cats-effect_2.12/0.10/cats-effect_2.12-0.10.jar"
-      ],
-      jar_sha256 = "e8e9f493c0a45d4ca5367e3ac133e39cf2d52499e2bf7adf5c589299e6a19cfb",
-      neverlink=0
-  )
-  java_import_external(
-      name = "org___typelevel_and_cats_ds_effect__2___12__EXTERNAL__NEVERLINK",
-      licenses = ["notice"],
-      jar_urls = [
-          "https://repo1.maven.org/maven2/org/typelevel/cats-effect_2.12/0.10/cats-effect_2.12-0.10.jar"
-      ],
-      jar_sha256 = "e8e9f493c0a45d4ca5367e3ac133e39cf2d52499e2bf7adf5c589299e6a19cfb",
-      neverlink=1
-  )
-
-  java_import_external(
       name = "io___swagger_and_swagger_ds_annotations",
       licenses = ["notice"],
       jar_urls = [
@@ -438,25 +438,6 @@ def maven_dependencies():
           "https://repo1.maven.org/maven2/com/typesafe/akka/akka-stream_2.12/2.5.16/akka-stream_2.12-2.5.16.jar"
       ],
       jar_sha256 = "ea27296434e07848d1073cf17647e2f5099ed7594b98b1a1807eebf542fb7e77",
-      neverlink=1
-  )
-
-  java_import_external(
-      name = "org___typelevel_and_cats_ds_macros__2___12__EXTERNAL",
-      licenses = ["notice"],
-      jar_urls = [
-          "https://repo1.maven.org/maven2/org/typelevel/cats-macros_2.12/1.0.1/cats-macros_2.12-1.0.1.jar"
-      ],
-      jar_sha256 = "c17a5625d9a203fa4676cb80ba22f65e68d18497945d24370bac9123ddc3da28",
-      neverlink=0
-  )
-  java_import_external(
-      name = "org___typelevel_and_cats_ds_macros__2___12__EXTERNAL__NEVERLINK",
-      licenses = ["notice"],
-      jar_urls = [
-          "https://repo1.maven.org/maven2/org/typelevel/cats-macros_2.12/1.0.1/cats-macros_2.12-1.0.1.jar"
-      ],
-      jar_sha256 = "c17a5625d9a203fa4676cb80ba22f65e68d18497945d24370bac9123ddc3da28",
       neverlink=1
   )
 
@@ -533,6 +514,44 @@ def maven_dependencies():
           "https://repo1.maven.org/maven2/org/reactivestreams/reactive-streams/1.0.2/reactive-streams-1.0.2.jar"
       ],
       jar_sha256 = "cc09ab0b140e0d0496c2165d4b32ce24f4d6446c0a26c5dc77b06bdf99ee8fae",
+      neverlink=1
+  )
+
+  java_import_external(
+      name = "com___lihaoyi_and_sourcecode__2___12__EXTERNAL",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/com/lihaoyi/sourcecode_2.12/0.1.5/sourcecode_2.12-0.1.5.jar"
+      ],
+      jar_sha256 = "297ab9234e13f760b4eaf16278269cc0cf8e26cc199728c203e68d0d1b334ee1",
+      neverlink=0
+  )
+  java_import_external(
+      name = "com___lihaoyi_and_sourcecode__2___12__EXTERNAL__NEVERLINK",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/com/lihaoyi/sourcecode_2.12/0.1.5/sourcecode_2.12-0.1.5.jar"
+      ],
+      jar_sha256 = "297ab9234e13f760b4eaf16278269cc0cf8e26cc199728c203e68d0d1b334ee1",
+      neverlink=1
+  )
+
+  java_import_external(
+      name = "com___zaxxer_and_HikariCP",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/com/zaxxer/HikariCP/3.2.0/HikariCP-3.2.0.jar"
+      ],
+      jar_sha256 = "b008de68bbd85811f4b6e8f0860d0966c6acb4f2e75fabd46ec2094569cbefeb",
+      neverlink=0
+  )
+  java_import_external(
+      name = "com___zaxxer_and_HikariCP__NEVERLINK",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/com/zaxxer/HikariCP/3.2.0/HikariCP-3.2.0.jar"
+      ],
+      jar_sha256 = "b008de68bbd85811f4b6e8f0860d0966c6acb4f2e75fabd46ec2094569cbefeb",
       neverlink=1
   )
 
@@ -628,6 +647,25 @@ def maven_dependencies():
           "https://repo1.maven.org/maven2/org/scala-sbt/test-interface/1.0/test-interface-1.0.jar"
       ],
       jar_sha256 = "15f70b38bb95f3002fec9aea54030f19bb4ecfbad64c67424b5e5fea09cd749e",
+      neverlink=1
+  )
+
+  java_import_external(
+      name = "org___tpolecat_and_doobie_ds_core__2___12__EXTERNAL",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/org/tpolecat/doobie-core_2.12/0.6.0/doobie-core_2.12-0.6.0.jar"
+      ],
+      jar_sha256 = "b51d54aaf41be41d713b081b9754168c59c80483e6b30d7a107dafb0dbdcd302",
+      neverlink=0
+  )
+  java_import_external(
+      name = "org___tpolecat_and_doobie_ds_core__2___12__EXTERNAL__NEVERLINK",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/org/tpolecat/doobie-core_2.12/0.6.0/doobie-core_2.12-0.6.0.jar"
+      ],
+      jar_sha256 = "b51d54aaf41be41d713b081b9754168c59c80483e6b30d7a107dafb0dbdcd302",
       neverlink=1
   )
 
@@ -841,25 +879,6 @@ def maven_dependencies():
   )
 
   java_import_external(
-      name = "org___typelevel_and_cats_ds_kernel__2___12__EXTERNAL",
-      licenses = ["notice"],
-      jar_urls = [
-          "https://repo1.maven.org/maven2/org/typelevel/cats-kernel_2.12/1.0.1/cats-kernel_2.12-1.0.1.jar"
-      ],
-      jar_sha256 = "d87025b6fb7f403d767f6fa726c1626c9c713927bdc6b2a58ac07a32fec7490d",
-      neverlink=0
-  )
-  java_import_external(
-      name = "org___typelevel_and_cats_ds_kernel__2___12__EXTERNAL__NEVERLINK",
-      licenses = ["notice"],
-      jar_urls = [
-          "https://repo1.maven.org/maven2/org/typelevel/cats-kernel_2.12/1.0.1/cats-kernel_2.12-1.0.1.jar"
-      ],
-      jar_sha256 = "d87025b6fb7f403d767f6fa726c1626c9c713927bdc6b2a58ac07a32fec7490d",
-      neverlink=1
-  )
-
-  java_import_external(
       name = "com___alexitc_and_playsonify_ds_core__2___12__EXTERNAL",
       licenses = ["notice"],
       jar_urls = [
@@ -974,6 +993,25 @@ def maven_dependencies():
   )
 
   java_import_external(
+      name = "org___tpolecat_and_doobie_ds_hikari__2___12__EXTERNAL",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/org/tpolecat/doobie-hikari_2.12/0.6.0/doobie-hikari_2.12-0.6.0.jar"
+      ],
+      jar_sha256 = "a63440892f7990ca2dadcb22edad61cc20391d2d0ae2b5b82b5fd63305c4c0be",
+      neverlink=0
+  )
+  java_import_external(
+      name = "org___tpolecat_and_doobie_ds_hikari__2___12__EXTERNAL__NEVERLINK",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/org/tpolecat/doobie-hikari_2.12/0.6.0/doobie-hikari_2.12-0.6.0.jar"
+      ],
+      jar_sha256 = "a63440892f7990ca2dadcb22edad61cc20391d2d0ae2b5b82b5fd63305c4c0be",
+      neverlink=1
+  )
+
+  java_import_external(
       name = "org___scala_ds_stm_and_scala_ds_stm__2___12__EXTERNAL",
       licenses = ["notice"],
       jar_urls = [
@@ -1046,6 +1084,25 @@ def maven_dependencies():
           "https://repo1.maven.org/maven2/io/monix/monix-tail_2.12/3.0.0-RC1/monix-tail_2.12-3.0.0-RC1.jar"
       ],
       jar_sha256 = "7cd7d22334744de3002870d3f1ff0204f96b4abb1469cfa84e9e98631b8f42dd",
+      neverlink=1
+  )
+
+  java_import_external(
+      name = "org___typelevel_and_cats_ds_free__2___12__EXTERNAL",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/org/typelevel/cats-free_2.12/1.4.0/cats-free_2.12-1.4.0.jar"
+      ],
+      jar_sha256 = "3a2a42a9537348aeaeb9d988d894f8b21e47f6387b30dc2e935c7a96dd39d5c0",
+      neverlink=0
+  )
+  java_import_external(
+      name = "org___typelevel_and_cats_ds_free__2___12__EXTERNAL__NEVERLINK",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/org/typelevel/cats-free_2.12/1.4.0/cats-free_2.12-1.4.0.jar"
+      ],
+      jar_sha256 = "3a2a42a9537348aeaeb9d988d894f8b21e47f6387b30dc2e935c7a96dd39d5c0",
       neverlink=1
   )
 
@@ -1316,6 +1373,25 @@ def maven_dependencies():
   )
 
   java_import_external(
+      name = "co___fs2_and_fs2_ds_core__2___12__EXTERNAL",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/co/fs2/fs2-core_2.12/1.0.0/fs2-core_2.12-1.0.0.jar"
+      ],
+      jar_sha256 = "00854b905839d8cbf9c9ddfa15217b96e2672eed6dd5a09e5c2e65e8c0bc359c",
+      neverlink=0
+  )
+  java_import_external(
+      name = "co___fs2_and_fs2_ds_core__2___12__EXTERNAL__NEVERLINK",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/co/fs2/fs2-core_2.12/1.0.0/fs2-core_2.12-1.0.0.jar"
+      ],
+      jar_sha256 = "00854b905839d8cbf9c9ddfa15217b96e2672eed6dd5a09e5c2e65e8c0bc359c",
+      neverlink=1
+  )
+
+  java_import_external(
       name = "com___fasterxml___jackson___datatype_and_jackson_ds_datatype_ds_jsr310",
       licenses = ["notice"],
       jar_urls = [
@@ -1373,21 +1449,21 @@ def maven_dependencies():
   )
 
   java_import_external(
-      name = "com___zaxxer_and_HikariCP",
+      name = "org___tpolecat_and_doobie_ds_h2__2___12__EXTERNAL",
       licenses = ["notice"],
       jar_urls = [
-          "https://repo1.maven.org/maven2/com/zaxxer/HikariCP/3.1.0/HikariCP-3.1.0.jar"
+          "https://repo1.maven.org/maven2/org/tpolecat/doobie-h2_2.12/0.6.0/doobie-h2_2.12-0.6.0.jar"
       ],
-      jar_sha256 = "4c1a39f25216d94932877558294c0e96271c01e471fb2f45c5d0f3b03f14514c",
+      jar_sha256 = "8acf96d1a80bb171626664d3c387dc91e327c7801da174bfe92b71eba164bf39",
       neverlink=0
   )
   java_import_external(
-      name = "com___zaxxer_and_HikariCP__NEVERLINK",
+      name = "org___tpolecat_and_doobie_ds_h2__2___12__EXTERNAL__NEVERLINK",
       licenses = ["notice"],
       jar_urls = [
-          "https://repo1.maven.org/maven2/com/zaxxer/HikariCP/3.1.0/HikariCP-3.1.0.jar"
+          "https://repo1.maven.org/maven2/org/tpolecat/doobie-h2_2.12/0.6.0/doobie-h2_2.12-0.6.0.jar"
       ],
-      jar_sha256 = "4c1a39f25216d94932877558294c0e96271c01e471fb2f45c5d0f3b03f14514c",
+      jar_sha256 = "8acf96d1a80bb171626664d3c387dc91e327c7801da174bfe92b71eba164bf39",
       neverlink=1
   )
 
@@ -1430,6 +1506,25 @@ def maven_dependencies():
   )
 
   java_import_external(
+      name = "org___typelevel_and_cats_ds_effect__2___12__EXTERNAL",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/org/typelevel/cats-effect_2.12/1.0.0/cats-effect_2.12-1.0.0.jar"
+      ],
+      jar_sha256 = "b4c58e58da2ac4a38ed1596d62d15ee4db75fdf6089e581157fb069ea76cf925",
+      neverlink=0
+  )
+  java_import_external(
+      name = "org___typelevel_and_cats_ds_effect__2___12__EXTERNAL__NEVERLINK",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/org/typelevel/cats-effect_2.12/1.0.0/cats-effect_2.12-1.0.0.jar"
+      ],
+      jar_sha256 = "b4c58e58da2ac4a38ed1596d62d15ee4db75fdf6089e581157fb069ea76cf925",
+      neverlink=1
+  )
+
+  java_import_external(
       name = "org___scalactic_and_scalactic__2___12__EXTERNAL",
       licenses = ["notice"],
       jar_urls = [
@@ -1449,6 +1544,25 @@ def maven_dependencies():
   )
 
   java_import_external(
+      name = "org___typelevel_and_cats_ds_macros__2___12__EXTERNAL",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/org/typelevel/cats-macros_2.12/1.4.0/cats-macros_2.12-1.4.0.jar"
+      ],
+      jar_sha256 = "28d318d6265ed08f15f61af407a22bacbe6f5e139075cc06df21e6d48a7a7eb2",
+      neverlink=0
+  )
+  java_import_external(
+      name = "org___typelevel_and_cats_ds_macros__2___12__EXTERNAL__NEVERLINK",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/org/typelevel/cats-macros_2.12/1.4.0/cats-macros_2.12-1.4.0.jar"
+      ],
+      jar_sha256 = "28d318d6265ed08f15f61af407a22bacbe6f5e139075cc06df21e6d48a7a7eb2",
+      neverlink=1
+  )
+
+  java_import_external(
       name = "com___github___swagger_ds_akka_ds_http_and_swagger_ds_akka_ds_http__2___12__EXTERNAL",
       licenses = ["notice"],
       jar_urls = [
@@ -1464,6 +1578,25 @@ def maven_dependencies():
           "https://repo1.maven.org/maven2/com/github/swagger-akka-http/swagger-akka-http_2.12/1.0.0/swagger-akka-http_2.12-1.0.0.jar"
       ],
       jar_sha256 = "cb41c5dc39b8a61cee0bef81309fc96e238b43d8f1df9a18b6cce8736bccfb21",
+      neverlink=1
+  )
+
+  java_import_external(
+      name = "org___scodec_and_scodec_ds_bits__2___12__EXTERNAL",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/org/scodec/scodec-bits_2.12/1.1.5/scodec-bits_2.12-1.1.5.jar"
+      ],
+      jar_sha256 = "dc943c1dfc4e9365d89f9cd6f40b8af036ea4ea9cefa2ba18cd3b89435356c46",
+      neverlink=0
+  )
+  java_import_external(
+      name = "org___scodec_and_scodec_ds_bits__2___12__EXTERNAL__NEVERLINK",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/org/scodec/scodec-bits_2.12/1.1.5/scodec-bits_2.12-1.1.5.jar"
+      ],
+      jar_sha256 = "dc943c1dfc4e9365d89f9cd6f40b8af036ea4ea9cefa2ba18cd3b89435356c46",
       neverlink=1
   )
 
@@ -1521,6 +1654,25 @@ def maven_dependencies():
           "https://repo1.maven.org/maven2/org/flywaydb/flyway-core/5.1.3/flyway-core-5.1.3.jar"
       ],
       jar_sha256 = "b347b2fcf4cfe895d7e57c9625ec149a8145a14bf94e36a2ba676b9bde908bd3",
+      neverlink=1
+  )
+
+  java_import_external(
+      name = "org___scala_ds_lang_and_scala_ds_reflect",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/org/scala-lang/scala-reflect/2.12.7/scala-reflect-2.12.7.jar"
+      ],
+      jar_sha256 = "7427d7ee5771e8c36c1db5a09368fa3078f6eceb77d7c797a322a088c5dddb76",
+      neverlink=0
+  )
+  java_import_external(
+      name = "org___scala_ds_lang_and_scala_ds_reflect__NEVERLINK",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/org/scala-lang/scala-reflect/2.12.7/scala-reflect-2.12.7.jar"
+      ],
+      jar_sha256 = "7427d7ee5771e8c36c1db5a09368fa3078f6eceb77d7c797a322a088c5dddb76",
       neverlink=1
   )
 
@@ -1658,21 +1810,21 @@ def maven_dependencies():
   )
 
   java_import_external(
-      name = "org___scala_ds_lang_and_scala_ds_reflect",
+      name = "org___tpolecat_and_doobie_ds_scalatest__2___12__EXTERNAL",
       licenses = ["notice"],
       jar_urls = [
-          "https://repo1.maven.org/maven2/org/scala-lang/scala-reflect/2.12.6/scala-reflect-2.12.6.jar"
+          "https://repo1.maven.org/maven2/org/tpolecat/doobie-scalatest_2.12/0.6.0/doobie-scalatest_2.12-0.6.0.jar"
       ],
-      jar_sha256 = "ffa70d522fc9f9deec14358aa674e6dd75c9dfa39d4668ef15bb52f002ce99fa",
+      jar_sha256 = "dcb731b5c0b929cf77813a7e80477777d8bda6c2ec4b10895680ac821cbeffd0",
       neverlink=0
   )
   java_import_external(
-      name = "org___scala_ds_lang_and_scala_ds_reflect__NEVERLINK",
+      name = "org___tpolecat_and_doobie_ds_scalatest__2___12__EXTERNAL__NEVERLINK",
       licenses = ["notice"],
       jar_urls = [
-          "https://repo1.maven.org/maven2/org/scala-lang/scala-reflect/2.12.6/scala-reflect-2.12.6.jar"
+          "https://repo1.maven.org/maven2/org/tpolecat/doobie-scalatest_2.12/0.6.0/doobie-scalatest_2.12-0.6.0.jar"
       ],
-      jar_sha256 = "ffa70d522fc9f9deec14358aa674e6dd75c9dfa39d4668ef15bb52f002ce99fa",
+      jar_sha256 = "dcb731b5c0b929cf77813a7e80477777d8bda6c2ec4b10895680ac821cbeffd0",
       neverlink=1
   )
 
@@ -1844,6 +1996,25 @@ def maven_dependencies():
           "https://repo1.maven.org/maven2/com/netflix/spectator/spectator-api/0.57.1/spectator-api-0.57.1.jar"
       ],
       jar_sha256 = "e0485838ca905a7af953c75d32b5d950292200134ba6fbe146f9f97ee19c6461",
+      neverlink=1
+  )
+
+  java_import_external(
+      name = "org___tpolecat_and_doobie_ds_free__2___12__EXTERNAL",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/org/tpolecat/doobie-free_2.12/0.6.0/doobie-free_2.12-0.6.0.jar"
+      ],
+      jar_sha256 = "2c3af03d1ff4596e400d88c6f5f65aea4a6f39acab3fe60e9f07112bbcfdeb4b",
+      neverlink=0
+  )
+  java_import_external(
+      name = "org___tpolecat_and_doobie_ds_free__2___12__EXTERNAL__NEVERLINK",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/org/tpolecat/doobie-free_2.12/0.6.0/doobie-free_2.12-0.6.0.jar"
+      ],
+      jar_sha256 = "2c3af03d1ff4596e400d88c6f5f65aea4a6f39acab3fe60e9f07112bbcfdeb4b",
       neverlink=1
   )
 

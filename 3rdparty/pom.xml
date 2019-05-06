@@ -105,6 +105,26 @@
       <version>3.2.2</version>
     </dependency>
     <dependency>
+      <groupId>org.tpolecat</groupId>
+      <artifactId>doobie-core_2.12</artifactId>
+      <version>0.6.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.tpolecat</groupId>
+      <artifactId>doobie-h2_2.12</artifactId>
+      <version>0.6.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.tpolecat</groupId>
+      <artifactId>doobie-hikari_2.12</artifactId>
+      <version>0.6.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.tpolecat</groupId>
+      <artifactId>doobie-scalatest_2.12</artifactId>
+      <version>0.6.0</version>
+    </dependency>
+    <dependency>
       <groupId>com.github.swagger-akka-http</groupId>
       <artifactId>swagger-akka-http_2.12</artifactId>
       <version>1.0.0</version>
