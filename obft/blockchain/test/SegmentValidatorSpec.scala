@@ -3,12 +3,11 @@ package test
 
 // format: off
 
-import obft.clock._
-import io.iohk.multicrypto._
 import io.iohk.decco.auto._
-
-import org.scalatest.WordSpec
-import org.scalatest.MustMatchers
+import io.iohk.multicrypto._
+import obft.blockchain.models._
+import obft.clock._
+import org.scalatest.{MustMatchers, WordSpec}
 
 class SegmentValidatorSpec extends WordSpec with MustMatchers {
 

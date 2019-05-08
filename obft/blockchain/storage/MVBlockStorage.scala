@@ -7,7 +7,7 @@ import io.iohk.decco.BufferInstantiator.global.HeapByteBuffer
 import io.iohk.decco.Codec
 import io.iohk.decco.auto._
 import io.iohk.multicrypto._
-import obft.blockchain.AnyBlock
+import obft.blockchain.models.AnyBlock
 import org.h2.mvstore.`type`.DataType
 import org.h2.mvstore.{MVMap, MVStore, WriteBuffer}
 

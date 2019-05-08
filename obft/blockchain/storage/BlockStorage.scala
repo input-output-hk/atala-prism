@@ -1,7 +1,7 @@
 package obft.blockchain.storage
 
 import io.iohk.multicrypto._
-import obft.blockchain.AnyBlock
+import obft.blockchain.models.AnyBlock
 
 trait BlockStorage[Tx] {
 

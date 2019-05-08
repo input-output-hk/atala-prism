@@ -8,6 +8,7 @@ import monix.execution.Scheduler.Implicits.global
 import monix.reactive.MulticastStrategy
 import monix.reactive.subjects.ConcurrentSubject
 import obft.blockchain._
+import obft.blockchain.models._
 import obft.blockchain.storage._
 import obft.clock.TimeSlot
 import obft.mempool.MemPool

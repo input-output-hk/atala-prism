@@ -1,8 +1,9 @@
-package obft.blockchain
+package obft.blockchain.storage
+package test
 
 import io.iohk.decco.auto._
 import io.iohk.multicrypto._
-import obft.blockchain.storage.MVBlockStorage
+import obft.blockchain.models._
 import obft.clock.TimeSlot
 import org.scalatest.MustMatchers._
 import org.scalatest.OptionValues._

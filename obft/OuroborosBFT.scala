@@ -7,6 +7,7 @@ import io.iohk.multicrypto._
 import monix.execution.Scheduler.Implicits.global
 import monix.reactive._
 import obft.blockchain._
+import obft.blockchain.models._
 import obft.clock._
 import obft.mempool._
 

@@ -1,14 +1,13 @@
-load("//scala:rules.bzl", "scala_binary", "scala_test")
+load("//scala:rules.bzl", "scala_library", "scala_test")
 
-scala_binary(
-    name = "obft",
-    external = ["io.monix:monix%"],
-    main_class = "obft.Obft",
+scala_library(
+    name = "storage",
+    external = [
+        "com.h2database:h2",
+    ],
     deps = [
-        "//obft/blockchain",
         "//obft/blockchain/models",
         "//obft/clock",
-        "//obft/mempool",
         "@decco//src/io/iohk/decco",
         "@decco//src/io/iohk/decco/auto",
         "@multicrypto//src/io/iohk/multicrypto",
@@ -19,19 +18,17 @@ scala_binary(
 scala_test(
     name = "tests",
     external = [
-        "io.monix:monix%",
         "org.scalacheck:scalacheck%",
     ],
     deps = [
-        "obft",
-        "//obft/blockchain",
+        "storage",
         "//obft/blockchain/models",
-        "//obft/blockchain/storage",
         "//obft/clock",
-        "//obft/mempool",
         "@decco//src/io/iohk/decco",
         "@decco//src/io/iohk/decco/auto",
+        "@decco//src/io/iohk/decco/test/utils",
         "@multicrypto//src/io/iohk/multicrypto",
         "@multicrypto//src/io/iohk/multicrypto/error",
+        "@multicrypto//src/io/iohk/multicrypto/test/utils",
     ],
 )

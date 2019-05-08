@@ -1,4 +1,4 @@
-package obft.blockchain
+package obft.blockchain.models
 
 import io.iohk.multicrypto._
 import obft.clock._
@@ -14,7 +14,6 @@ import obft.clock._
 // `AddBlockchainSegment` message type, only regular blocks should be allowed. It makes
 // no sense to be sending the `GenesisBlock` around
 sealed trait AnyBlock[Tx]
-
 
 
 
@@ -38,25 +37,27 @@ final case class GenesisBlock[Tx](keys: List[SigningPublicKey]) extends AnyBlock
 // and `Block` contains that and the signature of that.
 final case class Block[Tx](
     body: BlockBody[Tx],
-    signature: Signature              // AKA σblock in the paper.
-                                      //   > σblock is a signature (of the entire block).
+    // AKA σblock in the paper.
+    //   > σblock is a signature (of the entire block).
+    signature: Signature
 ) extends AnyBlock[Tx]
-
-
 
 
 // This contains all the data of a Block, except it's signature
 final case class BlockBody[Tx](
+    // AKA h in the paper.
+    //   > h is the hash of the previous block
+    hash: Hash,
 
-    hash: Hash,                                      // AKA h in the paper.
-                                                     //   > h is the hash of the previous block
+    // AKA d in the paper.
+    //   > d is a set of transactions
+    delta: List[Tx],
 
-    delta: List[Tx],                                 // AKA d in the paper.
-                                                     //   > d is a set of transactions
+    // AKA sl in the paper.
+    //   > sl is a (slot) time-stamp
+    timeSlot: TimeSlot,
 
-    timeSlot: TimeSlot,                              // AKA sl in the paper.
-                                                     //   > sl is a (slot) time-stamp
-
-    timeSlotSignature: Signature                     // AKA σsl in the paper.
-                                                     //   > σsl is a signature of the slot number
+    // AKA σsl in the paper.
+    //   > σsl is a signature of the slot number
+    timeSlotSignature: Signature
 )
