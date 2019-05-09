@@ -2,14 +2,12 @@ package atala.obft.blockchain
 
 // format: off
 
-import java.nio.file.Path
-
+import atala.clock._
+import atala.obft.blockchain.models._
+import atala.obft.blockchain.storage._
 import io.iohk.decco._
 import io.iohk.decco.auto._
 import io.iohk.multicrypto._
-import atala.obft.blockchain.models._
-import atala.obft.blockchain.storage.{BlockStorage, MVBlockStorage}
-import atala.clock._
 
 import scala.annotation.tailrec
 
@@ -159,7 +157,8 @@ class Blockchain[Tx: Codec](validator: SegmentValidator, private[blockchain] val
 
 object Blockchain {
 
-  def apply[Tx: Codec](keys: List[SigningPublicKey], maxNumOfAdversaries: Int, storageFile: Path): Blockchain[Tx] =
-    new Blockchain[Tx](new SegmentValidator(keys), new MVBlockStorage[Tx](storageFile))(keys, maxNumOfAdversaries)
-
+  def apply[Tx: Codec](keys: List[SigningPublicKey], maxNumOfAdversaries: Int, database: String): Blockchain[Tx] = {
+    val storage = H2BlockStorage[Tx](database)
+    new Blockchain[Tx](new SegmentValidator(keys), storage)(keys, maxNumOfAdversaries)
+  }
 }

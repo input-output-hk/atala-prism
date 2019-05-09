@@ -1,6 +1,6 @@
 package atala
 
-import java.nio.file.{Files, Path}
+import java.nio.file.Files
 
 import atala.obft._
 import atala.helpers.monixhelpers._
@@ -20,7 +20,7 @@ case class Server[Tx: Codec](
     clusterSize: Int, // AKA 'n' in the paper
     maxNumOfAdversaries: Int, // AKA 't' in the paper
     transactionTTL: Int, // AKA 'u' in the paper
-    storageFile: Path
+    database: String
 )(
     genesisKeys: => List[SigningPublicKey],
     otherServers: => Set[Server[Tx]]
@@ -78,7 +78,7 @@ case class Server[Tx: Codec](
       clockSignalsStream,
       inputNetwork,
       difusingNetworkInput,
-      storageFile
+      database
     )
 }
 
@@ -89,8 +89,8 @@ case class Cluster[Tx: Codec](n: Int, u: Int) {
   private val servers: List[Server[Tx]] =
     (1 to n).toList
       .map { i =>
-        val storageFile = Files.createTempFile("iohk", i.toString)
-        Server[Tx](i, generateSigningKeyPair(), n, n / 3, u, storageFile)(
+        val database = Files.createTempFile("iohk", i.toString).getFileName.toString
+        Server[Tx](i, generateSigningKeyPair(), n, n / 3, u, database)(
           servers.map(_.publicKey),
           servers.filterNot(_.i == i).toSet
         )
