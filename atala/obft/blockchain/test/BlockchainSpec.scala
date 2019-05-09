@@ -14,9 +14,9 @@ import atala.obft.blockchain.storage.InMemoryBlockStorage
 import atala.clock._
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
-import org.scalatest.prop.GeneratorDrivenPropertyChecks._
 import org.scalatest.{MustMatchers, WordSpec}
 import org.scalatest.OptionValues._
+import org.scalatest.prop.GeneratorDrivenPropertyChecks._
 
 class BlockchainSpec extends WordSpec with MustMatchers with CryptoEntityArbitraries {
 

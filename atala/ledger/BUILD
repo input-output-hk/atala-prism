@@ -1,34 +1,37 @@
 load("//scala:rules.bzl", "scala_library", "scala_test")
 
 scala_library(
-  name = "blockchain",
+  name = "ledger",
   deps = [
-    "//atala/obft/blockchain/models",
-    "//atala/obft/blockchain/storage",
     "//atala/clock:clock",
+    "//atala/obft/mempool:mempool",
+    "//atala/obft/blockchain:blockchain",
+    "//atala/helpers/monixhelpers:monixhelpers",
+    "//atala/obft:obft",
     "@multicrypto//src/io/iohk/multicrypto",
     "@multicrypto//src/io/iohk/multicrypto/error",
     "@decco//src/io/iohk/decco",
     "@decco//src/io/iohk/decco/auto",
   ],
-  external = [ ],
+  external = [ "io.monix:monix%" ],
 )
 
 scala_test(
   name = "tests",
   deps = [
-    "blockchain",
-    "//atala/obft/blockchain/models",
-    "//atala/obft/blockchain/storage",
+    "ledger",
     "//atala/clock:clock",
+    "//atala/obft/mempool:mempool",
+    "//atala/obft/blockchain:blockchain",
+    "//atala/helpers/monixhelpers:monixhelpers",
+    "//atala/obft:obft",
     "@multicrypto//src/io/iohk/multicrypto",
-    "@multicrypto//src/io/iohk/multicrypto/test/utils",
     "@multicrypto//src/io/iohk/multicrypto/error",
     "@decco//src/io/iohk/decco",
     "@decco//src/io/iohk/decco/auto",
-    "@decco//src/io/iohk/decco/test/utils",
   ],
   external = [
-    "org.scalacheck:scalacheck%",
+    "io.monix:monix%",
+    #"org.scalacheck:scalacheck%",
   ],
 )

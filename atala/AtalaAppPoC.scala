@@ -3,6 +3,7 @@ package atala
 import java.nio.file.Files
 
 import atala.obft._
+import atala.ledger._
 import atala.helpers.monixhelpers._
 import io.iohk.decco.Codec
 import io.iohk.multicrypto._
@@ -13,42 +14,45 @@ import atala.clock._
 
 import scala.concurrent.duration._
 import scala.io.StdIn.readLine
+import scala.concurrent.Future
 
-case class Server[Tx: Codec](
+case class Server[S, Tx: Codec, Q, QR](
     i: Int,
     private val keyPair: SigningKeyPair,
     clusterSize: Int, // AKA 'n' in the paper
     maxNumOfAdversaries: Int, // AKA 't' in the paper
     transactionTTL: Int, // AKA 'u' in the paper
-    database: String
+    database: String,
+    defaultState: S
 )(
     genesisKeys: => List[SigningPublicKey],
-    otherServers: => Set[Server[Tx]]
+    otherServers: => Set[Server[S, Tx, Q, QR]]
+)(
+    processQuery: (S, Q) => QR,
+    transactionExecutor: (S, Tx) => Option[S]
 ) {
 
   def publicKey: SigningPublicKey = keyPair.public
 
   def recieveTransaction(tx: Tx): Unit = {
-    val m = Message.AddTransaction[Tx](tx)
+    val m = NetworkMessage.AddTransaction[Tx](tx)
     inputNetwork.feedItem(m)
 
     // Replicate message to other servers
     difusingNetworkInput.feedItem(m)
   }
 
-  def run[S](initialState: S, transactionExecutor: (S, Tx) => Option[S]): S =
-    ouroborosBFT.runAllFinalizedTransactions[S](Clock.currentSlot(delta), initialState, transactionExecutor)
-
-  def start(): Unit = {
+  def run(): Unit = {
     difusingNetworkStream.subscribe()
-    ouroborosBFT.ouroborosStream.subscribe()
+    ouroborosBFT.run()
+    ledger.run()
   }
 
-  private val inputNetwork: Observer[Message[Tx]] with Observable[Message[Tx]] =
-    ConcurrentSubject[Message[Tx]](MulticastStrategy.replay)
+  private val inputNetwork: Observer[NetworkMessage[Tx]] with Observable[NetworkMessage[Tx]] =
+    ConcurrentSubject[NetworkMessage[Tx]](MulticastStrategy.replay)
 
   private val (difusingNetworkInput, difusingNetworkStream) = {
-    val input = ConcurrentSubject[Message[Tx]](MulticastStrategy.replay)
+    val input = ConcurrentSubject[NetworkMessage[Tx]](MulticastStrategy.replay)
     val stream =
       input
         .oneach { m =>
@@ -57,10 +61,11 @@ case class Server[Tx: Codec](
     (input, stream)
   }
 
+  private val stateRefreshInterval = 500.millis
   //private val delta = 5.seconds
   //private val delta = 1.seconds
   private val delta = 20.millis
-  private val clockSignalsStream: Observable[Tick] = {
+  private val clockSignalsStream: Observable[Tick[Tx]] = {
     Observable
       .intervalWithFixedDelay(delta)
       .map { _ =>
@@ -80,33 +85,41 @@ case class Server[Tx: Codec](
       difusingNetworkInput,
       database
     )
+
+  private lazy val ledger: Ledger[S, Tx, Q, QR] =
+    Ledger(ouroborosBFT)(defaultState, stateRefreshInterval, delta)(processQuery, transactionExecutor)
+
+  def ask(q: Q): Future[QR] = ledger.ask(q)
 }
 
-case class Cluster[Tx: Codec](n: Int, u: Int) {
+case class Cluster[S, Tx: Codec, Q, QR](n: Int, u: Int, defaultState: S)(
+    processQuery: (S, Q) => QR,
+    transactionExecutor: (S, Tx) => Option[S]
+) {
 
   import AtalaPoC.StringExtraOps
 
-  private val servers: List[Server[Tx]] =
+  private val servers: List[Server[S, Tx, Q, QR]] =
     (1 to n).toList
       .map { i =>
         val database = Files.createTempFile("iohk", i.toString).getFileName.toString
-        Server[Tx](i, generateSigningKeyPair(), n, n / 3, u, database)(
+        Server[S, Tx, Q, QR](i, generateSigningKeyPair(), n, n / 3, u, database, defaultState)(
           servers.map(_.publicKey),
           servers.filterNot(_.i == i).toSet
-        )
+        )(processQuery, transactionExecutor)
       }
 
-  private def aServer(): Server[Tx] =
+  private def aServer(): Server[S, Tx, Q, QR] =
     servers(util.Random.nextInt(servers.length))
 
   def recieveTransaction(tx: Tx) =
     tx sendTo aServer
 
-  def run[S](initialState: S, transactionExecutor: (S, Tx) => Option[S]): S =
-    aServer().run[S](initialState, transactionExecutor)
+  def ask(q: Q): Future[QR] =
+    aServer().ask(q)
 
-  def start(): Unit =
-    servers.foreach(_.start())
+  def run(): Unit =
+    servers.foreach(_.run())
 }
 
 object AtalaPoC extends App {
@@ -118,7 +131,8 @@ object AtalaPoC extends App {
   }
 
   def printCommand(): Unit = {
-    val r = cluster.run[Map[Int, String]](Map.empty, transactionExecutor)
+    val fr = cluster.ask(())
+    val r = scala.concurrent.Await.result(fr, Duration.Inf)
     println()
     r.toList
       .sortBy(_._1)
@@ -144,9 +158,11 @@ object AtalaPoC extends App {
   }
 
   import io.iohk.decco.auto._
-  val cluster = Cluster[(Int, String)](7, 5)
+  //val cluster = Cluster[Map[Int, String], (Int, String), Unit, Map[Int, String]](7, 5, Map.empty)((s, _) => s, transactionExecutor)
+  val cluster =
+    Cluster[Map[Int, String], (Int, String), Unit, Map[Int, String]](7, 14, Map.empty)((s, _) => s, transactionExecutor)
 
-  cluster.start()
+  cluster.run()
 
   println(
     """|
@@ -173,10 +189,10 @@ object AtalaPoC extends App {
 
   implicit class StringExtraOps[Tx](val tx: Tx) extends AnyVal {
 
-    def sendTo(server: Server[Tx]): Unit =
+    def sendTo[S, Q, QR](server: Server[S, Tx, Q, QR]): Unit =
       server.recieveTransaction(tx)
 
-    def sendTo(cluster: Cluster[Tx]): Unit =
+    def sendTo[S, Q, QR](cluster: Cluster[S, Tx, Q, QR]): Unit =
       cluster.recieveTransaction(tx)
   }
 

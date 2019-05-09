@@ -8,6 +8,7 @@ scala_binary(
     "//atala/obft/blockchain:blockchain",
     "//atala/helpers/monixhelpers:monixhelpers",
     "//atala/obft:obft",
+    "//atala/ledger:ledger",
     "@multicrypto//src/io/iohk/multicrypto",
     "@multicrypto//src/io/iohk/multicrypto/error",
     "@decco//src/io/iohk/decco",
