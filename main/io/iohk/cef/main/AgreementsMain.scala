@@ -17,8 +17,8 @@ import scala.concurrent.duration._
 object AgreementsMain extends App {
 
   args.foreach(println)
-  val cefConfig: CefConfig = pureconfig.loadConfigOrThrow[CefConfig](ConfigFactory.load(args(0)))
-  val agreementsMainConfig: FrontendConfig = pureconfig.loadConfigOrThrow[FrontendConfig](ConfigFactory.load(args(0)))
+  val cefConfig: CefConfig = pureconfig.loadConfigOrThrow[CefConfig](ConfigFactory.load())
+  val agreementsMainConfig: FrontendConfig = pureconfig.loadConfigOrThrow[FrontendConfig](ConfigFactory.load())
 
   implicit val timeout: Timeout = 1 minute
   implicit val executionContext: ExecutionContext = scala.concurrent.ExecutionContext.global

@@ -26,7 +26,7 @@ import scala.concurrent.duration._
 object ChimericMain extends App {
 
   val typesafeConfig = ConfigFactory.defaultReference()
-  val chimericConfig = ConfigFactory.load("chimeric")
+  val chimericConfig = ConfigFactory.load()
   val cefConfig: CefConfig = pureconfig.loadConfigOrThrow[CefConfig](typesafeConfig)
   val frontendConfig: FrontendConfig = pureconfig
     .loadConfigOrThrow[FrontendConfig](chimericConfig)
