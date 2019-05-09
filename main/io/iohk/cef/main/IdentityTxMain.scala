@@ -32,7 +32,7 @@ object IdentityTxMain extends App {
   val typesafeConfig = ConfigFactory.defaultReference()
   val cefConfig: CefConfig = pureconfig.loadConfigOrThrow[CefConfig](typesafeConfig)
   val identityTxMainConfig: FrontendConfig = pureconfig
-    .loadConfigOrThrow[FrontendConfig](ConfigFactory.load("identity-tx-main"))
+    .loadConfigOrThrow[FrontendConfig](ConfigFactory.load())
 
   type S = IdentityData
   type T = IdentityTransaction
