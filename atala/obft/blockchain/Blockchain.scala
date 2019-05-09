@@ -23,10 +23,11 @@ class Blockchain[Tx: Codec](validator: SegmentValidator, private[blockchain] val
       forceGetFromStorage(at)
   }
 
+  val genesisBlock = GenesisBlock[Tx](keys)
+  val genesisBlockHash = hash(genesisBlock)
+
   private[blockchain] var headPointer: BlockPointer = {
-    val gb: AnyBlock[Tx] = GenesisBlock[Tx](keys)
-    val hgb = hash(gb)
-    storage.put(hgb, gb)
+    val hgb = hash(genesisBlock)
     BlockPointer(hgb, 0)
   }
 
@@ -103,7 +104,7 @@ class Blockchain[Tx: Codec](validator: SegmentValidator, private[blockchain] val
     reversedSegment match {
       case Nil => ()
       case h :: _ =>
-        storage.get(h.body.hash) match {
+        getFromStorage(h.body.hash) match {
           case None =>
             // The segment follows up from a block we don't have in the storage
             ()
@@ -125,8 +126,6 @@ class Blockchain[Tx: Codec](validator: SegmentValidator, private[blockchain] val
             }
         }
     }
-
-
   }
 
   def createBlockData(transactions: List[Tx], timeSlot: TimeSlot, key: SigningPrivateKey): Block[Tx] = {
@@ -144,14 +143,18 @@ class Blockchain[Tx: Codec](validator: SegmentValidator, private[blockchain] val
     )
   }
 
-  private def forceGetFromStorage(id: Hash): AnyBlock[Tx] =
-    storage.get(id) match {
-      case None =>
-        throw new Error("FATAL: A block that in theory was already stored in the blockchain could not be recovered")
-      case Some(block) =>
-        block
-    }
+  private def forceGetFromStorage(id: Hash): AnyBlock[Tx] = {
+    getFromStorage(id)
+        .getOrElse { throw new Error("FATAL: A block that in theory was already stored in the blockchain could not be recovered") }
+  }
 
+  private def getFromStorage(id: Hash): Option[AnyBlock[Tx]] = {
+    if (genesisBlockHash == id) {
+      Some(genesisBlock)
+    } else {
+      storage.get(id)
+    }
+  }
 }
 
 object Blockchain {

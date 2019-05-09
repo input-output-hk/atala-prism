@@ -7,37 +7,36 @@ import atala.obft.blockchain.models._
 import atala.clock.TimeSlot
 import org.scalatest.MustMatchers._
 import org.scalatest.OptionValues._
-import org.scalatest.WordSpec
+import org.scalatest.{BeforeAndAfter, WordSpec}
 
-class MVBlockStorageSpec extends WordSpec {
+class MVBlockStorageSpec extends WordSpec with BeforeAndAfter {
 
   import MVBlockStorageSpec._
 
   val genesis = GenesisBlock[Tx](List(generateSigningKeyPair().public, generateSigningKeyPair().public))
   val dummySignature = sign(genesis, generateSigningKeyPair().`private`)
+
+  val body = BlockBody(
+    hash = hash(genesis),
+    delta = List("a", "b", "c"),
+    timeSlot = TimeSlot(1),
+    timeSlotSignature = dummySignature
+  )
+
+  val block = Block(
+    body = body,
+    signature = dummySignature
+  )
+
   val tempPath = java.nio.file.Files.createTempFile("test", "iohk")
   val service = new MVBlockStorage[Tx](tempPath)
 
+  before {
+    service.remove(hash(block))
+  }
+
   "put" should {
-    "create the genesis block" in {
-      val block: AnyBlock[Tx] = genesis
-      service.put(hash(block), block)
-
-      val retrieved = service.get(hash(block))
-      retrieved.value must be(block)
-    }
-
-    "create a non-genesis block" in {
-      val body = BlockBody(
-        hash = hash(genesis),
-        delta = List("a", "b", "c"),
-        timeSlot = TimeSlot(1),
-        timeSlotSignature = dummySignature
-      )
-      val block: AnyBlock[Tx] = Block(
-        body = body,
-        signature = dummySignature
-      )
+    "create a block" in {
       service.put(hash(block), block)
 
       val retrieved = service.get(hash(block))
@@ -45,16 +44,6 @@ class MVBlockStorageSpec extends WordSpec {
     }
 
     "replace an existing item" in {
-      val body = BlockBody(
-        hash = hash(genesis),
-        delta = List("a", "c"),
-        timeSlot = TimeSlot(2),
-        timeSlotSignature = dummySignature
-      )
-      val block: AnyBlock[Tx] = Block(
-        body = body,
-        signature = dummySignature
-      )
       service.put(hash(block), block)
 
       val retrieved = service.get(hash(block))
@@ -64,7 +53,6 @@ class MVBlockStorageSpec extends WordSpec {
 
   "get" should {
     "return an existing item" in {
-      val block: AnyBlock[Tx] = genesis
       service.put(hash(block), block)
 
       val retrieved = service.get(hash(block))
@@ -87,7 +75,6 @@ class MVBlockStorageSpec extends WordSpec {
     }
 
     "remove an existing item" in {
-      val block: AnyBlock[Tx] = genesis
       service.put(hash(block), block)
       service.remove(hash(block))
 

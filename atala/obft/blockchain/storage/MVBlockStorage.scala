@@ -3,11 +3,11 @@ package atala.obft.blockchain.storage
 import java.nio.ByteBuffer
 import java.nio.file.Path
 
+import atala.obft.blockchain.models.Block
 import io.iohk.decco.BufferInstantiator.global.HeapByteBuffer
 import io.iohk.decco.Codec
 import io.iohk.decco.auto._
 import io.iohk.multicrypto._
-import atala.obft.blockchain.models.AnyBlock
 import org.h2.mvstore.`type`.DataType
 import org.h2.mvstore.{MVMap, MVStore, WriteBuffer}
 
@@ -21,24 +21,24 @@ class MVBlockStorage[Tx](storageFile: Path)(implicit codec: Codec[Tx]) extends B
     .fileName(storageFile.toAbsolutePath.toString)
     .open()
 
-  private val table: MVMap[String, AnyBlock[Tx]] = {
-    val map = new MVMap.Builder[String, AnyBlock[Tx]]()
-      .valueType(new ByteBufferDataType[AnyBlock[Tx]])
+  private val table: MVMap[String, Block[Tx]] = {
+    val map = new MVMap.Builder[String, Block[Tx]]()
+      .valueType(new ByteBufferDataType[Block[Tx]])
 
     storage.openMap(tableId, map)
   }
 
-  override def get(id: Hash): Option[AnyBlock[Tx]] = {
-    val nullable = table.get(id.toCompactString())
+  override def get(hash: Hash): Option[Block[Tx]] = {
+    val nullable = table.get(hash.toCompactString())
     Option(nullable)
   }
 
-  override def put(id: Hash, block: AnyBlock[Tx]): Unit = {
-    table.put(id.toCompactString(), block)
+  override def put(hash: Hash, block: Block[Tx]): Unit = {
+    table.put(hash.toCompactString(), block)
   }
 
-  override def remove(id: Hash): Unit = {
-    table.remove(id.toCompactString())
+  override def remove(hash: Hash): Unit = {
+    table.remove(hash.toCompactString())
   }
 }
 
