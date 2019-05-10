@@ -3,6 +3,35 @@
 , config ? {}
 , nixpkgs ? import ./nix/nixpkgs.nix
 , pkgs ? import nixpkgs {inherit system crossSystem config;}
+
+# This is set by CI
+, buildId ? null
+
+# Disable running of tests for all cardano-sl packages.
+, forceDontCheck ? false
+
+# Enable profiling for all haskell packages.
+# Profiling slows down performance by 50% so we don't enable it by default.
+, enableProfiling ? false
+
+# Keeps the debug information for all haskell packages.
+, enableDebugging ? false
+
+# Build (but don't run) benchmarks for all cardano-sl packages.
+, enableBenchmarks ? false
+
+# Overrides all nix derivations to add build timing information in
+# their build output.
+, enablePhaseMetrics ? true
+
+# Disables optimization in the build for all cardano-sl packages.
+, fasterBuild ? false
+
+# Whether local options in ./custom-wallet-config.nix should apply to
+# the wallet connect script build.
+, allowCustomConfig ? true
+
+
 }:
 with pkgs;
 let commonAttrs = {
