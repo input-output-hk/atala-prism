@@ -2,7 +2,7 @@ package atala.clock
 
 import scala.concurrent.duration._
 
-case class TimeSlot(private val index: Int) extends Ordered[TimeSlot] {
+case class TimeSlot(index: Int) extends Ordered[TimeSlot] {
 
   override def compare(that: TimeSlot) = this.index - that.index
 

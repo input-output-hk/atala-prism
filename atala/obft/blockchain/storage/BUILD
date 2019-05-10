@@ -4,6 +4,9 @@ scala_library(
     name = "storage",
     external = [
         "com.h2database:h2",
+        "org.tpolecat:doobie-core%",
+        "org.tpolecat:doobie-h2%",
+        "org.tpolecat:doobie-hikari%",
     ],
     deps = [
         "//atala/obft/blockchain/models",

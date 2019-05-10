@@ -41,6 +41,19 @@ dependencies:
       version: "3.2.2"
       lang: scala
       modules: ['', config, test]
+  org.tpolecat:
+    doobie-core:
+      version: "0.6.0"
+      lang: scala
+    doobie-h2:
+      version: "0.6.0"
+      lang: scala
+    doobie-hikari:
+      version: "0.6.0"
+      lang: scala
+    doobie-scalatest:
+      version: "0.6.0"
+      lang: scala
   com.github.swagger-akka-http:
     swagger-akka-http:
       version: "1.0.0"
