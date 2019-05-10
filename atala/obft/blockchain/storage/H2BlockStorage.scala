@@ -38,7 +38,7 @@ class H2BlockStorage[Tx](xa: Transactor[IO])(implicit txCodec: Codec[List[Tx]]) 
 
   override def put(hash: Hash, block: Block[Tx]): Unit = {
     val hashString = hash.toCompactString()
-    val previousHash = block.body.hash.toCompactString()
+    val previousHash = block.body.previousHash.toCompactString()
     val signature = block.signature.toCompactString()
     val timeSlot = block.body.timeSlot.index
     val timeSlotSignature = block.body.timeSlotSignature.toCompactString()

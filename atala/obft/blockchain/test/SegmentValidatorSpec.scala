@@ -38,7 +38,7 @@ class SegmentValidatorSpec extends WordSpec with MustMatchers {
     "reject a Block with an incorrect previous hash" in {
       val previous = block(keyPairs, 1230, genesis)
       val valid = block(keyPairs, 1231, previous)
-      val invalid = valid.copy(body = valid.body.copy(hash = hash(genesis)))
+      val invalid = valid.copy(body = valid.body.copy(previousHash = hash(genesis)))
       segmentValidator.isValid(invalid, valid) mustBe false
     }
 
@@ -126,7 +126,7 @@ class SegmentValidatorSpec extends WordSpec with MustMatchers {
     val timeSlotSignature = sign(ts, signingKey)
     val body =
       BlockBody[String](
-        hash = hash(previous),
+        previousHash = hash(previous),
         delta = List("ABC", "DEF"),
         timeSlot = ts,
         timeSlotSignature = timeSlotSignature

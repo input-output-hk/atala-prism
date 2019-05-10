@@ -86,7 +86,7 @@ class BlockchainSpec extends WordSpec with MustMatchers with CryptoEntityArbitra
 
       // THEN
       block.body.delta mustBe List("A", "B")
-      block.body.hash mustBe blockchain.genesisBlockHash
+      block.body.previousHash mustBe blockchain.genesisBlockHash
       block.body.timeSlot mustBe TimeSlot(3)
       block.body.timeSlotSignature mustBe sign(TimeSlot(3), keyPair1.`private`)
       block.signature mustBe sign(BlockBody(blockchain.genesisBlockHash, List("A", "B"), TimeSlot(3), sign(TimeSlot(3), keyPair1.`private`)), keyPair1.`private`)

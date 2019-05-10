@@ -19,7 +19,7 @@ class SegmentValidator(keys: List[SigningPublicKey]) {
 
     // > [...] h is the hash of the previous block [...]
     val body = block.body
-    if (body.hash != previousHash) {
+    if (body.previousHash != previousHash) {
       return false
     }
 
