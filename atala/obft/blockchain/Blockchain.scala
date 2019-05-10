@@ -107,7 +107,7 @@ class Blockchain[Tx: Codec](validator: SegmentValidator, private[blockchain] val
             // The segment follows up from a block we don't have in the storage
             ()
           case Some(previous) =>
-            if (!validator.isValid(chainSegment, h.body.hash)) return ()
+            if (!validator.isValid(chainSegment, previous)) return ()
             val blocksToRemove = findBlocksToRemove(headPointer.at, h.body.hash, Nil)
 
             val s0 = headPointer.blockchainLength - blocksToRemove.length
