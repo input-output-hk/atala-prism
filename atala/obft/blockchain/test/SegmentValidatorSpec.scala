@@ -118,8 +118,8 @@ class SegmentValidatorSpec extends WordSpec with MustMatchers {
 
   // HELPERS
 
-  private def block(keys: List[SigningKeyPair], j: Int, previous: AnyBlock[String]): Block[String] = {
-    val ts = TimeSlot(j)
+  private def block(keys: List[SigningKeyPair], timeSlot: Int, previous: AnyBlock[String]): Block[String] = {
+    val ts = TimeSlot(timeSlot)
     val privateKeys = keys.map(_.`private`)
     val publicKeys = keys.map(_.public)
     val signingKey: SigningPrivateKey = privateKeys(ts.leader(keys.length) - 1)
@@ -131,7 +131,7 @@ class SegmentValidatorSpec extends WordSpec with MustMatchers {
         timeSlot = ts,
         timeSlotSignature = timeSlotSignature
       )
-    Block(body, sign(body, signingKey))
+    Block(previous.height.above, body, sign(body, signingKey))
   }
 
   private def segment(n: Int, j: Int = 1230): List[Block[String]] =
@@ -153,7 +153,7 @@ class SegmentValidatorSpec extends WordSpec with MustMatchers {
   private val (segmentValidator, keyPairs) = segval(7)
   private val privateKeys = keyPairs.map(_.`private`)
   private val genesis = GenesisBlock[String](keyPairs.map(_.public))
-  private val validBlock: Block[String] = block(keyPairs, 1230, genesis)
+  private val validBlock: Block[String] = block(keyPairs,1230, genesis)
   private val validTimeSlot = validBlock.body.timeSlot
   private val validLeader: Int = validTimeSlot.leader(privateKeys.length)
   private val validSigningKey: SigningPrivateKey = privateKeys(validLeader - 1)

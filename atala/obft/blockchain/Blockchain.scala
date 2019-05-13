@@ -15,7 +15,7 @@ class Blockchain[Tx: Codec](validator: SegmentValidator, private[blockchain] val
 
   private[blockchain] case class BlockPointer(
     at: Hash,
-    blockchainLength: Int // I wonder if this should be a Long
+    blockchainLength: Height
   ) {
     def forceGetPointedBlockFromStorage: AnyBlock[Tx] =
       forceGetFromStorage(at)
@@ -26,7 +26,7 @@ class Blockchain[Tx: Codec](validator: SegmentValidator, private[blockchain] val
 
   private[blockchain] var headPointer: BlockPointer = {
     val hgb = hash(genesisBlock)
-    BlockPointer(hgb, 0)
+    BlockPointer(hgb, genesisBlock.height)
   }
 
   private def head: AnyBlock[Tx] = headPointer.forceGetPointedBlockFromStorage
@@ -37,9 +37,9 @@ class Blockchain[Tx: Codec](validator: SegmentValidator, private[blockchain] val
     def findPointer(p: BlockPointer): BlockPointer =
       p.forceGetPointedBlockFromStorage match {
         case GenesisBlock(_) => p
-        case Block(body, _) if body.timeSlot < firstInvalidTimeSlot => p
-        case Block(body, _) =>
-          findPointer(BlockPointer(body.previousHash, p.blockchainLength - 1))
+        case Block(_,body, _) if body.timeSlot < firstInvalidTimeSlot => p
+        case Block(_,body, _) =>
+          findPointer(BlockPointer(body.previousHash, p.blockchainLength.below))
       }
 
     findPointer(headPointer)
@@ -73,9 +73,9 @@ class Blockchain[Tx: Codec](validator: SegmentValidator, private[blockchain] val
       pointer match {
         case GenesisBlock(_) =>
           accum.foldLeft(initialState)(safeTransactionExecutor)
-        case Block(body, _) if body.timeSlot <= snapshotTimestamp =>
+        case Block(_,body, _) if body.timeSlot <= snapshotTimestamp =>
           accum.foldLeft(initialState)(safeTransactionExecutor)
-        case Block(body, _) =>
+        case Block(_,body, _) =>
           val newAccum = body.delta ++ accum
           run(forceGetFromStorage(body.previousHash), newAccum)
       }
@@ -95,7 +95,7 @@ class Blockchain[Tx: Codec](validator: SegmentValidator, private[blockchain] val
         forceGetFromStorage(from) match {
           case GenesisBlock(_) =>
             throw new Error("FATAL: It's impossible it exist a block that goes before the GenesisBlock")
-          case Block(body, _) =>
+          case Block(_,body, _) =>
             findBlocksToRemove(body.previousHash, previous, from :: accum)
         }
 
@@ -110,9 +110,9 @@ class Blockchain[Tx: Codec](validator: SegmentValidator, private[blockchain] val
             if (!validator.isValid(chainSegment, previous)) return ()
             val blocksToRemove = findBlocksToRemove(headPointer.at, h.body.previousHash, Nil)
 
-            val s0 = headPointer.blockchainLength - blocksToRemove.length
+            val s0 = headPointer.blockchainLength.toInt - blocksToRemove.length
             val s  = s0 + chainSegment.length
-            val l  = headPointer.blockchainLength
+            val l  = headPointer.blockchainLength.toInt
 
             if (s > l) {  // THE PAPER: Whenever the server becomes aware of an alternative blockchain
                           //            B0 B'1 ... B's with s > l, it replaces its local chain with this
@@ -120,7 +120,8 @@ class Blockchain[Tx: Codec](validator: SegmentValidator, private[blockchain] val
 
               chainSegment.foreach(b => storage.put(hash(b), b))
               blocksToRemove.foreach(storage.remove)
-              headPointer = BlockPointer(hash(chainSegment.head), s)
+              val finalHeight = Height.from(s).get // `.get` is safe as s > 0.
+              headPointer = BlockPointer(hash(chainSegment.head), finalHeight)
             }
         }
     }
@@ -136,6 +137,7 @@ class Blockchain[Tx: Codec](validator: SegmentValidator, private[blockchain] val
       )
 
     Block[Tx](
+      blockchain.height.above,
       body,
       sign(body, key)
     )
@@ -153,6 +155,8 @@ class Blockchain[Tx: Codec](validator: SegmentValidator, private[blockchain] val
       storage.get(id)
     }
   }
+
+  def height: Height = headPointer.blockchainLength
 }
 
 object Blockchain {

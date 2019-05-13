@@ -16,6 +16,7 @@ import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
 import org.scalatest.prop.GeneratorDrivenPropertyChecks._
 import org.scalatest.{MustMatchers, WordSpec}
+import org.scalatest.OptionValues._
 
 class BlockchainSpec extends WordSpec with MustMatchers with CryptoEntityArbitraries {
 
@@ -28,6 +29,9 @@ class BlockchainSpec extends WordSpec with MustMatchers with CryptoEntityArbitra
 
   implicit val timeSlotArbitrary: Arbitrary[TimeSlot] =
     Arbitrary(arbitrary[Int].map(TimeSlot.apply))
+
+  implicit val heightArbitrary: Arbitrary[Height] =
+    Arbitrary(arbitrary[Int].suchThat(_ >= 0) map { i => Height.from(i).value })
 
   implicit def blockBodyArbitrary[T: Arbitrary]: Arbitrary[BlockBody[T]] =
     Arbitrary(
@@ -42,9 +46,10 @@ class BlockchainSpec extends WordSpec with MustMatchers with CryptoEntityArbitra
   implicit def blockArbitrary[T: Arbitrary]: Arbitrary[Block[T]] =
     Arbitrary(
       for {
+        h <- arbitrary[Height]
         b <- arbitrary[BlockBody[T]]
         s <- arbitrary[Signature]
-      } yield Block(b, s)
+      } yield Block(h, b, s)
     )
 
   implicit def anyBlockArbitrary[T: Arbitrary]: Arbitrary[AnyBlock[T]] =
@@ -85,6 +90,7 @@ class BlockchainSpec extends WordSpec with MustMatchers with CryptoEntityArbitra
       val block = blockchain.createBlockData(List("A", "B"), TimeSlot(3), keyPair1.`private`)
 
       // THEN
+      block.height mustBe blockchain.height.above
       block.body.delta mustBe List("A", "B")
       block.body.previousHash mustBe blockchain.genesisBlockHash
       block.body.timeSlot mustBe TimeSlot(3)
@@ -100,29 +106,33 @@ class BlockchainSpec extends WordSpec with MustMatchers with CryptoEntityArbitra
       // GIVEN
       val storage = new InMemoryBlockStorage[String]
       val blockchain = new Blockchain[String](new SegmentValidator(publicKeys), storage)(publicKeys, 1)
+      val oldHeight = blockchain.height
 
       //WHEN
       blockchain.add(Nil)
 
       //THEN
       storage.data.isEmpty mustBe true
-      blockchain.headPointer mustBe blockchain.BlockPointer(blockchain.genesisBlockHash, 0)
+      blockchain.height mustBe oldHeight
+      blockchain.headPointer mustBe blockchain.BlockPointer(blockchain.genesisBlockHash, Height.Zero)
     }
 
     "add a block, when the segment contains just that block (and it's valid)" in {
       // GIVEN
       val storage = new InMemoryBlockStorage[String]
       val blockchain = new Blockchain[String](new SegmentValidator(publicKeys), storage)(publicKeys, 1)
+      val oldHeight = blockchain.height
 
       val body = BlockBody(blockchain.genesisBlockHash, List("A", "B"), TimeSlot(3), sign(TimeSlot(3), keyPair1.`private`))
-      val block = Block(body, sign(body, keyPair1.`private`))
+      val block = Block(blockchain.height, body, sign(body, keyPair1.`private`))
 
       //WHEN
       blockchain.add(block :: Nil)
 
       //THEN
       storage.data mustBe Map(hash(block) -> block)
-      blockchain.headPointer mustBe blockchain.BlockPointer(hash(block: AnyBlock[String]), 1)
+      blockchain.headPointer mustBe blockchain.BlockPointer(hash(block: AnyBlock[String]), Height.from(1).value)
+      blockchain.height mustBe oldHeight.above
     }
 
 
@@ -130,12 +140,13 @@ class BlockchainSpec extends WordSpec with MustMatchers with CryptoEntityArbitra
       // GIVEN
       val storage = new InMemoryBlockStorage[String]
       val blockchain = new Blockchain[String](new SegmentValidator(publicKeys), storage)(publicKeys, 1)
+      val oldHeight = blockchain.height
 
       def block(ts: Int, previousBlock: AnyBlock[String]): Block[String] = {
         val keyPair = keys((ts - 1) % keys.length)
         val key = keyPair.`private`
         val body = BlockBody(hash(previousBlock), List(s"A$ts", s"B$ts"), TimeSlot(ts), sign(TimeSlot(ts), key))
-        Block(body, sign(body, key))
+        Block(previousBlock.height.above, body, sign(body, key))
       }
       val b1 = block(3, blockchain.genesisBlock)
       val b2 = block(4, b1)
@@ -150,23 +161,26 @@ class BlockchainSpec extends WordSpec with MustMatchers with CryptoEntityArbitra
       val targetStorage = targetBlockchain.map(b => hash(b) -> b).toMap
       storage.data.size mustBe targetStorage.size
       storage.data mustBe targetStorage
-      blockchain.headPointer mustBe blockchain.BlockPointer(hash(b3), 3)
+      blockchain.headPointer mustBe blockchain.BlockPointer(hash(b3), Height.from(3).value)
+      blockchain.height.toInt mustBe 3
     }
 
     "change nothing, when the segment contains just one block (and it's invalid)" in {
       // GIVEN
       val storage = new InMemoryBlockStorage[String]
       val blockchain = new Blockchain[String](new SegmentValidator(publicKeys), storage)(publicKeys, 1)
+      val oldHeight = blockchain.height
 
       val body = BlockBody(blockchain.genesisBlockHash, List("A", "B"), TimeSlot(3), sign(TimeSlot(5), keyPair1.`private`))
-      val block = Block(body, sign(body, keyPair1.`private`))
+      val block = Block(blockchain.height.above, body, sign(body, keyPair1.`private`))
 
       //WHEN
       blockchain.add(block :: Nil)
 
       //THEN
       storage.data.isEmpty mustBe true
-      blockchain.headPointer mustBe blockchain.BlockPointer(blockchain.genesisBlockHash, 0)
+      blockchain.headPointer mustBe blockchain.BlockPointer(blockchain.genesisBlockHash, Height.from(0).value)
+      blockchain.height mustBe oldHeight
     }
    }
 
@@ -180,7 +194,7 @@ class BlockchainSpec extends WordSpec with MustMatchers with CryptoEntityArbitra
         val keyPair = keys((ts - 1) % keys.length)
         val key = keyPair.`private`
         val body = BlockBody(hash(previousBlock), List(s"A$ts", s"B$ts"), TimeSlot(ts), sign(TimeSlot(ts), key))
-        Block(body, sign(body, key))
+        Block(previousBlock.height.above, body, sign(body, key))
       }
       val b1 = block(3, blockchain.genesisBlock)
       val b2 = block(4, b1)
@@ -203,7 +217,7 @@ class BlockchainSpec extends WordSpec with MustMatchers with CryptoEntityArbitra
         val keyPair = keys((ts - 1) % keys.length)
         val key = keyPair.`private`
         val body = BlockBody(hash(previousBlock), List(s"A$ts", s"B$ts"), TimeSlot(ts), sign(TimeSlot(ts), key))
-        Block(body, sign(body, key))
+        Block(previousBlock.height.above, body, sign(body, key))
       }
       val b1 = block(3, blockchain.genesisBlock)
       val b2 = block(4, b1)
@@ -226,7 +240,7 @@ class BlockchainSpec extends WordSpec with MustMatchers with CryptoEntityArbitra
         val keyPair = keys((ts - 1) % keys.length)
         val key = keyPair.`private`
         val body = BlockBody(hash(previousBlock), List(s"A$ts", s"B$ts"), TimeSlot(ts), sign(TimeSlot(ts), key))
-        Block(body, sign(body, key))
+        Block(previousBlock.height.above, body, sign(body, key))
       }
       val b1 = block(3, blockchain.genesisBlock)
       val b2 = block(4, b1)
@@ -250,7 +264,7 @@ class BlockchainSpec extends WordSpec with MustMatchers with CryptoEntityArbitra
         val keyPair = keys((ts - 1) % keys.length)
         val key = keyPair.`private`
         val body = BlockBody(hash(previousBlock), List(s"A$ts", s"B$ts"), TimeSlot(ts), sign(TimeSlot(ts), key))
-        Block(body, sign(body, key))
+        Block(previousBlock.height.above, body, sign(body, key))
       }
       val b1 = block(3, blockchain.genesisBlock)
       val b2 = block(4, b1)

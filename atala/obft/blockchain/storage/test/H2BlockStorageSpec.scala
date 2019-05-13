@@ -16,6 +16,8 @@ class H2BlockStorageSpec extends WordSpec with BeforeAndAfter {
   val genesis = GenesisBlock[Tx](List(generateSigningKeyPair().public, generateSigningKeyPair().public))
   val dummySignature = sign(genesis, generateSigningKeyPair().`private`)
 
+  val dummyHeight = Height.from(10).value
+
   val body = BlockBody(
     previousHash = hash(genesis),
     delta = List("a", "b", "c"),
@@ -24,6 +26,7 @@ class H2BlockStorageSpec extends WordSpec with BeforeAndAfter {
   )
 
   val block = Block(
+    height = dummyHeight,
     body = body,
     signature = dummySignature
   )
