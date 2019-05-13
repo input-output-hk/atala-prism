@@ -2,10 +2,10 @@ package atala.obft.blockchain
 
 // format: off
 
+import atala.obft.blockchain.models._
 import io.iohk.decco._
 import io.iohk.decco.auto._
 import io.iohk.multicrypto._
-import atala.obft.blockchain.models._
 
 import scala.annotation.tailrec
 
@@ -14,12 +14,24 @@ import scala.annotation.tailrec
 class SegmentValidator(keys: List[SigningPublicKey]) {
 
   // Checks that the content of a single (non genesis) block is valid
-  def isValid[Tx : Codec](block: Block[Tx], hashPreviousBlock: Hash): Boolean = {
+  def isValid[Tx : Codec](block: Block[Tx], previousBlock: AnyBlock[Tx]): Boolean = {
+    val previousHash = hash(previousBlock)
 
     // > [...] h is the hash of the previous block [...]
     val body = block.body
-    if (body.hash != hashPreviousBlock)
+    if (body.previousHash != previousHash) {
       return false
+    }
+
+    // the time slots should be strictly increasing
+    val previousSlot = previousBlock match {
+      case b: Block[Tx] => Some(b.body.timeSlot)
+      case _ => None
+    }
+
+    if (previousSlot.exists(_ >= body.timeSlot)) {
+      return false
+    }
 
     // > [...] by server i such that i - 1 = (j - 1) mod n [...]
     // In the previous fragment:
@@ -59,34 +71,36 @@ class SegmentValidator(keys: List[SigningPublicKey]) {
 
 
     // If all the validations pass, the block itself is valid
-    return true
+    true
   }
 
-  def isValid[Tx : Codec](
-    chainSegment:      List[Block[Tx]],
-    hashPreviousBlock: Hash               // This is the hash of the block that `chainSegment` would follow if
-                                          // chainSegment happened to be valid
-  ): Boolean = {
+  /**
+    * This is the hash of the block that `chainSegment` would follow if chainSegment happened to be valid.
+    */
+  def isValid[Tx : Codec](chainSegment: List[Block[Tx]], previousBlock: AnyBlock[Tx]): Boolean = {
 
     // This is implemented as a nested method because otherwise the @tailrec annotation only works on final or private
     // methods. And marking the external method as either private or final, would hinder unit testing.
     @tailrec
-    def isSegmentValid(chainSegment: List[Block[Tx]], hashPreviousBlock: Hash): Boolean =
+    def isSegmentValid(chainSegment: List[Block[Tx]]): Boolean = {
       chainSegment match {
         case Nil =>
           true
+
         case h :: Nil =>
-          // A segment is valid if ...
-          isValid(h, hashPreviousBlock)
+          isValid(h, previousBlock)
+
         case h :: h2 :: t =>
           // A segment is valid if ...
-          isValid(h, hash(h2)) &&                    // ... the head is valid
-          isSegmentValid(h2 :: t, hashPreviousBlock) // ... and the tail (another chain segment) is valid
-                                                     // NOTE: the tail, to be valid, has to accept the hash
-                                                     //       of the head as valid
+          // ... the head is valid
+          // ... and the tail (another chain segment) is valid
+          // NOTE: the tail, to be valid, has to accept the hash
+          //       of the head as valid
+          isValid(h, h2) &&
+              isSegmentValid(h2 :: t)
       }
+    }
 
-    isSegmentValid(chainSegment, hashPreviousBlock)
+    isSegmentValid(chainSegment)
   }
-
 }

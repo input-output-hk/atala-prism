@@ -39,7 +39,7 @@ class Blockchain[Tx: Codec](validator: SegmentValidator, private[blockchain] val
         case GenesisBlock(_) => p
         case Block(body, _) if body.timeSlot < firstInvalidTimeSlot => p
         case Block(body, _) =>
-          findPointer(BlockPointer(body.hash, p.blockchainLength - 1))
+          findPointer(BlockPointer(body.previousHash, p.blockchainLength - 1))
       }
 
     findPointer(headPointer)
@@ -77,7 +77,7 @@ class Blockchain[Tx: Codec](validator: SegmentValidator, private[blockchain] val
           accum.foldLeft(initialState)(safeTransactionExecutor)
         case Block(body, _) =>
           val newAccum = body.delta ++ accum
-          run(forceGetFromStorage(body.hash), newAccum)
+          run(forceGetFromStorage(body.previousHash), newAccum)
       }
 
     run(lastBlockPointer.forceGetPointedBlockFromStorage, Nil)
@@ -96,19 +96,19 @@ class Blockchain[Tx: Codec](validator: SegmentValidator, private[blockchain] val
           case GenesisBlock(_) =>
             throw new Error("FATAL: It's impossible it exist a block that goes before the GenesisBlock")
           case Block(body, _) =>
-            findBlocksToRemove(body.hash, previous, from :: accum)
+            findBlocksToRemove(body.previousHash, previous, from :: accum)
         }
 
     reversedSegment match {
       case Nil => ()
       case h :: _ =>
-        getFromStorage(h.body.hash) match {
+        getFromStorage(h.body.previousHash) match {
           case None =>
             // The segment follows up from a block we don't have in the storage
             ()
           case Some(previous) =>
-            if (!validator.isValid(chainSegment, h.body.hash)) return ()
-            val blocksToRemove = findBlocksToRemove(headPointer.at, h.body.hash, Nil)
+            if (!validator.isValid(chainSegment, previous)) return ()
+            val blocksToRemove = findBlocksToRemove(headPointer.at, h.body.previousHash, Nil)
 
             val s0 = headPointer.blockchainLength - blocksToRemove.length
             val s  = s0 + chainSegment.length

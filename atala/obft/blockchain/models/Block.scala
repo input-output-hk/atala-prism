@@ -1,7 +1,7 @@
 package atala.obft.blockchain.models
 
-import io.iohk.multicrypto._
 import atala.clock._
+import io.iohk.multicrypto._
 
 // format: off
 
@@ -47,7 +47,7 @@ final case class Block[Tx](
 final case class BlockBody[Tx](
     // AKA h in the paper.
     //   > h is the hash of the previous block
-    hash: Hash,
+    previousHash: Hash,
 
     // AKA d in the paper.
     //   > d is a set of transactions

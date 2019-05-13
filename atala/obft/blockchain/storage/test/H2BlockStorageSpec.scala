@@ -17,7 +17,7 @@ class H2BlockStorageSpec extends WordSpec with BeforeAndAfter {
   val dummySignature = sign(genesis, generateSigningKeyPair().`private`)
 
   val body = BlockBody(
-    hash = hash(genesis),
+    previousHash = hash(genesis),
     delta = List("a", "b", "c"),
     timeSlot = TimeSlot(1),
     timeSlotSignature = dummySignature
