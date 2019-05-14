@@ -13,6 +13,9 @@ package object logging {
   }
 
   object Loggable {
+
+    def apply[A](implicit l: Loggable[A]): Loggable[A] = l
+
     def gen[T](f: T => String): Loggable[T] = new Loggable[T] {
       def log(t: T): String = f(t)
     }
@@ -28,4 +31,8 @@ package object logging {
 
   implicit val StringLoggable: Loggable[String] = Loggable.gen[String](identity)
   implicit val IntLoggable: Loggable[Int] = Loggable.gen[Int](_.toString)
+  implicit def tuple2Loggable[A: Loggable, B: Loggable]: Loggable[(A, B)] =
+    Loggable.gen[(A, B)] {
+      case (a, b) => s"(${Loggable[A].log(a)}, ${Loggable[B].log(b)})"
+    }
 }

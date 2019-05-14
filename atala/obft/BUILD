@@ -8,18 +8,23 @@ scala_library(
     "//atala/obft/blockchain:blockchain",
     "//atala/obft/blockchain/models:models",
     "//atala/helpers/monixhelpers:monixhelpers",
+    "//atala/logging:logging",
     "@multicrypto//src/io/iohk/multicrypto",
     "@multicrypto//src/io/iohk/multicrypto/error",
     "@decco//src/io/iohk/decco",
     "@decco//src/io/iohk/decco/auto",
   ],
   external = [ "io.monix:monix%" ],
+  exports = [
+    "//atala/logging:logging",
+  ],
 )
 
 scala_test(
   name = "tests",
   deps = [
     "obft",
+    "//atala/logging/test/utils:utils",
     "//atala/obft/blockchain",
     "//atala/clock",
     "//atala/obft/blockchain/models",

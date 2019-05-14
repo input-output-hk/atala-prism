@@ -15,8 +15,9 @@ import atala.clock._
 import scala.concurrent.duration._
 import scala.io.StdIn.readLine
 import scala.concurrent.Future
+import atala.logging._
 
-case class Server[S, Tx: Codec, Q, QR](
+case class Server[S, Tx: Codec: Loggable, Q, QR](
     i: Int,
     private val keyPair: SigningKeyPair,
     clusterSize: Int, // AKA 'n' in the paper
@@ -92,7 +93,7 @@ case class Server[S, Tx: Codec, Q, QR](
   def ask(q: Q): Future[QR] = ledger.ask(q)
 }
 
-case class Cluster[S, Tx: Codec, Q, QR](n: Int, u: Int, defaultState: S)(
+case class Cluster[S, Tx: Codec: Loggable, Q, QR](n: Int, u: Int, defaultState: S)(
     processQuery: (S, Q) => QR,
     transactionExecutor: (S, Tx) => Option[S]
 ) {

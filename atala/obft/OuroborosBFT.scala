@@ -11,6 +11,7 @@ import atala.obft.blockchain._
 import atala.clock._
 import atala.obft.mempool._
 import atala.helpers.monixhelpers._
+import atala.logging._
 
 class OuroborosBFT[Tx: Codec](blockchain: Blockchain[Tx], mempool: MemPool[Tx])(
     i: Int,
@@ -19,7 +20,7 @@ class OuroborosBFT[Tx: Codec](blockchain: Blockchain[Tx], mempool: MemPool[Tx])(
     inputStreamClockSignals: Observable[Tick[Tx]],
     inputStreamMessages: Observable[NetworkMessage[Tx]],
     outputStreamDiffuseToRestOfCluster: Observer[NetworkMessage.AddBlockchainSegment[Tx]]
-) {
+) extends AtalaLogging {
 
 
 
@@ -30,12 +31,15 @@ class OuroborosBFT[Tx: Codec](blockchain: Blockchain[Tx], mempool: MemPool[Tx])(
   private def executeObftAlgorithm(event: ObftExternalActorMessage[Tx]): Unit = event match {
 
     case m: NetworkMessage.AddTransaction[Tx] => // 1. Mempool update
+      logger.trace("AddTransaction message recieved in the Mempool")
       updateMempool(m)
 
     case m: NetworkMessage.AddBlockchainSegment[Tx] => // 2. Blockchain update
+      logger.trace("AddBlockchainSegment message recieved in the Mempool")
       updateBlockchain(m)
 
     case tick: Tick[Tx] => // 3. Blockchain Extension
+      logger.trace("OuroborosBFT notified of new tick", "tick" -> tick.timeSlot.toString)
       extendBlockchain(tick)
 
   }
@@ -91,8 +95,10 @@ class OuroborosBFT[Tx: Codec](blockchain: Blockchain[Tx], mempool: MemPool[Tx])(
 
   private def extendBlockchain(tick: Tick[Tx]): Unit = {
     if (IamLeader(tick.timeSlot)) {
+      logger.debug("I become leader", "tick" -> tick.timeSlot.toString)
       val transactions = mempool.collect()
       if (transactions.nonEmpty) {
+        logger.debug("There are transactions in the MemPool. Ready to generate a block", "tick" -> tick.timeSlot.toString)
         val blockData = blockchain.createBlockData(transactions, tick.timeSlot, keyPair.`private`)
         val segment = List(blockData)
 
@@ -132,7 +138,7 @@ object OuroborosBFT {
       testing purposes) use the constructor.
 
     */
-  def apply[Tx: Codec](
+  def apply[Tx: Codec: Loggable](
       i: Int,
       keyPair: SigningKeyPair,
       maxNumOfAdversaries: Int, // AKA 't' in the paper

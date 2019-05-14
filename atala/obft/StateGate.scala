@@ -7,10 +7,13 @@ import monix.execution.Scheduler.Implicits.global
 import monix.reactive.subjects.ConcurrentSubject
 import atala.obft.blockchain._
 
+import atala.logging._
+
 class StateGate[S, Tx](
     actionsStream: Observer[ObftInternalActorMessage[Tx]] with Observable[ObftInternalActorMessage[Tx]],
     blockchain: Blockchain[Tx]
-)(transactionExecutor: (S, Tx) => Option[S], useFinalizedTransactions: Boolean = true) {
+)(transactionExecutor: (S, Tx) => Option[S], useFinalizedTransactions: Boolean = true)
+    extends AtalaLogging {
 
   // Public interface
   // ----------------
@@ -18,12 +21,17 @@ class StateGate[S, Tx](
   def stateUpdatedEventStream: Observable[StateSnapshot[S]] = stateEventSubject
 
   def requestStateUpdate(now: TimeSlot, previousSnapshot: StateSnapshot[S]): Unit = {
+
+    logger.trace("State update requested to the StateGate")
+
     val executable: () => Unit = () => {
       val newState =
         if (useFinalizedTransactions)
           runFinalizedTransactionsFromPreviousStateSnapshot(now, previousSnapshot, transactionExecutor)
         else
           unsafeRunTransactionsFromPreviousStateSnapshot(previousSnapshot, transactionExecutor)
+
+      logger.trace("New state computed in the StateGate")
 
       stateEventSubject.feedItem(StateSnapshot(newState, now))
     }
