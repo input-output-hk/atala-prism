@@ -10,6 +10,8 @@ trait BlockStorage[Tx] {
 
   def get(id: Hash): Option[Block[Tx]]
 
+  def getHighestBlock(): Option[Block[Tx]]
+
   def put(id: Hash, block: Block[Tx]): Unit
 
   def remove(id: Hash): Unit

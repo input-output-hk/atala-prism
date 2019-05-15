@@ -10,15 +10,15 @@ import io.iohk.multicrypto._
 import io.iohk.multicrypto.encoding.implicits._
 import io.iohk.multicrypto.test.utils.CryptoEntityArbitraries
 import atala.obft.blockchain.models._
-import atala.obft.blockchain.storage.InMemoryBlockStorage
+import atala.obft.blockchain.storage.{H2BlockStorage, InMemoryBlockStorage}
 import atala.clock._
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
-import org.scalatest.{MustMatchers, WordSpec}
+import org.scalatest.{BeforeAndAfter, MustMatchers, WordSpec}
 import org.scalatest.OptionValues._
 import org.scalatest.prop.GeneratorDrivenPropertyChecks._
 
-class BlockchainSpec extends WordSpec with MustMatchers with CryptoEntityArbitraries {
+class BlockchainSpec extends WordSpec with MustMatchers with BeforeAndAfter with CryptoEntityArbitraries {
 
   implicit def genesisBlockArbitrary[T: Arbitrary]: Arbitrary[GenesisBlock[T]] =
     Arbitrary(
@@ -54,6 +54,13 @@ class BlockchainSpec extends WordSpec with MustMatchers with CryptoEntityArbitra
 
   implicit def anyBlockArbitrary[T: Arbitrary]: Arbitrary[AnyBlock[T]] =
     Arbitrary(Gen.oneOf(arbitrary[Block[T]], arbitrary[GenesisBlock[T]]))
+
+    def block(ts: Int, previousBlock: AnyBlock[String]): Block[String] = {
+      val keyPair = keys((ts - 1) % keys.length)
+      val key = keyPair.`private`
+      val body = BlockBody(hash(previousBlock), List(s"A$ts", s"B$ts"), TimeSlot(ts), sign(TimeSlot(ts), key))
+      Block(previousBlock.height.above, body, sign(body, key))
+    }
 
   "The encoders and crypto functions" should {
     "work with OBFT entities" in {
@@ -142,12 +149,6 @@ class BlockchainSpec extends WordSpec with MustMatchers with CryptoEntityArbitra
       val blockchain = new Blockchain[String](new SegmentValidator(publicKeys), storage)(publicKeys, 1)
       val oldHeight = blockchain.height
 
-      def block(ts: Int, previousBlock: AnyBlock[String]): Block[String] = {
-        val keyPair = keys((ts - 1) % keys.length)
-        val key = keyPair.`private`
-        val body = BlockBody(hash(previousBlock), List(s"A$ts", s"B$ts"), TimeSlot(ts), sign(TimeSlot(ts), key))
-        Block(previousBlock.height.above, body, sign(body, key))
-      }
       val b1 = block(3, blockchain.genesisBlock)
       val b2 = block(4, b1)
       val b3 = block(7, b2)
@@ -190,12 +191,6 @@ class BlockchainSpec extends WordSpec with MustMatchers with CryptoEntityArbitra
       // GIVEN
       val blockchain = new Blockchain[String](new SegmentValidator(publicKeys), new InMemoryBlockStorage)(publicKeys, 1)
 
-      def block(ts: Int, previousBlock: AnyBlock[String]): Block[String] = {
-        val keyPair = keys((ts - 1) % keys.length)
-        val key = keyPair.`private`
-        val body = BlockBody(hash(previousBlock), List(s"A$ts", s"B$ts"), TimeSlot(ts), sign(TimeSlot(ts), key))
-        Block(previousBlock.height.above, body, sign(body, key))
-      }
       val b1 = block(3, blockchain.genesisBlock)
       val b2 = block(4, b1)
       val b3 = block(7, b2)
@@ -213,12 +208,7 @@ class BlockchainSpec extends WordSpec with MustMatchers with CryptoEntityArbitra
     "use only finalized transactions when invoking runAllFinalizedTransactions" in {
       // GIVEN
       val blockchain = new Blockchain[String](new SegmentValidator(publicKeys), new InMemoryBlockStorage)(publicKeys, 1)
-      def block(ts: Int, previousBlock: AnyBlock[String]): Block[String] = {
-        val keyPair = keys((ts - 1) % keys.length)
-        val key = keyPair.`private`
-        val body = BlockBody(hash(previousBlock), List(s"A$ts", s"B$ts"), TimeSlot(ts), sign(TimeSlot(ts), key))
-        Block(previousBlock.height.above, body, sign(body, key))
-      }
+
       val b1 = block(3, blockchain.genesisBlock)
       val b2 = block(4, b1)
       val b3 = block(7, b2)
@@ -236,12 +226,7 @@ class BlockchainSpec extends WordSpec with MustMatchers with CryptoEntityArbitra
     "use all transactions from after the snapshot when invoking unsafeRunTransactionsFromPreviousStateSnapshot" in {
       // GIVEN
       val blockchain = new Blockchain[String](new SegmentValidator(publicKeys), new InMemoryBlockStorage)(publicKeys, 1)
-      def block(ts: Int, previousBlock: AnyBlock[String]): Block[String] = {
-        val keyPair = keys((ts - 1) % keys.length)
-        val key = keyPair.`private`
-        val body = BlockBody(hash(previousBlock), List(s"A$ts", s"B$ts"), TimeSlot(ts), sign(TimeSlot(ts), key))
-        Block(previousBlock.height.above, body, sign(body, key))
-      }
+
       val b1 = block(3, blockchain.genesisBlock)
       val b2 = block(4, b1)
       val b3 = block(7, b2)
@@ -260,12 +245,7 @@ class BlockchainSpec extends WordSpec with MustMatchers with CryptoEntityArbitra
     "use only finalized transactions from after the snapshot when invoking runFinalizedTransactionsFromPreviousStateSnapshot" in {
       // GIVEN
       val blockchain = new Blockchain[String](new SegmentValidator(publicKeys), new InMemoryBlockStorage)(publicKeys, 1)
-      def block(ts: Int, previousBlock: AnyBlock[String]): Block[String] = {
-        val keyPair = keys((ts - 1) % keys.length)
-        val key = keyPair.`private`
-        val body = BlockBody(hash(previousBlock), List(s"A$ts", s"B$ts"), TimeSlot(ts), sign(TimeSlot(ts), key))
-        Block(previousBlock.height.above, body, sign(body, key))
-      }
+
       val b1 = block(3, blockchain.genesisBlock)
       val b2 = block(4, b1)
       val b3 = block(7, b2)
@@ -282,8 +262,56 @@ class BlockchainSpec extends WordSpec with MustMatchers with CryptoEntityArbitra
     }
   }
 
+  "The Blockchain component" should {
+
+    "load the genesis block on startup when InMemoryBlockStorage is empty" in {
+      val blockchain = new Blockchain[String](new SegmentValidator(publicKeys), new InMemoryBlockStorage[String])(publicKeys, 1)
+      blockchain.headPointer.forceGetPointedBlockFromStorage mustBe genesisBlock
+    }
+
+    "load the highest block from storage on startup from inMemoryBlockStorage" in {
+      val inMemoryBlockStorage = new InMemoryBlockStorage[String]
+      val b1 = block(3, genesisBlock)
+      val b2 = block(4, b1)
+      val b3 = block(7, b2)
+      inMemoryBlockStorage.put(hash(b1), b1)
+      inMemoryBlockStorage.put(hash(b2), b2)
+      inMemoryBlockStorage.put(hash(b3), b3)
+
+      val blockchain = new Blockchain[String](new SegmentValidator(publicKeys), inMemoryBlockStorage)(publicKeys, 1)
+      blockchain.headPointer.forceGetPointedBlockFromStorage mustBe b3
+    }
+
+    "load the genesis block on startup when H2BlockStorage is empty" in {
+      val blockchain = new Blockchain[String](new SegmentValidator(publicKeys), h2BlockStorage)(publicKeys, 1)
+      blockchain.headPointer.forceGetPointedBlockFromStorage mustBe genesisBlock
+    }
+
+    "load the highest block from storage on startup from H2BlockStorage" in {
+      h2BlockStorage.put(hash(h2b1), h2b1)
+      h2BlockStorage.put(hash(h2b2), h2b2)
+      h2BlockStorage.put(hash(h2b3), h2b3)
+
+      val blockchain = new Blockchain[String](new SegmentValidator(publicKeys), h2BlockStorage)(publicKeys, 1)
+      blockchain.headPointer.forceGetPointedBlockFromStorage mustBe h2b3
+    }
+  }
+
   private val keyPair1 = generateSigningKeyPair()
   private val keyPair2 = generateSigningKeyPair()
   private val keys = List(keyPair1, keyPair2)
   private val publicKeys = keys.map(_.public)
+
+  val h2BlockStorage = H2BlockStorage[String]("h2db")
+  val genesisBlock: AnyBlock[String] = GenesisBlock(publicKeys)
+  val h2b1 = block(3, genesisBlock)
+  val h2b2 = block(4, h2b1)
+  val h2b3 = block(7, h2b2)
+
+  before {
+    h2BlockStorage.remove(hash(h2b1))
+    h2BlockStorage.remove(hash(h2b2))
+    h2BlockStorage.remove(hash(h2b3))
+  }
+
 }

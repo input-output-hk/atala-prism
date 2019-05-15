@@ -9,7 +9,13 @@ class InMemoryBlockStorage[Tx] extends BlockStorage[Tx] {
 
   override def get(id: Hash): Option[Block[Tx]] = data.get(id)
 
+  override def getHighestBlock: Option[Block[Tx]] = {
+    if (data.isEmpty) None
+    else Some(data.maxBy(_._2.height.toInt)._2)
+  }
+
   override def put(id: Hash, block: Block[Tx]): Unit = data += (id -> block)
 
   override def remove(id: Hash): Unit = data -= id
+
 }

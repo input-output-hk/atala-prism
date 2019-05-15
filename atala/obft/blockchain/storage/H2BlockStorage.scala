@@ -36,6 +36,19 @@ class H2BlockStorage[Tx](xa: Transactor[IO])(implicit txCodec: Codec[List[Tx]]) 
     program.transact(xa).unsafeRunSync()
   }
 
+  override def getHighestBlock(): Option[Block[Tx]] = {
+
+    val program =
+      sql"""
+           |SELECT block_hash, height, delta, previous_hash, signature, time_slot, time_slot_signature
+           |FROM blocks
+           |ORDER BY height DESC
+           |LIMIT 1;
+       """.stripMargin.query[Block[Tx]].option
+
+    program.transact(xa).unsafeRunSync()
+  }
+
   override def put(hash: Hash, block: Block[Tx]): Unit = {
     val hashString = hash.toCompactString()
     val blockHeight: Int = block.height.toInt

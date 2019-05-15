@@ -34,8 +34,11 @@ class H2BlockStorageSpec extends WordSpec with BeforeAndAfter {
   val tempPath = java.nio.file.Files.createTempFile("test", "iohk")
   val service = H2BlockStorage[Tx]("h2db")
 
+  val highestBlock = block.copy(height = block.height.above)
+
   before {
     service.remove(hash(block))
+    service.remove(hash(highestBlock))
   }
 
   "put" should {
@@ -68,6 +71,18 @@ class H2BlockStorageSpec extends WordSpec with BeforeAndAfter {
 
       val result = service.get(hash(unknownGenesis))
       result must be(empty)
+    }
+  }
+
+  "getHighestBlock" should {
+    "return None on an empty storage" in {
+      service.getHighestBlock() mustBe empty
+    }
+
+    "return the block with highest index" in {
+      service.put(hash(block), block)
+      service.put(hash(highestBlock), highestBlock)
+      service.getHighestBlock() mustBe Some(highestBlock)
     }
   }
 

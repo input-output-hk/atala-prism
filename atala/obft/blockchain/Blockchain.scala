@@ -21,12 +21,15 @@ class Blockchain[Tx: Codec](validator: SegmentValidator, private[blockchain] val
       forceGetFromStorage(at)
   }
 
+  private[blockchain] def getHighestBlockFromStorage(): AnyBlock[Tx] =
+    storage.getHighestBlock() getOrElse genesisBlock
+
   val genesisBlock = GenesisBlock[Tx](keys)
   val genesisBlockHash = hash(genesisBlock)
 
   private[blockchain] var headPointer: BlockPointer = {
-    val hgb = hash(genesisBlock)
-    BlockPointer(hgb, genesisBlock.height)
+    val highestBlock = getHighestBlockFromStorage()
+    BlockPointer(hash(highestBlock), highestBlock.height)
   }
 
   private def head: AnyBlock[Tx] = headPointer.forceGetPointedBlockFromStorage
