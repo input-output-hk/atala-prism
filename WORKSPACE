@@ -1,6 +1,6 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-rules_scala_version="b537bddc58a77318b34165812a0311ef52806318"
+rules_scala_version="d3329c48511fc98c51bf4e28af14d231493a40d0"
 http_archive(
              name = "io_bazel_rules_scala",
              url = "https://github.com/bazelbuild/rules_scala/archive/%s.zip"%rules_scala_version,
@@ -54,3 +54,8 @@ git_repository(
     remote = "https://github.com/input-output-hk/scalanet.git",
     commit = "2417be602ce76cc420f5f8acf8b71ac4c902216a"
 )
+
+load("//bazel_tools:java.bzl", "java_home_runtime")
+java_home_runtime(name = "java_home")
+load("//bazel_tools:protobuf.bzl", "protobuf_dep")
+protobuf_dep()

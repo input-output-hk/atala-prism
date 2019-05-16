@@ -126,19 +126,19 @@ docker then install and run dazel (https://github.com/nadirizr/dazel).
 
 If you using a home edition of windows, there is no virtualization support and you should use the legacy `docker toolbox`
 from [https://docs.docker.com/toolbox/toolbox_install_windows/].
-  
+
 ## Sample application
 
 NOTE: This bit of the documentation needs to be improved/corrected
 
-A sample application is provided that configures and starts up an Identity Ledger. It is located in `io.iohk.cef.main.IndentityTxMain`. To run this application, simply execute `bazel run src/main/scala/io/iohk/cef/main`.
+A sample application is provided that configures and starts up an Identity Ledger. It is located in `io.iohk.cef.main.IndentityTxMain`. To run this application, simply execute `bazel run //main/io/iohk/cef/main:main`.
 
-When setting up a cluster, you need to configure each node's properties. 
-The configuration files used in `IndentityTxMain` are 
+When setting up a cluster, you need to configure each node's properties.
+The configuration files used in `IndentityTxMain` are
 * `src/main/resources/reference.conf` for configuring the library.
 * `src/main/resources/identity-tx-main.conf` for configuring the app.
 
-Below is a sample of a config of the node "1111" that belongs to a three-node cluster (1111,2222,3333): 
+Below is a sample of a config of the node "1111" that belongs to a three-node cluster (1111,2222,3333):
 
 ```
 db {
@@ -229,7 +229,7 @@ bazel run -- //src/main/scala/io/iohk/cef/main:AgreementsMain agreements-node-3-
 ## curl sample request for Agreements Demo
 ```
 curl -d '{"correlationId": "agreementId","data": "it is raining","to": ["2222","3333"]}' -XPOST -H "Content-Type: application/json" http://localhost:8000/agreements/weather/propose
-   
+
 curl -d '{"correlationId": "agreementId","data": "it is raining"}' -XPOST -H "Content-Type: application/json" http://localhost:9000/agreements/weather/agree
 
 curl -d '{"correlationId": "agreementId"}' -XPOST -H "Content-Type: application/json" http://localhost:7000/agreements/weather/decline

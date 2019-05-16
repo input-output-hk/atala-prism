@@ -9,3 +9,6 @@ local.sbt
 bazel-*
 .bazel-*
 .dazel_run
+.bazelrc.local
+
+result
