@@ -14,7 +14,7 @@ import monix.reactive.{MulticastStrategy, Observable, Observer}
 import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
 
-case class Server[S, Tx: Codec: Loggable, Q, QR](
+case class Server[S, Tx: Codec: Loggable, Q: Loggable, QR: Loggable](
     i: Int,
     private val keyPair: SigningKeyPair,
     clusterSize: Int, // AKA 'n' in the paper

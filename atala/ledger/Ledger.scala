@@ -15,8 +15,9 @@ import scala.concurrent.Promise
 import scala.concurrent.duration._
 import atala.helpers.monixhelpers._
 import scala.util.control.NonFatal
+import atala.logging._
 
-class Ledger[S, Tx, Q, QR](
+class Ledger[S, Tx, Q: Loggable, QR: Loggable](
     obftStateGate: StateGate[S, Tx],
     storage: StateStorage[S],
     clockSignalsStream: Observable[LedgerActorMessage.Tick[S]],
@@ -25,7 +26,7 @@ class Ledger[S, Tx, Q, QR](
     slotDuration: FiniteDuration)(
 
     processQuery: (S, Q) => QR,
-    transactionExecutor: (S, Tx) => Option[S]) {
+    transactionExecutor: (S, Tx) => Option[S]) extends AtalaLogging {
 
 
 
@@ -33,10 +34,12 @@ class Ledger[S, Tx, Q, QR](
   // ----------------
 
   def ask(q: Q): Future[QR] = {
+    logger.debug("Starting ledger query", "query" -> q)
     val p: Promise[QR] = Promise[QR]()
     val action: () => Unit = () => {
       try {
         val qr = processQuery(state, q)
+        logger.info("Ledger queried", "query" -> q, "response" -> qr)
         p.success(qr)
       }
       catch {
@@ -65,8 +68,10 @@ class Ledger[S, Tx, Q, QR](
         obftStateGate.requestStateUpdate(Clock.currentSlot(slotDuration), stateSnapshot)
 
       case LedgerActorMessage.StateUpdatedEvent(newState) =>
-        if (newState.snapshotTimestamp > stateSnapshot.snapshotTimestamp)
+        if (newState.snapshotTimestamp > stateSnapshot.snapshotTimestamp) {
+          logger.trace("Ledger state updated")
           storage.put(newState)
+        }
 
       case LedgerActorMessage.PerformQuery(action) =>
         action()
@@ -105,7 +110,6 @@ class Ledger[S, Tx, Q, QR](
 
 object Ledger {
 
-
   /**
 
       Generates an instance of Ledger with all its external dependencies properly injected. To
@@ -113,7 +117,7 @@ object Ledger {
       testing purposes) use the constructor.
 
     */
-  def apply[S, Tx: Codec, Q, QR](obft: OuroborosBFT[Tx])(
+  def apply[S, Tx: Codec, Q: Loggable, QR: Loggable](obft: OuroborosBFT[Tx])(
       defaultState: S,
       stateRefreshInterval: FiniteDuration,
       slotDuration: FiniteDuration

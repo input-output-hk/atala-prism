@@ -35,4 +35,7 @@ package object logging {
     Loggable.gen[(A, B)] {
       case (a, b) => s"(${Loggable[A].log(a)}, ${Loggable[B].log(b)})"
     }
+  implicit val CharLoggable: Loggable[Char] = Loggable.gen[Char](_.toString)
+  implicit val BooleanLoggable: Loggable[Boolean] = Loggable.gen[Boolean](_.toString)
+  implicit val UnitLoggable: Loggable[Unit] = Loggable.gen[Unit](_.toString)
 }

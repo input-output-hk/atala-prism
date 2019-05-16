@@ -8,7 +8,7 @@ import io.iohk.multicrypto._
 
 import scala.concurrent.Future
 
-case class Cluster[S, Tx: Codec: Loggable, Q, QR](n: Int, u: Int, defaultState: S)(
+case class Cluster[S, Tx: Codec: Loggable, Q: Loggable, QR: Loggable](n: Int, u: Int, defaultState: S)(
     processQuery: (S, Q) => QR,
     transactionExecutor: (S, Tx) => Option[S]
 ) {

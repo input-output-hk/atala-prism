@@ -1,6 +1,10 @@
 package atala
 
+import atala.logging._
+
 package object apps {
+
+  implicit def MapLoggable[A, B]: Loggable[Map[A, B]] = Loggable.gen(_.toString)
 
   implicit class StringExtraOps[Tx](val tx: Tx) extends AnyVal {
 
