@@ -2,34 +2,8 @@ package atala.obft.blockchain.models
 
 import atala.clock._
 import io.iohk.multicrypto._
-import io.iohk.decco.Codec
-import io.iohk.decco.auto._
 
 // format: off
-
-/** Encapsulates the height of a block/blockchain
-  *
-  * @param int height represented
-  * @note the internal representation may need to change to Long/BigInt
-  */
-class Height private (val int: Int) extends AnyVal {
-  def toInt: Int = int
-  def above: Height = new Height(int + 1)
-  def below: Height = new Height(int - 1)
-}
-
-object Height {
-  val Zero = new Height(0)
-  def from(int: Int): Option[Height] = {
-    if (int < 0) None
-    else Some(new Height(int))
-  }
-
-  implicit val heightCodec: Codec[Height] =
-    Codec[Int].map(i => Height.from(i).getOrElse(throw new RuntimeException("heightCodec: Corrupted height")), _.toInt)
-
-}
-
 
 // There are two types of blocks, but only one should be publicly used. For
 // that reason, I'll reserve the name `Block` for the subtype that is commonly used;
@@ -38,18 +12,13 @@ object Height {
 // A good example on why *only* `Block` should be publically used is that, in the
 // `AddBlockchainSegment` message type, only regular blocks should be allowed. It makes
 // no sense to be sending the `GenesisBlock` around
-sealed trait AnyBlock[Tx] {
-  def height: Height
-}
-
+sealed trait AnyBlock[Tx]
 
 
 // Quoting the paper:
 //   > [...] beginning with a special "genesis" block B0 which contains the servers'
 //   > public-keys (vk1,...,vkn).
-final case class GenesisBlock[Tx](keys: List[SigningPublicKey]) extends AnyBlock[Tx] {
-  override val height: Height = Height.Zero
-}
+final case class GenesisBlock[Tx](keys: List[SigningPublicKey]) extends AnyBlock[Tx]
 
 
 
@@ -65,11 +34,10 @@ final case class GenesisBlock[Tx](keys: List[SigningPublicKey]) extends AnyBlock
 // For that purpose, I've grouped up the first four fields in it's own case class (`BlockBody`)
 // and `Block` contains that and the signature of that.
 final case class Block[Tx](
-    override val height: Height,
-    body: BlockBody[Tx],
-    // AKA σblock in the paper.
-    //   > σblock is a signature (of the entire block).
-    signature: Signature
+     body: BlockBody[Tx],
+     // AKA σblock in the paper.
+     //   > σblock is a signature (of the entire block).
+     signature: Signature
 ) extends AnyBlock[Tx]
 
 

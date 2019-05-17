@@ -131,7 +131,7 @@ class SegmentValidatorSpec extends WordSpec with MustMatchers {
         timeSlot = ts,
         timeSlotSignature = timeSlotSignature
       )
-    Block(previous.height.above, body, sign(body, signingKey))
+    Block(body, sign(body, signingKey))
   }
 
   private def segment(n: Int, j: Int = 1230): List[Block[String]] =

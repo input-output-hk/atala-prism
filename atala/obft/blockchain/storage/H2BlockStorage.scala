@@ -25,55 +25,78 @@ class H2BlockStorage[Tx](xa: Transactor[IO])(implicit txCodec: Codec[List[Tx]]) 
       .unsafeRunSync()
   }
 
-  override def get(hash: Hash): Option[Block[Tx]] = {
-    val program =
-      sql"""
-           |SELECT block_hash, height, delta, previous_hash, signature, time_slot, time_slot_signature
-           |FROM blocks
-           |WHERE block_hash = ${hash.toCompactString()}
-       """.stripMargin.query[Block[Tx]].option
-
-    program.transact(xa).unsafeRunSync()
-  }
-
-  override def getHighestBlock(): Option[Block[Tx]] = {
-
-    val program =
-      sql"""
-           |SELECT block_hash, height, delta, previous_hash, signature, time_slot, time_slot_signature
-           |FROM blocks
-           |ORDER BY height DESC
-           |LIMIT 1;
-       """.stripMargin.query[Block[Tx]].option
-
-    program.transact(xa).unsafeRunSync()
-  }
-
-  override def put(hash: Hash, block: Block[Tx]): Unit = {
+  private def generatePutStatement(hash: Hash, block: Block[Tx]): Update0 = {
     val hashString = hash.toCompactString()
-    val blockHeight: Int = block.height.toInt
     val previousHash = block.body.previousHash.toCompactString()
     val signature = block.signature.toCompactString()
     val timeSlot = block.body.timeSlot.index
     val timeSlotSignature = block.body.timeSlotSignature.toCompactString()
 
     val delta = txCodec.encode(block.body.delta).array()
-    val program = sql"""
-                       |INSERT INTO blocks (block_hash, height, delta, previous_hash, signature, time_slot, time_slot_signature)
-                       |VALUES ($hashString, $blockHeight, $delta, $previousHash, $signature, $timeSlot, $timeSlotSignature)
-       """.stripMargin.update
 
-    program.run.transact(xa).unsafeRunSync()
+    sql"""
+         |INSERT INTO blocks (block_hash, delta, previous_hash, signature, time_slot, time_slot_signature)
+         |VALUES ($hashString, $delta, $previousHash, $signature, $timeSlot, $timeSlotSignature)
+     """.stripMargin.update
+  }
+
+  private def generateRemoveStatement(hash: Hash): Update0 = {
+    sql"""
+       |DELETE blocks
+       |WHERE block_hash = ${hash.toCompactString()}
+       """.stripMargin.update
+  }
+
+  override def get(hash: Hash): Option[Block[Tx]] = {
+    val program =
+      sql"""
+           |SELECT block_hash, delta, previous_hash, signature, time_slot, time_slot_signature
+           |FROM blocks
+           |WHERE block_hash = ${hash.toCompactString()}
+       """.stripMargin.query[Block[Tx]].option
+
+    program.transact(xa).unsafeRunSync()
+  }
+
+  override def getLatestBlock(): Option[Block[Tx]] = {
+
+    val program =
+      sql"""
+           |SELECT block_hash, delta, previous_hash, signature, time_slot, time_slot_signature
+           |FROM blocks
+           |ORDER BY time_slot DESC
+           |LIMIT 1;
+       """.stripMargin.query[Block[Tx]].option
+
+    program.transact(xa).unsafeRunSync()
+  }
+
+  def getNumberOfBlocks(): Int = {
+    val program =
+      sql"""
+           |SELECT COUNT(*)
+           |FROM blocks;
+         """.stripMargin.query[Int].unique
+
+    program.transact(xa).unsafeRunSync()
+  }
+
+  override def put(hash: Hash, block: Block[Tx]): Unit = {
+    generatePutStatement(hash, block).run.transact(xa).unsafeRunSync()
   }
 
   override def remove(hash: Hash): Unit = {
-    val program =
-      sql"""
-           |DELETE blocks
-           |WHERE block_hash = ${hash.toCompactString()}
-           """.stripMargin.update
+    generateRemoveStatement(hash).run.transact(xa).unsafeRunSync()
+  }
 
-    program.run.transact(xa).unsafeRunSync()
+  override def update(removeList: List[Hash], addList: List[(Hash, Block[Tx])]): Unit = {
+
+    import cats.implicits._
+
+    val remove = removeList map generateRemoveStatement
+    val add = addList map (generatePutStatement _).tupled
+    val statements = (remove ++ add).traverse(_.run)
+    statements.transact(xa).unsafeRunSync()
   }
 }
 
@@ -114,9 +137,6 @@ object H2BlockStorage {
 
   private implicit val timeSlotGet: Get[TimeSlot] = Get[Int].tmap(TimeSlot.apply)
 
-  private implicit val heightGet: Get[Height] =
-    Get[Int].tmap(int => Height.from(int).getOrElse(throw new RuntimeException("corrupted height")))
-
   private implicit def deltaGet[Tx](implicit txCodec: Codec[List[Tx]]): Read[List[Tx]] = Read[Array[Byte]].map {
     bytes =>
       txCodec
@@ -126,11 +146,10 @@ object H2BlockStorage {
   }
 
   private implicit def blockRead[Tx](implicit txCodec: Codec[List[Tx]]): Read[Block[Tx]] =
-    Read[(Hash, Height, List[Tx], Hash, Signature, TimeSlot, Signature)]
+    Read[(Hash, List[Tx], Hash, Signature, TimeSlot, Signature)]
       .map {
-        case (_, blockHeight, delta, previousHash, signature, timeSlot, timeSlotSignature) =>
+        case (_, delta, previousHash, signature, timeSlot, timeSlotSignature) =>
           Block(
-            blockHeight,
             BlockBody(previousHash, delta, timeSlot, timeSlotSignature),
             signature
           )
@@ -140,11 +159,10 @@ object H2BlockStorage {
     sql"""
          |CREATE TABLE IF NOT EXISTS blocks (
          |  block_hash VARCHAR NOT NULL PRIMARY KEY,
-         |  height INT NOT NULL,
          |  delta BINARY NOT NULL,
          |  previous_hash VARCHAR NOT NULL,
          |  signature VARCHAR NOT NULL,
-         |  time_slot INT NOT NULL,
+         |  time_slot INT NOT NULL UNIQUE,
          |  time_slot_signature VARCHAR NOT NULL
          |);
          """.stripMargin

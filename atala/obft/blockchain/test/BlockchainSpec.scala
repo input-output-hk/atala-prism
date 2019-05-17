@@ -49,7 +49,7 @@ class BlockchainSpec extends WordSpec with MustMatchers with BeforeAndAfter with
         h <- arbitrary[Height]
         b <- arbitrary[BlockBody[T]]
         s <- arbitrary[Signature]
-      } yield Block(h, b, s)
+      } yield Block(b, s)
     )
 
   implicit def anyBlockArbitrary[T: Arbitrary]: Arbitrary[AnyBlock[T]] =
@@ -59,7 +59,7 @@ class BlockchainSpec extends WordSpec with MustMatchers with BeforeAndAfter with
       val keyPair = keys((ts - 1) % keys.length)
       val key = keyPair.`private`
       val body = BlockBody(hash(previousBlock), List(s"A$ts", s"B$ts"), TimeSlot(ts), sign(TimeSlot(ts), key))
-      Block(previousBlock.height.above, body, sign(body, key))
+      Block(body, sign(body, key))
     }
 
   "The encoders and crypto functions" should {
@@ -97,7 +97,6 @@ class BlockchainSpec extends WordSpec with MustMatchers with BeforeAndAfter with
       val block = blockchain.createBlockData(List("A", "B"), TimeSlot(3), keyPair1.`private`)
 
       // THEN
-      block.height mustBe blockchain.height.above
       block.body.delta mustBe List("A", "B")
       block.body.previousHash mustBe blockchain.genesisBlockHash
       block.body.timeSlot mustBe TimeSlot(3)
@@ -131,7 +130,7 @@ class BlockchainSpec extends WordSpec with MustMatchers with BeforeAndAfter with
       val oldHeight = blockchain.height
 
       val body = BlockBody(blockchain.genesisBlockHash, List("A", "B"), TimeSlot(3), sign(TimeSlot(3), keyPair1.`private`))
-      val block = Block(blockchain.height, body, sign(body, keyPair1.`private`))
+      val block = Block(body, sign(body, keyPair1.`private`))
 
       //WHEN
       blockchain.add(block :: Nil)
@@ -173,7 +172,7 @@ class BlockchainSpec extends WordSpec with MustMatchers with BeforeAndAfter with
       val oldHeight = blockchain.height
 
       val body = BlockBody(blockchain.genesisBlockHash, List("A", "B"), TimeSlot(3), sign(TimeSlot(5), keyPair1.`private`))
-      val block = Block(blockchain.height.above, body, sign(body, keyPair1.`private`))
+      val block = Block(body, sign(body, keyPair1.`private`))
 
       //WHEN
       blockchain.add(block :: Nil)
@@ -264,12 +263,14 @@ class BlockchainSpec extends WordSpec with MustMatchers with BeforeAndAfter with
 
   "The Blockchain component" should {
 
-    "load the genesis block on startup when InMemoryBlockStorage is empty" in {
+    "load the genesis block as head pointer on startup when InMemoryBlockStorage is empty" in {
       val blockchain = new Blockchain[String](new SegmentValidator(publicKeys), new InMemoryBlockStorage[String])(publicKeys, 1)
+      blockchain.headPointer.at mustBe hash(genesisBlock)
+      blockchain.headPointer.blockchainHeight.toInt mustBe 0
       blockchain.headPointer.forceGetPointedBlockFromStorage mustBe genesisBlock
     }
 
-    "load the highest block from storage on startup from inMemoryBlockStorage" in {
+    "load the latest block as head pointer from storage on startup from inMemoryBlockStorage" in {
       val inMemoryBlockStorage = new InMemoryBlockStorage[String]
       val b1 = block(3, genesisBlock)
       val b2 = block(4, b1)
@@ -279,20 +280,27 @@ class BlockchainSpec extends WordSpec with MustMatchers with BeforeAndAfter with
       inMemoryBlockStorage.put(hash(b3), b3)
 
       val blockchain = new Blockchain[String](new SegmentValidator(publicKeys), inMemoryBlockStorage)(publicKeys, 1)
+      blockchain.headPointer.at mustBe hash(h2b3)
+      blockchain.headPointer.blockchainHeight.toInt mustBe 3
       blockchain.headPointer.forceGetPointedBlockFromStorage mustBe b3
+
     }
 
-    "load the genesis block on startup when H2BlockStorage is empty" in {
+    "load the genesis block as head pointer on startup when H2BlockStorage is empty" in {
       val blockchain = new Blockchain[String](new SegmentValidator(publicKeys), h2BlockStorage)(publicKeys, 1)
+      blockchain.headPointer.at mustBe hash(genesisBlock)
+      blockchain.headPointer.blockchainHeight.toInt mustBe 0
       blockchain.headPointer.forceGetPointedBlockFromStorage mustBe genesisBlock
     }
 
-    "load the highest block from storage on startup from H2BlockStorage" in {
+    "load the latest block as head pointer from storage on startup from H2BlockStorage" in {
       h2BlockStorage.put(hash(h2b1), h2b1)
       h2BlockStorage.put(hash(h2b2), h2b2)
       h2BlockStorage.put(hash(h2b3), h2b3)
 
       val blockchain = new Blockchain[String](new SegmentValidator(publicKeys), h2BlockStorage)(publicKeys, 1)
+      blockchain.headPointer.at mustBe hash(h2b3)
+      blockchain.headPointer.blockchainHeight.toInt mustBe 3
       blockchain.headPointer.forceGetPointedBlockFromStorage mustBe h2b3
     }
   }
