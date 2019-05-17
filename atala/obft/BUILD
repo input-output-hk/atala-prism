@@ -7,6 +7,8 @@ scala_library(
         "//atala/logging",
     ],
     deps = [
+        "//atala/obft/common",
+        "//atala/state",
         "//atala/clock",
         "//atala/helpers/monixhelpers",
         "//atala/logging",
@@ -29,6 +31,8 @@ scala_test(
     ],
     deps = [
         "obft",
+        "//atala/obft/common",
+        "//atala/state",
         "//atala/clock",
         "//atala/helpers/monixhelpers",
         "//atala/logging/test/utils",

@@ -6,7 +6,7 @@ scala_binary(
     deps = [
         "//atala/clock",
         "//atala/helpers/monixhelpers",
-        "//atala/ledger",
+        "//atala/view",
         "//atala/obft",
         "//atala/obft/blockchain",
         "//atala/obft/mempool",

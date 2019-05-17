@@ -7,6 +7,8 @@ scala_library(
         "//atala/logging",
     ],
     deps = [
+        "//atala/obft/common",
+        "//atala/state",
         "//atala/clock",
         "//atala/logging",
         "//atala/obft/blockchain/models",
@@ -25,6 +27,8 @@ scala_test(
     ],
     deps = [
         "blockchain",
+        "//atala/obft/common",
+        "//atala/state",
         "//atala/clock",
         "//atala/logging/test/utils",
         "//atala/obft/blockchain/models",

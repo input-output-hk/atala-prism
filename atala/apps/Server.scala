@@ -2,7 +2,7 @@ package atala.apps
 
 import atala.clock.Clock
 import atala.helpers.monixhelpers._
-import atala.ledger.Ledger
+import atala.view.StateView
 import atala.logging.Loggable
 import atala.obft.{NetworkMessage, OuroborosBFT, Tick}
 import io.iohk.decco.Codec
@@ -44,7 +44,7 @@ case class Server[S, Tx: Codec: Loggable, Q: Loggable, QR: Loggable](
   def run(): Unit = {
     diffusingNetworkStream.subscribe()
     ouroborosBFT.run()
-    ledger.run()
+    view.run()
   }
 
   private val inputNetwork: Observer[NetworkMessage[Tx]] with Observable[NetworkMessage[Tx]] =
@@ -84,8 +84,8 @@ case class Server[S, Tx: Codec: Loggable, Q: Loggable, QR: Loggable](
       delta.toMillis
     )
 
-  private lazy val ledger: Ledger[S, Tx, Q, QR] =
-    Ledger(ouroborosBFT)(defaultState, stateRefreshInterval, delta)(processQuery, transactionExecutor)
+  private lazy val view: StateView[S, Tx, Q, QR] =
+    StateView.inMemory(ouroborosBFT)(defaultState, stateRefreshInterval, delta)(processQuery, transactionExecutor)
 
-  def ask(q: Q): Future[QR] = ledger.ask(q)
+  def ask(q: Q): Future[QR] = view.ask(q)
 }

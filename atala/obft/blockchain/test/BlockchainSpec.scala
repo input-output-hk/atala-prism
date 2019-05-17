@@ -3,6 +3,7 @@ package test
 
 // format: off
 
+import atala.obft.common._
 import io.iohk.decco._
 import io.iohk.decco.auto._
 import io.iohk.decco.test.utils.CodecTestingHelpers._

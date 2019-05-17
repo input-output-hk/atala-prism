@@ -2,6 +2,7 @@ package atala.obft.blockchain
 
 // format: off
 
+import atala.obft.common._
 import atala.clock._
 import atala.logging.{AtalaLogging, Loggable}
 import atala.obft.blockchain.models._
@@ -93,8 +94,9 @@ class Blockchain[Tx: Codec: Loggable](validator: SegmentValidator, private[block
   private[blockchain] def run[S](lastBlockPointer: BlockPointer, snapshot: StateSnapshot[S], transactionExecutor: (S, Tx) => Option[S]): S = {
     val initialState = snapshot.computedState
     val snapshotTimestamp = snapshot.snapshotTimestamp
-    def safeTransactionExecutor(state: S, tx: Tx): S =
-      transactionExecutor(state, tx).getOrElse(state)
+    def safeTransactionExecutor(previous: S, tx: Tx): S = {
+      transactionExecutor(previous, tx) getOrElse previous
+    }
 
     @tailrec
     def run(pointer: AnyBlock[Tx], accum: List[Tx]): S =

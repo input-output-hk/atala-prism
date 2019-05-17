@@ -2,6 +2,7 @@ package atala.obft
 
 // format: off
 
+import atala.obft.common._
 import io.iohk.decco.Codec
 import io.iohk.multicrypto._
 import monix.execution.Scheduler.Implicits.global
@@ -13,6 +14,7 @@ import atala.obft.mempool._
 import atala.helpers.monixhelpers._
 import atala.logging._
 import atala.obft.blockchain.models.ChainSegment
+import atala.state.{StateGate => FullStateGate}
 
 class OuroborosBFT[Tx: Codec](blockchain: Blockchain[Tx], mempool: MemPool[Tx])(
     i: Int,
@@ -121,9 +123,48 @@ class OuroborosBFT[Tx: Codec](blockchain: Blockchain[Tx], mempool: MemPool[Tx])(
   // STATE GATE
   //  A gate is the way to access the information stored in the transaction log hold by the consensus algorithm
   //
+  private def gate[S] (
+    actionsStream: Observer[ObftInternalActorMessage[Tx]] with Observable[ObftInternalActorMessage[Tx]],
+    blockchain: Blockchain[Tx] )(
+    prepareExecution: ( /*now:*/ TimeSlot, /*previousSnapshot:*/ StateSnapshot[S]) => S,
+    transactionExecutor: (S, Tx) => Option[S], // transactionExecutor refers to the `parser` concept in the paper
+    finalizeExecution: StateSnapshot[S] => Unit,
+    useFinalizedTransactions: Boolean = true ): StateGate[S] = {
 
-  def StateGate[S](transactionExecutor: (S, Tx) => Option[S], useFinalizedTransactions: Boolean = true): StateGate[S, Tx] =
-    new StateGate[S, Tx](actionsStream, blockchain)(transactionExecutor, useFinalizedTransactions)
+    val newActionsStream: Observer[FullStateGate.Callback] = actionsStream.contramap(RequestStateUpdate[Tx](_))
+    val prepareComputation: FullStateGate.StateComputationStage[S, TimeSlot] = prepareExecution
+    val computeUpdatedState: FullStateGate.StateComputationStage[S, TimeSlot] = (now, snapshot) => {
+      if(useFinalizedTransactions)
+        blockchain.runFinalizedTransactionsFromPreviousStateSnapshot(now, snapshot, transactionExecutor)
+      else
+        blockchain.unsafeRunTransactionsFromPreviousStateSnapshot(snapshot, transactionExecutor)
+    }
+    val finalizeComputation: FullStateGate.StateComputationStage[S, TimeSlot] = (_, snap) => {finalizeExecution(snap); snap.computedState}
+
+    new FullStateGate[S, TimeSlot](newActionsStream)(prepareComputation, computeUpdatedState, finalizeComputation)
+  }
+
+  def gate[S](
+    prepareExecution: (/*now:*/ TimeSlot, /*previousSnapshot:*/ StateSnapshot[S]) => S,
+    transactionExecutor: (S, Tx) => Option[S],
+    finalizeExecution: /*result:*/ StateSnapshot[S] => Unit,
+    useFinalizedTransactions: Boolean): StateGate[S] =
+    gate[S](actionsStream, blockchain)(prepareExecution, transactionExecutor, finalizeExecution, useFinalizedTransactions)
+
+  def gate[S](
+    prepareExecution: (/*now:*/ TimeSlot, /*previousSnapshot:*/ StateSnapshot[S]) => S,
+    transactionExecutor: (S, Tx) => Option[S],
+    finalizeExecution: /*result:*/ StateSnapshot[S] => Unit): StateGate[S] =
+    gate(prepareExecution, transactionExecutor, finalizeExecution, true)
+
+  def gate[S](transactionExecutor: (S, Tx) => Option[S], useFinalizedTransactions: Boolean): StateGate[S] = {
+    def initialState(t: TimeSlot, s: StateSnapshot[S]): S = s.computedState
+    def doNothing(s: StateSnapshot[S]): Unit = ()
+    gate(initialState _, transactionExecutor, doNothing _, useFinalizedTransactions)
+  }
+
+  def gate[S](transactionExecutor: (S, Tx) => Option[S]): StateGate[S] =
+    gate(transactionExecutor, true)
 }
 
 
