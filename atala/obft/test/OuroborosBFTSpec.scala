@@ -13,6 +13,7 @@ import atala.obft.blockchain.storage._
 import atala.clock.TimeSlot
 import atala.obft.mempool.MemPool
 import org.scalatest.MustMatchers._
+import org.scalatest.OptionValues._
 import org.scalatest.WordSpec
 import org.scalatest.concurrent.ScalaFutures._
 import atala.helpers.monixhelpers._
@@ -34,7 +35,7 @@ class OuroborosBFTSpec extends WordSpec {
   "getting a clock signal" should {
     "produce a Tick" in {
       val data = create(myId, myKeyPair, genesisKeys)
-      val tick = Tick[Tx](TimeSlot(0))
+      val tick = Tick[Tx](TimeSlot.zero)
       data.inputStreamClockSignals.feedItem(tick)
 
       whenReady(data.obft.obftActorStream.headL.runAsync) { result =>
@@ -45,7 +46,7 @@ class OuroborosBFTSpec extends WordSpec {
     "advance the mempool" in {
       val data = create(myId, myKeyPair, genesisKeys)
       val old = data.mempool.level
-      val tick = Tick[Tx](TimeSlot(1))
+      val tick = Tick[Tx](TimeSlot.from(1).value)
       data.inputStreamClockSignals.feedItem(tick)
       whenReady(data.obft.obftActorStream.headL.runAsync)(_ => ())
 
@@ -56,7 +57,7 @@ class OuroborosBFTSpec extends WordSpec {
     "not extend the blockchain if server is the leader but the mempool is empty" in {
       val data = create(myId, myKeyPair, genesisKeys)
       val old = data.blockchain.level
-      val tick = Tick[Tx](TimeSlot(myId))
+      val tick = Tick[Tx](TimeSlot.from(myId).value)
       data.inputStreamClockSignals.feedItem(tick)
 
       val last = data.blockchain.level
@@ -66,7 +67,7 @@ class OuroborosBFTSpec extends WordSpec {
     "extend the blockchain and replicate the segment if the server is the leader" in {
       val data = create(myId, myKeyPair, genesisKeys)
       val old = data.blockchain.level
-      val tick = Tick[Tx](TimeSlot(myId))
+      val tick = Tick[Tx](TimeSlot.from(myId).value)
       data.inputStreamClockSignals.feedItem(tick)
 
       data.mempool.add("One")
@@ -99,10 +100,10 @@ class OuroborosBFTSpec extends WordSpec {
     "add the segment to the blockchain " in {
       val data = create(myId, myKeyPair, genesisKeys)
       val transaction = "example"
-      val tick = Tick[Tx](TimeSlot(myId))
+      val tick = Tick[Tx](TimeSlot.from(myId).value)
 
       val blockData = data.blockchain.createBlockData(List(transaction), tick.timeSlot, myKeyPair.`private`)
-      val segment = List(blockData)
+      val segment = ChainSegment(blockData)
       val old = data.blockchain.level
 
       data.inputStreamMessages.feedItem(NetworkMessage.AddBlockchainSegment(segment))
@@ -135,7 +136,7 @@ object OuroborosBFTSpec {
 
     var level = 0
 
-    override def add(chainSegment: List[Block[Tx]]): Unit = {
+    override def add(chainSegment: ChainSegment[Tx]): Unit = {
       level = level + 1
       super.add(chainSegment)
     }

@@ -6,6 +6,7 @@ package test
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatest.WordSpec
 import org.scalatest.MustMatchers
+import org.scalatest.OptionValues._
 import org.scalacheck.Gen
 
 class ClockSpec extends WordSpec with MustMatchers with GeneratorDrivenPropertyChecks {
@@ -22,13 +23,12 @@ class ClockSpec extends WordSpec with MustMatchers with GeneratorDrivenPropertyC
 
        forAll(tupleGen) {
          case (n, i, j) =>
-           whenever (n > 0 && i >= 1 && i <= n && j > 0) { // in theory tupleGen should not generate values that
+           whenever (n > 0 && i >= 1 && i <= n && j >= 0) { // in theory tupleGen should not generate values that
                                                            // fail this check, but the shrinking process does
-
-             if (i - 1 == (j - 1) % n) // 'i' should be the leader
-               TimeSlot(j).leader(n) mustBe i
+             if (i - 1 == (j - 1 + n) % n) // 'i' should be the leader
+               TimeSlot.from(j).value.leader(n) mustBe i
              else
-               TimeSlot(j).leader(n) must not be i
+               TimeSlot.from(j).value.leader(n) must not be i
 
            }
        }

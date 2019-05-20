@@ -40,7 +40,7 @@ class Blockchain[Tx: Codec](validator: SegmentValidator, private[blockchain] val
 
   private val finalisedDelta = (3 * maxNumOfAdversaries) + 1
   private def finalizedHeadPointer(now: TimeSlot): BlockPointer = {
-    val firstInvalidTimeSlot = now - finalisedDelta
+    val firstInvalidTimeSlot = (now - finalisedDelta) getOrElse TimeSlot.zero
     @scala.annotation.tailrec
     def findPointer(p: BlockPointer): BlockPointer =
       p.forceGetPointedBlockFromStorage match {
@@ -93,48 +93,47 @@ class Blockchain[Tx: Codec](validator: SegmentValidator, private[blockchain] val
     run(lastBlockPointer.forceGetPointedBlockFromStorage, Nil)
   }
 
-  def add(chainSegment: List[Block[Tx]]): Unit = {
-
-    val reversedSegment = chainSegment.reverse
+  def add(chainSegment: ChainSegment[Tx]): Unit = {
 
     @tailrec
-    def findBlocksToRemove(from: Hash, previous: Hash, accum: List[Hash]): List[Hash] =
-      if (from == previous)
+    def listBlocksToRemove(from: Hash, limit: Hash, accum: List[Hash]): List[Hash] =
+      if (from == limit)
         accum
       else
         forceGetFromStorage(from) match {
           case GenesisBlock(_) =>
             throw new Error("FATAL: It's impossible it exist a block that goes before the GenesisBlock")
           case Block(body, _) =>
-            findBlocksToRemove(body.previousHash, previous, from :: accum)
+            listBlocksToRemove(body.previousHash, limit, from :: accum)
         }
 
-    reversedSegment match {
-      case Nil => ()
-      case h :: _ =>
-        getFromStorage(h.body.previousHash) match {
-          case None =>
-            // The segment follows up from a block we don't have in the storage
-            ()
-          case Some(previous) =>
-            if (!validator.isValid(chainSegment, previous)) return ()
-            val blocksToRemove = findBlocksToRemove(headPointer.at, h.body.previousHash, Nil)
+    // Note:
+    //   if getFromStorage(oldestBlock.body.previousHash) is None, then the chainSegment
+    //   starts at an unknown point in the chain. We are currently ignoring this fact, but
+    //   this could indicate that we are missing valid blocks.
+    for {
+      oldestBlock <- chainSegment.oldestBlock
+      blockPreviousToTheSegment <- getFromStorage(oldestBlock.body.previousHash)
+      if validator.isValid(chainSegment, blockPreviousToTheSegment)
+    } {
+      val lastAcceptedBlock = headPointer.at
+      val limit = oldestBlock.body.previousHash
+      val blocksToRemove = listBlocksToRemove(lastAcceptedBlock, limit, Nil)
 
-            val s0 = headPointer.blockchainHeight.toInt - blocksToRemove.length
-            val s  = s0 + chainSegment.length
-            val l  = headPointer.blockchainHeight.toInt
+      val s0 = headPointer.blockchainHeight.toInt - blocksToRemove.length
+      val s = s0 + chainSegment.length
+      val l = headPointer.blockchainHeight.toInt
 
-            if (s > l) {  // THE PAPER: Whenever the server becomes aware of an alternative blockchain
-                          //            B0 B'1 ... B's with s > l, it replaces its local chain with this
-                          //            new chain provided it is valid
+      if (s > l) { // THE PAPER: Whenever the server becomes aware of an alternative blockchain
+        //            B0 B'1 ... B's with s > l, it replaces its local chain with this
+        //            new chain provided it is valid
 
-              val blocksToAdd = chainSegment map { b => (hash(b), b) }
-              storage.update(blocksToRemove, blocksToAdd)
+        val blocksToAdd = chainSegment.blocks map { b => (hash(b), b) }
+        storage.update(blocksToRemove, blocksToAdd)
 
-              val finalHeight = Height.from(s).get // `.get` is safe as s > 0.
-              headPointer = BlockPointer(hash(chainSegment.head), finalHeight)
-            }
-        }
+        val finalHeight = Height.from(s).get // `.get` is safe as s > 0.
+        headPointer = BlockPointer(hash(chainSegment.mostRecentBlock.get), finalHeight)
+      }
     }
   }
 

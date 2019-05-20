@@ -3,6 +3,7 @@ package test
 
 import org.scalatest.WordSpec
 import org.scalatest.MustMatchers
+import org.scalatest.OptionValues._
 import atala.clock._
 
 import monix.execution.Scheduler.Implicits.global
@@ -53,7 +54,7 @@ class LedgerSpec extends WordSpec with MustMatchers {
       val r1 = Await.result(ledger.ask('K'), 5.seconds)
       r1 mustBe false
       stateUpdatedEventStream.feedItem(
-        LedgerActorMessage.StateUpdatedEvent[S](StateSnapshot("OK", TimeSlot(10)))
+        LedgerActorMessage.StateUpdatedEvent[S](StateSnapshot("OK", TimeSlot.from(10).value))
       )
       Thread.sleep(100)
       val r2 = Await.result(ledger.ask('K'), 5.seconds)

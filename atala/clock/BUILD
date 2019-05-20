@@ -1,15 +1,18 @@
 load("//scala:rules.bzl", "scala_library", "scala_test")
 
 scala_library(
-  name = "clock",
-  deps = [],
-  external = [ ],
+    name = "clock",
+    external = [],
+    deps = [
+        "@decco//src/io/iohk/decco",
+        "@decco//src/io/iohk/decco/auto",
+    ],
 )
 
 scala_test(
     name = "tests",
-    deps = [ "clock" ],
     external = [
-      "org.scalacheck:scalacheck%",
+        "org.scalacheck:scalacheck%",
     ],
+    deps = ["clock"],
 )

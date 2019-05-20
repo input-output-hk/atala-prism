@@ -19,7 +19,7 @@ class H2BlockStorageSpec extends WordSpec with BeforeAndAfter {
   val body = BlockBody(
     previousHash = hash(genesis),
     delta = List("a", "b", "c"),
-    timeSlot = TimeSlot(1),
+    timeSlot = TimeSlot.from(1).value,
     timeSlotSignature = dummySignature
   )
 
@@ -32,7 +32,7 @@ class H2BlockStorageSpec extends WordSpec with BeforeAndAfter {
   val service = H2BlockStorage[Tx]("h2db")
 
   val latestBlock = {
-    val nextTimeSlot = TimeSlot(block.body.timeSlot.index + 1)
+    val nextTimeSlot = block.body.timeSlot.next
     block.copy(body = block.body.copy(timeSlot = nextTimeSlot))
   }
 

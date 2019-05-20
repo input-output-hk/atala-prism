@@ -3,7 +3,7 @@ package atala.obft
 // format: off
 
 import atala.clock.TimeSlot
-import atala.obft.blockchain.models.Block
+import atala.obft.blockchain.models.ChainSegment
 
 
 
@@ -37,7 +37,7 @@ sealed trait NetworkMessage[Tx] extends ObftExternalActorMessage[Tx]
 object NetworkMessage {
 
   case class AddTransaction[Tx](tx: Tx) extends NetworkMessage[Tx]
-  case class AddBlockchainSegment[Tx](chainSegment: List[Block[Tx]]) extends NetworkMessage[Tx]
+  case class AddBlockchainSegment[Tx](chainSegment: ChainSegment[Tx]) extends NetworkMessage[Tx]
 
 }
 

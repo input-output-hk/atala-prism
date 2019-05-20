@@ -8,6 +8,7 @@ import atala.obft.blockchain.models._
 import io.iohk.decco.auto._
 import io.iohk.multicrypto._
 import org.scalatest.{MustMatchers, WordSpec}
+import org.scalatest.OptionValues._
 
 class SegmentValidatorSpec extends WordSpec with MustMatchers {
 
@@ -44,7 +45,7 @@ class SegmentValidatorSpec extends WordSpec with MustMatchers {
 
     "reject a Block with the timeSlot signed by the wrong key" in {
       val validBlock: Block[String] = block(keyPairs, 1230, genesis)
-      val wrongTimeSlotSignature = sign(TimeSlot(1230), wrongKeys.`private`)
+      val wrongTimeSlotSignature = sign(TimeSlot.from(1230).value, wrongKeys.`private`)
       val invalid = validBlock.copy(body = validBlock.body.copy(timeSlotSignature = wrongTimeSlotSignature))
 
       segmentValidator.isValid(invalid, genesis) mustBe false
@@ -52,7 +53,7 @@ class SegmentValidatorSpec extends WordSpec with MustMatchers {
 
     "reject a Block with the timeSlotSignature signing the incorrect timeSlot" in {
       val validBlock: Block[String] = block(keyPairs, 1230, genesis)
-      val wrongTimeSlotSignature = sign(TimeSlot(1231), validSigningKey)
+      val wrongTimeSlotSignature = sign(TimeSlot.from(1231).value, validSigningKey)
       val invalid = validBlock.copy(body = validBlock.body.copy(timeSlotSignature = wrongTimeSlotSignature))
 
       segmentValidator.isValid(invalid, genesis) mustBe false
@@ -83,22 +84,23 @@ class SegmentValidatorSpec extends WordSpec with MustMatchers {
     }
 
     "accept an empty segment" in {
-      segmentValidator.isValid[String](Nil, genesis) mustBe true
+      segmentValidator.isValid[String](ChainSegment.empty[String], genesis) mustBe true
     }
 
     "accept a segment with a single block, that is valid" in {
-      segmentValidator.isValid(validBlock :: Nil, genesis) mustBe true
+      segmentValidator.isValid(ChainSegment(validBlock), genesis) mustBe true
     }
 
     "reject a segment that contains an invalid block" in {
-      val invalidSegment =
-        segment(10)
+      val invalidSegment = ChainSegment {
+        segment(10).blocks
           .zipWithIndex
-          .map{
+          .map {
             case (b, 5) =>
               b.copy(signature = sign(b.body, wrongKeys.`private`))
             case (b, _) => b
           }
+      }
       segmentValidator.isValid(invalidSegment, genesis) mustBe false
     }
 
@@ -111,7 +113,7 @@ class SegmentValidatorSpec extends WordSpec with MustMatchers {
     "reject a segment with a single block, that is invalid" in {
       val block =
         validBlock.copy(signature = sign(validBlock.body.copy(delta = List.empty[String]), validSigningKey))
-      segmentValidator.isValid(block :: Nil, genesis) mustBe false
+      segmentValidator.isValid(ChainSegment(block), genesis) mustBe false
     }
   }
 
@@ -119,7 +121,7 @@ class SegmentValidatorSpec extends WordSpec with MustMatchers {
   // HELPERS
 
   private def block(keys: List[SigningKeyPair], timeSlot: Int, previous: AnyBlock[String]): Block[String] = {
-    val ts = TimeSlot(timeSlot)
+    val ts = TimeSlot.from(timeSlot).value
     val privateKeys = keys.map(_.`private`)
     val publicKeys = keys.map(_.public)
     val signingKey: SigningPrivateKey = privateKeys(ts.leader(keys.length) - 1)
@@ -134,16 +136,17 @@ class SegmentValidatorSpec extends WordSpec with MustMatchers {
     Block(body, sign(body, signingKey))
   }
 
-  private def segment(n: Int, j: Int = 1230): List[Block[String]] =
+  private def segment(n: Int, j: Int = 1230): ChainSegment[String] = ChainSegment[String] {
     n match {
       case negative if negative < 0 =>
         throw new Exception("Can't generate a segment with a negative amount of Blocks")
       case 0 => Nil
       case _ =>
-        val tail = segment(n - 1, j - 1)
+        val tail = segment(n - 1, j - 1).blocks
         val head = block(keyPairs, j, tail.headOption.getOrElse(genesis))
         head :: tail
     }
+  }
 
   private def segval(n: Int) : (SegmentValidator, List[SigningKeyPair]) = {
     val keys = List.fill(n)(generateSigningKeyPair)

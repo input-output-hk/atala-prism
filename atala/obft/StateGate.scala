@@ -48,23 +48,23 @@ class StateGate[S, Tx](
   // Helper methods
   // --------------
 
-  private def unsafeRunAllTransactions[S](initialState: S, transactionExecutor: (S, Tx) => Option[S]): S =
+  private def unsafeRunAllTransactions(initialState: S, transactionExecutor: (S, Tx) => Option[S]): S =
     blockchain.unsafeRunAllTransactions(initialState, transactionExecutor)
 
-  private def unsafeRunTransactionsFromPreviousStateSnapshot[S](
+  private def unsafeRunTransactionsFromPreviousStateSnapshot(
       snapshot: StateSnapshot[S],
       transactionExecutor: (S, Tx) => Option[S]
   ): S =
     blockchain.unsafeRunTransactionsFromPreviousStateSnapshot(snapshot, transactionExecutor)
 
-  private def runAllFinalizedTransactions[S](
+  private def runAllFinalizedTransactions(
       now: TimeSlot,
       initialState: S,
       transactionExecutor: (S, Tx) => Option[S]
   ): S =
     blockchain.runAllFinalizedTransactions(now, initialState, transactionExecutor)
 
-  private def runFinalizedTransactionsFromPreviousStateSnapshot[S](
+  private def runFinalizedTransactionsFromPreviousStateSnapshot(
       now: TimeSlot,
       snapshot: StateSnapshot[S],
       transactionExecutor: (S, Tx) => Option[S]

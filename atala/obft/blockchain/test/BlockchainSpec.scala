@@ -28,7 +28,7 @@ class BlockchainSpec extends WordSpec with MustMatchers with BeforeAndAfter with
     )
 
   implicit val timeSlotArbitrary: Arbitrary[TimeSlot] =
-    Arbitrary(arbitrary[Int].map(TimeSlot.apply))
+    Arbitrary(arbitrary[Int].suchThat(_ >= 0) map { x => TimeSlot.from(x).value })
 
   implicit val heightArbitrary: Arbitrary[Height] =
     Arbitrary(arbitrary[Int].suchThat(_ >= 0) map { i => Height.from(i).value })
@@ -58,7 +58,7 @@ class BlockchainSpec extends WordSpec with MustMatchers with BeforeAndAfter with
     def block(ts: Int, previousBlock: AnyBlock[String]): Block[String] = {
       val keyPair = keys((ts - 1) % keys.length)
       val key = keyPair.`private`
-      val body = BlockBody(hash(previousBlock), List(s"A$ts", s"B$ts"), TimeSlot(ts), sign(TimeSlot(ts), key))
+      val body = BlockBody(hash(previousBlock), List(s"A$ts", s"B$ts"), TimeSlot.from(ts).value, sign(TimeSlot.from(ts).value, key))
       Block(body, sign(body, key))
     }
 
@@ -94,14 +94,14 @@ class BlockchainSpec extends WordSpec with MustMatchers with BeforeAndAfter with
       val blockchain = new Blockchain[String](new SegmentValidator(publicKeys), new InMemoryBlockStorage)(publicKeys, 1)
 
       // WHEN
-      val block = blockchain.createBlockData(List("A", "B"), TimeSlot(3), keyPair1.`private`)
+      val block = blockchain.createBlockData(List("A", "B"), TimeSlot.from(3).value, keyPair1.`private`)
 
       // THEN
       block.body.delta mustBe List("A", "B")
       block.body.previousHash mustBe blockchain.genesisBlockHash
-      block.body.timeSlot mustBe TimeSlot(3)
-      block.body.timeSlotSignature mustBe sign(TimeSlot(3), keyPair1.`private`)
-      block.signature mustBe sign(BlockBody(blockchain.genesisBlockHash, List("A", "B"), TimeSlot(3), sign(TimeSlot(3), keyPair1.`private`)), keyPair1.`private`)
+      block.body.timeSlot mustBe TimeSlot.from(3).value
+      block.body.timeSlotSignature mustBe sign(TimeSlot.from(3).value, keyPair1.`private`)
+      block.signature mustBe sign(BlockBody(blockchain.genesisBlockHash, List("A", "B"), TimeSlot.from(3).value, sign(TimeSlot.from(3).value, keyPair1.`private`)), keyPair1.`private`)
     }
 
   }
@@ -115,7 +115,7 @@ class BlockchainSpec extends WordSpec with MustMatchers with BeforeAndAfter with
       val oldHeight = blockchain.height
 
       //WHEN
-      blockchain.add(Nil)
+      blockchain.add(ChainSegment.empty)
 
       //THEN
       storage.data.isEmpty mustBe true
@@ -129,11 +129,11 @@ class BlockchainSpec extends WordSpec with MustMatchers with BeforeAndAfter with
       val blockchain = new Blockchain[String](new SegmentValidator(publicKeys), storage)(publicKeys, 1)
       val oldHeight = blockchain.height
 
-      val body = BlockBody(blockchain.genesisBlockHash, List("A", "B"), TimeSlot(3), sign(TimeSlot(3), keyPair1.`private`))
+      val body = BlockBody(blockchain.genesisBlockHash, List("A", "B"), TimeSlot.from(3).value, sign(TimeSlot.from(3).value, keyPair1.`private`))
       val block = Block(body, sign(body, keyPair1.`private`))
 
       //WHEN
-      blockchain.add(block :: Nil)
+      blockchain.add(ChainSegment(block))
 
       //THEN
       storage.data mustBe Map(hash(block) -> block)
@@ -151,13 +151,13 @@ class BlockchainSpec extends WordSpec with MustMatchers with BeforeAndAfter with
       val b1 = block(3, blockchain.genesisBlock)
       val b2 = block(4, b1)
       val b3 = block(7, b2)
-      val segment = b3 :: b2 :: b1 :: Nil
+      val segment = ChainSegment(b3, b2, b1)
 
       //WHEN
       blockchain.add(segment)
 
       //THEN
-      val targetBlockchain = segment
+      val targetBlockchain = segment.blocks
       val targetStorage = targetBlockchain.map(b => hash(b) -> b).toMap
       storage.data.size mustBe targetStorage.size
       storage.data mustBe targetStorage
@@ -171,11 +171,11 @@ class BlockchainSpec extends WordSpec with MustMatchers with BeforeAndAfter with
       val blockchain = new Blockchain[String](new SegmentValidator(publicKeys), storage)(publicKeys, 1)
       val oldHeight = blockchain.height
 
-      val body = BlockBody(blockchain.genesisBlockHash, List("A", "B"), TimeSlot(3), sign(TimeSlot(5), keyPair1.`private`))
+      val body = BlockBody(blockchain.genesisBlockHash, List("A", "B"), TimeSlot.from(3).value, sign(TimeSlot.from(5).value, keyPair1.`private`))
       val block = Block(body, sign(body, keyPair1.`private`))
 
       //WHEN
-      blockchain.add(block :: Nil)
+      blockchain.add(ChainSegment(block))
 
       //THEN
       storage.data.isEmpty mustBe true
@@ -193,7 +193,7 @@ class BlockchainSpec extends WordSpec with MustMatchers with BeforeAndAfter with
       val b1 = block(3, blockchain.genesisBlock)
       val b2 = block(4, b1)
       val b3 = block(7, b2)
-      val segment = b3 :: b2 :: b1 :: Nil
+      val segment = ChainSegment(b3, b2, b1)
 
       blockchain.add(segment)
 
@@ -211,12 +211,12 @@ class BlockchainSpec extends WordSpec with MustMatchers with BeforeAndAfter with
       val b1 = block(3, blockchain.genesisBlock)
       val b2 = block(4, b1)
       val b3 = block(7, b2)
-      val segment = b3 :: b2 :: b1 :: Nil
+      val segment = ChainSegment(b3, b2, b1)
 
       blockchain.add(segment)
 
       //WHEN
-      val result = blockchain.runAllFinalizedTransactions[List[String]](TimeSlot(8), Nil, (a, s) => Some(s :: a))
+      val result = blockchain.runAllFinalizedTransactions[List[String]](TimeSlot.from(8).value, Nil, (a, s) => Some(s :: a))
 
       //THEN
       result mustBe List("B3", "A3")
@@ -229,8 +229,8 @@ class BlockchainSpec extends WordSpec with MustMatchers with BeforeAndAfter with
       val b1 = block(3, blockchain.genesisBlock)
       val b2 = block(4, b1)
       val b3 = block(7, b2)
-      val segment = b3 :: b2 :: b1 :: Nil
-      val snapshot = StateSnapshot[List[String]](List("SomePreviousState"), TimeSlot(3))
+      val segment = ChainSegment(b3, b2, b1)
+      val snapshot = StateSnapshot[List[String]](List("SomePreviousState"), TimeSlot.from(3).value)
 
       blockchain.add(segment)
 
@@ -248,13 +248,13 @@ class BlockchainSpec extends WordSpec with MustMatchers with BeforeAndAfter with
       val b1 = block(3, blockchain.genesisBlock)
       val b2 = block(4, b1)
       val b3 = block(7, b2)
-      val segment = b3 :: b2 :: b1 :: Nil
-      val snapshot = StateSnapshot[List[String]](List("SomePreviousState"), TimeSlot(3))
+      val segment = ChainSegment(b3, b2, b1)
+      val snapshot = StateSnapshot[List[String]](List("SomePreviousState"), TimeSlot.from(3).value)
 
       blockchain.add(segment)
 
       //WHEN
-      val result = blockchain.runFinalizedTransactionsFromPreviousStateSnapshot[List[String]](TimeSlot(9), snapshot, (a, s) => Some(s :: a))
+      val result = blockchain.runFinalizedTransactionsFromPreviousStateSnapshot[List[String]](TimeSlot.from(9).value, snapshot, (a, s) => Some(s :: a))
 
       //THEN
       result mustBe List("B4", "A4", "SomePreviousState")

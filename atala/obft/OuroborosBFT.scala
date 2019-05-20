@@ -12,6 +12,7 @@ import atala.clock._
 import atala.obft.mempool._
 import atala.helpers.monixhelpers._
 import atala.logging._
+import atala.obft.blockchain.models.ChainSegment
 
 class OuroborosBFT[Tx: Codec](blockchain: Blockchain[Tx], mempool: MemPool[Tx])(
     i: Int,
@@ -100,7 +101,7 @@ class OuroborosBFT[Tx: Codec](blockchain: Blockchain[Tx], mempool: MemPool[Tx])(
       if (transactions.nonEmpty) {
         logger.debug("There are transactions in the MemPool. Ready to generate a block", "tick" -> tick.timeSlot.toString)
         val blockData = blockchain.createBlockData(transactions, tick.timeSlot, keyPair.`private`)
-        val segment = List(blockData)
+        val segment = ChainSegment(blockData)
 
         blockchain.add(segment)
 
