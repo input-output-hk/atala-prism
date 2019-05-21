@@ -235,3 +235,7 @@ curl -d '{"correlationId": "agreementId","data": "it is raining"}' -XPOST -H "Co
 curl -d '{"correlationId": "agreementId"}' -XPOST -H "Content-Type: application/json" http://localhost:7000/agreements/weather/decline
 
 ```
+
+## Infrastructure and Integrations
+
+All documentation related to our integrations and infrastructure should be found [here](https://input-output.atlassian.net/wiki/spaces/CE/pages/606371843/Code+and+Infrastructure+Setup)
