@@ -170,8 +170,8 @@ class Blockchain[Tx: Codec](validator: SegmentValidator, private[blockchain] val
 
 object Blockchain {
 
-  def apply[Tx: Codec](keys: List[SigningPublicKey], maxNumOfAdversaries: Int, database: String): Blockchain[Tx] = {
+  def apply[Tx: Codec](keys: List[SigningPublicKey], maxNumOfAdversaries: Int, database: String, segmentValidator: SegmentValidator): Blockchain[Tx] = {
     val storage = H2BlockStorage[Tx](database)
-    new Blockchain[Tx](new SegmentValidator(keys), storage)(keys, maxNumOfAdversaries)
+    new Blockchain[Tx](segmentValidator, storage)(keys, maxNumOfAdversaries)
   }
 }

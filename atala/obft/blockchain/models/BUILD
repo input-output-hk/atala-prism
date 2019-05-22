@@ -6,6 +6,7 @@ scala_library(
     ],
     deps = [
         "//atala/clock",
+        "@decco//src/io/iohk/decco",
         "@multicrypto//src/io/iohk/multicrypto",
         "@multicrypto//src/io/iohk/multicrypto/error",
     ],

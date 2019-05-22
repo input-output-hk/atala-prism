@@ -80,7 +80,8 @@ case class Server[S, Tx: Codec: Loggable, Q: Loggable, QR: Loggable](
       clockSignalsStream,
       inputNetwork,
       diffusingNetworkInput,
-      database
+      database,
+      delta.toMillis
     )
 
   private lazy val ledger: Ledger[S, Tx, Q, QR] =

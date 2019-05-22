@@ -148,10 +148,11 @@ object OuroborosBFT {
       inputStreamClockSignals: Observable[Tick[Tx]],
       inputStreamMessages: Observable[NetworkMessage[Tx]],
       outputStreamDiffuseToRestOfCluster: Observer[NetworkMessage.AddBlockchainSegment[Tx]],
-      database: String
+      database: String,
+      slotDuration: Long
   ): OuroborosBFT[Tx] = {
 
-    val blockchain = Blockchain[Tx](genesisKeys, maxNumOfAdversaries, database)
+    val blockchain = Blockchain[Tx](genesisKeys, maxNumOfAdversaries, database, SegmentValidator(genesisKeys, slotDuration))
     val mempool: MemPool[Tx] = MemPool[Tx](transactionTTL)
     val clusterSize = genesisKeys.length // AKA 'n' in the paper
 

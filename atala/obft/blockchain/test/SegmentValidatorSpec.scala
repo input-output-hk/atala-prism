@@ -12,35 +12,39 @@ import org.scalatest.OptionValues._
 
 class SegmentValidatorSpec extends WordSpec with MustMatchers {
 
+  import SegmentValidator.SegmentValidatorInternals
+
+  val veryLargeTimeSlot = TimeSlot.from(Long.MaxValue).value
+
   "SegmentValidator.isValid(Block)" should {
     "accept a valid Block after the genesis" in {
       val validBlock = block(keyPairs, 1230, genesis)
-      segmentValidator.isValid(validBlock, genesis) mustBe true
+      segmentValidator.isValid(validBlock, genesis, veryLargeTimeSlot) mustBe true
     }
 
     "accept a valid Block after a regular block" in {
       val previous = block(keyPairs, 1230, genesis)
       val validBlock = block(keyPairs, 1231, previous)
-      segmentValidator.isValid(validBlock, previous) mustBe true
+      segmentValidator.isValid(validBlock, previous, veryLargeTimeSlot) mustBe true
     }
 
     "reject a valid Block if its in the same time slot as the previous one" in {
       val previous = block(keyPairs, 1230, genesis)
       val invalidBlock = block(keyPairs, 1230, previous)
-      segmentValidator.isValid(invalidBlock, previous) mustBe false
+      segmentValidator.isValid(invalidBlock, previous, veryLargeTimeSlot) mustBe false
     }
 
     "reject a valid Block if its in before the time slot as the previous one" in {
       val previous = block(keyPairs, 1230, genesis)
       val invalidBlock = block(keyPairs, 1229, previous)
-      segmentValidator.isValid(invalidBlock, previous) mustBe false
+      segmentValidator.isValid(invalidBlock, previous, veryLargeTimeSlot) mustBe false
     }
 
     "reject a Block with an incorrect previous hash" in {
       val previous = block(keyPairs, 1230, genesis)
       val valid = block(keyPairs, 1231, previous)
       val invalid = valid.copy(body = valid.body.copy(previousHash = hash(genesis)))
-      segmentValidator.isValid(invalid, valid) mustBe false
+      segmentValidator.isValid(invalid, valid, veryLargeTimeSlot) mustBe false
     }
 
     "reject a Block with the timeSlot signed by the wrong key" in {
@@ -48,7 +52,7 @@ class SegmentValidatorSpec extends WordSpec with MustMatchers {
       val wrongTimeSlotSignature = sign(TimeSlot.from(1230).value, wrongKeys.`private`)
       val invalid = validBlock.copy(body = validBlock.body.copy(timeSlotSignature = wrongTimeSlotSignature))
 
-      segmentValidator.isValid(invalid, genesis) mustBe false
+      segmentValidator.isValid(invalid, genesis, veryLargeTimeSlot) mustBe false
     }
 
     "reject a Block with the timeSlotSignature signing the incorrect timeSlot" in {
@@ -56,7 +60,7 @@ class SegmentValidatorSpec extends WordSpec with MustMatchers {
       val wrongTimeSlotSignature = sign(TimeSlot.from(1231).value, validSigningKey)
       val invalid = validBlock.copy(body = validBlock.body.copy(timeSlotSignature = wrongTimeSlotSignature))
 
-      segmentValidator.isValid(invalid, genesis) mustBe false
+      segmentValidator.isValid(invalid, genesis, veryLargeTimeSlot) mustBe false
     }
 
     "reject a Block whose body is signed with the wrong key" in {
@@ -64,7 +68,7 @@ class SegmentValidatorSpec extends WordSpec with MustMatchers {
       val wrongSignature = sign(validBlock.body, wrongKeys.`private`)
       val invalid = validBlock.copy(signature = wrongSignature)
 
-      segmentValidator.isValid(invalid, genesis) mustBe false
+      segmentValidator.isValid(invalid, genesis, veryLargeTimeSlot) mustBe false
     }
 
     "reject a Block whose signature is signing an incorrect body" in {
@@ -72,7 +76,19 @@ class SegmentValidatorSpec extends WordSpec with MustMatchers {
       val wrongSignature = sign(validBlock.body.copy(delta = List.empty[String]), validSigningKey)
       val invalid = validBlock.copy(signature = wrongSignature)
 
-      segmentValidator.isValid(invalid, genesis) mustBe false
+      segmentValidator.isValid(invalid, genesis, veryLargeTimeSlot) mustBe false
+    }
+
+    "reject a Block that comes from the future" in {
+      val past = TimeSlot.from(1230).value
+      val present = past.next
+      val future = present.next
+      val validBlockFromThePast = block(keyPairs, past.toLong, genesis)
+      val validBlockFromThePresent = block(keyPairs, present.toLong, genesis)
+      val validBlockFromTheFuture = block(keyPairs, future.toLong, genesis)
+      segmentValidator.isValid(validBlockFromThePast, genesis, present) mustBe true
+      segmentValidator.isValid(validBlockFromThePresent, genesis, present) mustBe true
+      segmentValidator.isValid(validBlockFromTheFuture, genesis, present) mustBe false
     }
   }
 
@@ -80,15 +96,15 @@ class SegmentValidatorSpec extends WordSpec with MustMatchers {
 
     "accept a valid segment" in {
       val validSegment = segment(10)
-      segmentValidator.isValid(validSegment, genesis) mustBe true
+      segmentValidator.isValid(validSegment, genesis, veryLargeTimeSlot) mustBe true
     }
 
     "accept an empty segment" in {
-      segmentValidator.isValid[String](ChainSegment.empty[String], genesis) mustBe true
+      segmentValidator.isValid[String](ChainSegment.empty[String], genesis, veryLargeTimeSlot) mustBe true
     }
 
     "accept a segment with a single block, that is valid" in {
-      segmentValidator.isValid(ChainSegment(validBlock), genesis) mustBe true
+      segmentValidator.isValid(ChainSegment(validBlock), genesis, veryLargeTimeSlot) mustBe true
     }
 
     "reject a segment that contains an invalid block" in {
@@ -101,26 +117,26 @@ class SegmentValidatorSpec extends WordSpec with MustMatchers {
             case (b, _) => b
           }
       }
-      segmentValidator.isValid(invalidSegment, genesis) mustBe false
+      segmentValidator.isValid(invalidSegment, genesis, veryLargeTimeSlot) mustBe false
     }
 
     "reject a segment that doesn't end with the requested hash" in {
       val genesis = GenesisBlock[String](List(generateSigningKeyPair().public))
       val invalidSegment = segment(10)
-      segmentValidator.isValid(invalidSegment, genesis) mustBe false
+      segmentValidator.isValid(invalidSegment, genesis, veryLargeTimeSlot) mustBe false
     }
 
     "reject a segment with a single block, that is invalid" in {
       val block =
         validBlock.copy(signature = sign(validBlock.body.copy(delta = List.empty[String]), validSigningKey))
-      segmentValidator.isValid(ChainSegment(block), genesis) mustBe false
+      segmentValidator.isValid(ChainSegment(block), genesis, veryLargeTimeSlot) mustBe false
     }
   }
 
 
   // HELPERS
 
-  private def block(keys: List[SigningKeyPair], timeSlot: Int, previous: AnyBlock[String]): Block[String] = {
+  private def block(keys: List[SigningKeyPair], timeSlot: Long, previous: AnyBlock[String]): Block[String] = {
     val ts = TimeSlot.from(timeSlot).value
     val privateKeys = keys.map(_.`private`)
     val publicKeys = keys.map(_.public)
@@ -148,10 +164,14 @@ class SegmentValidatorSpec extends WordSpec with MustMatchers {
     }
   }
 
-  private def segval(n: Int) : (SegmentValidator, List[SigningKeyPair]) = {
-    val keys = List.fill(n)(generateSigningKeyPair)
-    (new SegmentValidator(keys.map(_.public)), keys)
+  private def segval(n: Int) : (SegmentValidatorInternals, List[SigningKeyPair]) = {
+    val ks = List.fill(n)(generateSigningKeyPair)
+    val sv: SegmentValidatorInternals = new SegmentValidatorInternals {
+      override val keys: List[SigningPublicKey] = ks.map(_.public)
+    }
+    (sv, ks)
   }
+
 
   private val (segmentValidator, keyPairs) = segval(7)
   private val privateKeys = keyPairs.map(_.`private`)

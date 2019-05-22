@@ -136,7 +136,7 @@ object H2BlockStorage {
   }
 
   private implicit val timeSlotGet: Get[TimeSlot] =
-    Get[Int].tmap(x => TimeSlot.from(x).getOrElse(throw new RuntimeException("Corrupted timeslot")))
+    Get[Long].tmap(x => TimeSlot.from(x).getOrElse(throw new RuntimeException("Corrupted timeslot")))
 
   private implicit def deltaGet[Tx](implicit txCodec: Codec[List[Tx]]): Read[List[Tx]] = Read[Array[Byte]].map {
     bytes =>
@@ -163,7 +163,7 @@ object H2BlockStorage {
          |  delta BINARY NOT NULL,
          |  previous_hash VARCHAR NOT NULL,
          |  signature VARCHAR NOT NULL,
-         |  time_slot INT NOT NULL UNIQUE,
+         |  time_slot LONG NOT NULL UNIQUE,
          |  time_slot_signature VARCHAR NOT NULL
          |);
          """.stripMargin

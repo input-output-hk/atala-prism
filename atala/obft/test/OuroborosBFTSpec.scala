@@ -128,8 +128,10 @@ object OuroborosBFTSpec {
   val transactionTTL = 2
   val maxNumOfAdversaries = 0
 
+  val slotDuration = 1L
+
   class FakeBlockchain(genesisKeys: List[SigningPublicKey], storageFile: Path)
-      extends Blockchain[Tx](new SegmentValidator(genesisKeys), H2BlockStorage("obft-spec"))(
+      extends Blockchain[Tx](SegmentValidator(genesisKeys, slotDuration), H2BlockStorage("obft-spec"))(
         genesisKeys,
         maxNumOfAdversaries
       ) {
