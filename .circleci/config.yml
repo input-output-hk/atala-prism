@@ -128,6 +128,19 @@ jobs:
       - run: cd enterprise-web && npm run test -- --no-watch --no-progress --browsers=ChromeHeadlessCI
       - run: cd enterprise-web && npm run e2e -- --protractor-config=e2e/protractor-ci.conf.js
 
+  trigger-atala-qa-automation:
+    working_directory: ~/repo
+    environment:
+      BRANCH_TO_TRIGGER: "master"
+      PROJECT_NAME_TO_TRIGGER: "atala-qa-automation"
+    docker:
+      - image: circleci/python:2.7-jessie
+    steps:
+      - checkout
+      - run:
+          name: trigger a job in atala-qa-automation project
+          command: python trigger_tests.py
+
 workflows:
   version: 2
   build-and-deploy:
@@ -138,5 +151,9 @@ workflows:
             - build
           filters:
             branches:
-              only: master
+              only: develop
       - build-enterprise-web
+      - trigger-atala-qa-automation:
+        filters:
+          branches:
+            only: develop
