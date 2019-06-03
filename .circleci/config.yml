@@ -154,6 +154,6 @@ workflows:
               only: develop
       - build-enterprise-web
       - trigger-atala-qa-automation:
-        filters:
-          branches:
-            only: develop
+          filters:
+            branches:
+              only: develop
