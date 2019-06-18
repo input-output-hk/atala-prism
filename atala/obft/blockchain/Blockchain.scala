@@ -113,7 +113,7 @@ class Blockchain[Tx: Codec: Loggable](validator: SegmentValidator, private[block
     run(lastBlockPointer.forceGetPointedBlockFromStorage, Nil)
   }
 
-  def add(chainSegment: ChainSegment[Tx]): Unit = {
+  def add(chainSegment: ChainSegment[Tx], now: TimeSlot): Unit = {
 
     logger.debug("Testing chain segment to be added", "segment" -> chainSegment)
     @tailrec
@@ -135,7 +135,7 @@ class Blockchain[Tx: Codec: Loggable](validator: SegmentValidator, private[block
     for {
       oldestBlock <- chainSegment.oldestBlock
       blockPreviousToTheSegment <- getFromStorage(oldestBlock.body.previousHash)
-      if validator.isValid(chainSegment, blockPreviousToTheSegment)
+      if validator.isValid(chainSegment, blockPreviousToTheSegment, now)
     } {
       val lastAcceptedBlock = headPointer.at
       val limit = oldestBlock.body.previousHash

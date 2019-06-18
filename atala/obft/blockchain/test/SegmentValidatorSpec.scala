@@ -12,7 +12,7 @@ import org.scalatest.OptionValues._
 
 class SegmentValidatorSpec extends WordSpec with MustMatchers {
 
-  import SegmentValidator.SegmentValidatorInternals
+  import SegmentValidator.SegmentValidatorImpl
 
   val veryLargeTimeSlot = TimeSlot.from(Long.MaxValue).value
 
@@ -164,11 +164,9 @@ class SegmentValidatorSpec extends WordSpec with MustMatchers {
     }
   }
 
-  private def segval(n: Int) : (SegmentValidatorInternals, List[SigningKeyPair]) = {
+  private def segval(n: Int) : (SegmentValidator, List[SigningKeyPair]) = {
     val ks = List.fill(n)(generateSigningKeyPair)
-    val sv: SegmentValidatorInternals = new SegmentValidatorInternals {
-      override val keys: List[SigningPublicKey] = ks.map(_.public)
-    }
+    val sv = new SegmentValidatorImpl(ks.map(_.public))
     (sv, ks)
   }
 

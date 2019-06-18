@@ -35,12 +35,14 @@ class OuroborosBFTSpec extends WordSpec {
   "getting a clock signal" should {
     "produce a Tick" in {
       val data = create(myId, myKeyPair, genesisKeys)
-      val tick = Tick[Tx](TimeSlot.zero)
+      val tick = Tick[Tx](TimeSlot.zero.next)
       data.inputStreamClockSignals.feedItem(tick)
 
       whenReady(data.obft.obftActorStream.headL.runAsync) { result =>
         result must be(tick)
       }
+
+      data.obft.currentTimeSlot must be(TimeSlot.zero.next)
     }
 
     "advance the mempool" in {
@@ -98,9 +100,9 @@ class OuroborosBFTSpec extends WordSpec {
 
   "getting the AddBlockchainSegment message" should {
     "add the segment to the blockchain " in {
-      val data = create(myId, myKeyPair, genesisKeys)
-      val transaction = "example"
       val tick = Tick[Tx](TimeSlot.from(myId).value)
+      val data = create(myId, myKeyPair, genesisKeys, initialTimeSlot = tick.timeSlot)
+      val transaction = "example"
 
       val blockData = data.blockchain.createBlockData(List(transaction), tick.timeSlot, myKeyPair.`private`)
       val segment = ChainSegment(blockData)
@@ -131,16 +133,16 @@ object OuroborosBFTSpec {
   val slotDuration = 1L
 
   class FakeBlockchain(genesisKeys: List[SigningPublicKey], storageFile: Path)
-      extends Blockchain[Tx](SegmentValidator(genesisKeys, slotDuration), H2BlockStorage("obft-spec"))(
+      extends Blockchain[Tx](SegmentValidator(genesisKeys), H2BlockStorage("obft-spec"))(
         genesisKeys,
         maxNumOfAdversaries
       ) {
 
     var level = 0
 
-    override def add(chainSegment: ChainSegment[Tx]): Unit = {
+    override def add(chainSegment: ChainSegment[Tx], now: TimeSlot): Unit = {
       level = level + 1
-      super.add(chainSegment)
+      super.add(chainSegment, now)
     }
   }
 
@@ -165,7 +167,12 @@ object OuroborosBFTSpec {
       ]]
   )
 
-  def create(myId: Int, myKeyPair: SigningKeyPair, genesisKeys: List[SigningPublicKey]): Data = {
+  def create(
+      myId: Int,
+      myKeyPair: SigningKeyPair,
+      genesisKeys: List[SigningPublicKey],
+      initialTimeSlot: TimeSlot = TimeSlot.zero
+  ): Data = {
 
     val inputStreamClockSignals = ConcurrentSubject[Tick[Tx]](multicastStrategy)
     val inputStreamMessages = ConcurrentSubject[NetworkMessage[Tx]](multicastStrategy)
@@ -177,6 +184,7 @@ object OuroborosBFTSpec {
     val mempool = new FakeMemPool
     val obft: OuroborosBFT[Tx] = new OuroborosBFT(blockchain, mempool)(
       i = myId,
+      initialTimeSlot = initialTimeSlot,
       keyPair = myKeyPair,
       clusterSize = genesisKeys.size,
       inputStreamClockSignals = inputStreamClockSignals,

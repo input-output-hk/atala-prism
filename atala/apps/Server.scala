@@ -73,6 +73,7 @@ case class Server[S, Tx: Codec: Loggable, Q: Loggable, QR: Loggable](
   private lazy val ouroborosBFT =
     OuroborosBFT[Tx](
       i,
+      Clock.currentSlot(delta.toMillis),
       keyPair,
       maxNumOfAdversaries,
       transactionTTL,

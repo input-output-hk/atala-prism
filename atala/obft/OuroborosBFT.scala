@@ -18,6 +18,7 @@ import atala.state.{StateGate => FullStateGate}
 
 class OuroborosBFT[Tx: Codec](blockchain: Blockchain[Tx], mempool: MemPool[Tx])(
     i: Int,
+    initialTimeSlot: TimeSlot,
     keyPair: SigningKeyPair,
     clusterSize: Int, // AKA 'n' in the paper
     inputStreamClockSignals: Observable[Tick[Tx]],
@@ -25,6 +26,7 @@ class OuroborosBFT[Tx: Codec](blockchain: Blockchain[Tx], mempool: MemPool[Tx])(
     outputStreamDiffuseToRestOfCluster: Observer[NetworkMessage.AddBlockchainSegment[Tx]]
 ) extends AtalaLogging {
 
+  private[obft] var currentTimeSlot: TimeSlot = initialTimeSlot
 
 
   // Message processing methods
@@ -43,6 +45,7 @@ class OuroborosBFT[Tx: Codec](blockchain: Blockchain[Tx], mempool: MemPool[Tx])(
 
     case tick: Tick[Tx] => // 3. Blockchain Extension
       logger.trace("OuroborosBFT notified of new tick", "tick" -> tick.timeSlot.toString)
+      currentTimeSlot = tick.timeSlot
       extendBlockchain(tick)
 
   }
@@ -94,7 +97,7 @@ class OuroborosBFT[Tx: Codec](blockchain: Blockchain[Tx], mempool: MemPool[Tx])(
     mempool.add(message.tx)
 
   private def updateBlockchain(message: NetworkMessage.AddBlockchainSegment[Tx]): Unit =
-    blockchain.add(message.chainSegment)
+    blockchain.add(message.chainSegment, currentTimeSlot)
 
   private def extendBlockchain(tick: Tick[Tx]): Unit = {
     if (IamLeader(tick.timeSlot)) {
@@ -105,7 +108,7 @@ class OuroborosBFT[Tx: Codec](blockchain: Blockchain[Tx], mempool: MemPool[Tx])(
         val blockData = blockchain.createBlockData(transactions, tick.timeSlot, keyPair.`private`)
         val segment = ChainSegment(blockData)
 
-        blockchain.add(segment)
+        blockchain.add(segment, tick.timeSlot)
 
         outputStreamDiffuseToRestOfCluster
           .feedItem(NetworkMessage.AddBlockchainSegment(segment))
@@ -182,6 +185,7 @@ object OuroborosBFT {
     */
   def apply[Tx: Codec: Loggable](
       i: Int,
+      initialTimeSlot: TimeSlot,
       keyPair: SigningKeyPair,
       maxNumOfAdversaries: Int, // AKA 't' in the paper
       transactionTTL: Int, // AKA 'u' in the paper
@@ -193,12 +197,13 @@ object OuroborosBFT {
       slotDuration: Long
   ): OuroborosBFT[Tx] = {
 
-    val blockchain = Blockchain[Tx](genesisKeys, maxNumOfAdversaries, database, SegmentValidator(genesisKeys, slotDuration))
+    val blockchain = Blockchain[Tx](genesisKeys, maxNumOfAdversaries, database, SegmentValidator(genesisKeys))
     val mempool: MemPool[Tx] = MemPool[Tx](transactionTTL)
     val clusterSize = genesisKeys.length // AKA 'n' in the paper
 
     new OuroborosBFT[Tx](blockchain, mempool)(
       i,
+      initialTimeSlot,
       keyPair,
       clusterSize,
       inputStreamClockSignals,

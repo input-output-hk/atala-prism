@@ -2,7 +2,7 @@ package atala.obft.blockchain
 
 // format: off
 
-import atala.clock.{Clock, TimeSlot}
+import atala.clock.TimeSlot
 
 import scala.annotation.tailrec
 import atala.obft.blockchain.models._
@@ -12,27 +12,20 @@ import io.iohk.multicrypto._
 
 // This validates that a segment of a Blockchain is correct (following the rules specified in the paper)
 // This does not perform any kind of business logic of the data stored within Tx (or the Ledger for that matter)
-class SegmentValidator(val keys: List[SigningPublicKey], slotDuration: Long) { this: SegmentValidator.SegmentValidatorInternals =>
+trait SegmentValidator {
 
-  def isValid[Tx : Codec](block: Block[Tx], previousBlock: AnyBlock[Tx]): Boolean = {
-    isValid(block, previousBlock, Clock.currentSlot(slotDuration))
-  }
+  def isValid[Tx : Codec](block: Block[Tx], previousBlock: AnyBlock[Tx], now: TimeSlot): Boolean
 
-  def isValid[Tx : Codec](chainSegment: ChainSegment[Tx], previousBlock: AnyBlock[Tx]): Boolean = {
-    isValid(chainSegment, previousBlock, Clock.currentSlot(slotDuration))
-  }
+  def isValid[Tx : Codec](chainSegment: ChainSegment[Tx], previousBlock: AnyBlock[Tx], now: TimeSlot): Boolean
 }
 
 object SegmentValidator {
-  def apply(keys: List[SigningPublicKey], slotDuration: Long): SegmentValidator =
-    new SegmentValidator(keys, slotDuration) with SegmentValidatorInternals
+  def apply(keys: List[SigningPublicKey]): SegmentValidator = new SegmentValidatorImpl(keys)
 
-  trait SegmentValidatorInternals {
-
-    def keys: List[SigningPublicKey]
+  class SegmentValidatorImpl(val keys: List[SigningPublicKey]) extends SegmentValidator {
 
     // Checks that the content of a single (non genesis) block is valid
-    def isValid[Tx : Codec](block: Block[Tx], previousBlock: AnyBlock[Tx], now: TimeSlot): Boolean = {
+    override def isValid[Tx : Codec](block: Block[Tx], previousBlock: AnyBlock[Tx], now: TimeSlot): Boolean = {
 
       // > [...] h is the hash of the previous block [...]
       val currentBody = block.body
@@ -97,7 +90,7 @@ object SegmentValidator {
     /**
       * This is the hash of the block that `chainSegment` would follow if chainSegment happened to be valid.
       */
-    def isValid[Tx : Codec](chainSegment: ChainSegment[Tx], previousBlock: AnyBlock[Tx], now: TimeSlot): Boolean = {
+    override def isValid[Tx : Codec](chainSegment: ChainSegment[Tx], previousBlock: AnyBlock[Tx], now: TimeSlot): Boolean = {
 
       // This is implemented as a nested method because otherwise the @tailrec annotation only works on final or private
       // methods. And marking the external method as either private or final, would hinder unit testing.

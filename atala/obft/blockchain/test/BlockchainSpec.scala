@@ -21,7 +21,7 @@ import org.scalatest.prop.GeneratorDrivenPropertyChecks._
 
 class BlockchainSpec extends WordSpec with MustMatchers with BeforeAndAfter with CryptoEntityArbitraries {
 
-  val slotDuration = 1L
+  val exampleNow = TimeSlot.from(3).value
 
   implicit def genesisBlockArbitrary[T: Arbitrary]: Arbitrary[GenesisBlock[T]] =
     Arbitrary(
@@ -94,17 +94,17 @@ class BlockchainSpec extends WordSpec with MustMatchers with BeforeAndAfter with
 
     "create a valid Block when all the parameters are correct" in {
       // GIVEN
-      val blockchain = new Blockchain[String](SegmentValidator(publicKeys, slotDuration), new InMemoryBlockStorage)(publicKeys, 1)
+      val blockchain = new Blockchain[String](SegmentValidator(publicKeys), new InMemoryBlockStorage)(publicKeys, 1)
 
       // WHEN
-      val block = blockchain.createBlockData(List("A", "B"), TimeSlot.from(3).value, keyPair1.`private`)
+      val block = blockchain.createBlockData(List("A", "B"), exampleNow, keyPair1.`private`)
 
       // THEN
       block.body.delta mustBe List("A", "B")
       block.body.previousHash mustBe blockchain.genesisBlockHash
-      block.body.timeSlot mustBe TimeSlot.from(3).value
-      block.body.timeSlotSignature mustBe sign(TimeSlot.from(3).value, keyPair1.`private`)
-      block.signature mustBe sign(BlockBody(blockchain.genesisBlockHash, List("A", "B"), TimeSlot.from(3).value, sign(TimeSlot.from(3).value, keyPair1.`private`)), keyPair1.`private`)
+      block.body.timeSlot mustBe exampleNow
+      block.body.timeSlotSignature mustBe sign(exampleNow, keyPair1.`private`)
+      block.signature mustBe sign(BlockBody(blockchain.genesisBlockHash, List("A", "B"), exampleNow, sign(exampleNow, keyPair1.`private`)), keyPair1.`private`)
     }
 
   }
@@ -114,11 +114,11 @@ class BlockchainSpec extends WordSpec with MustMatchers with BeforeAndAfter with
     "do nothing when the segment is empty" in {
       // GIVEN
       val storage = new InMemoryBlockStorage[String]
-      val blockchain = new Blockchain[String](SegmentValidator(publicKeys, slotDuration), storage)(publicKeys, 1)
+      val blockchain = new Blockchain[String](SegmentValidator(publicKeys), storage)(publicKeys, 1)
       val oldHeight = blockchain.height
 
       //WHEN
-      blockchain.add(ChainSegment.empty)
+      blockchain.add(ChainSegment.empty, exampleNow)
 
       //THEN
       storage.data.isEmpty mustBe true
@@ -129,14 +129,14 @@ class BlockchainSpec extends WordSpec with MustMatchers with BeforeAndAfter with
     "add a block, when the segment contains just that block (and it's valid)" in {
       // GIVEN
       val storage = new InMemoryBlockStorage[String]
-      val blockchain = new Blockchain[String](SegmentValidator(publicKeys, slotDuration), storage)(publicKeys, 1)
+      val blockchain = new Blockchain[String](SegmentValidator(publicKeys), storage)(publicKeys, 1)
       val oldHeight = blockchain.height
 
-      val body = BlockBody(blockchain.genesisBlockHash, List("A", "B"), TimeSlot.from(3).value, sign(TimeSlot.from(3).value, keyPair1.`private`))
+      val body = BlockBody(blockchain.genesisBlockHash, List("A", "B"), exampleNow, sign(exampleNow, keyPair1.`private`))
       val block = Block(body, sign(body, keyPair1.`private`))
 
       //WHEN
-      blockchain.add(ChainSegment(block))
+      blockchain.add(ChainSegment(block), exampleNow)
 
       //THEN
       storage.data mustBe Map(hash(block) -> block)
@@ -148,7 +148,7 @@ class BlockchainSpec extends WordSpec with MustMatchers with BeforeAndAfter with
     "add all the blocks of the segment, when the whole segment is valid" in {
       // GIVEN
       val storage = new InMemoryBlockStorage[String]
-      val blockchain = new Blockchain[String](SegmentValidator(publicKeys, slotDuration), storage)(publicKeys, 1)
+      val blockchain = new Blockchain[String](SegmentValidator(publicKeys), storage)(publicKeys, 1)
       val oldHeight = blockchain.height
 
       val b1 = block(3, blockchain.genesisBlock)
@@ -157,7 +157,7 @@ class BlockchainSpec extends WordSpec with MustMatchers with BeforeAndAfter with
       val segment = ChainSegment(b3, b2, b1)
 
       //WHEN
-      blockchain.add(segment)
+      blockchain.add(segment, b3.body.timeSlot)
 
       //THEN
       val targetBlockchain = segment.blocks
@@ -171,14 +171,14 @@ class BlockchainSpec extends WordSpec with MustMatchers with BeforeAndAfter with
     "change nothing, when the segment contains just one block (and it's invalid)" in {
       // GIVEN
       val storage = new InMemoryBlockStorage[String]
-      val blockchain = new Blockchain[String](SegmentValidator(publicKeys, slotDuration), storage)(publicKeys, 1)
+      val blockchain = new Blockchain[String](SegmentValidator(publicKeys), storage)(publicKeys, 1)
       val oldHeight = blockchain.height
 
-      val body = BlockBody(blockchain.genesisBlockHash, List("A", "B"), TimeSlot.from(3).value, sign(TimeSlot.from(5).value, keyPair1.`private`))
+      val body = BlockBody(blockchain.genesisBlockHash, List("A", "B"), exampleNow, sign(exampleNow.next, keyPair1.`private`))
       val block = Block(body, sign(body, keyPair1.`private`))
 
       //WHEN
-      blockchain.add(ChainSegment(block))
+      blockchain.add(ChainSegment(block), exampleNow)
 
       //THEN
       storage.data.isEmpty mustBe true
@@ -191,14 +191,14 @@ class BlockchainSpec extends WordSpec with MustMatchers with BeforeAndAfter with
 
     "use all transactions when invoking unsafeRunAllTransactions" in {
       // GIVEN
-      val blockchain = new Blockchain[String](SegmentValidator(publicKeys, slotDuration), new InMemoryBlockStorage)(publicKeys, 1)
+      val blockchain = new Blockchain[String](SegmentValidator(publicKeys), new InMemoryBlockStorage)(publicKeys, 1)
 
       val b1 = block(3, blockchain.genesisBlock)
       val b2 = block(4, b1)
       val b3 = block(7, b2)
       val segment = ChainSegment(b3, b2, b1)
 
-      blockchain.add(segment)
+      blockchain.add(segment, b3.body.timeSlot)
 
       //WHEN
       val result = blockchain.unsafeRunAllTransactions[List[String]](Nil, (a, s) => Some(s :: a))
@@ -209,14 +209,14 @@ class BlockchainSpec extends WordSpec with MustMatchers with BeforeAndAfter with
 
     "use only finalized transactions when invoking runAllFinalizedTransactions" in {
       // GIVEN
-      val blockchain = new Blockchain[String](SegmentValidator(publicKeys, slotDuration), new InMemoryBlockStorage)(publicKeys, 1)
+      val blockchain = new Blockchain[String](SegmentValidator(publicKeys), new InMemoryBlockStorage)(publicKeys, 1)
 
       val b1 = block(3, blockchain.genesisBlock)
       val b2 = block(4, b1)
       val b3 = block(7, b2)
       val segment = ChainSegment(b3, b2, b1)
 
-      blockchain.add(segment)
+      blockchain.add(segment, b3.body.timeSlot)
 
       //WHEN
       val result = blockchain.runAllFinalizedTransactions[List[String]](TimeSlot.from(8).value, Nil, (a, s) => Some(s :: a))
@@ -227,15 +227,15 @@ class BlockchainSpec extends WordSpec with MustMatchers with BeforeAndAfter with
 
     "use all transactions from after the snapshot when invoking unsafeRunTransactionsFromPreviousStateSnapshot" in {
       // GIVEN
-      val blockchain = new Blockchain[String](SegmentValidator(publicKeys, slotDuration), new InMemoryBlockStorage)(publicKeys, 1)
+      val blockchain = new Blockchain[String](SegmentValidator(publicKeys), new InMemoryBlockStorage)(publicKeys, 1)
 
       val b1 = block(3, blockchain.genesisBlock)
       val b2 = block(4, b1)
       val b3 = block(7, b2)
       val segment = ChainSegment(b3, b2, b1)
-      val snapshot = StateSnapshot[List[String]](List("SomePreviousState"), TimeSlot.from(3).value)
+      val snapshot = StateSnapshot[List[String]](List("SomePreviousState"), exampleNow)
 
-      blockchain.add(segment)
+      blockchain.add(segment, b3.body.timeSlot)
 
       //WHEN
       val result = blockchain.unsafeRunTransactionsFromPreviousStateSnapshot[List[String]](snapshot, (a, s) => Some(s :: a))
@@ -246,15 +246,15 @@ class BlockchainSpec extends WordSpec with MustMatchers with BeforeAndAfter with
 
     "use only finalized transactions from after the snapshot when invoking runFinalizedTransactionsFromPreviousStateSnapshot" in {
       // GIVEN
-      val blockchain = new Blockchain[String](SegmentValidator(publicKeys, slotDuration), new InMemoryBlockStorage)(publicKeys, 1)
+      val blockchain = new Blockchain[String](SegmentValidator(publicKeys), new InMemoryBlockStorage)(publicKeys, 1)
 
       val b1 = block(3, blockchain.genesisBlock)
       val b2 = block(4, b1)
       val b3 = block(7, b2)
       val segment = ChainSegment(b3, b2, b1)
-      val snapshot = StateSnapshot[List[String]](List("SomePreviousState"), TimeSlot.from(3).value)
+      val snapshot = StateSnapshot[List[String]](List("SomePreviousState"), exampleNow)
 
-      blockchain.add(segment)
+      blockchain.add(segment, b3.body.timeSlot)
 
       //WHEN
       val result = blockchain.runFinalizedTransactionsFromPreviousStateSnapshot[List[String]](TimeSlot.from(9).value, snapshot, (a, s) => Some(s :: a))
@@ -267,7 +267,7 @@ class BlockchainSpec extends WordSpec with MustMatchers with BeforeAndAfter with
   "The Blockchain component" should {
 
     "load the genesis block as head pointer on startup when InMemoryBlockStorage is empty" in {
-      val blockchain = new Blockchain[String](SegmentValidator(publicKeys, slotDuration), new InMemoryBlockStorage[String])(publicKeys, 1)
+      val blockchain = new Blockchain[String](SegmentValidator(publicKeys), new InMemoryBlockStorage[String])(publicKeys, 1)
       blockchain.headPointer.at mustBe hash(genesisBlock)
       blockchain.headPointer.blockchainHeight.toInt mustBe 0
       blockchain.headPointer.forceGetPointedBlockFromStorage mustBe genesisBlock
@@ -282,7 +282,7 @@ class BlockchainSpec extends WordSpec with MustMatchers with BeforeAndAfter with
       inMemoryBlockStorage.put(hash(b2), b2)
       inMemoryBlockStorage.put(hash(b3), b3)
 
-      val blockchain = new Blockchain[String](SegmentValidator(publicKeys, slotDuration), inMemoryBlockStorage)(publicKeys, 1)
+      val blockchain = new Blockchain[String](SegmentValidator(publicKeys), inMemoryBlockStorage)(publicKeys, 1)
       blockchain.headPointer.at mustBe hash(h2b3)
       blockchain.headPointer.blockchainHeight.toInt mustBe 3
       blockchain.headPointer.forceGetPointedBlockFromStorage mustBe b3
@@ -290,7 +290,7 @@ class BlockchainSpec extends WordSpec with MustMatchers with BeforeAndAfter with
     }
 
     "load the genesis block as head pointer on startup when H2BlockStorage is empty" in {
-      val blockchain = new Blockchain[String](SegmentValidator(publicKeys, slotDuration), h2BlockStorage)(publicKeys, 1)
+      val blockchain = new Blockchain[String](SegmentValidator(publicKeys), h2BlockStorage)(publicKeys, 1)
       blockchain.headPointer.at mustBe hash(genesisBlock)
       blockchain.headPointer.blockchainHeight.toInt mustBe 0
       blockchain.headPointer.forceGetPointedBlockFromStorage mustBe genesisBlock
@@ -301,7 +301,7 @@ class BlockchainSpec extends WordSpec with MustMatchers with BeforeAndAfter with
       h2BlockStorage.put(hash(h2b2), h2b2)
       h2BlockStorage.put(hash(h2b3), h2b3)
 
-      val blockchain = new Blockchain[String](SegmentValidator(publicKeys, slotDuration), h2BlockStorage)(publicKeys, 1)
+      val blockchain = new Blockchain[String](SegmentValidator(publicKeys), h2BlockStorage)(publicKeys, 1)
       blockchain.headPointer.at mustBe hash(h2b3)
       blockchain.headPointer.blockchainHeight.toInt mustBe 3
       blockchain.headPointer.forceGetPointedBlockFromStorage mustBe h2b3
