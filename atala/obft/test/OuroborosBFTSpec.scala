@@ -17,6 +17,7 @@ import org.scalatest.OptionValues._
 import org.scalatest.WordSpec
 import org.scalatest.concurrent.ScalaFutures._
 import atala.helpers.monixhelpers._
+import io.iohk.decco.auto._
 
 import scala.concurrent.duration.DurationInt
 
@@ -120,8 +121,6 @@ class OuroborosBFTSpec extends WordSpec {
 }
 
 object OuroborosBFTSpec {
-
-  import io.iohk.decco.auto._
 
   type Tx = String
 

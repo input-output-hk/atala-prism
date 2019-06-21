@@ -1,7 +1,7 @@
 load("//scala:rules.bzl", "scala_library", "scala_test")
 
 scala_library(
-    name = "obft",
+    name = "network",
     external = ["io.monix:monix%"],
     exports = [
         "//atala/logging",
@@ -10,15 +10,13 @@ scala_library(
         "//atala/clock",
         "//atala/helpers/monixhelpers",
         "//atala/logging",
-        "//atala/obft/blockchain",
+        "//atala/obft",
         "//atala/obft/blockchain/models",
-        "//atala/obft/common",
-        "//atala/obft/mempool",
-        "//atala/state",
         "@decco//src/io/iohk/decco",
         "@decco//src/io/iohk/decco/auto",
         "@multicrypto//src/io/iohk/multicrypto",
         "@multicrypto//src/io/iohk/multicrypto/error",
+        "@scalanet//src/io/iohk/scalanet",
     ],
 )
 
@@ -29,19 +27,20 @@ scala_test(
         "org.scalacheck:scalacheck%",
     ],
     deps = [
-        "obft",
+        "network",
         "//atala/clock",
         "//atala/helpers/monixhelpers",
         "//atala/logging/test/utils",
+        "//atala/obft",
         "//atala/obft/blockchain",
         "//atala/obft/blockchain/models",
         "//atala/obft/blockchain/storage",
-        "//atala/obft/common",
-        "//atala/obft/mempool",
-        "//atala/state",
         "@decco//src/io/iohk/decco",
         "@decco//src/io/iohk/decco/auto",
+        "@decco//src/io/iohk/decco/test/utils",
         "@multicrypto//src/io/iohk/multicrypto",
         "@multicrypto//src/io/iohk/multicrypto/error",
+        "@multicrypto//src/io/iohk/multicrypto/test/utils",
+        "@scalanet//src/io/iohk/scalanet",
     ],
 )

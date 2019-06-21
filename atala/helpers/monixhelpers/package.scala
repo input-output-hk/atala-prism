@@ -13,9 +13,9 @@ package object monixhelpers {
   implicit class GeneralObservableOps[A](val o: Observable[A]) extends AnyVal {
 
     def oneach[R](f: A => R): Observable[A] =
-      o.map { r =>
-        f(r)
-        r
+      o.map { a =>
+        f(a)
+        a
       }
 
   }

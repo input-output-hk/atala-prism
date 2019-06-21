@@ -16,18 +16,31 @@ import atala.logging._
 import atala.obft.blockchain.models.ChainSegment
 import atala.state.{StateGate => FullStateGate}
 
+/** This class represents an instance of the Ouroboros BFT consensus protocol.
+  *
+  * @param blockchain an instance of the protocol core.
+  * @param mempool an implementation of a mempool.
+  * @param i the instance identifier (1 <= i <= clusterSize).
+  * @param initialTimeSlot the initial time slot of the protocol.
+  * @param keyPair the key pair associated to the current server.
+  * @param clusterSize the number of servers involved in the protocol.
+  * @param inputStreamClockSignals a stream of events that represent the progress of time.
+  * @param inputStreamMessages a stream of network messages that come from other servers.
+  * @param outputStreamDiffuseToRestOfCluster a stream of messages that will be diffused to the other servers.
+  * @param codec$Tx an implicit Codec instance for Tx type.
+  * @tparam Tx the type of the underlying transactions of the ledger constructed by the protocol.
+  */
 class OuroborosBFT[Tx: Codec](blockchain: Blockchain[Tx], mempool: MemPool[Tx])(
-    i: Int,
-    initialTimeSlot: TimeSlot,
-    keyPair: SigningKeyPair,
-    clusterSize: Int, // AKA 'n' in the paper
-    inputStreamClockSignals: Observable[Tick[Tx]],
-    inputStreamMessages: Observable[NetworkMessage[Tx]],
-    outputStreamDiffuseToRestOfCluster: Observer[NetworkMessage.AddBlockchainSegment[Tx]]
+  i: Int,
+  initialTimeSlot: TimeSlot,
+  keyPair: SigningKeyPair,
+  clusterSize: Int, // AKA 'n' in the paper
+  inputStreamClockSignals: Observable[Tick[Tx]],
+  inputStreamMessages: Observable[NetworkMessage[Tx]],
+  outputStreamDiffuseToRestOfCluster: Observer[NetworkMessage.AddBlockchainSegment[Tx]]
 ) extends AtalaLogging {
 
   private[obft] var currentTimeSlot: TimeSlot = initialTimeSlot
-
 
   // Message processing methods
   // --------------------------

@@ -31,10 +31,8 @@ class BlockchainSpec extends WordSpec with MustMatchers with BeforeAndAfter with
     )
 
   implicit val timeSlotArbitrary: Arbitrary[TimeSlot] =
-    Arbitrary(arbitrary[Int].suchThat(_ >= 0) map { x => TimeSlot.from(x).value })
+    Arbitrary(Gen.posNum[Int] map { x => TimeSlot.from(x - 1).value })
 
-  implicit val heightArbitrary: Arbitrary[Height] =
-    Arbitrary(arbitrary[Int].suchThat(_ >= 0) map { i => Height.from(i).value })
 
   implicit def blockBodyArbitrary[T: Arbitrary]: Arbitrary[BlockBody[T]] =
     Arbitrary(
@@ -49,7 +47,6 @@ class BlockchainSpec extends WordSpec with MustMatchers with BeforeAndAfter with
   implicit def blockArbitrary[T: Arbitrary]: Arbitrary[Block[T]] =
     Arbitrary(
       for {
-        h <- arbitrary[Height]
         b <- arbitrary[BlockBody[T]]
         s <- arbitrary[Signature]
       } yield Block(b, s)

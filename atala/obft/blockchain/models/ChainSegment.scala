@@ -1,6 +1,9 @@
 package atala.obft.blockchain.models
 
 import atala.clock.TimeSlot
+import io.iohk.decco.Codec
+import io.iohk.decco.auto._
+import io.iohk.decco.auto.instances.CollectionInstances._
 
 class ChainSegment[Tx] private (val blocks: List[Block[Tx]]) extends AnyVal {
   def mostRecentToOldest: List[Block[Tx]] = blocks.sortBy(_.body.timeSlot)(Ordering[TimeSlot].reverse)
@@ -21,4 +24,12 @@ object ChainSegment {
   def apply[Tx](blocks: Block[Tx]*): ChainSegment[Tx] = ChainSegment[Tx](
     blocks.toList
   )
+
+  implicit def chainSegmentCodec[Tx](implicit bCodec: Codec[Block[Tx]]): Codec[ChainSegment[Tx]] =
+    Codec[List[Block[Tx]]].map(
+      { x: List[Block[Tx]] =>
+        ChainSegment(x)
+      },
+      _.blocks
+    )
 }

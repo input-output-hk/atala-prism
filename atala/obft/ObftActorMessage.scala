@@ -5,8 +5,6 @@ package atala.obft
 import atala.clock.TimeSlot
 import atala.obft.blockchain.models.ChainSegment
 
-
-
 // OuroborosBFT is implemented around the concept of an 'actor' implemented with a
 // monix stream. ObftActorMessage is the base type of the messages processed by the
 // actor.
@@ -36,9 +34,8 @@ final case class Tick[Tx](timeSlot: TimeSlot) extends ObftExternalActorMessage[T
 sealed trait NetworkMessage[Tx] extends ObftExternalActorMessage[Tx]
 object NetworkMessage {
 
-  case class AddTransaction[Tx](tx: Tx) extends NetworkMessage[Tx]
-  case class AddBlockchainSegment[Tx](chainSegment: ChainSegment[Tx]) extends NetworkMessage[Tx]
-
+  final case class AddTransaction[Tx](tx: Tx) extends NetworkMessage[Tx]
+  final case class AddBlockchainSegment[Tx](chainSegment: ChainSegment[Tx]) extends NetworkMessage[Tx]
 }
 
 
@@ -50,4 +47,4 @@ object NetworkMessage {
 // ObftInternalActorMessage = RequestStateUpdate
 //
 
-case class RequestStateUpdate[Tx](action: () => Unit) extends ObftInternalActorMessage[Tx]
+final case class RequestStateUpdate[Tx](action: () => Unit) extends ObftInternalActorMessage[Tx]

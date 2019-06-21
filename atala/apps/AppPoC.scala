@@ -5,6 +5,8 @@ import atala.logging._
 import scala.concurrent.duration._
 import scala.io.StdIn.readLine
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
 object AppPoC {
 
   def transactionExecutor(accum: Map[Int, String], tx: (Int, String)): Option[Map[Int, String]] = {
@@ -15,12 +17,26 @@ object AppPoC {
 
   def printCommand(): Unit = {
     val fr = cluster.ask(())
-    val r = scala.concurrent.Await.result(fr, Duration.Inf)
+    val (i, r) = scala.concurrent.Await.result(fr, Duration.Inf)
     println()
+    println(s"State of server $i:")
     r.toList
       .sortBy(_._1)
       .foreach { case (k, v) => println(s"$k: $v") }
     println()
+  }
+
+  def printAllCommand(): Unit = {
+    val fr = cluster.askAll(())
+    val l = scala.concurrent.Await.result(fr, Duration.Inf)
+    for { (i, r) <- l } {
+      println()
+      println(s"State of server $i:")
+      r.toList
+        .sortBy(_._1)
+        .foreach { case (k, v) => println(s"$k: $v") }
+      println()
+    }
   }
 
   def ask[T](label: String, f: String => Option[T]): T = {
@@ -28,8 +44,11 @@ object AppPoC {
       Console.print(s"$label > ")
       Console.flush
       readLine() match {
-        case "exit" => sys.exit(1)
+        case "exit" =>
+          cluster.shutdown()
+          sys.exit(1)
         case "print" => printCommand()
+        case "printAll" => printAllCommand()
         case text =>
           f(text) match {
             case Some(t) => return t
