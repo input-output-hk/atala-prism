@@ -5,8 +5,9 @@ import java.nio.file.{Files, Path}
 
 import io.iohk.multicrypto._
 import monix.execution.Scheduler.Implicits.global
-import monix.reactive.MulticastStrategy
 import monix.reactive.subjects.ConcurrentSubject
+import monix.reactive._
+import atala.obft.common.TransactionSnapshot
 import atala.obft.blockchain._
 import atala.obft.blockchain.models._
 import atala.obft.blockchain.storage._
@@ -188,7 +189,8 @@ object OuroborosBFTSpec {
       clusterSize = genesisKeys.size,
       inputStreamClockSignals = inputStreamClockSignals,
       inputStreamMessages = inputStreamMessages,
-      outputStreamDiffuseToRestOfCluster = outputStreamDiffuseToRestOfCluster
+      outputStreamDiffuseToRestOfCluster = outputStreamDiffuseToRestOfCluster,
+      lastProcessedTimeSlot = initialTimeSlot
     )
 
     Data(

@@ -1,8 +1,6 @@
 package atala.obft
 
-// format: off
-
-import atala.obft.common._
+import atala.obft.common.TransactionSnapshot
 import io.iohk.decco.Codec
 import io.iohk.multicrypto._
 import monix.execution.Scheduler.Implicits.global
@@ -14,7 +12,6 @@ import atala.obft.mempool._
 import atala.helpers.monixhelpers._
 import atala.logging._
 import atala.obft.blockchain.models.ChainSegment
-import atala.state.{StateGate => FullStateGate}
 
 /** This class represents an instance of the Ouroboros BFT consensus protocol.
   *
@@ -31,13 +28,14 @@ import atala.state.{StateGate => FullStateGate}
   * @tparam Tx the type of the underlying transactions of the ledger constructed by the protocol.
   */
 class OuroborosBFT[Tx: Codec](blockchain: Blockchain[Tx], mempool: MemPool[Tx])(
-  i: Int,
-  initialTimeSlot: TimeSlot,
-  keyPair: SigningKeyPair,
-  clusterSize: Int, // AKA 'n' in the paper
-  inputStreamClockSignals: Observable[Tick[Tx]],
-  inputStreamMessages: Observable[NetworkMessage[Tx]],
-  outputStreamDiffuseToRestOfCluster: Observer[NetworkMessage.AddBlockchainSegment[Tx]]
+    i: Int,
+    initialTimeSlot: TimeSlot,
+    keyPair: SigningKeyPair,
+    clusterSize: Int, // AKA 'n' in the paper
+    inputStreamClockSignals: Observable[Tick[Tx]],
+    inputStreamMessages: Observable[NetworkMessage[Tx]],
+    outputStreamDiffuseToRestOfCluster: Observer[NetworkMessage.AddBlockchainSegment[Tx]],
+    lastProcessedTimeSlot: TimeSlot
 ) extends AtalaLogging {
 
   private[obft] var currentTimeSlot: TimeSlot = initialTimeSlot
@@ -70,8 +68,6 @@ class OuroborosBFT[Tx: Codec](blockchain: Blockchain[Tx], mempool: MemPool[Tx])(
 
   }
 
-
-
   // The Streams
   // -----------
 
@@ -95,10 +91,14 @@ class OuroborosBFT[Tx: Codec](blockchain: Blockchain[Tx], mempool: MemPool[Tx])(
           executeInternalAction(action)
       }
 
-  def run(): Unit =
-    obftActorStream.subscribe()
-
-
+  lazy val view: Observable[TransactionSnapshot[Tx]] = {
+    blockchain.nextFinalizedTransactions(lastProcessedTimeSlot, initialTimeSlot) ++
+      obftActorStream
+        .collect {
+          case Tick(ts) => ts
+        }
+        .flatMap(blockchain.nextFinalizedTransactions)
+  }
 
   // Helper methods
   // -------------
@@ -117,7 +117,10 @@ class OuroborosBFT[Tx: Codec](blockchain: Blockchain[Tx], mempool: MemPool[Tx])(
       logger.debug("I become leader", "tick" -> tick.timeSlot.toString)
       val transactions = mempool.collect()
       if (transactions.nonEmpty) {
-        logger.debug("There are transactions in the MemPool. Ready to generate a block", "tick" -> tick.timeSlot.toString)
+        logger.debug(
+          "There are transactions in the MemPool. Ready to generate a block",
+          "tick" -> tick.timeSlot.toString
+        )
         val blockData = blockchain.createBlockData(transactions, tick.timeSlot, keyPair.`private`)
         val segment = ChainSegment(blockData)
 
@@ -132,62 +135,9 @@ class OuroborosBFT[Tx: Codec](blockchain: Blockchain[Tx], mempool: MemPool[Tx])(
     mempool.advance()
   }
 
-
-
-
-  //
-  // STATE GATE
-  //  A gate is the way to access the information stored in the transaction log hold by the consensus algorithm
-  //
-  private def gate[S] (
-    actionsStream: Observer[ObftInternalActorMessage[Tx]] with Observable[ObftInternalActorMessage[Tx]],
-    blockchain: Blockchain[Tx] )(
-    prepareExecution: ( /*now:*/ TimeSlot, /*previousSnapshot:*/ StateSnapshot[S]) => S,
-    transactionExecutor: (S, Tx) => Option[S], // transactionExecutor refers to the `parser` concept in the paper
-    finalizeExecution: StateSnapshot[S] => Unit,
-    useFinalizedTransactions: Boolean = true ): StateGate[S] = {
-
-    val newActionsStream: Observer[FullStateGate.Callback] = actionsStream.contramap(RequestStateUpdate[Tx](_))
-    val prepareComputation: FullStateGate.StateComputationStage[S, TimeSlot] = prepareExecution
-    val computeUpdatedState: FullStateGate.StateComputationStage[S, TimeSlot] = (now, snapshot) => {
-      if(useFinalizedTransactions)
-        blockchain.runFinalizedTransactionsFromPreviousStateSnapshot(now, snapshot, transactionExecutor)
-      else
-        blockchain.unsafeRunTransactionsFromPreviousStateSnapshot(snapshot, transactionExecutor)
-    }
-    val finalizeComputation: FullStateGate.StateComputationStage[S, TimeSlot] = (_, snap) => {finalizeExecution(snap); snap.computedState}
-
-    new FullStateGate[S, TimeSlot](newActionsStream)(prepareComputation, computeUpdatedState, finalizeComputation)
-  }
-
-  def gate[S](
-    prepareExecution: (/*now:*/ TimeSlot, /*previousSnapshot:*/ StateSnapshot[S]) => S,
-    transactionExecutor: (S, Tx) => Option[S],
-    finalizeExecution: /*result:*/ StateSnapshot[S] => Unit,
-    useFinalizedTransactions: Boolean): StateGate[S] =
-    gate[S](actionsStream, blockchain)(prepareExecution, transactionExecutor, finalizeExecution, useFinalizedTransactions)
-
-  def gate[S](
-    prepareExecution: (/*now:*/ TimeSlot, /*previousSnapshot:*/ StateSnapshot[S]) => S,
-    transactionExecutor: (S, Tx) => Option[S],
-    finalizeExecution: /*result:*/ StateSnapshot[S] => Unit): StateGate[S] =
-    gate(prepareExecution, transactionExecutor, finalizeExecution, true)
-
-  def gate[S](transactionExecutor: (S, Tx) => Option[S], useFinalizedTransactions: Boolean): StateGate[S] = {
-    def initialState(t: TimeSlot, s: StateSnapshot[S]): S = s.computedState
-    def doNothing(s: StateSnapshot[S]): Unit = ()
-    gate(initialState _, transactionExecutor, doNothing _, useFinalizedTransactions)
-  }
-
-  def gate[S](transactionExecutor: (S, Tx) => Option[S]): StateGate[S] =
-    gate(transactionExecutor, true)
 }
 
-
-
-
 object OuroborosBFT {
-
 
   /**
 
@@ -207,7 +157,7 @@ object OuroborosBFT {
       inputStreamMessages: Observable[NetworkMessage[Tx]],
       outputStreamDiffuseToRestOfCluster: Observer[NetworkMessage.AddBlockchainSegment[Tx]],
       database: String,
-      slotDuration: Long
+      lastProcessedTimeSlot: TimeSlot = TimeSlot.zero
   ): OuroborosBFT[Tx] = {
 
     val blockchain = Blockchain[Tx](genesisKeys, maxNumOfAdversaries, database, SegmentValidator(genesisKeys))
@@ -221,7 +171,9 @@ object OuroborosBFT {
       clusterSize,
       inputStreamClockSignals,
       inputStreamMessages,
-      outputStreamDiffuseToRestOfCluster
+      outputStreamDiffuseToRestOfCluster,
+      lastProcessedTimeSlot
     )
+
   }
 }

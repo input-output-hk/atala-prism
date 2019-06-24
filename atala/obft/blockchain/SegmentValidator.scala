@@ -38,7 +38,14 @@ object SegmentValidator {
       }
 
       // the block is not coming from the future
-      def blockIsNotFromTheFuture: Boolean = currentBody.timeSlot <= now
+      //
+      // NOTE:   we allow blocks from the time slot immidiately after now, because even with a small
+      //         clock delay it is possible that other nodes generate blocks (after their tick) and
+      //         deliver them before the tick in this node
+      //
+      // NOTE 2: once we have implemented the logical clock, we could review this and decide if
+      //         we still need it
+      def blockIsNotFromTheFuture: Boolean = currentBody.timeSlot <= now.next
 
 
       // > [...] by server i such that i - 1 = (j - 1) mod n [...]

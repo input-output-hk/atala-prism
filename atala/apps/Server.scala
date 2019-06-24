@@ -1,7 +1,6 @@
 package atala.apps
 
 import atala.clock.Clock
-import atala.view.StateView
 import atala.logging.Loggable
 import atala.obft.{OuroborosBFT, NetworkMessage, Tick}
 import atala.network.{OBFTNetworkInterface, OBFTPeerGroupNetworkInterface}
@@ -10,8 +9,9 @@ import io.iohk.multicrypto._
 import io.iohk.scalanet.peergroup.InetMultiAddress
 import monix.execution.Scheduler.Implicits.global
 import monix.reactive.Observable
+import atala.helpers.monixhelpers._
 
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Await
 import scala.concurrent.duration.DurationLong
 
 case class Server[S, Tx: Codec: Loggable, Q: Loggable, QR: Loggable](
@@ -41,8 +41,14 @@ case class Server[S, Tx: Codec: Loggable, Q: Loggable, QR: Loggable](
 
   def run(): Unit = {
     Await.result(networkInterface.initialise().runAsync, 10.seconds)
-    ouroborosBFT.run()
-    view.run()
+    view
+      .scan(defaultState) { (s, txSnap) =>
+        transactionExecutor(s, txSnap.transaction).getOrElse(s)
+      }
+      .oneach { s =>
+        state = s
+      }
+      .subscribe()
   }
 
   private lazy val networkInterface =
@@ -50,8 +56,7 @@ case class Server[S, Tx: Codec: Loggable, Q: Loggable, QR: Loggable](
 
   private lazy val obftChannel = Await.result(networkInterface.networkChannel().runAsync, 10.seconds)
 
-  private val stateRefreshInterval = 500.millis
-  private val delta = 20.millis
+  private val delta = 200.millis
   private val clockSignalsStream: Observable[Tick[Tx]] = {
     Observable
       .intervalWithFixedDelay(delta)
@@ -71,14 +76,14 @@ case class Server[S, Tx: Codec: Loggable, Q: Loggable, QR: Loggable](
       clockSignalsStream,
       obftChannel.in,
       obftChannel.out,
-      database,
-      delta.toMillis
+      database
     )
 
-  private lazy val view: StateView[S, Tx, Q, QR] =
-    StateView.inMemory(ouroborosBFT)(defaultState, stateRefreshInterval, delta)(processQuery, transactionExecutor)
+  private lazy val view = ouroborosBFT.view
 
-  def ask(q: Q): Future[QR] = view.ask(q)
+  private var state: S = defaultState
+
+  def ask(q: Q): QR = processQuery(state, q)
 
   def shutdown(): Unit = {
     obftChannel.close().runAsync

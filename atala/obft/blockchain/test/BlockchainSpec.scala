@@ -3,7 +3,6 @@ package test
 
 // format: off
 
-import atala.obft.common._
 import io.iohk.decco._
 import io.iohk.decco.auto._
 import io.iohk.decco.test.utils.CodecTestingHelpers._
@@ -183,83 +182,6 @@ class BlockchainSpec extends WordSpec with MustMatchers with BeforeAndAfter with
       blockchain.height mustBe oldHeight
     }
    }
-
-  "Blockchain.*run*" should {
-
-    "use all transactions when invoking unsafeRunAllTransactions" in {
-      // GIVEN
-      val blockchain = new Blockchain[String](SegmentValidator(publicKeys), new InMemoryBlockStorage)(publicKeys, 1)
-
-      val b1 = block(3, blockchain.genesisBlock)
-      val b2 = block(4, b1)
-      val b3 = block(7, b2)
-      val segment = ChainSegment(b3, b2, b1)
-
-      blockchain.add(segment, b3.body.timeSlot)
-
-      //WHEN
-      val result = blockchain.unsafeRunAllTransactions[List[String]](Nil, (a, s) => Some(s :: a))
-
-      //THEN
-      result mustBe List("B7", "A7", "B4", "A4", "B3", "A3")
-    }
-
-    "use only finalized transactions when invoking runAllFinalizedTransactions" in {
-      // GIVEN
-      val blockchain = new Blockchain[String](SegmentValidator(publicKeys), new InMemoryBlockStorage)(publicKeys, 1)
-
-      val b1 = block(3, blockchain.genesisBlock)
-      val b2 = block(4, b1)
-      val b3 = block(7, b2)
-      val segment = ChainSegment(b3, b2, b1)
-
-      blockchain.add(segment, b3.body.timeSlot)
-
-      //WHEN
-      val result = blockchain.runAllFinalizedTransactions[List[String]](TimeSlot.from(8).value, Nil, (a, s) => Some(s :: a))
-
-      //THEN
-      result mustBe List("B3", "A3")
-    }
-
-    "use all transactions from after the snapshot when invoking unsafeRunTransactionsFromPreviousStateSnapshot" in {
-      // GIVEN
-      val blockchain = new Blockchain[String](SegmentValidator(publicKeys), new InMemoryBlockStorage)(publicKeys, 1)
-
-      val b1 = block(3, blockchain.genesisBlock)
-      val b2 = block(4, b1)
-      val b3 = block(7, b2)
-      val segment = ChainSegment(b3, b2, b1)
-      val snapshot = StateSnapshot[List[String]](List("SomePreviousState"), exampleNow)
-
-      blockchain.add(segment, b3.body.timeSlot)
-
-      //WHEN
-      val result = blockchain.unsafeRunTransactionsFromPreviousStateSnapshot[List[String]](snapshot, (a, s) => Some(s :: a))
-
-      //THEN
-      result mustBe List("B7", "A7", "B4", "A4", "SomePreviousState")
-    }
-
-    "use only finalized transactions from after the snapshot when invoking runFinalizedTransactionsFromPreviousStateSnapshot" in {
-      // GIVEN
-      val blockchain = new Blockchain[String](SegmentValidator(publicKeys), new InMemoryBlockStorage)(publicKeys, 1)
-
-      val b1 = block(3, blockchain.genesisBlock)
-      val b2 = block(4, b1)
-      val b3 = block(7, b2)
-      val segment = ChainSegment(b3, b2, b1)
-      val snapshot = StateSnapshot[List[String]](List("SomePreviousState"), exampleNow)
-
-      blockchain.add(segment, b3.body.timeSlot)
-
-      //WHEN
-      val result = blockchain.runFinalizedTransactionsFromPreviousStateSnapshot[List[String]](TimeSlot.from(9).value, snapshot, (a, s) => Some(s :: a))
-
-      //THEN
-      result mustBe List("B4", "A4", "SomePreviousState")
-    }
-  }
 
   "The Blockchain component" should {
 

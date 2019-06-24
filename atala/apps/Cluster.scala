@@ -6,8 +6,6 @@ import atala.logging.Loggable
 import io.iohk.decco.Codec
 import io.iohk.multicrypto._
 
-import scala.concurrent.{ExecutionContext, Future}
-
 case class Cluster[S, Tx: Codec: Loggable, Q: Loggable, QR: Loggable](n: Int, u: Int, defaultState: S)(
     processQuery: (S, Q) => QR,
     transactionExecutor: (S, Tx) => Option[S]
@@ -37,13 +35,13 @@ case class Cluster[S, Tx: Codec: Loggable, Q: Loggable, QR: Loggable](n: Int, u:
     tx sendTo ser
   }
 
-  def ask(q: Q)(implicit ex: ExecutionContext): Future[(Int, QR)] = {
+  def ask(q: Q): (Int, QR) = {
     val server = aServer()
-    server.ask(q) map { (server.i, _) }
+    (server.i, server.ask(q))
   }
 
-  def askAll(q: Q)(implicit ex: ExecutionContext): Future[List[(Int, QR)]] =
-    Future.traverse(servers)(s => s.ask(q).map { (s.i, _) })
+  def askAll(q: Q): List[(Int, QR)] =
+    servers.map(s => (s.i, s.ask(q)))
 
   def run(): Unit = {
     servers.foreach(_.run())

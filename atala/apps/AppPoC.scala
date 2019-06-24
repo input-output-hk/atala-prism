@@ -2,10 +2,7 @@ package atala.apps
 
 import atala.logging._
 
-import scala.concurrent.duration._
 import scala.io.StdIn.readLine
-
-import scala.concurrent.ExecutionContext.Implicits.global
 
 object AppPoC {
 
@@ -16,8 +13,7 @@ object AppPoC {
   }
 
   def printCommand(): Unit = {
-    val fr = cluster.ask(())
-    val (i, r) = scala.concurrent.Await.result(fr, Duration.Inf)
+    val (i, r) = cluster.ask(())
     println()
     println(s"State of server $i:")
     r.toList
@@ -27,8 +23,7 @@ object AppPoC {
   }
 
   def printAllCommand(): Unit = {
-    val fr = cluster.askAll(())
-    val l = scala.concurrent.Await.result(fr, Duration.Inf)
+    val l = cluster.askAll(())
     for { (i, r) <- l } {
       println()
       println(s"State of server $i:")

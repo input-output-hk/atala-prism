@@ -14,7 +14,7 @@ class SegmentValidatorSpec extends WordSpec with MustMatchers {
 
   import SegmentValidator.SegmentValidatorImpl
 
-  val veryLargeTimeSlot = TimeSlot.from(Long.MaxValue).value
+  val veryLargeTimeSlot = TimeSlot.from(Long.MaxValue - 10).value
 
   "SegmentValidator.isValid(Block)" should {
     "accept a valid Block after the genesis" in {
@@ -82,7 +82,7 @@ class SegmentValidatorSpec extends WordSpec with MustMatchers {
     "reject a Block that comes from the future" in {
       val past = TimeSlot.from(1230).value
       val present = past.next
-      val future = present.next
+      val future = present.next.next
       val validBlockFromThePast = block(keyPairs, past.toLong, genesis)
       val validBlockFromThePresent = block(keyPairs, present.toLong, genesis)
       val validBlockFromTheFuture = block(keyPairs, future.toLong, genesis)
