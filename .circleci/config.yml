@@ -88,6 +88,11 @@ jobs:
 #              //atala:atala_deploy.jar
 
       - run:
+          name: generate the scaladocs
+          command: |
+            bazel build --jobs=1 //atala:atala_docs
+
+      - run:
           name: move library jar to workspace
           command: mv bazel-bin/atala/atala_deploy.jar /tmp/workspace/
 
