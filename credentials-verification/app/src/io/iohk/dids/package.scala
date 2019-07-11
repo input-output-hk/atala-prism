@@ -36,7 +36,7 @@ package object dids {
 
   case class PublicKey(id: String, `type`: String, publicKeyJwk: JWKPublicKey)
 
-  case class Document(publicKey: List[PublicKey])
+  case class Document(id: String, publicKey: List[PublicKey])
 
   private implicit val jwtPublicKeyReads: Reads[JWKPublicKey] =
     Json.reads[JWKPublicKey]
