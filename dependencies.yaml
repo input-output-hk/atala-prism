@@ -18,7 +18,7 @@ dependencies:
   com.github.pureconfig:
     pureconfig:
       lang: scala
-      version: "0.10.1"
+      version: "0.11.1"
   com.chuusai:
     shapeless:
       lang: scala
@@ -144,5 +144,7 @@ dependencies:
       version: "1.7.25"
       lang: "java"
       modules: [api, simple]
-
-
+  commons-validator:
+    commons-validator:
+      version: "1.6"
+      lang: java

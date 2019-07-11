@@ -290,25 +290,6 @@ def maven_dependencies():
   )
 
   java_import_external(
-      name = "com___github___pureconfig_and_pureconfig__2___12__EXTERNAL",
-      licenses = ["notice"],
-      jar_urls = [
-          "https://repo1.maven.org/maven2/com/github/pureconfig/pureconfig_2.12/0.10.1/pureconfig_2.12-0.10.1.jar"
-      ],
-      jar_sha256 = "cf4ba55a25a453eebff8671a7527012a5125daa902dd90cf6c8e4e2b9c108f8a",
-      neverlink=0
-  )
-  java_import_external(
-      name = "com___github___pureconfig_and_pureconfig__2___12__EXTERNAL__NEVERLINK",
-      licenses = ["notice"],
-      jar_urls = [
-          "https://repo1.maven.org/maven2/com/github/pureconfig/pureconfig_2.12/0.10.1/pureconfig_2.12-0.10.1.jar"
-      ],
-      jar_sha256 = "cf4ba55a25a453eebff8671a7527012a5125daa902dd90cf6c8e4e2b9c108f8a",
-      neverlink=1
-  )
-
-  java_import_external(
       name = "org___typelevel_and_cats_ds_kernel__2___12__EXTERNAL",
       licenses = ["notice"],
       jar_urls = [
@@ -400,6 +381,25 @@ def maven_dependencies():
           "https://repo1.maven.org/maven2/org/scalatest/scalatest_2.12/3.0.5/scalatest_2.12-3.0.5.jar"
       ],
       jar_sha256 = "b416b5bcef6720da469a8d8a5726e457fc2d1cd5d316e1bc283aa75a2ae005e5",
+      neverlink=1
+  )
+
+  java_import_external(
+      name = "com___github___pureconfig_and_pureconfig_ds_core__2___12__EXTERNAL",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/com/github/pureconfig/pureconfig-core_2.12/0.11.1/pureconfig-core_2.12-0.11.1.jar"
+      ],
+      jar_sha256 = "af62bd8d78e128f2240636c688b9ccf96aadb9d72c6a10488357b3b5482fdae8",
+      neverlink=0
+  )
+  java_import_external(
+      name = "com___github___pureconfig_and_pureconfig_ds_core__2___12__EXTERNAL__NEVERLINK",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/com/github/pureconfig/pureconfig-core_2.12/0.11.1/pureconfig-core_2.12-0.11.1.jar"
+      ],
+      jar_sha256 = "af62bd8d78e128f2240636c688b9ccf96aadb9d72c6a10488357b3b5482fdae8",
       neverlink=1
   )
 
@@ -533,6 +533,25 @@ def maven_dependencies():
           "https://repo1.maven.org/maven2/com/lihaoyi/sourcecode_2.12/0.1.5/sourcecode_2.12-0.1.5.jar"
       ],
       jar_sha256 = "297ab9234e13f760b4eaf16278269cc0cf8e26cc199728c203e68d0d1b334ee1",
+      neverlink=1
+  )
+
+  java_import_external(
+      name = "commons_ds_digester_and_commons_ds_digester",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/commons-digester/commons-digester/1.8.1/commons-digester-1.8.1.jar"
+      ],
+      jar_sha256 = "b97b72b4201137262215dca60ceb84e6b664bf7fe428a4d62729de0239cafdb6",
+      neverlink=0
+  )
+  java_import_external(
+      name = "commons_ds_digester_and_commons_ds_digester__NEVERLINK",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/commons-digester/commons-digester/1.8.1/commons-digester-1.8.1.jar"
+      ],
+      jar_sha256 = "b97b72b4201137262215dca60ceb84e6b664bf7fe428a4d62729de0239cafdb6",
       neverlink=1
   )
 
@@ -780,6 +799,25 @@ def maven_dependencies():
           "https://repo1.maven.org/maven2/com/fasterxml/jackson/core/jackson-core/2.9.6/jackson-core-2.9.6.jar"
       ],
       jar_sha256 = "fab8746aedd6427788ee390ea04d438ec141bff7eb3476f8bdd5d9110fb2718a",
+      neverlink=1
+  )
+
+  java_import_external(
+      name = "commons_ds_validator_and_commons_ds_validator",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/commons-validator/commons-validator/1.6/commons-validator-1.6.jar"
+      ],
+      jar_sha256 = "bd62795d7068a69cbea333f6dbf9c9c1a6ad7521443fb57202a44874f240ba25",
+      neverlink=0
+  )
+  java_import_external(
+      name = "commons_ds_validator_and_commons_ds_validator__NEVERLINK",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/commons-validator/commons-validator/1.6/commons-validator-1.6.jar"
+      ],
+      jar_sha256 = "bd62795d7068a69cbea333f6dbf9c9c1a6ad7521443fb57202a44874f240ba25",
       neverlink=1
   )
 
@@ -1126,6 +1164,25 @@ def maven_dependencies():
   )
 
   java_import_external(
+      name = "com___github___pureconfig_and_pureconfig_ds_generic__2___12__EXTERNAL",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/com/github/pureconfig/pureconfig-generic_2.12/0.11.1/pureconfig-generic_2.12-0.11.1.jar"
+      ],
+      jar_sha256 = "cdfbb04c825348ca676391787fc15f46e0bb13da3090fbb31400f7571dc6eea6",
+      neverlink=0
+  )
+  java_import_external(
+      name = "com___github___pureconfig_and_pureconfig_ds_generic__2___12__EXTERNAL__NEVERLINK",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/com/github/pureconfig/pureconfig-generic_2.12/0.11.1/pureconfig-generic_2.12-0.11.1.jar"
+      ],
+      jar_sha256 = "cdfbb04c825348ca676391787fc15f46e0bb13da3090fbb31400f7571dc6eea6",
+      neverlink=1
+  )
+
+  java_import_external(
       name = "com___softwaremill___quicklens_and_quicklens__2___12__EXTERNAL",
       licenses = ["notice"],
       jar_urls = [
@@ -1293,44 +1350,6 @@ def maven_dependencies():
           "https://repo1.maven.org/maven2/org/objenesis/objenesis/2.6/objenesis-2.6.jar"
       ],
       jar_sha256 = "5e168368fbc250af3c79aa5fef0c3467a2d64e5a7bd74005f25d8399aeb0708d",
-      neverlink=1
-  )
-
-  java_import_external(
-      name = "com___github___pureconfig_and_pureconfig_ds_core__2___12__EXTERNAL",
-      licenses = ["notice"],
-      jar_urls = [
-          "https://repo1.maven.org/maven2/com/github/pureconfig/pureconfig-core_2.12/0.10.1/pureconfig-core_2.12-0.10.1.jar"
-      ],
-      jar_sha256 = "b287e21e6a879b9e675a2f720b5019ca9da64e835aa282197137164622f1eb55",
-      neverlink=0
-  )
-  java_import_external(
-      name = "com___github___pureconfig_and_pureconfig_ds_core__2___12__EXTERNAL__NEVERLINK",
-      licenses = ["notice"],
-      jar_urls = [
-          "https://repo1.maven.org/maven2/com/github/pureconfig/pureconfig-core_2.12/0.10.1/pureconfig-core_2.12-0.10.1.jar"
-      ],
-      jar_sha256 = "b287e21e6a879b9e675a2f720b5019ca9da64e835aa282197137164622f1eb55",
-      neverlink=1
-  )
-
-  java_import_external(
-      name = "com___github___pureconfig_and_pureconfig_ds_generic__2___12__EXTERNAL",
-      licenses = ["notice"],
-      jar_urls = [
-          "https://repo1.maven.org/maven2/com/github/pureconfig/pureconfig-generic_2.12/0.10.1/pureconfig-generic_2.12-0.10.1.jar"
-      ],
-      jar_sha256 = "357f143df315d4baf5be4e32cdfcb03866042f92188bbb3b294b489014ba9f2f",
-      neverlink=0
-  )
-  java_import_external(
-      name = "com___github___pureconfig_and_pureconfig_ds_generic__2___12__EXTERNAL__NEVERLINK",
-      licenses = ["notice"],
-      jar_urls = [
-          "https://repo1.maven.org/maven2/com/github/pureconfig/pureconfig-generic_2.12/0.10.1/pureconfig-generic_2.12-0.10.1.jar"
-      ],
-      jar_sha256 = "357f143df315d4baf5be4e32cdfcb03866042f92188bbb3b294b489014ba9f2f",
       neverlink=1
   )
 
@@ -1677,6 +1696,25 @@ def maven_dependencies():
   )
 
   java_import_external(
+      name = "commons_ds_beanutils_and_commons_ds_beanutils",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/commons-beanutils/commons-beanutils/1.9.2/commons-beanutils-1.9.2.jar"
+      ],
+      jar_sha256 = "23729e3a2677ed5fb164ec999ba3fcdde3f8460e5ed086b6a43d8b5d46998d42",
+      neverlink=0
+  )
+  java_import_external(
+      name = "commons_ds_beanutils_and_commons_ds_beanutils__NEVERLINK",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/commons-beanutils/commons-beanutils/1.9.2/commons-beanutils-1.9.2.jar"
+      ],
+      jar_sha256 = "23729e3a2677ed5fb164ec999ba3fcdde3f8460e5ed086b6a43d8b5d46998d42",
+      neverlink=1
+  )
+
+  java_import_external(
       name = "javax___activation_and_activation",
       licenses = ["notice"],
       jar_urls = [
@@ -1692,25 +1730,6 @@ def maven_dependencies():
           "https://repo1.maven.org/maven2/javax/activation/activation/1.1.1/activation-1.1.1.jar"
       ],
       jar_sha256 = "ae475120e9fcd99b4b00b38329bd61cdc5eb754eee03fe66c01f50e137724f99",
-      neverlink=1
-  )
-
-  java_import_external(
-      name = "com___github___pureconfig_and_pureconfig_ds_macros__2___12__EXTERNAL",
-      licenses = ["notice"],
-      jar_urls = [
-          "https://repo1.maven.org/maven2/com/github/pureconfig/pureconfig-macros_2.12/0.10.1/pureconfig-macros_2.12-0.10.1.jar"
-      ],
-      jar_sha256 = "6ecfbb5e3c10c539d3b906bc3d8104ea847a03c6069c0b732cbcd2b0796bccfd",
-      neverlink=0
-  )
-  java_import_external(
-      name = "com___github___pureconfig_and_pureconfig_ds_macros__2___12__EXTERNAL__NEVERLINK",
-      licenses = ["notice"],
-      jar_urls = [
-          "https://repo1.maven.org/maven2/com/github/pureconfig/pureconfig-macros_2.12/0.10.1/pureconfig-macros_2.12-0.10.1.jar"
-      ],
-      jar_sha256 = "6ecfbb5e3c10c539d3b906bc3d8104ea847a03c6069c0b732cbcd2b0796bccfd",
       neverlink=1
   )
 
@@ -1749,6 +1768,25 @@ def maven_dependencies():
           "https://repo1.maven.org/maven2/net/bytebuddy/byte-buddy/1.8.15/byte-buddy-1.8.15.jar"
       ],
       jar_sha256 = "af32e420b1252c1eedef6232bd46fadafc02e0c609e086efd57a64781107a039",
+      neverlink=1
+  )
+
+  java_import_external(
+      name = "commons_ds_collections_and_commons_ds_collections",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/commons-collections/commons-collections/3.2.2/commons-collections-3.2.2.jar"
+      ],
+      jar_sha256 = "eeeae917917144a68a741d4c0dff66aa5c5c5fd85593ff217bced3fc8ca783b8",
+      neverlink=0
+  )
+  java_import_external(
+      name = "commons_ds_collections_and_commons_ds_collections__NEVERLINK",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/commons-collections/commons-collections/3.2.2/commons-collections-3.2.2.jar"
+      ],
+      jar_sha256 = "eeeae917917144a68a741d4c0dff66aa5c5c5fd85593ff217bced3fc8ca783b8",
       neverlink=1
   )
 
@@ -1886,6 +1924,25 @@ def maven_dependencies():
   )
 
   java_import_external(
+      name = "com___github___pureconfig_and_pureconfig__2___12__EXTERNAL",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/com/github/pureconfig/pureconfig_2.12/0.11.1/pureconfig_2.12-0.11.1.jar"
+      ],
+      jar_sha256 = "347daeaf6c80b3561eb95be08d1206b2518b724e8b5a9779f08641f8681d65d0",
+      neverlink=0
+  )
+  java_import_external(
+      name = "com___github___pureconfig_and_pureconfig__2___12__EXTERNAL__NEVERLINK",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/com/github/pureconfig/pureconfig_2.12/0.11.1/pureconfig_2.12-0.11.1.jar"
+      ],
+      jar_sha256 = "347daeaf6c80b3561eb95be08d1206b2518b724e8b5a9779f08641f8681d65d0",
+      neverlink=1
+  )
+
+  java_import_external(
       name = "org___scalikejdbc_and_scalikejdbc_ds_config__2___12__EXTERNAL",
       licenses = ["notice"],
       jar_urls = [
@@ -1927,18 +1984,18 @@ def maven_dependencies():
       name = "com___typesafe_and_config",
       licenses = ["notice"],
       jar_urls = [
-          "https://repo1.maven.org/maven2/com/typesafe/config/1.3.3/config-1.3.3.jar"
+          "https://repo1.maven.org/maven2/com/typesafe/config/1.3.4/config-1.3.4.jar"
       ],
-      jar_sha256 = "b5f1d6071f1548d05be82f59f9039c7d37a1787bd8e3c677e31ee275af4a4621",
+      jar_sha256 = "8aa8931d8143154f86d393d4a85cfa207a884f16469cdf314dc8d6abba3f1438",
       neverlink=0
   )
   java_import_external(
       name = "com___typesafe_and_config__NEVERLINK",
       licenses = ["notice"],
       jar_urls = [
-          "https://repo1.maven.org/maven2/com/typesafe/config/1.3.3/config-1.3.3.jar"
+          "https://repo1.maven.org/maven2/com/typesafe/config/1.3.4/config-1.3.4.jar"
       ],
-      jar_sha256 = "b5f1d6071f1548d05be82f59f9039c7d37a1787bd8e3c677e31ee275af4a4621",
+      jar_sha256 = "8aa8931d8143154f86d393d4a85cfa207a884f16469cdf314dc8d6abba3f1438",
       neverlink=1
   )
 
@@ -2072,6 +2129,25 @@ def maven_dependencies():
           "https://repo1.maven.org/maven2/org/apache/commons/commons-pool2/2.5.0/commons-pool2-2.5.0.jar"
       ],
       jar_sha256 = "21187043c79971d9c848b971840de841da0e5c4df30c923a96914131fb9ef969",
+      neverlink=1
+  )
+
+  java_import_external(
+      name = "com___github___pureconfig_and_pureconfig_ds_macros__2___12__EXTERNAL",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/com/github/pureconfig/pureconfig-macros_2.12/0.11.1/pureconfig-macros_2.12-0.11.1.jar"
+      ],
+      jar_sha256 = "99e00517e42982d0ea94d32009310a09021f6380dc5ee3d226c01b5d8bb23e60",
+      neverlink=0
+  )
+  java_import_external(
+      name = "com___github___pureconfig_and_pureconfig_ds_macros__2___12__EXTERNAL__NEVERLINK",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/com/github/pureconfig/pureconfig-macros_2.12/0.11.1/pureconfig-macros_2.12-0.11.1.jar"
+      ],
+      jar_sha256 = "99e00517e42982d0ea94d32009310a09021f6380dc5ee3d226c01b5d8bb23e60",
       neverlink=1
   )
 

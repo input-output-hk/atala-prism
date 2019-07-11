@@ -6,6 +6,7 @@ import atala.helpers.monixhelpers._
 import atala.logging.{AtalaLogging, Loggable}
 import atala.network.OBFTPeerGroupNetworkInterface.OBFTPeerGroupChannel
 import atala.obft.NetworkMessage
+import atala.config.ServerAddress
 import io.iohk.scalanet.peergroup.{Channel, InetMultiAddress, PeerGroup, UDPPeerGroup}
 import monix.eval.Task
 import monix.execution.Scheduler
@@ -154,20 +155,22 @@ object OBFTPeerGroupNetworkInterface {
     new OBFTPeerGroupNetworkInterface[Address, Tx](serverNumber, knownServers, underlyingPeerGroup)
 
   def createUPDNetworkInterface[Tx: Codec](
-      serverNumber: Int,
-      knownServers: Set[Int]
+      localNodeIndex: Int,
+      localNodeAddress: ServerAddress,
+      remoteNodes: Set[(Int, ServerAddress)]
   )(implicit s: Scheduler): OBFTNetworkInterface[InetMultiAddress, Tx] = {
     import io.iohk.decco.auto._
 
     implicit val inetMultiAddressLoggable: Loggable[InetMultiAddress] = Loggable.gen[InetMultiAddress](_.toString)
 
     OBFTPeerGroupNetworkInterface[InetMultiAddress, Tx](
-      serverNumber,
-      (knownServers map { i: Int =>
-        (i, InetMultiAddress(new InetSocketAddress("localhost", 8000 + i)))
+      localNodeIndex,
+      (remoteNodes map {
+        case (i, ServerAddress(h, p)) =>
+          (i, InetMultiAddress(new InetSocketAddress(h, p)))
       }).toMap,
       new UDPPeerGroup[Either[Unit, NetworkMessage[Tx]]](
-        UDPPeerGroup.Config(new InetSocketAddress("localhost", 8000 + serverNumber))
+        UDPPeerGroup.Config(new InetSocketAddress(localNodeAddress.host, localNodeAddress.port))
       )
     )
   }

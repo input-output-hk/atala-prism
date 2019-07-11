@@ -60,9 +60,7 @@ class BasicSimulationModel[Tx: Codec: Loggable](slotDuration: FiniteDuration, ge
 
   import BasicSimulationModel._
 
-  def u(n: Int, t: Int) = 5 * t + 2
-
-  protected def initialize[S](n: Int, t: Int, simulationName: String, stateLaws: StateLaws[S, Tx]): State[S, Tx] = {
+  protected def initialize[S](n: Int, simulationName: String, stateLaws: StateLaws[S, Tx]): State[S, Tx] = {
     val keys = List.fill(n)(generateSigningKeyPair())
     val publicKeys = keys.map(_.public)
     val tickStream = ConcurrentSubject.publish[Tick[Tx]]
@@ -74,8 +72,6 @@ class BasicSimulationModel[Tx: Codec: Loggable](slotDuration: FiniteDuration, ge
           i = index + 1,
           initialTimeSlot = TimeSlot.zero,
           keyPair = key,
-          maxNumOfAdversaries = t,
-          transactionTTL = u(n, t),
           genesisKeys = publicKeys,
           inputStreamClockSignals = tickStream,
           inputStreamMessages = input,
@@ -120,9 +116,8 @@ class BasicSimulationModel[Tx: Codec: Loggable](slotDuration: FiniteDuration, ge
       implicit stateLaws: StateLaws[S, Tx]
   ): Task[Unit] = {
     val n = plan.n
-    val t = plan.t
 
-    val state = initialize(n, t, simulationName, stateLaws)
+    val state = initialize(n, simulationName, stateLaws)
 
     val firstSlot = TimeSlot.zero.next
     val lastSlot = plan.lastSlot

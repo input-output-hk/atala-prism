@@ -150,8 +150,6 @@ object OuroborosBFT {
       i: Int,
       initialTimeSlot: TimeSlot,
       keyPair: SigningKeyPair,
-      maxNumOfAdversaries: Int, // AKA 't' in the paper
-      transactionTTL: Int, // AKA 'u' in the paper
       genesisKeys: List[SigningPublicKey],
       inputStreamClockSignals: Observable[Tick[Tx]],
       inputStreamMessages: Observable[NetworkMessage[Tx]],
@@ -160,9 +158,17 @@ object OuroborosBFT {
       lastProcessedTimeSlot: TimeSlot = TimeSlot.zero
   ): OuroborosBFT[Tx] = {
 
+    // AKA 'n' in the paper
+    val clusterSize = genesisKeys.length
+
+    // AKA 't' in the paper
+    val maxNumOfAdversaries: Int = (clusterSize - 1) / 3; // if `n = 3t + 1` then t must be `(n - 1) / 3`
+
+    // AKA 'u' in the paper
+    val transactionTTL: Int = (maxNumOfAdversaries * 5) + 2; // As expressed in the Theorem 3.8 of the paper
+
     val blockchain = Blockchain[Tx](genesisKeys, maxNumOfAdversaries, database, SegmentValidator(genesisKeys))
     val mempool: MemPool[Tx] = MemPool[Tx](transactionTTL)
-    val clusterSize = genesisKeys.length // AKA 'n' in the paper
 
     new OuroborosBFT[Tx](blockchain, mempool)(
       i,

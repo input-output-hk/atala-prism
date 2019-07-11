@@ -83,9 +83,9 @@ class ObftSimulationTest extends WordSpec {
     val alphabetSize = 'Z' - 'A' + 1
     val simulationPlanGen = for {
       n <- Gen.chooseNum(2, 7)
-      t <- Gen.chooseNum(0, (n - 1) / 3)
       slotsNumber <- Gen.chooseNum(1, alphabetSize)
     } yield {
+      val t = (n - 1) / 3
       val transactions = (0 until slotsNumber).map { i =>
         (i + 1, ('A' + i).toString)
       }
@@ -132,7 +132,6 @@ class ObftSimulationTest extends WordSpec {
 
     val simulationPlanGen = for {
       n <- Gen.chooseNum(2, 10)
-      t <- Gen.chooseNum(0, (n - 1) / 3)
       slotsNumber <- Gen.chooseNum(1, MAX_SLOTS)
       slotValues <- Gen.nonEmptyListOf {
         for {
@@ -142,6 +141,7 @@ class ObftSimulationTest extends WordSpec {
         } yield (slot, node, value)
       }
     } yield {
+      val t = (n - 1) / 3
       SimulationPlan
         .builder[List[Int], Int](n, t)
         .withItemsFrom(slotValues) {

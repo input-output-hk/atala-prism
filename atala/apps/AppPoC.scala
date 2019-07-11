@@ -57,7 +57,7 @@ object AppPoC {
   import io.iohk.decco.auto._
 
   val cluster =
-    Cluster[Map[Int, String], (Int, String), Unit, Map[Int, String]](7, 14, Map.empty)((s, _) => s, transactionExecutor)
+    Cluster[Map[Int, String], (Int, String), Unit, Map[Int, String]](7, Map.empty)((s, _) => s, transactionExecutor)
 
   def main(args: Array[String]): Unit = {
 

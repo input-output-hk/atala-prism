@@ -36,7 +36,6 @@ case class SimulationSlot[-S, +Tx](actions: List[SimulationAction[Tx]], checks: 
 
 case class SimulationPlan[S, Tx](
     n: Int,
-    t: Int,
     slots: Map[TimeSlot, SimulationSlot[S, Tx]],
     firstSlot: TimeSlot,
     lastSlot: TimeSlot
@@ -50,7 +49,7 @@ case class SimulationPlan[S, Tx](
           s"$ts:\n$slotItemsString"
       }
       .mkString("\n")
-    s"SimulationPlan(n = $n, t = $t,\n$slotsString\n)"
+    s"SimulationPlan(n = $n, \n$slotsString\n)"
   }
 
   def run(
@@ -91,7 +90,7 @@ object SimulationPlan {
         val checks = slotItems.collect { case (_, check: SimulationCheck[S]) => check }
         SimulationSlot(actions, checks)
       }
-      SimulationPlan(n, t, slots, TimeSlot.zero, slots.keys.max)
+      SimulationPlan(n, slots, TimeSlot.zero, slots.keys.max)
     }
   }
 

@@ -4,9 +4,10 @@ package test
 import atala.clock.TimeSlot
 import atala.helpers.monixhelpers._
 import atala.network.OBFTNetworkInterface.OBFTChannel
-import atala.network.{OBFTNetworkInterface, OBFTPeerGroupNetworkInterface}
+import atala.network.OBFTPeerGroupNetworkInterface
 import atala.obft.NetworkMessage
 import atala.obft.blockchain.models._
+import atala.config.ServerAddress
 import io.iohk.decco.Codec
 import io.iohk.decco.auto._
 import io.iohk.decco.auto.instances.CollectionInstances.ListInstance
@@ -18,7 +19,6 @@ import org.scalatest.OptionValues._
 import org.scalatest.{MustMatchers, WordSpec}
 import org.scalatest.concurrent.ScalaFutures._
 import io.iohk.multicrypto.test.utils.CryptoEntityArbitraries
-import io.iohk.scalanet.peergroup.InetMultiAddress
 import monix.eval.Task
 import monix.execution.Scheduler
 import monix.execution.Scheduler.Implicits.global
@@ -128,8 +128,10 @@ class OBFTPeerGroupNetworkInterfaceSpec extends WordSpec with MustMatchers with 
   def twoUDPnetworkChannels[Tx: Codec](
       testCode: (OBFTChannel[Tx], OBFTChannel[Tx]) => Any
   ): Unit = {
-    val alice = OBFTPeerGroupNetworkInterface.createUPDNetworkInterface[Tx](1, Set(2))
-    val bob = OBFTPeerGroupNetworkInterface.createUPDNetworkInterface[Tx](2, Set(1))
+    val aliceAddress = ServerAddress("localhost", 8001)
+    val bobAddress = ServerAddress("localhost", 8002)
+    val alice = OBFTPeerGroupNetworkInterface.createUPDNetworkInterface[Tx](1, aliceAddress, Set(2 -> bobAddress))
+    val bob = OBFTPeerGroupNetworkInterface.createUPDNetworkInterface[Tx](2, bobAddress, Set(1 -> aliceAddress))
     alice.initialise().evaluated
     bob.initialise().evaluated
     val aliceChannel = alice.networkChannel().evaluated

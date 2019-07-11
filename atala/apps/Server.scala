@@ -4,6 +4,7 @@ import atala.clock.Clock
 import atala.logging.Loggable
 import atala.obft.{OuroborosBFT, NetworkMessage, Tick}
 import atala.network.{OBFTNetworkInterface, OBFTPeerGroupNetworkInterface}
+import atala.config._
 import io.iohk.decco.Codec
 import io.iohk.multicrypto._
 import io.iohk.scalanet.peergroup.InetMultiAddress
@@ -12,26 +13,17 @@ import monix.reactive.Observable
 import atala.helpers.monixhelpers._
 
 import scala.concurrent.Await
-import scala.concurrent.duration.DurationLong
+import scala.concurrent.duration._
 
 case class Server[S, Tx: Codec: Loggable, Q: Loggable, QR: Loggable](
-    i: Int,
-    private val keyPair: SigningKeyPair,
-    clusterSize: Int, // AKA 'n' in the paper
-    maxNumOfAdversaries: Int, // AKA 't' in the paper
-    transactionTTL: Int, // AKA 'u' in the paper
-    database: String,
+    configuration: ObftNode,
     defaultState: S
-)(
-    genesisKeys: => List[SigningPublicKey],
-    otherServers: => Set[Int]
 )(
     processQuery: (S, Q) => QR,
     transactionExecutor: (S, Tx) => Option[S]
 ) {
-  require(i > 0 && i <= clusterSize, "Invalid server id")
 
-  def publicKey: SigningPublicKey = keyPair.public
+  def publicKey: SigningPublicKey = configuration.publicKey
 
   def receiveTransaction(tx: Tx): Unit = {
     feedMessage(NetworkMessage.AddTransaction[Tx](tx))
@@ -52,31 +44,31 @@ case class Server[S, Tx: Codec: Loggable, Q: Loggable, QR: Loggable](
   }
 
   private lazy val networkInterface =
-    Server.NetworkInterface.createUDPInterface[Tx](i, otherServers)
+    Server.NetworkInterface.createUDPInterface[Tx](
+      configuration.serverIndex,
+      configuration.address,
+      configuration.addressesOfRemoteNodes
+    )
 
   private lazy val obftChannel = Await.result(networkInterface.networkChannel().runAsync, 10.seconds)
-
-  private val delta = 200.millis
   private val clockSignalsStream: Observable[Tick[Tx]] = {
     Observable
-      .intervalWithFixedDelay(delta)
+      .intervalWithFixedDelay(configuration.timeSlotDuration)
       .map { _ =>
-        Tick(Clock.currentSlot(delta.toMillis))
+        Tick(Clock.currentSlot(configuration.timeSlotDuration.toMillis))
       }
   }
 
   private lazy val ouroborosBFT =
     OuroborosBFT[Tx](
-      i,
-      Clock.currentSlot(delta.toMillis),
-      keyPair,
-      maxNumOfAdversaries,
-      transactionTTL,
-      genesisKeys,
+      configuration.serverIndex,
+      Clock.currentSlot(configuration.timeSlotDuration.toMillis),
+      configuration.keyPair,
+      configuration.genesisKeys,
       clockSignalsStream,
       obftChannel.in,
       obftChannel.out,
-      database
+      configuration.database
     )
 
   private lazy val view = ouroborosBFT.view
@@ -94,8 +86,12 @@ case class Server[S, Tx: Codec: Loggable, Q: Loggable, QR: Loggable](
 object Server {
 
   object NetworkInterface {
-    def createUDPInterface[Tx: Codec](server: Int, rest: Set[Int]): OBFTNetworkInterface[InetMultiAddress, Tx] =
-      OBFTPeerGroupNetworkInterface.createUPDNetworkInterface[Tx](server, rest)
+    def createUDPInterface[Tx: Codec](
+        localNodeIndex: Int,
+        localNodeAddress: ServerAddress,
+        remoteNodes: Set[(Int, ServerAddress)]
+    ): OBFTNetworkInterface[InetMultiAddress, Tx] =
+      OBFTPeerGroupNetworkInterface.createUPDNetworkInterface[Tx](localNodeIndex, localNodeAddress, remoteNodes)
   }
 
 }

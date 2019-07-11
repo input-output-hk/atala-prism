@@ -172,7 +172,7 @@ workflows:
           filters:
             branches:
               only: develop
-      - build-enterprise-web
+      # - build-enterprise-web
       - trigger-atala-qa-automation:
           filters:
             branches:

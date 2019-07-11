@@ -84,22 +84,6 @@ scala_import(
     neverlink = 0
 )
 scala_import(
-    name = "com___github___pureconfig_and_pureconfig_ds_macros__2___12__NEVERLINK",
-    jars = [
-        "@com___github___pureconfig_and_pureconfig_ds_macros__2___12__EXTERNAL__NEVERLINK",
-    ],
-    visibility = ['//visibility:public'],
-    neverlink = 1
-)
-scala_import(
-    name = "com___github___pureconfig_and_pureconfig_ds_macros__2___12",
-    jars = [
-        "@com___github___pureconfig_and_pureconfig_ds_macros__2___12__EXTERNAL",
-    ],
-    visibility = ['//visibility:public'],
-    neverlink = 0
-)
-scala_import(
     name = "org___tpolecat_and_doobie_ds_hikari__2___12__NEVERLINK",
     jars = [
         "@org___tpolecat_and_doobie_ds_hikari__2___12__EXTERNAL__NEVERLINK",
@@ -175,6 +159,22 @@ scala_import(
     name = "io___monix_and_monix_ds_eval__2___12",
     jars = [
         "@io___monix_and_monix_ds_eval__2___12__EXTERNAL",
+    ],
+    visibility = ['//visibility:public'],
+    neverlink = 0
+)
+scala_import(
+    name = "com___github___pureconfig_and_pureconfig_ds_generic__2___12__NEVERLINK",
+    jars = [
+        "@com___github___pureconfig_and_pureconfig_ds_generic__2___12__EXTERNAL__NEVERLINK",
+    ],
+    visibility = ['//visibility:public'],
+    neverlink = 1
+)
+scala_import(
+    name = "com___github___pureconfig_and_pureconfig_ds_generic__2___12",
+    jars = [
+        "@com___github___pureconfig_and_pureconfig_ds_generic__2___12__EXTERNAL",
     ],
     visibility = ['//visibility:public'],
     neverlink = 0
@@ -308,22 +308,6 @@ scala_import(
     neverlink = 0
 )
 scala_import(
-    name = "com___github___pureconfig_and_pureconfig_ds_core__2___12__NEVERLINK",
-    jars = [
-        "@com___github___pureconfig_and_pureconfig_ds_core__2___12__EXTERNAL__NEVERLINK",
-    ],
-    visibility = ['//visibility:public'],
-    neverlink = 1
-)
-scala_import(
-    name = "com___github___pureconfig_and_pureconfig_ds_core__2___12",
-    jars = [
-        "@com___github___pureconfig_and_pureconfig_ds_core__2___12__EXTERNAL",
-    ],
-    visibility = ['//visibility:public'],
-    neverlink = 0
-)
-scala_import(
     name = "org___scalactic_and_scalactic__2___12__NEVERLINK",
     jars = [
         "@org___scalactic_and_scalactic__2___12__EXTERNAL__NEVERLINK",
@@ -420,6 +404,22 @@ scala_import(
     neverlink = 0
 )
 scala_import(
+    name = "com___github___pureconfig_and_pureconfig_ds_core__2___12__NEVERLINK",
+    jars = [
+        "@com___github___pureconfig_and_pureconfig_ds_core__2___12__EXTERNAL__NEVERLINK",
+    ],
+    visibility = ['//visibility:public'],
+    neverlink = 1
+)
+scala_import(
+    name = "com___github___pureconfig_and_pureconfig_ds_core__2___12",
+    jars = [
+        "@com___github___pureconfig_and_pureconfig_ds_core__2___12__EXTERNAL",
+    ],
+    visibility = ['//visibility:public'],
+    neverlink = 0
+)
+scala_import(
     name = "io___monix_and_monix_ds_tail__2___12__NEVERLINK",
     jars = [
         "@io___monix_and_monix_ds_tail__2___12__EXTERNAL__NEVERLINK",
@@ -463,6 +463,22 @@ scala_import(
     name = "org___typelevel_and_macro_ds_compat__2___12",
     jars = [
         "@org___typelevel_and_macro_ds_compat__2___12__EXTERNAL",
+    ],
+    visibility = ['//visibility:public'],
+    neverlink = 0
+)
+scala_import(
+    name = "com___github___pureconfig_and_pureconfig__2___12__NEVERLINK",
+    jars = [
+        "@com___github___pureconfig_and_pureconfig__2___12__EXTERNAL__NEVERLINK",
+    ],
+    visibility = ['//visibility:public'],
+    neverlink = 1
+)
+scala_import(
+    name = "com___github___pureconfig_and_pureconfig__2___12",
+    jars = [
+        "@com___github___pureconfig_and_pureconfig__2___12__EXTERNAL",
     ],
     visibility = ['//visibility:public'],
     neverlink = 0
@@ -756,6 +772,22 @@ scala_import(
     neverlink = 0
 )
 scala_import(
+    name = "com___github___pureconfig_and_pureconfig_ds_macros__2___12__NEVERLINK",
+    jars = [
+        "@com___github___pureconfig_and_pureconfig_ds_macros__2___12__EXTERNAL__NEVERLINK",
+    ],
+    visibility = ['//visibility:public'],
+    neverlink = 1
+)
+scala_import(
+    name = "com___github___pureconfig_and_pureconfig_ds_macros__2___12",
+    jars = [
+        "@com___github___pureconfig_and_pureconfig_ds_macros__2___12__EXTERNAL",
+    ],
+    visibility = ['//visibility:public'],
+    neverlink = 0
+)
+scala_import(
     name = "org___typelevel_and_cats_ds_effect__2___12__NEVERLINK",
     jars = [
         "@org___typelevel_and_cats_ds_effect__2___12__EXTERNAL__NEVERLINK",
@@ -847,38 +879,6 @@ scala_import(
     name = "org___scala_ds_lang___modules_and_scala_ds_xml__2___12",
     jars = [
         "@org___scala_ds_lang___modules_and_scala_ds_xml__2___12__EXTERNAL",
-    ],
-    visibility = ['//visibility:public'],
-    neverlink = 0
-)
-scala_import(
-    name = "com___github___pureconfig_and_pureconfig__2___12__NEVERLINK",
-    jars = [
-        "@com___github___pureconfig_and_pureconfig__2___12__EXTERNAL__NEVERLINK",
-    ],
-    visibility = ['//visibility:public'],
-    neverlink = 1
-)
-scala_import(
-    name = "com___github___pureconfig_and_pureconfig__2___12",
-    jars = [
-        "@com___github___pureconfig_and_pureconfig__2___12__EXTERNAL",
-    ],
-    visibility = ['//visibility:public'],
-    neverlink = 0
-)
-scala_import(
-    name = "com___github___pureconfig_and_pureconfig_ds_generic__2___12__NEVERLINK",
-    jars = [
-        "@com___github___pureconfig_and_pureconfig_ds_generic__2___12__EXTERNAL__NEVERLINK",
-    ],
-    visibility = ['//visibility:public'],
-    neverlink = 1
-)
-scala_import(
-    name = "com___github___pureconfig_and_pureconfig_ds_generic__2___12",
-    jars = [
-        "@com___github___pureconfig_and_pureconfig_ds_generic__2___12__EXTERNAL",
     ],
     visibility = ['//visibility:public'],
     neverlink = 0

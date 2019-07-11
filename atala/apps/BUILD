@@ -11,6 +11,7 @@ scala_binary(
         "//atala/obft/common",
         "//atala/obft/blockchain",
         "//atala/obft/mempool",
+        "//atala/config",
         "@decco//src/io/iohk/decco",
         "@decco//src/io/iohk/decco/auto",
         "@multicrypto//src/io/iohk/multicrypto",
