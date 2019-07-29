@@ -117,6 +117,21 @@ jobs:
           name: Deploy to S3
           command: aws s3 cp /tmp/workspace/atala_deploy.jar s3://cef-circle-ci/
 
+  build-credentials-verification:
+    docker:
+      - image: openjdk:8
+    working_directory: ~/repo
+    steps:
+      - checkout
+
+      - run:
+          name: install mill
+          command: sh -c '(echo "#!/usr/bin/env sh" && curl -L https://github.com/lihaoyi/mill/releases/download/0.4.1/0.4.1) > /usr/local/bin/mill && chmod +x /usr/local/bin/mill'
+
+      - run:
+          name: test
+          command: cd credentials-verification && mill all __.testLocal
+
   build-enterprise-web:
     working_directory: ~/repo
     docker:
@@ -162,3 +177,4 @@ workflows:
           filters:
             branches:
               only: develop
+      - build-credentials-verification
