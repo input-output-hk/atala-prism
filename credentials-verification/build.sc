@@ -9,6 +9,7 @@ object app extends ScalaModule {
     ivy"org.bouncycastle:bcprov-jdk15on:1.62",
     ivy"org.bouncycastle:bcpkix-jdk15on:1.62",
     ivy"com.typesafe.play::play-json:2.7.3",
+    ivy"com.beachape::enumeratum:1.5.13",
     ivy"com.lihaoyi::os-lib:0.2.7"
   )
 
