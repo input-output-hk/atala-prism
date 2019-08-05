@@ -96,10 +96,15 @@ jobs:
           name: move library jar to workspace
           command: mv bazel-bin/atala/atala_deploy.jar /tmp/workspace/
 
+      - run:
+          name: move scaladocs to workspace
+          command: mkdir -p /tmp/workspace/docs && mv bazel-bin/atala/atala_docs.html/* /tmp/workspace/docs/
+
       - persist_to_workspace:
           root: /tmp/workspace
           paths:
             - atala_deploy.jar
+            - docs
   deploy:
     docker:
       - image: circleci/python:2.7-jessie
@@ -116,6 +121,22 @@ jobs:
       - run:
           name: Deploy to S3
           command: aws s3 cp /tmp/workspace/atala_deploy.jar s3://cef-circle-ci/
+  deploy-docs:
+    docker:
+      - image: circleci/python:2.7-jessie
+    working_directory: ~/repo
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: tests
+          command: pwd;ls -R
+      - run:
+          name: Install awscli
+          command: sudo pip install awscli
+      - run:
+          name: Deploy scaladocs to S3
+          command: aws s3 cp --recursive /tmp/workspace/docs/ s3://cef-circle-ci/scaladocs/develop/
 
   build-credentials-verification:
     docker:
@@ -167,6 +188,12 @@ workflows:
     jobs:
       - build
       - deploy:
+          requires:
+            - build
+          filters:
+            branches:
+              only: develop
+      - deploy-docs:
           requires:
             - build
           filters:
