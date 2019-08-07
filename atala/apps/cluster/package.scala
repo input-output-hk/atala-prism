@@ -1,8 +1,8 @@
-package atala
+package atala.apps
 
 import atala.logging._
 
-package object apps {
+package object cluster {
 
   implicit def MapLoggable[A, B]: Loggable[Map[A, B]] = Loggable.gen(_.toString)
 

@@ -1,4 +1,4 @@
-package atala.apps
+package atala.apps.cluster
 
 import java.nio.file.Files
 

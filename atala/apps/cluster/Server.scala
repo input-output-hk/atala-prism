@@ -1,4 +1,4 @@
-package atala.apps
+package atala.apps.cluster
 
 import atala.clock.Clock
 import atala.logging.Loggable

@@ -5,6 +5,25 @@ load("@bazel_tools//tools/build_defs/repo:java.bzl", "java_import_external")
 
 def maven_dependencies():
   java_import_external(
+      name = "com___typesafe___akka_and_akka_ds_slf4j__2___12__EXTERNAL",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/com/typesafe/akka/akka-slf4j_2.12/2.5.23/akka-slf4j_2.12-2.5.23.jar"
+      ],
+      jar_sha256 = "90606a5c3aa895c1103b6fcc176a80431d6348c3be82a08449089a15bad3f52a",
+      neverlink=0
+  )
+  java_import_external(
+      name = "com___typesafe___akka_and_akka_ds_slf4j__2___12__EXTERNAL__NEVERLINK",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/com/typesafe/akka/akka-slf4j_2.12/2.5.23/akka-slf4j_2.12-2.5.23.jar"
+      ],
+      jar_sha256 = "90606a5c3aa895c1103b6fcc176a80431d6348c3be82a08449089a15bad3f52a",
+      neverlink=1
+  )
+
+  java_import_external(
       name = "com___beachape_and_enumeratum_ds_macros__2___12__EXTERNAL",
       licenses = ["notice"],
       jar_urls = [
@@ -20,6 +39,44 @@ def maven_dependencies():
           "https://repo1.maven.org/maven2/com/beachape/enumeratum-macros_2.12/1.5.9/enumeratum-macros_2.12-1.5.9.jar"
       ],
       jar_sha256 = "e7ef82aa1ab73d52cccfe78fa09d8491d021df153415cae6f5e60295a90ee187",
+      neverlink=1
+  )
+
+  java_import_external(
+      name = "com___typesafe___akka_and_akka_ds_http_ds_core__2___12__EXTERNAL",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/com/typesafe/akka/akka-http-core_2.12/10.1.9/akka-http-core_2.12-10.1.9.jar"
+      ],
+      jar_sha256 = "c78ee93da277b9959e90278fafccd0aaceb10dc0b9a475a005f528988cc92498",
+      neverlink=0
+  )
+  java_import_external(
+      name = "com___typesafe___akka_and_akka_ds_http_ds_core__2___12__EXTERNAL__NEVERLINK",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/com/typesafe/akka/akka-http-core_2.12/10.1.9/akka-http-core_2.12-10.1.9.jar"
+      ],
+      jar_sha256 = "c78ee93da277b9959e90278fafccd0aaceb10dc0b9a475a005f528988cc92498",
+      neverlink=1
+  )
+
+  java_import_external(
+      name = "com___typesafe_and_ssl_ds_config_ds_core__2___12__EXTERNAL",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/com/typesafe/ssl-config-core_2.12/0.3.7/ssl-config-core_2.12-0.3.7.jar"
+      ],
+      jar_sha256 = "5e41dfedc96081c6cf6d14f83f0e83cbefed7f5a3c50ae0b4c98344cc91545ad",
+      neverlink=0
+  )
+  java_import_external(
+      name = "com___typesafe_and_ssl_ds_config_ds_core__2___12__EXTERNAL__NEVERLINK",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/com/typesafe/ssl-config-core_2.12/0.3.7/ssl-config-core_2.12-0.3.7.jar"
+      ],
+      jar_sha256 = "5e41dfedc96081c6cf6d14f83f0e83cbefed7f5a3c50ae0b4c98344cc91545ad",
       neverlink=1
   )
 
@@ -157,25 +214,6 @@ def maven_dependencies():
   )
 
   java_import_external(
-      name = "com___typesafe___akka_and_akka_ds_http__2___12__EXTERNAL",
-      licenses = ["notice"],
-      jar_urls = [
-          "https://repo1.maven.org/maven2/com/typesafe/akka/akka-http_2.12/10.1.7/akka-http_2.12-10.1.7.jar"
-      ],
-      jar_sha256 = "a48bc25e3fdf3ccbc3230bf32fc9f825825fd9d15410ab0742f5469638d6c370",
-      neverlink=0
-  )
-  java_import_external(
-      name = "com___typesafe___akka_and_akka_ds_http__2___12__EXTERNAL__NEVERLINK",
-      licenses = ["notice"],
-      jar_urls = [
-          "https://repo1.maven.org/maven2/com/typesafe/akka/akka-http_2.12/10.1.7/akka-http_2.12-10.1.7.jar"
-      ],
-      jar_sha256 = "a48bc25e3fdf3ccbc3230bf32fc9f825825fd9d15410ab0742f5469638d6c370",
-      neverlink=1
-  )
-
-  java_import_external(
       name = "com___chuusai_and_shapeless__2___12__EXTERNAL",
       licenses = ["notice"],
       jar_urls = [
@@ -233,25 +271,6 @@ def maven_dependencies():
   )
 
   java_import_external(
-      name = "com___typesafe___akka_and_akka_ds_actor_ds_typed__2___12__EXTERNAL",
-      licenses = ["notice"],
-      jar_urls = [
-          "https://repo1.maven.org/maven2/com/typesafe/akka/akka-actor-typed_2.12/2.5.19/akka-actor-typed_2.12-2.5.19.jar"
-      ],
-      jar_sha256 = "63a5e79925afce40dd4432b25c2bb7ce6bc1003c4128017b33abe80b6f919a55",
-      neverlink=0
-  )
-  java_import_external(
-      name = "com___typesafe___akka_and_akka_ds_actor_ds_typed__2___12__EXTERNAL__NEVERLINK",
-      licenses = ["notice"],
-      jar_urls = [
-          "https://repo1.maven.org/maven2/com/typesafe/akka/akka-actor-typed_2.12/2.5.19/akka-actor-typed_2.12-2.5.19.jar"
-      ],
-      jar_sha256 = "63a5e79925afce40dd4432b25c2bb7ce6bc1003c4128017b33abe80b6f919a55",
-      neverlink=1
-  )
-
-  java_import_external(
       name = "org___typelevel_and_machinist__2___12__EXTERNAL",
       licenses = ["notice"],
       jar_urls = [
@@ -305,6 +324,25 @@ def maven_dependencies():
           "https://repo1.maven.org/maven2/org/typelevel/cats-kernel_2.12/1.4.0/cats-kernel_2.12-1.4.0.jar"
       ],
       jar_sha256 = "118074e737f810edd004588f0c681efb7d0d216ae9c481e3c952a07e47d3578b",
+      neverlink=1
+  )
+
+  java_import_external(
+      name = "com___typesafe___akka_and_akka_ds_http_ds_testkit__2___12__EXTERNAL",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/com/typesafe/akka/akka-http-testkit_2.12/10.1.9/akka-http-testkit_2.12-10.1.9.jar"
+      ],
+      jar_sha256 = "ab165fee9887462a3ae0c409853a43f78e8b7fcf442cd550f129b28dfc9e42b0",
+      neverlink=0
+  )
+  java_import_external(
+      name = "com___typesafe___akka_and_akka_ds_http_ds_testkit__2___12__EXTERNAL__NEVERLINK",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/com/typesafe/akka/akka-http-testkit_2.12/10.1.9/akka-http-testkit_2.12-10.1.9.jar"
+      ],
+      jar_sha256 = "ab165fee9887462a3ae0c409853a43f78e8b7fcf442cd550f129b28dfc9e42b0",
       neverlink=1
   )
 
@@ -419,44 +457,6 @@ def maven_dependencies():
           "https://repo1.maven.org/maven2/io/swagger/swagger-annotations/1.5.20/swagger-annotations-1.5.20.jar"
       ],
       jar_sha256 = "69dee1ef78137a3ac5f9716193224049eab41b83fc6b845c2522efceb0af0273",
-      neverlink=1
-  )
-
-  java_import_external(
-      name = "com___typesafe___akka_and_akka_ds_stream__2___12__EXTERNAL",
-      licenses = ["notice"],
-      jar_urls = [
-          "https://repo1.maven.org/maven2/com/typesafe/akka/akka-stream_2.12/2.5.16/akka-stream_2.12-2.5.16.jar"
-      ],
-      jar_sha256 = "ea27296434e07848d1073cf17647e2f5099ed7594b98b1a1807eebf542fb7e77",
-      neverlink=0
-  )
-  java_import_external(
-      name = "com___typesafe___akka_and_akka_ds_stream__2___12__EXTERNAL__NEVERLINK",
-      licenses = ["notice"],
-      jar_urls = [
-          "https://repo1.maven.org/maven2/com/typesafe/akka/akka-stream_2.12/2.5.16/akka-stream_2.12-2.5.16.jar"
-      ],
-      jar_sha256 = "ea27296434e07848d1073cf17647e2f5099ed7594b98b1a1807eebf542fb7e77",
-      neverlink=1
-  )
-
-  java_import_external(
-      name = "com___typesafe___akka_and_akka_ds_actor__2___12__EXTERNAL",
-      licenses = ["notice"],
-      jar_urls = [
-          "https://repo1.maven.org/maven2/com/typesafe/akka/akka-actor_2.12/2.5.19/akka-actor_2.12-2.5.19.jar"
-      ],
-      jar_sha256 = "33b5eef9db3766a7e7a307457995fde116967ead482c88377b2466475d8f703b",
-      neverlink=0
-  )
-  java_import_external(
-      name = "com___typesafe___akka_and_akka_ds_actor__2___12__EXTERNAL__NEVERLINK",
-      licenses = ["notice"],
-      jar_urls = [
-          "https://repo1.maven.org/maven2/com/typesafe/akka/akka-actor_2.12/2.5.19/akka-actor_2.12-2.5.19.jar"
-      ],
-      jar_sha256 = "33b5eef9db3766a7e7a307457995fde116967ead482c88377b2466475d8f703b",
       neverlink=1
   )
 
@@ -746,25 +746,6 @@ def maven_dependencies():
   )
 
   java_import_external(
-      name = "com___typesafe___akka_and_akka_ds_protobuf__2___12__EXTERNAL",
-      licenses = ["notice"],
-      jar_urls = [
-          "https://repo1.maven.org/maven2/com/typesafe/akka/akka-protobuf_2.12/2.5.16/akka-protobuf_2.12-2.5.16.jar"
-      ],
-      jar_sha256 = "621935b982960d73a56563158765d91982a7162ad5ef8029067cb9e2b7fc9483",
-      neverlink=0
-  )
-  java_import_external(
-      name = "com___typesafe___akka_and_akka_ds_protobuf__2___12__EXTERNAL__NEVERLINK",
-      licenses = ["notice"],
-      jar_urls = [
-          "https://repo1.maven.org/maven2/com/typesafe/akka/akka-protobuf_2.12/2.5.16/akka-protobuf_2.12-2.5.16.jar"
-      ],
-      jar_sha256 = "621935b982960d73a56563158765d91982a7162ad5ef8029067cb9e2b7fc9483",
-      neverlink=1
-  )
-
-  java_import_external(
       name = "com___fasterxml___jackson___dataformat_and_jackson_ds_dataformat_ds_yaml",
       licenses = ["notice"],
       jar_urls = [
@@ -879,25 +860,6 @@ def maven_dependencies():
   )
 
   java_import_external(
-      name = "com___typesafe___akka_and_akka_ds_actor_ds_testkit_ds_typed__2___12__EXTERNAL",
-      licenses = ["notice"],
-      jar_urls = [
-          "https://repo1.maven.org/maven2/com/typesafe/akka/akka-actor-testkit-typed_2.12/2.5.19/akka-actor-testkit-typed_2.12-2.5.19.jar"
-      ],
-      jar_sha256 = "e360cc7ca676f35adc6f38e17376f21e748d935a4e5fa4faa22961416850df66",
-      neverlink=0
-  )
-  java_import_external(
-      name = "com___typesafe___akka_and_akka_ds_actor_ds_testkit_ds_typed__2___12__EXTERNAL__NEVERLINK",
-      licenses = ["notice"],
-      jar_urls = [
-          "https://repo1.maven.org/maven2/com/typesafe/akka/akka-actor-testkit-typed_2.12/2.5.19/akka-actor-testkit-typed_2.12-2.5.19.jar"
-      ],
-      jar_sha256 = "e360cc7ca676f35adc6f38e17376f21e748d935a4e5fa4faa22961416850df66",
-      neverlink=1
-  )
-
-  java_import_external(
       name = "org___scalacheck_and_scalacheck__2___12__EXTERNAL",
       licenses = ["notice"],
       jar_urls = [
@@ -970,63 +932,6 @@ def maven_dependencies():
           "https://repo1.maven.org/maven2/io/micrometer/micrometer-core/0.12.0.RELEASE/micrometer-core-0.12.0.RELEASE.jar"
       ],
       jar_sha256 = "fdf9571581731fc20b6dc44742d51ec1aa0ce0c6ef964522dd2a7a9e2fbd2dff",
-      neverlink=1
-  )
-
-  java_import_external(
-      name = "com___typesafe___akka_and_akka_ds_http_ds_testkit__2___12__EXTERNAL",
-      licenses = ["notice"],
-      jar_urls = [
-          "https://repo1.maven.org/maven2/com/typesafe/akka/akka-http-testkit_2.12/10.1.7/akka-http-testkit_2.12-10.1.7.jar"
-      ],
-      jar_sha256 = "c96083d0c8fb087519d64c91c72d643696dd785b026a350ac5f5b400080f3e39",
-      neverlink=0
-  )
-  java_import_external(
-      name = "com___typesafe___akka_and_akka_ds_http_ds_testkit__2___12__EXTERNAL__NEVERLINK",
-      licenses = ["notice"],
-      jar_urls = [
-          "https://repo1.maven.org/maven2/com/typesafe/akka/akka-http-testkit_2.12/10.1.7/akka-http-testkit_2.12-10.1.7.jar"
-      ],
-      jar_sha256 = "c96083d0c8fb087519d64c91c72d643696dd785b026a350ac5f5b400080f3e39",
-      neverlink=1
-  )
-
-  java_import_external(
-      name = "com___typesafe_and_ssl_ds_config_ds_core__2___12__EXTERNAL",
-      licenses = ["notice"],
-      jar_urls = [
-          "https://repo1.maven.org/maven2/com/typesafe/ssl-config-core_2.12/0.2.4/ssl-config-core_2.12-0.2.4.jar"
-      ],
-      jar_sha256 = "fe32636f4a2ed9e73e44cc620edd02c6f2136994de94b53d129f5cbf59b39f37",
-      neverlink=0
-  )
-  java_import_external(
-      name = "com___typesafe_and_ssl_ds_config_ds_core__2___12__EXTERNAL__NEVERLINK",
-      licenses = ["notice"],
-      jar_urls = [
-          "https://repo1.maven.org/maven2/com/typesafe/ssl-config-core_2.12/0.2.4/ssl-config-core_2.12-0.2.4.jar"
-      ],
-      jar_sha256 = "fe32636f4a2ed9e73e44cc620edd02c6f2136994de94b53d129f5cbf59b39f37",
-      neverlink=1
-  )
-
-  java_import_external(
-      name = "com___typesafe___akka_and_akka_ds_parsing__2___12__EXTERNAL",
-      licenses = ["notice"],
-      jar_urls = [
-          "https://repo1.maven.org/maven2/com/typesafe/akka/akka-parsing_2.12/10.1.7/akka-parsing_2.12-10.1.7.jar"
-      ],
-      jar_sha256 = "215f0152f61231bbff8d4a236d79ded7caab6b70521116c50505b63c69a273cd",
-      neverlink=0
-  )
-  java_import_external(
-      name = "com___typesafe___akka_and_akka_ds_parsing__2___12__EXTERNAL__NEVERLINK",
-      licenses = ["notice"],
-      jar_urls = [
-          "https://repo1.maven.org/maven2/com/typesafe/akka/akka-parsing_2.12/10.1.7/akka-parsing_2.12-10.1.7.jar"
-      ],
-      jar_sha256 = "215f0152f61231bbff8d4a236d79ded7caab6b70521116c50505b63c69a273cd",
       neverlink=1
   )
 
@@ -1278,25 +1183,6 @@ def maven_dependencies():
   )
 
   java_import_external(
-      name = "com___typesafe___akka_and_akka_ds_http_ds_core__2___12__EXTERNAL",
-      licenses = ["notice"],
-      jar_urls = [
-          "https://repo1.maven.org/maven2/com/typesafe/akka/akka-http-core_2.12/10.1.7/akka-http-core_2.12-10.1.7.jar"
-      ],
-      jar_sha256 = "fbf129714858d186c5ef03d62776d9a778efc5ebd00ebc041074873e83c846e6",
-      neverlink=0
-  )
-  java_import_external(
-      name = "com___typesafe___akka_and_akka_ds_http_ds_core__2___12__EXTERNAL__NEVERLINK",
-      licenses = ["notice"],
-      jar_urls = [
-          "https://repo1.maven.org/maven2/com/typesafe/akka/akka-http-core_2.12/10.1.7/akka-http-core_2.12-10.1.7.jar"
-      ],
-      jar_sha256 = "fbf129714858d186c5ef03d62776d9a778efc5ebd00ebc041074873e83c846e6",
-      neverlink=1
-  )
-
-  java_import_external(
       name = "org___slf4j_and_slf4j_ds_simple",
       licenses = ["notice"],
       jar_urls = [
@@ -1312,6 +1198,25 @@ def maven_dependencies():
           "https://repo1.maven.org/maven2/org/slf4j/slf4j-simple/1.7.25/slf4j-simple-1.7.25.jar"
       ],
       jar_sha256 = "0966e86fffa5be52d3d9e7b89dd674d98a03eed0a454fbaf7c1bd9493bd9d874",
+      neverlink=1
+  )
+
+  java_import_external(
+      name = "com___typesafe___akka_and_akka_ds_actor_ds_testkit_ds_typed__2___12__EXTERNAL",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/com/typesafe/akka/akka-actor-testkit-typed_2.12/2.5.23/akka-actor-testkit-typed_2.12-2.5.23.jar"
+      ],
+      jar_sha256 = "1b543368dd8158bb0e8acf94608d85fb020f1f5f8213b6c522b06180ba26a52f",
+      neverlink=0
+  )
+  java_import_external(
+      name = "com___typesafe___akka_and_akka_ds_actor_ds_testkit_ds_typed__2___12__EXTERNAL__NEVERLINK",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/com/typesafe/akka/akka-actor-testkit-typed_2.12/2.5.23/akka-actor-testkit-typed_2.12-2.5.23.jar"
+      ],
+      jar_sha256 = "1b543368dd8158bb0e8acf94608d85fb020f1f5f8213b6c522b06180ba26a52f",
       neverlink=1
   )
 
@@ -1373,25 +1278,6 @@ def maven_dependencies():
   )
 
   java_import_external(
-      name = "com___typesafe___akka_and_akka_ds_testkit__2___12__EXTERNAL",
-      licenses = ["notice"],
-      jar_urls = [
-          "https://repo1.maven.org/maven2/com/typesafe/akka/akka-testkit_2.12/2.5.19/akka-testkit_2.12-2.5.19.jar"
-      ],
-      jar_sha256 = "33a87b84b6bf886863800c546a22452cd88782dbf5b7cf536710c709108063a4",
-      neverlink=0
-  )
-  java_import_external(
-      name = "com___typesafe___akka_and_akka_ds_testkit__2___12__EXTERNAL__NEVERLINK",
-      licenses = ["notice"],
-      jar_urls = [
-          "https://repo1.maven.org/maven2/com/typesafe/akka/akka-testkit_2.12/2.5.19/akka-testkit_2.12-2.5.19.jar"
-      ],
-      jar_sha256 = "33a87b84b6bf886863800c546a22452cd88782dbf5b7cf536710c709108063a4",
-      neverlink=1
-  )
-
-  java_import_external(
       name = "co___fs2_and_fs2_ds_core__2___12__EXTERNAL",
       licenses = ["notice"],
       jar_urls = [
@@ -1445,6 +1331,25 @@ def maven_dependencies():
           "https://repo1.maven.org/maven2/commons-logging/commons-logging/1.2/commons-logging-1.2.jar"
       ],
       jar_sha256 = "daddea1ea0be0f56978ab3006b8ac92834afeefbd9b7e4e6316fca57df0fa636",
+      neverlink=1
+  )
+
+  java_import_external(
+      name = "com___typesafe___akka_and_akka_ds_actor_ds_typed__2___12__EXTERNAL",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/com/typesafe/akka/akka-actor-typed_2.12/2.5.23/akka-actor-typed_2.12-2.5.23.jar"
+      ],
+      jar_sha256 = "c8b845dc1a3ed5ab2d879179a92cb4538a9d132c62a9915a1a80856edf0dd707",
+      neverlink=0
+  )
+  java_import_external(
+      name = "com___typesafe___akka_and_akka_ds_actor_ds_typed__2___12__EXTERNAL__NEVERLINK",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/com/typesafe/akka/akka-actor-typed_2.12/2.5.23/akka-actor-typed_2.12-2.5.23.jar"
+      ],
+      jar_sha256 = "c8b845dc1a3ed5ab2d879179a92cb4538a9d132c62a9915a1a80856edf0dd707",
       neverlink=1
   )
 
@@ -1886,21 +1791,21 @@ def maven_dependencies():
   )
 
   java_import_external(
-      name = "com___typesafe___akka_and_akka_ds_slf4j__2___12__EXTERNAL",
+      name = "com___typesafe___akka_and_akka_ds_protobuf__2___12__EXTERNAL",
       licenses = ["notice"],
       jar_urls = [
-          "https://repo1.maven.org/maven2/com/typesafe/akka/akka-slf4j_2.12/2.5.19/akka-slf4j_2.12-2.5.19.jar"
+          "https://repo1.maven.org/maven2/com/typesafe/akka/akka-protobuf_2.12/2.5.23/akka-protobuf_2.12-2.5.23.jar"
       ],
-      jar_sha256 = "2676e9d6e9f3b712a49db3df0a8c3b0db3dc89c8846295d12c3cf274c8cde6dd",
+      jar_sha256 = "e5096799da71c51a9c2164266e71ca32706cfcbf4c7c6a77abd6522b8e9cc70b",
       neverlink=0
   )
   java_import_external(
-      name = "com___typesafe___akka_and_akka_ds_slf4j__2___12__EXTERNAL__NEVERLINK",
+      name = "com___typesafe___akka_and_akka_ds_protobuf__2___12__EXTERNAL__NEVERLINK",
       licenses = ["notice"],
       jar_urls = [
-          "https://repo1.maven.org/maven2/com/typesafe/akka/akka-slf4j_2.12/2.5.19/akka-slf4j_2.12-2.5.19.jar"
+          "https://repo1.maven.org/maven2/com/typesafe/akka/akka-protobuf_2.12/2.5.23/akka-protobuf_2.12-2.5.23.jar"
       ],
-      jar_sha256 = "2676e9d6e9f3b712a49db3df0a8c3b0db3dc89c8846295d12c3cf274c8cde6dd",
+      jar_sha256 = "e5096799da71c51a9c2164266e71ca32706cfcbf4c7c6a77abd6522b8e9cc70b",
       neverlink=1
   )
 
@@ -1939,6 +1844,25 @@ def maven_dependencies():
           "https://repo1.maven.org/maven2/com/github/pureconfig/pureconfig_2.12/0.11.1/pureconfig_2.12-0.11.1.jar"
       ],
       jar_sha256 = "347daeaf6c80b3561eb95be08d1206b2518b724e8b5a9779f08641f8681d65d0",
+      neverlink=1
+  )
+
+  java_import_external(
+      name = "com___typesafe___akka_and_akka_ds_http__2___12__EXTERNAL",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/com/typesafe/akka/akka-http_2.12/10.1.9/akka-http_2.12-10.1.9.jar"
+      ],
+      jar_sha256 = "440315a4866e5b627da8d6d8d932c68f35496111bcfec59169e586e27a1edc9a",
+      neverlink=0
+  )
+  java_import_external(
+      name = "com___typesafe___akka_and_akka_ds_http__2___12__EXTERNAL__NEVERLINK",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/com/typesafe/akka/akka-http_2.12/10.1.9/akka-http_2.12-10.1.9.jar"
+      ],
+      jar_sha256 = "440315a4866e5b627da8d6d8d932c68f35496111bcfec59169e586e27a1edc9a",
       neverlink=1
   )
 
@@ -1996,6 +1920,25 @@ def maven_dependencies():
           "https://repo1.maven.org/maven2/com/typesafe/config/1.3.4/config-1.3.4.jar"
       ],
       jar_sha256 = "8aa8931d8143154f86d393d4a85cfa207a884f16469cdf314dc8d6abba3f1438",
+      neverlink=1
+  )
+
+  java_import_external(
+      name = "com___typesafe___akka_and_akka_ds_parsing__2___12__EXTERNAL",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/com/typesafe/akka/akka-parsing_2.12/10.1.9/akka-parsing_2.12-10.1.9.jar"
+      ],
+      jar_sha256 = "27f08f7586d5d87b9d5f1bb74371c8c283f4e76902b0370edd2e01fe5d9e3c66",
+      neverlink=0
+  )
+  java_import_external(
+      name = "com___typesafe___akka_and_akka_ds_parsing__2___12__EXTERNAL__NEVERLINK",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/com/typesafe/akka/akka-parsing_2.12/10.1.9/akka-parsing_2.12-10.1.9.jar"
+      ],
+      jar_sha256 = "27f08f7586d5d87b9d5f1bb74371c8c283f4e76902b0370edd2e01fe5d9e3c66",
       neverlink=1
   )
 
@@ -2076,6 +2019,44 @@ def maven_dependencies():
   )
 
   java_import_external(
+      name = "com___typesafe___akka_and_akka_ds_testkit__2___12__EXTERNAL",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/com/typesafe/akka/akka-testkit_2.12/2.5.23/akka-testkit_2.12-2.5.23.jar"
+      ],
+      jar_sha256 = "8b9f66d85639318438199a292ecb9cb7c8185ec5b9a66107a10f64301382fce5",
+      neverlink=0
+  )
+  java_import_external(
+      name = "com___typesafe___akka_and_akka_ds_testkit__2___12__EXTERNAL__NEVERLINK",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/com/typesafe/akka/akka-testkit_2.12/2.5.23/akka-testkit_2.12-2.5.23.jar"
+      ],
+      jar_sha256 = "8b9f66d85639318438199a292ecb9cb7c8185ec5b9a66107a10f64301382fce5",
+      neverlink=1
+  )
+
+  java_import_external(
+      name = "com___typesafe___akka_and_akka_ds_stream__2___12__EXTERNAL",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/com/typesafe/akka/akka-stream_2.12/2.5.23/akka-stream_2.12-2.5.23.jar"
+      ],
+      jar_sha256 = "4dec37918a5971a214d3f489719f6987934f89e5231906e7b5e1ef50e3b97007",
+      neverlink=0
+  )
+  java_import_external(
+      name = "com___typesafe___akka_and_akka_ds_stream__2___12__EXTERNAL__NEVERLINK",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/com/typesafe/akka/akka-stream_2.12/2.5.23/akka-stream_2.12-2.5.23.jar"
+      ],
+      jar_sha256 = "4dec37918a5971a214d3f489719f6987934f89e5231906e7b5e1ef50e3b97007",
+      neverlink=1
+  )
+
+  java_import_external(
       name = "com___fasterxml___jackson___module_and_jackson_ds_module_ds_paranamer",
       licenses = ["notice"],
       jar_urls = [
@@ -2091,6 +2072,25 @@ def maven_dependencies():
           "https://repo1.maven.org/maven2/com/fasterxml/jackson/module/jackson-module-paranamer/2.9.6/jackson-module-paranamer-2.9.6.jar"
       ],
       jar_sha256 = "dfd66598c0094d9a7ef0b6e6bb3140031fc833f6cf2e415da27bc9357cdfe63b",
+      neverlink=1
+  )
+
+  java_import_external(
+      name = "com___typesafe___akka_and_akka_ds_actor__2___12__EXTERNAL",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/com/typesafe/akka/akka-actor_2.12/2.5.23/akka-actor_2.12-2.5.23.jar"
+      ],
+      jar_sha256 = "e7f3969f762bffce10cf56c7a65c784d4c0f0b23853b88a88c55546db02b2817",
+      neverlink=0
+  )
+  java_import_external(
+      name = "com___typesafe___akka_and_akka_ds_actor__2___12__EXTERNAL__NEVERLINK",
+      licenses = ["notice"],
+      jar_urls = [
+          "https://repo1.maven.org/maven2/com/typesafe/akka/akka-actor_2.12/2.5.23/akka-actor_2.12-2.5.23.jar"
+      ],
+      jar_sha256 = "e7f3969f762bffce10cf56c7a65c784d4c0f0b23853b88a88c55546db02b2817",
       neverlink=1
   )
 

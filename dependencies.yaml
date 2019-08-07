@@ -30,12 +30,12 @@ dependencies:
   com.typesafe.akka:
     akka:
       lang: scala
-      version: "2.5.19"
-      modules: [actor, actor-typed, slf4j, testkit, actor-testkit-typed]
+      version: "2.5.23"
+      modules: [actor, actor-typed, slf4j, testkit, actor-testkit-typed, stream]
     akka-http:
-      version: "10.1.7"
+      version: "10.1.9"
       lang: scala
-      modules: [testkit]
+      modules: ['', testkit]
   org.scalikejdbc:
     scalikejdbc:
       version: "3.2.2"

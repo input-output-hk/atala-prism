@@ -1,8 +1,8 @@
 load("//scala:rules.bzl", "scala_binary")
 
 scala_binary(
-    name = "AppPoC",
-    main_class = "atala.apps.AppPoC",
+    name = "cluster",
+    main_class = "atala.apps.cluster.AppPoC",
     deps = [
         "//atala/clock",
         "//atala/helpers/monixhelpers",
