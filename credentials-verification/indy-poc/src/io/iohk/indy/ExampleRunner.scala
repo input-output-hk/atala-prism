@@ -7,7 +7,8 @@ object ExampleRunner {
 
     val examples: List[HasMain] = List(
       WriteDIDAndQueryVerKey,
-      RotateKey
+      RotateKey,
+      SaveSchemaAndCredentialDefinition
     )
 
     for (item <- examples.zipWithIndex) {
