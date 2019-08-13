@@ -16,10 +16,11 @@ object ECKeys {
 
   java.security.Security.addProvider(new BouncyCastleProvider)
 
+  val CURVE_NAME = "secp256k1"
+
   private val provider = "BC"
-  private val curveName = "secp256k1"
   private val keyFactory = KeyFactory.getInstance("EC", provider)
-  private val ecParameterSpec = ECNamedCurveTable.getParameterSpec(curveName)
+  private val ecParameterSpec = ECNamedCurveTable.getParameterSpec(CURVE_NAME)
 
   private val ecNamedCurveSpec = new ECNamedCurveSpec(
     ecParameterSpec.getName,
@@ -33,7 +34,7 @@ object ECKeys {
     */
   def generateKeyPair(): KeyPair = {
     val keyGen = KeyPairGenerator.getInstance("ECDSA", provider)
-    val ecSpec = new JavaECGenParameterSpec(curveName)
+    val ecSpec = new JavaECGenParameterSpec(CURVE_NAME)
     keyGen.initialize(ecSpec, new SecureRandom())
     keyGen.generateKeyPair()
   }

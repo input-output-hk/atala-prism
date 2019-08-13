@@ -8,6 +8,8 @@ import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPrivateKey
 import org.scalatest.{Matchers, WordSpec}
 import play.api.libs.json.Json
 
+import scala.util.Success
+
 class EncodingSpec extends WordSpec with Matchers {
 
   val expectedJson =
@@ -45,6 +47,19 @@ class EncodingSpec extends WordSpec with Matchers {
 
       decodedKey shouldBe javaPublicKey
     }
+  }
+
+  "PublicKey.toJavaPublicKey should deserialize keys serialized by PublicKey.fromJavaPublicKey" in {
+    val keyPair = ECKeys.generateKeyPair()
+
+    val encoded = PublicKey.fromJavaPublicKey(
+      "#key-1",
+      keyPair.getPublic,
+      Secp256k1VerificationKey2018,
+      "ES256K",
+      JWKUtils.KeyUse.sig
+    )
+    PublicKey.toJavaPublicKey(encoded) shouldBe Success(keyPair.getPublic)
   }
 
   "JWKPrivateKey.fromBCECPrivateKey" should {

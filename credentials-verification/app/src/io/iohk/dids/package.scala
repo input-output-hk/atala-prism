@@ -4,11 +4,14 @@ import java.security.{PublicKey => JPublicKey}
 import java.util.Base64
 
 import enumeratum._
+import io.iohk.crypto.ECKeys
 import io.iohk.dids.security.DIDPublicKeyType
 import org.bouncycastle.jcajce.provider.asymmetric.ec.{BCECPrivateKey, BCECPublicKey}
 import org.bouncycastle.jce.ECNamedCurveTable
 import org.bouncycastle.math.ec.ECCurve
 import play.api.libs.json._
+
+import scala.util.{Failure, Success, Try}
 
 package object dids {
 
@@ -143,6 +146,17 @@ package object dids {
         case _ =>
           throw new IllegalArgumentException(s"Unsupported key type: ${key.getClass.getCanonicalName}")
       }
+    }
+
+    def toJavaPublicKey(key: PublicKey): Try[JPublicKey] = key match {
+      case PublicKey(_, _, jwkKey @ JWKPublicKey("EC", _, crv, _, _, _, _, _)) =>
+        if (JWKUtils.jwkSupportedCurves.get(crv).contains(ECKeys.CURVE_NAME)) {
+          Success(ECKeys.toPublicKey(jwkKey.xBytes, jwkKey.yBytes))
+        } else {
+          Failure(new IllegalArgumentException("Unsupported EC curve"))
+        }
+      case _ =>
+        Failure(new IllegalArgumentException("Unsupported key type"))
     }
 
     def signingKey(keyId: String, key: JPublicKey, keyType: DIDPublicKeyType, algorithm: String): PublicKey = {
