@@ -6,7 +6,8 @@ object ExampleRunner {
     println("Choose example")
 
     val examples: List[HasMain] = List(
-      WriteDIDAndQueryVerKey
+      WriteDIDAndQueryVerKey,
+      RotateKey
     )
 
     for (item <- examples.zipWithIndex) {

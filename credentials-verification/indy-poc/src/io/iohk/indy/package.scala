@@ -36,6 +36,7 @@ package object indy {
   val DEFAULT_WALLET_CREDENTIALS_JSON = """ { "key": "wallet_key" }"""
 
   val STEWARD_SEED = "000000000000000000000000Steward1"
+  val DEFAULT_SEED_TRUSTANCHOR = "TestTrustAnchor00000000000000000"
 
   def prepareCleanEnvironment() = {
     Try {
