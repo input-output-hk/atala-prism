@@ -40,7 +40,7 @@ package object indy {
   def prepareCleanEnvironment() = {
     Try {
       // ensure the ledger config doesn't exists
-      Pool.deletePoolLedgerConfig(DEFAULT_WALLET_CONFIG_JSON).get
+      Pool.deletePoolLedgerConfig(DEFAULT_POOL_NAME).get
     }
 
     Try {
