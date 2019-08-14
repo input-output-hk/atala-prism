@@ -75,7 +75,8 @@ object OBFTPeerGroupNetworkInterface {
       ch.sendMessage(Left(())).runAsync
     }
 
-    private val obftOutputStream = ConcurrentSubject[NetworkMessage.AddBlockchainSegment[Tx]](MulticastStrategy.replay)
+    private val obftOutputStream =
+      ConcurrentSubject[NetworkMessage.AddBlockchainSegment[Tx]](MulticastStrategy.replayLimited(512))
 
     (obftOutputStream oneach {
       broadcast
@@ -83,7 +84,7 @@ object OBFTPeerGroupNetworkInterface {
 
     // This is the input stream that instances of OBFT will use to receive messages
     private val inputStream: ConcurrentSubject[NetworkMessage[Tx], NetworkMessage[Tx]] =
-      ConcurrentSubject[NetworkMessage[Tx]](MulticastStrategy.replay)
+      ConcurrentSubject[NetworkMessage[Tx]](MulticastStrategy.replayLimited(512))
 
     // We take all the messages that come from the connections we started and forward them to the input stream
     private val inputFromInitialConnections: Observable[NetworkMessage[Tx]] = Observable

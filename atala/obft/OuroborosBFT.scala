@@ -39,6 +39,7 @@ class OuroborosBFT[Tx: Codec](blockchain: Blockchain[Tx], mempool: MemPool[Tx])(
 ) extends AtalaLogging {
 
   private[obft] var currentTimeSlot: TimeSlot = initialTimeSlot
+  private[obft] var eachTick: List[() => Unit] = Nil
 
   // Message processing methods
   // --------------------------
@@ -58,6 +59,7 @@ class OuroborosBFT[Tx: Codec](blockchain: Blockchain[Tx], mempool: MemPool[Tx])(
       logger.trace("OuroborosBFT notified of new tick", "tick" -> tick.timeSlot.toString)
       currentTimeSlot = tick.timeSlot
       extendBlockchain(tick)
+      eachTick.foreach(action => action())
 
   }
 
@@ -72,7 +74,7 @@ class OuroborosBFT[Tx: Codec](blockchain: Blockchain[Tx], mempool: MemPool[Tx])(
   // -----------
 
   private val actionsStream: Observer[ObftInternalActorMessage[Tx]] with Observable[ObftInternalActorMessage[Tx]] =
-    ConcurrentSubject[ObftInternalActorMessage[Tx]](MulticastStrategy.replay)
+    ConcurrentSubject[ObftInternalActorMessage[Tx]](MulticastStrategy.replayLimited(512))
 
   // OuroborosBFT is implemented around the concept of an 'actor' implemented with a
   // monix stream. This is that stream
@@ -91,17 +93,42 @@ class OuroborosBFT[Tx: Codec](blockchain: Blockchain[Tx], mempool: MemPool[Tx])(
           executeInternalAction(action)
       }
 
-  lazy val view: Observable[TransactionSnapshot[Tx]] = {
-    blockchain.nextFinalizedTransactions(lastProcessedTimeSlot, initialTimeSlot) ++
-      obftActorStream
-        .collect {
-          case Tick(ts) => ts
-        }
-        .flatMap(blockchain.nextFinalizedTransactions)
+  def run(): Unit =
+    obftActorStream.subscribe()
+
+  def view(lastseenTimestamp: TimeSlot): Observable[TransactionSnapshot[Tx]] = {
+    val r = ViewController(lastseenTimestamp)
+
+    val onTick: () => Unit = { () =>
+      r.tick()
+    }
+
+    actionsStream.feedItem(RequestStateUpdate(() => eachTick = onTick :: eachTick))
+
+    r.view
+  }
+
+  def view: Observable[TransactionSnapshot[Tx]] = {
+    view(TimeSlot.zero)
   }
 
   // Helper methods
   // -------------
+
+  private type Transactions = Observer[TransactionSnapshot[Tx]] with Observable[TransactionSnapshot[Tx]]
+
+  private case class ViewController(lastseenTimestamp: TimeSlot) {
+    private val r: Transactions =
+      ConcurrentSubject[TransactionSnapshot[Tx]](MulticastStrategy.replayLimited(512))
+
+    def view: Observable[TransactionSnapshot[Tx]] = r
+
+    private var lastTimestamp = lastseenTimestamp
+
+    def tick(): Unit = {
+      lastTimestamp = blockchain.foreachFromLastseen(currentTimeSlot, lastTimestamp, snapshot => r.feedItem(snapshot))
+    }
+  }
 
   private def IamLeader(at: TimeSlot): Boolean =
     at.leader(clusterSize) == i

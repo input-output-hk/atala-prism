@@ -33,6 +33,7 @@ case class Server[S, Tx: Codec: Loggable, Q: Loggable, QR: Loggable](
 
   def run(): Unit = {
     Await.result(networkInterface.initialise().runAsync, 10.seconds)
+    ouroborosBFT.run()
     view
       .scan(defaultState) { (s, txSnap) =>
         transactionExecutor(s, txSnap.transaction).getOrElse(s)

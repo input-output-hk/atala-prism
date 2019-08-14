@@ -202,6 +202,51 @@ class Blockchain[Tx: Codec: Loggable](validator: SegmentValidator, private[block
   }
 
   def height: Height = headPointer.blockchainHeight
+
+  def foreach(now: TimeSlot, transactionExecutor: (TransactionSnapshot[Tx]) => Unit): TimeSlot = {
+    logger.trace("Running all finalized transactions")
+    run(finalizedHeadPointer(now), TimeSlot.zero, transactionExecutor)
+  }
+
+  def foreachFromLastseen(
+      now: TimeSlot,
+      lastseenTimestamp: TimeSlot,
+      transactionExecutor: (TransactionSnapshot[Tx]) => Unit
+  ): TimeSlot = {
+    logger.trace("Running finalized transactions since last seen")
+    run(finalizedHeadPointer(now), lastseenTimestamp, transactionExecutor)
+  }
+
+  private[blockchain] def run(
+      lastBlockPointer: BlockPointer,
+      lastseenTimestamp: TimeSlot,
+      transactionExecutor: (TransactionSnapshot[Tx]) => Unit
+  ): TimeSlot = {
+
+    @tailrec
+    def run(pointer: AnyBlock[Tx], accum: List[(TimeSlot, List[Tx])]): Unit =
+      pointer match {
+        case GenesisBlock(_) =>
+          accum.foreach { case (ts, b) => b.foreach(tx => transactionExecutor(TransactionSnapshot(tx, ts))) }
+        case Block(body, _) if body.timeSlot <= lastseenTimestamp =>
+          accum.foreach { case (ts, b) => b.foreach(tx => transactionExecutor(TransactionSnapshot(tx, ts))) }
+        case Block(body, _) =>
+          val newAccum = (body.timeSlot, body.delta) :: accum
+          run(forceGetFromStorage(body.previousHash), newAccum)
+      }
+
+    val last = lastBlockPointer.forceGetPointedBlockFromStorage
+    run(last, Nil)
+    last match {
+      case GenesisBlock(_) =>
+        lastseenTimestamp
+      case Block(body, _) if body.timeSlot <= lastseenTimestamp =>
+        lastseenTimestamp
+      case Block(body, _) =>
+        body.timeSlot
+    }
+  }
+
 }
 
 object Blockchain {
