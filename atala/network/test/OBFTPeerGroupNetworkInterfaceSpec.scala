@@ -3,8 +3,6 @@ package test
 
 import atala.clock.TimeSlot
 import atala.helpers.monixhelpers._
-import atala.network.OBFTNetworkInterface.OBFTChannel
-import atala.network.OBFTPeerGroupNetworkInterface
 import atala.obft.NetworkMessage
 import atala.obft.blockchain.models._
 import atala.config.ServerAddress
@@ -114,8 +112,8 @@ class OBFTPeerGroupNetworkInterfaceSpec extends WordSpec with MustMatchers with 
     }
   }
 
-  "OBFTPeerGroupNetworkInterface" should {
-    "create channels between two nodes" in twoUDPnetworkChannels[String] { (aliceChannel, bobChannel) =>
+  "OBFTPeerGroupNetworkFactory" should {
+    "create interfaces between two nodes" in twoUDPnetworkInterfaces[String] { (aliceChannel, bobChannel) =>
       val bobRecived = bobChannel.in.headL.runAsync
       val msg = NetworkMessage.AddBlockchainSegment(ChainSegment.empty[String])
 
@@ -125,24 +123,20 @@ class OBFTPeerGroupNetworkInterfaceSpec extends WordSpec with MustMatchers with 
     }
   }
 
-  def twoUDPnetworkChannels[Tx: Codec](
-      testCode: (OBFTChannel[Tx], OBFTChannel[Tx]) => Any
+  def twoUDPnetworkInterfaces[Tx: Codec](
+      testCode: (OBFTNetworkInterface[Tx], OBFTNetworkInterface[Tx]) => Any
   ): Unit = {
     val aliceAddress = ServerAddress("localhost", 8001)
     val bobAddress = ServerAddress("localhost", 8002)
-    val alice = OBFTPeerGroupNetworkInterface.createUPDNetworkInterface[Tx](1, aliceAddress, Set(2 -> bobAddress))
-    val bob = OBFTPeerGroupNetworkInterface.createUPDNetworkInterface[Tx](2, bobAddress, Set(1 -> aliceAddress))
-    alice.initialise().evaluated
-    bob.initialise().evaluated
-    val aliceChannel = alice.networkChannel().evaluated
-    val bobChannel = bob.networkChannel().evaluated
+    val alice = OBFTNetworkFactory[Tx](1, aliceAddress, Set(2 -> bobAddress))
+    val bob = OBFTNetworkFactory[Tx](2, bobAddress, Set(1 -> aliceAddress))
+    val aliceChannel = alice.initialise().evaluated
+    val bobChannel = bob.initialise().evaluated
     try {
       testCode(aliceChannel, bobChannel)
     } finally {
-      aliceChannel.close()
-      bobChannel.close()
-      alice.shutdown()
-      bob.shutdown()
+      aliceChannel.shutdown()
+      bobChannel.shutdown()
     }
   }
 }

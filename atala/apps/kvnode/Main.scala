@@ -38,11 +38,16 @@ object Main extends App {
       else Some(accum + tx)
     }
 
-    val controller = ObftController[S, Tx, Unit, S](configuration.obft, defaultState)((s, _) => s, transactionExecutor)
-    val rest = Rest(configuration.restAddress, controller)
+    val task =
+      for {
+        controller <- ObftController[S, Tx, Unit, S](configuration.obft, defaultState)((s, _) => s, transactionExecutor)
+        rest = Rest(configuration.restAddress, controller)
+      } yield {
+        controller.start()
+        rest.start()
+      }
 
-    controller.start()
-    rest.start()
+    task.runAsync
   }
 
 }

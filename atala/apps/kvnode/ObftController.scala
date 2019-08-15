@@ -3,7 +3,7 @@ package atala.apps.kvnode
 import atala.clock.Clock
 import atala.logging.Loggable
 import atala.obft.{OuroborosBFT, NetworkMessage, Tick}
-import atala.network.{OBFTNetworkInterface, OBFTPeerGroupNetworkInterface}
+import atala.network._
 import atala.config._
 import io.iohk.decco.Codec
 import io.iohk.multicrypto._
@@ -14,10 +14,12 @@ import atala.helpers.monixhelpers._
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
+import monix.eval.Task
 
-case class ObftController[S, Tx: Codec: Loggable, Q: Loggable, QR: Loggable](
+case class ObftController[S, Tx: Codec: Loggable, Q: Loggable, QR: Loggable] private (
     configuration: ObftNode,
-    defaultState: S
+    defaultState: S,
+    networkInterface: OBFTNetworkInterface[Tx]
 )(
     processQuery: (S, Q) => QR,
     transactionExecutor: (S, Tx) => Option[S]
@@ -29,10 +31,9 @@ case class ObftController[S, Tx: Codec: Loggable, Q: Loggable, QR: Loggable](
     feedMessage(NetworkMessage.AddTransaction[Tx](tx))
   }
 
-  private def feedMessage(m: NetworkMessage[Tx]): Unit = obftChannel.feed(m)
+  private def feedMessage(m: NetworkMessage[Tx]): Unit = networkInterface.feed(m)
 
   def start(): Unit = {
-    Await.result(networkInterface.initialise().runAsync, 10.seconds)
     view
       .scan(defaultState) { (s, txSnap) =>
         transactionExecutor(s, txSnap.transaction).getOrElse(s)
@@ -43,14 +44,6 @@ case class ObftController[S, Tx: Codec: Loggable, Q: Loggable, QR: Loggable](
       .subscribe()
   }
 
-  private lazy val networkInterface =
-    ObftController.NetworkInterface.createUDPInterface[Tx](
-      configuration.serverIndex,
-      configuration.address,
-      configuration.addressesOfRemoteNodes
-    )
-
-  private lazy val obftChannel = Await.result(networkInterface.networkChannel().runAsync, 10.seconds)
   private val clockSignalsStream: Observable[Tick[Tx]] = {
     Observable
       .intervalWithFixedDelay(configuration.timeSlotDuration)
@@ -66,8 +59,8 @@ case class ObftController[S, Tx: Codec: Loggable, Q: Loggable, QR: Loggable](
       configuration.keyPair,
       configuration.genesisKeys,
       clockSignalsStream,
-      obftChannel.in,
-      obftChannel.out,
+      networkInterface.in,
+      networkInterface.out,
       configuration.database
     )
 
@@ -78,20 +71,35 @@ case class ObftController[S, Tx: Codec: Loggable, Q: Loggable, QR: Loggable](
   def ask(q: Q): QR = processQuery(state, q)
 
   def shutdown(): Unit = {
-    obftChannel.close().runAsync
     networkInterface.shutdown().runAsync
   }
 }
 
 object ObftController {
 
-  object NetworkInterface {
-    def createUDPInterface[Tx: Codec](
-        localNodeIndex: Int,
-        localNodeAddress: ServerAddress,
-        remoteNodes: Set[(Int, ServerAddress)]
-    ): OBFTNetworkInterface[InetMultiAddress, Tx] =
-      OBFTPeerGroupNetworkInterface.createUPDNetworkInterface[Tx](localNodeIndex, localNodeAddress, remoteNodes)
+  def apply[S, Tx: Codec: Loggable, Q: Loggable, QR: Loggable](
+      configuration: ObftNode,
+      defaultState: S
+  )(
+      processQuery: (S, Q) => QR,
+      transactionExecutor: (S, Tx) => Option[S]
+  ): Task[ObftController[S, Tx, Q, QR]] = {
+    val networkInterfaceFactory =
+      OBFTNetworkFactory[Tx](
+        configuration.serverIndex,
+        configuration.address,
+        configuration.addressesOfRemoteNodes
+      )
+
+    networkInterfaceFactory
+      .initialise()
+      .map { networkInterface =>
+        new ObftController[S, Tx, Q, QR](
+          configuration,
+          defaultState,
+          networkInterface
+        )(processQuery, transactionExecutor)
+      }
   }
 
 }

@@ -8,6 +8,9 @@ import io.iohk.decco.Codec
 import io.iohk.multicrypto._
 import scala.concurrent.duration._
 import com.typesafe.config.ConfigFactory
+import scala.concurrent.Await
+import scala.concurrent.duration._
+import monix.execution.Scheduler.Implicits.global
 
 case class Cluster[S, Tx: Codec: Loggable, Q: Loggable, QR: Loggable](n: Int, defaultState: S)(
     processQuery: (S, Q) => QR,
@@ -48,14 +51,23 @@ case class Cluster[S, Tx: Codec: Loggable, Q: Loggable, QR: Loggable](n: Int, de
   def shutdown() = servers.map { _.shutdown() }
 
   private val servers: List[Server[S, Tx, Q, QR]] = {
-    keyPairs.toList
-      .map {
-        case (i, ks) =>
-          val configString = obftNode(i)
-          val configObject = ConfigFactory.parseString(configString).resolve()
-          val configuration = pureconfig.loadConfigOrThrow[ObftNode](configObject)
-          Server[S, Tx, Q, QR](configuration, defaultState)(processQuery, transactionExecutor)
-      }
+    Await.result(
+      scala.concurrent.Future.sequence(
+        keyPairs.toList
+          .map {
+            case (i, ks) =>
+              val configString = obftNode(i)
+              val configObject = ConfigFactory.parseString(configString).resolve()
+              val configuration = pureconfig.loadConfigOrThrow[ObftNode](configObject)
+              val t =
+                Server[S, Tx, Q, QR](configuration, defaultState)(processQuery, transactionExecutor)
+
+              t.runAsync
+          }
+      ),
+      10.seconds
+    )
+
   }
 
   private def aServer(): Server[S, Tx, Q, QR] =
