@@ -19,21 +19,16 @@ package object indy {
 
   val GENESIS_TXN: Path = getResourcePath("/docker_pool_transactions_genesis.txn")
 
-  val DEFAULT_POOL_CONFIG_JSON: String = {
-    s"""
-       |{
-       |  "genesis_txn":  "$GENESIS_TXN"
-       |}
-       |""".stripMargin
-  }
+  val DEFAULT_POOL_CONFIG_JSON: String = poolConfigJson(GENESIS_TXN)
 
   val DEFAULT_PROTOCOL_VERSION: Int = 2
 
   val DEFAULT_WALLET_NAME = "myWallet"
+  val DEFAULT_WALLET_KEY = "wallet_key"
   val DEFAULT_POOL_NAME = "pool"
 
   val DEFAULT_WALLET_CONFIG_JSON = walletConfigJson(DEFAULT_WALLET_NAME)
-  val DEFAULT_WALLET_CREDENTIALS_JSON = """ { "key": "wallet_key" }"""
+  val DEFAULT_WALLET_CREDENTIALS_JSON = walletCredentialsJson(DEFAULT_WALLET_KEY)
 
   val STEWARD_SEED = "000000000000000000000000Steward1"
   val DEFAULT_SEED_TRUSTANCHOR = "TestTrustAnchor00000000000000000"
@@ -54,5 +49,13 @@ package object indy {
 
   def walletConfigJson(walletName: String): String = {
     s"""{ "id": "$walletName" }"""
+  }
+
+  def walletCredentialsJson(key: String): String = {
+    s"""{ "key": "$key" }"""
+  }
+
+  def poolConfigJson(genesisTxn: Path): String = {
+    s"""{"genesis_txn":  "$GENESIS_TXN" }"""
   }
 }

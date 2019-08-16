@@ -9,7 +9,8 @@ object ExampleRunner {
       WriteDIDAndQueryVerKey,
       RotateKey,
       SaveSchemaAndCredentialDefinition,
-      IssueCredential
+      IssueCredential,
+      IssueCredentialCleanCode
     )
 
     for (item <- examples.zipWithIndex) {
