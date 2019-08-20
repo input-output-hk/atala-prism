@@ -1,0 +1,35 @@
+@startuml
+skinparam backgroundColor #EEEBDC
+
+title Indy - University wallet preparation
+
+entity IOHK
+actor University
+
+University -> Wallet : Create wallet
+Wallet -> University : Wallet created
+
+University -> Wallet : Generate DID
+Wallet -> Wallet : Creates and stores a DID
+Wallet -> University : DID generated
+
+University -> Wallet : Publish DID
+Wallet -> IndyPool : Publish DID
+IndyPool -> Wallet : DID published
+Wallet -> University : DID published
+
+University -> IOHK : Register DID
+IOHK -> University : DID registered
+
+University -> Wallet : Prepare credential schema
+Wallet -> IndyPool : Publish credential schema
+IndyPool -> Wallet : Credential schema published
+Wallet -> Wallet : Create credential definition
+Wallet -> IndyPool : Publish credential definition
+IndyPool -> Wallet : Credential definition published
+Wallet -> University : Credential schema prepared
+
+University -> University : Backup DID private key\n preferably on cold storage
+University -> Wallet : Delete DID private key
+Wallet -> University : Private key deleted
+@enduml
