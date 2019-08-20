@@ -32,15 +32,16 @@ package object indy {
   val DEFAULT_WALLET_NAME = "myWallet"
   val DEFAULT_POOL_NAME = "pool"
 
-  val DEFAULT_WALLET_CONFIG_JSON = s"""{ "id": "$DEFAULT_WALLET_NAME" }"""
+  val DEFAULT_WALLET_CONFIG_JSON = walletConfigJson(DEFAULT_WALLET_NAME)
   val DEFAULT_WALLET_CREDENTIALS_JSON = """ { "key": "wallet_key" }"""
 
   val STEWARD_SEED = "000000000000000000000000Steward1"
+  val DEFAULT_SEED_TRUSTANCHOR = "TestTrustAnchor00000000000000000"
 
   def prepareCleanEnvironment() = {
     Try {
       // ensure the ledger config doesn't exists
-      Pool.deletePoolLedgerConfig(DEFAULT_WALLET_CONFIG_JSON).get
+      Pool.deletePoolLedgerConfig(DEFAULT_POOL_NAME).get
     }
 
     Try {
@@ -49,5 +50,9 @@ package object indy {
     }
 
     val _ = Pool.setProtocolVersion(2).get()
+  }
+
+  def walletConfigJson(walletName: String): String = {
+    s"""{ "id": "$walletName" }"""
   }
 }

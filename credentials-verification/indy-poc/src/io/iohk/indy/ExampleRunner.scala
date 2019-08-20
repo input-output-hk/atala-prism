@@ -6,7 +6,10 @@ object ExampleRunner {
     println("Choose example")
 
     val examples: List[HasMain] = List(
-      WriteDIDAndQueryVerKey
+      WriteDIDAndQueryVerKey,
+      RotateKey,
+      SaveSchemaAndCredentialDefinition,
+      IssueCredential
     )
 
     for (item <- examples.zipWithIndex) {

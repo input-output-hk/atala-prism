@@ -3,6 +3,8 @@ The project contains proof of concepts using the Indy SDK.
 
 Most examples are based on the official [Indy how-to guides](https://github.com/hyperledger/indy-sdk/tree/master/docs/how-tos).
 
+The tested indy sdk version is bc14c5b514dc1c76ce62dd7f6bf804120bf69f5e.
+
 ## How to run
 - Compile libindy
 - Register the libindy library to the library search path, there are some ways:
