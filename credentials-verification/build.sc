@@ -113,3 +113,15 @@ object node extends `server-common` {
 
   object test extends `tests-common` {}
 }
+
+object connector extends ScalaPBModule {
+  def scalaVersion = "2.12.4"
+  def scalaPBVersion = "0.9.0"
+  def scalaPBGrpc = true
+  override def mainClass = Some("io.iohk.connector.ServerApp")
+
+  override def ivyDeps = Agg(
+    ivy"io.grpc:grpc-netty:1.23.0",
+    ivy"com.thesamet.scalapb::scalapb-runtime-grpc:0.9.0"
+  )
+}
