@@ -1,0 +1,10 @@
+@startuml
+title Bitcoin - Student wallet preparation
+
+actor Student
+
+Student -> Wallet : Create wallet
+Wallet -> Wallet : Generate recovery seed
+Wallet -> Student : Recovery seed generated
+Student -> Student : Backups the recovery seed
+@enduml

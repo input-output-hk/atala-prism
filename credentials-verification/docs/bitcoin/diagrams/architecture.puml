@@ -1,0 +1,38 @@
+@startuml
+
+title GEUD Bitcoin - Architecture
+
+cloud "IOHK Cloud" as IOHKCloud {
+    [IOHK Connector]
+}
+
+rectangle "Student Phone" as StudentPhone {
+    [Student Wallet]
+}
+
+rectangle "Issuer Computer" as IssuerComputer {
+    [University Wallet]
+}
+
+cloud "University Cloud" as UniversityCloud {
+    node "Credential Manager"
+}
+
+cloud "Bitcoin Cloud" as LedgerCloud {
+    node Bitcoin
+    node GEUD
+    GEUD - Bitcoin
+}
+
+rectangle "Employer Computer" as EmployerComputer {
+    [Employer Wallet]
+}
+
+IOHKCloud -- StudentPhone
+IOHKCloud -- IssuerComputer
+IOHKCloud -- EmployerComputer
+UniversityCloud --- IssuerComputer
+LedgerCloud -- UniversityCloud
+LedgerCloud --- EmployerComputer
+
+@enduml
