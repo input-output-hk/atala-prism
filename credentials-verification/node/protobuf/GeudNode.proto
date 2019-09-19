@@ -1,0 +1,86 @@
+syntax = "proto3";
+
+package io.iohk.connector;
+
+service NodeService {
+  rpc PublishDidDocument(PublishDidDocumentRequest) returns (PublishDidDocumentResponse) {}
+  rpc GetDidDocument(GetDidDocumentRequest) returns (GetDidDocumentResponse) {}
+
+  rpc PublishProofOfCredentialIssued(PublishProofOfCredentialIssuedRequest) returns (PublishProofOfCredentialIssuedResponse) {}
+  rpc GetProofOfCredentialIssued(GetProofOfCredentialIssuedRequest) returns (GetProofOfCredentialIssuedResponse) {}
+  rpc RevokeProofOfCredentialIssued(RevokeProofOfCredentialIssuedRequest) returns (RevokeProofOfCredentialIssuedResponse) {}
+}
+
+
+// COMMON
+
+message Nothing {}
+
+message DidDocument {
+  string publicKey = 1;
+}
+
+message ProofOfCredentialIssued {
+  string issuerDid = 1;
+  string credentialId = 2;
+}
+
+
+// PUBLISH DID DOCUMENT
+
+message PublishDidDocumentRequest {
+  string didId = 1;
+  DidDocument document = 2;
+}
+
+message PublishDidDocumentResponse {}
+
+
+// GET DID DOCUMENT
+
+message GetDidDocumentRequest {
+  string didId = 1;
+}
+
+message GetDidDocumentResponse {
+  oneof get_did_options {
+    Nothing nothing = 1;
+    DidDocument document = 2;
+  }
+}
+
+
+// PUBLISH PROOF OF CREDENTIAL ISSUED
+
+message PublishProofOfCredentialIssuedRequest {
+  ProofOfCredentialIssued proof = 1;
+  string proofSignature = 2; // Signed using the issuer private key
+}
+
+message PublishProofOfCredentialIssuedResponse {}
+
+
+// GET PROOF OF CREDENTIAL ISSUED
+
+message GetProofOfCredentialIssuedRequest {
+  string credentialId = 1;
+}
+
+message GetProofOfCredentialIssuedResponse {
+  oneof get_proof_options {
+    Nothing nothing = 1;
+    ProofOfCredentialIssued proof = 2;
+    Nothing revoked = 3; // Alternativly, we can return `nothing` both for revoked and non-existing proofs
+  }
+}
+
+
+// REVOKE PROOF OF CREDENTIAL ISSUED
+
+message RevokeProofOfCredentialIssuedRequest {
+  string credentialId = 1;
+  string credentialIdSignature = 2; // Signed using the issuer private key
+}
+
+message RevokeProofOfCredentialIssuedResponse {}
+
