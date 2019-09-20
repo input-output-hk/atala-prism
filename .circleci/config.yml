@@ -189,22 +189,22 @@ workflows:
   version: 2
   build-and-deploy:
     jobs:
-      # - build
-      # - deploy:
-      #     requires:
-      #       - build
-      #     filters:
-      #       branches:
-      #         only: develop
-      # - deploy-docs:
-      #     requires:
-      #       - build
-      #     filters:
-      #       branches:
-      #         only: develop
-      # - build-enterprise-web
-      # - trigger-atala-qa-automation:
-      #     filters:
-      #       branches:
-      #         only: develop
+      - build
+      - deploy:
+          requires:
+            - build
+          filters:
+            branches:
+              only: develop
+      - deploy-docs:
+          requires:
+            - build
+          filters:
+            branches:
+              only: develop
+#      - build-enterprise-web
+      - trigger-atala-qa-automation:
+          filters:
+            branches:
+              only: develop
       - build-credentials-verification
