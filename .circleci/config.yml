@@ -154,7 +154,7 @@ jobs:
 
       - run:
           name: test
-          command: cd credentials-verification && ~/mill __.test # mill all __.testLocal
+          command: cd credentials-verification && ~/mill __.test
 
   build-enterprise-web:
     working_directory: ~/repo
@@ -189,22 +189,22 @@ workflows:
   version: 2
   build-and-deploy:
     jobs:
-      - build
-      - deploy:
-          requires:
-            - build
-          filters:
-            branches:
-              only: develop
-      - deploy-docs:
-          requires:
-            - build
-          filters:
-            branches:
-              only: develop
+      # - build
+      # - deploy:
+      #     requires:
+      #       - build
+      #     filters:
+      #       branches:
+      #         only: develop
+      # - deploy-docs:
+      #     requires:
+      #       - build
+      #     filters:
+      #       branches:
+      #         only: develop
       # - build-enterprise-web
-      - trigger-atala-qa-automation:
-          filters:
-            branches:
-              only: develop
+      # - trigger-atala-qa-automation:
+      #     filters:
+      #       branches:
+      #         only: develop
       - build-credentials-verification
