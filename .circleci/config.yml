@@ -139,19 +139,22 @@ jobs:
           command: aws s3 cp --recursive /tmp/workspace/docs/ s3://cef-circle-ci/scaladocs/develop/
 
   build-credentials-verification:
-    docker:
-      - image: openjdk:8
     working_directory: ~/repo
+    machine:
+      image: ubuntu-1604:201903-01
     steps:
       - checkout
+      - run:
+          name: Pre-download postgres image
+          command: docker pull postgres:11.5
 
       - run:
           name: install mill
-          command: sh -c '(echo "#!/usr/bin/env sh" && curl -L https://github.com/lihaoyi/mill/releases/download/0.4.1/0.4.1) > /usr/local/bin/mill && chmod +x /usr/local/bin/mill'
+          command: sh -c '(echo "#!/usr/bin/env sh" && curl -L https://github.com/lihaoyi/mill/releases/download/0.4.1/0.4.1) > ~/mill && chmod +x ~/mill'
 
       - run:
           name: test
-          command: cd credentials-verification && mill all __.testLocal
+          command: cd credentials-verification && ~/mill __.test
 
   build-enterprise-web:
     working_directory: ~/repo
@@ -199,7 +202,7 @@ workflows:
           filters:
             branches:
               only: develop
-      # - build-enterprise-web
+#      - build-enterprise-web
       - trigger-atala-qa-automation:
           filters:
             branches:
