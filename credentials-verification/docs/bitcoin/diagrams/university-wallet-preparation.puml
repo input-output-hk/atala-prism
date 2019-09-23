@@ -1,29 +1,31 @@
 @startuml
-title Bitcoin - University wallet preparation
+title Bitcoin - Issuer Wallet preparation
 
 participant IOHK
-actor University
+actor Issuer
+participant "Issuer IssuerWallet" as IssuerWallet
+participant "ATALA Node" as AtalaNode
 
-University -> Wallet : Create wallet
-Wallet -> University : Wallet created
+Issuer -> IssuerWallet : Create Wallet
+IssuerWallet -> Issuer : Wallet created
 
-University -> Wallet : Generate DID
-Wallet -> Wallet : Creates and stores a DID
-Wallet -> University : DID generated
+Issuer -> IssuerWallet : Generate DID
+IssuerWallet -> IssuerWallet : Creates and stores a DID
+IssuerWallet -> Issuer : DID generated
 
-University -> Wallet : Publish DID
-Wallet -> GEUD : Publish DID
-GEUD -> Wallet : DID published
-Wallet -> University : DID published
+Issuer -> IssuerWallet : Publish DID
+IssuerWallet -> AtalaNode : Publish DID
+AtalaNode -> IssuerWallet : DID published
+IssuerWallet -> Issuer : DID published
 
-University -> IOHK : Register DID
-IOHK -> University : DID registered
+Issuer -> IOHK : Register DID
+IOHK -> Issuer : DID registered
 
-University -> IOHK : Choose billing plan\n (Who pays for connections)
-IOHK -> University : Billing plan defined
+Issuer -> IOHK : Choose billing plan\n (Who pays for connections)
+IOHK -> Issuer : Billing plan defined
 
-note over University : The University will likely issue\n credentials in batches,\n possibly twice a year\n having the key in cold storage is\n a safe mechanism for protecting it\n to prevent getting it compromised
-University -> University : Backup DID private key\n preferably on cold storage
-University -> Wallet : Delete DID private key
-Wallet -> University : Private key deleted
+note over Issuer : The Issuer will likely issue\n credentials in batches,\n possibly twice a year\n having the key in cold storage is\n a safe mechanism for protecting it\n to prevent getting it compromised
+Issuer -> Issuer : Backup DID private key\n preferably on cold storage
+Issuer -> IssuerWallet : Delete DID private key
+IssuerWallet -> Issuer : Private key deleted
 @enduml

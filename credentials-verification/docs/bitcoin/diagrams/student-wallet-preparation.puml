@@ -1,10 +1,11 @@
 @startuml
-title Bitcoin - Student wallet preparation
+title Bitcoin - Holder wallet preparation
 
-actor Student
+actor Holder
+participant "Holder Wallet." as HolderWallet
 
-Student -> Wallet : Create wallet
-Wallet -> Wallet : Generate recovery seed
-Wallet -> Student : Recovery seed generated
-Student -> Student : Backups the recovery seed
+Holder -> HolderWallet : Create wallet
+HolderWallet -> HolderWallet : Generate recovery seed
+HolderWallet -> Holder : Recovery seed generated
+Holder -> Holder : Backups the recovery seed
 @enduml
