@@ -13,8 +13,8 @@ public class PermissionUtils {
     return result == PackageManager.PERMISSION_GRANTED;
   }
 
-  public static void requestForSpecificPermission(Activity activity, String... permissions) {
-    ActivityCompat.requestPermissions(activity, permissions, ActivitiesRequestCodes
-        .QR_SCANNER_REQUEST_PERMISSION);
+  public static void requestForSpecificPermission(Activity activity,
+      int requestCode, String... permissions) {
+    ActivityCompat.requestPermissions(activity, permissions, requestCode);
   }
 }

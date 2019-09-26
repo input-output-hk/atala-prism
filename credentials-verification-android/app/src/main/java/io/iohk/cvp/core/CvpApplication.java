@@ -1,8 +1,8 @@
 package io.iohk.cvp.core;
 
-import io.iohk.cvp.dagger.components.DaggerCvpComponent;
 import dagger.android.AndroidInjector;
 import dagger.android.support.DaggerApplication;
+import io.iohk.cvp.dagger.components.DaggerCvpComponent;
 
 public class CvpApplication extends DaggerApplication {
 

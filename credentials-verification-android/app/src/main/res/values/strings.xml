@@ -9,4 +9,5 @@
   <string name="qr_scanner_activity_title">Scan QR</string>
 
   <string name="image_description">Image description</string>
+  <string name="permission_denied_message">You have to grant camera permission to continue</string>
 </resources>

@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "312121467046",
+    "firebase_url": "https://cvp-android.firebaseio.com",
+    "project_id": "cvp-android",
+    "storage_bucket": "cvp-android.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:312121467046:android:9453beb2fe14d98f999467",
+        "android_client_info": {
+          "package_name": "io.iohk.cvp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "312121467046-iitpb4v7apjqtgda6ik4l29rm8b2tbma.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCGAmJ8xveUWn2Qfr9ZwarlUHcOmHHkt3c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "312121467046-iitpb4v7apjqtgda6ik4l29rm8b2tbma.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
