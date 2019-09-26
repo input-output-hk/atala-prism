@@ -185,6 +185,29 @@ jobs:
           name: trigger a job in atala-qa-automation project
           command: python trigger_tests.py
 
+  build-credentials-verification-android:
+    working_directory: ~/repo
+    docker:
+      - image: circleci/android:api-29
+    environment:
+      JVM_OPTS: -Xmx3200m
+    steps:
+      - checkout
+      - run: yes | sdkmanager --licenses || exit 0
+      - run: yes | sdkmanager --update || exit 0
+      - restore_cache:
+          key: jars-{{ checksum "credentials-verification-android/build.gradle" }}-{{ checksum  "credentials-verification-android/app/build.gradle" }}
+      - run:
+          name: Download Dependencies
+          command: cd credentials-verification-android && ./gradlew androidDependencies
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: jars-{{ checksum "credentials-verification-android/build.gradle" }}-{{ checksum  "credentials-verification-android/app/build.gradle" }}
+      - run:
+          name: Run Tests
+          command: cd credentials-verification-android && ./gradlew lint test
+
 workflows:
   version: 2
   build-and-deploy:
@@ -208,3 +231,4 @@ workflows:
             branches:
               only: develop
       - build-credentials-verification
+      - build-credentials-verification-android
