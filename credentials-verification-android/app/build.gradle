@@ -1,0 +1,116 @@
+apply plugin: 'com.android.application'
+apply plugin: 'com.google.protobuf'
+
+android {
+    compileSdkVersion 29
+    buildToolsVersion "29.0.2"
+    defaultConfig {
+        applicationId "io.iohk.cvp"
+        minSdkVersion 24
+        targetSdkVersion 29
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    sourceSets {
+        main {
+            proto {
+                srcDir 'src/main/proto'
+            }
+        }
+    }
+    compileOptions {
+        sourceCompatibility = 1.8
+        targetCompatibility = 1.8
+    }
+}
+
+protobuf {
+    protoc { artifact = 'com.google.protobuf:protoc:3.9.0' }
+    plugins {
+        javalite { artifact = "com.google.protobuf:protoc-gen-javalite:3.0.0" }
+        grpc {
+            artifact = 'io.grpc:protoc-gen-grpc-java:1.23.0' // CURRENT_GRPC_VERSION
+        }
+    }
+    generateProtoTasks {
+        all().each { task ->
+            task.plugins {
+                javalite {}
+                grpc { // Options added to --grpc_out
+                    option 'lite'
+                }
+            }
+        }
+    }
+}
+
+ext {
+    daggerVersion = '2.14.1'
+    butterKnifeVersion = '10.2.0'
+}
+
+def injectionDependencies = [
+        butterKnifeCompiler   : [
+                type: "compile",
+                dep : "com.jakewharton:butterknife:$butterKnifeVersion"
+        ],
+        butterKnifeAnnotation : [
+                type: "annotationProcessor",
+                dep : "com.jakewharton:butterknife-compiler:$butterKnifeVersion"
+        ],
+        daggerCompiler        : [
+                type: "implementation",
+                dep : "com.google.dagger:dagger:$daggerVersion"
+        ],
+        daggerSupport         : [
+                type: "implementation",
+                dep : "com.google.dagger:dagger-android-support:$daggerVersion"
+        ],
+        daggerAnnotation      : [
+                type: "annotationProcessor",
+                dep : "com.google.dagger:dagger-compiler:$daggerVersion"
+        ],
+        daggerAndroidProcessor: [
+                type: "annotationProcessor",
+                dep : "com.google.dagger:dagger-android-processor:$daggerVersion"
+        ]
+]
+
+def utilsDependencies = [
+        androidSupportv4: [
+                type: "implementation",
+                dep : "com.android.support:support-v4:23.4.0"
+        ]
+]
+
+def androidDependencies = [
+        appcompat        : 'com.android.support:appcompat-v7:23.2.1',
+        supportAnnotatios: 'com.android.support:support-annotations:24.0.0',
+]
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'androidx.test:runner:1.2.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+    implementation 'io.grpc:grpc-okhttp:1.23.0' // CURRENT_GRPC_VERSION
+    implementation 'io.grpc:grpc-protobuf-lite:1.23.0' // CURRENT_GRPC_VERSION
+    implementation 'io.grpc:grpc-stub:1.23.0' // CURRENT_GRPC_VERSION
+    implementation 'javax.annotation:javax.annotation-api:1.2'
+    implementation 'androidx.lifecycle:lifecycle-extensions:2.1.0'
+    androidDependencies.each { k, dep -> compile dep }
+    injectionDependencies.each { k, v -> "${v.type}" v.dep }
+    utilsDependencies.each { k, v -> "${v.type}" v.dep }
+    implementation 'me.dm7.barcodescanner:zxing:1.9'
+
+}
