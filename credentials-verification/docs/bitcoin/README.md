@@ -53,6 +53,10 @@ This diagram shows all the components:
 
 ### Preparation steps
 
+As IOHK will run all the infrastructure for providing the credentials verification product and services, IOHK needs a way to onboard the issuers into the system.
+
+**IOHK holds the relationships between issuers and their public DID, onboarding an issuer means that IOHK adds a new relationship**.
+
 The issuer needs to do some preparation steps before being able to issue credentials:
 ![university-wallet-preparation](diagrams/university-wallet-preparation.png)
 
