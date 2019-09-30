@@ -1,5 +1,7 @@
 package io.iohk.node.bitcoin
 
+import io.iohk.node.bitcoin.models.Blockhash
+
 private[bitcoin] sealed abstract class BitcoinRPCMethod(name: String) extends Product with Serializable {
   def toJsonString: String = {
     s"""{ "jsonrpc": "1.0", "method": "$name", "params": $arrayParams }"""

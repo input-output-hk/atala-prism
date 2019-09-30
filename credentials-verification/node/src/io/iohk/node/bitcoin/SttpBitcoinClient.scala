@@ -4,6 +4,7 @@ import com.softwaremill.sttp.asynchttpclient.future.AsyncHttpClientFutureBackend
 import com.softwaremill.sttp.{Response, SttpBackend, Uri, asString, sttp}
 import io.circe.parser.parse
 import io.circe.{Decoder, Json}
+import io.iohk.node.bitcoin.models.{Block, BlockError, Blockhash}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try

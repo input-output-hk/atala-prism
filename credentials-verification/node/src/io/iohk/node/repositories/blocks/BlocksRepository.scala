@@ -4,7 +4,7 @@ import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import doobie.util.{Get, Read}
-import io.iohk.node.bitcoin.{Block, Blockhash}
+import io.iohk.node.bitcoin.models.{Block, Blockhash}
 
 import scala.concurrent.Future
 

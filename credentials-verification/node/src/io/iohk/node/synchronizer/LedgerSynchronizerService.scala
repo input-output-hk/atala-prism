@@ -1,6 +1,7 @@
 package io.iohk.node.synchronizer
 
-import io.iohk.node.bitcoin.{BitcoinClient, Block, Blockhash}
+import io.iohk.node.bitcoin.BitcoinClient
+import io.iohk.node.bitcoin.models.{Block, Blockhash}
 import io.iohk.node.repositories.blocks.BlocksRepository
 import io.iohk.node.utils.FutureEither
 import io.iohk.node.utils.FutureEither._

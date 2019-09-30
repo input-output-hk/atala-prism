@@ -1,6 +1,6 @@
 package io.iohk.node.repositories.blocks
 
-import io.iohk.node.bitcoin.{Block, Blockhash}
+import io.iohk.node.bitcoin.models.{Block, Blockhash}
 import io.iohk.node.repositories.common.PostgresRepositorySpec
 import org.scalatest.OptionValues._
 
