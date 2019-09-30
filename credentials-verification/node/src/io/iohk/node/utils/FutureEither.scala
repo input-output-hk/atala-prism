@@ -16,9 +16,38 @@ class FutureEither[+E, +A](val value: Future[Either[E, A]]) extends AnyVal {
 
     new FutureEither[E2, B](newFuture)
   }
+
+  def transform[E2, A2](fa: E => Either[E2, A2], fb: A => Either[E2, A2])(
+      implicit ec: ExecutionContext
+  ): FutureEither[E2, A2] = {
+    val newFuture = value.map {
+      case Left(e) => fa(e)
+      case Right(x) => fb(x)
+    }
+
+    new FutureEither(newFuture)
+  }
+
+  def transformWith[E2, A2](fa: E => FutureEither[E2, A2], fb: A => FutureEither[E2, A2])(
+      implicit ec: ExecutionContext
+  ): FutureEither[E2, A2] = {
+
+    val newFuture = value.flatMap {
+      case Left(e) => fa(e).value
+      case Right(x) => fb(x).value
+    }
+
+    new FutureEither(newFuture)
+  }
 }
 
+/**
+  * NOTE: Avoid defining generic future extensions, like {{{FutureOps[A](val value: Future[A])}}}
+  *
+  * These could cause ambiguity to the compiler while resolving implicits.
+  */
 object FutureEither {
+
   implicit class FutureEitherOps[E, A](val value: Future[Either[E, A]]) extends AnyVal {
     def toFutureEither: FutureEither[E, A] = new FutureEither[E, A](value)
     def toFutureEither[E2](mapper: E => E2)(implicit ec: ExecutionContext): FutureEither[E2, A] = {
@@ -37,12 +66,19 @@ object FutureEither {
     }
   }
 
-  implicit class FutureOps[A](val value: Future[A]) extends AnyVal {
-    def toFutureEither(implicit ec: ExecutionContext): FutureEither[Nothing, A] = {
-      val newFuture = value.map { x =>
-        Right(x)
+  implicit class FutureOptionOps[A](val value: Future[Option[A]]) extends AnyVal {
+    def toFutureEither[E](error: => E)(implicit ec: ExecutionContext): FutureEither[E, A] = {
+      val newFuture = value.map {
+        case Some(x) => Right(x)
+        case None => Left(error)
       }
-      new FutureEither[Nothing, A](newFuture)
+      new FutureEither[E, A](newFuture)
+    }
+  }
+
+  implicit class EitherOps[E, A](val value: Either[E, A]) extends AnyVal {
+    def toFutureEither(implicit ec: ExecutionContext): FutureEither[E, A] = {
+      Future.successful(value).toFutureEither
     }
   }
 }

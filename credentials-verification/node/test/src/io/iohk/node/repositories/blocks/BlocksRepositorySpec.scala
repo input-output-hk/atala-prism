@@ -1,7 +1,8 @@
 package io.iohk.node.repositories.blocks
 
-import io.iohk.node.bitcoin.models.{Block, Blockhash}
+import io.iohk.node.bitcoin.models.{Block, BlockError, Blockhash}
 import io.iohk.node.repositories.common.PostgresRepositorySpec
+import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 
 import scala.concurrent.duration.DurationLong
@@ -25,7 +26,7 @@ class BlocksRepositorySpec extends PostgresRepositorySpec {
       val block = randomBlock()
       blocksRepository.create(block).futureValue
       val result = blocksRepository.find(block.hash).futureValue
-      result.value must be(block)
+      result.right.value must be(block)
     }
   }
 
@@ -36,7 +37,7 @@ class BlocksRepositorySpec extends PostgresRepositorySpec {
       List(a, b).foreach(blocksRepository.create(_).futureValue)
 
       val result = blocksRepository.getLatest.futureValue
-      result.value must be(b)
+      result.right.value must be(b)
     }
   }
 
@@ -47,9 +48,9 @@ class BlocksRepositorySpec extends PostgresRepositorySpec {
       List(a, b).foreach(blocksRepository.create(_).futureValue)
 
       val result = blocksRepository.removeLatest().futureValue
-      result.value must be(b)
-      blocksRepository.find(b.hash).futureValue must be(empty)
-      blocksRepository.getLatest.futureValue.value must be(a)
+      result.right.value must be(b)
+      blocksRepository.find(b.hash).futureValue must be(Left(BlockError.NotFound(b.hash)))
+      blocksRepository.getLatest.futureValue.right.value must be(a)
     }
   }
 
