@@ -2,6 +2,8 @@ package io.iohk.node.synchronizer
 
 import io.iohk.node.bitcoin.{BitcoinClient, Block, Blockhash}
 import io.iohk.node.repositories.blocks.BlocksRepository
+import io.iohk.node.utils.FutureEither
+import io.iohk.node.utils.FutureEither._
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -21,12 +23,18 @@ class LedgerSynchronizerService(
     * the database will get corrupted.
     */
   def synchronize(blockhash: Blockhash): Future[Unit] = {
-    for {
-      candidateMaybe <- bitcoinClient.getBlock(blockhash)
-      candidate <- candidateMaybe.map(Future.successful).getOrElse(Future.failed(new RuntimeException("Failed")))
-      status <- syncStatusService.getSyncingStatus(candidate)
-      _ <- sync(status)
+    val result: FutureEither[Nothing, Unit] = for {
+      candidate <- bitcoinClient
+        .getBlock(blockhash)
+        .toFutureEither[Nothing] { e =>
+          throw new RuntimeException(s"Synchronization failed while retrieving the target block: $e")
+        }
+
+      status <- syncStatusService.getSyncingStatus(candidate).toFutureEither
+      _ <- sync(status).toFutureEither
     } yield ()
+
+    result.value.map(_ => ())
   }
 
   private def sync(status: SynchronizationStatus): Future[Unit] = {
@@ -61,17 +69,27 @@ class LedgerSynchronizerService(
   }
 
   private def sync(goal: Range): Future[Unit] = {
-    goal.foldLeft[Future[Unit]](Future.unit) {
+    val result = goal.foldLeft[FutureEither[Nothing, Unit]](Future.successful(Right(())).toFutureEither) {
       case (previous, height) =>
         for {
           _ <- previous
-          blockhashMaybe <- bitcoinClient.getBlockhash(height)
-          blockhash <- blockhashMaybe.map(Future.successful).getOrElse(Future.failed(new RuntimeException("Failed")))
-          blockMaybe <- bitcoinClient.getBlock(blockhash)
-          block <- blockMaybe.map(Future.successful).getOrElse(Future.failed(new RuntimeException("Failed")))
-          _ <- append(block)
+          blockhash <- bitcoinClient
+            .getBlockhash(height)
+            .toFutureEither[Nothing] { e =>
+              throw new RuntimeException(s"Synchronization failed while pushing $goal: $e")
+            }
+
+          block <- bitcoinClient
+            .getBlock(blockhash)
+            .toFutureEither[Nothing] { e =>
+              throw new RuntimeException(s"Synchronization failed while pushing $goal: $e")
+            }
+
+          _ <- append(block).toFutureEither
         } yield ()
     }
+
+    result.value.map(_ => ())
   }
 
   private def rollback(goal: BlockPointer): Future[Block] = {

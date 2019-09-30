@@ -33,7 +33,7 @@ object NodeApp {
     val blocksRepository = new BlocksRepository(xa)
 
     logger.info("Creating bitcoin client")
-    val bitcoinClient = new node.bitcoin.BitcoinClient.DefaultImpl(bitcoinConfig(globalConfig.getConfig("bitcoin")))
+    val bitcoinClient = new node.bitcoin.SttpBitcoinClient(bitcoinConfig(globalConfig.getConfig("bitcoin")))
 
     val synchronizerConfig = SynchronizerConfig(30.seconds)
     val syncStatusService = new LedgerSynchronizationStatusService(bitcoinClient, blocksRepository)

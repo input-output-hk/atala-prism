@@ -68,8 +68,8 @@ class LedgerSynchronizationStatusService(
   }
 
   private def findNewestStoredBlockFromChain(candidate: Block): Future[BlockPointer] = {
-    bitcoinClient
-      .getBlock(candidate.hash)
+    blocksRepository
+      .find(candidate.hash)
       .flatMap {
         case Some(_) =>
           Future.successful(BlockPointer(candidate.hash, candidate.height))
@@ -80,11 +80,22 @@ class LedgerSynchronizationStatusService(
               bitcoinClient
                 .getBlock(previous)
                 .flatMap {
-                  case Some(x) => findNewestStoredBlockFromChain(x)
-                  case None => Future.failed(new RuntimeException("Failed to get newest block on storage"))
+                  case Right(previousBlock) => findNewestStoredBlockFromChain(previousBlock)
+                  case Left(_) =>
+                    // Impossible case
+                    Future.failed(
+                      new RuntimeException(
+                        "Looks like a rollback was applied on the blockchain while trying to find the syncing state, retrying should solve the issue"
+                      )
+                    )
                 }
             case None =>
-              Future.failed(new RuntimeException("Failed to get newest block on storage"))
+              // Impossible case
+              Future.failed(
+                new RuntimeException(
+                  s"Reached the blockchain genesis (${candidate.hash}) without finding any of the blocks in our database, it likely means that we are using different nodes, like a database storing Bitcoin blocks and syncing a Litecoin blockchain"
+                )
+              )
           }
       }
   }
@@ -93,19 +104,31 @@ class LedgerSynchronizationStatusService(
     bitcoinClient
       .getBlockhash(block.height)
       .flatMap {
-        case Some(blockhash) if blockhash == block.hash =>
+        case Right(blockhash) if blockhash == block.hash =>
           Future.successful(BlockPointer(block.hash, block.height))
 
-        case _ =>
+        case Left(_) =>
           block.previous match {
             case Some(previous) =>
               blocksRepository
                 .find(previous)
                 .flatMap {
-                  case None => Future.failed(new RuntimeException("Failed to get newest block on storage"))
-                  case Some(x) => findNewestChainBlockFromStorage(x)
+                  case Some(previousBlock) => findNewestChainBlockFromStorage(previousBlock)
+                  case None =>
+                    // Impossible
+                    Future.failed(
+                      new RuntimeException(
+                        "Looks like a rollback was applied on the database while trying to find the syncing state, retrying should solve the issue"
+                      )
+                    )
                 }
-            case None => Future.failed(new RuntimeException("Failed to get newest block on storage"))
+            case None =>
+              // Impossible case
+              Future.failed(
+                new RuntimeException(
+                  s"Reached the database genesis (${block.hash}) without finding any of the blocks in the blockchain, it likely means that we are using different nodes, like a database storing Bitcoin blocks and syncing a Litecoin blockchain"
+                )
+              )
           }
       }
   }
