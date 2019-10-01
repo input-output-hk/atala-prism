@@ -205,8 +205,11 @@ jobs:
             - ~/.gradle
           key: jars-{{ checksum "credentials-verification-android/build.gradle" }}-{{ checksum  "credentials-verification-android/app/build.gradle" }}
       - run:
-          name: Run Tests
-          command: cd credentials-verification-android && ./gradlew lint test
+          name: Run Lint Tests
+          command: cd credentials-verification-android && ./gradlew lint test 
+      - run:
+          name: Run Unit Tests
+          command: cd credentials-verification-android && ./gradlew test 
 
 workflows:
   version: 2
