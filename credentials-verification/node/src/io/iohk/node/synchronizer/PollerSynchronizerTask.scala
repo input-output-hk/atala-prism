@@ -1,7 +1,6 @@
 package io.iohk.node.synchronizer
 
 import io.iohk.node.bitcoin.BitcoinClient
-import io.iohk.node.utils.FutureEither._
 import monix.execution.Scheduler
 import org.slf4j.LoggerFactory
 
@@ -27,9 +26,14 @@ class PollerSynchronizerTask(
 
   private def run(): Unit = {
     val result = for {
-      latestBlockhash <- bitcoin.getLatestBlockhash.toFutureEither(new RuntimeException("Failed"))
-      block <- bitcoin.getBlock(latestBlockhash).toFutureEither(new RuntimeException("Failed"))
-      _ <- synchronizer.synchronize(block.hash).toFutureEither
+      latestBlockhash <- bitcoin.getLatestBlockhash
+      block <- bitcoin
+        .getBlock(latestBlockhash)
+        .failOnLeft(
+          e => new RuntimeException(s"A rollback occurred on bitcoin while getting its latest block, error = $e")
+        )
+
+      _ <- synchronizer.synchronize(block.hash)
     } yield ()
 
     result.value.onComplete {

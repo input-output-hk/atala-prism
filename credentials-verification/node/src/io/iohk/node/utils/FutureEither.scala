@@ -39,6 +39,15 @@ class FutureEither[+E, +A](val value: Future[Either[E, A]]) extends AnyVal {
 
     new FutureEither(newFuture)
   }
+
+  def failOnLeft(f: E => Exception)(implicit ec: ExecutionContext): FutureEither[Nothing, A] = {
+    val newFuture = value.flatMap {
+      case Right(x) => Future.successful(Right(x))
+      case Left(e) => Future.failed(f(e))
+    }
+
+    new FutureEither(newFuture)
+  }
 }
 
 /**

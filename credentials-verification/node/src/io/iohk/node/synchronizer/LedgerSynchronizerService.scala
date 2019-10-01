@@ -23,25 +23,21 @@ class LedgerSynchronizerService(
     * This method must not be called concurrently, otherwise, it is likely that
     * the database will get corrupted.
     */
-  def synchronize(blockhash: Blockhash): Future[Either[Nothing, Unit]] = {
-    val result: FutureEither[Nothing, Unit] = for {
+  def synchronize(blockhash: Blockhash): FutureEither[Nothing, Unit] = {
+    for {
       candidate <- bitcoinClient
         .getBlock(blockhash)
-        .toFutureEither[Nothing] { e =>
-          throw new RuntimeException(s"Synchronization failed while retrieving the target block: $e")
-        }
+        .failOnLeft(e => new RuntimeException(s"Synchronization failed while retrieving the target block: $e"))
 
-      status <- syncStatusService.getSyncingStatus(candidate).toFutureEither
-      _ <- sync(status).toFutureEither
+      status <- syncStatusService.getSyncingStatus(candidate)
+      _ <- sync(status)
     } yield ()
-
-    result.value
   }
 
-  private def sync(status: SynchronizationStatus): Future[Either[Nothing, Unit]] = {
+  private def sync(status: SynchronizationStatus): FutureEither[Nothing, Unit] = {
     status match {
       case SynchronizationStatus.Synced =>
-        Future.successful(Right(()))
+        Future.successful(Right(())).toFutureEither
 
       case SynchronizationStatus.MissingBlockInterval(goal) =>
         if (goal.length >= 10) {
@@ -60,62 +56,53 @@ class LedgerSynchronizerService(
 
       case SynchronizationStatus.PendingReorganization(cutPoint, goal) =>
         logger.info(s"Applying reorganization, cutPoint = $cutPoint, goal = $goal")
-        val result = for {
-          latestRemoved <- rollback(cutPoint).toFutureEither
+        for {
+          latestRemoved <- rollback(cutPoint)
           interval = latestRemoved.height to goal
           _ = logger.info(s"${latestRemoved.hash} rolled back, now syncing $interval")
-          _ <- sync(latestRemoved.height to goal).toFutureEither
+          _ <- sync(latestRemoved.height to goal)
         } yield {
           logger.info("Reorganization completed")
         }
-
-        result.value
     }
   }
 
-  private def sync(goal: Range): Future[Either[Nothing, Unit]] = {
-    val result = goal.foldLeft[FutureEither[Nothing, Unit]](Future.successful(Right(())).toFutureEither) {
+  private def sync(goal: Range): FutureEither[Nothing, Unit] = {
+    goal.foldLeft[FutureEither[Nothing, Unit]](Future.successful(Right(())).toFutureEither) {
       case (previous, height) =>
         for {
           _ <- previous
           blockhash <- bitcoinClient
             .getBlockhash(height)
-            .toFutureEither[Nothing] { e =>
-              throw new RuntimeException(s"Synchronization failed while pushing $goal: $e")
-            }
+            .failOnLeft(e => new RuntimeException(s"Synchronization failed while pushing $goal: $e"))
 
           block <- bitcoinClient
             .getBlock(blockhash)
-            .toFutureEither[Nothing] { e =>
-              throw new RuntimeException(s"Synchronization failed while pushing $goal: $e")
-            }
+            .failOnLeft(e => new RuntimeException(s"Synchronization failed while pushing $goal: $e"))
 
-          _ <- append(block).toFutureEither
+          _ <- append(block)
         } yield ()
     }
-
-    result.value
   }
 
-  private def rollback(goal: BlockPointer): Future[Either[Nothing, Block]] = {
+  private def rollback(goal: BlockPointer): FutureEither[Nothing, Block] = {
     blocksRepository
       .removeLatest()
-      .flatMap {
-        case Right(removedBlock) =>
-          if (removedBlock.previous.contains(goal.blockhash)) {
-            Future.successful(Right(removedBlock))
-          } else {
-            require(
-              goal.height <= removedBlock.height,
-              "Can't rollback more, we have reached the supposed cut point without finding its hash"
-            )
-            rollback(goal)
-          }
-        case Left(_) => Future.failed(new RuntimeException("Failed"))
+      .failOnLeft(_ => new RuntimeException(s"Failed to rollback until ${goal}, there are no more blocks available"))
+      .flatMap { removedBlock =>
+        if (removedBlock.previous.contains(goal.blockhash)) {
+          Future.successful(Right(removedBlock)).toFutureEither
+        } else {
+          require(
+            goal.height <= removedBlock.height,
+            "Can't rollback more, we have reached the supposed cut point without finding its hash"
+          )
+          rollback(goal)
+        }
       }
   }
 
-  private def append(newBlock: Block): Future[Either[Nothing, Unit]] = {
+  private def append(newBlock: Block): FutureEither[Nothing, Unit] = {
     for {
       _ <- blocksRepository.create(newBlock)
     } yield {

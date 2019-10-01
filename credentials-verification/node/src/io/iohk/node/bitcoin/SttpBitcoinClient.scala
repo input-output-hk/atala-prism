@@ -5,6 +5,7 @@ import com.softwaremill.sttp.{Response, SttpBackend, Uri, asString, sttp}
 import io.circe.parser.parse
 import io.circe.{Decoder, Json}
 import io.iohk.node.bitcoin.models.{Block, BlockError, Blockhash}
+import io.iohk.node.utils.FutureEither.FutureEitherOps
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
@@ -45,10 +46,13 @@ class SttpBitcoinClient(config: BitcoinClient.Config)(implicit ec: ExecutionCont
   }
 
   private def call[E, A: Decoder](method: BitcoinRPCMethod, errorCodeMapper: Map[Int, E] = Map.empty): Result[E, A] = {
-
-    server.body(method.toJsonString).send().map { response =>
-      getResult[E, A](response, errorCodeMapper)
-    }
+    server
+      .body(method.toJsonString)
+      .send()
+      .map { response =>
+        getResult[E, A](response, errorCodeMapper)
+      }
+      .toFutureEither
   }
 }
 

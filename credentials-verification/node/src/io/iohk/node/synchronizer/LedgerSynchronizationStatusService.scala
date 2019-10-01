@@ -34,10 +34,10 @@ class LedgerSynchronizationStatusService(
     * @param candidate the block that we need to store
     * @return the state that needs to be applied in order to store the candidate block
     */
-  def getSyncingStatus(candidate: Block): Future[Either[Nothing, SynchronizationStatus]] = {
+  def getSyncingStatus(candidate: Block): FutureEither[Nothing, SynchronizationStatus] = {
     def findStatus(latestLedgerBlock: Block): FutureEither[Nothing, SynchronizationStatus] = {
       for {
-        lca <- findLeastCommonAncestor(candidate, latestLedgerBlock).toFutureEither
+        lca <- findLeastCommonAncestor(candidate, latestLedgerBlock)
       } yield {
         if (lca.blockhash == candidate.hash) {
           // nothing to do
@@ -52,7 +52,7 @@ class LedgerSynchronizationStatusService(
       }
     }
 
-    blocksRepository.getLatest.toFutureEither
+    blocksRepository.getLatest
       .transformWith(
         fa = {
           case BlockError.NoOneAvailable =>
@@ -61,10 +61,9 @@ class LedgerSynchronizationStatusService(
         },
         fb = findStatus
       )
-      .value
   }
 
-  def findLeastCommonAncestor(candidate: Block, existing: Block): Future[Either[Nothing, BlockPointer]] = {
+  def findLeastCommonAncestor(candidate: Block, existing: Block): FutureEither[Nothing, BlockPointer] = {
     if (candidate.height <= existing.height) {
       // the candidate might be already stored
       // otherwise, find the newest block from the chain that is stored in the database
@@ -76,7 +75,7 @@ class LedgerSynchronizationStatusService(
     }
   }
 
-  private def findNewestStoredBlockFromChain(candidate: Block): Future[Either[Nothing, BlockPointer]] = {
+  private def findNewestStoredBlockFromChain(candidate: Block): FutureEither[Nothing, BlockPointer] = {
     def findFromPrevious(): FutureEither[Nothing, BlockPointer] = {
       val previous = candidate.previous.getOrElse {
         // Impossible case
@@ -86,32 +85,32 @@ class LedgerSynchronizationStatusService(
       }
       bitcoinClient
         .getBlock(previous)
-        .flatMap {
-          case Right(previousBlock) => findNewestStoredBlockFromChain(previousBlock)
-          case Left(_) =>
+        .transformWith(
+          fa = _ => {
             // Impossible case
-            Future.failed(
-              new RuntimeException(
-                "Looks like a rollback was applied on the blockchain while trying to find the syncing state, retrying should solve the issue"
+            Future
+              .failed(
+                new RuntimeException(
+                  "Looks like a rollback was applied on the blockchain while trying to find the syncing state, retrying should solve the issue"
+                )
               )
-            )
-        }
-        .toFutureEither
+              .toFutureEither
+          },
+          fb = previousBlock => findNewestStoredBlockFromChain(previousBlock)
+        )
     }
 
     blocksRepository
       .find(candidate.hash)
-      .toFutureEither
       .transformWith(
         fa = {
           case BlockError.NotFound(_) => findFromPrevious()
         },
         fb = _ => Right(BlockPointer(candidate.hash, candidate.height)).toFutureEither
       )
-      .value
   }
 
-  private def findNewestChainBlockFromStorage(block: Block): Future[Either[Nothing, BlockPointer]] = {
+  private def findNewestChainBlockFromStorage(block: Block): FutureEither[Nothing, BlockPointer] = {
     def findFromPrevious(): FutureEither[Nothing, BlockPointer] = {
       val previous = block.previous.getOrElse {
         // Impossible case
@@ -121,22 +120,22 @@ class LedgerSynchronizationStatusService(
       }
       blocksRepository
         .find(previous)
-        .flatMap {
-          case Right(previousBlock) => findNewestChainBlockFromStorage(previousBlock)
-          case Left(_) =>
-            // Impossible
-            Future.failed(
-              new RuntimeException(
-                "Looks like a rollback was applied on the database while trying to find the syncing state, retrying should solve the issue"
+        .transformWith(
+          fa = _ =>
+            Future
+              .failed(
+                // Impossible
+                new RuntimeException(
+                  "Looks like a rollback was applied on the database while trying to find the syncing state, retrying should solve the issue"
+                )
               )
-            )
-        }
-        .toFutureEither
+              .toFutureEither,
+          fb = previousBlock => findNewestChainBlockFromStorage(previousBlock)
+        )
     }
 
     bitcoinClient
       .getBlockhash(block.height)
-      .toFutureEither
       .transformWith(
         fa = {
           case BlockError.HeightNotFound(_) => findFromPrevious()
@@ -147,6 +146,5 @@ class LedgerSynchronizationStatusService(
           case _ => findFromPrevious()
         }
       )
-      .value
   }
 }

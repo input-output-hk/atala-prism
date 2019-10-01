@@ -5,15 +5,16 @@ import doobie.implicits._
 import doobie.util.transactor.Transactor
 import doobie.util.{Get, Read}
 import io.iohk.node.bitcoin.models.{Block, BlockError, Blockhash}
-import io.iohk.node.utils.FutureEither.FutureOptionOps
+import io.iohk.node.utils.FutureEither
+import io.iohk.node.utils.FutureEither.{FutureEitherOps, FutureOptionOps}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class BlocksRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
 
   import BlocksRepository._
 
-  def create(block: Block): Future[Either[Nothing, Unit]] = {
+  def create(block: Block): FutureEither[Nothing, Unit] = {
     sql"""
          |INSERT INTO blocks (blockhash, height, time, previous_blockhash)
          |VALUES (${block.hash.toBytesBE}, ${block.height}, ${block.time}, ${block.previous.map(_.toBytesBE)})
@@ -22,9 +23,10 @@ class BlocksRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
       .map(_ => ())
       .unsafeToFuture()
       .map(Right.apply)
+      .toFutureEither
   }
 
-  def find(blockhash: Blockhash): Future[Either[BlockError.NotFound, Block]] = {
+  def find(blockhash: Blockhash): FutureEither[BlockError.NotFound, Block] = {
     val program =
       sql"""
            |SELECT blockhash, height, time, previous_blockhash
@@ -37,9 +39,10 @@ class BlocksRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
       .unsafeToFuture()
       .toFutureEither(BlockError.NotFound(blockhash))
       .value
+      .toFutureEither
   }
 
-  def getLatest: Future[Either[BlockError.NoOneAvailable.type, Block]] = {
+  def getLatest: FutureEither[BlockError.NoOneAvailable.type, Block] = {
     val program =
       sql"""
            |SELECT blockhash, height, time, previous_blockhash
@@ -53,9 +56,10 @@ class BlocksRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
       .unsafeToFuture()
       .toFutureEither(BlockError.NoOneAvailable)
       .value
+      .toFutureEither
   }
 
-  def removeLatest(): Future[Either[BlockError.NoOneAvailable.type, Block]] = {
+  def removeLatest(): FutureEither[BlockError.NoOneAvailable.type, Block] = {
     val program =
       sql"""
            |WITH CTE AS (
@@ -75,6 +79,7 @@ class BlocksRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
       .unsafeToFuture()
       .toFutureEither(BlockError.NoOneAvailable)
       .value
+      .toFutureEither
   }
 }
 
