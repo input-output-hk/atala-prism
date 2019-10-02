@@ -1,4 +1,4 @@
-package io.iohk.node.bitcoin
+package io.iohk.node.bitcoin.models
 
 import javax.xml.bind.DatatypeConverter
 

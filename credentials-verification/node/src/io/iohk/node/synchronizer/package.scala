@@ -1,6 +1,6 @@
 package io.iohk.node
 
-import io.iohk.node.bitcoin.Blockhash
+import io.iohk.node.bitcoin.models.Blockhash
 
 import scala.concurrent.duration.FiniteDuration
 

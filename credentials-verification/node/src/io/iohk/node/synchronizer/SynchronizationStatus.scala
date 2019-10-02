@@ -1,6 +1,6 @@
 package io.iohk.node.synchronizer
 
-private[synchronizer] sealed trait SynchronizationStatus
+private[synchronizer] sealed trait SynchronizationStatus extends Product with Serializable
 
 private[synchronizer] object SynchronizationStatus {
 

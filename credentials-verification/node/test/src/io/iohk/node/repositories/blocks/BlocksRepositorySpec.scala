@@ -1,9 +1,11 @@
 package io.iohk.node.repositories.blocks
 
-import io.iohk.node.bitcoin.{Block, Blockhash}
+import io.iohk.node.bitcoin.models.{Block, BlockError, Blockhash}
 import io.iohk.node.repositories.common.PostgresRepositorySpec
+import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 
+import scala.concurrent.Future
 import scala.concurrent.duration.DurationLong
 import scala.util.Random
 
@@ -14,8 +16,9 @@ class BlocksRepositorySpec extends PostgresRepositorySpec {
 
   "create" should {
     "work" in {
+      Future.successful(()).futureValue
       val block = randomBlock()
-      blocksRepository.create(block).futureValue
+      blocksRepository.create(block).value.futureValue
       succeed
     }
   }
@@ -23,9 +26,9 @@ class BlocksRepositorySpec extends PostgresRepositorySpec {
   "find" should {
     "find a block" in {
       val block = randomBlock()
-      blocksRepository.create(block).futureValue
-      val result = blocksRepository.find(block.hash).futureValue
-      result.value must be(block)
+      blocksRepository.create(block).value.futureValue
+      val result = blocksRepository.find(block.hash).value.futureValue
+      result.right.value must be(block)
     }
   }
 
@@ -33,10 +36,10 @@ class BlocksRepositorySpec extends PostgresRepositorySpec {
     "work" in {
       val a = randomBlock().copy(height = 1)
       val b = randomBlock().copy(height = 2)
-      List(a, b).foreach(blocksRepository.create(_).futureValue)
+      List(a, b).foreach(blocksRepository.create(_).value.futureValue)
 
-      val result = blocksRepository.getLatest.futureValue
-      result.value must be(b)
+      val result = blocksRepository.getLatest.value.futureValue
+      result.right.value must be(b)
     }
   }
 
@@ -44,12 +47,12 @@ class BlocksRepositorySpec extends PostgresRepositorySpec {
     "work" in {
       val a = randomBlock().copy(height = 1)
       val b = randomBlock().copy(height = 2)
-      List(a, b).foreach(blocksRepository.create(_).futureValue)
+      List(a, b).foreach(blocksRepository.create(_).value.futureValue)
 
-      val result = blocksRepository.removeLatest().futureValue
-      result.value must be(b)
-      blocksRepository.find(b.hash).futureValue must be(empty)
-      blocksRepository.getLatest.futureValue.value must be(a)
+      val result = blocksRepository.removeLatest().value.futureValue
+      result.right.value must be(b)
+      blocksRepository.find(b.hash).value.futureValue must be(Left(BlockError.NotFound(b.hash)))
+      blocksRepository.getLatest.value.futureValue.right.value must be(a)
     }
   }
 

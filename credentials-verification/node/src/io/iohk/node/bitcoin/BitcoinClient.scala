@@ -1,6 +1,7 @@
 package io.iohk.node.bitcoin
 
-import scala.concurrent.Future
+import io.iohk.node.bitcoin.models.{Block, BlockError, Blockhash}
+import io.iohk.node.utils.FutureEither
 
 trait BitcoinClient {
 
@@ -14,14 +15,7 @@ trait BitcoinClient {
 
 object BitcoinClient {
 
-  type Result[E, A] = Future[Either[E, A]]
-
-  sealed trait BlockError extends Product with Serializable
-  object BlockError {
-
-    final case class NotFound(blockhash: Blockhash) extends BlockError
-    final case class HeightNotFound(height: Int) extends BlockError
-  }
+  type Result[E, A] = FutureEither[E, A]
 
   case class Config(host: String, port: Int, username: String, password: String)
 

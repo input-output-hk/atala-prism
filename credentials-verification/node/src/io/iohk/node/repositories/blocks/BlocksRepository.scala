@@ -4,22 +4,29 @@ import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import doobie.util.{Get, Read}
-import io.iohk.node.bitcoin.{Block, Blockhash}
+import io.iohk.node.bitcoin.models.{Block, BlockError, Blockhash}
+import io.iohk.node.utils.FutureEither
+import io.iohk.node.utils.FutureEither.{FutureEitherOps, FutureOptionOps}
 
-import scala.concurrent.Future
+import scala.concurrent.ExecutionContext
 
-class BlocksRepository(xa: Transactor[IO]) {
+class BlocksRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
 
   import BlocksRepository._
 
-  def create(block: Block): Future[Unit] = {
+  def create(block: Block): FutureEither[Nothing, Unit] = {
     sql"""
          |INSERT INTO blocks (blockhash, height, time, previous_blockhash)
          |VALUES (${block.hash.toBytesBE}, ${block.height}, ${block.time}, ${block.previous.map(_.toBytesBE)})
-     """.stripMargin.update.run.transact(xa).map(_ => ()).unsafeToFuture()
+     """.stripMargin.update.run
+      .transact(xa)
+      .map(_ => ())
+      .unsafeToFuture()
+      .map(Right.apply)
+      .toFutureEither
   }
 
-  def find(blockhash: Blockhash): Future[Option[Block]] = {
+  def find(blockhash: Blockhash): FutureEither[BlockError.NotFound, Block] = {
     val program =
       sql"""
            |SELECT blockhash, height, time, previous_blockhash
@@ -27,10 +34,15 @@ class BlocksRepository(xa: Transactor[IO]) {
            |WHERE blockhash = ${blockhash.toBytesBE}
        """.stripMargin.query[Block].option
 
-    program.transact(xa).unsafeToFuture()
+    program
+      .transact(xa)
+      .unsafeToFuture()
+      .toFutureEither(BlockError.NotFound(blockhash))
+      .value
+      .toFutureEither
   }
 
-  def getLatest: Future[Option[Block]] = {
+  def getLatest: FutureEither[BlockError.NoOneAvailable.type, Block] = {
     val program =
       sql"""
            |SELECT blockhash, height, time, previous_blockhash
@@ -39,10 +51,15 @@ class BlocksRepository(xa: Transactor[IO]) {
            |LIMIT 1
        """.stripMargin.query[Block].option
 
-    program.transact(xa).unsafeToFuture()
+    program
+      .transact(xa)
+      .unsafeToFuture()
+      .toFutureEither(BlockError.NoOneAvailable)
+      .value
+      .toFutureEither
   }
 
-  def removeLatest(): Future[Option[Block]] = {
+  def removeLatest(): FutureEither[BlockError.NoOneAvailable.type, Block] = {
     val program =
       sql"""
            |WITH CTE AS (
@@ -57,7 +74,12 @@ class BlocksRepository(xa: Transactor[IO]) {
            |RETURNING blockhash, height, time, previous_blockhash
        """.stripMargin.query[Block].option
 
-    program.transact(xa).unsafeToFuture()
+    program
+      .transact(xa)
+      .unsafeToFuture()
+      .toFutureEither(BlockError.NoOneAvailable)
+      .value
+      .toFutureEither
   }
 }
 
