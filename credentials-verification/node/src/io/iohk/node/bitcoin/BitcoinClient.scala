@@ -10,6 +10,7 @@ trait BitcoinClient {
   // Bitcoin always has at least 1 block (the genesis one)
   def getLatestBlockhash: Result[Nothing, Blockhash]
   def getBlock(blockhash: Blockhash): Result[BlockError.NotFound, Block.Canonical]
+  def getFullBlock(blockhash: Blockhash): Result[BlockError.NotFound, Block.Full]
   def getBlockhash(height: Int): Result[BlockError.HeightNotFound, Blockhash]
 }
 

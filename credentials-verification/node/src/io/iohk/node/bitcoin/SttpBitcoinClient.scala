@@ -26,8 +26,14 @@ class SttpBitcoinClient(config: BitcoinClient.Config)(implicit ec: ExecutionCont
 
   override def getBlock(blockhash: Blockhash): Result[BlockError.NotFound, Block.Canonical] = {
     val errorCodeMapper = Map(-5 -> BlockError.NotFound(blockhash))
-    val method = BitcoinRPCMethod.GetBlock(blockhash)
+    val method = BitcoinRPCMethod.GetBlock(blockhash, BitcoinRPCMethod.BlockVerbosity.Raw)
     call[BlockError.NotFound, Block.Canonical](method, errorCodeMapper)
+  }
+
+  override def getFullBlock(blockhash: Blockhash): Result[BlockError.NotFound, Block.Full] = {
+    val errorCodeMapper = Map(-5 -> BlockError.NotFound(blockhash))
+    val method = BitcoinRPCMethod.GetBlock(blockhash, BitcoinRPCMethod.BlockVerbosity.Full)
+    call[BlockError.NotFound, Block.Full](method, errorCodeMapper)
   }
 
   override def getLatestBlockhash: Result[Nothing, Blockhash] = {
@@ -136,4 +142,34 @@ object SttpBitcoinClient {
 
   private implicit val canonicalBlockDecoder: Decoder[Block.Canonical] = blockHeaderDecoder.map(Block.Canonical.apply)
 
+  private implicit val transactionIdDecoder: Decoder[TransactionId] = Decoder.decodeString.emapTry { string =>
+    Try(TransactionId.from(string).getOrElse(throw new RuntimeException("Invalid transaction id")))
+  }
+
+  private implicit val transactionOutputScriptDecoder: Decoder[Transaction.OutputScript] =
+    Decoder.forProduct2("type", "asm")(Transaction.OutputScript.apply)
+
+  private implicit val transactionOutputDecoder: Decoder[Transaction.Output] =
+    Decoder.forProduct3("value", "n", "scriptPubKey")(Transaction.Output.apply)
+
+  private implicit val fullBlockDecoder: Decoder[Block.Full] = {
+    Decoder.decodeJson.emapTry { json =>
+      val result = for {
+        header <- json.as[BlockHeader]
+        txDecoder = transactionDecoder(header.hash)
+        txs <- json.hcursor.downField("tx").as[List[Transaction]](Decoder.decodeList(txDecoder))
+      } yield Block.Full(header, txs)
+
+      result match {
+        case Left(e) => Failure(e)
+        case Right(x) => Success(x)
+      }
+    }
+  }
+
+  private def transactionDecoder(blockhash: Blockhash): Decoder[Transaction] = {
+    Decoder.forProduct2[Transaction, TransactionId, List[Transaction.Output]]("txid", "vout")(
+      (id, vout) => Transaction(id = id, vout = vout, blockhash = blockhash)
+    )
+  }
 }
