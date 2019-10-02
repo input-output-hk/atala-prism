@@ -4,11 +4,11 @@ import com.softwaremill.sttp.asynchttpclient.future.AsyncHttpClientFutureBackend
 import com.softwaremill.sttp.{Response, SttpBackend, Uri, asString, sttp}
 import io.circe.parser.parse
 import io.circe.{Decoder, Json}
-import io.iohk.node.bitcoin.models.{Block, BlockError, Blockhash}
+import io.iohk.node.bitcoin.models._
 import io.iohk.node.utils.FutureEither.FutureEitherOps
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 class SttpBitcoinClient(config: BitcoinClient.Config)(implicit ec: ExecutionContext) extends BitcoinClient {
 
@@ -24,10 +24,10 @@ class SttpBitcoinClient(config: BitcoinClient.Config)(implicit ec: ExecutionCont
     .auth
     .basic(config.username, config.password)
 
-  override def getBlock(blockhash: Blockhash): Result[BlockError.NotFound, Block] = {
+  override def getBlock(blockhash: Blockhash): Result[BlockError.NotFound, Block.Canonical] = {
     val errorCodeMapper = Map(-5 -> BlockError.NotFound(blockhash))
     val method = BitcoinRPCMethod.GetBlock(blockhash)
-    call[BlockError.NotFound, Block](method, errorCodeMapper)
+    call[BlockError.NotFound, Block.Canonical](method, errorCodeMapper)
   }
 
   override def getLatestBlockhash: Result[Nothing, Blockhash] = {
@@ -127,11 +127,13 @@ object SttpBitcoinClient {
       )
   }
 
-  private implicit val blockhashDecoder: Decoder[Blockhash] = implicitly[Decoder[String]].emapTry { string =>
+  private implicit val blockhashDecoder: Decoder[Blockhash] = Decoder.decodeString.emapTry { string =>
     Try(Blockhash.from(string).getOrElse(throw new RuntimeException("Invalid blockhash")))
   }
 
-  private implicit val blockDecoder: Decoder[Block] =
-    Decoder.forProduct4("hash", "height", "time", "previousblockhash")(Block.apply)
+  private implicit val blockHeaderDecoder: Decoder[BlockHeader] =
+    Decoder.forProduct4("hash", "height", "time", "previousblockhash")(BlockHeader.apply)
+
+  private implicit val canonicalBlockDecoder: Decoder[Block.Canonical] = blockHeaderDecoder.map(Block.Canonical.apply)
 
 }
