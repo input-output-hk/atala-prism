@@ -1,4 +1,4 @@
-package io.iohk.node.repositories
+package io.iohk.cvp.repositories
 
 import org.flywaydb.core.Flyway
 

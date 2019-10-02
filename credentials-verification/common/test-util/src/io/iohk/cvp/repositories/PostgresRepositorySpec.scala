@@ -1,4 +1,4 @@
-package io.iohk.node.repositories.common
+package io.iohk.cvp.repositories
 
 import cats.effect.IO
 import com.spotify.docker.client.DefaultDockerClient
@@ -7,7 +7,7 @@ import com.whisk.docker.impl.spotify.SpotifyDockerFactory
 import com.whisk.docker.scalatest.DockerTestKit
 import doobie.util.fragment.Fragment
 import doobie.util.transactor.Transactor
-import io.iohk.node.repositories.{SchemaMigrations, TransactorFactory}
+import io.iohk.cvp.repositories.{SchemaMigrations, TransactorFactory}
 import org.scalatest.time.{Second, Seconds, Span}
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, MustMatchers, WordSpec}
 

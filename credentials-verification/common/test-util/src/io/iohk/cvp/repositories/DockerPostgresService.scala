@@ -1,4 +1,4 @@
-package io.iohk.node.repositories.common
+package io.iohk.cvp.repositories
 
 import java.sql.DriverManager
 

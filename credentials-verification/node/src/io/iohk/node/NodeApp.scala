@@ -4,7 +4,7 @@ import com.typesafe.config.{Config, ConfigFactory}
 import io.iohk.node
 import io.iohk.node.bitcoin.BitcoinClient
 import io.iohk.node.repositories.blocks.BlocksRepository
-import io.iohk.node.repositories.{SchemaMigrations, TransactorFactory}
+import io.iohk.cvp.repositories.{SchemaMigrations, TransactorFactory}
 import io.iohk.node.synchronizer.{
   LedgerSynchronizationStatusService,
   LedgerSynchronizerService,

@@ -1,4 +1,4 @@
-package io.iohk.node.repositories
+package io.iohk.cvp.repositories
 
 import cats.effect.{ContextShift, IO}
 import doobie.util.transactor.Transactor

@@ -1,7 +1,7 @@
 package io.iohk.node.repositories.blocks
 
 import io.iohk.node.bitcoin.models.{Block, BlockError, Blockhash}
-import io.iohk.node.repositories.common.PostgresRepositorySpec
+import io.iohk.cvp.repositories.PostgresRepositorySpec
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 
