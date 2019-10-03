@@ -83,7 +83,8 @@ object common extends ScalaModule {
       ivy"com.spotify:docker-client:8.16.0",
       ivy"com.whisk::docker-testkit-scalatest:0.9.9",
       ivy"com.whisk::docker-testkit-impl-spotify:0.9.9",
-      ivy"org.tpolecat::doobie-scalatest:${versions.doobie}"
+      ivy"org.tpolecat::doobie-scalatest:${versions.doobie}",
+      ivy"com.softwaremill.diffx::diffx-scalatest:0.3.3"
     )
   }
 
