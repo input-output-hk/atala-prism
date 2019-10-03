@@ -1,5 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'com.google.protobuf'
+apply plugin: 'io.fabric'
 
 android {
     compileSdkVersion 29
@@ -128,11 +129,15 @@ dependencies {
     implementation 'io.grpc:grpc-stub:1.23.0' // CURRENT_GRPC_VERSION
     implementation 'javax.annotation:javax.annotation-api:1.2'
     implementation 'androidx.lifecycle:lifecycle-extensions:2.1.0'
+    implementation 'me.dm7.barcodescanner:zxing:1.9.8'
+    implementation 'com.google.firebase:firebase-analytics:17.2.0'
+    implementation 'com.crashlytics.sdk.android:crashlytics:2.10.1'
     androidDependencies.each { k, dep -> implementation dep }
     injectionDependencies.each { k, v -> "${v.type}" v.dep }
     utilsDependencies.each { k, v -> "${v.type}" v.dep }
-    implementation 'me.dm7.barcodescanner:zxing:1.9'
     testDependencies.each { k, dep -> compile dep }
     testCoreDependencies.each { k, dep -> androidTestImplementation dep }
     espressoTestDependencies.each { k, dep -> androidTestImplementation dep }
 }
+
+apply plugin: 'com.google.gms.google-services'
