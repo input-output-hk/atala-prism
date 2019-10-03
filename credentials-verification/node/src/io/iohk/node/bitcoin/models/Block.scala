@@ -1,3 +1,11 @@
 package io.iohk.node.bitcoin.models
 
-case class Block(hash: Blockhash, height: Int, time: Long, previous: Option[Blockhash])
+sealed trait Block extends Product with Serializable {
+  def header: BlockHeader
+}
+
+object Block {
+
+  final case class Canonical(override val header: BlockHeader) extends Block
+  final case class Full(override val header: BlockHeader, transactions: List[Transaction]) extends Block
+}

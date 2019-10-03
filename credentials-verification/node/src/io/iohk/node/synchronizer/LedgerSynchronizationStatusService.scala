@@ -1,7 +1,7 @@
 package io.iohk.node.synchronizer
 
 import io.iohk.node.bitcoin.BitcoinClient
-import io.iohk.node.bitcoin.models.{Block, BlockError}
+import io.iohk.node.bitcoin.models.{BlockError, BlockHeader}
 import io.iohk.node.repositories.blocks.BlocksRepository
 import io.iohk.node.utils.FutureEither
 import io.iohk.node.utils.FutureEither.{EitherOps, FutureEitherOps}
@@ -34,8 +34,8 @@ class LedgerSynchronizationStatusService(
     * @param candidate the block that we need to store
     * @return the state that needs to be applied in order to store the candidate block
     */
-  def getSyncingStatus(candidate: Block): FutureEither[Nothing, SynchronizationStatus] = {
-    def findStatus(latestLedgerBlock: Block): FutureEither[Nothing, SynchronizationStatus] = {
+  def getSyncingStatus(candidate: BlockHeader): FutureEither[Nothing, SynchronizationStatus] = {
+    def findStatus(latestLedgerBlock: BlockHeader): FutureEither[Nothing, SynchronizationStatus] = {
       for {
         lca <- findLeastCommonAncestor(candidate, latestLedgerBlock)
       } yield {
@@ -63,7 +63,7 @@ class LedgerSynchronizationStatusService(
       )
   }
 
-  def findLeastCommonAncestor(candidate: Block, existing: Block): FutureEither[Nothing, BlockPointer] = {
+  def findLeastCommonAncestor(candidate: BlockHeader, existing: BlockHeader): FutureEither[Nothing, BlockPointer] = {
     if (candidate.height <= existing.height) {
       // the candidate might be already stored
       // otherwise, find the newest block from the chain that is stored in the database
@@ -75,7 +75,7 @@ class LedgerSynchronizationStatusService(
     }
   }
 
-  private def findNewestStoredBlockFromChain(candidate: Block): FutureEither[Nothing, BlockPointer] = {
+  private def findNewestStoredBlockFromChain(candidate: BlockHeader): FutureEither[Nothing, BlockPointer] = {
     def findFromPrevious(): FutureEither[Nothing, BlockPointer] = {
       val previous = candidate.previous.getOrElse {
         // Impossible case
@@ -96,7 +96,7 @@ class LedgerSynchronizationStatusService(
               )
               .toFutureEither
           },
-          fb = previousBlock => findNewestStoredBlockFromChain(previousBlock)
+          fb = previousBlock => findNewestStoredBlockFromChain(previousBlock.header)
         )
     }
 
@@ -110,7 +110,7 @@ class LedgerSynchronizationStatusService(
       )
   }
 
-  private def findNewestChainBlockFromStorage(block: Block): FutureEither[Nothing, BlockPointer] = {
+  private def findNewestChainBlockFromStorage(block: BlockHeader): FutureEither[Nothing, BlockPointer] = {
     def findFromPrevious(): FutureEither[Nothing, BlockPointer] = {
       val previous = block.previous.getOrElse {
         // Impossible case

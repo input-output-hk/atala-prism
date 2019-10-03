@@ -13,8 +13,14 @@ private[bitcoin] sealed abstract class BitcoinRPCMethod(name: String) extends Pr
 }
 
 object BitcoinRPCMethod {
-  final case class GetBlock(blockhash: Blockhash) extends BitcoinRPCMethod("getblock") {
-    override def arrayParams: String = s"[${asParamString(blockhash.string)}]"
+  sealed abstract class BlockVerbosity(val int: Int)
+  object BlockVerbosity {
+    final case object Raw extends BlockVerbosity(1) // just block header expanded
+    final case object Full extends BlockVerbosity(2) // block header and detailed transactions
+  }
+
+  final case class GetBlock(blockhash: Blockhash, verbosity: BlockVerbosity) extends BitcoinRPCMethod("getblock") {
+    override def arrayParams: String = s"[${asParamString(blockhash.string)}, ${verbosity.int}]"
   }
 
   final case class GetBlockhash(height: Int) extends BitcoinRPCMethod("getblockhash") {

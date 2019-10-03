@@ -1,7 +1,7 @@
 package io.iohk.node.repositories.blocks
 
-import io.iohk.node.bitcoin.models.{Block, BlockError, Blockhash}
 import io.iohk.cvp.repositories.PostgresRepositorySpec
+import io.iohk.node.bitcoin.models.{BlockError, BlockHeader, Blockhash}
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 
@@ -56,9 +56,9 @@ class BlocksRepositorySpec extends PostgresRepositorySpec {
     }
   }
 
-  def randomBlock(): Block = {
+  def randomBlock(): BlockHeader = {
     val bytes = Array.ofDim[Byte](32)
     Random.nextBytes(bytes)
-    Block(Blockhash.fromBytesBE(bytes).value, Random.nextInt(100), Random.nextLong(), None)
+    BlockHeader(Blockhash.fromBytesBE(bytes).value, Random.nextInt(100), Random.nextLong(), None)
   }
 }

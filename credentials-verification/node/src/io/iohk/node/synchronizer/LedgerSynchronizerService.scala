@@ -1,7 +1,7 @@
 package io.iohk.node.synchronizer
 
 import io.iohk.node.bitcoin.BitcoinClient
-import io.iohk.node.bitcoin.models.{Block, Blockhash}
+import io.iohk.node.bitcoin.models.{BlockHeader, Blockhash}
 import io.iohk.node.repositories.blocks.BlocksRepository
 import io.iohk.node.utils.FutureEither
 import io.iohk.node.utils.FutureEither._
@@ -29,7 +29,7 @@ class LedgerSynchronizerService(
         .getBlock(blockhash)
         .failOnLeft(e => new RuntimeException(s"Synchronization failed while retrieving the target block: $e"))
 
-      status <- syncStatusService.getSyncingStatus(candidate)
+      status <- syncStatusService.getSyncingStatus(candidate.header)
       _ <- sync(status)
     } yield ()
   }
@@ -80,12 +80,12 @@ class LedgerSynchronizerService(
             .getBlock(blockhash)
             .failOnLeft(e => new RuntimeException(s"Synchronization failed while pushing $goal: $e"))
 
-          _ <- append(block)
+          _ <- append(block.header)
         } yield ()
     }
   }
 
-  private def rollback(goal: BlockPointer): FutureEither[Nothing, Block] = {
+  private def rollback(goal: BlockPointer): FutureEither[Nothing, BlockHeader] = {
     blocksRepository
       .removeLatest()
       .failOnLeft(_ => new RuntimeException(s"Failed to rollback until ${goal}, there are no more blocks available"))
@@ -102,7 +102,7 @@ class LedgerSynchronizerService(
       }
   }
 
-  private def append(newBlock: Block): FutureEither[Nothing, Unit] = {
+  private def append(newBlock: BlockHeader): FutureEither[Nothing, Unit] = {
     for {
       _ <- blocksRepository.create(newBlock)
     } yield {

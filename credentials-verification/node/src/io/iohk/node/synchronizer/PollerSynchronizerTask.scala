@@ -33,7 +33,7 @@ class PollerSynchronizerTask(
           e => new RuntimeException(s"A rollback occurred on bitcoin while getting its latest block, error = $e")
         )
 
-      _ <- synchronizer.synchronize(block.hash)
+      _ <- synchronizer.synchronize(block.header.hash)
     } yield ()
 
     result.value.onComplete {
