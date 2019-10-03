@@ -1,10 +1,9 @@
 package io.iohk.node
 
 import com.typesafe.config.{Config, ConfigFactory}
-import io.iohk.node
-import io.iohk.node.bitcoin.BitcoinClient
-import io.iohk.node.repositories.blocks.BlocksRepository
 import io.iohk.cvp.repositories.{SchemaMigrations, TransactorFactory}
+import io.iohk.node.bitcoin.{BitcoinClient, SttpBitcoinClient}
+import io.iohk.node.repositories.blocks.BlocksRepository
 import io.iohk.node.synchronizer.{
   LedgerSynchronizationStatusService,
   LedgerSynchronizerService,
@@ -33,7 +32,7 @@ object NodeApp {
     val blocksRepository = new BlocksRepository(xa)
 
     logger.info("Creating bitcoin client")
-    val bitcoinClient = new node.bitcoin.SttpBitcoinClient(bitcoinConfig(globalConfig.getConfig("bitcoin")))
+    val bitcoinClient = SttpBitcoinClient(bitcoinConfig(globalConfig.getConfig("bitcoin")))
 
     val synchronizerConfig = SynchronizerConfig(30.seconds)
     val syncStatusService = new LedgerSynchronizationStatusService(bitcoinClient, blocksRepository)

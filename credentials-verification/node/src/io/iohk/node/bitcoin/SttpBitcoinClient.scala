@@ -1,21 +1,22 @@
 package io.iohk.node.bitcoin
 
+import com.softwaremill.sttp._
 import com.softwaremill.sttp.asynchttpclient.future.AsyncHttpClientFutureBackend
-import com.softwaremill.sttp.{Response, SttpBackend, Uri, asString, sttp}
 import io.circe.parser.parse
 import io.circe.{Decoder, Json}
 import io.iohk.node.bitcoin.models._
-import io.iohk.node.utils.FutureEither.FutureEitherOps
+import io.iohk.node.utils.FutureEither._
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
-class SttpBitcoinClient(config: BitcoinClient.Config)(implicit ec: ExecutionContext) extends BitcoinClient {
+class SttpBitcoinClient(config: BitcoinClient.Config)(
+    implicit backend: SttpBackend[Future, Nothing],
+    ec: ExecutionContext
+) extends BitcoinClient {
 
   import BitcoinClient._
   import SttpBitcoinClient._
-
-  private implicit val backend: SttpBackend[Future, Nothing] = AsyncHttpClientFutureBackend()
 
   private val server = sttp
     .post(Uri.apply(config.host, config.port))
@@ -65,6 +66,12 @@ class SttpBitcoinClient(config: BitcoinClient.Config)(implicit ec: ExecutionCont
 object SttpBitcoinClient {
 
   private final case class RPCErrorResponse(code: Int, message: String)
+
+  private val DefaultBackend: SttpBackend[Future, Nothing] = AsyncHttpClientFutureBackend()
+
+  def apply(config: BitcoinClient.Config)(implicit ec: ExecutionContext): SttpBitcoinClient = {
+    new SttpBitcoinClient(config)(DefaultBackend, ec)
+  }
 
   private implicit val rpcErrorResponseDecoder: Decoder[RPCErrorResponse] =
     Decoder.forProduct2("code", "message")(RPCErrorResponse.apply)
