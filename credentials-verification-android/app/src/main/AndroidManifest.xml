@@ -11,7 +11,9 @@
     android:supportsRtl="true"
     android:theme="@style/AppTheme"
     tools:ignore="GoogleAppIndexingWarning">
-    <activity android:name="io.iohk.cvp.views.activities.ConnectionActivity">
+    <activity android:name="io.iohk.cvp.views.activities.ConnectionActivity" />
+
+    <activity android:name="io.iohk.cvp.views.activities.WelcomeActivity">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />
@@ -25,7 +27,10 @@
     </activity>
   </application>
 
+  <uses-permission
+    android:name="android.permission.CAMERA"
+    tools:ignore="ManifestOrder" />
+
   <uses-permission android:name="android.permission.INTERNET" />
 
-  <uses-permission android:name="android.permission.CAMERA" />
 </manifest>

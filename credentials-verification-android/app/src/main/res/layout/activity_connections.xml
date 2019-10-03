@@ -11,7 +11,7 @@
     android:layout_width="322dp"
     android:layout_height="44dp"
     android:layout_marginBottom="36dp"
-    android:background="@drawable/rounded_button"
+    android:background="@drawable/rounded_button_red"
     android:text="@string/scan_qr"
     android:textColor="@android:color/white"
     app:layout_constraintBottom_toBottomOf="parent"
