@@ -1,0 +1,10 @@
+{
+  "home": {
+    "centralText": {
+      "edit": "Edit ",
+      "filePath": "src/App.js",
+      "toReload": " and save to reload."
+    },
+    "learnReact": "Learn React"
+  }
+}
