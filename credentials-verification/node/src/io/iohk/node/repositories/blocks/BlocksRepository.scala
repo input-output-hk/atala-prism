@@ -5,8 +5,8 @@ import doobie.implicits._
 import doobie.util.transactor.Transactor
 import doobie.util.{Get, Read}
 import io.iohk.node.bitcoin.models.{BlockError, BlockHeader, Blockhash}
-import io.iohk.node.utils.FutureEither
-import io.iohk.node.utils.FutureEither.{FutureEitherOps, FutureOptionOps}
+import io.iohk.cvp.utils.FutureEither
+import io.iohk.cvp.utils.FutureEither.{FutureEitherOps, FutureOptionOps}
 
 import scala.concurrent.ExecutionContext
 

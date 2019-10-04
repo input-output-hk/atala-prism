@@ -3,8 +3,8 @@ package io.iohk.node.synchronizer
 import io.iohk.node.bitcoin.BitcoinClient
 import io.iohk.node.bitcoin.models.{BlockHeader, Blockhash}
 import io.iohk.node.repositories.blocks.BlocksRepository
-import io.iohk.node.utils.FutureEither
-import io.iohk.node.utils.FutureEither._
+import io.iohk.cvp.utils.FutureEither
+import io.iohk.cvp.utils.FutureEither._
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}

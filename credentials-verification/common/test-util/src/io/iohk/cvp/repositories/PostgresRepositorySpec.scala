@@ -35,7 +35,7 @@ trait PostgresRepositorySpec
 
   import DockerPostgresService._
 
-  private val tables = List("blocks")
+  protected val tables = List("blocks")
 
   private implicit val pc: PatienceConfig =
     PatienceConfig(Span(20, Seconds), Span(1, Second))

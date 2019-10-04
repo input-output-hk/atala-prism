@@ -121,6 +121,7 @@ trait `server-common` extends ScalaPBModule {
   override def ivyDeps = Agg(
     ivy"org.flywaydb:flyway-core:6.0.2",
     ivy"org.postgresql:postgresql:42.2.6",
+    ivy"com.beachape::enumeratum:1.5.13",
     ivy"com.typesafe:config:1.3.4",
     ivy"org.slf4j:slf4j-api:1.7.25",
     ivy"ch.qos.logback:logback-core:${versions.logback}",
@@ -129,6 +130,7 @@ trait `server-common` extends ScalaPBModule {
     ivy"com.softwaremill.sttp::async-http-client-backend-future:${versions.sttp}",
     ivy"org.tpolecat::doobie-core:${versions.doobie}",
     ivy"org.tpolecat::doobie-hikari:${versions.doobie}",
+    ivy"org.tpolecat::doobie-postgres:${versions.doobie}",
     ivy"io.circe::circe-core:${versions.circe}",
     ivy"io.circe::circe-generic:${versions.circe}",
     ivy"io.circe::circe-parser:${versions.circe}",
@@ -174,6 +176,8 @@ object connector extends `server-common` {
     new FixedScalaPBWorker()
       .compile(scalaPBClasspath().map(_.path), scalaPBSources().map(_.path), scalaPBOptions(), T.ctx().dest)
   }
+
+  object test extends `tests-common` {}
 }
 
 object wallet extends `server-common` {

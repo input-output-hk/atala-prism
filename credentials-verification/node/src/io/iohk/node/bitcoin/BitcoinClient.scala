@@ -1,7 +1,7 @@
 package io.iohk.node.bitcoin
 
 import io.iohk.node.bitcoin.models.{Block, BlockError, Blockhash}
-import io.iohk.node.utils.FutureEither
+import io.iohk.cvp.utils.FutureEither
 
 trait BitcoinClient {
 

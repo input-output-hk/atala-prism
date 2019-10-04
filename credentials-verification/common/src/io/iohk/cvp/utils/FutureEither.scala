@@ -1,4 +1,4 @@
-package io.iohk.node.utils
+package io.iohk.cvp.utils
 
 import scala.concurrent.{ExecutionContext, Future}
 

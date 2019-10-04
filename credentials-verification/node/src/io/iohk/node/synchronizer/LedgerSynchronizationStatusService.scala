@@ -3,8 +3,8 @@ package io.iohk.node.synchronizer
 import io.iohk.node.bitcoin.BitcoinClient
 import io.iohk.node.bitcoin.models.{BlockError, BlockHeader}
 import io.iohk.node.repositories.blocks.BlocksRepository
-import io.iohk.node.utils.FutureEither
-import io.iohk.node.utils.FutureEither.{EitherOps, FutureEitherOps}
+import io.iohk.cvp.utils.FutureEither
+import io.iohk.cvp.utils.FutureEither.{EitherOps, FutureEitherOps}
 
 import scala.concurrent.{ExecutionContext, Future}
 

@@ -5,7 +5,7 @@ import com.softwaremill.sttp.asynchttpclient.future.AsyncHttpClientFutureBackend
 import io.circe.parser.parse
 import io.circe.{Decoder, Json}
 import io.iohk.node.bitcoin.models._
-import io.iohk.node.utils.FutureEither._
+import io.iohk.cvp.utils.FutureEither._
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
