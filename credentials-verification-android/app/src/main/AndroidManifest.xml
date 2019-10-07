@@ -15,13 +15,19 @@
 
     <activity android:name="io.iohk.cvp.views.activities.WelcomeActivity">
       <intent-filter>
-        <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
     </activity>
 
     <activity android:name="io.iohk.cvp.views.activities.QrCodeScanner">
       <intent-filter>
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+    </activity>
+
+    <activity android:name="io.iohk.cvp.views.activities.ConnectionsListActivity">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
     </activity>
