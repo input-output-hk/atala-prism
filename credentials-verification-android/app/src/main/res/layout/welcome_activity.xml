@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:layout_marginStart="24dp"
+  android:layout_marginEnd="24dp"
+  tools:context=".views.activities.WelcomeActivity">
+
+
+  <LinearLayout
+    android:id="@+id/steps_counter"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="48dp"
+    android:layout_marginStart="72dp"
+    android:layout_marginEnd="72dp"
+    android:orientation="horizontal"
+    android:visibility="gone"
+    app:layout_constraintBottom_toTopOf="@+id/welcome_body_container"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent">
+    <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_weight="1"
+      android:gravity="center"
+      android:orientation="vertical">
+      <TextView
+        android:id="@+id/step1_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="1"
+        android:textAlignment="center"
+        android:textColor="@color/black"
+        android:textSize="16sp" />
+      <View
+        android:id="@+id/step1_dot"
+        android:layout_width="5dp"
+        android:layout_height="5dp"
+        android:background="@drawable/dot" />
+    </LinearLayout>
+    <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_weight="1"
+      android:gravity="center"
+      android:orientation="vertical">
+      <TextView
+        android:id="@+id/step2_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="2"
+        android:textAlignment="center"
+        android:textColor="@color/black"
+        android:textSize="16sp" />
+      <View
+        android:id="@+id/step2_dot"
+        android:layout_width="5dp"
+        android:layout_height="5dp"
+        android:background="@drawable/dot"
+        android:visibility="gone" />
+    </LinearLayout>
+    <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_weight="1"
+      android:gravity="center"
+      android:orientation="vertical">
+      <TextView
+        android:id="@+id/step3_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="3"
+        android:textAlignment="center"
+        android:textColor="@color/black"
+        android:textSize="16sp" />
+      <View
+        android:id="@+id/step3_dot"
+        android:layout_width="5dp"
+        android:layout_height="5dp"
+        android:background="@drawable/dot"
+        android:visibility="gone" />
+    </LinearLayout>
+  </LinearLayout>
+
+
+  <LinearLayout
+    android:id="@+id/welcomeButtonsContainer"
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:orientation="horizontal"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent">
+    <Button
+      android:id="@+id/get_started_button"
+      android:layout_width="match_parent"
+      android:layout_height="50dp"
+      android:layout_marginBottom="32dp"
+      android:background="@drawable/rounded_button_red"
+      android:elevation="8dp"
+      android:text="@string/get_started"
+      android:textAllCaps="false"
+      android:textColor="@android:color/white" />
+
+    <Button
+      android:id="@+id/restore_account_btn"
+      android:layout_width="match_parent"
+      android:layout_height="50dp"
+      android:layout_weight="1"
+      android:layout_marginBottom="32dp"
+      android:layout_marginEnd="8dp"
+      android:background="@drawable/rounded_button_black"
+      android:text="@string/restore_account"
+      android:textAllCaps="false"
+      android:textColor="@android:color/white"
+      android:visibility="gone"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+      android:id="@+id/create_account_btn"
+      android:layout_width="match_parent"
+      android:layout_height="50dp"
+      android:layout_weight="1"
+      android:layout_marginBottom="32dp"
+      android:layout_marginStart="8dp"
+      android:background="@drawable/rounded_button_red"
+      android:text="@string/create_account"
+      android:textAllCaps="false"
+      android:textColor="@android:color/white"
+      android:visibility="gone"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent" />
+  </LinearLayout>
+
+  <RelativeLayout
+    android:id="@+id/welcome_body_container"
+    android:layout_width="0dp"
+    android:layout_height="0dp"
+    app:layout_constraintBottom_toTopOf="@+id/welcomeButtonsContainer"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@+id/steps_counter">
+
+    <include
+      android:id="@+id/welcome_view"
+      layout="@layout/welcome_layout"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent" />
+
+    <include
+      android:id="@+id/tutorial_step1_view"
+      layout="@layout/tutorial_step_1"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:visibility="gone" />
+
+    <include
+      android:id="@+id/tutorial_step2_view"
+      layout="@layout/tutorial_step_2"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:visibility="gone" />
+
+
+    <include
+      android:id="@+id/tutorial_step3_view"
+      layout="@layout/tutorial_step_3"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:visibility="gone" />
+
+  </RelativeLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

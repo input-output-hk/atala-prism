@@ -4,8 +4,8 @@ import android.content.Context;
 import android.os.Bundle;
 import androidx.lifecycle.ViewModel;
 import butterknife.ButterKnife;
-import io.iohk.cvp.views.Navigator;
 import dagger.android.support.DaggerAppCompatActivity;
+import io.iohk.cvp.views.Navigator;
 
 public abstract class CvpActivity<T extends ViewModel> extends DaggerAppCompatActivity {
 

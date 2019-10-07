@@ -10,4 +10,16 @@
 
   <string name="image_description">Image description</string>
   <string name="permission_denied_message">You have to grant camera permission to continue</string>
+  <string name="welcome">Welcome</string>
+  <string name="get_started">Get started</string>
+  <string name="empty_title" />
+  <string name="tutorial_step_1_slogan_1">Own and share your achievements</string>
+  <string name="tutorial_step_1_slogan_2">Securely store all your important documents in one place</string>
+  <string name="tutorial_step_2_slogan_1">Take control of your personal information</string>
+  <string name="tutorial_step_2_slogan_2">Secure your personal information and only share what you need to</string>
+  <string name="tutorial_step_3_slogan_1">Join a next generation payment network</string>
+  <string name="tutorial_step_3_slogan_2">Transact everywhere privately, securely and conveniently</string>
+  <string name="continue_string">Continue</string>
+  <string name="create_account">Create account</string>
+  <string name="restore_account">Restore account</string>
 </resources>
