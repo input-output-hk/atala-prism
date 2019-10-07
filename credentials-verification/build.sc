@@ -55,7 +55,7 @@ object versions {
 
   def scalaPB = "0.9.0"
   val scala = "2.12.10"
-  val circe = "0.11.1"
+  val circe = "0.12.2"
   val doobie = "0.7.0"
   val sttp = "1.6.6"
   val logback = "1.2.3"
@@ -114,11 +114,11 @@ object common extends ScalaModule {
   * - Logback
   * - Monix
   */
-trait `server-common` extends ScalaPBModule {
+trait ServerCommon extends ScalaModule {
 
   def scalaVersion = versions.scala
-  def scalaPBVersion = versions.scalaPB
-  def scalaPBGrpc = true
+
+  // def scalacOptions = Seq("-Ywarn-unused:imports", "-Xfatal-warnings", "-feature")
 
   override def moduleDeps = Seq(common) ++ super.moduleDeps
 
@@ -141,7 +141,7 @@ trait `server-common` extends ScalaPBModule {
     ivy"io.monix::monix:3.0.0",
     ivy"io.scalaland::chimney:0.3.2",
     ivy"io.grpc:grpc-netty:1.23.0",
-    ivy"com.thesamet.scalapb::scalapb-runtime-grpc:${versions.scalaPB}"
+    ivy"com.chuusai::shapeless:2.3.3"
   )
 
   trait `tests-common` extends Tests {
@@ -160,14 +160,26 @@ trait `server-common` extends ScalaPBModule {
   }
 }
 
-object node extends `server-common` {
+trait ServerPBCommon extends ServerCommon with ScalaPBModule {
+  def scalaPBVersion = versions.scalaPB
+  def scalaPBGrpc = true
+
+  override def ivyDeps =
+    super[ServerCommon].ivyDeps.map { deps =>
+      deps ++ Agg(
+        ivy"com.thesamet.scalapb::scalapb-runtime-grpc:${versions.scalaPB}"
+      )
+    }
+}
+
+object node extends ServerCommon {
 
   override def mainClass = Some("io.iohk.node.NodeApp")
 
   object test extends `tests-common` {}
 }
 
-object connector extends `server-common` {
+object connector extends ServerPBCommon {
 
   override def mainClass = Some("io.iohk.connector.ConnectorApp")
 
@@ -184,7 +196,7 @@ object connector extends `server-common` {
   object test extends `tests-common` {}
 }
 
-object wallet extends `server-common` {
+object wallet extends ServerPBCommon {
 
   override def mainClass = Some("io.iohk.cvp.wallet.WalletApp")
 

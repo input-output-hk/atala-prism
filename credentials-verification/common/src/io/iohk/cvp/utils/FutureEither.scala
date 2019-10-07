@@ -8,6 +8,11 @@ class FutureEither[+E, +A](val value: Future[Either[E, A]]) extends AnyVal {
     new FutureEither[E, B](newFuture)
   }
 
+  def mapLeft[F](f: E => F)(implicit ec: ExecutionContext): FutureEither[F, A] = {
+    val newFuture = value.map { _.left.map(f) }
+    new FutureEither[F, A](newFuture)
+  }
+
   def flatMap[E2 >: E, B](f: A => FutureEither[E2, B])(implicit ec: ExecutionContext): FutureEither[E2, B] = {
     val newFuture = value.flatMap {
       case Right(a) => f(a).value
@@ -16,6 +21,9 @@ class FutureEither[+E, +A](val value: Future[Either[E, A]]) extends AnyVal {
 
     new FutureEither[E2, B](newFuture)
   }
+
+  def innerFlatMap[E2 >: E, B](f: A => Either[E2, B])(implicit ec: ExecutionContext): FutureEither[E2, B] =
+    transform(e => Left(e), f)
 
   def transform[E2, A2](fa: E => Either[E2, A2], fb: A => Either[E2, A2])(
       implicit ec: ExecutionContext

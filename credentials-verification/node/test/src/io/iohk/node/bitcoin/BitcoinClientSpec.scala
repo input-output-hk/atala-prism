@@ -1,5 +1,7 @@
 package io.iohk.node.bitcoin
 
+import scala.language.higherKinds
+
 import com.softwaremill.diffx.scalatest.DiffMatcher._
 import com.softwaremill.sttp.testing.SttpBackendStub
 import io.iohk.node.bitcoin
@@ -13,7 +15,7 @@ import org.scalatest.time.{Millis, Seconds, Span}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class SttpBitcoinClientSpec extends WordSpec with ScalaFutures {
+class BitcoinClientSpec extends WordSpec with ScalaFutures {
 
   implicit override val patienceConfig = PatienceConfig(timeout = Span(5, Seconds), interval = Span(30, Millis))
 
@@ -52,15 +54,15 @@ class SttpBitcoinClientSpec extends WordSpec with ScalaFutures {
           Transaction(
             TransactionId.from("f78011d83798ba5eb928bd6e79a35cfd8a03d3657044a32c24a1f8f99d5f0125").value,
             blockhash,
-            List(Transaction.Output(0, 0, Transaction.OutputScript("nonstandard", "")))
+            List(Transaction.Output(Btc(0), 0, Transaction.OutputScript("nonstandard", "")))
           ),
           Transaction(
             TransactionId.from("3d488d9381b09954b5a9606b365ab0aaeca6aa750bdba79436e416ad6702226a").value,
             blockhash,
             List(
-              Transaction.Output(0, 0, Transaction.OutputScript("nonstandard", "")),
+              Transaction.Output(Btc(0), 0, Transaction.OutputScript("nonstandard", "")),
               Transaction.Output(
-                1340,
+                Btc(1340),
                 1,
                 Transaction.OutputScript(
                   "pubkeyhash",
@@ -68,7 +70,7 @@ class SttpBitcoinClientSpec extends WordSpec with ScalaFutures {
                 )
               ),
               Transaction.Output(
-                22.5,
+                Btc(22.5),
                 2,
                 Transaction.OutputScript(
                   "pubkeyhash",
@@ -82,7 +84,7 @@ class SttpBitcoinClientSpec extends WordSpec with ScalaFutures {
             blockhash,
             List(
               Transaction.Output(
-                0,
+                Btc(0),
                 0,
                 Transaction.OutputScript(
                   "nulldata",
@@ -90,7 +92,7 @@ class SttpBitcoinClientSpec extends WordSpec with ScalaFutures {
                 )
               ),
               Transaction.Output(
-                1,
+                Btc(1),
                 1,
                 Transaction.OutputScript(
                   "pubkeyhash",
@@ -98,7 +100,7 @@ class SttpBitcoinClientSpec extends WordSpec with ScalaFutures {
                 )
               ),
               Transaction.Output(
-                1249,
+                Btc(1249),
                 2,
                 Transaction.OutputScript(
                   "pubkeyhash",
@@ -116,9 +118,10 @@ class SttpBitcoinClientSpec extends WordSpec with ScalaFutures {
   }
 
   private def newClient(response: String): BitcoinClient = {
-    val config = bitcoin.BitcoinClient.Config("localhost", 0, "", "")
+    val config = bitcoin.api.rpc.RpcClient.Config("localhost", 0, "", "")
     val backend = SttpBackendStub.asynchronousFuture.whenAnyRequest.thenRespond(createRPCSuccessfulResponse(response))
-    new SttpBitcoinClient(config)(backend, global)
+    val client = new bitcoin.api.rpc.RpcClient(config)(backend, global)
+    new bitcoin.BitcoinClient(client)
   }
 
   private def blockPath(blockhash: Blockhash): String = {
