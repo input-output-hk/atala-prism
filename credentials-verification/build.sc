@@ -175,3 +175,10 @@ object connector extends `server-common` {
       .compile(scalaPBClasspath().map(_.path), scalaPBSources().map(_.path), scalaPBOptions(), T.ctx().dest)
   }
 }
+
+object wallet extends `server-common` {
+
+  override def mainClass = Some("io.iohk.cvp.wallet.WalletApp")
+
+  object test extends `tests-common` {}
+}
