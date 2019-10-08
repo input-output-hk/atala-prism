@@ -1,19 +1,27 @@
 package io.iohk.connector
 
+import java.time.Instant
+
 import io.grpc.Status
 import io.iohk.connector.protos._
+import io.iohk.connector.services.ConnectionsService
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
-class ConnectorService extends ConnectorServiceGrpc.ConnectorService {
+class ConnectorService(connections: ConnectionsService)(implicit executionContext: ExecutionContext)
+    extends ConnectorServiceGrpc.ConnectorService {
 
   /** Get active connections for current participant
     *
     * Available to: Holder, Issuer, Validator
     */
   override def getConnectionsSince(request: GetConnectionsSinceRequest): Future[GetConnectionsSinceResponse] = {
-    Future.successful {
-      GetConnectionsSinceResponse(Nil)
+    val userId = UserIdInterceptor.USER_ID_CTX_KEY.get()
+
+    connections.getConnectionsSince(userId, Instant.ofEpochMilli(request.since), request.limit).value.flatMap {
+      case Left(err) => Future.failed(new Exception(s"Problem: $err"))
+      case Right(connections) =>
+        Future.successful(GetConnectionsSinceResponse(connections.map(_.toProto)))
     }
   }
 
@@ -27,14 +35,9 @@ class ConnectorService extends ConnectorServiceGrpc.ConnectorService {
   override def getConnectionTokenInfo(
       request: GetConnectionTokenInfoRequest
   ): Future[GetConnectionTokenInfoResponse] = {
-    Future.successful {
-      GetConnectionTokenInfoResponse(
-        ParticipantInfo(
-          ParticipantInfo.Participant.Issuer(
-            IssuerInfo()
-          )
-        )
-      )
+    connections.getTokenInfo(new model.TokenString(request.token)).value.flatMap {
+      case Left(err) => Future.failed(new Exception(s"Problem: $err"))
+      case Right(participantInfo) => Future.successful(GetConnectionTokenInfoResponse(participantInfo.toProto))
     }
   }
 
@@ -48,8 +51,11 @@ class ConnectorService extends ConnectorServiceGrpc.ConnectorService {
   override def addConnectionFromToken(
       request: AddConnectionFromTokenRequest
   ): Future[AddConnectionFromTokenResponse] = {
-    Future.successful {
-      AddConnectionFromTokenResponse()
+    val userId = UserIdInterceptor.USER_ID_CTX_KEY.get()
+
+    connections.addConnectionFromToken(userId, new model.TokenString(request.token)).value.flatMap {
+      case Left(err) => Future.failed(new Exception(s"Problem: $err"))
+      case Right(connectionInfo) => Future.successful(AddConnectionFromTokenResponse(connectionInfo.toProto))
     }
   }
 
@@ -105,8 +111,11 @@ class ConnectorService extends ConnectorServiceGrpc.ConnectorService {
   override def generateConnectionToken(
       request: GenerateConnectionTokenRequest
   ): Future[GenerateConnectionTokenResponse] = {
-    Future.failed {
-      Status.PERMISSION_DENIED.withDescription("Billing plan doesn't allow token generation").asException()
+    val userId = UserIdInterceptor.USER_ID_CTX_KEY.get()
+
+    connections.generateToken(userId).value.flatMap {
+      case Left(err) => Future.failed(new Exception(s"Problem: $err"))
+      case Right(tokenString) => Future.successful(GenerateConnectionTokenResponse(tokenString.token))
     }
   }
 

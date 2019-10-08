@@ -6,6 +6,8 @@ import java.util.{Base64, UUID}
 import enumeratum.EnumEntry.Lowercase
 import enumeratum._
 
+import io.iohk.connector.protos
+
 import scala.util.Random
 
 sealed trait ParticipantType extends EnumEntry with Lowercase
@@ -41,9 +43,30 @@ object MessageId {
   }
 }
 
-case class ParticipantInfo(id: ParticipantId, tpe: ParticipantType, name: String, did: Option[String])
+case class ParticipantInfo(id: ParticipantId, tpe: ParticipantType, name: String, did: Option[String]) {
+  def toProto: protos.ParticipantInfo = {
+    tpe match {
+      case ParticipantType.Holder =>
+        protos.ParticipantInfo(
+          protos.ParticipantInfo.Participant.Holder(
+            protos.HolderInfo(did.getOrElse(""), name)
+          )
+        )
+      case ParticipantType.Issuer =>
+        protos.ParticipantInfo(
+          protos.ParticipantInfo.Participant.Issuer(
+            protos.IssuerInfo(did.getOrElse(""), name)
+          )
+        )
+    }
+  }
+}
 
-case class ConnectionInfo(id: ConnectionId, instantiatedAt: Instant, participantInfo: ParticipantInfo)
+case class ConnectionInfo(id: ConnectionId, instantiatedAt: Instant, participantInfo: ParticipantInfo) {
+  def toProto: protos.ConnectionInfo = {
+    protos.ConnectionInfo(id.id.toString, instantiatedAt.toEpochMilli, participantInfo.toProto)
+  }
+}
 
 class TokenString(val token: String) extends AnyVal
 
