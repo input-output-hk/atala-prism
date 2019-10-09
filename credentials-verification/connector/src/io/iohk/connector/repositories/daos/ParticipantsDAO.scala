@@ -3,7 +3,7 @@ package io.iohk.connector.repositories.daos
 import doobie.implicits._
 import io.iohk.connector.model.{ParticipantInfo, TokenString}
 
-class ParticipantsDAO {
+object ParticipantsDAO {
   def findBy(token: TokenString): doobie.ConnectionIO[Option[ParticipantInfo]] = {
     sql"""
          |SELECT p.id, p.tpe, p.name, p.did

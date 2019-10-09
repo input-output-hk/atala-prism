@@ -5,20 +5,27 @@ import java.time.Instant
 import doobie.implicits._
 import io.iohk.connector.model.{ConnectionId, ConnectionInfo, ParticipantId}
 
-class ConnectionsDAO {
+object ConnectionsDAO {
   def insert(
       initiator: ParticipantId,
-      acceptor: ParticipantId,
-      now: Instant
+      acceptor: ParticipantId
   ): doobie.ConnectionIO[(ConnectionId, Instant)] = {
 
     val connectionId = ConnectionId.random()
     sql"""
          |INSERT INTO connections (id, initiator, acceptor, instantiated_at)
-         |VALUES ($connectionId, $initiator, $acceptor, $now)
+         |VALUES ($connectionId, $initiator, $acceptor, now())
          |RETURNING id, instantiated_at""".stripMargin
       .query[(ConnectionId, Instant)]
       .unique
+  }
+
+  def getOtherSide(connection: ConnectionId, participant: ParticipantId): doobie.ConnectionIO[ParticipantId] = {
+    sql"""
+         |SELECT acceptor AS other_side FROM connections WHERE id = $connection AND initiator = $participant
+         | UNION
+         | SELECT initiator AS other_side FROM connections WHERE id = $connection AND acceptor = $participant"""
+      .stripMargin.query[ParticipantId].unique // TODO: use option, support error
   }
 
   def getConnectionsSince(

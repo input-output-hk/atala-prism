@@ -33,6 +33,14 @@ object ConnectionId {
   }
 }
 
+case class MessageId(id: UUID) extends AnyVal
+
+object MessageId {
+  def random(): MessageId = {
+    new MessageId(UUID.randomUUID())
+  }
+}
+
 case class ParticipantInfo(id: ParticipantId, tpe: ParticipantType, name: String, did: Option[String])
 
 case class ConnectionInfo(id: ConnectionId, instantiatedAt: Instant, participantInfo: ParticipantInfo)
@@ -48,3 +56,5 @@ object TokenString {
 
   def random(): TokenString = random(Random)
 }
+
+case class Message(id: MessageId, connection: ConnectionId, receivedAt: Instant, content: Array[Byte])

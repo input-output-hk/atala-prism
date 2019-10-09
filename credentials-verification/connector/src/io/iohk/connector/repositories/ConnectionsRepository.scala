@@ -13,14 +13,11 @@ import io.iohk.cvp.utils.FutureEither.{FutureEitherOps, FutureOptionOps}
 import scala.concurrent.ExecutionContext
 
 class ConnectionsRepository(
-    connectionTokensDAO: ConnectionTokensDAO,
-    connectionsDAO: ConnectionsDAO,
-    participantsDAO: ParticipantsDAO,
     xa: Transactor[IO]
 )(implicit ec: ExecutionContext) {
 
   def insertToken(initiator: ParticipantId, token: TokenString): FutureEither[Nothing, TokenString] = {
-    connectionTokensDAO
+    ConnectionTokensDAO
       .insert(initiator, token)
       .transact(xa)
       .unsafeToFuture()
@@ -30,7 +27,7 @@ class ConnectionsRepository(
 
   // TODO: replace Unit left with real error support
   def getTokenInfo(token: TokenString): FutureEither[Unit, ParticipantInfo] = {
-    participantsDAO
+    ParticipantsDAO
       .findBy(token)
       .transact(xa)
       .unsafeToFuture()
@@ -39,16 +36,14 @@ class ConnectionsRepository(
 
   // TODO: replace Unit left with real error support
   def addConnectionFromToken(token: TokenString, acceptor: ParticipantId): FutureEither[Unit, ConnectionInfo] = {
-    val now = Instant.now()
-
     val query = for {
-      initiatorMaybe <- participantsDAO.findByAvailableToken(token)
+      initiatorMaybe <- ParticipantsDAO.findByAvailableToken(token)
       initiator = initiatorMaybe.getOrElse(throw new RuntimeException("The token is not available"))
 
-      ciia <- connectionsDAO.insert(initiator = initiator.id, acceptor = acceptor, now)
+      ciia <- ConnectionsDAO.insert(initiator = initiator.id, acceptor = acceptor)
       (connectionId, instantiatedAt) = ciia
 
-      _ <- connectionTokensDAO.markAsUsed(token)
+      _ <- ConnectionTokensDAO.markAsUsed(token)
     } yield ConnectionInfo(connectionId, instantiatedAt, initiator)
 
     query
@@ -63,7 +58,7 @@ class ConnectionsRepository(
       since: Instant,
       limit: Int
   ): FutureEither[Nothing, Seq[ConnectionInfo]] = {
-    connectionsDAO
+    ConnectionsDAO
       .getConnectionsSince(participant, since, limit)
       .transact(xa)
       .unsafeToFuture()
