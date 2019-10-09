@@ -172,6 +172,16 @@ jobs:
       - run: cd enterprise-web && npm run test -- --no-watch --no-progress --browsers=ChromeHeadlessCI
       - run: cd enterprise-web && npm run e2e -- --protractor-config=e2e/protractor-ci.conf.js
 
+  build-credentials-verification-web:
+    working_directory: ~/repo
+    docker:
+      - image: circleci/node:10-browsers
+    steps:
+      - checkout
+      - run: 
+          name: Move to target folder then run tests
+          command: cd credentials-verification-web && ./web-testing-script.sh
+
   trigger-atala-qa-automation:
     working_directory: ~/repo
     environment:
@@ -228,7 +238,7 @@ workflows:
           filters:
             branches:
               only: develop
-#      - build-enterprise-web
+      - build-credentials-verification-web
       - trigger-atala-qa-automation:
           filters:
             branches:

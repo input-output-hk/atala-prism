@@ -5,10 +5,12 @@ import App from './App';
 import I18nError from './I18nError';
 import * as serviceWorker from './serviceWorker';
 import i18nInitialise from './i18nInitialisator';
+import Logger from './helpers/Logger';
 
-i18nInitialise().then(() => {
-  ReactDOM.render(<App />, document.getElementById('root'));
-}).catch(() => {
+i18nInitialise().then(
+  ReactDOM.render(<App />, document.getElementById('root'))
+).catch(error => {
+  Logger.error('[index.i18nInitialise] Error while initialising i18n', error);
   ReactDOM.render(<I18nError />, document.getElementById('root'));
 });
 
