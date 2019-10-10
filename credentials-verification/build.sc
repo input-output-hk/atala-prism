@@ -16,8 +16,7 @@ object app extends ScalaModule {
 
   override def ivyDeps = Agg(
     ivy"com.typesafe.play::play-json:2.7.3",
-    ivy"com.beachape::enumeratum:1.5.13",
-    ivy"com.lihaoyi::os-lib:0.2.7"
+    ivy"com.beachape::enumeratum:1.5.13"
   )
 
   object test extends Tests {
@@ -74,7 +73,8 @@ object common extends ScalaModule {
     ivy"org.tpolecat::doobie-hikari:${versions.doobie}",
     ivy"io.monix::monix:3.0.0",
     ivy"org.bouncycastle:bcprov-jdk15on:1.62",
-    ivy"org.bouncycastle:bcpkix-jdk15on:1.62"
+    ivy"org.bouncycastle:bcpkix-jdk15on:1.62",
+    ivy"com.lihaoyi::os-lib:0.2.7"
   )
 
   object `test-util` extends ScalaModule {
@@ -87,7 +87,8 @@ object common extends ScalaModule {
       ivy"com.whisk::docker-testkit-scalatest:0.9.9",
       ivy"com.whisk::docker-testkit-impl-spotify:0.9.9",
       ivy"org.tpolecat::doobie-scalatest:${versions.doobie}",
-      ivy"com.softwaremill.diffx::diffx-scalatest:0.3.3"
+      ivy"com.softwaremill.diffx::diffx-scalatest:0.3.3",
+      ivy"com.beachape::enumeratum:1.5.13"
     )
   }
 
