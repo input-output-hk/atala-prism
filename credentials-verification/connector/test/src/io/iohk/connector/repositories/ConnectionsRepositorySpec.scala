@@ -5,6 +5,7 @@ import java.time.{Instant, LocalDateTime, ZoneOffset}
 import doobie.implicits._
 import doobie.util.{Read, fragment}
 import io.iohk.connector.model._
+import io.iohk.connector.repositories.daos._
 import io.iohk.cvp.repositories.PostgresRepositorySpec
 import org.scalatest.EitherValues._
 
@@ -15,7 +16,8 @@ class ConnectionsRepositorySpec extends PostgresRepositorySpec {
   override val tables = List("connections", "connection_tokens", "participants")
 
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 500.millis)
-  lazy val connectionsRepository = new ConnectionsRepository(database)
+  lazy val connectionsRepository =
+    new ConnectionsRepository(new ConnectionTokensDAO, new ConnectionsDAO, new ParticipantsDAO, database)
 
   implicit class SqlTestOps(val sql: fragment.Fragment) {
     def runUpdate(): Unit = {

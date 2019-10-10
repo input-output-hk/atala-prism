@@ -1,14 +1,13 @@
-package io.iohk.connector
+package io.iohk.connector.repositories
 
 import java.util.UUID
 
 import doobie.postgres.implicits._
-import doobie.util.{Put, Read}
 import doobie.util.invariant.InvalidEnum
+import doobie.util.{Put, Read}
 import io.iohk.connector.model.{ConnectionId, ParticipantId, ParticipantType}
 
-package object repositories {
-
+package object daos {
   implicit val pgPackageTypeMeta = pgEnumString[ParticipantType](
     "PARTICIPANT_TYPE",
     a => ParticipantType.withNameOption(a).getOrElse(throw InvalidEnum[ParticipantType](a)),
@@ -20,4 +19,5 @@ package object repositories {
 
   implicit val participantIdRead: Read[ParticipantId] = Read[UUID].map(new ParticipantId(_))
   implicit val connectionIdRead: Read[ConnectionId] = Read[UUID].map(new ConnectionId(_))
+
 }
