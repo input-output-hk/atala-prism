@@ -2,7 +2,7 @@ package io.iohk.connector
 
 import java.util.UUID
 
-import io.grpc.{Context, Contexts, Metadata, ServerCall, ServerCallHandler, ServerInterceptor}
+import io.grpc.{Context, Contexts, Metadata, ServerCall, ServerCallHandler, ServerInterceptor, Status}
 import io.iohk.connector.model.ParticipantId
 
 object UserIdInterceptor {
@@ -19,6 +19,10 @@ class UserIdInterceptor extends ServerInterceptor {
       next: ServerCallHandler[ReqT, RespT]
   ): ServerCall.Listener[ReqT] = {
     val userIdStr = headers.get(USER_ID_METADATA_KEY)
+    if (userIdStr == null) {
+      throw Status.INVALID_ARGUMENT.withDescription("userId header missing").asRuntimeException()
+    }
+
     val userId = new model.ParticipantId(UUID.fromString(userIdStr))
     val ctx = Context.current().withValue(USER_ID_CTX_KEY, userId)
 

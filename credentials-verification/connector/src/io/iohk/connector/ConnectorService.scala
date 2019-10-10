@@ -1,15 +1,16 @@
 package io.iohk.connector
 
 import java.time.Instant
+import java.util.UUID
 
-import io.grpc.Status
 import io.iohk.connector.protos._
-import io.iohk.connector.services.ConnectionsService
+import io.iohk.connector.services.{ConnectionsService, MessagesService}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class ConnectorService(connections: ConnectionsService)(implicit executionContext: ExecutionContext)
-    extends ConnectorServiceGrpc.ConnectorService {
+class ConnectorService(connections: ConnectionsService, messages: MessagesService)(
+    implicit executionContext: ExecutionContext
+) extends ConnectorServiceGrpc.ConnectorService {
 
   /** Get active connections for current participant
     *
@@ -124,8 +125,11 @@ class ConnectorService(connections: ConnectionsService)(implicit executionContex
     * Available to: Issuer, Holder, Validator
     */
   override def getMessagesSince(request: GetMessagesSinceRequest): Future[GetMessagesSinceResponse] = {
-    Future.successful {
-      GetMessagesSinceResponse(Nil)
+    val userId = UserIdInterceptor.USER_ID_CTX_KEY.get()
+
+    messages.getMessagesSince(userId, Instant.ofEpochMilli(request.since), request.limit).value.flatMap {
+      case Left(error) => Future.failed(new Exception(s"Problem: $error"))
+      case Right(messagesSeq) => Future.successful(GetMessagesSinceResponse(messagesSeq.map(_.toProto)))
     }
   }
 
@@ -138,8 +142,12 @@ class ConnectorService(connections: ConnectionsService)(implicit executionContex
     * Connection closed (FAILED_PRECONDITION)
     */
   override def sendMessage(request: SendMessageRequest): Future[SendMessageResponse] = {
-    Future.successful {
-      SendMessageResponse()
+    val userId = UserIdInterceptor.USER_ID_CTX_KEY.get()
+    val connectionId = model.ConnectionId(UUID.fromString(request.connectionId))
+
+    messages.insertMessage(userId, connectionId, request.message.toByteArray).value.flatMap {
+      case Left(error) => Future.failed(new Exception(s"Problem: $error"))
+      case Right(_) => Future.successful(SendMessageResponse())
     }
   }
 }

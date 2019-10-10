@@ -3,9 +3,9 @@ package io.iohk.connector.model
 import java.time.Instant
 import java.util.{Base64, UUID}
 
+import com.google.protobuf.ByteString
 import enumeratum.EnumEntry.Lowercase
 import enumeratum._
-
 import io.iohk.connector.protos
 
 import scala.util.Random
@@ -80,4 +80,12 @@ object TokenString {
   def random(): TokenString = random(Random)
 }
 
-case class Message(id: MessageId, connection: ConnectionId, receivedAt: Instant, content: Array[Byte])
+case class Message(id: MessageId, connection: ConnectionId, receivedAt: Instant, content: Array[Byte]) {
+  def toProto: protos.ReceivedMessage = {
+    protos.ReceivedMessage(
+      receivedAt.toEpochMilli,
+      connection.id.toString,
+      ByteString.copyFrom(content)
+    )
+  }
+}
