@@ -44,19 +44,28 @@ abstract class ConnectorRepositorySpecBase extends PostgresRepositorySpec {
          |RETURNING id""".stripMargin.runUnique[ConnectionId]()
   }
 
-  protected def createConnection(initiatorId: ParticipantId, acceptorId: ParticipantId, instantiatedAt: Instant): ConnectionId = {
+  protected def createConnection(
+      initiatorId: ParticipantId,
+      acceptorId: ParticipantId,
+      instantiatedAt: Instant
+  ): ConnectionId = {
     sql"""
          |INSERT INTO connections (id, initiator, acceptor, instantiated_at)
          |VALUES(${ConnectionId.random()}, $initiatorId, $acceptorId, $instantiatedAt)
          |RETURNING id""".stripMargin.runUnique[ConnectionId]()
   }
 
-  protected def createMessage(connection: ConnectionId, sender: ParticipantId, recipient: ParticipantId, receivedAt: Instant, content: Array[Byte]): MessageId = {
+  protected def createMessage(
+      connection: ConnectionId,
+      sender: ParticipantId,
+      recipient: ParticipantId,
+      receivedAt: Instant,
+      content: Array[Byte]
+  ): MessageId = {
     sql"""
          |INSERT INTO messages (id, connection, sender, recipient, received_at, content)
          |VALUES (${MessageId.random()}, $connection, $sender, $recipient, $receivedAt, $content)
          |RETURNING id""".stripMargin.runUnique[MessageId]()
   }
-
 
 }

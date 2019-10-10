@@ -20,7 +20,7 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
       val holder = createHolder()
       val connection = createConnection(issuer, holder)
       val message = "hello".getBytes
-      
+
       val result = messagesRepository.insertMessage(issuer, connection, message).value.futureValue
       val messageId = result.right.value
 
@@ -66,7 +66,8 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
       val zeroTime = LocalDateTime.of(2019, 10, 10, 12, 14, 17, 5000).toEpochSecond(ZoneOffset.UTC)
 
       val messageIds = (for (i <- 0 to 20) yield {
-        val messageId = createMessage(connection, issuer, holder, Instant.ofEpochMilli(zeroTime + i), s"hello$i".getBytes())
+        val messageId =
+          createMessage(connection, issuer, holder, Instant.ofEpochMilli(zeroTime + i), s"hello$i".getBytes())
         i -> messageId
       }).toMap
 

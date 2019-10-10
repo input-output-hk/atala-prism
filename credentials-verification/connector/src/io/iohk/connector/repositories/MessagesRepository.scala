@@ -12,8 +12,12 @@ import io.iohk.cvp.utils.FutureEither.FutureEitherOps
 
 import scala.concurrent.ExecutionContext
 
-class MessagesRepository (xa: Transactor[IO])(implicit ec: ExecutionContext) {
-  def insertMessage(sender: ParticipantId, connection: ConnectionId, content: Array[Byte]): FutureEither[Nothing, MessageId] = {
+class MessagesRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
+  def insertMessage(
+      sender: ParticipantId,
+      connection: ConnectionId,
+      content: Array[Byte]
+  ): FutureEither[Nothing, MessageId] = {
     val messageId = MessageId.random()
 
     val query = for {
@@ -29,7 +33,8 @@ class MessagesRepository (xa: Transactor[IO])(implicit ec: ExecutionContext) {
   }
 
   def getMessagesSince(recipientId: ParticipantId, since: Instant, limit: Int): FutureEither[Nothing, Seq[Message]] = {
-    MessagesDAO.getMessagesSince(recipientId, since, limit)
+    MessagesDAO
+      .getMessagesSince(recipientId, since, limit)
       .transact(xa)
       .unsafeToFuture()
       .map(Right(_))

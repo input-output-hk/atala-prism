@@ -24,8 +24,9 @@ object ConnectionsDAO {
     sql"""
          |SELECT acceptor AS other_side FROM connections WHERE id = $connection AND initiator = $participant
          | UNION
-         | SELECT initiator AS other_side FROM connections WHERE id = $connection AND acceptor = $participant"""
-      .stripMargin.query[ParticipantId].unique // TODO: use option, support error
+         | SELECT initiator AS other_side FROM connections WHERE id = $connection AND acceptor = $participant""".stripMargin
+      .query[ParticipantId]
+      .unique // TODO: use option, support error
   }
 
   def getConnectionsSince(
