@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <dimen name="tutorial_texts_margin_end">88dp</dimen>
+  <dimen name="activity_default_side_margin">24dp</dimen>
+  <dimen name="card_corner_radius">8dp</dimen>
 </resources>

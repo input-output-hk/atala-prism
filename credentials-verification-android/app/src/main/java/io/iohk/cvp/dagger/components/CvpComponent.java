@@ -1,12 +1,12 @@
 package io.iohk.cvp.dagger.components;
 
 
-import io.iohk.cvp.core.CvpApplication;
-import io.iohk.cvp.dagger.builders.ActivityBuilder;
-import io.iohk.cvp.dagger.modules.ApplicationModule;
 import dagger.Component;
 import dagger.android.AndroidInjector;
 import dagger.android.support.AndroidSupportInjectionModule;
+import io.iohk.cvp.core.CvpApplication;
+import io.iohk.cvp.dagger.builders.ActivityBuilder;
+import io.iohk.cvp.dagger.modules.ApplicationModule;
 import javax.inject.Singleton;
 
 @Singleton

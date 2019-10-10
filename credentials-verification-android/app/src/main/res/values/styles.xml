@@ -1,16 +1,36 @@
 <resources>
   <!-- Base application theme. -->
-  <style name="AppTheme" parent="Theme.AppCompat.Light">
+  <style name="AppTheme" parent="Theme.MaterialComponents.Light">
     <!-- Customize your theme here. -->
     <item name="colorPrimary">@color/colorPrimary</item>
-    <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-    <item name="colorAccent">@color/colorAccent</item>
+    <item name="colorPrimaryVariant">@color/lightRed</item>
+    <item name="colorOnPrimary">@android:color/white</item>
+    <item name="colorSecondary">@color/black</item>
+    <item name="colorSecondaryVariant">@color/blueGrey</item>
+    <item name="colorOnSecondary">@android:color/white</item>
+    <item name="colorError">@color/colorPrimary</item>
+    <item name="colorOnError">@android:color/white</item>
+    <item name="colorSurface">#FFFFFF</item>
+    <item name="colorOnSurface">@color/black</item>
+
     <item name="android:windowContentOverlay">@null</item>
     <item name="actionBarStyle">@style/CustomActionBar</item>
+    <item name="textAppearanceButton">@style/AppTextAppearance.Button</item>
+    <!-- Uncomment when fonts are available
+    <item name="fontFamily">@font/roboto_mono</item>
+    <item name="android:fontFamily">@font/roboto_mono</item>
+    -->
   </style>
 
   <!-- Action bar theme. -->
   <style name="CustomActionBar" parent="@style/Widget.AppCompat.Light.ActionBar.Solid">
     <item name="elevation">0dp</item>
+    <item name="background">@android:color/white</item>
+    <item name="backgroundStacked">@android:color/white</item>
+    <item name="backgroundSplit">@android:color/white</item>
+  </style>
+
+  <style name="AppTextAppearance.Button" parent="TextAppearance.MaterialComponents.Button">
+    <item name="android:textAllCaps">false</item>
   </style>
 </resources>
