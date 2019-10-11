@@ -6,5 +6,8 @@
       "toReload": " and save to reload."
     },
     "learnReact": "Learn React"
+  },
+  "errors": {
+    "routeDidNotMatch": "The route {{pathnameToShow}} did not match any page"
   }
 }

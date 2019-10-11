@@ -181,6 +181,9 @@ jobs:
       - run: 
           name: Move to target folder then run tests
           command: cd credentials-verification-web && ./web-testing-script.sh
+      - run: 
+          name: Move to target folder then run linting validation script
+          command: cd credentials-verification-web && ./web-linting-validation-script.sh
 
   trigger-atala-qa-automation:
     working_directory: ~/repo
