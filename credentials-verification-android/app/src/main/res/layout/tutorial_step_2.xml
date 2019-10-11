@@ -23,7 +23,7 @@
     android:layout_marginEnd="@dimen/tutorial_texts_margin_end"
     android:text="@string/tutorial_step_2_slogan_1"
     android:textColor="@color/black"
-    android:textSize="24sp"
+    android:textSize="@dimen/titles_text_size"
     app:layout_constraintBottom_toTopOf="@+id/textView5"
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintStart_toStartOf="parent"

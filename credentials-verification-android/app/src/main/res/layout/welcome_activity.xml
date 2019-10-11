@@ -98,26 +98,26 @@
     <Button
       android:id="@+id/get_started_button"
       android:layout_width="match_parent"
-      android:layout_height="50dp"
+      android:layout_height="56dp"
       android:layout_marginBottom="32dp"
-      android:background="@drawable/rounded_button_red"
       android:elevation="8dp"
       android:text="@string/get_started"
       android:textAllCaps="false"
-      android:textColor="@android:color/white" />
+      android:textColor="@android:color/white"
+      app:cornerRadius="32dp" />
 
     <Button
       android:id="@+id/restore_account_btn"
       android:layout_width="match_parent"
-      android:layout_height="50dp"
+      android:layout_height="56dp"
       android:layout_weight="1"
       android:layout_marginBottom="32dp"
       android:layout_marginEnd="8dp"
-      android:background="@drawable/rounded_button_black"
+      android:backgroundTint="@color/black"
       android:text="@string/restore_account"
       android:textAllCaps="false"
-      android:textColor="@android:color/white"
       android:visibility="gone"
+      app:cornerRadius="32dp"
       app:layout_constraintBottom_toBottomOf="parent"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintStart_toStartOf="parent" />
@@ -125,15 +125,14 @@
     <Button
       android:id="@+id/create_account_btn"
       android:layout_width="match_parent"
-      android:layout_height="50dp"
+      android:layout_height="56dp"
       android:layout_weight="1"
       android:layout_marginBottom="32dp"
       android:layout_marginStart="8dp"
-      android:background="@drawable/rounded_button_red"
       android:text="@string/create_account"
       android:textAllCaps="false"
-      android:textColor="@android:color/white"
       android:visibility="gone"
+      app:cornerRadius="32dp"
       app:layout_constraintBottom_toBottomOf="parent"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintStart_toStartOf="parent" />
