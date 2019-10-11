@@ -12,6 +12,13 @@ To compile the .proto files protoc must be used, the script to compile is
 
 The server used for the gRPC testing is the one used in [this grpc-web tutorial](https://github.com/grpc/grpc-web/blob/master/net/grpc/gateway/examples/echo/tutorial.md).
 
+## Configurations
+
+react-scripts package use internally .dotenv. For more information see [adding-custom-environment-variables](https://create-react-app.dev/docs/adding-custom-environment-variables).
+
+Environment variables are configured in `.env` file.
+For development purposes copy `.env` file to `.env.local`. This file is excluded from git and overrides `.env`  for all environments except test.
+
 ## Running the project
 
 We use [nvm](https://github.com/nvm-sh/nvm) to handle the node versions.
@@ -19,5 +26,7 @@ We use [nvm](https://github.com/nvm-sh/nvm) to handle the node versions.
 To ensure the node version standardized run `nvm use`, which will set the node version to 10.16.3, if installed, otherwise install it and then run the command again.
 
 Prior to running the app install the dependencies with `npm install`.
+
+Copy `.env` file to `.env.local` and configure environment variables.
 
 Lastly, to run the project use `npm run start` or just `npm start`.

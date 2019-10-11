@@ -6,8 +6,9 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "test-no-watch": "react-scripts test --watch-All=false",
-    "eject": "react-scripts eject"
+    "test-no-watch": "react-scripts test --watchAll=false",
+    "eject": "react-scripts eject",
+    "eslint": "./node_modules/.bin/eslint . --ext .jsx --ext .js"
   },
   "dependencies": {
     "google-protobuf": "3.9.2",
@@ -15,22 +16,25 @@
     "i18next": "17.0.18",
     "moment": "2.24.0",
     "node-sass": "4.12.0",
+    "prop-types": "15.7.2",
     "react": "16.10.1",
     "react-dom": "16.10.1",
     "react-i18next": "10.13.1",
+    "react-router-dom": "5.1.2",
     "react-scripts": "3.2.0"
   },
   "devDependencies": {
-    "eslint": "6.5.1",
+    "eslint": "6.1.0",
     "eslint-config-airbnb": "17.1.0",
     "eslint-config-airbnb-base": "13.1.0",
-    "eslint-config-prettier": "4.0.0",
+    "eslint-config-prettier": "6.0.0",
     "eslint-import-resolver-meteor": "0.4.0",
     "eslint-plugin-css-modules": "2.11.0",
-    "eslint-plugin-import": "2.16.0",
-    "eslint-plugin-jsx-a11y": "6.2.0",
-    "eslint-plugin-prettier": "3.0.1",
-    "eslint-plugin-promise": "4.0.1",
+    "eslint-plugin-import": "2.18.0",
+    "eslint-plugin-jsx-a11y": "6.2.3",
+    "eslint-plugin-prettier": "3.1.0",
+    "eslint-plugin-promise": "4.2.1",
+    "eslint-plugin-react": "7.14.2",
     "prettier": "1.16.1",
     "react-app-rewired": "2.1.3"
   },
