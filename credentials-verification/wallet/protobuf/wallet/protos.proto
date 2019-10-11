@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package io.iohk.cvp.wallet;
+
+message KeyPair {
+    bytes privateKey = 1;
+    bytes publicKey = 2;
+}
+
+message WalletData {
+    KeyPair keyPair = 1;
+}

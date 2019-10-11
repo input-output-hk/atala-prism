@@ -1,4 +1,4 @@
-package io.iohk.crypto
+package io.iohk.cvp.crypto
 
 import java.security._
 import java.security.spec.{

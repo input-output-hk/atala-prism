@@ -1,6 +1,6 @@
 package io.iohk.test
 
-import io.iohk.crypto.{ECKeys, ECSignature}
+import io.iohk.cvp.crypto.{ECKeys, ECSignature}
 import io.iohk.dids.DIDLoader
 import javax.xml.bind.DatatypeConverter
 
