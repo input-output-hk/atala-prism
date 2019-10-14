@@ -6,6 +6,7 @@ import coursier.maven.MavenRepository
 
 import $file.scalapb
 import scalapb.FixedScalaPBWorker
+import scalapb.FixedScalaPBModule
 
 object app extends ScalaModule {
   def scalaVersion = versions.scala
@@ -53,7 +54,7 @@ object `indy-poc` extends ScalaModule {
 
 object versions {
 
-  def scalaPB = "0.9.0"
+  def scalaPB = "0.9.4"
   val scala = "2.12.10"
   val circe = "0.12.2"
   val doobie = "0.7.0"
@@ -160,7 +161,7 @@ trait ServerCommon extends ScalaModule {
   }
 }
 
-trait ServerPBCommon extends ServerCommon with ScalaPBModule {
+trait ServerPBCommon extends ServerCommon with FixedScalaPBModule {
   def scalaPBVersion = versions.scalaPB
   def scalaPBGrpc = true
 
@@ -170,9 +171,10 @@ trait ServerPBCommon extends ServerCommon with ScalaPBModule {
         ivy"com.thesamet.scalapb::scalapb-runtime-grpc:${versions.scalaPB}"
       )
     }
+
 }
 
-object node extends ServerCommon {
+object node extends ServerPBCommon {
 
   override def mainClass = Some("io.iohk.node.NodeApp")
 
@@ -185,12 +187,6 @@ object connector extends ServerPBCommon {
 
   override def scalaPBSources = T.sources {
     millSourcePath / 'protobuf / "protos.proto"
-  }
-
-  override def compileScalaPB: T[PathRef] = T.persistent {
-    scalaPBSources().foreach(pathRef => println(pathRef.path))
-    new FixedScalaPBWorker()
-      .compile(scalaPBClasspath().map(_.path), scalaPBSources().map(_.path), scalaPBOptions(), T.ctx().dest)
   }
 
   object test extends `tests-common` {}

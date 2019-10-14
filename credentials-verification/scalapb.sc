@@ -4,7 +4,7 @@ import java.net.URLClassLoader
 
 import mill.contrib.scalapblib._
 
-class FixedScalaPBWorker {
+class FixedScalaPBWorker(protocPath: Option[String]) {
   private var scalaPBInstanceCache = Option.empty[(Long, ScalaPBWorkerApi)]
 
   private def scalaPB(scalaPBClasspath: Agg[os.Path]) = {
@@ -19,14 +19,15 @@ class FixedScalaPBWorker {
         val instance = new ScalaPBWorkerApi {
           override def compileScalaPB(source: File, scalaPBOptions: String, generatedDirectory: File) {
             val opts = if (scalaPBOptions.isEmpty) "" else scalaPBOptions + ":"
+            val args = protocPath.map(p => s"--protoc=$p").toList ++ List(
+              "--throw",
+              s"--scala_out=${opts}${generatedDirectory.getCanonicalPath}",
+              s"--proto_path=${source.getParentFile.getCanonicalPath}",
+              source.getCanonicalPath
+            )
             mainMethod.invoke(
               null,
-              Array(
-                "--throw",
-                s"--scala_out=${opts}${generatedDirectory.getCanonicalPath}",
-                s"--proto_path=${source.getParentFile.getCanonicalPath}",
-                source.getCanonicalPath
-              )
+              args.toArray
             )
           }
         }
@@ -63,4 +64,20 @@ class FixedScalaPBWorker {
 
     mill.api.Result.Success(PathRef(dest))
   }
+}
+
+trait FixedScalaPBModule extends ScalaPBModule {
+
+  def protocPath: T[Option[String]] = T {
+    scala.util.Properties.envOrNone("CUSTOM_PROTOC")
+  }
+
+  override def compileScalaPB: T[PathRef] =
+    T.persistent {
+      val protoc = protocPath()
+      scalaPBSources().foreach(pathRef => println(pathRef.path))
+      new FixedScalaPBWorker(protoc)
+        .compile(scalaPBClasspath().map(_.path), scalaPBSources().map(_.path), scalaPBOptions(), T.ctx().dest)
+    }
+
 }

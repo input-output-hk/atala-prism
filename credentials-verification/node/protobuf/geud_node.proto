@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package io.iohk.connector;
+package io.iohk.node;
 
 service NodeService {
   rpc PublishDidDocument(PublishDidDocumentRequest) returns (PublishDidDocumentResponse) {}
