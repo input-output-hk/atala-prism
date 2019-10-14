@@ -2,6 +2,7 @@ package io.iohk.crypto
 
 import java.util.Base64
 
+import io.iohk.cvp.crypto.{ECKeys, ECSignature}
 import org.scalatest.MustMatchers._
 import org.scalatest.WordSpec
 

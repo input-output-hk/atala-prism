@@ -2,7 +2,7 @@ package io.iohk.dids
 
 import java.util.Base64
 
-import io.iohk.crypto.ECKeys
+import io.iohk.cvp.crypto.ECKeys
 import io.iohk.dids.security.Secp256k1VerificationKey2018
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPrivateKey
 import org.scalatest.{Matchers, WordSpec}
