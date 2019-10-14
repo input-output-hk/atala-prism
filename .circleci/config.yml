@@ -178,10 +178,10 @@ jobs:
       - image: circleci/node:10-browsers
     steps:
       - checkout
-      - run: 
+      - run:
           name: Move to target folder then run tests
           command: cd credentials-verification-web && ./web-testing-script.sh
-      - run: 
+      - run:
           name: Move to target folder then run linting validation script
           command: cd credentials-verification-web && ./web-linting-validation-script.sh
 
@@ -219,32 +219,32 @@ jobs:
           key: jars-{{ checksum "credentials-verification-android/build.gradle" }}-{{ checksum  "credentials-verification-android/app/build.gradle" }}
       - run:
           name: Run Lint Tests
-          command: cd credentials-verification-android && ./gradlew lint test 
+          command: cd credentials-verification-android && ./gradlew lint test
       - run:
           name: Run Unit Tests
-          command: cd credentials-verification-android && ./gradlew test 
+          command: cd credentials-verification-android && ./gradlew test
 
 workflows:
   version: 2
   build-and-deploy:
     jobs:
-      - build
-      - deploy:
-          requires:
-            - build
-          filters:
-            branches:
-              only: develop
-      - deploy-docs:
-          requires:
-            - build
-          filters:
-            branches:
-              only: develop
+#      - build
+#      - deploy:
+#          requires:
+#            - build
+#          filters:
+#            branches:
+#              only: develop
+#      - deploy-docs:
+#          requires:
+#            - build
+#          filters:
+#            branches:
+#              only: develop
+#      - trigger-atala-qa-automation:
+#          filters:
+#            branches:
+#              only: develop
       - build-credentials-verification-web
-      - trigger-atala-qa-automation:
-          filters:
-            branches:
-              only: develop
       - build-credentials-verification
       - build-credentials-verification-android

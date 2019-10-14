@@ -4,9 +4,10 @@ import java.net.URI
 import java.time.LocalDateTime
 import java.util.Base64
 
-import io.iohk.claims.{Certificate, SubjectClaims}
-import org.scalatest.{Matchers, WordSpec}
 import io.iohk.claims.json._
+import io.iohk.claims.{Certificate, SubjectClaims}
+import io.iohk.cvp.crypto.ECKeys
+import org.scalatest.{Matchers, WordSpec}
 
 class CertificateSigningSpec extends WordSpec with Matchers {
 
