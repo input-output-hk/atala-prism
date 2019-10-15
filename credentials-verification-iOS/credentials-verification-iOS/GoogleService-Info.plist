@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>312121467046-kku7bm1h6no4vlob9flegc356h0irssq.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.312121467046-kku7bm1h6no4vlob9flegc356h0irssq</string>
+	<key>API_KEY</key>
+	<string>AIzaSyBNZmhYKKsoQps3ap8sBDlS-G1e2XJzkaE</string>
+	<key>GCM_SENDER_ID</key>
+	<string>312121467046</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>iohk.credentials-verification-iOS</string>
+	<key>PROJECT_ID</key>
+	<string>cvp-android</string>
+	<key>STORAGE_BUCKET</key>
+	<string>cvp-android.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:312121467046:ios:a88e484dc1883de3999467</string>
+	<key>DATABASE_URL</key>
+	<string>https://cvp-android.firebaseio.com</string>
+</dict>
+</plist>

@@ -1,0 +1,21 @@
+# CocoaPods
+Pods/
+
+## Build generated
+.build/
+DerivedData
+build.xcarchive
+**/Generated
+
+## User settings
+**/xcuserdata/
+
+## Other
+*.xccheckout
+*.moved-aside
+*.xcuserstate
+*.xcscmblueprint
+
+## Customs
+.DS_Store
+node_modules/**
