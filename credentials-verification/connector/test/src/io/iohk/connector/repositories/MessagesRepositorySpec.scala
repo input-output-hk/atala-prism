@@ -1,9 +1,11 @@
 package io.iohk.connector.repositories
+
 import java.time.{Instant, LocalDateTime, ZoneOffset}
+
+import com.softwaremill.diffx.scalatest.DiffMatcher._
 
 import doobie.implicits._
 import io.iohk.connector.model.ParticipantId
-import io.iohk.connector.repositories.daos.{ConnectionsDAO, MessagesDAO}
 import org.scalatest.EitherValues._
 import io.iohk.connector.repositories.daos._
 
@@ -58,7 +60,7 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
     }
   }
 
-  "getMessagesSince" should {
+  "getMessagesPaginated" should {
     "select subset of messages according to since and limit" in {
       val issuer = createIssuer()
       val holder = createHolder()
@@ -71,9 +73,23 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
         i -> messageId
       }).toMap
 
-      val result = messagesRepository.getMessagesSince(holder, Instant.ofEpochMilli(zeroTime + 5), 10).value.futureValue
-      result.right.value.map(_.id).toSet mustBe (5 to 14).map(messageIds).toSet
+      val all = messagesRepository
+        .getMessagesPaginated(holder, 20, Option.empty)
+        .value
+        .futureValue
+        .right
+        .value
+        .map(_.id)
+
+      val firstTenExpected = all.take(10)
+      val nextTenExpected = all.drop(10).take(10)
+
+      val firstTenResult = messagesRepository.getMessagesPaginated(holder, 10, Option.empty).value.futureValue
+      firstTenResult.right.value.map(_.id) must matchTo(firstTenExpected)
+
+      val nextTenResult =
+        messagesRepository.getMessagesPaginated(holder, 10, Some(firstTenExpected.last)).value.futureValue
+      nextTenResult.right.value.map(_.id) must matchTo(nextTenExpected)
     }
   }
-
 }

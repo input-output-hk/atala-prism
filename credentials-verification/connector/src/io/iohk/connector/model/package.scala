@@ -83,6 +83,7 @@ object TokenString {
 case class Message(id: MessageId, connection: ConnectionId, receivedAt: Instant, content: Array[Byte]) {
   def toProto: protos.ReceivedMessage = {
     protos.ReceivedMessage(
+      id.id.toString,
       receivedAt.toEpochMilli,
       connection.id.toString,
       ByteString.copyFrom(content)

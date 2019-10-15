@@ -18,12 +18,37 @@ object MessagesDAO {
          |VALUES ($id, $connection, $sender, $recipient, now(), $content)""".stripMargin.update.run.map(_ => ())
   }
 
-  def getMessagesSince(recipientId: ParticipantId, since: Instant, limit: Int): doobie.ConnectionIO[Seq[Message]] = {
-    sql"""
-         |SELECT id, connection, received_at, content
-         |FROM messages
-         |WHERE recipient = $recipientId AND received_at >= $since
-         |LIMIT $limit
-       """.stripMargin.query[Message].to[Seq]
+  def getMessagesPaginated(
+      recipientId: ParticipantId,
+      limit: Int,
+      lastSeenMessageId: Option[MessageId]
+  ): doobie.ConnectionIO[Seq[Message]] = {
+    val query = lastSeenMessageId match {
+      case Some(value) =>
+        sql"""
+             |WITH CTE AS (
+             |  SELECT received_at AS last_seen_time
+             |  FROM messages
+             |  WHERE id = $value
+             |)
+             |SELECT id, connection, received_at, content
+             |FROM CTE CROSS JOIN messages
+             |WHERE recipient = $recipientId AND
+             |      (received_at > last_seen_time OR (received_at = last_seen_time AND id > $value))
+             |ORDER BY received_at ASC, id
+             |LIMIT $limit
+       """.stripMargin
+
+      case None =>
+        sql"""
+             |SELECT id, connection, received_at, content
+             |FROM messages
+             |WHERE recipient = $recipientId
+             |ORDER BY received_at ASC, id
+             |LIMIT $limit
+       """.stripMargin
+    }
+
+    query.query[Message].to[Seq]
   }
 }
