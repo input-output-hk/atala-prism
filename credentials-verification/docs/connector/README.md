@@ -96,7 +96,7 @@ grpcurl -import-path connector/protobuf/ -proto connector/protobuf/protos.proto 
 ```
 grpcurl -import-path connector/protobuf/ -proto connector/protobuf/protos.proto \
  -rpc-header "userId: c8834532-eade-11e9-a88d-d8f2ca059830" \
- -d '{"since": 0, "limit": 10}' \
+ -d '{"limit": 10}' \
  -plaintext localhost:50051 \
  io.iohk.connector.ConnectorService/GetConnectionsSince
 ```
@@ -118,6 +118,15 @@ grpcurl -import-path connector/protobuf/ -proto connector/protobuf/protos.proto 
 }
 ```
 
+Find the next items by paginating the request:
+```
+grpcurl -import-path connector/protobuf/ -proto connector/protobuf/protos.proto \
+ -rpc-header "userId: c8834532-eade-11e9-a88d-d8f2ca059830" \
+ -d '{"limit": 10, "lastSeenConnectionId": "c4d82cc0-6005-4d80-86fc-0d4b2fa2934a"}' \
+ -plaintext localhost:50051 \
+ io.iohk.connector.ConnectorService/GetConnectionsSince
+```
+
 5. As the issuer send message to the student (insert `connectionId` from step 4):
 ```
 grpcurl -import-path connector/protobuf/ -proto connector/protobuf/protos.proto \
@@ -137,7 +146,7 @@ grpcurl -import-path connector/protobuf/ -proto connector/protobuf/protos.proto 
 ```
 grpcurl -import-path connector/protobuf/ -proto connector/protobuf/protos.proto \
  -rpc-header "userId: e20a974e-eade-11e9-a447-d8f2ca059830" \
- -d '{"since": 0, "limit": 10}' \
+ -d '{"limit": 10}' \
  -plaintext \
  localhost:50051 io.iohk.connector.ConnectorService/GetMessagesSince
 ```
@@ -146,10 +155,20 @@ grpcurl -import-path connector/protobuf/ -proto connector/protobuf/protos.proto 
 {
   "messages": [
     {
+      "id": "d56728c0-6005-4d80-86fc-0d4b2fa2934a"
       "received": "1570816581675",
       "connectionId": "c4d82cc0-6005-4d80-86fc-0d4b2fa2934a",
       "message": "SGVsbG8sIHN0dWRlbnQhCg=="
     }
   ]
 }
+```
+
+Paginate the items by the last seen message:
+```
+grpcurl -import-path connector/protobuf/ -proto connector/protobuf/protos.proto \
+ -rpc-header "userId: e20a974e-eade-11e9-a447-d8f2ca059830" \
+ -d '{"limit": 10, "lastSeenMessageId": "d56728c0-6005-4d80-86fc-0d4b2fa2934a"}' \
+ -plaintext \
+ localhost:50051 io.iohk.connector.ConnectorService/GetMessagesSince
 ```

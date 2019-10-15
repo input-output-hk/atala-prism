@@ -1,7 +1,5 @@
 package io.iohk.connector.repositories
 
-import java.time.Instant
-
 import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
@@ -32,9 +30,14 @@ class MessagesRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
       .toFutureEither
   }
 
-  def getMessagesSince(recipientId: ParticipantId, since: Instant, limit: Int): FutureEither[Nothing, Seq[Message]] = {
+  def getMessagesPaginated(
+      recipientId: ParticipantId,
+      limit: Int,
+      lastSeenMessageId: Option[MessageId]
+  ): FutureEither[Nothing, Seq[Message]] = {
+
     MessagesDAO
-      .getMessagesSince(recipientId, since, limit)
+      .getMessagesPaginated(recipientId, limit, lastSeenMessageId)
       .transact(xa)
       .unsafeToFuture()
       .map(Right(_))
