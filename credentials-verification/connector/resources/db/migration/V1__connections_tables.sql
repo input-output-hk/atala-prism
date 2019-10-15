@@ -32,17 +32,12 @@ CREATE TABLE connections(
   CONSTRAINT connections_id_pk PRIMARY KEY (id),
   CONSTRAINT connections_initiator_fk FOREIGN KEY (initiator) REFERENCES participants(id),
   CONSTRAINT connections_acceptor_fk FOREIGN KEY (acceptor) REFERENCES participants(id),
-  CONSTRAINT connections_initiator_acceptor_not_equal CHECK (initiator != acceptor),
-  -- FIXME: these constraints try to assure that for any participant there will be just
-  -- one connection instantiated given timestamp, to make them strictly ordered
-  -- it fails though if the participant accepted a connection at the same moment when
-  -- another accepted a connection token created by them
-  CONSTRAINT connections_instantiated_at_unique_per_initiator UNIQUE (initiator, instantiated_at),
-  CONSTRAINT connections_instantiated_at_unique_per_acceptor UNIQUE (acceptor, instantiated_at)
+  CONSTRAINT connections_initiator_acceptor_not_equal CHECK (initiator != acceptor)
 );
 
 CREATE INDEX connections_initiator_index ON connections USING BTREE (initiator);
 CREATE INDEX connections_acceptor_index ON connections USING BTREE (acceptor);
+CREATE INDEX connections_instantiated_at_index ON connections USING BTREE (instantiated_at);
 
 INSERT INTO participants (id, tpe, name, did) VALUES ('c8834532-eade-11e9-a88d-d8f2ca059830', 'issuer', 'Issuer 1', 'did:test:issuer-1');
 INSERT INTO participants (id, tpe, name, did) VALUES ('e20a974e-eade-11e9-a447-d8f2ca059830', 'holder', 'Holder 1', 'did:test:holder-1');

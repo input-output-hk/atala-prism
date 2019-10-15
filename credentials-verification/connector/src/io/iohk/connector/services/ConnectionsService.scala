@@ -1,7 +1,5 @@
 package io.iohk.connector.services
 
-import java.time.Instant
-
 import io.iohk.connector.model._
 import io.iohk.connector.repositories.ConnectionsRepository
 import io.iohk.cvp.utils.FutureEither
@@ -19,11 +17,11 @@ class ConnectionsService(connectionsRepository: ConnectionsRepository) {
     connectionsRepository.addConnectionFromToken(tokenString, userId)
   }
 
-  def getConnectionsSince(
+  def getConnectionsPaginated(
       userId: ParticipantId,
-      since: Instant,
-      limit: Int
+      limit: Int,
+      lastSeenConnectionId: Option[ConnectionId]
   ): FutureEither[Nothing, Seq[ConnectionInfo]] = {
-    connectionsRepository.getConnectionsSince(userId, since, limit)
+    connectionsRepository.getConnectionsPaginated(userId, limit, lastSeenConnectionId)
   }
 }

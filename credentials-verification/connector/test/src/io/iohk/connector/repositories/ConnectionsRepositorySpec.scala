@@ -1,5 +1,7 @@
 package io.iohk.connector.repositories
 
+import com.softwaremill.diffx.scalatest.DiffMatcher._
+
 import java.time.{Instant, LocalDateTime, ZoneOffset}
 
 import doobie.implicits._
@@ -64,7 +66,7 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
     }
   }
 
-  "getConnectionsSince" should {
+  "getConnectionsPaginated" should {
     "return both initiated and accepted connections" in {
       val issuerId = createIssuer()
       val holderId = createHolder()
@@ -75,8 +77,8 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
         createConnection(issuerId, verifierId)
       )
 
-      val result = connectionsRepository.getConnectionsSince(verifierId, Instant.EPOCH, 10).value.futureValue
-      result.right.value.map(_.id).toSet mustBe connections.toSet
+      val result = connectionsRepository.getConnectionsPaginated(verifierId, 10, Option.empty).value.futureValue
+      result.right.value.map(_.id).toSet must matchTo(connections.toSet)
     }
 
     // creates connections (initiator -> acceptor):
@@ -99,40 +101,28 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
       }).toList.flatten.toMap
     }
 
-    "select subset of connections according to since and limit" in {
+    "select subset of connections according to the last seen connection and limit" in {
       val verifierId = createVerifier()
       val zeroTime = LocalDateTime.of(2019, 10, 8, 20, 12, 17, 5000).toEpochSecond(ZoneOffset.UTC)
       val participantConnections: Map[String, ConnectionId] = createExampleConnections(verifierId, zeroTime)
 
-      val since = Instant.ofEpochMilli(zeroTime + 10)
-      val result = connectionsRepository.getConnectionsSince(verifierId, since, 10).value.futureValue
+      val all = connectionsRepository
+        .getConnectionsPaginated(verifierId, 20, Option.empty)
+        .value
+        .futureValue
+        .right
+        .value
+        .map(_.id)
 
-      val firstTenConnections = (5 to 9)
-        .map(i => List(s"Holder$i", s"Issuer$i"))
-        .toList
-        .flatten
-        .map(participantConnections)
+      val firstTenExpected = all.take(10)
+      val nextTenExpected = all.drop(10).take(10)
 
-      result.right.value.map(_.id).toSet mustBe firstTenConnections.toSet
-    }
+      val firstTenResult = connectionsRepository.getConnectionsPaginated(verifierId, 10, Option.empty).value.futureValue
+      firstTenResult.right.value.map(_.id) must matchTo(firstTenExpected)
 
-    "not limit results when limit is 0" in {
-      val verifierId = createVerifier()
-      val zeroTime = LocalDateTime.of(2019, 10, 8, 20, 12, 17, 5000).toEpochSecond(ZoneOffset.UTC)
-      val participantConnections: Map[String, ConnectionId] = createExampleConnections(verifierId, zeroTime)
-
-      val since = Instant.ofEpochMilli(zeroTime + 10)
-      val result = connectionsRepository.getConnectionsSince(verifierId, since, 0).value.futureValue
-
-      val newConnections = (5 to 12)
-        .map(i => List(s"Holder$i", s"Issuer$i"))
-        .toList
-        .flatten
-        .map(participantConnections)
-
-      result.right.value.map(_.id).toSet mustBe newConnections.toSet
-
+      val nextTenResult =
+        connectionsRepository.getConnectionsPaginated(verifierId, 10, Some(firstTenExpected.last)).value.futureValue
+      nextTenResult.right.value.map(_.id) must matchTo(nextTenExpected)
     }
   }
-
 }

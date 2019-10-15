@@ -7,6 +7,7 @@ import io.iohk.connector.protos._
 import io.iohk.connector.services.{ConnectionsService, MessagesService}
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
 
 class ConnectorService(connections: ConnectionsService, messages: MessagesService)(
     implicit executionContext: ExecutionContext
@@ -16,14 +17,27 @@ class ConnectorService(connections: ConnectionsService, messages: MessagesServic
     *
     * Available to: Holder, Issuer, Validator
     */
-  override def getConnectionsSince(request: GetConnectionsSinceRequest): Future[GetConnectionsSinceResponse] = {
+  override def getConnectionsPaginated(
+      request: GetConnectionsPaginatedRequest
+  ): Future[GetConnectionsPaginatedResponse] = {
     val userId = UserIdInterceptor.USER_ID_CTX_KEY.get()
 
-    connections.getConnectionsSince(userId, Instant.ofEpochMilli(request.since), request.limit).value.flatMap {
-      case Left(err) => Future.failed(new Exception(s"Problem: $err"))
-      case Right(connections) =>
-        Future.successful(GetConnectionsSinceResponse(connections.map(_.toProto)))
-    }
+    // TODO: Validate arguments, empty string should be considered as a non-present field
+    // The limit validations throws a generic exception instead of a specific error.
+    val lastSeenConnectionId = Try(request.lastSeenConnectionId)
+      .map(UUID.fromString)
+      .map(model.ConnectionId.apply)
+      .toOption
+    require(request.limit > 0, "The limit must be > 0")
+
+    connections
+      .getConnectionsPaginated(userId, request.limit, lastSeenConnectionId)
+      .value
+      .flatMap {
+        case Left(err) => Future.failed(new Exception(s"Problem: $err"))
+        case Right(connections) =>
+          Future.successful(GetConnectionsPaginatedResponse(connections.map(_.toProto)))
+      }
   }
 
   /** Return info about connection token such as creator info

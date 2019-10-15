@@ -29,26 +29,50 @@ object ConnectionsDAO {
       .unique // TODO: use option, support error
   }
 
-  def getConnectionsSince(
+  def getConnectionsPaginated(
       participant: ParticipantId,
-      since: Instant,
-      limit: Int
+      limit: Int,
+      lastSeenConnectionId: Option[ConnectionId]
   ): doobie.ConnectionIO[Seq[ConnectionInfo]] = {
-    val baseSql = sql"""
-                       |WITH
-                       | initiated_connections AS (
-                       |  SELECT id, acceptor AS side, instantiated_at FROM connections WHERE initiator = $participant),
-                       | accepted_connections AS (
-                       |  SELECT id, initiator as side, instantiated_at FROM connections WHERE acceptor = $participant),
-                       | all_connections AS (SELECT * FROM initiated_connections UNION SELECT * FROM accepted_connections)
-                       |SELECT c.id, c.instantiated_at, p.id, p.tpe, p.name, p.did
-                       |FROM all_connections c
-                       |JOIN participants p ON p.id = c.side
-                       |WHERE c.instantiated_at >= $since
-                       |ORDER BY c.instantiated_at ASC
-      """.stripMargin
-
-    val fullSql = if (limit == 0) baseSql else (baseSql ++ sql"LIMIT $limit")
-    fullSql.query[ConnectionInfo].to[Seq]
+    lastSeenConnectionId match {
+      case Some(value) =>
+        sql"""
+             |WITH
+             | CTE AS (
+             |   SELECT instantiated_at AS last_seen_time
+             |   FROM connections
+             |   WHERE id = $value
+             | ),
+             | initiated_connections AS (
+             |  SELECT id, acceptor AS side, instantiated_at FROM connections WHERE initiator = $participant
+             | ),
+             | accepted_connections AS (
+             |  SELECT id, initiator as side, instantiated_at FROM connections WHERE acceptor = $participant
+             | ),
+             | all_connections AS (
+             |  SELECT * FROM initiated_connections UNION SELECT * FROM accepted_connections
+             | )
+             |SELECT c.id, c.instantiated_at, p.id, p.tpe, p.name, p.did
+             |FROM CTE CROSS JOIN all_connections c
+             |JOIN participants p ON p.id = c.side
+             |WHERE c.instantiated_at > last_seen_time OR (instantiated_at = last_seen_time AND c.id > $value)
+             |ORDER BY c.instantiated_at ASC, c.id
+             |LIMIT $limit
+      """.stripMargin.query[ConnectionInfo].to[Seq]
+      case None =>
+        sql"""
+             |WITH
+             | initiated_connections AS (
+             |  SELECT id, acceptor AS side, instantiated_at FROM connections WHERE initiator = $participant),
+             | accepted_connections AS (
+             |  SELECT id, initiator as side, instantiated_at FROM connections WHERE acceptor = $participant),
+             | all_connections AS (SELECT * FROM initiated_connections UNION SELECT * FROM accepted_connections)
+             |SELECT c.id, c.instantiated_at, p.id, p.tpe, p.name, p.did
+             |FROM all_connections c
+             |JOIN participants p ON p.id = c.side
+             |ORDER BY c.instantiated_at ASC, c.id
+             |LIMIT $limit
+      """.stripMargin.query[ConnectionInfo].to[Seq]
+    }
   }
 }

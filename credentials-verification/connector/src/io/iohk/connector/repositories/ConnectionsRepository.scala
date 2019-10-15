@@ -1,7 +1,5 @@
 package io.iohk.connector.repositories
 
-import java.time.Instant
-
 import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
@@ -53,13 +51,13 @@ class ConnectionsRepository(
       .toFutureEither
   }
 
-  def getConnectionsSince(
+  def getConnectionsPaginated(
       participant: ParticipantId,
-      since: Instant,
-      limit: Int
+      limit: Int,
+      lastSeenConnectionId: Option[ConnectionId]
   ): FutureEither[Nothing, Seq[ConnectionInfo]] = {
     ConnectionsDAO
-      .getConnectionsSince(participant, since, limit)
+      .getConnectionsPaginated(participant, limit, lastSeenConnectionId)
       .transact(xa)
       .unsafeToFuture()
       .map(seq => Right(seq))

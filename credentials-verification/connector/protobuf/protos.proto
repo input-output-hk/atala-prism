@@ -8,7 +8,7 @@ service ConnectorService {
   // Get active connections for current participant
   //
   // Available to: Holder, Issuer, Validator
-  rpc GetConnectionsSince (GetConnectionsSinceRequest) returns (GetConnectionsSinceResponse) {}
+  rpc GetConnectionsPaginated (GetConnectionsPaginatedRequest) returns (GetConnectionsPaginatedResponse) {}
 
   // Return info about connection token such as creator info
   //
@@ -126,14 +126,14 @@ message ConnectionInfo {
   ParticipantInfo participantInfo = 3 [(scalapb.field).no_box = true]; // information about the participant at the other end
 }
 
-// Request connections instantiated by us / with us from some time
-message GetConnectionsSinceRequest {
-  int64 since = 1 [(scalapb.field).no_box = true]; // returned credentials will have created >= since
-  int32 limit = 2 [(scalapb.field).no_box = true]; // maximum number of credentials to return; if 0 then all records should be returned
+// Request connections instantiated by us / with us possibly after a known connection
+message GetConnectionsPaginatedRequest {
+  string lastSeenConnectionId = 1 [(scalapb.field).no_box = true]; // returned credentials will have been created after the last seen connection (optional field)
+  int32 limit = 2 [(scalapb.field).no_box = true]; // maximum number of credentials to return; must be > 0
 }
 
 // Result with connections instantiated
-message GetConnectionsSinceResponse {
+message GetConnectionsPaginatedResponse {
   repeated ConnectionInfo connections = 1; // connections sorted in ascending order by instantiation time
 }
 
