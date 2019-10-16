@@ -12,20 +12,10 @@
     android:theme="@style/AppTheme"
     tools:ignore="GoogleAppIndexingWarning">
     <activity android:name="io.iohk.cvp.views.activities.ConnectionActivity" />
-
-    <activity android:name="io.iohk.cvp.views.activities.WelcomeActivity">
-      <intent-filter>
-        <category android:name="android.intent.category.LAUNCHER" />
-      </intent-filter>
-    </activity>
-
-    <activity android:name="io.iohk.cvp.views.activities.QrCodeScanner">
-      <intent-filter>
-        <category android:name="android.intent.category.LAUNCHER" />
-      </intent-filter>
-    </activity>
-
-    <activity android:name="io.iohk.cvp.views.activities.ConnectionsListActivity">
+    <activity android:name="io.iohk.cvp.views.activities.WelcomeActivity" />
+    <activity android:name="io.iohk.cvp.views.activities.QrCodeScanner" />
+    <activity android:name="io.iohk.cvp.views.activities.ConnectionsListActivity" />
+    <activity android:name="io.iohk.cvp.views.activities.HomeActivity">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />

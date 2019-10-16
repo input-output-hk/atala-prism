@@ -25,4 +25,7 @@
   <string name="more_info">More info</string>
   <string name="universities">Universities</string>
   <string name="employers">Employers</string>
+  <string name="home_title">My credentials</string>
+  <string name="view">View</string>
+  <string name="new_credentials_section_title">You have new credentials to confirm</string>
 </resources>
