@@ -3,6 +3,7 @@
 target/
 *.log
 *.iml
+.DS_Store
 
 cef/network/db/
 local.sbt

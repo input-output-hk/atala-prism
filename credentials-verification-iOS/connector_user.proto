@@ -1,0 +1,101 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+
+package connector;
+
+
+service ConnectorUserService {
+  // Get active connections for current user
+  rpc GetConnections (GetConnectionsRequest) returns (GetConnectionsResponse) {
+  }
+
+  // Returns info about connection token such as issuer info
+  rpc GetConnectionTokenInfo (GetConnectionTokenInfoRequest) returns (GetConnectionTokenInfoResponse) {
+  }
+
+  // Opens connection from connection token
+  rpc AddConnectionFromToken (AddConnectionFromTokenRequest) returns (AddConnectionFromTokenResponse) {
+  }
+
+  // Deletes active connection
+  rpc DeleteConnection (DeleteConnectionRequest) returns (DeleteConnectionResponse) {
+  }
+
+  // Returns credential added after given time moment, sorted ascendingly by adding time
+  rpc GetCredentialsSince (GetCredentialsSinceRequest) returns (GetCredentialsSinceResponse) {
+  }
+}
+
+// GENERAL
+
+message IssuerInfo {
+  string DID = 1;
+  string name = 2;
+}
+
+// CONNECTIONS
+
+message ConnectionInfo {
+  string connectionId = 1;
+  IssuerInfo issuerInfo = 2;
+}
+
+message GetConnectionsRequest {
+}
+
+message GetConnectionsResponse {
+  repeated ConnectionInfo connections = 1;
+}
+
+message GetConnectionTokenInfoRequest {
+  string token = 1;
+}
+
+message GetConnectionTokenInfoResponse {
+  IssuerInfo issuer = 1;
+}
+
+message AddConnectionFromTokenRequest {
+  string token = 1;
+}
+
+message AddConnectionFromTokenResponse {
+  ConnectionInfo connection = 1;
+}
+
+message DeleteConnectionRequest {
+  string connectionId = 1;
+}
+
+message DeleteConnectionResponse {
+}
+
+// CREDENTIALS
+
+message Credential {
+  int64 received = 1;
+  IssuerInfo issuerInfo = 2;
+  string subject = 3;
+  string title = 4;
+  CredentialType type = 5;
+  bytes credentialData = 6;
+}
+
+enum CredentialType {
+  UNKNOWN = 0; // random stuff
+  EDUCATION = 1; // school, university, library
+  INSTITUTIONAL = 2; // national id, goverment id, driver license
+  FINANCIAL = 3; // banks
+  BUSINESS = 4; // jobs
+  ENTERTAINMENT = 5; // permit to play music in parks (?)
+}
+
+message GetCredentialsSinceRequest {
+  int64 since = 1; // returned credentials will have receive date >= since
+  int32 limit = 2; // maximum number of credentials to return
+}
+
+message GetCredentialsSinceResponse {
+  repeated Credential credentials = 1;
+}
