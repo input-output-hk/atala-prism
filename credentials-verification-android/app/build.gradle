@@ -15,9 +15,15 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
+        debug {
+            buildConfigField "String", "API_BASE_URL", API_BASE_URL_DEV
+            buildConfigField "Integer", "API_PORT", API_PORT_DEV
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            buildConfigField "String", "API_BASE_URL", API_BASE_URL_PROD
+            buildConfigField "Integer", "API_PORT", API_PORT_PROD
         }
     }
     sourceSets {

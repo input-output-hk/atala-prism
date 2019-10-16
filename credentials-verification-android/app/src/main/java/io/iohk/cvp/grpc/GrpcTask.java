@@ -1,34 +1,43 @@
 package io.iohk.cvp.grpc;
 
 import android.os.AsyncTask;
+import com.crashlytics.android.Crashlytics;
+import io.grpc.Channel;
+import io.grpc.ClientInterceptor;
+import io.grpc.ClientInterceptors;
 import io.grpc.ManagedChannel;
-import io.iohk.cvp.io.connector.ConnectorUserServiceGrpc;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import io.grpc.ManagedChannelBuilder;
+import io.iohk.cvp.BuildConfig;
+import io.iohk.cvp.io.connector.ConnectorServiceGrpc;
+import io.iohk.cvp.io.connector.ConnectorServiceGrpc.ConnectorServiceBlockingStub;
+import io.iohk.cvp.io.connector.ConnectorServiceGrpc.ConnectorServiceStub;
 import java.util.Optional;
 
 public class GrpcTask extends AsyncTask<Object, Void, Optional<?>> {
 
   private final GrpcRunnable grpcRunnable;
-  private final ManagedChannel channel;
+  private final ManagedChannel origChannel;
 
-  public GrpcTask(GrpcRunnable grpcRunnable, ManagedChannel channel) {
+  public GrpcTask(GrpcRunnable grpcRunnable) {
     this.grpcRunnable = grpcRunnable;
-    this.channel = channel;
+    this.origChannel = ManagedChannelBuilder
+        .forAddress(BuildConfig.API_BASE_URL, BuildConfig.API_PORT).usePlaintext()
+        .build();
   }
 
   @Override
   public Optional<?> doInBackground(Object... params) {
     try {
+      ClientInterceptor interceptor = new HeaderClientInterceptor();
+      Channel channel = ClientInterceptors.intercept(origChannel, interceptor);
+      ConnectorServiceBlockingStub
+          blockingStub = ConnectorServiceGrpc.newBlockingStub(channel);
+      ConnectorServiceStub stub = ConnectorServiceGrpc.newStub(channel);
+
       return
-          grpcRunnable.run(
-              ConnectorUserServiceGrpc.newBlockingStub(channel),
-              ConnectorUserServiceGrpc.newStub(channel), params);
+          grpcRunnable.run(blockingStub, stub, params);
     } catch (Exception e) {
-      StringWriter sw = new StringWriter();
-      PrintWriter pw = new PrintWriter(sw);
-      e.printStackTrace(pw);
-      pw.flush();
+      Crashlytics.logException(e);
       // TODO handle error
       return Optional.empty();
     }
