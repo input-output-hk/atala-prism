@@ -139,7 +139,7 @@ trait ServerCommon extends ScalaModule {
     ivy"io.circe::circe-generic:${versions.circe}",
     ivy"io.circe::circe-parser:${versions.circe}",
     ivy"io.monix::monix:3.0.0",
-    ivy"io.scalaland::chimney:0.3.2",
+    ivy"io.scalaland::chimney:0.3.3",
     ivy"io.grpc:grpc-netty:1.23.0",
     ivy"com.chuusai::shapeless:2.3.3"
   )

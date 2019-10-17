@@ -1,45 +1,55 @@
 package io.iohk.cvp.wallet
 
-import io.iohk.cvp.crypto.ECKeys
+import io.grpc.{Server, ServerBuilder}
+import io.iohk.cvp.wallet.models.Wallet
 import org.slf4j.LoggerFactory
+
+import scala.concurrent.ExecutionContext
 
 object WalletApp {
 
-  val logger = LoggerFactory.getLogger(this.getClass)
-
   def main(args: Array[String]): Unit = {
-    val walletFile = os.pwd / ".cvpwallet" / "wallet.dat"
-    if (os.exists(walletFile)) {
-      loadWallet(walletFile)
-    } else {
-      createNewWallet(walletFile)
+    val wallet = WalletHelper.getOrCreate()
+    val app = new WalletApp(wallet)(ExecutionContext.global)
+    app.start()
+    app.blockUntilShutdown()
+  }
+}
+
+class WalletApp(wallet: Wallet)(implicit ec: ExecutionContext) {
+
+  private val logger = LoggerFactory.getLogger(this.getClass)
+  private val port = 50052
+
+  private[this] var server: Server = null
+
+  private def start(): Unit = {
+    logger.info("Starting server")
+    val walletService = new grpc.WalletServiceImpl(wallet)
+    server = ServerBuilder
+      .forPort(port)
+      .addService(protos.WalletServiceGrpc.bindService(walletService, ec))
+      .asInstanceOf[ServerBuilder[_]] // otherwise, IntelliJ marks the next lines as errors
+      .build()
+      .start()
+
+    logger.info(s"Server started, listening on $port")
+    sys.addShutdownHook {
+      System.err.println("*** shutting down gRPC server since JVM is shutting down")
+      stop()
+      System.err.println("*** server shut down")
     }
   }
 
-  private def loadWallet(file: os.ReadablePath) = {
-    val data = os.read.bytes(file)
-    logger.info("Previous wallet found, loading it")
-
-    val wallet = protos.WalletData.parseFrom(data)
-    logger.info("Wallet loaded")
-
-    wallet
+  private def stop(): Unit = {
+    if (server != null) {
+      server.shutdown()
+    }
   }
 
-  private def createNewWallet(file: os.Path) = {
-    import com.google.protobuf.ByteString
-
-    logger.info("Generating keys")
-    val pair = ECKeys.generateKeyPair()
-    val protoKeyPair = protos
-      .KeyPair()
-      .withPrivateKey(ByteString.copyFrom(pair.getPrivate.getEncoded))
-      .withPublicKey(ByteString.copyFrom(pair.getPublic.getEncoded))
-    val wallet = protos.WalletData().withKeyPair(protoKeyPair)
-
-    logger.info("Storing wallet")
-    os.write(file, wallet.toByteArray, createFolders = true)
-
-    wallet
+  private def blockUntilShutdown(): Unit = {
+    if (server != null) {
+      server.awaitTermination()
+    }
   }
 }
