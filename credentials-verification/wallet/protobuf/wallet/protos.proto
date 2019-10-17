@@ -9,4 +9,16 @@ message KeyPair {
 
 message WalletData {
     KeyPair keyPair = 1;
+    string did = 2; // For now, the DID string is enough, this will change in the future when a DID is standardized over the project
+}
+
+service WalletService {
+    // Get the wallet's DID, for now, there is a single DID.
+    rpc GetDID (GetDIDRequest) returns (GetDIDResponse) {}
+}
+
+message GetDIDRequest {}
+
+message GetDIDResponse {
+    string did = 1;
 }
