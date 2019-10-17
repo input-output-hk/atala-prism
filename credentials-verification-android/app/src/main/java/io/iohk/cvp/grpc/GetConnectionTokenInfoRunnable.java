@@ -1,24 +1,24 @@
 package io.iohk.cvp.grpc;
 
 import io.grpc.StatusRuntimeException;
-import io.iohk.cvp.io.connector.ConnectorUserServiceGrpc;
+import io.iohk.cvp.io.connector.ConnectorServiceGrpc;
 import io.iohk.cvp.io.connector.GetConnectionTokenInfoRequest;
 import io.iohk.cvp.io.connector.GetConnectionTokenInfoResponse;
-import io.iohk.cvp.io.connector.IssuerInfo;
+import io.iohk.cvp.io.connector.ParticipantInfo;
 import java.util.Optional;
 
 public class GetConnectionTokenInfoRunnable implements GrpcRunnable {
 
   @Override
-  public Optional<IssuerInfo> run(
-      ConnectorUserServiceGrpc.ConnectorUserServiceBlockingStub blockingStub,
-      ConnectorUserServiceGrpc.ConnectorUserServiceStub asyncStub, Object... params)
+  public Optional<ParticipantInfo> run(
+      ConnectorServiceGrpc.ConnectorServiceBlockingStub blockingStub,
+      ConnectorServiceGrpc.ConnectorServiceStub asyncStub, Object... params)
       throws Exception {
     return getConnectionToken(blockingStub, params);
   }
 
-  private Optional<IssuerInfo> getConnectionToken(
-      ConnectorUserServiceGrpc.ConnectorUserServiceBlockingStub blockingStub, Object... params)
+  private Optional<ParticipantInfo> getConnectionToken(
+      ConnectorServiceGrpc.ConnectorServiceBlockingStub blockingStub, Object... params)
       throws StatusRuntimeException {
 
     String token = String.valueOf(params[0]);
@@ -26,6 +26,6 @@ public class GetConnectionTokenInfoRunnable implements GrpcRunnable {
         .setToken(token).build();
     GetConnectionTokenInfoResponse response = blockingStub.getConnectionTokenInfo(request);
 
-    return Optional.ofNullable(response.getIssuer());
+    return Optional.ofNullable(response.getCreator());
   }
 }
