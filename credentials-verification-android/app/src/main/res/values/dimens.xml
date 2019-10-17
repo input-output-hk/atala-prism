@@ -4,5 +4,6 @@
   <dimen name="activity_default_side_margin">24dp</dimen>
   <dimen name="card_corner_radius">8dp</dimen>
   <dimen name="internal_margin">8dp</dimen>
-  <dimen name="titles_text_size">24sp</dimen>
+  <dimen name="titles_text_size">22sp</dimen>
+  <dimen name="little_text">13sp</dimen>
 </resources>

@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent">
+
+  <com.google.android.material.bottomappbar.BottomAppBar
+    android:id="@+id/bar"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="bottom"
+    app:contentInsetStart="0dp"
+    app:elevation="8dp"
+    app:fabAlignmentMode="center"
+    app:fabCradleMargin="0dp"
+    app:fabCradleRoundedCornerRadius="0dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+      android:layout_width="match_parent"
+      android:layout_height="match_parent">
+
+      <ImageButton
+        android:id="@+id/home_menu_item"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="@android:color/transparent"
+        android:src="@drawable/ic_home_grey"
+        app:layout_constraintBottom_toTopOf="@+id/home_menu_item_text"
+        app:layout_constraintEnd_toStartOf="@+id/profile_menu_item"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+      <ImageButton
+        android:id="@+id/profile_menu_item"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="@android:color/transparent"
+        android:src="@drawable/ic_profile_grey"
+        app:layout_constraintBottom_toTopOf="@+id/profile_menu_item_text"
+        app:layout_constraintEnd_toStartOf="@+id/stub_menu_item"
+        app:layout_constraintStart_toEndOf="@+id/home_menu_item"
+        app:layout_constraintTop_toTopOf="parent" />
+
+      <ImageButton
+        android:id="@+id/stub_menu_item"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="@android:color/transparent"
+        android:src="@drawable/ic_wallet_grey"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toTopOf="@+id/connections_text"
+        app:layout_constraintEnd_toStartOf="@+id/wallet_menu_item"
+        app:layout_constraintStart_toEndOf="@+id/profile_menu_item"
+        app:layout_constraintTop_toTopOf="parent" />
+
+      <ImageButton
+        android:id="@+id/wallet_menu_item"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="@android:color/transparent"
+        android:src="@drawable/ic_wallet_grey"
+        app:layout_constraintBottom_toTopOf="@+id/wallet_menu_item_text"
+        app:layout_constraintEnd_toStartOf="@+id/settings_menu_item"
+        app:layout_constraintStart_toEndOf="@+id/stub_menu_item"
+        app:layout_constraintTop_toTopOf="parent" />
+
+      <ImageButton
+        android:id="@+id/settings_menu_item"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:background="@android:color/transparent"
+        android:src="@drawable/ic_settings_grey"
+        app:layout_constraintBottom_toTopOf="@+id/settings_menu_item_text"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/wallet_menu_item"
+        app:layout_constraintTop_toTopOf="parent" />
+
+      <TextView
+        android:id="@+id/home_menu_item_text"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="8dp"
+        android:text="@string/home"
+        android:textAlignment="center"
+        android:textColor="@color/blueGrey"
+        android:textSize="12sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/profile_menu_item_text"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/home_menu_item" />
+
+      <TextView
+        android:id="@+id/profile_menu_item_text"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="8dp"
+        android:text="@string/profile"
+        android:textAlignment="center"
+        android:textColor="@color/blueGrey"
+        android:textSize="12sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/connections_text"
+        app:layout_constraintStart_toEndOf="@+id/home_menu_item_text"
+        app:layout_constraintTop_toBottomOf="@+id/profile_menu_item" />
+
+
+      <TextView
+        android:id="@+id/connections_text"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="8dp"
+        android:text="@string/connections"
+        android:textAlignment="center"
+        android:textColor="@color/blueGrey"
+        android:textSize="12sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/wallet_menu_item_text"
+        app:layout_constraintStart_toEndOf="@+id/profile_menu_item_text"
+        app:layout_constraintTop_toBottomOf="@+id/stub_menu_item" />
+
+      <TextView
+        android:id="@+id/wallet_menu_item_text"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="8dp"
+        android:text="@string/wallet"
+        android:textAlignment="center"
+        android:textColor="@color/blueGrey"
+        android:textSize="12sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/settings_menu_item_text"
+        app:layout_constraintStart_toEndOf="@+id/connections_text"
+        app:layout_constraintTop_toBottomOf="@+id/wallet_menu_item" />
+
+      <TextView
+        android:id="@+id/settings_menu_item_text"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="8dp"
+        android:text="@string/settings"
+        android:textAlignment="center"
+        android:textColor="@color/blueGrey"
+        android:textSize="12sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/wallet_menu_item_text"
+        app:layout_constraintTop_toBottomOf="@+id/settings_menu_item" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+  </com.google.android.material.bottomappbar.BottomAppBar>
+
+  <com.google.android.material.floatingactionbutton.FloatingActionButton
+    android:id="@+id/fab"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="32dp"
+    android:layout_gravity="bottom|center_horizontal"
+    android:src="@drawable/ic_connections_white"
+    app:elevation="0dp"
+    app:maxImageSize="24dp"
+    app:rippleColor="@color/colorPrimary" />
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
+
