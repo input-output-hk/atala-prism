@@ -6,7 +6,9 @@ import lombok.Getter;
 public enum ErrorCode {
 
   STEP_NOT_FOUND(100, "Tutorial step not found"),
-  TAB_NOT_FOUND(101, "Tab item not found");
+  TAB_NOT_FOUND(101, "Tab item not found"),
+
+  FRAGMENT_NOT_FOUND(200, "Fragment not found");
 
   private int code;
   private String description;

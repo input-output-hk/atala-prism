@@ -1,23 +1,28 @@
-package io.iohk.cvp.views.activities;
+package io.iohk.cvp.views.fragments;
 
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
 import androidx.lifecycle.ViewModel;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import java.util.Arrays;
+import java.util.List;
+
 import butterknife.BindView;
 import io.iohk.cvp.R;
 import io.iohk.cvp.io.connector.Credential;
-import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.utils.adapters.CredentialsRecyclerViewAdapter;
 import io.iohk.cvp.views.utils.adapters.NewCredentialsRecyclerViewAdapter;
-import java.util.Arrays;
-import java.util.List;
-import javax.inject.Inject;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-public class HomeActivity extends CvpActivity {
-
-  @Inject
-  Navigator navigator;
+@Setter
+@NoArgsConstructor
+public class HomeFragment extends CvpFragment {
 
   @BindView(R.id.credentials_list)
   RecyclerView credentialsRecyclerView;
@@ -29,49 +34,38 @@ public class HomeActivity extends CvpActivity {
   private CredentialsRecyclerViewAdapter credentialsAdapter;
 
   @Override
-  protected void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-    LinearLayoutManager linearLayoutManagerCredentials = new LinearLayoutManager(this);
+  protected int getViewId() {
+    return R.layout.fragment_home;
+  }
+
+  @Override
+  public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    View view = super.onCreateView(inflater, container, savedInstanceState);
+    LinearLayoutManager linearLayoutManagerCredentials = new LinearLayoutManager(getContext());
 
     credentialsRecyclerView.setLayoutManager(linearLayoutManagerCredentials);
 
     //TODO use view model and make grpc call to fetch real connections info
     List<Credential> lista = Arrays
-        .asList(Credential.getDefaultInstance(), Credential.getDefaultInstance(),
-            Credential.getDefaultInstance(), Credential.getDefaultInstance());
+      .asList(Credential.getDefaultInstance(), Credential.getDefaultInstance(),
+        Credential.getDefaultInstance(), Credential.getDefaultInstance());
 
     credentialsAdapter = new CredentialsRecyclerViewAdapter();
     credentialsAdapter.setCredentials(lista);
     credentialsRecyclerView.setAdapter(credentialsAdapter);
 
-    LinearLayoutManager linearLayoutManagerNewCredentials = new LinearLayoutManager(this);
+    LinearLayoutManager linearLayoutManagerNewCredentials = new LinearLayoutManager(getContext());
 
     newCredentialsRecyclerView.setLayoutManager(linearLayoutManagerNewCredentials);
 
     List<Credential> newCredentials = Arrays
-        .asList(Credential.getDefaultInstance(), Credential.getDefaultInstance(),
-            Credential.getDefaultInstance(), Credential.getDefaultInstance());
+      .asList(Credential.getDefaultInstance(), Credential.getDefaultInstance(),
+        Credential.getDefaultInstance(), Credential.getDefaultInstance());
 
     newCredentialsAdapter = new NewCredentialsRecyclerViewAdapter();
     newCredentialsAdapter.setCredentials(newCredentials);
     newCredentialsRecyclerView.setAdapter(newCredentialsAdapter);
-
-  }
-
-
-  @Override
-  protected Navigator getNavigator() {
-    return navigator;
-  }
-
-  @Override
-  protected int getView() {
-    return R.layout.home_activity;
-  }
-
-  @Override
-  protected int getTitleValue() {
-    return R.string.home_title;
+    return view;
   }
 
   @Override

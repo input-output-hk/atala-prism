@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:id="@+id/bottom_appbar_container"
   android:layout_width="match_parent"
-  android:layout_height="match_parent">
+  android:layout_height="wrap_content">
 
   <com.google.android.material.bottomappbar.BottomAppBar
-    android:id="@+id/bar"
+    android:id="@+id/bottom_appbar"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_gravity="bottom"
@@ -17,14 +18,15 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
       android:layout_width="match_parent"
-      android:layout_height="match_parent">
+      android:layout_height="wrap_content">
 
       <ImageButton
         android:id="@+id/home_menu_item"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_height="40dp"
         android:background="@android:color/transparent"
+        android:paddingTop="8dp"
+        android:paddingBottom="6dp"
         android:src="@drawable/ic_home_grey"
         app:layout_constraintBottom_toTopOf="@+id/home_menu_item_text"
         app:layout_constraintEnd_toStartOf="@+id/profile_menu_item"
@@ -34,9 +36,10 @@
       <ImageButton
         android:id="@+id/profile_menu_item"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_height="40dp"
         android:background="@android:color/transparent"
+        android:paddingTop="8dp"
+        android:paddingBottom="6dp"
         android:src="@drawable/ic_profile_grey"
         app:layout_constraintBottom_toTopOf="@+id/profile_menu_item_text"
         app:layout_constraintEnd_toStartOf="@+id/stub_menu_item"
@@ -46,9 +49,10 @@
       <ImageButton
         android:id="@+id/stub_menu_item"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_height="40dp"
         android:background="@android:color/transparent"
+        android:paddingTop="8dp"
+        android:paddingBottom="6dp"
         android:src="@drawable/ic_wallet_grey"
         android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@+id/connections_text"
@@ -59,9 +63,10 @@
       <ImageButton
         android:id="@+id/wallet_menu_item"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_height="40dp"
         android:background="@android:color/transparent"
+        android:paddingTop="8dp"
+        android:paddingBottom="6dp"
         android:src="@drawable/ic_wallet_grey"
         app:layout_constraintBottom_toTopOf="@+id/wallet_menu_item_text"
         app:layout_constraintEnd_toStartOf="@+id/settings_menu_item"
@@ -71,9 +76,10 @@
       <ImageButton
         android:id="@+id/settings_menu_item"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_height="40dp"
         android:background="@android:color/transparent"
+        android:paddingTop="8dp"
+        android:paddingBottom="6dp"
         android:src="@drawable/ic_settings_grey"
         app:layout_constraintBottom_toTopOf="@+id/settings_menu_item_text"
         app:layout_constraintEnd_toEndOf="parent"
@@ -84,7 +90,6 @@
         android:id="@+id/home_menu_item_text"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
         android:layout_marginBottom="8dp"
         android:text="@string/home"
         android:textAlignment="center"
@@ -99,7 +104,6 @@
         android:id="@+id/profile_menu_item_text"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
         android:layout_marginBottom="8dp"
         android:text="@string/profile"
         android:textAlignment="center"
@@ -115,7 +119,6 @@
         android:id="@+id/connections_text"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
         android:layout_marginBottom="8dp"
         android:text="@string/connections"
         android:textAlignment="center"
@@ -130,7 +133,6 @@
         android:id="@+id/wallet_menu_item_text"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
         android:layout_marginBottom="8dp"
         android:text="@string/wallet"
         android:textAlignment="center"
@@ -145,7 +147,6 @@
         android:id="@+id/settings_menu_item_text"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
         android:layout_marginBottom="8dp"
         android:text="@string/settings"
         android:textAlignment="center"
@@ -164,8 +165,8 @@
     android:id="@+id/fab"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="32dp"
     android:layout_gravity="bottom|center_horizontal"
+    android:layout_marginBottom="28dp"
     android:src="@drawable/ic_connections_white"
     app:elevation="0dp"
     app:maxImageSize="24dp"

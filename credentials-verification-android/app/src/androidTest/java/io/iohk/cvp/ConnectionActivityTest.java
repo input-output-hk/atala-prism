@@ -14,7 +14,6 @@ import android.os.Bundle;
 import androidx.test.espresso.intent.rule.IntentsTestRule;
 import io.iohk.cvp.utils.ActivitiesRequestCodes;
 import io.iohk.cvp.utils.IntentDataConstants;
-import io.iohk.cvp.views.activities.ConnectionActivity;
 import io.iohk.cvp.views.activities.QrCodeScanner;
 import org.junit.Rule;
 import org.junit.Test;

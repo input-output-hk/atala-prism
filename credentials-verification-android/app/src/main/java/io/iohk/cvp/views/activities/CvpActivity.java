@@ -2,7 +2,9 @@ package io.iohk.cvp.views.activities;
 
 import android.content.Context;
 import android.os.Bundle;
+
 import androidx.lifecycle.ViewModel;
+
 import butterknife.ButterKnife;
 import dagger.android.support.DaggerAppCompatActivity;
 import io.iohk.cvp.views.Navigator;
@@ -10,7 +12,6 @@ import io.iohk.cvp.views.Navigator;
 public abstract class CvpActivity<T extends ViewModel> extends DaggerAppCompatActivity {
 
   private T viewModel;
-
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -36,10 +37,6 @@ public abstract class CvpActivity<T extends ViewModel> extends DaggerAppCompatAc
 
   @Override
   public Context getApplicationContext() {
-    return this;
-  }
-
-  public CvpActivity getActivity() {
     return this;
   }
 

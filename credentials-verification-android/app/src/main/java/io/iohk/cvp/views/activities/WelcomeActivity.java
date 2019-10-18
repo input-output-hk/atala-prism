@@ -98,6 +98,12 @@ public class WelcomeActivity extends CvpActivity {
     currentStep++;
   }
 
+  @OnClick(R.id.create_account_btn)
+  public void onClickCreateAccount() {
+    // TODO refactor this. Now its just to get out of this view
+    navigator.showConnections(this);
+  }
+
   private void changeViewsByStep(boolean isAdvancing) {
     switch (currentStep) {
       case 0:

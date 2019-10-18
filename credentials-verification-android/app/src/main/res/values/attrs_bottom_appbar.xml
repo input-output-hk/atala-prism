@@ -1,0 +1,4 @@
+<resources>
+  <declare-styleable name="BottomAppBar">
+  </declare-styleable>
+</resources>
