@@ -168,7 +168,8 @@ trait ServerPBCommon extends ServerCommon with FixedScalaPBModule {
   override def ivyDeps =
     super[ServerCommon].ivyDeps.map { deps =>
       deps ++ Agg(
-        ivy"com.thesamet.scalapb::scalapb-runtime-grpc:${versions.scalaPB}"
+        ivy"com.thesamet.scalapb::scalapb-runtime-grpc:${versions.scalaPB}",
+        ivy"io.grpc:grpc-services:1.23.0"
       )
     }
 

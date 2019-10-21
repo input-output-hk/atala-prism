@@ -25,7 +25,7 @@ trait BitcoinApiClient {
       locktime: Long = 0L,
       replaceable: Boolean = false
   ): Result[RawTransaction]
-  def signRawTransactionWithWallet(rawTransaction: RawTransaction): Result[RawSignedTransaction]
+  def signRawTransactionWithWallet(rawTransaction: RawTransaction): Result[SignRawTransactionWithWalletResult]
   def sendRawTransaction(tx: RawSignedTransaction, allowHighFees: Boolean = false): Result[TransactionId]
 
   final def getRawChangeAddress(addressType: AddressType): Result[Address] =

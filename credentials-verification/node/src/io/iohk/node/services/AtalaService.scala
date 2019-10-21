@@ -16,18 +16,20 @@ trait AtalaService {
 
 class AtalaServiceImpl(bitcoinClient: BitcoinClient, storage: ObjectStorageService, binaryOps: BinaryOps)(
     implicit ec: ExecutionContext
-) {
+) extends AtalaService {
 
-  def publishAtalaTransaction(tx: AtalaTx): Result[PublishError, Unit] = {
+  override def publishAtalaTransaction(tx: AtalaTx): Result[PublishError, Unit] = {
     val block = AtalaBlock("1.0", List(tx))
     val blockBytes = binaryOps.toBytes(block)
     val blockHash = binaryOps.hashHex(block)
     val obj = AtalaObject(blockHash)
     val objBytes = binaryOps.toBytes(obj)
-    val objHash = binaryOps.hashHex(obj)
-    val opDataString = s"ATALA://$objHash"
+    val objHashBytes: Array[Byte] = binaryOps.hash(obj)
+    val objHash: String = binaryOps.hashHex(obj)
+    val header: Array[Byte] = "ATALA://".getBytes("UTF-8")
+    val opDataBytes: Array[Byte] = header ++ objHashBytes
 
-    OpData(opDataString) match {
+    OpData(opDataBytes) match {
       case Some(opData) =>
         storage.put(blockHash, blockBytes)
         storage.put(objHash, objBytes)
@@ -35,7 +37,7 @@ class AtalaServiceImpl(bitcoinClient: BitcoinClient, storage: ObjectStorageServi
           .sendDataTx(opData)
           .map(_ => ())
       case None =>
-        throw new RuntimeException("FATAL: Atala identifier is to long to store in bitcoin")
+        throw new RuntimeException(s"FATAL: Atala identifier is to long to store in bitcoin (${opDataBytes.length}")
     }
   }
 
@@ -47,4 +49,11 @@ object AtalaService {
   // Given that currently, `storage.put` doesn't return any error
   // we can safely equal `PublishError` to `SendDataTxError`
   type PublishError = SendDataTxError
+
+  def apply(bitcoinClient: BitcoinClient, storage: ObjectStorageService)(
+      implicit ec: ExecutionContext
+  ): AtalaService = {
+    val binaryOps = BinaryOps()
+    new AtalaServiceImpl(bitcoinClient, storage, binaryOps)
+  }
 }

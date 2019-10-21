@@ -24,4 +24,6 @@ object ApiModel {
       (data.map(d => List(("data", d))).getOrElse(Nil) ++
         addresses.map { case (a, b) => (a: String, b.toString) }).toMap
   }
+
+  case class SignRawTransactionWithWalletResult(hex: RawSignedTransaction, complete: Boolean)
 }

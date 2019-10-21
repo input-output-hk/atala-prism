@@ -28,6 +28,10 @@ trait BinaryOps {
   }
 }
 
+object BinaryOps {
+  def apply(): BinaryOps = DefaultBinaryOps
+}
+
 object DefaultBinaryOps extends BinaryOps {
 
   override def toBytes(tx: AtalaBlock): Array[Byte] =
