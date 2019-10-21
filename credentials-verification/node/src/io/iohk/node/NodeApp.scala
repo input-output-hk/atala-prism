@@ -17,7 +17,6 @@ import scala.concurrent.duration._
 import io.grpc.{Server, ServerBuilder}
 import io.iohk.node.geud_node._
 import scala.concurrent.ExecutionContext
-import scala.concurrent.Future
 import io.iohk.node.services.AtalaService
 import io.iohk.node.objects.ObjectStorageService
 
@@ -35,40 +34,6 @@ object NodeApp {
   }
 
   private val port = 50053
-
-}
-
-class NodeApi(atalaService: AtalaService)(implicit executionContext: ExecutionContext)
-    extends NodeServiceGrpc.NodeService { self =>
-
-  import io.iohk.node.atala_bitcoin._
-
-  def publishDidDocument(request: PublishDidDocumentRequest): Future[PublishDidDocumentResponse] = {
-    val txDefinition = AtalaTx.Definition.PublishDidDocument(request)
-    val tx = AtalaTx(txDefinition)
-    atalaService
-      .publishAtalaTransaction(tx)
-      .value
-      .map {
-        case Right(_) =>
-          PublishDidDocumentResponse()
-        case Left(left) =>
-          // TODO: Decide on a correct representation of errors
-          throw new Exception("Unexpected error trying to publish an atala transaction\n" + left)
-      }
-
-  }
-
-  def getDidDocument(request: GetDidDocumentRequest): Future[GetDidDocumentResponse] = ???
-  def getProofOfCredentialIssued(
-      request: GetProofOfCredentialIssuedRequest
-  ): Future[GetProofOfCredentialIssuedResponse] = ???
-  def publishProofOfCredentialIssued(
-      request: PublishProofOfCredentialIssuedRequest
-  ): Future[PublishProofOfCredentialIssuedResponse] = ???
-  def revokeProofOfCredentialIssued(
-      request: RevokeProofOfCredentialIssuedRequest
-  ): Future[RevokeProofOfCredentialIssuedResponse] = ???
 
 }
 
@@ -109,7 +74,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     server = ServerBuilder
       .forPort(NodeApp.port)
       .addService(NodeServiceGrpc.bindService(nodeApi, executionContext))
-      .addService(ProtoReflectionService.newInstance())
+      .addService(ProtoReflectionService.newInstance()) //TODO: Decide before release if we should keep this (or guard it with a config flag)
       .build()
       .start()
 

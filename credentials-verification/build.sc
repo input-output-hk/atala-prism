@@ -177,6 +177,8 @@ trait ServerPBCommon extends ServerCommon with FixedScalaPBModule {
 
 object node extends ServerPBCommon {
 
+  def scalacOptions = Seq("-Ywarn-unused:imports", "-Xfatal-warnings", "-feature")
+
   override def mainClass = Some("io.iohk.node.NodeApp")
 
   object test extends `tests-common` {}

@@ -90,7 +90,6 @@ class BitcoinClient(apiClient: BitcoinApiClient)(implicit ec: ExecutionContext) 
       signRawTx <- apiClient.signRawTransactionWithWallet(rawTx)
       txid <- apiClient.sendRawTransaction(signRawTx.hex)
     } yield {
-      println(txid)
       txid
     }
 
