@@ -48,12 +48,13 @@ package object models {
   object Vout extends TypeCompanion[Int, VoutTag]
 
   // TODO: Eventually we will want to increase to the real max length supported by bitcoin
-  val OP_RETURN_MAX_LENGTH = 64
-  type OpData = String @@ OpDataTag
-  object OpData extends ValidatedTypeCompanion[String, OpDataTag](op_data_hex(_).length <= OP_RETURN_MAX_LENGTH)
+  val OP_RETURN_MAX_LENGTH = 128
+  type OpData = Array[Byte] @@ OpDataTag
+  object OpData
+      extends ValidatedTypeCompanion[Array[Byte], OpDataTag](bs => op_data_hex(bs).length <= OP_RETURN_MAX_LENGTH)
 
-  private def op_data_hex(in: String): String =
-    in.getBytes("UTF-8").toList.map(b => String.format("%02X", Byte.box(b))).mkString
+  private def op_data_hex(in: Array[Byte]): String =
+    in.toList.map(b => String.format("%02X", Byte.box(b))).mkString
 
   implicit class OpDateExtensions(val od: OpData) extends AnyVal {
     def toHex: String =

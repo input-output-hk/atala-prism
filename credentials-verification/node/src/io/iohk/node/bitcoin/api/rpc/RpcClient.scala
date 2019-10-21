@@ -56,7 +56,9 @@ class RpcClient(config: RpcClient.Config)(
   ): Result[RawTransaction] =
     CreateRawTransaction(inputs, outputs, locktime, replaceable).run
 
-  override def signRawTransactionWithWallet(rawTransaction: RawTransaction): Result[RawSignedTransaction] =
+  override def signRawTransactionWithWallet(
+      rawTransaction: RawTransaction
+  ): Result[SignRawTransactionWithWalletResult] =
     SignRawTransactionWithWallet(rawTransaction).run
 
   override def sendRawTransaction(tx: RawSignedTransaction, allowHighFees: Boolean = false): Result[TransactionId] =

@@ -27,7 +27,7 @@ object ObjectStorageService {
 
   type ObjectId = String
 
-  def apply: ObjectStorageService = {
+  def apply(): ObjectStorageService = {
     new FileBased(os.pwd / ".node")
   }
 

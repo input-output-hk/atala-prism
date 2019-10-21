@@ -88,8 +88,10 @@ class BitcoinClient(apiClient: BitcoinApiClient)(implicit ec: ExecutionContext) 
       (ti, to) = composeTx(unspent, changeAddress)
       rawTx <- apiClient.createRawTransaction(List(ti), to)
       signRawTx <- apiClient.signRawTransactionWithWallet(rawTx)
-      txid <- apiClient.sendRawTransaction(signRawTx)
-    } yield txid
+      txid <- apiClient.sendRawTransaction(signRawTx.hex)
+    } yield {
+      txid
+    }
 
     // Using the following link as a reference, I'm going to tackle some of the general case errors:
     // https://github.com/bitcoin/bitcoin/blob/v0.18.1/src/rpc/protocol.h#L34-L92

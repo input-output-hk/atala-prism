@@ -97,6 +97,9 @@ object JsonCodecs {
     }
   }
 
+  implicit val signRawTransactionWithWalletResultCodec: Codec[SignRawTransactionWithWalletResult] =
+    deriveCodec[SignRawTransactionWithWalletResult]
+
   private def transactionDecoder(blockhash: Blockhash): Decoder[Transaction] = {
     Decoder.forProduct2[Transaction, TransactionId, List[Transaction.Output]]("txid", "vout")(
       (id, vout) => Transaction(id = id, vout = vout, blockhash = blockhash)
