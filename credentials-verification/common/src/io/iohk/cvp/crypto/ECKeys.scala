@@ -8,6 +8,7 @@ import java.security.spec.{
   ECPublicKeySpec => JavaECPublicKeySpec
 }
 
+import org.bouncycastle.jcajce.provider.asymmetric.ec.{BCECPrivateKey, BCECPublicKey}
 import org.bouncycastle.jce.ECNamedCurveTable
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.bouncycastle.jce.spec.{ECNamedCurveSpec, ECPublicKeySpec => BCECPublicKeySpec}
@@ -66,6 +67,18 @@ object ECKeys {
     val Q = ecParameterSpec.getG.multiply(d.bigInteger)
     val pubSpec = new BCECPublicKeySpec(Q, ecParameterSpec)
     keyFactory.generatePublic(pubSpec)
+  }
+
+  def getECPoint(publicKey: PublicKey): JavaECPoint = {
+    publicKey match {
+      case k: BCECPublicKey => k.getW
+    }
+  }
+
+  def getD(privateKey: PrivateKey): BigInt = {
+    privateKey match {
+      case k: BCECPrivateKey => k.getD
+    }
   }
 
   /**

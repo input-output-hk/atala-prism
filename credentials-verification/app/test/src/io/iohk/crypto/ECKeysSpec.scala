@@ -80,4 +80,30 @@ class ECKeysSpec extends WordSpec {
       matchIt(result)
     }
   }
+
+  "getD" should {
+    "get the private keys as big int" in {
+      val urlBase64EncodedD = "avwoe7yP0B58wMp7sALpCToCnA6gD2Dsv5bnScWzOL0"
+      val dBytes = Base64.getUrlDecoder.decode(urlBase64EncodedD)
+      val d = BigInt(1, dBytes)
+      val key = ECKeys.toPrivateKey(d)
+      val result = ECKeys.getD(key)
+      result must be(d)
+    }
+  }
+
+  "getECPoint" should {
+    "get the public key point" in {
+      val urlBase64EncodedX = "ostQVNLv52D3eioe0lsMRNng6stDrvzPVpQI3n8UCww"
+      val urlBase64EncodedY = "BmwZQjOif6ON0jJ4vTQgmBhlcKmoQ_P8bdDXZUmY_Mw"
+      val xBytes = Base64.getUrlDecoder.decode(urlBase64EncodedX)
+      val yBytes = Base64.getUrlDecoder.decode(urlBase64EncodedY)
+      val x = BigInt(1, xBytes)
+      val y = BigInt(1, yBytes)
+      val key = ECKeys.toPublicKey(x, y)
+      val result = ECKeys.getECPoint(key)
+      BigInt(result.getAffineX) must be(x)
+      BigInt(result.getAffineY) must be(y)
+    }
+  }
 }
