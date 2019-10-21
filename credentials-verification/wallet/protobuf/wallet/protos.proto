@@ -30,10 +30,34 @@ message WalletData {
 service WalletService {
     // Get the wallet's DID, for now, there is a single DID.
     rpc GetDID (GetDIDRequest) returns (GetDIDResponse) {}
+
+    // Given a message, sign it using the only existing key
+    rpc SignMessage (SignMessageRequest) returns (SignMessageResponse) {}
+
+    // given a signed message, verify that the signature corresponds to the given key
+    rpc VerifySignedMessage (VerifySignedMessageRequest) returns (VerifySignedMessageResponse) {}
 }
 
 message GetDIDRequest {}
 
 message GetDIDResponse {
     string did = 1;
+}
+
+message SignMessageRequest {
+    bytes message = 1;
+}
+
+message SignMessageResponse {
+    bytes signature = 1;
+}
+
+message VerifySignedMessageRequest {
+    ECPublicKey publicKey = 1;
+    bytes message = 2;
+    bytes signature = 3;
+}
+
+message VerifySignedMessageResponse {
+    bool verified = 1;
 }
