@@ -2,9 +2,24 @@ syntax = "proto3";
 
 package io.iohk.cvp.wallet;
 
+// While the binary representation is adequate, JavaScript has problems parsing big integers from bytes,
+// it is simpler to leave the big integer as string.
+message BigInteger {
+    string value = 1;
+}
+
+message ECPrivateKey {
+    BigInteger d = 1;
+}
+
+message ECPublicKey {
+    BigInteger x = 1;
+    BigInteger y = 2;
+}
+
 message KeyPair {
-    bytes privateKey = 1;
-    bytes publicKey = 2;
+    ECPrivateKey privateKey = 1;
+    ECPublicKey publicKey = 2;
 }
 
 message WalletData {

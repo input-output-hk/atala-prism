@@ -1,6 +1,7 @@
 package io.iohk.cvp.wallet
 
-import com.google.protobuf.ByteString
+import java.security.{PrivateKey, PublicKey}
+
 import io.iohk.cvp.crypto.ECKeys
 import io.iohk.cvp.wallet.models.Wallet
 import org.slf4j.LoggerFactory
@@ -21,7 +22,36 @@ object WalletHelper {
   }
 
   def toWalletModel(data: protos.WalletData): Wallet = {
-    Wallet(data.did)
+    val maybe = for {
+      protoKeyPair <- data.keyPair
+      protoPublicKey <- protoKeyPair.publicKey
+      protoPrivateKey <- protoKeyPair.privateKey
+      publicKey = toPublicKey(protoPublicKey)
+      privateKey = toPrivateKey(protoPrivateKey)
+    } yield Wallet(data.did, privateKey, publicKey)
+
+    maybe.getOrElse(fatalWalletCorrupted)
+  }
+
+  def toPrivateKey(proto: protos.ECPrivateKey): PrivateKey = {
+    proto.d
+      .map(_.value)
+      .map(BigInt.apply)
+      .map(ECKeys.toPrivateKey)
+      .getOrElse(fatalWalletCorrupted)
+  }
+
+  def toPublicKey(proto: protos.ECPublicKey): PublicKey = {
+    val maybe = for {
+      x <- proto.x.map(_.value).map(BigInt.apply)
+      y <- proto.y.map(_.value).map(BigInt.apply)
+    } yield ECKeys.toPublicKey(x, y)
+
+    maybe.getOrElse(fatalWalletCorrupted)
+  }
+
+  private def fatalWalletCorrupted = {
+    throw new RuntimeException("The wallet is likely corrupted, you'll need to repair it or delete it manually")
   }
 
   private def loadWallet(file: os.ReadablePath): protos.WalletData = {
@@ -39,8 +69,8 @@ object WalletHelper {
     val pair = ECKeys.generateKeyPair()
     val protoKeyPair = protos
       .KeyPair()
-      .withPrivateKey(ByteString.copyFrom(pair.getPrivate.getEncoded))
-      .withPublicKey(ByteString.copyFrom(pair.getPublic.getEncoded))
+      .withPrivateKey(toPrivateKeyProto(pair.getPrivate))
+      .withPublicKey(toPublicKeyProto(pair.getPublic))
 
     val wallet = protos
       .WalletData()
@@ -51,5 +81,17 @@ object WalletHelper {
     os.write(file, wallet.toByteArray, createFolders = true)
 
     wallet
+  }
+
+  private def toPublicKeyProto(key: PublicKey): protos.ECPublicKey = {
+    val point = ECKeys.getECPoint(key)
+    protos
+      .ECPublicKey()
+      .withX(protos.BigInteger(point.getAffineX.toString))
+      .withY(protos.BigInteger(point.getAffineY.toString))
+  }
+
+  private def toPrivateKeyProto(key: PrivateKey): protos.ECPrivateKey = {
+    protos.ECPrivateKey().withD(protos.BigInteger(ECKeys.getD(key).toString))
   }
 }
