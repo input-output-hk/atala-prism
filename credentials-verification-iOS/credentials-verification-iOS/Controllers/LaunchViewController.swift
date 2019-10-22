@@ -15,7 +15,9 @@ class LaunchViewController: UIViewController {
 
         // - background
         let background = UIView()
-        background.backgroundColor = .black
+        if let backgroundColor = UIColor.init(named: "atala_splash_backgroud_color") {
+            background.backgroundColor = backgroundColor
+        }
         view.addSubview(background)
         background.fitScreen()
             
@@ -47,16 +49,4 @@ class LaunchViewController: UIViewController {
         atalaLogo.centerYAnchor.constraint(equalTo: topCenteredLoadingView.centerYAnchor).isActive = true
         atalaLogo.contentMode = .scaleAspectFit
     }
-    
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destination.
-        // Pass the selected object to the new view controller.
-    }
-    */
-
 }
