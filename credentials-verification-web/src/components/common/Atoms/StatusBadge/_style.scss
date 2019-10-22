@@ -1,0 +1,23 @@
+@import '../../../../css/general_styling';
+
+.Label {
+  border-radius: 4px;
+  text-align: center;
+  padding: 3px 6px;
+  width: fit-content;
+  p {
+    @include primary-text($label, $white, 700);
+  }
+
+  &.PENDING_CONNECTION {
+    background: $grey;
+  }
+
+  &.CONNECTED {
+    background: $success-color;
+  }
+
+  &.PENDING_INVITATION {
+    background: $secondary-color;
+  }
+}

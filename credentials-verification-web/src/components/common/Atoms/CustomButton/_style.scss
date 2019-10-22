@@ -1,0 +1,67 @@
+@import '../../../../css/general_styling';
+
+.ant-btn {
+  @include primary-text($button, $dark-grey, 400);
+  height: 40px;
+  padding: 0 20px;
+  -webkit-transition: 500ms ease-out;
+  -moz-transition: 500ms ease-out;
+  -o-transition: 500ms ease-out;
+}
+
+.ant-btn:hover,
+.ant-btn:focus {
+  border-color: transparent;
+}
+
+.theme-primary {
+  background-color: $primary-color;
+  border-color: $primary-color;
+  color: $white;
+  &:hover,
+  &:focus {
+    background-color: $primary-color-darker;
+    color: $white;
+  }
+}
+
+.theme-secondary {
+  background-color: $secondary-color;
+  border-color: $secondary-color;
+  color: $white;
+  &:hover,
+  &:focus {
+    background-color: $black;
+    color: $white;
+  }
+}
+
+.theme-outline {
+  background-color: $white;
+  border-color: $secondary-color;
+  color: $secondary-color;
+  &:hover,
+  &:focus {
+    border-color: $black;
+    color: $black;
+  }
+}
+
+.theme-grey {
+  background-color: $grey;
+  border-color: $grey;
+  color: $white;
+  &:hover,
+  &:focus {
+    background-color: $dark-grey;
+    color: $white;
+  }
+}
+
+.theme-link,
+.theme-link:hover,
+.theme-link:focus  {
+  background-color: transparent;
+  border-color:  transparent;
+  color: $primary-color;
+}

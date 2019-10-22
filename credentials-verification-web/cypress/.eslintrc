@@ -7,7 +7,7 @@
     "node": true
   },
   "rules": {
-    "func-names": "error",
+    "func-names": "off",
     "new-cap": "off",
     "arrow-parens": "off",
     "consistent-return": "off",

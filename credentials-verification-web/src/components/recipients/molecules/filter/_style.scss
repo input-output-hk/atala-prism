@@ -1,0 +1,10 @@
+@import '../../../../css/general_styling';
+
+.FilterControls {
+  display: flex;
+  margin: 20px 0;
+
+  .ant-select {
+    width: 100px;
+  }
+}
