@@ -16,6 +16,7 @@
     <item name="android:windowContentOverlay">@null</item>
     <item name="actionBarStyle">@style/CustomActionBar</item>
     <item name="textAppearanceButton">@style/AppTextAppearance.Button</item>
+    <item name="checkboxStyle">@style/CustomCheckbox</item>
     <!-- Uncomment when fonts are available
     <item name="fontFamily">@font/roboto_mono</item>
     <item name="android:fontFamily">@font/roboto_mono</item>
@@ -32,5 +33,9 @@
 
   <style name="AppTextAppearance.Button" parent="TextAppearance.MaterialComponents.Button">
     <item name="android:textAllCaps">false</item>
+  </style>
+
+  <style name="CustomCheckbox" parent="Widget.AppCompat.CompoundButton.CheckBox">
+    <item name="android:colorAccent">@color/colorPrimary</item>
   </style>
 </resources>

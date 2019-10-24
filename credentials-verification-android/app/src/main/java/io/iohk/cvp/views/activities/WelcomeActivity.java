@@ -100,8 +100,8 @@ public class WelcomeActivity extends CvpActivity {
 
   @OnClick(R.id.create_account_btn)
   public void onClickCreateAccount() {
-    // TODO refactor this. Now its just to get out of this view
-    navigator.showConnections(this);
+    // TODO this should take you to the wallet setup
+    navigator.showTermsAndConditions(this);
   }
 
   private void changeViewsByStep(boolean isAdvancing) {

@@ -3,10 +3,20 @@
   <string name="scan_qr">Scan QR</string>
   <string name="connection_label">Connect to a University, Public Registry or potential Employees</string>
   <string name="connection_secondary_label">You can receive and send your digital certificates</string>
+  <string name="accept">Accept</string>
 
   <!-- Activities titles -->
   <string name="connections_activity_title">Connections</string>
+  <string name="terms_and_conditions_activity_title">Terms and Conditions</string>
   <string name="qr_scanner_activity_title">Scan QR</string>
+
+
+  <!-- Terms and Conditions -->
+  <string name="account_creation">Account Creation</string>
+  <string name="terms_and_conditions_description">
+    To continue creating your account you must accept the following terms and conditions.
+  </string>
+  <string name="privacy_policies_agreement">Privacy Policy Agreement</string>
 
   <string name="image_description">Image description</string>
   <string name="permission_denied_message">You have to grant camera permission to continue</string>
