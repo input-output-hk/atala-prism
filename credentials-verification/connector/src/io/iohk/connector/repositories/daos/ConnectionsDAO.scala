@@ -20,6 +20,30 @@ object ConnectionsDAO {
       .unique
   }
 
+  def insert(
+      initiator: ParticipantId,
+      acceptor: ParticipantId,
+      instantiatedAt: Instant
+  ): doobie.ConnectionIO[ConnectionId] = {
+
+    val connectionId = ConnectionId.random()
+    sql"""
+         |INSERT INTO connections (id, initiator, acceptor, instantiated_at)
+         |VALUES ($connectionId, $initiator, $acceptor, $instantiatedAt)
+         |RETURNING id""".stripMargin
+      .query[ConnectionId]
+      .unique
+  }
+
+  def exists(connectionId: ConnectionId): doobie.ConnectionIO[Boolean] = {
+    sql"""
+         |SELECT 1 FROM connections WHERE id = $connectionId
+       """.stripMargin
+      .query[Int]
+      .option
+      .map(_.isDefined)
+  }
+
   def getOtherSide(connection: ConnectionId, participant: ParticipantId): doobie.ConnectionIO[ParticipantId] = {
     sql"""
          |SELECT acceptor AS other_side FROM connections WHERE id = $connection AND initiator = $participant

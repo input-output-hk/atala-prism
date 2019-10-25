@@ -4,6 +4,15 @@ import doobie.implicits._
 import io.iohk.connector.model._
 
 object ConnectionTokensDAO {
+  def exists(tokenString: TokenString): doobie.ConnectionIO[Boolean] = {
+    sql"""
+         |SELECT 1 FROM connection_tokens WHERE token = $tokenString
+       """.stripMargin
+      .query[Int]
+      .option
+      .map(_.isDefined)
+  }
+
   def insert(initiator: ParticipantId, token: TokenString): doobie.ConnectionIO[Int] = {
     sql"""
          |INSERT INTO connection_tokens (token, initiator)

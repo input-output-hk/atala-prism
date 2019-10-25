@@ -4,6 +4,14 @@ import doobie.implicits._
 import io.iohk.connector.model.{ParticipantInfo, TokenString}
 
 object ParticipantsDAO {
+  def insert(participant: ParticipantInfo): doobie.ConnectionIO[Unit] = {
+    val ParticipantInfo(id, tpe, name, did) = participant
+    sql"""
+         |INSERT INTO participants (id, tpe, name, did)
+         |VALUES ($id, $tpe, $name, $did)
+       """.stripMargin.update.run.map(_ => ())
+  }
+
   def findBy(token: TokenString): doobie.ConnectionIO[Option[ParticipantInfo]] = {
     sql"""
          |SELECT p.id, p.tpe, p.name, p.did
