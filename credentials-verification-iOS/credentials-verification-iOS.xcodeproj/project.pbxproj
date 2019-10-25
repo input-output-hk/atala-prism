@@ -10,10 +10,13 @@
 		4CBC18384291926687A7EAA9 /* Pods_credentials_verification_iOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9FE4DE3E1C77A7F27599465B /* Pods_credentials_verification_iOS.framework */; };
 		BE1188304FE563D375E1840B /* Pods_credentials_verification_iOSUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C51D0105B7D63E4B8C1E4B7B /* Pods_credentials_verification_iOSUITests.framework */; };
 		C73F1ED22DD26837CFB70DC5 /* Pods_credentials_verification_iOSTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 874D892C1FBD9F2CFC9A1F15 /* Pods_credentials_verification_iOSTests.framework */; };
+		F52E56D62358F840002ACF2C /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = F52E56D42358F840002ACF2C /* Logger.swift */; };
+		F52E56D8235A3650002ACF2C /* LaunchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F52E56D7235A3650002ACF2C /* LaunchViewController.swift */; };
+		F52E56DA235A37D6002ACF2C /* UIViewExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = F52E56D9235A37D6002ACF2C /* UIViewExtension.swift */; };
+		F52E56DC235A5387002ACF2C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F52E56DB235A5387002ACF2C /* Assets.xcassets */; };
 		F58B51E3234D0BEE00DF67AB /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F58B51E1234D0BEE00DF67AB /* Main.storyboard */; };
 		F58B51E4234D0BEE00DF67AB /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F58B51E2234D0BEE00DF67AB /* ViewController.swift */; };
 		F58B51E6234D0C1000DF67AB /* SimpleConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = F58B51E5234D0C1000DF67AB /* SimpleConnection.swift */; };
-		F58B51FD234E558A00DF67AB /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = F58B51FC234E558A00DF67AB /* Logger.swift */; };
 		F5E347D8235662D100B2C24D /* connector_user.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5E347D6235662D100B2C24D /* connector_user.pb.swift */; };
 		F5E347D9235662D100B2C24D /* connector_user.grpc.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5E347D7235662D100B2C24D /* connector_user.grpc.swift */; };
 		F5E38949234BC34D0001F1E3 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5E38948234BC34D0001F1E3 /* AppDelegate.swift */; };
@@ -50,10 +53,13 @@
 		A1CBDBC54418D05C10B7AD3F /* Pods-credentials-verification-iOSUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-credentials-verification-iOSUITests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-credentials-verification-iOSUITests/Pods-credentials-verification-iOSUITests.debug.xcconfig"; sourceTree = "<group>"; };
 		C51D0105B7D63E4B8C1E4B7B /* Pods_credentials_verification_iOSUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_credentials_verification_iOSUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		E497159BDF935521E81A661D /* Pods-credentials-verification-iOSTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-credentials-verification-iOSTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-credentials-verification-iOSTests/Pods-credentials-verification-iOSTests.release.xcconfig"; sourceTree = "<group>"; };
+		F52E56D42358F840002ACF2C /* Logger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
+		F52E56D7235A3650002ACF2C /* LaunchViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LaunchViewController.swift; path = Controllers/LaunchViewController.swift; sourceTree = "<group>"; };
+		F52E56D9235A37D6002ACF2C /* UIViewExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = UIViewExtension.swift; path = Controllers/UIViewExtension.swift; sourceTree = "<group>"; };
+		F52E56DB235A5387002ACF2C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = Controllers/Assets.xcassets; sourceTree = "<group>"; };
 		F58B51E1234D0BEE00DF67AB /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = Main.storyboard; path = Controllers/Main.storyboard; sourceTree = "<group>"; };
 		F58B51E2234D0BEE00DF67AB /* ViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ViewController.swift; path = Controllers/ViewController.swift; sourceTree = "<group>"; };
 		F58B51E5234D0C1000DF67AB /* SimpleConnection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SimpleConnection.swift; path = Logic/SimpleConnection.swift; sourceTree = "<group>"; };
-		F58B51FC234E558A00DF67AB /* Logger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Logger.swift; path = emplate/Logger.swift; sourceTree = "<group>"; };
 		F5E347D6235662D100B2C24D /* connector_user.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = connector_user.pb.swift; sourceTree = "<group>"; };
 		F5E347D7235662D100B2C24D /* connector_user.grpc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = connector_user.grpc.swift; sourceTree = "<group>"; };
 		F5E38945234BC34D0001F1E3 /* credentials-verification-iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "credentials-verification-iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -123,7 +129,7 @@
 		F58B51FB234E555500DF67AB /* utils */ = {
 			isa = PBXGroup;
 			children = (
-				F58B51FC234E558A00DF67AB /* Logger.swift */,
+				F52E56D42358F840002ACF2C /* Logger.swift */,
 			);
 			path = utils;
 			sourceTree = "<group>";
@@ -134,12 +140,14 @@
 				F5E347D6235662D100B2C24D /* connector_user.pb.swift */,
 				F5E347D7235662D100B2C24D /* connector_user.grpc.swift */,
 			);
-			path = Generated;
+			name = Generated;
+			path = "credentials-verification-iOS/Generated";
 			sourceTree = "<group>";
 		};
 		F5E3893C234BC34D0001F1E3 = {
 			isa = PBXGroup;
 			children = (
+				F5E347D5235662D100B2C24D /* Generated */,
 				F5E38947234BC34D0001F1E3 /* credentials-verification-iOS */,
 				F5E3895E234BC3500001F1E3 /* credentials-verification-iOSTests */,
 				F5E38969234BC3500001F1E3 /* credentials-verification-iOSUITests */,
@@ -162,7 +170,6 @@
 		F5E38947234BC34D0001F1E3 /* credentials-verification-iOS */ = {
 			isa = PBXGroup;
 			children = (
-				F5E347D5235662D100B2C24D /* Generated */,
 				F58B51FB234E555500DF67AB /* utils */,
 				F5E38A75234D03B70001F1E3 /* Logic */,
 				F5E38A74234D03B10001F1E3 /* Models */,
@@ -196,9 +203,11 @@
 		F5E38A6D234D02860001F1E3 /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				F52E56DB235A5387002ACF2C /* Assets.xcassets */,
+				F52E56D9235A37D6002ACF2C /* UIViewExtension.swift */,
+				F52E56D7235A3650002ACF2C /* LaunchViewController.swift */,
 				F58B51E1234D0BEE00DF67AB /* Main.storyboard */,
 				F58B51E2234D0BEE00DF67AB /* ViewController.swift */,
-				F5E38A7A234D044B0001F1E3 /* Signup */,
 			);
 			name = Controllers;
 			sourceTree = "<group>";
@@ -216,13 +225,6 @@
 				F58B51E5234D0C1000DF67AB /* SimpleConnection.swift */,
 			);
 			name = Logic;
-			sourceTree = "<group>";
-		};
-		F5E38A7A234D044B0001F1E3 /* Signup */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Signup;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -336,6 +338,7 @@
 			files = (
 				F58B51E3234D0BEE00DF67AB /* Main.storyboard in Resources */,
 				F5E38955234BC34F0001F1E3 /* LaunchScreen.storyboard in Resources */,
+				F52E56DC235A5387002ACF2C /* Assets.xcassets in Resources */,
 				F5E38952234BC34F0001F1E3 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -453,11 +456,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F52E56D8235A3650002ACF2C /* LaunchViewController.swift in Sources */,
+				F52E56DA235A37D6002ACF2C /* UIViewExtension.swift in Sources */,
+				F52E56D62358F840002ACF2C /* Logger.swift in Sources */,
 				F58B51E4234D0BEE00DF67AB /* ViewController.swift in Sources */,
 				F5E347D9235662D100B2C24D /* connector_user.grpc.swift in Sources */,
 				F5E38949234BC34D0001F1E3 /* AppDelegate.swift in Sources */,
 				F5E3894B234BC34D0001F1E3 /* SceneDelegate.swift in Sources */,
-				F58B51FD234E558A00DF67AB /* Logger.swift in Sources */,
 				F58B51E6234D0C1000DF67AB /* SimpleConnection.swift in Sources */,
 				F5E347D8235662D100B2C24D /* connector_user.pb.swift in Sources */,
 			);
@@ -634,7 +639,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "iohk.credentials-verification-iOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -653,7 +658,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "iohk.credentials-verification-iOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};

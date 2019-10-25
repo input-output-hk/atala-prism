@@ -1,14 +1,14 @@
 //
-//  connector_userTest.swift
+//  credentials_verification_iOSTests.swift
 //  credentials-verification-iOSTests
 //
-//  Created by vanina on 09/10/2019.
+//  Created by vanina on 16/10/2019.
 //  Copyright © 2019 iohk. All rights reserved.
 //
 
 import XCTest
 
-class connector_userTest: XCTestCase {
+class credentials_verification_iOSTests: XCTestCase {
 
     override func setUp() {
         // Put setup code here. This method is called before the invocation of each test method in the class.
