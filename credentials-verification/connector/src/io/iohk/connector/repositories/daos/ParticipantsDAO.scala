@@ -1,5 +1,7 @@
 package io.iohk.connector.repositories.daos
 
+import cats.data.OptionT
+import cats.implicits._
 import doobie.implicits._
 import io.iohk.connector.model.{ParticipantInfo, TokenString}
 
@@ -12,7 +14,7 @@ object ParticipantsDAO {
        """.stripMargin.update.run.map(_ => ())
   }
 
-  def findBy(token: TokenString): doobie.ConnectionIO[Option[ParticipantInfo]] = {
+  def findBy(token: TokenString): OptionT[doobie.ConnectionIO, ParticipantInfo] = OptionT {
     sql"""
          |SELECT p.id, p.tpe, p.name, p.did
          |FROM connection_tokens t
@@ -21,7 +23,7 @@ object ParticipantsDAO {
       """.stripMargin.query[ParticipantInfo].option
   }
 
-  def findByAvailableToken(token: TokenString): doobie.ConnectionIO[Option[ParticipantInfo]] = {
+  def findByAvailableToken(token: TokenString): OptionT[doobie.ConnectionIO, ParticipantInfo] = OptionT {
     sql"""
          |SELECT p.id, p.tpe, p.name, p.did
          |FROM connection_tokens t

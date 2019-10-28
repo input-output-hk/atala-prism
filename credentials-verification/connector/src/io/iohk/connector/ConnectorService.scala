@@ -1,17 +1,21 @@
 package io.iohk.connector
 
-import java.time.Instant
 import java.util.UUID
 
+import io.iohk.connector.errors._
 import io.iohk.connector.protos._
 import io.iohk.connector.services.{ConnectionsService, MessagesService}
+import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 class ConnectorService(connections: ConnectionsService, messages: MessagesService)(
     implicit executionContext: ExecutionContext
-) extends ConnectorServiceGrpc.ConnectorService {
+) extends ConnectorServiceGrpc.ConnectorService
+    with ErrorSupport {
+
+  val logger: Logger = LoggerFactory.getLogger(getClass)
 
   /** Get active connections for current participant
     *
@@ -50,10 +54,14 @@ class ConnectorService(connections: ConnectionsService, messages: MessagesServic
   override def getConnectionTokenInfo(
       request: GetConnectionTokenInfoRequest
   ): Future[GetConnectionTokenInfoResponse] = {
-    connections.getTokenInfo(new model.TokenString(request.token)).value.flatMap {
-      case Left(err) => Future.failed(new Exception(s"Problem: $err"))
-      case Right(participantInfo) => Future.successful(GetConnectionTokenInfoResponse(participantInfo.toProto))
-    }
+    implicit val loggingContext = LoggingContext("request" -> request)
+
+    connections
+      .getTokenInfo(new model.TokenString(request.token))
+      .wrapExceptions
+      .successMap { participantInfo =>
+        GetConnectionTokenInfoResponse(participantInfo.toProto)
+      }
   }
 
   /** Instantiate connection from connection token
@@ -127,11 +135,14 @@ class ConnectorService(connections: ConnectionsService, messages: MessagesServic
       request: GenerateConnectionTokenRequest
   ): Future[GenerateConnectionTokenResponse] = {
     val userId = UserIdInterceptor.USER_ID_CTX_KEY.get()
+    implicit val loggingContext = LoggingContext("request" -> request, "userId" -> userId)
 
-    connections.generateToken(userId).value.flatMap {
-      case Left(err) => Future.failed(new Exception(s"Problem: $err"))
-      case Right(tokenString) => Future.successful(GenerateConnectionTokenResponse(tokenString.token))
-    }
+    connections
+      .generateToken(userId)
+      .wrapExceptions
+      .successMap { tokenString =>
+        GenerateConnectionTokenResponse(tokenString.token)
+      }
   }
 
   /** Return messages received after given time moment, sorted in ascending order by receive time

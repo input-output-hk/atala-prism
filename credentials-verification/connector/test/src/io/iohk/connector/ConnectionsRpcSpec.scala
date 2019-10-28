@@ -45,6 +45,22 @@ class ConnectionsRpcSpec extends RpcSpecBase {
         response.creator.getIssuer.name mustBe "Issuer"
       }
     }
+
+    "returns UNKNOWN if token does not exist" in {
+      val issuerId = createIssuer("Issuer")
+
+      usingApiAs(issuerId) { blockingStub =>
+        val token = TokenString.random()
+
+        val request = GetConnectionTokenInfoRequest(token.token)
+        val status = intercept[StatusRuntimeException] {
+          blockingStub.getConnectionTokenInfo(request)
+        }.getStatus
+
+        status.getCode mustBe Status.Code.UNKNOWN
+        status.getDescription must include(token.token)
+      }
+    }
   }
 
   "AddConnectionFromToken" should {
