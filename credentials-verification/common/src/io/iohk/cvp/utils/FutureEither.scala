@@ -56,6 +56,21 @@ class FutureEither[+E, +A](val value: Future[Either[E, A]]) extends AnyVal {
 
     new FutureEither(newFuture)
   }
+
+  def foreach[B](f: A => B)(implicit ec: ExecutionContext): Unit =
+    map(f)
+
+  def recoverLeft[A2 >: A](f: E => A2)(implicit ec: ExecutionContext): FutureEither[Nothing, A2] = {
+    val newFuture = value.map { e =>
+      e match {
+        case Right(a) => Right(a)
+        case Left(e) => Right(f(e))
+      }
+    }
+
+    new FutureEither(newFuture)
+  }
+
 }
 
 /**

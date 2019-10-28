@@ -8,11 +8,13 @@ import io.iohk.cvp.utils.FutureEither._
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
+import io.iohk.node.services.AtalaService
 
 class LedgerSynchronizerService(
     bitcoinClient: BitcoinClient,
     blocksRepository: BlocksRepository,
-    syncStatusService: LedgerSynchronizationStatusService
+    syncStatusService: LedgerSynchronizationStatusService,
+    atalaService: AtalaService
 )(implicit ec: ExecutionContext) {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
@@ -105,6 +107,7 @@ class LedgerSynchronizerService(
   private def append(newBlock: BlockHeader): FutureEither[Nothing, Unit] = {
     for {
       _ <- blocksRepository.create(newBlock)
+      _ <- atalaService.synchronizeBlock(newBlock.hash)
     } yield {
       if (newBlock.height % 5000 == 0) {
         logger.info(s"Caught up to block ${newBlock.height}")

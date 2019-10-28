@@ -61,13 +61,14 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     val bitcoinClient = BitcoinClient(bitcoinConfig(globalConfig.getConfig("bitcoin")))
     val storage = ObjectStorageService()
 
-    val synchronizerConfig = SynchronizerConfig(30.seconds)
-    val syncStatusService = new LedgerSynchronizationStatusService(bitcoinClient, blocksRepository)
-    val synchronizerService = new LedgerSynchronizerService(bitcoinClient, blocksRepository, syncStatusService)
-    val task = new PollerSynchronizerTask(synchronizerConfig, bitcoinClient, synchronizerService)
-
     val atalaService = AtalaService(bitcoinClient, storage)
     val nodeApi = new NodeApi(atalaService)
+
+    val synchronizerConfig = SynchronizerConfig(30.seconds)
+    val syncStatusService = new LedgerSynchronizationStatusService(bitcoinClient, blocksRepository)
+    val synchronizerService =
+      new LedgerSynchronizerService(bitcoinClient, blocksRepository, syncStatusService, atalaService)
+    val task = new PollerSynchronizerTask(synchronizerConfig, bitcoinClient, synchronizerService)
 
     logger.info("Starting server")
     import io.grpc.protobuf.services.ProtoReflectionService

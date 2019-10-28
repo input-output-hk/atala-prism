@@ -7,6 +7,9 @@ trait BinaryOps {
   def toBytes(obj: AtalaObject): Array[Byte]
   def genHash(bytes: Array[Byte]): Array[Byte]
 
+  def extractOpReturn(asm: String): Option[Array[Byte]]
+  def trimZeros(in: Array[Byte]): Array[Byte]
+
   final def hash(tx: AtalaBlock): Array[Byte] =
     genHash(toBytes(tx))
 
@@ -19,7 +22,7 @@ trait BinaryOps {
   final def hashHex(obj: AtalaObject): String =
     convertBytesToHex(hash(obj))
 
-  private def convertBytesToHex(bytes: Seq[Byte]): String = {
+  def convertBytesToHex(bytes: Seq[Byte]): String = {
     val sb = new StringBuilder
     for (b <- bytes) {
       sb.append(String.format("%02x", Byte.box(b)))
@@ -45,4 +48,23 @@ object DefaultBinaryOps extends BinaryOps {
     val digest = MessageDigest.getInstance("SHA-256")
     digest.digest(bytes)
   }
+
+  override def extractOpReturn(asm: String): Option[Array[Byte]] = {
+    import javax.xml.bind.DatatypeConverter
+    import scala.util.Try
+    val HEAD = "OP_RETURN "
+    if (asm.startsWith(HEAD)) {
+      val hexData = asm.drop(HEAD.length)
+      Try(DatatypeConverter.parseHexBinary(hexData)).toOption
+    } else {
+      None
+    }
+  }
+
+  override def trimZeros(in: Array[Byte]): Array[Byte] = {
+    var first = 0
+    while (first < in.length && in(first) == 0) first += 1
+    java.util.Arrays.copyOfRange(in, first, in.length)
+  }
+
 }
