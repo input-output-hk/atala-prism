@@ -53,7 +53,7 @@ const Connections = ({
       </div>
       <ConnectionFilters changeDate={setDate} changeFilter={setName} />
       <Row>
-        {!connections.length ? (
+        {connections.length ? (
           <ConnectionTable
             setOpen={setOpen}
             setCurrentConnection={setCurrentConnection}
