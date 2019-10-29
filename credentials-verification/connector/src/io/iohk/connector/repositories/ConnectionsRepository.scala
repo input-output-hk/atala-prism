@@ -77,7 +77,7 @@ class ConnectionsRepository(
     implicit val loggingContext = LoggingContext("participant" -> participant)
 
     if (limit <= 0) {
-      Left(InvalidArgumentError("token", "positive value", limit.toString).logWarn).toFutureEither
+      Left(InvalidArgumentError("limit", "positive value", limit.toString).logWarn).toFutureEither
     } else {
       ConnectionsDAO
         .getConnectionsPaginated(participant, limit, lastSeenConnectionId)

@@ -2,6 +2,7 @@ package io.iohk.connector
 
 import com.google.protobuf.ByteString
 import doobie.implicits._
+import io.grpc.{Status, StatusRuntimeException}
 import io.iohk.connector.protos.{GetMessagesPaginatedRequest, SendMessageRequest}
 import io.iohk.connector.repositories.daos.MessagesDAO
 
@@ -33,6 +34,46 @@ class MessagesRpcSpec extends RpcSpecBase {
         val response = blockingStub.getMessagesPaginated(request)
         response.messages.map(m => (m.id, m.connectionId)) mustBe
           messages.take(10).map { case (messageId, connectionId) => (messageId.id.toString, connectionId.id.toString) }
+      }
+    }
+
+    "return INVALID_ARGUMENT when limit is 0" in {
+      val verifierId = createVerifier("Verifier")
+
+      usingApiAs(verifierId) { blockingStub =>
+        val request = GetMessagesPaginatedRequest("", 0)
+
+        val status = intercept[StatusRuntimeException] {
+          blockingStub.getMessagesPaginated(request)
+        }.getStatus
+        status.getCode mustBe Status.Code.INVALID_ARGUMENT
+      }
+    }
+
+    "return INVALID_ARGUMENT when limit is negative" in {
+      val verifierId = createVerifier("Verifier")
+
+      usingApiAs(verifierId) { blockingStub =>
+        val request = GetMessagesPaginatedRequest("", -7)
+
+        val status = intercept[StatusRuntimeException] {
+          blockingStub.getMessagesPaginated(request)
+        }.getStatus
+        status.getCode mustBe Status.Code.INVALID_ARGUMENT
+      }
+    }
+
+    "return INVALID_ARGUMENT when provided id is not a valid" in {
+      val verifierId = createVerifier("Verifier")
+
+      usingApiAs(verifierId) { blockingStub =>
+        val request = GetMessagesPaginatedRequest("aaa", 10)
+
+        val status = intercept[StatusRuntimeException] {
+          blockingStub.getMessagesPaginated(request)
+        }.getStatus
+        status.getCode mustBe Status.Code.INVALID_ARGUMENT
+        status.getDescription must include("aaa")
       }
     }
   }

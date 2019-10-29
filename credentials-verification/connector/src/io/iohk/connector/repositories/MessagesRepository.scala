@@ -3,14 +3,19 @@ package io.iohk.connector.repositories
 import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
+import io.iohk.connector.errors.{ConnectorError, ErrorSupport, InvalidArgumentError, LoggingContext}
 import io.iohk.connector.model._
 import io.iohk.connector.repositories.daos.{ConnectionsDAO, MessagesDAO}
 import io.iohk.cvp.utils.FutureEither
-import io.iohk.cvp.utils.FutureEither.FutureEitherOps
+import io.iohk.cvp.utils.FutureEither._
+import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.ExecutionContext
 
-class MessagesRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
+class MessagesRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) extends ErrorSupport {
+
+  val logger: Logger = LoggerFactory.getLogger(getClass)
+
   def insertMessage(
       sender: ParticipantId,
       connection: ConnectionId,
@@ -34,13 +39,22 @@ class MessagesRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
       recipientId: ParticipantId,
       limit: Int,
       lastSeenMessageId: Option[MessageId]
-  ): FutureEither[Nothing, Seq[Message]] = {
+  ): FutureEither[ConnectorError, Seq[Message]] = {
+    implicit val loggingContext: LoggingContext = LoggingContext(
+      "recipientId" -> recipientId,
+      "limit" -> limit,
+      "lastSeenMessageId" -> lastSeenMessageId
+    )
 
-    MessagesDAO
-      .getMessagesPaginated(recipientId, limit, lastSeenMessageId)
-      .transact(xa)
-      .unsafeToFuture()
-      .map(Right(_))
-      .toFutureEither
+    if (limit <= 0) {
+      Left(InvalidArgumentError("limit", "positive value", limit.toString).logWarn).toFutureEither
+    } else {
+      MessagesDAO
+        .getMessagesPaginated(recipientId, limit, lastSeenMessageId)
+        .transact(xa)
+        .unsafeToFuture()
+        .map(Right(_))
+        .toFutureEither
+    }
   }
 }

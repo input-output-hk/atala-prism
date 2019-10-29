@@ -29,8 +29,6 @@ class ConnectorService(connections: ConnectionsService, messages: MessagesServic
 
     val userId = UserIdInterceptor.USER_ID_CTX_KEY.get()
 
-    // TODO: Validate arguments, empty string should be considered as a non-present field
-    // The limit validations throws a generic exception instead of a specific error.
     val lastSeenConnectionId = request.lastSeenConnectionId match {
       case "" => Right(None)
       case id =>
@@ -160,19 +158,26 @@ class ConnectorService(connections: ConnectionsService, messages: MessagesServic
     */
   override def getMessagesPaginated(request: GetMessagesPaginatedRequest): Future[GetMessagesPaginatedResponse] = {
     val userId = UserIdInterceptor.USER_ID_CTX_KEY.get()
+    implicit val loggingContext = LoggingContext("request" -> request, "userId" -> userId)
 
-    // TODO: Validate arguments, empty string should be considered as a non-present field
-    // The limit validations throws a generic exception instead of a specific error.
-    val lastSeenMessageId = Try(request.lastSeenMessageId)
-      .map(UUID.fromString)
-      .map(model.MessageId.apply)
-      .toOption
-    require(request.limit > 0, "The limit must be greater than zero")
-
-    messages.getMessagesPaginated(userId, request.limit, lastSeenMessageId).value.flatMap {
-      case Left(error) => Future.failed(new Exception(s"Problem: $error"))
-      case Right(messagesSeq) => Future.successful(GetMessagesPaginatedResponse(messagesSeq.map(_.toProto)))
+    val lastSeenMessageId = request.lastSeenMessageId match {
+      case "" => Right(None)
+      case id =>
+        Try(id)
+          .map(UUID.fromString)
+          .map(model.MessageId.apply)
+          .fold(
+            ex => Left(InvalidArgumentError("lastSeenMessageId", "valid id", id).logWarn),
+            id => Right(Some(id))
+          )
     }
+
+    lastSeenMessageId.toFutureEither
+      .flatMap(idOpt => messages.getMessagesPaginated(userId, request.limit, idOpt))
+      .wrapExceptions
+      .successMap { msgs =>
+        GetMessagesPaginatedResponse(msgs.map(_.toProto))
+      }
   }
 
   /** Send message over a connection
@@ -185,11 +190,12 @@ class ConnectorService(connections: ConnectionsService, messages: MessagesServic
     */
   override def sendMessage(request: SendMessageRequest): Future[SendMessageResponse] = {
     val userId = UserIdInterceptor.USER_ID_CTX_KEY.get()
+    implicit val loggingContext = LoggingContext("request" -> request, "userId" -> userId)
     val connectionId = model.ConnectionId(UUID.fromString(request.connectionId))
 
-    messages.insertMessage(userId, connectionId, request.message.toByteArray).value.flatMap {
-      case Left(error) => Future.failed(new Exception(s"Problem: $error"))
-      case Right(_) => Future.successful(SendMessageResponse())
-    }
+    messages
+      .insertMessage(userId, connectionId, request.message.toByteArray)
+      .wrapExceptions
+      .successMap(_ => SendMessageResponse())
   }
 }
