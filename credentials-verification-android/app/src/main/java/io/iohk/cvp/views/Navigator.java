@@ -12,7 +12,9 @@ import io.iohk.cvp.utils.ActivitiesRequestCodes;
 import io.iohk.cvp.utils.IntentDataConstants;
 import io.iohk.cvp.views.activities.MainActivity;
 import io.iohk.cvp.views.activities.QrCodeScanner;
+import io.iohk.cvp.views.activities.SeedPhraseVerificationActivity;
 import io.iohk.cvp.views.activities.TermsAndConditionsActivity;
+import io.iohk.cvp.views.activities.WalletSetupActivity;
 import io.iohk.cvp.views.fragments.FirstConnectionFragment;
 import io.iohk.cvp.views.fragments.PopUpFragment;
 
@@ -21,12 +23,24 @@ public class Navigator {
   //Activities
   public void showConnections(Activity from) {
     Intent intent = new Intent(from.getApplicationContext(), MainActivity.class);
-    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+    intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
     from.startActivity(intent);
   }
 
   public void showTermsAndConditions(Activity from) {
     Intent intent = new Intent(from.getApplicationContext(), TermsAndConditionsActivity.class);
+    from.startActivity(intent);
+  }
+
+  public void showWalletSetup(Activity from) {
+    Intent intent = new Intent(from.getApplicationContext(), WalletSetupActivity.class);
+    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+    from.startActivity(intent);
+  }
+
+  public void showSeedPhraseVerification(Activity from) {
+    Intent intent = new Intent(from.getApplicationContext(), SeedPhraseVerificationActivity.class);
+    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
     from.startActivity(intent);
   }
 

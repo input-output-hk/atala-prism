@@ -11,24 +11,15 @@ import android.widget.TextView;
 
 import androidx.lifecycle.ViewModel;
 
-import com.crashlytics.android.Crashlytics;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
 import java.util.Objects;
-import java.util.Optional;
 
 import butterknife.BindColor;
 import butterknife.BindView;
 import butterknife.OnClick;
 import io.iohk.cvp.R;
-import io.iohk.cvp.core.exception.AssetNotFoundException;
-import io.iohk.cvp.core.exception.CaseNotFoundException;
-import io.iohk.cvp.core.exception.ErrorCode;
 import io.iohk.cvp.utils.AssetsUtils;
 import io.iohk.cvp.utils.DateUtils;
 import lombok.NoArgsConstructor;

@@ -19,9 +19,9 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:text="@string/accept"
-    android:textAlignment="center"
+    android:textAlignment="textStart"
     android:textColor="@color/black"
-    android:textSize="18sp"
+    android:textSize="15sp"
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintStart_toEndOf="@id/checkbox"
     app:layout_constraintTop_toTopOf="parent" />
@@ -33,9 +33,9 @@
     android:layout_marginStart="8dp"
     android:clickable="true"
     android:focusable="true"
-    android:textAlignment="center"
+    android:textAlignment="textStart"
     android:textColor="@color/colorPrimary"
-    android:textSize="18sp"
+    android:textSize="15sp"
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintStart_toEndOf="@id/text_view"
     app:layout_constraintTop_toTopOf="parent" />
