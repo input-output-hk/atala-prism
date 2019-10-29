@@ -1,0 +1,48 @@
+@import '../../../../css/general_styling';
+
+.RecipientsTable {
+  margin-top: 10px;
+
+  table {
+    @include primary-text($body, $black, 400);
+
+    .ant-table-thead {
+      display: none;
+    }
+    .ant-table-tbody > tr > td {
+      background: $light-grey;
+
+      &:first-child {
+        -webkit-border-top-left-radius: 6px;
+        -webkit-border-bottom-left-radius: 6px;
+        -moz-border-radius-topleft: 6px;
+        -moz-border-radius-bottomleft: 6px;
+        border-top-left-radius: 6px;
+        border-bottom-left-radius: 6px;
+      }
+
+      &:last-child {
+        -webkit-border-top-right-radius: 6px;
+        -webkit-border-bottom-right-radius: 6px;
+        -moz-border-radius-topright: 6px;
+        -moz-border-radius-bottomright: 6px;
+        border-top-right-radius: 6px;
+        border-bottom-right-radius: 6px;
+      }
+    }
+
+    .ControlButtons {
+      display: flex;
+      align-items: center;
+
+      button {
+        margin-right: 1em;
+        margin-left: 1em;
+      }
+
+      a {
+        color: $primary-color;
+      }
+    }
+  }
+}

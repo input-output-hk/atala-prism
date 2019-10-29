@@ -4,7 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import './index.scss';
 import Logger from './helpers/Logger';
 import App from './App';
-import I18nError from './I18nError';
+import I18nError from './components/I18nError';
 import * as serviceWorker from './serviceWorker';
 import i18nInitialise from './i18nInitialisator';
 

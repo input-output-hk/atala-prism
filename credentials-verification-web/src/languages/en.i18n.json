@@ -7,7 +7,44 @@
     },
     "learnReact": "Learn React"
   },
+  "recipients": {
+    "title": "Recipients",
+    "status": {
+      "PENDING_CONNECTION": "Pending Connection",
+      "CONNECTED": "Connected",
+      "PENDING_INVITATION": "Pending Invitation"
+    },
+    "filters": {
+      "identityNumber": "Identity Number",
+      "name": "Name",
+      "status": "Status"
+    },
+    "buttons": {
+      "bulk": "Bulk Import",
+      "manual": "Add users manually"
+    },
+    "table": {
+      "columns": {
+        "identityNumber": "Identity Number",
+        "admissionDate": "Admission Date",
+        "email": "Email",
+        "invite": "Invite",
+        "delete": "Delete",
+        "view": "View"
+      }
+    },
+    "inviteSuccessfull": "The Holder has been successfully invited"
+  },
+  "holders": {
+    "status": {
+      "PENDING_CONNECTION": "Pending Connection",
+      "CONNECTED": "Connected",
+      "PENDING_INVITATION": "Pending Invitation"
+    }
+  },
   "errors": {
-    "routeDidNotMatch": "The route {{pathnameToShow}} did not match any page"
+    "routeDidNotMatch": "The route {{pathnameToShow}} did not match any page",
+    "errorGettingHolders": "An error occurred while getting holders",
+    "errorInvitingHolder": "An error occurred while inviting the holder"
   }
 }
