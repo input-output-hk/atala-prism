@@ -1,0 +1,19 @@
+version: "3"
+services:
+  connector:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    command: "bash -c out/connector/launcher/dest/run"
+    network_mode: host
+    ports:
+      - 50051:50051
+    depends_on:
+      - postgres_db
+  postgres_db:
+    image: postgres
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_DB: geud_connector_db
+    network_mode: host
