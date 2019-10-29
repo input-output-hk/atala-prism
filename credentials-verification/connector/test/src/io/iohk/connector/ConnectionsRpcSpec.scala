@@ -82,6 +82,22 @@ class ConnectionsRpcSpec extends RpcSpecBase {
           .futureValue mustBe true
       }
     }
+
+    "return UNKNOWN if the token does not exist" in {
+      val holderId = createHolder("Holder")
+      val token = TokenString.random()
+
+      usingApiAs(holderId) { blockingStub =>
+        val request = AddConnectionFromTokenRequest(token.token)
+
+        val status = intercept[StatusRuntimeException] {
+          blockingStub.addConnectionFromToken(request)
+        }.getStatus
+
+        status.getCode mustBe Status.Code.UNKNOWN
+        status.getDescription must include(token.token)
+      }
+    }
   }
 
   "GetConnectionsPaginated" should {
@@ -101,6 +117,46 @@ class ConnectionsRpcSpec extends RpcSpecBase {
         nextResponse.connections
           .map(_.connectionId)
           .toSet mustBe connections.map(_._2.id.toString).slice(10, 20).toList.toSet
+      }
+    }
+
+    "return INVALID_ARGUMENT when limit is 0" in {
+      val verifierId = createVerifier("Verifier")
+
+      usingApiAs(verifierId) { blockingStub =>
+        val request = GetConnectionsPaginatedRequest("", 0)
+
+        val status = intercept[StatusRuntimeException] {
+          blockingStub.getConnectionsPaginated(request)
+        }.getStatus
+        status.getCode mustBe Status.Code.INVALID_ARGUMENT
+      }
+    }
+
+    "return INVALID_ARGUMENT when limit is negative" in {
+      val verifierId = createVerifier("Verifier")
+
+      usingApiAs(verifierId) { blockingStub =>
+        val request = GetConnectionsPaginatedRequest("", -7)
+
+        val status = intercept[StatusRuntimeException] {
+          blockingStub.getConnectionsPaginated(request)
+        }.getStatus
+        status.getCode mustBe Status.Code.INVALID_ARGUMENT
+      }
+    }
+
+    "return INVALID_ARGUMENT when provided id is not a valid" in {
+      val verifierId = createVerifier("Verifier")
+
+      usingApiAs(verifierId) { blockingStub =>
+        val request = GetConnectionsPaginatedRequest("uaoen", 10)
+
+        val status = intercept[StatusRuntimeException] {
+          blockingStub.getConnectionsPaginated(request)
+        }.getStatus
+        status.getCode mustBe Status.Code.INVALID_ARGUMENT
+        status.getDescription must include("uaoen")
       }
     }
   }

@@ -8,7 +8,7 @@ import io.iohk.connector.errors._
 import io.iohk.connector.model._
 import io.iohk.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO, ParticipantsDAO}
 import io.iohk.cvp.utils.FutureEither
-import io.iohk.cvp.utils.FutureEither.FutureEitherOps
+import io.iohk.cvp.utils.FutureEither._
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext
@@ -43,7 +43,6 @@ class ConnectionsRepository(
       .toFutureEither
   }
 
-  // TODO: replace Unit left with real error support
   def addConnectionFromToken(
       token: TokenString,
       acceptor: ParticipantId
@@ -74,12 +73,18 @@ class ConnectionsRepository(
       participant: ParticipantId,
       limit: Int,
       lastSeenConnectionId: Option[ConnectionId]
-  ): FutureEither[Nothing, Seq[ConnectionInfo]] = {
-    ConnectionsDAO
-      .getConnectionsPaginated(participant, limit, lastSeenConnectionId)
-      .transact(xa)
-      .unsafeToFuture()
-      .map(seq => Right(seq))
-      .toFutureEither
+  ): FutureEither[ConnectorError, Seq[ConnectionInfo]] = {
+    implicit val loggingContext = LoggingContext("participant" -> participant)
+
+    if (limit <= 0) {
+      Left(InvalidArgumentError("token", "positive value", limit.toString).logWarn).toFutureEither
+    } else {
+      ConnectionsDAO
+        .getConnectionsPaginated(participant, limit, lastSeenConnectionId)
+        .transact(xa)
+        .unsafeToFuture()
+        .map(seq => Right(seq))
+        .toFutureEither
+    }
   }
 }

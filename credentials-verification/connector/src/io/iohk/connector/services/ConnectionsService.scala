@@ -25,7 +25,7 @@ class ConnectionsService(connectionsRepository: ConnectionsRepository) {
       userId: ParticipantId,
       limit: Int,
       lastSeenConnectionId: Option[ConnectionId]
-  ): FutureEither[Nothing, Seq[ConnectionInfo]] = {
+  ): FutureEither[ConnectorError, Seq[ConnectionInfo]] = {
     connectionsRepository.getConnectionsPaginated(userId, limit, lastSeenConnectionId)
   }
 }

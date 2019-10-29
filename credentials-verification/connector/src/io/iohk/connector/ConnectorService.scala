@@ -2,6 +2,7 @@ package io.iohk.connector
 
 import java.util.UUID
 
+import io.iohk.cvp.utils.FutureEither._
 import io.iohk.connector.errors._
 import io.iohk.connector.protos._
 import io.iohk.connector.services.{ConnectionsService, MessagesService}
@@ -24,23 +25,29 @@ class ConnectorService(connections: ConnectionsService, messages: MessagesServic
   override def getConnectionsPaginated(
       request: GetConnectionsPaginatedRequest
   ): Future[GetConnectionsPaginatedResponse] = {
+    implicit val loggingContext = LoggingContext("request" -> request)
+
     val userId = UserIdInterceptor.USER_ID_CTX_KEY.get()
 
     // TODO: Validate arguments, empty string should be considered as a non-present field
     // The limit validations throws a generic exception instead of a specific error.
-    val lastSeenConnectionId = Try(request.lastSeenConnectionId)
-      .map(UUID.fromString)
-      .map(model.ConnectionId.apply)
-      .toOption
-    require(request.limit > 0, "The limit must be > 0")
+    val lastSeenConnectionId = request.lastSeenConnectionId match {
+      case "" => Right(None)
+      case id =>
+        Try(id)
+          .map(UUID.fromString)
+          .map(model.ConnectionId.apply)
+          .fold(
+            ex => Left(InvalidArgumentError("lastSeenConnectionId", "valid id", id).logWarn),
+            id => Right(Some(id))
+          )
+    }
 
-    connections
-      .getConnectionsPaginated(userId, request.limit, lastSeenConnectionId)
-      .value
-      .flatMap {
-        case Left(err) => Future.failed(new Exception(s"Problem: $err"))
-        case Right(connections) =>
-          Future.successful(GetConnectionsPaginatedResponse(connections.map(_.toProto)))
+    lastSeenConnectionId.toFutureEither
+      .flatMap(idOpt => connections.getConnectionsPaginated(userId, request.limit, idOpt))
+      .wrapExceptions
+      .successMap { conns =>
+        GetConnectionsPaginatedResponse(conns.map(_.toProto))
       }
   }
 
@@ -74,12 +81,14 @@ class ConnectorService(connections: ConnectionsService, messages: MessagesServic
   override def addConnectionFromToken(
       request: AddConnectionFromTokenRequest
   ): Future[AddConnectionFromTokenResponse] = {
+    implicit val loggingContext = LoggingContext("request" -> request)
+
     val userId = UserIdInterceptor.USER_ID_CTX_KEY.get()
 
-    connections.addConnectionFromToken(userId, new model.TokenString(request.token)).value.flatMap {
-      case Left(err) => Future.failed(new Exception(s"Problem: $err"))
-      case Right(connectionInfo) => Future.successful(AddConnectionFromTokenResponse(connectionInfo.toProto))
-    }
+    connections
+      .addConnectionFromToken(userId, new model.TokenString(request.token))
+      .wrapExceptions
+      .successMap(connectionInfo => AddConnectionFromTokenResponse(connectionInfo.toProto))
   }
 
   /** Delete active connection

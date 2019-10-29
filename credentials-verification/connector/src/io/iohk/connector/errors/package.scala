@@ -20,6 +20,12 @@ package object errors {
     }
   }
 
+  case class InvalidArgumentError(tpe: String, requirement: String, value: String) extends ConnectorError {
+    override def toStatus: Status = {
+      Status.INVALID_ARGUMENT.withDescription(s"Invalid value for $tpe, expected $requirement, got $value")
+    }
+  }
+
   case class InternalServerError(cause: Throwable) extends ConnectorError {
     override def toStatus: Status = {
       Status.INTERNAL.withDescription("Internal server error. Please contact administrator.")
