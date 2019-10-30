@@ -1,43 +1,47 @@
 package io.iohk.cvp.views;
 
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
-import androidx.fragment.app.FragmentActivity;
+
+import androidx.fragment.app.FragmentManager;
+
 import io.iohk.cvp.utils.ActivitiesRequestCodes;
 import io.iohk.cvp.utils.IntentDataConstants;
-import io.iohk.cvp.views.activities.ConnectionActivity;
-import io.iohk.cvp.views.activities.CvpActivity;
+import io.iohk.cvp.views.activities.MainActivity;
 import io.iohk.cvp.views.activities.QrCodeScanner;
+import io.iohk.cvp.views.fragments.FirstConnectionFragment;
 import io.iohk.cvp.views.fragments.PopUpFragment;
 
 public class Navigator {
 
   //Activities
-  public void showConnections(CvpActivity from) {
-    Intent intent = new Intent(from.getApplicationContext(), ConnectionActivity.class);
+  public void showConnections(Activity from) {
+    Intent intent = new Intent(from.getApplicationContext(), MainActivity.class);
     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
     from.startActivity(intent);
   }
 
-  public void showQrScanner(CvpActivity from) {
-    Intent intent = new Intent(from.getApplicationContext(), QrCodeScanner.class);
+  public void showQrScanner(FirstConnectionFragment from) {
+    Intent intent = new Intent(from.getActivity().getApplicationContext(), QrCodeScanner.class);
     intent.putExtra(IntentDataConstants.QR_SCANNER_MODE_KEY,
-        IntentDataConstants.QR_SCANNER_MODE_QR_CODE);
+      IntentDataConstants.QR_SCANNER_MODE_QR_CODE);
     from.startActivityForResult(intent, ActivitiesRequestCodes.QR_SCANNER_REQUEST_ACTIVITY);
   }
 
-  public void showPermissionDeniedPopUp(CvpActivity from) {
+  public void showPermissionDeniedPopUp(FragmentManager fragmentManager) {
     Bundle bundle = new Bundle();
     PopUpFragment fragment = new PopUpFragment();
     fragment.setArguments(bundle);
-    from.getSupportFragmentManager()
-        .beginTransaction().add(fragment, "PERMISSION_DENIED_POPUP")
-        .show(fragment).commit();
+    fragmentManager
+      .beginTransaction().add(fragment, "PERMISSION_DENIED_POPUP")
+      .show(fragment).commit();
   }
 
-  public void showAppPermissionSettings(FragmentActivity from) {
+  public void showAppPermissionSettings(Activity from) {
     final Intent intent = new Intent();
     intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
     intent.addCategory(Intent.CATEGORY_DEFAULT);
@@ -47,5 +51,4 @@ public class Navigator {
     intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
     from.startActivity(intent);
   }
-
 }

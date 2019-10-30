@@ -1,20 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
-  xmlns:tools="http://schemas.android.com/tools"
   android:layout_width="match_parent"
-  android:layout_height="match_parent"
-  android:layout_marginStart="@dimen/activity_default_side_margin"
-  android:layout_marginEnd="@dimen/activity_default_side_margin"
-  tools:context=".views.activities.ConnectionActivity">
+  android:layout_height="match_parent">
 
   <Button
     android:id="@+id/scan_qr"
     android:layout_width="0dp"
     android:layout_height="64dp"
-    android:layout_marginBottom="36dp"
-    android:layout_marginStart="16dp"
-    android:layout_marginEnd="16dp"
+    android:layout_marginStart="40dp"
+    android:layout_marginEnd="40dp"
+    android:layout_marginBottom="96dp"
     android:text="@string/scan_qr"
     app:cornerRadius="32dp"
     app:layout_constraintBottom_toBottomOf="parent"
@@ -25,7 +21,9 @@
     android:id="@+id/imageView"
     android:layout_width="161dp"
     android:layout_height="95dp"
+    android:layout_marginStart="@dimen/activity_default_side_margin"
     android:layout_marginTop="32dp"
+    android:layout_marginEnd="@dimen/activity_default_side_margin"
     android:contentDescription="@string/image_description"
     app:layout_constraintBottom_toTopOf="@+id/scan_qr"
     app:layout_constraintEnd_toEndOf="parent"
@@ -39,9 +37,9 @@
     android:id="@+id/textView2"
     android:layout_width="293dp"
     android:layout_height="57dp"
+    android:layout_marginStart="48dp"
     android:layout_marginTop="16dp"
-    android:layout_marginStart="24dp"
-    android:layout_marginEnd="24dp"
+    android:layout_marginEnd="48dp"
     android:text="@string/connection_label"
     android:textAlignment="center"
     android:textColor="@color/black"
@@ -54,12 +52,13 @@
     android:id="@+id/textView"
     android:layout_width="204dp"
     android:layout_height="38dp"
+    android:layout_marginStart="@dimen/activity_default_side_margin"
     android:layout_marginTop="8dp"
+    android:layout_marginEnd="@dimen/activity_default_side_margin"
     android:text="@string/connection_secondary_label"
     android:textAlignment="center"
     app:layout_constraintHorizontal_bias="0.495"
     app:layout_constraintLeft_toLeftOf="parent"
     app:layout_constraintRight_toRightOf="parent"
     app:layout_constraintTop_toBottomOf="@+id/textView2" />
-
 </androidx.constraintlayout.widget.ConstraintLayout>

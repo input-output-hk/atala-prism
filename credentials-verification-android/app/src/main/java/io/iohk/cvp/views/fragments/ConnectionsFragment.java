@@ -1,19 +1,29 @@
-package io.iohk.cvp.views.activities;
+package io.iohk.cvp.views.fragments;
 
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
 import androidx.lifecycle.ViewModel;
 import androidx.viewpager.widget.ViewPager;
-import butterknife.BindView;
+
 import com.google.android.material.tabs.TabLayout;
+
+import javax.inject.Inject;
+
+import butterknife.BindView;
 import io.iohk.cvp.R;
 import io.iohk.cvp.views.Navigator;
-import io.iohk.cvp.views.fragments.ConnectionsListFragment;
 import io.iohk.cvp.views.utils.adapters.ConnectionTabsAdapter;
 import io.iohk.cvp.views.utils.adapters.EmployersRecyclerViewAdapter;
 import io.iohk.cvp.views.utils.adapters.UniversitiesRecyclerViewAdapter;
-import javax.inject.Inject;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-public class ConnectionsListActivity extends CvpActivity {
+@Setter
+@NoArgsConstructor
+public class ConnectionsFragment extends CvpFragment {
 
   @Inject
   Navigator navigator;
@@ -31,15 +41,15 @@ public class ConnectionsListActivity extends CvpActivity {
   ConnectionsListFragment employersListFragment;
 
   @Override
-  protected void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
+  public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    View view = super.onCreateView(inflater, container, savedInstanceState);
 
     universitiesListFragment.setAdapter(new UniversitiesRecyclerViewAdapter());
     employersListFragment.setAdapter(new EmployersRecyclerViewAdapter());
 
     ConnectionTabsAdapter adapter = new ConnectionTabsAdapter(
-        getSupportFragmentManager(), tabs.getTabCount(), universitiesListFragment,
-        employersListFragment);
+      getChildFragmentManager(), tabs.getTabCount(), universitiesListFragment,
+      employersListFragment);
 
     viewPager.setAdapter(adapter);
 
@@ -60,21 +70,12 @@ public class ConnectionsListActivity extends CvpActivity {
     });
     viewPager.setCurrentItem(0);
 
+    return view;
   }
 
   @Override
-  protected Navigator getNavigator() {
-    return null;
-  }
-
-  @Override
-  protected int getView() {
-    return R.layout.connections_list_activity;
-  }
-
-  @Override
-  protected int getTitleValue() {
-    return R.string.connections_activity_title;
+  protected int getViewId() {
+    return R.layout.fragment_connections;
   }
 
   @Override

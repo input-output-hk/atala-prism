@@ -1,16 +1,19 @@
-package io.iohk.cvp.views.activities;
+package io.iohk.cvp.views.fragments;
 
 import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModel;
-import butterknife.ButterKnife;
 
-public abstract class CvpFragment<T extends ViewModel> extends Fragment {
+import butterknife.ButterKnife;
+import dagger.android.support.DaggerFragment;
+
+public abstract class CvpFragment<T extends ViewModel> extends DaggerFragment {
 
   private T viewModel;
 
@@ -22,8 +25,7 @@ public abstract class CvpFragment<T extends ViewModel> extends Fragment {
   }
 
   @Override
-  public View onCreateView(LayoutInflater inflater, ViewGroup container,
-      Bundle savedInstanceState) {
+  public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
     android.view.View view = inflater.inflate(getViewId(), container, false);
     ButterKnife.bind(this, view);
     return view;

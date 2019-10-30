@@ -4,23 +4,22 @@
   package="io.iohk.cvp">
 
   <application
+    android:name="io.iohk.cvp.core.CvpApplication"
     android:allowBackup="true"
     android:icon="@mipmap/ic_launcher"
-    android:name="io.iohk.cvp.core.CvpApplication"
+    android:label="Credentials Verification"
     android:roundIcon="@mipmap/ic_launcher_round"
     android:supportsRtl="true"
     android:theme="@style/AppTheme"
     tools:ignore="GoogleAppIndexingWarning">
-    <activity android:name="io.iohk.cvp.views.activities.ConnectionActivity" />
-    <activity android:name="io.iohk.cvp.views.activities.WelcomeActivity" />
-    <activity android:name="io.iohk.cvp.views.activities.QrCodeScanner" />
-    <activity android:name="io.iohk.cvp.views.activities.ConnectionsListActivity" />
-    <activity android:name="io.iohk.cvp.views.activities.HomeActivity">
+    <activity android:name="io.iohk.cvp.views.activities.MainActivity" />
+    <activity android:name="io.iohk.cvp.views.activities.WelcomeActivity">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
     </activity>
+    <activity android:name="io.iohk.cvp.views.activities.QrCodeScanner" />
   </application>
 
   <uses-permission
