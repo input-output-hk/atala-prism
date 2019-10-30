@@ -9,7 +9,7 @@
     display: flex;
     margin-top: -30px;
     z-index: 500;
-    height: 90%;
+    height: 100%;
 
     .MainContainer {
       width: 95vw;
@@ -30,20 +30,48 @@
 
       .FilterControls {
         display: flex;
-        margin: 20px 0;
+        margin: 40px 0 20px;
 
         .ant-select {
-          width: 100px;
+          width: 100%;
         }
       }
     }
   }
+
+  .ControlButtons {
+    display: flex;
+
+    button {
+      margin-left: 1em;
+    }
+  }
 }
 
-.ButtonControls {
-  display: flex;
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background: $dark-grey;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 5px $dark-grey;
+  border-radius: 20px;
+}
 
-  button {
-    margin-left: 1em;
+.ant-table-body {
+  padding-bottom: 10px;
+
+  &::-webkit-scrollbar {
+    height: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: $dark-grey;
+    border-radius: 10px;
+  }
+  &::-webkit-scrollbar-track {
+    box-shadow: inset 0 0 5px $dark-grey;
+    border-radius: 20px;
   }
 }

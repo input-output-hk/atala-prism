@@ -2,7 +2,8 @@
   "actions": {
     "ok": "OK",
     "cancel": "Cancel",
-    "delete": "Delete"
+    "delete": "Delete",
+    "view": "View"
   },
   "home": {
     "centralText": {
@@ -38,6 +39,11 @@
         "view": "View"
       }
     },
+    "noRecipients": {
+      "photoAlt": "No Recipients",
+      "title": "You don't have Holders yet",
+      "subtitle": "You can start adding them by clicking the button bellow"
+    },
     "inviteSuccessfull": "The Holder has been successfully invited"
   },
   "groups": {
@@ -51,7 +57,7 @@
       "date": "Date",
       "search": "Search"
     },
-    "createNewGroup": "+ Create New Group",
+    "createNewGroup": "Create New Group",
     "modal": {
       "title": "Delete Grop",
       "text": "Are you sure you want to delete the {{groupName}} group?"
@@ -63,10 +69,10 @@
         "credential": "Credential"
       },
       "buttons": {
-        "addCredential": "+ Add Credentials",
-        "delete": "Delete Group",
-        "copy": "Copy Group",
-        "view": "View Group" 
+        "addCredential": "Add Credentials",
+        "delete": "Delete",
+        "copy": "Copy",
+        "view": "View"
       }
     },
     "deletionSuccess": "The group {{groupName}} was successfully deleted"
@@ -78,9 +84,63 @@
       "PENDING_INVITATION": "Pending Invitation"
     }
   },
+  "credentials": {
+    "title": "Credentials",
+    "sendCredentials": "Send Credentials",
+    "student": {
+      "title": "Student",
+      "alt": "Student image",
+      "table": {
+        "columns": {
+          "student": "Student"
+        }
+      }
+    },
+    "actions": {
+      "createCredential": "Create Credential"
+    },
+    "noCredentials": {
+      "photoAlt": "No Credentials",
+      "title": "You don't have Credentials yet",
+      "subtitle": "You can start adding them by clicking the button bellow"
+    },
+    "filters": {
+      "ID": "ID",
+      "credentialType": "Credential",
+      "category": "Category",
+      "group": "Group",
+      "date": "Date",
+      "name": "Search",
+      "types": {
+        "credentialType": {
+          "CREDENTIAL1": "CREDENTIAL1",
+          "CREDENTIAL2": "CREDENTIAL2",
+          "CREDENTIAL3": "CREDENTIAL3"
+        },
+        "category": {
+          "CATEGORY1": "CATEGORY1",
+          "CATEGORY2": "CATEGORY2",
+          "CATEGORY3": "CATEGORY3"
+        },
+        "group": {
+          "GROUP1": "GROUP1",
+          "GROUP2": "GROUP2",
+          "GROUP3": "GROUP3"
+        }
+      },
+      "clearFilters": "Clear Filters"
+    },
+    "table": {
+      "columns": {
+        "identityNumber": "Identity Number",
+        "admissionDate": "Admission Date",
+        "groupAssigned": "Group Assigned"
+      }
+    }
+  },
   "errors": {
     "routeDidNotMatch": "The route {{pathnameToShow}} did not match any page",
-    "errorGettingHolders": "An error occurred while getting holders",
+    "errorGetting": "An error occurred while getting {{model}}",
     "errorInvitingHolder": "An error occurred while inviting the holder",
     "errorDeletingGroup": "An error occurred while deleting the group {{groupName}}"
   }

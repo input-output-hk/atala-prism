@@ -8,6 +8,10 @@
   -webkit-transition: 500ms ease-out;
   -moz-transition: 500ms ease-out;
   -o-transition: 500ms ease-out;
+
+  .anticon {
+    font-size: 11px;
+  }
 }
 
 .ant-btn:hover,
@@ -61,8 +65,20 @@
 
 .theme-link,
 .theme-link:hover,
-.theme-link:focus  {
+.theme-link:focus {
   background-color: transparent;
-  border-color:  transparent;
+  border-color: transparent;
   color: $primary-color;
+}
+
+.theme-filter {
+  height: 32px;
+  background-color: $grey;
+  border-color: $grey;
+  color: $white;
+  &:hover,
+  &:focus {
+    background-color: $dark-grey;
+    color: $white;
+  }
 }

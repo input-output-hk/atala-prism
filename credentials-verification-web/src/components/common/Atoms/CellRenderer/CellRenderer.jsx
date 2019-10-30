@@ -1,22 +1,17 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Row, Col } from 'antd';
 import PropTypes from 'prop-types';
 
 import './_style.scss';
 
 const CellRenderer = ({ title, value, componentName }) => {
   const { t } = useTranslation();
-
+  if (title === 'admissionDate') console.log(`${title}: ${value}`);
   return (
-    <Row>
-      <Col>
-        <p className="TableLabel">{t(`${componentName}.table.columns.${title}`)}</p>
-      </Col>
-      <Col>
-        <p className="TableText">{value}</p>
-      </Col>
-    </Row>
+    <div className="CellRenderer">
+      <p className="TableLabel">{t(`${componentName}.table.columns.${title}`)}</p>
+      <p className="TableText">{value}</p>
+    </div>
   );
 };
 

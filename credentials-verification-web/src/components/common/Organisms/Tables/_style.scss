@@ -6,6 +6,10 @@
   table {
     @include primary-text($body, $black, 400);
 
+    img {
+      border-radius: 4px;
+    }
+
     .ant-table-thead {
       display: none;
     }

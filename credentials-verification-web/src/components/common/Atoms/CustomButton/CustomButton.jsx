@@ -9,6 +9,7 @@ import './_style.scss';
 //    - theme-secondary
 //    - theme-outline
 //    - theme-grey
+//    - theme-filter
 const CustomButton = ({ theme, icon, buttonText, onClick }) => (
   <Button onClick={onClick} className={theme}>
     {icon && icon}
