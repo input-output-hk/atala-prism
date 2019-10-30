@@ -20,7 +20,6 @@ import io.iohk.cvp.utils.PermissionUtils;
 import io.iohk.cvp.viewmodel.ConnectionsActivityViewModel;
 import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.activities.MainActivity;
-import io.iohk.cvp.views.activities.QrCodeScanner;
 import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBarOption;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

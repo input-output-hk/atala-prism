@@ -6,6 +6,7 @@ import android.widget.FrameLayout;
 import androidx.fragment.app.FragmentTransaction;
 
 import java.util.Objects;
+import java.util.Optional;
 
 import javax.inject.Inject;
 
@@ -66,28 +67,27 @@ public class MainActivity extends DaggerAppCompatActivity implements BottomAppBa
 
   @Override
   public void onNavigation(BottomAppBarOption option) {
-
-    CvpFragment fragmentToRender = getFramentToRende(option);
-    if (fragmentToRender != null) {
-      FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-      ft.replace(R.id.fragment_layout, fragmentToRender);
-      ft.commit();
-    }
+    getFragmentToRender(option)
+      .ifPresent(cvpFragment -> {
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.replace(R.id.fragment_layout, cvpFragment);
+        ft.commit();
+      });
   }
 
-  private CvpFragment getFramentToRende(BottomAppBarOption option) {
+  private Optional<CvpFragment> getFragmentToRender(BottomAppBarOption option) {
     switch (option) {
       case CONNECTIONS:
-        return new ConnectionsFragment();
+        return Optional.of(new ConnectionsFragment());
       case HOME:
-        return new HomeFragment();
+        return Optional.of(new HomeFragment());
       default:
         // TODO: for now, every intention to go to an unimplemented screen result in no action.
         // TODO: when the rest of the screen are implemented, the default case should throw an Exception
         // Crashlytics.logException(
         //   new CaseNotFoundException("Couldn't find fragment for option " + option,
         //     ErrorCode.STEP_NOT_FOUND));
-        return null;
+        return Optional.empty();
     }
   }
 
