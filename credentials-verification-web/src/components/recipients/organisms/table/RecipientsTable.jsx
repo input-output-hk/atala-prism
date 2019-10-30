@@ -7,9 +7,9 @@ import CellRenderer from '../../../common/Atoms/CellRenderer/CellRenderer';
 import StatusBadge from '../../../common/Atoms/StatusBadge/StatusBadge';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import { completeDateFormatter } from '../../../../helpers/formatters';
-import { PENDING_INVITATION, HOLDER_PAGE_SIZE } from '../../../../helpers/constants';
+import { PENDING_INVITATION, HOLDER_PAGE_SIZE, xScroll } from '../../../../helpers/constants';
 
-import '../../_style.scss';
+import './_style.scss';
 
 const GetActionButtons = ({ id, showInviteButton, inviteHolder }) => {
   const { t } = useTranslation();
@@ -69,6 +69,7 @@ const getColumns = inviteHolder => [
   },
   {
     key: 'actions',
+    fixed: 'right',
     render: ({ id, status }) => (
       <GetActionButtons
         id={id}
@@ -84,6 +85,7 @@ const RecipientsTable = ({ subjects, subjectCount, offset, setOffset, inviteHold
     <Table
       columns={getColumns(inviteHolder)}
       dataSource={subjects}
+      scroll={{ x: xScroll }}
       pagination={{
         total: subjectCount,
         defaultCurrent: 1,

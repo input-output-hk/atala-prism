@@ -1,0 +1,25 @@
+@import '../../../../css/general_styling';
+
+.EmptyState {
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+
+  img{
+      margin-bottom: 1em;
+  }
+
+  .ActionButton {
+    margin-top: 1em;
+  }
+
+  h3 {
+    @include primary-text($h3, $primary-color, 600);
+  }
+
+  p {
+    @include secondary-text($body, $dark-grey, 400);
+  }
+}

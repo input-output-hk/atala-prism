@@ -1,4 +1,9 @@
 {
+  "actions": {
+    "ok": "OK",
+    "cancel": "Cancel",
+    "delete": "Delete"
+  },
   "home": {
     "centralText": {
       "edit": "Edit ",
@@ -35,6 +40,37 @@
     },
     "inviteSuccessfull": "The Holder has been successfully invited"
   },
+  "groups": {
+    "title": "Groups",
+    "noGroups": {
+      "photoAlt": "No groups yet",
+      "title": "You don't have Groups yet",
+      "subtitle": "Click on create new group to add your first one!"
+    },
+    "filters": {
+      "date": "Date",
+      "search": "Search"
+    },
+    "createNewGroup": "+ Create New Group",
+    "modal": {
+      "title": "Delete Grop",
+      "text": "Are you sure you want to delete the {{groupName}} group?"
+    },
+    "table": {
+      "columns": {
+        "groupName": "Group Name",
+        "lastUpdate": "Last Update",
+        "credential": "Credential"
+      },
+      "buttons": {
+        "addCredential": "+ Add Credentials",
+        "delete": "Delete Group",
+        "copy": "Copy Group",
+        "view": "View Group" 
+      }
+    },
+    "deletionSuccess": "The group {{groupName}} was successfully deleted"
+  },
   "holders": {
     "status": {
       "PENDING_CONNECTION": "Pending Connection",
@@ -45,6 +81,7 @@
   "errors": {
     "routeDidNotMatch": "The route {{pathnameToShow}} did not match any page",
     "errorGettingHolders": "An error occurred while getting holders",
-    "errorInvitingHolder": "An error occurred while inviting the holder"
+    "errorInvitingHolder": "An error occurred while inviting the holder",
+    "errorDeletingGroup": "An error occurred while deleting the group {{groupName}}"
   }
 }

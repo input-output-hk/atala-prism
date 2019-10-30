@@ -34,7 +34,7 @@ const Recipients = ({ tableProps, filterProps }) => {
 
   return (
     <Fragment>
-      <div className="RecipientsHeader">
+      <div className="ContentHeader">
         <h1>{t('recipients.title')}</h1>
         <RecipientsButtons />
       </div>

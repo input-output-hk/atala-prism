@@ -1,135 +1,40 @@
-import faker from 'faker';
+import { internet, name, random, date } from 'faker';
 import moment from 'moment';
-import { PENDING_CONNECTION, CONNECTED, PENDING_INVITATION } from '../../helpers/constants';
+import {
+  PENDING_CONNECTION,
+  CONNECTED,
+  PENDING_INVITATION,
+  HOLDER_PAGE_SIZE
+} from '../../helpers/constants';
 import Logger from '../../helpers/Logger';
 
-const mockedHolders = [
-  {
-    avatar: faker.internet.avatar(),
-    name: `${faker.name.firstName()} ${faker.name.lastName()}`,
-    identityNumber: faker.random.number(),
-    admissionDate: moment(faker.date.recent()).unix(),
-    email: faker.internet.email(),
-    status: PENDING_CONNECTION,
-    id: faker.random.alphaNumeric(9999)
-  },
-  {
-    avatar: faker.internet.avatar(),
-    name: `${faker.name.firstName()} ${faker.name.lastName()}`,
-    identityNumber: faker.random.number(),
-    admissionDate: moment(faker.date.recent()).unix(),
-    email: faker.internet.email(),
-    status: CONNECTED,
-    id: faker.random.alphaNumeric(9999)
-  },
-  {
-    avatar: faker.internet.avatar(),
-    name: `${faker.name.firstName()} ${faker.name.lastName()}`,
-    identityNumber: faker.random.number(),
-    admissionDate: moment(faker.date.recent()).unix(),
-    email: faker.internet.email(),
-    status: PENDING_INVITATION,
-    id: faker.random.alphaNumeric(9999)
-  },
-  {
-    avatar: faker.internet.avatar(),
-    name: `${faker.name.firstName()} ${faker.name.lastName()}`,
-    identityNumber: faker.random.number(),
-    admissionDate: moment(faker.date.recent()).unix(),
-    email: faker.internet.email(),
-    status: PENDING_INVITATION,
-    id: faker.random.alphaNumeric(9999)
-  },
-  {
-    avatar: faker.internet.avatar(),
-    name: `${faker.name.firstName()} ${faker.name.lastName()}`,
-    identityNumber: faker.random.number(),
-    admissionDate: moment(faker.date.recent()).unix(),
-    email: faker.internet.email(),
-    status: PENDING_INVITATION,
-    id: faker.random.alphaNumeric(9999)
-  },
-  {
-    avatar: faker.internet.avatar(),
-    name: `${faker.name.firstName()} ${faker.name.lastName()}`,
-    identityNumber: faker.random.number(),
-    admissionDate: moment(faker.date.recent()).unix(),
-    email: faker.internet.email(),
-    status: PENDING_INVITATION,
-    id: faker.random.alphaNumeric(9999)
-  },
-  {
-    avatar: faker.internet.avatar(),
-    name: `${faker.name.firstName()} ${faker.name.lastName()}`,
-    identityNumber: faker.random.number(),
-    admissionDate: moment(faker.date.recent()).unix(),
-    email: faker.internet.email(),
-    status: PENDING_INVITATION,
-    id: faker.random.alphaNumeric(9999)
-  },
-  {
-    avatar: faker.internet.avatar(),
-    name: `${faker.name.firstName()} ${faker.name.lastName()}`,
-    identityNumber: faker.random.number(),
-    admissionDate: moment(faker.date.recent()).unix(),
-    email: faker.internet.email(),
-    status: PENDING_INVITATION,
-    id: faker.random.alphaNumeric(9999)
-  },
-  {
-    avatar: faker.internet.avatar(),
-    name: `${faker.name.firstName()} ${faker.name.lastName()}`,
-    identityNumber: faker.random.number(),
-    admissionDate: moment(faker.date.recent()).unix(),
-    email: faker.internet.email(),
-    status: PENDING_INVITATION,
-    id: faker.random.alphaNumeric(9999)
-  },
-  {
-    avatar: faker.internet.avatar(),
-    name: `${faker.name.firstName()} ${faker.name.lastName()}`,
-    identityNumber: faker.random.number(),
-    admissionDate: moment(faker.date.recent()).unix(),
-    email: faker.internet.email(),
-    status: PENDING_INVITATION,
-    id: faker.random.alphaNumeric(9999)
-  },
-  {
-    avatar: faker.internet.avatar(),
-    name: `${faker.name.firstName()} ${faker.name.lastName()}`,
-    identityNumber: faker.random.number(),
-    admissionDate: moment(faker.date.recent()).unix(),
-    email: faker.internet.email(),
-    status: PENDING_INVITATION,
-    id: faker.random.alphaNumeric(9999)
-  },
-  {
-    avatar: faker.internet.avatar(),
-    name: `${faker.name.firstName()} ${faker.name.lastName()}`,
-    identityNumber: faker.random.number(),
-    admissionDate: moment(faker.date.recent()).unix(),
-    email: faker.internet.email(),
-    status: PENDING_INVITATION,
-    id: faker.random.alphaNumeric(9999)
-  },
-  {
-    avatar: faker.internet.avatar(),
-    name: `${faker.name.firstName()} ${faker.name.lastName()}`,
-    identityNumber: faker.random.number(),
-    admissionDate: moment(faker.date.recent()).unix(),
-    email: faker.internet.email(),
-    status: PENDING_INVITATION,
-    id: faker.random.alphaNumeric(9999)
-  }
-];
+const createMockHolder = () => ({
+  avatar: internet.avatar(),
+  name: `${name.firstName()} ${name.lastName()}`,
+  identityNumber: random.number(),
+  admissionDate: moment(date.recent()).unix(),
+  email: internet.email(),
+  status: random.arrayElement([PENDING_CONNECTION, CONNECTED, PENDING_INVITATION]),
+  id: random.alphaNumeric(999)
+});
 
-export const getHolders = ({ userId = '', name = '', status = '', pageSize, offset }) =>
+const mockedHolders = [];
+
+for (let i = 0; i < 3 * HOLDER_PAGE_SIZE; i++) mockedHolders.push(createMockHolder());
+
+export const getHolders = ({
+  identityNumber = 0,
+  name: filterName = '',
+  status = '',
+  pageSize,
+  offset
+}) =>
   new Promise(resolve => {
     const filteredHolders = mockedHolders.filter(
-      ({ id, status: holderStatus, name: holderName }) =>
+      ({ identityNumber: holderIdentityNumber, status: holderStatus, name: holderName }) =>
         (!status || status === holderStatus) &&
-        holderName.toLowerCase().includes(name.toLowerCase()) &&
-        id.toLowerCase().includes(userId.toLowerCase())
+        holderName.toLowerCase().includes(filterName.toLowerCase()) &&
+        holderIdentityNumber.toString().includes(identityNumber.toString())
     );
 
     const skip = offset * pageSize;
