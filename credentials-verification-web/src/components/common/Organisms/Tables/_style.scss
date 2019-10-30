@@ -1,6 +1,6 @@
 @import '../../../../css/general_styling';
 
-.RecipientsTable {
+.PaginatedTable {
   margin-top: 10px;
 
   table {
@@ -19,14 +19,14 @@
       align-items: center;
 
       button {
-        margin: 0 0.5em;
+        margin: 0 0.75em;
       }
 
       a {
         color: $primary-color;
         min-width: 100px;
         text-align: center;
-        margin: 0 0.5em;
+        margin: 0 0.75em;
       }
     }
   }

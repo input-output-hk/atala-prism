@@ -1,13 +1,5 @@
 @import '../../css/general_styling';
 
-.RecipientsHeader {
-  display: flex;
-  justify-content: space-between;
-  h1 {
-    @include primary-text($h1, $secondary-color, 400);
-  }
-}
-
 .ButtonControls {
   display: flex;
 

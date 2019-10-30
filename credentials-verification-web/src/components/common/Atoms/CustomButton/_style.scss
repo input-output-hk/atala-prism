@@ -4,6 +4,7 @@
   @include primary-text($button, $dark-grey, 400);
   height: 40px;
   padding: 0 20px;
+  box-shadow: none;
   -webkit-transition: 500ms ease-out;
   -moz-transition: 500ms ease-out;
   -o-transition: 500ms ease-out;
