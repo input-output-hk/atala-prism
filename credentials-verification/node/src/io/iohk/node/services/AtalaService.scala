@@ -10,13 +10,24 @@ import scala.concurrent.ExecutionContext
 import io.iohk.node.atala_bitcoin._
 import io.iohk.node.bitcoin.models._
 import org.slf4j.LoggerFactory
+import io.iohk.node.services.models._
+import io.iohk.node.repositories.atalaobjects.AtalaObjectsRepository
 
 trait AtalaService {
   def publishAtalaTransaction(tx: AtalaTx): Result[PublishError, Unit]
   def synchronizeBlock(blockhash: Blockhash): Result[Nothing, Unit]
+  def persistAtalaObjectReference(
+      atalaObjectId: AtalaObjectId,
+      bitcoinTx: TransactionId
+  ): Result[Nothing, Unit]
 }
 
-class AtalaServiceImpl(bitcoinClient: BitcoinClient, storage: ObjectStorageService, binaryOps: BinaryOps)(
+class AtalaServiceImpl(
+    bitcoinClient: BitcoinClient,
+    storage: ObjectStorageService,
+    binaryOps: BinaryOps,
+    atalaObjectsRepository: AtalaObjectsRepository
+)(
     implicit ec: ExecutionContext
 ) extends AtalaService {
 
@@ -29,16 +40,13 @@ class AtalaServiceImpl(bitcoinClient: BitcoinClient, storage: ObjectStorageServi
     val blockBytes = binaryOps.toBytes(block)
     val blockHash = binaryOps.hashHex(block)
     val obj = AtalaObject(blockHash)
-    val objBytes = binaryOps.toBytes(obj)
-    val objHashBytes: Array[Byte] = binaryOps.hash(obj)
-    val objHash: String = binaryOps.hashHex(obj)
-    val header: Array[Byte] = ATALA_HEADER
-    val opDataBytes: Array[Byte] = header ++ objHashBytes
+    val (objBytes, objId) = binaryOps.getBytesAndId(obj)
+    val opDataBytes: Array[Byte] = ATALA_HEADER ++ objId
 
     OpData(opDataBytes) match {
       case Some(opData) =>
         storage.put(blockHash, blockBytes)
-        storage.put(objHash, objBytes)
+        storage.putAtalaObject(objId, objBytes)
         bitcoinClient
           .sendDataTx(opData)
           .map(_ => ())
@@ -65,6 +73,8 @@ class AtalaServiceImpl(bitcoinClient: BitcoinClient, storage: ObjectStorageServi
                   // this is an Atala transaction
                   val data = trimmed.drop(ATALA_HEADER.length)
                   logger info s"New Atala transaction found in the chain: ${binaryOps.convertBytesToHex(data)}"
+                  val atalaObjectId = AtalaObjectId(data)
+                  persistAtalaObjectReference(atalaObjectId, tx.id)
                 }
               }
           }
@@ -72,6 +82,12 @@ class AtalaServiceImpl(bitcoinClient: BitcoinClient, storage: ObjectStorageServi
       }
       .recoverLeft(_ => ())
   }
+
+  override def persistAtalaObjectReference(
+      atalaObjectId: AtalaObjectId,
+      bitcoinTx: TransactionId
+  ): Result[Nothing, Unit] =
+    atalaObjectsRepository.createReference(atalaObjectId, bitcoinTx)
 }
 
 object AtalaService {
@@ -81,10 +97,14 @@ object AtalaService {
   // we can safely equal `PublishError` to `SendDataTxError`
   type PublishError = SendDataTxError
 
-  def apply(bitcoinClient: BitcoinClient, storage: ObjectStorageService)(
+  def apply(
+      bitcoinClient: BitcoinClient,
+      storage: ObjectStorageService,
+      atalaObjectsRepository: AtalaObjectsRepository
+  )(
       implicit ec: ExecutionContext
   ): AtalaService = {
     val binaryOps = BinaryOps()
-    new AtalaServiceImpl(bitcoinClient, storage, binaryOps)
+    new AtalaServiceImpl(bitcoinClient, storage, binaryOps, atalaObjectsRepository)
   }
 }

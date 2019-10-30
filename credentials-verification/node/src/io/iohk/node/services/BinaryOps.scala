@@ -1,6 +1,7 @@
 package io.iohk.node.services
 
 import io.iohk.node.atala_bitcoin._
+import io.iohk.node.services.models._
 
 trait BinaryOps {
   def toBytes(tx: AtalaBlock): Array[Byte]
@@ -9,6 +10,15 @@ trait BinaryOps {
 
   def extractOpReturn(asm: String): Option[Array[Byte]]
   def trimZeros(in: Array[Byte]): Array[Byte]
+
+  final def getId(obj: AtalaObject): AtalaObjectId =
+    getBytesAndId(obj)._2
+
+  final def getBytesAndId(obj: AtalaObject): (Array[Byte], AtalaObjectId) = {
+    val bytes = toBytes(obj)
+    val hash = genHash(bytes)
+    (bytes, AtalaObjectId(hash))
+  }
 
   final def hash(tx: AtalaBlock): Array[Byte] =
     genHash(toBytes(tx))

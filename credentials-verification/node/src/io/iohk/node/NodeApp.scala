@@ -4,6 +4,7 @@ import com.typesafe.config.{Config, ConfigFactory}
 import io.iohk.cvp.repositories.{SchemaMigrations, TransactorFactory}
 import io.iohk.node.bitcoin.BitcoinClient
 import io.iohk.node.repositories.blocks.BlocksRepository
+import io.iohk.node.repositories.atalaobjects.AtalaObjectsRepository
 import io.iohk.node.synchronizer.{
   LedgerSynchronizationStatusService,
   LedgerSynchronizerService,
@@ -56,12 +57,13 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     logger.info("Connecting to the database")
     val xa = TransactorFactory(databaseConfig)
     val blocksRepository = new BlocksRepository(xa)
+    val atalaObjectsRepository = new AtalaObjectsRepository(xa)
 
     logger.info("Creating bitcoin client")
     val bitcoinClient = BitcoinClient(bitcoinConfig(globalConfig.getConfig("bitcoin")))
     val storage = ObjectStorageService()
 
-    val atalaService = AtalaService(bitcoinClient, storage)
+    val atalaService = AtalaService(bitcoinClient, storage, atalaObjectsRepository)
     val nodeApi = new NodeApi(atalaService)
 
     val synchronizerConfig = SynchronizerConfig(30.seconds)

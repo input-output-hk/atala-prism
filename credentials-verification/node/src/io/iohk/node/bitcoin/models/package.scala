@@ -1,7 +1,7 @@
 package io.iohk.node.bitcoin
 
 import shapeless.tag.@@
-import shapeless.tag
+import io.iohk.node.modeling._
 
 // Kept in a separate package to avoid polluting the `models` namespace
 package modeltags {
@@ -13,24 +13,9 @@ package modeltags {
   sealed trait OpDataTag
 }
 
-// Kept in a separate package to avoid polluting the `models` namespace
-package modelutils {
-  trait TypeCompanion[A, T] {
-    def apply(a: A): A @@ T = tag[T][A](a)
-    def unapply(wrapper: A @@ T): Option[A] = Some(wrapper)
-  }
-
-  abstract class ValidatedTypeCompanion[A, T](isValid: A => Boolean) {
-    def apply(a: A): Option[A @@ T] =
-      Some(tag[T][A](a)).filter(isValid)
-    def unapply(wrapper: A @@ T): Option[A] = Some(wrapper)
-  }
-}
-
 package object models {
 
   import modeltags._
-  import modelutils._
 
   type Btc = BigDecimal @@ BtcTag
   object Btc extends TypeCompanion[BigDecimal, BtcTag]
