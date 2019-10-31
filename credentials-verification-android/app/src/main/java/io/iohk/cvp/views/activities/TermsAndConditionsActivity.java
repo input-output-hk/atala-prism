@@ -60,7 +60,7 @@ public class TermsAndConditionsActivity extends CvpActivity {
         updateButtonState();
       },
       // TODO: get the last time the terms and conditions where updated
-      () -> showLargeDescription(termsAndConditionsTitle, Calendar.getInstance(), "terms-and-conditions")
+      () -> showLargeDescription(termsAndConditionsTitle, Calendar.getInstance(), R.string.terms_and_conditions_asset_name)
     );
     secondCheckbox.setListeners(
       isClicked -> {
@@ -68,14 +68,14 @@ public class TermsAndConditionsActivity extends CvpActivity {
         updateButtonState();
       },
       // TODO: get the last time the privacy policies and conditions where updated
-      // TODO: importe the privacy policies asset when needed
-      () -> showLargeDescription(policiesTitle, Calendar.getInstance(), "terms-and-conditions")
+      // TODO: import the privacy policies asset when needed
+      () -> showLargeDescription(policiesTitle, Calendar.getInstance(), R.string.terms_and_conditions_asset_name)
     );
   }
 
-  public void showLargeDescription(String title, Calendar lastUpdated, String assetName) {
+  public void showLargeDescription(String title, Calendar lastUpdated, int assetResourceId) {
     FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-    ft.replace(R.id.large_description_frame, new LargeDescriptionDialogFragment(title, lastUpdated, assetName));
+    ft.replace(R.id.large_description_frame, new LargeDescriptionDialogFragment(title, lastUpdated, assetResourceId));
     ft.addToBackStack(title);
     ft.commit();
   }

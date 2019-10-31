@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
 import java.util.Objects;
+import java.util.Optional;
 
 import butterknife.BindColor;
 import butterknife.BindView;
@@ -28,6 +29,8 @@ import io.iohk.cvp.R;
 import io.iohk.cvp.core.exception.AssetNotFoundException;
 import io.iohk.cvp.core.exception.CaseNotFoundException;
 import io.iohk.cvp.core.exception.ErrorCode;
+import io.iohk.cvp.utils.AssetsUtils;
+import io.iohk.cvp.utils.DateUtils;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
@@ -50,12 +53,12 @@ public class LargeDescriptionDialogFragment extends CvpFragment {
 
   private String title;
   private Calendar lastUpdated;
-  private String assetName;
+  private int assetResourceId;
 
-  public LargeDescriptionDialogFragment(String title, Calendar lastUpdated, String assetName) {
+  public LargeDescriptionDialogFragment(String title, Calendar lastUpdated, int assetResourceId) {
     this.title = title;
     this.lastUpdated = lastUpdated;
-    this.assetName = assetName;
+    this.assetResourceId = assetResourceId;
   }
 
   @Override
@@ -63,10 +66,14 @@ public class LargeDescriptionDialogFragment extends CvpFragment {
     View view = super.onCreateView(inflater, container, savedInstanceState);
 
     textViewTitle.setText(title);
-    java.text.DateFormat dateFormat = android.text.format.DateFormat.getDateFormat(getContext());
-    textViewSubTitle.setText(dateFormat.format(lastUpdated.getTime()));
+    textViewSubTitle.setText(new DateUtils(getContext()).format(lastUpdated));
     floatingActionButtonClose.setBackgroundTintList(colorRed);
-    textViewDescription.setText(Html.fromHtml(getTextFromAsset(assetName), Html.FROM_HTML_MODE_COMPACT));
+
+    new AssetsUtils(getContext())
+      .getTextFromAsset(assetResourceId)
+      .ifPresent(text ->
+        textViewDescription.setText(Html.fromHtml(text, Html.FROM_HTML_MODE_COMPACT))
+      );
     textViewDescription.setMovementMethod(new ScrollingMovementMethod());
     return view;
   }
@@ -76,29 +83,6 @@ public class LargeDescriptionDialogFragment extends CvpFragment {
     Objects.requireNonNull(getActivity()).onBackPressed();
   }
 
-
-  private String getTextFromAsset(final String fileName) {
-    try {
-      InputStream stream = Objects.requireNonNull(getContext()).getAssets().open(fileName);
-      ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-      int nRead;
-      byte[] data = new byte[1024];
-      while ((nRead = stream.read(data, 0, data.length)) != -1) {
-        buffer.write(data, 0, nRead);
-      }
-
-      buffer.flush();
-      byte[] byteArray = buffer.toByteArray();
-
-      return new String(byteArray, StandardCharsets.UTF_8);
-    } catch (IOException e) {
-      Crashlytics.logException(
-        new AssetNotFoundException("Couldn't find the asset with the name " + fileName + ", exception:" + e.getMessage(),
-          ErrorCode.ASSET_NOT_FOUND));
-      e.printStackTrace();
-      return "";
-    }
-  }
 
   @Override
   public ViewModel getViewModel() {
