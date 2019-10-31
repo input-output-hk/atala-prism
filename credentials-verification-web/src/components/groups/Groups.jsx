@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Row } from 'antd';
+import { Row, Icon } from 'antd';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import GroupsTable from './Organisms/Tables/GroupsTable';
@@ -17,6 +17,7 @@ const NewGroupButton = () => {
       onClick={() => console.log('create a new group')}
       buttonText={t('groups.createNewGroup')}
       theme="theme-secondary"
+      icon={<Icon type="plus" />}
     />
   );
 };

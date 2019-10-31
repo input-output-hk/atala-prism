@@ -40,7 +40,7 @@ const RecipientsFilter = ({
             value={userName}
           />
         </Col>
-        <Col span={6}>
+        <Col span={8}>
           <Select value={status} onChange={setStatus}>
             <Select.Option value="">{t('recipients.filters.status')}</Select.Option>
             {statuses.map(statusType => (

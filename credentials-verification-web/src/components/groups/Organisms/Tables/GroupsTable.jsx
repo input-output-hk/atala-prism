@@ -1,10 +1,10 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, Col, message, Row } from 'antd';
+import { Button, message } from 'antd';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import CellRenderer from '../../../common/Atoms/CellRenderer/CellRenderer';
-import { completeDateFormatter } from '../../../../helpers/formatters';
+import { shortDateFormatter } from '../../../../helpers/formatters';
 import PaginatedTable from '../../../common/Organisms/Tables/PaginatedTable';
 import { GROUP_PAGE_SIZE } from '../../../../helpers/constants';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
@@ -69,7 +69,7 @@ const getColumns = (openModal, setGroupToDelete) => {
         <CellRenderer
           title="lastUpdate"
           componentName={componentName}
-          value={completeDateFormatter(lastUpdate)}
+          value={shortDateFormatter(lastUpdate)}
         />
       )
     },

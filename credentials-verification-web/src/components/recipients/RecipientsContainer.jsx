@@ -35,7 +35,7 @@ const RecipientsContainer = ({ api }) => {
       })
       .catch(error => {
         Logger.error('[Recipients.getHolders] Error while getting holders', error);
-        message.error(t('errors.errorGettingHolders'), 1);
+        message.error(t('errors.errorGetting', { model: 'Holders' }), 1);
       });
   }, [identityNumber, name, status, offset]);
 

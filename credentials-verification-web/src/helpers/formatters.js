@@ -3,12 +3,13 @@ import moment from 'moment';
 import 'moment/locale/ka';
 import { getBrowserLanguage } from './languageUtils';
 
-export const dateFormatter = date => date;
-
-export const completeDateFormatter = date => {
+const completeDateFormatter = (date, format) => {
   const lang = getBrowserLanguage();
-
   moment.locale(lang);
-
-  return moment.unix(date).format('DD/MM/YYYY');
+  return moment.unix(date).format(format);
 };
+
+export const dateFormatter = format => date => completeDateFormatter(date, format);
+
+export const longDateFormatter = dateFormatter('LLLL');
+export const shortDateFormatter = dateFormatter('lll');

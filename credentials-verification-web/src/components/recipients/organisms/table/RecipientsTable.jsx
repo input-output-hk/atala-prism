@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 import CellRenderer from '../../../common/Atoms/CellRenderer/CellRenderer';
 import StatusBadge from '../../../common/Atoms/StatusBadge/StatusBadge';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
-import { completeDateFormatter } from '../../../../helpers/formatters';
+import { longDateFormatter } from '../../../../helpers/formatters';
 import { PENDING_INVITATION, HOLDER_PAGE_SIZE, xScroll } from '../../../../helpers/constants';
 
 import './_style.scss';
@@ -54,7 +54,7 @@ const getColumns = inviteHolder => [
     render: ({ admissionDate }) => (
       <CellRenderer
         title="admissionDate"
-        value={completeDateFormatter(admissionDate)}
+        value={longDateFormatter(admissionDate)}
         componentName="recipients"
       />
     )

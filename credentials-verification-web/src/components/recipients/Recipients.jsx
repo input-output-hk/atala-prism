@@ -5,6 +5,8 @@ import PropTypes from 'prop-types';
 import RecipientsFilter from './molecules/filter/RecipientsFilter';
 import RecipientsTable from './organisms/table/RecipientsTable';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
+import EmptyComponent from '../common/Atoms/EmptyComponent/EmptyComponent';
+import noRecipients from '../../images/noRecipients.svg';
 
 import './_style.scss';
 
@@ -12,7 +14,7 @@ const RecipientsButtons = () => {
   const { t } = useTranslation();
 
   return (
-    <div className="ButtonControls">
+    <div className="ControlButtons">
       <CustomButton
         theme="theme-outline"
         buttonText={t('recipients.buttons.bulk')}
@@ -32,6 +34,13 @@ const RecipientsButtons = () => {
 const Recipients = ({ tableProps, filterProps }) => {
   const { t } = useTranslation();
 
+  const emptyProps = {
+    photoSrc: noRecipients,
+    photoAlt: t('recipients.noRecipients.photoAlt'),
+    title: t('recipients.noRecipients.title'),
+    subtitle: t('recipients.noRecipients.subtitle')
+  };
+
   return (
     <Fragment>
       <div className="ContentHeader">
@@ -39,7 +48,11 @@ const Recipients = ({ tableProps, filterProps }) => {
         <RecipientsButtons />
       </div>
       <RecipientsFilter {...filterProps} />
-      <RecipientsTable {...tableProps} />
+      {tableProps.subjects.length ? (
+        <RecipientsTable {...tableProps} />
+      ) : (
+        <EmptyComponent {...emptyProps} />
+      )}
     </Fragment>
   );
 };
