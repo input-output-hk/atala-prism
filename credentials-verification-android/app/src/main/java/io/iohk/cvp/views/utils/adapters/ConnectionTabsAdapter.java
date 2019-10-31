@@ -11,7 +11,6 @@ import io.iohk.cvp.views.fragments.ConnectionsListFragment;
 
 public class ConnectionTabsAdapter extends FragmentPagerAdapter {
 
-  private final FragmentManager mFragmentManager;
   private final ConnectionsListFragment universitiesListFragment;
   private final ConnectionsListFragment employersListFragment;
   private int mNumOfTabs;
@@ -20,7 +19,6 @@ public class ConnectionTabsAdapter extends FragmentPagerAdapter {
       ConnectionsListFragment universitiesListFragment,
       ConnectionsListFragment employersListFragment) {
     super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
-    this.mFragmentManager = fm;
     this.mNumOfTabs = NumOfTabs;
     this.universitiesListFragment = universitiesListFragment;
     this.employersListFragment = employersListFragment;

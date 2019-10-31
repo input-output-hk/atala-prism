@@ -5,5 +5,6 @@ public enum BottomAppBarOption {
   PROFILE,
   CONNECTIONS,
   WALLET,
-  SETTINGS
+  SETTINGS,
+  CREDENTIAL
 }

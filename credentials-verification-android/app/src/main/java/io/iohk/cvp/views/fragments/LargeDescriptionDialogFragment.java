@@ -22,6 +22,8 @@ import butterknife.OnClick;
 import io.iohk.cvp.R;
 import io.iohk.cvp.utils.AssetsUtils;
 import io.iohk.cvp.utils.DateUtils;
+import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
+import io.iohk.cvp.views.fragments.utils.NoAppBar;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
@@ -78,6 +80,11 @@ public class LargeDescriptionDialogFragment extends CvpFragment {
   @Override
   public ViewModel getViewModel() {
     return null;
+  }
+
+  @Override
+  protected AppBarConfigurator getAppBarConfigurator() {
+    return new NoAppBar();
   }
 
   @Override

@@ -28,6 +28,19 @@
   <string name="word_5">Word #5</string>
   <string name="word_10">Word #10</string>
 
+  <!-- Credential Detail -->
+  <string name="degree_name">Degree Name</string>
+  <string name="bachelors_in_engineering">Bachelor\'s in Engineering</string>
+  <string name="university_name">University Name</string>
+  <string name="free_university_Tbilisi">Free University Tbilisi</string>
+  <string name="some_date">10/2/2019</string>
+  <string name="graduation_date">Graduation Date</string>
+  <string name="start_date">Start Date</string>
+  <string name="full_name">Full Name</string>
+  <string name="some_name">Gergi Beridze</string>
+  <string name="some_award">First Class Honours</string>
+  <string name="award">Award</string>
+  <string name="university_degree">University Degree</string>
 
   <string name="image_description">Image description</string>
   <string name="permission_denied_message">You have to grant camera permission to continue</string>
@@ -60,4 +73,5 @@
 
   <!-- Assets names for internationalization -->
   <string name="terms_and_conditions_asset_name">terms-and-conditions-en</string>
+
 </resources>

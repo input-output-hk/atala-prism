@@ -14,5 +14,7 @@
   <color name="blue">#4A2DFF</color>
   <color name="violet">#AF2DFF</color>
   <color name="onSurfaceMedium">#77869E</color>
+  <color name="almost_black">#262324</color>
+  <color name="dark_grey">#3C393A</color>
   <color name="trasparent">#80000000</color>
 </resources>
