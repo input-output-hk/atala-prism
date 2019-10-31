@@ -1,0 +1,7 @@
+<resources>
+  <declare-styleable name="CheckboxWithDescription">
+    <attr name="text" format="string" />
+    <attr name="link_text" format="string" />
+    <attr name="large_description" format="string" />
+  </declare-styleable>
+</resources>

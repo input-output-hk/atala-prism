@@ -7,9 +7,13 @@ import io.iohk.cvp.views.fragments.ConnectionsFragment;
 import io.iohk.cvp.views.fragments.FirstConnectionFragment;
 import io.iohk.cvp.views.fragments.ConnectionsListFragment;
 import io.iohk.cvp.views.fragments.HomeFragment;
+import io.iohk.cvp.views.fragments.LargeDescriptionDialogFragment;
 
 @Module
 public abstract class FragmentBuilder {
+
+  @ContributesAndroidInjector
+  abstract LargeDescriptionDialogFragment contributeLargeDescription();
 
   @ContributesAndroidInjector
   abstract HomeFragment contributeHomeFragment();

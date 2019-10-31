@@ -67,7 +67,7 @@ ext {
 
 def injectionDependencies = [
         butterKnifeCompiler   : [
-                type: "compile",
+                type: "implementation",
                 dep : "com.jakewharton:butterknife:$butterKnifeVersion"
         ],
         butterKnifeAnnotation : [

@@ -1,7 +1,6 @@
 package io.iohk.cvp.views;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -13,6 +12,7 @@ import io.iohk.cvp.utils.ActivitiesRequestCodes;
 import io.iohk.cvp.utils.IntentDataConstants;
 import io.iohk.cvp.views.activities.MainActivity;
 import io.iohk.cvp.views.activities.QrCodeScanner;
+import io.iohk.cvp.views.activities.TermsAndConditionsActivity;
 import io.iohk.cvp.views.fragments.FirstConnectionFragment;
 import io.iohk.cvp.views.fragments.PopUpFragment;
 
@@ -22,6 +22,11 @@ public class Navigator {
   public void showConnections(Activity from) {
     Intent intent = new Intent(from.getApplicationContext(), MainActivity.class);
     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+    from.startActivity(intent);
+  }
+
+  public void showTermsAndConditions(Activity from) {
+    Intent intent = new Intent(from.getApplicationContext(), TermsAndConditionsActivity.class);
     from.startActivity(intent);
   }
 
