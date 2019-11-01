@@ -2,11 +2,11 @@
 $background: #f1f3f8;
 $surface: #fff;
 
-$primary-color: #FF2D3B;
+$primary-color: #ff2d3b;
 $primary-color-darker: #bf222c;
 $secondary-color: #202020;
 
-$success-color: #1ED69E;
+$success-color: #1ed69e;
 
 $black: #000;
 $white: #fff;
@@ -24,23 +24,42 @@ $h3: 16px;
 $button: 14px;
 $body: 14px;
 $label: 12px;
+$explain: 10px;
 
 // Shadow
 $shadow: 0 1px 6px rgba(147, 141, 158, 0.16), 0 2px 6px rgba(52, 53, 62, 0.16);
 
+@font-face {
+  font-family: 'Circular-bold';
+  src: url(../fonts/CircularStd-Bold.woff) format('woff');
+  font-weight: bold;
+}
+@font-face {
+  font-family: 'Circular-book';
+  src: url(../fonts/CircularStd-Book.woff) format('woff');
+}
+
 // Fonts
 
-@mixin primary-text($font-size, $font-color, $font-weight) {
+@mixin primary-text($font-size, $font-color) {
   margin: 0;
-  font-family: 'Noto Sans', sans-serif;
+  font-family: 'Circular-book';
   font-size: $font-size;
-  font-weight: $font-weight;
   @if $font-color {
     color: $font-color;
   }
 }
 
-@mixin secondary-text($font-size, $font-color, $font-weight) {
+@mixin secondary-text($font-size, $font-color) {
+  margin: 0;
+  font-family: 'Circular-bold';
+  font-size: $font-size;
+  @if $font-color {
+    color: $font-color;
+  }
+}
+
+@mixin body-text($font-size, $font-color, $font-weight) {
   margin: 0;
   font-family: 'Source Sans Pro', sans-serif;
   font-size: $font-size;

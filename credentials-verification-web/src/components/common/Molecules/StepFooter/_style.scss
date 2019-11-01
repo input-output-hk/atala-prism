@@ -1,0 +1,37 @@
+@import '../../../../css/general_styling';
+
+.StepsFooter {
+  display: flex;
+  justify-content: space-between;
+  background: $light-grey;
+  padding: 1em;
+
+  .StepContainer {
+    align-self: center;
+  }
+
+  .ContinueButtons {
+    position: relative;
+    display: flex;
+
+    .SaveButton {
+      position: absolute;
+      left: -220px;
+    }
+  }
+
+  .ant-steps-item-process .ant-steps-item-icon,
+  .ant-steps-item-finish .ant-steps-item-icon {
+    background: $white;
+    border: 2px solid $primary-color;
+    line-height: 30px;
+  }
+
+  .ant-steps-item-process .ant-steps-item-icon > .ant-steps-icon {
+    color: $primary-color;
+  }
+
+  .ant-steps-item-finish .ant-steps-item-icon > .ant-steps-icon {
+    color: $primary-color;
+  }
+}

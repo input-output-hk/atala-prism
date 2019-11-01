@@ -4,14 +4,14 @@ import PropTypes from 'prop-types';
 
 import './_style.scss';
 
-// The accepted themes are:
+// The accepted classNames inside the buttonProps are:
 //    - theme-primary
 //    - theme-secondary
 //    - theme-outline
 //    - theme-grey
-//    - theme-filter
-const CustomButton = ({ theme, icon, buttonText, onClick }) => (
-  <Button onClick={onClick} className={theme}>
+//    - theme-link
+const CustomButton = ({ buttonProps, icon, buttonText }) => (
+  <Button {...buttonProps}>
     {icon && icon}
     {buttonText}
   </Button>
@@ -22,10 +22,18 @@ CustomButton.defaultProps = {
 };
 
 CustomButton.propTypes = {
-  theme: PropTypes.string.isRequired,
+  buttonProps: PropTypes.shape({
+    className: PropTypes.oneOf([
+      'theme-primary',
+      'theme-secondary',
+      'theme-outline',
+      'theme-grey',
+      'theme-link'
+    ]),
+    onClick: PropTypes.func
+  }).isRequired,
   buttonText: PropTypes.string.isRequired,
-  icon: PropTypes.element,
-  onClick: PropTypes.func.isRequired
+  icon: PropTypes.element
 };
 
 export default CustomButton;

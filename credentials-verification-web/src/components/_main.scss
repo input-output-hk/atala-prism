@@ -12,8 +12,7 @@
     height: 100%;
 
     .MainContainer {
-      width: 95vw;
-      padding: 2em;
+      width: 97vw;
       background: $white;
 
       -webkit-border-top-right-radius: 16px;
@@ -24,7 +23,7 @@
         display: flex;
         justify-content: space-between;
         h1 {
-          @include primary-text($h1, $secondary-color, 400);
+          @include primary-text($h1, $secondary-color);
         }
       }
 

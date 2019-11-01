@@ -11,6 +11,11 @@ import {
   getTotalCredentials
 } from './APIs/__mocks__/credentials';
 import { getConnections } from './APIs/__mocks__/connections';
+import {
+  savePictureInS3,
+  saveCredential,
+  saveDraft
+} from './APIs/__mocks__/credentialInteractions';
 
 /* Here should be the header and the sidebar */
 const App = () => (
@@ -25,7 +30,10 @@ const App = () => (
       getGroups,
       deleteGroup,
       getTotalCredentials,
-      getConnections
+      getConnections,
+      savePictureInS3,
+      saveCredential,
+      saveDraft
     }}
   />
 );

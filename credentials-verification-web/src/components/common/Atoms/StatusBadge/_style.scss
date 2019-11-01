@@ -6,7 +6,7 @@
   padding: 3px 6px;
   width: max-content;
   p {
-    @include primary-text($label, $white, 700);
+    @include secondary-text($label, $white);
   }
 
   &.PENDING_CONNECTION {

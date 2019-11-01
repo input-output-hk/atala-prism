@@ -3,7 +3,13 @@
     "ok": "OK",
     "cancel": "Cancel",
     "delete": "Delete",
-    "view": "View"
+    "view": "View",
+    "back": "Back",
+    "next": "Next",
+    "saveForLater": "Save & Continue later"
+  },
+  "generic": {
+    "step": "Step {{step}}"
   },
   "home": {
     "centralText": {
@@ -173,10 +179,72 @@
     },
     "deletionSuccess": "The connection {{name}} was successfully deleted"
   },
+  "newCredential": {
+    "title": "New Credential",
+    "subtitle": "Let's create a New Credential. Here are some key things to do.",
+    "steps": {
+      "step1": "Create Credential Template",
+      "step2": "Asign Recipients Group",
+      "step3": "Check and Confirm Credential"
+    },
+    "table": {
+      "columns": {
+        "identityNumber": "Identity Number",
+        "date": "Date",
+        "groupAssigned": "Group Assigned",
+        "degreeName": "Degree Name",
+        "universityName": "University Name",
+        "award": "Award",
+        "fullName": "Full Name",
+        "startDate": "Start Date",
+        "graduationDate": "Graduation Date"
+      }
+    },
+    "modal": {
+      "saveForLaterCancel": "Cancel",
+      "saveForLaterConfirm": "Save",
+      "title": "New Credential",
+      "subtitle": "Are you sure you want to save and continue later?",
+      "saveCredentials": "Save Credential",
+      "saveSuccess": "Draft successfully saved"
+    },
+    "form": {
+      "errors": {
+        "emptyField": "This field is mandatory",
+        "futureError": "The date must be earlier than today",
+        "pastError": "The graduation date must be later than the start date",
+        "atLeastOneLogo": "You must upload one logo",
+        "noGroupSelected": "You must select a group before continuing"
+      },
+      "degreeName": "Degree Name",
+      "award": "Award",
+      "startDate": "Start Date",
+      "graduationDate": "Graduation Date",
+      "logoUniversity": "University Logo",
+      "logoHint": "Recomended Image Size: 80x80px. Format: PNG or JPG.",
+      "uploadButton": "Upload a logo for the university"
+    },
+    "save": "Create Credentials",
+    "savingSuccess": "Credential successfully save",
+    "groups": {
+      "title": "Select a Group"
+    },
+    "validation": {
+      "title": "Check the data below"
+    }
+  },
   "errors": {
     "routeDidNotMatch": "The route {{pathnameToShow}} did not match any page",
     "errorGetting": "An error occurred while getting {{model}}",
     "errorInvitingHolder": "An error occurred while inviting the holder",
-    "errorDeletingGroup": "An error occurred while deleting the group {{groupName}}"
+    "errorDeletingGroup": "An error occurred while deleting the group {{groupName}}",
+    "savePicture": {
+      "invalidType": "The file must be a JPG or a PNG",
+      "tooLarge": "The file is too large, the maximum size allowed is {{maxSize}}",
+      "uploadError": "An error ocurred while uploading the file"
+    },
+    "saveDraft": "Error while saving New Credential draft",
+    "emptyCredential": "Trying to save empty credential",
+    "invalidCredential": "The credential has invalid fields"
   }
 }

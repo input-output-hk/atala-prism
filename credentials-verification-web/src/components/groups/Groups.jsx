@@ -22,10 +22,21 @@ const NewGroupButton = () => {
   );
 };
 
-const Groups = ({ groups, count, offset, setOffset, setDate, setName, handleGroupDeletion }) => {
+const Groups = ({
+  groups,
+  count,
+  offset,
+  setOffset,
+  setDate,
+  setName,
+  handleGroupDeletion,
+  fullInfo,
+  setGroup,
+  group
+}) => {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
-  const [groupToDelete, setGroupToDelete] = useState();
+  const [groupToDelete, setGroupToDelete] = useState({});
 
   const closeModal = () => {
     setOpen(false);
@@ -33,10 +44,11 @@ const Groups = ({ groups, count, offset, setOffset, setDate, setName, handleGrou
   };
 
   const modalProps = {
-    groupToDelete,
+    toDelete: { name: groupToDelete.groupName, id: groupToDelete.id },
     open,
     closeModal,
-    handleGroupDeletion
+    handleDeletion: handleGroupDeletion,
+    prefix: 'groups'
   };
 
   return (
@@ -44,7 +56,7 @@ const Groups = ({ groups, count, offset, setOffset, setDate, setName, handleGrou
       <DeleteGroupModal {...modalProps} />
       <div className="ContentHeader">
         <h1>{t('groups.title')}</h1>
-        <NewGroupButton />
+        {fullInfo && <NewGroupButton />}
       </div>
       <GroupFilters changeDate={setDate} changeFilter={setName} />
       <Row>
@@ -57,6 +69,9 @@ const Groups = ({ groups, count, offset, setOffset, setDate, setName, handleGrou
             total={count}
             offset={offset}
             onPageChange={value => setOffset(value - 1)}
+            fullInfo={fullInfo}
+            setGroup={setGroup}
+            selectedGroup={group}
           />
         ) : (
           <EmptyComponent

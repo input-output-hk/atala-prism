@@ -28,7 +28,7 @@ export const getGroups = ({ name = '', date: filterDate = 0, offset, pageSize })
   new Promise(resolve => {
     const filteredGroups = mockedGroups.filter(
       ({ groupName, lastUpdate }) =>
-        (!groupName || groupName.toLowerCase().includes(name.toLowerCase())) &&
+        (!name || groupName.toLowerCase().includes(name.toLowerCase())) &&
         (!filterDate || lastUpdate > filterDate)
     );
 

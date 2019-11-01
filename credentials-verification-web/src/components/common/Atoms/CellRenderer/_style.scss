@@ -1,13 +1,9 @@
 @import '../../../../css/general_styling';
 
-.CellRenderer {
-  width: max-content;
-  
-  .TableLabel {
-    @include primary-text($label, $dark-grey, 400);
-  }
+.TableLabel {
+  @include primary-text($label, $dark-grey);
+}
 
-  .TableText {
-    @include primary-text($body, $black, 400);
-  }
+.TableText{
+    @include body-text($body, $black, 400);
 }

@@ -4,9 +4,18 @@ import PropTypes from 'prop-types';
 import './_style.scss';
 import { xScroll } from '../../../../helpers/constants';
 
-const PaginatedTable = ({ columns, data, current, total, defaultPageSize, onChange }) => (
+const PaginatedTable = ({
+  selectionType,
+  columns,
+  data,
+  current,
+  total,
+  defaultPageSize,
+  onChange
+}) => (
   <div className="PaginatedTable">
     <Table
+      rowSelection={selectionType}
       columns={columns}
       scroll={{ x: xScroll }}
       dataSource={data}
@@ -25,10 +34,12 @@ const PaginatedTable = ({ columns, data, current, total, defaultPageSize, onChan
 PaginatedTable.defaultProps = {
   data: [],
   current: 0,
-  total: 0
+  total: 0,
+  selectionType: null
 };
 
 PaginatedTable.propTypes = {
+  selectionType: PropTypes.shape({ type: PropTypes.string }),
   columns: PropTypes.arrayOf(PropTypes.object).isRequired,
   data: PropTypes.arrayOf(PropTypes.object),
   current: PropTypes.number,

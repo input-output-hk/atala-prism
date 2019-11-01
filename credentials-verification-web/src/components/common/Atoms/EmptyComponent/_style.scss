@@ -16,10 +16,10 @@
   }
 
   h3 {
-    @include primary-text($h3, $primary-color, 600);
+    @include primary-text($h3, $primary-color);
   }
 
   p {
-    @include secondary-text($body, $dark-grey, 400);
+    @include secondary-text($body, $dark-grey);
   }
 }
