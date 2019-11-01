@@ -1,7 +1,7 @@
 @import '../../../../css/general_styling';
 
 .ant-btn {
-  @include primary-text($button, $dark-grey, 400);
+  @include primary-text($button, $dark-grey);
   height: 40px;
   padding: 0 20px;
   box-shadow: none;

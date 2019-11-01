@@ -1,0 +1,22 @@
+@import '../../../../css/general_styling';
+
+.ant-form {
+  .ant-form-item {
+    margin-bottom: 0.5em;
+  }
+  .ant-form-item-label {
+    line-height: 14px;
+    label {
+      @include primary-text($label, $dark-grey);
+    }
+  }
+
+  .ant-form-explain,
+  .ant-form-extra {
+    font-size: $explain;
+  }
+
+  .ant-form-item-children {
+    line-height: 0px;
+  }
+}

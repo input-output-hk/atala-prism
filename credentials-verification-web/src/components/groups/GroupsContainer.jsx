@@ -55,6 +55,7 @@ const GroupsContainer = ({ api }) => {
 
   return (
     <Groups
+      fullInfo
       groups={groups}
       count={groupCount}
       offset={offset}

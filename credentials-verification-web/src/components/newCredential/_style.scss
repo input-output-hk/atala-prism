@@ -1,0 +1,30 @@
+@import '../../../src/css/general_styling';
+
+.CredentialMainContent {
+  display: flex;
+  flex-flow: column;
+  justify-content: space-between;
+  height: 100%;
+
+  .CredentialContainerTop {
+    height: 85%;
+    overflow-y: auto;
+    margin: 1em 1.5em 0 1.5em;
+
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: $grey;
+      border-radius: 10px;
+    }
+    &::-webkit-scrollbar-track {
+      box-shadow: inset 0 0 5px $grey;
+      border-radius: 20px;
+    }
+  }
+
+  .StepsFooter {
+    height: 12%;
+  }
+}

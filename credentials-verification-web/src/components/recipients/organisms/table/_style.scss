@@ -4,7 +4,7 @@
   margin-top: 10px;
 
   table {
-    @include primary-text($body, $black, 400);
+    @include primary-text($body, $black);
 
     img {
       border-radius: 4px;
