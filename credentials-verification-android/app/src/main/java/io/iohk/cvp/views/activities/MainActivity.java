@@ -2,14 +2,7 @@ package io.iohk.cvp.views.activities;
 
 import android.os.Bundle;
 import android.widget.FrameLayout;
-
 import androidx.fragment.app.FragmentTransaction;
-
-import java.util.Objects;
-import java.util.Optional;
-
-import javax.inject.Inject;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import dagger.android.support.DaggerAppCompatActivity;
@@ -19,9 +12,12 @@ import io.iohk.cvp.views.fragments.ConnectionsFragment;
 import io.iohk.cvp.views.fragments.CvpFragment;
 import io.iohk.cvp.views.fragments.FirstConnectionFragment;
 import io.iohk.cvp.views.fragments.HomeFragment;
+import io.iohk.cvp.views.fragments.SettingsFragment;
 import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBar;
 import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBarListener;
 import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBarOption;
+import java.util.Optional;
+import javax.inject.Inject;
 import lombok.Getter;
 
 public class MainActivity extends DaggerAppCompatActivity implements BottomAppBarListener {
@@ -67,7 +63,7 @@ public class MainActivity extends DaggerAppCompatActivity implements BottomAppBa
   @Override
   public void onNavigation(BottomAppBarOption option) {
     getFragmentToRender(option)
-      .ifPresent(cvpFragment -> navigator.showFragment(getSupportFragmentManager(), cvpFragment));
+        .ifPresent(cvpFragment -> navigator.showFragment(getSupportFragmentManager(), cvpFragment));
   }
 
   private Optional<CvpFragment> getFragmentToRender(BottomAppBarOption option) {
@@ -76,6 +72,8 @@ public class MainActivity extends DaggerAppCompatActivity implements BottomAppBa
         return Optional.of(new ConnectionsFragment());
       case HOME:
         return Optional.of(new HomeFragment());
+      case SETTINGS:
+        return Optional.of(new SettingsFragment());
       default:
         // TODO: for now, every intention to go to an unimplemented screen result in no action.
         // TODO: when the rest of the screen are implemented, the default case should throw an Exception
