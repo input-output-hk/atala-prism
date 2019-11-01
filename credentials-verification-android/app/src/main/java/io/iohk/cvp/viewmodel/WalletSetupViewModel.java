@@ -11,7 +11,7 @@ import javax.inject.Inject;
 
 public class WalletSetupViewModel extends ViewModel {
 
-  // TODO: hardcode seed phrase
+  // TODO: hardcode row_seed phrase
   private final String[] hardcodeSeedPhrase = {"fan", "enter", "win", "brick", "sniff", "act", "doll", "batman", "until", "test", "comic", "disney"};
 
   private MutableLiveData<List<String>> seedPhrase = new MutableLiveData<>();
