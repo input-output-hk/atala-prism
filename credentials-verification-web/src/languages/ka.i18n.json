@@ -138,6 +138,41 @@
       }
     }
   },
+  "connections": {
+    "title": "Connections",
+    "noConnections": {
+      "photoAlt": "No connections yet",
+      "title": "You don't have Connections yet"
+    },
+    "filters": {
+      "date": "Date",
+      "search": "Search"
+    },
+    "modal": {
+      "title": "Delete Connection",
+      "text": "Are you sure you want to delete the connection with {{name}}?"
+    },
+    "table": {
+      "columns": {
+        "name": "Name",
+        "date": "Date",
+        "totalCredentials": "Total Credentials",
+        "type": "Credential"
+      },
+      "buttons": {
+        "delete": "Delete",
+        "view": "View"
+      }
+    },
+    "detail": {
+      "title": "Connection Detail",
+      "transactions": "Transaction History",
+      "proofRequest": "Proof Request",
+      "newCredential": "New Credential",
+      "iconAlt": "Avatar"
+    },
+    "deletionSuccess": "The connection {{name}} was successfully deleted"
+  },
   "errors": {
     "routeDidNotMatch": "The route {{pathnameToShow}} did not match any page",
     "errorGetting": "An error occurred while getting {{model}}",

@@ -6,6 +6,7 @@ import Recipients from './recipients/RecipientsContainer';
 import NotFound from './notFound/NotFound';
 import Groups from './groups/GroupsContainer';
 import Credential from './credentials/CredentialContainer';
+import Connections from './connections/ConnectionsController';
 
 const landingRoute = { exact: true, path: '/', key: '/', component: Landing };
 const errorRoute = { exact: true, path: '/error', key: '/error', component: I18nError };
@@ -17,9 +18,15 @@ const credential = {
   key: '/credentials',
   component: Credential
 };
+const connections = {
+  exact: true,
+  path: '/connections',
+  key: '/connections',
+  component: Connections
+};
 const notFound = { key: 'notFound', component: NotFound };
 
-const routes = [landingRoute, errorRoute, recipients, groups, credential, notFound];
+const routes = [landingRoute, errorRoute, recipients, groups, credential, connections, notFound];
 
 const Router = () => (
   <Switch>
