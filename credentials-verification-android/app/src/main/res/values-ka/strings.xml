@@ -3,13 +3,13 @@
   <string name="scan_qr">Scan QR</string>
   <string name="connection_label">Connect to a University, Public Registry or potential Employees</string>
   <string name="connection_secondary_label">You can receive and send your digital certificates</string>
-  <string name="accept">Accept</string>
 
   <!-- Activities titles -->
   <string name="connections_activity_title">Connections</string>
   <string name="terms_and_conditions_activity_title">Terms and Conditions</string>
+  <string name="wallet_setup_activity_title">Your Seed Phrase</string>
+  <string name="seed_phrase_verification_activity_title">Verify Seed Phrase</string>
   <string name="qr_scanner_activity_title">Scan QR</string>
-
 
   <!-- Terms and Conditions -->
   <string name="account_creation">Account Creation</string>
@@ -17,6 +17,17 @@
     To continue creating your account you must accept the following terms and conditions.
   </string>
   <string name="privacy_policies_agreement">Privacy Policy Agreement</string>
+
+  <!-- Wallet setup -->
+  <string name="seed_phrase_description">Your seed phrase is your personal key that gives you access to your account.</string>
+  <string name="seed_phrase_explanation">Without it you will not be able to access any of your records or funds in case you lose your device or quite the app. \nPlease store your seed phrase securely before proceeding.</string>
+  <string name="seed_phrase_acceptance">I understand that if I lose my seed phrase,\nI will not be able to access my account.</string>
+
+  <!-- Seed Phrase Verification -->
+  <string name="seed_phrase_verification_description">Enter the correct words of your seed phrase bellow.</string>
+  <string name="word_5">Word #5</string>
+  <string name="word_10">Word #10</string>
+
 
   <string name="image_description">Image description</string>
   <string name="permission_denied_message">You have to grant camera permission to continue</string>
@@ -29,6 +40,8 @@
   <string name="tutorial_step_2_slogan_2">Secure your personal information and only share what you need to</string>
   <string name="tutorial_step_3_slogan_1">Join a next generation payment network</string>
   <string name="tutorial_step_3_slogan_2">Transact everywhere privately, securely and conveniently</string>
+  <string name="accept">Accept</string>
+  <string name="verify">Verify</string>
   <string name="continue_string">Continue</string>
   <string name="create_account">Create account</string>
   <string name="restore_account">Restore account</string>

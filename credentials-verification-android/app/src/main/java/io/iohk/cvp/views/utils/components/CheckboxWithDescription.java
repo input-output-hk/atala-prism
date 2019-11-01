@@ -7,17 +7,11 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.FragmentManager;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import io.iohk.cvp.R;
-import io.iohk.cvp.views.activities.CvpActivity;
-import io.iohk.cvp.views.activities.TermsAndConditionsActivity;
-import io.iohk.cvp.views.utils.dialogs.ConditionsDialog;
-import lombok.Setter;
 
 public class CheckboxWithDescription extends ConstraintLayout {
 
@@ -38,8 +32,8 @@ public class CheckboxWithDescription extends ConstraintLayout {
   @BindView(R.id.link_text_view)
   public TextView linkTextView;
 
-  private CheckboxStateListener statelistener;
-  private CheckboxLinkListener clicklistener;
+  private CheckboxStateListener stateListener;
+  private CheckboxLinkListener clickListener;
 
   public CheckboxWithDescription(Context context) {
     super(context);
@@ -65,29 +59,37 @@ public class CheckboxWithDescription extends ConstraintLayout {
       final TypedArray a = getContext().obtainStyledAttributes(
         attrs, R.styleable.CheckboxWithDescription, defStyle, 0);
       try {
-        textView.setText(a.getString(
-          R.styleable.CheckboxWithDescription_text));
-        linkTextView.setText(a.getString(
-          R.styleable.CheckboxWithDescription_link_text));
+        setParameterText(a, textView, R.styleable.CheckboxWithDescription_text);
+        setParameterText(a, linkTextView, R.styleable.CheckboxWithDescription_link_text);
       } finally {
         a.recycle();
       }
     }
   }
 
-  public void setListeners(CheckboxStateListener statelistener, CheckboxLinkListener clicklistener) {
-    this.statelistener = statelistener;
-    this.clicklistener = clicklistener;
+  private void setParameterText(TypedArray a, TextView textView, int attr) {
+    String text = a.getString(attr);
+    if (text != null) {
+      textView.setVisibility(VISIBLE);
+      textView.setText(text);
+    } else {
+      textView.setVisibility(INVISIBLE);
+    }
+  }
+
+  public void setListeners(CheckboxStateListener stateListener, CheckboxLinkListener clickListener) {
+    this.stateListener = stateListener;
+    this.clickListener = clickListener;
   }
 
   @OnClick(R.id.checkbox)
   public void onChecked(CheckBox checkBox) {
-    statelistener.stateChanged(checkBox.isChecked());
+    stateListener.stateChanged(checkBox.isChecked());
   }
 
 
   @OnClick(R.id.link_text_view)
   public void onTextClicked() {
-    clicklistener.linkClicked();
+    clickListener.linkClicked();
   }
 }

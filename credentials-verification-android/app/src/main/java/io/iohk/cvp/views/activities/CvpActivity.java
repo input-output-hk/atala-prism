@@ -11,7 +11,7 @@ import io.iohk.cvp.views.Navigator;
 
 public abstract class CvpActivity<T extends ViewModel> extends DaggerAppCompatActivity {
 
-  private T viewModel;
+  protected T viewModel;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {

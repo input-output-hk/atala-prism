@@ -101,7 +101,7 @@ public class TermsAndConditionsActivity extends CvpActivity {
 
   @OnClick(R.id.continue_button)
   public void onContinueClick() {
-    navigator.showConnections(this);
+    navigator.showWalletSetup(this);
   }
 
 }

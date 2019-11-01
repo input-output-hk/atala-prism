@@ -20,6 +20,8 @@
       </intent-filter>
     </activity>
     <activity android:name="io.iohk.cvp.views.activities.TermsAndConditionsActivity" />
+    <activity android:name="io.iohk.cvp.views.activities.WalletSetupActivity" />
+    <activity android:name="io.iohk.cvp.views.activities.SeedPhraseVerificationActivity" />
     <activity android:name="io.iohk.cvp.views.activities.QrCodeScanner" />
   </application>
 
