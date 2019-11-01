@@ -16,3 +16,13 @@ export const groupShape = {
   description: PropTypes.string,
   lastUpdate: PropTypes.number
 };
+
+export const connectionShape = {
+  id: PropTypes.string,
+  user: PropTypes.shape({
+    icon: PropTypes.string,
+    name: PropTypes.string
+  }),
+  date: PropTypes.number,
+  totalCredentials: PropTypes.number
+};

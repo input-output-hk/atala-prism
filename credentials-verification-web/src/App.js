@@ -10,6 +10,7 @@ import {
   getCredentialsGroups,
   getTotalCredentials
 } from './APIs/__mocks__/credentials';
+import { getConnections } from './APIs/__mocks__/connections';
 
 /* Here should be the header and the sidebar */
 const App = () => (
@@ -21,9 +22,10 @@ const App = () => (
       getCredentialTypes,
       getCategoryTypes,
       getCredentialsGroups,
-      getTotalCredentials,
       getGroups,
-      deleteGroup
+      deleteGroup,
+      getTotalCredentials,
+      getConnections
     }}
   />
 );
