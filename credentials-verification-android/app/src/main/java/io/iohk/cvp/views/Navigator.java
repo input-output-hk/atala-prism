@@ -5,9 +5,9 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
-
 import androidx.fragment.app.FragmentManager;
-
+import androidx.fragment.app.FragmentTransaction;
+import io.iohk.cvp.R;
 import io.iohk.cvp.utils.ActivitiesRequestCodes;
 import io.iohk.cvp.utils.IntentDataConstants;
 import io.iohk.cvp.views.activities.MainActivity;
@@ -15,8 +15,10 @@ import io.iohk.cvp.views.activities.QrCodeScanner;
 import io.iohk.cvp.views.activities.SeedPhraseVerificationActivity;
 import io.iohk.cvp.views.activities.TermsAndConditionsActivity;
 import io.iohk.cvp.views.activities.WalletSetupActivity;
+import io.iohk.cvp.views.fragments.CvpFragment;
 import io.iohk.cvp.views.fragments.FirstConnectionFragment;
 import io.iohk.cvp.views.fragments.PopUpFragment;
+
 
 public class Navigator {
 
@@ -69,5 +71,18 @@ public class Navigator {
     intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
     intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
     from.startActivity(intent);
+  }
+
+  public void showFragment(FragmentManager supportFragmentManager, CvpFragment cvpFragment) {
+    FragmentTransaction ft = supportFragmentManager.beginTransaction();
+    ft.replace(R.id.fragment_layout, cvpFragment);
+    ft.commit();
+  }
+
+  public void showFragmentOnTop(FragmentManager supportFragmentManager, CvpFragment cvpFragment) {
+    FragmentTransaction ft = supportFragmentManager.beginTransaction();
+    ft.replace(R.id.fragment_layout, cvpFragment);
+    ft.addToBackStack(null);
+    ft.commit();
   }
 }

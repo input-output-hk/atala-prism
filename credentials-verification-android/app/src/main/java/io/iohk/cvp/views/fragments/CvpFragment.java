@@ -7,17 +7,23 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModel;
+
+import java.util.Optional;
 
 import butterknife.ButterKnife;
 import dagger.android.support.DaggerFragment;
+import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 
 public abstract class CvpFragment<T extends ViewModel> extends DaggerFragment {
 
-  private T viewModel;
+  T viewModel;
 
   public abstract T getViewModel();
+
+  protected abstract AppBarConfigurator getAppBarConfigurator();
 
   @Override
   public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -38,9 +44,22 @@ public abstract class CvpFragment<T extends ViewModel> extends DaggerFragment {
   }
 
   @Override
+  public void onResume() {
+    super.onResume();
+    Optional<ActionBar> supportActionBar = activity().map(AppCompatActivity::getSupportActionBar);
+    supportActionBar.ifPresent(actionBar -> getAppBarConfigurator().configureActionBar(actionBar));
+  }
+
+  public Optional<AppCompatActivity> activity() {
+    return Optional.ofNullable(getActivity())
+      .map(fragmentActivity -> (AppCompatActivity) fragmentActivity);
+  }
+
+  @Override
   public void onDetach() {
     super.onDetach();
   }
 
   protected abstract int getViewId();
+
 }

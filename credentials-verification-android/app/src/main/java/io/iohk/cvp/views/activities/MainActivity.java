@@ -39,7 +39,6 @@ public class MainActivity extends DaggerAppCompatActivity implements BottomAppBa
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    Objects.requireNonNull(getSupportActionBar()).hide();
 
     if (findViewById(this.getView()) != null && savedInstanceState != null) {
       return;
@@ -68,11 +67,7 @@ public class MainActivity extends DaggerAppCompatActivity implements BottomAppBa
   @Override
   public void onNavigation(BottomAppBarOption option) {
     getFragmentToRender(option)
-      .ifPresent(cvpFragment -> {
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        ft.replace(R.id.fragment_layout, cvpFragment);
-        ft.commit();
-      });
+      .ifPresent(cvpFragment -> navigator.showFragment(getSupportFragmentManager(), cvpFragment));
   }
 
   private Optional<CvpFragment> getFragmentToRender(BottomAppBarOption option) {

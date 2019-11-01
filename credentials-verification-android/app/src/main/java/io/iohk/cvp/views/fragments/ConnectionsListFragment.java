@@ -7,21 +7,23 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import butterknife.BindView;
-import io.iohk.cvp.R;
-import io.iohk.cvp.io.connector.ConnectionInfo;
-import io.iohk.cvp.viewmodel.ConnectionsActivityViewModel;
-import io.iohk.cvp.views.utils.adapters.ConnectionsRecyclerViewAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
 
+import butterknife.BindView;
+import io.iohk.cvp.R;
+import io.iohk.cvp.io.connector.ConnectionInfo;
+import io.iohk.cvp.viewmodel.ConnectionsActivityViewModel;
+import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
+import io.iohk.cvp.views.fragments.utils.RootAppBar;
+import io.iohk.cvp.views.utils.adapters.ConnectionsRecyclerViewAdapter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
@@ -65,6 +67,11 @@ public class ConnectionsListFragment extends CvpFragment {
   @Override
   protected int getViewId() {
     return R.layout.universities_list;
+  }
+
+  @Override
+  protected AppBarConfigurator getAppBarConfigurator() {
+    return new RootAppBar(R.string.connections_activity_title);
   }
 
   @Override

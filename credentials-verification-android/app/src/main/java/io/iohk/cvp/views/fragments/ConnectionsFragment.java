@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.lifecycle.ViewModel;
 import androidx.viewpager.widget.ViewPager;
 
@@ -15,6 +16,8 @@ import javax.inject.Inject;
 import butterknife.BindView;
 import io.iohk.cvp.R;
 import io.iohk.cvp.views.Navigator;
+import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
+import io.iohk.cvp.views.fragments.utils.RootAppBar;
 import io.iohk.cvp.views.utils.adapters.ConnectionTabsAdapter;
 import io.iohk.cvp.views.utils.adapters.EmployersRecyclerViewAdapter;
 import io.iohk.cvp.views.utils.adapters.UniversitiesRecyclerViewAdapter;
@@ -78,8 +81,14 @@ public class ConnectionsFragment extends CvpFragment {
     return R.layout.fragment_connections;
   }
 
+
   @Override
   public ViewModel getViewModel() {
     return null;
+  }
+
+  @Override
+  protected AppBarConfigurator getAppBarConfigurator() {
+    return new RootAppBar(R.string.connections_activity_title);
   }
 }

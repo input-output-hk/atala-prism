@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 
@@ -20,6 +21,8 @@ import io.iohk.cvp.utils.PermissionUtils;
 import io.iohk.cvp.viewmodel.ConnectionsActivityViewModel;
 import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.activities.MainActivity;
+import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
+import io.iohk.cvp.views.fragments.utils.RootAppBar;
 import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBarOption;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -46,6 +49,11 @@ public class FirstConnectionFragment extends CvpFragment<ConnectionsActivityView
   @Override
   public ConnectionsActivityViewModel getViewModel() {
     return ViewModelProviders.of(this, factory).get(ConnectionsActivityViewModel.class);
+  }
+
+  @Override
+  protected AppBarConfigurator getAppBarConfigurator() {
+    return new RootAppBar(R.string.connections_activity_title);
   }
 
   @OnClick(R.id.scan_qr)
