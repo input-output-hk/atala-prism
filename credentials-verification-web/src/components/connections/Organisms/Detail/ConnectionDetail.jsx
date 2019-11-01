@@ -33,7 +33,6 @@ const ConnectionDetail = ({ user: { icon, name: userName, transactions }, date }
         />
       </Collapse>
       {transactions.map(trans => (
-        // <CellRenderer componentName="connections" value={<Connection {...trans} />} title="type" />
         <div className="ConnectionLine">
           <p>Credential</p>
           <Connection {...trans} />

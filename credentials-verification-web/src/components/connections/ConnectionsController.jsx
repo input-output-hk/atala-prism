@@ -20,9 +20,9 @@ const ConnectionsController = ({ api: { getConnections } }) => {
     const filterDateAsUnix = date ? moment(date).unix() : 0;
 
     getConnections({ date: filterDateAsUnix, name, offset })
-      .then(({ connections: connectionResponse, connectionCount }) => {
+      .then(({ connections: connectionResponse, connectionsCount }) => {
         setConnections(connectionResponse);
-        setCount(connectionCount);
+        setCount(connectionsCount);
       })
       .catch(() => message.error(t('errors.errorGetting', 'Connections')));
   }, [date, name, offset]);

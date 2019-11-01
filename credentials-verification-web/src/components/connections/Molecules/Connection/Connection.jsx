@@ -3,7 +3,7 @@ import { Col, Row } from 'antd';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { shortDateFormatter } from '../../../../helpers/formatters';
-import CustomButton from '../../../../components/common/Atoms/CustomButton/CustomButton';
+import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 
 import './_style.scss';
 
@@ -20,7 +20,6 @@ const Connection = ({ icon, type, date, id }) => {
       </Col>
       <Col span={6} className="CredentialLink">
         <CustomButton buttonText={t('actions.view')} to={`/credential/${id}`} theme="theme-link" />
-        {/* <Link to={`/credential/${id}`}>{t('actions.view')}</Link> */}
       </Col>
     </div>
   );

@@ -39,10 +39,12 @@ GetActionsButtons.propTypes = {
 const getColumns = (setCurrentConnection, openDrawer) => {
   const componentName = 'connections';
 
+  const avatarWidth = 50;
+  const actionsWidth = 250;
   return [
     {
       key: 'icon',
-      width: 50,
+      width: avatarWidth,
       render: ({ user: { icon, name } }) => (
         <img style={{ height: '40px', width: '40px' }} src={icon} alt={`${name} icon`} />
       )
@@ -71,7 +73,7 @@ const getColumns = (setCurrentConnection, openDrawer) => {
     },
     {
       key: 'actions',
-      width: 250,
+      width: actionsWidth,
       render: connection => (
         <GetActionsButtons
           connection={connection}
