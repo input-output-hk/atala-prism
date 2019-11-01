@@ -44,6 +44,7 @@ const Connections = ({
         placement="right"
         onClose={() => setShowDrawer(false)}
         visible={showDrawer}
+        width={450}
       >
         <ConnectionDetail {...currentConnection} />
       </Drawer>

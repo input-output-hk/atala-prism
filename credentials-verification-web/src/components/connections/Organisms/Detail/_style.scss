@@ -1,0 +1,56 @@
+@import '../../../../css/general_styling';
+
+.ConnectionDetail {
+  .ConnectionHeader {
+    display: flex;
+    margin-bottom: 1em;
+    img {
+      width: 45px;
+      height: 45px;
+      border-radius: 4px;
+      margin-right: 1em;
+    }
+    .ConnectionUser {
+      h3 {
+        @include primary-text($h3, $secondary-color, 600);
+      }
+      p {
+        @include primary-text($body, $secondary-color, 400);
+      }
+    }
+  }
+
+  .TransactionsDetail {
+    margin-bottom: 1em;
+    border-radius: 0;
+    background: transparent;
+    border: none;
+  }
+
+  .ConnectionLine {
+    p {
+      @include primary-text($body, $grey, 400);
+      margin-bottom: 0.5em;
+    }
+  }
+
+  .ControlButtons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2em;
+
+    button {
+      width: 48%;
+    }
+  }
+}
+
+.ant-collapse-header {
+  padding: 12px 0;
+}
+
+.ant-collapse > .ant-collapse-item:last-child,
+.ant-collapse > .ant-collapse-item:last-child > .ant-collapse-header {
+  border-radius: 0;
+  @include primary-text($body, $black, 400);
+}

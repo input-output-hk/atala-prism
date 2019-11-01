@@ -42,6 +42,7 @@ const getColumns = (setCurrentConnection, openDrawer) => {
   return [
     {
       key: 'icon',
+      width: 50,
       render: ({ user: { icon, name } }) => (
         <img style={{ height: '40px', width: '40px' }} src={icon} alt={`${name} icon`} />
       )
@@ -70,7 +71,7 @@ const getColumns = (setCurrentConnection, openDrawer) => {
     },
     {
       key: 'actions',
-      fixed: 'right',
+      width: 250,
       render: connection => (
         <GetActionsButtons
           connection={connection}
