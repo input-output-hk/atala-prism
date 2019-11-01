@@ -9,6 +9,7 @@ import ConnectionFilters from './Molecules/Filters/ConnectionFilters';
 import ConnectionTable from './Organisms/Tables/ConnectionTable';
 import ConnectionDetail from './Organisms/Detail/ConnectionDetail';
 import noGroups from '../../images/noGroups.svg';
+import { drawerWidth } from '../../helpers/constants';
 
 const Connections = ({
   connections,
@@ -44,6 +45,7 @@ const Connections = ({
         placement="right"
         onClose={() => setShowDrawer(false)}
         visible={showDrawer}
+        width={drawerWidth}
       >
         <ConnectionDetail {...currentConnection} />
       </Drawer>
@@ -53,7 +55,7 @@ const Connections = ({
       </div>
       <ConnectionFilters changeDate={setDate} changeFilter={setName} />
       <Row>
-        {!connections.length ? (
+        {connections.length ? (
           <ConnectionTable
             setOpen={setOpen}
             setCurrentConnection={setCurrentConnection}
