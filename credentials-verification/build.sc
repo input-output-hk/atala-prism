@@ -1,12 +1,12 @@
 import mill._
 import mill.scalalib._
 import mill.contrib.scalapblib._
-
 import coursier.maven.MavenRepository
-
 import $file.scalapb
 import scalapb.FixedScalaPBWorker
 import scalapb.FixedScalaPBModule
+
+import ammonite.ops._
 
 object app extends ScalaModule {
   def scalaVersion = versions.scala
@@ -177,7 +177,7 @@ trait ServerPBCommon extends ServerCommon with FixedScalaPBModule {
 
 object node extends ServerPBCommon {
 
-  def scalacOptions = Seq("-Ywarn-unused:imports", "-Xfatal-warnings", "-feature")
+  override def scalacOptions = Seq("-Ywarn-unused:imports", "-Xfatal-warnings", "-feature")
 
   override def mainClass = Some("io.iohk.node.NodeApp")
 
@@ -199,6 +199,53 @@ object connector extends ServerPBCommon {
   }
 
   object test extends `tests-common` {}
+
+  object docker extends Module {
+
+    private val version = os.proc("git", "rev-parse", "HEAD").call().out.trim
+    private val tag = s"895947072537.dkr.ecr.us-east-2.amazonaws.com/atala:$version"
+    private val dockerfile = "docker/Dockerfile"
+    private val jar = "connector.jar"
+
+    private def doLogin(): os.CommandResult = {
+      val awsResult = os.proc("aws", "ecr", "get-login", "--no-include-email").call()
+      if (awsResult.exitCode == 0) {
+        val commandWords = awsResult.out.string.split("\\s+").toSeq
+        val loginResult = os.proc(commandWords).call()
+        loginResult
+      } else {
+        awsResult
+      }
+    }
+
+    private def doBuild(
+        assemblyPath: Path,
+        dest: Path,
+        jar: String,
+        dockerfile: String,
+        tag: String
+    ): os.CommandResult = {
+      os.copy(assemblyPath, dest / jar)
+      os.proc("docker", "build", "-f", dockerfile, "-t", tag, dest.toString())
+        .call()
+    }
+
+    private def doPush(buildResult: os.CommandResult, loginResult: os.CommandResult, tag: String): os.CommandResult = {
+      os.proc("docker", "push", tag).call()
+    }
+
+    def login = T {
+      doLogin()
+    }
+
+    def build = T {
+      doBuild(assembly().path, T.ctx().dest, jar, dockerfile, tag)
+    }
+
+    def push = T {
+      doPush(build(), login(), tag)
+    }
+  }
 }
 
 object wallet extends ServerPBCommon {

@@ -2,18 +2,18 @@ version: "3"
 services:
   connector:
     build:
-      context: ..
-      dockerfile: docker/Dockerfile
-    command: "bash -c out/connector/launcher/dest/run"
-    network_mode: host
+      context: ../out/connector/docker/build/dest
+      dockerfile: ../../../../../docker/Dockerfile
+    command: "java -cp connector.jar io.iohk.connector.ConnectorApp"
     ports:
-      - 50051:50051
+      - 127.0.0.1:50051:50051
     depends_on:
       - postgres_db
+    environment:
+      GEUD_CONNECTOR_PSQL_HOST: postgres_db
   postgres_db:
     image: postgres
     ports:
-      - 5432:5432
+      - 127.0.0.1:5432:5432
     environment:
       POSTGRES_DB: geud_connector_db
-    network_mode: host

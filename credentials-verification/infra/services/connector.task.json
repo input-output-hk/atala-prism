@@ -1,0 +1,46 @@
+[
+  {
+    "name": "connector",
+    "image": "${connector-docker-image}",
+    "cpu": 10,
+    "memory": 512,
+    "links": [],
+    "portMappings": [
+      {
+        "containerPort": 50051,
+        "hostPort": 50051,
+        "protocol": "tcp"
+      }
+    ],
+    "essential": true,
+    "entryPoint": [],
+    "command": [],
+    "environment": [
+      {
+        "name": "GEUD_CONNECTOR_PSQL_HOST",
+        "value": "${geud-connector-psql-host}"
+      },
+      {
+        "name": "GEUD_CONNECTOR_PSQL_DATABASE",
+        "value": "${geud-connector-psql-database}"
+      },
+      {
+        "name": "GEUD_CONNECTOR_PSQL_USERNAME",
+        "value": "${geud-connector-psql-username}"
+      },
+      {
+        "name": "GEUD_CONNECTOR_PSQL_PASSWORD",
+        "value": "${geud-connector-psql-password}"
+      }
+    ],
+    "mountPoints": [],
+    "volumesFrom": [],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "${awslogs-group}",
+        "awslogs-region": "${awslogs-region}"
+      }
+    }
+  }
+]

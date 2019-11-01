@@ -3,3 +3,7 @@ out
 .idea
 .cvpwallet
 .node
+.terraform/
+*.tfstate*
+*.tfstate.backup
+*.tfvars
