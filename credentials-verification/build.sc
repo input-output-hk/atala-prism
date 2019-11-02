@@ -201,3 +201,10 @@ object wallet extends ServerPBCommon {
 
   object test extends `tests-common` {}
 }
+
+object cmanager extends ServerPBCommon {
+
+  override def mainClass = Some("io.iohk.cvp.cmanager.CManagerApp")
+
+  object test extends `tests-common` {}
+}

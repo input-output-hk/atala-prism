@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+package io.iohk.cvp.cmanager;
+
+service CredentialsService {
+    rpc CreateCredential (CreateCredentialRequest) returns (CreateCredentialResponse) {}
+    rpc GetCredentials (GetCredentialsRequest) returns (GetCredentialsResponse) {}
+}
+
+// The authenticated issuer is creating a credential
+message CreateCredentialRequest {
+    string subject = 1;
+    string title = 2;
+    Date enrollmentDate = 3;
+    Date graduationDate = 4;
+    string groupName = 5;
+}
+message CreateCredentialResponse {
+    Credential credential = 1;
+}
+
+message GetCredentialsRequest {}
+message GetCredentialsResponse {
+    repeated Credential credentials = 1;
+}
+
+message Date {
+    int32 year = 1; // positive value
+    int32 month = 2; // value in the [1, 12] interval
+    int32 day = 3; // value in the [1, 31] interval (depending on the month, the max value might be 28
+}
+
+message Credential {
+    string id = 1;
+    string issuedBy = 2;
+    string subject = 3;
+    string title = 4;
+    Date enrollmentDate = 5;
+    Date graduationDate = 6;
+    string groupName = 7;
+}
