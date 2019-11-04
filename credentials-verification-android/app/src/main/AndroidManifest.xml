@@ -4,10 +4,10 @@
   package="io.iohk.cvp">
 
   <application
-    android:name="io.iohk.cvp.core.CvpApplication"
     android:allowBackup="true"
     android:icon="@mipmap/ic_launcher"
     android:label="Credentials Verification"
+    android:name="io.iohk.cvp.core.CvpApplication"
     android:roundIcon="@mipmap/ic_launcher_round"
     android:supportsRtl="true"
     android:theme="@style/AppTheme"
@@ -25,6 +25,7 @@
     <activity android:name="io.iohk.cvp.views.activities.WalletSetupActivity" />
     <activity android:name="io.iohk.cvp.views.activities.SeedPhraseVerificationActivity" />
     <activity android:name="io.iohk.cvp.views.activities.QrCodeScanner" />
+    <activity android:name="io.iohk.cvp.views.activities.WebViewActivity" />
   </application>
 
   <uses-permission

@@ -3,14 +3,20 @@ package io.iohk.cvp.views.fragments;
 import androidx.lifecycle.ViewModel;
 import butterknife.OnClick;
 import io.iohk.cvp.R;
+import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.RootAppBar;
+import java.util.Objects;
+import javax.inject.Inject;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Setter
 @NoArgsConstructor
 public class SettingsFragment extends CvpFragment {
+
+  @Inject
+  Navigator navigator;
 
   @Override
   protected int getViewId() {
@@ -29,6 +35,6 @@ public class SettingsFragment extends CvpFragment {
 
   @OnClick(R.id.support)
   public void onSupportClick() {
-    // TODO open zenddesk web view
+    navigator.showWebView(Objects.requireNonNull(this.getActivity()));
   }
 }

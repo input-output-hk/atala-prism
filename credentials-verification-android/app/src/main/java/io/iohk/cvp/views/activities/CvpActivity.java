@@ -2,9 +2,7 @@ package io.iohk.cvp.views.activities;
 
 import android.content.Context;
 import android.os.Bundle;
-
 import androidx.lifecycle.ViewModel;
-
 import butterknife.ButterKnife;
 import dagger.android.support.DaggerAppCompatActivity;
 import io.iohk.cvp.views.Navigator;

@@ -15,10 +15,10 @@ import io.iohk.cvp.views.activities.QrCodeScanner;
 import io.iohk.cvp.views.activities.SeedPhraseVerificationActivity;
 import io.iohk.cvp.views.activities.TermsAndConditionsActivity;
 import io.iohk.cvp.views.activities.WalletSetupActivity;
+import io.iohk.cvp.views.activities.WebViewActivity;
 import io.iohk.cvp.views.fragments.CvpFragment;
 import io.iohk.cvp.views.fragments.FirstConnectionFragment;
 import io.iohk.cvp.views.fragments.PopUpFragment;
-
 
 public class Navigator {
 
@@ -46,10 +46,16 @@ public class Navigator {
     from.startActivity(intent);
   }
 
+  public void showWebView(Activity from) {
+    Intent intent = new Intent(from.getApplicationContext(), WebViewActivity.class);
+    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+    from.startActivity(intent);
+  }
+
   public void showQrScanner(FirstConnectionFragment from) {
     Intent intent = new Intent(from.getActivity().getApplicationContext(), QrCodeScanner.class);
     intent.putExtra(IntentDataConstants.QR_SCANNER_MODE_KEY,
-      IntentDataConstants.QR_SCANNER_MODE_QR_CODE);
+        IntentDataConstants.QR_SCANNER_MODE_QR_CODE);
     from.startActivityForResult(intent, ActivitiesRequestCodes.QR_SCANNER_REQUEST_ACTIVITY);
   }
 
@@ -58,8 +64,8 @@ public class Navigator {
     PopUpFragment fragment = new PopUpFragment();
     fragment.setArguments(bundle);
     fragmentManager
-      .beginTransaction().add(fragment, "PERMISSION_DENIED_POPUP")
-      .show(fragment).commit();
+        .beginTransaction().add(fragment, "PERMISSION_DENIED_POPUP")
+        .show(fragment).commit();
   }
 
   public void showAppPermissionSettings(Activity from) {
