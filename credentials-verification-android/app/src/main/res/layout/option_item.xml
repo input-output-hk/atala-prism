@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?><!-- Bottom View Start-->
+<!--What you want to show-->
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:background="@drawable/rounded_corner_white">
+
+  <ImageView
+    android:id="@+id/action_image"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="8dp"
+    android:layout_centerVertical="true"
+    android:contentDescription="@string/empty_title"
+    android:src="@drawable/arrow_right_grey"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintTop_toTopOf="parent" />
+
+  <RelativeLayout
+    android:id="@+id/card_logo_container"
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:layout_marginStart="8dp"
+    android:background="@drawable/rounded_corner_grey"
+    android:clickable="true"
+    android:focusable="true"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent">
+
+    <ImageView
+      android:id="@+id/logo"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_centerInParent="true"
+      android:src="@drawable/icon_scan_qr"
+      tools:ignore="ContentDescription" />
+  </RelativeLayout>
+  <TextView
+    android:id="@+id/primary_info"
+    android:textStyle="bold"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="8dp"
+    android:layout_marginStart="16dp"
+    android:layout_marginEnd="32dp"
+    android:ellipsize="end"
+    android:maxLines="1"
+    android:textColor="@color/black"
+    app:layout_constraintBottom_toTopOf="@id/more_info"
+    app:layout_constraintEnd_toStartOf="@+id/action_image"
+    app:layout_constraintStart_toEndOf="@+id/card_logo_container"
+    app:layout_constraintTop_toTopOf="parent" />
+
+  <TextView
+    android:id="@+id/more_info"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="4dp"
+    android:layout_marginBottom="8dp"
+    android:layout_marginStart="16dp"
+    android:text="@string/more_info"
+    android:textColor="@color/onSurfaceMedium"
+    android:textSize="@dimen/little_text"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toStartOf="@+id/action_image"
+    app:layout_constraintStart_toEndOf="@+id/card_logo_container"
+    app:layout_constraintTop_toBottomOf="@+id/primary_info" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

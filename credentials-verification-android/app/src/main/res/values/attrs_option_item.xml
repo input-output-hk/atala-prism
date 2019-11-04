@@ -1,0 +1,8 @@
+<resources>
+  <declare-styleable name="OptionItem">
+    <attr format="string" name="primaryText" />
+    <attr format="string" name="secondaryText" />
+    <attr format="reference" name="logoImage" />
+    <attr format="reference" name="actionImage" />
+  </declare-styleable>
+</resources>

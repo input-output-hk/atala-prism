@@ -74,4 +74,14 @@
   <!-- Assets names for internationalization -->
   <string name="terms_and_conditions_asset_name">terms-and-conditions-en</string>
 
+  <string name="backup_button_name">Backup Data</string>
+  <string name="backup_button_description">Please create your backup now!</string>
+  <string name="security_button_name">Security</string>
+  <string name="security_button_description">Secure your app using Biometrics</string>
+  <string name="pin_code_button_name">PIN Code</string>
+  <string name="pin_code_button_description">Change the code to unlock this app</string>
+  <string name="support_button_name">Support</string>
+  <string name="support_button_description">Do you have any doubts?</string>
+  <string name="about_button_name">About</string>
+  <string name="about_button_description">Legal, Versions and Network info</string>
 </resources>
