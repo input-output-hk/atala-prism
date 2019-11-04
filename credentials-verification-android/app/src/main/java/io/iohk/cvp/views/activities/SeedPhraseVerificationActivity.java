@@ -2,22 +2,17 @@ package io.iohk.cvp.views.activities;
 
 import android.os.Bundle;
 import android.widget.Button;
-
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
-
-import com.google.android.material.textfield.TextInputEditText;
-
-import java.util.Objects;
-
-import javax.inject.Inject;
-
 import butterknife.BindView;
 import butterknife.OnClick;
+import com.google.android.material.textfield.TextInputEditText;
 import io.iohk.cvp.R;
 import io.iohk.cvp.viewmodel.WalletSetupViewModel;
 import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.utils.SimpleTextWatcher;
+import java.util.Objects;
+import javax.inject.Inject;
 
 public class SeedPhraseVerificationActivity extends CvpActivity<WalletSetupViewModel> {
 

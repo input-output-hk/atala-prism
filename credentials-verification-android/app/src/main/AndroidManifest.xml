@@ -15,15 +15,16 @@
     tools:ignore="GoogleAppIndexingWarning">
     <activity
       android:name="io.iohk.cvp.views.activities.MainActivity"
-      android:screenOrientation="portrait"></activity>
-    <activity
-      android:name="io.iohk.cvp.views.activities.WelcomeActivity"
       android:screenOrientation="portrait">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
+
     </activity>
+    <activity
+      android:name="io.iohk.cvp.views.activities.WelcomeActivity"
+      android:screenOrientation="portrait"></activity>
     <activity
       android:name="io.iohk.cvp.views.activities.TermsAndConditionsActivity"
       android:screenOrientation="portrait" />

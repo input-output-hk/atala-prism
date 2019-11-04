@@ -41,9 +41,11 @@
   <string name="some_award">First Class Honours</string>
   <string name="award">Award</string>
   <string name="university_degree">University Degree</string>
-
   <string name="decline">Decline</string>
   <string name="confirm">Confirm</string>
+
+  <!-- Credential Acceptance Payment -->
+  <string name="payment_activity_title">Payment</string>
 
   <string name="image_description">Image description</string>
   <string name="permission_denied_message">You have to grant camera permission to continue</string>
@@ -89,5 +91,12 @@
 
   <!-- Assets names for internationalization -->
   <string name="terms_and_conditions_asset_name">terms-and-conditions-ka</string>
-
+  <string name="receive_credential">Receive Credential</string>
+  <string name="receive_credential_description">In order to receive your digital\ncredential then please pay issuance fee</string>
+  <string name="credit_card_number">Credit Card Number</string>
+  <string name="expiry_date">Expiry Date</string>
+  <string name="cvv_number">CVV Number</string>
+  <string name="cardholder_name">Cardholder Name</string>
+  <string name="amount">Amount</string>
+  <string name="some_amount">₾ 10</string>
 </resources>
