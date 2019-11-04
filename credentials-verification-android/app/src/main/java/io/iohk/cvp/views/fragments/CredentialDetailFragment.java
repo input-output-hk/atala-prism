@@ -5,19 +5,17 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-
+import android.widget.Button;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
-
-import io.iohk.cvp.io.connector.CredentialType;
-import java.util.Objects;
-
-import javax.inject.Inject;
-
+import butterknife.BindView;
+import com.google.android.material.button.MaterialButton;
 import io.iohk.cvp.R;
 import io.iohk.cvp.viewmodel.CredentialsViewModel;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
+import java.util.Objects;
+import javax.inject.Inject;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
@@ -26,6 +24,16 @@ import lombok.Setter;
 public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> {
 
   private ViewModelProvider.Factory factory;
+
+  @Setter
+  private String credentialId;
+
+
+  @BindView(R.id.decline_credential)
+  public MaterialButton declineButton;
+
+  @BindView(R.id.accept_credential)
+  public Button acceptButton;
 
   @Inject
   CredentialDetailFragment(ViewModelProvider.Factory factory) {
@@ -62,10 +70,18 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
       Bundle savedInstanceState) {
     View view = super.onCreateView(inflater, container, savedInstanceState);
 
-    viewModel.getCredential().observe(this, credential -> {
+    viewModel.getCredential(credentialId).observe(this, credential -> {
       // TODO: here the UI should be feed with the credential data
+
+      // TODO: The credential should have an attr to determinate if it needs to be accepted or not
+      showOptions(credentialId.equals("newCredential"));
     });
     return view;
+  }
+
+  private void showOptions(boolean optionsVisible) {
+    declineButton.setVisibility(optionsVisible ? View.VISIBLE : View.GONE);
+    acceptButton.setVisibility(optionsVisible ? View.VISIBLE : View.GONE);
   }
 
   @Override

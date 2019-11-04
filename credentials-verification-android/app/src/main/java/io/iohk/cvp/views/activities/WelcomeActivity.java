@@ -129,7 +129,7 @@ public class WelcomeActivity extends CvpActivity {
     step2Dot.setVisibility(isAdvancing ? View.GONE : View.VISIBLE);
     step3Dot.setVisibility(isAdvancing ? View.VISIBLE : View.GONE);
     getStartedBtn.setVisibility(isAdvancing ? View.GONE : View.VISIBLE);
-    restoreAccountBtn.setVisibility(isAdvancing ? View.VISIBLE : View.GONE);
+//    restoreAccountBtn.setVisibility(isAdvancing ? View.VISIBLE : View.GONE);
     createAccountBtn.setVisibility(isAdvancing ? View.VISIBLE : View.GONE);
   }
 

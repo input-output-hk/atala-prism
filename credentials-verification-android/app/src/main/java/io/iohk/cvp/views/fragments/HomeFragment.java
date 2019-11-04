@@ -51,10 +51,10 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> {
   @Inject
   CredentialDetailFragment credentialFragment;
 
-  private CredentialsRecyclerViewAdapter newCredentialsAdapter
-      = new CredentialsRecyclerViewAdapter(R.layout.row_credential, this);
-  private CredentialsRecyclerViewAdapter credentialsAdapter
-      = new CredentialsRecyclerViewAdapter(R.layout.row_new_credential, this);
+  private final CredentialsRecyclerViewAdapter newCredentialsAdapter
+      = new CredentialsRecyclerViewAdapter(R.layout.row_new_credential, this, true);
+  private final CredentialsRecyclerViewAdapter credentialsAdapter
+      = new CredentialsRecyclerViewAdapter(R.layout.row_credential, this, false);
 
   @Override
   protected int getViewId() {
@@ -70,21 +70,19 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> {
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
       Bundle savedInstanceState) {
     View view = super.onCreateView(inflater, container, savedInstanceState);
-    LinearLayoutManager linearLayoutManagerCredentials = new LinearLayoutManager(getContext());
 
-    credentialsRecyclerView.setLayoutManager(linearLayoutManagerCredentials);
-//    credentialsAdapter = new CredentialsRecyclerViewAdapter(R.layout.row_credential, this);
+    // Init credentialsRecyclerView
+    credentialsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
     credentialsRecyclerView.setAdapter(credentialsAdapter);
 
-    LinearLayoutManager linearLayoutManagerNewCredentials = new LinearLayoutManager(getContext());
-
-    newCredentialsRecyclerView.setLayoutManager(linearLayoutManagerNewCredentials);
-//    newCredentialsAdapter = new CredentialsRecyclerViewAdapter(R.layout.row_new_credential, this);
+    // Init newCredentialsRecyclerView
+    newCredentialsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
     newCredentialsRecyclerView.setAdapter(newCredentialsAdapter);
 
     viewModel.getCredentials().observe(this, credentials -> {
       credentialsAdapter.setCredentials(credentials);
       credentialsAdapter.notifyDataSetChanged();
+
       newCredentialsAdapter.setCredentials(credentials);
       newCredentialsAdapter.notifyDataSetChanged();
     });
@@ -96,8 +94,9 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> {
     return ViewModelProviders.of(this, factory).get(CredentialsViewModel.class);
   }
 
-  public void onCredentialClicked() {
-    navigator.showFragmentOnTop(Objects.requireNonNull(getActivity()).getSupportFragmentManager(),
-        credentialFragment);
+  public void onCredentialClicked(String credentialId) {
+    credentialFragment.setCredentialId(credentialId);
+    navigator.showFragmentOnTop(
+        Objects.requireNonNull(getActivity()).getSupportFragmentManager(), credentialFragment);
   }
 }

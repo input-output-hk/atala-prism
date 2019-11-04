@@ -42,6 +42,9 @@
   <string name="award">Award</string>
   <string name="university_degree">University Degree</string>
 
+  <string name="decline">Decline</string>
+  <string name="confirm">Confirm</string>
+
   <string name="image_description">Image description</string>
   <string name="permission_denied_message">You have to grant camera permission to continue</string>
   <string name="welcome">Welcome</string>
@@ -70,9 +73,8 @@
   <string name="profile">Profile</string>
   <string name="connections">Connections</string>
 
-  <!-- Assets names for internationalization -->
-  <string name="terms_and_conditions_asset_name">terms-and-conditions-ka</string>
 
+  <!-- Settings option labels -->
   <string name="backup_button_name">Backup Data</string>
   <string name="backup_button_description">Please create your backup now!</string>
   <string name="security_button_name">Security</string>
@@ -84,4 +86,8 @@
   <string name="about_button_name">About</string>
   <string name="about_button_description">Legal, Versions and Network info</string>
   <string name="support_title">Support</string>
+
+  <!-- Assets names for internationalization -->
+  <string name="terms_and_conditions_asset_name">terms-and-conditions-ka</string>
+
 </resources>

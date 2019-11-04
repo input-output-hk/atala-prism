@@ -21,17 +21,20 @@ import io.iohk.cvp.views.fragments.HomeFragment;
 import lombok.Setter;
 
 public class CredentialsRecyclerViewAdapter extends
-  RecyclerView.Adapter<CredentialsRecyclerViewAdapter.ViewHolder> {
+    RecyclerView.Adapter<CredentialsRecyclerViewAdapter.ViewHolder> {
 
   private final int holderLayoutId;
   private final HomeFragment listener;
+  private final Boolean hasNewCredentials;
 
   @Setter
   private List<Credential> credentials = new ArrayList<>();
 
-  public CredentialsRecyclerViewAdapter(int holderLayoutId, HomeFragment listener) {
+  public CredentialsRecyclerViewAdapter(int holderLayoutId, HomeFragment listener,
+      Boolean hasNewCredentials) {
     this.holderLayoutId = holderLayoutId;
     this.listener = listener;
+    this.hasNewCredentials = hasNewCredentials;
   }
 
   @NonNull
@@ -39,7 +42,7 @@ public class CredentialsRecyclerViewAdapter extends
   public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
     View v = LayoutInflater.from(parent.getContext())
-      .inflate(holderLayoutId, parent, false);
+        .inflate(holderLayoutId, parent, false);
     return new ViewHolder(v);
   }
 
@@ -47,6 +50,7 @@ public class CredentialsRecyclerViewAdapter extends
   public void onBindViewHolder(CredentialsRecyclerViewAdapter.ViewHolder holder, int position) {
     // TODO unmock this when we are sure about which class's info are we going to show here
     holder.listener = this.listener;
+    holder.isNew = this.hasNewCredentials;
     holder.issuerName.setText("Business and Technology University");
   }
 
@@ -64,6 +68,8 @@ public class CredentialsRecyclerViewAdapter extends
     ImageView issuerLogo;
 
     HomeFragment listener;
+    Boolean isNew;
+
 
     ViewHolder(View itemView) {
       super(itemView);
@@ -72,7 +78,7 @@ public class CredentialsRecyclerViewAdapter extends
 
     @OnClick(R.id.issuer_card_view)
     public void onCredentialClicked() {
-      listener.onCredentialClicked();
+      listener.onCredentialClicked(isNew ? "newCredential" : "");
     }
   }
 }
