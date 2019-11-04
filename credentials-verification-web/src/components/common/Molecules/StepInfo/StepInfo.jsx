@@ -16,7 +16,7 @@ const StepInfo = ({ title, subtitle, steps, currentStep }) => {
       </div>
       <div className="NewCredentialSteps">
         {steps.map(({ stepTitle }, index) => (
-          <div className="StepLine">
+          <div key={stepTitle} className="StepLine">
             <div
               className={currentStep === index ? 'StepLineContentActive' : 'StepLineContent'}
               key={stepTitle}
@@ -30,7 +30,7 @@ const StepInfo = ({ title, subtitle, steps, currentStep }) => {
                 count={t('generic.step', { step: index + 1 })}
               />
               {/* eslint-disable-next-line jsx-a11y/label-has-for */}
-              <label>{t(stepTitle)}</label>
+              <label id="stepTitle">{t(stepTitle)}</label>
             </div>
           </div>
         ))}

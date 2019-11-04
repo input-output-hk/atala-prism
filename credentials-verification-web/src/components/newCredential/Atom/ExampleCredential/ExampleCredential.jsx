@@ -1,5 +1,4 @@
 import React from 'react';
-import { Col, Row } from 'antd';
 import CellRenderer from '../../../common/Atoms/CellRenderer/CellRenderer';
 import {
   EXAMPLE_DEGREE_NAME,

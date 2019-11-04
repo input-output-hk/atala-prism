@@ -231,7 +231,8 @@
     },
     "validation": {
       "title": "Check the data below"
-    }
+    },
+    "checkInfo": "Check the data below"
   },
   "errors": {
     "routeDidNotMatch": "The route {{pathnameToShow}} did not match any page",

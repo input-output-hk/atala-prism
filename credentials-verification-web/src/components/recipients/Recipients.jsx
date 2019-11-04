@@ -7,6 +7,7 @@ import RecipientsTable from './organisms/table/RecipientsTable';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 import EmptyComponent from '../common/Atoms/EmptyComponent/EmptyComponent';
 import noRecipients from '../../images/noRecipients.svg';
+import Logger from '../../helpers/Logger';
 
 import './_style.scss';
 
@@ -18,13 +19,13 @@ const RecipientsButtons = () => {
       <CustomButton
         theme="theme-outline"
         buttonText={t('recipients.buttons.bulk')}
-        onClick={() => console.log('placeholder function')}
+        onClick={() => Logger.info('placeholder function')}
         icon={<Icon type="plus" />}
       />
       <CustomButton
         theme="theme-secondary"
         buttonText={t('recipients.buttons.manual')}
-        onClick={() => console.log('placeholder function')}
+        onClick={() => Logger.info('placeholder function')}
         icon={<Icon type="plus" />}
       />
     </div>

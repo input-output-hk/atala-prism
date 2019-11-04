@@ -21,7 +21,7 @@ const FileUploader = ({ hint, field, accept, savePicture, uploadText, formRef, i
         setFileList([file]);
         onSuccess(response);
       })
-      .catch(({ error: errorMessage }) => {
+      .catch(({ message: errorMessage }) => {
         message.error(t(errorMessage));
         onError();
       });
@@ -57,7 +57,8 @@ const FileUploader = ({ hint, field, accept, savePicture, uploadText, formRef, i
 
 FileUploader.defaultProps = {
   hint: '',
-  accept: undefined
+  accept: undefined,
+  initialValue: null
 };
 
 FileUploader.propTypes = {
@@ -67,7 +68,8 @@ FileUploader.propTypes = {
   savePicture: PropTypes.func.isRequired,
   uploadText: PropTypes.string.isRequired,
   formRef: PropTypes.oneOfType([PropTypes.func, PropTypes.shape({ current: PropTypes.object })])
-    .isRequired
+    .isRequired,
+  initialValue: PropTypes.shape()
 };
 
 export default FileUploader;

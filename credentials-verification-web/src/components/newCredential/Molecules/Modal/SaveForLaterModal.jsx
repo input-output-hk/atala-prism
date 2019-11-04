@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Col, Modal, Row } from 'antd';
+import { Modal } from 'antd';
+import PropTypes from 'prop-types';
 import saveCredentials from '../../../../images/noCredentials.svg';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 
@@ -31,6 +32,12 @@ const SaveForLaterModal = ({ open, onCancel, onOk }) => {
       </div>
     </Modal>
   );
+};
+
+SaveForLaterModal.propTypes = {
+  open: PropTypes.bool.isRequired,
+  onCancel: PropTypes.func.isRequired,
+  onOk: PropTypes.func.isRequired
 };
 
 export default SaveForLaterModal;

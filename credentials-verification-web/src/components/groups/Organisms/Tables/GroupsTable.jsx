@@ -35,13 +35,14 @@ const GetActionsButtons = ({ id, setGroupToDelete, fullInfo }) => {
 
 GetActionsButtons.propTypes = {
   id: PropTypes.string.isRequired,
-  setGroupToDelete: PropTypes.func.isRequired
+  setGroupToDelete: PropTypes.func.isRequired,
+  fullInfo: PropTypes.bool.isRequired
 };
 
 const AddCredentialsButton = ({ id }) => {
   const { t } = useTranslation();
   return (
-    <Button onClick={() => console.log('add with this id', id)}>
+    <Button onClick={() => message.info('add with this id', id)}>
       {t('groups.table.buttons.addCredential')}
     </Button>
   );
@@ -154,7 +155,9 @@ const GroupsTable = ({
 GroupsTable.defaultProps = {
   groups: [],
   current: 0,
-  total: 0
+  total: 0,
+  selectedGroup: '',
+  setGroup: null
 };
 
 GroupsTable.propTypes = {
@@ -163,7 +166,10 @@ GroupsTable.propTypes = {
   groups: PropTypes.arrayOf(PropTypes.object),
   current: PropTypes.number,
   total: PropTypes.number,
-  onPageChange: PropTypes.func.isRequired
+  onPageChange: PropTypes.func.isRequired,
+  selectedGroup: PropTypes.string,
+  setGroup: PropTypes.func,
+  fullInfo: PropTypes.bool.isRequired
 };
 
 export default GroupsTable;

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { message } from 'antd';
 import moment from 'moment';
 import { useTranslation } from 'react-i18next';
+import PropTypes from 'prop-types';
 import Logger from '../../helpers/Logger';
 import NewCredential from './NewCredential';
 import { withApi } from '../providers/witApi';
@@ -170,6 +171,14 @@ const NewCredentialContainer = ({ api: { savePictureInS3, saveDraft, getGroups }
       selectedGroup={group}
     />
   );
+};
+
+NewCredentialContainer.propTypes = {
+  api: PropTypes.shape({
+    savePictureInS3: PropTypes.func,
+    saveDraft: PropTypes.func,
+    getGroups: PropTypes.func
+  }).isRequired
 };
 
 export default withApi(NewCredentialContainer);

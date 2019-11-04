@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Row, Icon } from 'antd';
+import { Row, Icon, message } from 'antd';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import GroupsTable from './Organisms/Tables/GroupsTable';
@@ -14,7 +14,7 @@ const NewGroupButton = () => {
   const { t } = useTranslation();
   return (
     <CustomButton
-      onClick={() => console.log('create a new group')}
+      onClick={() => message.info('create a new group')}
       buttonText={t('groups.createNewGroup')}
       theme="theme-secondary"
       icon={<Icon type="plus" />}
@@ -90,7 +90,9 @@ const Groups = ({
 Groups.defaultProps = {
   groups: [],
   count: 0,
-  offset: 0
+  offset: 0,
+  setGroup: null,
+  group: ''
 };
 
 Groups.propTypes = {
@@ -100,7 +102,10 @@ Groups.propTypes = {
   setOffset: PropTypes.func.isRequired,
   setDate: PropTypes.func.isRequired,
   setName: PropTypes.func.isRequired,
-  handleGroupDeletion: PropTypes.func.isRequired
+  handleGroupDeletion: PropTypes.func.isRequired,
+  fullInfo: PropTypes.bool.isRequired,
+  setGroup: PropTypes.func,
+  group: PropTypes.string
 };
 
 export default Groups;

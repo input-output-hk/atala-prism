@@ -15,7 +15,7 @@ const NewCredentialValidation = ({
 
   return (
     <div className="NewCredentialValidationContainer">
-      <h2>{t('newCredential.validation.title')}</h2>
+      <h2>{t('newCredential.checkInfo')}</h2>
       <div className="NewCredentialValidation">
         <img
           style={{ height: '50px', width: '50px' }}
@@ -39,7 +39,7 @@ NewCredentialValidation.propTypes = {
   credentialValues: PropTypes.shape({
     startDate: PropTypes.number,
     degreeName: PropTypes.string,
-    logoUniversity: PropTypes.any
+    logoUniversity: PropTypes.shape()
   }).isRequired,
   group: PropTypes.string.isRequired
 };
