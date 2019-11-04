@@ -3,7 +3,7 @@ package io.iohk.cvp.cmanager.repositories
 import java.time.LocalDate
 import java.util.UUID
 
-import io.iohk.cvp.cmanager.models.Issuer
+import io.iohk.cvp.cmanager.models.{Credential, Issuer}
 import io.iohk.cvp.cmanager.models.requests.CreateCredential
 import io.iohk.cvp.cmanager.repositories.common.CManagerRepositorySpec
 import org.scalatest.EitherValues._
@@ -35,6 +35,30 @@ class CredentialsRepositorySpec extends CManagerRepositorySpec {
     }
   }
 
+  "getBy" should {
+    "return the first credentials" in {
+      val issuer = createIssuer("Issuer X")
+      val credA = createCredential(issuer, "A")
+      val credB = createCredential(issuer, "B")
+      val credC = createCredential(issuer, "C")
+
+      val result = repository.getBy(issuer, 2, None).value.futureValue.right.value
+      result.toSet must be(Set(credA, credB))
+    }
+
+    "paginate by the last seen credential" in {
+      val issuer = createIssuer("Issuer X")
+      val credA = createCredential(issuer, "A")
+      val credB = createCredential(issuer, "B")
+      val credC = createCredential(issuer, "C")
+      val credD = createCredential(issuer, "D")
+
+      val first = repository.getBy(issuer, 2, None).value.futureValue.right.value
+      val result = repository.getBy(issuer, 1, first.lastOption.map(_.id)).value.futureValue.right.value
+      result.toSet must be(Set(credC))
+    }
+  }
+
   def createIssuer(name: String = "Issuer"): Issuer.Id = {
     import doobie.implicits._
     import daos._
@@ -46,5 +70,19 @@ class CredentialsRepositorySpec extends CManagerRepositorySpec {
          |VALUES ($id, $name, $did)
          |""".stripMargin.update.run.transact(database).unsafeRunSync()
     id
+  }
+
+  def createCredential(issuedBy: Issuer.Id, tag: String = ""): Credential = {
+    val request = CreateCredential(
+      issuedBy = issuedBy,
+      subject = s"Atala Prism $tag".trim,
+      title = s"Major IN Applied Blockchain $tag".trim,
+      enrollmentDate = LocalDate.now(),
+      graduationDate = LocalDate.now().plusYears(5),
+      groupName = s"Computer Science $tag".trim
+    )
+
+    val result = repository.create(request).value.futureValue
+    result.right.value
   }
 }

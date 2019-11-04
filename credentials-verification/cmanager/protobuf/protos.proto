@@ -19,7 +19,11 @@ message CreateCredentialResponse {
     Credential credential = 1;
 }
 
-message GetCredentialsRequest {}
+// The authenticated issuer is retrieving its issued credentials
+message GetCredentialsRequest {
+    int32 limit = 1; // the max amount of credentials to return, must be > 0
+    string lastSeenCredentialId = 2; // the last seen credential (if any), the returned credentials start after this one
+}
 message GetCredentialsResponse {
     repeated Credential credentials = 1;
 }

@@ -1,6 +1,6 @@
 package io.iohk.cvp.cmanager.models
 
-import java.time.LocalDate
+import java.time.{Instant, LocalDate}
 import java.util.UUID
 
 import io.iohk.cvp.cmanager.models.requests.CreateCredential
@@ -8,6 +8,7 @@ import io.scalaland.chimney.dsl._
 
 case class Credential(
     id: Credential.Id,
+    createdOn: Instant,
     issuedBy: Issuer.Id,
     subject: String,
     title: String,
@@ -20,7 +21,11 @@ object Credential {
 
   case class Id(value: UUID) extends AnyVal
 
-  def create(id: Id, data: CreateCredential): Credential = {
-    data.into[Credential].withFieldConst(_.id, id).transform
+  def create(id: Id, createdOn: Instant, data: CreateCredential): Credential = {
+    data
+      .into[Credential]
+      .withFieldConst(_.id, id)
+      .withFieldConst(_.createdOn, createdOn)
+      .transform
   }
 }
