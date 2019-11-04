@@ -1,6 +1,7 @@
 package io.iohk.cvp.cmanager.grpc.services
 
 import java.time.LocalDate
+import java.util.UUID
 
 import io.iohk.cvp.cmanager.grpc.UserIdInterceptor
 import io.iohk.cvp.cmanager.models.Credential
@@ -11,6 +12,7 @@ import io.scalaland.chimney.Transformer
 import io.scalaland.chimney.dsl._
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
 
 class CredentialsServiceImpl(credentialsRepository: CredentialsRepository)(implicit ec: ExecutionContext)
     extends protos.CredentialsServiceGrpc.CredentialsService {
@@ -35,7 +37,18 @@ class CredentialsServiceImpl(credentialsRepository: CredentialsRepository)(impli
   }
 
   override def getCredentials(request: protos.GetCredentialsRequest): Future[protos.GetCredentialsResponse] = {
-    Future.failed(new Exception("Not implemented yet"))
+    val lastSeenCredential = Try(UUID.fromString(request.lastSeenCredentialId)).map(Credential.Id.apply).toOption
+    val userId = UserIdInterceptor.USER_ID_CTX_KEY.get()
+    credentialsRepository
+      .getBy(userId, request.limit, lastSeenCredential)
+      .map { list =>
+        protos.GetCredentialsResponse(list.map(toProto))
+      }
+      .value
+      .map {
+        case Right(x) => x
+        case Left(e) => throw new RuntimeException(s"FAILED: $e")
+      }
   }
 
   private def toProto(credential: Credential): protos.Credential = {
