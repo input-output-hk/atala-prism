@@ -1,11 +1,12 @@
 package io.iohk.cvp.views.activities;
 
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.FrameLayout;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.ViewModel;
 import butterknife.BindView;
-import butterknife.ButterKnife;
-import dagger.android.support.DaggerAppCompatActivity;
 import io.iohk.cvp.R;
 import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.fragments.ConnectionsFragment;
@@ -13,6 +14,7 @@ import io.iohk.cvp.views.fragments.CvpFragment;
 import io.iohk.cvp.views.fragments.FirstConnectionFragment;
 import io.iohk.cvp.views.fragments.HomeFragment;
 import io.iohk.cvp.views.fragments.SettingsFragment;
+import io.iohk.cvp.views.fragments.WalletFragment;
 import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBar;
 import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBarListener;
 import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBarOption;
@@ -20,7 +22,7 @@ import java.util.Optional;
 import javax.inject.Inject;
 import lombok.Getter;
 
-public class MainActivity extends DaggerAppCompatActivity implements BottomAppBarListener {
+public class MainActivity extends CvpActivity implements BottomAppBarListener {
 
   @Inject
   @Getter
@@ -32,17 +34,11 @@ public class MainActivity extends DaggerAppCompatActivity implements BottomAppBa
   @BindView(R.id.fragment_layout)
   public FrameLayout frameLayout;
 
+  MenuItem paymentHistoryMenuItem;
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-
-    if (findViewById(this.getView()) != null && savedInstanceState != null) {
-      return;
-    }
-
-    setContentView(this.getView());
-
-    ButterKnife.bind(this);
 
     bottomAppBar.setListener(this);
 
@@ -61,9 +57,17 @@ public class MainActivity extends DaggerAppCompatActivity implements BottomAppBa
   }
 
   @Override
+  public ViewModel getViewModel() {
+    return null;
+  }
+
+  @Override
   public void onNavigation(BottomAppBarOption option) {
     getFragmentToRender(option)
-        .ifPresent(cvpFragment -> navigator.showFragment(getSupportFragmentManager(), cvpFragment));
+        .ifPresent(cvpFragment -> {
+          paymentHistoryMenuItem.setVisible(BottomAppBarOption.WALLET == option);
+          navigator.showFragment(getSupportFragmentManager(), cvpFragment);
+        });
   }
 
   private Optional<CvpFragment> getFragmentToRender(BottomAppBarOption option) {
@@ -74,6 +78,8 @@ public class MainActivity extends DaggerAppCompatActivity implements BottomAppBa
         return Optional.of(new HomeFragment());
       case SETTINGS:
         return Optional.of(new SettingsFragment());
+      case WALLET:
+        return Optional.of(new WalletFragment());
       default:
         // TODO: for now, every intention to go to an unimplemented screen result in no action.
         // TODO: when the rest of the screen are implemented, the default case should throw an Exception
@@ -90,5 +96,11 @@ public class MainActivity extends DaggerAppCompatActivity implements BottomAppBa
     if (getSupportActionBar() != null) {
       getSupportActionBar().setTitle(this.getTitleValue());
     }
+  }
+
+  @Override
+  public boolean onPrepareOptionsMenu(Menu menu) {
+    paymentHistoryMenuItem = menu.findItem(R.id.action_payment_history);
+    return true;
   }
 }

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:background="@drawable/bg_profile">
+
+  <io.iohk.cvp.views.utils.components.OptionItem
+    android:id="@+id/credit_card_button"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="48dp"
+    android:layout_marginStart="@dimen/activity_default_side_margin"
+    android:layout_marginEnd="@dimen/activity_default_side_margin"
+    app:actionImage="@drawable/arrow_right_grey"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent"
+    app:logoImage="@drawable/ic_credit_card"
+    app:primaryText="@string/credit_card_option_name" />
+
+  <io.iohk.cvp.views.utils.components.OptionItem
+    android:id="@+id/digital_lari_button"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="16dp"
+    android:layout_marginStart="@dimen/activity_default_side_margin"
+    android:layout_marginEnd="@dimen/activity_default_side_margin"
+    android:elevation="4dp"
+    app:actionImage="@drawable/arrow_right_grey"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@id/credit_card_button"
+    app:logoImage="@drawable/ic_digital_lari"
+    app:primaryText="@string/digital_lari_option_name" />
+
+  <io.iohk.cvp.views.utils.components.OptionItem
+    android:id="@+id/cash_button"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="16dp"
+    android:layout_marginStart="@dimen/activity_default_side_margin"
+    android:layout_marginEnd="@dimen/activity_default_side_margin"
+    app:actionImage="@drawable/arrow_right_grey"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@id/digital_lari_button"
+    app:logoImage="@drawable/ic_cash"
+    app:primaryText="@string/cash_option_name" />
+
+  <io.iohk.cvp.views.utils.components.OptionItem
+    android:id="@+id/wire_transfer_button"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="16dp"
+    android:layout_marginStart="@dimen/activity_default_side_margin"
+    android:layout_marginEnd="@dimen/activity_default_side_margin"
+    app:actionImage="@drawable/arrow_right_grey"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@id/cash_button"
+    app:logoImage="@drawable/ic_wire_transfer"
+    app:primaryText="@string/wire_transfer_option_name" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

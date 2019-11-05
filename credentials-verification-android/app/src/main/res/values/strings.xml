@@ -89,8 +89,7 @@
   <string name="about_button_description">Legal, Versions and Network info</string>
   <string name="support_title">Support</string>
 
-  <!-- Assets names for internationalization -->
-  <string name="terms_and_conditions_asset_name">terms-and-conditions-en</string>
+  <!-- Payment screen labels -->
   <string name="receive_credential">Receive Credential</string>
   <string name="receive_credential_description">In order to receive your digital\ncredential then please pay issuance fee</string>
   <string name="credit_card_number">Credit Card Number</string>
@@ -100,4 +99,14 @@
   <string name="amount">Amount</string>
   <string name="some_amount">₾ 10</string>
 
+  <!-- Wallet screen labels -->
+  <string name="wallet_title">Wallet</string>
+  <string name="credit_card_option_name">Credit card</string>
+  <string name="digital_lari_option_name">Digital Lari</string>
+  <string name="cash_option_name">Cash</string>
+  <string name="wire_transfer_option_name">Wire Transfer</string>
+  <string name="payment_history_menu_item_label">Payment history</string>
+
+  <!-- Assets names for internationalization -->
+  <string name="terms_and_conditions_asset_name">terms-and-conditions-en</string>
 </resources>

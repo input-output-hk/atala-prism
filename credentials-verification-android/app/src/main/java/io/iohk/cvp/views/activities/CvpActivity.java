@@ -2,9 +2,12 @@ package io.iohk.cvp.views.activities;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import androidx.lifecycle.ViewModel;
 import butterknife.ButterKnife;
 import dagger.android.support.DaggerAppCompatActivity;
+import io.iohk.cvp.R;
 import io.iohk.cvp.views.Navigator;
 
 public abstract class CvpActivity<T extends ViewModel> extends DaggerAppCompatActivity {
@@ -36,6 +39,26 @@ public abstract class CvpActivity<T extends ViewModel> extends DaggerAppCompatAc
   @Override
   public Context getApplicationContext() {
     return this;
+  }
+
+  @Override
+  public boolean onCreateOptionsMenu(Menu menu) {
+    getMenuInflater().inflate(R.menu.menu, menu);
+    return super.onCreateOptionsMenu(menu);
+  }
+
+  @Override
+  public boolean onOptionsItemSelected(MenuItem item) {
+    switch (item.getItemId()) {
+      case R.id.action_payment_history:
+        //TODO Call navigator to payment history screen when its done
+        return true;
+      default:
+        // If we got here, the user's action was not recognized.
+        // Invoke the superclass to handle it.
+        return super.onOptionsItemSelected(item);
+
+    }
   }
 
   protected abstract Navigator getNavigator();
