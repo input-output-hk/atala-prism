@@ -150,7 +150,7 @@ jobs:
 
       - run:
           name: install mill
-          command: sh -c '(echo "#!/usr/bin/env sh" && curl -L https://github.com/lihaoyi/mill/releases/download/0.4.1/0.4.1) > ~/mill && chmod +x ~/mill'
+          command: sh -c '(echo "#!/usr/bin/env sh" && curl -L https://github.com/lihaoyi/mill/releases/download/0.5.2/0.5.2-9-ea4f04-assembly) > ~/mill && chmod +x ~/mill'
 
       - run:
           name: test
