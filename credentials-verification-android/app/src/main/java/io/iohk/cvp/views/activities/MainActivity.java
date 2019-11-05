@@ -3,6 +3,7 @@ package io.iohk.cvp.views.activities;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModel;
@@ -38,6 +39,8 @@ public class MainActivity extends CvpActivity implements BottomAppBarListener {
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
+    getWindow().setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION,
+        WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
     super.onCreate(savedInstanceState);
 
     bottomAppBar.setListener(this);
@@ -64,10 +67,7 @@ public class MainActivity extends CvpActivity implements BottomAppBarListener {
   @Override
   public void onNavigation(BottomAppBarOption option) {
     getFragmentToRender(option)
-        .ifPresent(cvpFragment -> {
-          paymentHistoryMenuItem.setVisible(BottomAppBarOption.WALLET == option);
-          navigator.showFragment(getSupportFragmentManager(), cvpFragment);
-        });
+        .ifPresent(cvpFragment -> navigator.showFragment(getSupportFragmentManager(), cvpFragment));
   }
 
   private Optional<CvpFragment> getFragmentToRender(BottomAppBarOption option) {

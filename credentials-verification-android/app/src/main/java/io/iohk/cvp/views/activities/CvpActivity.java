@@ -47,20 +47,6 @@ public abstract class CvpActivity<T extends ViewModel> extends DaggerAppCompatAc
     return super.onCreateOptionsMenu(menu);
   }
 
-  @Override
-  public boolean onOptionsItemSelected(MenuItem item) {
-    switch (item.getItemId()) {
-      case R.id.action_payment_history:
-        //TODO Call navigator to payment history screen when its done
-        return true;
-      default:
-        // If we got here, the user's action was not recognized.
-        // Invoke the superclass to handle it.
-        return super.onOptionsItemSelected(item);
-
-    }
-  }
-
   protected abstract Navigator getNavigator();
 
   protected abstract int getView();

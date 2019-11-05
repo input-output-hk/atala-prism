@@ -1,10 +1,22 @@
 package io.iohk.cvp.views.fragments;
 
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.os.Bundle;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
+import android.view.Menu;
+import android.view.MenuItem;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
 import androidx.lifecycle.ViewModel;
 import io.iohk.cvp.R;
 import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.RootAppBar;
+import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBarOption;
+import java.util.Objects;
 import javax.inject.Inject;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,6 +27,9 @@ public class WalletFragment extends CvpFragment {
 
   @Inject
   Navigator navigator;
+
+  @Inject
+  PaymentHistoryFragment paymentHistoryFragment;
 
   @Override
   protected int getViewId() {
@@ -27,7 +42,47 @@ public class WalletFragment extends CvpFragment {
   }
 
   @Override
+  public void onCreate(@Nullable Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setHasOptionsMenu(true);
+  }
+
+  @Override
+  public void onPrepareOptionsMenu(Menu menu) {
+    MenuItem paymentHistoryMenuItem;
+    paymentHistoryMenuItem = menu.findItem(R.id.action_payment_history);
+    paymentHistoryMenuItem.setVisible(true);
+  }
+
+  @Override
   protected AppBarConfigurator getAppBarConfigurator() {
-    return new RootAppBar(R.string.wallet_title);
+    return supportActionBar -> {
+      supportActionBar.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+      supportActionBar.setHomeButtonEnabled(false);
+      supportActionBar.setDisplayHomeAsUpEnabled(false);
+      supportActionBar.setTitle(R.string.wallet_title);
+      setActionbarTextColor(supportActionBar, Color.WHITE);
+    };
+  }
+
+  @Override
+  public boolean onOptionsItemSelected(MenuItem item) {
+    if (item.getItemId() == R.id.action_payment_history) {
+      navigator.showFragmentOnTop(
+          Objects.requireNonNull(getActivity()).getSupportFragmentManager(),
+          paymentHistoryFragment);
+      return true;
+    }
+    // If we got here, the user's action was not recognized.
+    // Invoke the superclass to handle it.
+    return super.onOptionsItemSelected(item);
+  }
+
+  private void setActionbarTextColor(ActionBar actBar, int color) {
+    String title = actBar.getTitle().toString();
+    Spannable spannablerTitle = new SpannableString(title);
+    spannablerTitle.setSpan(new ForegroundColorSpan(color), 0, spannablerTitle.length(),
+        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+    actBar.setTitle(spannablerTitle);
   }
 }
