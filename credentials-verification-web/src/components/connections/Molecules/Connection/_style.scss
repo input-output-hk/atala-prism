@@ -14,10 +14,10 @@
     }
     .CredentialDataText {
       h3 {
-        @include primary-text($h3, $secondary-color, 600);
+        @include primary-text($h3, $secondary-color);
       }
       p {
-        @include primary-text($body, $secondary-color, 400);
+        @include primary-text($body, $secondary-color);
       }
     }
   }

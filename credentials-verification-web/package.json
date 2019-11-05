@@ -23,6 +23,7 @@
     "moment": "2.24.0",
     "node-sass": "4.12.0",
     "prop-types": "15.7.2",
+    "qrcode.react": "0.9.3",
     "react": "16.10.1",
     "react-dom": "16.10.1",
     "react-i18next": "10.13.1",

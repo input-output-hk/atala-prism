@@ -12,10 +12,10 @@
     }
     .ConnectionUser {
       h3 {
-        @include primary-text($h3, $secondary-color, 600);
+        @include primary-text($h3, $secondary-color);
       }
       p {
-        @include primary-text($body, $secondary-color, 400);
+        @include primary-text($body, $secondary-color);
       }
     }
   }
@@ -29,7 +29,7 @@
 
   .ConnectionLine {
     p {
-      @include primary-text($body, $grey, 400);
+      @include primary-text($body, $grey);
       margin-bottom: 0.5em;
     }
   }
@@ -52,5 +52,5 @@
 .ant-collapse > .ant-collapse-item:last-child,
 .ant-collapse > .ant-collapse-item:last-child > .ant-collapse-header {
   border-radius: 0;
-  @include primary-text($body, $black, 400);
+  @include primary-text($body, $black);
 }

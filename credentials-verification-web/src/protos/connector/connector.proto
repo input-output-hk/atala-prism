@@ -1,0 +1,236 @@
+syntax = "proto3";
+
+import "scalapb.proto";
+
+package io.iohk.connector;
+
+service ConnectorService {
+  // Get active connections for current participant
+  //
+  // Available to: Holder, Issuer, Validator
+  rpc GetConnectionsPaginated (GetConnectionsPaginatedRequest) returns (GetConnectionsPaginatedResponse) {}
+
+  // Return info about connection token such as creator info
+  //
+  // Available to: Holder
+  //
+  // Errors:
+  // Token does not exist (UNKNOWN)
+  rpc GetConnectionTokenInfo (GetConnectionTokenInfoRequest) returns (GetConnectionTokenInfoResponse) {}
+
+  // Instantiate connection from connection token
+  //
+  // Available to: Holder
+  //
+  // Errors:
+  // Token does not exist (UNKNOWN)
+  rpc AddConnectionFromToken (AddConnectionFromTokenRequest) returns (AddConnectionFromTokenResponse) {}
+
+  // Delete active connection
+  //
+  // Available to: Holder, Issuer, Validator
+  //
+  // Errors:
+  // Connection does not exist (UNKNOWN)
+  rpc DeleteConnection (DeleteConnectionRequest) returns (DeleteConnectionResponse) {}
+
+  // Bind DID to issuer
+  //
+  // Available to: Issuer
+  //
+  // Errors:
+  // Invalid DID (INVALID_ARGUMENT)
+  // Invalid DID document (INVALID_ARGUMENT)
+  // DID Document does not match DID (INVALID_ARGUMENT)
+  rpc RegisterDID (RegisterDIDRequest) returns (RegisterDIDResponse) {}
+  
+  // Change billing plan of participant who wants to generate connection tokens
+  //
+  // Available to: Issuer, Validator
+  //
+  // Errors:
+  // Unknown billing plan (UNKNOWN)
+  // User not allowed to set this billing plan (PERMISSION_DENIED)
+  rpc ChangeBillingPlan (ChangeBillingPlanRequest) returns (ChangeBillingPlanResponse) {}
+
+  // Generate connection token that can be used to instantiate connection
+  //
+  // Available to: Issuer, Validator
+  //
+  // Errors:
+  // Billing plan doesn't allow token generation (PERMISSION_DENIED)
+  rpc GenerateConnectionToken (GenerateConnectionTokenRequest) returns (GenerateConnectionTokenResponse) {}
+
+  // Return messages received after given time moment, sorted in ascending order by receive time
+  //
+  // Available to: Issuer, Holder, Validator
+  rpc GetMessagesPaginated (GetMessagesPaginatedRequest) returns (GetMessagesPaginatedResponse) {}
+
+  // Send message over a connection
+  //
+  // Available to: Issuer, Holder, Validator
+  //
+  // Errors:
+  // Unknown connection (UNKNOWN)
+  // Connection closed (FAILED_PRECONDITION)
+  rpc SendMessage (SendMessageRequest) returns (SendMessageResponse) {}
+}
+
+// GENERAL
+
+// Credential information; FIXME: is it a part of protocol?
+message Credential {
+  IssuerInfo issuerInfo = 1 [(scalapb.field).no_box = true];
+  string subject = 2 [(scalapb.field).no_box = true];
+  string title = 3 [(scalapb.field).no_box = true];
+  CredentialType type = 4 [(scalapb.field).no_box = true];
+  bytes credentialData = 5 [(scalapb.field).no_box = true];
+}
+
+// Credential type; FIXME: is it a part of protocol?
+enum CredentialType {
+  UNKNOWN = 0;       // random stuff
+  EDUCATION = 1;     // school, university, library
+  INSTITUTIONAL = 2; // national id, goverment id, driver license
+  FINANCIAL = 3;     // banks
+  BUSINESS = 4;      // jobs
+  ENTERTAINMENT = 5; // permit to play music in parks (?)
+}
+
+// Information on an Issuer
+message IssuerInfo {
+  string DID = 1 [(scalapb.field).no_box = true];
+  string name = 2 [(scalapb.field).no_box = true];
+}
+
+// Information on a Holder
+message HolderInfo {
+  string DID = 1 [(scalapb.field).no_box = true];
+  string name = 2 [(scalapb.field).no_box = true];
+}
+
+// Type representing generic participant in the system, alternative of IssuerInfo, HolderInfo, or VerifierInfo.
+message ParticipantInfo {
+  oneof participant {
+    IssuerInfo issuer = 1;
+    HolderInfo holder = 2;
+  }
+}
+
+// CONNECTIONS
+
+// Information on the connection; both sides see the same connectionId and creation time, but each sees different participantInfo
+message ConnectionInfo {
+  string connectionId = 1 [(scalapb.field).no_box = true];
+  int64 created = 2; // moment of instantiation as milliseconds since the Unix Epoch
+  ParticipantInfo participantInfo = 3 [(scalapb.field).no_box = true]; // information about the participant at the other end
+}
+
+// Request connections instantiated by us / with us possibly after a known connection
+message GetConnectionsPaginatedRequest {
+  string lastSeenConnectionId = 1 [(scalapb.field).no_box = true]; // returned credentials will have been created after the last seen connection (optional field)
+  int32 limit = 2 [(scalapb.field).no_box = true]; // maximum number of credentials to return; must be > 0
+}
+
+// Result with connections instantiated
+message GetConnectionsPaginatedResponse {
+  repeated ConnectionInfo connections = 1; // connections sorted in ascending order by instantiation time
+}
+
+// Request to obtain information of connection token
+message GetConnectionTokenInfoRequest {
+  string token = 1 [(scalapb.field).no_box = true]; // token value to get information for
+}
+
+// Result with information on connection token
+message GetConnectionTokenInfoResponse {
+  ParticipantInfo creator = 1 [(scalapb.field).no_box = true]; // participant who generated the code
+}
+
+// Request to instantiate a connection using token
+message AddConnectionFromTokenRequest {
+  string token = 1 [(scalapb.field).no_box = true]; // token to instantiate connection
+}
+
+// Confirmation of connection instantiation
+message AddConnectionFromTokenResponse {
+  ConnectionInfo connection = 1 [(scalapb.field).no_box = true]; // instantiated connection info
+}
+
+// Request to delete a connection
+message DeleteConnectionRequest {
+  string connectionId = 1 [(scalapb.field).no_box = true]; // id of connection to delete
+}
+
+// Confirmation of connection deletion
+message DeleteConnectionResponse {
+}
+
+// Request to generate a connection token
+message GenerateConnectionTokenRequest {
+}
+
+// Result with generated token
+message GenerateConnectionTokenResponse {
+  string token = 1; // generated token
+}
+
+// MESSAGES
+
+// Message received via a connection
+message ReceivedMessage {
+  string id = 1 [(scalapb.field).no_box = true];
+  int64 received = 2 [(scalapb.field).no_box = true]; // time when Connector received the message as milliseconds since the Unix Epoch
+  string connectionId = 3 [(scalapb.field).no_box = true]; // connection where the message has been received
+  bytes message = 4 [(scalapb.field).no_box = true]; // raw message
+}
+
+// Request to return messages for us after the given known message (if any)
+message GetMessagesPaginatedRequest {
+  string lastSeenMessageId = 1 [(scalapb.field).no_box = true]; // returned credentials will have been received after the given message (if any)
+  int32 limit = 2 [(scalapb.field).no_box = true]; // maximum number of credentials to return, must be > 0
+}
+
+// Response with messages
+message GetMessagesPaginatedResponse {
+  repeated ReceivedMessage messages = 1; // messages sorted in ascending order by receiving time
+}
+
+// Request to send message
+message SendMessageRequest {
+  string connectionId = 1 [(scalapb.field).no_box = true]; // id of the connection
+  bytes message = 2 [(scalapb.field).no_box = true]; // raw message
+}
+
+// Confirmation of message sending
+message SendMessageResponse {
+}
+
+// REGISTRATION AND ACCOUNT MANAGEMENT
+
+// Request to register DID
+message RegisterDIDRequest {
+  string DID = 1 [(scalapb.field).no_box = true];
+  string DIDDocument = 2 [(scalapb.field).no_box = true];
+}
+
+// Confirmation of DID registration
+message RegisterDIDResponse {
+}
+
+// Enumeration representing billing plan of Issuer. Possible values are hardcoded as new billing options would require implementation changes anyway.
+enum BillingPlan {
+  NO_PLAN = 0; // participant not able to generate connection tokens
+  FREE_PLAN = 1; // connections are created for free
+  SENDER_PAYS = 2; // side generating the token pays for the connection
+  RECEIVER_PAYS = 3; // side receiving the token and using it to instantiate connection pays for it
+}
+
+// Request to change the billing plan
+message ChangeBillingPlanRequest {
+  BillingPlan billingPlan = 1; // new billing plan
+}
+
+// Confirmation of billing plan change
+message ChangeBillingPlanResponse {
+}
