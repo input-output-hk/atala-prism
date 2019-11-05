@@ -1,5 +1,4 @@
 import React from 'react';
-import { Col, Row } from 'antd';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 
@@ -7,8 +6,6 @@ import './_style.scss';
 
 const EmptyComponent = ({ photoSrc, photoAlt, title, subtitle, button }) => {
   const { t } = useTranslation();
-
-  const rowProps = { align: 'middle', gutter: '32', justify: 'center', type: 'flex' };
 
   return (
     <div className="EmptyState">

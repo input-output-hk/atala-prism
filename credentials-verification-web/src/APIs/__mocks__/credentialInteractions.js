@@ -20,11 +20,7 @@ export const savePictureInS3 = file =>
 
     if (tooLarge) {
       Logger.error(`The file had a size of ${size} when the maximum is ${MAX_FILE_SIZE}`);
-      reject(
-        new Error(`${savePicture}tooLarge`, {
-          maxSize: MAX_FILE_SIZE
-        })
-      );
+      reject(new Error(`${savePicture}tooLarge`, { maxSize: MAX_FILE_SIZE }));
     }
 
     s3Endpoint(file)
@@ -45,7 +41,12 @@ export const saveDraft = ({ degreeName, award, startDate, graduationDate, logoUn
       (!logoUniversity || !logoUniversity.length)
     ) {
       Logger.error('Trying to save empty credential');
-      reject(new Error('errors.emptyCredential'));
+      reject(
+        new Error({
+          error: 'Trying to save empty credential',
+          errorMessage: 'errors.emptyCredential'
+        })
+      );
     }
 
     const credentialToSave = Object.assign(

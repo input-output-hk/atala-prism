@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import TemplateForm from '../TemplateForm/TemplateForm';
 import ExampleCredential from '../../Atom/ExampleCredential/ExampleCredential';
 
@@ -14,5 +15,15 @@ const NewCredentialCreation = ({ savePicture, formRef, credentialValues }) => (
     </div>
   </div>
 );
+
+NewCredentialCreation.defaultProps = {
+  credentialValues: {}
+};
+
+NewCredentialCreation.propTypes = {
+  savePicture: PropTypes.func.isRequired,
+  formRef: PropTypes.shape().isRequired,
+  credentialValues: PropTypes.shape()
+};
 
 export default NewCredentialCreation;

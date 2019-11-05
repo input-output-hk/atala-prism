@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { Col, Steps, Row } from 'antd';
+import { Steps } from 'antd';
 import CustomButton from '../../Atoms/CustomButton/CustomButton';
 
 import './_style.scss';

@@ -99,21 +99,15 @@ const TemplateForm = React.forwardRef(
   }
 );
 
-TemplateForm.defaultProps = {
-  startDate: undefined,
-  graduationDate: undefined,
-  logoUniversity: undefined,
-  degreeName: '',
-  award: ''
-};
-
 TemplateForm.propTypes = {
   savePicture: PropTypes.func.isRequired,
-  startDate: PropTypes.instanceOf(moment),
-  graduationDate: PropTypes.instanceOf(moment),
-  logoUniversity: PropTypes.arrayOf(PropTypes.shape),
-  degreeName: PropTypes.string,
-  award: PropTypes.string
+  credentialValues: PropTypes.shape({
+    startDate: PropTypes.instanceOf(moment),
+    graduationDate: PropTypes.instanceOf(moment),
+    logoUniversity: PropTypes.arrayOf(PropTypes.shape),
+    degreeName: PropTypes.string,
+    award: PropTypes.string
+  }).isRequired
 };
 
 export default TemplateForm;

@@ -1,5 +1,6 @@
 import React from 'react';
-import { /* Button, */ Form } from 'antd';
+import { Form } from 'antd';
+import PropTypes from 'prop-types';
 
 import './_style.scss';
 
@@ -13,6 +14,11 @@ const GenericForm = ({ items, form: { getFieldDecorator } }) => (
     })}
   </Form>
 );
+
+GenericForm.propTypes = {
+  items: PropTypes.arrayOf(PropTypes.shape()).isRequired,
+  form: PropTypes.shape().isRequired
+};
 
 const CustomForm = Form.create({ name: 'custom_form' })(GenericForm);
 

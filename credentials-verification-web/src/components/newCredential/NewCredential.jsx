@@ -20,6 +20,10 @@ const SaveDraft = ({ saveDraft }) => {
   );
 };
 
+SaveDraft.propTypes = {
+  saveDraft: PropTypes.func.isRequired
+};
+
 const NewCredential = ({
   currentStep,
   createCredentialTemplate,
@@ -45,8 +49,6 @@ const NewCredential = ({
         message.error(t('newCredential.form.errors.noGroupSelected'));
         return;
       }
-
-      console.log('a', currentStep + 1);
 
       changeStep(currentStep + 1);
     },
@@ -83,6 +85,10 @@ const NewCredential = ({
   );
 };
 
+NewCredential.defaultProps = {
+  selectedGroup: ''
+};
+
 NewCredential.propTypes = {
   currentStep: PropTypes.number.isRequired,
   saveCredential: PropTypes.func.isRequired,
@@ -90,7 +96,8 @@ NewCredential.propTypes = {
   changeStep: PropTypes.func.isRequired,
   renderStep: PropTypes.func.isRequired,
   renderModal: PropTypes.func.isRequired,
-  openModal: PropTypes.func.isRequired
+  openModal: PropTypes.func.isRequired,
+  selectedGroup: PropTypes.string
 };
 
 export default NewCredential;
