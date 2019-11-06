@@ -4,28 +4,39 @@
   package="io.iohk.cvp">
 
   <application
+    android:name="io.iohk.cvp.core.CvpApplication"
     android:allowBackup="true"
     android:icon="@mipmap/ic_launcher"
     android:label="Credentials Verification"
-    android:name="io.iohk.cvp.core.CvpApplication"
     android:roundIcon="@mipmap/ic_launcher_round"
+    android:screenOrientation="portrait"
     android:supportsRtl="true"
     android:theme="@style/AppTheme"
     tools:ignore="GoogleAppIndexingWarning">
-    <activity android:name="io.iohk.cvp.views.activities.MainActivity">
+    <activity
+      android:name="io.iohk.cvp.views.activities.MainActivity"
+      android:screenOrientation="portrait"></activity>
+    <activity
+      android:name="io.iohk.cvp.views.activities.WelcomeActivity"
+      android:screenOrientation="portrait">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
     </activity>
-    <activity android:name="io.iohk.cvp.views.activities.WelcomeActivity">
-
-    </activity>
-    <activity android:name="io.iohk.cvp.views.activities.TermsAndConditionsActivity" />
+    <activity
+      android:name="io.iohk.cvp.views.activities.TermsAndConditionsActivity"
+      android:screenOrientation="portrait" />
     <activity android:name="io.iohk.cvp.views.activities.WalletSetupActivity" />
-    <activity android:name="io.iohk.cvp.views.activities.SeedPhraseVerificationActivity" />
-    <activity android:name="io.iohk.cvp.views.activities.QrCodeScanner" />
-    <activity android:name="io.iohk.cvp.views.activities.WebViewActivity" />
+    <activity
+      android:name="io.iohk.cvp.views.activities.SeedPhraseVerificationActivity"
+      android:screenOrientation="portrait" />
+    <activity
+      android:name="io.iohk.cvp.views.activities.QrCodeScanner"
+      android:screenOrientation="portrait" />
+    <activity
+      android:name="io.iohk.cvp.views.activities.WebViewActivity"
+      android:screenOrientation="portrait" />
   </application>
 
   <uses-permission

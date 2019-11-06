@@ -1,36 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
-  android:id="@+id/seed_card_view"
   android:layout_width="match_parent"
   android:layout_height="wrap_content"
   android:layout_gravity="center"
-  android:layout_marginTop="8dp"
-  android:layout_marginBottom="8dp"
   android:layout_weight="1"
-  android:background="@drawable/rounded_corner_pink"
-  android:elevation="2dp"
+  android:background="@color/white"
+  android:clickable="false"
   app:layout_constraintBottom_toBottomOf="parent"
   app:layout_constraintEnd_toEndOf="parent"
   app:layout_constraintStart_toStartOf="parent"
-  app:layout_constraintTop_toTopOf="parent"
-  android:clickable="false">
+  app:layout_constraintTop_toTopOf="parent">
 
-  <TextView
-    android:id="@+id/text_view_seed"
+  <androidx.constraintlayout.widget.ConstraintLayout
+    android:id="@+id/seed_card_view"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginStart="12dp"
-    android:layout_marginTop="8dp"
-    android:layout_marginEnd="12dp"
-    android:layout_marginBottom="8dp"
-    android:gravity="start"
-    android:maxLines="1"
-    android:textStyle="bold"
-    android:text="@string/accept"
-    android:textColor="@color/colorPrimary"
+    android:layout_gravity="center"
+    android:layout_margin="4dp"
+    android:layout_weight="1"
+    android:background="@drawable/rounded_corner_pink"
+    android:clickable="false"
+    android:elevation="2dp"
     app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toTopOf="parent" />
+    app:layout_constraintTop_toTopOf="parent">
 
+    <TextView
+      android:id="@+id/text_view_seed"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="12dp"
+      android:layout_marginTop="8dp"
+      android:layout_marginEnd="12dp"
+      android:layout_marginBottom="8dp"
+      android:gravity="start"
+      android:maxLines="1"
+      android:text="@string/accept"
+      android:textColor="@color/colorPrimary"
+      android:textStyle="bold"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent" />
+
+  </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

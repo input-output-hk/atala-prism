@@ -31,7 +31,7 @@ public class CredentialsViewModel extends ViewModel {
     return credentials;
   }
 
-  public LiveData<Credential> getCredential() {
+  public LiveData<Credential> getCredential(String credentialId) {
     return credential;
   }
 }

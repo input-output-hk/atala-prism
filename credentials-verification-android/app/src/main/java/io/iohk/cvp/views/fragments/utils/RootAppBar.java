@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 public class RootAppBar implements AppBarConfigurator {
+
   private final int titleId;
 
   @Override
