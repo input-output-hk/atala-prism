@@ -1,5 +1,7 @@
 package io.iohk.node.models
 
+import java.util.Locale
+
 import javax.xml.bind.DatatypeConverter
 
 trait SHA256Value extends Any {
@@ -29,7 +31,7 @@ object SHA256Value {
   private val pattern = "^[a-f0-9]{64}$".r.pattern
 
   def from(string: String): Option[SHA256Value] = {
-    val lowercaseString = string.toLowerCase
+    val lowercaseString = string.toLowerCase(Locale.ROOT)
 
     if (pattern.matcher(lowercaseString).matches()) {
       Some(new Default(lowercaseString))
