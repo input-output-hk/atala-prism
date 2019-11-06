@@ -40,7 +40,7 @@ const NewCredentialContainer = ({ api: { savePictureInS3, saveDraft, getGroups }
         setGroupCount(count);
       })
       .catch(error => {
-        Logger.error('[Recipients.getHolders] Error while getting holders', error);
+        Logger.error('[NewCredentialContainer.getGroups] Error: ', error);
         message.error(t('errors.errorGettingHolders'), 1);
       });
   }, [name, date, offset]);

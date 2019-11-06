@@ -213,7 +213,6 @@
     },
     "form": {
       "errors": {
-        "emptyField": "This field is mandatory",
         "futureError": "The date must be earlier than today",
         "pastError": "The graduation date must be later than the start date",
         "atLeastOneLogo": "You must upload one logo",
@@ -237,6 +236,61 @@
     },
     "checkInfo": "Check the data below"
   },
+  "registration": {
+    "termsAndConditions": "Terms and Conditions",
+    "privacyPolicy": "Privacy Policy Agreement",
+    "seedPhrase": "Seed Phrase responsibility",
+    "errorGetting": "Error getting {{document}}",
+    "acceptToContinue": "You must accept the {{document}} to continue",
+    "lastUpdated": "Last Updated",
+    "back": "Back",
+    "next": "Next",
+    "cancel": "Cancel",
+    "accept": "Accept ",
+    "alt": "Wallet Image",
+    "downloadWallet": {
+      "title": "Download LocalWallet",
+      "subtitle": "Download and execute this file to create the wallet that will allow you to access and operate Atala",
+      "action": "Download File"
+    },
+    "password": {
+      "title": "Create your Password", 
+      "begin": "Let's begin!",
+      "info": "You must create a password which will encrypt the data in your local wallet",
+      "passwordInput": "Password",
+      "passwordConfirmation": "Confirm Password",
+      "passwordMissmatch": "The passwords must match"
+    },
+    "mnemonic": {
+      "title": "Your Seed Phrase...",
+      "explanation": "Your seed phrase is your personal key that gives you access yo your account. Without it you will not be able to access any of your records or funds in case you lose your device or quite the app.",
+      "request": "Please store your seed phrase securely before proceeding.",
+      "warning": "I understand that if I lose my seed phrase I will not be able to access my account.",
+      "word": "Word",
+      "validation": {
+        "title": "Verify Seed Phrase",
+        "subtitle": "Enter the correct words of your seed phrase bellow.",
+        "verify": "Verify",
+        "success": "Seed Phrase Verified",
+        "failure": "Seed Phrase Incorrect",
+        "validationRequired": "You must verify the words to continue",
+        "wordMissmatch": "The written word doesn't match the one of the Seed Phrase"
+      }
+    },
+    "organisationInfo": {
+      "title": "We need some data...",
+      "comment": "You are almost done!",
+      "subtitle": "Please enter your Organisation name so you can start using the application.",
+      "name": "Organisation Name"
+    },
+    "congratulations": {
+      "alt": "Congratulations Image",
+      "title": "Congrats!",
+      "subtitle": "Your accoount has been created",
+      "info": "Login to Atala using your password. Remember to have your local wallet running in the computer.",
+      "login": "Login"
+    }
+  },
   "errors": {
     "routeDidNotMatch": "The route {{pathnameToShow}} did not match any page",
     "errorGetting": "An error occurred while getting {{model}}",
@@ -249,6 +303,10 @@
     },
     "saveDraft": "Error while saving New Credential draft",
     "emptyCredential": "Trying to save empty credential",
-    "invalidCredential": "The credential has invalid fields"
+    "invalidCredential": "The credential has invalid fields",
+    "walletNotRunning": "You must have your local wallet running to continue",
+    "form": {
+      "emptyField": "This field is mandatory"
+    }
   }
 }

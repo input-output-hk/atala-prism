@@ -3,6 +3,7 @@ import { Switch, Route } from 'react-router-dom';
 import Landing from './landing/Landing';
 import I18nError from './I18nError';
 import Recipients from './recipients/RecipientsContainer';
+import Registration from './registration/RegistrationContainer';
 import NotFound from './notFound/NotFound';
 import Groups from './groups/GroupsContainer';
 import Credential from './credentials/CredentialContainer';
@@ -31,6 +32,12 @@ const newCredential = {
   key: '/newCredential',
   component: NewCredential
 };
+const registration = {
+  exact: true,
+  path: '/registration',
+  key: '/registration',
+  component: Registration
+};
 const notFound = { key: 'notFound', component: NotFound };
 
 const routes = [
@@ -41,6 +48,7 @@ const routes = [
   newCredential,
   credential,
   connections,
+  registration,
   notFound
 ];
 

@@ -13,7 +13,7 @@ const getStartDate = formRef => formRef.current.getForm().getFieldValue('startDa
 
 const getInput = (key, initialValue, t) => ({
   fieldDecoratorData: {
-    rules: [noEmptyInput(t('newCredential.form.errors.emptyField'))],
+    rules: [noEmptyInput(t('errors.form.emptyField'))],
     initialValue
   },
   label: t(`newCredential.form.${key}`),
@@ -74,7 +74,7 @@ const TemplateForm = React.forwardRef(
           rules: [
             {
               validator: (_, value, cb) => minOneElement(value, cb),
-              message: t('newCredential.form.errors.emptyField')
+              message: t('errors.form.emptyField')
             }
           ],
           initialValue: logoUniversity ? [logoUniversity] : []
