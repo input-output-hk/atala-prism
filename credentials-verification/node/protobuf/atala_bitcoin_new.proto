@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package io.iohk.nodenew;
+
+import "geud_node_new.proto";
+
+// These models are intended for internal usage inside
+// the AtalaNode (not to be publically accessible from
+// the gRPC API)
+
+message AtalaBlock {
+  string version = 1;
+  repeated SignedAtalaOperation operations = 2;
+}
+
+message AtalaObject {
+  bytes blockHash = 1;
+  int32 blockOperationCount = 2;
+  int32 blockByteLength = 3;
+}
