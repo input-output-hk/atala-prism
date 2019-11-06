@@ -6,11 +6,11 @@
   android:id="@+id/issuer_card_view"
   android:layout_width="match_parent"
   android:layout_height="wrap_content"
-  android:layout_marginTop="8dp"
-  android:layout_marginBottom="8dp"
-  android:layout_marginStart="@dimen/activity_default_side_margin"
-  android:layout_marginEnd="@dimen/activity_default_side_margin"
   android:layout_gravity="center"
+  android:layout_marginStart="@dimen/activity_default_side_margin"
+  android:layout_marginTop="8dp"
+  android:layout_marginEnd="@dimen/activity_default_side_margin"
+  android:layout_marginBottom="8dp"
   android:background="@android:color/white"
   android:minHeight="64dp"
   app:cardCornerRadius="@dimen/card_corner_radius"
@@ -28,8 +28,8 @@
       android:id="@+id/card_arrow"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:layout_marginEnd="8dp"
       android:layout_centerVertical="true"
+      android:layout_marginEnd="8dp"
       android:contentDescription="@string/empty_title"
       android:src="@drawable/open_icon"
       app:layout_constraintBottom_toBottomOf="parent"
@@ -49,7 +49,7 @@
       app:layout_constraintTop_toTopOf="parent">
 
       <ImageView
-        android:id="@+id/issuer_logo"
+        android:id="@+id/credential_logo"
         android:layout_width="46dp"
         android:layout_height="46dp"
         android:layout_centerInParent="true"
@@ -58,7 +58,6 @@
     </RelativeLayout>
     <TextView
       android:id="@+id/issuer_name"
-      android:textStyle="bold"
       android:layout_width="0dp"
       android:layout_height="wrap_content"
       android:layout_marginStart="24dp"
@@ -67,6 +66,7 @@
       android:maxLines="1"
       android:text="dsadsadsadasdasdsa asd sadsa dsadas dsadsad"
       android:textColor="@color/black"
+      android:textStyle="bold"
       app:layout_constraintEnd_toStartOf="@+id/card_arrow"
       app:layout_constraintStart_toEndOf="@+id/card_logo_container"
       app:layout_constraintTop_toTopOf="parent" />
@@ -75,8 +75,8 @@
       android:id="@+id/more_info"
       android:layout_width="0dp"
       android:layout_height="wrap_content"
-      android:layout_marginBottom="8dp"
       android:layout_marginStart="24dp"
+      android:layout_marginBottom="8dp"
       android:text="@string/more_info"
       android:textColor="@color/black"
       app:layout_constraintBottom_toBottomOf="parent"

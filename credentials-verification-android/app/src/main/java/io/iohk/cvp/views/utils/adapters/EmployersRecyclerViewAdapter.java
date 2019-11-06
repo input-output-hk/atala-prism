@@ -51,7 +51,7 @@ public class EmployersRecyclerViewAdapter extends
     @BindView(R.id.issuer_name)
     TextView issuerName;
 
-    @BindView(R.id.issuer_logo)
+    @BindView(R.id.credential_logo)
     ImageView issuerLogo;
 
 

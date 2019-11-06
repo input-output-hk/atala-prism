@@ -10,9 +10,11 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 import butterknife.BindView;
+import butterknife.OnClick;
 import com.google.android.material.button.MaterialButton;
 import io.iohk.cvp.R;
 import io.iohk.cvp.viewmodel.CredentialsViewModel;
+import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import java.util.Objects;
 import javax.inject.Inject;
@@ -28,12 +30,14 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
   @Setter
   private String credentialId;
 
-
   @BindView(R.id.decline_credential)
   public MaterialButton declineButton;
 
   @BindView(R.id.accept_credential)
   public Button acceptButton;
+
+  @Inject
+  Navigator navigator;
 
   @Inject
   CredentialDetailFragment(ViewModelProvider.Factory factory) {
@@ -82,6 +86,12 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
   private void showOptions(boolean optionsVisible) {
     declineButton.setVisibility(optionsVisible ? View.VISIBLE : View.GONE);
     acceptButton.setVisibility(optionsVisible ? View.VISIBLE : View.GONE);
+  }
+
+  @OnClick(R.id.accept_credential)
+  public void onAcceptClick() {
+    navigator.showFragmentOnTop(
+        Objects.requireNonNull(getActivity()).getSupportFragmentManager(), new PaymentFragment());
   }
 
   @Override
