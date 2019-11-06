@@ -26,3 +26,10 @@ export const connectionShape = {
   date: PropTypes.number,
   totalCredentials: PropTypes.number
 };
+
+export const refShape = PropTypes.oneOfType([
+  PropTypes.func,
+  PropTypes.shape({
+    current: PropTypes.object
+  })
+]);

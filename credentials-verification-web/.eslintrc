@@ -31,6 +31,7 @@
     "react/prop-types": "warn",
     "react/sort-comp": "error",
     "jsx-a11y/label-has-associated-control": "off",
+    "jsx-a11y/label-has-for": "off",
     "class-methods-use-this": "off",
     "no-duplicate-imports": "error",
     "no-param-reassign": "error",

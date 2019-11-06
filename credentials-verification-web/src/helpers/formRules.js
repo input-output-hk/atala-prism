@@ -39,3 +39,8 @@ export const minOneElement = (value, cb) => {
   if (value && value.length) cb();
   else cb('error');
 };
+
+export const passwordValidation = (value, cb, otherPass) => {
+  if (!value || !otherPass || value === otherPass) cb();
+  else cb('error');
+};

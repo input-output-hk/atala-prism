@@ -17,6 +17,7 @@ import {
   saveCredential,
   saveDraft
 } from './APIs/__mocks__/credentialInteractions';
+import { getTermsAndConditions, getPrivacyPolicy } from './APIs/__mocks__/documents';
 
 /* Here should be the header and the sidebar */
 const App = () => (
@@ -35,7 +36,9 @@ const App = () => (
       savePictureInS3,
       saveCredential,
       saveDraft,
-      geConnectionToken: generateConnectionToken
+      geConnectionToken: generateConnectionToken,
+      getTermsAndConditions,
+      getPrivacyPolicy
     }}
   />
 );
