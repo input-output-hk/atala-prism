@@ -18,9 +18,11 @@ const GetActionButtons = ({ id, showInviteButton, inviteHolder }) => {
     <div className="ControlButtons">
       {showInviteButton && (
         <CustomButton
-          onClick={() => inviteHolder(id)}
+          buttonProps={{
+            onClick: () => inviteHolder(id),
+            theme: 'theme-link'
+          }}
           buttonText={t('recipients.table.columns.invite')}
-          theme="theme-link"
         />
       )}
       <CustomButton theme="theme-link" buttonText={t('recipients.table.columns.delete')} />

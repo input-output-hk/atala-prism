@@ -10,7 +10,7 @@ import './_style.scss';
 //    - theme-outline
 //    - theme-grey
 //    - theme-link
-const CustomButton = ({ icon, buttonText, ...buttonProps }) => (
+const CustomButton = ({ icon, buttonText, buttonProps }) => (
   <Button {...buttonProps}>
     {icon && icon}
     {buttonText}
