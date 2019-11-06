@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+package io.iohk.cvp.wallet;
+
+// While the binary representation is adequate, JavaScript has problems parsing big integers from bytes,
+// it is simpler to leave the big integer as string.
+message BigInteger {
+    string value = 1;
+}
+
+message ECPrivateKey {
+    BigInteger d = 1;
+}
+
+message ECPublicKey {
+    BigInteger x = 1;
+    BigInteger y = 2;
+}
+
+message KeyPair {
+    ECPrivateKey privateKey = 1;
+    ECPublicKey publicKey = 2;
+}
+
+message WalletData {
+    KeyPair keyPair = 1;
+    string did = 2; // For now, the DID string is enough, this will change in the future when a DID is standardized over the project
+}
+
+service WalletService {
+    // Get the wallet's DID, for now, there is a single DID.
+    rpc GetDID (GetDIDRequest) returns (GetDIDResponse) {}
+
+    // Given a message, sign it using the only existing key
+    rpc SignMessage (SignMessageRequest) returns (SignMessageResponse) {}
+
+    // given a signed message, verify that the signature corresponds to the given key
+    rpc VerifySignedMessage (VerifySignedMessageRequest) returns (VerifySignedMessageResponse) {}
+}
+
+message GetDIDRequest {}
+
+message GetDIDResponse {
+    string did = 1;
+}
+
+message SignMessageRequest {
+    bytes message = 1;
+}
+
+message SignMessageResponse {
+    bytes signature = 1;
+}
+
+message VerifySignedMessageRequest {
+    ECPublicKey publicKey = 1;
+    bytes message = 2;
+    bytes signature = 3;
+}
+
+message VerifySignedMessageResponse {
+    bool verified = 1;
+}
