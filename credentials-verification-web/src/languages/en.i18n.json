@@ -50,7 +50,10 @@
       "title": "You don't have Holders yet",
       "subtitle": "You can start adding them by clicking the button bellow"
     },
-    "inviteSuccessfull": "The Holder has been successfully invited"
+    "inviteSuccessfull": "The Holder has been successfully invited",
+    "modal": {
+      "title": "Scan to get connection token"
+    }
   },
   "groups": {
     "title": "Groups",

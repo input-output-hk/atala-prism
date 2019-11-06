@@ -6,7 +6,6 @@ import './_style.scss';
 
 const CellRenderer = ({ title, value, componentName }) => {
   const { t } = useTranslation();
-  if (title === 'admissionDate') console.log(`${title}: ${value}`);
   return (
     <div className="CellRenderer">
       <p className="TableLabel">{t(`${componentName}.table.columns.${title}`)}</p>

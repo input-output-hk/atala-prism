@@ -44,14 +44,9 @@ const RecipientsContainer = ({ api }) => {
     setField(value);
   };
 
-  const callInviteHolder = id => {
-    api
-      .inviteHolder({ id })
-      .then(() => message.success(t('recipients.inviteSuccessfull')))
-      .catch(() => message.error(t('errors.errorInvitingHolder')));
-  };
+  const inviteHolder = cb => api.geConnectionToken(null, cb);
 
-  const tableProps = { subjects, subjectCount, offset, setOffset, inviteHolder: callInviteHolder };
+  const tableProps = { subjects, subjectCount, offset, setOffset };
   const filterProps = {
     identityNumber,
     setIdentityNumber: value => updateFilter(value, setIdentityNumber),
@@ -61,7 +56,9 @@ const RecipientsContainer = ({ api }) => {
     setStatus: value => updateFilter(value, setStatus)
   };
 
-  return <Recipients tableProps={tableProps} filterProps={filterProps} />;
+  return (
+    <Recipients tableProps={tableProps} filterProps={filterProps} inviteHolder={inviteHolder} />
+  );
 };
 
 RecipientsContainer.propTypes = {
