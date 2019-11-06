@@ -1,22 +1,24 @@
 import React from 'react';
-import { Layout, Menu } from 'antd';
-import './_style.scss';
 import { withRouter, Link } from 'react-router-dom';
+import { Layout, Menu } from 'antd';
 import PropTypes from 'prop-types';
+import connectionsIcon from '../../../../images/connectionsIcon.svg';
 import iconMenu from '../../../../images/icon-menu.svg';
-import iconRecipients from '../../../../images/icon-recipients.svg';
 import iconGroups from '../../../../images/icon-groups.svg';
 import iconCredentials from '../../../../images/icon-credentials.svg';
 import iconTransactions from '../../../../images/icon-transactions.svg';
+import certificateIcon from '../../../../images/certificateIcon.svg';
+import './_style.scss';
 
 const { Sider } = Layout;
 
 const SideMenu = ({ location: pathname }) => {
   const icons = [
     { icon: iconMenu, path: '' },
-    { icon: iconRecipients, path: '/recipients' },
+    { icon: connectionsIcon, path: '/connections' },
     { icon: iconGroups, path: '/groups' },
-    { icon: iconCredentials, path: '/credentials' }
+    { icon: iconCredentials, path: '/credentials' },
+    { icon: certificateIcon, path: '/newCredential' }
     // The next page is not yet developed
     // { icon: iconTransactions, path: '/transactions' }
   ];

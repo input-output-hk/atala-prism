@@ -2,38 +2,45 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import { Table } from 'antd';
-import { Link } from 'react-router-dom';
 import CellRenderer from '../../../common/Atoms/CellRenderer/CellRenderer';
-import StatusBadge from '../../../common/Atoms/StatusBadge/StatusBadge';
+import StatusBadge from '../../Atoms/StatusBadge/StatusBadge';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import { longDateFormatter } from '../../../../helpers/formatters';
-import { PENDING_INVITATION, HOLDER_PAGE_SIZE, xScroll } from '../../../../helpers/constants';
+import { HOLDER_PAGE_SIZE, xScroll, PENDING_CONNECTION } from '../../../../helpers/constants';
 
 import './_style.scss';
 
-const GetActionButtons = ({ id, showInviteButton, inviteHolder }) => {
+const GetActionButtons = ({ id, showQRButton, inviteHolder }) => {
   const { t } = useTranslation();
 
   return (
     <div className="ControlButtons">
-      {showInviteButton && (
+      {showQRButton && (
         <CustomButton
           buttonProps={{
             onClick: () => inviteHolder(id),
-            theme: 'theme-link'
+            className: 'theme-link'
           }}
-          buttonText={t('recipients.table.columns.invite')}
+          buttonText={t('connections.table.columns.invite')}
         />
       )}
-      <CustomButton theme="theme-link" buttonText={t('recipients.table.columns.delete')} />
-      <Link to={`/subject/${id}`}>{t('recipients.table.columns.view')}</Link>
+      <CustomButton
+        buttonProps={{ className: 'theme-link' }}
+        buttonText={t('connections.table.columns.delete')}
+      />
+      <CustomButton
+        buttonProps={{
+          className: 'theme-link'
+        }}
+        buttonText={t('connections.table.columns.view')}
+      />
     </div>
   );
 };
 
 GetActionButtons.propTypes = {
   id: PropTypes.string.isRequired,
-  showInviteButton: PropTypes.bool.isRequired,
+  showQRButton: PropTypes.bool.isRequired,
   inviteHolder: PropTypes.func.isRequired
 };
 
@@ -48,7 +55,7 @@ const getColumns = inviteHolder => [
   {
     key: 'identityNumber',
     render: ({ identityNumber }) => (
-      <CellRenderer title="identityNumber" value={identityNumber} componentName="recipients" />
+      <CellRenderer title="identityNumber" value={identityNumber} componentName="connections" />
     )
   },
   {
@@ -57,13 +64,13 @@ const getColumns = inviteHolder => [
       <CellRenderer
         title="admissionDate"
         value={longDateFormatter(admissionDate)}
-        componentName="recipients"
+        componentName="connections"
       />
     )
   },
   {
     key: 'email',
-    render: ({ email }) => <CellRenderer title="email" value={email} componentName="recipients" />
+    render: ({ email }) => <CellRenderer title="email" value={email} componentName="connections" />
   },
   {
     key: 'status',
@@ -71,19 +78,18 @@ const getColumns = inviteHolder => [
   },
   {
     key: 'actions',
-    fixed: 'right',
     render: ({ id, status }) => (
       <GetActionButtons
         id={id}
-        showInviteButton={status === PENDING_INVITATION}
+        showQRButton={status === PENDING_CONNECTION}
         inviteHolder={inviteHolder}
       />
     )
   }
 ];
 
-const RecipientsTable = ({ subjects, subjectCount, offset, setOffset, inviteHolder }) => (
-  <div className="RecipientsTable">
+const ConnectionsTable = ({ subjects, subjectCount, offset, setOffset, inviteHolder }) => (
+  <div className="ConnectionsTable">
     <Table
       columns={getColumns(inviteHolder)}
       dataSource={subjects}
@@ -105,17 +111,17 @@ const subjectShape = {
   identityNumber: PropTypes.number,
   admissionDate: PropTypes.number,
   email: PropTypes.string,
-  status: PropTypes.oneOf(['PENDING_CONNECTION', 'CONNECTED', 'PENDING_INVITATION']),
+  status: PropTypes.oneOf(['PENDING_CONNECTION', 'CONNECTED']),
   id: PropTypes.string
 };
 
-RecipientsTable.defaultProps = {
+ConnectionsTable.defaultProps = {
   subjects: [],
   subjectCount: 0,
   offset: 0
 };
 
-RecipientsTable.propTypes = {
+ConnectionsTable.propTypes = {
   subjects: PropTypes.arrayOf(PropTypes.shape(subjectShape)),
   subjectCount: PropTypes.number,
   offset: PropTypes.number,
@@ -123,4 +129,4 @@ RecipientsTable.propTypes = {
   inviteHolder: PropTypes.func.isRequired
 };
 
-export default RecipientsTable;
+export default ConnectionsTable;

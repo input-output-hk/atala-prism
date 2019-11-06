@@ -4,40 +4,44 @@ import PropTypes from 'prop-types';
 import CellRenderer from '../../../common/Atoms/CellRenderer/CellRenderer';
 import { shortDateFormatter } from '../../../../helpers/formatters';
 import PaginatedTable from '../../../common/Organisms/Tables/PaginatedTable';
-import { CONNECTION_PAGE_SIZE, AVATAR_WIDTH } from '../../../../helpers/constants';
+import { CREDENTIAL_SUMMARY_PAGE_SIZE, AVATAR_WIDTH } from '../../../../helpers/constants';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
-import { connectionShape } from '../../../../helpers/propShapes';
+import { credentialSummaryShape } from '../../../../helpers/propShapes';
 
-const GetActionsButtons = ({ connection, setCurrentConnection, openDrawer }) => {
+const GetActionsButtons = ({ credentialSummary, setCurrentCredentialSummary, openDrawer }) => {
   const { t } = useTranslation();
 
   return (
     <div className="ControlButtons">
       <CustomButton
-        onClick={setCurrentConnection}
-        buttonText={t('connections.table.buttons.delete')}
-        theme="theme-link"
+        buttonProps={{
+          onClick: setCurrentCredentialSummary,
+          className: 'theme-link'
+        }}
+        buttonText={t('credentialSummary.table.buttons.delete')}
       />
       <CustomButton
-        onClick={() => {
-          setCurrentConnection(connection);
-          openDrawer();
+        buttonProps={{
+          onClick: () => {
+            setCurrentCredentialSummary(credentialSummary);
+            openDrawer();
+          },
+          className: 'theme-link'
         }}
-        theme="theme-link"
-        buttonText={t('connections.table.buttons.view')}
+        buttonText={t('credentialSummary.table.buttons.view')}
       />
     </div>
   );
 };
 
 GetActionsButtons.propTypes = {
-  connection: PropTypes.shape(connectionShape).isRequired,
-  setCurrentConnection: PropTypes.func.isRequired,
+  credentialSummary: PropTypes.shape(credentialSummaryShape).isRequired,
+  setCurrentCredentialSummary: PropTypes.func.isRequired,
   openDrawer: PropTypes.func.isRequired
 };
 
-const getColumns = (setCurrentConnection, openDrawer) => {
-  const componentName = 'connections';
+const getColumns = (setCurrentCredentialSummary, openDrawer) => {
+  const componentName = 'credentialSummary';
 
   const actionsWidth = 250;
   return [
@@ -73,10 +77,10 @@ const getColumns = (setCurrentConnection, openDrawer) => {
     {
       key: 'actions',
       width: actionsWidth,
-      render: connection => (
+      render: credentialSummary => (
         <GetActionsButtons
-          connection={connection}
-          setCurrentConnection={setCurrentConnection}
+          credentialSummary={credentialSummary}
+          setCurrentCredentialSummary={setCurrentCredentialSummary}
           openDrawer={openDrawer}
         />
       )
@@ -84,39 +88,39 @@ const getColumns = (setCurrentConnection, openDrawer) => {
   ];
 };
 
-const ConnectionTable = ({
-  setCurrentConnection,
-  connections,
+const CredentialSummaryTable = ({
+  setCurrentCredentialSummary,
+  credentialSummaries,
   current,
   total,
   onPageChange,
   openDrawer
 }) => {
   const tableProps = {
-    columns: getColumns(setCurrentConnection, openDrawer),
-    data: connections,
+    columns: getColumns(setCurrentCredentialSummary, openDrawer),
+    data: credentialSummaries,
     current,
     total,
-    defaultPageSize: CONNECTION_PAGE_SIZE,
+    defaultPageSize: CREDENTIAL_SUMMARY_PAGE_SIZE,
     onChange: onPageChange
   };
 
   return <PaginatedTable {...tableProps} />;
 };
 
-ConnectionTable.defaultProps = {
-  connections: [],
+CredentialSummaryTable.defaultProps = {
+  credentialSummaries: [],
   current: 0,
   total: 0
 };
 
-ConnectionTable.propTypes = {
+CredentialSummaryTable.propTypes = {
   setOpen: PropTypes.func.isRequired,
-  setCurrentConnection: PropTypes.func.isRequired,
-  connections: PropTypes.arrayOf(connectionShape),
+  setCurrentCredentialSummary: PropTypes.func.isRequired,
+  credentialSummaries: PropTypes.arrayOf(credentialSummaryShape),
   current: PropTypes.number,
   total: PropTypes.number,
   onPageChange: PropTypes.func.isRequired
 };
 
-export default ConnectionTable;
+export default CredentialSummaryTable;
