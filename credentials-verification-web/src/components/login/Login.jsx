@@ -5,7 +5,8 @@ import { Col, Card, Row } from 'antd';
 import LoginForm from './Organisms/Form/LoginForm';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 import logo from '../../images/loginLogo.svg';
-import background from '../../images/loginBackground.svg';
+
+import './_style.scss';
 
 const Login = ({ formRef, handleLogin }) => {
   const { t } = useTranslation();
@@ -13,31 +14,25 @@ const Login = ({ formRef, handleLogin }) => {
   const rowProps = { align: 'middle', gutter: '32', type: 'flex' };
 
   return (
-    <div className="login">
-      <Card>
-        <Row {...rowProps}>
-          <img src={logo} alt={t('login.logoAlt')} />
-        </Row>
-        <Row {...rowProps}>
-          <label>{t('login.welcome.title')}</label>
-        </Row>
-        <Row {...rowProps}>
-          <label>{t('login.welcome.subtitle')}</label>
-        </Row>
-        <Row {...rowProps}>
+    <div className="LoginContainer">
+      <div className="LoginCard">
+        <img src={logo} alt={t('login.logoAlt')} />
+        <div className="WelcomeText">
+          <h3>{t('login.welcome.title')}</h3>
+          <h3>{t('login.welcome.subtitle')}</h3>
+        </div>
+        <div className="FormContainer">
           <LoginForm ref={formRef} />
-        </Row>
-        <Row {...rowProps}>
-          <label>{t('login.forgotPassword')}</label>
+        </div>
+        <div className="ForgotPassword">
+          <p>{t('login.forgotPassword')}</p>
           <Link to="forgotPassword">{t('login.goToForgotPassword')}</Link>
-        </Row>
-        <Row {...rowProps}>
-          <CustomButton
-            buttonProps={{ className: 'theme-secondary', onClick: handleLogin }}
-            buttonText={t('login.submit')}
-          />
-        </Row>
-      </Card>
+        </div>
+        <CustomButton
+          buttonProps={{ className: 'theme-secondary', onClick: handleLogin }}
+          buttonText={t('login.submit')}
+        />
+      </div>
     </div>
   );
 };
