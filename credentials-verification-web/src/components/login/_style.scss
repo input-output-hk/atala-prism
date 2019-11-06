@@ -1,0 +1,83 @@
+@import '../../css/general_styling';
+
+.LoginContainer {
+  background: $primary-color;
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  align-items: center;
+  background-image: url('../../images/bgLogin.png');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+
+  .LoginCard {
+    background: $white;
+    border-radius: 6px;
+    padding: 2em 5em;
+    box-shadow: $shadow;
+    width: 450px;
+    height: 450px;
+    margin-left: 100px;
+    display: flex;
+    flex-flow: column;
+
+    img {
+      margin: 20px auto;
+    }
+
+    .WelcomeText {
+      border-top: 1px solid $light-grey;
+      padding: 2em 0;
+
+      h3 {
+        @include secondary-text($h1, $primary-color);
+      }
+    }
+
+    .ForgotPassword {
+      display: flex;
+      align-items: baseline;
+      @include body-text($body, $dark-grey, 400);
+      margin-bottom: 4em;
+
+      p {
+        margin-bottom: 1em;
+        margin-right: 0.5em;
+      }
+
+      a {
+        font-weight: 600;
+        color: $secondary-color;
+        cursor: pointer;
+      }
+    }
+  }
+}
+
+.ant-form {
+  .ant-form-item-label {
+    label {
+      font-size: 14px;
+    }
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .LoginContainer {
+    .LoginCard {
+      margin: 0 auto;
+    }
+  }
+}
+
+@media screen and (max-width: 425px) {
+  .LoginContainer {
+    .LoginCard {
+      margin: 0 auto;
+      padding: 2em;
+      width: 350px;
+      height: 450px;
+    }
+  }
+}

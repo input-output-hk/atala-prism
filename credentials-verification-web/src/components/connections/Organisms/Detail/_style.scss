@@ -12,7 +12,7 @@
     }
     .ConnectionUser {
       h3 {
-        @include primary-text($h3, $secondary-color);
+        @include secondary-text($h3, $secondary-color);
       }
       p {
         @include primary-text($body, $secondary-color);

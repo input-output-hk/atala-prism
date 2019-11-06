@@ -213,6 +213,7 @@
     },
     "form": {
       "errors": {
+        "emptyField": "This field is mandatory",
         "futureError": "The date must be earlier than today",
         "pastError": "The graduation date must be later than the start date",
         "atLeastOneLogo": "You must upload one logo",
@@ -236,6 +237,19 @@
     },
     "checkInfo": "Check the data below"
   },
+  "login": {
+    "welcome": {
+      "title": "Hey!",
+      "subtitle": "Welcome back"
+    },
+    "form": {
+      "password": "Password",
+      "emptyPassword": "You must enter your password"
+    },
+    "forgotPassword": "Forgot Password?",
+    "goToForgotPassword": "Click here!",
+    "submit": "Login"
+  },
   "registration": {
     "termsAndConditions": "Terms and Conditions",
     "privacyPolicy": "Privacy Policy Agreement",
@@ -254,7 +268,7 @@
       "action": "Download File"
     },
     "password": {
-      "title": "Create your Password", 
+      "title": "Create your Password",
       "begin": "Let's begin!",
       "info": "You must create a password which will encrypt the data in your local wallet",
       "passwordInput": "Password",
