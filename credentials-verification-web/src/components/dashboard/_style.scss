@@ -1,0 +1,39 @@
+@import '../../css/general_styling';
+
+.DashboardContainer {
+  margin: 2em;
+  .DashboardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    h1 {
+      @include secondary-text($h1, $secondary-color);
+    }
+    p {
+      @include primary-text($body, $grey);
+    }
+  }
+
+  .DashboardContent {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .DashboardContentBottom {
+    display: flex;
+    flex-flow: column;
+    margin-top: 2em;
+
+    .TransactionSummary,
+    .ConnectionSummary {
+      display: flex;
+      flex-flow: column;
+
+      .SummaryContent {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 2em;
+      }
+    }
+  }
+}

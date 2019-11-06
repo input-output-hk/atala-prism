@@ -1,0 +1,27 @@
+@import '../../../../css/general_styling';
+
+.TransactionSummary {
+  margin-top: 2em;
+  h3 {
+    @include primary-text($h3, $secondary-color);
+    width: 250px;
+    line-height: 2;
+    position: relative;
+
+    /* bottom line */
+    &.line-bottom::after {
+      content: '';
+      position: absolute;
+      background-color: $primary-color;
+      width: 10%;
+      height: 3px;
+      bottom: -5px;
+      left: 0;
+    }
+  }
+  .SummaryContent {
+    .Summary {
+      width: 23%;
+    }
+  }
+}

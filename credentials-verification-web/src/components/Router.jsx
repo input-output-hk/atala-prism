@@ -1,5 +1,6 @@
 import React from 'react';
 import { Switch, Route } from 'react-router-dom';
+import Dashboard from './dashboard/Dashboard';
 import Landing from './landing/Landing';
 import Login from './login/LoginContainer';
 import I18nError from './I18nError';
@@ -13,6 +14,7 @@ import NewCredential from './newCredential/NewCredentialContainer';
 
 const landingRoute = { exact: true, path: '/', key: '/', component: Landing };
 const loginRoute = { exact: true, path: '/login', key: '/login', component: Login };
+const dashboardRoute = { exact: true, path: '/', key: '/', component: Dashboard };
 const errorRoute = { exact: true, path: '/error', key: '/error', component: I18nError };
 const recipients = { exact: true, path: '/recipients', key: '/recipients', component: Recipients };
 const groups = { exact: true, path: '/groups', key: '/groups', component: Groups };
@@ -43,6 +45,7 @@ const registration = {
 const notFound = { key: 'notFound', component: NotFound };
 
 const routes = [
+  dashboardRoute,
   landingRoute,
   errorRoute,
   loginRoute,

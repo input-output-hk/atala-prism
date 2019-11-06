@@ -9,7 +9,10 @@ const completeDateFormatter = (date, format) => {
   return moment.unix(date).format(format);
 };
 
-export const dateFormatter = format => date => completeDateFormatter(date, format);
+export const backendDateFormatter = format => date => completeDateFormatter(date, format);
+export const frontendDateFormatter = format => date => date.format(format);
 
-export const longDateFormatter = dateFormatter('LLLL');
-export const shortDateFormatter = dateFormatter('lll');
+export const longDateFormatter = backendDateFormatter('LLLL');
+export const shortDateFormatter = backendDateFormatter('lll');
+
+export const monthDayFormat = frontendDateFormatter('MMM DD');
