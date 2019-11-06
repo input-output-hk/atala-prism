@@ -1,7 +1,7 @@
 import React from 'react';
 import { withRouter } from 'react-router-dom';
 import Main from './components/Main';
-import { geConnectionToken } from './APIs/connector/connector';
+import { generateConnectionToken } from './APIs/connector/connector';
 import { getHolders, inviteHolder } from './APIs/__mocks__/holders';
 import { getGroups, deleteGroup } from './APIs/__mocks__/groups';
 import {
@@ -35,7 +35,7 @@ const App = () => (
       savePictureInS3,
       saveCredential,
       saveDraft,
-      geConnectionToken
+      geConnectionToken: generateConnectionToken
     }}
   />
 );

@@ -8,6 +8,7 @@ import Logger from '../../helpers/Logger';
 
 const { REACT_APP_GRPC_CLIENT } = process.env;
 const issuerId = 'c8834532-eade-11e9-a88d-d8f2ca059830';
+const connectorServiceClient = new ConnectorServiceClient(REACT_APP_GRPC_CLIENT, null, null);
 
 const generateConnectionTokenCallback = callback => (error, response) => {
   if (error) return Logger.error('An error: ', error);
@@ -15,11 +16,9 @@ const generateConnectionTokenCallback = callback => (error, response) => {
   callback(response.getToken());
 };
 
-export const geConnectionToken = (userId, callback) => {
-  const service = new ConnectorServiceClient(REACT_APP_GRPC_CLIENT, null, null);
-
+export const generateConnectionToken = (userId, callback) => {
   const generateConnectionTokenRequest = new GenerateConnectionTokenRequest();
-  const call = service.generateConnectionToken(
+  const call = connectorServiceClient.generateConnectionToken(
     generateConnectionTokenRequest,
     { userId: issuerId }, // TODO unhardcode this when there be more user ids
     generateConnectionTokenCallback(callback)
@@ -43,6 +42,9 @@ export const getConnectionsPaginated = (userId, lastSeenConnectionId, limit = 10
     limit
   );
 
-  const service = new ConnectorServiceClient(`${REACT_APP_GRPC_CLIENT}`, null, null);
-  service.call(connectionsPaginatedRequest, { userId }, getConnectionsPaginatedCallback);
+  connectorServiceClient.call(
+    connectionsPaginatedRequest,
+    { userId },
+    getConnectionsPaginatedCallback
+  );
 };
