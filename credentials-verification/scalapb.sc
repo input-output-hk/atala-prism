@@ -1,8 +1,9 @@
+import $ivy.`com.lihaoyi::mill-contrib-scalapblib:$MILL_VERSION`
+import contrib.scalapblib._
+
 import java.io.File
 import java.lang.reflect.Method
 import java.net.URLClassLoader
-
-import mill.contrib.scalapblib._
 
 class FixedScalaPBWorker(protocPath: Option[String]) {
   private var scalaPBInstanceCache = Option.empty[(Long, ScalaPBWorkerApi)]
