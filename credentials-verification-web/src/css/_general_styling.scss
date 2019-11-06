@@ -69,6 +69,11 @@ $shadow: 0 1px 6px rgba(147, 141, 158, 0.16), 0 2px 6px rgba(52, 53, 62, 0.16);
   }
 }
 
+@mixin letter-spacing() {
+  font-feature-settings: normal;
+  font-variant: normal;
+}
+
 // Container
 
 @mixin container() {

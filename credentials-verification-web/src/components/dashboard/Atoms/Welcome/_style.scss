@@ -1,0 +1,28 @@
+@import '../../../../css/general_styling';
+
+.WelcomeContainer {
+  width: 65.5%;
+  display: flex;
+  background: #ffeaeb;
+  padding: 1em 2em;
+  border-radius: 4px;
+  position: relative;
+  align-items: center;
+  margin-top: 2em;
+
+  .WelcomeText {
+    h2 {
+      @include primary-text($h1, $primary-color);
+      @include letter-spacing;
+    }
+    p {
+      @include primary-text($body, $secondary-color);
+      @include letter-spacing;
+    }
+  }
+  .WelcomeImg {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+  }
+}

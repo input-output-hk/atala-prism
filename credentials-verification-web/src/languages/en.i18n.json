@@ -305,6 +305,33 @@
       "login": "Login"
     }
   },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": {
+      "title": "Welcome back ",
+      "image": "Welcome",
+      "subtitle": "This is a placeholder with info that is important for the logged user."
+    },
+    "bundle": {
+      "noBundle": "No bundle yet",
+      "title": "Current Bundle",
+      "remaining": "Remaining",
+      "total": "Total connections"
+    },
+    "summary": {
+      "month": "Month",
+      "week": "Week",
+      "year": "Year"
+    },
+    "transactionSummary": {
+      "title": "Transaction Summary",
+      "issuedCredentials": "Issued Credentials",
+      "proofRequests": "Proof Requests"
+    },
+    "connectionSummary": {
+      "title": "Connection Summary"
+    }
+  },
   "errors": {
     "routeDidNotMatch": "The route {{pathnameToShow}} did not match any page",
     "errorGetting": "An error occurred while getting {{model}}",
