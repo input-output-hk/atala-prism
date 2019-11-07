@@ -3,6 +3,7 @@ package io.iohk.cvp.views.utils.components;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
@@ -45,23 +46,47 @@ public class OptionItem extends ConstraintLayout {
 
     if (attrs != null) {
       // Load attributes
-      final TypedArray a = getContext().obtainStyledAttributes(
+      final TypedArray attrArray = getContext().obtainStyledAttributes(
           attrs, R.styleable.OptionItem, defStyle, 0);
       try {
-        textView.setText(a.getString(
+        textView.setText(attrArray.getString(
             R.styleable.OptionItem_primaryText));
 
-        secondaryTextView.setText(a.getString(
-            R.styleable.OptionItem_secondaryText));
+        setSecondaryText(attrArray);
 
-        actionImageView.setImageDrawable(a.getDrawable(
+        actionImageView.setImageDrawable(attrArray.getDrawable(
             R.styleable.OptionItem_actionImage));
 
-        logoImageView.setImageDrawable(a.getDrawable(
+        logoImageView.setImageDrawable(attrArray.getDrawable(
             R.styleable.OptionItem_logoImage));
       } finally {
-        a.recycle();
+        attrArray.recycle();
       }
+    }
+  }
+
+  private void setSecondaryText(TypedArray attrArray) {
+    String secondaryTextValue = attrArray.getString(
+        R.styleable.OptionItem_secondaryText);
+
+    if (secondaryTextValue != null) {
+      secondaryTextView.setText(secondaryTextValue);
+    } else {
+      secondaryTextView.setVisibility(GONE);
+      ConstraintLayout.LayoutParams params = new ConstraintLayout.LayoutParams(
+          0, LayoutParams.WRAP_CONTENT);
+
+      int marginSides = (int) TypedValue.applyDimension(
+          TypedValue.COMPLEX_UNIT_DIP,
+          16,
+          getResources().getDisplayMetrics()
+      );
+
+      params.setMargins(marginSides, 0, marginSides, 0);
+      params.topToTop = LayoutParams.PARENT_ID;
+      params.bottomToBottom = LayoutParams.PARENT_ID;
+      params.startToEnd = R.id.card_logo_container;
+      textView.setLayoutParams(params);
     }
   }
 }

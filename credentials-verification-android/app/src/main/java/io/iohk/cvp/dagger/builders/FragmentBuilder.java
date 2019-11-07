@@ -12,6 +12,7 @@ import io.iohk.cvp.views.fragments.HomeFragment;
 import io.iohk.cvp.views.fragments.LargeDescriptionDialogFragment;
 import io.iohk.cvp.views.fragments.PaymentFragment;
 import io.iohk.cvp.views.fragments.SettingsFragment;
+import io.iohk.cvp.views.fragments.WalletFragment;
 
 @Module
 public abstract class FragmentBuilder {
@@ -36,6 +37,9 @@ public abstract class FragmentBuilder {
 
   @ContributesAndroidInjector
   abstract SettingsFragment contributeSettingsFragment();
+
+  @ContributesAndroidInjector
+  abstract WalletFragment contributeWalletFragment();
 
   @ContributesAndroidInjector
   abstract PaymentFragment contributePaymenFragment();
