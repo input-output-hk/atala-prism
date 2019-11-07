@@ -1,4 +1,4 @@
 <resources>
-  <declare-styleable name="BottomAppBar">
+  <declare-styleable name="PaymentState">
   </declare-styleable>
 </resources>

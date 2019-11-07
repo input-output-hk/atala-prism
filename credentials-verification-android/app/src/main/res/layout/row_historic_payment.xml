@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content">
+
+  <androidx.constraintlayout.widget.ConstraintLayout
+    android:id="@+id/row_historic_payment_layout"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="8dp"
+    android:layout_marginBottom="8dp"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent">
+
+    <ImageView
+      android:id="@+id/payment_logo"
+      android:layout_width="36dp"
+      android:layout_height="36dp"
+      android:layout_centerInParent="true"
+      android:src="@drawable/ic_payment"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+      android:id="@+id/text_view_date"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="8dp"
+      android:ellipsize="end"
+      android:maxLines="1"
+      android:text="@string/some_date"
+      android:textAlignment="textStart"
+      android:textColor="@color/grey"
+      android:textSize="12sp"
+      app:layout_constraintEnd_toStartOf="@id/text_view_amount"
+      app:layout_constraintStart_toEndOf="@id/payment_logo"
+      app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+      android:id="@+id/text_view_title"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="8dp"
+      android:layout_marginTop="4dp"
+      android:text="@string/free_university_Tbilisi"
+      android:textAlignment="textStart"
+      android:textColor="@color/black"
+      android:textSize="16sp"
+      app:layout_constraintEnd_toStartOf="@id/text_view_amount"
+      app:layout_constraintStart_toEndOf="@id/payment_logo"
+      app:layout_constraintTop_toBottomOf="@id/text_view_date" />
+
+
+    <io.iohk.cvp.views.utils.components.PaymentState
+      android:id="@+id/text_view_state"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="8dp"
+      android:layout_marginTop="4dp"
+      app:layout_constraintStart_toEndOf="@id/payment_logo"
+      app:layout_constraintTop_toBottomOf="@id/text_view_title" />
+
+    <TextView
+      android:id="@+id/text_view_amount"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="8dp"
+      android:maxLines="1"
+      android:text="@string/some_date"
+      android:textAlignment="textEnd"
+      android:textColor="@color/black"
+      android:textSize="16sp"
+      android:textStyle="bold"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintTop_toTopOf="@id/text_view_title" />
+  </androidx.constraintlayout.widget.ConstraintLayout>
+  <RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="1dp"
+    android:background="@color/lightGrey"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@id/row_historic_payment_layout" />
+</androidx.constraintlayout.widget.ConstraintLayout>

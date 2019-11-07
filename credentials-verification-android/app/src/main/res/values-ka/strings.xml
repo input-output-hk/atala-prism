@@ -107,6 +107,12 @@
   <string name="wire_transfer_option_name">Wire Transfer</string>
   <string name="payment_history_menu_item_label">Payment history</string>
 
+
+  <!-- Payment History -->
+  <string name="payment_history">Payment History</string>
+  <string name="completed">Completed</string>
+  <string name="pending">Pending</string>
+  <string name="failed">Failed</string>
   <!-- Assets names for internationalization -->
   <string name="terms_and_conditions_asset_name">terms-and-conditions-en</string>
 </resources>

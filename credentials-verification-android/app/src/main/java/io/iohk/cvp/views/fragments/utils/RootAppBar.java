@@ -1,5 +1,7 @@
 package io.iohk.cvp.views.fragments.utils;
 
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import androidx.appcompat.app.ActionBar;
 
 import lombok.AllArgsConstructor;
@@ -11,6 +13,7 @@ public class RootAppBar implements AppBarConfigurator {
 
   @Override
   public void configureActionBar(ActionBar supportActionBar) {
+    supportActionBar.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
     supportActionBar.setHomeButtonEnabled(false);
     supportActionBar.setDisplayHomeAsUpEnabled(false);
     supportActionBar.setTitle(titleId);
