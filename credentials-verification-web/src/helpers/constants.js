@@ -8,9 +8,12 @@ export const GROUP_PAGE_SIZE = DEFAUlT_PAGE_SIZE;
 export const CREDENTIAL_PAGE_SIZE = DEFAUlT_PAGE_SIZE;
 // eslint-disable-next-line camelcase
 export const CONNECTION_PAGE_SIZE = DEFAUlT_PAGE_SIZE;
+// eslint-disable-next-line camelcase
+export const PAYMENT_PAGE_SIZE = DEFAUlT_PAGE_SIZE;
 
 export const xScroll = 1300;
 export const drawerWidth = 450;
+export const AVATAR_WIDTH = 50;
 
 export const PENDING_CONNECTION = 'PENDING_CONNECTION';
 export const CONNECTED = 'CONNECTED';

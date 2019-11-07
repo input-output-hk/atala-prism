@@ -11,6 +11,7 @@ import Groups from './groups/GroupsContainer';
 import Credential from './credentials/CredentialContainer';
 import Connections from './connections/ConnectionsController';
 import NewCredential from './newCredential/NewCredentialContainer';
+import Payment from './payments/PaymentContainer';
 
 const landingRoute = { exact: true, path: '/', key: '/', component: Landing };
 const loginRoute = { exact: true, path: '/login', key: '/login', component: Login };
@@ -42,6 +43,12 @@ const registration = {
   key: '/registration',
   component: Registration
 };
+const payment = {
+  exact: true,
+  path: '/payment',
+  key: 'paymnt',
+  component: Payment
+};
 const notFound = { key: 'notFound', component: NotFound };
 
 const routes = [
@@ -55,6 +62,7 @@ const routes = [
   credential,
   connections,
   registration,
+  payment,
   notFound
 ];
 

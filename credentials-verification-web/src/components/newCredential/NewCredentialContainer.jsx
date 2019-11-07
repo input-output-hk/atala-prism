@@ -11,6 +11,7 @@ import Group from '../groups/Groups';
 import NewCredentialValidation from './Molecules/Validation/NewCredentialValidation';
 import { GROUP_PAGE_SIZE } from '../../helpers/constants';
 import NewCredentialCreation from './Organism/Creation/NewCredentialCreation';
+import { dateAsUnix } from '../../helpers/formatters';
 
 const NewCredentialContainer = ({ api: { savePictureInS3, saveDraft, getGroups } }) => {
   const { t } = useTranslation();
@@ -32,7 +33,7 @@ const NewCredentialContainer = ({ api: { savePictureInS3, saveDraft, getGroups }
   const formRef = React.createRef();
 
   useEffect(() => {
-    const filterDateAsUnix = date ? moment(date).unix() : 0;
+    const filterDateAsUnix = dateAsUnix(date);
 
     getGroups({ name, date: filterDateAsUnix, offset, pageSize: GROUP_PAGE_SIZE })
       .then(({ groups: filteredGroups, groupsCount: count }) => {

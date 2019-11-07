@@ -7,6 +7,7 @@ import Logger from '../../helpers/Logger';
 import { GROUP_PAGE_SIZE } from '../../helpers/constants';
 import Groups from './Groups';
 import { withApi } from '../providers/witApi';
+import { dateAsUnix } from '../../helpers/formatters';
 
 const GroupsContainer = ({ api }) => {
   const { t } = useTranslation();
@@ -18,7 +19,7 @@ const GroupsContainer = ({ api }) => {
   const [offset, setOffset] = useState(0);
 
   const updateGroups = () => {
-    const filterDateAsUnix = date ? moment(date).unix() : 0;
+    const filterDateAsUnix = dateAsUnix(date);
 
     api
       .getGroups({ name, date: filterDateAsUnix, offset, pageSize: GROUP_PAGE_SIZE })
