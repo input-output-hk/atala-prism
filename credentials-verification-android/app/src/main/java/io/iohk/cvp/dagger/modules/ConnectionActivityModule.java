@@ -11,5 +11,4 @@ public class ConnectionActivityModule {
   ConnectionsActivityViewModel provideConnectionsActivityViewModel() {
     return new ConnectionsActivityViewModel();
   }
-
 }

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:layout_width="match_parent"
+  android:layout_height="300dp"
+  android:background="@color/grey_2"
+  android:paddingStart="24dp"
+  android:paddingEnd="24dp">
+
+  <ImageView
+    android:layout_width="0dp"
+    android:layout_height="0dp"
+    android:layout_marginTop="5dp"
+    android:src="@drawable/rounded_corner_white"
+    app:layout_constraintBottom_toBottomOf="@id/text_input_name"
+    app:layout_constraintEnd_toEndOf="@id/text_input_name"
+    app:layout_constraintStart_toStartOf="@id/text_input_name"
+    app:layout_constraintTop_toTopOf="@id/text_input_name" />
+
+  <com.google.android.material.textfield.TextInputLayout
+    android:id="@+id/text_input_name"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="16dp"
+    android:hint="@string/full_name"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent">
+
+    <com.google.android.material.textfield.TextInputEditText
+      android:id="@+id/edit_text_name"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:enabled="false"
+      android:singleLine="true"
+      android:text="@string/some_name" />
+  </com.google.android.material.textfield.TextInputLayout>
+
+  <ImageView
+    android:layout_width="0dp"
+    android:layout_height="0dp"
+    android:layout_marginTop="5dp"
+    android:src="@drawable/rounded_corner_white"
+    app:layout_constraintBottom_toBottomOf="@id/text_input_country"
+    app:layout_constraintEnd_toEndOf="@id/text_input_country"
+    app:layout_constraintStart_toStartOf="@id/text_input_country"
+    app:layout_constraintTop_toTopOf="@id/text_input_country" />
+
+
+  <com.google.android.material.textfield.TextInputLayout
+    android:id="@+id/text_input_country"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="16dp"
+    android:hint="@string/country"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@id/text_input_name">
+
+    <com.google.android.material.textfield.TextInputEditText
+      android:id="@+id/edit_text_country"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:enabled="false"
+      android:singleLine="true"
+      android:text="@string/some_award" />
+  </com.google.android.material.textfield.TextInputLayout>
+
+  <ImageView
+    android:layout_width="0dp"
+    android:layout_height="0dp"
+    android:layout_marginTop="5dp"
+    android:src="@drawable/rounded_corner_white"
+    app:layout_constraintBottom_toBottomOf="@id/text_input_birth_date"
+    app:layout_constraintEnd_toEndOf="@id/text_input_birth_date"
+    app:layout_constraintStart_toStartOf="@id/text_input_birth_date"
+    app:layout_constraintTop_toTopOf="@id/text_input_birth_date" />
+
+  <com.google.android.material.textfield.TextInputLayout
+    android:id="@+id/text_input_birth_date"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="16dp"
+    android:hint="@string/birth_date"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@id/text_input_country">
+
+    <com.google.android.material.textfield.TextInputEditText
+      android:id="@+id/edit_text_birth_date"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:enabled="false"
+      android:singleLine="true"
+      android:text="@string/some_date" />
+  </com.google.android.material.textfield.TextInputLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

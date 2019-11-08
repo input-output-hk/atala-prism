@@ -113,6 +113,17 @@
   <string name="pending">Pending</string>
   <string name="failed">Failed</string>
 
+  <!-- Profile screen labels -->
+  <string name="my_id_code">My ID Code</string>
+  <string name="some_id">1BoatSLRHtKNngkdXEeobR76b53LETtpyT</string>
+  <string name="some_email">gergi.beridze@gmail.com</string>
+  <string name="edit_profile">Edit Profile</string>
+  <string name="personal_title">Personal</string>
+  <string name="qr_code_title">QR Code</string>
+  <string name="country">Country</string>
+  <string name="birth_date">Birth Date</string>
+
+
   <!-- Assets names for internationalization -->
   <string name="terms_and_conditions_asset_name">terms-and-conditions-en</string>
 </resources>

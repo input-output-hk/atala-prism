@@ -55,7 +55,7 @@
       android:layout_marginTop="16dp"
       android:text="@string/amount"
       android:textAlignment="textStart"
-      android:textColor="@color/grey"
+      android:textColor="@color/grey_3"
       android:textSize="18sp"
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintTop_toBottomOf="@id/text_view_subtitle" />

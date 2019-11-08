@@ -3,27 +3,25 @@ package io.iohk.cvp.views.fragments;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.text.Spannable;
-import android.text.SpannableString;
-import android.text.style.ForegroundColorSpan;
 import android.view.Menu;
 import android.view.MenuItem;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.ActionBar;
 import androidx.lifecycle.ViewModel;
 import io.iohk.cvp.R;
 import io.iohk.cvp.views.Navigator;
+import io.iohk.cvp.views.fragments.utils.ActionBarUtils;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
-import io.iohk.cvp.views.fragments.utils.RootAppBar;
-import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBarOption;
 import java.util.Objects;
 import javax.inject.Inject;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Setter
-@NoArgsConstructor
 public class WalletFragment extends CvpFragment {
+
+  @Inject
+  public WalletFragment() {
+  }
 
   @Inject
   Navigator navigator;
@@ -61,7 +59,7 @@ public class WalletFragment extends CvpFragment {
       supportActionBar.setHomeButtonEnabled(false);
       supportActionBar.setDisplayHomeAsUpEnabled(false);
       supportActionBar.setTitle(R.string.wallet_title);
-      setActionbarTextColor(supportActionBar, Color.WHITE);
+      ActionBarUtils.setTextColor(supportActionBar, Color.WHITE);
     };
   }
 
@@ -76,13 +74,5 @@ public class WalletFragment extends CvpFragment {
     // If we got here, the user's action was not recognized.
     // Invoke the superclass to handle it.
     return super.onOptionsItemSelected(item);
-  }
-
-  private void setActionbarTextColor(ActionBar actBar, int color) {
-    String title = actBar.getTitle().toString();
-    Spannable spannablerTitle = new SpannableString(title);
-    spannablerTitle.setSpan(new ForegroundColorSpan(color), 0, spannablerTitle.length(),
-        Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-    actBar.setTitle(spannablerTitle);
   }
 }

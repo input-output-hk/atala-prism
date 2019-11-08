@@ -33,7 +33,7 @@
       android:maxLines="1"
       android:text="@string/some_date"
       android:textAlignment="textStart"
-      android:textColor="@color/grey"
+      android:textColor="@color/grey_3"
       android:textSize="12sp"
       app:layout_constraintEnd_toStartOf="@id/text_view_amount"
       app:layout_constraintStart_toEndOf="@id/payment_logo"
@@ -80,7 +80,7 @@
   <RelativeLayout
     android:layout_width="match_parent"
     android:layout_height="1dp"
-    android:background="@color/lightGrey"
+    android:background="@color/grey_1"
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintStart_toStartOf="parent"

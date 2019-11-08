@@ -65,7 +65,7 @@ public class WelcomeActivity extends CvpActivity {
   @BindColor(R.color.black)
   ColorStateList blackColor;
 
-  @BindColor(R.color.mediumGrey)
+  @BindColor(R.color.grey_2)
   ColorStateList mediumGrayColor;
 
   @BindString(R.string.continue_string)

@@ -8,12 +8,16 @@ import android.widget.FrameLayout;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModel;
 import butterknife.BindView;
+import com.crashlytics.android.Crashlytics;
 import io.iohk.cvp.R;
+import io.iohk.cvp.core.exception.CaseNotFoundException;
+import io.iohk.cvp.core.exception.ErrorCode;
 import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.fragments.ConnectionsFragment;
 import io.iohk.cvp.views.fragments.CvpFragment;
 import io.iohk.cvp.views.fragments.FirstConnectionFragment;
 import io.iohk.cvp.views.fragments.HomeFragment;
+import io.iohk.cvp.views.fragments.ProfileFragment;
 import io.iohk.cvp.views.fragments.SettingsFragment;
 import io.iohk.cvp.views.fragments.WalletFragment;
 import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBar;
@@ -24,6 +28,21 @@ import javax.inject.Inject;
 import lombok.Getter;
 
 public class MainActivity extends CvpActivity implements BottomAppBarListener {
+
+  @Inject
+  ConnectionsFragment connectionsFragment;
+
+  @Inject
+  HomeFragment homeFragment;
+
+  @Inject
+  SettingsFragment settingsFragment;
+
+  @Inject
+  WalletFragment walletFragment;
+
+  @Inject
+  ProfileFragment profileFragment;
 
   @Inject
   @Getter
@@ -73,19 +92,19 @@ public class MainActivity extends CvpActivity implements BottomAppBarListener {
   private Optional<CvpFragment> getFragmentToRender(BottomAppBarOption option) {
     switch (option) {
       case CONNECTIONS:
-        return Optional.of(new ConnectionsFragment());
+        return Optional.of(connectionsFragment);
       case HOME:
-        return Optional.of(new HomeFragment());
+        return Optional.of(homeFragment);
       case SETTINGS:
-        return Optional.of(new SettingsFragment());
+        return Optional.of(settingsFragment);
       case WALLET:
-        return Optional.of(new WalletFragment());
+        return Optional.of(walletFragment);
+      case PROFILE:
+        return Optional.of(profileFragment);
       default:
-        // TODO: for now, every intention to go to an unimplemented screen result in no action.
-        // TODO: when the rest of the screen are implemented, the default case should throw an Exception
-        // Crashlytics.logException(
-        //   new CaseNotFoundException("Couldn't find fragment for option " + option,
-        //     ErrorCode.STEP_NOT_FOUND));
+        Crashlytics.logException(
+            new CaseNotFoundException("Couldn't find fragment for option " + option,
+                ErrorCode.STEP_NOT_FOUND));
         return Optional.empty();
     }
   }

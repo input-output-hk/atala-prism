@@ -7,4 +7,10 @@
     android:title="@string/payment_history_menu_item_label"
     android:visible="false"
     app:showAsAction="always" />
+  <item
+    android:id="@+id/action_edit_profile"
+    android:icon="@drawable/ic_edit"
+    android:title="@string/edit_profile"
+    android:visible="false"
+    app:showAsAction="ifRoom" />
 </menu>

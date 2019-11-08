@@ -4,16 +4,11 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
-import androidx.appcompat.app.ActionBar;
 import androidx.lifecycle.ViewModel;
 import androidx.viewpager.widget.ViewPager;
-
-import com.google.android.material.tabs.TabLayout;
-
-import javax.inject.Inject;
-
 import butterknife.BindView;
+import com.google.android.material.tabs.TabLayout;
+import dagger.Provides;
 import io.iohk.cvp.R;
 import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
@@ -21,12 +16,16 @@ import io.iohk.cvp.views.fragments.utils.RootAppBar;
 import io.iohk.cvp.views.utils.adapters.ConnectionTabsAdapter;
 import io.iohk.cvp.views.utils.adapters.EmployersRecyclerViewAdapter;
 import io.iohk.cvp.views.utils.adapters.UniversitiesRecyclerViewAdapter;
+import javax.inject.Inject;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Setter
-@NoArgsConstructor
 public class ConnectionsFragment extends CvpFragment {
+
+  @Inject
+  public ConnectionsFragment() {
+  }
 
   @Inject
   Navigator navigator;
@@ -44,15 +43,16 @@ public class ConnectionsFragment extends CvpFragment {
   ConnectionsListFragment employersListFragment;
 
   @Override
-  public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+  public View onCreateView(LayoutInflater inflater, ViewGroup container,
+      Bundle savedInstanceState) {
     View view = super.onCreateView(inflater, container, savedInstanceState);
 
     universitiesListFragment.setAdapter(new UniversitiesRecyclerViewAdapter());
     employersListFragment.setAdapter(new EmployersRecyclerViewAdapter());
 
     ConnectionTabsAdapter adapter = new ConnectionTabsAdapter(
-      getChildFragmentManager(), tabs.getTabCount(), universitiesListFragment,
-      employersListFragment);
+        getChildFragmentManager(), tabs.getTabCount(), universitiesListFragment,
+        employersListFragment);
 
     viewPager.setAdapter(adapter);
 
