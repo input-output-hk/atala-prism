@@ -7,6 +7,7 @@ import doobie.implicits._
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc._
 import io.iohk.connector.model._
+import io.iohk.connector.payments.PaymentWall
 import io.iohk.connector.protos.ConnectorServiceGrpc
 import io.iohk.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO, MessagesDAO, ParticipantsDAO}
 import io.iohk.connector.repositories.{ConnectionsRepository, MessagesRepository}
@@ -26,7 +27,8 @@ class RpcSpecBase extends PostgresRepositorySpec with BeforeAndAfterEach {
   lazy val connectionsService = new ConnectionsService(connectionsRepository)
   lazy val messagesRepository = new MessagesRepository(database)(executionContext)
   lazy val messagesService = new MessagesService(messagesRepository)
-  lazy val connectorService = new ConnectorService(connectionsService, messagesService)(executionContext)
+  lazy val paymentWall = new PaymentWall
+  lazy val connectorService = new ConnectorService(connectionsService, messagesService, paymentWall)(executionContext)
 
   protected var serverName: String = _
   protected var serverHandle: Server = _
@@ -42,7 +44,8 @@ class RpcSpecBase extends PostgresRepositorySpec with BeforeAndAfterEach {
       .directExecutor()
       .intercept(new UserIdInterceptor)
       .addService(
-        ConnectorServiceGrpc.bindService(new ConnectorService(connectionsService, messagesService), executionContext)
+        ConnectorServiceGrpc
+          .bindService(new ConnectorService(connectionsService, messagesService, paymentWall), executionContext)
       )
       .build()
       .start()
