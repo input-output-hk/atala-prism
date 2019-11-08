@@ -5,7 +5,6 @@ import moment from 'moment';
 import Logger from '../../helpers/Logger';
 import Credentials from './Credentials';
 import { withApi } from '../providers/witApi';
-import { getCredentialsGroups } from '../../APIs/__mocks__/credentials';
 
 const CredentialContainer = ({ api }) => {
   const { t } = useTranslation();
@@ -47,21 +46,25 @@ const CredentialContainer = ({ api }) => {
         message.error(t('errors.errorGetting', { model: field }));
       });
 
-  useEffect(() => getTypes(api.getCredentialTypes, setCredentialTypes, 'Credentials'), []);
-  useEffect(() => getTypes(api.getCategoryTypes, setCategories, 'Categories'), []);
-  useEffect(() => getTypes(api.getCredentialsGroups, setGroups, 'Groups'), []);
+  useEffect(() => {
+    getTypes(api.getCredentialTypes, setCredentialTypes, 'Credentials');
+  }, []);
+  useEffect(() => {
+    getTypes(api.getCategoryTypes, setCategories, 'Categories');
+  }, []);
+  useEffect(() => {
+    getTypes(api.getCredentialsGroups, setGroups, 'Groups');
+  }, []);
 
-  useEffect(
-    () =>
-      api
-        .getTotalCredentials()
-        .then(count => setNoCredentials(count === 0))
-        .catch(error => {
-          Logger.error('RecipientsContainer: Error while getting Credentials', error);
-          message.error(t('errors.errorGetting', { model: 'Credentials' }));
-        }),
-    []
-  );
+  useEffect(() => {
+    api
+      .getTotalCredentials()
+      .then(count => setNoCredentials(count === 0))
+      .catch(error => {
+        Logger.error('RecipientsContainer: Error while getting Credentials', error);
+        message.error(t('errors.errorGetting', { model: 'Credentials' }));
+      });
+  }, []);
 
   useEffect(() => {
     const filterDateAsUnix = date ? moment(date).unix() : 0;
