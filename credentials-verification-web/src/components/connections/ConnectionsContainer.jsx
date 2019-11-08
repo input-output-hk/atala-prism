@@ -44,7 +44,7 @@ const ConnectionsContainer = ({ api }) => {
     setField(value);
   };
 
-  const inviteHolder = cb => api.geConnectionToken(null, cb);
+  const inviteHolder = cb => api.generateConnectionToken(null, cb);
 
   const tableProps = { subjects, subjectCount, offset, setOffset };
   const filterProps = {

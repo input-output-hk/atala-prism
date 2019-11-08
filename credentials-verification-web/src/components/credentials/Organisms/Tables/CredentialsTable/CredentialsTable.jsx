@@ -7,6 +7,8 @@ import CellRenderer from '../../../../common/Atoms/CellRenderer/CellRenderer';
 import { shortDateFormatter } from '../../../../../helpers/formatters';
 import { CREDENTIAL_PAGE_SIZE } from '../../../../../helpers/constants';
 import RenderStudent from '../../../Molecules/RenderStudent/RenderStudent';
+import holderDefaultAvatar from '../../../../../images/holder-default-avatar.svg';
+import freeUniLogo from '../../../../../images/free-uni-logo.png';
 
 import './_style.scss';
 import CustomButton from '../../../../common/Atoms/CustomButton/CustomButton';
@@ -15,40 +17,44 @@ const getColumns = (viewText, sendCredentials) => [
   {
     key: 'icon',
     render: ({ icon, name }) => (
-      <img style={{ width: '40px', height: '40px' }} src={icon} alt={`${name} icon`} />
+      <img
+        style={{ width: '40px', height: '40px' }}
+        src={icon || freeUniLogo}
+        alt={`${name} icon`}
+      />
     )
   },
-  { key: 'name', render: ({ name }) => name },
+  { key: 'title', render: ({ title }) => title },
   {
-    key: 'identityNumber',
-    render: ({ identityNumber }) => (
-      <CellRenderer title="identityNumber" value={identityNumber} componentName="credentials" />
+    key: 'id',
+    render: ({ id }) => (
+      <CellRenderer title="identityNumber" value={id} componentName="credentials" />
     )
   },
   {
-    key: 'admissionDate',
-    render: ({ admissionDate }) => (
+    key: 'enrollmentdate',
+    render: ({ enrollmentdate }) => (
       <CellRenderer
         title="admissionDate"
-        value={shortDateFormatter(admissionDate)}
+        value={shortDateFormatter(enrollmentdate)}
         componentName="credentials"
       />
     )
   },
   {
-    key: 'groupId',
-    render: ({ groupId }) => (
-      <CellRenderer title="groupAssigned" value={groupId} componentName="credentials" />
+    key: 'groupname',
+    render: ({ groupname }) => (
+      <CellRenderer title="groupAssigned" value={groupname} componentName="credentials" />
     )
   },
   {
-    key: 'student',
-    render: ({ student }) =>
-      student ? (
+    key: 'subject',
+    render: ({ subject }) =>
+      subject ? (
         <RenderStudent
-          imageSrc={student.avatar}
-          imageAlt={`${student.name} avatar`}
-          name={student.name}
+          imageSrc={subject.avatar || holderDefaultAvatar}
+          imageAlt={`${subject} avatar`}
+          name={subject}
         />
       ) : (
         <CustomButton
@@ -69,7 +75,7 @@ const getColumns = (viewText, sendCredentials) => [
   }
 ];
 
-const CredentialsTable = ({ credentials, credentialCount, offset, setOffset, inviteHolder }) => {
+const CredentialsTable = ({ credentials, credentialCount, offset, setOffset }) => {
   const { t } = useTranslation();
 
   return (
@@ -111,8 +117,7 @@ CredentialsTable.propTypes = {
   credentials: PropTypes.arrayOf(PropTypes.shape(credentialshape)),
   credentialCount: PropTypes.number,
   offset: PropTypes.number,
-  setOffset: PropTypes.func.isRequired,
-  inviteHolder: PropTypes.func.isRequired
+  setOffset: PropTypes.func.isRequired
 };
 
 export default CredentialsTable;
