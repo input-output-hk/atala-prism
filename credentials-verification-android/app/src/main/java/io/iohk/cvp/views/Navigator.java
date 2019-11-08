@@ -16,6 +16,7 @@ import io.iohk.cvp.views.activities.SeedPhraseVerificationActivity;
 import io.iohk.cvp.views.activities.TermsAndConditionsActivity;
 import io.iohk.cvp.views.activities.WalletSetupActivity;
 import io.iohk.cvp.views.activities.WebViewActivity;
+import io.iohk.cvp.views.activities.WelcomeActivity;
 import io.iohk.cvp.views.fragments.CvpFragment;
 import io.iohk.cvp.views.fragments.FirstConnectionFragment;
 import io.iohk.cvp.views.fragments.PopUpFragment;
@@ -23,6 +24,12 @@ import io.iohk.cvp.views.fragments.PopUpFragment;
 public class Navigator {
 
   //Activities
+  public void showWellcomeActivity(Activity from) {
+    Intent intent = new Intent(from.getApplicationContext(), WelcomeActivity.class);
+    intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+    from.startActivity(intent);
+  }
+
   public void showConnections(Activity from) {
     Intent intent = new Intent(from.getApplicationContext(), MainActivity.class);
     intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);

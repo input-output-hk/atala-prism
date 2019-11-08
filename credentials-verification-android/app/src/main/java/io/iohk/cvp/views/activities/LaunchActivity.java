@@ -1,0 +1,52 @@
+package io.iohk.cvp.views.activities;
+
+import android.os.Bundle;
+import android.os.Handler;
+import androidx.lifecycle.ViewModel;
+import io.iohk.cvp.R;
+import io.iohk.cvp.views.Navigator;
+import io.iohk.cvp.views.Preferences;
+import java.util.Objects;
+import javax.inject.Inject;
+
+public class LaunchActivity extends CvpActivity {
+
+  @Inject
+  Navigator navigator;
+
+  @Override
+  public void onCreate(Bundle state) {
+    super.onCreate(state);
+    Objects.requireNonNull(getSupportActionBar()).hide();
+
+    new Handler().postDelayed(
+        () -> {
+          if (new Preferences(this).getPrivateKey().isPresent()) {
+            navigator.showConnections(this);
+          } else {
+            navigator.showWellcomeActivity(this);
+          }
+        },
+        1500);
+  }
+
+  @Override
+  protected Navigator getNavigator() {
+    return this.navigator;
+  }
+
+  @Override
+  protected int getView() {
+    return R.layout.launch_activity;
+  }
+
+  @Override
+  protected int getTitleValue() {
+    return R.string.empty_title;
+  }
+
+  @Override
+  public ViewModel getViewModel() {
+    return null;
+  }
+}
