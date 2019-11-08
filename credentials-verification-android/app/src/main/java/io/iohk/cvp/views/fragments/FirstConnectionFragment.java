@@ -73,7 +73,11 @@ public class FirstConnectionFragment extends CvpFragment<ConnectionsActivityView
 
       viewModel.getConnectionTokenInfo(token).observe(this, issuerInfo -> {
         // TODO show issuer data to confirm connection and after confirmation call
-        ((MainActivity) getActivity()).onNavigation(BottomAppBarOption.CONNECTIONS);
+        viewModel.addConnectionFromToken(token).observe(this, connectionInfo -> {
+          //TODO should we show new connection info before switching to connections list?
+          // if we decide not to do so, addConnectionFromToken method should be moved from view model
+          ((MainActivity) getActivity()).onNavigation(BottomAppBarOption.CONNECTIONS);
+        });
       });
     }
   }
