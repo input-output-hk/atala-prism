@@ -2,16 +2,17 @@ package io.iohk.connector
 
 import java.util.UUID
 
-import io.iohk.cvp.utils.FutureEither._
 import io.iohk.connector.errors._
+import io.iohk.connector.payments.PaymentWall
 import io.iohk.connector.protos._
 import io.iohk.connector.services.{ConnectionsService, MessagesService}
+import io.iohk.cvp.utils.FutureEither._
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
-class ConnectorService(connections: ConnectionsService, messages: MessagesService)(
+class ConnectorService(connections: ConnectionsService, messages: MessagesService, paymentWall: PaymentWall)(
     implicit executionContext: ExecutionContext
 ) extends ConnectorServiceGrpc.ConnectorService
     with ErrorSupport {
@@ -197,5 +198,12 @@ class ConnectorService(connections: ConnectionsService, messages: MessagesServic
       .insertMessage(userId, connectionId, request.message.toByteArray)
       .wrapExceptions
       .successMap(_ => SendMessageResponse())
+  }
+
+  override def generatePaymentUrl(request: GeneratePaymentUrlRequest): Future[GeneratePaymentUrlResponse] = {
+    val userId = UserIdInterceptor.USER_ID_CTX_KEY.get()
+    val url = paymentWall.generatePaymentUrl(userId)
+    val response = GeneratePaymentUrlResponse(paymentUrl = url)
+    Future.successful(response)
   }
 }

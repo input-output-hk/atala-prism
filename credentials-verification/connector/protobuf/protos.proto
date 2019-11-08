@@ -74,6 +74,9 @@ service ConnectorService {
   // Unknown connection (UNKNOWN)
   // Connection closed (FAILED_PRECONDITION)
   rpc SendMessage (SendMessageRequest) returns (SendMessageResponse) {}
+
+  // Generate a URL that can be used to do a payment
+  rpc GeneratePaymentUrl (GeneratePaymentUrlRequest) returns (GeneratePaymentUrlResponse) {}
 }
 
 // GENERAL
@@ -233,4 +236,9 @@ message ChangeBillingPlanRequest {
 
 // Confirmation of billing plan change
 message ChangeBillingPlanResponse {
+}
+
+message GeneratePaymentUrlRequest {}
+message GeneratePaymentUrlResponse {
+  string paymentUrl = 1;
 }

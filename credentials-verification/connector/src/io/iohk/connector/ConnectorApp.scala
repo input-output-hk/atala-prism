@@ -2,6 +2,7 @@ package io.iohk.connector
 
 import com.typesafe.config.{Config, ConfigFactory}
 import io.grpc.{Server, ServerBuilder}
+import io.iohk.connector.payments.PaymentWall
 import io.iohk.connector.protos._
 import io.iohk.connector.repositories.{ConnectionsRepository, MessagesRepository}
 import io.iohk.connector.services.{ConnectionsService, MessagesService}
@@ -12,6 +13,8 @@ import scala.concurrent.ExecutionContext
 
 /**
   * Run with `mill -i connector.run`, otherwise, the server will stay running even after ctrl+C.
+  *
+  * Launch grpcui with: grpcui -plaintext -import-path connector/protobuf -proto connector/protobuf/protos.proto localhost:50051
   */
 object ConnectorApp {
   def main(args: Array[String]): Unit = {
@@ -39,11 +42,15 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     logger.info("Connecting to the database")
     val xa = TransactorFactory(databaseConfig)
 
+    logger.info("Initializing Payment Wall")
+    PaymentWall.initialize(paymentWallConfig(globalConfig.getConfig("paymentWall")))
+    val paymentWall = new PaymentWall
+
     val connectionsRepository = new ConnectionsRepository(xa)(executionContext)
     val connectionsService = new ConnectionsService(connectionsRepository)
     val messagesRepository = new MessagesRepository(xa)(executionContext)
     val messagesService = new MessagesService(messagesRepository)
-    val connectorService = new ConnectorService(connectionsService, messagesService)(executionContext)
+    val connectorService = new ConnectorService(connectionsService, messagesService, paymentWall)(executionContext)
 
     logger.info("Starting server")
     server = ServerBuilder
@@ -90,6 +97,15 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       jdbcUrl = url,
       username = username,
       password = password
+    )
+  }
+
+  private def paymentWallConfig(config: Config): PaymentWall.Config = {
+    val publicKey = config.getString("publicKey")
+    val privateKey = config.getString("privateKey")
+    PaymentWall.Config(
+      publicKey = publicKey,
+      privateKey = privateKey
     )
   }
 }

@@ -188,6 +188,12 @@ object connector extends ServerPBCommon {
 
   override def mainClass = Some("io.iohk.connector.ConnectorApp")
 
+  override def ivyDeps = super.ivyDeps.map { deps =>
+    deps ++ Agg(
+      ivy"com.paymentwall:paymentwall-java:2.0.2"
+    )
+  }
+
   override def scalaPBSources = T.sources {
     millSourcePath / 'protobuf / "protos.proto"
   }
