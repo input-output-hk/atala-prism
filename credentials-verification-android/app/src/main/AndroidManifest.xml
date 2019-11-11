@@ -15,9 +15,7 @@
     tools:ignore="GoogleAppIndexingWarning">
     <activity
       android:name="io.iohk.cvp.views.activities.MainActivity"
-      android:screenOrientation="portrait">
-
-    </activity>
+      android:screenOrientation="portrait"></activity>
     <activity
       android:name="io.iohk.cvp.views.activities.WelcomeActivity"
       android:screenOrientation="portrait">

@@ -12,8 +12,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Setter
-@NoArgsConstructor
 public class SettingsFragment extends CvpFragment {
+
+  @Inject
+  public SettingsFragment() {
+  }
 
   @Inject
   Navigator navigator;
@@ -34,7 +37,7 @@ public class SettingsFragment extends CvpFragment {
   }
 
   @OnClick(R.id.support)
-  public void onSupportClick() {
+  void onSupportClick() {
     navigator.showWebView(Objects.requireNonNull(this.getActivity()));
   }
 }

@@ -3,19 +3,22 @@
   <color name="colorPrimary">#FF2D3B</color>
   <color name="colorPrimaryVariant">#00574B</color>
   <color name="colorOnPrimary">#F8F9F9</color>
-  <color name="black">#202020</color>
-  <color name="white">#FFFFFF</color>
-  <color name="lightGrey">#F8F9F9</color>
-  <color name="mediumGrey">#E5E5E5</color>
-  <color name="grey">#B6B6B6</color>
   <color name="blueGrey">#A0AABB</color>
   <color name="lightRed">#FFEAEB</color>
   <color name="green">#1ED69E</color>
   <color name="blue">#4A2DFF</color>
   <color name="violet">#AF2DFF</color>
   <color name="onSurfaceMedium">#77869E</color>
-  <color name="almost_black">#262324</color>
-  <color name="dark_grey">#3C393A</color>
   <color name="trasparent">#80000000</color>
   <color name="orange">#FFB954</color>
+
+  <color name="white">#FFFFFF</color>
+  <color name="grey_1">#F8F9F9</color>
+  <color name="grey_2">#E5E5E5</color>
+  <color name="grey_3">#B6B6B6</color>
+  <color name="grey_4">#979797</color>
+  <color name="grey_5">#3C393A</color>
+  <color name="grey_6">#262324</color>
+  <color name="black">#202020</color>
+
 </resources>
