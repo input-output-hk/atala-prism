@@ -16,3 +16,5 @@ export const longDateFormatter = backendDateFormatter('LLLL');
 export const shortDateFormatter = backendDateFormatter('lll');
 
 export const monthDayFormat = frontendDateFormatter('MMM DD');
+
+export const dateAsUnix = date => (date ? moment(date).unix() : 0);

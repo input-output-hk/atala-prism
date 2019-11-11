@@ -1,35 +1,45 @@
-import PropTypes from 'prop-types';
+import { string, shape, number, oneOfType, func, object } from 'prop-types';
 
 export const groupShape = {
-  icon: PropTypes.string,
-  courseName: PropTypes.string,
-  courseId: PropTypes.string,
-  certificate: PropTypes.shape({
-    certificateName: PropTypes.string,
-    certificateId: PropTypes.string
+  icon: string,
+  courseName: string,
+  courseId: string,
+  certificate: shape({
+    certificateName: string,
+    certificateId: string
   }),
-  credential: PropTypes.shape({
-    credentialName: PropTypes.string,
-    credentialId: PropTypes.string
+  credential: shape({
+    credentialName: string,
+    credentialId: string
   }),
-  websiteLink: PropTypes.string,
-  description: PropTypes.string,
-  lastUpdate: PropTypes.number
+  websiteLink: string,
+  description: string,
+  lastUpdate: number
 };
 
 export const connectionShape = {
-  id: PropTypes.string,
-  user: PropTypes.shape({
-    icon: PropTypes.string,
-    name: PropTypes.string
+  id: string,
+  user: shape({
+    icon: string,
+    name: string
   }),
-  date: PropTypes.number,
-  totalCredentials: PropTypes.number
+  date: number,
+  totalCredentials: number
 };
 
-export const refShape = PropTypes.oneOfType([
-  PropTypes.func,
-  PropTypes.shape({
-    current: PropTypes.object
+export const paymentShape = {
+  user: shape({
+    avatar: string,
+    name: string
+  }),
+  date: number,
+  amount: number,
+  currency: string
+};
+
+export const refShape = oneOfType([
+  func,
+  shape({
+    current: object
   })
 ]);

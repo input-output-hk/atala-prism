@@ -332,6 +332,24 @@
       "title": "Connection Summary"
     }
   },
+  "payment": {
+    "title": "Payments",
+    "payer": "Payer",
+    "filterBy": "Filter by {{field}}",
+    "fields": {
+      "from": "From",
+      "to": "To",
+      "payer": "Payer"
+    },
+    "table": {
+      "columns": {
+        "date": "Date",
+        "amount": "Amount",
+        "currency": "Currency",
+        "name": "Name"
+      }
+    }
+  },
   "errors": {
     "routeDidNotMatch": "The route {{pathnameToShow}} did not match any page",
     "errorGetting": "An error occurred while getting {{model}}",

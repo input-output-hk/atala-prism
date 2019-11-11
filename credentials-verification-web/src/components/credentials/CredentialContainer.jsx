@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { message } from 'antd';
-import moment from 'moment';
 import Logger from '../../helpers/Logger';
 import Credentials from './Credentials';
 import { withApi } from '../providers/witApi';
+import { dateAsUnix } from '../../helpers/formatters';
 
 const CredentialContainer = ({ api }) => {
   const { t } = useTranslation();
@@ -67,7 +67,8 @@ const CredentialContainer = ({ api }) => {
   }, []);
 
   useEffect(() => {
-    const filterDateAsUnix = date ? moment(date).unix() : 0;
+    const filterDateAsUnix = dateAsUnix(date);
+
     api
       .getCredentials({
         credentialId,

@@ -11,14 +11,18 @@ const PaginatedTable = ({
   current,
   total,
   defaultPageSize,
-  onChange
+  onChange,
+  handleSort
 }) => (
-  <div className="PaginatedTable">
+  <div className={handleSort ? '' : 'PaginatedTable'}>
     <Table
       rowSelection={selectionType}
       columns={columns}
       scroll={{ x: xScroll }}
       dataSource={data}
+      onChange={(_pagination, _filters, sorter) => {
+        if (handleSort) return handleSort(sorter);
+      }}
       pagination={{
         total,
         defaultCurrent: 1,
@@ -35,7 +39,8 @@ PaginatedTable.defaultProps = {
   data: [],
   current: 0,
   total: 0,
-  selectionType: null
+  selectionType: null,
+  handleSort: null
 };
 
 PaginatedTable.propTypes = {
@@ -45,7 +50,8 @@ PaginatedTable.propTypes = {
   current: PropTypes.number,
   total: PropTypes.number,
   defaultPageSize: PropTypes.number.isRequired,
-  onChange: PropTypes.func.isRequired
+  onChange: PropTypes.func.isRequired,
+  handleSort: PropTypes.func
 };
 
 export default PaginatedTable;

@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import CellRenderer from '../../../common/Atoms/CellRenderer/CellRenderer';
 import { shortDateFormatter } from '../../../../helpers/formatters';
 import PaginatedTable from '../../../common/Organisms/Tables/PaginatedTable';
-import { CONNECTION_PAGE_SIZE } from '../../../../helpers/constants';
+import { CONNECTION_PAGE_SIZE, AVATAR_WIDTH } from '../../../../helpers/constants';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import { connectionShape } from '../../../../helpers/propShapes';
 
@@ -39,12 +39,11 @@ GetActionsButtons.propTypes = {
 const getColumns = (setCurrentConnection, openDrawer) => {
   const componentName = 'connections';
 
-  const avatarWidth = 50;
   const actionsWidth = 250;
   return [
     {
       key: 'icon',
-      width: avatarWidth,
+      width: AVATAR_WIDTH,
       render: ({ user: { icon, name } }) => (
         <img style={{ height: '40px', width: '40px' }} src={icon} alt={`${name} icon`} />
       )

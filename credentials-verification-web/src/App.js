@@ -18,6 +18,7 @@ import {
   saveDraft
 } from './APIs/__mocks__/credentialInteractions';
 import { getTermsAndConditions, getPrivacyPolicy } from './APIs/__mocks__/documents';
+import { getCurrencies, getAmounts, getPayments } from './APIs/__mocks__/payments';
 import { getDid } from './APIs/wallet/wallet';
 
 /* Here should be the header and the sidebar */
@@ -40,7 +41,10 @@ const App = () => (
       geConnectionToken: generateConnectionToken,
       getDid,
       getTermsAndConditions,
-      getPrivacyPolicy
+      getPrivacyPolicy,
+      getCurrencies,
+      getAmounts,
+      getPayments
     }}
   />
 );
