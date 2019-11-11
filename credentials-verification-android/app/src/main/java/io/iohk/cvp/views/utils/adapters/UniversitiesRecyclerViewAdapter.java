@@ -11,6 +11,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.iohk.cvp.R;
 import io.iohk.cvp.io.connector.ConnectionInfo;
+import io.iohk.cvp.io.connector.IssuerInfo;
 import java.util.List;
 
 public class UniversitiesRecyclerViewAdapter extends
@@ -29,8 +30,8 @@ public class UniversitiesRecyclerViewAdapter extends
 
   @Override
   public void onBindViewHolder(UniversitiesRecyclerViewAdapter.ViewHolder holder, int position) {
-    // TODO unmock this when we are sure about which class's info are we going to show here
-    holder.issuerName.setText("Business and Technology University");
+    IssuerInfo issuerInfo = connections.get(position).getParticipantInfo().getIssuer();
+    holder.issuerName.setText(issuerInfo.getName());
   }
 
   @Override

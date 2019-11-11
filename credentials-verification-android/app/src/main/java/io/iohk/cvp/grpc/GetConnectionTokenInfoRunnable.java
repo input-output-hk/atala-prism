@@ -7,7 +7,7 @@ import io.iohk.cvp.io.connector.GetConnectionTokenInfoResponse;
 import io.iohk.cvp.io.connector.ParticipantInfo;
 import java.util.Optional;
 
-public class GetConnectionTokenInfoRunnable implements GrpcRunnable {
+public class GetConnectionTokenInfoRunnable implements GrpcRunnable<ParticipantInfo> {
 
   @Override
   public Optional<ParticipantInfo> run(

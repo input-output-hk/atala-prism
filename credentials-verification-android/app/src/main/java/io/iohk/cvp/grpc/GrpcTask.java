@@ -13,12 +13,12 @@ import io.iohk.cvp.io.connector.ConnectorServiceGrpc.ConnectorServiceBlockingStu
 import io.iohk.cvp.io.connector.ConnectorServiceGrpc.ConnectorServiceStub;
 import java.util.Optional;
 
-public class GrpcTask extends AsyncTask<Object, Void, Optional<?>> {
+public class GrpcTask<A> extends AsyncTask<Object, Void, Optional<A>> {
 
-  private final GrpcRunnable grpcRunnable;
+  private final GrpcRunnable<A> grpcRunnable;
   private final ManagedChannel origChannel;
 
-  public GrpcTask(GrpcRunnable grpcRunnable) {
+  public GrpcTask(GrpcRunnable<A> grpcRunnable) {
     this.grpcRunnable = grpcRunnable;
     this.origChannel = ManagedChannelBuilder
         .forAddress(BuildConfig.API_BASE_URL, BuildConfig.API_PORT).usePlaintext()
@@ -26,7 +26,7 @@ public class GrpcTask extends AsyncTask<Object, Void, Optional<?>> {
   }
 
   @Override
-  public Optional<?> doInBackground(Object... params) {
+  public Optional<A> doInBackground(Object... params) {
     try {
       ClientInterceptor interceptor = new HeaderClientInterceptor();
       Channel channel = ClientInterceptors.intercept(origChannel, interceptor);
