@@ -1,0 +1,12 @@
+@import '../../../../css/general_styling';
+
+.TermsContent {
+  overflow-y: scroll;
+  padding-right: 1.5em;
+  margin-top: 1em;
+  height: 85%;
+
+  p {
+    @include body-text($body, $secondary-color, 400);
+  }
+}

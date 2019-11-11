@@ -6,6 +6,8 @@ import CustomForm from '../../../common/Organisms/Forms/CustomForm';
 import { noEmptyInput } from '../../../../helpers/formRules';
 import { refShape } from '../../../../helpers/propShapes';
 
+import './_style.scss';
+
 const OrganisationInfo = ({ organisationRef }) => {
   const { t } = useTranslation();
 
@@ -22,14 +24,14 @@ const OrganisationInfo = ({ organisationRef }) => {
   ];
 
   return (
-    <Fragment>
+    <div className="RegisterStep">
       <StepCard
         title="registration.organisationInfo.title"
         subtitle="registration.organisationInfo.subtitle"
         comment="registration.organisationInfo.comment"
       />
       <CustomForm items={orgName} ref={organisationRef} />
-    </Fragment>
+    </div>
   );
 };
 

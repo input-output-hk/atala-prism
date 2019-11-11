@@ -1,0 +1,32 @@
+@import '../../../../css/general_styling';
+
+.StepCard {
+  width: 100%;
+  background: #ffeaeb;
+  padding: 1.5em 2em;
+  border-radius: 6px;
+  position: relative;
+  justify-content: center;
+  margin-bottom: 2em;
+
+  span {
+    @include primary-text($label, $primary-color);
+    @include letter-spacing();
+  }
+
+  h1 {
+    @include secondary-text($h1, $primary-color);
+    @include letter-spacing();
+  }
+
+  p {
+    @include primary-text($body, $secondary-color);
+    @include letter-spacing();
+  }
+
+  .RegistrationImg {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+  }
+}

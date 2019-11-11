@@ -8,6 +8,7 @@
     line-height: 14px;
     label {
       @include primary-text($label, $dark-grey);
+      @include letter-spacing();
     }
   }
 

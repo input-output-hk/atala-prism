@@ -3,6 +3,8 @@ import { Card } from 'antd';
 import PropTypes from 'prop-types';
 import RegistrationFooter from './Molecules/Footer/RegistrationFooter';
 
+import './_style.scss';
+
 const Registration = ({
   renderContent,
   next,
@@ -12,18 +14,20 @@ const Registration = ({
   previous,
   documentToAccept
 }) => (
-  <Card>
-    {renderContent()}
-    {renderFooter && (
-      <RegistrationFooter
-        next={next}
-        previous={previous}
-        toggleAccept={toggleAccept}
-        accepted={accepted}
-        documentToAccept={documentToAccept}
-      />
-    )}
-  </Card>
+  <div className="RegistrationContainer">
+    <div className="RegistrationContent">
+      {renderContent()}
+      {renderFooter && (
+        <RegistrationFooter
+          next={next}
+          previous={previous}
+          toggleAccept={toggleAccept}
+          accepted={accepted}
+          documentToAccept={documentToAccept}
+        />
+      )}
+    </div>
+  </div>
 );
 
 Registration.defaultProps = {

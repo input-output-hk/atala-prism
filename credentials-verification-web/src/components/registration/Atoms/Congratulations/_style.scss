@@ -1,0 +1,38 @@
+@import '../../../../css/general_styling';
+
+.Congratulations {
+  display: flex;
+  flex-flow: column;
+  justify-content: space-between;
+  height: 85%;
+  align-items: center;
+
+  .CongratulationsContainer {
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding-top: 6em;
+
+    img {
+      margin-bottom: 2em;
+    }
+
+    h2 {
+      @include primary-text($h2, $primary-color);
+      @include letter-spacing();
+      strong {
+        @include secondary-text($h2, $primary-color);
+      }
+    }
+
+    p {
+      width: 30%;
+      text-align: center;
+      @include primary-text($body, $secondary-color);
+      @include letter-spacing();
+      margin-bottom: 2em;
+    }
+  }
+}

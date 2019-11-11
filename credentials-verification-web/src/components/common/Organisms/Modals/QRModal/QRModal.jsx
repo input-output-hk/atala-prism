@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
-import QRCode from 'qrcode.react';
+// import QRCode from 'qrcode.react';
 import { Modal } from 'antd';
 
 const QRModal = ({ tPrefix, visible, onCancel, qrValue }) => {
@@ -14,7 +14,7 @@ const QRModal = ({ tPrefix, visible, onCancel, qrValue }) => {
       footer={null}
       onCancel={onCancel}
     >
-      <QRCode value={qrValue} />
+      {/* <QRCode value={qrValue} /> */}
     </Modal>
   );
 };

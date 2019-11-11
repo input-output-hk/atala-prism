@@ -4,16 +4,18 @@ import { Icon } from 'antd';
 import PropTypes from 'prop-types';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 
+import './_style.scss';
+
 const VerifyFooter = ({ triedToVerify, valid, validateWords }) => {
   const { t } = useTranslation();
 
   return (
-    <Fragment>
+    <div className="VerifyFooter">
       {triedToVerify && (
-        <Fragment>
-          <Icon type={valid ? 'check-circle' : 'close-circle'} />
-          <label>{t(`registration.mnemonic.validation.${valid ? 'success' : 'failure'}`)}</label>
-        </Fragment>
+        <div className="SuccessContainer">
+          <Icon type={valid ? 'check-circle' : 'close-circle'} theme="filled"/>
+          <p>{t(`registration.mnemonic.validation.${valid ? 'success' : 'failure'}`)}</p>
+        </div>
       )}
       {!(triedToVerify && valid) && (
         <CustomButton
@@ -24,7 +26,7 @@ const VerifyFooter = ({ triedToVerify, valid, validateWords }) => {
           buttonText={t('registration.mnemonic.validation.verify')}
         />
       )}
-    </Fragment>
+    </div>
   );
 };
 
