@@ -11,19 +11,20 @@ import lombok.AllArgsConstructor;
 public class Preferences {
 
   private static final String MY_PREFS_NAME = "IOHK.ATALA.CREDENTIAL.VERIFICATION";
-
+  private static final String PK_KEY = "pk";
   private Context context;
 
+  // TODO: receive and save correctly the symmetrical keys
   public void savePrivateKey(String pk) {
-    // TODO
+    // this is not a secure or correct way to save the symmetrical keys, but should be really close to this
     SharedPreferences.Editor editor = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE)
         .edit();
-    editor.putString("pk", "this is the pk");
+    editor.putString(PK_KEY, "this is the pk");
     editor.apply();
   }
 
   public Optional<String> getPrivateKey() {
     SharedPreferences sharedPreferences = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
-    return Optional.ofNullable(sharedPreferences.getString("pk", null));
+    return Optional.ofNullable(sharedPreferences.getString(PK_KEY, null));
   }
 }

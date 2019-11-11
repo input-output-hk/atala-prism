@@ -11,6 +11,8 @@ import javax.inject.Inject;
 
 public class LaunchActivity extends CvpActivity {
 
+  private static final long DELAY_IN_MILLISECONDS = 1500L;  // 1.5 seconds
+
   @Inject
   Navigator navigator;
 
@@ -27,12 +29,12 @@ public class LaunchActivity extends CvpActivity {
             navigator.showWellcomeActivity(this);
           }
         },
-        1500);
+        DELAY_IN_MILLISECONDS);
   }
 
   @Override
   protected Navigator getNavigator() {
-    return this.navigator;
+    return navigator;
   }
 
   @Override
