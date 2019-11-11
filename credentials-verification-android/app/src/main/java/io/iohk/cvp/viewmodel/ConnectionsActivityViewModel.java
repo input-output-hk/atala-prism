@@ -3,6 +3,7 @@ package io.iohk.cvp.viewmodel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
+import io.iohk.cvp.grpc.AddConnectionFromTokenRunnable;
 import io.iohk.cvp.grpc.GetConnectionTokenInfoRunnable;
 import io.iohk.cvp.grpc.GetConnectionsInfoRunnable;
 import io.iohk.cvp.grpc.GrpcTask;
@@ -16,6 +17,7 @@ public class ConnectionsActivityViewModel extends ViewModel {
 
   private MutableLiveData<List<ConnectionInfo>> connections = new MutableLiveData<>();
   private MutableLiveData<ParticipantInfo> issuerInfo = new MutableLiveData<>();
+  private MutableLiveData<ConnectionInfo> newConnectionInfo = new MutableLiveData<>();
 
   @Inject
   public ConnectionsActivityViewModel() {
@@ -32,9 +34,17 @@ public class ConnectionsActivityViewModel extends ViewModel {
   public LiveData<ParticipantInfo> getConnectionTokenInfo(String token) {
     Optional<ParticipantInfo> result = new GrpcTask<>(
         new GetConnectionTokenInfoRunnable()).doInBackground(
-        "3l-uWR__jJLUAqaEEkEHbg==");
-    result.ifPresent(info -> issuerInfo.setValue(info));
+        token);
 
+    result.ifPresent(info -> issuerInfo.setValue(info));
     return issuerInfo;
+  }
+
+  public LiveData<ConnectionInfo> addConnectionFromToken(String token) {
+    Optional<ConnectionInfo> result = new GrpcTask<>(
+        new AddConnectionFromTokenRunnable()).doInBackground(token);
+    result.ifPresent(info -> newConnectionInfo.setValue(info));
+
+    return newConnectionInfo;
   }
 }
