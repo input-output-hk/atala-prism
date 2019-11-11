@@ -1,7 +1,6 @@
 syntax = "proto3";
 
 package io.iohk.cvp.wallet;
-
 // While the binary representation is adequate, JavaScript has problems parsing big integers from bytes,
 // it is simpler to leave the big integer as string.
 message BigInteger {
@@ -36,6 +35,12 @@ service WalletService {
 
     // given a signed message, verify that the signature corresponds to the given key
     rpc VerifySignedMessage (VerifySignedMessageRequest) returns (VerifySignedMessageResponse) {}
+
+    // Creates a new wallet
+    rpc CreateWallet(CreateWalletRequest) returns (CreateWalletResponse) {}
+
+    // Get wallet status
+    rpc GetWalletStatus(GetWalletStatusRequest) returns (GetWalletStatusResponse) {}
 }
 
 message GetDIDRequest {}
@@ -60,4 +65,21 @@ message VerifySignedMessageRequest {
 
 message VerifySignedMessageResponse {
     bool verified = 1;
+}
+
+message CreateWalletRequest {
+    string passphrase = 1;
+}
+
+message CreateWalletResponse {}
+
+message GetWalletStatusRequest {}
+
+message GetWalletStatusResponse {
+    enum WalletStatus {
+        Missing = 0;
+        Unlocked = 1;
+        Locked = 2;
+    }
+    WalletStatus status = 1;
 }
