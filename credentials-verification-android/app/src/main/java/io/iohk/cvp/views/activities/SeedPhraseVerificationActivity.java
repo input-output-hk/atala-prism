@@ -10,6 +10,7 @@ import com.google.android.material.textfield.TextInputEditText;
 import io.iohk.cvp.R;
 import io.iohk.cvp.viewmodel.WalletSetupViewModel;
 import io.iohk.cvp.views.Navigator;
+import io.iohk.cvp.views.Preferences;
 import io.iohk.cvp.views.utils.SimpleTextWatcher;
 import java.util.Objects;
 import javax.inject.Inject;
@@ -81,7 +82,9 @@ public class SeedPhraseVerificationActivity extends CvpActivity<WalletSetupViewM
 
   @OnClick(R.id.verify_button)
   public void onContinueClick() {
+    // TODO: i created this stage for a simple simulation, it's not necesari to save the keys in this moment,
+    // you can create and save the keys in other place and here only set a boolean "isWalletCreated"
+    new Preferences(this).savePrivateKey("this is a mock pk");
     navigator.showConnections(this);
   }
-
 }
