@@ -16,6 +16,7 @@ import io.iohk.cvp.utils.DateUtils;
 import io.iohk.cvp.viewmodel.PaymentViewModel;
 import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
+import io.iohk.cvp.views.fragments.utils.StackedAppBar;
 import io.iohk.cvp.views.utils.adapters.PaymentsHistoryRecyclerViewAdapter;
 import java.util.Objects;
 import javax.inject.Inject;
@@ -49,12 +50,8 @@ public class PaymentHistoryFragment extends CvpFragment<PaymentViewModel> {
 
   @Override
   protected AppBarConfigurator getAppBarConfigurator() {
-    return supportActionBar -> {
-      setHasOptionsMenu(true);
-      supportActionBar.setHomeButtonEnabled(true);
-      supportActionBar.setDisplayHomeAsUpEnabled(true);
-      supportActionBar.setTitle(R.string.payment_history);
-    };
+    setHasOptionsMenu(true);
+    return new StackedAppBar(R.string.payment_history);
   }
 
   @Override

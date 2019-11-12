@@ -1,5 +1,6 @@
 package io.iohk.cvp.views.fragments;
 
+import android.graphics.Color;
 import androidx.lifecycle.ViewModel;
 import butterknife.OnClick;
 import io.iohk.cvp.R;

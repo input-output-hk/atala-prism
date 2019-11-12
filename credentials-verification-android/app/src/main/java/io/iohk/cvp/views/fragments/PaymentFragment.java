@@ -13,12 +13,18 @@ import butterknife.BindView;
 import butterknife.OnClick;
 import com.google.android.material.textfield.TextInputEditText;
 import io.iohk.cvp.R;
+import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
+import io.iohk.cvp.views.fragments.utils.StackedAppBar;
 import io.iohk.cvp.views.utils.SimpleTextWatcher.SimpleFormListener;
 import io.iohk.cvp.views.utils.SimpleTextWatcher.SimpleFormWatcher;
 import java.util.Objects;
+import javax.inject.Inject;
 
 public class PaymentFragment extends CvpFragment implements SimpleFormListener {
+
+  @Inject
+  Navigator navigator;
 
   @BindView(R.id.continue_button)
   public Button continueButton;
@@ -59,10 +65,6 @@ public class PaymentFragment extends CvpFragment implements SimpleFormListener {
     return v;
   }
 
-  private void updateButtonState() {
-    continueButton.setEnabled(true);
-  }
-
   @Override
   public ViewModel getViewModel() {
     return null;
@@ -70,12 +72,8 @@ public class PaymentFragment extends CvpFragment implements SimpleFormListener {
 
   @Override
   protected AppBarConfigurator getAppBarConfigurator() {
-    return supportActionBar -> {
-      setHasOptionsMenu(true);
-      supportActionBar.setHomeButtonEnabled(true);
-      supportActionBar.setDisplayHomeAsUpEnabled(true);
-      supportActionBar.setTitle(R.string.payment_activity_title);
-    };
+    setHasOptionsMenu(true);
+    return new StackedAppBar(R.string.payment_activity_title);
   }
 
   @Override
@@ -89,6 +87,9 @@ public class PaymentFragment extends CvpFragment implements SimpleFormListener {
 
   @OnClick(R.id.continue_button)
   public void onContinueClick() {
+    navigator.showFragmentOnTop(
+        Objects.requireNonNull(getActivity()).getSupportFragmentManager(),
+        new PaymentCongratsFragment());
 
   }
 

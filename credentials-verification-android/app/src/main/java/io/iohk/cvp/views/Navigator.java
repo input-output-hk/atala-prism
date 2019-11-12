@@ -10,6 +10,7 @@ import androidx.fragment.app.FragmentTransaction;
 import io.iohk.cvp.R;
 import io.iohk.cvp.utils.ActivitiesRequestCodes;
 import io.iohk.cvp.utils.IntentDataConstants;
+import io.iohk.cvp.views.activities.AccountCreatedActivity;
 import io.iohk.cvp.views.activities.MainActivity;
 import io.iohk.cvp.views.activities.QrCodeScanner;
 import io.iohk.cvp.views.activities.SeedPhraseVerificationActivity;
@@ -49,6 +50,12 @@ public class Navigator {
 
   public void showSeedPhraseVerification(Activity from) {
     Intent intent = new Intent(from.getApplicationContext(), SeedPhraseVerificationActivity.class);
+    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+    from.startActivity(intent);
+  }
+
+  public void showAccountCreated(Activity from) {
+    Intent intent = new Intent(from.getApplicationContext(), AccountCreatedActivity.class);
     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
     from.startActivity(intent);
   }

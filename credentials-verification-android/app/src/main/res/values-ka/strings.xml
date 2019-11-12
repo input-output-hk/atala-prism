@@ -126,4 +126,8 @@
 
   <!-- Assets names for internationalization -->
   <string name="terms_and_conditions_asset_name">terms-and-conditions-ka</string>
+  <string name="congrats">Congrats!</string>
+  <string name="credential_payment_successful">Your Credential payment has been made successfully</string>
+  <string name="your_account_has_been_created">Your account has been created</string>
+  <string name="continue_connectiong">Continue connecting with your University or School</string>
 </resources>

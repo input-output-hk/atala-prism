@@ -18,6 +18,7 @@ import io.iohk.cvp.R;
 import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.fragments.utils.ActionBarUtils;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
+import io.iohk.cvp.views.fragments.utils.RootAppBar;
 import io.iohk.cvp.views.utils.adapters.ProfileTabsAdapter;
 import javax.inject.Inject;
 import lombok.Setter;
@@ -106,12 +107,6 @@ public class ProfileFragment extends CvpFragment {
 
   @Override
   protected AppBarConfigurator getAppBarConfigurator() {
-    return supportActionBar -> {
-      supportActionBar.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-      supportActionBar.setHomeButtonEnabled(false);
-      supportActionBar.setDisplayHomeAsUpEnabled(false);
-      supportActionBar.setTitle(R.string.profile);
-      ActionBarUtils.setTextColor(supportActionBar, Color.WHITE);
-    };
+    return new RootAppBar(R.string.profile, Color.WHITE);
   }
 }

@@ -85,6 +85,6 @@ public class SeedPhraseVerificationActivity extends CvpActivity<WalletSetupViewM
     // TODO: i created this stage for a simple simulation, it's not necesari to save the keys in this moment,
     // you can create and save the keys in other place and here only set a boolean "isWalletCreated"
     new Preferences(this).savePrivateKey("this is a mock pk");
-    navigator.showConnections(this);
+    navigator.showAccountCreated(this);
   }
 }

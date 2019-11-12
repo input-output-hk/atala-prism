@@ -4,6 +4,7 @@ import dagger.Module;
 import dagger.android.ContributesAndroidInjector;
 import io.iohk.cvp.dagger.modules.MainActivityModule;
 import io.iohk.cvp.dagger.modules.WalletSetupModule;
+import io.iohk.cvp.views.activities.AccountCreatedActivity;
 import io.iohk.cvp.views.activities.LaunchActivity;
 import io.iohk.cvp.views.activities.MainActivity;
 import io.iohk.cvp.views.activities.SeedPhraseVerificationActivity;
@@ -31,4 +32,8 @@ public abstract class ActivityBuilder {
 
   @ContributesAndroidInjector(modules = WalletSetupModule.class)
   abstract SeedPhraseVerificationActivity contributeSeedPhraseVerificationActivity();
+
+  @ContributesAndroidInjector
+  abstract AccountCreatedActivity accountCreatedActivity();
+
 }

@@ -37,6 +37,9 @@
       android:name="io.iohk.cvp.views.activities.SeedPhraseVerificationActivity"
       android:screenOrientation="portrait" />
     <activity
+      android:name="io.iohk.cvp.views.activities.AccountCreatedActivity"
+      android:screenOrientation="portrait" />
+    <activity
       android:name="io.iohk.cvp.views.activities.QrCodeScanner"
       android:screenOrientation="portrait" />
     <activity
