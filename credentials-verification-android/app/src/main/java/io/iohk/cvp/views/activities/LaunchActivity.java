@@ -26,7 +26,7 @@ public class LaunchActivity extends CvpActivity {
           if (new Preferences(this).getPrivateKey().isPresent()) {
             navigator.showConnections(this);
           } else {
-            navigator.showWellcomeActivity(this);
+            navigator.showWelcomeActivity(this);
           }
         },
         DELAY_IN_MILLISECONDS);
