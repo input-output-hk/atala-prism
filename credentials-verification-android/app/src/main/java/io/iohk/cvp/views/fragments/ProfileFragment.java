@@ -83,8 +83,6 @@ public class ProfileFragment extends CvpFragment {
       // TODO: the inputs used to show the profile data should be enabled here
       return true;
     }
-    // If we got here, the user's action was not recognized.
-    // Invoke the superclass to handle it.
     return super.onOptionsItemSelected(item);
   }
 

@@ -3,13 +3,10 @@ package io.iohk.cvp.viewmodel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
-
+import io.iohk.cvp.io.connector.Credential;
 import java.util.Arrays;
 import java.util.List;
-
 import javax.inject.Inject;
-
-import io.iohk.cvp.io.connector.Credential;
 
 public class CredentialsViewModel extends ViewModel {
 

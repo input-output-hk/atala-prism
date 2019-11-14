@@ -86,7 +86,7 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
   }
 
   @OnClick(R.id.accept_credential)
-  public void onAcceptClick() {
+  void onAcceptClick() {
     navigator.showFragmentOnTop(
         Objects.requireNonNull(getActivity()).getSupportFragmentManager(), new PaymentFragment());
   }

@@ -13,7 +13,7 @@ public class ConnectionTabsAdapter extends FragmentPagerAdapter {
 
   private final ConnectionsListFragment universitiesListFragment;
   private final ConnectionsListFragment employersListFragment;
-  private int mNumOfTabs;
+  private final int mNumOfTabs;
 
   public ConnectionTabsAdapter(FragmentManager fm, int NumOfTabs,
       ConnectionsListFragment universitiesListFragment,

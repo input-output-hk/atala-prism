@@ -13,4 +13,10 @@
     android:title="@string/edit_profile"
     android:visible="false"
     app:showAsAction="ifRoom" />
+  <item
+    android:id="@+id/action_new_connection"
+    android:icon="@drawable/icon_scan_qr"
+    android:title="@string/new_connection"
+    android:visible="false"
+    app:showAsAction="ifRoom" />
 </menu>

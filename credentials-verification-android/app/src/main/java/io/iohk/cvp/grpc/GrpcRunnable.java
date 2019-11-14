@@ -11,4 +11,7 @@ public interface GrpcRunnable<A> {
   Optional<A> run(ConnectorServiceGrpc.ConnectorServiceBlockingStub blockingStub,
       ConnectorServiceGrpc.ConnectorServiceStub asyncStub, Object... params)
       throws Exception;
+
+  void onPostExecute(A result);
+
 }

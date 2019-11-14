@@ -10,7 +10,6 @@ import io.iohk.cvp.grpc.GrpcTask;
 import io.iohk.cvp.io.connector.ConnectionInfo;
 import io.iohk.cvp.io.connector.ParticipantInfo;
 import java.util.List;
-import java.util.Optional;
 import javax.inject.Inject;
 
 public class ConnectionsActivityViewModel extends ViewModel {
@@ -24,27 +23,17 @@ public class ConnectionsActivityViewModel extends ViewModel {
   }
 
   public LiveData<List<ConnectionInfo>> getConnections() {
-    Optional<List<ConnectionInfo>> result = new GrpcTask<>(
-        new GetConnectionsInfoRunnable()).doInBackground();
-    result.ifPresent(info -> connections.setValue(info));
-
+    new GrpcTask<>(new GetConnectionsInfoRunnable(connections)).execute();
     return connections;
   }
 
   public LiveData<ParticipantInfo> getConnectionTokenInfo(String token) {
-    Optional<ParticipantInfo> result = new GrpcTask<>(
-        new GetConnectionTokenInfoRunnable()).doInBackground(
-        token);
-
-    result.ifPresent(info -> issuerInfo.setValue(info));
+    new GrpcTask<>(new GetConnectionTokenInfoRunnable(issuerInfo)).execute(token);
     return issuerInfo;
   }
 
   public LiveData<ConnectionInfo> addConnectionFromToken(String token) {
-    Optional<ConnectionInfo> result = new GrpcTask<>(
-        new AddConnectionFromTokenRunnable()).doInBackground(token);
-    result.ifPresent(info -> newConnectionInfo.setValue(info));
-
+    new GrpcTask<>(new AddConnectionFromTokenRunnable(newConnectionInfo)).execute(token);
     return newConnectionInfo;
   }
 }

@@ -66,8 +66,6 @@ public class WalletFragment extends CvpFragment {
           paymentHistoryFragment);
       return true;
     }
-    // If we got here, the user's action was not recognized.
-    // Invoke the superclass to handle it.
     return super.onOptionsItemSelected(item);
   }
 }

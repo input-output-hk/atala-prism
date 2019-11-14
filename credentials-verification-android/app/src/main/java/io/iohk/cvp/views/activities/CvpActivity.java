@@ -3,7 +3,6 @@ package io.iohk.cvp.views.activities;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.Menu;
-import android.view.MenuItem;
 import androidx.lifecycle.ViewModel;
 import butterknife.ButterKnife;
 import dagger.android.support.DaggerAppCompatActivity;
