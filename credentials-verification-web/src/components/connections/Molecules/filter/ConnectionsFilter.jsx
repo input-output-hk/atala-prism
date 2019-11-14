@@ -2,11 +2,11 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import PropTypes, { number } from 'prop-types';
 import { Row, Col, Input, Icon, Select } from 'antd';
-import { PENDING_CONNECTION, CONNECTED, PENDING_INVITATION } from '../../../../helpers/constants';
+import { PENDING_CONNECTION, CONNECTED } from '../../../../helpers/constants';
 
 import './_style.scss';
 
-const RecipientsFilter = ({
+const ConnectionsFilter = ({
   identityNumber,
   setIdentityNumber,
   name: userName,
@@ -16,14 +16,14 @@ const RecipientsFilter = ({
 }) => {
   const { t } = useTranslation();
 
-  const statuses = [PENDING_CONNECTION, CONNECTED, PENDING_INVITATION];
+  const statuses = [PENDING_CONNECTION, CONNECTED];
 
   return (
     <div className="FilterControls">
       <Row gutter={16}>
         <Col span={8}>
           <Input
-            placeholder={t('recipients.filters.identityNumber')}
+            placeholder={t('connections.filters.identityNumber')}
             prefix={<Icon type="search" />}
             onChange={({ target: { value } }) => setIdentityNumber(value)}
             allowClear
@@ -33,7 +33,7 @@ const RecipientsFilter = ({
         </Col>
         <Col span={8}>
           <Input
-            placeholder={t('recipients.filters.name')}
+            placeholder={t('connections.filters.name')}
             prefix={<Icon type="search" />}
             onChange={({ target: { value } }) => setName(value)}
             allowClear
@@ -42,7 +42,7 @@ const RecipientsFilter = ({
         </Col>
         <Col span={8}>
           <Select value={status} onChange={setStatus}>
-            <Select.Option value="">{t('recipients.filters.status')}</Select.Option>
+            <Select.Option value="">{t('connections.filters.status')}</Select.Option>
             {statuses.map(statusType => (
               <Select.Option key={statusType} value={statusType}>
                 {t(`holders.status.${statusType}`)}
@@ -55,13 +55,13 @@ const RecipientsFilter = ({
   );
 };
 
-RecipientsFilter.defaultProps = {
+ConnectionsFilter.defaultProps = {
   identityNumber: '',
   name: '',
   status: ''
 };
 
-RecipientsFilter.propTypes = {
+ConnectionsFilter.propTypes = {
   identityNumber: PropTypes.string,
   setIdentityNumber: PropTypes.func.isRequired,
   name: PropTypes.string,
@@ -70,4 +70,4 @@ RecipientsFilter.propTypes = {
   setStatus: PropTypes.func.isRequired
 };
 
-export default RecipientsFilter;
+export default ConnectionsFilter;

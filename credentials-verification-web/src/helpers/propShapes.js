@@ -17,7 +17,7 @@ export const groupShape = {
   lastUpdate: number
 };
 
-export const connectionShape = {
+export const credentialSummaryShape = {
   id: string,
   user: shape({
     icon: string,

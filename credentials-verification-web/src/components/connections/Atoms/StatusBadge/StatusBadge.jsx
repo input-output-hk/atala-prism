@@ -10,13 +10,13 @@ const StatusBadge = ({ status }) => {
 
   return (
     <div className={classname}>
-      <p>{t(`recipients.status.${status}`)}</p>
+      <p>{t(`connections.status.${status}`)}</p>
     </div>
   );
 };
 
 StatusBadge.propTypes = {
-  status: PropTypes.oneOf(['PENDING_CONNECTION', 'CONNECTED', 'PENDING_INVITATION']).isRequired
+  status: PropTypes.oneOf(['PENDING_CONNECTION', 'CONNECTED']).isRequired
 };
 
 export default StatusBadge;

@@ -1,11 +1,6 @@
 import { internet, name, random, date } from 'faker';
 import moment from 'moment';
-import {
-  PENDING_CONNECTION,
-  CONNECTED,
-  PENDING_INVITATION,
-  HOLDER_PAGE_SIZE
-} from '../../helpers/constants';
+import { PENDING_CONNECTION, CONNECTED, HOLDER_PAGE_SIZE } from '../../helpers/constants';
 import Logger from '../../helpers/Logger';
 
 const createMockHolder = () => ({
@@ -14,7 +9,7 @@ const createMockHolder = () => ({
   identityNumber: random.number(),
   admissionDate: moment(date.recent()).unix(),
   email: internet.email(),
-  status: random.arrayElement([PENDING_CONNECTION, CONNECTED, PENDING_INVITATION]),
+  status: random.arrayElement([PENDING_CONNECTION, CONNECTED]),
   id: random.alphaNumeric(999)
 });
 

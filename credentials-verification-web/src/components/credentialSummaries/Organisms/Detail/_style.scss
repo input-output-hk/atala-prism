@@ -1,7 +1,7 @@
 @import '../../../../css/general_styling';
 
-.ConnectionDetail {
-  .ConnectionHeader {
+.CredentialSummaryDetail {
+  .CredentialSummaryHeader {
     display: flex;
     margin-bottom: 1em;
     img {
@@ -10,7 +10,7 @@
       border-radius: 4px;
       margin-right: 1em;
     }
-    .ConnectionUser {
+    .CredentialSummaryUser {
       h3 {
         @include secondary-text($h3, $secondary-color);
       }
@@ -27,7 +27,7 @@
     border: none;
   }
 
-  .ConnectionLine {
+  .CredentialSummaryLine {
     p {
       @include primary-text($body, $grey);
       margin-bottom: 0.5em;

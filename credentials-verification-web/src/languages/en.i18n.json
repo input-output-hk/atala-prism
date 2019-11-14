@@ -19,12 +19,11 @@
     },
     "learnReact": "Learn React"
   },
-  "recipients": {
-    "title": "Recipients",
+  "connections": {
+    "title": "Connections",
     "status": {
       "PENDING_CONNECTION": "Pending Connection",
-      "CONNECTED": "Connected",
-      "PENDING_INVITATION": "Pending Invitation"
+      "CONNECTED": "Connected"
     },
     "filters": {
       "identityNumber": "Identity Number",
@@ -45,8 +44,8 @@
         "view": "View"
       }
     },
-    "noRecipients": {
-      "photoAlt": "No Recipients",
+    "noConnections": {
+      "photoAlt": "No Connections",
       "title": "You don't have Holders yet",
       "subtitle": "You can start adding them by clicking the button bellow"
     },
@@ -89,8 +88,7 @@
   "holders": {
     "status": {
       "PENDING_CONNECTION": "Pending Connection",
-      "CONNECTED": "Connected",
-      "PENDING_INVITATION": "Pending Invitation"
+      "CONNECTED": "Connected"
     }
   },
   "credentials": {
@@ -147,19 +145,19 @@
       }
     }
   },
-  "connections": {
-    "title": "Connections",
+  "credentialSummary": {
+    "title": "Credential Summaries",
     "noConnections": {
-      "photoAlt": "No connections yet",
-      "title": "You don't have Connections yet"
+      "photoAlt": "No Credential Summaries yet",
+      "title": "You don't have Credential Summaries yet"
     },
     "filters": {
       "date": "Date",
       "search": "Search"
     },
     "modal": {
-      "title": "Delete Connection",
-      "text": "Are you sure you want to delete the connection with {{name}}?"
+      "title": "Delete Credential Summary?",
+      "text": "Are you sure you want to delete the credential summary with {{name}}?"
     },
     "table": {
       "columns": {
@@ -174,13 +172,13 @@
       }
     },
     "detail": {
-      "title": "Connection Detail",
+      "title": "Credential Summary Detail",
       "transactions": "Transaction History",
       "proofRequest": "Proof Request",
       "newCredential": "New Credential",
       "iconAlt": "Avatar"
     },
-    "deletionSuccess": "The connection {{name}} was successfully deleted"
+    "deletionSuccess": "The credential summary {{name}} was successfully deleted"
   },
   "newCredential": {
     "title": "New Credential",

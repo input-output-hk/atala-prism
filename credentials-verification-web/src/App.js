@@ -11,7 +11,7 @@ import {
   getCredentialsGroups,
   getTotalCredentials
 } from './APIs/__mocks__/credentials';
-import { getConnections } from './APIs/__mocks__/connections';
+import { getCredentialSummaries } from './APIs/__mocks__/credentialSummaries';
 import {
   savePictureInS3,
   saveCredential,
@@ -34,7 +34,7 @@ const App = () => (
       getGroups,
       deleteGroup,
       getTotalCredentials,
-      getConnections,
+      getCredentialSummaries,
       savePictureInS3,
       saveCredential,
       saveDraft,

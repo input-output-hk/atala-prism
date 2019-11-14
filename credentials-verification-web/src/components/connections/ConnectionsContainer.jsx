@@ -2,12 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { message } from 'antd';
 import PropTypes from 'prop-types';
-import Recipients from './Recipients';
+import Connections from './Connections';
 import Logger from '../../helpers/Logger';
 import { HOLDER_PAGE_SIZE } from '../../helpers/constants';
 import { withApi } from '../providers/witApi';
 
-const RecipientsContainer = ({ api }) => {
+const ConnectionsContainer = ({ api }) => {
   const { t } = useTranslation();
 
   // These are the values used to filter the holders/subjects
@@ -34,7 +34,7 @@ const RecipientsContainer = ({ api }) => {
         setSubjectCount(holderCount);
       })
       .catch(error => {
-        Logger.error('[Recipients.getHolders] Error while getting holders', error);
+        Logger.error('[Connections.getHolders] Error while getting holders', error);
         message.error(t('errors.errorGetting', { model: 'Holders' }), 1);
       });
   }, [identityNumber, name, status, offset]);
@@ -57,12 +57,12 @@ const RecipientsContainer = ({ api }) => {
   };
 
   return (
-    <Recipients tableProps={tableProps} filterProps={filterProps} inviteHolder={inviteHolder} />
+    <Connections tableProps={tableProps} filterProps={filterProps} inviteHolder={inviteHolder} />
   );
 };
 
-RecipientsContainer.propTypes = {
+ConnectionsContainer.propTypes = {
   api: PropTypes.shape().isRequired
 };
 
-export default withApi(RecipientsContainer);
+export default withApi(ConnectionsContainer);

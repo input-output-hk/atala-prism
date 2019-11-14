@@ -3,7 +3,7 @@ import { DatePicker, Icon, Input, Row, Col } from 'antd';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 
-const ConnectionFilters = ({ changeDate, changeFilter }) => {
+const CredentialSummaryFilters = ({ changeDate, changeFilter }) => {
   const { t } = useTranslation();
 
   const datePickerProps = {
@@ -30,9 +30,9 @@ const ConnectionFilters = ({ changeDate, changeFilter }) => {
   );
 };
 
-ConnectionFilters.propTypes = {
+CredentialSummaryFilters.propTypes = {
   changeDate: PropTypes.func.isRequired,
   changeFilter: PropTypes.func.isRequired
 };
 
-export default ConnectionFilters;
+export default CredentialSummaryFilters;

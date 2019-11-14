@@ -1,4 +1,4 @@
-import { PENDING_CONNECTION, CONNECTED, PENDING_INVITATION } from '../../helpers/constants';
+import { PENDING_CONNECTION, CONNECTED } from '../../helpers/constants';
 import Logger from '../../helpers/Logger';
 
 export const mockedHolders = [
@@ -58,7 +58,7 @@ export const mockedHolders = [
     identityNumber: 48628,
     admissionDate: 1571200728,
     email: 'Greyson_Emard@hotmail.com',
-    status: PENDING_INVITATION,
+    status: PENDING_CONNECTION,
     id: 'z',
     key: 'z'
   },
@@ -68,7 +68,7 @@ export const mockedHolders = [
     identityNumber: 47145,
     admissionDate: 1571232206,
     email: 'Chelsie.Gerhold89@yahoo.com',
-    status: PENDING_INVITATION,
+    status: PENDING_CONNECTION,
     id: 'h',
     key: 'h'
   },
@@ -78,7 +78,7 @@ export const mockedHolders = [
     identityNumber: 8643,
     admissionDate: 1571186724,
     email: 'Camila_Maggio26@gmail.com',
-    status: PENDING_INVITATION,
+    status: PENDING_CONNECTION,
     id: 'c',
     key: 'c'
   },
@@ -88,7 +88,7 @@ export const mockedHolders = [
     identityNumber: 24147,
     admissionDate: 1571195744,
     email: 'Rodrigo62@yahoo.com',
-    status: PENDING_INVITATION,
+    status: PENDING_CONNECTION,
     id: '4',
     key: '4'
   },
@@ -98,7 +98,7 @@ export const mockedHolders = [
     identityNumber: 20963,
     admissionDate: 1571217949,
     email: 'Jolie50@hotmail.com',
-    status: PENDING_INVITATION,
+    status: PENDING_CONNECTION,
     id: 'w',
     key: 'w'
   },
@@ -108,7 +108,7 @@ export const mockedHolders = [
     identityNumber: 18656,
     admissionDate: 1571225532,
     email: 'Ernie_Romaguera@gmail.com',
-    status: PENDING_INVITATION,
+    status: PENDING_CONNECTION,
     id: 'z1',
     key: 'z1'
   },
@@ -118,7 +118,7 @@ export const mockedHolders = [
     identityNumber: 69575,
     admissionDate: 1571190154,
     email: 'Clifford27@gmail.com',
-    status: PENDING_INVITATION,
+    status: PENDING_CONNECTION,
     id: 'x',
     key: 'x'
   },
@@ -128,7 +128,7 @@ export const mockedHolders = [
     identityNumber: 73621,
     admissionDate: 1571173229,
     email: 'Mercedes.Cassin22@yahoo.com',
-    status: PENDING_INVITATION,
+    status: PENDING_CONNECTION,
     id: 'c1',
     key: 'c1'
   }

@@ -42,7 +42,7 @@ const CredentialContainer = ({ api }) => {
     method()
       .then(response => updateField(response))
       .catch(error => {
-        Logger.error(`RecipientsContainer: Error while getting ${field}`, error);
+        Logger.error(`CredentialContainer: Error while getting ${field}`, error);
         message.error(t('errors.errorGetting', { model: field }));
       });
 
@@ -61,7 +61,7 @@ const CredentialContainer = ({ api }) => {
       .getTotalCredentials()
       .then(count => setNoCredentials(count === 0))
       .catch(error => {
-        Logger.error('RecipientsContainer: Error while getting Credentials', error);
+        Logger.error('CredentialContainer: Error while getting Credentials', error);
         message.error(t('errors.errorGetting', { model: 'Credentials' }));
       });
   }, []);
@@ -84,7 +84,7 @@ const CredentialContainer = ({ api }) => {
         setCredentialCount(count);
       })
       .catch(error => {
-        Logger.error('[Recipients.getHolders] Error while getting Credentials', error);
+        Logger.error('[CredentialContainer.getCredentials] Error while getting Credentials', error);
         message.error(t('errors.errorGetting', { model: 'Credentials' }), 1);
       });
   }, [credentialId, name, credentialType, category, group, offset]);

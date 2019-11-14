@@ -28,7 +28,7 @@ const GroupsContainer = ({ api }) => {
         setGroupCount(count);
       })
       .catch(error => {
-        Logger.error('[Recipients.getHolders] Error while getting holders', error);
+        Logger.error('[GroupsContainer.updateGroups] Error: ', error);
         message.error(t('errors.errorGettingHolders'), 1);
       });
   };
@@ -45,7 +45,7 @@ const GroupsContainer = ({ api }) => {
         message.success(t('groups.deletionSuccess', { groupName }), 1);
       })
       .catch(error => {
-        Logger.error('[Recipients.getHolders] Error while getting holders', error);
+        Logger.error('[GroupsContainer.handleGroupDeletion] Error: ', error);
         message.error(t('errors.errorDeletingGroup', { groupName }), 1);
       });
 

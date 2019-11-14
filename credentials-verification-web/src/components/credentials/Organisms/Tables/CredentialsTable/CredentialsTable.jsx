@@ -97,7 +97,7 @@ const credentialshape = {
   identityNumber: PropTypes.number,
   admissionDate: PropTypes.number,
   email: PropTypes.string,
-  status: PropTypes.oneOf(['PENDING_CONNECTION', 'CONNECTED', 'PENDING_INVITATION']),
+  status: PropTypes.oneOf(['PENDING_CONNECTION', 'CONNECTED']),
   id: PropTypes.string
 };
 

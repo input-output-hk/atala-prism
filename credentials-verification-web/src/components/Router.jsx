@@ -4,12 +4,12 @@ import Dashboard from './dashboard/Dashboard';
 import Landing from './landing/Landing';
 import Login from './login/LoginContainer';
 import I18nError from './I18nError';
-import Recipients from './recipients/RecipientsContainer';
+import Connections from './connections/ConnectionsContainer';
 import Registration from './registration/RegistrationContainer';
 import NotFound from './notFound/NotFound';
 import Groups from './groups/GroupsContainer';
 import Credential from './credentials/CredentialContainer';
-import Connections from './connections/ConnectionsController';
+import CredentialSummaries from './credentialSummaries/CredentialSummaryController';
 import NewCredential from './newCredential/NewCredentialContainer';
 import Payment from './payments/PaymentContainer';
 
@@ -17,7 +17,12 @@ const landingRoute = { exact: true, path: '/', key: '/', component: Landing };
 const loginRoute = { exact: true, path: '/login', key: '/login', component: Login };
 const dashboardRoute = { exact: true, path: '/', key: '/', component: Dashboard };
 const errorRoute = { exact: true, path: '/error', key: '/error', component: I18nError };
-const recipients = { exact: true, path: '/recipients', key: '/recipients', component: Recipients };
+const connections = {
+  exact: true,
+  path: '/connections',
+  key: '/connections',
+  component: Connections
+};
 const groups = { exact: true, path: '/groups', key: '/groups', component: Groups };
 const credential = {
   exact: true,
@@ -25,11 +30,11 @@ const credential = {
   key: '/credentials',
   component: Credential
 };
-const connections = {
+const credentialSummary = {
   exact: true,
-  path: '/connections',
-  key: '/connections',
-  component: Connections
+  path: '/credentialSummary',
+  key: '/credentialSummary',
+  component: CredentialSummaries
 };
 const newCredential = {
   exact: true,
@@ -56,11 +61,11 @@ const routes = [
   landingRoute,
   errorRoute,
   loginRoute,
-  recipients,
+  connections,
   groups,
   newCredential,
   credential,
-  connections,
+  credentialSummary,
   registration,
   payment,
   notFound
