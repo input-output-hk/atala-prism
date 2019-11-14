@@ -16,6 +16,7 @@ import io.iohk.cvp.R;
 import io.iohk.cvp.viewmodel.CredentialsViewModel;
 import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
+import io.iohk.cvp.views.fragments.utils.StackedAppBar;
 import java.util.Objects;
 import javax.inject.Inject;
 import lombok.NoArgsConstructor;
@@ -51,13 +52,9 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
 
   @Override
   protected AppBarConfigurator getAppBarConfigurator() {
-    return supportActionBar -> {
-      setHasOptionsMenu(true);
-      supportActionBar.setHomeButtonEnabled(true);
-      supportActionBar.setDisplayHomeAsUpEnabled(true);
-      // configure the appbar title, FIXME for now it is hardcode as "University Degree"
-      supportActionBar.setTitle(R.string.university_degree);
-    };
+    setHasOptionsMenu(true);
+    // configure the appbar title, FIXME for now it is hardcode as "University Degree"
+    return new StackedAppBar(R.string.university_degree);
   }
 
   @Override

@@ -12,6 +12,7 @@ import io.iohk.cvp.views.fragments.CredentialDetailFragment;
 import io.iohk.cvp.views.fragments.FirstConnectionFragment;
 import io.iohk.cvp.views.fragments.HomeFragment;
 import io.iohk.cvp.views.fragments.LargeDescriptionDialogFragment;
+import io.iohk.cvp.views.fragments.PaymentCongratsFragment;
 import io.iohk.cvp.views.fragments.PaymentFragment;
 import io.iohk.cvp.views.fragments.PaymentHistoryFragment;
 import io.iohk.cvp.views.fragments.ProfileFragment;
@@ -50,6 +51,9 @@ public abstract class FragmentBuilder {
 
   @ContributesAndroidInjector
   abstract PaymentFragment contributePaymenFragment();
+
+  @ContributesAndroidInjector
+  abstract PaymentCongratsFragment contributePaymenCongratsFragment();
 
   @ContributesAndroidInjector(modules = PaymentsModule.class)
   abstract PaymentHistoryFragment contributePaymentHistoryFragment();

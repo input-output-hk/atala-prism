@@ -11,6 +11,7 @@ import io.iohk.cvp.R;
 import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.fragments.utils.ActionBarUtils;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
+import io.iohk.cvp.views.fragments.utils.RootAppBar;
 import java.util.Objects;
 import javax.inject.Inject;
 import lombok.NoArgsConstructor;
@@ -54,13 +55,7 @@ public class WalletFragment extends CvpFragment {
 
   @Override
   protected AppBarConfigurator getAppBarConfigurator() {
-    return supportActionBar -> {
-      supportActionBar.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-      supportActionBar.setHomeButtonEnabled(false);
-      supportActionBar.setDisplayHomeAsUpEnabled(false);
-      supportActionBar.setTitle(R.string.wallet_title);
-      ActionBarUtils.setTextColor(supportActionBar, Color.WHITE);
-    };
+    return new RootAppBar(R.string.wallet_title, Color.WHITE);
   }
 
   @Override

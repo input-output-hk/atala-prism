@@ -10,6 +10,7 @@ import androidx.fragment.app.FragmentTransaction;
 import io.iohk.cvp.R;
 import io.iohk.cvp.utils.ActivitiesRequestCodes;
 import io.iohk.cvp.utils.IntentDataConstants;
+import io.iohk.cvp.views.activities.AccountCreatedActivity;
 import io.iohk.cvp.views.activities.MainActivity;
 import io.iohk.cvp.views.activities.QrCodeScanner;
 import io.iohk.cvp.views.activities.SeedPhraseVerificationActivity;
@@ -20,50 +21,50 @@ import io.iohk.cvp.views.activities.WelcomeActivity;
 import io.iohk.cvp.views.fragments.CvpFragment;
 import io.iohk.cvp.views.fragments.FirstConnectionFragment;
 import io.iohk.cvp.views.fragments.PopUpFragment;
+import java.util.Objects;
 
 public class Navigator {
 
   //Activities
-  public void showWellcomeActivity(Activity from) {
-    Intent intent = new Intent(from.getApplicationContext(), WelcomeActivity.class);
-    intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-    from.startActivity(intent);
+  public void showWelcomeActivity(Activity from) {
+    startNewActivity(from, WelcomeActivity.class);
   }
 
   public void showConnections(Activity from) {
-    Intent intent = new Intent(from.getApplicationContext(), MainActivity.class);
-    intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-    from.startActivity(intent);
+    startNewActivity(from, MainActivity.class);
   }
 
   public void showTermsAndConditions(Activity from) {
-    Intent intent = new Intent(from.getApplicationContext(), TermsAndConditionsActivity.class);
-    from.startActivity(intent);
+    startNewActivity(from, TermsAndConditionsActivity.class);
   }
 
   public void showWalletSetup(Activity from) {
-    Intent intent = new Intent(from.getApplicationContext(), WalletSetupActivity.class);
-    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-    from.startActivity(intent);
+    startNewActivity(from, WalletSetupActivity.class);
   }
 
   public void showSeedPhraseVerification(Activity from) {
-    Intent intent = new Intent(from.getApplicationContext(), SeedPhraseVerificationActivity.class);
-    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-    from.startActivity(intent);
+    startNewActivity(from, SeedPhraseVerificationActivity.class);
+  }
+
+  public void showAccountCreated(Activity from) {
+    startNewActivity(from, AccountCreatedActivity.class);
   }
 
   public void showWebView(Activity from) {
-    Intent intent = new Intent(from.getApplicationContext(), WebViewActivity.class);
-    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-    from.startActivity(intent);
+    startNewActivity(from, WebViewActivity.class);
   }
 
   public void showQrScanner(FirstConnectionFragment from) {
-    Intent intent = new Intent(from.getActivity().getApplicationContext(), QrCodeScanner.class);
+    Intent intent = new Intent(Objects.requireNonNull(from.getActivity()).getApplicationContext(), QrCodeScanner.class);
     intent.putExtra(IntentDataConstants.QR_SCANNER_MODE_KEY,
         IntentDataConstants.QR_SCANNER_MODE_QR_CODE);
     from.startActivityForResult(intent, ActivitiesRequestCodes.QR_SCANNER_REQUEST_ACTIVITY);
+  }
+
+  private void startNewActivity(Activity from, Class activityClass) {
+    Intent intent = new Intent(from.getApplicationContext(), activityClass);
+    intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+    from.startActivity(intent);
   }
 
   public void showPermissionDeniedPopUp(FragmentManager fragmentManager) {
