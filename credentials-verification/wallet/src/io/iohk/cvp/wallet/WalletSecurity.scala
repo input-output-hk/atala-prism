@@ -1,7 +1,5 @@
 package io.iohk.cvp.wallet
 
-import java.util.UUID
-
 import javax.crypto.Cipher
 import javax.crypto.spec.SecretKeySpec
 
@@ -20,6 +18,7 @@ class WalletSecurity(keySalt: String) {
   private[wallet] def generateSecretKey(passphrase: String): SecretKeySpec = {
     import java.security.NoSuchAlgorithmException
     import java.security.spec.InvalidKeySpecException
+
     import javax.crypto.SecretKeyFactory
     import javax.crypto.spec.PBEKeySpec
 
@@ -64,7 +63,7 @@ class WalletSecurity(keySalt: String) {
 }
 
 object WalletSecurity {
-  val defaultKeySalt: String = UUID.randomUUID().toString
+  val defaultKeySalt: String = "f1e1210c-5cfa-4b6e-bb8b-c141e5946b2f" //UUID.randomUUID().toString
   def apply(): WalletSecurity = new WalletSecurity(defaultKeySalt)
   def apply(keySalt: String): WalletSecurity = new WalletSecurity(keySalt)
 }

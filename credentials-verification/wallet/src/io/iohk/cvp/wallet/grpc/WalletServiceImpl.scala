@@ -1,24 +1,20 @@
 package io.iohk.cvp.wallet.grpc
 
-import java.security.{PrivateKey, PublicKey}
+import java.security.PublicKey
+import java.util.concurrent.atomic.AtomicReference
 
 import com.google.protobuf.ByteString
 import io.iohk.cvp.crypto.{ECKeys, ECSignature}
+import io.iohk.cvp.wallet.WalletServiceOrchestrator.{createNewWallet, _}
 import io.iohk.cvp.wallet.models.Wallet
-import io.iohk.cvp.wallet.protos
-import io.iohk.cvp.wallet.WalletServiceOrchestrator._
-import io.iohk.cvp.wallet.protos._
-import javax.crypto.spec.SecretKeySpec
-import org.slf4j.LoggerFactory
-import io.iohk.cvp.wallet.WalletSecurity._
+import io.iohk.cvp.wallet.{WalletIO, protos}
 import io.iohk.cvp.wallet.protos.GetWalletStatusResponse.WalletStatus
+import io.iohk.cvp.wallet.protos._
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class WalletServiceImpl(wallet: Wallet)(implicit ec: ExecutionContext) extends protos.WalletServiceGrpc.WalletService {
-  private val logger = LoggerFactory.getLogger(this.getClass)
-
-  private val walletFile = os.pwd / ".cvpwallet" / "wallet.dat"
+  private val cachedWallet: AtomicReference[Option[WalletData]] = new AtomicReference(None)
 
   override def getDID(request: protos.GetDIDRequest): Future[protos.GetDIDResponse] = {
     val response = protos.GetDIDResponse(did = wallet.did)
@@ -56,16 +52,51 @@ class WalletServiceImpl(wallet: Wallet)(implicit ec: ExecutionContext) extends p
   }
 
   override def createWallet(request: CreateWalletRequest): Future[CreateWalletResponse] = {
-    createNewWallet(request.passphrase).map { _ =>
-      CreateWalletResponse()
+    createNewWallet(request.passphrase).map { data =>
+      {
+        cachedWallet.set(Some(data))
+        protos.CreateWalletResponse()
+      }
     }
   }
 
   override def getWalletStatus(request: GetWalletStatusRequest): Future[GetWalletStatusResponse] = {
-    loadWallet().map {
-      case Some(_) => GetWalletStatusResponse(WalletStatus.Locked)
-      case None => GetWalletStatusResponse(WalletStatus.Missing)
+    Future {
+      cachedWallet.get()
+    }.flatMap {
+      case Some(_) => Future.successful(GetWalletStatusResponse(WalletStatus.Unlocked))
+      case None =>
+        WalletIO().load().map {
+          case Some(_) => GetWalletStatusResponse(WalletStatus.Locked)
+          case None => GetWalletStatusResponse(WalletStatus.Missing)
+        }
+
     }
+
+  }
+
+  override def unlockWallet(request: UnlockWalletRequest): Future[UnlockWalletResponse] = {
+
+    Future {
+      cachedWallet.get()
+    }.flatMap {
+      case Some(_) => Future.successful(UnlockWalletResponse())
+      case None =>
+        loadWallet(request.passphrase).map {
+          case Some(data) => {
+            cachedWallet.set(Some(protos.WalletData.parseFrom(data)))
+            UnlockWalletResponse()
+          }
+          case None => throw new RuntimeException("Wallet cannot be Unlocked")
+        }
+    }
+
+  }
+
+  override def lockWallet(request: LockWalletRequest): Future[LockWalletResponse] = {
+    Future {
+      cachedWallet.set(None)
+    }.map(_ => LockWalletResponse())
   }
 
 }

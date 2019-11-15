@@ -2,32 +2,38 @@ package io.iohk.cvp.wallet
 
 import java.security.{PrivateKey, PublicKey}
 
+import cats.effect.{ContextShift, IO}
+import cats.effect.concurrent.Ref
 import io.iohk.cvp.crypto.ECKeys
+import io.iohk.cvp.wallet.models.Wallet
+import io.iohk.cvp.wallet.protos.GetWalletStatusResponse.WalletStatus
 import io.iohk.cvp.wallet.protos.WalletData
 import javax.crypto.spec.SecretKeySpec
 import org.slf4j.LoggerFactory
+import cats.implicits._
 
 import scala.concurrent.{ExecutionContext, Future}
 
 object WalletServiceOrchestrator {
-
   private val logger = LoggerFactory.getLogger(this.getClass)
   private val walletSecurity = WalletSecurity()
 
-  def createNewWallet(passphrase: String)(implicit ec: ExecutionContext): Future[Unit] = {
+  def createNewWallet(passphrase: String)(implicit ec: ExecutionContext): Future[WalletData] = {
     for {
       keySpec <- Future { walletSecurity.generateSecretKey(passphrase) }
       wallet = generateWallet()
       encryptedWallet = walletSecurity.encrypt(keySpec, wallet.toByteArray)
       save <- WalletIO().save(encryptedWallet)
-    } yield save
+    } yield wallet
   }
 
-  def loadWallet(passphrase: Option[String] = None)(implicit ec: ExecutionContext): Future[Option[Array[Byte]]] = {
-//    val keySpec: SecretKeySpec = generateSecretKey(
-//      passphrase.getOrElse(throw new RuntimeException("Passphrase required"))
-//    ) //TODO IN NEXT STORY
-    WalletIO().load()
+  def loadWallet(passphrase: String)(implicit ec: ExecutionContext): Future[Option[Array[Byte]]] = {
+    WalletIO().load().map { dataO =>
+      dataO.map { data =>
+        val keySpec = walletSecurity.generateSecretKey(passphrase)
+        walletSecurity.decrypt(keySpec, data)
+      }
+    }
   }
 
   private def generateWallet(): WalletData = {

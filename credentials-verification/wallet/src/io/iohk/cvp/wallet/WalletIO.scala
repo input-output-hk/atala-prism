@@ -37,7 +37,7 @@ class WalletIO(walletFile: Path)(implicit ec: ExecutionContext) {
 
 object WalletIO {
 
-  private val defaultFile = os.pwd / ".cvpwallet" / "wallet.dat"
+  private val defaultFile = os.pwd / ".cvpwallet" / "wallet-new.dat"
 
   def apply()(implicit ec: ExecutionContext): WalletIO = {
     new WalletIO(defaultFile)

@@ -41,6 +41,12 @@ service WalletService {
 
     // Get wallet status
     rpc GetWalletStatus(GetWalletStatusRequest) returns (GetWalletStatusResponse) {}
+
+    // Unlock wallet
+    rpc unlockWallet(UnlockWalletRequest) returns (UnlockWalletResponse) {}
+
+    // Lock  wallet
+    rpc lockWallet(LockWalletRequest) returns (LockWalletResponse) {}
 }
 
 message GetDIDRequest {}
@@ -83,3 +89,14 @@ message GetWalletStatusResponse {
     }
     WalletStatus status = 1;
 }
+
+message UnlockWalletRequest {
+    string passphrase = 1;
+}
+
+message UnlockWalletResponse {}
+
+message LockWalletRequest {}
+
+message LockWalletResponse {}
+
