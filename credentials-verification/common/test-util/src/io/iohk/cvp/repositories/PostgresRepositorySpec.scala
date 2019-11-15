@@ -53,7 +53,7 @@ trait PostgresRepositorySpec
     clearDatabase()
   }
 
-  lazy val database: Transactor[IO] = {
+  implicit lazy val database: Transactor[IO] = {
     val config = TransactorFactory.Config(
       username = PostgresUsername,
       password = PostgresPassword,

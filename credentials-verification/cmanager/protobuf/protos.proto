@@ -7,6 +7,10 @@ service CredentialsService {
     rpc GetCredentials (GetCredentialsRequest) returns (GetCredentialsResponse) {}
 }
 
+service StudentsService {
+    rpc CreateStudent (CreateStudentRequest) returns (CreateStudentResponse) {}
+}
+
 // The authenticated issuer is creating a credential
 message CreateCredentialRequest {
     string subject = 1;
@@ -28,6 +32,16 @@ message GetCredentialsResponse {
     repeated Credential credentials = 1;
 }
 
+message CreateStudentRequest {
+    string universityAssignedId = 1;
+    string fullName = 2;
+    string email = 3;
+    Date admissionDate = 4;
+}
+message CreateStudentResponse {
+    Student student = 1;
+}
+
 message Date {
     int32 year = 1; // positive value
     int32 month = 2; // value in the [1, 12] interval
@@ -42,4 +56,22 @@ message Credential {
     Date enrollmentDate = 5;
     Date graduationDate = 6;
     string groupName = 7;
+}
+
+message Student {
+    string id = 1;
+    string issuerId = 2;
+    string universityAssignedId = 3;
+    string fullName = 4;
+    string email = 5;
+    Date admissionDate = 6;
+    StudentConnectionStatus connectionStatus = 7;
+    string connectionId = 8;
+}
+
+enum StudentConnectionStatus {
+    InvitationMissing = 0;
+    ConnectionMissing = 1;
+    ConnectionAccepted = 2;
+    ConnectionRevoked = 3;
 }

@@ -1,14 +1,13 @@
 package io.iohk.cvp.cmanager.grpc.services
 
-import java.time.LocalDate
 import java.util.UUID
 
 import io.iohk.cvp.cmanager.grpc.UserIdInterceptor
+import io.iohk.cvp.cmanager.grpc.services.codecs.ProtoCodecs._
 import io.iohk.cvp.cmanager.models.Credential
 import io.iohk.cvp.cmanager.models.requests.CreateCredential
 import io.iohk.cvp.cmanager.protos
 import io.iohk.cvp.cmanager.repositories.CredentialsRepository
-import io.scalaland.chimney.Transformer
 import io.scalaland.chimney.dsl._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -27,7 +26,7 @@ class CredentialsServiceImpl(credentialsRepository: CredentialsRepository)(impli
 
     credentialsRepository
       .create(model)
-      .map(toProto)
+      .map(credentialToProto)
       .map(protos.CreateCredentialResponse().withCredential)
       .value
       .map {
@@ -42,34 +41,12 @@ class CredentialsServiceImpl(credentialsRepository: CredentialsRepository)(impli
     credentialsRepository
       .getBy(userId, request.limit, lastSeenCredential)
       .map { list =>
-        protos.GetCredentialsResponse(list.map(toProto))
+        protos.GetCredentialsResponse(list.map(credentialToProto))
       }
       .value
       .map {
         case Right(x) => x
         case Left(e) => throw new RuntimeException(s"FAILED: $e")
       }
-  }
-
-  private def toProto(credential: Credential): protos.Credential = {
-    val graduationDate = credential.graduationDate.into[protos.Date].transform
-    val enrollmentDate = credential.enrollmentDate.into[protos.Date].transform
-    protos
-      .Credential()
-      .withId(credential.id.value.toString)
-      .withSubject(credential.subject)
-      .withTitle(credential.title)
-      .withIssuedBy(credential.issuedBy.value.toString)
-      .withGroupName(credential.groupName)
-      .withEnrollmentDate(graduationDate)
-      .withGraduationDate(enrollmentDate)
-  }
-
-  private implicit val proto2DateTransformer: Transformer[protos.Date, LocalDate] = proto => {
-    LocalDate.of(proto.year, proto.month, proto.day)
-  }
-
-  private implicit val date2ProtoTransformer: Transformer[LocalDate, protos.Date] = date => {
-    protos.Date(year = date.getYear, month = date.getMonthValue, day = date.getDayOfMonth)
   }
 }

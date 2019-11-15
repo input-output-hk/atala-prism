@@ -1,11 +1,11 @@
 package io.iohk.cvp.cmanager.repositories
 
 import java.time.LocalDate
-import java.util.UUID
 
-import io.iohk.cvp.cmanager.models.{Credential, Issuer}
 import io.iohk.cvp.cmanager.models.requests.CreateCredential
+import io.iohk.cvp.cmanager.models.{Credential, Issuer}
 import io.iohk.cvp.cmanager.repositories.common.CManagerRepositorySpec
+import io.iohk.cvp.cmanager.repositories.common.DataPreparation._
 import org.scalatest.EitherValues._
 
 class CredentialsRepositorySpec extends CManagerRepositorySpec {
@@ -57,19 +57,6 @@ class CredentialsRepositorySpec extends CManagerRepositorySpec {
       val result = repository.getBy(issuer, 1, first.lastOption.map(_.id)).value.futureValue.right.value
       result.toSet must be(Set(credC))
     }
-  }
-
-  def createIssuer(name: String = "Issuer"): Issuer.Id = {
-    import doobie.implicits._
-    import daos._
-
-    val id = Issuer.Id(UUID.randomUUID())
-    val did = "did:geud:issuer-x"
-    sql"""
-         |INSERT INTO issuers (issuer_id, name, did)
-         |VALUES ($id, $name, $did)
-         |""".stripMargin.update.run.transact(database).unsafeRunSync()
-    id
   }
 
   def createCredential(issuedBy: Issuer.Id, tag: String = ""): Credential = {
