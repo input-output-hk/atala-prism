@@ -4,8 +4,8 @@ import com.typesafe.config.{Config, ConfigFactory}
 import io.grpc.protobuf.services.ProtoReflectionService
 import io.grpc.{Server, ServerBuilder}
 import io.iohk.cvp.cmanager.grpc.UserIdInterceptor
-import io.iohk.cvp.cmanager.grpc.services.CredentialsServiceImpl
-import io.iohk.cvp.cmanager.repositories.CredentialsRepository
+import io.iohk.cvp.cmanager.grpc.services.{CredentialsServiceImpl, StudentsServiceImpl}
+import io.iohk.cvp.cmanager.repositories.{CredentialsRepository, StudentsRepository}
 import io.iohk.cvp.repositories.{SchemaMigrations, TransactorFactory}
 import org.slf4j.LoggerFactory
 
@@ -41,7 +41,9 @@ class CManagerApp(ec: ExecutionContext) { self =>
     val xa = TransactorFactory(databaseConfig)
 
     val credentialsRepository = new CredentialsRepository(xa)(ec)
+    val studentsRepository = new StudentsRepository(xa)(ec)
     val credentialsService = new CredentialsServiceImpl(credentialsRepository)(ec)
+    val studentsService = new StudentsServiceImpl(studentsRepository)(ec)
 
     logger.info("Starting server")
     server = ServerBuilder
@@ -49,6 +51,7 @@ class CManagerApp(ec: ExecutionContext) { self =>
       .intercept(new UserIdInterceptor)
       .addService(ProtoReflectionService.newInstance())
       .addService(protos.CredentialsServiceGrpc.bindService(credentialsService, ec))
+      .addService(protos.StudentsServiceGrpc.bindService(studentsService, ec))
       .build()
       .start()
 
