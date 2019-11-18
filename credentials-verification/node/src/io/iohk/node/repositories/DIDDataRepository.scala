@@ -9,7 +9,7 @@ import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither._
 import io.iohk.node.errors.NodeError
 import io.iohk.node.errors.NodeError.UnknownValueError
-import io.iohk.node.models.{DIDData, DIDPublicKey, DIDSuffix}
+import io.iohk.node.models.{DIDData, DIDPublicKey, DIDSuffix, SHA256Digest}
 import io.iohk.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
 
 import scala.concurrent.ExecutionContext
@@ -24,13 +24,12 @@ class DIDDataRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
     * @return unit indicating success or error
     */
   def create(
-      didSuffix: DIDSuffix,
-      lastOperation: Array[Byte],
-      keys: List[DIDPublicKey]
+      didData: DIDData,
+      lastOperation: SHA256Digest
   ): FutureEither[NodeError, Unit] = {
     val query = for {
-      _ <- DIDDataDAO.insert(didSuffix, lastOperation)
-      _ <- keys.traverse((key: DIDPublicKey) => PublicKeysDAO.insert(key))
+      _ <- DIDDataDAO.insert(didData.didSuffix, lastOperation)
+      _ <- didData.keys.traverse((key: DIDPublicKey) => PublicKeysDAO.insert(key))
     } yield ()
 
     query

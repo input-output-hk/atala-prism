@@ -4,7 +4,7 @@ import doobie.postgres.implicits._
 import doobie.util.{Get, Put, Read, Write}
 import doobie.util.invariant.InvalidEnum
 import io.iohk.cvp.crypto.ECKeys
-import io.iohk.node.models.{DIDPublicKey, DIDSuffix, KeyUsage}
+import io.iohk.node.models.{CredentialId, DIDPublicKey, DIDSuffix, KeyUsage}
 
 package object daos {
   implicit val pgKeyUsageMeta = pgEnumString[KeyUsage](
@@ -15,6 +15,9 @@ package object daos {
 
   implicit val didSuffixPut: Put[DIDSuffix] = Put[String].contramap(_.suffix)
   implicit val didSuffixGet: Get[DIDSuffix] = Get[String].map(DIDSuffix(_))
+
+  implicit val credentialIdPut: Put[CredentialId] = Put[String].contramap(_.id)
+  implicit val credentialIdGet: Get[CredentialId] = Get[String].map(CredentialId(_))
 
   implicit val didPublicKeyWrite: Write[DIDPublicKey] = {
     Write[(DIDSuffix, String, KeyUsage, String, Array[Byte], Array[Byte])].contramap { key =>

@@ -4,9 +4,14 @@ CREATE DOMAIN ID_TYPE AS TEXT CHECK(
   VALUE ~ '^[0-9a-f]{64}$'
 );
 
+CREATE DOMAIN OPERATION_HASH AS BYTEA
+CHECK (
+  LENGTH(VALUE) = 32
+);
+
 CREATE TABLE did_data(
   did_suffix ID_TYPE NOT NULL,
-  last_operation BYTEA NOT NULL,
+  last_operation OPERATION_HASH NOT NULL,
   CONSTRAINT did_data_pk PRIMARY KEY (did_suffix)
 );
 
