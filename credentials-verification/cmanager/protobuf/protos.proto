@@ -9,6 +9,7 @@ service CredentialsService {
 
 service StudentsService {
     rpc CreateStudent (CreateStudentRequest) returns (CreateStudentResponse) {}
+    rpc GetStudents (GetStudentsRequest) returns (GetStudentsResponse) {}
 }
 
 // The authenticated issuer is creating a credential
@@ -40,6 +41,14 @@ message CreateStudentRequest {
 }
 message CreateStudentResponse {
     Student student = 1;
+}
+
+message GetStudentsRequest {
+    int32 limit = 1; // the max amount of students to return, must be > 0
+    string lastSeenStudentId = 2; // the last seen student (if any), the returned students start after this one
+}
+message GetStudentsResponse {
+    repeated Student students = 1;
 }
 
 message Date {
