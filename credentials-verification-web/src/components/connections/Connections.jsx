@@ -75,7 +75,7 @@ const Connections = ({ tableProps, filterProps, inviteHolder }) => {
         visible={QRModalIsOpen}
         onCancel={() => showQRModal(false)}
         qrValue={connectionToken}
-        tPrefix="recipients"
+        tPrefix="connections"
       />
     </Fragment>
   );

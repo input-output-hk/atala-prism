@@ -14,11 +14,18 @@ const completeDateFormatter = (date, format) => {
     .format(format);
 };
 
-export const backendDateFormatter = format => date => completeDateFormatter(date, format);
-export const frontendDateFormatter = format => date => date.format(format);
+const completeFrontendDateFormatter = (date, format) => {
+  const lang = getBrowserLanguage();
+  moment.locale(lang);
+  return moment.unix(date).format(format);
+};
 
-export const longDateFormatter = backendDateFormatter('LLLL');
-export const shortDateFormatter = backendDateFormatter('lll');
+export const backendDateFormatter = format => date => completeDateFormatter(date, format);
+export const frontendDateFormatter = format => date => completeFrontendDateFormatter(date, format);
+
+export const longDateFormatter = frontendDateFormatter('LLLL');
+export const shortDateFormatter = frontendDateFormatter('lll');
+export const shortBackendDateFormatter = backendDateFormatter('lll');
 
 export const monthDayFormat = frontendDateFormatter('MMM DD');
 

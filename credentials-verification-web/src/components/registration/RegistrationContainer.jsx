@@ -3,6 +3,7 @@ import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import _ from 'lodash';
+import moment from 'moment';
 import DocumentAcceptation from './Molecules/DocumentAcceptation/DocumentAcceptation';
 import Registration from './Registration';
 import { withApi } from '../providers/witApi';
@@ -22,7 +23,7 @@ const MNEMONIC_VALIDATION_STEP = 5;
 const ORGANISATION_INFO_STEP = 6;
 const STEP_QUANTITY = 7;
 
-const RegistrationContainer = ({ api: { getTermsAndConditions, getPrivacyPolicy } }) => {
+const RegistrationContainer = ({ getTermsAndConditions, getPrivacyPolicy, toProtoDate }) => {
   const { t } = useTranslation();
 
   const [currentStep, setCurrentStep] = useState(TERMS_AND_CONDITIONS_STEP);
@@ -151,7 +152,7 @@ const RegistrationContainer = ({ api: { getTermsAndConditions, getPrivacyPolicy 
         return (
           <DocumentAcceptation
             title="registration.termsAndConditions"
-            lastUpdated={9}
+            lastUpdated={toProtoDate(moment())}
             content={termsAndConditions}
           />
         );
@@ -159,7 +160,7 @@ const RegistrationContainer = ({ api: { getTermsAndConditions, getPrivacyPolicy 
         return (
           <DocumentAcceptation
             title="registration.privacyPolicy"
-            lastUpdated={9}
+            lastUpdated={toProtoDate(moment())}
             content={privacyPolicy}
           />
         );
@@ -217,8 +218,9 @@ const RegistrationContainer = ({ api: { getTermsAndConditions, getPrivacyPolicy 
 };
 
 RegistrationContainer.propTypes = {
-  api: PropTypes.shape({ getTermsAndConditions: PropTypes.func, getPrivacyPolicy: PropTypes.func })
-    .isRequired
+  getTermsAndConditions: PropTypes.func.isRequired,
+  getPrivacyPolicy: PropTypes.func.isRequired,
+  toProtoDate: PropTypes.func.isRequired
 };
 
 export default withApi(RegistrationContainer);
