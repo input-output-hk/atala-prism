@@ -12,35 +12,36 @@ import Credential from './credentials/CredentialContainer';
 import CredentialSummaries from './credentialSummaries/CredentialSummaryController';
 import NewCredential from './newCredential/NewCredentialContainer';
 import Payment from './payments/PaymentContainer';
+import { withSideBar } from './providers/withSideBar';
 
 const landingRoute = { exact: true, path: '/', key: '/', component: Landing };
 const loginRoute = { exact: true, path: '/login', key: '/login', component: Login };
-const dashboardRoute = { exact: true, path: '/', key: '/', component: Dashboard };
+const dashboardRoute = { exact: true, path: '/', key: '/', component: withSideBar(Dashboard) };
 const errorRoute = { exact: true, path: '/error', key: '/error', component: I18nError };
 const connections = {
   exact: true,
   path: '/connections',
   key: '/connections',
-  component: Connections
+  component: withSideBar(Connections)
 };
-const groups = { exact: true, path: '/groups', key: '/groups', component: Groups };
+const groups = { exact: true, path: '/groups', key: '/groups', component: withSideBar(Groups) };
 const credential = {
   exact: true,
   path: '/credentials',
   key: '/credentials',
-  component: Credential
+  component: withSideBar(Credential)
 };
 const credentialSummary = {
   exact: true,
   path: '/credentialSummary',
   key: '/credentialSummary',
-  component: CredentialSummaries
+  component: withSideBar(CredentialSummaries)
 };
 const newCredential = {
   exact: true,
   path: '/newCredential',
   key: '/newCredential',
-  component: NewCredential
+  component: withSideBar(NewCredential)
 };
 const registration = {
   exact: true,
@@ -52,7 +53,7 @@ const payment = {
   exact: true,
   path: '/payment',
   key: 'paymnt',
-  component: Payment
+  component: withSideBar(Payment)
 };
 const notFound = { key: 'notFound', component: NotFound };
 
