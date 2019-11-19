@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { message } from 'antd';
+import PropTypes from 'prop-types';
 import Logger from '../../helpers/Logger';
 import Credentials from './Credentials';
 import { withApi } from '../providers/witApi';
@@ -67,18 +68,8 @@ const CredentialContainer = ({ api }) => {
   }, []);
 
   useEffect(() => {
-    const filterDateAsUnix = dateAsUnix(date);
-
     api
-      .getCredentials({
-        credentialId,
-        name,
-        credentialType,
-        category,
-        group,
-        offset,
-        date: filterDateAsUnix
-      })
+      .getCredentials()
       .then(({ credentials: credentialsList, count }) => {
         setCredentials(credentialsList);
         setCredentialCount(count);
@@ -133,6 +124,16 @@ const CredentialContainer = ({ api }) => {
   return (
     <Credentials showEmpty={noCredentials} tableProps={tableProps} filterProps={filterProps} />
   );
+};
+
+CredentialContainer.propTypes = {
+  api: PropTypes.shape({
+    getCredentialTypes: PropTypes.func.isRequired,
+    getCategoryTypes: PropTypes.func.isRequired,
+    getCredentialsGroups: PropTypes.func.isRequired,
+    getTotalCredentials: PropTypes.func.isRequired,
+    getCredentials: PropTypes.func.isRequired
+  }).isRequired
 };
 
 export default withApi(CredentialContainer);

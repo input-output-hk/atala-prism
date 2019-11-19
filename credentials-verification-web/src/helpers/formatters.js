@@ -5,8 +5,13 @@ import { getBrowserLanguage } from './languageUtils';
 
 const completeDateFormatter = (date, format) => {
   const lang = getBrowserLanguage();
-  moment.locale(lang);
-  return moment.unix(date).format(format);
+  return moment
+    .utc()
+    .year(date.year)
+    .month(date.month - 1) // because Months are zero indexed
+    .date(date.day)
+    .locale(lang)
+    .format(format);
 };
 
 export const backendDateFormatter = format => date => completeDateFormatter(date, format);

@@ -17,7 +17,7 @@ Lastly, to run the project use `npm run start` or just `npm start`.
 First of all, ensure you have .protos compiled. For more information go to [Compile .protos section](#Compile-.protos)
 
 Run envoy proxy. Envoy is just for dev environment
-1. Edit `./envoy/Dockerfile` setting your host ip in `clusters.hosts[socket_address.address]`. 
+1. Edit `./envoy/envoy.yaml` setting your host ip in `clusters.hosts[socket_address.address]`. 
 1. Go to ./envoy directory and run `docker build -t envoy:{versionTag} .`. 
 1. Start envoy running `docker run -d --name {containerName} -p 9901:9901 -p 10000:10000 envoy:{versionTag}`
 
