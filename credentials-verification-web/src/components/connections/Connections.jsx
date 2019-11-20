@@ -1,4 +1,4 @@
-import React, { Fragment, useState } from 'react';
+import React, { useState } from 'react';
 import { Icon } from 'antd';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
@@ -60,7 +60,7 @@ const Connections = ({ tableProps, filterProps, inviteHolder }) => {
   };
 
   return (
-    <Fragment>
+    <div className="PageContainer">
       <div className="ContentHeader">
         <h1>{t('connections.title')}</h1>
         <ConnectionsButtons />
@@ -77,7 +77,7 @@ const Connections = ({ tableProps, filterProps, inviteHolder }) => {
         qrValue={connectionToken}
         tPrefix="connections"
       />
-    </Fragment>
+    </div>
   );
 };
 

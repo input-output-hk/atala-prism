@@ -9,6 +9,8 @@ import {
 import { savePictureInS3, saveCredential, saveDraft } from './credentialInteractions';
 import { getTermsAndConditions, getPrivacyPolicy } from './documents';
 import { toProtoDate } from './helpers';
+import { getCredentialSummaries } from './credentialSummaries';
+import { getPayments, getCurrencies, getAmounts } from './payments';
 
 export const mockApi = {
   getHolders,
@@ -24,5 +26,9 @@ export const mockApi = {
   saveDraft,
   getTermsAndConditions,
   getPrivacyPolicy,
-  toProtoDate
+  toProtoDate,
+  getCredentialSummaries,
+  getPayments,
+  getCurrencies,
+  getAmounts
 };

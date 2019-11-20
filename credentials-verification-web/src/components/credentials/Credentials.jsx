@@ -43,7 +43,7 @@ const Credentials = ({ showEmpty, tableProps, filterProps }) => {
   };
 
   return (
-    <React.Fragment>
+    <div className="PageContainer">
       <div className="ContentHeader">
         <h1>{t('credentials.title')}</h1>
         <CredentialsButtons />
@@ -57,7 +57,7 @@ const Credentials = ({ showEmpty, tableProps, filterProps }) => {
           <EmptyComponent {...emptyProps} />
         )}
       </Row>
-    </React.Fragment>
+    </div>
   );
 };
 

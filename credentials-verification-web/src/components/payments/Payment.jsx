@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import { paymentShape } from '../../helpers/propShapes';
@@ -18,14 +18,14 @@ const Payment = ({
 }) => {
   const { t } = useTranslation();
 
-  const a = { setFrom, setTo, setPayer, payer };
+  const filterProps = { setFrom, setTo, setPayer, payer };
 
   return (
-    <Fragment>
+    <div className="PageContainer">
       <div>
         <h1>{t('payment.title')}</h1>
       </div>
-      <PaymentFilter {...a} />
+      <PaymentFilter {...filterProps} />
       {payments.length ? (
         <PaymentTable
           payments={payments}
@@ -37,7 +37,7 @@ const Payment = ({
       ) : (
         <div />
       )}
-    </Fragment>
+    </div>
   );
 };
 
