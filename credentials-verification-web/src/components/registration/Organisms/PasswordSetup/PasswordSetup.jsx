@@ -7,6 +7,8 @@ import CustomForm from '../../../common/Organisms/Forms/CustomForm';
 import { noEmptyInput, passwordValidation } from '../../../../helpers/formRules';
 import { refShape } from '../../../../helpers/propShapes';
 
+import './_style.scss';
+
 const getPassValue = (formRef, field) => formRef.current.getForm().getFieldValue(field);
 
 const PasswordSetup = ({ password, passwordRef }) => {
@@ -50,14 +52,14 @@ const PasswordSetup = ({ password, passwordRef }) => {
   ];
 
   return (
-    <Fragment>
+    <div className="RegisterStep">
       <StepCard
         comment="registration.password.begin"
         title="registration.password.title"
         info="registration.password.info"
       />
       <CustomForm items={items} ref={passwordRef} />
-    </Fragment>
+    </div>
   );
 };
 

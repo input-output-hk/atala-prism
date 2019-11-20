@@ -1,17 +1,16 @@
-import React, { createRef } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { Col, Card, Row } from 'antd';
+import PropTypes from 'prop-types';
 import LoginForm from './Organisms/Form/LoginForm';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
+import { refShape } from '../../helpers/propShapes';
 import logo from '../../images/loginLogo.svg';
 
 import './_style.scss';
 
 const Login = ({ formRef, handleLogin }) => {
   const { t } = useTranslation();
-
-  const rowProps = { align: 'middle', gutter: '32', type: 'flex' };
 
   return (
     <div className="LoginContainer">
@@ -35,6 +34,11 @@ const Login = ({ formRef, handleLogin }) => {
       </div>
     </div>
   );
+};
+
+Login.propTypes = {
+  formRef: refShape.isRequired,
+  handleLogin: PropTypes.isRequired
 };
 
 export default Login;

@@ -1,0 +1,53 @@
+@import '../../../../css/general_styling';
+
+.VerifyFooter {
+  width: 40%;
+  padding: 0 2em;
+  display: flex;
+  align-self: flex-start;
+  flex-flow: column;
+
+  .VerifyContainer {
+    display: flex;
+    align-items: center;
+    height: 40px;
+    margin-bottom: 1em;
+    width: 100%;
+    padding: 0 1em;
+    border-radius: 4px;
+    margin-right: 1.5em;
+    @include letter-spacing();
+    
+    &.Success{
+      background: #ccf7e9;
+      
+      p{
+      @include primary-text($body, $success-color);
+    }
+    }
+
+    &.Failure{
+      background: #ffeaeb;
+      p{
+      @include primary-text($body, $primary-color);
+    }
+    }
+
+    .anticon {
+      font-size: 20px;
+      margin-right: 0.5em;
+      &.anticon-check-circle {
+        color: $success-color;
+      }
+      &.anticon-close-circle {
+        color: $primary-color;
+      }
+    }
+
+
+  }
+  
+   .theme-secondary {
+     width: 100%
+   }
+}

@@ -1,0 +1,60 @@
+@import '../../../../css/general_styling';
+
+.DownloadWallet {
+  display: flex;
+  flex-flow: column;
+  justify-content: space-between;
+  height: 85%;
+  align-items: center;
+
+  .DownloadContainer {
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding-top: 4em;
+
+    img {
+      margin-bottom: 2em;
+    }
+
+    h2 {
+      @include secondary-text($h2, $primary-color);
+      @include letter-spacing();
+    }
+
+    p {
+      width: 30%;
+      text-align: center;
+      @include primary-text($body, $secondary-color);
+      @include letter-spacing();
+      margin-bottom: 2em;
+    }
+    
+    .theme-secondary {
+      @include primary-text($button, $dark-grey);
+      border-radius: 4px;
+      padding: 0.65em;
+      color: $white;
+      &:hover,
+      &:focus {
+        background-color: $black;
+        color: $white;
+      }
+    }
+  }
+
+  .ErrorContainer {
+    width: 95%;
+    padding: 2em 0;
+    .WalletError {
+      width: 100%;
+      background: #ffeaeb;
+      padding: 1em;
+      border-radius: 4px;
+      @include primary-text($body, $primary-color);
+      @include letter-spacing();
+    }
+  }
+}

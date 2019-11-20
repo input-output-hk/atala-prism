@@ -1,17 +1,29 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Checkbox, Col, Row } from 'antd';
-import { Link } from 'react-router-dom';
+import { Checkbox } from 'antd';
 import { useTranslation } from 'react-i18next';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
+
+import './_style.scss';
 
 const RegistrationFooter = ({ next, previous, accepted, toggleAccept, documentToAccept }) => {
   const { t } = useTranslation();
 
   return (
-    <Row>
-      {previous && (
-        <Col>
+    <div className="RegistrationFooter">
+      <div className="LeftButtons">
+        {toggleAccept && (
+          <div className="CheckControl">
+            <Checkbox onChange={toggleAccept} checked={accepted} />
+            <p>
+              {t('registration.accept')}
+              <strong>{t(`registration.${documentToAccept}`)}</strong>
+            </p>
+          </div>
+        )}
+      </div>
+      <div className="RightButtons">
+        {previous && (
           <CustomButton
             buttonProps={{
               onClick: previous,
@@ -19,18 +31,7 @@ const RegistrationFooter = ({ next, previous, accepted, toggleAccept, documentTo
             }}
             buttonText={t('registration.back')}
           />
-        </Col>
-      )}
-      {toggleAccept && (
-        <Col>
-          <Checkbox onChange={toggleAccept} checked={accepted} /> {t('registration.accept')}
-          {t(`registration.${documentToAccept}`)}
-        </Col>
-      )}
-      <Col>
-        <Link to="/">{t('registration.cancel')}</Link>
-      </Col>
-      <Col>
+        )}
         <CustomButton
           buttonProps={{
             onClick: next,
@@ -38,8 +39,8 @@ const RegistrationFooter = ({ next, previous, accepted, toggleAccept, documentTo
           }}
           buttonText={t('registration.next')}
         />
-      </Col>
-    </Row>
+      </div>
+    </div>
   );
 };
 

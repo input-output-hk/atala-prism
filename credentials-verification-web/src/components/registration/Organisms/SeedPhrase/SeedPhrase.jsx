@@ -5,22 +5,26 @@ import { Checkbox, Row } from 'antd';
 import StepCard from '../../Atoms/StepCard/StepCard';
 import PhraseRenderer from '../../Molecules/PhraseRenderer/PhraseRenderer';
 
+import './_style.scss';
+
 const SeedPhrase = ({ mnemonics, accepted, toggleAccept }) => {
   const { t } = useTranslation();
 
   return (
-    <Fragment>
+    <div className="RegisterStep">
       <StepCard
         title="registration.mnemonic.title"
         info="registration.mnemonic.explanation"
         subtitle="registration.mnemonic.request"
       />
-      <PhraseRenderer mnemonics={mnemonics} />
-      <Row>
+      <div className="PhraseContainer">
+        <PhraseRenderer mnemonics={mnemonics} />
+      </div>
+      <div className="CheckboxContainer">
         <Checkbox onChange={toggleAccept} checked={accepted} />
-        <label>{t('registration.mnemonic.warning')}</label>
-      </Row>
-    </Fragment>
+        <p>{t('registration.mnemonic.warning')}</p>
+      </div>
+    </div>
   );
 };
 

@@ -1,0 +1,53 @@
+@import '../../css/general_styling';
+
+.RegistrationContainer {
+  background: $primary-color;
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  align-items: center;
+  background-image: url('../../images/bgRegister.png');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+
+  .RegistrationContent {
+    width: 90%;
+    height: 80%;
+    border-radius: 10px;
+    background: $white;
+    box-shadow: $shadow;
+    margin: 0 auto;
+
+    .AcceptTerms {
+      height: 85%;
+      padding: 2em;
+      @include letter-spacing();
+
+      h2 {
+        @include secondary-text($h2, $secondary-color);
+      }
+      span {
+        @include primary-text($body, $grey);
+      }
+    }
+
+    .RegisterStep {
+      height: 85%;
+      width: 65%;
+      display: flex;
+      flex-flow: column;
+      justify-content: space-between;
+      align-items: center;
+      margin: 0 auto;
+      padding: 4em 0;
+
+      .ant-form {
+        align-self: flex-start;
+        width: 40%;
+        height: 40%;
+        padding: 0 2em;
+      }
+    }
+  }
+}

@@ -8,6 +8,8 @@ import CustomForm from '../../../common/Organisms/Forms/CustomForm';
 import { noEmptyInput } from '../../../../helpers/formRules';
 import VerifyFooter from '../../Atoms/VerifyFooter/VerifyFooter';
 
+import './_style.scss';
+
 const VerifySeedPhrase = ({ words, validMnemonic, setValidMnemonic }) => {
   const { t } = useTranslation();
 
@@ -62,7 +64,7 @@ const VerifySeedPhrase = ({ words, validMnemonic, setValidMnemonic }) => {
   const items = words.map((word, index) => createItem(word, index));
 
   return (
-    <Fragment>
+    <div className="RegisterStep">
       <StepCard
         title="registration.mnemonic.validation.title"
         subtitle="registration.mnemonic.validation.subtitle"
@@ -73,7 +75,7 @@ const VerifySeedPhrase = ({ words, validMnemonic, setValidMnemonic }) => {
         triedToVerify={triedToVerify}
         validateWords={validateWords}
       />
-    </Fragment>
+    </div>
   );
 };
 

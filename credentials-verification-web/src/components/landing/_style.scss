@@ -1,0 +1,69 @@
+@import '../../css/general_styling';
+
+.LandingContainer {
+  background: $primary-color;
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  align-items: center;
+  background-image: url('../../images/bgLogin.png');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+
+  .LandingCard {
+    background: $white;
+    border-radius: 6px;
+    padding: 2em 5em;
+    box-shadow: $shadow;
+    width: 450px;
+    height: 450px;
+    height: 530px;
+    margin-left: 100px;
+    display: flex;
+    flex-flow: column;
+
+    img {
+      margin: 20px auto;
+      height: 200px;
+      width: 200px;
+    };
+    
+    .WelcomeText {
+      @include secondary-text($h2, $primary-color);
+      @include letter-spacing();
+      border-top: 1px solid $light-grey;
+      padding: 2em 0;
+      text-align: center;
+    }
+
+    .LandingOptions {
+      display: flex;
+    
+      button {
+        margin-left: 1em;
+        width: 150px;
+        align-items: center;
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .LandingContainer {
+    .LandingCard {
+      margin: 0 auto;
+    }
+  }
+}
+
+@media screen and (max-width: 425px) {
+  .LandingContainer {
+    .LandingCard {
+      margin: 0 auto;
+      padding: 2em;
+      width: 350px;
+      height: 450px;
+    }
+  }
+}

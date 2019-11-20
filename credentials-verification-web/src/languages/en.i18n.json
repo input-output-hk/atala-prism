@@ -235,6 +235,12 @@
     },
     "checkInfo": "Check the data below"
   },
+  "landing": {
+    "welcome": "Welcome",
+    "register": "Register",
+    "login": "Login",
+    "logoAlt": "Atala landing picture"
+  },
   "login": {
     "welcome": {
       "title": "Hey!",
@@ -246,7 +252,8 @@
     },
     "forgotPassword": "Forgot Password?",
     "goToForgotPassword": "Click here!",
-    "submit": "Login"
+    "submit": "Login",
+    "logoAlt": "Atala login picture"
   },
   "registration": {
     "termsAndConditions": "Terms and Conditions",
@@ -289,11 +296,11 @@
         "wordMissmatch": "The written word doesn't match the one of the Seed Phrase"
       }
     },
-    "organisationInfo": {
+    "organizationInfo": {
       "title": "We need some data...",
       "comment": "You are almost done!",
-      "subtitle": "Please enter your Organisation name so you can start using the application.",
-      "name": "Organisation Name"
+      "subtitle": "Please enter your Organization name so you can start using the application.",
+      "name": "Organization Name"
     },
     "congratulations": {
       "alt": "Congratulations Image",

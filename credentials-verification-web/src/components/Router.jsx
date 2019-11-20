@@ -13,7 +13,7 @@ import CredentialSummaries from './credentialSummaries/CredentialSummaryControll
 import NewCredential from './newCredential/NewCredentialContainer';
 import Payment from './payments/PaymentContainer';
 
-const landingRoute = { exact: true, path: '/', key: '/', component: Landing };
+const landingRoute = { exact: true, path: '/landing', key: '/landing', component: Landing };
 const loginRoute = { exact: true, path: '/login', key: '/login', component: Login };
 const dashboardRoute = { exact: true, path: '/', key: '/', component: Dashboard };
 const errorRoute = { exact: true, path: '/error', key: '/error', component: I18nError };
