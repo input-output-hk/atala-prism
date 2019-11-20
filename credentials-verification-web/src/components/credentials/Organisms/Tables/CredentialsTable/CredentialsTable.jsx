@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { Table } from 'antd';
 import { Link } from 'react-router-dom';
 import CellRenderer from '../../../../common/Atoms/CellRenderer/CellRenderer';
-import { shortDateFormatter } from '../../../../../helpers/formatters';
+import { shortBackendDateFormatter } from '../../../../../helpers/formatters';
 import { CREDENTIAL_PAGE_SIZE } from '../../../../../helpers/constants';
 import RenderStudent from '../../../Molecules/RenderStudent/RenderStudent';
 import holderDefaultAvatar from '../../../../../images/holder-default-avatar.svg';
@@ -36,7 +36,7 @@ const getColumns = (viewText, sendCredentials) => [
     render: ({ enrollmentdate }) => (
       <CellRenderer
         title="admissionDate"
-        value={shortDateFormatter(enrollmentdate)}
+        value={shortBackendDateFormatter(enrollmentdate)}
         componentName="credentials"
       />
     )

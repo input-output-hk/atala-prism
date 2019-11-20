@@ -2,6 +2,7 @@ import { image, company, random, lorem, date } from 'faker';
 import moment from 'moment';
 import __ from 'lodash';
 import { GROUP_PAGE_SIZE } from '../../helpers/constants';
+import { toProtoDate } from './helpers';
 
 const createMockGroup = () => ({
   icon: image.avatar(),
@@ -17,7 +18,7 @@ const createMockGroup = () => ({
   },
   websiteLink: '/',
   description: lorem.paragraph(),
-  lastUpdate: moment(date.recent()).unix()
+  lastUpdate: toProtoDate(moment(date.recent()))
 });
 
 const mockedGroups = [];
