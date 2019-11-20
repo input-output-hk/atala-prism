@@ -10,7 +10,7 @@ import DownloadWallet from './Molecules/DownloadWallet/DownloadWallet';
 import SeedPhrase from './Organisms/SeedPhrase/SeedPhrase';
 import VerifySeedPhrase from './Organisms/SeedVerificator/VerifySeedPhrase';
 import PasswordSetup from './Organisms/PasswordSetup/PasswordSetup';
-import OrganisationInfo from './Organisms/OrganisationInfo/OrganisationInfo';
+import OrganizationInfo from './Organisms/OrganizationInfo/OrganizationInfo';
 import Congratulations from './Atoms/Congratulations/Congratulations';
 
 const TERMS_AND_CONDITIONS_STEP = 0;
@@ -19,7 +19,7 @@ const DOWNLOAD_WALLET_STEP = 2;
 const PASSWORD_STEP = 3;
 const SEED_PHRASE_STEP = 4;
 const MNEMONIC_VALIDATION_STEP = 5;
-const ORGANISATION_INFO_STEP = 6;
+const ORGANIZATION_INFO_STEP = 6;
 const STEP_QUANTITY = 7;
 
 const RegistrationContainer = ({ api: { getTermsAndConditions, getPrivacyPolicy } }) => {
@@ -34,7 +34,7 @@ const RegistrationContainer = ({ api: { getTermsAndConditions, getPrivacyPolicy 
   const [validMnemonic, setValidMnemonic] = useState(false);
   const [mnemonicWords, setMnemonicWords] = useState([]);
   const [password, setPassword] = useState('');
-  const [, setOrganisationInfo] = useState('');
+  const [, setOrganizationInfo] = useState('');
 
   useEffect(() => {
     const mnemonicsFromWallet = [
@@ -72,7 +72,7 @@ const RegistrationContainer = ({ api: { getTermsAndConditions, getPrivacyPolicy 
   }, []);
 
   const passwordRef = createRef();
-  const organisationRef = createRef();
+  const organizationRef = createRef();
 
   const nextStep = () => setCurrentStep(currentStep + 1);
 
@@ -87,10 +87,7 @@ const RegistrationContainer = ({ api: { getTermsAndConditions, getPrivacyPolicy 
   };
 
   const validateWalletStatus = () =>
-    new Promise((resolve, reject) => {
-      const randomNum = 100 * Math.random();
-
-      if (randomNum > 70) reject();
+    new Promise(resolve => {
       resolve();
     });
 
@@ -117,10 +114,10 @@ const RegistrationContainer = ({ api: { getTermsAndConditions, getPrivacyPolicy 
     });
 
   const validateOrganisatonInfo = () =>
-    organisationRef.current.getForm().validateFieldsAndScroll((errors, { organisationInfo }) => {
+    organizationRef.current.getForm().validateFieldsAndScroll((errors, { organizationInfo }) => {
       if (errors) return;
 
-      setOrganisationInfo(organisationInfo);
+      setOrganizationInfo(organizationInfo);
       nextStep();
     });
 
@@ -138,7 +135,7 @@ const RegistrationContainer = ({ api: { getTermsAndConditions, getPrivacyPolicy 
         return () => nextFromDocument(t('seedPhrase'));
       case MNEMONIC_VALIDATION_STEP:
         return nextIfMnemonicIsValid;
-      case ORGANISATION_INFO_STEP:
+      case ORGANIZATION_INFO_STEP:
         return validateOrganisatonInfo;
       default:
         return nextStep;
@@ -194,8 +191,8 @@ const RegistrationContainer = ({ api: { getTermsAndConditions, getPrivacyPolicy 
           />
         );
       }
-      case ORGANISATION_INFO_STEP:
-        return <OrganisationInfo organisationRef={organisationRef} />;
+      case ORGANIZATION_INFO_STEP:
+        return <OrganizationInfo organizationRef={organizationRef} />;
       default:
         return <Congratulations />;
     }

@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Input } from 'antd';
 import StepCard from '../../Atoms/StepCard/StepCard';
@@ -8,7 +8,7 @@ import { refShape } from '../../../../helpers/propShapes';
 
 import './_style.scss';
 
-const OrganisationInfo = ({ organisationRef }) => {
+const OrganizationInfo = ({ organizationRef }) => {
   const { t } = useTranslation();
 
   const orgName = [
@@ -16,8 +16,8 @@ const OrganisationInfo = ({ organisationRef }) => {
       fieldDecoratorData: {
         rules: [noEmptyInput(t('errors.form.emptyField'))]
       },
-      label: t('registration.organisationInfo.name'),
-      key: 'organisationInfo',
+      label: t('registration.organizationInfo.name'),
+      key: 'organizationInfo',
       className: '',
       input: <Input />
     }
@@ -26,17 +26,17 @@ const OrganisationInfo = ({ organisationRef }) => {
   return (
     <div className="RegisterStep">
       <StepCard
-        title="registration.organisationInfo.title"
-        subtitle="registration.organisationInfo.subtitle"
-        comment="registration.organisationInfo.comment"
+        title="registration.organizationInfo.title"
+        subtitle="registration.organizationInfo.subtitle"
+        comment="registration.organizationInfo.comment"
       />
-      <CustomForm items={orgName} ref={organisationRef} />
+      <CustomForm items={orgName} ref={organizationRef} />
     </div>
   );
 };
 
-OrganisationInfo.propTypes = {
-  organisationRef: refShape.isRequired
+OrganizationInfo.propTypes = {
+  organizationRef: refShape.isRequired
 };
 
-export default OrganisationInfo;
+export default OrganizationInfo;

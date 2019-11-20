@@ -1,28 +1,36 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import logo from '../../logo.svg';
-import './Landing.scss';
+import { useHistory } from 'react-router-dom';
+import CustomButton from '../common/Atoms/CustomButton/CustomButton';
+import preloginLogo from '../../images/landingLogo.svg';
+
+import './_style.scss';
 
 const Landing = () => {
   const { t } = useTranslation();
+  const history = useHistory();
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          {t('home.centralText.edit')}
-          <code>{t('home.centralText.filePath')}</code>
-          {t('home.centralText.toReload')}
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {t('home.learnReact')}
-        </a>
-      </header>
+    <div className="LandingContainer">
+      <div className="LandingCard">
+        <img src={preloginLogo} alt={t('landing.logoAlt')} />
+        <div className="WelcomeText">
+          <h3>{t('landing.welcome')}</h3>
+        </div>
+        <div className="LandingOptions">
+          <CustomButton
+            buttonProps={{
+              className: 'theme-outline',
+              onClick: () => history.push('/registration')
+            }}
+            buttonText={t('landing.register')}
+          />
+          <CustomButton
+            buttonProps={{ className: 'theme-secondary', onClick: () => history.push('/login') }}
+            buttonText={t('landing.login')}
+          />
+        </div>
+      </div>
     </div>
   );
 };

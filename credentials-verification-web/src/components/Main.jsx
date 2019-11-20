@@ -12,13 +12,13 @@ const Main = ({ apiProvider }) => (
   <main>
     <APIContext.Provider value={apiProvider}>
       <div className="AppContainer">
-        {/* <Header /> */}
-        {/* <div className="MainContent"> */}
-        {/* <SideMenu /> */}
-        {/* <div className="MainContainer"> */}
-        <Router />
-        {/* </div> */}
-        {/* </div> */}
+        <Header />
+        <div className="MainContent">
+          <SideMenu />
+          <div className="MainContainer">
+            <Router />
+          </div>
+        </div>
       </div>
     </APIContext.Provider>
   </main>

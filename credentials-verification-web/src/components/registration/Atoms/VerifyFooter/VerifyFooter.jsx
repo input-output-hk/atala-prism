@@ -12,8 +12,8 @@ const VerifyFooter = ({ triedToVerify, valid, validateWords }) => {
   return (
     <div className="VerifyFooter">
       {triedToVerify && (
-        <div className="SuccessContainer">
-          <Icon type={valid ? 'check-circle' : 'close-circle'} theme="filled"/>
+        <div className={`${'VerifyContainer'} ${valid ? 'Success' : 'Failure'}`}>
+          <Icon type={valid ? 'check-circle' : 'close-circle'} theme="filled" />
           <p>{t(`registration.mnemonic.validation.${valid ? 'success' : 'failure'}`)}</p>
         </div>
       )}

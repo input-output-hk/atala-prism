@@ -1,7 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Checkbox, Col, Row } from 'antd';
-import { Link } from 'react-router-dom';
+import { Checkbox } from 'antd';
 import { useTranslation } from 'react-i18next';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 
@@ -13,16 +12,9 @@ const RegistrationFooter = ({ next, previous, accepted, toggleAccept, documentTo
   return (
     <div className="RegistrationFooter">
       <div className="LeftButtons">
-        <CustomButton
-          buttonProps={{
-            className: 'theme-grey'
-          }}
-          buttonText={t('registration.cancel')}
-        />
-        {/* <Link to="/">{t('registration.cancel')}</Link> */}
         {toggleAccept && (
           <div className="CheckControl">
-            <Checkbox onChange={toggleAccept} checked={accepted} />{' '}
+            <Checkbox onChange={toggleAccept} checked={accepted} />
             <p>
               {t('registration.accept')}
               <strong>{t(`registration.${documentToAccept}`)}</strong>

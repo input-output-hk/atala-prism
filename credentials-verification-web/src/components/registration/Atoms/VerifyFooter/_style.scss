@@ -1,24 +1,36 @@
 @import '../../../../css/general_styling';
 
 .VerifyFooter {
-  width: 52%;
+  width: 40%;
   padding: 0 2em;
   display: flex;
   align-self: flex-start;
+  flex-flow: column;
 
-  .SuccessContainer {
+  .VerifyContainer {
     display: flex;
     align-items: center;
-    width: 100%;
     height: 40px;
-    background: #ccf7e9;
+    margin-bottom: 1em;
+    width: 100%;
     padding: 0 1em;
     border-radius: 4px;
     margin-right: 1.5em;
-
-    p {
+    @include letter-spacing();
+    
+    &.Success{
+      background: #ccf7e9;
+      
+      p{
       @include primary-text($body, $success-color);
-      @include letter-spacing();
+    }
+    }
+
+    &.Failure{
+      background: #ffeaeb;
+      p{
+      @include primary-text($body, $primary-color);
+    }
     }
 
     .anticon {
@@ -31,5 +43,11 @@
         color: $primary-color;
       }
     }
+
+
   }
+  
+   .theme-secondary {
+     width: 100%
+   }
 }

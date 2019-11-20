@@ -31,6 +31,18 @@
       @include letter-spacing();
       margin-bottom: 2em;
     }
+    
+    .theme-secondary {
+      @include primary-text($button, $dark-grey);
+      border-radius: 4px;
+      padding: 0.65em;
+      color: $white;
+      &:hover,
+      &:focus {
+        background-color: $black;
+        color: $white;
+      }
+    }
   }
 
   .ErrorContainer {

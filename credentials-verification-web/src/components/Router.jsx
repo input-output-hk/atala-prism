@@ -12,7 +12,7 @@ import Credential from './credentials/CredentialContainer';
 import Connections from './connections/ConnectionsController';
 import NewCredential from './newCredential/NewCredentialContainer';
 
-const landingRoute = { exact: true, path: '/', key: '/', component: Landing };
+const landingRoute = { exact: true, path: '/landing', key: '/landing', component: Landing };
 const loginRoute = { exact: true, path: '/login', key: '/login', component: Login };
 const dashboardRoute = { exact: true, path: '/', key: '/', component: Dashboard };
 const errorRoute = { exact: true, path: '/error', key: '/error', component: I18nError };

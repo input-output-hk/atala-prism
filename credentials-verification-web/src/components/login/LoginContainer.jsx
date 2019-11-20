@@ -7,7 +7,6 @@ const LoginContainer = ({ api: { getDid } }) => {
   const formRef = createRef();
 
   const handleLogin = () => {
-    console.log('the waletterino', getDid);
     formRef.current.getForm().validateFieldsAndScroll(['password'], (errors, { password }) => {
       if (errors) return;
 
