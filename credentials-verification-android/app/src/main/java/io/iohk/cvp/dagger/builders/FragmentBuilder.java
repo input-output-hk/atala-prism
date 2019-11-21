@@ -3,6 +3,7 @@ package io.iohk.cvp.dagger.builders;
 import dagger.Module;
 import dagger.android.ContributesAndroidInjector;
 import io.iohk.cvp.dagger.modules.ConnectionsListFragmentModule;
+import io.iohk.cvp.dagger.modules.ConnectionsListableModule;
 import io.iohk.cvp.dagger.modules.CredentialsFragmentModule;
 import io.iohk.cvp.dagger.modules.HomeFragmentModule;
 import io.iohk.cvp.dagger.modules.PaymentsModule;
@@ -17,6 +18,7 @@ import io.iohk.cvp.views.fragments.PaymentFragment;
 import io.iohk.cvp.views.fragments.PaymentHistoryFragment;
 import io.iohk.cvp.views.fragments.ProfileFragment;
 import io.iohk.cvp.views.fragments.SettingsFragment;
+import io.iohk.cvp.views.fragments.ShareCredentialDialogFragment;
 import io.iohk.cvp.views.fragments.WalletFragment;
 
 @Module
@@ -42,6 +44,9 @@ public abstract class FragmentBuilder {
 
   @ContributesAndroidInjector(modules = CredentialsFragmentModule.class)
   abstract CredentialDetailFragment contributeCredentialFragment();
+
+  @ContributesAndroidInjector(modules = ConnectionsListableModule.class)
+  abstract ShareCredentialDialogFragment contributeShareCredentialDialogFragment();
 
   @ContributesAndroidInjector
   abstract SettingsFragment contributeSettingsFragment();

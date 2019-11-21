@@ -8,7 +8,7 @@ import io.iohk.cvp.io.connector.GetConnectionTokenInfoResponse;
 import io.iohk.cvp.io.connector.ParticipantInfo;
 import java.util.Optional;
 
-public class GetConnectionTokenInfoRunnable extends CommonGrpcRunnable<ParticipantInfo> implements GrpcRunnable<ParticipantInfo> {
+public class GetConnectionTokenInfoRunnable extends CommonGrpcRunnable<ParticipantInfo> {
 
   public GetConnectionTokenInfoRunnable(MutableLiveData<ParticipantInfo> liveData) {
     super(liveData);

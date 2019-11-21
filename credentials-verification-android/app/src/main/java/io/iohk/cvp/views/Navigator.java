@@ -21,6 +21,7 @@ import io.iohk.cvp.views.activities.WelcomeActivity;
 import io.iohk.cvp.views.fragments.CvpFragment;
 import io.iohk.cvp.views.fragments.FirstConnectionFragment;
 import io.iohk.cvp.views.fragments.PopUpFragment;
+import io.iohk.cvp.views.fragments.ShareCredentialDialogFragment;
 import java.util.Objects;
 
 public class Navigator {
@@ -55,7 +56,8 @@ public class Navigator {
   }
 
   public void showQrScanner(FirstConnectionFragment from) {
-    Intent intent = new Intent(Objects.requireNonNull(from.getActivity()).getApplicationContext(), QrCodeScanner.class);
+    Intent intent = new Intent(Objects.requireNonNull(from.getActivity()).getApplicationContext(),
+        QrCodeScanner.class);
     intent.putExtra(IntentDataConstants.QR_SCANNER_MODE_KEY,
         IntentDataConstants.QR_SCANNER_MODE_QR_CODE);
     from.startActivityForResult(intent, ActivitiesRequestCodes.QR_SCANNER_REQUEST_ACTIVITY);
@@ -96,6 +98,14 @@ public class Navigator {
   public void showFragmentOnTop(FragmentManager supportFragmentManager, CvpFragment cvpFragment) {
     FragmentTransaction ft = supportFragmentManager.beginTransaction();
     ft.replace(R.id.fragment_layout, cvpFragment);
+    ft.addToBackStack(null);
+    ft.commit();
+  }
+
+  public void showFragmentOnTopOfMenu(FragmentManager supportFragmentManager,
+      CvpFragment cvpFragment) {
+    FragmentTransaction ft = supportFragmentManager.beginTransaction();
+    ft.replace(R.id.fragment_layout_over_menu, cvpFragment);
     ft.addToBackStack(null);
     ft.commit();
   }

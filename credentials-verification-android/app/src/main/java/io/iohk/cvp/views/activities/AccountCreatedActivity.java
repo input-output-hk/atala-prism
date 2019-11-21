@@ -32,7 +32,7 @@ public class AccountCreatedActivity extends CvpActivity {
     
     continueButton.setText(R.string.continue_string);
     textViewTitle.setText(R.string.your_account_has_been_created);
-    textViewDescription.setText(R.string.continue_connectiong);
+    textViewDescription.setText(R.string.continue_connection);
   }
 
   @Override
