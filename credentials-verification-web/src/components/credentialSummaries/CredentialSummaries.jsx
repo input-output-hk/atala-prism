@@ -1,4 +1,4 @@
-import React, { Fragment, useState } from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Drawer, Row } from 'antd';
 import { useTranslation } from 'react-i18next';
@@ -38,10 +38,8 @@ const CredentialSummaries = ({
     prefix: 'credentialSummary'
   };
 
-  console.log('the cred', credentialSummaries);
-
   return (
-    <Fragment>
+    <div className="PageContainer">
       <Drawer
         title={t('credentialSummary.detail.title')}
         placement="right"
@@ -76,7 +74,7 @@ const CredentialSummaries = ({
           />
         )}
       </Row>
-    </Fragment>
+    </div>
   );
 };
 

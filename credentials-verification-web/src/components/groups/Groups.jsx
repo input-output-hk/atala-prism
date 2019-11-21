@@ -14,9 +14,11 @@ const NewGroupButton = () => {
   const { t } = useTranslation();
   return (
     <CustomButton
-      onClick={() => message.info('create a new group')}
+      buttonProps={{
+        onClick: () => message.info('create a new group'),
+        className: 'theme-secondary'
+      }}
       buttonText={t('groups.createNewGroup')}
-      theme="theme-secondary"
       icon={<Icon type="plus" />}
     />
   );
@@ -52,7 +54,7 @@ const Groups = ({
   };
 
   return (
-    <React.Fragment>
+    <div className="PageContainer">
       <DeleteGroupModal {...modalProps} />
       <div className="ContentHeader">
         <h1>{t('groups.title')}</h1>
@@ -83,7 +85,7 @@ const Groups = ({
           />
         )}
       </Row>
-    </React.Fragment>
+    </div>
   );
 };
 
