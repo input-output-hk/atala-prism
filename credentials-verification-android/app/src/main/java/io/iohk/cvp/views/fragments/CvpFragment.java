@@ -31,7 +31,8 @@ public abstract class CvpFragment<T extends ViewModel> extends DaggerFragment {
   }
 
   @Override
-  public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+  public View onCreateView(LayoutInflater inflater, ViewGroup container,
+      Bundle savedInstanceState) {
     android.view.View view = inflater.inflate(getViewId(), container, false);
     ButterKnife.bind(this, view);
     return view;
@@ -52,7 +53,7 @@ public abstract class CvpFragment<T extends ViewModel> extends DaggerFragment {
 
   public Optional<AppCompatActivity> activity() {
     return Optional.ofNullable(getActivity())
-      .map(fragmentActivity -> (AppCompatActivity) fragmentActivity);
+        .map(fragmentActivity -> (AppCompatActivity) fragmentActivity);
   }
 
   @Override

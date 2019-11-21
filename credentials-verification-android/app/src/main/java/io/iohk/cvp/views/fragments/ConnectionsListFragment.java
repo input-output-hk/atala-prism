@@ -42,13 +42,9 @@ public class ConnectionsListFragment extends CvpFragment<ConnectionsActivityView
   }
 
   @Override
-  public void onViewCreated(@NonNull View view,
-      Bundle savedInstanceState) {
+  public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
     recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-
-    adapter.setConnections(new ArrayList<>());
     recyclerView.setAdapter(adapter);
-
     viewModel.getConnections().observe(this, connections -> {
       adapter.setConnections(connections);
       adapter.notifyDataSetChanged();
@@ -67,7 +63,6 @@ public class ConnectionsListFragment extends CvpFragment<ConnectionsActivityView
 
   @Override
   public ConnectionsActivityViewModel getViewModel() {
-    viewModel = ViewModelProviders.of(this, factory).get(ConnectionsActivityViewModel.class);
-    return viewModel;
+    return ViewModelProviders.of(this, factory).get(ConnectionsActivityViewModel.class);
   }
 }

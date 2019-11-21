@@ -1,8 +1,6 @@
 package io.iohk.cvp.views.utils.adapters;
 
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
@@ -17,34 +15,22 @@ import java.util.List;
 public class UniversitiesRecyclerViewAdapter extends
     ConnectionsRecyclerViewAdapter<UniversitiesRecyclerViewAdapter.ViewHolder> {
 
-  private List<ConnectionInfo> connections;
-
-  @NonNull
   @Override
-  public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-
-    View v = LayoutInflater.from(parent.getContext())
-        .inflate(R.layout.row_university_connection_list, parent, false);
-    return new ViewHolder(v);
-  }
-
-  @Override
-  public void onBindViewHolder(UniversitiesRecyclerViewAdapter.ViewHolder holder, int position) {
-    IssuerInfo issuerInfo = connections.get(position).getParticipantInfo().getIssuer();
+  public void onBindViewHolder(UniversitiesRecyclerViewAdapter.ViewHolder holder,
+      ConnectionInfo connectionInfo) {
+    IssuerInfo issuerInfo = connectionInfo.getParticipantInfo().getIssuer();
     holder.issuerName.setText(issuerInfo.getName());
   }
 
+
   @Override
-  public int getItemCount() {
-    if (connections != null) {
-      return connections.size();
-    } else {
-      return 0;
-    }
+  protected int getLayoutId() {
+    return R.layout.row_university_connection_list;
   }
 
-  public void setConnections(List<ConnectionInfo> connections) {
-    this.connections = connections;
+  @Override
+  protected ViewHolder createViewHolder(View view) {
+    return new ViewHolder(view);
   }
 
   static class ViewHolder extends RecyclerView.ViewHolder {
@@ -55,12 +41,10 @@ public class UniversitiesRecyclerViewAdapter extends
     @BindView(R.id.credential_logo)
     ImageView issuerLogo;
 
-
     ViewHolder(View itemView) {
       super(itemView);
       ButterKnife.bind(this, itemView);
     }
-
   }
 }
 

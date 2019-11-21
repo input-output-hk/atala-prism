@@ -53,7 +53,7 @@ public class FirstConnectionFragment extends CvpFragment<ConnectionsActivityView
   }
 
   @OnClick(R.id.scan_qr)
-  public void scanQr() {
+  void scanQr() {
     if (!PermissionUtils
         .checkIfAlreadyHavePermission(getActivity().getApplicationContext(),
             Manifest.permission.CAMERA)) {

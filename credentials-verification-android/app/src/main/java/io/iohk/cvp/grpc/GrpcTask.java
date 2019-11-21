@@ -34,12 +34,17 @@ public class GrpcTask<A> extends AsyncTask<Object, Void, Optional<A>> {
           blockingStub = ConnectorServiceGrpc.newBlockingStub(channel);
       ConnectorServiceStub stub = ConnectorServiceGrpc.newStub(channel);
 
-      return
-          grpcRunnable.run(blockingStub, stub, params);
+      return grpcRunnable.run(blockingStub, stub, params);
     } catch (Exception e) {
       Crashlytics.logException(e);
       // TODO handle error
       return Optional.empty();
     }
+  }
+
+  @Override
+  protected void onPostExecute(final Optional<A> a) {
+    super.onPostExecute(a);
+    a.ifPresent(grpcRunnable::onPostExecute);
   }
 }

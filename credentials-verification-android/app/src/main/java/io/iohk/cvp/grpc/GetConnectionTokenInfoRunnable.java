@@ -1,5 +1,6 @@
 package io.iohk.cvp.grpc;
 
+import androidx.lifecycle.MutableLiveData;
 import io.grpc.StatusRuntimeException;
 import io.iohk.cvp.io.connector.ConnectorServiceGrpc;
 import io.iohk.cvp.io.connector.GetConnectionTokenInfoRequest;
@@ -7,13 +8,16 @@ import io.iohk.cvp.io.connector.GetConnectionTokenInfoResponse;
 import io.iohk.cvp.io.connector.ParticipantInfo;
 import java.util.Optional;
 
-public class GetConnectionTokenInfoRunnable implements GrpcRunnable<ParticipantInfo> {
+public class GetConnectionTokenInfoRunnable extends CommonGrpcRunnable<ParticipantInfo> implements GrpcRunnable<ParticipantInfo> {
+
+  public GetConnectionTokenInfoRunnable(MutableLiveData<ParticipantInfo> liveData) {
+    super(liveData);
+  }
 
   @Override
   public Optional<ParticipantInfo> run(
       ConnectorServiceGrpc.ConnectorServiceBlockingStub blockingStub,
-      ConnectorServiceGrpc.ConnectorServiceStub asyncStub, Object... params)
-      throws Exception {
+      ConnectorServiceGrpc.ConnectorServiceStub asyncStub, Object... params) {
     return getConnectionToken(blockingStub, params);
   }
 
