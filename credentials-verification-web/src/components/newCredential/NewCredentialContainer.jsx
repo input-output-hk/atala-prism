@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { message } from 'antd';
-import moment from 'moment';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
+import { useHistory } from 'react-router-dom';
 import Logger from '../../helpers/Logger';
 import NewCredential from './NewCredential';
 import { withApi } from '../providers/witApi';
@@ -11,10 +11,14 @@ import Group from '../groups/Groups';
 import NewCredentialValidation from './Molecules/Validation/NewCredentialValidation';
 import { GROUP_PAGE_SIZE } from '../../helpers/constants';
 import NewCredentialCreation from './Organism/Creation/NewCredentialCreation';
-import { dateAsUnix } from '../../helpers/formatters';
+import { dateAsUnix, fromUnixToProtoDateFormatter } from '../../helpers/formatters';
 
-const NewCredentialContainer = ({ api: { savePictureInS3, saveDraft, getGroups } }) => {
+const NewCredentialContainer = ({
+  api: { savePictureInS3, saveDraft, getGroups, createCredential }
+}) => {
   const { t } = useTranslation();
+  const history = useHistory();
+
   const [currentStep, setCurrentStep] = useState(0);
   const [degreeName, setDegreeName] = useState();
   const [award, setAward] = useState();
@@ -45,6 +49,25 @@ const NewCredentialContainer = ({ api: { savePictureInS3, saveDraft, getGroups }
         message.error(t('errors.errorGettingHolders'), 1);
       });
   }, [name, date, offset]);
+
+  const saveCredential = () => {
+    createCredential({
+      // For now the subject is the hardcoded subject id
+      subject: 'e20a974e-eade-11e9-a447-d8f2ca059830',
+      title: degreeName,
+      groupName: group.groupName,
+      enrollmentDate: fromUnixToProtoDateFormatter(startDate),
+      graduationDate: fromUnixToProtoDateFormatter(graduationDate)
+    })
+      .then(response => {
+        Logger.info('Successfully saved the credential: ', response.toObject());
+        history.push('/credentials');
+      })
+      .catch(error => {
+        Logger.error(error);
+        message.error(t('errors.errorSaving', { model: t('credentials.title') }));
+      });
+  };
 
   const createCredentialTemplate = () => {
     formRef.current
@@ -165,7 +188,7 @@ const NewCredentialContainer = ({ api: { savePictureInS3, saveDraft, getGroups }
       currentStep={currentStep}
       createCredentialTemplate={createCredentialTemplate}
       changeStep={setCurrentStep}
-      saveCredential={() => Logger.info('Saving credential')}
+      saveCredential={saveCredential}
       renderModal={renderModal}
       openModal={() => setOpen(true)}
       renderStep={renderStep}
@@ -178,7 +201,8 @@ NewCredentialContainer.propTypes = {
   api: PropTypes.shape({
     savePictureInS3: PropTypes.func,
     saveDraft: PropTypes.func,
-    getGroups: PropTypes.func
+    getGroups: PropTypes.func,
+    createCredential: PropTypes.func
   }).isRequired
 };
 
