@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import androidx.lifecycle.ViewModel;
 import io.iohk.cvp.R;
+import io.iohk.cvp.core.exception.SharedPrefencesDataNotFoundException;
 import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.Preferences;
 import java.util.Objects;
@@ -23,9 +24,10 @@ public class LaunchActivity extends CvpActivity {
 
     new Handler().postDelayed(
         () -> {
-          if (new Preferences(this).getPrivateKey().isPresent()) {
+          try {
+            new Preferences(this).getPrivateKey();
             navigator.showConnections(this);
-          } else {
+          } catch (SharedPrefencesDataNotFoundException e) {
             navigator.showWelcomeActivity(this);
           }
         },
