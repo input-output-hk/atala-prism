@@ -130,7 +130,7 @@ const GroupsTable = ({
   onPageChange,
   fullInfo
 }) => {
-  const selectedRows = groups.map(({ groupId }) => groupId).indexOf(selectedGroup);
+  const selectedRows = groups.map(({ groupId }) => groupId).indexOf(selectedGroup.groupId);
   const selectedRowKeys = selectedRows === -1 ? [] : [selectedRows];
 
   const tableProps = {
@@ -145,7 +145,7 @@ const GroupsTable = ({
       : {
           selectedRowKeys,
           type: 'radio',
-          onChange: (_index, selected) => setGroup(selected[0].groupId)
+          onChange: (_index, selected) => setGroup(selected[0])
         }
   };
 

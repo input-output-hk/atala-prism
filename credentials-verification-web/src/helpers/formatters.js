@@ -20,6 +20,18 @@ const completeFrontendDateFormatter = (date, format) => {
   return moment.unix(date).format(format);
 };
 
+export const fromUnixToProtoDateFormatter = date => {
+  const dateFromUnix = moment(date);
+
+  const protoDate = {
+    year: dateFromUnix.year(),
+    month: dateFromUnix.month(),
+    day: dateFromUnix.day()
+  };
+
+  return protoDate;
+};
+
 export const backendDateFormatter = format => date => completeDateFormatter(date, format);
 export const frontendDateFormatter = format => date => completeFrontendDateFormatter(date, format);
 
