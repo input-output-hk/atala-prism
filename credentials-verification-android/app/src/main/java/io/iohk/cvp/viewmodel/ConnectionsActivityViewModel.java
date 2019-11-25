@@ -9,6 +9,7 @@ import io.iohk.cvp.grpc.GetConnectionsInfoRunnable;
 import io.iohk.cvp.grpc.GrpcTask;
 import io.iohk.cvp.io.connector.ConnectionInfo;
 import io.iohk.cvp.io.connector.ParticipantInfo;
+import io.iohk.cvp.viewmodel.dtos.ConnectionListable;
 import java.util.List;
 import javax.inject.Inject;
 

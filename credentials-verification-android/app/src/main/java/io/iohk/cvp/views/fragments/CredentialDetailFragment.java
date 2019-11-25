@@ -2,6 +2,7 @@ package io.iohk.cvp.views.fragments;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -58,7 +59,20 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
   }
 
   @Override
+  public void onPrepareOptionsMenu(Menu menu) {
+    MenuItem shareCredentialMenuItem;
+    shareCredentialMenuItem = menu.findItem(R.id.action_share_credential);
+    shareCredentialMenuItem.setVisible(true);
+  }
+
+  @Override
   public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+    if (item.getItemId() == R.id.action_share_credential) {
+      navigator.showFragmentOnTopOfMenu(
+          Objects.requireNonNull(getActivity()).getSupportFragmentManager(),
+          new ShareCredentialDialogFragment());
+      return true;
+    }
     if (item.getItemId() == android.R.id.home) {
       Objects.requireNonNull(getActivity()).onBackPressed();
       return true;
@@ -87,8 +101,7 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
 
   @OnClick(R.id.accept_credential)
   void onAcceptClick() {
-    navigator.showFragmentOnTop(
-        Objects.requireNonNull(getActivity()).getSupportFragmentManager(), new PaymentFragment());
+    navigator.showFragmentOnTop(getFragmentManager(), new PaymentFragment());
   }
 
   @Override

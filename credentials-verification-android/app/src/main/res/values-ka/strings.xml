@@ -124,11 +124,16 @@
   <string name="country">Country</string>
   <string name="birth_date">Birth Date</string>
 
-  <!-- Assets names for internationalization -->
-  <string name="terms_and_conditions_asset_name">terms-and-conditions-ka</string>
+  <!-- Congrats screen labels -->
   <string name="congrats">Congrats!</string>
   <string name="credential_payment_successful">Your Credential payment has been made successfully</string>
   <string name="your_account_has_been_created">Your account has been created</string>
-  <string name="continue_connectiong">Continue connecting with your University or School</string>
+  <string name="continue_connection">Continue connecting with your University or School</string>
   <string name="new_connection">New Connection</string>
+
+  <!-- Share credential screen labels -->
+  <string name="share_credential">Share Credential</string>
+
+  <!-- Assets names for internationalization -->
+  <string name="terms_and_conditions_asset_name">terms-and-conditions-ka</string>
 </resources>

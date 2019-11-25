@@ -10,6 +10,7 @@ import butterknife.ButterKnife;
 import io.iohk.cvp.R;
 import io.iohk.cvp.io.connector.ConnectionInfo;
 import io.iohk.cvp.io.connector.IssuerInfo;
+import io.iohk.cvp.viewmodel.dtos.ConnectionListable;
 import java.util.List;
 
 public class UniversitiesRecyclerViewAdapter extends
