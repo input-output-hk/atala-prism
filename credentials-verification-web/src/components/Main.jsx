@@ -3,7 +3,7 @@ import 'antd/dist/antd.css';
 import PropTypes from 'prop-types';
 import Router from './Router';
 import { APIContext } from './providers/ApiContext';
-
+import '../App.scss';
 import './_main.scss';
 
 const Main = ({ apiProvider }) => (

@@ -114,3 +114,24 @@ input[type='number']::-webkit-outer-spin-button {
 input[type='number'] {
   -moz-appearance: textfield;
 }
+
+// Responsive
+
+$screen-sm-min: 425px;
+$screen-md-min: 768px;
+$screen-lg-min: 1024px;
+
+@mixin breakpoint($media) {
+  @if $media == xs {
+    @media only screen and (max-width: $screen-xs-min) { @content; }
+  }
+    @else if $media == sm {
+    @media only screen and (max-width: $screen-sm-min) { @content; }
+  }
+  @else if $media == md {
+    @media only screen and (max-width: $screen-md-min) { @content; }
+  }
+  @else if $media == lg {
+    @media only screen and (max-width: $screen-lg-min) { @content; }
+  }
+}

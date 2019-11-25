@@ -60,7 +60,7 @@ const Connections = ({ tableProps, filterProps, inviteHolder }) => {
   };
 
   return (
-    <div className="PageContainer">
+    <div className="Wrapper">
       <div className="ContentHeader">
         <h1>{t('connections.title')}</h1>
         <ConnectionsButtons />

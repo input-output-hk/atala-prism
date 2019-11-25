@@ -1,5 +1,5 @@
 import React from 'react';
-import { Menu, Dropdown, Icon } from 'antd';
+import { Menu, Dropdown, Icon, Col } from 'antd';
 
 import './_style.scss';
 
@@ -24,13 +24,13 @@ const menu = (
 );
 
 const SettingsMenu = () => (
-  <div className="SettingsMenu">
+  <Col className="SettingsMenu RightSide" xs={2} sm={2} md={2} lg={2}>
     <Dropdown overlay={menu} trigger={['click']}>
       <div className="ant-dropdown-link">
         <Icon type="down" />
       </div>
     </Dropdown>
-  </div>
+  </Col>
 );
 
 export default SettingsMenu;

@@ -43,7 +43,7 @@ const Credentials = ({ showEmpty, tableProps, filterProps }) => {
   };
 
   return (
-    <div className="PageContainer">
+    <div className="Wrapper">
       <div className="ContentHeader">
         <h1>{t('credentials.title')}</h1>
         <CredentialsButtons />

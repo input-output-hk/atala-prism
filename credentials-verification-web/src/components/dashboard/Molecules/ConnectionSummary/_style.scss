@@ -22,6 +22,10 @@
     .Summary {
       width: 31%;
       border-left: 4px solid #ff6f6f;
+      @include breakpoint(sm) {
+        width: 100%;
+        margin: 0.5em 0;
+      }
     }
   }
 }

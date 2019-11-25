@@ -21,7 +21,7 @@ const Payment = ({
   const filterProps = { setFrom, setTo, setPayer, payer };
 
   return (
-    <div className="PageContainer">
+    <div className="Wrapper">
       <div>
         <h1>{t('payment.title')}</h1>
       </div>

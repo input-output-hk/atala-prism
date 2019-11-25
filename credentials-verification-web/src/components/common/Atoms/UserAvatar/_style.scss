@@ -3,18 +3,12 @@
 .UserAvatar {
   display: flex;
   align-items: center;
-
   .UserData {
     display: flex;
     align-items: center;
-
     .UserLabel {
       @include primary-text($body, $white);
       margin-left: 1em;
     }
-  }
-
-  .SettingsMenu {
-    margin-left: 0.75em;
   }
 }
