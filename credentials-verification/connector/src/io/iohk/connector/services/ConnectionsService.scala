@@ -15,10 +15,10 @@ class ConnectionsService(connectionsRepository: ConnectionsRepository) {
   }
 
   def addConnectionFromToken(
-      userId: ParticipantId,
-      tokenString: TokenString
-  ): FutureEither[ConnectorError, ConnectionInfo] = {
-    connectionsRepository.addConnectionFromToken(tokenString, userId)
+      tokenString: TokenString,
+      publicKey: ECPublicKey
+  ): FutureEither[ConnectorError, (ParticipantId, ConnectionInfo)] = {
+    connectionsRepository.addConnectionFromToken(tokenString, publicKey)
   }
 
   def getConnectionsPaginated(

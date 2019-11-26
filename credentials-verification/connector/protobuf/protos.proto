@@ -81,6 +81,12 @@ service ConnectorService {
 
 // GENERAL
 
+// just an EC public key represented with big integers as strings
+message PublicKey {
+  string x = 1 [(scalapb.field).no_box = true];
+  string y = 2 [(scalapb.field).no_box = true];
+}
+
 // Credential information; FIXME: is it a part of protocol?
 message Credential {
   IssuerInfo issuerInfo = 1 [(scalapb.field).no_box = true];
@@ -153,11 +159,13 @@ message GetConnectionTokenInfoResponse {
 // Request to instantiate a connection using token
 message AddConnectionFromTokenRequest {
   string token = 1 [(scalapb.field).no_box = true]; // token to instantiate connection
+  PublicKey holderPublicKey = 2 [(scalapb.field).no_box = true];
 }
 
 // Confirmation of connection instantiation
 message AddConnectionFromTokenResponse {
   ConnectionInfo connection = 1 [(scalapb.field).no_box = true]; // instantiated connection info
+  string userId = 2 [(scalapb.field).no_box = true]; // your generated user id
 }
 
 // Request to delete a connection

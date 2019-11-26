@@ -9,9 +9,10 @@ import io.iohk.connector.protos.{
   AddConnectionFromTokenRequest,
   GenerateConnectionTokenRequest,
   GetConnectionTokenInfoRequest,
-  GetConnectionsPaginatedRequest
+  GetConnectionsPaginatedRequest,
+  PublicKey
 }
-import io.iohk.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO}
+import io.iohk.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO, ParticipantsDAO}
 
 class ConnectionsRpcSpec extends RpcSpecBase {
 
@@ -68,10 +69,15 @@ class ConnectionsRpcSpec extends RpcSpecBase {
       val issuerId = createIssuer("Issuer")
       val holderId = createHolder("Holder")
       val token = createToken(issuerId)
+      val publicKey = ECPublicKey(BigInt("12345678912345678901234567890"), BigInt("987654322198754321942182"))
+      val publicKeyProto = PublicKey(publicKey.x.toString(), publicKey.y.toString())
 
       usingApiAs(holderId) { blockingStub =>
-        val request = AddConnectionFromTokenRequest(token.token)
+        val request = AddConnectionFromTokenRequest(token.token).withHolderPublicKey(publicKeyProto)
         val response = blockingStub.addConnectionFromToken(request)
+        val holderId = response.userId
+
+        holderId mustNot be(empty)
         response.connection.participantInfo.getIssuer.name mustBe "Issuer"
         val connectionId = new ConnectionId(UUID.fromString(response.connection.connectionId))
 
@@ -80,6 +86,13 @@ class ConnectionsRpcSpec extends RpcSpecBase {
           .transact(database)
           .unsafeToFuture()
           .futureValue mustBe true
+
+        ParticipantsDAO
+          .findPublicKey(ParticipantId(UUID.fromString(holderId)))
+          .transact(database)
+          .value
+          .unsafeToFuture()
+          .futureValue mustBe Some(publicKey)
       }
     }
 
@@ -88,7 +101,7 @@ class ConnectionsRpcSpec extends RpcSpecBase {
       val token = TokenString.random()
 
       usingApiAs(holderId) { blockingStub =>
-        val request = AddConnectionFromTokenRequest(token.token)
+        val request = AddConnectionFromTokenRequest(token.token).withHolderPublicKey(PublicKey("0", "0"))
 
         val status = intercept[StatusRuntimeException] {
           blockingStub.addConnectionFromToken(request)
