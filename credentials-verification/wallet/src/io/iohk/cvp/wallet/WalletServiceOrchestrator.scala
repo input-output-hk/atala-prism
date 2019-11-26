@@ -2,38 +2,44 @@ package io.iohk.cvp.wallet
 
 import java.security.{PrivateKey, PublicKey}
 
-import cats.effect.{ContextShift, IO}
-import cats.effect.concurrent.Ref
 import io.iohk.cvp.crypto.ECKeys
-import io.iohk.cvp.wallet.models.Wallet
-import io.iohk.cvp.wallet.protos.GetWalletStatusResponse.WalletStatus
 import io.iohk.cvp.wallet.protos.WalletData
-import javax.crypto.spec.SecretKeySpec
 import org.slf4j.LoggerFactory
-import cats.implicits._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-object WalletServiceOrchestrator {
-  private val logger = LoggerFactory.getLogger(this.getClass)
-  private val walletSecurity = WalletSecurity()
+class WalletServiceOrchestrator(walletSecurity: WalletSecurity, walletIO: WalletIO)(implicit ec: ExecutionContext) {
 
-  def createNewWallet(passphrase: String)(implicit ec: ExecutionContext): Future[WalletData] = {
-    for {
-      keySpec <- Future { walletSecurity.generateSecretKey(passphrase) }
-      wallet = generateWallet()
-      encryptedWallet = walletSecurity.encrypt(keySpec, wallet.toByteArray)
-      save <- WalletIO().save(encryptedWallet)
-    } yield wallet
+  private val logger = LoggerFactory.getLogger(this.getClass)
+
+  def createNewWallet(passphrase: String): Future[WalletData] = {
+    Future {
+      if (walletIO.fileExist()) {
+        logger.info("Previous wallet found")
+        throw new RuntimeException("Previous wallet found")
+      } else {
+        val wallet = generateWallet()
+        logger.info("Storing wallet")
+        save(passphrase, wallet).map(_ => wallet)
+      }
+    }.flatten
   }
 
-  def loadWallet(passphrase: String)(implicit ec: ExecutionContext): Future[Option[Array[Byte]]] = {
-    WalletIO().load().map { dataO =>
+  def loadWallet(passphrase: String): Future[Option[Array[Byte]]] = {
+    walletIO.load().map { dataO =>
       dataO.map { data =>
         val keySpec = walletSecurity.generateSecretKey(passphrase)
         walletSecurity.decrypt(keySpec, data)
       }
     }
+  }
+
+  def save(passphrase: String, walletData: WalletData): Future[Unit] = {
+    for {
+      keySpec <- Future { walletSecurity.generateSecretKey(passphrase) }
+      encryptedWallet = walletSecurity.encrypt(keySpec, walletData.toByteArray)
+      _ <- walletIO.save(encryptedWallet)
+    } yield ()
   }
 
   private def generateWallet(): WalletData = {
@@ -63,5 +69,12 @@ object WalletServiceOrchestrator {
   private def toPrivateKeyProto(key: PrivateKey): protos.ECPrivateKey = {
     protos.ECPrivateKey().withD(protos.BigInteger(ECKeys.getD(key).toString))
   }
+}
 
+object WalletServiceOrchestrator {
+
+  def apply(walletSecurity: WalletSecurity, walletIO: WalletIO)(
+      implicit ec: ExecutionContext
+  ): WalletServiceOrchestrator =
+    new WalletServiceOrchestrator(walletSecurity, walletIO)
 }

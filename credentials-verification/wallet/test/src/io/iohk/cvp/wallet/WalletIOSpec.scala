@@ -8,7 +8,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 class WalletIOSpec extends WordSpec with ScalaFutures with MustMatchers with BeforeAndAfterEach with OptionValues {
 
-  val filePath: Path = os.pwd / ".test" / "testwallet.dat"
+  val filePath: Path = os.pwd / ".test" / "test-wallet.dat"
 
   override def afterEach(): Unit = {
     super.afterEach()
@@ -21,15 +21,6 @@ class WalletIOSpec extends WordSpec with ScalaFutures with MustMatchers with Bef
       val wallet = "saved-wallet".getBytes
       val responseF = walletIO.save(wallet)
       responseF.futureValue mustBe ()
-    }
-
-    "store file should throw exception if file already exists" in {
-      val walletIO = WalletIO(filePath)
-      val wallet = "saved-wallet".getBytes
-      walletIO.save(wallet).futureValue
-      intercept[RuntimeException] {
-        walletIO.save(wallet).futureValue
-      }
     }
   }
 

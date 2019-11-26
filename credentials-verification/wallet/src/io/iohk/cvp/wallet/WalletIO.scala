@@ -8,22 +8,19 @@ class WalletIO(walletFile: Path)(implicit ec: ExecutionContext) {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
+  def fileExist() = os.exists(walletFile)
+
   def save(byteArray: Array[Byte]): Future[Unit] = {
     Future {
-      if (os.exists(walletFile)) {
-        logger.info("Previous wallet found")
-        throw new RuntimeException("Previous wallet found")
-      } else {
-        logger.info("Storing wallet")
-        os.write(walletFile, byteArray, createFolders = true)
-        ()
-      }
+      logger.info("save wallet")
+      os.write.over(walletFile, byteArray, createFolders = true)
+      ()
     }
   }
 
   def load(): Future[Option[Array[Byte]]] = {
     Future {
-      if (os.exists(walletFile)) {
+      if (fileExist()) {
         logger.info("Previous wallet found, loading it")
         val data = os.read.bytes(walletFile)
         Some(data)

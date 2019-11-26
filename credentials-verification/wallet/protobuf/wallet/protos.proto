@@ -47,6 +47,9 @@ service WalletService {
 
     // Lock  wallet
     rpc lockWallet(LockWalletRequest) returns (LockWalletResponse) {}
+
+    // change pass phrase  wallet
+    rpc changePassphrase(ChangePassphraseRequest) returns (ChangePassphraseResponse) {}
 }
 
 message GetDIDRequest {}
@@ -100,3 +103,9 @@ message LockWalletRequest {}
 
 message LockWalletResponse {}
 
+message ChangePassphraseRequest {
+    string currentPassphrase = 1;
+    string newPassphrase = 2;
+}
+
+message ChangePassphraseResponse {}
