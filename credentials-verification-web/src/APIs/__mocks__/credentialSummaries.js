@@ -22,8 +22,8 @@ const createMockUser = () => ({
   transactions: createMockTransactions(random.number(7) + 1)
 });
 
-const createMockCredentialSummary = () => ({
-  id: random.alphaNumeric(999),
+const createMockCredentialSummary = id => ({
+  id,
   user: createMockUser(),
   icon: image.avatar(),
   date: moment(fakeDate.recent()).unix()
@@ -32,23 +32,16 @@ const createMockCredentialSummary = () => ({
 const credentialSummaries = [];
 
 for (let i = 0; i < 3 * CREDENTIAL_SUMMARY_PAGE_SIZE; i++)
-  credentialSummaries.push(createMockCredentialSummary());
+  credentialSummaries.push(createMockCredentialSummary(i));
 
-export const getCredentialSummaries = ({ name: filterName, date: filterDate, offset }) =>
+export const getCredentialSummaries = ({ name: filterName, date: filterDate, lastId }) =>
   new Promise(resolve => {
     const filteredCredentialSummaries = credentialSummaries.filter(
-      ({ user: { name }, date }) =>
+      ({ user: { name }, date, id }) =>
+        (!lastId || id > lastId) &&
         (!filterName || name.toLowerCase().includes(filterName.toLowerCase())) &&
         (!filterDate || date > filterDate)
     );
 
-    const skip = offset * CREDENTIAL_SUMMARY_PAGE_SIZE;
-
-    resolve({
-      credentialSummaries: filteredCredentialSummaries.slice(
-        skip,
-        skip + CREDENTIAL_SUMMARY_PAGE_SIZE
-      ),
-      credentialSummariesCount: filteredCredentialSummaries.length
-    });
+    resolve(filteredCredentialSummaries.slice(0, CREDENTIAL_SUMMARY_PAGE_SIZE));
   });

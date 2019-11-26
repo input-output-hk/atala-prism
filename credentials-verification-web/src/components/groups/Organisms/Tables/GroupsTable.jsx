@@ -1,13 +1,12 @@
-import React, { Fragment } from 'react';
+import React, { Fragment, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, message } from 'antd';
+import { Button, message, Radio } from 'antd';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import CellRenderer from '../../../common/Atoms/CellRenderer/CellRenderer';
 import { shortDateFormatter } from '../../../../helpers/formatters';
-import PaginatedTable from '../../../common/Organisms/Tables/PaginatedTable';
-import { GROUP_PAGE_SIZE } from '../../../../helpers/constants';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
+import InfiniteScrollTable from '../../../common/Organisms/Tables/InfiniteScrollTable';
 
 const GetActionsButtons = ({ id, setGroupToDelete, fullInfo }) => {
   const { t } = useTranslation();
@@ -17,14 +16,18 @@ const GetActionsButtons = ({ id, setGroupToDelete, fullInfo }) => {
       {fullInfo && (
         <Fragment>
           <CustomButton
-            onClick={setGroupToDelete}
+            buttonProps={{
+              onClick: setGroupToDelete,
+              className: 'theme-link'
+            }}
             buttonText={t('groups.table.buttons.delete')}
-            theme="theme-link"
           />
           <CustomButton
-            onClick={() => message.info(`The id to copy is ${id}`, 1)}
+            buttonProps={{
+              onClick: () => message.info(`The id to copy is ${id}`, 1),
+              className: 'theme-link'
+            }}
             buttonText={t('groups.table.buttons.copy')}
-            theme="theme-link"
           />
         </Fragment>
       )}
@@ -41,6 +44,7 @@ GetActionsButtons.propTypes = {
 
 const AddCredentialsButton = ({ id }) => {
   const { t } = useTranslation();
+
   return (
     <Button onClick={() => message.info('add with this id', id)}>
       {t('groups.table.buttons.addCredential')}
@@ -52,32 +56,7 @@ AddCredentialsButton.propTypes = {
   id: PropTypes.string.isRequired
 };
 
-const commonColumns = componentName => [
-  {
-    key: 'icon',
-    render: ({ icon, groupName }) => (
-      <img style={{ height: '40px', width: '40px' }} src={icon} alt={`${groupName} icon`} />
-    )
-  },
-  {
-    key: 'groupName',
-    render: ({ groupName }) => (
-      <CellRenderer title="groupName" componentName={componentName} value={groupName} />
-    )
-  },
-  {
-    key: 'lastUpdate',
-    render: ({ lastUpdate }) => (
-      <CellRenderer
-        title="lastUpdate"
-        componentName={componentName}
-        value={shortDateFormatter(lastUpdate)}
-      />
-    )
-  }
-];
-
-const getColumns = (openModal, setGroupToDelete, fullInfo) => {
+const getColumns = ({ setGroupToDelete, fullInfo, selectedGroup, setGroup }) => {
   const componentName = 'groups';
   const credentialColumns = fullInfo
     ? [
@@ -95,7 +74,17 @@ const getColumns = (openModal, setGroupToDelete, fullInfo) => {
             )
         }
       ]
-    : [];
+    : [
+        {
+          key: 'checked',
+          render: group => (
+            <Radio
+              checked={group.groupId === selectedGroup.groupId}
+              onClick={() => setGroup(group)}
+            />
+          )
+        }
+      ];
 
   const actionColumn = [
     {
@@ -104,72 +93,92 @@ const getColumns = (openModal, setGroupToDelete, fullInfo) => {
       render: ({ groupId, groupName }) => (
         <GetActionsButtons
           id={groupId}
-          setGroupToDelete={() => {
-            openModal(true);
-            setGroupToDelete({ id: groupId, groupName });
-          }}
-          onlyView={fullInfo}
+          setGroupToDelete={() => setGroupToDelete({ id: groupId, groupName })}
+          fullInfo={fullInfo}
         />
       )
     }
   ];
 
-  return commonColumns(componentName)
-    .concat(credentialColumns)
-    .concat(actionColumn);
+  const commonColumns = [
+    {
+      key: 'icon',
+      render: ({ icon, groupName }) => (
+        <img style={{ height: '40px', width: '40px' }} src={icon} alt={`${groupName} icon`} />
+      )
+    },
+    {
+      key: 'groupName',
+      render: ({ groupName }) => (
+        <CellRenderer title="groupName" componentName={componentName} value={groupName} />
+      )
+    },
+    {
+      key: 'lastUpdate',
+      render: ({ lastUpdate }) => (
+        <CellRenderer
+          title="lastUpdate"
+          componentName={componentName}
+          value={shortDateFormatter(lastUpdate)}
+        />
+      )
+    }
+  ];
+
+  return commonColumns.concat(credentialColumns).concat(actionColumn);
 };
 
 const GroupsTable = ({
-  setOpen,
   setGroupToDelete,
   groups,
   selectedGroup,
   setGroup,
-  current,
-  total,
   onPageChange,
-  fullInfo
+  fullInfo,
+  hasMore
 }) => {
+  const [loading, setLoading] = useState(false);
   const selectedRows = groups.map(({ groupId }) => groupId).indexOf(selectedGroup.groupId);
   const selectedRowKeys = selectedRows === -1 ? [] : [selectedRows];
 
+  const getMoreData = () => {
+    setLoading(true);
+    onPageChange();
+    setLoading(false);
+  };
+
   const tableProps = {
-    columns: getColumns(setOpen, setGroupToDelete, fullInfo),
+    columns: getColumns({ setGroupToDelete, fullInfo, selectedGroup, setGroup }),
     data: groups,
-    current,
-    total,
-    defaultPageSize: GROUP_PAGE_SIZE,
-    onChange: onPageChange,
     selectionType: fullInfo
       ? null
       : {
           selectedRowKeys,
           type: 'radio',
           onChange: (_index, selected) => setGroup(selected[0])
-        }
+        },
+    loading,
+    hasMore,
+    getMoreData
   };
 
-  return <PaginatedTable {...tableProps} />;
+  return <InfiniteScrollTable {...tableProps} />;
 };
 
 GroupsTable.defaultProps = {
   groups: [],
-  current: 0,
-  total: 0,
   selectedGroup: '',
   setGroup: null
 };
 
 GroupsTable.propTypes = {
-  setOpen: PropTypes.func.isRequired,
   setGroupToDelete: PropTypes.func.isRequired,
   groups: PropTypes.arrayOf(PropTypes.object),
-  current: PropTypes.number,
-  total: PropTypes.number,
   onPageChange: PropTypes.func.isRequired,
   selectedGroup: PropTypes.string,
   setGroup: PropTypes.func,
-  fullInfo: PropTypes.bool.isRequired
+  fullInfo: PropTypes.bool.isRequired,
+  hasMore: PropTypes.func.isRequired
 };
 
 export default GroupsTable;

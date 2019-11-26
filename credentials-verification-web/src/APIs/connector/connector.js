@@ -1,5 +1,8 @@
 import grpcWeb from 'grpc-web';
-import { ConnectorServiceClient } from '../../protos/connector/connector_grpc_web_pb';
+import {
+  ConnectorServiceClient,
+  ConnectorServicePromiseClient
+} from '../../protos/connector/connector_grpc_web_pb';
 import {
   GenerateConnectionTokenRequest,
   GetConnectionsPaginatedRequest
@@ -8,7 +11,7 @@ import Logger from '../../helpers/Logger';
 
 const { REACT_APP_GRPC_CLIENT } = process.env;
 const issuerId = 'c8834532-eade-11e9-a88d-d8f2ca059830';
-const connectorServiceClient = new ConnectorServiceClient(REACT_APP_GRPC_CLIENT, null, null);
+const connectorServiceClient = new ConnectorServicePromiseClient(REACT_APP_GRPC_CLIENT, null, null);
 
 const generateConnectionTokenCallback = callback => (error, response) => {
   if (error) return Logger.error('An error: ', error);
@@ -31,20 +34,22 @@ export const generateConnectionToken = (userId, callback) => {
   });
 };
 
-const getConnectionsPaginatedCallback = (error, response) => {
-  if (error) return Logger.error('An error: ', error);
-  Logger.info('This is the response', response.getConnections());
-};
+export const getConnectionsPaginated = (
+  // Since the userId comes not from the session, I hardcoded it here
+  userId = 'c8834532-eade-11e9-a88d-d8f2ca059830',
+  lastSeenConnectionId,
+  limit = 10
+) => {
+  const connectionsPaginatedRequest = new GetConnectionsPaginatedRequest();
 
-export const getConnectionsPaginated = (userId, lastSeenConnectionId, limit = 10) => {
-  const connectionsPaginatedRequest = new GetConnectionsPaginatedRequest(
-    lastSeenConnectionId,
-    limit
-  );
+  connectionsPaginatedRequest.setLastseenconnectionid(lastSeenConnectionId);
+  connectionsPaginatedRequest.setLimit(limit);
 
-  connectorServiceClient.call(
-    connectionsPaginatedRequest,
-    { userId },
-    getConnectionsPaginatedCallback
-  );
+  return connectorServiceClient
+    .getConnectionsPaginated(connectionsPaginatedRequest, { userId })
+    .then(call => {
+      const { connectionsList } = call.toObject();
+      return connectionsList;
+    })
+    .catch(error => Logger.error('An error: ', error));
 };

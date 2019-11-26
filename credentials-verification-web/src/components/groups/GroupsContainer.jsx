@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
-import moment from 'moment';
 import PropTypes from 'prop-types';
 import Logger from '../../helpers/Logger';
 import { GROUP_PAGE_SIZE } from '../../helpers/constants';
@@ -13,19 +12,25 @@ const GroupsContainer = ({ api }) => {
   const { t } = useTranslation();
 
   const [groups, setGroups] = useState([]);
-  const [groupCount, setGroupCount] = useState(0);
   const [date, setDate] = useState();
   const [name, setName] = useState('');
-  const [offset, setOffset] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
 
   const updateGroups = () => {
+    if (!hasMore) return;
+
     const filterDateAsUnix = dateAsUnix(date);
 
+    const { groupId } = groups.length ? groups[groups.length - 1] : {};
+
     api
-      .getGroups({ name, date: filterDateAsUnix, offset, pageSize: GROUP_PAGE_SIZE })
-      .then(({ groups: filteredGroups, groupsCount: count }) => {
-        setGroups(filteredGroups);
-        setGroupCount(count);
+      .getGroups({ name, date: filterDateAsUnix, pageSize: GROUP_PAGE_SIZE, lastId: groupId })
+      .then(filteredGroups => {
+        if (!filteredGroups.length) {
+          setHasMore(false);
+          return;
+        }
+        setGroups(groups.concat(filteredGroups));
       })
       .catch(error => {
         Logger.error('[GroupsContainer.updateGroups] Error: ', error);
@@ -34,8 +39,15 @@ const GroupsContainer = ({ api }) => {
   };
 
   useEffect(() => {
-    updateGroups();
-  }, [date, name, offset]);
+    setGroups([]);
+    setHasMore(true);
+  }, [date, name]);
+
+  useEffect(() => {
+    if (!groups.length) {
+      updateGroups();
+    }
+  }, [groups]);
 
   const handleGroupDeletion = (id, groupName) =>
     api
@@ -49,21 +61,15 @@ const GroupsContainer = ({ api }) => {
         message.error(t('errors.errorDeletingGroup', { groupName }), 1);
       });
 
-  const updateFilter = (value, setField) => {
-    setOffset(0);
-    setField(value);
-  };
-
   return (
     <Groups
       fullInfo
       groups={groups}
-      count={groupCount}
-      offset={offset}
-      setOffset={setOffset}
-      setDate={value => updateFilter(value, setDate)}
-      setName={value => updateFilter(value, setName)}
+      setDate={setDate}
+      setName={setName}
       handleGroupDeletion={handleGroupDeletion}
+      updateGroups={updateGroups}
+      hasMore={hasMore}
     />
   );
 };

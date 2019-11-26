@@ -4,10 +4,10 @@ import __ from 'lodash';
 import { GROUP_PAGE_SIZE } from '../../helpers/constants';
 import { toProtoDate } from './helpers';
 
-const createMockGroup = () => ({
+const createMockGroup = groupId => ({
   icon: image.avatar(),
   groupName: company.companyName(),
-  groupId: random.alphaNumeric(999),
+  groupId,
   certificate: {
     certificateName: lorem.sentence(),
     certificateId: random.alphaNumeric()
@@ -23,22 +23,18 @@ const createMockGroup = () => ({
 
 const mockedGroups = [];
 
-for (let i = 0; i < 3 * GROUP_PAGE_SIZE; i++) mockedGroups.push(createMockGroup());
+for (let i = 0; i < 3 * GROUP_PAGE_SIZE; i++) mockedGroups.push(createMockGroup(i));
 
-export const getGroups = ({ name = '', date: filterDate = 0, offset, pageSize }) =>
+export const getGroups = ({ name = '', date: filterDate = 0, pageSize, lastId }) =>
   new Promise(resolve => {
     const filteredGroups = mockedGroups.filter(
-      ({ groupName, lastUpdate }) =>
+      ({ groupId, groupName, lastUpdate }) =>
+        (!lastId || groupId > lastId) &&
         (!name || groupName.toLowerCase().includes(name.toLowerCase())) &&
         (!filterDate || lastUpdate > filterDate)
     );
 
-    const skip = offset * pageSize;
-
-    resolve({
-      groups: filteredGroups.slice(skip, skip + pageSize),
-      groupsCount: filteredGroups.length
-    });
+    resolve(filteredGroups.slice(0, pageSize));
   });
 
 export const deleteGroup = ({ id = '' }) =>

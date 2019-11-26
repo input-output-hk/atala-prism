@@ -31,12 +31,13 @@ const CredentialSummaryDetail = ({ user: { icon, name: userName, transactions },
           extra={genExtra()}
         />
       </Collapse>
-      {transactions.map(trans => (
-        <div className="CredentialSummaryLine">
-          <p>Credential</p>
-          <Connection {...trans} />
-        </div>
-      ))}
+      {transactions &&
+        transactions.map(trans => (
+          <div className="CredentialSummaryLine">
+            <p>Credential</p>
+            <Connection {...trans} />
+          </div>
+        ))}
       <div className="ControlButtons">
         <CustomButton
           buttonProps={{

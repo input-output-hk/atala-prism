@@ -17,7 +17,8 @@ const completeDateFormatter = (date, format) => {
 const completeFrontendDateFormatter = (date, format) => {
   const lang = getBrowserLanguage();
   moment.locale(lang);
-  return moment.unix(date).format(format);
+  // The dates come from the backend as unix timestamp with miliseconds
+  return moment.unix(date / 1000).format(format);
 };
 
 export const fromUnixToProtoDateFormatter = date => {

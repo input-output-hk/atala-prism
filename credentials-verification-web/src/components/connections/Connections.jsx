@@ -48,7 +48,6 @@ const Connections = ({ tableProps, filterProps, inviteHolder }) => {
       setConnectionToken(value);
       showQRModal(true);
     };
-    console.log('inviteHolderAndShowQR');
     inviteHolder(cb);
   };
 
