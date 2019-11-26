@@ -147,7 +147,7 @@
   },
   "credentialSummary": {
     "title": "Credential Summaries",
-    "noConnections": {
+    "noCredentialSummaries": {
       "photoAlt": "No Credential Summaries yet",
       "title": "You don't have Credential Summaries yet"
     },

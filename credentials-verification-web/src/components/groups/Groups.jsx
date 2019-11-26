@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Row, Icon, message } from 'antd';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
@@ -26,24 +26,27 @@ const NewGroupButton = () => {
 
 const Groups = ({
   groups,
-  count,
-  offset,
-  setOffset,
   setDate,
   setName,
   handleGroupDeletion,
   fullInfo,
   setGroup,
-  group
+  group,
+  updateGroups,
+  hasMore
 }) => {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [groupToDelete, setGroupToDelete] = useState({});
 
   const closeModal = () => {
-    setOpen(false);
     setGroupToDelete({});
   };
+
+  useEffect(() => {
+    const hasValues = Object.keys(groupToDelete).length !== 0;
+    setOpen(hasValues);
+  }, [groupToDelete]);
 
   const modalProps = {
     toDelete: { name: groupToDelete.groupName, id: groupToDelete.id },
@@ -51,6 +54,16 @@ const Groups = ({
     closeModal,
     handleDeletion: handleGroupDeletion,
     prefix: 'groups'
+  };
+
+  const tableProps = {
+    setGroupToDelete,
+    groups,
+    fullInfo,
+    onPageChange: updateGroups,
+    setGroup,
+    hasMore,
+    selectedGroup: group
   };
 
   return (
@@ -63,18 +76,7 @@ const Groups = ({
       <GroupFilters changeDate={setDate} changeFilter={setName} />
       <Row>
         {groups.length ? (
-          <GroupsTable
-            setOpen={setOpen}
-            setGroupToDelete={setGroupToDelete}
-            groups={groups}
-            current={offset + 1}
-            total={count}
-            offset={offset}
-            onPageChange={value => setOffset(value - 1)}
-            fullInfo={fullInfo}
-            setGroup={setGroup}
-            selectedGroup={group}
-          />
+          <GroupsTable {...tableProps} />
         ) : (
           <EmptyComponent
             photoSrc={noGroups}
@@ -91,23 +93,20 @@ const Groups = ({
 
 Groups.defaultProps = {
   groups: [],
-  count: 0,
-  offset: 0,
   setGroup: null,
   group: ''
 };
 
 Groups.propTypes = {
   groups: PropTypes.arrayOf(groupShape),
-  count: PropTypes.number,
-  offset: PropTypes.number,
-  setOffset: PropTypes.func.isRequired,
   setDate: PropTypes.func.isRequired,
   setName: PropTypes.func.isRequired,
   handleGroupDeletion: PropTypes.func.isRequired,
   fullInfo: PropTypes.bool.isRequired,
   setGroup: PropTypes.func,
-  group: PropTypes.string
+  group: PropTypes.string,
+  updateGroups: PropTypes.func.isRequired,
+  hasMore: PropTypes.bool.isRequired
 };
 
 export default Groups;

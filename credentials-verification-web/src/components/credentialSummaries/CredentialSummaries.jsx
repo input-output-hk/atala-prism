@@ -13,12 +13,10 @@ import { drawerWidth } from '../../helpers/constants';
 
 const CredentialSummaries = ({
   credentialSummaries,
-  count,
-  offset,
-  setOffset,
   setDate,
   setName,
-  handleCredentialSummaryDeletion
+  handleCredentialSummaryDeletion,
+  onPageChange
 }) => {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -57,13 +55,9 @@ const CredentialSummaries = ({
       <Row>
         {credentialSummaries.length ? (
           <CredentialSummaryTable
-            setOpen={setOpen}
             setCurrentCredentialSummary={setCurrentCredentialSummary}
             credentialSummaries={credentialSummaries}
-            current={offset + 1}
-            total={count}
-            offset={offset}
-            onPageChange={value => setOffset(value - 1)}
+            onPageChange={onPageChange}
             openDrawer={() => setShowDrawer(true)}
           />
         ) : (
@@ -91,7 +85,8 @@ CredentialSummaries.propTypes = {
   setOffset: PropTypes.func.isRequired,
   setDate: PropTypes.func.isRequired,
   setName: PropTypes.func.isRequired,
-  handleCredentialSummaryDeletion: PropTypes.func.isRequired
+  handleCredentialSummaryDeletion: PropTypes.func.isRequired,
+  onPageChange: PropTypes.func.isRequired
 };
 
 export default CredentialSummaries;

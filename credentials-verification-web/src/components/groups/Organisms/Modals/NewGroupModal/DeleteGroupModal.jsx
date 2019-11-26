@@ -3,12 +3,7 @@ import { Button, Col, Modal, Row } from 'antd';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 
-const DeleteGroupModal = ({
-  groupToDelete: { groupName, id },
-  open,
-  closeModal,
-  handleGroupDeletion
-}) => {
+const DeleteGroupModal = ({ toDelete: { name, id }, open, closeModal, handleGroupDeletion }) => {
   const { t } = useTranslation();
 
   return (
@@ -20,15 +15,13 @@ const DeleteGroupModal = ({
       onCancel={closeModal}
     >
       <React.Fragment>
-        <Row>{t('groups.modal.text', { groupName })}</Row>
+        <Row>{t('groups.modal.text', { groupName: name })}</Row>
         <Row>
           <Col>
             <Button onClick={closeModal}>{t('actions.cancel')}</Button>
           </Col>
           <Col>
-            <Button onClick={() => handleGroupDeletion(id, groupName)}>
-              {t('actions.delete')}
-            </Button>
+            <Button onClick={() => handleGroupDeletion(id, name)}>{t('actions.delete')}</Button>
           </Col>
         </Row>
       </React.Fragment>
@@ -37,12 +30,12 @@ const DeleteGroupModal = ({
 };
 
 DeleteGroupModal.defaultProps = {
-  groupToDelete: { groupName: '', id: '' },
+  toDelete: { name: '', id: '' },
   open: false
 };
 
 DeleteGroupModal.propTypes = {
-  groupToDelete: PropTypes.shape({ groupName: PropTypes.string, id: PropTypes.string }),
+  toDelete: PropTypes.shape({ name: PropTypes.string, id: PropTypes.string }),
   closeModal: PropTypes.func.isRequired,
   open: PropTypes.bool,
   handleGroupDeletion: PropTypes.func.isRequired
