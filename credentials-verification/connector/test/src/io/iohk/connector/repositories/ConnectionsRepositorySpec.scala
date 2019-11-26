@@ -13,7 +13,7 @@ import scala.concurrent.duration.DurationLong
 
 class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
 
-  override val tables = List("connections", "connection_tokens", "participants")
+  override val tables = List("connections", "connection_tokens", "holder_public_keys", "participants")
 
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 5.millis)
   lazy val connectionsRepository =
@@ -46,13 +46,13 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
   "addConnectionFromToken" should {
     "add connection from existing token" in {
       val issuerId = createIssuer()
-      val holderId = createHolder()
+      val publicKey = ECPublicKey(BigInt(0), BigInt(1))
 
       val token = new TokenString("t0k3nc0de")
       sql"""INSERT INTO connection_tokens(token, initiator) VALUES ($token, $issuerId)""".runUpdate()
 
-      val result = connectionsRepository.addConnectionFromToken(token, holderId).value.futureValue
-      val connectionId = result.right.value.id
+      val result = connectionsRepository.addConnectionFromToken(token, publicKey).value.futureValue
+      val connectionId = result.right.value._2.id
 
       sql"""SELECT COUNT(1) FROM connections WHERE id=$connectionId""".runUnique[Int]() mustBe 1
       //verify that instantiated_at field is set correctly, to avoid conversion or timezone errors

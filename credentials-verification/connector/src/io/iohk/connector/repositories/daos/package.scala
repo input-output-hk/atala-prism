@@ -5,7 +5,7 @@ import java.util.UUID
 import doobie.postgres.implicits._
 import doobie.util.invariant.InvalidEnum
 import doobie.util.{Put, Read}
-import io.iohk.connector.model.{ConnectionId, MessageId, ParticipantId, ParticipantType}
+import io.iohk.connector.model.{ConnectionId, ECPublicKey, MessageId, ParticipantId, ParticipantType}
 
 package object daos {
   implicit val pgPackageTypeMeta = pgEnumString[ParticipantType](
@@ -13,6 +13,8 @@ package object daos {
     a => ParticipantType.withNameOption(a).getOrElse(throw InvalidEnum[ParticipantType](a)),
     _.entryName
   )
+  implicit val bigIntPut: Put[BigInt] = implicitly[Put[BigDecimal]].contramap(BigDecimal.apply)
+  implicit val bigIntRead: Read[BigInt] = implicitly[Read[BigDecimal]].map(_.toBigInt())
 
   implicit val participantIdPut: Put[ParticipantId] = Put[UUID].contramap((_: ParticipantId).id)
   implicit val connectionIdPut: Put[ConnectionId] = Put[UUID].contramap((_: ConnectionId).id)

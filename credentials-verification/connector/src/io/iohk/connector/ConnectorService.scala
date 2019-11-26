@@ -3,6 +3,7 @@ package io.iohk.connector
 import java.util.UUID
 
 import io.iohk.connector.errors._
+import io.iohk.connector.model.ECPublicKey
 import io.iohk.connector.payments.PaymentWall
 import io.iohk.connector.protos._
 import io.iohk.connector.services.{ConnectionsService, MessagesService}
@@ -82,12 +83,18 @@ class ConnectorService(connections: ConnectionsService, messages: MessagesServic
   ): Future[AddConnectionFromTokenResponse] = {
     implicit val loggingContext = LoggingContext("request" -> request)
 
-    val userId = UserIdInterceptor.USER_ID_CTX_KEY.get()
+    val publicKey = ECPublicKey(
+      x = BigInt(request.holderPublicKey.x),
+      y = BigInt(request.holderPublicKey.y)
+    )
 
     connections
-      .addConnectionFromToken(userId, new model.TokenString(request.token))
+      .addConnectionFromToken(new model.TokenString(request.token), publicKey)
       .wrapExceptions
-      .successMap(connectionInfo => AddConnectionFromTokenResponse(connectionInfo.toProto))
+      .successMap {
+        case (userId, connectionInfo) =>
+          AddConnectionFromTokenResponse(connectionInfo.toProto).withUserId(userId.id.toString)
+      }
   }
 
   /** Delete active connection

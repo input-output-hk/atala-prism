@@ -45,22 +45,32 @@ class ConnectionsRepository(
 
   def addConnectionFromToken(
       token: TokenString,
-      acceptor: ParticipantId
-  ): FutureEither[ConnectorError, ConnectionInfo] = {
-    implicit val loggingContext = LoggingContext("token" -> token, "acceptor" -> acceptor)
+      publicKey: ECPublicKey
+  ): FutureEither[ConnectorError, (ParticipantId, ConnectionInfo)] = {
+
+    implicit val loggingContext = LoggingContext("token" -> token)
 
     val query = for {
       initiator <- ParticipantsDAO
         .findByAvailableToken(token)
         .toRight(UnknownValueError("token", token.token).logWarn)
 
+      // Create a holder, which has no name nor did, instead it has a public key
+      acceptorInfo = ParticipantInfo(ParticipantId.random(), ParticipantType.Holder, "", None)
+      _ <- EitherT.right[ConnectorError] {
+        ParticipantsDAO.insert(acceptorInfo)
+      }
+      _ <- EitherT.right[ConnectorError] {
+        ParticipantsDAO.insertPublicKey(acceptorInfo.id, publicKey)
+      }
+
       ciia <- EitherT.right[ConnectorError](
-        ConnectionsDAO.insert(initiator = initiator.id, acceptor = acceptor)
+        ConnectionsDAO.insert(initiator = initiator.id, acceptor = acceptorInfo.id)
       )
       (connectionId, instantiatedAt) = ciia
 
       _ <- EitherT.right[ConnectorError](ConnectionTokensDAO.markAsUsed(token))
-    } yield ConnectionInfo(connectionId, instantiatedAt, initiator)
+    } yield acceptorInfo.id -> ConnectionInfo(connectionId, instantiatedAt, initiator)
 
     query
       .transact(xa)

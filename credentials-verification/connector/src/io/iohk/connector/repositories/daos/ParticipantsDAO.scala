@@ -3,7 +3,7 @@ package io.iohk.connector.repositories.daos
 import cats.data.OptionT
 import cats.implicits._
 import doobie.implicits._
-import io.iohk.connector.model.{ParticipantInfo, TokenString}
+import io.iohk.connector.model.{ECPublicKey, ParticipantId, ParticipantInfo, TokenString}
 
 object ParticipantsDAO {
   def insert(participant: ParticipantInfo): doobie.ConnectionIO[Unit] = {
@@ -11,6 +11,13 @@ object ParticipantsDAO {
     sql"""
          |INSERT INTO participants (id, tpe, name, did)
          |VALUES ($id, $tpe, $name, $did)
+       """.stripMargin.update.run.map(_ => ())
+  }
+
+  def insertPublicKey(holderId: ParticipantId, publicKey: ECPublicKey): doobie.ConnectionIO[Unit] = {
+    sql"""
+         |INSERT INTO holder_public_keys (participant_id, x, y)
+         |VALUES ($holderId, ${publicKey.x}, ${publicKey.y})
        """.stripMargin.update.run.map(_ => ())
   }
 
@@ -31,5 +38,13 @@ object ParticipantsDAO {
          |WHERE t.token = $token AND
          |      used_at IS NULL
       """.stripMargin.query[ParticipantInfo].option
+  }
+
+  def findPublicKey(id: ParticipantId): OptionT[doobie.ConnectionIO, ECPublicKey] = OptionT {
+    sql"""
+         |SELECT x, y
+         |FROM holder_public_keys
+         |WHERE participant_id = $id
+      """.stripMargin.query[ECPublicKey].option
   }
 }

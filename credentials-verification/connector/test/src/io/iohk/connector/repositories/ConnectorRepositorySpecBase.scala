@@ -9,7 +9,7 @@ import io.iohk.connector.repositories.daos._
 import io.iohk.cvp.repositories.PostgresRepositorySpec
 
 abstract class ConnectorRepositorySpecBase extends PostgresRepositorySpec {
-  override val tables = List("messages", "connections", "participants")
+  override val tables = List("messages", "connections", "holder_public_keys", "participants")
   implicit class SqlTestOps(val sql: fragment.Fragment) {
     def runUpdate(): Unit = {
       sql.update.run.transact(database).unsafeToFuture().futureValue

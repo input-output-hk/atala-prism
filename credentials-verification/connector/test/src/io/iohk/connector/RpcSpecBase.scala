@@ -18,7 +18,7 @@ import org.scalatest.BeforeAndAfterEach
 import scala.concurrent.duration.DurationLong
 
 class RpcSpecBase extends PostgresRepositorySpec with BeforeAndAfterEach {
-  override val tables = List("messages", "connections", "connection_tokens", "participants")
+  override val tables = List("messages", "connections", "connection_tokens", "holder_public_keys", "participants")
   implicit val executionContext = scala.concurrent.ExecutionContext.global
 
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 20.millis)
