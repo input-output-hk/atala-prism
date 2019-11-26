@@ -27,7 +27,15 @@ package object operations {
     *
     * Appearance of such error signifies that the operation is invalid
     */
-  sealed trait ValidationError
+  sealed trait ValidationError {
+    def name: String
+
+    def path: Path
+
+    def explanation: String
+
+    def render = s"$name at ${path.dotRender}: $explanation"
+  }
 
   object ValidationError {
 
@@ -38,9 +46,15 @@ package object operations {
       *
       * @param path Path where the problem occurred - list of field names
       */
-    case class MissingValue(path: Path) extends ValidationError
+    case class MissingValue(override val path: Path) extends ValidationError {
+      override def name = "Missing Value"
+      override def explanation = "missing value"
+    }
 
-    case class InvalidValue(path: Path, value: String, message: String) extends ValidationError
+    case class InvalidValue(override val path: Path, value: String, override val explanation: String)
+        extends ValidationError {
+      override def name = "Invalid Value"
+    }
   }
 
   /** Error during applying an operation to the state */

@@ -239,22 +239,22 @@ trait CVPDockerModule extends Module { self: JavaModule =>
   }
 
   private def doBuild(
-                       assemblyPath: Path,
-                       dest: Path,
-                       jar: String,
-                       dockerfile: String,
-                       tag: String
-                     ): os.CommandResult = {
+      assemblyPath: Path,
+      dest: Path,
+      jar: String,
+      dockerfile: String,
+      tag: String
+  ): os.CommandResult = {
     os.copy(assemblyPath, dest / jar)
     os.proc("docker", "build", "-f", dockerfile, "-t", tag, dest.toString())
       .call(stdout = os.Inherit, stderr = os.Inherit)
   }
 
   private def doPush(
-                      buildResult: os.CommandResult,
-                      loginResult: os.CommandResult,
-                      tag: String
-                    ): os.CommandResult = {
+      buildResult: os.CommandResult,
+      loginResult: os.CommandResult,
+      tag: String
+  ): os.CommandResult = {
     os.proc("docker", "push", tag).call(stdout = os.Inherit, stderr = os.Inherit)
   }
 

@@ -14,13 +14,7 @@ import org.scalatest.Inside._
 
 import scala.concurrent.duration._
 
-class CreateDIDOperationSpec extends PostgresRepositorySpec {
-
-  implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 500.millis)
-  lazy val didDataRepository = new DIDDataRepository(database)
-
-  override val tables = List("public_keys", "did_data")
-
+object CreateDIDOperationSpec {
   def protoECKeyFromPublicKey(key: PublicKey) = {
     val point = ECKeys.getECPoint(key)
 
@@ -36,8 +30,8 @@ class CreateDIDOperationSpec extends PostgresRepositorySpec {
     protoECKeyFromPublicKey(keyPair.getPublic)
   }
 
-  val masterKey = ECKeys.generateKeyPair().getPublic
-  val masterEcKey = protoECKeyFromPublicKey(masterKey)
+  val masterKeys = ECKeys.generateKeyPair()
+  val masterEcKey = protoECKeyFromPublicKey(masterKeys.getPublic)
 
   val exampleOperation = proto.AtalaOperation(
     proto.AtalaOperation.Operation.CreateDid(
@@ -65,6 +59,17 @@ class CreateDIDOperationSpec extends PostgresRepositorySpec {
       )
     )
   )
+
+}
+
+class CreateDIDOperationSpec extends PostgresRepositorySpec {
+
+  import CreateDIDOperationSpec._
+
+  implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 50.millis)
+  lazy val didDataRepository = new DIDDataRepository(database)
+
+  override val tables = List("public_keys", "did_data")
 
   "CreateDIDOperation.parse" should {
     "parse valid CreateDid AtalaOperation" in {
@@ -149,7 +154,7 @@ class CreateDIDOperationSpec extends PostgresRepositorySpec {
       val parsedOperation = CreateDIDOperation.parse(exampleOperation).right.value
       val OperationKey.IncludedKey(key) = parsedOperation.getKey("master").right.value
 
-      key mustBe masterKey
+      key mustBe masterKeys.getPublic
     }
   }
 
