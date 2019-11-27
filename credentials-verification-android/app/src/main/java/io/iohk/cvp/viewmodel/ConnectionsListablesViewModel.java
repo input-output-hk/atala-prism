@@ -17,7 +17,7 @@ public class ConnectionsListablesViewModel extends ViewModel {
   public ConnectionsListablesViewModel() {
   }
 
-  public LiveData<List<ConnectionListable>> getConnections() {
+  public LiveData<List<ConnectionListable>> getConnections(String userId) {
     new GrpcTask<>(new GetConnectionsListableRunnable(connections)).execute();
     return connections;
   }

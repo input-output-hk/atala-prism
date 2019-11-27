@@ -2,7 +2,6 @@ package io.iohk.cvp.views.fragments;
 
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import androidx.annotation.NonNull;
@@ -11,14 +10,13 @@ import androidx.lifecycle.ViewModelProviders;
 import butterknife.OnClick;
 import io.iohk.cvp.R;
 import io.iohk.cvp.utils.ActivitiesRequestCodes;
-import io.iohk.cvp.utils.IntentDataConstants;
+import io.iohk.cvp.utils.ActivityUtils;
 import io.iohk.cvp.utils.PermissionUtils;
 import io.iohk.cvp.viewmodel.ConnectionsActivityViewModel;
 import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.activities.MainActivity;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.RootAppBar;
-import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBarOption;
 import javax.inject.Inject;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -67,19 +65,9 @@ public class FirstConnectionFragment extends CvpFragment<ConnectionsActivityView
   @Override
   public void onActivityResult(int requestCode, int resultCode, Intent data) {
     super.onActivityResult(requestCode, resultCode, data);
-    if (requestCode == ActivitiesRequestCodes.QR_SCANNER_REQUEST_ACTIVITY
-        && resultCode == Activity.RESULT_OK) {
-      String token = data.getStringExtra(IntentDataConstants.QR_RESULT);
-
-      viewModel.getConnectionTokenInfo(token).observe(this, issuerInfo -> {
-        // TODO show issuer data to confirm connection and after confirmation call
-        viewModel.addConnectionFromToken(token).observe(this, connectionInfo -> {
-          //TODO should we show new connection info before switching to connections list?
-          // if we decide not to do so, addConnectionFromToken method should be moved from view model
-          ((MainActivity) getActivity()).onNavigation(BottomAppBarOption.CONNECTIONS);
-        });
-      });
-    }
+    ActivityUtils
+        .onQrcodeResult(requestCode, resultCode, getContext(), (MainActivity) getActivity(),
+            viewModel, data, this);
   }
 
   @Override

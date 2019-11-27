@@ -21,6 +21,7 @@ public class Preferences {
   private static final String PK_KEY = "wallet_pk";
   public static final String ACCEPTED_MESSAGES_KEY = "accepted_messages";
   public static final String REJECTED_MESSAGES_KEY = "rejected_messages";
+  private static final String USER_ID_LIST_KEY = "user_id";
   private Context context;
 
   public void savePrivateKey(byte[] pk) {
@@ -47,12 +48,7 @@ public class Preferences {
   }
 
   public void saveMessage(String messageId, String prefKey) {
-    SharedPreferences prefs = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
-    Set<String> storedIds = prefs.getStringSet(prefKey, new HashSet<>());
-    storedIds.add(messageId);
-    Editor editor = prefs.edit();
-    editor.putStringSet(prefKey, storedIds);
-    editor.apply();
+    editStringSet(messageId, prefKey);
   }
 
   public Set<String> getStoredMessages(String messageTypeKey) {
@@ -60,4 +56,22 @@ public class Preferences {
     return sharedPreferences.getStringSet(messageTypeKey, new HashSet<>());
   }
 
+  public void saveUserId(String userId) {
+    editStringSet(userId, USER_ID_LIST_KEY);
+  }
+
+  public Set<String> getUserIds() {
+    SharedPreferences sharedPreferences = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
+    return sharedPreferences
+        .getStringSet(USER_ID_LIST_KEY, new HashSet<>());
+  }
+
+  private void editStringSet(String valueToAdd, String prefKey) {
+    SharedPreferences prefs = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
+    Set<String> newItems = new HashSet<>(prefs.getStringSet(prefKey, new HashSet<>()));
+    newItems.add(valueToAdd);
+    Editor editor = prefs.edit();
+    editor.putStringSet(prefKey, newItems);
+    editor.apply();
+  }
 }

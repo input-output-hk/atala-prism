@@ -53,10 +53,8 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> {
   @Inject
   CredentialDetailFragment credentialFragment;
 
-  private final CredentialsRecyclerViewAdapter newCredentialsAdapter
-      = new CredentialsRecyclerViewAdapter(R.layout.row_new_credential, this, true);
-  private final CredentialsRecyclerViewAdapter credentialsAdapter
-      = new CredentialsRecyclerViewAdapter(R.layout.row_credential, this, false);
+  private CredentialsRecyclerViewAdapter newCredentialsAdapter;
+  private CredentialsRecyclerViewAdapter credentialsAdapter;
 
   @Override
   protected int getViewId() {
@@ -72,6 +70,10 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> {
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
       Bundle savedInstanceState) {
     View view = super.onCreateView(inflater, container, savedInstanceState);
+    newCredentialsAdapter = new CredentialsRecyclerViewAdapter(R.layout.row_new_credential, this,
+        true);
+    credentialsAdapter = new CredentialsRecyclerViewAdapter(R.layout.row_credential, this, false);
+
     return view;
   }
 
@@ -85,28 +87,27 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> {
     newCredentialsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
     newCredentialsRecyclerView.setAdapter(newCredentialsAdapter);
 
-    viewModel.getMessages().observe(this, messages -> {
+    viewModel.getMessages(this.getUserIds()).observe(this, messages -> {
       Preferences prefs = new Preferences(getContext());
 
-      Set<String> acceptedMessagesIds = prefs.getStoredMessages(Preferences.ACCEPTED_MESSAGES_KEY);
-      Set<String> rejectedMessagesIds = prefs.getStoredMessages(Preferences.REJECTED_MESSAGES_KEY);
+      Set<String> acceptedMessagesIds = prefs
+          .getStoredMessages(Preferences.ACCEPTED_MESSAGES_KEY);
+      Set<String> rejectedMessagesIds = prefs
+          .getStoredMessages(Preferences.REJECTED_MESSAGES_KEY);
 
       List<ReceivedMessage> newMessages = messages.stream()
           .filter(msg -> !acceptedMessagesIds.contains(msg.getId()) && !rejectedMessagesIds
               .contains(msg.getId())).collect(
               Collectors.toList());
 
-      newCredentialsAdapter.setMessages(newMessages);
-      newCredentialsAdapter.notifyDataSetChanged();
+      newCredentialsAdapter.addMesseges(newMessages);
 
       List<ReceivedMessage> acceptedMessages = messages.stream()
           .filter(msg -> acceptedMessagesIds.contains(msg.getId())).collect(
               Collectors.toList());
 
-      credentialsAdapter.setMessages(acceptedMessages);
-      credentialsAdapter.notifyDataSetChanged();
+      credentialsAdapter.addMesseges(acceptedMessages);
     });
-
 
   }
 

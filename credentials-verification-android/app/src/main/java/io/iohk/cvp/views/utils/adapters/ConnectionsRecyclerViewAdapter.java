@@ -39,4 +39,8 @@ public abstract class ConnectionsRecyclerViewAdapter<V extends ViewHolder> exten
   }
 
   protected abstract void onBindViewHolder(V holder, ConnectionInfo connectionInfo);
+
+  public void addConnections(List<ConnectionInfo> newConnections) {
+    connections.addAll(newConnections);
+  }
 }

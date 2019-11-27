@@ -28,7 +28,8 @@ public class GrpcTask<A> extends AsyncTask<Object, Void, Optional<A>> {
   @Override
   public Optional<A> doInBackground(Object... params) {
     try {
-      ClientInterceptor interceptor = new HeaderClientInterceptor();
+      String userId = params[0] != null ? String.valueOf(params[0]) : null;
+      ClientInterceptor interceptor = new HeaderClientInterceptor(userId);
       Channel channel = ClientInterceptors.intercept(origChannel, interceptor);
       ConnectorServiceBlockingStub
           blockingStub = ConnectorServiceGrpc.newBlockingStub(channel);

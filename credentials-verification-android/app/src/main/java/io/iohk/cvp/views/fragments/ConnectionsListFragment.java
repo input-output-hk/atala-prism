@@ -12,11 +12,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import butterknife.BindView;
 import io.iohk.cvp.R;
+import io.iohk.cvp.io.connector.ConnectionInfo;
 import io.iohk.cvp.viewmodel.ConnectionsActivityViewModel;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.RootAppBar;
 import io.iohk.cvp.views.utils.adapters.ConnectionsRecyclerViewAdapter;
-import java.util.ArrayList;
+import java.util.List;
 import javax.inject.Inject;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -45,10 +46,6 @@ public class ConnectionsListFragment extends CvpFragment<ConnectionsActivityView
   public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
     recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
     recyclerView.setAdapter(adapter);
-    viewModel.getConnections().observe(this, connections -> {
-      adapter.setConnections(connections);
-      adapter.notifyDataSetChanged();
-    });
   }
 
   @Override
@@ -64,5 +61,10 @@ public class ConnectionsListFragment extends CvpFragment<ConnectionsActivityView
   @Override
   public ConnectionsActivityViewModel getViewModel() {
     return ViewModelProviders.of(this, factory).get(ConnectionsActivityViewModel.class);
+  }
+
+  public void addConnections(List<ConnectionInfo> newConnections) {
+    adapter.addConnections(newConnections);
+    adapter.notifyDataSetChanged();
   }
 }

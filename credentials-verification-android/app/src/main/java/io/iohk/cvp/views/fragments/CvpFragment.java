@@ -5,17 +5,16 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModel;
-
-import java.util.Optional;
-
 import butterknife.ButterKnife;
 import dagger.android.support.DaggerFragment;
+import io.iohk.cvp.views.Preferences;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
+import java.util.Optional;
+import java.util.Set;
 
 public abstract class CvpFragment<T extends ViewModel> extends DaggerFragment {
 
@@ -66,5 +65,10 @@ public abstract class CvpFragment<T extends ViewModel> extends DaggerFragment {
   }
 
   protected abstract int getViewId();
+
+  protected Set<String> getUserIds() {
+    Preferences prefs = new Preferences(getContext());
+    return prefs.getUserIds();
+  }
 
 }

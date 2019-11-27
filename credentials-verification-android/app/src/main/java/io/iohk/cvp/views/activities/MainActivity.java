@@ -13,6 +13,7 @@ import io.iohk.cvp.R;
 import io.iohk.cvp.core.exception.CaseNotFoundException;
 import io.iohk.cvp.core.exception.ErrorCode;
 import io.iohk.cvp.views.Navigator;
+import io.iohk.cvp.views.Preferences;
 import io.iohk.cvp.views.fragments.ConnectionsFragment;
 import io.iohk.cvp.views.fragments.CvpFragment;
 import io.iohk.cvp.views.fragments.FirstConnectionFragment;
@@ -66,7 +67,13 @@ public class MainActivity extends CvpActivity implements BottomAppBarListener {
 
     // TODO: for now, in every start of the main screen, the FirstConnectionFragment is showed, because other way this screen is only showed ones.
     FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-    ft.replace(R.id.fragment_layout, new FirstConnectionFragment());
+
+    Preferences prefs = new Preferences(getApplicationContext());
+    if (prefs.getUserIds().size() > 0) {
+      ft.replace(R.id.fragment_layout, connectionsFragment);
+    } else {
+      ft.replace(R.id.fragment_layout, new FirstConnectionFragment());
+    }
     ft.commit();
   }
 
