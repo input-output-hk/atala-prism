@@ -5,6 +5,8 @@ import coursier.maven.MavenRepository
 import $file.scalapb
 import scalapb.FixedScalaPBWorker
 import scalapb.FixedScalaPBModule
+import ammonite.ops._
+import connector.version
 
 import ammonite.ops._
 
@@ -175,16 +177,18 @@ trait ServerPBCommon extends ServerCommon with FixedScalaPBModule {
 
 }
 
-object node extends ServerPBCommon {
+object node extends ServerPBCommon with CVPDockerModule {
 
   override def scalacOptions = Seq("-Ywarn-unused:imports", "-Xfatal-warnings", "-feature")
 
   override def mainClass = Some("io.iohk.node.NodeApp")
 
+  override def cvpDockerConfig = CVPDockerConfig(name = "node")
+
   object test extends `tests-common` {}
 }
 
-object connector extends ServerPBCommon {
+object connector extends ServerPBCommon with CVPDockerModule {
 
   override def mainClass = Some("io.iohk.connector.ConnectorApp")
 
@@ -198,54 +202,10 @@ object connector extends ServerPBCommon {
     millSourcePath / 'protobuf / "protos.proto"
   }
 
+  override def cvpDockerConfig = CVPDockerConfig(name = "connector")
+
   object test extends `tests-common` {}
 
-  object docker extends Module {
-
-    private val version = os.proc("git", "rev-parse", "HEAD").call().out.trim
-    private val tag = s"895947072537.dkr.ecr.us-east-2.amazonaws.com/atala:$version"
-    private val dockerfile = "docker/Dockerfile"
-    private val jar = "connector.jar"
-
-    private def doLogin(): os.CommandResult = {
-      val awsResult = os.proc("aws", "ecr", "get-login", "--no-include-email").call()
-      if (awsResult.exitCode == 0) {
-        val commandWords = awsResult.out.string.split("\\s+").toSeq
-        val loginResult = os.proc(commandWords).call()
-        loginResult
-      } else {
-        awsResult
-      }
-    }
-
-    private def doBuild(
-        assemblyPath: Path,
-        dest: Path,
-        jar: String,
-        dockerfile: String,
-        tag: String
-    ): os.CommandResult = {
-      os.copy(assemblyPath, dest / jar)
-      os.proc("docker", "build", "-f", dockerfile, "-t", tag, dest.toString())
-        .call()
-    }
-
-    private def doPush(buildResult: os.CommandResult, loginResult: os.CommandResult, tag: String): os.CommandResult = {
-      os.proc("docker", "push", tag).call()
-    }
-
-    def login = T {
-      doLogin()
-    }
-
-    def build = T {
-      doBuild(assembly().path, T.ctx().dest, jar, dockerfile, tag)
-    }
-
-    def push = T {
-      doPush(build(), login(), tag)
-    }
-  }
 }
 
 object wallet extends ServerPBCommon {
@@ -260,4 +220,61 @@ object cmanager extends ServerPBCommon {
   override def mainClass = Some("io.iohk.cvp.cmanager.CManagerApp")
 
   object test extends `tests-common` {}
+}
+
+trait CVPDockerModule extends Module { self: JavaModule =>
+
+  case class CVPDockerConfig(name: String) {
+    val tag = s"895947072537.dkr.ecr.us-east-2.amazonaws.com/atala:$name-$version"
+    val dockerfile = s"$name/Dockerfile"
+    val jarfile = s"$name.jar"
+  }
+
+  def version: String = os.proc("git", "rev-parse", "HEAD").call().out.trim
+  def cvpDockerConfig: CVPDockerConfig
+
+  private def doLogin(): os.CommandResult = {
+    val awsResult =
+      os.proc("aws", "ecr", "get-login", "--no-include-email").call(stdout = os.Inherit, stderr = os.Inherit)
+    if (awsResult.exitCode == 0) {
+      val commandWords = awsResult.out.string.split("\\s+").toSeq
+      val loginResult = os.proc(commandWords).call(stdout = os.Inherit, stderr = os.Inherit)
+      loginResult
+    } else {
+      awsResult
+    }
+  }
+
+  private def doBuild(
+      assemblyPath: Path,
+      dest: Path,
+      jar: String,
+      dockerfile: String,
+      tag: String
+  ): os.CommandResult = {
+    os.copy(assemblyPath, dest / jar)
+    os.proc("docker", "build", "-f", dockerfile, "-t", tag, dest.toString())
+      .call(stdout = os.Inherit, stderr = os.Inherit)
+  }
+
+  private def doPush(
+      buildResult: os.CommandResult,
+      loginResult: os.CommandResult,
+      tag: String
+  ): os.CommandResult = {
+    os.proc("docker", "push", tag).call(stdout = os.Inherit, stderr = os.Inherit)
+  }
+
+  def `docker-login` = T {
+    doLogin()
+  }
+
+  def `docker-build` = T {
+    doBuild(assembly().path, T.ctx().dest, cvpDockerConfig.jarfile, cvpDockerConfig.dockerfile, cvpDockerConfig.tag)
+  }
+
+  def `docker-push` = T {
+    doPush(`docker-build`(), `docker-login`(), cvpDockerConfig.tag)
+  }
+
 }

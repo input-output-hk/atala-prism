@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# See https://docs.aws.amazon.com/AmazonECS/latest/developerguide/using_cloudwatch_logs.html
-echo ECS_CLUSTER=${ecs-cluster-name} > /etc/ecs/ecs.config
-
 yum install -y awslogs
 
 cat << EOF >> /etc/awslogs/awslogs.conf
@@ -47,5 +44,10 @@ EOF
 
 sed -i 's:^region *=.*$:region = ${aws-region}:' /etc/awslogs/awscli.conf
 
+# See https://docs.aws.amazon.com/AmazonECS/latest/developerguide/using_cloudwatch_logs.html
+sudo yum update -y ecs-init
+echo ECS_CLUSTER=${ecs-cluster-name} > /etc/ecs/ecs.config
+
 systemctl enable awslogsd.service
 systemctl restart awslogsd.service
+systemctl restart docker

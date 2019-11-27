@@ -1,19 +1,55 @@
 version: "3"
 services:
+
+  bitcoind:
+    image: ruimarinho/bitcoin-core
+    command:
+      -printtoconsole
+      -regtest=1
+      -rpcallowip=0.0.0.0/0
+      -rpcuser=bitcoin
+      -rpcpassword=bitcoin
+      -rpcbind=bitcoind:18333
+    ports:
+      - 127.0.0.1:18333:18333
+
+  postgres_db:
+    build:
+      context: postgres
+    ports:
+      - 127.0.0.1:5432:5432
+    environment:
+      POSTGRES_PASSWORD: postgres
+
   connector:
     build:
-      context: ../out/connector/docker/build/dest
-      dockerfile: ../../../../../docker/Dockerfile
-    command: "java -cp connector.jar io.iohk.connector.ConnectorApp"
+      context: ../out/connector/docker-build/dest
+      dockerfile: ../../../../connector/Dockerfile
     ports:
       - 127.0.0.1:50051:50051
     depends_on:
       - postgres_db
     environment:
       GEUD_CONNECTOR_PSQL_HOST: postgres_db
-  postgres_db:
-    image: postgres
+      GEUD_CONNECTOR_PSQL_DATABASE: connector
+      GEUD_CONNECTOR_PSQL_USERNAME: connector
+      GEUD_CONNECTOR_PSQL_PASSWORD: connector
+
+  node:
+    build:
+      context: ../out/node/docker-build/dest
+      dockerfile: ../../../../node/Dockerfile
     ports:
-      - 127.0.0.1:5432:5432
+      - 127.0.0.1:50053:50053
+    depends_on:
+      - postgres_db
+      - bitcoind
     environment:
-      POSTGRES_DB: geud_connector_db
+      GEUD_NODE_PSQL_HOST: postgres_db
+      GEUD_NODE_PSQL_DATABASE: node
+      GEUD_NODE_PSQL_USERNAME: node
+      GEUD_NODE_PSQL_PASSWORD: node
+      GEUD_NODE_BITCOIND_HOST: bitcoind
+      GEUD_NODE_BITCOIND_PORT: 18333
+      GEUD_NODE_BITCOIND_USERNAME: bitcoin
+      GEUD_NODE_BITCOIND_PASSWORD: bitcoin

@@ -1,4 +1,5 @@
 #!/usr/bin/env zsh
+set -e
 
 usage() {
   print "Usage: vpc.sh [[-a] [-d] [-p] [-s]] <env type>

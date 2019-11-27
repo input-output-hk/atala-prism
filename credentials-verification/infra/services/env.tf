@@ -1,8 +1,13 @@
+
 terraform {
-  backend local {}
+  backend "s3" {
+    bucket = "atala-cvp"
+    region = "us-east-2"
+  }
 }
 
 locals {
+  aws_region       = "us-east-2"
   ecs_cluster_name = "ecs-cluster-${var.env_name_short}"
 }
 
@@ -17,13 +22,12 @@ resource aws_key_pair user-keypair {
 }
 
 // queries the availability zones (used in creation of subnets).
-data "aws_availability_zones" "available" {
+data aws_availability_zones available {
   state = "available"
 }
 
 // Defines the access rules (ingress and egress) for the VPC
-// TODO could this be in vpc.tf?
-resource "aws_security_group" "credentials-vpc-security-group" {
+resource aws_security_group credentials-vpc-security-group {
   name        = "credentials-vpc-security-group-${var.env_name_short}"
   description = "Security group defining access rules to the VPC."
   vpc_id      = var.credentials-vpc-id
@@ -38,9 +42,28 @@ resource "aws_security_group" "credentials-vpc-security-group" {
   }
 
   // connector inbound
+  // TODO these port numbers should be vars
   ingress {
-    from_port = 50051
-    to_port   = 50051
+    from_port = var.connector_port
+    to_port   = var.connector_port
+    protocol  = "tcp"
+    cidr_blocks = [
+    "0.0.0.0/0"]
+  }
+
+  // node inbound
+  ingress {
+    from_port = var.node_port
+    to_port   = var.node_port
+    protocol  = "tcp"
+    cidr_blocks = [
+    "0.0.0.0/0"]
+  }
+
+  // bitcoind inbound
+  ingress {
+    from_port = var.bitcoind_port
+    to_port   = var.bitcoind_port
     protocol  = "tcp"
     cidr_blocks = [
     "0.0.0.0/0"]
@@ -51,21 +74,8 @@ resource "aws_security_group" "credentials-vpc-security-group" {
     from_port = 0
     to_port   = 0
     protocol  = "tcp"
-    cidr_blocks = [
-      "10.0.0.0/24",
-    "10.0.0.0/24"]
+    cidr_blocks = ["10.0.0.0/16"]
   }
-
-  # Allow all outbound traffic to the private SN
-  egress {
-    from_port = "0"
-    to_port   = "0"
-    protocol  = "-1"
-    cidr_blocks = [
-    "0.0.0.0/0"]
-  }
-
-  // END of network config
 
   tags = {
     Name = "credentials-vpc-security-group-${var.env_name_short}"
@@ -75,7 +85,7 @@ resource "aws_security_group" "credentials-vpc-security-group" {
 // Allows access to the database
 data aws_security_group credentials-database-security-group {
   vpc_id = var.credentials-vpc-id
-  name = "credentials-database-security-group"
+  name   = "credentials-database-security-group"
 }
 
 resource aws_security_group_rule allow_rds_access {
@@ -89,33 +99,8 @@ resource aws_security_group_rule allow_rds_access {
 
 // START of role config
 
-// See https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service_IAM_role.html
-resource "aws_iam_role" "ecs-service-role" {
-  name               = "ecs-service-role-${var.env_name_short}"
-  assume_role_policy = data.aws_iam_policy_document.ecs-service-policy.json
-  tags = {
-    Name = "ecs-service-role-${var.env_name_short}"
-  }
-}
-
-data "aws_iam_policy_document" "ecs-service-policy" {
-  statement {
-    actions = ["sts:AssumeRole"]
-    principals {
-      type        = "Service"
-      identifiers = ["ecs.amazonaws.com"]
-    }
-    effect = "Allow"
-  }
-}
-
-resource "aws_iam_role_policy_attachment" "ecs-service-role-attachment" {
-  role       = aws_iam_role.ecs-service-role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceRole"
-}
-
 // See https://docs.aws.amazon.com/AmazonECS/latest/developerguide/instance_IAM_role.html
-resource "aws_iam_role" "ecs-instance-role" {
+resource aws_iam_role ecs-instance-role {
   name               = "ecs-instance-role-${var.env_name_short}"
   path               = "/"
   assume_role_policy = data.aws_iam_policy_document.ecs-instance-policy.json
@@ -124,7 +109,7 @@ resource "aws_iam_role" "ecs-instance-role" {
   }
 }
 
-data "aws_iam_policy_document" "ecs-instance-policy" {
+data aws_iam_policy_document ecs-instance-policy {
   statement {
     actions = ["sts:AssumeRole"]
 
@@ -136,12 +121,12 @@ data "aws_iam_policy_document" "ecs-instance-policy" {
   }
 }
 
-resource "aws_iam_role_policy_attachment" "ecs-instance-role-attachment" {
+resource aws_iam_role_policy_attachment ecs-instance-role-attachment {
   role       = aws_iam_role.ecs-instance-role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
 }
 
-resource "aws_iam_instance_profile" "ecs-instance-profile" {
+resource aws_iam_instance_profile ecs-instance-profile {
   name = "ecs-instance-profile-${var.env_name_short}"
   path = "/"
   role = aws_iam_role.ecs-instance-role.id
@@ -152,23 +137,12 @@ resource "aws_iam_instance_profile" "ecs-instance-profile" {
 
 // END of role config
 
-// START of ECS cluster definition
-resource "aws_ecs_cluster" "credentials-cluster" {
-  name = local.ecs_cluster_name
-  tags = {
-    Name = local.ecs_cluster_name
-  }
-}
-
-
-// END of ECS cluster definition
-
 // START of configuration creating load balancers that connect to the docker containers
 // See https://docs.aws.amazon.com/elasticloadbalancing/latest/network/introduction.html
 // See https://rokt.com/engineering_blog/learnings-grpc-aws/ (for a good discussion of
 //     issues around load balancing gRPC traffic on AWS.
-resource "aws_lb" "ecs-net-load-balancer" {
-  name               = "ecs-load-balancer-${var.env_name_short}"
+resource aws_lb ecs-net-load-balancer {
+  name               = "ecs-net-load-balancer-${var.env_name_short}"
   internal           = false
   load_balancer_type = "network"
   subnets            = [var.credentials-subnet-primary-id, var.credentials-subnet-secondary-id]
@@ -178,25 +152,25 @@ resource "aws_lb" "ecs-net-load-balancer" {
   }
 }
 
-resource "aws_lb_listener" "lb-listener" {
+resource aws_lb_listener connector-lb-listener {
   load_balancer_arn = aws_lb.ecs-net-load-balancer.arn
   protocol          = "TCP"
-  port              = 50051
+  port              = var.connector_port
 
   default_action {
-    target_group_arn = aws_lb_target_group.ecs-target-group.arn
+    target_group_arn = aws_lb_target_group.connector-target-group.arn
     type             = "forward"
   }
 }
 
-resource "aws_lb_target_group" "ecs-target-group" {
-  name     = "ecs-target-group-${var.env_name_short}"
+resource aws_lb_target_group connector-target-group {
+  name     = "connector-target-group-${var.env_name_short}"
   protocol = "TCP"
-  port     = 50051
+  port     = var.connector_port
   vpc_id   = var.credentials-vpc-id
 
   tags = {
-    Name = "ecs-target-group-${var.env_name_short}"
+    Name = "connector-target-group-${var.env_name_short}"
   }
 
   depends_on = [
@@ -204,17 +178,74 @@ resource "aws_lb_target_group" "ecs-target-group" {
   ]
 }
 
-resource "aws_launch_configuration" "ecs-launch-configuration" {
+resource aws_lb_listener node-lb-listener {
+  load_balancer_arn = aws_lb.ecs-net-load-balancer.arn
+  protocol          = "TCP"
+  port              = var.node_port
+
+  default_action {
+    target_group_arn = aws_lb_target_group.node-target-group.arn
+    type             = "forward"
+  }
+}
+
+resource aws_lb_target_group node-target-group {
+  name     = "node-target-group-${var.env_name_short}"
+  protocol = "TCP"
+  port     = var.node_port
+  vpc_id   = var.credentials-vpc-id
+
+  tags = {
+    Name = "node-target-group-${var.env_name_short}"
+  }
+
+  depends_on = [
+    aws_lb.ecs-net-load-balancer
+  ]
+}
+
+resource aws_lb_listener bitcoind-lb-listener {
+  load_balancer_arn = aws_lb.ecs-net-load-balancer.arn
+  protocol          = "TCP"
+  port              = var.bitcoind_port
+
+  default_action {
+    target_group_arn = aws_lb_target_group.bitcoind-target-group.arn
+    type             = "forward"
+  }
+}
+
+resource aws_lb_target_group bitcoind-target-group {
+  name     = "bitcoind-target-group-${var.env_name_short}"
+  protocol = "TCP"
+  port     = var.bitcoind_port
+  vpc_id   = var.credentials-vpc-id
+
+  tags = {
+    Name = "bitcoind-target-group-${var.env_name_short}"
+  }
+
+  depends_on = [
+    aws_lb.ecs-net-load-balancer
+  ]
+}
+
+// END of load balancer configuration
+
+// START of ECS container configuration
+
+resource aws_ecs_cluster credentials-cluster {
+  name = local.ecs_cluster_name
+  tags = {
+    Name = local.ecs_cluster_name
+  }
+}
+
+resource aws_launch_configuration ecs-launch-configuration {
   name_prefix          = "ecs-launch-configuration-${var.env_name_short}"
   image_id             = lookup(var.amis, var.aws_region)
   instance_type        = var.instance_type
   iam_instance_profile = aws_iam_instance_profile.ecs-instance-profile.id
-
-  root_block_device {
-    volume_type           = "standard"
-    volume_size           = 30
-    delete_on_termination = true
-  }
 
   lifecycle {
     create_before_destroy = true
@@ -234,58 +265,97 @@ data "template_file" "ec2_user_data_template" {
   }
 }
 
-resource "aws_autoscaling_group" "ecs-autoscaling-group" {
-  name                 = "ecs-autoscaling-group-${var.env_name_short}"
+resource aws_autoscaling_group ec2-autoscaling-group {
+  name                 = "ec2-autoscaling-group-${var.env_name_short}"
   max_size             = var.autoscale_max
   min_size             = var.autoscale_min
   desired_capacity     = var.autoscale_desired
   vpc_zone_identifier  = [var.credentials-subnet-primary-id, var.credentials-subnet-secondary-id]
   launch_configuration = aws_launch_configuration.ecs-launch-configuration.name
   health_check_type    = "EC2"
+  target_group_arns = [aws_lb_target_group.connector-target-group.arn, aws_lb_target_group.node-target-group.arn, aws_lb_target_group.bitcoind-target-group.arn]
 }
 
-data "template_file" "connector_task_template" {
-  template = file("connector.task.json")
+data "template_file" "credentials_task_template" {
+  template = file("cvp.task.json")
   vars = {
-    geud-connector-psql-host     = var.geud_connector_psql_host
-    geud-connector-psql-database = var.geud_connector_psql_database
-    geud-connector-psql-username = var.geud_connector_psql_username
-    geud-connector-psql-password = var.geud_connector_psql_password
-    connector-docker-image       = var.connector_docker_image
-    awslogs-region               = var.aws_region
-    awslogs-group                = aws_cloudwatch_log_group.container_log_group.name
+    connector-psql-host     = var.connector_psql_host
+    connector-psql-database = var.connector_psql_database
+    connector-psql-username = var.connector_psql_username
+    connector-psql-password = var.connector_psql_password
+    connector-docker-image  = var.connector_docker_image
+
+    node-psql-host     = var.node_psql_host
+    node-psql-database = var.node_psql_database
+    node-psql-username = var.node_psql_username
+    node-psql-password = var.node_psql_password
+
+    node-bitcoind-host     = aws_lb.ecs-net-load-balancer.dns_name
+    node-bitcoind-port     = var.bitcoind_port
+    node-bitcoind-username = var.bitcoind_username
+    node-bitcoind-password = var.bitcoind_password
+
+    node-psql-password = var.node_psql_password
+    node-docker-image  = var.node_docker_image
+
+    awslogs-region = var.aws_region
+    awslogs-group  = aws_cloudwatch_log_group.container_log_group.name
   }
 }
 
-resource "aws_ecs_task_definition" "geud_connector" {
-  family                = "geud-connector-${var.env_name_short}"
-  container_definitions = data.template_file.connector_task_template.rendered
+resource aws_ecs_task_definition credentials_task_definition {
+  family                = "credentials-task-definition-${var.env_name_short}"
+  container_definitions = data.template_file.credentials_task_template.rendered
 
   tags = {
-    Name = "geud-connector-${var.env_name_short}"
+    Name = "credentials-task-definition-${var.env_name_short}"
   }
 }
 
-resource "aws_ecs_service" "ecs-service" {
-  name            = "ecs-service-${var.env_name_short}"
-  iam_role        = aws_iam_role.ecs-service-role.name
+// the iam_role is not specified, meaning this uses the ECS 'Service-linked role'
+// see https://docs.aws.amazon.com/IAM/latest/UserGuide/using-service-linked-roles.html
+resource aws_ecs_service credentials-service {
+  name            = "credentials-ecs-service-${var.env_name_short}"
   cluster         = aws_ecs_cluster.credentials-cluster.id
-  task_definition = aws_ecs_task_definition.geud_connector.arn
+  task_definition = aws_ecs_task_definition.credentials_task_definition.arn
   desired_count   = 1
 
   // TODO look at dynamic mapping, which allows multiple container
   // TODO instances on the same ec2 instance.
   load_balancer {
-    target_group_arn = aws_lb_target_group.ecs-target-group.arn
-    container_port   = 50051
+    target_group_arn = aws_lb_target_group.connector-target-group.arn
     container_name   = "connector"
+    container_port   = var.connector_port
+  }
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.node-target-group.arn
+    container_name   = "node"
+    container_port   = var.node_port
+  }
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.bitcoind-target-group.arn
+    container_port   = var.bitcoind_port
+    container_name   = "bitcoind"
   }
 }
 
-resource "aws_cloudwatch_log_group" "container_log_group" {
-  name = "geud-log-group-${var.env_name_short}"
+resource aws_route53_record cvp_dns_entry {
+  zone_id = "Z1KSGMIKO36ZPM" // TODO consider using a data element to query the zone id
+  name    = "cvp-${var.env_name_short}.cef.iohkdev.io"
+  type    = "CNAME"
+  ttl     = "300"
+  records = [aws_lb.ecs-net-load-balancer.dns_name]
 }
 
-output "grpc-command-to-copy" {
-  value = "grpcurl -import-path connector/protobuf/ -proto connector/protobuf/protos.proto -rpc-header 'userId: c8834532-eade-11e9-a88d-d8f2ca059830' -plaintext ${aws_lb.ecs-net-load-balancer.dns_name}:50051 io.iohk.connector.ConnectorService/GenerateConnectionToken"
+resource aws_cloudwatch_log_group container_log_group {
+  name = "cvp-log-group-${var.env_name_short}"
+  tags = {
+    Name = "cvp-log-group-${var.env_name_short}"
+  }
+}
+
+output "command-to-test-connector" {
+  value = "grpcurl -import-path connector/protobuf/ -proto connector/protobuf/protos.proto -rpc-header 'userId: c8834532-eade-11e9-a88d-d8f2ca059830' -plaintext cvp-${var.env_name_short}.cef.iohkdev.io:${var.connector_port} io.iohk.connector.ConnectorService/GenerateConnectionToken"
 }

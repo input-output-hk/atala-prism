@@ -31,10 +31,13 @@ There are few setup steps if you wish to create and work with your own testing e
 * Create an AWS access key for your AWS account at https://console.aws.amazon.com/iam/home?region=us-east-2#/security_credentials.
 * Install the AWS cli and configure it using `aws configure` to use up the credentials created above.
 * Setup MFA on your AWS account at https://console.aws.amazon.com/iam/home?region=us-east-2#/security_credentials.
-* Install ‘awslogs’ from https://github.com/jorgebastida/awslogs (this enables the env.sh -w flag which will show logs from an AWS environment directly in your terminal window).
+* Install ‘awslogs’ from https://github.com/jorgebastida/awslogs. This is optional and enables the `env.sh -w` flag which 
+  will show logs from an AWS environment directly in your terminal window).
+* Install graphviz from https://graphviz.gitlab.io/. This is optional and enables the `env.sh -g` flag which
+  produces a diagrammatic hierarchy for your environment.
 * Install 'terraform' from https://www.terraform.io/downloads.html.
 * Install dbeaver. To connect to the RDS database instance, you need to create a tunnel, for e.g. You are then able
-  to connect to the RDS database using `localhost:5432` as the host 
+  to connect to the RDS database using `localhost:5432` as the host.
 ```bash
 # substitute the correct IP address for an EC2 instance inside the VPC.
 ssh -L5432:credentials-database-test.co3l80tftzq2.us-east-2.rds.amazonaws.com:5432 -i ~/.ssh/id_rsa ec2-user@3.133.101.108
@@ -45,6 +48,11 @@ ssh -L5432:credentials-database-test.co3l80tftzq2.us-east-2.rds.amazonaws.com:54
 CREATE DATABASE connector_<unique suffix>;
 CREATE USER connector_<unique suffix> WITH ENCRYPTED PASSWORD ‘some password’;
 GRANT ALL PRIVILEGES ON DATABASE connector_<unique suffix> TO connector_<unique suffix>;
+
+CREATE DATABASE geud_node_<unique suffix>;
+CREATE USER geud_node_<unique suffix> WITH ENCRYPTED PASSWORD 'some password';
+GRANT ALL PRIVILEGES ON DATABASE geud_node_<unique suffix> TO geud_node_<unique suffix>;
+
 ```
 
 ### Changing either the docker image or database used by an environment
@@ -60,7 +68,9 @@ The root build file now contains targets to build and push a docker image to Ama
 Create a file called `~/.secrets.tfvars` with the following:
 ```bash
 $ cat ~/.secrets.tfvars
-geud_connector_psql_password = "<secret>"
+connector_psql_password = "<secret>"
+node_psql_password = "<secret>"
+bitcoind_password = "<secret>"
 ```
 
 ### Environment lifecycle
