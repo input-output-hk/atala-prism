@@ -15,6 +15,9 @@
       align-items: flex-start;
       justify-content: space-between;
       margin-bottom: 0.5em;
+      @include breakpoint(sm) {
+        justify-content: flex-start
+      }
       p {
         @include secondary-text($h3, $secondary-color);
       }

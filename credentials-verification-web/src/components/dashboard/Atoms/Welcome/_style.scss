@@ -1,15 +1,18 @@
 @import '../../../../css/general_styling';
 
 .WelcomeContainer {
-  width: 65.5%;
+  width: 50%;
   display: flex;
   background: #ffeaeb;
-  padding: 1em 2em;
+  padding: 3em 2em;
   border-radius: 4px;
   position: relative;
   align-items: center;
   margin-top: 2em;
-
+  @include breakpoint(sm) {
+    width: 100%;
+    padding: 1em;
+  }
   .WelcomeText {
     h2 {
       @include primary-text($h1, $primary-color);
@@ -24,5 +27,14 @@
     position: absolute;
     right: 10px;
     bottom: 10px;
+    @include breakpoint(sm) {
+      right: 0;
+    bottom: 60%;
+    }
+    img{
+      @include breakpoint(sm) {
+        width: 80px;
+      }
+    }
   }
 }

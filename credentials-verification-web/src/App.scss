@@ -1,3 +1,5 @@
+@import '../src/css/general_styling';
+
 .App {
   text-align: center;
 }
@@ -20,3 +22,11 @@
 .App-link {
   color: #09d3ac;
 }
+
+.Wrapper{
+  margin: 2em;
+  @include breakpoint(sm) {
+    margin: 2em 1em;
+  }
+}
+

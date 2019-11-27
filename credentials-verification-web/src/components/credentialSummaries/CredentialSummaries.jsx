@@ -37,7 +37,7 @@ const CredentialSummaries = ({
   };
 
   return (
-    <div className="PageContainer">
+    <div className="Wrapper">
       <Drawer
         title={t('credentialSummary.detail.title')}
         placement="right"

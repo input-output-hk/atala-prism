@@ -17,7 +17,7 @@ const Dashboard = ({ name, bundle, credentials, proofRequests }) => {
   moment.locale(getBrowserLanguage());
 
   return (
-    <div className="DashboardContainer">
+    <div className="DashboardContainer Wrapper">
       <div className="DashboardHeader">
         <h1>{t('dashboard.title')}</h1>
         <p>{moment().format('DD/MM/YYYY')}</p>

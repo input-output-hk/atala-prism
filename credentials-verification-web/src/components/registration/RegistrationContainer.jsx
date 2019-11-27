@@ -23,7 +23,9 @@ const MNEMONIC_VALIDATION_STEP = 5;
 const ORGANIZATION_INFO_STEP = 6;
 const STEP_QUANTITY = 7;
 
-const RegistrationContainer = ({ getTermsAndConditions, getPrivacyPolicy, toProtoDate }) => {
+const RegistrationContainer = ({
+  api: { getTermsAndConditions, getPrivacyPolicy, toProtoDate }
+}) => {
   const { t } = useTranslation();
 
   const [currentStep, setCurrentStep] = useState(TERMS_AND_CONDITIONS_STEP);

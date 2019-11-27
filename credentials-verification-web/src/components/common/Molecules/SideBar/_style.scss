@@ -4,9 +4,20 @@
   background: $white;
   padding-top: 20px;
   box-shadow: $shadow;
-  -webkit-border-top-left-radius: 16px;
-  -moz-border-radius-topleft: 16px;
   border-top-left-radius: 16px;
+  // Layoout Side
+
+  .ant-layout-sider-zero-width-trigger{
+    background-color: $primary-color;
+    top: 0px;
+    right: -40px;
+    border-radius: 0 20px 20px 0;
+    height: 30px;
+    width: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 }
 
 .ant-menu-root.ant-menu-inline {

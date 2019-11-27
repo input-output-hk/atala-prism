@@ -11,7 +11,7 @@ const Congratulations = () => {
   const history = useHistory();
 
   return (
-    <div className="Congratulations">
+    <div className="Congratulations Wrapper">
       <div className="CongratulationsContainer">
         <img src={icon} alt={t('registration.congratulations.alt')} />
         <h2>

@@ -67,7 +67,7 @@ const Groups = ({
   };
 
   return (
-    <div className="PageContainer">
+    <div className="Wrapper">
       <DeleteGroupModal {...modalProps} />
       <div className="ContentHeader">
         <h1>{t('groups.title')}</h1>

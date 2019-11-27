@@ -10,7 +10,7 @@ const DocumentAcceptation = ({ title, lastUpdated, content }) => {
   const { t } = useTranslation();
 
   return (
-    <div className="AcceptTerms">
+    <div className="AcceptTerms Wrapper">
       <h2>{t(title)}</h2>
       <span>
         {t('registration.lastUpdated')}: {shortDateFormatter(lastUpdated)}

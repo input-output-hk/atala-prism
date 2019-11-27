@@ -1,17 +1,17 @@
 import React from 'react';
-import { Avatar } from 'antd';
+import { Avatar, Col } from 'antd';
 import SettingsMenu from '../SettingsMenu/SettingsMenu';
 
 import './_style.scss';
 
 const UserAvatar = () => (
-  <div className="UserAvatar">
-    <div className="UserData">
+  <Col xs={18} sm={18} md={15} lg={15} className="UserAvatar">
+    <Col xs={22} sm={22} md={22} lg={22} className="UserData">
       <Avatar style={{ color: '#FF2D3B', backgroundColor: '#FFFFFF' }}>JC</Avatar>
       <p className="UserLabel">John Case</p>
-    </div>
+    </Col>
     <SettingsMenu />
-  </div>
+  </Col>
 );
 
 export default UserAvatar;
