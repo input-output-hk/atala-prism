@@ -6,12 +6,18 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 import butterknife.BindView;
 import butterknife.OnClick;
+import com.crashlytics.android.Crashlytics;
 import com.google.android.material.textfield.TextInputEditText;
 import io.iohk.cvp.R;
+import io.iohk.cvp.core.exception.CryptoException;
+import io.iohk.cvp.crypto.ECKeys;
+import io.iohk.cvp.io.wallet.KeyPair;
 import io.iohk.cvp.viewmodel.WalletSetupViewModel;
 import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.Preferences;
 import io.iohk.cvp.views.utils.SimpleTextWatcher;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
 import javax.inject.Inject;
 
@@ -82,9 +88,15 @@ public class SeedPhraseVerificationActivity extends CvpActivity<WalletSetupViewM
 
   @OnClick(R.id.verify_button)
   public void onContinueClick() {
-    // TODO: i created this stage for a simple simulation, it's not necesari to save the keys in this moment,
-    // you can create and save the keys in other place and here only set a boolean "isWalletCreated"
-    new Preferences(this).savePrivateKey("this is a mock pk");
-    navigator.showAccountCreated(this);
+    ECKeys crypto = new ECKeys();
+    try {
+      KeyPair keyPair = crypto.generateKeyPair();
+      Preferences prefs = new Preferences(this);
+      prefs.savePrivateKey(keyPair.getPrivateKey().toByteArray());
+      navigator.showAccountCreated(this);
+    } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException | CryptoException e) {
+      Crashlytics.logException(e);
+      // TODO show error message
+    }
   }
 }

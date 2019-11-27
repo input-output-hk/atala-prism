@@ -1,5 +1,7 @@
 package io.iohk.cvp.views;
 
+import static android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
@@ -21,38 +23,39 @@ import io.iohk.cvp.views.activities.WelcomeActivity;
 import io.iohk.cvp.views.fragments.CvpFragment;
 import io.iohk.cvp.views.fragments.FirstConnectionFragment;
 import io.iohk.cvp.views.fragments.PopUpFragment;
-import io.iohk.cvp.views.fragments.ShareCredentialDialogFragment;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class Navigator {
 
   //Activities
   public void showWelcomeActivity(Activity from) {
-    startNewActivity(from, WelcomeActivity.class);
+    startNewActivity(from, WelcomeActivity.class, null);
   }
 
   public void showConnections(Activity from) {
-    startNewActivity(from, MainActivity.class);
+    startNewActivity(from, MainActivity.class, null);
   }
 
   public void showTermsAndConditions(Activity from) {
-    startNewActivity(from, TermsAndConditionsActivity.class);
+    startNewActivity(from, TermsAndConditionsActivity.class, null);
   }
 
   public void showWalletSetup(Activity from) {
-    startNewActivity(from, WalletSetupActivity.class);
+    startNewActivity(from, WalletSetupActivity.class, null);
   }
 
   public void showSeedPhraseVerification(Activity from) {
-    startNewActivity(from, SeedPhraseVerificationActivity.class);
+    startNewActivity(from, SeedPhraseVerificationActivity.class, null);
   }
 
   public void showAccountCreated(Activity from) {
-    startNewActivity(from, AccountCreatedActivity.class);
+    startNewActivity(from, AccountCreatedActivity.class, new ArrayList<>(FLAG_ACTIVITY_CLEAR_TASK));
   }
 
   public void showWebView(Activity from) {
-    startNewActivity(from, WebViewActivity.class);
+    startNewActivity(from, WebViewActivity.class, null);
   }
 
   public void showQrScanner(FirstConnectionFragment from) {
@@ -63,9 +66,15 @@ public class Navigator {
     from.startActivityForResult(intent, ActivitiesRequestCodes.QR_SCANNER_REQUEST_ACTIVITY);
   }
 
-  private void startNewActivity(Activity from, Class activityClass) {
+  private void startNewActivity(Activity from, Class activityClass,
+      List<Integer> flags) {
     Intent intent = new Intent(from.getApplicationContext(), activityClass);
     intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+
+    if (flags != null) {
+      flags.forEach(intent::addFlags);
+    }
+
     from.startActivity(intent);
   }
 
@@ -105,7 +114,8 @@ public class Navigator {
   public void showFragmentOnTopOfMenu(FragmentManager supportFragmentManager,
       CvpFragment cvpFragment) {
     FragmentTransaction ft = supportFragmentManager.beginTransaction();
-    ft.replace(R.id.fragment_layout_over_menu, cvpFragment);
+    // FIXME missing layout
+    //ft.replace(R.id.fragment_layout_over_menu, cvpFragment);
     ft.addToBackStack(null);
     ft.commit();
   }

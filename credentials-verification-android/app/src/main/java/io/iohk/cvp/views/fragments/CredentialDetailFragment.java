@@ -18,7 +18,6 @@ import io.iohk.cvp.viewmodel.CredentialsViewModel;
 import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.StackedAppBar;
-import java.util.Objects;
 import javax.inject.Inject;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -61,13 +60,15 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
   @Override
   public void onPrepareOptionsMenu(Menu menu) {
     MenuItem shareCredentialMenuItem;
-    shareCredentialMenuItem = menu.findItem(R.id.action_share_credential);
-    shareCredentialMenuItem.setVisible(true);
+    // FIXME missing layout
+    /* shareCredentialMenuItem = menu.findItem(R.id.action_share_credential);
+    shareCredentialMenuItem.setVisible(true); */
   }
 
   @Override
   public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-    if (item.getItemId() == R.id.action_share_credential) {
+    // FIXME missing layout
+   /* if (item.getItemId() == R.id.action_share_credential) {
       navigator.showFragmentOnTopOfMenu(
           Objects.requireNonNull(getActivity()).getSupportFragmentManager(),
           new ShareCredentialDialogFragment());
@@ -76,7 +77,7 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
     if (item.getItemId() == android.R.id.home) {
       Objects.requireNonNull(getActivity()).onBackPressed();
       return true;
-    }
+    } */
     return super.onOptionsItemSelected(item);
   }
 
