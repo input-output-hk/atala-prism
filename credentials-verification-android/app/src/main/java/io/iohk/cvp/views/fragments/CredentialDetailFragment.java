@@ -7,17 +7,22 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 import butterknife.BindView;
 import butterknife.OnClick;
+import com.crashlytics.android.Crashlytics;
 import com.google.android.material.button.MaterialButton;
+import com.google.protobuf.InvalidProtocolBufferException;
 import io.iohk.cvp.R;
 import io.iohk.cvp.viewmodel.CredentialsViewModel;
 import io.iohk.cvp.views.Navigator;
+import io.iohk.cvp.views.Preferences;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.StackedAppBar;
+import java.util.concurrent.ExecutionException;
 import javax.inject.Inject;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -31,11 +36,23 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
   @Setter
   private String credentialId;
 
+  @Setter
+  private Boolean credentialIsNew;
+
   @BindView(R.id.decline_credential)
   public MaterialButton declineButton;
 
   @BindView(R.id.accept_credential)
   public Button acceptButton;
+
+  @BindView(R.id.text_view_university_name)
+  TextView textViewUniversityName;
+
+  @BindView(R.id.text_view_full_name)
+  TextView textViewFullName;
+
+  @BindView(R.id.text_view_credential_name)
+  TextView textViewCredentialName;
 
   @Inject
   Navigator navigator;
@@ -86,12 +103,18 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
       Bundle savedInstanceState) {
     View view = super.onCreateView(inflater, container, savedInstanceState);
 
-    viewModel.getCredential(credentialId).observe(this, credential -> {
-      // TODO: here the UI should be feed with the credential data
-
-      // TODO: The credential should have an attr to determinate if it needs to be accepted or not
-      showOptions(credentialId.equals("newCredential"));
-    });
+    try {
+      viewModel.getCredential(credentialId).observe(this, credential -> {
+        textViewUniversityName.setText(credential.getIssuerInfo().getName());
+        textViewFullName.setText(credential.getSubject());
+        textViewCredentialName.setText(credential.getTitle());
+        // TODO add missing fields
+        showOptions(credentialIsNew);
+      });
+    } catch (InvalidProtocolBufferException | InterruptedException | ExecutionException e) {
+      Crashlytics.logException(e);
+      // TODO show error msg
+    }
     return view;
   }
 
@@ -102,7 +125,19 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
 
   @OnClick(R.id.accept_credential)
   void onAcceptClick() {
-    navigator.showFragmentOnTop(getFragmentManager(), new PaymentFragment());
+    saveAndGoBack(Preferences.ACCEPTED_MESSAGES_KEY);
+  }
+
+
+  @OnClick(R.id.decline_credential)
+  void onDeclineClick() {
+    saveAndGoBack(Preferences.REJECTED_MESSAGES_KEY);
+  }
+
+  private void saveAndGoBack(String key) {
+    Preferences prefs = new Preferences(getContext());
+    prefs.saveMessage(credentialId, key);
+    getActivity().onBackPressed();
   }
 
   @Override

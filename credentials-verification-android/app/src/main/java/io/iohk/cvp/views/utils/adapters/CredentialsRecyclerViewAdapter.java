@@ -5,19 +5,19 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import com.crashlytics.android.Crashlytics;
+import com.google.protobuf.InvalidProtocolBufferException;
 import io.iohk.cvp.R;
 import io.iohk.cvp.io.connector.Credential;
+import io.iohk.cvp.io.connector.ReceivedMessage;
 import io.iohk.cvp.views.fragments.HomeFragment;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.Setter;
 
 public class CredentialsRecyclerViewAdapter extends
@@ -28,7 +28,7 @@ public class CredentialsRecyclerViewAdapter extends
   private final Boolean hasNewCredentials;
 
   @Setter
-  private List<Credential> credentials = new ArrayList<>();
+  private List<ReceivedMessage> messages = new ArrayList<>();
 
   public CredentialsRecyclerViewAdapter(int holderLayoutId, HomeFragment listener,
       Boolean hasNewCredentials) {
@@ -48,18 +48,28 @@ public class CredentialsRecyclerViewAdapter extends
 
   @Override
   public void onBindViewHolder(CredentialsRecyclerViewAdapter.ViewHolder holder, int position) {
-    // TODO unmock this when we are sure about which class's info are we going to show here
-    holder.listener = this.listener;
-    holder.isNew = this.hasNewCredentials;
-    holder.issuerName.setText("Business and Technology University");
+    try {
+      ReceivedMessage msg = messages.get(position);
+      Credential current = null;
+      current = Credential.parseFrom(msg.getMessage());
+      holder.messageId = msg.getId();
+      holder.listener = this.listener;
+      holder.isNew = this.hasNewCredentials;
+      holder.issuerName.setText(current.getIssuerInfo().getName());
+      // TODO set image
+    } catch (InvalidProtocolBufferException e) {
+      Crashlytics.logException(e);
+    }
   }
 
   @Override
   public int getItemCount() {
-    return credentials.size();
+    return messages.size();
   }
 
   static class ViewHolder extends RecyclerView.ViewHolder {
+
+    String messageId;
 
     @BindView(R.id.issuer_name)
     TextView issuerName;
@@ -78,7 +88,7 @@ public class CredentialsRecyclerViewAdapter extends
 
     @OnClick(R.id.issuer_card_view)
     public void onCredentialClicked() {
-      listener.onCredentialClicked(isNew ? "newCredential" : "");
+      listener.onCredentialClicked(isNew, messageId);
     }
   }
 }

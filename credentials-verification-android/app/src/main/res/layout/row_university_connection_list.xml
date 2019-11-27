@@ -58,12 +58,13 @@
     </RelativeLayout>
     <TextView
       android:id="@+id/issuer_name"
+      android:textStyle="bold"
       android:layout_width="0dp"
       android:layout_height="wrap_content"
       android:layout_marginStart="24dp"
       android:layout_marginEnd="24dp"
       android:textColor="@color/black"
-      android:textStyle="bold"
+      app:layout_constraintBottom_toBottomOf="parent"
       app:layout_constraintEnd_toStartOf="@+id/card_arrow"
       app:layout_constraintStart_toEndOf="@+id/card_logo_container"
       app:layout_constraintTop_toTopOf="parent" />

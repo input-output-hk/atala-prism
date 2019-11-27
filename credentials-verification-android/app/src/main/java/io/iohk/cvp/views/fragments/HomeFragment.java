@@ -5,23 +5,25 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-
+import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import java.util.Objects;
-
-import javax.inject.Inject;
-
 import butterknife.BindView;
 import io.iohk.cvp.R;
+import io.iohk.cvp.io.connector.ReceivedMessage;
 import io.iohk.cvp.viewmodel.CredentialsViewModel;
 import io.iohk.cvp.views.Navigator;
+import io.iohk.cvp.views.Preferences;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.RootAppBar;
 import io.iohk.cvp.views.utils.adapters.CredentialsRecyclerViewAdapter;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import javax.inject.Inject;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
@@ -70,7 +72,11 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> {
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
       Bundle savedInstanceState) {
     View view = super.onCreateView(inflater, container, savedInstanceState);
+    return view;
+  }
 
+  @Override
+  public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
     // Init credentialsRecyclerView
     credentialsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
     credentialsRecyclerView.setAdapter(credentialsAdapter);
@@ -79,14 +85,29 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> {
     newCredentialsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
     newCredentialsRecyclerView.setAdapter(newCredentialsAdapter);
 
-    viewModel.getCredentials().observe(this, credentials -> {
-      credentialsAdapter.setCredentials(credentials);
-      credentialsAdapter.notifyDataSetChanged();
+    viewModel.getMessages().observe(this, messages -> {
+      Preferences prefs = new Preferences(getContext());
 
-      newCredentialsAdapter.setCredentials(credentials);
+      Set<String> acceptedMessagesIds = prefs.getStoredMessages(Preferences.ACCEPTED_MESSAGES_KEY);
+      Set<String> rejectedMessagesIds = prefs.getStoredMessages(Preferences.REJECTED_MESSAGES_KEY);
+
+      List<ReceivedMessage> newMessages = messages.stream()
+          .filter(msg -> !acceptedMessagesIds.contains(msg.getId()) && !rejectedMessagesIds
+              .contains(msg.getId())).collect(
+              Collectors.toList());
+
+      newCredentialsAdapter.setMessages(newMessages);
       newCredentialsAdapter.notifyDataSetChanged();
+
+      List<ReceivedMessage> acceptedMessages = messages.stream()
+          .filter(msg -> acceptedMessagesIds.contains(msg.getId())).collect(
+              Collectors.toList());
+
+      credentialsAdapter.setMessages(acceptedMessages);
+      credentialsAdapter.notifyDataSetChanged();
     });
-    return view;
+
+
   }
 
   @Override
@@ -94,8 +115,9 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> {
     return ViewModelProviders.of(this, factory).get(CredentialsViewModel.class);
   }
 
-  public void onCredentialClicked(String credentialId) {
+  public void onCredentialClicked(Boolean isNew, String credentialId) {
     credentialFragment.setCredentialId(credentialId);
+    credentialFragment.setCredentialIsNew(isNew);
     navigator.showFragmentOnTop(
         Objects.requireNonNull(getActivity()).getSupportFragmentManager(), credentialFragment);
   }
