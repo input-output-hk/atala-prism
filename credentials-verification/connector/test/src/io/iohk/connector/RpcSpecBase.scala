@@ -4,14 +4,14 @@ import java.time.Instant
 import java.util.concurrent.{Executor, TimeUnit}
 
 import doobie.implicits._
-import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc._
+import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.iohk.connector.model._
 import io.iohk.connector.payments.PaymentWall
-import io.iohk.connector.protos.ConnectorServiceGrpc
 import io.iohk.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO, MessagesDAO, ParticipantsDAO}
 import io.iohk.connector.repositories.{ConnectionsRepository, MessagesRepository}
 import io.iohk.connector.services.{ConnectionsService, MessagesService}
+import io.iohk.cvp.connector.protos.ConnectorServiceGrpc
 import io.iohk.cvp.repositories.PostgresRepositorySpec
 import org.scalatest.BeforeAndAfterEach
 

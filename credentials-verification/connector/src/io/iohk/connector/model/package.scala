@@ -6,7 +6,7 @@ import java.util.{Base64, UUID}
 import com.google.protobuf.ByteString
 import enumeratum.EnumEntry.Lowercase
 import enumeratum._
-import io.iohk.connector.protos
+import io.iohk.cvp.connector.protos
 
 import scala.util.Random
 

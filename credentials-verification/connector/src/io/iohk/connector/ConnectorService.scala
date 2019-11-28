@@ -5,8 +5,8 @@ import java.util.UUID
 import io.iohk.connector.errors._
 import io.iohk.connector.model.ECPublicKey
 import io.iohk.connector.payments.PaymentWall
-import io.iohk.connector.protos._
 import io.iohk.connector.services.{ConnectionsService, MessagesService}
+import io.iohk.cvp.connector.protos._
 import io.iohk.cvp.utils.FutureEither._
 import org.slf4j.{Logger, LoggerFactory}
 

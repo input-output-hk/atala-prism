@@ -3,9 +3,9 @@ package io.iohk.connector
 import com.typesafe.config.{Config, ConfigFactory}
 import io.grpc.{Server, ServerBuilder}
 import io.iohk.connector.payments.PaymentWall
-import io.iohk.connector.protos._
 import io.iohk.connector.repositories.{ConnectionsRepository, MessagesRepository}
 import io.iohk.connector.services.{ConnectionsService, MessagesService}
+import io.iohk.cvp.connector.protos._
 import io.iohk.cvp.repositories.{SchemaMigrations, TransactorFactory}
 import org.slf4j.LoggerFactory
 

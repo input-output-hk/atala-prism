@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package io.iohk.connector;
+package io.iohk.cvp.connector;
 
 service ConnectorService {
   // Get active connections for current participant
