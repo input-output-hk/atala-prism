@@ -6,8 +6,12 @@ import connectionsIcon from '../../../../images/connectionsIcon.svg';
 import iconMenu from '../../../../images/icon-menu.svg';
 import iconGroups from '../../../../images/icon-groups.svg';
 import iconCredentials from '../../../../images/icon-credentials.svg';
-import iconTransactions from '../../../../images/icon-transactions.svg';
+// import iconTransactions from '../../../../images/icon-transactions.svg';
 import certificateIcon from '../../../../images/certificateIcon.svg';
+import paymentIcon from '../../../../images/paymentIcon.svg';
+import credentialSummaryIcon from '../../../../images/credentialSummaryIcon.svg';
+import settingsIcon from '../../../../images/settingsIcon.svg';
+import supportIcon from '../../../../images/supportIcon.svg';
 import './_style.scss';
 import { ISSUER, VERIFIER } from '../../../../helpers/constants';
 
@@ -19,7 +23,9 @@ const SideMenu = ({ location: pathname }) => {
     { icon: connectionsIcon, path: '/connections', restrictedTo: [ISSUER, VERIFIER] },
     { icon: iconGroups, path: '/groups', restrictedTo: [ISSUER] },
     { icon: iconCredentials, path: '/credentials', restrictedTo: [ISSUER] },
-    { icon: certificateIcon, path: '/newCredential', restrictedTo: [ISSUER] }
+    { icon: certificateIcon, path: '/newCredential', restrictedTo: [ISSUER] },
+    { icon: credentialSummaryIcon, path: '/credentialSummary', restrictedTo: [ISSUER] },
+    { icon: paymentIcon, path: '/payment', restrictedTo: [ISSUER, VERIFIER] }
     // The next page is not yet developed
     // { icon: iconTransactions, path: '/transactions' }
   ];
@@ -27,6 +33,11 @@ const SideMenu = ({ location: pathname }) => {
   const iconsByRole = icons.filter(({ restrictedTo }) =>
     restrictedTo.includes(localStorage.getItem('userRole'))
   );
+
+  const bottomIcons = [
+    { icon: settingsIcon, path: '/settings' },
+    { icon: supportIcon, path: '/support' }
+  ];
 
   return (
     <Sider
@@ -42,6 +53,15 @@ const SideMenu = ({ location: pathname }) => {
     >
       <Menu mode="inline" defaultSelectedKeys={[pathname]}>
         {iconsByRole.map(({ icon, path }) => (
+          <Menu.Item key={path}>
+            <Link to={path}>
+              <img src={icon} alt="Menu Icon" />
+            </Link>
+          </Menu.Item>
+        ))}
+      </Menu>
+      <Menu mode="inline" defaultSelectedKeys={[pathname]}>
+        {bottomIcons.map(({ icon, path }) => (
           <Menu.Item key={path}>
             <Link to={path}>
               <img src={icon} alt="Menu Icon" />
