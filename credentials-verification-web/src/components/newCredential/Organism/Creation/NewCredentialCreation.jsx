@@ -1,19 +1,20 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { Col, Row } from 'antd';
 import TemplateForm from '../TemplateForm/TemplateForm';
 import ExampleCredential from '../../Atom/ExampleCredential/ExampleCredential';
 
 import './_style.scss';
 
 const NewCredentialCreation = ({ savePicture, formRef, credentialValues }) => (
-  <div className="NewCredentialCreation">
-    <div className="CredentialTemplateContainer">
+  <Row type="flex" align="middle" className="NewCredentialCreation">
+    <Col xs={24} lg={12} className="CredentialTemplateContainer">
       <ExampleCredential />
-    </div>
-    <div className="CredentialFormContainer">
+    </Col>
+    <Col xs={24} lg={12} className="CredentialFormContainer">
       <TemplateForm savePicture={savePicture} credentialValues={credentialValues} ref={formRef} />
-    </div>
-  </div>
+    </Col>
+  </Row>
 );
 
 NewCredentialCreation.defaultProps = {

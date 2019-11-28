@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
-import { Badge } from 'antd';
+import { Badge, Col, Row } from 'antd';
 
 import './_style.scss';
 
@@ -9,12 +9,12 @@ const StepInfo = ({ title, subtitle, steps, currentStep }) => {
   const { t } = useTranslation();
 
   return (
-    <div className="StepsInfo">
-      <div className="NewCredentialTitle">
+    <Row type="flex" align="middle" className="StepsInfo">
+      <Col xs={24} lg={12} className="NewCredentialTitle">
         {title && <h1>{t(title)}</h1>}
         {subtitle && <p>{t(subtitle)}</p>}
-      </div>
-      <div className="NewCredentialSteps">
+      </Col>
+      <Col xs={24} lg={12} className="NewCredentialSteps">
         {steps.map(({ stepTitle }, index) => (
           <div key={stepTitle} className="StepLine">
             <div
@@ -34,8 +34,8 @@ const StepInfo = ({ title, subtitle, steps, currentStep }) => {
             </div>
           </div>
         ))}
-      </div>
-    </div>
+      </Col>
+    </Row>
   );
 };
 

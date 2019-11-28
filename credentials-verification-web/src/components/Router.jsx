@@ -13,10 +13,11 @@ import CredentialSummaries from './credentialSummaries/CredentialSummaryControll
 import NewCredential from './newCredential/NewCredentialContainer';
 import Payment from './payments/PaymentContainer';
 import { withSideBar } from './providers/withSideBar';
+import { ISSUER, VERIFIER } from '../helpers/constants';
 
-const landingRoute = { exact: true, path: '/landing', key: '/landing', component: Landing };
+const landingRoute = { path: '/', key: '/', component: Landing };
 const loginRoute = { exact: true, path: '/login', key: '/login', component: Login };
-const dashboardRoute = { exact: true, path: '/', key: '/', component: withSideBar(Dashboard) };
+const dashboardRoute = { path: '/', key: '/', component: withSideBar(Dashboard) };
 const errorRoute = { exact: true, path: '/error', key: '/error', component: I18nError };
 const connections = {
   exact: true,
@@ -55,22 +56,30 @@ const payment = {
   key: 'paymnt',
   component: withSideBar(Payment)
 };
-const notFound = { key: 'notFound', component: NotFound };
 
-const routes = [
-  dashboardRoute,
-  landingRoute,
-  errorRoute,
-  loginRoute,
-  connections,
-  groups,
-  newCredential,
-  credential,
-  credentialSummary,
-  registration,
-  payment,
-  notFound
-];
+const publicRoutes = [registration, loginRoute, loginRoute, landingRoute];
+
+const issuerRoutes = [newCredential, groups, credential, credentialSummary];
+
+const genericRoutes = [errorRoute, connections, payment, dashboardRoute];
+
+const role = localStorage.getItem('userRole');
+
+const routes = [];
+
+switch (role) {
+  case ISSUER: {
+    routes.push(...issuerRoutes);
+    routes.push(...genericRoutes);
+    break;
+  }
+  case VERIFIER: {
+    routes.push(...genericRoutes);
+    break;
+  }
+  default:
+    routes.push(...publicRoutes);
+}
 
 const Router = () => (
   <Switch>

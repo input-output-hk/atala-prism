@@ -4,7 +4,7 @@ import { Button, message, Radio } from 'antd';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import CellRenderer from '../../../common/Atoms/CellRenderer/CellRenderer';
-import { shortDateFormatter } from '../../../../helpers/formatters';
+import { shortBackendDateFormatter } from '../../../../helpers/formatters';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import InfiniteScrollTable from '../../../common/Organisms/Tables/InfiniteScrollTable';
 
@@ -56,7 +56,7 @@ AddCredentialsButton.propTypes = {
   id: PropTypes.string.isRequired
 };
 
-const getColumns = ({ setGroupToDelete, fullInfo, selectedGroup, setGroup }) => {
+const getColumns = ({ setGroupToDelete, fullInfo, selectedGroup, setGroup, openModal }) => {
   const componentName = 'groups';
   const credentialColumns = fullInfo
     ? [
@@ -89,7 +89,6 @@ const getColumns = ({ setGroupToDelete, fullInfo, selectedGroup, setGroup }) => 
   const actionColumn = [
     {
       key: 'actions',
-      fixed: 'right',
       render: ({ groupId, groupName }) => (
         <GetActionsButtons
           id={groupId}
@@ -110,7 +109,12 @@ const getColumns = ({ setGroupToDelete, fullInfo, selectedGroup, setGroup }) => 
     {
       key: 'groupName',
       render: ({ groupName }) => (
-        <CellRenderer title="groupName" componentName={componentName} value={groupName} />
+        <CellRenderer
+          title="groupName"
+          componentName={componentName}
+          value=""
+          firstValue={groupName}
+        />
       )
     },
     {
@@ -119,7 +123,7 @@ const getColumns = ({ setGroupToDelete, fullInfo, selectedGroup, setGroup }) => 
         <CellRenderer
           title="lastUpdate"
           componentName={componentName}
-          value={shortDateFormatter(lastUpdate)}
+          value={shortBackendDateFormatter(lastUpdate)}
         />
       )
     }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { DatePicker, Input } from 'antd';
+import { DatePicker, Input, Col } from 'antd';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import { noEmptyInput, futureDate, pastDate, minOneElement } from '../../../../helpers/formRules';
@@ -19,7 +19,7 @@ const getInput = (key, initialValue, t) => ({
   label: t(`newCredential.form.${key}`),
   key,
   className: '',
-  input: <Input />
+  input: <Input size="large" />
 });
 
 const TemplateForm = React.forwardRef(
@@ -48,7 +48,11 @@ const TemplateForm = React.forwardRef(
         label: t('newCredential.form.startDate'),
         key: 'startDate',
         className: 'DatePickerContainer',
-        input: <DatePicker showToday={false} />
+        input: (
+          <Col span={23}>
+            <DatePicker size="large" showToday={false} />
+          </Col>
+        )
       },
       {
         fieldDecoratorData: {
@@ -67,7 +71,11 @@ const TemplateForm = React.forwardRef(
         label: t('newCredential.form.graduationDate'),
         key: 'graduationDate',
         className: 'DatePickerContainer',
-        input: <DatePicker />
+        input: (
+          <Col span={24}>
+            <DatePicker size="large" />
+          </Col>
+        )
       },
       {
         fieldDecoratorData: {

@@ -31,3 +31,7 @@ const JPEG = 'image/jpeg';
 const PNG = 'image/png';
 export const ALLOWED_TYPES = [JPEG, PNG];
 export const MAX_FILE_SIZE = 1073741824; // 1 Gb as maximum just so all my images can pass
+
+// Roles
+export const VERIFIER = 'VERIFIER';
+export const ISSUER = 'ISSUER';

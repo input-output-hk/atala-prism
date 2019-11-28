@@ -1,6 +1,5 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Col, Row } from 'antd';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 import Welcome from './Atoms/Welcome/Welcome';
@@ -8,6 +7,7 @@ import CurrentBundle from './Atoms/CurrentBundle/CurrentBundle';
 import ConnectionSummary from './Molecules/ConnectionSummary/ConnectionSummary';
 import TransactionSummary from './Molecules/TransactionSummary/TransactionSummary';
 import { getBrowserLanguage } from '../../helpers/languageUtils';
+import { ISSUER } from '../../helpers/constants';
 
 import './_style.scss';
 
@@ -28,7 +28,9 @@ const Dashboard = ({ name, bundle, credentials, proofRequests }) => {
       </div>
       <div className="DashboardContentBottom">
         <ConnectionSummary weekAmount={0} monthAmount={0} yearAmount={0} />
-        <TransactionSummary credentials={credentials} proofRequests={proofRequests} />
+        {localStorage.getItem('userRole') === ISSUER && (
+          <TransactionSummary credentials={credentials} proofRequests={proofRequests} />
+        )}
       </div>
     </div>
   );

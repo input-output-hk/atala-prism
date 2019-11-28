@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Icon } from 'antd';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import ConnectionsFilter from './Molecules/filter/ConnectionsFilter';
@@ -9,39 +8,18 @@ import EmptyComponent from '../common/Atoms/EmptyComponent/EmptyComponent';
 import noConnections from '../../images/noConnections.svg';
 import QRModal from '../common/Organisms/Modals/QRModal/QRModal';
 import Logger from '../../helpers/Logger';
+import AddUserButtons from './Atoms/AddUsersButtons/AddUsersButtons';
+import { ISSUER } from '../../helpers/constants';
 
 import './_style.scss';
-
-const ConnectionsButtons = () => {
-  const { t } = useTranslation();
-
-  return (
-    <div className="ControlButtons">
-      <CustomButton
-        buttonProps={{
-          className: 'theme-outline',
-          onClick: () => Logger.info('placeholder function')
-        }}
-        buttonText={t('connections.buttons.bulk')}
-        icon={<Icon type="plus" />}
-      />
-      <CustomButton
-        buttonProps={{
-          className: 'theme-secondary',
-          onClick: () => Logger.info('placeholder function')
-        }}
-        buttonText={t('connections.buttons.manual')}
-        icon={<Icon type="plus" />}
-      />
-    </div>
-  );
-};
 
 const Connections = ({ tableProps, filterProps, inviteHolder }) => {
   const { t } = useTranslation();
 
   const [connectionToken, setConnectionToken] = useState('');
   const [QRModalIsOpen, showQRModal] = useState(false);
+
+  const isIssuer = localStorage.getItem('userRole') === ISSUER;
 
   const inviteHolderAndShowQR = () => {
     const cb = value => {
@@ -62,11 +40,25 @@ const Connections = ({ tableProps, filterProps, inviteHolder }) => {
     <div className="Wrapper">
       <div className="ContentHeader">
         <h1>{t('connections.title')}</h1>
-        <ConnectionsButtons />
+        {isIssuer ? (
+          <AddUserButtons />
+        ) : (
+          <CustomButton
+            buttonProps={{
+              className: 'theme-secondary',
+              onClick: () => Logger.info('Tried to add a connection')
+            }}
+            buttonText={t('connections.buttons.newConnection')}
+          />
+        )}
       </div>
       <ConnectionsFilter {...filterProps} />
       {tableProps.subjects.length ? (
-        <ConnectionsTable inviteHolder={inviteHolderAndShowQR} {...tableProps} />
+        <ConnectionsTable
+          inviteHolder={inviteHolderAndShowQR}
+          {...tableProps}
+          isIssuer={isIssuer}
+        />
       ) : (
         <EmptyComponent {...emptyProps} />
       )}

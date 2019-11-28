@@ -1,4 +1,7 @@
 .DatePickerContainer {
   width: 50%;
   float: left;
+  .ant-calendar-picker {
+    width: 100%;
+  }
 }
