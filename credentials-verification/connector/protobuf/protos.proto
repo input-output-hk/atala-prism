@@ -1,7 +1,5 @@
 syntax = "proto3";
 
-import "scalapb/scalapb.proto";
-
 package io.iohk.connector;
 
 service ConnectorService {
@@ -83,17 +81,17 @@ service ConnectorService {
 
 // just an EC public key represented with big integers as strings
 message PublicKey {
-  string x = 1 [(scalapb.field).no_box = true];
-  string y = 2 [(scalapb.field).no_box = true];
+  string x = 1;
+  string y = 2;
 }
 
 // Credential information; FIXME: is it a part of protocol?
 message Credential {
-  IssuerInfo issuerInfo = 1 [(scalapb.field).no_box = true];
-  string subject = 2 [(scalapb.field).no_box = true];
-  string title = 3 [(scalapb.field).no_box = true];
-  CredentialType type = 4 [(scalapb.field).no_box = true];
-  bytes credentialData = 5 [(scalapb.field).no_box = true];
+  IssuerInfo issuerInfo = 1;
+  string subject = 2;
+  string title = 3;
+  CredentialType type = 4;
+  bytes credentialData = 5;
 }
 
 // Credential type; FIXME: is it a part of protocol?
@@ -108,14 +106,14 @@ enum CredentialType {
 
 // Information on an Issuer
 message IssuerInfo {
-  string DID = 1 [(scalapb.field).no_box = true];
-  string name = 2 [(scalapb.field).no_box = true];
+  string DID = 1;
+  string name = 2;
 }
 
 // Information on a Holder
 message HolderInfo {
-  string DID = 1 [(scalapb.field).no_box = true];
-  string name = 2 [(scalapb.field).no_box = true];
+  string DID = 1;
+  string name = 2;
 }
 
 // Type representing generic participant in the system, alternative of IssuerInfo, HolderInfo, or VerifierInfo.
@@ -130,16 +128,16 @@ message ParticipantInfo {
 
 // Information on the connection; both sides see the same connectionId and creation time, but each sees different participantInfo
 message ConnectionInfo {
-  string connectionId = 1 [(scalapb.field).no_box = true];
+  string connectionId = 1;
   int64 created = 2; // moment of instantiation as milliseconds since the Unix Epoch
-  ParticipantInfo participantInfo = 3 [(scalapb.field).no_box = true]; // information about the participant at the other end
-  string token = 4 [(scalapb.field).no_box = true]; // the token used to generate the connection
+  ParticipantInfo participantInfo = 3; // information about the participant at the other end
+  string token = 4; // the token used to generate the connection
 }
 
 // Request connections instantiated by us / with us possibly after a known connection
 message GetConnectionsPaginatedRequest {
-  string lastSeenConnectionId = 1 [(scalapb.field).no_box = true]; // returned credentials will have been created after the last seen connection (optional field)
-  int32 limit = 2 [(scalapb.field).no_box = true]; // maximum number of credentials to return; must be > 0
+  string lastSeenConnectionId = 1; // returned credentials will have been created after the last seen connection (optional field)
+  int32 limit = 2; // maximum number of credentials to return; must be > 0
 }
 
 // Result with connections instantiated
@@ -149,29 +147,29 @@ message GetConnectionsPaginatedResponse {
 
 // Request to obtain information of connection token
 message GetConnectionTokenInfoRequest {
-  string token = 1 [(scalapb.field).no_box = true]; // token value to get information for
+  string token = 1; // token value to get information for
 }
 
 // Result with information on connection token
 message GetConnectionTokenInfoResponse {
-  ParticipantInfo creator = 1 [(scalapb.field).no_box = true]; // participant who generated the code
+  ParticipantInfo creator = 1; // participant who generated the code
 }
 
 // Request to instantiate a connection using token
 message AddConnectionFromTokenRequest {
-  string token = 1 [(scalapb.field).no_box = true]; // token to instantiate connection
-  PublicKey holderPublicKey = 2 [(scalapb.field).no_box = true];
+  string token = 1; // token to instantiate connection
+  PublicKey holderPublicKey = 2;
 }
 
 // Confirmation of connection instantiation
 message AddConnectionFromTokenResponse {
-  ConnectionInfo connection = 1 [(scalapb.field).no_box = true]; // instantiated connection info
-  string userId = 2 [(scalapb.field).no_box = true]; // your generated user id
+  ConnectionInfo connection = 1; // instantiated connection info
+  string userId = 2; // your generated user id
 }
 
 // Request to delete a connection
 message DeleteConnectionRequest {
-  string connectionId = 1 [(scalapb.field).no_box = true]; // id of connection to delete
+  string connectionId = 1; // id of connection to delete
 }
 
 // Confirmation of connection deletion
@@ -191,16 +189,16 @@ message GenerateConnectionTokenResponse {
 
 // Message received via a connection
 message ReceivedMessage {
-  string id = 1 [(scalapb.field).no_box = true];
-  int64 received = 2 [(scalapb.field).no_box = true]; // time when Connector received the message as milliseconds since the Unix Epoch
-  string connectionId = 3 [(scalapb.field).no_box = true]; // connection where the message has been received
-  bytes message = 4 [(scalapb.field).no_box = true]; // raw message
+  string id = 1;
+  int64 received = 2; // time when Connector received the message as milliseconds since the Unix Epoch
+  string connectionId = 3; // connection where the message has been received
+  bytes message = 4; // raw message
 }
 
 // Request to return messages for us after the given known message (if any)
 message GetMessagesPaginatedRequest {
-  string lastSeenMessageId = 1 [(scalapb.field).no_box = true]; // returned credentials will have been received after the given message (if any)
-  int32 limit = 2 [(scalapb.field).no_box = true]; // maximum number of credentials to return, must be > 0
+  string lastSeenMessageId = 1; // returned credentials will have been received after the given message (if any)
+  int32 limit = 2; // maximum number of credentials to return, must be > 0
 }
 
 // Response with messages
@@ -210,8 +208,8 @@ message GetMessagesPaginatedResponse {
 
 // Request to send message
 message SendMessageRequest {
-  string connectionId = 1 [(scalapb.field).no_box = true]; // id of the connection
-  bytes message = 2 [(scalapb.field).no_box = true]; // raw message
+  string connectionId = 1; // id of the connection
+  bytes message = 2; // raw message
 }
 
 // Confirmation of message sending
@@ -222,8 +220,8 @@ message SendMessageResponse {
 
 // Request to register DID
 message RegisterDIDRequest {
-  string DID = 1 [(scalapb.field).no_box = true];
-  string DIDDocument = 2 [(scalapb.field).no_box = true];
+  string DID = 1;
+  string DIDDocument = 2;
 }
 
 // Confirmation of DID registration

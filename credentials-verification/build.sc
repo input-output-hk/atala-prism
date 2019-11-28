@@ -1,12 +1,10 @@
+import $ivy.`com.lihaoyi::mill-contrib-scalapblib:$MILL_VERSION`
+
 import mill._
 import mill.scalalib._
 import mill.contrib.scalapblib._
 import coursier.maven.MavenRepository
-import $file.scalapb
-import scalapb.FixedScalaPBWorker
-import scalapb.FixedScalaPBModule
 import ammonite.ops._
-import connector.version
 
 import ammonite.ops._
 
@@ -163,7 +161,7 @@ trait ServerCommon extends ScalaModule {
   }
 }
 
-trait ServerPBCommon extends ServerCommon with FixedScalaPBModule {
+trait ServerPBCommon extends ServerCommon with ScalaPBModule {
   def scalaPBVersion = versions.scalaPB
   def scalaPBGrpc = true
 
@@ -196,10 +194,6 @@ object connector extends ServerPBCommon with CVPDockerModule {
     deps ++ Agg(
       ivy"com.paymentwall:paymentwall-java:2.0.2"
     )
-  }
-
-  override def scalaPBSources = T.sources {
-    millSourcePath / 'protobuf / "protos.proto"
   }
 
   override def cvpDockerConfig = CVPDockerConfig(name = "connector")

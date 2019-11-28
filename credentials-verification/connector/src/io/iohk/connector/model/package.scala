@@ -72,7 +72,7 @@ case class ConnectionInfo(
     protos.ConnectionInfo(
       id.id.toString,
       created = instantiatedAt.toEpochMilli,
-      participantInfo = participantInfo.toProto,
+      participantInfo = Some(participantInfo.toProto),
       token = token.token
     )
   }

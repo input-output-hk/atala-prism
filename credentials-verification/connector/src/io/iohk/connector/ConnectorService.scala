@@ -67,7 +67,7 @@ class ConnectorService(connections: ConnectionsService, messages: MessagesServic
       .getTokenInfo(new model.TokenString(request.token))
       .wrapExceptions
       .successMap { participantInfo =>
-        GetConnectionTokenInfoResponse(participantInfo.toProto)
+        GetConnectionTokenInfoResponse(Some(participantInfo.toProto))
       }
   }
 
@@ -83,17 +83,21 @@ class ConnectorService(connections: ConnectionsService, messages: MessagesServic
   ): Future[AddConnectionFromTokenResponse] = {
     implicit val loggingContext = LoggingContext("request" -> request)
 
-    val publicKey = ECPublicKey(
-      x = BigInt(request.holderPublicKey.x),
-      y = BigInt(request.holderPublicKey.y)
-    )
+    val publicKey = request.holderPublicKey
+      .map { protoKey =>
+        ECPublicKey(
+          x = BigInt(protoKey.x),
+          y = BigInt(protoKey.y)
+        )
+      }
+      .getOrElse(throw new RuntimeException("Missing public key"))
 
     connections
       .addConnectionFromToken(new model.TokenString(request.token), publicKey)
       .wrapExceptions
       .successMap {
         case (userId, connectionInfo) =>
-          AddConnectionFromTokenResponse(connectionInfo.toProto).withUserId(userId.id.toString)
+          AddConnectionFromTokenResponse(Some(connectionInfo.toProto)).withUserId(userId.id.toString)
       }
   }
 
