@@ -108,7 +108,8 @@ class RpcSpecBase extends PostgresRepositorySpec with BeforeAndAfterEach {
       initiatorId: ParticipantId,
       acceptorId: ParticipantId
   ): ConnectionId = {
-    ConnectionsDAO.insert(initiatorId, acceptorId).transact(database).unsafeToFuture().futureValue._1
+    val token = createToken(initiatorId)
+    ConnectionsDAO.insert(initiatorId, acceptorId, token).transact(database).unsafeToFuture().futureValue._1
   }
 
   protected def createConnection(
@@ -116,7 +117,12 @@ class RpcSpecBase extends PostgresRepositorySpec with BeforeAndAfterEach {
       acceptorId: ParticipantId,
       instantiatedAt: Instant
   ): ConnectionId = {
-    ConnectionsDAO.insert(initiatorId, acceptorId, instantiatedAt).transact(database).unsafeToFuture().futureValue
+    val token = createToken(initiatorId)
+    ConnectionsDAO
+      .insert(initiatorId, acceptorId, instantiatedAt, token)
+      .transact(database)
+      .unsafeToFuture()
+      .futureValue
   }
 
   // creates connections (initiator -> acceptor):

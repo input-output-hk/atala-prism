@@ -9,7 +9,7 @@ import io.iohk.connector.repositories.daos._
 import io.iohk.cvp.repositories.PostgresRepositorySpec
 
 abstract class ConnectorRepositorySpecBase extends PostgresRepositorySpec {
-  override val tables = List("messages", "connections", "holder_public_keys", "participants")
+  override val tables = List("messages", "connections", "connection_tokens", "holder_public_keys", "participants")
   implicit class SqlTestOps(val sql: fragment.Fragment) {
     def runUpdate(): Unit = {
       sql.update.run.transact(database).unsafeToFuture().futureValue
@@ -38,9 +38,10 @@ abstract class ConnectorRepositorySpecBase extends PostgresRepositorySpec {
   }
 
   protected def createConnection(initiatorId: ParticipantId, acceptorId: ParticipantId): ConnectionId = {
+    val token = createToken(initiatorId)
     sql"""
-         |INSERT INTO connections (id, initiator, acceptor, instantiated_at)
-         |VALUES(${ConnectionId.random()}, $initiatorId, $acceptorId, now())
+         |INSERT INTO connections (id, initiator, acceptor, instantiated_at, token)
+         |VALUES(${ConnectionId.random()}, $initiatorId, $acceptorId, now(), $token)
          |RETURNING id""".stripMargin.runUnique[ConnectionId]()
   }
 
@@ -49,9 +50,10 @@ abstract class ConnectorRepositorySpecBase extends PostgresRepositorySpec {
       acceptorId: ParticipantId,
       instantiatedAt: Instant
   ): ConnectionId = {
+    val token = createToken(initiatorId)
     sql"""
-         |INSERT INTO connections (id, initiator, acceptor, instantiated_at)
-         |VALUES(${ConnectionId.random()}, $initiatorId, $acceptorId, $instantiatedAt)
+         |INSERT INTO connections (id, initiator, acceptor, instantiated_at, token)
+         |VALUES(${ConnectionId.random()}, $initiatorId, $acceptorId, $instantiatedAt, $token)
          |RETURNING id""".stripMargin.runUnique[ConnectionId]()
   }
 
@@ -68,4 +70,14 @@ abstract class ConnectorRepositorySpecBase extends PostgresRepositorySpec {
          |RETURNING id""".stripMargin.runUnique[MessageId]()
   }
 
+  protected def createToken(initiator: ParticipantId): TokenString = {
+    val tokenString = TokenString.random()
+    ConnectionTokensDAO
+      .insert(initiator, tokenString)
+      .transact(database)
+      .unsafeToFuture()
+      .futureValue
+
+    tokenString
+  }
 }
