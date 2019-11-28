@@ -62,9 +62,19 @@ case class ParticipantInfo(id: ParticipantId, tpe: ParticipantType, name: String
   }
 }
 
-case class ConnectionInfo(id: ConnectionId, instantiatedAt: Instant, participantInfo: ParticipantInfo) {
+case class ConnectionInfo(
+    id: ConnectionId,
+    instantiatedAt: Instant,
+    participantInfo: ParticipantInfo,
+    token: TokenString
+) {
   def toProto: protos.ConnectionInfo = {
-    protos.ConnectionInfo(id.id.toString, instantiatedAt.toEpochMilli, participantInfo.toProto)
+    protos.ConnectionInfo(
+      id.id.toString,
+      created = instantiatedAt.toEpochMilli,
+      participantInfo = participantInfo.toProto,
+      token = token.token
+    )
   }
 }
 

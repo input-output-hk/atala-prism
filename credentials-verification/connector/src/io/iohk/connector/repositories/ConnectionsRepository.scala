@@ -65,12 +65,12 @@ class ConnectionsRepository(
       }
 
       ciia <- EitherT.right[ConnectorError](
-        ConnectionsDAO.insert(initiator = initiator.id, acceptor = acceptorInfo.id)
+        ConnectionsDAO.insert(initiator = initiator.id, acceptor = acceptorInfo.id, token = token)
       )
       (connectionId, instantiatedAt) = ciia
 
       _ <- EitherT.right[ConnectorError](ConnectionTokensDAO.markAsUsed(token))
-    } yield acceptorInfo.id -> ConnectionInfo(connectionId, instantiatedAt, initiator)
+    } yield acceptorInfo.id -> ConnectionInfo(connectionId, instantiatedAt, initiator, token)
 
     query
       .transact(xa)

@@ -3,18 +3,19 @@ package io.iohk.connector.repositories.daos
 import java.time.Instant
 
 import doobie.implicits._
-import io.iohk.connector.model.{ConnectionId, ConnectionInfo, ParticipantId}
+import io.iohk.connector.model.{ConnectionId, ConnectionInfo, ParticipantId, TokenString}
 
 object ConnectionsDAO {
   def insert(
       initiator: ParticipantId,
-      acceptor: ParticipantId
+      acceptor: ParticipantId,
+      token: TokenString
   ): doobie.ConnectionIO[(ConnectionId, Instant)] = {
 
     val connectionId = ConnectionId.random()
     sql"""
-         |INSERT INTO connections (id, initiator, acceptor, instantiated_at)
-         |VALUES ($connectionId, $initiator, $acceptor, now())
+         |INSERT INTO connections (id, initiator, acceptor, token, instantiated_at)
+         |VALUES ($connectionId, $initiator, $acceptor, $token, now())
          |RETURNING id, instantiated_at""".stripMargin
       .query[(ConnectionId, Instant)]
       .unique
@@ -23,13 +24,14 @@ object ConnectionsDAO {
   def insert(
       initiator: ParticipantId,
       acceptor: ParticipantId,
-      instantiatedAt: Instant
+      instantiatedAt: Instant,
+      token: TokenString
   ): doobie.ConnectionIO[ConnectionId] = {
 
     val connectionId = ConnectionId.random()
     sql"""
-         |INSERT INTO connections (id, initiator, acceptor, instantiated_at)
-         |VALUES ($connectionId, $initiator, $acceptor, $instantiatedAt)
+         |INSERT INTO connections (id, initiator, acceptor, token, instantiated_at)
+         |VALUES ($connectionId, $initiator, $acceptor, $token, $instantiatedAt)
          |RETURNING id""".stripMargin
       .query[ConnectionId]
       .unique
@@ -68,15 +70,15 @@ object ConnectionsDAO {
              |   WHERE id = $value
              | ),
              | initiated_connections AS (
-             |  SELECT id, acceptor AS side, instantiated_at FROM connections WHERE initiator = $participant
+             |  SELECT id, acceptor AS side, instantiated_at, token FROM connections WHERE initiator = $participant
              | ),
              | accepted_connections AS (
-             |  SELECT id, initiator as side, instantiated_at FROM connections WHERE acceptor = $participant
+             |  SELECT id, initiator as side, instantiated_at, token FROM connections WHERE acceptor = $participant
              | ),
              | all_connections AS (
              |  SELECT * FROM initiated_connections UNION SELECT * FROM accepted_connections
              | )
-             |SELECT c.id, c.instantiated_at, p.id, p.tpe, p.name, p.did
+             |SELECT c.id, c.instantiated_at, p.id, p.tpe, p.name, p.did, c.token
              |FROM CTE CROSS JOIN all_connections c
              |JOIN participants p ON p.id = c.side
              |WHERE c.instantiated_at > last_seen_time OR (instantiated_at = last_seen_time AND c.id > $value)
@@ -87,11 +89,11 @@ object ConnectionsDAO {
         sql"""
              |WITH
              | initiated_connections AS (
-             |  SELECT id, acceptor AS side, instantiated_at FROM connections WHERE initiator = $participant),
+             |  SELECT id, acceptor AS side, instantiated_at, token FROM connections WHERE initiator = $participant),
              | accepted_connections AS (
-             |  SELECT id, initiator as side, instantiated_at FROM connections WHERE acceptor = $participant),
+             |  SELECT id, initiator as side, instantiated_at, token FROM connections WHERE acceptor = $participant),
              | all_connections AS (SELECT * FROM initiated_connections UNION SELECT * FROM accepted_connections)
-             |SELECT c.id, c.instantiated_at, p.id, p.tpe, p.name, p.did
+             |SELECT c.id, c.instantiated_at, p.id, p.tpe, p.name, p.did, c.token
              |FROM all_connections c
              |JOIN participants p ON p.id = c.side
              |ORDER BY c.instantiated_at ASC, c.id
