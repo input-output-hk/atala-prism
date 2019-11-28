@@ -32,7 +32,8 @@
     },
     "buttons": {
       "bulk": "Bulk Import",
-      "manual": "Add users manually"
+      "manual": "Add users manually",
+      "newConnection": "New Connection"
     },
     "table": {
       "columns": {
@@ -41,7 +42,8 @@
         "email": "Email",
         "invite": "Invite",
         "delete": "Delete",
-        "view": "View"
+        "view": "View",
+        "viewCredentials": "View Credentials"
       }
     },
     "noConnections": {
@@ -338,7 +340,7 @@
     }
   },
   "payment": {
-    "title": "Payments",
+    "title": "Payments List",
     "payer": "Payer",
     "filterBy": "Filter by {{field}}",
     "fields": {

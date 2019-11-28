@@ -1,97 +1,92 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import { Table } from 'antd';
 import CellRenderer from '../../../common/Atoms/CellRenderer/CellRenderer';
 import StatusBadge from '../../Atoms/StatusBadge/StatusBadge';
-import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
-import { longDateFormatter } from '../../../../helpers/formatters';
+import { longDateFormatter, shortBackendDateFormatter } from '../../../../helpers/formatters';
 import { HOLDER_PAGE_SIZE, xScroll, PENDING_CONNECTION } from '../../../../helpers/constants';
+import ActionButtons from '../../Atoms/ActionButtons/ActionButtons';
 
 import './_style.scss';
 
-const GetActionButtons = ({ id, showQRButton, inviteHolder }) => {
-  const { t } = useTranslation();
+const getColumns = (inviteHolder, isIssuer) => {
+  const userColumn = [
+    {
+      key: 'avatar',
+      render: ({ avatar }) => (
+        <img style={{ width: '40px', height: '40px' }} src={avatar} alt="imagecita" />
+      )
+    },
+    { key: 'name', render: ({ name }) => name }
+  ];
 
-  return (
-    <div className="ControlButtons">
-      {showQRButton && (
-        <CustomButton
-          buttonProps={{
-            onClick: () => inviteHolder(id),
-            className: 'theme-link'
-          }}
-          buttonText={t('connections.table.columns.invite')}
+  const issuerInfo = [
+    {
+      key: 'identityNumber',
+      render: ({ identityNumber }) => (
+        <CellRenderer title="identityNumber" value={identityNumber} componentName="connections" />
+      )
+    },
+    {
+      key: 'admissionDate',
+      render: ({ admissionDate }) => (
+        <CellRenderer
+          title="admissionDate"
+          value={shortBackendDateFormatter(admissionDate)}
+          componentName="connections"
         />
-      )}
-      <CustomButton
-        buttonProps={{ className: 'theme-link' }}
-        buttonText={t('connections.table.columns.delete')}
-      />
-      <CustomButton
-        buttonProps={{
-          className: 'theme-link'
-        }}
-        buttonText={t('connections.table.columns.view')}
-      />
-    </div>
-  );
+      )
+    }
+  ];
+
+  const genericColumns = [
+    {
+      key: 'email',
+      render: ({ email }) => (
+        <CellRenderer title="email" value={email} componentName="connections" />
+      )
+    },
+    {
+      key: 'status',
+      render: ({ status }) => <StatusBadge status={status} />
+    }
+  ];
+
+  const actionColumns = [
+    {
+      key: 'actions',
+      render: ({ id, status }) => (
+        <ActionButtons
+          id={id}
+          showQRButton={status === PENDING_CONNECTION}
+          inviteHolder={inviteHolder}
+          isIssuer={isIssuer}
+        />
+      )
+    }
+  ];
+
+  const finalColumns = [];
+
+  finalColumns.push(...userColumn);
+  if (isIssuer) finalColumns.push(...issuerInfo);
+  finalColumns.push(...genericColumns);
+  finalColumns.push(...actionColumns);
+
+  return finalColumns;
 };
 
-GetActionButtons.propTypes = {
-  id: PropTypes.string.isRequired,
-  showQRButton: PropTypes.bool.isRequired,
-  inviteHolder: PropTypes.func.isRequired
-};
-
-const getColumns = inviteHolder => [
-  {
-    key: 'avatar',
-    render: ({ avatar }) => (
-      <img style={{ width: '40px', height: '40px' }} src={avatar} alt="imagecita" />
-    )
-  },
-  { key: 'name', render: ({ name }) => name },
-  {
-    key: 'identityNumber',
-    render: ({ identityNumber }) => (
-      <CellRenderer title="identityNumber" value={identityNumber} componentName="connections" />
-    )
-  },
-  {
-    key: 'admissionDate',
-    render: ({ admissionDate }) => (
-      <CellRenderer
-        title="admissionDate"
-        value={longDateFormatter(admissionDate)}
-        componentName="connections"
-      />
-    )
-  },
-  {
-    key: 'email',
-    render: ({ email }) => <CellRenderer title="email" value={email} componentName="connections" />
-  },
-  {
-    key: 'status',
-    render: ({ status }) => <StatusBadge status={status} />
-  },
-  {
-    key: 'actions',
-    render: ({ id, status }) => (
-      <GetActionButtons
-        id={id}
-        showQRButton={status === PENDING_CONNECTION}
-        inviteHolder={inviteHolder}
-      />
-    )
-  }
-];
-
-const ConnectionsTable = ({ subjects, subjectCount, offset, setOffset, inviteHolder }) => (
+const ConnectionsTable = ({
+  subjects,
+  subjectCount,
+  offset,
+  setOffset,
+  inviteHolder,
+  isIssuer
+}) => (
   <div className="ConnectionsTable">
     <Table
-      columns={getColumns(inviteHolder)}
+      columns={getColumns(inviteHolder, isIssuer)}
       dataSource={subjects}
       scroll={{ x: xScroll }}
       pagination={{

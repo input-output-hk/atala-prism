@@ -1,4 +1,5 @@
 import React from 'react';
+import { Col } from 'antd';
 import CellRenderer from '../../../common/Atoms/CellRenderer/CellRenderer';
 import {
   EXAMPLE_DEGREE_NAME,
@@ -8,11 +9,10 @@ import {
   EXAMPLE_AWARD_START_DATE,
   EXAMPLE_GRADUATION_DATE
 } from '../../../../helpers/constants';
-
 import './_style.scss';
 
 const ExampleCredential = () => (
-  <div className="CredentialTemplate">
+  <Col lg={12} xs={24} className="CredentialTemplate">
     <div className="CredentialHeader">
       <CellRenderer componentName="newCredential" title="degreeName" value={EXAMPLE_DEGREE_NAME} />
       <img
@@ -45,7 +45,7 @@ const ExampleCredential = () => (
         />
       </div>
     </div>
-  </div>
+  </Col>
 );
 
 export default ExampleCredential;

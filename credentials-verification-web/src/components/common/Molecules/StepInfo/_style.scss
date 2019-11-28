@@ -1,27 +1,22 @@
 @import '../../../../css/general_styling';
 
 .StepsInfo {
-  display: flex;
   background-color: $light-grey;
   border: 1px solid $grey;
   border-radius: 4px;
   padding: 1em 4em;
-
   .NewCredentialTitle {
-    width: 50%;
-    padding-top: 1.5em;
     h1 {
       @include secondary-text($h1, $black);
     }
 
     p {
-      @include body-text($body, $dark-grey, 400);
+      @include body-text($h3, $dark-grey, 400);
     }
   }
 
   .NewCredentialSteps {
-    width: 50%;
-
+    padding: 0 2em;
     .StepLine {
       margin-bottom: 0.75em;
       &:last-child {

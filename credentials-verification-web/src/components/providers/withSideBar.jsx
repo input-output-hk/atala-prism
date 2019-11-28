@@ -8,7 +8,7 @@ export const withSideBar = Component => props => (
     <div className="MainContent">
       <SideMenu />
       <div className="MainContainer">
-        <Component {...props} />;
+        <Component {...props} />
       </div>
     </div>
   </Fragment>

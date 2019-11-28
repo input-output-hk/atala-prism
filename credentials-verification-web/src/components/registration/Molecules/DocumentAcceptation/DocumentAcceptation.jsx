@@ -1,6 +1,5 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Row } from 'antd';
 import PropTypes from 'prop-types';
 import { shortDateFormatter } from '../../../../helpers/formatters';
 

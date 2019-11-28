@@ -2,6 +2,10 @@
 
 .TableLabel {
   @include primary-text($label, $dark-grey);
+  line-height: 13px;
+}
+.TableTextBold{
+  @include body-text($body, $black, 600);
 }
 
 .TableText{

@@ -151,7 +151,7 @@ const RegistrationContainer = ({
         return (
           <DocumentAcceptation
             title="registration.termsAndConditions"
-            lastUpdated={toProtoDate(moment())}
+            lastUpdated={moment()}
             content={termsAndConditions}
           />
         );
@@ -159,7 +159,7 @@ const RegistrationContainer = ({
         return (
           <DocumentAcceptation
             title="registration.privacyPolicy"
-            lastUpdated={toProtoDate(moment())}
+            lastUpdated={moment()}
             content={privacyPolicy}
           />
         );

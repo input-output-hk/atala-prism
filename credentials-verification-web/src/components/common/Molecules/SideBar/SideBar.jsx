@@ -9,19 +9,24 @@ import iconCredentials from '../../../../images/icon-credentials.svg';
 import iconTransactions from '../../../../images/icon-transactions.svg';
 import certificateIcon from '../../../../images/certificateIcon.svg';
 import './_style.scss';
+import { ISSUER, VERIFIER } from '../../../../helpers/constants';
 
 const { Sider } = Layout;
 
 const SideMenu = ({ location: pathname }) => {
   const icons = [
-    { icon: iconMenu, path: '' },
-    { icon: connectionsIcon, path: '/connections' },
-    { icon: iconGroups, path: '/groups' },
-    { icon: iconCredentials, path: '/credentials' },
-    { icon: certificateIcon, path: '/newCredential' }
+    { icon: iconMenu, path: '', restrictedTo: [ISSUER, VERIFIER] },
+    { icon: connectionsIcon, path: '/connections', restrictedTo: [ISSUER, VERIFIER] },
+    { icon: iconGroups, path: '/groups', restrictedTo: [ISSUER] },
+    { icon: iconCredentials, path: '/credentials', restrictedTo: [ISSUER] },
+    { icon: certificateIcon, path: '/newCredential', restrictedTo: [ISSUER] }
     // The next page is not yet developed
     // { icon: iconTransactions, path: '/transactions' }
   ];
+
+  const iconsByRole = icons.filter(({ restrictedTo }) =>
+    restrictedTo.includes(localStorage.getItem('userRole'))
+  );
 
   return (
     <Sider
@@ -36,7 +41,7 @@ const SideMenu = ({ location: pathname }) => {
       }}
     >
       <Menu mode="inline" defaultSelectedKeys={[pathname]}>
-        {icons.map(({ icon, path }) => (
+        {iconsByRole.map(({ icon, path }) => (
           <Menu.Item key={path}>
             <Link to={path}>
               <img src={icon} alt="Menu Icon" />
