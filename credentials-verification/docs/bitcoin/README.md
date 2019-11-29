@@ -50,6 +50,7 @@ Related to payments, the approach assumes we'll bill per connection, which indir
 This diagram shows all the components:
 ![architecture](diagrams/architecture.png)
 
+**NOTE**: At Nov/29 the Credentials Manager has been merged into the Connector, the [PR](https://github.com/input-output-hk/atala/pull/477) has more details.
 
 ### Preparation steps
 
