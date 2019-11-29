@@ -138,8 +138,8 @@ message ConnectionInfo {
 
 // Request connections instantiated by us / with us possibly after a known connection
 message GetConnectionsPaginatedRequest {
-  string lastSeenConnectionId = 1; // returned credentials will have been created after the last seen connection (optional field)
-  int32 limit = 2; // maximum number of credentials to return; must be > 0
+  string lastSeenConnectionId = 1; // returned messages will have been created after the last seen connection (optional field)
+  int32 limit = 2; // maximum number of messages to return; must be > 0
 }
 
 // Result with connections instantiated
@@ -197,8 +197,8 @@ message ReceivedMessage {
 
 // Request to return messages for us after the given known message (if any)
 message GetMessagesPaginatedRequest {
-  string lastSeenMessageId = 1; // returned credentials will have been received after the given message (if any)
-  int32 limit = 2; // maximum number of credentials to return, must be > 0
+  string lastSeenMessageId = 1; // returned messages will have been received after the given message (if any)
+  int32 limit = 2; // maximum number of messages to return, must be > 0
 }
 
 // Response with messages

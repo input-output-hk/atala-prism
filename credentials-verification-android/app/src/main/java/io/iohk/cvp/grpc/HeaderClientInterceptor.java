@@ -25,7 +25,7 @@ public class HeaderClientInterceptor implements ClientInterceptor {
       @Override
       public void start(Listener<RespT> responseListener, Metadata headers) {
         //TODO get this from session storage when implemented
-        headers.put(HEADER_USER_ID_KEY, "e20a974e-eade-11e9-a447-d8f2ca059830");
+        headers.put(HEADER_USER_ID_KEY, "faf2f8e7-6170-4d5f-b839-21df46cf1d27");
         super.start(new SimpleForwardingClientCallListener<RespT>(responseListener) {
           @Override
           public void onHeaders(Metadata headers) {

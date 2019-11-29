@@ -1,34 +1,67 @@
 package io.iohk.cvp.viewmodel;
 
+import static io.iohk.cvp.core.exception.ErrorCode.ITEM_NOT_FOUND_IN_LIST;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
+import com.crashlytics.android.Crashlytics;
+import com.google.protobuf.InvalidProtocolBufferException;
+import io.iohk.cvp.core.exception.ItemNotFoundException;
+import io.iohk.cvp.grpc.GetMessagesRunnable;
+import io.iohk.cvp.grpc.GrpcTask;
 import io.iohk.cvp.io.connector.Credential;
-import java.util.Arrays;
+import io.iohk.cvp.io.connector.ReceivedMessage;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 
 public class CredentialsViewModel extends ViewModel {
 
-  private final MutableLiveData<List<Credential>> credentials = new MutableLiveData<>();
-  private final MutableLiveData<Credential> credential = new MutableLiveData<>();
+  private final MutableLiveData<List<ReceivedMessage>> messages = new MutableLiveData<>(
+      new ArrayList<>());
+  private final MutableLiveData<Credential> selectedCredential = new MutableLiveData<>();
 
   @Inject
   public CredentialsViewModel() {
-    //TODO use view model and make grpc call to fetch real connections info
-    List<Credential> list = Arrays
-        .asList(Credential.getDefaultInstance(), Credential.getDefaultInstance(),
-            Credential.getDefaultInstance(), Credential.getDefaultInstance());
-
-    credentials.setValue(list);
-    credential.setValue(Credential.getDefaultInstance());
+    selectedCredential.setValue(Credential.getDefaultInstance());
   }
 
-  public LiveData<List<Credential>> getCredentials() {
-    return credentials;
+  public LiveData<List<ReceivedMessage>> getMessages() {
+    new GrpcTask<>(new GetMessagesRunnable(messages)).execute();
+    return messages;
   }
 
-  public LiveData<Credential> getCredential(String credentialId) {
-    return credential;
+
+  public LiveData<Credential> getCredential(String messageId)
+      throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
+
+    Optional<List<ReceivedMessage>> msgs = new GrpcTask<>(new GetMessagesRunnable(messages))
+        .execute().get();
+
+    try {
+      selectedCredential
+          .setValue(findCredential(msgs.orElse(new ArrayList<>()), messageId)
+              .orElseThrow(() -> new ItemNotFoundException("The selected credential id " + messageId
+                  + " wasn't found on current messages list", ITEM_NOT_FOUND_IN_LIST)));
+    } catch (ItemNotFoundException e) {
+      Crashlytics.logException(e);
+    }
+
+    return selectedCredential;
+  }
+
+  private Optional<Credential> findCredential(List<ReceivedMessage> messages, String messageId)
+      throws InvalidProtocolBufferException {
+    if (messages.size() > 0) {
+      return Optional.of(Credential.parseFrom(messages.stream()
+          .filter(message -> message.getId().equals(messageId)).collect(Collectors.toList())
+          .get(0).getMessage()));
+    }
+    return Optional.empty();
   }
 }
+
