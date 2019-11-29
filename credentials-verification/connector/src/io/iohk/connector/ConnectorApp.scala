@@ -9,6 +9,7 @@ import io.iohk.cvp.cmanager.grpc.services.{CredentialsServiceImpl, StudentsServi
 import io.iohk.cvp.cmanager.protos.{CredentialsServiceGrpc, StudentsServiceGrpc}
 import io.iohk.cvp.cmanager.repositories.{CredentialsRepository, StudentsRepository}
 import io.iohk.cvp.connector.protos._
+import io.iohk.cvp.grpc.UserIdInterceptor
 import io.iohk.cvp.repositories.{SchemaMigrations, TransactorFactory}
 import org.slf4j.LoggerFactory
 

@@ -5,8 +5,9 @@ import java.util.UUID
 import doobie.implicits._
 import io.grpc.{Status, StatusRuntimeException}
 import io.iohk.connector.model._
-import io.iohk.cvp.connector.protos._
 import io.iohk.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO, ParticipantsDAO}
+import io.iohk.cvp.connector.protos._
+import io.iohk.cvp.models.ParticipantId
 import org.scalatest.OptionValues._
 
 class ConnectionsRpcSpec extends RpcSpecBase {

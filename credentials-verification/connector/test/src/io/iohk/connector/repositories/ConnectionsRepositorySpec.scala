@@ -1,12 +1,12 @@
 package io.iohk.connector.repositories
 
 import com.softwaremill.diffx.scalatest.DiffMatcher._
-
 import java.time.{Instant, LocalDateTime, ZoneOffset}
 
 import doobie.implicits._
 import io.iohk.connector.model._
 import io.iohk.connector.repositories.daos._
+import io.iohk.cvp.models.ParticipantId
 import org.scalatest.EitherValues._
 
 import scala.concurrent.duration.DurationLong

@@ -3,6 +3,7 @@ package io.iohk.connector.services
 import io.iohk.connector.errors.ConnectorError
 import io.iohk.connector.model._
 import io.iohk.connector.repositories.MessagesRepository
+import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.utils.FutureEither
 
 class MessagesService(messagesRepository: MessagesRepository) {

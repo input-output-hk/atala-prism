@@ -1,13 +1,13 @@
-package io.iohk.cvp.cmanager.grpc
+package io.iohk.cvp.grpc
 
 import java.util.UUID
 
 import io.grpc._
-import io.iohk.cvp.cmanager.models.Issuer
+import io.iohk.cvp.models.ParticipantId
 
 object UserIdInterceptor {
-  val USER_ID_METADATA_KEY: Metadata.Key[String] = Metadata.Key.of("userId", Metadata.ASCII_STRING_MARSHALLER)
-  val USER_ID_CTX_KEY: Context.Key[Issuer.Id] = Context.key[Issuer.Id]("userId")
+  val USER_ID_METADATA_KEY = Metadata.Key.of("userId", Metadata.ASCII_STRING_MARSHALLER)
+  val USER_ID_CTX_KEY = Context.key[ParticipantId]("userId")
 }
 
 class UserIdInterceptor extends ServerInterceptor {
@@ -23,7 +23,7 @@ class UserIdInterceptor extends ServerInterceptor {
       throw Status.INVALID_ARGUMENT.withDescription("userId header missing").asRuntimeException()
     }
 
-    val userId = Issuer.Id(UUID.fromString(userIdStr))
+    val userId = new ParticipantId(UUID.fromString(userIdStr))
     val ctx = Context.current().withValue(USER_ID_CTX_KEY, userId)
 
     Contexts.interceptCall(ctx, call, headers, next)

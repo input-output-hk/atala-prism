@@ -1,9 +1,9 @@
 package io.iohk.connector.repositories.daos
 
 import cats.data.OptionT
-import cats.implicits._
 import doobie.implicits._
-import io.iohk.connector.model.{ECPublicKey, ParticipantId, ParticipantInfo, TokenString}
+import io.iohk.connector.model.{ECPublicKey, ParticipantInfo, TokenString}
+import io.iohk.cvp.models.ParticipantId
 
 object ParticipantsDAO {
   def insert(participant: ParticipantInfo): doobie.ConnectionIO[Unit] = {

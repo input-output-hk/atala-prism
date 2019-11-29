@@ -7,6 +7,7 @@ import io.iohk.connector.model.ECPublicKey
 import io.iohk.connector.payments.PaymentWall
 import io.iohk.connector.services.{ConnectionsService, MessagesService}
 import io.iohk.cvp.connector.protos._
+import io.iohk.cvp.grpc.UserIdInterceptor
 import io.iohk.cvp.utils.FutureEither._
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -97,7 +98,7 @@ class ConnectorService(connections: ConnectionsService, messages: MessagesServic
       .wrapExceptions
       .successMap {
         case (userId, connectionInfo) =>
-          AddConnectionFromTokenResponse(Some(connectionInfo.toProto)).withUserId(userId.id.toString)
+          AddConnectionFromTokenResponse(Some(connectionInfo.toProto)).withUserId(userId.uuid.toString)
       }
   }
 

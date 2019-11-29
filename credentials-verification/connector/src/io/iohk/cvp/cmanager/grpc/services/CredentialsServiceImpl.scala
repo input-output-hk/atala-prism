@@ -2,7 +2,6 @@ package io.iohk.cvp.cmanager.grpc.services
 
 import java.util.UUID
 
-import io.iohk.cvp.cmanager.grpc.UserIdInterceptor
 import io.iohk.cvp.cmanager.grpc.services.codecs.ProtoCodecs._
 import io.iohk.cvp.cmanager.models.Credential
 import io.iohk.cvp.cmanager.models.requests.CreateCredential
@@ -17,7 +16,7 @@ class CredentialsServiceImpl(credentialsRepository: CredentialsRepository)(impli
     extends protos.CredentialsServiceGrpc.CredentialsService {
 
   override def createCredential(request: protos.CreateCredentialRequest): Future[protos.CreateCredentialResponse] = {
-    val userId = UserIdInterceptor.USER_ID_CTX_KEY.get()
+    val userId = getIssuerId()
     val model = request
       .into[CreateCredential]
       .withFieldConst(_.issuedBy, userId)
@@ -37,7 +36,7 @@ class CredentialsServiceImpl(credentialsRepository: CredentialsRepository)(impli
 
   override def getCredentials(request: protos.GetCredentialsRequest): Future[protos.GetCredentialsResponse] = {
     val lastSeenCredential = Try(UUID.fromString(request.lastSeenCredentialId)).map(Credential.Id.apply).toOption
-    val userId = UserIdInterceptor.USER_ID_CTX_KEY.get()
+    val userId = getIssuerId()
     credentialsRepository
       .getBy(userId, request.limit, lastSeenCredential)
       .map { list =>

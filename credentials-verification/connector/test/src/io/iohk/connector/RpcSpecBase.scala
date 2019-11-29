@@ -12,6 +12,8 @@ import io.iohk.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO,
 import io.iohk.connector.repositories.{ConnectionsRepository, MessagesRepository}
 import io.iohk.connector.services.{ConnectionsService, MessagesService}
 import io.iohk.cvp.connector.protos.ConnectorServiceGrpc
+import io.iohk.cvp.grpc.UserIdInterceptor
+import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.repositories.PostgresRepositorySpec
 import org.scalatest.BeforeAndAfterEach
 
@@ -70,7 +72,7 @@ class RpcSpecBase extends PostgresRepositorySpec with BeforeAndAfterEach {
       ): Unit = {
         appExecutor.execute { () =>
           val headers = new Metadata()
-          headers.put(UserIdInterceptor.USER_ID_METADATA_KEY, id.id.toString)
+          headers.put(UserIdInterceptor.USER_ID_METADATA_KEY, id.uuid.toString)
           applier.apply(headers)
         }
       }
