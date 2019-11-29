@@ -3,8 +3,8 @@ package io.iohk.connector
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.grpc.{Status, StatusRuntimeException}
-import io.iohk.connector.protos.{GetMessagesPaginatedRequest, SendMessageRequest}
 import io.iohk.connector.repositories.daos.MessagesDAO
+import io.iohk.cvp.connector.protos._
 
 class MessagesRpcSpec extends RpcSpecBase {
   "SendMessage" should {

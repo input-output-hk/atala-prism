@@ -3,7 +3,8 @@ package io.iohk.connector.repositories.daos
 import java.time.Instant
 
 import doobie.implicits._
-import io.iohk.connector.model.{ConnectionId, ConnectionInfo, ParticipantId, TokenString}
+import io.iohk.connector.model.{ConnectionId, ConnectionInfo, TokenString}
+import io.iohk.cvp.models.ParticipantId
 
 object ConnectionsDAO {
   def insert(

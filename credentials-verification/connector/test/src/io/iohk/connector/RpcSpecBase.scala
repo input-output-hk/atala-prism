@@ -4,14 +4,16 @@ import java.time.Instant
 import java.util.concurrent.{Executor, TimeUnit}
 
 import doobie.implicits._
-import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc._
+import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.iohk.connector.model._
 import io.iohk.connector.payments.PaymentWall
-import io.iohk.connector.protos.ConnectorServiceGrpc
 import io.iohk.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO, MessagesDAO, ParticipantsDAO}
 import io.iohk.connector.repositories.{ConnectionsRepository, MessagesRepository}
 import io.iohk.connector.services.{ConnectionsService, MessagesService}
+import io.iohk.cvp.connector.protos.ConnectorServiceGrpc
+import io.iohk.cvp.grpc.UserIdInterceptor
+import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.repositories.PostgresRepositorySpec
 import org.scalatest.BeforeAndAfterEach
 
@@ -70,7 +72,7 @@ class RpcSpecBase extends PostgresRepositorySpec with BeforeAndAfterEach {
       ): Unit = {
         appExecutor.execute { () =>
           val headers = new Metadata()
-          headers.put(UserIdInterceptor.USER_ID_METADATA_KEY, id.id.toString)
+          headers.put(UserIdInterceptor.USER_ID_METADATA_KEY, id.uuid.toString)
           applier.apply(headers)
         }
       }

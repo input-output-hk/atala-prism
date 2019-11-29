@@ -5,14 +5,10 @@ import java.util.UUID
 import doobie.implicits._
 import io.grpc.{Status, StatusRuntimeException}
 import io.iohk.connector.model._
-import io.iohk.connector.protos.{
-  AddConnectionFromTokenRequest,
-  GenerateConnectionTokenRequest,
-  GetConnectionTokenInfoRequest,
-  GetConnectionsPaginatedRequest,
-  PublicKey
-}
 import io.iohk.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO, ParticipantsDAO}
+import io.iohk.cvp.connector.protos._
+import io.iohk.cvp.models.ParticipantId
+import org.scalatest.OptionValues._
 
 class ConnectionsRpcSpec extends RpcSpecBase {
 
@@ -43,7 +39,7 @@ class ConnectionsRpcSpec extends RpcSpecBase {
       usingApiAs(issuerId) { blockingStub =>
         val request = GetConnectionTokenInfoRequest(token.token)
         val response = blockingStub.getConnectionTokenInfo(request)
-        response.creator.getIssuer.name mustBe "Issuer"
+        response.creator.value.getIssuer.name mustBe "Issuer"
       }
     }
 
@@ -78,8 +74,8 @@ class ConnectionsRpcSpec extends RpcSpecBase {
         val holderId = response.userId
 
         holderId mustNot be(empty)
-        response.connection.participantInfo.getIssuer.name mustBe "Issuer"
-        val connectionId = new ConnectionId(UUID.fromString(response.connection.connectionId))
+        response.connection.value.participantInfo.value.getIssuer.name mustBe "Issuer"
+        val connectionId = new ConnectionId(UUID.fromString(response.connection.value.connectionId))
 
         ConnectionsDAO
           .exists(connectionId)

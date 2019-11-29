@@ -1,7 +1,7 @@
 package io.iohk.connector.payments
 
 import com.paymentwall.java._
-import io.iohk.connector.model.ParticipantId
+import io.iohk.cvp.models.ParticipantId
 
 class PaymentWall {
 
@@ -11,7 +11,7 @@ class PaymentWall {
     val productId = "single_connection"
     val productName = "Single Connection"
     val product = newProduct(amount = amount, currency = currency, productId = productId, productName = productName)
-    val widget = newWidget(product, userId.id.toString)
+    val widget = newWidget(product, userId.uuid.toString)
     widget.getUrl
   }
 

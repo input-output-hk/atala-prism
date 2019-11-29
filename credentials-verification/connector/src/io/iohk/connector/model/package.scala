@@ -6,7 +6,8 @@ import java.util.{Base64, UUID}
 import com.google.protobuf.ByteString
 import enumeratum.EnumEntry.Lowercase
 import enumeratum._
-import io.iohk.connector.protos
+import io.iohk.cvp.connector.protos
+import io.iohk.cvp.models.ParticipantId
 
 import scala.util.Random
 
@@ -17,14 +18,6 @@ object ParticipantType extends Enum[ParticipantType] {
   case object Issuer extends ParticipantType
   case object Holder extends ParticipantType
   case object Verifier extends ParticipantType
-}
-
-case class ParticipantId(id: UUID) extends AnyVal
-
-object ParticipantId {
-  def random(): ParticipantId = {
-    new ParticipantId(UUID.randomUUID())
-  }
 }
 
 case class ConnectionId(id: UUID) extends AnyVal
@@ -72,7 +65,7 @@ case class ConnectionInfo(
     protos.ConnectionInfo(
       id.id.toString,
       created = instantiatedAt.toEpochMilli,
-      participantInfo = participantInfo.toProto,
+      participantInfo = Some(participantInfo.toProto),
       token = token.token
     )
   }

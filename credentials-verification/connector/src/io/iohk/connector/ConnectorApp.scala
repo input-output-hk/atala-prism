@@ -3,9 +3,13 @@ package io.iohk.connector
 import com.typesafe.config.{Config, ConfigFactory}
 import io.grpc.{Server, ServerBuilder}
 import io.iohk.connector.payments.PaymentWall
-import io.iohk.connector.protos._
 import io.iohk.connector.repositories.{ConnectionsRepository, MessagesRepository}
 import io.iohk.connector.services.{ConnectionsService, MessagesService}
+import io.iohk.cvp.cmanager.grpc.services.{CredentialsServiceImpl, StudentsServiceImpl}
+import io.iohk.cvp.cmanager.protos.{CredentialsServiceGrpc, StudentsServiceGrpc}
+import io.iohk.cvp.cmanager.repositories.{CredentialsRepository, StudentsRepository}
+import io.iohk.cvp.connector.protos._
+import io.iohk.cvp.grpc.UserIdInterceptor
 import io.iohk.cvp.repositories.{SchemaMigrations, TransactorFactory}
 import org.slf4j.LoggerFactory
 
@@ -46,17 +50,26 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     PaymentWall.initialize(paymentWallConfig(globalConfig.getConfig("paymentWall")))
     val paymentWall = new PaymentWall
 
+    // connector
     val connectionsRepository = new ConnectionsRepository(xa)(executionContext)
     val connectionsService = new ConnectionsService(connectionsRepository)
     val messagesRepository = new MessagesRepository(xa)(executionContext)
     val messagesService = new MessagesService(messagesRepository)
     val connectorService = new ConnectorService(connectionsService, messagesService, paymentWall)(executionContext)
 
+    // cmanager
+    val credentialsRepository = new CredentialsRepository(xa)(executionContext)
+    val studentsRepository = new StudentsRepository(xa)(executionContext)
+    val credentialsService = new CredentialsServiceImpl(credentialsRepository)(executionContext)
+    val studentsService = new StudentsServiceImpl(studentsRepository)(executionContext)
+
     logger.info("Starting server")
     server = ServerBuilder
       .forPort(ConnectorApp.port)
       .intercept(new UserIdInterceptor)
       .addService(ConnectorServiceGrpc.bindService(connectorService, executionContext))
+      .addService(CredentialsServiceGrpc.bindService(credentialsService, executionContext))
+      .addService(StudentsServiceGrpc.bindService(studentsService, executionContext))
       .build()
       .start()
 

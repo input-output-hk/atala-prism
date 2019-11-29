@@ -5,8 +5,9 @@ import java.util.UUID
 import io.iohk.connector.errors._
 import io.iohk.connector.model.ECPublicKey
 import io.iohk.connector.payments.PaymentWall
-import io.iohk.connector.protos._
 import io.iohk.connector.services.{ConnectionsService, MessagesService}
+import io.iohk.cvp.connector.protos._
+import io.iohk.cvp.grpc.UserIdInterceptor
 import io.iohk.cvp.utils.FutureEither._
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -67,7 +68,7 @@ class ConnectorService(connections: ConnectionsService, messages: MessagesServic
       .getTokenInfo(new model.TokenString(request.token))
       .wrapExceptions
       .successMap { participantInfo =>
-        GetConnectionTokenInfoResponse(participantInfo.toProto)
+        GetConnectionTokenInfoResponse(Some(participantInfo.toProto))
       }
   }
 
@@ -83,17 +84,21 @@ class ConnectorService(connections: ConnectionsService, messages: MessagesServic
   ): Future[AddConnectionFromTokenResponse] = {
     implicit val loggingContext = LoggingContext("request" -> request)
 
-    val publicKey = ECPublicKey(
-      x = BigInt(request.holderPublicKey.x),
-      y = BigInt(request.holderPublicKey.y)
-    )
+    val publicKey = request.holderPublicKey
+      .map { protoKey =>
+        ECPublicKey(
+          x = BigInt(protoKey.x),
+          y = BigInt(protoKey.y)
+        )
+      }
+      .getOrElse(throw new RuntimeException("Missing public key"))
 
     connections
       .addConnectionFromToken(new model.TokenString(request.token), publicKey)
       .wrapExceptions
       .successMap {
         case (userId, connectionInfo) =>
-          AddConnectionFromTokenResponse(connectionInfo.toProto).withUserId(userId.id.toString)
+          AddConnectionFromTokenResponse(Some(connectionInfo.toProto)).withUserId(userId.uuid.toString)
       }
   }
 
