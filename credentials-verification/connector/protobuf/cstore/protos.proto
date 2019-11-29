@@ -1,0 +1,83 @@
+syntax = "proto3";
+
+package io.iohk.cvp.cstore;
+
+service CredentialsStoreService {
+  rpc CreateIndividual (CreateIndividualRequest) returns (CreateIndividualResponse) {}
+
+  rpc GetIndividuals (GetIndividualsRequest) returns (GetIndividualsResponse) {}
+
+  rpc GenerateConnectionTokenFor(GenerateConnectionTokenForRequest) returns (GenerateConnectionTokenForResponse) {}
+
+  rpc StoreCredential (StoreCredentialRequest) returns (StoreCredentialResponse) {}
+
+  rpc GetStoredCredentialsFor (GetStoredCredentialsForRequest) returns (GetStoredCredentialsForResponse) {}
+}
+
+message CreateIndividualRequest {
+  string fullName = 1;
+  string email = 2;
+}
+
+message CreateIndividualResponse {
+  Individual individual = 1;
+}
+
+message GenerateConnectionTokenForRequest {
+  string individualId = 1;
+}
+
+enum IndividualConnectionStatus {
+  CREATED = 0;
+  INVITED = 1;
+  CONNECTED = 2;
+  REVOKED = 3;
+}
+
+message Individual {
+  string individualId = 1;
+  IndividualConnectionStatus status = 2;
+  string fullName = 3;
+  string email = 4;
+  string connectionToken = 5;
+  string connectionId = 6;
+}
+
+message GetIndividualsRequest {
+  int32 limit = 1;
+  string lastSeenIndividualId = 2;
+}
+
+message GetIndividualsResponse {
+  repeated Individual individuals = 1;
+}
+
+message GenerateConnectionTokenForResponse {
+  string token = 1;
+}
+
+message SignedCredential {
+  string issuerDid = 1;
+  string proofId = 2;
+  bytes content = 3; // to be replaced with Credential message?
+  bytes signature = 4;
+}
+
+message StoreCredentialRequest {
+  string individualId = 1;
+  string issuerDid = 2;
+  string proofId = 3;
+  bytes content = 4;
+  bytes signature = 5;
+}
+
+message StoreCredentialResponse {
+}
+
+message GetStoredCredentialsForRequest {
+  string individualId = 1;
+}
+
+message GetStoredCredentialsForResponse {
+  repeated SignedCredential credentials = 1;
+}

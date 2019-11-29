@@ -6,7 +6,7 @@ import io.grpc.{Status, StatusRuntimeException}
 import io.iohk.connector.repositories.daos.MessagesDAO
 import io.iohk.cvp.connector.protos._
 
-class MessagesRpcSpec extends RpcSpecBase {
+class MessagesRpcSpec extends ConnectorRpcSpecBase {
   "SendMessage" should {
     "insert message into database" in {
       val issuerId = createIssuer("Issuer")

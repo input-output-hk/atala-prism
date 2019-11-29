@@ -11,6 +11,7 @@ import io.iohk.cvp.cmanager.models
 import io.iohk.cvp.cmanager.models.Student
 import io.iohk.cvp.cmanager.repositories.daos.StudentsDAO
 import io.iohk.cvp.connector.protos.ParticipantInfo.Participant.Issuer
+import io.iohk.cvp.cstore.repositories.daos.IndividualsDAO
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither._
@@ -80,6 +81,11 @@ class ConnectionsRepository(
           models.Issuer.Id(initiator.id.uuid),
           StudentsDAO.UpdateStudentRequest.ConnectionAccepted(token, connectionId)
         )
+      }
+
+      // corresponding hack to add connectionId to the individual in cstore, TODO: ditto
+      _ <- EitherT.right[ConnectorError] {
+        IndividualsDAO.addConnection(token, connectionId)
       }
 
       _ <- EitherT.right[ConnectorError](ConnectionTokensDAO.markAsUsed(token))

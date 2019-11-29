@@ -44,4 +44,5 @@ CREATE INDEX connections_instantiated_at_index ON connections USING BTREE (insta
 CREATE INDEX connections_token_index ON connections USING BTREE (token);
 
 INSERT INTO participants (id, tpe, name, did) VALUES ('c8834532-eade-11e9-a88d-d8f2ca059830', 'issuer', 'Issuer 1', 'did:test:issuer-1');
+INSERT INTO participants (id, tpe, name, did) VALUES ('f424f42c-2097-4b66-932d-b5e53c734eff', 'verifier', 'Verifier 1', 'did:test:verifier-1');
 INSERT INTO participants (id, tpe, name, did) VALUES ('e20a974e-eade-11e9-a447-d8f2ca059830', 'holder', 'Holder 1', 'did:test:holder-1');

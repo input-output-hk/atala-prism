@@ -4,7 +4,8 @@ import cats.effect.IO
 import doobie.util.fragment.Fragment
 import doobie.util.transactor.Transactor
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, MustMatchers, WordSpec}
+import org.scalatest.time.{Second, Seconds, Span}
+import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, MustMatchers, WordSpec}
 
 import scala.concurrent.ExecutionContext
 
@@ -29,7 +30,7 @@ trait PostgresRepositorySpec
     with MustMatchers
     with ScalaFutures
     with BeforeAndAfterAll
-    with BeforeAndAfter {
+    with BeforeAndAfterEach {
 
   implicit def ec: ExecutionContext = ExecutionContext.global
 
@@ -81,7 +82,7 @@ trait PostgresRepositorySpec
     SchemaMigrations.migrate(config)
   }
 
-  before {
+  override def beforeEach(): Unit = {
     clearDatabase()
   }
 

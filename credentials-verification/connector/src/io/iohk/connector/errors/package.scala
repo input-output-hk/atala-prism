@@ -3,7 +3,6 @@ package io.iohk.connector
 import io.grpc.Status
 import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither.FutureEitherOps
-import com.google.protobuf.ByteString
 import org.slf4j.Logger
 
 import scala.concurrent.{ExecutionContext, Future}

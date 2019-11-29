@@ -19,38 +19,33 @@ import org.scalatest.BeforeAndAfterEach
 
 import scala.concurrent.duration.DurationLong
 
-class RpcSpecBase extends PostgresRepositorySpec with BeforeAndAfterEach {
-  override val tables = List("messages", "connections", "connection_tokens", "holder_public_keys", "participants")
-  implicit val executionContext = scala.concurrent.ExecutionContext.global
+trait ApiTestHelper[STUB] {
+  def apply[T](participantId: ParticipantId)(f: STUB => T): T
+}
 
-  implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 20.millis)
-
-  lazy val connectionsRepository = new ConnectionsRepository(database)(executionContext)
-  lazy val connectionsService = new ConnectionsService(connectionsRepository)
-  lazy val messagesRepository = new MessagesRepository(database)(executionContext)
-  lazy val messagesService = new MessagesService(messagesRepository)
-  lazy val paymentWall = new PaymentWall
-  lazy val connectorService = new ConnectorService(connectionsService, messagesService, paymentWall)(executionContext)
+abstract class RpcSpecBase extends PostgresRepositorySpec with BeforeAndAfterEach {
 
   protected var serverName: String = _
   protected var serverHandle: Server = _
   protected var channelHandle: ManagedChannel = _
+
+  def services: Seq[ServerServiceDefinition]
 
   override def beforeEach(): Unit = {
     super.beforeEach()
 
     serverName = InProcessServerBuilder.generateName()
 
-    serverHandle = InProcessServerBuilder
+    val serverBuilderWithoutServices = InProcessServerBuilder
       .forName(serverName)
       .directExecutor()
       .intercept(new UserIdInterceptor)
-      .addService(
-        ConnectorServiceGrpc
-          .bindService(new ConnectorService(connectionsService, messagesService, paymentWall), executionContext)
-      )
-      .build()
-      .start()
+
+    val serverBuilder = services.foldLeft(serverBuilderWithoutServices) { (builder, service) =>
+      builder.addService(service)
+    }
+
+    serverHandle = serverBuilder.build().start()
 
     channelHandle = InProcessChannelBuilder.forName(serverName).directExecutor().build()
   }
@@ -63,26 +58,52 @@ class RpcSpecBase extends PostgresRepositorySpec with BeforeAndAfterEach {
     super.afterEach()
   }
 
-  def usingApiAs[T](id: ParticipantId)(f: ConnectorServiceGrpc.ConnectorServiceBlockingStub => T): T = {
-    val callOptions = CallOptions.DEFAULT.withCallCredentials(new CallCredentials {
-      override def applyRequestMetadata(
-          requestInfo: CallCredentials.RequestInfo,
-          appExecutor: Executor,
-          applier: CallCredentials.MetadataApplier
-      ): Unit = {
-        appExecutor.execute { () =>
-          val headers = new Metadata()
-          headers.put(UserIdInterceptor.USER_ID_METADATA_KEY, id.uuid.toString)
-          applier.apply(headers)
-        }
+  def usingApiAsConstructor[STUB](stubFactory: (ManagedChannel, CallOptions) => STUB): ApiTestHelper[STUB] =
+    new ApiTestHelper[STUB] {
+      def apply[T](id: ParticipantId)(f: STUB => T): T = {
+        val callOptions = CallOptions.DEFAULT.withCallCredentials(new CallCredentials {
+          override def applyRequestMetadata(
+              requestInfo: CallCredentials.RequestInfo,
+              appExecutor: Executor,
+              applier: CallCredentials.MetadataApplier
+          ): Unit = {
+            appExecutor.execute { () =>
+              val headers = new Metadata()
+              headers.put(UserIdInterceptor.USER_ID_METADATA_KEY, id.uuid.toString)
+              applier.apply(headers)
+            }
+          }
+
+          override def thisUsesUnstableApi(): Unit = ()
+        })
+
+        val blockingStub = stubFactory(channelHandle, callOptions)
+        f(blockingStub)
       }
+    }
+}
 
-      override def thisUsesUnstableApi(): Unit = ()
-    })
+class ConnectorRpcSpecBase extends RpcSpecBase {
+  implicit val executionContext = scala.concurrent.ExecutionContext.global
 
-    val blockingStub = new ConnectorServiceGrpc.ConnectorServiceBlockingStub(channelHandle, callOptions)
-    f(blockingStub)
-  }
+  implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 20.millis)
+
+  override val tables = List("messages", "connections", "connection_tokens", "holder_public_keys", "participants")
+  override def services = Seq(
+    ConnectorServiceGrpc
+      .bindService(new ConnectorService(connectionsService, messagesService, paymentWall), executionContext)
+  )
+
+  val usingApiAs: ApiTestHelper[ConnectorServiceGrpc.ConnectorServiceBlockingStub] = usingApiAsConstructor(
+    new ConnectorServiceGrpc.ConnectorServiceBlockingStub(_, _)
+  )
+
+  lazy val connectionsRepository = new ConnectionsRepository(database)(executionContext)
+  lazy val connectionsService = new ConnectionsService(connectionsRepository)
+  lazy val messagesRepository = new MessagesRepository(database)(executionContext)
+  lazy val messagesService = new MessagesService(messagesRepository)
+  lazy val paymentWall = new PaymentWall
+  lazy val connectorService = new ConnectorService(connectionsService, messagesService, paymentWall)(executionContext)
 
   protected def createParticipant(
       name: String,
