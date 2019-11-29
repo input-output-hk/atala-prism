@@ -45,3 +45,9 @@ react-scripts package use internally .dotenv. For more information see [adding-c
 
 Environment variables are configured in `.env` file.
 For development purposes copy `.env` file to `.env.local`. This file is excluded from git and overrides `.env`  for all environments except test.
+
+
+## Build with custom configs
+
+1. Create a copy of `.env` config file and setup the environment variables.
+1. Run build: `npx env-cmd -f {config-file-path} npm run build`
