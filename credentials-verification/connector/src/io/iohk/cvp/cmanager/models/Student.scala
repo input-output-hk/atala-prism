@@ -4,6 +4,7 @@ import java.time.{Instant, LocalDate}
 import java.util.UUID
 
 import enumeratum.{Enum, EnumEntry}
+import io.iohk.connector.model.TokenString
 import io.iohk.cvp.cmanager.models.requests.CreateStudent
 import io.scalaland.chimney.dsl._
 
@@ -16,6 +17,7 @@ case class Student(
     admissionDate: LocalDate,
     createdOn: Instant,
     connectionStatus: Student.ConnectionStatus,
+    connectionToken: Option[TokenString],
     connectionId: Option[UUID]
 )
 
@@ -41,6 +43,7 @@ object Student {
       .withFieldConst(_.createdOn, createdOn)
       .withFieldConst(_.connectionStatus, connectionStatus)
       .withFieldConst(_.connectionId, None)
+      .withFieldConst(_.connectionToken, None)
       .transform
   }
 }

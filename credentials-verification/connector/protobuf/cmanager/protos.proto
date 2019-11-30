@@ -10,6 +10,9 @@ service CredentialsService {
 service StudentsService {
     rpc CreateStudent (CreateStudentRequest) returns (CreateStudentResponse) {}
     rpc GetStudents (GetStudentsRequest) returns (GetStudentsResponse) {}
+
+    // Generate a connection token to get connected to a specific student
+    rpc GenerateConnectionToken (GenerateConnectionTokenRequest) returns (GenerateConnectionTokenResponse) {}
 }
 
 // The authenticated issuer is creating a credential
@@ -51,6 +54,13 @@ message GetStudentsResponse {
     repeated Student students = 1;
 }
 
+message GenerateConnectionTokenRequest {
+    string studentId = 1; // the student that will be linked to the token
+}
+message GenerateConnectionTokenResponse {
+    string token = 1;
+}
+
 message Date {
     int32 year = 1; // positive value
     int32 month = 2; // value in the [1, 12] interval
@@ -75,7 +85,8 @@ message Student {
     string email = 5;
     Date admissionDate = 6;
     StudentConnectionStatus connectionStatus = 7;
-    string connectionId = 8;
+    string connectionToken = 8; // present when the status is ConnectionMissing
+    string connectionId = 9; // present when the status is ConnectionAccepted
 }
 
 enum StudentConnectionStatus {

@@ -7,6 +7,7 @@ import io.iohk.cvp.cmanager.models.{Issuer, Student}
 import io.iohk.cvp.cmanager.repositories.common.CManagerRepositorySpec
 import io.iohk.cvp.cmanager.repositories.common.DataPreparation._
 import org.scalatest.EitherValues._
+import org.scalatest.OptionValues._
 
 class StudentsRepositorySpec extends CManagerRepositorySpec {
   lazy val repository = new StudentsRepository(database)
@@ -46,6 +47,19 @@ class StudentsRepositorySpec extends CManagerRepositorySpec {
       val first = repository.getBy(issuer, 2, None).value.futureValue.right.value
       val result = repository.getBy(issuer, 1, first.lastOption.map(_.id)).value.futureValue.right.value
       result.toSet must be(Set(credC))
+    }
+  }
+
+  "generateToken" should {
+    "update the student to set the status and token" in {
+      val issuer = createIssuer("tokenizer")
+      val student = createStudent(issuer, "token")
+      val result = repository.generateToken(issuer, student.id).value.futureValue
+      val token = result.right.value
+
+      val newStudent = repository.find(issuer, student.id).value.futureValue.right.value.value
+      newStudent.connectionStatus must be(Student.ConnectionStatus.ConnectionMissing)
+      newStudent.connectionToken.value must be(token)
     }
   }
 

@@ -47,6 +47,7 @@ object ProtoCodecs {
       .withEmail(student.email)
       .withAdmissionDate(date2ProtoTransformer.transform(student.admissionDate))
       .withConnectionStatus(studentConnectionStatus2Proto.transform(student.connectionStatus))
+      .withConnectionToken(student.connectionToken.map(_.token).getOrElse(""))
       .withConnectionId(student.connectionId.map(_.toString).getOrElse(""))
   }
 }
