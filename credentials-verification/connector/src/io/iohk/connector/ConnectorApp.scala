@@ -18,7 +18,7 @@ import scala.concurrent.ExecutionContext
 /**
   * Run with `mill -i connector.run`, otherwise, the server will stay running even after ctrl+C.
   *
-  * Launch grpcui with: grpcui -plaintext -import-path connector/protobuf -proto connector/protobuf/protos.proto localhost:50051
+  * Launch grpcui with: grpcui -plaintext -import-path connector/protobuf --proto connector/protobuf/cmanager/protos.proto --proto connector/protobuf/connector/protos.proto localhost:50051
   */
 object ConnectorApp {
   def main(args: Array[String]): Unit = {
