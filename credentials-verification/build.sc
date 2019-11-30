@@ -199,19 +199,18 @@ object connector extends ServerPBCommon with CVPDockerModule {
   override def cvpDockerConfig = CVPDockerConfig(name = "connector")
 
   object test extends `tests-common` {}
-
-}
-
-object wallet extends ServerPBCommon {
-
-  override def mainClass = Some("io.iohk.cvp.wallet.WalletApp")
-
-  object test extends `tests-common` {}
 }
 
 object cmanager extends ServerPBCommon {
 
   override def mainClass = Some("io.iohk.cvp.cmanager.CManagerApp")
+
+  object test extends `tests-common` {}
+}
+
+object wallet extends ServerPBCommon {
+
+  override def mainClass = Some("io.iohk.cvp.wallet.WalletApp")
 
   object test extends `tests-common` {}
 }
@@ -240,22 +239,22 @@ trait CVPDockerModule extends Module { self: JavaModule =>
   }
 
   private def doBuild(
-      assemblyPath: Path,
-      dest: Path,
-      jar: String,
-      dockerfile: String,
-      tag: String
-  ): os.CommandResult = {
+                       assemblyPath: Path,
+                       dest: Path,
+                       jar: String,
+                       dockerfile: String,
+                       tag: String
+                     ): os.CommandResult = {
     os.copy(assemblyPath, dest / jar)
     os.proc("docker", "build", "-f", dockerfile, "-t", tag, dest.toString())
       .call(stdout = os.Inherit, stderr = os.Inherit)
   }
 
   private def doPush(
-      buildResult: os.CommandResult,
-      loginResult: os.CommandResult,
-      tag: String
-  ): os.CommandResult = {
+                      buildResult: os.CommandResult,
+                      loginResult: os.CommandResult,
+                      tag: String
+                    ): os.CommandResult = {
     os.proc("docker", "push", tag).call(stdout = os.Inherit, stderr = os.Inherit)
   }
 
@@ -270,5 +269,4 @@ trait CVPDockerModule extends Module { self: JavaModule =>
   def `docker-push` = T {
     doPush(`docker-build`(), `docker-login`(), cvpDockerConfig.tag)
   }
-
 }

@@ -1,6 +1,12 @@
 version: "3"
 services:
 
+  cvp-envoy:
+    build:
+      context: cvp-envoy
+    ports:
+      - 127.0.0.1:8080:8080
+
   bitcoind:
     image: ruimarinho/bitcoin-core
     command:

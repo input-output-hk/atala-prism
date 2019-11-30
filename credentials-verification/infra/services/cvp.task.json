@@ -5,6 +5,7 @@
     "cpu": 10,
     "memory": 512,
     "links": [],
+    "hostname": "connector",
     "portMappings": [
       {
         "containerPort": 50051,
@@ -50,6 +51,7 @@
     "cpu": 10,
     "memory": 512,
     "links": [],
+    "hostname": "node",
     "portMappings": [
       {
         "containerPort": 50053,
@@ -122,6 +124,35 @@
     "essential": true,
     "entryPoint": [],
     "command": ["-printtoconsole", "-regtest=1", "-rpcallowip=0.0.0.0/0", "-rpcuser=bitcoin", "-rpcpassword=bitcoin", "-rpcbind=bitcoind:18333"],
+    "environment": [],
+    "mountPoints": [],
+    "volumesFrom": [],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "${awslogs-group}",
+        "awslogs-region": "${awslogs-region}"
+      }
+    },
+    "networkMode": "awsvpc"
+  },
+  {
+    "name": "envoy",
+    "image": "895947072537.dkr.ecr.us-east-2.amazonaws.com/atala:cvp-envoy",
+    "cpu": 10,
+    "memory": 512,
+    "links": ["connector"],
+    "hostname": "envoy",
+    "portMappings": [
+      {
+        "containerPort": 8080,
+        "hostPort": 8080,
+        "protocol": "tcp"
+      }
+    ],
+    "essential": true,
+    "entryPoint": [],
+    "command": ["-c", "/etc/envoy/envoy.yaml", "--log-path", "/dev/stdout"],
     "environment": [],
     "mountPoints": [],
     "volumesFrom": [],

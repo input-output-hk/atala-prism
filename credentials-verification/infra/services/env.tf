@@ -41,8 +41,16 @@ resource aws_security_group credentials-vpc-security-group {
     "0.0.0.0/0"]
   }
 
+  // envoy proxy inbound
+  ingress {
+    from_port = var.envoy_port
+    to_port   = var.envoy_port
+    protocol  = "tcp"
+    cidr_blocks = [
+    "0.0.0.0/0"]
+  }
+
   // connector inbound
-  // TODO these port numbers should be vars
   ingress {
     from_port = var.connector_port
     to_port   = var.connector_port
@@ -145,6 +153,7 @@ resource aws_lb ecs-net-load-balancer {
   name               = "ecs-net-load-balancer-${var.env_name_short}"
   internal           = false
   load_balancer_type = "network"
+  enable_cross_zone_load_balancing = "true"
   subnets            = [var.credentials-subnet-primary-id, var.credentials-subnet-secondary-id]
 
   tags = {
@@ -230,6 +239,33 @@ resource aws_lb_target_group bitcoind-target-group {
   ]
 }
 
+resource aws_lb_listener envoy-lb-listener {
+  load_balancer_arn = aws_lb.ecs-net-load-balancer.arn
+  protocol = "TCP"
+  port = var.envoy_port
+
+  default_action {
+    type = "forward"
+    target_group_arn = aws_lb_target_group.envoy-target-group.arn
+  }
+}
+
+resource aws_lb_target_group envoy-target-group {
+  name     = "envoy-target-group-${var.env_name_short}"
+  protocol = "TCP"
+  port     = var.envoy_port
+  vpc_id   = var.credentials-vpc-id
+
+  tags = {
+    Name = "envoy-target-group-${var.env_name_short}"
+  }
+
+  depends_on = [
+    aws_lb.ecs-net-load-balancer
+  ]
+}
+
+
 // END of load balancer configuration
 
 // START of ECS container configuration
@@ -254,10 +290,10 @@ resource aws_launch_configuration ecs-launch-configuration {
   security_groups             = [aws_security_group.credentials-vpc-security-group.id, data.aws_security_group.credentials-database-security-group.id]
   associate_public_ip_address = "true"
   key_name                    = aws_key_pair.user-keypair.key_name
-  user_data                   = data.template_file.ec2_user_data_template.rendered
+  user_data                   = data.template_file.ec2-user-data-template.rendered
 }
 
-data "template_file" "ec2_user_data_template" {
+data "template_file" "ec2-user-data-template" {
   template = file("user_data_template.sh")
   vars = {
     ecs-cluster-name = aws_ecs_cluster.credentials-cluster.name
@@ -265,6 +301,7 @@ data "template_file" "ec2_user_data_template" {
   }
 }
 
+// TODO define some scaling policies and attach them.
 resource aws_autoscaling_group ec2-autoscaling-group {
   name                 = "ec2-autoscaling-group-${var.env_name_short}"
   max_size             = var.autoscale_max
@@ -273,10 +310,10 @@ resource aws_autoscaling_group ec2-autoscaling-group {
   vpc_zone_identifier  = [var.credentials-subnet-primary-id, var.credentials-subnet-secondary-id]
   launch_configuration = aws_launch_configuration.ecs-launch-configuration.name
   health_check_type    = "EC2"
-  target_group_arns = [aws_lb_target_group.connector-target-group.arn, aws_lb_target_group.node-target-group.arn, aws_lb_target_group.bitcoind-target-group.arn]
+  target_group_arns = [aws_lb_target_group.connector-target-group.arn, aws_lb_target_group.node-target-group.arn, aws_lb_target_group.bitcoind-target-group.arn, aws_lb_target_group.envoy-target-group.arn]
 }
 
-data "template_file" "credentials_task_template" {
+data "template_file" "cvp-task-template" {
   template = file("cvp.task.json")
   vars = {
     connector-psql-host     = var.connector_psql_host
@@ -299,25 +336,25 @@ data "template_file" "credentials_task_template" {
     node-docker-image  = var.node_docker_image
 
     awslogs-region = var.aws_region
-    awslogs-group  = aws_cloudwatch_log_group.container_log_group.name
+    awslogs-group  = aws_cloudwatch_log_group.cvp-log-group.name
   }
 }
 
-resource aws_ecs_task_definition credentials_task_definition {
-  family                = "credentials-task-definition-${var.env_name_short}"
-  container_definitions = data.template_file.credentials_task_template.rendered
+resource aws_ecs_task_definition cvp-task-definition {
+  family                = "cvp-task-definition-${var.env_name_short}"
+  container_definitions = data.template_file.cvp-task-template.rendered
 
   tags = {
-    Name = "credentials-task-definition-${var.env_name_short}"
+    Name = "cvp-task-definition-${var.env_name_short}"
   }
 }
 
 // the iam_role is not specified, meaning this uses the ECS 'Service-linked role'
 // see https://docs.aws.amazon.com/IAM/latest/UserGuide/using-service-linked-roles.html
-resource aws_ecs_service credentials-service {
-  name            = "credentials-ecs-service-${var.env_name_short}"
+resource aws_ecs_service cvp-service {
+  name            = "cvp-ecs-service-${var.env_name_short}"
   cluster         = aws_ecs_cluster.credentials-cluster.id
-  task_definition = aws_ecs_task_definition.credentials_task_definition.arn
+  task_definition = aws_ecs_task_definition.cvp-task-definition.arn
   desired_count   = 1
 
   // TODO look at dynamic mapping, which allows multiple container
@@ -339,9 +376,15 @@ resource aws_ecs_service credentials-service {
     container_port   = var.bitcoind_port
     container_name   = "bitcoind"
   }
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.envoy-target-group.arn
+    container_name = "envoy"
+    container_port = var.envoy_port
+  }
 }
 
-resource aws_route53_record cvp_dns_entry {
+resource aws_route53_record cvp-dns-entry {
   zone_id = "Z1KSGMIKO36ZPM" // TODO consider using a data element to query the zone id
   name    = "cvp-${var.env_name_short}.cef.iohkdev.io"
   type    = "CNAME"
@@ -349,7 +392,7 @@ resource aws_route53_record cvp_dns_entry {
   records = [aws_lb.ecs-net-load-balancer.dns_name]
 }
 
-resource aws_cloudwatch_log_group container_log_group {
+resource aws_cloudwatch_log_group cvp-log-group {
   name = "cvp-log-group-${var.env_name_short}"
   tags = {
     Name = "cvp-log-group-${var.env_name_short}"
@@ -358,4 +401,8 @@ resource aws_cloudwatch_log_group container_log_group {
 
 output "command-to-test-connector" {
   value = "grpcurl -import-path connector/protobuf/ -proto connector/protobuf/protos.proto -rpc-header 'userId: c8834532-eade-11e9-a88d-d8f2ca059830' -plaintext cvp-${var.env_name_short}.cef.iohkdev.io:${var.connector_port} io.iohk.connector.ConnectorService/GenerateConnectionToken"
+}
+
+output "command-to-test-envoy-proxy" {
+  value = "curl -i -XOPTIONS -H'Host: cvp-${var.env_name_short}.cef.iohkdev.io:8080' -H'Accept: */*' -H'Accept-Language: en-GB,en;q=0.5' -H'Accept-Encoding: gzip, deflate' -H'Access-Control-Request-Method: POST' -H'Access-Control-Request-Headers: content-type,userid,x-grpc-web,x-user-agent' -H'Referer: http://localhost:3000/connections' -H'Origin: http://localhost:3000' 'http://cvp-${var.env_name_short}.cef.iohkdev.io:${var.envoy_port}/io.iohk.connector.ConnectorService/GenerateConnectionToken'"
 }

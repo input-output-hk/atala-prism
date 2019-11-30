@@ -127,3 +127,9 @@ variable bitcoind_port {
   type        = number
   default     = 18333
 }
+
+variable envoy_port {
+  description = "Port for the envoy gprc-web proxy."
+  type        = number
+  default     = 8080
+}
