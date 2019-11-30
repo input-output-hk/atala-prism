@@ -29,9 +29,11 @@ object ProtoCodecs {
     protos
       .Credential()
       .withId(credential.id.value.toString)
-      .withSubject(credential.subject)
+      .withIssuerId(credential.issuedBy.value.toString)
+      .withStudentId(credential.studentId.value.toString)
+      .withIssuerName(credential.issuerName)
+      .withStudentName(credential.studentName)
       .withTitle(credential.title)
-      .withIssuedBy(credential.issuedBy.value.toString)
       .withGroupName(credential.groupName)
       .withEnrollmentDate(graduationDate)
       .withGraduationDate(enrollmentDate)

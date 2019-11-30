@@ -14,7 +14,7 @@ class StudentsRepositorySpec extends CManagerRepositorySpec {
 
   "create" should {
     "create a new student" in {
-      val issuer = createIssuer("Issuer-1")
+      val issuer = createIssuer("Issuer-1").id
       val request = CreateStudent(issuer, "uid", "Dusty Here", "d.here@iohk.io", LocalDate.now())
       val result = repository.create(request).value.futureValue
       val student = result.right.value
@@ -28,7 +28,7 @@ class StudentsRepositorySpec extends CManagerRepositorySpec {
 
   "getBy" should {
     "return the first students" in {
-      val issuer = createIssuer("Issuer X")
+      val issuer = createIssuer("Issuer X").id
       val credA = createStudent(issuer, "A")
       val credB = createStudent(issuer, "B")
       val credC = createStudent(issuer, "C")
@@ -38,7 +38,7 @@ class StudentsRepositorySpec extends CManagerRepositorySpec {
     }
 
     "paginate by the last seen student" in {
-      val issuer = createIssuer("Issuer X")
+      val issuer = createIssuer("Issuer X").id
       val credA = createStudent(issuer, "A")
       val credB = createStudent(issuer, "B")
       val credC = createStudent(issuer, "C")
@@ -52,7 +52,7 @@ class StudentsRepositorySpec extends CManagerRepositorySpec {
 
   "generateToken" should {
     "update the student to set the status and token" in {
-      val issuer = createIssuer("tokenizer")
+      val issuer = createIssuer("tokenizer").id
       val student = createStudent(issuer, "token")
       val result = repository.generateToken(issuer, student.id).value.futureValue
       val token = result.right.value

@@ -17,7 +17,7 @@ service StudentsService {
 
 // The authenticated issuer is creating a credential
 message CreateCredentialRequest {
-    string subject = 1;
+    string studentId = 1;
     string title = 2;
     Date enrollmentDate = 3;
     Date graduationDate = 4;
@@ -69,12 +69,14 @@ message Date {
 
 message Credential {
     string id = 1;
-    string issuedBy = 2;
-    string subject = 3;
-    string title = 4;
-    Date enrollmentDate = 5;
-    Date graduationDate = 6;
-    string groupName = 7;
+    string issuerId = 2;
+    string studentId = 3;
+    string issuerName = 4;
+    string studentName = 5;
+    string title = 6;
+    Date enrollmentDate = 7;
+    Date graduationDate = 8;
+    string groupName = 9;
 }
 
 message Student {

@@ -39,18 +39,19 @@ CREATE INDEX students_connection_token_index ON students USING BTREE (connection
 -- credentials
 CREATE TABLE credentials (
   credential_id UUID NOT NULL,
-  issued_by UUID NOT NULL,
-  subject TEXT NOT NULL,
+  issuer_id UUID NOT NULL,
+  student_id UUID NOT NULL,
   title TEXT NOT NULL,
   enrollment_date DATE NOT NULL,
   graduation_date DATE NOT NULL,
   group_name TEXT NOT NULL,
   created_on TIMESTAMPTZ NOT NULL,
   CONSTRAINT credentials_id_pk PRIMARY KEY (credential_id),
-  CONSTRAINT credentials_issuer_by_fk FOREIGN KEY (issued_by) REFERENCES issuers (issuer_id)
+  CONSTRAINT credentials_issuer_by_fk FOREIGN KEY (issuer_id) REFERENCES issuers (issuer_id),
+  CONSTRAINT credentials_student_id_fk FOREIGN KEY (student_id) REFERENCES students (student_id)
 );
 
-CREATE INDEX credentials_issued_by_index ON credentials USING BTREE (issued_by);
+CREATE INDEX credentials_issuer_id_index ON credentials USING BTREE (issuer_id);
 CREATE INDEX credentials_created_on_index ON credentials USING BTREE (created_on);
 
 -- INSERT mock data
