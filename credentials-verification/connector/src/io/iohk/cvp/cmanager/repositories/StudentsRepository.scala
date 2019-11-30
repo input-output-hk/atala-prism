@@ -51,7 +51,7 @@ class StudentsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
 
     val tx = for {
       _ <- ConnectionTokensDAO.insert(toParticipantId(issuerId), token)
-      _ <- StudentsDAO.update(issuerId, studentId, StudentsDAO.UpdateStudentRequest.ConnectionTokenGenerated(token))
+      _ <- StudentsDAO.update(issuerId, StudentsDAO.UpdateStudentRequest.ConnectionTokenGenerated(studentId, token))
     } yield ()
 
     tx.transact(xa)
