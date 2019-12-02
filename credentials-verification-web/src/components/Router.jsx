@@ -6,12 +6,12 @@ import Login from './login/LoginContainer';
 import I18nError from './I18nError';
 import Connections from './connections/ConnectionsContainer';
 import Registration from './registration/RegistrationContainer';
-import NotFound from './notFound/NotFound';
 import Groups from './groups/GroupsContainer';
 import Credential from './credentials/CredentialContainer';
 import CredentialSummaries from './credentialSummaries/CredentialSummaryController';
 import NewCredential from './newCredential/NewCredentialContainer';
 import Payment from './payments/PaymentContainer';
+import Settings from './settings/SettingsContainer';
 import { withSideBar } from './providers/withSideBar';
 import { ISSUER, VERIFIER } from '../helpers/constants';
 
@@ -53,15 +53,21 @@ const registration = {
 const payment = {
   exact: true,
   path: '/payment',
-  key: 'paymnt',
+  key: 'payment',
   component: withSideBar(Payment)
+};
+const settings = {
+  exact: true,
+  path: '/settings',
+  key: 'settings',
+  component: withSideBar(Settings)
 };
 
 const publicRoutes = [registration, loginRoute, loginRoute, landingRoute];
 
 const issuerRoutes = [newCredential, groups, credential, credentialSummary];
 
-const genericRoutes = [errorRoute, connections, payment, dashboardRoute];
+const genericRoutes = [errorRoute, connections, payment, settings, dashboardRoute];
 
 const role = localStorage.getItem('userRole');
 

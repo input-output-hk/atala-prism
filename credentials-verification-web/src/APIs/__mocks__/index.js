@@ -11,6 +11,7 @@ import { getTermsAndConditions, getPrivacyPolicy } from './documents';
 import { toProtoDate } from './helpers';
 import { getCredentialSummaries } from './credentialSummaries';
 import { getPayments, getCurrencies, getAmounts } from './payments';
+import { getSettings, editSettings } from './settings';
 
 export const mockApi = {
   getHolders,
@@ -30,5 +31,7 @@ export const mockApi = {
   getCredentialSummaries,
   getPayments,
   getCurrencies,
-  getAmounts
+  getAmounts,
+  getSettings,
+  editSettings
 };
