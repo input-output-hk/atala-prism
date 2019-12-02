@@ -357,6 +357,19 @@
       }
     }
   },
+  "settings": {
+    "title": "Settings",
+    "save": "Save",
+    "form": {
+      "option": {
+        "title": "Select option",
+        "studentPay": "Students pay for Credential Issuance"
+      },
+      "enterAmount": "Enter the amount",
+      "amount": "Amount"
+    },
+    "success": "Successfully updated the Settings"
+  },
   "errors": {
     "routeDidNotMatch": "The route {{pathnameToShow}} did not match any page",
     "errorGetting": "An error occurred while getting {{model}}",
@@ -374,6 +387,8 @@
     "walletNotRunning": "You must have your local wallet running to continue",
     "form": {
       "emptyField": "This field is mandatory"
-    }
+    },
+    "updateSettings": "An error ocurred while updating the settings",
+    "invalidSettings": "If the student pays for the credential an amount must be entered"
   }
 }

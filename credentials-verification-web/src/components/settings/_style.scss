@@ -1,0 +1,56 @@
+@import '../../css/general_styling';
+
+.SettingsContainer {
+  .ant-col-6 {
+    border-left: 1px solid $medium-grey;
+    margin-left: 1em;
+    height: 86vh;
+  }
+  .box {
+    margin: 1.15em;
+    padding-bottom: 1em;
+  }
+  .flex{
+    display:flex;
+  }
+  h3 {
+    @include secondary-text($h3, $secondary-color);
+    font-variant: normal;
+    font-feature-settings: normal;
+    margin-bottom: 1em;
+    position: relative;
+    &::before{
+      content: "";
+      width: 10px;
+      display:block;
+      height: 10px;
+      border-radius: 50px;
+      top: 0.3em;
+      position: absolute;left: -1.4em;
+      background: white;
+      border: 1px solid $medium-grey
+    }
+  }
+  p {
+    @include primary-text($body, $secondary-color);
+    font-variant: normal;
+    font-feature-settings: normal;
+  }
+  .label{
+    @include primary-text($body, $dark-grey);
+  }
+  .ant-checkbox-wrapper {
+    margin-right: 0.5em;
+    .ant-checkbox-checked .ant-checkbox-inner{
+      background: $primary-color;
+      border-color: $primary-color;
+    }
+  }
+  .ant-input{
+    margin-top: 1em;
+    border: 1px solid $primary-color;
+  }
+  .ant-input.ant-input-disabled{
+    border: 1px solid  $medium-grey;
+  }
+}
