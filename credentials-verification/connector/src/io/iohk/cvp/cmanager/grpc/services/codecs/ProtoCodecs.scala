@@ -29,9 +29,11 @@ object ProtoCodecs {
     protos
       .Credential()
       .withId(credential.id.value.toString)
-      .withSubject(credential.subject)
+      .withIssuerId(credential.issuedBy.value.toString)
+      .withStudentId(credential.studentId.value.toString)
+      .withIssuerName(credential.issuerName)
+      .withStudentName(credential.studentName)
       .withTitle(credential.title)
-      .withIssuedBy(credential.issuedBy.value.toString)
       .withGroupName(credential.groupName)
       .withEnrollmentDate(graduationDate)
       .withGraduationDate(enrollmentDate)
@@ -47,6 +49,7 @@ object ProtoCodecs {
       .withEmail(student.email)
       .withAdmissionDate(date2ProtoTransformer.transform(student.admissionDate))
       .withConnectionStatus(studentConnectionStatus2Proto.transform(student.connectionStatus))
+      .withConnectionToken(student.connectionToken.map(_.token).getOrElse(""))
       .withConnectionId(student.connectionId.map(_.toString).getOrElse(""))
   }
 }

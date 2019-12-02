@@ -3,7 +3,7 @@ package io.iohk.cvp.cmanager.grpc.services
 import java.util.UUID
 
 import io.iohk.cvp.cmanager.grpc.services.codecs.ProtoCodecs._
-import io.iohk.cvp.cmanager.models.Credential
+import io.iohk.cvp.cmanager.models.{Credential, Student}
 import io.iohk.cvp.cmanager.models.requests.CreateCredential
 import io.iohk.cvp.cmanager.protos
 import io.iohk.cvp.cmanager.repositories.CredentialsRepository
@@ -17,9 +17,11 @@ class CredentialsServiceImpl(credentialsRepository: CredentialsRepository)(impli
 
   override def createCredential(request: protos.CreateCredentialRequest): Future[protos.CreateCredentialResponse] = {
     val userId = getIssuerId()
+    val studentId = Student.Id(UUID.fromString(request.studentId))
     val model = request
       .into[CreateCredential]
       .withFieldConst(_.issuedBy, userId)
+      .withFieldConst(_.studentId, studentId)
       .enableUnsafeOption
       .transform
 

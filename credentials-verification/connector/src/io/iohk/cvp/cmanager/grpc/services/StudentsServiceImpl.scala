@@ -6,7 +6,12 @@ import io.iohk.cvp.cmanager.grpc.services.codecs.ProtoCodecs._
 import io.iohk.cvp.cmanager.models.Student
 import io.iohk.cvp.cmanager.models.requests.CreateStudent
 import io.iohk.cvp.cmanager.protos
-import io.iohk.cvp.cmanager.protos.{GetStudentsRequest, GetStudentsResponse}
+import io.iohk.cvp.cmanager.protos.{
+  GenerateConnectionTokenRequest,
+  GenerateConnectionTokenResponse,
+  GetStudentsRequest,
+  GetStudentsResponse
+}
 import io.iohk.cvp.cmanager.repositories.StudentsRepository
 import io.scalaland.chimney.dsl._
 
@@ -43,6 +48,22 @@ class StudentsServiceImpl(studentsRepository: StudentsRepository)(implicit ec: E
       .map { list =>
         protos.GetStudentsResponse(list.map(studentToProto))
       }
+      .value
+      .map {
+        case Right(x) => x
+        case Left(e) => throw new RuntimeException(s"FAILED: $e")
+      }
+  }
+
+  override def generateConnectionToken(
+      request: GenerateConnectionTokenRequest
+  ): Future[GenerateConnectionTokenResponse] = {
+    val issuerId = getIssuerId()
+    val studentId = Student.Id.apply(UUID.fromString(request.studentId))
+
+    studentsRepository
+      .generateToken(issuerId, studentId)
+      .map(token => protos.GenerateConnectionTokenResponse(token.token))
       .value
       .map {
         case Right(x) => x

@@ -7,6 +7,10 @@ import doobie.util.transactor.Transactor
 import io.iohk.connector.errors._
 import io.iohk.connector.model._
 import io.iohk.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO, ParticipantsDAO}
+import io.iohk.cvp.cmanager.models
+import io.iohk.cvp.cmanager.models.Student
+import io.iohk.cvp.cmanager.repositories.daos.StudentsDAO
+import io.iohk.cvp.connector.protos.ParticipantInfo.Participant.Issuer
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither._
@@ -69,6 +73,14 @@ class ConnectionsRepository(
         ConnectionsDAO.insert(initiator = initiator.id, acceptor = acceptorInfo.id, token = token)
       )
       (connectionId, instantiatedAt) = ciia
+
+      // hack to add the connectionId to the student (if any), TODO: this should be moved to another layer
+      _ <- EitherT.right[ConnectorError] {
+        StudentsDAO.update(
+          models.Issuer.Id(initiator.id.uuid),
+          StudentsDAO.UpdateStudentRequest.ConnectionAccepted(token, connectionId)
+        )
+      }
 
       _ <- EitherT.right[ConnectorError](ConnectionTokensDAO.markAsUsed(token))
     } yield acceptorInfo.id -> ConnectionInfo(connectionId, instantiatedAt, initiator, token)

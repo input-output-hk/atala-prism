@@ -28,27 +28,30 @@ CREATE TABLE students (
   connection_token TEXT NULL, -- non-empty when the status is CONNECTION_MISSING
   connection_id UUID NULL, -- non-empty when the status is CONNECTION_ACCEPTED
   CONSTRAINT students_id PRIMARY KEY (student_id),
-  CONSTRAINT students_id_fk FOREIGN KEY (issuer_id) REFERENCES issuers (issuer_id)
+  CONSTRAINT students_id_fk FOREIGN KEY (issuer_id) REFERENCES issuers (issuer_id),
+  CONSTRAINT students_connection_token_unique UNIQUE (connection_token)
 );
 
 CREATE INDEX students_issuer_index ON students USING BTREE (student_id);
 CREATE INDEX students_created_on_index ON students USING BTREE (created_on);
+CREATE INDEX students_connection_token_index ON students USING BTREE (connection_token);
 
 -- credentials
 CREATE TABLE credentials (
   credential_id UUID NOT NULL,
-  issued_by UUID NOT NULL,
-  subject TEXT NOT NULL,
+  issuer_id UUID NOT NULL,
+  student_id UUID NOT NULL,
   title TEXT NOT NULL,
   enrollment_date DATE NOT NULL,
   graduation_date DATE NOT NULL,
   group_name TEXT NOT NULL,
   created_on TIMESTAMPTZ NOT NULL,
   CONSTRAINT credentials_id_pk PRIMARY KEY (credential_id),
-  CONSTRAINT credentials_issuer_by_fk FOREIGN KEY (issued_by) REFERENCES issuers (issuer_id)
+  CONSTRAINT credentials_issuer_by_fk FOREIGN KEY (issuer_id) REFERENCES issuers (issuer_id),
+  CONSTRAINT credentials_student_id_fk FOREIGN KEY (student_id) REFERENCES students (student_id)
 );
 
-CREATE INDEX credentials_issued_by_index ON credentials USING BTREE (issued_by);
+CREATE INDEX credentials_issuer_id_index ON credentials USING BTREE (issuer_id);
 CREATE INDEX credentials_created_on_index ON credentials USING BTREE (created_on);
 
 -- INSERT mock data
