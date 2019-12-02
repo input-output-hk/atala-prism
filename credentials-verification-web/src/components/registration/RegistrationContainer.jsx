@@ -24,7 +24,7 @@ const ORGANIZATION_INFO_STEP = 6;
 const STEP_QUANTITY = 7;
 
 const RegistrationContainer = ({
-  api: { getTermsAndConditions, getPrivacyPolicy, toProtoDate }
+  api: { getTermsAndConditions, getPrivacyPolicy, toProtoDate, createWallet }
 }) => {
   const { t } = useTranslation();
 
@@ -121,7 +121,10 @@ const RegistrationContainer = ({
       if (errors) return;
 
       setOrganizationInfo(organizationInfo);
-      nextStep();
+
+      createWallet(password)
+        .then(nextStep)
+        .catch(() => message.error(t('errors.errorDuringRegister')));
     });
 
   const nextFunction = () => {

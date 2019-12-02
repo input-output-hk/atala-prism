@@ -372,6 +372,7 @@
     "emptyCredential": "Trying to save empty credential",
     "invalidCredential": "The credential has invalid fields",
     "walletNotRunning": "You must have your local wallet running to continue",
+    "errorDuringRegister": "An error ocurred while registering, please try again or contact the FAQs",
     "form": {
       "emptyField": "This field is mandatory"
     }
