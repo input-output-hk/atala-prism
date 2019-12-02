@@ -54,6 +54,6 @@ For development purposes copy `.env` file to `.env.local`. This file is excluded
 
 ### Docker build
 
-1. Create a copy of `.env` config file and setup the environment variables.
-1. Build image `docker build -t atala:prod --build-arg ENV_FILE={filePath} .` Use the name and tag you want and replace `{filePath}` with the custom configs file path. By default it uses `.env`
-1. Run container `docker run -it -p 80:HOST_PORT --rm atala:prod`.
+1. Environment variables in `.env` config file are used as default.
+1. Build image `docker build -t atala:prod .` Use the name and tag you want.
+1. Run container `docker run -it -p 80:HOST_PORT -e REACT_APP_GRPC_CLIENT=http://localhost:10000 --rm atala:prod`.
