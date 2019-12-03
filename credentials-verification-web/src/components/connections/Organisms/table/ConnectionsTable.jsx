@@ -3,9 +3,10 @@ import PropTypes from 'prop-types';
 import { Table } from 'antd';
 import CellRenderer from '../../../common/Atoms/CellRenderer/CellRenderer';
 import StatusBadge from '../../Atoms/StatusBadge/StatusBadge';
-import { longDateFormatter, shortBackendDateFormatter } from '../../../../helpers/formatters';
+import { shortBackendDateFormatter } from '../../../../helpers/formatters';
 import { HOLDER_PAGE_SIZE, xScroll, PENDING_CONNECTION } from '../../../../helpers/constants';
 import ActionButtons from '../../Atoms/ActionButtons/ActionButtons';
+import holderDefaultAvatar from '../../../../images/holder-default-avatar.svg';
 
 import './_style.scss';
 
@@ -14,7 +15,11 @@ const getColumns = (inviteHolder, isIssuer) => {
     {
       key: 'avatar',
       render: ({ avatar }) => (
-        <img style={{ width: '40px', height: '40px' }} src={avatar} alt="imagecita" />
+        <img
+          style={{ width: '40px', height: '40px' }}
+          src={avatar || holderDefaultAvatar}
+          alt="Avatar"
+        />
       )
     },
     { key: 'name', render: ({ name }) => name }
@@ -23,16 +28,16 @@ const getColumns = (inviteHolder, isIssuer) => {
   const issuerInfo = [
     {
       key: 'identityNumber',
-      render: ({ identityNumber }) => (
-        <CellRenderer title="identityNumber" value={identityNumber} componentName="connections" />
+      render: ({ id }) => (
+        <CellRenderer title="identityNumber" value={id} componentName="connections" />
       )
     },
     {
       key: 'admissionDate',
-      render: ({ admissionDate }) => (
+      render: ({ admissiondate }) => (
         <CellRenderer
           title="admissionDate"
-          value={shortBackendDateFormatter(admissionDate)}
+          value={shortBackendDateFormatter(admissiondate)}
           componentName="connections"
         />
       )
@@ -121,7 +126,8 @@ ConnectionsTable.propTypes = {
   subjectCount: PropTypes.number,
   offset: PropTypes.number,
   setOffset: PropTypes.func.isRequired,
-  inviteHolder: PropTypes.func.isRequired
+  inviteHolder: PropTypes.func.isRequired,
+  isIssuer: PropTypes.bool.isRequired
 };
 
 export default ConnectionsTable;
