@@ -78,8 +78,11 @@ class WalletServiceImpl(wallet: Wallet)(implicit ec: ExecutionContext) extends p
       case None =>
         walletServiceOrchestrator.loadWallet(request.passphrase).map {
           case Some(data) => {
-            cachedWallet.set(Some(protos.WalletData.parseFrom(data)))
+            val walletData = protos.WalletData.parseFrom(data)
+            cachedWallet.set(Some(walletData))
             UnlockWalletResponse()
+              .withOrganisationName(walletData.organisationName)
+              .withRole(walletData.role)
           }
           case None => throw new RuntimeException("Wallet cannot be Unlocked")
         }

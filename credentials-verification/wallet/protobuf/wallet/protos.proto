@@ -113,7 +113,10 @@ message UnlockWalletRequest {
     string passphrase = 1;
 }
 
-message UnlockWalletResponse {}
+message UnlockWalletResponse {
+    string organisationName = 4;
+    Role role = 5;
+}
 
 message LockWalletRequest {}
 

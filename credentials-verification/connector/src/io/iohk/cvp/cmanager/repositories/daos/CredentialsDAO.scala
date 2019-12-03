@@ -5,7 +5,7 @@ import java.util.UUID
 
 import doobie.implicits._
 import io.iohk.cvp.cmanager.models.requests.CreateCredential
-import io.iohk.cvp.cmanager.models.{Credential, Issuer}
+import io.iohk.cvp.cmanager.models.{Credential, Issuer, Student}
 
 object CredentialsDAO {
 
@@ -59,5 +59,17 @@ object CredentialsDAO {
              |""".stripMargin
     }
     query.query[Credential].to[List]
+  }
+
+  def getBy(issuedBy: Issuer.Id, studentId: Student.Id): doobie.ConnectionIO[List[Credential]] = {
+    sql"""
+         |SELECT credential_id, c.issuer_id, student_id, title, enrollment_date, graduation_date, group_name, c.created_on, issuers.name AS issuer_name, students.full_name AS student_name
+         |FROM credentials c
+         |     JOIN issuers USING (issuer_id)
+         |     JOIN students USING (student_id)
+         |WHERE c.issuer_id = $issuedBy AND
+         |      c.student_id = $studentId
+         |ORDER BY c.created_on ASC, credential_id
+         |""".stripMargin.query[Credential].to[List]
   }
 }
