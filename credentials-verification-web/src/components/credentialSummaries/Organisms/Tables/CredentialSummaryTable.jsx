@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import CellRenderer from '../../../common/Atoms/CellRenderer/CellRenderer';
-import { shortDateFormatter } from '../../../../helpers/formatters';
 import InfiniteScrollTable from '../../../common/Organisms/Tables/InfiniteScrollTable';
+import { shortBackendDateFormatter } from '../../../../helpers/formatters';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import { credentialSummaryShape } from '../../../../helpers/propShapes';
 import genericUserIcon from '../../../../images/genericUserIcon.svg';
@@ -62,7 +62,21 @@ const getColumns = (setCurrentCredentialSummary, openDrawer) => {
     {
       key: 'admissionDate',
       render: ({ date }) => (
-        <CellRenderer title="date" componentName={componentName} value={shortDateFormatter(date)} />
+        <CellRenderer
+          title="date"
+          componentName={componentName}
+          value={shortBackendDateFormatter(date)}
+        />
+      )
+    },
+    {
+      key: 'totalCredentials',
+      render: ({ transactions }) => (
+        <CellRenderer
+          title="totalCredentials"
+          componentName={componentName}
+          value={transactions.length}
+        />
       )
     },
     {

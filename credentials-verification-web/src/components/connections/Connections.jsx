@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Drawer } from 'antd';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import ConnectionsFilter from './Molecules/filter/ConnectionsFilter';
@@ -9,15 +10,22 @@ import noConnections from '../../images/noConnections.svg';
 import QRModal from '../common/Organisms/Modals/QRModal/QRModal';
 import Logger from '../../helpers/Logger';
 import AddUserButtons from './Atoms/AddUsersButtons/AddUsersButtons';
-import { ISSUER } from '../../helpers/constants';
+import { ISSUER, drawerWidth } from '../../helpers/constants';
 
 import './_style.scss';
+import CredentialListDetail from '../common/Organisms/Detail/CredentialListDetail';
 
 const Connections = ({ tableProps, filterProps, inviteHolder }) => {
   const { t } = useTranslation();
 
   const [connectionToken, setConnectionToken] = useState('');
   const [QRModalIsOpen, showQRModal] = useState(false);
+  const [currentConnection, setCurrentConnection] = useState({});
+  const [showDrawer, setShowDrawer] = useState();
+
+  useEffect(() => {
+    if (!showDrawer) setCurrentConnection({});
+  }, [showDrawer]);
 
   const isIssuer = localStorage.getItem('userRole') === ISSUER;
 
@@ -38,6 +46,16 @@ const Connections = ({ tableProps, filterProps, inviteHolder }) => {
 
   return (
     <div className="Wrapper">
+      <Drawer
+        title={t('connections.detail.title')}
+        placement="right"
+        onClose={() => setShowDrawer(false)}
+        visible={showDrawer}
+        width={drawerWidth}
+        destroyOnClose
+      >
+        {showDrawer && <CredentialListDetail {...currentConnection} />}
+      </Drawer>
       <div className="ContentHeader">
         <h1>{t('connections.title')}</h1>
         {isIssuer ? (
@@ -56,8 +74,12 @@ const Connections = ({ tableProps, filterProps, inviteHolder }) => {
       {tableProps.subjects.length ? (
         <ConnectionsTable
           inviteHolder={inviteHolderAndShowQR}
-          {...tableProps}
           isIssuer={isIssuer}
+          setHolder={connection => {
+            setCurrentConnection(connection);
+            setShowDrawer(true);
+          }}
+          {...tableProps}
         />
       ) : (
         <EmptyComponent {...emptyProps} />

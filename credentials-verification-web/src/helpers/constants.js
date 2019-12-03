@@ -24,8 +24,8 @@ export const EXAMPLE_DEGREE_NAME = "Bachelor's in Engineering";
 export const EXAMPLE_UNIVERSITY_NANE = 'Free University Tbilisi';
 export const EXAMPLE_AWARD = 'First Class Honorous';
 export const EXAMPLE_FULL_NAME = 'Student Name';
-export const EXAMPLE_AWARD_START_DATE = '03/01/2009';
-export const EXAMPLE_GRADUATION_DATE = '03/01/2019';
+export const EXAMPLE_START_DATE = 1555005000;
+export const EXAMPLE_GRADUATION_DATE = 1555005000;
 
 const JPEG = 'image/jpeg';
 const PNG = 'image/png';

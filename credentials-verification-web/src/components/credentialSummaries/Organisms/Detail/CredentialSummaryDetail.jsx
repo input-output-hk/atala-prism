@@ -7,7 +7,7 @@ import { shortDateFormatter } from '../../../../helpers/formatters';
 import Connection from '../../Molecules/Connection/Connection';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 
-import './_style.scss';
+import '../../../common/Organisms/Detail/_style.scss';
 
 const CredentialSummaryDetail = ({ user: { icon, name: userName, transactions }, date }) => {
   const { t } = useTranslation();

@@ -1,14 +1,15 @@
 import React from 'react';
-import { Col, Row } from 'antd';
-import { Link } from 'react-router-dom';
+import { Col } from 'antd';
 import { useTranslation } from 'react-i18next';
+import PropTypes from 'prop-types';
 import { shortDateFormatter } from '../../../../helpers/formatters';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 
 import './_style.scss';
 
-const Connection = ({ icon, type, date, id }) => {
+const Connection = ({ icon, type, date, setConnectionInfo }) => {
   const { t } = useTranslation();
+
   return (
     <div className="ConnectionCredentials">
       <Col span={18} className="CredentialData">
@@ -19,10 +20,27 @@ const Connection = ({ icon, type, date, id }) => {
         </div>
       </Col>
       <Col span={6} className="CredentialLink">
-        <CustomButton buttonText={t('actions.view')} to={`/credential/${id}`} theme="theme-link" />
+        <CustomButton
+          buttonProps={{
+            className: 'theme-link',
+            onClick: () => setConnectionInfo({ title: type, startDate: date })
+          }}
+          buttonText={t('actions.view')}
+        />
       </Col>
     </div>
   );
+};
+
+Connection.defaultProps = {
+  icon: ''
+};
+
+Connection.propTypes = {
+  icon: PropTypes.string,
+  type: PropTypes.string.isRequired,
+  date: PropTypes.string.isRequired,
+  setConnectionInfo: PropTypes.func.isRequired
 };
 
 export default Connection;

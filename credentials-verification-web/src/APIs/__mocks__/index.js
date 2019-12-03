@@ -1,10 +1,12 @@
 import { getHolders, inviteHolder } from './holders';
 import { getGroups, deleteGroup } from './groups';
 import {
+  getCredentials as getMockCredentials,
   getCredentialTypes,
   getCategoryTypes,
   getCredentialsGroups,
-  getTotalCredentials
+  getTotalCredentials,
+  deleteCredential
 } from './credentials';
 import { savePictureInS3, saveCredential, saveDraft } from './credentialInteractions';
 import { getTermsAndConditions, getPrivacyPolicy } from './documents';
@@ -21,7 +23,9 @@ export const mockApi = {
   getCredentialTypes,
   getCategoryTypes,
   getCredentialsGroups,
+  getMockCredentials,
   getTotalCredentials,
+  deleteCredential,
   savePictureInS3,
   saveCredential,
   saveDraft,

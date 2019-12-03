@@ -2,7 +2,7 @@ import { internet, name, random, date } from 'faker';
 import moment from 'moment';
 import { PENDING_CONNECTION, CONNECTED, HOLDER_PAGE_SIZE } from '../../helpers/constants';
 import Logger from '../../helpers/Logger';
-import { toProtoDate } from './helpers';
+import { createMockTransactions, toProtoDate } from './helpers';
 
 const createMockHolder = () => ({
   avatar: internet.avatar(),
@@ -11,7 +11,8 @@ const createMockHolder = () => ({
   admissionDate: toProtoDate(moment(date.recent())),
   email: internet.email(),
   status: random.arrayElement([PENDING_CONNECTION, CONNECTED]),
-  id: random.alphaNumeric(999)
+  id: random.alphaNumeric(999),
+  transactions: createMockTransactions(random.number(7) + 1)
 });
 
 const mockedHolders = [];

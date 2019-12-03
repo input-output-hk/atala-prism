@@ -1,32 +1,19 @@
 import moment from 'moment';
 import { image, name as fakeName, random, date as fakeDate } from 'faker';
 import { CREDENTIAL_SUMMARY_PAGE_SIZE } from '../../helpers/constants';
-
-const createMockTransaction = () => ({
-  id: random.alphaNumeric(999),
-  icon: image.avatar(),
-  date: moment(fakeDate.recent()).unix(),
-  type: 'Connection'
-});
-
-const createMockTransactions = quantity => {
-  const transactions = [];
-  for (let i = 0; i < quantity; i++) transactions.push(createMockTransaction());
-
-  return transactions;
-};
+import { createMockTransactions, toProtoDate } from './helpers';
 
 const createMockUser = () => ({
   icon: image.avatar(),
-  name: `${fakeName.firstName()} ${fakeName.lastName()}`,
-  transactions: createMockTransactions(random.number(7) + 1)
+  name: `${fakeName.firstName()} ${fakeName.lastName()}`
 });
 
 const createMockCredentialSummary = id => ({
   id,
   user: createMockUser(),
   icon: image.avatar(),
-  date: moment(fakeDate.recent()).unix()
+  date: toProtoDate(moment(fakeDate.recent())),
+  transactions: createMockTransactions(random.number(7) + 1)
 });
 
 const credentialSummaries = [];
