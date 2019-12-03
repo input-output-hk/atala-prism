@@ -19,7 +19,10 @@ const ConnectionsContainer = ({ api }) => {
   const [subjects, setSubjects] = useState([]);
 
   // This is the amount of holders/subjects by the sent query
-  const [subjectCount, setSubjectCount] = useState(0);
+  // Until the infinite pagination is in all of the tables
+  // this count will be hardcoded since there is no way of
+  // knowing the total amount of subjects
+  const [subjectCount] = useState(HOLDER_PAGE_SIZE);
 
   // This is used to paginate
   const [offset, setOffset] = useState(0);
@@ -27,11 +30,10 @@ const ConnectionsContainer = ({ api }) => {
   // This should have the backend call
   useEffect(() => {
     api
-      .getHolders({ identityNumber, name, status, pageSize: HOLDER_PAGE_SIZE, offset })
-      .then(({ holders, holderCount }) => {
+      .getStudents(HOLDER_PAGE_SIZE)
+      .then(holders => {
         const holdersWithKey = holders.map(holder => Object.assign({}, holder, { key: holder.id }));
         setSubjects(holdersWithKey);
-        setSubjectCount(holderCount);
       })
       .catch(error => {
         Logger.error('[Connections.getHolders] Error while getting holders', error);

@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import './_style.scss';
 
-const StatusBadge = ({ status }) => {
+const StatusBadge = ({ status = 'CONNECTED' }) => {
   const { t } = useTranslation();
   const classname = 'Label ' + status;
 

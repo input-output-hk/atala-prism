@@ -3,6 +3,7 @@ import { mockApi } from './__mocks__';
 import { generateConnectionToken, getConnectionsPaginated } from './connector/connector';
 import { createWallet, getDid } from './wallet/wallet';
 import { getCredentials, createCredential } from './credentials/credentialsManager';
+import { getStudents } from './credentials/studentsManager';
 
 export { mockApi };
 export const api = {
@@ -11,5 +12,6 @@ export const api = {
   createWallet,
   getDid,
   getCredentials,
-  createCredential
+  createCredential,
+  getStudents
 };
