@@ -1,6 +1,9 @@
 syntax = "proto3";
 
 package io.iohk.cvp.wallet;
+
+import "geud_node_new.proto";
+
 // While the binary representation is adequate, JavaScript has problems parsing big integers from bytes,
 // it is simpler to leave the big integer as string.
 message BigInteger {
@@ -17,13 +20,17 @@ message ECPublicKey {
 }
 
 message KeyPair {
-    ECPrivateKey privateKey = 1;
-    ECPublicKey publicKey = 2;
+    string id = 1;
+    io.iohk.nodenew.KeyUsage usage = 2;
+    ECPrivateKey privateKey = 3;
+    ECPublicKey publicKey = 4;
 }
 
 message WalletData {
-    KeyPair keyPair = 1;
+    repeated KeyPair keyPair = 1;
     string did = 2; // For now, the DID string is enough, this will change in the future when a DID is standardized over the project
+    string organisationName = 4;
+    Role role = 5;
 }
 
 service WalletService {
@@ -76,11 +83,20 @@ message VerifySignedMessageResponse {
     bool verified = 1;
 }
 
+
+enum Role {
+    Issuer = 0;
+    Verifier = 1;
+}
 message CreateWalletRequest {
     string passphrase = 1;
+    string organisationName = 2;
+    Role role = 3;
 }
 
-message CreateWalletResponse {}
+message CreateWalletResponse {
+    io.iohk.nodenew.SignedAtalaOperation operation = 1;
+}
 
 message GetWalletStatusRequest {}
 

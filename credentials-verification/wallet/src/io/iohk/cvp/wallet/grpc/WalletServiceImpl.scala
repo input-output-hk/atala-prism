@@ -1,15 +1,14 @@
 package io.iohk.cvp.wallet.grpc
 
-import java.security.PublicKey
 import java.util.concurrent.atomic.AtomicReference
 
 import com.google.protobuf.ByteString
-import io.iohk.cvp.crypto.{ECKeys, ECSignature}
+import io.iohk.cvp.crypto.ECSignature
 import io.iohk.cvp.wallet.models.Wallet
-import io.iohk.cvp.wallet.{WalletIO, WalletSecurity, WalletServiceOrchestrator, protos}
 import io.iohk.cvp.wallet.protos.GetWalletStatusResponse.WalletStatus
 import io.iohk.cvp.wallet.protos.{ChangePassphraseResponse, _}
-
+import io.iohk.cvp.wallet._
+import io.iohk.cvp.wallet.ECKeyOperation._
 import scala.concurrent.{ExecutionContext, Future}
 
 class WalletServiceImpl(wallet: Wallet)(implicit ec: ExecutionContext) extends protos.WalletServiceGrpc.WalletService {
@@ -45,20 +44,12 @@ class WalletServiceImpl(wallet: Wallet)(implicit ec: ExecutionContext) extends p
     }
   }
 
-  private def toPublicKey(proto: protos.ECPublicKey): PublicKey = {
-    val maybe = for {
-      x <- proto.x.map(_.value).map(BigInt.apply)
-      y <- proto.y.map(_.value).map(BigInt.apply)
-    } yield ECKeys.toPublicKey(x, y)
-
-    maybe.getOrElse(throw new RuntimeException("Invalid public key"))
-  }
-
   override def createWallet(request: CreateWalletRequest): Future[CreateWalletResponse] = {
-    walletServiceOrchestrator.createNewWallet(request.passphrase).map { data =>
+    walletServiceOrchestrator.createNewWallet(request.passphrase, request.role, request.organisationName).map { data =>
       {
         cachedWallet.set(Some(data))
-        protos.CreateWalletResponse()
+
+        protos.CreateWalletResponse(Some(toSignedAtalaOperation(data.keyPair)))
       }
     }
   }

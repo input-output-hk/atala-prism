@@ -3,7 +3,7 @@ package io.iohk.cvp.wallet
 import java.security.{PrivateKey, PublicKey}
 
 import io.iohk.cvp.crypto.ECKeys
-import io.iohk.cvp.wallet.protos.WalletData
+import io.iohk.cvp.wallet.protos.{Role, WalletData}
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -12,13 +12,13 @@ class WalletServiceOrchestrator(walletSecurity: WalletSecurity, walletIO: Wallet
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
-  def createNewWallet(passphrase: String): Future[WalletData] = {
+  def createNewWallet(passphrase: String, role: Role, organisationName: String): Future[WalletData] = {
     Future {
       if (walletIO.fileExist()) {
         logger.info("Previous wallet found")
         throw new RuntimeException("Previous wallet found")
       } else {
-        val wallet = generateWallet()
+        val wallet = generateWallet(role, organisationName)
         logger.info("Storing wallet")
         save(passphrase, wallet).map(_ => wallet)
       }
@@ -42,20 +42,28 @@ class WalletServiceOrchestrator(walletSecurity: WalletSecurity, walletIO: Wallet
     } yield ()
   }
 
-  private def generateWallet(): WalletData = {
+  private def generateWallet(role: Role, organisationName: String): WalletData = {
     logger.info("Generating keys")
-    val pair = ECKeys.generateKeyPair()
-    val protoKeyPair = protos
-      .KeyPair()
-      .withPrivateKey(toPrivateKeyProto(pair.getPrivate))
-      .withPublicKey(toPublicKeyProto(pair.getPublic))
+
+    val protoMasterKeyPair = generateProtoKeyPair("master")
+    val protoIssuerKeyPair = generateProtoKeyPair("issuing")
 
     val wallet = protos
       .WalletData()
-      .withKeyPair(protoKeyPair)
-      .withDid("did:iohk:test")
+      .withKeyPair(Seq(protoMasterKeyPair, protoIssuerKeyPair))
+      .withOrganisationName(organisationName)
+      .withRole(role)
 
     wallet
+  }
+
+  private def generateProtoKeyPair(id: String): protos.KeyPair = {
+    val keyPair = ECKeys.generateKeyPair()
+    protos
+      .KeyPair()
+      .withId(id)
+      .withPrivateKey(toPrivateKeyProto(keyPair.getPrivate))
+      .withPublicKey(toPublicKeyProto(keyPair.getPublic))
   }
 
   private def toPublicKeyProto(key: PublicKey): protos.ECPublicKey = {

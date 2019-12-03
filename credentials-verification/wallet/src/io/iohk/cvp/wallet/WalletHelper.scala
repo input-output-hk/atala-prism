@@ -30,7 +30,7 @@ object WalletHelper {
       privateKey = toPrivateKey(protoPrivateKey)
     } yield Wallet(data.did, privateKey, publicKey)
 
-    maybe.getOrElse(fatalWalletCorrupted)
+    maybe.headOption.getOrElse(fatalWalletCorrupted)
   }
 
   def toPrivateKey(proto: protos.ECPrivateKey): PrivateKey = {
@@ -74,7 +74,7 @@ object WalletHelper {
 
     val wallet = protos
       .WalletData()
-      .withKeyPair(protoKeyPair)
+      .withKeyPair(Seq(protoKeyPair))
       .withDid("did:iohk:test")
 
     logger.info("Storing wallet")
