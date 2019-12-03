@@ -3,7 +3,7 @@ syntax = "proto3";
 option java_multiple_files = true;
 option java_package = "io.iohk.cvp.io.connector";
 
-package io.iohk.connector;
+package io.iohk.cvp.connector;
 
 service ConnectorService {
   // Get active connections for current participant

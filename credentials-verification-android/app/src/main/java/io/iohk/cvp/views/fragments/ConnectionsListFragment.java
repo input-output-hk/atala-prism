@@ -17,6 +17,7 @@ import io.iohk.cvp.viewmodel.ConnectionsActivityViewModel;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.RootAppBar;
 import io.iohk.cvp.views.utils.adapters.ConnectionsRecyclerViewAdapter;
+import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Inject;
 import lombok.NoArgsConstructor;
@@ -65,6 +66,11 @@ public class ConnectionsListFragment extends CvpFragment<ConnectionsActivityView
 
   public void addConnections(List<ConnectionInfo> newConnections) {
     adapter.addConnections(newConnections);
+    adapter.notifyDataSetChanged();
+  }
+
+  public void clearConnecitons() {
+    adapter.setConnections(new ArrayList<>());
     adapter.notifyDataSetChanged();
   }
 }

@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.viewpager.widget.ViewPager;
@@ -18,7 +19,6 @@ import io.iohk.cvp.R;
 import io.iohk.cvp.io.connector.ConnectionInfo;
 import io.iohk.cvp.utils.ActivityUtils;
 import io.iohk.cvp.viewmodel.ConnectionsActivityViewModel;
-import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.activities.MainActivity;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.RootAppBar;
@@ -26,6 +26,7 @@ import io.iohk.cvp.views.utils.adapters.ConnectionTabsAdapter;
 import io.iohk.cvp.views.utils.adapters.EmployersRecyclerViewAdapter;
 import io.iohk.cvp.views.utils.adapters.UniversitiesRecyclerViewAdapter;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import lombok.Setter;
@@ -35,9 +36,6 @@ public class ConnectionsFragment extends CvpFragment<ConnectionsActivityViewMode
 
   @Inject
   ViewModelProvider.Factory factory;
-
-  @Inject
-  Navigator navigator;
 
   @BindView(R.id.connections_list_tabs)
   TabLayout tabs;
@@ -109,18 +107,28 @@ public class ConnectionsFragment extends CvpFragment<ConnectionsActivityViewMode
 
   @Override
   public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
-    viewModel.getConnections(this.getUserIds()).observe(this, connections -> {
-      List<ConnectionInfo> issuerConnections = connections.stream()
-          .filter(conn -> conn.getParticipantInfo().getIssuer() != null).collect(
-              Collectors.toList());
-      universitiesListFragment.addConnections(issuerConnections);
+    universitiesListFragment.clearConnecitons();
+    employersListFragment.clearConnecitons();
+    listConnections(this.getUserIds());
+  }
 
-      // FIXME connections should have something like getVerifier
+  public void listConnections(Set<String> userIds) {
+    LiveData<List<ConnectionInfo>> connectionsData = viewModel.getConnections(userIds);
+
+    if (!connectionsData.hasActiveObservers()) {
+      connectionsData.observe(this, connections -> {
+        List<ConnectionInfo> issuerConnections = connections.stream()
+            .filter(conn -> conn.getParticipantInfo().getIssuer() != null).collect(
+                Collectors.toList());
+        universitiesListFragment.addConnections(issuerConnections);
+
+        // FIXME connections should have something like getVerifier
           /* <ConnectionInfo> verifiersConnections = connections.stream()
               .filter(conn -> conn.getParticipantInfo().getVerifier() != null).collect(
                   Collectors.toList());
           employersListFragment.addConnections(verifiersConnections); */
-    });
+      });
+    }
   }
 
   @Override
@@ -148,7 +156,7 @@ public class ConnectionsFragment extends CvpFragment<ConnectionsActivityViewMode
   public void onActivityResult(int requestCode, int resultCode, Intent data) {
     super.onActivityResult(requestCode, resultCode, data);
     ActivityUtils
-        .onQrcodeResult(requestCode, resultCode, getContext(), (MainActivity) getActivity(),
+        .onQrcodeResult(requestCode, resultCode, (MainActivity) getActivity(),
             viewModel, data, this);
   }
 }

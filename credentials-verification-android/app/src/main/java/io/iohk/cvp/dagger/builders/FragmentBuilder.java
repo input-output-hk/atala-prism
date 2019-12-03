@@ -2,11 +2,13 @@ package io.iohk.cvp.dagger.builders;
 
 import dagger.Module;
 import dagger.android.ContributesAndroidInjector;
+import io.iohk.cvp.dagger.modules.AddConnectionsModule;
 import io.iohk.cvp.dagger.modules.ConnectionsListFragmentModule;
 import io.iohk.cvp.dagger.modules.ConnectionsListableModule;
 import io.iohk.cvp.dagger.modules.CredentialsFragmentModule;
 import io.iohk.cvp.dagger.modules.HomeFragmentModule;
 import io.iohk.cvp.dagger.modules.PaymentsModule;
+import io.iohk.cvp.views.fragments.AcceptConnectionDialogFragment;
 import io.iohk.cvp.views.fragments.ConnectionsFragment;
 import io.iohk.cvp.views.fragments.ConnectionsListFragment;
 import io.iohk.cvp.views.fragments.CredentialDetailFragment;
@@ -62,4 +64,7 @@ public abstract class FragmentBuilder {
 
   @ContributesAndroidInjector(modules = PaymentsModule.class)
   abstract PaymentHistoryFragment contributePaymentHistoryFragment();
+
+  @ContributesAndroidInjector(modules = AddConnectionsModule.class)
+  abstract AcceptConnectionDialogFragment contributeAcceptConnectionDialogFragment();
 }

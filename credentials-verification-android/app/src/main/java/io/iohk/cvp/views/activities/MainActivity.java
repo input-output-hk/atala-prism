@@ -5,6 +5,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModel;
 import butterknife.BindView;
@@ -24,11 +25,15 @@ import io.iohk.cvp.views.fragments.WalletFragment;
 import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBar;
 import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBarListener;
 import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBarOption;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import javax.inject.Inject;
 import lombok.Getter;
 
 public class MainActivity extends CvpActivity implements BottomAppBarListener {
+
+  public static final String MAIN_FRAGMENT_TAG = "MAIN_FRAGMENT";
 
   @Inject
   ConnectionsFragment connectionsFragment;
@@ -65,14 +70,13 @@ public class MainActivity extends CvpActivity implements BottomAppBarListener {
 
     bottomAppBar.setListener(this);
 
-    // TODO: for now, in every start of the main screen, the FirstConnectionFragment is showed, because other way this screen is only showed ones.
     FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 
     Preferences prefs = new Preferences(getApplicationContext());
     if (prefs.getUserIds().size() > 0) {
-      ft.replace(R.id.fragment_layout, connectionsFragment);
+      ft.replace(R.id.fragment_layout, connectionsFragment, MAIN_FRAGMENT_TAG);
     } else {
-      ft.replace(R.id.fragment_layout, new FirstConnectionFragment());
+      ft.replace(R.id.fragment_layout, new FirstConnectionFragment(), MAIN_FRAGMENT_TAG);
     }
     ft.commit();
   }
@@ -91,15 +95,30 @@ public class MainActivity extends CvpActivity implements BottomAppBarListener {
   }
 
   @Override
-  public void onNavigation(BottomAppBarOption option) {
+  public void onNavigation(BottomAppBarOption option, String userId) {
     getFragmentToRender(option)
-        .ifPresent(cvpFragment -> navigator.showFragment(getSupportFragmentManager(), cvpFragment));
+        .ifPresent(cvpFragment -> {
+          Fragment currentFragment = this.getSupportFragmentManager()
+              .findFragmentByTag(MAIN_FRAGMENT_TAG);
+          if (currentFragment instanceof ConnectionsFragment
+              && cvpFragment instanceof ConnectionsFragment) {
+            Set<String> userIds = new HashSet<>();
+            userIds.add(userId);
+            ((ConnectionsFragment) currentFragment).listConnections(userIds);
+          } else {
+            navigator.showFragment(getSupportFragmentManager(), cvpFragment, MAIN_FRAGMENT_TAG);
+          }
+        });
   }
 
   private Optional<CvpFragment> getFragmentToRender(BottomAppBarOption option) {
     switch (option) {
       case CONNECTIONS:
-        return Optional.of(connectionsFragment);
+        Preferences prefs = new Preferences(getApplicationContext());
+        if (prefs.getUserIds().size() > 0) {
+          return Optional.of(connectionsFragment);
+        }
+        return Optional.of(new FirstConnectionFragment());
       case HOME:
         return Optional.of(homeFragment);
       case SETTINGS:

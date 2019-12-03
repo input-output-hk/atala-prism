@@ -3,14 +3,11 @@ package io.iohk.cvp.viewmodel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
-import io.iohk.cvp.grpc.AddConnectionFromTokenRunnable;
 import io.iohk.cvp.grpc.GetConnectionTokenInfoRunnable;
 import io.iohk.cvp.grpc.GetConnectionsInfoRunnable;
 import io.iohk.cvp.grpc.GrpcTask;
-import io.iohk.cvp.io.connector.AddConnectionFromTokenResponse;
 import io.iohk.cvp.io.connector.ConnectionInfo;
 import io.iohk.cvp.io.connector.ParticipantInfo;
-import io.iohk.cvp.io.connector.PublicKey;
 import java.util.List;
 import java.util.Set;
 import javax.inject.Inject;
@@ -19,7 +16,6 @@ public class ConnectionsActivityViewModel extends ViewModel {
 
   private MutableLiveData<List<ConnectionInfo>> connections = new MutableLiveData<>();
   private MutableLiveData<ParticipantInfo> issuerInfo = new MutableLiveData<>();
-  private MutableLiveData<AddConnectionFromTokenResponse> newConnectionInfo = new MutableLiveData<>();
 
   @Inject
   public ConnectionsActivityViewModel() {
@@ -37,12 +33,4 @@ public class ConnectionsActivityViewModel extends ViewModel {
     return issuerInfo;
   }
 
-  public LiveData<AddConnectionFromTokenResponse> addConnectionFromToken(
-      String token,
-      PublicKey publicKey) {
-    // FIXME this shouldn't be sending user id
-    new GrpcTask<>(new AddConnectionFromTokenRunnable(newConnectionInfo))
-        .execute(null, token, publicKey);
-    return newConnectionInfo;
-  }
 }

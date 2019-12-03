@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -87,28 +88,31 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> {
     newCredentialsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
     newCredentialsRecyclerView.setAdapter(newCredentialsAdapter);
 
-    viewModel.getMessages(this.getUserIds()).observe(this, messages -> {
-      Preferences prefs = new Preferences(getContext());
+    LiveData<List<ReceivedMessage>> liveData = viewModel.getMessages(this.getUserIds());
 
-      Set<String> acceptedMessagesIds = prefs
-          .getStoredMessages(Preferences.ACCEPTED_MESSAGES_KEY);
-      Set<String> rejectedMessagesIds = prefs
-          .getStoredMessages(Preferences.REJECTED_MESSAGES_KEY);
+    if (!liveData.hasActiveObservers()) {
+      liveData.observe(this, messages -> {
+        Preferences prefs = new Preferences(getContext());
 
-      List<ReceivedMessage> newMessages = messages.stream()
-          .filter(msg -> !acceptedMessagesIds.contains(msg.getId()) && !rejectedMessagesIds
-              .contains(msg.getId())).collect(
-              Collectors.toList());
+        Set<String> acceptedMessagesIds = prefs
+            .getStoredMessages(Preferences.ACCEPTED_MESSAGES_KEY);
+        Set<String> rejectedMessagesIds = prefs
+            .getStoredMessages(Preferences.REJECTED_MESSAGES_KEY);
 
-      newCredentialsAdapter.addMesseges(newMessages);
+        List<ReceivedMessage> newMessages = messages.stream()
+            .filter(msg -> !acceptedMessagesIds.contains(msg.getId()) && !rejectedMessagesIds
+                .contains(msg.getId())).collect(
+                Collectors.toList());
 
-      List<ReceivedMessage> acceptedMessages = messages.stream()
-          .filter(msg -> acceptedMessagesIds.contains(msg.getId())).collect(
-              Collectors.toList());
+        newCredentialsAdapter.addMesseges(newMessages);
 
-      credentialsAdapter.addMesseges(acceptedMessages);
-    });
+        List<ReceivedMessage> acceptedMessages = messages.stream()
+            .filter(msg -> acceptedMessagesIds.contains(msg.getId())).collect(
+                Collectors.toList());
 
+        credentialsAdapter.addMesseges(acceptedMessages);
+      });
+    }
   }
 
   @Override

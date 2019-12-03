@@ -11,14 +11,21 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModel;
 import butterknife.ButterKnife;
 import dagger.android.support.DaggerFragment;
+import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.Preferences;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import java.util.Optional;
 import java.util.Set;
+import javax.inject.Inject;
+import lombok.Getter;
 
 public abstract class CvpFragment<T extends ViewModel> extends DaggerFragment {
 
   T viewModel;
+
+  @Getter
+  @Inject
+  Navigator navigator;
 
   public abstract T getViewModel();
 
