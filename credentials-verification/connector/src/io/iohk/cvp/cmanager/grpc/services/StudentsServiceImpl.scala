@@ -9,6 +9,8 @@ import io.iohk.cvp.cmanager.protos
 import io.iohk.cvp.cmanager.protos.{
   GenerateConnectionTokenRequest,
   GenerateConnectionTokenResponse,
+  GetStudentRequest,
+  GetStudentResponse,
   GetStudentsRequest,
   GetStudentsResponse
 }
@@ -47,6 +49,21 @@ class StudentsServiceImpl(studentsRepository: StudentsRepository)(implicit ec: E
       .getBy(userId, request.limit, lastSeenStudent)
       .map { list =>
         protos.GetStudentsResponse(list.map(studentToProto))
+      }
+      .value
+      .map {
+        case Right(x) => x
+        case Left(e) => throw new RuntimeException(s"FAILED: $e")
+      }
+  }
+
+  override def getStudent(request: GetStudentRequest): Future[GetStudentResponse] = {
+    val userId = getIssuerId()
+    val studentId = Student.Id(UUID.fromString(request.studentId))
+    studentsRepository
+      .find(userId, studentId)
+      .map { maybe =>
+        protos.GetStudentResponse(maybe.map(studentToProto))
       }
       .value
       .map {
