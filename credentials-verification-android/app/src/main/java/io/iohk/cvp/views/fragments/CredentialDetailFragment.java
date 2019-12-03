@@ -103,18 +103,21 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
       Bundle savedInstanceState) {
     View view = super.onCreateView(inflater, container, savedInstanceState);
 
-    try {
-      viewModel.getCredential(credentialId).observe(this, credential -> {
-        textViewUniversityName.setText(credential.getIssuerInfo().getName());
-        textViewFullName.setText(credential.getSubject());
-        textViewCredentialName.setText(credential.getTitle());
-        // TODO add missing fields
-        showOptions(credentialIsNew);
-      });
-    } catch (InvalidProtocolBufferException | InterruptedException | ExecutionException e) {
-      Crashlytics.logException(e);
-      // TODO show error msg
-    }
+    this.getUserIds().forEach(userId -> {
+      try {
+        viewModel.getCredential(userId, credentialId).observe(this, credential -> {
+          textViewUniversityName.setText(credential.getIssuerInfo().getName());
+          textViewFullName.setText(credential.getSubject());
+          textViewCredentialName.setText(credential.getTitle());
+          // TODO add missing fields
+          showOptions(credentialIsNew);
+        });
+      } catch (InvalidProtocolBufferException | InterruptedException | ExecutionException e) {
+        Crashlytics.logException(e);
+        // TODO show error msg
+      }
+    });
+
     return view;
   }
 

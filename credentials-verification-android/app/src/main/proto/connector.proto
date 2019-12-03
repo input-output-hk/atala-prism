@@ -84,9 +84,19 @@ service ConnectorService {
   // Connection closed (FAILED_PRECONDITION)
   rpc SendMessage (SendMessageRequest) returns (SendMessageResponse) {
   }
+
+  // Generate a URL that can be used to do a payment
+  rpc GeneratePaymentUrl (GeneratePaymentUrlRequest) returns (GeneratePaymentUrlResponse) {
+  }
 }
 
 // GENERAL
+
+// just an EC public key represented with big integers as strings
+message PublicKey {
+  string x = 1;
+  string y = 2;
+}
 
 // Credential information; FIXME: is it a part of protocol?
 message Credential {
@@ -138,8 +148,8 @@ message ConnectionInfo {
 
 // Request connections instantiated by us / with us possibly after a known connection
 message GetConnectionsPaginatedRequest {
-  string lastSeenConnectionId = 1; // returned messages will have been created after the last seen connection (optional field)
-  int32 limit = 2; // maximum number of messages to return; must be > 0
+  string lastSeenConnectionId = 1; // returned credentials will have been created after the last seen connection (optional field)
+  int32 limit = 2; // maximum number of credentials to return; must be > 0
 }
 
 // Result with connections instantiated
@@ -160,11 +170,13 @@ message GetConnectionTokenInfoResponse {
 // Request to instantiate a connection using token
 message AddConnectionFromTokenRequest {
   string token = 1; // token to instantiate connection
+  PublicKey holderPublicKey = 2;
 }
 
 // Confirmation of connection instantiation
 message AddConnectionFromTokenResponse {
   ConnectionInfo connection = 1; // instantiated connection info
+  string userId = 2; // your generated user id
 }
 
 // Request to delete a connection
@@ -197,8 +209,8 @@ message ReceivedMessage {
 
 // Request to return messages for us after the given known message (if any)
 message GetMessagesPaginatedRequest {
-  string lastSeenMessageId = 1; // returned messages will have been received after the given message (if any)
-  int32 limit = 2; // maximum number of messages to return, must be > 0
+  string lastSeenMessageId = 1; // returned credentials will have been received after the given message (if any)
+  int32 limit = 2; // maximum number of credentials to return, must be > 0
 }
 
 // Response with messages
@@ -243,4 +255,10 @@ message ChangeBillingPlanRequest {
 
 // Confirmation of billing plan change
 message ChangeBillingPlanResponse {
+}
+
+message GeneratePaymentUrlRequest {
+}
+message GeneratePaymentUrlResponse {
+  string paymentUrl = 1;
 }

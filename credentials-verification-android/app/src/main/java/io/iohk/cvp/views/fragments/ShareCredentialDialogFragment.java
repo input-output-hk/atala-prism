@@ -53,10 +53,12 @@ public class ShareCredentialDialogFragment extends CvpFragment<ConnectionsListab
         new LinearLayoutManager(getContext(), RecyclerView.HORIZONTAL, false)
     );
     recyclerView.setAdapter(adapter);
-    viewModel.getConnections().observe(this, connections -> {
-      adapter.setConnections(connections);
-      adapter.notifyDataSetChanged();
-    });
+    this.getUserIds().forEach(userId ->
+        viewModel.getConnections(userId).observe(this, connections -> {
+          adapter.addConnections(connections);
+          adapter.notifyDataSetChanged();
+        })
+    );
     return view;
   }
 

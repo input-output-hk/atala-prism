@@ -25,7 +25,7 @@ public class GetConnectionTokenInfoRunnable extends CommonGrpcRunnable<Participa
       ConnectorServiceGrpc.ConnectorServiceBlockingStub blockingStub, Object... params)
       throws StatusRuntimeException {
 
-    String token = String.valueOf(params[0]);
+    String token = String.valueOf(params[1]);
     GetConnectionTokenInfoRequest request = GetConnectionTokenInfoRequest.newBuilder()
         .setToken(token).build();
     GetConnectionTokenInfoResponse response = blockingStub.getConnectionTokenInfo(request);

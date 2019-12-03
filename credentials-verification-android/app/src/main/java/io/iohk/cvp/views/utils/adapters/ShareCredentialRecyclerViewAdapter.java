@@ -43,7 +43,6 @@ public class ShareCredentialRecyclerViewAdapter extends
 
   @Override
   public void onBindViewHolder(ShareCredentialRecyclerViewAdapter.ViewHolder holder, int position) {
-    // TODO unmock this when we are sure about which class's info are we going to show here
     holder.setConnectionInfo(connections.get(position));
   }
 
@@ -55,6 +54,10 @@ public class ShareCredentialRecyclerViewAdapter extends
 
   public Boolean areConnectionsSelected() {
     return connections.stream().anyMatch(ConnectionListable::getIsSelected);
+  }
+
+  public void addConnections(List<ConnectionListable> newConnections) {
+    connections.addAll(newConnections);
   }
 
   static class ViewHolder extends RecyclerView.ViewHolder {

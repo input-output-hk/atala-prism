@@ -18,7 +18,6 @@ import io.iohk.cvp.io.connector.ReceivedMessage;
 import io.iohk.cvp.views.fragments.HomeFragment;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.Setter;
 
 public class CredentialsRecyclerViewAdapter extends
     RecyclerView.Adapter<CredentialsRecyclerViewAdapter.ViewHolder> {
@@ -27,7 +26,6 @@ public class CredentialsRecyclerViewAdapter extends
   private final HomeFragment listener;
   private final Boolean hasNewCredentials;
 
-  @Setter
   private List<ReceivedMessage> messages = new ArrayList<>();
 
   public CredentialsRecyclerViewAdapter(int holderLayoutId, HomeFragment listener,
@@ -40,7 +38,6 @@ public class CredentialsRecyclerViewAdapter extends
   @NonNull
   @Override
   public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-
     View v = LayoutInflater.from(parent.getContext())
         .inflate(holderLayoutId, parent, false);
     return new ViewHolder(v);
@@ -60,6 +57,11 @@ public class CredentialsRecyclerViewAdapter extends
     } catch (InvalidProtocolBufferException e) {
       Crashlytics.logException(e);
     }
+  }
+
+  public void addMesseges(List<ReceivedMessage> newMessages) {
+    this.messages.addAll(newMessages);
+    this.notifyDataSetChanged();
   }
 
   @Override
@@ -90,6 +92,7 @@ public class CredentialsRecyclerViewAdapter extends
     public void onCredentialClicked() {
       listener.onCredentialClicked(isNew, messageId);
     }
+
   }
 }
 

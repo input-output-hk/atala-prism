@@ -15,6 +15,7 @@ import io.iohk.cvp.io.connector.ReceivedMessage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
@@ -30,17 +31,18 @@ public class CredentialsViewModel extends ViewModel {
     selectedCredential.setValue(Credential.getDefaultInstance());
   }
 
-  public LiveData<List<ReceivedMessage>> getMessages() {
-    new GrpcTask<>(new GetMessagesRunnable(messages)).execute();
+  public LiveData<List<ReceivedMessage>> getMessages(Set<String> userIds) {
+    userIds.forEach(userId ->
+        new GrpcTask<>(new GetMessagesRunnable(messages)).execute(userId));
     return messages;
   }
 
 
-  public LiveData<Credential> getCredential(String messageId)
+  public LiveData<Credential> getCredential(String userId, String messageId)
       throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
 
     Optional<List<ReceivedMessage>> msgs = new GrpcTask<>(new GetMessagesRunnable(messages))
-        .execute().get();
+        .execute(userId).get();
 
     try {
       selectedCredential
@@ -62,6 +64,7 @@ public class CredentialsViewModel extends ViewModel {
           .get(0).getMessage()));
     }
     return Optional.empty();
+
   }
 }
 

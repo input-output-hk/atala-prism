@@ -21,7 +21,6 @@ import io.iohk.cvp.views.activities.WalletSetupActivity;
 import io.iohk.cvp.views.activities.WebViewActivity;
 import io.iohk.cvp.views.activities.WelcomeActivity;
 import io.iohk.cvp.views.fragments.CvpFragment;
-import io.iohk.cvp.views.fragments.FirstConnectionFragment;
 import io.iohk.cvp.views.fragments.PopUpFragment;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,7 +57,7 @@ public class Navigator {
     startNewActivity(from, WebViewActivity.class, null);
   }
 
-  public void showQrScanner(FirstConnectionFragment from) {
+  public void showQrScanner(CvpFragment from) {
     Intent intent = new Intent(Objects.requireNonNull(from.getActivity()).getApplicationContext(),
         QrCodeScanner.class);
     intent.putExtra(IntentDataConstants.QR_SCANNER_MODE_KEY,

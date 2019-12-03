@@ -69,8 +69,9 @@ public class ECKeys {
         .setPublicKey(getPublicKey(keyPair.getPublic())).build();
   }
 
-  public PrivateKey toPrivateKey(byte[] d) throws InvalidKeySpecException {
-    return toPrivateKey(toBigInt(d));
+  public ECPrivateKey toPrivateKey(byte[] d) {
+    return ECPrivateKey.newBuilder().setD(BigInteger.newBuilder().setValue(toBigInt(d).toString()))
+        .build();
   }
 
   private PrivateKey toPrivateKey(java.math.BigInteger d) throws InvalidKeySpecException {
@@ -143,7 +144,7 @@ public class ECKeys {
     return ECPrivateKey.newBuilder().setD(this.getD(pk)).build();
   }
 
-  private ECPublicKey getPublicKey(PublicKey pubKey) throws CryptoException {
+  public ECPublicKey getPublicKey(PublicKey pubKey) throws CryptoException {
     ECPoint ecPoint = this.getECPoint(pubKey);
     return ECPublicKey.newBuilder()
         .setX(BigInteger.newBuilder().setValue(ecPoint.getAffineX().toString()))
