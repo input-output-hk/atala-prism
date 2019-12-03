@@ -7,7 +7,7 @@ import {
 import Logger from '../../helpers/Logger';
 import { setDateInfoFromJSON } from '../helpers';
 
-const { REACT_APP_GRPC_CLIENT } = process.env;
+const { REACT_APP_GRPC_CLIENT } = window._env_;
 const issuerId = 'c8834532-eade-11e9-a88d-d8f2ca059830';
 const credentialsService = new CredentialsServicePromiseClient(REACT_APP_GRPC_CLIENT, null, null);
 

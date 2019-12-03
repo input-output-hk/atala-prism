@@ -6,7 +6,7 @@ import {
 import { CreateWalletRequest, GetDIDRequest } from '../../protos/wallet/wallet_pb';
 import Logger from '../../helpers/Logger';
 
-const { REACT_APP_GRPC_CLIENT } = process.env;
+const { REACT_APP_GRPC_CLIENT } = window._env_;
 const walletServiceClient = new WalletServiceClient(REACT_APP_GRPC_CLIENT, null, null);
 const walletServicePromiseClient = new WalletServicePromiseClient(
   REACT_APP_GRPC_CLIENT,

@@ -51,3 +51,9 @@ For development purposes copy `.env` file to `.env.local`. This file is excluded
 
 1. Create a copy of `.env` config file and setup the environment variables.
 1. Run build: `npx env-cmd -f {config-file-path} npm run build`
+
+### Docker build
+
+1. Environment variables in `.env` config file are used as default.
+1. Build image `docker build -t atala:prod .` Use the name and tag you want.
+1. Run container `docker run -it -p 80:HOST_PORT -e REACT_APP_GRPC_CLIENT=http://localhost:10000 --rm atala:prod`.
