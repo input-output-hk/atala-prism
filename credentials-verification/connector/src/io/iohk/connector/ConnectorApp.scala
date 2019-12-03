@@ -61,7 +61,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     val credentialsRepository = new CredentialsRepository(xa)(executionContext)
     val studentsRepository = new StudentsRepository(xa)(executionContext)
     val credentialsService = new CredentialsServiceImpl(credentialsRepository)(executionContext)
-    val studentsService = new StudentsServiceImpl(studentsRepository)(executionContext)
+    val studentsService = new StudentsServiceImpl(studentsRepository, credentialsRepository)(executionContext)
 
     logger.info("Starting server")
     server = ServerBuilder

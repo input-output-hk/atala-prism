@@ -11,6 +11,7 @@ service StudentsService {
     rpc CreateStudent (CreateStudentRequest) returns (CreateStudentResponse) {}
     rpc GetStudents (GetStudentsRequest) returns (GetStudentsResponse) {}
     rpc GetStudent (GetStudentRequest) returns (GetStudentResponse) {}
+    rpc GetStudentCredentials (GetStudentCredentialsRequest) returns (GetStudentCredentialsResponse) {}
 
     // Generate a connection token to get connected to a specific student
     rpc GenerateConnectionToken (GenerateConnectionTokenRequest) returns (GenerateConnectionTokenResponse) {}
@@ -60,6 +61,13 @@ message GetStudentRequest {
 }
 message GetStudentResponse {
     Student student = 1;
+}
+
+message GetStudentCredentialsRequest {
+    string studentId = 1;
+}
+message GetStudentCredentialsResponse {
+    repeated Credential credential = 1;
 }
 
 message GenerateConnectionTokenRequest {
