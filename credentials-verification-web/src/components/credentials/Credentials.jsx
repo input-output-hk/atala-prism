@@ -1,5 +1,5 @@
-import React from 'react';
-import { Row, Icon } from 'antd';
+import React, { Fragment, useState } from 'react';
+import { Row, Icon, Drawer } from 'antd';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import CredentialsFilter from './Molecules/Filters/CredentialsFilter/CredentialsFilter';
@@ -8,8 +8,11 @@ import { credentials, categories, groups } from '../../APIs/__mocks__/credential
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 import EmptyComponent from '../common/Atoms/EmptyComponent/EmptyComponent';
 import noCredentials from '../../images/noCredentials.svg';
+import CredentialData from '../common/Atoms/CredentialData/CredentialData';
+import { drawerWidth } from '../../helpers/constants';
 
 import './_style.scss';
+import CredentialDetail from '../common/Organisms/Detail/CredentialDetail';
 
 const CredentialsButtons = () => {
   const { t } = useTranslation();
@@ -27,6 +30,8 @@ const CredentialsButtons = () => {
 
 const Credentials = ({ showEmpty, tableProps, filterProps }) => {
   const { t } = useTranslation();
+  const [currentCredential, setCurrentCredential] = useState({});
+  const [showDrawer, setShowDrawer] = useState(false);
 
   const emptyProps = {
     photoSrc: noCredentials,
@@ -42,8 +47,31 @@ const Credentials = ({ showEmpty, tableProps, filterProps }) => {
     )
   };
 
+  const showCredentialData = ({ title, student, admissionDate }) => {
+    const credentialToShow = {
+      title,
+      university: '', // For the moment the credential does not have this
+      award: '', // For the moment the credential does not have this
+      student: student ? student.name : '',
+      startDate: admissionDate,
+      graduationDate: 34 // For the moment the credential does not have this
+    };
+    setCurrentCredential(credentialToShow);
+    setShowDrawer(true);
+  };
+
+  const expandedTableProps = Object.assign({}, tableProps, { onView: showCredentialData });
+
   return (
-    <div className="Wrapper">
+    <div className="Wrapper PageContainer">
+      <CredentialDetail
+        drawerInfo={{
+          title: t('credentials.detail.title'),
+          onClose: () => setShowDrawer(false),
+          visible: showDrawer
+        }}
+        credentialData={currentCredential}
+      />
       <div className="ContentHeader">
         <h1>{t('credentials.title')}</h1>
         <CredentialsButtons />
@@ -52,7 +80,7 @@ const Credentials = ({ showEmpty, tableProps, filterProps }) => {
 
       <Row>
         {tableProps.credentialCount ? (
-          <CredentialsTable {...tableProps} />
+          <CredentialsTable {...expandedTableProps} />
         ) : (
           <EmptyComponent {...emptyProps} />
         )}

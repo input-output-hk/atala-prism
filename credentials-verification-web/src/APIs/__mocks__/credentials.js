@@ -1,11 +1,8 @@
 import { date as fakeDate, image, lorem, name as fakeName, random } from 'faker';
 import moment from 'moment';
+import __ from 'lodash';
 import { CREDENTIAL_PAGE_SIZE } from '../../helpers/constants';
-import {
-  filterByExactMatch,
-  filterByInclusion,
-  filterByNewerDate
-} from '../../helpers/filterHelpers';
+import { toProtoDate } from './helpers';
 
 export const credentials = ['CREDENTIAL1', 'CREDENTIAL2', 'CREDENTIAL3'];
 export const categories = ['CATEGORY1', 'CATEGORY2', 'CATEGORY3'];
@@ -18,11 +15,14 @@ const createMockStudent = () => ({
 
 const createMockCredential = () => ({
   id: random.alphaNumeric(999),
+  issuedBy: random.alphaNumeric(999),
+  subject: random.alphaNumeric(999),
   icon: image.avatar(),
-  name: lorem.words(),
+  title: lorem.words(),
   identityNumber: random.number(100000),
-  admissionDate: moment(fakeDate.recent()).unix(),
-  groupId: random.alphaNumeric(9),
+  enrollmentdate: toProtoDate(moment(fakeDate.recent())),
+  graduationdate: toProtoDate(moment(fakeDate.recent())),
+  groupName: random.alphaNumeric(9),
   student: random.number(5) > 1 ? createMockStudent() : null,
   credential: random.arrayElement(credentials),
   category: random.arrayElement(categories),
@@ -33,37 +33,26 @@ const mockCredentials = [];
 
 for (let i = 0; i < 3 * CREDENTIAL_PAGE_SIZE; i++) mockCredentials.push(createMockCredential());
 
-export const getCredentials = ({
-  credentialId,
-  name: filterName,
-  date = 0,
-  credentialType,
-  category: categoryFilter,
-  group: groupFilter,
-  offset
-}) =>
-  new Promise(resolve => {
-    const filteredCredentials = mockCredentials.filter(
-      ({ id, name, admissionDate, credential, category, group }) =>
-        filterByInclusion(credentialId, id) &&
-        filterByInclusion(filterName, name) &&
-        filterByNewerDate(date, admissionDate) &&
-        filterByExactMatch(credentialType, credential) &&
-        filterByExactMatch(categoryFilter, category) &&
-        filterByExactMatch(groupFilter, group)
-    );
+const promisify = response => new Promise(resolve => resolve(response));
 
-    const skip = offset * CREDENTIAL_PAGE_SIZE;
-    resolve({
-      credentials: filteredCredentials.slice(skip, skip + CREDENTIAL_PAGE_SIZE),
-      count: filteredCredentials.length
-    });
+export const getCredentials = () =>
+  promisify({
+    credentials: mockCredentials,
+    count: mockCredentials.length
   });
 
-export const getTotalCredentials = () => new Promise(resolve => resolve(mockCredentials.length));
+export const getTotalCredentials = () => promisify(mockCredentials.length);
 
-export const getCredentialTypes = () => new Promise(resolve => resolve(credentials));
+export const getCredentialTypes = () => promisify(credentials);
 
-export const getCategoryTypes = () => new Promise(resolve => resolve(categories));
+export const getCategoryTypes = () => promisify(categories);
 
-export const getCredentialsGroups = () => new Promise(resolve => resolve(groups));
+export const getCredentialsGroups = () => promisify(groups);
+
+export const deleteCredential = ({ id }) => {
+  const index = __.findIndex(mockCredentials, ({ groupId }) => groupId === id);
+
+  mockCredentials.splice(index, 1);
+
+  return promisify(200);
+};

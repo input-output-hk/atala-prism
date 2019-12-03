@@ -18,6 +18,7 @@ const CustomButton = ({ icon, buttonText, buttonProps }) => (
 );
 
 CustomButton.defaultProps = {
+  buttonText: '',
   icon: null
 };
 
@@ -32,7 +33,7 @@ CustomButton.propTypes = {
     ]),
     onClick: PropTypes.func
   }).isRequired,
-  buttonText: PropTypes.string.isRequired,
+  buttonText: PropTypes.string,
   icon: PropTypes.element
 };
 

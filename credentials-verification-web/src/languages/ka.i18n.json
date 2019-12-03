@@ -54,6 +54,9 @@
     "inviteSuccessfull": "The Holder has been successfully invited",
     "modal": {
       "title": "Scan to get connection token"
+    },
+    "detail": {
+      "title": "Credentials List"
     }
   },
   "groups": {
@@ -145,6 +148,13 @@
         "admissionDate": "Admission Date",
         "groupAssigned": "Group Assigned"
       }
+    },
+    "detail": {
+      "title": "Credential Detail",
+      "noStudent": "You can't view the details of a credential that doesn't have a student",
+      "delete": "Delete",
+      "resend": "Resend",
+      "verify": "Verify"
     }
   },
   "credentialSummary": {

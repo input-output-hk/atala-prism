@@ -5,7 +5,6 @@ import PropTypes from 'prop-types';
 import Logger from '../../helpers/Logger';
 import Credentials from './Credentials';
 import { withApi } from '../providers/witApi';
-import { dateAsUnix } from '../../helpers/formatters';
 
 const CredentialContainer = ({ api }) => {
   const { t } = useTranslation();
@@ -132,7 +131,8 @@ CredentialContainer.propTypes = {
     getCategoryTypes: PropTypes.func.isRequired,
     getCredentialsGroups: PropTypes.func.isRequired,
     getTotalCredentials: PropTypes.func.isRequired,
-    getCredentials: PropTypes.func.isRequired
+    getCredentials: PropTypes.func.isRequired,
+    deleteCredential: PropTypes.func.isRequired
   }).isRequired
 };
 

@@ -2,7 +2,6 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import { Table } from 'antd';
-import { Link } from 'react-router-dom';
 import CellRenderer from '../../../../common/Atoms/CellRenderer/CellRenderer';
 import { shortBackendDateFormatter } from '../../../../../helpers/formatters';
 import { CREDENTIAL_PAGE_SIZE } from '../../../../../helpers/constants';
@@ -13,7 +12,7 @@ import freeUniLogo from '../../../../../images/free-uni-logo.png';
 import './_style.scss';
 import CustomButton from '../../../../common/Atoms/CustomButton/CustomButton';
 
-const getColumns = (viewText, sendCredentials) => [
+const getColumns = (viewText, sendCredentials, onView) => [
   {
     key: 'icon',
     render: ({ icon, name }) => (
@@ -58,24 +57,30 @@ const getColumns = (viewText, sendCredentials) => [
         />
       ) : (
         <CustomButton
+          buttonProps={{
+            theme: 'theme-outline',
+            onClick: () => console.log('Clicked send credential')
+          }}
           buttonText={sendCredentials}
-          theme="theme-outline"
-          onClick={() => console.log('memes')}
         />
       )
   },
   {
     key: 'actions',
     fixed: 'right',
-    render: ({ id }) => (
-      <div className="ControlButtons">
-        <Link to={`credential/${id}`}>{viewText}</Link>
-      </div>
+    render: credential => (
+      <CustomButton
+        buttonProps={{
+          className: 'theme-link',
+          onClick: () => onView(credential)
+        }}
+        buttonText={viewText}
+      />
     )
   }
 ];
 
-const CredentialsTable = ({ credentials, credentialCount, offset, setOffset }) => {
+const CredentialsTable = ({ credentials, credentialCount, offset, setOffset, onView }) => {
   const { t } = useTranslation();
 
   return (
@@ -83,7 +88,7 @@ const CredentialsTable = ({ credentials, credentialCount, offset, setOffset }) =
       <Table
         id="CredentialsTable"
         scroll={{ x: 1300 }}
-        columns={getColumns(t('actions.view'), t('credentials.sendCredentials'))}
+        columns={getColumns(t('actions.view'), t('credentials.sendCredentials'), onView)}
         dataSource={credentials}
         pagination={{
           total: credentialCount,
@@ -117,7 +122,8 @@ CredentialsTable.propTypes = {
   credentials: PropTypes.arrayOf(PropTypes.shape(credentialshape)),
   credentialCount: PropTypes.number,
   offset: PropTypes.number,
-  setOffset: PropTypes.func.isRequired
+  setOffset: PropTypes.func.isRequired,
+  onView: PropTypes.func.isRequired
 };
 
 export default CredentialsTable;

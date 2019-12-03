@@ -39,6 +39,7 @@ export const frontendDateFormatter = format => date => completeFrontendDateForma
 export const longDateFormatter = frontendDateFormatter('LLLL');
 export const shortDateFormatter = frontendDateFormatter('lll');
 export const shortBackendDateFormatter = backendDateFormatter('lll');
+export const dayMonthYearFormatter = frontendDateFormatter('L');
 
 export const monthDayFormat = frontendDateFormatter('MMM DD');
 

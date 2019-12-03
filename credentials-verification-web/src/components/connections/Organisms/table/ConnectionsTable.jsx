@@ -10,7 +10,7 @@ import holderDefaultAvatar from '../../../../images/holder-default-avatar.svg';
 
 import './_style.scss';
 
-const getColumns = (inviteHolder, isIssuer) => {
+const getColumns = ({ inviteHolder, isIssuer, setHolder }) => {
   const userColumn = [
     {
       key: 'avatar',
@@ -60,12 +60,13 @@ const getColumns = (inviteHolder, isIssuer) => {
   const actionColumns = [
     {
       key: 'actions',
-      render: ({ id, status }) => (
+      render: holder => (
         <ActionButtons
-          id={id}
-          showQRButton={status === PENDING_CONNECTION}
+          holder={holder}
+          showQRButton={holder.status === PENDING_CONNECTION}
           inviteHolder={inviteHolder}
           isIssuer={isIssuer}
+          setHolder={setHolder}
         />
       )
     }
@@ -87,11 +88,12 @@ const ConnectionsTable = ({
   offset,
   setOffset,
   inviteHolder,
-  isIssuer
+  isIssuer,
+  setHolder
 }) => (
   <div className="ConnectionsTable">
     <Table
-      columns={getColumns(inviteHolder, isIssuer)}
+      columns={getColumns({ inviteHolder, isIssuer, setHolder })}
       dataSource={subjects}
       scroll={{ x: xScroll }}
       pagination={{
@@ -127,6 +129,7 @@ ConnectionsTable.propTypes = {
   offset: PropTypes.number,
   setOffset: PropTypes.func.isRequired,
   inviteHolder: PropTypes.func.isRequired,
+  setHolder: PropTypes.func.isRequired,
   isIssuer: PropTypes.bool.isRequired
 };
 

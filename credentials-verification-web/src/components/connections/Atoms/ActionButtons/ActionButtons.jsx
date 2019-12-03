@@ -3,8 +3,10 @@ import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 
-const ActionButtons = ({ id, showQRButton, inviteHolder, isIssuer }) => {
+const ActionButtons = ({ showQRButton, inviteHolder, isIssuer, setHolder, holder }) => {
   const { t } = useTranslation();
+
+  const { admissionDate, avatar, id, name, transactions } = holder;
 
   return (
     <div className="ControlButtons">
@@ -23,7 +25,15 @@ const ActionButtons = ({ id, showQRButton, inviteHolder, isIssuer }) => {
       />
       <CustomButton
         buttonProps={{
-          className: 'theme-link'
+          className: 'theme-link',
+          onClick: () => {
+            const formattedHolder = {
+              user: { icon: avatar, name },
+              transactions,
+              date: admissionDate
+            };
+            setHolder(formattedHolder);
+          }
         }}
         buttonText={t(`connections.table.columns.${isIssuer ? 'view' : 'viewCredentials'}`)}
       />
