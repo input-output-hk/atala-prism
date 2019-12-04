@@ -20,6 +20,7 @@ import io.iohk.cvp.views.activities.TermsAndConditionsActivity;
 import io.iohk.cvp.views.activities.WalletSetupActivity;
 import io.iohk.cvp.views.activities.WebViewActivity;
 import io.iohk.cvp.views.activities.WelcomeActivity;
+import io.iohk.cvp.views.fragments.CvpDialogFragment;
 import io.iohk.cvp.views.fragments.CvpFragment;
 import io.iohk.cvp.views.fragments.PopUpFragment;
 import java.util.ArrayList;
@@ -97,9 +98,10 @@ public class Navigator {
     from.startActivity(intent);
   }
 
-  public void showFragment(FragmentManager supportFragmentManager, CvpFragment cvpFragment) {
+  public void showFragment(FragmentManager supportFragmentManager, CvpFragment cvpFragment,
+      String tag) {
     FragmentTransaction ft = supportFragmentManager.beginTransaction();
-    ft.replace(R.id.fragment_layout, cvpFragment);
+    ft.replace(R.id.fragment_layout, cvpFragment, tag);
     ft.commit();
   }
 
@@ -113,9 +115,16 @@ public class Navigator {
   public void showFragmentOnTopOfMenu(FragmentManager supportFragmentManager,
       CvpFragment cvpFragment) {
     FragmentTransaction ft = supportFragmentManager.beginTransaction();
-    // FIXME missing layout
-    //ft.replace(R.id.fragment_layout_over_menu, cvpFragment);
+    ft.replace(R.id.fragment_layout_over_menu, cvpFragment);
     ft.addToBackStack(null);
     ft.commit();
+  }
+
+  public void showDialogFragment(FragmentManager supportFragmentManager,
+      CvpDialogFragment cvpFragment, String tag) {
+    supportFragmentManager
+        .beginTransaction().add(cvpFragment, tag)
+        .show(cvpFragment)
+        .commit();
   }
 }

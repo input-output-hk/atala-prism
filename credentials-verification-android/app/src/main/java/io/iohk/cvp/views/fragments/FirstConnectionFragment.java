@@ -13,7 +13,6 @@ import io.iohk.cvp.utils.ActivitiesRequestCodes;
 import io.iohk.cvp.utils.ActivityUtils;
 import io.iohk.cvp.utils.PermissionUtils;
 import io.iohk.cvp.viewmodel.ConnectionsActivityViewModel;
-import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.activities.MainActivity;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.RootAppBar;
@@ -24,9 +23,6 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class FirstConnectionFragment extends CvpFragment<ConnectionsActivityViewModel> {
-
-  @Inject
-  Navigator navigator;
 
   private ViewModelProvider.Factory factory;
 
@@ -66,7 +62,7 @@ public class FirstConnectionFragment extends CvpFragment<ConnectionsActivityView
   public void onActivityResult(int requestCode, int resultCode, Intent data) {
     super.onActivityResult(requestCode, resultCode, data);
     ActivityUtils
-        .onQrcodeResult(requestCode, resultCode, getContext(), (MainActivity) getActivity(),
+        .onQrcodeResult(requestCode, resultCode, (MainActivity) getActivity(),
             viewModel, data, this);
   }
 
