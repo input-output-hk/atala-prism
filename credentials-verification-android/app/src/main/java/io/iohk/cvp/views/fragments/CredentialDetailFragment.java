@@ -17,11 +17,14 @@ import com.crashlytics.android.Crashlytics;
 import com.google.android.material.button.MaterialButton;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.iohk.cvp.R;
+import io.iohk.cvp.io.credential.Credential;
+import io.iohk.cvp.io.credential.SubjectData;
+import io.iohk.cvp.utils.DateUtils;
 import io.iohk.cvp.viewmodel.CredentialsViewModel;
-import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.Preferences;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.StackedAppBar;
+import java.text.MessageFormat;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import javax.inject.Inject;
@@ -55,8 +58,14 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
   @BindView(R.id.text_view_credential_name)
   TextView textViewCredentialName;
 
-  @Inject
-  Navigator navigator;
+  @BindView(R.id.text_view_start_date)
+  TextView textViewStartDate;
+
+  @BindView(R.id.text_view_graduation_date)
+  TextView textViewGraduationDate;
+
+  @BindView(R.id.text_view_award)
+  TextView textViewAward;
 
   @Inject
   CredentialDetailFragment(ViewModelProvider.Factory factory) {
@@ -105,10 +114,7 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
     this.getUserIds().forEach(userId -> {
       try {
         viewModel.getCredential(userId, credentialId).observe(this, credential -> {
-          textViewUniversityName.setText(credential.getIssuerInfo().getName());
-          textViewFullName.setText(credential.getSubject());
-          textViewCredentialName.setText(credential.getTitle());
-          // TODO add missing fields
+          fillData(credential);
           showOptions(credentialIsNew);
         });
       } catch (InvalidProtocolBufferException | InterruptedException | ExecutionException e) {
@@ -118,6 +124,24 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
     });
 
     return view;
+  }
+
+  private void fillData(Credential credential) {
+    textViewUniversityName.setText(credential.getIssuerType().getIssuerLegalName());
+
+    SubjectData subjectData = credential.getSubjectData();
+    textViewFullName.setText(
+        MessageFormat.format("{0} {1}", subjectData.getNames(0), subjectData.getSurname(0)));
+
+    textViewCredentialName.setText(credential.getGrantingDecision());
+
+    DateUtils dateUtils = new DateUtils(getContext());
+
+    textViewStartDate.setText(dateUtils.format(credential.getAdmissionDate()));
+    textViewGraduationDate.setText(dateUtils.format(credential.getGraduationDate()));
+
+    textViewAward.setText(
+        credential.getAdditionalSpeciality() != null ? credential.getDegreeAwarded() : "-");
   }
 
   private void showOptions(boolean optionsVisible) {

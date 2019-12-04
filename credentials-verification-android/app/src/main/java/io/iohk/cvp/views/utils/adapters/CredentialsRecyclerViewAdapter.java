@@ -13,8 +13,9 @@ import butterknife.OnClick;
 import com.crashlytics.android.Crashlytics;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.iohk.cvp.R;
-import io.iohk.cvp.io.connector.Credential;
 import io.iohk.cvp.io.connector.ReceivedMessage;
+import io.iohk.cvp.io.credential.Credential;
+import io.iohk.cvp.io.credential.SentCredential;
 import io.iohk.cvp.views.fragments.HomeFragment;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,12 +48,12 @@ public class CredentialsRecyclerViewAdapter extends
   public void onBindViewHolder(CredentialsRecyclerViewAdapter.ViewHolder holder, int position) {
     try {
       ReceivedMessage msg = messages.get(position);
-      Credential current = null;
-      current = Credential.parseFrom(msg.getMessage());
+      SentCredential sentCredential = SentCredential.parseFrom(msg.getMessage());
+      Credential current = sentCredential.getIssuerSentCredential().getCredential();
       holder.messageId = msg.getId();
       holder.listener = this.listener;
       holder.isNew = this.hasNewCredentials;
-      holder.issuerName.setText(current.getIssuerInfo().getName());
+      holder.issuerName.setText(current.getIssuerType().getAcademicAuthority());
       // TODO set image
     } catch (InvalidProtocolBufferException e) {
       Crashlytics.logException(e);

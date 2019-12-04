@@ -6,12 +6,14 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import com.crashlytics.android.Crashlytics;
+import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.iohk.cvp.core.exception.ItemNotFoundException;
 import io.iohk.cvp.grpc.GetMessagesRunnable;
 import io.iohk.cvp.grpc.GrpcTask;
-import io.iohk.cvp.io.connector.Credential;
 import io.iohk.cvp.io.connector.ReceivedMessage;
+import io.iohk.cvp.io.credential.Credential;
+import io.iohk.cvp.io.credential.SentCredential;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -59,9 +61,13 @@ public class CredentialsViewModel extends ViewModel {
   private Optional<Credential> findCredential(List<ReceivedMessage> messages, String messageId)
       throws InvalidProtocolBufferException {
     if (messages.size() > 0) {
-      return Optional.of(Credential.parseFrom(messages.stream()
+      ByteString rawMessage = messages.stream()
           .filter(message -> message.getId().equals(messageId)).collect(Collectors.toList())
-          .get(0).getMessage()));
+          .get(0).getMessage();
+      SentCredential sentCredential = SentCredential.parseFrom(rawMessage);
+      Credential current = sentCredential.getIssuerSentCredential()
+          .getCredential();
+      return Optional.of(current);
     }
     return Optional.empty();
 
