@@ -1,9 +1,19 @@
 version: "3"
 services:
 
+  web:
+    build:
+      context: ../../credentials-verification-web/
+      args:
+        - ENV_FILE=.env.local
+    image: 895947072537.dkr.ecr.us-east-2.amazonaws.com/atala:cvp-web
+    ports:
+      - 127.0.0.1:80:80
+
   cvp-envoy:
     build:
       context: cvp-envoy
+    image: 895947072537.dkr.ecr.us-east-2.amazonaws.com/atala:cvp-envoy
     ports:
       - 127.0.0.1:8080:8080
 
@@ -22,6 +32,7 @@ services:
   postgres_db:
     build:
       context: postgres
+    image: 895947072537.dkr.ecr.us-east-2.amazonaws.com/atala:cvp-postgres
     ports:
       - 127.0.0.1:5432:5432
     environment:
@@ -31,6 +42,7 @@ services:
     build:
       context: ../out/connector/docker-build/dest
       dockerfile: ../../../../connector/Dockerfile
+    image: 895947072537.dkr.ecr.us-east-2.amazonaws.com/atala:connector
     ports:
       - 127.0.0.1:50051:50051
     depends_on:
@@ -45,6 +57,7 @@ services:
     build:
       context: ../out/node/docker-build/dest
       dockerfile: ../../../../node/Dockerfile
+    image: 895947072537.dkr.ecr.us-east-2.amazonaws.com/atala:node
     ports:
       - 127.0.0.1:50053:50053
     depends_on:

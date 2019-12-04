@@ -11,6 +11,7 @@ usage() {
   -s    show an (almost) human readable view of the given environment
   -w    watch logs from the given environment
   -g    create a 'graph.svg' file showing the dependencies of all resources.
+  -t    'taint'. Force an update to an environment, e.g. after updating a task definition. Note, this will cause some downtime.
   "
   exit 1
 }
@@ -39,6 +40,10 @@ graph_env() {
   terraform init -backend-config="key=infra/services/$env_name_short/terraform.tfstate" && terraform graph -draw-cycles | dot -Tsvg > graph.svg
 }
 
+taint_env() {
+  terraform init -backend-config="key=infra/services/$env_name_short/terraform.tfstate" && terraform taint "aws_ecs_service.cvp-service"
+}
+
 # TODO substitute the values you require below.
 write_vars() {
 cat << EOF > env.auto.tfvars
@@ -54,12 +59,14 @@ node_docker_image       = "895947072537.dkr.ecr.us-east-2.amazonaws.com/atala:no
 
 bitcoind_username       = "bitcoin"
 
+web_docker_image        = "895947072537.dkr.ecr.us-east-2.amazonaws.com/atala:cvp-web"
+
 env_name_short          = "$env_name_short"
 EOF
 }
 
 action="plan"
-while getopts ':adpswg' arg; do
+while getopts ':adpswgt' arg; do
   case $arg in
     (a) action="apply";;
     (d) action="destroy";;
@@ -67,6 +74,7 @@ while getopts ':adpswg' arg; do
     (s) action="show";;
     (w) action="watch";;
     (g) action="graph";;
+    (t) action="taint";;
     (\*) usage
          exit 1;;
     (\?) usage
@@ -92,4 +100,5 @@ case $action in
   (show) show_env;;
   (watch) watch_logs;;
   (graph) graph_env;;
+  (taint) taint_env;;
 esac

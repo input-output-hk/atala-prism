@@ -41,6 +41,15 @@ resource aws_security_group credentials-vpc-security-group {
     "0.0.0.0/0"]
   }
 
+  // web inbound
+  ingress {
+    from_port = var.web_port
+    to_port   = var.web_port
+    protocol  = "tcp"
+    cidr_blocks = [
+    "0.0.0.0/0"]
+  }
+
   // envoy proxy inbound
   ingress {
     from_port = var.envoy_port
@@ -265,6 +274,32 @@ resource aws_lb_target_group envoy-target-group {
   ]
 }
 
+resource aws_lb_listener web-lb-listener {
+  load_balancer_arn = aws_lb.ecs-net-load-balancer.arn
+  protocol = "TCP"
+  port = var.web_port
+
+  default_action {
+    type = "forward"
+    target_group_arn = aws_lb_target_group.web-target-group.arn
+  }
+}
+
+resource aws_lb_target_group web-target-group {
+  name     = "web-target-group-${var.env_name_short}"
+  protocol = "TCP"
+  port     = var.web_port
+  vpc_id   = var.credentials-vpc-id
+
+  tags = {
+    Name = "web-target-group-${var.env_name_short}"
+  }
+
+  depends_on = [
+    aws_lb.ecs-net-load-balancer
+  ]
+}
+
 
 // END of load balancer configuration
 
@@ -310,7 +345,7 @@ resource aws_autoscaling_group ec2-autoscaling-group {
   vpc_zone_identifier  = [var.credentials-subnet-primary-id, var.credentials-subnet-secondary-id]
   launch_configuration = aws_launch_configuration.ecs-launch-configuration.name
   health_check_type    = "EC2"
-  target_group_arns = [aws_lb_target_group.connector-target-group.arn, aws_lb_target_group.node-target-group.arn, aws_lb_target_group.bitcoind-target-group.arn, aws_lb_target_group.envoy-target-group.arn]
+  target_group_arns = [aws_lb_target_group.connector-target-group.arn, aws_lb_target_group.node-target-group.arn, aws_lb_target_group.bitcoind-target-group.arn, aws_lb_target_group.envoy-target-group.arn, aws_lb_target_group.web-target-group.arn]
 }
 
 data "template_file" "cvp-task-template" {
@@ -327,7 +362,6 @@ data "template_file" "cvp-task-template" {
     node-psql-username = var.node_psql_username
     node-psql-password = var.node_psql_password
 
-    node-bitcoind-host     = aws_lb.ecs-net-load-balancer.dns_name
     node-bitcoind-port     = var.bitcoind_port
     node-bitcoind-username = var.bitcoind_username
     node-bitcoind-password = var.bitcoind_password
@@ -335,6 +369,7 @@ data "template_file" "cvp-task-template" {
     node-psql-password = var.node_psql_password
     node-docker-image  = var.node_docker_image
 
+    web-docker-image = var.web_docker_image
     awslogs-region = var.aws_region
     awslogs-group  = aws_cloudwatch_log_group.cvp-log-group.name
   }
@@ -382,6 +417,12 @@ resource aws_ecs_service cvp-service {
     container_name = "envoy"
     container_port = var.envoy_port
   }
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.web-target-group.arn
+    container_name = "web"
+    container_port = var.web_port
+  }
 }
 
 resource aws_route53_record cvp-dns-entry {
@@ -400,9 +441,13 @@ resource aws_cloudwatch_log_group cvp-log-group {
 }
 
 output "command-to-test-connector" {
-  value = "grpcurl -import-path connector/protobuf/ -proto connector/protobuf/protos.proto -rpc-header 'userId: c8834532-eade-11e9-a88d-d8f2ca059830' -plaintext cvp-${var.env_name_short}.cef.iohkdev.io:${var.connector_port} io.iohk.connector.ConnectorService/GenerateConnectionToken"
+  value = "grpcurl -import-path connector/protobuf/connector -proto connector/protobuf/connector/protos.proto -rpc-header 'userId: c8834532-eade-11e9-a88d-d8f2ca059830' -plaintext cvp-${var.env_name_short}.cef.iohkdev.io:${var.connector_port} io.iohk.connector.ConnectorService/GenerateConnectionToken"
 }
 
 output "command-to-test-envoy-proxy" {
   value = "curl -i -XOPTIONS -H'Host: cvp-${var.env_name_short}.cef.iohkdev.io:8080' -H'Accept: */*' -H'Accept-Language: en-GB,en;q=0.5' -H'Accept-Encoding: gzip, deflate' -H'Access-Control-Request-Method: POST' -H'Access-Control-Request-Headers: content-type,userid,x-grpc-web,x-user-agent' -H'Referer: http://localhost:3000/connections' -H'Origin: http://localhost:3000' 'http://cvp-${var.env_name_short}.cef.iohkdev.io:${var.envoy_port}/io.iohk.connector.ConnectorService/GenerateConnectionToken'"
+}
+
+output "command-to-test-credentials-manager-web-app" {
+  value = "curl -i 'http://cvp-${var.env_name_short}.cef.iohkdev.io'"
 }

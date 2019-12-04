@@ -50,7 +50,7 @@
     "image": "${node-docker-image}",
     "cpu": 10,
     "memory": 512,
-    "links": [],
+    "links": ["bitcoind"],
     "hostname": "node",
     "portMappings": [
       {
@@ -81,7 +81,7 @@
       },
       {
         "name": "GEUD_NODE_BITCOIND_HOST",
-        "value": "${node-bitcoind-host}"
+        "value": "bitcoind"
       },
       {
         "name": "GEUD_NODE_BITCOIND_PORT",
@@ -153,6 +153,34 @@
     "essential": true,
     "entryPoint": [],
     "command": ["-c", "/etc/envoy/envoy.yaml", "--log-path", "/dev/stdout"],
+    "environment": [],
+    "mountPoints": [],
+    "volumesFrom": [],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "${awslogs-group}",
+        "awslogs-region": "${awslogs-region}"
+      }
+    },
+    "networkMode": "awsvpc"
+  },
+  {
+    "name": "web",
+    "image": "${web-docker-image}",
+    "cpu": 10,
+    "memory": 512,
+    "links": [],
+    "hostname": "web",
+    "portMappings": [
+      {
+        "containerPort": 80,
+        "hostPort": 80,
+        "protocol": "tcp"
+      }
+    ],
+    "essential": true,
+    "entryPoint": [],
     "environment": [],
     "mountPoints": [],
     "volumesFrom": [],

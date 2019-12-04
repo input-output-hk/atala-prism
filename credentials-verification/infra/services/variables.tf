@@ -133,3 +133,13 @@ variable envoy_port {
   type        = number
   default     = 8080
 }
+
+variable web_port {
+  description = "Port for the credentials manager web app."
+  type        = number
+  default     = 80
+}
+
+variable web_docker_image {
+  description = "Docker image for the credentials manager web app."
+}
