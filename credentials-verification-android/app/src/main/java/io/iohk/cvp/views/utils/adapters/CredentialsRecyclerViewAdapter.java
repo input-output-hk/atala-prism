@@ -65,6 +65,11 @@ public class CredentialsRecyclerViewAdapter extends
     this.notifyDataSetChanged();
   }
 
+  public void clearMessages() {
+    messages = new ArrayList<>();
+    this.notifyDataSetChanged();
+  }
+
   @Override
   public int getItemCount() {
     return messages.size();

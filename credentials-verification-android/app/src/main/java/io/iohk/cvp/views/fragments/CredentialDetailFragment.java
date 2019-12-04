@@ -1,5 +1,7 @@
 package io.iohk.cvp.views.fragments;
 
+import static io.iohk.cvp.utils.IntentDataConstants.CREDENTIAL_DATA_KEY;
+
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -67,6 +69,8 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
   @BindView(R.id.text_view_award)
   TextView textViewAward;
 
+  private Credential credential;
+
   @Inject
   CredentialDetailFragment(ViewModelProvider.Factory factory) {
     this.factory = factory;
@@ -87,16 +91,17 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
   @Override
   public void onPrepareOptionsMenu(Menu menu) {
     MenuItem shareCredentialMenuItem;
-    shareCredentialMenuItem = menu.findItem(R.id.action_share_credential);
-    shareCredentialMenuItem.setVisible(true);
+    if (!credentialIsNew) {
+      shareCredentialMenuItem = menu.findItem(R.id.action_share_credential);
+      shareCredentialMenuItem.setVisible(true);
+    }
   }
 
   @Override
   public boolean onOptionsItemSelected(@NonNull MenuItem item) {
     if (item.getItemId() == R.id.action_share_credential) {
       navigator.showFragmentOnTopOfMenu(
-          Objects.requireNonNull(getActivity()).getSupportFragmentManager(),
-          new ShareCredentialDialogFragment());
+          Objects.requireNonNull(getActivity()).getSupportFragmentManager(), getShareFragment());
       return true;
     }
     if (item.getItemId() == android.R.id.home) {
@@ -104,6 +109,15 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
       return true;
     }
     return super.onOptionsItemSelected(item);
+  }
+
+  private ShareCredentialDialogFragment getShareFragment() {
+    ShareCredentialDialogFragment fragment = new ShareCredentialDialogFragment();
+    Bundle args = new Bundle();
+    args.putByteArray(CREDENTIAL_DATA_KEY, credential.toByteArray());
+    fragment.setArguments(args);
+
+    return fragment;
   }
 
   @Override
@@ -114,6 +128,7 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
     this.getUserIds().forEach(userId -> {
       try {
         viewModel.getCredential(userId, credentialId).observe(this, credential -> {
+          this.credential = credential;
           fillData(credential);
           showOptions(credentialIsNew);
         });

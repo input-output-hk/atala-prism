@@ -133,6 +133,7 @@
 
   <!-- Share credential screen labels -->
   <string name="share_credential">Share Credential</string>
+  <string name="share">Share!</string>
 
   <!-- Assets names for internationalization -->
   <string name="terms_and_conditions_asset_name">terms-and-conditions-en</string>

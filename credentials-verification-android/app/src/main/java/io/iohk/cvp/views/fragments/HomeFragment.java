@@ -88,6 +88,9 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> {
     newCredentialsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
     newCredentialsRecyclerView.setAdapter(newCredentialsAdapter);
 
+    newCredentialsAdapter.clearMessages();
+    credentialsAdapter.clearMessages();
+
     LiveData<List<ReceivedMessage>> liveData = viewModel.getMessages(this.getUserIds());
 
     if (!liveData.hasActiveObservers()) {
@@ -114,6 +117,7 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> {
       });
     }
   }
+
 
   @Override
   public CredentialsViewModel getViewModel() {
