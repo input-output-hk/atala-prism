@@ -14,6 +14,7 @@ import { toProtoDate } from './helpers';
 import { getCredentialSummaries } from './credentialSummaries';
 import { getPayments, getCurrencies, getAmounts } from './payments';
 import { getSettings, editSettings } from './settings';
+import { isWalletUnlocked } from './login';
 
 export const mockApi = {
   getHolders,
@@ -37,5 +38,6 @@ export const mockApi = {
   getCurrencies,
   getAmounts,
   getSettings,
-  editSettings
+  editSettings,
+  isWalletUnlocked
 };

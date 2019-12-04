@@ -20,7 +20,7 @@
     "no-use-before-define": "off",
     "promise/param-names": "error",
     "promise/always-return": "off",
-    "promise/catch-or-return": "error",
+    "promise/catch-or-return": ["error", { "allowFinally": true }],
     "promise/no-native": "off",
     "react/jsx-no-bind": "off",
     "react/jsx-filename-extension": ["error", { "extensions": [".js", ".jsx"] }],

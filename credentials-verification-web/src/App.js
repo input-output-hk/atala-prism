@@ -1,6 +1,6 @@
 import React from 'react';
 import { withRouter } from 'react-router-dom';
-import Main from './components/Main';
+import Main from './components/main/Main';
 import { mockApi, api } from './APIs';
 import { ISSUER, VERIFIER } from './helpers/constants';
 
