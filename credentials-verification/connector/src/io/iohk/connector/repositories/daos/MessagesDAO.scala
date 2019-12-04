@@ -50,4 +50,17 @@ object MessagesDAO {
 
     query.query[Message].to[Seq]
   }
+
+  def getMessagesPaginated(
+      recipientId: ParticipantId,
+      connectionId: ConnectionId
+  ): doobie.ConnectionIO[Seq[Message]] = {
+    sql"""
+         |SELECT id, connection, received_at, content
+         |FROM messages
+         |WHERE recipient = $recipientId AND
+         |      connection = $connectionId
+         |ORDER BY received_at ASC, id
+       """.stripMargin.query[Message].to[Seq]
+  }
 }
