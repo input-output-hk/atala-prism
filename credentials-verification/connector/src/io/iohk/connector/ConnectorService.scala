@@ -193,6 +193,28 @@ class ConnectorService(connections: ConnectionsService, messages: MessagesServic
       }
   }
 
+  override def getMessagesForConnection(
+      request: GetMessagesForConnectionRequest
+  ): Future[GetMessagesForConnectionResponse] = {
+    val userId = UserIdInterceptor.USER_ID_CTX_KEY.get()
+    implicit val loggingContext = LoggingContext("request" -> request, "userId" -> userId)
+
+    val validatedConnectionId = Try(request.connectionId)
+      .map(UUID.fromString)
+      .map(model.ConnectionId.apply)
+      .fold(
+        ex => Left(InvalidArgumentError("connectionId", "valid id", request.connectionId).logWarn),
+        id => Right(id)
+      )
+
+    validatedConnectionId.toFutureEither
+      .flatMap(connectionId => messages.getMessages(userId, connectionId))
+      .wrapExceptions
+      .successMap { msgs =>
+        GetMessagesForConnectionResponse(msgs.map(_.toProto))
+      }
+  }
+
   /** Send message over a connection
     *
     * Available to: Issuer, Holder, Validator

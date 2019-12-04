@@ -58,4 +58,21 @@ class MessagesRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) exte
         .toFutureEither
     }
   }
+
+  def getMessages(
+      recipientId: ParticipantId,
+      connectionId: ConnectionId
+  ): FutureEither[ConnectorError, Seq[Message]] = {
+    implicit val loggingContext: LoggingContext = LoggingContext(
+      "recipientId" -> recipientId,
+      "connectionId" -> connectionId
+    )
+
+    MessagesDAO
+      .getMessagesPaginated(recipientId, connectionId)
+      .transact(xa)
+      .unsafeToFuture()
+      .map(Right(_))
+      .toFutureEither
+  }
 }

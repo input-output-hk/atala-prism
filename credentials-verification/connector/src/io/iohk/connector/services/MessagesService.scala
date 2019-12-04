@@ -22,4 +22,12 @@ class MessagesService(messagesRepository: MessagesRepository) {
   ): FutureEither[ConnectorError, Seq[Message]] = {
     messagesRepository.getMessagesPaginated(recipientId, limit, lastSeenMessageId)
   }
+
+  def getMessages(
+      recipientId: ParticipantId,
+      connectionId: ConnectionId
+  ): FutureEither[ConnectorError, Seq[Message]] = {
+
+    messagesRepository.getMessages(recipientId, connectionId)
+  }
 }

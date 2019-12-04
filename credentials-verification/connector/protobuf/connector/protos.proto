@@ -64,6 +64,9 @@ service ConnectorService {
   // Available to: Issuer, Holder, Validator
   rpc GetMessagesPaginated (GetMessagesPaginatedRequest) returns (GetMessagesPaginatedResponse) {}
 
+  // Return messages received on the given connection, the number is supposed to be small, so, no pagination is required.
+  rpc GetMessagesForConnection (GetMessagesForConnectionRequest) returns (GetMessagesForConnectionResponse) {}
+
   // Send message over a connection
   //
   // Available to: Issuer, Holder, Validator
@@ -204,6 +207,13 @@ message GetMessagesPaginatedRequest {
 // Response with messages
 message GetMessagesPaginatedResponse {
   repeated ReceivedMessage messages = 1; // messages sorted in ascending order by receiving time
+}
+
+message GetMessagesForConnectionRequest {
+  string connectionId = 1;
+}
+message GetMessagesForConnectionResponse {
+  repeated ReceivedMessage messages = 1;
 }
 
 // Request to send message
