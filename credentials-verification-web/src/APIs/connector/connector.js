@@ -11,7 +11,7 @@ import Logger from '../../helpers/Logger';
 
 const { REACT_APP_GRPC_CLIENT } = window._env_;
 const issuerId = 'c8834532-eade-11e9-a88d-d8f2ca059830';
-const connectorServiceClient = new ConnectorServicePromiseClient(REACT_APP_GRPC_CLIENT, null, null);
+const connectorServiceClient = new ConnectorServiceClient(REACT_APP_GRPC_CLIENT, null, null);
 
 const generateConnectionTokenCallback = callback => (error, response) => {
   if (error) return Logger.error('An error: ', error);

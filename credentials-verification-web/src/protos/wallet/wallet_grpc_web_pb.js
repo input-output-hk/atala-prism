@@ -1,3 +1,4 @@
+/* eslint-disable */
 /**
  * @fileoverview gRPC-Web generated client stub for io.iohk.cvp.wallet
  * @enhanceable
@@ -11,6 +12,8 @@
 const grpc = {};
 grpc.web = require('grpc-web');
 
+
+var geud_node_new_pb = require('./geud_node_new_pb.js')
 const proto = {};
 proto.io = {};
 proto.io.iohk = {};

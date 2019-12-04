@@ -13,6 +13,8 @@ var jspb = require('google-protobuf');
 var goog = jspb;
 var global = Function('return this')();
 
+var geud_node_new_pb = require('./geud_node_new_pb.js');
+goog.object.extend(proto, geud_node_new_pb);
 goog.exportSymbol('proto.io.iohk.cvp.wallet.BigInteger', null, global);
 goog.exportSymbol('proto.io.iohk.cvp.wallet.ChangePassphraseRequest', null, global);
 goog.exportSymbol('proto.io.iohk.cvp.wallet.ChangePassphraseResponse', null, global);
@@ -28,6 +30,7 @@ goog.exportSymbol('proto.io.iohk.cvp.wallet.GetWalletStatusResponse.WalletStatus
 goog.exportSymbol('proto.io.iohk.cvp.wallet.KeyPair', null, global);
 goog.exportSymbol('proto.io.iohk.cvp.wallet.LockWalletRequest', null, global);
 goog.exportSymbol('proto.io.iohk.cvp.wallet.LockWalletResponse', null, global);
+goog.exportSymbol('proto.io.iohk.cvp.wallet.Role', null, global);
 goog.exportSymbol('proto.io.iohk.cvp.wallet.SignMessageRequest', null, global);
 goog.exportSymbol('proto.io.iohk.cvp.wallet.SignMessageResponse', null, global);
 goog.exportSymbol('proto.io.iohk.cvp.wallet.UnlockWalletRequest', null, global);
@@ -130,7 +133,7 @@ if (goog.DEBUG && !COMPILED) {
  * @constructor
  */
 proto.io.iohk.cvp.wallet.WalletData = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.io.iohk.cvp.wallet.WalletData.repeatedFields_, null);
 };
 goog.inherits(proto.io.iohk.cvp.wallet.WalletData, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
@@ -991,6 +994,8 @@ proto.io.iohk.cvp.wallet.KeyPair.prototype.toObject = function(opt_includeInstan
  */
 proto.io.iohk.cvp.wallet.KeyPair.toObject = function(includeInstance, msg) {
   var f, obj = {
+    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    usage: jspb.Message.getFieldWithDefault(msg, 2, 0),
     privatekey: (f = msg.getPrivatekey()) && proto.io.iohk.cvp.wallet.ECPrivateKey.toObject(includeInstance, f),
     publickey: (f = msg.getPublickey()) && proto.io.iohk.cvp.wallet.ECPublicKey.toObject(includeInstance, f)
   };
@@ -1030,11 +1035,19 @@ proto.io.iohk.cvp.wallet.KeyPair.deserializeBinaryFromReader = function(msg, rea
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setId(value);
+      break;
+    case 2:
+      var value = /** @type {!proto.io.iohk.nodenew.KeyUsage} */ (reader.readEnum());
+      msg.setUsage(value);
+      break;
+    case 3:
       var value = new proto.io.iohk.cvp.wallet.ECPrivateKey;
       reader.readMessage(value,proto.io.iohk.cvp.wallet.ECPrivateKey.deserializeBinaryFromReader);
       msg.setPrivatekey(value);
       break;
-    case 2:
+    case 4:
       var value = new proto.io.iohk.cvp.wallet.ECPublicKey;
       reader.readMessage(value,proto.io.iohk.cvp.wallet.ECPublicKey.deserializeBinaryFromReader);
       msg.setPublickey(value);
@@ -1068,10 +1081,24 @@ proto.io.iohk.cvp.wallet.KeyPair.prototype.serializeBinary = function() {
  */
 proto.io.iohk.cvp.wallet.KeyPair.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
+  f = message.getId();
+  if (f.length > 0) {
+    writer.writeString(
+      1,
+      f
+    );
+  }
+  f = message.getUsage();
+  if (f !== 0.0) {
+    writer.writeEnum(
+      2,
+      f
+    );
+  }
   f = message.getPrivatekey();
   if (f != null) {
     writer.writeMessage(
-      1,
+      3,
       f,
       proto.io.iohk.cvp.wallet.ECPrivateKey.serializeBinaryToWriter
     );
@@ -1079,7 +1106,7 @@ proto.io.iohk.cvp.wallet.KeyPair.serializeBinaryToWriter = function(message, wri
   f = message.getPublickey();
   if (f != null) {
     writer.writeMessage(
-      2,
+      4,
       f,
       proto.io.iohk.cvp.wallet.ECPublicKey.serializeBinaryToWriter
     );
@@ -1088,12 +1115,48 @@ proto.io.iohk.cvp.wallet.KeyPair.serializeBinaryToWriter = function(message, wri
 
 
 /**
- * optional ECPrivateKey privateKey = 1;
+ * optional string id = 1;
+ * @return {string}
+ */
+proto.io.iohk.cvp.wallet.KeyPair.prototype.getId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.cvp.wallet.KeyPair} returns this
+ */
+proto.io.iohk.cvp.wallet.KeyPair.prototype.setId = function(value) {
+  return jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
+/**
+ * optional io.iohk.nodenew.KeyUsage usage = 2;
+ * @return {!proto.io.iohk.nodenew.KeyUsage}
+ */
+proto.io.iohk.cvp.wallet.KeyPair.prototype.getUsage = function() {
+  return /** @type {!proto.io.iohk.nodenew.KeyUsage} */ (jspb.Message.getFieldWithDefault(this, 2, 0));
+};
+
+
+/**
+ * @param {!proto.io.iohk.nodenew.KeyUsage} value
+ * @return {!proto.io.iohk.cvp.wallet.KeyPair} returns this
+ */
+proto.io.iohk.cvp.wallet.KeyPair.prototype.setUsage = function(value) {
+  return jspb.Message.setProto3EnumField(this, 2, value);
+};
+
+
+/**
+ * optional ECPrivateKey privateKey = 3;
  * @return {?proto.io.iohk.cvp.wallet.ECPrivateKey}
  */
 proto.io.iohk.cvp.wallet.KeyPair.prototype.getPrivatekey = function() {
   return /** @type{?proto.io.iohk.cvp.wallet.ECPrivateKey} */ (
-    jspb.Message.getWrapperField(this, proto.io.iohk.cvp.wallet.ECPrivateKey, 1));
+    jspb.Message.getWrapperField(this, proto.io.iohk.cvp.wallet.ECPrivateKey, 3));
 };
 
 
@@ -1102,7 +1165,7 @@ proto.io.iohk.cvp.wallet.KeyPair.prototype.getPrivatekey = function() {
  * @return {!proto.io.iohk.cvp.wallet.KeyPair} returns this
 */
 proto.io.iohk.cvp.wallet.KeyPair.prototype.setPrivatekey = function(value) {
-  return jspb.Message.setWrapperField(this, 1, value);
+  return jspb.Message.setWrapperField(this, 3, value);
 };
 
 
@@ -1120,17 +1183,17 @@ proto.io.iohk.cvp.wallet.KeyPair.prototype.clearPrivatekey = function() {
  * @return {boolean}
  */
 proto.io.iohk.cvp.wallet.KeyPair.prototype.hasPrivatekey = function() {
-  return jspb.Message.getField(this, 1) != null;
+  return jspb.Message.getField(this, 3) != null;
 };
 
 
 /**
- * optional ECPublicKey publicKey = 2;
+ * optional ECPublicKey publicKey = 4;
  * @return {?proto.io.iohk.cvp.wallet.ECPublicKey}
  */
 proto.io.iohk.cvp.wallet.KeyPair.prototype.getPublickey = function() {
   return /** @type{?proto.io.iohk.cvp.wallet.ECPublicKey} */ (
-    jspb.Message.getWrapperField(this, proto.io.iohk.cvp.wallet.ECPublicKey, 2));
+    jspb.Message.getWrapperField(this, proto.io.iohk.cvp.wallet.ECPublicKey, 4));
 };
 
 
@@ -1139,7 +1202,7 @@ proto.io.iohk.cvp.wallet.KeyPair.prototype.getPublickey = function() {
  * @return {!proto.io.iohk.cvp.wallet.KeyPair} returns this
 */
 proto.io.iohk.cvp.wallet.KeyPair.prototype.setPublickey = function(value) {
-  return jspb.Message.setWrapperField(this, 2, value);
+  return jspb.Message.setWrapperField(this, 4, value);
 };
 
 
@@ -1157,10 +1220,17 @@ proto.io.iohk.cvp.wallet.KeyPair.prototype.clearPublickey = function() {
  * @return {boolean}
  */
 proto.io.iohk.cvp.wallet.KeyPair.prototype.hasPublickey = function() {
-  return jspb.Message.getField(this, 2) != null;
+  return jspb.Message.getField(this, 4) != null;
 };
 
 
+
+/**
+ * List of repeated fields within this message type.
+ * @private {!Array<number>}
+ * @const
+ */
+proto.io.iohk.cvp.wallet.WalletData.repeatedFields_ = [1];
 
 
 
@@ -1193,8 +1263,11 @@ proto.io.iohk.cvp.wallet.WalletData.prototype.toObject = function(opt_includeIns
  */
 proto.io.iohk.cvp.wallet.WalletData.toObject = function(includeInstance, msg) {
   var f, obj = {
-    keypair: (f = msg.getKeypair()) && proto.io.iohk.cvp.wallet.KeyPair.toObject(includeInstance, f),
-    did: jspb.Message.getFieldWithDefault(msg, 2, "")
+    keypairList: jspb.Message.toObjectList(msg.getKeypairList(),
+    proto.io.iohk.cvp.wallet.KeyPair.toObject, includeInstance),
+    did: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    organisationname: jspb.Message.getFieldWithDefault(msg, 4, ""),
+    role: jspb.Message.getFieldWithDefault(msg, 5, 0)
   };
 
   if (includeInstance) {
@@ -1234,11 +1307,19 @@ proto.io.iohk.cvp.wallet.WalletData.deserializeBinaryFromReader = function(msg, 
     case 1:
       var value = new proto.io.iohk.cvp.wallet.KeyPair;
       reader.readMessage(value,proto.io.iohk.cvp.wallet.KeyPair.deserializeBinaryFromReader);
-      msg.setKeypair(value);
+      msg.addKeypair(value);
       break;
     case 2:
       var value = /** @type {string} */ (reader.readString());
       msg.setDid(value);
+      break;
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setOrganisationname(value);
+      break;
+    case 5:
+      var value = /** @type {!proto.io.iohk.cvp.wallet.Role} */ (reader.readEnum());
+      msg.setRole(value);
       break;
     default:
       reader.skipField();
@@ -1269,9 +1350,9 @@ proto.io.iohk.cvp.wallet.WalletData.prototype.serializeBinary = function() {
  */
 proto.io.iohk.cvp.wallet.WalletData.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = message.getKeypair();
-  if (f != null) {
-    writer.writeMessage(
+  f = message.getKeypairList();
+  if (f.length > 0) {
+    writer.writeRepeatedMessage(
       1,
       f,
       proto.io.iohk.cvp.wallet.KeyPair.serializeBinaryToWriter
@@ -1284,43 +1365,58 @@ proto.io.iohk.cvp.wallet.WalletData.serializeBinaryToWriter = function(message, 
       f
     );
   }
+  f = message.getOrganisationname();
+  if (f.length > 0) {
+    writer.writeString(
+      4,
+      f
+    );
+  }
+  f = message.getRole();
+  if (f !== 0.0) {
+    writer.writeEnum(
+      5,
+      f
+    );
+  }
 };
 
 
 /**
- * optional KeyPair keyPair = 1;
- * @return {?proto.io.iohk.cvp.wallet.KeyPair}
+ * repeated KeyPair keyPair = 1;
+ * @return {!Array<!proto.io.iohk.cvp.wallet.KeyPair>}
  */
-proto.io.iohk.cvp.wallet.WalletData.prototype.getKeypair = function() {
-  return /** @type{?proto.io.iohk.cvp.wallet.KeyPair} */ (
-    jspb.Message.getWrapperField(this, proto.io.iohk.cvp.wallet.KeyPair, 1));
+proto.io.iohk.cvp.wallet.WalletData.prototype.getKeypairList = function() {
+  return /** @type{!Array<!proto.io.iohk.cvp.wallet.KeyPair>} */ (
+    jspb.Message.getRepeatedWrapperField(this, proto.io.iohk.cvp.wallet.KeyPair, 1));
 };
 
 
 /**
- * @param {?proto.io.iohk.cvp.wallet.KeyPair|undefined} value
+ * @param {!Array<!proto.io.iohk.cvp.wallet.KeyPair>} value
  * @return {!proto.io.iohk.cvp.wallet.WalletData} returns this
 */
-proto.io.iohk.cvp.wallet.WalletData.prototype.setKeypair = function(value) {
-  return jspb.Message.setWrapperField(this, 1, value);
+proto.io.iohk.cvp.wallet.WalletData.prototype.setKeypairList = function(value) {
+  return jspb.Message.setRepeatedWrapperField(this, 1, value);
 };
 
 
 /**
- * Clears the message field making it undefined.
+ * @param {!proto.io.iohk.cvp.wallet.KeyPair=} opt_value
+ * @param {number=} opt_index
+ * @return {!proto.io.iohk.cvp.wallet.KeyPair}
+ */
+proto.io.iohk.cvp.wallet.WalletData.prototype.addKeypair = function(opt_value, opt_index) {
+  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.io.iohk.cvp.wallet.KeyPair, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
  * @return {!proto.io.iohk.cvp.wallet.WalletData} returns this
  */
-proto.io.iohk.cvp.wallet.WalletData.prototype.clearKeypair = function() {
-  return this.setKeypair(undefined);
-};
-
-
-/**
- * Returns whether this field is set.
- * @return {boolean}
- */
-proto.io.iohk.cvp.wallet.WalletData.prototype.hasKeypair = function() {
-  return jspb.Message.getField(this, 1) != null;
+proto.io.iohk.cvp.wallet.WalletData.prototype.clearKeypairList = function() {
+  return this.setKeypairList([]);
 };
 
 
@@ -1339,6 +1435,42 @@ proto.io.iohk.cvp.wallet.WalletData.prototype.getDid = function() {
  */
 proto.io.iohk.cvp.wallet.WalletData.prototype.setDid = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
+};
+
+
+/**
+ * optional string organisationName = 4;
+ * @return {string}
+ */
+proto.io.iohk.cvp.wallet.WalletData.prototype.getOrganisationname = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.cvp.wallet.WalletData} returns this
+ */
+proto.io.iohk.cvp.wallet.WalletData.prototype.setOrganisationname = function(value) {
+  return jspb.Message.setProto3StringField(this, 4, value);
+};
+
+
+/**
+ * optional Role role = 5;
+ * @return {!proto.io.iohk.cvp.wallet.Role}
+ */
+proto.io.iohk.cvp.wallet.WalletData.prototype.getRole = function() {
+  return /** @type {!proto.io.iohk.cvp.wallet.Role} */ (jspb.Message.getFieldWithDefault(this, 5, 0));
+};
+
+
+/**
+ * @param {!proto.io.iohk.cvp.wallet.Role} value
+ * @return {!proto.io.iohk.cvp.wallet.WalletData} returns this
+ */
+proto.io.iohk.cvp.wallet.WalletData.prototype.setRole = function(value) {
+  return jspb.Message.setProto3EnumField(this, 5, value);
 };
 
 
@@ -2302,7 +2434,9 @@ proto.io.iohk.cvp.wallet.CreateWalletRequest.prototype.toObject = function(opt_i
  */
 proto.io.iohk.cvp.wallet.CreateWalletRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    passphrase: jspb.Message.getFieldWithDefault(msg, 1, "")
+    passphrase: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    organisationname: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    role: jspb.Message.getFieldWithDefault(msg, 3, 0)
   };
 
   if (includeInstance) {
@@ -2343,6 +2477,14 @@ proto.io.iohk.cvp.wallet.CreateWalletRequest.deserializeBinaryFromReader = funct
       var value = /** @type {string} */ (reader.readString());
       msg.setPassphrase(value);
       break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setOrganisationname(value);
+      break;
+    case 3:
+      var value = /** @type {!proto.io.iohk.cvp.wallet.Role} */ (reader.readEnum());
+      msg.setRole(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -2379,6 +2521,20 @@ proto.io.iohk.cvp.wallet.CreateWalletRequest.serializeBinaryToWriter = function(
       f
     );
   }
+  f = message.getOrganisationname();
+  if (f.length > 0) {
+    writer.writeString(
+      2,
+      f
+    );
+  }
+  f = message.getRole();
+  if (f !== 0.0) {
+    writer.writeEnum(
+      3,
+      f
+    );
+  }
 };
 
 
@@ -2397,6 +2553,42 @@ proto.io.iohk.cvp.wallet.CreateWalletRequest.prototype.getPassphrase = function(
  */
 proto.io.iohk.cvp.wallet.CreateWalletRequest.prototype.setPassphrase = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
+/**
+ * optional string organisationName = 2;
+ * @return {string}
+ */
+proto.io.iohk.cvp.wallet.CreateWalletRequest.prototype.getOrganisationname = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.cvp.wallet.CreateWalletRequest} returns this
+ */
+proto.io.iohk.cvp.wallet.CreateWalletRequest.prototype.setOrganisationname = function(value) {
+  return jspb.Message.setProto3StringField(this, 2, value);
+};
+
+
+/**
+ * optional Role role = 3;
+ * @return {!proto.io.iohk.cvp.wallet.Role}
+ */
+proto.io.iohk.cvp.wallet.CreateWalletRequest.prototype.getRole = function() {
+  return /** @type {!proto.io.iohk.cvp.wallet.Role} */ (jspb.Message.getFieldWithDefault(this, 3, 0));
+};
+
+
+/**
+ * @param {!proto.io.iohk.cvp.wallet.Role} value
+ * @return {!proto.io.iohk.cvp.wallet.CreateWalletRequest} returns this
+ */
+proto.io.iohk.cvp.wallet.CreateWalletRequest.prototype.setRole = function(value) {
+  return jspb.Message.setProto3EnumField(this, 3, value);
 };
 
 
@@ -2432,7 +2624,7 @@ proto.io.iohk.cvp.wallet.CreateWalletResponse.prototype.toObject = function(opt_
  */
 proto.io.iohk.cvp.wallet.CreateWalletResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-
+    operation: (f = msg.getOperation()) && geud_node_new_pb.SignedAtalaOperation.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -2469,6 +2661,11 @@ proto.io.iohk.cvp.wallet.CreateWalletResponse.deserializeBinaryFromReader = func
     }
     var field = reader.getFieldNumber();
     switch (field) {
+    case 1:
+      var value = new geud_node_new_pb.SignedAtalaOperation;
+      reader.readMessage(value,geud_node_new_pb.SignedAtalaOperation.deserializeBinaryFromReader);
+      msg.setOperation(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -2498,6 +2695,51 @@ proto.io.iohk.cvp.wallet.CreateWalletResponse.prototype.serializeBinary = functi
  */
 proto.io.iohk.cvp.wallet.CreateWalletResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
+  f = message.getOperation();
+  if (f != null) {
+    writer.writeMessage(
+      1,
+      f,
+      geud_node_new_pb.SignedAtalaOperation.serializeBinaryToWriter
+    );
+  }
+};
+
+
+/**
+ * optional io.iohk.nodenew.SignedAtalaOperation operation = 1;
+ * @return {?proto.io.iohk.nodenew.SignedAtalaOperation}
+ */
+proto.io.iohk.cvp.wallet.CreateWalletResponse.prototype.getOperation = function() {
+  return /** @type{?proto.io.iohk.nodenew.SignedAtalaOperation} */ (
+    jspb.Message.getWrapperField(this, geud_node_new_pb.SignedAtalaOperation, 1));
+};
+
+
+/**
+ * @param {?proto.io.iohk.nodenew.SignedAtalaOperation|undefined} value
+ * @return {!proto.io.iohk.cvp.wallet.CreateWalletResponse} returns this
+*/
+proto.io.iohk.cvp.wallet.CreateWalletResponse.prototype.setOperation = function(value) {
+  return jspb.Message.setWrapperField(this, 1, value);
+};
+
+
+/**
+ * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.cvp.wallet.CreateWalletResponse} returns this
+ */
+proto.io.iohk.cvp.wallet.CreateWalletResponse.prototype.clearOperation = function() {
+  return this.setOperation(undefined);
+};
+
+
+/**
+ * Returns whether this field is set.
+ * @return {boolean}
+ */
+proto.io.iohk.cvp.wallet.CreateWalletResponse.prototype.hasOperation = function() {
+  return jspb.Message.getField(this, 1) != null;
 };
 
 
@@ -2903,7 +3145,8 @@ proto.io.iohk.cvp.wallet.UnlockWalletResponse.prototype.toObject = function(opt_
  */
 proto.io.iohk.cvp.wallet.UnlockWalletResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-
+    organisationname: jspb.Message.getFieldWithDefault(msg, 4, ""),
+    role: jspb.Message.getFieldWithDefault(msg, 5, 0)
   };
 
   if (includeInstance) {
@@ -2940,6 +3183,14 @@ proto.io.iohk.cvp.wallet.UnlockWalletResponse.deserializeBinaryFromReader = func
     }
     var field = reader.getFieldNumber();
     switch (field) {
+    case 4:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setOrganisationname(value);
+      break;
+    case 5:
+      var value = /** @type {!proto.io.iohk.cvp.wallet.Role} */ (reader.readEnum());
+      msg.setRole(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -2969,6 +3220,56 @@ proto.io.iohk.cvp.wallet.UnlockWalletResponse.prototype.serializeBinary = functi
  */
 proto.io.iohk.cvp.wallet.UnlockWalletResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
+  f = message.getOrganisationname();
+  if (f.length > 0) {
+    writer.writeString(
+      4,
+      f
+    );
+  }
+  f = message.getRole();
+  if (f !== 0.0) {
+    writer.writeEnum(
+      5,
+      f
+    );
+  }
+};
+
+
+/**
+ * optional string organisationName = 4;
+ * @return {string}
+ */
+proto.io.iohk.cvp.wallet.UnlockWalletResponse.prototype.getOrganisationname = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.cvp.wallet.UnlockWalletResponse} returns this
+ */
+proto.io.iohk.cvp.wallet.UnlockWalletResponse.prototype.setOrganisationname = function(value) {
+  return jspb.Message.setProto3StringField(this, 4, value);
+};
+
+
+/**
+ * optional Role role = 5;
+ * @return {!proto.io.iohk.cvp.wallet.Role}
+ */
+proto.io.iohk.cvp.wallet.UnlockWalletResponse.prototype.getRole = function() {
+  return /** @type {!proto.io.iohk.cvp.wallet.Role} */ (jspb.Message.getFieldWithDefault(this, 5, 0));
+};
+
+
+/**
+ * @param {!proto.io.iohk.cvp.wallet.Role} value
+ * @return {!proto.io.iohk.cvp.wallet.UnlockWalletResponse} returns this
+ */
+proto.io.iohk.cvp.wallet.UnlockWalletResponse.prototype.setRole = function(value) {
+  return jspb.Message.setProto3EnumField(this, 5, value);
 };
 
 
@@ -3434,5 +3735,13 @@ proto.io.iohk.cvp.wallet.ChangePassphraseResponse.serializeBinaryToWriter = func
   var f = undefined;
 };
 
+
+/**
+ * @enum {number}
+ */
+proto.io.iohk.cvp.wallet.Role = {
+  ISSUER: 0,
+  VERIFIER: 1
+};
 
 goog.object.extend(exports, proto.io.iohk.cvp.wallet);

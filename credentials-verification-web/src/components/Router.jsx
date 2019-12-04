@@ -14,78 +14,93 @@ import Payment from './payments/PaymentContainer';
 import Settings from './settings/SettingsContainer';
 import { withSideBar } from './providers/withSideBar';
 import { ISSUER, VERIFIER } from '../helpers/constants';
+import { withLoggedValidation } from './providers/withLoggedValidation';
 
-const landingRoute = { path: '/', key: '/', component: Landing };
-const loginRoute = { exact: true, path: '/login', key: '/login', component: Login };
-const dashboardRoute = { path: '/', key: '/', component: withSideBar(Dashboard) };
+const issuer = [ISSUER];
+const allRoles = [ISSUER, VERIFIER];
+const noRole = [];
+
+const loginRoute = {
+  exact: true,
+  path: '/login',
+  key: '/login',
+  component: withLoggedValidation(Login, noRole)
+};
 const errorRoute = { exact: true, path: '/error', key: '/error', component: I18nError };
+
 const connections = {
   exact: true,
   path: '/connections',
   key: '/connections',
-  component: withSideBar(Connections)
+  component: withLoggedValidation(withSideBar(Connections), allRoles)
 };
-const groups = { exact: true, path: '/groups', key: '/groups', component: withSideBar(Groups) };
+const groups = {
+  exact: true,
+  path: '/groups',
+  key: '/groups',
+  component: withLoggedValidation(withSideBar(Groups), issuer)
+};
 const credential = {
   exact: true,
   path: '/credentials',
   key: '/credentials',
-  component: withSideBar(Credential)
+  component: withLoggedValidation(withSideBar(Credential), issuer)
 };
 const credentialSummary = {
   exact: true,
   path: '/credentialSummary',
   key: '/credentialSummary',
-  component: withSideBar(CredentialSummaries)
+  component: withLoggedValidation(withSideBar(CredentialSummaries), issuer)
 };
 const newCredential = {
   exact: true,
   path: '/newCredential',
   key: '/newCredential',
-  component: withSideBar(NewCredential)
+  component: withLoggedValidation(withSideBar(NewCredential), issuer)
 };
 const registration = {
   exact: true,
   path: '/registration',
   key: '/registration',
-  component: Registration
+  component: withLoggedValidation(Registration, noRole)
 };
 const payment = {
   exact: true,
   path: '/payment',
   key: 'payment',
-  component: withSideBar(Payment)
+  component: withLoggedValidation(withSideBar(Payment), allRoles)
+};
+const landingRoute = {
+  path: '/landing',
+  key: '/landing',
+  component: withLoggedValidation(Landing, noRole)
+};
+const dashboardRoute = {
+  path: '/',
+  key: '/',
+  component: withLoggedValidation(withSideBar(Dashboard), allRoles)
 };
 const settings = {
   exact: true,
   path: '/settings',
   key: 'settings',
-  component: withSideBar(Settings)
+  component: withLoggedValidation(withSideBar(Settings), allRoles)
 };
 
-const publicRoutes = [registration, loginRoute, loginRoute, landingRoute];
-
-const issuerRoutes = [newCredential, groups, credential, credentialSummary];
-
-const genericRoutes = [errorRoute, connections, payment, settings, dashboardRoute];
-
-const role = localStorage.getItem('userRole');
-
-const routes = [];
-
-switch (role) {
-  case ISSUER: {
-    routes.push(...issuerRoutes);
-    routes.push(...genericRoutes);
-    break;
-  }
-  case VERIFIER: {
-    routes.push(...genericRoutes);
-    break;
-  }
-  default:
-    routes.push(...publicRoutes);
-}
+const routes = [
+  loginRoute,
+  errorRoute,
+  connections,
+  groups,
+  credential,
+  settings,
+  credentialSummary,
+  newCredential,
+  registration,
+  payment,
+  landingRoute,
+  dashboardRoute
+];
 
 const Router = () => (
   <Switch>
