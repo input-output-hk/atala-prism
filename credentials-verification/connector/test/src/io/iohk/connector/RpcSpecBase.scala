@@ -84,16 +84,22 @@ class RpcSpecBase extends PostgresRepositorySpec with BeforeAndAfterEach {
     f(blockingStub)
   }
 
-  protected def createParticipant(name: String, tpe: ParticipantType): ParticipantId = {
+  protected def createParticipant(
+      name: String,
+      tpe: ParticipantType,
+      logo: Option[ParticipantLogo] = None
+  ): ParticipantId = {
     val id = ParticipantId.random()
-    ParticipantsDAO.insert(ParticipantInfo(id, tpe, name, None)).transact(database).unsafeToFuture().futureValue
+    ParticipantsDAO.insert(ParticipantInfo(id, tpe, name, None, logo)).transact(database).unsafeToFuture().futureValue
 
     id
   }
 
   protected def createHolder(name: String): ParticipantId = createParticipant(name, ParticipantType.Holder)
-  protected def createIssuer(name: String): ParticipantId = createParticipant(name, ParticipantType.Issuer)
-  protected def createVerifier(name: String): ParticipantId = createParticipant(name, ParticipantType.Verifier)
+  protected def createIssuer(name: String): ParticipantId =
+    createParticipant(name, ParticipantType.Issuer, Some(ParticipantLogo(Vector(10.toByte, 5.toByte))))
+  protected def createVerifier(name: String): ParticipantId =
+    createParticipant(name, ParticipantType.Verifier, Some(ParticipantLogo(Vector(1.toByte, 3.toByte))))
 
   protected def createToken(initiator: ParticipantId): TokenString = {
     val tokenString = TokenString.random()

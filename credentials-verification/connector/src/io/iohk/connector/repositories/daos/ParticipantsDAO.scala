@@ -7,10 +7,10 @@ import io.iohk.cvp.models.ParticipantId
 
 object ParticipantsDAO {
   def insert(participant: ParticipantInfo): doobie.ConnectionIO[Unit] = {
-    val ParticipantInfo(id, tpe, name, did) = participant
+    val ParticipantInfo(id, tpe, name, did, logo) = participant
     sql"""
-         |INSERT INTO participants (id, tpe, name, did)
-         |VALUES ($id, $tpe, $name, $did)
+         |INSERT INTO participants (id, tpe, name, did, logo)
+         |VALUES ($id, $tpe, $name, $did, $logo)
        """.stripMargin.update.run.map(_ => ())
   }
 
@@ -23,7 +23,7 @@ object ParticipantsDAO {
 
   def findBy(token: TokenString): OptionT[doobie.ConnectionIO, ParticipantInfo] = OptionT {
     sql"""
-         |SELECT p.id, p.tpe, p.name, p.did
+         |SELECT p.id, p.tpe, p.name, p.did, p.logo
          |FROM connection_tokens t
          |JOIN participants p ON p.id = t.initiator
          |WHERE t.token = $token
@@ -32,7 +32,7 @@ object ParticipantsDAO {
 
   def findByAvailableToken(token: TokenString): OptionT[doobie.ConnectionIO, ParticipantInfo] = OptionT {
     sql"""
-         |SELECT p.id, p.tpe, p.name, p.did
+         |SELECT p.id, p.tpe, p.name, p.did, p.logo
          |FROM connection_tokens t
          |JOIN participants p ON p.id = t.initiator
          |WHERE t.token = $token AND

@@ -27,7 +27,7 @@ object DataPreparation {
          |""".stripMargin.update.run.transact(database).unsafeRunSync()
 
     // dirty hack to create a participant while creating an issuer, TODO: Merge the tables
-    val participant = ParticipantInfo(ParticipantId(id.value), ParticipantType.Issuer, name, Option(did))
+    val participant = ParticipantInfo(ParticipantId(id.value), ParticipantType.Issuer, name, Option(did), None)
     sql"""
          |INSERT INTO participants (id, tpe, name, did)
          |VALUES (${participant.id}, ${participant.tpe}, ${participant.name}, ${participant.did})

@@ -39,7 +39,13 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
       sql"""INSERT INTO connection_tokens(token, initiator) VALUES ($token, $issuerId)""".runUpdate()
 
       val result = connectionsRepository.getTokenInfo(token).value.futureValue
-      result.right.value mustBe ParticipantInfo(issuerId, ParticipantType.Issuer, "Issuer", Some("did:test:issuer"))
+      result.right.value mustBe ParticipantInfo(
+        issuerId,
+        ParticipantType.Issuer,
+        "Issuer",
+        Some("did:test:issuer"),
+        None
+      )
     }
   }
 
@@ -92,7 +98,7 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
         val holderName = s"Holder$i"
         val issuerName = s"Issuer$i"
         val holderId = createHolder(holderName)
-        val issuerId = createIssuer(issuerName)
+        val issuerId = createIssuer(issuerName, Some(ParticipantLogo(Vector(10.toByte, 15.toByte))))
 
         val holderConnectionId = createConnection(verifierId, holderId, Instant.ofEpochMilli(zeroTime + 2 * i))
         val issuerConnectionId = createConnection(issuerId, verifierId, Instant.ofEpochMilli(zeroTime + 2 * i + 1))
