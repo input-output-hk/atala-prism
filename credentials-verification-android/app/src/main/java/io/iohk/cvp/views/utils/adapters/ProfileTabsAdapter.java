@@ -25,10 +25,12 @@ public class ProfileTabsAdapter extends PagerAdapter {
     LayoutInflater inflater = LayoutInflater.from(context);
     ViewGroup layout = (ViewGroup) inflater
         .inflate(
-            position == 0 ? R.layout.fragment_profile_personal_view : R.layout.fragment_profile_qr_view,
+            position == 0 ? R.layout.fragment_profile_personal_view
+                : R.layout.fragment_profile_qr_view,
             collection,
             false
         );
+    // TODO populate with stored profile data
     collection.addView(layout);
     return layout;
   }

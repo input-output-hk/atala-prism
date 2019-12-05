@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
@@ -47,6 +48,9 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> {
 
   @BindView(R.id.fragment_layout)
   FrameLayout fragmentLayout;
+
+  @BindView(R.id.new_credentials_container)
+  ConstraintLayout newCredentialsContainer;
 
   @Inject
   CredentialDetailFragment credentialFragment;
@@ -115,6 +119,10 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> {
                 Collectors.toList());
 
         credentialsAdapter.addMesseges(acceptedMessages);
+
+        if (newMessages.size() > 0) {
+          newCredentialsContainer.setVisibility(View.VISIBLE);
+        }
       });
     }
   }

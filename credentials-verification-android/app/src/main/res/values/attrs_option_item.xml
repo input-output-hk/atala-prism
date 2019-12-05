@@ -4,5 +4,6 @@
     <attr format="string" name="secondaryText" />
     <attr format="reference" name="logoImage" />
     <attr format="reference" name="actionImage" />
+    <attr format="boolean" name="isAvailable" />
   </declare-styleable>
 </resources>
