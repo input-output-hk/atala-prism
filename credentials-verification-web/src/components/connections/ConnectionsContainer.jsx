@@ -64,6 +64,7 @@ const ConnectionsContainer = ({ api }) => {
       filterProps={filterProps}
       inviteHolder={inviteHolder}
       isIssuer={api.isIssuer}
+      getCredentials={api.getMessagesForConnection}
     />
   );
 };

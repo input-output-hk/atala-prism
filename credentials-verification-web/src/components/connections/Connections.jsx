@@ -15,7 +15,7 @@ import { drawerWidth } from '../../helpers/constants';
 import './_style.scss';
 import CredentialListDetail from '../common/Organisms/Detail/CredentialListDetail';
 
-const Connections = ({ tableProps, filterProps, inviteHolder, isIssuer }) => {
+const Connections = ({ tableProps, filterProps, inviteHolder, isIssuer, getCredentials }) => {
   const { t } = useTranslation();
 
   const [connectionToken, setConnectionToken] = useState('');
@@ -117,7 +117,8 @@ Connections.propTypes = {
     setStatus: PropTypes.func.isRequired
   }).isRequired,
   inviteHolder: PropTypes.func.isRequired,
-  isIssuer: PropTypes.func.isRequired
+  isIssuer: PropTypes.func.isRequired,
+  getCredentials: PropTypes.func.isRequired
 };
 
 export default Connections;

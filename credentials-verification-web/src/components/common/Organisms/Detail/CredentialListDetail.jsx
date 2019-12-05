@@ -11,6 +11,7 @@ import CredentialData from '../../Atoms/CredentialData/CredentialData';
 
 import './_style.scss';
 import CredentialDetail from './CredentialDetail';
+import holderDefaultAvatar from '../../../../images/holder-default-avatar.svg';
 
 const CredentialListDetail = ({ user: { icon, name: userName }, transactions, date }) => {
   const { t } = useTranslation();
@@ -31,7 +32,7 @@ const CredentialListDetail = ({ user: { icon, name: userName }, transactions, da
         credentialData={connectionInfo}
       />
       <div className="CredentialSummaryHeader">
-        <img src={icon} alt={t('credentialSummary.detail.alt', userName)} />
+        <img src={icon || holderDefaultAvatar} alt={t('credentialSummary.detail.alt', userName)} />
         <div className="CredentialSummaryUser">
           <h3>{userName}</h3>
           <p>{shortBackendDateFormatter(date)}</p>

@@ -1,6 +1,6 @@
 /* eslint import/no-unresolved: 0 */ // --> OFF
 import { ConnectorServicePromiseClient } from '../../protos/connector/connector_grpc_web_pb';
-import { GetConnectionsPaginatedRequest } from '../../protos/connector/connector_pb';
+import { GetConnectionsPaginatedRequest, GetMessagesForConnectionRequest } from '../../protos/connector/connector_pb';
 import Logger from '../../helpers/Logger';
 
 const { REACT_APP_GRPC_CLIENT } = window._env_;
@@ -24,4 +24,14 @@ export const getConnectionsPaginated = (
       return connectionsList;
     })
     .catch(error => Logger.error('An error: ', error));
+};
+
+export const getMessagesForConnection = async (userId, connectionId) => {
+  const request = new GetMessagesForConnectionRequest();
+  request.setConnectionid(connectionId);
+
+  const result = await connectorServiceClient.getMessagesForConnection(request, { userId });
+  Logger.info(result.getMessagesList());
+  result.getMessagesList().map(msg => Object.assign({}, msg, { message: })) // TODO parse message
+  return result.getMessagesList();
 };
