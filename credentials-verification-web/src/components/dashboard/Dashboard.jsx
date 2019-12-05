@@ -38,7 +38,7 @@ const Dashboard = ({ name, bundle, credentials, proofRequests }) => {
 
 Dashboard.defaultProps = {
   bundle: undefined,
-  name: 'John'
+  name: 'Username'
 };
 
 Dashboard.propTypes = {

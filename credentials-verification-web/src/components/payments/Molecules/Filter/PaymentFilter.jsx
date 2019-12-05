@@ -21,15 +21,15 @@ const PaymentFilter = ({ setFrom, setTo, setPayer, payer }) => {
   };
 
   return (
-    <div>
-      <Row>
-        <Col>
+    <div className="FilterControls">
+      <Row gutter={8}>
+        <Col span={8}>
           <DatePicker {...fromProps} />
         </Col>
-        <Col>
+        <Col span={8}>
           <DatePicker {...toProps} />
         </Col>
-        <Col>
+        <Col span={8}>
           <Input
             id="payer"
             placeholder={t('payment.filterBy', { field: t('payment.fields.payer') })}
