@@ -10,6 +10,7 @@ CREATE TABLE participants(
   tpe PARTICIPANT_TYPE NOT NULL,
   name text NOT NULL,
   did DID NULL,
+  logo BYTEA NULL,
   CONSTRAINT participants_id_pk PRIMARY KEY (id)
 );
 

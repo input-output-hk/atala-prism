@@ -111,6 +111,7 @@ enum CredentialType {
 message IssuerInfo {
   string DID = 1;
   string name = 2;
+  bytes logo = 3;
 }
 
 // Information on a Holder

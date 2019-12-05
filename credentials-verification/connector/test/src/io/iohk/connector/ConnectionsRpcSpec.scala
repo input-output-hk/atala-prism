@@ -40,6 +40,7 @@ class ConnectionsRpcSpec extends RpcSpecBase {
         val request = GetConnectionTokenInfoRequest(token.token)
         val response = blockingStub.getConnectionTokenInfo(request)
         response.creator.value.getIssuer.name mustBe "Issuer"
+        response.creator.value.getIssuer.logo.size() must be > 0 // the issuer has a logo
       }
     }
 

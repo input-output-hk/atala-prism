@@ -36,7 +36,15 @@ object MessageId {
   }
 }
 
-case class ParticipantInfo(id: ParticipantId, tpe: ParticipantType, name: String, did: Option[String]) {
+case class ParticipantLogo(bytes: Vector[Byte]) extends AnyVal
+case class ParticipantInfo(
+    id: ParticipantId,
+    tpe: ParticipantType,
+    name: String,
+    did: Option[String],
+    logo: Option[ParticipantLogo]
+) {
+
   def toProto: protos.ParticipantInfo = {
     tpe match {
       case ParticipantType.Holder =>
@@ -48,7 +56,11 @@ case class ParticipantInfo(id: ParticipantId, tpe: ParticipantType, name: String
       case ParticipantType.Issuer =>
         protos.ParticipantInfo(
           protos.ParticipantInfo.Participant.Issuer(
-            protos.IssuerInfo(did.getOrElse(""), name)
+            protos.IssuerInfo(
+              dID = did.getOrElse(""),
+              name = name,
+              logo = ByteString.copyFrom(logo.map(_.bytes).getOrElse(Vector.empty).toArray)
+            )
           )
         )
     }

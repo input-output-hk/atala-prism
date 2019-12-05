@@ -20,22 +20,28 @@ abstract class ConnectorRepositorySpecBase extends PostgresRepositorySpec {
     }
   }
 
-  protected def createParticipant(tpe: ParticipantType, name: String, did: String): ParticipantId = {
-    sql"""INSERT INTO participants(id, tpe, did, name) VALUES (${ParticipantId
-      .random()}, $tpe, $did, $name) RETURNING id"""
+  protected def createParticipant(
+      tpe: ParticipantType,
+      name: String,
+      did: String,
+      logo: Option[ParticipantLogo]
+  ): ParticipantId = {
+    sql"""INSERT INTO participants(id, tpe, did, name, logo) VALUES
+          (${ParticipantId.random()}, $tpe, $did, $name, $logo)
+          RETURNING id"""
       .runUnique[ParticipantId]
   }
 
-  protected def createIssuer(name: String = "Issuer"): ParticipantId = {
-    createParticipant(ParticipantType.Issuer, name, s"did:test:${name.toLowerCase}")
+  protected def createIssuer(name: String = "Issuer", logo: Option[ParticipantLogo] = None): ParticipantId = {
+    createParticipant(ParticipantType.Issuer, name, s"did:test:${name.toLowerCase}", logo)
   }
 
   protected def createHolder(name: String = "Holder"): ParticipantId = {
-    createParticipant(ParticipantType.Holder, name, s"did:test:${name.toLowerCase}")
+    createParticipant(ParticipantType.Holder, name, s"did:test:${name.toLowerCase}", None)
   }
 
-  protected def createVerifier(name: String = "Verifier"): ParticipantId = {
-    createParticipant(ParticipantType.Verifier, name, s"did:test:${name.toLowerCase}")
+  protected def createVerifier(name: String = "Verifier", logo: Option[ParticipantLogo] = None): ParticipantId = {
+    createParticipant(ParticipantType.Verifier, name, s"did:test:${name.toLowerCase}", logo)
   }
 
   protected def createConnection(initiatorId: ParticipantId, acceptorId: ParticipantId): ConnectionId = {
