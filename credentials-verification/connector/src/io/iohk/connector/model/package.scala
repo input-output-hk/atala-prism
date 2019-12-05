@@ -63,6 +63,16 @@ case class ParticipantInfo(
             )
           )
         )
+      case ParticipantType.Verifier =>
+        protos.ParticipantInfo(
+          protos.ParticipantInfo.Participant.Verifier(
+            protos.VerifierInfo(
+              dID = did.getOrElse(""),
+              name = name,
+              logo = ByteString.copyFrom(logo.map(_.bytes).getOrElse(Vector.empty).toArray)
+            )
+          )
+        )
     }
   }
 }
