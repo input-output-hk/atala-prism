@@ -2,19 +2,30 @@ package io.iohk.cvp.repositories
 
 import java.sql.DriverManager
 
+import com.spotify.docker.client.DefaultDockerClient
 import com.whisk.docker._
+import com.whisk.docker.impl.spotify.SpotifyDockerFactory
+import org.scalatest.MustMatchers._
+import org.scalatest.concurrent.ScalaFutures._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait DockerPostgresService extends DockerKit {
-
-  import DockerPostgresService._
+object DockerPostgresService extends DockerKit {
 
   import scala.concurrent.duration._
 
   override val PullImagesTimeout = 120.minutes
   override val StartContainersTimeout = 120.seconds
   override val StopContainersTimeout = 120.seconds
+
+  override implicit val dockerFactory: DockerFactory = new SpotifyDockerFactory(
+    DefaultDockerClient.fromEnv().build()
+  )
+
+  val PostgresImage = "postgres:11.5"
+  val PostgresUsername = "postgres"
+  val PostgresPassword = "postgres"
+  val DatabaseName = "db"
 
   val postgresContainer = DockerContainer(PostgresImage)
     .withCommand("-N 1000")
@@ -24,32 +35,48 @@ trait DockerPostgresService extends DockerKit {
       new PostgresReadyChecker().looped(15, 1.second)
     )
 
-  abstract override def dockerContainers: List[DockerContainer] =
+  override val dockerContainers: List[DockerContainer] =
     postgresContainer :: super.dockerContainers
-}
-
-object DockerPostgresService {
-
-  val PostgresImage = "postgres:11.5"
-  val PostgresUsername = "postgres"
-  val PostgresPassword = "postgres"
-  val DatabaseName = "db"
 
   def PostgresAdvertisedPort = 5432
   def PostgresExposedPort = 44444
+
+  private var isRunning = false
+
+  def getPostgres(): PostgresConfig = synchronized {
+    if (!isRunning) {
+      Runtime.getRuntime.addShutdownHook(new Thread {
+        override def run(): Unit = {
+
+          println("Stopping Docker container with Postgres")
+          stopAllQuietly()
+          println("Stopped Docker container with Postgres")
+        }
+      })
+
+      println("Starting Docker container with Postgres")
+      startAllOrFail()
+      isContainerReady(postgresContainer).futureValue mustEqual true
+      isRunning = true
+      println("Started Docker container with Postgres")
+    }
+
+    val hostname = postgresContainer.hostname.getOrElse("localhost")
+    PostgresConfig(s"$hostname:$PostgresExposedPort", DatabaseName, PostgresUsername, PostgresPassword)
+  }
 
   class PostgresReadyChecker extends DockerReadyChecker {
 
     override def apply(
         container: DockerContainerState
-    )(implicit docker: DockerCommandExecutor, ec: ExecutionContext): Future[Boolean] = {
+    )(implicit dockerExecutor: DockerCommandExecutor, ec: ExecutionContext): Future[Boolean] = {
 
       container
-        .getPorts()
+        .getPorts()(dockerExecutor, ec)
         .map { ports =>
           try {
             Class.forName("org.postgresql.Driver")
-            val url = s"jdbc:postgresql://${docker.host}:$PostgresExposedPort/"
+            val url = s"jdbc:postgresql://${dockerExecutor.host}:$PostgresExposedPort/"
             Option(DriverManager.getConnection(url, PostgresUsername, PostgresPassword))
               .foreach { conn =>
                 // NOTE: For some reason the result is always false
@@ -62,7 +89,7 @@ object DockerPostgresService {
             case _: Throwable =>
               false
           }
-        }
+        }(ec)
     }
   }
 }

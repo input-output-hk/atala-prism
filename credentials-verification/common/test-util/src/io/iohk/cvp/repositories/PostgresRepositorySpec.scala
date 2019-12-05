@@ -1,15 +1,14 @@
 package io.iohk.cvp.repositories
 
 import cats.effect.IO
-import com.spotify.docker.client.DefaultDockerClient
-import com.whisk.docker.DockerFactory
-import com.whisk.docker.impl.spotify.SpotifyDockerFactory
-import com.whisk.docker.scalatest.DockerTestKit
 import doobie.util.fragment.Fragment
 import doobie.util.transactor.Transactor
-import io.iohk.cvp.repositories.{SchemaMigrations, TransactorFactory}
-import org.scalatest.time.{Second, Seconds, Span}
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, MustMatchers, WordSpec}
+
+import scala.concurrent.ExecutionContext
+
+case class PostgresConfig(host: String, database: String, user: String, password: String)
 
 /**
   * Allow us to write integration tests depending in a postgres database.
@@ -28,41 +27,68 @@ import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, MustMatchers, WordSpec}
 trait PostgresRepositorySpec
     extends WordSpec
     with MustMatchers
-    with DockerTestKit
-    with DockerPostgresService
+    with ScalaFutures
     with BeforeAndAfterAll
     with BeforeAndAfter {
 
-  import DockerPostgresService._
+  implicit def ec: ExecutionContext = ExecutionContext.global
 
   protected val tables = List("blocks")
 
-  private implicit val pc: PatienceConfig =
-    PatienceConfig(Span(20, Seconds), Span(1, Second))
+  val POSTGRES_HOST_ENVNAME = "POSTGRES_TEST_HOST"
+  val POSTGRES_DB_ENVNAME = "POSTGRES_TEST_DB"
+  val POSTGRES_USER_ENVNAME = "POSTGRES_TEST_USER"
+  val POSTGRES_PASSWORD_ENVNAME = "POSTGRES_TEST_PASSWORD"
 
-  override implicit val dockerFactory: DockerFactory = new SpotifyDockerFactory(
-    DefaultDockerClient.fromEnv().build()
-  )
+  def getProvidedPostgres(): Option[PostgresConfig] = {
+    val host = System.getenv(POSTGRES_HOST_ENVNAME)
+    val db = System.getenv(POSTGRES_DB_ENVNAME)
+    val user = System.getenv(POSTGRES_USER_ENVNAME)
+    val password = System.getenv(POSTGRES_PASSWORD_ENVNAME)
+
+    if (List(host, db, user, password).forall(s => s != null && s.nonEmpty)) {
+      Some(PostgresConfig(host, db, user, password))
+    } else {
+      None
+    }
+  }
 
   override def beforeAll(): Unit = {
     super.beforeAll()
-    val _ = isContainerReady(postgresContainer).futureValue mustEqual true
+
+    val postgresConfig = getProvidedPostgres().getOrElse(DockerPostgresService.getPostgres())
+
+    val config = TransactorFactory.Config(
+      username = postgresConfig.user,
+      password = postgresConfig.password,
+      jdbcUrl = s"jdbc:postgresql://${postgresConfig.host}/${postgresConfig.database}"
+    )
+
+    _database = Some(TransactorFactory(config))
+
+    import doobie.implicits._
+    // solution to clean the database as provided by StackOverflow user User
+    // profile: https://stackoverflow.com/users/155268/user
+    // answer: https://stackoverflow.com/a/21247009
+    sql"""
+         |DROP SCHEMA public CASCADE;
+         |CREATE SCHEMA public;
+         |GRANT ALL ON SCHEMA public TO postgres;
+         |GRANT ALL ON SCHEMA public TO public;
+         |COMMENT ON SCHEMA public IS 'standard public schema'
+      """.stripMargin.update.run.transact(database).unsafeRunSync()
+
+    SchemaMigrations.migrate(config)
   }
 
   before {
     clearDatabase()
   }
 
-  implicit lazy val database: Transactor[IO] = {
-    val config = TransactorFactory.Config(
-      username = PostgresUsername,
-      password = PostgresPassword,
-      jdbcUrl = s"jdbc:postgresql://localhost:$PostgresExposedPort/$DatabaseName"
-    )
+  protected var _database: Option[Transactor[IO]] = None
 
-    SchemaMigrations.migrate(config)
-
-    TransactorFactory(config)
+  implicit def database: Transactor[IO] = {
+    _database.getOrElse(throw new IllegalStateException("Attempt to use database before it is ready"))
   }
 
   protected def clearDatabase(): Unit = {
