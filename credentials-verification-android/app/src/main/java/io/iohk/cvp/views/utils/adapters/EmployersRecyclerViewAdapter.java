@@ -8,6 +8,8 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.iohk.cvp.R;
 import io.iohk.cvp.io.connector.ConnectionInfo;
+import io.iohk.cvp.io.connector.VerifierInfo;
+import io.iohk.cvp.utils.ImageUtils;
 
 public class EmployersRecyclerViewAdapter extends
     ConnectionsRecyclerViewAdapter<EmployersRecyclerViewAdapter.ViewHolder> {
@@ -24,17 +26,19 @@ public class EmployersRecyclerViewAdapter extends
 
   @Override
   protected void onBindViewHolder(ViewHolder holder, ConnectionInfo connectionInfo) {
-    // TODO unmock this when we are sure about which class's info are we going to show here
-    holder.issuerName.setText("Business and Technology University");
+    VerifierInfo verifierInfo = connectionInfo.getParticipantInfo().getVerifier();
+    holder.verifierName.setText(verifierInfo.getName());
+    holder.verifierLogo
+        .setImageBitmap(ImageUtils.getBitmapFromByteArray(verifierInfo.getLogo().toByteArray()));
   }
 
   static class ViewHolder extends RecyclerView.ViewHolder {
 
     @BindView(R.id.issuer_name)
-    TextView issuerName;
+    TextView verifierName;
 
     @BindView(R.id.credential_logo)
-    ImageView issuerLogo;
+    ImageView verifierLogo;
 
 
     ViewHolder(View itemView) {

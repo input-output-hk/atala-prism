@@ -6,14 +6,11 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import com.crashlytics.android.Crashlytics;
-import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.iohk.cvp.core.exception.ItemNotFoundException;
 import io.iohk.cvp.grpc.GetMessagesRunnable;
 import io.iohk.cvp.grpc.GrpcTask;
 import io.iohk.cvp.io.connector.ReceivedMessage;
-import io.iohk.cvp.io.credential.Credential;
-import io.iohk.cvp.io.credential.SentCredential;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -26,11 +23,11 @@ public class CredentialsViewModel extends ViewModel {
 
   private final MutableLiveData<List<ReceivedMessage>> messages = new MutableLiveData<>(
       new ArrayList<>());
-  private final MutableLiveData<Credential> selectedCredential = new MutableLiveData<>();
+  private final MutableLiveData<ReceivedMessage> selectedCredential = new MutableLiveData<>();
 
   @Inject
   public CredentialsViewModel() {
-    selectedCredential.setValue(Credential.getDefaultInstance());
+    selectedCredential.setValue(ReceivedMessage.getDefaultInstance());
   }
 
   public LiveData<List<ReceivedMessage>> getMessages(Set<String> userIds) {
@@ -40,7 +37,7 @@ public class CredentialsViewModel extends ViewModel {
   }
 
 
-  public LiveData<Credential> getCredential(String userId, String messageId)
+  public LiveData<ReceivedMessage> getCredential(String userId, String messageId)
       throws InvalidProtocolBufferException, ExecutionException, InterruptedException {
 
     Optional<List<ReceivedMessage>> msgs = new GrpcTask<>(new GetMessagesRunnable(messages))
@@ -58,15 +55,12 @@ public class CredentialsViewModel extends ViewModel {
     return selectedCredential;
   }
 
-  private Optional<Credential> findCredential(List<ReceivedMessage> messages, String messageId)
+  private Optional<ReceivedMessage> findCredential(List<ReceivedMessage> messages, String messageId)
       throws InvalidProtocolBufferException {
     if (messages.size() > 0) {
-      ByteString rawMessage = messages.stream()
+      ReceivedMessage current = messages.stream()
           .filter(message -> message.getId().equals(messageId)).collect(Collectors.toList())
-          .get(0).getMessage();
-      SentCredential sentCredential = SentCredential.parseFrom(rawMessage);
-      Credential current = sentCredential.getIssuerSentCredential()
-          .getCredential();
+          .get(0);
       return Optional.of(current);
     }
     return Optional.empty();

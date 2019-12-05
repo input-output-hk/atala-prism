@@ -9,6 +9,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModelProvider;
@@ -20,8 +21,10 @@ import com.google.android.material.button.MaterialButton;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.iohk.cvp.R;
 import io.iohk.cvp.io.credential.Credential;
+import io.iohk.cvp.io.credential.SentCredential;
 import io.iohk.cvp.io.credential.SubjectData;
 import io.iohk.cvp.utils.DateUtils;
+import io.iohk.cvp.utils.ImageUtils;
 import io.iohk.cvp.viewmodel.CredentialsViewModel;
 import io.iohk.cvp.views.Preferences;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
@@ -68,6 +71,9 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
 
   @BindView(R.id.text_view_award)
   TextView textViewAward;
+
+  @BindView(R.id.credential_logo)
+  ImageView imageViewCredentialLogo;
 
   private Credential credential;
 
@@ -127,10 +133,18 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
 
     this.getUserIds().forEach(userId -> {
       try {
-        viewModel.getCredential(userId, credentialId).observe(this, credential -> {
-          this.credential = credential;
-          fillData(credential);
-          showOptions(credentialIsNew);
+        viewModel.getCredential(userId, credentialId).observe(this, message -> {
+          try {
+            SentCredential sentCredential = SentCredential.parseFrom(message.getMessage());
+            Credential current = sentCredential.getIssuerSentCredential()
+                .getCredential();
+            this.credential = current;
+            fillData(credential, message.getConnectionId());
+            showOptions(credentialIsNew);
+          } catch (InvalidProtocolBufferException e) {
+            e.printStackTrace();
+          }
+
         });
       } catch (InvalidProtocolBufferException | InterruptedException | ExecutionException e) {
         Crashlytics.logException(e);
@@ -141,7 +155,7 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
     return view;
   }
 
-  private void fillData(Credential credential) {
+  private void fillData(Credential credential, String connectionId) {
     textViewUniversityName.setText(credential.getIssuerType().getIssuerLegalName());
 
     SubjectData subjectData = credential.getSubjectData();
@@ -157,6 +171,11 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
 
     textViewAward.setText(
         credential.getAdditionalSpeciality() != null ? credential.getDegreeAwarded() : "-");
+
+    Preferences prefs = new Preferences(getContext());
+
+    imageViewCredentialLogo.setImageBitmap(
+        ImageUtils.getBitmapFromByteArray(prefs.getConnectionLogo(connectionId)));
   }
 
   private void showOptions(boolean optionsVisible) {

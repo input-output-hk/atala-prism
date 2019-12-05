@@ -6,8 +6,10 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.util.Base64;
+import com.google.protobuf.ByteString;
 import io.iohk.cvp.core.exception.ErrorCode;
 import io.iohk.cvp.core.exception.SharedPrefencesDataNotFoundException;
+import io.iohk.cvp.io.connector.AddConnectionFromTokenResponse;
 import io.iohk.cvp.utils.KeyStoreUtils;
 import java.util.HashSet;
 import java.util.Optional;
@@ -22,6 +24,8 @@ public class Preferences {
   public static final String ACCEPTED_MESSAGES_KEY = "accepted_messages";
   public static final String REJECTED_MESSAGES_KEY = "rejected_messages";
   private static final String USER_ID_LIST_KEY = "user_id";
+  private static final String CONNECTION_USER_ID_KEY = "connection_id_user_id";
+  private static final String CONNECTION_LOGO_KEY = "connection_logo";
   private Context context;
 
   public void savePrivateKey(byte[] pk) {
@@ -78,13 +82,39 @@ public class Preferences {
   public void saveConnectionWithUser(String connectionId, String userId) {
     SharedPreferences prefs = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
     Editor editor = prefs.edit();
-    editor.putString(connectionId, userId);
+    editor.putString(connectionId.concat(CONNECTION_USER_ID_KEY), userId);
     editor.apply();
   }
 
   public Optional<String> getUserIdByConnection(String connectionId) {
     SharedPreferences sharedPreferences = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
     return Optional.ofNullable(sharedPreferences
-        .getString(connectionId, null));
+        .getString(connectionId.concat(CONNECTION_USER_ID_KEY), null));
+  }
+
+  public void saveConnectionWithLogo(String connectionId, ByteString logo) {
+    SharedPreferences prefs = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
+    Editor editor = prefs.edit();
+    editor.putString(connectionId.concat(CONNECTION_LOGO_KEY),
+        Base64.encodeToString(logo.toByteArray(), Base64.DEFAULT));
+    editor.apply();
+  }
+
+  public byte[] getConnectionLogo(String connectionId) {
+    SharedPreferences sharedPreferences = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
+    String logoString = sharedPreferences
+        .getString(connectionId.concat(CONNECTION_LOGO_KEY), "");
+
+    return Base64.decode(logoString, Base64.DEFAULT);
+  }
+
+  public void addConnection(AddConnectionFromTokenResponse connectionInfo) {
+    this.saveUserId(connectionInfo.getUserId());
+    this.saveConnectionWithUser(
+        connectionInfo.getConnection().getConnectionId(),
+        connectionInfo.getUserId());
+    this.saveConnectionWithLogo(
+        connectionInfo.getConnection().getConnectionId(),
+        connectionInfo.getConnection().getParticipantInfo().getIssuer().getLogo());
   }
 }

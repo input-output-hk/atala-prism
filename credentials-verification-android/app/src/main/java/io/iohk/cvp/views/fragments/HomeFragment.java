@@ -71,9 +71,13 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> {
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
       Bundle savedInstanceState) {
     View view = super.onCreateView(inflater, container, savedInstanceState);
+
+    Preferences prefs = new Preferences(getContext());
+
     newCredentialsAdapter = new CredentialsRecyclerViewAdapter(R.layout.row_new_credential, this,
-        true);
-    credentialsAdapter = new CredentialsRecyclerViewAdapter(R.layout.row_credential, this, false);
+        true, prefs);
+    credentialsAdapter = new CredentialsRecyclerViewAdapter(R.layout.row_credential, this, false,
+        prefs);
 
     return view;
   }
