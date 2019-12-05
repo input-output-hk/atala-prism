@@ -114,6 +114,13 @@ message IssuerInfo {
   bytes logo = 3;
 }
 
+// Information on a Verifier
+message VerifierInfo {
+  string DID = 1;
+  string name = 2;
+  bytes logo = 3;
+}
+
 // Information on a Holder
 message HolderInfo {
   string DID = 1;
@@ -125,6 +132,7 @@ message ParticipantInfo {
   oneof participant {
     IssuerInfo issuer = 1;
     HolderInfo holder = 2;
+    VerifierInfo verifier = 3;
   }
 }
 
