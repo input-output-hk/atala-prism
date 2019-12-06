@@ -1,17 +1,12 @@
 @import '../../../../css/general_styling';
 
-.PaginatedTable {
+.PaginatedTable,.PaginatedTableHeader  {
   margin-top: 10px;
-
   table {
     @include primary-text($body, $black);
 
     img {
       border-radius: 4px;
-    }
-
-    .ant-table-thead {
-      display: none;
     }
     .ant-table-tbody > tr > td {
       background: $light-grey;
@@ -33,4 +28,18 @@
       }
     }
   }
+}
+.PaginatedTable{
+  .ant-table-thead {
+    display: none;
+  }
+}
+.PaginatedTableHeader{
+
+  .ant-table-thead > tr > th{
+    padding: 0.7em 0.5em 0;
+    vertical-align: middle;
+    background: $light-grey;
+    border-bottom: 4px solid $white;
+}
 }

@@ -22,7 +22,7 @@ const Payment = ({
 
   return (
     <div className="Wrapper">
-      <div>
+      <div className="ContentHeader">
         <h1>{t('payment.title')}</h1>
       </div>
       <PaymentFilter {...filterProps} />
@@ -50,6 +50,7 @@ Payment.propTypes = {
   setTo: PropTypes.func.isRequired,
   setPayer: PropTypes.func.isRequired,
   payer: PropTypes.func.isRequired,
+  changeSort: PropTypes.func.isRequired,
   payments: PropTypes.arrayOf(paymentShape).isRequired,
   totalPayments: PropTypes.number.isRequired,
   offset: PropTypes.number,

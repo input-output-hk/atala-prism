@@ -14,7 +14,7 @@ const PaginatedTable = ({
   onChange,
   handleSort
 }) => (
-  <div className={handleSort ? '' : 'PaginatedTable'}>
+  <div className={handleSort ? 'PaginatedTableHeader' : 'PaginatedTable'}>
     <Table
       rowSelection={selectionType}
       columns={columns}
