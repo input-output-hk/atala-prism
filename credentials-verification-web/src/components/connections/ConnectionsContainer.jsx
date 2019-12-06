@@ -46,7 +46,7 @@ const ConnectionsContainer = ({ api }) => {
     setField(value);
   };
 
-  const inviteHolder = cb => api.generateConnectionToken(null, cb);
+  const inviteHolder = studentId => api.generateConnectionToken(null, studentId);
 
   const tableProps = { subjects, subjectCount, offset, setOffset };
   const filterProps = {
@@ -59,7 +59,12 @@ const ConnectionsContainer = ({ api }) => {
   };
 
   return (
-    <Connections tableProps={tableProps} filterProps={filterProps} inviteHolder={inviteHolder} />
+    <Connections
+      tableProps={tableProps}
+      filterProps={filterProps}
+      inviteHolder={inviteHolder}
+      isIssuer={api.isIssuer}
+    />
   );
 };
 

@@ -35,7 +35,7 @@ const ActionButtons = ({ showQRButton, inviteHolder, isIssuer, setHolder, holder
             setHolder(formattedHolder);
           }
         }}
-        buttonText={t(`connections.table.columns.${isIssuer ? 'view' : 'viewCredentials'}`)}
+        buttonText={t(`connections.table.columns.${isIssuer() ? 'view' : 'viewCredentials'}`)}
       />
     </div>
   );

@@ -1,3 +1,5 @@
+import __ from 'lodash';
+
 // eslint-disable-next-line camelcase
 const DEFAUlT_PAGE_SIZE = 15;
 // eslint-disable-next-line camelcase
@@ -17,6 +19,14 @@ export const drawerWidth = 450;
 export const AVATAR_WIDTH = 50;
 
 export const PENDING_CONNECTION = 'PENDING_CONNECTION';
+export const CONNECTION_STATUSES = {
+  invitationMissing: 0,
+  connectionMissing: 1,
+  connectionAccepted: 2,
+  connectionRevoked: 3
+};
+export const CONNECTION_STATUSES_TRANSLATOR = __.invert(CONNECTION_STATUSES);
+
 export const CONNECTED = 'CONNECTED';
 
 // eslint-disable-next-line quotes

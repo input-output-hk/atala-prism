@@ -9,11 +9,11 @@
     @include secondary-text($label, $white);
   }
 
-  &.PENDING_CONNECTION {
+  &.invitationMissing {
     background: $grey;
   }
 
-  &.CONNECTED {
+  &.connectionAccepted {
     background: $success-color;
   }
 }

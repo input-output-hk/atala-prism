@@ -1,3 +1,4 @@
+/* eslint import/no-unresolved: 0 */ // --> OFF
 import { CredentialsServicePromiseClient } from '../../protos/credentials/credentialsManager_grpc_web_pb';
 import {
   GetCredentialsRequest,
