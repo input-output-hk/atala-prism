@@ -16,6 +16,8 @@ import io.iohk.cvp.R;
 import io.iohk.cvp.io.connector.ReceivedMessage;
 import io.iohk.cvp.io.credential.Credential;
 import io.iohk.cvp.io.credential.SentCredential;
+import io.iohk.cvp.utils.ImageUtils;
+import io.iohk.cvp.views.Preferences;
 import io.iohk.cvp.views.fragments.HomeFragment;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,14 +28,16 @@ public class CredentialsRecyclerViewAdapter extends
   private final int holderLayoutId;
   private final HomeFragment listener;
   private final Boolean hasNewCredentials;
+  private final Preferences preferences;
 
   private List<ReceivedMessage> messages = new ArrayList<>();
 
   public CredentialsRecyclerViewAdapter(int holderLayoutId, HomeFragment listener,
-      Boolean hasNewCredentials) {
+      Boolean hasNewCredentials, Preferences prefs) {
     this.holderLayoutId = holderLayoutId;
     this.listener = listener;
     this.hasNewCredentials = hasNewCredentials;
+    this.preferences = prefs;
   }
 
   @NonNull
@@ -54,7 +58,8 @@ public class CredentialsRecyclerViewAdapter extends
       holder.listener = this.listener;
       holder.isNew = this.hasNewCredentials;
       holder.issuerName.setText(current.getIssuerType().getAcademicAuthority());
-      // TODO set image
+      holder.issuerLogo.setImageBitmap(
+          ImageUtils.getBitmapFromByteArray(preferences.getConnectionLogo(msg.getConnectionId())));
     } catch (InvalidProtocolBufferException e) {
       Crashlytics.logException(e);
     }

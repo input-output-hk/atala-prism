@@ -1,17 +1,14 @@
 package io.iohk.cvp.utils;
 
 import android.content.Context;
-
 import com.crashlytics.android.Crashlytics;
-
+import io.iohk.cvp.core.exception.AssetNotFoundException;
+import io.iohk.cvp.core.exception.ErrorCode;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
-
-import io.iohk.cvp.core.exception.AssetNotFoundException;
-import io.iohk.cvp.core.exception.ErrorCode;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -36,8 +33,10 @@ public class AssetsUtils {
       return Optional.of(new String(byteArray, StandardCharsets.UTF_8));
     } catch (IOException e) {
       Crashlytics.logException(
-        new AssetNotFoundException("Couldn't find the asset with the name " + assetName + ", exception:" + e.getMessage(),
-          ErrorCode.ASSET_NOT_FOUND));
+          new AssetNotFoundException(
+              "Couldn't find the asset with the name " + assetName + ", exception:" + e
+                  .getMessage(),
+              ErrorCode.ASSET_NOT_FOUND));
       e.printStackTrace();
       return Optional.empty();
     }

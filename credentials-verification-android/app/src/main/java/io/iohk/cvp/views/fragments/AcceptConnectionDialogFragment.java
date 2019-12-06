@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
@@ -19,6 +20,7 @@ import io.iohk.cvp.core.exception.CryptoException;
 import io.iohk.cvp.core.exception.SharedPrefencesDataNotFoundException;
 import io.iohk.cvp.io.connector.ParticipantInfo;
 import io.iohk.cvp.utils.CryptoUtils;
+import io.iohk.cvp.utils.ImageUtils;
 import io.iohk.cvp.viewmodel.AcceptConnectionViewModel;
 import io.iohk.cvp.views.Preferences;
 import io.iohk.cvp.views.activities.MainActivity;
@@ -33,12 +35,16 @@ public class AcceptConnectionDialogFragment extends CvpDialogFragment<AcceptConn
   private static final String TITLE_KEY = "title";
   private static final String TOKEN_KEY = "token";
   private static final String NAME_KEY = "participantName";
+  private static final String LOGO_DATA_KEY = "logo";
 
   @BindView(R.id.title)
   TextView titleTextView;
 
   @BindView(R.id.participantName)
   TextView participantNameTextView;
+
+  @BindView(R.id.participantLogo)
+  ImageView participantLogoImgView;
 
   private ViewModelProvider.Factory factory;
 
@@ -53,7 +59,7 @@ public class AcceptConnectionDialogFragment extends CvpDialogFragment<AcceptConn
     args.putString(NAME_KEY, isIssuer ? participantInfo.getIssuer().getName()
         : ""); // TODO replace "" with verifier's name
     args.putString(TITLE_KEY, isIssuer ? "University name" : "Employer name");
-    // TODO handle logo based on inititor type
+    args.putByteArray(LOGO_DATA_KEY, participantInfo.getIssuer().getLogo().toByteArray());
     instance.setArguments(args);
     instance.setCancelable(false);
 
@@ -81,6 +87,8 @@ public class AcceptConnectionDialogFragment extends CvpDialogFragment<AcceptConn
 
     titleTextView.setText(getArguments().getString(TITLE_KEY));
     participantNameTextView.setText(getArguments().getString(NAME_KEY));
+    participantLogoImgView.setImageBitmap(
+        ImageUtils.getBitmapFromByteArray(getArguments().getByteArray(LOGO_DATA_KEY)));
     return view;
   }
 
@@ -118,10 +126,8 @@ public class AcceptConnectionDialogFragment extends CvpDialogFragment<AcceptConn
           .addConnectionFromToken(getArguments().getString(TOKEN_KEY),
               CryptoUtils.getPublicKey(prefs))
           .observe(this, connectionInfo -> {
-            prefs.saveUserId(connectionInfo.getUserId());
             this.dismiss();
-            prefs.saveConnectionWithUser(connectionInfo.getConnection().getConnectionId(),
-                connectionInfo.getUserId());
+            prefs.addConnection(connectionInfo);
             ((MainActivity) getActivity())
                 .onNavigation(BottomAppBarOption.CONNECTIONS, connectionInfo.getUserId());
           });
