@@ -40,7 +40,6 @@ public class EmployersRecyclerViewAdapter extends
     @BindView(R.id.credential_logo)
     ImageView verifierLogo;
 
-
     ViewHolder(View itemView) {
       super(itemView);
       ButterKnife.bind(this, itemView);

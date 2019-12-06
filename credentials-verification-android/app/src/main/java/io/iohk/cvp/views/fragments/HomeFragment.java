@@ -15,7 +15,6 @@ import butterknife.BindView;
 import io.iohk.cvp.R;
 import io.iohk.cvp.io.connector.ReceivedMessage;
 import io.iohk.cvp.viewmodel.CredentialsViewModel;
-import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.Preferences;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.RootAppBar;
@@ -33,14 +32,12 @@ import lombok.Setter;
 public class HomeFragment extends CvpFragment<CredentialsViewModel> {
 
   private ViewModelProvider.Factory factory;
+  private LiveData<List<ReceivedMessage>> liveData;
 
   @Inject
   HomeFragment(ViewModelProvider.Factory factory) {
     this.factory = factory;
   }
-
-  @Inject
-  Navigator navigator;
 
   @BindView(R.id.credentials_list)
   RecyclerView credentialsRecyclerView;
@@ -95,7 +92,7 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> {
     newCredentialsAdapter.clearMessages();
     credentialsAdapter.clearMessages();
 
-    LiveData<List<ReceivedMessage>> liveData = viewModel.getMessages(this.getUserIds());
+    liveData = viewModel.getMessages(this.getUserIds());
 
     if (!liveData.hasActiveObservers()) {
       liveData.observe(this, messages -> {
@@ -120,6 +117,13 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> {
         credentialsAdapter.addMesseges(acceptedMessages);
       });
     }
+  }
+
+  @Override
+  public void onDestroyView() {
+    super.onDestroyView();
+    liveData.removeObservers(this);
+    viewModel.clearMessages();
   }
 
 

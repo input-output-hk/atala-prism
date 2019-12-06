@@ -30,6 +30,10 @@ public class CredentialsViewModel extends ViewModel {
     selectedCredential.setValue(ReceivedMessage.getDefaultInstance());
   }
 
+  public void clearMessages() {
+    this.messages.setValue(new ArrayList<>());
+  }
+
   public LiveData<List<ReceivedMessage>> getMessages(Set<String> userIds) {
     userIds.forEach(userId ->
         new GrpcTask<>(new GetMessagesRunnable(messages)).execute(userId));
