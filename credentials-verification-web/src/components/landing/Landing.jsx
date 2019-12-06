@@ -1,14 +1,14 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useHistory } from 'react-router-dom';
+import PropTypes from 'prop-types';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 import preloginLogo from '../../images/landingLogo.svg';
 
 import './_style.scss';
+import { withRedirector } from '../providers/withRedirector';
 
-const Landing = () => {
+const Landing = ({ redirector: { redirectToLogin, redirectToRegistration } }) => {
   const { t } = useTranslation();
-  const history = useHistory();
 
   return (
     <div className="LandingContainer">
@@ -21,12 +21,12 @@ const Landing = () => {
           <CustomButton
             buttonProps={{
               className: 'theme-outline',
-              onClick: () => history.push('/registration')
+              onClick: redirectToRegistration
             }}
             buttonText={t('landing.register')}
           />
           <CustomButton
-            buttonProps={{ className: 'theme-secondary', onClick: () => history.push('/login') }}
+            buttonProps={{ className: 'theme-secondary', onClick: redirectToLogin }}
             buttonText={t('landing.login')}
           />
         </div>
@@ -35,4 +35,10 @@ const Landing = () => {
   );
 };
 
-export default Landing;
+Landing.propTypes = {
+  redirector: PropTypes.shape({
+    redirectToLogin: PropTypes.func
+  }).isRequired
+};
+
+export default withRedirector(Landing);

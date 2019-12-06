@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
-import { useHistory } from 'react-router-dom';
 import Logger from '../../helpers/Logger';
 import NewCredential from './NewCredential';
 import { withApi } from '../providers/witApi';
@@ -12,12 +11,13 @@ import NewCredentialValidation from './Molecules/Validation/NewCredentialValidat
 import { GROUP_PAGE_SIZE } from '../../helpers/constants';
 import NewCredentialCreation from './Organism/Creation/NewCredentialCreation';
 import { dateAsUnix, fromUnixToProtoDateFormatter } from '../../helpers/formatters';
+import { withRedirector } from '../providers/withRedirector';
 
 const NewCredentialContainer = ({
-  api: { savePictureInS3, saveDraft, getGroups, createCredential }
+  api: { savePictureInS3, saveDraft, getGroups, createCredential },
+  redirector: { redirectToCredentials }
 }) => {
   const { t } = useTranslation();
-  const history = useHistory();
 
   const [currentStep, setCurrentStep] = useState(0);
   const [degreeName, setDegreeName] = useState();
@@ -61,7 +61,7 @@ const NewCredentialContainer = ({
     })
       .then(response => {
         Logger.info('Successfully saved the credential: ', response.toObject());
-        history.push('/credentials');
+        redirectToCredentials();
       })
       .catch(error => {
         Logger.error(error);
@@ -203,7 +203,10 @@ NewCredentialContainer.propTypes = {
     saveDraft: PropTypes.func,
     getGroups: PropTypes.func,
     createCredential: PropTypes.func
+  }).isRequired,
+  redirector: PropTypes.shape({
+    redirectToCredentials: PropTypes.func
   }).isRequired
 };
 
-export default withApi(NewCredentialContainer);
+export default withApi(withRedirector(NewCredentialContainer));

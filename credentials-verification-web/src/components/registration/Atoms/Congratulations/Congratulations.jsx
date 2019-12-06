@@ -1,14 +1,14 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { useHistory } from 'react-router-dom';
+import PropTypes from 'prop-types';
 import icon from '../../../../images/registrationCongratulation.svg';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 
 import './_style.scss';
+import { withRedirector } from '../../../providers/withRedirector';
 
-const Congratulations = () => {
+const Congratulations = ({ redirector: { redirectToLogin } }) => {
   const { t } = useTranslation();
-  const history = useHistory();
 
   return (
     <div className="Congratulations Wrapper">
@@ -22,7 +22,7 @@ const Congratulations = () => {
       </div>
       <CustomButton
         buttonProps={{
-          onClick: () => history.push('/login'),
+          onClick: redirectToLogin,
           className: 'theme-secondary'
         }}
         buttonText={t('registration.congratulations.login')}
@@ -31,4 +31,10 @@ const Congratulations = () => {
   );
 };
 
-export default Congratulations;
+Congratulations.propTypes = {
+  redirector: PropTypes.shape({
+    redirectToLogin: PropTypes.func
+  }).isRequired
+};
+
+export default withRedirector(Congratulations);

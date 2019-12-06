@@ -1,5 +1,5 @@
-import React, { Fragment, useState } from 'react';
-import { Row, Icon, Drawer } from 'antd';
+import React, { useState } from 'react';
+import { Row, Icon } from 'antd';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import CredentialsFilter from './Molecules/Filters/CredentialsFilter/CredentialsFilter';
@@ -8,25 +8,10 @@ import { credentials, categories, groups } from '../../APIs/__mocks__/credential
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 import EmptyComponent from '../common/Atoms/EmptyComponent/EmptyComponent';
 import noCredentials from '../../images/noCredentials.svg';
-import CredentialData from '../common/Atoms/CredentialData/CredentialData';
-import { drawerWidth } from '../../helpers/constants';
+import CredentialsButtons from './Atoms/Buttons/CredentialButtons';
 
 import './_style.scss';
 import CredentialDetail from '../common/Organisms/Detail/CredentialDetail';
-
-const CredentialsButtons = () => {
-  const { t } = useTranslation();
-
-  return (
-    <div className="ControlButtons">
-      <CustomButton
-        buttonText={t('credentials.actions.createCredential')}
-        theme="theme-outline"
-        icon={<Icon type="plus" />}
-      />
-    </div>
-  );
-};
 
 const Credentials = ({ showEmpty, tableProps, filterProps }) => {
   const { t } = useTranslation();
