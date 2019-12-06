@@ -1,3 +1,4 @@
+/* eslint import/no-unresolved: 0 */ // --> OFF
 import grpcWeb from 'grpc-web';
 import {
   WalletServiceClient,
@@ -10,6 +11,7 @@ import {
   GetWalletStatusRequest
 } from '../../protos/wallet/wallet_pb';
 import Logger from '../../helpers/Logger';
+import { ISSUER } from '../../helpers/constants';
 
 const { REACT_APP_GRPC_CLIENT } = window._env_;
 const walletServiceClient = new WalletServiceClient(REACT_APP_GRPC_CLIENT, null, null);
@@ -85,3 +87,5 @@ export const isWalletUnlocked = async () => {
   const status = await getWalletStatus();
   return status === 1;
 };
+
+export const isIssuer = () => localStorage.getItem('userRole') === ISSUER;

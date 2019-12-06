@@ -10,12 +10,12 @@ import noConnections from '../../images/noConnections.svg';
 import QRModal from '../common/Organisms/Modals/QRModal/QRModal';
 import Logger from '../../helpers/Logger';
 import AddUserButtons from './Atoms/AddUsersButtons/AddUsersButtons';
-import { ISSUER, drawerWidth } from '../../helpers/constants';
+import { drawerWidth } from '../../helpers/constants';
 
 import './_style.scss';
 import CredentialListDetail from '../common/Organisms/Detail/CredentialListDetail';
 
-const Connections = ({ tableProps, filterProps, inviteHolder }) => {
+const Connections = ({ tableProps, filterProps, inviteHolder, isIssuer }) => {
   const { t } = useTranslation();
 
   const [connectionToken, setConnectionToken] = useState('');
@@ -27,14 +27,10 @@ const Connections = ({ tableProps, filterProps, inviteHolder }) => {
     if (!showDrawer) setCurrentConnection({});
   }, [showDrawer]);
 
-  const isIssuer = localStorage.getItem('userRole') === ISSUER;
-
-  const inviteHolderAndShowQR = () => {
-    const cb = value => {
-      setConnectionToken(value);
-      showQRModal(true);
-    };
-    inviteHolder(cb);
+  const inviteHolderAndShowQR = async studentId => {
+    const token = await inviteHolder(studentId);
+    setConnectionToken(token);
+    showQRModal(true);
   };
 
   const emptyProps = {
@@ -58,7 +54,7 @@ const Connections = ({ tableProps, filterProps, inviteHolder }) => {
       </Drawer>
       <div className="ContentHeader">
         <h1>{t('connections.title')}</h1>
-        {isIssuer ? (
+        {isIssuer() ? (
           <AddUserButtons />
         ) : (
           <CustomButton
@@ -120,7 +116,8 @@ Connections.propTypes = {
     status: PropTypes.string,
     setStatus: PropTypes.func.isRequired
   }).isRequired,
-  inviteHolder: PropTypes.func.isRequired
+  inviteHolder: PropTypes.func.isRequired,
+  isIssuer: PropTypes.func.isRequired
 };
 
 export default Connections;

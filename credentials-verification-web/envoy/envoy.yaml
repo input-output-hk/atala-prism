@@ -24,7 +24,7 @@ static_resources:
                           route:
                             cluster: wallet_service
                             max_grpc_timeout: 0s
-                        - match: { prefix: "/io.iohk.connector.ConnectorService" }
+                        - match: { prefix: "/io.iohk.cvp.connector.ConnectorService" }
                           route:
                             cluster: connector_service
                             max_grpc_timeout: 0s
@@ -54,25 +54,25 @@ static_resources:
       http2_protocol_options: {}
       lb_policy: round_robin
       # win/mac hosts: Use address: host.docker.internal instead of address: localhost in the line below
-      hosts: [{ socket_address: { address: 192.168.3.113, port_value: 50052 }}]
+      hosts: [{ socket_address: { address: 192.168.3.109, port_value: 50052 }}]
     - name: connector_service
       connect_timeout: 15s
       type: logical_dns
       http2_protocol_options: {}
       lb_policy: round_robin
       # win/mac hosts: Use address: host.docker.internal instead of address: localhost in the line below
-      hosts: [{ socket_address: { address: 192.168.3.113, port_value: 50051 }}]
+      hosts: [{ socket_address: { address: 192.168.3.109, port_value: 50051 }}]
     - name: credentials_service
       connect_timeout: 15s
       type: logical_dns
       http2_protocol_options: {}
       lb_policy: round_robin
       # win/mac hosts: Use address: host.docker.internal instead of address: localhost in the line below
-      hosts: [{ socket_address: { address: 192.168.3.113, port_value: 50053 }}]
+      hosts: [{ socket_address: { address: 192.168.3.109, port_value: 50051 }}]
     - name: students_service
       connect_timeout: 15s
       type: logical_dns
       http2_protocol_options: {}
       lb_policy: round_robin
       # win/mac hosts: Use address: host.docker.internal instead of address: localhost in the line below
-      hosts: [{ socket_address: { address: 192.168.3.113, port_value: 50053 }}]
+      hosts: [{ socket_address: { address: 192.168.3.109, port_value: 50051 }}]

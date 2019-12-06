@@ -1,3 +1,5 @@
+import { CONNECTION_STATUSES } from './constants';
+
 export const getBrowserLanguage = () => {
   const en = 'en';
   const ka = 'ka';
@@ -15,3 +17,6 @@ export const getBrowserLanguage = () => {
 
   return langToUse;
 };
+
+
+const CONNECTION_STATUSES_TRANSLATOR = (connectionStatus) => CONNECTION_STATUSES[connectionStatus]

@@ -4,7 +4,12 @@ import { Table } from 'antd';
 import CellRenderer from '../../../common/Atoms/CellRenderer/CellRenderer';
 import StatusBadge from '../../Atoms/StatusBadge/StatusBadge';
 import { shortBackendDateFormatter } from '../../../../helpers/formatters';
-import { HOLDER_PAGE_SIZE, xScroll, PENDING_CONNECTION } from '../../../../helpers/constants';
+import {
+  HOLDER_PAGE_SIZE,
+  xScroll,
+  CONNECTION_STATUSES,
+  CONNECTION_STATUSES_TRANSLATOR
+} from '../../../../helpers/constants';
 import ActionButtons from '../../Atoms/ActionButtons/ActionButtons';
 import holderDefaultAvatar from '../../../../images/holder-default-avatar.svg';
 
@@ -52,8 +57,11 @@ const getColumns = ({ inviteHolder, isIssuer, setHolder }) => {
       )
     },
     {
-      key: 'status',
-      render: ({ status }) => <StatusBadge status={status} />
+      key: 'connectionstatus',
+      render: ({ connectionstatus }) => {
+        const status = CONNECTION_STATUSES_TRANSLATOR[connectionstatus];
+        return <StatusBadge status={status} />;
+      }
     }
   ];
 
@@ -63,7 +71,7 @@ const getColumns = ({ inviteHolder, isIssuer, setHolder }) => {
       render: holder => (
         <ActionButtons
           holder={holder}
-          showQRButton={holder.status === PENDING_CONNECTION}
+          showQRButton={holder.connectionstatus === CONNECTION_STATUSES.invitationMissing}
           inviteHolder={inviteHolder}
           isIssuer={isIssuer}
           setHolder={setHolder}
@@ -75,7 +83,7 @@ const getColumns = ({ inviteHolder, isIssuer, setHolder }) => {
   const finalColumns = [];
 
   finalColumns.push(...userColumn);
-  if (isIssuer) finalColumns.push(...issuerInfo);
+  if (isIssuer()) finalColumns.push(...issuerInfo);
   finalColumns.push(...genericColumns);
   finalColumns.push(...actionColumns);
 
@@ -130,7 +138,7 @@ ConnectionsTable.propTypes = {
   setOffset: PropTypes.func.isRequired,
   inviteHolder: PropTypes.func.isRequired,
   setHolder: PropTypes.func.isRequired,
-  isIssuer: PropTypes.bool.isRequired
+  isIssuer: PropTypes.func.isRequired
 };
 
 export default ConnectionsTable;

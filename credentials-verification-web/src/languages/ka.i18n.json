@@ -22,8 +22,10 @@
   "connections": {
     "title": "Connections",
     "status": {
-      "PENDING_CONNECTION": "Pending Connection",
-      "CONNECTED": "Connected"
+      "invitationMissing":  "Pending",
+      "connectionMissing": "Connection Missing",
+      "connectionAccepted":  "Connection Accepted",
+      "connectionRevoked": "Connection Revoked"
     },
     "filters": {
       "identityNumber": "Identity Number",

@@ -1,5 +1,9 @@
+/* eslint import/no-unresolved: 0 */ // --> OFF
 import { StudentsServicePromiseClient } from '../../protos/credentials/credentialsManager_grpc_web_pb';
-import { GetStudentsRequest } from '../../protos/credentials/credentialsManager_pb';
+import {
+  GetStudentsRequest,
+  GenerateConnectionTokenRequest
+} from '../../protos/credentials/credentialsManager_pb';
 import Logger from '../../helpers/Logger';
 
 const { REACT_APP_GRPC_CLIENT } = process.env;
@@ -24,4 +28,16 @@ export const getStudents = async (limit = 10, lastSeenCredentialId = null) => {
   const { studentsList } = result.toObject();
 
   return studentsList;
+};
+
+export const generateConnectionToken = async (userId, studentId) => {
+  Logger.info(`Generating token for studentId ${studentId}`);
+  const generateConnectionTokenRequest = new GenerateConnectionTokenRequest();
+  generateConnectionTokenRequest.setStudentid(studentId);
+  const response = await studentsService.generateConnectionToken(
+    generateConnectionTokenRequest,
+    { userId: issuerId } // TODO unhardcode this when there be more user ids
+  );
+
+  return response.getToken();
 };
