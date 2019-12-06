@@ -24,7 +24,7 @@ const ORGANIZATION_INFO_STEP = 6;
 const STEP_QUANTITY = 7;
 
 const RegistrationContainer = ({
-  api: { getTermsAndConditions, getPrivacyPolicy, toProtoDate, createWallet }
+  api: { getTermsAndConditions, getPrivacyPolicy, createWallet }
 }) => {
   const { t } = useTranslation();
 
@@ -37,7 +37,7 @@ const RegistrationContainer = ({
   const [validMnemonic, setValidMnemonic] = useState(false);
   const [mnemonicWords, setMnemonicWords] = useState([]);
   const [password, setPassword] = useState('');
-  const [, setOrganizationInfo] = useState('');
+  const [organizationInfo, setOrganizationInfo] = useState({});
 
   useEffect(() => {
     const mnemonicsFromWallet = [
@@ -79,16 +79,6 @@ const RegistrationContainer = ({
 
   const nextStep = () => setCurrentStep(currentStep + 1);
 
-  const nextFromDocument = documentType => {
-    if (!accepted)
-      return message.error(
-        t('registration.acceptToContinue', { document: t(`registration.${documentType}`) })
-      );
-
-    setAccepted(currentStep === SEED_PHRASE_STEP);
-    nextStep();
-  };
-
   const validateWalletStatus = () =>
     new Promise(resolve => {
       resolve();
@@ -103,6 +93,9 @@ const RegistrationContainer = ({
       .catch(() => setWalletError(true));
   };
 
+  const nextIfAcceptedSeedPhrase = () =>
+    accepted ? nextStep() : message.error(t('registration.acceptSeedPhraseToContinue'));
+
   const nextIfMnemonicIsValid = () =>
     validMnemonic
       ? nextStep()
@@ -116,33 +109,34 @@ const RegistrationContainer = ({
       nextStep();
     });
 
-  const validateOrganisatonInfo = () =>
-    organizationRef.current.getForm().validateFieldsAndScroll((errors, { organizationInfo }) => {
-      if (errors) return;
+  const validateOrganizatonInfo = () =>
+    organizationRef.current
+      .getForm()
+      .validateFieldsAndScroll((errors, { organizationName, organizationRole }) => {
+        if (errors) return;
 
-      setOrganizationInfo(organizationInfo);
+        setOrganizationInfo({ organizationName, organizationRole });
 
-      createWallet(password)
-        .then(nextStep)
-        .catch(() => message.error(t('errors.errorDuringRegister')));
-    });
+        createWallet(password)
+          .then(nextStep)
+          .catch(() => message.error(t('errors.errorDuringRegister')));
+      });
 
   const nextFunction = () => {
     switch (currentStep) {
       case TERMS_AND_CONDITIONS_STEP:
-        return () => nextFromDocument(t('termsAndConditions'));
       case PRIVACY_POLICY_STEP:
-        return () => nextFromDocument(t('privacyPolicy'));
+        return nextStep;
       case DOWNLOAD_WALLET_STEP:
         return nextIfWalletIsRunning;
       case PASSWORD_STEP:
         return validatePassword;
       case SEED_PHRASE_STEP:
-        return () => nextFromDocument(t('seedPhrase'));
+        return nextIfAcceptedSeedPhrase;
       case MNEMONIC_VALIDATION_STEP:
         return nextIfMnemonicIsValid;
       case ORGANIZATION_INFO_STEP:
-        return validateOrganisatonInfo;
+        return validateOrganizatonInfo;
       default:
         return nextStep;
     }
@@ -170,7 +164,7 @@ const RegistrationContainer = ({
         return <DownloadWallet walletError={walletError} />;
       case PASSWORD_STEP:
         return <PasswordSetup password={password} passwordRef={passwordRef} />;
-      case SEED_PHRASE_STEP:
+      case SEED_PHRASE_STEP: {
         return (
           <SeedPhrase
             accepted={accepted}
@@ -178,6 +172,7 @@ const RegistrationContainer = ({
             mnemonics={mnemonics}
           />
         );
+      }
       case MNEMONIC_VALIDATION_STEP: {
         if (!mnemonicWords.length) {
           const WORD_QUANTITY = 2;
@@ -198,31 +193,37 @@ const RegistrationContainer = ({
         );
       }
       case ORGANIZATION_INFO_STEP:
-        return <OrganizationInfo organizationRef={organizationRef} />;
+        return (
+          <OrganizationInfo organizationRef={organizationRef} organizationInfo={organizationInfo} />
+        );
       default:
         return <Congratulations />;
     }
+  };
+
+  const requiresAgreement = () => {
+    const stepsWithAgreement = [TERMS_AND_CONDITIONS_STEP, PRIVACY_POLICY_STEP, SEED_PHRASE_STEP];
+
+    return stepsWithAgreement.includes(currentStep);
   };
 
   return (
     <Registration
       renderContent={() => getContent(currentStep)}
       next={nextFunction()}
-      accepted={accepted}
-      toggleAccept={currentStep < DOWNLOAD_WALLET_STEP ? () => setAccepted(!accepted) : null}
-      previous={
-        currentStep === MNEMONIC_VALIDATION_STEP ? () => setCurrentStep(SEED_PHRASE_STEP) : null
-      }
+      previous={currentStep ? () => setCurrentStep(currentStep - 1) : null}
       renderFooter={currentStep < STEP_QUANTITY}
-      documentToAccept={currentStep ? 'privacyPolicy' : 'termsAndConditions'}
+      requiresAgreement={requiresAgreement()}
     />
   );
 };
 
 RegistrationContainer.propTypes = {
-  getTermsAndConditions: PropTypes.func.isRequired,
-  getPrivacyPolicy: PropTypes.func.isRequired,
-  toProtoDate: PropTypes.func.isRequired
+  api: PropTypes.shape({
+    getTermsAndConditions: PropTypes.func.isRequired,
+    getPrivacyPolicy: PropTypes.func.isRequired,
+    createWallet: PropTypes.func.isRequired
+  }).isRequired
 };
 
 export default withApi(RegistrationContainer);

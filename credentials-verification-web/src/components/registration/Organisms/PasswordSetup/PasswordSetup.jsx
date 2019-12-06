@@ -4,7 +4,11 @@ import { useTranslation } from 'react-i18next';
 import { Input } from 'antd';
 import StepCard from '../../Atoms/StepCard/StepCard';
 import CustomForm from '../../../common/Organisms/Forms/CustomForm';
-import { noEmptyInput, passwordValidation } from '../../../../helpers/formRules';
+import {
+  noEmptyInput,
+  passwordValidation,
+  passwordFormatValidation
+} from '../../../../helpers/formRules';
 import { refShape } from '../../../../helpers/propShapes';
 
 import './_style.scss';
@@ -23,6 +27,9 @@ const PasswordSetup = ({ password, passwordRef }) => {
             validator: (_, value, cb) =>
               passwordValidation(value, cb, getPassValue(passwordRef, 'passwordConfirmation')),
             message: t('registration.password.passwordMissmatch')
+          },
+          {
+            validator: (_rule, value, cb) => passwordFormatValidation(value, cb, t)
           }
         ],
         initialValue: password
@@ -40,6 +47,9 @@ const PasswordSetup = ({ password, passwordRef }) => {
             validator: (_, value, cb) =>
               passwordValidation(value, cb, getPassValue(passwordRef, 'password')),
             message: t('registration.password.passwordMissmatch')
+          },
+          {
+            validator: (_rule, value, cb) => passwordFormatValidation(value, cb, t)
           }
         ],
         initialValue: password

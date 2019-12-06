@@ -274,10 +274,11 @@
     "privacyPolicy": "Privacy Policy Agreement",
     "seedPhrase": "Seed Phrase responsibility",
     "errorGetting": "Error getting {{document}}",
-    "acceptToContinue": "You must accept the {{document}} to continue",
+    "acceptSeedPhraseToContinue": "You must check that you understand the importance of the seed phrase to continue",
     "lastUpdated": "Last Updated",
     "back": "Back",
     "next": "Next",
+    "nextAndAgree": "Agree and Continue",
     "cancel": "Cancel",
     "accept": "Accept ",
     "alt": "Wallet Image",
@@ -292,7 +293,16 @@
       "info": "You must create a password which will encrypt the data in your local wallet",
       "passwordInput": "Password",
       "passwordConfirmation": "Confirm Password",
-      "passwordMissmatch": "The passwords must match"
+      "passwordMissmatch": "The passwords must match",
+      "invalidPassword": {
+        "initial": "The password must have",
+        "and": "and",
+        "number": "at least 1 number",
+        "lowercase": "at least 1 lower case",
+        "uppercase": "at least 1 upper case",
+        "minlength": "at leas 8 characters",
+        "nospaces": "no blank spaces"
+      }
     },
     "mnemonic": {
       "title": "Your Seed Phrase...",
@@ -313,8 +323,13 @@
     "organizationInfo": {
       "title": "We need some data...",
       "comment": "You are almost done!",
-      "subtitle": "Please enter your Organization name so you can start using the application.",
-      "name": "Organization Name"
+      "subtitle": "Please enter your Organization info so you can start using the application.",
+      "name": "Organization Name",
+      "role": "Organization Role",
+      "defaultRole": "Please select a role",
+      "invalidRole": "Please select a valid role",
+      "ISSUER": "Issuer",
+      "VERIFIER": "Verifier"
     },
     "congratulations": {
       "alt": "Congratulations Image",

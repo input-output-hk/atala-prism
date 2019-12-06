@@ -7,11 +7,13 @@ import {
 import {
   CreateWalletRequest,
   GetDIDRequest,
+  LockWalletRequest,
   UnlockWalletRequest,
+  UnlockWalletResponse,
   GetWalletStatusRequest
 } from '../../protos/wallet/wallet_pb';
 import Logger from '../../helpers/Logger';
-import { ISSUER } from '../../helpers/constants';
+import { USER_ROLE, ORGANISATION_NAME, ISSUER, VERIFIER } from '../../helpers/constants';
 
 const { REACT_APP_GRPC_CLIENT } = window._env_;
 const walletServiceClient = new WalletServiceClient(REACT_APP_GRPC_CLIENT, null, null);
@@ -61,12 +63,37 @@ export const getWalletStatus = async () => {
   return walletStatus.getStatus();
 };
 
+const cleanUserData = () => {
+  localStorage.removeItem(USER_ROLE);
+  localStorage.removeItem(ORGANISATION_NAME);
+};
+
+export const lockWallet = async () => {
+  const lockRequest = new LockWalletRequest();
+  await walletServicePromiseClient.lockWallet(lockRequest);
+
+  cleanUserData();
+};
+
+const UserRoles = {
+  0: ISSUER,
+  1: VERIFIER
+};
+
+const translateUserRole = role => UserRoles[role];
+
+const setUserData = (role, organisationName) => {
+  const roleAsString = translateUserRole(role);
+  localStorage.setItem(USER_ROLE, roleAsString);
+  localStorage.setItem(ORGANISATION_NAME, organisationName);
+};
+
 export const unlockWallet = async passphrase => {
   const unlockRequest = new UnlockWalletRequest();
   unlockRequest.setPassphrase(passphrase);
-  /* const unlockResponse = */ await walletServiceClient.unlockWallet(unlockRequest, null);
-  // const response = new UnlockWalletResponse(unlockResponse);
-  // console.log('unlockResponse', response, 'as obj', response.toObject());
+  const unlockResponse = await walletServicePromiseClient.unlockWallet(unlockRequest, null);
+  setUserData(unlockResponse.getRole(), unlockResponse.getOrganisationname());
+
   const status = await getWalletStatus();
   Logger.info(`status ${status}`);
   return status;
@@ -88,4 +115,4 @@ export const isWalletUnlocked = async () => {
   return status === 1;
 };
 
-export const isIssuer = () => localStorage.getItem('userRole') === ISSUER;
+export const isIssuer = () => localStorage.getItem(USER_ROLE) === ISSUER;

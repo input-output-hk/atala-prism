@@ -1,7 +1,7 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
-import { Checkbox, Row } from 'antd';
+import { Checkbox } from 'antd';
 import StepCard from '../../Atoms/StepCard/StepCard';
 import PhraseRenderer from '../../Molecules/PhraseRenderer/PhraseRenderer';
 

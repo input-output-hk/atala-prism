@@ -1,30 +1,15 @@
 import React from 'react';
-import { Card } from 'antd';
 import PropTypes from 'prop-types';
 import RegistrationFooter from './Molecules/Footer/RegistrationFooter';
 
 import './_style.scss';
 
-const Registration = ({
-  renderContent,
-  next,
-  renderFooter,
-  accepted,
-  toggleAccept,
-  previous,
-  documentToAccept
-}) => (
+const Registration = ({ renderContent, next, renderFooter, previous, requiresAgreement }) => (
   <div className="RegistrationContainer">
     <div className="RegistrationContent">
       {renderContent()}
       {renderFooter && (
-        <RegistrationFooter
-          next={next}
-          previous={previous}
-          toggleAccept={toggleAccept}
-          accepted={accepted}
-          documentToAccept={documentToAccept}
-        />
+        <RegistrationFooter next={next} previous={previous} requiresAgreement={requiresAgreement} />
       )}
     </div>
   </div>
@@ -32,19 +17,15 @@ const Registration = ({
 
 Registration.defaultProps = {
   next: null,
-  previous: null,
-  toggleAccept: null,
-  documentToAccept: '',
-  accepted: false
+  previous: null
 };
 
 Registration.propTypes = {
   renderContent: PropTypes.element.isRequired,
   next: PropTypes.func,
   previous: PropTypes.func,
-  toggleAccept: PropTypes.func,
-  documentToAccept: PropTypes.string,
-  accepted: PropTypes.bool
+  renderFooter: PropTypes.bool.isRequired,
+  requiresAgreement: PropTypes.bool.isRequired
 };
 
 export default Registration;

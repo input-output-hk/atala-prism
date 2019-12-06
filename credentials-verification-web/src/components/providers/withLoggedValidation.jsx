@@ -5,6 +5,7 @@ import Loading from '../common/Atoms/Loading/Loading';
 import { withSideBar } from './withSideBar';
 import Logger from '../../helpers/Logger';
 import { withApi } from './witApi';
+import { USER_ROLE } from '../../helpers/constants';
 
 const withLoggedValidationComponent = (Component, validRoles) => props => {
   const DashboardWithSidebar = withSideBar(Dashboard);
@@ -28,7 +29,7 @@ const withLoggedValidationComponent = (Component, validRoles) => props => {
 
   // Here is where the validations are made
 
-  const role = localStorage.getItem('userRole');
+  const role = localStorage.getItem(USER_ROLE);
   const userHasRole = !!role;
 
   const canRender = () => {

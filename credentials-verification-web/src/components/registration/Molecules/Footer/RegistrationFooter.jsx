@@ -1,28 +1,16 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Checkbox } from 'antd';
 import { useTranslation } from 'react-i18next';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 
 import './_style.scss';
 
-const RegistrationFooter = ({ next, previous, accepted, toggleAccept, documentToAccept }) => {
+const RegistrationFooter = ({ next, previous, requiresAgreement }) => {
   const { t } = useTranslation();
 
   return (
     <div className="RegistrationFooter">
       <div className="LeftButtons">
-        {toggleAccept && (
-          <div className="CheckControl">
-            <Checkbox onChange={toggleAccept} checked={accepted} />
-            <p>
-              {t('registration.accept')}
-              <strong>{t(`registration.${documentToAccept}`)}</strong>
-            </p>
-          </div>
-        )}
-      </div>
-      <div className="RightButtons">
         {previous && (
           <CustomButton
             buttonProps={{
@@ -32,12 +20,14 @@ const RegistrationFooter = ({ next, previous, accepted, toggleAccept, documentTo
             buttonText={t('registration.back')}
           />
         )}
+      </div>
+      <div className="RightButtons">
         <CustomButton
           buttonProps={{
             onClick: next,
             className: 'theme-primary'
           }}
-          buttonText={t('registration.next')}
+          buttonText={t(`registration.next${requiresAgreement ? 'AndAgree' : ''}`)}
         />
       </div>
     </div>
@@ -46,17 +36,13 @@ const RegistrationFooter = ({ next, previous, accepted, toggleAccept, documentTo
 
 RegistrationFooter.defaultProps = {
   next: null,
-  previous: null,
-  toggleAccept: null,
-  documentToAccept: ''
+  previous: null
 };
 
 RegistrationFooter.propTypes = {
   next: PropTypes.func,
   previous: PropTypes.func,
-  accepted: PropTypes.bool.isRequired,
-  toggleAccept: PropTypes.func,
-  documentToAccept: PropTypes.string
+  requiresAgreement: PropTypes.bool.isRequired
 };
 
 export default RegistrationFooter;
