@@ -21,6 +21,14 @@ object ParticipantsDAO {
        """.stripMargin.update.run.map(_ => ())
   }
 
+  def findBy(id: ParticipantId): OptionT[doobie.ConnectionIO, ParticipantInfo] = OptionT {
+    sql"""
+         |SELECT id, tpe, name, did, logo
+         |FROM participants
+         |WHERE id = $id
+      """.stripMargin.query[ParticipantInfo].option
+  }
+
   def findBy(token: TokenString): OptionT[doobie.ConnectionIO, ParticipantInfo] = OptionT {
     sql"""
          |SELECT p.id, p.tpe, p.name, p.did, p.logo

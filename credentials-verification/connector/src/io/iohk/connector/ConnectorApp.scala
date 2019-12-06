@@ -7,7 +7,7 @@ import io.iohk.connector.repositories.{ConnectionsRepository, MessagesRepository
 import io.iohk.connector.services.{ConnectionsService, MessagesService}
 import io.iohk.cvp.cmanager.grpc.services.{CredentialsServiceImpl, StudentsServiceImpl}
 import io.iohk.cvp.cmanager.protos.{CredentialsServiceGrpc, StudentsServiceGrpc}
-import io.iohk.cvp.cmanager.repositories.{CredentialsRepository, StudentsRepository}
+import io.iohk.cvp.cmanager.repositories.{CredentialsRepository, IssuersRepository, StudentsRepository}
 import io.iohk.cvp.connector.protos._
 import io.iohk.cvp.grpc.UserIdInterceptor
 import io.iohk.cvp.repositories.{SchemaMigrations, TransactorFactory}
@@ -58,9 +58,10 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       new ConnectorService(connectionsService, messagesService, braintreePayments)(executionContext)
 
     // cmanager
+    val issuersRepository = new IssuersRepository(xa)(executionContext)
     val credentialsRepository = new CredentialsRepository(xa)(executionContext)
     val studentsRepository = new StudentsRepository(xa)(executionContext)
-    val credentialsService = new CredentialsServiceImpl(credentialsRepository)(executionContext)
+    val credentialsService = new CredentialsServiceImpl(issuersRepository, credentialsRepository)(executionContext)
     val studentsService = new StudentsServiceImpl(studentsRepository, credentialsRepository)(executionContext)
 
     logger.info("Starting server")

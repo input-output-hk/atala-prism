@@ -225,7 +225,8 @@ trait CVPDockerModule extends Module { self: JavaModule =>
 
   // This naming convention is also encoded into terraform env.sh and the circle-ci build.
   def version: String = {
-    val branchPrefix = os.proc("git", "rev-parse", "--abbrev-ref", "HEAD").call().out.trim.replaceFirst("(ATA-\\d+).*", "$1").toLowerCase
+    val branchPrefix =
+      os.proc("git", "rev-parse", "--abbrev-ref", "HEAD").call().out.trim.replaceFirst("(ATA-\\d+).*", "$1").toLowerCase
     val revCount = os.proc("git", "rev-list", "HEAD", "--count").call().out.trim
     val shaShort = os.proc("git", "rev-parse", "--short", "HEAD").call().out.trim
 

@@ -21,6 +21,7 @@ import scala.concurrent.duration.DurationLong
 
 trait ApiTestHelper[STUB] {
   def apply[T](participantId: ParticipantId)(f: STUB => T): T
+  def unlogged[T](f: STUB => T): T
 }
 
 abstract class RpcSpecBase extends PostgresRepositorySpec with BeforeAndAfterEach {
@@ -60,7 +61,12 @@ abstract class RpcSpecBase extends PostgresRepositorySpec with BeforeAndAfterEac
 
   def usingApiAsConstructor[STUB](stubFactory: (ManagedChannel, CallOptions) => STUB): ApiTestHelper[STUB] =
     new ApiTestHelper[STUB] {
-      def apply[T](id: ParticipantId)(f: STUB => T): T = {
+      override def unlogged[T](f: STUB => T): T = {
+        val blockingStub = stubFactory(channelHandle, CallOptions.DEFAULT)
+        f(blockingStub)
+      }
+
+      override def apply[T](id: ParticipantId)(f: STUB => T): T = {
         val callOptions = CallOptions.DEFAULT.withCallCredentials(new CallCredentials {
           override def applyRequestMetadata(
               requestInfo: CallCredentials.RequestInfo,

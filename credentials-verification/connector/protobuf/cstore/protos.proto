@@ -3,6 +3,8 @@ syntax = "proto3";
 package io.iohk.cvp.cstore;
 
 service CredentialsStoreService {
+  rpc Register (RegisterRequest) returns (RegisterResponse) {}
+
   rpc CreateIndividual (CreateIndividualRequest) returns (CreateIndividualResponse) {}
 
   rpc GetIndividuals (GetIndividualsRequest) returns (GetIndividualsResponse) {}
@@ -12,6 +14,15 @@ service CredentialsStoreService {
   rpc StoreCredential (StoreCredentialRequest) returns (StoreCredentialResponse) {}
 
   rpc GetStoredCredentialsFor (GetStoredCredentialsForRequest) returns (GetStoredCredentialsForResponse) {}
+}
+
+message RegisterRequest {
+    string name = 1;
+    bytes logo = 3;
+}
+
+message RegisterResponse {
+    string userId = 1;
 }
 
 message CreateIndividualRequest {

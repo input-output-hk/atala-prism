@@ -6,19 +6,40 @@ import io.iohk.cvp.cstore.models.StoreIndividual
 import io.iohk.cvp.cstore.protos._
 import io.iohk.cvp.cstore.repositories.daos.IndividualsDAO.StoreIndividualCreateData
 import io.iohk.cvp.cstore.repositories.daos.StoredCredentialsDAO.StoredCredentialCreateData
-import io.iohk.cvp.cstore.services.{StoreIndividualsService, StoredCredentialsService}
+import io.iohk.cvp.cstore.services.{StoreIndividualsService, StoreUsersService, StoredCredentialsService}
 import io.iohk.cvp.grpc.UserIdInterceptor
 import io.iohk.cvp.models.ParticipantId
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class CredentialsStoreService(individuals: StoreIndividualsService, storedCredentials: StoredCredentialsService)(
+class CredentialsStoreService(
+    storeUsers: StoreUsersService,
+    individuals: StoreIndividualsService,
+    storedCredentials: StoredCredentialsService
+)(
     implicit ec: ExecutionContext
 ) extends CredentialsStoreServiceGrpc.CredentialsStoreService
     with ErrorSupport {
 
   override def logger: Logger = LoggerFactory.getLogger(getClass)
+
+  override def register(request: RegisterRequest): Future[RegisterResponse] = {
+    implicit val loggingContext = LoggingContext("request" -> request)
+
+    val createData = StoreUsersService.StoreUserCreationData(
+      request.name,
+      Option(request.logo).filter(!_.isEmpty).map(_.toByteArray.toVector)
+    )
+
+    storeUsers
+      .insert(createData)
+      .wrapExceptions
+      .successMap { id =>
+        protos.RegisterResponse(userId = id.uuid.toString)
+      }
+
+  }
 
   override def createIndividual(request: CreateIndividualRequest): Future[CreateIndividualResponse] = {
     val userId = UserIdInterceptor.participantId()

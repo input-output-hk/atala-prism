@@ -8,8 +8,9 @@ import io.iohk.connector.repositories.daos.ParticipantsDAO
 import io.iohk.cvp.cstore.models.{IndividualConnectionStatus, StoreUser}
 import io.iohk.cvp.cstore.protos.CredentialsStoreServiceGrpc
 import io.iohk.cvp.cstore.repositories.daos.{IndividualsDAO, StoreUsersDAO, StoredCredentialsDAO}
-import io.iohk.cvp.cstore.services.{StoreIndividualsService, StoredCredentialsService}
+import io.iohk.cvp.cstore.services.{StoreIndividualsService, StoreUsersService, StoredCredentialsService}
 import io.iohk.cvp.models.ParticipantId
+import org.scalatest.OptionValues._
 
 import scala.concurrent.duration._
 
@@ -24,6 +25,7 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
 
   val usingApiAs = usingApiAsConstructor(new CredentialsStoreServiceGrpc.CredentialsStoreServiceBlockingStub(_, _))
 
+  lazy val storeUsers = new StoreUsersService(database)
   lazy val individuals = new StoreIndividualsService(database)
   lazy val storedCredentials = new StoredCredentialsService(database)
 
@@ -31,7 +33,7 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
 
   override def services = Seq(
     CredentialsStoreServiceGrpc
-      .bindService(new CredentialsStoreService(individuals, storedCredentials), executionContext)
+      .bindService(new CredentialsStoreService(storeUsers, individuals, storedCredentials), executionContext)
   )
 
   override def beforeEach(): Unit = {
@@ -48,6 +50,24 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
       .transact(database)
       .unsafeToFuture()
       .futureValue
+  }
+
+  "register" should {
+    "create relevant records in the database" in {
+      usingApiAs.unlogged { serviceStub =>
+        val request = protos.RegisterRequest("Verifier", ByteString.EMPTY)
+        val result = serviceStub.register(request)
+
+        val user = StoreUsersDAO.get(ParticipantId(result.userId)).transact(database).unsafeRunSync().value
+        // user needs just to exist
+
+        val participant =
+          ParticipantsDAO.findBy(ParticipantId(result.userId)).transact(database).value.unsafeRunSync().value
+        participant.tpe mustBe ParticipantType.Verifier
+        participant.name mustBe "Verifier"
+        participant.logo mustBe None
+      }
+    }
   }
 
   "createIndividual" should {

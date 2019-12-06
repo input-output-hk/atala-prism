@@ -3,17 +3,18 @@ package io.iohk.cvp.cmanager.grpc.services
 import java.util.UUID
 
 import io.iohk.cvp.cmanager.grpc.services.codecs.ProtoCodecs._
-import io.iohk.cvp.cmanager.models.{Credential, Student}
 import io.iohk.cvp.cmanager.models.requests.CreateCredential
+import io.iohk.cvp.cmanager.models.{Credential, Issuer, Student}
 import io.iohk.cvp.cmanager.protos
-import io.iohk.cvp.cmanager.repositories.CredentialsRepository
+import io.iohk.cvp.cmanager.repositories.{CredentialsRepository, IssuersRepository}
 import io.scalaland.chimney.dsl._
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
-class CredentialsServiceImpl(credentialsRepository: CredentialsRepository)(implicit ec: ExecutionContext)
-    extends protos.CredentialsServiceGrpc.CredentialsService {
+class CredentialsServiceImpl(issuersRepository: IssuersRepository, credentialsRepository: CredentialsRepository)(
+    implicit ec: ExecutionContext
+) extends protos.CredentialsServiceGrpc.CredentialsService {
 
   override def createCredential(request: protos.CreateCredentialRequest): Future[protos.CreateCredentialResponse] = {
     val userId = getIssuerId()
@@ -47,6 +48,21 @@ class CredentialsServiceImpl(credentialsRepository: CredentialsRepository)(impli
       .value
       .map {
         case Right(x) => x
+        case Left(e) => throw new RuntimeException(s"FAILED: $e")
+      }
+  }
+
+  override def register(request: protos.RegisterRequest): Future[protos.RegisterResponse] = {
+    val creationData = IssuersRepository.IssuerCreationData(
+      Issuer.Name(request.name),
+      request.did,
+      Option(request.logo).filter(!_.isEmpty).map(_.toByteArray.toVector)
+    )
+    issuersRepository
+      .insert(creationData)
+      .value
+      .map {
+        case Right(id) => protos.RegisterResponse(issuerId = id.value.toString)
         case Left(e) => throw new RuntimeException(s"FAILED: $e")
       }
   }
