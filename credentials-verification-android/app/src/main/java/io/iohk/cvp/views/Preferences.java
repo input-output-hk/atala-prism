@@ -74,4 +74,17 @@ public class Preferences {
     editor.putStringSet(prefKey, newItems);
     editor.apply();
   }
+
+  public void saveConnectionWithUser(String connectionId, String userId) {
+    SharedPreferences prefs = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
+    Editor editor = prefs.edit();
+    editor.putString(connectionId, userId);
+    editor.apply();
+  }
+
+  public Optional<String> getUserIdByConnection(String connectionId) {
+    SharedPreferences sharedPreferences = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
+    return Optional.ofNullable(sharedPreferences
+        .getString(connectionId, null));
+  }
 }

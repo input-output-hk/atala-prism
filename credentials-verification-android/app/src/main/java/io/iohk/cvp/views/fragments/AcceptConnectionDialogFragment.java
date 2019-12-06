@@ -120,6 +120,8 @@ public class AcceptConnectionDialogFragment extends CvpDialogFragment<AcceptConn
           .observe(this, connectionInfo -> {
             prefs.saveUserId(connectionInfo.getUserId());
             this.dismiss();
+            prefs.saveConnectionWithUser(connectionInfo.getConnection().getConnectionId(),
+                connectionInfo.getUserId());
             ((MainActivity) getActivity())
                 .onNavigation(BottomAppBarOption.CONNECTIONS, connectionInfo.getUserId());
           });

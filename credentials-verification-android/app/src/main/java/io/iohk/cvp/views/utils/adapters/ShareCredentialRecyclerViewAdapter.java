@@ -91,7 +91,8 @@ public class ShareCredentialRecyclerViewAdapter extends
 
     void setConnectionInfo(ConnectionListable connectionInfo) {
       this.connectionInfo = connectionInfo;
-      verifierName.setText("Business and Technology University");
+      verifierName.setText(connectionInfo.getVerifierName());
+      // TODO set logo
       setBackground();
     }
 
@@ -100,6 +101,8 @@ public class ShareCredentialRecyclerViewAdapter extends
       connectionInfo.setIsSelected(!connectionInfo.getIsSelected());
       setBackground();
       fragment.updateButtonState();
+      fragment.updateSelectedVerifiers(connectionInfo.getConnectionId(),
+          connectionInfo.getIsSelected());
     }
 
     void setBackground() {
