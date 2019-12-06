@@ -57,6 +57,10 @@ service WalletService {
 
     // change pass phrase  wallet
     rpc changePassphrase(ChangePassphraseRequest) returns (ChangePassphraseResponse) {}
+
+    // Generate DID Registration request
+    rpc GenerateDID(GenerateDIDRequest) returns (GenerateDIDResponse) {}
+
 }
 
 message GetDIDRequest {}
@@ -128,3 +132,9 @@ message ChangePassphraseRequest {
 }
 
 message ChangePassphraseResponse {}
+
+message GenerateDIDRequest {}
+
+message GenerateDIDResponse {
+    io.iohk.nodenew.SignedAtalaOperation operation = 1;
+}

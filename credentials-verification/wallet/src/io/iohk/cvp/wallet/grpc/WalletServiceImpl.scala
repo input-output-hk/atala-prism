@@ -109,4 +109,15 @@ class WalletServiceImpl(wallet: Wallet)(implicit ec: ExecutionContext) extends p
     }
   }
 
+  override def generateDID(request: GenerateDIDRequest): Future[GenerateDIDResponse] = {
+    Future {
+      cachedWallet.get() match {
+        case Some(data) => {
+          GenerateDIDResponse(Some(toSignedAtalaOperation(data.keyPair)))
+        }
+        case None => throw new RuntimeException("Wallet is locked")
+      }
+    }
+  }
+
 }
