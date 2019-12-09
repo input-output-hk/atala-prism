@@ -18,5 +18,4 @@ export const getBrowserLanguage = () => {
   return langToUse;
 };
 
-
-const CONNECTION_STATUSES_TRANSLATOR = (connectionStatus) => CONNECTION_STATUSES[connectionStatus]
+const CONNECTION_STATUSES_TRANSLATOR = connectionStatus => CONNECTION_STATUSES[connectionStatus];
