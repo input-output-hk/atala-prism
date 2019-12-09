@@ -15,7 +15,7 @@ import { drawerWidth } from '../../helpers/constants';
 import './_style.scss';
 import CredentialListDetail from '../common/Organisms/Detail/CredentialListDetail';
 
-const Connections = ({ tableProps, filterProps, inviteHolder, isIssuer, getCredentials }) => {
+const Connections = ({ tableProps, filterProps, inviteHolder, isIssuer }) => {
   const { t } = useTranslation();
 
   const [connectionToken, setConnectionToken] = useState('');
@@ -38,6 +38,24 @@ const Connections = ({ tableProps, filterProps, inviteHolder, isIssuer, getCrede
     photoAlt: t('connections.noConnections.photoAlt'),
     title: t('connections.noConnections.title'),
     subtitle: t('connections.noConnections.subtitle')
+  };
+
+  const getStudentCredentials = connectionId => {
+    const { getCredentials } = tableProps;
+    return getCredentials(null, connectionId);
+  };
+
+  const setHolderInfo = async connection => {
+    const { admissiondate, avatar, fullname, connectionid } = connection;
+    const transactions = await getStudentCredentials(connectionid);
+    console.log('transactions', transactions);
+    const formattedHolder = {
+      user: { icon: avatar, name: fullname },
+      transactions,
+      date: admissiondate
+    };
+    setCurrentConnection(formattedHolder);
+    setShowDrawer(true);
   };
 
   return (
@@ -71,10 +89,7 @@ const Connections = ({ tableProps, filterProps, inviteHolder, isIssuer, getCrede
         <ConnectionsTable
           inviteHolder={inviteHolderAndShowQR}
           isIssuer={isIssuer}
-          setHolder={connection => {
-            setCurrentConnection(connection);
-            setShowDrawer(true);
-          }}
+          setHolder={setHolderInfo}
           {...tableProps}
         />
       ) : (
@@ -106,7 +121,8 @@ Connections.propTypes = {
     subjectCount: PropTypes.number,
     offset: PropTypes.number,
     setOffset: PropTypes.func.isRequired,
-    inviteHolder: PropTypes.func.isRequired
+    inviteHolder: PropTypes.func.isRequired,
+    getCredentials: PropTypes.func.isRequired
   }).isRequired,
   filterProps: PropTypes.shape({
     userId: PropTypes.string,
@@ -117,8 +133,7 @@ Connections.propTypes = {
     setStatus: PropTypes.func.isRequired
   }).isRequired,
   inviteHolder: PropTypes.func.isRequired,
-  isIssuer: PropTypes.func.isRequired,
-  getCredentials: PropTypes.func.isRequired
+  isIssuer: PropTypes.func.isRequired
 };
 
 export default Connections;

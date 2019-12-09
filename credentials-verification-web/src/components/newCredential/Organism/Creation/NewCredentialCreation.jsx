@@ -11,6 +11,7 @@ import {
   EXAMPLE_START_DATE,
   EXAMPLE_GRADUATION_DATE
 } from '../../../../helpers/constants';
+import { dayMonthYearFormatter } from '../../../../helpers/formatters';
 
 import './_style.scss';
 
@@ -22,8 +23,8 @@ const NewCredentialCreation = ({ savePicture, formRef, credentialValues }) => (
         university={EXAMPLE_UNIVERSITY_NANE}
         award={EXAMPLE_AWARD}
         student={EXAMPLE_FULL_NAME}
-        startDate={EXAMPLE_START_DATE}
-        graduationDate={EXAMPLE_GRADUATION_DATE}
+        startDate={dayMonthYearFormatter(EXAMPLE_START_DATE)}
+        graduationDate={dayMonthYearFormatter(EXAMPLE_GRADUATION_DATE)}
       />
     </Col>
     <Col xs={24} lg={12} className="CredentialFormContainer">

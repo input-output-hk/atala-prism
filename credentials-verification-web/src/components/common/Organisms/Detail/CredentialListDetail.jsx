@@ -1,13 +1,14 @@
-import React, { Fragment, useState } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
-import { Collapse, Drawer, Icon } from 'antd';
+import { Collapse, Icon } from 'antd';
 import { credentialSummaryShape } from '../../../../helpers/propShapes';
-import { shortBackendDateFormatter } from '../../../../helpers/formatters';
+import {
+  dayMonthYearBackendFormatter,
+  shortBackendDateFormatter
+} from '../../../../helpers/formatters';
 import Connection from '../../../credentialSummaries/Molecules/Connection/Connection';
 import CustomButton from '../../Atoms/CustomButton/CustomButton';
-import { drawerWidth } from '../../../../helpers/constants';
-import CredentialData from '../../Atoms/CredentialData/CredentialData';
 
 import './_style.scss';
 import CredentialDetail from './CredentialDetail';
@@ -19,7 +20,7 @@ const CredentialListDetail = ({ user: { icon, name: userName }, transactions, da
   const [connectionInfo, setConnectionInfo] = useState();
 
   const genExtra = () => <Icon type="caret-down" />;
-  const role = localStorage.getItem('role');
+  const role = localStorage.getItem('userRole');
 
   return (
     <div className="CredentialSummaryDetail">
@@ -48,12 +49,24 @@ const CredentialListDetail = ({ user: { icon, name: userName }, transactions, da
           />
         </Collapse>
       )}
-      {transactions.map(trans => (
-        <div className="CredentialSummaryLine">
-          <p>Credential</p>
-          <Connection {...trans} setConnectionInfo={setConnectionInfo} />
-        </div>
-      ))}
+      {transactions.map(trans => {
+        const transaction = mapTransaction(trans, setConnectionInfo);
+        return (
+          <div className="CredentialSummaryLine">
+            <p>Credential</p>
+            <Connection
+              icon={transaction.icon}
+              type={transaction.type}
+              date={transaction.date}
+              setConnectionInfo={transaction.setConnectionInfo}
+              university={transaction.university}
+              award={transaction.award}
+              student={transaction.student}
+              graduationDate={transaction.graduationDate}
+            />
+          </div>
+        );
+      })}
       {role && (
         <div className="ControlButtons">
           <CustomButton
@@ -77,6 +90,42 @@ const CredentialListDetail = ({ user: { icon, name: userName }, transactions, da
     </div>
   );
 };
+
+const mapTransaction = (credential, setConnectionInfo) => {
+  const {
+    degreeawarded,
+    additionalspeciality,
+    admissiondate,
+    issuertype,
+    subjectdata,
+    graduationdate,
+    grantingDecision
+  } = credential;
+  return {
+    icon: null,
+    type: getTitle(degreeawarded, additionalspeciality),
+    date: dayMonthYearBackendFormatter(admissiondate),
+    setConnectionInfo,
+    university: getIssuerName(issuertype),
+    student: getStudentName(subjectdata),
+    graduationDate: dayMonthYearBackendFormatter(graduationdate),
+    award: grantingDecision
+  };
+};
+
+const getStudentName = student => {
+  const names = student.namesList.join(' ');
+  const surnames = student.surnameList.join(' ');
+  return `${names} ${surnames}`;
+};
+
+const getIssuerName = issuer => {
+  const { issuerlegalname, academicauthority } = issuer;
+  return `${issuerlegalname}, ${academicauthority}`;
+};
+
+const getTitle = (degreeawarded, additionalspeciality) =>
+  `${degreeawarded}, ${additionalspeciality}`;
 
 CredentialListDetail.defaultProps = {
   transactions: []

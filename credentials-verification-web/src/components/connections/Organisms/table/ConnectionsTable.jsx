@@ -15,7 +15,7 @@ import holderDefaultAvatar from '../../../../images/holder-default-avatar.svg';
 
 import './_style.scss';
 
-const getColumns = ({ inviteHolder, isIssuer, setHolder, getCredentials }) => {
+const getColumns = ({ inviteHolder, isIssuer, setHolder }) => {
   const userColumn = [
     {
       key: 'avatar',
@@ -27,7 +27,7 @@ const getColumns = ({ inviteHolder, isIssuer, setHolder, getCredentials }) => {
         />
       )
     },
-    { key: 'name', render: ({ name }) => name }
+    { key: 'fullname', render: ({ fullname }) => fullname }
   ];
 
   const issuerInfo = [
@@ -75,7 +75,6 @@ const getColumns = ({ inviteHolder, isIssuer, setHolder, getCredentials }) => {
           inviteHolder={inviteHolder}
           isIssuer={isIssuer}
           setHolder={setHolder}
-          getCredentials={getCredentials}
         />
       )
     }
@@ -139,8 +138,7 @@ ConnectionsTable.propTypes = {
   setOffset: PropTypes.func.isRequired,
   inviteHolder: PropTypes.func.isRequired,
   setHolder: PropTypes.func.isRequired,
-  isIssuer: PropTypes.func.isRequired,
-  getCredentials: PropTypes.func.isRequired
+  isIssuer: PropTypes.func.isRequired
 };
 
 export default ConnectionsTable;

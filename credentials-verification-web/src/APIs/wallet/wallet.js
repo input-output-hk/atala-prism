@@ -112,9 +112,7 @@ const translateStatus = status => WalletStatuses[status];
 
 export const isWalletUnlocked = async () => {
   const status = await getWalletStatus();
-  console.log('Entre');
-  return true;
-  // return status === 1;
+  return status === 1;
 };
 
 export const isIssuer = () => localStorage.getItem(USER_ROLE) === ISSUER;

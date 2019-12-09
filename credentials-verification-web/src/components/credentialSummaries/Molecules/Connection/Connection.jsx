@@ -2,13 +2,21 @@ import React from 'react';
 import { Col } from 'antd';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
-import { shortDateFormatter } from '../../../../helpers/formatters';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import iconCredentials from '../../../../images/icon-credentials.svg';
 
 import './_style.scss';
 
-const Connection = ({ icon, type, date, setConnectionInfo }) => {
+const Connection = ({
+  icon,
+  type,
+  date,
+  university,
+  award,
+  student,
+  graduationDate,
+  setConnectionInfo
+}) => {
   const { t } = useTranslation();
 
   return (
@@ -17,14 +25,22 @@ const Connection = ({ icon, type, date, setConnectionInfo }) => {
         <img src={icon || iconCredentials} alt={t('connections.detail.iconAlt')} />
         <div className="CredentialDataText">
           <h3>{type}</h3>
-          <p>{shortDateFormatter(date)}</p>
+          <p>{date}</p>
         </div>
       </Col>
       <Col span={6} className="CredentialLink">
         <CustomButton
           buttonProps={{
             className: 'theme-link',
-            onClick: () => setConnectionInfo({ title: type, startDate: date })
+            onClick: () =>
+              setConnectionInfo({
+                title: type,
+                startDate: date,
+                university,
+                award,
+                student,
+                graduationDate
+              })
           }}
           buttonText={t('actions.view')}
         />
