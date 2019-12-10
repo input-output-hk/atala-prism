@@ -5,6 +5,7 @@ import io.grpc.StatusRuntimeException;
 import io.iohk.cvp.io.connector.ConnectorServiceGrpc;
 import io.iohk.cvp.io.connector.GetConnectionsPaginatedRequest;
 import io.iohk.cvp.io.connector.GetConnectionsPaginatedResponse;
+import io.iohk.cvp.io.connector.ParticipantInfo;
 import io.iohk.cvp.viewmodel.dtos.ConnectionListable;
 import java.util.List;
 import java.util.Optional;
@@ -37,6 +38,8 @@ public class GetConnectionsListableRunnable extends CommonGrpcRunnable<List<Conn
 
     return Optional.ofNullable(response.getConnectionsList())
         .map(connectionInfos -> connectionInfos.stream()
+            .filter(
+                connection -> connection.getParticipantInfo().getParticipantCase().getNumber() == ParticipantInfo.VERIFIER_FIELD_NUMBER)
             .map(ConnectionListable::new)
             .collect(Collectors.toList())
         );

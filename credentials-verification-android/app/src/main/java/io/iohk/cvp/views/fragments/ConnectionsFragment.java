@@ -17,6 +17,7 @@ import butterknife.BindView;
 import com.google.android.material.tabs.TabLayout;
 import io.iohk.cvp.R;
 import io.iohk.cvp.io.connector.ConnectionInfo;
+import io.iohk.cvp.io.connector.ParticipantInfo;
 import io.iohk.cvp.utils.ActivityUtils;
 import io.iohk.cvp.viewmodel.ConnectionsActivityViewModel;
 import io.iohk.cvp.views.activities.MainActivity;
@@ -118,15 +119,18 @@ public class ConnectionsFragment extends CvpFragment<ConnectionsActivityViewMode
     if (!connectionsData.hasActiveObservers()) {
       connectionsData.observe(this, connections -> {
         List<ConnectionInfo> issuerConnections = connections.stream()
-            .filter(conn -> conn.getParticipantInfo().getIssuer() != null).collect(
+            .filter(conn -> conn.getParticipantInfo().getParticipantCase().getNumber()
+                == ParticipantInfo.ISSUER_FIELD_NUMBER)
+            .collect(
                 Collectors.toList());
         universitiesListFragment.addConnections(issuerConnections);
 
-        // FIXME connections should have something like getVerifier
-          /* <ConnectionInfo> verifiersConnections = connections.stream()
-              .filter(conn -> conn.getParticipantInfo().getVerifier() != null).collect(
-                  Collectors.toList());
-          employersListFragment.addConnections(verifiersConnections); */
+        List<ConnectionInfo> verifiersConnections = connections.stream()
+            .filter(conn -> conn.getParticipantInfo().getParticipantCase().getNumber()
+                == ParticipantInfo.VERIFIER_FIELD_NUMBER)
+            .collect(
+                Collectors.toList());
+        employersListFragment.addConnections(verifiersConnections);
       });
     }
   }
