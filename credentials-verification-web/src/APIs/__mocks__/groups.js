@@ -1,29 +1,19 @@
-import { image, company, random, lorem, date } from 'faker';
-import moment from 'moment';
 import __ from 'lodash';
-import { GROUP_PAGE_SIZE } from '../../helpers/constants';
-import { toProtoDate } from './helpers';
+import icon from '../../images/icon-groups.svg';
 
-const createMockGroup = groupId => ({
-  icon: image.avatar(),
-  groupName: company.companyName(),
-  groupId,
-  certificate: {
-    certificateName: lorem.sentence(),
-    certificateId: random.alphaNumeric()
-  },
-  credential: {
-    credentialName: lorem.sentence(),
-    credentialId: random.alphaNumeric()
-  },
-  websiteLink: '/',
-  description: lorem.paragraph(),
-  lastUpdate: toProtoDate(moment(date.recent()))
-});
+// This group  is hardcoded as it was discussed for the alpha verion
+const mockGroup = {
+  icon,
+  groupName: 'Example Group Name',
+  groupId: 1,
+  lastUpdate: {
+    year: 2018,
+    month: 5,
+    day: 25
+  }
+};
 
-const mockedGroups = [];
-
-for (let i = 0; i < 3 * GROUP_PAGE_SIZE; i++) mockedGroups.push(createMockGroup(i));
+const mockedGroups = [mockGroup];
 
 export const getGroups = ({ name = '', date: filterDate = 0, pageSize, lastId }) =>
   new Promise(resolve => {

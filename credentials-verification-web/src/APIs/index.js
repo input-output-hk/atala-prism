@@ -15,6 +15,7 @@ import { getStudents, generateConnectionToken } from './credentials/studentsMana
 
 export { mockApi };
 export const api = {
+  ...mockApi,
   generateConnectionToken,
   getConnectionsPaginated,
   createWallet,

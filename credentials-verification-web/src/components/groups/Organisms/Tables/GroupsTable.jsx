@@ -18,20 +18,24 @@ const GetActionsButtons = ({ id, setGroupToDelete, fullInfo }) => {
           <CustomButton
             buttonProps={{
               onClick: setGroupToDelete,
-              className: 'theme-link'
+              className: 'theme-link',
+              disabled: true
             }}
             buttonText={t('groups.table.buttons.delete')}
           />
           <CustomButton
             buttonProps={{
               onClick: () => message.info(`The id to copy is ${id}`, 1),
-              className: 'theme-link'
+              className: 'theme-link',
+              disabled: true
             }}
             buttonText={t('groups.table.buttons.copy')}
           />
         </Fragment>
       )}
-      <Link to={`group/${id}`}>{t('groups.table.buttons.view')}</Link>
+      <Link disabled to={`group/${id}`}>
+        {t('groups.table.buttons.view')}
+      </Link>
     </div>
   );
 };
@@ -56,35 +60,8 @@ AddCredentialsButton.propTypes = {
   id: PropTypes.string.isRequired
 };
 
-const getColumns = ({ setGroupToDelete, fullInfo, selectedGroup, setGroup, openModal }) => {
+const getColumns = ({ setGroupToDelete, fullInfo }) => {
   const componentName = 'groups';
-  const credentialColumns = fullInfo
-    ? [
-        {
-          key: 'credential',
-          render: ({ credential, groupId }) =>
-            credential ? (
-              <CellRenderer
-                title="credential"
-                componentName={componentName}
-                value={credential.credentialName}
-              />
-            ) : (
-              <AddCredentialsButton id={groupId} />
-            )
-        }
-      ]
-    : [
-        {
-          key: 'checked',
-          render: group => (
-            <Radio
-              checked={group.groupId === selectedGroup.groupId}
-              onClick={() => setGroup(group)}
-            />
-          )
-        }
-      ];
 
   const actionColumn = [
     {
@@ -129,7 +106,7 @@ const getColumns = ({ setGroupToDelete, fullInfo, selectedGroup, setGroup, openM
     }
   ];
 
-  return commonColumns.concat(credentialColumns).concat(actionColumn);
+  return commonColumns.concat(actionColumn);
 };
 
 const GroupsTable = ({
@@ -138,12 +115,11 @@ const GroupsTable = ({
   selectedGroup,
   setGroup,
   onPageChange,
-  fullInfo,
   hasMore
 }) => {
   const [loading, setLoading] = useState(false);
-  const selectedRows = groups.map(({ groupId }) => groupId).indexOf(selectedGroup.groupId);
-  const selectedRowKeys = selectedRows === -1 ? [] : [selectedRows];
+  const selectedRowKeys = selectedGroup.groupId ? [0] : []; // groups.map(({ groupId }) => groupId).indexOf(selectedGroup.groupId);
+  // const selectedRowKeys = selectedRows === -1 ? [] : [selectedRows];
 
   const getMoreData = () => {
     setLoading(true);
@@ -152,9 +128,9 @@ const GroupsTable = ({
   };
 
   const tableProps = {
-    columns: getColumns({ setGroupToDelete, fullInfo, selectedGroup, setGroup }),
+    columns: getColumns({ setGroupToDelete, fullInfo: !setGroup, selectedGroup, setGroup }),
     data: groups,
-    selectionType: fullInfo
+    selectionType: !setGroup
       ? null
       : {
           selectedRowKeys,
@@ -181,7 +157,6 @@ GroupsTable.propTypes = {
   onPageChange: PropTypes.func.isRequired,
   selectedGroup: PropTypes.string,
   setGroup: PropTypes.func,
-  fullInfo: PropTypes.bool.isRequired,
   hasMore: PropTypes.func.isRequired
 };
 

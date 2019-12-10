@@ -29,7 +29,6 @@ const Groups = ({
   setDate,
   setName,
   handleGroupDeletion,
-  fullInfo,
   setGroup,
   group,
   updateGroups,
@@ -59,7 +58,6 @@ const Groups = ({
   const tableProps = {
     setGroupToDelete,
     groups,
-    fullInfo,
     onPageChange: updateGroups,
     setGroup,
     hasMore,
@@ -71,7 +69,7 @@ const Groups = ({
       <DeleteGroupModal {...modalProps} />
       <div className="ContentHeader">
         <h1>{t('groups.title')}</h1>
-        {fullInfo && <NewGroupButton />}
+        {!setGroup && <NewGroupButton />}
       </div>
       <GroupFilters changeDate={setDate} changeFilter={setName} />
       <Row>
@@ -102,7 +100,6 @@ Groups.propTypes = {
   setDate: PropTypes.func.isRequired,
   setName: PropTypes.func.isRequired,
   handleGroupDeletion: PropTypes.func.isRequired,
-  fullInfo: PropTypes.bool.isRequired,
   setGroup: PropTypes.func,
   group: PropTypes.string,
   updateGroups: PropTypes.func.isRequired,

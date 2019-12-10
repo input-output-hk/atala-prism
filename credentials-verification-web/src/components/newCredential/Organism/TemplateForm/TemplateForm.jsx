@@ -47,12 +47,8 @@ const TemplateForm = React.forwardRef(
         },
         label: t('newCredential.form.startDate'),
         key: 'startDate',
-        className: 'DatePickerContainer',
-        input: (
-          <Col span={23}>
-            <DatePicker size="large" showToday={false} />
-          </Col>
-        )
+        className: 'DatePickerContainer firstElement',
+        input: <DatePicker allowClear={false} size="large" showToday={false} />
       },
       {
         fieldDecoratorData: {
@@ -71,11 +67,7 @@ const TemplateForm = React.forwardRef(
         label: t('newCredential.form.graduationDate'),
         key: 'graduationDate',
         className: 'DatePickerContainer',
-        input: (
-          <Col span={24}>
-            <DatePicker size="large" />
-          </Col>
-        )
+        input: <DatePicker allowClear={false} size="large" />
       },
       {
         fieldDecoratorData: {
