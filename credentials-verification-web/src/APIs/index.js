@@ -5,6 +5,7 @@ import {
   createWallet,
   getDid,
   getWalletStatus,
+  lockWallet,
   unlockWallet,
   isWalletUnlocked,
   isIssuer
@@ -24,5 +25,6 @@ export const api = {
   getWalletStatus,
   unlockWallet,
   isWalletUnlocked,
+  lockWallet,
   isIssuer
 };

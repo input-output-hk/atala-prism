@@ -13,7 +13,7 @@ import credentialSummaryIcon from '../../../../images/credentialSummaryIcon.svg'
 import settingsIcon from '../../../../images/settingsIcon.svg';
 import supportIcon from '../../../../images/supportIcon.svg';
 import './_style.scss';
-import { ISSUER, VERIFIER } from '../../../../helpers/constants';
+import { ISSUER, VERIFIER, USER_ROLE } from '../../../../helpers/constants';
 
 const { Sider } = Layout;
 
@@ -31,7 +31,7 @@ const SideMenu = ({ location: pathname }) => {
   ];
 
   const iconsByRole = icons.filter(({ restrictedTo }) =>
-    restrictedTo.includes(localStorage.getItem('userRole'))
+    restrictedTo.includes(localStorage.getItem(USER_ROLE))
   );
 
   const bottomIcons = [

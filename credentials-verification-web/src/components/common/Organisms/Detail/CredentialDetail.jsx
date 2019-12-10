@@ -4,11 +4,11 @@ import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import CredentialData from '../../Atoms/CredentialData/CredentialData';
 import CustomButton from '../../Atoms/CustomButton/CustomButton';
-import { drawerWidth, ISSUER, VERIFIER } from '../../../../helpers/constants';
+import { drawerWidth, ISSUER, VERIFIER, USER_ROLE } from '../../../../helpers/constants';
 
 const CredentialDetail = ({ drawerInfo, credentialData }) => {
   const { t } = useTranslation();
-  const role = localStorage.getItem('userRole');
+  const role = localStorage.getItem(USER_ROLE);
 
   return (
     <Drawer placement="right" width={drawerWidth} destroyOnClose {...drawerInfo}>

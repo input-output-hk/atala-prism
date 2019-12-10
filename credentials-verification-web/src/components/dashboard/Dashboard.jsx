@@ -7,7 +7,7 @@ import CurrentBundle from './Atoms/CurrentBundle/CurrentBundle';
 import ConnectionSummary from './Molecules/ConnectionSummary/ConnectionSummary';
 import TransactionSummary from './Molecules/TransactionSummary/TransactionSummary';
 import { getBrowserLanguage } from '../../helpers/languageUtils';
-import { ISSUER } from '../../helpers/constants';
+import { ISSUER, USER_ROLE } from '../../helpers/constants';
 
 import './_style.scss';
 
@@ -28,7 +28,7 @@ const Dashboard = ({ name, bundle, credentials, proofRequests }) => {
       </div>
       <div className="DashboardContentBottom">
         <ConnectionSummary weekAmount={0} monthAmount={0} yearAmount={0} />
-        {localStorage.getItem('userRole') === ISSUER && (
+        {localStorage.getItem(USER_ROLE) === ISSUER && (
           <TransactionSummary credentials={credentials} proofRequests={proofRequests} />
         )}
       </div>
