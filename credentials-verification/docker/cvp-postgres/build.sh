@@ -10,8 +10,7 @@ usage() {
   exit 1
 }
 
-repo="895947072537.dkr.ecr.us-east-2.amazonaws.com/atala"
-image_tag="$repo:cvp-postgres"
+image_tag="895947072537.dkr.ecr.us-east-2.amazonaws.com/cvp-postgres"
 
 build() {
   docker build -t "$image_tag" .

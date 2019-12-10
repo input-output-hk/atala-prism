@@ -1,142 +1,66 @@
-version: 2
+version: 2.1
 jobs:
-  build:
-    docker:
-      - image: openjdk:8
-    working_directory: ~/repo
-    steps:
-      - run: mkdir -p /tmp/workspace
 
+  deploy-ecr-images:
+    docker:
+      - image: inputoutput/scala-mill:2.12.8-0.5.2
+    steps:
       - checkout
 
-      - run:
-          name: install coursier
-          command: curl -L -o coursier https://git.io/vgvpD && chmod +x coursier
+      - setup_remote_docker
 
       - run:
-          name: install scalafmt
-          command: ./coursier bootstrap org.scalameta:scalafmt-cli_2.12:2.0.0-RC4 -r bintray:scalameta/maven -o scalafmt --main org.scalafmt.cli.Cli
-
-#      - run:
-#          name: install bazel-remote-proxy
-#          command: |
-#            # if go is already installed
-#            # go install github.com/notnoopci/bazel-remote-proxy
-#
-#            # otherwise download latest artifact
-#            DOWNLOAD_URL="$(curl -sSL \
-#               https://circleci.com/api/v1.1/project/github/notnoopci/bazel-remote-proxy/latest/artifacts?branch=master \
-#               | grep -o -e "https://[^\"]*/bazel-remote-proxy-$(uname -s)_$(uname -m)" \
-#            )"
-#
-#            curl -o ~/bazel-remote-proxy "$DOWNLOAD_URL"
-#            chmod +x ~/bazel-remote-proxy
+          name: Create node assembly
+          command: cd credentials-verification && mill -i node.assembly && cp out/node/assembly/dest/out.jar out/node/assembly/dest/node.jar
 
       - run:
-          name: install bazel
-          command: ~/repo/docker/installBazel
-
-#      - run:
-#          name: setup bazel remote proxy
-#          command: ~/bazel-remote-proxy -backend circleci:// -bind localhost:7654
-#          background: true
+          name: Create connector assembly
+          command: cd credentials-verification && mill -i connector.assembly && cp out/connector/assembly/dest/out.jar out/connector/assembly/dest/connector.jar
 
       - run:
-          name: build
+          name: Set tag convention
           command: |
-            bazel build --jobs=1 //atala/...
-#            bazel \
-#              --host_jvm_args=-Dbazel.DigestFunction=sha256 \
-#              build \
-#              --jobs=2 \
-#              --spawn_strategy=standalone \
-#              --strategy=Javac=standalone \
-#              --genrule_strategy=standalone \
-#              --remote_http_cache=http://localhost:7654 \
-#              //...
+            echo "export TAG=develop" >> $BASH_ENV
+            if [ "${CIRCLE_BRANCH}" != "develop" ]; then
+              echo "export TAG=$(git rev-parse --abbrev-ref HEAD | sed -E 's/(^ATA\-[0-9]+).*/\1/' | tr '[:upper:]' '[:lower:]')" >> $BASH_ENV;
+            fi
+            . $BASH_ENV && echo "Image tag set to $TAG"
 
       - run:
-          name: test
+          name: Configure AWS
           command: |
-            bazel test --jobs=1 //atala/... --test_output=errors
-#            bazel \
-#              --host_jvm_args=-Dbazel.DigestFunction=sha256 \
-#              test \
-#              --jobs=2 \
-#              --spawn_strategy=standalone \
-#              --strategy=Javac=standalone \
-#              --genrule_strategy=standalone \
-#              --remote_http_cache=http://localhost:7654 \
-#              //... --test_output=errors
+            aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID --profile default
+            aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY --profile default
+            aws configure set region $AWS_DEFAULT_REGION --profile default
+            $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
 
       - run:
-          name: check that the code is formatted properly
-          command: ./scalafmt --test
-
-      - run:
-          name: create library jar
+          name: Build and push credentials-verification-web
           command: |
-            bazel build --jobs=1 //atala:atala_deploy.jar
-#            bazel \
-#              --host_jvm_args=-Dbazel.DigestFunction=sha256 \
-#              build \
-#              --jobs=2 \
-#              --spawn_strategy=standalone \
-#              --strategy=Javac=standalone \
-#              --genrule_strategy=standalone \
-#              --remote_http_cache=http://localhost:7654 \
-#              //atala:atala_deploy.jar
+            docker build -f credentials-verification-web/Dockerfile -t 895947072537.dkr.ecr.us-east-2.amazonaws.com/web:${TAG} credentials-verification-web
+            docker push 895947072537.dkr.ecr.us-east-2.amazonaws.com/web:${TAG}
 
       - run:
-          name: generate the scaladocs
+          name: Build and push credentials-verification/node
           command: |
-            bazel build --jobs=1 //atala:atala_docs
+            docker build -f credentials-verification/node/Dockerfile -t 895947072537.dkr.ecr.us-east-2.amazonaws.com/node:${TAG} credentials-verification/out/node/assembly/dest/
+            docker push 895947072537.dkr.ecr.us-east-2.amazonaws.com/node:${TAG}
 
       - run:
-          name: move library jar to workspace
-          command: mv bazel-bin/atala/atala_deploy.jar /tmp/workspace/
+          name: Build and push credentials-verification/connector
+          command: |
+            docker build -f credentials-verification/connector/Dockerfile -t 895947072537.dkr.ecr.us-east-2.amazonaws.com/connector:${TAG} credentials-verification/out/connector/assembly/dest/
+            docker push 895947072537.dkr.ecr.us-east-2.amazonaws.com/connector:${TAG}
 
       - run:
-          name: move scaladocs to workspace
-          command: mkdir -p /tmp/workspace/docs && mv bazel-bin/atala/atala_docs.html/* /tmp/workspace/docs/
-
-      - persist_to_workspace:
-          root: /tmp/workspace
-          paths:
-            - atala_deploy.jar
-            - docs
-  deploy:
-    docker:
-      - image: circleci/python:2.7-jessie
-    working_directory: ~/repo
-    steps:
-      - attach_workspace:
-          at: /tmp/workspace
-      - run:
-          name: tests
-          command: pwd;ls -R
-      - run:
-          name: Install awscli
-          command: sudo pip install awscli
-      - run:
-          name: Deploy to S3
-          command: aws s3 cp /tmp/workspace/atala_deploy.jar s3://cef-circle-ci/
-  deploy-docs:
-    docker:
-      - image: circleci/python:2.7-jessie
-    working_directory: ~/repo
-    steps:
-      - attach_workspace:
-          at: /tmp/workspace
-      - run:
-          name: tests
-          command: pwd;ls -R
-      - run:
-          name: Install awscli
-          command: sudo pip install awscli
-      - run:
-          name: Deploy scaladocs to S3
-          command: aws s3 cp --recursive /tmp/workspace/docs/ s3://cef-circle-ci/scaladocs/develop/
+          name: Rebuild development environment
+          command: |
+            if [ "${TAG}" == "develop" ]; then
+              cd credentials-verification/infra/services
+              ./env.sh -A ${TAG}
+            else
+              echo "Skipping on non-develop branch $TAG"
+            fi
 
   build-credentials-verification:
     working_directory: ~/repo
@@ -144,33 +68,18 @@ jobs:
       image: ubuntu-1604:201903-01
     steps:
       - checkout
+
       - run:
           name: Pre-download postgres image
           command: docker pull postgres:11.5
 
       - run:
-          name: install mill
+          name: Install mill
           command: sh -c '(echo "#!/usr/bin/env sh" && curl -L https://github.com/lihaoyi/mill/releases/download/0.5.2/0.5.2-9-ea4f04-assembly) > ~/mill && chmod +x ~/mill'
 
       - run:
-          name: test
+          name: Test credentials-verification components
           command: cd credentials-verification && ~/mill __.test
-
-  build-enterprise-web:
-    working_directory: ~/repo
-    docker:
-      - image: circleci/node:8-browsers
-    steps:
-      - checkout
-      - restore_cache:
-          key: my-project-{{ .Branch }}-{{ checksum "enterprise-web/package-lock.json" }}
-      - run: cd enterprise-web && npm install
-      - save_cache:
-          key: my-project-{{ .Branch }}-{{ checksum "enterprise-web/package-lock.json" }}
-          paths:
-            - "enterprise-web/node_modules"
-      - run: cd enterprise-web && npm run test -- --no-watch --no-progress --browsers=ChromeHeadlessCI
-      - run: cd enterprise-web && npm run e2e -- --protractor-config=e2e/protractor-ci.conf.js
 
   build-credentials-verification-web:
     working_directory: ~/repo
@@ -178,6 +87,9 @@ jobs:
       - image: circleci/node:10-browsers
     steps:
       - checkout
+
+      - setup_remote_docker
+
       - run:
           name: Move to target folder then run tests
           command: cd credentials-verification-web && ./web-testing-script.sh
@@ -225,26 +137,13 @@ jobs:
           command: cd credentials-verification-android && ./gradlew test
 
 workflows:
-  version: 2
+  version: 2.1
   build-and-deploy:
     jobs:
-#      - build
-#      - deploy:
-#          requires:
-#            - build
-#          filters:
-#            branches:
-#              only: develop
-#      - deploy-docs:
-#          requires:
-#            - build
-#          filters:
-#            branches:
-#              only: develop
-#      - trigger-atala-qa-automation:
-#          filters:
-#            branches:
-#              only: develop
       - build-credentials-verification-web
       - build-credentials-verification
       - build-credentials-verification-android
+      - deploy-ecr-images:
+          requires:
+            - build-credentials-verification-web
+            - build-credentials-verification

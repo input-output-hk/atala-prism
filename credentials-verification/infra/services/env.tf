@@ -18,7 +18,7 @@ provider aws {
 
 resource aws_key_pair user-keypair {
   key_name   = "user-keypair-${var.env_name_short}"
-  public_key = file(var.ssh_pubkey_file)
+  public_key = var.ssh_pubkey
 }
 
 // queries the availability zones (used in creation of subnets).
@@ -91,27 +91,31 @@ resource aws_security_group credentials-vpc-security-group {
     from_port = 0
     to_port   = 0
     protocol  = "tcp"
-    cidr_blocks = ["10.0.0.0/16"]
+    //    cidr_blocks = ["10.0.0.0/16"]
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # Allow all outbound traffic from the services
+  egress {
+    from_port = "0"
+    to_port   = "0"
+    protocol  = "-1"
+    cidr_blocks = [
+      "0.0.0.0/0"]
+  }
+
+  # Allow all outbound traffic to the private SN
+  egress {
+    from_port = "0"
+    to_port   = "0"
+    protocol  = "-1"
+    cidr_blocks = [
+      "0.0.0.0/0"]
   }
 
   tags = {
     Name = "credentials-vpc-security-group-${var.env_name_short}"
   }
-}
-
-// Allows access to the database
-data aws_security_group credentials-database-security-group {
-  vpc_id = var.credentials-vpc-id
-  name   = "credentials-database-security-group"
-}
-
-resource aws_security_group_rule allow_rds_access {
-  type                     = "ingress"
-  from_port                = 5432
-  to_port                  = 5432
-  protocol                 = "tcp"
-  security_group_id        = data.aws_security_group.credentials-database-security-group.id
-  source_security_group_id = aws_security_group.credentials-vpc-security-group.id
 }
 
 // START of role config
@@ -158,12 +162,12 @@ resource aws_iam_instance_profile ecs-instance-profile {
 // See https://docs.aws.amazon.com/elasticloadbalancing/latest/network/introduction.html
 // See https://rokt.com/engineering_blog/learnings-grpc-aws/ (for a good discussion of
 //     issues around load balancing gRPC traffic on AWS.
-resource aws_lb ecs-net-load-balancer {
-  name               = "ecs-net-load-balancer-${var.env_name_short}"
-  internal           = false
-  load_balancer_type = "network"
+resource aws_lb ecs-net-lb {
+  name                             = "ecs-net-load-balancer-${var.env_name_short}"
+  internal                         = false
+  load_balancer_type               = "network"
   enable_cross_zone_load_balancing = "true"
-  subnets            = [var.credentials-subnet-primary-id, var.credentials-subnet-secondary-id]
+  subnets                          = [var.credentials-subnet-primary-id, var.credentials-subnet-secondary-id]
 
   tags = {
     Name = "ecs-net-load-balancer-${var.env_name_short}"
@@ -171,7 +175,7 @@ resource aws_lb ecs-net-load-balancer {
 }
 
 resource aws_lb_listener connector-lb-listener {
-  load_balancer_arn = aws_lb.ecs-net-load-balancer.arn
+  load_balancer_arn = aws_lb.ecs-net-lb.arn
   protocol          = "TCP"
   port              = var.connector_port
 
@@ -192,12 +196,12 @@ resource aws_lb_target_group connector-target-group {
   }
 
   depends_on = [
-    aws_lb.ecs-net-load-balancer
+    aws_lb.ecs-net-lb
   ]
 }
 
 resource aws_lb_listener node-lb-listener {
-  load_balancer_arn = aws_lb.ecs-net-load-balancer.arn
+  load_balancer_arn = aws_lb.ecs-net-lb.arn
   protocol          = "TCP"
   port              = var.node_port
 
@@ -218,12 +222,12 @@ resource aws_lb_target_group node-target-group {
   }
 
   depends_on = [
-    aws_lb.ecs-net-load-balancer
+    aws_lb.ecs-net-lb
   ]
 }
 
 resource aws_lb_listener bitcoind-lb-listener {
-  load_balancer_arn = aws_lb.ecs-net-load-balancer.arn
+  load_balancer_arn = aws_lb.ecs-net-lb.arn
   protocol          = "TCP"
   port              = var.bitcoind_port
 
@@ -244,12 +248,12 @@ resource aws_lb_target_group bitcoind-target-group {
   }
 
   depends_on = [
-    aws_lb.ecs-net-load-balancer
+    aws_lb.ecs-net-lb
   ]
 }
 
 resource aws_lb_listener envoy-lb-listener {
-  load_balancer_arn = aws_lb.ecs-net-load-balancer.arn
+  load_balancer_arn = aws_lb.ecs-net-lb.arn
   protocol = "TCP"
   port = var.envoy_port
 
@@ -270,12 +274,12 @@ resource aws_lb_target_group envoy-target-group {
   }
 
   depends_on = [
-    aws_lb.ecs-net-load-balancer
+    aws_lb.ecs-net-lb
   ]
 }
 
 resource aws_lb_listener web-lb-listener {
-  load_balancer_arn = aws_lb.ecs-net-load-balancer.arn
+  load_balancer_arn = aws_lb.ecs-net-lb.arn
   protocol = "TCP"
   port = var.web_port
 
@@ -296,7 +300,7 @@ resource aws_lb_target_group web-target-group {
   }
 
   depends_on = [
-    aws_lb.ecs-net-load-balancer
+    aws_lb.ecs-net-lb
   ]
 }
 
@@ -312,9 +316,24 @@ resource aws_ecs_cluster credentials-cluster {
   }
 }
 
+data "aws_ami" "latest_ecs" {
+  most_recent = true
+  owners      = ["591542846629"] # AWS
+
+  filter {
+    name   = "name"
+    values = ["*amazon-ecs-optimized"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+}
+
 resource aws_launch_configuration ecs-launch-configuration {
   name_prefix          = "ecs-launch-configuration-${var.env_name_short}"
-  image_id             = lookup(var.amis, var.aws_region)
+  image_id             = data.aws_ami.latest_ecs.id
   instance_type        = var.instance_type
   iam_instance_profile = aws_iam_instance_profile.ecs-instance-profile.id
 
@@ -322,7 +341,7 @@ resource aws_launch_configuration ecs-launch-configuration {
     create_before_destroy = true
   }
 
-  security_groups             = [aws_security_group.credentials-vpc-security-group.id, data.aws_security_group.credentials-database-security-group.id]
+  security_groups             = [aws_security_group.credentials-vpc-security-group.id]
   associate_public_ip_address = "true"
   key_name                    = aws_key_pair.user-keypair.key_name
   user_data                   = data.template_file.ec2-user-data-template.rendered
@@ -345,33 +364,34 @@ resource aws_autoscaling_group ec2-autoscaling-group {
   vpc_zone_identifier  = [var.credentials-subnet-primary-id, var.credentials-subnet-secondary-id]
   launch_configuration = aws_launch_configuration.ecs-launch-configuration.name
   health_check_type    = "EC2"
-  target_group_arns = [aws_lb_target_group.connector-target-group.arn, aws_lb_target_group.node-target-group.arn, aws_lb_target_group.bitcoind-target-group.arn, aws_lb_target_group.envoy-target-group.arn, aws_lb_target_group.web-target-group.arn]
+  target_group_arns    = [aws_lb_target_group.connector-target-group.arn /*, aws_lb_target_group.node-target-group.arn, aws_lb_target_group.bitcoind-target-group.arn, aws_lb_target_group.envoy-target-group.arn, aws_lb_target_group.web-target-group.arn*/]
 }
 
 data "template_file" "cvp-task-template" {
   template = file("cvp.task.json")
   vars = {
-    connector-psql-host     = var.connector_psql_host
-    connector-psql-database = var.connector_psql_database
-    connector-psql-username = var.connector_psql_username
-    connector-psql-password = var.connector_psql_password
-    connector-docker-image  = var.connector_docker_image
+    connector-psql-host     = "${data.aws_db_instance.credentials-database.address}:${data.aws_db_instance.credentials-database.port}"
+    connector-psql-database = "postgres"
+    connector-psql-username = "connector-${var.env_name_short}"
+    connector-psql-password = random_password.connector-plsql-password.result
 
-    node-psql-host     = var.node_psql_host
-    node-psql-database = var.node_psql_database
-    node-psql-username = var.node_psql_username
-    node-psql-password = var.node_psql_password
+    node-psql-host     = "${data.aws_db_instance.credentials-database.address}:${data.aws_db_instance.credentials-database.port}"
+    node-psql-database = "postgres"
+    node-psql-username = "node-${var.env_name_short}"
+    node-psql-password = random_password.node-plsql-password.result
 
     node-bitcoind-port     = var.bitcoind_port
     node-bitcoind-username = var.bitcoind_username
     node-bitcoind-password = var.bitcoind_password
 
-    node-psql-password = var.node_psql_password
-    node-docker-image  = var.node_docker_image
+    node-docker-image      = var.node_docker_image
+    connector-docker-image = var.connector_docker_image
+    web-docker-image       = var.web_docker_image
 
-    web-docker-image = var.web_docker_image
     awslogs-region = var.aws_region
     awslogs-group  = aws_cloudwatch_log_group.cvp-log-group.name
+
+    react-app-grpc-client = "http://cvp-${var.env_name_short}.cef.iohkdev.io:${var.envoy_port}"
   }
 }
 
@@ -430,7 +450,7 @@ resource aws_route53_record cvp-dns-entry {
   name    = "cvp-${var.env_name_short}.cef.iohkdev.io"
   type    = "CNAME"
   ttl     = "300"
-  records = [aws_lb.ecs-net-load-balancer.dns_name]
+  records = [aws_lb.ecs-net-lb.dns_name]
 }
 
 resource aws_cloudwatch_log_group cvp-log-group {
@@ -440,14 +460,84 @@ resource aws_cloudwatch_log_group cvp-log-group {
   }
 }
 
+
+# Setup PostgreSQL Provider After RDS Database is Provisioned
+data aws_db_instance credentials-database {
+  db_instance_identifier = "credentials-database-test"
+}
+
+provider "postgresql" {
+  host      = data.aws_db_instance.credentials-database.address
+  port      = data.aws_db_instance.credentials-database.port
+  username  = "postgres"
+  password  = var.postgres_password
+  superuser = false
+}
+
+# Create connector user
+resource random_password connector-plsql-password {
+  length  = 16
+  special = false
+}
+
+resource postgresql_role connector-role {
+  name                = "connector-${var.env_name_short}"
+  login               = true
+  password            = random_password.connector-plsql-password.result
+  encrypted_password  = true
+  skip_reassign_owned = true
+}
+
+resource "postgresql_schema" "connector-schema" {
+  name = "connector-${var.env_name_short}"
+  policy {
+    create            = true
+    usage             = true
+    create_with_grant = true
+    role              = postgresql_role.connector-role.name
+  }
+}
+
+# Create node user
+resource random_password node-plsql-password {
+  length  = 16
+  special = false
+}
+
+resource postgresql_role node-role {
+  name                = "node-${var.env_name_short}"
+  login               = true
+  password            = random_password.node-plsql-password.result
+  encrypted_password  = true
+  skip_reassign_owned = true
+}
+
+resource "postgresql_schema" "node-schema" {
+  name = "node-${var.env_name_short}"
+  policy {
+    create            = true
+    usage             = true
+    create_with_grant = true
+    role              = postgresql_role.node-role.name
+  }
+}
+
 output "command-to-test-connector" {
-  value = "grpcurl -import-path connector/protobuf/connector -proto connector/protobuf/connector/protos.proto -rpc-header 'userId: c8834532-eade-11e9-a88d-d8f2ca059830' -plaintext cvp-${var.env_name_short}.cef.iohkdev.io:${var.connector_port} io.iohk.connector.ConnectorService/GenerateConnectionToken"
+  value = "grpcurl -import-path connector/protobuf/connector -proto connector/protobuf/connector/protos.proto -rpc-header 'userId: c8834532-eade-11e9-a88d-d8f2ca059830' -plaintext cvp-${var.env_name_short}.cef.iohkdev.io:${var.connector_port} io.iohk.cvp.connector.ConnectorService/GenerateConnectionToken"
 }
 
 output "command-to-test-envoy-proxy" {
-  value = "curl -i -XOPTIONS -H'Host: cvp-${var.env_name_short}.cef.iohkdev.io:8080' -H'Accept: */*' -H'Accept-Language: en-GB,en;q=0.5' -H'Accept-Encoding: gzip, deflate' -H'Access-Control-Request-Method: POST' -H'Access-Control-Request-Headers: content-type,userid,x-grpc-web,x-user-agent' -H'Referer: http://localhost:3000/connections' -H'Origin: http://localhost:3000' 'http://cvp-${var.env_name_short}.cef.iohkdev.io:${var.envoy_port}/io.iohk.connector.ConnectorService/GenerateConnectionToken'"
+  value = "curl -i -XOPTIONS -H'Host: cvp-${var.env_name_short}.cef.iohkdev.io:8080' -H'Accept: */*' -H'Accept-Language: en-GB,en;q=0.5' -H'Accept-Encoding: gzip, deflate' -H'Access-Control-Request-Method: POST' -H'Access-Control-Request-Headers: content-type,userid,x-grpc-web,x-user-agent' -H'Referer: http://localhost:3000/connections' -H'Origin: http://localhost:3000' 'http://cvp-${var.env_name_short}.cef.iohkdev.io:${var.envoy_port}/io.iohk.cvp.connector.ConnectorService/GenerateConnectionToken'"
 }
 
 output "command-to-test-credentials-manager-web-app" {
   value = "curl -i 'http://cvp-${var.env_name_short}.cef.iohkdev.io'"
+}
+
+output connector-db-details {
+  value = "connector db: ${data.aws_db_instance.credentials-database.address}:5432:connector-${var.env_name_short}:${random_password.connector-plsql-password.result}"
+}
+
+output node-db-details {
+  value = "node db: ${data.aws_db_instance.credentials-database.address}:5432:node-${var.env_name_short}:${random_password.node-plsql-password.result}"
 }

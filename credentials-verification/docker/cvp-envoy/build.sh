@@ -10,12 +10,12 @@ usage() {
 }
 
 build() {
-  docker build -t "895947072537.dkr.ecr.us-east-2.amazonaws.com/atala:cvp-envoy" .
+  docker build -t "895947072537.dkr.ecr.us-east-2.amazonaws.com/cvp-envoy" .
   exit
 }
 
 push() {
-  docker push "895947072537.dkr.ecr.us-east-2.amazonaws.com/atala:cvp-envoy"
+  docker push "895947072537.dkr.ecr.us-east-2.amazonaws.com/cvp-envoy"
   exit
 }
 

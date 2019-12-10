@@ -218,17 +218,19 @@ object wallet extends ServerPBCommon {
 trait CVPDockerModule extends Module { self: JavaModule =>
 
   case class CVPDockerConfig(name: String) {
-    val tag = s"895947072537.dkr.ecr.us-east-2.amazonaws.com/atala:$name-$version"
+    val tag = s"895947072537.dkr.ecr.us-east-2.amazonaws.com/$name:$version"
     val dockerfile = s"$name/Dockerfile"
     val jarfile = s"$name.jar"
   }
 
-  def version: String = os.proc("git", "rev-parse", "HEAD").call().out.trim
+  // This convention of using the ticket number for the image version is also encoded into terraform env.sh and the credentials-verification-web build.
+  def version: String = os.proc("git", "rev-parse", "--abbrev-ref", "HEAD").call().out.trim.replaceFirst("(ATA-\\d+).*", "$1").toLowerCase
+
   def cvpDockerConfig: CVPDockerConfig
 
   private def doLogin(): os.CommandResult = {
     val awsResult =
-      os.proc("aws", "ecr", "get-login", "--no-include-email").call(stdout = os.Inherit, stderr = os.Inherit)
+      os.proc("aws", "ecr", "get-login", "--no-include-email").call()
     if (awsResult.exitCode == 0) {
       val commandWords = awsResult.out.string.split("\\s+").toSeq
       val loginResult = os.proc(commandWords).call(stdout = os.Inherit, stderr = os.Inherit)

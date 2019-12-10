@@ -138,7 +138,7 @@
   },
   {
     "name": "envoy",
-    "image": "895947072537.dkr.ecr.us-east-2.amazonaws.com/atala:cvp-envoy",
+    "image": "895947072537.dkr.ecr.us-east-2.amazonaws.com/cvp-envoy:latest",
     "cpu": 10,
     "memory": 512,
     "links": ["connector"],
@@ -181,7 +181,6 @@
     ],
     "essential": true,
     "entryPoint": [],
-    "environment": [],
     "mountPoints": [],
     "volumesFrom": [],
     "logConfiguration": {
@@ -191,6 +190,12 @@
         "awslogs-region": "${awslogs-region}"
       }
     },
+    "environment": [
+      {
+        "name": "REACT_APP_GRPC_CLIENT",
+        "value": "${react-app-grpc-client}"
+      }
+    ],
     "networkMode": "awsvpc"
   }
 ]

@@ -1,5 +1,4 @@
 variable "env_type" {
-  type        = "string"
   description = "A classification for an environment type, such as 'test' or 'prod'."
   default = "test"
 }

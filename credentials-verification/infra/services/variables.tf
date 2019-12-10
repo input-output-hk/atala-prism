@@ -14,8 +14,7 @@ variable credentials-subnet-secondary-id {
 }
 
 variable env_name_short {
-  type        = "string"
-  description = "A three or four letter abbreviation for the environment name, used as a prefix on resource names. "
+  description = "A short abbreviation for the environment name, used as in resource an DNS names."
 }
 
 variable aws_profile {
@@ -29,13 +28,6 @@ variable aws_profile {
 variable aws_region {
   description = "The AWS region to create resources in."
   default     = "us-east-2"
-}
-
-variable amis {
-  description = "Which AMI to spawn. Defaults to the AWS ECS optimized images."
-  default = {
-    us-east-2 = "ami-0fbd313043845c4f2"
-  }
 }
 
 variable autoscale_min {
@@ -57,26 +49,26 @@ variable instance_type {
   default = "m5ad.large"
 }
 
-variable ssh_pubkey_file {
-  description = "Path to an SSH public key"
-  default     = "~/.ssh/id_rsa.pub"
+variable ssh_pubkey {
+  description = "An SSH public key"
+  default     = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDDej/qOE5UhG6e49yKv+LTPiLlKOckIy3NtBe+X0/oHSdOkisYfMMe/aCuWiwgduLKcMQlh5Y+tqFwQaEFXEdqPWOgDRT/gkWKVmR0yZP4DGgLSoOib92ogRgk87fv9zjVLhaVr2mkcReHmoL94WfPK3AqSCZA29KRm1Ca1a3KUFx6eAleCaLYrPe5Z7Z3d49jXHO1GJWsyqZMSMrRwJJYPZyhzxAOZUB178AnQDt+wGrLKN9avx7yMVeXOJKeIL93mTgrG/orQ4WoidVf0WtN10h2VtA2wq9gSNawCd2R3opF9ishiHrl/Eq83tsj2Cy7Y1x3gqGUFsOB3G+rmg2b test-vpc-deployer"
 }
 
-variable connector_psql_host {
-  description = "Hostname:port of the connector DB."
-}
-
-variable connector_psql_database {
-  description = "Database name of the connector DB."
-}
-
-variable connector_psql_username {
-  description = "Database username for the connector."
-}
-
-variable connector_psql_password {
-  description = "The password should be stored in ~/.secrets.tfvars"
-}
+//variable connector_psql_host {
+//  description = "Hostname:port of the connector DB."
+//}
+//
+//variable connector_psql_database {
+//  description = "Database name of the connector DB."
+//}
+//
+//variable connector_psql_username {
+//  description = "Database username for the connector."
+//}
+//
+//variable connector_psql_password {
+//  description = "The password should be stored in ~/.secrets.tfvars or in environment variable TF_VAR_connector_psql_password."
+//}
 
 variable connector_docker_image {
   description = "Docker image for the connector."
@@ -86,22 +78,6 @@ variable connector_port {
   description = "Port number for the connector"
   type        = number
   default     = 50051
-}
-
-variable node_psql_host {
-  description = "Hostname:port of the node DB."
-}
-
-variable node_psql_database {
-  description = "Database name of the node DB."
-}
-
-variable node_psql_username {
-  description = "Database username for the node."
-}
-
-variable node_psql_password {
-  description = "The password should be stored in ~/.secrets.tfvars"
 }
 
 variable node_docker_image {
@@ -119,7 +95,7 @@ variable bitcoind_username {
 }
 
 variable bitcoind_password {
-  description = "Password for the bitcoin RPC endpoint."
+  description = "The password should be stored in ~/.secrets.tfvars or in environment variable TF_VAR_bitcoind_password."
 }
 
 variable bitcoind_port {
@@ -142,4 +118,8 @@ variable web_port {
 
 variable web_docker_image {
   description = "Docker image for the credentials manager web app."
+}
+
+variable postgres_password {
+  description = "The password for the postgres user in the database. Should be stored in ~/.secrets.tfvars or in environment variable TF_VAR_postgres_password."
 }

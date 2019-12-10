@@ -1,7 +1,7 @@
 Readme for infrastructure as code
 =======
 ### Context
-A working CVP environment consists of 
+A working CVP environment consists of
 * a POSTGRES database
 * a VLAN (a _virtual private cloud_ in AWS-speak)
 * Credentials verification services, such as connector and node.
@@ -25,14 +25,15 @@ There are two directories
   if you do use the vpc script and want to then create environments inside your new vpc.
 * services - this sets up docker containers for the credentials services (using amazon ECS, which is a provisioning service
   for docker).
-  
+
 ### Some setup
 There are few setup steps if you wish to create and work with your own testing environment. Here is an overview:
 * Create an AWS access key for your AWS account at https://console.aws.amazon.com/iam/home?region=us-east-2#/security_credentials.
 * Install the AWS cli and configure it using `aws configure` to use up the credentials created above.
 * Setup MFA on your AWS account at https://console.aws.amazon.com/iam/home?region=us-east-2#/security_credentials.
-* Install ‘awslogs’ from https://github.com/jorgebastida/awslogs. This is optional and enables the `env.sh -w` flag which 
+* Install ‘awslogs’ from https://github.com/jorgebastida/awslogs. This is optional and enables the `env.sh -w` flag which
   will show logs from an AWS environment directly in your terminal window).
+* Install jq (https://stedolan.github.io/jq/).
 * Install graphviz from https://graphviz.gitlab.io/. This is optional and enables the `env.sh -g` flag which
   produces a diagrammatic hierarchy for your environment.
 * Install 'terraform' from https://www.terraform.io/downloads.html.
@@ -41,8 +42,8 @@ There are few setup steps if you wish to create and work with your own testing e
 ```bash
 # substitute the correct IP address for an EC2 instance inside the VPC.
 ssh -L5432:credentials-database-test.co3l80tftzq2.us-east-2.rds.amazonaws.com:5432 -i ~/.ssh/id_rsa ec2-user@3.133.101.108
-``` 
-* The infra code does not currently create or destroy databases. If you do want to create a new database for your environment 
+```
+* The infra code does not currently create or destroy databases. If you do want to create a new database for your environment
   (e.g. to experiment with new migrations) then run:
 ```postgresql
 CREATE DATABASE connector_<unique suffix>;
@@ -56,7 +57,7 @@ GRANT ALL PRIVILEGES ON DATABASE geud_node_<unique suffix> TO geud_node_<unique 
 ```
 
 ### Changing either the docker image or database used by an environment
-The root build file now contains targets to build and push a docker image to Amazon ECR (a docker repository). 
+The root build file now contains targets to build and push a docker image to Amazon ECR (a docker repository).
 * `mill connector.docker.build && mill connector.docker.push` (note there are currently some dependency glitches which may
    require a `mill clean` to ensure your changes are pushed). The docker image that gets pushed used the git sha-1 hash
    (as output from `git rev-parse HEAD`) to tag the image.
@@ -98,18 +99,18 @@ You can SSH into EC2 instances inside an environment you create as follows:
 * `ssh -i ~/.ssh/id_rsa ec2-user@<ip obtained above>` (note the username!).
 
 ### Terraform state files
-Assuming you have used the `env.sh` script, terraform will store what it thinks is the current state of a given environment 
-in a directory called `.<env name>`. 
+Assuming you have used the `env.sh` script, terraform will store what it thinks is the current state of a given environment
+in a directory called `.<env name>`.
 
 If you have dropped the environment with `env.sh -d <env name>`, you may delete the directory containing the terraform state.
-*Do not delete this directory* while resources from the environment still exist. If you do, terraform will lose track of 
+*Do not delete this directory* while resources from the environment still exist. If you do, terraform will lose track of
 resources on AWS and you will have to find and delete them manually.
 
 TODO: Store terraform state in S3. If you want to change an environment that is
 shared and not personal to you, *remember that you will need to obtain the most up to date state file from the person
 who last changed the environment.
- 
+
 ### Reminder
 Environments on AWS cost money. Avoid creating loads of environments then forgetting about them and
-if you create an environment and are not going to be using it for more than a few days then 
-destroy it with `env.sh -d <my env>`. 
+if you create an environment and are not going to be using it for more than a few days then
+destroy it with `env.sh -d <my env>`.

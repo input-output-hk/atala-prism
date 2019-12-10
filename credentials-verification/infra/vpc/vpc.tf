@@ -84,3 +84,18 @@ resource aws_route_table_association credentials-external-route-secondary {
   subnet_id      = aws_subnet.credentials-subnet-secondary.id
   route_table_id = aws_route_table.credentials-public-subnet-rt-secondary.id
 }
+
+// Allows access to the database
+data aws_security_group credentials-database-security-group {
+  vpc_id = aws_vpc.credentials-vpc.id
+  name   = "credentials-database-security-group"
+}
+
+resource aws_security_group_rule allow_rds_access {
+  type              = "ingress"
+  from_port         = 5432
+  to_port           = 5432
+  protocol          = "tcp"
+  security_group_id = data.aws_security_group.credentials-database-security-group.id
+  cidr_blocks       = ["0.0.0.0/0"]
+}
