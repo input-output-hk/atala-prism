@@ -21,7 +21,7 @@ class CredentialsStoreService(individuals: StoreIndividualsService, storedCreden
   override def logger: Logger = LoggerFactory.getLogger(getClass)
 
   override def createIndividual(request: CreateIndividualRequest): Future[CreateIndividualResponse] = {
-    val userId = UserIdInterceptor.USER_ID_CTX_KEY.get()
+    val userId = UserIdInterceptor.participantId()
     implicit val loggingContext = LoggingContext("request" -> request, "userId" -> userId)
 
     val createData = StoreIndividualCreateData(
@@ -51,7 +51,7 @@ class CredentialsStoreService(individuals: StoreIndividualsService, storedCreden
   }
 
   override def getIndividuals(request: GetIndividualsRequest): Future[GetIndividualsResponse] = {
-    val userId = UserIdInterceptor.USER_ID_CTX_KEY.get()
+    val userId = UserIdInterceptor.participantId()
     implicit val loggingContext = LoggingContext("request" -> request, "userId" -> userId)
 
     val lastSeen = Some(request.lastSeenIndividualId).filterNot(_.isEmpty).map(ParticipantId.apply)
@@ -69,7 +69,7 @@ class CredentialsStoreService(individuals: StoreIndividualsService, storedCreden
   override def generateConnectionTokenFor(
       request: GenerateConnectionTokenForRequest
   ): Future[GenerateConnectionTokenForResponse] = {
-    val userId = UserIdInterceptor.USER_ID_CTX_KEY.get()
+    val userId = UserIdInterceptor.participantId()
     implicit val loggingContext = LoggingContext("request" -> request, "userId" -> userId)
 
     val individualId = ParticipantId(request.individualId)
@@ -83,7 +83,7 @@ class CredentialsStoreService(individuals: StoreIndividualsService, storedCreden
   }
 
   override def storeCredential(request: StoreCredentialRequest): Future[StoreCredentialResponse] = {
-    val userId = UserIdInterceptor.USER_ID_CTX_KEY.get()
+    val userId = UserIdInterceptor.participantId()
     implicit val loggingContext = LoggingContext("request" -> request, "userId" -> userId)
 
     val createData = StoredCredentialCreateData(
@@ -105,7 +105,7 @@ class CredentialsStoreService(individuals: StoreIndividualsService, storedCreden
   override def getStoredCredentialsFor(
       request: GetStoredCredentialsForRequest
   ): Future[GetStoredCredentialsForResponse] = {
-    val userId = UserIdInterceptor.USER_ID_CTX_KEY.get()
+    val userId = UserIdInterceptor.participantId()
     implicit val loggingContext = LoggingContext("request" -> request, "userId" -> userId)
     val individualId = ParticipantId(request.individualId)
 
