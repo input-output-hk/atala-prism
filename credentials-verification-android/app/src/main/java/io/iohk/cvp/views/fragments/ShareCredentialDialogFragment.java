@@ -15,10 +15,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import butterknife.BindView;
 import butterknife.OnClick;
-import com.google.protobuf.ByteString;
+import com.crashlytics.android.Crashlytics;
+import com.google.protobuf.InvalidProtocolBufferException;
 import io.iohk.cvp.R;
 import io.iohk.cvp.core.exception.ErrorCode;
 import io.iohk.cvp.core.exception.SharedPrefencesDataNotFoundException;
+import io.iohk.cvp.io.credential.Credential;
+import io.iohk.cvp.io.credential.HolderSentCredential;
+import io.iohk.cvp.io.credential.SentCredential;
 import io.iohk.cvp.viewmodel.ConnectionsListablesViewModel;
 import io.iohk.cvp.viewmodel.dtos.ConnectionListable;
 import io.iohk.cvp.views.Preferences;
@@ -111,10 +115,16 @@ public class ShareCredentialDialogFragment extends CvpFragment<ConnectionsListab
             new SharedPrefencesDataNotFoundException(
                 "Couldn't find user id for connection id " + connectionId,
                 ErrorCode.USER_ID_NOT_FOUND));
-        viewModel.sendMessage(userId, connectionId, ByteString.copyFrom(
-            Objects.requireNonNull(getArguments().getByteArray(CREDENTIAL_DATA_KEY))));
-      } catch (SharedPrefencesDataNotFoundException e) {
-        e.printStackTrace();
+
+        HolderSentCredential sentCredential = HolderSentCredential.newBuilder().setCredential(
+            Credential.parseFrom(getArguments().getByteArray(CREDENTIAL_DATA_KEY))).build();
+
+        viewModel
+            .sendMessage(userId, connectionId,
+                SentCredential.newBuilder().setHolderSentCredential(sentCredential)
+                    .build().toByteString());
+      } catch (SharedPrefencesDataNotFoundException | InvalidProtocolBufferException e) {
+        Crashlytics.logException(e);
       }
     });
     onBackgroundClick();

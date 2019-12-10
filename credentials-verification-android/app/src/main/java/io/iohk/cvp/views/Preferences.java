@@ -26,6 +26,10 @@ public class Preferences {
   private static final String USER_ID_LIST_KEY = "user_id";
   private static final String CONNECTION_USER_ID_KEY = "connection_id_user_id";
   private static final String CONNECTION_LOGO_KEY = "connection_logo";
+  public static final String USER_PROFILE_NAME = "user_profile_name";
+  public static final String USER_PROFILE_COUNTRY = "user_profile_country";
+  public static final String USER_PROFILE_BIRTH_DATE = "user_profile_birth_date";
+  public static final String USER_PROFILE_EMAIL = "user_profile_email";
   private Context context;
 
   public void savePrivateKey(byte[] pk) {
@@ -116,5 +120,21 @@ public class Preferences {
     this.saveConnectionWithLogo(
         connectionInfo.getConnection().getConnectionId(),
         connectionInfo.getConnection().getParticipantInfo().getIssuer().getLogo());
+  }
+
+  public void saveUserProfile(String name, String country, String birthDate, String email) {
+    SharedPreferences prefs = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
+    Editor editor = prefs.edit();
+    editor.putString(USER_PROFILE_NAME, name);
+    editor.putString(USER_PROFILE_COUNTRY, country);
+    editor.putString(USER_PROFILE_BIRTH_DATE, birthDate);
+    editor.putString(USER_PROFILE_EMAIL, email);
+    editor.apply();
+  }
+
+  public String getString(String key) {
+    SharedPreferences sharedPreferences = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
+    return sharedPreferences
+        .getString(key, "");
   }
 }

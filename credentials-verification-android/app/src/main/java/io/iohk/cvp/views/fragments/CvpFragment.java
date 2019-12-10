@@ -53,6 +53,10 @@ public abstract class CvpFragment<T extends ViewModel> extends DaggerFragment {
   @Override
   public void onResume() {
     super.onResume();
+    setActionBar();
+  }
+
+  protected void setActionBar() {
     Optional<ActionBar> supportActionBar = activity().map(AppCompatActivity::getSupportActionBar);
     supportActionBar.ifPresent(actionBar -> {
       if (getAppBarConfigurator() != null) {

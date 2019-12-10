@@ -26,6 +26,9 @@ public class OptionItem extends ConstraintLayout {
   @BindView(R.id.action_image)
   public ImageView actionImageView;
 
+  @BindView(R.id.coming_soon)
+  public TextView comingSoonTextView;
+
   public OptionItem(@NonNull Context context) {
     super(context);
   }
@@ -59,6 +62,10 @@ public class OptionItem extends ConstraintLayout {
 
         logoImageView.setImageDrawable(attrArray.getDrawable(
             R.styleable.OptionItem_logoImage));
+
+        if (attrArray.getBoolean(R.styleable.OptionItem_isAvailable, false)) {
+          comingSoonTextView.setVisibility(INVISIBLE);
+        }
       } finally {
         attrArray.recycle();
       }
