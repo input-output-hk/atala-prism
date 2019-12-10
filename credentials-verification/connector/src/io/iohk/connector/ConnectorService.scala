@@ -7,7 +7,7 @@ import io.iohk.connector.model.ECPublicKey
 import io.iohk.connector.payments.PaymentWall
 import io.iohk.connector.services.{ConnectionsService, MessagesService}
 import io.iohk.cvp.connector.protos._
-import io.iohk.cvp.grpc.UserIdInterceptor
+import io.iohk.cvp.grpc.UserIdInterceptor.participantId
 import io.iohk.cvp.utils.FutureEither._
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -30,7 +30,7 @@ class ConnectorService(connections: ConnectionsService, messages: MessagesServic
   ): Future[GetConnectionsPaginatedResponse] = {
     implicit val loggingContext = LoggingContext("request" -> request)
 
-    val userId = UserIdInterceptor.USER_ID_CTX_KEY.get()
+    val userId = participantId()
 
     val lastSeenConnectionId = request.lastSeenConnectionId match {
       case "" => Right(None)
@@ -154,7 +154,8 @@ class ConnectorService(connections: ConnectionsService, messages: MessagesServic
   override def generateConnectionToken(
       request: GenerateConnectionTokenRequest
   ): Future[GenerateConnectionTokenResponse] = {
-    val userId = UserIdInterceptor.USER_ID_CTX_KEY.get()
+    val userId = participantId()
+
     implicit val loggingContext = LoggingContext("request" -> request, "userId" -> userId)
 
     connections
@@ -170,7 +171,8 @@ class ConnectorService(connections: ConnectionsService, messages: MessagesServic
     * Available to: Issuer, Holder, Validator
     */
   override def getMessagesPaginated(request: GetMessagesPaginatedRequest): Future[GetMessagesPaginatedResponse] = {
-    val userId = UserIdInterceptor.USER_ID_CTX_KEY.get()
+    val userId = participantId()
+
     implicit val loggingContext = LoggingContext("request" -> request, "userId" -> userId)
 
     val lastSeenMessageId = request.lastSeenMessageId match {
@@ -196,7 +198,8 @@ class ConnectorService(connections: ConnectionsService, messages: MessagesServic
   override def getMessagesForConnection(
       request: GetMessagesForConnectionRequest
   ): Future[GetMessagesForConnectionResponse] = {
-    val userId = UserIdInterceptor.USER_ID_CTX_KEY.get()
+    val userId = participantId()
+
     implicit val loggingContext = LoggingContext("request" -> request, "userId" -> userId)
 
     val validatedConnectionId = Try(request.connectionId)
@@ -224,7 +227,8 @@ class ConnectorService(connections: ConnectionsService, messages: MessagesServic
     * Connection closed (FAILED_PRECONDITION)
     */
   override def sendMessage(request: SendMessageRequest): Future[SendMessageResponse] = {
-    val userId = UserIdInterceptor.USER_ID_CTX_KEY.get()
+    val userId = participantId()
+
     implicit val loggingContext = LoggingContext("request" -> request, "userId" -> userId)
     val connectionId = model.ConnectionId(UUID.fromString(request.connectionId))
 
@@ -235,9 +239,11 @@ class ConnectorService(connections: ConnectionsService, messages: MessagesServic
   }
 
   override def generatePaymentUrl(request: GeneratePaymentUrlRequest): Future[GeneratePaymentUrlResponse] = {
-    val userId = UserIdInterceptor.USER_ID_CTX_KEY.get()
+    val userId = participantId()
+
     val url = paymentWall.generatePaymentUrl(userId)
     val response = GeneratePaymentUrlResponse(paymentUrl = url)
     Future.successful(response)
   }
+
 }

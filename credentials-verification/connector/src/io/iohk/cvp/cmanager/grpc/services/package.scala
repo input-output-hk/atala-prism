@@ -5,7 +5,8 @@ import io.iohk.cvp.grpc.UserIdInterceptor
 
 package object services {
   private[grpc] def getIssuerId(): Issuer.Id = {
-    val participant = UserIdInterceptor.USER_ID_CTX_KEY.get()
+    val participant =
+      UserIdInterceptor.USER_ID_CTX_KEY.get().getOrElse(throw new RuntimeException("userId header missing"))
     Issuer.Id(participant.uuid)
   }
 }
