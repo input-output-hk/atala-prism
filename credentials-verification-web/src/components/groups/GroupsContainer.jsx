@@ -8,7 +8,7 @@ import Groups from './Groups';
 import { withApi } from '../providers/witApi';
 import { dateAsUnix } from '../../helpers/formatters';
 
-const GroupsContainer = ({ api }) => {
+const GroupsContainer = ({ api, selectingProps }) => {
   const { t } = useTranslation();
 
   const [groups, setGroups] = useState([]);
@@ -63,19 +63,27 @@ const GroupsContainer = ({ api }) => {
 
   return (
     <Groups
-      fullInfo
       groups={groups}
       setDate={setDate}
       setName={setName}
       handleGroupDeletion={handleGroupDeletion}
       updateGroups={updateGroups}
       hasMore={hasMore}
+      {...selectingProps}
     />
   );
 };
 
+GroupsContainer.defaultProps = {
+  selectingProps: {}
+};
+
 GroupsContainer.propTypes = {
-  api: PropTypes.shape().isRequired
+  api: PropTypes.shape().isRequired,
+  selectingProps: PropTypes.shape({
+    setGroup: PropTypes.func,
+    group: PropTypes.func
+  })
 };
 
 export default withApi(GroupsContainer);

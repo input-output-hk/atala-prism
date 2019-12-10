@@ -12,8 +12,6 @@ export const groupShape = {
     credentialName: string,
     credentialId: string
   }),
-  websiteLink: string,
-  description: string,
   lastUpdate: number
 };
 
