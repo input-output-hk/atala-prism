@@ -41,16 +41,6 @@ proto.io.iohk.cvp.connector.ConnectorServiceClient =
    */
   this.hostname_ = hostname;
 
-  /**
-   * @private @const {?Object} The credentials to be used to connect
-   *    to the server
-   */
-  this.credentials_ = credentials;
-
-  /**
-   * @private @const {?Object} Options for the client
-   */
-  this.options_ = options;
 };
 
 
@@ -77,16 +67,6 @@ proto.io.iohk.cvp.connector.ConnectorServicePromiseClient =
    */
   this.hostname_ = hostname;
 
-  /**
-   * @private @const {?Object} The credentials to be used to connect
-   *    to the server
-   */
-  this.credentials_ = credentials;
-
-  /**
-   * @private @const {?Object} Options for the client
-   */
-  this.options_ = options;
 };
 
 
@@ -101,7 +81,10 @@ const methodDescriptor_ConnectorService_GetConnectionsPaginated = new grpc.web.M
   grpc.web.MethodType.UNARY,
   proto.io.iohk.cvp.connector.GetConnectionsPaginatedRequest,
   proto.io.iohk.cvp.connector.GetConnectionsPaginatedResponse,
-  /** @param {!proto.io.iohk.cvp.connector.GetConnectionsPaginatedRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.connector.GetConnectionsPaginatedRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -117,7 +100,10 @@ const methodDescriptor_ConnectorService_GetConnectionsPaginated = new grpc.web.M
  */
 const methodInfo_ConnectorService_GetConnectionsPaginated = new grpc.web.AbstractClientBase.MethodInfo(
   proto.io.iohk.cvp.connector.GetConnectionsPaginatedResponse,
-  /** @param {!proto.io.iohk.cvp.connector.GetConnectionsPaginatedRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.connector.GetConnectionsPaginatedRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -175,7 +161,10 @@ const methodDescriptor_ConnectorService_GetConnectionTokenInfo = new grpc.web.Me
   grpc.web.MethodType.UNARY,
   proto.io.iohk.cvp.connector.GetConnectionTokenInfoRequest,
   proto.io.iohk.cvp.connector.GetConnectionTokenInfoResponse,
-  /** @param {!proto.io.iohk.cvp.connector.GetConnectionTokenInfoRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.connector.GetConnectionTokenInfoRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -191,7 +180,10 @@ const methodDescriptor_ConnectorService_GetConnectionTokenInfo = new grpc.web.Me
  */
 const methodInfo_ConnectorService_GetConnectionTokenInfo = new grpc.web.AbstractClientBase.MethodInfo(
   proto.io.iohk.cvp.connector.GetConnectionTokenInfoResponse,
-  /** @param {!proto.io.iohk.cvp.connector.GetConnectionTokenInfoRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.connector.GetConnectionTokenInfoRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -249,7 +241,10 @@ const methodDescriptor_ConnectorService_AddConnectionFromToken = new grpc.web.Me
   grpc.web.MethodType.UNARY,
   proto.io.iohk.cvp.connector.AddConnectionFromTokenRequest,
   proto.io.iohk.cvp.connector.AddConnectionFromTokenResponse,
-  /** @param {!proto.io.iohk.cvp.connector.AddConnectionFromTokenRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.connector.AddConnectionFromTokenRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -265,7 +260,10 @@ const methodDescriptor_ConnectorService_AddConnectionFromToken = new grpc.web.Me
  */
 const methodInfo_ConnectorService_AddConnectionFromToken = new grpc.web.AbstractClientBase.MethodInfo(
   proto.io.iohk.cvp.connector.AddConnectionFromTokenResponse,
-  /** @param {!proto.io.iohk.cvp.connector.AddConnectionFromTokenRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.connector.AddConnectionFromTokenRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -323,7 +321,10 @@ const methodDescriptor_ConnectorService_DeleteConnection = new grpc.web.MethodDe
   grpc.web.MethodType.UNARY,
   proto.io.iohk.cvp.connector.DeleteConnectionRequest,
   proto.io.iohk.cvp.connector.DeleteConnectionResponse,
-  /** @param {!proto.io.iohk.cvp.connector.DeleteConnectionRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.connector.DeleteConnectionRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -339,7 +340,10 @@ const methodDescriptor_ConnectorService_DeleteConnection = new grpc.web.MethodDe
  */
 const methodInfo_ConnectorService_DeleteConnection = new grpc.web.AbstractClientBase.MethodInfo(
   proto.io.iohk.cvp.connector.DeleteConnectionResponse,
-  /** @param {!proto.io.iohk.cvp.connector.DeleteConnectionRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.connector.DeleteConnectionRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -397,7 +401,10 @@ const methodDescriptor_ConnectorService_RegisterDID = new grpc.web.MethodDescrip
   grpc.web.MethodType.UNARY,
   proto.io.iohk.cvp.connector.RegisterDIDRequest,
   proto.io.iohk.cvp.connector.RegisterDIDResponse,
-  /** @param {!proto.io.iohk.cvp.connector.RegisterDIDRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.connector.RegisterDIDRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -413,7 +420,10 @@ const methodDescriptor_ConnectorService_RegisterDID = new grpc.web.MethodDescrip
  */
 const methodInfo_ConnectorService_RegisterDID = new grpc.web.AbstractClientBase.MethodInfo(
   proto.io.iohk.cvp.connector.RegisterDIDResponse,
-  /** @param {!proto.io.iohk.cvp.connector.RegisterDIDRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.connector.RegisterDIDRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -471,7 +481,10 @@ const methodDescriptor_ConnectorService_ChangeBillingPlan = new grpc.web.MethodD
   grpc.web.MethodType.UNARY,
   proto.io.iohk.cvp.connector.ChangeBillingPlanRequest,
   proto.io.iohk.cvp.connector.ChangeBillingPlanResponse,
-  /** @param {!proto.io.iohk.cvp.connector.ChangeBillingPlanRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.connector.ChangeBillingPlanRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -487,7 +500,10 @@ const methodDescriptor_ConnectorService_ChangeBillingPlan = new grpc.web.MethodD
  */
 const methodInfo_ConnectorService_ChangeBillingPlan = new grpc.web.AbstractClientBase.MethodInfo(
   proto.io.iohk.cvp.connector.ChangeBillingPlanResponse,
-  /** @param {!proto.io.iohk.cvp.connector.ChangeBillingPlanRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.connector.ChangeBillingPlanRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -545,7 +561,10 @@ const methodDescriptor_ConnectorService_GenerateConnectionToken = new grpc.web.M
   grpc.web.MethodType.UNARY,
   proto.io.iohk.cvp.connector.GenerateConnectionTokenRequest,
   proto.io.iohk.cvp.connector.GenerateConnectionTokenResponse,
-  /** @param {!proto.io.iohk.cvp.connector.GenerateConnectionTokenRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.connector.GenerateConnectionTokenRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -561,7 +580,10 @@ const methodDescriptor_ConnectorService_GenerateConnectionToken = new grpc.web.M
  */
 const methodInfo_ConnectorService_GenerateConnectionToken = new grpc.web.AbstractClientBase.MethodInfo(
   proto.io.iohk.cvp.connector.GenerateConnectionTokenResponse,
-  /** @param {!proto.io.iohk.cvp.connector.GenerateConnectionTokenRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.connector.GenerateConnectionTokenRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -619,7 +641,10 @@ const methodDescriptor_ConnectorService_GetMessagesPaginated = new grpc.web.Meth
   grpc.web.MethodType.UNARY,
   proto.io.iohk.cvp.connector.GetMessagesPaginatedRequest,
   proto.io.iohk.cvp.connector.GetMessagesPaginatedResponse,
-  /** @param {!proto.io.iohk.cvp.connector.GetMessagesPaginatedRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.connector.GetMessagesPaginatedRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -635,7 +660,10 @@ const methodDescriptor_ConnectorService_GetMessagesPaginated = new grpc.web.Meth
  */
 const methodInfo_ConnectorService_GetMessagesPaginated = new grpc.web.AbstractClientBase.MethodInfo(
   proto.io.iohk.cvp.connector.GetMessagesPaginatedResponse,
-  /** @param {!proto.io.iohk.cvp.connector.GetMessagesPaginatedRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.connector.GetMessagesPaginatedRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -693,7 +721,10 @@ const methodDescriptor_ConnectorService_GetMessagesForConnection = new grpc.web.
   grpc.web.MethodType.UNARY,
   proto.io.iohk.cvp.connector.GetMessagesForConnectionRequest,
   proto.io.iohk.cvp.connector.GetMessagesForConnectionResponse,
-  /** @param {!proto.io.iohk.cvp.connector.GetMessagesForConnectionRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.connector.GetMessagesForConnectionRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -709,7 +740,10 @@ const methodDescriptor_ConnectorService_GetMessagesForConnection = new grpc.web.
  */
 const methodInfo_ConnectorService_GetMessagesForConnection = new grpc.web.AbstractClientBase.MethodInfo(
   proto.io.iohk.cvp.connector.GetMessagesForConnectionResponse,
-  /** @param {!proto.io.iohk.cvp.connector.GetMessagesForConnectionRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.connector.GetMessagesForConnectionRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -767,7 +801,10 @@ const methodDescriptor_ConnectorService_SendMessage = new grpc.web.MethodDescrip
   grpc.web.MethodType.UNARY,
   proto.io.iohk.cvp.connector.SendMessageRequest,
   proto.io.iohk.cvp.connector.SendMessageResponse,
-  /** @param {!proto.io.iohk.cvp.connector.SendMessageRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.connector.SendMessageRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -783,7 +820,10 @@ const methodDescriptor_ConnectorService_SendMessage = new grpc.web.MethodDescrip
  */
 const methodInfo_ConnectorService_SendMessage = new grpc.web.AbstractClientBase.MethodInfo(
   proto.io.iohk.cvp.connector.SendMessageResponse,
-  /** @param {!proto.io.iohk.cvp.connector.SendMessageRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.connector.SendMessageRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -841,7 +881,10 @@ const methodDescriptor_ConnectorService_GeneratePaymentUrl = new grpc.web.Method
   grpc.web.MethodType.UNARY,
   proto.io.iohk.cvp.connector.GeneratePaymentUrlRequest,
   proto.io.iohk.cvp.connector.GeneratePaymentUrlResponse,
-  /** @param {!proto.io.iohk.cvp.connector.GeneratePaymentUrlRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.connector.GeneratePaymentUrlRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -857,7 +900,10 @@ const methodDescriptor_ConnectorService_GeneratePaymentUrl = new grpc.web.Method
  */
 const methodInfo_ConnectorService_GeneratePaymentUrl = new grpc.web.AbstractClientBase.MethodInfo(
   proto.io.iohk.cvp.connector.GeneratePaymentUrlResponse,
-  /** @param {!proto.io.iohk.cvp.connector.GeneratePaymentUrlRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.connector.GeneratePaymentUrlRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },

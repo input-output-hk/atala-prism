@@ -1,6 +1,10 @@
 import { mockApi } from './__mocks__';
 
-import { getConnectionsPaginated, getMessagesForConnection } from './connector/connector';
+import {
+  getConnectionsPaginated,
+  getMessagesForConnection,
+  issueCredential
+} from './connector/connector';
 import {
   createWallet,
   getDid,
@@ -20,6 +24,7 @@ export const api = {
   createWallet,
   getDid,
   getCredentials,
+  issueCredential,
   createCredential,
   getStudents,
   getWalletStatus,

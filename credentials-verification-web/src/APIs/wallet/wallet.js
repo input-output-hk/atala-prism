@@ -28,21 +28,14 @@ const getDidCallback = (error, response) => {
   Logger.info('This is the response', response.getDid());
 };
 
-export const getDid = () => {
+export const getDid = async () => {
   const didRequest = new GetDIDRequest();
 
-  const call = walletServiceClient.getDID(didRequest, {}, getDidCallback);
+  const call = await walletServicePromiseClient.getDID(didRequest, {});
 
-  call.on('status', status => {
-    if (status.code !== grpcWeb.StatusCode.OK) {
-      Logger.error('Error code: ' + status.code + ' "' + status.details + '"');
-    }
+  const { did } = call.toObject();
 
-    if (status.metadata) {
-      Logger.info('Received metadata');
-      Logger.info(status.metadata);
-    }
-  });
+  return did;
 };
 
 export const createWallet = async passphrase => {

@@ -46,6 +46,16 @@ const CredentialContainer = ({ api }) => {
         message.error(t('errors.errorGetting', { model: field }));
       });
 
+  const issueCredential = credential => {
+    api
+      .issueCredential(credential)
+      .then(() => message.success(t('credentials.successfullyIssued')))
+      .catch(error => {
+        Logger.error('CredentialContainer: Error while sending credential', error);
+        message.error(t('errors.issueCredential'));
+      });
+  };
+
   useEffect(() => {
     getTypes(api.getCredentialTypes, setCredentialTypes, 'Credentials');
   }, []);
@@ -88,7 +98,8 @@ const CredentialContainer = ({ api }) => {
     credentials,
     credentialCount,
     offset,
-    setOffset
+    setOffset,
+    issueCredential
   };
 
   const clearFilters = () => {
@@ -131,6 +142,7 @@ CredentialContainer.propTypes = {
     getCategoryTypes: PropTypes.func.isRequired,
     getCredentialsGroups: PropTypes.func.isRequired,
     getTotalCredentials: PropTypes.func.isRequired,
+    issueCredential: PropTypes.func.isRequired,
     getCredentials: PropTypes.func.isRequired,
     deleteCredential: PropTypes.func.isRequired
   }).isRequired

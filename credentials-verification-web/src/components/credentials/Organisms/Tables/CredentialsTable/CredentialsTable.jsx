@@ -12,7 +12,7 @@ import freeUniLogo from '../../../../../images/free-uni-logo.png';
 import './_style.scss';
 import CustomButton from '../../../../common/Atoms/CustomButton/CustomButton';
 
-const getColumns = (viewText, sendCredentials, onView) => [
+const getColumns = (viewText, sendCredentials, onView, issueCredential) => [
   {
     key: 'icon',
     render: ({ icon, name }) => (
@@ -48,8 +48,9 @@ const getColumns = (viewText, sendCredentials, onView) => [
   },
   {
     key: 'subject',
-    render: ({ subject }) =>
-      subject ? (
+    render: credential => {
+      const { subject } = credential;
+      return subject ? (
         <RenderStudent
           imageSrc={subject.avatar || holderDefaultAvatar}
           imageAlt={`${subject} avatar`}
@@ -59,11 +60,12 @@ const getColumns = (viewText, sendCredentials, onView) => [
         <CustomButton
           buttonProps={{
             theme: 'theme-outline',
-            onClick: () => console.log('Clicked send credential')
+            onClick: () => issueCredential(credential)
           }}
           buttonText={sendCredentials}
         />
-      )
+      );
+    }
   },
   {
     key: 'actions',
@@ -80,7 +82,14 @@ const getColumns = (viewText, sendCredentials, onView) => [
   }
 ];
 
-const CredentialsTable = ({ credentials, credentialCount, offset, setOffset, onView }) => {
+const CredentialsTable = ({
+  issueCredential,
+  credentials,
+  credentialCount,
+  offset,
+  setOffset,
+  onView
+}) => {
   const { t } = useTranslation();
 
   return (
@@ -88,7 +97,12 @@ const CredentialsTable = ({ credentials, credentialCount, offset, setOffset, onV
       <Table
         id="CredentialsTable"
         scroll={{ x: 1300 }}
-        columns={getColumns(t('actions.view'), t('credentials.sendCredentials'), onView)}
+        columns={getColumns(
+          t('actions.view'),
+          t('credentials.sendCredentials'),
+          onView,
+          issueCredential
+        )}
         dataSource={credentials}
         pagination={{
           total: credentialCount,

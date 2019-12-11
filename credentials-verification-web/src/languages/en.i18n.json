@@ -101,6 +101,7 @@
   "credentials": {
     "title": "Credentials",
     "sendCredentials": "Send Credentials",
+    "successfullyIssued": "The Credential has been successfully issued",
     "student": {
       "title": "Student",
       "alt": "Student image",
@@ -403,6 +404,7 @@
     "errorSaving": "An error occurred while saving, {{model}}",
     "errorInvitingHolder": "An error occurred while inviting the holder",
     "errorDeletingGroup": "An error occurred while deleting the group {{groupName}}",
+    "issueCredential": "Failed issuing the Credential",
     "savePicture": {
       "invalidType": "The file must be a JPG or a PNG",
       "tooLarge": "The file is too large, the maximum size allowed is {{maxSize}}",
