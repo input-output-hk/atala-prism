@@ -16,9 +16,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 import butterknife.BindView;
 import butterknife.OnClick;
-import com.crashlytics.android.Crashlytics;
 import com.google.android.material.button.MaterialButton;
-import com.google.protobuf.InvalidProtocolBufferException;
 import io.iohk.cvp.R;
 import io.iohk.cvp.io.credential.Credential;
 import io.iohk.cvp.io.credential.SentCredential;
@@ -31,7 +29,6 @@ import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.StackedAppBar;
 import java.text.MessageFormat;
 import java.util.Objects;
-import java.util.concurrent.ExecutionException;
 import javax.inject.Inject;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -43,7 +40,13 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
   private ViewModelProvider.Factory factory;
 
   @Setter
-  private String credentialId;
+  private SentCredential credential;
+
+  @Setter
+  private String connectionId;
+
+  @Setter
+  private String messageId;
 
   @Setter
   private Boolean credentialIsNew;
@@ -74,8 +77,6 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
 
   @BindView(R.id.credential_logo)
   ImageView imageViewCredentialLogo;
-
-  private Credential credential;
 
   @Inject
   CredentialDetailFragment(ViewModelProvider.Factory factory) {
@@ -120,7 +121,8 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
   private ShareCredentialDialogFragment getShareFragment() {
     ShareCredentialDialogFragment fragment = new ShareCredentialDialogFragment();
     Bundle args = new Bundle();
-    args.putByteArray(CREDENTIAL_DATA_KEY, credential.toByteArray());
+    args.putByteArray(CREDENTIAL_DATA_KEY,
+        credential.getIssuerSentCredential().getCredential().toByteArray());
     fragment.setArguments(args);
 
     return fragment;
@@ -130,27 +132,8 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
       Bundle savedInstanceState) {
     View view = super.onCreateView(inflater, container, savedInstanceState);
-
-    this.getUserIds().forEach(userId -> {
-      try {
-        viewModel.getCredential(userId, credentialId).observe(this, message -> {
-          try {
-            SentCredential sentCredential = SentCredential.parseFrom(message.getMessage());
-            Credential current = sentCredential.getIssuerSentCredential()
-                .getCredential();
-            this.credential = current;
-            fillData(credential, message.getConnectionId());
-            showOptions(credentialIsNew);
-          } catch (InvalidProtocolBufferException e) {
-            e.printStackTrace();
-          }
-
-        });
-      } catch (InvalidProtocolBufferException | InterruptedException | ExecutionException e) {
-        Crashlytics.logException(e);
-        // TODO show error msg
-      }
-    });
+    fillData(credential.getIssuerSentCredential().getCredential(), connectionId);
+    showOptions(credentialIsNew);
 
     return view;
   }
@@ -196,7 +179,7 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
 
   private void saveAndGoBack(String key) {
     Preferences prefs = new Preferences(getContext());
-    prefs.saveMessage(credentialId, key);
+    prefs.saveMessage(messageId, key);
     getActivity().onBackPressed();
   }
 

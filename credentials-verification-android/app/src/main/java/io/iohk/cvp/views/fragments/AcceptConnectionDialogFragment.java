@@ -19,6 +19,7 @@ import io.iohk.cvp.R;
 import io.iohk.cvp.core.exception.CryptoException;
 import io.iohk.cvp.core.exception.SharedPrefencesDataNotFoundException;
 import io.iohk.cvp.io.connector.ParticipantInfo;
+import io.iohk.cvp.io.connector.ParticipantInfo.ParticipantCase;
 import io.iohk.cvp.utils.CryptoUtils;
 import io.iohk.cvp.utils.ImageUtils;
 import io.iohk.cvp.viewmodel.AcceptConnectionViewModel;
@@ -52,14 +53,16 @@ public class AcceptConnectionDialogFragment extends CvpDialogFragment<AcceptConn
       ParticipantInfo participantInfo) {
     AcceptConnectionDialogFragment instance = new AcceptConnectionDialogFragment();
 
-    boolean isIssuer = participantInfo.getIssuer() != null;
+    boolean isIssuer =
+        participantInfo.getParticipantCase().getNumber() == ParticipantCase.ISSUER.getNumber();
 
     Bundle args = new Bundle();
     args.putString(TOKEN_KEY, token);
     args.putString(NAME_KEY, isIssuer ? participantInfo.getIssuer().getName()
-        : ""); // TODO replace "" with verifier's name
+        : participantInfo.getVerifier().getName());
     args.putString(TITLE_KEY, isIssuer ? "University name" : "Employer name");
-    args.putByteArray(LOGO_DATA_KEY, participantInfo.getIssuer().getLogo().toByteArray());
+    args.putByteArray(LOGO_DATA_KEY, isIssuer ? participantInfo.getIssuer().getLogo().toByteArray()
+        : participantInfo.getVerifier().getLogo().toByteArray());
     instance.setArguments(args);
     instance.setCancelable(false);
 

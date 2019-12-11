@@ -54,7 +54,9 @@ public class CredentialsRecyclerViewAdapter extends
       ReceivedMessage msg = messages.get(position);
       SentCredential sentCredential = SentCredential.parseFrom(msg.getMessage());
       Credential current = sentCredential.getIssuerSentCredential().getCredential();
+      holder.credential = sentCredential;
       holder.messageId = msg.getId();
+      holder.connectionId = msg.getConnectionId();
       holder.listener = this.listener;
       holder.isNew = this.hasNewCredentials;
       holder.issuerName.setText(current.getIssuerType().getAcademicAuthority());
@@ -82,6 +84,8 @@ public class CredentialsRecyclerViewAdapter extends
 
   static class ViewHolder extends RecyclerView.ViewHolder {
 
+    String connectionId;
+    SentCredential credential;
     String messageId;
 
     @BindView(R.id.issuer_name)
@@ -101,7 +105,7 @@ public class CredentialsRecyclerViewAdapter extends
 
     @OnClick(R.id.issuer_card_view)
     public void onCredentialClicked() {
-      listener.onCredentialClicked(isNew, messageId);
+      listener.onCredentialClicked(isNew, credential, connectionId, messageId);
     }
 
   }

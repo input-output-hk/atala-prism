@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import butterknife.BindView;
 import io.iohk.cvp.R;
 import io.iohk.cvp.io.connector.ReceivedMessage;
+import io.iohk.cvp.io.credential.SentCredential;
 import io.iohk.cvp.viewmodel.CredentialsViewModel;
 import io.iohk.cvp.views.Preferences;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
@@ -140,9 +141,12 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> {
     return ViewModelProviders.of(this, factory).get(CredentialsViewModel.class);
   }
 
-  public void onCredentialClicked(Boolean isNew, String credentialId) {
-    credentialFragment.setCredentialId(credentialId);
+  public void onCredentialClicked(Boolean isNew, SentCredential credential,
+      String connectionId, String messageId) {
+    credentialFragment.setCredential(credential);
     credentialFragment.setCredentialIsNew(isNew);
+    credentialFragment.setConnectionId(connectionId);
+    credentialFragment.setMessageId(messageId);
     navigator.showFragmentOnTop(
         Objects.requireNonNull(getActivity()).getSupportFragmentManager(), credentialFragment);
   }
