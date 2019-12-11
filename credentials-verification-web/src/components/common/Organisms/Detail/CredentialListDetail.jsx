@@ -115,7 +115,7 @@ const mapTransaction = (credential, setConnectionInfo) => {
 
 const getStudentName = student => {
   const names = student.namesList.join(' ');
-  const surnames = student.surnameList.join(' ');
+  const surnames = student.surnamesList.join(' ');
   return `${names} ${surnames}`;
 };
 

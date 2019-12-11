@@ -8,7 +8,7 @@ import Logger from '../../helpers/Logger';
 
 const { SentCredential } = require('../../protos/credentials/credential_pb');
 
-const { REACT_APP_GRPC_CLIENT } = window._env_;
+const { REACT_APP_GRPC_CLIENT, REACT_APP_VERIFIER } = window._env_;
 const connectorServiceClient = new ConnectorServicePromiseClient(REACT_APP_GRPC_CLIENT, null, null);
 
 export const getConnectionsPaginated = (
@@ -40,12 +40,13 @@ const mapMessageToCredential = message => {
   return holderSentCredential.getCredential().toObject();
 };
 
-export const getMessagesForConnection = async (userId, connectionId) => {
+export const getMessagesForConnection = async (aUserId = REACT_APP_VERIFIER, connectionId) => {
+  const userId = aUserId || REACT_APP_VERIFIER; // set default if null
   Logger.info(`Getting messages for connectionId ${connectionId}`);
   const request = new GetMessagesForConnectionRequest();
   request.setConnectionid(connectionId);
   const result = await connectorServiceClient.getMessagesForConnection(request, {
-    userId: 'c8834532-eade-11e9-a88d-d8f2ca059830' // Since the userId comes not from the session, I hardcoded it here
+    userId
   });
   return result.getMessagesList().map(msg => mapMessageToCredential(msg));
 };
