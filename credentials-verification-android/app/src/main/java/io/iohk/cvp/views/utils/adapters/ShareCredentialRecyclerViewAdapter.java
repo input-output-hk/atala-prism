@@ -13,6 +13,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import io.iohk.cvp.R;
+import io.iohk.cvp.utils.ImageUtils;
 import io.iohk.cvp.viewmodel.dtos.ConnectionListable;
 import io.iohk.cvp.views.fragments.ShareCredentialDialogFragment;
 import java.util.ArrayList;
@@ -92,7 +93,10 @@ public class ShareCredentialRecyclerViewAdapter extends
     void setConnectionInfo(ConnectionListable connectionInfo) {
       this.connectionInfo = connectionInfo;
       verifierName.setText(connectionInfo.getVerifierName());
-      // TODO set logo
+      if (connectionInfo.getVerifierLogo().length > 0) {
+        verifierLogo.setImageBitmap(
+            ImageUtils.getBitmapFromByteArray(connectionInfo.getVerifierLogo()));
+      }
       setBackground();
     }
 
