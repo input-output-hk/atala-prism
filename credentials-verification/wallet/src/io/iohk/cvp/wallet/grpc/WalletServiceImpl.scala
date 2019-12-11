@@ -45,13 +45,13 @@ class WalletServiceImpl(wallet: Wallet)(implicit ec: ExecutionContext) extends p
   }
 
   override def createWallet(request: CreateWalletRequest): Future[CreateWalletResponse] = {
-    walletServiceOrchestrator.createNewWallet(request.passphrase, request.role, request.organisationName).map { data =>
-      {
+    walletServiceOrchestrator
+      .createNewWallet(request.passphrase, request.role, request.organisationName, request.logo.toByteArray)
+      .map { data =>
         cachedWallet.set(Some(data))
 
         protos.CreateWalletResponse(Some(toSignedAtalaOperation(data.keyPair)))
       }
-    }
   }
 
   override def getWalletStatus(request: GetWalletStatusRequest): Future[GetWalletStatusResponse] = {

@@ -31,6 +31,7 @@ message WalletData {
     string did = 2; // For now, the DID string is enough, this will change in the future when a DID is standardized over the project
     string organisationName = 4;
     Role role = 5;
+    bytes logo = 6;
 }
 
 service WalletService {
@@ -92,10 +93,12 @@ enum Role {
     Issuer = 0;
     Verifier = 1;
 }
+
 message CreateWalletRequest {
     string passphrase = 1;
     string organisationName = 2;
     Role role = 3;
+    bytes logo = 4;
 }
 
 message CreateWalletResponse {
@@ -120,6 +123,7 @@ message UnlockWalletRequest {
 message UnlockWalletResponse {
     string organisationName = 4;
     Role role = 5;
+    bytes logo = 6;
 }
 
 message LockWalletRequest {}

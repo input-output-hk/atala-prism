@@ -1,14 +1,14 @@
 package io.iohk.cvp.wallet
 
-import io.iohk.cvp.wallet.protos.{Role, WalletData}
+import io.iohk.cvp.wallet.protos.Role
 import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.time.{Second, Seconds, Span}
 import org.scalatest.{BeforeAndAfterEach, MustMatchers, OptionValues, WordSpec}
 import os.Path
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent._
-import ExecutionContext.Implicits.global
 import scala.concurrent.duration._
+
 class WalletServiceOrchestratorSpec
     extends WordSpec
     with ScalaFutures
@@ -22,6 +22,7 @@ class WalletServiceOrchestratorSpec
   private val passPhrase = "password"
   private val walletIO = WalletIO(filePath)
   private val walletSecurity = WalletSecurity()
+  private val defaultLogo = List(10, 20, 30).map(_.toByte).toArray
 
   override def afterEach(): Unit = {
     super.afterEach()
@@ -32,7 +33,8 @@ class WalletServiceOrchestratorSpec
 
     "create new wallet" in {
       val walletServiceOrchestrator = new WalletServiceOrchestrator(walletSecurity, walletIO)
-      val walletData = walletServiceOrchestrator.createNewWallet(passPhrase, Role.Issuer, "ORG").futureValue
+      val walletData =
+        walletServiceOrchestrator.createNewWallet(passPhrase, Role.Issuer, "ORG", defaultLogo).futureValue
       walletData.organisationName mustBe "ORG"
       walletData.role mustBe Role.Issuer
 
@@ -40,22 +42,24 @@ class WalletServiceOrchestratorSpec
 
     "create new wallet throw Runtime exception if wallet already exits" in {
       val walletServiceOrchestrator = new WalletServiceOrchestrator(walletSecurity, walletIO)
-      walletServiceOrchestrator.createNewWallet(passPhrase, Role.Issuer, "ORG").futureValue
+      walletServiceOrchestrator.createNewWallet(passPhrase, Role.Issuer, "ORG", defaultLogo).futureValue
       intercept[RuntimeException] {
-        walletServiceOrchestrator.createNewWallet(passPhrase, Role.Issuer, "ORG").futureValue
+        walletServiceOrchestrator.createNewWallet(passPhrase, Role.Issuer, "ORG", defaultLogo).futureValue
       }
     }
 
     "load a existing wallet" in {
       val walletServiceOrchestrator = new WalletServiceOrchestrator(walletSecurity, walletIO)
-      val walletData = walletServiceOrchestrator.createNewWallet(passPhrase, Role.Issuer, "ORG").futureValue
+      val walletData =
+        walletServiceOrchestrator.createNewWallet(passPhrase, Role.Issuer, "ORG", defaultLogo).futureValue
       val loadedWalletData = walletServiceOrchestrator.loadWallet(passPhrase).futureValue
       loadedWalletData.value mustBe walletData.toByteArray
     }
 
     "save or update existing wallet" in {
       val walletServiceOrchestrator = new WalletServiceOrchestrator(walletSecurity, walletIO)
-      val walletData = walletServiceOrchestrator.createNewWallet(passPhrase, Role.Issuer, "ORG").futureValue
+      val walletData =
+        walletServiceOrchestrator.createNewWallet(passPhrase, Role.Issuer, "ORG", defaultLogo).futureValue
       val newPassPhrase = "new password"
       val savedWalletData: Unit = walletServiceOrchestrator.save(newPassPhrase, walletData).futureValue
       savedWalletData mustBe ()

@@ -2,6 +2,7 @@ package io.iohk.cvp.wallet
 
 import java.security.{PrivateKey, PublicKey}
 
+import com.google.protobuf.ByteString
 import io.iohk.cvp.crypto.ECKeys
 import io.iohk.cvp.wallet.protos.{Role, WalletData}
 import org.slf4j.LoggerFactory
@@ -12,13 +13,18 @@ class WalletServiceOrchestrator(walletSecurity: WalletSecurity, walletIO: Wallet
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
-  def createNewWallet(passphrase: String, role: Role, organisationName: String): Future[WalletData] = {
+  def createNewWallet(
+      passphrase: String,
+      role: Role,
+      organisationName: String,
+      logo: Array[Byte]
+  ): Future[WalletData] = {
     Future {
       if (walletIO.fileExist()) {
         logger.info("Previous wallet found")
         throw new RuntimeException("Previous wallet found")
       } else {
-        val wallet = generateWallet(role, organisationName)
+        val wallet = generateWallet(role, organisationName, logo)
         logger.info("Storing wallet")
         save(passphrase, wallet).map(_ => wallet)
       }
@@ -42,7 +48,7 @@ class WalletServiceOrchestrator(walletSecurity: WalletSecurity, walletIO: Wallet
     } yield ()
   }
 
-  private def generateWallet(role: Role, organisationName: String): WalletData = {
+  private def generateWallet(role: Role, organisationName: String, logo: Array[Byte]): WalletData = {
     logger.info("Generating keys")
 
     val protoMasterKeyPair = generateProtoKeyPair("master")
@@ -53,6 +59,7 @@ class WalletServiceOrchestrator(walletSecurity: WalletSecurity, walletIO: Wallet
       .withKeyPair(Seq(protoMasterKeyPair, protoIssuerKeyPair))
       .withOrganisationName(organisationName)
       .withRole(role)
+      .withLogo(ByteString.copyFrom(logo))
 
     wallet
   }
