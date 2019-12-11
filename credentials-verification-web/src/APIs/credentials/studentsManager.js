@@ -1,6 +1,7 @@
 /* eslint import/no-unresolved: 0 */ // --> OFF
 import { StudentsServicePromiseClient } from '../../protos/credentials/credentialsManager_grpc_web_pb';
 import {
+  GetStudentRequest,
   GetStudentsRequest,
   GenerateConnectionTokenRequest
 } from '../../protos/credentials/credentialsManager_pb';
@@ -40,4 +41,15 @@ export const generateConnectionToken = async (userId, studentId) => {
   );
 
   return response.getToken();
+};
+
+export const getStudentById = async studentId => {
+  const getStudentRequest = new GetStudentRequest();
+  getStudentRequest.setStudentid(studentId);
+
+  const result = await studentsService.getStudent(getStudentRequest, { userId: issuerId });
+
+  const { student } = result.toObject();
+
+  return student;
 };

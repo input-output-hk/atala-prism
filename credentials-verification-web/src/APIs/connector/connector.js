@@ -2,18 +2,22 @@
 import { ConnectorServicePromiseClient } from '../../protos/connector/connector_grpc_web_pb';
 import {
   GetConnectionsPaginatedRequest,
-  GetMessagesForConnectionRequest
+  GetMessagesForConnectionRequest,
+  SendMessageRequest
 } from '../../protos/connector/connector_pb';
 import Logger from '../../helpers/Logger';
+import { getCredentialBinary } from '../credentials/credentialsManager';
+import { getStudentById } from '../credentials/studentsManager';
 
 const { SentCredential } = require('../../protos/credentials/credential_pb');
 
 const { REACT_APP_GRPC_CLIENT, REACT_APP_VERIFIER } = window._env_;
 const connectorServiceClient = new ConnectorServicePromiseClient(REACT_APP_GRPC_CLIENT, null, null);
+const issuerId = 'c8834532-eade-11e9-a88d-d8f2ca059830';
 
 export const getConnectionsPaginated = (
   // Since the userId comes not from the session, I hardcoded it here
-  userId = 'c8834532-eade-11e9-a88d-d8f2ca059830',
+  userId = issuerId,
   lastSeenConnectionId,
   limit = 10
 ) => {
@@ -63,4 +67,27 @@ const errorCredential = {
     namesList: ['Error'],
     surnameList: ['Error']
   }
+};
+
+export const issueCredential = async credentialData => {
+  const sendMessageRequest = new SendMessageRequest();
+
+  const { studentid } = credentialData;
+
+  const studentData = await getStudentById(studentid);
+
+  const credentialBinary = await getCredentialBinary(credentialData, studentData);
+
+  const { connectionid } = studentData;
+  sendMessageRequest.setConnectionid(connectionid);
+  sendMessageRequest.setMessage(credentialBinary);
+
+  return connectorServiceClient
+    .sendMessage(sendMessageRequest, {
+      userId: issuerId
+    })
+    .catch(error => {
+      Logger.error('Error issuing the credential: ', error);
+      throw new Error(error);
+    });
 };
