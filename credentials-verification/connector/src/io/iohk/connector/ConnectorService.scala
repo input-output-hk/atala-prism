@@ -8,6 +8,7 @@ import io.iohk.connector.payments.PaymentWall
 import io.iohk.connector.services.{ConnectionsService, MessagesService}
 import io.iohk.cvp.connector.protos._
 import io.iohk.cvp.grpc.UserIdInterceptor.participantId
+import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither._
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -43,13 +44,20 @@ class ConnectorService(connections: ConnectionsService, messages: MessagesServic
             id => Right(Some(id))
           )
     }
-
-    lastSeenConnectionId.toFutureEither
+  val d: FutureEither[ConnectorError, Seq[model.ConnectionInfo]] =  lastSeenConnectionId.toFutureEither
       .flatMap(idOpt => connections.getConnectionsPaginated(userId, request.limit, idOpt))
-      .wrapExceptions
+
+      d.wrapExceptions
       .successMap { conns =>
         GetConnectionsPaginatedResponse(conns.map(_.toProto))
       }
+
+//    lastSeenConnectionId.toFutureEither
+//      .flatMap(idOpt => connections.getConnectionsPaginated(userId, request.limit, idOpt))
+//      .wrapExceptions
+//      .successMap { conns =>
+//        GetConnectionsPaginatedResponse(conns.map(_.toProto))
+//      }
   }
 
   /** Return info about connection token such as creator info

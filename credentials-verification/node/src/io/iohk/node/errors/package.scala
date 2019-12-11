@@ -1,7 +1,11 @@
 package io.iohk.node
 
+import io.grpc.Status
+
 package object errors {
-  sealed trait NodeError
+  sealed trait NodeError {
+    def toStatus: Status
+  }
 
   object NodeError {
 
@@ -10,7 +14,11 @@ package object errors {
       * @param tpe type of the value, e.g. "didSuffix" or "contract"
       * @param identifier identifier used to look for the value
       */
-    case class UnknownValueError(tpe: String, identifier: String) extends NodeError
+    case class UnknownValueError(tpe: String, identifier: String) extends NodeError{
+      override def toStatus: Status = {
+        Status.UNKNOWN.withDescription(s"Unknown $tpe: $identifier")
+      }
+    }
   }
 
 }
