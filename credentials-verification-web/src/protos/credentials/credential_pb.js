@@ -1234,7 +1234,7 @@ proto.Signer.toObject = function(includeInstance, msg) {
     surnamesList: (f = jspb.Message.getRepeatedField(msg, 2)) == null ? undefined : f,
     role: jspb.Message.getFieldWithDefault(msg, 3, ""),
     did: jspb.Message.getFieldWithDefault(msg, 4, ""),
-    tittle: jspb.Message.getFieldWithDefault(msg, 15, "")
+    title: jspb.Message.getFieldWithDefault(msg, 5, "")
   };
 
   if (includeInstance) {
@@ -1287,9 +1287,9 @@ proto.Signer.deserializeBinaryFromReader = function(msg, reader) {
       var value = /** @type {string} */ (reader.readString());
       msg.setDid(value);
       break;
-    case 15:
+    case 5:
       var value = /** @type {string} */ (reader.readString());
-      msg.setTittle(value);
+      msg.setTitle(value);
       break;
     default:
       reader.skipField();
@@ -1348,10 +1348,10 @@ proto.Signer.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
-  f = message.getTittle();
+  f = message.getTitle();
   if (f.length > 0) {
     writer.writeString(
-      15,
+      5,
       f
     );
   }
@@ -1469,11 +1469,11 @@ proto.Signer.prototype.setDid = function(value) {
 
 
 /**
- * optional string tittle = 15;
+ * optional string title = 5;
  * @return {string}
  */
-proto.Signer.prototype.getTittle = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 15, ""));
+proto.Signer.prototype.getTitle = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
 };
 
 
@@ -1481,8 +1481,8 @@ proto.Signer.prototype.getTittle = function() {
  * @param {string} value
  * @return {!proto.Signer} returns this
  */
-proto.Signer.prototype.setTittle = function(value) {
-  return jspb.Message.setProto3StringField(this, 15, value);
+proto.Signer.prototype.setTitle = function(value) {
+  return jspb.Message.setProto3StringField(this, 5, value);
 };
 
 
@@ -1526,7 +1526,7 @@ proto.SubjectData.prototype.toObject = function(opt_includeInstance) {
 proto.SubjectData.toObject = function(includeInstance, msg) {
   var f, obj = {
     namesList: (f = jspb.Message.getRepeatedField(msg, 1)) == null ? undefined : f,
-    surnameList: (f = jspb.Message.getRepeatedField(msg, 2)) == null ? undefined : f,
+    surnamesList: (f = jspb.Message.getRepeatedField(msg, 2)) == null ? undefined : f,
     dateofbirth: (f = msg.getDateofbirth()) && proto.Date.toObject(includeInstance, f),
     iddocument: (f = msg.getIddocument()) && proto.PersonalId.toObject(includeInstance, f)
   };
@@ -1571,7 +1571,7 @@ proto.SubjectData.deserializeBinaryFromReader = function(msg, reader) {
       break;
     case 2:
       var value = /** @type {string} */ (reader.readString());
-      msg.addSurname(value);
+      msg.addSurnames(value);
       break;
     case 3:
       var value = new proto.Date;
@@ -1619,7 +1619,7 @@ proto.SubjectData.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
-  f = message.getSurnameList();
+  f = message.getSurnamesList();
   if (f.length > 0) {
     writer.writeRepeatedString(
       2,
@@ -1683,10 +1683,10 @@ proto.SubjectData.prototype.clearNamesList = function() {
 
 
 /**
- * repeated string surname = 2;
+ * repeated string surnames = 2;
  * @return {!Array<string>}
  */
-proto.SubjectData.prototype.getSurnameList = function() {
+proto.SubjectData.prototype.getSurnamesList = function() {
   return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 2));
 };
 
@@ -1695,7 +1695,7 @@ proto.SubjectData.prototype.getSurnameList = function() {
  * @param {!Array<string>} value
  * @return {!proto.SubjectData} returns this
  */
-proto.SubjectData.prototype.setSurnameList = function(value) {
+proto.SubjectData.prototype.setSurnamesList = function(value) {
   return jspb.Message.setField(this, 2, value || []);
 };
 
@@ -1705,7 +1705,7 @@ proto.SubjectData.prototype.setSurnameList = function(value) {
  * @param {number=} opt_index
  * @return {!proto.SubjectData} returns this
  */
-proto.SubjectData.prototype.addSurname = function(value, opt_index) {
+proto.SubjectData.prototype.addSurnames = function(value, opt_index) {
   return jspb.Message.addToRepeatedField(this, 2, value, opt_index);
 };
 
@@ -1714,8 +1714,8 @@ proto.SubjectData.prototype.addSurname = function(value, opt_index) {
  * Clears the list making it empty but non-null.
  * @return {!proto.SubjectData} returns this
  */
-proto.SubjectData.prototype.clearSurnameList = function() {
-  return this.setSurnameList([]);
+proto.SubjectData.prototype.clearSurnamesList = function() {
+  return this.setSurnamesList([]);
 };
 
 

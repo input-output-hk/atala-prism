@@ -27,7 +27,7 @@ const getColumns = ({ inviteHolder, isIssuer, setHolder }) => {
         />
       )
     },
-    { key: 'name', render: ({ name }) => name }
+    { key: 'fullname', render: ({ fullname }) => fullname }
   ];
 
   const issuerInfo = [

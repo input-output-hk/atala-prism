@@ -1,6 +1,6 @@
 import { mockApi } from './__mocks__';
 
-import { getConnectionsPaginated } from './connector/connector';
+import { getConnectionsPaginated, getMessagesForConnection } from './connector/connector';
 import {
   createWallet,
   getDid,
@@ -15,7 +15,6 @@ import { getStudents, generateConnectionToken } from './credentials/studentsMana
 
 export { mockApi };
 export const api = {
-  ...mockApi,
   generateConnectionToken,
   getConnectionsPaginated,
   createWallet,
@@ -27,5 +26,6 @@ export const api = {
   unlockWallet,
   isWalletUnlocked,
   lockWallet,
-  isIssuer
+  isIssuer,
+  getMessagesForConnection
 };

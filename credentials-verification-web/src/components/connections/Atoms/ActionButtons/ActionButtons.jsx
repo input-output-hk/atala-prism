@@ -2,11 +2,11 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
+import { studentShape } from '../../../../helpers/propShapes';
 
 const ActionButtons = ({ showQRButton, inviteHolder, isIssuer, setHolder, holder }) => {
   const { t } = useTranslation();
-
-  const { admissionDate, avatar, id, name, transactions } = holder;
+  const { id } = holder;
 
   return (
     <div className="ControlButtons">
@@ -26,14 +26,7 @@ const ActionButtons = ({ showQRButton, inviteHolder, isIssuer, setHolder, holder
       <CustomButton
         buttonProps={{
           className: 'theme-link',
-          onClick: () => {
-            const formattedHolder = {
-              user: { icon: avatar, name },
-              transactions,
-              date: admissionDate
-            };
-            setHolder(formattedHolder);
-          }
+          onClick: () => setHolder(holder)
         }}
         buttonText={t(`connections.table.columns.${isIssuer() ? 'view' : 'viewCredentials'}`)}
       />
@@ -45,7 +38,9 @@ ActionButtons.propTypes = {
   id: PropTypes.string.isRequired,
   showQRButton: PropTypes.bool.isRequired,
   inviteHolder: PropTypes.func.isRequired,
-  isIssuer: PropTypes.func.isRequired
+  isIssuer: PropTypes.func.isRequired,
+  setHolder: PropTypes.func.isRequired,
+  holder: PropTypes.shape(studentShape).isRequired
 };
 
 export default ActionButtons;

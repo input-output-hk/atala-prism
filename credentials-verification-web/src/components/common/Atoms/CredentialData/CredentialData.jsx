@@ -2,19 +2,14 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Col } from 'antd';
 import CellRenderer from '../CellRenderer/CellRenderer';
-import { dayMonthYearFormatter } from '../../../../helpers/formatters';
-
+import freeUniLgo from '../../../../images/FreeUniLogo.png';
 import './_style.scss';
 
 const CredentialData = ({ title, university, award, student, startDate, graduationDate }) => (
   <Col lg={12} xs={24} className="CredentialTemplate">
     <div className="CredentialHeader">
       <CellRenderer componentName="newCredential" title="degreeName" value={title} />
-      <img
-        className="IconUniversity"
-        src="icon-free-university.svg"
-        alt="Free University Tbilisi"
-      />
+      <img className="IconUniversity" src={freeUniLgo} alt="Free University Tbilisi" />
     </div>
     <div className="CredentialContent">
       <CellRenderer componentName="newCredential" title="universityName" value={university} />
@@ -25,17 +20,13 @@ const CredentialData = ({ title, university, award, student, startDate, graduati
       <hr />
       <div className="DegreeDate">
         {startDate && (
-          <CellRenderer
-            componentName="newCredential"
-            title="startDate"
-            value={dayMonthYearFormatter(startDate)}
-          />
+          <CellRenderer componentName="newCredential" title="startDate" value={startDate} />
         )}
         {graduationDate && (
           <CellRenderer
             componentName="newCredential"
             title="graduationDate"
-            value={dayMonthYearFormatter(graduationDate)}
+            value={graduationDate}
           />
         )}
       </div>

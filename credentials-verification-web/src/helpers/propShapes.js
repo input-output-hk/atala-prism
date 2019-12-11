@@ -1,4 +1,6 @@
 import { string, shape, number, oneOfType, func, object } from 'prop-types';
+import __ from 'lodash';
+import { CONNECTION_STATUSES } from './constants';
 
 export const groupShape = {
   icon: string,
@@ -41,3 +43,22 @@ export const refShape = oneOfType([
     current: object
   })
 ]);
+
+export const dateObjectShape = {
+  day: number,
+  month: number,
+  year: number
+};
+
+export const connectionStatusesShape = __.values(CONNECTION_STATUSES);
+
+export const studentShape = {
+  admissiondate: dateObjectShape,
+  connectionid: string,
+  connectionstatus: oneOfType(connectionStatusesShape),
+  connectiontoken: string,
+  fullname: string,
+  id: string,
+  issuerid: string,
+  universityassignedid: string
+};

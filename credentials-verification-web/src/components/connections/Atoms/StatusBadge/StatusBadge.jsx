@@ -1,8 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import __ from 'lodash';
-import { CONNECTION_STATUSES } from '../../../../helpers/constants';
+import { connectionStatusesShape } from '../../../../helpers/propShapes';
 
 import './_style.scss';
 
@@ -18,7 +17,7 @@ const StatusBadge = ({ status = 'invitationMissing' }) => {
 };
 
 StatusBadge.propTypes = {
-  status: PropTypes.oneOf(__.values(CONNECTION_STATUSES)).isRequired
+  status: PropTypes.oneOf(connectionStatusesShape).isRequired
 };
 
 export default StatusBadge;
