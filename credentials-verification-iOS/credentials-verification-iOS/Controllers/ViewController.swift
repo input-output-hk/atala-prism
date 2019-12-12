@@ -12,17 +12,18 @@ class ViewController: UIViewController {
 
     @IBOutlet weak var issuerDID: UILabel!
     @IBOutlet weak var issuerLaber: UILabel!
-    
+
     lazy var simpleConnection = {
-        return SimpleConnection()
+        SimpleConnection()
     }()
 
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
     }
+
     var counter = 0
-    
+
     @IBAction func onClick(_ sender: UIButton) {
         counter = counter + 1
         do {
@@ -35,4 +36,3 @@ class ViewController: UIViewController {
         }
     }
 }
-

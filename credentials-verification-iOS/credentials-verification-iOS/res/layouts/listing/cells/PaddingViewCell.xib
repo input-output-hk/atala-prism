@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15505" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15510"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="padding" rowHeight="415" id="6dN-Su-4Ww" customClass="PaddingViewCell" customModule="ATALA" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="569" height="415"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="6dN-Su-4Ww" id="5My-La-PfX">
+                <rect key="frame" x="0.0" y="0.0" width="569" height="415"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ikh-ML-u5V">
+                        <rect key="frame" x="0.0" y="0.0" width="569" height="415"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="qdB-Cg-R6y">
+                                <rect key="frame" x="0.0" y="0.0" width="569" height="50"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" priority="999" constant="50" id="i3z-IP-ynE"/>
+                                </constraints>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="backgroundColorIB" value="appGreyLight"/>
+                                </userDefinedRuntimeAttributes>
+                            </view>
+                        </subviews>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="qdB-Cg-R6y" firstAttribute="top" secondItem="Ikh-ML-u5V" secondAttribute="top" id="9Ua-sp-AzU"/>
+                            <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="qdB-Cg-R6y" secondAttribute="bottom" id="CyS-4v-x6Q"/>
+                            <constraint firstItem="qdB-Cg-R6y" firstAttribute="leading" secondItem="Ikh-ML-u5V" secondAttribute="leading" id="H8E-SR-Q76"/>
+                            <constraint firstAttribute="trailing" secondItem="qdB-Cg-R6y" secondAttribute="trailing" id="yMd-gU-GTD"/>
+                        </constraints>
+                    </view>
+                </subviews>
+                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                <constraints>
+                    <constraint firstAttribute="bottom" secondItem="Ikh-ML-u5V" secondAttribute="bottom" id="BXU-27-caE"/>
+                    <constraint firstItem="Ikh-ML-u5V" firstAttribute="leading" secondItem="5My-La-PfX" secondAttribute="leading" id="Jaa-P1-T5d"/>
+                    <constraint firstItem="Ikh-ML-u5V" firstAttribute="top" secondItem="5My-La-PfX" secondAttribute="top" id="XFp-cF-0T8"/>
+                    <constraint firstAttribute="trailing" secondItem="Ikh-ML-u5V" secondAttribute="trailing" id="gh6-65-HSV"/>
+                </constraints>
+            </tableViewCellContentView>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <connections>
+                <outlet property="constraintHeight" destination="i3z-IP-ynE" id="1Uz-bQ-Cmw"/>
+            </connections>
+            <point key="canvasLocation" x="136.95652173913044" y="94.754464285714278"/>
+        </tableViewCell>
+    </objects>
+</document>

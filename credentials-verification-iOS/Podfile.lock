@@ -1,47 +1,103 @@
 PODS:
+  - Alamofire (4.8.2)
+  - AlamofireImage (3.5.2):
+    - Alamofire (~> 4.8)
+  - AlamofireObjectMapper (5.2.1):
+    - Alamofire (~> 4.7)
+    - ObjectMapper (~> 3.4)
+  - AutoInsetter (1.8.0)
   - BoringSSL-GRPC (0.0.3):
     - BoringSSL-GRPC/Implementation (= 0.0.3)
     - BoringSSL-GRPC/Interface (= 0.0.3)
   - BoringSSL-GRPC/Implementation (0.0.3):
     - BoringSSL-GRPC/Interface (= 0.0.3)
   - BoringSSL-GRPC/Interface (0.0.3)
-  - gRPC-Core (1.19.0):
-    - gRPC-Core/Implementation (= 1.19.0)
-    - gRPC-Core/Interface (= 1.19.0)
-  - gRPC-Core/Implementation (1.19.0):
+  - Crashlytics (3.12.0):
+    - Fabric (~> 1.9.0)
+  - Fabric (1.9.0)
+  - gRPC-Core (1.23.1):
+    - gRPC-Core/Implementation (= 1.23.1)
+    - gRPC-Core/Interface (= 1.23.1)
+  - gRPC-Core/Implementation (1.23.1):
     - BoringSSL-GRPC (= 0.0.3)
-    - gRPC-Core/Interface (= 1.19.0)
+    - gRPC-Core/Interface (= 1.23.1)
     - nanopb (~> 0.3)
-  - gRPC-Core/Interface (1.19.0)
-  - nanopb (0.3.901):
-    - nanopb/decode (= 0.3.901)
-    - nanopb/encode (= 0.3.901)
-  - nanopb/decode (0.3.901)
-  - nanopb/encode (0.3.901)
-  - SwiftGRPC (0.9.1):
-    - gRPC-Core (~> 1.19.0)
-    - SwiftProtobuf (~> 1.5.0)
-  - SwiftProtobuf (1.5.0)
+  - gRPC-Core/Interface (1.23.1)
+  - MBProgressHUD (1.0.0)
+  - nanopb (0.3.9011):
+    - nanopb/decode (= 0.3.9011)
+    - nanopb/encode (= 0.3.9011)
+  - nanopb/decode (0.3.9011)
+  - nanopb/encode (0.3.9011)
+  - ObjectMapper (3.5.1)
+  - Pageboy (3.5.0)
+  - Presentr (1.9)
+  - SwiftGRPC (0.10.0):
+    - gRPC-Core (~> 1.23.0)
+    - SwiftProtobuf (~> 1.7.0)
+  - SwiftProtobuf (1.7.0)
+  - SwiftyBeaver (1.7.1)
+  - Tabman (2.6.3):
+    - AutoInsetter (~> 1.8.0)
+    - Pageboy (~> 3.5.0)
+  - Toast-Swift (5.0.0)
 
 DEPENDENCIES:
+  - Alamofire (~> 4.8.2)
+  - AlamofireImage (~> 3.5)
+  - AlamofireObjectMapper (~> 5.2)
+  - Crashlytics (~> 3.12.0)
+  - Fabric (~> 1.9.0)
+  - MBProgressHUD (~> 1.0.0)
+  - ObjectMapper (~> 3.1)
+  - Presentr (~> 1.9.0)
   - SwiftGRPC
   - SwiftProtobuf
+  - SwiftyBeaver (~> 1.7.0)
+  - Tabman (~> 2.6)
+  - Toast-Swift (~> 5.0.0)
 
 SPEC REPOS:
   trunk:
+    - Alamofire
+    - AlamofireImage
+    - AlamofireObjectMapper
+    - AutoInsetter
     - BoringSSL-GRPC
+    - Crashlytics
+    - Fabric
     - gRPC-Core
+    - MBProgressHUD
     - nanopb
+    - ObjectMapper
+    - Pageboy
+    - Presentr
     - SwiftGRPC
     - SwiftProtobuf
+    - SwiftyBeaver
+    - Tabman
+    - Toast-Swift
 
 SPEC CHECKSUMS:
+  Alamofire: ae5c501addb7afdbb13687d7f2f722c78734c2d3
+  AlamofireImage: 63cfe3baf1370be6c498149687cf6db3e3b00999
+  AlamofireObjectMapper: 1989f690e982b71921b9253f53a4f33a9bc00d88
+  AutoInsetter: 0b90ca74e36561c340129045a3722c51a0b15c58
   BoringSSL-GRPC: db8764df3204ccea016e1c8dd15d9a9ad63ff318
-  gRPC-Core: bd9472c8daa2e414b9f8038ba667bf56ce0e02b8
-  nanopb: 2901f78ea1b7b4015c860c2fdd1ea2fee1a18d48
-  SwiftGRPC: 43d3e8db88f97e7386bd44f159ecdfad02ce3362
-  SwiftProtobuf: 241400280f912735c1e1b9fe675fdd2c6c4d42e2
+  Crashlytics: 07fb167b1694128c1c9a5a5cc319b0e9c3ca0933
+  Fabric: f988e33c97f08930a413e08123064d2e5f68d655
+  gRPC-Core: 4b1148eb8596225178e5a154e40e35141a3cdf0f
+  MBProgressHUD: 4890f671c94e8a0f3cf959aa731e9de2f036d71a
+  nanopb: 18003b5e52dab79db540fe93fe9579f399bd1ccd
+  ObjectMapper: 70187b8941977c62ccfb423caf6b50be405cabf0
+  Pageboy: 3794c578aae5fcce06e90b3ed4a0ad6b807d75bb
+  Presentr: 7078d7eb5d1661ebeaae60c9e42a1e534de1b993
+  SwiftGRPC: f8fcfecb547c96cc6913de619f95fa3cd09838ee
+  SwiftProtobuf: 4fd9645e69b72cbae6ec8da5be0cdd20ca6565dd
+  SwiftyBeaver: da5e573ad583586c18236324c36900990afe1733
+  Tabman: 63eae331ae7a9388ae389b1808f1939269fcdece
+  Toast-Swift: 36f4720243c8582c2be243a60a51e193c761f541
 
-PODFILE CHECKSUM: cd8e160f62bcf701c8c0eea0c7283fbe6fa70590
+PODFILE CHECKSUM: 0444f2a9cf01f36c34f6fecb6cdde0e64072c27a
 
 COCOAPODS: 1.8.4

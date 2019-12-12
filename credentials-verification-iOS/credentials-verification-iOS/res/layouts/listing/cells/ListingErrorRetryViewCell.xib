@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15400" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15404"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="error_retry" rowHeight="415" id="da5-rr-tL6" customClass="ListingErrorRetryViewCell" customModule="credentials_verification_iOS" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="569" height="415"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="da5-rr-tL6" id="GPy-BT-Ch7">
+                <rect key="frame" x="0.0" y="0.0" width="569" height="415"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="yKK-B1-w01">
+                        <rect key="frame" x="27" y="0.0" width="515" height="410"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Qs9-Hc-bKD">
+                                <rect key="frame" x="0.0" y="122" width="515" height="23"/>
+                                <fontDescription key="fontDescription" type="boldSystem" pointSize="19"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="localized" value="error_generic_title"/>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="appBlack"/>
+                                </userDefinedRuntimeAttributes>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="wCh-Zw-VS0">
+                                <rect key="frame" x="0.0" y="150" width="515" height="19.5"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="16"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="localized" value="error_generic_error"/>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="appBlackLight"/>
+                                </userDefinedRuntimeAttributes>
+                            </label>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="xmark.icloud" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="GVg-Th-sE3">
+                                <rect key="frame" x="242.5" y="81" width="30" height="26.5"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="30" id="dIm-zt-N9X"/>
+                                    <constraint firstAttribute="height" constant="30" id="neE-Go-vfT"/>
+                                </constraints>
+                            </imageView>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="K95-W0-rAx">
+                                <rect key="frame" x="165.5" y="214.5" width="184" height="40"/>
+                                <fontDescription key="fontDescription" type="boldSystem" pointSize="13"/>
+                                <inset key="contentEdgeInsets" minX="70" minY="12" maxX="70" maxY="12"/>
+                                <state key="normal" title="Button">
+                                    <color key="titleColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                </state>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="appRed"/>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="localized" value="error_connection_retry"/>
+                                </userDefinedRuntimeAttributes>
+                                <connections>
+                                    <action selector="buttonRetryAction:" destination="da5-rr-tL6" eventType="touchUpInside" id="a4v-A4-sVX"/>
+                                </connections>
+                            </button>
+                        </subviews>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstAttribute="trailing" secondItem="Qs9-Hc-bKD" secondAttribute="trailing" id="8NF-AC-oBo"/>
+                            <constraint firstItem="wCh-Zw-VS0" firstAttribute="leading" secondItem="yKK-B1-w01" secondAttribute="leading" id="PXI-6o-2zk"/>
+                            <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="K95-W0-rAx" secondAttribute="bottom" constant="10" id="SsM-3R-JcF"/>
+                            <constraint firstItem="Qs9-Hc-bKD" firstAttribute="leading" secondItem="yKK-B1-w01" secondAttribute="leading" id="UBi-AI-h25"/>
+                            <constraint firstItem="K95-W0-rAx" firstAttribute="centerX" secondItem="yKK-B1-w01" secondAttribute="centerX" id="VjK-gk-O13"/>
+                            <constraint firstItem="wCh-Zw-VS0" firstAttribute="top" secondItem="Qs9-Hc-bKD" secondAttribute="bottom" constant="5" id="XYz-sG-5jC"/>
+                            <constraint firstItem="K95-W0-rAx" firstAttribute="top" secondItem="wCh-Zw-VS0" secondAttribute="bottom" constant="45" id="eC3-7T-t3R"/>
+                            <constraint firstItem="GVg-Th-sE3" firstAttribute="centerX" secondItem="yKK-B1-w01" secondAttribute="centerX" id="g9E-r7-Vpm"/>
+                            <constraint firstAttribute="trailing" secondItem="wCh-Zw-VS0" secondAttribute="trailing" id="hC8-jG-2uc"/>
+                            <constraint firstItem="GVg-Th-sE3" firstAttribute="top" secondItem="yKK-B1-w01" secondAttribute="top" constant="80" id="nNw-tA-VA3"/>
+                            <constraint firstItem="Qs9-Hc-bKD" firstAttribute="top" secondItem="GVg-Th-sE3" secondAttribute="bottom" constant="12" id="tsB-XO-1z3"/>
+                        </constraints>
+                    </view>
+                </subviews>
+                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                <constraints>
+                    <constraint firstAttribute="trailing" secondItem="yKK-B1-w01" secondAttribute="trailing" constant="27" id="E3q-j8-cGX"/>
+                    <constraint firstItem="yKK-B1-w01" firstAttribute="leading" secondItem="GPy-BT-Ch7" secondAttribute="leading" constant="27" id="UQx-IA-cnr"/>
+                    <constraint firstAttribute="bottom" secondItem="yKK-B1-w01" secondAttribute="bottom" constant="5" id="fFa-Ve-NLk"/>
+                    <constraint firstItem="yKK-B1-w01" firstAttribute="top" secondItem="GPy-BT-Ch7" secondAttribute="top" id="mGC-Zh-i9z"/>
+                </constraints>
+            </tableViewCellContentView>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <connections>
+                <outlet property="buttonRetry" destination="K95-W0-rAx" id="cfo-6w-pES"/>
+                <outlet property="imageViewIcon" destination="GVg-Th-sE3" id="Kbx-Nc-hSh"/>
+                <outlet property="labelSubtitle" destination="wCh-Zw-VS0" id="zdz-CY-TMm"/>
+                <outlet property="labelTitle" destination="Qs9-Hc-bKD" id="5le-LW-ZfS"/>
+            </connections>
+            <point key="canvasLocation" x="309.4202898550725" y="272.87946428571428"/>
+        </tableViewCell>
+    </objects>
+    <resources>
+        <image name="xmark.icloud" catalog="system" width="64" height="44"/>
+    </resources>
+</document>

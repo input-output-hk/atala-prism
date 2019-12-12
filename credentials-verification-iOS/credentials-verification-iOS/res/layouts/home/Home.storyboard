@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15505" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15510"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Home View Controller-->
+        <scene sceneID="zKM-pz-bBG">
+            <objects>
+                <viewController storyboardIdentifier="Home" useStoryboardIdentifierAsRestorationIdentifier="YES" id="wVx-7m-8l7" customClass="HomeViewController" customModule="ATALA" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="bJc-Xv-ljL">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="kDC-SR-khb" customClass="InformationView" customModule="ATALA" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="44" width="414" height="818"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            </view>
+                            <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="lsm-uD-tWn" userLabel="TableView">
+                                <rect key="frame" x="0.0" y="44" width="414" height="818"/>
+                                <subviews>
+                                    <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="none" allowsSelection="NO" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="eKG-bx-uPS">
+                                        <rect key="frame" x="0.0" y="72" width="414" height="746"/>
+                                        <color key="separatorColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <inset key="separatorInset" minX="15" minY="0.0" maxX="0.0" maxY="0.0"/>
+                                        <color key="sectionIndexBackgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <userDefinedRuntimeAttributes>
+                                            <userDefinedRuntimeAttribute type="string" keyPath="backgroundColorIB" value="appWhite"/>
+                                        </userDefinedRuntimeAttributes>
+                                    </tableView>
+                                </subviews>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstItem="eKG-bx-uPS" firstAttribute="leading" secondItem="lsm-uD-tWn" secondAttribute="leading" id="01q-DY-GYk"/>
+                                    <constraint firstAttribute="trailing" secondItem="eKG-bx-uPS" secondAttribute="trailing" id="PJc-iL-WUW"/>
+                                    <constraint firstAttribute="bottom" secondItem="eKG-bx-uPS" secondAttribute="bottom" id="WlQ-Xy-Azr"/>
+                                    <constraint firstItem="eKG-bx-uPS" firstAttribute="top" secondItem="lsm-uD-tWn" secondAttribute="top" constant="72" id="tUV-IF-j2W"/>
+                                </constraints>
+                            </view>
+                        </subviews>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="kDC-SR-khb" firstAttribute="leading" secondItem="tRp-2a-isO" secondAttribute="leading" id="HIs-6o-xeD"/>
+                            <constraint firstItem="lsm-uD-tWn" firstAttribute="leading" secondItem="tRp-2a-isO" secondAttribute="leading" id="Hrv-gu-PLs"/>
+                            <constraint firstItem="lsm-uD-tWn" firstAttribute="bottom" secondItem="tRp-2a-isO" secondAttribute="bottom" id="Lqj-uj-ndQ"/>
+                            <constraint firstItem="lsm-uD-tWn" firstAttribute="top" secondItem="tRp-2a-isO" secondAttribute="top" id="QOC-ae-aSd"/>
+                            <constraint firstItem="tRp-2a-isO" firstAttribute="bottom" secondItem="kDC-SR-khb" secondAttribute="bottom" id="Xmw-yX-Nqa"/>
+                            <constraint firstItem="tRp-2a-isO" firstAttribute="trailing" secondItem="kDC-SR-khb" secondAttribute="trailing" id="eaI-Bz-xhW"/>
+                            <constraint firstItem="kDC-SR-khb" firstAttribute="top" secondItem="tRp-2a-isO" secondAttribute="top" id="rey-5W-y7L"/>
+                            <constraint firstItem="lsm-uD-tWn" firstAttribute="trailing" secondItem="tRp-2a-isO" secondAttribute="trailing" id="yFi-bO-oPn"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="tRp-2a-isO"/>
+                        <userDefinedRuntimeAttributes>
+                            <userDefinedRuntimeAttribute type="string" keyPath="backgroundColorIB" value="appWhite"/>
+                        </userDefinedRuntimeAttributes>
+                    </view>
+                    <extendedEdge key="edgesForExtendedLayout"/>
+                    <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+                    <size key="freeformSize" width="414" height="896"/>
+                    <connections>
+                        <outlet property="table" destination="eKG-bx-uPS" id="lYg-OA-dME"/>
+                        <outlet property="viewEmpty" destination="kDC-SR-khb" id="EkH-Md-hpi"/>
+                        <outlet property="viewTable" destination="lsm-uD-tWn" id="poX-pY-cGr"/>
+                        <segue destination="KBw-4M-KfG" kind="show" identifier="CredentialPaySegue" id="R1O-o1-hIq"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="sJI-nR-A95" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="122.40000000000001" y="80.50974512743629"/>
+        </scene>
+        <!--CredentialPay-->
+        <scene sceneID="0Gl-Aa-Lum">
+            <objects>
+                <viewControllerPlaceholder storyboardName="CredentialPay" referencedIdentifier="CredentialPay" id="KBw-4M-KfG" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="eSR-FL-gK6"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Zl0-X3-zfg" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="728" y="80"/>
+        </scene>
+    </scenes>
+</document>

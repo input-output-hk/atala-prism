@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15505" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15510"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Welcome View Controller-->
+        <scene sceneID="9Ws-z1-diH">
+            <objects>
+                <viewController storyboardIdentifier="Welcome" useStoryboardIdentifierAsRestorationIdentifier="YES" id="fBn-RO-ahR" customClass="WelcomeViewController" customModule="ATALA" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="B4y-7t-xrg">
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Ezf-CD-BrE" customClass="InformationView" customModule="ATALA" customModuleProvider="target">
+                                <rect key="frame" x="0.0" y="44" width="414" height="818"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                            </view>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="Ezf-CD-BrE" firstAttribute="top" secondItem="UDx-7N-TKs" secondAttribute="top" id="9kf-eF-WTW"/>
+                            <constraint firstItem="UDx-7N-TKs" firstAttribute="trailing" secondItem="Ezf-CD-BrE" secondAttribute="trailing" id="HGN-po-Vu6"/>
+                            <constraint firstItem="UDx-7N-TKs" firstAttribute="bottom" secondItem="Ezf-CD-BrE" secondAttribute="bottom" id="XFK-BG-ziQ"/>
+                            <constraint firstItem="Ezf-CD-BrE" firstAttribute="leading" secondItem="UDx-7N-TKs" secondAttribute="leading" id="ilr-ae-bKu"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="UDx-7N-TKs"/>
+                        <userDefinedRuntimeAttributes>
+                            <userDefinedRuntimeAttribute type="string" keyPath="backgroundColorIB" value="appWhite"/>
+                        </userDefinedRuntimeAttributes>
+                    </view>
+                    <connections>
+                        <outlet property="informationView" destination="Ezf-CD-BrE" id="dC9-kq-QWz"/>
+                        <segue destination="7rb-la-Yt0" kind="show" identifier="TutorialSegue" id="2vB-gm-pfS"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="vN2-tV-pcF" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="34.782608695652179" y="78.348214285714278"/>
+        </scene>
+        <!--Tutorial-->
+        <scene sceneID="d0K-a5-JfX">
+            <objects>
+                <viewControllerPlaceholder storyboardName="Tutorial" referencedIdentifier="Tutorial" id="7rb-la-Yt0" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="rOt-ka-imV"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="SiS-Ik-ek3" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="659" y="78"/>
+        </scene>
+    </scenes>
+</document>

@@ -2,21 +2,6 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "group:README.md">
-   </FileRef>
-   <FileRef
-      location = "group:simple_proto_server.js">
-   </FileRef>
-   <FileRef
-      location = "group:protoc-gen-swift">
-   </FileRef>
-   <FileRef
-      location = "group:protoc-gen-swiftgrpc">
-   </FileRef>
-   <FileRef
-      location = "group:connector_user.proto">
-   </FileRef>
-   <FileRef
       location = "group:credentials-verification-iOS.xcodeproj">
    </FileRef>
    <FileRef

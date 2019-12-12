@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15400" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="oZG-4W-JRw">
+    <device id="retina4_7" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15404"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--Main Nav View Controller-->
+        <scene sceneID="uh0-fS-8Lv">
+            <objects>
+                <navigationController storyboardIdentifier="MainFlow" useStoryboardIdentifierAsRestorationIdentifier="YES" navigationBarHidden="YES" id="oZG-4W-JRw" customClass="MainNavViewController" customModule="credentials_verification_iOS" customModuleProvider="target" sceneMemberID="viewController">
+                    <nil key="simulatedTopBarMetrics"/>
+                    <nil key="simulatedBottomBarMetrics"/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="ohY-pN-WRW">
+                        <autoresizingMask key="autoresizingMask"/>
+                        <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <color key="tintColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    </navigationBar>
+                    <connections>
+                        <segue destination="iEB-Lg-Usl" kind="relationship" relationship="rootViewController" id="qhG-2b-MJo"/>
+                    </connections>
+                </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Li2-fY-s6e" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="-621" y="-657"/>
+        </scene>
+        <!--Dashboard-->
+        <scene sceneID="WU0-Li-UL4">
+            <objects>
+                <viewControllerPlaceholder storyboardName="Dashboard" referencedIdentifier="Dashboard" id="iEB-Lg-Usl" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="NXA-F4-qpE"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="mm5-4J-g1u" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="190" y="-658"/>
+        </scene>
+    </scenes>
+    <color key="tintColor" red="0.050980392159999999" green="0.73333333329999995" blue="0.74901960779999999" alpha="1" colorSpace="calibratedRGB"/>
+</document>
