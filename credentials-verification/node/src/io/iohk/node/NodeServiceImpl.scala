@@ -29,10 +29,9 @@ class NodeServiceImpl(didDataService: DIDDataService)(implicit ec: ExecutionCont
   override def revokeCredential(request: proto.SignedAtalaOperation): Future[proto.RevokeCredentialResponse] = ???
 
   private def toDIDData(didData: models.DIDData) = {
-    val did = s"did:atala:${didData.didSuffix.suffix}"
     proto
       .DIDData()
-      .withId(did)
+      .withId(didData.didSuffix.suffix)
       .withPublicKeys(
         didData.keys.map(key => toProtoPublicKey(key.keyId, toECKeyData(key.key), toProtoKeyUsage(key.keyUsage)))
       )
