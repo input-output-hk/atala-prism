@@ -15,7 +15,7 @@ import {
   isWalletUnlocked,
   isIssuer
 } from './wallet/wallet';
-import { getCredentials, createCredential } from './credentials/credentialsManager';
+import { getCredentials, createCredential, registerUser } from './credentials/credentialsManager';
 import {
   getStudents,
   generateConnectionToken,
@@ -42,7 +42,8 @@ export const api = {
   lockWallet,
   isIssuer,
   getStudentCredentials,
-  getMessagesForConnection
+  getMessagesForConnection,
+  registerUser
 };
 
 export const hardcodedApi = {

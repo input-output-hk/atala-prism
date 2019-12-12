@@ -1311,7 +1311,8 @@ proto.io.iohk.cvp.wallet.WalletData.toObject = function(includeInstance, msg) {
     proto.io.iohk.cvp.wallet.KeyPair.toObject, includeInstance),
     did: jspb.Message.getFieldWithDefault(msg, 2, ""),
     organisationname: jspb.Message.getFieldWithDefault(msg, 4, ""),
-    role: jspb.Message.getFieldWithDefault(msg, 5, 0)
+    role: jspb.Message.getFieldWithDefault(msg, 5, 0),
+    logo: msg.getLogo_asB64()
   };
 
   if (includeInstance) {
@@ -1364,6 +1365,10 @@ proto.io.iohk.cvp.wallet.WalletData.deserializeBinaryFromReader = function(msg, 
     case 5:
       var value = /** @type {!proto.io.iohk.cvp.wallet.Role} */ (reader.readEnum());
       msg.setRole(value);
+      break;
+    case 6:
+      var value = /** @type {!Uint8Array} */ (reader.readBytes());
+      msg.setLogo(value);
       break;
     default:
       reader.skipField();
@@ -1420,6 +1425,13 @@ proto.io.iohk.cvp.wallet.WalletData.serializeBinaryToWriter = function(message, 
   if (f !== 0.0) {
     writer.writeEnum(
       5,
+      f
+    );
+  }
+  f = message.getLogo_asU8();
+  if (f.length > 0) {
+    writer.writeBytes(
+      6,
       f
     );
   }
@@ -1515,6 +1527,48 @@ proto.io.iohk.cvp.wallet.WalletData.prototype.getRole = function() {
  */
 proto.io.iohk.cvp.wallet.WalletData.prototype.setRole = function(value) {
   return jspb.Message.setProto3EnumField(this, 5, value);
+};
+
+
+/**
+ * optional bytes logo = 6;
+ * @return {string}
+ */
+proto.io.iohk.cvp.wallet.WalletData.prototype.getLogo = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 6, ""));
+};
+
+
+/**
+ * optional bytes logo = 6;
+ * This is a type-conversion wrapper around `getLogo()`
+ * @return {string}
+ */
+proto.io.iohk.cvp.wallet.WalletData.prototype.getLogo_asB64 = function() {
+  return /** @type {string} */ (jspb.Message.bytesAsB64(
+      this.getLogo()));
+};
+
+
+/**
+ * optional bytes logo = 6;
+ * Note that Uint8Array is not supported on all browsers.
+ * @see http://caniuse.com/Uint8Array
+ * This is a type-conversion wrapper around `getLogo()`
+ * @return {!Uint8Array}
+ */
+proto.io.iohk.cvp.wallet.WalletData.prototype.getLogo_asU8 = function() {
+  return /** @type {!Uint8Array} */ (jspb.Message.bytesAsU8(
+      this.getLogo()));
+};
+
+
+/**
+ * @param {!(string|Uint8Array)} value
+ * @return {!proto.io.iohk.cvp.wallet.WalletData} returns this
+ */
+proto.io.iohk.cvp.wallet.WalletData.prototype.setLogo = function(value) {
+  return jspb.Message.setProto3BytesField(this, 6, value);
 };
 
 
@@ -2480,7 +2534,8 @@ proto.io.iohk.cvp.wallet.CreateWalletRequest.toObject = function(includeInstance
   var f, obj = {
     passphrase: jspb.Message.getFieldWithDefault(msg, 1, ""),
     organisationname: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    role: jspb.Message.getFieldWithDefault(msg, 3, 0)
+    role: jspb.Message.getFieldWithDefault(msg, 3, 0),
+    logo: msg.getLogo_asB64()
   };
 
   if (includeInstance) {
@@ -2529,6 +2584,10 @@ proto.io.iohk.cvp.wallet.CreateWalletRequest.deserializeBinaryFromReader = funct
       var value = /** @type {!proto.io.iohk.cvp.wallet.Role} */ (reader.readEnum());
       msg.setRole(value);
       break;
+    case 4:
+      var value = /** @type {!Uint8Array} */ (reader.readBytes());
+      msg.setLogo(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -2576,6 +2635,13 @@ proto.io.iohk.cvp.wallet.CreateWalletRequest.serializeBinaryToWriter = function(
   if (f !== 0.0) {
     writer.writeEnum(
       3,
+      f
+    );
+  }
+  f = message.getLogo_asU8();
+  if (f.length > 0) {
+    writer.writeBytes(
+      4,
       f
     );
   }
@@ -2633,6 +2699,48 @@ proto.io.iohk.cvp.wallet.CreateWalletRequest.prototype.getRole = function() {
  */
 proto.io.iohk.cvp.wallet.CreateWalletRequest.prototype.setRole = function(value) {
   return jspb.Message.setProto3EnumField(this, 3, value);
+};
+
+
+/**
+ * optional bytes logo = 4;
+ * @return {string}
+ */
+proto.io.iohk.cvp.wallet.CreateWalletRequest.prototype.getLogo = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
+};
+
+
+/**
+ * optional bytes logo = 4;
+ * This is a type-conversion wrapper around `getLogo()`
+ * @return {string}
+ */
+proto.io.iohk.cvp.wallet.CreateWalletRequest.prototype.getLogo_asB64 = function() {
+  return /** @type {string} */ (jspb.Message.bytesAsB64(
+      this.getLogo()));
+};
+
+
+/**
+ * optional bytes logo = 4;
+ * Note that Uint8Array is not supported on all browsers.
+ * @see http://caniuse.com/Uint8Array
+ * This is a type-conversion wrapper around `getLogo()`
+ * @return {!Uint8Array}
+ */
+proto.io.iohk.cvp.wallet.CreateWalletRequest.prototype.getLogo_asU8 = function() {
+  return /** @type {!Uint8Array} */ (jspb.Message.bytesAsU8(
+      this.getLogo()));
+};
+
+
+/**
+ * @param {!(string|Uint8Array)} value
+ * @return {!proto.io.iohk.cvp.wallet.CreateWalletRequest} returns this
+ */
+proto.io.iohk.cvp.wallet.CreateWalletRequest.prototype.setLogo = function(value) {
+  return jspb.Message.setProto3BytesField(this, 4, value);
 };
 
 
@@ -3190,7 +3298,8 @@ proto.io.iohk.cvp.wallet.UnlockWalletResponse.prototype.toObject = function(opt_
 proto.io.iohk.cvp.wallet.UnlockWalletResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
     organisationname: jspb.Message.getFieldWithDefault(msg, 4, ""),
-    role: jspb.Message.getFieldWithDefault(msg, 5, 0)
+    role: jspb.Message.getFieldWithDefault(msg, 5, 0),
+    logo: msg.getLogo_asB64()
   };
 
   if (includeInstance) {
@@ -3235,6 +3344,10 @@ proto.io.iohk.cvp.wallet.UnlockWalletResponse.deserializeBinaryFromReader = func
       var value = /** @type {!proto.io.iohk.cvp.wallet.Role} */ (reader.readEnum());
       msg.setRole(value);
       break;
+    case 6:
+      var value = /** @type {!Uint8Array} */ (reader.readBytes());
+      msg.setLogo(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -3278,6 +3391,13 @@ proto.io.iohk.cvp.wallet.UnlockWalletResponse.serializeBinaryToWriter = function
       f
     );
   }
+  f = message.getLogo_asU8();
+  if (f.length > 0) {
+    writer.writeBytes(
+      6,
+      f
+    );
+  }
 };
 
 
@@ -3314,6 +3434,48 @@ proto.io.iohk.cvp.wallet.UnlockWalletResponse.prototype.getRole = function() {
  */
 proto.io.iohk.cvp.wallet.UnlockWalletResponse.prototype.setRole = function(value) {
   return jspb.Message.setProto3EnumField(this, 5, value);
+};
+
+
+/**
+ * optional bytes logo = 6;
+ * @return {string}
+ */
+proto.io.iohk.cvp.wallet.UnlockWalletResponse.prototype.getLogo = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 6, ""));
+};
+
+
+/**
+ * optional bytes logo = 6;
+ * This is a type-conversion wrapper around `getLogo()`
+ * @return {string}
+ */
+proto.io.iohk.cvp.wallet.UnlockWalletResponse.prototype.getLogo_asB64 = function() {
+  return /** @type {string} */ (jspb.Message.bytesAsB64(
+      this.getLogo()));
+};
+
+
+/**
+ * optional bytes logo = 6;
+ * Note that Uint8Array is not supported on all browsers.
+ * @see http://caniuse.com/Uint8Array
+ * This is a type-conversion wrapper around `getLogo()`
+ * @return {!Uint8Array}
+ */
+proto.io.iohk.cvp.wallet.UnlockWalletResponse.prototype.getLogo_asU8 = function() {
+  return /** @type {!Uint8Array} */ (jspb.Message.bytesAsU8(
+      this.getLogo()));
+};
+
+
+/**
+ * @param {!(string|Uint8Array)} value
+ * @return {!proto.io.iohk.cvp.wallet.UnlockWalletResponse} returns this
+ */
+proto.io.iohk.cvp.wallet.UnlockWalletResponse.prototype.setLogo = function(value) {
+  return jspb.Message.setProto3BytesField(this, 6, value);
 };
 
 

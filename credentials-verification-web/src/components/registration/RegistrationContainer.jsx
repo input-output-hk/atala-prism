@@ -13,6 +13,7 @@ import VerifySeedPhrase from './Organisms/SeedVerificator/VerifySeedPhrase';
 import PasswordSetup from './Organisms/PasswordSetup/PasswordSetup';
 import OrganizationInfo from './Organisms/OrganizationInfo/OrganizationInfo';
 import Congratulations from './Atoms/Congratulations/Congratulations';
+import Logger from '../../helpers/Logger';
 
 const TERMS_AND_CONDITIONS_STEP = 0;
 const PRIVACY_POLICY_STEP = 1;
@@ -24,7 +25,7 @@ const ORGANIZATION_INFO_STEP = 6;
 const STEP_QUANTITY = 7;
 
 const RegistrationContainer = ({
-  api: { getTermsAndConditions, getPrivacyPolicy, createWallet }
+  api: { getTermsAndConditions, getPrivacyPolicy, createWallet, lockWallet /* , registerUser */ }
 }) => {
   const { t } = useTranslation();
 
@@ -109,17 +110,26 @@ const RegistrationContainer = ({
       nextStep();
     });
 
-  const validateOrganizatonInfo = () =>
+  const validateOrganizatonInfo = async () =>
     organizationRef.current
       .getForm()
-      .validateFieldsAndScroll((errors, { organizationName, organizationRole }) => {
+      .validateFieldsAndScroll(async (errors, { organizationName, organizationRole, logo }) => {
         if (errors) return;
-
-        setOrganizationInfo({ organizationName, organizationRole });
-
-        createWallet(password)
+        const logoToSave = new Uint8Array(await logo[0].arrayBuffer());
+        setOrganizationInfo({ organizationName, organizationRole, logo });
+        /* registerUser(organizationName, `did:test:issuer-${Math.floor(Math.random() * 1000)}`, logo)
+          .then(() =>  */ createWallet(
+          password,
+          organizationName,
+          organizationRole,
+          logoToSave
+        ) // )
+          .then(lockWallet)
           .then(nextStep)
-          .catch(() => message.error(t('errors.errorDuringRegister')));
+          .catch(error => {
+            Logger('Error at registration: ', error);
+            message.error(t('errors.errorDuringRegister'));
+          });
       });
 
   const nextFunction = () => {
@@ -141,6 +151,14 @@ const RegistrationContainer = ({
         return nextStep;
     }
   };
+
+  const toFileReader = file =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader);
+      reader.onerror = error => reject(error);
+    });
 
   const getContent = () => {
     switch (currentStep) {
@@ -194,7 +212,11 @@ const RegistrationContainer = ({
       }
       case ORGANIZATION_INFO_STEP:
         return (
-          <OrganizationInfo organizationRef={organizationRef} organizationInfo={organizationInfo} />
+          <OrganizationInfo
+            organizationRef={organizationRef}
+            organizationInfo={organizationInfo}
+            savePicture={toFileReader}
+          />
         );
       default:
         return <Congratulations />;
@@ -222,7 +244,9 @@ RegistrationContainer.propTypes = {
   api: PropTypes.shape({
     getTermsAndConditions: PropTypes.func.isRequired,
     getPrivacyPolicy: PropTypes.func.isRequired,
-    createWallet: PropTypes.func.isRequired
+    createWallet: PropTypes.func.isRequired,
+    lockWallet: PropTypes.func.isRequired,
+    registerUser: PropTypes.func.isRequired
   }).isRequired
 };
 
