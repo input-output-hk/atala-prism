@@ -39,3 +39,20 @@ export const api = {
   isIssuer,
   getMessagesForConnection
 };
+
+export const hardcodedApi = {
+  getTermsAndConditions: mockApi.getTermsAndConditions,
+  getPrivacyPolicy: mockApi.getPrivacyPolicy,
+  getGroups: mockApi.getGroups,
+  getCredentialTypes: mockApi.getCredentialTypes,
+  getCategoryTypes: mockApi.getCategoryTypes,
+  getCredentialsGroups: mockApi.getCredentialsGroups,
+  getTotalCredentials: mockApi.getTotalCredentials,
+  savePictureInS3: mockApi.savePictureInS3,
+  saveDraft: mockApi.saveDraft,
+  getPayments: mockApi.getPayments,
+  getCurrencies: mockApi.getCurrencies,
+  getAmounts: mockApi.getAmounts,
+  getSettings: mockApi.getSettings,
+  editSettings: mockApi.editSettings
+};
