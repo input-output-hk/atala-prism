@@ -49,3 +49,15 @@ export const ORGANISATION_NAME = 'organisationName';
 // Roles
 export const VERIFIER = 'VERIFIER';
 export const ISSUER = 'ISSUER';
+
+// Wallet
+const MISSING = 'MISSING';
+export const UNLOCKED = 'UNLOCKED';
+const LOCKED = 'LOCKED';
+const WalletStatuses = {
+  0: MISSING,
+  1: UNLOCKED,
+  2: LOCKED
+};
+
+export const translateStatus = status => WalletStatuses[status];

@@ -15,7 +15,7 @@ const NewGroupButton = () => {
   return (
     <CustomButton
       buttonProps={{
-        onClick: () => message.info('create a new group'),
+        onClick: () => message.info(t('groups.onCreateNewGroupClick')),
         className: 'theme-secondary'
       }}
       buttonText={t('groups.createNewGroup')}

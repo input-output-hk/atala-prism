@@ -1,4 +1,5 @@
 import { mockApi } from './__mocks__';
+import { getGroups } from './__mocks__/groups';
 
 import { getConnectionsPaginated, getMessagesForConnection } from './connector/connector';
 import {
@@ -15,6 +16,10 @@ import { getStudents, generateConnectionToken } from './credentials/studentsMana
 
 export { mockApi };
 export const api = {
+  // These are the mocked apis that will be hardcoded
+  // in the alpha version
+  getGroups,
+  // These are the real interactions with the backend
   generateConnectionToken,
   getConnectionsPaginated,
   createWallet,

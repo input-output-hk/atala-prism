@@ -73,6 +73,7 @@
       "search": "Search"
     },
     "createNewGroup": "Create New Group",
+    "onCreateNewGroupClick": "New Groups can not yet be created",
     "modal": {
       "title": "Delete Grop",
       "text": "Are you sure you want to delete the {{groupName}} group?"
@@ -300,7 +301,7 @@
         "number": "at least 1 number",
         "lowercase": "at least 1 lower case",
         "uppercase": "at least 1 upper case",
-        "minlength": "at leas 8 characters",
+        "minlength": "at least 8 characters",
         "nospaces": "no blank spaces"
       }
     },
@@ -397,6 +398,9 @@
     },
     "success": "Successfully updated the Settings"
   },
+  "menu": {
+    "logout": "Log out"
+  },
   "errors": {
     "routeDidNotMatch": "The route {{pathnameToShow}} did not match any page",
     "errorGetting": "An error occurred while getting {{model}}",
@@ -418,6 +422,7 @@
     },
     "updateSettings": "An error ocurred while updating the settings",
     "invalidSettings": "If the student pays for the credential an amount must be entered",
-    "invalidPassword": "The entered password doesn't match the wallet one"
+    "invalidPassword": "The entered password doesn't match the wallet one",
+    "logout": "The logout could not be completed"
   }
 }
