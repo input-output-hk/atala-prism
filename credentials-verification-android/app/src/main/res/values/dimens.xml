@@ -6,4 +6,5 @@
   <dimen name="internal_margin">8dp</dimen>
   <dimen name="titles_text_size">22sp</dimen>
   <dimen name="little_text">13sp</dimen>
+  <dimen name="small_text">10sp</dimen>
 </resources>

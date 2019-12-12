@@ -6,11 +6,11 @@
   android:id="@+id/issuer_card_view"
   android:layout_width="match_parent"
   android:layout_height="wrap_content"
-  android:layout_gravity="center"
-  android:layout_marginStart="@dimen/activity_default_side_margin"
   android:layout_marginTop="8dp"
-  android:layout_marginEnd="@dimen/activity_default_side_margin"
   android:layout_marginBottom="8dp"
+  android:layout_marginStart="@dimen/activity_default_side_margin"
+  android:layout_marginEnd="@dimen/activity_default_side_margin"
+  android:layout_gravity="center"
   android:background="@android:color/white"
   android:minHeight="64dp"
   app:cardCornerRadius="@dimen/card_corner_radius"
@@ -23,18 +23,6 @@
     android:layout_alignParentBottom="true"
     android:layout_centerHorizontal="true"
     android:layout_gravity="center">
-
-    <ImageView
-      android:id="@+id/card_arrow"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_centerVertical="true"
-      android:layout_marginEnd="8dp"
-      android:contentDescription="@string/empty_title"
-      android:src="@drawable/arrow_right_grey"
-      app:layout_constraintBottom_toBottomOf="parent"
-      app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintTop_toTopOf="parent" />
 
     <RelativeLayout
       android:id="@+id/card_logo_container"
@@ -65,7 +53,7 @@
       android:layout_marginEnd="24dp"
       android:textColor="@color/black"
       app:layout_constraintBottom_toBottomOf="parent"
-      app:layout_constraintEnd_toStartOf="@+id/card_arrow"
+      app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintStart_toEndOf="@+id/card_logo_container"
       app:layout_constraintTop_toTopOf="parent" />
 
