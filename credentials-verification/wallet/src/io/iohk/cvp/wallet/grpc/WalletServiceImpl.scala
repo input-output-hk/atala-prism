@@ -4,12 +4,14 @@ import java.util.concurrent.atomic.AtomicReference
 
 import com.google.protobuf.ByteString
 import io.iohk.cvp.crypto.ECSignature
+import io.iohk.cvp.wallet.ECKeyOperation._
+import io.iohk.cvp.wallet._
 import io.iohk.cvp.wallet.models.Wallet
 import io.iohk.cvp.wallet.protos.GetWalletStatusResponse.WalletStatus
 import io.iohk.cvp.wallet.protos.{ChangePassphraseResponse, _}
-import io.iohk.cvp.wallet._
-import io.iohk.cvp.wallet.ECKeyOperation._
+
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Success
 
 class WalletServiceImpl(wallet: Wallet)(implicit ec: ExecutionContext) extends protos.WalletServiceGrpc.WalletService {
   private val cachedWallet: AtomicReference[Option[WalletData]] = new AtomicReference(None)
@@ -70,24 +72,26 @@ class WalletServiceImpl(wallet: Wallet)(implicit ec: ExecutionContext) extends p
   }
 
   override def unlockWallet(request: UnlockWalletRequest): Future[UnlockWalletResponse] = {
-
-    Future {
-      cachedWallet.get()
-    }.flatMap {
-      case Some(_) => Future.successful(UnlockWalletResponse())
+    val walletFuture = cachedWallet.get() match {
+      case Some(wallet) => Future.successful(wallet)
       case None =>
-        walletServiceOrchestrator.loadWallet(request.passphrase).map {
-          case Some(data) => {
-            val walletData = protos.WalletData.parseFrom(data)
-            cachedWallet.set(Some(walletData))
-            UnlockWalletResponse()
-              .withOrganisationName(walletData.organisationName)
-              .withRole(walletData.role)
+        walletServiceOrchestrator
+          .loadWallet(request.passphrase)
+          .map(_.getOrElse(throw new RuntimeException("Wallet cannot be Unlocked")))
+          .map(protos.WalletData.parseFrom)
+          .andThen {
+            case Success(wallet) =>
+              cachedWallet.compareAndSet(None, Some(wallet))
+            case _ => ()
           }
-          case None => throw new RuntimeException("Wallet cannot be Unlocked")
-        }
     }
 
+    walletFuture.map { wallet =>
+      UnlockWalletResponse()
+        .withOrganisationName(wallet.organisationName)
+        .withRole(wallet.role)
+        .withLogo(wallet.logo)
+    }
   }
 
   override def lockWallet(request: LockWalletRequest): Future[LockWalletResponse] = {
