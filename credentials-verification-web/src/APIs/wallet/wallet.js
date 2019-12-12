@@ -1,32 +1,22 @@
 /* eslint import/no-unresolved: 0 */ // --> OFF
 import grpcWeb from 'grpc-web';
-import {
-  WalletServiceClient,
-  WalletServicePromiseClient
-} from '../../protos/wallet/wallet_grpc_web_pb';
+import { WalletServicePromiseClient } from '../../protos/wallet/wallet_grpc_web_pb';
 import {
   CreateWalletRequest,
   GetDIDRequest,
   LockWalletRequest,
   UnlockWalletRequest,
-  UnlockWalletResponse,
   GetWalletStatusRequest
 } from '../../protos/wallet/wallet_pb';
 import Logger from '../../helpers/Logger';
 import { USER_ROLE, ORGANISATION_NAME, ISSUER, VERIFIER } from '../../helpers/constants';
 
-const { REACT_APP_GRPC_CLIENT } = window._env_;
-const walletServiceClient = new WalletServiceClient(REACT_APP_GRPC_CLIENT, null, null);
+const { REACT_APP_WALLET_GRPC_CLIENT } = window._env_;
 const walletServicePromiseClient = new WalletServicePromiseClient(
-  REACT_APP_GRPC_CLIENT,
+  REACT_APP_WALLET_GRPC_CLIENT,
   null,
   null
 );
-
-const getDidCallback = (error, response) => {
-  if (error) return Logger.error('An error: ', error);
-  Logger.info('This is the response', response.getDid());
-};
 
 export const getDid = async () => {
   const didRequest = new GetDIDRequest();
