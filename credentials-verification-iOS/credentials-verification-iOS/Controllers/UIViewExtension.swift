@@ -23,7 +23,7 @@ extension UIView {
         leadingAnchor.constraint(equalTo: leading).isActive = true
         trailingAnchor.constraint(equalTo: trailing).isActive = true
     }
-    
+
     func fitSafeArea() {
         if let parentView = superview {
             self.anchor(

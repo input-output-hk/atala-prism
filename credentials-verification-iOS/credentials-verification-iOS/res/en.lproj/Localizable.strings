@@ -1,0 +1,179 @@
+//
+
+// <!-- App -->
+"app_name" = "Atala";
+"app_version" = "VERSION 1.0";
+
+// <!-- General use strings -->
+"ok" = "Ok";
+"yes" = "Yes";
+"no" = "No";
+"cancel" = "Cancel";
+"confirm" = "Confirm";
+"agree" = "Agree";
+"share" = "Share";
+"done" = "Done";
+"delete" = "Delete";
+"save" = "Save";
+"send" = "Send";
+"change" = "Change";
+"continue" = "Continue";
+"decline" = "Decline";
+"verify" = "Verify";
+"next" = "Next";
+
+ // <!-- Default errors and loadings -->
+"coming_soon_btn" = "COMING SOON";
+"coming_soon_title" = "Coming soon...";
+"error_generic_title" = "Error";
+"error_generic_error" = "An error occurred. Try again.";
+"error_connection_error" = "No connection found. Try again.";
+"error_connection_retry" = "Retry";
+"loading_title" = "Loading";
+"loading_message" = "Please wait…";
+"success_generic_title" = "Success!";
+"empty_list_title" = "There is no data to show.";
+"empty_list_subtitle" = "Add some & try again.";
+"empty_list_retry" = "Retry";
+"dialog_logout_confirm_title" = "Logout";
+"dialog_logout_confirm_message" = "Are you sure you want to logout?";
+
+
+// <!-- Dashboard -->
+"tab_home" = "Home";
+"tab_profile" = "Profile";
+"tab_connections" = "Connections";
+"tab_wallet" = "Wallet";
+"tab_settings" = "Settings";
+
+// <!-- Connections -->
+"connections_nav_title" = "Connections";
+"connections_empty_title" = "Connect to a University, Public Registry or potential Employers";
+"connections_empty_subtitle" = "You can receive and send your digital certificates";
+"connections_empty_button" = "Scan a QR";
+"connections_scan_qr_nav_title" = "Scan QR";
+"connections_scan_qr_error" = "QR Code not recognized. Try again.";
+"connections_scan_qr_confirm_button" = "Connect!";
+"connections_scan_qr_confirm_title_type_0" = "University Name";
+"connections_scan_qr_confirm_title_type_1" = "Employer Name";
+"connections_scan_qr_confirm_error" = "Failed to confirm connection. Try again.";
+"connections_universities" = "Universities";
+"connections_employers" = "Employers";
+"connections_more_info" = "More Info";
+
+// <!-- Home -->
+"home_nav_title" = "My Credentials";
+"home_degrees_new_hello" = "Hello %1$@!";
+"home_degrees_new_title" = "You have new credentials to confirm";
+"home_degrees_new_view_btn" = "VIEW";
+"home_document_title" = "National ID Card";
+"home_document_identity_number" = "Identity Number";
+"home_document_nationality" = "Nationality";
+"home_document_full_name" = "Full Name";
+"home_document_date_of_birth" = "Date of Birth";
+"home_detail_title_type_1" = "University Degree";
+"home_detail_title_type_2" = "School Degree";
+"home_detail_title_new" = "Add Credential";
+"home_detail_degree_name" = "Degree Name";
+"home_detail_start_date" = "Start Date";
+"home_detail_graduation_date" = "Graduation Date";
+"home_detail_share_button" = "Share!";
+"home_detail_share_success" = "Successfully shared!";
+"home_empty_title" = "Connect to a University, Public Registry or potential Employers";
+"home_empty_subtitle" = "You can receive and send your digital certificates";
+
+// <!-- Profile -->
+"profile_nav_title" = "Profile";
+"profile_tab_personal" = "Personal";
+"profile_tab_qr_code" = "QR Code";
+"profile_field_title_fullname" = "Full Name";
+"profile_field_title_country" = "Country";
+"profile_field_title_email" = "Email";
+"profile_field_title_dateofbirth" = "Date of Birth";
+"profile_edit_nav_title" = "Edit Profile";
+
+// <!-- Settings -->
+"settings_nav_title" = "Settings";
+"settings_backup_title" = "Backup Data";
+"settings_backup_subtitle" = "Please create backup now!";
+"settings_security_title" = "Security";
+"settings_security_subtitle" = "Secure your app using Biometrics";
+"settings_pin_title" = "PIN Code";
+"settings_pin_subtitle" = "Change the code to unlock this app";
+"settings_support_title" = "Support";
+"settings_support_subtitle" = "Do you have any doubts?";
+"settings_about_title" = "About";
+"settings_about_subtitle" = "Legal, Versions and Network Info";
+
+// <!-- Login: Welcome -->
+"welcome_title" = "Welcome";
+"welcome_button" = "Get Started";
+
+// <!-- Login: Tutorial -->
+"tutorial_1_title" = "Own and share your achievements";
+"tutorial_1_subtitle" = "Securely store all your important documents in one place.";
+"tutorial_1_button" = "Get Started";
+"tutorial_2_title" = "Take control of your personal information";
+"tutorial_2_subtitle" = "Secure your personal information and only share what you need to. ";
+"tutorial_2_button" = "Continue";
+"tutorial_3_title" = "Join a next generation payment network";
+"tutorial_3_subtitle" = "Transact everywhere privately, securely and conveniently";
+"tutorial_3_button_register" = "Create Account";
+"tutorial_3_button_login" = "Restore Account";
+
+// <!-- Login: Terms -->
+"terms_lead" = "Account Creation";
+"terms_title" = "Terms \& Conditions";
+"terms_subtitle" = "To continue creating your account you must accept the following terms and conditions.";
+"terms_accept_terms" = "<b><font color=#000000>Accept </font><font color=#FF002D>Terms and Conditions</font></b>";
+"terms_accept_privacy" = "<b><font color=#000000>Accept </font><font color=#FF002D>Privacy Policy Agreement</font></b>";
+
+// <!-- Login: Register -->
+"register_nav_title" = "Your Seed Phrase";
+"register_subtitle" = "Your seed phrase is your personal key that gives you access to your account.";
+"register_warning" = "Without it you will not be able to access any of your records or funds in case you lose your device or quite the app.\n\nPlease store your seed phrase securely before proceeding.";
+"register_accept_terms" = "I understand that if I lose my seed phrase that I will not be able to access my account.";
+"register_seed_text" = "%1$d.%2$@";
+
+// <!-- Login: Login -->
+"login_nav_title" = "Verify Seed Phrase";
+"login_subtitle" = "Enter the correct words of your seed phrase bellow.";
+"login_input_title" = "Word \#%1$d";
+"login_input_title_empty" = "Word";
+
+// <!-- Success -->
+"success_register_title" = "Congrats!\nYour account has been created";
+"success_register_subtitle" = "Continue connecting with your\nUniversity or School";
+"success_register_button" = "Continue";
+"success_email_support_title" = "Your message has been sent successfully!";
+"success_email_support_subtitle" = "Someone from our Support Team will contact you as soon as possible";
+"success_email_support_button" = "Got it";
+"success_payment_title" = "Congrats!";
+"success_payment_subtitle" = "Your credential payment has been made successfully";
+"success_payment_button" = "Continue";
+
+// <!-- Wallet -->
+"wallet_initial_nav_title" = "Payments";
+"wallet_initial_row_credit_cards" = "Credit Cards";
+"wallet_initial_row_digital_lari" = "Digital Lari";
+"wallet_initial_row_cash" = "Cash";
+"wallet_initial_row_wire_transfer" = "Wire Transfer";
+"wallet_history_nav_title" = "Payment History";
+"wallet_history_status_completed" = "Completed";
+"wallet_history_status_pending" = "Pending";
+"wallet_history_empty_title" = "Empty Payment History";
+"wallet_history_empty_subtitle" = "All your payments will be listed here";
+"wallet_history_empty_button" = "Go Back";
+"wallet_cards_empty_title" = "No Credit Cards";
+"wallet_cards_empty_subtitle" = "Please link a credit card\nto your account";
+"wallet_cards_empty_button" = "Add New Payment Method";
+
+// <!-- Credential Pay -->
+"credentialpay_nav_title" = "Payment";
+"credentialpay_main_title" = "Receive Credential";
+"credentialpay_main_subtitle" = "In order to receive your digital credential please pay issuance fee";
+"credentialpay_amount" = "Amount";
+"credentialpay_card_number" = "Credit Card Number";
+"credentialpay_card_expiration" = "Expiry Date MM/YY";
+"credentialpay_card_cvv" = "CVV Number";
+"credentialpay_card_name" = "Cardholder Name";

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15400" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <dependencies>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15404"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="detailProperty" rowHeight="415" id="DcP-8Z-qdh" customClass="DetailPropertyViewCell" customModule="credentials_verification_iOS" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="569" height="415"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="DcP-8Z-qdh" id="lFR-Xv-6il">
+                <rect key="frame" x="0.0" y="0.0" width="569" height="415"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <view contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zhh-di-JlT">
+                        <rect key="frame" x="24" y="0.0" width="521" height="62"/>
+                        <color key="backgroundColor" red="0.46666666670000001" green="0.52549019610000003" blue="0.61960784310000006" alpha="0.20000000000000001" colorSpace="custom" customColorSpace="displayP3"/>
+                    </view>
+                    <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="vue-cw-UPj">
+                        <rect key="frame" x="24" y="0.0" width="521" height="62"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="6" adjustsLetterSpacingToFitWidth="YES" translatesAutoresizingMaskIntoConstraints="NO" id="yLV-RL-oVj">
+                                <rect key="frame" x="21" y="13" width="37" height="11"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="9"/>
+                                <color key="textColor" white="1" alpha="0.69999999999999996" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <nil key="highlightedColor"/>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="appWhite"/>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="localized" value="home_detail_start_date"/>
+                                </userDefinedRuntimeAttributes>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" minimumFontSize="9" adjustsLetterSpacingToFitWidth="YES" translatesAutoresizingMaskIntoConstraints="NO" id="HqE-WA-z67">
+                                <rect key="frame" x="21" y="30" width="37" height="17"/>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="14"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="appWhite"/>
+                                </userDefinedRuntimeAttributes>
+                            </label>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ISw-dQ-Usj">
+                                <rect key="frame" x="21" y="60" width="479" height="1"/>
+                                <color key="backgroundColor" red="0.96078431372549022" green="0.96078431372549022" blue="0.96078431372549022" alpha="0.20000000000000001" colorSpace="custom" customColorSpace="displayP3"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="1" id="Ptn-uX-FOm"/>
+                                </constraints>
+                            </view>
+                        </subviews>
+                        <color key="backgroundColor" red="0.14901960780000001" green="0.13725490200000001" blue="0.14117647059999999" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                        <constraints>
+                            <constraint firstItem="yLV-RL-oVj" firstAttribute="leading" secondItem="vue-cw-UPj" secondAttribute="leading" constant="21" id="Igj-QN-3fG"/>
+                            <constraint firstItem="ISw-dQ-Usj" firstAttribute="top" secondItem="HqE-WA-z67" secondAttribute="bottom" constant="13" id="RJr-Wz-WNI"/>
+                            <constraint firstItem="HqE-WA-z67" firstAttribute="leading" secondItem="yLV-RL-oVj" secondAttribute="leading" id="cmb-xu-9F9"/>
+                            <constraint firstAttribute="bottom" secondItem="ISw-dQ-Usj" secondAttribute="bottom" constant="1" id="cqv-3j-iiz"/>
+                            <constraint firstItem="HqE-WA-z67" firstAttribute="trailing" secondItem="yLV-RL-oVj" secondAttribute="trailing" id="dOy-Yp-thw"/>
+                            <constraint firstItem="ISw-dQ-Usj" firstAttribute="leading" secondItem="yLV-RL-oVj" secondAttribute="leading" id="l6C-sw-Vcs"/>
+                            <constraint firstItem="HqE-WA-z67" firstAttribute="top" secondItem="yLV-RL-oVj" secondAttribute="bottom" constant="6" id="luZ-lp-GxR"/>
+                            <constraint firstItem="yLV-RL-oVj" firstAttribute="top" secondItem="vue-cw-UPj" secondAttribute="top" constant="13" id="n1v-8J-nKY"/>
+                            <constraint firstAttribute="trailing" secondItem="ISw-dQ-Usj" secondAttribute="trailing" constant="21" id="xW5-CD-5fK"/>
+                        </constraints>
+                        <userDefinedRuntimeAttributes>
+                            <userDefinedRuntimeAttribute type="string" keyPath="backgroundColorIB" value="appPropertyGrey"/>
+                        </userDefinedRuntimeAttributes>
+                    </view>
+                </subviews>
+                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                <constraints>
+                    <constraint firstItem="zhh-di-JlT" firstAttribute="width" secondItem="vue-cw-UPj" secondAttribute="width" id="4y4-Ge-oG5"/>
+                    <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="vue-cw-UPj" secondAttribute="bottom" id="Fra-jr-k5r"/>
+                    <constraint firstItem="zhh-di-JlT" firstAttribute="top" secondItem="vue-cw-UPj" secondAttribute="top" id="R5d-eV-58x"/>
+                    <constraint firstItem="vue-cw-UPj" firstAttribute="leading" secondItem="lFR-Xv-6il" secondAttribute="leading" constant="24" id="T06-sQ-dVd"/>
+                    <constraint firstAttribute="trailing" secondItem="vue-cw-UPj" secondAttribute="trailing" constant="24" id="Zpw-D1-LKJ"/>
+                    <constraint firstItem="zhh-di-JlT" firstAttribute="bottom" secondItem="vue-cw-UPj" secondAttribute="bottom" id="dyI-QA-bsv"/>
+                    <constraint firstItem="vue-cw-UPj" firstAttribute="top" secondItem="lFR-Xv-6il" secondAttribute="top" id="eV5-Fc-eD7"/>
+                    <constraint firstItem="zhh-di-JlT" firstAttribute="centerX" secondItem="vue-cw-UPj" secondAttribute="centerX" id="fdf-pm-3Ke"/>
+                </constraints>
+            </tableViewCellContentView>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <connections>
+                <outlet property="labelSubtitle" destination="HqE-WA-z67" id="XHc-vH-O6J"/>
+                <outlet property="labelTitle" destination="yLV-RL-oVj" id="75z-WF-p3A"/>
+            </connections>
+            <point key="canvasLocation" x="-54.347826086956523" y="131.58482142857142"/>
+        </tableViewCell>
+    </objects>
+</document>

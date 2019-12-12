@@ -1,0 +1,76 @@
+External Libraries and Licenses:
+
+Name: Alerts & Pickers
+Source: https://github.com/dillidon/alerts-and-pickers
+License: https://github.com/dillidon/alerts-and-pickers/blob/new/LICENSE
+License TL;DR: MIT License
+
+Name: Alamofire
+Source: https://github.com/Alamofire/Alamofire
+License: https://github.com/Alamofire/Alamofire/blob/master/LICENSE
+License TL;DR: MIT License
+
+Name: AlamofireImage
+Source: https://github.com/Alamofire/AlamofireImage
+License: https://github.com/Alamofire/AlamofireImage/blob/master/LICENSE
+License TL;DR: MIT License
+
+Name: AlamofireObjectMapper
+Source: https://github.com/tristanhimmelman/AlamofireObjectMapper
+License: https://github.com/tristanhimmelman/AlamofireObjectMapper/blob/master/LICENSE
+License TL;DR: MIT License
+
+Name: ObjectMapper
+Source: https://github.com/tristanhimmelman/ObjectMapper
+License: https://github.com/tristanhimmelman/ObjectMapper/blob/master/LICENSE
+License TL;DR: MIT License
+
+Name: SwiftGRPC
+Source: https://github.com/grpc/grpc-swift
+License: https://github.com/grpc/grpc-swift/blob/master/LICENSE
+License TL;DR: Apache License 2.0
+
+Name: SwiftProtobuf
+Source: https://github.com/apple/swift-protobuf
+License: https://github.com/apple/swift-protobuf/blob/master/LICENSE.txt
+License TL;DR: Apache License 2.0
+
+Name: SwiftyBeaver
+Source: https://github.com/SwiftyBeaver/SwiftyBeaver
+License: https://github.com/SwiftyBeaver/SwiftyBeaver/blob/master/LICENSE
+License TL;DR: MIT License
+
+Name: Tabman
+Source: https://github.com/uias/Tabman
+License: https://github.com/uias/Tabman/blob/master/LICENSE
+License TL;DR: MIT License
+
+Name: MBProgressHUD
+Source: https://github.com/jdg/MBProgressHUD
+License: https://github.com/jdg/MBProgressHUD/blob/master/LICENSE
+License TL;DR: MIT License
+
+Name: Presentr
+Source: https://github.com/IcaliaLabs/Presentr
+License: https://github.com/IcaliaLabs/Presentr/blob/master/LICENSE
+License TL;DR: MIT License
+
+Name: Toast-Swift
+Source: https://github.com/scalessec/Toast-Swift
+License: https://github.com/scalessec/Toast-Swift/blob/master/LICENSE
+License TL;DR: MIT License
+
+Name: Fabric
+Source: https://fabric.io
+License: http://get.fabric.io/terms/opensource.txt
+License TL;DR: Apache License 2.0
+
+Name: Crashlytics
+Source: http://try.crashlytics.com/
+License: http://get.fabric.io/terms/opensource.txt
+License TL;DR: Apache License 2.0
+
+Name: Firebase
+Source: https://firebase.google.com/
+License: https://firebase.google.com/terms
+License TL;DR: Custom license
