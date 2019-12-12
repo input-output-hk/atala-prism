@@ -224,7 +224,8 @@ trait CVPDockerModule extends Module { self: JavaModule =>
   }
 
   // This convention of using the ticket number for the image version is also encoded into terraform env.sh and the credentials-verification-web build.
-  def version: String = os.proc("git", "rev-parse", "--abbrev-ref", "HEAD").call().out.trim.replaceFirst("(ATA-\\d+).*", "$1").toLowerCase
+  def version: String =
+    os.proc("git", "rev-parse", "--abbrev-ref", "HEAD").call().out.trim.replaceFirst("(ATA-\\d+).*", "$1").toLowerCase
 
   def cvpDockerConfig: CVPDockerConfig
 

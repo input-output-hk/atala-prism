@@ -5,7 +5,6 @@ import java.security.PublicKey
 import com.google.protobuf.ByteString
 import io.iohk.cvp.crypto.ECKeys
 import io.iohk.node.errors.NodeError
-import io.iohk.node.models.{DIDPublicKey, DIDSuffix}
 import io.iohk.node.models.KeyUsage.{AuthenticationKey, CommunicationKey, IssuingKey, MasterKey}
 import io.iohk.node.services.DIDDataService
 import io.iohk.nodenew.geud_node_new.NodeServiceGrpc.NodeService
@@ -16,10 +15,10 @@ import scala.concurrent.{ExecutionContext, Future}
 class NodeServiceImpl(didDataService: DIDDataService)(implicit ec: ExecutionContext) extends NodeService {
   override def getDidDocument(request: proto.GetDidDocumentRequest): Future[proto.GetDidDocumentResponse] = {
 
-    didDataService.findByDIDSuffix(DIDSuffix(request.did)).value.flatMap {
+    didDataService.findByDID(request.did).value.flatMap {
       case Left(err: NodeError) => Future.failed(err.toStatus.asRuntimeException())
       case Right(didData) =>
-        Future.successful(proto.GetDidDocumentResponse(Some(toDIDData(didData.didSuffix.suffix, didData.keys))))
+        Future.successful(proto.GetDidDocumentResponse(Some(toDIDData(didData))))
     }
   }
 
@@ -29,13 +28,16 @@ class NodeServiceImpl(didDataService: DIDDataService)(implicit ec: ExecutionCont
 
   override def revokeCredential(request: proto.SignedAtalaOperation): Future[proto.RevokeCredentialResponse] = ???
 
-  private def toDIDData(id: String, didPublicKeys: Seq[DIDPublicKey]) = {
+  private def toDIDData(didData: models.DIDData) = {
+    val did = s"did:atala:${didData.didSuffix.suffix}"
     proto
       .DIDData()
-      .withId(id)
-      .withPublicKeys(didPublicKeys.map(key =>
-        toProtoPublicKey(key.keyId, toECKeyData(key.key), toProtoKeyUsage(key.keyUsage))))
+      .withId(did)
+      .withPublicKeys(
+        didData.keys.map(key => toProtoPublicKey(key.keyId, toECKeyData(key.key), toProtoKeyUsage(key.keyUsage)))
+      )
   }
+
   private def toProtoPublicKey(id: String, ecKeyData: proto.ECKeyData, keyUsage: proto.KeyUsage): proto.PublicKey = {
     proto
       .PublicKey()
