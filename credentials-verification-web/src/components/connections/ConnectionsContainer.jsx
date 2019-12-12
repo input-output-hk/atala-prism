@@ -46,7 +46,7 @@ const ConnectionsContainer = ({ api }) => {
     setField(value);
   };
 
-  const inviteHolder = studentId => api.generateConnectionToken(null, studentId);
+  const inviteHolder = studentId => api.generateConnectionToken(undefined, studentId);
 
   const tableProps = {
     subjects,

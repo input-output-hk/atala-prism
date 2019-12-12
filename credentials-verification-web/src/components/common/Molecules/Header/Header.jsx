@@ -1,9 +1,10 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { Row, Col } from 'antd';
 import './_style.scss';
 import UserAvatar from '../../Atoms/UserAvatar/UserAvatar';
 
-const Header = () => (
+const Header = ({ api: { lockWallet } }) => (
   <Row type="flex" align="middle" className="HeaderContainer">
     <Col xs={10} sm={12} md={12} lg={12}>
       <a href="/">
@@ -23,9 +24,15 @@ const Header = () => (
           alt="Free University Tbilisi"
         />
       </Col>
-      <UserAvatar />
+      <UserAvatar lockWallet={lockWallet} />
     </Col>
   </Row>
 );
+
+Header.propTypes = {
+  api: PropTypes.shape({
+    lockWallet: PropTypes.func
+  }).isRequired
+};
 
 export default Header;

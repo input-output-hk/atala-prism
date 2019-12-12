@@ -82,17 +82,6 @@ export const unlockWallet = async passphrase => {
   return status;
 };
 
-const MISSING = 'MISSING';
-const UNLOCKED = 'UNLOCKED';
-const LOCKED = 'LOCKED';
-const WalletStatuses = {
-  0: MISSING,
-  1: UNLOCKED,
-  2: LOCKED
-};
-
-const translateStatus = status => WalletStatuses[status];
-
 export const isWalletUnlocked = async () => {
   const status = await getWalletStatus();
   return status === 1;

@@ -17,9 +17,9 @@ import { ISSUER, VERIFIER, USER_ROLE } from '../../../../helpers/constants';
 
 const { Sider } = Layout;
 
-const SideMenu = ({ location: pathname }) => {
+const SideMenu = ({ location: { pathname } }) => {
   const icons = [
-    { icon: iconMenu, path: '', restrictedTo: [ISSUER, VERIFIER] },
+    { icon: iconMenu, path: '/', restrictedTo: [ISSUER, VERIFIER] },
     { icon: connectionsIcon, path: '/connections', restrictedTo: [ISSUER, VERIFIER] },
     { icon: iconGroups, path: '/groups', restrictedTo: [ISSUER] },
     { icon: iconCredentials, path: '/credentials', restrictedTo: [ISSUER] },

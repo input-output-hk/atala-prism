@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { Avatar, Col } from 'antd';
 import SettingsMenu from '../SettingsMenu/SettingsMenu';
 
@@ -6,7 +7,7 @@ import './_style.scss';
 import { ORGANISATION_NAME } from '../../../../helpers/constants';
 import { getInitials } from '../../../../helpers/genericHelpers';
 
-const UserAvatar = () => {
+const UserAvatar = ({ lockWallet }) => {
   const organisationName = localStorage.getItem(ORGANISATION_NAME);
 
   return (
@@ -17,9 +18,13 @@ const UserAvatar = () => {
         </Avatar>
         <p className="UserLabel">{organisationName}</p>
       </Col>
-      <SettingsMenu />
+      <SettingsMenu lockWallet={lockWallet} />
     </Col>
   );
+};
+
+UserAvatar.propTypes = {
+  lockWallet: PropTypes.func.isRequired
 };
 
 export default UserAvatar;

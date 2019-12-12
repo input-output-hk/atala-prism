@@ -27,7 +27,7 @@ const RegistrationFooter = ({ next, previous, requiresAgreement }) => {
             onClick: next,
             className: 'theme-primary'
           }}
-          buttonText={t(`registration.next${requiresAgreement ? 'AndAgree' : ''}`)}
+          buttonText={t(`registration.${requiresAgreement ? 'nextAndAgree' : 'next'}`)}
         />
       </div>
     </div>

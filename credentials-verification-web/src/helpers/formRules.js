@@ -50,7 +50,7 @@ const validations = [
   { name: 'number', regex: new RegExp('(?=.*[0-9])') }, // At least 1 number
   { name: 'lowercase', regex: new RegExp('(?=.*[a-z])') }, // At least 1 lower case
   { name: 'uppercase', regex: new RegExp('(?=.*[A-Z])') }, // At least 1 upper case
-  { name: 'minlength', regex: new RegExp('.{8,25}') }, // At leas 8 characters
+  { name: 'minlength', regex: new RegExp('.{8,}') }, // At leas 8 characters
   { name: 'nospaces', regex: new RegExp('^((?! ).)*$') } // No blank spaces
 ];
 
