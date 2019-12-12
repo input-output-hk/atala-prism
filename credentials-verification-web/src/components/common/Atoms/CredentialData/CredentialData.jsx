@@ -5,7 +5,7 @@ import CellRenderer from '../CellRenderer/CellRenderer';
 import freeUniLgo from '../../../../images/FreeUniLogo.png';
 import './_style.scss';
 
-const CredentialData = ({ title, university, award, student, startDate, graduationDate }) => (
+const CredentialData = ({ title, university, student, startDate, graduationDate }) => (
   <Col lg={12} xs={24} className="CredentialTemplate">
     <div className="CredentialHeader">
       <CellRenderer componentName="newCredential" title="degreeName" value={title} />
@@ -13,8 +13,6 @@ const CredentialData = ({ title, university, award, student, startDate, graduati
     </div>
     <div className="CredentialContent">
       <CellRenderer componentName="newCredential" title="universityName" value={university} />
-      <hr />
-      <CellRenderer componentName="newCredential" title="award" value={award} />
       <hr />
       <CellRenderer componentName="newCredential" title="fullName" value={student} />
       <hr />
@@ -34,14 +32,9 @@ const CredentialData = ({ title, university, award, student, startDate, graduati
   </Col>
 );
 
-CredentialData.defaultProps = {
-  award: ''
-};
-
 CredentialData.propTypes = {
   title: PropTypes.string.isRequired,
   university: PropTypes.string.isRequired,
-  award: PropTypes.string,
   student: PropTypes.string.isRequired,
   startDate: PropTypes.string.isRequired,
   graduationDate: PropTypes.string.isRequired

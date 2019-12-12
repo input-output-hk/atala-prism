@@ -6,7 +6,6 @@ import CredentialData from '../../../common/Atoms/CredentialData/CredentialData'
 import {
   EXAMPLE_DEGREE_NAME,
   EXAMPLE_UNIVERSITY_NANE,
-  EXAMPLE_AWARD,
   EXAMPLE_FULL_NAME,
   EXAMPLE_START_DATE,
   EXAMPLE_GRADUATION_DATE
@@ -21,7 +20,6 @@ const NewCredentialCreation = ({ savePicture, formRef, credentialValues }) => (
       <CredentialData
         title={EXAMPLE_DEGREE_NAME}
         university={EXAMPLE_UNIVERSITY_NANE}
-        award={EXAMPLE_AWARD}
         student={EXAMPLE_FULL_NAME}
         startDate={dayMonthYearFormatter(EXAMPLE_START_DATE)}
         graduationDate={dayMonthYearFormatter(EXAMPLE_GRADUATION_DATE)}

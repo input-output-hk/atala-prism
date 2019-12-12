@@ -12,7 +12,6 @@ const Connection = ({
   type,
   date,
   university,
-  award,
   student,
   graduationDate,
   setConnectionInfo
@@ -37,7 +36,6 @@ const Connection = ({
                 title: type,
                 startDate: date,
                 university,
-                award,
                 student,
                 graduationDate
               })

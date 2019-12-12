@@ -60,7 +60,6 @@ const CredentialListDetail = ({ user: { icon, name: userName }, transactions, da
               date={transaction.date}
               setConnectionInfo={transaction.setConnectionInfo}
               university={transaction.university}
-              award={transaction.award}
               student={transaction.student}
               graduationDate={transaction.graduationDate}
             />

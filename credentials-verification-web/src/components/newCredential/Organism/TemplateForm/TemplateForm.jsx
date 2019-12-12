@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { DatePicker, Input, Col } from 'antd';
+import { DatePicker, Input } from 'antd';
 import moment from 'moment';
 import PropTypes from 'prop-types';
 import { noEmptyInput, futureDate, pastDate, minOneElement } from '../../../../helpers/formRules';
@@ -24,17 +24,13 @@ const getInput = (key, initialValue, t) => ({
 
 const TemplateForm = React.forwardRef(
   (
-    {
-      savePicture,
-      credentialValues: { award, degreeName, logoUniversity, startDate, graduationDate }
-    },
+    { savePicture, credentialValues: { degreeName, logoUniversity, startDate, graduationDate } },
     ref
   ) => {
     const { t } = useTranslation();
 
     const items = [
       getInput('degreeName', degreeName, t),
-      getInput('award', award, t),
       {
         fieldDecoratorData: {
           rules: [
@@ -105,8 +101,7 @@ TemplateForm.propTypes = {
     startDate: PropTypes.instanceOf(moment),
     graduationDate: PropTypes.instanceOf(moment),
     logoUniversity: PropTypes.arrayOf(PropTypes.shape),
-    degreeName: PropTypes.string,
-    award: PropTypes.string
+    degreeName: PropTypes.string
   }).isRequired
 };
 

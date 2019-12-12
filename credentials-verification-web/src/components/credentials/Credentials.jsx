@@ -36,7 +36,6 @@ const Credentials = ({ showEmpty, tableProps, filterProps }) => {
     const credentialToShow = {
       title,
       university: '', // For the moment the credential does not have this
-      award: '', // For the moment the credential does not have this
       student: student ? student.name : '',
       startDate: admissionDate,
       graduationDate: 34 // For the moment the credential does not have this
