@@ -20,7 +20,15 @@ static_resources:
                     - name: local_service
                       domains: ["*"]
                       routes:
-                        - match: { prefix: "/io.iohk.connector.ConnectorService" }
+                        - match: { prefix: "/io.iohk.cvp.connector.ConnectorService" }
+                          route:
+                            cluster: connector_service
+                            max_grpc_timeout: 0s
+                        - match: { prefix: "/io.iohk.cvp.cmanager.CredentialsService" }
+                          route:
+                            cluster: connector_service
+                            max_grpc_timeout: 0s
+                        - match: { prefix: "/io.iohk.cvp.cmanager.StudentsService" }
                           route:
                             cluster: connector_service
                             max_grpc_timeout: 0s
