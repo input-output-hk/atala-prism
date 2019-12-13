@@ -9,7 +9,7 @@ import {
   GetWalletStatusRequest
 } from '../../protos/wallet/wallet_pb';
 import Logger from '../../helpers/Logger';
-import { USER_ROLE, ORGANISATION_NAME, ISSUER, VERIFIER } from '../../helpers/constants';
+import { USER_ROLE, ORGANISATION_NAME, ISSUER, VERIFIER, LOGO } from '../../helpers/constants';
 
 const { REACT_APP_WALLET_GRPC_CLIENT } = window._env_;
 const walletServicePromiseClient = new WalletServicePromiseClient(
@@ -28,12 +28,39 @@ export const getDid = async () => {
   return did;
 };
 
-export const createWallet = async passphrase => {
+const createAndPopulateRequest = ({ passphrase, organisationName, role, file }) => {
   const createWalletRequest = new CreateWalletRequest();
-  createWalletRequest.setPassphrase(passphrase);
-  const response = await walletServicePromiseClient.createWallet(createWalletRequest);
+  const encodedLogo = new TextEncoder().encode(file);
 
-  return response.toObject();
+  const roleDictionary = {
+    ISSUER: 0,
+    VERIFIER: 1
+  };
+
+  createWalletRequest.setPassphrase(passphrase);
+  createWalletRequest.setOrganisationname(organisationName);
+  createWalletRequest.setRole(roleDictionary[role]);
+  createWalletRequest.setLogo(encodedLogo);
+
+  return createWalletRequest;
+};
+
+export const createWallet = async (passphrase, organisationName, role, file) => {
+  try {
+    const createWalletRequest = createAndPopulateRequest({
+      passphrase,
+      organisationName,
+      role,
+      file
+    });
+
+    const response = await walletServicePromiseClient.createWallet(createWalletRequest);
+
+    return response.toObject();
+  } catch (e) {
+    Logger.info('Error at wallet creation', e);
+    throw new Error(e);
+  }
 };
 
 export const getWalletStatus = async () => {
@@ -65,17 +92,18 @@ const UserRoles = {
 
 const translateUserRole = role => UserRoles[role];
 
-const setUserData = (role, organisationName) => {
+const setUserData = ({ role, organisationname, logo }) => {
   const roleAsString = translateUserRole(role);
   localStorage.setItem(USER_ROLE, roleAsString);
-  localStorage.setItem(ORGANISATION_NAME, organisationName);
+  localStorage.setItem(ORGANISATION_NAME, organisationname);
+  localStorage.setItem(LOGO, logo);
 };
 
 export const unlockWallet = async passphrase => {
   const unlockRequest = new UnlockWalletRequest();
   unlockRequest.setPassphrase(passphrase);
   const unlockResponse = await walletServicePromiseClient.unlockWallet(unlockRequest, null);
-  setUserData(unlockResponse.getRole(), unlockResponse.getOrganisationname());
+  setUserData(unlockResponse.toObject());
 
   const status = await getWalletStatus();
   Logger.info(`status ${status}`);

@@ -3,6 +3,7 @@ import { CredentialsServicePromiseClient } from '../../protos/credentials/creden
 import {
   GetCredentialsRequest,
   CreateCredentialRequest,
+  RegisterRequest,
   Date
 } from '../../protos/connector/credentialsManager_pb';
 import {
@@ -303,4 +304,28 @@ export const getCredentialBinary = async (connectionData, studentData) => {
   Logger.info('Credential to be sent: ', sentCredential.toObject());
 
   return sentCredential.serializeBinary();
+};
+
+export const registerUser = async (name, did, file) => {
+  try {
+    const registerRequest = new RegisterRequest();
+    const logo = new TextEncoder().encode(file);
+
+    registerRequest.setName(name);
+    registerRequest.setDid(did);
+    registerRequest.setLogo(logo);
+
+    console.log('before the meme');
+
+    const response = await credentialsService.register(registerRequest, {
+      userId: issuerId
+    });
+
+    const { id } = response.toObject();
+
+    return id;
+  } catch (e) {
+    console.log('error at', e);
+    throw e;
+  }
 };

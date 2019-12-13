@@ -73,6 +73,86 @@ proto.io.iohk.cvp.cmanager.CredentialsServicePromiseClient =
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
+ *   !proto.io.iohk.cvp.cmanager.RegisterRequest,
+ *   !proto.io.iohk.cvp.cmanager.RegisterResponse>}
+ */
+const methodDescriptor_CredentialsService_Register = new grpc.web.MethodDescriptor(
+  '/io.iohk.cvp.cmanager.CredentialsService/Register',
+  grpc.web.MethodType.UNARY,
+  proto.io.iohk.cvp.cmanager.RegisterRequest,
+  proto.io.iohk.cvp.cmanager.RegisterResponse,
+  /**
+   * @param {!proto.io.iohk.cvp.cmanager.RegisterRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.cvp.cmanager.RegisterResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.io.iohk.cvp.cmanager.RegisterRequest,
+ *   !proto.io.iohk.cvp.cmanager.RegisterResponse>}
+ */
+const methodInfo_CredentialsService_Register = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.io.iohk.cvp.cmanager.RegisterResponse,
+  /**
+   * @param {!proto.io.iohk.cvp.cmanager.RegisterRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.cvp.cmanager.RegisterResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.io.iohk.cvp.cmanager.RegisterRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.cvp.cmanager.RegisterResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.cvp.cmanager.RegisterResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.io.iohk.cvp.cmanager.CredentialsServiceClient.prototype.register =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/io.iohk.cvp.cmanager.CredentialsService/Register',
+      request,
+      metadata || {},
+      methodDescriptor_CredentialsService_Register,
+      callback);
+};
+
+
+/**
+ * @param {!proto.io.iohk.cvp.cmanager.RegisterRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.io.iohk.cvp.cmanager.RegisterResponse>}
+ *     A native promise that resolves to the response
+ */
+proto.io.iohk.cvp.cmanager.CredentialsServicePromiseClient.prototype.register =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/io.iohk.cvp.cmanager.CredentialsService/Register',
+      request,
+      metadata || {},
+      methodDescriptor_CredentialsService_Register);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
  *   !proto.io.iohk.cvp.cmanager.CreateCredentialRequest,
  *   !proto.io.iohk.cvp.cmanager.CreateCredentialResponse>}
  */

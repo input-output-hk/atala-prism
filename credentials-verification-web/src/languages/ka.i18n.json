@@ -243,8 +243,8 @@
       "startDate": "Start Date",
       "graduationDate": "Graduation Date",
       "logoUniversity": "University Logo",
-      "logoHint": "Recomended Image Size: 80x80px. Format: PNG or JPG.",
-      "uploadButton": "Upload a logo for the university"
+      "logoHint": "Recommended Image Size: 80x80px. Format: PNG or JPG.",
+      "uploadButton": "Upload logo"
     },
     "save": "Create Credentials",
     "savingSuccess": "Credential successfully save",

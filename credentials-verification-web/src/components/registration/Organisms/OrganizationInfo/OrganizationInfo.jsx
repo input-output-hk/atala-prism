@@ -4,15 +4,17 @@ import { Input, Select } from 'antd';
 import PropTypes from 'prop-types';
 import StepCard from '../../Atoms/StepCard/StepCard';
 import CustomForm from '../../../common/Organisms/Forms/CustomForm';
-import { isValidRole, noEmptyInput } from '../../../../helpers/formRules';
+import { isValidRole, noEmptyInput, minOneElement } from '../../../../helpers/formRules';
 import { refShape } from '../../../../helpers/propShapes';
 
 import './_style.scss';
 import { ISSUER, VERIFIER } from '../../../../helpers/constants';
+import FileUploader from '../../../common/Molecules/FileUploader/FileUploader';
 
 const OrganizationInfo = ({
   organizationRef,
-  organizationInfo: { organizationName = '', organizationRole = '' }
+  organizationInfo: { organizationName = '', organizationRole = '', logo },
+  savePicture
 }) => {
   const { t } = useTranslation();
 
@@ -32,7 +34,7 @@ const OrganizationInfo = ({
         rules: [
           {
             validator: (_rule, value, cb) => isValidRole(value, cb),
-            message: 'registration.organizationInfo.invalidRole'
+            message: t('registration.organizationInfo.invalidRole')
           }
         ],
         initialValue: organizationRole
@@ -50,6 +52,30 @@ const OrganizationInfo = ({
             {t(`registration.organizationInfo.${VERIFIER}`)}
           </Select.Option>
         </Select>
+      )
+    },
+    {
+      fieldDecoratorData: {
+        rules: [
+          {
+            validator: (_, value, cb) => minOneElement(value, cb),
+            message: t('errors.form.emptyField')
+          }
+        ],
+        initialValue: logo ? [logo] : []
+      },
+      label: t('newCredential.form.logo'),
+      key: 'logo',
+      className: '',
+      input: (
+        <FileUploader
+          initialValue={logo}
+          hint="newCredential.form.logoHint"
+          field="logo"
+          savePicture={savePicture}
+          uploadText="newCredential.form.uploadButton"
+          formRef={organizationRef}
+        />
       )
     }
   ];
@@ -77,8 +103,10 @@ OrganizationInfo.propTypes = {
   organizationRef: refShape.isRequired,
   organizationInfo: PropTypes.shape({
     organizationName: PropTypes.string,
-    organizationRole: PropTypes.string
-  })
+    organizationRole: PropTypes.string,
+    logo: PropTypes.any
+  }),
+  savePicture: PropTypes.func.isRequired
 };
 
 export default OrganizationInfo;

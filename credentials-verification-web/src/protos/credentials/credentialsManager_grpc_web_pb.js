@@ -41,16 +41,6 @@ proto.io.iohk.cvp.cmanager.CredentialsServiceClient =
    */
   this.hostname_ = hostname;
 
-  /**
-   * @private @const {?Object} The credentials to be used to connect
-   *    to the server
-   */
-  this.credentials_ = credentials;
-
-  /**
-   * @private @const {?Object} Options for the client
-   */
-  this.options_ = options;
 };
 
 
@@ -77,16 +67,86 @@ proto.io.iohk.cvp.cmanager.CredentialsServicePromiseClient =
    */
   this.hostname_ = hostname;
 
-  /**
-   * @private @const {?Object} The credentials to be used to connect
-   *    to the server
-   */
-  this.credentials_ = credentials;
+};
 
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.io.iohk.cvp.cmanager.RegisterRequest,
+ *   !proto.io.iohk.cvp.cmanager.RegisterResponse>}
+ */
+const methodDescriptor_CredentialsService_Register = new grpc.web.MethodDescriptor(
+  '/io.iohk.cvp.cmanager.CredentialsService/Register',
+  grpc.web.MethodType.UNARY,
+  proto.io.iohk.cvp.cmanager.RegisterRequest,
+  proto.io.iohk.cvp.cmanager.RegisterResponse,
   /**
-   * @private @const {?Object} Options for the client
+   * @param {!proto.io.iohk.cvp.cmanager.RegisterRequest} request
+   * @return {!Uint8Array}
    */
-  this.options_ = options;
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.cvp.cmanager.RegisterResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.io.iohk.cvp.cmanager.RegisterRequest,
+ *   !proto.io.iohk.cvp.cmanager.RegisterResponse>}
+ */
+const methodInfo_CredentialsService_Register = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.io.iohk.cvp.cmanager.RegisterResponse,
+  /**
+   * @param {!proto.io.iohk.cvp.cmanager.RegisterRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.cvp.cmanager.RegisterResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.io.iohk.cvp.cmanager.RegisterRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.cvp.cmanager.RegisterResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.cvp.cmanager.RegisterResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.io.iohk.cvp.cmanager.CredentialsServiceClient.prototype.register =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/io.iohk.cvp.cmanager.CredentialsService/Register',
+      request,
+      metadata || {},
+      methodDescriptor_CredentialsService_Register,
+      callback);
+};
+
+
+/**
+ * @param {!proto.io.iohk.cvp.cmanager.RegisterRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.io.iohk.cvp.cmanager.RegisterResponse>}
+ *     A native promise that resolves to the response
+ */
+proto.io.iohk.cvp.cmanager.CredentialsServicePromiseClient.prototype.register =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/io.iohk.cvp.cmanager.CredentialsService/Register',
+      request,
+      metadata || {},
+      methodDescriptor_CredentialsService_Register);
 };
 
 
@@ -101,7 +161,10 @@ const methodDescriptor_CredentialsService_CreateCredential = new grpc.web.Method
   grpc.web.MethodType.UNARY,
   proto.io.iohk.cvp.cmanager.CreateCredentialRequest,
   proto.io.iohk.cvp.cmanager.CreateCredentialResponse,
-  /** @param {!proto.io.iohk.cvp.cmanager.CreateCredentialRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.cmanager.CreateCredentialRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -117,7 +180,10 @@ const methodDescriptor_CredentialsService_CreateCredential = new grpc.web.Method
  */
 const methodInfo_CredentialsService_CreateCredential = new grpc.web.AbstractClientBase.MethodInfo(
   proto.io.iohk.cvp.cmanager.CreateCredentialResponse,
-  /** @param {!proto.io.iohk.cvp.cmanager.CreateCredentialRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.cmanager.CreateCredentialRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -175,7 +241,10 @@ const methodDescriptor_CredentialsService_GetCredentials = new grpc.web.MethodDe
   grpc.web.MethodType.UNARY,
   proto.io.iohk.cvp.cmanager.GetCredentialsRequest,
   proto.io.iohk.cvp.cmanager.GetCredentialsResponse,
-  /** @param {!proto.io.iohk.cvp.cmanager.GetCredentialsRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.cmanager.GetCredentialsRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -191,7 +260,10 @@ const methodDescriptor_CredentialsService_GetCredentials = new grpc.web.MethodDe
  */
 const methodInfo_CredentialsService_GetCredentials = new grpc.web.AbstractClientBase.MethodInfo(
   proto.io.iohk.cvp.cmanager.GetCredentialsResponse,
-  /** @param {!proto.io.iohk.cvp.cmanager.GetCredentialsRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.cmanager.GetCredentialsRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -261,16 +333,6 @@ proto.io.iohk.cvp.cmanager.StudentsServiceClient =
    */
   this.hostname_ = hostname;
 
-  /**
-   * @private @const {?Object} The credentials to be used to connect
-   *    to the server
-   */
-  this.credentials_ = credentials;
-
-  /**
-   * @private @const {?Object} Options for the client
-   */
-  this.options_ = options;
 };
 
 
@@ -297,16 +359,6 @@ proto.io.iohk.cvp.cmanager.StudentsServicePromiseClient =
    */
   this.hostname_ = hostname;
 
-  /**
-   * @private @const {?Object} The credentials to be used to connect
-   *    to the server
-   */
-  this.credentials_ = credentials;
-
-  /**
-   * @private @const {?Object} Options for the client
-   */
-  this.options_ = options;
 };
 
 
@@ -321,7 +373,10 @@ const methodDescriptor_StudentsService_CreateStudent = new grpc.web.MethodDescri
   grpc.web.MethodType.UNARY,
   proto.io.iohk.cvp.cmanager.CreateStudentRequest,
   proto.io.iohk.cvp.cmanager.CreateStudentResponse,
-  /** @param {!proto.io.iohk.cvp.cmanager.CreateStudentRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.cmanager.CreateStudentRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -337,7 +392,10 @@ const methodDescriptor_StudentsService_CreateStudent = new grpc.web.MethodDescri
  */
 const methodInfo_StudentsService_CreateStudent = new grpc.web.AbstractClientBase.MethodInfo(
   proto.io.iohk.cvp.cmanager.CreateStudentResponse,
-  /** @param {!proto.io.iohk.cvp.cmanager.CreateStudentRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.cmanager.CreateStudentRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -395,7 +453,10 @@ const methodDescriptor_StudentsService_GetStudents = new grpc.web.MethodDescript
   grpc.web.MethodType.UNARY,
   proto.io.iohk.cvp.cmanager.GetStudentsRequest,
   proto.io.iohk.cvp.cmanager.GetStudentsResponse,
-  /** @param {!proto.io.iohk.cvp.cmanager.GetStudentsRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.cmanager.GetStudentsRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -411,7 +472,10 @@ const methodDescriptor_StudentsService_GetStudents = new grpc.web.MethodDescript
  */
 const methodInfo_StudentsService_GetStudents = new grpc.web.AbstractClientBase.MethodInfo(
   proto.io.iohk.cvp.cmanager.GetStudentsResponse,
-  /** @param {!proto.io.iohk.cvp.cmanager.GetStudentsRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.cmanager.GetStudentsRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -469,7 +533,10 @@ const methodDescriptor_StudentsService_GetStudent = new grpc.web.MethodDescripto
   grpc.web.MethodType.UNARY,
   proto.io.iohk.cvp.cmanager.GetStudentRequest,
   proto.io.iohk.cvp.cmanager.GetStudentResponse,
-  /** @param {!proto.io.iohk.cvp.cmanager.GetStudentRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.cmanager.GetStudentRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -485,7 +552,10 @@ const methodDescriptor_StudentsService_GetStudent = new grpc.web.MethodDescripto
  */
 const methodInfo_StudentsService_GetStudent = new grpc.web.AbstractClientBase.MethodInfo(
   proto.io.iohk.cvp.cmanager.GetStudentResponse,
-  /** @param {!proto.io.iohk.cvp.cmanager.GetStudentRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.cmanager.GetStudentRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -543,7 +613,10 @@ const methodDescriptor_StudentsService_GetStudentCredentials = new grpc.web.Meth
   grpc.web.MethodType.UNARY,
   proto.io.iohk.cvp.cmanager.GetStudentCredentialsRequest,
   proto.io.iohk.cvp.cmanager.GetStudentCredentialsResponse,
-  /** @param {!proto.io.iohk.cvp.cmanager.GetStudentCredentialsRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.cmanager.GetStudentCredentialsRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -559,7 +632,10 @@ const methodDescriptor_StudentsService_GetStudentCredentials = new grpc.web.Meth
  */
 const methodInfo_StudentsService_GetStudentCredentials = new grpc.web.AbstractClientBase.MethodInfo(
   proto.io.iohk.cvp.cmanager.GetStudentCredentialsResponse,
-  /** @param {!proto.io.iohk.cvp.cmanager.GetStudentCredentialsRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.cmanager.GetStudentCredentialsRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -617,7 +693,10 @@ const methodDescriptor_StudentsService_GenerateConnectionToken = new grpc.web.Me
   grpc.web.MethodType.UNARY,
   proto.io.iohk.cvp.cmanager.GenerateConnectionTokenRequest,
   proto.io.iohk.cvp.cmanager.GenerateConnectionTokenResponse,
-  /** @param {!proto.io.iohk.cvp.cmanager.GenerateConnectionTokenRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.cmanager.GenerateConnectionTokenRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -633,7 +712,10 @@ const methodDescriptor_StudentsService_GenerateConnectionToken = new grpc.web.Me
  */
 const methodInfo_StudentsService_GenerateConnectionToken = new grpc.web.AbstractClientBase.MethodInfo(
   proto.io.iohk.cvp.cmanager.GenerateConnectionTokenResponse,
-  /** @param {!proto.io.iohk.cvp.cmanager.GenerateConnectionTokenRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.cmanager.GenerateConnectionTokenRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
