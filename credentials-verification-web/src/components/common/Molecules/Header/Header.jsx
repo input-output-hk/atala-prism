@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Row, Col } from 'antd';
 import './_style.scss';
 import UserAvatar from '../../Atoms/UserAvatar/UserAvatar';
+import { withApi } from '../../../providers/witApi';
 
 const Header = ({ api: { lockWallet } }) => (
   <Row type="flex" align="middle" className="HeaderContainer">
@@ -35,4 +36,4 @@ Header.propTypes = {
   }).isRequired
 };
 
-export default Header;
+export default withApi(Header);

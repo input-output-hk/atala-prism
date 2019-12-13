@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import { studentShape } from '../../../../helpers/propShapes';
 
-const ActionButtons = ({ showQRButton, inviteHolder, isIssuer, setHolder, holder }) => {
+const ActionButtons = ({ showQRButton, inviteHolder, isIssuer, viewConnectionDetail, holder }) => {
   const { t } = useTranslation();
   const { id } = holder;
 
@@ -23,13 +23,15 @@ const ActionButtons = ({ showQRButton, inviteHolder, isIssuer, setHolder, holder
         buttonProps={{ className: 'theme-link' }}
         buttonText={t('connections.table.columns.delete')}
       />
-      <CustomButton
-        buttonProps={{
-          className: 'theme-link',
-          onClick: () => setHolder(holder)
-        }}
-        buttonText={t(`connections.table.columns.${isIssuer() ? 'view' : 'viewCredentials'}`)}
-      />
+      {!isIssuer() && (
+        <CustomButton
+          buttonProps={{
+            className: 'theme-link',
+            onClick: () => viewConnectionDetail(holder)
+          }}
+          buttonText={t(`connections.table.columns.${isIssuer() ? 'view' : 'viewCredentials'}`)}
+        />
+      )}
     </div>
   );
 };
@@ -39,7 +41,7 @@ ActionButtons.propTypes = {
   showQRButton: PropTypes.bool.isRequired,
   inviteHolder: PropTypes.func.isRequired,
   isIssuer: PropTypes.func.isRequired,
-  setHolder: PropTypes.func.isRequired,
+  viewConnectionDetail: PropTypes.func.isRequired,
   holder: PropTypes.shape(studentShape).isRequired
 };
 

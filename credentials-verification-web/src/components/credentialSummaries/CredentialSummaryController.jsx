@@ -5,8 +5,9 @@ import PropTypes from 'prop-types';
 import CredentialSummaries from './CredentialSummaries';
 import { withApi } from '../providers/witApi';
 import Logger from '../../helpers/Logger';
+import { CONNECTION_ACCEPTED } from '../../helpers/constants';
 
-const CredentialSummaryController = ({ api: { getConnectionsPaginated } }) => {
+const CredentialSummaryController = ({ api: { getStudents, getStudentCredentials } }) => {
   const { t } = useTranslation();
 
   const [credentialSummaries, setCredentialSummaries] = useState([]);
@@ -27,20 +28,21 @@ const CredentialSummaryController = ({ api: { getConnectionsPaginated } }) => {
       ? credentialSummaries[credentialSummaries.length - 1]
       : {};
 
-    getConnectionsPaginated(userId, id)
+    getStudents(userId, id)
       .then(summariesResponse => {
+        const parsedSummaries = summariesResponse
+          .filter(({ connectionstatus }) => connectionstatus === CONNECTION_ACCEPTED)
+          .map(({ id: credentialId, admissiondate, email, fullname }) => ({
+            id: credentialId,
+            date: admissiondate,
+            user: { email, fullname }
+          }));
+
         if (!summariesResponse.length) {
           setHasMore(false);
           return;
         }
 
-        const parsedSummaries = summariesResponse.map(
-          ({ connectionid, created, participantinfo: { holder } }) => ({
-            id: connectionid,
-            date: created,
-            user: holder
-          })
-        );
         setCredentialSummaries(credentialSummaries.concat(parsedSummaries));
         // This gets the id of the last item of the array of credential
         // summaries sent from the backend and saves it to use in future
@@ -78,7 +80,7 @@ const CredentialSummaryController = ({ api: { getConnectionsPaginated } }) => {
     setDate,
     setName,
     handleCredentialSummaryDeletion,
-    getFilteredCredentialSummaries,
+    getStudentCredentials,
     hasMore
   };
 
@@ -86,8 +88,11 @@ const CredentialSummaryController = ({ api: { getConnectionsPaginated } }) => {
 };
 
 CredentialSummaryController.propTypes = {
-  api: PropTypes.shape({ getConnections: PropTypes.func, getConnectionsPaginated: PropTypes.func })
-    .isRequired
+  api: PropTypes.shape({
+    getConnections: PropTypes.func,
+    getConnectionsPaginated: PropTypes.func,
+    getStudentCredentials: PropTypes.func
+  }).isRequired
 };
 
 export default withApi(CredentialSummaryController);

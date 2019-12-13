@@ -16,7 +16,11 @@ import {
   isIssuer
 } from './wallet/wallet';
 import { getCredentials, createCredential } from './credentials/credentialsManager';
-import { getStudents, generateConnectionToken } from './credentials/studentsManager';
+import {
+  getStudents,
+  generateConnectionToken,
+  getStudentCredentials
+} from './credentials/studentsManager';
 
 export { mockApi };
 export const api = {
@@ -37,6 +41,7 @@ export const api = {
   isWalletUnlocked,
   lockWallet,
   isIssuer,
+  getStudentCredentials,
   getMessagesForConnection
 };
 

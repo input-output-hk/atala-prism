@@ -22,10 +22,7 @@ const GetActionsButtons = ({ credentialSummary, setCurrentCredentialSummary, ope
       />
       <CustomButton
         buttonProps={{
-          onClick: () => {
-            setCurrentCredentialSummary(credentialSummary);
-            openDrawer();
-          },
+          onClick: () => setCurrentCredentialSummary(credentialSummary),
           className: 'theme-link'
         }}
         buttonText={t('credentialSummary.table.buttons.view')}
@@ -47,17 +44,25 @@ const getColumns = (setCurrentCredentialSummary, openDrawer) => {
   return [
     {
       key: 'avatar',
-      render: ({ icon, name }) => (
+      render: ({ icon, fullname }) => (
         <img
           style={{ height: '40px', width: '40px' }}
           src={icon || genericUserIcon}
-          alt={`${name} icon`}
+          alt={`${fullname} icon`}
         />
       )
     },
     {
-      key: 'name',
-      render: ({ name }) => <CellRenderer title="name" componentName={componentName} value={name} />
+      key: 'fullname',
+      render: ({ user: { fullname } }) => (
+        <CellRenderer title="name" componentName={componentName} value={fullname} />
+      )
+    },
+    {
+      key: 'email',
+      render: ({ user: { email } }) => (
+        <CellRenderer title="email" componentName={componentName} value={email} />
+      )
     },
     {
       key: 'admissionDate',
@@ -66,16 +71,6 @@ const getColumns = (setCurrentCredentialSummary, openDrawer) => {
           title="date"
           componentName={componentName}
           value={shortBackendDateFormatter(date)}
-        />
-      )
-    },
-    {
-      key: 'totalCredentials',
-      render: ({ transactions }) => (
-        <CellRenderer
-          title="totalCredentials"
-          componentName={componentName}
-          value={transactions.length}
         />
       )
     },
