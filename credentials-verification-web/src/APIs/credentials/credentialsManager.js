@@ -19,6 +19,7 @@ import Logger from '../../helpers/Logger';
 import { setDateInfoFromJSON } from '../helpers';
 import { getStudents } from './studentsManager';
 import { getDid } from '../wallet/wallet';
+import { HARDCODED_LIMIT } from '../../helpers/constants';
 
 const { REACT_APP_GRPC_CLIENT, REACT_APP_ISSUER } = window._env_;
 const issuerId = REACT_APP_ISSUER;
@@ -27,7 +28,7 @@ const credentialsService = new CredentialsServicePromiseClient(REACT_APP_GRPC_CL
 export const getCredentials = async (limit = 10, lastSeenCredentialId = null) => {
   Logger.info(`getting credentials from ${lastSeenCredentialId}, limit ${limit}`);
   const getCredentialsRequest = new GetCredentialsRequest();
-  getCredentialsRequest.setLimit(limit);
+  getCredentialsRequest.setLimit(HARDCODED_LIMIT);
   const result = await credentialsService.getCredentials(getCredentialsRequest, {
     userId: issuerId
   });
@@ -69,12 +70,12 @@ const getAllStudents = async () => {
 
     // The next 100 students are requested
     // eslint-disable-next-line no-await-in-loop
-    response = await getStudents(limit, id);
+    response = await getStudents(HARDCODED_LIMIT, id);
     allStudents.push(...response);
 
     // If less than the requested students are returned it means all the students have
     // already been brought
-  } while (response.length === limit);
+  } while (response.length === HARDCODED_LIMIT);
 
   return allStudents;
 };

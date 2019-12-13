@@ -7,6 +7,7 @@ import CellRenderer from '../../../common/Atoms/CellRenderer/CellRenderer';
 import { shortBackendDateFormatter } from '../../../../helpers/formatters';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import InfiniteScrollTable from '../../../common/Organisms/Tables/InfiniteScrollTable';
+import PaginatedTable from '../../../common/Organisms/Tables/PaginatedTable';
 
 const GetActionsButtons = ({ id, setGroupToDelete, fullInfo }) => {
   const { t } = useTranslation();
@@ -141,10 +142,14 @@ const GroupsTable = ({
         },
     loading,
     hasMore,
-    getMoreData
+    getMoreData,
+    current: 1,
+    total: 1,
+    defaultPageSize: 1,
+    onChange: () => {}
   };
 
-  return <InfiniteScrollTable {...tableProps} />;
+  return <PaginatedTable {...tableProps} />;
 };
 
 GroupsTable.defaultProps = {

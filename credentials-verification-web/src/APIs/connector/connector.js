@@ -8,6 +8,7 @@ import {
 import Logger from '../../helpers/Logger';
 import { getCredentialBinary } from '../credentials/credentialsManager';
 import { getStudentById } from '../credentials/studentsManager';
+import { HARDCODED_LIMIT } from '../../helpers/constants';
 
 const { SentCredential } = require('../../protos/credentials/credential_pb');
 
@@ -19,12 +20,12 @@ export const getConnectionsPaginated = (
   // Since the userId comes not from the session, I hardcoded it here
   userId = issuerId,
   lastSeenConnectionId,
-  limit = 10
+  limit
 ) => {
   const connectionsPaginatedRequest = new GetConnectionsPaginatedRequest();
 
   connectionsPaginatedRequest.setLastseenconnectionid(lastSeenConnectionId);
-  connectionsPaginatedRequest.setLimit(limit);
+  connectionsPaginatedRequest.setLimit(HARDCODED_LIMIT);
 
   return connectorServiceClient
     .getConnectionsPaginated(connectionsPaginatedRequest, { userId })

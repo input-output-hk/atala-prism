@@ -7,6 +7,7 @@ import {
   GetStudentCredentialsRequest
 } from '../../protos/credentials/credentialsManager_pb';
 import Logger from '../../helpers/Logger';
+import { HARDCODED_LIMIT } from '../../helpers/constants';
 
 const { REACT_APP_GRPC_CLIENT, REACT_APP_ISSUER } = window._env_;
 const issuerId = REACT_APP_ISSUER;
@@ -23,7 +24,10 @@ const createAndPopulateGetStudentRequest = (limit, lastSeenStudentId) => {
 
 export const getStudents = async (limit = 10, lastSeenCredentialId = null) => {
   Logger.info('Getting the students');
-  const getStudentsRequest = createAndPopulateGetStudentRequest(limit, lastSeenCredentialId);
+  const getStudentsRequest = createAndPopulateGetStudentRequest(
+    HARDCODED_LIMIT,
+    lastSeenCredentialId
+  );
 
   const result = await studentsService.getStudents(getStudentsRequest, { userId: issuerId });
 

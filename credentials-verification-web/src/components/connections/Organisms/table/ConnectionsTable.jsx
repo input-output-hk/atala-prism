@@ -8,7 +8,8 @@ import {
   HOLDER_PAGE_SIZE,
   xScroll,
   CONNECTION_STATUSES,
-  CONNECTION_STATUSES_TRANSLATOR
+  CONNECTION_STATUSES_TRANSLATOR,
+  yScroll
 } from '../../../../helpers/constants';
 import ActionButtons from '../../Atoms/ActionButtons/ActionButtons';
 import holderDefaultAvatar from '../../../../images/holder-default-avatar.svg';
@@ -104,7 +105,7 @@ const ConnectionsTable = ({
     <Table
       columns={getColumns({ inviteHolder, isIssuer, viewConnectionDetail })}
       dataSource={subjects}
-      scroll={{ x: xScroll }}
+      scroll={{ x: xScroll, y: yScroll }}
       pagination={{
         total: subjectCount,
         defaultCurrent: 1,
