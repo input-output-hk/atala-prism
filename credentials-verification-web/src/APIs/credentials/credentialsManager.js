@@ -160,7 +160,7 @@ const populateSubject = ({ names, surnames, birthDate = {}, idInfo = {} }) => {
   subjectData.setIddocument(personalId);
 
   subjectData.setNamesList(names);
-  subjectData.setSurnameList(surnames);
+  subjectData.setSurnamesList(surnames);
 
   return subjectData;
 };

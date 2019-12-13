@@ -4,9 +4,9 @@ import __ from 'lodash';
 import { CREDENTIAL_PAGE_SIZE } from '../../helpers/constants';
 import { toProtoDate } from './helpers';
 
-export const credentials = ['CREDENTIAL1', 'CREDENTIAL2', 'CREDENTIAL3'];
-export const categories = ['CATEGORY1', 'CATEGORY2', 'CATEGORY3'];
-export const groups = ['GROUP1', 'GROUP2', 'GROUP3'];
+export const credentials = [];
+export const categories = [];
+export const groups = [];
 
 const createMockStudent = () => ({
   avatar: image.avatar(),

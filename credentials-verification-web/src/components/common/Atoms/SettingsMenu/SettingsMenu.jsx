@@ -10,16 +10,6 @@ import './_style.scss';
 const menu = (handleLogout, logoutText) => (
   <Menu>
     <Menu.Item>
-      <a target="_blank" rel="noopener noreferrer" href="http://www.alipay.com/">
-        1st menu item
-      </a>
-    </Menu.Item>
-    <Menu.Item>
-      <a target="_blank" rel="noopener noreferrer" href="http://www.taobao.com/">
-        2nd menu item
-      </a>
-    </Menu.Item>
-    <Menu.Item>
       <CustomButton
         buttonProps={{
           onClick: handleLogout,
