@@ -30,18 +30,18 @@ usage () {
 
 apply_env () {
   write_vars
-  terraform init -backend-config="key=infra/services/$env_name_short/terraform.tfstate" && terraform apply ${1-} -var-file=".terraform/$env_name_short.tfvars" $secrets
+  terraform init -backend-config="key=infra/services/$env_name_short/terraform.tfstate" && terraform apply ${1-} -var-file=".terraform/$env_name_short.tfvars" ${secrets-}
 }
 
 destroy_env () {
   write_vars
   drop_schemas
-  terraform init -backend-config="key=infra/services/$env_name_short/terraform.tfstate" && terraform destroy ${1-} -var-file=".terraform/$env_name_short.tfvars" $secrets
+  terraform init -backend-config="key=infra/services/$env_name_short/terraform.tfstate" && terraform destroy ${1-} -var-file=".terraform/$env_name_short.tfvars" ${secrets-}
 }
 
 plan_env () {
   write_vars
-  terraform init -backend-config="key=infra/services/$env_name_short/terraform.tfstate" && terraform plan -var-file=".terraform/$env_name_short.tfvars" $secrets
+  terraform init -backend-config="key=infra/services/$env_name_short/terraform.tfstate" && terraform plan -var-file=".terraform/$env_name_short.tfvars" ${secrets-}
 }
 
 show_env () {
