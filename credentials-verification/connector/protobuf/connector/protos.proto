@@ -77,7 +77,8 @@ service ConnectorService {
   rpc SendMessage (SendMessageRequest) returns (SendMessageResponse) {}
 
   // Generate a URL that can be used to do a payment
-  rpc GeneratePaymentUrl (GeneratePaymentUrlRequest) returns (GeneratePaymentUrlResponse) {}
+  rpc GetBraintreePaymentsConfig (GetBraintreePaymentsConfigRequest) returns (GetBraintreePaymentsConfigResponse) {}
+  rpc ProcessPayment (ProcessPaymentRequest) returns (ProcessPaymentResponse);
 }
 
 // GENERAL
@@ -264,7 +265,13 @@ message ChangeBillingPlanRequest {
 message ChangeBillingPlanResponse {
 }
 
-message GeneratePaymentUrlRequest {}
-message GeneratePaymentUrlResponse {
-  string paymentUrl = 1;
+message GetBraintreePaymentsConfigRequest {}
+message GetBraintreePaymentsConfigResponse {
+  string tokenizationKey = 1;
 }
+
+message ProcessPaymentRequest {
+  string amount = 1; // exact decimal amount
+  string nonce = 2; // client nonce
+}
+message ProcessPaymentResponse {}

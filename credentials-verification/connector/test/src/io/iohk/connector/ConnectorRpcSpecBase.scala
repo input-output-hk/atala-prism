@@ -7,7 +7,7 @@ import doobie.implicits._
 import io.grpc._
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.iohk.connector.model._
-import io.iohk.connector.payments.PaymentWall
+import io.iohk.connector.payments.BraintreePayments
 import io.iohk.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO, MessagesDAO, ParticipantsDAO}
 import io.iohk.connector.repositories.{ConnectionsRepository, MessagesRepository}
 import io.iohk.connector.services.{ConnectionsService, MessagesService}
@@ -91,7 +91,7 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
   override val tables = List("messages", "connections", "connection_tokens", "holder_public_keys", "participants")
   override def services = Seq(
     ConnectorServiceGrpc
-      .bindService(new ConnectorService(connectionsService, messagesService, paymentWall), executionContext)
+      .bindService(new ConnectorService(connectionsService, messagesService, braintreePayments), executionContext)
   )
 
   val usingApiAs: ApiTestHelper[ConnectorServiceGrpc.ConnectorServiceBlockingStub] = usingApiAsConstructor(
@@ -102,8 +102,9 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
   lazy val connectionsService = new ConnectionsService(connectionsRepository)
   lazy val messagesRepository = new MessagesRepository(database)(executionContext)
   lazy val messagesService = new MessagesService(messagesRepository)
-  lazy val paymentWall = new PaymentWall
-  lazy val connectorService = new ConnectorService(connectionsService, messagesService, paymentWall)(executionContext)
+  lazy val braintreePayments = BraintreePayments(BraintreePayments.Config(false, "none", "none", "none", "none"))
+  lazy val connectorService =
+    new ConnectorService(connectionsService, messagesService, braintreePayments)(executionContext)
 
   protected def createParticipant(
       name: String,
