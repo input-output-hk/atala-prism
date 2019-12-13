@@ -22,31 +22,24 @@ import lombok.Setter;
 @Setter
 public class ProfileFragment extends CvpFragment {
 
+  @BindView(R.id.edit_text_name)
+  TextInputEditText textInputEditTextName;
+  @BindView(R.id.edit_text_country)
+  TextInputEditText textInputEditTextCountry;
+  @BindView(R.id.edit_text_birth_date)
+  TextInputEditText textInputEditTextBirthDate;
+  @BindView(R.id.edit_text_email)
+  TextInputEditText textInputEditTextEmail;
+  @BindView(R.id.text_view_email)
+  TextView textViewEmail;
+  @BindView(R.id.text_view_name)
+  TextView textViewName;
   private Preferences preferences;
   private boolean isEditing;
-
 
   @Inject
   public ProfileFragment() {
   }
-
-  @BindView(R.id.edit_text_name)
-  TextInputEditText textInputEditTextName;
-
-  @BindView(R.id.edit_text_country)
-  TextInputEditText textInputEditTextCountry;
-
-  @BindView(R.id.edit_text_birth_date)
-  TextInputEditText textInputEditTextBirthDate;
-
-  @BindView(R.id.edit_text_email)
-  TextInputEditText textInputEditTextEmail;
-
-  @BindView(R.id.text_view_email)
-  TextView textViewEmail;
-
-  @BindView(R.id.text_view_name)
-  TextView textViewName;
 
   @Override
   protected int getViewId() {
@@ -92,10 +85,18 @@ public class ProfileFragment extends CvpFragment {
       } else {
         item.setIcon(getActivity().getDrawable(R.drawable.ic_edit));
         saveUserProfile();
+        clearInputsFocus();
       }
       return true;
     }
     return super.onOptionsItemSelected(item);
+  }
+
+  private void clearInputsFocus() {
+    textInputEditTextName.clearFocus();
+    textInputEditTextCountry.clearFocus();
+    textInputEditTextBirthDate.clearFocus();
+    textInputEditTextEmail.clearFocus();
   }
 
   private void switchState(TextInputEditText editText) {

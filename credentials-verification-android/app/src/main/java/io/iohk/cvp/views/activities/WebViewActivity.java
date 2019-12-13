@@ -2,12 +2,13 @@ package io.iohk.cvp.views.activities;
 
 import android.os.Bundle;
 import android.view.KeyEvent;
+import android.view.MenuItem;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import io.iohk.cvp.R;
-import io.iohk.cvp.views.fragments.utils.RootAppBar;
+import io.iohk.cvp.views.fragments.utils.StackedAppBar;
 import java.util.Optional;
 
 public class WebViewActivity extends AppCompatActivity {
@@ -23,6 +24,16 @@ public class WebViewActivity extends AppCompatActivity {
     webView.setWebViewClient(new WebViewClient());
     webView.loadUrl("https://www.zendesk.com/");
 
+  }
+
+  @Override
+  public boolean onOptionsItemSelected(MenuItem item) {
+    if (item.getItemId() == android.R.id.home) {
+      onBackPressed();
+      return true;
+    }
+
+    return super.onOptionsItemSelected(item);
   }
 
   @Override
@@ -42,7 +53,9 @@ public class WebViewActivity extends AppCompatActivity {
     super.onResume();
     Optional<ActionBar> supportActionBar = Optional.ofNullable(getSupportActionBar());
     supportActionBar.ifPresent(
-        actionBar -> new RootAppBar(R.string.support_title).configureActionBar(actionBar));
+        actionBar -> {
+          new StackedAppBar(R.string.support_title).configureActionBar(actionBar);
+        });
   }
 
 }

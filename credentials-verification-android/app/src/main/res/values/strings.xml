@@ -139,4 +139,8 @@
   <string name="terms_and_conditions_asset_name">terms-and-conditions-en</string>
   <string name="email">Email</string>
   <string name="coming_soon">COMING SOON</string>
+
+
+  <string name="hello_username">Hello %1$s!</string>
+  <string name="no_credentials_yet">You don\'t have credentials yet</string>
 </resources>

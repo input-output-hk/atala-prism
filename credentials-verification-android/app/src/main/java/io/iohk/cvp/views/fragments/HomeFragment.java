@@ -5,6 +5,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.LiveData;
@@ -33,31 +35,28 @@ import lombok.Setter;
 @NoArgsConstructor
 public class HomeFragment extends CvpFragment<CredentialsViewModel> {
 
+  @BindView(R.id.credentials_list)
+  RecyclerView credentialsRecyclerView;
+  @BindView(R.id.new_credentials_list)
+  RecyclerView newCredentialsRecyclerView;
+  @BindView(R.id.fragment_layout)
+  FrameLayout fragmentLayout;
+  @BindView(R.id.new_credentials_container)
+  ConstraintLayout newCredentialsContainer;
+  @BindView(R.id.username)
+  TextView textViewUsername;
+  @BindView(R.id.no_credentials_container)
+  LinearLayout noCredentialsContainer;
+  @Inject
+  CredentialDetailFragment credentialFragment;
   private ViewModelProvider.Factory factory;
   private LiveData<List<ReceivedMessage>> liveData;
-
+  private CredentialsRecyclerViewAdapter newCredentialsAdapter;
+  private CredentialsRecyclerViewAdapter credentialsAdapter;
   @Inject
   HomeFragment(ViewModelProvider.Factory factory) {
     this.factory = factory;
   }
-
-  @BindView(R.id.credentials_list)
-  RecyclerView credentialsRecyclerView;
-
-  @BindView(R.id.new_credentials_list)
-  RecyclerView newCredentialsRecyclerView;
-
-  @BindView(R.id.fragment_layout)
-  FrameLayout fragmentLayout;
-
-  @BindView(R.id.new_credentials_container)
-  ConstraintLayout newCredentialsContainer;
-
-  @Inject
-  CredentialDetailFragment credentialFragment;
-
-  private CredentialsRecyclerViewAdapter newCredentialsAdapter;
-  private CredentialsRecyclerViewAdapter credentialsAdapter;
 
   @Override
   protected int getViewId() {
@@ -80,6 +79,9 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> {
         true, prefs);
     credentialsAdapter = new CredentialsRecyclerViewAdapter(R.layout.row_credential, this, false,
         prefs);
+
+    textViewUsername.setText(Objects.requireNonNull(getContext())
+        .getString(R.string.hello_username, prefs.getString(Preferences.USER_PROFILE_NAME)));
 
     return view;
   }
@@ -120,6 +122,11 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> {
                 Collectors.toList());
 
         credentialsAdapter.addMesseges(acceptedMessages);
+
+        if (acceptedMessages.size() > 0) {
+          credentialsRecyclerView.setVisibility(View.VISIBLE);
+          noCredentialsContainer.setVisibility(View.GONE);
+        }
 
         if (newMessages.size() > 0) {
           newCredentialsContainer.setVisibility(View.VISIBLE);

@@ -23,10 +23,10 @@ import lombok.Setter;
 public class ShareCredentialRecyclerViewAdapter extends
     RecyclerView.Adapter<ShareCredentialRecyclerViewAdapter.ViewHolder> {
 
-  @Setter
-  private List<ConnectionListable> connections = new ArrayList<>();
   private final float displayDensity;
   private final ShareCredentialDialogFragment fragment;
+  @Setter
+  private List<ConnectionListable> connections = new ArrayList<>();
 
   public ShareCredentialRecyclerViewAdapter(ShareCredentialDialogFragment fragment) {
     this.displayDensity = fragment.getContext().getResources().getDisplayMetrics().density;
@@ -63,23 +63,18 @@ public class ShareCredentialRecyclerViewAdapter extends
 
   static class ViewHolder extends RecyclerView.ViewHolder {
 
-    @BindView(R.id.verifier_name)
-    TextView verifierName;
-
-    @BindView(R.id.verifier_logo)
-    ImageView verifierLogo;
-
-    @BindView(R.id.layout_share_with_verifier)
-    View background;
-
-    @BindDrawable(R.drawable.rounded_corner_white)
-    Drawable backgroudNotSelected;
-
-    @BindDrawable(R.drawable.rounded_corner_white_bg_red_sroke)
-    Drawable backgroudSelected;
-
     private final float displayDensity;
     private final ShareCredentialDialogFragment fragment;
+    @BindView(R.id.verifier_name)
+    TextView verifierName;
+    @BindView(R.id.verifier_logo)
+    ImageView verifierLogo;
+    @BindView(R.id.layout_share_with_verifier)
+    View background;
+    @BindDrawable(R.drawable.rounded_corner_light_grey)
+    Drawable backgroudNotSelected;
+    @BindDrawable(R.drawable.rounded_corner_white_bg_red_sroke)
+    Drawable backgroudSelected;
     ConnectionListable connectionInfo;
 
     ViewHolder(final View itemView, final float displayDensity,
