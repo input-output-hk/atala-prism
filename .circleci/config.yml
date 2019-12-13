@@ -20,10 +20,11 @@ jobs:
       - run:
           name: Set tag convention
           command: |
-            echo "export TAG=develop" >> $BASH_ENV
-            if [ "${CIRCLE_BRANCH}" != "develop" ]; then
-              echo "export TAG=$(git rev-parse --abbrev-ref HEAD | sed -E 's/(^ATA\-[0-9]+).*/\1/' | tr '[:upper:]' '[:lower:]')" >> $BASH_ENV;
-            fi
+            branchPrefix=$(git rev-parse --abbrev-ref HEAD | sed -E 's/(^ATA\-[0-9]+).*/\1/' | tr '[:upper:]' '[:lower:]')
+            revCount=$(git rev-list HEAD --count)
+            shaShort=$(git rev-parse --short HEAD)
+            tag="${branchPrefix}-${revCount}-${shaShort}"
+            echo "export TAG=$tag" >> $BASH_ENV;
             . $BASH_ENV && echo "Image tag set to $TAG"
 
       - run:
@@ -55,11 +56,12 @@ jobs:
       - run:
           name: Rebuild development environment
           command: |
-            if [ "${TAG}" == "develop" ]; then
+            if [[ "${TAG}" =~ ^develop.+$ ]]; then
               cd credentials-verification/infra/services
-              ./env.sh -A ${TAG}
+              ./env.sh -t develop
+              ./env.sh -A develop
             else
-              echo "Skipping on non-develop branch $TAG"
+              echo "Skipping on non-develop branch $CIRCLE_BRANCH"
             fi
 
   build-credentials-verification:

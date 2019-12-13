@@ -5,6 +5,7 @@ A working CVP environment consists of
 * a POSTGRES database
 * a VLAN (a _virtual private cloud_ in AWS-speak)
 * Credentials verification services, such as connector and node.
+* Supporting services, like bitcoind.
 * Services supporting the development workflow, such as the ECR docker repository.
 
 Currently, we have code to provision
@@ -37,58 +38,51 @@ There are few setup steps if you wish to create and work with your own testing e
 * Install graphviz from https://graphviz.gitlab.io/. This is optional and enables the `env.sh -g` flag which
   produces a diagrammatic hierarchy for your environment.
 * Install 'terraform' from https://www.terraform.io/downloads.html.
-* Install dbeaver. To connect to the RDS database instance, you need to create a tunnel, for e.g. You are then able
-  to connect to the RDS database using `localhost:5432` as the host.
-```bash
-# substitute the correct IP address for an EC2 instance inside the VPC.
-ssh -L5432:credentials-database-test.co3l80tftzq2.us-east-2.rds.amazonaws.com:5432 -i ~/.ssh/id_rsa ec2-user@3.133.101.108
-```
-* The infra code does not currently create or destroy databases. If you do want to create a new database for your environment
-  (e.g. to experiment with new migrations) then run:
-```postgresql
-CREATE DATABASE connector_<unique suffix>;
-CREATE USER connector_<unique suffix> WITH ENCRYPTED PASSWORD ‘some password’;
-GRANT ALL PRIVILEGES ON DATABASE connector_<unique suffix> TO connector_<unique suffix>;
-
-CREATE DATABASE geud_node_<unique suffix>;
-CREATE USER geud_node_<unique suffix> WITH ENCRYPTED PASSWORD 'some password';
-GRANT ALL PRIVILEGES ON DATABASE geud_node_<unique suffix> TO geud_node_<unique suffix>;
-
-```
+* Install dbeaver. To connect to the RDS test database instance, the use the following hostname: credentials-database-test.co3l80tftzq2.us-east-2.rds.amazonaws.com:5432
+* If you want to access the EC2 instances (e.g. to examine the output of `docker ps`), you should
+ * Go to the aws console, find the ECS cluster and drill down to the EC2 instances. Copy-and-paste the public IP.
+ * Login as _ec2-user_. i.e. `ssh -i ~/.ssh/<my key> ec2-user@<public ip>`
 
 ### Changing either the docker image or database used by an environment
-The root build file now contains targets to build and push a docker image to Amazon ECR (a docker repository).
-* `mill connector.docker.build && mill connector.docker.push` (note there are currently some dependency glitches which may
-   require a `mill clean` to ensure your changes are pushed). The docker image that gets pushed used the git sha-1 hash
-   (as output from `git rev-parse HEAD`) to tag the image.
-* To change the docker image deployed by terraform, edit env.sh inside the `write_vars`, substituting the image URI you require
-  (yes, this is horribly manual and we need a convention to automate this).
-* You can also change the database and username inside env.sh at `write_vars`.
+Circleci will automatically build and push docker images for the CVP components. If you want to do this manuall, the root `build.sc` 
+file now contains targets to do this.
+* `mill connector.docker-build && mill connector.docker-push`. The docker image that gets pushed will have a tag with the following format: `<branch name prefix>-<revision count>-<sha>`.
+* The env.sh script, which you should use to invoke terraform, understands this convention. It will try to configure your environment in the following way:
+ * If, for a given cvp component, there is a docker image for your branch, it will use the latest image.
+ * If there is none, it will fall back to the latest image built from the develop branch.
+* The rationale here is that if you are working on a branch and, say, only change the connector, the env script will deploy
+  the connector component from your branch and everything else from develop. In theory, then, your branch should be properly
+  integration tested with other develop components by the time you merge down.  
 
 ### Secrets management
 Create a file called `~/.secrets.tfvars` with the following:
 ```bash
 $ cat ~/.secrets.tfvars
-connector_psql_password = "<secret>"
-node_psql_password = "<secret>"
+postgres_password = "<secret>"
 bitcoind_password = "<secret>"
 ```
 
 ### Environment lifecycle
 The basic use-case for creating, working with and destroying an environment is as follows
 ```bash
-# Use -p to check syntax etc before making an changes on AWS
-./env.sh -p myenv
+# Optionally, use -p to check syntax etc before making an changes on AWS
+./env.sh -p
 
-# Use -a to apply changes to an environment. This creates the env on AWS.
+# Use -a or -A to apply changes to an environment. This creates the env on AWS.
 # After running, terraform will output the hostname you can use for gRPC requests.
-./env.sh -a myenv
+./env.sh -a  # use env.sh -A to apply without prompting for approval.
+
+# Show information about an environment, including it AWS resources, its URLs and node/connector DB credentials
+./env.sh -s
 
 # Watch the logs from the environment
-./env.sh -w myenv
+./env.sh -w
 
 # Drop the environment
-./env.sh -d myenv
+./env.sh -d myenv  # use -D to drop without prompting for approval
+
+# To modify/query a different environment to your branch, specify the environment name explicitly as the last arg to env.sh
+./env.sh -s 
 ```
 
 ### Gaining access to the environments
@@ -99,18 +93,16 @@ You can SSH into EC2 instances inside an environment you create as follows:
 * `ssh -i ~/.ssh/id_rsa ec2-user@<ip obtained above>` (note the username!).
 
 ### Terraform state files
-Assuming you have used the `env.sh` script, terraform will store what it thinks is the current state of a given environment
-in a directory called `.<env name>`.
+Assuming you have used the `env.sh` script, terraform will store what it thinks is the current state of a given environment in S3
+under s3://atala-cvp/infra/services/<env name>.
 
 If you have dropped the environment with `env.sh -d <env name>`, you may delete the directory containing the terraform state.
 *Do not delete this directory* while resources from the environment still exist. If you do, terraform will lose track of
 resources on AWS and you will have to find and delete them manually.
 
-TODO: Store terraform state in S3. If you want to change an environment that is
-shared and not personal to you, *remember that you will need to obtain the most up to date state file from the person
-who last changed the environment.
+TODO: Store terraform state for the VPC build in S3. Currently this still uses local state storage.
 
 ### Reminder
-Environments on AWS cost money. Avoid creating loads of environments then forgetting about them and
-if you create an environment and are not going to be using it for more than a few days then
+Environments on AWS cost money. Avoid creating loads of environments then forgetting about them and,
+if you create an environment and are not going to be using it for more than a few days, then
 destroy it with `env.sh -d <my env>`.

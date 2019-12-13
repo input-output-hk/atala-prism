@@ -88,10 +88,19 @@ resource aws_security_group credentials-vpc-security-group {
 
   // allows all traffic within the vpc
   ingress {
-    from_port = 0
-    to_port   = 0
-    protocol  = "tcp"
-    //    cidr_blocks = ["10.0.0.0/16"]
+    from_port   = 0
+    to_port     = 0
+    protocol    = "tcp"
+    cidr_blocks = ["10.0.0.0/16"]
+  }
+
+  // allows traffic to talk to the services with dynamic port allocation
+  ingress {
+    protocol    = "tcp"
+    from_port   = 32768
+    to_port     = 65535
+    description = "NLB access"
+
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -101,16 +110,7 @@ resource aws_security_group credentials-vpc-security-group {
     to_port   = "0"
     protocol  = "-1"
     cidr_blocks = [
-      "0.0.0.0/0"]
-  }
-
-  # Allow all outbound traffic to the private SN
-  egress {
-    from_port = "0"
-    to_port   = "0"
-    protocol  = "-1"
-    cidr_blocks = [
-      "0.0.0.0/0"]
+    "0.0.0.0/0"]
   }
 
   tags = {
@@ -136,7 +136,7 @@ data aws_iam_policy_document ecs-instance-policy {
 
     principals {
       type        = "Service"
-      identifiers = ["ec2.amazonaws.com"]
+      identifiers = ["ec2.amazonaws.com", "ecs.amazonaws.com"]
     }
     effect = "Allow"
   }
@@ -149,11 +149,7 @@ resource aws_iam_role_policy_attachment ecs-instance-role-attachment {
 
 resource aws_iam_instance_profile ecs-instance-profile {
   name = "ecs-instance-profile-${var.env_name_short}"
-  path = "/"
   role = aws_iam_role.ecs-instance-role.id
-  provisioner "local-exec" {
-    command = "sleep 10"
-  }
 }
 
 // END of role config
@@ -163,12 +159,11 @@ resource aws_iam_instance_profile ecs-instance-profile {
 // See https://rokt.com/engineering_blog/learnings-grpc-aws/ (for a good discussion of
 //     issues around load balancing gRPC traffic on AWS.
 resource aws_lb ecs-net-lb {
-  name                             = "ecs-net-load-balancer-${var.env_name_short}"
+  name                             = "ecs-net-lb-${var.env_name_short}"
   internal                         = false
   load_balancer_type               = "network"
   enable_cross_zone_load_balancing = "true"
   subnets                          = [var.credentials-subnet-primary-id, var.credentials-subnet-secondary-id]
-
   tags = {
     Name = "ecs-net-load-balancer-${var.env_name_short}"
   }
@@ -186,13 +181,13 @@ resource aws_lb_listener connector-lb-listener {
 }
 
 resource aws_lb_target_group connector-target-group {
-  name     = "connector-target-group-${var.env_name_short}"
+  name     = "conn-tg-${var.env_name_short}"
   protocol = "TCP"
   port     = var.connector_port
   vpc_id   = var.credentials-vpc-id
 
   tags = {
-    Name = "connector-target-group-${var.env_name_short}"
+    Name = "conn-tg-${var.env_name_short}"
   }
 
   depends_on = [
@@ -212,13 +207,13 @@ resource aws_lb_listener node-lb-listener {
 }
 
 resource aws_lb_target_group node-target-group {
-  name     = "node-target-group-${var.env_name_short}"
+  name     = "node-tg-${var.env_name_short}"
   protocol = "TCP"
   port     = var.node_port
   vpc_id   = var.credentials-vpc-id
 
   tags = {
-    Name = "node-target-group-${var.env_name_short}"
+    Name = "node-tg-${var.env_name_short}"
   }
 
   depends_on = [
@@ -238,13 +233,13 @@ resource aws_lb_listener bitcoind-lb-listener {
 }
 
 resource aws_lb_target_group bitcoind-target-group {
-  name     = "bitcoind-target-group-${var.env_name_short}"
+  name     = "btc-tg-${var.env_name_short}"
   protocol = "TCP"
   port     = var.bitcoind_port
   vpc_id   = var.credentials-vpc-id
 
   tags = {
-    Name = "bitcoind-target-group-${var.env_name_short}"
+    Name = "btc-tg-${var.env_name_short}"
   }
 
   depends_on = [
@@ -254,23 +249,23 @@ resource aws_lb_target_group bitcoind-target-group {
 
 resource aws_lb_listener envoy-lb-listener {
   load_balancer_arn = aws_lb.ecs-net-lb.arn
-  protocol = "TCP"
-  port = var.envoy_port
+  protocol          = "TCP"
+  port              = var.envoy_port
 
   default_action {
-    type = "forward"
+    type             = "forward"
     target_group_arn = aws_lb_target_group.envoy-target-group.arn
   }
 }
 
 resource aws_lb_target_group envoy-target-group {
-  name     = "envoy-target-group-${var.env_name_short}"
+  name     = "envoy-tg-${var.env_name_short}"
   protocol = "TCP"
   port     = var.envoy_port
   vpc_id   = var.credentials-vpc-id
 
   tags = {
-    Name = "envoy-target-group-${var.env_name_short}"
+    Name = "envoy-tg-${var.env_name_short}"
   }
 
   depends_on = [
@@ -280,23 +275,23 @@ resource aws_lb_target_group envoy-target-group {
 
 resource aws_lb_listener web-lb-listener {
   load_balancer_arn = aws_lb.ecs-net-lb.arn
-  protocol = "TCP"
-  port = var.web_port
+  protocol          = "TCP"
+  port              = var.web_port
 
   default_action {
-    type = "forward"
+    type             = "forward"
     target_group_arn = aws_lb_target_group.web-target-group.arn
   }
 }
 
 resource aws_lb_target_group web-target-group {
-  name     = "web-target-group-${var.env_name_short}"
+  name     = "web-tg-${var.env_name_short}"
   protocol = "TCP"
   port     = var.web_port
   vpc_id   = var.credentials-vpc-id
 
   tags = {
-    Name = "web-target-group-${var.env_name_short}"
+    Name = "web-tg-${var.env_name_short}"
   }
 
   depends_on = [
@@ -332,11 +327,10 @@ data "aws_ami" "latest_ecs" {
 }
 
 resource aws_launch_configuration ecs-launch-configuration {
-  name_prefix          = "ecs-launch-configuration-${var.env_name_short}"
+  name_prefix          = "launch-config-${var.env_name_short}"
   image_id             = data.aws_ami.latest_ecs.id
   instance_type        = var.instance_type
   iam_instance_profile = aws_iam_instance_profile.ecs-instance-profile.id
-
   lifecycle {
     create_before_destroy = true
   }
@@ -355,16 +349,36 @@ data "template_file" "ec2-user-data-template" {
   }
 }
 
-// TODO define some scaling policies and attach them.
 resource aws_autoscaling_group ec2-autoscaling-group {
-  name                 = "ec2-autoscaling-group-${var.env_name_short}"
+  name                 = "asg-${var.env_name_short}"
   max_size             = var.autoscale_max
   min_size             = var.autoscale_min
   desired_capacity     = var.autoscale_desired
   vpc_zone_identifier  = [var.credentials-subnet-primary-id, var.credentials-subnet-secondary-id]
   launch_configuration = aws_launch_configuration.ecs-launch-configuration.name
   health_check_type    = "EC2"
-  target_group_arns    = [aws_lb_target_group.connector-target-group.arn /*, aws_lb_target_group.node-target-group.arn, aws_lb_target_group.bitcoind-target-group.arn, aws_lb_target_group.envoy-target-group.arn, aws_lb_target_group.web-target-group.arn*/]
+  target_group_arns = [
+    aws_lb_target_group.web-target-group.arn,
+    aws_lb_target_group.bitcoind-target-group.arn,
+    aws_lb_target_group.connector-target-group.arn,
+    aws_lb_target_group.node-target-group.arn,
+  aws_lb_target_group.envoy-target-group.arn]
+}
+
+resource aws_autoscaling_policy track-mean-cpu {
+  name                      = "mean-cpu-${var.env_name_short}"
+  policy_type               = "TargetTrackingScaling"
+  estimated_instance_warmup = "90"
+  adjustment_type           = "ChangeInCapacity"
+  autoscaling_group_name    = aws_autoscaling_group.ec2-autoscaling-group.name
+
+  target_tracking_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ASGAverageCPUUtilization"
+    }
+
+    target_value = 40
+  }
 }
 
 data "template_file" "cvp-task-template" {
@@ -396,21 +410,23 @@ data "template_file" "cvp-task-template" {
 }
 
 resource aws_ecs_task_definition cvp-task-definition {
-  family                = "cvp-task-definition-${var.env_name_short}"
+  family                = "cvp-task-def-${var.env_name_short}"
   container_definitions = data.template_file.cvp-task-template.rendered
-
+  network_mode          = "bridge"
   tags = {
-    Name = "cvp-task-definition-${var.env_name_short}"
+    Name = "cvp-task-def-${var.env_name_short}"
   }
 }
 
 // the iam_role is not specified, meaning this uses the ECS 'Service-linked role'
 // see https://docs.aws.amazon.com/IAM/latest/UserGuide/using-service-linked-roles.html
 resource aws_ecs_service cvp-service {
-  name            = "cvp-ecs-service-${var.env_name_short}"
+  name            = "cvp-service-${var.env_name_short}"
   cluster         = aws_ecs_cluster.credentials-cluster.id
   task_definition = aws_ecs_task_definition.cvp-task-definition.arn
-  desired_count   = 1
+  desired_count   = 2
+
+  depends_on = [aws_iam_instance_profile.ecs-instance-profile]
 
   // TODO look at dynamic mapping, which allows multiple container
   // TODO instances on the same ec2 instance.
@@ -434,14 +450,14 @@ resource aws_ecs_service cvp-service {
 
   load_balancer {
     target_group_arn = aws_lb_target_group.envoy-target-group.arn
-    container_name = "envoy"
-    container_port = var.envoy_port
+    container_name   = "envoy"
+    container_port   = var.envoy_port
   }
 
   load_balancer {
     target_group_arn = aws_lb_target_group.web-target-group.arn
-    container_name = "web"
-    container_port = var.web_port
+    container_name   = "web"
+    container_port   = var.web_port
   }
 }
 
@@ -488,7 +504,7 @@ resource postgresql_role connector-role {
   skip_reassign_owned = true
 }
 
-resource "postgresql_schema" "connector-schema" {
+resource postgresql_schema connector-schema {
   name = "connector-${var.env_name_short}"
   policy {
     create            = true
@@ -512,7 +528,7 @@ resource postgresql_role node-role {
   skip_reassign_owned = true
 }
 
-resource "postgresql_schema" "node-schema" {
+resource postgresql_schema node-schema {
   name = "node-${var.env_name_short}"
   policy {
     create            = true
@@ -522,11 +538,11 @@ resource "postgresql_schema" "node-schema" {
   }
 }
 
-output "command-to-test-connector" {
+output command-to-test-connector {
   value = "grpcurl -import-path connector/protobuf/connector -proto connector/protobuf/connector/protos.proto -rpc-header 'userId: c8834532-eade-11e9-a88d-d8f2ca059830' -plaintext cvp-${var.env_name_short}.cef.iohkdev.io:${var.connector_port} io.iohk.cvp.connector.ConnectorService/GenerateConnectionToken"
 }
 
-output "command-to-test-envoy-proxy" {
+output command-to-test-envoy-proxy {
   value = "curl -i -XOPTIONS -H'Host: cvp-${var.env_name_short}.cef.iohkdev.io:8080' -H'Accept: */*' -H'Accept-Language: en-GB,en;q=0.5' -H'Accept-Encoding: gzip, deflate' -H'Access-Control-Request-Method: POST' -H'Access-Control-Request-Headers: content-type,userid,x-grpc-web,x-user-agent' -H'Referer: http://localhost:3000/connections' -H'Origin: http://localhost:3000' 'http://cvp-${var.env_name_short}.cef.iohkdev.io:${var.envoy_port}/io.iohk.cvp.connector.ConnectorService/GenerateConnectionToken'"
 }
 

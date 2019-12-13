@@ -9,7 +9,6 @@
     "portMappings": [
       {
         "containerPort": 50051,
-        "hostPort": 50051,
         "protocol": "tcp"
       }
     ],
@@ -43,7 +42,7 @@
         "awslogs-region": "${awslogs-region}"
       }
     },
-    "networkMode": "awsvpc"
+    "networkMode": "bridge"
   },
   {
     "name": "node",
@@ -55,7 +54,6 @@
     "portMappings": [
       {
         "containerPort": 50053,
-        "hostPort": 50053,
         "protocol": "tcp"
       }
     ],
@@ -105,7 +103,7 @@
         "awslogs-region": "${awslogs-region}"
       }
     },
-    "networkMode": "awsvpc"
+    "networkMode": "bridge"
   },
   {
     "name": "bitcoind",
@@ -117,7 +115,6 @@
     "portMappings": [
       {
         "containerPort": 18333,
-        "hostPort": 18333,
         "protocol": "tcp"
       }
     ],
@@ -134,7 +131,7 @@
         "awslogs-region": "${awslogs-region}"
       }
     },
-    "networkMode": "awsvpc"
+    "networkMode": "bridge"
   },
   {
     "name": "envoy",
@@ -146,7 +143,6 @@
     "portMappings": [
       {
         "containerPort": 8080,
-        "hostPort": 8080,
         "protocol": "tcp"
       }
     ],
@@ -163,7 +159,7 @@
         "awslogs-region": "${awslogs-region}"
       }
     },
-    "networkMode": "awsvpc"
+    "networkMode": "bridge"
   },
   {
     "name": "web",
@@ -175,7 +171,6 @@
     "portMappings": [
       {
         "containerPort": 80,
-        "hostPort": 80,
         "protocol": "tcp"
       }
     ],
@@ -196,6 +191,6 @@
         "value": "${react-app-grpc-client}"
       }
     ],
-    "networkMode": "awsvpc"
+    "networkMode": "bridge"
   }
 ]

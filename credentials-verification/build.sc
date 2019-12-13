@@ -223,9 +223,14 @@ trait CVPDockerModule extends Module { self: JavaModule =>
     val jarfile = s"$name.jar"
   }
 
-  // This convention of using the ticket number for the image version is also encoded into terraform env.sh and the credentials-verification-web build.
-  def version: String =
-    os.proc("git", "rev-parse", "--abbrev-ref", "HEAD").call().out.trim.replaceFirst("(ATA-\\d+).*", "$1").toLowerCase
+  // This naming convention is also encoded into terraform env.sh and the circle-ci build.
+  def version: String = {
+    val branchPrefix = os.proc("git", "rev-parse", "--abbrev-ref", "HEAD").call().out.trim.replaceFirst("(ATA-\\d+).*", "$1").toLowerCase
+    val revCount = os.proc("git", "rev-list", "HEAD", "--count").call().out.trim
+    val shaShort = os.proc("git", "rev-parse", "--short", "HEAD").call().out.trim
+
+    s"$branchPrefix-$revCount-$shaShort"
+  }
 
   def cvpDockerConfig: CVPDockerConfig
 
