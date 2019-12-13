@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Drawer, Row } from 'antd';
+import { Drawer, message, Row } from 'antd';
 import { useTranslation } from 'react-i18next';
 import EmptyComponent from '../common/Atoms/EmptyComponent/EmptyComponent';
 import { credentialSummaryShape } from '../../helpers/propShapes';
 import DeletionModal from '../common/Organisms/Modals/DeletionModal/DeletionModal';
 import CredentialSummaryFilters from './Molecules/Filters/CredentialSummaryFilters';
 import CredentialSummaryTable from './Organisms/Tables/CredentialSummaryTable';
-import CredentialSummaryDetail from '../common/Organisms/Detail/CredentialListDetail';
+import CredentialSummaryDetail from '../common/Organisms/Detail/CredentialSummaryListDetail';
 import noGroups from '../../images/noGroups.svg';
 import { drawerWidth } from '../../helpers/constants';
 
@@ -16,12 +16,12 @@ const CredentialSummaries = ({
   setDate,
   setName,
   handleCredentialSummaryDeletion,
+  getStudentCredentials,
   onPageChange
 }) => {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [currentCredentialSummary, setCurrentCredentialSummary] = useState({});
-  const [showDrawer, setShowDrawer] = useState();
 
   const closeModal = () => {
     setOpen(false);
@@ -36,16 +36,26 @@ const CredentialSummaries = ({
     prefix: 'credentialSummary'
   };
 
+  const viewSummary = summary => {
+    getStudentCredentials(summary.id)
+      .then(credentials => setCurrentCredentialSummary({ ...summary, credentials }))
+      .catch(() => {
+        message.error(t('errors.errorGetting', { model: 'Credentials' }));
+      });
+  };
+
+  const showDrawer = !!Object.keys(currentCredentialSummary).length;
+
   return (
     <div className="Wrapper">
       <Drawer
         title={t('credentialSummary.detail.title')}
         placement="right"
-        onClose={() => setShowDrawer(false)}
+        onClose={() => setCurrentCredentialSummary({})}
         visible={showDrawer}
         width={drawerWidth}
       >
-        <CredentialSummaryDetail {...currentCredentialSummary} />
+        {showDrawer && <CredentialSummaryDetail {...currentCredentialSummary} />}
       </Drawer>
       <DeletionModal {...modalProps} />
       <div className="ContentHeader">
@@ -55,10 +65,9 @@ const CredentialSummaries = ({
       <Row>
         {credentialSummaries.length ? (
           <CredentialSummaryTable
-            setCurrentCredentialSummary={setCurrentCredentialSummary}
+            setCurrentCredentialSummary={viewSummary}
             credentialSummaries={credentialSummaries}
             onPageChange={onPageChange}
-            openDrawer={() => setShowDrawer(true)}
           />
         ) : (
           <EmptyComponent

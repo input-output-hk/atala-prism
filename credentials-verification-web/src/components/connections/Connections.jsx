@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Drawer } from 'antd';
+import { Drawer, message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import ConnectionsFilter from './Molecules/filter/ConnectionsFilter';
@@ -42,20 +42,22 @@ const Connections = ({ tableProps, filterProps, inviteHolder, isIssuer }) => {
 
   const getStudentCredentials = connectionId => {
     const { getCredentials } = tableProps;
-    return getCredentials(null, connectionId);
+    return getCredentials(undefined, connectionId);
   };
 
-  const setHolderInfo = async connection => {
+  const viewConnection = connection => {
     const { admissiondate, avatar, fullname, connectionid } = connection;
-    const transactions = await getStudentCredentials(connectionid);
-    console.log('transactions', transactions);
-    const formattedHolder = {
-      user: { icon: avatar, name: fullname },
-      transactions,
-      date: admissiondate
-    };
-    setCurrentConnection(formattedHolder);
-    setShowDrawer(true);
+    getStudentCredentials(connectionid)
+      .then(transactions => {
+        const formattedHolder = {
+          user: { icon: avatar, name: fullname },
+          transactions,
+          date: admissiondate
+        };
+        setCurrentConnection(formattedHolder);
+        setShowDrawer(true);
+      })
+      .catch(() => message.error(t('errors.errorGetting', { model: 'Credentials' })));
   };
 
   return (
@@ -89,7 +91,7 @@ const Connections = ({ tableProps, filterProps, inviteHolder, isIssuer }) => {
         <ConnectionsTable
           inviteHolder={inviteHolderAndShowQR}
           isIssuer={isIssuer}
-          setHolder={setHolderInfo}
+          viewConnectionDetail={viewConnection}
           {...tableProps}
         />
       ) : (

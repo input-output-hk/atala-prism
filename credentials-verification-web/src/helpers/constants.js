@@ -61,3 +61,6 @@ const WalletStatuses = {
 };
 
 export const translateStatus = status => WalletStatuses[status];
+
+// Connection status
+export const CONNECTION_ACCEPTED = 2;

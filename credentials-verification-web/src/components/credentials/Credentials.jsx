@@ -11,7 +11,7 @@ import noCredentials from '../../images/noCredentials.svg';
 import CredentialsButtons from './Atoms/Buttons/CredentialButtons';
 
 import './_style.scss';
-import CredentialDetail from '../common/Organisms/Detail/CredentialDetail';
+import CredentialSummaryDetail from '../common/Organisms/Detail/CredentialSummaryDetail';
 
 const Credentials = ({ showEmpty, tableProps, filterProps }) => {
   const { t } = useTranslation();
@@ -48,7 +48,7 @@ const Credentials = ({ showEmpty, tableProps, filterProps }) => {
 
   return (
     <div className="Wrapper PageContainer">
-      <CredentialDetail
+      <CredentialSummaryDetail
         drawerInfo={{
           title: t('credentials.detail.title'),
           onClose: () => setShowDrawer(false),

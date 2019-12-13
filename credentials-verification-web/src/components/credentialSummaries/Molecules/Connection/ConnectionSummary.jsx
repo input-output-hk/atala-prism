@@ -2,43 +2,30 @@ import React from 'react';
 import { Col } from 'antd';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
+import { shortBackendDateFormatter } from '../../../../helpers/formatters';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
-import iconCredentials from '../../../../images/icon-credentials.svg';
+import defaultIcon from '../../../../images/defaultCredentialImage.svg';
 
 import './_style.scss';
 
-const Connection = ({
-  icon,
-  type,
-  date,
-  university,
-  student,
-  graduationDate,
-  setConnectionInfo
-}) => {
+const Connection = ({ credential, setConnectionInfo }) => {
   const { t } = useTranslation();
+  const { icon, type = 'Credential', graduationDate } = credential;
 
   return (
     <div className="ConnectionCredentials">
       <Col span={18} className="CredentialData">
-        <img src={icon || iconCredentials} alt={t('connections.detail.iconAlt')} />
+        <img src={icon || defaultIcon} alt={t('connections.detail.iconAlt')} />
         <div className="CredentialDataText">
           <h3>{type}</h3>
-          <p>{date}</p>
+          <p>{shortBackendDateFormatter(graduationDate)}</p>
         </div>
       </Col>
       <Col span={6} className="CredentialLink">
         <CustomButton
           buttonProps={{
             className: 'theme-link',
-            onClick: () =>
-              setConnectionInfo({
-                title: type,
-                startDate: date,
-                university,
-                student,
-                graduationDate
-              })
+            onClick: () => setConnectionInfo(credential)
           }}
           buttonText={t('actions.view')}
         />

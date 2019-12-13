@@ -3,12 +3,13 @@ import { StudentsServicePromiseClient } from '../../protos/credentials/credentia
 import {
   GetStudentRequest,
   GetStudentsRequest,
-  GenerateConnectionTokenRequest
+  GenerateConnectionTokenRequest,
+  GetStudentCredentialsRequest
 } from '../../protos/credentials/credentialsManager_pb';
 import Logger from '../../helpers/Logger';
 
 const { REACT_APP_GRPC_CLIENT } = process.env;
-const issuerId = 'c8834532-eade-11e9-a88d-d8f2ca059830';
+const issuerId = 'd0ecca47-86e2-4cdb-bf64-b289f03eb77e'; // 'c8834532-eade-11e9-a88d-d8f2ca059830';
 const studentsService = new StudentsServicePromiseClient(REACT_APP_GRPC_CLIENT, null, null);
 
 const createAndPopulateGetStudentRequest = (limit, lastSeenStudentId) => {
@@ -52,4 +53,30 @@ export const getStudentById = async studentId => {
   const { student } = result.toObject();
 
   return student;
+};
+
+export const getStudentCredentials = async (studentId, issuer = issuerId) => {
+  Logger.info('Getting credentials for the student: ', studentId, 'as the issuer: ', issuer);
+
+  try {
+    const getStudentCredentialsRequest = new GetStudentCredentialsRequest();
+    getStudentCredentialsRequest.setStudentid(studentId);
+
+    const response = await studentsService.getStudentCredentials(getStudentCredentialsRequest, {
+      userId: issuer
+    });
+    const { credentialList } = response.toObject();
+
+    console.log('the lizto', credentialList);
+
+    return credentialList;
+  } catch (e) {
+    Logger.error(
+      'An error ocurred while getting the credentials for student',
+      studentId,
+      '\n Error:',
+      e
+    );
+    throw new Error(e);
+  }
 };

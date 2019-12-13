@@ -27,7 +27,6 @@ const ConnectionsContainer = ({ api }) => {
   // This is used to paginate
   const [offset, setOffset] = useState(0);
 
-  // This should have the backend call
   useEffect(() => {
     api
       .getStudents(HOLDER_PAGE_SIZE)

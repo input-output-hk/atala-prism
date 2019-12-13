@@ -15,7 +15,7 @@ import holderDefaultAvatar from '../../../../images/holder-default-avatar.svg';
 
 import './_style.scss';
 
-const getColumns = ({ inviteHolder, isIssuer, setHolder }) => {
+const getColumns = ({ inviteHolder, isIssuer, viewConnectionDetail }) => {
   const userColumn = [
     {
       key: 'avatar',
@@ -74,7 +74,7 @@ const getColumns = ({ inviteHolder, isIssuer, setHolder }) => {
           showQRButton={holder.connectionstatus === CONNECTION_STATUSES.invitationMissing}
           inviteHolder={inviteHolder}
           isIssuer={isIssuer}
-          setHolder={setHolder}
+          viewConnectionDetail={viewConnectionDetail}
         />
       )
     }
@@ -97,11 +97,11 @@ const ConnectionsTable = ({
   setOffset,
   inviteHolder,
   isIssuer,
-  setHolder
+  viewConnectionDetail
 }) => (
   <div className="ConnectionsTable">
     <Table
-      columns={getColumns({ inviteHolder, isIssuer, setHolder })}
+      columns={getColumns({ inviteHolder, isIssuer, viewConnectionDetail })}
       dataSource={subjects}
       scroll={{ x: xScroll }}
       pagination={{
@@ -137,7 +137,7 @@ ConnectionsTable.propTypes = {
   offset: PropTypes.number,
   setOffset: PropTypes.func.isRequired,
   inviteHolder: PropTypes.func.isRequired,
-  setHolder: PropTypes.func.isRequired,
+  viewConnectionDetail: PropTypes.func.isRequired,
   isIssuer: PropTypes.func.isRequired
 };
 

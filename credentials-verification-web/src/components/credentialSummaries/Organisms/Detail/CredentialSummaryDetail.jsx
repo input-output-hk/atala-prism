@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import { Collapse, Icon } from 'antd';
 import { credentialSummaryShape } from '../../../../helpers/propShapes';
 import { shortDateFormatter } from '../../../../helpers/formatters';
-import Connection from '../../Molecules/Connection/Connection';
+import Connection from '../../Molecules/Connection/ConnectionSummary';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 
 import '../../../common/Organisms/Detail/_style.scss';

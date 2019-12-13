@@ -14,7 +14,7 @@ import './_style.scss';
 import CredentialDetail from './CredentialDetail';
 import holderDefaultAvatar from '../../../../images/holder-default-avatar.svg';
 
-const CredentialListDetail = ({ user: { icon, name: userName }, transactions, date }) => {
+const CredentialListDetail = ({ user: { icon, userName }, transactions, date }) => {
   const { t } = useTranslation();
 
   const [connectionInfo, setConnectionInfo] = useState();
@@ -53,7 +53,7 @@ const CredentialListDetail = ({ user: { icon, name: userName }, transactions, da
         const transaction = mapTransaction(trans, setConnectionInfo);
         return (
           <div className="CredentialSummaryLine">
-            <p>Credential</p>
+            <p>{t('credentialDetail.type')}</p>
             <Connection
               icon={transaction.icon}
               type={transaction.type}

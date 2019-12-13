@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Col, Row } from 'antd';
 import TemplateForm from '../TemplateForm/TemplateForm';
-import CredentialData from '../../../common/Atoms/CredentialData/CredentialData';
+import CredentialData from '../../../common/Atoms/CredentialData/CredentialSummaryData';
 import {
   EXAMPLE_DEGREE_NAME,
   EXAMPLE_UNIVERSITY_NANE,

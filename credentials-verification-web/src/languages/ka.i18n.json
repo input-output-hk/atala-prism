@@ -180,7 +180,8 @@
         "name": "Name",
         "date": "Date",
         "totalCredentials": "Total Credentials",
-        "type": "Credential"
+        "type": "Credential",
+        "email": "Email"
       },
       "buttons": {
         "delete": "Delete",
@@ -401,6 +402,9 @@
   },
   "menu": {
     "logout": "Log out"
+  },
+  "credentialDetail": {
+    "type": "Credential"
   },
   "errors": {
     "routeDidNotMatch": "The route {{pathnameToShow}} did not match any page",
