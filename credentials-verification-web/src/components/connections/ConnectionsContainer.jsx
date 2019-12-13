@@ -22,7 +22,7 @@ const ConnectionsContainer = ({ api }) => {
   // Until the infinite pagination is in all of the tables
   // this count will be hardcoded since there is no way of
   // knowing the total amount of subjects
-  const [subjectCount] = useState(HOLDER_PAGE_SIZE);
+  const [subjectCount, setSubjectCount] = useState(0);
 
   // This is used to paginate
   const [offset, setOffset] = useState(0);
@@ -33,6 +33,7 @@ const ConnectionsContainer = ({ api }) => {
       .then(holders => {
         const holdersWithKey = holders.map(holder => Object.assign({}, holder, { key: holder.id }));
         setSubjects(holdersWithKey);
+        setSubjectCount(holdersWithKey.length);
       })
       .catch(error => {
         Logger.error('[Connections.getHolders] Error while getting holders', error);

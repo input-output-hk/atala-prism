@@ -69,7 +69,6 @@ const getColumns = (viewText, sendCredentials, onView, issueCredential) => [
   },
   {
     key: 'actions',
-    fixed: 'right',
     render: credential => (
       <CustomButton
         buttonProps={{
@@ -96,7 +95,7 @@ const CredentialsTable = ({
     <div className="CredentialsTable">
       <Table
         id="CredentialsTable"
-        scroll={{ x: 1300 }}
+        scroll={{ x: 1300, y: 600 }}
         columns={getColumns(
           t('actions.view'),
           t('credentials.sendCredentials'),

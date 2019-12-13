@@ -439,6 +439,7 @@
     "updateSettings": "An error ocurred while updating the settings",
     "invalidSettings": "If the student pays for the credential an amount must be entered",
     "invalidPassword": "The entered password doesn't match the wallet one",
+    "noWallet": "The wallet must be running to login",
     "logout": "The logout could not be completed"
   }
 }

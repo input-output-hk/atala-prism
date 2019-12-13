@@ -2,7 +2,7 @@ import React from 'react';
 import { Table } from 'antd';
 import PropTypes from 'prop-types';
 import './_style.scss';
-import { xScroll } from '../../../../helpers/constants';
+import { xScroll, yScroll } from '../../../../helpers/constants';
 
 const PaginatedTable = ({
   selectionType,
@@ -18,7 +18,7 @@ const PaginatedTable = ({
     <Table
       rowSelection={selectionType}
       columns={columns}
-      scroll={{ x: xScroll }}
+      scroll={{ x: xScroll, y: yScroll }}
       dataSource={data}
       onChange={(_pagination, _filters, sorter) => {
         if (handleSort) return handleSort(sorter);

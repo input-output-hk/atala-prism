@@ -6,7 +6,7 @@ import { useHistory } from 'react-router-dom';
 import { withApi } from '../providers/witApi';
 import Login from './Login';
 import Logger from '../../helpers/Logger';
-import { UNLOCKED, translateStatus } from '../../helpers/constants';
+import { UNLOCKED, translateStatus, MISSING_WALLET_ERROR } from '../../helpers/constants';
 
 const LoginContainer = ({ api: { getDid, unlockWallet } }) => {
   const formRef = createRef();
@@ -26,7 +26,11 @@ const LoginContainer = ({ api: { getDid, unlockWallet } }) => {
         })
         .catch(error => {
           Logger.error(error);
-          message.error(t('errors.invalidPassword'));
+          if (error.message === MISSING_WALLET_ERROR) {
+            message.error(t('errors.noWallet'));
+          } else {
+            message.error(t('errors.invalidPassword'));
+          }
         });
     });
   };

@@ -113,9 +113,9 @@ const RegistrationContainer = ({
   const validateOrganizatonInfo = async () =>
     organizationRef.current
       .getForm()
-      .validateFieldsAndScroll(async (errors, { organizationName, organizationRole, logo }) => {
+      .validateFieldsAndScroll((errors, { organizationName, organizationRole, logo }) => {
         if (errors) return;
-        const logoToSave = new Uint8Array(await logo[0].arrayBuffer());
+        const logoToSave = new Uint8Array(logo[0]);
         setOrganizationInfo({ organizationName, organizationRole, logo });
         /* registerUser(organizationName, `did:test:issuer-${Math.floor(Math.random() * 1000)}`, logo)
           .then(() =>  */ createWallet(

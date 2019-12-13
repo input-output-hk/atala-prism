@@ -12,9 +12,11 @@ export const CREDENTIAL_PAGE_SIZE = DEFAUlT_PAGE_SIZE;
 export const CREDENTIAL_SUMMARY_PAGE_SIZE = DEFAUlT_PAGE_SIZE;
 // eslint-disable-next-line camelcase
 export const PAYMENT_PAGE_SIZE = DEFAUlT_PAGE_SIZE;
+// eslint-disable-next-line camelcase
+export const HARDCODED_LIMIT = 1000;
 
 export const xScroll = 1300;
-export const yScroll = 450;
+export const yScroll = 600;
 export const drawerWidth = 450;
 export const AVATAR_WIDTH = 50;
 
@@ -52,6 +54,7 @@ export const VERIFIER = 'VERIFIER';
 export const ISSUER = 'ISSUER';
 
 // Wallet
+export const MISSING_WALLET_ERROR = 'Wallet cannot be Unlocked';
 const MISSING = 'MISSING';
 export const UNLOCKED = 'UNLOCKED';
 const LOCKED = 'LOCKED';
