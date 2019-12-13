@@ -13,6 +13,17 @@
 
   .ActionButton {
     margin-top: 1em;
+
+    button {
+      background-color: $white;
+      border-color: $secondary-color;
+      color: $secondary-color;
+      &:hover,
+      &:focus {
+        border-color: $black;
+        color: $black;
+      }
+    }
   }
 
   h3 {

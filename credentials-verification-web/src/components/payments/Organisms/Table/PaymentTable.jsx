@@ -40,6 +40,10 @@ const getColumns = () => [
     render: ({ currency }) => (
       <CellRenderer title="currency" value={currency} componentName="payment" />
     )
+  },
+  {
+    key: 'method',
+    render: ({ method }) => <CellRenderer title="method" value={method} componentName="payment" />
   }
 ];
 

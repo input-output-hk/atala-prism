@@ -19,8 +19,8 @@ import { setDateInfoFromJSON } from '../helpers';
 import { getStudents } from './studentsManager';
 import { getDid } from '../wallet/wallet';
 
-const { REACT_APP_GRPC_CLIENT } = window._env_;
-const issuerId = 'c8834532-eade-11e9-a88d-d8f2ca059830';
+const { REACT_APP_GRPC_CLIENT, REACT_APP_ISSUER } = window._env_;
+const issuerId = REACT_APP_ISSUER;
 const credentialsService = new CredentialsServicePromiseClient(REACT_APP_GRPC_CLIENT, null, null);
 
 export const getCredentials = async (limit = 10, lastSeenCredentialId = null) => {

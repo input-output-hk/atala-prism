@@ -19,6 +19,7 @@ const getColumns = ({ inviteHolder, isIssuer, viewConnectionDetail }) => {
   const userColumn = [
     {
       key: 'avatar',
+      width: 45,
       render: ({ avatar }) => (
         <img
           style={{ width: '40px', height: '40px' }}
