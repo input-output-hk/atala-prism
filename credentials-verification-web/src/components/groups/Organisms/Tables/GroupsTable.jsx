@@ -79,6 +79,7 @@ const getColumns = ({ setGroupToDelete, fullInfo }) => {
   const commonColumns = [
     {
       key: 'icon',
+      width: 45,
       render: ({ icon, groupName }) => (
         <img style={{ height: '40px', width: '40px' }} src={icon} alt={`${groupName} icon`} />
       )
@@ -96,6 +97,7 @@ const getColumns = ({ setGroupToDelete, fullInfo }) => {
     },
     {
       key: 'lastUpdate',
+      width: 150,
       render: ({ lastUpdate }) => (
         <CellRenderer
           title="lastUpdate"

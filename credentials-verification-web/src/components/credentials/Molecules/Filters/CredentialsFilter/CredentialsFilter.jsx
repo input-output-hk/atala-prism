@@ -90,9 +90,11 @@ const CredentialsFilter = ({
         </Col>
         <Col span={3}>
           <CustomButton
-            onClick={clearFilters}
+            buttonProps={{
+              onClick: clearFilters,
+              className: 'theme-filter'
+            }}
             buttonText={t('credentials.filters.clearFilters')}
-            theme="theme-filter"
           />
         </Col>
       </Row>

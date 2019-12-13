@@ -12,33 +12,40 @@ const CredentialDetail = ({ drawerInfo, credentialData }) => {
 
   return (
     <Drawer placement="right" width={drawerWidth} destroyOnClose {...drawerInfo}>
-      <Fragment>
+      <div className="CredentialDetailContainer">
         {credentialData && <CredentialData {...credentialData} />}
-        {role === ISSUER && (
-          <CustomButton
-            buttonProps={{ className: 'theme-outline', onClick: () => {} }}
-            buttonText={t('credentials.detail.delete')}
-          />
-        )}
-        {role === ISSUER && (
-          <CustomButton
-            buttonProps={{ className: 'theme-secondary', onClick: () => {} }}
-            buttonText={t('credentials.detail.resend')}
-          />
-        )}
+        <div className="CredentialDetailButtons">
+          {role === ISSUER && (
+            <CustomButton
+              buttonProps={{ className: 'theme-outline', onClick: () => {} }}
+              buttonText={t('credentials.detail.delete')}
+            />
+          )}
+          {role === ISSUER && (
+            <CustomButton
+              buttonProps={{ className: 'theme-secondary', onClick: () => {} }}
+              buttonText={t('credentials.detail.resend')}
+            />
+          )}
+        </div>
         {role === VERIFIER && (
           <CustomButton
             buttonProps={{ className: 'theme-outline', onClick: () => {} }}
-            icon={<Icon type="download" />}
+            buttonText={t('credentials.detail.downloadButton')}
           />
         )}
         {role === VERIFIER && (
-          <CustomButton
-            buttonProps={{ className: 'theme-secondary', onClick: () => {} }}
-            buttonText={t('credentials.detail.verify')}
-          />
+          <div id="notarization" className="BlockchainLog">
+            <h3>{t('credentials.detail.notarizationTitle')}</h3>
+            <span>{t('credentials.detail.hashTitle')}</span>
+            <a href="#notarization">
+              <p className="TxHash">#a4b9c56412df3cd6dd89c0e6f2d18ab34075566186e2e9a</p>
+            </a>
+            <span>{t('credentials.detail.notarizationDate')}</span>
+            <p>20-11-2019 11:20AM</p>
+          </div>
         )}
-      </Fragment>
+      </div>
     </Drawer>
   );
 };

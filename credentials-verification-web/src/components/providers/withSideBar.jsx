@@ -4,7 +4,7 @@ import SideMenu from '../common/Molecules/SideBar/SideBar';
 
 export const withSideBar = Component => props => (
   <Fragment>
-    <Header />
+    <Header {...props} />
     <div className="MainContent">
       <SideMenu />
       <div className="MainContainer">

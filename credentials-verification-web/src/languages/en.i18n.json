@@ -158,7 +158,12 @@
       "noStudent": "You can't view the details of a credential that doesn't have a student",
       "delete": "Delete",
       "resend": "Resend",
-      "verify": "Verify"
+      "verify": "Verify",
+      "notarizationTitle": "Blockchain Notarization",
+      "hashTitle": "Tx Hash",
+      "notarizationDate": "Upload Date",
+      "downloadButton": "Download Credential"
+
     }
   },
   "credentialSummary": {
@@ -383,6 +388,7 @@
         "date": "Date",
         "amount": "Amount",
         "currency": "Currency",
+        "method": "Payment Method",
         "name": "Name"
       }
     }
@@ -402,6 +408,9 @@
   },
   "menu": {
     "logout": "Log out"
+  },
+  "loading":{
+    "logoName": "Atala Logo"
   },
   "credentialDetail": {
     "type": "Credential"

@@ -45,9 +45,10 @@
   background: transparent;
 }
 
-.ant-menu-vertical .ant-menu-item::after,
-.ant-menu-vertical-left .ant-menu-item::after,
-.ant-menu-vertical-right .ant-menu-item::after,
-.ant-menu-inline .ant-menu-item::after {
+.ant-menu-vertical .ant-menu-item.ant-menu-item-selected::after,
+.ant-menu-vertical-left .ant-menu-item.ant-menu-item-selected::after,
+.ant-menu-vertical-right .ant-menu-item.ant-menu-item-selected::after,
+.ant-menu-inline .ant-menu-item.ant-menu-item-selected::after {
   border-right: 3px solid $primary-color;
 }
+

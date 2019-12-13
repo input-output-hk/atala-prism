@@ -29,7 +29,8 @@ CustomButton.propTypes = {
       'theme-secondary',
       'theme-outline',
       'theme-grey',
-      'theme-link'
+      'theme-link',
+      'theme-filter'
     ]),
     onClick: PropTypes.func
   }).isRequired,

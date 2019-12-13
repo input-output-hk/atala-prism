@@ -11,9 +11,9 @@ import { getStudentById } from '../credentials/studentsManager';
 
 const { SentCredential } = require('../../protos/credentials/credential_pb');
 
-const { REACT_APP_GRPC_CLIENT, REACT_APP_VERIFIER } = window._env_;
+const { REACT_APP_GRPC_CLIENT, REACT_APP_VERIFIER, REACT_APP_ISSUER } = window._env_;
 const connectorServiceClient = new ConnectorServicePromiseClient(REACT_APP_GRPC_CLIENT, null, null);
-const issuerId = 'c8834532-eade-11e9-a88d-d8f2ca059830';
+const issuerId = REACT_APP_ISSUER;
 
 export const getConnectionsPaginated = (
   // Since the userId comes not from the session, I hardcoded it here

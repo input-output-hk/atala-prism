@@ -14,7 +14,7 @@ export const CREDENTIAL_SUMMARY_PAGE_SIZE = DEFAUlT_PAGE_SIZE;
 export const PAYMENT_PAGE_SIZE = DEFAUlT_PAGE_SIZE;
 
 export const xScroll = 1300;
-export const yScroll = 600;
+export const yScroll = 450;
 export const drawerWidth = 450;
 export const AVATAR_WIDTH = 50;
 

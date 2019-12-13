@@ -54,3 +54,40 @@
   border-radius: 0;
   @include primary-text($body, $black);
 }
+
+.CredentialDetailContainer{
+    display: flex;
+    flex-direction: column;
+
+    .CredentialDetailButtons{
+      display: flex;
+      justify-content: space-between;
+      .ant-btn{
+        width: 48%;
+      }
+    }
+
+    .CredentialTemplate{
+      width: 100%;
+      margin-bottom: 1em;
+    }
+
+    .BlockchainLog{
+      border-top: 1px solid #e8e8e8;
+      margin-top: 2em;
+      padding-top: 2em;
+      h3{
+        @include secondary-text($h3, $primary-color);
+      }
+      span{
+        @include primary-text(11px, $grey);
+      }
+      p{
+        @include body-text($body, $black, 400);
+        margin-bottom: 1em;
+        &.TxHash{
+          text-decoration: underline;
+        }
+      }
+    }
+}
