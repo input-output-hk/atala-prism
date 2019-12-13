@@ -46,7 +46,7 @@ const mapMessageToCredential = message => {
 
 export const getMessagesForConnection = async (aUserId = REACT_APP_VERIFIER, connectionId) => {
   const userId = aUserId || REACT_APP_VERIFIER; // set default if null
-  Logger.info(`Getting messages for connectionId ${connectionId}`);
+  Logger.info(`Getting messages for connectionId ${connectionId} and userId ${userId}`);
   const request = new GetMessagesForConnectionRequest();
   request.setConnectionid(connectionId);
   const result = await connectorServiceClient.getMessagesForConnection(request, {

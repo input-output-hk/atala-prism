@@ -19,7 +19,6 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
 
   const [currentStep, setCurrentStep] = useState(0);
   const [degreeName, setDegreeName] = useState();
-  const [award, setAward] = useState();
   const [startDate, setStartDate] = useState();
   const [graduationDate, setGraduationDate] = useState();
   const [logoUniversity, setLogoUniversity] = useState();
@@ -49,12 +48,11 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
     formRef.current
       .getForm()
       .validateFieldsAndScroll(
-        ['degreeName', 'award', 'startDate', 'graduationDate', 'logoUniversity'],
+        ['degreeName', 'startDate', 'graduationDate', 'logoUniversity'],
         (
           errors,
           {
             degreeName: newDegreeName,
-            award: newAward,
             startDate: newStartDate,
             graduationDate: newGraduationDate,
             logoUniversity: newLogoUniversity
@@ -63,7 +61,6 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
           if (errors) return;
 
           setDegreeName(newDegreeName);
-          setAward(newAward);
           setStartDate(newStartDate);
           setGraduationDate(newGraduationDate);
           setLogoUniversity(newLogoUniversity[0]);
@@ -78,7 +75,6 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
 
       return {
         degreeName: form.getFieldValue('degreeName'),
-        award: form.getFieldValue('award'),
         startDate: form.getFieldValue('startDate'),
         graduationDate: form.getFieldValue('graduationDate'),
         logoUniversity: form.getFieldValue('logoUniversity')
@@ -87,7 +83,6 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
 
     return {
       degreeName,
-      award,
       startDate,
       graduationDate,
       logoUniversity
@@ -95,7 +90,6 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
   };
 
   const credentialValues = {
-    award,
     degreeName,
     logoUniversity,
     startDate,
