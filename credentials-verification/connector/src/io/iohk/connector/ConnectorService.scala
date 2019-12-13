@@ -4,7 +4,7 @@ import java.util.UUID
 
 import io.iohk.connector.errors._
 import io.iohk.connector.model.ECPublicKey
-import io.iohk.connector.payments.PaymentWall
+import io.iohk.connector.payments.BraintreePayments
 import io.iohk.connector.services.{ConnectionsService, MessagesService}
 import io.iohk.cvp.connector.protos._
 import io.iohk.cvp.grpc.UserIdInterceptor.participantId
@@ -14,7 +14,7 @@ import org.slf4j.{Logger, LoggerFactory}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
-class ConnectorService(connections: ConnectionsService, messages: MessagesService, paymentWall: PaymentWall)(
+class ConnectorService(connections: ConnectionsService, messages: MessagesService, braintreePayments: BraintreePayments)(
     implicit executionContext: ExecutionContext
 ) extends ConnectorServiceGrpc.ConnectorService
     with ErrorSupport {
@@ -238,12 +238,20 @@ class ConnectorService(connections: ConnectionsService, messages: MessagesServic
       .successMap(_ => SendMessageResponse())
   }
 
-  override def generatePaymentUrl(request: GeneratePaymentUrlRequest): Future[GeneratePaymentUrlResponse] = {
-    val userId = participantId()
-
-    val url = paymentWall.generatePaymentUrl(userId)
-    val response = GeneratePaymentUrlResponse(paymentUrl = url)
-    Future.successful(response)
+  override def getBraintreePaymentsConfig(
+      request: GetBraintreePaymentsConfigRequest
+  ): Future[GetBraintreePaymentsConfigResponse] = {
+    Future.successful(GetBraintreePaymentsConfigResponse(tokenizationKey = braintreePayments.tokenizationKey))
   }
 
+  override def processPayment(request: ProcessPaymentRequest): Future[ProcessPaymentResponse] = {
+    val userId = participantId()
+
+    Future {
+      val amount = BigDecimal(request.amount)
+      val nonce = new BraintreePayments.ClientNonce(request.nonce)
+      braintreePayments.processPayment(userId, amount, nonce)
+      ProcessPaymentResponse()
+    }
+  }
 }

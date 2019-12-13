@@ -192,7 +192,7 @@ object connector extends ServerPBCommon with CVPDockerModule {
 
   override def ivyDeps = super.ivyDeps.map { deps =>
     deps ++ Agg(
-      ivy"com.paymentwall:paymentwall-java:2.0.2"
+      ivy"com.braintreepayments.gateway:braintree-java:2.106.0"
     )
   }
 

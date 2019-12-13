@@ -2,7 +2,7 @@ package io.iohk.connector
 
 import com.typesafe.config.{Config, ConfigFactory}
 import io.grpc.{Server, ServerBuilder}
-import io.iohk.connector.payments.PaymentWall
+import io.iohk.connector.payments.BraintreePayments
 import io.iohk.connector.repositories.{ConnectionsRepository, MessagesRepository}
 import io.iohk.connector.services.{ConnectionsService, MessagesService}
 import io.iohk.cvp.cmanager.grpc.services.{CredentialsServiceImpl, StudentsServiceImpl}
@@ -47,15 +47,15 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     val xa = TransactorFactory(databaseConfig)
 
     logger.info("Initializing Payment Wall")
-    PaymentWall.initialize(paymentWallConfig(globalConfig.getConfig("paymentWall")))
-    val paymentWall = new PaymentWall
+    val braintreePayments = BraintreePayments(braintreePaymentsConfig(globalConfig.getConfig("braintreePayments")))
 
     // connector
     val connectionsRepository = new ConnectionsRepository(xa)(executionContext)
     val connectionsService = new ConnectionsService(connectionsRepository)
     val messagesRepository = new MessagesRepository(xa)(executionContext)
     val messagesService = new MessagesService(messagesRepository)
-    val connectorService = new ConnectorService(connectionsService, messagesService, paymentWall)(executionContext)
+    val connectorService =
+      new ConnectorService(connectionsService, messagesService, braintreePayments)(executionContext)
 
     // cmanager
     val credentialsRepository = new CredentialsRepository(xa)(executionContext)
@@ -113,12 +113,18 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     )
   }
 
-  private def paymentWallConfig(config: Config): PaymentWall.Config = {
+  private def braintreePaymentsConfig(config: Config): BraintreePayments.Config = {
     val publicKey = config.getString("publicKey")
     val privateKey = config.getString("privateKey")
-    PaymentWall.Config(
+    val merchantId = config.getString("merchantId")
+    val tokenizationKey = config.getString("tokenizationKey")
+    val production = config.getBoolean("production")
+    BraintreePayments.Config(
+      production = production,
       publicKey = publicKey,
-      privateKey = privateKey
+      privateKey = privateKey,
+      merchantId = merchantId,
+      tokenizationKey = tokenizationKey
     )
   }
 }
