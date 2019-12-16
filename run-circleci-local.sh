@@ -14,4 +14,8 @@ circleci local execute \
   -e AWS_DEFAULT_REGION=us-east-2 \
   -e AWS_ECR_ACCOUNT_URL=895947072537.dkr.ecr.us-east-2.amazonaws.com \
   -e AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
-  --job deploy-ecr-images
+  -e POSTGRES_TEST_HOST=localhost \
+  -e POSTGRES_TEST_DB=postgres \
+  -e POSTGRES_TEST_USER=postgres \
+  -e POSTGRES_TEST_PASSWORD=postgres \
+  --job build-credentials-verification
