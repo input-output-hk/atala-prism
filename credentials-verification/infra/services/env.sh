@@ -95,7 +95,7 @@ EOF
 get_tag() {
   component=$1
   version=$2
-  tag=$(aws --output json ecr describe-images --filter tagStatus=TAGGED --repository-name "$component" | jq "[[.imageDetails[]] | sort_by(-.imagePushedAt)[] | .imageTags[]] | map(select(test(\"$version\")))[]")
+  tag=$(aws --output json ecr describe-images --filter tagStatus=TAGGED --repository-name "$component" | jq "[[.imageDetails[]] | sort_by(-.imagePushedAt)[] | .imageTags[]] | map(select(test(\"$version\")))[]" | head -1)
   echo -n "$tag"
 }
 
