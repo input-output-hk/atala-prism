@@ -72,9 +72,6 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
   @BindView(R.id.text_view_graduation_date)
   TextView textViewGraduationDate;
 
-  @BindView(R.id.text_view_award)
-  TextView textViewAward;
-
   @BindView(R.id.credential_logo)
   ImageView imageViewCredentialLogo;
 
@@ -145,15 +142,12 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
     textViewFullName.setText(
         MessageFormat.format("{0} {1}", subjectData.getNames(0), subjectData.getSurname(0)));
 
-    textViewCredentialName.setText(credential.getGrantingDecision());
+    textViewCredentialName.setText(credential.getDegreeAwarded());
 
     DateUtils dateUtils = new DateUtils(getContext());
 
     textViewStartDate.setText(dateUtils.format(credential.getAdmissionDate()));
     textViewGraduationDate.setText(dateUtils.format(credential.getGraduationDate()));
-
-    textViewAward.setText(
-        credential.getAdditionalSpeciality() != null ? credential.getDegreeAwarded() : "-");
 
     Preferences prefs = new Preferences(getContext());
 

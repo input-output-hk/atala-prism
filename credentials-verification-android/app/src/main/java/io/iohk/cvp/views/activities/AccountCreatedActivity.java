@@ -1,5 +1,6 @@
 package io.iohk.cvp.views.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
@@ -8,6 +9,8 @@ import butterknife.BindView;
 import butterknife.OnClick;
 import io.iohk.cvp.R;
 import io.iohk.cvp.views.Navigator;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import javax.inject.Inject;
 
@@ -29,7 +32,7 @@ public class AccountCreatedActivity extends CvpActivity {
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     Objects.requireNonNull(getSupportActionBar()).hide();
-    
+
     continueButton.setText(R.string.continue_string);
     textViewTitle.setText(R.string.your_account_has_been_created);
     textViewDescription.setText(R.string.continue_connection);
@@ -57,7 +60,10 @@ public class AccountCreatedActivity extends CvpActivity {
 
   @OnClick(R.id.button)
   public void onContinueClick() {
-    navigator.showConnections(this);
+    List<Integer> flags = new ArrayList<>();
+    flags.add(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+    flags.add(Intent.FLAG_ACTIVITY_NEW_TASK);
+    navigator.showConnections(this, flags);
   }
 
 }

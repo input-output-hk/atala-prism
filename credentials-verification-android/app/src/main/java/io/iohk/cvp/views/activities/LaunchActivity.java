@@ -7,6 +7,7 @@ import io.iohk.cvp.R;
 import io.iohk.cvp.core.exception.SharedPrefencesDataNotFoundException;
 import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.Preferences;
+import java.util.ArrayList;
 import java.util.Objects;
 import javax.inject.Inject;
 
@@ -26,7 +27,7 @@ public class LaunchActivity extends CvpActivity {
         () -> {
           try {
             new Preferences(this).getPrivateKey();
-            navigator.showConnections(this);
+            navigator.showConnections(this, new ArrayList<>());
           } catch (SharedPrefencesDataNotFoundException e) {
             navigator.showWelcomeActivity(this);
           }

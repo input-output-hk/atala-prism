@@ -50,6 +50,8 @@ public class ConnectionsFragment extends CvpFragment<ConnectionsActivityViewMode
   @Inject
   ConnectionsListFragment employersListFragment;
 
+  private LiveData<List<ConnectionInfo>> liveData;
+
   @Inject
   public ConnectionsFragment() {
   }
@@ -114,10 +116,10 @@ public class ConnectionsFragment extends CvpFragment<ConnectionsActivityViewMode
   }
 
   public void listConnections(Set<String> userIds) {
-    LiveData<List<ConnectionInfo>> connectionsData = viewModel.getConnections(userIds);
+    liveData = viewModel.getConnections(userIds);
 
-    if (!connectionsData.hasActiveObservers()) {
-      connectionsData.observe(this, connections -> {
+    if (!liveData.hasActiveObservers()) {
+      liveData.observe(this, connections -> {
         List<ConnectionInfo> issuerConnections = connections.stream()
             .filter(conn -> conn.getParticipantInfo().getParticipantCase().getNumber()
                 == ParticipantInfo.ISSUER_FIELD_NUMBER)
@@ -162,5 +164,13 @@ public class ConnectionsFragment extends CvpFragment<ConnectionsActivityViewMode
     ActivityUtils
         .onQrcodeResult(requestCode, resultCode, (MainActivity) getActivity(),
             viewModel, data, this);
+  }
+
+  @Override
+  public void onDestroyView() {
+    super.onDestroyView();
+    liveData.removeObservers(this);
+    viewModel.clearConnections();
+    viewModel.stopTasks();
   }
 }
