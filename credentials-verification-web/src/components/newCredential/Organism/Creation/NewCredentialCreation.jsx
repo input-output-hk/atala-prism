@@ -1,35 +1,46 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Col, Row } from 'antd';
+import moment from 'moment';
 import TemplateForm from '../TemplateForm/TemplateForm';
 import CredentialData from '../../../common/Atoms/CredentialData/CredentialSummaryData';
-import {
-  EXAMPLE_DEGREE_NAME,
-  EXAMPLE_UNIVERSITY_NANE,
-  EXAMPLE_FULL_NAME,
-  EXAMPLE_START_DATE,
-  EXAMPLE_GRADUATION_DATE
-} from '../../../../helpers/constants';
-import { dayMonthYearFormatter } from '../../../../helpers/formatters';
 
 import './_style.scss';
+import { toProtoDate } from '../../../../APIs/__mocks__/helpers';
 
-const NewCredentialCreation = ({ savePicture, formRef, credentialValues }) => (
-  <Row type="flex" align="middle" className="NewCredentialCreation">
-    <Col xs={24} lg={12} className="CredentialTemplateContainer">
-      <CredentialData
-        title={EXAMPLE_DEGREE_NAME}
-        university={EXAMPLE_UNIVERSITY_NANE}
-        student={EXAMPLE_FULL_NAME}
-        startDate={dayMonthYearFormatter(EXAMPLE_START_DATE)}
-        graduationDate={dayMonthYearFormatter(EXAMPLE_GRADUATION_DATE)}
-      />
-    </Col>
-    <Col xs={24} lg={12} className="CredentialFormContainer">
-      <TemplateForm savePicture={savePicture} credentialValues={credentialValues} ref={formRef} />
-    </Col>
-  </Row>
-);
+const NewCredentialCreation = ({
+  savePicture,
+  formRef,
+  credentialValues,
+  credentialData,
+  updateExampleCredential
+}) => {
+  const { startDate, graduationDate } = credentialData;
+
+  const formattedStartDate = startDate && toProtoDate(moment(startDate));
+  const formattedGraduationDate = graduationDate && toProtoDate(moment(graduationDate));
+
+  const formattedData = Object.assign({}, credentialData, {
+    startDate: formattedStartDate,
+    graduationDate: formattedGraduationDate
+  });
+
+  return (
+    <Row type="flex" align="middle" className="NewCredentialCreation">
+      <Col xs={24} lg={12} className="CredentialTemplateContainer">
+        <CredentialData {...formattedData} />
+      </Col>
+      <Col xs={24} lg={12} className="CredentialFormContainer">
+        <TemplateForm
+          savePicture={savePicture}
+          credentialValues={credentialValues}
+          ref={formRef}
+          updateExampleCredential={updateExampleCredential}
+        />
+      </Col>
+    </Row>
+  );
+};
 
 NewCredentialCreation.defaultProps = {
   credentialValues: {}
