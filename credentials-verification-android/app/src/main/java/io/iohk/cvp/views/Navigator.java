@@ -1,7 +1,5 @@
 package io.iohk.cvp.views;
 
-import static android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
@@ -34,8 +32,8 @@ public class Navigator {
     startNewActivity(from, WelcomeActivity.class, null);
   }
 
-  public void showConnections(Activity from) {
-    startNewActivity(from, MainActivity.class, null);
+  public void showConnections(Activity from, List<Integer> flags) {
+    startNewActivity(from, MainActivity.class, flags);
   }
 
   public void showTermsAndConditions(Activity from) {
@@ -51,7 +49,10 @@ public class Navigator {
   }
 
   public void showAccountCreated(Activity from) {
-    startNewActivity(from, AccountCreatedActivity.class, new ArrayList<>(FLAG_ACTIVITY_CLEAR_TASK));
+    List<Integer> flags = new ArrayList<>();
+    flags.add(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+    flags.add(Intent.FLAG_ACTIVITY_NEW_TASK);
+    startNewActivity(from, AccountCreatedActivity.class, flags);
   }
 
   public void showWebView(Activity from) {
@@ -102,6 +103,7 @@ public class Navigator {
       String tag) {
     FragmentTransaction ft = supportFragmentManager.beginTransaction();
     ft.replace(R.id.fragment_layout, cvpFragment, tag);
+    ft.addToBackStack(tag);
     ft.commit();
   }
 
