@@ -9,6 +9,9 @@ jobs:
 
       - setup_remote_docker
 
+      - restore_cache:
+          key: ivy-cache-{{ checksum "credentials-verification/build.sc" }}
+
       - run:
           name: Create node assembly
           command: cd credentials-verification && mill -i node.assembly && cp out/node/assembly/dest/out.jar out/node/assembly/dest/node.jar
@@ -76,9 +79,17 @@ jobs:
     steps:
       - checkout
 
+      - restore_cache:
+          key: ivy-cache-{{ checksum "credentials-verification/build.sc" }}
+
       - run:
           name: Test credentials-verification components
           command: cd credentials-verification && mill -i __.test
+
+      - save_cache:
+          key: ivy-cache-{{ checksum "credentials-verification/build.sc" }}
+          paths:
+            - "~/.ivy2/cache"
 
   build-credentials-verification-web:
     working_directory: ~/repo
