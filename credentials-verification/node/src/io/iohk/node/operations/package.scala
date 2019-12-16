@@ -4,7 +4,7 @@ import java.security.PublicKey
 
 import cats.data.EitherT
 import doobie.free.connection.ConnectionIO
-import io.iohk.node.models.DIDSuffix
+import io.iohk.node.models.{DIDSuffix, SHA256Digest}
 import io.iohk.node.operations.path._
 import io.iohk.nodenew.{geud_node_new => proto}
 
@@ -68,6 +68,8 @@ package object operations {
     /** Error signifying that key that was supposed to be used to verify the signature does not exist */
     case class UnknownKey(didSuffix: DIDSuffix, keyId: String) extends StateError
 
+    case class InvalidSignature() extends StateError
+
   }
 
   /** Representation of already parsed valid operation */
@@ -81,6 +83,8 @@ package object operations {
       * It's the responsibility of the caller to manage transaction, in order to ensure atomicity of the operation.
       */
     def applyState(): EitherT[ConnectionIO, StateError, Unit]
+
+    def digest: SHA256Digest
   }
 
   /** Companion object for operation */

@@ -18,4 +18,11 @@ object DIDDataDAO {
          |WHERE did_suffix = $didSuffix
        """.stripMargin.query[Int].option.map(_.map(_ => didSuffix))
   }
+
+  def all(): ConnectionIO[Seq[DIDSuffix]] = {
+    sql"""SELECT did_suffix FROM did_data"""
+      .query[DIDSuffix]
+      .to[Seq]
+
+  }
 }

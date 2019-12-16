@@ -1,6 +1,6 @@
 package io.iohk.node.operations
 
-import java.security.{MessageDigest, PublicKey}
+import java.security.PublicKey
 
 import cats.data.EitherT
 import cats.implicits._
@@ -114,7 +114,7 @@ object CreateDIDOperation extends OperationCompanion[CreateDIDOperation] {
   }
 
   override def parse(operation: proto.AtalaOperation): Either[ValidationError, CreateDIDOperation] = {
-    val operationDigest = SHA256Digest(MessageDigest.getInstance("SHA-256").digest())
+    val operationDigest = SHA256Digest.compute(operation.toByteArray)
     val didSuffix = DIDSuffix(operationDigest)
     val createOperation = ValueAtPath(operation, Path.root).child(_.getCreateDid, "createDid")
     for {

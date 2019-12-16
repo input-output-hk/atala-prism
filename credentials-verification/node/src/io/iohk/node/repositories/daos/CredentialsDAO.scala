@@ -24,6 +24,13 @@ object CredentialsDAO {
        """.stripMargin.update.run.map(_ => ())
   }
 
+  def all(): ConnectionIO[Seq[Credential]] = {
+    sql"""
+         |SELECT credential_id, issuer, content_hash, issued_on, revoked_on
+         |FROM credentials
+       """.stripMargin.query[Credential].to[Seq]
+  }
+
   def find(credentialId: CredentialId): ConnectionIO[Option[Credential]] = {
     sql"""
          |SELECT credential_id, issuer, content_hash, issued_on, revoked_on

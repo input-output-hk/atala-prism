@@ -1,6 +1,6 @@
 package io.iohk.node
 
-import java.security.PublicKey
+import java.security.{MessageDigest, PublicKey}
 import java.sql.Date
 
 import enumeratum.EnumEntry.UpperSnakecase
@@ -33,9 +33,20 @@ package object models {
         case _ => false
       })
     }
+
+    override def toString(): String = s"SHA256Digest($hexValue)"
   }
 
-  class DIDSuffix private (val suffix: String) extends AnyVal
+  object SHA256Digest {
+    private def messageDigest = MessageDigest.getInstance("SHA256")
+    def compute(data: Array[Byte]): SHA256Digest = {
+      SHA256Digest(messageDigest.digest(data))
+    }
+  }
+
+  class DIDSuffix private (val suffix: String) extends AnyVal {
+    override def toString = suffix
+  }
 
   object DIDSuffix {
     def apply(didSuffix: String): DIDSuffix = {

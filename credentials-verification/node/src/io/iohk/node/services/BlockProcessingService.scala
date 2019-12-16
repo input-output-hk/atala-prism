@@ -1,11 +1,16 @@
 package io.iohk.node.services
 
+import java.security.PublicKey
+
+import cats.data.{EitherT, OptionT}
 import cats.implicits._
 import doobie.free.connection
 import doobie.free.connection.ConnectionIO
+import io.iohk.cvp.crypto.ECSignature
 import io.iohk.node.operations.ValidationError.InvalidValue
 import io.iohk.node.operations.path.Path
-import io.iohk.node.operations.{CreateDIDOperation, Operation, ValidationError}
+import io.iohk.node.operations._
+import io.iohk.node.repositories.daos.PublicKeysDAO
 import io.iohk.nodenew.{atala_bitcoin_new => atala_proto, geud_node_new => geud_proto}
 import org.slf4j.LoggerFactory
 
@@ -13,6 +18,12 @@ import scala.collection.generic.CanBuildFrom
 import scala.language.higherKinds
 
 class BlockProcessingService {
+
+  // there are two implicit implementations for cats.Monad[doobie.free.connection.ConnectionIO],
+  // one from doobie, the other for cats, making it ambiguous
+  // we need to choose one
+  implicit def _connectionIOMonad: cats.Monad[doobie.free.connection.ConnectionIO] =
+    doobie.free.connection.AsyncConnectionIO
 
   protected val logger = LoggerFactory.getLogger(getClass)
 
@@ -65,7 +76,66 @@ class BlockProcessingService {
         )
         connection.pure(false)
       case Right(parsedOperations) =>
-        connection.pure(true)
+        (parsedOperations zip operations)
+          .traverse {
+            case (parsedOperation, protoOperation) =>
+              val result: ConnectionIO[Unit] = for {
+                // we want operations to be atomic - either it is applied correctly or the state is not modified
+                // we are using SQL savepoints for that, which can be used to do subtransactions
+                savepoint <- connection.setSavepoint
+                _ <- {
+                  processOperation(parsedOperation, protoOperation)
+                    .flatMap {
+                      case Right(_) =>
+                        logger.info(s"Operation applied:\n${parsedOperation.digest}")
+                        connection.releaseSavepoint(savepoint)
+                      case Left(err) =>
+                        logger.warn(
+                          s"Operation was not applied:\n${err.toString}\nOperation:\n${protoOperation.toProtoString}"
+                        )
+                        connection.rollback(savepoint)
+                    }
+                }
+              } yield ()
+              result
+          }
+          .map(_ => true)
+    }
+  }
+
+  def processOperation(
+      operation: Operation,
+      protoOperation: geud_proto.SignedAtalaOperation
+  ): ConnectionIO[Either[StateError, Unit]] = {
+    val keyET = EitherT
+      .fromEither[ConnectionIO](operation.getKey(protoOperation.signedWith))
+      .flatMap {
+        case OperationKey.IncludedKey(k) => EitherT.rightT[ConnectionIO, StateError](k)
+        case OperationKey.DeferredKey(owner, keyId) =>
+          OptionT(PublicKeysDAO.find(owner, keyId))
+            .toRight[StateError](StateError.UnknownKey(owner, keyId))
+            .map(_.key)
+      }
+
+    val result = for {
+      key <- keyET
+      _ <- EitherT.fromEither[ConnectionIO](verifySignature(key, protoOperation))
+      _ <- operation.applyState()
+    } yield ()
+    result.value
+  }
+
+  def verifySignature(key: PublicKey, protoOperation: geud_proto.SignedAtalaOperation): Either[StateError, Unit] = {
+    try {
+      Either.cond(
+        ECSignature.verify(key, protoOperation.getOperation.toByteArray, protoOperation.signature.toByteArray.toVector),
+        (),
+        StateError.InvalidSignature()
+      )
+    } catch {
+      case ex: java.security.SignatureException =>
+        logger.warn("Unable to parse signature", ex)
+        Left(StateError.InvalidSignature())
     }
   }
 }
