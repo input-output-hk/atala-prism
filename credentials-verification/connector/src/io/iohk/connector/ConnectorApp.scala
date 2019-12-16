@@ -9,6 +9,9 @@ import io.iohk.cvp.cmanager.grpc.services.{CredentialsServiceImpl, StudentsServi
 import io.iohk.cvp.cmanager.protos.{CredentialsServiceGrpc, StudentsServiceGrpc}
 import io.iohk.cvp.cmanager.repositories.{CredentialsRepository, IssuersRepository, StudentsRepository}
 import io.iohk.cvp.connector.protos._
+import io.iohk.cvp.cstore.CredentialsStoreService
+import io.iohk.cvp.cstore.services.{StoreIndividualsService, StoreUsersService, StoredCredentialsService}
+import io.iohk.cvp.cstore.protos.{CredentialsStoreServiceGrpc}
 import io.iohk.cvp.grpc.UserIdInterceptor
 import io.iohk.cvp.repositories.{SchemaMigrations, TransactorFactory}
 import org.slf4j.LoggerFactory
@@ -64,6 +67,14 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     val credentialsService = new CredentialsServiceImpl(issuersRepository, credentialsRepository)(executionContext)
     val studentsService = new StudentsServiceImpl(studentsRepository, credentialsRepository)(executionContext)
 
+    val storeUsersService = new StoreUsersService(xa)(executionContext)
+    val storeIndividualsService = new StoreIndividualsService(xa)(executionContext)
+    val storedCredentialsService = new StoredCredentialsService(xa)(executionContext)
+    val credentialsStoreService =
+      new CredentialsStoreService(storeUsersService, storeIndividualsService, storedCredentialsService)(
+        executionContext
+      )
+
     logger.info("Starting server")
     server = ServerBuilder
       .forPort(ConnectorApp.port)
@@ -71,6 +82,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       .addService(ConnectorServiceGrpc.bindService(connectorService, executionContext))
       .addService(CredentialsServiceGrpc.bindService(credentialsService, executionContext))
       .addService(StudentsServiceGrpc.bindService(studentsService, executionContext))
+      .addService(CredentialsStoreServiceGrpc.bindService(credentialsStoreService, executionContext))
       .build()
       .start()
 
