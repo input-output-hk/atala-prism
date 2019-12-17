@@ -9,6 +9,9 @@ jobs:
 
       - setup_remote_docker
 
+      - restore_cache:
+          key: ivy-cache-{{ checksum "credentials-verification/build.sc" }}
+
       - run:
           name: Create node assembly
           command: cd credentials-verification && mill -i node.assembly && cp out/node/assembly/dest/out.jar out/node/assembly/dest/node.jar
@@ -66,22 +69,27 @@ jobs:
 
   build-credentials-verification:
     working_directory: ~/repo
-    machine:
-      image: ubuntu-1604:201903-01
+    docker:
+      - image: inputoutput/scala-mill:2.12.8-0.5.2
+      - image: postgres:11.5
+        environment:
+          POSTGRES_USER: postgres
+          POSTGRES_DB: postgres
+          POSTGRES_PASSWORD: postgres
     steps:
       - checkout
 
-      - run:
-          name: Pre-download postgres image
-          command: docker pull postgres:11.5
-
-      - run:
-          name: Install mill
-          command: sh -c '(echo "#!/usr/bin/env sh" && curl -L https://github.com/lihaoyi/mill/releases/download/0.5.2/0.5.2-9-ea4f04-assembly) > ~/mill && chmod +x ~/mill'
+      - restore_cache:
+          key: ivy-cache-{{ checksum "credentials-verification/build.sc" }}
 
       - run:
           name: Test credentials-verification components
-          command: cd credentials-verification && ~/mill __.test
+          command: cd credentials-verification && mill -i __.test
+
+      - save_cache:
+          key: ivy-cache-{{ checksum "credentials-verification/build.sc" }}
+          paths:
+            - "~/.ivy2/cache"
 
   build-credentials-verification-web:
     working_directory: ~/repo
