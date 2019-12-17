@@ -13,12 +13,25 @@ jobs:
           key: ivy-cache-{{ checksum "credentials-verification/build.sc" }}
 
       - run:
+          name: Create web assembly
+          command: |
+            cd credentials-verification-web
+            npm ci --production
+            CI=false GENERATE_SOURCEMAP=false npm run build
+
+      - run:
           name: Create node assembly
-          command: cd credentials-verification && mill -i node.assembly && cp out/node/assembly/dest/out.jar out/node/assembly/dest/node.jar
+          command: |
+            cd credentials-verification
+            mill -i node.assembly
+            cp out/node/assembly/dest/out.jar out/node/assembly/dest/node.jar
 
       - run:
           name: Create connector assembly
-          command: cd credentials-verification && mill -i connector.assembly && cp out/connector/assembly/dest/out.jar out/connector/assembly/dest/connector.jar
+          command: |
+            cd credentials-verification
+            mill -i connector.assembly
+            cp out/connector/assembly/dest/out.jar out/connector/assembly/dest/connector.jar
 
       - run:
           name: Set tag convention

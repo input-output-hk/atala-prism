@@ -4,6 +4,7 @@ FROM openjdk:8u181
 ENV SCALA_VERSION 2.12.8
 ENV MILL_VERSION 0.5.2
 ENV TERRAFORM_VERSION 0.12.17
+ENV NODE_VERSION=10.16.3
 
 # Define working directory
 WORKDIR /root
@@ -45,3 +46,10 @@ RUN export terraform="terraform_${TERRAFORM_VERSION}_linux_amd64.zip" \
 
 # Install jq
 RUN apt-get update && apt-get install -y jq
+
+# Install node
+ENV NVM_DIR=/root/.nvm
+RUN \
+   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.1/install.sh | bash
+RUN . "$NVM_DIR/nvm.sh" && nvm install ${NODE_VERSION} && nvm use v${NODE_VERSION} && nvm alias default v${NODE_VERSION}
+ENV PATH="/root/.nvm/versions/node/v${NODE_VERSION}/bin/:${PATH}"
