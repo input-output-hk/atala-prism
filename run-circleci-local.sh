@@ -18,4 +18,4 @@ circleci local execute \
   -e POSTGRES_TEST_DB=postgres \
   -e POSTGRES_TEST_USER=postgres \
   -e POSTGRES_TEST_PASSWORD=postgres \
-  --job build-credentials-verification
+  --job deploy-ecr-images

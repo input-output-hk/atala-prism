@@ -46,14 +46,9 @@ react-scripts package use internally .dotenv. For more information see [adding-c
 Environment variables are configured in `.env` file.
 For development purposes copy `.env` file to `.env.local`. This file is excluded from git and overrides `.env`  for all environments except test.
 
-
-## Build with custom configs
-
-1. Create a copy of `.env` config file and setup the environment variables.
-1. Run build: `npx env-cmd -f {config-file-path} npm run build`
-
 ### Docker build
 
 1. Environment variables in `.env` config file are used as default.
-1. Build image `docker build -t atala:prod .` Use the name and tag you want.
-1. Run container `docker run -it -p 80:HOST_PORT -e REACT_APP_GRPC_CLIENT=http://localhost:10000 --rm atala:prod`.
+1. Build deployment bundle with `npm run build`
+1. Build docker image `docker build .`.
+1. Run container `docker run -it -p 80:HOST_PORT -e REACT_APP_GRPC_CLIENT=http://localhost:10000 --rm <image>`.

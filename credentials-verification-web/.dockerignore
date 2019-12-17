@@ -1,5 +1,13 @@
-node_modules/
-out/
-build/
-.idea/
+# Ignore everything
+**
+
+# Allow directories required by the docker build
+!/.env
+!/scripts/**
+!/build/**
+!/nginx/**
+
+# Ignore unnecessary files inside allowed directories
+**/.DS_Store
+**/Thumbs.db
 
