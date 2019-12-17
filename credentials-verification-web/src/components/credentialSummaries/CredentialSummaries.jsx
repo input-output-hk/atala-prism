@@ -7,7 +7,7 @@ import { credentialSummaryShape } from '../../helpers/propShapes';
 import DeletionModal from '../common/Organisms/Modals/DeletionModal/DeletionModal';
 import CredentialSummaryFilters from './Molecules/Filters/CredentialSummaryFilters';
 import CredentialSummaryTable from './Organisms/Tables/CredentialSummaryTable';
-import CredentialSummaryDetail from '../common/Organisms/Detail/CredentialSummaryListDetail';
+import CredentialSummaryListDetail from '../common/Organisms/Detail/CredentialSummaryListDetail';
 import noGroups from '../../images/noGroups.svg';
 import { drawerWidth } from '../../helpers/constants';
 
@@ -55,7 +55,7 @@ const CredentialSummaries = ({
         visible={showDrawer}
         width={drawerWidth}
       >
-        {showDrawer && <CredentialSummaryDetail {...currentCredentialSummary} />}
+        {showDrawer && <CredentialSummaryListDetail {...currentCredentialSummary} />}
       </Drawer>
       <DeletionModal {...modalProps} />
       <div className="ContentHeader">

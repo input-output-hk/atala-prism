@@ -49,10 +49,11 @@ const CredentialSummaryListDetail = ({ user, credentials, date }) => {
       )}
       {credentials.map(({ enrollmentdate, title, graduationdate }) => (
         <div className="CredentialSummaryLine">
-          <p>Credential</p>
+          <p>{t('credentialSummary.detail.credentialsType.bachelorsDegree')}</p>
           <Connection
             credential={{
-              startDate: enrollmentdate,
+              startDate: shortBackendDateFormatter(enrollmentdate),
+              type: title,
               title,
               student: user,
               graduationDate: graduationdate
