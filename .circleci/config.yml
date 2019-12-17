@@ -163,10 +163,10 @@ workflows:
   version: 2.1
   build-and-deploy:
     jobs:
-#      - build-credentials-verification-web
-#      - build-credentials-verification
-#      - build-credentials-verification-android
-      - deploy-ecr-images
-#          requires:
-#            - build-credentials-verification-web
-#            - build-credentials-verification
+      - build-credentials-verification-web
+      - build-credentials-verification
+      - build-credentials-verification-android
+      - deploy-ecr-images:
+          requires:
+            - build-credentials-verification-web
+            - build-credentials-verification
