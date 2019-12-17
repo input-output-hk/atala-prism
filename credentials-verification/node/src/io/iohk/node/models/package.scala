@@ -90,4 +90,11 @@ package object models {
       revokedOn: Option[LocalDate] = None,
       lastOperation: SHA256Digest
   )
+
+  case class AtalaObject(
+      objectId: SHA256Digest,
+      sequenceNumber: Int,
+      blockHash: Option[SHA256Digest],
+      processed: Boolean
+  )
 }

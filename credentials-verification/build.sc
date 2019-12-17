@@ -180,7 +180,14 @@ object node extends ServerPBCommon with CVPDockerModule {
 
   override def cvpDockerConfig = CVPDockerConfig(name = "node")
 
-  object test extends `tests-common` {}
+  object test extends `tests-common` {
+    override def ivyDeps = super.ivyDeps.map { deps =>
+      deps ++ Agg(
+        ivy"org.mockito::mockito-scala:1.11.1",
+        ivy"org.mockito::mockito-scala-scalatest:1.11.1"
+      )
+    }
+  }
 }
 
 object connector extends ServerPBCommon with CVPDockerModule {

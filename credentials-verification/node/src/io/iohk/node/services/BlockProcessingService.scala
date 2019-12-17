@@ -16,7 +16,12 @@ import org.slf4j.LoggerFactory
 import scala.collection.generic.CanBuildFrom
 import scala.language.higherKinds
 
-class BlockProcessingService {
+trait BlockProcessingService {
+
+  def processBlock(block: atala_proto.AtalaBlock): ConnectionIO[Boolean]
+}
+
+class BlockProcessingServiceImpl extends BlockProcessingService {
 
   // there are two implicit implementations for cats.Monad[doobie.free.connection.ConnectionIO],
   // one from doobie, the other for cats, making it ambiguous
@@ -62,7 +67,7 @@ class BlockProcessingService {
 
   // ConnectionIO[Boolean] is a temporary type used to be able to unit tests this
   // it eventually will be replaced with ConnectionIO[Unit]
-  def processBlock(block: atala_proto.AtalaBlock): ConnectionIO[Boolean] = {
+  override def processBlock(block: atala_proto.AtalaBlock): ConnectionIO[Boolean] = {
     val operations = block.operations.toList
     val parsedOperationsEither = eitherTraverse(operations) { signedOperation =>
       parseOperation(signedOperation).left.map(err => (signedOperation, err))
