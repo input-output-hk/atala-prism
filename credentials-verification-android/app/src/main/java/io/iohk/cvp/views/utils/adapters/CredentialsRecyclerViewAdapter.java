@@ -59,7 +59,7 @@ public class CredentialsRecyclerViewAdapter extends
       holder.connectionId = msg.getConnectionId();
       holder.listener = this.listener;
       holder.isNew = this.hasNewCredentials;
-      holder.issuerName.setText(current.getIssuerType().getAcademicAuthority());
+      holder.degreeName.setText(current.getDegreeAwarded());
       holder.issuerLogo.setImageBitmap(
           ImageUtils.getBitmapFromByteArray(preferences.getConnectionLogo(msg.getConnectionId())));
     } catch (InvalidProtocolBufferException e) {
@@ -88,8 +88,8 @@ public class CredentialsRecyclerViewAdapter extends
     SentCredential credential;
     String messageId;
 
-    @BindView(R.id.issuer_name)
-    TextView issuerName;
+    @BindView(R.id.degree_name)
+    TextView degreeName;
 
     @BindView(R.id.credential_logo)
     ImageView issuerLogo;

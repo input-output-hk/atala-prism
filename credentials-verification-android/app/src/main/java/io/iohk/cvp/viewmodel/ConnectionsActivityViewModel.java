@@ -2,17 +2,17 @@ package io.iohk.cvp.viewmodel;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
 import io.iohk.cvp.grpc.GetConnectionTokenInfoRunnable;
 import io.iohk.cvp.grpc.GetConnectionsInfoRunnable;
 import io.iohk.cvp.grpc.GrpcTask;
 import io.iohk.cvp.io.connector.ConnectionInfo;
 import io.iohk.cvp.io.connector.ParticipantInfo;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import javax.inject.Inject;
 
-public class ConnectionsActivityViewModel extends ViewModel {
+public class ConnectionsActivityViewModel extends CvpViewModel {
 
   private MutableLiveData<List<ConnectionInfo>> connections = new MutableLiveData<>();
   private MutableLiveData<ParticipantInfo> issuerInfo = new MutableLiveData<>();
@@ -22,15 +22,22 @@ public class ConnectionsActivityViewModel extends ViewModel {
   }
 
   public LiveData<List<ConnectionInfo>> getConnections(Set<String> userIds) {
-    userIds.forEach(userId ->
-        new GrpcTask<>(new GetConnectionsInfoRunnable(connections)).execute(userId));
+    userIds.forEach(userId -> {
+      GrpcTask task = new GrpcTask<>(new GetConnectionsInfoRunnable(connections));
+      task.execute(userId);
+      runningTasks.add(task);
+    });
     return connections;
   }
 
   public LiveData<ParticipantInfo> getConnectionTokenInfo(String token) {
-    // FIXME this shouldn't be sending user id
     new GrpcTask<>(new GetConnectionTokenInfoRunnable(issuerInfo)).execute(null, token);
     return issuerInfo;
   }
+
+  public void clearConnections() {
+    connections.setValue(new ArrayList<>());
+  }
+
 
 }

@@ -198,7 +198,10 @@
       "transactions": "Transaction History",
       "proofRequest": "Proof Request",
       "newCredential": "New Credential",
-      "iconAlt": "Avatar"
+      "iconAlt": "Avatar",
+      "credentialsType": {
+        "bachelorsDegree":  "Bachelor's Degree"
+      }
     },
     "deletionSuccess": "The credential summary {{name}} was successfully deleted"
   },

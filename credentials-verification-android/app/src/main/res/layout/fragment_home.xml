@@ -39,7 +39,8 @@
       android:layout_gravity="center_horizontal"
       android:text="@string/no_credentials_yet"
       android:textColor="@color/black"
-      android:textSize="@dimen/titles_text_size" />
+      android:textSize="@dimen/titles_text_size"
+      android:visibility="gone" />
 
   </LinearLayout>
 

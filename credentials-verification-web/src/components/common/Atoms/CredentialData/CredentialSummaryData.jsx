@@ -16,7 +16,9 @@ const CredentialSummaryData = ({ title, university, student, startDate, graduati
     <div className="CredentialContent">
       <CellRenderer componentName="newCredential" title="universityName" value={university} />
       <hr />
-      <CellRenderer componentName="newCredential" title="fullName" value={student.fullname} />
+      {student && (
+        <CellRenderer componentName="newCredential" title="fullName" value={student.fullname} />
+      )}
       <hr />
       <div className="DegreeDate">
         {startDate && (

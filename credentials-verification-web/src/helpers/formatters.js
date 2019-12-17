@@ -22,12 +22,27 @@ const completeFrontendDateFormatter = (date, format) => {
 };
 
 export const fromUnixToProtoDateFormatter = date => {
-  const dateFromUnix = moment(date);
+  const lang = getBrowserLanguage();
+  const dateAsNumberArray = moment(date)
+    .locale(lang)
+    .format('L')
+    .split('/')
+    .map(Number);
+
+  let year;
+  let month;
+  let day;
+
+  if (lang === 'en') {
+    [month, day, year] = dateAsNumberArray;
+  } else {
+    [day, month, year] = dateAsNumberArray;
+  }
 
   const protoDate = {
-    year: dateFromUnix.year(),
-    month: dateFromUnix.month(),
-    day: dateFromUnix.day()
+    year,
+    month,
+    day
   };
 
   return protoDate;

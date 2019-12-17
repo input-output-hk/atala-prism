@@ -1,20 +1,24 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { Col } from 'antd';
 import CellRenderer from '../CellRenderer/CellRenderer';
 import freeUniLgo from '../../../../images/FreeUniLogo.png';
 import './_style.scss';
 
-const CredentialData = ({ title, university, student, startDate, graduationDate }) => (
+const CredentialData = ({ icon, title, university, student, startDate, graduationDate }) => (
   <Col lg={12} xs={24} className="CredentialTemplate">
     <div className="CredentialHeader">
       <CellRenderer componentName="newCredential" title="degreeName" value={title} />
-      <img className="IconUniversity" src={freeUniLgo} alt="Free University Tbilisi" />
+      <img className="IconUniversity" src={icon || freeUniLgo} alt="Free University Tbilisi" />
     </div>
     <div className="CredentialContent">
       <CellRenderer componentName="newCredential" title="universityName" value={university} />
-      <hr />
-      <CellRenderer componentName="newCredential" title="fullName" value={student} />
+      {student && (
+        <Fragment>
+          <hr />
+          <CellRenderer componentName="newCredential" title="fullName" value={student} />
+        </Fragment>
+      )}
       <hr />
       <div className="DegreeDate">
         {startDate && (
@@ -32,7 +36,12 @@ const CredentialData = ({ title, university, student, startDate, graduationDate 
   </Col>
 );
 
+CredentialData.defaultProps = {
+  icon: ''
+};
+
 CredentialData.propTypes = {
+  icon: PropTypes.string,
   title: PropTypes.string.isRequired,
   university: PropTypes.string.isRequired,
   student: PropTypes.string.isRequired,
