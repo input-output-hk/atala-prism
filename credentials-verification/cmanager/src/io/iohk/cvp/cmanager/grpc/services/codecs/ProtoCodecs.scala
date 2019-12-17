@@ -33,8 +33,8 @@ object ProtoCodecs {
       .withTitle(credential.title)
       .withIssuedBy(credential.issuedBy.value.toString)
       .withGroupName(credential.groupName)
-      .withEnrollmentDate(graduationDate)
-      .withGraduationDate(enrollmentDate)
+      .withEnrollmentDate(enrollmentDate)
+      .withGraduationDate(graduationDate)
   }
 
   def studentToProto(student: Student): protos.Student = {
