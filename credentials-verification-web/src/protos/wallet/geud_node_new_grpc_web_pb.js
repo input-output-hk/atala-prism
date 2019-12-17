@@ -40,6 +40,16 @@ proto.io.iohk.nodenew.NodeServiceClient =
    */
   this.hostname_ = hostname;
 
+  /**
+   * @private @const {?Object} The credentials to be used to connect
+   *    to the server
+   */
+  this.credentials_ = credentials;
+
+  /**
+   * @private @const {?Object} Options for the client
+   */
+  this.options_ = options;
 };
 
 
@@ -66,6 +76,16 @@ proto.io.iohk.nodenew.NodeServicePromiseClient =
    */
   this.hostname_ = hostname;
 
+  /**
+   * @private @const {?Object} The credentials to be used to connect
+   *    to the server
+   */
+  this.credentials_ = credentials;
+
+  /**
+   * @private @const {?Object} Options for the client
+   */
+  this.options_ = options;
 };
 
 
@@ -80,10 +100,7 @@ const methodDescriptor_NodeService_GetDidDocument = new grpc.web.MethodDescripto
   grpc.web.MethodType.UNARY,
   proto.io.iohk.nodenew.GetDidDocumentRequest,
   proto.io.iohk.nodenew.GetDidDocumentResponse,
-  /**
-   * @param {!proto.io.iohk.nodenew.GetDidDocumentRequest} request
-   * @return {!Uint8Array}
-   */
+  /** @param {!proto.io.iohk.nodenew.GetDidDocumentRequest} request */
   function(request) {
     return request.serializeBinary();
   },
@@ -99,10 +116,7 @@ const methodDescriptor_NodeService_GetDidDocument = new grpc.web.MethodDescripto
  */
 const methodInfo_NodeService_GetDidDocument = new grpc.web.AbstractClientBase.MethodInfo(
   proto.io.iohk.nodenew.GetDidDocumentResponse,
-  /**
-   * @param {!proto.io.iohk.nodenew.GetDidDocumentRequest} request
-   * @return {!Uint8Array}
-   */
+  /** @param {!proto.io.iohk.nodenew.GetDidDocumentRequest} request */
   function(request) {
     return request.serializeBinary();
   },
@@ -160,10 +174,7 @@ const methodDescriptor_NodeService_CreateDID = new grpc.web.MethodDescriptor(
   grpc.web.MethodType.UNARY,
   proto.io.iohk.nodenew.SignedAtalaOperation,
   proto.io.iohk.nodenew.CreateDIDResponse,
-  /**
-   * @param {!proto.io.iohk.nodenew.SignedAtalaOperation} request
-   * @return {!Uint8Array}
-   */
+  /** @param {!proto.io.iohk.nodenew.SignedAtalaOperation} request */
   function(request) {
     return request.serializeBinary();
   },
@@ -179,10 +190,7 @@ const methodDescriptor_NodeService_CreateDID = new grpc.web.MethodDescriptor(
  */
 const methodInfo_NodeService_CreateDID = new grpc.web.AbstractClientBase.MethodInfo(
   proto.io.iohk.nodenew.CreateDIDResponse,
-  /**
-   * @param {!proto.io.iohk.nodenew.SignedAtalaOperation} request
-   * @return {!Uint8Array}
-   */
+  /** @param {!proto.io.iohk.nodenew.SignedAtalaOperation} request */
   function(request) {
     return request.serializeBinary();
   },
@@ -240,10 +248,7 @@ const methodDescriptor_NodeService_IssueCredential = new grpc.web.MethodDescript
   grpc.web.MethodType.UNARY,
   proto.io.iohk.nodenew.SignedAtalaOperation,
   proto.io.iohk.nodenew.IssueCredentialResponse,
-  /**
-   * @param {!proto.io.iohk.nodenew.SignedAtalaOperation} request
-   * @return {!Uint8Array}
-   */
+  /** @param {!proto.io.iohk.nodenew.SignedAtalaOperation} request */
   function(request) {
     return request.serializeBinary();
   },
@@ -259,10 +264,7 @@ const methodDescriptor_NodeService_IssueCredential = new grpc.web.MethodDescript
  */
 const methodInfo_NodeService_IssueCredential = new grpc.web.AbstractClientBase.MethodInfo(
   proto.io.iohk.nodenew.IssueCredentialResponse,
-  /**
-   * @param {!proto.io.iohk.nodenew.SignedAtalaOperation} request
-   * @return {!Uint8Array}
-   */
+  /** @param {!proto.io.iohk.nodenew.SignedAtalaOperation} request */
   function(request) {
     return request.serializeBinary();
   },
@@ -320,10 +322,7 @@ const methodDescriptor_NodeService_RevokeCredential = new grpc.web.MethodDescrip
   grpc.web.MethodType.UNARY,
   proto.io.iohk.nodenew.SignedAtalaOperation,
   proto.io.iohk.nodenew.RevokeCredentialResponse,
-  /**
-   * @param {!proto.io.iohk.nodenew.SignedAtalaOperation} request
-   * @return {!Uint8Array}
-   */
+  /** @param {!proto.io.iohk.nodenew.SignedAtalaOperation} request */
   function(request) {
     return request.serializeBinary();
   },
@@ -339,10 +338,7 @@ const methodDescriptor_NodeService_RevokeCredential = new grpc.web.MethodDescrip
  */
 const methodInfo_NodeService_RevokeCredential = new grpc.web.AbstractClientBase.MethodInfo(
   proto.io.iohk.nodenew.RevokeCredentialResponse,
-  /**
-   * @param {!proto.io.iohk.nodenew.SignedAtalaOperation} request
-   * @return {!Uint8Array}
-   */
+  /** @param {!proto.io.iohk.nodenew.SignedAtalaOperation} request */
   function(request) {
     return request.serializeBinary();
   },

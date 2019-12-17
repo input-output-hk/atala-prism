@@ -13,6 +13,14 @@
     background: $grey;
   }
 
+  &.connectionMissing {
+    background: $dark-grey;
+  }
+
+  &.connectionRevoked {
+    background: $primary-color-darker;
+  }
+
   &.connectionAccepted {
     background: $success-color;
   }

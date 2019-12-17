@@ -120,7 +120,7 @@ const getStudentName = student => {
 
 const getIssuerName = issuer => {
   const { issuerlegalname, academicauthority } = issuer;
-  return `${issuerlegalname}, ${academicauthority}`;
+  return issuerlegalname;
 };
 
 const getTitle = (degreeawarded, additionalspeciality) =>

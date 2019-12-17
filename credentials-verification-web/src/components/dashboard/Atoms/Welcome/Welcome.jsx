@@ -12,11 +12,7 @@ const Welcome = ({ name, importantInfo }) => {
   return (
     <div className="WelcomeContainer">
       <div className="WelcomeText">
-        <h2>
-          {t('dashboard.welcome.title')}
-          <strong>{name}!</strong>
-        </h2>
-        {importantInfo && <p>{importantInfo}</p>}
+        <h2>{t('dashboard.welcome.title')}</h2>
       </div>
       <div className="WelcomeImg">
         <img src={welcomeImage} alt={t('dashboard.welcome.image')} />

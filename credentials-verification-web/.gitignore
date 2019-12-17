@@ -31,7 +31,6 @@ out/
 node_modules/
 
 .env*.local
-package-lock.json
 build
 
 ./public/env-config.js

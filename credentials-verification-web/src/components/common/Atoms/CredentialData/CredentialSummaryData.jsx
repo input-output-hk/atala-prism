@@ -22,17 +22,13 @@ const CredentialSummaryData = ({ title, university, student, startDate, graduati
       <hr />
       <div className="DegreeDate">
         {startDate && (
-          <CellRenderer
-            componentName="newCredential"
-            title="startDate"
-            value={shortBackendDateFormatter(startDate)}
-          />
+          <CellRenderer componentName="newCredential" title="startDate" value={startDate} />
         )}
         {graduationDate && (
           <CellRenderer
             componentName="newCredential"
             title="graduationDate"
-            value={shortBackendDateFormatter(graduationDate)}
+            value={graduationDate}
           />
         )}
       </div>

@@ -8,8 +8,9 @@ import {
 } from '../../protos/credentials/credentialsManager_pb';
 import Logger from '../../helpers/Logger';
 import { HARDCODED_LIMIT } from '../../helpers/constants';
+import { isIssuer } from '../wallet/wallet';
 
-const { REACT_APP_GRPC_CLIENT, REACT_APP_ISSUER } = window._env_;
+const { REACT_APP_GRPC_CLIENT, REACT_APP_ISSUER, REACT_APP_VERIFIER } = window._env_;
 const issuerId = REACT_APP_ISSUER;
 const studentsService = new StudentsServicePromiseClient(REACT_APP_GRPC_CLIENT, null, null);
 
@@ -22,7 +23,7 @@ const createAndPopulateGetStudentRequest = (limit, lastSeenStudentId) => {
   return getStudentsRequest;
 };
 
-export const getStudents = async (limit = 10, lastSeenCredentialId = null) => {
+export const getStudents = async (limit = 100, lastSeenCredentialId = null) => {
   Logger.info('Getting the students');
   const getStudentsRequest = createAndPopulateGetStudentRequest(
     HARDCODED_LIMIT,
@@ -37,12 +38,13 @@ export const getStudents = async (limit = 10, lastSeenCredentialId = null) => {
 };
 
 export const generateConnectionToken = async (userId, studentId) => {
+  const hardCodedUserId = isIssuer() ? REACT_APP_ISSUER : REACT_APP_VERIFIER;
   Logger.info(`Generating token for studentId ${studentId}`);
   const generateConnectionTokenRequest = new GenerateConnectionTokenRequest();
   generateConnectionTokenRequest.setStudentid(studentId);
   const response = await studentsService.generateConnectionToken(
     generateConnectionTokenRequest,
-    { userId: issuerId } // TODO unhardcode this when there be more user ids
+    { userId: hardCodedUserId } // TODO unhardcode this when there be more user ids
   );
 
   return response.getToken();
@@ -70,8 +72,6 @@ export const getStudentCredentials = async (studentId, issuer = issuerId) => {
       userId: issuer
     });
     const { credentialList } = response.toObject();
-
-    console.log('the lizto', credentialList);
 
     return credentialList;
   } catch (e) {

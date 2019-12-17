@@ -39,7 +39,7 @@
     },
     "table": {
       "columns": {
-        "identityNumber": "Identity Number",
+        "studentname": "Student Name",
         "admissionDate": "Admission Date",
         "email": "Email",
         "invite": "Invite",
@@ -148,7 +148,7 @@
     },
     "table": {
       "columns": {
-        "identityNumber": "Identity Number",
+        "studentname": "Student Name",
         "admissionDate": "Admission Date",
         "groupAssigned": "Group Assigned"
       }
@@ -354,7 +354,7 @@
   "dashboard": {
     "title": "Dashboard",
     "welcome": {
-      "title": "Welcome back ",
+      "title": "Welcome back!",
       "image": "Welcome",
       "subtitle": "This is a placeholder with info that is important for the logged user."
     },
