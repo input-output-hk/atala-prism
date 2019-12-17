@@ -26,7 +26,7 @@ const NewCredentialValidation = ({
         <CellRenderer title="identityNumber" value={identityNumber} componentName="newCredential" />
         <CellRenderer
           title="date"
-          value={shortDateFormatter(startDate / 1000)}
+          value={shortDateFormatter(startDate)}
           componentName="newCredential"
         />
         <CellRenderer title="groupAssigned" value={groupName} componentName="newCredential" />

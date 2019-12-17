@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
+import moment from 'moment';
 import Logger from '../../helpers/Logger';
 import NewCredential from './NewCredential';
 import { withApi } from '../providers/witApi';
@@ -11,6 +12,8 @@ import NewCredentialValidation from './Molecules/Validation/NewCredentialValidat
 import NewCredentialCreation from './Organism/Creation/NewCredentialCreation';
 import { fromUnixToProtoDateFormatter } from '../../helpers/formatters';
 import { withRedirector } from '../providers/withRedirector';
+import { EXAMPLE_UNIVERSITY_NANE } from '../../helpers/constants';
+import { toProtoDate } from '../../APIs/__mocks__/helpers';
 
 const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) => {
   const { t } = useTranslation();
@@ -34,14 +37,24 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
       enrollmentDate: fromUnixToProtoDateFormatter(startDate),
       graduationDate: fromUnixToProtoDateFormatter(graduationDate)
     })
-      .then(response => {
-        Logger.info('Successfully saved the credential: ', response.toObject());
+      .then(() => {
+        Logger.info('Successfully saved the credential');
         redirectToCredentials();
       })
       .catch(error => {
         Logger.error(error);
         message.error(t('errors.errorSaving', { model: t('credentials.title') }));
       });
+  };
+
+  const updateExampleCredential = (key, value) => {
+    const updaterDictionary = {
+      degreeName: setDegreeName,
+      startDate: setStartDate,
+      graduationDate: setGraduationDate
+    };
+
+    updaterDictionary[key](value);
   };
 
   const createCredentialTemplate = () => {
@@ -101,9 +114,16 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
       case 0:
         return (
           <NewCredentialCreation
+            updateExampleCredential={updateExampleCredential}
             credentialValues={credentialValues}
             savePicture={savePictureInS3}
             formRef={formRef}
+            credentialData={{
+              title: degreeName,
+              university: EXAMPLE_UNIVERSITY_NANE,
+              startDate,
+              graduationDate
+            }}
           />
         );
       case 1: {

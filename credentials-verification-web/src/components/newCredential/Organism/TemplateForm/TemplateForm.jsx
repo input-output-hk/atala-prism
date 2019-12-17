@@ -3,15 +3,18 @@ import { useTranslation } from 'react-i18next';
 import { DatePicker, Input } from 'antd';
 import moment from 'moment';
 import PropTypes from 'prop-types';
+import localeKa from 'moment/locale/ka';
+import localeEn from 'moment/locale/en-gb';
 import { noEmptyInput, futureDate, pastDate, minOneElement } from '../../../../helpers/formRules';
 import CustomForm from '../../../common/Organisms/Forms/CustomForm';
 import FileUploader from '../../../common/Molecules/FileUploader/FileUploader';
 
 import './_style.scss';
+import { getBrowserLanguage } from '../../../../helpers/languageUtils';
 
 const getStartDate = formRef => formRef.current.getForm().getFieldValue('startDate');
 
-const getInput = (key, initialValue, t) => ({
+const getInput = (key, initialValue, t, onChange) => ({
   fieldDecoratorData: {
     rules: [noEmptyInput(t('errors.form.emptyField'))],
     initialValue
@@ -19,18 +22,26 @@ const getInput = (key, initialValue, t) => ({
   label: t(`newCredential.form.${key}`),
   key,
   className: '',
-  input: <Input size="large" />
+  input: <Input size="large" onChange={onChange} />
 });
 
 const TemplateForm = React.forwardRef(
   (
-    { savePicture, credentialValues: { degreeName, logoUniversity, startDate, graduationDate } },
+    {
+      savePicture,
+      credentialValues: { degreeName, logoUniversity, startDate, graduationDate },
+      updateExampleCredential
+    },
     ref
   ) => {
     const { t } = useTranslation();
 
+    const locale = getBrowserLanguage() === 'en' ? localeEn : localeKa;
+
     const items = [
-      getInput('degreeName', degreeName, t),
+      getInput('degreeName', degreeName, t, ({ target: { value } }) =>
+        updateExampleCredential('degreeName', value)
+      ),
       {
         fieldDecoratorData: {
           rules: [
@@ -44,7 +55,15 @@ const TemplateForm = React.forwardRef(
         label: t('newCredential.form.startDate'),
         key: 'startDate',
         className: 'DatePickerContainer firstElement',
-        input: <DatePicker allowClear={false} size="large" showToday={false} />
+        input: (
+          <DatePicker
+            onChange={({ _d }) => updateExampleCredential('startDate', 1000 * moment(_d).unix())}
+            allowClear={false}
+            size="large"
+            showToday={false}
+            locale={locale}
+          />
+        )
       },
       {
         fieldDecoratorData: {
@@ -63,7 +82,16 @@ const TemplateForm = React.forwardRef(
         label: t('newCredential.form.graduationDate'),
         key: 'graduationDate',
         className: 'DatePickerContainer',
-        input: <DatePicker allowClear={false} size="large" />
+        input: (
+          <DatePicker
+            onChange={({ _d }) =>
+              updateExampleCredential('graduationDate', 1000 * moment(_d).unix())
+            }
+            allowClear={false}
+            size="large"
+            locale={locale}
+          />
+        )
       },
       {
         fieldDecoratorData: {
@@ -102,7 +130,8 @@ TemplateForm.propTypes = {
     graduationDate: PropTypes.instanceOf(moment),
     logoUniversity: PropTypes.arrayOf(PropTypes.shape),
     degreeName: PropTypes.string
-  }).isRequired
+  }).isRequired,
+  updateExampleCredential: PropTypes.func.isRequired
 };
 
 export default TemplateForm;
