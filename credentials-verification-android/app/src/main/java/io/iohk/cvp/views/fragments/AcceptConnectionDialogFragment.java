@@ -14,19 +14,12 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 import butterknife.BindView;
 import butterknife.OnClick;
-import com.crashlytics.android.Crashlytics;
 import io.iohk.cvp.R;
-import io.iohk.cvp.core.exception.CryptoException;
-import io.iohk.cvp.core.exception.SharedPrefencesDataNotFoundException;
 import io.iohk.cvp.io.connector.ParticipantInfo;
 import io.iohk.cvp.io.connector.ParticipantInfo.ParticipantCase;
-import io.iohk.cvp.utils.CryptoUtils;
 import io.iohk.cvp.utils.ImageUtils;
 import io.iohk.cvp.viewmodel.AcceptConnectionViewModel;
 import io.iohk.cvp.views.Preferences;
-import io.iohk.cvp.views.activities.MainActivity;
-import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBarOption;
-import java.security.spec.InvalidKeySpecException;
 import javax.inject.Inject;
 import lombok.NoArgsConstructor;
 
@@ -123,20 +116,11 @@ public class AcceptConnectionDialogFragment extends CvpDialogFragment<AcceptConn
 
   @OnClick(R.id.connect_button)
   public void onConnectClick() {
-    Preferences prefs = new Preferences(getContext());
-    try {
-      viewModel
-          .addConnectionFromToken(getArguments().getString(TOKEN_KEY),
-              CryptoUtils.getPublicKey(prefs))
-          .observe(this, connectionInfo -> {
-            this.dismiss();
-            prefs.addConnection(connectionInfo);
-            ((MainActivity) getActivity())
-                .onNavigation(BottomAppBarOption.CONNECTIONS, connectionInfo.getUserId());
-          });
-    } catch (SharedPrefencesDataNotFoundException | InvalidKeySpecException | CryptoException e) {
-      Crashlytics.logException(e);
-      // TODO show error message
-    }
+    viewModel.getTokenizationKey().observe(this, token -> {
+      this.dismiss();
+      Preferences prefs = new Preferences(getContext());
+      prefs.saveConnectionTokenToAccept(getArguments().getString(TOKEN_KEY));
+      navigator.showPayment(getActivity(), token);
+    });
   }
 }

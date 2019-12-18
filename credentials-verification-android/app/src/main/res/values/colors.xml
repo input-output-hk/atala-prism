@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
+  <attr name="textColorError">#FFF</attr>
   <color name="colorPrimary">#FF2D3B</color>
   <color name="colorPrimaryVariant">#00574B</color>
   <color name="colorOnPrimary">#F8F9F9</color>
@@ -10,8 +11,8 @@
   <color name="violet">#AF2DFF</color>
   <color name="onSurfaceMedium">#77869E</color>
   <color name="trasparent">#80000000</color>
-  <color name="orange">#FFB954</color>
 
+  <color name="orange">#FFB954</color>
   <color name="white">#FFFFFF</color>
   <color name="white_70">#BEBDBD</color>
   <color name="grey_1">#F8F9F9</color>
@@ -20,6 +21,7 @@
   <color name="grey_4">#979797</color>
   <color name="grey_5">#3C393A</color>
   <color name="grey_6">#262324</color>
+
   <color name="black">#202020</color>
 
   <color name="mtrl_textinput_default_box_stroke_color" tools:override="true">#E5E5E5</color>

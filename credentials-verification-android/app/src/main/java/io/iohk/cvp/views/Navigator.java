@@ -1,5 +1,7 @@
 package io.iohk.cvp.views;
 
+import static io.iohk.cvp.utils.ActivitiesRequestCodes.BRAINTREE_REQUEST_ACTIVITY;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
@@ -7,6 +9,7 @@ import android.os.Bundle;
 import android.provider.Settings;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import com.braintreepayments.api.dropin.DropInRequest;
 import io.iohk.cvp.R;
 import io.iohk.cvp.utils.ActivitiesRequestCodes;
 import io.iohk.cvp.utils.IntentDataConstants;
@@ -65,6 +68,12 @@ public class Navigator {
     intent.putExtra(IntentDataConstants.QR_SCANNER_MODE_KEY,
         IntentDataConstants.QR_SCANNER_MODE_QR_CODE);
     from.startActivityForResult(intent, ActivitiesRequestCodes.QR_SCANNER_REQUEST_ACTIVITY);
+  }
+
+  public void showPayment(Activity from, String tokenizationKey) {
+    DropInRequest dropInRequest = new DropInRequest().clientToken(tokenizationKey);
+    Intent intent = dropInRequest.getIntent(from);
+    from.startActivityForResult(intent, BRAINTREE_REQUEST_ACTIVITY);
   }
 
   private void startNewActivity(Activity from, Class activityClass,

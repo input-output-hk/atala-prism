@@ -90,8 +90,10 @@ service ConnectorService {
   }
 
   // Generate a URL that can be used to do a payment
-  rpc GeneratePaymentUrl (GeneratePaymentUrlRequest) returns (GeneratePaymentUrlResponse) {
+  rpc GetBraintreePaymentsConfig (GetBraintreePaymentsConfigRequest) returns (GetBraintreePaymentsConfigResponse) {
   }
+  rpc ProcessPayment (ProcessPaymentRequest) returns (ProcessPaymentResponse);
+  rpc GetPayments (GetPaymentsRequest) returns (GetPaymentsResponse);
 }
 
 // GENERAL
@@ -185,6 +187,7 @@ message GetConnectionTokenInfoResponse {
 message AddConnectionFromTokenRequest {
   string token = 1; // token to instantiate connection
   PublicKey holderPublicKey = 2;
+  string paymentNonce = 3; // optional field, if present, we'll charge the user before adding the connection
 }
 
 // Confirmation of connection instantiation
@@ -278,8 +281,30 @@ message ChangeBillingPlanRequest {
 message ChangeBillingPlanResponse {
 }
 
-message GeneratePaymentUrlRequest {
+message GetBraintreePaymentsConfigRequest {
 }
-message GeneratePaymentUrlResponse {
-  string paymentUrl = 1;
+message GetBraintreePaymentsConfigResponse {
+  string tokenizationKey = 1;
+}
+
+message ProcessPaymentRequest {
+  string amount = 1; // exact decimal amount
+  string nonce = 2; // client nonce
+}
+message ProcessPaymentResponse {
+  Payment payment = 1;
+}
+
+message GetPaymentsRequest {
+}
+message GetPaymentsResponse {
+  repeated Payment payments = 1;
+}
+
+message Payment {
+  string id = 1;
+  string amount = 2;
+  int64 createdOn = 3;
+  string status = 4;
+  string failureReason = 5;
 }

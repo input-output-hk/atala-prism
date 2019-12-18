@@ -28,7 +28,7 @@ public class GrpcTask<A> extends AsyncTask<Object, Void, Optional<A>> {
   @Override
   public Optional<A> doInBackground(Object... params) {
     try {
-      String userId = params[0] != null ? String.valueOf(params[0]) : null;
+      String userId = getUserId(params);
       ClientInterceptor interceptor = new HeaderClientInterceptor(userId);
       Channel channel = ClientInterceptors.intercept(origChannel, interceptor);
       ConnectorServiceBlockingStub
@@ -41,6 +41,14 @@ public class GrpcTask<A> extends AsyncTask<Object, Void, Optional<A>> {
       // TODO handle error
       return Optional.empty();
     }
+  }
+
+  // FIXME we should find a better way to send user id
+  private String getUserId(Object[] params) {
+    if (params.length == 0 || params[0] == null) {
+      return null;
+    }
+    return String.valueOf(params[0]);
   }
 
   @Override
