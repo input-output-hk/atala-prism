@@ -3,7 +3,7 @@ import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import Settings from './Settings';
-import { withApi } from '../providers/witApi';
+import { withApi } from '../providers/withApi';
 import Logger from '../../helpers/Logger';
 
 const SettingsContainer = ({ api: { getSettings, editSettings } }) => {

@@ -23,14 +23,18 @@ const createAndPopulateGetStudentRequest = (limit, lastSeenStudentId) => {
   return getStudentsRequest;
 };
 
-export const getStudents = async (limit = 100, lastSeenCredentialId = null) => {
+export const getStudents = async (
+  userId = REACT_APP_ISSUER,
+  limit = 100,
+  lastSeenCredentialId = null
+) => {
   Logger.info('Getting the students');
   const getStudentsRequest = createAndPopulateGetStudentRequest(
     HARDCODED_LIMIT,
     lastSeenCredentialId
   );
 
-  const result = await studentsService.getStudents(getStudentsRequest, { userId: issuerId });
+  const result = await studentsService.getStudents(getStudentsRequest, { userId });
 
   const { studentsList } = result.toObject();
 

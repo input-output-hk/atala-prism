@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import Logger from '../../helpers/Logger';
 import { GROUP_PAGE_SIZE } from '../../helpers/constants';
 import Groups from './Groups';
-import { withApi } from '../providers/witApi';
+import { withApi } from '../providers/withApi';
 import { dateAsUnix } from '../../helpers/formatters';
 
 const GroupsContainer = ({ api, selectingProps }) => {

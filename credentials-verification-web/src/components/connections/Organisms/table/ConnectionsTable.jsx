@@ -9,12 +9,17 @@ import {
   xScroll,
   CONNECTION_STATUSES,
   CONNECTION_STATUSES_TRANSLATOR,
+  INDIVIDUAL_STATUSES,
+  INDIVIDUAL_STATUSES_TRANSLATOR,
   yScroll
 } from '../../../../helpers/constants';
 import ActionButtons from '../../Atoms/ActionButtons/ActionButtons';
 import holderDefaultAvatar from '../../../../images/holder-default-avatar.svg';
 
 import './_style.scss';
+
+export const STATUSES_TRANSLATOR = isIssuer =>
+  isIssuer ? CONNECTION_STATUSES_TRANSLATOR : INDIVIDUAL_STATUSES_TRANSLATOR;
 
 const getColumns = ({ inviteHolder, isIssuer, viewConnectionDetail }) => {
   const userColumn = [
@@ -33,12 +38,6 @@ const getColumns = ({ inviteHolder, isIssuer, viewConnectionDetail }) => {
   ];
 
   const issuerInfo = [
-    {
-      key: 'identityNumber',
-      render: ({ id }) => (
-        <CellRenderer title="identityNumber" value={id} componentName="connections" />
-      )
-    },
     {
       key: 'admissionDate',
       render: ({ admissiondate }) => (
@@ -60,12 +59,23 @@ const getColumns = ({ inviteHolder, isIssuer, viewConnectionDetail }) => {
     },
     {
       key: 'connectionstatus',
-      render: ({ connectionstatus }) => {
-        const status = CONNECTION_STATUSES_TRANSLATOR[connectionstatus];
-        return <StatusBadge status={status} />;
+      render: ({ status }) => {
+        const statusDictionary = STATUSES_TRANSLATOR(isIssuer());
+        const statusLabel = statusDictionary[status];
+
+        return <StatusBadge status={statusLabel} />;
       }
     }
   ];
+
+  const showQR = holder => {
+    const invitationMissing = holder.connectionstatus === CONNECTION_STATUSES.invitationMissing;
+    const createdOrRevoked = [INDIVIDUAL_STATUSES.created, INDIVIDUAL_STATUSES.revoked].includes(
+      holder.status
+    );
+
+    return invitationMissing || createdOrRevoked;
+  };
 
   const actionColumns = [
     {
@@ -73,7 +83,7 @@ const getColumns = ({ inviteHolder, isIssuer, viewConnectionDetail }) => {
       render: holder => (
         <ActionButtons
           holder={holder}
-          showQRButton={holder.connectionstatus === CONNECTION_STATUSES.invitationMissing}
+          showQRButton={showQR(holder)}
           inviteHolder={inviteHolder}
           isIssuer={isIssuer}
           viewConnectionDetail={viewConnectionDetail}

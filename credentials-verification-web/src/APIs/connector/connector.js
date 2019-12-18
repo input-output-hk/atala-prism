@@ -66,7 +66,7 @@ const errorCredential = {
     dateofbirth: undefined,
     iddocument: undefined,
     namesList: ['Error'],
-    surnameList: ['Error']
+    surnamesList: ['Error']
   }
 };
 

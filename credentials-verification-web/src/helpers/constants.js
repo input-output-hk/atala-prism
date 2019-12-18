@@ -29,6 +29,14 @@ export const CONNECTION_STATUSES = {
 };
 export const CONNECTION_STATUSES_TRANSLATOR = __.invert(CONNECTION_STATUSES);
 
+export const INDIVIDUAL_STATUSES = {
+  created: 0,
+  invited: 1,
+  connected: 2,
+  revoked: 3
+};
+export const INDIVIDUAL_STATUSES_TRANSLATOR = __.invert(INDIVIDUAL_STATUSES);
+
 export const CONNECTED = 'CONNECTED';
 
 // eslint-disable-next-line quotes

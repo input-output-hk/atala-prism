@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import moment from 'moment';
 import Logger from '../../helpers/Logger';
 import NewCredential from './NewCredential';
-import { withApi } from '../providers/witApi';
+import { withApi } from '../providers/withApi';
 import SaveForLaterModal from './Molecules/Modal/SaveForLaterModal';
 import GroupsContainer from '../groups/GroupsContainer';
 import NewCredentialValidation from './Molecules/Validation/NewCredentialValidation';

@@ -3,7 +3,7 @@ import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import CredentialSummaries from './CredentialSummaries';
-import { withApi } from '../providers/witApi';
+import { withApi } from '../providers/withApi';
 import Logger from '../../helpers/Logger';
 import { CONNECTION_ACCEPTED } from '../../helpers/constants';
 

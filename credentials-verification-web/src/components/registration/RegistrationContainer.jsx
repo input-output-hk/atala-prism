@@ -6,7 +6,7 @@ import _ from 'lodash';
 import moment from 'moment';
 import DocumentAcceptation from './Molecules/DocumentAcceptation/DocumentAcceptation';
 import Registration from './Registration';
-import { withApi } from '../providers/witApi';
+import { withApi } from '../providers/withApi';
 import DownloadWallet from './Molecules/DownloadWallet/DownloadWallet';
 import SeedPhrase from './Organisms/SeedPhrase/SeedPhrase';
 import VerifySeedPhrase from './Organisms/SeedVerificator/VerifySeedPhrase';
