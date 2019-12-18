@@ -4,7 +4,8 @@ import java.util.UUID
 
 import doobie.postgres.implicits._
 import doobie.util.invariant.InvalidEnum
-import doobie.util.{Get, Put, Read}
+import doobie.util.{Get, Put}
+import io.iohk.connector.model.payments.{ClientNonce, Payment}
 import io.iohk.connector.model.{ConnectionId, MessageId, ParticipantLogo, ParticipantType}
 import io.iohk.cvp.models.ParticipantId
 
@@ -29,4 +30,14 @@ package object daos {
   implicit val participantLogoGet: Get[ParticipantLogo] =
     Get[Array[Byte]].map(bytes => ParticipantLogo.apply(bytes.toVector))
 
+  implicit val paymentIdPut: Put[Payment.Id] = Put[UUID].contramap(_.uuid)
+  implicit val paymentIdGet: Get[Payment.Id] = Get[UUID].map(Payment.Id.apply)
+
+  implicit val clientNoncePut: Put[ClientNonce] = Put[String].contramap(_.string)
+  implicit val clientNonceGet: Get[ClientNonce] = Get[String].map(s => new ClientNonce(s))
+
+  implicit val paymentStatusPut: Put[Payment.Status] = Put[String].contramap(_.value)
+  implicit val paymentStatusGet: Get[Payment.Status] = {
+    Get[String].map(Payment.Status.withNameInsensitive)
+  }
 }

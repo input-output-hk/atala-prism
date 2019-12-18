@@ -1,6 +1,7 @@
 package io.iohk.connector.payments
 
 import com.braintreegateway.{BraintreeGateway, Environment, Transaction, TransactionRequest}
+import io.iohk.connector.model.payments.ClientNonce
 import io.iohk.connector.payments.BraintreePayments._
 import io.iohk.cvp.models.ParticipantId
 
@@ -35,8 +36,6 @@ object BraintreePayments {
       merchantId: String,
       tokenizationKey: String
   )
-
-  class ClientNonce(val string: String) extends AnyVal
 
   def apply(config: Config): BraintreePayments = {
     val environment = if (config.production) Environment.PRODUCTION else Environment.SANDBOX

@@ -4,6 +4,7 @@ import java.util.UUID
 
 import io.iohk.connector.errors._
 import io.iohk.connector.model.ECPublicKey
+import io.iohk.connector.model.payments.ClientNonce
 import io.iohk.connector.payments.BraintreePayments
 import io.iohk.connector.services.{ConnectionsService, MessagesService}
 import io.iohk.cvp.connector.protos._
@@ -249,7 +250,7 @@ class ConnectorService(connections: ConnectionsService, messages: MessagesServic
 
     Future {
       val amount = BigDecimal(request.amount)
-      val nonce = new BraintreePayments.ClientNonce(request.nonce)
+      val nonce = new ClientNonce(request.nonce)
       braintreePayments.processPayment(userId, amount, nonce)
       ProcessPaymentResponse()
     }
