@@ -3,7 +3,7 @@ package io.iohk.connector
 import com.typesafe.config.{Config, ConfigFactory}
 import io.grpc.{Server, ServerBuilder}
 import io.iohk.connector.payments.BraintreePayments
-import io.iohk.connector.repositories.{ConnectionsRepository, MessagesRepository}
+import io.iohk.connector.repositories.{ConnectionsRepository, MessagesRepository, PaymentsRepository}
 import io.iohk.connector.services.{ConnectionsService, MessagesService}
 import io.iohk.cvp.cmanager.grpc.services.{CredentialsServiceImpl, StudentsServiceImpl}
 import io.iohk.cvp.cmanager.protos.{CredentialsServiceGrpc, StudentsServiceGrpc}
@@ -11,7 +11,7 @@ import io.iohk.cvp.cmanager.repositories.{CredentialsRepository, IssuersReposito
 import io.iohk.cvp.connector.protos._
 import io.iohk.cvp.cstore.CredentialsStoreService
 import io.iohk.cvp.cstore.services.{StoreIndividualsService, StoreUsersService, StoredCredentialsService}
-import io.iohk.cvp.cstore.protos.{CredentialsStoreServiceGrpc}
+import io.iohk.cvp.cstore.protos.CredentialsStoreServiceGrpc
 import io.iohk.cvp.grpc.UserIdInterceptor
 import io.iohk.cvp.repositories.{SchemaMigrations, TransactorFactory}
 import org.slf4j.LoggerFactory
@@ -50,15 +50,17 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     val xa = TransactorFactory(databaseConfig)
 
     logger.info("Initializing Payment Wall")
-    val braintreePayments = BraintreePayments(braintreePaymentsConfig(globalConfig.getConfig("braintreePayments")))
+    val braintreePayments =
+      BraintreePayments(braintreePaymentsConfig(globalConfig.getConfig("braintreePayments")))(executionContext)
 
     // connector
     val connectionsRepository = new ConnectionsRepository(xa)(executionContext)
     val connectionsService = new ConnectionsService(connectionsRepository)
     val messagesRepository = new MessagesRepository(xa)(executionContext)
     val messagesService = new MessagesService(messagesRepository)
+    val paymentsRepository = new PaymentsRepository(xa)(executionContext)
     val connectorService =
-      new ConnectorService(connectionsService, messagesService, braintreePayments)(executionContext)
+      new ConnectorService(connectionsService, messagesService, braintreePayments, paymentsRepository)(executionContext)
 
     // cmanager
     val issuersRepository = new IssuersRepository(xa)(executionContext)

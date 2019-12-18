@@ -274,4 +274,14 @@ message ProcessPaymentRequest {
   string amount = 1; // exact decimal amount
   string nonce = 2; // client nonce
 }
-message ProcessPaymentResponse {}
+message ProcessPaymentResponse {
+  Payment payment = 1;
+}
+
+message Payment {
+  string id = 1;
+  string amount = 2;
+  int64 createdOn = 3;
+  string status = 4;
+  string failureReason = 5;
+}
