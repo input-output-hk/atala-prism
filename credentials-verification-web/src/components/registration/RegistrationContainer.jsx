@@ -117,17 +117,11 @@ const RegistrationContainer = ({
         if (errors) return;
         const logoToSave = new Uint8Array(logo[0]);
         setOrganizationInfo({ organizationName, organizationRole, logo });
-        /* registerUser(organizationName, `did:test:issuer-${Math.floor(Math.random() * 1000)}`, logo)
-          .then(() =>  */ createWallet(
-          password,
-          organizationName,
-          organizationRole,
-          logoToSave
-        ) // )
+        createWallet(password, organizationName, organizationRole, logoToSave)
           .then(lockWallet)
           .then(nextStep)
           .catch(error => {
-            Logger('Error at registration: ', error);
+            Logger.error('Error at registration: ', error);
             message.error(t('errors.errorDuringRegister'));
           });
       });

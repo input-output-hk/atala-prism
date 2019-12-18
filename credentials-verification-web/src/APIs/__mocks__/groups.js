@@ -4,7 +4,7 @@ import icon from '../../images/icon-groups.svg';
 // This group  is hardcoded as it was discussed for the alpha verion
 const mockGroup = {
   icon,
-  groupName: 'Example Group Name',
+  groupName: 'Finance Class of 2019',
   groupId: 1,
   lastUpdate: {
     year: 2018,

@@ -38,7 +38,7 @@ const CredentialSummaryController = ({ api: { getStudents, getStudentCredentials
             user: { email, fullname }
           }));
 
-        if (!summariesResponse.length) {
+        if (!parsedSummaries.length) {
           setHasMore(false);
           return;
         }

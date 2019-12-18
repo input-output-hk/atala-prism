@@ -678,7 +678,7 @@ proto.io.iohk.cvp.cmanager.RegisterResponse.prototype.toObject = function(opt_in
  */
 proto.io.iohk.cvp.cmanager.RegisterResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    id: jspb.Message.getFieldWithDefault(msg, 1, "")
+    issuerid: jspb.Message.getFieldWithDefault(msg, 1, "")
   };
 
   if (includeInstance) {
@@ -717,7 +717,7 @@ proto.io.iohk.cvp.cmanager.RegisterResponse.deserializeBinaryFromReader = functi
     switch (field) {
     case 1:
       var value = /** @type {string} */ (reader.readString());
-      msg.setId(value);
+      msg.setIssuerid(value);
       break;
     default:
       reader.skipField();
@@ -748,7 +748,7 @@ proto.io.iohk.cvp.cmanager.RegisterResponse.prototype.serializeBinary = function
  */
 proto.io.iohk.cvp.cmanager.RegisterResponse.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = message.getId();
+  f = message.getIssuerid();
   if (f.length > 0) {
     writer.writeString(
       1,
@@ -759,10 +759,10 @@ proto.io.iohk.cvp.cmanager.RegisterResponse.serializeBinaryToWriter = function(m
 
 
 /**
- * optional string id = 1;
+ * optional string issuerId = 1;
  * @return {string}
  */
-proto.io.iohk.cvp.cmanager.RegisterResponse.prototype.getId = function() {
+proto.io.iohk.cvp.cmanager.RegisterResponse.prototype.getIssuerid = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
@@ -771,7 +771,7 @@ proto.io.iohk.cvp.cmanager.RegisterResponse.prototype.getId = function() {
  * @param {string} value
  * @return {!proto.io.iohk.cvp.cmanager.RegisterResponse} returns this
  */
-proto.io.iohk.cvp.cmanager.RegisterResponse.prototype.setId = function(value) {
+proto.io.iohk.cvp.cmanager.RegisterResponse.prototype.setIssuerid = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 

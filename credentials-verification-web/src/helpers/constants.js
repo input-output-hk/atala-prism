@@ -1,7 +1,7 @@
 import __ from 'lodash';
 
 // eslint-disable-next-line camelcase
-const DEFAUlT_PAGE_SIZE = 15;
+const DEFAUlT_PAGE_SIZE = 100;
 // eslint-disable-next-line camelcase
 export const HOLDER_PAGE_SIZE = DEFAUlT_PAGE_SIZE;
 // eslint-disable-next-line camelcase
@@ -11,7 +11,7 @@ export const CREDENTIAL_PAGE_SIZE = DEFAUlT_PAGE_SIZE;
 // eslint-disable-next-line camelcase
 export const CREDENTIAL_SUMMARY_PAGE_SIZE = DEFAUlT_PAGE_SIZE;
 // eslint-disable-next-line camelcase
-export const PAYMENT_PAGE_SIZE = DEFAUlT_PAGE_SIZE;
+export const PAYMENT_PAGE_SIZE = 20;
 // eslint-disable-next-line camelcase
 export const HARDCODED_LIMIT = 1000;
 

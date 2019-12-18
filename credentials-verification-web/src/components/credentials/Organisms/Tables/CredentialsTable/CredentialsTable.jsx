@@ -25,9 +25,9 @@ const getColumns = (viewText, sendCredentials, onView, issueCredential) => [
   },
   { key: 'title', render: ({ title }) => title },
   {
-    key: 'id',
-    render: ({ id }) => (
-      <CellRenderer title="identityNumber" value={id} componentName="credentials" />
+    key: 'studentname',
+    render: ({ studentname }) => (
+      <CellRenderer title="studentname" value={studentname} componentName="credentials" />
     )
   },
   {

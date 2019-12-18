@@ -25,7 +25,7 @@ const { REACT_APP_GRPC_CLIENT, REACT_APP_ISSUER } = window._env_;
 const issuerId = REACT_APP_ISSUER;
 const credentialsService = new CredentialsServicePromiseClient(REACT_APP_GRPC_CLIENT, null, null);
 
-export const getCredentials = async (limit = 10, lastSeenCredentialId = null) => {
+export const getCredentials = async (limit = 100, lastSeenCredentialId = null) => {
   Logger.info(`getting credentials from ${lastSeenCredentialId}, limit ${limit}`);
   const getCredentialsRequest = new GetCredentialsRequest();
   getCredentialsRequest.setLimit(HARDCODED_LIMIT);
@@ -33,6 +33,7 @@ export const getCredentials = async (limit = 10, lastSeenCredentialId = null) =>
     userId: issuerId
   });
   const { credentialsList } = result.toObject();
+
   return { credentials: credentialsList, count: credentialsList.length };
 };
 
@@ -115,7 +116,12 @@ const IssuerTypes = {
 
 const translateIssuerType = type => IssuerTypes[type];
 
-const populateIssuer = ({ type = 'UNIVERSITY', legalName = 'The university name', name, did }) => {
+const populateIssuer = ({
+  type = 'UNIVERSITY',
+  legalName = 'Free University Tbilisi',
+  name,
+  did
+}) => {
   const issuerData = new IssuerData();
 
   issuerData.setIssuertype(translateIssuerType(type));
