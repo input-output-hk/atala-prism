@@ -290,6 +290,15 @@ class ConnectorService(
       }
   }
 
+  override def getPayments(request: GetPaymentsRequest): Future[GetPaymentsResponse] = {
+    val userId = participantId()
+
+    paymentsRepository.find(userId).value.map {
+      case Left(_) => throw new RuntimeException("Impossible")
+      case Right(payments) => GetPaymentsResponse(payments.map(toPaymentProto))
+    }
+  }
+
   private def toPaymentProto(payment: ConnectorPayment): Payment = {
     Payment()
       .withAmount(payment.amount.toString())

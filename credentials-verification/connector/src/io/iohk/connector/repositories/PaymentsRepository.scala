@@ -25,4 +25,8 @@ class PaymentsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
   def find(userId: ParticipantId, nonce: ClientNonce): FutureEither[Nothing, Option[Payment]] = {
     PaymentsDAO.find(userId, nonce).transact(xa).unsafeToFuture().map(Right(_)).toFutureEither
   }
+
+  def find(userId: ParticipantId): FutureEither[Nothing, List[Payment]] = {
+    PaymentsDAO.find(userId).transact(xa).unsafeToFuture().map(Right(_)).toFutureEither
+  }
 }

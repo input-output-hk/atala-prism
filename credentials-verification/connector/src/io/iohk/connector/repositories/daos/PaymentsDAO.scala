@@ -25,4 +25,13 @@ object PaymentsDAO {
          |      nonce = $nonce
          |""".stripMargin.query[Payment].option
   }
+
+  def find(participantId: ParticipantId): doobie.ConnectionIO[List[Payment]] = {
+    sql"""
+         |SELECT payment_id, participant_id, nonce, amount, created_on, status, failure_reason
+         |FROM payments
+         |WHERE participant_id = $participantId
+         |ORDER BY created_on DESC
+         |""".stripMargin.query[Payment].to[List]
+  }
 }

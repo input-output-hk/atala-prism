@@ -79,6 +79,7 @@ service ConnectorService {
   // Generate a URL that can be used to do a payment
   rpc GetBraintreePaymentsConfig (GetBraintreePaymentsConfigRequest) returns (GetBraintreePaymentsConfigResponse) {}
   rpc ProcessPayment (ProcessPaymentRequest) returns (ProcessPaymentResponse);
+  rpc GetPayments (GetPaymentsRequest) returns (GetPaymentsResponse);
 }
 
 // GENERAL
@@ -276,6 +277,11 @@ message ProcessPaymentRequest {
 }
 message ProcessPaymentResponse {
   Payment payment = 1;
+}
+
+message GetPaymentsRequest {}
+message GetPaymentsResponse {
+  repeated Payment payments = 1;
 }
 
 message Payment {
