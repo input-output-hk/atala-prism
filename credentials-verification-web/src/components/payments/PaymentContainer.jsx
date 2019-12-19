@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { message } from 'antd';
 import Payment from './Payment';
 import Logger from '../../helpers/Logger';
-import { withApi } from '../providers/witApi';
+import { withApi } from '../providers/withApi';
 
 const PaymentContainer = ({ api: { getCurrencies, getAmounts, getPayments } }) => {
   const { t } = useTranslation();

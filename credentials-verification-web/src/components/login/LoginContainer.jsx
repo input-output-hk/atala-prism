@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useHistory } from 'react-router-dom';
-import { withApi } from '../providers/witApi';
+import { withApi } from '../providers/withApi';
 import Login from './Login';
 import Logger from '../../helpers/Logger';
 import { UNLOCKED, translateStatus, MISSING_WALLET_ERROR } from '../../helpers/constants';

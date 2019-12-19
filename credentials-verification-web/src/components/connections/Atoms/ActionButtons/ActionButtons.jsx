@@ -8,6 +8,8 @@ const ActionButtons = ({ showQRButton, inviteHolder, isIssuer, viewConnectionDet
   const { t } = useTranslation();
   const { id } = holder;
 
+  const issuer = isIssuer();
+
   return (
     <div className="ControlButtons">
       {showQRButton && (
@@ -23,13 +25,13 @@ const ActionButtons = ({ showQRButton, inviteHolder, isIssuer, viewConnectionDet
         buttonProps={{ className: 'theme-link' }}
         buttonText={t('connections.table.columns.delete')}
       />
-      {!isIssuer() && (
+      {!issuer && (
         <CustomButton
           buttonProps={{
             className: 'theme-link',
             onClick: () => viewConnectionDetail(holder)
           }}
-          buttonText={t(`connections.table.columns.${isIssuer() ? 'view' : 'viewCredentials'}`)}
+          buttonText={t(`connections.table.columns.${issuer ? 'view' : 'viewCredentials'}`)}
         />
       )}
     </div>

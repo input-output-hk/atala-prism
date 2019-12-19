@@ -308,31 +308,22 @@ export const getCredentialBinary = async (connectionData, studentData) => {
 
   sentCredential.setIssuersentcredential(issuerCredential);
 
-  Logger.info('Credential to be sent: ', sentCredential.toObject());
-
   return sentCredential.serializeBinary();
 };
 
 export const registerUser = async (name, did, file) => {
-  try {
-    const registerRequest = new RegisterRequest();
-    const logo = new TextEncoder().encode(file);
+  const registerRequest = new RegisterRequest();
+  const logo = new TextEncoder().encode(file);
 
-    registerRequest.setName(name);
-    registerRequest.setDid(did);
-    registerRequest.setLogo(logo);
+  registerRequest.setName(name);
+  registerRequest.setDid(did);
+  registerRequest.setLogo(logo);
 
-    console.log('before the meme');
+  const response = await credentialsService.register(registerRequest, {
+    userId: issuerId
+  });
 
-    const response = await credentialsService.register(registerRequest, {
-      userId: issuerId
-    });
+  const { id } = response.toObject();
 
-    const { id } = response.toObject();
-
-    return id;
-  } catch (e) {
-    console.log('error at', e);
-    throw e;
-  }
+  return id;
 };

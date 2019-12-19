@@ -11,9 +11,9 @@ import QRModal from '../common/Organisms/Modals/QRModal/QRModal';
 import Logger from '../../helpers/Logger';
 import AddUserButtons from './Atoms/AddUsersButtons/AddUsersButtons';
 import { drawerWidth } from '../../helpers/constants';
+import CredentialListDetail from '../common/Organisms/Detail/CredentialListDetail';
 
 import './_style.scss';
-import CredentialListDetail from '../common/Organisms/Detail/CredentialListDetail';
 
 const Connections = ({ tableProps, filterProps, inviteHolder, isIssuer }) => {
   const { t } = useTranslation();
@@ -27,8 +27,8 @@ const Connections = ({ tableProps, filterProps, inviteHolder, isIssuer }) => {
     if (!showDrawer) setCurrentConnection({});
   }, [showDrawer]);
 
-  const inviteHolderAndShowQR = async studentId => {
-    const token = await inviteHolder(studentId);
+  const inviteHolderAndShowQR = async holderId => {
+    const token = await inviteHolder(holderId);
     setConnectionToken(token);
     showQRModal(true);
   };
@@ -46,14 +46,15 @@ const Connections = ({ tableProps, filterProps, inviteHolder, isIssuer }) => {
   };
 
   const viewConnection = connection => {
-    const { admissiondate, avatar, fullname, connectionid } = connection;
+    const { createdat, fullname, connectionid } = connection;
+
     getStudentCredentials(connectionid)
       .then(transactions => {
         const formattedHolder = {
-          user: { icon: avatar, name: fullname },
-          transactions,
-          date: admissiondate
+          user: { name: fullname, date: createdat },
+          transactions
         };
+
         setCurrentConnection(formattedHolder);
         setShowDrawer(true);
       })

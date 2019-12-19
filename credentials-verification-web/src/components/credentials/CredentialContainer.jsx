@@ -4,7 +4,7 @@ import { message } from 'antd';
 import PropTypes from 'prop-types';
 import Logger from '../../helpers/Logger';
 import Credentials from './Credentials';
-import { withApi } from '../providers/witApi';
+import { withApi } from '../providers/withApi';
 
 const CredentialContainer = ({ api }) => {
   const { t } = useTranslation();

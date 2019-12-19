@@ -4,7 +4,7 @@ import Dashboard from '../dashboard/Dashboard';
 import Loading from '../common/Atoms/Loading/Loading';
 import { withSideBar } from './withSideBar';
 import Logger from '../../helpers/Logger';
-import { withApi } from './witApi';
+import { withApi } from './withApi';
 import { USER_ROLE } from '../../helpers/constants';
 
 const withLoggedValidationComponent = (Component, validRoles) => props => {

@@ -106,7 +106,6 @@ export const unlockWallet = async passphrase => {
   setUserData(unlockResponse.toObject());
 
   const status = await getWalletStatus();
-  Logger.info(`status ${status}`);
   return status;
 };
 

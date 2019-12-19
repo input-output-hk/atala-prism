@@ -22,10 +22,18 @@
   "connections": {
     "title": "Connections",
     "status": {
-      "invitationMissing":  "Pending",
-      "connectionMissing": "Connection Missing",
-      "connectionAccepted":  "Connection Accepted",
-      "connectionRevoked": "Connection Revoked"
+      "issuer": {
+        "invitationMissing":  "Pending",
+        "connectionMissing": "Connection Missing",
+        "connectionAccepted":  "Connection Accepted",
+        "connectionRevoked": "Connection Revoked"
+      },
+      "verifier": {
+        "created": "Created",
+        "invited": "Invited",
+        "connected": "Connected",
+        "revoked": "Revoked"
+      }
     },
     "filters": {
       "identityNumber": "Identity Number",

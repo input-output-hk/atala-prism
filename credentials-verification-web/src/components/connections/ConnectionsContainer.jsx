@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import Connections from './Connections';
 import Logger from '../../helpers/Logger';
 import { HOLDER_PAGE_SIZE } from '../../helpers/constants';
-import { withApi } from '../providers/witApi';
+import { withApi } from '../providers/withApi';
 
 const ConnectionsContainer = ({ api }) => {
   const { t } = useTranslation();
@@ -28,10 +28,22 @@ const ConnectionsContainer = ({ api }) => {
   const [offset, setOffset] = useState(0);
 
   useEffect(() => {
-    api
-      .getStudents(HOLDER_PAGE_SIZE)
+    const getIndividuals = api.getIndividuals(api.isIssuer());
+
+    getIndividuals(HOLDER_PAGE_SIZE)
       .then(holders => {
-        const holdersWithKey = holders.map(holder => Object.assign({}, holder, { key: holder.id }));
+        const holdersWithKey = holders.map(
+          ({ status: holderStatus, connectionstatus, id: holderId, individualid, ...rest }) => {
+            const id = holderId || individualid;
+            const indivStatus = holderStatus || connectionstatus;
+
+            return Object.assign({}, rest, {
+              key: id,
+              status: indivStatus,
+              id
+            });
+          }
+        );
         setSubjects(holdersWithKey);
         setSubjectCount(holdersWithKey.length);
       })
@@ -46,7 +58,11 @@ const ConnectionsContainer = ({ api }) => {
     setField(value);
   };
 
-  const inviteHolder = studentId => api.generateConnectionToken(undefined, studentId);
+  const inviteHolder = studentId => {
+    const generateConnectionToken = api.generateConnectionToken(api.isIssuer());
+
+    return generateConnectionToken(studentId);
+  };
 
   const tableProps = {
     subjects,

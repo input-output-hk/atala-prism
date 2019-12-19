@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { Row, Col } from 'antd';
 import './_style.scss';
 import UserAvatar from '../../Atoms/UserAvatar/UserAvatar';
-import { withApi } from '../../../providers/witApi';
+import { withApi } from '../../../providers/withApi';
 
 const Header = ({ api: { lockWallet } }) => (
   <Row type="flex" align="middle" className="HeaderContainer">
