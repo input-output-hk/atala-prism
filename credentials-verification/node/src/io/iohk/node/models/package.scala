@@ -21,7 +21,7 @@ package object models {
   }
 
   case class SHA256Digest(value: Array[Byte]) {
-    require(value.length == 32)
+    require(value.length == SHA256Digest.BYTE_LENGTH)
 
     def hexValue: String = value.map("%02x".format(_)).mkString("")
 
@@ -38,6 +38,8 @@ package object models {
   }
 
   object SHA256Digest {
+    val BYTE_LENGTH = 32
+
     private def messageDigest = MessageDigest.getInstance("SHA256")
     def compute(data: Array[Byte]): SHA256Digest = {
       SHA256Digest(messageDigest.digest(data))

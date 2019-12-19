@@ -1,5 +1,6 @@
 package io.iohk.node.operations
 
+import com.google.protobuf.ByteString
 import io.iohk.node.operations.ValidationError.{InvalidValue, MissingValue}
 
 package object path {
@@ -48,6 +49,14 @@ package object path {
     /** Generates MissingValue error for this path */
     def missing(): MissingValue = MissingValue(path)
 
+    // to string with special case for ByteString, which is useful, as it often occurs in protobuf
+    protected def valueToString(value: Any): String = {
+      value match {
+        case v: ByteString => if (v.isEmpty) "0x0" else "0x" + v.toByteArray.map("%02x".format(_)).mkString("")
+        case v => v.toString
+      }
+    }
+
     /** Attempts to apply potentially failing transform to the value
       *
       * @param f the transform, should return either result or error message
@@ -55,7 +64,7 @@ package object path {
       * @return transformed value or InvalidError for this path with provided message
       */
     def parse[MM](f: M => Either[String, MM]): Either[InvalidValue, MM] = {
-      f(value).left.map(message => InvalidValue(path, value.toString, message))
+      f(value).left.map(message => InvalidValue(path, valueToString(value), message))
     }
   }
 }

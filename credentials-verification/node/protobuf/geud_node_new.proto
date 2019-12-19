@@ -12,6 +12,12 @@ service NodeService {
   rpc RevokeCredential(SignedAtalaOperation) returns (RevokeCredentialResponse) {}
 }
 
+message Date {
+    int32 year = 1; // positive value
+    int32 month = 2; // value in the [1, 12] interval
+    int32 day = 3; // value in the [1, 31] interval (depending on the month, the max value might be 28
+}
+
 enum KeyUsage {
   UNKNOWN_KEY = 0;
   MASTER_KEY = 1;
@@ -43,6 +49,7 @@ message CredentialData {
   string id = 1;
   string issuer = 2;
   bytes contentHash = 3;
+  Date issuanceDate = 4;
 }
 
 message GetDidDocumentRequest {

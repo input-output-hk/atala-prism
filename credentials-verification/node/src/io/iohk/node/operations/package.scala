@@ -62,7 +62,10 @@ package object operations {
 
   object StateError {
 
-    /** Error signifying that operation cannot be applied as it tries to create entity that does already exist */
+    /** Error signifying that operation cannot be applied as it tries to access an entity that does not exist */
+    case class EntityMissing(tpe: String, identifier: String) extends StateError
+
+    /** Error signifying that operation cannot be applied as it tries to create an entity that already exists */
     case class EntityExists(tpe: String, identifier: String) extends StateError
 
     /** Error signifying that key that was supposed to be used to verify the signature does not exist */
