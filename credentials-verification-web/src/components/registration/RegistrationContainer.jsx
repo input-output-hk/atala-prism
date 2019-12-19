@@ -25,7 +25,7 @@ const ORGANIZATION_INFO_STEP = 6;
 const STEP_QUANTITY = 7;
 
 const RegistrationContainer = ({
-  api: { getTermsAndConditions, getPrivacyPolicy, createWallet, lockWallet /* , registerUser */ }
+  api: { getTermsAndConditions, getPrivacyPolicy, createWallet, lockWallet, registerUser }
 }) => {
   const { t } = useTranslation();
 
@@ -115,9 +115,11 @@ const RegistrationContainer = ({
       .getForm()
       .validateFieldsAndScroll((errors, { organizationName, organizationRole, logo }) => {
         if (errors) return;
-        const logoToSave = new Uint8Array(logo[0]);
         setOrganizationInfo({ organizationName, organizationRole, logo });
-        createWallet(password, organizationName, organizationRole, logoToSave)
+        createWallet(password, organizationName, organizationRole, logo[0])
+          .then(did => {
+            registerUser(organizationName, did, logo);
+          })
           .then(lockWallet)
           .then(nextStep)
           .catch(error => {
@@ -149,8 +151,8 @@ const RegistrationContainer = ({
   const toFileReader = file =>
     new Promise((resolve, reject) => {
       const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader);
+      reader.readAsArrayBuffer(file);
+      reader.onload = () => resolve(reader.result);
       reader.onerror = error => reject(error);
     });
 

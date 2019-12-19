@@ -1,3 +1,5 @@
+import { LOGO } from './constants';
+
 const firstLetterAsUpperCase = word => word.charAt(0).toUpperCase();
 
 export const getInitials = name => {
@@ -11,3 +13,5 @@ export const getInitials = name => {
 
   return initials;
 };
+
+export const getLogoAsBase64 = () => `data:image/png;base64,${localStorage.getItem(LOGO)}`;

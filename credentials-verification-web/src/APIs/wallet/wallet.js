@@ -1,5 +1,4 @@
 /* eslint import/no-unresolved: 0 */ // --> OFF
-import grpcWeb from 'grpc-web';
 import { WalletServicePromiseClient } from '../../protos/wallet/wallet_grpc_web_pb';
 import {
   CreateWalletRequest,
@@ -21,16 +20,16 @@ const walletServicePromiseClient = new WalletServicePromiseClient(
 export const getDid = async () => {
   const didRequest = new GetDIDRequest();
 
-  const call = await walletServicePromiseClient.getDID(didRequest, {});
+  const response = await walletServicePromiseClient.getDID(didRequest, {});
 
-  const { did } = call.toObject();
+  const { did } = response.toObject();
 
   return did;
 };
 
 const createAndPopulateRequest = ({ passphrase, organisationName, role, file }) => {
   const createWalletRequest = new CreateWalletRequest();
-  const encodedLogo = new TextEncoder().encode(file);
+  const binaryFile = new Uint8Array(file);
 
   const roleDictionary = {
     ISSUER: 0,
@@ -40,7 +39,7 @@ const createAndPopulateRequest = ({ passphrase, organisationName, role, file }) 
   createWalletRequest.setPassphrase(passphrase);
   createWalletRequest.setOrganisationname(organisationName);
   createWalletRequest.setRole(roleDictionary[role]);
-  createWalletRequest.setLogo(encodedLogo);
+  createWalletRequest.setLogo(binaryFile);
 
   return createWalletRequest;
 };
@@ -54,9 +53,10 @@ export const createWallet = async (passphrase, organisationName, role, file) => 
       file
     });
 
-    const response = await walletServicePromiseClient.createWallet(createWalletRequest);
+    // This returns a signed operation that is not being used yet
+    await walletServicePromiseClient.createWallet(createWalletRequest);
 
-    return response.toObject();
+    return getDid();
   } catch (e) {
     Logger.info('Error at wallet creation', e);
     throw new Error(e);

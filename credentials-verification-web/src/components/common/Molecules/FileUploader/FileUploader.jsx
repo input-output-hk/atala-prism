@@ -16,7 +16,7 @@ const FileUploader = ({ hint, field, accept, savePicture, uploadText, formRef, i
     savePicture(file)
       .then(response => {
         formRef.current.getForm().setFieldsValue({
-          [field]: [file]
+          [field]: [response]
         });
         setFileList([file]);
         onSuccess(response);
