@@ -4,17 +4,26 @@ import java.util.UUID
 
 import io.iohk.connector.errors._
 import io.iohk.connector.model.ECPublicKey
+import io.iohk.connector.model.payments.{ClientNonce, Payment => ConnectorPayment}
+import io.iohk.connector.model.requests.CreatePaymentRequest
 import io.iohk.connector.payments.BraintreePayments
+import io.iohk.connector.repositories.PaymentsRepository
 import io.iohk.connector.services.{ConnectionsService, MessagesService}
 import io.iohk.cvp.connector.protos._
 import io.iohk.cvp.grpc.UserIdInterceptor.participantId
+import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither._
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
-class ConnectorService(connections: ConnectionsService, messages: MessagesService, braintreePayments: BraintreePayments)(
+class ConnectorService(
+    connections: ConnectionsService,
+    messages: MessagesService,
+    braintreePayments: BraintreePayments,
+    paymentsRepository: PaymentsRepository
+)(
     implicit executionContext: ExecutionContext
 ) extends ConnectorServiceGrpc.ConnectorService
     with ErrorSupport {
@@ -84,6 +93,7 @@ class ConnectorService(connections: ConnectionsService, messages: MessagesServic
   ): Future[AddConnectionFromTokenResponse] = {
     implicit val loggingContext = LoggingContext("request" -> request)
 
+    val paymentNonce = Option(request.paymentNonce).filter(_.nonEmpty).map(s => new ClientNonce(s))
     val publicKey = request.holderPublicKey
       .map { protoKey =>
         ECPublicKey(
@@ -94,7 +104,7 @@ class ConnectorService(connections: ConnectionsService, messages: MessagesServic
       .getOrElse(throw new RuntimeException("Missing public key"))
 
     connections
-      .addConnectionFromToken(new model.TokenString(request.token), publicKey)
+      .addConnectionFromToken(new model.TokenString(request.token), publicKey, paymentNonce)
       .wrapExceptions
       .successMap {
         case (userId, connectionInfo) =>
@@ -246,12 +256,56 @@ class ConnectorService(connections: ConnectionsService, messages: MessagesServic
 
   override def processPayment(request: ProcessPaymentRequest): Future[ProcessPaymentResponse] = {
     val userId = participantId()
+    implicit val loggingContext = LoggingContext("request" -> request, "userId" -> userId)
 
-    Future {
-      val amount = BigDecimal(request.amount)
-      val nonce = new BraintreePayments.ClientNonce(request.nonce)
-      braintreePayments.processPayment(userId, amount, nonce)
-      ProcessPaymentResponse()
+    val nonce = new ClientNonce(request.nonce)
+    val amount = BigDecimal(request.amount)
+
+    def tryProcessingPayment: FutureEither[Nothing, ConnectorPayment] = {
+      braintreePayments
+        .processPayment(amount, nonce)
+        .value
+        .map {
+          case Left(error) => CreatePaymentRequest(nonce, amount, ConnectorPayment.Status.Failed, Some(error.reason))
+          case Right(_) => CreatePaymentRequest(nonce, amount, ConnectorPayment.Status.Charged, None)
+        }
+        .flatMap { r =>
+          paymentsRepository.create(userId, r).value
+        }
+        .toFutureEither
     }
+
+    val result = for {
+      maybe <- paymentsRepository.find(userId, nonce)
+      payment <- maybe match {
+        case None => tryProcessingPayment
+        case Some(payment) => Future.successful(Right(payment)).toFutureEither
+      }
+    } yield payment
+
+    result.value
+      .map {
+        case Left(_) => throw new RuntimeException("Impossible")
+        case Right(p) =>
+          ProcessPaymentResponse().withPayment(toPaymentProto(p))
+      }
+  }
+
+  override def getPayments(request: GetPaymentsRequest): Future[GetPaymentsResponse] = {
+    val userId = participantId()
+
+    paymentsRepository.find(userId).value.map {
+      case Left(_) => throw new RuntimeException("Impossible")
+      case Right(payments) => GetPaymentsResponse(payments.map(toPaymentProto))
+    }
+  }
+
+  private def toPaymentProto(payment: ConnectorPayment): Payment = {
+    Payment()
+      .withAmount(payment.amount.toString())
+      .withCreatedOn(payment.createdOn.toEpochMilli)
+      .withId(payment.id.uuid.toString)
+      .withStatus(payment.status.entryName)
+      .withFailureReason(payment.failureReason.getOrElse(""))
   }
 }

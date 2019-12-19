@@ -9,7 +9,7 @@ import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.iohk.connector.model._
 import io.iohk.connector.payments.BraintreePayments
 import io.iohk.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO, MessagesDAO, ParticipantsDAO}
-import io.iohk.connector.repositories.{ConnectionsRepository, MessagesRepository}
+import io.iohk.connector.repositories.{ConnectionsRepository, MessagesRepository, PaymentsRepository}
 import io.iohk.connector.services.{ConnectionsService, MessagesService}
 import io.iohk.cvp.connector.protos.ConnectorServiceGrpc
 import io.iohk.cvp.grpc.UserIdInterceptor
@@ -97,20 +97,24 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
   override val tables = List("messages", "connections", "connection_tokens", "holder_public_keys", "participants")
   override def services = Seq(
     ConnectorServiceGrpc
-      .bindService(new ConnectorService(connectionsService, messagesService, braintreePayments), executionContext)
+      .bindService(
+        new ConnectorService(connectionsService, messagesService, braintreePayments, paymentsRepository),
+        executionContext
+      )
   )
 
   val usingApiAs: ApiTestHelper[ConnectorServiceGrpc.ConnectorServiceBlockingStub] = usingApiAsConstructor(
     new ConnectorServiceGrpc.ConnectorServiceBlockingStub(_, _)
   )
 
+  lazy val braintreePayments = BraintreePayments(BraintreePayments.Config(false, "none", "none", "none", "none"))
   lazy val connectionsRepository = new ConnectionsRepository(database)(executionContext)
-  lazy val connectionsService = new ConnectionsService(connectionsRepository)
+  lazy val paymentsRepository = new PaymentsRepository(database)(executionContext)
+  lazy val connectionsService = new ConnectionsService(connectionsRepository, paymentsRepository, braintreePayments)
   lazy val messagesRepository = new MessagesRepository(database)(executionContext)
   lazy val messagesService = new MessagesService(messagesRepository)
-  lazy val braintreePayments = BraintreePayments(BraintreePayments.Config(false, "none", "none", "none", "none"))
   lazy val connectorService =
-    new ConnectorService(connectionsService, messagesService, braintreePayments)(executionContext)
+    new ConnectorService(connectionsService, messagesService, braintreePayments, paymentsRepository)(executionContext)
 
   protected def createParticipant(
       name: String,
