@@ -107,12 +107,12 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
     new ConnectorServiceGrpc.ConnectorServiceBlockingStub(_, _)
   )
 
+  lazy val braintreePayments = BraintreePayments(BraintreePayments.Config(false, "none", "none", "none", "none"))
   lazy val connectionsRepository = new ConnectionsRepository(database)(executionContext)
   lazy val paymentsRepository = new PaymentsRepository(database)(executionContext)
-  lazy val connectionsService = new ConnectionsService(connectionsRepository)
+  lazy val connectionsService = new ConnectionsService(connectionsRepository, paymentsRepository, braintreePayments)
   lazy val messagesRepository = new MessagesRepository(database)(executionContext)
   lazy val messagesService = new MessagesService(messagesRepository)
-  lazy val braintreePayments = BraintreePayments(BraintreePayments.Config(false, "none", "none", "none", "none"))
   lazy val connectorService =
     new ConnectorService(connectionsService, messagesService, braintreePayments, paymentsRepository)(executionContext)
 

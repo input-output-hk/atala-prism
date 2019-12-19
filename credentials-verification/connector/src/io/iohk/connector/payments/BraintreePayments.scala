@@ -14,7 +14,6 @@ class BraintreePayments(gateway: BraintreeGateway, config: Config)(implicit ec: 
   def tokenizationKey: String = config.tokenizationKey
 
   def processPayment(
-      userId: ParticipantId,
       amount: BigDecimal,
       nonce: ClientNonce
   ): FutureEither[PaymentError, Transaction] = {

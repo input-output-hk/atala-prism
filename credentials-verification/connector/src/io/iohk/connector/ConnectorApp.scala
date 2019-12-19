@@ -55,10 +55,11 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
 
     // connector
     val connectionsRepository = new ConnectionsRepository(xa)(executionContext)
-    val connectionsService = new ConnectionsService(connectionsRepository)
+    val paymentsRepository = new PaymentsRepository(xa)(executionContext)
+    val connectionsService =
+      new ConnectionsService(connectionsRepository, paymentsRepository, braintreePayments)(executionContext)
     val messagesRepository = new MessagesRepository(xa)(executionContext)
     val messagesService = new MessagesService(messagesRepository)
-    val paymentsRepository = new PaymentsRepository(xa)(executionContext)
     val connectorService =
       new ConnectorService(connectionsService, messagesService, braintreePayments, paymentsRepository)(executionContext)
 

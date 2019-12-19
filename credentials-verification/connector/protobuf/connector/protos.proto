@@ -173,6 +173,7 @@ message GetConnectionTokenInfoResponse {
 message AddConnectionFromTokenRequest {
   string token = 1; // token to instantiate connection
   PublicKey holderPublicKey = 2;
+  string paymentNonce = 3; // optional field, if present, we'll charge the user before adding the connection
 }
 
 // Confirmation of connection instantiation

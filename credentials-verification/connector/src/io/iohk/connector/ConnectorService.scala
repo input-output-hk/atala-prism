@@ -93,6 +93,7 @@ class ConnectorService(
   ): Future[AddConnectionFromTokenResponse] = {
     implicit val loggingContext = LoggingContext("request" -> request)
 
+    val paymentNonce = Option(request.paymentNonce).filter(_.nonEmpty).map(s => new ClientNonce(s))
     val publicKey = request.holderPublicKey
       .map { protoKey =>
         ECPublicKey(
@@ -103,7 +104,7 @@ class ConnectorService(
       .getOrElse(throw new RuntimeException("Missing public key"))
 
     connections
-      .addConnectionFromToken(new model.TokenString(request.token), publicKey)
+      .addConnectionFromToken(new model.TokenString(request.token), publicKey, paymentNonce)
       .wrapExceptions
       .successMap {
         case (userId, connectionInfo) =>
@@ -262,7 +263,7 @@ class ConnectorService(
 
     def tryProcessingPayment: FutureEither[Nothing, ConnectorPayment] = {
       braintreePayments
-        .processPayment(userId, amount, nonce)
+        .processPayment(amount, nonce)
         .value
         .map {
           case Left(error) => CreatePaymentRequest(nonce, amount, ConnectorPayment.Status.Failed, Some(error.reason))
