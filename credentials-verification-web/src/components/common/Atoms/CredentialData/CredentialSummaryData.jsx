@@ -2,13 +2,19 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Col } from 'antd';
 import CellRenderer from '../CellRenderer/CellRenderer';
-import { shortBackendDateFormatter } from '../../../../helpers/formatters';
 import freeUniLogo from '../../../../images/free-uni-logo.png';
 
 import './_style.scss';
 
-const CredentialSummaryData = ({ title, university, student, startDate, graduationDate }) => (
-  <Col lg={12} xs={24} className="CredentialTemplate">
+const CredentialSummaryData = ({
+  title,
+  university,
+  student,
+  startDate,
+  graduationDate,
+  lg = 12
+}) => (
+  <Col lg={lg} xs={24} className="CredentialTemplate">
     <div className="CredentialHeader">
       <CellRenderer componentName="newCredential" title="degreeName" value={title} />
       <img className="IconUniversity" src={freeUniLogo} alt="Free University Tbilisi" />

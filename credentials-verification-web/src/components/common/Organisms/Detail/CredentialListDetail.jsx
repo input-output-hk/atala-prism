@@ -108,7 +108,8 @@ const mapTransaction = (credential, setConnectionInfo) => {
     university: getIssuerName(issuertype),
     student: getStudentName(subjectdata),
     graduationDate: dayMonthYearBackendFormatter(graduationdate),
-    award: grantingDecision
+    award: grantingDecision,
+    lg: 24
   };
 };
 

@@ -56,7 +56,8 @@ const CredentialSummaryListDetail = ({ user, credentials, date }) => {
               type: title,
               title,
               student: user,
-              graduationDate: shortBackendDateFormatter(graduationdate)
+              graduationDate: shortBackendDateFormatter(graduationdate),
+              lg: 24
             }}
             setConnectionInfo={setConnectionInfo}
           />
