@@ -33,6 +33,7 @@ const Credentials = ({ tableProps, filterProps }) => {
       student: {
         fullname: studentname
       },
+      lg: 24,
       title
     };
 

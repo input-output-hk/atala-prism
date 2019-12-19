@@ -4,7 +4,6 @@
     padding: 2em 0;
   h2 {
     @include primary-text($h2, $black);
-    word-spacing: -4px;
     margin-bottom: 1em;
   }
   .NewCredentialValidation {
@@ -22,7 +21,9 @@
     h3 {
       @include body-text($h3, $black, 600);
     }
-
+    .CellRenderer{
+      padding: 1em;
+    }
     .ant-row {
       margin: 0 2em;
     }
