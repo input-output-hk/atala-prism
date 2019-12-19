@@ -13,6 +13,17 @@ jobs:
           key: ivy-cache-{{ checksum "credentials-verification/build.sc" }}
 
       - run:
+          name: Set tag convention
+          command: |
+            branchPrefix=$(git rev-parse --abbrev-ref HEAD | sed -E 's/(^ATA\-[0-9]+).*/\1/' | tr '[:upper:]' '[:lower:]')
+            revCount=$(git rev-list HEAD --count)
+            shaShort=$(git rev-parse --short HEAD)
+            tag="${branchPrefix}-${revCount}-${shaShort}"
+            echo "export TAG=$tag" >> $BASH_ENV;
+            echo "export ENV=$branchPrefix" >> $BASH_ENV;
+            . $BASH_ENV && echo "Env short name set to $ENV. Image tag set to $TAG"
+
+      - run:
           name: Create web assembly
           command: |
             cd credentials-verification-web
@@ -32,16 +43,6 @@ jobs:
             cd credentials-verification
             mill -i connector.assembly
             cp out/connector/assembly/dest/out.jar out/connector/assembly/dest/connector.jar
-
-      - run:
-          name: Set tag convention
-          command: |
-            branchPrefix=$(git rev-parse --abbrev-ref HEAD | sed -E 's/(^ATA\-[0-9]+).*/\1/' | tr '[:upper:]' '[:lower:]')
-            revCount=$(git rev-list HEAD --count)
-            shaShort=$(git rev-parse --short HEAD)
-            tag="${branchPrefix}-${revCount}-${shaShort}"
-            echo "export TAG=$tag" >> $BASH_ENV;
-            . $BASH_ENV && echo "Image tag set to $TAG"
 
       - run:
           name: Configure AWS
@@ -70,15 +71,13 @@ jobs:
             docker push 895947072537.dkr.ecr.us-east-2.amazonaws.com/connector:${TAG}
 
       - run:
-          name: Rebuild development environment
+          name: Rebuild environment
           command: |
-            if [[ "${TAG}" =~ ^develop.+$ ]]; then
-              cd credentials-verification/infra/services
-              ./env.sh -t develop
-              ./env.sh -A develop
-            else
-              echo "Skipping on non-develop branch $CIRCLE_BRANCH"
+            cd credentials-verification/infra/services
+            if aws s3 ls s3://atala-cvp/infra/services/$ENV/terraform.tfstate; then
+              ./env.sh -t $ENV
             fi
+            ./env.sh -A $ENV
 
   build-credentials-verification:
     working_directory: ~/repo
@@ -167,6 +166,12 @@ workflows:
       - build-credentials-verification
       - build-credentials-verification-android
       - deploy-ecr-images:
+          filters:
+            branches:
+              only:
+                - develop
+                - /infra.*/
+                - /test.*/
           requires:
             - build-credentials-verification-web
             - build-credentials-verification

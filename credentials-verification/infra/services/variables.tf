@@ -54,22 +54,6 @@ variable ssh_pubkey {
   default     = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDDej/qOE5UhG6e49yKv+LTPiLlKOckIy3NtBe+X0/oHSdOkisYfMMe/aCuWiwgduLKcMQlh5Y+tqFwQaEFXEdqPWOgDRT/gkWKVmR0yZP4DGgLSoOib92ogRgk87fv9zjVLhaVr2mkcReHmoL94WfPK3AqSCZA29KRm1Ca1a3KUFx6eAleCaLYrPe5Z7Z3d49jXHO1GJWsyqZMSMrRwJJYPZyhzxAOZUB178AnQDt+wGrLKN9avx7yMVeXOJKeIL93mTgrG/orQ4WoidVf0WtN10h2VtA2wq9gSNawCd2R3opF9ishiHrl/Eq83tsj2Cy7Y1x3gqGUFsOB3G+rmg2b test-vpc-deployer"
 }
 
-//variable connector_psql_host {
-//  description = "Hostname:port of the connector DB."
-//}
-//
-//variable connector_psql_database {
-//  description = "Database name of the connector DB."
-//}
-//
-//variable connector_psql_username {
-//  description = "Database username for the connector."
-//}
-//
-//variable connector_psql_password {
-//  description = "The password should be stored in ~/.secrets.tfvars or in environment variable TF_VAR_connector_psql_password."
-//}
-
 variable connector_docker_image {
   description = "Docker image for the connector."
 }
