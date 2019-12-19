@@ -303,7 +303,7 @@ class ConnectorService(
   private def toPaymentProto(payment: ConnectorPayment): Payment = {
     Payment()
       .withAmount(payment.amount.toString())
-      .withCreatedOn(payment.createdOn.getEpochSecond)
+      .withCreatedOn(payment.createdOn.toEpochMilli)
       .withId(payment.id.uuid.toString)
       .withStatus(payment.status.entryName)
       .withFailureReason(payment.failureReason.getOrElse(""))
