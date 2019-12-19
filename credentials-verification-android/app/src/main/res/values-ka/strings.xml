@@ -110,7 +110,7 @@
 
   <!-- Payment History -->
   <string name="payment_history">Payment History</string>
-  <string name="completed">Completed</string>
+  <string name="charged">Charged</string>
   <string name="pending">Pending</string>
   <string name="failed">Failed</string>
 
@@ -143,4 +143,5 @@
 
   <string name="hello_username">Hello %1$s!</string>
   <string name="no_credentials_yet">You don\'t have credentials yet</string>
+  <string name="accept_conneciton">Accept connection</string>
 </resources>

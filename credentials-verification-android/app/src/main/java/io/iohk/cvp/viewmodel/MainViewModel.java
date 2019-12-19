@@ -5,7 +5,6 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import io.iohk.cvp.grpc.AddConnectionFromTokenRunnable;
 import io.iohk.cvp.grpc.GrpcTask;
-import io.iohk.cvp.grpc.ProcessPaymentRunnable;
 import io.iohk.cvp.io.connector.AddConnectionFromTokenResponse;
 import io.iohk.cvp.io.connector.ProcessPaymentResponse;
 import io.iohk.cvp.io.connector.PublicKey;
@@ -28,9 +27,4 @@ public class MainViewModel extends ViewModel {
     return newConnectionInfo;
   }
 
-
-  public LiveData<ProcessPaymentResponse> processPayment(String amount, String nonce) {
-    new GrpcTask<>(new ProcessPaymentRunnable(paymentResponse)).execute(null, amount, nonce);
-    return paymentResponse;
-  }
 }
