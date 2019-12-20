@@ -28,9 +28,11 @@ public class AddConnectionFromTokenRunnable extends
 
     String token = String.valueOf(params[1]);
     PublicKey publicKey = (PublicKey) params[2];
+    String nonce = String.valueOf(params[3]);
 
     AddConnectionFromTokenRequest request = AddConnectionFromTokenRequest.newBuilder()
         .setToken(token)
+        .setPaymentNonce(nonce)
         .setHolderPublicKey(publicKey).build();
     AddConnectionFromTokenResponse response = blockingStub.addConnectionFromToken(request);
 

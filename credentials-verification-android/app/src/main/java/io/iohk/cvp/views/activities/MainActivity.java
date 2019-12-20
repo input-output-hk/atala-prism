@@ -1,5 +1,9 @@
 package io.iohk.cvp.views.activities;
 
+import static io.iohk.cvp.utils.ActivitiesRequestCodes.BRAINTREE_REQUEST_ACTIVITY;
+import static io.iohk.cvp.views.Preferences.CONNECTION_TOKEN_TO_ACCEPT;
+
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -7,12 +11,20 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModelProviders;
 import butterknife.BindView;
+import com.braintreepayments.api.dropin.DropInActivity;
+import com.braintreepayments.api.dropin.DropInResult;
+import com.braintreepayments.api.models.PaymentMethodNonce;
 import com.crashlytics.android.Crashlytics;
 import io.iohk.cvp.R;
 import io.iohk.cvp.core.exception.CaseNotFoundException;
+import io.iohk.cvp.core.exception.CryptoException;
 import io.iohk.cvp.core.exception.ErrorCode;
+import io.iohk.cvp.core.exception.SharedPrefencesDataNotFoundException;
+import io.iohk.cvp.utils.CryptoUtils;
+import io.iohk.cvp.viewmodel.MainViewModel;
 import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.Preferences;
 import io.iohk.cvp.views.fragments.ConnectionsFragment;
@@ -25,13 +37,16 @@ import io.iohk.cvp.views.fragments.WalletFragment;
 import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBar;
 import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBarListener;
 import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBarOption;
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.security.spec.InvalidKeySpecException;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import javax.inject.Inject;
 import lombok.Getter;
 
-public class MainActivity extends CvpActivity implements BottomAppBarListener {
+public class MainActivity extends CvpActivity<MainViewModel> implements BottomAppBarListener {
 
   public static final String MAIN_FRAGMENT_TAG = "MAIN_FRAGMENT";
 
@@ -62,6 +77,9 @@ public class MainActivity extends CvpActivity implements BottomAppBarListener {
 
   MenuItem paymentHistoryMenuItem;
 
+  @Inject
+  ViewModelProvider.Factory factory;
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     getWindow().setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION,
@@ -90,8 +108,8 @@ public class MainActivity extends CvpActivity implements BottomAppBarListener {
   }
 
   @Override
-  public ViewModel getViewModel() {
-    return null;
+  public MainViewModel getViewModel() {
+    return ViewModelProviders.of(this, factory).get(MainViewModel.class);
   }
 
   @Override
@@ -147,5 +165,47 @@ public class MainActivity extends CvpActivity implements BottomAppBarListener {
   public boolean onPrepareOptionsMenu(Menu menu) {
     paymentHistoryMenuItem = menu.findItem(R.id.action_payment_history);
     return true;
+  }
+
+  @Override
+  public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    super.onActivityResult(requestCode, resultCode, data);
+    if (requestCode == BRAINTREE_REQUEST_ACTIVITY) {
+      if (resultCode == RESULT_OK) {
+        DropInResult result = data.getParcelableExtra(DropInResult.EXTRA_DROP_IN_RESULT);
+        PaymentMethodNonce nonce = result.getPaymentMethodNonce();
+        String strNonce = nonce.getNonce();
+
+        Preferences prefs = new Preferences(this);
+
+        // TODO send real amount
+        sendPayments(new BigDecimal(150.1, MathContext.DECIMAL32), strNonce,
+            prefs.getString(CONNECTION_TOKEN_TO_ACCEPT),
+            prefs);
+      } else {
+        if (resultCode != RESULT_CANCELED) {
+          Exception error = (Exception) data.getSerializableExtra(DropInActivity.EXTRA_ERROR);
+          Crashlytics.logException(error);
+          // TODO show error message
+        }
+      }
+    }
+  }
+
+  private void sendPayments(BigDecimal amount, String nonce, String connectionToken,
+      Preferences prefs) {
+    //viewModel.processPayment(amount.toString(), nonce).observe(this, result -> {
+    try {
+      viewModel
+          .addConnectionFromToken(connectionToken, CryptoUtils.getPublicKey(prefs), nonce)
+          .observe(this, connectionInfo -> {
+            prefs.addConnection(connectionInfo);
+            onNavigation(BottomAppBarOption.CONNECTIONS, connectionInfo.getUserId());
+          });
+    } catch (SharedPrefencesDataNotFoundException | InvalidKeySpecException | CryptoException e) {
+      Crashlytics.logException(e);
+      // TODO show error message
+    }
+    //});
   }
 }

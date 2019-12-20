@@ -30,6 +30,7 @@ public class Preferences {
   public static final String USER_PROFILE_COUNTRY = "user_profile_country";
   public static final String USER_PROFILE_BIRTH_DATE = "user_profile_birth_date";
   public static final String USER_PROFILE_EMAIL = "user_profile_email";
+  public static final String CONNECTION_TOKEN_TO_ACCEPT = "connection_token_to_accept";
   private Context context;
 
   public void savePrivateKey(byte[] pk) {
@@ -136,5 +137,12 @@ public class Preferences {
     SharedPreferences sharedPreferences = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
     return sharedPreferences
         .getString(key, "");
+  }
+
+  public void saveConnectionTokenToAccept(String token) {
+    SharedPreferences prefs = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
+    Editor editor = prefs.edit();
+    editor.putString(CONNECTION_TOKEN_TO_ACCEPT, token);
+    editor.apply();
   }
 }
