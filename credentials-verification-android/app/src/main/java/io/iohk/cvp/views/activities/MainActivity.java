@@ -194,7 +194,6 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
 
   private void sendPayments(BigDecimal amount, String nonce, String connectionToken,
       Preferences prefs) {
-    //viewModel.processPayment(amount.toString(), nonce).observe(this, result -> {
     try {
       viewModel
           .addConnectionFromToken(connectionToken, CryptoUtils.getPublicKey(prefs), nonce)
@@ -206,6 +205,5 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
       Crashlytics.logException(e);
       // TODO show error message
     }
-    //});
   }
 }

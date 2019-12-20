@@ -9,17 +9,18 @@ import androidx.recyclerview.widget.RecyclerView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.iohk.cvp.R;
+import io.iohk.cvp.io.connector.Payment;
 import io.iohk.cvp.utils.DateUtils;
-import io.iohk.cvp.viewmodel.PaymentViewModel.Payment;
+import io.iohk.cvp.viewmodel.PaymentViewModel;
 import io.iohk.cvp.views.utils.components.PaymentState;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
-import lombok.Setter;
 
 public class PaymentsHistoryRecyclerViewAdapter extends
     RecyclerView.Adapter<PaymentsHistoryRecyclerViewAdapter.ViewHolder> {
 
-  @Setter
   private List<Payment> payments = new ArrayList<>();
 
   private final DateUtils dateUtils;
@@ -38,12 +39,25 @@ public class PaymentsHistoryRecyclerViewAdapter extends
 
   @Override
   public void onBindViewHolder(PaymentsHistoryRecyclerViewAdapter.ViewHolder holder, int position) {
-    // TODO unmock this when we are sure about which class's info are we going to show here
     Payment payment = payments.get(position);
-    holder.textViewDate.setText(dateUtils.format(payment.getDate()));
-    holder.textViewTitle.setText(payment.getTitle());
-    holder.textViewAmount.setText(payment.getCurrencySymbol() + payment.getAmount());
-    holder.paymentState.setState(payment.getState());
+    holder.textViewDate.setText(dateUtils.format(payment.getCreatedOn()));
+    holder.textViewAmount.setText(String.format("USD %s", getFormattedAmount(payment.getAmount())));
+    holder.paymentState
+        .setState(payment.getStatus().equals("CHARGED") ? PaymentViewModel.PaymentState.CHARGED
+            : PaymentViewModel.PaymentState.FAILED);
+  }
+
+  private String getFormattedAmount(String amount) {
+    return new BigDecimal(amount).setScale(2, RoundingMode.HALF_UP).toString();
+  }
+
+  public void addPayments(List<Payment> newPayments) {
+    this.payments.addAll(newPayments);
+    notifyDataSetChanged();
+  }
+
+  public void clearPayments() {
+    this.payments.clear();
   }
 
   @Override

@@ -6,18 +6,22 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import butterknife.BindView;
 import io.iohk.cvp.R;
+import io.iohk.cvp.io.connector.Payment;
 import io.iohk.cvp.utils.DateUtils;
 import io.iohk.cvp.viewmodel.PaymentViewModel;
 import io.iohk.cvp.views.Navigator;
+import io.iohk.cvp.views.Preferences;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.StackedAppBar;
 import io.iohk.cvp.views.utils.adapters.PaymentsHistoryRecyclerViewAdapter;
+import java.util.List;
 import java.util.Objects;
 import javax.inject.Inject;
 import lombok.NoArgsConstructor;
@@ -39,6 +43,8 @@ public class PaymentHistoryFragment extends CvpFragment<PaymentViewModel> {
 
   @Inject
   Navigator navigator;
+
+  LiveData<List<Payment>> liveData;
 
   private PaymentsHistoryRecyclerViewAdapter adapter = new PaymentsHistoryRecyclerViewAdapter(
       new DateUtils(getContext()));
@@ -72,15 +78,27 @@ public class PaymentHistoryFragment extends CvpFragment<PaymentViewModel> {
     recyclerView.setLayoutManager(linearLayoutManagerCredentials);
     recyclerView.setAdapter(adapter);
 
-    viewModel.getPayments().observe(this, payments -> {
-      adapter.setPayments(payments);
-      adapter.notifyDataSetChanged();
-    });
+    Preferences prefs = new Preferences(getContext());
+
+    liveData = viewModel.getPayments(prefs.getUserIds());
+
+    if (!liveData.hasActiveObservers()) {
+      liveData.observe(this, payments ->
+          adapter.addPayments(payments));
+    }
     return view;
   }
 
   @Override
   public PaymentViewModel getViewModel() {
     return ViewModelProviders.of(this, factory).get(PaymentViewModel.class);
+  }
+
+  @Override
+  public void onDestroyView() {
+    super.onDestroyView();
+    viewModel.clearPayments();
+    adapter.clearPayments();
+    liveData.removeObservers(this);
   }
 }

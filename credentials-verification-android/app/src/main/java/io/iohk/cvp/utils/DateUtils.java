@@ -22,4 +22,10 @@ public class DateUtils {
         date.getDay()); // Calendar's months range is 0 - 11
     return format(calendar);
   }
+
+  public String format(Long time) {
+    Calendar calendar = Calendar.getInstance();
+    calendar.setTimeInMillis(time);
+    return format(calendar);
+  }
 }
