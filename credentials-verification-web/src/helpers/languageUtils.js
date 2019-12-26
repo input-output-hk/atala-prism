@@ -1,11 +1,37 @@
-import { CONNECTION_STATUSES } from './constants';
+import { getI18n } from 'react-i18next';
+import { DEFAULT_LANGUAGE } from './constants';
+
+const EN = 'en';
+const KA = 'ka';
+
+export const saveLang = defaultLang => localStorage.setItem(DEFAULT_LANGUAGE, defaultLang);
+
+const getSavedLang = () => localStorage.getItem(DEFAULT_LANGUAGE);
+
+export const getLanguages = () => {
+  const i18nObject = getI18n();
+
+  if (!i18nObject) return [EN, KA];
+
+  return Object.keys(i18nObject.options.resources);
+};
+
+export const getCurrentLanguage = () => (getI18n() ? getI18n().language : EN);
+
+export const changeLanguage = newLanguage => {
+  if (newLanguage === getCurrentLanguage()) return;
+
+  getI18n().changeLanguage(newLanguage);
+  saveLang(newLanguage);
+};
 
 export const getBrowserLanguage = () => {
-  const en = 'en';
-  const ka = 'ka';
+  const savedLang = getSavedLang();
 
-  const DEFAULT_LANG = en;
-  const langs = [en, ka];
+  if (savedLang) return savedLang;
+
+  const langs = getLanguages();
+  const [DEFAULT_LANG] = langs;
 
   // In case the user has IE the language is in userLanguage, otherwise that
   // value doesn't exist and therefore tries to get it from language
@@ -17,5 +43,3 @@ export const getBrowserLanguage = () => {
 
   return langToUse;
 };
-
-const CONNECTION_STATUSES_TRANSLATOR = connectionStatus => CONNECTION_STATUSES[connectionStatus];

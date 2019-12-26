@@ -3,9 +3,13 @@ import PropTypes from 'prop-types';
 import RegistrationFooter from './Molecules/Footer/RegistrationFooter';
 
 import './_style.scss';
+import LanguageSelector from '../common/Molecules/LanguageSelector/LanguageSelector';
 
 const Registration = ({ renderContent, next, renderFooter, previous, requiresAgreement }) => (
   <div className="RegistrationContainer">
+    <div className="LangSelector">
+      <LanguageSelector />
+    </div>
     <div className="RegistrationContent">
       {renderContent()}
       {renderFooter && (

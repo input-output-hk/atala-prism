@@ -6,12 +6,16 @@ import preloginLogo from '../../images/landingLogo.svg';
 
 import './_style.scss';
 import { withRedirector } from '../providers/withRedirector';
+import LanguageSelector from '../common/Molecules/LanguageSelector/LanguageSelector';
 
 const Landing = ({ redirector: { redirectToLogin, redirectToRegistration } }) => {
   const { t } = useTranslation();
 
   return (
     <div className="LandingContainer">
+      <div className="LangSelector">
+        <LanguageSelector />
+      </div>
       <div className="LandingCard">
         <img src={preloginLogo} alt={t('landing.logoAlt')} />
         <div className="WelcomeText">
