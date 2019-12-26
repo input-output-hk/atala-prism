@@ -6,7 +6,7 @@ import Welcome from './Atoms/Welcome/Welcome';
 import CurrentBundle from './Atoms/CurrentBundle/CurrentBundle';
 import ConnectionSummary from './Molecules/ConnectionSummary/ConnectionSummary';
 import TransactionSummary from './Molecules/TransactionSummary/TransactionSummary';
-import { getBrowserLanguage } from '../../helpers/languageUtils';
+import { getCurrentLanguage } from '../../helpers/languageUtils';
 import { ISSUER, USER_ROLE } from '../../helpers/constants';
 
 import './_style.scss';
@@ -14,7 +14,7 @@ import './_style.scss';
 const Dashboard = ({ name, bundle, credentials, proofRequests }) => {
   const { t } = useTranslation();
 
-  moment.locale(getBrowserLanguage());
+  moment.locale(getCurrentLanguage());
 
   return (
     <div className="DashboardContainer Wrapper">

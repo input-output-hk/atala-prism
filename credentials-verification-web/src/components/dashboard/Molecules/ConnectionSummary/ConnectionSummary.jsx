@@ -4,14 +4,14 @@ import moment from 'moment';
 import PropTypes from 'prop-types';
 import SubSummary from '../../Atoms/Summaries/SubSummary';
 import YearSummary from '../../Atoms/Summaries/YearSummary';
-import { getBrowserLanguage } from '../../../../helpers/languageUtils';
+import { getCurrentLanguage } from '../../../../helpers/languageUtils';
 
 import './_style.scss';
 
 const ConnectionSummary = ({ weekAmount, monthAmount, yearAmount }) => {
   const { t } = useTranslation();
 
-  moment.locale(getBrowserLanguage());
+  moment.locale(getCurrentLanguage());
   const to = moment();
   const oneWeekAgo = moment().subtract(1, 'weeks');
   const oneMonthAgo = moment().subtract(1, 'months');

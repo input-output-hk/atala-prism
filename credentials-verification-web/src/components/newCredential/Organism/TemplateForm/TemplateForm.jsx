@@ -10,7 +10,7 @@ import CustomForm from '../../../common/Organisms/Forms/CustomForm';
 import FileUploader from '../../../common/Molecules/FileUploader/FileUploader';
 
 import './_style.scss';
-import { getBrowserLanguage } from '../../../../helpers/languageUtils';
+import { getCurrentLanguage } from '../../../../helpers/languageUtils';
 
 const getStartDate = formRef => formRef.current.getForm().getFieldValue('startDate');
 
@@ -36,7 +36,7 @@ const TemplateForm = React.forwardRef(
   ) => {
     const { t } = useTranslation();
 
-    const locale = getBrowserLanguage() === 'en' ? localeEn : localeKa;
+    const locale = getCurrentLanguage() === 'en' ? localeEn : localeKa;
 
     const items = [
       getInput('degreeName', degreeName, t, ({ target: { value } }) =>

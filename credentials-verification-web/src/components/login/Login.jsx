@@ -8,12 +8,16 @@ import { refShape } from '../../helpers/propShapes';
 import logo from '../../images/loginLogo.svg';
 
 import './_style.scss';
+import LanguageSelector from '../common/Molecules/LanguageSelector/LanguageSelector';
 
 const Login = ({ formRef, handleLogin }) => {
   const { t } = useTranslation();
 
   return (
     <div className="LoginContainer">
+      <div className="LangSelector">
+        <LanguageSelector />
+      </div>
       <div className="LoginCard">
         <img src={logo} alt={t('login.logoAlt')} />
         <div className="WelcomeText">

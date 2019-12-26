@@ -427,6 +427,11 @@
   "credentialDetail": {
     "type": "Credential"
   },
+  "languages": {
+    "en": "UK",
+    "ka": "GE",
+    "flag": "flag"
+  },
   "errors": {
     "routeDidNotMatch": "The route {{pathnameToShow}} did not match any page",
     "errorGetting": "An error occurred while getting {{model}}",

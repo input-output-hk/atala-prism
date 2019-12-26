@@ -56,6 +56,7 @@ export const MAX_FILE_SIZE = 1073741824; // 1 Gb as maximum just so all my image
 export const USER_ROLE = 'userRole';
 export const ORGANISATION_NAME = 'organisationName';
 export const LOGO = 'logo';
+export const DEFAULT_LANGUAGE = 'defaultLanguage';
 
 // Roles
 export const VERIFIER = 'VERIFIER';

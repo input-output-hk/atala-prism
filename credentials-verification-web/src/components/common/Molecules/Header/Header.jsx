@@ -5,6 +5,7 @@ import './_style.scss';
 import UserAvatar from '../../Atoms/UserAvatar/UserAvatar';
 import { withApi } from '../../../providers/withApi';
 import { getLogoAsBase64 } from '../../../../helpers/genericHelpers';
+import LanguageSelector from '../LanguageSelector/LanguageSelector';
 
 const Header = ({ api: { lockWallet } }) => {
   const userLogo = getLogoAsBase64();
@@ -30,6 +31,7 @@ const Header = ({ api: { lockWallet } }) => {
           />
         </Col>
         <UserAvatar lockWallet={lockWallet} />
+        <LanguageSelector />
       </Col>
     </Row>
   );

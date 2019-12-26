@@ -1,10 +1,10 @@
 import moment from 'moment';
 // If the module isn't explicitly imported moment wouldn't recognize the georgian language setting
 import 'moment/locale/ka';
-import { getBrowserLanguage } from './languageUtils';
+import { getCurrentLanguage } from './languageUtils';
 
 const completeDateFormatter = (date, format) => {
-  const lang = getBrowserLanguage();
+  const lang = getCurrentLanguage();
   return moment
     .utc()
     .year(date.year)
@@ -15,14 +15,14 @@ const completeDateFormatter = (date, format) => {
 };
 
 const completeFrontendDateFormatter = (date, format) => {
-  const lang = getBrowserLanguage();
+  const lang = getCurrentLanguage();
   moment.locale(lang);
   // The dates come from the backend as unix timestamp with miliseconds
   return moment.unix(date / 1000).format(format);
 };
 
 export const fromUnixToProtoDateFormatter = date => {
-  const lang = getBrowserLanguage();
+  const lang = getCurrentLanguage();
   const dateAsNumberArray = moment(date)
     .locale(lang)
     .format('L')
