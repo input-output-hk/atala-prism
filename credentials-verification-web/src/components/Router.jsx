@@ -12,11 +12,13 @@ import CredentialSummaries from './credentialSummaries/CredentialSummaryControll
 import NewCredential from './newCredential/NewCredentialContainer';
 import Payment from './payments/PaymentContainer';
 import Settings from './settings/SettingsContainer';
+import IndividualCreation from './individualCreation/IndividualCreationContainer';
 import { withSideBar } from './providers/withSideBar';
 import { ISSUER, VERIFIER } from '../helpers/constants';
 import { withLoggedValidation } from './providers/withLoggedValidation';
 
 const issuer = [ISSUER];
+const verifier = [VERIFIER];
 const allRoles = [ISSUER, VERIFIER];
 const noRole = [];
 
@@ -86,6 +88,12 @@ const settings = {
   key: 'settings',
   component: withLoggedValidation(withSideBar(Settings), allRoles)
 };
+const individualCreation = {
+  exact: true,
+  path: '/individualCreation',
+  key: 'individualCreation',
+  component: withLoggedValidation(withSideBar(IndividualCreation), verifier)
+};
 
 const routes = [
   loginRoute,
@@ -98,6 +106,7 @@ const routes = [
   newCredential,
   registration,
   payment,
+  individualCreation,
   landingRoute,
   dashboardRoute
 ];

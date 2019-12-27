@@ -432,6 +432,34 @@
     "ka": "GE",
     "flag": "flag"
   },
+  "individualCreation": {
+    "title": "Individual Creation",
+    "success": "Successfully saved the Individuals",
+    "save": "Save",
+    "newIndividual": "Add a new Individual",
+    "cantSubmit": "These individuals can't be saved",
+    "missingInfo": "The full name and email of each individual is necesary to save it",
+    "table": {
+      "fullName": "Full Name",
+      "email": "Email",
+      "delete": "Delete Individual"
+    }
+  },
+  "studentCreation": {
+    "title": "Student Creation",
+    "success": "Successfully saved the Studentss",
+    "save": "Save",
+    "newStudent": "Add a new Student",
+    "cantSubmit": "These students can't be saved",
+    "missingInfo": "The full name, email, admission date and university Id of each individual is necesary to save it",
+    "table": {
+      "fullName": "Full Name",
+      "email": "Email",
+      "admissionDate": "Admission Date",
+      "universityAssignedId": "University Id",
+      "delete": "Delete Individual"
+    }
+  },
   "errors": {
     "routeDidNotMatch": "The route {{pathnameToShow}} did not match any page",
     "errorGetting": "An error occurred while getting {{model}}",

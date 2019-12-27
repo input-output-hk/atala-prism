@@ -14,11 +14,14 @@ export const withRedirector = Component => props => {
 
   const redirectToCredentials = () => redirectTo('credentials');
 
+  const redirectToConnections = () => redirectTo('connections');
+
   const redirector = {
     redirectToNewCredential,
     redirectToRegistration,
     redirectToLogin,
-    redirectToCredentials
+    redirectToCredentials,
+    redirectToConnections
   };
 
   return <Component {...props} redirector={redirector} />;
