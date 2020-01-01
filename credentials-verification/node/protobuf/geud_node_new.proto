@@ -102,6 +102,7 @@ message IssueCredentialResponse {
 message RevokeCredentialOperation {
   bytes previousOperationHash = 1;
   string credentialId = 2; // revoked credential id, as returned in IssueCredentialResponse
+  Date revocationDate = 3;
 }
 
 message RevokeCredentialResponse {
