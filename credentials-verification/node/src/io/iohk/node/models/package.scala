@@ -1,14 +1,16 @@
 package io.iohk.node
 
 import java.security.{MessageDigest, PublicKey}
-import java.sql.Date
+import java.time.LocalDate
 
 import enumeratum.EnumEntry.UpperSnakecase
 import enumeratum._
 
 package object models {
 
-  sealed trait KeyUsage extends EnumEntry with UpperSnakecase
+  sealed trait KeyUsage extends EnumEntry with UpperSnakecase {
+    def canIssue: Boolean = this == KeyUsage.IssuingKey
+  }
 
   object KeyUsage extends Enum[KeyUsage] {
     val values = findValues
@@ -84,7 +86,8 @@ package object models {
       credentialId: CredentialId,
       issuer: DIDSuffix,
       contentHash: SHA256Digest,
-      issuedOn: Date,
-      revokedOn: Option[Date] = None
+      issuedOn: LocalDate,
+      revokedOn: Option[LocalDate] = None,
+      lastOperation: SHA256Digest
   )
 }

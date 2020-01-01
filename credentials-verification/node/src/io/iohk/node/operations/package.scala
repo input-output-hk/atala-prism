@@ -72,14 +72,16 @@ package object operations {
     case class UnknownKey(didSuffix: DIDSuffix, keyId: String) extends StateError
 
     case class InvalidSignature() extends StateError
-
   }
 
-  /** Representation of already parsed valid operation */
+  /** Data required to verify the correctness of the operation */
+  case class CorrectnessData(key: PublicKey, previousOperation: Option[SHA256Digest])
+
+  /** Representation of already parsed valid operation, common for operations */
   trait Operation {
 
-    /** Returns the key or the information of how to obtain it from the state */
-    def getKey(keyId: String): Either[StateError, OperationKey]
+    /** Fetches key and possible previous operation reference from database */
+    def getCorrectnessData(keyId: String): EitherT[ConnectionIO, StateError, CorrectnessData]
 
     /** Applies operation to the state
       *
@@ -88,6 +90,8 @@ package object operations {
     def applyState(): EitherT[ConnectionIO, StateError, Unit]
 
     def digest: SHA256Digest
+
+    def linkedPreviousOperation: Option[SHA256Digest] = None
   }
 
   /** Companion object for operation */

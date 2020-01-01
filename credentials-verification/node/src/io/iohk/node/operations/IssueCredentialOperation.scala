@@ -7,13 +7,11 @@ import cats.data.EitherT
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.postgres.sqlstate
-import io.iohk.node.models.{CredentialId, DIDSuffix, SHA256Digest}
+import io.iohk.node.models._
 import io.iohk.node.operations.path._
-import io.iohk.node.repositories.daos.CredentialsDAO
 import io.iohk.node.repositories.daos.CredentialsDAO.CreateCredentialData
+import io.iohk.node.repositories.daos.{CredentialsDAO, PublicKeysDAO}
 import io.iohk.nodenew.{geud_node_new => proto}
-
-import scala.util.Try
 
 case class IssueCredentialOperation(
     credentialId: CredentialId,
@@ -22,11 +20,24 @@ case class IssueCredentialOperation(
     issuanceDate: LocalDate,
     digest: SHA256Digest
 ) extends Operation {
-  override def getKey(keyId: String): Either[StateError, OperationKey] = Right(OperationKey.DeferredKey(issuer, keyId))
+
+  override def getCorrectnessData(keyId: String): EitherT[ConnectionIO, StateError, CorrectnessData] = {
+    EitherT[ConnectionIO, StateError, DIDPublicKey] {
+      PublicKeysDAO
+        .find(issuer, keyId)
+        .map(_.toRight(StateError.UnknownKey(issuer, credentialId.id)))
+    }.subflatMap { didKey =>
+      Either.cond(
+        didKey.keyUsage == KeyUsage.IssuingKey,
+        CorrectnessData(didKey.key, None),
+        StateError.InvalidSignature()
+      )
+    }
+  }
 
   override def applyState(): EitherT[ConnectionIO, StateError, Unit] = EitherT {
     CredentialsDAO
-      .insert(CreateCredentialData(credentialId, digest, issuer, contentHash, java.sql.Date.valueOf(issuanceDate)))
+      .insert(CreateCredentialData(credentialId, digest, issuer, contentHash, issuanceDate))
       .attemptSomeSqlState {
         case sqlstate.class23.UNIQUE_VIOLATION =>
           StateError.EntityExists("credential", credentialId.id): StateError
@@ -40,20 +51,7 @@ case class IssueCredentialOperation(
 
 object IssueCredentialOperation extends OperationCompanion[IssueCredentialOperation] {
 
-  protected def parseDate(date: ValueAtPath[proto.Date]): Either[ValidationError, LocalDate] = {
-    for {
-      year <- date.child(_.year, "year").parse { year =>
-        Either.cond(year > 0, year, "Year needs to be specified as positive value")
-      }
-      month <- date.child(_.month, "month").parse { month =>
-        Either.cond(month >= 1 && month <= 12, month, "Month has to be specified and between 1 and 12")
-      }
-      parsedDate <- date.child(_.day, "day").parse { day =>
-        Try(LocalDate.of(year, month, day)).toEither.left
-          .map(_ => "Day has to be specified and a proper day in the month")
-      }
-    } yield parsedDate
-  }
+  import ParsingUtils._
 
   override def parse(operation: proto.AtalaOperation): Either[ValidationError, IssueCredentialOperation] = {
     val operationDigest = SHA256Digest(MessageDigest.getInstance("SHA-256").digest(operation.toByteArray))

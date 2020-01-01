@@ -33,6 +33,9 @@ object CreateDIDOperationSpec {
   val masterKeys = ECKeys.generateKeyPair()
   val masterEcKey = protoECKeyFromPublicKey(masterKeys.getPublic)
 
+  val issuingKeys = ECKeys.generateKeyPair()
+  val issuingEcKey = protoECKeyFromPublicKey(issuingKeys.getPublic)
+
   val exampleOperation = proto.AtalaOperation(
     proto.AtalaOperation.Operation.CreateDid(
       value = proto.CreateDIDOperation(
@@ -42,7 +45,7 @@ object CreateDIDOperationSpec {
             publicKeys = List(
               proto.PublicKey("master", proto.KeyUsage.MASTER_KEY, proto.PublicKey.KeyData.EcKeyData(masterEcKey)),
               proto
-                .PublicKey("issuing", proto.KeyUsage.ISSUING_KEY, proto.PublicKey.KeyData.EcKeyData(randomProtoECKey)),
+                .PublicKey("issuing", proto.KeyUsage.ISSUING_KEY, proto.PublicKey.KeyData.EcKeyData(issuingEcKey)),
               proto.PublicKey(
                 "authentication",
                 proto.KeyUsage.AUTHENTICATION_KEY,
@@ -149,12 +152,19 @@ class CreateDIDOperationSpec extends PostgresRepositorySpec {
     }
   }
 
-  "CreateDIDOperation.getKey" should {
+  "CreateDIDOperation.getCorrectnessData" should {
     "provide the key to be used for signing" in {
       val parsedOperation = CreateDIDOperation.parse(exampleOperation).right.value
-      val OperationKey.IncludedKey(key) = parsedOperation.getKey("master").right.value
+      val CorrectnessData(key, previousOperation) = parsedOperation
+        .getCorrectnessData("master")
+        .transact(database)
+        .value
+        .unsafeRunSync()
+        .right
+        .value
 
       key mustBe masterKeys.getPublic
+      previousOperation mustBe None
     }
   }
 

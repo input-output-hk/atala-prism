@@ -1,6 +1,6 @@
 package io.iohk.node.repositories
 
-import java.sql.Date
+import java.time.LocalDate
 
 import cats.data.{EitherT, OptionT}
 import cats.effect.IO
@@ -40,7 +40,7 @@ class CredentialsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
       .toFutureEither
   }
 
-  def revoke(credentialId: CredentialId, revocationDate: Date): FutureEither[NodeError, Boolean] = {
+  def revoke(credentialId: CredentialId, revocationDate: LocalDate): FutureEither[NodeError, Boolean] = {
     EitherT
       .right[NodeError](CredentialsDAO.revoke(credentialId, revocationDate))
       .transact(xa)

@@ -1,6 +1,6 @@
 package io.iohk.node.repositories
 
-import java.sql.Date
+import java.time.LocalDate
 
 import io.iohk.cvp.repositories.PostgresRepositorySpec
 import io.iohk.node.errors.NodeError.UnknownValueError
@@ -25,8 +25,8 @@ class CredentialsRepositorySpec extends PostgresRepositorySpec {
   val credentialOperationDigest = digestGen(1, 2)
   val credentialId = credentialIdFromDigest(credentialOperationDigest)
   val credentialDigest = digestGen(127, 1)
-  val issuanceDate = Date.valueOf("2019-02-03")
-  val revocationDate = Date.valueOf("2019-11-05")
+  val issuanceDate = LocalDate.parse("2019-02-03")
+  val revocationDate = LocalDate.parse("2019-11-05")
   val createCredentialData =
     CreateCredentialData(credentialId, credentialOperationDigest, didSuffix, credentialDigest, issuanceDate)
 

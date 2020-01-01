@@ -9,7 +9,6 @@ import doobie.implicits._
 import doobie.postgres.sqlstate
 import io.iohk.cvp.crypto.ECKeys
 import io.iohk.node.models.{DIDPublicKey, DIDSuffix, KeyUsage, SHA256Digest}
-import io.iohk.node.operations.OperationKey.IncludedKey
 import io.iohk.node.operations.StateError.{EntityExists, UnknownKey}
 import io.iohk.node.operations.ValidationError.{InvalidValue, MissingValue}
 import io.iohk.node.operations.path._
@@ -20,11 +19,13 @@ import scala.util.Try
 
 case class CreateDIDOperation(id: DIDSuffix, keys: List[DIDPublicKey], digest: SHA256Digest) extends Operation {
 
-  override def getKey(keyId: String): Either[StateError, OperationKey] = {
-    keys
-      .find(_.keyId == keyId)
-      .map(didKey => IncludedKey(didKey.key))
-      .toRight(UnknownKey(id, keyId))
+  override def getCorrectnessData(keyId: String): EitherT[ConnectionIO, StateError, CorrectnessData] = {
+    EitherT.fromEither {
+      keys
+        .find(_.keyId == keyId)
+        .map(didKey => CorrectnessData(didKey.key, None))
+        .toRight(UnknownKey(id, keyId))
+    }
   }
 
   override def applyState(): EitherT[ConnectionIO, StateError, Unit] = {

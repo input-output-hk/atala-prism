@@ -2,15 +2,14 @@ package io.iohk.node.services
 
 import java.security.PublicKey
 
-import cats.data.{EitherT, OptionT}
+import cats.data.EitherT
 import cats.implicits._
 import doobie.free.connection
 import doobie.free.connection.ConnectionIO
 import io.iohk.cvp.crypto.ECSignature
 import io.iohk.node.operations.ValidationError.InvalidValue
-import io.iohk.node.operations.path.Path
 import io.iohk.node.operations._
-import io.iohk.node.repositories.daos.PublicKeysDAO
+import io.iohk.node.operations.path.Path
 import io.iohk.nodenew.{atala_bitcoin_new => atala_proto, geud_node_new => geud_proto}
 import org.slf4j.LoggerFactory
 
@@ -107,18 +106,14 @@ class BlockProcessingService {
       operation: Operation,
       protoOperation: geud_proto.SignedAtalaOperation
   ): ConnectionIO[Either[StateError, Unit]] = {
-    val keyET = EitherT
-      .fromEither[ConnectionIO](operation.getKey(protoOperation.signedWith))
-      .flatMap {
-        case OperationKey.IncludedKey(k) => EitherT.rightT[ConnectionIO, StateError](k)
-        case OperationKey.DeferredKey(owner, keyId) =>
-          OptionT(PublicKeysDAO.find(owner, keyId))
-            .toRight[StateError](StateError.UnknownKey(owner, keyId))
-            .map(_.key)
-      }
-
     val result = for {
-      key <- keyET
+      correctnessData <- operation.getCorrectnessData(protoOperation.signedWith)
+      CorrectnessData(key, previousOperation) = correctnessData
+      _ <- EitherT.cond[ConnectionIO](
+        operation.linkedPreviousOperation == previousOperation,
+        (),
+        StateError.InvalidSignature(): StateError
+      )
       _ <- EitherT.fromEither[ConnectionIO](verifySignature(key, protoOperation))
       _ <- operation.applyState()
     } yield ()

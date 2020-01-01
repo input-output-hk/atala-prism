@@ -1,6 +1,6 @@
 package io.iohk.node.repositories.daos
 
-import java.sql.Date
+import java.time.LocalDate
 
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
@@ -12,7 +12,7 @@ object CredentialsDAO {
       lastOperation: SHA256Digest,
       issuer: DIDSuffix,
       contentHash: SHA256Digest,
-      issuedOn: Date
+      issuedOn: LocalDate
   )
 
   def insert(
@@ -26,20 +26,20 @@ object CredentialsDAO {
 
   def all(): ConnectionIO[Seq[Credential]] = {
     sql"""
-         |SELECT credential_id, issuer, content_hash, issued_on, revoked_on
+         |SELECT credential_id, issuer, content_hash, issued_on, revoked_on, last_operation
          |FROM credentials
        """.stripMargin.query[Credential].to[Seq]
   }
 
   def find(credentialId: CredentialId): ConnectionIO[Option[Credential]] = {
     sql"""
-         |SELECT credential_id, issuer, content_hash, issued_on, revoked_on
+         |SELECT credential_id, issuer, content_hash, issued_on, revoked_on, last_operation
          |FROM credentials
          |WHERE credential_id = $credentialId
        """.stripMargin.query[Credential].option
   }
 
-  def revoke(credentialId: CredentialId, revocationDate: Date): ConnectionIO[Boolean] = {
+  def revoke(credentialId: CredentialId, revocationDate: LocalDate): ConnectionIO[Boolean] = {
     sql"""
          |UPDATE credentials
          |SET revoked_on = $revocationDate
