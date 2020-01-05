@@ -178,10 +178,10 @@ class ShareDialogItemCollectionViewCell: UICollectionViewCell {
         self.delegate = delegate
     }
 
-    func config(name: String?, logoUrl: String?, placeholderNamed: String, isSelected: Bool) {
+    func config(name: String?, logoData: Data?, placeholderNamed: String, isSelected: Bool) {
 
         self.labelTitle.text = name
-        self.imageLogo.applyUrlImage(url: logoUrl, placeholderNamed: placeholderNamed)
+        self.imageLogo.applyDataImage(data: logoData, placeholderNamed: placeholderNamed)
         self.imageLogo.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_REGULAR)
         self.viewTick.isHidden = !isSelected
         self.viewBg.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_REGULAR, borderWidth: isSelected ? 2 : 0, borderColor: UIColor.appRed.cgColor)

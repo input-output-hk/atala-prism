@@ -42,7 +42,7 @@ class NewDegreeViewCell: BaseTableViewCell {
 
     // MARK: Config
 
-    func config(title: String?, subtitle: String?, logoUrl: String?, logoPlaceholderNamed: String, isLast: Bool) {
+    func config(title: String?, subtitle: String?, logoData: Data?, logoPlaceholderNamed: String, isLast: Bool) {
 
         labelTitle.text = title
         let hideSubtitle = subtitle == nil
@@ -50,7 +50,7 @@ class NewDegreeViewCell: BaseTableViewCell {
         labelSubtitle.text = subtitle
         constraintTitleVertical.constant = hideSubtitle ? 0.0 : -10.0
         // Logo image
-        imageLogo.applyUrlImage(url: logoUrl, placeholderNamed: logoPlaceholderNamed)
+        imageLogo.applyDataImage(data: logoData, placeholderNamed: logoPlaceholderNamed)
 
         let radius = isLast ? AppConfigs.CORNER_RADIUS_REGULAR : 0.0
         viewMainBody.addRoundCorners(radius: radius, onlyBottoms: true)

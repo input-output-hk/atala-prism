@@ -216,7 +216,7 @@ class WalletPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDeleg
     func setup(for cell: CommonViewCell) {
 
         let value = initialRows![cell.indexPath!.row].value as! InitialCellValue
-        cell.config(title: value.title.localize(), subtitle: nil, logoUrl: nil, logoPlaceholderNamed: value.icon, isComingSoon: value.action == nil)
+        cell.config(title: value.title.localize(), subtitle: nil, logoData: nil, logoPlaceholderNamed: value.icon, isComingSoon: value.action == nil)
     }
 
     func tappedAction(for cell: CommonViewCell) {

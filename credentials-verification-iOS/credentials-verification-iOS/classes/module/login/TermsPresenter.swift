@@ -17,6 +17,8 @@ class TermsPresenter: BasePresenter {
     }
 
     func tappedContinueButton() {
+
+        Tracker.global.trackContinuedAfterAcceptTerms()
         viewImpl?.changeScreenToRegister()
     }
 
@@ -25,11 +27,15 @@ class TermsPresenter: BasePresenter {
     }
 
     func tappedTermsSwitch(newState: Bool) {
+
+        Tracker.global.trackAcceptTerms()
         acceptedTerms = newState
         updateContinueButtonState()
     }
 
     func tappedPrivacySwitch(newState: Bool) {
+
+        Tracker.global.trackAcceptPrivacy()
         acceptedPrivacy = newState
         updateContinueButtonState()
     }

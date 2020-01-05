@@ -45,11 +45,40 @@ extension UIImage {
             callback?(scaledImage)
         }
     }
+
+    static func applyDataImage(data: Data?, imageView: UIImageView, isCircular: Bool = false, placeholderNamed: String? = nil, callback: ((Image) -> Void)? = nil) {
+
+        // Apply the placeholder
+        if placeholderNamed != nil {
+            imageView.image = UIImage(named: placeholderNamed!)
+        }
+
+        // If the data is nil or empty return
+        if data?.isEmpty ?? true {
+            return
+        }
+
+        // Load data image and apply it
+        var scaledImage = UIImage(data: data!)
+        if isCircular && imageView.width > 0 && imageView.height > 0 {
+            let circularImage = scaledImage?.af_imageRoundedIntoCircle()
+            let size = CGSize(width: imageView.width, height: imageView.height)
+            scaledImage = circularImage?.af_imageScaled(to: size)
+        }
+        if scaledImage != nil {
+            imageView.image = scaledImage
+            callback?(scaledImage!)
+        }
+    }
 }
 
 extension UIImageView {
 
     func applyUrlImage(url: String?, isCircular: Bool = false, placeholderNamed: String? = nil, callback: ((Image) -> Void)? = nil) {
         UIImage.applyUrlImage(url: url, imageView: self, isCircular: isCircular, placeholderNamed: placeholderNamed, callback: callback)
+    }
+
+    func applyDataImage(data: Data?, isCircular: Bool = false, placeholderNamed: String? = nil, callback: ((Image) -> Void)? = nil) {
+        UIImage.applyDataImage(data: data, imageView: self, isCircular: isCircular, placeholderNamed: placeholderNamed, callback: callback)
     }
 }

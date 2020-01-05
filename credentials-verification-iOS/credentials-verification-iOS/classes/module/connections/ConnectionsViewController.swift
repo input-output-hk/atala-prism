@@ -163,7 +163,7 @@ class ConnectionsViewController: ListingBaseViewController {
         scanner.stopScan()
     }
 
-    func showNewConnectMessage(type: Int, title: String?, logoUrl: String?) {
+    func showNewConnectMessage(type: Int, title: String?, logoData: Data?) {
 
         let lead = (type == 0 ? "connections_scan_qr_confirm_title_type_0" : "connections_scan_qr_confirm_title_type_1").localize()
         let placeholder = type == 0 ? "ico_placeholder_university" : "ico_placeholder_employer"
@@ -171,6 +171,6 @@ class ConnectionsViewController: ListingBaseViewController {
         if !confirmMessageViewController.isBeingPresented {
             customPresentViewController(confirmMessageViewController.presentr, viewController: confirmMessageViewController, animated: true)
         }
-        confirmMessageViewController.config(delegate: presenterImpl, lead: lead, title: title, logoUrl: logoUrl, placeholderNamed: placeholder)
+        confirmMessageViewController.config(delegate: presenterImpl, lead: lead, title: title, logoData: logoData, placeholderNamed: placeholder)
     }
 }

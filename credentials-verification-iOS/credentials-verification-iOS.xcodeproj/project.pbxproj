@@ -10,6 +10,14 @@
 		4CBC18384291926687A7EAA9 /* Pods_credentials_verification_iOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9FE4DE3E1C77A7F27599465B /* Pods_credentials_verification_iOS.framework */; };
 		BE1188304FE563D375E1840B /* Pods_credentials_verification_iOSUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C51D0105B7D63E4B8C1E4B7B /* Pods_credentials_verification_iOSUITests.framework */; };
 		C73F1ED22DD26837CFB70DC5 /* Pods_credentials_verification_iOSTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 874D892C1FBD9F2CFC9A1F15 /* Pods_credentials_verification_iOSTests.framework */; };
+		EE22F1EA23A486FA003C4F87 /* wallet.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE22F1E323A486FA003C4F87 /* wallet.pb.swift */; };
+		EE22F1EB23A486FA003C4F87 /* credential.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE22F1E423A486FA003C4F87 /* credential.pb.swift */; };
+		EE22F1EC23A486FA003C4F87 /* credential.proto in Sources */ = {isa = PBXBuildFile; fileRef = EE22F1E523A486FA003C4F87 /* credential.proto */; };
+		EE22F1ED23A486FA003C4F87 /* wallet.proto in Sources */ = {isa = PBXBuildFile; fileRef = EE22F1E623A486FA003C4F87 /* wallet.proto */; };
+		EE22F1EE23A486FA003C4F87 /* connector.grpc.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE22F1E723A486FA003C4F87 /* connector.grpc.swift */; };
+		EE22F1EF23A486FA003C4F87 /* connector.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE22F1E823A486FA003C4F87 /* connector.pb.swift */; };
+		EE22F1F023A486FA003C4F87 /* connector.proto in Sources */ = {isa = PBXBuildFile; fileRef = EE22F1E923A486FA003C4F87 /* connector.proto */; };
+		EE22F1F223A4AD2C003C4F87 /* CryptoUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE22F1F123A4AD2C003C4F87 /* CryptoUtils.swift */; };
 		EE48AC022377537200C0A441 /* Tutorial.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EE48AC012377537200C0A441 /* Tutorial.storyboard */; };
 		EE48AC04237753A900C0A441 /* Register.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EE48AC03237753A900C0A441 /* Register.storyboard */; };
 		EE48AC06237753C600C0A441 /* Terms.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EE48AC05237753C600C0A441 /* Terms.storyboard */; };
@@ -54,8 +62,6 @@
 		EE7185862384FBC200C58F62 /* CredentialPay.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EE7185852384FBC200C58F62 /* CredentialPay.storyboard */; };
 		EE7185882384FC6A00C58F62 /* CredentialPayViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7185872384FC6A00C58F62 /* CredentialPayViewCell.swift */; };
 		EE71858B2384FCAD00C58F62 /* CredentialPayViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE71858A2384FCAD00C58F62 /* CredentialPayViewCell.xib */; };
-		EE7D49C72366B5A7007C31A8 /* connector_user.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7D49BF2366B5A7007C31A8 /* connector_user.pb.swift */; };
-		EE7D49C92366B5A7007C31A8 /* connector_user.grpc.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7D49C12366B5A7007C31A8 /* connector_user.grpc.swift */; };
 		EE7D49D12366B697007C31A8 /* AppConfigs.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7D49CF2366B697007C31A8 /* AppConfigs.swift */; };
 		EE7D49D22366B697007C31A8 /* Common.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7D49D02366B697007C31A8 /* Common.swift */; };
 		EE7D4BB82366B9C4007C31A8 /* TableUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7D4A102366B9C2007C31A8 /* TableUtils.swift */; };
@@ -134,7 +140,6 @@
 		EE7D4D29236F8DE9007C31A8 /* ListingEmptyViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7D4D24236F8DE8007C31A8 /* ListingEmptyViewCell.swift */; };
 		EE7D4D2A236F8DE9007C31A8 /* ListingLoadingViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7D4D25236F8DE8007C31A8 /* ListingLoadingViewCell.swift */; };
 		EE7D4D2B236F8DE9007C31A8 /* ListingBasePresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7D4D26236F8DE9007C31A8 /* ListingBasePresenter.swift */; };
-		EE7D4D2D236F9983007C31A8 /* TempModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7D4D2C236F9983007C31A8 /* TempModels.swift */; };
 		EE7D4D30236FB379007C31A8 /* ConnectionMainViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE7D4D2F236FB379007C31A8 /* ConnectionMainViewCell.xib */; };
 		EE7D4D32236FB3C1007C31A8 /* ConnectionMainViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7D4D31236FB3C1007C31A8 /* ConnectionMainViewCell.swift */; };
 		EE8CD810237B691100614578 /* TextFieldTitledView.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE8CD80F237B691100614578 /* TextFieldTitledView.xib */; };
@@ -168,10 +173,16 @@
 		EE904F1C2373BA0700EE6344 /* DocumentViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE904F1B2373BA0700EE6344 /* DocumentViewCell.xib */; };
 		EE904F1E2373BA1500EE6344 /* NewDegreeHeaderViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE904F1D2373BA1500EE6344 /* NewDegreeHeaderViewCell.xib */; };
 		EE904F202373BA2100EE6344 /* NewDegreeViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE904F1F2373BA2100EE6344 /* NewDegreeViewCell.xib */; };
+		EEB7DD502395F79300C4DEA5 /* ConnectionsDtos.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEB7DD4F2395F79300C4DEA5 /* ConnectionsDtos.swift */; };
+		EEB7DD52239A0C6900C4DEA5 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = EEB7DD51239A0C6800C4DEA5 /* GoogleService-Info.plist */; };
+		EEB7DD56239A153700C4DEA5 /* Tracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEB7DD55239A153700C4DEA5 /* Tracker.swift */; };
 		EEDAF2C32389EC2400121206 /* ConfirmationViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = EEDAF2C22389EC2400121206 /* ConfirmationViewCell.xib */; };
 		EEDAF2C62389ECDC00121206 /* ConfirmationViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEDAF2C52389ECDC00121206 /* ConfirmationViewCell.swift */; };
 		EEE43A63237A60A000E8E304 /* RegisterSeedView.xib in Resources */ = {isa = PBXBuildFile; fileRef = EEE43A62237A60A000E8E304 /* RegisterSeedView.xib */; };
 		EEE43A65237A60CA00E8E304 /* RegisterSeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEE43A64237A60CA00E8E304 /* RegisterSeedView.swift */; };
+		EEEFB91023ADBAE2005BA755 /* CredentialsDtos.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEEFB90F23ADBAE2005BA755 /* CredentialsDtos.swift */; };
+		EEEFB91223ADD5A4005BA755 /* WalletDtos.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEEFB91123ADD5A4005BA755 /* WalletDtos.swift */; };
+		EEEFB91623ADEDD4005BA755 /* ImageBank.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEEFB91523ADEDD4005BA755 /* ImageBank.swift */; };
 		F5E38949234BC34D0001F1E3 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5E38948234BC34D0001F1E3 /* AppDelegate.swift */; };
 		F5E3894B234BC34D0001F1E3 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5E3894A234BC34D0001F1E3 /* SceneDelegate.swift */; };
 		F5E3896B234BC3500001F1E3 /* credentials_verification_iOSUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5E3896A234BC3500001F1E3 /* credentials_verification_iOSUITests.swift */; };
@@ -204,6 +215,14 @@
 		A1CBDBC54418D05C10B7AD3F /* Pods-credentials-verification-iOSUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-credentials-verification-iOSUITests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-credentials-verification-iOSUITests/Pods-credentials-verification-iOSUITests.debug.xcconfig"; sourceTree = "<group>"; };
 		C51D0105B7D63E4B8C1E4B7B /* Pods_credentials_verification_iOSUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_credentials_verification_iOSUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		E497159BDF935521E81A661D /* Pods-credentials-verification-iOSTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-credentials-verification-iOSTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-credentials-verification-iOSTests/Pods-credentials-verification-iOSTests.release.xcconfig"; sourceTree = "<group>"; };
+		EE22F1E323A486FA003C4F87 /* wallet.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = wallet.pb.swift; sourceTree = "<group>"; };
+		EE22F1E423A486FA003C4F87 /* credential.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = credential.pb.swift; sourceTree = "<group>"; };
+		EE22F1E523A486FA003C4F87 /* credential.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.protobuf; path = credential.proto; sourceTree = "<group>"; };
+		EE22F1E623A486FA003C4F87 /* wallet.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.protobuf; path = wallet.proto; sourceTree = "<group>"; };
+		EE22F1E723A486FA003C4F87 /* connector.grpc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = connector.grpc.swift; sourceTree = "<group>"; };
+		EE22F1E823A486FA003C4F87 /* connector.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = connector.pb.swift; sourceTree = "<group>"; };
+		EE22F1E923A486FA003C4F87 /* connector.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.protobuf; path = connector.proto; sourceTree = "<group>"; };
+		EE22F1F123A4AD2C003C4F87 /* CryptoUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CryptoUtils.swift; sourceTree = "<group>"; };
 		EE48AC012377537200C0A441 /* Tutorial.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Tutorial.storyboard; sourceTree = "<group>"; };
 		EE48AC03237753A900C0A441 /* Register.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Register.storyboard; sourceTree = "<group>"; };
 		EE48AC05237753C600C0A441 /* Terms.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Terms.storyboard; sourceTree = "<group>"; };
@@ -248,8 +267,6 @@
 		EE7185852384FBC200C58F62 /* CredentialPay.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = CredentialPay.storyboard; sourceTree = "<group>"; };
 		EE7185872384FC6A00C58F62 /* CredentialPayViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialPayViewCell.swift; sourceTree = "<group>"; };
 		EE71858A2384FCAD00C58F62 /* CredentialPayViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = CredentialPayViewCell.xib; sourceTree = "<group>"; };
-		EE7D49BF2366B5A7007C31A8 /* connector_user.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = connector_user.pb.swift; sourceTree = "<group>"; };
-		EE7D49C12366B5A7007C31A8 /* connector_user.grpc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = connector_user.grpc.swift; sourceTree = "<group>"; };
 		EE7D49C32366B5A7007C31A8 /* protoc-gen-swift */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = "protoc-gen-swift"; sourceTree = "<group>"; };
 		EE7D49C42366B5A7007C31A8 /* package.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = package.json; sourceTree = "<group>"; };
 		EE7D49C52366B5A7007C31A8 /* simple_proto_server.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; path = simple_proto_server.js; sourceTree = "<group>"; };
@@ -320,7 +337,6 @@
 		EE7D4CE123673C39007C31A8 /* UIAlertController+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIAlertController+Extensions.swift"; sourceTree = "<group>"; };
 		EE7D4CE223673C39007C31A8 /* UIApplication+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIApplication+Extensions.swift"; sourceTree = "<group>"; };
 		EE7D4CE323673C39007C31A8 /* Date+Extension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Date+Extension.swift"; sourceTree = "<group>"; };
-		EE7D4CFA23673CB7007C31A8 /* connector_user.proto */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.protobuf; path = connector_user.proto; sourceTree = "<group>"; };
 		EE7D4CFB236759A1007C31A8 /* DashboardViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardViewController.swift; sourceTree = "<group>"; };
 		EE7D4CFD236759B4007C31A8 /* DashboardPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardPresenter.swift; sourceTree = "<group>"; };
 		EE7D4D002367621B007C31A8 /* HomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
@@ -337,7 +353,6 @@
 		EE7D4D24236F8DE8007C31A8 /* ListingEmptyViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ListingEmptyViewCell.swift; sourceTree = "<group>"; };
 		EE7D4D25236F8DE8007C31A8 /* ListingLoadingViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ListingLoadingViewCell.swift; sourceTree = "<group>"; };
 		EE7D4D26236F8DE9007C31A8 /* ListingBasePresenter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ListingBasePresenter.swift; sourceTree = "<group>"; };
-		EE7D4D2C236F9983007C31A8 /* TempModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TempModels.swift; sourceTree = "<group>"; };
 		EE7D4D2F236FB379007C31A8 /* ConnectionMainViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ConnectionMainViewCell.xib; sourceTree = "<group>"; };
 		EE7D4D31236FB3C1007C31A8 /* ConnectionMainViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionMainViewCell.swift; sourceTree = "<group>"; };
 		EE8CD80F237B691100614578 /* TextFieldTitledView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TextFieldTitledView.xib; sourceTree = "<group>"; };
@@ -371,10 +386,16 @@
 		EE904F1B2373BA0700EE6344 /* DocumentViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DocumentViewCell.xib; sourceTree = "<group>"; };
 		EE904F1D2373BA1500EE6344 /* NewDegreeHeaderViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = NewDegreeHeaderViewCell.xib; sourceTree = "<group>"; };
 		EE904F1F2373BA2100EE6344 /* NewDegreeViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = NewDegreeViewCell.xib; sourceTree = "<group>"; };
+		EEB7DD4F2395F79300C4DEA5 /* ConnectionsDtos.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionsDtos.swift; sourceTree = "<group>"; };
+		EEB7DD51239A0C6800C4DEA5 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		EEB7DD55239A153700C4DEA5 /* Tracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tracker.swift; sourceTree = "<group>"; };
 		EEDAF2C22389EC2400121206 /* ConfirmationViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ConfirmationViewCell.xib; sourceTree = "<group>"; };
 		EEDAF2C52389ECDC00121206 /* ConfirmationViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfirmationViewCell.swift; sourceTree = "<group>"; };
 		EEE43A62237A60A000E8E304 /* RegisterSeedView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = RegisterSeedView.xib; sourceTree = "<group>"; };
 		EEE43A64237A60CA00E8E304 /* RegisterSeedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterSeedView.swift; sourceTree = "<group>"; };
+		EEEFB90F23ADBAE2005BA755 /* CredentialsDtos.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CredentialsDtos.swift; sourceTree = "<group>"; };
+		EEEFB91123ADD5A4005BA755 /* WalletDtos.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletDtos.swift; sourceTree = "<group>"; };
+		EEEFB91523ADEDD4005BA755 /* ImageBank.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageBank.swift; sourceTree = "<group>"; };
 		F5E38945234BC34D0001F1E3 /* ATALA.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ATALA.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F5E38948234BC34D0001F1E3 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		F5E3894A234BC34D0001F1E3 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -532,9 +553,13 @@
 		EE7D49BE2366B5A7007C31A8 /* protobuf */ = {
 			isa = PBXGroup;
 			children = (
-				EE7D4CFA23673CB7007C31A8 /* connector_user.proto */,
-				EE7D49BF2366B5A7007C31A8 /* connector_user.pb.swift */,
-				EE7D49C12366B5A7007C31A8 /* connector_user.grpc.swift */,
+				EE22F1E723A486FA003C4F87 /* connector.grpc.swift */,
+				EE22F1E823A486FA003C4F87 /* connector.pb.swift */,
+				EE22F1E923A486FA003C4F87 /* connector.proto */,
+				EE22F1E423A486FA003C4F87 /* credential.pb.swift */,
+				EE22F1E523A486FA003C4F87 /* credential.proto */,
+				EE22F1E323A486FA003C4F87 /* wallet.pb.swift */,
+				EE22F1E623A486FA003C4F87 /* wallet.proto */,
 				EE7D49C22366B5A7007C31A8 /* utils */,
 			);
 			path = protobuf;
@@ -630,19 +655,22 @@
 		EE7D4A782366B9C2007C31A8 /* model */ = {
 			isa = PBXGroup;
 			children = (
-				EE7D4AA32366B9C2007C31A8 /* own */,
+				EE7D4AA32366B9C2007C31A8 /* temporal_fix */,
+				EE7D4AA42366B9C2007C31A8 /* LoggedUser.swift */,
+				EEB7DD4F2395F79300C4DEA5 /* ConnectionsDtos.swift */,
+				EEEFB90F23ADBAE2005BA755 /* CredentialsDtos.swift */,
+				EEEFB91123ADD5A4005BA755 /* WalletDtos.swift */,
+				EEEFB91523ADEDD4005BA755 /* ImageBank.swift */,
 			);
 			path = model;
 			sourceTree = "<group>";
 		};
-		EE7D4AA32366B9C2007C31A8 /* own */ = {
+		EE7D4AA32366B9C2007C31A8 /* temporal_fix */ = {
 			isa = PBXGroup;
 			children = (
-				EE7D4AA42366B9C2007C31A8 /* LoggedUser.swift */,
-				EE7D4D2C236F9983007C31A8 /* TempModels.swift */,
 				EE8FD4EF2372864900EFF62E /* FakeData.swift */,
 			);
-			path = own;
+			path = temporal_fix;
 			sourceTree = "<group>";
 		};
 		EE7D4AA82366B9C2007C31A8 /* aux */ = {
@@ -726,6 +754,9 @@
 				EE7D4AC72366B9C3007C31A8 /* Logger.swift */,
 				EE7D4ACA2366B9C3007C31A8 /* Date+Extensions.swift */,
 				EE7D4AC92366B9C3007C31A8 /* GeneralUtils.swift */,
+				EE7D4B022366B9C3007C31A8 /* CrashReporter.swift */,
+				EEB7DD55239A153700C4DEA5 /* Tracker.swift */,
+				EE22F1F123A4AD2C003C4F87 /* CryptoUtils.swift */,
 			);
 			path = general;
 			sourceTree = "<group>";
@@ -744,7 +775,6 @@
 			children = (
 				EE7D4B002366B9C3007C31A8 /* SharedMemory.swift */,
 				EE7D4B032366B9C3007C31A8 /* SharedMemoryHelper.swift */,
-				EE7D4B022366B9C3007C31A8 /* CrashReporter.swift */,
 			);
 			path = db;
 			sourceTree = "<group>";
@@ -1057,6 +1087,7 @@
 				EE7D49CF2366B697007C31A8 /* AppConfigs.swift */,
 				EE7D49D02366B697007C31A8 /* Common.swift */,
 				EE7D49D32366B883007C31A8 /* credentials-verification-iOS-Bridging-Header.h */,
+				EEB7DD51239A0C6800C4DEA5 /* GoogleService-Info.plist */,
 				F5E38956234BC34F0001F1E3 /* Info.plist */,
 			);
 			path = "credentials-verification-iOS";
@@ -1092,6 +1123,7 @@
 				F5E38942234BC34D0001F1E3 /* Frameworks */,
 				F5E38943234BC34D0001F1E3 /* Resources */,
 				E4442DCACB70A2F13D492DEA /* [CP] Embed Pods Frameworks */,
+				EEB7DD53239A0EF500C4DEA5 /* Run Crashlytics Script */,
 			);
 			buildRules = (
 			);
@@ -1215,6 +1247,7 @@
 				EE7185712384D5CB00C58F62 /* ProfileViewCell.xib in Resources */,
 				EE48AC292379221000C0A441 /* SwitchCustomView.xib in Resources */,
 				EE7D4C7A2366B9C4007C31A8 /* Localizable.stringsdict in Resources */,
+				EEB7DD52239A0C6900C4DEA5 /* GoogleService-Info.plist in Resources */,
 				EE8CD81E237D10D700614578 /* HistoryViewCell.xib in Resources */,
 				EE904F162373B9E100EE6344 /* DetailFooterViewCell.xib in Resources */,
 				EE904F1A2373B9FA00EE6344 /* DetailPropertyViewCell.xib in Resources */,
@@ -1328,6 +1361,24 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-credentials-verification-iOS/Pods-credentials-verification-iOS-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
+		EEB7DD53239A0EF500C4DEA5 /* Run Crashlytics Script */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Run Crashlytics Script";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\n\"${PODS_ROOT}/Fabric/run\"\n";
+		};
 		F5A3CB6823564D31000855C1 /* Run Protobuf Script */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -1344,7 +1395,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its pat\nexport PATH=$PATH:${SRCROOT}\nmkdir -p ./protobuf\nprotoc --swift_out=. --swiftgrpc_out=Client=true,Server=false:. ./protobuf/connector_user.proto\n";
+			shellScript = "# Type a script or drag a script file from your workspace to insert its pat\nexport PATH=$PATH:${SRCROOT}\nmkdir -p ./protobuf\nprotoc --swift_out=. --swiftgrpc_out=Client=true,Server=false:. ./protobuf/connector.proto\nprotoc --swift_out=. --swiftgrpc_out=Client=true,Server=false:. ./protobuf/wallet.proto\nprotoc --swift_out=. --swiftgrpc_out=Client=true,Server=false:. ./protobuf/credential.proto\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -1374,6 +1425,7 @@
 				EE7D4D32236FB3C1007C31A8 /* ConnectionMainViewCell.swift in Sources */,
 				EE7D4BFF2366B9C4007C31A8 /* BaseTabViewController.swift in Sources */,
 				EE48AC2723791B3000C0A441 /* SwitchCustomView.swift in Sources */,
+				EE22F1ED23A486FA003C4F87 /* wallet.proto in Sources */,
 				EE48AC1E23775E0700C0A441 /* SuccessViewController.swift in Sources */,
 				EE71855C2383563100C58F62 /* ShareDialogViewController.swift in Sources */,
 				EE7D4D28236F8DE9007C31A8 /* ListingErrorRetryViewCell.swift in Sources */,
@@ -1392,12 +1444,15 @@
 				EE7D4C022366B9C4007C31A8 /* BaseNavigationController.swift in Sources */,
 				EE7D4CF823673C39007C31A8 /* UIApplication+Extensions.swift in Sources */,
 				EE71856023839E6A00C58F62 /* CommonViewCell.swift in Sources */,
+				EE22F1EA23A486FA003C4F87 /* wallet.pb.swift in Sources */,
 				EE7D4CEB23673C39007C31A8 /* Optional+Extensions.swift in Sources */,
 				EE7185562383089500C58F62 /* ConnectionConfirmViewController.swift in Sources */,
 				EE904F082373AAE000EE6344 /* NewDegreeHeaderViewCell.swift in Sources */,
+				EE22F1EB23A486FA003C4F87 /* credential.pb.swift in Sources */,
 				EE7D4C432366B9C4007C31A8 /* Logger.swift in Sources */,
 				EE7D4C452366B9C4007C31A8 /* GeneralUtils.swift in Sources */,
 				EEE43A65237A60CA00E8E304 /* RegisterSeedView.swift in Sources */,
+				EE22F1EF23A486FA003C4F87 /* connector.pb.swift in Sources */,
 				EEDAF2C62389ECDC00121206 /* ConfirmationViewCell.swift in Sources */,
 				EE7185772384F39500C58F62 /* PaddingViewCell.swift in Sources */,
 				EE7D4D012367621C007C31A8 /* HomeViewController.swift in Sources */,
@@ -1405,13 +1460,14 @@
 				EE48AC152377547C00C0A441 /* LoginPresenter.swift in Sources */,
 				EE7D4D17236A89AE007C31A8 /* NavBarCustom.swift in Sources */,
 				EE7D4C6E2366B9C4007C31A8 /* CrashReporter.swift in Sources */,
+				EEEFB91223ADD5A4005BA755 /* WalletDtos.swift in Sources */,
 				EE71857E2384F9FE00C58F62 /* CredentialPayPresenter.swift in Sources */,
 				EE7D4C392366B9C4007C31A8 /* BaseNibLoadingView.swift in Sources */,
-				EE7D4D2D236F9983007C31A8 /* TempModels.swift in Sources */,
 				EE7D4CE823673C39007C31A8 /* LocalizedUI+Extensions.swift in Sources */,
 				EE7D4CE923673C39007C31A8 /* UITable+Extensions.swift in Sources */,
 				EE8FD4DE23726A1000EFF62E /* ProfileViewController.swift in Sources */,
 				EE7D4CE623673C39007C31A8 /* UISearchBar+Extensions.swift in Sources */,
+				EE22F1EC23A486FA003C4F87 /* credential.proto in Sources */,
 				EE904F112373AB4400EE6344 /* DetailPropertyViewCell.swift in Sources */,
 				EE48AC132377544800C0A441 /* TermsViewController.swift in Sources */,
 				EE7185642384B77600C58F62 /* BrowserPresenter.swift in Sources */,
@@ -1419,6 +1475,8 @@
 				EE7D4CE523673C39007C31A8 /* UISegmentedControl+Extensions.swift in Sources */,
 				EE7D4CFC236759A1007C31A8 /* DashboardViewController.swift in Sources */,
 				EE7D4C012366B9C4007C31A8 /* BasePresenter.swift in Sources */,
+				EE22F1F223A4AD2C003C4F87 /* CryptoUtils.swift in Sources */,
+				EEB7DD56239A153700C4DEA5 /* Tracker.swift in Sources */,
 				EE7D4CEF23673C39007C31A8 /* UITextView+Extensions2.swift in Sources */,
 				EE7D4C032366B9C4007C31A8 /* BaseView.swift in Sources */,
 				EE7D4CF623673C39007C31A8 /* UIImage+Extensions.swift in Sources */,
@@ -1426,16 +1484,16 @@
 				EE7D4CF123673C39007C31A8 /* UIColor+Extensions2.swift in Sources */,
 				EE7D4CF423673C39007C31A8 /* UIViewController+Extensions.swift in Sources */,
 				EE48AC092377540500C0A441 /* TutorialPresenter.swift in Sources */,
-				EE7D49C72366B5A7007C31A8 /* connector_user.pb.swift in Sources */,
 				EE7D4CEE23673C39007C31A8 /* UIImageView+Extensions.swift in Sources */,
-				EE7D49C92366B5A7007C31A8 /* connector_user.grpc.swift in Sources */,
 				EE7D4D2A236F8DE9007C31A8 /* ListingLoadingViewCell.swift in Sources */,
 				EE7D4CF223673C39007C31A8 /* Array+Extensions2.swift in Sources */,
+				EE22F1F023A486FA003C4F87 /* connector.proto in Sources */,
 				F5E38949234BC34D0001F1E3 /* AppDelegate.swift in Sources */,
 				EE48AC1C23775DFC00C0A441 /* SuccessPresenter.swift in Sources */,
 				EE7D4CF723673C39007C31A8 /* UIAlertController+Extensions.swift in Sources */,
 				EE7D4BFD2366B9C4007C31A8 /* BaseViewController.swift in Sources */,
 				EE7D4CF923673C39007C31A8 /* Date+Extension.swift in Sources */,
+				EE22F1EE23A486FA003C4F87 /* connector.grpc.swift in Sources */,
 				EE7D4D29236F8DE9007C31A8 /* ListingEmptyViewCell.swift in Sources */,
 				EE8CD812237B6C7300614578 /* TextFieldTitledView.swift in Sources */,
 				EE7D4CE423673C39007C31A8 /* Locale+Extensions.swift in Sources */,
@@ -1446,6 +1504,7 @@
 				EE7D49D12366B697007C31A8 /* AppConfigs.swift in Sources */,
 				EE7D4CF023673C39007C31A8 /* String+Extensions2.swift in Sources */,
 				EE904F0D2373AB1800EE6344 /* DetailHeaderViewCell.swift in Sources */,
+				EEB7DD502395F79300C4DEA5 /* ConnectionsDtos.swift in Sources */,
 				EE71854E237DBF4700C58F62 /* WelcomePresenter.swift in Sources */,
 				F5E3894B234BC34D0001F1E3 /* SceneDelegate.swift in Sources */,
 				EE7D4D0D23693588007C31A8 /* ConnectionsViewController.swift in Sources */,
@@ -1453,6 +1512,7 @@
 				EE7D4C6C2366B9C4007C31A8 /* SharedMemory.swift in Sources */,
 				EE7D4BBA2366B9C4007C31A8 /* UserUtils.swift in Sources */,
 				EE48AC0B2377541000C0A441 /* TutorialViewController.swift in Sources */,
+				EEEFB91623ADEDD4005BA755 /* ImageBank.swift in Sources */,
 				EE7D4C6F2366B9C4007C31A8 /* SharedMemoryHelper.swift in Sources */,
 				EE8FD4E023726A2700EFF62E /* ProfilePresenter.swift in Sources */,
 				EE8FD4E623726A5500EFF62E /* WalletPresenter.swift in Sources */,
@@ -1461,6 +1521,7 @@
 				EE71857C2384F9EE00C58F62 /* CredentialPayViewController.swift in Sources */,
 				EE7D4CE723673C39007C31A8 /* UIColor+Extensions.swift in Sources */,
 				EE48AC0D2377542600C0A441 /* RegisterPresenter.swift in Sources */,
+				EEEFB91023ADBAE2005BA755 /* CredentialsDtos.swift in Sources */,
 				EE7185692384D09800C58F62 /* ProfileViewCell.swift in Sources */,
 				EE7D49D22366B697007C31A8 /* Common.swift in Sources */,
 				EE7D4CED23673C39007C31A8 /* UIView+Extensions2.swift in Sources */,
@@ -1644,12 +1705,15 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 4;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 556N44M7XA;
 				INFOPLIST_FILE = "credentials-verification-iOS/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = 0.1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = io.iohk.cvp;
 				PRODUCT_NAME = ATALA;
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1666,12 +1730,14 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 4;
 				DEVELOPMENT_TEAM = 556N44M7XA;
 				INFOPLIST_FILE = "credentials-verification-iOS/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = 0.1.3;
 				PRODUCT_BUNDLE_IDENTIFIER = io.iohk.cvp;
 				PRODUCT_NAME = ATALA;
 				PROVISIONING_PROFILE_SPECIFIER = "";

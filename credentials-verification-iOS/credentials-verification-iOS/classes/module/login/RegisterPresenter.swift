@@ -23,10 +23,14 @@ class RegisterPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDel
     // MARK: Buttons
 
     func tappedContinueButton() {
+
+        Tracker.global.trackContinuedAfterAcceptRecovery()
         viewImpl?.changeScreenToLogin()
     }
 
     func tappedLegalSwitch(newState: Bool) {
+
+        Tracker.global.trackAcceptRecovery()
         acceptedLegal = newState
         updateContinueButtonState()
     }

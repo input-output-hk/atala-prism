@@ -42,10 +42,10 @@
                     <rect key="frame" x="13" y="0.0" width="42" height="17"/>
                     <subviews>
                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="ksL-Ok-jPu">
-                            <rect key="frame" x="0.0" y="9" width="42" height="1.5"/>
+                            <rect key="frame" x="0.0" y="8.5" width="42" height="2"/>
                             <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                             <constraints>
-                                <constraint firstAttribute="height" constant="1.5" id="3Kd-cg-ucc"/>
+                                <constraint firstAttribute="height" constant="2" id="3Kd-cg-ucc"/>
                             </constraints>
                         </view>
                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2iQ-R5-Ok6">

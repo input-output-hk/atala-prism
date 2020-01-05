@@ -7,6 +7,7 @@ class TutorialPresenter: BasePresenter {
     }
 
     func tappedRegisterButton() {
+        Tracker.global.trackCreateAccountTapped()
         viewImpl?.changeScreenToRegister()
     }
 

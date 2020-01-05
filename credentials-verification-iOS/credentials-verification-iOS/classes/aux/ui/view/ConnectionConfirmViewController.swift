@@ -52,12 +52,12 @@ class ConnectionConfirmViewController: UIViewController, PresentrDelegate {
         return presenter
     }()
 
-    func config(delegate: ConnectionConfirmPresenterDelegate?, lead: String?, title: String?, logoUrl: String?, placeholderNamed: String?) {
+    func config(delegate: ConnectionConfirmPresenterDelegate?, lead: String?, title: String?, logoData: Data?, placeholderNamed: String?) {
 
         self.delegate = delegate
         labelLead.text = lead
         labelTitle.text = title
-        imageLogo.applyUrlImage(url: logoUrl, placeholderNamed: placeholderNamed)
+        imageLogo.applyDataImage(data: logoData, placeholderNamed: placeholderNamed)
     }
 
     // MARK: Component delegates

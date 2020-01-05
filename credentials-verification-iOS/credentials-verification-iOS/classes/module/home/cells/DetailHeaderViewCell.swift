@@ -33,10 +33,10 @@ class DetailHeaderViewCell: BaseTableViewCell {
 
     // MARK: Config
 
-    func config(title: String?, subtitle: String?, logoUrl: String?) {
+    func config(title: String?, subtitle: String?, logoData: Data?) {
 
         labelTitle.text = title
         labelSubtitle.text = subtitle
-        imageLogo.applyUrlImage(url: logoUrl, placeholderNamed: "ico_placeholder_university")
+        imageLogo.applyDataImage(data: logoData, placeholderNamed: "ico_placeholder_university")
     }
 }

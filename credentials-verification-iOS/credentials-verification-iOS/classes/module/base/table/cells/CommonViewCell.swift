@@ -44,14 +44,14 @@ class CommonViewCell: BaseTableViewCell {
 
     // MARK: Config
 
-    func config(title: String?, subtitle: String?, logoUrl: String?, logoPlaceholderNamed: String, isComingSoon: Bool = false) {
+    func config(title: String?, subtitle: String?, logoData: Data?, logoPlaceholderNamed: String, isComingSoon: Bool = false) {
 
         labelTitle.text = title
         let hideSubtitle = subtitle == nil
         labelSubtitle.isHidden = hideSubtitle
         labelSubtitle.text = subtitle
         constraintTitleVertical.constant = hideSubtitle ? 0.0 : -10.0
-        imageLogo.applyUrlImage(url: logoUrl, placeholderNamed: logoPlaceholderNamed)
+        imageLogo.applyDataImage(data: logoData, placeholderNamed: logoPlaceholderNamed)
         buttonIconAction.isHidden = isComingSoon
         buttonComingSoon.isHidden = !isComingSoon
         constraintTitleTrailing.constant = !isComingSoon ? 17.0 : 70.0

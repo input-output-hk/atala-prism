@@ -143,7 +143,7 @@ class SettingsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDel
     func setup(for cell: CommonViewCell) {
 
         let value = initialRows![cell.indexPath!.row].value as! InitialCellValue
-        cell.config(title: value.title.localize(), subtitle: value.subtitle.localize(), logoUrl: nil, logoPlaceholderNamed: value.icon, isComingSoon: value.action == nil)
+        cell.config(title: value.title.localize(), subtitle: value.subtitle.localize(), logoData: nil, logoPlaceholderNamed: value.icon, isComingSoon: value.action == nil)
     }
 
     func tappedAction(for cell: CommonViewCell) {

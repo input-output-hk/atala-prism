@@ -1,7 +1,104 @@
 //
+import SwiftGRPC
 
 class ApiService: NSObject {
 
+    static let DEFAULT_REQUEST_LIMIT: Int32 = 10
+
     static let global = ApiService()
     let sharedMemory = SharedMemory.global
+
+    // MARK: Service
+
+    lazy var service: Io_Iohk_Cvp_Connector_ConnectorServiceServiceClient = {
+        Io_Iohk_Cvp_Connector_ConnectorServiceServiceClient(address: Common.URL_API, secure: false)
+    }()
+
+    func makeMeta(_ userId: String?) -> Metadata {
+
+        let meta = Metadata()
+        if userId != nil {
+            try? meta.add(key: "userid", value: userId!)
+        }
+        return meta
+    }
+
+    static func call(async: @escaping () -> Error?, success: @escaping () -> Void, error: @escaping (Error) -> Void) {
+        DispatchQueue.global(qos: .background).async {
+            let errorRes = async()
+            DispatchQueue.main.async {
+                if errorRes == nil {
+                    success()
+                } else {
+                    error(errorRes!)
+                }
+            }
+        }
+    }
+
+    // MARK: Methods
+
+    func getConnectionTokenInfo(token: String) throws -> Io_Iohk_Cvp_Connector_GetConnectionTokenInfoResponse {
+
+        let userId = FakeData.fakeUserId()
+        return try service.getConnectionTokenInfo(Io_Iohk_Cvp_Connector_GetConnectionTokenInfoRequest.with {
+            $0.token = token
+        }, metadata: makeMeta(userId))
+    }
+
+    func addConnectionToken(token: String) throws -> Io_Iohk_Cvp_Connector_AddConnectionFromTokenResponse {
+
+        let publicKey = FakeData.fakePublicKey()
+        let userId = FakeData.fakeUserId()
+        return try service.addConnectionFromToken(Io_Iohk_Cvp_Connector_AddConnectionFromTokenRequest.with {
+            $0.token = token
+            $0.holderPublicKey = publicKey
+        }, metadata: makeMeta(userId))
+    }
+
+    func getConnections(userIds: [String]?, limit: Int32 = DEFAULT_REQUEST_LIMIT) throws -> [Io_Iohk_Cvp_Connector_GetConnectionsPaginatedResponse] {
+
+        var responseList: [Io_Iohk_Cvp_Connector_GetConnectionsPaginatedResponse] = []
+        for userId in userIds ?? [] {
+            let response = try service.getConnectionsPaginated(Io_Iohk_Cvp_Connector_GetConnectionsPaginatedRequest.with {
+                // $0.lastSeenConnectionID = token
+                $0.limit = limit
+            }, metadata: makeMeta(userId))
+            responseList.append(response)
+        }
+        return responseList
+    }
+
+    func getCredentials(userIds: [String]?, limit: Int32 = DEFAULT_REQUEST_LIMIT) throws -> [Io_Iohk_Cvp_Connector_GetMessagesPaginatedResponse] {
+
+        var responseList: [Io_Iohk_Cvp_Connector_GetMessagesPaginatedResponse] = []
+        for userId in userIds ?? [] {
+            let response = try service.getMessagesPaginated(Io_Iohk_Cvp_Connector_GetMessagesPaginatedRequest.with {
+                $0.limit = limit
+            }, metadata: makeMeta(userId))
+            responseList.append(response)
+        }
+        return responseList
+    }
+
+    func shareCredential(userIds: [String]?, connectionIds: [String]?, degree: Degree) throws -> [Io_Iohk_Cvp_Connector_SendMessageResponse] {
+
+        var message = Io_Iohk_Cvp_Credential_SentCredential()
+        message.holderSentCredential = Io_Iohk_Cvp_Credential_HolderSentCredential()
+        message.holderSentCredential.credential = degree.intCredential!
+        let messageData = try? message.serializedData()
+
+        var responseList: [Io_Iohk_Cvp_Connector_SendMessageResponse] = []
+
+        for i in 0 ..< (userIds ?? []).count {
+            let userId = userIds![i]
+            let connectionId = connectionIds![i]
+            let response = try service.sendMessage(Io_Iohk_Cvp_Connector_SendMessageRequest.with {
+                $0.message = messageData!
+                $0.connectionID = connectionId
+            }, metadata: makeMeta(userId))
+            responseList.append(response)
+        }
+        return responseList
+    }
 }

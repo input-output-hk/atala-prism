@@ -50,8 +50,8 @@ class ListingBasePresenter: BasePresenter, ListingErrorRetryViewCellPresenterDel
     func updateViewToState() {
 
         NSObject.execOnMain(delaySecs: 0) {
-            self.viewImpl?.config(mode: self.state)
             self.viewImpl?.tableUtils?.refreshTable()
+            self.viewImpl?.config(mode: self.state)
         }
     }
 

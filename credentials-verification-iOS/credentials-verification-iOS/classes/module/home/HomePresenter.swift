@@ -1,4 +1,6 @@
 //
+import SwiftGRPC
+import SwiftProtobuf
 
 class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegate, NewDegreeViewCellPresenterDelegate, DegreeViewCellPresenterDelegate, NewDegreeHeaderViewCellPresenterDelegate, DocumentViewCellPresenterDelegate, DetailHeaderViewCellPresenterDelegate, DetailFooterViewCellPresenterDelegate, DetailPropertyViewCellPresenterDelegate, ShareDialogPresenterDelegate {
 
@@ -146,30 +148,47 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
         return sharedMemory.loggedUser
     }
 
-    var showAsEmpty_DELETE_ME = false
-
     func fetchElements() {
-        // TODO: Call the services
 
-        // TODO: Delete me when services are ready
-        DispatchQueue.global(qos: .background).async {
-            print("This is run on the background queue")
-
-            sleep(1)
-
-            self.cleanData()
-
-            // Fake data
-            let degrees = FakeData.degreesList()
-            self.parseData(degrees: degrees)
-
-            DispatchQueue.main.async {
-                self.startListing()
-            }
+        guard let user = self.sharedMemory.loggedUser else {
+            return
         }
+
+        // Call the service
+        ApiService.call(async: {
+            do {
+                let responses = try ApiService.global.getCredentials(userIds: user.connectionUserIds?.valuesArray)
+                Logger.d("getCredentials responses: \(responses)")
+
+                self.cleanData()
+
+                var credentials: [Degree] = []
+                // Parse the messages
+                for response in responses {
+                    for message in response.messages {
+                        let isRejected = user.messagesRejectedIds?.contains(message.id) ?? false
+                        let isNew = !(user.messagesAcceptedIds?.contains(message.id) ?? false)
+                        if !isRejected {
+                            if let credential = Degree.build(message, isNew: isNew) {
+                                credentials.append(credential)
+                            }
+                        }
+                    }
+                }
+                self.makeDegreeRows(degrees: credentials)
+
+            } catch {
+                return error
+            }
+            return nil
+        }, success: {
+            self.startListing()
+        }, error: { error in
+            self.viewImpl?.showErrorMessage(doShow: true, message: error.localizedDescription)
+        })
     }
 
-    private func parseData(degrees: [Degree]) {
+    private func makeDegreeRows(degrees: [Degree]) {
 
         let newDeg = degrees.filter { $0.isNew ?? false }
         let oldDeg = degrees.filter { !($0.isNew ?? false) }
@@ -194,52 +213,62 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
 
         viewImpl?.config(isLoading: true)
 
-        // TODO: Call the services
+        // Call the service
+        ApiService.call(async: {
+            do {
+                let responses = try ApiService.global.getConnections(userIds: self.sharedMemory.loggedUser?.connectionUserIds?.valuesArray)
+                Logger.d("getConnections response: \(responses)")
 
-        // TODO: Delete me when services are ready
-        DispatchQueue.global(qos: .background).async {
-            print("This is run on the background queue")
+                // Clean data
+                self.shareEmployers = []
+                self.shareSelectedEmployers = []
 
-            sleep(0)
-
-            self.shareEmployers = []
-            self.shareSelectedEmployers = []
-
-            // Fake data
-            let employers = FakeData.employersList()
-            self.shareEmployers?.append(contentsOf: employers)
-
-            DispatchQueue.main.async {
-                self.viewImpl?.config(isLoading: false)
-                self.viewImpl?.showShareDialog()
+                // Parse data
+                let parsedResponse = ConnectionMaker.parseResponseList(responses)
+                self.shareEmployers?.append(contentsOf: parsedResponse.1)
+            } catch {
+                return error
             }
-        }
+            return nil
+        }, success: {
+            self.viewImpl?.config(isLoading: false)
+            self.viewImpl?.showShareDialog()
+        }, error: { error in
+            self.viewImpl?.config(isLoading: false)
+            self.viewImpl?.showErrorMessage(doShow: true, message: error.localizedDescription)
+        })
     }
 
     private func shareWithSelectedEmployers() {
-        // TODO:
 
+        Tracker.global.trackCredentialShareCompleted()
         viewImpl?.config(isLoading: true)
 
-        // TODO: Call the services
+        // Call the service
+        ApiService.call(async: {
+            do {
+                var userIds: [String] = []
+                var connectionIds: [String] = []
+                for employer in self.shareSelectedEmployers ?? [] {
+                    if let connId = employer.connectionId, let userId = self.sharedMemory.loggedUser?.connectionUserIds?[connId] {
+                        connectionIds.append(connId)
+                        userIds.append(userId)
+                    }
+                }
+                let responses = try ApiService.global.shareCredential(userIds: userIds, connectionIds: connectionIds, degree: self.detailDegree!)
+                Logger.d("shareCredential response: \(responses)")
 
-        // TODO: Delete me when services are ready
-        DispatchQueue.global(qos: .background).async {
-            print("This is run on the background queue")
-
-            sleep(1)
-
-            // Fake data
-            // let employers = FakeData.employersList()
-            // self.shareEmployers?.append(contentsOf: employers)
-
-            // TODO: Check if share successfull
-
-            DispatchQueue.main.async {
-                self.viewImpl?.config(isLoading: false)
-                self.viewImpl?.showSuccessMessage(doShow: true, message: "home_detail_share_success".localize())
+            } catch {
+                return error
             }
-        }
+            return nil
+        }, success: {
+            self.viewImpl?.config(isLoading: false)
+            self.viewImpl?.showSuccessMessage(doShow: true, message: "home_detail_share_success".localize())
+        }, error: { error in
+            self.viewImpl?.config(isLoading: false)
+            self.viewImpl?.showErrorMessage(doShow: true, message: error.localizedDescription)
+        })
     }
 
     // MARK: Table
@@ -271,7 +300,7 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
             }
         }
 
-        cell.config(title: degree.name, subtitle: degree.subtitle, logoUrl: degree.preLogoUrl, logoPlaceholderNamed: "ico_placeholder_university", isLast: isLast)
+        cell.config(title: degree.name, subtitle: degree.subtitle, logoData: sharedMemory.imageBank?.logo(for: degree.connectionId), logoPlaceholderNamed: "ico_placeholder_university", isLast: isLast)
     }
 
     func tappedAction(for cell: NewDegreeViewCell) {
@@ -279,6 +308,7 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
         guard let rowIndex = cell.indexPath?.row, let cellRow = degreeRows?[rowIndex], let degree = cellRow.value as? Degree else {
             return
         }
+        Tracker.global.trackCredentialNewTapped()
         startShowingDetails(degree: degree)
     }
 
@@ -287,11 +317,11 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
         let cellRow = degreeRows?[cell.indexPath!.row]
         // Config for a Degree
         if let degree = cellRow?.value as? Degree {
-            cell.config(title: degree.name, subtitle: degree.subtitle, logoUrl: degree.preLogoUrl, logoPlaceholderNamed: "ico_placeholder_university")
+            cell.config(title: degree.name, subtitle: degree.subtitle, logoData: sharedMemory.imageBank?.logo(for: degree.connectionId), logoPlaceholderNamed: "ico_placeholder_university")
         }
         // Config for an Id
         else if let _ = cellRow?.value as? LoggedUser {
-            cell.config(title: "home_document_title".localize(), subtitle: nil, logoUrl: nil, logoPlaceholderNamed: "ico_placeholder_credential")
+            cell.config(title: "home_document_title".localize(), subtitle: nil, logoData: nil, logoPlaceholderNamed: "ico_placeholder_credential")
         }
     }
 
@@ -317,7 +347,7 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
     }
 
     func setup(for cell: DetailHeaderViewCell) {
-        cell.config(title: "home_detail_degree_name".localize(), subtitle: detailDegree?.fullName, logoUrl: detailDegree?.logoUrl)
+        cell.config(title: "home_detail_degree_name".localize(), subtitle: detailDegree?.fullName, logoData: sharedMemory.imageBank?.logo(for: detailDegree?.connectionId))
     }
 
     func setup(for cell: DetailPropertyViewCell) {
@@ -330,14 +360,24 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
         cell.config(startDate: detailDegree?.startDate, endDate: detailDegree?.endDate, isNew: detailDegree?.isNew ?? false)
     }
 
+    // MARK: Accept and Decline buttons
+
     func tappedDeclineAction(for cell: DetailFooterViewCell) {
+
+        Tracker.global.trackCredentialNewDecline()
+        sharedMemory.loggedUser?.messagesRejectedIds?.append(detailDegree!.messageId!)
+        sharedMemory.loggedUser = sharedMemory.loggedUser
         startShowingDegrees()
+        actionPullToRefresh()
     }
 
     func tappedConfirmAction(for cell: DetailFooterViewCell) {
-        // viewImpl?.changeScreenToPayment(degree: detailDegree)
-        // TODO: Call server
+
+        Tracker.global.trackCredentialNewConfirm()
+        sharedMemory.loggedUser?.messagesAcceptedIds?.append(detailDegree!.messageId!)
+        sharedMemory.loggedUser = sharedMemory.loggedUser
         tappedBackButton()
+        actionPullToRefresh()
     }
 
     // MARK: Share
@@ -377,13 +417,13 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
     }
 
     func employerIsSelected(employer: Employer) -> Bool {
-        return shareSelectedEmployers?.contains(where: { $0.id == employer.id }) ?? false
+        return shareSelectedEmployers?.contains(where: { $0.connectionId == employer.connectionId }) ?? false
     }
 
     func shareItemConfig(for cell: ShareDialogItemCollectionViewCell?, at index: Int, item: Any?) {
 
         let employer = shareEmployers![index]
         let isSelected = employerIsSelected(employer: employer)
-        cell?.config(name: employer.name, logoUrl: employer.logoUrl, placeholderNamed: "ico_placeholder_employer", isSelected: isSelected)
+        cell?.config(name: employer.name, logoData: sharedMemory.imageBank?.logo(for: employer.connectionId), placeholderNamed: "ico_placeholder_employer", isSelected: isSelected)
     }
 }

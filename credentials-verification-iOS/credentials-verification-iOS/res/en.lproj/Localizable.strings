@@ -52,7 +52,7 @@
 "connections_empty_subtitle" = "You can receive and send your digital certificates";
 "connections_empty_button" = "Scan a QR";
 "connections_scan_qr_nav_title" = "Scan QR";
-"connections_scan_qr_error" = "QR Code not recognized. Try again.";
+"connections_scan_qr_error" = "Invalid QR code";
 "connections_scan_qr_confirm_button" = "Connect!";
 "connections_scan_qr_confirm_title_type_0" = "University Name";
 "connections_scan_qr_confirm_title_type_1" = "Employer Name";
@@ -77,6 +77,10 @@
 "home_detail_degree_name" = "Degree Name";
 "home_detail_start_date" = "Start Date";
 "home_detail_graduation_date" = "Graduation Date";
+"home_detail_start_date" = "Start Date";
+"home_detail_university_name" = "University Name";
+"home_detail_full_name" = "Full Name";
+"home_detail_award" = "Award";
 "home_detail_share_button" = "Share!";
 "home_detail_share_success" = "Successfully shared!";
 "home_empty_title" = "Connect to a University, Public Registry or potential Employers";
@@ -140,6 +144,7 @@
 "login_subtitle" = "Enter the correct words of your seed phrase bellow.";
 "login_input_title" = "Word \#%1$d";
 "login_input_title_empty" = "Word";
+"login_phrase_invalid_error" = "Words were invalid. Please try again.";
 
 // <!-- Success -->
 "success_register_title" = "Congrats!\nYour account has been created";

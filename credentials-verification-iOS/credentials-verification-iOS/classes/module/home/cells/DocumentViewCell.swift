@@ -30,18 +30,8 @@ class DocumentViewCell: BaseTableViewCell {
 
     // MARK: Config
 
-    func config(title: String?, isUniversity: Bool, logoUrl: String?) {
+    func config(title: String?, isUniversity: Bool, logoData: Data?) {
 
-        /* labelTitle.text = title
-         labelSubtitle.isHidden = isUniversity
-         constraintTitleVertical.constant = isUniversity ? 0.0 : -10.0
-         buttonIconAction.setImage(UIImage(named: isUniversity ? "ico_caret" : "ico_open_link"), for: .normal)
-         // Logo image
-         let placeholder = UIImage(named: isUniversity ? "ico_placeholder_university" : "ico_placeholder_employer")
-         if let logoUrl = logoUrl, let url = URL(string: logoUrl) {
-             imageLogo.af_setImage(withURL: url, placeholderImage: placeholder)
-         } else {
-             imageLogo.image = placeholder
-         } */
+        // Not for this version
     }
 }

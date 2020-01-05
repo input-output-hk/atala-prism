@@ -1,12 +1,7 @@
 //
-//  AppDelegate.swift
-//  credentials-verification-iOS
-//
-//  Created by vanina on 07/10/2019.
-//  Copyright © 2019 iohk. All rights reserved.
-//
 import Crashlytics
 import Fabric
+import Firebase
 import UIKit
 
 @UIApplicationMain
@@ -15,7 +10,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
 
-        setupCrashlytics(application, didFinishLaunchingWithOptions: launchOptions)
+        setupFirebase()
+        setupCrashlytics()
         setupLoggingPlatform()
 
         return true
@@ -42,9 +38,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         Logger.setup()
     }
 
-    // MARK: Crashlytics
+    // MARK: Firebase et al.
 
-    func setupCrashlytics(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) {
-        // Fabric.with([Crashlytics.self]) //TODO: ADD ME
+    func setupCrashlytics() {
+        Fabric.with([Crashlytics.self])
+    }
+
+    func setupFirebase() {
+        FirebaseApp.configure()
     }
 }

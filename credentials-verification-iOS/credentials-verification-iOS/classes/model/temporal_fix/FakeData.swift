@@ -1,22 +1,33 @@
 //
+import SwiftGRPC
 
 class FakeData {
 
-    static func profile() -> LoggedUser {
+    static func fakeUserId() -> String {
+        return "ca4293a3-80bb-4d85-a7a7-fe3df67da7e1"
+    }
+
+    static func fakePublicKey() -> Io_Iohk_Cvp_Connector_PublicKey {
+
+        var publicKey: Io_Iohk_Cvp_Connector_PublicKey = Io_Iohk_Cvp_Connector_PublicKey()
+        publicKey.x = "1234"
+        publicKey.y = "1234"
+        return publicKey
+    }
+
+    static func fakeProfile() -> LoggedUser {
 
         let loggedUser = LoggedUser()
-        loggedUser.id = "ABC123"
+        // loggedUser.id = "ca4293a3-80bb-4d85-a7a7-fe3df67da7e1"
         loggedUser.email = "mauro@mauro.com"
         loggedUser.firstName = "Mauro"
         loggedUser.lastName = "Carreño"
-        loggedUser.idCode = "1BoatSLRHtKNngkdXEeobR76b53LETtpyT"
-        loggedUser.identityNumber = "123 456 789"
+        loggedUser.connectionUserIds = ["af3dccfa-6505-44cb-a24e-4a64ca2e564e": "320f42d9-1ffe-4ddf-b630-72e679cf4731", "fcd5959e-d904-4dc5-85bb-5130f9b565cd": "870543ae-e0d5-4d33-92a9-4654003819e3", "8421a54a-a2b9-43f3-b70b-b2a300e58ec6": "ca4293a3-80bb-4d85-a7a7-fe3df67da7e1"]
         loggedUser.countryFullName = "Republic of Georgia"
         loggedUser.countryShortName = "Georgia"
         loggedUser.nationalityName = "Georgian"
         loggedUser.dateOfBirth = "02/03/1987"
-        loggedUser.qrUrlString = "https://www.qr-code-generator.com/wp-content/themes/qr/new_structure/markets/core_market_full/generator/dist/generator/assets/images/websiteQRCode_noFrame.png"
-        loggedUser.avatarUrl = "https://scontent.faep4-1.fna.fbcdn.net/v/t1.0-9/12246889_774081482721005_1079614860347768525_n.jpg?_nc_cat=104&_nc_oc=AQmHxNj4_aLwmT5a8GUGCSuhN-p7kSk0PoZ-cNMvylJQCkLDMoueiHWJOOCQvH5iAQs&_nc_ht=scontent.faep4-1.fna&oh=88106ffab5d09288811498cac3de0816&oe=5E820E6F"
+        // loggedUser.avatarUrl = "https://scontent.faep4-1.fna.fbcdn.net/v/t1.0-9/12246889_774081482721005_1079614860347768525_n.jpg?_nc_cat=104&_nc_oc=AQmHxNj4_aLwmT5a8GUGCSuhN-p7kSk0PoZ-cNMvylJQCkLDMoueiHWJOOCQvH5iAQs&_nc_ht=scontent.faep4-1.fna&oh=88106ffab5d09288811498cac3de0816&oe=5E820E6F"
         loggedUser.isVerified = true
         return loggedUser
     }
@@ -26,8 +37,8 @@ class FakeData {
         var list: [University] = []
 
         let u1 = University()
+        u1.connectionId = "111"
         u1.name = "Business and Techonoly University"
-        u1.url = "http://www.fi.uba.ar/"
         u1.logoUrl = "https://studyqa.com/media/upload/univers/705/41/uni_profile_70541.jpg"
         list.append(u1)
 
@@ -39,37 +50,32 @@ class FakeData {
         var list: [Employer] = []
 
         let e1 = Employer()
-        e1.id = "1"
+        e1.connectionId = "1"
         e1.name = "HR.GE"
-        e1.url = "https://www.google.com/"
         e1.logoUrl = "https://studyqa.com/media/upload/univers/706/71/uni_profile_70671.jpg"
         list.append(e1)
 
         let e2 = Employer()
-        e2.id = "2"
+        e2.connectionId = "2"
         e2.name = "ABC Bank"
-        e2.url = "https://www.google.com/"
         e2.logoUrl = "https://studyqa.com/media/upload/univers/809/01/uni_profile_80901.jpg"
         list.append(e2)
 
         let e3 = Employer()
-        e3.id = "3"
+        e3.connectionId = "3"
         e3.name = "Important Employer"
-        e3.url = "https://www.google.com/"
         e3.logoUrl = "https://studyqa.com/media/upload/univers/706/71/uni_profile_70671.jpg"
         list.append(e3)
 
         let e4 = Employer()
-        e4.id = "4"
+        e4.connectionId = "4"
         e4.name = "Citi Bank"
-        e4.url = "https://www.google.com/"
         e4.logoUrl = "https://studyqa.com/media/upload/univers/809/01/uni_profile_80901.jpg"
         list.append(e4)
 
         let e5 = Employer()
-        e5.id = "5"
+        e5.connectionId = "5"
         e5.name = "Citi Bank 2"
-        e5.url = "https://www.google.com/"
         e5.logoUrl = "https://studyqa.com/media/upload/univers/809/01/uni_profile_80901.jpg"
         list.append(e5)
 
@@ -81,7 +87,8 @@ class FakeData {
         var list: [Degree] = []
 
         let d1 = Degree()
-        d1.id = "A1"
+        d1.connectionId = "A1"
+        d1.messageId = "A1"
         d1.name = "Credential Free University Tbilisi"
         d1.subtitle = nil
         d1.type = 1
@@ -96,7 +103,8 @@ class FakeData {
         list.append(d1)
 
         let d2 = Degree()
-        d2.id = "A2"
+        d2.connectionId = "A2"
+        d2.messageId = "A2"
         d2.name = "Credential BTU"
         d2.subtitle = "Lorem ipsum text"
         d2.type = 1
@@ -111,7 +119,8 @@ class FakeData {
         list.append(d2)
 
         let d3 = Degree()
-        d3.id = "A3"
+        d3.connectionId = "A3"
+        d3.messageId = "A3"
         d3.name = "Univerity of Texas"
         d3.subtitle = "In Lorem we Ipsum"
         d3.type = 1
@@ -125,7 +134,8 @@ class FakeData {
         list.append(d3)
 
         let d4 = Degree()
-        d4.id = "A4"
+        d4.connectionId = "A4"
+        d4.messageId = "A4"
         d4.name = "School Certificate"
         d4.subtitle = "Lorem ipsum text"
         d4.type = 2
@@ -139,7 +149,8 @@ class FakeData {
         list.append(d4)
 
         let d5 = Degree()
-        d5.id = "A5"
+        d5.connectionId = "A5"
+        d5.messageId = "A5"
         d5.name = "Prueba nueva"
         d5.subtitle = "Lorem ipsum text"
         d5.type = 2
@@ -164,26 +175,29 @@ class FakeData {
         return [2, 6]
     }
 
-    static func loginIsValid(words: [String]) -> LoggedUser? {
+    static func loginIsValid(words: [String]) -> Bool {
         let seeds = seedWords()
         if seeds[2 - 1] == words[0] && seeds[6 - 1] == words[1] {
-            return profile()
+            return true
         }
-        return nil
+        return false
     }
 
     static func qrIsValid(code: String) -> ConnectionRequest? {
         if code == "http://www.arcgis.com/apps/Cascade/index.html?appid=10cdc865c31a4bd6ba76e6efefb57730" {
             let conn = ConnectionRequest()
-            conn.name = "Free University Tbilisi"
+            conn.token = code
+            conn.info = University()
             conn.type = 0
-            conn.logoUrl = "https://studyqa.com/media/upload/univers/705/41/uni_profile_70541.jpg"
+            conn.info?.name = "Free University Tbilisi"
+            conn.info?.logoUrl = "https://studyqa.com/media/upload/univers/705/41/uni_profile_70541.jpg"
             return conn
         } else if code == "california" {
             let conn = ConnectionRequest()
-            conn.name = "Super Serious Company"
+            conn.token = code
             conn.type = 1
-            conn.logoUrl = "https://studyqa.com/media/upload/univers/706/71/uni_profile_70671.jpg"
+            conn.info?.name = "Super Serious Company"
+            conn.info?.logoUrl = "https://studyqa.com/media/upload/univers/706/71/uni_profile_70671.jpg"
             return conn
         }
         return nil

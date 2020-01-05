@@ -3,7 +3,7 @@
 class UserUtils {
 
     static func isLogged(_ sharedMemory: SharedMemory) -> Bool {
-        return sharedMemory.loggedUser != nil && sharedMemory.loggedUser?.id != nil
+        return sharedMemory.loggedUser != nil
     }
 
     static func logout(_ sharedMemory: SharedMemory) {

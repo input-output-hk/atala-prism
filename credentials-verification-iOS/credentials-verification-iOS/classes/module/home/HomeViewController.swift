@@ -37,7 +37,7 @@ class HomeViewController: ListingBaseViewController {
 
     func setupEmptyView() {
 
-        viewEmpty.config(imageNamed: "ico_mini_id", title: "connections_empty_title".localize(), subtitle: "connections_empty_subtitle".localize(), buttonText: nil, buttonAction: nil)
+        viewEmpty.config(imageNamed: "img_notifications_tray", title: "connections_empty_title".localize(), subtitle: "connections_empty_subtitle".localize(), buttonText: nil, buttonAction: nil)
     }
 
     override func config(mode: ListingBasePresenter.ListingBaseState) {

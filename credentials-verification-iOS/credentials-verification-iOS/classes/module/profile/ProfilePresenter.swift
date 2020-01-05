@@ -41,7 +41,7 @@ class ProfilePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDele
 
     lazy var initialStaticCells: [CellRow] = [
         CellRow(type: .profile, value: nil),
-        //CellRow(type: .tabs, value: nil),
+        // CellRow(type: .tabs, value: nil),
         CellRow(type: .field, value: (0, true)),
         CellRow(type: .field, value: (1, true)),
         CellRow(type: .field, value: (2, false)),

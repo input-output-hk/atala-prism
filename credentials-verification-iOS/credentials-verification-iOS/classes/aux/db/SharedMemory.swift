@@ -13,6 +13,7 @@ class SharedMemory: NSObject {
 
     // Main
     private var mLoggedUser: LoggedUser?
+    private var mImageBank: ImageBank?
 
     // Used for change screen
     var changeScreenParams: [Any?]?
@@ -30,6 +31,7 @@ class SharedMemory: NSObject {
     public func logoutUser() {
 
         mLoggedUser = nil
+        mImageBank = nil
         if let bundle = Bundle.main.bundleIdentifier {
             preferences.removePersistentDomain(forName: bundle)
         }
@@ -45,6 +47,17 @@ class SharedMemory: NSObject {
         set {
             mLoggedUser = newValue
             helper.setMappableObject(key: Common.KEY_PREF + "loggeduser", internalObject: mLoggedUser)
+        }
+    }
+
+    var imageBank: ImageBank? {
+        get {
+            mImageBank = helper.getMappableObject(key: Common.KEY_PREF + "imagebank", internalObject: mImageBank)
+            return mImageBank
+        }
+        set {
+            mImageBank = newValue
+            helper.setMappableObject(key: Common.KEY_PREF + "imagebank", internalObject: mImageBank)
         }
     }
 }

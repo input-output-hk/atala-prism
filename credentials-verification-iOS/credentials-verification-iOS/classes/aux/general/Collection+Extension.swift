@@ -20,3 +20,10 @@ extension Collection where Element: BinaryFloatingPoint {
         return isEmpty ? 0 : total / Element(count)
     }
 }
+
+extension Dictionary {
+
+    var valuesArray: [Value] {
+        return Array(self.values)
+    }
+}

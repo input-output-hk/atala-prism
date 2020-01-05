@@ -4,9 +4,13 @@ import ObjectMapper
 class LoggedUser: Mappable {
 
     var id: String?
+    var privateKey: String?
     var email: String?
     var firstName: String?
     var lastName: String?
+    var connectionUserIds: [String: String]? // ConnectionId -> UserId
+    var messagesAcceptedIds: [String]?
+    var messagesRejectedIds: [String]?
 
     var idCode: String?
     var identityNumber: String?
@@ -18,7 +22,11 @@ class LoggedUser: Mappable {
     var avatarUrl: String?
     var isVerified: Bool?
 
-    init() {}
+    init() {
+        connectionUserIds = [:]
+        messagesAcceptedIds = []
+        messagesRejectedIds = []
+    }
 
     required init?(map: Map) {}
 
@@ -26,9 +34,13 @@ class LoggedUser: Mappable {
     func mapping(map: Map) {
 
         id <- map["id"]
+        privateKey <- map["publicKey"]
         email <- map["email"]
         firstName <- map["firstName"]
         lastName <- map["lastName"]
+        connectionUserIds <- map["connectionUserIds"]
+        messagesAcceptedIds <- map["messagesAcceptedIds"]
+        messagesRejectedIds <- map["messagesRejectedIds"]
 
         idCode <- map["idCode"]
         identityNumber <- map["identityNumber"]

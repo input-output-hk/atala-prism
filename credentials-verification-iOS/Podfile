@@ -12,8 +12,8 @@ target 'credentials-verification-iOS' do
   pod 'AlamofireImage', '~> 3.5'
   pod 'AlamofireObjectMapper', '~> 5.2'
   pod 'ObjectMapper', '~> 3.1'
-  pod 'SwiftGRPC'
-  pod 'SwiftProtobuf'
+  pod 'SwiftGRPC', '~> 0.10.0'
+  pod 'SwiftProtobuf', '~> 1.7.0'
   # Logger
   pod 'SwiftyBeaver', '~> 1.7.0'
   # UI components
@@ -21,9 +21,12 @@ target 'credentials-verification-iOS' do
   pod 'MBProgressHUD', '~> 1.0.0'
   pod 'Presentr', '~> 1.9.0' 
   pod 'Toast-Swift', '~> 5.0.0'
-  # Crash reports
-  pod 'Fabric', '~> 1.9.0'
-  pod 'Crashlytics', '~> 3.12.0'
+  # Firebase
+  pod 'Fabric', '~> 1.10.2'
+  pod 'Crashlytics', '~> 3.14.0'
+  pod 'Firebase/Analytics', '~> 6.13.0'
+  pod 'Firebase/Performance', '~> 6.13.0'
+
   
   target 'credentials-verification-iOSTests' do
     inherit! :search_paths

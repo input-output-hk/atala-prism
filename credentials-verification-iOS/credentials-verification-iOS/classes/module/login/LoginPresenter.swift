@@ -118,21 +118,33 @@ class LoginPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelega
             self.cleanData()
 
             // Fake data
-            let user = FakeData.loginIsValid(words: words)
+            var user: LoggedUser?
+            if FakeData.loginIsValid(words: words) {
+                // user = FakeData.fakeProfile()
+                user = LoggedUser()
+            }
 
             DispatchQueue.main.async {
                 if user == nil {
-                    self.startShowError(error: SimpleLocalizedError("Words were invalid. Please try again."))
+                    self.startValidationFail()
                 } else {
-                    self.startSuccessValidation(user: user!)
+                    self.startValidationSucess(user: user!)
                 }
             }
         }
     }
 
-    func startSuccessValidation(user: LoggedUser) {
+    func startValidationFail() {
 
+        Tracker.global.trackRecoveryFail()
+        self.startShowError(error: SimpleLocalizedError("login_phrase_invalid_error".localize()))
+    }
+
+    func startValidationSucess(user: LoggedUser) {
+
+        Tracker.global.trackRecoverySuccess()
         self.sharedMemory.loggedUser = user
+        self.sharedMemory.imageBank = ImageBank()
         viewImpl?.changeScreenToSuccess(action: actionSuccessContinue)
     }
 

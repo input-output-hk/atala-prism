@@ -42,6 +42,8 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
     // MARK: Buttons
 
     func tappedScanButton() {
+
+        Tracker.global.trackScanQrTapped()
         startQrScanning()
     }
 
@@ -126,92 +128,96 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
 
     // MARK: Fetch
 
-    var showAsEmpty_DELETE_ME = false
-
     func fetchElements() {
-        // TODO: Call the services
 
-        // TODO: Delete me when services are ready
-        DispatchQueue.global(qos: .background).async {
-            print("This is run on the background queue")
+        // Call the service
+        ApiService.call(async: {
+            do {
+                let user = self.sharedMemory.loggedUser
+                let responses = try ApiService.global.getConnections(userIds: user?.connectionUserIds?.valuesArray)
+                Logger.d("getConnections responsed: \(responses)")
 
-            sleep(1)
+                self.cleanData()
 
-            self.cleanData()
-
-            // Toggles empty view and loaded view
-            self.showAsEmpty_DELETE_ME = !self.showAsEmpty_DELETE_ME
-            if self.showAsEmpty_DELETE_ME {
-                self.universities?.append(contentsOf: FakeData.universitiesList())
-                self.employers?.append(contentsOf: FakeData.employersList())
+                // Parse data
+                let parsedResponse = ConnectionMaker.parseResponseList(responses)
+                self.universities?.append(contentsOf: parsedResponse.0)
+                self.employers?.append(contentsOf: parsedResponse.1)
+                // Save logos
+                ImageBank.saveLogos(list: self.universities)
+                ImageBank.saveLogos(list: self.employers)
+            } catch {
+                return error
             }
-
-            DispatchQueue.main.async {
-                self.startListing()
-            }
-        }
+            return nil
+        }, success: {
+            self.startListing()
+        }, error: { error in
+            self.viewImpl?.showErrorMessage(doShow: true, message: error.localizedDescription)
+        })
     }
 
     func validateQrCode(_ str: String) {
 
         self.viewImpl?.config(isLoading: true)
 
-        // TODO: Call the services
+        // Call the service
+        ApiService.call(async: {
+            do {
+                let response = try ApiService.global.getConnectionTokenInfo(token: str)
+                Logger.d("getConnectionTokenInfo response: \(response)")
 
-        // TODO: Delete me when services are ready
-        DispatchQueue.global(qos: .background).async {
-            print("This is run on the background queue")
-
-            sleep(1)
-
-            let conn = FakeData.qrIsValid(code: str)
-
-            DispatchQueue.main.async {
-                // self.startListing()
-
-                self.viewImpl?.config(isLoading: false)
-
-                if conn != nil {
-                    self.connectionRequest = conn!
-                    self.viewImpl?.showNewConnectMessage(type: conn!.type!, title: conn!.name, logoUrl: conn!.logoUrl)
-                } else {
-                    self.viewImpl?.showErrorMessage(doShow: true, message: "connections_scan_qr_error".localize(), afterErrorAction: {
-                        self.tappedBackButton()
-                    })
+                // Parse data
+                guard let connection = ConnectionMaker.build(response.creator) else {
+                    return SimpleLocalizedError("Can't parse response")
                 }
+                let conn = ConnectionRequest()
+                conn.info = connection
+                conn.token = str
+                conn.type = connection as? University != nil ? 0 : 1
+
+                self.connectionRequest = conn
+            } catch {
+                return error
             }
-        }
+            return nil
+        }, success: {
+            self.viewImpl?.config(isLoading: false)
+            self.viewImpl?.showNewConnectMessage(type: self.connectionRequest?.type ?? 0, title: self.connectionRequest!.info?.name, logoData: self.connectionRequest?.info?.logoData)
+        }, error: { error in
+            Tracker.global.trackConnectionFail()
+            self.viewImpl?.config(isLoading: false)
+            self.viewImpl?.showErrorMessage(doShow: true, message: "connections_scan_qr_error".localize(), afterErrorAction: {
+                self.tappedBackButton()
+            })
+        })
     }
 
     func confirmQrCode() {
 
         self.viewImpl?.config(isLoading: true)
 
-        // TODO: Call the services
-
-        // TODO: Delete me when services are ready
-        DispatchQueue.global(qos: .background).async {
-            print("This is run on the background queue")
-
-            sleep(1)
-
-            let result = FakeData.confirmQrCode(conn: self.connectionRequest!)
-
-            DispatchQueue.main.async {
-
-                self.viewImpl?.config(isLoading: false)
-
-                if result {
-                    // Success
-                    self.tappedBackButton()
-                } else {
-                    // Fail
-                    self.viewImpl?.showErrorMessage(doShow: true, message: "connections_scan_qr_confirm_error".localize(), afterErrorAction: {
-                        self.tappedBackButton()
-                    })
-                }
+        // Call the service
+        ApiService.call(async: {
+            do {
+                let response = try ApiService.global.addConnectionToken(token: self.connectionRequest!.token!)
+                Logger.d("addConnectionToken response: \(response)")
+                // Save the userId
+                self.sharedMemory.loggedUser?.connectionUserIds?[response.connection.connectionID] = response.userID
+                self.sharedMemory.loggedUser = self.sharedMemory.loggedUser
+            } catch {
+                return error
             }
-        }
+            return nil
+        }, success: {
+            self.viewImpl?.config(isLoading: false)
+            self.tappedBackButton()
+        }, error: { error in
+            self.viewImpl?.config(isLoading: false)
+            self.viewImpl?.showErrorMessage(doShow: true, message: "connections_scan_qr_confirm_error".localize(), afterErrorAction: {
+                self.tappedBackButton()
+            })
+        })
     }
 
     // MARK: Table
@@ -220,25 +226,15 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
 
         if tabMode == .universities {
             let university: University = universities![cell.indexPath!.row]
-            cell.config(title: university.name, isUniversity: true, logoUrl: university.logoUrl)
+            cell.config(title: university.name, isUniversity: true, logoData: sharedMemory.imageBank?.logo(for: university.connectionId))
         } else {
             let employer = employers![cell.indexPath!.row]
-            cell.config(title: employer.name, isUniversity: false, logoUrl: employer.logoUrl)
+            cell.config(title: employer.name, isUniversity: false, logoData: sharedMemory.imageBank?.logo(for: employer.connectionId))
         }
     }
 
     func tappedAction(for cell: ConnectionMainViewCell) {
-
-        var urlStr: String?
-        if tabMode == .universities {
-            let university: University = universities![cell.indexPath!.row]
-            urlStr = university.url
-        } else {
-            let employer = employers![cell.indexPath!.row]
-            urlStr = employer.url
-        }
-        guard let urlStrFn = urlStr, let url = URL(string: urlStrFn) else { return }
-        UIApplication.shared.open(url)
+        // Do nothing
     }
 
     func hasPullToRefresh() -> Bool {
@@ -259,10 +255,14 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
     }
 
     func tappedDeclineAction(for: ConnectionConfirmViewController) {
+
+        Tracker.global.trackConnectionDecline()
         self.viewImpl?.startQrScan()
     }
 
     func tappedConfirmAction(for: ConnectionConfirmViewController) {
+
+        Tracker.global.trackConnectionAccept()
         confirmQrCode()
     }
 }
