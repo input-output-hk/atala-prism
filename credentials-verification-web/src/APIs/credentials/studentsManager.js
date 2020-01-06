@@ -91,3 +91,18 @@ export const getStudentCredentials = async (studentId, issuer = issuerId) => {
     throw new Error(e);
   }
 };
+
+export const createStudent = async (universityAssignedId, fullName, email, admissionDate) => {
+  const request = new CreateStudentRequest();
+  const date = new Date();
+  setDateInfoFromJSON(date, admissionDate);
+
+  request.setUniversityassignedid(universityAssignedId);
+  request.setFullname(fullName);
+  request.setEmail(email);
+  request.setAdmissiondate(date);
+
+  const student = await studentsService.createStudent(request, { userId: REACT_APP_ISSUER });
+
+  Logger.info('Created student:', student.toObject());
+};

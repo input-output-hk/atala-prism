@@ -19,7 +19,8 @@ import { getCredentials, createCredential, registerUser } from './credentials/cr
 import {
   getStudents as getIndividualsAsIssuer,
   generateConnectionToken as generateConnectionTokenAsIssuer,
-  getStudentCredentials
+  getStudentCredentials,
+  createStudent
 } from './credentials/studentsManager';
 import {
   getIndividuals as getIndividualsAsVerifier,
@@ -70,7 +71,8 @@ export const api = {
   getMessagesForConnection,
   registerUser,
   getIndividuals,
-  createIndividual
+  createIndividual,
+  createStudent
 };
 
 export const hardcodedApi = {

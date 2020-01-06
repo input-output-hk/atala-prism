@@ -50,6 +50,7 @@ export const fromUnixToProtoDateFormatter = date => {
 
 export const backendDateFormatter = format => date => completeDateFormatter(date, format);
 export const frontendDateFormatter = format => date => completeFrontendDateFormatter(date, format);
+export const simpleMomentFormatter = date => date.format('L');
 
 export const longDateFormatter = frontendDateFormatter('LLLL');
 export const shortDateFormatter = frontendDateFormatter('lll');
