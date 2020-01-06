@@ -13,6 +13,7 @@ import NewCredential from './newCredential/NewCredentialContainer';
 import Payment from './payments/PaymentContainer';
 import Settings from './settings/SettingsContainer';
 import IndividualCreation from './individualCreation/IndividualCreationContainer';
+import StudentCreation from './studentCreation/StudentCreationContainer';
 import { withSideBar } from './providers/withSideBar';
 import { ISSUER, VERIFIER } from '../helpers/constants';
 import { withLoggedValidation } from './providers/withLoggedValidation';
@@ -94,6 +95,12 @@ const individualCreation = {
   key: 'individualCreation',
   component: withLoggedValidation(withSideBar(IndividualCreation), verifier)
 };
+const studentCreation = {
+  exact: true,
+  path: '/studentCreation',
+  key: 'studentCreation',
+  component: withLoggedValidation(withSideBar(StudentCreation), issuer)
+};
 
 const routes = [
   loginRoute,
@@ -107,6 +114,7 @@ const routes = [
   registration,
   payment,
   individualCreation,
+  studentCreation,
   landingRoute,
   dashboardRoute
 ];

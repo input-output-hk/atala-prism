@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { Input, Form, DatePicker } from 'antd';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
+import moment from 'moment';
 import { noEmptyInput } from '../../../../helpers/formRules';
+import { simpleMomentFormatter } from '../../../../helpers/formatters';
 
 const EditableCell = ({
   EditableContext: Consumer,
@@ -25,6 +27,25 @@ const EditableCell = ({
     setEditing(isEditing);
   };
 
+  const saveDate = ({ currentTarget: { id } }) => {
+    cellForm.validateFields((errors, values) => {
+      if (errors && !values[id]) {
+        return;
+      }
+
+      let dateToSave;
+      if (type === 'date' && values[id]) {
+        const dateAsString = simpleMomentFormatter(values[id]);
+        dateToSave = { [id]: dateAsString };
+      }
+
+      toggleEdit();
+      const toSave = Object.assign({}, record, values, dateToSave);
+
+      handleSave(toSave);
+    });
+  };
+
   const save = ({ currentTarget: { id } }) => {
     cellForm.validateFields((errors, values) => {
       if (errors && errors[id]) {
@@ -33,6 +54,7 @@ const EditableCell = ({
 
       toggleEdit();
       const toSave = Object.assign({}, record, values);
+
       handleSave(toSave);
     });
   };
@@ -53,14 +75,18 @@ const EditableCell = ({
 
     switch (type) {
       case 'date':
-        return <DatePicker {...props} />;
+        return <DatePicker onPressEnter={saveDate} onBlur={saveDate} />;
       default:
-        return <Input {...props} />;
+        return <Input onPressEnter={save} onBlur={save} />;
     }
   };
 
   const renderCell = form => {
     setCellForm(form);
+
+    const savedData = record[dataIndex];
+
+    const initialValue = record[dataIndex] && type === 'date' ? moment(savedData) : savedData;
 
     return editing ? (
       <Form.Item>
