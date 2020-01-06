@@ -1,25 +1,35 @@
 package io.iohk.cvp.views.activities;
 
+import static org.bitcoinj.crypto.MnemonicCode.BIP39_ENGLISH_SHA256;
+
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.GridView;
-
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
-
-import java.util.Objects;
-
-import javax.inject.Inject;
-
 import butterknife.BindView;
 import butterknife.OnClick;
 import io.iohk.cvp.R;
+import io.iohk.cvp.core.exception.MnemonicException.MnemonicLengthException;
+import org.bitcoinj.crypto.MnemonicCode;
 import io.iohk.cvp.viewmodel.WalletSetupViewModel;
 import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.utils.adapters.SeedPhraseAdapter;
 import io.iohk.cvp.views.utils.components.CheckboxWithDescription;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.SecureRandom;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Random;
+import javax.inject.Inject;
 
-public class WalletSetupActivity extends CvpActivity<WalletSetupViewModel> implements CheckboxWithDescription.CheckboxStateListener {
+public class WalletSetupActivity extends CvpActivity<WalletSetupViewModel> implements
+    CheckboxWithDescription.CheckboxStateListener {
+
+  private static final Integer[] seedPhraseIndexes = new Integer[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 
   @Inject
   Navigator navigator;
@@ -38,6 +48,10 @@ public class WalletSetupActivity extends CvpActivity<WalletSetupViewModel> imple
 
   private SeedPhraseAdapter adapter;
 
+  private Integer firstWordIndexToCheck;
+
+  private Integer secondWordIndexToCheck;
+
   protected int getView() {
     return R.layout.activity_wallet_setup;
   }
@@ -51,11 +65,23 @@ public class WalletSetupActivity extends CvpActivity<WalletSetupViewModel> imple
     adapter = new SeedPhraseAdapter();
     gridView.setAdapter(adapter);
 
-    viewModel.getSeedPhrase().observe(this, seedPhrase -> {
-      adapter.setSeedPhrase(seedPhrase);
-      adapter.notifyDataSetChanged();
-    });
+    InputStream inputStream = getResources().openRawResource(R.raw.word_list);
+    try {
+      MnemonicCode mnemonic = new MnemonicCode(inputStream, BIP39_ENGLISH_SHA256);
 
+      byte[] entropy = mnemonic.getSeedBytes();
+      new SecureRandom().nextBytes(entropy);
+      adapter.setSeedPhrase(mnemonic.toMnemonic(entropy));
+      adapter.notifyDataSetChanged();
+    } catch (IOException | MnemonicLengthException e) {
+      e.printStackTrace();
+    }
+
+    List<Integer> indexesList = new LinkedList<>(Arrays.asList(seedPhraseIndexes));
+    Random rand = new Random();
+    firstWordIndexToCheck = indexesList.get(rand.nextInt(indexesList.size()));
+    indexesList.remove(firstWordIndexToCheck);
+    secondWordIndexToCheck = indexesList.get(rand.nextInt(indexesList.size()));
   }
 
   @Override
@@ -80,7 +106,8 @@ public class WalletSetupActivity extends CvpActivity<WalletSetupViewModel> imple
 
   @OnClick(R.id.accept_button)
   public void onContinueClick() {
-    navigator.showSeedPhraseVerification(this);
+    navigator.showSeedPhraseVerification(this, adapter.getSeedPhrase(), firstWordIndexToCheck,
+        secondWordIndexToCheck);
   }
 
 }

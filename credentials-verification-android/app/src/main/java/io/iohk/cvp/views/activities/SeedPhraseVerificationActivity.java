@@ -1,5 +1,7 @@
 package io.iohk.cvp.views.activities;
 
+import static org.bitcoinj.crypto.MnemonicCode.BIP39_ENGLISH_SHA256;
+
 import android.os.Bundle;
 import android.widget.Button;
 import androidx.lifecycle.ViewModelProvider;
@@ -8,20 +10,33 @@ import butterknife.BindView;
 import butterknife.OnClick;
 import com.crashlytics.android.Crashlytics;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import io.iohk.cvp.R;
 import io.iohk.cvp.core.exception.CryptoException;
+import io.iohk.cvp.core.exception.MnemonicException.MnemonicChecksumException;
+import io.iohk.cvp.core.exception.MnemonicException.MnemonicLengthException;
+import io.iohk.cvp.core.exception.MnemonicException.MnemonicWordException;
 import io.iohk.cvp.crypto.ECKeys;
 import io.iohk.cvp.io.wallet.KeyPair;
 import io.iohk.cvp.viewmodel.WalletSetupViewModel;
 import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.Preferences;
 import io.iohk.cvp.views.utils.SimpleTextWatcher;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.NoSuchAlgorithmException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import javax.inject.Inject;
+import org.bitcoinj.crypto.MnemonicCode;
 
 public class SeedPhraseVerificationActivity extends CvpActivity<WalletSetupViewModel> {
+
+  public static final String SEED_PHRASE_KEY = "seed_phrase";
+  public static final String FIRST_WORD_INDEX_KEY = "first_word_index";
+  public static final String SECOND_WORD_INDEX_KEY = "second_word_index";
 
   @Inject
   Navigator navigator;
@@ -35,11 +50,18 @@ public class SeedPhraseVerificationActivity extends CvpActivity<WalletSetupViewM
   @BindView(R.id.edit_text_2)
   public TextInputEditText inputEditText2;
 
+  @BindView(R.id.text_input_layout_1)
+  public TextInputLayout inputEditTextLayout1;
+
+  @BindView(R.id.text_input_layout_2)
+  public TextInputLayout inputEditTextLayout2;
+
   @Inject
   ViewModelProvider.Factory factory;
 
   private Boolean firstSeedValidated = false;
   private Boolean secondSeedValidated = false;
+  private List<String> seedPhrase = new ArrayList<>();
 
   protected int getView() {
     return R.layout.activity_seed_phrase_verification;
@@ -50,18 +72,35 @@ public class SeedPhraseVerificationActivity extends CvpActivity<WalletSetupViewM
     super.onCreate(savedInstanceState);
     Objects.requireNonNull(getSupportActionBar()).hide();
 
+    Bundle bundle = getIntent().getExtras();
+
+    Objects.requireNonNull(bundle);
+
+    seedPhrase = Arrays.asList(
+        Objects.requireNonNull(bundle.getStringArray(SEED_PHRASE_KEY)));
+
+    int firstWordIndexToCheck = bundle.getInt(FIRST_WORD_INDEX_KEY);
+
+    inputEditTextLayout1.setHint(
+        getString(R.string.word_numeric, String.valueOf(firstWordIndexToCheck)));
+
     inputEditText1.addTextChangedListener(new SimpleTextWatcher() {
       @Override
       public void onTextChanged(CharSequence s, int start, int before, int count) {
-        firstSeedValidated = viewModel.validateSeed(s, 5);
+        firstSeedValidated = validateSeed(s, firstWordIndexToCheck);
         updateButtonState();
       }
     });
 
+    int secondWordIndexToCheck = bundle.getInt(SECOND_WORD_INDEX_KEY);
+
+    inputEditTextLayout2.setHint(
+        getString(R.string.word_numeric, String.valueOf(secondWordIndexToCheck)));
+
     inputEditText2.addTextChangedListener(new SimpleTextWatcher() {
       @Override
       public void onTextChanged(CharSequence s, int start, int before, int count) {
-        secondSeedValidated = viewModel.validateSeed(s, 10);
+        secondSeedValidated = validateSeed(s, secondWordIndexToCheck);
         updateButtonState();
       }
     });
@@ -88,15 +127,22 @@ public class SeedPhraseVerificationActivity extends CvpActivity<WalletSetupViewM
 
   @OnClick(R.id.verify_button)
   public void onContinueClick() {
-    ECKeys crypto = new ECKeys();
     try {
-      KeyPair keyPair = crypto.generateKeyPair();
+      ECKeys crypto = new ECKeys();
+      InputStream inputStream = getResources().openRawResource(R.raw.word_list);
+      MnemonicCode mnemonic = new MnemonicCode(inputStream, BIP39_ENGLISH_SHA256);
+      KeyPair keyPair = crypto.getKeyPair(mnemonic.toEntropy(seedPhrase));
       Preferences prefs = new Preferences(this);
       prefs.savePrivateKey(keyPair.getPrivateKey().toByteArray());
       navigator.showAccountCreated(this);
-    } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException | CryptoException e) {
+    } catch (CryptoException | MnemonicLengthException | MnemonicWordException |
+        MnemonicChecksumException | IOException | InvalidKeySpecException e) {
       Crashlytics.logException(e);
       // TODO show error message
     }
+  }
+
+  private boolean validateSeed(CharSequence toCompare, int seedNumber) {
+    return seedPhrase != null && seedPhrase.get(seedNumber - 1).contentEquals(toCompare);
   }
 }
