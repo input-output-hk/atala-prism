@@ -4,6 +4,7 @@ import Logger from '../../helpers/Logger';
 const {
   GenerateConnectionTokenForRequest,
   GetIndividualsRequest,
+  CreateIndividualRequest,
   GetStoredCredentialsForRequest
 } = require('../../../src/protos/cstore/cstore_pb');
 
@@ -37,4 +38,17 @@ export const generateConnectionTokenForIndividual = async (
   const res = await credentialsService.generateConnectionTokenFor(request, { userId });
 
   return res.getToken();
+};
+
+export const createIndividual = async (fullName, email) => {
+  const request = new CreateIndividualRequest();
+
+  request.setFullname(fullName);
+  request.setEmail(email);
+
+  const individual = await credentialsService.createIndividual(request, {
+    userId: REACT_APP_VERIFIER
+  });
+
+  return individual.toObject();
 };

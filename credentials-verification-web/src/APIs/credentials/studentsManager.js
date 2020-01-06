@@ -4,11 +4,14 @@ import {
   GetStudentRequest,
   GetStudentsRequest,
   GenerateConnectionTokenRequest,
-  GetStudentCredentialsRequest
+  GetStudentCredentialsRequest,
+  CreateStudentRequest,
+  Date
 } from '../../protos/credentials/credentialsManager_pb';
 import Logger from '../../helpers/Logger';
 import { HARDCODED_LIMIT } from '../../helpers/constants';
 import { isIssuer } from '../wallet/wallet';
+import { setDateInfoFromJSON } from '../helpers';
 
 const { REACT_APP_GRPC_CLIENT, REACT_APP_ISSUER, REACT_APP_VERIFIER } = window._env_;
 const issuerId = REACT_APP_ISSUER;

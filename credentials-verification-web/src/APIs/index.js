@@ -23,7 +23,8 @@ import {
 } from './credentials/studentsManager';
 import {
   getIndividuals as getIndividualsAsVerifier,
-  generateConnectionTokenForIndividual as generateConnectionTokenAsVerifier
+  generateConnectionTokenForIndividual as generateConnectionTokenAsVerifier,
+  createIndividual
 } from './cstore/credentialsStore';
 
 export { mockApi };
@@ -68,7 +69,8 @@ export const api = {
   getStudentCredentials,
   getMessagesForConnection,
   registerUser,
-  getIndividuals
+  getIndividuals,
+  createIndividual
 };
 
 export const hardcodedApi = {
