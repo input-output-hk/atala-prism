@@ -1,6 +1,9 @@
 package io.iohk.cvp.views;
 
 import static io.iohk.cvp.utils.ActivitiesRequestCodes.BRAINTREE_REQUEST_ACTIVITY;
+import static io.iohk.cvp.views.activities.SeedPhraseVerificationActivity.FIRST_WORD_INDEX_KEY;
+import static io.iohk.cvp.views.activities.SeedPhraseVerificationActivity.SECOND_WORD_INDEX_KEY;
+import static io.iohk.cvp.views.activities.SeedPhraseVerificationActivity.SEED_PHRASE_KEY;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -25,6 +28,7 @@ import io.iohk.cvp.views.fragments.CvpDialogFragment;
 import io.iohk.cvp.views.fragments.CvpFragment;
 import io.iohk.cvp.views.fragments.PopUpFragment;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -47,8 +51,17 @@ public class Navigator {
     startNewActivity(from, WalletSetupActivity.class, null);
   }
 
-  public void showSeedPhraseVerification(Activity from) {
-    startNewActivity(from, SeedPhraseVerificationActivity.class, null);
+  public void showSeedPhraseVerification(Activity from, List<String> seedPhrase,
+      Integer firstWordIndexToCheck, Integer secondWordIndexToCheck) {
+    Intent intent = getIntent(from, SeedPhraseVerificationActivity.class, null);
+    Bundle bundle = new Bundle();
+    bundle.putStringArray(SEED_PHRASE_KEY, Arrays.copyOf(seedPhrase.toArray(),
+        seedPhrase.size(),
+        String[].class));
+    bundle.putInt(FIRST_WORD_INDEX_KEY, firstWordIndexToCheck);
+    bundle.putInt(SECOND_WORD_INDEX_KEY, secondWordIndexToCheck);
+    intent.putExtras(bundle);
+    from.startActivity(intent);
   }
 
   public void showAccountCreated(Activity from) {
@@ -78,6 +91,11 @@ public class Navigator {
 
   private void startNewActivity(Activity from, Class activityClass,
       List<Integer> flags) {
+    Intent intent = getIntent(from, activityClass, flags);
+    from.startActivity(intent);
+  }
+
+  private Intent getIntent(Activity from, Class activityClass, List<Integer> flags) {
     Intent intent = new Intent(from.getApplicationContext(), activityClass);
     intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
@@ -85,7 +103,7 @@ public class Navigator {
       flags.forEach(intent::addFlags);
     }
 
-    from.startActivity(intent);
+    return intent;
   }
 
   public void showPermissionDeniedPopUp(FragmentManager fragmentManager) {

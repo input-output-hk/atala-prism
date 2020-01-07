@@ -7,7 +7,7 @@
   <!-- Activities titles -->
   <string name="connections_activity_title">Connections</string>
   <string name="terms_and_conditions_activity_title">Terms and Conditions</string>
-  <string name="wallet_setup_activity_title">Your Seed Phrase</string>
+  <string name="wallet_setup_activity_title">Tu frase de recuperacion</string>
   <string name="seed_phrase_verification_activity_title">Verify Seed Phrase</string>
   <string name="qr_scanner_activity_title">Scan QR</string>
 
@@ -25,8 +25,7 @@
 
   <!-- Seed Phrase Verification -->
   <string name="seed_phrase_verification_description">Enter the correct words of your seed phrase bellow.</string>
-  <string name="word_5">Word #5</string>
-  <string name="word_10">Word #10</string>
+  <string name="word_numeric">Word #%1$s</string>>
 
   <!-- Credential Detail -->
   <string name="degree_name">Degree Name</string>

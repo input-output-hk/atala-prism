@@ -10,15 +10,11 @@ import io.iohk.cvp.io.wallet.BigInteger;
 import io.iohk.cvp.io.wallet.ECPrivateKey;
 import io.iohk.cvp.io.wallet.ECPublicKey;
 import io.iohk.cvp.io.wallet.KeyPair;
-import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyFactory;
-import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.SecureRandom;
 import java.security.Security;
-import java.security.spec.ECGenParameterSpec;
 import java.security.spec.ECPoint;
 import java.security.spec.ECPrivateKeySpec;
 import java.security.spec.InvalidKeySpecException;
@@ -56,17 +52,11 @@ public class ECKeys {
       ecParameterSpec.getN()
   );
 
+  public KeyPair getKeyPair(byte[] seed) throws InvalidKeySpecException, CryptoException {
+    ECPrivateKey pk = toPrivateKey(seed);
+    ECPublicKey pubK = getPublicKey(toPublicKey(pk.getD()));
 
-  public KeyPair generateKeyPair()
-      throws NoSuchAlgorithmException, InvalidAlgorithmParameterException, CryptoException {
-    Security.addProvider(new BouncyCastleProvider());
-    KeyPairGenerator keyGen = KeyPairGenerator.getInstance("ECDSA");
-    ECGenParameterSpec ecSpec = new ECGenParameterSpec(CURVE_NAME);
-    keyGen.initialize(ecSpec, new SecureRandom());
-    java.security.KeyPair keyPair = keyGen.generateKeyPair();
-
-    return KeyPair.newBuilder().setPrivateKey(getPrivateKey(keyPair.getPrivate()))
-        .setPublicKey(getPublicKey(keyPair.getPublic())).build();
+    return KeyPair.newBuilder().setPublicKey(pubK).setPrivateKey(pk).build();
   }
 
   public ECPrivateKey toPrivateKey(byte[] d) {
