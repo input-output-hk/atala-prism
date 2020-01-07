@@ -1,4 +1,7 @@
 ## Dependencies
+
+This project uses [scalajs-bundler](https://github.com/scalacenter/scalajs-bundler) to fetch JavaScript dependencies, so `npm` is required to build it.
+
 Until this [PR](https://github.com/lucidd/scala-js-chrome/pull/46) gets merged, we need a custom plugin to support [content_scripts](https://developer.chrome.com/extensions/content_scripts), if you don't need those, feel free to replace the forked plugin on the [plugins.sbt](project/plugins.sbt).
 
 Before being able to build the extension, you'll need to install a plugin locally.

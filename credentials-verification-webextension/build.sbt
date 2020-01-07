@@ -18,7 +18,7 @@ scalacOptions ++= Seq(
   "-P:scalajs:sjsDefinedByDefault"
 )
 
-enablePlugins(ChromeSbtPlugin, BuildInfoPlugin)
+enablePlugins(ChromeSbtPlugin, BuildInfoPlugin, ScalaJSBundlerPlugin)
 
 // build-info
 buildInfoPackage := "io.iohk.atala.cvp.webextension"
@@ -28,27 +28,27 @@ buildInfoKeys ++= Seq[BuildInfoKey](
 )
 
 // scala-js-chrome
-scalaJSUseMainModuleInitializer := true
-scalaJSUseMainModuleInitializer in Test := false
 relativeSourceMaps := true
 skip in packageJSDependencies := false
+
+webpackBundlingMode := BundlingMode.Application
+
+npmDependencies in Compile += "uuid" -> "3.1.0"
+npmDependencies in Compile += "elliptic" -> "6.5.2"
+
+fastOptJsLib := (webpack in (Compile, fastOptJS)).value.head
+fullOptJsLib := (webpack in (Compile, fullOptJS)).value.head
+
+webpackBundlingMode := BundlingMode.LibraryAndApplication()
 
 // you can customize and have a static output name for lib and dependencies
 // instead of having the default files names like extension-fastopt.js, ...
 artifactPath in (Compile, fastOptJS) := {
-  (crossTarget in fastOptJS).value / "main.js"
+  (crossTarget in (Compile, fastOptJS)).value / "main.js"
 }
 
 artifactPath in (Compile, fullOptJS) := {
-  (crossTarget in fullOptJS).value / "main.js"
-}
-
-artifactPath in (Compile, packageJSDependencies) := {
-  (crossTarget in packageJSDependencies).value / "dependencies.js"
-}
-
-artifactPath in (Compile, packageMinifiedJSDependencies) := {
-  (crossTarget in packageMinifiedJSDependencies).value / "dependencies.js"
+  (crossTarget in (Compile, fullOptJS)).value / "main.js"
 }
 
 chromeManifest := new ExtensionManifest {
@@ -74,7 +74,7 @@ chromeManifest := new ExtensionManifest {
     Some(BrowserAction(icons, Some("TO BE DEFINED - POPUP TITLE"), Some("popup.html")))
 
   // scripts used on all modules
-  val commonScripts = List("scripts/common.js", "dependencies.js", "main.js")
+  val commonScripts = List("scripts/common.js", "main-bundle.js")
 
   override val background =
     Background(
