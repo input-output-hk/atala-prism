@@ -14,7 +14,7 @@ class ApiService: NSObject {
         Io_Iohk_Cvp_Connector_ConnectorServiceServiceClient(address: Common.URL_API, secure: false)
     }()
 
-    func makeMeta(_ userId: String?) -> Metadata {
+    func makeMeta(_ userId: String? = nil) -> Metadata {
 
         let meta = Metadata()
         if userId != nil {
@@ -36,7 +36,7 @@ class ApiService: NSObject {
         }
     }
 
-    // MARK: Methods
+    // MARK: Connections
 
     func getConnectionTokenInfo(token: String) throws -> Io_Iohk_Cvp_Connector_GetConnectionTokenInfoResponse {
 
@@ -46,13 +46,14 @@ class ApiService: NSObject {
         }, metadata: makeMeta(userId))
     }
 
-    func addConnectionToken(token: String) throws -> Io_Iohk_Cvp_Connector_AddConnectionFromTokenResponse {
+    func addConnectionToken(token: String, nonce: String) throws -> Io_Iohk_Cvp_Connector_AddConnectionFromTokenResponse {
 
         let publicKey = FakeData.fakePublicKey()
         let userId = FakeData.fakeUserId()
         return try service.addConnectionFromToken(Io_Iohk_Cvp_Connector_AddConnectionFromTokenRequest.with {
             $0.token = token
             $0.holderPublicKey = publicKey
+            $0.paymentNonce = nonce
         }, metadata: makeMeta(userId))
     }
 
@@ -68,6 +69,8 @@ class ApiService: NSObject {
         }
         return responseList
     }
+
+    // MARK: Credentials
 
     func getCredentials(userIds: [String]?, limit: Int32 = DEFAULT_REQUEST_LIMIT) throws -> [Io_Iohk_Cvp_Connector_GetMessagesPaginatedResponse] {
 
@@ -96,6 +99,25 @@ class ApiService: NSObject {
             let response = try service.sendMessage(Io_Iohk_Cvp_Connector_SendMessageRequest.with {
                 $0.message = messageData!
                 $0.connectionID = connectionId
+            }, metadata: makeMeta(userId))
+            responseList.append(response)
+        }
+        return responseList
+    }
+
+    // MARK: Payments
+
+    func getPaymentToken() throws -> Io_Iohk_Cvp_Connector_GetBraintreePaymentsConfigResponse {
+
+        return try service.getBraintreePaymentsConfig(Io_Iohk_Cvp_Connector_GetBraintreePaymentsConfigRequest.with { _ in
+        }, metadata: makeMeta())
+    }
+
+    func getPaymentsHistory(userIds: [String]?) throws -> [Io_Iohk_Cvp_Connector_GetPaymentsResponse] {
+
+        var responseList: [Io_Iohk_Cvp_Connector_GetPaymentsResponse] = []
+        for userId in userIds ?? [] {
+            let response = try service.getPayments(Io_Iohk_Cvp_Connector_GetPaymentsRequest.with { _ in
             }, metadata: makeMeta(userId))
             responseList.append(response)
         }

@@ -29,11 +29,11 @@ class HistoryViewCell: BaseTableViewCell {
 
     // MARK: Config
 
-    func config(title: String?, date: String?, amount: Int?, status: Int) {
+    func config(title: String?, date: String?, amount: String?, status: Int) {
 
         labelTitle.text = title
         labelDate.text = date
-        labelAmount.text = "\(amount ?? 0)"
+        labelAmount.text = "\(amount ?? "-")"
 
         let statusColor = UIColor(hexString: status == 0 ? "00D793" : "FFB954")
         buttonStatus.setTitle((status == 0 ? "wallet_history_status_completed" : "wallet_history_status_pending").localize(), for: .normal)

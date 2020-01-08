@@ -57,6 +57,7 @@
 "connections_scan_qr_confirm_title_type_0" = "University Name";
 "connections_scan_qr_confirm_title_type_1" = "Employer Name";
 "connections_scan_qr_confirm_error" = "Failed to confirm connection. Try again.";
+"connections_scan_qr_confirm_payment_error" = "Failed to confirm payment. Try again.";
 "connections_universities" = "Universities";
 "connections_employers" = "Employers";
 "connections_more_info" = "More Info";
@@ -169,6 +170,7 @@
 "wallet_history_empty_title" = "Empty Payment History";
 "wallet_history_empty_subtitle" = "All your payments will be listed here";
 "wallet_history_empty_button" = "Go Back";
+"wallet_history_retrieve_error" = "Failed to retrieve payment history. Try again.";
 "wallet_cards_empty_title" = "No Credit Cards";
 "wallet_cards_empty_subtitle" = "Please link a credit card\nto your account";
 "wallet_cards_empty_button" = "Add New Payment Method";

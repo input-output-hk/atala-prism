@@ -155,6 +155,7 @@ class ConnectionsViewController: ListingBaseViewController {
     }
 
     func startQrScan() {
+
         scanner.clearDrawLayer()
         scanner.startScan()
     }

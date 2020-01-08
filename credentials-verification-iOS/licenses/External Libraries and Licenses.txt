@@ -74,3 +74,8 @@ Name: Firebase
 Source: https://firebase.google.com/
 License: https://firebase.google.com/terms
 License TL;DR: Custom license
+
+Name: BraintreeDropIn
+Source: https://github.com/braintree/braintree-ios-drop-in
+License: https://github.com/braintree/braintree-ios-drop-in/blob/master/LICENSE
+License TL;DR: MIT

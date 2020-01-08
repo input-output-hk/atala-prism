@@ -168,31 +168,44 @@ class WalletPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDeleg
 
     private func fetchHistory() {
 
-        // TODO: Call the services
-
-        // TODO: Delete me when services are ready
-        DispatchQueue.global(qos: .background).async {
-            print("This is run on the background queue")
-
-            sleep(1)
-
-            self.cleanData()
-
-            // Fake data
-            let history = FakeData.paymentHistoryList()
-            self.parseData(history: history)
-
-            DispatchQueue.main.async {
-                self.startListing()
-            }
+        guard let user = self.sharedMemory.loggedUser else {
+            return
         }
+
+        // Call the service
+        ApiService.call(async: {
+            do {
+                let responses = try ApiService.global.getPaymentsHistory(userIds: user.connectionUserIds?.valuesArray)
+                Logger.d("getPaymentsHistory responses: \(responses)")
+
+                var history: [PaymentHistory] = []
+                for response in responses {
+                    for intPayment in response.payments {
+                        if let payment = PaymentHistory.build(intPayment) {
+                            history.append(payment)
+                        }
+                    }
+                }
+                self.makePaymentHistoryRows(history: history)
+
+            } catch {
+                return error
+            }
+            return nil
+        }, success: {
+            self.startListing()
+        }, error: { error in
+            self.viewImpl?.showErrorMessage(doShow: true, message: "wallet_history_retrieve_error".localize(), afterErrorAction: {
+                self.tappedBackButton()
+            })
+        })
     }
 
     private func fetchCreditCards() {
         // TODO:
     }
 
-    private func parseData(history: [PaymentHistory]) {
+    private func makePaymentHistoryRows(history: [PaymentHistory]) {
 
         historyRows = []
         history.forEach { historyElem in

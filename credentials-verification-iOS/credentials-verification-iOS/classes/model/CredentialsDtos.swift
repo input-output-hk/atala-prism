@@ -58,13 +58,13 @@ class Degree: Mappable {
         credential.isNew = isNew
         credential.fullName = intCredential.degreeAwarded
         credential.name = intCredential.issuerType.academicAuthority
-        credential.startDate = intCredential.hasAdmissionDate ? parseDate(intCredential.admissionDate) : ""
-        credential.endDate = intCredential.hasGraduationDate ? parseDate(intCredential.graduationDate) : ""
+        credential.startDate = intCredential.hasAdmissionDate ? ApiParseUtils.parseDate(intCredential.admissionDate) : ""
+        credential.endDate = intCredential.hasGraduationDate ? ApiParseUtils.parseDate(intCredential.graduationDate) : ""
         credential.connectionId = message.connectionID
         credential.messageId = message.id
         credential.properties = [:]
         if intCredential.hasSubjectData {
-            credential.properties?["home_detail_full_name".localize()] = parseFullName(intCredential.subjectData)
+            credential.properties?["home_detail_full_name".localize()] = ApiParseUtils.parseFullName(intCredential.subjectData)
         }
         if intCredential.additionalSpeciality != "" {
             credential.properties?["home_detail_award".localize()] = intCredential.additionalSpeciality
@@ -74,21 +74,5 @@ class Degree: Mappable {
         }
 
         return credential
-    }
-
-    private static func parseDate(_ intDate: Io_Iohk_Cvp_Credential_Date) -> String {
-        return "\(intDate.month)/\(intDate.day)/\(intDate.year)"
-    }
-
-    private static func parseFullName(_ intSubject: Io_Iohk_Cvp_Credential_SubjectData) -> String {
-
-        var fullName = ""
-        for name in intSubject.names {
-            fullName = "\(fullName) \(name)"
-        }
-        for surname in intSubject.surname {
-            fullName = "\(fullName) \(surname)"
-        }
-        return fullName.trim()
     }
 }

@@ -142,6 +142,7 @@
 		EE7D4D2B236F8DE9007C31A8 /* ListingBasePresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7D4D26236F8DE9007C31A8 /* ListingBasePresenter.swift */; };
 		EE7D4D30236FB379007C31A8 /* ConnectionMainViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE7D4D2F236FB379007C31A8 /* ConnectionMainViewCell.xib */; };
 		EE7D4D32236FB3C1007C31A8 /* ConnectionMainViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7D4D31236FB3C1007C31A8 /* ConnectionMainViewCell.swift */; };
+		EE7E753023C29D0600BE9AD1 /* PaymentUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7E752F23C29D0600BE9AD1 /* PaymentUtils.swift */; };
 		EE8CD810237B691100614578 /* TextFieldTitledView.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE8CD80F237B691100614578 /* TextFieldTitledView.xib */; };
 		EE8CD812237B6C7300614578 /* TextFieldTitledView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE8CD811237B6C7300614578 /* TextFieldTitledView.swift */; };
 		EE8CD814237BA29700614578 /* ScanQrUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE8CD813237BA29700614578 /* ScanQrUtils.swift */; };
@@ -173,6 +174,7 @@
 		EE904F1C2373BA0700EE6344 /* DocumentViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE904F1B2373BA0700EE6344 /* DocumentViewCell.xib */; };
 		EE904F1E2373BA1500EE6344 /* NewDegreeHeaderViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE904F1D2373BA1500EE6344 /* NewDegreeHeaderViewCell.xib */; };
 		EE904F202373BA2100EE6344 /* NewDegreeViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE904F1F2373BA2100EE6344 /* NewDegreeViewCell.xib */; };
+		EE917B8723C2AEF9009D0974 /* ApiParseUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE917B8623C2AEF9009D0974 /* ApiParseUtils.swift */; };
 		EEB7DD502395F79300C4DEA5 /* ConnectionsDtos.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEB7DD4F2395F79300C4DEA5 /* ConnectionsDtos.swift */; };
 		EEB7DD52239A0C6900C4DEA5 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = EEB7DD51239A0C6800C4DEA5 /* GoogleService-Info.plist */; };
 		EEB7DD56239A153700C4DEA5 /* Tracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEB7DD55239A153700C4DEA5 /* Tracker.swift */; };
@@ -355,6 +357,7 @@
 		EE7D4D26236F8DE9007C31A8 /* ListingBasePresenter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ListingBasePresenter.swift; sourceTree = "<group>"; };
 		EE7D4D2F236FB379007C31A8 /* ConnectionMainViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ConnectionMainViewCell.xib; sourceTree = "<group>"; };
 		EE7D4D31236FB3C1007C31A8 /* ConnectionMainViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionMainViewCell.swift; sourceTree = "<group>"; };
+		EE7E752F23C29D0600BE9AD1 /* PaymentUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentUtils.swift; sourceTree = "<group>"; };
 		EE8CD80F237B691100614578 /* TextFieldTitledView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = TextFieldTitledView.xib; sourceTree = "<group>"; };
 		EE8CD811237B6C7300614578 /* TextFieldTitledView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextFieldTitledView.swift; sourceTree = "<group>"; };
 		EE8CD813237BA29700614578 /* ScanQrUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanQrUtils.swift; sourceTree = "<group>"; };
@@ -386,6 +389,7 @@
 		EE904F1B2373BA0700EE6344 /* DocumentViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DocumentViewCell.xib; sourceTree = "<group>"; };
 		EE904F1D2373BA1500EE6344 /* NewDegreeHeaderViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = NewDegreeHeaderViewCell.xib; sourceTree = "<group>"; };
 		EE904F1F2373BA2100EE6344 /* NewDegreeViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = NewDegreeViewCell.xib; sourceTree = "<group>"; };
+		EE917B8623C2AEF9009D0974 /* ApiParseUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApiParseUtils.swift; sourceTree = "<group>"; };
 		EEB7DD4F2395F79300C4DEA5 /* ConnectionsDtos.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionsDtos.swift; sourceTree = "<group>"; };
 		EEB7DD51239A0C6800C4DEA5 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		EEB7DD55239A153700C4DEA5 /* Tracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tracker.swift; sourceTree = "<group>"; };
@@ -757,6 +761,7 @@
 				EE7D4B022366B9C3007C31A8 /* CrashReporter.swift */,
 				EEB7DD55239A153700C4DEA5 /* Tracker.swift */,
 				EE22F1F123A4AD2C003C4F87 /* CryptoUtils.swift */,
+				EE7E752F23C29D0600BE9AD1 /* PaymentUtils.swift */,
 			);
 			path = general;
 			sourceTree = "<group>";
@@ -783,6 +788,7 @@
 			isa = PBXGroup;
 			children = (
 				EE7D4B072366B9C3007C31A8 /* ApiService.swift */,
+				EE917B8623C2AEF9009D0974 /* ApiParseUtils.swift */,
 				EE7D4B082366B9C3007C31A8 /* RemoteImages.swift */,
 			);
 			path = service;
@@ -1408,6 +1414,7 @@
 				EE7185622384B76B00C58F62 /* BrowserViewController.swift in Sources */,
 				EE7D4C402366B9C4007C31A8 /* String+Extensions.swift in Sources */,
 				EE7D4C272366B9C4007C31A8 /* LoggedUser.swift in Sources */,
+				EE7E753023C29D0600BE9AD1 /* PaymentUtils.swift in Sources */,
 				EE8FD4E423726A4000EFF62E /* SettingsViewController.swift in Sources */,
 				EE904F062373AAD200EE6344 /* NewDegreeViewCell.swift in Sources */,
 				EE7D4C422366B9C4007C31A8 /* ErrorUtils.swift in Sources */,
@@ -1486,6 +1493,7 @@
 				EE48AC092377540500C0A441 /* TutorialPresenter.swift in Sources */,
 				EE7D4CEE23673C39007C31A8 /* UIImageView+Extensions.swift in Sources */,
 				EE7D4D2A236F8DE9007C31A8 /* ListingLoadingViewCell.swift in Sources */,
+				EE917B8723C2AEF9009D0974 /* ApiParseUtils.swift in Sources */,
 				EE7D4CF223673C39007C31A8 /* Array+Extensions2.swift in Sources */,
 				EE22F1F023A486FA003C4F87 /* connector.proto in Sources */,
 				F5E38949234BC34D0001F1E3 /* AppDelegate.swift in Sources */,

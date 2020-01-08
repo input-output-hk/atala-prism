@@ -215,21 +215,21 @@ class FakeData {
         e1.status = 0
         e1.text = "Credential Issuance Free University Tblisi"
         e1.date = "27 Aug 2019"
-        e1.amount = 10
+        e1.amount = "10"
         list.append(e1)
 
         let e2 = PaymentHistory()
         e2.status = 1
         e2.text = "Credential Issuance Business and Technical University (BTU)"
         e2.date = "27 Aug 2019"
-        e2.amount = 8
+        e2.amount = "8"
         list.append(e2)
 
         let e3 = PaymentHistory()
         e3.status = 0
         e3.text = "Credential Verification HR.GE"
         e3.date = "27 Aug 2019"
-        e3.amount = 10
+        e3.amount = "10"
         list.append(e3)
 
         return list

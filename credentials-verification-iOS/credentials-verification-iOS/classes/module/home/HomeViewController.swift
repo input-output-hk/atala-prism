@@ -148,8 +148,6 @@ class HomeViewController: ListingBaseViewController {
     }
 
     func configShareDialog(enableButton: Bool) {
-        // TODO: HACER Y LLAMAR
-
         shareDialogViewController.config(enableButton: enableButton)
     }
 

@@ -106,6 +106,8 @@ class ConnectionRequest: Mappable {
     var token: String?
     var type: Int? // 0 = University, 1 = Employer
     var info: ConnectionBase?
+    var paymentToken: String?
+    var paymentNonce: String?
 
     init() {}
 
@@ -117,5 +119,7 @@ class ConnectionRequest: Mappable {
         token <- map["token"]
         type <- map["type"]
         info <- map["info"]
+        paymentToken <- map["paymentToken"]
+        paymentNonce <- map["paymentNonce"]
     }
 }

@@ -195,12 +195,68 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
 
     func confirmQrCode() {
 
+        // 1. Get the connection payment token.
+        // 2. Call the payment library.
+        // 3. On library response, add new connection.
+
         self.viewImpl?.config(isLoading: true)
 
         // Call the service
         ApiService.call(async: {
             do {
-                let response = try ApiService.global.addConnectionToken(token: self.connectionRequest!.token!)
+                let response = try ApiService.global.getPaymentToken()
+                Logger.d("getPaymentToken response: \(response)")
+                // Save the payment token
+                if response.tokenizationKey.isEmpty {
+                    throw SimpleLocalizedError("Payment token failed to retrieve")
+                }
+                self.connectionRequest!.paymentToken = response.tokenizationKey
+            } catch {
+                return error
+            }
+            return nil
+        }, success: {
+            self.viewImpl?.config(isLoading: false)
+            self.callPaymentLibrary()
+        }, error: { error in
+            self.viewImpl?.config(isLoading: false)
+            self.viewImpl?.showErrorMessage(doShow: true, message: "connections_scan_qr_confirm_error".localize(), afterErrorAction: {
+                self.tappedBackButton()
+            })
+        })
+    }
+
+    func callPaymentLibrary() {
+
+        // Call payment library
+        self.viewImpl?.config(isLoading: true)
+
+        PaymentUtils.showPaymentView(
+            viewImpl,
+            token: self.connectionRequest!.paymentToken!,
+            success: { nonce in
+                Logger.d("showPaymentView success response: \(nonce)")
+                self.viewImpl?.config(isLoading: false)
+                self.connectionRequest!.paymentNonce = nonce
+                self.sendNewConnectionToServer()
+            }, error: { isCancelled, error in
+                Logger.d("showPaymentView error response: \(error?.localizedDescription ?? "no error")")
+                self.viewImpl?.config(isLoading: false)
+                self.viewImpl?.showErrorMessage(doShow: true, message: "connections_scan_qr_confirm_payment_error".localize(), afterErrorAction: {
+                    self.tappedBackButton()
+                })
+            }
+        )
+    }
+
+    func sendNewConnectionToServer() {
+
+        self.viewImpl?.config(isLoading: true)
+
+        // Call the service
+        ApiService.call(async: {
+            do {
+                let response = try ApiService.global.addConnectionToken(token: self.connectionRequest!.token!, nonce: self.connectionRequest!.paymentNonce!)
                 Logger.d("addConnectionToken response: \(response)")
                 // Save the userId
                 self.sharedMemory.loggedUser?.connectionUserIds?[response.connection.connectionID] = response.userID
