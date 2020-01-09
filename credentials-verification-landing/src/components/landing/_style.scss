@@ -1,0 +1,86 @@
+@import '../../css/general_styling';
+
+html {
+  scroll-behavior: smooth;
+}
+
+.LandingContainer {
+  .LandingHeader {
+    background: $white;
+    padding: 0 8em;
+    width: 100%;
+    height: 650px;
+    background-image: url('../../images/lading-bg.png');
+    background-position: bottom;
+    background-repeat: no-repeat;
+    background-size: cover;
+    @include breakpoint(md) {
+      padding: 0 2em;
+      height: auto;
+    }
+
+    .LadingHeaderContent {
+      display: flex;
+      align-items: center;
+      height: 400px;
+      @include breakpoint(sm) {
+        flex-direction: column;
+      }
+
+      .HeaderImages {
+        margin-top: 250px;
+        display: flex;
+        width: 55%;
+        justify-content: center;
+
+        img {
+          height: 650px;
+        }
+
+        @include breakpoint(md) {
+          width: 50%;
+          margin-top: 55px;
+
+          img {
+            width: 80%;
+            height: auto;
+          }
+        }
+        @include breakpoint(sm) {
+          display: none;
+        }
+      }
+
+      .HeaderText {
+        width: 45%;
+        padding: 10em 0 2em;
+
+        h1 {
+          @include secondary-text($large-title, $white);
+          line-height: 44px;
+          margin-bottom: 0.5em;
+        }
+
+        h3 {
+          @include primary-text($h1, $white);
+        }
+
+        @include breakpoint(md) {
+          width: 50%;
+          padding: 5em 0 2em;
+          h1 {
+            @include secondary-text($title, $white);
+          }
+          h3 {
+            @include primary-text($h2, $white);
+          }
+        }
+
+        @include breakpoint(sm) {
+          width: 100%;
+          padding: 2em 0;
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,138 @@
+// Colors
+$background: #f1f3f8;
+$surface: #fff;
+
+$primary-color: #ff2d3b;
+$primary-color-darker: #bf222c;
+$secondary-color: #202020;
+
+$success-color: #1ed69e;
+
+$black: #303034;
+$white: #fff;
+$dark-grey: #728099;
+$grey: #b3bec5;
+$medium-grey: #c5d0de;
+$light-grey: #F8F9F9;
+
+// Typographic Scale
+$large-title: 40px;
+$title: 32px;
+$subtitle: 18px;
+$h1: 24px;
+$h2: 18px;
+$h3: 16px;
+$button: 14px;
+$body: 14px;
+$label: 13px;
+$explain: 10px;
+
+// Shadow
+$shadow: 0 1px 6px rgba(147, 141, 158, 0.16), 0 2px 6px rgba(52, 53, 62, 0.16);
+
+@font-face {
+  font-family: 'Circular-bold';
+  src: url(../fonts/CircularStd-Bold.woff) format('woff');
+  font-weight: bold;
+}
+@font-face {
+  font-family: 'Circular-book';
+  src: url(../fonts/CircularStd-Book.woff) format('woff');
+}
+
+// Fonts
+
+@mixin primary-text($font-size, $font-color) {
+  margin: 0;
+  font-family: 'Circular-book';
+  font-size: $font-size;
+  @if $font-color {
+    color: $font-color;
+  }
+}
+
+@mixin secondary-text($font-size, $font-color) {
+  margin: 0;
+  font-family: 'Circular-bold';
+  font-size: $font-size;
+  @if $font-color {
+    color: $font-color;
+  }
+}
+
+@mixin body-text($font-size, $font-color, $font-weight) {
+  margin: 0;
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: $font-size;
+  font-weight: $font-weight;
+  @if $font-color {
+    color: $font-color;
+  }
+}
+
+@mixin letter-spacing() {
+  font-feature-settings: normal;
+  font-variant: normal;
+}
+
+// Container
+
+@mixin container() {
+  background: #fff;
+  box-shadow: 0 1px 6px rgba(147, 141, 158, 0.16), 0 2px 6px rgba(52, 53, 62, 0.28);
+  border-radius: 6px;
+  padding: 1em;
+}
+
+// Theme Colors
+
+@mixin input-style($border-color) {
+  outline: 0;
+  -webkit-box-shadow: none;
+  box-shadow: none;
+  border-color: $border-color;
+}
+
+@mixin tag-style($tag-bg, $font-size, $font-color, $font-weight) {
+  background: $tag-bg;
+  border-radius: 20px;
+  padding: 3px;
+  text-align: center;
+  p {
+    @include primary-text($font-size, $font-color, $font-weight);
+    text-transform: uppercase;
+  }
+}
+
+/* Remove controls from Safari and Chrome */
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Remove controls from Firefox */
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+// Responsive
+
+$screen-sm-min: 425px;
+$screen-md-min: 768px;
+$screen-lg-min: 1024px;
+
+@mixin breakpoint($media) {
+  @if $media == xs {
+    @media only screen and (max-width: $screen-xs-min) { @content; }
+  }
+    @else if $media == sm {
+    @media only screen and (max-width: $screen-sm-min) { @content; }
+  }
+  @else if $media == md {
+    @media only screen and (max-width: $screen-md-min) { @content; }
+  }
+  @else if $media == lg {
+    @media only screen and (max-width: $screen-lg-min) { @content; }
+  }
+}

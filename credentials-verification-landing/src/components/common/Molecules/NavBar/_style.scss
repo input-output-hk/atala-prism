@@ -1,0 +1,101 @@
+@import '../../../../css/general_styling';
+
+//Acá piso estilos de Antd del menú
+
+.ant-menu {
+  background-color: transparent;
+  color: $white;
+  border-bottom: transparent;
+  @include primary-text($body, $white);
+}
+
+.ant-menu-horizontal > .ant-menu-item:hover {
+  border-bottom: 2px solid transparent;
+}
+
+.ant-menu-horizontal > .ant-menu-submenu:hover,
+.ant-menu-horizontal > .ant-menu-submenu-open {
+  border-bottom: 2px solid transparent;
+}
+
+.ant-menu-horizontal > .ant-menu-item:hover,
+.ant-menu-horizontal > .ant-menu-submenu:hover,
+.ant-menu-horizontal > .ant-menu-item-active,
+.ant-menu-horizontal > .ant-menu-submenu-active,
+.ant-menu-horizontal > .ant-menu-item-open,
+.ant-menu-horizontal > .ant-menu-submenu-open,
+.ant-menu-horizontal > .ant-menu-item-selected,
+.ant-menu-horizontal > .ant-menu-submenu-selected .ant-submenu-item:active,
+.ant-menu-horizontal > .ant-menu-submenu-selected .ant-menu-item-active:hover,
+.ant-menu-horizontal > .ant-menu-submenu-selected .ant-menu-hidden.ant-menu-vertical:hover {
+  border-bottom: 2px solid $white;
+  color: $white;
+  font-weight: bold;
+}
+
+.ant-menu-submenu-popup {
+  background-color: transparent;
+}
+
+.ant-menu-vertical {
+  background-color: #373737 !important;
+}
+
+@media only screen and (max-width: 600px) {
+  .ulMain {
+    width: 24px;
+    background-image: url(../../../../images/icon-menu.svg);
+    background-repeat: no-repeat;
+    background-position: center center;
+  }
+  .ant-menu-submenu-title {
+    color: transparent;
+  }
+
+  .ant-menu-item:active,
+  .ant-menu-submenu-title:active {
+    background: transparent;
+  }
+
+  .ant-menu-submenu:hover {
+    color: $light-grey;
+  }
+
+  .ant-menu-item:hover,
+  .ant-menu-item-active,
+  .ant-menu:not(.ant-menu-inline) .ant-menu-submenu-open,
+  .ant-menu-submenu-active,
+  .ant-menu-submenu-title:hover {
+    color: transparent;
+    background: transparent;
+  }
+
+  .ant-menu-submenu .ant-menu .ant-menu-submenu-title:hover {
+    color: transparent;
+    background-color: $light-grey;
+    .ant-menu-submenu-arrow {
+      color: $background;
+    }
+  }
+  .ant-menu-submenu .ant-menu {
+    background-color: #373737;
+  }
+
+  .ant-menu:not(.ant-menu-horizontal) .ant-menu-item-selected {
+    background-color: $black;
+    color: $white;
+    font-weight: bold;
+  }
+
+  .ant-menu-horizontal > .ant-menu-item:hover,
+  .ant-menu-horizontal > .ant-menu-submenu:hover,
+  .ant-menu-horizontal > .ant-menu-item-active,
+  .ant-menu-horizontal > .ant-menu-submenu-active,
+  .ant-menu-horizontal > .ant-menu-item-open,
+  .ant-menu-horizontal > .ant-menu-submenu-open,
+  .ant-menu-horizontal > .ant-menu-item-selected,
+  .ant-menu-horizontal > .ant-menu-submenu-selected {
+    color: $white;
+    border-bottom: 1px solid transparent;
+  }
+}

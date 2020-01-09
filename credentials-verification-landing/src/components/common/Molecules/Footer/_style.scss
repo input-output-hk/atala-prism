@@ -1,0 +1,36 @@
+@import '../../../../css/general_styling';
+
+.Footer {
+  width: 100%;
+  padding: 2em;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: $secondary-color;
+
+  img {
+    height: 25px;
+  }
+
+  p {
+    @include secondary-text($body, $white);
+  }
+
+  @include breakpoint(md) {
+    p {
+      padding-left: 5em;
+    }
+  }
+
+  @include breakpoint(sm) {
+    flex-direction: column;
+    align-items: flex-start;
+
+    p {
+      padding-left: 0;
+    }
+    img {
+      margin-bottom: 1em;
+    }
+  }
+}

@@ -1,0 +1,37 @@
+@import './_general_styling.scss';
+
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: auto;
+  padding: 0;
+  width: 100vw;
+  overflow-x: hidden;
+  font-variant: normal;
+}
+
+button {
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  &:focus {
+    outline: none;
+  }
+}
+
+// Lines
+
+.lineSeparatorSide {
+  border: none;
+  border-right: 1px solid $medium-grey;
+  height: auto;
+}
+
+.lineSeparator {
+  border: none;
+  border-top: 1px solid $medium-grey;
+  height: auto;
+}

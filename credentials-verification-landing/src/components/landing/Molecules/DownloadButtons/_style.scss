@@ -1,0 +1,17 @@
+@import '../../../../css/general_styling';
+
+.DownloadButtons {
+  margin: 3em 0;
+
+  img {
+    width: 180px;
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  .DownloadButtons {
+    img {
+      width: 150px;
+    }
+  }
+}

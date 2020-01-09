@@ -1,0 +1,36 @@
+@import '../../../../css/general_styling';
+
+.FindCredential {
+  display: flex;
+  background: $light-grey;
+  padding: 5em;
+  justify-content: space-between;
+
+  @include breakpoint(md) {
+    flex-direction: column;
+    padding: 2em;
+  }
+
+  .TextContainer {
+    width: 15%;
+
+    @include breakpoint(md) {
+      width: 100%;
+    }
+
+    h1 {
+      @include secondary-text($title, $secondary-color);
+      line-height: 36px;
+      margin-bottom: 1em;
+    }
+  }
+  .FindCredentialContainer {
+    width: 80%;
+    justify-content: center;
+    display: flex;
+    @include breakpoint(md) {
+      width: 100%;
+      margin-top: 2em;
+    }
+  }
+}
