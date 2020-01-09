@@ -103,7 +103,3 @@ variable web_port {
 variable web_docker_image {
   description = "Docker image for the credentials manager web app."
 }
-
-variable postgres_password {
-  description = "The password for the postgres user in the database. Should be stored in ~/.secrets.tfvars or in environment variable TF_VAR_postgres_password."
-}
