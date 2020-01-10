@@ -6,8 +6,9 @@ import Connections from './Connections';
 import Logger from '../../helpers/Logger';
 import { HOLDER_PAGE_SIZE } from '../../helpers/constants';
 import { withApi } from '../providers/withApi';
+import { withRedirector } from '../providers/withRedirector';
 
-const ConnectionsContainer = ({ api }) => {
+const ConnectionsContainer = ({ api, redirector: { redirectToBulkImport } }) => {
   const { t } = useTranslation();
 
   // These are the values used to filter the holders/subjects
@@ -86,6 +87,7 @@ const ConnectionsContainer = ({ api }) => {
       filterProps={filterProps}
       inviteHolder={inviteHolder}
       isIssuer={api.isIssuer}
+      redirectToBulkImport={redirectToBulkImport}
     />
   );
 };
@@ -94,4 +96,4 @@ ConnectionsContainer.propTypes = {
   api: PropTypes.shape().isRequired
 };
 
-export default withApi(ConnectionsContainer);
+export default withApi(withRedirector(ConnectionsContainer));

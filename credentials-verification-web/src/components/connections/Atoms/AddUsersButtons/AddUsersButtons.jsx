@@ -1,10 +1,11 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import PropTypes from 'prop-types';
 import { Icon } from 'antd';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
-import Logger from '../../../../helpers/Logger';
+import { withRedirector } from '../../../providers/withRedirector';
 
-const AddUsersButtons = () => {
+const AddUsersButtons = ({ redirector: { redirectToBulkImport, redirectToStudentCreation } }) => {
   const { t } = useTranslation();
 
   return (
@@ -12,7 +13,7 @@ const AddUsersButtons = () => {
       <CustomButton
         buttonProps={{
           className: 'theme-outline',
-          onClick: () => Logger.info('placeholder function')
+          onClick: redirectToBulkImport
         }}
         buttonText={t('connections.buttons.bulk')}
         icon={<Icon type="plus" />}
@@ -20,7 +21,7 @@ const AddUsersButtons = () => {
       <CustomButton
         buttonProps={{
           className: 'theme-secondary',
-          onClick: () => Logger.info('placeholder function')
+          onClick: redirectToStudentCreation
         }}
         buttonText={t('connections.buttons.manual')}
         icon={<Icon type="plus" />}
@@ -29,4 +30,11 @@ const AddUsersButtons = () => {
   );
 };
 
-export default AddUsersButtons;
+AddUsersButtons.propTypes = {
+  redirector: PropTypes.shape({
+    redirectToBulkImport: PropTypes.func,
+    redirectToStudentCreation: PropTypes.func
+  }).isRequired
+};
+
+export default withRedirector(AddUsersButtons);

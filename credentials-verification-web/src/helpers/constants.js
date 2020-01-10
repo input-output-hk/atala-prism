@@ -77,3 +77,7 @@ export const translateStatus = status => WalletStatuses[status];
 
 // Connection status
 export const CONNECTION_ACCEPTED = 2;
+
+// Import connections steps
+export const DOWNLOAD_STEP = 0;
+export const UPLOAD_STEP = 1;

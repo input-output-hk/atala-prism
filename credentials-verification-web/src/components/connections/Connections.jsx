@@ -8,14 +8,13 @@ import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 import EmptyComponent from '../common/Atoms/EmptyComponent/EmptyComponent';
 import noConnections from '../../images/noConnections.svg';
 import QRModal from '../common/Organisms/Modals/QRModal/QRModal';
-import Logger from '../../helpers/Logger';
 import AddUserButtons from './Atoms/AddUsersButtons/AddUsersButtons';
 import { drawerWidth } from '../../helpers/constants';
 import CredentialListDetail from '../common/Organisms/Detail/CredentialListDetail';
 
 import './_style.scss';
 
-const Connections = ({ tableProps, filterProps, inviteHolder, isIssuer }) => {
+const Connections = ({ redirectToBulkImport, tableProps, filterProps, inviteHolder, isIssuer }) => {
   const { t } = useTranslation();
 
   const [connectionToken, setConnectionToken] = useState('');
@@ -81,7 +80,7 @@ const Connections = ({ tableProps, filterProps, inviteHolder, isIssuer }) => {
           <CustomButton
             buttonProps={{
               className: 'theme-secondary',
-              onClick: () => Logger.info('Tried to add a connection')
+              onClick: redirectToBulkImport
             }}
             buttonText={t('connections.buttons.newConnection')}
           />
@@ -136,7 +135,8 @@ Connections.propTypes = {
     setStatus: PropTypes.func.isRequired
   }).isRequired,
   inviteHolder: PropTypes.func.isRequired,
-  isIssuer: PropTypes.func.isRequired
+  isIssuer: PropTypes.func.isRequired,
+  redirectToBulkImport: PropTypes.func.isRequired
 };
 
 export default Connections;

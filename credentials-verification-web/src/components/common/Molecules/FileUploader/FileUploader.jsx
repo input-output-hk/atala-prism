@@ -6,7 +6,16 @@ import CustomButton from '../../Atoms/CustomButton/CustomButton';
 
 import './_style.scss';
 
-const FileUploader = ({ hint, field, accept, savePicture, uploadText, formRef, initialValue }) => {
+const FileUploader = ({
+  hint,
+  field,
+  accept,
+  savePicture,
+  uploadText,
+  formRef,
+  initialValue,
+  disabled
+}) => {
   const { t } = useTranslation();
   const [fileList, setFileList] = useState(initialValue ? [initialValue] : []);
 
@@ -45,7 +54,7 @@ const FileUploader = ({ hint, field, accept, savePicture, uploadText, formRef, i
           <div />
         ) : (
           <CustomButton
-            buttonProps={{ className: 'theme-outline' }}
+            buttonProps={{ className: 'theme-outline', disabled }}
             buttonText={t(uploadText)}
             icon={<Icon type="upload" />}
           />
@@ -58,7 +67,8 @@ const FileUploader = ({ hint, field, accept, savePicture, uploadText, formRef, i
 FileUploader.defaultProps = {
   hint: '',
   accept: undefined,
-  initialValue: null
+  initialValue: null,
+  disabled: false
 };
 
 FileUploader.propTypes = {
@@ -69,7 +79,8 @@ FileUploader.propTypes = {
   uploadText: PropTypes.string.isRequired,
   formRef: PropTypes.oneOfType([PropTypes.func, PropTypes.shape({ current: PropTypes.object })])
     .isRequired,
-  initialValue: PropTypes.shape()
+  initialValue: PropTypes.shape(),
+  disabled: PropTypes.bool
 };
 
 export default FileUploader;
