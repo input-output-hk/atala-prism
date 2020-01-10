@@ -460,6 +460,19 @@
       "delete": "Delete Individual"
     }
   },
+  "bulkImport": {
+    "title": "Import Connections",
+    "download": {
+      "title": "Download Spreadsheet",
+      "info": "To import users you have to download this template spreadsheet, complete and upload it",
+      "buttonText": "Download"
+    },
+    "upload": {
+      "title": "Upload Spreadsheet",
+      "info": "Upload your Excel document with the new users",
+      "buttonText": "Upload"
+    }
+  },
   "errors": {
     "routeDidNotMatch": "The route {{pathnameToShow}} did not match any page",
     "errorGetting": "An error occurred while getting {{model}}",
@@ -484,6 +497,7 @@
     "invalidSettings": "If the student pays for the credential an amount must be entered",
     "invalidPassword": "The entered password doesn't match the wallet one",
     "noWallet": "The wallet must be running to login",
-    "logout": "The logout could not be completed"
+    "logout": "The logout could not be completed",
+    "spreadsheetUpload": "The spreadsheet upload failed"
   }
 }

@@ -14,6 +14,7 @@ import Payment from './payments/PaymentContainer';
 import Settings from './settings/SettingsContainer';
 import IndividualCreation from './individualCreation/IndividualCreationContainer';
 import StudentCreation from './studentCreation/StudentCreationContainer';
+import BulkImport from './bulkImport/BulkImportContainer';
 import { withSideBar } from './providers/withSideBar';
 import { ISSUER, VERIFIER } from '../helpers/constants';
 import { withLoggedValidation } from './providers/withLoggedValidation';
@@ -101,6 +102,12 @@ const studentCreation = {
   key: 'studentCreation',
   component: withLoggedValidation(withSideBar(StudentCreation), issuer)
 };
+const bulkImport = {
+  exact: true,
+  path: '/bulkImport',
+  key: 'bulkImport',
+  component: withLoggedValidation(withSideBar(BulkImport), allRoles)
+};
 
 const routes = [
   loginRoute,
@@ -115,6 +122,7 @@ const routes = [
   payment,
   individualCreation,
   studentCreation,
+  bulkImport,
   landingRoute,
   dashboardRoute
 ];

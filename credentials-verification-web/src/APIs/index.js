@@ -50,6 +50,17 @@ const generateConnectionToken = issuer => {
   return id => functionByRole(getRole(issuer), id);
 };
 
+// TODO when the bulk imports really exist replace this mocked promise
+const mockApiCall = file => new Promise(resolve => resolve(file));
+const importStudentBulk = mockApiCall;
+const importIndividualBulk = mockApiCall;
+
+const importBulk = (issuer, fileWithBulk) => {
+  const functionByRole = issuer ? importStudentBulk : importIndividualBulk;
+
+  return functionByRole(fileWithBulk);
+};
+
 export const api = {
   // These are the mocked apis that will be hardcoded
   // in the alpha version
@@ -72,7 +83,8 @@ export const api = {
   registerUser,
   getIndividuals,
   createIndividual,
-  createStudent
+  createStudent,
+  importBulk
 };
 
 export const hardcodedApi = {

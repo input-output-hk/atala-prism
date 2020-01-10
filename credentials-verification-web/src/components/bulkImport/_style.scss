@@ -1,0 +1,16 @@
+@import '../../css/general_styling';
+
+.BulkImportContent {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .ant-col {
+    margin: 7px;
+  }
+}
+
+.FooterButton {
+  display: flex;
+  justify-content: flex-end;
+}

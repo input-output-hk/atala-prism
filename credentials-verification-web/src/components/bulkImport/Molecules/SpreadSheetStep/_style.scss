@@ -1,0 +1,49 @@
+@import '../../../../css/general_styling';
+
+.StepCard {
+  width: 100%;
+  background-color: white;
+  position: relative;
+  justify-content: center;
+  padding: 3em;
+}
+
+.IsSelected {
+  border-style: solid;
+  border-color: $primary-color;
+  border-radius: 1px;
+
+  .ant-avatar-circle {
+    color: '#FF2D3B';
+    background-color: white;
+    border-color: '#FF2D3B';
+    border-radius: '6px';
+    border-style: solid;
+  }
+
+  h1 {
+    @include secondary-text($h1, $secondary-color);
+    @include letter-spacing();
+  }
+
+  p {
+    @include primary-text($body, $secondary-color);
+    @include letter-spacing();
+  }
+}
+
+.NotSelected {
+  .ant-avatar-circle {
+    visibility: hidden;
+  }
+
+  h1 {
+    @include secondary-text($h1, $secondary-color-disabled);
+    @include letter-spacing();
+  }
+
+  p {
+    @include primary-text($body, $secondary-color-disabled);
+    @include letter-spacing();
+  }
+}
