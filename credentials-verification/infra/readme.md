@@ -105,6 +105,12 @@ resources on AWS and you will have to find and delete them manually.
 
 TODO: Store terraform state for the VPC build in S3. Currently this still uses local state storage.
 
+### Automatic environment builds
+Circleci will create docker images and an AWS environment for pushes to branches with names matching `develop`, `infra*` and `test*`.
+For any other branch name, it will do nothing infra related (no docker images, no AWS env).
+If you want to test a story on AWS, before merging to develop, you should merge your changes into branch `infra1` and push. 
+If somebody else is already working with `infra1`, use branch `infra2`, etc. The same is true for any branch named `test*`.
+
 ### Reminder
 Environments on AWS cost money. Avoid creating loads of environments then forgetting about them and,
 if you create an environment and are not going to be using it for more than a few days, then
