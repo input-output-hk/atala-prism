@@ -1,4 +1,5 @@
 {
+  "atalaLogo": "Atala Logo",
   "actions": {
     "ok": "OK",
     "cancel": "Cancel",
@@ -105,6 +106,65 @@
     "status": {
       "PENDING_CONNECTION": "Pending Connection",
       "CONNECTED": "Connected"
+    }
+  },
+  "navBar": {
+    "menuItems": {
+      "features": "Features",
+      "credentials": "Credentials",
+      "download": "Download"
+    }
+  },
+  "landing": {
+    "start": {
+      "info": "Digital universities degrees powered by Blockchain",
+      "subtitle": "Carry and share your credentials inside your digital wallet."
+    },
+    "downloadAndroidAlt": "Download Android",
+    "intro": {
+      "question": "What is Atala Prism?",
+      "explanation": "Digital wallet and credentials verification platform. All in one.",
+      "itemIcon": {
+        "credentials": {
+          "title": "Credentials",
+          "text": "It is a long established fact that a reader will be distracted by the readable content of a page."
+        },
+        "wallet": {
+          "title": "Wallet",
+          "text": "It is a long established fact that a reader will be distracted by the readable content of a page."
+        },
+        "crypto": {
+          "title": "Crypto",
+          "text": "It is a long established fact that a reader will be distracted by the readable content of a page."
+        }
+      }
+    },
+    "credential": {
+      "credentialAlt": "Credential Example that shows a credential with filled info (degree, student and university name, award and dates of start and graduation)",
+      "iconAlt": "Credential Icon",
+      "title": "Lorem Ipsum is simply printing text.",
+      "subtitle1": "It is a long established fact that a reader will be distracted by the readable content of ",
+      "subtitle2": "a page."
+    },
+    "findCredential": {
+      "title": "Find a Credential",
+      "arrowAlt": "Arrow Right",
+      "credentialAlt": "Man smiling",
+      "cardTitle": "Find a Credential",
+      "cardSubtitle1": "It is a long established fact that a reader will be distracted by the readable content of ",
+      "cardSubtitle2": "a page.",
+      "warning": "You will be ask for some personal data",
+      "askForCredential": "Ask for Credential"
+    },
+    "trust": {
+      "trustName": "Trust 1",
+      "info": "It is a long established fact that a reader will be distracted by the readable content of a page.",
+      "predownloadText": "Lorem Ipsum is simply dummy text of the printing texto simulado.",
+      "mobile": "Mobile phones with screens of the mobile app"
+    },
+    "trademark": {
+      "part1": "© Copyright 2019, ATALA. All Rights Reserved. ATALA Prism is a registered trademarke of ",
+      "part2": "IOHK."
     }
   },
   "credentials": {
@@ -269,12 +329,6 @@
     },
     "checkInfo": "Check the data below"
   },
-  "landing": {
-    "welcome": "Welcome",
-    "register": "Register",
-    "login": "Login",
-    "logoAlt": "Atala landing picture"
-  },
   "login": {
     "welcome": {
       "title": "Hey!",
@@ -427,6 +481,53 @@
   "credentialDetail": {
     "type": "Credential"
   },
+  "credential": {
+    "backHome": "Back Home",
+    "createdCredential": {
+      "title": "This is your Credential!"
+    },
+    "errors": {
+      "studentCreation": "The student could not be created",
+      "creationAndIssuing": "The credential could not be created or issued",
+      "connectionWaiting": "A connection error happened, please refresh this page and start anew"
+    },
+    "personalInformation": {
+      "title": "Personal Information",
+      "explanation": "Please fill in the following information that will be displayed in your credential. You will not be able to change this once the credential is issued.",
+      "askForCredential": "Ask for Credential",
+      "form": {
+        "name": "Name",
+        "lastName": "Last Name",
+        "universityName": "University Name",
+        "degreeName": "Degree Name",
+        "award": "Award",
+        "startDate": "Start Date",
+        "graduationDate": "Graduation Date"
+      }
+    },
+    "finishInfo": {
+      "title": "Check your phone!",
+      "explanation": "You will receive you Credential on Atala Prism App Dashboard.",
+      "finishedIconAlt": "Cellphone with Credential",
+      "howToSee": "Open Atala Prism App and check your Dashboard to see your",
+      "whatToSee": " New Credential",
+      "finished": "Got it! It's done!"
+    },
+    "QRCard": {
+      "noAppYet": "You don't have the application?",
+      "downloadIt": "Download it from your store",
+      "appStoreLogo": "App Store Logo",
+      "googlePlayLogo": "Google Play Logo"
+    },
+    "scanQRInfo": {
+      "title": "Scan QR Code",
+      "explanation": "Scan this QR to start a connection between you and this Issuer.",
+      "step1": "Open Atala Prism on your phone.",
+      "step2": "Touch Connections in the Main Menu.",
+      "step3": "When the camera is activated, point your phone towards this screen to scan the code",
+      "scannedQR": "I scanned the QR!"
+    }
+  },
   "errors": {
     "routeDidNotMatch": "The route {{pathnameToShow}} did not match any page",
     "errorGetting": "An error occurred while getting {{model}}",
@@ -451,6 +552,8 @@
     "invalidSettings": "If the student pays for the credential an amount must be entered",
     "invalidPassword": "The entered password doesn't match the wallet one",
     "noWallet": "The wallet must be running to login",
-    "logout": "The logout could not be completed"
+    "logout": "The logout could not be completed",
+    "futureError": "The date must be earlier than today",
+    "pastError": "The graduation date must be later than the start date"
   }
 }

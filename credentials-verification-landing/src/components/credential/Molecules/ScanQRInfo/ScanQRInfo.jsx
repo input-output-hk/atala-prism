@@ -19,10 +19,6 @@ const ScanQRInfo = ({ nextStep }) => {
         <label>{t('credential.scanQRInfo.explanation')}</label>
       </Row>
       <ScanQRSteps />
-      <CustomButton
-        buttonProps={{ onClick: nextStep, className: 'theme-secondary' }}
-        buttonText={t('credential.scanQRInfo.scannedQR')}
-      />
     </div>
   );
 };
