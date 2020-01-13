@@ -1,0 +1,24 @@
+@import '../../../../css/general_styling';
+
+.IntroItem {
+  display: flex;
+  flex-direction: column;
+  width: 25%;
+
+  @include breakpoint(sm) {
+    width: 100%;
+    margin-bottom: 2em;
+  }
+
+  img {
+    margin-bottom: 1.5em;
+  }
+
+  h2 {
+    @include secondary-text($h2, $secondary-color);
+  }
+
+  p {
+    @include primary-text($body, $dark-grey);
+  }
+}

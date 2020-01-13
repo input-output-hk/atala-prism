@@ -1,0 +1,456 @@
+{
+  "actions": {
+    "ok": "OK",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "view": "View",
+    "back": "Back",
+    "next": "Next",
+    "saveForLater": "Save & Continue later"
+  },
+  "generic": {
+    "step": "Step {{step}}"
+  },
+  "home": {
+    "centralText": {
+      "edit": "Edit ",
+      "filePath": "src/App.js",
+      "toReload": " and save to reload."
+    },
+    "learnReact": "Learn React"
+  },
+  "connections": {
+    "title": "Connections",
+    "status": {
+      "issuer": {
+        "invitationMissing":  "Pending",
+        "connectionMissing": "Connection Missing",
+        "connectionAccepted":  "Connection Accepted",
+        "connectionRevoked": "Connection Revoked"
+      },
+      "verifier": {
+        "created": "Created",
+        "invited": "Invited",
+        "connected": "Connected",
+        "revoked": "Revoked"
+      }
+    },
+    "filters": {
+      "identityNumber": "Identity Number",
+      "name": "Name",
+      "status": "Status"
+    },
+    "buttons": {
+      "bulk": "Bulk Import",
+      "manual": "Add users manually",
+      "newConnection": "New Connection"
+    },
+    "table": {
+      "columns": {
+        "studentname": "Student Name",
+        "admissionDate": "Admission Date",
+        "email": "Email",
+        "invite": "Invite",
+        "delete": "Delete",
+        "view": "View",
+        "viewCredentials": "View Credentials"
+      }
+    },
+    "noConnections": {
+      "photoAlt": "No Connections",
+      "title": "You don't have Holders yet",
+      "subtitle": "You can start adding them by clicking the button bellow"
+    },
+    "inviteSuccessfull": "The Holder has been successfully invited",
+    "modal": {
+      "title": "Scan to get connection token"
+    },
+    "detail": {
+      "title": "Credentials List"
+    }
+  },
+  "groups": {
+    "title": "Groups",
+    "noGroups": {
+      "photoAlt": "No groups yet",
+      "title": "You don't have Groups yet",
+      "subtitle": "Click on create new group to add your first one!"
+    },
+    "filters": {
+      "date": "Date",
+      "search": "Search"
+    },
+    "createNewGroup": "Create New Group",
+    "onCreateNewGroupClick": "New Groups can not yet be created",
+    "modal": {
+      "title": "Delete Grop",
+      "text": "Are you sure you want to delete the {{groupName}} group?"
+    },
+    "table": {
+      "columns": {
+        "groupName": "Group Name",
+        "lastUpdate": "Last Update",
+        "credential": "Credential"
+      },
+      "buttons": {
+        "addCredential": "Add Credentials",
+        "delete": "Delete",
+        "copy": "Copy",
+        "view": "View"
+      }
+    },
+    "deletionSuccess": "The group {{groupName}} was successfully deleted"
+  },
+  "holders": {
+    "status": {
+      "PENDING_CONNECTION": "Pending Connection",
+      "CONNECTED": "Connected"
+    }
+  },
+  "credentials": {
+    "title": "Credentials",
+    "sendCredentials": "Send Credentials",
+    "successfullyIssued": "The Credential has been successfully issued",
+    "student": {
+      "title": "Student",
+      "alt": "Student image",
+      "table": {
+        "columns": {
+          "student": "Student"
+        }
+      }
+    },
+    "actions": {
+      "createCredential": "Create Credential"
+    },
+    "noCredentials": {
+      "photoAlt": "No Credentials",
+      "title": "You don't have Credentials yet",
+      "subtitle": "You can start adding them by clicking the button bellow"
+    },
+    "filters": {
+      "ID": "ID",
+      "credentialType": "Credential",
+      "category": "Category",
+      "group": "Group",
+      "date": "Date",
+      "name": "Search",
+      "types": {
+        "credentialType": {
+          "CREDENTIAL1": "CREDENTIAL1",
+          "CREDENTIAL2": "CREDENTIAL2",
+          "CREDENTIAL3": "CREDENTIAL3"
+        },
+        "category": {
+          "CATEGORY1": "CATEGORY1",
+          "CATEGORY2": "CATEGORY2",
+          "CATEGORY3": "CATEGORY3"
+        },
+        "group": {
+          "GROUP1": "GROUP1",
+          "GROUP2": "GROUP2",
+          "GROUP3": "GROUP3"
+        }
+      },
+      "clearFilters": "Clear Filters"
+    },
+    "table": {
+      "columns": {
+        "studentname": "Student Name",
+        "admissionDate": "Admission Date",
+        "groupAssigned": "Group Assigned"
+      }
+    },
+    "detail": {
+      "title": "Credential Detail",
+      "noStudent": "You can't view the details of a credential that doesn't have a student",
+      "delete": "Delete",
+      "resend": "Resend",
+      "verify": "Verify",
+      "notarizationTitle": "Blockchain Notarization",
+      "hashTitle": "Tx Hash",
+      "notarizationDate": "Upload Date",
+      "downloadButton": "Download Credential"
+
+    }
+  },
+  "credentialSummary": {
+    "title": "Credential Summaries",
+    "noCredentialSummaries": {
+      "photoAlt": "No Credential Summaries yet",
+      "title": "You don't have Credential Summaries yet"
+    },
+    "filters": {
+      "date": "Date",
+      "search": "Search"
+    },
+    "modal": {
+      "title": "Delete Credential Summary?",
+      "text": "Are you sure you want to delete the credential summary with {{name}}?"
+    },
+    "table": {
+      "columns": {
+        "name": "Name",
+        "date": "Date",
+        "totalCredentials": "Total Credentials",
+        "type": "Credential",
+        "email": "Email"
+      },
+      "buttons": {
+        "delete": "Delete",
+        "view": "View"
+      }
+    },
+    "detail": {
+      "title": "Credential Summary Detail",
+      "transactions": "Transaction History",
+      "proofRequest": "Proof Request",
+      "newCredential": "New Credential",
+      "iconAlt": "Avatar",
+      "credentialsType": {
+        "bachelorsDegree":  "Bachelor's Degree"
+      }
+    },
+    "deletionSuccess": "The credential summary {{name}} was successfully deleted"
+  },
+  "newCredential": {
+    "title": "New Credential",
+    "subtitle": "Let's create a New Credential. Here are some key things to do.",
+    "steps": {
+      "step1": "Create Credential Template",
+      "step2": "Asign Recipients Group",
+      "step3": "Check and Confirm Credential"
+    },
+    "table": {
+      "columns": {
+        "identityNumber": "Identity Number",
+        "date": "Date",
+        "groupAssigned": "Group Assigned",
+        "degreeName": "Degree Name",
+        "universityName": "University Name",
+        "award": "Award",
+        "fullName": "Full Name",
+        "startDate": "Start Date",
+        "graduationDate": "Graduation Date"
+      }
+    },
+    "modal": {
+      "saveForLaterCancel": "Cancel",
+      "saveForLaterConfirm": "Save",
+      "title": "New Credential",
+      "subtitle": "Are you sure you want to save and continue later?",
+      "saveCredentials": "Save Credential",
+      "saveSuccess": "Draft successfully saved"
+    },
+    "form": {
+      "errors": {
+        "emptyField": "This field is mandatory",
+        "futureError": "The date must be earlier than today",
+        "pastError": "The graduation date must be later than the start date",
+        "atLeastOneLogo": "You must upload one logo",
+        "noGroupSelected": "You must select a group before continuing"
+      },
+      "degreeName": "Degree Name",
+      "award": "Award",
+      "startDate": "Start Date",
+      "graduationDate": "Graduation Date",
+      "logoUniversity": "University Logo",
+      "logo": "Logo",
+      "logoHint": "Recommended Image Size: 80x80px. Format: PNG or JPG.",
+      "uploadButton": "Upload logo"
+    },
+    "save": "Create Credentials",
+    "savingSuccess": "Credential successfully save",
+    "groups": {
+      "title": "Select a Group"
+    },
+    "validation": {
+      "title": "Check the data below"
+    },
+    "checkInfo": "Check the data below"
+  },
+  "landing": {
+    "welcome": "Welcome",
+    "register": "Register",
+    "login": "Login",
+    "logoAlt": "Atala landing picture"
+  },
+  "login": {
+    "welcome": {
+      "title": "Hey!",
+      "subtitle": "Welcome back"
+    },
+    "form": {
+      "password": "Password",
+      "emptyPassword": "You must enter your password"
+    },
+    "forgotPassword": "Forgot Password?",
+    "goToForgotPassword": "Click here!",
+    "submit": "Login",
+    "logoAlt": "Atala login picture"
+  },
+  "registration": {
+    "termsAndConditions": "Terms and Conditions",
+    "privacyPolicy": "Privacy Policy Agreement",
+    "seedPhrase": "Seed Phrase responsibility",
+    "errorGetting": "Error getting {{document}}",
+    "acceptSeedPhraseToContinue": "You must check that you understand the importance of the seed phrase to continue",
+    "lastUpdated": "Last Updated",
+    "back": "Back",
+    "next": "Next",
+    "nextAndAgree": "Agree and Continue",
+    "cancel": "Cancel",
+    "accept": "Accept ",
+    "alt": "Wallet Image",
+    "downloadWallet": {
+      "title": "Download LocalWallet",
+      "subtitle": "Download and execute this file to create the wallet that will allow you to access and operate Atala",
+      "action": "Download File"
+    },
+    "password": {
+      "title": "Create your Password",
+      "begin": "Let's begin!",
+      "info": "You must create a password which will encrypt the data in your local wallet",
+      "passwordInput": "Password",
+      "passwordConfirmation": "Confirm Password",
+      "passwordMissmatch": "The passwords must match",
+      "invalidPassword": {
+        "initial": "The password must have",
+        "and": "and",
+        "number": "at least 1 number",
+        "lowercase": "at least 1 lower case",
+        "uppercase": "at least 1 upper case",
+        "minlength": "at least 8 characters",
+        "nospaces": "no blank spaces"
+      }
+    },
+    "mnemonic": {
+      "title": "Your Seed Phrase...",
+      "explanation": "Your seed phrase is your personal key that gives you access yo your account. Without it you will not be able to access any of your records or funds in case you lose your device or quite the app.",
+      "request": "Please store your seed phrase securely before proceeding.",
+      "warning": "I understand that if I lose my seed phrase I will not be able to access my account.",
+      "word": "Word",
+      "validation": {
+        "title": "Verify Seed Phrase",
+        "subtitle": "Enter the correct words of your seed phrase bellow.",
+        "verify": "Verify",
+        "success": "Seed Phrase Verified",
+        "failure": "Seed Phrase Incorrect",
+        "validationRequired": "You must verify the words to continue",
+        "wordMissmatch": "The written word doesn't match the one of the Seed Phrase"
+      }
+    },
+    "organizationInfo": {
+      "title": "We need some data...",
+      "comment": "You are almost done!",
+      "subtitle": "Please enter your Organization info so you can start using the application.",
+      "name": "Organization Name",
+      "role": "Organization Role",
+      "defaultRole": "Please select a role",
+      "invalidRole": "Please select a valid role",
+      "ISSUER": "Issuer",
+      "VERIFIER": "Verifier"
+    },
+    "congratulations": {
+      "alt": "Congratulations Image",
+      "title": "Congrats!",
+      "subtitle": "Your accoount has been created",
+      "info": "Login to Atala using your password. Remember to have your local wallet running in the computer.",
+      "login": "Login"
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": {
+      "title": "Welcome back!",
+      "image": "Welcome",
+      "subtitle": "This is a placeholder with info that is important for the logged user."
+    },
+    "bundle": {
+      "noBundle": "No bundle yet",
+      "title": "Current Bundle",
+      "remaining": "Remaining",
+      "total": "Total connections"
+    },
+    "summary": {
+      "month": "Month",
+      "week": "Week",
+      "year": "Year"
+    },
+    "transactionSummary": {
+      "title": "Transaction Summary",
+      "issuedCredentials": "Issued Credentials",
+      "proofRequests": "Proof Requests"
+    },
+    "connectionSummary": {
+      "title": "Connection Summary"
+    }
+  },
+  "payment": {
+    "title": "Payments List",
+    "payer": "Payer",
+    "filterBy": "Filter by {{field}}",
+    "fields": {
+      "from": "From",
+      "to": "To",
+      "payer": "Payer"
+    },
+    "table": {
+      "columns": {
+        "date": "Date",
+        "amount": "Amount",
+        "currency": "Currency",
+        "method": "Payment Method",
+        "name": "Name"
+      }
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "save": "Save",
+    "form": {
+      "option": {
+        "title": "Select option",
+        "studentPay": "Students pay for Credential Issuance"
+      },
+      "enterAmount": "Enter the amount",
+      "amount": "Amount"
+    },
+    "success": "Successfully updated the Settings"
+  },
+  "menu": {
+    "logout": "Log out"
+  },
+  "loading":{
+    "logoName": "Atala Logo"
+  },
+  "credentialDetail": {
+    "type": "Credential"
+  },
+  "errors": {
+    "routeDidNotMatch": "The route {{pathnameToShow}} did not match any page",
+    "errorGetting": "An error occurred while getting {{model}}",
+    "errorSaving": "An error occurred while saving, {{model}}",
+    "errorInvitingHolder": "An error occurred while inviting the holder",
+    "errorDeletingGroup": "An error occurred while deleting the group {{groupName}}",
+    "issueCredential": "Failed issuing the Credential",
+    "savePicture": {
+      "invalidType": "The file must be a JPG or a PNG",
+      "tooLarge": "The file is too large, the maximum size allowed is {{maxSize}}",
+      "uploadError": "An error ocurred while uploading the file"
+    },
+    "saveDraft": "Error while saving New Credential draft",
+    "emptyCredential": "Trying to save empty credential",
+    "invalidCredential": "The credential has invalid fields",
+    "walletNotRunning": "You must have your local wallet running to continue",
+    "errorDuringRegister": "An error ocurred while registering, please try again or contact the FAQs",
+    "form": {
+      "emptyField": "This field is mandatory"
+    },
+    "updateSettings": "An error ocurred while updating the settings",
+    "invalidSettings": "If the student pays for the credential an amount must be entered",
+    "invalidPassword": "The entered password doesn't match the wallet one",
+    "noWallet": "The wallet must be running to login",
+    "logout": "The logout could not be completed"
+  }
+}

@@ -1,0 +1,66 @@
+@import '../../../../css/general_styling';
+
+.TrustSection {
+  background: $primary-color;
+  width: 100%;
+
+  .MobilePhones {
+    margin-top: -325px;
+
+    @include breakpoint(md) {
+      width: 100%;
+      margin-top: 0;
+    }
+
+    @include breakpoint(sm) {
+      display: none;
+    }
+  }
+
+  .TrustItemContainer {
+    background: $light-grey;
+    -webkit-border-bottom-left-radius: 150px;
+    -moz-border-radius-bottomleft: 150px;
+    border-bottom-left-radius: 150px;
+    height: 300px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    padding-right: 200px;
+    padding-top: 5em;
+
+    @include breakpoint(md) {
+      padding: 4em 2em;
+      width: 100%;
+      align-items: center;
+    }
+  }
+
+  .DownloadContainer {
+    height: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    padding-right: 290px;
+    padding-top: 5em;
+
+    @include breakpoint(md) {
+      align-items: flex-start;
+      padding-right: 0;
+      padding-left: 350px;
+    }
+
+    @include breakpoint(sm) {
+      padding: 4em 2em;
+      width: 100%;
+      height: auto;
+      align-items: center;
+    }
+
+    h1 {
+      @include secondary-text($h1, $white);
+      line-height: 32px;
+      width: 360px;
+    }
+  }
+}

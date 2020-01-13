@@ -1,0 +1,49 @@
+@import '../../../../css/general_styling';
+
+.CredentialItem {
+  display: flex;
+  background: $white;
+  width: 70%;
+  border-radius: 4px;
+  box-shadow: $shadow;
+  padding: 2em;
+  align-items: flex-start;
+  border-left: 6px solid $primary-color;
+
+  @include breakpoint(md) {
+    width: 100%;
+  }
+
+  .CredentialImageContainer {
+    width: 30%;
+    display: flex;
+    justify-content: center;
+    margin-right: 2em;
+
+    @include breakpoint(sm) {
+      display: none;
+    }
+  }
+
+  .CredentialTextContainer {
+    width: 60%;
+    @include breakpoint(sm) {
+      width: 100%;
+    }
+    h2 {
+      @include secondary-text($h2, $secondary-color);
+    }
+
+    p {
+      @include primary-text($body, $secondary-color);
+    }
+
+    .LittleText {
+      @include primary-text($explain, $dark-grey);
+    }
+
+    button {
+      margin-top: 2em;
+    }
+  }
+}

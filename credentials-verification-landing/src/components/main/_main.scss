@@ -1,0 +1,73 @@
+@import '../../css/general_styling';
+
+.AppContainer {
+  display: flex;
+  flex-flow: column;
+  height: 100vh;
+  .MainContent {
+    display: flex;
+    height: 91%;
+    border-radius: 20px 20px 0 0;
+    overflow: hidden;
+    .MainContainer {
+      width: 97vw;
+      background: $white;
+      @include breakpoint(sm) {
+        width: 100vw;
+        overflow-y: auto;
+      }
+      .ContentHeader {
+        display: flex;
+        justify-content: space-between;
+        h1 {
+          @include secondary-text($h1, $secondary-color);
+        }
+      }
+
+      .FilterControls {
+        display: flex;
+        margin: 40px 0 20px;
+
+        .ant-select {
+          width: 100%;
+        }
+      }
+    }
+  }
+
+  .ControlButtons {
+    display: flex;
+
+    button {
+      margin-left: 1em;
+    }
+  }
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background: $dark-grey;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 5px $dark-grey;
+  border-radius: 20px;
+}
+
+.ant-table-body {
+  padding-bottom: 10px;
+
+  &::-webkit-scrollbar {
+    height: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: $dark-grey;
+    border-radius: 10px;
+  }
+  &::-webkit-scrollbar-track {
+    box-shadow: inset 0 0 5px $dark-grey;
+    border-radius: 20px;
+  }
+}

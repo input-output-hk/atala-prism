@@ -1,0 +1,63 @@
+@import '../../../../css/general_styling';
+
+.CredentialSection {
+  display: flex;
+  background: $white;
+  padding: 0 5em 10em;
+  justify-content: space-around;
+  align-items: center;
+  -webkit-border-bottom-left-radius: 150px;
+  -moz-border-radius-bottomleft: 150px;
+  border-bottom-left-radius: 150px;
+
+  @include breakpoint(md) {
+    padding: 0 2em 10em;
+    .ImageContainer {
+      width: 50%;
+      img {
+        width: 100%;
+      }
+    }
+  }
+
+  @include breakpoint(sm) {
+    flex-direction: column;
+    padding: 0 2em;
+
+    .ImageContainer {
+      width: 100%;
+      img {
+        width: 100%;
+      }
+    }
+  }
+
+  .TextContainer {
+    width: 35%;
+    padding: 2em 0;
+
+    img {
+      margin-bottom: 1em;
+    }
+
+    h1 {
+      @include secondary-text($title, $secondary-color);
+      line-height: 38px;
+      margin-bottom: 0.5em;
+    }
+
+    h3 {
+      @include primary-text($h3, $dark-grey);
+    }
+
+    @include breakpoint(md) {
+      h1 {
+        @include secondary-text($h1, $secondary-color);
+      }
+    }
+
+    @include breakpoint(sm) {
+      width: 100%;
+    }
+  }
+}
