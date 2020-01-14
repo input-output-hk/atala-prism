@@ -24,16 +24,7 @@ const NewGroupButton = () => {
   );
 };
 
-const Groups = ({
-  groups,
-  setDate,
-  setName,
-  handleGroupDeletion,
-  setGroup,
-  group,
-  updateGroups,
-  hasMore
-}) => {
+const Groups = ({ groups, handleGroupDeletion, setGroup, group, updateGroups, hasMore }) => {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [groupToDelete, setGroupToDelete] = useState({});
@@ -71,16 +62,14 @@ const Groups = ({
         <h1>{t('groups.title')}</h1>
         {!setGroup && <NewGroupButton />}
       </div>
-      <GroupFilters changeDate={setDate} changeFilter={setName} />
+      <GroupFilters updateGroups={updateGroups} />
       <Row>
         {groups.length ? (
           <GroupsTable {...tableProps} />
         ) : (
           <EmptyComponent
             photoSrc={noGroups}
-            photoAlias="groups.noGroups.photoAlt"
-            title="groups.noGroups.title"
-            subtitle="groups.noGroups.subtitle"
+            model={t('groups.title')}
             button={<NewGroupButton />}
           />
         )}

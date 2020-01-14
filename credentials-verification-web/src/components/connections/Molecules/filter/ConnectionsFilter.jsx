@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import PropTypes, { number } from 'prop-types';
 import { Row, Col, Input, Icon, Select } from 'antd';
@@ -6,15 +6,16 @@ import { PENDING_CONNECTION, CONNECTED } from '../../../../helpers/constants';
 
 import './_style.scss';
 
-const ConnectionsFilter = ({
-  identityNumber,
-  setIdentityNumber,
-  name: userName,
-  setName,
-  status,
-  setStatus
-}) => {
+const ConnectionsFilter = ({ fetchConnections }) => {
   const { t } = useTranslation();
+
+  const [identityNumber, setIdentityNumber] = useState('');
+  const [name, setName] = useState('');
+  const [status, setStatus] = useState(t(''));
+
+  useEffect(() => {
+    fetchConnections([], identityNumber, name, status);
+  }, [identityNumber, name, status]);
 
   const statuses = [PENDING_CONNECTION, CONNECTED];
 
@@ -37,7 +38,7 @@ const ConnectionsFilter = ({
             prefix={<Icon type="search" />}
             onChange={({ target: { value } }) => setName(value)}
             allowClear
-            value={userName}
+            value={name}
           />
         </Col>
         <Col span={8}>
@@ -55,19 +56,8 @@ const ConnectionsFilter = ({
   );
 };
 
-ConnectionsFilter.defaultProps = {
-  identityNumber: '',
-  name: '',
-  status: ''
-};
-
 ConnectionsFilter.propTypes = {
-  identityNumber: PropTypes.string,
-  setIdentityNumber: PropTypes.func.isRequired,
-  name: PropTypes.string,
-  setName: PropTypes.func.isRequired,
-  status: PropTypes.string,
-  setStatus: PropTypes.func.isRequired
+  fetchConnections: PropTypes.func.isRequired
 };
 
 export default ConnectionsFilter;

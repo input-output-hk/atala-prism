@@ -39,7 +39,7 @@ const getRole = issuer => {
 const getIndividuals = issuer => {
   const functionByRole = issuer ? getIndividualsAsIssuer : getIndividualsAsVerifier;
 
-  return (limit, lastSeenId) => functionByRole(getRole(issuer), limit, lastSeenId);
+  return (limit, lastSeenId) => functionByRole(getRole(issuer), lastSeenId, limit);
 };
 
 const generateConnectionToken = issuer => {
@@ -82,6 +82,7 @@ export const api = {
   getMessagesForConnection,
   registerUser,
   getIndividuals,
+  getIndividualsAsIssuer,
   createIndividual,
   createStudent,
   importBulk

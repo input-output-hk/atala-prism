@@ -1,29 +1,32 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import { DatePicker, Row, Col, Input, Icon, Select } from 'antd';
 import moment from 'moment';
 import CustomButton from '../../../../common/Atoms/CustomButton/CustomButton';
 
-const CredentialsFilter = ({
-  credentialId,
-  setCredentialId,
-  name,
-  setName,
-  credentialTypes,
-  credentialType,
-  setCredentialType,
-  categories,
-  category,
-  setCategory,
-  groups,
-  group,
-  setGroup,
-  date,
-  setDate,
-  clearFilters
-}) => {
+const CredentialsFilter = ({ fetchCredentials, credentialTypes, categories, groups }) => {
   const { t } = useTranslation();
+
+  const [credentialId, setCredentialId] = useState('');
+  const [name, setName] = useState('');
+  const [credentialType, setCredentialType] = useState('');
+  const [category, setCategory] = useState('');
+  const [group, setGroup] = useState('');
+  const [date, setDate] = useState('');
+
+  useEffect(() => {
+    fetchCredentials(false, [], credentialId, name, credentialType, category, group, date);
+  }, [credentialId, name, credentialType, category, group, date]);
+
+  const clearFilters = () => {
+    setCredentialId('');
+    setName('');
+    setCredentialType('');
+    setCategory('');
+    setGroup('');
+    setDate();
+  };
 
   const datePickerProps = {
     placeholder: t('credentials.filters.date'),
@@ -103,19 +106,16 @@ const CredentialsFilter = ({
 };
 
 CredentialsFilter.defaultProps = {
-  credentialId: '',
-  name: '',
-  credentialType: ''
+  credentialTypes: [],
+  categories: [],
+  groups: []
 };
 
 CredentialsFilter.propTypes = {
-  credentialId: PropTypes.string,
-  setCredentialId: PropTypes.func.isRequired,
-  name: PropTypes.string,
-  setName: PropTypes.func.isRequired,
-  credentialType: PropTypes.string,
-  setCredentialType: PropTypes.func.isRequired,
-  clearFilters: PropTypes.func.isRequired
+  fetchCredentials: PropTypes.func.isRequired,
+  credentialTypes: PropTypes.arrayOf(PropTypes.string),
+  categories: PropTypes.arrayOf(PropTypes.string),
+  groups: PropTypes.arrayOf(PropTypes.string)
 };
 
 export default CredentialsFilter;

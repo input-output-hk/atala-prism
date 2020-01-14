@@ -4,9 +4,9 @@ import { Col, Row } from 'antd';
 import moment from 'moment';
 import TemplateForm from '../TemplateForm/TemplateForm';
 import CredentialData from '../../../common/Atoms/CredentialData/CredentialSummaryData';
+import { dayMonthYearFormatter } from '../../../../helpers/formatters';
 
 import './_style.scss';
-import { toProtoDate } from '../../../../APIs/__mocks__/helpers';
 
 const NewCredentialCreation = ({
   savePicture,
@@ -17,8 +17,8 @@ const NewCredentialCreation = ({
 }) => {
   const { startDate, graduationDate } = credentialData;
 
-  const formattedStartDate = startDate && toProtoDate(moment(startDate));
-  const formattedGraduationDate = graduationDate && toProtoDate(moment(graduationDate));
+  const formattedStartDate = startDate && dayMonthYearFormatter(moment(startDate));
+  const formattedGraduationDate = graduationDate && dayMonthYearFormatter(moment(graduationDate));
 
   const formattedData = Object.assign({}, credentialData, {
     startDate: formattedStartDate,
@@ -43,13 +43,16 @@ const NewCredentialCreation = ({
 };
 
 NewCredentialCreation.defaultProps = {
-  credentialValues: {}
+  credentialValues: {},
+  credentialData: {}
 };
 
 NewCredentialCreation.propTypes = {
   savePicture: PropTypes.func.isRequired,
   formRef: PropTypes.shape().isRequired,
-  credentialValues: PropTypes.shape()
+  credentialValues: PropTypes.shape(),
+  credentialData: PropTypes.shape(),
+  updateExampleCredential: PropTypes.func.isRequired
 };
 
 export default NewCredentialCreation;

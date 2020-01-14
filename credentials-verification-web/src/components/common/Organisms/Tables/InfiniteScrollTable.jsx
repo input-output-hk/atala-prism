@@ -23,10 +23,11 @@ const InfiniteScrollTable = ({
       if (hasMore && !loading && scrollTop === maxScroll) getMoreData();
     };
 
+    tableContent.removeEventListener('scroll', scrollListener);
     tableContent.addEventListener('scroll', scrollListener);
 
     return () => tableContent.removeEventListener('scroll', scrollListener);
-  }, []);
+  }, [hasMore, loading]);
 
   return (
     <div className={handleSort ? '' : 'PaginatedTable'}>

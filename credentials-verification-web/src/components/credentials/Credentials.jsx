@@ -4,25 +4,30 @@ import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import CredentialsFilter from './Molecules/Filters/CredentialsFilter/CredentialsFilter';
 import CredentialsTable from './Organisms/Tables/CredentialsTable/CredentialsTable';
-import { credentials, categories, groups } from '../../APIs/__mocks__/credentials';
 import EmptyComponent from '../common/Atoms/EmptyComponent/EmptyComponent';
-import noCredentials from '../../images/noCredentials.svg';
-import CredentialButtons from './Atoms/Buttons/CredentialButtons';
 import CredentialSummaryDetail from '../common/Organisms/Detail/CredentialSummaryDetail';
+import noCredentialsPicture from '../../images/noCredentials.svg';
+import CredentialButtons from './Atoms/Buttons/CredentialButtons';
+import { subjectShape } from '../../helpers/propShapes';
 import { shortBackendDateFormatter } from '../../helpers/formatters';
 
 import './_style.scss';
 
-const Credentials = ({ tableProps, filterProps }) => {
+const Credentials = ({ showEmpty, tableProps, filterProps, noCredentials, fetchCredentials }) => {
   const { t } = useTranslation();
   const [currentCredential, setCurrentCredential] = useState({});
   const [showDrawer, setShowDrawer] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const getMoreData = () => {
+    setLoading(true);
+    return fetchCredentials().finally(() => setLoading(false));
+  };
 
   const emptyProps = {
-    photoSrc: noCredentials,
-    photoAlt: t('credentials.noCredentials.photoAlt'),
-    title: t('credentials.noCredentials.title'),
-    subtitle: t('credentials.noCredentials.subtitle'),
+    photoSrc: noCredentialsPicture,
+    model: t('credentials.title'),
+    isFilter: noCredentials,
     button: <CredentialButtons />
   };
 
@@ -42,6 +47,7 @@ const Credentials = ({ tableProps, filterProps }) => {
   };
 
   const expandedTableProps = Object.assign({}, tableProps, { onView: showCredentialData });
+  const renderEmptyComponent = !tableProps.credentials.length || noCredentials;
 
   return (
     <div className="Wrapper PageContainer">
@@ -57,13 +63,12 @@ const Credentials = ({ tableProps, filterProps }) => {
         <h1>{t('credentials.title')}</h1>
         <CredentialButtons />
       </div>
-      <CredentialsFilter {...filterProps} />
-
+      <CredentialsFilter {...filterProps} fetchCredentials={fetchCredentials} />
       <Row>
-        {tableProps.credentialCount ? (
-          <CredentialsTable {...expandedTableProps} />
-        ) : (
+        {showEmpty || renderEmptyComponent ? (
           <EmptyComponent {...emptyProps} />
+        ) : (
+          <CredentialsTable getMoreData={getMoreData} loading={loading} {...expandedTableProps} />
         )}
       </Row>
     </div>
@@ -74,37 +79,20 @@ Credentials.defaultProps = {
   showEmpty: false
 };
 
-const subjectShape = {
-  credentialId: '',
-  name: '',
-  credentialType: '',
-  category: '',
-  group: ''
-};
-
 Credentials.propTypes = {
+  noCredentials: PropTypes.bool.isRequired,
+  fetchCredentials: PropTypes.func.isRequired,
   tableProps: PropTypes.shape({
     subjects: PropTypes.arrayOf(PropTypes.shape(subjectShape)),
-    subjectCount: PropTypes.number,
-    offset: PropTypes.number,
-    setOffset: PropTypes.func.isRequired
+    credentials: PropTypes.arrayOf(PropTypes.shape())
   }).isRequired,
   filterProps: PropTypes.shape({
-    credentialId: PropTypes.string,
-    setCredentialId: PropTypes.func.isRequired,
-    name: PropTypes.string,
-    setName: PropTypes.func.isRequired,
-    credentialTypes: PropTypes.oneOf(credentials),
-    credentialType: PropTypes.string,
-    setCredentialType: PropTypes.func.isRequired,
-    categories: PropTypes.oneOf(categories),
-    category: PropTypes.string,
-    setCategory: PropTypes.func.isRequired,
-    groups: PropTypes.oneOf(groups),
-    group: PropTypes.string,
-    setGroup: PropTypes.func.isRequired
+    credentialTypes: PropTypes.arrayOf(PropTypes.string),
+    categories: PropTypes.arrayOf(PropTypes.string),
+    groups: PropTypes.arrayOf(PropTypes.string)
   }).isRequired,
-  showEmpty: PropTypes.bool
+  showEmpty: PropTypes.bool,
+  redirector: PropTypes.shape({ redirectToNewCredential: PropTypes.func }).isRequired
 };
 
 export default Credentials;

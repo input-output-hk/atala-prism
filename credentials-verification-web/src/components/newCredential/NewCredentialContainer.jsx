@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
-import moment from 'moment';
 import Logger from '../../helpers/Logger';
 import NewCredential from './NewCredential';
 import { withApi } from '../providers/withApi';
@@ -13,7 +12,6 @@ import NewCredentialCreation from './Organism/Creation/NewCredentialCreation';
 import { fromUnixToProtoDateFormatter } from '../../helpers/formatters';
 import { withRedirector } from '../providers/withRedirector';
 import { EXAMPLE_UNIVERSITY_NANE } from '../../helpers/constants';
-import { toProtoDate } from '../../APIs/__mocks__/helpers';
 
 const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) => {
   const { t } = useTranslation();

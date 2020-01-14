@@ -15,3 +15,5 @@ export const getInitials = name => {
 };
 
 export const getLogoAsBase64 = () => `data:image/png;base64,${localStorage.getItem(LOGO)}`;
+
+export const getLastArrayElementOrEmpty = array => (array.length ? array[array.length - 1] : {});

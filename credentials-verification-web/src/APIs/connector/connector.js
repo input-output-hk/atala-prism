@@ -8,7 +8,6 @@ import {
 import Logger from '../../helpers/Logger';
 import { getCredentialBinary } from '../credentials/credentialsManager';
 import { getStudentById } from '../credentials/studentsManager';
-import { HARDCODED_LIMIT } from '../../helpers/constants';
 
 const { SentCredential } = require('../../protos/credentials/credential_pb');
 
@@ -25,7 +24,7 @@ export const getConnectionsPaginated = (
   const connectionsPaginatedRequest = new GetConnectionsPaginatedRequest();
 
   connectionsPaginatedRequest.setLastseenconnectionid(lastSeenConnectionId);
-  connectionsPaginatedRequest.setLimit(HARDCODED_LIMIT);
+  connectionsPaginatedRequest.setLimit(limit);
 
   return connectorServiceClient
     .getConnectionsPaginated(connectionsPaginatedRequest, { userId })

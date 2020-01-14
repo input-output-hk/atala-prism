@@ -7,41 +7,36 @@ import { GROUP_PAGE_SIZE } from '../../helpers/constants';
 import Groups from './Groups';
 import { withApi } from '../providers/withApi';
 import { dateAsUnix } from '../../helpers/formatters';
+import { getLastArrayElementOrEmpty } from '../../helpers/genericHelpers';
 
 const GroupsContainer = ({ api, selectingProps }) => {
   const { t } = useTranslation();
 
   const [groups, setGroups] = useState([]);
-  const [date, setDate] = useState();
-  const [name, setName] = useState('');
   const [hasMore, setHasMore] = useState(true);
 
-  const updateGroups = () => {
+  const updateGroups = (oldGroups = groups, date, name) => {
     if (!hasMore) return;
 
     const filterDateAsUnix = dateAsUnix(date);
 
-    const { groupId } = groups.length ? groups[groups.length - 1] : {};
+    const { groupId } = getLastArrayElementOrEmpty(oldGroups);
 
-    api
+    return api
       .getGroups({ name, date: filterDateAsUnix, pageSize: GROUP_PAGE_SIZE, lastId: groupId })
       .then(filteredGroups => {
         if (!filteredGroups.length) {
           setHasMore(false);
           return;
         }
-        setGroups(groups.concat(filteredGroups));
+
+        setGroups(oldGroups.concat(filteredGroups));
       })
       .catch(error => {
         Logger.error('[GroupsContainer.updateGroups] Error: ', error);
         message.error(t('errors.errorGettingHolders'), 1);
       });
   };
-
-  useEffect(() => {
-    setGroups([]);
-    setHasMore(true);
-  }, [date, name]);
 
   useEffect(() => {
     if (!groups.length) {
@@ -64,10 +59,12 @@ const GroupsContainer = ({ api, selectingProps }) => {
   return (
     <Groups
       groups={groups}
-      setDate={setDate}
-      setName={setName}
+      updateGroups={(oldGroups, date, name) => {
+        setHasMore(true);
+
+        updateGroups(oldGroups, date, name);
+      }}
       handleGroupDeletion={handleGroupDeletion}
-      updateGroups={updateGroups}
       hasMore={hasMore}
       {...selectingProps}
     />
@@ -75,7 +72,8 @@ const GroupsContainer = ({ api, selectingProps }) => {
 };
 
 GroupsContainer.defaultProps = {
-  selectingProps: {}
+  selectingProps: {},
+  fullInfo: true
 };
 
 GroupsContainer.propTypes = {
@@ -83,7 +81,8 @@ GroupsContainer.propTypes = {
   selectingProps: PropTypes.shape({
     setGroup: PropTypes.func,
     group: PropTypes.func
-  })
+  }),
+  fullInfo: PropTypes.bool
 };
 
 export default withApi(GroupsContainer);

@@ -25,7 +25,7 @@ const FileUploader = ({
     savePicture(file)
       .then(response => {
         formRef.current.getForm().setFieldsValue({
-          [field]: [response]
+          [field]: [file]
         });
         setFileList([file]);
         onSuccess(response);

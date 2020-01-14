@@ -11,10 +11,18 @@ import QRModal from '../common/Organisms/Modals/QRModal/QRModal';
 import AddUserButtons from './Atoms/AddUsersButtons/AddUsersButtons';
 import { drawerWidth } from '../../helpers/constants';
 import CredentialListDetail from '../common/Organisms/Detail/CredentialListDetail';
+import { subjectShape } from '../../helpers/propShapes';
 
 import './_style.scss';
+import { withRedirector } from '../providers/withRedirector';
 
-const Connections = ({ redirectToBulkImport, tableProps, filterProps, inviteHolder, isIssuer }) => {
+const Connections = ({
+  redirector: { redirectToBulkImport },
+  tableProps,
+  inviteHolder,
+  isIssuer,
+  handleHoldersRequest
+}) => {
   const { t } = useTranslation();
 
   const [connectionToken, setConnectionToken] = useState('');
@@ -34,9 +42,7 @@ const Connections = ({ redirectToBulkImport, tableProps, filterProps, inviteHold
 
   const emptyProps = {
     photoSrc: noConnections,
-    photoAlt: t('connections.noConnections.photoAlt'),
-    title: t('connections.noConnections.title'),
-    subtitle: t('connections.noConnections.subtitle')
+    model: t('connections.title')
   };
 
   const getStudentCredentials = connectionId => {
@@ -45,13 +51,14 @@ const Connections = ({ redirectToBulkImport, tableProps, filterProps, inviteHold
   };
 
   const viewConnection = connection => {
-    const { createdat, fullname, connectionid } = connection;
+    const { admissiondate, avatar, createdat, fullname, connectionid } = connection;
 
     getStudentCredentials(connectionid)
       .then(transactions => {
         const formattedHolder = {
-          user: { name: fullname, date: createdat },
-          transactions
+          user: { icon: avatar, name: fullname, date: createdat },
+          transactions,
+          date: admissiondate
         };
 
         setCurrentConnection(formattedHolder);
@@ -86,12 +93,13 @@ const Connections = ({ redirectToBulkImport, tableProps, filterProps, inviteHold
           />
         )}
       </div>
-      <ConnectionsFilter {...filterProps} />
+      <ConnectionsFilter fetchConnections={handleHoldersRequest} />
       {tableProps.subjects.length ? (
         <ConnectionsTable
           inviteHolder={inviteHolderAndShowQR}
           isIssuer={isIssuer}
           viewConnectionDetail={viewConnection}
+          handleHoldersRequest={handleHoldersRequest}
           {...tableProps}
         />
       ) : (
@@ -107,36 +115,18 @@ const Connections = ({ redirectToBulkImport, tableProps, filterProps, inviteHold
   );
 };
 
-const subjectShape = {
-  avatar: PropTypes.string,
-  name: PropTypes.string,
-  identityNumber: PropTypes.number,
-  admissionDate: PropTypes.number,
-  email: PropTypes.string,
-  status: PropTypes.oneOf(['PENDING_CONNECTION', 'CONNECTED']),
-  id: PropTypes.string
-};
-
 Connections.propTypes = {
+  redirector: PropTypes.shape({ redirectToBulkImport: PropTypes.func }).isRequired,
+  handleHoldersRequest: PropTypes.func.isRequired,
   tableProps: PropTypes.shape({
     subjects: PropTypes.arrayOf(PropTypes.shape(subjectShape)),
-    subjectCount: PropTypes.number,
-    offset: PropTypes.number,
-    setOffset: PropTypes.func.isRequired,
     inviteHolder: PropTypes.func.isRequired,
-    getCredentials: PropTypes.func.isRequired
-  }).isRequired,
-  filterProps: PropTypes.shape({
-    userId: PropTypes.string,
-    setUserId: PropTypes.func.isRequired,
-    name: PropTypes.string,
-    setName: PropTypes.func.isRequired,
-    status: PropTypes.string,
-    setStatus: PropTypes.func.isRequired
+    getCredentials: PropTypes.func.isRequired,
+    hasMore: PropTypes.bool.isRequired
   }).isRequired,
   inviteHolder: PropTypes.func.isRequired,
   isIssuer: PropTypes.func.isRequired,
   redirectToBulkImport: PropTypes.func.isRequired
 };
 
-export default Connections;
+export default withRedirector(Connections);
