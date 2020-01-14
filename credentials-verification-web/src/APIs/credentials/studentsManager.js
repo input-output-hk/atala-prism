@@ -9,9 +9,9 @@ import {
   Date
 } from '../../protos/credentials/credentialsManager_pb';
 import Logger from '../../helpers/Logger';
-import { HARDCODED_LIMIT } from '../../helpers/constants';
 import { isIssuer } from '../wallet/wallet';
 import { setDateInfoFromJSON } from '../helpers';
+import { HOLDER_PAGE_SIZE } from '../../helpers/constants';
 
 const { REACT_APP_GRPC_CLIENT, REACT_APP_ISSUER, REACT_APP_VERIFIER } = window._env_;
 const issuerId = REACT_APP_ISSUER;
@@ -28,14 +28,11 @@ const createAndPopulateGetStudentRequest = (limit, lastSeenStudentId) => {
 
 export const getStudents = async (
   userId = REACT_APP_ISSUER,
-  limit = 100,
-  lastSeenCredentialId = null
+  lastSeenCredentialId = null,
+  limit = HOLDER_PAGE_SIZE
 ) => {
   Logger.info('Getting the students');
-  const getStudentsRequest = createAndPopulateGetStudentRequest(
-    HARDCODED_LIMIT,
-    lastSeenCredentialId
-  );
+  const getStudentsRequest = createAndPopulateGetStudentRequest(limit, lastSeenCredentialId);
 
   const result = await studentsService.getStudents(getStudentsRequest, { userId });
 

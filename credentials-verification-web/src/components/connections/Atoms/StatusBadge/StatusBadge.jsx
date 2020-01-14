@@ -11,12 +11,12 @@ const StatusBadge = ({ status }) => {
   const classname = `Label ${status}`;
 
   const role = localStorage.getItem(USER_ROLE);
-  const defaultRole = role === ISSUER ? 'invitationMissing' : 'created';
+  const defaultStatus = role === ISSUER ? 'invitationMissing' : 'created';
   const lowerCaseRole = role.toLowerCase();
 
   return (
     <div className={classname}>
-      <p>{t(`connections.status.${lowerCaseRole}.${status || defaultRole}`)}</p>
+      <p>{t(`connections.status.${lowerCaseRole}.${status || defaultStatus}`)}</p>
     </div>
   );
 };

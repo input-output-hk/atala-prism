@@ -15,7 +15,7 @@ const credentialsService = new CredentialsStoreServicePromiseClient(
   null
 );
 
-export const getIndividuals = async (aUserId = REACT_APP_VERIFIER, limit = 10, lastSeenId) => {
+export const getIndividuals = async (aUserId = REACT_APP_VERIFIER, lastSeenId, limit = 10) => {
   const userId = aUserId || REACT_APP_VERIFIER;
   Logger.info(`Getting individuals userId ${userId}, limit ${limit}, lastSeenId ${lastSeenId}`);
   const getIndividualsRequest = new GetIndividualsRequest();

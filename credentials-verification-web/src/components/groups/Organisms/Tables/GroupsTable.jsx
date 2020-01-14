@@ -1,13 +1,12 @@
 import React, { Fragment, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, message, Radio } from 'antd';
+import { Button, message } from 'antd';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import CellRenderer from '../../../common/Atoms/CellRenderer/CellRenderer';
 import { shortBackendDateFormatter } from '../../../../helpers/formatters';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import InfiniteScrollTable from '../../../common/Organisms/Tables/InfiniteScrollTable';
-import PaginatedTable from '../../../common/Organisms/Tables/PaginatedTable';
 
 const GetActionsButtons = ({ id, setGroupToDelete, fullInfo }) => {
   const { t } = useTranslation();
@@ -61,8 +60,9 @@ AddCredentialsButton.propTypes = {
   id: PropTypes.string.isRequired
 };
 
-const getColumns = ({ setGroupToDelete, fullInfo }) => {
+const getColumns = ({ setGroupToDelete, setGroup }) => {
   const componentName = 'groups';
+  const fullInfo = !setGroup;
 
   const actionColumn = [
     {
@@ -112,44 +112,32 @@ const getColumns = ({ setGroupToDelete, fullInfo }) => {
   return commonColumns.concat(actionColumn);
 };
 
-const GroupsTable = ({
-  setGroupToDelete,
-  groups,
-  selectedGroup,
-  setGroup,
-  onPageChange,
-  hasMore
-}) => {
+const GroupsTable = ({ setGroupToDelete, groups, selectedGroup, setGroup, onPageChange }) => {
   const [loading, setLoading] = useState(false);
-  const selectedRowKeys = selectedGroup.groupId ? [0] : []; // groups.map(({ groupId }) => groupId).indexOf(selectedGroup.groupId);
+  const selectedRowKeys = selectedGroup.groupId ? [0] : [];
   // const selectedRowKeys = selectedRows === -1 ? [] : [selectedRows];
 
   const getMoreData = () => {
     setLoading(true);
-    onPageChange();
-    setLoading(false);
+    return onPageChange().finally(() => setLoading(false));
   };
 
   const tableProps = {
-    columns: getColumns({ setGroupToDelete, fullInfo: !setGroup, selectedGroup, setGroup }),
+    columns: getColumns({ setGroupToDelete, setGroup }),
     data: groups,
     selectionType: !setGroup
       ? null
       : {
           selectedRowKeys,
           type: 'radio',
-          onChange: (_index, selected) => setGroup(selected[0])
+          onChange: (_index, [selected]) => setGroup(selected)
         },
     loading,
-    hasMore,
-    getMoreData,
-    current: 1,
-    total: 1,
-    defaultPageSize: 1,
-    onChange: () => {}
+    hasMore: false,
+    getMoreData
   };
 
-  return <PaginatedTable {...tableProps} />;
+  return <InfiniteScrollTable {...tableProps} />;
 };
 
 GroupsTable.defaultProps = {

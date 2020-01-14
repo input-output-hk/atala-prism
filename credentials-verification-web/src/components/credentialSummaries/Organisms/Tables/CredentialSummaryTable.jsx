@@ -91,15 +91,15 @@ const getColumns = (setCurrentCredentialSummary, openDrawer) => {
 const CredentialSummaryTable = ({
   setCurrentCredentialSummary,
   credentialSummaries,
-  onPageChange,
+  getCredentialSummaries,
   hasMore,
   openDrawer
 }) => {
   const [loading, setLoading] = useState(false);
+
   const getMoreData = () => {
     setLoading(true);
-    onPageChange();
-    setLoading(false);
+    return getCredentialSummaries().finally(() => setLoading(false));
   };
 
   const tableProps = {
@@ -129,7 +129,7 @@ CredentialSummaryTable.propTypes = {
   credentialSummaries: PropTypes.arrayOf(credentialSummaryShape),
   current: PropTypes.number,
   total: PropTypes.number,
-  onPageChange: PropTypes.func.isRequired,
+  getCredentialSummaries: PropTypes.func.isRequired,
   hasMore: PropTypes.bool.isRequired,
   openDrawer: PropTypes.func.isRequired
 };

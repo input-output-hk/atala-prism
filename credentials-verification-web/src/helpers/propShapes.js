@@ -1,6 +1,16 @@
-import { string, shape, number, oneOfType, func, object } from 'prop-types';
+import { string, shape, number, oneOf, oneOfType, func, object, bool, arrayOf } from 'prop-types';
 import __ from 'lodash';
 import { CONNECTION_STATUSES } from './constants';
+
+export const subjectShape = {
+  avatar: string,
+  name: string,
+  identityNumber: number,
+  admissionDate: number,
+  email: string,
+  status: oneOf(['PENDING_CONNECTION', 'CONNECTED']),
+  id: string
+};
 
 export const groupShape = {
   icon: string,
@@ -28,13 +38,18 @@ export const credentialSummaryShape = {
 };
 
 export const paymentShape = {
+  id: string,
+  // Not returning from the backend
   user: shape({
     avatar: string,
     name: string
   }),
   date: number,
   amount: number,
-  currency: string
+  // Not returning from the backend
+  currency: string,
+  status: string,
+  failureReason: string
 };
 
 export const refShape = oneOfType([
@@ -61,4 +76,20 @@ export const studentShape = {
   id: string,
   issuerid: string,
   universityassignedid: string
+};
+
+export const infiniteTableProps = {
+  loading: bool.isRequired,
+  getMoreData: func.isRequired,
+  hasMore: bool.isRequired
+};
+
+export const credentialShape = {
+  icon: string,
+  name: string,
+  identityNumber: number,
+  admissionDate: number,
+  email: string,
+  status: oneOf(['PENDING_CONNECTION', 'CONNECTED']),
+  id: string
 };

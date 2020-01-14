@@ -4,32 +4,31 @@ import PropTypes from 'prop-types';
 
 import './_style.scss';
 
-const EmptyComponent = ({ photoSrc, photoAlt, title, subtitle, button }) => {
+const EmptyComponent = ({ photoSrc, button, model, isFilter }) => {
   const { t } = useTranslation();
+  const title = isFilter ? 'filterTitle' : 'title';
 
   return (
     <div className="EmptyState">
-      {photoSrc && <img src={photoSrc} alt={t(photoAlt)} />}
-      {title && <h3>{t(title)}</h3>}
-      {subtitle && <p>{t(subtitle)}</p>} {button && <div className="ActionButton">{button}</div>}
+      {photoSrc && <img src={photoSrc} alt={t('emptyComponent.photoAlt', { model })} />}
+      {<h3>{t(`emptyComponent.${title}`, { model })}</h3>}
+      {button && <p>{t(`emptyComponent.${button ? 'subtitleWithGroup' : 'subtitle'}`)}</p>}
+      {button && <div className="ActionButton">{button}</div>}
     </div>
   );
 };
 
 EmptyComponent.defaultProps = {
   photoSrc: '',
-  photoAlt: '',
-  title: '',
-  subtitle: '',
+  isFilter: false,
   button: null
 };
 
 EmptyComponent.propTypes = {
   photoSrc: PropTypes.string,
-  photoAlt: PropTypes.string,
-  title: PropTypes.string,
-  subtitle: PropTypes.string,
-  button: PropTypes.element
+  isFilter: PropTypes.bool,
+  button: PropTypes.element,
+  model: PropTypes.oneOf(['connection']).isRequired
 };
 
 export default EmptyComponent;

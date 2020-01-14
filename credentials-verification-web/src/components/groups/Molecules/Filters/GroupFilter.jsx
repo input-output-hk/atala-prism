@@ -1,15 +1,22 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { DatePicker, Icon, Input, Row, Col } from 'antd';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 
-const GroupFilters = ({ changeDate, changeFilter }) => {
+const GroupFilters = ({ updateGroups }) => {
   const { t } = useTranslation();
+
+  const [date, setDate] = useState();
+  const [name, setName] = useState('');
+
+  useEffect(() => {
+    updateGroups([], date, name);
+  }, [date, name]);
 
   const datePickerProps = {
     placeholder: t('groups.filters.date'),
     suffixIcon: <Icon type="down" />,
-    onChange: (_, dateString) => changeDate(dateString)
+    onChange: (_, dateString) => setDate(dateString)
   };
 
   return (
@@ -22,7 +29,7 @@ const GroupFilters = ({ changeDate, changeFilter }) => {
           <Input
             placeholder={t('groups.filters.search')}
             prefix={<Icon type="search" />}
-            onChange={({ target: { value } }) => changeFilter(value)}
+            onChange={({ target: { value } }) => setName(value)}
           />
         </Col>
       </Row>
@@ -31,8 +38,7 @@ const GroupFilters = ({ changeDate, changeFilter }) => {
 };
 
 GroupFilters.propTypes = {
-  changeDate: PropTypes.func.isRequired,
-  changeFilter: PropTypes.func.isRequired
+  updateGroups: PropTypes.func.isRequired
 };
 
 export default GroupFilters;

@@ -13,11 +13,10 @@ import { drawerWidth } from '../../helpers/constants';
 
 const CredentialSummaries = ({
   credentialSummaries,
-  setDate,
-  setName,
-  handleCredentialSummaryDeletion,
   getStudentCredentials,
-  onPageChange
+  getCredentialSummaries,
+  noSummaries,
+  hasMore
 }) => {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
@@ -32,7 +31,7 @@ const CredentialSummaries = ({
     toDelete: { name: currentCredentialSummary.name, id: currentCredentialSummary.id },
     open,
     closeModal,
-    handleDeletion: handleCredentialSummaryDeletion,
+    handleDeletion: () => {},
     prefix: 'credentialSummary'
   };
 
@@ -45,6 +44,7 @@ const CredentialSummaries = ({
   };
 
   const showDrawer = !!Object.keys(currentCredentialSummary).length;
+  const title = t('credentialSummary.title');
 
   return (
     <div className="Wrapper">
@@ -59,22 +59,19 @@ const CredentialSummaries = ({
       </Drawer>
       <DeletionModal {...modalProps} />
       <div className="ContentHeader">
-        <h1>{t('credentialSummary.title')}</h1>
+        <h1>{title}</h1>
       </div>
-      <CredentialSummaryFilters changeDate={setDate} changeFilter={setName} />
+      <CredentialSummaryFilters getCredentialSummaries={getCredentialSummaries} />
       <Row>
         {credentialSummaries.length ? (
           <CredentialSummaryTable
             setCurrentCredentialSummary={viewSummary}
             credentialSummaries={credentialSummaries}
-            onPageChange={onPageChange}
+            getCredentialSummaries={getCredentialSummaries}
+            hasMore={hasMore}
           />
         ) : (
-          <EmptyComponent
-            photoSrc={noGroups}
-            photoAlt="credentialSummary.noCredentialSummaries.photoAlt"
-            title="credentialSummary.noCredentialSummaries.title"
-          />
+          <EmptyComponent photoSrc={noGroups} model={title} isFilter={noSummaries} />
         )}
       </Row>
     </div>
@@ -82,20 +79,15 @@ const CredentialSummaries = ({
 };
 
 CredentialSummaries.defaultProps = {
-  credentialSummaries: [],
-  count: 0,
-  offset: 0
+  credentialSummaries: []
 };
 
 CredentialSummaries.propTypes = {
   credentialSummaries: PropTypes.arrayOf(credentialSummaryShape),
-  count: PropTypes.number,
-  offset: PropTypes.number,
-  setOffset: PropTypes.func.isRequired,
-  setDate: PropTypes.func.isRequired,
-  setName: PropTypes.func.isRequired,
-  handleCredentialSummaryDeletion: PropTypes.func.isRequired,
-  onPageChange: PropTypes.func.isRequired
+  getStudentCredentials: PropTypes.func.isRequired,
+  getCredentialSummaries: PropTypes.func.isRequired,
+  noSummaries: PropTypes.bool.isRequired,
+  hasMore: PropTypes.bool.isRequired
 };
 
 export default CredentialSummaries;

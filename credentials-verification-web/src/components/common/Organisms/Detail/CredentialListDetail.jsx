@@ -14,7 +14,7 @@ import './_style.scss';
 import CredentialDetail from './CredentialDetail';
 import holderDefaultAvatar from '../../../../images/holder-default-avatar.svg';
 
-const CredentialListDetail = ({ user: { icon, name }, transactions, date }) => {
+const CredentialListDetail = ({ user: { icon, name: userName }, transactions, date }) => {
   const { t } = useTranslation();
 
   const [connectionInfo, setConnectionInfo] = useState();
@@ -33,9 +33,9 @@ const CredentialListDetail = ({ user: { icon, name }, transactions, date }) => {
         credentialData={connectionInfo}
       />
       <div className="CredentialSummaryHeader">
-        <img src={icon || holderDefaultAvatar} alt={t('credentialSummary.detail.alt', name)} />
+        <img src={icon || holderDefaultAvatar} alt={t('credentialSummary.detail.alt', userName)} />
         <div className="CredentialSummaryUser">
-          <h3>{name}</h3>
+          <h3>{userName}</h3>
           {date && <p>{shortBackendDateFormatter(date)}</p>}
         </div>
       </div>
@@ -60,6 +60,7 @@ const CredentialListDetail = ({ user: { icon, name }, transactions, date }) => {
               date={transaction.date}
               setConnectionInfo={transaction.setConnectionInfo}
               university={transaction.university}
+              award={transaction.award}
               student={transaction.student}
               graduationDate={transaction.graduationDate}
             />
@@ -121,7 +122,7 @@ const getStudentName = student => {
 
 const getIssuerName = issuer => {
   const { issuerlegalname, academicauthority } = issuer;
-  return issuerlegalname;
+  return `${issuerlegalname}, ${academicauthority}`;
 };
 
 const getTitle = (degreeawarded, additionalspeciality) =>

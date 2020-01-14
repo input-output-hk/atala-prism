@@ -8,6 +8,13 @@
     "next": "Next",
     "saveForLater": "Save & Continue later"
   },
+  "emptyComponent": {
+    "photoAlt": "No {{model}}",
+    "title": "You don't have {{model}} yet",
+    "subtitle": "",
+    "subtitleWithButton": "You can add them by clicking the button below",
+    "filterTitle": "No {{model}} match these filters"
+  },
   "generic": {
     "step": "Step {{step}}"
   },
@@ -48,6 +55,7 @@
     "table": {
       "columns": {
         "studentname": "Student Name",
+        "identityNumber": "Identity Number",
         "admissionDate": "Admission Date",
         "email": "Email",
         "invite": "Invite",
@@ -55,11 +63,6 @@
         "view": "View",
         "viewCredentials": "View Credentials"
       }
-    },
-    "noConnections": {
-      "photoAlt": "No Connections",
-      "title": "You don't have Holders yet",
-      "subtitle": "You can start adding them by clicking the button bellow"
     },
     "inviteSuccessfull": "The Holder has been successfully invited",
     "modal": {
@@ -123,11 +126,6 @@
     "actions": {
       "createCredential": "Create Credential"
     },
-    "noCredentials": {
-      "photoAlt": "No Credentials",
-      "title": "You don't have Credentials yet",
-      "subtitle": "You can start adding them by clicking the button bellow"
-    },
     "filters": {
       "ID": "ID",
       "credentialType": "Credential",
@@ -157,6 +155,7 @@
     "table": {
       "columns": {
         "studentname": "Student Name",
+        "identityNumber": "Identity Number",
         "admissionDate": "Admission Date",
         "groupAssigned": "Group Assigned"
       }
@@ -171,7 +170,6 @@
       "hashTitle": "Tx Hash",
       "notarizationDate": "Upload Date",
       "downloadButton": "Download Credential"
-
     }
   },
   "credentialSummary": {
@@ -332,7 +330,7 @@
       "word": "Word",
       "validation": {
         "title": "Verify Seed Phrase",
-        "subtitle": "Enter the correct words of your seed phrase bellow.",
+        "subtitle": "Enter the correct words of your seed phrase below.",
         "verify": "Verify",
         "success": "Seed Phrase Verified",
         "failure": "Seed Phrase Incorrect",
@@ -396,12 +394,18 @@
       "payer": "Payer"
     },
     "table": {
+      "defaults": {
+        "currency": "Dollars",
+        "method": "Credit Card"
+      },
       "columns": {
         "date": "Date",
         "amount": "Amount",
         "currency": "Currency",
         "method": "Payment Method",
-        "name": "Name"
+        "name": "Name",
+        "status": "Status",
+        "failureReason": "Failure Reason"
       }
     }
   },

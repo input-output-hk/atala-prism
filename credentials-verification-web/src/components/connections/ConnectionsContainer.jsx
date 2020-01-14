@@ -6,57 +6,51 @@ import Connections from './Connections';
 import Logger from '../../helpers/Logger';
 import { HOLDER_PAGE_SIZE } from '../../helpers/constants';
 import { withApi } from '../providers/withApi';
-import { withRedirector } from '../providers/withRedirector';
+import { getLastArrayElementOrEmpty } from '../../helpers/genericHelpers';
 
-const ConnectionsContainer = ({ api, redirector: { redirectToBulkImport } }) => {
+const ConnectionsContainer = ({ api }) => {
   const { t } = useTranslation();
 
-  // These are the values used to filter the holders/subjects
-  const [identityNumber, setIdentityNumber] = useState('');
-  const [name, setName] = useState('');
-  const [status, setStatus] = useState(t(''));
-
-  // These are the holders/subjects returned from the "backend"
   const [subjects, setSubjects] = useState([]);
+  const [noConnections, setNoConnections] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
 
-  // This is the amount of holders/subjects by the sent query
-  // Until the infinite pagination is in all of the tables
-  // this count will be hardcoded since there is no way of
-  // knowing the total amount of subjects
-  const [subjectCount, setSubjectCount] = useState(0);
+  const handleHoldersRequest = (oldSubjects = subjects, _identityNumber, _name, _status) => {
+    const { id } = getLastArrayElementOrEmpty(oldSubjects);
 
-  // This is used to paginate
-  const [offset, setOffset] = useState(0);
-
-  useEffect(() => {
     const getIndividuals = api.getIndividuals(api.isIssuer());
 
-    getIndividuals(HOLDER_PAGE_SIZE)
+    return getIndividuals(HOLDER_PAGE_SIZE, id)
       .then(holders => {
+        const noFilters = !(_identityNumber || _name || _status);
+        const showNoConnections = !id && noFilters;
+        setNoConnections(showNoConnections);
+
+        if (!holders.length) {
+          setHasMore(false);
+          return;
+        }
+
         const holdersWithKey = holders.map(
           ({ status: holderStatus, connectionstatus, id: holderId, individualid, ...rest }) => {
-            const id = holderId || individualid;
+            const existingId = holderId || individualid;
             const indivStatus = holderStatus || connectionstatus;
 
             return Object.assign({}, rest, {
-              key: id,
+              key: existingId,
               status: indivStatus,
-              id
+              id: existingId
             });
           }
         );
-        setSubjects(holdersWithKey);
-        setSubjectCount(holdersWithKey.length);
+
+        const newSubjects = oldSubjects.concat(holdersWithKey);
+        setSubjects(newSubjects);
       })
       .catch(error => {
         Logger.error('[Connections.getHolders] Error while getting holders', error);
         message.error(t('errors.errorGetting', { model: 'Holders' }), 1);
       });
-  }, [identityNumber, name, status, offset]);
-
-  const updateFilter = (value, setField) => {
-    setOffset(0);
-    setField(value);
   };
 
   const inviteHolder = studentId => {
@@ -65,29 +59,24 @@ const ConnectionsContainer = ({ api, redirector: { redirectToBulkImport } }) => 
     return generateConnectionToken(studentId);
   };
 
+  useEffect(() => {
+    if (!subjects.length) handleHoldersRequest();
+  }, []);
+
   const tableProps = {
     subjects,
-    subjectCount,
-    offset,
-    setOffset,
+    inviteHolder,
+    hasMore,
     getCredentials: api.getMessagesForConnection
-  };
-  const filterProps = {
-    identityNumber,
-    setIdentityNumber: value => updateFilter(value, setIdentityNumber),
-    name,
-    setName: value => updateFilter(value, setName),
-    status,
-    setStatus: value => updateFilter(value, setStatus)
   };
 
   return (
     <Connections
       tableProps={tableProps}
-      filterProps={filterProps}
+      handleHoldersRequest={handleHoldersRequest}
+      noConnections={noConnections}
       inviteHolder={inviteHolder}
       isIssuer={api.isIssuer}
-      redirectToBulkImport={redirectToBulkImport}
     />
   );
 };
@@ -96,4 +85,4 @@ ConnectionsContainer.propTypes = {
   api: PropTypes.shape().isRequired
 };
 
-export default withApi(withRedirector(ConnectionsContainer));
+export default withApi(ConnectionsContainer);
