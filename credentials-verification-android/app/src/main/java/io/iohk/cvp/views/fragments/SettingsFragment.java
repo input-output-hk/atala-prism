@@ -1,6 +1,7 @@
 package io.iohk.cvp.views.fragments;
 
-import android.graphics.Color;
+import static io.iohk.cvp.views.activities.MainActivity.MAIN_FRAGMENT_TAG;
+
 import androidx.lifecycle.ViewModel;
 import butterknife.OnClick;
 import io.iohk.cvp.R;
@@ -9,7 +10,6 @@ import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.RootAppBar;
 import java.util.Objects;
 import javax.inject.Inject;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Setter
@@ -40,5 +40,10 @@ public class SettingsFragment extends CvpFragment {
   @OnClick(R.id.support)
   void onSupportClick() {
     navigator.showWebView(Objects.requireNonNull(this.getActivity()));
+  }
+
+  @OnClick(R.id.backend_ip)
+  void onBackendIpClick() {
+    navigator.showFragment(getFragmentManager(), new BackendIpFragment(), MAIN_FRAGMENT_TAG);
   }
 }

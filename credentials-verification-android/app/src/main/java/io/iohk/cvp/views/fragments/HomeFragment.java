@@ -53,6 +53,7 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> {
   private LiveData<List<ReceivedMessage>> liveData;
   private CredentialsRecyclerViewAdapter newCredentialsAdapter;
   private CredentialsRecyclerViewAdapter credentialsAdapter;
+
   @Inject
   HomeFragment(ViewModelProvider.Factory factory) {
     this.factory = factory;
@@ -145,7 +146,10 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> {
 
   @Override
   public CredentialsViewModel getViewModel() {
-    return ViewModelProviders.of(this, factory).get(CredentialsViewModel.class);
+    CredentialsViewModel viewModel = ViewModelProviders.of(this, factory)
+        .get(CredentialsViewModel.class);
+    viewModel.setContext(getContext());
+    return viewModel;
   }
 
   public void onCredentialClicked(Boolean isNew, SentCredential credential,

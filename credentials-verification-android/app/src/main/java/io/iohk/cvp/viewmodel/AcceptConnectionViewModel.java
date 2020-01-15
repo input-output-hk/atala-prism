@@ -2,12 +2,11 @@ package io.iohk.cvp.viewmodel;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
 import io.iohk.cvp.grpc.GetBraintreePaymentsConfigRunnable;
 import io.iohk.cvp.grpc.GrpcTask;
 import javax.inject.Inject;
 
-public class AcceptConnectionViewModel extends ViewModel {
+public class AcceptConnectionViewModel extends CvpViewModel {
 
   private MutableLiveData<String> tokenizationKey = new MutableLiveData<>();
 
@@ -16,7 +15,7 @@ public class AcceptConnectionViewModel extends ViewModel {
   }
 
   public LiveData<String> getTokenizationKey() {
-    new GrpcTask<>(new GetBraintreePaymentsConfigRunnable(tokenizationKey)).execute();
+    new GrpcTask<>(new GetBraintreePaymentsConfigRunnable(tokenizationKey), context).execute();
     return tokenizationKey;
   }
 }

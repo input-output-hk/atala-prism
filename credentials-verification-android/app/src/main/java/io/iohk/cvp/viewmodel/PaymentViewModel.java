@@ -21,7 +21,7 @@ public class PaymentViewModel extends CvpViewModel {
 
   public LiveData<List<Payment>> getPayments(Set<String> userIds) {
     userIds.forEach(userId -> {
-      GrpcTask task = new GrpcTask<>(new GetPaymentsRunnable(payments));
+      GrpcTask task = new GrpcTask<>(new GetPaymentsRunnable(payments), context);
       task.execute(userId);
       runningTasks.add(task);
     });
