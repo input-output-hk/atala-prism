@@ -89,7 +89,10 @@ public class ShareCredentialDialogFragment extends CvpFragment<ConnectionsListab
 
   @Override
   public ConnectionsListablesViewModel getViewModel() {
-    return ViewModelProviders.of(this, factory).get(ConnectionsListablesViewModel.class);
+    ConnectionsListablesViewModel viewModel = ViewModelProviders.of(this, factory)
+        .get(ConnectionsListablesViewModel.class);
+    viewModel.setContext(getContext());
+    return viewModel;
   }
 
   @Override

@@ -109,7 +109,9 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
 
   @Override
   public MainViewModel getViewModel() {
-    return ViewModelProviders.of(this, factory).get(MainViewModel.class);
+    MainViewModel viewModel = ViewModelProviders.of(this, factory).get(MainViewModel.class);
+    viewModel.setContext(getApplicationContext());
+    return viewModel;
   }
 
   @Override

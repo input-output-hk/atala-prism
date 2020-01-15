@@ -38,7 +38,10 @@ public class FirstConnectionFragment extends CvpFragment<ConnectionsActivityView
 
   @Override
   public ConnectionsActivityViewModel getViewModel() {
-    return ViewModelProviders.of(this, factory).get(ConnectionsActivityViewModel.class);
+    ConnectionsActivityViewModel viewModel = ViewModelProviders.of(this, factory)
+        .get(ConnectionsActivityViewModel.class);
+    viewModel.setContext(getContext());
+    return viewModel;
   }
 
   @Override

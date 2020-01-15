@@ -1,5 +1,6 @@
 package io.iohk.cvp.grpc;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import com.crashlytics.android.Crashlytics;
 import io.grpc.Channel;
@@ -11,6 +12,7 @@ import io.iohk.cvp.BuildConfig;
 import io.iohk.cvp.io.connector.ConnectorServiceGrpc;
 import io.iohk.cvp.io.connector.ConnectorServiceGrpc.ConnectorServiceBlockingStub;
 import io.iohk.cvp.io.connector.ConnectorServiceGrpc.ConnectorServiceStub;
+import io.iohk.cvp.views.Preferences;
 import java.util.Optional;
 
 public class GrpcTask<A> extends AsyncTask<Object, Void, Optional<A>> {
@@ -18,11 +20,18 @@ public class GrpcTask<A> extends AsyncTask<Object, Void, Optional<A>> {
   private final GrpcRunnable<A> grpcRunnable;
   private final ManagedChannel origChannel;
 
-  public GrpcTask(GrpcRunnable<A> grpcRunnable) {
-    this.grpcRunnable = grpcRunnable;
+  public GrpcTask(GrpcRunnable<A> grpcRunnable, Context context) {
+    Preferences prefs = new Preferences(context);
+    String ip = prefs.getString(Preferences.BACKEND_IP);
+    Integer port = prefs.getInt(Preferences.BACKEND_PORT);
+
     this.origChannel = ManagedChannelBuilder
-        .forAddress(BuildConfig.API_BASE_URL, BuildConfig.API_PORT).usePlaintext()
+        .forAddress(ip.equals("") ? BuildConfig.API_BASE_URL : ip,
+            port.equals(0) ? BuildConfig.API_PORT : port)
+        .usePlaintext()
         .build();
+    this.grpcRunnable = grpcRunnable;
+
   }
 
   @Override

@@ -91,7 +91,9 @@ public class PaymentHistoryFragment extends CvpFragment<PaymentViewModel> {
 
   @Override
   public PaymentViewModel getViewModel() {
-    return ViewModelProviders.of(this, factory).get(PaymentViewModel.class);
+    PaymentViewModel viewModel = ViewModelProviders.of(this, factory).get(PaymentViewModel.class);
+    viewModel.setContext(getContext());
+    return viewModel;
   }
 
   @Override

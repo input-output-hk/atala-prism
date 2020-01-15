@@ -25,7 +25,7 @@ public class CredentialsViewModel extends CvpViewModel {
 
   public LiveData<List<ReceivedMessage>> getMessages(Set<String> userIds) {
     userIds.forEach(userId -> {
-      GrpcTask task = new GrpcTask<>(new GetMessagesRunnable(messages));
+      GrpcTask task = new GrpcTask<>(new GetMessagesRunnable(messages), context);
       task.execute(userId);
       runningTasks.add(task);
     });

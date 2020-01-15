@@ -31,6 +31,8 @@ public class Preferences {
   public static final String USER_PROFILE_BIRTH_DATE = "user_profile_birth_date";
   public static final String USER_PROFILE_EMAIL = "user_profile_email";
   public static final String CONNECTION_TOKEN_TO_ACCEPT = "connection_token_to_accept";
+  public static final String BACKEND_IP = "backend_ip";
+  public static final String BACKEND_PORT = "backend_port";
   private Context context;
 
   public void savePrivateKey(byte[] pk) {
@@ -144,5 +146,21 @@ public class Preferences {
     Editor editor = prefs.edit();
     editor.putString(CONNECTION_TOKEN_TO_ACCEPT, token);
     editor.apply();
+  }
+
+  public void saveBackendData(String ip, String port) {
+    SharedPreferences prefs = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
+    Editor editor = prefs.edit();
+    editor.putString(BACKEND_IP, ip);
+
+    int portValue = port.equals("") ? 0 : Integer.valueOf(port);
+    editor.putInt(BACKEND_PORT, portValue);
+    editor.apply();
+  }
+
+  public Integer getInt(String key) {
+    SharedPreferences sharedPreferences = context.getSharedPreferences(MY_PREFS_NAME, MODE_PRIVATE);
+    return sharedPreferences
+        .getInt(key, 0);
   }
 }

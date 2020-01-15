@@ -23,7 +23,7 @@ public class ConnectionsActivityViewModel extends CvpViewModel {
 
   public LiveData<List<ConnectionInfo>> getConnections(Set<String> userIds) {
     userIds.forEach(userId -> {
-      GrpcTask task = new GrpcTask<>(new GetConnectionsInfoRunnable(connections));
+      GrpcTask task = new GrpcTask<>(new GetConnectionsInfoRunnable(connections), context);
       task.execute(userId);
       runningTasks.add(task);
     });
@@ -31,7 +31,7 @@ public class ConnectionsActivityViewModel extends CvpViewModel {
   }
 
   public LiveData<ParticipantInfo> getConnectionTokenInfo(String token) {
-    new GrpcTask<>(new GetConnectionTokenInfoRunnable(issuerInfo)).execute(null, token);
+    new GrpcTask<>(new GetConnectionTokenInfoRunnable(issuerInfo), context).execute(null, token);
     return issuerInfo;
   }
 

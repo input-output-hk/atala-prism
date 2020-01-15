@@ -179,6 +179,9 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
 
   @Override
   public CredentialsViewModel getViewModel() {
-    return ViewModelProviders.of(this, factory).get(CredentialsViewModel.class);
+    CredentialsViewModel viewModel = ViewModelProviders.of(this, factory)
+        .get(CredentialsViewModel.class);
+    viewModel.setContext(getContext());
+    return viewModel;
   }
 }

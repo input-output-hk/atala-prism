@@ -106,7 +106,10 @@ public class AcceptConnectionDialogFragment extends CvpDialogFragment<AcceptConn
 
   @Override
   public AcceptConnectionViewModel getViewModel() {
-    return ViewModelProviders.of(this, factory).get(AcceptConnectionViewModel.class);
+    AcceptConnectionViewModel viewModel = ViewModelProviders.of(this, factory)
+        .get(AcceptConnectionViewModel.class);
+    viewModel.setContext(getContext());
+    return viewModel;
   }
 
   @OnClick(R.id.cancel_button)

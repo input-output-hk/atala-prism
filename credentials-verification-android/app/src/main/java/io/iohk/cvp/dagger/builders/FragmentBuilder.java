@@ -9,6 +9,7 @@ import io.iohk.cvp.dagger.modules.CredentialsFragmentModule;
 import io.iohk.cvp.dagger.modules.HomeFragmentModule;
 import io.iohk.cvp.dagger.modules.PaymentsModule;
 import io.iohk.cvp.views.fragments.AcceptConnectionDialogFragment;
+import io.iohk.cvp.views.fragments.BackendIpFragment;
 import io.iohk.cvp.views.fragments.ConnectionsFragment;
 import io.iohk.cvp.views.fragments.ConnectionsListFragment;
 import io.iohk.cvp.views.fragments.CredentialDetailFragment;
@@ -67,4 +68,7 @@ public abstract class FragmentBuilder {
 
   @ContributesAndroidInjector(modules = AddConnectionsModule.class)
   abstract AcceptConnectionDialogFragment contributeAcceptConnectionDialogFragment();
+
+  @ContributesAndroidInjector
+  abstract BackendIpFragment contributeBackendIpFragment();
 }
