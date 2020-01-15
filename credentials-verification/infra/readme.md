@@ -59,8 +59,11 @@ file now contains targets to do this.
 Create a file called `~/.secrets.tfvars` with the following:
 ```bash
 $ cat ~/.secrets.tfvars
+postgres_password = "<secret>"
 bitcoind_password = "<secret>"
 ```
+
+**NOTE**: While `postgres_password` is not required for development, it's required for CircleCi, just place any value.
 
 ### Environment lifecycle
 The basic use-case for creating, working with and destroying an environment is as follows

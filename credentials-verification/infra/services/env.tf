@@ -486,6 +486,7 @@ provider "postgresql" {
   host      = data.aws_db_instance.credentials-database.address
   port      = data.aws_db_instance.credentials-database.port
   username  = "postgres"
+  password  = var.postgres_password
   superuser = false
 }
 
