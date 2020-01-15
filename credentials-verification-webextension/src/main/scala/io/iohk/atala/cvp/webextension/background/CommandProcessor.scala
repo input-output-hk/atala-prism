@@ -1,8 +1,11 @@
 package io.iohk.atala.cvp.webextension.background
 
+import io.circe.generic.auto._
+import io.iohk.atala.cvp.webextension.background.models.Command.{KeyList, SignatureResult, SigningRequests}
 import io.iohk.atala.cvp.webextension.background.models.{Command, Event}
-import io.iohk.atala.cvp.webextension.background.services.browser.BrowserNotificationService
+import io.iohk.atala.cvp.webextension.background.services.browser.{BrowserActionService, BrowserNotificationService}
 import io.iohk.atala.cvp.webextension.background.services.storage.StorageService
+import io.iohk.atala.cvp.webextension.background.wallet.WalletManager
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -11,12 +14,41 @@ import scala.concurrent.{ExecutionContext, Future}
   */
 private[background] class CommandProcessor(
     productStorage: StorageService,
-    browserNotificationService: BrowserNotificationService
+    browserNotificationService: BrowserNotificationService,
+    browserActionService: BrowserActionService,
+    walletManager: WalletManager
 )(implicit ec: ExecutionContext) {
 
-  def process(command: Command): Future[Event] = command match {
+  def process(command: Command): Future[CommandResponse[_]] = command match {
     case Command.SendBrowserNotification(title, message) =>
       browserNotificationService.notify(title, message)
-      Future.successful(Event.BrowserNotificationSent())
+      Future.successful(CommandResponse(Event.BrowserNotificationSent(): Event))
+    case Command.ListKeys =>
+      Future.successful(CommandResponse[KeyList] {
+        KeyList(walletManager.listKeys().toList)
+      })
+    case Command.SignRequestWithKey(requestId, keyName) =>
+      Future.successful(CommandResponse {
+        walletManager.signWith(requestId, keyName)
+      })
+    case Command.RequestSignature(message) =>
+      walletManager.requestSignature(message).map(s => CommandResponse(SignatureResult(s)))
+    case Command.GetSigningRequests =>
+      Future.successful(CommandResponse {
+        SigningRequests(walletManager.getSigningRequests().toList)
+      })
+    case Command.CreateKey(keyName) =>
+      Future.successful(CommandResponse {
+        walletManager.createKey(keyName)
+        ()
+      })
+    case Command.UnlockWallet(password) =>
+      for {
+        _ <- walletManager.unlock(password)
+        _ <- browserActionService.setPopup("popup.html")
+      } yield CommandResponse(())
+    case Command.LockWallet() =>
+      walletManager.lock()
+      browserActionService.setPopup("popup-closed.html").map(CommandResponse(_))
   }
 }

@@ -1,27 +1,39 @@
 package io.iohk.atala.cvp.webextension.background
 
+import io.circe.generic.auto._
+import io.circe.{Encoder, Json}
 import io.iohk.atala.cvp.webextension.Config
-import io.iohk.atala.cvp.webextension.background.alarms.AlarmRunner
-import io.iohk.atala.cvp.webextension.background.models.{Command, Event}
-import io.iohk.atala.cvp.webextension.background.services.browser.BrowserNotificationService
+import io.iohk.atala.cvp.webextension.background.models.Command
+import io.iohk.atala.cvp.webextension.background.services.browser.{BrowserActionService, BrowserNotificationService}
 import io.iohk.atala.cvp.webextension.background.services.http.HttpService
 import io.iohk.atala.cvp.webextension.background.services.storage.StorageService
+import io.iohk.atala.cvp.webextension.background.wallet.WalletManager
 import io.iohk.atala.cvp.webextension.common.I18NMessages
-import io.circe.syntax._
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
 import scala.util.control.NonFatal
+import scala.util.{Failure, Success, Try}
+
+final case class CommandResponse[T](response: T)(implicit val enc: Encoder[T])
 
 class Runner(
-    commandProcessor: CommandProcessor,
-    alarmRunner: AlarmRunner
+    commandProcessor: CommandProcessor
 )(implicit ec: ExecutionContext) {
+
+  implicit val encodeNothing = new Encoder[Nothing] {
+    override def apply(a: Nothing): Json = ???
+  }
 
   def run(): Unit = {
     log("This was run by the background script")
-    alarmRunner.register()
     processExternalMessages()
+  }
+
+  // this is needed as defining a generic method seems to be the only way to tell Scala
+  // that in response: CommandResponse[_] encoder response.enc is the right one for response.response
+  private def encodeCommandResponseAsRight[T](response: CommandResponse[T]): Json = {
+    implicit val responseEnc: Encoder[T] = response.enc
+    implicitly[Encoder[Either[Nothing, T]]].apply(Right(response.response))
   }
 
   /**
@@ -39,12 +51,21 @@ class Runner(
             cmd
           }
           .flatMap(commandProcessor.process)
-          .recover {
-            case NonFatal(ex) =>
+          .map(encodeCommandResponseAsRight(_))
+          .transformWith {
+            case Success(response: Json) =>
+              log(s"Responding successfully: ${response.toString}")
+              Future.successful(response)
+            case Failure(NonFatal(ex)) =>
               log(s"Failed to process command, error = ${ex.getMessage}")
-              Event.CommandRejected(ex.getMessage)
+              Future.successful {
+                implicitly[Encoder[Either[String, Nothing]]].apply(Left(ex.getMessage))
+              }
+            case Failure(ex) =>
+              log(s"Impossible failure: ${ex.getMessage}")
+              Future.failed(ex)
           }
-          .map(_.asJson.noSpaces)
+          .map(_.noSpaces)
 
         /**
           * NOTE: When replying on futures, the method returning an async response is the only reliable one
@@ -68,14 +89,20 @@ object Runner {
     val http = HttpService(config.httpConfig)
     val messages = new I18NMessages
     val browserNotificationService = new BrowserNotificationService(messages)
-    val commandProcessor =
-      new CommandProcessor(storage, browserNotificationService)
+    val browserActionService = new BrowserActionService
 
-    val productUpdaterAlarm = new AlarmRunner(
-      config.alarmRunnerConfig,
-      messages,
-      browserNotificationService
-    )
-    new Runner(commandProcessor, productUpdaterAlarm)
+    val walletManager = new WalletManager(browserActionService, storage)
+    walletManager.unlock(WalletManager.FIXME_WALLET_PASSWORD).andThen {
+      case _ =>
+        val existingKeys = walletManager.listKeys()
+        for (keyName <- Set("math-faculty", "cs-faculty").diff(existingKeys.toSet)) {
+          walletManager.createKey(keyName)
+        }
+    }
+
+    val commandProcessor =
+      new CommandProcessor(storage, browserNotificationService, browserActionService, walletManager)
+
+    new Runner(commandProcessor)
   }
 }

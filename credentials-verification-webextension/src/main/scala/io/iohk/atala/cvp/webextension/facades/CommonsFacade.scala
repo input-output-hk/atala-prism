@@ -11,4 +11,8 @@ import scala.scalajs.js.annotation.JSGlobal
 object CommonsFacade extends js.Object {
 
   def notify(title: String, message: String, iconUrl: String): Unit = js.native
+
+  def setBadgeText(text: String, callback: js.Function0[_]): Unit = js.native
+  def setBadgeBackgroundColor(color: String, callback: js.Function0[_]): Unit = js.native
+  def setPopup(popup: String, callback: js.Function0[_]): Unit = js.native
 }

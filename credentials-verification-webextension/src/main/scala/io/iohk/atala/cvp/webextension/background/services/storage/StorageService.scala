@@ -32,6 +32,16 @@ private[background] class StorageService(implicit ec: ExecutionContext) {
           .flatMap(_.hcursor.downField("lastUsedOn").as[Long].toOption)
       }
   }
+
+  def store(key: String, value: js.Any): Future[Unit] = {
+    chrome.storage.Storage.local.set(js.Dictionary(key -> value))
+  }
+
+  def load(key: String): Future[js.Any] = {
+    chrome.storage.Storage.local
+      .get(any2undefOrA(key))
+      .map(_.getOrElse(key, null))
+  }
 }
 
 private[background] object StorageService {

@@ -1,3 +1,10 @@
+Proof of Concept for a ScalaJS browser extension wallet that can be used to sign credentials and authenticate communication with the backend. Currently it is compatible with Chrome only, in the future support of Firefox and new Edge versions is going to be added.
+
+Browser extension model imposes rescrictions on what can be done - e.g. the code running in the tab cannot invoke directly methods of the extension popup. Because of that the wallet consists of three parts:
+* background - it is the core of the wallet, manages the keys and signing requests; that is the place where the cryptography is run,
+* injected script - code that is injected into sites that need the wallet; in this PoC it just sends a signing request to the background; in the future it is going to expose API that JavaScript code running in tabs will access in order to do the signing,
+* popup - ephemeral web page shown in a popup that opens when extension method is clicked; when it is closed, all the state is lost; used to notify user about signing requests and let them choose which ones to sign.
+
 ## Dependencies
 
 This project uses [scalajs-bundler](https://github.com/scalacenter/scalajs-bundler) to fetch JavaScript dependencies, so `npm` is required to build it.
@@ -15,6 +22,15 @@ Then, running `sbt chromePackage` on this project is enough.
 - Running `sbt ~chromeUnpackedFast` will build the app each time it detects changes on the code, it also disables js optimizations which result in faster builds (placing the build at `target/chrome/unpacked-fast`).
 - Be sure to integrate scalafmt on your IntelliJ to format the source code on save (see https://scalameta.org/scalafmt/docs/installation.html#intellij).
 
+### Running
+1. Install the script using **Load unpacked** button in `chrome://extensions/` tab (`target/chrome/unpacked-fast` folder).
+1. Open https://iohk.io/, script will be injected into that tab and it will request for signature
+1. Click the extension icon right to the address bar
+1. Choose key to do the signing
+1. Click on certificate request
+1. There should be a notification from the tab script, that it has received the signature
+1. You can view tab logs by opening Developer Console and popup logs by right-clicking the icon and choosing *Inspect pop-up*; please note that each time the pop-up is closed its state is cleared.
+
 ## Release
 Run: `PROD=true sbt chromePackage` which generates:
 - A zip file that can be uploaded to the chrome store: `target/chrome/chrome-scalajs-template.zip`
@@ -24,20 +40,20 @@ Run: `PROD=true sbt chromePackage` which generates:
 The project has 3 components, and each of them acts as a different application, there are interfaces for interacting between them.
 
 ### Active Tab
-The [activetab](/src/main/scala/com/alexitc/activetab) package has the script that is executed when the user visits a web page that the app is allowed to interact with (like github.com), everything running on the active tab has limited permissions, see the [official docs](https://developer.chrome.com/extensions/activeTab) for more details, be sure to read about the [content scripts](https://developer.chrome.com/extensions/content_scripts) too.
+The [activetab](src/main/scala/io/iohk/atala/cvp/webextension/activetab) package has the script that is executed when the user visits a web page that the app is allowed to interact with, everything running on the active tab has limited permissions, see the [official docs](https://developer.chrome.com/extensions/activeTab) for more details, be sure to read about the [content scripts](https://developer.chrome.com/extensions/content_scripts) too. As the message to be signed will come from the tab, we need to deliver it to the background.
 
 ### Popup
-The [activetab](/src/main/scala/com/alexitc/popup) package has the script that is executed when the user visits clicks on the app icon which is displayed on the browser navigation bar.
- 
+The [activetab](src/main/scala/io/iohk/atala/cvp/webextension/popup) package has the script that is executed when the user visits clicks on the app icon which is displayed on the browser navigation bar.
 There is a limited functionality that the popup can do, see the [official docs](https://developer.chrome.com/extensions/browserAction) for more details.
+It cannot talk directly to the scripts in tab, just the background script.
 
 ### Background
-The [background](/src/main/scala/com/alexitc/background) package has the script that is executed when the browser starts, it keeps running to do anything the extension is supposed to do on the background, for example, interacts with the storage, web services, and alarms.
+The [background](src/main/scala/io/iohk/atala/cvp/webextension/background) package has the script that is executed when the browser starts, it keeps running to do anything the extension is supposed to do on the background, for example, interacts with the storage, web services, and alarms.
+As other components can't interact directly with the storage or web services, they use a high-level API ([BackgroundAPI](src/main/scala/io/iohk/atala/cvp/background/BackgroundAPI.scala)) to request the background to do that.
 
-As other components can't interact directly with the storage or web services, they use a high-level API ([BackgroundAPI](/src/main/scala/com/alexitc/background/BackgroundAPI.scala)) to request the background to do that.
+It can be viewed as the central component, as it is the only one that the other components can communicate with.
 
 Be sure to review the [official docs](https://developer.chrome.com/extensions/background_pages).
-
 
 ## Hints
 While scalajs works great, there are some limitations, in particular, you must pay lots of attention while dealing with boundaries.
@@ -45,4 +61,4 @@ While scalajs works great, there are some limitations, in particular, you must p
 A boundary is whatever interacts directly with JavaScript, like the browser APIs, for example:
 - When the background receives requests from other components, it gets a message that is serialized and deserialized by the browser, in order to support strongly typed models, the app encodes these models to a JSON string, the browser knows how to deal with strings but it doesn't know what to do with Scala objects.
 - When the storage needs to persist data, the app encodes the Scala objects to a JSON string, which is what the browser understands.
-- When there is a need to interact with JavaScript APIs (like external libraries), you'll need to write a [facade](/src/main/scala/com/alexitc/facades) unless there is one available, this facade will deal with primitive types only (strings, ints, etc).
+- When there is a need to interact with JavaScript APIs (like external libraries), you'll need to write a [facade](src/main/scala/io/iohk/atala/cvp/webextension/facades) unless there is one available, this facade will deal with primitive types only (strings, ints, etc).

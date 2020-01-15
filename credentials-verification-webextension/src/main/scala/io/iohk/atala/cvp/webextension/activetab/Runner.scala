@@ -5,6 +5,7 @@ import io.iohk.atala.cvp.webextension.background.BackgroundAPI
 import io.iohk.atala.cvp.webextension.common.I18NMessages
 
 import scala.concurrent.ExecutionContext
+import scala.util.{Failure, Success}
 
 class Runner(config: ActiveTabConfig, backgroundAPI: BackgroundAPI, messages: I18NMessages)(
     implicit ec: ExecutionContext
@@ -12,7 +13,13 @@ class Runner(config: ActiveTabConfig, backgroundAPI: BackgroundAPI, messages: I1
 
   def run(): Unit = {
     log("This was run by the active tab")
-    backgroundAPI.sendBrowserNotification(messages.appName, "I'm on the tab!!")
+    backgroundAPI.requestSignature("deadbeef").onComplete {
+      case Success(signature) =>
+        log(s"Signature delivered to tab: ${signature.signature}")
+        backgroundAPI.sendBrowserNotification(messages.appName, "Message signed and delivered to tab")
+      case Failure(ex) =>
+        log(s"Error from signing delivered to tab: ${ex.getMessage}")
+    }
   }
 
   private def log(msg: String): Unit = {

@@ -55,7 +55,7 @@ chromeManifest := new ExtensionManifest {
   override val name = "__MSG_extensionName__" // NOTE: i18n on the manifest is not supported on firefox
   override val version = Keys.version.value
   override val description = Some(
-    "TO BE UPDATED" // TODO: REPLACE ME
+    "ATALA Browser Wallet Extension" //
   )
   override val icons = Chrome.icons("icons", "app.png", Set(48, 96, 128))
 
@@ -69,9 +69,8 @@ chromeManifest := new ExtensionManifest {
 
   override val defaultLocale: Option[String] = Some("en")
 
-  // TODO: REPLACE ME
   override val browserAction: Option[BrowserAction] =
-    Some(BrowserAction(icons, Some("TO BE DEFINED - POPUP TITLE"), Some("popup.html")))
+    Some(BrowserAction(icons, Some("Popup action message"), Some("popup.html")))
 
   // scripts used on all modules
   val commonScripts = List("scripts/common.js", "main-bundle.js")
@@ -85,7 +84,7 @@ chromeManifest := new ExtensionManifest {
     List(
       ContentScript(
         matches = List(
-          "https://github.com/*" // TODO: REPLACE ME
+          "https://iohk.io/*"
         ),
         css = List("css/active-tab.css"),
         js = commonScripts ::: List("scripts/active-tab-script.js")
@@ -99,6 +98,7 @@ val circe = "0.11.1"
 val sttp = "1.7.0"
 
 libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.9.7"
+
 libraryDependencies += "net.lullabyte" %%% "scala-js-chrome" % "1b6d0d9cbeb95a23d5ecd4ba0defd6f1373fae1b"
 
 libraryDependencies += "io.circe" %%% "circe-core" % circe

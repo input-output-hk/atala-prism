@@ -9,9 +9,14 @@ import scala.scalajs.js.annotation.JSImport
 @JSImport("elliptic", "ec", globalFallback = "elliptic")
 class EC(curveName: String) extends js.Object {
   def genKeyPair(): KeyPair = js.native
+
+  def keyFromPrivate(priv: String, enc: String): KeyPair = js.native
+  def keyFromPublic(pub: String, enc: String): KeyPair = js.native
+
   //def sign(keys: KeyPair, encoding: String): String = js.native // TODO: options
   def verify(message: String, signature: Signature, key: KeyPair): Boolean = js.native // TODO: types of signature?
 }
+
 @js.native
 trait KeyPair extends js.Object {
   def getPublic(): CurvePoint = js.native
