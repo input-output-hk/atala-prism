@@ -69,7 +69,7 @@ class LoginPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelega
         DispatchQueue.global(qos: .background).async {
             print("This is run on the background queue")
 
-            sleep(1)
+            // sleep(1)
 
             self.cleanData()
 
@@ -122,6 +122,7 @@ class LoginPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelega
             if FakeData.loginIsValid(words: words) {
                 // user = FakeData.fakeProfile()
                 user = LoggedUser()
+                user?.apiUrl = Common.URL_API
             }
 
             DispatchQueue.main.async {
