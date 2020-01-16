@@ -56,11 +56,4 @@ object ParticipantsDAO {
       """.stripMargin.query[ParticipantInfo].option
   }
 
-//  def findPublicKey(id: ParticipantId): OptionT[doobie.ConnectionIO, ECPublicKey] = OptionT {
-//    sql"""
-//         |SELECT x, y
-//         |FROM holder_public_keys
-//         |WHERE participant_id = $id
-//      """.stripMargin.query[ECPublicKey].option
-//  }
 }

@@ -110,14 +110,6 @@ class ConnectorService(
           }
           .getOrElse(throw new RuntimeException("Missing public key"))
       }
-//    val publicKey = request.holderPublicKey
-//      .map { protoKey =>
-//       EncodedPublicKey (toEncodePublicKey(
-//          x = BigInt(protoKey.x),
-//          y = BigInt(protoKey.y)
-//        ).toVector)
-//      }
-//      .getOrElse(throw new RuntimeException("Missing public key"))
 
     connections
       .addConnectionFromToken(new model.TokenString(request.token), publicKey, paymentNonce)
