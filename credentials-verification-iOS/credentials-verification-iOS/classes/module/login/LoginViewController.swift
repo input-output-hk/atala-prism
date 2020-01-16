@@ -70,7 +70,7 @@ class LoginViewController: BaseViewController {
     func configFields(numbers: [Int]) {
 
         for index in 0 ..< textFields.count {
-            let number = numbers.count > index ? numbers[index] : -1
+            let number = numbers.count > index ? (numbers[index] + 1) : -1
             let text: String = number != -1 ? String(format: "login_input_title".localize(), number) : "login_input_title_empty".localize()
             textFields[index].config(title: text)
         }

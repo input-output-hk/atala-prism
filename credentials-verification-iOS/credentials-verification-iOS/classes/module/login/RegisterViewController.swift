@@ -9,7 +9,6 @@ class RegisterViewController: BaseViewController, RegisterSeedViewDelegate, Swit
     @IBOutlet weak var switchLegal: SwitchCustomView!
     @IBOutlet weak var buttonContinue: UIButton!
 
-    let SEED_COUNT = 12
     var viewSeeds: [RegisterSeedView] = []
 
     override func navBarCustomStyle() -> NavBarCustomStyle {
@@ -46,7 +45,7 @@ class RegisterViewController: BaseViewController, RegisterSeedViewDelegate, Swit
     func setupSeeds() {
 
         let stackRows = stack.subviews
-        let elementsPerRow = SEED_COUNT / stackRows.count
+        let elementsPerRow = CryptoUtils.SEED_COUNT / stackRows.count
         for indexColumn in 0 ..< stackRows.count {
             let stackRow = stackRows[indexColumn] as! UIStackView
             stackRow.arrangedSubviews.forEach { $0.removeFromSuperview() }

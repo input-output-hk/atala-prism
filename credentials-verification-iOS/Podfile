@@ -28,6 +28,9 @@ target 'credentials-verification-iOS' do
   pod 'Firebase/Performance', '~> 6.13.0'
   # Payments
   pod 'BraintreeDropIn', '~> 7.5.0'
+  # Mnemonics
+  pod 'BitcoinKit', '~> 1.1.0'
+  pod 'BigInt', '~> 5.0'
 
   
   target 'credentials-verification-iOSTests' do

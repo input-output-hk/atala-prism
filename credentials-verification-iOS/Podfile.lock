@@ -6,6 +6,8 @@ PODS:
     - Alamofire (~> 4.7)
     - ObjectMapper (~> 3.4)
   - AutoInsetter (1.8.0)
+  - BigInt (5.0.0)
+  - BitcoinKit (1.1.0)
   - BoringSSL-GRPC (0.0.3):
     - BoringSSL-GRPC/Implementation (= 0.0.3)
     - BoringSSL-GRPC/Interface (= 0.0.3)
@@ -172,6 +174,8 @@ DEPENDENCIES:
   - Alamofire (~> 4.8.2)
   - AlamofireImage (~> 3.5)
   - AlamofireObjectMapper (~> 5.2)
+  - BigInt (~> 5.0)
+  - BitcoinKit (~> 1.1.0)
   - BraintreeDropIn (~> 7.5.0)
   - Crashlytics (~> 3.14.0)
   - Fabric (~> 1.10.2)
@@ -192,6 +196,8 @@ SPEC REPOS:
     - AlamofireImage
     - AlamofireObjectMapper
     - AutoInsetter
+    - BigInt
+    - BitcoinKit
     - BoringSSL-GRPC
     - Braintree
     - BraintreeDropIn
@@ -231,6 +237,8 @@ SPEC CHECKSUMS:
   AlamofireImage: 63cfe3baf1370be6c498149687cf6db3e3b00999
   AlamofireObjectMapper: 1989f690e982b71921b9253f53a4f33a9bc00d88
   AutoInsetter: 0b90ca74e36561c340129045a3722c51a0b15c58
+  BigInt: 74b4d88367b0e819d9f77393549226d36faeb0d8
+  BitcoinKit: a8c198d2a57caf64dc43271901f8c5a2309aced2
   BoringSSL-GRPC: db8764df3204ccea016e1c8dd15d9a9ad63ff318
   Braintree: 9fc21dc2ead57d104c4a0743454308e404217ec7
   BraintreeDropIn: 15d6f53bf80bc0ae7809ab17803100c0a5448fd2
@@ -265,6 +273,6 @@ SPEC CHECKSUMS:
   Tabman: 63eae331ae7a9388ae389b1808f1939269fcdece
   Toast-Swift: 36f4720243c8582c2be243a60a51e193c761f541
 
-PODFILE CHECKSUM: 98cced335625cca8d62b61ecf83ae13c99b9e64f
+PODFILE CHECKSUM: ff151917dc493b4f7f9ac70cf4700aa228560369
 
 COCOAPODS: 1.8.4

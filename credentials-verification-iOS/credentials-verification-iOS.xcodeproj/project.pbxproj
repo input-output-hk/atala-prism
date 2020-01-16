@@ -245,10 +245,7 @@
 		EE48AC242377652F00C0A441 /* TutorialPageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorialPageView.swift; sourceTree = "<group>"; };
 		EE48AC2623791B3000C0A441 /* SwitchCustomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwitchCustomView.swift; sourceTree = "<group>"; };
 		EE48AC282379221000C0A441 /* SwitchCustomView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SwitchCustomView.xib; sourceTree = "<group>"; };
-		EE631CF423C66119001EAA0F /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
-		EE631CF523C66119001EAA0F /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = es; path = es.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
 		EE631CFC23C66259001EAA0F /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		EE631CFE23C6626F001EAA0F /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		EE631CFF23C66285001EAA0F /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Base; path = Base.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		EE684D3B23CFE46D0050EF71 /* ka */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ka; path = ka.lproj/Localizable.strings; sourceTree = "<group>"; };
 		EE684D3C23CFE46D0050EF71 /* ka */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = ka; path = ka.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
@@ -1218,7 +1215,6 @@
 			knownRegions = (
 				en,
 				Base,
-				es,
 				ka,
 			);
 			mainGroup = F5E3893C234BC34D0001F1E3;
@@ -1588,7 +1584,6 @@
 			isa = PBXVariantGroup;
 			children = (
 				EE631CFC23C66259001EAA0F /* en */,
-				EE631CFE23C6626F001EAA0F /* es */,
 				EE631CFF23C66285001EAA0F /* Base */,
 				EE684D3D23CFE46D0050EF71 /* ka */,
 			);
@@ -1600,7 +1595,6 @@
 			children = (
 				EE7D4B112366B9C3007C31A8 /* en */,
 				EE7D4B162366B9C3007C31A8 /* Base */,
-				EE631CF423C66119001EAA0F /* es */,
 				EE684D3B23CFE46D0050EF71 /* ka */,
 			);
 			name = Localizable.strings;
@@ -1611,7 +1605,6 @@
 			children = (
 				EE7D4B132366B9C3007C31A8 /* en */,
 				EE7D4B172366B9C3007C31A8 /* Base */,
-				EE631CF523C66119001EAA0F /* es */,
 				EE684D3C23CFE46D0050EF71 /* ka */,
 			);
 			name = Localizable.stringsdict;
@@ -1743,7 +1736,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 556N44M7XA;
 				INFOPLIST_FILE = "credentials-verification-iOS/Info.plist";
@@ -1751,7 +1744,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.1.4;
+				MARKETING_VERSION = 0.1.5;
 				PRODUCT_BUNDLE_IDENTIFIER = io.iohk.cvp;
 				PRODUCT_NAME = ATALA;
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1768,14 +1761,14 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 5;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_TEAM = 556N44M7XA;
 				INFOPLIST_FILE = "credentials-verification-iOS/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.1.4;
+				MARKETING_VERSION = 0.1.5;
 				PRODUCT_BUNDLE_IDENTIFIER = io.iohk.cvp;
 				PRODUCT_NAME = ATALA;
 				PROVISIONING_PROFILE_SPECIFIER = "";
