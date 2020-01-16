@@ -28,7 +28,7 @@ class ConnectionsService(
 
   def addConnectionFromToken(
       tokenString: TokenString,
-      publicKey: ECPublicKey,
+      publicKey: EncodedPublicKey,
       paymentNonce: Option[ClientNonce]
   ): FutureEither[ConnectorError, (ParticipantId, ConnectionInfo)] = {
     val connectionPrice = 5

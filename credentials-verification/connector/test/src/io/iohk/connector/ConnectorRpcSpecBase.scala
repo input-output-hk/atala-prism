@@ -119,10 +119,15 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
   protected def createParticipant(
       name: String,
       tpe: ParticipantType,
-      logo: Option[ParticipantLogo] = None
+      logo: Option[ParticipantLogo] = None,
+      publicKey: Option[EncodedPublicKey] = None
   ): ParticipantId = {
     val id = ParticipantId.random()
-    ParticipantsDAO.insert(ParticipantInfo(id, tpe, name, None, logo)).transact(database).unsafeToFuture().futureValue
+    ParticipantsDAO
+      .insert(ParticipantInfo(id, tpe, publicKey, name, None, logo))
+      .transact(database)
+      .unsafeToFuture()
+      .futureValue
 
     id
   }

@@ -35,11 +35,13 @@ object MessageId {
     new MessageId(UUID.randomUUID())
   }
 }
+case class EncodedPublicKey(bytes: Vector[Byte]) extends AnyVal
 
 case class ParticipantLogo(bytes: Vector[Byte]) extends AnyVal
 case class ParticipantInfo(
     id: ParticipantId,
     tpe: ParticipantType,
+    publicKey: Option[EncodedPublicKey],
     name: String,
     did: Option[String],
     logo: Option[ParticipantLogo]

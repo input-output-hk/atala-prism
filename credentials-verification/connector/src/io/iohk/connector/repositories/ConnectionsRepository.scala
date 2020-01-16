@@ -51,7 +51,7 @@ class ConnectionsRepository(
 
   def addConnectionFromToken(
       token: TokenString,
-      publicKey: ECPublicKey
+      publicKey: EncodedPublicKey
   ): FutureEither[ConnectorError, (ParticipantId, ConnectionInfo)] = {
 
     implicit val loggingContext = LoggingContext("token" -> token)
@@ -62,12 +62,9 @@ class ConnectionsRepository(
         .toRight(UnknownValueError("token", token.token).logWarn)
 
       // Create a holder, which has no name nor did, instead it has a public key
-      acceptorInfo = ParticipantInfo(ParticipantId.random(), ParticipantType.Holder, "", None, None)
+      acceptorInfo = ParticipantInfo(ParticipantId.random(), ParticipantType.Holder, Some(publicKey), "", None, None)
       _ <- EitherT.right[ConnectorError] {
         ParticipantsDAO.insert(acceptorInfo)
-      }
-      _ <- EitherT.right[ConnectorError] {
-        ParticipantsDAO.insertPublicKey(acceptorInfo.id, publicKey)
       }
 
       ciia <- EitherT.right[ConnectorError](

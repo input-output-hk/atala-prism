@@ -12,6 +12,7 @@ import org.bouncycastle.jcajce.provider.asymmetric.ec.{BCECPrivateKey, BCECPubli
 import org.bouncycastle.jce.ECNamedCurveTable
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.bouncycastle.jce.spec.{ECNamedCurveSpec, ECPublicKeySpec => BCECPublicKeySpec}
+import org.bouncycastle.math.ec.ECCurve
 
 object ECKeys {
 
@@ -81,11 +82,40 @@ object ECKeys {
     }
   }
 
+  def toEncodePublicKey(x: BigInt, y: BigInt): Array[Byte] = {
+    encodePoint(getECPoint(toPublicKey(x, y)), ecParameterSpec.getCurve)
+  }
+
+  /**
+    * @param ecPoint
+    * @param ecCurve
+    * @return Array[Byte]
+    *
+    */
+  def encodePoint(ecPoint: JavaECPoint, ecCurve: ECCurve): Array[Byte] = {
+    val size = ecCurve.getFieldSize + 7 >> 3
+    val xArr = toUnsignedByteArray(ecPoint.getAffineX)
+    val yArr = toUnsignedByteArray(ecPoint.getAffineY)
+    if (xArr.length <= size && yArr.length <= size) {
+      val arr = new Array[Byte](1 + (size << 1))
+      arr(0) = 4 //Uncompressed point indicator for encoding
+      Array.copy(xArr, 0, arr, size - xArr.length + 1, xArr.length)
+      Array.copy(yArr, 0, arr, arr.length - yArr.length, yArr.length)
+      arr
+    } else throw new RuntimeException("Point coordinates do not match field size")
+  }
+
+  private def toUnsignedByteArray(src: BigInt): Array[Byte] = {
+    val asByteArray = src.toByteArray
+    if (asByteArray.head == 0) asByteArray.tail
+    else asByteArray
+  }
+
   /**
     * It looks like the coordinates on secp256k1 are always possitive and keys are encoded without the byte sign
     * that Java uses for encoding/decoding a big integer.
     */
-  private def toBigInt(bytes: Array[Byte]): BigInt = {
+  private def toBigInt(bytes: Array[Byte]) = {
     BigInt(1, bytes)
   }
 
@@ -98,4 +128,5 @@ object ECKeys {
 
     new JavaECPublicKeySpec(ecPoint, ecNamedCurveSpec)
   }
+
 }

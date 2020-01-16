@@ -8,6 +8,7 @@ CREATE DOMAIN DID AS TEXT CHECK(
 CREATE TABLE participants(
   id UUID NOT NULL,
   tpe PARTICIPANT_TYPE NOT NULL,
+  publicKey BYTEA NULL,
   name text NOT NULL,
   did DID NULL,
   logo BYTEA NULL,

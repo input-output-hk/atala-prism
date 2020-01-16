@@ -6,6 +6,7 @@ import java.time.{Instant, LocalDateTime, ZoneOffset}
 import doobie.implicits._
 import io.iohk.connector.model._
 import io.iohk.connector.repositories.daos._
+import io.iohk.cvp.crypto.ECKeys
 import io.iohk.cvp.models.ParticipantId
 import org.scalatest.EitherValues._
 
@@ -42,6 +43,7 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
       result.right.value mustBe ParticipantInfo(
         issuerId,
         ParticipantType.Issuer,
+        None,
         "Issuer",
         Some("did:test:issuer"),
         None
@@ -52,12 +54,13 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
   "addConnectionFromToken" should {
     "add connection from existing token" in {
       val issuerId = createIssuer()
-      val publicKey = ECPublicKey(BigInt(0), BigInt(1))
+      val publicKey = "Publickey(BigInt(0), BigInt(1))".getBytes.toVector
+      val encodedPublicKey = EncodedPublicKey(publicKey)
 
       val token = new TokenString("t0k3nc0de")
       sql"""INSERT INTO connection_tokens(token, initiator) VALUES ($token, $issuerId)""".runUpdate()
 
-      val result = connectionsRepository.addConnectionFromToken(token, publicKey).value.futureValue
+      val result = connectionsRepository.addConnectionFromToken(token, encodedPublicKey).value.futureValue
       val connectionId = result.right.value._2.id
 
       sql"""SELECT COUNT(1) FROM connections WHERE id=$connectionId""".runUnique[Int]() mustBe 1

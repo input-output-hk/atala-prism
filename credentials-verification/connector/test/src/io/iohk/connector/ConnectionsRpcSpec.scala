@@ -7,6 +7,7 @@ import io.grpc.{Status, StatusRuntimeException}
 import io.iohk.connector.model._
 import io.iohk.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO, ParticipantsDAO}
 import io.iohk.cvp.connector.protos._
+import io.iohk.cvp.crypto.ECKeys._
 import io.iohk.cvp.models.ParticipantId
 import org.scalatest.OptionValues._
 
@@ -66,9 +67,10 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase {
       val issuerId = createIssuer("Issuer")
       val holderId = createHolder("Holder")
       val token = createToken(issuerId)
-      val publicKey = ECPublicKey(BigInt("12345678912345678901234567890"), BigInt("987654322198754321942182"))
-      val publicKeyProto = PublicKey(publicKey.x.toString(), publicKey.y.toString())
-
+      val ecPoint = getECPoint(generateKeyPair().getPublic)
+      val publicKeyProto = PublicKey(ecPoint.getAffineX.toString(), ecPoint.getAffineY.toString())
+      val encodedPublicKey =
+        io.iohk.connector.model.EncodedPublicKey(toEncodePublicKey(ecPoint.getAffineX, ecPoint.getAffineY).toVector)
       usingApiAs(holderId) { blockingStub =>
         val request = AddConnectionFromTokenRequest(token.token).withHolderPublicKey(publicKeyProto)
         val response = blockingStub.addConnectionFromToken(request)
@@ -85,11 +87,11 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase {
           .futureValue mustBe true
 
         ParticipantsDAO
-          .findPublicKey(ParticipantId(UUID.fromString(holderId)))
+          .findByPublicKey(encodedPublicKey)
           .transact(database)
           .value
           .unsafeToFuture()
-          .futureValue mustBe Some(publicKey)
+          .futureValue mustBe response.connection.value.participantInfo
       }
     }
 
