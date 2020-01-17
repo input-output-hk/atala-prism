@@ -5,7 +5,11 @@ import {
   registerUser,
   createAndIssueCredential
 } from './credentials/credentialsManager';
-import { createStudent, generateConnectionToken } from './credentials/studentsManager';
+import {
+  createStudent,
+  generateConnectionToken,
+  getStudentById
+} from './credentials/studentsManager';
 
 export const api = {
   generateConnectionToken,
@@ -14,5 +18,6 @@ export const api = {
   createCredential,
   registerUser,
   createStudent,
-  createAndIssueCredential
+  createAndIssueCredential,
+  getStudentById
 };

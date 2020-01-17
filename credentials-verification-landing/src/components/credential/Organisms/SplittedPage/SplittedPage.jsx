@@ -1,10 +1,14 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Col, Row } from 'antd';
 import PropTypes from 'prop-types';
 
 import './_style.scss';
 
-const SplittedPage = ({ renderLeft, renderRight }) => {
+const SplittedPage = ({ onMount, renderLeft, renderRight }) => {
+  useEffect(() => {
+    if (onMount) onMount();
+  }, []);
+
   return (
     <div className="SplittedPageContent">
       <Row>
@@ -20,7 +24,7 @@ const SplittedPage = ({ renderLeft, renderRight }) => {
 };
 
 SplittedPage.propTypes = {
-  redirector: PropTypes.shape({ redirectToHome: PropTypes.func }).isRequired,
+  onMount: PropTypes.func.isRequired,
   renderLeft: PropTypes.func.isRequired,
   renderRight: PropTypes.func.isRequired
 };

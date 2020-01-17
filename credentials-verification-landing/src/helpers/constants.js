@@ -81,6 +81,7 @@ export const translateStatus = status => WalletStatuses[status];
 
 // Connection status
 export const CONNECTION_ACCEPTED = 2;
+export const CONNECTION_REVOKED = 3;
 
 export const FEATURE_NAME = 'features';
 export const CREDENTIAL_NAME = 'credentials';

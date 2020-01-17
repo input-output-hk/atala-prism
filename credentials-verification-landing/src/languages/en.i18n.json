@@ -488,7 +488,8 @@
     },
     "errors": {
       "studentCreation": "The student could not be created",
-      "creationAndIssuing": "The credential could not be created or issued"
+      "creationAndIssuing": "The credential could not be created or issued",
+      "connectionWaiting": "A connection error happened, please refresh this page and start anew"
     },
     "personalInformation": {
       "title": "Personal Information",
