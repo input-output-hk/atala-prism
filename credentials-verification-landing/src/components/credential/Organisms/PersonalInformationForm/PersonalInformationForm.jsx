@@ -6,8 +6,9 @@ import localeKa from 'moment/locale/ka';
 import localeEn from 'moment/locale/en-gb';
 import { noEmptyInput, futureDate, pastDate } from '../../../../helpers/formRules';
 import CustomForm from '../../../common/Organisms/Forms/CustomForm';
-
 import { getBrowserLanguage } from '../../../../helpers/languageUtils';
+
+import './_style.scss';
 
 const getStartDate = formRef => formRef.current.getForm().getFieldValue('startDate');
 
@@ -29,8 +30,6 @@ const TemplateForm = React.forwardRef((_props, ref) => {
   const items = [
     getInput('name', t),
     getInput('lastName', t),
-    // getInput('universityName', t),
-    // getInput('degreeName', t),
     getInput('award', t),
     {
       fieldDecoratorData: {

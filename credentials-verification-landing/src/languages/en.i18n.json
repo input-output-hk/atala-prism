@@ -117,7 +117,7 @@
   },
   "landing": {
     "start": {
-      "info": "Digital universities degrees powered by Blockchain",
+      "info": "Digital universities' degrees powered by Blockchain",
       "subtitle": "Carry and share your credentials inside your digital wallet."
     },
     "downloadAndroidAlt": "Download Android",
@@ -140,7 +140,7 @@
       }
     },
     "credential": {
-      "credentialAlt": "Credential Example that shows a credential with filled info (degree, student and university name, award and dates of start and graduation)",
+      "credentialAlt": "Credential example that shows a credential with filled info (degree, student and university name, award and dates of start and graduation)",
       "iconAlt": "Credential Icon",
       "title": "Lorem Ipsum is simply printing text.",
       "subtitle1": "It is a long established fact that a reader will be distracted by the readable content of ",
@@ -163,13 +163,13 @@
       "mobile": "Mobile phones with screens of the mobile app"
     },
     "trademark": {
-      "part1": "© Copyright 2019, ATALA. All Rights Reserved. ATALA Prism is a registered trademarke of ",
+      "part1": "© Copyright 2019, ATALA. All Rights Reserved. ATALA Prism is a registered trademark of ",
       "part2": "IOHK."
     }
   },
   "credentials": {
     "title": "Credentials",
-    "sendCredentials": "Send Credentials",
+    "sendCredentials": "Send credentials",
     "successfullyIssued": "The Credential has been successfully issued",
     "student": {
       "title": "Student",
@@ -484,7 +484,7 @@
   "credential": {
     "backHome": "Back Home",
     "createdCredential": {
-      "title": "This is your Credential!"
+      "title": "This is your credential!"
     },
     "errors": {
       "studentCreation": "The student could not be created",
@@ -494,7 +494,7 @@
     "personalInformation": {
       "title": "Personal Information",
       "explanation": "Please fill in the following information that will be displayed in your credential. You will not be able to change this once the credential is issued.",
-      "askForCredential": "Ask for Credential",
+      "askForCredential": "Ask for credential",
       "form": {
         "name": "Name",
         "lastName": "Last Name",
@@ -505,9 +505,17 @@
         "graduationDate": "Graduation Date"
       }
     },
+    "sendCredentials": {
+      "title": "Congrats!",
+      "subtitle": "Your personal information has been verified successfully. Your Credential is ready to be issued.",
+      "howToContinue1": "To continue click the ",
+      "howToContinue2": " button, then check your device.",
+      "receiveCredential": "Receive Credential",
+      "iconAlt": "Phone Image"
+    },
     "finishInfo": {
       "title": "Check your phone!",
-      "explanation": "You will receive you Credential on Atala Prism App Dashboard.",
+      "explanation": "You will receive your credential on Atala Prism App Dashboard.",
       "finishedIconAlt": "Cellphone with Credential",
       "howToSee": "Open Atala Prism App and check your Dashboard to see your",
       "whatToSee": " New Credential",
@@ -523,7 +531,11 @@
       "title": "Scan QR Code",
       "explanation": "Scan this QR to start a connection between you and this Issuer.",
       "step1": "Open Atala Prism on your phone.",
-      "step2": "Touch Connections in the Main Menu.",
+      "step2": {
+        "part1": "Touch Connections ",
+        "part2": " in the Main Menu.",
+        "alt": "Connection Menu Icon"
+      },
       "step3": "When the camera is activated, point your phone towards this screen to scan the code",
       "scannedQR": "I scanned the QR!"
     }

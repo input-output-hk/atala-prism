@@ -4,9 +4,10 @@ import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import LabelItem from '../../../common/Atoms/LabelItem/LabelItem';
+import { withRedirector } from '../../../providers/withRedirector';
+import { RIGHT } from '../../../../helpers/constants';
 
 import './_style.scss';
-import { withRedirector } from '../../../providers/withRedirector';
 
 const CredentialItem = ({ redirector: { redirectToCredential } }) => {
   const { t } = useTranslation();
@@ -28,7 +29,7 @@ const CredentialItem = ({ redirector: { redirectToCredential } }) => {
         <CustomButton
           buttonProps={{ className: 'theme-secondary', onClick: redirectToCredential }}
           buttonText={t('landing.findCredential.askForCredential')}
-          icon={<Icon type="arrow-right" />}
+          icon={{ icon: <Icon type="arrow-right" />, side: RIGHT }}
         />
       </div>
     </div>

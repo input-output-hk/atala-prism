@@ -4,7 +4,13 @@ import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import CredentialSummaryData from '../CredentialData/CredentialSummaryData';
 import CustomButton from '../CustomButton/CustomButton';
-import { drawerWidth, VERIFIER, USER_ROLE, ORGANISATION_NAME } from '../../../../helpers/constants';
+import {
+  drawerWidth,
+  VERIFIER,
+  USER_ROLE,
+  ORGANISATION_NAME,
+  RIGHT
+} from '../../../../helpers/constants';
 
 const CredentialSummaryDetail = ({ drawerInfo, credentialData }) => {
   const { t } = useTranslation();
@@ -18,7 +24,7 @@ const CredentialSummaryDetail = ({ drawerInfo, credentialData }) => {
         {role === VERIFIER && (
           <CustomButton
             buttonProps={{ className: 'theme-outline', onClick: () => {} }}
-            icon={<Icon type="download" />}
+            icon={{ icon: <Icon type="download" />, side: RIGHT }}
           />
         )}
         {role === VERIFIER && (

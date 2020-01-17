@@ -4,6 +4,7 @@ import { Icon, Row } from 'antd';
 import PropTypes from 'prop-types';
 import { withRedirector } from '../providers/withRedirector';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
+import { LEFT } from '../../helpers/constants';
 
 import './_style.scss';
 
@@ -12,14 +13,17 @@ const Credential = ({ redirector: { redirectToLanding }, getStep }) => {
 
   return (
     <div className="CredentialContainer">
-      <div className="CredentialContent">
+      <div className="LogoContent">
+        <img src="images/atala-logo.svg" alt={t('atalaLogo')} />
+      </div>
+      <div className="CredentialStepContent">
         <Row>
           <CustomButton
             buttonProps={{
               onClick: redirectToLanding,
               className: 'theme-link'
             }}
-            icon={<Icon type="arrow-left" />}
+            icon={{ icon: <Icon type="arrow-left" />, side: LEFT }}
             buttonText={t('credential.backHome')}
           />
         </Row>

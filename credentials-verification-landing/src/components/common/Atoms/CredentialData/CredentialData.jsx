@@ -4,15 +4,20 @@ import { Col } from 'antd';
 import CellRenderer from '../CellRenderer/CellRenderer';
 import freeUniLgo from '../../../../images/FreeUniLogo.png';
 import './_style.scss';
+import { LANDING_TITLE, LANDING_UNIVERSITY } from '../../../../helpers/constants';
 
-const CredentialData = ({ icon, title, university, student, startDate, graduationDate }) => (
+const CredentialData = ({ icon, student, startDate, graduationDate }) => (
   <Col lg={12} xs={24} className="CredentialTemplate">
     <div className="CredentialHeader">
-      <CellRenderer componentName="newCredential" title="degreeName" value={title} />
+      <CellRenderer componentName="newCredential" title="degreeName" value={LANDING_TITLE} />
       <img className="IconUniversity" src={icon || freeUniLgo} alt="Free University Tbilisi" />
     </div>
     <div className="CredentialContent">
-      <CellRenderer componentName="newCredential" title="universityName" value={university} />
+      <CellRenderer
+        componentName="newCredential"
+        title="universityName"
+        value={LANDING_UNIVERSITY}
+      />
       {student && (
         <Fragment>
           <hr />
@@ -42,8 +47,6 @@ CredentialData.defaultProps = {
 
 CredentialData.propTypes = {
   icon: PropTypes.string,
-  title: PropTypes.string.isRequired,
-  university: PropTypes.string.isRequired,
   student: PropTypes.string.isRequired,
   startDate: PropTypes.string.isRequired,
   graduationDate: PropTypes.string.isRequired

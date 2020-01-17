@@ -12,7 +12,7 @@ const PersonalInformation = ({ nextStep, personalInfoRef }) => {
   return (
     <div className="PersonalInformation">
       <h1>{t('credential.personalInformation.title')}</h1>
-      <label>{t('credential.personalInformation.explanation')}</label>
+      <h2>{t('credential.personalInformation.explanation')}</h2>
       <PersonalInformationForm ref={personalInfoRef} />
       <CustomButton
         buttonProps={{
