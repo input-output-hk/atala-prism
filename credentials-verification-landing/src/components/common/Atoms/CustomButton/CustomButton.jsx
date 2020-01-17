@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button } from 'antd';
 import PropTypes from 'prop-types';
+import { LEFT, RIGHT } from '../../../../helpers/constants';
 
 import './_style.scss';
 
@@ -10,16 +11,17 @@ import './_style.scss';
 //    - theme-outline
 //    - theme-grey
 //    - theme-link
-const CustomButton = ({ icon, buttonText, buttonProps }) => (
+const CustomButton = ({ icon: { icon, side }, buttonText, buttonProps }) => (
   <Button {...buttonProps}>
+    {side === LEFT && icon}
     {buttonText}
-    {icon && icon}
+    {side === RIGHT && icon}
   </Button>
 );
 
 CustomButton.defaultProps = {
   buttonText: '',
-  icon: null
+  icon: { icon: null }
 };
 
 CustomButton.propTypes = {
@@ -35,7 +37,7 @@ CustomButton.propTypes = {
     onClick: PropTypes.func
   }).isRequired,
   buttonText: PropTypes.string,
-  icon: PropTypes.element
+  icon: PropTypes.shape({ icon: PropTypes.element, side: PropTypes.string })
 };
 
 export default CustomButton;

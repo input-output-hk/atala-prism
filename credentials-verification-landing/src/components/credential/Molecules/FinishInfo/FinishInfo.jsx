@@ -13,27 +13,20 @@ const FinishInfo = ({ redirector: { redirectToLanding } }) => {
 
   return (
     <div className="FinishInfo">
-      <h1>
-        <strong>{t('credential.finishInfo.title')}</strong>
-      </h1>
-      <Row>
-        <label>{t('credential.finishInfo.explanation')}</label>
-      </Row>
-      <Row>
+      <h1>{t('credential.finishInfo.title')}</h1>
+      <h3>{t('credential.finishInfo.explanation')}</h3>
+      <div className="FinishContent">
         <img src={finishedIcon} alt={t('credential.finishInfo.finishedIconAlt')} />
-      </Row>
-      <Row>
         <p>
           {t('credential.finishInfo.howToSee')}
           <strong>{t('credential.finishInfo.whatToSee')}</strong>
         </p>
-      </Row>
-      <br />
-      <div className="centeredButton">
-        <CustomButton
-          buttonProps={{ onClick: redirectToLanding, className: 'theme-secondary' }}
-          buttonText={t('credential.finishInfo.finished')}
-        />
+        <div className="centeredButton">
+          <CustomButton
+            buttonProps={{ onClick: redirectToLanding, className: 'theme-secondary' }}
+            buttonText={t('credential.finishInfo.finished')}
+          />
+        </div>
       </div>
     </div>
   );
