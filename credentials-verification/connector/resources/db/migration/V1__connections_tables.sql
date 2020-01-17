@@ -8,12 +8,15 @@ CREATE DOMAIN DID AS TEXT CHECK(
 CREATE TABLE participants(
   id UUID NOT NULL,
   tpe PARTICIPANT_TYPE NOT NULL,
-  publicKey BYTEA NULL,
   name text NOT NULL,
   did DID NULL,
   logo BYTEA NULL,
   CONSTRAINT participants_id_pk PRIMARY KEY (id)
 );
+
+ALTER TABLE participants ADD COLUMN public_key BYTEA NULL;
+CREATE UNIQUE INDEX participants_public_key_index ON participants USING BTREE (public_key);
+
 
 CREATE TABLE connection_tokens(
   token text NOT NULL,

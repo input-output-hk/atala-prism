@@ -89,7 +89,7 @@ message PublicKey {
   string x = 1;
   string y = 2;
 }
-//Public key EC Point  uncompressed encoded
+// Public key ECPoint uncompressed encoded
 message EncodedPublicKey {
   bytes publicKey = 1;
 }
@@ -177,7 +177,7 @@ message AddConnectionFromTokenRequest {
   string token = 1; // token to instantiate connection
   PublicKey holderPublicKey = 2;
   string paymentNonce = 3; // optional field, if present, we'll charge the user before adding the connection
-  EncodedPublicKey holderEncodedPublicKey = 4;//uncompressed encoded public key
+  EncodedPublicKey holderEncodedPublicKey = 4;// Uncompressed encoded public key
 
 }
 

@@ -80,13 +80,14 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase {
         response.connection.value.participantInfo.value.getIssuer.name mustBe "Issuer"
         val connectionId = new ConnectionId(UUID.fromString(response.connection.value.connectionId))
 
-       val participantInfo =  io.iohk.connector.model.ParticipantInfo(
-         ParticipantId(holderId),
-         Holder,
-         Some(encodedPublicKey),
-         "",
-         None,None
-       )
+        val participantInfo = io.iohk.connector.model.ParticipantInfo(
+          ParticipantId(holderId),
+          Holder,
+          Some(encodedPublicKey),
+          "",
+          None,
+          None
+        )
         ConnectionsDAO
           .exists(connectionId)
           .transact(database)

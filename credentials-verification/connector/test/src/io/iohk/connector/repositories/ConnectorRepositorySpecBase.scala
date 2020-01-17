@@ -27,8 +27,8 @@ abstract class ConnectorRepositorySpecBase extends PostgresRepositorySpec {
       publicKey: Option[EncodedPublicKey],
       logo: Option[ParticipantLogo]
   ): ParticipantId = {
-    sql"""INSERT INTO participants(id, tpe, did, publicKey,name, logo) VALUES
-          (${ParticipantId.random()}, $tpe, $did, $publicKey ,$name, $logo)
+    sql"""INSERT INTO participants(id, tpe, did, public_key, name, logo) VALUES
+          (${ParticipantId.random()}, $tpe, $did, $publicKey, $name, $logo)
           RETURNING id"""
       .runUnique[ParticipantId]
   }

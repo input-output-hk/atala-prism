@@ -87,12 +87,12 @@ object ECKeys {
   }
 
   /**
-    * @param ecPoint
-    * @param ecCurve
+    * @param ecPoint points on elliptic curves
+    * @param ecCurve an elliptic curve
     * @return Array[Byte]
-    *
+    * @see sun.security.util.ECUtils#encodePoint()
     */
-  def encodePoint(ecPoint: JavaECPoint, ecCurve: ECCurve): Array[Byte] = {
+  private def encodePoint(ecPoint: JavaECPoint, ecCurve: ECCurve): Array[Byte] = {
     val size = ecCurve.getFieldSize + 7 >> 3
     val xArr = toUnsignedByteArray(ecPoint.getAffineX)
     val yArr = toUnsignedByteArray(ecPoint.getAffineY)
@@ -115,7 +115,7 @@ object ECKeys {
     * It looks like the coordinates on secp256k1 are always possitive and keys are encoded without the byte sign
     * that Java uses for encoding/decoding a big integer.
     */
-  private def toBigInt(bytes: Array[Byte]) = {
+  private def toBigInt(bytes: Array[Byte]): BigInt = {
     BigInt(1, bytes)
   }
 

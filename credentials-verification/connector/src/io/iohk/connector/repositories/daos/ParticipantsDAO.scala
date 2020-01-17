@@ -2,14 +2,14 @@ package io.iohk.connector.repositories.daos
 
 import cats.data.OptionT
 import doobie.implicits._
-import io.iohk.connector.model.{ECPublicKey, EncodedPublicKey, ParticipantInfo, TokenString}
+import io.iohk.connector.model.{EncodedPublicKey, ParticipantInfo, TokenString}
 import io.iohk.cvp.models.ParticipantId
 
 object ParticipantsDAO {
   def insert(participant: ParticipantInfo): doobie.ConnectionIO[Unit] = {
     val ParticipantInfo(id, tpe, publicKey, name, did, logo) = participant
     sql"""
-         |INSERT INTO participants (id, tpe, publicKey, name, did, logo)
+         |INSERT INTO participants (id, tpe, public_key, name, did, logo)
          |VALUES ($id, $tpe, $publicKey, $name, $did, $logo)
        """.stripMargin.update.run.map(_ => ())
   }
@@ -23,7 +23,7 @@ object ParticipantsDAO {
 
   def findBy(id: ParticipantId): OptionT[doobie.ConnectionIO, ParticipantInfo] = OptionT {
     sql"""
-         |SELECT id, tpe, publicKey ,name, did, logo
+         |SELECT id, tpe, public_key ,name, did, logo
          |FROM participants
          |WHERE id = $id
       """.stripMargin.query[ParticipantInfo].option
@@ -31,7 +31,7 @@ object ParticipantsDAO {
 
   def findBy(token: TokenString): OptionT[doobie.ConnectionIO, ParticipantInfo] = OptionT {
     sql"""
-         |SELECT p.id, p.tpe ,p.publicKey, p.name, p.did, p.logo
+         |SELECT p.id, p.tpe, p.public_key, p.name, p.did, p.logo
          |FROM connection_tokens t
          |JOIN participants p ON p.id = t.initiator
          |WHERE t.token = $token
@@ -40,7 +40,7 @@ object ParticipantsDAO {
 
   def findByAvailableToken(token: TokenString): OptionT[doobie.ConnectionIO, ParticipantInfo] = OptionT {
     sql"""
-         |SELECT p.id, p.tpe, p.publicKey, p.name, p.did, p.logo
+         |SELECT p.id, p.tpe, p.public_key, p.name, p.did, p.logo
          |FROM connection_tokens t
          |JOIN participants p ON p.id = t.initiator
          |WHERE t.token = $token AND
@@ -50,9 +50,9 @@ object ParticipantsDAO {
 
   def findByPublicKey(publicKey: EncodedPublicKey): OptionT[doobie.ConnectionIO, ParticipantInfo] = OptionT {
     sql"""
-         |SELECT id, tpe, publicKey, name, did, logo
+         |SELECT id, tpe, public_key, name, did, logo
          |FROM participants
-         |WHERE publicKey = $publicKey
+         |WHERE public_key = $publicKey
       """.stripMargin.query[ParticipantInfo].option
   }
 
