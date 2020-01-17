@@ -14,13 +14,6 @@ object ParticipantsDAO {
        """.stripMargin.update.run.map(_ => ())
   }
 
-//  def insertPublicKey(holderId: ParticipantId, publicKey: ECPublicKey): doobie.ConnectionIO[Unit] = {
-//    sql"""
-//         |INSERT INTO holder_public_keys (participant_id, x, y)
-//         |VALUES ($holderId, ${publicKey.x}, ${publicKey.y})
-//       """.stripMargin.update.run.map(_ => ())
-//  }
-
   def findBy(id: ParticipantId): OptionT[doobie.ConnectionIO, ParticipantInfo] = OptionT {
     sql"""
          |SELECT id, tpe, public_key ,name, did, logo
