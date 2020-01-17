@@ -106,9 +106,7 @@ object ECKeys {
   }
 
   private def toUnsignedByteArray(src: BigInt): Array[Byte] = {
-    val asByteArray = src.toByteArray
-    if (asByteArray.head == 0) asByteArray.tail
-    else asByteArray
+    src.toByteArray.dropWhile(_ == 0)
   }
 
   /**
