@@ -5,7 +5,7 @@ import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 
 import './_style.scss';
 
-const RegistrationFooter = ({ next, previous, requiresAgreement }) => {
+const RegistrationFooter = ({ next, previous, disabled, requiresAgreement }) => {
   const { t } = useTranslation();
 
   return (
@@ -15,7 +15,7 @@ const RegistrationFooter = ({ next, previous, requiresAgreement }) => {
           <CustomButton
             buttonProps={{
               onClick: previous,
-              className: 'theme-grey'
+              className: 'theme-outline'
             }}
             buttonText={t('registration.back')}
           />
@@ -25,7 +25,8 @@ const RegistrationFooter = ({ next, previous, requiresAgreement }) => {
         <CustomButton
           buttonProps={{
             onClick: next,
-            className: 'theme-primary'
+            className: 'theme-primary',
+            disabled
           }}
           buttonText={t(`registration.${requiresAgreement ? 'nextAndAgree' : 'next'}`)}
         />
@@ -42,6 +43,7 @@ RegistrationFooter.defaultProps = {
 RegistrationFooter.propTypes = {
   next: PropTypes.func,
   previous: PropTypes.func,
+  disabled: PropTypes.bool.isRequired,
   requiresAgreement: PropTypes.bool.isRequired
 };
 
