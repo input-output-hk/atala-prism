@@ -6,6 +6,7 @@ import {
   getCurrentLanguage,
   changeLanguage
 } from '../../../../helpers/languageUtils';
+import { customUpperCase } from '../../../../helpers/genericHelpers';
 import flagEn from '../../../../images/en.png';
 import flagKa from '../../../../images/ge.png';
 
@@ -34,7 +35,7 @@ const LanguageSelector = () => {
         {languages.map(lang => (
           <Select.Option value={lang} disabled={lang === currentLanguage}>
             <img src={flags[lang]} alt={`${t(`languages.${lang}`)}-${t('languages.flag')}`} />
-            {t(`languages.${lang}`).toUpperCase()}
+            {customUpperCase(t(`languages.${lang}`))}
           </Select.Option>
         ))}
       </Select>
