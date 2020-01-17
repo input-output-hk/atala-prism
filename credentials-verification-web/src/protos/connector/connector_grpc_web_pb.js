@@ -1030,5 +1030,85 @@ proto.io.iohk.cvp.connector.ConnectorServicePromiseClient.prototype.processPayme
 };
 
 
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.io.iohk.cvp.connector.GetPaymentsRequest,
+ *   !proto.io.iohk.cvp.connector.GetPaymentsResponse>}
+ */
+const methodDescriptor_ConnectorService_GetPayments = new grpc.web.MethodDescriptor(
+  '/io.iohk.cvp.connector.ConnectorService/GetPayments',
+  grpc.web.MethodType.UNARY,
+  proto.io.iohk.cvp.connector.GetPaymentsRequest,
+  proto.io.iohk.cvp.connector.GetPaymentsResponse,
+  /**
+   * @param {!proto.io.iohk.cvp.connector.GetPaymentsRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.cvp.connector.GetPaymentsResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.io.iohk.cvp.connector.GetPaymentsRequest,
+ *   !proto.io.iohk.cvp.connector.GetPaymentsResponse>}
+ */
+const methodInfo_ConnectorService_GetPayments = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.io.iohk.cvp.connector.GetPaymentsResponse,
+  /**
+   * @param {!proto.io.iohk.cvp.connector.GetPaymentsRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.cvp.connector.GetPaymentsResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.io.iohk.cvp.connector.GetPaymentsRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.cvp.connector.GetPaymentsResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.cvp.connector.GetPaymentsResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.io.iohk.cvp.connector.ConnectorServiceClient.prototype.getPayments =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/io.iohk.cvp.connector.ConnectorService/GetPayments',
+      request,
+      metadata || {},
+      methodDescriptor_ConnectorService_GetPayments,
+      callback);
+};
+
+
+/**
+ * @param {!proto.io.iohk.cvp.connector.GetPaymentsRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.io.iohk.cvp.connector.GetPaymentsResponse>}
+ *     A native promise that resolves to the response
+ */
+proto.io.iohk.cvp.connector.ConnectorServicePromiseClient.prototype.getPayments =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/io.iohk.cvp.connector.ConnectorService/GetPayments',
+      request,
+      metadata || {},
+      methodDescriptor_ConnectorService_GetPayments);
+};
+
+
 module.exports = proto.io.iohk.cvp.connector;
 

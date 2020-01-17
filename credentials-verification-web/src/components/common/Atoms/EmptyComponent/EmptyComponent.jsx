@@ -12,7 +12,7 @@ const EmptyComponent = ({ photoSrc, button, model, isFilter }) => {
     <div className="EmptyState">
       {photoSrc && <img src={photoSrc} alt={t('emptyComponent.photoAlt', { model })} />}
       {<h3>{t(`emptyComponent.${title}`, { model })}</h3>}
-      {button && <p>{t(`emptyComponent.${button ? 'subtitleWithGroup' : 'subtitle'}`)}</p>}
+      {button && <p>{t(`emptyComponent.${button ? 'subtitleWithButton' : 'subtitle'}`)}</p>}
       {button && <div className="ActionButton">{button}</div>}
     </div>
   );
