@@ -30,7 +30,6 @@ target 'credentials-verification-iOS' do
   pod 'BraintreeDropIn', '~> 7.5.0'
   # Mnemonics
   pod 'BitcoinKit', '~> 1.1.0'
-  pod 'BigInt', '~> 5.0'
 
   
   target 'credentials-verification-iOSTests' do
