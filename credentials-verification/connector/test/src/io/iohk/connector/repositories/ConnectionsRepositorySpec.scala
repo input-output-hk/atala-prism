@@ -54,7 +54,7 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
   "addConnectionFromToken" should {
     "add connection from existing token" in {
       val issuerId = createIssuer()
-      val publicKey = "Publickey(BigInt(0), BigInt(1))".getBytes.toVector
+      val publicKey = "some-bytes".getBytes.toVector
       val encodedPublicKey = EncodedPublicKey(publicKey)
 
       val token = new TokenString("t0k3nc0de")
