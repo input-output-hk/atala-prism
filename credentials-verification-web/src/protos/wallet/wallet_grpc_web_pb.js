@@ -43,16 +43,6 @@ proto.io.iohk.cvp.wallet.WalletServiceClient =
    */
   this.hostname_ = hostname;
 
-  /**
-   * @private @const {?Object} The credentials to be used to connect
-   *    to the server
-   */
-  this.credentials_ = credentials;
-
-  /**
-   * @private @const {?Object} Options for the client
-   */
-  this.options_ = options;
 };
 
 
@@ -79,16 +69,6 @@ proto.io.iohk.cvp.wallet.WalletServicePromiseClient =
    */
   this.hostname_ = hostname;
 
-  /**
-   * @private @const {?Object} The credentials to be used to connect
-   *    to the server
-   */
-  this.credentials_ = credentials;
-
-  /**
-   * @private @const {?Object} Options for the client
-   */
-  this.options_ = options;
 };
 
 
@@ -103,7 +83,10 @@ const methodDescriptor_WalletService_GetDID = new grpc.web.MethodDescriptor(
   grpc.web.MethodType.UNARY,
   proto.io.iohk.cvp.wallet.GetDIDRequest,
   proto.io.iohk.cvp.wallet.GetDIDResponse,
-  /** @param {!proto.io.iohk.cvp.wallet.GetDIDRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.wallet.GetDIDRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -119,7 +102,10 @@ const methodDescriptor_WalletService_GetDID = new grpc.web.MethodDescriptor(
  */
 const methodInfo_WalletService_GetDID = new grpc.web.AbstractClientBase.MethodInfo(
   proto.io.iohk.cvp.wallet.GetDIDResponse,
-  /** @param {!proto.io.iohk.cvp.wallet.GetDIDRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.wallet.GetDIDRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -177,7 +163,10 @@ const methodDescriptor_WalletService_SignMessage = new grpc.web.MethodDescriptor
   grpc.web.MethodType.UNARY,
   proto.io.iohk.cvp.wallet.SignMessageRequest,
   proto.io.iohk.cvp.wallet.SignMessageResponse,
-  /** @param {!proto.io.iohk.cvp.wallet.SignMessageRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.wallet.SignMessageRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -193,7 +182,10 @@ const methodDescriptor_WalletService_SignMessage = new grpc.web.MethodDescriptor
  */
 const methodInfo_WalletService_SignMessage = new grpc.web.AbstractClientBase.MethodInfo(
   proto.io.iohk.cvp.wallet.SignMessageResponse,
-  /** @param {!proto.io.iohk.cvp.wallet.SignMessageRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.wallet.SignMessageRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -251,7 +243,10 @@ const methodDescriptor_WalletService_VerifySignedMessage = new grpc.web.MethodDe
   grpc.web.MethodType.UNARY,
   proto.io.iohk.cvp.wallet.VerifySignedMessageRequest,
   proto.io.iohk.cvp.wallet.VerifySignedMessageResponse,
-  /** @param {!proto.io.iohk.cvp.wallet.VerifySignedMessageRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.wallet.VerifySignedMessageRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -267,7 +262,10 @@ const methodDescriptor_WalletService_VerifySignedMessage = new grpc.web.MethodDe
  */
 const methodInfo_WalletService_VerifySignedMessage = new grpc.web.AbstractClientBase.MethodInfo(
   proto.io.iohk.cvp.wallet.VerifySignedMessageResponse,
-  /** @param {!proto.io.iohk.cvp.wallet.VerifySignedMessageRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.wallet.VerifySignedMessageRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -325,7 +323,10 @@ const methodDescriptor_WalletService_CreateWallet = new grpc.web.MethodDescripto
   grpc.web.MethodType.UNARY,
   proto.io.iohk.cvp.wallet.CreateWalletRequest,
   proto.io.iohk.cvp.wallet.CreateWalletResponse,
-  /** @param {!proto.io.iohk.cvp.wallet.CreateWalletRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.wallet.CreateWalletRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -341,7 +342,10 @@ const methodDescriptor_WalletService_CreateWallet = new grpc.web.MethodDescripto
  */
 const methodInfo_WalletService_CreateWallet = new grpc.web.AbstractClientBase.MethodInfo(
   proto.io.iohk.cvp.wallet.CreateWalletResponse,
-  /** @param {!proto.io.iohk.cvp.wallet.CreateWalletRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.wallet.CreateWalletRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -399,7 +403,10 @@ const methodDescriptor_WalletService_GetWalletStatus = new grpc.web.MethodDescri
   grpc.web.MethodType.UNARY,
   proto.io.iohk.cvp.wallet.GetWalletStatusRequest,
   proto.io.iohk.cvp.wallet.GetWalletStatusResponse,
-  /** @param {!proto.io.iohk.cvp.wallet.GetWalletStatusRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.wallet.GetWalletStatusRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -415,7 +422,10 @@ const methodDescriptor_WalletService_GetWalletStatus = new grpc.web.MethodDescri
  */
 const methodInfo_WalletService_GetWalletStatus = new grpc.web.AbstractClientBase.MethodInfo(
   proto.io.iohk.cvp.wallet.GetWalletStatusResponse,
-  /** @param {!proto.io.iohk.cvp.wallet.GetWalletStatusRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.wallet.GetWalletStatusRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -473,7 +483,10 @@ const methodDescriptor_WalletService_unlockWallet = new grpc.web.MethodDescripto
   grpc.web.MethodType.UNARY,
   proto.io.iohk.cvp.wallet.UnlockWalletRequest,
   proto.io.iohk.cvp.wallet.UnlockWalletResponse,
-  /** @param {!proto.io.iohk.cvp.wallet.UnlockWalletRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.wallet.UnlockWalletRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -489,7 +502,10 @@ const methodDescriptor_WalletService_unlockWallet = new grpc.web.MethodDescripto
  */
 const methodInfo_WalletService_unlockWallet = new grpc.web.AbstractClientBase.MethodInfo(
   proto.io.iohk.cvp.wallet.UnlockWalletResponse,
-  /** @param {!proto.io.iohk.cvp.wallet.UnlockWalletRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.wallet.UnlockWalletRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -547,7 +563,10 @@ const methodDescriptor_WalletService_lockWallet = new grpc.web.MethodDescriptor(
   grpc.web.MethodType.UNARY,
   proto.io.iohk.cvp.wallet.LockWalletRequest,
   proto.io.iohk.cvp.wallet.LockWalletResponse,
-  /** @param {!proto.io.iohk.cvp.wallet.LockWalletRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.wallet.LockWalletRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -563,7 +582,10 @@ const methodDescriptor_WalletService_lockWallet = new grpc.web.MethodDescriptor(
  */
 const methodInfo_WalletService_lockWallet = new grpc.web.AbstractClientBase.MethodInfo(
   proto.io.iohk.cvp.wallet.LockWalletResponse,
-  /** @param {!proto.io.iohk.cvp.wallet.LockWalletRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.wallet.LockWalletRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -621,7 +643,10 @@ const methodDescriptor_WalletService_changePassphrase = new grpc.web.MethodDescr
   grpc.web.MethodType.UNARY,
   proto.io.iohk.cvp.wallet.ChangePassphraseRequest,
   proto.io.iohk.cvp.wallet.ChangePassphraseResponse,
-  /** @param {!proto.io.iohk.cvp.wallet.ChangePassphraseRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.wallet.ChangePassphraseRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -637,7 +662,10 @@ const methodDescriptor_WalletService_changePassphrase = new grpc.web.MethodDescr
  */
 const methodInfo_WalletService_changePassphrase = new grpc.web.AbstractClientBase.MethodInfo(
   proto.io.iohk.cvp.wallet.ChangePassphraseResponse,
-  /** @param {!proto.io.iohk.cvp.wallet.ChangePassphraseRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.wallet.ChangePassphraseRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -695,7 +723,10 @@ const methodDescriptor_WalletService_GenerateDID = new grpc.web.MethodDescriptor
   grpc.web.MethodType.UNARY,
   proto.io.iohk.cvp.wallet.GenerateDIDRequest,
   proto.io.iohk.cvp.wallet.GenerateDIDResponse,
-  /** @param {!proto.io.iohk.cvp.wallet.GenerateDIDRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.wallet.GenerateDIDRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -711,7 +742,10 @@ const methodDescriptor_WalletService_GenerateDID = new grpc.web.MethodDescriptor
  */
 const methodInfo_WalletService_GenerateDID = new grpc.web.AbstractClientBase.MethodInfo(
   proto.io.iohk.cvp.wallet.GenerateDIDResponse,
-  /** @param {!proto.io.iohk.cvp.wallet.GenerateDIDRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.wallet.GenerateDIDRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },

@@ -135,19 +135,13 @@
       "name": "Search",
       "types": {
         "credentialType": {
-          "CREDENTIAL1": "CREDENTIAL1",
-          "CREDENTIAL2": "CREDENTIAL2",
-          "CREDENTIAL3": "CREDENTIAL3"
+          "Mock Credentials": "Mock Credential"
         },
         "category": {
-          "CATEGORY1": "CATEGORY1",
-          "CATEGORY2": "CATEGORY2",
-          "CATEGORY3": "CATEGORY3"
+          "Mock Categories": "Mock Category"
         },
         "group": {
-          "GROUP1": "GROUP1",
-          "GROUP2": "GROUP2",
-          "GROUP3": "GROUP3"
+          "Mock Groups": "Mock Group"
         }
       },
       "clearFilters": "Clear Filters"
