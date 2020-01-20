@@ -2,7 +2,7 @@ package io.iohk.cvp.crypto
 
 import java.io.IOException
 import java.math.BigInteger
-import java.security._
+import java.security.{PublicKey, _}
 import java.security.spec.{
   ECGenParameterSpec => JavaECGenParameterSpec,
   ECPoint => JavaECPoint,
@@ -84,8 +84,8 @@ object ECKeys {
     }
   }
 
-  def toEncodePublicKey(x: BigInt, y: BigInt): EncodedPublicKey = {
-    val encodeBytes = encodePoint(getECPoint(toPublicKey(x, y)), ecParameterSpec.getCurve)
+  def toEncodePublicKey(publicKey: PublicKey): EncodedPublicKey = {
+    val encodeBytes = encodePoint(getECPoint(publicKey), ecParameterSpec.getCurve)
     EncodedPublicKey(encodeBytes.toVector)
   }
 

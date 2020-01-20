@@ -100,8 +100,10 @@ class ConnectorService(
         request.holderPublicKey
           .map { protoKey =>
             toEncodePublicKey(
-              x = BigInt(protoKey.x),
-              y = BigInt(protoKey.y)
+              toPublicKey(
+                x = BigInt(protoKey.x),
+                y = BigInt(protoKey.y)
+              )
             )
           }
           .getOrElse(throw new RuntimeException("Missing public key"))

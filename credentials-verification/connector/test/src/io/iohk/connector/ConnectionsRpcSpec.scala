@@ -68,9 +68,10 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase {
       val issuerId = createIssuer("Issuer")
       val holderId = createHolder("Holder")
       val token = createToken(issuerId)
-      val ecPoint = getECPoint(generateKeyPair().getPublic)
+      val publicKey = generateKeyPair().getPublic
+      val ecPoint = getECPoint(publicKey)
       val publicKeyProto = PublicKey(ecPoint.getAffineX.toString(), ecPoint.getAffineY.toString())
-      val encodedPublicKey = toEncodePublicKey(ecPoint.getAffineX, ecPoint.getAffineY)
+      val encodedPublicKey = toEncodePublicKey(publicKey)
       usingApiAs(holderId) { blockingStub =>
         val request = AddConnectionFromTokenRequest(token.token).withHolderPublicKey(publicKeyProto)
         val response = blockingStub.addConnectionFromToken(request)
