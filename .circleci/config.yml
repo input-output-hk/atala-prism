@@ -3,7 +3,7 @@ jobs:
 
   deploy-ecr-images:
     docker:
-      - image: inputoutput/scala-mill:2.12.8-0.5.2
+      - image: inputoutput/scala-mill:2.12.10-0.5.2
     steps:
       - checkout
 
@@ -82,7 +82,7 @@ jobs:
   build-credentials-verification:
     working_directory: ~/repo
     docker:
-      - image: inputoutput/scala-mill:2.12.8-0.5.2
+      - image: inputoutput/scala-mill:2.12.10-0.5.2
       - image: postgres:11.5
         environment:
           POSTGRES_USER: postgres
