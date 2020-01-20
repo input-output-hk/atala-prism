@@ -19,13 +19,8 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class Preferences {
 
-  private static final String MY_PREFS_NAME = "IOHK.ATALA.CREDENTIAL.VERIFICATION";
-  private static final String PK_KEY = "wallet_pk";
   public static final String ACCEPTED_MESSAGES_KEY = "accepted_messages";
   public static final String REJECTED_MESSAGES_KEY = "rejected_messages";
-  private static final String USER_ID_LIST_KEY = "user_id";
-  private static final String CONNECTION_USER_ID_KEY = "connection_id_user_id";
-  private static final String CONNECTION_LOGO_KEY = "connection_logo";
   public static final String USER_PROFILE_NAME = "user_profile_name";
   public static final String USER_PROFILE_COUNTRY = "user_profile_country";
   public static final String USER_PROFILE_BIRTH_DATE = "user_profile_birth_date";
@@ -33,6 +28,11 @@ public class Preferences {
   public static final String CONNECTION_TOKEN_TO_ACCEPT = "connection_token_to_accept";
   public static final String BACKEND_IP = "backend_ip";
   public static final String BACKEND_PORT = "backend_port";
+  private static final String MY_PREFS_NAME = "IOHK.ATALA.CREDENTIAL.VERIFICATION";
+  private static final String PK_KEY = "wallet_pk";
+  private static final String USER_ID_LIST_KEY = "user_id";
+  private static final String CONNECTION_USER_ID_KEY = "connection_id_user_id";
+  private static final String CONNECTION_LOGO_KEY = "connection_logo";
   private Context context;
 
   public void savePrivateKey(byte[] pk) {

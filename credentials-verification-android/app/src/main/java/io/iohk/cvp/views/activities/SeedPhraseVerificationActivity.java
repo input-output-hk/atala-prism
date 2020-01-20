@@ -1,7 +1,5 @@
 package io.iohk.cvp.views.activities;
 
-import static org.bitcoinj.crypto.MnemonicCode.BIP39_ENGLISH_SHA256;
-
 import android.os.Bundle;
 import android.widget.Button;
 import androidx.lifecycle.ViewModelProvider;
@@ -13,24 +11,18 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import io.iohk.cvp.R;
 import io.iohk.cvp.core.exception.CryptoException;
-import io.iohk.cvp.core.exception.MnemonicException.MnemonicChecksumException;
-import io.iohk.cvp.core.exception.MnemonicException.MnemonicLengthException;
-import io.iohk.cvp.core.exception.MnemonicException.MnemonicWordException;
 import io.iohk.cvp.crypto.ECKeys;
 import io.iohk.cvp.io.wallet.KeyPair;
 import io.iohk.cvp.viewmodel.WalletSetupViewModel;
 import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.Preferences;
 import io.iohk.cvp.views.utils.SimpleTextWatcher;
-import java.io.IOException;
-import java.io.InputStream;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import javax.inject.Inject;
-import org.bitcoinj.crypto.MnemonicCode;
 
 public class SeedPhraseVerificationActivity extends CvpActivity<WalletSetupViewModel> {
 
@@ -129,14 +121,11 @@ public class SeedPhraseVerificationActivity extends CvpActivity<WalletSetupViewM
   public void onContinueClick() {
     try {
       ECKeys crypto = new ECKeys();
-      InputStream inputStream = getResources().openRawResource(R.raw.word_list);
-      MnemonicCode mnemonic = new MnemonicCode(inputStream, BIP39_ENGLISH_SHA256);
-      KeyPair keyPair = crypto.getKeyPair(mnemonic.toEntropy(seedPhrase));
+      KeyPair keyPair = crypto.getKeyPair(seedPhrase);
       Preferences prefs = new Preferences(this);
       prefs.savePrivateKey(keyPair.getPrivateKey().toByteArray());
       navigator.showAccountCreated(this);
-    } catch (CryptoException | MnemonicLengthException | MnemonicWordException |
-        MnemonicChecksumException | IOException | InvalidKeySpecException e) {
+    } catch (CryptoException | InvalidKeySpecException e) {
       Crashlytics.logException(e);
       // TODO show error message
     }

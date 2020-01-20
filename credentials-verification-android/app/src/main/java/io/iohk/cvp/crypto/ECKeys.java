@@ -4,6 +4,7 @@ import static io.iohk.cvp.core.exception.ErrorCode.CRYPTO_UNKNOWN_PRIVATE_KEY_TY
 import static io.iohk.cvp.core.exception.ErrorCode.CRYPTO_UNKNOWN_PUBLIC_KEY_TYPE;
 
 import com.crashlytics.android.Crashlytics;
+import com.google.common.collect.ImmutableList;
 import io.iohk.cvp.core.exception.CryptoException;
 import io.iohk.cvp.core.exception.ErrorCode;
 import io.iohk.cvp.io.wallet.BigInteger;
@@ -19,6 +20,14 @@ import java.security.spec.ECPoint;
 import java.security.spec.ECPrivateKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
+import java.util.Calendar;
+import java.util.List;
+import org.bitcoinj.crypto.ChildNumber;
+import org.bitcoinj.crypto.DeterministicHierarchy;
+import org.bitcoinj.crypto.DeterministicKey;
+import org.bitcoinj.crypto.HDUtils;
+import org.bitcoinj.wallet.DeterministicKeyChain;
+import org.bitcoinj.wallet.DeterministicSeed;
 import org.spongycastle.jcajce.provider.asymmetric.ec.BCECPrivateKey;
 import org.spongycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.spongycastle.jce.ECNamedCurveTable;
@@ -52,8 +61,24 @@ public class ECKeys {
       ecParameterSpec.getN()
   );
 
-  public KeyPair getKeyPair(byte[] seed) throws InvalidKeySpecException, CryptoException {
-    ECPrivateKey pk = toPrivateKey(seed);
+  public KeyPair getKeyPair(List<String> mnemonicCode)
+      throws InvalidKeySpecException, CryptoException {
+
+    // What about the passphrase? we are not asking for it in the on boarding process
+    DeterministicSeed deterministicSeed = new DeterministicSeed(mnemonicCode, null, "",
+        Calendar.getInstance().getTimeInMillis());
+
+    /* If we are going to support multiple accounts, we need to make the second 0H on the path variable.
+       If we only intend to manage multiple address for only one account this should be good. */
+    List<ChildNumber> path = HDUtils.parsePath("M/44H/0H/0H/0");
+
+    DeterministicKeyChain chain = DeterministicKeyChain.builder().seed(deterministicSeed)
+        .accountPath(ImmutableList.copyOf(path)).build();
+
+    DeterministicKey accountKey = new DeterministicHierarchy(chain.getWatchingKey())
+        .deriveChild(chain.getAccountPath(), false, true, new ChildNumber(0, false));
+
+    ECPrivateKey pk = toPrivateKey(accountKey.getPrivKey());
     ECPublicKey pubK = getPublicKey(toPublicKey(pk.getD()));
 
     return KeyPair.newBuilder().setPublicKey(pubK).setPrivateKey(pk).build();
@@ -64,10 +89,9 @@ public class ECKeys {
         .build();
   }
 
-  private PrivateKey toPrivateKey(java.math.BigInteger d) throws InvalidKeySpecException {
-    KeySpec spec = toPrivateKeySpec(d);
-    return keyFactory.generatePrivate
-        (spec);
+  private ECPrivateKey toPrivateKey(java.math.BigInteger d) {
+    return ECPrivateKey.newBuilder().setD(BigInteger.newBuilder().setValue(d.toString()))
+        .build();
   }
 
   public PublicKey toPublicKey(byte[] x, byte[] y) throws InvalidKeySpecException {

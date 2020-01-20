@@ -1,7 +1,5 @@
 package io.iohk.cvp.views.activities;
 
-import static org.bitcoinj.crypto.MnemonicCode.BIP39_ENGLISH_SHA256;
-
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.GridView;
@@ -10,8 +8,6 @@ import androidx.lifecycle.ViewModelProviders;
 import butterknife.BindView;
 import butterknife.OnClick;
 import io.iohk.cvp.R;
-import io.iohk.cvp.core.exception.MnemonicException.MnemonicLengthException;
-import org.bitcoinj.crypto.MnemonicCode;
 import io.iohk.cvp.viewmodel.WalletSetupViewModel;
 import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.utils.adapters.SeedPhraseAdapter;
@@ -25,6 +21,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 import javax.inject.Inject;
+import org.bitcoinj.crypto.MnemonicCode;
+import org.bitcoinj.crypto.MnemonicException.MnemonicLengthException;
 
 public class WalletSetupActivity extends CvpActivity<WalletSetupViewModel> implements
     CheckboxWithDescription.CheckboxStateListener {
@@ -67,9 +65,9 @@ public class WalletSetupActivity extends CvpActivity<WalletSetupViewModel> imple
 
     InputStream inputStream = getResources().openRawResource(R.raw.word_list);
     try {
-      MnemonicCode mnemonic = new MnemonicCode(inputStream, BIP39_ENGLISH_SHA256);
-
-      byte[] entropy = mnemonic.getSeedBytes();
+      byte[] entropy = new byte[128 / 8];
+      MnemonicCode mnemonic = new MnemonicCode(inputStream,
+          "ad90bf3beb7b0eb7e5acd74727dc0da96e0a280a258354e7293fb7e211ac03db");
       new SecureRandom().nextBytes(entropy);
       adapter.setSeedPhrase(mnemonic.toMnemonic(entropy));
       adapter.notifyDataSetChanged();
