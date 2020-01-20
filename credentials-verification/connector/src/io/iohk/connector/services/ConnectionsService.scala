@@ -1,12 +1,12 @@
 package io.iohk.connector.services
 
-import com.braintreegateway.Transaction
 import io.iohk.connector.errors._
 import io.iohk.connector.model._
 import io.iohk.connector.model.payments.{ClientNonce, Payment}
 import io.iohk.connector.model.requests.CreatePaymentRequest
 import io.iohk.connector.payments.BraintreePayments
 import io.iohk.connector.repositories.{ConnectionsRepository, PaymentsRepository}
+import io.iohk.cvp.crypto.ECKeys.EncodedPublicKey
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither.FutureEitherOps

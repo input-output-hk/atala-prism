@@ -8,9 +8,8 @@ import io.iohk.connector.errors._
 import io.iohk.connector.model._
 import io.iohk.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO, ParticipantsDAO}
 import io.iohk.cvp.cmanager.models
-import io.iohk.cvp.cmanager.models.Student
 import io.iohk.cvp.cmanager.repositories.daos.StudentsDAO
-import io.iohk.cvp.connector.protos.ParticipantInfo.Participant.Issuer
+import io.iohk.cvp.crypto.ECKeys.EncodedPublicKey
 import io.iohk.cvp.cstore.repositories.daos.IndividualsDAO
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.utils.FutureEither

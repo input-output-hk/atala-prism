@@ -2,7 +2,8 @@ package io.iohk.connector.repositories.daos
 
 import cats.data.OptionT
 import doobie.implicits._
-import io.iohk.connector.model.{EncodedPublicKey, ParticipantInfo, TokenString}
+import io.iohk.connector.model.{ParticipantInfo, TokenString}
+import io.iohk.cvp.crypto.ECKeys.EncodedPublicKey
 import io.iohk.cvp.models.ParticipantId
 
 object ParticipantsDAO {

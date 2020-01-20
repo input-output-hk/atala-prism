@@ -6,7 +6,8 @@ import doobie.postgres.implicits._
 import doobie.util.invariant.InvalidEnum
 import doobie.util.{Get, Put}
 import io.iohk.connector.model.payments.{ClientNonce, Payment}
-import io.iohk.connector.model.{ConnectionId, EncodedPublicKey, MessageId, ParticipantLogo, ParticipantType}
+import io.iohk.connector.model.{ConnectionId, MessageId, ParticipantLogo, ParticipantType}
+import io.iohk.cvp.crypto.ECKeys.EncodedPublicKey
 import io.iohk.cvp.models.ParticipantId
 
 package object daos {

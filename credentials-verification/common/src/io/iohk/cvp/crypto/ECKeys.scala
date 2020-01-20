@@ -1,5 +1,7 @@
 package io.iohk.cvp.crypto
 
+import java.io.IOException
+import java.math.BigInteger
 import java.security._
 import java.security.spec.{
   ECGenParameterSpec => JavaECGenParameterSpec,
@@ -82,15 +84,16 @@ object ECKeys {
     }
   }
 
-  def toEncodePublicKey(x: BigInt, y: BigInt): Array[Byte] = {
-    encodePoint(getECPoint(toPublicKey(x, y)), ecParameterSpec.getCurve)
+  def toEncodePublicKey(x: BigInt, y: BigInt): EncodedPublicKey = {
+    val encodeBytes = encodePoint(getECPoint(toPublicKey(x, y)), ecParameterSpec.getCurve)
+    EncodedPublicKey(encodeBytes.toVector)
   }
 
   /**
     * @param ecPoint points on elliptic curves
     * @param ecCurve an elliptic curve
     * @return Array[Byte]
-    * @see sun.security.util.ECUtils#encodePoint()
+    * @see sun.security.util.ECUtil#encodePoint()
     */
   private def encodePoint(ecPoint: JavaECPoint, ecCurve: ECCurve): Array[Byte] = {
     val size = ecCurve.getFieldSize + 7 >> 3
@@ -103,6 +106,25 @@ object ECKeys {
       Array.copy(yArr, 0, arr, arr.length - yArr.length, yArr.length)
       arr
     } else throw new RuntimeException("Point coordinates do not match field size")
+  }
+
+  /**
+    *
+    * @param encodedPublicKey EncodedPublicKey is a uncompressed byte Array
+    * @return ECPoint points on elliptic curve
+    */
+  def toJavaECPoint(encodedPublicKey: EncodedPublicKey): JavaECPoint = {
+    val ecCurve = ecParameterSpec.getCurve
+    val bytes = encodedPublicKey.bytes.toArray
+    if (bytes.nonEmpty && bytes(0) == 4) {
+      val point = (bytes.length - 1) / 2
+      if (point != ecCurve.getFieldSize + 7 >> 3) throw new IOException("Point does not match field size")
+      else {
+        val xArr: Array[Byte] = bytes.slice(1, 1 + point)
+        val yArr: Array[Byte] = bytes.slice(point + 1, point + 1 + point)
+        new JavaECPoint(new BigInteger(1, xArr), new BigInteger(1, yArr))
+      }
+    } else throw new IOException("Only uncompressed point format supported")
   }
 
   private def toUnsignedByteArray(src: BigInt): Array[Byte] = {
@@ -127,4 +149,5 @@ object ECKeys {
     new JavaECPublicKeySpec(ecPoint, ecNamedCurveSpec)
   }
 
+  case class EncodedPublicKey(bytes: Vector[Byte]) extends AnyVal
 }

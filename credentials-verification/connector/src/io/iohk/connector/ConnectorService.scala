@@ -3,7 +3,6 @@ package io.iohk.connector
 import java.util.UUID
 
 import io.iohk.connector.errors._
-import io.iohk.connector.model.ECPublicKey
 import io.iohk.connector.model.payments.{ClientNonce, Payment => ConnectorPayment}
 import io.iohk.connector.model.requests.CreatePaymentRequest
 import io.iohk.connector.payments.BraintreePayments
@@ -17,7 +16,6 @@ import org.slf4j.{Logger, LoggerFactory}
 import io.iohk.cvp.crypto.ECKeys._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
-import io.iohk.connector.model.EncodedPublicKey
 class ConnectorService(
     connections: ConnectionsService,
     messages: MessagesService,
@@ -96,16 +94,14 @@ class ConnectorService(
     val paymentNonce = Option(request.paymentNonce).filter(_.nonEmpty).map(s => new ClientNonce(s))
     val publicKey = request.holderEncodedPublicKey
       .map { encodedKey =>
-        EncodedPublicKey(encodedKey.publicKey.toByteArray.toVector)
+        io.iohk.cvp.crypto.ECKeys.EncodedPublicKey(encodedKey.publicKey.toByteArray.toVector)
       }
       .getOrElse {
         request.holderPublicKey
           .map { protoKey =>
-            EncodedPublicKey(
-              toEncodePublicKey(
-                x = BigInt(protoKey.x),
-                y = BigInt(protoKey.y)
-              ).toVector
+            toEncodePublicKey(
+              x = BigInt(protoKey.x),
+              y = BigInt(protoKey.y)
             )
           }
           .getOrElse(throw new RuntimeException("Missing public key"))

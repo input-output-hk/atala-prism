@@ -12,6 +12,7 @@ import io.iohk.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO,
 import io.iohk.connector.repositories.{ConnectionsRepository, MessagesRepository, PaymentsRepository}
 import io.iohk.connector.services.{ConnectionsService, MessagesService}
 import io.iohk.cvp.connector.protos.ConnectorServiceGrpc
+import io.iohk.cvp.crypto.ECKeys.EncodedPublicKey
 import io.iohk.cvp.grpc.UserIdInterceptor
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.repositories.PostgresRepositorySpec

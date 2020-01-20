@@ -7,6 +7,7 @@ import doobie.implicits._
 import io.iohk.connector.model._
 import io.iohk.connector.repositories.daos._
 import io.iohk.cvp.crypto.ECKeys
+import io.iohk.cvp.crypto.ECKeys.EncodedPublicKey
 import io.iohk.cvp.models.ParticipantId
 import org.scalatest.EitherValues._
 
