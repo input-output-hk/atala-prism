@@ -7,6 +7,7 @@ import doobie.util.invariant.InvalidEnum
 import doobie.util.{Get, Put}
 import io.iohk.connector.model.payments.{ClientNonce, Payment}
 import io.iohk.connector.model.{ConnectionId, MessageId, ParticipantLogo, ParticipantType}
+import io.iohk.cvp.crypto.ECKeys.EncodedPublicKey
 import io.iohk.cvp.models.ParticipantId
 
 package object daos {
@@ -29,6 +30,10 @@ package object daos {
   implicit val participantLogoPut: Put[ParticipantLogo] = Put[Array[Byte]].contramap(_.bytes.toArray)
   implicit val participantLogoGet: Get[ParticipantLogo] =
     Get[Array[Byte]].map(bytes => ParticipantLogo.apply(bytes.toVector))
+
+  implicit val encodedPublicKeyPut: Put[EncodedPublicKey] = Put[Array[Byte]].contramap(_.bytes.toArray)
+  implicit val encodedPublicKeyGet: Get[EncodedPublicKey] =
+    Get[Array[Byte]].map(bytes => EncodedPublicKey.apply(bytes.toVector))
 
   implicit val paymentIdPut: Put[Payment.Id] = Put[UUID].contramap(_.uuid)
   implicit val paymentIdGet: Get[Payment.Id] = Get[UUID].map(Payment.Id.apply)

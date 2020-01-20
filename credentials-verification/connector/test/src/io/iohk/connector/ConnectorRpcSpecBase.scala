@@ -12,6 +12,7 @@ import io.iohk.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO,
 import io.iohk.connector.repositories.{ConnectionsRepository, MessagesRepository, PaymentsRepository}
 import io.iohk.connector.services.{ConnectionsService, MessagesService}
 import io.iohk.cvp.connector.protos.ConnectorServiceGrpc
+import io.iohk.cvp.crypto.ECKeys.EncodedPublicKey
 import io.iohk.cvp.grpc.UserIdInterceptor
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.repositories.PostgresRepositorySpec
@@ -119,10 +120,15 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
   protected def createParticipant(
       name: String,
       tpe: ParticipantType,
-      logo: Option[ParticipantLogo] = None
+      logo: Option[ParticipantLogo] = None,
+      publicKey: Option[EncodedPublicKey] = None
   ): ParticipantId = {
     val id = ParticipantId.random()
-    ParticipantsDAO.insert(ParticipantInfo(id, tpe, name, None, logo)).transact(database).unsafeToFuture().futureValue
+    ParticipantsDAO
+      .insert(ParticipantInfo(id, tpe, publicKey, name, None, logo))
+      .transact(database)
+      .unsafeToFuture()
+      .futureValue
 
     id
   }

@@ -4,9 +4,11 @@ import java.util.UUID
 
 import doobie.implicits._
 import io.grpc.{Status, StatusRuntimeException}
+import io.iohk.connector.model.ParticipantType.Holder
 import io.iohk.connector.model._
 import io.iohk.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO, ParticipantsDAO}
 import io.iohk.cvp.connector.protos._
+import io.iohk.cvp.crypto.ECKeys._
 import io.iohk.cvp.models.ParticipantId
 import org.scalatest.OptionValues._
 
@@ -66,18 +68,26 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase {
       val issuerId = createIssuer("Issuer")
       val holderId = createHolder("Holder")
       val token = createToken(issuerId)
-      val publicKey = ECPublicKey(BigInt("12345678912345678901234567890"), BigInt("987654322198754321942182"))
-      val publicKeyProto = PublicKey(publicKey.x.toString(), publicKey.y.toString())
-
+      val publicKey = generateKeyPair().getPublic
+      val ecPoint = getECPoint(publicKey)
+      val publicKeyProto = PublicKey(ecPoint.getAffineX.toString(), ecPoint.getAffineY.toString())
+      val encodedPublicKey = toEncodePublicKey(publicKey)
       usingApiAs(holderId) { blockingStub =>
         val request = AddConnectionFromTokenRequest(token.token).withHolderPublicKey(publicKeyProto)
         val response = blockingStub.addConnectionFromToken(request)
         val holderId = response.userId
-
         holderId mustNot be(empty)
         response.connection.value.participantInfo.value.getIssuer.name mustBe "Issuer"
         val connectionId = new ConnectionId(UUID.fromString(response.connection.value.connectionId))
 
+        val participantInfo = io.iohk.connector.model.ParticipantInfo(
+          ParticipantId(holderId),
+          Holder,
+          Some(encodedPublicKey),
+          "",
+          None,
+          None
+        )
         ConnectionsDAO
           .exists(connectionId)
           .transact(database)
@@ -85,20 +95,21 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase {
           .futureValue mustBe true
 
         ParticipantsDAO
-          .findPublicKey(ParticipantId(UUID.fromString(holderId)))
+          .findByPublicKey(encodedPublicKey)
           .transact(database)
           .value
           .unsafeToFuture()
-          .futureValue mustBe Some(publicKey)
+          .futureValue mustBe Some(participantInfo)
       }
     }
 
     "return UNKNOWN if the token does not exist" in {
       val holderId = createHolder("Holder")
       val token = TokenString.random()
-
+      val ecPoint = getECPoint(generateKeyPair().getPublic)
+      val publicKeyProto = PublicKey(ecPoint.getAffineX.toString(), ecPoint.getAffineY.toString())
       usingApiAs(holderId) { blockingStub =>
-        val request = AddConnectionFromTokenRequest(token.token).withHolderPublicKey(PublicKey("0", "0"))
+        val request = AddConnectionFromTokenRequest(token.token).withHolderPublicKey(publicKeyProto)
 
         val status = intercept[StatusRuntimeException] {
           blockingStub.addConnectionFromToken(request)

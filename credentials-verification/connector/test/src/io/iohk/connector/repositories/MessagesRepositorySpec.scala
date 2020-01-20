@@ -81,7 +81,7 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
         .map(_.id)
 
       val firstTenExpected = all.take(10)
-      val nextTenExpected = all.drop(10).take(10)
+      val nextTenExpected = all.slice(10, 20)
 
       val firstTenResult = messagesRepository.getMessagesPaginated(holder, 10, Option.empty).value.futureValue
       firstTenResult.right.value.map(_.id) must matchTo(firstTenExpected)

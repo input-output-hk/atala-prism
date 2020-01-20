@@ -1,6 +1,8 @@
 package io.iohk.cvp.crypto
 
-import java.security._
+import java.io.IOException
+import java.math.BigInteger
+import java.security.{PublicKey, _}
 import java.security.spec.{
   ECGenParameterSpec => JavaECGenParameterSpec,
   ECPoint => JavaECPoint,
@@ -12,6 +14,7 @@ import org.bouncycastle.jcajce.provider.asymmetric.ec.{BCECPrivateKey, BCECPubli
 import org.bouncycastle.jce.ECNamedCurveTable
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.bouncycastle.jce.spec.{ECNamedCurveSpec, ECPublicKeySpec => BCECPublicKeySpec}
+import org.bouncycastle.math.ec.ECCurve
 
 object ECKeys {
 
@@ -81,6 +84,53 @@ object ECKeys {
     }
   }
 
+  def toEncodePublicKey(publicKey: PublicKey): EncodedPublicKey = {
+    val encodeBytes = encodePoint(getECPoint(publicKey), ecParameterSpec.getCurve)
+    EncodedPublicKey(encodeBytes.toVector)
+  }
+
+  /**
+    * @param ecPoint points on elliptic curves
+    * @param ecCurve an elliptic curve
+    * @return Array[Byte]
+    * @see sun.security.util.ECUtil#encodePoint()
+    */
+  private def encodePoint(ecPoint: JavaECPoint, ecCurve: ECCurve): Array[Byte] = {
+    val size = ecCurve.getFieldSize + 7 >> 3
+    val xArr = toUnsignedByteArray(ecPoint.getAffineX)
+    val yArr = toUnsignedByteArray(ecPoint.getAffineY)
+    if (xArr.length <= size && yArr.length <= size) {
+      val arr = new Array[Byte](1 + (size << 1))
+      arr(0) = 4 //Uncompressed point indicator for encoding
+      Array.copy(xArr, 0, arr, size - xArr.length + 1, xArr.length)
+      Array.copy(yArr, 0, arr, arr.length - yArr.length, yArr.length)
+      arr
+    } else throw new RuntimeException("Point coordinates do not match field size")
+  }
+
+  /**
+    *
+    * @param encodedPublicKey EncodedPublicKey is an uncompressed byte Array
+    * @return ECPoint points on elliptic curve
+    */
+  def toJavaECPoint(encodedPublicKey: EncodedPublicKey): JavaECPoint = {
+    val ecCurve = ecParameterSpec.getCurve
+    val bytes = encodedPublicKey.bytes.toArray
+    if (bytes.nonEmpty && bytes(0) == 4) {
+      val point = (bytes.length - 1) / 2
+      if (point != ecCurve.getFieldSize + 7 >> 3) throw new IOException("Point does not match field size")
+      else {
+        val xArr: Array[Byte] = bytes.slice(1, 1 + point)
+        val yArr: Array[Byte] = bytes.slice(point + 1, point + 1 + point)
+        new JavaECPoint(new BigInteger(1, xArr), new BigInteger(1, yArr))
+      }
+    } else throw new IOException("Only uncompressed point format supported")
+  }
+
+  private def toUnsignedByteArray(src: BigInt): Array[Byte] = {
+    src.toByteArray.dropWhile(_ == 0)
+  }
+
   /**
     * It looks like the coordinates on secp256k1 are always possitive and keys are encoded without the byte sign
     * that Java uses for encoding/decoding a big integer.
@@ -98,4 +148,6 @@ object ECKeys {
 
     new JavaECPublicKeySpec(ecPoint, ecNamedCurveSpec)
   }
+
+  case class EncodedPublicKey(bytes: Vector[Byte]) extends AnyVal
 }

@@ -30,6 +30,7 @@ class IssuersRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
         ParticipantInfo(
           ParticipantId(id),
           ParticipantType.Issuer,
+          None,
           data.name.value,
           Some(data.did),
           data.logo.map(ParticipantLogo(_))

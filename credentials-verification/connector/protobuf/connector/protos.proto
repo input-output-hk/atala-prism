@@ -89,7 +89,10 @@ message PublicKey {
   string x = 1;
   string y = 2;
 }
-
+// Public key ECPoint uncompressed encoded
+message EncodedPublicKey {
+  bytes publicKey = 1;
+}
 // Credential information; FIXME: is it a part of protocol?
 message Credential {
   IssuerInfo issuerInfo = 1;
@@ -174,6 +177,8 @@ message AddConnectionFromTokenRequest {
   string token = 1; // token to instantiate connection
   PublicKey holderPublicKey = 2;
   string paymentNonce = 3; // optional field, if present, we'll charge the user before adding the connection
+  // Note that old clients will send the holderPublicKey instead, which we'll need to encode on the server.
+  EncodedPublicKey holderEncodedPublicKey = 4; // Uncompressed encoded public key
 }
 
 // Confirmation of connection instantiation

@@ -6,6 +6,7 @@ import doobie.implicits._
 import doobie.util.{Read, fragment}
 import io.iohk.connector.model._
 import io.iohk.connector.repositories.daos._
+import io.iohk.cvp.crypto.ECKeys.EncodedPublicKey
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.repositories.PostgresRepositorySpec
 
@@ -24,24 +25,25 @@ abstract class ConnectorRepositorySpecBase extends PostgresRepositorySpec {
       tpe: ParticipantType,
       name: String,
       did: String,
+      publicKey: Option[EncodedPublicKey],
       logo: Option[ParticipantLogo]
   ): ParticipantId = {
-    sql"""INSERT INTO participants(id, tpe, did, name, logo) VALUES
-          (${ParticipantId.random()}, $tpe, $did, $name, $logo)
+    sql"""INSERT INTO participants(id, tpe, did, public_key, name, logo) VALUES
+          (${ParticipantId.random()}, $tpe, $did, $publicKey, $name, $logo)
           RETURNING id"""
       .runUnique[ParticipantId]
   }
 
   protected def createIssuer(name: String = "Issuer", logo: Option[ParticipantLogo] = None): ParticipantId = {
-    createParticipant(ParticipantType.Issuer, name, s"did:test:${name.toLowerCase}", logo)
+    createParticipant(ParticipantType.Issuer, name, s"did:test:${name.toLowerCase}", None, logo)
   }
 
-  protected def createHolder(name: String = "Holder"): ParticipantId = {
-    createParticipant(ParticipantType.Holder, name, s"did:test:${name.toLowerCase}", None)
+  protected def createHolder(name: String = "Holder", publicKey: Option[EncodedPublicKey] = None): ParticipantId = {
+    createParticipant(ParticipantType.Holder, name, s"did:test:${name.toLowerCase}", publicKey, None)
   }
 
   protected def createVerifier(name: String = "Verifier", logo: Option[ParticipantLogo] = None): ParticipantId = {
-    createParticipant(ParticipantType.Verifier, name, s"did:test:${name.toLowerCase}", logo)
+    createParticipant(ParticipantType.Verifier, name, s"did:test:${name.toLowerCase}", None, logo)
   }
 
   protected def createConnection(initiatorId: ParticipantId, acceptorId: ParticipantId): ConnectionId = {

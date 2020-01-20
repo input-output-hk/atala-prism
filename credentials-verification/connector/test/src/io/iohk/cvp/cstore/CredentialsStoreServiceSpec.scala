@@ -46,7 +46,7 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
       .futureValue
 
     ParticipantsDAO
-      .insert(ParticipantInfo(verifierId, ParticipantType.Verifier, "Verifier", None, None))
+      .insert(ParticipantInfo(verifierId, ParticipantType.Verifier, None, "Verifier", None, None))
       .transact(database)
       .unsafeToFuture()
       .futureValue
