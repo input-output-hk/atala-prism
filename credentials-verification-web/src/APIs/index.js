@@ -32,8 +32,9 @@ export { mockApi };
 
 const getRole = issuer => {
   const { REACT_APP_VERIFIER, REACT_APP_ISSUER } = window._env_;
-
-  return issuer ? REACT_APP_ISSUER : REACT_APP_VERIFIER;
+  const issuerId = window.localStorage.getItem('issuerId') || REACT_APP_ISSUER;
+  const verifierId = window.localStorage.getItem('verifierId') || REACT_APP_VERIFIER;
+  return issuer ? issuerId : verifierId;
 };
 
 const getIndividuals = issuer => {
