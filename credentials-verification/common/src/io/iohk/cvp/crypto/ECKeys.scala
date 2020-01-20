@@ -110,7 +110,7 @@ object ECKeys {
 
   /**
     *
-    * @param encodedPublicKey EncodedPublicKey is a uncompressed byte Array
+    * @param encodedPublicKey EncodedPublicKey is an uncompressed byte Array
     * @return ECPoint points on elliptic curve
     */
   def toJavaECPoint(encodedPublicKey: EncodedPublicKey): JavaECPoint = {

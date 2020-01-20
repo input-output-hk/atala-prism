@@ -177,8 +177,8 @@ message AddConnectionFromTokenRequest {
   string token = 1; // token to instantiate connection
   PublicKey holderPublicKey = 2;
   string paymentNonce = 3; // optional field, if present, we'll charge the user before adding the connection
-  EncodedPublicKey holderEncodedPublicKey = 4;// Uncompressed encoded public key
-
+  // Note that old clients will send the holderPublicKey instead, which we'll need to encode on the server.
+  EncodedPublicKey holderEncodedPublicKey = 4; // Uncompressed encoded public key
 }
 
 // Confirmation of connection instantiation
