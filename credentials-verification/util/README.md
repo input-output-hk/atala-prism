@@ -3,7 +3,7 @@
 Before running the script you should install protobuf tools (we need `protoc` to generate Python protobuf code) and python dependencies (drop `--user` and add `sudo` if you prefer to install globally):
 
 ```
-pip3 install --user coincurve faker
+pip3 install --user coincurve faker image google-api-python-client protobuf
 ```
 
 Then you can run:
@@ -30,3 +30,10 @@ If you don't have `psql`, but you have docker, you can run (you might need to di
 ```
 docker run -it -v `pwd`/fake_data.sql:/fake_data.sql --rm --network host postgres psql -h localhost -U postgres geud_connector_db -f /fake_data.sql
 ```
+
+If you want to insert the data to one of the AWS environments, run, be sure to replace `connector-pre-georgia-test` with the schema used in your AWS environment, replace the connection options to the ones available in your environment:
+
+```
+PGOPTIONS='--search_path=connector-pre-georgia-test' psql -p 15432 -U postgres -h localhost
+```
+
