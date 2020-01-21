@@ -65,7 +65,6 @@ const ConnectionsContainer = ({ api }) => {
 
   const tableProps = {
     subjects,
-    inviteHolder,
     hasMore,
     getCredentials: api.getMessagesForConnection
   };

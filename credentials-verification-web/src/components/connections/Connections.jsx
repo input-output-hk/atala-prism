@@ -120,7 +120,6 @@ Connections.propTypes = {
   handleHoldersRequest: PropTypes.func.isRequired,
   tableProps: PropTypes.shape({
     subjects: PropTypes.arrayOf(PropTypes.shape(subjectShape)),
-    inviteHolder: PropTypes.func.isRequired,
     getCredentials: PropTypes.func.isRequired,
     hasMore: PropTypes.bool.isRequired
   }).isRequired,
