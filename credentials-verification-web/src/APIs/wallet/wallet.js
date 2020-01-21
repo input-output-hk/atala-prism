@@ -10,7 +10,7 @@ import {
 import Logger from '../../helpers/Logger';
 import { USER_ROLE, ORGANISATION_NAME, ISSUER, VERIFIER, LOGO } from '../../helpers/constants';
 
-const { config } = require('./config');
+const { config } = require('../config');
 
 const walletServicePromiseClient = new WalletServicePromiseClient(
   config.walletGrpcClient,
