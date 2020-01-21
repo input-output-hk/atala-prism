@@ -11,13 +11,13 @@ import { getStudentById } from '../credentials/studentsManager';
 
 const { SentCredential } = require('../../protos/credentials/credential_pb');
 
-const { REACT_APP_GRPC_CLIENT, REACT_APP_VERIFIER, REACT_APP_ISSUER } = window._env_;
-const connectorServiceClient = new ConnectorServicePromiseClient(REACT_APP_GRPC_CLIENT, null, null);
-const issuerId = REACT_APP_ISSUER;
+const { config } = require('../config');
+
+const connectorServiceClient = new ConnectorServicePromiseClient(config.grpcClient, null, null);
 
 export const getConnectionsPaginated = (
   // Since the userId comes not from the session, I hardcoded it here
-  userId = issuerId,
+  userId = config.issuerId,
   lastSeenConnectionId,
   limit
 ) => {
@@ -44,8 +44,8 @@ const mapMessageToCredential = message => {
   return holderSentCredential.getCredential().toObject();
 };
 
-export const getMessagesForConnection = async (aUserId = REACT_APP_VERIFIER, connectionId) => {
-  const userId = aUserId || REACT_APP_VERIFIER; // set default if null
+export const getMessagesForConnection = async (aUserId = config.verifierId, connectionId) => {
+  const userId = aUserId || config.verifierId; // set default if null
   Logger.info(`Getting messages for connectionId ${connectionId} and userId ${userId}`);
   const request = new GetMessagesForConnectionRequest();
   request.setConnectionid(connectionId);
@@ -84,7 +84,7 @@ export const issueCredential = async credentialData => {
 
   return connectorServiceClient
     .sendMessage(sendMessageRequest, {
-      userId: issuerId
+      userId: config.issuerId
     })
     .catch(error => {
       Logger.error('Error issuing the credential: ', error);

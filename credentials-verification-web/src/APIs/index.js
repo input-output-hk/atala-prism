@@ -28,13 +28,12 @@ import {
   createIndividual
 } from './cstore/credentialsStore';
 
+const { config } = require('./config');
+
 export { mockApi };
 
 const getRole = issuer => {
-  const { REACT_APP_VERIFIER, REACT_APP_ISSUER } = window._env_;
-  const issuerId = window.localStorage.getItem('issuerId') || REACT_APP_ISSUER;
-  const verifierId = window.localStorage.getItem('verifierId') || REACT_APP_VERIFIER;
-  return issuer ? issuerId : verifierId;
+  return issuer ? config.issuerId : config.verifierId;
 };
 
 const getIndividuals = issuer => {

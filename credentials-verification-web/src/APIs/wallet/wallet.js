@@ -10,9 +10,10 @@ import {
 import Logger from '../../helpers/Logger';
 import { USER_ROLE, ORGANISATION_NAME, ISSUER, VERIFIER, LOGO } from '../../helpers/constants';
 
-const { REACT_APP_WALLET_GRPC_CLIENT } = window._env_;
+const { config } = require('./config');
+
 const walletServicePromiseClient = new WalletServicePromiseClient(
-  window.localStorage.getItem('walletUrl') || REACT_APP_WALLET_GRPC_CLIENT,
+  config.walletGrpcClient,
   null,
   null
 );

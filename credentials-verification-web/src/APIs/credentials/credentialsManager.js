@@ -20,16 +20,16 @@ import { setDateInfoFromJSON } from '../helpers';
 import { getStudents } from './studentsManager';
 import { getDid } from '../wallet/wallet';
 
-const { REACT_APP_GRPC_CLIENT, REACT_APP_ISSUER } = window._env_;
-const issuerId = REACT_APP_ISSUER;
-const credentialsService = new CredentialsServicePromiseClient(REACT_APP_GRPC_CLIENT, null, null);
+const { config } = require('../config');
+
+const credentialsService = new CredentialsServicePromiseClient(config.grpcClient, null, null);
 
 export const getCredentials = async (limit, lastSeenCredentialId = null) => {
   Logger.info(`getting credentials from ${lastSeenCredentialId}, limit ${limit}`);
   const getCredentialsRequest = new GetCredentialsRequest();
   getCredentialsRequest.setLimit(limit);
   const result = await credentialsService.getCredentials(getCredentialsRequest, {
-    userId: issuerId
+    userId: config.issuerId
   });
   const { credentialsList } = result.toObject();
 
@@ -70,7 +70,7 @@ const getAllStudents = async () => {
 
     // The next 100 students are requested
     // eslint-disable-next-line no-await-in-loop
-    response = await getStudents(REACT_APP_ISSUER, id, limit);
+    response = await getStudents(config.issuerId, id, limit);
 
     allStudents.push(...response);
 
@@ -82,7 +82,7 @@ const getAllStudents = async () => {
 };
 
 export const createCredential = async ({ title, enrollmentDate, graduationDate, groupName }) => {
-  Logger.info('Creating credentials for the all the subjects as the issuer: ', issuerId);
+  Logger.info('Creating credentials for the all the subjects as the issuer: ', config.issuerId);
 
   const enrollmentDateObject = new Date();
   const graduationDateObject = new Date();
@@ -102,7 +102,7 @@ export const createCredential = async ({ title, enrollmentDate, graduationDate, 
     );
 
     return credentialsService.createCredential(createCredentialRequest, {
-      userId: issuerId
+      userId: config.issuerId
     });
   });
 
@@ -320,7 +320,7 @@ export const registerUser = async (name, did, file) => {
   registerRequest.setLogo(logo);
 
   const response = await credentialsService.register(registerRequest, {
-    userId: issuerId
+    userId: config.issuerId
   });
 
   const { id } = response.toObject();
