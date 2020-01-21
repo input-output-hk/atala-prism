@@ -4,19 +4,15 @@ import Logger from '../../helpers/Logger';
 const {
   GenerateConnectionTokenForRequest,
   GetIndividualsRequest,
-  CreateIndividualRequest,
-  GetStoredCredentialsForRequest
+  CreateIndividualRequest
 } = require('../../../src/protos/cstore/cstore_pb');
 
-const { REACT_APP_GRPC_CLIENT, REACT_APP_VERIFIER } = window._env_;
-const credentialsService = new CredentialsStoreServicePromiseClient(
-  REACT_APP_GRPC_CLIENT,
-  null,
-  null
-);
+const { config } = require('../config');
 
-export const getIndividuals = async (aUserId = REACT_APP_VERIFIER, lastSeenId, limit = 10) => {
-  const userId = aUserId || REACT_APP_VERIFIER;
+const credentialsService = new CredentialsStoreServicePromiseClient(config.grpcClient, null, null);
+
+export const getIndividuals = async (aUserId = config.verifierId, lastSeenId, limit = 10) => {
+  const userId = aUserId || config.verifierId;
   Logger.info(`Getting individuals userId ${userId}, limit ${limit}, lastSeenId ${lastSeenId}`);
   const getIndividualsRequest = new GetIndividualsRequest();
   getIndividualsRequest.setLimit(limit);
@@ -28,10 +24,10 @@ export const getIndividuals = async (aUserId = REACT_APP_VERIFIER, lastSeenId, l
 };
 
 export const generateConnectionTokenForIndividual = async (
-  aUserId = REACT_APP_VERIFIER,
+  aUserId = config.verifierId,
   individualId
 ) => {
-  const userId = aUserId || REACT_APP_VERIFIER;
+  const userId = aUserId || config.verifierId;
   Logger.info(`Generating connection token for individualId ${individualId} with userId ${userId}`);
   const request = new GenerateConnectionTokenForRequest();
   request.setIndividualid(individualId);
@@ -47,7 +43,7 @@ export const createIndividual = async (fullName, email) => {
   request.setEmail(email);
 
   const individual = await credentialsService.createIndividual(request, {
-    userId: REACT_APP_VERIFIER
+    userId: config.verifierId
   });
 
   return individual.toObject();
