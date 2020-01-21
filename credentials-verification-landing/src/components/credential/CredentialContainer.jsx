@@ -13,12 +13,10 @@ import PersonalInformation from './Organisms/PersonalInformation/PersonalInforma
 import { withApi } from '../providers/withApi';
 import Logger from '../../helpers/Logger';
 import { CONNECTION_ACCEPTED, CONNECTION_REVOKED } from '../../helpers/constants';
-import SendCredentials from './Atoms/SendCredential/SendCredentials';
 
 const PERSONAL_INFORMATION_STEP = 0;
 const QR_STEP = 1;
-const SEND_CREDENTIAL_STEP = 2;
-const SUCCESS_STEP = 3;
+const SUCCESS_STEP = 2;
 
 const CredentialContainer = ({
   api: { createStudent, getStudentById, generateConnectionToken, createAndIssueCredential }
@@ -150,7 +148,6 @@ const CredentialContainer = ({
       case QR_STEP: {
         const renderLeft = () => <ScanQRInfo />;
         const renderRight = () => <QRCard qrValue={token} />;
-
         return (
           <SplittedPage
             onMount={loopUntilStudentIsConnected}
@@ -158,9 +155,6 @@ const CredentialContainer = ({
             renderRight={renderRight}
           />
         );
-      }
-      case SEND_CREDENTIAL_STEP: {
-        return <SendCredentials nextStep={createAndIssue} />;
       }
       case SUCCESS_STEP: {
         const renderLeft = () => <FinishInfo />;
