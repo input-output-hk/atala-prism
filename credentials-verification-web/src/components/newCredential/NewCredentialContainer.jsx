@@ -12,11 +12,12 @@ import NewCredentialCreation from './Organism/Creation/NewCredentialCreation';
 import { fromUnixToProtoDateFormatter } from '../../helpers/formatters';
 import { withRedirector } from '../providers/withRedirector';
 import { EXAMPLE_UNIVERSITY_NANE } from '../../helpers/constants';
+import { imageToFileReader } from '../../helpers/fileHelpers';
 
 const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) => {
   const { t } = useTranslation();
 
-  const { savePictureInS3, saveDraft, createCredential } = api;
+  const { saveDraft, createCredential } = api;
 
   const [currentStep, setCurrentStep] = useState(0);
   const [degreeName, setDegreeName] = useState();
@@ -114,7 +115,7 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
           <NewCredentialCreation
             updateExampleCredential={updateExampleCredential}
             credentialValues={credentialValues}
-            savePicture={savePictureInS3}
+            savePicture={imageToFileReader}
             formRef={formRef}
             credentialData={{
               title: degreeName,
@@ -171,7 +172,6 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
 
 NewCredentialContainer.propTypes = {
   api: PropTypes.shape({
-    savePictureInS3: PropTypes.func,
     saveDraft: PropTypes.func,
     getGroups: PropTypes.func,
     createCredential: PropTypes.func

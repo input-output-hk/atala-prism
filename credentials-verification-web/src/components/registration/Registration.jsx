@@ -5,31 +5,28 @@ import RegistrationFooter from './Molecules/Footer/RegistrationFooter';
 import './_style.scss';
 import LanguageSelector from '../common/Molecules/LanguageSelector/LanguageSelector';
 
-const Registration = ({ renderContent, next, renderFooter, previous, requiresAgreement }) => (
+const Registration = ({ renderContent, footerProps, renderFooter }) => (
   <div className="RegistrationContainer">
     <div className="LangSelector">
       <LanguageSelector />
     </div>
     <div className="RegistrationContent">
       {renderContent()}
-      {renderFooter && (
-        <RegistrationFooter next={next} previous={previous} requiresAgreement={requiresAgreement} />
-      )}
+      {renderFooter && <RegistrationFooter {...footerProps} />}
     </div>
   </div>
 );
 
-Registration.defaultProps = {
-  next: null,
-  previous: null
-};
-
 Registration.propTypes = {
   renderContent: PropTypes.element.isRequired,
-  next: PropTypes.func,
-  previous: PropTypes.func,
-  renderFooter: PropTypes.bool.isRequired,
-  requiresAgreement: PropTypes.bool.isRequired
+  footerProps: PropTypes.shape({
+    next: PropTypes.func,
+    previous: PropTypes.func,
+    requiresAgreement: PropTypes.bool,
+    renderFooter: PropTypes.bool,
+    disabled: PropTypes.bool
+  }).isRequired,
+  renderFooter: PropTypes.bool.isRequired
 };
 
 export default Registration;

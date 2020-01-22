@@ -1,12 +1,10 @@
-import React, { createRef, Fragment, useState } from 'react';
+import React, { createRef, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Input, Icon } from 'antd';
+import { Input } from 'antd';
 import { useTranslation } from 'react-i18next';
-import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import StepCard from '../../Atoms/StepCard/StepCard';
 import CustomForm from '../../../common/Organisms/Forms/CustomForm';
 import { noEmptyInput } from '../../../../helpers/formRules';
-import VerifyFooter from '../../Atoms/VerifyFooter/VerifyFooter';
 
 import './_style.scss';
 
@@ -58,7 +56,8 @@ const VerifySeedPhrase = ({ words, validMnemonic, setValidMnemonic }) => {
     label: `${t('registration.mnemonic.word')} #${wordNumber + 1}`,
     key: `${index ? 'second' : 'first'}Word`,
     className: '',
-    input: <Input />
+    // This is to force the onChange to run after the form update
+    input: <Input onChange={() => setTimeout(validateWords, 1)} />
   });
 
   const items = words.map((word, index) => createItem(word, index));
@@ -70,11 +69,6 @@ const VerifySeedPhrase = ({ words, validMnemonic, setValidMnemonic }) => {
         subtitle="registration.mnemonic.validation.subtitle"
       />
       <CustomForm items={items} ref={wordsRef} />
-      <VerifyFooter
-        valid={validMnemonic}
-        triedToVerify={triedToVerify}
-        validateWords={validateWords}
-      />
     </div>
   );
 };

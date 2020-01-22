@@ -6,6 +6,7 @@ import { withApi } from '../providers/withApi';
 import BulkImport from './BulkImport';
 import { withRedirector } from '../providers/withRedirector';
 import Logger from '../../helpers/Logger';
+import { excelToFileReader } from '../../helpers/fileHelpers';
 
 const BulkImportContainer = ({ api, redirector: { redirectToConnections } }) => {
   const { t } = useTranslation();
@@ -24,11 +25,7 @@ const BulkImportContainer = ({ api, redirector: { redirectToConnections } }) => 
         message.error(t('errors.spreadsheetUpload'));
       });
 
-  const uploadBulkExcel = spreadSheet =>
-    new Promise(resolve => {
-      setExcelFile(spreadSheet);
-      resolve(spreadSheet);
-    });
+  const uploadBulkExcel = spreadSheet => excelToFileReader(spreadSheet).then(setExcelFile);
 
   const downloadFile = () => {
     setCurrentStep(currentStep + 1);

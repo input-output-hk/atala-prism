@@ -479,7 +479,7 @@
     "errorInvitingHolder": "An error occurred while inviting the holder",
     "errorDeletingGroup": "An error occurred while deleting the group {{groupName}}",
     "issueCredential": "Failed issuing the Credential",
-    "savePicture": {
+    "saveFile": {
       "invalidType": "The file must be a JPG or a PNG",
       "tooLarge": "The file is too large, the maximum size allowed is {{maxSize}}",
       "uploadError": "An error ocurred while uploading the file"

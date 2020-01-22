@@ -25,13 +25,13 @@ const FileUploader = ({
     savePicture(file)
       .then(response => {
         formRef.current.getForm().setFieldsValue({
-          [field]: [file]
+          [field]: [response]
         });
         setFileList([file]);
         onSuccess(response);
       })
       .catch(({ message: errorMessage }) => {
-        message.error(t(errorMessage));
+        message.error(t(`errors.saveFile.${errorMessage}`));
         onError();
       });
   };

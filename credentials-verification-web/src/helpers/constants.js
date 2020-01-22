@@ -45,10 +45,21 @@ export const EXAMPLE_FULL_NAME = 'Student Name';
 export const EXAMPLE_START_DATE = 1555005000;
 export const EXAMPLE_GRADUATION_DATE = 1555005000;
 
+// File constants
 const JPEG = 'image/jpeg';
 const PNG = 'image/png';
-export const ALLOWED_TYPES = [JPEG, PNG];
+const ODS = 'application/vnd.oasis.opendocument.spreadsheet';
+const XLS = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+const XLSX = 'application/vnd.ms-exce';
+export const ALLOWED_IMAGE_TYPES = [JPEG, PNG];
+export const ALLOWED_EXCEL_TYPES = [ODS, XLS, XLSX];
+export const ALLOWED_TYPES = [...ALLOWED_EXCEL_TYPES, ...ALLOWED_IMAGE_TYPES];
 export const MAX_FILE_SIZE = 1073741824; // 1 Gb as maximum just so all my images can pass
+export const IMAGE = 'image';
+export const EXCEL = 'excel';
+export const ANY = 'any';
+export const INVALID_TYPE = 'invalidType';
+export const TOO_LARGE = 'tooLarge';
 
 // Local storage item names
 export const USER_ROLE = 'userRole';
