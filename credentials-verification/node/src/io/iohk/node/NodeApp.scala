@@ -70,7 +70,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     val syncStatusService = new LedgerSynchronizationStatusService(bitcoinClient, blocksRepository)
     val synchronizerService =
       new LedgerSynchronizerService(bitcoinClient, blocksRepository, syncStatusService, atalaService)
-    val task = new PollerSynchronizerTask(synchronizerConfig, bitcoinClient, synchronizerService)
+    // val task = new PollerSynchronizerTask(synchronizerConfig, bitcoinClient, synchronizerService)
 
     logger.info("Starting server")
     import io.grpc.protobuf.services.ProtoReflectionService

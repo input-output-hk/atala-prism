@@ -9,11 +9,13 @@ import io.iohk.connector.payments.BraintreePayments
 import io.iohk.connector.repositories.PaymentsRepository
 import io.iohk.connector.services.{ConnectionsService, MessagesService}
 import io.iohk.cvp.connector.protos._
+import io.iohk.cvp.crypto.ECKeys
 import io.iohk.cvp.grpc.UserIdInterceptor.participantId
 import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither._
 import org.slf4j.{Logger, LoggerFactory}
 import io.iohk.cvp.crypto.ECKeys._
+
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 class ConnectorService(
@@ -97,16 +99,25 @@ class ConnectorService(
         io.iohk.cvp.crypto.ECKeys.EncodedPublicKey(encodedKey.publicKey.toByteArray.toVector)
       }
       .getOrElse {
-        request.holderPublicKey
-          .map { protoKey =>
-            toEncodePublicKey(
-              toPublicKey(
-                x = BigInt(protoKey.x),
-                y = BigInt(protoKey.y)
+        // The iOS app has a key hardcoded which is not a valid ECKey
+        // This hack allow us to do the demo because it generates a valid key
+        // ignoring whatever cames from the app.
+        // TODO: Remove me after the demo
+        try {
+          request.holderPublicKey
+            .map { protoKey =>
+              toEncodePublicKey(
+                toPublicKey(
+                  x = BigInt(protoKey.x),
+                  y = BigInt(protoKey.y)
+                )
               )
-            )
-          }
-          .getOrElse(throw new RuntimeException("Missing public key"))
+            }
+            .getOrElse(throw new RuntimeException("Missing public key"))
+        } catch {
+          case _: Throwable =>
+            toEncodePublicKey(ECKeys.generateKeyPair().getPublic)
+        }
       }
 
     connections
