@@ -20,13 +20,13 @@ const Header = ({ api: { lockWallet } }) => {
       <Col
         xs={14}
         sm={{ span: 7, offset: 5 }}
-        md={{ span: 7, offset: 5 }}
-        lg={{ span: 4, offset: 8 }}
+        md={{ span: 6, offset: 6 }}
+        lg={{ span: 6, offset: 6 }}
       >
-        <Col xs={6} sm={6} md={9} lg={9}>
+        <Col xs={6} sm={6} md={9} lg={3}>
           <img
             className="IconUniversity"
-            src={userLogo || 'icon-free-university.svg'}
+            src="icon-free-university.svg"
             alt="Free University Tbilisi"
           />
         </Col>
