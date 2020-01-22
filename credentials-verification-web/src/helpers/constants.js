@@ -79,3 +79,8 @@ export const CONNECTION_ACCEPTED = 2;
 // Import connections steps
 export const DOWNLOAD_STEP = 0;
 export const UPLOAD_STEP = 1;
+
+// Keys
+export const ENTER = 'Enter';
+export const ARROW_LEFT = 'ArrowLeft';
+export const ARROW_RIGHT = 'ArrowRight';
