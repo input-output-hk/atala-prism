@@ -5,12 +5,7 @@ import io.iohk.cvp.repositories.{SchemaMigrations, TransactorFactory}
 import io.iohk.node.bitcoin.BitcoinClient
 import io.iohk.node.repositories.blocks.BlocksRepository
 import io.iohk.node.repositories.atalaobjects.AtalaObjectsRepository
-import io.iohk.node.synchronizer.{
-  LedgerSynchronizationStatusService,
-  LedgerSynchronizerService,
-  PollerSynchronizerTask,
-  SynchronizerConfig
-}
+import io.iohk.node.synchronizer.{LedgerSynchronizationStatusService, LedgerSynchronizerService, SynchronizerConfig}
 import monix.execution.Scheduler.Implicits.{global => scheduler}
 import org.slf4j.LoggerFactory
 
