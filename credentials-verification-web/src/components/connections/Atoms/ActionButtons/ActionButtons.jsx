@@ -12,19 +12,6 @@ const ActionButtons = ({ showQRButton, inviteHolder, isIssuer, viewConnectionDet
 
   return (
     <div className="ControlButtons">
-      {showQRButton && (
-        <CustomButton
-          buttonProps={{
-            onClick: () => inviteHolder(id),
-            className: 'theme-link'
-          }}
-          buttonText={t('connections.table.columns.invite')}
-        />
-      )}
-      <CustomButton
-        buttonProps={{ className: 'theme-link', disabled: true }}
-        buttonText={t('connections.table.columns.delete')}
-      />
       {!issuer && (
         <CustomButton
           buttonProps={{
@@ -32,6 +19,20 @@ const ActionButtons = ({ showQRButton, inviteHolder, isIssuer, viewConnectionDet
             onClick: () => viewConnectionDetail(holder)
           }}
           buttonText={t(`connections.table.columns.${issuer ? 'view' : 'viewCredentials'}`)}
+        />
+      )}
+      {/* TODO uncomment when this work*/}
+      {/*<CustomButton*/}
+      {/*  buttonProps={{ className: 'theme-link', disabled: true }}*/}
+      {/*  buttonText={t('connections.table.columns.delete')}*/}
+      {/*/>*/}
+      {showQRButton && (
+        <CustomButton
+          buttonProps={{
+            onClick: () => inviteHolder(id),
+            className: 'theme-link'
+          }}
+          buttonText={t('connections.table.columns.invite')}
         />
       )}
     </div>
