@@ -1,17 +1,24 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { Result } from 'antd';
+import { Result, Icon } from 'antd';
 import StudentCreationTable from './Organisms/Table/StudentCreationTable';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
+
+import './_style.scss';
 
 const StudentCreation = ({ saveStudent, saveStudents, tableProps, invalidStudents }) => {
   const { t } = useTranslation();
 
   return (
     <div className="Wrapper">
-      <div className="Header">
+      <div className="StudentCreationHeader">
         <h1>{t('studentCreation.title')}</h1>
+        <CustomButton
+          buttonProps={{ onClick: saveStudent, className: 'theme-secondary' }}
+          buttonText={t('studentCreation.newStudent')}
+          icon={<Icon type="plus" />}
+        />
       </div>
       <div className="Content">
         {invalidStudents && (
@@ -23,14 +30,10 @@ const StudentCreation = ({ saveStudent, saveStudents, tableProps, invalidStudent
         )}
         <StudentCreationTable {...tableProps} />
       </div>
-      <div className="Footer">
+      <div className="StudentCreationFooter">
         <CustomButton
-          buttonProps={{ onClick: saveStudents, className: 'theme-secondary' }}
+          buttonProps={{ onClick: saveStudents, className: 'theme-outline' }}
           buttonText={t('studentCreation.save')}
-        />
-        <CustomButton
-          buttonProps={{ onClick: saveStudent, className: 'theme-secondary' }}
-          buttonText={t('studentCreation.newStudent')}
         />
       </div>
     </div>

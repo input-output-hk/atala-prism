@@ -15,7 +15,7 @@ const EdtiableTable = ({ dataSource, columns }) => {
   };
 
   return (
-    <div>
+    <div className="EditableTable">
       <Table
         components={components}
         bordered

@@ -1,0 +1,18 @@
+@import '../../css/general_styling';
+
+.StudentCreationHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1em;
+  h1 {
+    @include secondary-text($h1, $secondary-color);
+  }
+}
+
+.EditableTable {
+  .ant-table-tbody {
+    .ant-row.ant-form-item {
+      margin-bottom: 0;
+    }
+  }
+}

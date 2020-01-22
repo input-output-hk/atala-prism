@@ -5,8 +5,18 @@
   padding: 1em;
   background-color: $primary-color;
 
+  .ant-select-selection {
+    background: #ff2d3b;
+    color: white;
+    border: none;  
+  }
+
+  .ant-select-arrow {
+    color: white;
+  }
+
   .IconUniversity {
-    height: 45%;
-    width: 45%;
+    height: 80%;
+    width: 80%;
   }
 }
