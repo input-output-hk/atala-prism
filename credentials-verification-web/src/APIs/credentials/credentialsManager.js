@@ -26,8 +26,11 @@ const credentialsService = new CredentialsServicePromiseClient(config.grpcClient
 
 export const getCredentials = async (limit, lastSeenCredentialId = null) => {
   Logger.info(`getting credentials from ${lastSeenCredentialId}, limit ${limit}`);
+
   const getCredentialsRequest = new GetCredentialsRequest();
   getCredentialsRequest.setLimit(limit);
+  getCredentialsRequest.setLastseencredentialid(lastSeenCredentialId);
+
   const result = await credentialsService.getCredentials(getCredentialsRequest, {
     userId: config.issuerId
   });
