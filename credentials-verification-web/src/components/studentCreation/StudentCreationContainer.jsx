@@ -7,7 +7,7 @@ import StudentCreation from './StudentCreation';
 import { withApi } from '../providers/withApi';
 import { withRedirector } from '../providers/withRedirector';
 import Logger from '../../helpers/Logger';
-import { fromUnixToProtoDateFormatter } from '../../helpers/formatters';
+import { fromStringToProtoDateFormatter } from '../../helpers/formatters';
 
 const createBlankStudent = key => ({
   key,
@@ -72,7 +72,7 @@ const StudentCreationContainer = ({ api, redirector: { redirectToConnections } }
           universityAssignedId,
           fullName,
           email,
-          fromUnixToProtoDateFormatter(admissionDate)
+          fromStringToProtoDateFormatter(admissionDate)
         )
     );
 

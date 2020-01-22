@@ -5,6 +5,7 @@ import { getCurrentLanguage } from './languageUtils';
 
 const completeDateFormatter = (date, format) => {
   const lang = getCurrentLanguage();
+
   return moment
     .utc()
     .year(date.year)
@@ -38,6 +39,20 @@ export const fromUnixToProtoDateFormatter = date => {
   } else {
     [day, month, year] = dateAsNumberArray;
   }
+
+  const protoDate = {
+    year,
+    month,
+    day
+  };
+
+  return protoDate;
+};
+
+export const fromStringToProtoDateFormatter = date => {
+  const dateAsNumberArray = date.split('/').map(Number);
+
+  const [day, month, year] = dateAsNumberArray;
 
   const protoDate = {
     year,

@@ -3,8 +3,10 @@ import { Input, Form, DatePicker } from 'antd';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import moment from 'moment';
-import { noEmptyInput } from '../../../../helpers/formRules';
+import { noEmptyInput, futureDate } from '../../../../helpers/formRules';
 import { simpleMomentFormatter } from '../../../../helpers/formatters';
+
+const isDate = type => type === 'date';
 
 const EditableCell = ({
   EditableContext: Consumer,
@@ -86,13 +88,21 @@ const EditableCell = ({
 
     const savedData = record[dataIndex];
 
-    const initialValue = record[dataIndex] && type === 'date' ? moment(savedData) : savedData;
+    const initialValue = savedData && isDate(type) ? moment(savedData) : savedData;
+
+    const emptyRule = [noEmptyInput(t('errors.form.emptyField'))];
+    const rulesByType = isDate(type)
+      ? emptyRule.concat({
+          validator: (_, value, cb) => futureDate(value, cb, moment.now()),
+          message: t('newCredential.form.errors.futureError')
+        })
+      : emptyRule;
 
     return editing ? (
       <Form.Item>
         {cellForm.getFieldDecorator(dataIndex, {
-          rules: [noEmptyInput(t('errors.form.emptyField'))],
-          initialValue: record[dataIndex]
+          rules: rulesByType,
+          initialValue
         })(getElement())}
       </Form.Item>
     ) : (
