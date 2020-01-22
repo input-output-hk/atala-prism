@@ -73,7 +73,8 @@ const getColumns = ({ inviteHolder, isIssuer, viewConnectionDetail }) => {
   ];
 
   const showQR = holder => {
-    const invitationMissing = holder.connectionstatus === CONNECTION_STATUSES.invitationMissing;
+    const invitationMissing = holder.status === CONNECTION_STATUSES.invitationMissing;
+
     const createdOrRevoked = [INDIVIDUAL_STATUSES.created, INDIVIDUAL_STATUSES.revoked].includes(
       holder.status
     );
