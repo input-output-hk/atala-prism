@@ -31,9 +31,11 @@ If you don't have `psql`, but you have docker, you can run (you might need to di
 docker run -it -v `pwd`/fake_data.sql:/fake_data.sql --rm --network host postgres psql -h localhost -U postgres geud_connector_db -f /fake_data.sql
 ```
 
-If you want to insert the data to one of the AWS environments, run, be sure to replace `connector-pre-georgia-test` with the schema used in your AWS environment, replace the connection options to the ones available in your environment:
+If you want to insert the data to one of the AWS environments, remember to connect as the connector user for your environment.
+For example, in environment 'develop', this will be connector-develop and your connection arguments would be 
 
 ```
-PGOPTIONS='--search_path=connector-pre-georgia-test' psql -p 15432 -U postgres -h localhost
+PGPASSWD=<pswd> psql -U connector-develop -h credentials-database-test.co3l80tftzq2.us-east-2.rds.amazonaws.com -d postgres -f fake_data.sql
 ```
+replacing <pswd> with the password that is written output to the console after terraform runs (i.e. after running either ./env.sh -A or ./env.sh -s, or looking in the circleci build output).
 
