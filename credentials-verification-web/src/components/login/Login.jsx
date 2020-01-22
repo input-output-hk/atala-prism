@@ -25,7 +25,7 @@ const Login = ({ formRef, handleLogin }) => {
           <h3>{t('login.welcome.subtitle')}</h3>
         </div>
         <div className="FormContainer">
-          <LoginForm ref={formRef} />
+          <LoginForm ref={formRef} handleLogin={handleLogin} />
         </div>
         <div className="ForgotPassword">
           <p>{t('login.forgotPassword')}</p>
