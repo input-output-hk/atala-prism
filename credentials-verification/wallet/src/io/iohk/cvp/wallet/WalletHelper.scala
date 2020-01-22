@@ -67,9 +67,9 @@ object WalletHelper {
     wallet
   }
 
-  private def generateDid(): String = {
+  def generateDid(): String = {
     val id = Option(System.getenv(ID_ENV_VARIABLE)).getOrElse {
-      "test-" + (1 to 8).map(_ => ('a' + Random.nextInt(26)).toChar).mkString("")
+      "test-" + Random.alphanumeric.take(8).mkString("")
     }
     "did:iohk:" + id
   }
@@ -85,7 +85,7 @@ object WalletHelper {
     val wallet = protos
       .WalletData()
       .withKeyPair(Seq(protoKeyPair))
-      .withDid("did:iohk:test")
+      .withDid(generateDid())
 
     logger.info("Storing wallet")
     os.write(file, wallet.toByteArray, createFolders = true)
