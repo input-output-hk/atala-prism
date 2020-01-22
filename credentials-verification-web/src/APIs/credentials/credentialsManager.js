@@ -19,6 +19,7 @@ import Logger from '../../helpers/Logger';
 import { setDateInfoFromJSON } from '../helpers';
 import { getStudents } from './studentsManager';
 import { getDid } from '../wallet/wallet';
+import { CONNECTION_STATUSES, CONNECTION_ACCEPTED } from '../../helpers/constants';
 
 const { config } = require('../config');
 
@@ -72,7 +73,11 @@ const getAllStudents = async () => {
     // eslint-disable-next-line no-await-in-loop
     response = await getStudents(config.issuerId, id, limit);
 
-    allStudents.push(...response);
+    const connectedStudents = response.filter(
+      ({ connectionstatus }) => connectionstatus === CONNECTION_ACCEPTED
+    );
+
+    allStudents.push(...connectedStudents);
 
     // If less than the requested students are returned it means all the students have
     // already been brought
