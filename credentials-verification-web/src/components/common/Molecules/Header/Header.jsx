@@ -26,7 +26,7 @@ const Header = ({ api: { lockWallet } }) => {
         <Col xs={6} sm={6} md={9} lg={3}>
           <img
             className="IconUniversity"
-            src="icon-free-university.svg"
+            src={userLogo || 'icon-free-university.svg'}
             alt="Free University Tbilisi"
           />
         </Col>
