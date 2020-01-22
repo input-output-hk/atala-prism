@@ -24,9 +24,9 @@
         android:id="@+id/home_menu_item"
         android:layout_width="0dp"
         android:layout_height="40dp"
-        android:background="@android:color/transparent"
         android:paddingTop="8dp"
         android:paddingBottom="6dp"
+        android:background="@android:color/transparent"
         android:src="@drawable/ic_home_grey"
         app:layout_constraintBottom_toTopOf="@+id/home_menu_item_text"
         app:layout_constraintEnd_toStartOf="@+id/profile_menu_item"
@@ -37,9 +37,9 @@
         android:id="@+id/profile_menu_item"
         android:layout_width="0dp"
         android:layout_height="40dp"
-        android:background="@android:color/transparent"
         android:paddingTop="8dp"
         android:paddingBottom="6dp"
+        android:background="@android:color/transparent"
         android:src="@drawable/ic_profile_grey"
         app:layout_constraintBottom_toTopOf="@+id/profile_menu_item_text"
         app:layout_constraintEnd_toStartOf="@+id/stub_menu_item"
@@ -50,9 +50,9 @@
         android:id="@+id/stub_menu_item"
         android:layout_width="0dp"
         android:layout_height="40dp"
-        android:background="@android:color/transparent"
         android:paddingTop="8dp"
         android:paddingBottom="6dp"
+        android:background="@android:color/transparent"
         android:src="@drawable/ic_wallet_grey"
         android:visibility="invisible"
         app:layout_constraintBottom_toTopOf="@+id/connections_text"
@@ -64,9 +64,9 @@
         android:id="@+id/wallet_menu_item"
         android:layout_width="0dp"
         android:layout_height="40dp"
-        android:background="@android:color/transparent"
         android:paddingTop="8dp"
         android:paddingBottom="6dp"
+        android:background="@android:color/transparent"
         android:src="@drawable/ic_wallet_grey"
         app:layout_constraintBottom_toTopOf="@+id/wallet_menu_item_text"
         app:layout_constraintEnd_toStartOf="@+id/settings_menu_item"
@@ -77,9 +77,9 @@
         android:id="@+id/settings_menu_item"
         android:layout_width="0dp"
         android:layout_height="40dp"
-        android:background="@android:color/transparent"
         android:paddingTop="8dp"
         android:paddingBottom="6dp"
+        android:background="@android:color/transparent"
         android:src="@drawable/ic_settings_grey"
         app:layout_constraintBottom_toTopOf="@+id/settings_menu_item_text"
         app:layout_constraintEnd_toEndOf="parent"
@@ -161,15 +161,6 @@
 
   </com.google.android.material.bottomappbar.BottomAppBar>
 
-  <com.google.android.material.floatingactionbutton.FloatingActionButton
-    android:id="@+id/fab"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_gravity="bottom|center_horizontal"
-    android:layout_marginBottom="28dp"
-    android:src="@drawable/ic_connections_white"
-    app:elevation="0dp"
-    app:maxImageSize="24dp"
-    app:rippleColor="@color/colorPrimary" />
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
