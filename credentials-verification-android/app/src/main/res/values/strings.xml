@@ -143,4 +143,5 @@
   <string name="hello_username">Hello %1$s!</string>
   <string name="no_credentials_yet">You don\'t have credentials yet</string>
   <string name="accept_conneciton">Accept connection</string>
+  <string name="education">Education</string>
 </resources>

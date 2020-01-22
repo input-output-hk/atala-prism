@@ -5,11 +5,7 @@ import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.widget.ImageButton;
-
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
-
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-
 import butterknife.BindColor;
 import butterknife.BindDrawable;
 import butterknife.BindView;
@@ -19,9 +15,6 @@ import io.iohk.cvp.R;
 import lombok.Setter;
 
 public class BottomAppBar extends CoordinatorLayout {
-
-  @BindView(R.id.fab)
-  FloatingActionButton fab;
 
   @BindColor(R.color.colorPrimary)
   ColorStateList colorRed;
@@ -76,17 +69,15 @@ public class BottomAppBar extends CoordinatorLayout {
     listener.onNavigation(option, null);
   }
 
-  private void setItemColors(BottomAppBarOption optionSelected) {
-    fab.setBackgroundTintList(BottomAppBarOption.CONNECTIONS.equals(optionSelected) ? colorRed : colorBlack);
-    homeMenuItem.setImageDrawable(BottomAppBarOption.HOME.equals(optionSelected) ? icHomeRed : icHomeGrey);
-    profileMenuItem.setImageDrawable(BottomAppBarOption.PROFILE.equals(optionSelected) ? icProfileRed : icProfileGrey);
-    walletMenuItem.setImageDrawable(BottomAppBarOption.WALLET.equals(optionSelected) ? icWalletRed : icWalletGrey);
-    settingsMenuItem.setImageDrawable(BottomAppBarOption.SETTINGS.equals(optionSelected) ? icSettingsRed : icSettingsGrey);
-  }
-
-  @OnClick(R.id.fab)
-  public void onFabClick() {
-    onItemSelected(BottomAppBarOption.CONNECTIONS);
+  public void setItemColors(BottomAppBarOption optionSelected) {
+    homeMenuItem
+        .setImageDrawable(BottomAppBarOption.HOME.equals(optionSelected) ? icHomeRed : icHomeGrey);
+    profileMenuItem.setImageDrawable(
+        BottomAppBarOption.PROFILE.equals(optionSelected) ? icProfileRed : icProfileGrey);
+    walletMenuItem.setImageDrawable(
+        BottomAppBarOption.WALLET.equals(optionSelected) ? icWalletRed : icWalletGrey);
+    settingsMenuItem.setImageDrawable(
+        BottomAppBarOption.SETTINGS.equals(optionSelected) ? icSettingsRed : icSettingsGrey);
   }
 
   @OnClick(R.id.home_menu_item)
@@ -127,6 +118,5 @@ public class BottomAppBar extends CoordinatorLayout {
   private void init() {
     inflate(getContext(), R.layout.bottom_appbar, this);
     ButterKnife.bind(this);
-    fab.setBackgroundTintList(colorRed);
   }
 }

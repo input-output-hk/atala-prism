@@ -89,7 +89,7 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
   protected AppBarConfigurator getAppBarConfigurator() {
     setHasOptionsMenu(true);
     // configure the appbar title, FIXME for now it is hardcode as "University Degree"
-    return new StackedAppBar(R.string.university_degree);
+    return new StackedAppBar(R.string.education);
   }
 
   @Override

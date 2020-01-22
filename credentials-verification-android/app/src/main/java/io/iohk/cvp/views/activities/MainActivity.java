@@ -4,6 +4,7 @@ import static io.iohk.cvp.utils.ActivitiesRequestCodes.BRAINTREE_REQUEST_ACTIVIT
 import static io.iohk.cvp.views.Preferences.CONNECTION_TOKEN_TO_ACCEPT;
 
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -13,11 +14,14 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
+import butterknife.BindColor;
 import butterknife.BindView;
+import butterknife.OnClick;
 import com.braintreepayments.api.dropin.DropInActivity;
 import com.braintreepayments.api.dropin.DropInResult;
 import com.braintreepayments.api.models.PaymentMethodNonce;
 import com.crashlytics.android.Crashlytics;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import io.iohk.cvp.R;
 import io.iohk.cvp.core.exception.CaseNotFoundException;
 import io.iohk.cvp.core.exception.CryptoException;
@@ -69,11 +73,20 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
   @Getter
   Navigator navigator;
 
+  @BindView(R.id.fab)
+  FloatingActionButton fab;
+
   @BindView(R.id.bottom_appbar)
   public BottomAppBar bottomAppBar;
 
   @BindView(R.id.fragment_layout)
   public FrameLayout frameLayout;
+
+  @BindColor(R.color.colorPrimary)
+  ColorStateList colorRed;
+
+  @BindColor(R.color.black)
+  ColorStateList colorBlack;
 
   MenuItem paymentHistoryMenuItem;
 
@@ -87,6 +100,7 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
     super.onCreate(savedInstanceState);
 
     bottomAppBar.setListener(this);
+    fab.setBackgroundTintList(colorRed);
 
     FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
 
@@ -116,6 +130,13 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
 
   @Override
   public void onNavigation(BottomAppBarOption option, String userId) {
+    if (BottomAppBarOption.CONNECTIONS.equals(option)) {
+      fab.setBackgroundTintList(colorRed);
+      bottomAppBar.setItemColors(option);
+    } else {
+      fab.setBackgroundTintList(colorBlack);
+    }
+
     getFragmentToRender(option)
         .ifPresent(cvpFragment -> {
           Fragment currentFragment = this.getSupportFragmentManager()
@@ -192,6 +213,11 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
         }
       }
     }
+  }
+
+  @OnClick(R.id.fab)
+  public void onFabClick() {
+    onNavigation(BottomAppBarOption.CONNECTIONS, null);
   }
 
   private void sendPayments(BigDecimal amount, String nonce, String connectionToken,
