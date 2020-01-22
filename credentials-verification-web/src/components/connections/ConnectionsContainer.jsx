@@ -4,7 +4,7 @@ import { message } from 'antd';
 import PropTypes from 'prop-types';
 import Connections from './Connections';
 import Logger from '../../helpers/Logger';
-import { HOLDER_PAGE_SIZE } from '../../helpers/constants';
+import { HOLDER_PAGE_SIZE, INDIVIDUAL_STATUSES } from '../../helpers/constants';
 import { withApi } from '../providers/withApi';
 import { getLastArrayElementOrEmpty } from '../../helpers/genericHelpers';
 
@@ -34,7 +34,10 @@ const ConnectionsContainer = ({ api }) => {
         const holdersWithKey = holders.map(
           ({ status: holderStatus, connectionstatus, id: holderId, individualid, ...rest }) => {
             const existingId = holderId || individualid;
-            const indivStatus = holderStatus || connectionstatus;
+            const indivStatus =
+              holderStatus === undefined
+                ? INDIVIDUAL_STATUSES.created
+                : holderStatus || connectionstatus;
 
             return Object.assign({}, rest, {
               key: existingId,
