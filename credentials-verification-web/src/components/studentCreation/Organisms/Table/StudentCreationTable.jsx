@@ -17,7 +17,7 @@ const getColumns = (length, t, handleDelete) => [
     editable: true
   },
   {
-    title: t('studentCreation.table.universityAssignedId'),
+    title: t('studentCreation.table.studentId'),
     dataIndex: 'universityAssignedId',
     editable: true
   },

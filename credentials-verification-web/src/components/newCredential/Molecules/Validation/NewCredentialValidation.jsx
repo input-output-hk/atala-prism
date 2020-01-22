@@ -11,7 +11,6 @@ const NewCredentialValidation = ({
   group: { groupName }
 }) => {
   const { t } = useTranslation();
-  const identityNumber = '3';
 
   return (
     <div className="NewCredentialValidationContainer">
@@ -23,7 +22,6 @@ const NewCredentialValidation = ({
           alt={t('newCredential.form.logoUniversity')}
         />
         <h3>{degreeName}</h3>
-        <CellRenderer title="identityNumber" value={identityNumber} componentName="newCredential" />
         <CellRenderer
           title="date"
           value={shortDateFormatter(startDate)}

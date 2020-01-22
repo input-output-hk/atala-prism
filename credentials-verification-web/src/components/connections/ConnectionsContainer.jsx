@@ -15,14 +15,14 @@ const ConnectionsContainer = ({ api }) => {
   const [noConnections, setNoConnections] = useState(false);
   const [hasMore, setHasMore] = useState(true);
 
-  const handleHoldersRequest = (oldSubjects = subjects, _identityNumber, _name, _status) => {
+  const handleHoldersRequest = (oldSubjects = subjects, _name, _status) => {
     const { id } = getLastArrayElementOrEmpty(oldSubjects);
 
     const getIndividuals = api.getIndividuals(api.isIssuer());
 
     return getIndividuals(HOLDER_PAGE_SIZE, id)
       .then(holders => {
-        const noFilters = !(_identityNumber || _name || _status);
+        const noFilters = !(_name || _status);
         const showNoConnections = !id && noFilters;
         setNoConnections(showNoConnections);
 
