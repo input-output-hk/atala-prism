@@ -22,7 +22,7 @@ const QRModal = ({ tPrefix, visible, onCancel, qrValue }) => {
       <div className="FooterButtons">
         <CustomButton
           buttonProps={{ onClick: onCancel, className: 'theme-secondary' }}
-          buttonText="Cancel"
+          buttonText={t('actions.done')}
         />
       </div>
     </Modal>

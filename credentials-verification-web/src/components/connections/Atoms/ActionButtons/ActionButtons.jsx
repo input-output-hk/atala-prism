@@ -22,7 +22,7 @@ const ActionButtons = ({ showQRButton, inviteHolder, isIssuer, viewConnectionDet
         />
       )}
       <CustomButton
-        buttonProps={{ className: 'theme-link' }}
+        buttonProps={{ className: 'theme-link', disabled: true }}
         buttonText={t('connections.table.columns.delete')}
       />
       {!issuer && (

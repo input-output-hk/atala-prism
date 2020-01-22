@@ -6,6 +6,7 @@
     "view": "View",
     "back": "Back",
     "next": "Next",
+    "done": "Done",
     "saveForLater": "Save & Continue later"
   },
   "emptyComponent": {
@@ -210,7 +211,7 @@
     "subtitle": "Let's create a New Credential. Here are some key things to do.",
     "steps": {
       "step1": "Create Credential Template",
-      "step2": "Asign Recipients Group",
+      "step2": "Assign Recipients Group",
       "step3": "Check and Confirm Credential"
     },
     "table": {
