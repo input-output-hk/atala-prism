@@ -37,12 +37,6 @@ const getColumns = ({ inviteHolder, isIssuer, viewConnectionDetail }) => {
 
   const issuerInfo = [
     {
-      key: 'identityNumber',
-      render: ({ id }) => (
-        <CellRenderer title="identityNumber" value={id} componentName="connections" />
-      )
-    },
-    {
       key: 'admissionDate',
       render: ({ admissiondate }) => (
         <CellRenderer

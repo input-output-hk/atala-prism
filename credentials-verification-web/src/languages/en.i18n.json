@@ -454,7 +454,7 @@
       "fullName": "Full Name",
       "email": "Email",
       "admissionDate": "Admission Date",
-      "universityAssignedId": "University Id",
+      "studentId": "Student Id",
       "delete": "Delete Individual"
     }
   },

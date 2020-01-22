@@ -39,16 +39,6 @@ const CredentialsFilter = ({ fetchCredentials, credentialTypes, categories, grou
     <div className="FilterControls">
       <Row gutter={16}>
         <Col span={3}>
-          <Input
-            id="credentialIdFilter"
-            placeholder={t('credentials.filters.ID')}
-            prefix={<Icon type="search" />}
-            onChange={({ target: { value } }) => setCredentialId(value)}
-            allowClear
-            value={credentialId}
-          />
-        </Col>
-        <Col span={3}>
           <Select id="credentialTypeFilter" value={credentialType} onChange={setCredentialType}>
             <Select.Option value="">{t('credentials.filters.credentialType')}</Select.Option>
             {credentialTypes.map(aCredentialType => (
