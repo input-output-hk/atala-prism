@@ -201,13 +201,6 @@ object connector extends ServerPBCommon with CVPDockerModule {
   object test extends `tests-common` {}
 }
 
-object cmanager extends ServerPBCommon {
-
-  override def mainClass = Some("io.iohk.cvp.cmanager.CManagerApp")
-
-  object test extends `tests-common` {}
-}
-
 object wallet extends ServerPBCommon {
 
   override def mainClass = Some("io.iohk.cvp.wallet.WalletApp")
