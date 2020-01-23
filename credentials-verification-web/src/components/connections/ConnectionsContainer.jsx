@@ -34,10 +34,7 @@ const ConnectionsContainer = ({ api }) => {
         const holdersWithKey = holders.map(
           ({ status: holderStatus, connectionstatus, id: holderId, individualid, ...rest }) => {
             const existingId = holderId || individualid;
-            const indivStatus =
-              holderStatus === undefined
-                ? INDIVIDUAL_STATUSES.created
-                : holderStatus || connectionstatus;
+            const indivStatus = holderStatus !== undefined ? holderStatus : connectionstatus;
 
             return Object.assign({}, rest, {
               key: existingId,
