@@ -18,9 +18,9 @@ object DataPreparation {
   import cmanagerDaos._
   import connectorDaos._
 
-  def createIssuer(name: String = "Issuer")(implicit database: Transactor[IO]): Issuer = {
+  def createIssuer(name: String = "Issuer", tag: String = "")(implicit database: Transactor[IO]): Issuer = {
     val id = Issuer.Id(UUID.randomUUID())
-    val did = "did:geud:issuer-x"
+    val did = s"did:geud:issuer-x$tag"
     sql"""
          |INSERT INTO issuers (issuer_id, name, did)
          |VALUES ($id, $name, $did)
@@ -61,5 +61,9 @@ object DataPreparation {
     )
 
     StudentsDAO.create(request).transact(database).unsafeRunSync()
+  }
+
+  def createIssuerGroup(issuer: Issuer.Id, name: String)(implicit database: Transactor[IO]): Unit = {
+    IssuerGroupsDAO.create(issuer, name).transact(database).unsafeRunSync()
   }
 }
