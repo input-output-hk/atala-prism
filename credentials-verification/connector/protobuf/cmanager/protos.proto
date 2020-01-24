@@ -18,6 +18,11 @@ service StudentsService {
     rpc GenerateConnectionToken (GenerateConnectionTokenRequest) returns (GenerateConnectionTokenResponse) {}
 }
 
+service GroupsService {
+    rpc CreateGroup (CreateGroupRequest) returns (CreateGroupResponse) {}
+    rpc GetGroups (GetGroupsRequest) returns (GetGroupsResponse) {}
+}
+
 message RegisterRequest {
     string name = 1;
     string did = 2;
@@ -123,4 +128,18 @@ enum StudentConnectionStatus {
     ConnectionMissing = 1;
     ConnectionAccepted = 2;
     ConnectionRevoked = 3;
+}
+
+message CreateGroupRequest {
+    string name = 1;
+}
+message CreateGroupResponse {}
+
+message GetGroupsRequest {}
+message GetGroupsResponse {
+    repeated Group groups = 1;
+}
+
+message Group {
+    string name = 1;
 }

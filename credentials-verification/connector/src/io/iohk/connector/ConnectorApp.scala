@@ -5,9 +5,14 @@ import io.grpc.{Server, ServerBuilder}
 import io.iohk.connector.payments.BraintreePayments
 import io.iohk.connector.repositories.{ConnectionsRepository, MessagesRepository, PaymentsRepository}
 import io.iohk.connector.services.{ConnectionsService, MessagesService}
-import io.iohk.cvp.cmanager.grpc.services.{CredentialsServiceImpl, StudentsServiceImpl}
-import io.iohk.cvp.cmanager.protos.{CredentialsServiceGrpc, StudentsServiceGrpc}
-import io.iohk.cvp.cmanager.repositories.{CredentialsRepository, IssuersRepository, StudentsRepository}
+import io.iohk.cvp.cmanager.grpc.services.{CredentialsServiceImpl, GroupsServiceImpl, StudentsServiceImpl}
+import io.iohk.cvp.cmanager.protos.{CredentialsServiceGrpc, GroupsServiceGrpc, StudentsServiceGrpc}
+import io.iohk.cvp.cmanager.repositories.{
+  CredentialsRepository,
+  IssuerGroupsRepository,
+  IssuersRepository,
+  StudentsRepository
+}
 import io.iohk.cvp.connector.protos._
 import io.iohk.cvp.cstore.CredentialsStoreService
 import io.iohk.cvp.cstore.services.{StoreIndividualsService, StoreUsersService, StoredCredentialsService}
@@ -67,8 +72,10 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     val issuersRepository = new IssuersRepository(xa)(executionContext)
     val credentialsRepository = new CredentialsRepository(xa)(executionContext)
     val studentsRepository = new StudentsRepository(xa)(executionContext)
+    val issuerGroupsRepository = new IssuerGroupsRepository(xa)(executionContext)
     val credentialsService = new CredentialsServiceImpl(issuersRepository, credentialsRepository)(executionContext)
     val studentsService = new StudentsServiceImpl(studentsRepository, credentialsRepository)(executionContext)
+    val groupsService = new GroupsServiceImpl(issuerGroupsRepository)(executionContext)
 
     val storeUsersService = new StoreUsersService(xa)(executionContext)
     val storeIndividualsService = new StoreIndividualsService(xa)(executionContext)
@@ -85,6 +92,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       .addService(ConnectorServiceGrpc.bindService(connectorService, executionContext))
       .addService(CredentialsServiceGrpc.bindService(credentialsService, executionContext))
       .addService(StudentsServiceGrpc.bindService(studentsService, executionContext))
+      .addService(GroupsServiceGrpc.bindService(groupsService, executionContext))
       .addService(CredentialsStoreServiceGrpc.bindService(credentialsStoreService, executionContext))
       .build()
       .start()
