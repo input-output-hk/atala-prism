@@ -14,6 +14,7 @@ const GroupFilters = ({ updateGroups }) => {
   }, [date, name]);
 
   const datePickerProps = {
+    disabled: true,
     placeholder: t('groups.filters.date'),
     suffixIcon: <Icon type="down" />,
     onChange: (_, dateString) => setDate(dateString)
@@ -27,6 +28,7 @@ const GroupFilters = ({ updateGroups }) => {
         </Col>
         <Col span={12}>
           <Input
+            disabled
             placeholder={t('groups.filters.search')}
             prefix={<Icon type="search" />}
             onChange={({ target: { value } }) => setName(value)}

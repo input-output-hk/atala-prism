@@ -23,6 +23,7 @@ const ConnectionsFilter = ({ fetchConnections }) => {
       <Row gutter={16}>
         <Col span={8}>
           <Input
+            disabled
             placeholder={t('connections.filters.name')}
             prefix={<Icon type="search" />}
             onChange={({ target: { value } }) => setName(value)}
@@ -31,7 +32,7 @@ const ConnectionsFilter = ({ fetchConnections }) => {
           />
         </Col>
         <Col span={8}>
-          <Select value={status} onChange={setStatus}>
+          <Select disabled value={status} onChange={setStatus}>
             <Select.Option value="">{t('connections.filters.status')}</Select.Option>
             {statuses.map(statusType => (
               <Select.Option key={statusType} value={statusType}>

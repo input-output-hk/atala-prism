@@ -7,6 +7,7 @@ const PaymentFilter = ({ setFrom, setTo, setPayer, payer }) => {
   const { t } = useTranslation();
 
   const fromProps = {
+    disabled: true,
     id: 'from',
     placeholder: t('payment.filterBy', { field: t('payment.fields.from') }),
     suffixIcon: <Icon type="down" />,
@@ -14,6 +15,7 @@ const PaymentFilter = ({ setFrom, setTo, setPayer, payer }) => {
   };
 
   const toProps = {
+    disabled: true,
     id: 'to',
     placeholder: t('payment.filterBy', { field: t('payment.fields.to') }),
     suffixIcon: <Icon type="down" />,
@@ -31,6 +33,7 @@ const PaymentFilter = ({ setFrom, setTo, setPayer, payer }) => {
         </Col>
         <Col span={8}>
           <Input
+            disabled
             id="payer"
             placeholder={t('payment.filterBy', { field: t('payment.fields.payer') })}
             prefix={<Icon type="search" />}
