@@ -33,9 +33,31 @@ object StudentsDAO {
       .map(_ => Student.create(data, id, createdOn, connectionStatus))
   }
 
-  def getBy(issuer: Issuer.Id, limit: Int, lastSeenStudent: Option[Student.Id]): doobie.ConnectionIO[List[Student]] = {
-    val query = lastSeenStudent match {
-      case Some(lastSeen) =>
+  def getBy(
+      issuer: Issuer.Id,
+      limit: Int,
+      lastSeenStudent: Option[Student.Id],
+      groupName: Option[IssuerGroup.Name]
+  ): doobie.ConnectionIO[List[Student]] = {
+
+    // TODO: Refactor to a single or at most two queries, likely using doobie fragments
+    val query = (lastSeenStudent, groupName) match {
+      case (Some(lastSeen), Some(group)) =>
+        sql"""
+             |WITH CTE AS (
+             |  SELECT created_on AS last_seen_time
+             |  FROM students
+             |  WHERE student_id = $lastSeen
+             |)
+             |SELECT student_id, university_assigned_id, full_name, email, admission_date, created_on, connection_status, connection_token, connection_id, g.name
+             |FROM CTE CROSS JOIN students JOIN issuer_groups g USING (group_id)
+             |WHERE issuer_id = $issuer AND
+             |      (created_on > last_seen_time OR (created_on = last_seen_time AND student_id > $lastSeen)) AND
+             |      g.name = $group
+             |ORDER BY created_on ASC, student_id
+             |LIMIT $limit
+             |""".stripMargin
+      case (Some(lastSeen), None) =>
         sql"""
              |WITH CTE AS (
              |  SELECT created_on AS last_seen_time
@@ -49,7 +71,16 @@ object StudentsDAO {
              |ORDER BY created_on ASC, student_id
              |LIMIT $limit
              |""".stripMargin
-      case None =>
+      case (None, Some(group)) =>
+        sql"""
+             |SELECT student_id, university_assigned_id, full_name, email, admission_date, created_on, connection_status, connection_token, connection_id, g.name
+             |FROM students JOIN issuer_groups g USING (group_id)
+             |WHERE issuer_id = $issuer AND
+             |      g.name = $group
+             |ORDER BY created_on ASC, student_id
+             |LIMIT $limit
+             |""".stripMargin
+      case (None, None) =>
         sql"""
              |SELECT student_id, university_assigned_id, full_name, email, admission_date, created_on, connection_status, connection_token, connection_id, g.name
              |FROM students JOIN issuer_groups g USING (group_id)

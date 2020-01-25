@@ -3,7 +3,7 @@ package io.iohk.cvp.cmanager.grpc.services
 import java.util.UUID
 
 import io.iohk.cvp.cmanager.grpc.services.codecs.ProtoCodecs._
-import io.iohk.cvp.cmanager.models.Student
+import io.iohk.cvp.cmanager.models.{IssuerGroup, Student}
 import io.iohk.cvp.cmanager.models.requests.CreateStudent
 import io.iohk.cvp.cmanager.protos
 import io.iohk.cvp.cmanager.protos.{
@@ -48,8 +48,10 @@ class StudentsServiceImpl(studentsRepository: StudentsRepository, credentialsRep
   override def getStudents(request: GetStudentsRequest): Future[GetStudentsResponse] = {
     val userId = getIssuerId()
     val lastSeenStudent = Try(UUID.fromString(request.lastSeenStudentId)).map(Student.Id.apply).toOption
+    val groupName = Option(request.groupName.trim).filter(_.nonEmpty).map(IssuerGroup.Name.apply)
+
     studentsRepository
-      .getBy(userId, request.limit, lastSeenStudent)
+      .getBy(userId, request.limit, lastSeenStudent, groupName)
       .map { list =>
         protos.GetStudentsResponse(list.map(studentToProto))
       }

@@ -6,7 +6,7 @@ import doobie.util.transactor.Transactor
 import io.iohk.connector.model.TokenString
 import io.iohk.connector.repositories.daos.ConnectionTokensDAO
 import io.iohk.cvp.cmanager.models.requests.CreateStudent
-import io.iohk.cvp.cmanager.models.{Issuer, Student}
+import io.iohk.cvp.cmanager.models.{Issuer, IssuerGroup, Student}
 import io.iohk.cvp.cmanager.repositories.daos.{IssuerGroupsDAO, StudentsDAO}
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.utils.FutureEither
@@ -32,10 +32,11 @@ class StudentsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
   def getBy(
       issuer: Issuer.Id,
       limit: Int,
-      lastSeenStudent: Option[Student.Id]
+      lastSeenStudent: Option[Student.Id],
+      groupName: Option[IssuerGroup.Name]
   ): FutureEither[Nothing, List[Student]] = {
     StudentsDAO
-      .getBy(issuer, limit, lastSeenStudent)
+      .getBy(issuer, limit, lastSeenStudent, groupName)
       .transact(xa)
       .unsafeToFuture()
       .map(Right(_))

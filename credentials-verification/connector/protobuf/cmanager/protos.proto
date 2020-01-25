@@ -68,6 +68,7 @@ message CreateStudentResponse {
 message GetStudentsRequest {
     int32 limit = 1; // the max amount of students to return, must be > 0
     string lastSeenStudentId = 2; // the last seen student (if any), the returned students start after this one
+    string groupName = 3; // if provided, get only the students that belong to this group
 }
 message GetStudentsResponse {
     repeated Student students = 1;
