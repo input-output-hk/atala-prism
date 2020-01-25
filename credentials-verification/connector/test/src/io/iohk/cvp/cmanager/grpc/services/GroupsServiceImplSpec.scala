@@ -1,7 +1,7 @@
 package io.iohk.cvp.cmanager.grpc.services
 
 import io.iohk.connector.RpcSpecBase
-import io.iohk.cvp.cmanager.models.Issuer
+import io.iohk.cvp.cmanager.models.{Issuer, IssuerGroup}
 import io.iohk.cvp.cmanager.protos
 import io.iohk.cvp.cmanager.protos.GroupsServiceGrpc
 import io.iohk.cvp.cmanager.repositories.{IssuerGroupsRepository, IssuersRepository}
@@ -10,9 +10,9 @@ import org.scalatest.EitherValues._
 
 import scala.concurrent.duration.DurationDouble
 
-class GroupsServiceSpec extends RpcSpecBase {
+class GroupsServiceImplSpec extends RpcSpecBase {
 
-  override val tables = List("issuer_groups", "credentials", "students", "issuers")
+  override val tables = List("credentials", "students", "issuer_groups", "issuers")
 
   private implicit val executionContext = scala.concurrent.ExecutionContext.global
   private implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 20.millis)
@@ -28,16 +28,11 @@ class GroupsServiceSpec extends RpcSpecBase {
 
   "createGroup" should {
     "create a group" in {
-      val issuerId = issuersRepository
-        .insert(IssuersRepository.IssuerCreationData(Issuer.Name("IOHK"), "did:prism:issuer1", None))
-        .value
-        .futureValue
-        .right
-        .value
+      val issuerId = createIssuer()
 
       usingApiAs(toParticipantId(issuerId)) { serviceStub =>
-        val newGroup = "IOHK University"
-        val request = protos.CreateGroupRequest(newGroup)
+        val newGroup = IssuerGroup.Name("IOHK University")
+        val request = protos.CreateGroupRequest(newGroup.value)
         val _ = serviceStub.createGroup(request)
 
         // the new group needs to exist
@@ -49,14 +44,9 @@ class GroupsServiceSpec extends RpcSpecBase {
 
   "getGroups" should {
     "return available groups" in {
-      val issuerId = issuersRepository
-        .insert(IssuersRepository.IssuerCreationData(Issuer.Name("IOHK"), "did:prism:issuer1", None))
-        .value
-        .futureValue
-        .right
-        .value
+      val issuerId = createIssuer()
 
-      val groups = List("Blockchain 2020", "Finance 2020")
+      val groups = List("Blockchain 2020", "Finance 2020").map(IssuerGroup.Name.apply)
       groups.foreach { group =>
         issuerGroupsRepository.create(issuerId, group).value.futureValue.right.value
       }
@@ -64,9 +54,18 @@ class GroupsServiceSpec extends RpcSpecBase {
       usingApiAs(toParticipantId(issuerId)) { serviceStub =>
         val request = protos.GetGroupsRequest()
         val result = serviceStub.getGroups(request)
-        result.groups.map(_.name) must be(groups)
+        result.groups.map(_.name).map(IssuerGroup.Name.apply) must be(groups)
       }
     }
+  }
+
+  private def createIssuer(): Issuer.Id = {
+    issuersRepository
+      .insert(IssuersRepository.IssuerCreationData(Issuer.Name("IOHK"), "did:prism:issuer1", None))
+      .value
+      .futureValue
+      .right
+      .value
   }
 
   private def toParticipantId(issuer: Issuer.Id): ParticipantId = {

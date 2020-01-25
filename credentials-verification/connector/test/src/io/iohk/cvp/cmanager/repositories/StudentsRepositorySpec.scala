@@ -3,7 +3,7 @@ package io.iohk.cvp.cmanager.repositories
 import java.time.LocalDate
 
 import io.iohk.cvp.cmanager.models.requests.CreateStudent
-import io.iohk.cvp.cmanager.models.{Issuer, Student}
+import io.iohk.cvp.cmanager.models.{Issuer, IssuerGroup, Student}
 import io.iohk.cvp.cmanager.repositories.common.CManagerRepositorySpec
 import io.iohk.cvp.cmanager.repositories.common.DataPreparation._
 import org.scalatest.EitherValues._
@@ -15,10 +15,11 @@ class StudentsRepositorySpec extends CManagerRepositorySpec {
   "create" should {
     "create a new student" in {
       val issuer = createIssuer("Issuer-1").id
-      val request = CreateStudent(issuer, "uid", "Dusty Here", "d.here@iohk.io", LocalDate.now())
+      val group = createIssuerGroup(issuer, IssuerGroup.Name("Grp 1"))
+      val request = CreateStudent(issuer, "uid", "Dusty Here", "d.here@iohk.io", LocalDate.now(), group.name)
       val result = repository.create(request).value.futureValue
       val student = result.right.value
-      student.issuer must be(issuer)
+      student.groupName must be(group.name)
       student.fullName must be(request.fullName)
       student.universityAssignedId must be(request.universityAssignedId)
       student.email must be(request.email)
@@ -63,13 +64,17 @@ class StudentsRepositorySpec extends CManagerRepositorySpec {
     }
   }
 
-  private def createStudent(issuer: Issuer.Id, tag: String = ""): Student = {
+  private def createStudent(issuer: Issuer.Id, tag: String = "", groupMaybe: Option[IssuerGroup] = None): Student = {
+    val group = groupMaybe.getOrElse {
+      createIssuerGroup(issuer, IssuerGroup.Name(s"Grp 1 - $tag"))
+    }
     val request = CreateStudent(
       issuer = issuer,
       universityAssignedId = s"uid $tag",
       fullName = s"Atala Prism $tag".trim,
       email = "test@iohk.io",
-      admissionDate = LocalDate.now()
+      admissionDate = LocalDate.now(),
+      groupName = group.name
     )
 
     val result = repository.create(request).value.futureValue

@@ -4,7 +4,7 @@ import java.util.UUID
 
 import doobie.postgres.implicits._
 import doobie.util.{Get, Put}
-import io.iohk.cvp.cmanager.models.{Credential, Issuer, Student}
+import io.iohk.cvp.cmanager.models.{Credential, Issuer, IssuerGroup, Student}
 
 package object daos {
 
@@ -21,4 +21,11 @@ package object daos {
   implicit val studentConnectionStatusGet: Get[Student.ConnectionStatus] = {
     Get[String].map(Student.ConnectionStatus.withNameInsensitive)
   }
+
+  implicit val groupIdPut: Put[IssuerGroup.Id] = Put[UUID].contramap(_.value)
+  implicit val groupIdGet: Get[IssuerGroup.Id] = Get[UUID].map(IssuerGroup.Id.apply)
+
+  implicit val groupNamePut: Put[IssuerGroup.Name] = Put[String].contramap(_.value)
+  implicit val groupNameGet: Get[IssuerGroup.Name] = Get[String].map(IssuerGroup.Name.apply)
+
 }

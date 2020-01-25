@@ -5,7 +5,7 @@ import java.util.UUID
 
 import cats.effect.IO
 import doobie.util.transactor.Transactor
-import io.iohk.cvp.cmanager.models.{Credential, Issuer, Student}
+import io.iohk.cvp.cmanager.models.{Credential, Issuer, IssuerGroup, Student}
 import io.iohk.cvp.cmanager.repositories.{daos => cmanagerDaos}
 import io.iohk.connector.repositories.{daos => connectorDaos}
 import doobie.implicits._
@@ -51,19 +51,28 @@ object DataPreparation {
     CredentialsDAO.create(request).transact(database).unsafeRunSync()
   }
 
-  def createStudent(issuer: Issuer.Id, name: String, tag: String = "")(implicit database: Transactor[IO]): Student = {
+  def createStudent(issuer: Issuer.Id, name: String, groupName: IssuerGroup.Name, tag: String = "")(
+      implicit database: Transactor[IO]
+  ): Student = {
+    val group = IssuerGroupsDAO
+      .find(issuer, groupName)
+      .transact(database)
+      .unsafeRunSync()
+      .getOrElse(throw new RuntimeException("Missing group"))
+
     val request = CreateStudent(
       issuer = issuer,
       universityAssignedId = s"uid - $tag",
       fullName = name,
       email = "donthaveone@here.com",
-      admissionDate = LocalDate.now()
+      admissionDate = LocalDate.now(),
+      groupName = group.name
     )
 
-    StudentsDAO.create(request).transact(database).unsafeRunSync()
+    StudentsDAO.create(request, group.id).transact(database).unsafeRunSync()
   }
 
-  def createIssuerGroup(issuer: Issuer.Id, name: String)(implicit database: Transactor[IO]): Unit = {
+  def createIssuerGroup(issuer: Issuer.Id, name: IssuerGroup.Name)(implicit database: Transactor[IO]): IssuerGroup = {
     IssuerGroupsDAO.create(issuer, name).transact(database).unsafeRunSync()
   }
 }

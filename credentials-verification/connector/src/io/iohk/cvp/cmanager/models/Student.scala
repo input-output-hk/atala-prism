@@ -10,7 +10,6 @@ import io.scalaland.chimney.dsl._
 
 case class Student(
     id: Student.Id,
-    issuer: Issuer.Id,
     universityAssignedId: String,
     fullName: String,
     email: String,
@@ -18,7 +17,8 @@ case class Student(
     createdOn: Instant,
     connectionStatus: Student.ConnectionStatus,
     connectionToken: Option[TokenString],
-    connectionId: Option[UUID]
+    connectionId: Option[UUID],
+    groupName: IssuerGroup.Name
 )
 
 object Student {
