@@ -11,6 +11,7 @@
     .UserLabel {
       @include primary-text($body, $white);
       margin-left: 1em;
+      margin-right: 1em;
     }
   }
 }

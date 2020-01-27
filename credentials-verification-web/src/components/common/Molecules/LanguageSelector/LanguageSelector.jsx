@@ -30,16 +30,18 @@ const LanguageSelector = () => {
   };
 
   return (
-    <Col xs={2} sm={2} md={2} lg={10}>
+    <div className="LanguajeMenu">
       <Select {...selectProps}>
         {languages.map(lang => (
           <Select.Option value={lang} disabled={lang === currentLanguage}>
-            <img src={flags[lang]} alt={`${t(`languages.${lang}`)}-${t('languages.flag')}`} />
-            {customUpperCase(t(`languages.${lang}`))}
+            <div className="LanguajeOption">
+              <img src={flags[lang]} alt={`${t(`languages.${lang}`)}-${t('languages.flag')}`} />
+              {customUpperCase(t(`languages.${lang}`))}
+            </div>
           </Select.Option>
         ))}
       </Select>
-    </Col>
+    </div>
   );
 };
 

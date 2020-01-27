@@ -36,7 +36,7 @@
   color: $white;
   &:hover,
   &:focus {
-    background-color: $black;
+    background-color: #01101c;
     color: $white;
   }
 }
@@ -47,8 +47,8 @@
   color: $secondary-color;
   &:hover,
   &:focus {
-    border-color: $black;
-    color: $black;
+    border-color: $secondary-color;
+    color: $secondary-color;
   }
 }
 

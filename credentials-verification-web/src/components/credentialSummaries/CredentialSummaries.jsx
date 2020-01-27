@@ -11,6 +11,8 @@ import CredentialSummaryListDetail from '../common/Organisms/Detail/CredentialSu
 import noGroups from '../../images/noGroups.svg';
 import { drawerWidth } from '../../helpers/constants';
 
+import './_style.scss';
+
 const CredentialSummaries = ({
   credentialSummaries,
   getStudentCredentials,
@@ -47,7 +49,7 @@ const CredentialSummaries = ({
   const title = t('credentialSummary.title');
 
   return (
-    <div className="Wrapper">
+    <div className="CredentialSummaries">
       <Drawer
         title={t('credentialSummary.detail.title')}
         placement="right"

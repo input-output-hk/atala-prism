@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
-import preloginLogo from '../../images/landingLogo.svg';
+import preloginLogo from '../../images/atala-logo-loading.svg';
 
 import './_style.scss';
 import { withRedirector } from '../providers/withRedirector';

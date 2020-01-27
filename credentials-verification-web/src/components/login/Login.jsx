@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import LoginForm from './Organisms/Form/LoginForm';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 import { refShape } from '../../helpers/propShapes';
-import logo from '../../images/loginLogo.svg';
+import logo from '../../images/atala-logo-black.svg';
 
 import './_style.scss';
 import LanguageSelector from '../common/Molecules/LanguageSelector/LanguageSelector';

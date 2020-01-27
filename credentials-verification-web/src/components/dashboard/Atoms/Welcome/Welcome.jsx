@@ -2,7 +2,7 @@ import React, { Fragment } from 'react';
 import { Col, Row } from 'antd';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
-import welcomeImage from '../../../../DashboardWelcome.svg';
+import welcomeImage from '../../../../images/DashboardWelcome.svg';
 
 import './_style.scss';
 

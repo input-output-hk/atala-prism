@@ -1,19 +1,36 @@
 @import '../../../../css/general_styling';
 
-.OrganizationInfo {
-  height: 85%;
-  width: 65%;
-  display: flex;
-  flex-flow: column;
-  justify-content: space-between;
-  align-items: center;
-  margin: 0 auto;
-  padding: 4em 0;
+.RegistrationContainer {
+  .RegistrationContent {
+    .RegisterStep {
+      .OrganizationInfo {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 0 auto;
 
-  .ant-form {
-    align-self: flex-start;
-    width: 40%;
-    height: 40%;
-    padding: 0 2em;
+        .ant-form {
+          align-self: flex-start;
+          flex-wrap: wrap;
+          justify-content: space-between;
+          display: flex;
+          width: 90%;
+          padding: 0 2em;
+
+          .organizationRole {
+            width: 45%;
+
+            .FileUploader {
+              padding-top: 0;
+              p {
+                line-height: 20px;
+                margin-bottom: 1em;
+              }
+            }
+          }
+        }
+      }
+    }
   }
 }

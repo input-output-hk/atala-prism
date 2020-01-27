@@ -8,6 +8,8 @@ import { shortBackendDateFormatter } from '../../../../helpers/formatters';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import InfiniteScrollTable from '../../../common/Organisms/Tables/InfiniteScrollTable';
 
+import './_style.scss';
+
 const GetActionsButtons = ({ id, setGroupToDelete, fullInfo }) => {
   const { t } = useTranslation();
 
@@ -67,6 +69,7 @@ const getColumns = ({ setGroupToDelete, setGroup }) => {
   const actionColumn = [
     {
       key: 'actions',
+      width: 300,
       render: ({ groupId, groupName }) => (
         <GetActionsButtons
           id={groupId}
@@ -87,6 +90,7 @@ const getColumns = ({ setGroupToDelete, setGroup }) => {
     },
     {
       key: 'groupName',
+      width: 300,
       render: ({ groupName }) => (
         <CellRenderer
           title="groupName"
@@ -98,7 +102,7 @@ const getColumns = ({ setGroupToDelete, setGroup }) => {
     },
     {
       key: 'lastUpdate',
-      width: 150,
+      width: 300,
       render: ({ lastUpdate }) => (
         <CellRenderer
           title="lastUpdate"
@@ -137,7 +141,11 @@ const GroupsTable = ({ setGroupToDelete, groups, selectedGroup, setGroup, onPage
     getMoreData
   };
 
-  return <InfiniteScrollTable {...tableProps} />;
+  return (
+    <div className="GroupTableContainer">
+      <InfiniteScrollTable {...tableProps} />
+    </div>
+  );
 };
 
 GroupsTable.defaultProps = {
