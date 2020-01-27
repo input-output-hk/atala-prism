@@ -3,20 +3,22 @@
 .HeaderContainer {
   height: 9%;
   padding: 1em;
-  background-color: $primary-color;
+  background-color: $secondary-color;
 
-  .ant-select-selection {
-    background: #ff2d3b;
-    color: white;
-    border: none;  
+  .HeaderLogo {
+    height: 32px;
   }
 
-  .ant-select-arrow {
-    color: white;
+  .RightSide {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
   }
 
   .IconUniversity {
-    height: 80%;
-    width: 80%;
+    height: 32px;
+    width: 32px;
+    border-radius: 4px;
+    margin-right: 1em;
   }
 }

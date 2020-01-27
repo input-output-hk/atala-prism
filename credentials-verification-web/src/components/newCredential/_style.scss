@@ -8,8 +8,7 @@
 
   .CredentialContainerTop {
     height: 88%;
-    overflow-y: auto;
-    margin: 1em 1.5em 0 1.5em;
+    margin: 1.5em 1.5em 0 1.5em;
 
     &::-webkit-scrollbar {
       width: 6px;
@@ -26,5 +25,11 @@
 
   .StepsFooter {
     height: 12%;
+  }
+
+  .GroupsNewCredential {
+    .Wrapper {
+      margin: 2em 0;
+    }
   }
 }

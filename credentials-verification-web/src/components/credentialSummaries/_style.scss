@@ -1,0 +1,12 @@
+@import '../../css/general_styling';
+
+.CredentialSummaries {
+  margin: 2em;
+
+  .PaginatedTable {
+    .ant-table-body {
+      overflow-x: auto !important;
+      overflow-y: auto !important;
+    }
+  }
+}

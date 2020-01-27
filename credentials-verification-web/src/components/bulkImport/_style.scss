@@ -4,6 +4,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: 4em 0;
+
+  .StepCard {
+    width: 400px;
+    height: 350px;
+    cursor: pointer;
+    margin: 0 1em;
+  }
 
   .ant-col {
     margin: 7px;

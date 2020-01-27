@@ -23,8 +23,10 @@ const GenericStep = ({ step, currentStep, stepType, button, changeStep }) => {
       tabIndex={step}
     >
       <Avatar>{isActiveStep && step + 1}</Avatar>
-      <h1>{t(`bulkImport.${stepType}.title`)}</h1>
-      <p>{t(`bulkImport.${stepType}.info`)}</p>
+      <div className="CardText">
+        <h1>{t(`bulkImport.${stepType}.title`)}</h1>
+        <p>{t(`bulkImport.${stepType}.info`)}</p>
+      </div>
       {button}
     </div>
   );

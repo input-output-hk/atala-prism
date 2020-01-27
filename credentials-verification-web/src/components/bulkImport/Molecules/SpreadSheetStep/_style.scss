@@ -8,24 +8,33 @@
   padding: 3em;
   border-radius: 10px;
   box-shadow: $shadow;
-  height: 250px;
 
   &:focus {
     outline: none;
   }
+
+  .CardText {
+    margin-top: 2em;
+  }
 }
 
 .IsSelected {
-  border: 3px solid $primary-color;
+  border: 2px solid $primary-color;
   border-radius: 10px;
-  box-shadow: $shadow;
+  box-shadow: $red-shadow;
 
   .ant-avatar-circle {
-    color: '#FF2D3B';
+    color: #ff2d3b;
     background-color: white;
-    border-color: '#FF2D3B';
-    border-radius: '6px';
+    border-color: #ff2d3b;
+    border-radius: 20px;
     border-style: solid;
+    border-width: 2px;
+
+    span {
+      font-size: 18px;
+      line-height: 28px;
+    }
   }
 
   h1 {

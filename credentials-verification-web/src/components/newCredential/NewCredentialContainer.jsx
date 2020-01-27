@@ -126,7 +126,11 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
           />
         );
       case 1: {
-        return <GroupsContainer api={api} selectingProps={{ setGroup, group }} />;
+        return (
+          <div className="GroupsNewCredential">
+            <GroupsContainer api={api} selectingProps={{ setGroup, group }} />
+          </div>
+        );
       }
       default:
         return <NewCredentialValidation credentialValues={credentialValues} group={group} />;

@@ -1,5 +1,16 @@
-.SettingsMenu {
-  div {
-    color: black;
+@import '../../../../css/general_styling';
+
+.ant-select {
+  width: 152px;
+  background: transparent;
+}
+
+.LanguajeOption {
+  @include primary-text(11px, $secondary-color);
+  img {
+    width: 21px;
+    height: 14px;
+    margin-right: 0.75em;
   }
+  margin-right: 1em;
 }
