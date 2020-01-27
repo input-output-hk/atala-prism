@@ -39,7 +39,8 @@ public class GetConnectionsListableRunnable extends CommonGrpcRunnable<List<Conn
     return Optional.ofNullable(response.getConnectionsList())
         .map(connectionInfos -> connectionInfos.stream()
             .filter(
-                connection -> connection.getParticipantInfo().getParticipantCase().getNumber() == ParticipantInfo.VERIFIER_FIELD_NUMBER)
+                connection -> connection.getParticipantInfo().getParticipantCase().getNumber()
+                    == ParticipantInfo.VERIFIER_FIELD_NUMBER)
             .map(ConnectionListable::new)
             .collect(Collectors.toList())
         );

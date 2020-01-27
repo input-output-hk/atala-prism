@@ -12,11 +12,9 @@ import java.util.logging.Logger;
 
 public class HeaderClientInterceptor implements ClientInterceptor {
 
-  private static final Logger logger = Logger.getLogger(HeaderClientInterceptor.class.getName());
-
   static final Metadata.Key<String> HEADER_USER_ID_KEY =
       Metadata.Key.of("userId", Metadata.ASCII_STRING_MARSHALLER);
-
+  private static final Logger logger = Logger.getLogger(HeaderClientInterceptor.class.getName());
   private final String userId;
 
   public HeaderClientInterceptor(String userId) {

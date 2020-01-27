@@ -14,5 +14,5 @@ public class WalletSetupViewModel extends ViewModel {
 
   }
 
-  
+
 }

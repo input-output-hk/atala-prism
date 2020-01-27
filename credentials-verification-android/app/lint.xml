@@ -1,0 +1,6 @@
+<lint>
+  <issue id="InvalidPackage">
+    <!-- ignore Invalid Package check for spongycastle -->
+    <ignore path="**/*bouncycastle*.jar" />
+  </issue>
+</lint>
