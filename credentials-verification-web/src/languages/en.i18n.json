@@ -32,12 +32,12 @@
     "status": {
       "issuer": {
         "invitationMissing":  "Pending",
-        "connectionMissing": "Connection Missing",
-        "connectionAccepted":  "Connection Accepted",
-        "connectionRevoked": "Connection Revoked"
+        "connectionMissing": "Invited",
+        "connectionAccepted":  "Connected",
+        "connectionRevoked": "Revoked"
       },
       "verifier": {
-        "created": "Created",
+        "created": "Pending",
         "invited": "Invited",
         "connected": "Connected",
         "revoked": "Revoked"
