@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import CellRenderer from '../../../../common/Atoms/CellRenderer/CellRenderer';
-import { backendDateFormatter } from '../../../../../helpers/formatters';
+import { shortBackendDateFormatter } from '../../../../../helpers/formatters';
 import RenderStudent from '../../../Molecules/RenderStudent/RenderStudent';
 import InfiniteScrollTable from '../../../../common/Organisms/Tables/InfiniteScrollTable';
 import holderDefaultAvatar from '../../../../../images/holder-default-avatar.svg';
@@ -35,7 +35,7 @@ const getColumns = (viewText, sendCredentials, onView, issueCredential) => [
     render: ({ enrollmentdate }) => (
       <CellRenderer
         title="admissionDate"
-        value={backendDateFormatter(enrollmentdate)}
+        value={shortBackendDateFormatter(enrollmentdate)}
         componentName="credentials"
       />
     )
