@@ -85,8 +85,7 @@ export const api = {
   getIndividualsAsIssuer,
   createIndividual,
   createStudent,
-  importBulk,
-  getGroups
+  importBulk
 };
 
 export const hardcodedApi = {
