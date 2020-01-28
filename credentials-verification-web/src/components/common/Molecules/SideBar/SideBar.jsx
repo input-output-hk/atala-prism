@@ -8,7 +8,6 @@ import iconGroups from '../../../../images/icon-groups.svg';
 import iconCredentials from '../../../../images/icon-credentials.svg';
 // import iconTransactions from '../../../../images/icon-transactions.svg';
 import certificateIcon from '../../../../images/certificateIcon.svg';
-import paymentIcon from '../../../../images/paymentIcon.svg';
 import credentialSummaryIcon from '../../../../images/credentialSummaryIcon.svg';
 import settingsIcon from '../../../../images/settingsIcon.svg';
 import supportIcon from '../../../../images/supportIcon.svg';
@@ -24,9 +23,9 @@ const SideMenu = ({ location: { pathname } }) => {
     { icon: iconGroups, path: '/groups', restrictedTo: [ISSUER] },
     { icon: iconCredentials, path: '/credentials', restrictedTo: [ISSUER] },
     { icon: certificateIcon, path: '/newCredential', restrictedTo: [ISSUER] },
-    { icon: credentialSummaryIcon, path: '/credentialSummary', restrictedTo: [ISSUER] },
-    { icon: paymentIcon, path: '/payment', restrictedTo: [ISSUER, VERIFIER] }
-    // The next page is not yet developed
+    { icon: credentialSummaryIcon, path: '/credentialSummary', restrictedTo: [ISSUER] }
+    // The next pages are not yet developed
+    // { icon: paymentIcon, path: '/payment', restrictedTo: [ISSUER, VERIFIER] }
     // { icon: iconTransactions, path: '/transactions' }
   ];
 
