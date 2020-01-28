@@ -58,7 +58,7 @@ const createAndPopulateCreationRequest = (
   return createCredentialRequest;
 };
 
-const getAllStudents = async () => {
+const getAllStudents = async groupName => {
   const allStudents = [];
   const limit = 100;
   let response;
@@ -74,7 +74,7 @@ const getAllStudents = async () => {
 
     // The next 100 students are requested
     // eslint-disable-next-line no-await-in-loop
-    response = await getStudents(config.issuerId, id, limit);
+    response = await getStudents(config.issuerId, id, limit, groupName);
 
     const connectedStudents = response.filter(
       ({ connectionstatus }) => connectionstatus === CONNECTION_ACCEPTED
@@ -98,7 +98,7 @@ export const createCredential = async ({ title, enrollmentDate, graduationDate, 
   setDateInfoFromJSON(enrollmentDateObject, enrollmentDate);
   setDateInfoFromJSON(graduationDateObject, graduationDate);
 
-  const allStudents = await getAllStudents();
+  const allStudents = await getAllStudents(groupName);
 
   const credentialStudentsPromises = allStudents.map(student => {
     const createCredentialRequest = createAndPopulateCreationRequest(

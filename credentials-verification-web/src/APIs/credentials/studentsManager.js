@@ -17,11 +17,13 @@ const { config } = require('../config');
 
 const studentsService = new StudentsServicePromiseClient(config.grpcClient, null, null);
 
-const createAndPopulateGetStudentRequest = (limit, lastSeenStudentId) => {
+const createAndPopulateGetStudentRequest = (limit, lastSeenStudentId, groupName) => {
   const getStudentsRequest = new GetStudentsRequest();
 
   getStudentsRequest.setLimit(limit);
   getStudentsRequest.setLastseenstudentid(lastSeenStudentId);
+
+  if (groupName) getStudentsRequest.setGroupname(groupName);
 
   return getStudentsRequest;
 };
@@ -29,10 +31,15 @@ const createAndPopulateGetStudentRequest = (limit, lastSeenStudentId) => {
 export const getStudents = async (
   userId = config.issuerId,
   lastSeenCredentialId = null,
-  limit = HOLDER_PAGE_SIZE
+  limit = HOLDER_PAGE_SIZE,
+  groupName
 ) => {
   Logger.info('Getting the students');
-  const getStudentsRequest = createAndPopulateGetStudentRequest(limit, lastSeenCredentialId);
+  const getStudentsRequest = createAndPopulateGetStudentRequest(
+    limit,
+    lastSeenCredentialId,
+    groupName
+  );
 
   const result = await studentsService.getStudents(getStudentsRequest, { userId });
 
