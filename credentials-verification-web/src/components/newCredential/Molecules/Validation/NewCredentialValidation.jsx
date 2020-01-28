@@ -8,7 +8,7 @@ import './_style.scss';
 
 const NewCredentialValidation = ({
   credentialValues: { startDate, degreeName, logoUniversity },
-  group: { groupName }
+  group: { name }
 }) => {
   const { t } = useTranslation();
 
@@ -27,7 +27,7 @@ const NewCredentialValidation = ({
           value={shortDateFormatter(startDate)}
           componentName="newCredential"
         />
-        <CellRenderer title="groupAssigned" value={groupName} componentName="newCredential" />
+        <CellRenderer title="groupAssigned" value={name} componentName="newCredential" />
       </div>
     </div>
   );
