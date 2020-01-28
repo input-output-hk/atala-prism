@@ -1,4 +1,4 @@
 #!/bin/bash
 
-protoc --python_out=. -I ../cmanager/protobuf/ ../cmanager/protobuf/credential.proto
+protoc --python_out=. -I ../connector/protobuf/credential/ ../connector/protobuf/credential/credential.proto
 python3 fake_data.py
