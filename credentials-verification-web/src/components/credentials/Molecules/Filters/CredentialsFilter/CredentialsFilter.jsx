@@ -29,6 +29,7 @@ const CredentialsFilter = ({ fetchCredentials, credentialTypes, categories, grou
   };
 
   const datePickerProps = {
+    disabled: true,
     placeholder: t('credentials.filters.date'),
     suffixIcon: <Icon type="down" />,
     onChange: (_, dateString) => setDate(dateString),
@@ -39,7 +40,12 @@ const CredentialsFilter = ({ fetchCredentials, credentialTypes, categories, grou
     <div className="FilterControls">
       <Row gutter={16}>
         <Col span={3}>
-          <Select id="credentialTypeFilter" value={credentialType} onChange={setCredentialType}>
+          <Select
+            disabled
+            id="credentialTypeFilter"
+            value={credentialType}
+            onChange={setCredentialType}
+          >
             <Select.Option value="">{t('credentials.filters.credentialType')}</Select.Option>
             {credentialTypes.map(aCredentialType => (
               <Select.Option key={aCredentialType} value={aCredentialType}>
@@ -49,7 +55,7 @@ const CredentialsFilter = ({ fetchCredentials, credentialTypes, categories, grou
           </Select>
         </Col>
         <Col span={3}>
-          <Select id="categoryFilter" value={category} onChange={setCategory}>
+          <Select disabled id="categoryFilter" value={category} onChange={setCategory}>
             <Select.Option value="">{t('credentials.filters.category')}</Select.Option>
             {categories.map(categoryType => (
               <Select.Option key={categoryType} value={categoryType}>
@@ -59,7 +65,7 @@ const CredentialsFilter = ({ fetchCredentials, credentialTypes, categories, grou
           </Select>
         </Col>
         <Col span={3}>
-          <Select id="groupFilter" value={group} onChange={setGroup}>
+          <Select disabled id="groupFilter" value={group} onChange={setGroup}>
             <Select.Option value="">{t('credentials.filters.group')}</Select.Option>
             {groups.map(groupType => (
               <Select.Option key={groupType} value={groupType}>
@@ -73,6 +79,7 @@ const CredentialsFilter = ({ fetchCredentials, credentialTypes, categories, grou
         </Col>
         <Col span={3}>
           <Input
+            disabled
             id="nameFilter"
             placeholder={t('credentials.filters.name')}
             prefix={<Icon type="search" />}
@@ -84,6 +91,7 @@ const CredentialsFilter = ({ fetchCredentials, credentialTypes, categories, grou
         <Col span={3}>
           <CustomButton
             buttonProps={{
+              disabled: true,
               onClick: clearFilters,
               className: 'theme-filter'
             }}
