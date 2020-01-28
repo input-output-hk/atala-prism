@@ -32,7 +32,7 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
   const saveCredential = () => {
     createCredential({
       title: degreeName,
-      groupName: group.groupName,
+      groupName: group.name,
       enrollmentDate: fromUnixToProtoDateFormatter(startDate),
       graduationDate: fromUnixToProtoDateFormatter(graduationDate)
     })
