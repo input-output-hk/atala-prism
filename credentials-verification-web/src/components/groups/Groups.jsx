@@ -16,7 +16,8 @@ const NewGroupButton = () => {
     <CustomButton
       buttonProps={{
         onClick: () => message.info(t('groups.onCreateNewGroupClick')),
-        className: 'theme-secondary'
+        className: 'theme-secondary',
+        disabled: true
       }}
       buttonText={t('groups.createNewGroup')}
       icon={<Icon type="plus" />}
