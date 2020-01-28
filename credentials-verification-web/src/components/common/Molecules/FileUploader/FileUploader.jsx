@@ -14,9 +14,11 @@ const FileUploader = ({
   uploadText,
   formRef,
   initialValue,
-  disabled
+  disabled,
+  updateFile
 }) => {
   const { t } = useTranslation();
+
   const [fileList, setFileList] = useState(initialValue ? [initialValue] : []);
 
   const onChange = ({ fileList: newFileList }) => !newFileList.length && setFileList([]);
@@ -27,6 +29,7 @@ const FileUploader = ({
         formRef.current.getForm().setFieldsValue({
           [field]: [response]
         });
+        updateFile(file);
         setFileList([file]);
         onSuccess(response);
       })
@@ -80,7 +83,8 @@ FileUploader.propTypes = {
   formRef: PropTypes.oneOfType([PropTypes.func, PropTypes.shape({ current: PropTypes.object })])
     .isRequired,
   initialValue: PropTypes.shape(),
-  disabled: PropTypes.bool
+  disabled: PropTypes.bool,
+  updateFile: PropTypes.func.isRequired
 };
 
 export default FileUploader;
