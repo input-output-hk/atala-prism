@@ -74,10 +74,10 @@
     }
   },
   "groups": {
-    "title": "Groups",
+    "title": "Graduation Groups",
     "noGroups": {
       "photoAlt": "No groups yet",
-      "title": "You don't have Groups yet",
+      "title": "You don't have Graduation Groups yet",
       "subtitle": "Click on create new group to add your first one!"
     },
     "filters": {
@@ -87,7 +87,7 @@
     "createNewGroup": "Create New Group",
     "onCreateNewGroupClick": "New Groups can not yet be created",
     "modal": {
-      "title": "Delete Grop",
+      "title": "Delete Group",
       "text": "Are you sure you want to delete the {{groupName}} group?"
     },
     "table": {
