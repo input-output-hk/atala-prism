@@ -66,59 +66,40 @@ const getColumns = ({ setGroupToDelete, setGroup }) => {
   const componentName = 'groups';
   const fullInfo = !setGroup;
 
-  const actionColumn = [
-    {
-      key: 'actions',
-      width: 300,
-      render: ({ groupId, groupName }) => (
-        <GetActionsButtons
-          id={groupId}
-          setGroupToDelete={() => setGroupToDelete({ id: groupId, groupName })}
-          fullInfo={fullInfo}
-        />
-      )
-    }
-  ];
+  const actionColumn = {
+    key: 'actions',
+    width: 300,
+    render: ({ groupId, groupName }) => (
+      <GetActionsButtons
+        id={groupId}
+        setGroupToDelete={() => setGroupToDelete({ id: groupId, groupName })}
+        fullInfo={fullInfo}
+      />
+    )
+  };
 
-  const commonColumns = [
-    {
-      key: 'icon',
-      width: 45,
-      render: ({ icon, groupName }) => (
-        <img style={{ height: '40px', width: '40px' }} src={icon} alt={`${groupName} icon`} />
-      )
-    },
-    {
-      key: 'groupName',
-      width: 300,
-      render: ({ groupName }) => (
-        <CellRenderer
-          title="groupName"
-          componentName={componentName}
-          value=""
-          firstValue={groupName}
-        />
-      )
-    },
-    {
-      key: 'lastUpdate',
-      width: 300,
-      render: ({ lastUpdate }) => (
-        <CellRenderer
-          title="lastUpdate"
-          componentName={componentName}
-          value={shortBackendDateFormatter(lastUpdate)}
-        />
-      )
-    }
-  ];
+  const nameColumn = {
+    key: 'groupName',
+    width: 300,
+    render: ({ name }) => (
+      <CellRenderer title="groupName" componentName={componentName} value="" firstValue={name} />
+    )
+  };
 
-  return commonColumns.concat(actionColumn);
+  return [nameColumn, actionColumn];
+};
+
+const getSelectedIndexArray = ({ name }, groups) => {
+  if (!name) return [];
+
+  const selectedIndex = groups.map(({ name: groupName }) => groupName).indexOf(name);
+
+  return [selectedIndex];
 };
 
 const GroupsTable = ({ setGroupToDelete, groups, selectedGroup, setGroup, onPageChange }) => {
   const [loading, setLoading] = useState(false);
-  const selectedRowKeys = selectedGroup.groupId ? [0] : [];
+  const selectedRowKeys = getSelectedIndexArray(selectedGroup, groups);
   // const selectedRowKeys = selectedRows === -1 ? [] : [selectedRows];
 
   const getMoreData = () => {
