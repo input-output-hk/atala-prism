@@ -12,6 +12,7 @@ const AddUsersButtons = ({ redirector: { redirectToBulkImport, redirectToStudent
     <div className="ControlButtons">
       <CustomButton
         buttonProps={{
+          disabled: true,
           className: 'theme-outline',
           onClick: redirectToBulkImport
         }}

@@ -86,6 +86,7 @@ const Connections = ({
         ) : (
           <CustomButton
             buttonProps={{
+              disabled: true,
               className: 'theme-secondary',
               onClick: redirectToBulkImport
             }}
