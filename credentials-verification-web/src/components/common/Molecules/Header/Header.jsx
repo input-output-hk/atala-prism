@@ -12,11 +12,16 @@ const Header = ({ api: { lockWallet } }) => {
   const userLogo = getLogoAsBase64();
 
   return (
-    <Row type="flex" align="middle" className="HeaderContainer">
-      <Col lg={8}>
+    // Add class IssuerUser or VerifierUser to change Theme Color
+    <Row type="flex" align="middle" className="HeaderContainer IssuerUser">
+      <Col lg={8} className="LogoContainer">
         <a href="/">
           <img className="HeaderLogo" src="atala-logo.svg" alt="Atala Logo" />
         </a>
+        <div className="PortalName">
+          {/* Change Name Issuer Portal or Verifier Portal */}
+          <p>Issuer Portal</p>
+        </div>
       </Col>
       <Col
         lg={16}

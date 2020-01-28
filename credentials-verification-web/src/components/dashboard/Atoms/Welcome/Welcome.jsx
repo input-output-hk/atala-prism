@@ -10,9 +10,11 @@ const Welcome = ({ name, importantInfo }) => {
   const { t } = useTranslation();
 
   return (
-    <div className="WelcomeContainer">
+    // Add class IssuerUser or VerifierUser to change Theme Color
+    <div className="WelcomeContainer IssuerUser">
       <div className="WelcomeText">
-        <h2>{t('dashboard.welcome.title')}</h2>
+        {/* Add class IssuerUser or VerifierUser to change Theme Color */}
+        <h2 className="IssuerUser">{t('dashboard.welcome.title')}</h2>
       </div>
       <div className="WelcomeImg">
         <img src={welcomeImage} alt={t('dashboard.welcome.image')} />

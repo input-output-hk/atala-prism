@@ -9,7 +9,8 @@ import './_main.scss';
 const Main = ({ apiProvider }) => (
   <main>
     <APIContext.Provider value={apiProvider}>
-      <div className="AppContainer">
+      {/* Add class IssuerUser or VerifierUser to change Theme Color */}
+      <div className="AppContainer IssuerUser">
         <Router />
       </div>
     </APIContext.Provider>
