@@ -1,5 +1,4 @@
 import { mockApi } from './__mocks__';
-import { getGroups } from './__mocks__/groups';
 
 import {
   getConnectionsPaginated,
@@ -22,6 +21,7 @@ import {
   getStudentCredentials,
   createStudent
 } from './credentials/studentsManager';
+import { getGroups } from './credentials/groupsManager';
 import {
   getIndividuals as getIndividualsAsVerifier,
   generateConnectionTokenForIndividual as generateConnectionTokenAsVerifier,
@@ -85,13 +85,13 @@ export const api = {
   getIndividualsAsIssuer,
   createIndividual,
   createStudent,
-  importBulk
+  importBulk,
+  getGroups
 };
 
 export const hardcodedApi = {
   getTermsAndConditions: mockApi.getTermsAndConditions,
   getPrivacyPolicy: mockApi.getPrivacyPolicy,
-  getGroups: mockApi.getGroups,
   getCredentialTypes: mockApi.getCredentialTypes,
   getCategoryTypes: mockApi.getCategoryTypes,
   getCredentialsGroups: mockApi.getCredentialsGroups,
