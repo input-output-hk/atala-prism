@@ -28,6 +28,8 @@ const CredentialListDetail = ({
   const genExtra = () => <Icon type="caret-down" />;
   const role = localStorage.getItem('userRole');
 
+  const hasCredentials = !!transactions.length;
+
   return (
     <div className="CredentialSummaryDetail">
       <CredentialDetail
@@ -45,7 +47,7 @@ const CredentialListDetail = ({
           {date && <p>{shortBackendDateFormatter(date)}</p>}
         </div>
       </div>
-      {role && (
+      {role && hasCredentials && (
         <Collapse accordion className="TransactionsDetail">
           <Collapse.Panel
             header={t('credentialSummary.detail.transactions')}
@@ -55,24 +57,26 @@ const CredentialListDetail = ({
           />
         </Collapse>
       )}
-      {transactions.map(trans => {
-        const transaction = mapTransaction(trans, setConnectionInfo);
-        return (
-          <div className="CredentialSummaryLine">
-            <p>{t('credentialDetail.type')}</p>
-            <Connection
-              icon={transaction.icon}
-              type={transaction.type}
-              date={transaction.date}
-              setConnectionInfo={transaction.setConnectionInfo}
-              university={transaction.university}
-              award={transaction.award}
-              student={transaction.student}
-              graduationDate={transaction.graduationDate}
-            />
-          </div>
-        );
-      })}
+      {!hasCredentials && <label>{t('credentialSummary.detail.noCredentials')}</label>}
+      {hasCredentials &&
+        transactions.map(trans => {
+          const transaction = mapTransaction(trans, setConnectionInfo);
+          return (
+            <div className="CredentialSummaryLine">
+              <p>{t('credentialDetail.type')}</p>
+              <Connection
+                icon={transaction.icon}
+                type={transaction.type}
+                date={transaction.date}
+                setConnectionInfo={transaction.setConnectionInfo}
+                university={transaction.university}
+                award={transaction.award}
+                student={transaction.student}
+                graduationDate={transaction.graduationDate}
+              />
+            </div>
+          );
+        })}
       {role && (
         <div className="ControlButtons">
           <CustomButton

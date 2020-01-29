@@ -200,6 +200,7 @@
       "proofRequest": "Proof Request",
       "newCredential": "New Credential",
       "iconAlt": "Avatar",
+      "noCredentials": "The student has not shared credentials yet",
       "credentialsType": {
         "bachelorsDegree":  "Bachelor's Degree"
       }
