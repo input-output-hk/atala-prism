@@ -96,15 +96,16 @@ export const getStudentCredentials = async (studentId, issuer = config.issuerId)
   }
 };
 
-export const createStudent = async (universityAssignedId, fullName, email, admissionDate) => {
+export const createStudent = async ({ studentId, fullName, email, admissionDate, groupName }) => {
   const request = new CreateStudentRequest();
   const date = new Date();
   setDateInfoFromJSON(date, admissionDate);
 
-  request.setUniversityassignedid(universityAssignedId);
+  request.setUniversityassignedid(studentId);
   request.setFullname(fullName);
   request.setEmail(email);
   request.setAdmissiondate(date);
+  request.setGroupname(groupName);
 
   const student = await studentsService.createStudent(request, { userId: config.issuerId });
 

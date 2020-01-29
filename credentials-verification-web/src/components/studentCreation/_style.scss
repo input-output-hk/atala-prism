@@ -9,6 +9,20 @@
   }
 }
 
+.GroupSelection {
+  display: flex;
+  margin-bottom: 1em;
+  align-items: center;
+  
+  div {
+    width: 30em;
+  }
+
+  p {
+    margin: 1em;
+  }
+}
+
 .EditableTable {
   .ant-table-tbody {
     .ant-row.ant-form-item {

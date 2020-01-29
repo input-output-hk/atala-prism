@@ -2,15 +2,15 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import CellRenderer from '../../../../common/Atoms/CellRenderer/CellRenderer';
-import { shortBackendDateFormatter } from '../../../../../helpers/formatters';
+import { dayMonthYearBackendFormatter } from '../../../../../helpers/formatters';
 import RenderStudent from '../../../Molecules/RenderStudent/RenderStudent';
 import InfiniteScrollTable from '../../../../common/Organisms/Tables/InfiniteScrollTable';
 import holderDefaultAvatar from '../../../../../images/holder-default-avatar.svg';
 import freeUniLogo from '../../../../../images/free-uni-logo.png';
-
-import './_style.scss';
 import CustomButton from '../../../../common/Atoms/CustomButton/CustomButton';
 import { credentialShape } from '../../../../../helpers/propShapes';
+
+import './_style.scss';
 
 const getColumns = (viewText, sendCredentials, onView, issueCredential) => [
   {
@@ -35,7 +35,7 @@ const getColumns = (viewText, sendCredentials, onView, issueCredential) => [
     render: ({ enrollmentdate }) => (
       <CellRenderer
         title="admissionDate"
-        value={shortBackendDateFormatter(enrollmentdate)}
+        value={dayMonthYearBackendFormatter(enrollmentdate)}
         componentName="credentials"
       />
     )

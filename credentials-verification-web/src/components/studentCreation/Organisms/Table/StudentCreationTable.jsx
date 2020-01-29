@@ -18,7 +18,7 @@ const getColumns = (length, t, handleDelete) => [
   },
   {
     title: t('studentCreation.table.studentId'),
-    dataIndex: 'universityAssignedId',
+    dataIndex: 'studentId',
     editable: true
   },
   {
@@ -39,7 +39,8 @@ const getColumns = (length, t, handleDelete) => [
         }}
         buttonText={t('studentCreation.table.delete')}
       />
-    )
+    ),
+    editable: false
   }
 ];
 

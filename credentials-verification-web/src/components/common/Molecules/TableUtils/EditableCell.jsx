@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 import { noEmptyInput, futureDate } from '../../../../helpers/formRules';
-import { simpleMomentFormatter } from '../../../../helpers/formatters';
+
+import './editableCell.scss';
 
 const isDate = type => type === 'date';
 
@@ -35,14 +36,8 @@ const EditableCell = ({
         return;
       }
 
-      let dateToSave;
-      if (type === 'date' && values[id]) {
-        const dateAsString = simpleMomentFormatter(values[id]);
-        dateToSave = { [id]: dateAsString };
-      }
-
       toggleEdit();
-      const toSave = Object.assign({}, record, values, dateToSave);
+      const toSave = Object.assign({}, record, values);
 
       handleSave(toSave);
     });
@@ -50,10 +45,6 @@ const EditableCell = ({
 
   const save = ({ currentTarget: { id } }) => {
     cellForm.validateFields((errors, values) => {
-      if (errors && errors[id]) {
-        return;
-      }
-
       toggleEdit();
       const toSave = Object.assign({}, record, values);
 
@@ -64,17 +55,15 @@ const EditableCell = ({
   const renderChild = (child, form) => {
     const [, , content] = child;
 
+    setEditing(true);
     if (content === '' || content === null) {
       setCellForm(form);
-      setEditing(true);
     }
 
     return child;
   };
 
   const getElement = () => {
-    const props = { onPressEnter: save, onBlur: save };
-
     switch (type) {
       case 'date':
         return <DatePicker onPressEnter={saveDate} onBlur={saveDate} />;
@@ -83,28 +72,48 @@ const EditableCell = ({
     }
   };
 
+  const getError = () => {
+    const data = record[dataIndex];
+
+    if (!data) return `* ${t('errors.form.emptyField')}`;
+    if (isDate(type) && moment(data).isSameOrAfter(moment()))
+      return `* ${t('newCredential.form.errors.futureError')}`;
+  };
+
   const renderCell = form => {
     setCellForm(form);
 
     const savedData = record[dataIndex];
 
-    const initialValue = savedData && isDate(type) ? moment(savedData) : savedData;
-
-    const emptyRule = [noEmptyInput(t('errors.form.emptyField'))];
-    const rulesByType = isDate(type)
-      ? emptyRule.concat({
-          validator: (_, value, cb) => futureDate(value, cb, moment.now()),
-          message: t('newCredential.form.errors.futureError')
+    const emptyRule = [
+      noEmptyInput(
+        t('studentCreation.table.requirement', {
+          requirement: t(`studentCreation.table.${dataIndex}`)
         })
-      : emptyRule;
+      )
+    ];
+    const futureRule = [
+      {
+        validator: (_, value, cb) => futureDate(value, cb, moment.now()),
+        message: t('studentCreation.table.requirement', {
+          requirement: t('studentCreation.table.dateRequirement')
+        })
+      }
+    ];
+    const rulesByType = isDate(type) ? futureRule : emptyRule;
+
+    const errorToShow = getError();
 
     return editing ? (
-      <Form.Item>
-        {cellForm.getFieldDecorator(dataIndex, {
-          rules: rulesByType,
-          initialValue
-        })(getElement())}
-      </Form.Item>
+      <div className={errorToShow ? 'InputWithError' : ''}>
+        <Form.Item>
+          {errorToShow}
+          {cellForm.getFieldDecorator(dataIndex, {
+            rules: rulesByType,
+            initialValue: savedData
+          })(getElement())}
+        </Form.Item>
+      </div>
     ) : (
       <textbox onClick={toggleEdit}>{renderChild(children, form)}</textbox>
     );

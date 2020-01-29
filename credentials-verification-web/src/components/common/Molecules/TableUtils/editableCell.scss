@@ -1,0 +1,36 @@
+@import '../../../../css/general_styling';
+
+.ant-form-item-control.has-error {
+  .has-error .ant-form-explain,
+  .has-error .ant-form-split {
+    @include primary-text(11px, $primary-color);
+    @include letter-spacing();
+  }
+}
+
+.InputWithError {
+  .ant-form-item-control {
+    line-height: 20px;
+  }
+  .ant-calendar-picker {
+    width: 100%;
+  }
+  .ant-form-item-children {
+    color: $primary-color;
+    @include primary-text(11px, $dark-grey);
+    @include letter-spacing();
+  }
+
+  .ant-form-explain {
+    color: $primary-color;
+    @include primary-text($body, $primary-color);
+    @include letter-spacing();
+    margin-top: 0.5em;
+  }
+
+  .ant-input,
+  .ant-input:hover {
+    background-color: #fff;
+    // border-color: $primary-color;
+  }
+}
