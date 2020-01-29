@@ -18,14 +18,7 @@ const Header = ({ api: { lockWallet } }) => {
           <img className="HeaderLogo" src="atala-logo.svg" alt="Atala Logo" />
         </a>
       </Col>
-      <Col
-        lg={16}
-        className="RightSide"
-        // xs={14}
-        // sm={{ span: 7, offset: 5 }}
-        // md={{ span: 6, offset: 6 }}
-        // lg={{ span: 6, offset: 6 }}
-      >
+      <Col lg={16} className="RightSide">
         <img
           className="IconUniversity"
           src={userLogo || 'icon-free-university.svg'}
