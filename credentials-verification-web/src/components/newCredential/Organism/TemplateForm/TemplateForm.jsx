@@ -27,13 +27,7 @@ const getInput = (key, initialValue, t, onChange) => ({
 
 const TemplateForm = React.forwardRef(
   (
-    {
-      savePicture,
-      credentialValues: { degreeName, startDate, graduationDate },
-      updateExampleCredential,
-      logoAsFileObject,
-      setLogoAsFileObject
-    },
+    { credentialValues: { degreeName, startDate, graduationDate }, updateExampleCredential },
     ref
   ) => {
     const { t } = useTranslation();
@@ -94,31 +88,6 @@ const TemplateForm = React.forwardRef(
             locale={locale}
           />
         )
-      },
-      {
-        fieldDecoratorData: {
-          rules: [
-            {
-              validator: (_, value, cb) => minOneElement(value, cb),
-              message: t('errors.form.emptyField')
-            }
-          ],
-          initialValue: logoAsFileObject ? [logoAsFileObject] : []
-        },
-        label: t('newCredential.form.logoUniversity'),
-        key: 'logoUniversity',
-        className: '',
-        input: (
-          <FileUploader
-            initialValue={logoAsFileObject}
-            hint="newCredential.form.logoHint"
-            field="logoUniversity"
-            savePicture={savePicture}
-            uploadText="newCredential.form.uploadButton"
-            formRef={ref}
-            updateFile={setLogoAsFileObject}
-          />
-        )
       }
     ];
 
@@ -126,21 +95,14 @@ const TemplateForm = React.forwardRef(
   }
 );
 
-TemplateForm.defaultProps = {
-  logoAsFileObject: null
-};
-
 TemplateForm.propTypes = {
-  savePicture: PropTypes.func.isRequired,
   credentialValues: PropTypes.shape({
     startDate: PropTypes.instanceOf(moment),
     graduationDate: PropTypes.instanceOf(moment),
     logoUniversity: PropTypes.arrayOf(PropTypes.shape),
     degreeName: PropTypes.string
   }).isRequired,
-  updateExampleCredential: PropTypes.func.isRequired,
-  logoAsFileObject: PropTypes.shape(PropTypes.shape()),
-  setLogoAsFileObject: PropTypes.func.isRequired
+  updateExampleCredential: PropTypes.func.isRequired
 };
 
 export default TemplateForm;

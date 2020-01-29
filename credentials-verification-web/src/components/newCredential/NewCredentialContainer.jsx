@@ -23,8 +23,6 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
   const [degreeName, setDegreeName] = useState();
   const [startDate, setStartDate] = useState();
   const [graduationDate, setGraduationDate] = useState();
-  const [logoUniversity, setLogoUniversity] = useState();
-  const [logoAsFileObject, setLogoAsFileObject] = useState();
   const [group, setGroup] = useState();
   const [open, setOpen] = useState(false);
 
@@ -61,22 +59,16 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
     formRef.current
       .getForm()
       .validateFieldsAndScroll(
-        ['degreeName', 'startDate', 'graduationDate', 'logoUniversity'],
+        ['degreeName', 'startDate', 'graduationDate'],
         (
           errors,
-          {
-            degreeName: newDegreeName,
-            startDate: newStartDate,
-            graduationDate: newGraduationDate,
-            logoUniversity: newLogoUniversity
-          }
+          { degreeName: newDegreeName, startDate: newStartDate, graduationDate: newGraduationDate }
         ) => {
           if (errors) return;
 
           setDegreeName(newDegreeName);
           setStartDate(newStartDate);
           setGraduationDate(newGraduationDate);
-          setLogoUniversity(newLogoUniversity[0]);
           setCurrentStep(currentStep + 1);
         }
       );
@@ -89,22 +81,19 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
       return {
         degreeName: form.getFieldValue('degreeName'),
         startDate: form.getFieldValue('startDate'),
-        graduationDate: form.getFieldValue('graduationDate'),
-        logoUniversity: form.getFieldValue('logoUniversity')
+        graduationDate: form.getFieldValue('graduationDate')
       };
     }
 
     return {
       degreeName,
       startDate,
-      graduationDate,
-      logoUniversity
+      graduationDate
     };
   };
 
   const credentialValues = {
     degreeName,
-    logoUniversity,
     startDate,
     graduationDate
   };
@@ -124,8 +113,6 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
               startDate,
               graduationDate
             }}
-            logoAsFileObject={logoAsFileObject}
-            setLogoAsFileObject={setLogoAsFileObject}
           />
         );
       case 1: {

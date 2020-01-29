@@ -6,11 +6,19 @@ import freeUniLogo from '../../../../images/free-uni-logo.png';
 
 import './_style.scss';
 
-const CredentialSummaryData = ({ title, university, student, startDate, graduationDate, lg }) => (
+const CredentialSummaryData = ({
+  title,
+  university,
+  student,
+  startDate,
+  graduationDate,
+  lg,
+  logo
+}) => (
   <Col lg={lg} xs={24} className="CredentialTemplate">
     <div className="CredentialHeader">
       <CellRenderer componentName="newCredential" title="degreeName" value={title} />
-      <img className="IconUniversity" src={freeUniLogo} alt="Free University Tbilisi" />
+      <img className="IconUniversity" src={logo || freeUniLogo} alt="Free University Tbilisi" />
     </div>
     <div className="CredentialContent">
       <CellRenderer componentName="newCredential" title="universityName" value={university} />
@@ -36,7 +44,8 @@ const CredentialSummaryData = ({ title, university, student, startDate, graduati
 );
 
 CredentialSummaryData.defaultProps = {
-  lg: 12
+  lg: 12,
+  logo: null
 };
 
 CredentialSummaryData.propTypes = {
@@ -45,7 +54,8 @@ CredentialSummaryData.propTypes = {
   student: PropTypes.string.isRequired,
   startDate: PropTypes.string.isRequired,
   graduationDate: PropTypes.string.isRequired,
-  lg: PropTypes.number
+  lg: PropTypes.number,
+  logo: PropTypes.string
 };
 
 export default CredentialSummaryData;
