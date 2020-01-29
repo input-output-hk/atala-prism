@@ -459,8 +459,10 @@
     "missingInfoPart2": " of each individual {{isOrAre}} necesary to save it",
     "selectGroup": "Select a group for the students:",
     "table": {
+      "requirement": "Please add a {{requirement}}",
+      "dateRequirement": "date earlied than today",
       "fullName": "Full Name",
-      "email": "Email",
+      "email": "Mail account",
       "admissionDate": "Admission Date",
       "studentId": "Student Id",
       "delete": "Delete Individual"

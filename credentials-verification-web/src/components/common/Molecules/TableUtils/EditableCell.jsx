@@ -85,11 +85,19 @@ const EditableCell = ({
 
     const savedData = record[dataIndex];
 
-    const emptyRule = [noEmptyInput(`Please add a ${dataIndex}`)];
+    const emptyRule = [
+      noEmptyInput(
+        t('studentCreation.table.requirement', {
+          requirement: t(`studentCreation.table.${dataIndex}`)
+        })
+      )
+    ];
     const futureRule = [
       {
         validator: (_, value, cb) => futureDate(value, cb, moment.now()),
-        message: ''
+        message: t('studentCreation.table.requirement', {
+          requirement: t('studentCreation.table.dateRequirement')
+        })
       }
     ];
     const rulesByType = isDate(type) ? futureRule : emptyRule;

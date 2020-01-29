@@ -27,15 +27,18 @@ const StudentCreationContainer = ({ api, redirector: { redirectToConnections } }
   const [group, setGroup] = useState();
 
   useEffect(() => {
-    setGroups([{ name: '1' }, { name: '2' }]);
-    setGroup('1');
-    // api
-    //   .getGroups()
-    //   .then(setGroups)
-    //   .catch(error => {
-    //     Logger.error('[GroupsContainer.updateGroups] Error: ', error);
-    //     message.error(t('errors.errorGetting', { model: t('groups.title') }), 1);
-    //   });
+    api
+      .getGroups()
+      .then(response => {
+        const [{ name }] = response;
+
+        setGroups(response);
+        setGroup(name);
+      })
+      .catch(error => {
+        Logger.error('[GroupsContainer.updateGroups] Error: ', error);
+        message.error(t('errors.errorGetting', { model: t('groups.title') }), 1);
+      });
   }, []);
 
   const isInvalidValueByKey = (key, value) => {

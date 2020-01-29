@@ -50,8 +50,6 @@ const StudentCreation = ({
     return `${part1}${missingFields}${part2}`;
   };
 
-  console.log('the memerinos', groups, group);
-
   return (
     <div className="Wrapper">
       <div className="StudentCreationHeader">
