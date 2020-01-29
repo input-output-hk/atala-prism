@@ -40,7 +40,7 @@ export const CONNECTED = 'CONNECTED';
 // eslint-disable-next-line quotes
 export const EXAMPLE_DEGREE_NAME = "Bachelor's in Engineering";
 export const EXAMPLE_UNIVERSITY_NANE = 'Free University Tbilisi';
-export const EXAMPLE_AWARD = 'First Class Honorous';
+export const EXAMPLE_AWARD = 'First-Class Honours';
 export const EXAMPLE_FULL_NAME = 'Student Name';
 export const EXAMPLE_START_DATE = 1555005000;
 export const EXAMPLE_GRADUATION_DATE = 1555005000;
