@@ -9,6 +9,11 @@
     "done": "Done",
     "saveForLater": "Save & Continue later"
   },
+  "commonWords": {
+    "and": "and",
+    "is": "is",
+    "are": "are"
+  },
   "emptyComponent": {
     "photoAlt": "No {{model}}",
     "title": "You don't have {{model}} yet",
@@ -450,7 +455,9 @@
     "save": "Save",
     "newStudent": "Add a new Student",
     "cantSubmit": "These students can't be saved",
-    "missingInfo": "The full name, email, admission date and university Id of each individual is necesary to save it",
+    "missingInfoPart1": "The ",
+    "missingInfoPart2": " of each individual {{isOrAre}} necesary to save it",
+    "selectGroup": "Select a group for the students:",
     "table": {
       "fullName": "Full Name",
       "email": "Email",

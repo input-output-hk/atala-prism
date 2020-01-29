@@ -18,14 +18,21 @@ export const getLogoAsBase64 = () => `data:image/png;base64,${localStorage.getIt
 
 export const getLastArrayElementOrEmpty = array => (array.length ? array[array.length - 1] : {});
 
-const charToUpperCase = char => (char.match(/[a-z]/i) ? char.toUpperCase() : char);
+const modifyChar = (char, modifier) => (char.match(/[a-z]/i) ? modifier(char) : char);
 
-export const customUpperCase = string => {
-  let upperCasedString = '';
+const customCharByCharModifier = (string, modifier) => {
+  let modifiedString = '';
 
   for (let i = 0; i < string.length; i++) {
-    upperCasedString += charToUpperCase(string.charAt(i));
+    modifiedString += modifyChar(string.charAt(i), modifier);
   }
 
-  return upperCasedString;
+  return modifiedString;
 };
+
+const upperCase = string => string.toUpperCase();
+const lowerCase = string => string.toLowerCase();
+
+export const customUpperCase = string => customCharByCharModifier(string, upperCase);
+
+export const customLowerCase = string => customCharByCharModifier(string, lowerCase);

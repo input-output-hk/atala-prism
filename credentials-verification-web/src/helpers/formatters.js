@@ -49,6 +49,9 @@ export const fromUnixToProtoDateFormatter = date => {
   return protoDate;
 };
 
+export const fromMomentToProtoDateFormatter = date =>
+  fromStringToProtoDateFormatter(date.format('L'));
+
 export const fromStringToProtoDateFormatter = date => {
   const dateAsNumberArray = date.split('/').map(Number);
 

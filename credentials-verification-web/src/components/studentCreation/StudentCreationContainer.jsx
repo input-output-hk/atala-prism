@@ -1,19 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { message } from 'antd';
 import _ from 'lodash';
 import { useTranslation } from 'react-i18next';
+import moment from 'moment';
 import StudentCreation from './StudentCreation';
 import { withApi } from '../providers/withApi';
 import { withRedirector } from '../providers/withRedirector';
 import Logger from '../../helpers/Logger';
-import { fromStringToProtoDateFormatter } from '../../helpers/formatters';
+import { fromMomentToProtoDateFormatter } from '../../helpers/formatters';
 
 const createBlankStudent = key => ({
   key,
   fullName: '',
   email: '',
-  universityAssignedId: '',
+  studentId: '',
   admissionDate: ''
 });
 const defaultStudentList = [createBlankStudent(0)];
@@ -21,7 +22,53 @@ const defaultStudentList = [createBlankStudent(0)];
 const StudentCreationContainer = ({ api, redirector: { redirectToConnections } }) => {
   const { t } = useTranslation();
   const [students, setStudents] = useState(defaultStudentList);
-  const [invalidStudents, setIndvalidStudents] = useState(false);
+  const [invalidFields, setInvalidFields] = useState([]);
+  const [groups, setGroups] = useState([]);
+  const [group, setGroup] = useState();
+
+  useEffect(() => {
+    setGroups([{ name: '1' }, { name: '2' }]);
+    setGroup('1');
+    // api
+    //   .getGroups()
+    //   .then(setGroups)
+    //   .catch(error => {
+    //     Logger.error('[GroupsContainer.updateGroups] Error: ', error);
+    //     message.error(t('errors.errorGetting', { model: t('groups.title') }), 1);
+    //   });
+  }, []);
+
+  const isInvalidValueByKey = (key, value) => {
+    switch (key) {
+      case 'admissionDate':
+        return !(value && moment(value).isSameOrBefore(moment()));
+      case 'key':
+        return false;
+      default:
+        return !value;
+    }
+  };
+
+  const validateStudent = (student, invalidFieldsObject) => {
+    const updatedFieldsObject = Object.assign({}, invalidFieldsObject);
+
+    Object.keys(student).forEach(key => {
+      const invalidKey = isInvalidValueByKey(key, student[key]);
+      if (invalidKey && !invalidFieldsObject[key]) updatedFieldsObject[key] = key;
+    });
+
+    return updatedFieldsObject;
+  };
+
+  const getInvalidFields = () => {
+    let invalidFieldsObject = {};
+
+    students.forEach(currentStudent => {
+      invalidFieldsObject = validateStudent(currentStudent, invalidFieldsObject);
+    });
+
+    return Object.keys(invalidFieldsObject);
+  };
 
   const addNewStudent = () => {
     const { key = 0 } = _.last(students) || {};
@@ -53,27 +100,20 @@ const StudentCreationContainer = ({ api, redirector: { redirectToConnections } }
   const saveStudents = () => {
     if (!students.length) return redirectToConnections();
 
-    const invalidStudent = students.reduce(
-      (accumulator, { fullName, email, universityAssignedId, admissionDate }) => {
-        const isInvalid = !fullName || !email || !universityAssignedId || !admissionDate;
+    const invalidFieldos = getInvalidFields();
 
-        return accumulator || isInvalid;
-      },
-      false
-    );
+    setInvalidFields(invalidFieldos);
 
-    setIndvalidStudents(invalidStudent);
+    if (invalidFieldos.length) return;
 
-    if (invalidStudent) return;
-
-    const creationPromises = students.map(
-      ({ fullName, email, universityAssignedId, admissionDate }) =>
-        api.createStudent(
-          universityAssignedId,
-          fullName,
-          email,
-          fromStringToProtoDateFormatter(admissionDate)
-        )
+    const creationPromises = students.map(({ fullName, email, studentId, admissionDate }) =>
+      api.createStudent({
+        studentId,
+        fullName,
+        email,
+        admissionDate: fromMomentToProtoDateFormatter(admissionDate),
+        groupName: group
+      })
     );
 
     Promise.all(creationPromises)
@@ -98,13 +138,17 @@ const StudentCreationContainer = ({ api, redirector: { redirectToConnections } }
       saveStudent={addNewStudent}
       saveStudents={saveStudents}
       tableProps={tableProps}
-      invalidStudents={invalidStudents}
+      invalidFields={invalidFields}
+      groups={groups}
+      group={group}
+      setGroup={setGroup}
+      canAddMore={getInvalidFields().length}
     />
   );
 };
 
 StudentCreationContainer.propTypes = {
-  api: PropTypes.shape({ createStudent: PropTypes.func }).isRequired,
+  api: PropTypes.shape({ createStudent: PropTypes.func, getGroups: PropTypes.func }).isRequired,
   redirector: PropTypes.shape({ redirectToConnections: PropTypes.func }).isRequired
 };
 
