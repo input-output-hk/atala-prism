@@ -5,6 +5,7 @@ import CellRenderer from '../CellRenderer/CellRenderer';
 import freeUniLogo from '../../../../images/free-uni-logo.png';
 
 import './_style.scss';
+import { EXAMPLE_AWARD } from '../../../../helpers/constants';
 
 const CredentialSummaryData = ({
   title,
@@ -17,11 +18,13 @@ const CredentialSummaryData = ({
 }) => (
   <Col lg={lg} xs={24} className="CredentialTemplate">
     <div className="CredentialHeader">
-      <CellRenderer componentName="newCredential" title="degreeName" value={title} />
+      <CellRenderer componentName="newCredential" title="universityName" value={university} />
       <img className="IconUniversity" src={logo || freeUniLogo} alt="Free University Tbilisi" />
     </div>
     <div className="CredentialContent">
-      <CellRenderer componentName="newCredential" title="universityName" value={university} />
+      <CellRenderer componentName="newCredential" title="degreeName" value={title} />
+      <hr />
+      <CellRenderer componentName="newCredential" title="result" value={EXAMPLE_AWARD} />
       <hr />
       {student && (
         <CellRenderer componentName="newCredential" title="fullName" value={student.fullname} />
