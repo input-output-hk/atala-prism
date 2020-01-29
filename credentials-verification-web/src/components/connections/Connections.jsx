@@ -81,18 +81,7 @@ const Connections = ({
       </Drawer>
       <div className="ContentHeader">
         <h1>{t('connections.title')}</h1>
-        {isIssuer() ? (
-          <AddUserButtons />
-        ) : (
-          <CustomButton
-            buttonProps={{
-              disabled: true,
-              className: 'theme-secondary',
-              onClick: redirectToBulkImport
-            }}
-            buttonText={t('connections.buttons.newConnection')}
-          />
-        )}
+        <AddUserButtons isIssuer={isIssuer} />
       </div>
       <ConnectionsFilter fetchConnections={handleHoldersRequest} />
       {tableProps.subjects.length ? (

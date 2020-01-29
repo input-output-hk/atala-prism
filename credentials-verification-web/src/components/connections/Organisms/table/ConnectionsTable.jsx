@@ -4,9 +4,7 @@ import CellRenderer from '../../../common/Atoms/CellRenderer/CellRenderer';
 import StatusBadge from '../../Atoms/StatusBadge/StatusBadge';
 import { shortBackendDateFormatter } from '../../../../helpers/formatters';
 import {
-  CONNECTION_STATUSES,
   CONNECTION_STATUSES_TRANSLATOR,
-  INDIVIDUAL_STATUSES,
   INDIVIDUAL_STATUSES_TRANSLATOR
 } from '../../../../helpers/constants';
 import ActionButtons from '../../Atoms/ActionButtons/ActionButtons';
@@ -66,18 +64,12 @@ const getColumns = ({ inviteHolder, isIssuer, viewConnectionDetail }) => {
     }
   ];
 
-  const showQR = holder =>
-    ![INDIVIDUAL_STATUSES.connected, CONNECTION_STATUSES.connectionAccepted].includes(
-      holder.status
-    );
-
   const actionColumns = [
     {
       key: 'actions',
       render: holder => (
         <ActionButtons
           holder={holder}
-          showQRButton={showQR(holder)}
           inviteHolder={inviteHolder}
           isIssuer={isIssuer}
           viewConnectionDetail={viewConnectionDetail}
