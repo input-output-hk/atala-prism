@@ -217,7 +217,10 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
             return nil
         }, success: {
             self.viewImpl?.config(isLoading: false)
-            self.callPaymentLibrary()
+// FIXME: temporary disabled payment api for demo
+//            self.callPaymentLibrary()
+            self.connectionRequest!.paymentNonce = ""
+            self.sendNewConnectionToServer()
         }, error: { error in
             self.viewImpl?.config(isLoading: false)
             self.viewImpl?.showErrorMessage(doShow: true, message: "connections_scan_qr_confirm_error".localize(), afterErrorAction: {
