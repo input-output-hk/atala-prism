@@ -29,8 +29,10 @@ const TemplateForm = React.forwardRef(
   (
     {
       savePicture,
-      credentialValues: { degreeName, logoUniversity, startDate, graduationDate },
-      updateExampleCredential
+      credentialValues: { degreeName, startDate, graduationDate },
+      updateExampleCredential,
+      logoAsFileObject,
+      setLogoAsFileObject
     },
     ref
   ) => {
@@ -101,19 +103,20 @@ const TemplateForm = React.forwardRef(
               message: t('errors.form.emptyField')
             }
           ],
-          initialValue: logoUniversity ? [logoUniversity] : []
+          initialValue: logoAsFileObject ? [logoAsFileObject] : []
         },
         label: t('newCredential.form.logoUniversity'),
         key: 'logoUniversity',
         className: '',
         input: (
           <FileUploader
-            initialValue={logoUniversity}
+            initialValue={logoAsFileObject}
             hint="newCredential.form.logoHint"
             field="logoUniversity"
             savePicture={savePicture}
             uploadText="newCredential.form.uploadButton"
             formRef={ref}
+            updateFile={setLogoAsFileObject}
           />
         )
       }
@@ -123,6 +126,10 @@ const TemplateForm = React.forwardRef(
   }
 );
 
+TemplateForm.defaultProps = {
+  logoAsFileObject: null
+};
+
 TemplateForm.propTypes = {
   savePicture: PropTypes.func.isRequired,
   credentialValues: PropTypes.shape({
@@ -131,7 +138,9 @@ TemplateForm.propTypes = {
     logoUniversity: PropTypes.arrayOf(PropTypes.shape),
     degreeName: PropTypes.string
   }).isRequired,
-  updateExampleCredential: PropTypes.func.isRequired
+  updateExampleCredential: PropTypes.func.isRequired,
+  logoAsFileObject: PropTypes.shape(PropTypes.shape()),
+  setLogoAsFileObject: PropTypes.func.isRequired
 };
 
 export default TemplateForm;

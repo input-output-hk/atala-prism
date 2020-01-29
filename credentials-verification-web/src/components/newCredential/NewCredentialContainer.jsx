@@ -24,6 +24,7 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
   const [startDate, setStartDate] = useState();
   const [graduationDate, setGraduationDate] = useState();
   const [logoUniversity, setLogoUniversity] = useState();
+  const [logoAsFileObject, setLogoAsFileObject] = useState();
   const [group, setGroup] = useState();
   const [open, setOpen] = useState(false);
 
@@ -123,6 +124,8 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
               startDate,
               graduationDate
             }}
+            logoAsFileObject={logoAsFileObject}
+            setLogoAsFileObject={setLogoAsFileObject}
           />
         );
       case 1: {

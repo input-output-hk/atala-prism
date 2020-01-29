@@ -13,7 +13,9 @@ const NewCredentialCreation = ({
   formRef,
   credentialValues,
   credentialData,
-  updateExampleCredential
+  updateExampleCredential,
+  logoAsFileObject,
+  setLogoAsFileObject
 }) => {
   const { startDate, graduationDate } = credentialData;
 
@@ -36,6 +38,8 @@ const NewCredentialCreation = ({
           credentialValues={credentialValues}
           ref={formRef}
           updateExampleCredential={updateExampleCredential}
+          logoAsFileObject={logoAsFileObject}
+          setLogoAsFileObject={setLogoAsFileObject}
         />
       </Col>
     </Row>
@@ -44,7 +48,8 @@ const NewCredentialCreation = ({
 
 NewCredentialCreation.defaultProps = {
   credentialValues: {},
-  credentialData: {}
+  credentialData: {},
+  logoAsFileObject: null
 };
 
 NewCredentialCreation.propTypes = {
@@ -52,7 +57,9 @@ NewCredentialCreation.propTypes = {
   formRef: PropTypes.shape().isRequired,
   credentialValues: PropTypes.shape(),
   credentialData: PropTypes.shape(),
-  updateExampleCredential: PropTypes.func.isRequired
+  updateExampleCredential: PropTypes.func.isRequired,
+  logoAsFileObject: PropTypes.shape(PropTypes.shape()),
+  setLogoAsFileObject: PropTypes.func.isRequired
 };
 
 export default NewCredentialCreation;
