@@ -151,9 +151,12 @@ public class Navigator {
 
   public void showDialogFragment(FragmentManager supportFragmentManager,
       CvpDialogFragment cvpFragment, String tag) {
-    supportFragmentManager
-        .beginTransaction().add(cvpFragment, tag)
-        .show(cvpFragment)
-        .commit();
+
+    if (supportFragmentManager.findFragmentByTag(tag) == null) {
+      supportFragmentManager
+          .beginTransaction().add(cvpFragment, tag)
+          .show(cvpFragment)
+          .commit();
+    }
   }
 }
