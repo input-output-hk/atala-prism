@@ -9,12 +9,18 @@ import {
 } from '../../../../helpers/formatters';
 import Connection from '../../../credentialSummaries/Molecules/Connection/Connection';
 import CustomButton from '../../Atoms/CustomButton/CustomButton';
-
-import './_style.scss';
 import CredentialDetail from './CredentialDetail';
 import holderDefaultAvatar from '../../../../images/holder-default-avatar.svg';
+import { withRedirector } from '../../../providers/withRedirector';
 
-const CredentialListDetail = ({ user: { icon, name: userName }, transactions, date }) => {
+import './_style.scss';
+
+const CredentialListDetail = ({
+  redirector: { redirectToNewCredential },
+  user: { icon, name: userName },
+  transactions,
+  date
+}) => {
   const { t } = useTranslation();
 
   const [connectionInfo, setConnectionInfo] = useState();
@@ -72,17 +78,10 @@ const CredentialListDetail = ({ user: { icon, name: userName }, transactions, da
           <CustomButton
             buttonProps={{
               className: 'theme-outline',
-              onClick: () => console.log('placeholder function')
+              onClick: () => {},
+              disabled: true
             }}
             buttonText={t('credentialSummary.detail.proofRequest')}
-            icon={<Icon type="plus" />}
-          />
-          <CustomButton
-            buttonProps={{
-              className: 'theme-secondary',
-              onClick: () => console.log('placeholder function')
-            }}
-            buttonText={t('credentialSummary.detail.newCredential')}
             icon={<Icon type="plus" />}
           />
         </div>
@@ -138,4 +137,4 @@ CredentialListDetail.propTypes = {
   date: credentialSummaryShape.date.isRequired
 };
 
-export default CredentialListDetail;
+export default withRedirector(CredentialListDetail);
