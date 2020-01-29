@@ -70,7 +70,7 @@ const CredentialListDetail = ({
                 date={transaction.date}
                 setConnectionInfo={transaction.setConnectionInfo}
                 university={transaction.university}
-                award={transaction.award}
+                result={transaction.award}
                 student={transaction.student}
                 graduationDate={transaction.graduationDate}
               />
@@ -112,7 +112,7 @@ const mapTransaction = (credential, setConnectionInfo) => {
     university: getIssuerName(issuertype),
     student: getStudentName(subjectdata),
     graduationDate: dayMonthYearBackendFormatter(graduationdate),
-    award: grantingDecision,
+    result: grantingDecision,
     lg: 24
   };
 };

@@ -222,7 +222,7 @@
         "groupAssigned": "Group Assigned",
         "degreeName": "Degree Name",
         "universityName": "University Name",
-        "award": "Award",
+        "result": "Result",
         "fullName": "Full Name",
         "startDate": "Start Date",
         "graduationDate": "Graduation Date"
@@ -245,7 +245,7 @@
         "noGroupSelected": "You must select a group before continuing"
       },
       "degreeName": "Degree Name",
-      "award": "Award",
+      "result": "Result",
       "startDate": "Start Date",
       "graduationDate": "Graduation Date",
       "logoUniversity": "University Logo",
