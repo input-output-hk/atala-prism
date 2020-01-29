@@ -10,7 +10,7 @@ import { theme } from '../../helpers/themeHelper';
 const Main = ({ apiProvider }) => (
   <main>
     <APIContext.Provider value={apiProvider}>
-      <div className={`AppContainer ${theme.class}`}>
+      <div className={`AppContainer ${theme.class()}`}>
         <Router />
       </div>
     </APIContext.Provider>

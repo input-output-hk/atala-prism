@@ -11,9 +11,9 @@ const Welcome = ({ name, importantInfo }) => {
   const { t } = useTranslation();
 
   return (
-    <div className={`WelcomeContainer ${theme.class}`}>
+    <div className={`WelcomeContainer ${theme.class()}`}>
       <div className="WelcomeText">
-        <h2 className={theme.class}>{t('dashboard.welcome.title')}</h2>
+        <h2 className={theme.class()}>{t('dashboard.welcome.title')}</h2>
       </div>
       <div className="WelcomeImg">
         <img src={welcomeImage} alt={t('dashboard.welcome.image')} />
