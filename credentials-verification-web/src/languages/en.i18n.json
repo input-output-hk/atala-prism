@@ -472,6 +472,12 @@
       "buttonText": "Upload"
     }
   },
+  "theme": {
+    "title": {
+      "issuer": "Issuer Portal",
+      "verifier": "Verifier Portal"
+    }
+  },
   "errors": {
     "routeDidNotMatch": "The route {{pathnameToShow}} did not match any page",
     "errorGetting": "An error occurred while getting {{model}}",

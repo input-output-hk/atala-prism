@@ -3,20 +3,34 @@
 .WelcomeContainer {
   width: 50%;
   display: flex;
-  background: #FEF1F0;
   padding: 3em 2em;
   border-radius: 4px;
   position: relative;
   align-items: center;
   margin-top: 2em;
+
+  &.IssuerUser {
+    background: #e8fdfd;
+  }
+
+  &.VerifierUser {
+    background: #fef1f0;
+  }
+
   @include breakpoint(sm) {
     width: 100%;
     padding: 1em;
   }
   .WelcomeText {
     h2 {
-      @include primary-text($h1, $primary-color);
       @include letter-spacing;
+      &.IssuerUser {
+        @include primary-text($h1, #344552);
+      }
+
+      &.VerifierUser {
+        @include primary-text($h1, $primary-color);
+      }
     }
     p {
       @include primary-text($body, $secondary-color);
@@ -29,9 +43,9 @@
     bottom: 10px;
     @include breakpoint(sm) {
       right: 0;
-    bottom: 60%;
+      bottom: 60%;
     }
-    img{
+    img {
       @include breakpoint(sm) {
         width: 80px;
       }

@@ -3,10 +3,29 @@
 .HeaderContainer {
   height: 9%;
   padding: 1em;
-  background-color: $secondary-color;
 
-  .HeaderLogo {
-    height: 32px;
+  &.IssuerUser {
+    background-color: $secondary-color;
+  }
+
+  &.VerifierUser {
+    background-color: $primary-color-darker;
+  }
+
+  .LogoContainer {
+    display: flex;
+    align-items: center;
+    .HeaderLogo {
+      height: 32px;
+    }
+    .PortalName {
+      border-left: 1px solid $white;
+      margin-left: 1.5em;
+      padding-left: 1.5em;
+      p {
+        @include secondary-text($h3, $white);
+      }
+    }
   }
 
   .RightSide {

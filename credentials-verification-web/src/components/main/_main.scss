@@ -5,7 +5,15 @@
   flex-flow: column;
   height: 100vh;
   width: 100vw;
-  background: $secondary-color;
+
+  &.IssuerUser {
+    background-color: $secondary-color;
+  }
+
+  &.VerifierUser {
+    background-color: $primary-color-darker;
+  }
+
   .MainContent {
     display: flex;
     height: 91%;

@@ -3,6 +3,7 @@ import { Col, Row } from 'antd';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import welcomeImage from '../../../../images/DashboardWelcome.svg';
+import { theme } from '../../../../helpers/themeHelper';
 
 import './_style.scss';
 
@@ -10,9 +11,9 @@ const Welcome = ({ name, importantInfo }) => {
   const { t } = useTranslation();
 
   return (
-    <div className="WelcomeContainer">
+    <div className={`WelcomeContainer ${theme.class()}`}>
       <div className="WelcomeText">
-        <h2>{t('dashboard.welcome.title')}</h2>
+        <h2 className={theme.class()}>{t('dashboard.welcome.title')}</h2>
       </div>
       <div className="WelcomeImg">
         <img src={welcomeImage} alt={t('dashboard.welcome.image')} />
