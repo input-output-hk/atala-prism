@@ -43,7 +43,11 @@ class ConnectionMainViewCell: BaseTableViewCell {
         labelTitle.text = title
         labelSubtitle.isHidden = isUniversity
         constraintTitleVertical.constant = isUniversity ? 0.0 : -10.0
-        buttonIconAction.setImage(UIImage(named: isUniversity ? "ico_caret" : "ico_open_link"), for: .normal)
+        if isUniversity {
+            buttonIconAction.setImage(#imageLiteral(resourceName: "ico_caret"), for: .normal)
+        } else {
+            buttonIconAction.isHidden = true
+        }
         imageLogo.applyDataImage(data: logoData, placeholderNamed: isUniversity ? "ico_placeholder_university" : "ico_placeholder_employer")
     }
 }

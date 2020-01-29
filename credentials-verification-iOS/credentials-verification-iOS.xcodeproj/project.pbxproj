@@ -1401,7 +1401,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its pat\nexport PATH=$PATH:${SRCROOT}\nmkdir -p ./protobuf\nprotoc --swift_out=. --swiftgrpc_out=Client=true,Server=false:. ./protobuf/connector.proto\nprotoc --swift_out=. --swiftgrpc_out=Client=true,Server=false:. ./protobuf/wallet.proto\nprotoc --swift_out=. --swiftgrpc_out=Client=true,Server=false:. ./protobuf/credential.proto\n";
+			shellScript = "# Type a script or drag a script file from your workspace to insert its pat\nexport PATH=$PATH:${SRCROOT}/protobuf/utils\nmkdir -p ./protobuf\nprotoc --swift_out=. --swiftgrpc_out=Client=true,Server=false:. ./protobuf/connector.proto\nprotoc --swift_out=. --swiftgrpc_out=Client=true,Server=false:. ./protobuf/wallet.proto\nprotoc --swift_out=. --swiftgrpc_out=Client=true,Server=false:. ./protobuf/credential.proto\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
