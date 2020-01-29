@@ -30,7 +30,7 @@ const RegistrationContainer = ({
 }) => {
   const { t } = useTranslation();
 
-  const [currentStep, setCurrentStep] = useState(PASSWORD_STEP);
+  const [currentStep, setCurrentStep] = useState(TERMS_AND_CONDITIONS_STEP);
   const [accepted, setAccepted] = useState(false);
   const [termsAndConditions, setTermsAndConditions] = useState('');
   const [privacyPolicy, setPrivacyPolicy] = useState('');
