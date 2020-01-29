@@ -41,6 +41,16 @@ proto.io.iohk.cvp.cstore.CredentialsStoreServiceClient =
    */
   this.hostname_ = hostname;
 
+  /**
+   * @private @const {?Object} The credentials to be used to connect
+   *    to the server
+   */
+  this.credentials_ = credentials;
+
+  /**
+   * @private @const {?Object} Options for the client
+   */
+  this.options_ = options;
 };
 
 
@@ -67,6 +77,16 @@ proto.io.iohk.cvp.cstore.CredentialsStoreServicePromiseClient =
    */
   this.hostname_ = hostname;
 
+  /**
+   * @private @const {?Object} The credentials to be used to connect
+   *    to the server
+   */
+  this.credentials_ = credentials;
+
+  /**
+   * @private @const {?Object} Options for the client
+   */
+  this.options_ = options;
 };
 
 
@@ -81,10 +101,7 @@ const methodDescriptor_CredentialsStoreService_Register = new grpc.web.MethodDes
   grpc.web.MethodType.UNARY,
   proto.io.iohk.cvp.cstore.RegisterRequest,
   proto.io.iohk.cvp.cstore.RegisterResponse,
-  /**
-   * @param {!proto.io.iohk.cvp.cstore.RegisterRequest} request
-   * @return {!Uint8Array}
-   */
+  /** @param {!proto.io.iohk.cvp.cstore.RegisterRequest} request */
   function(request) {
     return request.serializeBinary();
   },
@@ -100,10 +117,7 @@ const methodDescriptor_CredentialsStoreService_Register = new grpc.web.MethodDes
  */
 const methodInfo_CredentialsStoreService_Register = new grpc.web.AbstractClientBase.MethodInfo(
   proto.io.iohk.cvp.cstore.RegisterResponse,
-  /**
-   * @param {!proto.io.iohk.cvp.cstore.RegisterRequest} request
-   * @return {!Uint8Array}
-   */
+  /** @param {!proto.io.iohk.cvp.cstore.RegisterRequest} request */
   function(request) {
     return request.serializeBinary();
   },
@@ -161,10 +175,7 @@ const methodDescriptor_CredentialsStoreService_CreateIndividual = new grpc.web.M
   grpc.web.MethodType.UNARY,
   proto.io.iohk.cvp.cstore.CreateIndividualRequest,
   proto.io.iohk.cvp.cstore.CreateIndividualResponse,
-  /**
-   * @param {!proto.io.iohk.cvp.cstore.CreateIndividualRequest} request
-   * @return {!Uint8Array}
-   */
+  /** @param {!proto.io.iohk.cvp.cstore.CreateIndividualRequest} request */
   function(request) {
     return request.serializeBinary();
   },
@@ -180,10 +191,7 @@ const methodDescriptor_CredentialsStoreService_CreateIndividual = new grpc.web.M
  */
 const methodInfo_CredentialsStoreService_CreateIndividual = new grpc.web.AbstractClientBase.MethodInfo(
   proto.io.iohk.cvp.cstore.CreateIndividualResponse,
-  /**
-   * @param {!proto.io.iohk.cvp.cstore.CreateIndividualRequest} request
-   * @return {!Uint8Array}
-   */
+  /** @param {!proto.io.iohk.cvp.cstore.CreateIndividualRequest} request */
   function(request) {
     return request.serializeBinary();
   },
@@ -241,10 +249,7 @@ const methodDescriptor_CredentialsStoreService_GetIndividuals = new grpc.web.Met
   grpc.web.MethodType.UNARY,
   proto.io.iohk.cvp.cstore.GetIndividualsRequest,
   proto.io.iohk.cvp.cstore.GetIndividualsResponse,
-  /**
-   * @param {!proto.io.iohk.cvp.cstore.GetIndividualsRequest} request
-   * @return {!Uint8Array}
-   */
+  /** @param {!proto.io.iohk.cvp.cstore.GetIndividualsRequest} request */
   function(request) {
     return request.serializeBinary();
   },
@@ -260,10 +265,7 @@ const methodDescriptor_CredentialsStoreService_GetIndividuals = new grpc.web.Met
  */
 const methodInfo_CredentialsStoreService_GetIndividuals = new grpc.web.AbstractClientBase.MethodInfo(
   proto.io.iohk.cvp.cstore.GetIndividualsResponse,
-  /**
-   * @param {!proto.io.iohk.cvp.cstore.GetIndividualsRequest} request
-   * @return {!Uint8Array}
-   */
+  /** @param {!proto.io.iohk.cvp.cstore.GetIndividualsRequest} request */
   function(request) {
     return request.serializeBinary();
   },
@@ -321,10 +323,7 @@ const methodDescriptor_CredentialsStoreService_GenerateConnectionTokenFor = new 
   grpc.web.MethodType.UNARY,
   proto.io.iohk.cvp.cstore.GenerateConnectionTokenForRequest,
   proto.io.iohk.cvp.cstore.GenerateConnectionTokenForResponse,
-  /**
-   * @param {!proto.io.iohk.cvp.cstore.GenerateConnectionTokenForRequest} request
-   * @return {!Uint8Array}
-   */
+  /** @param {!proto.io.iohk.cvp.cstore.GenerateConnectionTokenForRequest} request */
   function(request) {
     return request.serializeBinary();
   },
@@ -340,10 +339,7 @@ const methodDescriptor_CredentialsStoreService_GenerateConnectionTokenFor = new 
  */
 const methodInfo_CredentialsStoreService_GenerateConnectionTokenFor = new grpc.web.AbstractClientBase.MethodInfo(
   proto.io.iohk.cvp.cstore.GenerateConnectionTokenForResponse,
-  /**
-   * @param {!proto.io.iohk.cvp.cstore.GenerateConnectionTokenForRequest} request
-   * @return {!Uint8Array}
-   */
+  /** @param {!proto.io.iohk.cvp.cstore.GenerateConnectionTokenForRequest} request */
   function(request) {
     return request.serializeBinary();
   },
@@ -401,10 +397,7 @@ const methodDescriptor_CredentialsStoreService_StoreCredential = new grpc.web.Me
   grpc.web.MethodType.UNARY,
   proto.io.iohk.cvp.cstore.StoreCredentialRequest,
   proto.io.iohk.cvp.cstore.StoreCredentialResponse,
-  /**
-   * @param {!proto.io.iohk.cvp.cstore.StoreCredentialRequest} request
-   * @return {!Uint8Array}
-   */
+  /** @param {!proto.io.iohk.cvp.cstore.StoreCredentialRequest} request */
   function(request) {
     return request.serializeBinary();
   },
@@ -420,10 +413,7 @@ const methodDescriptor_CredentialsStoreService_StoreCredential = new grpc.web.Me
  */
 const methodInfo_CredentialsStoreService_StoreCredential = new grpc.web.AbstractClientBase.MethodInfo(
   proto.io.iohk.cvp.cstore.StoreCredentialResponse,
-  /**
-   * @param {!proto.io.iohk.cvp.cstore.StoreCredentialRequest} request
-   * @return {!Uint8Array}
-   */
+  /** @param {!proto.io.iohk.cvp.cstore.StoreCredentialRequest} request */
   function(request) {
     return request.serializeBinary();
   },
@@ -481,10 +471,7 @@ const methodDescriptor_CredentialsStoreService_GetStoredCredentialsFor = new grp
   grpc.web.MethodType.UNARY,
   proto.io.iohk.cvp.cstore.GetStoredCredentialsForRequest,
   proto.io.iohk.cvp.cstore.GetStoredCredentialsForResponse,
-  /**
-   * @param {!proto.io.iohk.cvp.cstore.GetStoredCredentialsForRequest} request
-   * @return {!Uint8Array}
-   */
+  /** @param {!proto.io.iohk.cvp.cstore.GetStoredCredentialsForRequest} request */
   function(request) {
     return request.serializeBinary();
   },
@@ -500,10 +487,7 @@ const methodDescriptor_CredentialsStoreService_GetStoredCredentialsFor = new grp
  */
 const methodInfo_CredentialsStoreService_GetStoredCredentialsFor = new grpc.web.AbstractClientBase.MethodInfo(
   proto.io.iohk.cvp.cstore.GetStoredCredentialsForResponse,
-  /**
-   * @param {!proto.io.iohk.cvp.cstore.GetStoredCredentialsForRequest} request
-   * @return {!Uint8Array}
-   */
+  /** @param {!proto.io.iohk.cvp.cstore.GetStoredCredentialsForRequest} request */
   function(request) {
     return request.serializeBinary();
   },
