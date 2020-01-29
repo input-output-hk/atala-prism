@@ -256,7 +256,7 @@ def proto_subject(d):
             names = d['names'],
             surnames = d['surnames'],
             dateOfBirth = proto_date(d['birth_date']),
-            idDocument = PersonalId(id = d['document_id'], documentType = IdDocumentType.NationalIdCard)
+            idDocument = PersonalId(id = d['document_id'], documentType = IdDocumentType.Value('NationalIdCard'))
             )
 
 def proto_signer(d):
