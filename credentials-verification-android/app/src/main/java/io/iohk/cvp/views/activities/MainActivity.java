@@ -27,6 +27,7 @@ import io.iohk.cvp.core.exception.CaseNotFoundException;
 import io.iohk.cvp.core.exception.CryptoException;
 import io.iohk.cvp.core.exception.ErrorCode;
 import io.iohk.cvp.core.exception.SharedPrefencesDataNotFoundException;
+import io.iohk.cvp.io.connector.AddConnectionFromTokenResponse;
 import io.iohk.cvp.utils.CryptoUtils;
 import io.iohk.cvp.viewmodel.MainViewModel;
 import io.iohk.cvp.views.Navigator;
@@ -225,9 +226,15 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
     try {
       viewModel
           .addConnectionFromToken(connectionToken, CryptoUtils.getPublicKey(prefs), nonce)
-          .observe(this, connectionInfo -> {
-            prefs.addConnection(connectionInfo);
-            onNavigation(BottomAppBarOption.CONNECTIONS, connectionInfo.getUserId());
+          .observe(this, response -> {
+            if (response.getError() != null) {
+              getNavigator().showPopUp(getSupportFragmentManager(), getResources().getString(
+                  R.string.server_error_message));
+              return;
+            }
+            AddConnectionFromTokenResponse info = response.getResult();
+            prefs.addConnection(info);
+            onNavigation(BottomAppBarOption.CONNECTIONS, info.getUserId());
           });
     } catch (SharedPrefencesDataNotFoundException | InvalidKeySpecException | CryptoException e) {
       Crashlytics.logException(e);

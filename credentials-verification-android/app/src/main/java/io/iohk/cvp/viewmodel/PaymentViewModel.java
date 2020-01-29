@@ -2,6 +2,7 @@ package io.iohk.cvp.viewmodel;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import io.iohk.cvp.grpc.AsyncTaskResult;
 import io.iohk.cvp.grpc.GetPaymentsRunnable;
 import io.iohk.cvp.grpc.GrpcTask;
 import io.iohk.cvp.io.connector.Payment;
@@ -12,14 +13,14 @@ import javax.inject.Inject;
 
 public class PaymentViewModel extends CvpViewModel {
 
-  private MutableLiveData<List<Payment>> payments = new MutableLiveData<>();
+  private MutableLiveData<AsyncTaskResult<List<Payment>>> payments = new MutableLiveData<>();
 
   @Inject
   public PaymentViewModel() {
 
   }
 
-  public LiveData<List<Payment>> getPayments(Set<String> userIds) {
+  public LiveData<AsyncTaskResult<List<Payment>>> getPayments(Set<String> userIds) {
     userIds.forEach(userId -> {
       GrpcTask task = new GrpcTask<>(new GetPaymentsRunnable(payments), context);
       task.execute(userId);
@@ -29,7 +30,7 @@ public class PaymentViewModel extends CvpViewModel {
   }
 
   public void clearPayments() {
-    payments.setValue(new ArrayList<>());
+    payments.setValue(new AsyncTaskResult<>(new ArrayList<>()));
   }
 
   public enum PaymentState {

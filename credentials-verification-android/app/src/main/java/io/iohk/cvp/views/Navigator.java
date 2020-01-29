@@ -106,13 +106,21 @@ public class Navigator {
     return intent;
   }
 
-  public void showPermissionDeniedPopUp(FragmentManager fragmentManager) {
+  public void showPopUp(FragmentManager fragmentManager, String errorMessage) {
     Bundle bundle = new Bundle();
+    bundle.putBoolean(IntentDataConstants.POP_UP_IS_ERROR, errorMessage != null);
+    bundle.putString(IntentDataConstants.ERROR_MSG_DESCRIPTION_KEY, errorMessage);
+
     PopUpFragment fragment = new PopUpFragment();
     fragment.setArguments(bundle);
-    fragmentManager
-        .beginTransaction().add(fragment, "PERMISSION_DENIED_POPUP")
-        .show(fragment).commit();
+
+    String tag = "ERROR_POP_UP";
+
+    if (fragmentManager.findFragmentByTag(tag) == null) {
+      fragmentManager
+          .beginTransaction().add(fragment, tag)
+          .show(fragment).commit();
+    }
   }
 
   public void showAppPermissionSettings(Activity from) {

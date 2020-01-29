@@ -6,23 +6,23 @@ import io.iohk.cvp.io.connector.AddConnectionFromTokenRequest;
 import io.iohk.cvp.io.connector.AddConnectionFromTokenResponse;
 import io.iohk.cvp.io.connector.ConnectorServiceGrpc;
 import io.iohk.cvp.io.connector.PublicKey;
-import java.util.Optional;
 
 public class AddConnectionFromTokenRunnable extends
     CommonGrpcRunnable<AddConnectionFromTokenResponse> {
 
-  public AddConnectionFromTokenRunnable(MutableLiveData<AddConnectionFromTokenResponse> liveData) {
+  public AddConnectionFromTokenRunnable(
+      MutableLiveData<AsyncTaskResult<AddConnectionFromTokenResponse>> liveData) {
     super(liveData);
   }
 
   @Override
-  public Optional<AddConnectionFromTokenResponse> run(
+  public AsyncTaskResult<AddConnectionFromTokenResponse> run(
       ConnectorServiceGrpc.ConnectorServiceBlockingStub blockingStub,
       ConnectorServiceGrpc.ConnectorServiceStub asyncStub, Object... params) {
     return addConnectionFromToken(blockingStub, params);
   }
 
-  private Optional<AddConnectionFromTokenResponse> addConnectionFromToken(
+  private AsyncTaskResult<AddConnectionFromTokenResponse> addConnectionFromToken(
       ConnectorServiceGrpc.ConnectorServiceBlockingStub blockingStub, Object... params)
       throws StatusRuntimeException {
 
@@ -36,6 +36,6 @@ public class AddConnectionFromTokenRunnable extends
         .setHolderPublicKey(publicKey).build();
     AddConnectionFromTokenResponse response = blockingStub.addConnectionFromToken(request);
 
-    return Optional.ofNullable(response);
+    return new AsyncTaskResult<>(response);
   }
 }

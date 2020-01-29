@@ -6,22 +6,22 @@ import io.iohk.cvp.io.connector.ConnectorServiceGrpc;
 import io.iohk.cvp.io.connector.GetConnectionTokenInfoRequest;
 import io.iohk.cvp.io.connector.GetConnectionTokenInfoResponse;
 import io.iohk.cvp.io.connector.ParticipantInfo;
-import java.util.Optional;
 
 public class GetConnectionTokenInfoRunnable extends CommonGrpcRunnable<ParticipantInfo> {
 
-  public GetConnectionTokenInfoRunnable(MutableLiveData<ParticipantInfo> liveData) {
+  public GetConnectionTokenInfoRunnable(
+      MutableLiveData<AsyncTaskResult<ParticipantInfo>> liveData) {
     super(liveData);
   }
 
   @Override
-  public Optional<ParticipantInfo> run(
+  public AsyncTaskResult<ParticipantInfo> run(
       ConnectorServiceGrpc.ConnectorServiceBlockingStub blockingStub,
       ConnectorServiceGrpc.ConnectorServiceStub asyncStub, Object... params) {
     return getConnectionToken(blockingStub, params);
   }
 
-  private Optional<ParticipantInfo> getConnectionToken(
+  private AsyncTaskResult<ParticipantInfo> getConnectionToken(
       ConnectorServiceGrpc.ConnectorServiceBlockingStub blockingStub, Object... params)
       throws StatusRuntimeException {
 
@@ -30,6 +30,6 @@ public class GetConnectionTokenInfoRunnable extends CommonGrpcRunnable<Participa
         .setToken(token).build();
     GetConnectionTokenInfoResponse response = blockingStub.getConnectionTokenInfo(request);
 
-    return Optional.ofNullable(response.getCreator());
+    return new AsyncTaskResult<>(response.getCreator());
   }
 }

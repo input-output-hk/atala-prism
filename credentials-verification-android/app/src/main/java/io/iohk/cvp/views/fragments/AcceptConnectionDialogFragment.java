@@ -119,11 +119,18 @@ public class AcceptConnectionDialogFragment extends CvpDialogFragment<AcceptConn
 
   @OnClick(R.id.connect_button)
   public void onConnectClick() {
-    viewModel.getTokenizationKey().observe(this, token -> {
+    viewModel.getTokenizationKey().observe(this, response -> {
       this.dismiss();
+
+      if (response.getError() != null) {
+        getNavigator().showPopUp(getFragmentManager(), getResources().getString(
+            R.string.server_error_message));
+        return;
+      }
+
       Preferences prefs = new Preferences(getContext());
       prefs.saveConnectionTokenToAccept(getArguments().getString(TOKEN_KEY));
-      navigator.showPayment(getActivity(), token);
+      navigator.showPayment(getActivity(), response.getResult());
     });
   }
 }
