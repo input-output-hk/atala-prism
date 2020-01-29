@@ -29,7 +29,7 @@ const FileUploader = ({
         formRef.current.getForm().setFieldsValue({
           [field]: [response]
         });
-        updateFile(file);
+        if (updateFile) updateFile(file);
         setFileList([file]);
         onSuccess(response);
       })
