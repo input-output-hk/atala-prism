@@ -6,6 +6,7 @@ delete from credentials;
 delete from holder_public_keys;
 delete from students;
 delete from payments;
+delete from issuer_groups;
 delete from issuers;
 delete from participants;
 delete from store_individuals;
