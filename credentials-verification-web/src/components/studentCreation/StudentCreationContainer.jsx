@@ -37,7 +37,7 @@ const StudentCreationContainer = ({ api, redirector: { redirectToConnections } }
       })
       .catch(error => {
         Logger.error('[GroupsContainer.updateGroups] Error: ', error);
-        message.error(t('errors.errorGetting', { model: t('groups.title') }), 1);
+        message.error(t('errors.errorGetting', { model: t('groups.title') }));
       });
   }, []);
 

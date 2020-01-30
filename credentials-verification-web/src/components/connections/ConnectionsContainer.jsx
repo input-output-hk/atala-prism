@@ -49,7 +49,7 @@ const ConnectionsContainer = ({ api }) => {
       })
       .catch(error => {
         Logger.error('[Connections.getHolders] Error while getting holders', error);
-        message.error(t('errors.errorGetting', { model: 'Holders' }), 1);
+        message.error(t('errors.errorGetting', { model: 'Holders' }));
       });
   };
 
