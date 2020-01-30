@@ -31,21 +31,23 @@ class StudentsServiceImpl(studentsRepository: StudentsRepository, credentialsRep
 
   override def createStudent(request: protos.CreateStudentRequest): Future[protos.CreateStudentResponse] = {
     def f(issuerId: Issuer.Id) = {
-      val model = request
-        .into[CreateStudent]
-        .withFieldConst(_.issuer, issuerId)
-        .enableUnsafeOption
-        .transform
+      Future {
+        val model = request
+          .into[CreateStudent]
+          .withFieldConst(_.issuer, issuerId)
+          .enableUnsafeOption
+          .transform
 
-      studentsRepository
-        .create(model)
-        .map(studentToProto)
-        .map(protos.CreateStudentResponse().withStudent)
-        .value
-        .map {
-          case Right(x) => x
-          case Left(e) => throw new RuntimeException(s"FAILED: $e")
-        }
+        studentsRepository
+          .create(model)
+          .map(studentToProto)
+          .map(protos.CreateStudentResponse().withStudent)
+          .value
+          .map {
+            case Right(x) => x
+            case Left(e) => throw new RuntimeException(s"FAILED: $e")
+          }
+      }.flatMap(identity)
     }
 
     Try {
