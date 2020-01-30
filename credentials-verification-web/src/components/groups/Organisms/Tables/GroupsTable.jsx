@@ -27,7 +27,7 @@ const GetActionsButtons = ({ id, setGroupToDelete, fullInfo }) => {
           />
           <CustomButton
             buttonProps={{
-              onClick: () => message.info(`The id to copy is ${id}`, 1),
+              onClick: () => message.info(`The id to copy is ${id}`),
               className: 'theme-link',
               disabled: true
             }}

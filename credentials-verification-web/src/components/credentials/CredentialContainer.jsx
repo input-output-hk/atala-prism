@@ -79,7 +79,7 @@ const CredentialContainer = ({ api }) => {
       })
       .catch(error => {
         Logger.error('[CredentialContainer.getCredentials] Error while getting Credentials', error);
-        message.error(t('errors.errorGetting', { model: 'Credentials' }), 1);
+        message.error(t('errors.errorGetting', { model: 'Credentials' }));
       });
   };
 
