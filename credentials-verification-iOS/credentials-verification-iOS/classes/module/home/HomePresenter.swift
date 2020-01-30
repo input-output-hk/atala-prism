@@ -64,9 +64,12 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
         detailRows = []
         detailDegree = degree
         detailRows?.append(CellRow(type: .detailHeader, value: degree))
-        degree.properties?.forEach { key, value in
-            detailRows?.append(CellRow(type: .detailProperty, value: (key, value)))
-        }
+        detailRows?.append(CellRow(type: .detailProperty, value: ("home_detail_degree_name".localize(), degree.properties?["home_detail_degree_name".localize()])))
+        detailRows?.append(CellRow(type: .detailProperty, value: ("home_detail_result".localize(), degree.properties?["home_detail_result".localize()])))
+        detailRows?.append(CellRow(type: .detailProperty, value: ("home_detail_full_name".localize(), degree.properties?["home_detail_full_name".localize()])))
+//        degree.properties?.forEach { key, value in
+//            detailRows?.append(CellRow(type: .detailProperty, value: (key, value)))
+//        }
         detailRows?.append(CellRow(type: .detailFooter, value: degree))
 
         mode = .detail
@@ -347,7 +350,7 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
     }
 
     func setup(for cell: DetailHeaderViewCell) {
-        cell.config(title: "home_detail_degree_name".localize(), subtitle: detailDegree?.fullName, logoData: sharedMemory.imageBank?.logo(for: detailDegree?.connectionId))
+        cell.config(title: "home_detail_university_name".localize(), subtitle: detailDegree?.fullName, logoData: sharedMemory.imageBank?.logo(for: detailDegree?.connectionId))
     }
 
     func setup(for cell: DetailPropertyViewCell) {
