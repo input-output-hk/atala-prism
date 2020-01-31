@@ -1,5 +1,7 @@
 package io.iohk.connector.repositories
 
+import java.util.Base64
+
 import cats.data.EitherT
 import cats.effect.IO
 import doobie.implicits._
@@ -42,6 +44,21 @@ class ConnectionsRepository(
     ParticipantsDAO
       .findBy(token)
       .toRight(UnknownValueError("token", token.token).logWarn)
+      .transact(xa)
+      .value
+      .unsafeToFuture()
+      .toFutureEither
+  }
+
+  def getParticipantId(encodedPublicKey: EncodedPublicKey): FutureEither[ConnectorError, ParticipantId] = {
+    implicit val loggingContext = LoggingContext("encodedPublicKey" -> encodedPublicKey)
+
+    ParticipantsDAO
+      .findByPublicKey(encodedPublicKey)
+      .map(_.id)
+      .toRight(
+        UnknownValueError("encodedPublicKey", Base64.getEncoder.encodeToString(encodedPublicKey.bytes.toArray)).logWarn
+      )
       .transact(xa)
       .value
       .unsafeToFuture()

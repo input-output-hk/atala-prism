@@ -26,6 +26,10 @@ class ConnectionsService(
     connectionsRepository.getTokenInfo(token)
   }
 
+  def getParticipantId(encodedPublicKey: EncodedPublicKey): FutureEither[ConnectorError, ParticipantId] = {
+    connectionsRepository.getParticipantId(encodedPublicKey)
+  }
+
   def addConnectionFromToken(
       tokenString: TokenString,
       publicKey: EncodedPublicKey,

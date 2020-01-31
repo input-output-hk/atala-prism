@@ -1,32 +1,39 @@
 package io.iohk.connector
 
-import java.util.UUID
+import java.util.{Base64, UUID}
 
+import io.iohk.AuthSupport
 import io.iohk.connector.errors._
+import io.iohk.connector.model.Message
 import io.iohk.connector.model.payments.{ClientNonce, Payment => ConnectorPayment}
 import io.iohk.connector.model.requests.CreatePaymentRequest
 import io.iohk.connector.payments.BraintreePayments
 import io.iohk.connector.repositories.PaymentsRepository
 import io.iohk.connector.services.{ConnectionsService, MessagesService}
 import io.iohk.cvp.connector.protos._
+import io.iohk.cvp.grpc.UserIdInterceptor._
 import io.iohk.cvp.crypto.ECKeys
 import io.iohk.cvp.grpc.UserIdInterceptor.participantId
 import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither._
 import org.slf4j.{Logger, LoggerFactory}
 import io.iohk.cvp.crypto.ECKeys._
+import io.iohk.cvp.crypto.{ECKeys, ECSignature}
+import io.iohk.cvp.models.ParticipantId
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
+import scala.util.control.NonFatal
 class ConnectorService(
-    connections: ConnectionsService,
+    override val connections: ConnectionsService,
     messages: MessagesService,
     braintreePayments: BraintreePayments,
     paymentsRepository: PaymentsRepository
 )(
     implicit executionContext: ExecutionContext
 ) extends ConnectorServiceGrpc.ConnectorService
-    with ErrorSupport {
+    with ErrorSupport
+    with AuthSupport {
 
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
@@ -37,28 +44,34 @@ class ConnectorService(
   override def getConnectionsPaginated(
       request: GetConnectionsPaginatedRequest
   ): Future[GetConnectionsPaginatedResponse] = {
-    implicit val loggingContext = LoggingContext("request" -> request)
 
-    val userId = participantId()
+    def getLastSeenConnections(userId: ParticipantId): FutureEither[ConnectorError, Seq[model.ConnectionInfo]] = {
+      implicit val loggingContext = LoggingContext("request" -> request)
 
-    val lastSeenConnectionId = request.lastSeenConnectionId match {
-      case "" => Right(None)
-      case id =>
-        Try(id)
-          .map(UUID.fromString)
-          .map(model.ConnectionId.apply)
-          .fold(
-            ex => Left(InvalidArgumentError("lastSeenConnectionId", "valid id", id).logWarn),
-            id => Right(Some(id))
-          )
+      val lastSeenConnectionId = request.lastSeenConnectionId match {
+        case "" => Right(None)
+        case id =>
+          Try(id)
+            .map(UUID.fromString)
+            .map(model.ConnectionId.apply)
+            .fold(
+              ex => Left(InvalidArgumentError("lastSeenConnectionId", "valid id", id).logWarn),
+              id => Right(Some(id))
+            )
+      }
+      lastSeenConnectionId.toFutureEither
+        .flatMap(idOpt => connections.getConnectionsPaginated(userId, request.limit, idOpt))
+        .wrapExceptions
     }
 
-    lastSeenConnectionId.toFutureEither
-      .flatMap(idOpt => connections.getConnectionsPaginated(userId, request.limit, idOpt))
-      .wrapExceptions
-      .successMap { conns =>
-        GetConnectionsPaginatedResponse(conns.map(_.toProto))
-      }
+    {
+      for {
+        userId <- getSignatureHeader()
+          .map(authenticate(request.toByteArray, _))
+          .getOrElse(Right(participantId()).toFutureEither)
+        conns <- getLastSeenConnections(userId)
+      } yield GetConnectionsPaginatedResponse(conns.map(_.toProto))
+    }.successMap(identity)
   }
 
   /** Return info about connection token such as creator info
@@ -115,7 +128,7 @@ class ConnectorService(
             }
             .getOrElse(throw new RuntimeException("Missing public key"))
         } catch {
-          case _: Throwable =>
+          case NonFatal(e) =>
             toEncodePublicKey(ECKeys.generateKeyPair().getPublic)
         }
       }
@@ -193,33 +206,41 @@ class ConnectorService(
       }
   }
 
+
   /** Return messages received after given time moment, sorted in ascending order by receive time
     *
     * Available to: Issuer, Holder, Validator
     */
   override def getMessagesPaginated(request: GetMessagesPaginatedRequest): Future[GetMessagesPaginatedResponse] = {
-    val userId = participantId()
 
-    implicit val loggingContext = LoggingContext("request" -> request, "userId" -> userId)
+    def getLastSeenMessages(userId: ParticipantId): FutureEither[ConnectorError, Seq[Message]] = {
+      implicit val loggingContext = LoggingContext("request" -> request, "userId" -> userId)
 
-    val lastSeenMessageId = request.lastSeenMessageId match {
-      case "" => Right(None)
-      case id =>
-        Try(id)
-          .map(UUID.fromString)
-          .map(model.MessageId.apply)
-          .fold(
-            ex => Left(InvalidArgumentError("lastSeenMessageId", "valid id", id).logWarn),
-            id => Right(Some(id))
-          )
+      val lastSeenMessageId = request.lastSeenMessageId match {
+        case "" => Right(None)
+        case id =>
+          Try(id)
+            .map(UUID.fromString)
+            .map(model.MessageId.apply)
+            .fold(
+              ex => Left(InvalidArgumentError("lastSeenMessageId", "valid id", id).logWarn),
+              id => Right(Some(id))
+            )
+      }
+      lastSeenMessageId.toFutureEither
+        .flatMap(idOpt => messages.getMessagesPaginated(userId, request.limit, idOpt))
+        .wrapExceptions
     }
 
-    lastSeenMessageId.toFutureEither
-      .flatMap(idOpt => messages.getMessagesPaginated(userId, request.limit, idOpt))
-      .wrapExceptions
-      .successMap { msgs =>
-        GetMessagesPaginatedResponse(msgs.map(_.toProto))
-      }
+    {
+      for {
+        userId <- getSignatureHeader()
+          .map(authenticate(request.toByteArray, _))
+          .getOrElse(Right(participantId()).toFutureEither)
+        msgs <- getLastSeenMessages(userId)
+      } yield GetMessagesPaginatedResponse(msgs.map(_.toProto))
+    }.successMap(identity)
+
   }
 
   override def getMessagesForConnection(

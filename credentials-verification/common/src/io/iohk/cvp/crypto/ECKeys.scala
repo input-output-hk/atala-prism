@@ -89,6 +89,11 @@ object ECKeys {
     EncodedPublicKey(encodeBytes.toVector)
   }
 
+  def toPublicKey(encodedPublicKey: EncodedPublicKey): PublicKey = {
+    val ecPoint = toJavaECPoint(encodedPublicKey)
+    toPublicKey(ecPoint.getAffineX, ecPoint.getAffineY)
+  }
+
   /**
     * @param ecPoint points on elliptic curves
     * @param ecCurve an elliptic curve
@@ -113,7 +118,7 @@ object ECKeys {
     * @param encodedPublicKey EncodedPublicKey is an uncompressed byte Array
     * @return ECPoint points on elliptic curve
     */
-  def toJavaECPoint(encodedPublicKey: EncodedPublicKey): JavaECPoint = {
+  private def toJavaECPoint(encodedPublicKey: EncodedPublicKey): JavaECPoint = {
     val ecCurve = ecParameterSpec.getCurve
     val bytes = encodedPublicKey.bytes.toArray
     if (bytes.nonEmpty && bytes(0) == 4) {

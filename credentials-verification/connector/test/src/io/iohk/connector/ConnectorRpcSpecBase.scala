@@ -22,6 +22,7 @@ import scala.concurrent.duration.DurationLong
 
 trait ApiTestHelper[STUB] {
   def apply[T](participantId: ParticipantId)(f: STUB => T): T
+  def apply[T](signatureStr: String, publicKeyStr: String)(f: STUB => T): T
   def unlogged[T](f: STUB => T): T
 }
 
@@ -87,6 +88,28 @@ abstract class RpcSpecBase extends PostgresRepositorySpec with BeforeAndAfterEac
         val blockingStub = stubFactory(channelHandle, callOptions)
         f(blockingStub)
       }
+      override def apply[T](signatureStr: String, publicKeyStr: String)(f: STUB => T): T = {
+
+        val callOptions = CallOptions.DEFAULT.withCallCredentials(new CallCredentials {
+          override def applyRequestMetadata(
+              requestInfo: CallCredentials.RequestInfo,
+              appExecutor: Executor,
+              applier: CallCredentials.MetadataApplier
+          ): Unit = {
+            appExecutor.execute { () =>
+              val headers = new Metadata()
+              headers.put(UserIdInterceptor.SIGNATURE_METADATA_KEY, signatureStr)
+              headers.put(UserIdInterceptor.PUBLIC_METADATA_KEY, publicKeyStr)
+              applier.apply(headers)
+            }
+          }
+
+          override def thisUsesUnstableApi(): Unit = ()
+        })
+
+        val blockingStub = stubFactory(channelHandle, callOptions)
+        f(blockingStub)
+      }
     }
 }
 
@@ -134,10 +157,10 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
   }
 
   protected def createHolder(name: String): ParticipantId = createParticipant(name, ParticipantType.Holder)
-  protected def createIssuer(name: String): ParticipantId =
-    createParticipant(name, ParticipantType.Issuer, Some(ParticipantLogo(Vector(10.toByte, 5.toByte))))
-  protected def createVerifier(name: String): ParticipantId =
-    createParticipant(name, ParticipantType.Verifier, Some(ParticipantLogo(Vector(1.toByte, 3.toByte))))
+  protected def createIssuer(name: String, publicKey: Option[EncodedPublicKey] = None): ParticipantId =
+    createParticipant(name, ParticipantType.Issuer, Some(ParticipantLogo(Vector(10.toByte, 5.toByte))), publicKey)
+  protected def createVerifier(name: String, publicKey: Option[EncodedPublicKey] = None): ParticipantId =
+    createParticipant(name, ParticipantType.Verifier, Some(ParticipantLogo(Vector(1.toByte, 3.toByte))), publicKey)
 
   protected def createToken(initiator: ParticipantId): TokenString = {
     val tokenString = TokenString.random()

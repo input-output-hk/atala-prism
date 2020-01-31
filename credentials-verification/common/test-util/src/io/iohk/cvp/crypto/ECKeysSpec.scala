@@ -6,10 +6,9 @@ class ECKeysSpec extends WordSpec with MustMatchers {
   "ECKeys.EncodePublicKey" should {
     "Encode and decode public key" in {
       val publicKey = generateKeyPair().getPublic
-      val ecPoint = getECPoint(publicKey)
-      val encodeBytes = toEncodePublicKey(publicKey)
-      val decodedEcPoint = toJavaECPoint(encodeBytes)
-      ecPoint mustBe decodedEcPoint
+      val encodedPublicKey = toEncodePublicKey(publicKey)
+      val decodedPublicKey = toPublicKey(encodedPublicKey)
+      publicKey mustBe decodedPublicKey
     }
   }
 
