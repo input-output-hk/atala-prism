@@ -24,6 +24,9 @@
   "generic": {
     "step": "Step {{step}}"
   },
+  "sidebar": {
+    "itemAlt": "{{itemName}} Icon"
+  },
   "home": {
     "centralText": {
       "edit": "Edit ",
@@ -487,6 +490,9 @@
       "issuer": "Issuer Portal",
       "verifier": "Verifier Portal"
     }
+  },
+  "support": {
+    "title": "Support"
   },
   "errors": {
     "routeDidNotMatch": "The route {{pathnameToShow}} did not match any page",

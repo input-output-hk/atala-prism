@@ -30,7 +30,8 @@
     "react-i18next": "10.13.1",
     "react-router-dom": "5.1.2",
     "react-scripts": "3.2.0",
-    "react-spinners": "0.6.1"
+    "react-spinners": "0.6.1",
+    "react-tooltip": "3.11.2"
   },
   "devDependencies": {
     "cypress": "3.4.1",
