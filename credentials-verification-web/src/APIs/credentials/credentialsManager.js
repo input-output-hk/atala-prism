@@ -249,7 +249,7 @@ const populateCredential = ({ issuerInfo, subjectInfo, signersInfo, additionalIn
 
 const getNamesAndSurames = fullName => {
   const wordsSeparator = '@';
-  const [joinedNames, joinedSurnames] = fullName.split(' ');
+  const [joinedNames, joinedSurnames = ''] = fullName.split(' ');
 
   const names = joinedNames.split(wordsSeparator);
   const surnames = joinedSurnames.split(wordsSeparator);
