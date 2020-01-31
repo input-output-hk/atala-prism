@@ -2,7 +2,7 @@
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15505" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15509"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15510"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -59,6 +59,13 @@
                                     <constraint firstAttribute="height" constant="68" id="K9D-DP-hkW"/>
                                 </constraints>
                             </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="8p0-mc-vTR" customClass="TextFieldTitledView" customModule="ATALA" customModuleProvider="target">
+                                <rect key="frame" x="31" y="368" width="352" height="68"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="68" id="FZT-fk-loi"/>
+                                </constraints>
+                            </view>
                         </subviews>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <constraints>
@@ -72,7 +79,10 @@
                             <constraint firstItem="VyB-wh-xfW" firstAttribute="trailing" secondItem="q8i-I4-LVC" secondAttribute="trailing" constant="31" id="bkh-1G-aPF"/>
                             <constraint firstItem="b3l-c0-cbs" firstAttribute="top" secondItem="VyB-wh-xfW" secondAttribute="top" constant="80" id="bqr-tO-E7Z"/>
                             <constraint firstItem="VyB-wh-xfW" firstAttribute="trailing" secondItem="hTy-EQ-ABZ" secondAttribute="trailing" constant="31" id="c8W-l2-NXH"/>
+                            <constraint firstItem="8p0-mc-vTR" firstAttribute="leading" secondItem="VyB-wh-xfW" secondAttribute="leading" constant="31" id="mpm-qS-zkf"/>
                             <constraint firstItem="VyB-wh-xfW" firstAttribute="trailing" secondItem="b3l-c0-cbs" secondAttribute="trailing" constant="90" id="qmu-9Z-1Mq"/>
+                            <constraint firstItem="8p0-mc-vTR" firstAttribute="top" secondItem="q8i-I4-LVC" secondAttribute="bottom" constant="50" id="rnM-CK-qJe"/>
+                            <constraint firstItem="VyB-wh-xfW" firstAttribute="trailing" secondItem="8p0-mc-vTR" secondAttribute="trailing" constant="31" id="ruI-PM-M0N"/>
                             <constraint firstItem="VyB-wh-xfW" firstAttribute="bottom" secondItem="3Za-yW-TUn" secondAttribute="bottom" constant="31" id="urq-zx-9Nd"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="VyB-wh-xfW"/>
@@ -81,6 +91,7 @@
                         <outlet property="buttonContinue" destination="3Za-yW-TUn" id="wKh-0l-Z9G"/>
                         <outlet property="textField1" destination="hTy-EQ-ABZ" id="T3m-jZ-wfr"/>
                         <outlet property="textField2" destination="q8i-I4-LVC" id="SkN-ax-J0V"/>
+                        <outlet property="textFieldUrl" destination="8p0-mc-vTR" id="ahR-o2-qqM"/>
                         <segue destination="g8p-gT-lDB" kind="show" identifier="SuccessSegue" id="Its-0h-Y3K"/>
                     </connections>
                 </viewController>

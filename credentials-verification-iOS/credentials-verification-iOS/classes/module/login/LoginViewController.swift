@@ -8,6 +8,7 @@ class LoginViewController: BaseViewController {
     @IBOutlet weak var buttonContinue: UIButton!
     @IBOutlet weak var textField1: TextFieldTitledView!
     @IBOutlet weak var textField2: TextFieldTitledView!
+    @IBOutlet weak var textFieldUrl: TextFieldTitledView!
 
     override func navBarCustomStyle() -> NavBarCustomStyle {
         return NavBarCustomStyle(hasNavBar: true, title: "login_nav_title".localize(), hasBackButton: true)
@@ -33,6 +34,8 @@ class LoginViewController: BaseViewController {
     }
 
     func setupTextFields() {
+        
+        setupUrlTextField()
 
         textFields.forEach { textField in
             textField.config(delegate: self)
@@ -113,5 +116,29 @@ extension LoginViewController: TextFieldTitledViewDelegate {
 
     func textFieldDidChange(for view: TextFieldTitledView, textField: UITextField, text: String?) {
         presenterImpl.textFieldTextChanged()
+        textFieldUrlChanged(view)
+    }
+}
+
+extension LoginViewController {
+
+    func setupUrlTextField() {
+
+        textFieldUrl.isHidden = !Common.DEBUG
+        textFieldUrl.config(delegate: self)
+        textFieldUrl.textField.autocapitalizationType = .none
+        textFieldUrl.textField.autocorrectionType = .no
+        textFieldUrl.textField.returnKeyType = .done
+        textFieldUrl.config(title: "SERVER URL")
+        textFieldUrl.textField.text = Common.URL_API
+    }
+
+    func textFieldUrlChanged(_ view: TextFieldTitledView) {
+
+        if view != textFieldUrl {
+            return
+        }
+        Common.URL_API = textFieldUrl.textField.text ?? "cvp-develop.cef.iohkdev.io:50051"
+        Logger.d("Changed URL to: \(Common.URL_API)")
     }
 }
