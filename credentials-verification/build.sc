@@ -53,13 +53,13 @@ object `indy-poc` extends ScalaModule {
 }
 
 object versions {
-
   def scalaPB = "0.9.4"
   val scala = "2.12.10"
   val circe = "0.12.2"
   val doobie = "0.7.0"
   val sttp = "1.6.6"
   val logback = "1.2.3"
+  val grpc = "1.24.0"
 }
 
 object common extends ScalaModule {
@@ -141,7 +141,7 @@ trait ServerCommon extends ScalaModule {
     ivy"io.circe::circe-parser:${versions.circe}",
     ivy"io.monix::monix:3.0.0",
     ivy"io.scalaland::chimney:0.3.3",
-    ivy"io.grpc:grpc-netty:1.23.0",
+    ivy"io.grpc:grpc-netty:${versions.grpc}",
     ivy"com.chuusai::shapeless:2.3.3"
   )
 
@@ -169,7 +169,7 @@ trait ServerPBCommon extends ServerCommon with ScalaPBModule {
     super[ServerCommon].ivyDeps.map { deps =>
       deps ++ Agg(
         ivy"com.thesamet.scalapb::scalapb-runtime-grpc:${versions.scalaPB}",
-        ivy"io.grpc:grpc-services:1.23.0"
+        ivy"io.grpc:grpc-services:${versions.grpc}"
       )
     }
 
