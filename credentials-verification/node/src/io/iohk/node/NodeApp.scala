@@ -79,7 +79,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     val objectManagementService = new ObjectManagementService(storage, atalaReferenceLedger, blockProcessingService)
     objectManagementServicePromise.success(objectManagementService)
 
-    val nodeService = new NodeServiceImpl(didDataService)
+    val nodeService = new NodeServiceImpl(didDataService, objectManagementService)
 
     logger.info("Starting server")
     import io.grpc.protobuf.services.ProtoReflectionService
