@@ -15,9 +15,8 @@ import io.iohk.cvp.cmanager.repositories.{
 }
 import io.iohk.cvp.connector.protos._
 import io.iohk.cvp.cstore.CredentialsStoreService
-import io.iohk.cvp.cstore.services.{StoreIndividualsService, StoreUsersService, StoredCredentialsService}
 import io.iohk.cvp.cstore.protos.CredentialsStoreServiceGrpc
-import io.iohk.cvp.grpc.UserIdInterceptor
+import io.iohk.cvp.cstore.services.{StoreIndividualsService, StoreUsersService, StoredCredentialsService}
 import io.iohk.cvp.repositories.{SchemaMigrations, TransactorFactory}
 import org.slf4j.LoggerFactory
 
@@ -65,23 +64,28 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       new ConnectionsService(connectionsRepository, paymentsRepository, braintreePayments)(executionContext)
     val messagesRepository = new MessagesRepository(xa)(executionContext)
     val messagesService = new MessagesService(messagesRepository)
+    val authenticator = new SignedRequestsAuthenticator(connectionsRepository)
     val connectorService =
-      new ConnectorService(connectionsService, messagesService, braintreePayments, paymentsRepository)(executionContext)
+      new ConnectorService(connectionsService, messagesService, braintreePayments, paymentsRepository, authenticator)(
+        executionContext
+      )
 
     // cmanager
     val issuersRepository = new IssuersRepository(xa)(executionContext)
     val credentialsRepository = new CredentialsRepository(xa)(executionContext)
     val studentsRepository = new StudentsRepository(xa)(executionContext)
     val issuerGroupsRepository = new IssuerGroupsRepository(xa)(executionContext)
-    val credentialsService = new CredentialsServiceImpl(issuersRepository, credentialsRepository)(executionContext)
-    val studentsService = new StudentsServiceImpl(studentsRepository, credentialsRepository)(executionContext)
-    val groupsService = new GroupsServiceImpl(issuerGroupsRepository)(executionContext)
+    val credentialsService =
+      new CredentialsServiceImpl(issuersRepository, credentialsRepository, authenticator)(executionContext)
+    val studentsService =
+      new StudentsServiceImpl(studentsRepository, credentialsRepository, authenticator)(executionContext)
+    val groupsService = new GroupsServiceImpl(issuerGroupsRepository, authenticator)(executionContext)
 
     val storeUsersService = new StoreUsersService(xa)(executionContext)
     val storeIndividualsService = new StoreIndividualsService(xa)(executionContext)
     val storedCredentialsService = new StoredCredentialsService(xa)(executionContext)
     val credentialsStoreService =
-      new CredentialsStoreService(storeUsersService, storeIndividualsService, storedCredentialsService)(
+      new CredentialsStoreService(storeUsersService, storeIndividualsService, storedCredentialsService, authenticator)(
         executionContext
       )
 

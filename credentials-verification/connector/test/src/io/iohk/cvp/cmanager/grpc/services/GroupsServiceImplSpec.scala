@@ -1,6 +1,7 @@
 package io.iohk.cvp.cmanager.grpc.services
 
-import io.iohk.connector.RpcSpecBase
+import io.iohk.connector.{RpcSpecBase, SignedRequestsAuthenticator}
+import io.iohk.connector.repositories.ConnectionsRepository
 import io.iohk.cvp.cmanager.models.{Issuer, IssuerGroup}
 import io.iohk.cvp.cmanager.protos
 import io.iohk.cvp.cmanager.protos.GroupsServiceGrpc
@@ -12,7 +13,7 @@ import scala.concurrent.duration.DurationDouble
 
 class GroupsServiceImplSpec extends RpcSpecBase {
 
-  override val tables = List("credentials", "students", "issuer_groups", "issuers")
+  override val tables = List("credentials", "students", "issuer_groups", "issuers", "connections")
 
   private implicit val executionContext = scala.concurrent.ExecutionContext.global
   private implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 20.millis)
@@ -20,10 +21,12 @@ class GroupsServiceImplSpec extends RpcSpecBase {
 
   private lazy val issuerGroupsRepository = new IssuerGroupsRepository(database)
   private lazy val issuersRepository = new IssuersRepository(database)
+  private lazy val connectionsRepository = new ConnectionsRepository(database)(executionContext)
+  private lazy val authenticator = new SignedRequestsAuthenticator(connectionsRepository)
 
   override def services = Seq(
     GroupsServiceGrpc
-      .bindService(new GroupsServiceImpl(issuerGroupsRepository), executionContext)
+      .bindService(new GroupsServiceImpl(issuerGroupsRepository, authenticator), executionContext)
   )
 
   "createGroup" should {

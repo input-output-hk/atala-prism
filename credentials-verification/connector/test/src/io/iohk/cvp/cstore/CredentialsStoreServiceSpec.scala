@@ -2,8 +2,9 @@ package io.iohk.cvp.cstore
 
 import com.google.protobuf.ByteString
 import doobie.implicits._
-import io.iohk.connector.RpcSpecBase
+import io.iohk.connector.{RpcSpecBase, SignedRequestsAuthenticator}
 import io.iohk.connector.model.{ParticipantInfo, ParticipantType}
+import io.iohk.connector.repositories.ConnectionsRepository
 import io.iohk.connector.repositories.daos.ParticipantsDAO
 import io.iohk.cvp.cstore.models.{IndividualConnectionStatus, StoreUser}
 import io.iohk.cvp.cstore.protos.CredentialsStoreServiceGrpc
@@ -21,19 +22,23 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 20.millis)
 
   override val tables =
-    List("stored_credentials", "store_individuals", "store_users", "connection_tokens", "participants")
+    List("stored_credentials", "store_individuals", "store_users", "connection_tokens", "participants", "connections")
 
   val usingApiAs = usingApiAsConstructor(new CredentialsStoreServiceGrpc.CredentialsStoreServiceBlockingStub(_, _))
 
   lazy val storeUsers = new StoreUsersService(database)
   lazy val individuals = new StoreIndividualsService(database)
   lazy val storedCredentials = new StoredCredentialsService(database)
-
+  private lazy val connectionsRepository = new ConnectionsRepository(database)(executionContext)
+  private lazy val authenticator = new SignedRequestsAuthenticator(connectionsRepository)
   lazy val verifierId = ParticipantId("af45a4da-65b8-473e-aadc-aa6b346250a3")
 
   override def services = Seq(
     CredentialsStoreServiceGrpc
-      .bindService(new CredentialsStoreService(storeUsers, individuals, storedCredentials), executionContext)
+      .bindService(
+        new CredentialsStoreService(storeUsers, individuals, storedCredentials, authenticator),
+        executionContext
+      )
   )
 
   override def beforeEach(): Unit = {

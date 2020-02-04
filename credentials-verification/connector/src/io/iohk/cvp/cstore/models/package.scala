@@ -2,9 +2,8 @@ package io.iohk.cvp.cstore
 
 import java.time.Instant
 
-import enumeratum._
-import enumeratum.EnumEntry
 import enumeratum.EnumEntry.UpperSnakecase
+import enumeratum.{EnumEntry, _}
 import io.iohk.connector.model.ConnectionId
 import io.iohk.cvp.models.ParticipantId
 
