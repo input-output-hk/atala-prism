@@ -247,7 +247,7 @@ const populateCredential = ({ issuerInfo, subjectInfo, signersInfo, additionalIn
   return credential;
 };
 
-const getNamesAndSurames = fullName => {
+export const getNamesAndSurnames = fullName => {
   const wordsSeparator = '@';
   const [joinedNames, joinedSurnames = ''] = fullName.split(' ');
 
@@ -288,7 +288,7 @@ const parseAndPopulate = async (credentialData, studentData) => {
   } = studentData;
 
   const subjectInfo = {
-    ...getNamesAndSurames(fullname)
+    ...getNamesAndSurnames(fullname)
   };
 
   const additionalInfo = {
