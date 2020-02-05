@@ -1,11 +1,8 @@
 import $ivy.`com.lihaoyi::mill-contrib-scalapblib:$MILL_VERSION`
-
 import mill._
 import mill.scalalib._
 import mill.contrib.scalapblib._
 import coursier.maven.MavenRepository
-import ammonite.ops._
-
 import ammonite.ops._
 
 object app extends ScalaModule {
@@ -197,6 +194,27 @@ object connector extends ServerPBCommon with CVPDockerModule {
   }
 
   override def cvpDockerConfig = CVPDockerConfig(name = "connector")
+
+  object test extends `tests-common` {}
+}
+
+object admin extends ServerPBCommon with CVPDockerModule {
+  override def scalacOptions = Seq("-Ywarn-unused:imports", "-Xfatal-warnings", "-feature")
+  override def mainClass = Some("io.iohk.cvp.admin.AdminApp")
+  override def cvpDockerConfig = CVPDockerConfig(name = "admin")
+
+
+  def utilDir = T.sources {
+    os.pwd / 'util
+  }
+
+  def resourceDir = T.sources {
+    millSourcePath / "resources"
+  }
+
+  override def resources = T.sources {
+    resourceDir() ++ utilDir()
+  }
 
   object test extends `tests-common` {}
 }

@@ -15,6 +15,7 @@ import { getCredentialSummaries } from './credentialSummaries';
 import { getPayments, getCurrencies, getAmounts } from './payments';
 import { getSettings, editSettings } from './settings';
 import { isWalletUnlocked } from './login';
+import { isAdminSupported, populateDemoDataset } from './admin';
 
 export const mockApi = {
   getHolders,
@@ -39,5 +40,7 @@ export const mockApi = {
   getAmounts,
   getSettings,
   editSettings,
-  isWalletUnlocked
+  isWalletUnlocked,
+  isAdminSupported,
+  populateDemoDataset
 };
