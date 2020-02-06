@@ -20,6 +20,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import io.iohk.cvp.R;
 import io.iohk.cvp.core.exception.ErrorCode;
 import io.iohk.cvp.core.exception.SharedPrefencesDataNotFoundException;
+import io.iohk.cvp.grpc.AsyncTaskResult;
 import io.iohk.cvp.io.credential.Credential;
 import io.iohk.cvp.io.credential.HolderSentCredential;
 import io.iohk.cvp.io.credential.SentCredential;
@@ -71,11 +72,18 @@ public class ShareCredentialDialogFragment extends CvpFragment<ConnectionsListab
     );
     recyclerView.setAdapter(adapter);
 
-    LiveData<List<ConnectionListable>> liveData = viewModel.getConnections(this.getUserIds());
+    LiveData<AsyncTaskResult<List<ConnectionListable>>> liveData = viewModel
+        .getConnections(this.getUserIds());
 
     if (!liveData.hasActiveObservers()) {
-      liveData.observe(this, connections -> {
-        adapter.addConnections(connections);
+      liveData.observe(this, response -> {
+
+        if (response.getError() != null) {
+          getNavigator().showPopUp(getFragmentManager(), getResources().getString(
+              R.string.server_error_message));
+          return;
+        }
+        adapter.addConnections(response.getResult());
         adapter.notifyDataSetChanged();
       });
     }
