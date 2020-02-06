@@ -54,7 +54,6 @@ const ActionButtons = ({ inviteHolder, isIssuer, viewConnectionDetail, holder })
 };
 
 ActionButtons.propTypes = {
-  id: PropTypes.string.isRequired,
   inviteHolder: PropTypes.func.isRequired,
   isIssuer: PropTypes.func.isRequired,
   viewConnectionDetail: PropTypes.func.isRequired,

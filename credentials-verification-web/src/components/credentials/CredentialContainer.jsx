@@ -74,6 +74,11 @@ const CredentialContainer = ({ api }) => {
           setHasMore(false);
           return;
         }
+        // credentialsList.map(credential => {
+        //   console.log(credential);
+        //   const { id: key } = credential;
+        //   return Object.assign(credential, { key });
+        // });
 
         setCredentials(oldCredentials.concat(credentialsList));
       })
@@ -121,8 +126,7 @@ CredentialContainer.propTypes = {
     getCredentialsGroups: PropTypes.func.isRequired,
     getTotalCredentials: PropTypes.func.isRequired,
     issueCredential: PropTypes.func.isRequired,
-    getCredentials: PropTypes.func.isRequired,
-    deleteCredential: PropTypes.func.isRequired
+    getCredentials: PropTypes.func.isRequired
   }).isRequired
 };
 

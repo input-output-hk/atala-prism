@@ -7,7 +7,6 @@ import './_style.scss';
 const EmptyComponent = ({ photoSrc, button, model, isFilter }) => {
   const { t } = useTranslation();
   const title = isFilter ? 'filterTitle' : 'title';
-
   return (
     <div className="EmptyState">
       {photoSrc && <img src={photoSrc} alt={t('emptyComponent.photoAlt', { model })} />}
@@ -28,7 +27,7 @@ EmptyComponent.propTypes = {
   photoSrc: PropTypes.string,
   isFilter: PropTypes.bool,
   button: PropTypes.element,
-  model: PropTypes.oneOf(['connection']).isRequired
+  model: PropTypes.string.isRequired
 };
 
 export default EmptyComponent;

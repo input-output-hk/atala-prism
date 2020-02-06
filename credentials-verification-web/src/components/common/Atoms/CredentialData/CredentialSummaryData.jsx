@@ -48,15 +48,21 @@ const CredentialSummaryData = ({
 
 CredentialSummaryData.defaultProps = {
   lg: 12,
-  logo: null
+  logo: null,
+  title: '',
+  student: {
+    fullname: ''
+  },
+  startDate: '',
+  graduationDate: ''
 };
 
 CredentialSummaryData.propTypes = {
-  title: PropTypes.string.isRequired,
+  title: PropTypes.string,
   university: PropTypes.string.isRequired,
-  student: PropTypes.string.isRequired,
-  startDate: PropTypes.string.isRequired,
-  graduationDate: PropTypes.string.isRequired,
+  student: PropTypes.shape({ fullname: PropTypes.string }),
+  startDate: PropTypes.string,
+  graduationDate: PropTypes.string,
   lg: PropTypes.number,
   logo: PropTypes.string
 };

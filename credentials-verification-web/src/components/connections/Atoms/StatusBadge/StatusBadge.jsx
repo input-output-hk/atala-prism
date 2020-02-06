@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
-import { connectionStatusesShape } from '../../../../helpers/propShapes';
+import { connectionStatusesKeysShape } from '../../../../helpers/propShapes';
 import { USER_ROLE, ISSUER } from '../../../../helpers/constants';
 
 import './_style.scss';
@@ -22,7 +22,7 @@ const StatusBadge = ({ status }) => {
 };
 
 StatusBadge.propTypes = {
-  status: PropTypes.oneOf(connectionStatusesShape).isRequired
+  status: PropTypes.oneOf(connectionStatusesKeysShape).isRequired
 };
 
 export default StatusBadge;
