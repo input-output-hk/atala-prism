@@ -74,11 +74,6 @@ const CredentialContainer = ({ api }) => {
           setHasMore(false);
           return;
         }
-        // credentialsList.map(credential => {
-        //   console.log(credential);
-        //   const { id: key } = credential;
-        //   return Object.assign(credential, { key });
-        // });
 
         setCredentials(oldCredentials.concat(credentialsList));
       })

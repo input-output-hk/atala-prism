@@ -35,14 +35,6 @@ const NewCredential = ({
   selectedGroup
 }) => {
   const { t } = useTranslation();
-  console.log(currentStep);
-  console.log(createCredentialTemplate);
-  console.log(changeStep);
-  console.log(saveCredential);
-  console.log(renderStep);
-  console.log(renderModal);
-  console.log(openModal);
-  console.log(selectedGroup);
   const steps = [
     { stepTitle: 'newCredential.steps.step1' },
     { stepTitle: 'newCredential.steps.step2' },
