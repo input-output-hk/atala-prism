@@ -109,6 +109,9 @@ class LoginPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelega
             if self.cryptoUtils.checkWordsValidity(indexes: self.data, words: words) {
                 user = LoggedUser()
                 user?.apiUrl = Common.URL_API
+                user?.mnemonics = CryptoUtils.global.mnemonics
+                user?.seed = CryptoUtils.global.seed
+                user?.privateKey = CryptoUtils.global.pk?.extended()
             }
 
             DispatchQueue.main.async {

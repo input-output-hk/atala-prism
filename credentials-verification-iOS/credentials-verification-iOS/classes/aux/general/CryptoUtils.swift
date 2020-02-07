@@ -10,16 +10,24 @@ class CryptoUtils: NSObject {
     var mnemonics: [String]?
     var usedMnemonics: [String]?
     var seed: Data?
-
+    var pk: HDPrivateKey?
+    
     func setupMnemonics() {
 
         mnemonics = try! Mnemonic.generate()
         usedMnemonics = Array(mnemonics![0 ..< CryptoUtils.SEED_COUNT])
 
+        generateSeed()
+        generatePrivateKey()
+    }
+
+     func generateSeed() {
         let passphrase = ""
-        let mnemonic = usedMnemonics!.joined(separator: " ").decomposedStringWithCompatibilityMapping.data(using: .utf8)!
-        let salt = ("mnemonic" + passphrase).decomposedStringWithCompatibilityMapping.data(using: .utf8)!
-        seed = _Key.deriveKey(mnemonic, salt: salt, iterations: 2048, keyLength: 64)
+        seed = try? Mnemonic.seed(mnemonic: usedMnemonics!, passphrase: passphrase)
+    }
+    
+    func generatePrivateKey() {
+        pk = HDPrivateKey(seed: seed!, network: .mainnetBCH)
     }
 
     func getUsedRandomIndexes(count: Int) -> [Int] {

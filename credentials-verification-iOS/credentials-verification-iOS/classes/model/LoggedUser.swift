@@ -23,6 +23,9 @@ class LoggedUser: Mappable {
     var isVerified: Bool?
 
     var apiUrl: String?
+    
+    var seed: Data?
+    var mnemonics: [String]?
 
     init() {
         connectionUserIds = [:]
@@ -55,5 +58,8 @@ class LoggedUser: Mappable {
         isVerified <- map["isVerified"]
 
         apiUrl <- map["apiUrl"]
+        
+        seed <- map["seed"]
+        mnemonics <- map["mnemonics"]
     }
 }
