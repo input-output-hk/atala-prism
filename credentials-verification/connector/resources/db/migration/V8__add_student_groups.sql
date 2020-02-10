@@ -1,9 +1,9 @@
-CREATE EXTENSION IF NOT EXISTS CITEXT;
+
 
 CREATE TABLE issuer_groups(
   group_id UUID NOT NULL,
   issuer_id UUID NOT NULL,
-  name CITEXT NOT NULL,
+  name TEXT NOT NULL,
   CONSTRAINT issuer_groups_pk PRIMARY KEY (group_id),
   CONSTRAINT issuer_groups_issuer_id_fk FOREIGN KEY (issuer_id) REFERENCES issuers (issuer_id),
   CONSTRAINT issuer_groups_name_non_empty CHECK (TRIM(name) <> ''),
