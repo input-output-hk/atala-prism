@@ -206,7 +206,6 @@ class ConnectorService(
       }
   }
 
-
   /** Return messages received after given time moment, sorted in ascending order by receive time
     *
     * Available to: Issuer, Holder, Validator

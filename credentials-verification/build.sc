@@ -203,7 +203,6 @@ object admin extends ServerPBCommon with CVPDockerModule {
   override def mainClass = Some("io.iohk.cvp.admin.AdminApp")
   override def cvpDockerConfig = CVPDockerConfig(name = "admin")
 
-
   def utilDir = T.sources {
     os.pwd / 'util
   }

@@ -19,18 +19,18 @@ trait AuthSupport {
       implicit executionContext: ExecutionContext
   ): FutureEither[ConnectorError, ParticipantId] = {
 
-      for {
-        signature <- Future{Right(signatureHeader.signature)}.toFutureEither
-        publicKey <- Future{Right(toPublicKey(signatureHeader.publicKey))}.toFutureEither
-        _ <- Either
-          .cond(
-            ECSignature.verify(publicKey, request, signature),
-            (),
-            SignatureVerificationError()
-          )
-          .toFutureEither
-        participantId <- connections.getParticipantId(signatureHeader.publicKey)
-      } yield participantId
+    for {
+      signature <- Future { Right(signatureHeader.signature) }.toFutureEither
+      publicKey <- Future { Right(toPublicKey(signatureHeader.publicKey)) }.toFutureEither
+      _ <- Either
+        .cond(
+          ECSignature.verify(publicKey, request, signature),
+          (),
+          SignatureVerificationError()
+        )
+        .toFutureEither
+      participantId <- connections.getParticipantId(signatureHeader.publicKey)
+    } yield participantId
 
   }
 }

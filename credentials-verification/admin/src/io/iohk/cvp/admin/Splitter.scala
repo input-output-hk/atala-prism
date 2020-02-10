@@ -2,7 +2,7 @@ package io.iohk.cvp.admin
 
 object Splitter {
 
-  val (markerSpE, markerSpF) = ("\ufffe" , "\uffff")
+  val (markerSpE, markerSpF) = ("\ufffe", "\uffff")
 
   def sqlSplit(str: String): Array[String] = split(str, ";", "\\")
 
