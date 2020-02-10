@@ -38,7 +38,9 @@ const Dashboard = ({ name, bundle, credentials, proofRequests }) => {
 
 Dashboard.defaultProps = {
   bundle: undefined,
-  name: 'Username'
+  name: 'Username',
+  credentials: { week: 10, month: 60 },
+  proofRequests: { week: 10, month: 60 }
 };
 
 Dashboard.propTypes = {
@@ -50,11 +52,11 @@ Dashboard.propTypes = {
   credentials: PropTypes.shape({
     week: PropTypes.number,
     month: PropTypes.number
-  }).isRequired,
+  }),
   proofRequests: PropTypes.shape({
     week: PropTypes.number,
     month: PropTypes.number
-  }).isRequired
+  })
 };
 
 export default Dashboard;

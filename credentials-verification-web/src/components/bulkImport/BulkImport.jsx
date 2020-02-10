@@ -1,5 +1,4 @@
 import React from 'react';
-import { Col, Row } from 'antd';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import DownloadStep from './Molecules/SpreadSheetStep/DownloadStep';

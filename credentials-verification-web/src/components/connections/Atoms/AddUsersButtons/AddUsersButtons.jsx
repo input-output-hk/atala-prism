@@ -35,7 +35,7 @@ const AddUsersButtons = ({
 };
 
 AddUsersButtons.propTypes = {
-  isIssuer: PropTypes.bool.isRequired,
+  isIssuer: PropTypes.func.isRequired,
   redirector: PropTypes.shape({
     redirectToBulkImport: PropTypes.func,
     redirectToStudentCreation: PropTypes.func,

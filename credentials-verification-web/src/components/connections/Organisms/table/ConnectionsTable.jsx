@@ -9,7 +9,7 @@ import {
 } from '../../../../helpers/constants';
 import ActionButtons from '../../Atoms/ActionButtons/ActionButtons';
 import holderDefaultAvatar from '../../../../images/holder-default-avatar.svg';
-import { infiniteTableProps, subjectShape } from '../../../../helpers/propShapes';
+import { subjectShape } from '../../../../helpers/propShapes';
 import InfiniteScrollTable from '../../../common/Organisms/Tables/InfiniteScrollTable';
 
 import './_style.scss';
@@ -102,7 +102,6 @@ const ConnectionsTable = ({
     setLoading(true);
     return handleHoldersRequest().finally(() => setLoading(false));
   };
-
   return (
     <div className="ConnectionsTable">
       <InfiniteScrollTable
@@ -111,6 +110,7 @@ const ConnectionsTable = ({
         loading={loading}
         getMoreData={getMoreData}
         hasMore={hasMore}
+        rowKey="id"
       />
     </div>
   );
@@ -125,7 +125,8 @@ ConnectionsTable.propTypes = {
   inviteHolder: PropTypes.func.isRequired,
   viewConnectionDetail: PropTypes.func.isRequired,
   isIssuer: PropTypes.func.isRequired,
-  ...infiniteTableProps
+  handleHoldersRequest: PropTypes.func.isRequired,
+  hasMore: PropTypes.bool.isRequired
 };
 
 export default ConnectionsTable;

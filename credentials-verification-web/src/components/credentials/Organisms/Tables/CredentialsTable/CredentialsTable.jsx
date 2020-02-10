@@ -104,6 +104,7 @@ const CredentialsTable = ({
         loading={loading}
         getMoreData={getMoreData}
         hasMore={hasMore}
+        rowKey="id"
       />
     </div>
   );

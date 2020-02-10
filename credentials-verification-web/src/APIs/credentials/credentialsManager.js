@@ -19,7 +19,7 @@ import Logger from '../../helpers/Logger';
 import { setDateInfoFromJSON } from '../helpers';
 import { getStudents } from './studentsManager';
 import { getDid } from '../wallet/wallet';
-import { CONNECTION_STATUSES, CONNECTION_ACCEPTED } from '../../helpers/constants';
+import { CONNECTION_ACCEPTED } from '../../helpers/constants';
 
 const { config } = require('../config');
 
@@ -258,17 +258,7 @@ const getNamesAndSurames = fullName => {
 };
 
 const parseAndPopulate = async (credentialData, studentData) => {
-  const {
-    enrollmentdate,
-    graduationdate,
-    groupname,
-    id,
-    issuerid,
-    issuername,
-    studentid,
-    studentname,
-    title
-  } = credentialData;
+  const { enrollmentdate, graduationdate, id, issuername, title } = credentialData;
 
   const did = await getDid();
 
@@ -277,15 +267,7 @@ const parseAndPopulate = async (credentialData, studentData) => {
     did
   };
 
-  const {
-    admissiondate,
-    connectionid,
-    connectionstatus,
-    connectiontoken,
-    email,
-    fullname,
-    universityassignedid
-  } = studentData;
+  const { fullname } = studentData;
 
   const subjectInfo = {
     ...getNamesAndSurames(fullname)
@@ -298,13 +280,11 @@ const parseAndPopulate = async (credentialData, studentData) => {
     graduationDate: graduationdate
   };
 
-  const credential = await populateCredential({
+  return populateCredential({
     issuerInfo,
     subjectInfo,
     additionalInfo
   });
-
-  return credential;
 };
 
 export const getCredentialBinary = async (connectionData, studentData) => {

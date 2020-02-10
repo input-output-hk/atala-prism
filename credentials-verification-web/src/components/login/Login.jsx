@@ -42,7 +42,7 @@ const Login = ({ formRef, handleLogin }) => {
 
 Login.propTypes = {
   formRef: refShape.isRequired,
-  handleLogin: PropTypes.isRequired
+  handleLogin: PropTypes.func.isRequired
 };
 
 export default Login;

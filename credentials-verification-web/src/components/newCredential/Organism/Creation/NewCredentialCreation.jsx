@@ -7,7 +7,6 @@ import CredentialSummaryData from '../../../common/Atoms/CredentialData/Credenti
 import { dayMonthYearFormatter } from '../../../../helpers/formatters';
 
 import './_style.scss';
-import { LOGO } from '../../../../helpers/constants';
 import { getLogoAsBase64 } from '../../../../helpers/genericHelpers';
 
 const NewCredentialCreation = ({

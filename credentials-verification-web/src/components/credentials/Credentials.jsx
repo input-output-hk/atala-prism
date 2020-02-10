@@ -13,7 +13,7 @@ import { shortBackendDateFormatter } from '../../helpers/formatters';
 
 import './_style.scss';
 
-const Credentials = ({ showEmpty, tableProps, filterProps, noCredentials, fetchCredentials }) => {
+const Credentials = ({ showEmpty, tableProps, filterProps, fetchCredentials }) => {
   const { t } = useTranslation();
   const [currentCredential, setCurrentCredential] = useState({});
   const [showDrawer, setShowDrawer] = useState(false);
@@ -27,7 +27,7 @@ const Credentials = ({ showEmpty, tableProps, filterProps, noCredentials, fetchC
   const emptyProps = {
     photoSrc: noCredentialsPicture,
     model: t('credentials.title'),
-    isFilter: noCredentials,
+    isFilter: showEmpty,
     button: <CredentialButtons />
   };
 
@@ -47,7 +47,7 @@ const Credentials = ({ showEmpty, tableProps, filterProps, noCredentials, fetchC
   };
 
   const expandedTableProps = Object.assign({}, tableProps, { onView: showCredentialData });
-  const renderEmptyComponent = !tableProps.credentials.length || noCredentials;
+  const renderEmptyComponent = !tableProps.credentials.length || showEmpty;
 
   return (
     <div className="Wrapper PageContainer">
@@ -80,7 +80,6 @@ Credentials.defaultProps = {
 };
 
 Credentials.propTypes = {
-  noCredentials: PropTypes.bool.isRequired,
   fetchCredentials: PropTypes.func.isRequired,
   tableProps: PropTypes.shape({
     subjects: PropTypes.arrayOf(PropTypes.shape(subjectShape)),
@@ -91,8 +90,7 @@ Credentials.propTypes = {
     categories: PropTypes.arrayOf(PropTypes.string),
     groups: PropTypes.arrayOf(PropTypes.string)
   }).isRequired,
-  showEmpty: PropTypes.bool,
-  redirector: PropTypes.shape({ redirectToNewCredential: PropTypes.func }).isRequired
+  showEmpty: PropTypes.bool
 };
 
 export default Credentials;

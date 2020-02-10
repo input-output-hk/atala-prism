@@ -11,7 +11,8 @@ const InfiniteScrollTable = ({
   handleSort,
   loading,
   getMoreData,
-  hasMore
+  hasMore,
+  rowKey
 }) => {
   // This use effect handles the call for more data after
   // the scroll reaches the end
@@ -40,6 +41,7 @@ const InfiniteScrollTable = ({
           if (handleSort) return handleSort(sorter);
         }}
         pagination={false}
+        rowKey={rowKey}
       />
     </div>
   );
@@ -58,7 +60,8 @@ InfiniteScrollTable.propTypes = {
   handleSort: PropTypes.func,
   loading: PropTypes.bool.isRequired,
   getMoreData: PropTypes.func.isRequired,
-  hasMore: PropTypes.func.isRequired
+  hasMore: PropTypes.bool.isRequired,
+  rowKey: PropTypes.string.isRequired
 };
 
 export default InfiniteScrollTable;

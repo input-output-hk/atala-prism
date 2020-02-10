@@ -114,8 +114,7 @@ Connections.propTypes = {
     hasMore: PropTypes.bool.isRequired
   }).isRequired,
   inviteHolder: PropTypes.func.isRequired,
-  isIssuer: PropTypes.func.isRequired,
-  redirectToBulkImport: PropTypes.func.isRequired
+  isIssuer: PropTypes.func.isRequired
 };
 
 export default withRedirector(Connections);
