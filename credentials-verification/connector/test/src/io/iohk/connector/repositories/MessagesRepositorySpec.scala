@@ -4,9 +4,10 @@ import java.time.{Instant, LocalDateTime, ZoneOffset}
 
 import com.softwaremill.diffx.scalatest.DiffMatcher._
 import doobie.implicits._
-import org.scalatest.EitherValues._
 import io.iohk.connector.repositories.daos._
+import io.iohk.connector.model.ConnectionId
 import io.iohk.cvp.models.ParticipantId
+import org.scalatest.EitherValues._
 
 import scala.concurrent.duration.DurationLong
 
@@ -56,6 +57,18 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
       sender mustBe holder
       recipient mustBe issuer
       content mustBe message
+    }
+
+    "fail when the sender has no other side" in {
+      val issuer = createIssuer()
+      val connection = ConnectionId.random()
+      val message = "hello".getBytes
+
+      val caught = intercept[RuntimeException] {
+        messagesRepository.insertMessage(issuer, connection, message).value.futureValue
+      }
+      caught.getCause must not be null
+      caught.getCause.getMessage mustBe s"Failed to send message, the connection $connection with sender $issuer doesn't exist"
     }
   }
 

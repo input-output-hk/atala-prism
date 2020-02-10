@@ -217,7 +217,10 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
   def createMessage(sender: ParticipantId, connectionId: ConnectionId, content: Array[Byte]): MessageId = {
     val messageId = MessageId.random()
     val query = for {
-      recipient <- ConnectionsDAO.getOtherSide(connectionId, sender)
+      recipientOption <- ConnectionsDAO.getOtherSide(connectionId, sender)
+      recipient = recipientOption.getOrElse(
+        throw new RuntimeException(
+          s"Failed to send message, the connection $connectionId with sender $sender doesn't exist"))
       _ <- MessagesDAO.insert(messageId, connectionId, sender, recipient, content)
     } yield messageId
 
