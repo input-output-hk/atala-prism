@@ -70,7 +70,7 @@ export const connectionStatusesShape = __.values(CONNECTION_STATUSES);
 export const studentShape = {
   admissiondate: dateObjectShape,
   connectionid: string,
-  connectionstatus: oneOfType(connectionStatusesShape),
+  connectionstatus: oneOf(connectionStatusesShape),
   connectiontoken: string,
   fullname: string,
   id: string,
