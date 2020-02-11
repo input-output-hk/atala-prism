@@ -71,7 +71,7 @@ export const dateObjectShape = {
 export const studentShape = {
   admissiondate: dateObjectShape,
   connectionid: string,
-  connectionstatus: oneOfType(connectionStatusesShape),
+  connectionstatus: oneOf(connectionStatusesShape),
   connectiontoken: string,
   fullname: string,
   id: string,
