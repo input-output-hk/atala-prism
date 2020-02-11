@@ -1,12 +1,17 @@
-/* eslint import/no-unresolved: 0 */ // --> OFF
 import { CredentialsServicePromiseClient } from '../../protos/credentials/credentialsManager_grpc_web_pb';
-import {
+import Logger from '../../helpers/Logger';
+import { setDateInfoFromJSON } from '../helpers';
+import { getStudents } from './studentsManager';
+import { getDid } from '../wallet/wallet';
+import { CONNECTION_ACCEPTED } from '../../helpers/constants';
+
+const {
   GetCredentialsRequest,
   CreateCredentialRequest,
   RegisterRequest,
   Date
-} from '../../protos/connector/credentialsManager_pb';
-import {
+} = require('../../protos/connector/credentialsManager_pb');
+const {
   Credential,
   IssuerData,
   SubjectData,
@@ -14,12 +19,7 @@ import {
   SentCredential,
   IssuerSentCredential,
   Signer
-} from '../../protos/credentials/credential_pb';
-import Logger from '../../helpers/Logger';
-import { setDateInfoFromJSON } from '../helpers';
-import { getStudents } from './studentsManager';
-import { getDid } from '../wallet/wallet';
-import { CONNECTION_ACCEPTED } from '../../helpers/constants';
+} = require('../../protos/credentials/credential_pb');
 
 const { config } = require('../config');
 

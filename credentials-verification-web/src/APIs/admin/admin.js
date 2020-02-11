@@ -1,9 +1,8 @@
-import {
-  PopulateDemoDatasetRequest,
-  AdminServicePromiseClient
-} from '../../protos/admin/admin_grpc_web_pb';
+import { AdminServicePromiseClient } from '../../protos/admin/admin_grpc_web_pb';
 import { isDevEnv } from '../env';
 import { config } from '../config';
+
+const { PopulateDemoDatasetRequest } = require('../../protos/admin/admin_pb');
 
 const adminService = new AdminServicePromiseClient(config.grpcClient, null, null);
 
