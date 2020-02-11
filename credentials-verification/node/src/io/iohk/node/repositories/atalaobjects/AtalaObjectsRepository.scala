@@ -1,33 +1,26 @@
 package io.iohk.node.repositories.atalaobjects
 
 import cats.effect.IO
+import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import doobie.util.Put
-import io.iohk.node.bitcoin.models._
-import io.iohk.node.services.models._
 import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither.FutureEitherOps
+import io.iohk.node.repositories.daos.AtalaObjectsDAO
 
 import scala.concurrent.ExecutionContext
 
 class AtalaObjectsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
 
-  import AtalaObjectsRepository._
-
   def createReference(
-      atalaObjectId: AtalaObjectId,
-      bitcoinTxId: TransactionId
-  ): FutureEither[Nothing, Unit] =
-    sql"""  |
-            | INSERT INTO atala_objects (atala_object_id, bitcoin_txid)
-            | VALUES ($atalaObjectId, $bitcoinTxId)
-            |
-            |""".stripMargin.run
+      data: AtalaObjectsDAO.AtalaObjectCreateData
+  ): FutureEither[Nothing, Unit] = {
+    AtalaObjectsDAO.insert(data).runQuery
+  }
 
-  private implicit class QueryExtensions(val query: doobie.util.fragment.Fragment) {
-    def run: FutureEither[Nothing, Unit] =
-      query.update.run
+  private implicit class ConnectionIOExtensions[T](val query: ConnectionIO[T]) {
+    def runQuery: FutureEither[Nothing, Unit] =
+      query
         .transact(xa)
         .map(_ => ())
         .unsafeToFuture()
@@ -35,10 +28,4 @@ class AtalaObjectsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) 
         .toFutureEither
   }
 
-}
-
-object AtalaObjectsRepository {
-  private implicit val blockhashPut: Put[Blockhash] = Put[List[Byte]].contramap(_.toBytesBE)
-  private implicit val transactionIdPut: Put[TransactionId] = Put[List[Byte]].contramap(_.toBytesBE)
-  private implicit val atalaObjectIdPut: Put[AtalaObjectId] = Put[Array[Byte]].contramap(identity)
 }

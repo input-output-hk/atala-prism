@@ -1,10 +1,14 @@
 package io.iohk.connector
 
+import java.util.Base64
+
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.grpc.{Status, StatusRuntimeException}
 import io.iohk.connector.repositories.daos.MessagesDAO
 import io.iohk.cvp.connector.protos._
+import io.iohk.cvp.crypto.ECKeys.toEncodePublicKey
+import io.iohk.cvp.crypto.{ECKeys, ECSignature}
 
 class MessagesRpcSpec extends ConnectorRpcSpecBase {
   "SendMessage" should {
@@ -31,6 +35,26 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
 
       usingApiAs(verifierId) { blockingStub =>
         val request = GetMessagesPaginatedRequest("", 10)
+        val response = blockingStub.getMessagesPaginated(request)
+        response.messages.map(m => (m.id, m.connectionId)) mustBe
+          messages.take(10).map { case (messageId, connectionId) => (messageId.id.toString, connectionId.id.toString) }
+      }
+    }
+
+    "return messages  authenticating by signature" in {
+      val keys = ECKeys.generateKeyPair()
+      val privateKey = keys.getPrivate
+      val encodedPublicKey = toEncodePublicKey(keys.getPublic)
+      val request = GetMessagesPaginatedRequest("", 10)
+
+      val publicKeyStr = Base64.getUrlEncoder.encodeToString(encodedPublicKey.bytes.toArray)
+      val signatureStr = Base64.getUrlEncoder.encodeToString(ECSignature.sign(privateKey, request.toByteArray).toArray)
+
+      val issuerId = createIssuer("Issuer", Some(encodedPublicKey))
+
+      val messages = createExampleMessages(issuerId)
+
+      usingApiAs(signatureStr, publicKeyStr) { blockingStub =>
         val response = blockingStub.getMessagesPaginated(request)
         response.messages.map(m => (m.id, m.connectionId)) mustBe
           messages.take(10).map { case (messageId, connectionId) => (messageId.id.toString, connectionId.id.toString) }

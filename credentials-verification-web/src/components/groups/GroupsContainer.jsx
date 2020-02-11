@@ -34,7 +34,7 @@ const GroupsContainer = ({ api, selectingProps }) => {
       })
       .catch(error => {
         Logger.error('[GroupsContainer.updateGroups] Error: ', error);
-        message.error(t('errors.errorGettingHolders'), 1);
+        message.error(t('errors.errorGettingHolders'));
       });
   };
 
@@ -49,11 +49,11 @@ const GroupsContainer = ({ api, selectingProps }) => {
       .deleteGroup({ id })
       .then(() => {
         updateGroups();
-        message.success(t('groups.deletionSuccess', { groupName }), 1);
+        message.success(t('groups.deletionSuccess', { groupName }));
       })
       .catch(error => {
         Logger.error('[GroupsContainer.handleGroupDeletion] Error: ', error);
-        message.error(t('errors.errorDeletingGroup', { groupName }), 1);
+        message.error(t('errors.errorDeletingGroup', { groupName }));
       });
 
   return (

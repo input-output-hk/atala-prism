@@ -9,18 +9,26 @@ import {
 } from '../../../../helpers/formatters';
 import Connection from '../../../credentialSummaries/Molecules/Connection/Connection';
 import CustomButton from '../../Atoms/CustomButton/CustomButton';
-
-import './_style.scss';
 import CredentialDetail from './CredentialDetail';
 import holderDefaultAvatar from '../../../../images/holder-default-avatar.svg';
+import { withRedirector } from '../../../providers/withRedirector';
 
-const CredentialListDetail = ({ user: { icon, name: userName }, transactions, date }) => {
+import './_style.scss';
+
+const CredentialListDetail = ({
+  redirector: { redirectToNewCredential },
+  user: { icon, name: userName },
+  transactions,
+  date
+}) => {
   const { t } = useTranslation();
 
   const [connectionInfo, setConnectionInfo] = useState();
 
   const genExtra = () => <Icon type="caret-down" />;
   const role = localStorage.getItem('userRole');
+
+  const hasCredentials = !!transactions.length;
 
   return (
     <div className="CredentialSummaryDetail">
@@ -39,7 +47,7 @@ const CredentialListDetail = ({ user: { icon, name: userName }, transactions, da
           {date && <p>{shortBackendDateFormatter(date)}</p>}
         </div>
       </div>
-      {role && (
+      {role && hasCredentials && (
         <Collapse accordion className="TransactionsDetail">
           <Collapse.Panel
             header={t('credentialSummary.detail.transactions')}
@@ -49,40 +57,35 @@ const CredentialListDetail = ({ user: { icon, name: userName }, transactions, da
           />
         </Collapse>
       )}
-      {transactions.map(trans => {
-        const transaction = mapTransaction(trans, setConnectionInfo);
-        return (
-          <div className="CredentialSummaryLine">
-            <p>{t('credentialDetail.type')}</p>
-            <Connection
-              icon={transaction.icon}
-              type={transaction.type}
-              date={transaction.date}
-              setConnectionInfo={transaction.setConnectionInfo}
-              university={transaction.university}
-              award={transaction.award}
-              student={transaction.student}
-              graduationDate={transaction.graduationDate}
-            />
-          </div>
-        );
-      })}
+      {!hasCredentials && <label>{t('credentialSummary.detail.noCredentials')}</label>}
+      {hasCredentials &&
+        transactions.map(trans => {
+          const transaction = mapTransaction(trans, setConnectionInfo);
+          return (
+            <div className="CredentialSummaryLine">
+              <p>{t('credentialDetail.type')}</p>
+              <Connection
+                icon={transaction.icon}
+                type={transaction.type}
+                date={transaction.date}
+                setConnectionInfo={transaction.setConnectionInfo}
+                university={transaction.university}
+                result={transaction.award}
+                student={transaction.student}
+                graduationDate={transaction.graduationDate}
+              />
+            </div>
+          );
+        })}
       {role && (
         <div className="ControlButtons">
           <CustomButton
             buttonProps={{
               className: 'theme-outline',
-              onClick: () => console.log('placeholder function')
+              onClick: () => {},
+              disabled: true
             }}
             buttonText={t('credentialSummary.detail.proofRequest')}
-            icon={<Icon type="plus" />}
-          />
-          <CustomButton
-            buttonProps={{
-              className: 'theme-secondary',
-              onClick: () => console.log('placeholder function')
-            }}
-            buttonText={t('credentialSummary.detail.newCredential')}
             icon={<Icon type="plus" />}
           />
         </div>
@@ -109,7 +112,7 @@ const mapTransaction = (credential, setConnectionInfo) => {
     university: getIssuerName(issuertype),
     student: getStudentName(subjectdata),
     graduationDate: dayMonthYearBackendFormatter(graduationdate),
-    award: grantingDecision,
+    result: grantingDecision,
     lg: 24
   };
 };
@@ -121,12 +124,12 @@ const getStudentName = student => {
 };
 
 const getIssuerName = issuer => {
-  const { issuerlegalname, academicauthority } = issuer;
-  return `${issuerlegalname}, ${academicauthority}`;
+  const { issuerlegalname } = issuer;
+  return issuerlegalname;
 };
 
 const getTitle = (degreeawarded, additionalspeciality) =>
-  `${degreeawarded}, ${additionalspeciality}`;
+  additionalspeciality ? `${degreeawarded}, ${additionalspeciality}` : degreeawarded;
 
 CredentialListDetail.defaultProps = {
   transactions: []
@@ -138,4 +141,4 @@ CredentialListDetail.propTypes = {
   date: credentialSummaryShape.date.isRequired
 };
 
-export default CredentialListDetail;
+export default withRedirector(CredentialListDetail);

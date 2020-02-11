@@ -79,7 +79,7 @@ const CredentialContainer = ({ api }) => {
       })
       .catch(error => {
         Logger.error('[CredentialContainer.getCredentials] Error while getting Credentials', error);
-        message.error(t('errors.errorGetting', { model: 'Credentials' }), 1);
+        message.error(t('errors.errorGetting', { model: 'Credentials' }));
       });
   };
 
@@ -121,8 +121,7 @@ CredentialContainer.propTypes = {
     getCredentialsGroups: PropTypes.func.isRequired,
     getTotalCredentials: PropTypes.func.isRequired,
     issueCredential: PropTypes.func.isRequired,
-    getCredentials: PropTypes.func.isRequired,
-    deleteCredential: PropTypes.func.isRequired
+    getCredentials: PropTypes.func.isRequired
   }).isRequired
 };
 

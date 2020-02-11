@@ -2,7 +2,6 @@ package io.iohk.cvp.grpc;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import com.crashlytics.android.Crashlytics;
 import io.grpc.Channel;
 import io.grpc.ClientInterceptor;
 import io.grpc.ClientInterceptors;
@@ -13,9 +12,8 @@ import io.iohk.cvp.io.connector.ConnectorServiceGrpc;
 import io.iohk.cvp.io.connector.ConnectorServiceGrpc.ConnectorServiceBlockingStub;
 import io.iohk.cvp.io.connector.ConnectorServiceGrpc.ConnectorServiceStub;
 import io.iohk.cvp.views.Preferences;
-import java.util.Optional;
 
-public class GrpcTask<A> extends AsyncTask<Object, Void, Optional<A>> {
+public class GrpcTask<A> extends AsyncTask<Object, Void, AsyncTaskResult<A>> {
 
   private final GrpcRunnable<A> grpcRunnable;
   private final ManagedChannel origChannel;
@@ -35,21 +33,20 @@ public class GrpcTask<A> extends AsyncTask<Object, Void, Optional<A>> {
   }
 
   @Override
-  public Optional<A> doInBackground(Object... params) {
-    try {
-      String userId = getUserId(params);
-      ClientInterceptor interceptor = new HeaderClientInterceptor(userId);
-      Channel channel = ClientInterceptors.intercept(origChannel, interceptor);
-      ConnectorServiceBlockingStub
-          blockingStub = ConnectorServiceGrpc.newBlockingStub(channel);
-      ConnectorServiceStub stub = ConnectorServiceGrpc.newStub(channel);
+  public AsyncTaskResult<A> doInBackground(Object... params) {
+    String userId = getUserId(params);
+    ClientInterceptor interceptor = new HeaderClientInterceptor(userId);
+    Channel channel = ClientInterceptors.intercept(origChannel, interceptor);
+    ConnectorServiceBlockingStub
+        blockingStub = ConnectorServiceGrpc.newBlockingStub(channel);
+    ConnectorServiceStub stub = ConnectorServiceGrpc.newStub(channel);
 
+    try {
       return grpcRunnable.run(blockingStub, stub, params);
     } catch (Exception e) {
-      Crashlytics.logException(e);
-      // TODO handle error
-      return Optional.empty();
+      return new AsyncTaskResult<>(e);
     }
+
   }
 
   // FIXME we should find a better way to send user id
@@ -61,8 +58,8 @@ public class GrpcTask<A> extends AsyncTask<Object, Void, Optional<A>> {
   }
 
   @Override
-  protected void onPostExecute(final Optional<A> a) {
+  protected void onPostExecute(final AsyncTaskResult<A> a) {
     super.onPostExecute(a);
-    a.ifPresent(grpcRunnable::onPostExecute);
+    grpcRunnable.onPostExecute(a);
   }
 }

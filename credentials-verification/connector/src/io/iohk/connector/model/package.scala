@@ -7,6 +7,7 @@ import com.google.protobuf.ByteString
 import enumeratum.EnumEntry.Lowercase
 import enumeratum._
 import io.iohk.cvp.connector.protos
+import io.iohk.cvp.crypto.ECKeys.EncodedPublicKey
 import io.iohk.cvp.models.ParticipantId
 
 import scala.util.Random
@@ -40,6 +41,7 @@ case class ParticipantLogo(bytes: Vector[Byte]) extends AnyVal
 case class ParticipantInfo(
     id: ParticipantId,
     tpe: ParticipantType,
+    publicKey: Option[EncodedPublicKey],
     name: String,
     did: Option[String],
     logo: Option[ParticipantLogo]

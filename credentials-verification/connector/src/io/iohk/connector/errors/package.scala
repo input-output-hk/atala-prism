@@ -25,6 +25,22 @@ package object errors {
     }
   }
 
+  case class PublicKeyMissingError() extends ConnectorError {
+    override def toStatus: Status = {
+      Status.UNAUTHENTICATED.withDescription("Missing Public Key")
+    }
+  }
+  case class SignatureMissingError() extends ConnectorError {
+    override def toStatus: Status = {
+      Status.UNAUTHENTICATED.withDescription("Missing Signature")
+    }
+  }
+  case class SignatureVerificationError() extends ConnectorError {
+    override def toStatus: Status = {
+      Status.UNAUTHENTICATED.withDescription("Signature Invalid")
+    }
+  }
+
   case class InternalServerError(cause: Throwable) extends ConnectorError {
     override def toStatus: Status = {
       Status.INTERNAL.withDescription("Internal server error. Please contact administrator.")
@@ -81,5 +97,4 @@ package object errors {
       }
     }
   }
-
 }

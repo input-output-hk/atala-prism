@@ -1,11 +1,12 @@
 import React from 'react';
-import { Col, Select } from 'antd';
+import { Select } from 'antd';
 import { useTranslation } from 'react-i18next';
 import {
   getLanguages,
   getCurrentLanguage,
   changeLanguage
 } from '../../../../helpers/languageUtils';
+import { customUpperCase } from '../../../../helpers/genericHelpers';
 import flagEn from '../../../../images/en.png';
 import flagKa from '../../../../images/ge.png';
 
@@ -29,16 +30,18 @@ const LanguageSelector = () => {
   };
 
   return (
-    <Col xs={2} sm={2} md={2} lg={2}>
+    <div className="LanguajeMenu">
       <Select {...selectProps}>
         {languages.map(lang => (
-          <Select.Option value={lang} disabled={lang === currentLanguage}>
-            <img src={flags[lang]} alt={`${t(`languages.${lang}`)}-${t('languages.flag')}`} />
-            {t(`languages.${lang}`).toUpperCase()}
+          <Select.Option value={lang} disabled={lang === currentLanguage} key={`language-${lang}`}>
+            <div className="LanguajeOption">
+              <img src={flags[lang]} alt={`${t(`languages.${lang}`)}-${t('languages.flag')}`} />
+              {customUpperCase(t(`languages.${lang}`))}
+            </div>
           </Select.Option>
         ))}
       </Select>
-    </Col>
+    </div>
   );
 };
 

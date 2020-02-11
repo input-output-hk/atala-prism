@@ -13,6 +13,10 @@
     background: $grey;
   }
 
+  &.created {
+    background: $grey;
+  }
+
   &.connectionMissing {
     background: $dark-grey;
   }
@@ -22,6 +26,10 @@
   }
 
   &.connectionAccepted {
+    background: $success-color;
+  }
+
+  &.connected {
     background: $success-color;
   }
 }

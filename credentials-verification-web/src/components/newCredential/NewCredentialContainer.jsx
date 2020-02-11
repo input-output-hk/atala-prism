@@ -12,17 +12,17 @@ import NewCredentialCreation from './Organism/Creation/NewCredentialCreation';
 import { fromUnixToProtoDateFormatter } from '../../helpers/formatters';
 import { withRedirector } from '../providers/withRedirector';
 import { EXAMPLE_UNIVERSITY_NANE } from '../../helpers/constants';
+import { imageToFileReader } from '../../helpers/fileHelpers';
 
 const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) => {
   const { t } = useTranslation();
 
-  const { savePictureInS3, saveDraft, createCredential } = api;
+  const { saveDraft, createCredential } = api;
 
   const [currentStep, setCurrentStep] = useState(0);
   const [degreeName, setDegreeName] = useState();
   const [startDate, setStartDate] = useState();
   const [graduationDate, setGraduationDate] = useState();
-  const [logoUniversity, setLogoUniversity] = useState();
   const [group, setGroup] = useState();
   const [open, setOpen] = useState(false);
 
@@ -31,7 +31,7 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
   const saveCredential = () => {
     createCredential({
       title: degreeName,
-      groupName: group.groupName,
+      groupName: group.name,
       enrollmentDate: fromUnixToProtoDateFormatter(startDate),
       graduationDate: fromUnixToProtoDateFormatter(graduationDate)
     })
@@ -59,22 +59,16 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
     formRef.current
       .getForm()
       .validateFieldsAndScroll(
-        ['degreeName', 'startDate', 'graduationDate', 'logoUniversity'],
+        ['degreeName', 'startDate', 'graduationDate'],
         (
           errors,
-          {
-            degreeName: newDegreeName,
-            startDate: newStartDate,
-            graduationDate: newGraduationDate,
-            logoUniversity: newLogoUniversity
-          }
+          { degreeName: newDegreeName, startDate: newStartDate, graduationDate: newGraduationDate }
         ) => {
           if (errors) return;
 
           setDegreeName(newDegreeName);
           setStartDate(newStartDate);
           setGraduationDate(newGraduationDate);
-          setLogoUniversity(newLogoUniversity[0]);
           setCurrentStep(currentStep + 1);
         }
       );
@@ -87,22 +81,19 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
       return {
         degreeName: form.getFieldValue('degreeName'),
         startDate: form.getFieldValue('startDate'),
-        graduationDate: form.getFieldValue('graduationDate'),
-        logoUniversity: form.getFieldValue('logoUniversity')
+        graduationDate: form.getFieldValue('graduationDate')
       };
     }
 
     return {
       degreeName,
       startDate,
-      graduationDate,
-      logoUniversity
+      graduationDate
     };
   };
 
   const credentialValues = {
     degreeName,
-    logoUniversity,
     startDate,
     graduationDate
   };
@@ -114,7 +105,7 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
           <NewCredentialCreation
             updateExampleCredential={updateExampleCredential}
             credentialValues={credentialValues}
-            savePicture={savePictureInS3}
+            savePicture={imageToFileReader}
             formRef={formRef}
             credentialData={{
               title: degreeName,
@@ -125,7 +116,11 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
           />
         );
       case 1: {
-        return <GroupsContainer api={api} selectingProps={{ setGroup, group }} />;
+        return (
+          <div className="GroupsNewCredential">
+            <GroupsContainer api={api} selectingProps={{ setGroup, group }} />
+          </div>
+        );
       }
       default:
         return <NewCredentialValidation credentialValues={credentialValues} group={group} />;
@@ -171,7 +166,6 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
 
 NewCredentialContainer.propTypes = {
   api: PropTypes.shape({
-    savePictureInS3: PropTypes.func,
     saveDraft: PropTypes.func,
     getGroups: PropTypes.func,
     createCredential: PropTypes.func

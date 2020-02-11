@@ -27,11 +27,7 @@ const getInput = (key, initialValue, t, onChange) => ({
 
 const TemplateForm = React.forwardRef(
   (
-    {
-      savePicture,
-      credentialValues: { degreeName, logoUniversity, startDate, graduationDate },
-      updateExampleCredential
-    },
+    { credentialValues: { degreeName, startDate, graduationDate }, updateExampleCredential },
     ref
   ) => {
     const { t } = useTranslation();
@@ -92,30 +88,6 @@ const TemplateForm = React.forwardRef(
             locale={locale}
           />
         )
-      },
-      {
-        fieldDecoratorData: {
-          rules: [
-            {
-              validator: (_, value, cb) => minOneElement(value, cb),
-              message: t('errors.form.emptyField')
-            }
-          ],
-          initialValue: logoUniversity ? [logoUniversity] : []
-        },
-        label: t('newCredential.form.logoUniversity'),
-        key: 'logoUniversity',
-        className: '',
-        input: (
-          <FileUploader
-            initialValue={logoUniversity}
-            hint="newCredential.form.logoHint"
-            field="logoUniversity"
-            savePicture={savePicture}
-            uploadText="newCredential.form.uploadButton"
-            formRef={ref}
-          />
-        )
       }
     ];
 
@@ -124,7 +96,6 @@ const TemplateForm = React.forwardRef(
 );
 
 TemplateForm.propTypes = {
-  savePicture: PropTypes.func.isRequired,
   credentialValues: PropTypes.shape({
     startDate: PropTypes.instanceOf(moment),
     graduationDate: PropTypes.instanceOf(moment),

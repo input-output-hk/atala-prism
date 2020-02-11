@@ -2,6 +2,7 @@ import moment from 'moment';
 import { ISSUER, VERIFIER } from './constants';
 
 export const futureDate = (value, cb, compareTo) => {
+  if (!value) return cb('error');
   const isAfter = moment(value).isSameOrAfter(compareTo);
 
   if (isAfter) {

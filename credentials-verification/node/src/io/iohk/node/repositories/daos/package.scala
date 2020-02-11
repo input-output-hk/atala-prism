@@ -1,9 +1,10 @@
 package io.iohk.node.repositories
 
 import doobie.postgres.implicits._
-import doobie.util.{Get, Put, Read, Write}
 import doobie.util.invariant.InvalidEnum
+import doobie.util.{Get, Put, Read, Write}
 import io.iohk.cvp.crypto.ECKeys
+import io.iohk.node.bitcoin.models.{Blockhash, TransactionId}
 import io.iohk.node.models.{CredentialId, DIDPublicKey, DIDSuffix, KeyUsage}
 
 package object daos {
@@ -35,4 +36,7 @@ package object daos {
         DIDPublicKey(didSuffix, keyId, keyUsage, javaPublicKey)
     }
   }
+
+  implicit val blockhashPut: Put[Blockhash] = Put[List[Byte]].contramap(_.toBytesBE)
+  implicit val transactionIdPut: Put[TransactionId] = Put[List[Byte]].contramap(_.toBytesBE)
 }

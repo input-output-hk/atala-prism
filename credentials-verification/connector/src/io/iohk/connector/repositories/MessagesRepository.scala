@@ -25,7 +25,10 @@ class MessagesRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) exte
     val messageId = MessageId.random()
 
     val query = for {
-      recipient <- ConnectionsDAO.getOtherSide(connection, sender)
+      recipientOption <- ConnectionsDAO.getOtherSide(connection, sender)
+      recipient = recipientOption.getOrElse(
+        throw new RuntimeException(
+          s"Failed to send message, the connection $connection with sender $sender doesn't exist"))
       _ <- MessagesDAO.insert(messageId, connection, sender, recipient, content)
     } yield messageId
 

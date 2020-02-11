@@ -14,6 +14,7 @@ import PasswordSetup from './Organisms/PasswordSetup/PasswordSetup';
 import OrganizationInfo from './Organisms/OrganizationInfo/OrganizationInfo';
 import Congratulations from './Atoms/Congratulations/Congratulations';
 import Logger from '../../helpers/Logger';
+import { imageToFileReader } from '../../helpers/fileHelpers';
 
 const TERMS_AND_CONDITIONS_STEP = 0;
 const PRIVACY_POLICY_STEP = 1;
@@ -97,10 +98,7 @@ const RegistrationContainer = ({
   const nextIfAcceptedSeedPhrase = () =>
     accepted ? nextStep() : message.error(t('registration.acceptSeedPhraseToContinue'));
 
-  const nextIfMnemonicIsValid = () =>
-    validMnemonic
-      ? nextStep()
-      : message.error(t('registration.mnemonic.validation.validationRequired'));
+  const isDisabled = () => currentStep === MNEMONIC_VALIDATION_STEP && !validMnemonic;
 
   const validatePassword = () =>
     passwordRef.current.getForm().validateFieldsAndScroll((errors, { passwordConfirmation }) => {
@@ -116,6 +114,7 @@ const RegistrationContainer = ({
       .validateFieldsAndScroll((errors, { organizationName, organizationRole, logo }) => {
         if (errors) return;
         setOrganizationInfo({ organizationName, organizationRole, logo });
+
         createWallet(password, organizationName, organizationRole, logo[0])
           .then(did => {
             registerUser(organizationName, did, logo);
@@ -140,21 +139,13 @@ const RegistrationContainer = ({
       case SEED_PHRASE_STEP:
         return nextIfAcceptedSeedPhrase;
       case MNEMONIC_VALIDATION_STEP:
-        return nextIfMnemonicIsValid;
+        return nextStep;
       case ORGANIZATION_INFO_STEP:
         return validateOrganizatonInfo;
       default:
         return nextStep;
     }
   };
-
-  const toFileReader = file =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsArrayBuffer(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = error => reject(error);
-    });
 
   const getContent = () => {
     switch (currentStep) {
@@ -211,7 +202,7 @@ const RegistrationContainer = ({
           <OrganizationInfo
             organizationRef={organizationRef}
             organizationInfo={organizationInfo}
-            savePicture={toFileReader}
+            savePicture={imageToFileReader}
           />
         );
       default:
@@ -225,13 +216,18 @@ const RegistrationContainer = ({
     return stepsWithAgreement.includes(currentStep);
   };
 
+  const footerProps = {
+    next: nextFunction(),
+    previous: currentStep ? () => setCurrentStep(currentStep - 1) : null,
+    requiresAgreement: requiresAgreement(),
+    disabled: isDisabled()
+  };
+
   return (
     <Registration
       renderContent={() => getContent(currentStep)}
-      next={nextFunction()}
-      previous={currentStep ? () => setCurrentStep(currentStep - 1) : null}
+      footerProps={footerProps}
       renderFooter={currentStep < STEP_QUANTITY}
-      requiresAgreement={requiresAgreement()}
     />
   );
 };

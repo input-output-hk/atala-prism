@@ -1,5 +1,7 @@
 package io.iohk.connector.repositories
 
+import java.util.Base64
+
 import cats.data.EitherT
 import cats.effect.IO
 import doobie.implicits._
@@ -8,9 +10,8 @@ import io.iohk.connector.errors._
 import io.iohk.connector.model._
 import io.iohk.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO, ParticipantsDAO}
 import io.iohk.cvp.cmanager.models
-import io.iohk.cvp.cmanager.models.Student
 import io.iohk.cvp.cmanager.repositories.daos.StudentsDAO
-import io.iohk.cvp.connector.protos.ParticipantInfo.Participant.Issuer
+import io.iohk.cvp.crypto.ECKeys.EncodedPublicKey
 import io.iohk.cvp.cstore.repositories.daos.IndividualsDAO
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.utils.FutureEither
@@ -49,9 +50,24 @@ class ConnectionsRepository(
       .toFutureEither
   }
 
+  def getParticipantId(encodedPublicKey: EncodedPublicKey): FutureEither[ConnectorError, ParticipantId] = {
+    implicit val loggingContext = LoggingContext("encodedPublicKey" -> encodedPublicKey)
+
+    ParticipantsDAO
+      .findByPublicKey(encodedPublicKey)
+      .map(_.id)
+      .toRight(
+        UnknownValueError("encodedPublicKey", Base64.getEncoder.encodeToString(encodedPublicKey.bytes.toArray)).logWarn
+      )
+      .transact(xa)
+      .value
+      .unsafeToFuture()
+      .toFutureEither
+  }
+
   def addConnectionFromToken(
       token: TokenString,
-      publicKey: ECPublicKey
+      publicKey: EncodedPublicKey
   ): FutureEither[ConnectorError, (ParticipantId, ConnectionInfo)] = {
 
     implicit val loggingContext = LoggingContext("token" -> token)
@@ -62,12 +78,9 @@ class ConnectionsRepository(
         .toRight(UnknownValueError("token", token.token).logWarn)
 
       // Create a holder, which has no name nor did, instead it has a public key
-      acceptorInfo = ParticipantInfo(ParticipantId.random(), ParticipantType.Holder, "", None, None)
+      acceptorInfo = ParticipantInfo(ParticipantId.random(), ParticipantType.Holder, Some(publicKey), "", None, None)
       _ <- EitherT.right[ConnectorError] {
         ParticipantsDAO.insert(acceptorInfo)
-      }
-      _ <- EitherT.right[ConnectorError] {
-        ParticipantsDAO.insertPublicKey(acceptorInfo.id, publicKey)
       }
 
       ciia <- EitherT.right[ConnectorError](

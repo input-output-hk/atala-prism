@@ -6,9 +6,12 @@ import io.iohk.cvp.crypto.ECKeys
 import io.iohk.cvp.wallet.models.Wallet
 import org.slf4j.LoggerFactory
 
+import scala.util.Random
+
 object WalletHelper {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
+  private val ID_ENV_VARIABLE = "ATALA_WALLET_ID"
 
   def getOrCreate(): Wallet = {
     val walletFile = os.pwd / ".cvpwallet" / "wallet.dat"
@@ -64,6 +67,13 @@ object WalletHelper {
     wallet
   }
 
+  def generateDid(): String = {
+    val id = Option(System.getenv(ID_ENV_VARIABLE)).getOrElse {
+      "test-" + Random.alphanumeric.take(8).mkString("")
+    }
+    "did:iohk:" + id
+  }
+
   private def createNewWallet(file: os.Path): protos.WalletData = {
     logger.info("Generating keys")
     val pair = ECKeys.generateKeyPair()
@@ -75,7 +85,7 @@ object WalletHelper {
     val wallet = protos
       .WalletData()
       .withKeyPair(Seq(protoKeyPair))
-      .withDid("did:iohk:test")
+      .withDid(generateDid())
 
     logger.info("Storing wallet")
     os.write(file, wallet.toByteArray, createFolders = true)

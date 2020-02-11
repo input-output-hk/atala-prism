@@ -4,17 +4,18 @@ import { Col } from 'antd';
 import CellRenderer from '../CellRenderer/CellRenderer';
 import freeUniLgo from '../../../../images/FreeUniLogo.png';
 import './_style.scss';
+import { EXAMPLE_AWARD } from '../../../../helpers/constants';
 
 const CredentialData = ({ icon, title, university, award, student, startDate, graduationDate }) => (
   <Col lg={12} xs={24} className="CredentialTemplate">
     <div className="CredentialHeader">
-      <CellRenderer componentName="newCredential" title="degreeName" value={title} />
+      <CellRenderer componentName="newCredential" title="universityName" value={university} />
       <img className="IconUniversity" src={icon || freeUniLgo} alt="Free University Tbilisi" />
     </div>
     <div className="CredentialContent">
-      <CellRenderer componentName="newCredential" title="universityName" value={university} />
+      <CellRenderer componentName="newCredential" title="degreeName" value={title} />
       <hr />
-      <CellRenderer componentName="newCredential" title="award" value={award} />
+      <CellRenderer componentName="newCredential" title="result" value={EXAMPLE_AWARD} />
       <hr />
       <CellRenderer componentName="newCredential" title="fullName" value={student} />
       <hr />

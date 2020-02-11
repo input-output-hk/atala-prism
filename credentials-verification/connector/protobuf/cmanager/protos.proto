@@ -18,6 +18,11 @@ service StudentsService {
     rpc GenerateConnectionToken (GenerateConnectionTokenRequest) returns (GenerateConnectionTokenResponse) {}
 }
 
+service GroupsService {
+    rpc CreateGroup (CreateGroupRequest) returns (CreateGroupResponse) {}
+    rpc GetGroups (GetGroupsRequest) returns (GetGroupsResponse) {}
+}
+
 message RegisterRequest {
     string name = 1;
     string did = 2;
@@ -54,6 +59,7 @@ message CreateStudentRequest {
     string fullName = 2;
     string email = 3;
     Date admissionDate = 4;
+    string groupName = 5;
 }
 message CreateStudentResponse {
     Student student = 1;
@@ -62,6 +68,7 @@ message CreateStudentResponse {
 message GetStudentsRequest {
     int32 limit = 1; // the max amount of students to return, must be > 0
     string lastSeenStudentId = 2; // the last seen student (if any), the returned students start after this one
+    string groupName = 3; // if provided, get only the students that belong to this group
 }
 message GetStudentsResponse {
     repeated Student students = 1;
@@ -108,7 +115,9 @@ message Credential {
 
 message Student {
     string id = 1;
-    string issuerId = 2;
+    // When introducing the groupName, the issuerId field was removed
+    reserved 2;
+    reserved "issuerId";
     string universityAssignedId = 3;
     string fullName = 4;
     string email = 5;
@@ -116,6 +125,7 @@ message Student {
     StudentConnectionStatus connectionStatus = 7;
     string connectionToken = 8; // present when the status is ConnectionMissing
     string connectionId = 9; // present when the status is ConnectionAccepted
+    string groupName = 10;
 }
 
 enum StudentConnectionStatus {
@@ -123,4 +133,18 @@ enum StudentConnectionStatus {
     ConnectionMissing = 1;
     ConnectionAccepted = 2;
     ConnectionRevoked = 3;
+}
+
+message CreateGroupRequest {
+    string name = 1;
+}
+message CreateGroupResponse {}
+
+message GetGroupsRequest {}
+message GetGroupsResponse {
+    repeated Group groups = 1;
+}
+
+message Group {
+    string name = 1;
 }

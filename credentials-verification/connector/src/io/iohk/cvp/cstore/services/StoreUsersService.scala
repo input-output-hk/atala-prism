@@ -27,7 +27,7 @@ class StoreUsersService(xa: Transactor[IO])(implicit ec: ExecutionContext) {
     val query = for {
       _ <- StoreUsersDAO.insert(StoreUser(id))
       _ <- ParticipantsDAO.insert(
-        ParticipantInfo(id, ParticipantType.Verifier, data.name, None, data.logo.map(ParticipantLogo))
+        ParticipantInfo(id, ParticipantType.Verifier, None, data.name, None, data.logo.map(ParticipantLogo))
       )
     } yield ()
 

@@ -2,16 +2,17 @@
 $background: #f1f3f8;
 $surface: #fff;
 
-$primary-color: #ff2d3b;
-$primary-color-darker: #bf222c;
-$secondary-color: #202020;
+$primary-color: #F83633;
+$primary-color-darker: #BA2926;
+$secondary-color: #011727;
 $secondary-color-disabled: #0000004d;
 
 $success-color: #1ed69e;
 
 $black: #303034;
 $white: #fff;
-$dark-grey: #728099;
+// $dark-grey: #728099;
+$dark-grey: #99A2A9; 
 $grey: #b3bec5;
 $medium-grey: #c5d0de;
 $light-grey: #F8F9F9;
@@ -29,6 +30,7 @@ $explain: 10px;
 
 // Shadow
 $shadow: 0 1px 6px rgba(147, 141, 158, 0.16), 0 2px 6px rgba(52, 53, 62, 0.16);
+$red-shadow: 0 1px 6px rgba(255, 45, 60, 0.16), 0 2px 6px rgba(255, 45, 60, 0.16);
 
 @font-face {
   font-family: 'Circular-bold';

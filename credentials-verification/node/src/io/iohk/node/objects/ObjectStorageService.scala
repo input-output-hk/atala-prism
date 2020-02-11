@@ -1,8 +1,8 @@
 package io.iohk.node.objects
 
-import scala.util.control.NonFatal
-import io.iohk.node.services.models._
 import io.iohk.node.services.BinaryOps
+
+import scala.util.control.NonFatal
 
 trait ObjectStorageService {
 
@@ -23,8 +23,6 @@ trait ObjectStorageService {
     * @return the object data if it was found
     */
   def get(id: ObjectId): Option[Array[Byte]]
-
-  def putAtalaObject(atalaObjectId: AtalaObjectId, data: Array[Byte]): Unit
 }
 
 object ObjectStorageService {
@@ -34,6 +32,17 @@ object ObjectStorageService {
   def apply(): ObjectStorageService = {
     val binaryOps = BinaryOps()
     new FileBased(os.pwd / ".node", binaryOps)
+  }
+
+  class InMemory extends ObjectStorageService {
+    private var dataMap: Map[ObjectId, Array[Byte]] = Map.empty
+    override def put(id: ObjectId, data: Array[Byte]): Unit = {
+      dataMap += id -> data
+    }
+
+    override def get(id: ObjectId): Option[Array[Byte]] = {
+      dataMap.get(id)
+    }
   }
 
   class FileBased(baseDirectory: os.Path, binaryOps: BinaryOps) extends ObjectStorageService {
@@ -50,11 +59,6 @@ object ObjectStorageService {
       } catch {
         case NonFatal(_) => None
       }
-    }
-
-    override def putAtalaObject(atalaObjectId: AtalaObjectId, data: Array[Byte]): Unit = {
-      val objectId = binaryOps.convertBytesToHex(atalaObjectId)
-      put(objectId, data)
     }
   }
 }

@@ -56,21 +56,22 @@ class Degree: Mappable {
         credential.intCredential = intCredential
         credential.type = 1 // Degree
         credential.isNew = isNew
-        credential.fullName = intCredential.degreeAwarded
+        credential.fullName = intCredential.issuerType.academicAuthority
         credential.name = intCredential.issuerType.academicAuthority
         credential.startDate = intCredential.hasAdmissionDate ? ApiParseUtils.parseDate(intCredential.admissionDate) : ""
         credential.endDate = intCredential.hasGraduationDate ? ApiParseUtils.parseDate(intCredential.graduationDate) : ""
         credential.connectionId = message.connectionID
         credential.messageId = message.id
         credential.properties = [:]
-        if intCredential.hasSubjectData {
-            credential.properties?["home_detail_full_name".localize()] = ApiParseUtils.parseFullName(intCredential.subjectData)
-        }
         if intCredential.additionalSpeciality != "" {
             credential.properties?["home_detail_award".localize()] = intCredential.additionalSpeciality
         }
         if intCredential.hasIssuerType {
-            credential.properties?["home_detail_university_name".localize()] = intCredential.issuerType.academicAuthority
+            credential.properties?["home_detail_degree_name".localize()] = intCredential.degreeAwarded
+        }
+        credential.properties?["home_detail_result".localize()] = "First-Class Honours"
+        if intCredential.hasSubjectData {
+            credential.properties?["home_detail_full_name".localize()] = ApiParseUtils.parseFullName(intCredential.subjectData)
         }
 
         return credential

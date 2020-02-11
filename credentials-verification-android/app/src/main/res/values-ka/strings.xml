@@ -143,4 +143,8 @@
   <string name="hello_username">Hello %1$s!</string>
   <string name="no_credentials_yet">You don\'t have credentials yet</string>
   <string name="accept_conneciton">Accept connection</string>
+  <string name="education">Education</string>
+  <string name="ok">OK</string>
+  <string name="error">ERROR</string>
+  <string name="server_error_message">Please try again. If the error persists contact support.</string>
 </resources>

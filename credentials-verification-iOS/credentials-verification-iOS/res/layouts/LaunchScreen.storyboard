@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15400" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="01J-lp-oVM">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15505" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="01J-lp-oVM">
     <device id="retina4_7" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15404"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15510"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -18,27 +18,21 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="img_launch_bg_butterfly" translatesAutoresizingMaskIntoConstraints="NO" id="ufZ-3L-0Gd">
-                                <rect key="frame" x="0.0" y="237" width="329.5" height="394"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" secondItem="ufZ-3L-0Gd" secondAttribute="height" multiplier="342:409" id="7IY-gq-ueE"/>
-                                </constraints>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="img_launch_bg" translatesAutoresizingMaskIntoConstraints="NO" id="ufZ-3L-0Gd">
+                                <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                             </imageView>
                             <imageView userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="img_white_logo" translatesAutoresizingMaskIntoConstraints="NO" id="4Qe-GW-3fb">
-                                <rect key="frame" x="95.5" y="144" width="184" height="122"/>
-                                <constraints>
-                                    <constraint firstAttribute="width" constant="184" id="oiA-dC-BsD"/>
-                                    <constraint firstAttribute="height" constant="122" id="udd-QP-PRz"/>
-                                </constraints>
+                                <rect key="frame" x="112.5" y="258.5" width="150" height="150"/>
                             </imageView>
                         </subviews>
                         <color key="backgroundColor" red="0.14901960784313725" green="0.13725490196078433" blue="0.14117647058823529" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="ufZ-3L-0Gd" firstAttribute="leading" secondItem="Ze5-6b-2t3" secondAttribute="leading" id="0fO-YE-cti"/>
                             <constraint firstItem="4Qe-GW-3fb" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="P8r-Mn-n3y"/>
-                            <constraint firstItem="ufZ-3L-0Gd" firstAttribute="trailing" secondItem="4Qe-GW-3fb" secondAttribute="trailing" constant="50" id="d9R-gg-9cN"/>
-                            <constraint firstAttribute="bottom" secondItem="ufZ-3L-0Gd" secondAttribute="bottom" constant="36" id="fdM-Zf-znm"/>
-                            <constraint firstItem="4Qe-GW-3fb" firstAttribute="top" secondItem="Llm-lL-Icb" secondAttribute="bottom" constant="144" id="hxp-qW-iDA"/>
+                            <constraint firstItem="4Qe-GW-3fb" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="RTq-MC-Egq"/>
+                            <constraint firstItem="ufZ-3L-0Gd" firstAttribute="top" secondItem="Ze5-6b-2t3" secondAttribute="top" id="WnM-L2-1vh"/>
+                            <constraint firstItem="ufZ-3L-0Gd" firstAttribute="trailing" secondItem="Ze5-6b-2t3" secondAttribute="trailing" id="d9R-gg-9cN"/>
+                            <constraint firstAttribute="bottom" secondItem="ufZ-3L-0Gd" secondAttribute="bottom" id="fdM-Zf-znm"/>
                         </constraints>
                     </view>
                 </viewController>
@@ -48,7 +42,7 @@
         </scene>
     </scenes>
     <resources>
-        <image name="img_launch_bg_butterfly" width="343" height="410"/>
-        <image name="img_white_logo" width="184" height="122"/>
+        <image name="img_launch_bg" width="375" height="812"/>
+        <image name="img_white_logo" width="150" height="150"/>
     </resources>
 </document>

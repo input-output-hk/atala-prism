@@ -16,7 +16,8 @@ const NewGroupButton = () => {
     <CustomButton
       buttonProps={{
         onClick: () => message.info(t('groups.onCreateNewGroupClick')),
-        className: 'theme-secondary'
+        className: 'theme-secondary',
+        disabled: true
       }}
       buttonText={t('groups.createNewGroup')}
       icon={<Icon type="plus" />}
@@ -42,7 +43,7 @@ const Groups = ({ groups, handleGroupDeletion, setGroup, group, updateGroups, ha
     toDelete: { name: groupToDelete.groupName, id: groupToDelete.id },
     open,
     closeModal,
-    handleDeletion: handleGroupDeletion,
+    handleGroupDeletion,
     prefix: 'groups'
   };
 
@@ -85,9 +86,7 @@ Groups.defaultProps = {
 };
 
 Groups.propTypes = {
-  groups: PropTypes.arrayOf(groupShape),
-  setDate: PropTypes.func.isRequired,
-  setName: PropTypes.func.isRequired,
+  groups: PropTypes.arrayOf(PropTypes.shape(groupShape)),
   handleGroupDeletion: PropTypes.func.isRequired,
   setGroup: PropTypes.func,
   group: PropTypes.string,

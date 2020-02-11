@@ -4,9 +4,10 @@ import { Button, message } from 'antd';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import CellRenderer from '../../../common/Atoms/CellRenderer/CellRenderer';
-import { shortBackendDateFormatter } from '../../../../helpers/formatters';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import InfiniteScrollTable from '../../../common/Organisms/Tables/InfiniteScrollTable';
+
+import './_style.scss';
 
 const GetActionsButtons = ({ id, setGroupToDelete, fullInfo }) => {
   const { t } = useTranslation();
@@ -25,7 +26,7 @@ const GetActionsButtons = ({ id, setGroupToDelete, fullInfo }) => {
           />
           <CustomButton
             buttonProps={{
-              onClick: () => message.info(`The id to copy is ${id}`, 1),
+              onClick: () => message.info(`The id to copy is ${id}`),
               className: 'theme-link',
               disabled: true
             }}
@@ -64,57 +65,40 @@ const getColumns = ({ setGroupToDelete, setGroup }) => {
   const componentName = 'groups';
   const fullInfo = !setGroup;
 
-  const actionColumn = [
-    {
-      key: 'actions',
-      render: ({ groupId, groupName }) => (
-        <GetActionsButtons
-          id={groupId}
-          setGroupToDelete={() => setGroupToDelete({ id: groupId, groupName })}
-          fullInfo={fullInfo}
-        />
-      )
-    }
-  ];
+  const actionColumn = {
+    key: 'actions',
+    width: 300,
+    render: ({ key, name }) => (
+      <GetActionsButtons
+        id={key}
+        setGroupToDelete={() => setGroupToDelete({ id: key, name })}
+        fullInfo={fullInfo}
+      />
+    )
+  };
 
-  const commonColumns = [
-    {
-      key: 'icon',
-      width: 45,
-      render: ({ icon, groupName }) => (
-        <img style={{ height: '40px', width: '40px' }} src={icon} alt={`${groupName} icon`} />
-      )
-    },
-    {
-      key: 'groupName',
-      render: ({ groupName }) => (
-        <CellRenderer
-          title="groupName"
-          componentName={componentName}
-          value=""
-          firstValue={groupName}
-        />
-      )
-    },
-    {
-      key: 'lastUpdate',
-      width: 150,
-      render: ({ lastUpdate }) => (
-        <CellRenderer
-          title="lastUpdate"
-          componentName={componentName}
-          value={shortBackendDateFormatter(lastUpdate)}
-        />
-      )
-    }
-  ];
+  const nameColumn = {
+    key: 'groupName',
+    width: 300,
+    render: ({ name }) => (
+      <CellRenderer title="groupName" componentName={componentName} value="" firstValue={name} />
+    )
+  };
 
-  return commonColumns.concat(actionColumn);
+  return [nameColumn, actionColumn];
+};
+
+const getSelectedIndexArray = ({ name }, groups) => {
+  if (!name) return [];
+
+  const selectedIndex = groups.map(({ name: groupName }) => groupName).indexOf(name);
+
+  return [selectedIndex];
 };
 
 const GroupsTable = ({ setGroupToDelete, groups, selectedGroup, setGroup, onPageChange }) => {
   const [loading, setLoading] = useState(false);
-  const selectedRowKeys = selectedGroup.groupId ? [0] : [];
+  const selectedRowKeys = getSelectedIndexArray(selectedGroup, groups);
   // const selectedRowKeys = selectedRows === -1 ? [] : [selectedRows];
 
   const getMoreData = () => {
@@ -134,10 +118,15 @@ const GroupsTable = ({ setGroupToDelete, groups, selectedGroup, setGroup, onPage
         },
     loading,
     hasMore: false,
-    getMoreData
+    getMoreData,
+    rowKey: 'name'
   };
 
-  return <InfiniteScrollTable {...tableProps} />;
+  return (
+    <div className="GroupTableContainer">
+      <InfiniteScrollTable {...tableProps} />
+    </div>
+  );
 };
 
 GroupsTable.defaultProps = {
@@ -152,7 +141,7 @@ GroupsTable.propTypes = {
   onPageChange: PropTypes.func.isRequired,
   selectedGroup: PropTypes.string,
   setGroup: PropTypes.func,
-  hasMore: PropTypes.func.isRequired
+  hasMore: PropTypes.bool.isRequired
 };
 
 export default GroupsTable;

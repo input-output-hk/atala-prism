@@ -1,5 +1,4 @@
 import React from 'react';
-import { Col, Row } from 'antd';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import DownloadStep from './Molecules/SpreadSheetStep/DownloadStep';
@@ -25,19 +24,13 @@ const BulkImport = ({
         <h1>{t('bulkImport.title')}</h1>
       </div>
       <div className="BulkImportContent">
-        <Row>
-          <Col span={11}>
-            <DownloadStep currentStep={currentStep} setAsCurrentStep={setCurrentStep} />
-          </Col>
-          <Col span={11}>
-            <UploadStep
-              currentStep={currentStep}
-              uploadBulkExcel={uploadBulkExcel}
-              setAsCurrentStep={setCurrentStep}
-              uploadRef={uploadRef}
-            />
-          </Col>
-        </Row>
+        <DownloadStep currentStep={currentStep} setAsCurrentStep={setCurrentStep} />
+        <UploadStep
+          currentStep={currentStep}
+          uploadBulkExcel={uploadBulkExcel}
+          setAsCurrentStep={setCurrentStep}
+          uploadRef={uploadRef}
+        />
       </div>
       <div className="FooterButton">
         {showNext && (

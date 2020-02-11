@@ -11,13 +11,13 @@ const UserAvatar = ({ lockWallet }) => {
   const organisationName = localStorage.getItem(ORGANISATION_NAME);
 
   return (
-    <Col xs={18} sm={18} md={15} lg={15} className="UserAvatar">
-      <Col xs={22} sm={22} md={22} lg={22} className="UserData">
+    <Col lg={6} className="UserAvatar">
+      <div className="UserData">
         <Avatar style={{ color: '#FF2D3B', backgroundColor: '#FFFFFF' }}>
           {getInitials(organisationName)}
         </Avatar>
         <p className="UserLabel">{organisationName}</p>
-      </Col>
+      </div>
       <SettingsMenu lockWallet={lockWallet} />
     </Col>
   );

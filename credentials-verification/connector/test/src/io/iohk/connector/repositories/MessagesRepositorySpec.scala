@@ -4,9 +4,10 @@ import java.time.{Instant, LocalDateTime, ZoneOffset}
 
 import com.softwaremill.diffx.scalatest.DiffMatcher._
 import doobie.implicits._
-import org.scalatest.EitherValues._
 import io.iohk.connector.repositories.daos._
+import io.iohk.connector.model.ConnectionId
 import io.iohk.cvp.models.ParticipantId
+import org.scalatest.EitherValues._
 
 import scala.concurrent.duration.DurationLong
 
@@ -57,6 +58,18 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
       recipient mustBe issuer
       content mustBe message
     }
+
+    "fail when the sender has no other side" in {
+      val issuer = createIssuer()
+      val connection = ConnectionId.random()
+      val message = "hello".getBytes
+
+      val caught = intercept[RuntimeException] {
+        messagesRepository.insertMessage(issuer, connection, message).value.futureValue
+      }
+      caught.getCause must not be null
+      caught.getCause.getMessage mustBe s"Failed to send message, the connection $connection with sender $issuer doesn't exist"
+    }
   }
 
   "getMessagesPaginated" should {
@@ -81,7 +94,7 @@ class MessagesRepositorySpec extends ConnectorRepositorySpecBase {
         .map(_.id)
 
       val firstTenExpected = all.take(10)
-      val nextTenExpected = all.drop(10).take(10)
+      val nextTenExpected = all.slice(10, 20)
 
       val firstTenResult = messagesRepository.getMessagesPaginated(holder, 10, Option.empty).value.futureValue
       firstTenResult.right.value.map(_.id) must matchTo(firstTenExpected)

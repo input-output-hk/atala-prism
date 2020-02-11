@@ -5,15 +5,26 @@ import CellRenderer from '../CellRenderer/CellRenderer';
 import freeUniLogo from '../../../../images/free-uni-logo.png';
 
 import './_style.scss';
+import { EXAMPLE_AWARD } from '../../../../helpers/constants';
 
-const CredentialSummaryData = ({ title, university, student, startDate, graduationDate, lg }) => (
+const CredentialSummaryData = ({
+  title,
+  university,
+  student,
+  startDate,
+  graduationDate,
+  lg,
+  logo
+}) => (
   <Col lg={lg} xs={24} className="CredentialTemplate">
     <div className="CredentialHeader">
-      <CellRenderer componentName="newCredential" title="degreeName" value={title} />
-      <img className="IconUniversity" src={freeUniLogo} alt="Free University Tbilisi" />
+      <CellRenderer componentName="newCredential" title="universityName" value={university} />
+      <img className="IconUniversity" src={logo || freeUniLogo} alt="Free University Tbilisi" />
     </div>
     <div className="CredentialContent">
-      <CellRenderer componentName="newCredential" title="universityName" value={university} />
+      <CellRenderer componentName="newCredential" title="degreeName" value={title} />
+      <hr />
+      <CellRenderer componentName="newCredential" title="result" value={EXAMPLE_AWARD} />
       <hr />
       {student && (
         <CellRenderer componentName="newCredential" title="fullName" value={student.fullname} />
@@ -36,16 +47,24 @@ const CredentialSummaryData = ({ title, university, student, startDate, graduati
 );
 
 CredentialSummaryData.defaultProps = {
-  lg: 12
+  lg: 12,
+  logo: null,
+  title: '',
+  student: {
+    fullname: ''
+  },
+  startDate: '',
+  graduationDate: ''
 };
 
 CredentialSummaryData.propTypes = {
-  title: PropTypes.string.isRequired,
+  title: PropTypes.string,
   university: PropTypes.string.isRequired,
-  student: PropTypes.string.isRequired,
-  startDate: PropTypes.string.isRequired,
-  graduationDate: PropTypes.string.isRequired,
-  lg: PropTypes.number
+  student: PropTypes.shape({ fullname: PropTypes.string }),
+  startDate: PropTypes.string,
+  graduationDate: PropTypes.string,
+  lg: PropTypes.number,
+  logo: PropTypes.string
 };
 
 export default CredentialSummaryData;

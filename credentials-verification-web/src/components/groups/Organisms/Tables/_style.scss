@@ -1,0 +1,10 @@
+@import '../../../../css/general_styling';
+
+.GroupTableContainer {
+  .PaginatedTable {
+    .ant-table-body {
+      overflow-x: auto !important;
+      overflow-y: auto !important;
+    }
+  }
+}

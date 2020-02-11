@@ -47,13 +47,13 @@ object ConnectionsDAO {
       .map(_.isDefined)
   }
 
-  def getOtherSide(connection: ConnectionId, participant: ParticipantId): doobie.ConnectionIO[ParticipantId] = {
+  def getOtherSide(connection: ConnectionId, participant: ParticipantId): doobie.ConnectionIO[Option[ParticipantId]] = {
     sql"""
          |SELECT acceptor AS other_side FROM connections WHERE id = $connection AND initiator = $participant
          | UNION
          | SELECT initiator AS other_side FROM connections WHERE id = $connection AND acceptor = $participant""".stripMargin
       .query[ParticipantId]
-      .unique // TODO: use option, support error
+      .option
   }
 
   def getConnectionsPaginated(
@@ -79,7 +79,7 @@ object ConnectionsDAO {
              | all_connections AS (
              |  SELECT * FROM initiated_connections UNION SELECT * FROM accepted_connections
              | )
-             |SELECT c.id, c.instantiated_at, p.id, p.tpe, p.name, p.did, p.logo, c.token
+             |SELECT c.id, c.instantiated_at, p.id, p.tpe, p.public_key, p.name, p.did, p.logo, c.token
              |FROM CTE CROSS JOIN all_connections c
              |JOIN participants p ON p.id = c.side
              |WHERE c.instantiated_at > last_seen_time OR (instantiated_at = last_seen_time AND c.id > $value)
@@ -94,7 +94,7 @@ object ConnectionsDAO {
              | accepted_connections AS (
              |  SELECT id, initiator as side, instantiated_at, token FROM connections WHERE acceptor = $participant),
              | all_connections AS (SELECT * FROM initiated_connections UNION SELECT * FROM accepted_connections)
-             |SELECT c.id, c.instantiated_at, p.id, p.tpe, p.name, p.did, p.logo, c.token
+             |SELECT c.id, c.instantiated_at, p.id, p.tpe, p.public_key, p.name, p.did, p.logo, c.token
              |FROM all_connections c
              |JOIN participants p ON p.id = c.side
              |ORDER BY c.instantiated_at ASC, c.id

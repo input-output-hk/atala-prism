@@ -78,10 +78,10 @@
 "home_detail_degree_name" = "Degree Name";
 "home_detail_start_date" = "Start Date";
 "home_detail_graduation_date" = "Graduation Date";
-"home_detail_start_date" = "Start Date";
 "home_detail_university_name" = "University Name";
 "home_detail_full_name" = "Full Name";
 "home_detail_award" = "Award";
+"home_detail_result" = "Result";
 "home_detail_share_button" = "Share!";
 "home_detail_share_success" = "Successfully shared!";
 "home_empty_title" = "Connect to a University, Public Registry or potential Employers";

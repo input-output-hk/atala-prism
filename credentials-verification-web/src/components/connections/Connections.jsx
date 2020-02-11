@@ -81,17 +81,7 @@ const Connections = ({
       </Drawer>
       <div className="ContentHeader">
         <h1>{t('connections.title')}</h1>
-        {isIssuer() ? (
-          <AddUserButtons />
-        ) : (
-          <CustomButton
-            buttonProps={{
-              className: 'theme-secondary',
-              onClick: redirectToBulkImport
-            }}
-            buttonText={t('connections.buttons.newConnection')}
-          />
-        )}
+        <AddUserButtons isIssuer={isIssuer} />
       </div>
       <ConnectionsFilter fetchConnections={handleHoldersRequest} />
       {tableProps.subjects.length ? (
@@ -120,13 +110,11 @@ Connections.propTypes = {
   handleHoldersRequest: PropTypes.func.isRequired,
   tableProps: PropTypes.shape({
     subjects: PropTypes.arrayOf(PropTypes.shape(subjectShape)),
-    inviteHolder: PropTypes.func.isRequired,
     getCredentials: PropTypes.func.isRequired,
     hasMore: PropTypes.bool.isRequired
   }).isRequired,
   inviteHolder: PropTypes.func.isRequired,
-  isIssuer: PropTypes.func.isRequired,
-  redirectToBulkImport: PropTypes.func.isRequired
+  isIssuer: PropTypes.func.isRequired
 };
 
 export default withRedirector(Connections);

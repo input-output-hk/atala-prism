@@ -77,7 +77,7 @@ public class FirstConnectionFragment extends CvpFragment<ConnectionsActivityView
       if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
         navigator.showQrScanner(this);
       } else {
-        navigator.showPermissionDeniedPopUp(getChildFragmentManager());
+        navigator.showPopUp(getChildFragmentManager(), null);
       }
     } else {
       super.onRequestPermissionsResult(requestCode, permissions, grantResults);

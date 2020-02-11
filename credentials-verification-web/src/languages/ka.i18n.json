@@ -6,7 +6,13 @@
     "view": "View",
     "back": "Back",
     "next": "Next",
+    "done": "Done",
     "saveForLater": "Save & Continue later"
+  },
+  "commonWords": {
+    "and": "and",
+    "is": "is",
+    "are": "are"
   },
   "emptyComponent": {
     "photoAlt": "No {{model}}",
@@ -17,6 +23,9 @@
   },
   "generic": {
     "step": "Step {{step}}"
+  },
+  "sidebar": {
+    "itemAlt": "{{itemName}} Icon"
   },
   "home": {
     "centralText": {
@@ -31,12 +40,12 @@
     "status": {
       "issuer": {
         "invitationMissing":  "Pending",
-        "connectionMissing": "Connection Missing",
-        "connectionAccepted":  "Connection Accepted",
-        "connectionRevoked": "Connection Revoked"
+        "connectionMissing": "Invited",
+        "connectionAccepted":  "Connected",
+        "connectionRevoked": "Revoked"
       },
       "verifier": {
-        "created": "Created",
+        "created": "Pending",
         "invited": "Invited",
         "connected": "Connected",
         "revoked": "Revoked"
@@ -73,10 +82,10 @@
     }
   },
   "groups": {
-    "title": "Groups",
+    "title": "Graduation Groups",
     "noGroups": {
       "photoAlt": "No groups yet",
-      "title": "You don't have Groups yet",
+      "title": "You don't have Graduation Groups yet",
       "subtitle": "Click on create new group to add your first one!"
     },
     "filters": {
@@ -86,7 +95,7 @@
     "createNewGroup": "Create New Group",
     "onCreateNewGroupClick": "New Groups can not yet be created",
     "modal": {
-      "title": "Delete Grop",
+      "title": "Delete Group",
       "text": "Are you sure you want to delete the {{groupName}} group?"
     },
     "table": {
@@ -135,19 +144,13 @@
       "name": "Search",
       "types": {
         "credentialType": {
-          "CREDENTIAL1": "CREDENTIAL1",
-          "CREDENTIAL2": "CREDENTIAL2",
-          "CREDENTIAL3": "CREDENTIAL3"
+          "Mock Credentials": "Mock Credential"
         },
         "category": {
-          "CATEGORY1": "CATEGORY1",
-          "CATEGORY2": "CATEGORY2",
-          "CATEGORY3": "CATEGORY3"
+          "Mock Categories": "Mock Category"
         },
         "group": {
-          "GROUP1": "GROUP1",
-          "GROUP2": "GROUP2",
-          "GROUP3": "GROUP3"
+          "Mock Groups": "Mock Group"
         }
       },
       "clearFilters": "Clear Filters"
@@ -205,6 +208,7 @@
       "proofRequest": "Proof Request",
       "newCredential": "New Credential",
       "iconAlt": "Avatar",
+      "noCredentials": "The student has not shared credentials yet",
       "credentialsType": {
         "bachelorsDegree":  "Bachelor's Degree"
       }
@@ -216,7 +220,7 @@
     "subtitle": "Let's create a New Credential. Here are some key things to do.",
     "steps": {
       "step1": "Create Credential Template",
-      "step2": "Asign Recipients Group",
+      "step2": "Assign Recipients Group",
       "step3": "Check and Confirm Credential"
     },
     "table": {
@@ -226,7 +230,7 @@
         "groupAssigned": "Group Assigned",
         "degreeName": "Degree Name",
         "universityName": "University Name",
-        "award": "Award",
+        "result": "Result",
         "fullName": "Full Name",
         "startDate": "Start Date",
         "graduationDate": "Graduation Date"
@@ -249,7 +253,7 @@
         "noGroupSelected": "You must select a group before continuing"
       },
       "degreeName": "Degree Name",
-      "award": "Award",
+      "result": "Result",
       "startDate": "Start Date",
       "graduationDate": "Graduation Date",
       "logoUniversity": "University Logo",
@@ -432,8 +436,8 @@
     "type": "Credential"
   },
   "languages": {
-    "en": "UK",
-    "ka": "GE",
+    "en": "English (UK)",
+    "ka": "ქართული",
     "flag": "flag"
   },
   "individualCreation": {
@@ -455,12 +459,16 @@
     "save": "Save",
     "newStudent": "Add a new Student",
     "cantSubmit": "These students can't be saved",
-    "missingInfo": "The full name, email, admission date and university Id of each individual is necesary to save it",
+    "missingInfoPart1": "The ",
+    "missingInfoPart2": " of each individual {{isOrAre}} necesary to save it",
+    "selectGroup": "Select a group for the students:",
     "table": {
+      "requirement": "Please add a {{requirement}}",
+      "dateRequirement": "date earlied than today",
       "fullName": "Full Name",
-      "email": "Email",
+      "email": "Mail account",
       "admissionDate": "Admission Date",
-      "universityAssignedId": "University Id",
+      "studentId": "Student Id",
       "delete": "Delete Individual"
     }
   },
@@ -477,6 +485,15 @@
       "buttonText": "Upload"
     }
   },
+  "theme": {
+    "title": {
+      "issuer": "Issuer Portal",
+      "verifier": "Verifier Portal"
+    }
+  },
+  "support": {
+    "title": "Support"
+  },
   "errors": {
     "routeDidNotMatch": "The route {{pathnameToShow}} did not match any page",
     "errorGetting": "An error occurred while getting {{model}}",
@@ -484,7 +501,7 @@
     "errorInvitingHolder": "An error occurred while inviting the holder",
     "errorDeletingGroup": "An error occurred while deleting the group {{groupName}}",
     "issueCredential": "Failed issuing the Credential",
-    "savePicture": {
+    "saveFile": {
       "invalidType": "The file must be a JPG or a PNG",
       "tooLarge": "The file is too large, the maximum size allowed is {{maxSize}}",
       "uploadError": "An error ocurred while uploading the file"

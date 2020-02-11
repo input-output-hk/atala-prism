@@ -35,3 +35,12 @@
     }
   }
 }
+
+.ConnectionsTable {
+  .PaginatedTable {
+    .ant-table-body {
+      overflow-x: auto !important;
+      overflow-y: auto !important;
+    }
+  }
+}

@@ -4,14 +4,12 @@ import CellRenderer from '../../../common/Atoms/CellRenderer/CellRenderer';
 import StatusBadge from '../../Atoms/StatusBadge/StatusBadge';
 import { shortBackendDateFormatter } from '../../../../helpers/formatters';
 import {
-  CONNECTION_STATUSES,
   CONNECTION_STATUSES_TRANSLATOR,
-  INDIVIDUAL_STATUSES,
   INDIVIDUAL_STATUSES_TRANSLATOR
 } from '../../../../helpers/constants';
 import ActionButtons from '../../Atoms/ActionButtons/ActionButtons';
 import holderDefaultAvatar from '../../../../images/holder-default-avatar.svg';
-import { infiniteTableProps, subjectShape } from '../../../../helpers/propShapes';
+import { subjectShape } from '../../../../helpers/propShapes';
 import InfiniteScrollTable from '../../../common/Organisms/Tables/InfiniteScrollTable';
 
 import './_style.scss';
@@ -36,12 +34,6 @@ const getColumns = ({ inviteHolder, isIssuer, viewConnectionDetail }) => {
   ];
 
   const issuerInfo = [
-    {
-      key: 'identityNumber',
-      render: ({ id }) => (
-        <CellRenderer title="identityNumber" value={id} componentName="connections" />
-      )
-    },
     {
       key: 'admissionDate',
       render: ({ admissiondate }) => (
@@ -72,22 +64,12 @@ const getColumns = ({ inviteHolder, isIssuer, viewConnectionDetail }) => {
     }
   ];
 
-  const showQR = holder => {
-    const invitationMissing = holder.connectionstatus === CONNECTION_STATUSES.invitationMissing;
-    const createdOrRevoked = [INDIVIDUAL_STATUSES.created, INDIVIDUAL_STATUSES.revoked].includes(
-      holder.status
-    );
-
-    return invitationMissing || createdOrRevoked;
-  };
-
   const actionColumns = [
     {
       key: 'actions',
       render: holder => (
         <ActionButtons
           holder={holder}
-          showQRButton={showQR(holder)}
           inviteHolder={inviteHolder}
           isIssuer={isIssuer}
           viewConnectionDetail={viewConnectionDetail}
@@ -120,7 +102,6 @@ const ConnectionsTable = ({
     setLoading(true);
     return handleHoldersRequest().finally(() => setLoading(false));
   };
-
   return (
     <div className="ConnectionsTable">
       <InfiniteScrollTable
@@ -129,6 +110,7 @@ const ConnectionsTable = ({
         loading={loading}
         getMoreData={getMoreData}
         hasMore={hasMore}
+        rowKey="id"
       />
     </div>
   );
@@ -143,7 +125,8 @@ ConnectionsTable.propTypes = {
   inviteHolder: PropTypes.func.isRequired,
   viewConnectionDetail: PropTypes.func.isRequired,
   isIssuer: PropTypes.func.isRequired,
-  ...infiniteTableProps
+  handleHoldersRequest: PropTypes.func.isRequired,
+  hasMore: PropTypes.bool.isRequired
 };
 
 export default ConnectionsTable;

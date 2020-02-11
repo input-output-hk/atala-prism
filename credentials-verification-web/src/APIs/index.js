@@ -1,5 +1,4 @@
 import { mockApi } from './__mocks__';
-import { getGroups } from './__mocks__/groups';
 
 import {
   getConnectionsPaginated,
@@ -22,18 +21,20 @@ import {
   getStudentCredentials,
   createStudent
 } from './credentials/studentsManager';
+import { getGroups } from './credentials/groupsManager';
 import {
   getIndividuals as getIndividualsAsVerifier,
   generateConnectionTokenForIndividual as generateConnectionTokenAsVerifier,
   createIndividual
 } from './cstore/credentialsStore';
+import { isAdminSupported, populateDemoDataset } from './admin/admin';
+
+const { config } = require('./config');
 
 export { mockApi };
 
 const getRole = issuer => {
-  const { REACT_APP_VERIFIER, REACT_APP_ISSUER } = window._env_;
-
-  return issuer ? REACT_APP_ISSUER : REACT_APP_VERIFIER;
+  return issuer ? config.issuerId : config.verifierId;
 };
 
 const getIndividuals = issuer => {
@@ -85,13 +86,14 @@ export const api = {
   getIndividualsAsIssuer,
   createIndividual,
   createStudent,
-  importBulk
+  importBulk,
+  isAdminSupported,
+  populateDemoDataset
 };
 
 export const hardcodedApi = {
   getTermsAndConditions: mockApi.getTermsAndConditions,
   getPrivacyPolicy: mockApi.getPrivacyPolicy,
-  getGroups: mockApi.getGroups,
   getCredentialTypes: mockApi.getCredentialTypes,
   getCategoryTypes: mockApi.getCategoryTypes,
   getCredentialsGroups: mockApi.getCredentialsGroups,

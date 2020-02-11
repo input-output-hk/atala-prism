@@ -35,15 +35,14 @@ object ProtoCodecs {
       .withStudentName(credential.studentName)
       .withTitle(credential.title)
       .withGroupName(credential.groupName)
-      .withEnrollmentDate(graduationDate)
-      .withGraduationDate(enrollmentDate)
+      .withEnrollmentDate(enrollmentDate)
+      .withGraduationDate(graduationDate)
   }
 
   def studentToProto(student: Student): protos.Student = {
     protos
       .Student()
       .withId(student.id.value.toString)
-      .withIssuerId(student.issuer.value.toString)
       .withUniversityAssignedId(student.universityAssignedId)
       .withFullName(student.fullName)
       .withEmail(student.email)
@@ -51,5 +50,6 @@ object ProtoCodecs {
       .withConnectionStatus(studentConnectionStatus2Proto.transform(student.connectionStatus))
       .withConnectionToken(student.connectionToken.map(_.token).getOrElse(""))
       .withConnectionId(student.connectionId.map(_.toString).getOrElse(""))
+      .withGroupName(student.groupName.value)
   }
 }

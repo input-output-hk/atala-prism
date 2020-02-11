@@ -10,8 +10,10 @@ const CreatedCredential = ({ credentialData }) => {
 
   return (
     <div className="CreatedCredential">
-      <h3>{t('credential.createdCredential.title')}</h3>
-      <CredentialData {...credentialData} />
+      <h3 className="line-bottom">{t('credential.createdCredential.title')}</h3>
+      <div className="ContainerCredential">
+        <CredentialData {...credentialData} />
+      </div>
     </div>
   );
 };

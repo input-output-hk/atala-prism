@@ -5,13 +5,17 @@ import { Icon } from 'antd';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import { withRedirector } from '../../../providers/withRedirector';
 
-const AddUsersButtons = ({ redirector: { redirectToBulkImport, redirectToStudentCreation } }) => {
+const AddUsersButtons = ({
+  isIssuer,
+  redirector: { redirectToBulkImport, redirectToStudentCreation, redirectToIndividualCreation }
+}) => {
   const { t } = useTranslation();
 
   return (
     <div className="ControlButtons">
       <CustomButton
         buttonProps={{
+          disabled: true,
           className: 'theme-outline',
           onClick: redirectToBulkImport
         }}
@@ -21,7 +25,7 @@ const AddUsersButtons = ({ redirector: { redirectToBulkImport, redirectToStudent
       <CustomButton
         buttonProps={{
           className: 'theme-secondary',
-          onClick: redirectToStudentCreation
+          onClick: isIssuer() ? redirectToStudentCreation : redirectToIndividualCreation
         }}
         buttonText={t('connections.buttons.manual')}
         icon={<Icon type="plus" />}
@@ -31,9 +35,11 @@ const AddUsersButtons = ({ redirector: { redirectToBulkImport, redirectToStudent
 };
 
 AddUsersButtons.propTypes = {
+  isIssuer: PropTypes.func.isRequired,
   redirector: PropTypes.shape({
     redirectToBulkImport: PropTypes.func,
-    redirectToStudentCreation: PropTypes.func
+    redirectToStudentCreation: PropTypes.func,
+    redirectToIndividualCreation: PropTypes.func
   }).isRequired
 };
 

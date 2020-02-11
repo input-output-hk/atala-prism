@@ -3,10 +3,41 @@
 .HeaderContainer {
   height: 9%;
   padding: 1em;
-  background-color: $primary-color;
+
+  &.IssuerUser {
+    background-color: $secondary-color;
+  }
+
+  &.VerifierUser {
+    background-color: $primary-color-darker;
+  }
+
+  .LogoContainer {
+    display: flex;
+    align-items: center;
+    .HeaderLogo {
+      height: 32px;
+    }
+    .PortalName {
+      border-left: 1px solid $white;
+      margin-left: 1.5em;
+      padding-left: 1.5em;
+      p {
+        @include secondary-text($h3, $white);
+      }
+    }
+  }
+
+  .RightSide {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
 
   .IconUniversity {
-    height: 45%;
-    width: 45%;
+    height: 32px;
+    width: 32px;
+    border-radius: 4px;
+    margin-right: 1em;
   }
 }

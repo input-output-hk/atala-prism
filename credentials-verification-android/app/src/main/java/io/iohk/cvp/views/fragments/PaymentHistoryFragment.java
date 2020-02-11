@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import butterknife.BindView;
 import io.iohk.cvp.R;
+import io.iohk.cvp.grpc.AsyncTaskResult;
 import io.iohk.cvp.io.connector.Payment;
 import io.iohk.cvp.utils.DateUtils;
 import io.iohk.cvp.viewmodel.PaymentViewModel;
@@ -44,7 +45,7 @@ public class PaymentHistoryFragment extends CvpFragment<PaymentViewModel> {
   @Inject
   Navigator navigator;
 
-  LiveData<List<Payment>> liveData;
+  LiveData<AsyncTaskResult<List<Payment>>> liveData;
 
   private PaymentsHistoryRecyclerViewAdapter adapter = new PaymentsHistoryRecyclerViewAdapter(
       new DateUtils(getContext()));
@@ -83,8 +84,14 @@ public class PaymentHistoryFragment extends CvpFragment<PaymentViewModel> {
     liveData = viewModel.getPayments(prefs.getUserIds());
 
     if (!liveData.hasActiveObservers()) {
-      liveData.observe(this, payments ->
-          adapter.addPayments(payments));
+      liveData.observe(this, response -> {
+        if (response.getError() != null) {
+          getNavigator().showPopUp(getFragmentManager(), getResources().getString(
+              R.string.server_error_message));
+          return;
+        }
+        adapter.addPayments(response.getResult());
+      });
     }
     return view;
   }

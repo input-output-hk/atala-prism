@@ -2,13 +2,14 @@ import React from 'react';
 import { withRouter, Link } from 'react-router-dom';
 import { Layout, Menu } from 'antd';
 import PropTypes from 'prop-types';
+import ReactTooltip from 'react-tooltip';
+import { useTranslation } from 'react-i18next';
 import connectionsIcon from '../../../../images/connectionsIcon.svg';
 import iconMenu from '../../../../images/icon-menu.svg';
 import iconGroups from '../../../../images/icon-groups.svg';
 import iconCredentials from '../../../../images/icon-credentials.svg';
 // import iconTransactions from '../../../../images/icon-transactions.svg';
 import certificateIcon from '../../../../images/certificateIcon.svg';
-import paymentIcon from '../../../../images/paymentIcon.svg';
 import credentialSummaryIcon from '../../../../images/credentialSummaryIcon.svg';
 import settingsIcon from '../../../../images/settingsIcon.svg';
 import supportIcon from '../../../../images/supportIcon.svg';
@@ -18,16 +19,18 @@ import { ISSUER, VERIFIER, USER_ROLE } from '../../../../helpers/constants';
 const { Sider } = Layout;
 
 const SideMenu = ({ location: { pathname } }) => {
+  const { t } = useTranslation();
+
   const icons = [
-    { icon: iconMenu, path: '/', restrictedTo: [ISSUER, VERIFIER] },
-    { icon: connectionsIcon, path: '/connections', restrictedTo: [ISSUER, VERIFIER] },
-    { icon: iconGroups, path: '/groups', restrictedTo: [ISSUER] },
-    { icon: iconCredentials, path: '/credentials', restrictedTo: [ISSUER] },
-    { icon: certificateIcon, path: '/newCredential', restrictedTo: [ISSUER] },
-    { icon: credentialSummaryIcon, path: '/credentialSummary', restrictedTo: [ISSUER] },
-    { icon: paymentIcon, path: '/payment', restrictedTo: [ISSUER, VERIFIER] }
-    // The next page is not yet developed
-    // { icon: iconTransactions, path: '/transactions' }
+    { icon: iconMenu, name: '', restrictedTo: [ISSUER, VERIFIER] },
+    { icon: connectionsIcon, name: 'connections', restrictedTo: [ISSUER, VERIFIER] },
+    { icon: iconGroups, name: 'groups', restrictedTo: [ISSUER] },
+    { icon: iconCredentials, name: 'credentials', restrictedTo: [ISSUER] },
+    { icon: certificateIcon, name: 'newCredential', restrictedTo: [ISSUER] },
+    { icon: credentialSummaryIcon, name: 'credentialSummary', restrictedTo: [ISSUER] }
+    // The next pages are not yet developed
+    // { icon: paymentIcon, name: 'payment', restrictedTo: [ISSUER, VERIFIER] }
+    // { icon: iconTransactions, name: 'transactions' }
   ];
 
   const iconsByRole = icons.filter(({ restrictedTo }) =>
@@ -35,9 +38,24 @@ const SideMenu = ({ location: { pathname } }) => {
   );
 
   const bottomIcons = [
-    { icon: settingsIcon, path: '/settings' },
-    { icon: supportIcon, path: '/support' }
+    { icon: settingsIcon, name: 'settings' },
+    { icon: supportIcon, name: 'support' }
   ];
+
+  // Tried to move it to a new component but it
+  // lost the styles therefore making it hideous
+  const getMenuItem = ({ icon, name }) => {
+    const path = `/${name}`;
+    const itemName = t(`${name || 'dashboard'}.title`);
+
+    return (
+      <Menu.Item data-tip={itemName} key={path}>
+        <Link to={path}>
+          <img src={icon} alt={t('dashboard.itemAlt', { itemName })} />
+        </Link>
+      </Menu.Item>
+    );
+  };
 
   return (
     <Sider
@@ -51,23 +69,12 @@ const SideMenu = ({ location: { pathname } }) => {
         console.log(collapsed, type);
       }}
     >
+      <ReactTooltip place="right" />
       <Menu mode="inline" defaultSelectedKeys={[pathname]}>
-        {iconsByRole.map(({ icon, path }) => (
-          <Menu.Item key={path}>
-            <Link to={path}>
-              <img src={icon} alt="Menu Icon" />
-            </Link>
-          </Menu.Item>
-        ))}
+        {iconsByRole.map(item => getMenuItem(item))}
       </Menu>
       <Menu mode="inline" defaultSelectedKeys={[pathname]}>
-        {bottomIcons.map(({ icon, path }) => (
-          <Menu.Item key={path}>
-            <Link to={path}>
-              <img src={icon} alt="Menu Icon" />
-            </Link>
-          </Menu.Item>
-        ))}
+        {bottomIcons.map(item => getMenuItem(item))}
       </Menu>
     </Sider>
   );

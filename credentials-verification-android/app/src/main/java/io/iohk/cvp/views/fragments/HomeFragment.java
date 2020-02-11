@@ -9,13 +9,15 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import butterknife.BindView;
+import com.crashlytics.android.Crashlytics;
 import io.iohk.cvp.R;
+import io.iohk.cvp.grpc.AsyncTaskResult;
 import io.iohk.cvp.io.connector.ReceivedMessage;
 import io.iohk.cvp.io.credential.SentCredential;
 import io.iohk.cvp.viewmodel.CredentialsViewModel;
@@ -50,7 +52,7 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> {
   @Inject
   CredentialDetailFragment credentialFragment;
   private ViewModelProvider.Factory factory;
-  private LiveData<List<ReceivedMessage>> liveData;
+  private MutableLiveData<AsyncTaskResult<List<ReceivedMessage>>> liveData;
   private CredentialsRecyclerViewAdapter newCredentialsAdapter;
   private CredentialsRecyclerViewAdapter credentialsAdapter;
 
@@ -100,39 +102,51 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> {
     newCredentialsAdapter.clearMessages();
     credentialsAdapter.clearMessages();
 
-    liveData = viewModel.getMessages(this.getUserIds());
+    try {
+      liveData = viewModel.getMessages(this.getUserIds());
 
-    if (!liveData.hasActiveObservers()) {
-      liveData.observe(this, messages -> {
-        Preferences prefs = new Preferences(getContext());
+      if (!liveData.hasActiveObservers()) {
+        liveData.observe(this, result -> {
 
-        Set<String> acceptedMessagesIds = prefs
-            .getStoredMessages(Preferences.ACCEPTED_MESSAGES_KEY);
-        Set<String> rejectedMessagesIds = prefs
-            .getStoredMessages(Preferences.REJECTED_MESSAGES_KEY);
+          if (result.getError() != null) {
+            getNavigator().showPopUp(getFragmentManager(), getResources().getString(
+                R.string.server_error_message));
+          } else {
+            Preferences prefs = new Preferences(getContext());
 
-        List<ReceivedMessage> newMessages = messages.stream()
-            .filter(msg -> !acceptedMessagesIds.contains(msg.getId()) && !rejectedMessagesIds
-                .contains(msg.getId())).collect(
-                Collectors.toList());
+            Set<String> acceptedMessagesIds = prefs
+                .getStoredMessages(Preferences.ACCEPTED_MESSAGES_KEY);
+            Set<String> rejectedMessagesIds = prefs
+                .getStoredMessages(Preferences.REJECTED_MESSAGES_KEY);
 
-        newCredentialsAdapter.addMesseges(newMessages);
+            List<ReceivedMessage> messages = result.getResult();
 
-        List<ReceivedMessage> acceptedMessages = messages.stream()
-            .filter(msg -> acceptedMessagesIds.contains(msg.getId())).collect(
-                Collectors.toList());
+            List<ReceivedMessage> newMessages = messages.stream()
+                .filter(msg -> !acceptedMessagesIds.contains(msg.getId()) && !rejectedMessagesIds
+                    .contains(msg.getId())).collect(
+                    Collectors.toList());
 
-        credentialsAdapter.addMesseges(acceptedMessages);
+            newCredentialsAdapter.addMesseges(newMessages);
 
-        if (acceptedMessages.size() > 0) {
-          credentialsRecyclerView.setVisibility(View.VISIBLE);
-          noCredentialsContainer.setVisibility(View.GONE);
-        }
+            List<ReceivedMessage> acceptedMessages = messages.stream()
+                .filter(msg -> acceptedMessagesIds.contains(msg.getId())).collect(
+                    Collectors.toList());
 
-        if (newMessages.size() > 0) {
-          newCredentialsContainer.setVisibility(View.VISIBLE);
-        }
-      });
+            credentialsAdapter.addMesseges(acceptedMessages);
+
+            if (!acceptedMessages.isEmpty()) {
+              credentialsRecyclerView.setVisibility(View.VISIBLE);
+              noCredentialsContainer.setVisibility(View.GONE);
+            }
+
+            if (!newMessages.isEmpty()) {
+              newCredentialsContainer.setVisibility(View.VISIBLE);
+            }
+          }
+        });
+      }
+    } catch (Exception e) {
+      Crashlytics.logException(e);
     }
   }
 

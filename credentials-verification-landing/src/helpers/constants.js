@@ -20,6 +20,9 @@ export const yScroll = 600;
 export const drawerWidth = 450;
 export const AVATAR_WIDTH = 50;
 
+export const RIGHT = 'right';
+export const LEFT = 'left';
+
 export const PENDING_CONNECTION = 'PENDING_CONNECTION';
 export const CONNECTION_STATUSES = {
   invitationMissing: 0,
@@ -81,6 +84,7 @@ export const translateStatus = status => WalletStatuses[status];
 
 // Connection status
 export const CONNECTION_ACCEPTED = 2;
+export const CONNECTION_REVOKED = 3;
 
 export const FEATURE_NAME = 'features';
 export const CREDENTIAL_NAME = 'credentials';

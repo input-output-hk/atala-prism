@@ -3,13 +3,18 @@
 .RegistrationContainer {
   background: $primary-color;
   display: flex;
+  flex-direction: column;
   width: 100%;
   height: 100vh;
-  align-items: center;
-  background-image: url('../../images/bgRegister.png');
+  background-image: url('../../images/atala-white-bg.png');
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
+
+  .LangSelector {
+    align-self: flex-end;
+    margin: 1em;
+  }
 
   .RegistrationContent {
     width: 90%;

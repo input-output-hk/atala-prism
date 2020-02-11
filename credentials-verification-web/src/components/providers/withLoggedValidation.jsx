@@ -50,6 +50,7 @@ const withLoggedValidationComponent = (Component, validRoles) => props => {
 
   // If is either public and no user is logger or meets the requeriments, the
   // wanted component is returned.
+  // if (canRender()) return <Component {...props} />;
   if (canRender()) return <Component {...props} />;
 
   // If the previous validation turns out to fail, because it is not public and

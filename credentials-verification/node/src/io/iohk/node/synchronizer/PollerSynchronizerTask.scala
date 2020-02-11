@@ -29,8 +29,8 @@ class PollerSynchronizerTask(
       latestBlockhash <- bitcoin.getLatestBlockhash
       block <- bitcoin
         .getBlock(latestBlockhash)
-        .failOnLeft(
-          e => new RuntimeException(s"A rollback occurred on bitcoin while getting its latest block, error = $e")
+        .failOnLeft(e =>
+          new RuntimeException(s"A rollback occurred on bitcoin while getting its latest block, error = $e")
         )
 
       _ <- synchronizer.synchronize(block.header.hash)

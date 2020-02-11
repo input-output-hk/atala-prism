@@ -4,12 +4,16 @@
   display: flex;
   flex-flow: column;
   height: 100vh;
-  background: $primary-color;
-  .LangSelector {
-    align-self: flex-start !important;
-    margin-left: 1em;
-    margin-top: 1em;
+  width: 100vw;
+
+  &.IssuerUser {
+    background-color: $secondary-color;
   }
+
+  &.VerifierUser {
+    background-color: $primary-color-darker;
+  }
+
   .MainContent {
     display: flex;
     height: 91%;

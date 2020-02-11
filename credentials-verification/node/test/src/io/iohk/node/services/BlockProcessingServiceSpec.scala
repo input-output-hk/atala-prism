@@ -14,7 +14,7 @@ import io.iohk.nodenew.{atala_bitcoin_new => atala_proto, geud_node_new => geud_
 
 import scala.concurrent.duration._
 
-class BlockProcessingServiceSpec extends PostgresRepositorySpec {
+object BlockProcessingServiceSpec {
   import io.iohk.node.operations.CreateDIDOperationSpec.masterKeys
   val createDidOperation = io.iohk.node.operations.CreateDIDOperationSpec.exampleOperation
 
@@ -36,13 +36,20 @@ class BlockProcessingServiceSpec extends PostgresRepositorySpec {
     operations = Seq(signedCreateDidOperation)
   )
 
+}
+
+class BlockProcessingServiceSpec extends PostgresRepositorySpec {
+
+  import io.iohk.node.operations.CreateDIDOperationSpec.masterKeys
+  import BlockProcessingServiceSpec._
+
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 50.millis)
   lazy val didDataRepository = new DIDDataRepository(database)
   lazy val credentialsRepository = new CredentialsRepository(database)
 
   override val tables = List("credentials", "public_keys", "did_data")
 
-  val service = new BlockProcessingService()
+  val service = new BlockProcessingServiceImpl()
 
   "BlockProcessingService" should {
     "apply block in" in {

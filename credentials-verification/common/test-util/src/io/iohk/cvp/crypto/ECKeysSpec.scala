@@ -1,0 +1,15 @@
+package io.iohk.cvp.crypto
+
+import org.scalatest.{MustMatchers, WordSpec}
+import ECKeys._
+class ECKeysSpec extends WordSpec with MustMatchers {
+  "ECKeys.EncodePublicKey" should {
+    "Encode and decode public key" in {
+      val publicKey = generateKeyPair().getPublic
+      val encodedPublicKey = toEncodePublicKey(publicKey)
+      val decodedPublicKey = toPublicKey(encodedPublicKey)
+      publicKey mustBe decodedPublicKey
+    }
+  }
+
+}

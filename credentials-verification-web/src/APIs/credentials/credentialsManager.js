@@ -19,17 +19,21 @@ import Logger from '../../helpers/Logger';
 import { setDateInfoFromJSON } from '../helpers';
 import { getStudents } from './studentsManager';
 import { getDid } from '../wallet/wallet';
+import { CONNECTION_ACCEPTED } from '../../helpers/constants';
 
-const { REACT_APP_GRPC_CLIENT, REACT_APP_ISSUER } = window._env_;
-const issuerId = REACT_APP_ISSUER;
-const credentialsService = new CredentialsServicePromiseClient(REACT_APP_GRPC_CLIENT, null, null);
+const { config } = require('../config');
+
+const credentialsService = new CredentialsServicePromiseClient(config.grpcClient, null, null);
 
 export const getCredentials = async (limit, lastSeenCredentialId = null) => {
   Logger.info(`getting credentials from ${lastSeenCredentialId}, limit ${limit}`);
+
   const getCredentialsRequest = new GetCredentialsRequest();
   getCredentialsRequest.setLimit(limit);
+  getCredentialsRequest.setLastseencredentialid(lastSeenCredentialId);
+
   const result = await credentialsService.getCredentials(getCredentialsRequest, {
-    userId: issuerId
+    userId: config.issuerId
   });
   const { credentialsList } = result.toObject();
 
@@ -54,7 +58,7 @@ const createAndPopulateCreationRequest = (
   return createCredentialRequest;
 };
 
-const getAllStudents = async () => {
+const getAllStudents = async groupName => {
   const allStudents = [];
   const limit = 100;
   let response;
@@ -70,9 +74,13 @@ const getAllStudents = async () => {
 
     // The next 100 students are requested
     // eslint-disable-next-line no-await-in-loop
-    response = await getStudents(REACT_APP_ISSUER, id, limit);
+    response = await getStudents(config.issuerId, id, limit, groupName);
 
-    allStudents.push(...response);
+    const connectedStudents = response.filter(
+      ({ connectionstatus }) => connectionstatus === CONNECTION_ACCEPTED
+    );
+
+    allStudents.push(...connectedStudents);
 
     // If less than the requested students are returned it means all the students have
     // already been brought
@@ -82,7 +90,7 @@ const getAllStudents = async () => {
 };
 
 export const createCredential = async ({ title, enrollmentDate, graduationDate, groupName }) => {
-  Logger.info('Creating credentials for the all the subjects as the issuer: ', issuerId);
+  Logger.info('Creating credentials for the all the subjects as the issuer: ', config.issuerId);
 
   const enrollmentDateObject = new Date();
   const graduationDateObject = new Date();
@@ -90,7 +98,7 @@ export const createCredential = async ({ title, enrollmentDate, graduationDate, 
   setDateInfoFromJSON(enrollmentDateObject, enrollmentDate);
   setDateInfoFromJSON(graduationDateObject, graduationDate);
 
-  const allStudents = await getAllStudents();
+  const allStudents = await getAllStudents(groupName);
 
   const credentialStudentsPromises = allStudents.map(student => {
     const createCredentialRequest = createAndPopulateCreationRequest(
@@ -102,7 +110,7 @@ export const createCredential = async ({ title, enrollmentDate, graduationDate, 
     );
 
     return credentialsService.createCredential(createCredentialRequest, {
-      userId: issuerId
+      userId: config.issuerId
     });
   });
 
@@ -239,9 +247,9 @@ const populateCredential = ({ issuerInfo, subjectInfo, signersInfo, additionalIn
   return credential;
 };
 
-const getNamesAndSurames = fullName => {
+export const getNamesAndSurnames = fullName => {
   const wordsSeparator = '@';
-  const [joinedNames, joinedSurnames] = fullName.split(' ');
+  const [joinedNames, joinedSurnames = ''] = fullName.split(' ');
 
   const names = joinedNames.split(wordsSeparator);
   const surnames = joinedSurnames.split(wordsSeparator);
@@ -250,17 +258,7 @@ const getNamesAndSurames = fullName => {
 };
 
 const parseAndPopulate = async (credentialData, studentData) => {
-  const {
-    enrollmentdate,
-    graduationdate,
-    groupname,
-    id,
-    issuerid,
-    issuername,
-    studentid,
-    studentname,
-    title
-  } = credentialData;
+  const { enrollmentdate, graduationdate, id, issuername, title } = credentialData;
 
   const did = await getDid();
 
@@ -269,18 +267,10 @@ const parseAndPopulate = async (credentialData, studentData) => {
     did
   };
 
-  const {
-    admissiondate,
-    connectionid,
-    connectionstatus,
-    connectiontoken,
-    email,
-    fullname,
-    universityassignedid
-  } = studentData;
+  const { fullname } = studentData;
 
   const subjectInfo = {
-    ...getNamesAndSurames(fullname)
+    ...getNamesAndSurnames(fullname)
   };
 
   const additionalInfo = {
@@ -290,13 +280,11 @@ const parseAndPopulate = async (credentialData, studentData) => {
     graduationDate: graduationdate
   };
 
-  const credential = await populateCredential({
+  return populateCredential({
     issuerInfo,
     subjectInfo,
     additionalInfo
   });
-
-  return credential;
 };
 
 export const getCredentialBinary = async (connectionData, studentData) => {
@@ -320,7 +308,7 @@ export const registerUser = async (name, did, file) => {
   registerRequest.setLogo(logo);
 
   const response = await credentialsService.register(registerRequest, {
-    userId: issuerId
+    userId: config.issuerId
   });
 
   const { id } = response.toObject();

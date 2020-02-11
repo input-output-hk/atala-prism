@@ -14,9 +14,11 @@ const FileUploader = ({
   uploadText,
   formRef,
   initialValue,
-  disabled
+  disabled,
+  updateFile
 }) => {
   const { t } = useTranslation();
+
   const [fileList, setFileList] = useState(initialValue ? [initialValue] : []);
 
   const onChange = ({ fileList: newFileList }) => !newFileList.length && setFileList([]);
@@ -25,13 +27,14 @@ const FileUploader = ({
     savePicture(file)
       .then(response => {
         formRef.current.getForm().setFieldsValue({
-          [field]: [file]
+          [field]: [response]
         });
+        if (updateFile) updateFile(file);
         setFileList([file]);
         onSuccess(response);
       })
       .catch(({ message: errorMessage }) => {
-        message.error(t(errorMessage));
+        message.error(t(`errors.saveFile.${errorMessage}`));
         onError();
       });
   };
@@ -80,7 +83,8 @@ FileUploader.propTypes = {
   formRef: PropTypes.oneOfType([PropTypes.func, PropTypes.shape({ current: PropTypes.object })])
     .isRequired,
   initialValue: PropTypes.shape(),
-  disabled: PropTypes.bool
+  disabled: PropTypes.bool,
+  updateFile: PropTypes.func.isRequired
 };
 
 export default FileUploader;

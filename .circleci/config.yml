@@ -3,7 +3,7 @@ jobs:
 
   deploy-ecr-images:
     docker:
-      - image: inputoutput/scala-mill:2.12.8-0.5.2
+      - image: inputoutput/scala-mill:2.12.10-0.5.2
     steps:
       - checkout
 
@@ -45,6 +45,13 @@ jobs:
             cp out/connector/assembly/dest/out.jar out/connector/assembly/dest/connector.jar
 
       - run:
+          name: Create admin assembly
+          command: |
+            cd credentials-verification
+            mill -i admin.assembly
+            cp out/admin/assembly/dest/out.jar out/admin/assembly/dest/admin.jar
+
+      - run:
           name: Configure AWS
           command: |
             aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID --profile default
@@ -71,6 +78,12 @@ jobs:
             docker push 895947072537.dkr.ecr.us-east-2.amazonaws.com/connector:${TAG}
 
       - run:
+          name: Build and push credentials-verification/admin
+          command: |
+            docker build -f credentials-verification/admin/Dockerfile -t 895947072537.dkr.ecr.us-east-2.amazonaws.com/admin:${TAG} credentials-verification/out/admin/assembly/dest/
+            docker push 895947072537.dkr.ecr.us-east-2.amazonaws.com/admin:${TAG}
+
+      - run:
           name: Rebuild environment
           command: |
             cd credentials-verification/infra/services
@@ -82,7 +95,7 @@ jobs:
   build-credentials-verification:
     working_directory: ~/repo
     docker:
-      - image: inputoutput/scala-mill:2.12.8-0.5.2
+      - image: inputoutput/scala-mill:2.12.10-0.5.2
       - image: postgres:11.5
         environment:
           POSTGRES_USER: postgres
@@ -169,8 +182,7 @@ workflows:
           filters:
             branches:
               only:
-                - develop
-                - /infra.*/
+                - /develop.*/
                 - /test.*/
           requires:
             - build-credentials-verification-web

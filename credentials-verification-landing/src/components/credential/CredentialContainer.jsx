@@ -12,13 +12,14 @@ import ScanQRInfo from './Molecules/ScanQRInfo/ScanQRInfo';
 import PersonalInformation from './Organisms/PersonalInformation/PersonalInformation';
 import { withApi } from '../providers/withApi';
 import Logger from '../../helpers/Logger';
+import { CONNECTION_ACCEPTED, CONNECTION_REVOKED } from '../../helpers/constants';
 
 const PERSONAL_INFORMATION_STEP = 0;
 const QR_STEP = 1;
 const SUCCESS_STEP = 2;
 
 const CredentialContainer = ({
-  api: { createStudent, generateConnectionToken, createAndIssueCredential }
+  api: { createStudent, getStudentById, generateConnectionToken, createAndIssueCredential }
 }) => {
   const { t } = useTranslation();
 
@@ -49,7 +50,9 @@ const CredentialContainer = ({
   const nextStep = () => setCurrentStep(currentStep + 1);
 
   useEffect(() => {
-    if (student && token) {
+    const isFirstStep = currentStep === PERSONAL_INFORMATION_STEP;
+
+    if (isFirstStep && student && token) {
       nextStep();
     }
   }, [student, token]);
@@ -59,7 +62,7 @@ const CredentialContainer = ({
       .getForm()
       .validateFieldsAndScroll(
         ['startDate', 'graduationDate', 'name', 'lastName', 'award'],
-        (errors, { startDate, graduationDate, name, lastName, award }) => {
+        (errors, { startDate, graduationDate, name, lastName }) => {
           if (errors) return;
 
           const fullName = `${name} ${lastName}`;
@@ -76,6 +79,52 @@ const CredentialContainer = ({
       );
   };
 
+  const returnAfterOneSecond = result => {
+    setTimeout(result, 1000);
+  };
+
+  const checkStudentConnection = id =>
+    new Promise(resolve =>
+      getStudentById(id)
+        .then(foundStudent => {
+          if (!foundStudent) return returnAfterOneSecond(() => resolve(true));
+
+          const { connectionstatus } = foundStudent;
+
+          const isAccepted = connectionstatus === CONNECTION_ACCEPTED;
+          if (isAccepted) createAndIssue();
+
+          const isRevoked = connectionstatus === CONNECTION_REVOKED;
+          if (isRevoked) {
+            submitForm();
+          }
+
+          return returnAfterOneSecond(() => resolve(!(isAccepted || isRevoked)));
+        })
+        .catch(error => {
+          Logger.error('Error while getting the student to check the connection status.', error);
+
+          return returnAfterOneSecond(() => resolve(false));
+        })
+    );
+
+  const loopUntilStudentIsConnected = async () => {
+    let continueLooping = true;
+
+    const { id } = student;
+
+    do {
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        continueLooping = await checkStudentConnection(id);
+      } catch (error) {
+        Logger.error('An error happened while waiting for connection status change:', error);
+        message.error(t('credential.error.connectionWaiting'));
+        continueLooping = false;
+      }
+    } while (continueLooping);
+  };
+
   const createAndIssue = () => {
     const { startDate, graduationDate } = credentialData;
 
@@ -88,9 +137,6 @@ const CredentialContainer = ({
       .catch(error => {
         Logger.error('Error at credential creation and issuing', error);
         message.error('credential.errors.creationAndIssuing');
-
-        // TODO erase this when we can test the integration with the mobile app
-        if (error.message === 'User not connected') nextStep();
       });
   };
 
@@ -100,10 +146,15 @@ const CredentialContainer = ({
         return <PersonalInformation nextStep={submitForm} personalInfoRef={personalInfoRef} />;
       }
       case QR_STEP: {
-        const renderLeft = () => <ScanQRInfo nextStep={createAndIssue} />;
+        const renderLeft = () => <ScanQRInfo />;
         const renderRight = () => <QRCard qrValue={token} />;
-
-        return <SplittedPage renderLeft={renderLeft} renderRight={renderRight} />;
+        return (
+          <SplittedPage
+            onMount={loopUntilStudentIsConnected}
+            renderLeft={renderLeft}
+            renderRight={renderRight}
+          />
+        );
       }
       case SUCCESS_STEP: {
         const renderLeft = () => <FinishInfo />;
@@ -123,7 +174,8 @@ CredentialContainer.propTypes = {
   api: PropTypes.shape({
     createStudent: PropTypes.func,
     generateConnectionToken: PropTypes.func,
-    createAndIssueCredential: PropTypes.func
+    createAndIssueCredential: PropTypes.func,
+    getStudentById: PropTypes.func
   }).isRequired
 };
 

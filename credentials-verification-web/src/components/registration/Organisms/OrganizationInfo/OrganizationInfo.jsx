@@ -6,10 +6,10 @@ import StepCard from '../../Atoms/StepCard/StepCard';
 import CustomForm from '../../../common/Organisms/Forms/CustomForm';
 import { isValidRole, noEmptyInput, minOneElement } from '../../../../helpers/formRules';
 import { refShape } from '../../../../helpers/propShapes';
-
-import './_style.scss';
 import { ISSUER, VERIFIER } from '../../../../helpers/constants';
 import FileUploader from '../../../common/Molecules/FileUploader/FileUploader';
+
+import './_style.scss';
 
 const OrganizationInfo = ({
   organizationRef,
@@ -26,7 +26,7 @@ const OrganizationInfo = ({
       },
       label: t('registration.organizationInfo.name'),
       key: 'organizationName',
-      className: '',
+      className: 'organizationRole',
       input: <Input />
     },
     {
@@ -41,7 +41,7 @@ const OrganizationInfo = ({
       },
       label: t('registration.organizationInfo.role'),
       key: 'organizationRole',
-      className: '',
+      className: 'organizationRole',
       input: (
         <Select value={organizationRole}>
           <Select.Option value="">{t('registration.organizationInfo.defaultRole')}</Select.Option>
@@ -66,7 +66,7 @@ const OrganizationInfo = ({
       },
       label: t('newCredential.form.logo'),
       key: 'logo',
-      className: '',
+      className: 'organizationRole',
       input: (
         <FileUploader
           initialValue={logo}
@@ -87,7 +87,9 @@ const OrganizationInfo = ({
         subtitle="registration.organizationInfo.subtitle"
         comment="registration.organizationInfo.comment"
       />
-      <CustomForm items={items} ref={organizationRef} />
+      <div className="OrganizationInfo">
+        <CustomForm items={items} ref={organizationRef} />
+      </div>
     </div>
   );
 };

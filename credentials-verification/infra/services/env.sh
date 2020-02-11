@@ -57,7 +57,7 @@ graph_env () {
 }
 
 taint_env () {
-  terraform init -backend-config="key=infra/services/$env_name_short/terraform.tfstate" && terraform taint "aws_ecs_task_definition.cvp-task-definition"
+  terraform init -backend-config="key=infra/services/$env_name_short/terraform.tfstate" && terraform taint "aws_ecs_task_definition.cvp-task-definition" && terraform taint "aws_ecs_task_definition.admin-task-definition"
 }
 
 # Terraform's postgres provider will not drop a schema that we have created tables in (i.e. does not do a cascading drop)
@@ -86,6 +86,7 @@ bitcoind_username       = "bitcoin"
 connector_docker_image  = "$connector_docker_image"
 node_docker_image       = "$node_docker_image"
 web_docker_image        = "$web_docker_image"
+admin_docker_image      = "$admin_docker_image"
 
 env_name_short          = "$env_name_short"
 EOF
@@ -127,15 +128,25 @@ set_vars () {
     echo "No available web image. Exiting."
     exit 1
   fi
+  admin_tag=$(get_tag "admin" "$env_name_short")
+  if [ -z "$admin_tag" ]; then
+    admin_tag=$(get_tag "admin" "develop")
+  fi
+  if [ -z "$admin_tag" ]; then
+    echo "No available admin image. Exiting."
+    exit 1
+  fi
   echo "done."
   # Remove leading/trailing quote marks from string values
   connector_tag=$(sed -e 's/^"//' -e 's/"$//' <<< "$connector_tag")
   node_tag=$(sed -e 's/^"//' -e 's/"$//' <<< "$node_tag")
   web_tag=$(sed -e 's/^"//' -e 's/"$//' <<< "$web_tag")
+  admin_tag=$(sed -e 's/^"//' -e 's/"$//' <<< "$admin_tag")
 
   connector_docker_image="$ecr_url/connector:$connector_tag"
   node_docker_image="$ecr_url/node:$node_tag"
   web_docker_image="$ecr_url/web:$web_tag"
+  admin_docker_image="$ecr_url/admin:$admin_tag"
 
   if [ -f "$HOME/.secrets.tfvars" ]; then
     secrets="-var-file=$HOME/.secrets.tfvars"
@@ -145,6 +156,7 @@ set_vars () {
   echo "Using connector image: $connector_docker_image"
   echo "Using node image: $node_docker_image"
   echo "Using web image: $web_docker_image"
+  echo "Using admin image: $admin_docker_image"
 }
 
 action="plan"

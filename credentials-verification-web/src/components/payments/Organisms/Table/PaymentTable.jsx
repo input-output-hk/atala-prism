@@ -6,6 +6,8 @@ import { paymentShape } from '../../../../helpers/propShapes';
 import CellRenderer from '../../../common/Atoms/CellRenderer/CellRenderer';
 import { shortDateFormatter } from '../../../../helpers/formatters';
 
+import './_style.scss';
+
 const getColumns = () => [
   {
     key: 'icon',

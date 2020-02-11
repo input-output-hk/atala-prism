@@ -13,26 +13,33 @@ import { isIssuer } from '../wallet/wallet';
 import { setDateInfoFromJSON } from '../helpers';
 import { HOLDER_PAGE_SIZE } from '../../helpers/constants';
 
-const { REACT_APP_GRPC_CLIENT, REACT_APP_ISSUER, REACT_APP_VERIFIER } = window._env_;
-const issuerId = REACT_APP_ISSUER;
-const studentsService = new StudentsServicePromiseClient(REACT_APP_GRPC_CLIENT, null, null);
+const { config } = require('../config');
 
-const createAndPopulateGetStudentRequest = (limit, lastSeenStudentId) => {
+const studentsService = new StudentsServicePromiseClient(config.grpcClient, null, null);
+
+const createAndPopulateGetStudentRequest = (limit, lastSeenStudentId, groupName) => {
   const getStudentsRequest = new GetStudentsRequest();
 
   getStudentsRequest.setLimit(limit);
   getStudentsRequest.setLastseenstudentid(lastSeenStudentId);
 
+  if (groupName) getStudentsRequest.setGroupname(groupName);
+
   return getStudentsRequest;
 };
 
 export const getStudents = async (
-  userId = REACT_APP_ISSUER,
+  userId = config.issuerId,
   lastSeenCredentialId = null,
-  limit = HOLDER_PAGE_SIZE
+  limit = HOLDER_PAGE_SIZE,
+  groupName
 ) => {
   Logger.info('Getting the students');
-  const getStudentsRequest = createAndPopulateGetStudentRequest(limit, lastSeenCredentialId);
+  const getStudentsRequest = createAndPopulateGetStudentRequest(
+    limit,
+    lastSeenCredentialId,
+    groupName
+  );
 
   const result = await studentsService.getStudents(getStudentsRequest, { userId });
 
@@ -42,7 +49,7 @@ export const getStudents = async (
 };
 
 export const generateConnectionToken = async (userId, studentId) => {
-  const hardCodedUserId = isIssuer() ? REACT_APP_ISSUER : REACT_APP_VERIFIER;
+  const hardCodedUserId = isIssuer() ? config.issuerId : config.verifierId;
   Logger.info(`Generating token for studentId ${studentId}`);
   const generateConnectionTokenRequest = new GenerateConnectionTokenRequest();
   generateConnectionTokenRequest.setStudentid(studentId);
@@ -58,14 +65,14 @@ export const getStudentById = async studentId => {
   const getStudentRequest = new GetStudentRequest();
   getStudentRequest.setStudentid(studentId);
 
-  const result = await studentsService.getStudent(getStudentRequest, { userId: issuerId });
+  const result = await studentsService.getStudent(getStudentRequest, { userId: config.issuerId });
 
   const { student } = result.toObject();
 
   return student;
 };
 
-export const getStudentCredentials = async (studentId, issuer = issuerId) => {
+export const getStudentCredentials = async (studentId, issuer = config.issuerId) => {
   Logger.info('Getting credentials for the student: ', studentId, 'as the issuer: ', issuer);
 
   try {
@@ -89,17 +96,18 @@ export const getStudentCredentials = async (studentId, issuer = issuerId) => {
   }
 };
 
-export const createStudent = async (universityAssignedId, fullName, email, admissionDate) => {
+export const createStudent = async ({ studentId, fullName, email, admissionDate, groupName }) => {
   const request = new CreateStudentRequest();
   const date = new Date();
   setDateInfoFromJSON(date, admissionDate);
 
-  request.setUniversityassignedid(universityAssignedId);
+  request.setUniversityassignedid(studentId);
   request.setFullname(fullName);
   request.setEmail(email);
   request.setAdmissiondate(date);
+  request.setGroupname(groupName);
 
-  const student = await studentsService.createStudent(request, { userId: REACT_APP_ISSUER });
+  const student = await studentsService.createStudent(request, { userId: config.issuerId });
 
   Logger.info('Created student:', student.toObject());
 };

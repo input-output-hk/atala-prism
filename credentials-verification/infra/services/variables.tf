@@ -108,3 +108,12 @@ variable postgres_password {
   description = "The password for the postgres user in the database. Should be stored in ~/.secrets.tfvars or in environment variable TF_VAR_postgres_password."
 }
 
+variable admin_docker_image {
+  description = "Docker image for the admin service."
+}
+
+variable admin_port {
+  description = "Port number for the admin service."
+  type        = number
+  default     = 50055
+}

@@ -4,7 +4,7 @@ import { message } from 'antd';
 import PropTypes from 'prop-types';
 import Connections from './Connections';
 import Logger from '../../helpers/Logger';
-import { HOLDER_PAGE_SIZE } from '../../helpers/constants';
+import { HOLDER_PAGE_SIZE, INDIVIDUAL_STATUSES } from '../../helpers/constants';
 import { withApi } from '../providers/withApi';
 import { getLastArrayElementOrEmpty } from '../../helpers/genericHelpers';
 
@@ -15,14 +15,14 @@ const ConnectionsContainer = ({ api }) => {
   const [noConnections, setNoConnections] = useState(false);
   const [hasMore, setHasMore] = useState(true);
 
-  const handleHoldersRequest = (oldSubjects = subjects, _identityNumber, _name, _status) => {
+  const handleHoldersRequest = (oldSubjects = subjects, _name, _status) => {
     const { id } = getLastArrayElementOrEmpty(oldSubjects);
 
     const getIndividuals = api.getIndividuals(api.isIssuer());
 
     return getIndividuals(HOLDER_PAGE_SIZE, id)
       .then(holders => {
-        const noFilters = !(_identityNumber || _name || _status);
+        const noFilters = !(_name || _status);
         const showNoConnections = !id && noFilters;
         setNoConnections(showNoConnections);
 
@@ -34,7 +34,7 @@ const ConnectionsContainer = ({ api }) => {
         const holdersWithKey = holders.map(
           ({ status: holderStatus, connectionstatus, id: holderId, individualid, ...rest }) => {
             const existingId = holderId || individualid;
-            const indivStatus = holderStatus || connectionstatus;
+            const indivStatus = holderStatus !== undefined ? holderStatus : connectionstatus;
 
             return Object.assign({}, rest, {
               key: existingId,
@@ -49,7 +49,7 @@ const ConnectionsContainer = ({ api }) => {
       })
       .catch(error => {
         Logger.error('[Connections.getHolders] Error while getting holders', error);
-        message.error(t('errors.errorGetting', { model: 'Holders' }), 1);
+        message.error(t('errors.errorGetting', { model: 'Holders' }));
       });
   };
 
@@ -65,7 +65,6 @@ const ConnectionsContainer = ({ api }) => {
 
   const tableProps = {
     subjects,
-    inviteHolder,
     hasMore,
     getCredentials: api.getMessagesForConnection
   };
