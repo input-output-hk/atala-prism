@@ -166,7 +166,7 @@
 "wallet_initial_row_wire_transfer" = "Wire Transfer";
 "wallet_history_nav_title" = "Payment History";
 "wallet_history_status_completed" = "Completed";
-"wallet_history_status_pending" = "Pending";
+"wallet_history_status_pending" = "Rejected";
 "wallet_history_empty_title" = "Empty Payment History";
 "wallet_history_empty_subtitle" = "All your payments will be listed here";
 "wallet_history_empty_button" = "Go Back";

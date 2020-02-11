@@ -6,6 +6,7 @@ class RegisterPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDel
         return view as? RegisterViewController
     }
 
+    let cryptoUtils = CryptoUtils.global
     var acceptedLegal = false
     var data: [String] = []
 
@@ -55,17 +56,12 @@ class RegisterPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDel
 
     func fetchData() {
 
-        // TODO: Delete me when services are ready
         DispatchQueue.global(qos: .background).async {
-            print("This is run on the background queue")
-
-            sleep(1)
 
             self.cleanData()
-
-            // Fake data
-            let words = FakeData.seedWords()
-            self.data = words
+            // Generate the mnemonics and get the used ones
+            self.cryptoUtils.setupMnemonics()
+            self.data = self.cryptoUtils.usedMnemonics!
 
             DispatchQueue.main.async {
                 self.startListing()

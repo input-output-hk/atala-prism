@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15505" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15509"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -59,6 +59,13 @@
                                     <constraint firstAttribute="height" constant="68" id="K9D-DP-hkW"/>
                                 </constraints>
                             </view>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="SV4-9O-YEY" customClass="TextFieldTitledView" customModule="ATALA" customModuleProvider="target">
+                                <rect key="frame" x="31" y="368" width="352" height="68"/>
+                                <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="68" id="xBB-PJ-ylE"/>
+                                </constraints>
+                            </view>
                         </subviews>
                         <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                         <constraints>
@@ -69,10 +76,13 @@
                             <constraint firstItem="q8i-I4-LVC" firstAttribute="leading" secondItem="VyB-wh-xfW" secondAttribute="leading" constant="31" id="Nng-fW-ka3"/>
                             <constraint firstItem="3Za-yW-TUn" firstAttribute="leading" secondItem="VyB-wh-xfW" secondAttribute="leading" constant="31" id="OI5-xQ-EKo"/>
                             <constraint firstItem="b3l-c0-cbs" firstAttribute="leading" secondItem="VyB-wh-xfW" secondAttribute="leading" constant="31" id="TJ4-gH-mkM"/>
+                            <constraint firstItem="SV4-9O-YEY" firstAttribute="leading" secondItem="VyB-wh-xfW" secondAttribute="leading" constant="31" id="UYr-wK-5sC"/>
+                            <constraint firstItem="VyB-wh-xfW" firstAttribute="trailing" secondItem="SV4-9O-YEY" secondAttribute="trailing" constant="31" id="aqP-fw-VtH"/>
                             <constraint firstItem="VyB-wh-xfW" firstAttribute="trailing" secondItem="q8i-I4-LVC" secondAttribute="trailing" constant="31" id="bkh-1G-aPF"/>
                             <constraint firstItem="b3l-c0-cbs" firstAttribute="top" secondItem="VyB-wh-xfW" secondAttribute="top" constant="80" id="bqr-tO-E7Z"/>
                             <constraint firstItem="VyB-wh-xfW" firstAttribute="trailing" secondItem="hTy-EQ-ABZ" secondAttribute="trailing" constant="31" id="c8W-l2-NXH"/>
                             <constraint firstItem="VyB-wh-xfW" firstAttribute="trailing" secondItem="b3l-c0-cbs" secondAttribute="trailing" constant="90" id="qmu-9Z-1Mq"/>
+                            <constraint firstItem="SV4-9O-YEY" firstAttribute="top" secondItem="q8i-I4-LVC" secondAttribute="bottom" constant="50" id="sPZ-eT-6Vb"/>
                             <constraint firstItem="VyB-wh-xfW" firstAttribute="bottom" secondItem="3Za-yW-TUn" secondAttribute="bottom" constant="31" id="urq-zx-9Nd"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="VyB-wh-xfW"/>
@@ -81,6 +91,7 @@
                         <outlet property="buttonContinue" destination="3Za-yW-TUn" id="wKh-0l-Z9G"/>
                         <outlet property="textField1" destination="hTy-EQ-ABZ" id="T3m-jZ-wfr"/>
                         <outlet property="textField2" destination="q8i-I4-LVC" id="SkN-ax-J0V"/>
+                        <outlet property="textFieldUrl" destination="SV4-9O-YEY" id="Uim-Yy-Ztd"/>
                         <segue destination="g8p-gT-lDB" kind="show" identifier="SuccessSegue" id="Its-0h-Y3K"/>
                     </connections>
                 </viewController>

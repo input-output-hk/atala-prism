@@ -183,13 +183,12 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
             return nil
         }, success: {
             self.viewImpl?.config(isLoading: false)
+            self.viewImpl?.onBackPressed()
             self.viewImpl?.showNewConnectMessage(type: self.connectionRequest?.type ?? 0, title: self.connectionRequest!.info?.name, logoData: self.connectionRequest?.info?.logoData)
         }, error: { error in
             Tracker.global.trackConnectionFail()
             self.viewImpl?.config(isLoading: false)
-            self.viewImpl?.showErrorMessage(doShow: true, message: "connections_scan_qr_error".localize(), afterErrorAction: {
-                self.tappedBackButton()
-            })
+            self.viewImpl?.showErrorMessage(doShow: true, message: "connections_scan_qr_error".localize())
         })
     }
 
@@ -223,9 +222,7 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
             self.sendNewConnectionToServer()
         }, error: { error in
             self.viewImpl?.config(isLoading: false)
-            self.viewImpl?.showErrorMessage(doShow: true, message: "connections_scan_qr_confirm_error".localize(), afterErrorAction: {
-                self.tappedBackButton()
-            })
+            self.viewImpl?.showErrorMessage(doShow: true, message: "connections_scan_qr_confirm_error".localize())
         })
     }
 
@@ -245,9 +242,7 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
             }, error: { isCancelled, error in
                 Logger.d("showPaymentView error response: \(error?.localizedDescription ?? "no error")")
                 self.viewImpl?.config(isLoading: false)
-                self.viewImpl?.showErrorMessage(doShow: true, message: "connections_scan_qr_confirm_payment_error".localize(), afterErrorAction: {
-                    self.tappedBackButton()
-                })
+                self.viewImpl?.showErrorMessage(doShow: true, message: "connections_scan_qr_confirm_payment_error".localize())
             }
         )
     }
@@ -270,12 +265,10 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
             return nil
         }, success: {
             self.viewImpl?.config(isLoading: false)
-            self.tappedBackButton()
+            self.actionPullToRefresh()
         }, error: { error in
             self.viewImpl?.config(isLoading: false)
-            self.viewImpl?.showErrorMessage(doShow: true, message: "connections_scan_qr_confirm_error".localize(), afterErrorAction: {
-                self.tappedBackButton()
-            })
+            self.viewImpl?.showErrorMessage(doShow: true, message: "connections_scan_qr_confirm_error".localize())
         })
     }
 
@@ -316,7 +309,6 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
     func tappedDeclineAction(for: ConnectionConfirmViewController) {
 
         Tracker.global.trackConnectionDecline()
-        self.viewImpl?.startQrScan()
     }
 
     func tappedConfirmAction(for: ConnectionConfirmViewController) {

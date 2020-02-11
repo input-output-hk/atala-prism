@@ -8,6 +8,7 @@ class LoginViewController: BaseViewController {
     @IBOutlet weak var buttonContinue: UIButton!
     @IBOutlet weak var textField1: TextFieldTitledView!
     @IBOutlet weak var textField2: TextFieldTitledView!
+    @IBOutlet weak var textFieldUrl: TextFieldTitledView!
 
     override func navBarCustomStyle() -> NavBarCustomStyle {
         return NavBarCustomStyle(hasNavBar: true, title: "login_nav_title".localize(), hasBackButton: true)
@@ -34,6 +35,7 @@ class LoginViewController: BaseViewController {
 
     func setupTextFields() {
 
+        setupUrlTextField()
         textFields.forEach { textField in
             textField.config(delegate: self)
             textField.textField.autocapitalizationType = .none
@@ -68,7 +70,7 @@ class LoginViewController: BaseViewController {
     func configFields(numbers: [Int]) {
 
         for index in 0 ..< textFields.count {
-            let number = numbers.count > index ? numbers[index] : -1
+            let number = numbers.count > index ? (numbers[index] + 1) : -1
             let text: String = number != -1 ? String(format: "login_input_title".localize(), number) : "login_input_title_empty".localize()
             textFields[index].config(title: text)
         }
@@ -113,5 +115,30 @@ extension LoginViewController: TextFieldTitledViewDelegate {
 
     func textFieldDidChange(for view: TextFieldTitledView, textField: UITextField, text: String?) {
         presenterImpl.textFieldTextChanged()
+        textFieldUrlChanged(view)
+    }
+}
+
+// Delete me in the future, URL config server
+extension LoginViewController {
+
+    func setupUrlTextField() {
+
+        textFieldUrl.isHidden = !Common.DEBUG
+        textFieldUrl.config(delegate: self)
+        textFieldUrl.textField.autocapitalizationType = .none
+        textFieldUrl.textField.autocorrectionType = .no
+        textFieldUrl.textField.returnKeyType = .done
+        textFieldUrl.config(title: "SERVER URL")
+        textFieldUrl.textField.text = Common.URL_API
+    }
+
+    func textFieldUrlChanged(_ view: TextFieldTitledView) {
+
+        if view != textFieldUrl {
+            return
+        }
+        Common.URL_API = textFieldUrl.textField.text ?? "cvp-develop.cef.iohkdev.io:50051"
+        Logger.d("Changed URL to: \(Common.URL_API)")
     }
 }
