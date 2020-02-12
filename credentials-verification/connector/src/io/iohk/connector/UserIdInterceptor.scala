@@ -1,4 +1,4 @@
-package io.iohk.cvp.grpc
+package io.iohk.connector
 
 import java.util.{Base64, UUID}
 

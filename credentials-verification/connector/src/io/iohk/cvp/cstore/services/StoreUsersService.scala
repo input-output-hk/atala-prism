@@ -1,7 +1,5 @@
 package io.iohk.cvp.cstore.services
 
-import java.util.UUID
-
 import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor

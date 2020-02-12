@@ -28,7 +28,9 @@ class MessagesRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) exte
       recipientOption <- ConnectionsDAO.getOtherSide(connection, sender)
       recipient = recipientOption.getOrElse(
         throw new RuntimeException(
-          s"Failed to send message, the connection $connection with sender $sender doesn't exist"))
+          s"Failed to send message, the connection $connection with sender $sender doesn't exist"
+        )
+      )
       _ <- MessagesDAO.insert(messageId, connection, sender, recipient, content)
     } yield messageId
 

@@ -13,7 +13,6 @@ import io.iohk.connector.repositories.{ConnectionsRepository, MessagesRepository
 import io.iohk.connector.services.{ConnectionsService, MessagesService}
 import io.iohk.cvp.connector.protos.ConnectorServiceGrpc
 import io.iohk.cvp.crypto.ECKeys.EncodedPublicKey
-import io.iohk.cvp.grpc.UserIdInterceptor
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.repositories.PostgresRepositorySpec
 import org.scalatest.BeforeAndAfterEach
@@ -122,7 +121,7 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
   override def services = Seq(
     ConnectorServiceGrpc
       .bindService(
-        new ConnectorService(connectionsService, messagesService, braintreePayments, paymentsRepository),
+        new ConnectorService(connectionsService, messagesService, braintreePayments, paymentsRepository, authenticator),
         executionContext
       )
   )
@@ -136,9 +135,13 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
   lazy val paymentsRepository = new PaymentsRepository(database)(executionContext)
   lazy val connectionsService = new ConnectionsService(connectionsRepository, paymentsRepository, braintreePayments)
   lazy val messagesRepository = new MessagesRepository(database)(executionContext)
+  lazy val authenticator = new SignedRequestsAuthenticator(connectionsRepository)
+
   lazy val messagesService = new MessagesService(messagesRepository)
   lazy val connectorService =
-    new ConnectorService(connectionsService, messagesService, braintreePayments, paymentsRepository)(executionContext)
+    new ConnectorService(connectionsService, messagesService, braintreePayments, paymentsRepository, authenticator)(
+      executionContext
+    )
 
   protected def createParticipant(
       name: String,
@@ -220,7 +223,9 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
       recipientOption <- ConnectionsDAO.getOtherSide(connectionId, sender)
       recipient = recipientOption.getOrElse(
         throw new RuntimeException(
-          s"Failed to send message, the connection $connectionId with sender $sender doesn't exist"))
+          s"Failed to send message, the connection $connectionId with sender $sender doesn't exist"
+        )
+      )
       _ <- MessagesDAO.insert(messageId, connectionId, sender, recipient, content)
     } yield messageId
 
