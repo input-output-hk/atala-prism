@@ -1,13 +1,13 @@
-/* eslint import/no-unresolved: 0 */ // --> OFF
 import { ConnectorServicePromiseClient } from '../../protos/connector/connector_grpc_web_pb';
-import {
-  GetConnectionsPaginatedRequest,
-  GetMessagesForConnectionRequest,
-  SendMessageRequest
-} from '../../protos/connector/connector_pb';
 import Logger from '../../helpers/Logger';
 import { getCredentialBinary } from '../credentials/credentialsManager';
 import { getStudentById } from '../credentials/studentsManager';
+
+const {
+  GetConnectionsPaginatedRequest,
+  GetMessagesForConnectionRequest,
+  SendMessageRequest
+} = require('../../protos/connector/connector_pb');
 
 const { SentCredential } = require('../../protos/credentials/credential_pb');
 
