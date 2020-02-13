@@ -1,6 +1,8 @@
 package io.iohk.cvp.admin
-import io.iohk.cvp.admin.AdminServiceGrpc._
+
 import io.iohk.cvp.admin.Errors.AdminError.DatabaseError
+import io.iohk.cvp.admin.protos.AdminServiceGrpc.AdminService
+import io.iohk.cvp.admin.protos.{PopulateDemoDatasetRequest, PopulateDemoDatasetResponse}
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}

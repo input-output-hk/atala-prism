@@ -1,16 +1,6 @@
 version: "3"
 services:
 
-  web:
-    build:
-      context: ../../credentials-verification-web/
-    image: 895947072537.dkr.ecr.us-east-2.amazonaws.com/web
-    ports:
-      - 127.0.0.1:80:80
-    environment:
-      REACT_APP_GRPC_CLIENT: cvp-envoy:8080
-
-
   cvp-envoy:
     build:
       context: cvp-envoy
@@ -39,7 +29,7 @@ services:
 
   connector:
     build:
-      context: ../out/connector/docker-build/dest
+      context: ../../out/connector/docker-build/dest
       dockerfile: ../../../../connector/Dockerfile
     ports:
       - 127.0.0.1:50051:50051
@@ -53,7 +43,7 @@ services:
 
   node:
     build:
-      context: ../out/node/docker-build/dest
+      context: ../../out/node/docker-build/dest
       dockerfile: ../../../../node/Dockerfile
     ports:
       - 127.0.0.1:50053:50053
@@ -69,17 +59,3 @@ services:
       GEUD_NODE_BITCOIND_PORT: 18333
       GEUD_NODE_BITCOIND_USERNAME: bitcoin
       GEUD_NODE_BITCOIND_PASSWORD: bitcoin
-
-  admin:
-    build:
-      context: ../out/admin/docker-build/dest
-      dockerfile: ../../../../admin/Dockerfile
-    ports:
-      - 127.0.0.1:50055:50055
-    depends_on:
-      - postgres_db
-    environment:
-      CONNECTOR_PSQL_HOST: postgres_db
-      CONNECTOR_PSQL_DATABASE: connector
-      CONNECTOR_PSQL_USERNAME: connector
-      CONNECTOR_PSQL_PASSWORD: connector

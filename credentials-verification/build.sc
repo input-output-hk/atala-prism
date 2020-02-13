@@ -203,26 +203,14 @@ object connector extends ServerPBCommon with CVPDockerModule {
   override def cvpDockerConfig = CVPDockerConfig(name = "connector")
 
   object test extends `tests-common` {}
-}
 
-object admin extends ServerPBCommon with CVPDockerModule {
-  override def scalacOptions = Seq("-Ywarn-unused:imports", "-Xfatal-warnings", "-feature")
-  override def mainClass = Some("io.iohk.cvp.admin.AdminApp")
-  override def cvpDockerConfig = CVPDockerConfig(name = "admin")
+  def utilDir = T.sources { os.pwd / 'util }
 
-  def utilDir = T.sources {
-    os.pwd / 'util
-  }
-
-  def resourceDir = T.sources {
-    millSourcePath / "resources"
-  }
+  def resourceDir = T.sources { millSourcePath / "resources"}
 
   override def resources = T.sources {
     resourceDir() ++ utilDir()
   }
-
-  object test extends `tests-common` {}
 }
 
 object wallet extends ServerPBCommon {

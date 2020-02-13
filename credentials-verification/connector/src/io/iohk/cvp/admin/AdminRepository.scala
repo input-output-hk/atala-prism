@@ -1,21 +1,19 @@
 package io.iohk.cvp.admin
 
 import cats.effect.IO
+import cats.implicits._
+import doobie.implicits._
 import doobie.util.transactor.Transactor
 import doobie.util.update.Update0
+import io.iohk.cvp.admin.AdminRepository.{log, _}
+import io.iohk.cvp.admin.Errors.AdminError.DatabaseError
+import io.iohk.cvp.admin.Splitter.sqlSplit
 import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither._
-import doobie.implicits._
-
-import scala.concurrent.ExecutionContext
-import cats.implicits._
-import io.iohk.cvp.admin.Errors.AdminError.DatabaseError
-import AdminRepository._
-import io.iohk.cvp.admin.Splitter.sqlSplit
 import io.iohk.cvp.utils.Using.using
 import org.slf4j.LoggerFactory
-import AdminRepository.log
 
+import scala.concurrent.ExecutionContext
 import scala.io.{BufferedSource, Source}
 
 class AdminRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {

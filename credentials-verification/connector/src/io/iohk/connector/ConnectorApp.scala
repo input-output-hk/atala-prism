@@ -5,14 +5,11 @@ import io.grpc.{Server, ServerBuilder}
 import io.iohk.connector.payments.BraintreePayments
 import io.iohk.connector.repositories.{ConnectionsRepository, MessagesRepository, PaymentsRepository}
 import io.iohk.connector.services.{ConnectionsService, MessagesService}
+import io.iohk.cvp.admin.protos.AdminServiceGrpc
+import io.iohk.cvp.admin.{AdminRepository, AdminServiceImpl}
 import io.iohk.cvp.cmanager.grpc.services.{CredentialsServiceImpl, GroupsServiceImpl, StudentsServiceImpl}
 import io.iohk.cvp.cmanager.protos.{CredentialsServiceGrpc, GroupsServiceGrpc, StudentsServiceGrpc}
-import io.iohk.cvp.cmanager.repositories.{
-  CredentialsRepository,
-  IssuerGroupsRepository,
-  IssuersRepository,
-  StudentsRepository
-}
+import io.iohk.cvp.cmanager.repositories.{CredentialsRepository, IssuerGroupsRepository, IssuersRepository, StudentsRepository}
 import io.iohk.cvp.connector.protos._
 import io.iohk.cvp.cstore.CredentialsStoreService
 import io.iohk.cvp.cstore.protos.CredentialsStoreServiceGrpc
@@ -89,6 +86,11 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
         executionContext
       )
 
+
+    // admin
+    val adminRepository = new AdminRepository(xa)(executionContext)
+    val adminService = new AdminServiceImpl(adminRepository)(executionContext)
+
     logger.info("Starting server")
     server = ServerBuilder
       .forPort(ConnectorApp.port)
@@ -98,6 +100,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       .addService(StudentsServiceGrpc.bindService(studentsService, executionContext))
       .addService(GroupsServiceGrpc.bindService(groupsService, executionContext))
       .addService(CredentialsStoreServiceGrpc.bindService(credentialsStoreService, executionContext))
+      .addService(AdminServiceGrpc.bindService(adminService, executionContext))
       .build()
       .start()
 

@@ -2,8 +2,7 @@
   {
     "name": "connector",
     "image": "${connector-docker-image}",
-    "cpu": 10,
-    "memory": 512,
+    "memoryReservation": 10,
     "links": [],
     "hostname": "connector",
     "portMappings": [
@@ -47,8 +46,7 @@
   {
     "name": "node",
     "image": "${node-docker-image}",
-    "cpu": 10,
-    "memory": 512,
+    "memoryReservation": 10,
     "links": ["bitcoind"],
     "hostname": "node",
     "portMappings": [
@@ -108,8 +106,7 @@
   {
     "name": "bitcoind",
     "image": "ruimarinho/bitcoin-core",
-    "cpu": 10,
-    "memory": 512,
+    "memoryReservation": 10,
     "links": [],
     "hostname": "bitcoind",
     "portMappings": [
@@ -136,8 +133,7 @@
   {
     "name": "envoy",
     "image": "895947072537.dkr.ecr.us-east-2.amazonaws.com/cvp-envoy:latest",
-    "cpu": 10,
-    "memory": 512,
+    "memoryReservation": 10,
     "links": ["connector"],
     "hostname": "envoy",
     "portMappings": [
@@ -164,8 +160,7 @@
   {
     "name": "web",
     "image": "${web-docker-image}",
-    "cpu": 10,
-    "memory": 512,
+    "memoryReservation": 10,
     "links": [],
     "hostname": "web",
     "portMappings": [

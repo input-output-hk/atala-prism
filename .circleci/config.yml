@@ -45,13 +45,6 @@ jobs:
             cp out/connector/assembly/dest/out.jar out/connector/assembly/dest/connector.jar
 
       - run:
-          name: Create admin assembly
-          command: |
-            cd credentials-verification
-            mill -i admin.assembly
-            cp out/admin/assembly/dest/out.jar out/admin/assembly/dest/admin.jar
-
-      - run:
           name: Configure AWS
           command: |
             aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID --profile default
@@ -76,12 +69,6 @@ jobs:
           command: |
             docker build -f credentials-verification/connector/Dockerfile -t 895947072537.dkr.ecr.us-east-2.amazonaws.com/connector:${TAG} credentials-verification/out/connector/assembly/dest/
             docker push 895947072537.dkr.ecr.us-east-2.amazonaws.com/connector:${TAG}
-
-      - run:
-          name: Build and push credentials-verification/admin
-          command: |
-            docker build -f credentials-verification/admin/Dockerfile -t 895947072537.dkr.ecr.us-east-2.amazonaws.com/admin:${TAG} credentials-verification/out/admin/assembly/dest/
-            docker push 895947072537.dkr.ecr.us-east-2.amazonaws.com/admin:${TAG}
 
       - run:
           name: Rebuild environment

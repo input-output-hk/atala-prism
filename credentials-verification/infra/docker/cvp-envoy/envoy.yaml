@@ -20,10 +20,6 @@ static_resources:
                     - name: local_service
                       domains: ["*"]
                       routes:
-                      - match: { prefix: "/io.iohk.cvp.AdminService" }
-                        route:
-                          cluster: admin_service
-                          max_grpc_timeout: 0s
                       - match: { prefix: "/io.iohk.cvp" }
                         route:
                           cluster: connector_service
@@ -49,12 +45,3 @@ static_resources:
         - socket_address:
             address: connector
             port_value: 50051
-    - name: admin_service
-      connect_timeout: 25s
-      type: logical_dns
-      http2_protocol_options: {}
-      lb_policy: round_robin
-      hosts:
-        - socket_address:
-            address: admin
-            port_value: 50055
