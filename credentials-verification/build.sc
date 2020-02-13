@@ -57,6 +57,8 @@ object versions {
   val sttp = "1.6.6"
   val logback = "1.2.3"
   val grpc = "1.24.0"
+  val monocle = "2.0.0"
+  val scopt = "4.0.0-RC2"
 }
 
 object common extends ScalaModule {
@@ -185,6 +187,21 @@ object node extends ServerPBCommon with CVPDockerModule {
       deps ++ Agg(
         ivy"org.mockito::mockito-scala:1.11.1",
         ivy"org.mockito::mockito-scala-scalatest:1.11.1"
+      )
+    }
+  }
+
+  object client extends ScalaModule {
+
+    override def moduleDeps = Seq(node)
+    override def scalaVersion = node.scalaVersion
+
+    override def ivyDeps = node.ivyDeps.map { deps =>
+      deps ++ Agg(
+        ivy"com.github.scopt::scopt:${versions.scopt}",
+        ivy"com.github.julien-truffaut::monocle-core:${versions.monocle}",
+        ivy"com.github.julien-truffaut::monocle-generic:${versions.monocle}",
+        ivy"com.github.julien-truffaut::monocle-macro:${versions.monocle}"
       )
     }
   }
