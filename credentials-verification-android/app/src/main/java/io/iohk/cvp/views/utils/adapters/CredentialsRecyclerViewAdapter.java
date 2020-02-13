@@ -52,6 +52,8 @@ public class CredentialsRecyclerViewAdapter extends
   public void onBindViewHolder(CredentialsRecyclerViewAdapter.ViewHolder holder, int position) {
     try {
       ReceivedMessage msg = messages.get(position);
+
+
       SentCredential sentCredential = SentCredential.parseFrom(msg.getMessage());
       Credential current = sentCredential.getIssuerSentCredential().getCredential();
       holder.credential = sentCredential;
@@ -60,8 +62,18 @@ public class CredentialsRecyclerViewAdapter extends
       holder.listener = this.listener;
       holder.isNew = this.hasNewCredentials;
       holder.degreeName.setText(current.getDegreeAwarded());
-      holder.issuerLogo.setImageBitmap(
-          ImageUtils.getBitmapFromByteArray(preferences.getConnectionLogo(msg.getConnectionId())));
+
+      //TODO: harcodeo la credencial de government
+      if( msg.getConnectionId().equals("")){
+        holder.degreeType.setText("My ID Credential");
+        holder.degreeName.setText("");
+        holder.isNew = true;
+      }else{
+        holder.issuerLogo.setImageBitmap(
+                ImageUtils.getBitmapFromByteArray(preferences.getConnectionLogo(msg.getConnectionId())));
+      }
+
+
     } catch (InvalidProtocolBufferException e) {
       Crashlytics.logException(e);
     }
@@ -87,6 +99,9 @@ public class CredentialsRecyclerViewAdapter extends
     String connectionId;
     SentCredential credential;
     String messageId;
+
+    @BindView(R.id.degree_type)
+    TextView degreeType;
 
     @BindView(R.id.degree_name)
     TextView degreeName;
