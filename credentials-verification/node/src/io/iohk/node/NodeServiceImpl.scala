@@ -33,16 +33,16 @@ class NodeServiceImpl(didDataService: DIDDataService, objectManagement: ObjectMa
 
   override def createDID(request: proto.SignedAtalaOperation): Future[proto.CreateDIDResponse] = {
     for {
-      _ <- errorEitherToFuture(CreateDIDOperation.parse(request.operation.get))
+      parsedOperation <- errorEitherToFuture(CreateDIDOperation.parse(request.operation.get))
       _ <- objectManagement.publishAtalaOperation(request)
-    } yield proto.CreateDIDResponse()
+    } yield proto.CreateDIDResponse(id = parsedOperation.id.suffix)
   }
 
   override def issueCredential(request: proto.SignedAtalaOperation): Future[proto.IssueCredentialResponse] = {
     for {
-      _ <- errorEitherToFuture(IssueCredentialOperation.parse(request.operation.get))
+      parsedOperation <- errorEitherToFuture(IssueCredentialOperation.parse(request.operation.get))
       _ <- objectManagement.publishAtalaOperation(request)
-    } yield proto.IssueCredentialResponse()
+    } yield proto.IssueCredentialResponse(id = parsedOperation.credentialId.id)
   }
 
   override def revokeCredential(request: proto.SignedAtalaOperation): Future[proto.RevokeCredentialResponse] = {

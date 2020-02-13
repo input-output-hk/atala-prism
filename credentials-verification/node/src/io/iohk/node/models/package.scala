@@ -5,7 +5,6 @@ import java.time.LocalDate
 
 import enumeratum.EnumEntry.UpperSnakecase
 import enumeratum._
-import org.bouncycastle.jce.provider.BouncyCastleProvider
 
 package object models {
 
@@ -43,9 +42,7 @@ package object models {
   object SHA256Digest {
     val BYTE_LENGTH = 32
 
-    java.security.Security.addProvider(new BouncyCastleProvider)
-
-    private def messageDigest = MessageDigest.getInstance("SHA256")
+    private def messageDigest = MessageDigest.getInstance("SHA-256")
     def compute(data: Array[Byte]): SHA256Digest = {
       SHA256Digest(messageDigest.digest(data))
     }

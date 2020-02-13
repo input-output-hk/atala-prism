@@ -34,8 +34,11 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
   def parseOperation(signedOperation: geud_proto.SignedAtalaOperation): Either[ValidationError, Operation] = {
     signedOperation.getOperation.operation match {
       case _: geud_proto.AtalaOperation.Operation.CreateDid =>
-        CreateDIDOperation
-          .parse(signedOperation.getOperation)
+        CreateDIDOperation.parse(signedOperation.getOperation)
+      case _: geud_proto.AtalaOperation.Operation.IssueCredential =>
+        IssueCredentialOperation.parse(signedOperation.getOperation)
+      case _: geud_proto.AtalaOperation.Operation.RevokeCredential =>
+        RevokeCredentialOperation.parse(signedOperation.getOperation)
       case op =>
         Left(InvalidValue(Path.root, op.getClass.getSimpleName, "Unknown operation"))
     }
