@@ -34,6 +34,8 @@ class LoginViewController: BaseViewController {
     }
 
     func setupTextFields() {
+        
+        setupUrlTextField()
 
         setupUrlTextField()
         textFields.forEach { textField in
