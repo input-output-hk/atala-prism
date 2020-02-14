@@ -1,5 +1,5 @@
 import React from 'react';
-import { Col, Select } from 'antd';
+import { Select } from 'antd';
 import { useTranslation } from 'react-i18next';
 import {
   getLanguages,
@@ -33,7 +33,7 @@ const LanguageSelector = () => {
     <div className="LanguajeMenu">
       <Select {...selectProps}>
         {languages.map(lang => (
-          <Select.Option value={lang} disabled={lang === currentLanguage}>
+          <Select.Option value={lang} disabled={lang === currentLanguage} key={`language-${lang}`}>
             <div className="LanguajeOption">
               <img src={flags[lang]} alt={`${t(`languages.${lang}`)}-${t('languages.flag')}`} />
               {customUpperCase(t(`languages.${lang}`))}

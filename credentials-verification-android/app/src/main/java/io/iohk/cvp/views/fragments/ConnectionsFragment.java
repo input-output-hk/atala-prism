@@ -1,5 +1,6 @@
 package io.iohk.cvp.views.fragments;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -9,13 +10,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.viewpager.widget.ViewPager;
 import butterknife.BindView;
+import com.google.android.gms.common.SupportErrorDialogFragment;
 import com.google.android.material.tabs.TabLayout;
 import io.iohk.cvp.R;
+import io.iohk.cvp.grpc.AsyncTaskResult;
 import io.iohk.cvp.io.connector.ConnectionInfo;
 import io.iohk.cvp.io.connector.ParticipantInfo;
 import io.iohk.cvp.utils.ActivityUtils;
@@ -50,7 +54,7 @@ public class ConnectionsFragment extends CvpFragment<ConnectionsActivityViewMode
   @Inject
   ConnectionsListFragment employersListFragment;
 
-  private LiveData<List<ConnectionInfo>> liveData;
+  private LiveData<AsyncTaskResult<List<ConnectionInfo>>> liveData;
 
   @Inject
   public ConnectionsFragment() {
@@ -58,7 +62,8 @@ public class ConnectionsFragment extends CvpFragment<ConnectionsActivityViewMode
 
   @Override
   public ConnectionsActivityViewModel getViewModel() {
-    ConnectionsActivityViewModel viewModel = ViewModelProviders.of(this, factory).get(ConnectionsActivityViewModel.class);
+    ConnectionsActivityViewModel viewModel = ViewModelProviders.of(this, factory)
+        .get(ConnectionsActivityViewModel.class);
     viewModel.setContext(getContext());
     return viewModel;
   }
@@ -121,7 +126,18 @@ public class ConnectionsFragment extends CvpFragment<ConnectionsActivityViewMode
     liveData = viewModel.getConnections(userIds);
 
     if (!liveData.hasActiveObservers()) {
-      liveData.observe(this, connections -> {
+      liveData.observe(this, response -> {
+        FragmentManager fm = getFragmentManager();
+        if (response.getError() != null) {
+          SupportErrorDialogFragment.newInstance(new Dialog(getContext()))
+              .show(fm, "");
+          getNavigator().showPopUp(getFragmentManager(), getResources().getString(
+              R.string.server_error_message));
+          return;
+        }
+
+        List<ConnectionInfo> connections = response.getResult();
+
         List<ConnectionInfo> issuerConnections = connections.stream()
             .filter(conn -> conn.getParticipantInfo().getParticipantCase().getNumber()
                 == ParticipantInfo.ISSUER_FIELD_NUMBER)

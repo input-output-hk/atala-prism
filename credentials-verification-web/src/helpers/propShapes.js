@@ -1,6 +1,9 @@
-import { string, shape, number, oneOf, oneOfType, func, object, bool, arrayOf } from 'prop-types';
+import { string, shape, number, oneOf, oneOfType, func, object, bool } from 'prop-types';
 import __ from 'lodash';
 import { CONNECTION_STATUSES } from './constants';
+
+export const connectionStatusesShape = __.values(CONNECTION_STATUSES);
+export const connectionStatusesKeysShape = __.keys(CONNECTION_STATUSES);
 
 export const subjectShape = {
   avatar: string,
@@ -8,7 +11,7 @@ export const subjectShape = {
   identityNumber: number,
   admissionDate: number,
   email: string,
-  status: oneOf(['PENDING_CONNECTION', 'CONNECTED']),
+  status: oneOf(connectionStatusesShape),
   id: string
 };
 
@@ -65,12 +68,10 @@ export const dateObjectShape = {
   year: number
 };
 
-export const connectionStatusesShape = __.values(CONNECTION_STATUSES);
-
 export const studentShape = {
   admissiondate: dateObjectShape,
   connectionid: string,
-  connectionstatus: oneOfType(connectionStatusesShape),
+  connectionstatus: oneOf(connectionStatusesShape),
   connectiontoken: string,
   fullname: string,
   id: string,

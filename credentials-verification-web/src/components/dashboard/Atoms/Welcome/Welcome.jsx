@@ -1,5 +1,4 @@
-import React, { Fragment } from 'react';
-import { Col, Row } from 'antd';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import PropTypes from 'prop-types';
 import welcomeImage from '../../../../images/DashboardWelcome.svg';

@@ -3,16 +3,25 @@ package io.iohk.node
 import java.security.PublicKey
 
 import com.google.protobuf.ByteString
+import io.grpc.Status
 import io.iohk.cvp.crypto.ECKeys
 import io.iohk.node.errors.NodeError
 import io.iohk.node.models.KeyUsage.{AuthenticationKey, CommunicationKey, IssuingKey, MasterKey}
-import io.iohk.node.services.DIDDataService
+import io.iohk.node.operations.{
+  CreateDIDOperation,
+  IssueCredentialOperation,
+  RevokeCredentialOperation,
+  ValidationError
+}
+import io.iohk.node.services.{DIDDataService, ObjectManagementService}
 import io.iohk.nodenew.geud_node_new.NodeServiceGrpc.NodeService
 import io.iohk.nodenew.{geud_node_new => proto}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class NodeServiceImpl(didDataService: DIDDataService)(implicit ec: ExecutionContext) extends NodeService {
+class NodeServiceImpl(didDataService: DIDDataService, objectManagement: ObjectManagementService)(
+    implicit ec: ExecutionContext
+) extends NodeService {
   override def getDidDocument(request: proto.GetDidDocumentRequest): Future[proto.GetDidDocumentResponse] = {
 
     didDataService.findByDID(request.did).value.flatMap {
@@ -22,11 +31,26 @@ class NodeServiceImpl(didDataService: DIDDataService)(implicit ec: ExecutionCont
     }
   }
 
-  override def createDID(request: proto.SignedAtalaOperation): Future[proto.CreateDIDResponse] = ???
+  override def createDID(request: proto.SignedAtalaOperation): Future[proto.CreateDIDResponse] = {
+    for {
+      _ <- errorEitherToFuture(CreateDIDOperation.parse(request.operation.get))
+      _ <- objectManagement.publishAtalaOperation(request)
+    } yield proto.CreateDIDResponse()
+  }
 
-  override def issueCredential(request: proto.SignedAtalaOperation): Future[proto.IssueCredentialResponse] = ???
+  override def issueCredential(request: proto.SignedAtalaOperation): Future[proto.IssueCredentialResponse] = {
+    for {
+      _ <- errorEitherToFuture(IssueCredentialOperation.parse(request.operation.get))
+      _ <- objectManagement.publishAtalaOperation(request)
+    } yield proto.IssueCredentialResponse()
+  }
 
-  override def revokeCredential(request: proto.SignedAtalaOperation): Future[proto.RevokeCredentialResponse] = ???
+  override def revokeCredential(request: proto.SignedAtalaOperation): Future[proto.RevokeCredentialResponse] = {
+    for {
+      _ <- errorEitherToFuture(RevokeCredentialOperation.parse(request.operation.get))
+      _ <- objectManagement.publishAtalaOperation(request)
+    } yield proto.RevokeCredentialResponse()
+  }
 
   private def toDIDData(didData: models.DIDData) = {
     proto
@@ -50,6 +74,7 @@ class NodeServiceImpl(didDataService: DIDDataService)(implicit ec: ExecutionCont
     val point = ECKeys.getECPoint(key)
     proto
       .ECKeyData()
+      .withCurve(ECKeys.CURVE_NAME)
       .withX(ByteString.copyFrom(point.getAffineX.toByteArray))
       .withY(ByteString.copyFrom(point.getAffineY.toByteArray))
   }
@@ -61,6 +86,14 @@ class NodeServiceImpl(didDataService: DIDDataService)(implicit ec: ExecutionCont
       case CommunicationKey => proto.KeyUsage.COMMUNICATION_KEY
       case AuthenticationKey => proto.KeyUsage.AUTHENTICATION_KEY
 
+    }
+  }
+
+  protected def errorEitherToFuture[T](either: Either[ValidationError, T]): Future[T] = {
+    Future.fromTry {
+      either.left.map { error =>
+        Status.INVALID_ARGUMENT.withDescription(error.render).asRuntimeException()
+      }.toTry
     }
   }
 }

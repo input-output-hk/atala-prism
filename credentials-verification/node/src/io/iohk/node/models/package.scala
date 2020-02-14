@@ -5,6 +5,7 @@ import java.time.LocalDate
 
 import enumeratum.EnumEntry.UpperSnakecase
 import enumeratum._
+import org.bouncycastle.jce.provider.BouncyCastleProvider
 
 package object models {
 
@@ -41,6 +42,8 @@ package object models {
 
   object SHA256Digest {
     val BYTE_LENGTH = 32
+
+    java.security.Security.addProvider(new BouncyCastleProvider)
 
     private def messageDigest = MessageDigest.getInstance("SHA256")
     def compute(data: Array[Byte]): SHA256Digest = {
@@ -89,5 +92,12 @@ package object models {
       issuedOn: LocalDate,
       revokedOn: Option[LocalDate] = None,
       lastOperation: SHA256Digest
+  )
+
+  case class AtalaObject(
+      objectId: SHA256Digest,
+      sequenceNumber: Int,
+      blockHash: Option[SHA256Digest],
+      processed: Boolean
   )
 }

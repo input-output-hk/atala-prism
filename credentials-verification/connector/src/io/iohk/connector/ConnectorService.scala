@@ -1,8 +1,7 @@
 package io.iohk.connector
 
-import java.util.{Base64, UUID}
+import java.util.UUID
 
-import io.iohk.AuthSupport
 import io.iohk.connector.errors._
 import io.iohk.connector.model.Message
 import io.iohk.connector.model.payments.{ClientNonce, Payment => ConnectorPayment}
@@ -11,31 +10,28 @@ import io.iohk.connector.payments.BraintreePayments
 import io.iohk.connector.repositories.PaymentsRepository
 import io.iohk.connector.services.{ConnectionsService, MessagesService}
 import io.iohk.cvp.connector.protos._
-import io.iohk.cvp.grpc.UserIdInterceptor._
 import io.iohk.cvp.crypto.ECKeys
-import io.iohk.cvp.grpc.UserIdInterceptor.participantId
+import io.iohk.cvp.crypto.ECKeys._
+import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither._
 import org.slf4j.{Logger, LoggerFactory}
-import io.iohk.cvp.crypto.ECKeys._
-import io.iohk.cvp.crypto.{ECKeys, ECSignature}
-import io.iohk.cvp.models.ParticipantId
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 import scala.util.control.NonFatal
 class ConnectorService(
-    override val connections: ConnectionsService,
+    connections: ConnectionsService,
     messages: MessagesService,
     braintreePayments: BraintreePayments,
-    paymentsRepository: PaymentsRepository
+    paymentsRepository: PaymentsRepository,
+    authenticator: Authenticator
 )(
     implicit executionContext: ExecutionContext
 ) extends ConnectorServiceGrpc.ConnectorService
-    with ErrorSupport
-    with AuthSupport {
+    with ErrorSupport {
 
-  val logger: Logger = LoggerFactory.getLogger(getClass)
+  val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   /** Get active connections for current participant
     *
@@ -64,14 +60,18 @@ class ConnectorService(
         .wrapExceptions
     }
 
-    {
-      for {
-        userId <- getSignatureHeader()
-          .map(authenticate(request.toByteArray, _))
-          .getOrElse(Right(participantId()).toFutureEither)
-        conns <- getLastSeenConnections(userId)
-      } yield GetConnectionsPaginatedResponse(conns.map(_.toProto))
-    }.successMap(identity)
+    def f(participantId: ParticipantId) = {
+      {
+        for {
+          conns <- getLastSeenConnections(participantId)
+        } yield GetConnectionsPaginatedResponse(conns.map(_.toProto))
+      }.successMap(identity)
+    }
+
+    authenticator.authenticated("getConnectionsPaginated", request) { participantId =>
+      f(participantId)
+    }
+
   }
 
   /** Return info about connection token such as creator info
@@ -85,13 +85,14 @@ class ConnectorService(
       request: GetConnectionTokenInfoRequest
   ): Future[GetConnectionTokenInfoResponse] = {
     implicit val loggingContext = LoggingContext("request" -> request)
-
-    connections
-      .getTokenInfo(new model.TokenString(request.token))
-      .wrapExceptions
-      .successMap { participantInfo =>
-        GetConnectionTokenInfoResponse(Some(participantInfo.toProto))
-      }
+    authenticator.public("getConnectionTokenInfo", request) {
+      connections
+        .getTokenInfo(new model.TokenString(request.token))
+        .wrapExceptions
+        .successMap { participantInfo =>
+          GetConnectionTokenInfoResponse(Some(participantInfo.toProto))
+        }
+    }
   }
 
   /** Instantiate connection from connection token
@@ -105,41 +106,46 @@ class ConnectorService(
       request: AddConnectionFromTokenRequest
   ): Future[AddConnectionFromTokenResponse] = {
     implicit val loggingContext = LoggingContext("request" -> request)
-
-    val paymentNonce = Option(request.paymentNonce).filter(_.nonEmpty).map(s => new ClientNonce(s))
-    val publicKey = request.holderEncodedPublicKey
-      .map { encodedKey =>
-        io.iohk.cvp.crypto.ECKeys.EncodedPublicKey(encodedKey.publicKey.toByteArray.toVector)
-      }
-      .getOrElse {
-        // The iOS app has a key hardcoded which is not a valid ECKey
-        // This hack allow us to do the demo because it generates a valid key
-        // ignoring whatever cames from the app.
-        // TODO: Remove me after the demo
-        try {
-          request.holderPublicKey
-            .map { protoKey =>
-              toEncodePublicKey(
-                toPublicKey(
-                  x = BigInt(protoKey.x),
-                  y = BigInt(protoKey.y)
-                )
-              )
+    def f() = {
+      Future {
+        val paymentNonce = Option(request.paymentNonce).filter(_.nonEmpty).map(s => new ClientNonce(s))
+        val publicKey = request.holderEncodedPublicKey
+          .map { encodedKey =>
+            io.iohk.cvp.crypto.ECKeys.EncodedPublicKey(encodedKey.publicKey.toByteArray.toVector)
+          }
+          .getOrElse {
+            // The iOS app has a key hardcoded which is not a valid ECKey
+            // This hack allow us to do the demo because it generates a valid key
+            // ignoring whatever cames from the app.
+            // TODO: Remove me after the demo
+            try {
+              request.holderPublicKey
+                .map { protoKey =>
+                  toEncodePublicKey(
+                    toPublicKey(
+                      x = BigInt(protoKey.x),
+                      y = BigInt(protoKey.y)
+                    )
+                  )
+                }
+                .getOrElse(throw new RuntimeException("Missing public key"))
+            } catch {
+              case NonFatal(e) =>
+                toEncodePublicKey(ECKeys.generateKeyPair().getPublic)
             }
-            .getOrElse(throw new RuntimeException("Missing public key"))
-        } catch {
-          case NonFatal(e) =>
-            toEncodePublicKey(ECKeys.generateKeyPair().getPublic)
-        }
-      }
+          }
 
-    connections
-      .addConnectionFromToken(new model.TokenString(request.token), publicKey, paymentNonce)
-      .wrapExceptions
-      .successMap {
-        case (userId, connectionInfo) =>
-          AddConnectionFromTokenResponse(Some(connectionInfo.toProto)).withUserId(userId.uuid.toString)
-      }
+        connections
+          .addConnectionFromToken(new model.TokenString(request.token), publicKey, paymentNonce)
+          .wrapExceptions
+          .successMap {
+            case (userId, connectionInfo) =>
+              AddConnectionFromTokenResponse(Some(connectionInfo.toProto)).withUserId(userId.uuid.toString)
+          }
+      }.flatten
+    }
+
+    authenticator.public("addConnectionFromToken", request) { f() }
   }
 
   /** Delete active connection
@@ -194,18 +200,22 @@ class ConnectorService(
   override def generateConnectionToken(
       request: GenerateConnectionTokenRequest
   ): Future[GenerateConnectionTokenResponse] = {
-    val userId = participantId()
+    def f(userId: ParticipantId) = {
 
-    implicit val loggingContext = LoggingContext("request" -> request, "userId" -> userId)
+      implicit val loggingContext: LoggingContext = LoggingContext("request" -> request, "userId" -> userId)
+      connections
+        .generateToken(userId)
+        .wrapExceptions
+        .successMap { tokenString =>
+          GenerateConnectionTokenResponse(tokenString.token)
+        }
 
-    connections
-      .generateToken(userId)
-      .wrapExceptions
-      .successMap { tokenString =>
-        GenerateConnectionTokenResponse(tokenString.token)
-      }
+    }
+    authenticator.authenticated("generateConnectionToken", request) { participantId =>
+      f(participantId)
+    }
+
   }
-
 
   /** Return messages received after given time moment, sorted in ascending order by receive time
     *
@@ -232,38 +242,48 @@ class ConnectorService(
         .wrapExceptions
     }
 
-    {
-      for {
-        userId <- getSignatureHeader()
-          .map(authenticate(request.toByteArray, _))
-          .getOrElse(Right(participantId()).toFutureEither)
-        msgs <- getLastSeenMessages(userId)
-      } yield GetMessagesPaginatedResponse(msgs.map(_.toProto))
-    }.successMap(identity)
+    def f(participantId: ParticipantId) = {
+      {
+        for {
+          msgs <- getLastSeenMessages(participantId)
+        } yield GetMessagesPaginatedResponse(msgs.map(_.toProto))
+      }.successMap(identity)
+    }
+
+    authenticator.authenticated("getMessagesPaginated", request) { participantId =>
+      f(participantId)
+    }
 
   }
 
   override def getMessagesForConnection(
       request: GetMessagesForConnectionRequest
   ): Future[GetMessagesForConnectionResponse] = {
-    val userId = participantId()
 
-    implicit val loggingContext = LoggingContext("request" -> request, "userId" -> userId)
+    def f(userId: ParticipantId) = {
+      Future {
+        implicit val loggingContext: LoggingContext = LoggingContext("request" -> request, "userId" -> userId)
+        val validatedConnectionId = Try(request.connectionId)
+          .map(UUID.fromString)
+          .map(model.ConnectionId.apply)
+          .fold(
+            ex => Left(InvalidArgumentError("connectionId", "valid id", request.connectionId).logWarn),
+            id => Right(id)
+          )
 
-    val validatedConnectionId = Try(request.connectionId)
-      .map(UUID.fromString)
-      .map(model.ConnectionId.apply)
-      .fold(
-        ex => Left(InvalidArgumentError("connectionId", "valid id", request.connectionId).logWarn),
-        id => Right(id)
-      )
+        validatedConnectionId.toFutureEither
+          .flatMap(connectionId => messages.getMessages(userId, connectionId))
+          .wrapExceptions
+          .successMap { msgs =>
+            GetMessagesForConnectionResponse(msgs.map(_.toProto))
+          }
+      }.flatten
+    }
 
-    validatedConnectionId.toFutureEither
-      .flatMap(connectionId => messages.getMessages(userId, connectionId))
-      .wrapExceptions
-      .successMap { msgs =>
-        GetMessagesForConnectionResponse(msgs.map(_.toProto))
-      }
+    authenticator.authenticated("getMessagesForConnection", request) { participantId =>
+      f(participantId)
+    }
+
   }
 
   /** Send message over a connection
@@ -275,31 +295,39 @@ class ConnectorService(
     * Connection closed (FAILED_PRECONDITION)
     */
   override def sendMessage(request: SendMessageRequest): Future[SendMessageResponse] = {
-    val userId = participantId()
 
-    implicit val loggingContext = LoggingContext("request" -> request, "userId" -> userId)
-    val connectionId = model.ConnectionId(UUID.fromString(request.connectionId))
+    def f(userId: ParticipantId) = {
+      Future {
+        implicit val loggingContext = LoggingContext("request" -> request, "userId" -> userId)
+        val connectionId = model.ConnectionId(UUID.fromString(request.connectionId))
 
-    messages
-      .insertMessage(userId, connectionId, request.message.toByteArray)
-      .wrapExceptions
-      .successMap(_ => SendMessageResponse())
+        messages
+          .insertMessage(userId, connectionId, request.message.toByteArray)
+          .wrapExceptions
+          .successMap(_ => SendMessageResponse())
+      }.flatten
+    }
+
+    authenticator.authenticated("sendMessage", request) { participantId =>
+      f(participantId)
+    }
   }
 
   override def getBraintreePaymentsConfig(
       request: GetBraintreePaymentsConfigRequest
   ): Future[GetBraintreePaymentsConfigResponse] = {
-    Future.successful(GetBraintreePaymentsConfigResponse(tokenizationKey = braintreePayments.tokenizationKey))
+    authenticator.public("getBraintreePaymentsConfig", request) {
+      Future.successful(GetBraintreePaymentsConfigResponse(tokenizationKey = braintreePayments.tokenizationKey))
+    }
   }
 
   override def processPayment(request: ProcessPaymentRequest): Future[ProcessPaymentResponse] = {
-    val userId = participantId()
-    implicit val loggingContext = LoggingContext("request" -> request, "userId" -> userId)
 
-    val nonce = new ClientNonce(request.nonce)
-    val amount = BigDecimal(request.amount)
-
-    def tryProcessingPayment: FutureEither[Nothing, ConnectorPayment] = {
+    def tryProcessingPayment(
+        userId: ParticipantId,
+        amount: BigDecimal,
+        nonce: ClientNonce
+    ): FutureEither[Nothing, ConnectorPayment] = {
       braintreePayments
         .processPayment(amount, nonce)
         .value
@@ -313,28 +341,47 @@ class ConnectorService(
         .toFutureEither
     }
 
-    val result = for {
-      maybe <- paymentsRepository.find(userId, nonce)
-      payment <- maybe match {
-        case None => tryProcessingPayment
-        case Some(payment) => Future.successful(Right(payment)).toFutureEither
-      }
-    } yield payment
+    def f(userId: ParticipantId) = {
+      Future {
+        val nonce: ClientNonce = new ClientNonce(request.nonce)
+        val amount: BigDecimal = BigDecimal(request.amount)
 
-    result.value
-      .map {
-        case Left(_) => throw new RuntimeException("Impossible")
-        case Right(p) =>
-          ProcessPaymentResponse().withPayment(toPaymentProto(p))
-      }
+        implicit val loggingContext = LoggingContext("request" -> request, "userId" -> userId)
+
+        val result = for {
+          maybe <- paymentsRepository.find(userId, nonce)
+          payment <- maybe match {
+            case None => tryProcessingPayment(userId, amount, nonce)
+            case Some(payment) => Future.successful(Right(payment)).toFutureEither
+          }
+        } yield payment
+
+        result.value
+          .map {
+            case Left(_) => throw new RuntimeException("Impossible")
+            case Right(p) =>
+              ProcessPaymentResponse().withPayment(toPaymentProto(p))
+          }
+      }.flatten
+
+    }
+
+    authenticator.authenticated("processPayment", request) { participantId =>
+      f(participantId)
+    }
+
   }
 
   override def getPayments(request: GetPaymentsRequest): Future[GetPaymentsResponse] = {
-    val userId = participantId()
+    def f(userId: ParticipantId) = {
+      paymentsRepository.find(userId).value.map {
+        case Left(_) => throw new RuntimeException("Impossible")
+        case Right(payments) => GetPaymentsResponse(payments.map(toPaymentProto))
+      }
+    }
 
-    paymentsRepository.find(userId).value.map {
-      case Left(_) => throw new RuntimeException("Impossible")
-      case Right(payments) => GetPaymentsResponse(payments.map(toPaymentProto))
+    authenticator.authenticated("getPayments", request) { participantId =>
+      f(participantId)
     }
   }
 

@@ -11,6 +11,7 @@ class LoginPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelega
         case validatingWords
     }
 
+    let cryptoUtils = CryptoUtils.global
     var stateSpecial: LoginSpecialState = .none
     var data: [Int] = []
 
@@ -65,17 +66,10 @@ class LoginPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelega
 
     func fetchData() {
 
-        // TODO: Delete me when services are ready
         DispatchQueue.global(qos: .background).async {
-            print("This is run on the background queue")
-
-            sleep(1)
 
             self.cleanData()
-
-            // Fake data
-            let indexes = FakeData.loginWords()
-            self.data = indexes
+            self.data = self.cryptoUtils.getUsedRandomIndexes(count: 2)
 
             DispatchQueue.main.async {
                 self.startListing()
@@ -109,19 +103,15 @@ class LoginPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelega
 
         let words = viewImpl!.getTextFieldsTexts()
 
-        // TODO: Delete me when services are ready
         DispatchQueue.global(qos: .background).async {
-            print("This is run on the background queue")
 
-            // sleep(1)
-
-            self.cleanData()
-
-            // Fake data
             var user: LoggedUser?
-            if FakeData.loginIsValid(words: words) {
-                // user = FakeData.fakeProfile()
+            if self.cryptoUtils.checkWordsValidity(indexes: self.data, words: words) {
                 user = LoggedUser()
+                user?.apiUrl = Common.URL_API
+                user?.mnemonics = CryptoUtils.global.mnemonics
+                user?.seed = CryptoUtils.global.seed
+                user?.privateKey = CryptoUtils.global.pk?.extended()
             }
 
             DispatchQueue.main.async {

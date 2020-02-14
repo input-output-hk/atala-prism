@@ -47,13 +47,13 @@ object ConnectionsDAO {
       .map(_.isDefined)
   }
 
-  def getOtherSide(connection: ConnectionId, participant: ParticipantId): doobie.ConnectionIO[ParticipantId] = {
+  def getOtherSide(connection: ConnectionId, participant: ParticipantId): doobie.ConnectionIO[Option[ParticipantId]] = {
     sql"""
          |SELECT acceptor AS other_side FROM connections WHERE id = $connection AND initiator = $participant
          | UNION
          | SELECT initiator AS other_side FROM connections WHERE id = $connection AND acceptor = $participant""".stripMargin
       .query[ParticipantId]
-      .unique // TODO: use option, support error
+      .option
   }
 
   def getConnectionsPaginated(

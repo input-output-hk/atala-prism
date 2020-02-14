@@ -1,7 +1,7 @@
 package io.iohk.cvp.cmanager.grpc
 
+import io.iohk.connector.UserIdInterceptor
 import io.iohk.cvp.cmanager.models.Issuer
-import io.iohk.cvp.grpc.UserIdInterceptor
 
 package object services {
   private[grpc] def getIssuerId(): Issuer.Id = {

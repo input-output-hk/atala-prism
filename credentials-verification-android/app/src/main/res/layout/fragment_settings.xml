@@ -1,114 +1,118 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
   android:layout_width="match_parent"
-  android:layout_height="match_parent"
-  android:paddingTop="48dp"
-  android:background="@drawable/bg_settings">
+  android:layout_height="match_parent">
+  <androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingTop="48dp"
+    android:background="@drawable/bg_settings">
 
-  <!--  <TextView
-      android:id="@+id/title"
+    <!--  <TextView
+        android:id="@+id/title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:layout_marginStart="@dimen/activity_default_side_margin"
+        android:text="@string/settings"
+        android:textColor="@color/black"
+        android:textSize="@dimen/titles_text_size"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />-->
+
+
+    <io.iohk.cvp.views.utils.components.OptionItem
+      android:id="@+id/backup"
       android:layout_width="0dp"
       android:layout_height="wrap_content"
-      android:layout_marginTop="24dp"
+      android:layout_marginTop="48dp"
       android:layout_marginStart="@dimen/activity_default_side_margin"
-      android:text="@string/settings"
-      android:textColor="@color/black"
-      android:textSize="@dimen/titles_text_size"
+      android:layout_marginEnd="@dimen/activity_default_side_margin"
+      app:actionImage="@drawable/arrow_right_grey"
+      app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toTopOf="parent" />-->
+      app:layout_constraintTop_toTopOf="parent"
+      app:logoImage="@drawable/ic_backup"
+      app:primaryText="@string/backup_button_name"
+      app:secondaryText="@string/backup_button_description" />
 
+    <io.iohk.cvp.views.utils.components.OptionItem
+      android:id="@+id/security"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="16dp"
+      android:layout_marginStart="@dimen/activity_default_side_margin"
+      android:layout_marginEnd="@dimen/activity_default_side_margin"
+      app:actionImage="@drawable/arrow_right_grey"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/backup"
+      app:logoImage="@drawable/ic_security"
+      app:primaryText="@string/security_button_name"
+      app:secondaryText="@string/security_button_description" />
 
-  <io.iohk.cvp.views.utils.components.OptionItem
-    android:id="@+id/backup"
-    android:layout_width="0dp"
-    android:layout_height="wrap_content"
-    android:layout_marginTop="48dp"
-    android:layout_marginStart="@dimen/activity_default_side_margin"
-    android:layout_marginEnd="@dimen/activity_default_side_margin"
-    app:actionImage="@drawable/arrow_right_grey"
-    app:layout_constraintEnd_toEndOf="parent"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toTopOf="parent"
-    app:logoImage="@drawable/ic_backup"
-    app:primaryText="@string/backup_button_name"
-    app:secondaryText="@string/backup_button_description" />
+    <io.iohk.cvp.views.utils.components.OptionItem
+      android:id="@+id/pin_code"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="16dp"
+      android:layout_marginStart="@dimen/activity_default_side_margin"
+      android:layout_marginEnd="@dimen/activity_default_side_margin"
+      app:actionImage="@drawable/arrow_right_grey"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/security"
+      app:logoImage="@drawable/ic_pin_code"
+      app:primaryText="@string/pin_code_button_name"
+      app:secondaryText="@string/pin_code_button_description" />
 
-  <io.iohk.cvp.views.utils.components.OptionItem
-    android:id="@+id/security"
-    android:layout_width="0dp"
-    android:layout_height="wrap_content"
-    android:layout_marginTop="16dp"
-    android:layout_marginStart="@dimen/activity_default_side_margin"
-    android:layout_marginEnd="@dimen/activity_default_side_margin"
-    app:actionImage="@drawable/arrow_right_grey"
-    app:layout_constraintEnd_toEndOf="parent"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toBottomOf="@id/backup"
-    app:logoImage="@drawable/ic_security"
-    app:primaryText="@string/security_button_name"
-    app:secondaryText="@string/security_button_description" />
+    <io.iohk.cvp.views.utils.components.OptionItem
+      android:id="@+id/support"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="16dp"
+      android:layout_marginStart="@dimen/activity_default_side_margin"
+      android:layout_marginEnd="@dimen/activity_default_side_margin"
+      app:actionImage="@drawable/arrow_right_grey"
+      app:isAvailable="true"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/pin_code"
+      app:logoImage="@drawable/ic_support"
+      app:primaryText="@string/support_button_name"
+      app:secondaryText="@string/support_button_description" />
 
-  <io.iohk.cvp.views.utils.components.OptionItem
-    android:id="@+id/pin_code"
-    android:layout_width="0dp"
-    android:layout_height="wrap_content"
-    android:layout_marginTop="16dp"
-    android:layout_marginStart="@dimen/activity_default_side_margin"
-    android:layout_marginEnd="@dimen/activity_default_side_margin"
-    app:actionImage="@drawable/arrow_right_grey"
-    app:layout_constraintEnd_toEndOf="parent"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toBottomOf="@id/security"
-    app:logoImage="@drawable/ic_pin_code"
-    app:primaryText="@string/pin_code_button_name"
-    app:secondaryText="@string/pin_code_button_description" />
+    <io.iohk.cvp.views.utils.components.OptionItem
+      android:id="@+id/about"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="16dp"
+      android:layout_marginStart="@dimen/activity_default_side_margin"
+      android:layout_marginEnd="@dimen/activity_default_side_margin"
+      app:actionImage="@drawable/arrow_right_grey"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/support"
+      app:logoImage="@drawable/ic_about"
+      app:primaryText="@string/about_button_name"
+      app:secondaryText="@string/about_button_description" />
 
-  <io.iohk.cvp.views.utils.components.OptionItem
-    android:id="@+id/support"
-    android:layout_width="0dp"
-    android:layout_height="wrap_content"
-    android:layout_marginTop="16dp"
-    android:layout_marginStart="@dimen/activity_default_side_margin"
-    android:layout_marginEnd="@dimen/activity_default_side_margin"
-    app:actionImage="@drawable/arrow_right_grey"
-    app:isAvailable="true"
-    app:layout_constraintEnd_toEndOf="parent"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toBottomOf="@id/pin_code"
-    app:logoImage="@drawable/ic_support"
-    app:primaryText="@string/support_button_name"
-    app:secondaryText="@string/support_button_description" />
+    <io.iohk.cvp.views.utils.components.OptionItem
+      android:id="@+id/backend_ip"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="16dp"
+      android:layout_marginStart="@dimen/activity_default_side_margin"
+      android:layout_marginEnd="@dimen/activity_default_side_margin"
+      app:actionImage="@drawable/arrow_right_grey"
+      app:isAvailable="true"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@id/about"
+      app:logoImage="@drawable/ic_about"
+      app:primaryText="Backend config"
+      app:secondaryText="Set api url and port" />
 
-  <io.iohk.cvp.views.utils.components.OptionItem
-    android:id="@+id/about"
-    android:layout_width="0dp"
-    android:layout_height="wrap_content"
-    android:layout_marginTop="16dp"
-    android:layout_marginStart="@dimen/activity_default_side_margin"
-    android:layout_marginEnd="@dimen/activity_default_side_margin"
-    app:actionImage="@drawable/arrow_right_grey"
-    app:layout_constraintEnd_toEndOf="parent"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toBottomOf="@id/support"
-    app:logoImage="@drawable/ic_about"
-    app:primaryText="@string/about_button_name"
-    app:secondaryText="@string/about_button_description" />
-
-  <io.iohk.cvp.views.utils.components.OptionItem
-    android:id="@+id/backend_ip"
-    android:layout_width="0dp"
-    android:layout_height="wrap_content"
-    android:layout_marginTop="16dp"
-    android:layout_marginStart="@dimen/activity_default_side_margin"
-    android:layout_marginEnd="@dimen/activity_default_side_margin"
-    app:actionImage="@drawable/arrow_right_grey"
-    app:isAvailable="true"
-    app:layout_constraintEnd_toEndOf="parent"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toBottomOf="@id/about"
-    app:logoImage="@drawable/ic_about"
-    app:primaryText="Backend config"
-    app:secondaryText="Set api url and port" />
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+  </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

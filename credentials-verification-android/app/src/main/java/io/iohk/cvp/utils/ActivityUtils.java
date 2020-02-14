@@ -2,6 +2,8 @@ package io.iohk.cvp.utils;
 
 import android.app.Activity;
 import android.content.Intent;
+import androidx.fragment.app.FragmentManager;
+import io.iohk.cvp.R;
 import io.iohk.cvp.viewmodel.ConnectionsActivityViewModel;
 import io.iohk.cvp.views.activities.MainActivity;
 import io.iohk.cvp.views.fragments.AcceptConnectionDialogFragment;
@@ -18,12 +20,18 @@ public class ActivityUtils {
       String token = data.getStringExtra(IntentDataConstants.QR_RESULT);
 
       viewModel.getConnectionTokenInfo(token)
-          .observe(fragment, issuerInfo ->
-              fragment.getNavigator().showDialogFragment(
-                  Objects.requireNonNull(activity).getSupportFragmentManager(),
-                  AcceptConnectionDialogFragment
-                      .newInstance(token, issuerInfo),
-                  "ACCEPT_CONNECTION_DIALOG_FRAGMENT")
+          .observe(fragment, response -> {
+                FragmentManager fragmentManager = Objects.requireNonNull(activity)
+                    .getSupportFragmentManager();
+                if (response.getError() != null) {
+                  fragment.getNavigator().showPopUp(fragmentManager, fragment.getResources().getString(
+                      R.string.server_error_message));
+                  return;
+                }
+                fragment.getNavigator().showDialogFragment(fragmentManager,
+                    AcceptConnectionDialogFragment.newInstance(token, response.getResult()),
+                    "ACCEPT_CONNECTION_DIALOG_FRAGMENT");
+              }
           );
     }
   }

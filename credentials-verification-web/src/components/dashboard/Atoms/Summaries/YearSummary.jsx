@@ -22,7 +22,6 @@ const YearSummary = ({ year, amount }) => {
 };
 
 YearSummary.propTypes = {
-  type: PropTypes.string.isRequired,
   year: PropTypes.instanceOf(moment).isRequired,
   amount: PropTypes.number.isRequired
 };

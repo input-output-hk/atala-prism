@@ -11,7 +11,8 @@
     "test-no-watch": "react-scripts test --watchAll=false",
     "eject": "react-scripts eject",
     "eslint": "npx eslint . --ext .jsx --ext .js",
-    "ci-e2e": "start-server-and-test start-test-server http://localhost:3000 e2e-test"
+    "ci-e2e": "start-server-and-test start-test-server http://localhost:3000 e2e-test",
+    "test:debug": "react-scripts --inspect-brk test --runInBand --no-cache"
   },
   "dependencies": {
     "antd": "3.23.6",
@@ -22,20 +23,21 @@
     "i18next": "17.0.18",
     "lodash": "4.17.15",
     "moment": "2.24.0",
-    "node-sass": "4.12.0",
+    "node-sass": "4.13.1",
     "prop-types": "15.7.2",
     "qrcode.react": "0.9.3",
     "react": "16.10.1",
     "react-dom": "16.10.1",
     "react-i18next": "10.13.1",
     "react-router-dom": "5.1.2",
-    "react-scripts": "3.2.0",
-    "react-spinners": "0.6.1"
+    "react-scripts": "3.3.1",
+    "react-spinners": "0.6.1",
+    "react-tooltip": "3.11.2"
   },
   "devDependencies": {
+    "@testing-library/react": "9.4.0",
     "cypress": "3.4.1",
     "env-cmd": "10.0.1",
-    "eslint": "6.1.0",
     "eslint-config-airbnb": "17.1.0",
     "eslint-config-airbnb-base": "13.1.0",
     "eslint-config-prettier": "6.0.0",

@@ -35,7 +35,6 @@ const NewCredential = ({
   selectedGroup
 }) => {
   const { t } = useTranslation();
-
   const steps = [
     { stepTitle: 'newCredential.steps.step1' },
     { stepTitle: 'newCredential.steps.step2' },
@@ -86,7 +85,7 @@ const NewCredential = ({
 };
 
 NewCredential.defaultProps = {
-  selectedGroup: ''
+  selectedGroup: { name: '' }
 };
 
 NewCredential.propTypes = {
@@ -97,7 +96,7 @@ NewCredential.propTypes = {
   renderStep: PropTypes.func.isRequired,
   renderModal: PropTypes.func.isRequired,
   openModal: PropTypes.func.isRequired,
-  selectedGroup: PropTypes.string
+  selectedGroup: PropTypes.shape({ name: PropTypes.string })
 };
 
 export default NewCredential;

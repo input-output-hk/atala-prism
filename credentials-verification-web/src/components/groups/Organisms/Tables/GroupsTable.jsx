@@ -4,7 +4,6 @@ import { Button, message } from 'antd';
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import CellRenderer from '../../../common/Atoms/CellRenderer/CellRenderer';
-import { shortBackendDateFormatter } from '../../../../helpers/formatters';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import InfiniteScrollTable from '../../../common/Organisms/Tables/InfiniteScrollTable';
 
@@ -69,10 +68,10 @@ const getColumns = ({ setGroupToDelete, setGroup }) => {
   const actionColumn = {
     key: 'actions',
     width: 300,
-    render: ({ groupId, groupName }) => (
+    render: ({ key, name }) => (
       <GetActionsButtons
-        id={groupId}
-        setGroupToDelete={() => setGroupToDelete({ id: groupId, groupName })}
+        id={key}
+        setGroupToDelete={() => setGroupToDelete({ id: key, name })}
         fullInfo={fullInfo}
       />
     )
@@ -119,7 +118,8 @@ const GroupsTable = ({ setGroupToDelete, groups, selectedGroup, setGroup, onPage
         },
     loading,
     hasMore: false,
-    getMoreData
+    getMoreData,
+    rowKey: 'name'
   };
 
   return (
@@ -141,7 +141,7 @@ GroupsTable.propTypes = {
   onPageChange: PropTypes.func.isRequired,
   selectedGroup: PropTypes.string,
   setGroup: PropTypes.func,
-  hasMore: PropTypes.func.isRequired
+  hasMore: PropTypes.bool.isRequired
 };
 
 export default GroupsTable;

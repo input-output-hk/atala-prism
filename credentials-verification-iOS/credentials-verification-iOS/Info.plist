@@ -26,7 +26,7 @@
 		<true/>
 	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>App needs the camera to scan QR Codes</string>
+	<string>NSCameraUsageDescription</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

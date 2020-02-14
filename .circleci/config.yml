@@ -169,8 +169,7 @@ workflows:
           filters:
             branches:
               only:
-                - develop
-                - /infra.*/
+                - /develop.*/
                 - /test.*/
           requires:
             - build-credentials-verification-web

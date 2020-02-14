@@ -27,6 +27,7 @@ import {
   generateConnectionTokenForIndividual as generateConnectionTokenAsVerifier,
   createIndividual
 } from './cstore/credentialsStore';
+import { isAdminSupported, populateDemoDataset } from './admin/admin';
 
 const { config } = require('./config');
 
@@ -85,7 +86,9 @@ export const api = {
   getIndividualsAsIssuer,
   createIndividual,
   createStudent,
-  importBulk
+  importBulk,
+  isAdminSupported,
+  populateDemoDataset
 };
 
 export const hardcodedApi = {

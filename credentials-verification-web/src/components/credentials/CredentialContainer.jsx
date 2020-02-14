@@ -121,8 +121,7 @@ CredentialContainer.propTypes = {
     getCredentialsGroups: PropTypes.func.isRequired,
     getTotalCredentials: PropTypes.func.isRequired,
     issueCredential: PropTypes.func.isRequired,
-    getCredentials: PropTypes.func.isRequired,
-    deleteCredential: PropTypes.func.isRequired
+    getCredentials: PropTypes.func.isRequired
   }).isRequired
 };
 

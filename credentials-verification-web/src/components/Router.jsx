@@ -15,6 +15,7 @@ import Settings from './settings/SettingsContainer';
 import IndividualCreation from './individualCreation/IndividualCreationContainer';
 import StudentCreation from './studentCreation/StudentCreationContainer';
 import BulkImport from './bulkImport/BulkImportContainer';
+import Admin from './admin/AdminContainer';
 import { withSideBar } from './providers/withSideBar';
 import { ISSUER, VERIFIER } from '../helpers/constants';
 import { withLoggedValidation } from './providers/withLoggedValidation';
@@ -108,8 +109,15 @@ const bulkImport = {
   key: 'bulkImport',
   component: withLoggedValidation(withSideBar(BulkImport), allRoles)
 };
+const adminRoute = {
+  exact: true,
+  path: '/admin',
+  key: 'admin',
+  component: withLoggedValidation(withSideBar(Admin), allRoles)
+};
 
 const routes = [
+  adminRoute,
   loginRoute,
   errorRoute,
   connections,

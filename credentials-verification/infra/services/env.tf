@@ -299,7 +299,6 @@ resource aws_lb_target_group web-target-group {
   ]
 }
 
-
 // END of load balancer configuration
 
 // START of ECS container configuration
@@ -362,7 +361,7 @@ resource aws_autoscaling_group ec2-autoscaling-group {
     aws_lb_target_group.bitcoind-target-group.arn,
     aws_lb_target_group.connector-target-group.arn,
     aws_lb_target_group.node-target-group.arn,
-  aws_lb_target_group.envoy-target-group.arn]
+    aws_lb_target_group.envoy-target-group.arn]
 }
 
 resource aws_autoscaling_policy track-mean-cpu {
@@ -428,8 +427,6 @@ resource aws_ecs_service cvp-service {
 
   depends_on = [aws_iam_instance_profile.ecs-instance-profile]
 
-  // TODO look at dynamic mapping, which allows multiple container
-  // TODO instances on the same ec2 instance.
   load_balancer {
     target_group_arn = aws_lb_target_group.connector-target-group.arn
     container_name   = "connector"

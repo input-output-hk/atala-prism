@@ -1,12 +1,17 @@
-/* eslint import/no-unresolved: 0 */ // --> OFF
 import { CredentialsServicePromiseClient } from '../../protos/credentials/credentialsManager_grpc_web_pb';
-import {
+import Logger from '../../helpers/Logger';
+import { setDateInfoFromJSON } from '../helpers';
+import { getStudents } from './studentsManager';
+import { getDid } from '../wallet/wallet';
+import { CONNECTION_ACCEPTED } from '../../helpers/constants';
+
+const {
   GetCredentialsRequest,
   CreateCredentialRequest,
   RegisterRequest,
   Date
-} from '../../protos/connector/credentialsManager_pb';
-import {
+} = require('../../protos/connector/credentialsManager_pb');
+const {
   Credential,
   IssuerData,
   SubjectData,
@@ -14,12 +19,7 @@ import {
   SentCredential,
   IssuerSentCredential,
   Signer
-} from '../../protos/credentials/credential_pb';
-import Logger from '../../helpers/Logger';
-import { setDateInfoFromJSON } from '../helpers';
-import { getStudents } from './studentsManager';
-import { getDid } from '../wallet/wallet';
-import { CONNECTION_STATUSES, CONNECTION_ACCEPTED } from '../../helpers/constants';
+} = require('../../protos/credentials/credential_pb');
 
 const { config } = require('../config');
 
@@ -247,9 +247,9 @@ const populateCredential = ({ issuerInfo, subjectInfo, signersInfo, additionalIn
   return credential;
 };
 
-const getNamesAndSurames = fullName => {
+export const getNamesAndSurnames = fullName => {
   const wordsSeparator = '@';
-  const [joinedNames, joinedSurnames] = fullName.split(' ');
+  const [joinedNames, joinedSurnames = ''] = fullName.split(' ');
 
   const names = joinedNames.split(wordsSeparator);
   const surnames = joinedSurnames.split(wordsSeparator);
@@ -258,17 +258,7 @@ const getNamesAndSurames = fullName => {
 };
 
 const parseAndPopulate = async (credentialData, studentData) => {
-  const {
-    enrollmentdate,
-    graduationdate,
-    groupname,
-    id,
-    issuerid,
-    issuername,
-    studentid,
-    studentname,
-    title
-  } = credentialData;
+  const { enrollmentdate, graduationdate, id, issuername, title } = credentialData;
 
   const did = await getDid();
 
@@ -277,18 +267,10 @@ const parseAndPopulate = async (credentialData, studentData) => {
     did
   };
 
-  const {
-    admissiondate,
-    connectionid,
-    connectionstatus,
-    connectiontoken,
-    email,
-    fullname,
-    universityassignedid
-  } = studentData;
+  const { fullname } = studentData;
 
   const subjectInfo = {
-    ...getNamesAndSurames(fullname)
+    ...getNamesAndSurnames(fullname)
   };
 
   const additionalInfo = {
@@ -298,13 +280,11 @@ const parseAndPopulate = async (credentialData, studentData) => {
     graduationDate: graduationdate
   };
 
-  const credential = await populateCredential({
+  return populateCredential({
     issuerInfo,
     subjectInfo,
     additionalInfo
   });
-
-  return credential;
 };
 
 export const getCredentialBinary = async (connectionData, studentData) => {

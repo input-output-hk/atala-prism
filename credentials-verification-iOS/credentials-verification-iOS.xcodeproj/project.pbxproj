@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		4CBC18384291926687A7EAA9 /* Pods_credentials_verification_iOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9FE4DE3E1C77A7F27599465B /* Pods_credentials_verification_iOS.framework */; };
+		B3E8ADD723EE025C00D63D0A /* MnemonicsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E8ADD623EE025C00D63D0A /* MnemonicsTests.swift */; };
 		BE1188304FE563D375E1840B /* Pods_credentials_verification_iOSUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C51D0105B7D63E4B8C1E4B7B /* Pods_credentials_verification_iOSUITests.framework */; };
 		C73F1ED22DD26837CFB70DC5 /* Pods_credentials_verification_iOSTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 874D892C1FBD9F2CFC9A1F15 /* Pods_credentials_verification_iOSTests.framework */; };
 		EE22F1EA23A486FA003C4F87 /* wallet.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE22F1E323A486FA003C4F87 /* wallet.pb.swift */; };
@@ -37,6 +38,7 @@
 		EE48AC252377652F00C0A441 /* TutorialPageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE48AC242377652F00C0A441 /* TutorialPageView.swift */; };
 		EE48AC2723791B3000C0A441 /* SwitchCustomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE48AC2623791B3000C0A441 /* SwitchCustomView.swift */; };
 		EE48AC292379221000C0A441 /* SwitchCustomView.xib in Resources */ = {isa = PBXBuildFile; fileRef = EE48AC282379221000C0A441 /* SwitchCustomView.xib */; };
+		EE631CFB23C66259001EAA0F /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = EE631CFD23C66259001EAA0F /* InfoPlist.strings */; };
 		EE71854E237DBF4700C58F62 /* WelcomePresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE71854D237DBF4700C58F62 /* WelcomePresenter.swift */; };
 		EE718550237DBF5400C58F62 /* WelcomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE71854F237DBF5400C58F62 /* WelcomeViewController.swift */; };
 		EE718552237DCDB100C58F62 /* Welcome.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EE718551237DCDB100C58F62 /* Welcome.storyboard */; };
@@ -215,6 +217,8 @@
 		9417FE70D7248A15335AFA8F /* Pods-credentials-verification-iOSUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-credentials-verification-iOSUITests.release.xcconfig"; path = "Pods/Target Support Files/Pods-credentials-verification-iOSUITests/Pods-credentials-verification-iOSUITests.release.xcconfig"; sourceTree = "<group>"; };
 		9FE4DE3E1C77A7F27599465B /* Pods_credentials_verification_iOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_credentials_verification_iOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1CBDBC54418D05C10B7AD3F /* Pods-credentials-verification-iOSUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-credentials-verification-iOSUITests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-credentials-verification-iOSUITests/Pods-credentials-verification-iOSUITests.debug.xcconfig"; sourceTree = "<group>"; };
+		B3E8ADD523EE025B00D63D0A /* credentials-verification-iOSTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "credentials-verification-iOSTests-Bridging-Header.h"; sourceTree = "<group>"; };
+		B3E8ADD623EE025C00D63D0A /* MnemonicsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MnemonicsTests.swift; sourceTree = "<group>"; };
 		C51D0105B7D63E4B8C1E4B7B /* Pods_credentials_verification_iOSUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_credentials_verification_iOSUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		E497159BDF935521E81A661D /* Pods-credentials-verification-iOSTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-credentials-verification-iOSTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-credentials-verification-iOSTests/Pods-credentials-verification-iOSTests.release.xcconfig"; sourceTree = "<group>"; };
 		EE22F1E323A486FA003C4F87 /* wallet.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = wallet.pb.swift; sourceTree = "<group>"; };
@@ -244,6 +248,11 @@
 		EE48AC242377652F00C0A441 /* TutorialPageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorialPageView.swift; sourceTree = "<group>"; };
 		EE48AC2623791B3000C0A441 /* SwitchCustomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwitchCustomView.swift; sourceTree = "<group>"; };
 		EE48AC282379221000C0A441 /* SwitchCustomView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = SwitchCustomView.xib; sourceTree = "<group>"; };
+		EE631CFC23C66259001EAA0F /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		EE631CFF23C66285001EAA0F /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Base; path = Base.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		EE684D3B23CFE46D0050EF71 /* ka */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ka; path = ka.lproj/Localizable.strings; sourceTree = "<group>"; };
+		EE684D3C23CFE46D0050EF71 /* ka */ = {isa = PBXFileReference; lastKnownFileType = text.plist.stringsdict; name = ka; path = ka.lproj/Localizable.stringsdict; sourceTree = "<group>"; };
+		EE684D3D23CFE46D0050EF71 /* ka */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ka; path = ka.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		EE71854D237DBF4700C58F62 /* WelcomePresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomePresenter.swift; sourceTree = "<group>"; };
 		EE71854F237DBF5400C58F62 /* WelcomeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeViewController.swift; sourceTree = "<group>"; };
 		EE718551237DCDB100C58F62 /* Welcome.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Welcome.storyboard; sourceTree = "<group>"; };
@@ -1095,6 +1104,7 @@
 				EE7D49D32366B883007C31A8 /* credentials-verification-iOS-Bridging-Header.h */,
 				EEB7DD51239A0C6800C4DEA5 /* GoogleService-Info.plist */,
 				F5E38956234BC34F0001F1E3 /* Info.plist */,
+				EE631CFD23C66259001EAA0F /* InfoPlist.strings */,
 			);
 			path = "credentials-verification-iOS";
 			sourceTree = "<group>";
@@ -1102,7 +1112,9 @@
 		F5E3895E234BC3500001F1E3 /* credentials-verification-iOSTests */ = {
 			isa = PBXGroup;
 			children = (
+				B3E8ADD623EE025C00D63D0A /* MnemonicsTests.swift */,
 				F5E38961234BC3500001F1E3 /* Info.plist */,
+				B3E8ADD523EE025B00D63D0A /* credentials-verification-iOSTests-Bridging-Header.h */,
 			);
 			path = "credentials-verification-iOSTests";
 			sourceTree = "<group>";
@@ -1193,6 +1205,7 @@
 					};
 					F5E3895A234BC3500001F1E3 = {
 						CreatedOnToolsVersion = 11.0;
+						LastSwiftMigration = 1120;
 						TestTargetID = F5E38944234BC34D0001F1E3;
 					};
 					F5E38965234BC3500001F1E3 = {
@@ -1208,6 +1221,7 @@
 			knownRegions = (
 				en,
 				Base,
+				ka,
 			);
 			mainGroup = F5E3893C234BC34D0001F1E3;
 			productRefGroup = F5E38946234BC34D0001F1E3 /* Products */;
@@ -1248,6 +1262,7 @@
 				EE7D4D19236A99D7007C31A8 /* NavBarCustom.xib in Resources */,
 				EE718552237DCDB100C58F62 /* Welcome.storyboard in Resources */,
 				EE7D4D0823676311007C31A8 /* Dashboard.storyboard in Resources */,
+				EE631CFB23C66259001EAA0F /* InfoPlist.strings in Resources */,
 				EE7D4CB62366B9C5007C31A8 /* ListingEmptyViewCell.xib in Resources */,
 				EE48AC192377549C00C0A441 /* Login.storyboard in Resources */,
 				EE7185712384D5CB00C58F62 /* ProfileViewCell.xib in Resources */,
@@ -1544,6 +1559,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B3E8ADD723EE025C00D63D0A /* MnemonicsTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1571,11 +1587,22 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
+		EE631CFD23C66259001EAA0F /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				EE631CFC23C66259001EAA0F /* en */,
+				EE631CFF23C66285001EAA0F /* Base */,
+				EE684D3D23CFE46D0050EF71 /* ka */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
 		EE7D4B102366B9C3007C31A8 /* Localizable.strings */ = {
 			isa = PBXVariantGroup;
 			children = (
 				EE7D4B112366B9C3007C31A8 /* en */,
 				EE7D4B162366B9C3007C31A8 /* Base */,
+				EE684D3B23CFE46D0050EF71 /* ka */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
@@ -1585,6 +1612,7 @@
 			children = (
 				EE7D4B132366B9C3007C31A8 /* en */,
 				EE7D4B172366B9C3007C31A8 /* Base */,
+				EE684D3C23CFE46D0050EF71 /* ka */,
 			);
 			name = Localizable.stringsdict;
 			sourceTree = "<group>";
@@ -1596,6 +1624,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -1656,6 +1685,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
@@ -1761,6 +1791,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 556N44M7XA;
 				INFOPLIST_FILE = "credentials-verification-iOSTests/Info.plist";
@@ -1772,9 +1803,11 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "iohk.credentials-verification-iOSTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "credentials-verification-iOSTests/credentials-verification-iOSTests-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/credentials-verification-iOS.app/credentials-verification-iOS";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ATALA.app/ATALA";
 			};
 			name = Debug;
 		};
@@ -1784,6 +1817,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 556N44M7XA;
 				INFOPLIST_FILE = "credentials-verification-iOSTests/Info.plist";
@@ -1795,9 +1829,10 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "iohk.credentials-verification-iOSTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "credentials-verification-iOSTests/credentials-verification-iOSTests-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/credentials-verification-iOS.app/credentials-verification-iOS";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ATALA.app/ATALA";
 			};
 			name = Release;
 		};

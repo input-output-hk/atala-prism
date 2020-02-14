@@ -1,14 +1,14 @@
-/* eslint import/no-unresolved: 0 */ // --> OFF
 import { WalletServicePromiseClient } from '../../protos/wallet/wallet_grpc_web_pb';
-import {
+import Logger from '../../helpers/Logger';
+import { USER_ROLE, ORGANISATION_NAME, ISSUER, VERIFIER, LOGO } from '../../helpers/constants';
+
+const {
   CreateWalletRequest,
   GetDIDRequest,
   LockWalletRequest,
   UnlockWalletRequest,
   GetWalletStatusRequest
-} from '../../protos/wallet/wallet_pb';
-import Logger from '../../helpers/Logger';
-import { USER_ROLE, ORGANISATION_NAME, ISSUER, VERIFIER, LOGO } from '../../helpers/constants';
+} = require('../../protos/wallet/wallet_pb');
 
 const { config } = require('../config');
 

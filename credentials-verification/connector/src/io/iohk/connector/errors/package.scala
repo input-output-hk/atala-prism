@@ -25,6 +25,11 @@ package object errors {
     }
   }
 
+  case class UserIdMissingError() extends ConnectorError {
+    override def toStatus: Status = {
+      Status.UNAUTHENTICATED.withDescription("Missing UserId")
+    }
+  }
   case class PublicKeyMissingError() extends ConnectorError {
     override def toStatus: Status = {
       Status.UNAUTHENTICATED.withDescription("Missing Public Key")

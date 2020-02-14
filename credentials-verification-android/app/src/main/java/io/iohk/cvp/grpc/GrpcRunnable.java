@@ -8,10 +8,9 @@ public interface GrpcRunnable<A> {
   /**
    * Perform a grpcRunnable and return all the logs.
    */
-  Optional<A> run(ConnectorServiceGrpc.ConnectorServiceBlockingStub blockingStub,
-      ConnectorServiceGrpc.ConnectorServiceStub asyncStub, Object... params)
-      throws Exception;
+  AsyncTaskResult<A> run(ConnectorServiceGrpc.ConnectorServiceBlockingStub blockingStub,
+      ConnectorServiceGrpc.ConnectorServiceStub asyncStub, Object... params);
 
-  void onPostExecute(A result);
+  void onPostExecute(AsyncTaskResult<A> result);
 
 }

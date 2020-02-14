@@ -22,6 +22,11 @@ class LoggedUser: Mappable {
     var avatarUrl: String?
     var isVerified: Bool?
 
+    var apiUrl: String?
+    
+    var seed: Data?
+    var mnemonics: [String]?
+
     init() {
         connectionUserIds = [:]
         messagesAcceptedIds = []
@@ -51,5 +56,10 @@ class LoggedUser: Mappable {
         qrUrlString <- map["qrUrlString"]
         avatarUrl <- map["avatarUrl"]
         isVerified <- map["isVerified"]
+
+        apiUrl <- map["apiUrl"]
+        
+        seed <- map["seed"]
+        mnemonics <- map["mnemonics"]
     }
 }

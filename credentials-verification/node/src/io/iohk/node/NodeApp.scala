@@ -1,20 +1,24 @@
 package io.iohk.node
 
+import cats.effect.IO
 import com.typesafe.config.{Config, ConfigFactory}
+import doobie.util.transactor.Transactor
+import io.grpc.{Server, ServerBuilder}
 import io.iohk.cvp.repositories.{SchemaMigrations, TransactorFactory}
 import io.iohk.node.bitcoin.BitcoinClient
-import io.iohk.node.repositories.blocks.BlocksRepository
+import io.iohk.node.models.SHA256Digest
+import io.iohk.node.objects.ObjectStorageService
+import io.iohk.node.repositories.DIDDataRepository
 import io.iohk.node.repositories.atalaobjects.AtalaObjectsRepository
+import io.iohk.node.repositories.blocks.BlocksRepository
+import io.iohk.node.services.{AtalaService, BlockProcessingServiceImpl, DIDDataService, ObjectManagementService}
 import io.iohk.node.synchronizer.{LedgerSynchronizationStatusService, LedgerSynchronizerService, SynchronizerConfig}
+import io.iohk.nodenew.geud_node_new._
 import monix.execution.Scheduler.Implicits.{global => scheduler}
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.duration._
-import io.grpc.{Server, ServerBuilder}
-import io.iohk.node.geud_node._
-import scala.concurrent.ExecutionContext
-import io.iohk.node.services.AtalaService
-import io.iohk.node.objects.ObjectStorageService
+import scala.concurrent.{ExecutionContext, Future, Promise}
 
 /**
   * Run with `mill -i node.run`, otherwise, the server will stay running even after ctrl+C.
@@ -50,28 +54,38 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     applyDatabaseMigrations(databaseConfig)
 
     logger.info("Connecting to the database")
-    val xa = TransactorFactory(databaseConfig)
-    val blocksRepository = new BlocksRepository(xa)
+    implicit val xa = TransactorFactory(databaseConfig)
     val atalaObjectsRepository = new AtalaObjectsRepository(xa)
 
-    logger.info("Creating bitcoin client")
-    val bitcoinClient = BitcoinClient(bitcoinConfig(globalConfig.getConfig("bitcoin")))
     val storage = ObjectStorageService()
 
-    val atalaService = AtalaService(bitcoinClient, storage, atalaObjectsRepository)
-    val nodeApi = new NodeApi(atalaService)
+    val objectManagementServicePromise: Promise[ObjectManagementService] = Promise()
+    def onAtalaReference(ref: SHA256Digest): Future[Unit] = {
+      objectManagementServicePromise.future.map { objectManagementService =>
+        objectManagementService.saveReference(ref)
+      }
+    }
 
-    val synchronizerConfig = SynchronizerConfig(30.seconds)
-    val syncStatusService = new LedgerSynchronizationStatusService(bitcoinClient, blocksRepository)
-    val synchronizerService =
-      new LedgerSynchronizerService(bitcoinClient, blocksRepository, syncStatusService, atalaService)
-    // val task = new PollerSynchronizerTask(synchronizerConfig, bitcoinClient, synchronizerService)
+    val atalaReferenceLedger = globalConfig.getString("ledger") match {
+      case "bitcoin" => initializeBitcoin(globalConfig.getConfig("bitcoin"), onAtalaReference)
+      case "in-memory" =>
+        logger.info("Using in-memory ledger")
+        new InMemoryAtalaReferenceLedger(onAtalaReference)
+    }
+
+    logger.info("Creating blocks processor")
+    val blockProcessingService = new BlockProcessingServiceImpl
+    val didDataService = new DIDDataService(new DIDDataRepository(xa))
+    val objectManagementService = new ObjectManagementService(storage, atalaReferenceLedger, blockProcessingService)
+    objectManagementServicePromise.success(objectManagementService)
+
+    val nodeService = new NodeServiceImpl(didDataService, objectManagementService)
 
     logger.info("Starting server")
     import io.grpc.protobuf.services.ProtoReflectionService
     server = ServerBuilder
       .forPort(NodeApp.port)
-      .addService(NodeServiceGrpc.bindService(nodeApi, executionContext))
+      .addService(NodeServiceGrpc.bindService(nodeService, executionContext))
       .addService(ProtoReflectionService.newInstance()) //TODO: Decide before release if we should keep this (or guard it with a config flag)
       .build()
       .start()
@@ -82,6 +96,25 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       self.stop()
       System.err.println("*** server shut down")
     }
+  }
+
+  def initializeBitcoin(config: Config, onAtalaReference: SHA256Digest => Future[Unit])(
+      implicit xa: Transactor[IO]
+  ): AtalaService = {
+    logger.info("Creating bitcoin client")
+    val bitcoinClient = BitcoinClient(bitcoinConfig(config))
+
+    val blocksRepository = new BlocksRepository(xa)
+
+    val atalaService = AtalaService(bitcoinClient, onAtalaReference)
+
+    val synchronizerConfig = SynchronizerConfig(30.seconds)
+    val syncStatusService = new LedgerSynchronizationStatusService(bitcoinClient, blocksRepository)
+    val synchronizerService =
+      new LedgerSynchronizerService(bitcoinClient, blocksRepository, syncStatusService, atalaService)
+    //val task = new PollerSynchronizerTask(synchronizerConfig, bitcoinClient, synchronizerService)
+
+    atalaService
   }
 
   private def stop(): Unit = {

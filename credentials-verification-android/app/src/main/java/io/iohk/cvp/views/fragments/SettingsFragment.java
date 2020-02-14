@@ -2,12 +2,19 @@ package io.iohk.cvp.views.fragments;
 
 import static io.iohk.cvp.views.activities.MainActivity.MAIN_FRAGMENT_TAG;
 
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import androidx.lifecycle.ViewModel;
+import butterknife.BindView;
 import butterknife.OnClick;
+import io.iohk.cvp.BuildConfig;
 import io.iohk.cvp.R;
 import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.RootAppBar;
+import io.iohk.cvp.views.utils.components.OptionItem;
 import java.util.Objects;
 import javax.inject.Inject;
 import lombok.Setter;
@@ -22,6 +29,9 @@ public class SettingsFragment extends CvpFragment {
   @Inject
   Navigator navigator;
 
+  @BindView(R.id.backend_ip)
+  OptionItem backendConfigItem;
+
   @Override
   protected int getViewId() {
     return R.layout.fragment_settings;
@@ -35,6 +45,18 @@ public class SettingsFragment extends CvpFragment {
   @Override
   protected AppBarConfigurator getAppBarConfigurator() {
     return new RootAppBar(R.string.settings);
+  }
+
+  @Override
+  public View onCreateView(LayoutInflater inflater, ViewGroup container,
+      Bundle savedInstanceState) {
+    View view = super.onCreateView(inflater, container, savedInstanceState);
+
+    if (!BuildConfig.DEBUG) {
+      backendConfigItem.setVisibility(View.GONE);
+    }
+
+    return view;
   }
 
   @OnClick(R.id.support)

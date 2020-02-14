@@ -11,4 +11,7 @@ public final class IntentDataConstants {
   public static final String TOKENIZATION_KEY = "TOKENIZATION_KEY";
   public static final String CONNECTION_TOKEN_KEY = "CONNECTION_TOKEN_KEY";
 
+  public static final String ERROR_MSG_DESCRIPTION_KEY = "ERROR_MSG_DESCRIPTION_KEY";
+  public static final String POP_UP_IS_ERROR = "POP_UP_IS_ERROR";
+
 }
