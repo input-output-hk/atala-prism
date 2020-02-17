@@ -8,8 +8,6 @@ import io.iohk.cvp.models.ParticipantId
 
 object UserIdInterceptor {
 
-  case class SignatureHeader(publicKey: EncodedPublicKey, signature: Vector[Byte])
-
   val USER_ID_METADATA_KEY = Metadata.Key.of("userId", Metadata.ASCII_STRING_MARSHALLER)
   val USER_ID_CTX_KEY = Context.key[Option[ParticipantId]]("userId")
 
@@ -24,17 +22,6 @@ object UserIdInterceptor {
       .get()
       .getOrElse(throw Status.UNAUTHENTICATED.withDescription("userId header missing").asRuntimeException())
   }
-
-  def getSignatureHeader(): Option[SignatureHeader] = {
-    (Option(SIGNATURE_CTX_KEY.get()), Option(PUBLIC_CTX_KEY.get())) match {
-      case (Some(signatureStr), Some(publicKeyStr)) => {
-        val encodedPublicKey = EncodedPublicKey(publicKeyStr.toVector)
-        Some(SignatureHeader(encodedPublicKey, signatureStr.toVector))
-      }
-      case _ => None
-    }
-  }
-
 }
 
 class UserIdInterceptor extends ServerInterceptor {

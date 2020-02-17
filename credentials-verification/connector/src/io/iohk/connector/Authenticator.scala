@@ -1,9 +1,9 @@
 package io.iohk.connector
 
-import io.iohk.connector.UserIdInterceptor.{SignatureHeader, getSignatureHeader, participantId}
+import io.grpc.Status
 import io.iohk.connector.errors.{ConnectorError, ErrorSupport, SignatureVerificationError}
 import io.iohk.connector.repositories.ConnectionsRepository
-import io.iohk.cvp.crypto.ECKeys.toPublicKey
+import io.iohk.cvp.crypto.ECKeys.{EncodedPublicKey, toPublicKey}
 import io.iohk.cvp.crypto.ECSignature
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.utils.FutureEither
@@ -15,22 +15,62 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
 trait Authenticator {
+
+  import Authenticator._
+
   def logger: Logger
 
   def authenticated[Request <: GeneratedMessage, Response <: GeneratedMessage](
       methodName: String,
       request: Request
-  )(f: ParticipantId => Future[Response])(implicit ec: ExecutionContext): Future[Response]
+  )(
+      f: ParticipantId => Future[Response]
+  )(implicit ec: ExecutionContext, headersParser: RequestHeadersParser): Future[Response]
 
   def public[Request <: GeneratedMessage, Response <: GeneratedMessage](methodName: String, request: Request)(
       f: => Future[Response]
   )(implicit ec: ExecutionContext): Future[Response]
+}
 
+object Authenticator {
+
+  case class SignatureHeader(publicKey: EncodedPublicKey, signature: Vector[Byte])
+
+  trait RequestHeadersParser {
+    def parseSignatureHeader: Option[SignatureHeader]
+
+    /**
+      * Assumes there is always a userId, otherwise, we fail, this is done to comply with the
+      * legacy authentication mechanism.
+      */
+    def participantId: ParticipantId
+  }
+
+  implicit val gRPCHeadersParser: RequestHeadersParser = new RequestHeadersParser {
+    override def parseSignatureHeader: Option[SignatureHeader] = {
+      (Option(UserIdInterceptor.SIGNATURE_CTX_KEY.get()), Option(UserIdInterceptor.PUBLIC_CTX_KEY.get())) match {
+        case (Some(signatureStr), Some(publicKeyStr)) =>
+          val encodedPublicKey = EncodedPublicKey(publicKeyStr.toVector)
+          Some(SignatureHeader(encodedPublicKey, signatureStr.toVector))
+
+        case _ => None
+      }
+    }
+
+    override def participantId: ParticipantId = {
+      UserIdInterceptor.USER_ID_CTX_KEY
+        .get()
+        .getOrElse(throw Status.UNAUTHENTICATED.withDescription("userId header missing").asRuntimeException())
+    }
+  }
 }
 
 class SignedRequestsAuthenticator(connectionsRepository: ConnectionsRepository)
     extends Authenticator
     with ErrorSupport {
+
+  import Authenticator._
+
   override val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
   def withLogging[Request <: GeneratedMessage, Response <: GeneratedMessage](
@@ -89,12 +129,14 @@ class SignedRequestsAuthenticator(connectionsRepository: ConnectionsRepository)
   override def authenticated[Request <: GeneratedMessage, Response <: GeneratedMessage](
       methodName: String,
       request: Request
-  )(f: ParticipantId => Future[Response])(implicit ec: ExecutionContext): Future[Response] = {
+  )(
+      f: ParticipantId => Future[Response]
+  )(implicit ec: ExecutionContext, headersParser: RequestHeadersParser): Future[Response] = {
     {
       Try {
-        getSignatureHeader()
+        headersParser.parseSignatureHeader
           .map(authenticate(request.toByteArray, _))
-          .getOrElse(Right(participantId()).toFutureEither)
+          .getOrElse(Right(headersParser.participantId).toFutureEither)
       } match {
         case Failure(ex) =>
           logger.error(s"$methodName - missing userId, request = ${request.toProtoString}", ex)
@@ -110,5 +152,4 @@ class SignedRequestsAuthenticator(connectionsRepository: ConnectionsRepository)
   )(implicit ec: ExecutionContext): Future[Response] = {
     withLogging(methodName, request)(f)
   }
-
 }
