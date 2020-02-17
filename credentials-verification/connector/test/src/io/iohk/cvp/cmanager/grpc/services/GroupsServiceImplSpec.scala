@@ -21,7 +21,7 @@ class GroupsServiceImplSpec extends RpcSpecBase {
 
   private lazy val issuerGroupsRepository = new IssuerGroupsRepository(database)
   private lazy val issuersRepository = new IssuersRepository(database)
-  private lazy val connectionsRepository = new ConnectionsRepository(database)(executionContext)
+  private lazy val connectionsRepository = new ConnectionsRepository.PostgresImpl(database)(executionContext)
   private lazy val authenticator = new SignedRequestsAuthenticator(connectionsRepository)
 
   override def services = Seq(

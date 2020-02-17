@@ -31,7 +31,7 @@ class StudentsServiceImplSpec extends RpcSpecBase {
   private lazy val issuersRepository = new IssuersRepository(database)
   private lazy val studentsRepository = new StudentsRepository(database)
   private lazy val credentialsRepository = new CredentialsRepository(database)
-  private lazy val connectionsRepository = new ConnectionsRepository(database)(executionContext)
+  private lazy val connectionsRepository = new ConnectionsRepository.PostgresImpl(database)(executionContext)
   private lazy val authenticator = new SignedRequestsAuthenticator(connectionsRepository)
   override def services = Seq(
     StudentsServiceGrpc

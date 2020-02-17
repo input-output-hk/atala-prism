@@ -9,7 +9,12 @@ import io.iohk.cvp.admin.protos.AdminServiceGrpc
 import io.iohk.cvp.admin.{AdminRepository, AdminServiceImpl}
 import io.iohk.cvp.cmanager.grpc.services.{CredentialsServiceImpl, GroupsServiceImpl, StudentsServiceImpl}
 import io.iohk.cvp.cmanager.protos.{CredentialsServiceGrpc, GroupsServiceGrpc, StudentsServiceGrpc}
-import io.iohk.cvp.cmanager.repositories.{CredentialsRepository, IssuerGroupsRepository, IssuersRepository, StudentsRepository}
+import io.iohk.cvp.cmanager.repositories.{
+  CredentialsRepository,
+  IssuerGroupsRepository,
+  IssuersRepository,
+  StudentsRepository
+}
 import io.iohk.cvp.connector.protos._
 import io.iohk.cvp.cstore.CredentialsStoreService
 import io.iohk.cvp.cstore.protos.CredentialsStoreServiceGrpc
@@ -55,7 +60,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       BraintreePayments(braintreePaymentsConfig(globalConfig.getConfig("braintreePayments")))(executionContext)
 
     // connector
-    val connectionsRepository = new ConnectionsRepository(xa)(executionContext)
+    val connectionsRepository = new ConnectionsRepository.PostgresImpl(xa)(executionContext)
     val paymentsRepository = new PaymentsRepository(xa)(executionContext)
     val connectionsService =
       new ConnectionsService(connectionsRepository, paymentsRepository, braintreePayments)(executionContext)
@@ -85,7 +90,6 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       new CredentialsStoreService(storeUsersService, storeIndividualsService, storedCredentialsService, authenticator)(
         executionContext
       )
-
 
     // admin
     val adminRepository = new AdminRepository(xa)(executionContext)

@@ -131,7 +131,7 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
   )
 
   lazy val braintreePayments = BraintreePayments(BraintreePayments.Config(false, "none", "none", "none", "none"))
-  lazy val connectionsRepository = new ConnectionsRepository(database)(executionContext)
+  lazy val connectionsRepository = new ConnectionsRepository.PostgresImpl(database)(executionContext)
   lazy val paymentsRepository = new PaymentsRepository(database)(executionContext)
   lazy val connectionsService = new ConnectionsService(connectionsRepository, paymentsRepository, braintreePayments)
   lazy val messagesRepository = new MessagesRepository(database)(executionContext)

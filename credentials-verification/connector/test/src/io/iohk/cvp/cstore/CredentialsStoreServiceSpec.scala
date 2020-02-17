@@ -29,7 +29,7 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
   lazy val storeUsers = new StoreUsersService(database)
   lazy val individuals = new StoreIndividualsService(database)
   lazy val storedCredentials = new StoredCredentialsService(database)
-  private lazy val connectionsRepository = new ConnectionsRepository(database)(executionContext)
+  private lazy val connectionsRepository = new ConnectionsRepository.PostgresImpl(database)(executionContext)
   private lazy val authenticator = new SignedRequestsAuthenticator(connectionsRepository)
   lazy val verifierId = ParticipantId("af45a4da-65b8-473e-aadc-aa6b346250a3")
 
