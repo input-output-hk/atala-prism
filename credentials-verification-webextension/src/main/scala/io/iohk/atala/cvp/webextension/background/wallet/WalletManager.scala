@@ -2,21 +2,21 @@ package io.iohk.atala.cvp.webextension.background.wallet
 
 import java.util.Base64
 
-import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.parser.parse
 import io.circe.syntax._
+import io.circe.{Decoder, Encoder, Json}
 import io.iohk.atala.cvp.webextension.background.services.browser.BrowserActionService
 import io.iohk.atala.cvp.webextension.background.services.storage.StorageService
+import io.iohk.atala.cvp.webextension.background.wallet.WalletStatus.WalletStatus
 import io.iohk.atala.cvp.webextension.facades.elliptic.{EC, KeyPair}
 import org.scalajs.dom
 import org.scalajs.dom.crypto
 import org.scalajs.dom.crypto.{CryptoKey, KeyFormat}
 
-import scala.scalajs.js.typedarray._
-import scala.scalajs.js.typedarray.ArrayBuffer
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.scalajs.js
+import scala.scalajs.js.typedarray.{ArrayBuffer, _}
 import scala.util.{Failure, Success}
 
 object WalletManager {
@@ -30,6 +30,14 @@ object WalletManager {
 }
 
 case class SigningRequest(id: Int, message: String)
+
+object WalletStatus extends Enumeration {
+  type WalletStatus = Value
+  val Missing, Unlocked, Locked = Value
+
+  implicit val decoder: Decoder[WalletStatus.Value] = Decoder.enumDecoder(WalletStatus)
+  implicit val encoder: Encoder[WalletStatus.Value] = Encoder.enumEncoder(WalletStatus)
+}
 
 case class WalletData(keys: Map[String, String])
 
@@ -136,6 +144,20 @@ private[background] class WalletManager(browserActionService: BrowserActionServi
     }
 
     result
+  }
+
+  def getStatus(): Future[WalletStatus] = {
+    for {
+      encryptedJsonOrUndef <- storageService.load(WalletManager.LOCAL_STORAGE_KEY)
+    } yield {
+      if (encryptedJsonOrUndef == null) {
+        WalletStatus.Missing
+      } else if (this.storageKey.nonEmpty) {
+        WalletStatus.Unlocked
+      } else {
+        WalletStatus.Locked
+      }
+    }
   }
 
   def unlock(password: String): Future[Unit] = {
