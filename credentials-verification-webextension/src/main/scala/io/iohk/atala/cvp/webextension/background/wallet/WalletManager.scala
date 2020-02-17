@@ -2,13 +2,12 @@ package io.iohk.atala.cvp.webextension.background.wallet
 
 import java.util.Base64
 
+import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.parser.parse
 import io.circe.syntax._
-import io.circe.{Decoder, Encoder, Json}
 import io.iohk.atala.cvp.webextension.background.services.browser.BrowserActionService
 import io.iohk.atala.cvp.webextension.background.services.storage.StorageService
-import io.iohk.atala.cvp.webextension.background.wallet.WalletStatus.WalletStatus
 import io.iohk.atala.cvp.webextension.facades.elliptic.{EC, KeyPair}
 import org.scalajs.dom
 import org.scalajs.dom.crypto
@@ -31,12 +30,11 @@ object WalletManager {
 
 case class SigningRequest(id: Int, message: String)
 
-object WalletStatus extends Enumeration {
-  type WalletStatus = Value
-  val Missing, Unlocked, Locked = Value
-
-  implicit val decoder: Decoder[WalletStatus.Value] = Decoder.enumDecoder(WalletStatus)
-  implicit val encoder: Encoder[WalletStatus.Value] = Encoder.enumEncoder(WalletStatus)
+sealed trait WalletStatus
+object WalletStatus {
+  final case object Missing extends WalletStatus
+  final case object Unlocked extends WalletStatus
+  final case object Locked extends WalletStatus
 }
 
 case class WalletData(keys: Map[String, String])
@@ -148,9 +146,9 @@ private[background] class WalletManager(browserActionService: BrowserActionServi
 
   def getStatus(): Future[WalletStatus] = {
     for {
-      encryptedJsonOrUndef <- storageService.load(WalletManager.LOCAL_STORAGE_KEY)
+      storedData <- storageService.load(WalletManager.LOCAL_STORAGE_KEY)
     } yield {
-      if (encryptedJsonOrUndef == null) {
+      if (storedData.isEmpty) {
         WalletStatus.Missing
       } else if (this.storageKey.nonEmpty) {
         WalletStatus.Unlocked
@@ -188,12 +186,13 @@ private[background] class WalletManager(browserActionService: BrowserActionServi
         .toFuture
         .asInstanceOf[Future[crypto.CryptoKey]]
       _ = { storageKey = Some(aesKey) }
-      encryptedJsonOrUndef <- storageService.load(WalletManager.LOCAL_STORAGE_KEY)
+      storedEncryptedJson <- storageService.load(WalletManager.LOCAL_STORAGE_KEY)
       json <- {
-        if (encryptedJsonOrUndef == null) {
+        dom.console.log(s"Serialized wallet: $storedEncryptedJson")
+        if (storedEncryptedJson.isEmpty) {
           Future.successful("{}")
         } else {
-          val encryptedJson = encryptedJsonOrUndef.asInstanceOf[String]
+          val encryptedJson = storedEncryptedJson.get.asInstanceOf[String]
           val encryptedBytes = Base64.getDecoder.decode(encryptedJson.asInstanceOf[String]).toTypedArray.buffer
           crypto.crypto.subtle
             .decrypt(initialAesCtr, aesKey, encryptedBytes)

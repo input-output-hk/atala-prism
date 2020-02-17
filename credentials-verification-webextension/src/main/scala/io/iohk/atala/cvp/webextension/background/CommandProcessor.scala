@@ -37,7 +37,7 @@ private[background] class CommandProcessor(
         walletManager.signWith(requestId, keyName)
       })
     case Command.RequestSignature(message) =>
-      walletManager.requestSignature(message).map(s => CommandResponse(SignatureResult(s)))
+      walletManager.requestSignature(message).map(SignatureResult.apply).map(CommandResponse.apply)
     case Command.GetSigningRequests =>
       Future.successful(CommandResponse {
         SigningRequests(walletManager.getSigningRequests().toList)
@@ -48,7 +48,7 @@ private[background] class CommandProcessor(
         ()
       })
     case Command.GetWalletStatus =>
-      walletManager.getStatus().map(status => CommandResponse(WalletStatusResult(status)))
+      walletManager.getStatus().map(WalletStatusResult.apply).map(CommandResponse.apply)
     case Command.UnlockWallet(password) =>
       for {
         _ <- walletManager.unlock(password)

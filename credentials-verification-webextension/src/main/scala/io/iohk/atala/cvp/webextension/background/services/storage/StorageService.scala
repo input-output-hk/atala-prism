@@ -37,10 +37,11 @@ private[background] class StorageService(implicit ec: ExecutionContext) {
     chrome.storage.Storage.local.set(js.Dictionary(key -> value))
   }
 
-  def load(key: String): Future[js.Any] = {
+  def load(key: String): Future[Option[js.Any]] = {
     chrome.storage.Storage.local
       .get(any2undefOrA(key))
       .map(_.getOrElse(key, null))
+      .map(Option.apply)
   }
 }
 

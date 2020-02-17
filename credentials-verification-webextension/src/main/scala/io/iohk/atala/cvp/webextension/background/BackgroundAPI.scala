@@ -5,14 +5,12 @@ import io.circe.generic.auto._
 import io.circe.parser.parse
 import io.circe.syntax._
 import io.iohk.atala.cvp.webextension.background.models.Command.{
-  GetWalletStatus,
   KeyList,
   SignatureResult,
   SigningRequests,
   WalletStatusResult
 }
 import io.iohk.atala.cvp.webextension.background.models.{Command, CommandWithResponse, Event}
-import io.iohk.atala.cvp.webextension.background.wallet.WalletStatus.WalletStatus
 import org.scalajs.dom
 
 import scala.concurrent.{ExecutionContext, Future, Promise}

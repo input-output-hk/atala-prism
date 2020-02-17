@@ -2,8 +2,7 @@ package io.iohk.atala.cvp.webextension.background.models
 
 import io.circe.generic.auto._
 import io.circe.parser.parse
-import io.iohk.atala.cvp.webextension.background.wallet.SigningRequest
-import io.iohk.atala.cvp.webextension.background.wallet.WalletStatus.WalletStatus
+import io.iohk.atala.cvp.webextension.background.wallet.{SigningRequest, WalletStatus}
 
 import scala.util.Try
 
