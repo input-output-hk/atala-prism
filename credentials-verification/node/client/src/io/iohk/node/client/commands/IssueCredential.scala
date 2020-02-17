@@ -3,9 +3,9 @@ package io.iohk.node.client.commands
 import java.time.LocalDate
 
 import com.google.protobuf.ByteString
-import io.iohk.node.client.{Config, State, StateStorage}
+import io.iohk.node.client.{Config, StateStorage}
+import io.iohk.node.geud_node._
 import io.iohk.node.models.SHA256Digest
-import io.iohk.nodenew.geud_node_new._
 import monocle.Optional
 import monocle.macros.{GenLens, GenPrism}
 import monocle.std.option.some

@@ -7,7 +7,7 @@ import doobie.implicits._
 import io.iohk.cvp.repositories.PostgresRepositorySpec
 import io.iohk.node.models.{DIDPublicKey, KeyUsage}
 import io.iohk.node.repositories.{CredentialsRepository, DIDDataRepository}
-import io.iohk.nodenew.{geud_node_new => proto}
+import io.iohk.node.{geud_node => proto}
 import org.scalatest.EitherValues._
 import org.scalatest.Inside._
 

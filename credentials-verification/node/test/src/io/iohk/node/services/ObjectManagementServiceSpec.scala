@@ -7,12 +7,11 @@ import doobie.free.connection
 import doobie.implicits._
 import io.iohk.cvp.crypto.ECKeys
 import io.iohk.cvp.repositories.PostgresRepositorySpec
+import io.iohk.node.atala_bitcoin.AtalaBlock
 import io.iohk.node.models.SHA256Digest
 import io.iohk.node.operations.CreateDIDOperationSpec
 import io.iohk.node.repositories.daos.AtalaObjectsDAO
-import io.iohk.node.{AtalaReferenceLedger, objects}
-import io.iohk.nodenew.atala_bitcoin_new.AtalaBlock
-import io.iohk.nodenew.{atala_bitcoin_new => atala_proto, geud_node_new => geud_proto}
+import io.iohk.node.{AtalaReferenceLedger, objects, atala_bitcoin => atala_proto, geud_node => geud_proto}
 import org.mockito.captor.ArgCaptor
 import org.mockito.scalatest.MockitoSugar
 import org.scalatest.BeforeAndAfterEach

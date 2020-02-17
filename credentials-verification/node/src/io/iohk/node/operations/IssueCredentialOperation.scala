@@ -11,7 +11,7 @@ import io.iohk.node.models._
 import io.iohk.node.operations.path._
 import io.iohk.node.repositories.daos.CredentialsDAO.CreateCredentialData
 import io.iohk.node.repositories.daos.{CredentialsDAO, PublicKeysDAO}
-import io.iohk.nodenew.{geud_node_new => proto}
+import io.iohk.node.{geud_node => proto}
 
 case class IssueCredentialOperation(
     credentialId: CredentialId,

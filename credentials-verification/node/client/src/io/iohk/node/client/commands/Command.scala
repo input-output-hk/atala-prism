@@ -5,7 +5,7 @@ import java.security.{PrivateKey => JPrivateKey}
 import com.google.protobuf.ByteString
 import io.iohk.cvp.crypto.ECSignature
 import io.iohk.node.client.Config
-import io.iohk.nodenew.geud_node_new.{NodeServiceGrpc, _}
+import io.iohk.node.geud_node.{NodeServiceGrpc, _}
 
 trait Command {
   def run(api: NodeServiceGrpc.NodeServiceBlockingStub, config: Config): Unit

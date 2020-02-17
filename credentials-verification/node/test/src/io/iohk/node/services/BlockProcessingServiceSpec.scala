@@ -10,7 +10,7 @@ import io.iohk.node.models.{DIDSuffix, SHA256Digest}
 import io.iohk.node.operations.CreateDIDOperationSpec
 import io.iohk.node.repositories.daos.{CredentialsDAO, DIDDataDAO}
 import io.iohk.node.repositories.{CredentialsRepository, DIDDataRepository}
-import io.iohk.nodenew.{atala_bitcoin_new => atala_proto, geud_node_new => geud_proto}
+import io.iohk.node.{atala_bitcoin => atala_proto, geud_node => geud_proto}
 
 import scala.concurrent.duration._
 
@@ -40,8 +40,8 @@ object BlockProcessingServiceSpec {
 
 class BlockProcessingServiceSpec extends PostgresRepositorySpec {
 
-  import io.iohk.node.operations.CreateDIDOperationSpec.masterKeys
   import BlockProcessingServiceSpec._
+  import io.iohk.node.operations.CreateDIDOperationSpec.masterKeys
 
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 50.millis)
   lazy val didDataRepository = new DIDDataRepository(database)

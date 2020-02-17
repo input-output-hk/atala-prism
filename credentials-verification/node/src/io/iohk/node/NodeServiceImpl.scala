@@ -6,6 +6,7 @@ import com.google.protobuf.ByteString
 import io.grpc.Status
 import io.iohk.cvp.crypto.ECKeys
 import io.iohk.node.errors.NodeError
+import io.iohk.node.geud_node.NodeServiceGrpc.NodeService
 import io.iohk.node.models.KeyUsage.{AuthenticationKey, CommunicationKey, IssuingKey, MasterKey}
 import io.iohk.node.operations.{
   CreateDIDOperation,
@@ -14,8 +15,7 @@ import io.iohk.node.operations.{
   ValidationError
 }
 import io.iohk.node.services.{DIDDataService, ObjectManagementService}
-import io.iohk.nodenew.geud_node_new.NodeServiceGrpc.NodeService
-import io.iohk.nodenew.{geud_node_new => proto}
+import io.iohk.node.{geud_node => proto}
 
 import scala.concurrent.{ExecutionContext, Future}
 

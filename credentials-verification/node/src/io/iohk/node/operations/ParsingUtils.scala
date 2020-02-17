@@ -3,7 +3,7 @@ package io.iohk.node.operations
 import java.time.LocalDate
 
 import io.iohk.node.operations.path.ValueAtPath
-import io.iohk.nodenew.{geud_node_new => proto}
+import io.iohk.node.{geud_node => proto}
 
 import scala.util.Try
 

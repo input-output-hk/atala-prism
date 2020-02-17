@@ -4,7 +4,7 @@ import java.io.File
 
 import io.grpc._
 import io.iohk.node.client.commands._
-import io.iohk.nodenew.geud_node_new._
+import io.iohk.node.geud_node._
 import monocle.POptional
 import scopt.OParser
 

@@ -6,7 +6,7 @@ import cats.data.EitherT
 import doobie.free.connection.ConnectionIO
 import io.iohk.node.models.{DIDSuffix, SHA256Digest}
 import io.iohk.node.operations.path._
-import io.iohk.nodenew.{geud_node_new => proto}
+import io.iohk.node.{geud_node => proto}
 
 package object operations {
 

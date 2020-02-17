@@ -6,12 +6,11 @@ import doobie.free.connection
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.node.AtalaReferenceLedger
 import io.iohk.node.models.{AtalaObject, SHA256Digest}
 import io.iohk.node.objects.ObjectStorageService
 import io.iohk.node.repositories.daos.AtalaObjectsDAO
 import io.iohk.node.repositories.daos.AtalaObjectsDAO.AtalaObjectCreateData
-import io.iohk.nodenew.{atala_bitcoin_new => atala_proto, geud_node_new => geud_proto}
+import io.iohk.node.{AtalaReferenceLedger, atala_bitcoin => atala_proto, geud_node => geud_proto}
 
 import scala.concurrent.{ExecutionContext, Future}
 

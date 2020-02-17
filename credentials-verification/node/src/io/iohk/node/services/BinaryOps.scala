@@ -1,6 +1,6 @@
 package io.iohk.node.services
 
-import io.iohk.nodenew.atala_bitcoin_new._
+import io.iohk.node.atala_bitcoin._
 import io.iohk.node.models.SHA256Digest
 import io.iohk.node.services.models._
 
@@ -62,6 +62,7 @@ object DefaultBinaryOps extends BinaryOps {
 
   override def extractOpReturn(asm: String): Option[Array[Byte]] = {
     import javax.xml.bind.DatatypeConverter
+
     import scala.util.Try
     val HEAD = "OP_RETURN "
     if (asm.startsWith(HEAD)) {

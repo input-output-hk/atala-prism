@@ -13,7 +13,7 @@ import io.iohk.node.operations.StateError.{EntityExists, UnknownKey}
 import io.iohk.node.operations.ValidationError.{InvalidValue, MissingValue}
 import io.iohk.node.operations.path._
 import io.iohk.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
-import io.iohk.nodenew.{geud_node_new => proto}
+import io.iohk.node.{geud_node => proto}
 
 import scala.util.Try
 

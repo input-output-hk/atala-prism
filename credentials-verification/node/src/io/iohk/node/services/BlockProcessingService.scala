@@ -10,7 +10,7 @@ import io.iohk.cvp.crypto.ECSignature
 import io.iohk.node.operations.ValidationError.InvalidValue
 import io.iohk.node.operations._
 import io.iohk.node.operations.path.Path
-import io.iohk.nodenew.{atala_bitcoin_new => atala_proto, geud_node_new => geud_proto}
+import io.iohk.node.{atala_bitcoin => atala_proto, geud_node => geud_proto}
 import org.slf4j.LoggerFactory
 
 import scala.collection.generic.CanBuildFrom

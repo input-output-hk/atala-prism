@@ -4,21 +4,17 @@ package io.iohk.node;
 
 import "geud_node.proto";
 
-// This is models are intended for internal usage inside
+// These models are intended for internal usage inside
 // the AtalaNode (not to be publically accessible from
 // the gRPC API)
 
-message AtalaTx {
-  oneof definition {
-    PublishDidDocumentRequest publishDidDocument = 1;
-  }
-}
-
 message AtalaBlock {
   string version = 1;
-  repeated AtalaTx transactions = 2;
+  repeated SignedAtalaOperation operations = 2;
 }
 
 message AtalaObject {
-  string blockHash = 1;
+  bytes blockHash = 1;
+  int32 blockOperationCount = 2;
+  int32 blockByteLength = 3;
 }

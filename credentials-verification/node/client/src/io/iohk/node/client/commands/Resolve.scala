@@ -1,7 +1,7 @@
 package io.iohk.node.client.commands
 
 import io.iohk.node.client.Config
-import io.iohk.nodenew.geud_node_new.{GetDidDocumentRequest, NodeServiceGrpc}
+import io.iohk.node.geud_node.{GetDidDocumentRequest, NodeServiceGrpc}
 import monocle.Optional
 import monocle.macros.{GenLens, GenPrism}
 import monocle.std.option.some

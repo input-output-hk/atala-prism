@@ -8,7 +8,7 @@ import doobie.implicits._
 import io.iohk.node.models.{CredentialId, DIDPublicKey, DIDSuffix, SHA256Digest}
 import io.iohk.node.operations.path._
 import io.iohk.node.repositories.daos.{CredentialsDAO, PublicKeysDAO}
-import io.iohk.nodenew.{geud_node_new => proto}
+import io.iohk.node.{geud_node => proto}
 
 case class RevokeCredentialOperation(
     credentialId: CredentialId,

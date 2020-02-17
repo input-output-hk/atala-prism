@@ -6,6 +6,7 @@ import doobie.implicits._
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.{ManagedChannel, Server, Status, StatusRuntimeException}
 import io.iohk.cvp.repositories.PostgresRepositorySpec
+import io.iohk.node.geud_node.NodeServiceGrpc
 import io.iohk.node.models.{DIDPublicKey, DIDSuffix, KeyUsage, SHA256Digest}
 import io.iohk.node.operations.path.{Path, ValueAtPath}
 import io.iohk.node.operations.{
@@ -17,8 +18,7 @@ import io.iohk.node.operations.{
 import io.iohk.node.repositories.DIDDataRepository
 import io.iohk.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
 import io.iohk.node.services.{BlockProcessingServiceSpec, DIDDataService, ObjectManagementService}
-import io.iohk.nodenew.geud_node_new.NodeServiceGrpc
-import io.iohk.nodenew.{geud_node_new => geud_proto}
+import io.iohk.node.{geud_node => geud_proto}
 import org.mockito.scalatest.MockitoSugar
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.EitherValues._

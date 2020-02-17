@@ -5,8 +5,8 @@ import java.security.{PrivateKey, PublicKey}
 import java.util.Base64
 
 import io.iohk.cvp.crypto.ECKeys
+import io.iohk.node.geud_node.KeyUsage
 import io.iohk.node.models.SHA256Digest
-import io.iohk.nodenew.geud_node_new.KeyUsage
 
 import scala.io.Source
 

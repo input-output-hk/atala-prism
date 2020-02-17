@@ -3,7 +3,7 @@ package io.iohk.connector.client
 import io.grpc.ManagedChannelBuilder
 import io.iohk.connector.client.commands.Register
 import io.iohk.cvp.connector.protos.ConnectorServiceGrpc
-import io.iohk.nodenew.geud_node_new.NodeServiceGrpc
+import io.iohk.node.geud_node.NodeServiceGrpc
 import scopt.OParser
 
 object ConnectorClient {
