@@ -1,7 +1,7 @@
 package io.iohk.connector
 
 import com.typesafe.config.{Config, ConfigFactory}
-import io.grpc.{Server, ServerBuilder}
+import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
 import io.iohk.connector.payments.BraintreePayments
 import io.iohk.connector.repositories.{ConnectionsRepository, MessagesRepository, PaymentsRepository}
 import io.iohk.connector.services.{ConnectionsService, MessagesService}
@@ -20,6 +20,7 @@ import io.iohk.cvp.cstore.CredentialsStoreService
 import io.iohk.cvp.cstore.protos.CredentialsStoreServiceGrpc
 import io.iohk.cvp.cstore.services.{StoreIndividualsService, StoreUsersService, StoredCredentialsService}
 import io.iohk.cvp.repositories.{SchemaMigrations, TransactorFactory}
+import io.iohk.nodenew.node_api.NodeServiceGrpc
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext
@@ -59,14 +60,24 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     val braintreePayments =
       BraintreePayments(braintreePaymentsConfig(globalConfig.getConfig("braintreePayments")))(executionContext)
 
-    // connector
+    // node client
+    val configLoader = new ConfigLoader
+    val nodeConfig = configLoader.nodeClientConfig(globalConfig.getConfig("node"))
+    val nodeChannel = ManagedChannelBuilder.forAddress(nodeConfig.host, nodeConfig.port).usePlaintext().build()
+    val node = NodeServiceGrpc.stub(nodeChannel)
+
+    // connector repositories
     val connectionsRepository = new ConnectionsRepository.PostgresImpl(xa)(executionContext)
     val paymentsRepository = new PaymentsRepository(xa)(executionContext)
+    val messagesRepository = new MessagesRepository(xa)(executionContext)
+
+    // authenticator
+    val authenticator = new SignedRequestsAuthenticator(connectionsRepository)
+
+    // connector services
     val connectionsService =
       new ConnectionsService(connectionsRepository, paymentsRepository, braintreePayments)(executionContext)
-    val messagesRepository = new MessagesRepository(xa)(executionContext)
     val messagesService = new MessagesService(messagesRepository)
-    val authenticator = new SignedRequestsAuthenticator(connectionsRepository)
     val connectorService =
       new ConnectorService(connectionsService, messagesService, braintreePayments, paymentsRepository, authenticator)(
         executionContext
@@ -95,6 +106,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     val adminRepository = new AdminRepository(xa)(executionContext)
     val adminService = new AdminServiceImpl(adminRepository)(executionContext)
 
+    //
     logger.info("Starting server")
     server = ServerBuilder
       .forPort(ConnectorApp.port)
