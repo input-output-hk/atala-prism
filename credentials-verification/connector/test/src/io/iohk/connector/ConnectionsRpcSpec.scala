@@ -148,18 +148,16 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase {
       val encodedPublicKey = toEncodePublicKey(keys.getPublic)
       val request = GetConnectionsPaginatedRequest("", 10)
 
-      val publicKeyStr = Base64.getUrlEncoder.encodeToString(encodedPublicKey.bytes.toArray)
-      val signatureStr = Base64.getUrlEncoder.encodeToString(ECSignature.sign(privateKey, request.toByteArray).toArray)
+      val signature = ECSignature.sign(privateKey, request.toByteArray)
 
       val verifierId = createVerifier("Verifier", Some(encodedPublicKey))
 
       val zeroTime = System.currentTimeMillis()
       val connections = createExampleConnections(verifierId, zeroTime)
 
-      usingApiAs(signatureStr, publicKeyStr) { blockingStub =>
+      usingApiAs(signature, encodedPublicKey) { blockingStub =>
         val response = blockingStub.getConnectionsPaginated(request)
         response.connections.map(_.connectionId).toSet mustBe connections.map(_._2.id.toString).take(10).toList.toSet
-
       }
     }
 

@@ -5,6 +5,7 @@ import io.iohk.connector.repositories.ConnectionsRepository
 import io.iohk.cvp.connector.protos
 import io.iohk.cvp.crypto.ECKeys.toEncodePublicKey
 import io.iohk.cvp.crypto.{ECKeys, ECSignature}
+import io.iohk.cvp.grpc.GrpcAuthenticationHeader
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither.FutureEitherOps
@@ -38,11 +39,9 @@ class SignedRequestsAuthenticatorSpec extends WordSpec {
       val authenticator = new SignedRequestsAuthenticator(new DummyConnectionsRepository {})
       val userId = ParticipantId.random()
       val customParser = new Authenticator.RequestHeadersParser {
-        override def parseSignatureHeader: Option[Authenticator.SignatureHeader] = None
-
-        override def participantId: ParticipantId = userId
+        override def parseAuthenticationHeader: Option[GrpcAuthenticationHeader] =
+          Some(GrpcAuthenticationHeader.Legacy(userId))
       }
-
       val result = authenticator.authenticated("test", request) { _ =>
         Future.successful(response)
       }(global, customParser)
@@ -52,9 +51,7 @@ class SignedRequestsAuthenticatorSpec extends WordSpec {
     "reject wrong legacy authentication" in {
       val authenticator = new SignedRequestsAuthenticator(new DummyConnectionsRepository {})
       val customParser = new Authenticator.RequestHeadersParser {
-        override def parseSignatureHeader: Option[Authenticator.SignatureHeader] = None
-
-        override def participantId: ParticipantId = throw new RuntimeException("Missing user")
+        override def parseAuthenticationHeader: Option[GrpcAuthenticationHeader] = None
       }
 
       intercept[RuntimeException] {
@@ -81,13 +78,10 @@ class SignedRequestsAuthenticatorSpec extends WordSpec {
       val signature = ECSignature.sign(privateKey, request.toByteArray)
 
       val customParser = new Authenticator.RequestHeadersParser {
-        override def parseSignatureHeader: Option[Authenticator.SignatureHeader] = {
-          Some(Authenticator.SignatureHeader(publicKey = encodedPublicKey, signature = signature))
+        override def parseAuthenticationHeader: Option[GrpcAuthenticationHeader] = {
+          Some(GrpcAuthenticationHeader.PublicKeyBased(publicKey = encodedPublicKey, signature = signature))
         }
-
-        override def participantId: ParticipantId = ???
       }
-
       val result = authenticator.authenticated("test", request) { _ =>
         Future.successful(response)
       }(global, customParser)
@@ -111,13 +105,10 @@ class SignedRequestsAuthenticatorSpec extends WordSpec {
       val signature = ECSignature.sign(ECKeys.generateKeyPair().getPrivate, request.toByteArray)
 
       val customParser = new Authenticator.RequestHeadersParser {
-        override def parseSignatureHeader: Option[Authenticator.SignatureHeader] = {
-          Some(Authenticator.SignatureHeader(publicKey = encodedPublicKey, signature = signature))
+        override def parseAuthenticationHeader: Option[GrpcAuthenticationHeader] = {
+          Some(GrpcAuthenticationHeader.PublicKeyBased(publicKey = encodedPublicKey, signature = signature))
         }
-
-        override def participantId: ParticipantId = ???
       }
-
       val result = authenticator.authenticated("test", request) { _ =>
         Future.successful(response)
       }(global, customParser)

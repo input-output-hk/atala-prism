@@ -19,6 +19,7 @@ import io.iohk.cvp.connector.protos._
 import io.iohk.cvp.cstore.CredentialsStoreService
 import io.iohk.cvp.cstore.protos.CredentialsStoreServiceGrpc
 import io.iohk.cvp.cstore.services.{StoreIndividualsService, StoreUsersService, StoredCredentialsService}
+import io.iohk.cvp.grpc.GrpcAuthenticatorInterceptor
 import io.iohk.cvp.repositories.{SchemaMigrations, TransactorFactory}
 import io.iohk.nodenew.node_api.NodeServiceGrpc
 import org.slf4j.LoggerFactory
@@ -110,7 +111,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     logger.info("Starting server")
     server = ServerBuilder
       .forPort(ConnectorApp.port)
-      .intercept(new UserIdInterceptor)
+      .intercept(new GrpcAuthenticatorInterceptor)
       .addService(ConnectorServiceGrpc.bindService(connectorService, executionContext))
       .addService(CredentialsServiceGrpc.bindService(credentialsService, executionContext))
       .addService(StudentsServiceGrpc.bindService(studentsService, executionContext))

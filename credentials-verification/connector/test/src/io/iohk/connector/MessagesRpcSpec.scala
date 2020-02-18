@@ -47,14 +47,12 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
       val encodedPublicKey = toEncodePublicKey(keys.getPublic)
       val request = GetMessagesPaginatedRequest("", 10)
 
-      val publicKeyStr = Base64.getUrlEncoder.encodeToString(encodedPublicKey.bytes.toArray)
-      val signatureStr = Base64.getUrlEncoder.encodeToString(ECSignature.sign(privateKey, request.toByteArray).toArray)
-
+      val signature = ECSignature.sign(privateKey, request.toByteArray)
       val issuerId = createIssuer("Issuer", Some(encodedPublicKey))
 
       val messages = createExampleMessages(issuerId)
 
-      usingApiAs(signatureStr, publicKeyStr) { blockingStub =>
+      usingApiAs(signature, encodedPublicKey) { blockingStub =>
         val response = blockingStub.getMessagesPaginated(request)
         response.messages.map(m => (m.id, m.connectionId)) mustBe
           messages.take(10).map { case (messageId, connectionId) => (messageId.id.toString, connectionId.id.toString) }

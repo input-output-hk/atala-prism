@@ -13,6 +13,7 @@ import io.iohk.connector.repositories.{ConnectionsRepository, MessagesRepository
 import io.iohk.connector.services.{ConnectionsService, MessagesService}
 import io.iohk.cvp.connector.protos.ConnectorServiceGrpc
 import io.iohk.cvp.crypto.ECKeys.EncodedPublicKey
+import io.iohk.cvp.grpc.{GrpcAuthenticationHeader, GrpcAuthenticatorInterceptor}
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.repositories.PostgresRepositorySpec
 import org.scalatest.BeforeAndAfterEach
@@ -21,7 +22,7 @@ import scala.concurrent.duration.DurationLong
 
 trait ApiTestHelper[STUB] {
   def apply[T](participantId: ParticipantId)(f: STUB => T): T
-  def apply[T](signatureStr: String, publicKeyStr: String)(f: STUB => T): T
+  def apply[T](signature: Vector[Byte], publicKey: EncodedPublicKey)(f: STUB => T): T
   def unlogged[T](f: STUB => T): T
 }
 
@@ -41,7 +42,7 @@ abstract class RpcSpecBase extends PostgresRepositorySpec with BeforeAndAfterEac
     val serverBuilderWithoutServices = InProcessServerBuilder
       .forName(serverName)
       .directExecutor()
-      .intercept(new UserIdInterceptor)
+      .intercept(new GrpcAuthenticatorInterceptor)
 
     val serverBuilder = services.foldLeft(serverBuilderWithoutServices) { (builder, service) =>
       builder.addService(service)
@@ -75,9 +76,7 @@ abstract class RpcSpecBase extends PostgresRepositorySpec with BeforeAndAfterEac
               applier: CallCredentials.MetadataApplier
           ): Unit = {
             appExecutor.execute { () =>
-              val headers = new Metadata()
-              headers.put(UserIdInterceptor.USER_ID_METADATA_KEY, id.uuid.toString)
-              applier.apply(headers)
+              applier.apply(GrpcAuthenticationHeader.Legacy(id).toMetadata)
             }
           }
 
@@ -87,7 +86,7 @@ abstract class RpcSpecBase extends PostgresRepositorySpec with BeforeAndAfterEac
         val blockingStub = stubFactory(channelHandle, callOptions)
         f(blockingStub)
       }
-      override def apply[T](signatureStr: String, publicKeyStr: String)(f: STUB => T): T = {
+      override def apply[T](signature: Vector[Byte], publicKey: EncodedPublicKey)(f: STUB => T): T = {
 
         val callOptions = CallOptions.DEFAULT.withCallCredentials(new CallCredentials {
           override def applyRequestMetadata(
@@ -96,10 +95,7 @@ abstract class RpcSpecBase extends PostgresRepositorySpec with BeforeAndAfterEac
               applier: CallCredentials.MetadataApplier
           ): Unit = {
             appExecutor.execute { () =>
-              val headers = new Metadata()
-              headers.put(UserIdInterceptor.SIGNATURE_METADATA_KEY, signatureStr)
-              headers.put(UserIdInterceptor.PUBLIC_METADATA_KEY, publicKeyStr)
-              applier.apply(headers)
+              applier.apply(GrpcAuthenticationHeader.PublicKeyBased(publicKey, signature).toMetadata)
             }
           }
 

@@ -1,10 +1,10 @@
 package io.iohk.connector
 
-import io.grpc.Status
 import io.iohk.connector.errors.{ConnectorError, ErrorSupport, SignatureVerificationError}
 import io.iohk.connector.repositories.ConnectionsRepository
-import io.iohk.cvp.crypto.ECKeys.{EncodedPublicKey, toPublicKey}
+import io.iohk.cvp.crypto.ECKeys.toPublicKey
 import io.iohk.cvp.crypto.ECSignature
+import io.iohk.cvp.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser}
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither._
@@ -34,46 +34,27 @@ trait Authenticator {
 
 object Authenticator {
 
-  case class SignatureHeader(publicKey: EncodedPublicKey, signature: Vector[Byte])
-
   trait RequestHeadersParser {
-    def parseSignatureHeader: Option[SignatureHeader]
-
-    /**
-      * Assumes there is always a userId, otherwise, we fail, this is done to comply with the
-      * legacy authentication mechanism.
-      */
-    def participantId: ParticipantId
+    def parseAuthenticationHeader: Option[GrpcAuthenticationHeader]
   }
 
   implicit val gRPCHeadersParser: RequestHeadersParser = new RequestHeadersParser {
-    override def parseSignatureHeader: Option[SignatureHeader] = {
-      (Option(UserIdInterceptor.SIGNATURE_CTX_KEY.get()), Option(UserIdInterceptor.PUBLIC_CTX_KEY.get())) match {
-        case (Some(signatureStr), Some(publicKeyStr)) =>
-          val encodedPublicKey = EncodedPublicKey(publicKeyStr.toVector)
-          Some(SignatureHeader(encodedPublicKey, signatureStr.toVector))
-
-        case _ => None
-      }
-    }
-
-    override def participantId: ParticipantId = {
-      UserIdInterceptor.USER_ID_CTX_KEY
-        .get()
-        .getOrElse(throw Status.UNAUTHENTICATED.withDescription("userId header missing").asRuntimeException())
+    override def parseAuthenticationHeader: Option[GrpcAuthenticationHeader] = {
+      GrpcAuthenticationHeaderParser.current()
     }
   }
 }
 
-class SignedRequestsAuthenticator(connectionsRepository: ConnectionsRepository)
-    extends Authenticator
+class SignedRequestsAuthenticator(
+    connectionsRepository: ConnectionsRepository /*, nodeClient: NodeServiceGrpc.NodeService*/
+) extends Authenticator
     with ErrorSupport {
 
   import Authenticator._
 
   override val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
-  def withLogging[Request <: GeneratedMessage, Response <: GeneratedMessage](
+  private def withLogging[Request <: GeneratedMessage, Response <: GeneratedMessage](
       methodName: String,
       request: Request,
       participantId: ParticipantId
@@ -93,7 +74,10 @@ class SignedRequestsAuthenticator(connectionsRepository: ConnectionsRepository)
         )
     }
 
-  def withLogging[Request <: GeneratedMessage, Response <: GeneratedMessage](methodName: String, request: Request)(
+  private def withLogging[Request <: GeneratedMessage, Response <: GeneratedMessage](
+      methodName: String,
+      request: Request
+  )(
       run: => Future[Response]
   )(implicit ec: ExecutionContext): Future[Response] =
     run.andThen {
@@ -107,13 +91,23 @@ class SignedRequestsAuthenticator(connectionsRepository: ConnectionsRepository)
         )
     }
 
-  private def authenticate(request: Array[Byte], signatureHeader: SignatureHeader)(
+  private def authenticate(request: Array[Byte], authenticationHeader: GrpcAuthenticationHeader)(
       implicit executionContext: ExecutionContext
+  ): FutureEither[ConnectorError, ParticipantId] = {
+    authenticationHeader match {
+      case GrpcAuthenticationHeader.Legacy(userId) => Future.successful(Right(userId)).toFutureEither
+      case h: GrpcAuthenticationHeader.PublicKeyBased => authenticate(request, h)
+      case h: GrpcAuthenticationHeader.DIDBased => authenticate(request, h)
+    }
+  }
+
+  private def authenticate(request: Array[Byte], authenticationHeader: GrpcAuthenticationHeader.PublicKeyBased)(
+      implicit ec: ExecutionContext
   ): FutureEither[ConnectorError, ParticipantId] = {
 
     for {
-      signature <- Future { Right(signatureHeader.signature) }.toFutureEither
-      publicKey <- Future { Right(toPublicKey(signatureHeader.publicKey)) }.toFutureEither
+      signature <- Future { Right(authenticationHeader.signature) }.toFutureEither
+      publicKey <- Future { Right(toPublicKey(authenticationHeader.publicKey)) }.toFutureEither
       _ <- Either
         .cond(
           ECSignature.verify(publicKey, request, signature),
@@ -121,9 +115,14 @@ class SignedRequestsAuthenticator(connectionsRepository: ConnectionsRepository)
           SignatureVerificationError()
         )
         .toFutureEither
-      participantId <- connectionsRepository.getParticipantId(signatureHeader.publicKey)
+      participantId <- connectionsRepository.getParticipantId(authenticationHeader.publicKey)
     } yield participantId
+  }
 
+  private def authenticate(request: Array[Byte], authenticationHeader: GrpcAuthenticationHeader.DIDBased)(
+      implicit ec: ExecutionContext
+  ): FutureEither[ConnectorError, ParticipantId] = {
+    ??? // TODO: Complete method
   }
 
   override def authenticated[Request <: GeneratedMessage, Response <: GeneratedMessage](
@@ -133,17 +132,15 @@ class SignedRequestsAuthenticator(connectionsRepository: ConnectionsRepository)
       f: ParticipantId => Future[Response]
   )(implicit ec: ExecutionContext, headersParser: RequestHeadersParser): Future[Response] = {
     {
-      Try {
-        headersParser.parseSignatureHeader
-          .map(authenticate(request.toByteArray, _))
-          .getOrElse(Right(headersParser.participantId).toFutureEither)
-      } match {
-        case Failure(ex) =>
-          logger.error(s"$methodName - missing userId, request = ${request.toProtoString}", ex)
-          Future.failed(throw new RuntimeException("Missing userId"))
-        case Success(value) =>
+      headersParser.parseAuthenticationHeader
+        .map(authenticate(request.toByteArray, _))
+        .map { value =>
           value.map(v => withLogging(methodName, request, v) { f(v) }).successMap(identity)
-      }
+        }
+        .getOrElse {
+          logger.error(s"$methodName - missing userId, request = ${request.toProtoString}")
+          Future.failed(throw new RuntimeException("Missing userId"))
+        }
     }.flatten
   }
 
