@@ -1,3 +1,4 @@
+/* eslint-disable */
 // source: src/protos/admin/admin.proto
 /**
  * @fileoverview

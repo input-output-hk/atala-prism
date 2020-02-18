@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Landing from '../landing/Landing';
 import Dashboard from '../dashboard/Dashboard';
 import Loading from '../common/Atoms/Loading/Loading';
@@ -6,6 +6,7 @@ import { withSideBar } from './withSideBar';
 import Logger from '../../helpers/Logger';
 import { withApi } from './withApi';
 import { USER_ROLE } from '../../helpers/constants';
+import { makeCancelable, PromiseCancellationError } from '../../helpers/promises';
 
 const withLoggedValidationComponent = (Component, validRoles) => props => {
   const DashboardWithSidebar = withSideBar(Dashboard);
@@ -15,14 +16,27 @@ const withLoggedValidationComponent = (Component, validRoles) => props => {
   const {
     api: { isWalletUnlocked: checkIsWalletUnlocked }
   } = props;
-  useState(() => {
-    checkIsWalletUnlocked()
-      .then(response => setIsWalletUnlocked(response))
+
+  useEffect(() => {
+    // This component is unmounted before promise resolution sometimes.
+    // Therefore checkIsWalletUnlocked was made cancellable.
+    const cancelablePromise = makeCancelable(checkIsWalletUnlocked());
+    cancelablePromise.promise
+      .then(response => {
+        setIsWalletUnlocked(response);
+        setLoading(false);
+      })
       .catch(error => {
+        if (error instanceof PromiseCancellationError) {
+          Logger.info('Promise was cancelled');
+          return;
+        }
         Logger.error('Error while getting if wallet is unlocked', error);
         setIsWalletUnlocked(false);
-      })
-      .finally(() => setLoading(false));
+        setLoading(false);
+      });
+
+    return () => cancelablePromise.cancel();
   }, []);
 
   if (loading) return <Loading />;
