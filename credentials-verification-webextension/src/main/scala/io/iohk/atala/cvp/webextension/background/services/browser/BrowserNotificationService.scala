@@ -2,6 +2,8 @@ package io.iohk.atala.cvp.webextension.background.services.browser
 
 import io.iohk.atala.cvp.webextension.common.{I18NMessages, ResourceProvider}
 import io.iohk.atala.cvp.webextension.facades.CommonsFacade
+import typings.std.console
+import typings.bip39.mod
 
 /**
   * Internal service available to the background context, which allows sending notifications to the browser.
@@ -26,5 +28,10 @@ private[background] class BrowserNotificationService(messages: I18NMessages) {
       message,
       ResourceProvider.appIcon96
     )
+    console.warn("Hello, World!")
+
+    console.warn(s"*************************${mod.generateMnemonic()}*******************")
+
+    console.warn("Hello, World End!")
   }
 }

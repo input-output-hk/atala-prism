@@ -1,0 +1,41 @@
+.div__btngroup {
+    width: 80%;
+    min-width: 240px;
+    margin: 0 auto;
+    margin-right: 20px;
+    margin-bottom: 10px;
+    padding: 10px;
+    background-color: #f2f2f2;
+    border-radius: 4px;
+    box-shadow: inset 0 1px 3px 0 rgba(0,0,0,.25);
+}
+
+.div__header {
+    text-align: center;
+    margin: auto;
+    padding-bottom: 20px;
+    color: #333;
+    max-width: 300px;
+}
+
+.div__btn {
+    margin-bottom: 5px;
+    user-select: none;
+    cursor: pointer;
+    display: block;
+    padding: 18px 30px 15px;
+    border-radius: 2px;
+    color: #fff;
+    text-align: center;
+    font-size: 18px;
+    background-color: #3cc77a;
+    box-shadow: 0 2px 0 0 #2ea262;
+    transition: none;
+    position: relative;
+}
+
+#outerId.outer {
+    display: block;
+    padding-left: 10px;
+    padding-right: 10px;
+}

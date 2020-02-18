@@ -6,7 +6,13 @@ import io.iohk.atala.cvp.webextension.common.I18NMessages
 import io.iohk.atala.cvp.webextension.facades.elliptic.{EC, KeyPair}
 import org.scalajs.dom
 import org.scalajs.dom.Event
-import org.scalajs.dom.raw.{HTMLParagraphElement, HTMLSelectElement}
+import org.scalajs.dom.raw.{HTMLHeadElement, HTMLParagraphElement, HTMLSelectElement}
+import typings.bip39.{mod => bip39}
+import typings.bip32.{mod => bip32}
+import typings.node.BufferEncoding
+import typings.node.bufferMod.Buffer
+import typings.std.document
+import typings.std.console
 
 import scala.concurrent.ExecutionContext
 import scala.scalajs.js
@@ -130,6 +136,9 @@ class Runner(messages: I18NMessages, backgroundAPI: BackgroundAPI)(implicit ec: 
 
     val closeButton = dom.document.getElementById("close-button")
 
+    val generateBtn = document.getElementById("generate").asInstanceOf[HTMLHeadElement]
+    generateBtn.addEventListener("click", (ev: Event) => generate(), true)
+
     log("Getting wallet status from the popup script")
     getWalletStatus()
     if (closeButton != null) {
@@ -179,6 +188,17 @@ class Runner(messages: I18NMessages, backgroundAPI: BackgroundAPI)(implicit ec: 
   private def log(msg: String): Unit = {
     println(s"popup: $msg")
   }
+
+  private def generate() = {
+    console.info("**************************generate*****************************")
+
+    val h2 = dom.document.getElementById("h2").asInstanceOf[typings.std.HTMLHeadingElement]
+    val mnemonic = bip39.generateMnemonic()
+
+    h2.innerText = mnemonic
+
+  }
+
 }
 
 object Runner {
