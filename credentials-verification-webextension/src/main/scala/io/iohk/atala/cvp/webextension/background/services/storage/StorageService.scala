@@ -40,8 +40,7 @@ private[background] class StorageService(implicit ec: ExecutionContext) {
   def load(key: String): Future[Option[js.Any]] = {
     chrome.storage.Storage.local
       .get(any2undefOrA(key))
-      .map(_.getOrElse(key, null))
-      .map(Option.apply)
+      .map(_.get(key))
   }
 }
 

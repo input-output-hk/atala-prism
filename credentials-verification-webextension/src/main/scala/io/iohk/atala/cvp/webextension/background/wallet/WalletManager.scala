@@ -186,13 +186,10 @@ private[background] class WalletManager(browserActionService: BrowserActionServi
         .toFuture
         .asInstanceOf[Future[crypto.CryptoKey]]
       _ = { storageKey = Some(aesKey) }
-      storedEncryptedJson <- storageService.load(WalletManager.LOCAL_STORAGE_KEY)
-      json <- {
-        dom.console.log(s"Serialized wallet: $storedEncryptedJson")
-        if (storedEncryptedJson.isEmpty) {
-          Future.successful("{}")
-        } else {
-          val encryptedJson = storedEncryptedJson.get.asInstanceOf[String]
+      storedEncryptedJsonOption <- storageService.load(WalletManager.LOCAL_STORAGE_KEY)
+      json <- storedEncryptedJsonOption
+        .map(storedEncryptedJson => {
+          val encryptedJson = storedEncryptedJson.asInstanceOf[String]
           val encryptedBytes = Base64.getDecoder.decode(encryptedJson.asInstanceOf[String]).toTypedArray.buffer
           crypto.crypto.subtle
             .decrypt(initialAesCtr, aesKey, encryptedBytes)
@@ -203,8 +200,8 @@ private[background] class WalletManager(browserActionService: BrowserActionServi
               TypedArrayBuffer.wrap(buffer).get(arr)
               new String(arr, "UTF-8")
             }
-        }
-      }
+        })
+        .getOrElse(Future.successful("{}"))
       _ = dom.console.log(s"Loading wallet from: ${json}")
       walletData = parse(json).getOrElse(Json.obj()).as[WalletData].getOrElse(WalletData(Map.empty))
       _ = loadFromWalletData(walletData)
