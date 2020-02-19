@@ -13,10 +13,9 @@ import org.scalajs.dom
 import org.scalajs.dom.crypto
 import org.scalajs.dom.crypto.{CryptoKey, KeyFormat}
 
-import scala.scalajs.js.typedarray._
-import scala.scalajs.js.typedarray.ArrayBuffer
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.scalajs.js
+import scala.scalajs.js.typedarray.{ArrayBuffer, _}
 import scala.util.{Failure, Success}
 
 object WalletManager {
@@ -30,6 +29,13 @@ object WalletManager {
 }
 
 case class SigningRequest(id: Int, message: String)
+
+sealed trait WalletStatus
+object WalletStatus {
+  final case object Missing extends WalletStatus
+  final case object Unlocked extends WalletStatus
+  final case object Locked extends WalletStatus
+}
 
 case class WalletData(keys: Map[String, String])
 
@@ -138,6 +144,20 @@ private[background] class WalletManager(browserActionService: BrowserActionServi
     result
   }
 
+  def getStatus(): Future[WalletStatus] = {
+    for {
+      storedData <- storageService.load(WalletManager.LOCAL_STORAGE_KEY)
+    } yield {
+      if (storedData.isEmpty) {
+        WalletStatus.Missing
+      } else if (this.storageKey.nonEmpty) {
+        WalletStatus.Unlocked
+      } else {
+        WalletStatus.Locked
+      }
+    }
+  }
+
   def unlock(password: String): Future[Unit] = {
     val pbdkf2 =
       crypto.Pbkdf2Params("PBKDF2", WalletManager.PASSWORD_SALT.getBytes.toTypedArray.buffer, 100L, "SHA-512")
@@ -166,12 +186,10 @@ private[background] class WalletManager(browserActionService: BrowserActionServi
         .toFuture
         .asInstanceOf[Future[crypto.CryptoKey]]
       _ = { storageKey = Some(aesKey) }
-      encryptedJsonOrUndef <- storageService.load(WalletManager.LOCAL_STORAGE_KEY)
-      json <- {
-        if (encryptedJsonOrUndef == null) {
-          Future.successful("{}")
-        } else {
-          val encryptedJson = encryptedJsonOrUndef.asInstanceOf[String]
+      storedEncryptedJsonOption <- storageService.load(WalletManager.LOCAL_STORAGE_KEY)
+      json <- storedEncryptedJsonOption
+        .map { storedEncryptedJson =>
+          val encryptedJson = storedEncryptedJson.asInstanceOf[String]
           val encryptedBytes = Base64.getDecoder.decode(encryptedJson.asInstanceOf[String]).toTypedArray.buffer
           crypto.crypto.subtle
             .decrypt(initialAesCtr, aesKey, encryptedBytes)
@@ -183,7 +201,7 @@ private[background] class WalletManager(browserActionService: BrowserActionServi
               new String(arr, "UTF-8")
             }
         }
-      }
+        .getOrElse(Future.successful("{}"))
       _ = dom.console.log(s"Loading wallet from: ${json}")
       walletData = parse(json).getOrElse(Json.obj()).as[WalletData].getOrElse(WalletData(Map.empty))
       _ = loadFromWalletData(walletData)

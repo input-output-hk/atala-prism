@@ -94,15 +94,27 @@ class Runner(messages: I18NMessages, backgroundAPI: BackgroundAPI)(implicit ec: 
       }
   }
 
+  def getWalletStatus(): Unit = {
+    backgroundAPI.getWalletStatus().onComplete {
+      case Success(walletStatus) =>
+        log(s"Got wallet status: ${walletStatus.status}")
+      case Failure(ex) =>
+        log(s"Failed obtaining wallet status: ${ex.getMessage}")
+        throw ex
+    }
+  }
+
   def unlockWallet(): Unit = {
     backgroundAPI.unlockWallet(WalletManager.FIXME_WALLET_PASSWORD).map { _ =>
       dom.window.location.href = "popup.html"
+      getWalletStatus()
     }
   }
 
   def lockWallet(): Unit = {
     backgroundAPI.lockWallet().map { _ =>
       dom.window.location.href = "popup-locked.html"
+      getWalletStatus()
     }
   }
 
@@ -111,6 +123,8 @@ class Runner(messages: I18NMessages, backgroundAPI: BackgroundAPI)(implicit ec: 
 
     val closeButton = dom.document.getElementById("close-button")
 
+    log("Getting wallet status from the popup script")
+    getWalletStatus()
     if (closeButton != null) {
       loadRequests()
       loadKeys()

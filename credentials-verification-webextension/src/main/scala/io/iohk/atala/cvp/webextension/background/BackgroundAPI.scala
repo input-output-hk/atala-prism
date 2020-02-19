@@ -4,7 +4,12 @@ import io.circe.Decoder
 import io.circe.generic.auto._
 import io.circe.parser.parse
 import io.circe.syntax._
-import io.iohk.atala.cvp.webextension.background.models.Command.{KeyList, SignatureResult, SigningRequests}
+import io.iohk.atala.cvp.webextension.background.models.Command.{
+  KeyList,
+  SignatureResult,
+  SigningRequests,
+  WalletStatusResult
+}
 import io.iohk.atala.cvp.webextension.background.models.{Command, CommandWithResponse, Event}
 import org.scalajs.dom
 
@@ -54,6 +59,10 @@ class BackgroundAPI(implicit ec: ExecutionContext) {
 
   def signRequestWithKey(requestId: Int, keyName: String): Future[Unit] = {
     process(Command.SignRequestWithKey(requestId, keyName))
+  }
+
+  def getWalletStatus(): Future[WalletStatusResult] = {
+    process(Command.GetWalletStatus)
   }
 
   def unlockWallet(password: String): Future[Unit] = {
