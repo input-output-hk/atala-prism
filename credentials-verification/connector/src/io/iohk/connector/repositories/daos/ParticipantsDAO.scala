@@ -50,4 +50,11 @@ object ParticipantsDAO {
       """.stripMargin.query[ParticipantInfo].option
   }
 
+  def findByDID(did: String): OptionT[doobie.ConnectionIO, ParticipantInfo] = OptionT {
+    sql"""
+         |SELECT id, tpe, public_key, name, did, logo
+         |FROM participants
+         |WHERE did = $did
+      """.stripMargin.query[ParticipantInfo].option
+  }
 }

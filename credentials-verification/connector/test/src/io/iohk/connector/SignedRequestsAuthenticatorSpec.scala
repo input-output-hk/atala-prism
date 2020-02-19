@@ -137,6 +137,8 @@ object SignedRequestsAuthenticatorSpec {
         encodedPublicKey: ECKeys.EncodedPublicKey
     ): FutureEither[errors.ConnectorError, ParticipantId] = ???
 
+    override def getParticipantId(did: String): FutureEither[errors.ConnectorError, ParticipantId] = ???
+
     override def addConnectionFromToken(
         token: TokenString,
         publicKey: ECKeys.EncodedPublicKey

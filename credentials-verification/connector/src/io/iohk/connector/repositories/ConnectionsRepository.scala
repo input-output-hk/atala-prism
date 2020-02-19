@@ -28,6 +28,8 @@ trait ConnectionsRepository {
 
   def getParticipantId(encodedPublicKey: EncodedPublicKey): FutureEither[ConnectorError, ParticipantId]
 
+  def getParticipantId(did: String): FutureEither[ConnectorError, ParticipantId]
+
   def addConnectionFromToken(
       token: TokenString,
       publicKey: EncodedPublicKey
@@ -77,6 +79,21 @@ object ConnectionsRepository {
         .map(_.id)
         .toRight(
           UnknownValueError("encodedPublicKey", Base64.getEncoder.encodeToString(encodedPublicKey.bytes.toArray)).logWarn
+        )
+        .transact(xa)
+        .value
+        .unsafeToFuture()
+        .toFutureEither
+    }
+
+    override def getParticipantId(did: String): FutureEither[ConnectorError, ParticipantId] = {
+      implicit val loggingContext = LoggingContext("did" -> did)
+
+      ParticipantsDAO
+        .findByDID(did)
+        .map(_.id)
+        .toRight(
+          UnknownValueError("did", did).logWarn
         )
         .transact(xa)
         .value

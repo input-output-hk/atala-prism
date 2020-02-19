@@ -1,12 +1,12 @@
 package io.iohk.connector.repositories
 
-import com.softwaremill.diffx.scalatest.DiffMatcher._
 import java.time.{Instant, LocalDateTime, ZoneOffset}
 
+import com.softwaremill.diffx.scalatest.DiffMatcher._
 import doobie.implicits._
+import io.iohk.connector.errors.UnknownValueError
 import io.iohk.connector.model._
 import io.iohk.connector.repositories.daos._
-import io.iohk.cvp.crypto.ECKeys
 import io.iohk.cvp.crypto.ECKeys.EncodedPublicKey
 import io.iohk.cvp.models.ParticipantId
 import org.scalatest.EitherValues._
@@ -132,6 +132,33 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
       val nextTenResult =
         connectionsRepository.getConnectionsPaginated(verifierId, 10, Some(firstTenExpected.last)).value.futureValue
       nextTenResult.right.value.map(_.id) must matchTo(nextTenExpected)
+    }
+  }
+
+  "getParticipantId by did" should {
+    "get a participant" in {
+      val id = ParticipantId.random()
+      val did = "did:prism:test"
+      ParticipantsDAO
+        .insert(ParticipantInfo(id, ParticipantType.Issuer, None, "issuer", Some(did), None))
+        .transact(database)
+        .unsafeToFuture()
+        .futureValue
+
+      val result = connectionsRepository.getParticipantId(did).value.futureValue
+      result.right.value must be(id)
+    }
+
+    "return no participant on unknown did" in {
+      val did = "did:prism:test"
+      ParticipantsDAO
+        .insert(ParticipantInfo(ParticipantId.random(), ParticipantType.Issuer, None, "issuer", Some(did + "x"), None))
+        .transact(database)
+        .unsafeToFuture()
+        .futureValue
+
+      val result = connectionsRepository.getParticipantId(did).value.futureValue
+      result.left.value must be(UnknownValueError("did", did))
     }
   }
 }
