@@ -107,7 +107,6 @@ class Runner(messages: I18NMessages, backgroundAPI: BackgroundAPI)(implicit ec: 
   def unlockWallet(): Unit = {
     backgroundAPI.unlockWallet(WalletManager.FIXME_WALLET_PASSWORD).map { _ =>
       dom.window.location.href = "popup.html"
-      log("Getting wallet status after unlocking it")
       getWalletStatus()
     }
   }
@@ -115,7 +114,6 @@ class Runner(messages: I18NMessages, backgroundAPI: BackgroundAPI)(implicit ec: 
   def lockWallet(): Unit = {
     backgroundAPI.lockWallet().map { _ =>
       dom.window.location.href = "popup-locked.html"
-      log("Getting wallet status after locking it")
       getWalletStatus()
     }
   }
