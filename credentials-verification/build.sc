@@ -219,11 +219,18 @@ object connector extends ServerPBCommon with CVPDockerModule {
 
   override def cvpDockerConfig = CVPDockerConfig(name = "connector")
 
-  object test extends `tests-common` {}
+  object test extends `tests-common` {
+    override def ivyDeps = super.ivyDeps.map { deps =>
+      deps ++ Agg(
+        ivy"org.mockito::mockito-scala:1.11.1",
+        ivy"org.mockito::mockito-scala-scalatest:1.11.1"
+      )
+    }
+  }
 
   def utilDir = T.sources { os.pwd / 'util }
 
-  def resourceDir = T.sources { millSourcePath / "resources"}
+  def resourceDir = T.sources { millSourcePath / "resources" }
 
   override def resources = T.sources {
     resourceDir() ++ utilDir()

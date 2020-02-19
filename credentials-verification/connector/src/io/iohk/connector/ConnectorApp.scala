@@ -73,7 +73,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     val messagesRepository = new MessagesRepository(xa)(executionContext)
 
     // authenticator
-    val authenticator = new SignedRequestsAuthenticator(connectionsRepository)
+    val authenticator = new SignedRequestsAuthenticator(connectionsRepository, node)
 
     // connector services
     val connectionsService =

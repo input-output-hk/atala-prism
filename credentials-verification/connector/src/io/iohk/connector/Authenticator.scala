@@ -3,16 +3,17 @@ package io.iohk.connector
 import io.iohk.connector.errors.{ConnectorError, ErrorSupport, SignatureVerificationError}
 import io.iohk.connector.repositories.ConnectionsRepository
 import io.iohk.cvp.crypto.ECKeys.toPublicKey
-import io.iohk.cvp.crypto.ECSignature
+import io.iohk.cvp.crypto.{ECKeys, ECSignature}
 import io.iohk.cvp.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser}
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither._
+import io.iohk.nodenew.node_api
 import org.slf4j.{Logger, LoggerFactory}
 import scalapb.GeneratedMessage
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Success}
 
 trait Authenticator {
 
@@ -46,7 +47,8 @@ object Authenticator {
 }
 
 class SignedRequestsAuthenticator(
-    connectionsRepository: ConnectionsRepository /*, nodeClient: NodeServiceGrpc.NodeService*/
+    connectionsRepository: ConnectionsRepository,
+    nodeClient: node_api.NodeServiceGrpc.NodeService
 ) extends Authenticator
     with ErrorSupport {
 
@@ -122,7 +124,36 @@ class SignedRequestsAuthenticator(
   private def authenticate(request: Array[Byte], authenticationHeader: GrpcAuthenticationHeader.DIDBased)(
       implicit ec: ExecutionContext
   ): FutureEither[ConnectorError, ParticipantId] = {
-    ??? // TODO: Complete method
+    for {
+      // first we verify that we know the DID to avoid performing costly calls if we don't know it
+      participantId <- connectionsRepository.getParticipantId(authenticationHeader.did)
+
+      didDocumentResponse <- nodeClient
+        .getDidDocument(node_api.GetDidDocumentRequest(authenticationHeader.did))
+        .map(Right(_))
+        .toFutureEither
+
+      didDocument = didDocumentResponse.document.getOrElse(throw new RuntimeException("Unknown DID"))
+      // TODO: Validate keyUsage and revocation
+      // we haven't defined which keys can sign requests, and the model doesn't specify when a key is revoked
+      publicKey = didDocument.publicKeys
+        .find(_.id == authenticationHeader.keyId)
+        .flatMap(_.keyData.ecKeyData)
+        .map { data =>
+          // TODO: Validate curve, right now we support a single curve
+          ECKeys.toPublicKey(x = data.x.toByteArray, y = data.y.toByteArray)
+        }
+        .getOrElse(throw new RuntimeException("Unknown public key id"))
+
+      // Verify the actual signature
+      _ <- Either
+        .cond(
+          ECSignature.verify(publicKey, request, authenticationHeader.signature),
+          (),
+          SignatureVerificationError()
+        )
+        .toFutureEither
+    } yield participantId
   }
 
   override def authenticated[Request <: GeneratedMessage, Response <: GeneratedMessage](

@@ -17,6 +17,7 @@ import io.iohk.cvp.grpc.{GrpcAuthenticationHeader, GrpcAuthenticatorInterceptor}
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.repositories.PostgresRepositorySpec
 import org.scalatest.BeforeAndAfterEach
+import org.mockito.MockitoSugar._
 
 import scala.concurrent.duration.DurationLong
 
@@ -131,7 +132,8 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
   lazy val paymentsRepository = new PaymentsRepository(database)(executionContext)
   lazy val connectionsService = new ConnectionsService(connectionsRepository, paymentsRepository, braintreePayments)
   lazy val messagesRepository = new MessagesRepository(database)(executionContext)
-  lazy val authenticator = new SignedRequestsAuthenticator(connectionsRepository)
+  lazy val nodeMock = mock[io.iohk.nodenew.node_api.NodeServiceGrpc.NodeService]
+  lazy val authenticator = new SignedRequestsAuthenticator(connectionsRepository, nodeMock)
 
   lazy val messagesService = new MessagesService(messagesRepository)
   lazy val connectorService =

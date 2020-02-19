@@ -14,6 +14,7 @@ import io.iohk.cvp.cmanager.repositories.{
   StudentsRepository
 }
 import io.iohk.cvp.models.ParticipantId
+import org.mockito.MockitoSugar._
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 
@@ -32,7 +33,8 @@ class StudentsServiceImplSpec extends RpcSpecBase {
   private lazy val studentsRepository = new StudentsRepository(database)
   private lazy val credentialsRepository = new CredentialsRepository(database)
   private lazy val connectionsRepository = new ConnectionsRepository.PostgresImpl(database)(executionContext)
-  private lazy val authenticator = new SignedRequestsAuthenticator(connectionsRepository)
+  private lazy val nodeMock = mock[io.iohk.nodenew.node_api.NodeServiceGrpc.NodeService]
+  private lazy val authenticator = new SignedRequestsAuthenticator(connectionsRepository, nodeMock)
   override def services = Seq(
     StudentsServiceGrpc
       .bindService(new StudentsServiceImpl(studentsRepository, credentialsRepository, authenticator), executionContext)
