@@ -21,7 +21,7 @@ import {
   getStudentCredentials,
   createStudent
 } from './credentials/studentsManager';
-import { getGroups } from './credentials/groupsManager';
+import { createGroup, getGroups } from './credentials/groupsManager';
 import {
   getIndividuals as getIndividualsAsVerifier,
   generateConnectionTokenForIndividual as generateConnectionTokenAsVerifier,
@@ -88,7 +88,8 @@ export const api = {
   createStudent,
   importBulk,
   isAdminSupported,
-  populateDemoDataset
+  populateDemoDataset,
+  createGroup
 };
 
 export const hardcodedApi = {

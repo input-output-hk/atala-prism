@@ -19,6 +19,7 @@ import Admin from './admin/AdminContainer';
 import { withSideBar } from './providers/withSideBar';
 import { ISSUER, VERIFIER } from '../helpers/constants';
 import { withLoggedValidation } from './providers/withLoggedValidation';
+import GroupCreationContainer from './groupCreation/GroupCreationContainer';
 
 const issuer = [ISSUER];
 const verifier = [VERIFIER];
@@ -115,12 +116,19 @@ const adminRoute = {
   key: 'admin',
   component: withLoggedValidation(withSideBar(Admin), allRoles)
 };
+const groupCreationRoute = {
+  exact: true,
+  path: '/groups/creation',
+  key: 'groupsCreation',
+  component: withLoggedValidation(withSideBar(GroupCreationContainer), allRoles)
+};
 
 const routes = [
   adminRoute,
   loginRoute,
   errorRoute,
   connections,
+  groupCreationRoute,
   groups,
   credential,
   settings,
