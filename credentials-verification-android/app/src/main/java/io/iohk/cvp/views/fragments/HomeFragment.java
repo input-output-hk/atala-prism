@@ -104,7 +104,7 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> {
     newCredentialsAdapter.clearMessages();
     credentialsAdapter.clearMessages();
 
-    //HARCODEO LA NUEVA CREDENCIAL
+    //HARDCODED NEW CREDENTIAL
     List<ReceivedMessage> hardcoreMessages = new ArrayList<>();
     ReceivedMessage message = ReceivedMessage.getDefaultInstance();
     hardcoreMessages.add(message);
@@ -140,7 +140,7 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> {
                 .filter(msg -> acceptedMessagesIds.contains(msg.getId())).collect(
                     Collectors.toList());
 
-            //HARCODEO LA CREDENCIAL GUARDADA
+            //HARDCODED SAVED CREDENTIAL
             ReceivedMessage hardcoreOldMessage = ReceivedMessage.getDefaultInstance();
             acceptedMessages.add(hardcoreOldMessage);
 

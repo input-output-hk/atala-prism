@@ -63,7 +63,7 @@ public class CredentialsRecyclerViewAdapter extends
       holder.isNew = this.hasNewCredentials;
       holder.degreeName.setText(current.getDegreeAwarded());
 
-      //TODO: harcodeo la credencial de government
+      //TODO: hardcoded government credential
       if( msg.getConnectionId().equals("")){
         holder.degreeType.setText("My ID Credential");
         holder.degreeName.setText("");
