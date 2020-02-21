@@ -1,6 +1,7 @@
 package io.iohk.connector
 
 import java.time.Instant
+import java.util.UUID
 import java.util.concurrent.{Executor, TimeUnit}
 
 import doobie.implicits._
@@ -13,7 +14,7 @@ import io.iohk.connector.repositories.{ConnectionsRepository, MessagesRepository
 import io.iohk.connector.services.{ConnectionsService, MessagesService}
 import io.iohk.cvp.connector.protos.ConnectorServiceGrpc
 import io.iohk.cvp.crypto.ECKeys.EncodedPublicKey
-import io.iohk.cvp.grpc.{GrpcAuthenticationHeader, GrpcAuthenticatorInterceptor}
+import io.iohk.cvp.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser, GrpcAuthenticatorInterceptor}
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.repositories.PostgresRepositorySpec
 import org.scalatest.BeforeAndAfterEach
@@ -96,7 +97,11 @@ abstract class RpcSpecBase extends PostgresRepositorySpec with BeforeAndAfterEac
               applier: CallCredentials.MetadataApplier
           ): Unit = {
             appExecutor.execute { () =>
-              applier.apply(GrpcAuthenticationHeader.PublicKeyBased(publicKey, signature).toMetadata)
+              applier.apply(
+                GrpcAuthenticationHeader
+                  .PublicKeyBased(UUID.randomUUID().toString.getBytes.toVector, publicKey, signature)
+                  .toMetadata
+              )
             }
           }
 
@@ -133,7 +138,8 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
   lazy val connectionsService = new ConnectionsService(connectionsRepository, paymentsRepository, braintreePayments)
   lazy val messagesRepository = new MessagesRepository(database)(executionContext)
   lazy val nodeMock = mock[io.iohk.nodenew.node_api.NodeServiceGrpc.NodeService]
-  lazy val authenticator = new SignedRequestsAuthenticator(connectionsRepository, nodeMock)
+  lazy val authenticator =
+    new SignedRequestsAuthenticator(connectionsRepository, nodeMock, GrpcAuthenticationHeaderParser)
 
   lazy val messagesService = new MessagesService(messagesRepository)
   lazy val connectorService =

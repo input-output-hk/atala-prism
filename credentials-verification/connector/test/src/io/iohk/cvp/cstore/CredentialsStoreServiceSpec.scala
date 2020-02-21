@@ -10,6 +10,7 @@ import io.iohk.cvp.cstore.models.{IndividualConnectionStatus, StoreUser}
 import io.iohk.cvp.cstore.protos.CredentialsStoreServiceGrpc
 import io.iohk.cvp.cstore.repositories.daos.{IndividualsDAO, StoreUsersDAO, StoredCredentialsDAO}
 import io.iohk.cvp.cstore.services.{StoreIndividualsService, StoreUsersService, StoredCredentialsService}
+import io.iohk.cvp.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.cvp.models.ParticipantId
 import org.mockito.MockitoSugar._
 import org.scalatest.OptionValues._
@@ -33,7 +34,8 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
   private lazy val connectionsRepository = new ConnectionsRepository.PostgresImpl(database)(executionContext)
   private lazy val nodeMock = mock[io.iohk.nodenew.node_api.NodeServiceGrpc.NodeService]
 
-  private lazy val authenticator = new SignedRequestsAuthenticator(connectionsRepository, nodeMock)
+  private lazy val authenticator =
+    new SignedRequestsAuthenticator(connectionsRepository, nodeMock, GrpcAuthenticationHeaderParser)
   lazy val verifierId = ParticipantId("af45a4da-65b8-473e-aadc-aa6b346250a3")
 
   override def services = Seq(

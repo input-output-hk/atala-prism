@@ -1,5 +1,6 @@
 package io.iohk.connector
 
+import io.grpc.Context
 import io.iohk.connector.errors.{ConnectorError, ErrorSupport, SignatureVerificationError}
 import io.iohk.connector.repositories.ConnectionsRepository
 import io.iohk.cvp.crypto.ECKeys.toPublicKey
@@ -17,8 +18,6 @@ import scala.util.{Failure, Success}
 
 trait Authenticator {
 
-  import Authenticator._
-
   def logger: Logger
 
   def authenticated[Request <: GeneratedMessage, Response <: GeneratedMessage](
@@ -26,33 +25,19 @@ trait Authenticator {
       request: Request
   )(
       f: ParticipantId => Future[Response]
-  )(implicit ec: ExecutionContext, headersParser: RequestHeadersParser): Future[Response]
+  )(implicit ec: ExecutionContext): Future[Response]
 
   def public[Request <: GeneratedMessage, Response <: GeneratedMessage](methodName: String, request: Request)(
       f: => Future[Response]
   )(implicit ec: ExecutionContext): Future[Response]
 }
 
-object Authenticator {
-
-  trait RequestHeadersParser {
-    def parseAuthenticationHeader: Option[GrpcAuthenticationHeader]
-  }
-
-  implicit val gRPCHeadersParser: RequestHeadersParser = new RequestHeadersParser {
-    override def parseAuthenticationHeader: Option[GrpcAuthenticationHeader] = {
-      GrpcAuthenticationHeaderParser.current()
-    }
-  }
-}
-
 class SignedRequestsAuthenticator(
     connectionsRepository: ConnectionsRepository,
-    nodeClient: node_api.NodeServiceGrpc.NodeService
+    nodeClient: node_api.NodeServiceGrpc.NodeService,
+    grpcAuthenticationHeaderParser: GrpcAuthenticationHeaderParser
 ) extends Authenticator
     with ErrorSupport {
-
-  import Authenticator._
 
   override val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
@@ -161,9 +146,11 @@ class SignedRequestsAuthenticator(
       request: Request
   )(
       f: ParticipantId => Future[Response]
-  )(implicit ec: ExecutionContext, headersParser: RequestHeadersParser): Future[Response] = {
+  )(implicit ec: ExecutionContext): Future[Response] = {
     {
-      headersParser.parseAuthenticationHeader
+      val ctx = Context.current()
+      grpcAuthenticationHeaderParser
+        .parse(ctx)
         .map(authenticate(request.toByteArray, _))
         .map { value =>
           value.map(v => withLogging(methodName, request, v) { f(v) }).successMap(identity)

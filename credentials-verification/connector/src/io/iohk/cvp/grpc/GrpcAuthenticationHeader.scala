@@ -15,17 +15,21 @@ sealed trait GrpcAuthenticationHeader {
       case GrpcAuthenticationHeader.Legacy(userId) =>
         metadata.put(UserIdKeys.metadata, userId.uuid.toString)
 
-      case GrpcAuthenticationHeader.PublicKeyBased(publicKey, signature) =>
+      case GrpcAuthenticationHeader.PublicKeyBased(requestNonce, publicKey, signature) =>
         val publicKeyStr = Base64.getUrlEncoder.encodeToString(publicKey.bytes.toArray)
         val signatureStr = Base64.getUrlEncoder.encodeToString(signature.toArray)
+        val requestNonceStr = Base64.getUrlEncoder.encodeToString(requestNonce.toArray)
         metadata.put(PublicKeyKeys.metadata, publicKeyStr)
         metadata.put(SignatureKeys.metadata, signatureStr)
+        metadata.put(RequestNonceKeys.metadata, requestNonceStr)
 
-      case GrpcAuthenticationHeader.DIDBased(did, keyId, signature) =>
+      case GrpcAuthenticationHeader.DIDBased(requestNonce, did, keyId, signature) =>
         val signatureStr = Base64.getUrlEncoder.encodeToString(signature.toArray)
+        val requestNonceStr = Base64.getUrlEncoder.encodeToString(requestNonce.toArray)
         metadata.put(DidKeys.metadata, did)
         metadata.put(DidKeyIdKeys.metadata, keyId)
         metadata.put(DidSignatureKeys.metadata, signatureStr)
+        metadata.put(RequestNonceKeys.metadata, requestNonceStr)
     }
 
     metadata
@@ -35,6 +39,8 @@ sealed trait GrpcAuthenticationHeader {
 object GrpcAuthenticationHeader {
 
   final case class Legacy(userId: ParticipantId) extends GrpcAuthenticationHeader
-  final case class PublicKeyBased(publicKey: EncodedPublicKey, signature: Vector[Byte]) extends GrpcAuthenticationHeader
-  final case class DIDBased(did: String, keyId: String, signature: Vector[Byte]) extends GrpcAuthenticationHeader
+  final case class PublicKeyBased(requestNonce: Vector[Byte], publicKey: EncodedPublicKey, signature: Vector[Byte])
+      extends GrpcAuthenticationHeader
+  final case class DIDBased(requestNonce: Vector[Byte], did: String, keyId: String, signature: Vector[Byte])
+      extends GrpcAuthenticationHeader
 }
