@@ -1,6 +1,6 @@
 package io.iohk.connector
 
-import java.util.{Base64, UUID}
+import java.util.UUID
 
 import doobie.implicits._
 import io.grpc.{Status, StatusRuntimeException}
@@ -8,8 +8,9 @@ import io.iohk.connector.model.ParticipantType.Holder
 import io.iohk.connector.model._
 import io.iohk.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO, ParticipantsDAO}
 import io.iohk.cvp.connector.protos._
-import io.iohk.cvp.crypto.{ECKeys, ECSignature}
 import io.iohk.cvp.crypto.ECKeys._
+import io.iohk.cvp.crypto.{ECKeys, ECSignature}
+import io.iohk.cvp.grpc.SignedRequestsHelper
 import io.iohk.cvp.models.ParticipantId
 import org.scalatest.OptionValues._
 
@@ -147,15 +148,16 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase {
       val privateKey = keys.getPrivate
       val encodedPublicKey = toEncodePublicKey(keys.getPublic)
       val request = GetConnectionsPaginatedRequest("", 10)
-
-      val signature = ECSignature.sign(privateKey, request.toByteArray)
+      val requestNonce = UUID.randomUUID().toString.getBytes.toVector
+      val signature =
+        ECSignature.sign(privateKey, SignedRequestsHelper.merge(requestNonce, request.toByteArray).toArray)
 
       val verifierId = createVerifier("Verifier", Some(encodedPublicKey))
 
       val zeroTime = System.currentTimeMillis()
       val connections = createExampleConnections(verifierId, zeroTime)
 
-      usingApiAs(signature, encodedPublicKey) { blockingStub =>
+      usingApiAs(requestNonce, signature, encodedPublicKey) { blockingStub =>
         val response = blockingStub.getConnectionsPaginated(request)
         response.connections.map(_.connectionId).toSet mustBe connections.map(_._2.id.toString).take(10).toList.toSet
       }

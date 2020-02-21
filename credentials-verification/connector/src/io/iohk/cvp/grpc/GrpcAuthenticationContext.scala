@@ -104,13 +104,12 @@ private[grpc] object GrpcAuthenticationContext {
 
   def parsePublicKeyAuthenticationHeader(ctx: Context): Option[GrpcAuthenticationHeader.PublicKeyBased] = {
     (ctx.getOpt(RequestNonceKeys), ctx.getOpt(SignatureKeys), ctx.getOpt(PublicKeyKeys)) match {
-      case (Some(requestNonceStr), Some(signatureStr), Some(publicKeyStr)) =>
-        val encodedPublicKey = EncodedPublicKey(publicKeyStr.toVector)
-        val requestNonce = Base64.getUrlDecoder.decode(requestNonceStr)
+      case (Some(requestNonce), Some(signature), Some(publicKey)) =>
+        val encodedPublicKey = EncodedPublicKey(publicKey.toVector)
         val header = GrpcAuthenticationHeader.PublicKeyBased(
           requestNonce = requestNonce.toVector,
           publicKey = encodedPublicKey,
-          signature = signatureStr.toVector
+          signature = signature.toVector
         )
         Some(header)
 

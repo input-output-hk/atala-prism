@@ -1,11 +1,13 @@
 package io.iohk.connector
 
+import java.security.PublicKey
+
 import io.grpc.Context
 import io.iohk.connector.errors.{ConnectorError, ErrorSupport, SignatureVerificationError}
 import io.iohk.connector.repositories.ConnectionsRepository
 import io.iohk.cvp.crypto.ECKeys.toPublicKey
 import io.iohk.cvp.crypto.{ECKeys, ECSignature}
-import io.iohk.cvp.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser}
+import io.iohk.cvp.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser, SignedRequestsHelper}
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither._
@@ -78,6 +80,29 @@ class SignedRequestsAuthenticator(
         )
     }
 
+  /**
+    * A request must be signed by prepending the nonce, let's say requestNonce|request
+    *
+    * The signature is valid if the signature matches and the nonce hasn't been seen before.
+    */
+  private def verifyRequestSignature(
+      participantId: ParticipantId,
+      publicKey: PublicKey,
+      request: Array[Byte],
+      requestNonce: Vector[Byte],
+      signature: Vector[Byte]
+  )(implicit ec: ExecutionContext): FutureEither[SignatureVerificationError, ParticipantId] = {
+
+    val payload = SignedRequestsHelper.merge(requestNonce, request).toArray
+    Either
+      .cond(
+        ECSignature.verify(publicKey = publicKey, data = payload, signature = signature),
+        participantId,
+        SignatureVerificationError()
+      )
+      .toFutureEither
+  }
+
   private def authenticate(request: Array[Byte], authenticationHeader: GrpcAuthenticationHeader)(
       implicit executionContext: ExecutionContext
   ): FutureEither[ConnectorError, ParticipantId] = {
@@ -93,16 +118,17 @@ class SignedRequestsAuthenticator(
   ): FutureEither[ConnectorError, ParticipantId] = {
 
     for {
+      // first we verify that we know the DID to avoid performing costly calls if we don't know it
+      participantId <- connectionsRepository.getParticipantId(authenticationHeader.publicKey)
       signature <- Future { Right(authenticationHeader.signature) }.toFutureEither
       publicKey <- Future { Right(toPublicKey(authenticationHeader.publicKey)) }.toFutureEither
-      _ <- Either
-        .cond(
-          ECSignature.verify(publicKey, request, signature),
-          (),
-          SignatureVerificationError()
-        )
-        .toFutureEither
-      participantId <- connectionsRepository.getParticipantId(authenticationHeader.publicKey)
+      _ <- verifyRequestSignature(
+        participantId = participantId,
+        publicKey = publicKey,
+        signature = signature,
+        request = request,
+        requestNonce = authenticationHeader.requestNonce
+      )
     } yield participantId
   }
 
@@ -131,13 +157,13 @@ class SignedRequestsAuthenticator(
         .getOrElse(throw new RuntimeException("Unknown public key id"))
 
       // Verify the actual signature
-      _ <- Either
-        .cond(
-          ECSignature.verify(publicKey, request, authenticationHeader.signature),
-          (),
-          SignatureVerificationError()
-        )
-        .toFutureEither
+      _ <- verifyRequestSignature(
+        participantId = participantId,
+        publicKey = publicKey,
+        signature = authenticationHeader.signature,
+        request = request,
+        requestNonce = authenticationHeader.requestNonce
+      )
     } yield participantId
   }
 

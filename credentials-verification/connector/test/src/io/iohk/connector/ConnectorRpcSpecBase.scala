@@ -24,7 +24,7 @@ import scala.concurrent.duration.DurationLong
 
 trait ApiTestHelper[STUB] {
   def apply[T](participantId: ParticipantId)(f: STUB => T): T
-  def apply[T](signature: Vector[Byte], publicKey: EncodedPublicKey)(f: STUB => T): T
+  def apply[T](requestNonce: Vector[Byte], signature: Vector[Byte], publicKey: EncodedPublicKey)(f: STUB => T): T
   def unlogged[T](f: STUB => T): T
 }
 
@@ -88,7 +88,9 @@ abstract class RpcSpecBase extends PostgresRepositorySpec with BeforeAndAfterEac
         val blockingStub = stubFactory(channelHandle, callOptions)
         f(blockingStub)
       }
-      override def apply[T](signature: Vector[Byte], publicKey: EncodedPublicKey)(f: STUB => T): T = {
+      override def apply[T](requestNonce: Vector[Byte], signature: Vector[Byte], publicKey: EncodedPublicKey)(
+          f: STUB => T
+      ): T = {
 
         val callOptions = CallOptions.DEFAULT.withCallCredentials(new CallCredentials {
           override def applyRequestMetadata(
@@ -99,7 +101,7 @@ abstract class RpcSpecBase extends PostgresRepositorySpec with BeforeAndAfterEac
             appExecutor.execute { () =>
               applier.apply(
                 GrpcAuthenticationHeader
-                  .PublicKeyBased(UUID.randomUUID().toString.getBytes.toVector, publicKey, signature)
+                  .PublicKeyBased(requestNonce, publicKey, signature)
                   .toMetadata
               )
             }
