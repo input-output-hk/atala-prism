@@ -164,7 +164,7 @@ class IssueCredentialOperationSpec extends PostgresRepositorySpec {
 
   "IssueCredentialOperation.getCorrectnessData" should {
     "provide the key reference be used for signing" in {
-      didDataRepository.create(models.DIDData(issuer, issuerDidKeys), issuerOperation.digest).value.futureValue
+      didDataRepository.create(models.DIDData(issuer, issuerDidKeys, issuerOperation.digest)).value.futureValue
       val parsedOperation = IssueCredentialOperation.parse(exampleOperation).right.value
 
       val CorrectnessData(key, previousOperation) = parsedOperation
@@ -182,7 +182,7 @@ class IssueCredentialOperationSpec extends PostgresRepositorySpec {
 
   "IssueCredentialOperation.applyState" should {
     "create the DID information in the database" in {
-      didDataRepository.create(models.DIDData(issuer, issuerDidKeys), issuerOperation.digest).value.futureValue
+      didDataRepository.create(models.DIDData(issuer, issuerDidKeys, issuerOperation.digest)).value.futureValue
       val parsedOperation = IssueCredentialOperation.parse(exampleOperation).right.value
 
       val result = parsedOperation
@@ -212,7 +212,7 @@ class IssueCredentialOperationSpec extends PostgresRepositorySpec {
     }
 
     "return error when the credential already exists in the db" in {
-      didDataRepository.create(models.DIDData(issuer, issuerDidKeys), issuerOperation.digest).value.futureValue
+      didDataRepository.create(models.DIDData(issuer, issuerDidKeys, issuerOperation.digest)).value.futureValue
       val parsedOperation = IssueCredentialOperation.parse(exampleOperation).right.value
 
       // first insertion

@@ -72,7 +72,7 @@ package object models {
 
   case class DIDPublicKey(didSuffix: DIDSuffix, keyId: String, keyUsage: KeyUsage, key: PublicKey)
 
-  case class DIDData(didSuffix: DIDSuffix, keys: List[DIDPublicKey])
+  case class DIDData(didSuffix: DIDSuffix, keys: List[DIDPublicKey], lastOperation: SHA256Digest)
 
   class CredentialId private (val id: String) extends AnyVal
 

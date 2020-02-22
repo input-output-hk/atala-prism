@@ -50,6 +50,14 @@ In order to revoke the credential you need to run the command with its id:
 mill -i node.client.run revoke-credential --credential 06029555d620331dedc886eb65832f959eddf359b97a82148845b5a83a81abc2
 ```
 
+## Update a DID
+
+In order to update the DID use `update-did` command. Use `--generate-[usage]-key <key-id>` to add new keys and `--remove-key` to remove key from DID.
+
+```
+mill -i node.client.run update-did --generate-authentication-key authentication --remove-key another_issuing
+```
+
 ## Resolve a DID
 
 Resolving DID is easy:

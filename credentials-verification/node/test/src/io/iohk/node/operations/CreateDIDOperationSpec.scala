@@ -190,7 +190,7 @@ class CreateDIDOperationSpec extends PostgresRepositorySpec {
     "return error when given DID already exists" in {
       val parsedOperation = CreateDIDOperation.parse(exampleOperation).right.value
 
-      didDataRepository.create(DIDData(parsedOperation.id, Nil), parsedOperation.digest).value.futureValue
+      didDataRepository.create(DIDData(parsedOperation.id, Nil, parsedOperation.digest)).value.futureValue
 
       val result = parsedOperation
         .applyState()

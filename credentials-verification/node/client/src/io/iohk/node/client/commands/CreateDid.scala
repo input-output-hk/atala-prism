@@ -1,10 +1,7 @@
 package io.iohk.node.client.commands
 
-import java.security.{PublicKey => JPublicKey}
-
-import com.google.protobuf.ByteString
 import io.iohk.cvp.crypto.ECKeys
-import io.iohk.node.client.{Config, State, StateStorage}
+import io.iohk.node.client.{Config, ProtoUtils, State, StateStorage}
 import io.iohk.node.geud_node._
 import io.iohk.node.models.SHA256Digest
 import monocle.Optional
@@ -18,16 +15,6 @@ case class CreateDid(
     recreate: Boolean = false
 ) extends Command {
   import Command.signOperation
-
-  protected def protoECKeyFromPublicKey(key: JPublicKey) = {
-    val point = ECKeys.getECPoint(key)
-
-    ECKeyData(
-      curve = ECKeys.CURVE_NAME,
-      x = ByteString.copyFrom(point.getAffineX.toByteArray),
-      y = ByteString.copyFrom(point.getAffineY.toByteArray)
-    )
-  }
 
   override def run(api: NodeServiceGrpc.NodeServiceBlockingStub, config: Config): Unit = {
     val state = if (config.stateStorage.exists()) {
@@ -61,7 +48,7 @@ case class CreateDid(
         PublicKey(
           id = keyId,
           usage = keyUsage,
-          keyData = PublicKey.KeyData.EcKeyData(protoECKeyFromPublicKey(key))
+          keyData = PublicKey.KeyData.EcKeyData(ProtoUtils.protoECKeyFromPublicKey(key))
         )
     }
 

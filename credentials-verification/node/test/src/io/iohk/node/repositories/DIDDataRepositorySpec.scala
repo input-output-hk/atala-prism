@@ -45,12 +45,12 @@ class DIDDataRepositorySpec extends PostgresRepositorySpec {
     )
   )
 
-  val didData = DIDData(didSuffix, keys)
+  val didData = DIDData(didSuffix, keys, operationDigest)
 
   "DIDDataRepository" should {
     "retrieve previously inserted DID data" in {
       val result = (for {
-        _ <- didDataRepository.create(didData, operationDigest)
+        _ <- didDataRepository.create(didData)
         did <- didDataRepository.findByDidSuffix(didSuffix)
       } yield did).value.futureValue.right.value
 
@@ -59,7 +59,7 @@ class DIDDataRepositorySpec extends PostgresRepositorySpec {
 
     "return UnknownValueError when the DID is not found" in {
       val result = (for {
-        _ <- didDataRepository.create(didData, operationDigest)
+        _ <- didDataRepository.create(didData)
         did <- didDataRepository.findByDidSuffix(didSuffixFromDigest(digestGen(0, 2)))
       } yield did).value.futureValue.left.value
 
@@ -68,7 +68,7 @@ class DIDDataRepositorySpec extends PostgresRepositorySpec {
 
     "retrieve previously inserted DID key" in {
       val result = (for {
-        _ <- didDataRepository.create(didData, operationDigest)
+        _ <- didDataRepository.create(didData)
         key <- didDataRepository.findKey(didSuffix, "issuing")
       } yield key).value.futureValue.right.value
 
@@ -77,7 +77,7 @@ class DIDDataRepositorySpec extends PostgresRepositorySpec {
 
     "return UnknownValueError when retrieving key for non-existing DID" in {
       val result = (for {
-        _ <- didDataRepository.create(didData, operationDigest)
+        _ <- didDataRepository.create(didData)
         key <- didDataRepository.findKey(didSuffixFromDigest(digestGen(0, 2)), "issuing")
       } yield key).value.futureValue.left.value
 
@@ -86,7 +86,7 @@ class DIDDataRepositorySpec extends PostgresRepositorySpec {
 
     "return UnknownValueError when retrieving non-existing key" in {
       val result = (for {
-        _ <- didDataRepository.create(DIDData(didSuffix, keys.tail), operationDigest)
+        _ <- didDataRepository.create(DIDData(didSuffix, keys.tail, operationDigest))
         key <- didDataRepository.findKey(didSuffix, "master")
       } yield key).value.futureValue.left.value
 

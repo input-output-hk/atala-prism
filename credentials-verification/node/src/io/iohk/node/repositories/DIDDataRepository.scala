@@ -9,7 +9,7 @@ import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither._
 import io.iohk.node.errors.NodeError
 import io.iohk.node.errors.NodeError.UnknownValueError
-import io.iohk.node.models.{DIDData, DIDPublicKey, DIDSuffix, SHA256Digest}
+import io.iohk.node.models.{DIDData, DIDPublicKey, DIDSuffix}
 import io.iohk.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
 
 import scala.concurrent.ExecutionContext
@@ -24,11 +24,10 @@ class DIDDataRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
     * @return unit indicating success or error
     */
   def create(
-      didData: DIDData,
-      lastOperation: SHA256Digest
+      didData: DIDData
   ): FutureEither[NodeError, Unit] = {
     val query = for {
-      _ <- DIDDataDAO.insert(didData.didSuffix, lastOperation)
+      _ <- DIDDataDAO.insert(didData.didSuffix, didData.lastOperation)
       _ <- didData.keys.traverse((key: DIDPublicKey) => PublicKeysDAO.insert(key))
     } yield ()
 
@@ -41,10 +40,10 @@ class DIDDataRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
 
   def findByDidSuffix(didSuffix: DIDSuffix): FutureEither[NodeError, DIDData] = {
     val query = for {
-      _ <- OptionT(DIDDataDAO.findByDidSuffix(didSuffix))
+      lastOperation <- OptionT(DIDDataDAO.getLastOperation(didSuffix))
         .toRight[NodeError](UnknownValueError("didSuffix", didSuffix.suffix))
       keys <- EitherT.right[NodeError](PublicKeysDAO.findAll(didSuffix))
-    } yield DIDData(didSuffix, keys)
+    } yield DIDData(didSuffix, keys, lastOperation)
 
     query
       .transact(xa)

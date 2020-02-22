@@ -30,7 +30,18 @@ package object path {
       * @tparam MM type of the child
       * @return ValueAtPath representing the child
       */
-    def child[MM](f: M => MM, axis: String) = ValueAtPath(f(value), path / axis)
+    def child[MM](f: M => MM, axis: String): ValueAtPath[MM] = ValueAtPath(f(value), path / axis)
+
+    /** Extracts child from the value
+      *
+      * @param f function used to extract the child value
+      * @param axis name of the child - field name or array index
+      * @tparam MM type of the child
+      * @return ValueAtPath representing the child
+      */
+    def children[MM](f: M => Seq[MM], axis: String): Seq[ValueAtPath[MM]] = {
+      f(value).zipWithIndex.map { case (v, i) => ValueAtPath(v, path / axis / i.toString) }
+    }
 
     /** Variant of child extracting it from option
       *

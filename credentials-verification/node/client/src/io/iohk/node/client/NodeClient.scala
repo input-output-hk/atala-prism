@@ -62,6 +62,9 @@ object NodeClient {
       cmd("create-did")
         .action((x, c) => c.copy(command = Some(CreateDid())))
         .children(CreateDid.parser),
+      cmd("update-did")
+        .action((x, c) => c.copy(command = Some(UpdateDid())))
+        .children(UpdateDid.parser),
       cmd("issue-credential")
         .action((x, c) => c.copy(command = Some(IssueCredential())))
         .children(IssueCredential.parser),

@@ -71,6 +71,10 @@ package object operations {
     /** Error signifying that key that was supposed to be used to verify the signature does not exist */
     case class UnknownKey(didSuffix: DIDSuffix, keyId: String) extends StateError
 
+    case class InvalidKeyUsed(requirement: String) extends StateError
+
+    case class InvalidPreviousOperation() extends StateError
+
     case class InvalidSignature() extends StateError
   }
 
@@ -99,9 +103,19 @@ package object operations {
 
     /** Parses the protobuf representation of operation
       *
-      * @param operation encoded operation, needs to be of the type compatible with the called companion object
+      * @param signedOperation signed operation, needs to be of the type compatible with the called companion object
       * @return parsed operation or ValidationError signifying the operation is invalid
       */
+    def parse(signedOperation: proto.SignedAtalaOperation): Either[ValidationError, Repr]
+
+  }
+
+  trait SimpleOperationCompanion[Repr <: Operation] extends OperationCompanion[Repr] {
+
+    override def parse(operation: proto.SignedAtalaOperation): Either[ValidationError, Repr] = {
+      parse(operation.getOperation)
+    }
+
     def parse(operation: proto.AtalaOperation): Either[ValidationError, Repr]
   }
 

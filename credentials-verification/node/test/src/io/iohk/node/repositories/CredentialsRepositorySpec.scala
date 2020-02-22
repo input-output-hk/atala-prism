@@ -20,7 +20,7 @@ class CredentialsRepositorySpec extends PostgresRepositorySpec {
 
   val didOperationDigest = digestGen(0, 1)
   val didSuffix = didSuffixFromDigest(didOperationDigest)
-  val didData = DIDData(didSuffix, Nil)
+  val didData = DIDData(didSuffix, Nil, didOperationDigest)
 
   val credentialOperationDigest = digestGen(1, 2)
   val credentialId = credentialIdFromDigest(credentialOperationDigest)
@@ -33,7 +33,7 @@ class CredentialsRepositorySpec extends PostgresRepositorySpec {
   "CredentialsRepository" should {
     "retrieve inserted credential" in {
       val result = (for {
-        _ <- didDataRepository.create(didData, didOperationDigest)
+        _ <- didDataRepository.create(didData)
         _ <- credentialsRepository.create(
           createCredentialData
         )
@@ -50,7 +50,7 @@ class CredentialsRepositorySpec extends PostgresRepositorySpec {
       val otherCredentialId = credentialIdFromDigest(digestGen(1, 3))
 
       val result = (for {
-        _ <- didDataRepository.create(didData, didOperationDigest)
+        _ <- didDataRepository.create(didData)
         _ <- credentialsRepository.create(createCredentialData)
         credential <- credentialsRepository.find(otherCredentialId)
       } yield credential).value.futureValue.left.value
@@ -60,7 +60,7 @@ class CredentialsRepositorySpec extends PostgresRepositorySpec {
 
     "revoke credential" in {
       val (revocation, credential) = (for {
-        _ <- didDataRepository.create(didData, didOperationDigest)
+        _ <- didDataRepository.create(didData)
         _ <- credentialsRepository.create(createCredentialData)
         revocation <- credentialsRepository.revoke(credentialId, revocationDate)
         credential <- credentialsRepository.find(credentialId)
@@ -74,7 +74,7 @@ class CredentialsRepositorySpec extends PostgresRepositorySpec {
       val otherCredentialId = credentialIdFromDigest(digestGen(1, 3))
 
       val result = (for {
-        _ <- didDataRepository.create(didData, didOperationDigest)
+        _ <- didDataRepository.create(didData)
         _ <- credentialsRepository.create(createCredentialData)
         revocation <- credentialsRepository.revoke(otherCredentialId, revocationDate)
       } yield revocation).value.futureValue.right.value

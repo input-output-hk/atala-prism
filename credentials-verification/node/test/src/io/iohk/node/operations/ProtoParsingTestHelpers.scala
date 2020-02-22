@@ -1,0 +1,47 @@
+package io.iohk.node.operations
+
+import io.iohk.node.services.BlockProcessingServiceSpec
+import io.iohk.node.{geud_node => proto}
+import org.scalatest.Assertion
+import org.scalatest.Inside._
+import org.scalatest.MustMatchers._
+import scalapb.lenses.{Lens, Mutation}
+
+trait ProtoParsingTestHelpers {
+
+  type Repr <: Operation
+  protected def exampleOperation: proto.AtalaOperation
+  protected def operationCompanion: OperationCompanion[Repr]
+
+  protected def signingKeyId = "master"
+  protected def signingKey = CreateDIDOperationSpec.masterKeys.getPrivate
+
+  protected def missingValueTest[U](
+      mutation: Lens[proto.AtalaOperation, proto.AtalaOperation] => Mutation[proto.AtalaOperation],
+      expectedPath: Vector[String]
+  ): Assertion = {
+    val invalidOperation = exampleOperation.update(mutation)
+    val signedOperation = BlockProcessingServiceSpec.signOperation(invalidOperation, signingKeyId, signingKey)
+
+    inside(operationCompanion.parse(signedOperation)) {
+      case Left(ValidationError.MissingValue(path)) =>
+        path.path mustBe expectedPath
+    }
+  }
+
+  protected def invalidValueTest[U](
+      mutation: Lens[proto.AtalaOperation, proto.AtalaOperation] => Mutation[proto.AtalaOperation],
+      expectedPath: Vector[String],
+      expectedValue: U
+  ): Assertion = {
+    val invalidOperation = exampleOperation.update(mutation)
+    val signedOperation = BlockProcessingServiceSpec.signOperation(invalidOperation, signingKeyId, signingKey)
+
+    inside(operationCompanion.parse(signedOperation)) {
+      case Left(ValidationError.InvalidValue(path, value, _)) =>
+        path.path mustBe expectedPath
+        value mustBe expectedValue
+    }
+  }
+
+}

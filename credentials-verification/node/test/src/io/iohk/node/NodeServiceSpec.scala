@@ -10,9 +10,9 @@ import io.iohk.node.geud_node.NodeServiceGrpc
 import io.iohk.node.models.{DIDPublicKey, DIDSuffix, KeyUsage, SHA256Digest}
 import io.iohk.node.operations.path.{Path, ValueAtPath}
 import io.iohk.node.operations.{
-  CreateDIDOperation,
   CreateDIDOperationSpec,
   IssueCredentialOperationSpec,
+  ParsingUtils,
   RevokeCredentialOperationSpec
 }
 import io.iohk.node.repositories.DIDDataRepository
@@ -86,7 +86,7 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       publicKey.id mustBe "master"
       publicKey.usage mustBe geud_proto.KeyUsage.MASTER_KEY
 
-      CreateDIDOperation.parseECKey(ValueAtPath(publicKey.getEcKeyData, Path.root)).right.value mustBe key.key
+      ParsingUtils.parseECKey(ValueAtPath(publicKey.getEcKeyData, Path.root)).right.value mustBe key.key
     }
   }
 

@@ -30,7 +30,7 @@ case class IssueCredentialOperation(
       Either.cond(
         didKey.keyUsage == KeyUsage.IssuingKey,
         CorrectnessData(didKey.key, None),
-        StateError.InvalidSignature()
+        StateError.InvalidKeyUsed("issuing key")
       )
     }
   }
@@ -49,7 +49,7 @@ case class IssueCredentialOperation(
   }
 }
 
-object IssueCredentialOperation extends OperationCompanion[IssueCredentialOperation] {
+object IssueCredentialOperation extends SimpleOperationCompanion[IssueCredentialOperation] {
 
   import ParsingUtils._
 

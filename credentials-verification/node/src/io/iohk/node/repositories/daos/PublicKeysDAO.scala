@@ -34,4 +34,11 @@ object PublicKeysDAO {
          |WHERE did_suffix = $didSuffix
        """.stripMargin.query[DIDPublicKey].to[List]
   }
+
+  def remove(keyId: String): ConnectionIO[Boolean] = {
+    sql"""
+         |DELETE FROM public_keys
+         |WHERE key_id = $keyId
+         |""".stripMargin.update.run.map(_ > 0)
+  }
 }

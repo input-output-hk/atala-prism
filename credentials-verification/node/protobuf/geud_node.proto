@@ -7,6 +7,8 @@ service NodeService {
 
   rpc CreateDID(SignedAtalaOperation) returns (CreateDIDResponse) {}
 
+  rpc UpdateDID(SignedAtalaOperation) returns (UpdateDIDResponse) {}
+
   rpc IssueCredential(SignedAtalaOperation) returns (IssueCredentialResponse) {}
 
   rpc RevokeCredential(SignedAtalaOperation) returns (RevokeCredentialResponse) {}
@@ -19,6 +21,7 @@ message Date {
 }
 
 enum KeyUsage {
+  // UNKNOWN_KEY is an invalid value - Protobuf uses 0 if no value is provided and we want user to explicitly choose the usage
   UNKNOWN_KEY = 0;
   MASTER_KEY = 1;
   ISSUING_KEY = 2;
@@ -84,8 +87,9 @@ message UpdateDIDAction {
 }
 
 message UpdateDIDOperation {
-  string id = 1;
-  repeated UpdateDIDAction actions = 2;
+  bytes previousOperationHash = 1;
+  string id = 2;
+  repeated UpdateDIDAction actions = 3;
 }
 
 message UpdateDIDResponse {

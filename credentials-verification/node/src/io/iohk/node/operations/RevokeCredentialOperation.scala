@@ -32,7 +32,7 @@ case class RevokeCredentialOperation(
       key <- EitherT[ConnectionIO, StateError, DIDPublicKey] {
         PublicKeysDAO.find(issuer, keyId).map(_.toRight(StateError.UnknownKey(issuer, keyId)))
       }.subflatMap { didKey =>
-        Either.cond(didKey.keyUsage.canIssue, didKey.key, StateError.InvalidSignature())
+        Either.cond(didKey.keyUsage.canIssue, didKey.key, StateError.InvalidKeyUsed("issuing key"))
       }
     } yield CorrectnessData(key, Some(prevOp))
   }
@@ -44,7 +44,7 @@ case class RevokeCredentialOperation(
   }
 }
 
-object RevokeCredentialOperation extends OperationCompanion[RevokeCredentialOperation] {
+object RevokeCredentialOperation extends SimpleOperationCompanion[RevokeCredentialOperation] {
 
   import ParsingUtils._
 
@@ -61,13 +61,9 @@ object RevokeCredentialOperation extends OperationCompanion[RevokeCredentialOper
           "must follow valid format"
         )
       }
-      previousOperation <- revokeOperation.child(_.previousOperationHash, "previousOperationHash").parse { hash =>
-        Either.cond(
-          hash.size() == SHA256Digest.BYTE_LENGTH,
-          SHA256Digest(hash.toByteArray),
-          s"mush have ${SHA256Digest.BYTE_LENGTH} bytes"
-        )
-      }
+      previousOperation <- ParsingUtils.parseHash(
+        revokeOperation.child(_.previousOperationHash, "previousOperationHash")
+      )
       revocationDate <- revokeOperation.childGet(_.revocationDate, "revocationDate").flatMap(parseDate)
     } yield RevokeCredentialOperation(credentialId, revocationDate, previousOperation, operationDigest)
   }

@@ -34,11 +34,13 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
   def parseOperation(signedOperation: geud_proto.SignedAtalaOperation): Either[ValidationError, Operation] = {
     signedOperation.getOperation.operation match {
       case _: geud_proto.AtalaOperation.Operation.CreateDid =>
-        CreateDIDOperation.parse(signedOperation.getOperation)
+        CreateDIDOperation.parse(signedOperation)
+      case _: geud_proto.AtalaOperation.Operation.UpdateDid =>
+        UpdateDIDOperation.parse(signedOperation)
       case _: geud_proto.AtalaOperation.Operation.IssueCredential =>
-        IssueCredentialOperation.parse(signedOperation.getOperation)
+        IssueCredentialOperation.parse(signedOperation)
       case _: geud_proto.AtalaOperation.Operation.RevokeCredential =>
-        RevokeCredentialOperation.parse(signedOperation.getOperation)
+        RevokeCredentialOperation.parse(signedOperation)
       case op =>
         Left(InvalidValue(Path.root, op.getClass.getSimpleName, "Unknown operation"))
     }
@@ -120,7 +122,7 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
       _ <- EitherT.cond[ConnectionIO](
         operation.linkedPreviousOperation == previousOperation,
         (),
-        StateError.InvalidSignature(): StateError
+        StateError.InvalidPreviousOperation(): StateError
       )
       _ <- EitherT.fromEither[ConnectionIO](verifySignature(key, protoOperation))
       _ <- operation.applyState()

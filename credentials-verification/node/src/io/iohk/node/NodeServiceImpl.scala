@@ -8,12 +8,7 @@ import io.iohk.cvp.crypto.ECKeys
 import io.iohk.node.errors.NodeError
 import io.iohk.node.geud_node.NodeServiceGrpc.NodeService
 import io.iohk.node.models.KeyUsage.{AuthenticationKey, CommunicationKey, IssuingKey, MasterKey}
-import io.iohk.node.operations.{
-  CreateDIDOperation,
-  IssueCredentialOperation,
-  RevokeCredentialOperation,
-  ValidationError
-}
+import io.iohk.node.operations._
 import io.iohk.node.services.{DIDDataService, ObjectManagementService}
 import io.iohk.node.{geud_node => proto}
 
@@ -33,21 +28,28 @@ class NodeServiceImpl(didDataService: DIDDataService, objectManagement: ObjectMa
 
   override def createDID(request: proto.SignedAtalaOperation): Future[proto.CreateDIDResponse] = {
     for {
-      parsedOperation <- errorEitherToFuture(CreateDIDOperation.parse(request.operation.get))
+      parsedOperation <- errorEitherToFuture(CreateDIDOperation.parse(request))
       _ <- objectManagement.publishAtalaOperation(request)
     } yield proto.CreateDIDResponse(id = parsedOperation.id.suffix)
   }
 
+  override def updateDID(request: proto.SignedAtalaOperation): Future[proto.UpdateDIDResponse] = {
+    for {
+      _ <- errorEitherToFuture(UpdateDIDOperation.parse(request))
+      _ <- objectManagement.publishAtalaOperation(request)
+    } yield proto.UpdateDIDResponse()
+  }
+
   override def issueCredential(request: proto.SignedAtalaOperation): Future[proto.IssueCredentialResponse] = {
     for {
-      parsedOperation <- errorEitherToFuture(IssueCredentialOperation.parse(request.operation.get))
+      parsedOperation <- errorEitherToFuture(IssueCredentialOperation.parse(request))
       _ <- objectManagement.publishAtalaOperation(request)
     } yield proto.IssueCredentialResponse(id = parsedOperation.credentialId.id)
   }
 
   override def revokeCredential(request: proto.SignedAtalaOperation): Future[proto.RevokeCredentialResponse] = {
     for {
-      _ <- errorEitherToFuture(RevokeCredentialOperation.parse(request.operation.get))
+      _ <- errorEitherToFuture(RevokeCredentialOperation.parse(request))
       _ <- objectManagement.publishAtalaOperation(request)
     } yield proto.RevokeCredentialResponse()
   }
