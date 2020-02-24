@@ -536,7 +536,7 @@ resource postgresql_schema node-schema {
 }
 
 output command-to-test-connector {
-  value = "grpcurl -import-path connector/protobuf/connector -proto connector/protobuf/connector/protos.proto -rpc-header 'userId: c8834532-eade-11e9-a88d-d8f2ca059830' -plaintext cvp-${var.env_name_short}.cef.iohkdev.io:${var.connector_port} io.iohk.cvp.connector.ConnectorService/GenerateConnectionToken"
+  value = "grpcurl -import-path ../../connector/protobuf/connector -proto protos.proto -rpc-header 'userId: c8834532-eade-11e9-a88d-d8f2ca059830' -plaintext cvp-${var.env_name_short}.cef.iohkdev.io:${var.connector_port} io.iohk.cvp.connector.ConnectorService/GenerateConnectionToken"
 }
 
 output command-to-test-envoy-proxy {

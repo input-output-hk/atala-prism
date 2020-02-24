@@ -55,7 +55,8 @@ bower_components
 .lock-wscript
 
 # Compiled binary addons (https://nodejs.org/api/addons.html)
-build/Release
+build/*
+#build/Release
 
 # Dependency directories
 node_modules/
@@ -83,7 +84,6 @@ typings/
 .yarn-integrity
 
 # dotenv environment variables file
-.env
 .env.test
 
 # parcel-bundler cache (https://parceljs.org/)
@@ -137,4 +137,6 @@ thumb
 sketch
 
 # End of https://www.gitignore.io/api/linux,node,react
-n
+
+./public/env-config.js
+env-config.js

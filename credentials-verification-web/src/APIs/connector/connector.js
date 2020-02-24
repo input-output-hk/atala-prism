@@ -9,7 +9,7 @@ const {
   SendMessageRequest
 } = require('../../protos/connector/connector_pb');
 
-const { SentCredential } = require('../../protos/credentials/credential_pb');
+const { AtalaMessage } = require('../../protos/credentials/credential_pb');
 
 const { config } = require('../config');
 
@@ -36,7 +36,7 @@ export const getConnectionsPaginated = (
 };
 
 const mapMessageToCredential = message => {
-  const sentCredential = SentCredential.deserializeBinary(message.getMessage_asU8());
+  const sentCredential = AtalaMessage.deserializeBinary(message.getMessage_asU8());
   const holderSentCredential = sentCredential.getHoldersentcredential();
   if (!holderSentCredential) return errorCredential;
   // In alpha version should be always a credential

@@ -1,6 +1,15 @@
 version: "3"
 services:
 
+  landing:
+    build:
+      context: ../../../credentials-verification-landing
+    ports:
+      - 127.0.0.1:80:80
+    environment:
+      REACT_APP_GRPC_CLIENT: cvp-envoy:8080
+
+
   cvp-envoy:
     build:
       context: cvp-envoy

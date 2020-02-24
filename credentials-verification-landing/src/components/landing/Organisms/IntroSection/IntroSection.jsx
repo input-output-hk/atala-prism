@@ -13,7 +13,7 @@ const IntroSection = () => {
 
   const createIntroItem = (key, pictureNumber) => (
     <IntroItem
-      itemIcon={`images/icon-0${pictureNumber}.svg`}
+      itemIcon={`images/icon-04.svg`}
       itemTitle={t(`landing.intro.itemIcon.${key}.title`)}
       itemText={t(`landing.intro.itemIcon.${key}.text`)}
     />

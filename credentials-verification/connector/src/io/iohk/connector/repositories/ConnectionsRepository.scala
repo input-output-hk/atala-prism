@@ -40,6 +40,8 @@ trait ConnectionsRepository {
       limit: Int,
       lastSeenConnectionId: Option[ConnectionId]
   ): FutureEither[ConnectorError, Seq[ConnectionInfo]]
+
+  def getConnectionByToken(token: TokenString): FutureEither[ConnectorError, Option[Connection]]
 }
 
 object ConnectionsRepository {
@@ -164,6 +166,15 @@ object ConnectionsRepository {
           .map(seq => Right(seq))
           .toFutureEither
       }
+    }
+
+    def getConnectionByToken(token: TokenString): FutureEither[ConnectorError, Option[Connection]] = {
+      ConnectionsDAO
+        .getConnectionByToken(token)
+        .transact(xa)
+        .unsafeToFuture()
+        .map(Right(_))
+        .toFutureEither
     }
   }
 }

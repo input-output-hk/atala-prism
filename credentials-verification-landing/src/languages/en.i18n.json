@@ -24,9 +24,9 @@
     "title": "Connections",
     "status": {
       "issuer": {
-        "invitationMissing":  "Pending",
+        "invitationMissing": "Pending",
         "connectionMissing": "Connection Missing",
-        "connectionAccepted":  "Connection Accepted",
+        "connectionAccepted": "Connection Accepted",
         "connectionRevoked": "Connection Revoked"
       },
       "verifier": {
@@ -115,10 +115,28 @@
       "download": "Download"
     }
   },
+  "userInfo": {
+    "identityVerifierModal": {
+      "question": "Are you "
+    },
+    "PersonalInfoItems": {
+      "address": "Address",
+      "addressPlaceholder": "2121 Red Street",
+      "zipCode": "Zip Code",
+      "zipCodePlaceholder": "123456",
+      "city": "City",
+      "cityPlaceholder": "Redland",
+      "state": "State / Province",
+      "statePlaceholder": "Redland",
+      "country": "Country",
+      "countryPlaceholder": "Republic of Redland"
+    }
+  },
   "landing": {
     "start": {
-      "info": "Digital universities' degrees powered by Blockchain",
-      "subtitle": "Carry and share your credentials inside your digital wallet."
+      "info": "Digital credentials powered by Blockchain",
+      "subtitle": "Carry and share your credentials inside your digital wallet.",
+      "welcome": "Welcome"
     },
     "downloadAndroidAlt": "Download Android",
     "intro": {
@@ -140,31 +158,48 @@
       }
     },
     "credential": {
+      "credential": "credential",
+      "description": "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
+      "IssuingAuthority": "Issuing Authority",
       "credentialAlt": "Credential example that shows a credential with filled info (degree, student and university name, award and dates of start and graduation)",
       "iconAlt": "Credential Icon",
       "title": "Lorem Ipsum is simply printing text.",
       "subtitle1": "It is a long established fact that a reader will be distracted by the readable content of ",
-      "subtitle2": "a page."
+      "subtitle2": "a page.",
+      "detailText": "Credentials "
+    },
+    "WhatYouNeed": {
+      "Title": "What do you need?"
+    },
+    "createdCredentialGov": {
+      "Title": "This is your Government Issued Digital Identity"
     },
     "findCredential": {
-      "title": "Find a Credential",
+      "title": "Try Atala Prism interative Demo",
       "arrowAlt": "Arrow Right",
       "credentialAlt": "Man smiling",
       "cardTitle": "Find a Credential",
       "cardSubtitle1": "It is a long established fact that a reader will be distracted by the readable content of ",
       "cardSubtitle2": "a page.",
       "warning": "You will be ask for some personal data",
-      "askForCredential": "Ask for Credential"
+      "askForCredential": "Ask for Credential",
+      "detailText": "Digital Credentials "
     },
     "trust": {
       "trustName": "Trust 1",
       "info": "It is a long established fact that a reader will be distracted by the readable content of a page.",
       "predownloadText": "Lorem Ipsum is simply dummy text of the printing texto simulado.",
-      "mobile": "Mobile phones with screens of the mobile app"
+      "mobile": "Mobile phones with screens of the mobile app",
+      "downloadInfo": "Download App"
+    },
+    "credentialsView": {
+      "title": "These are the Credentials",
+      "subtitle": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. "
     },
     "trademark": {
-      "part1": "© Copyright 2019, ATALA. All Rights Reserved. ATALA Prism is a registered trademark of ",
-      "part2": "IOHK."
+      "part1": "Terms & Conditions",
+      "part2": " Privacy Policy",
+      "part3": "Copyright © 2020 atala.io"
     }
   },
   "credentials": {
@@ -231,7 +266,6 @@
       "hashTitle": "Tx Hash",
       "notarizationDate": "Upload Date",
       "downloadButton": "Download Credential"
-
     }
   },
   "credentialSummary": {
@@ -268,7 +302,7 @@
       "newCredential": "New Credential",
       "iconAlt": "Avatar",
       "credentialsType": {
-        "bachelorsDegree":  "Bachelor's Degree"
+        "bachelorsDegree": "Bachelor's Degree"
       }
     },
     "deletionSuccess": "The credential summary {{name}} was successfully deleted"
@@ -475,7 +509,7 @@
   "menu": {
     "logout": "Log out"
   },
-  "loading":{
+  "loading": {
     "logoName": "Atala Logo"
   },
   "credentialDetail": {
@@ -483,27 +517,41 @@
   },
   "credential": {
     "backHome": "Back Home",
+    "GOVERNMENT_ISSUED_DIGITAL_IDENTITY": "1. Government identity credential",
+    "UNIVERSITY_DEGREE": "2. University degree credential",
+    "PROOF_OF_EMPLOYMENT": "3. Employment credential",
+    "INSURANCE_POLICY": "4. Insurance policy credential",
     "createdCredential": {
       "title": "This is your credential!"
     },
     "errors": {
-      "studentCreation": "The student could not be created",
+      "connectionCreation": "The connection could not be created",
       "creationAndIssuing": "The credential could not be created or issued",
-      "connectionWaiting": "A connection error happened, please refresh this page and start anew"
+      "connectionWaiting": "A connection error happened, please refresh this page and start a new"
     },
     "personalInformation": {
       "title": "Personal Information",
       "explanation": "Please fill in the following information that will be displayed in your credential. You will not be able to change this once the credential is issued.",
       "askForCredential": "Ask for credential",
+      "titleAlert":"Privacy is very important to us!",
+      "textAlert":"Any data that you enter is protected and encrypted. We do not store any private data and do not share it with any third party.",
       "form": {
-        "name": "Name",
+        "firstName": "Name",
         "lastName": "Last Name",
         "universityName": "University Name",
         "degreeName": "Degree Name",
         "award": "Award",
         "startDate": "Start Date",
-        "graduationDate": "Graduation Date"
+        "graduationDate": "Graduation Date",
+        "address": "Address",
+        "dateOfBirth": "Date of birth"
       }
+    },
+    "introductionInformation": {
+      "title": "Credential Information",
+      "explanation": "Here you can ask for a credential.",
+      "askForCredential": "Ask for credential",
+      "miniText": "Ask for Credentials "
     },
     "sendCredentials": {
       "title": "Congrats!",
@@ -519,7 +567,12 @@
       "finishedIconAlt": "Cellphone with Credential",
       "howToSee": "Open Atala Prism App and check your Dashboard to see your",
       "whatToSee": " New Credential",
-      "finished": "Got it! It's done!"
+      "finished": "Got it! It's done!",
+      "congrats": "Congrats!",
+      "openOnPhone": "Open Atala Prism on your phone.",
+      "checkHome": " Check your Home",
+      "IdType1": "to see your Government",
+      "IdType2": "Digital Identity."
     },
     "QRCard": {
       "noAppYet": "You don't have the application?",
@@ -529,7 +582,7 @@
     },
     "scanQRInfo": {
       "title": "Scan QR Code",
-      "explanation": "Scan this QR to start a connection between you and this Issuer.",
+      "explanation": "To obtain your Government Issued Digital Identity you must start scanning this QR Code, follow the steps",
       "step1": "Open Atala Prism on your phone.",
       "step2": {
         "part1": "Touch Connections ",
@@ -538,6 +591,13 @@
       },
       "step3": "When the camera is activated, point your phone towards this screen to scan the code",
       "scannedQR": "I scanned the QR!"
+    },
+    "generic": {
+      "UNCONNECTED": "Unconnected",
+      "CONNECTED": "Connection successful",
+      "CREDENTIAL_AVAILABLE": "Credential available",
+      "CREDENTIAL_SENT": "Credential sent",
+      "CREDENTIAL_RECEIVED": "Credential received"
     }
   },
   "errors": {

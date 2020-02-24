@@ -1,7 +1,5 @@
 package io.iohk.connector
 
-import java.util.Base64
-
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.grpc.{Status, StatusRuntimeException}

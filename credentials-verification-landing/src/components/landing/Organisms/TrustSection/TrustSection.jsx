@@ -1,6 +1,5 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import TrustItem from '../../Atoms/TrustItem/TrustItem';
 import DownloadButtons from '../../Molecules/DownloadButtons/DownloadButtons';
 
 import './_style.scss';
@@ -10,19 +9,15 @@ const TrustSection = () => {
 
   return (
     <div className="TrustSection">
-      <div className="TrustItemContainer">
-        <TrustItem />
-        <TrustItem />
-      </div>
       <div className="DownloadContainer">
+        <span className="MiniDetailText">
+          {t('landing.trust.downloadInfo')}
+          <em>_____</em>
+        </span>
         <h1>{t('landing.trust.predownloadText')}</h1>
         <DownloadButtons />
       </div>
-      <img
-        src="images/trust-bg.png"
-        alt="Verified Icon"
-        className={t('landing.trust.mobilePhones')}
-      />
+      <img src="images/trust-bg.png" alt="Verified Icon" className="MobilePhones" />
     </div>
   );
 };

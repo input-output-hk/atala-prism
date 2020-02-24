@@ -1,0 +1,20 @@
+@import '../../../../css/general_styling';
+
+.CredentialsView {
+  border-right: 1px solid #c5d0de;
+  padding-right: 3em;
+
+  .CredentialsViewIntro {
+    border-left: 1px solid $primary-color;
+    padding: 1.5em;
+    margin-bottom: 1.5em;
+    h2 {
+      @include secondary-text($h3, $black);
+      margin-bottom: 0.5em;
+    }
+
+    p {
+      @include primary-text($body, $black);
+    }
+  }
+}

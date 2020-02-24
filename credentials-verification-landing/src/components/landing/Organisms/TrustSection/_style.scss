@@ -5,7 +5,8 @@
   width: 100%;
 
   .MobilePhones {
-    margin-top: -325px;
+    margin-top: -200px;
+    width: 1000px;
 
     @include breakpoint(md) {
       width: 100%;
@@ -17,32 +18,13 @@
     }
   }
 
-  .TrustItemContainer {
-    background: $light-grey;
-    -webkit-border-bottom-left-radius: 150px;
-    -moz-border-radius-bottomleft: 150px;
-    border-bottom-left-radius: 150px;
-    height: 300px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    padding-right: 200px;
-    padding-top: 5em;
-
-    @include breakpoint(md) {
-      padding: 4em 2em;
-      width: 100%;
-      align-items: center;
-    }
-  }
-
   .DownloadContainer {
     height: 100px;
     display: flex;
+    float: right;
+    width: 50%;
     flex-direction: column;
-    align-items: flex-end;
-    padding-right: 290px;
-    padding-top: 5em;
+    padding-top: 7em;
 
     @include breakpoint(md) {
       align-items: flex-start;
@@ -57,10 +39,15 @@
       align-items: center;
     }
 
+    .MiniDetailText {
+      color: $white;
+    }
+
     h1 {
       @include secondary-text($h1, $white);
       line-height: 32px;
       width: 360px;
+      margin-top: 0.5em;
     }
   }
 }

@@ -3,6 +3,12 @@ syntax = "proto3";
 package io.iohk.cvp.connector;
 
 service ConnectorService {
+
+  // Retrieve a connection for a given connection token.
+  //
+  // Available to: Holder, Issuer, Validator
+  rpc GetConnectionByToken (GetConnectionByTokenRequest) returns (GetConnectionByTokenResponse) {}
+
   // Get active connections for current participant
   //
   // Available to: Holder, Issuer, Validator
@@ -142,6 +148,21 @@ message ParticipantInfo {
 }
 
 // CONNECTIONS
+
+// A connection between two parties authorizing
+// the use of the connector as a messaging channel.
+message Connection {
+  // the connection token used to initialize the connection with the wallet
+  string connectionToken = 1;
+}
+
+message GetConnectionByTokenRequest {
+  string token = 1;
+}
+
+message GetConnectionByTokenResponse {
+  Connection connection = 1;
+}
 
 // Information on the connection; both sides see the same connectionId and creation time, but each sees different participantInfo
 message ConnectionInfo {

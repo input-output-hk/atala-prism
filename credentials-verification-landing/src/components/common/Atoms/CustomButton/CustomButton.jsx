@@ -1,27 +1,21 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from 'antd';
 import PropTypes from 'prop-types';
 import { LEFT, RIGHT } from '../../../../helpers/constants';
 
 import './_style.scss';
 
-// The accepted classNames inside the buttonProps are:
-//    - theme-primary
-//    - theme-secondary
-//    - theme-outline
-//    - theme-grey
-//    - theme-link
-const CustomButton = ({ icon: { icon, side }, buttonText, buttonProps }) => (
-  <Button {...buttonProps}>
-    {side === LEFT && icon}
-    {buttonText}
-    {side === RIGHT && icon}
-  </Button>
-);
-
-CustomButton.defaultProps = {
-  buttonText: '',
-  icon: { icon: null }
+const CustomButton = ({ icon: { icon, side }, img, buttonText, buttonProps }) => {
+  const { t } = useTranslation();
+  return (
+    <Button {...buttonProps}>
+      {img.src && <img src={img.src} alt={t(img.alt)} />}
+      {side === LEFT && icon}
+      {buttonText}
+      {side === RIGHT && icon}
+    </Button>
+  );
 };
 
 CustomButton.propTypes = {
@@ -32,12 +26,20 @@ CustomButton.propTypes = {
       'theme-outline',
       'theme-grey',
       'theme-link',
-      'theme-filter'
+      'theme-filter',
+      'theme-list'
     ]),
     onClick: PropTypes.func
   }).isRequired,
   buttonText: PropTypes.string,
-  icon: PropTypes.shape({ icon: PropTypes.element, side: PropTypes.string })
+  icon: PropTypes.shape({ icon: PropTypes.element, side: PropTypes.string }),
+  img: PropTypes.shape({ src: PropTypes.string, alt: PropTypes.string })
+};
+
+CustomButton.defaultProps = {
+  img: {},
+  buttonText: '',
+  icon: {}
 };
 
 export default CustomButton;
