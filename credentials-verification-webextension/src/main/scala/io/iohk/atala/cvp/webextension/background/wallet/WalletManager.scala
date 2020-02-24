@@ -31,13 +31,32 @@ object WalletManager {
 case class SigningRequest(id: Int, message: String)
 
 sealed trait WalletStatus
+
 object WalletStatus {
+
   final case object Missing extends WalletStatus
+
   final case object Unlocked extends WalletStatus
+
   final case object Locked extends WalletStatus
+
 }
 
-case class WalletData(keys: Map[String, String])
+sealed trait Role
+
+object Role {
+
+  final case object Issuer extends Role
+
+  final case object Verifier extends Role
+
+}
+
+case class WalletData(keys: Map[String, String], organisationName: String, role: Role, logo: Array[Byte]) {
+  def addKey(name: String, key: String): WalletData = {
+    copy(keys = keys + (name -> key))
+  }
+}
 
 private[background] class WalletManager(browserActionService: BrowserActionService, storageService: StorageService)(
     implicit ectx: ExecutionContext
@@ -45,7 +64,7 @@ private[background] class WalletManager(browserActionService: BrowserActionServi
   val ec: EC = new EC(WalletManager.CURVE_NAME)
 
   private var storageKey: Option[CryptoKey] = None
-  var keys: Map[String, KeyPair] = Map.empty
+  var walletData: Option[WalletData] = None
   var signingRequests: Map[Int, (SigningRequest, Promise[String])] = Map.empty
   var requestCounter: Int = 0
 
@@ -54,19 +73,30 @@ private[background] class WalletManager(browserActionService: BrowserActionServi
     browserActionService.setBadgeText(badgeText)
   }
 
-  def createKey(name: String): KeyPair = {
-    if (keys.contains(name)) {
-      throw new IllegalArgumentException("Key exists")
-    } else {
-      val key = ec.genKeyPair()
-      keys += name -> key
-      save()
-      key
+  private def updateStorageKeyAndWalletData(storageKey: CryptoKey, walletData: WalletData): Unit = {
+    this.storageKey = Some(storageKey)
+    this.walletData = Some(walletData)
+  }
+
+  def createKey(name: String): Future[KeyPair] = {
+    (walletData, storageKey) match {
+      case (Some(wallet), Some(encryptionKey)) =>
+        if (wallet.keys.contains(name)) {
+          Future.failed(new IllegalArgumentException("Key exists"))
+        } else {
+          val newKeyPair = ec.genKeyPair()
+          val newWalletData = wallet.addKey(name, newKeyPair.getPrivate("hex"))
+          for {
+            _ <- save(encryptionKey, newWalletData)
+            _ = updateStorageKeyAndWalletData(storageKey.get, newWalletData)
+          } yield newKeyPair
+        }
+      case _ => Future.failed(new RuntimeException("The wallet has not been loaded"))
     }
   }
 
   def listKeys(): Seq[String] = {
-    keys.keys.toSeq
+    walletData.map(_.keys.keys.toSeq).getOrElse(Seq.empty)
   }
 
   def requestSignature(message: String): Future[String] = {
@@ -86,7 +116,7 @@ private[background] class WalletManager(browserActionService: BrowserActionServi
 
   def signWith(requestId: Int, keyName: String): Unit = {
     val (request, promise) = signingRequests.getOrElse(requestId, throw new IllegalArgumentException("Unknown request"))
-    val key = keys.getOrElse(keyName, throw new IllegalArgumentException("Unknown key"))
+    val key = getKey(keyName)
 
     val signature = key.sign(request.message)
 
@@ -95,19 +125,13 @@ private[background] class WalletManager(browserActionService: BrowserActionServi
     promise.success(signature.toDER("hex"))
   }
 
-  def toWalletData(): WalletData = {
-    val serializedKeys = keys.map {
-      case (keyName, keyPair) =>
-        (keyName, keyPair.getPrivate("hex"))
-    }
-    WalletData(serializedKeys)
-  }
-
-  def loadFromWalletData(data: WalletData): Unit = {
-    keys = data.keys.map {
-      case (keyName, serializedKey) =>
-        (keyName, ec.keyFromPrivate(serializedKey, "hex"))
-    }
+  private def getKey(keyName: String): KeyPair = {
+    val serializedKey =
+      walletData
+        .map(_.keys)
+        .getOrElse(Map.empty)
+        .getOrElse(keyName, throw new RuntimeException(s"Unknown key $keyName"))
+    ec.keyFromPrivate(serializedKey, "hex")
   }
 
   def initialAesCtr: crypto.AesCtrParams = {
@@ -119,26 +143,25 @@ private[background] class WalletManager(browserActionService: BrowserActionServi
     )
   }
 
-  def save(): Future[Unit] = {
-    val walletData = toWalletData()
+  def save(key: CryptoKey, walletData: WalletData): Future[Unit] = {
     val json = walletData.asJson.noSpaces
-    dom.console.log(s"Serialized wallet: $json")
+    println(s"Serialized wallet: $json")
 
     val result = for {
       arrayBuffer <- crypto.crypto.subtle
-        .encrypt(initialAesCtr, storageKey.get, json.getBytes.toTypedArray.buffer)
+        .encrypt(initialAesCtr, key, json.getBytes.toTypedArray.buffer)
         .toFuture
         .asInstanceOf[Future[ArrayBuffer]]
       arr = Array.ofDim[Byte](arrayBuffer.byteLength)
       _ = TypedArrayBuffer.wrap(arrayBuffer).get(arr)
       encodedJson = new String(Base64.getEncoder.encode(arr))
-      _ = dom.console.log(s"Encrypted wallet: $encodedJson")
+      _ = println(s"Encrypted wallet: $encodedJson")
       _ = storageService.store(WalletManager.LOCAL_STORAGE_KEY, encodedJson)
     } yield ()
 
     result.onComplete {
-      case Success(value) => dom.console.log("Successfully saved wallet")
-      case Failure(exception) => dom.console.log("Failed saving wallet"); exception.printStackTrace()
+      case Success(value) => println("Successfully saved wallet")
+      case Failure(exception) => println("Failed saving wallet"); exception.printStackTrace()
     }
 
     result
@@ -158,11 +181,11 @@ private[background] class WalletManager(browserActionService: BrowserActionServi
     }
   }
 
-  def unlock(password: String): Future[Unit] = {
+  def generateSecretKey(password: String): Future[CryptoKey] = {
     val pbdkf2 =
       crypto.Pbkdf2Params("PBKDF2", WalletManager.PASSWORD_SALT.getBytes.toTypedArray.buffer, 100L, "SHA-512")
 
-    val result = for {
+    for {
       pbkdf2Key <- crypto.crypto.subtle
         .importKey(
           KeyFormat.raw,
@@ -185,7 +208,28 @@ private[background] class WalletManager(browserActionService: BrowserActionServi
         )
         .toFuture
         .asInstanceOf[Future[crypto.CryptoKey]]
-      _ = { storageKey = Some(aesKey) }
+    } yield aesKey
+  }
+
+  def createWallet(password: String, role: Role, organisationName: String, logo: Array[Byte]): Future[Unit] = {
+    val result = for {
+      aesKey <- generateSecretKey(password)
+      newWalletData = WalletData(Map.empty, organisationName, role, logo)
+      _ <- save(aesKey, newWalletData)
+      _ = updateStorageKeyAndWalletData(aesKey, newWalletData)
+    } yield ()
+
+    result.onComplete {
+      case Success(_) => println("Successfully created wallet")
+      case Failure(exception) => println("Failed creating wallet"); exception.printStackTrace()
+    }
+
+    result
+  }
+
+  def unlock(password: String): Future[Unit] = {
+    val result = for {
+      aesKey <- generateSecretKey(password)
       storedEncryptedJsonOption <- storageService.load(WalletManager.LOCAL_STORAGE_KEY)
       json <- storedEncryptedJsonOption
         .map { storedEncryptedJson =>
@@ -201,21 +245,28 @@ private[background] class WalletManager(browserActionService: BrowserActionServi
               new String(arr, "UTF-8")
             }
         }
-        .getOrElse(Future.successful("{}"))
-      _ = dom.console.log(s"Loading wallet from: ${json}")
-      walletData = parse(json).getOrElse(Json.obj()).as[WalletData].getOrElse(WalletData(Map.empty))
-      _ = loadFromWalletData(walletData)
+        .getOrElse(throw new RuntimeException("You need to create the wallet before unlocking it"))
+      _ = updateStorageKeyAndWalletData(aesKey, parseWalletDataFromJson(json))
     } yield ()
 
     result.onComplete {
-      case Success(value) => dom.console.log("Successfully loaded wallet")
-      case Failure(exception) => dom.console.log("Failed loading wallet"); exception.printStackTrace()
+      case Success(value) => println("Successfully loaded wallet")
+      case Failure(exception) => println("Failed loading wallet"); exception.printStackTrace()
     }
 
     result
   }
 
+  private def parseWalletDataFromJson(json: String): WalletData = {
+    println(s"Parsing wallet data from: ${json}")
+    parse(json)
+      .getOrElse(Json.obj())
+      .as[WalletData]
+      .getOrElse(throw new RuntimeException("Wallet could not be loaded from JSON"))
+  }
+
   def lock(): Unit = {
     this.storageKey = None
+    this.walletData = None
   }
 }

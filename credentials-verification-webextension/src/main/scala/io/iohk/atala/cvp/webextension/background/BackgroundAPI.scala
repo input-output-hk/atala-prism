@@ -11,6 +11,7 @@ import io.iohk.atala.cvp.webextension.background.models.Command.{
   WalletStatusResult
 }
 import io.iohk.atala.cvp.webextension.background.models.{Command, CommandWithResponse, Event}
+import io.iohk.atala.cvp.webextension.background.wallet.Role
 import org.scalajs.dom
 
 import scala.concurrent.{ExecutionContext, Future, Promise}
@@ -63,6 +64,10 @@ class BackgroundAPI(implicit ec: ExecutionContext) {
 
   def getWalletStatus(): Future[WalletStatusResult] = {
     process(Command.GetWalletStatus)
+  }
+
+  def createWallet(password: String, role: Role, organisationName: String, logo: Array[Byte]): Future[Unit] = {
+    process(Command.CreateWallet(password, role, organisationName, logo))
   }
 
   def unlockWallet(password: String): Future[Unit] = {

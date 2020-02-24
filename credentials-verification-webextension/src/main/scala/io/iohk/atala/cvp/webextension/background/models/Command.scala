@@ -2,7 +2,7 @@ package io.iohk.atala.cvp.webextension.background.models
 
 import io.circe.generic.auto._
 import io.circe.parser.parse
-import io.iohk.atala.cvp.webextension.background.wallet.{SigningRequest, WalletStatus}
+import io.iohk.atala.cvp.webextension.background.wallet.{Role, SigningRequest, WalletStatus}
 
 import scala.util.Try
 
@@ -31,6 +31,9 @@ private[background] object Command {
 
   final case object GetWalletStatus extends CommandWithResponse[WalletStatusResult];
   final case class WalletStatusResult(status: WalletStatus)
+
+  final case class CreateWallet(password: String, role: Role, organisationName: String, logo: Array[Byte])
+      extends CommandWithResponse[Unit]
 
   final case class UnlockWallet(password: String) extends CommandWithResponse[Unit]
   final case class LockWallet() extends CommandWithResponse[Unit]

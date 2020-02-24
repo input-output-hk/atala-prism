@@ -43,12 +43,11 @@ private[background] class CommandProcessor(
         SigningRequests(walletManager.getSigningRequests().toList)
       })
     case Command.CreateKey(keyName) =>
-      Future.successful(CommandResponse {
-        walletManager.createKey(keyName)
-        ()
-      })
+      walletManager.createKey(keyName).map(_ => CommandResponse())
     case Command.GetWalletStatus =>
       walletManager.getStatus().map(WalletStatusResult.apply).map(CommandResponse.apply)
+    case Command.CreateWallet(password, role, organisationName, logo) =>
+      walletManager.createWallet(password, role, organisationName, logo).map(CommandResponse.apply)
     case Command.UnlockWallet(password) =>
       for {
         _ <- walletManager.unlock(password)

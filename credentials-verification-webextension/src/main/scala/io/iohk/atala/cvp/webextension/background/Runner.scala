@@ -7,7 +7,7 @@ import io.iohk.atala.cvp.webextension.background.models.Command
 import io.iohk.atala.cvp.webextension.background.services.browser.{BrowserActionService, BrowserNotificationService}
 import io.iohk.atala.cvp.webextension.background.services.http.HttpService
 import io.iohk.atala.cvp.webextension.background.services.storage.StorageService
-import io.iohk.atala.cvp.webextension.background.wallet.WalletManager
+import io.iohk.atala.cvp.webextension.background.wallet.{Role, WalletManager, WalletStatus}
 import io.iohk.atala.cvp.webextension.common.I18NMessages
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -15,6 +15,12 @@ import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
 
 final case class CommandResponse[T](response: T)(implicit val enc: Encoder[T])
+
+private object Logger {
+  def log(msg: String): Unit = {
+    println(s"background: $msg")
+  }
+}
 
 class Runner(
     commandProcessor: CommandProcessor
@@ -25,7 +31,7 @@ class Runner(
   }
 
   def run(): Unit = {
-    log("This was run by the background script")
+    Logger.log("This was run by the background script")
     processExternalMessages()
   }
 
@@ -47,22 +53,22 @@ class Runner(
         val response = Future
           .fromTry { Try(any.asInstanceOf[String]).flatMap(Command.decode) }
           .map { cmd =>
-            log(s"Got command = $cmd")
+            Logger.log(s"Got command = $cmd")
             cmd
           }
           .flatMap(commandProcessor.process)
           .map(encodeCommandResponseAsRight(_))
           .transformWith {
             case Success(response: Json) =>
-              log(s"Responding successfully: ${response.toString}")
+              Logger.log(s"Responding successfully: ${response.toString}")
               Future.successful(response)
             case Failure(NonFatal(ex)) =>
-              log(s"Failed to process command, error = ${ex.getMessage}")
+              Logger.log(s"Failed to process command, error = ${ex.getMessage}")
               Future.successful {
                 implicitly[Encoder[Either[String, Nothing]]].apply(Left(ex.getMessage))
               }
             case Failure(ex) =>
-              log(s"Impossible failure: ${ex.getMessage}")
+              Logger.log(s"Impossible failure: ${ex.getMessage}")
               Future.failed(ex)
           }
           .map(_.noSpaces)
@@ -76,10 +82,6 @@ class Runner(
       }
     }
   }
-
-  private def log(msg: String): Unit = {
-    println(s"background: $msg")
-  }
 }
 
 object Runner {
@@ -90,19 +92,30 @@ object Runner {
     val messages = new I18NMessages
     val browserNotificationService = new BrowserNotificationService(messages)
     val browserActionService = new BrowserActionService
-
     val walletManager = new WalletManager(browserActionService, storage)
-    walletManager.unlock(WalletManager.FIXME_WALLET_PASSWORD).andThen {
-      case _ =>
-        val existingKeys = walletManager.listKeys()
-        for (keyName <- Set("math-faculty", "cs-faculty").diff(existingKeys.toSet)) {
-          walletManager.createKey(keyName)
-        }
+
+    val initialization = for {
+      walletStatus <- walletManager.getStatus()
+      _ <- initializeWallet(walletManager, walletStatus)
+      existingKeys = walletManager.listKeys().toSet
+      _ <- Future.sequence(Set("math-faculty", "cs-faculty").diff(existingKeys).map(walletManager.createKey))
+    } yield ()
+    initialization.onComplete {
+      case Failure(ex) => Logger.log(s"Could not initialize the wallet: ${ex.toString}")
+      case _ => ()
     }
 
     val commandProcessor =
       new CommandProcessor(storage, browserNotificationService, browserActionService, walletManager)
 
     new Runner(commandProcessor)
+  }
+
+  private def initializeWallet(walletManager: WalletManager, walletStatus: WalletStatus): Future[Unit] = {
+    if (walletStatus == WalletStatus.Missing) {
+      walletManager.createWallet(WalletManager.FIXME_WALLET_PASSWORD, Role.Verifier, "IOHK", Array())
+    } else {
+      walletManager.unlock(WalletManager.FIXME_WALLET_PASSWORD)
+    }
   }
 }

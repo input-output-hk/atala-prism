@@ -1,7 +1,7 @@
 package io.iohk.atala.cvp.webextension.popup
 
 import io.iohk.atala.cvp.webextension.background.BackgroundAPI
-import io.iohk.atala.cvp.webextension.background.wallet.WalletManager
+import io.iohk.atala.cvp.webextension.background.wallet.{Role, WalletManager}
 import io.iohk.atala.cvp.webextension.common.I18NMessages
 import io.iohk.atala.cvp.webextension.facades.elliptic.{EC, KeyPair}
 import org.scalajs.dom
@@ -101,6 +101,13 @@ class Runner(messages: I18NMessages, backgroundAPI: BackgroundAPI)(implicit ec: 
       case Failure(ex) =>
         log(s"Failed obtaining wallet status: ${ex.getMessage}")
         throw ex
+    }
+  }
+
+  def createWallet(): Unit = {
+    backgroundAPI.createWallet(WalletManager.FIXME_WALLET_PASSWORD, Role.Verifier, "IOHK", Array()).map { _ =>
+      log("Getting wallet status after creating it")
+      getWalletStatus()
     }
   }
 
