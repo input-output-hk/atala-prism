@@ -24,6 +24,10 @@ static_resources:
                           route:
                             cluster: wallet_service
                             max_grpc_timeout: 0s
+                        - match: { prefix: "/io.iohk.cvp.AdminService" }
+                          route:
+                            cluster: admin_service
+                            max_grpc_timeout: 0s
                         - match: { prefix: "/io.iohk.cvp" }
                           route:
                             cluster: connector_service
@@ -46,11 +50,19 @@ static_resources:
       http2_protocol_options: {}
       lb_policy: round_robin
       # win/mac hosts: Use address: host.docker.internal instead of address: localhost in the line below
-      hosts: [{ socket_address: { address: 192.168.3.113, port_value: 50052 }}]
+      hosts: [{ socket_address: { address: 192.168.3.145, port_value: 50052 }}]
     - name: connector_service
       connect_timeout: 15s
       type: logical_dns
       http2_protocol_options: {}
       lb_policy: round_robin
       # win/mac hosts: Use address: host.docker.internal instead of address: localhost in the line below
-      hosts: [{ socket_address: { address: 192.168.3.113, port_value: 50051 }}]
+      hosts: [{ socket_address: { address: 192.168.3.145, port_value: 50051 }}]
+    - name: admin_service
+      connect_timeout: 15s
+      type: logical_dns
+      http2_protocol_options: {}
+      lb_policy: round_robin
+      # win/mac hosts: Use address: host.docker.internal instead of address: localhost in the line below
+      hosts: [{ socket_address: { address: 192.168.3.145, port_value: 50055 }}]
+

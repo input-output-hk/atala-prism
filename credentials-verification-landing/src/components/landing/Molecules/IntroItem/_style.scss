@@ -3,6 +3,8 @@
 .IntroItem {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
   width: 25%;
 
   @include breakpoint(sm) {

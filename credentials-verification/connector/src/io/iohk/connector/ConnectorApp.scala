@@ -20,10 +20,13 @@ import io.iohk.cvp.cstore.CredentialsStoreService
 import io.iohk.cvp.cstore.protos.CredentialsStoreServiceGrpc
 import io.iohk.cvp.cstore.services.{StoreIndividualsService, StoreUsersService, StoredCredentialsService}
 import io.iohk.cvp.grpc.GrpcAuthenticatorInterceptor
+import io.iohk.cvp.intdemo.{CredentialStatusRepository, IDServiceImpl}
+import io.iohk.cvp.intdemo.protos.IDServiceGrpc
 import io.iohk.cvp.repositories.{SchemaMigrations, TransactorFactory}
 import io.iohk.nodenew.node_api.NodeServiceGrpc
 import org.slf4j.LoggerFactory
 
+import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext
 
 /**
@@ -107,7 +110,11 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     val adminRepository = new AdminRepository(xa)(executionContext)
     val adminService = new AdminServiceImpl(adminRepository)(executionContext)
 
-    //
+    // interactive demo, ID credential service
+    val credentialStatusRepository = new CredentialStatusRepository(xa)(executionContext)
+    val idService =
+      new IDServiceImpl(connectorService, schedulerPeriod = 1 second)(credentialStatusRepository)(executionContext)
+
     logger.info("Starting server")
     server = ServerBuilder
       .forPort(ConnectorApp.port)
@@ -117,6 +124,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       .addService(StudentsServiceGrpc.bindService(studentsService, executionContext))
       .addService(GroupsServiceGrpc.bindService(groupsService, executionContext))
       .addService(CredentialsStoreServiceGrpc.bindService(credentialsStoreService, executionContext))
+      .addService(IDServiceGrpc.bindService(idService, executionContext))
       .addService(AdminServiceGrpc.bindService(adminService, executionContext))
       .build()
       .start()

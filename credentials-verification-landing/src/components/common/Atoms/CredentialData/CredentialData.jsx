@@ -6,7 +6,7 @@ import freeUniLgo from '../../../../images/FreeUniLogo.png';
 import './_style.scss';
 import { LANDING_TITLE, LANDING_UNIVERSITY } from '../../../../helpers/constants';
 
-const CredentialData = ({ icon, student, startDate, graduationDate }) => (
+const CredentialData = ({ icon, firstName, lastName, startDate, graduationDate }) => (
   <Col lg={12} xs={24} className="CredentialTemplate">
     <div className="CredentialHeader">
       <CellRenderer componentName="newCredential" title="degreeName" value={LANDING_TITLE} />
@@ -18,10 +18,14 @@ const CredentialData = ({ icon, student, startDate, graduationDate }) => (
         title="universityName"
         value={LANDING_UNIVERSITY}
       />
-      {student && (
+      {firstName && (
         <Fragment>
           <hr />
-          <CellRenderer componentName="newCredential" title="fullName" value={student} />
+          <CellRenderer
+            componentName="newCredential"
+            title="fullName"
+            value={`${firstName} ${lastName}`}
+          />
         </Fragment>
       )}
       <hr />
@@ -47,7 +51,8 @@ CredentialData.defaultProps = {
 
 CredentialData.propTypes = {
   icon: PropTypes.string,
-  student: PropTypes.string.isRequired,
+  firstName: PropTypes.string.isRequired,
+  lastName: PropTypes.string.isRequired,
   startDate: PropTypes.string.isRequired,
   graduationDate: PropTypes.string.isRequired
 };

@@ -18,6 +18,11 @@ class ConnectionsService(
     paymentsRepository: PaymentsRepository,
     braintreePayments: BraintreePayments
 )(implicit ec: ExecutionContext) {
+
+  def getConnectionByToken(token: TokenString): FutureEither[ConnectorError, Option[Connection]] = {
+    connectionsRepository.getConnectionByToken(token)
+  }
+
   def generateToken(userId: ParticipantId): FutureEither[ConnectorError, TokenString] = {
     connectionsRepository.insertToken(userId, TokenString.random())
   }

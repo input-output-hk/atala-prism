@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import Header from '../common/Molecules/Header/Header';
 import IntroSection from './Organisms/IntroSection/IntroSection';
 import CredentialSection from './Organisms/CredentialSection/CredentialSection';
-import FindCredential from './Organisms/FindCredential/FindCredentail';
+import FindCredential from './Molecules/FindCredential/FindCredential';
 import DownloadButtons from './Molecules/DownloadButtons/DownloadButtons';
 import './_style.scss';
 import Footer from '../common/Molecules/Footer/Footer';
@@ -32,6 +32,10 @@ const Landing = () => {
         <Header executeScroll={executeScroll} />
         <div className="LadingHeaderContent">
           <div className="HeaderText">
+            <span className="MiniDetailText">
+              {t('landing.start.welcome')}
+              <em>_____</em>
+            </span>
             <h1>{t('landing.start.info')}</h1>
             <h3>{t('landing.start.subtitle')}</h3>
             <DownloadButtons />

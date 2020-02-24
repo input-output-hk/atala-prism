@@ -83,8 +83,24 @@ const WalletStatuses = {
 export const translateStatus = status => WalletStatuses[status];
 
 // Connection status
-export const CONNECTION_ACCEPTED = 2;
-export const CONNECTION_REVOKED = 3;
+export const CONNECTION_ACCEPTED = 1;
+
+export const CREDENTIAL_TYPES = {
+  0: 'GOVERNMENT_ISSUED_DIGITAL_IDENTITY',
+  1: 'UNIVERSITY_DEGREE',
+  2: 'PROOF_OF_EMPLOYMENT',
+  3: 'INSURANCE_POLICY'
+};
+
+export const SUBJECT_STATUSES = {
+  0: 'UNCONNECTED',
+  1: 'CONNECTED',
+  2: 'CREDENTIAL_AVAILABLE',
+  3: 'CREDENTIAL_SENT',
+  4: 'CREDENTIAL_RECEIVED'
+};
+
+export const USER = 'atala-demo-web-user';
 
 export const FEATURE_NAME = 'features';
 export const CREDENTIAL_NAME = 'credentials';

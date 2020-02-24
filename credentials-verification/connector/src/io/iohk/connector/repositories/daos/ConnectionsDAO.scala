@@ -3,7 +3,7 @@ package io.iohk.connector.repositories.daos
 import java.time.Instant
 
 import doobie.implicits._
-import io.iohk.connector.model.{ConnectionId, ConnectionInfo, TokenString}
+import io.iohk.connector.model.{Connection, ConnectionId, ConnectionInfo, TokenString}
 import io.iohk.cvp.models.ParticipantId
 
 object ConnectionsDAO {
@@ -53,6 +53,16 @@ object ConnectionsDAO {
          | UNION
          | SELECT initiator AS other_side FROM connections WHERE id = $connection AND acceptor = $participant""".stripMargin
       .query[ParticipantId]
+      .option
+  }
+
+  def getConnectionByToken(token: TokenString): doobie.ConnectionIO[Option[Connection]] = {
+    sql"""
+         |SELECT token
+         |FROM connections
+         |WHERE token = ${token.token}
+         |""".stripMargin
+      .query[Connection]
       .option
   }
 

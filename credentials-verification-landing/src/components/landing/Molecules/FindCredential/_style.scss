@@ -1,0 +1,44 @@
+@import '../../../../css/general_styling';
+
+.FindCredential {
+  display: flex;
+  padding: 4em 4em 0 4em;
+  align-items: flex-start;
+  background: $black;
+
+  @include breakpoint(md) {
+    width: 100%;
+  }
+
+  .FindCredentialContainer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    width: 70%;
+
+    .CredentialItemLanding {
+      margin-bottom: 4em;
+    }
+  }
+
+  .TextContainer {
+    width: 30%;
+    @include breakpoint(sm) {
+      width: 100%;
+    }
+
+    .MiniDetailText {
+      color: $white;
+    }
+
+    h1 {
+      @include secondary-text($h1, $white);
+      width: 60%;
+      margin-top: 0.5em;
+    }
+
+    button {
+      margin-top: 2em;
+    }
+  }
+}

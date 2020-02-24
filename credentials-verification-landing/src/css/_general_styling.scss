@@ -1,19 +1,23 @@
 // Colors
 $background: #f1f3f8;
-$surface: #fff;
+$surface: #f5f5f5;
 
 $primary-color: #ff2d3b;
 $primary-color-darker: #bf222c;
-$secondary-color: #202020;
+$secondary-color: #011727;
+
+$primary-accent: #40eaea;
+$secondary-accent: #af2dff;
+$ternary-accent: #4a2dff;
 
 $success-color: #1ed69e;
 
-$black: #303034;
+$black: #000000;
 $white: #fff;
 $dark-grey: #728099;
-$grey: #b3bec5;
+$grey: #8F97A4;
 $medium-grey: #c5d0de;
-$light-grey: #F8F9F9;
+$light-grey: #f8f9f9;
 
 // Typographic Scale
 $large-title: 40px;
@@ -24,11 +28,32 @@ $h2: 18px;
 $h3: 16px;
 $button: 14px;
 $body: 14px;
-$label: 13px;
+$label: 12px;
 $explain: 10px;
+
+$theme-color: linear-gradient(to right, #f2316a, #ed1c24);
 
 // Shadow
 $shadow: 0 1px 6px rgba(147, 141, 158, 0.16), 0 2px 6px rgba(52, 53, 62, 0.16);
+$shadow-primary: 0 1px 6px rgba(255, 45, 59, 0.16), 0 2px 6px rgba(255, 45, 59, 0.16);
+
+// Container
+
+@mixin container() {
+  background: #fff;
+  box-shadow: 0 1px 6px rgba(147, 141, 158, 0.16), 0 2px 6px rgba(52, 53, 62, 0.28);
+  border-radius: 6px;
+  padding: 1em;
+}
+
+// Theme Colors
+
+@mixin border-theme($theme-color) {
+  border-left: solid;
+  border-color: $theme-color;
+  border-left-width: 6px;
+  border-left-style: solid;
+}
 
 @font-face {
   font-family: 'Circular-bold';
@@ -44,8 +69,9 @@ $shadow: 0 1px 6px rgba(147, 141, 158, 0.16), 0 2px 6px rgba(52, 53, 62, 0.16);
 
 @mixin primary-text($font-size, $font-color) {
   margin: 0;
-  font-family: 'Circular-book';
+  font-family: 'Poppins', sans-serif;
   font-size: $font-size;
+  font-weight: 400;
   @if $font-color {
     color: $font-color;
   }
@@ -53,8 +79,9 @@ $shadow: 0 1px 6px rgba(147, 141, 158, 0.16), 0 2px 6px rgba(52, 53, 62, 0.16);
 
 @mixin secondary-text($font-size, $font-color) {
   margin: 0;
-  font-family: 'Circular-bold';
+  font-family: 'Poppins', sans-serif;
   font-size: $font-size;
+  font-weight: 700;
   @if $font-color {
     color: $font-color;
   }
@@ -62,7 +89,7 @@ $shadow: 0 1px 6px rgba(147, 141, 158, 0.16), 0 2px 6px rgba(52, 53, 62, 0.16);
 
 @mixin body-text($font-size, $font-color, $font-weight) {
   margin: 0;
-  font-family: 'Source Sans Pro', sans-serif;
+  font-family: 'Poppins', sans-serif;
   font-size: $font-size;
   font-weight: $font-weight;
   @if $font-color {
@@ -124,15 +151,20 @@ $screen-lg-min: 1024px;
 
 @mixin breakpoint($media) {
   @if $media == xs {
-    @media only screen and (max-width: $screen-xs-min) { @content; }
-  }
-    @else if $media == sm {
-    @media only screen and (max-width: $screen-sm-min) { @content; }
-  }
-  @else if $media == md {
-    @media only screen and (max-width: $screen-md-min) { @content; }
-  }
-  @else if $media == lg {
-    @media only screen and (max-width: $screen-lg-min) { @content; }
+    @media only screen and (max-width: $screen-xs-min) {
+      @content;
+    }
+  } @else if $media == sm {
+    @media only screen and (max-width: $screen-sm-min) {
+      @content;
+    }
+  } @else if $media == md {
+    @media only screen and (max-width: $screen-md-min) {
+      @content;
+    }
+  } @else if $media == lg {
+    @media only screen and (max-width: $screen-lg-min) {
+      @content;
+    }
   }
 }

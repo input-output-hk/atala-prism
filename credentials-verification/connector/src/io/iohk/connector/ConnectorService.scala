@@ -3,7 +3,7 @@ package io.iohk.connector
 import java.util.UUID
 
 import io.iohk.connector.errors._
-import io.iohk.connector.model.Message
+import io.iohk.connector.model.{Message, TokenString}
 import io.iohk.connector.model.payments.{ClientNonce, Payment => ConnectorPayment}
 import io.iohk.connector.model.requests.CreatePaymentRequest
 import io.iohk.connector.payments.BraintreePayments
@@ -20,6 +20,7 @@ import org.slf4j.{Logger, LoggerFactory}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 import scala.util.control.NonFatal
+
 class ConnectorService(
     connections: ConnectionsService,
     messages: MessagesService,
@@ -32,6 +33,20 @@ class ConnectorService(
     with ErrorSupport {
 
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
+
+  /** Retrieve a connection for a given connection token.
+    *
+    * Available to: Holder, Issuer, Validator
+    */
+  override def getConnectionByToken(request: GetConnectionByTokenRequest): Future[GetConnectionByTokenResponse] = {
+    authenticator.public("getConnectionByToken", request) {
+      implicit val loggingContext = LoggingContext("request" -> request)
+      connections
+        .getConnectionByToken(new TokenString(request.token))
+        .wrapExceptions
+        .successMap(maybeConnection => GetConnectionByTokenResponse(maybeConnection.map(_.toProto)))
+    }
+  }
 
   /** Get active connections for current participant
     *

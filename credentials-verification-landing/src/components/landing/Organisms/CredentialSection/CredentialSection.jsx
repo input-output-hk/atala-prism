@@ -12,7 +12,10 @@ const CredentialSection = () => {
         <img src="images/credential-example.svg" alt={t('landing.credential.credentialAlt')} />
       </div>
       <div className="TextContainer">
-        <img src="images/credential-icon.svg" alt={t('landing.credential.iconAlt')} />
+        <span className="MiniDetailText">
+          {t('landing.credential.detailText')}
+          <em>_____</em>
+        </span>
         <h1>{t('landing.credential.title')}</h1>
         <h3>
           {t('landing.credential.subtitle1')}

@@ -31,6 +31,7 @@
     </appender>
 
     <logger name="application" level="DEBUG" />
+    <logger name="io.iohk" level="DEBUG" />
 
     <root level="INFO">
         <appender-ref ref="ASYNCFILE" />

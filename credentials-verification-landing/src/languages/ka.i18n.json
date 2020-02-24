@@ -147,7 +147,7 @@
       "subtitle2": "a page."
     },
     "findCredential": {
-      "title": "Find a Credential",
+      "title": "Try Atala Prism interative Demo",
       "arrowAlt": "Arrow Right",
       "credentialAlt": "Man smiling",
       "cardTitle": "Find a Credential",
@@ -163,8 +163,9 @@
       "mobile": "Mobile phones with screens of the mobile app"
     },
     "trademark": {
-      "part1": "© Copyright 2019, ATALA. All Rights Reserved. ATALA Prism is a registered trademark of ",
-      "part2": "IOHK."
+      "part1": "Terms & Conditions",
+      "part2": " Privacy Policy",
+      "part3": "Copyright © 2020 atala.io"
     }
   },
   "credentials": {
@@ -487,7 +488,7 @@
       "title": "This is your credential!"
     },
     "errors": {
-      "studentCreation": "The student could not be created",
+      "connectionCreation": "The connection could not be created",
       "creationAndIssuing": "The credential could not be created or issued",
       "connectionWaiting": "A connection error happened, please refresh this page and start anew"
     },
@@ -537,7 +538,14 @@
         "alt": "Connection Menu Icon"
       },
       "step3": "When the camera is activated, point your phone towards this screen to scan the code",
-      "scannedQR": "I scanned the QR!"
+      "scannedQR": "I scanned the QR!",
+      "generic": {
+        "UNCONNECTED": "Unconnected",
+        "CONNECTED":"Connection successful",
+        "CREDENTIAL_AVAILABLE": "Credential available",
+        "CREDENTIAL_SENT":"Credential sent",
+        "CREDENTIAL_RECEIVED": "Credential received"
+      }
     }
   },
   "errors": {

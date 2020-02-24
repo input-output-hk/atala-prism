@@ -10,14 +10,13 @@ const Footer = () => {
   return (
     <div className="Footer">
       <button type="button" onClick={scrollToTop}>
-        <img src="images/atala-logo.svg" alt={t('atalaLogo')} />
+        <img src="images/atala-logo-v2.svg" alt={t('atalaLogo')} />
       </button>
       <div className="FooterText">
-        <p>
-          {t('landing.trademark.part1')}
-          {t('landing.trademark.part2')}
-        </p>
+        <p>{t('landing.trademark.part1')}</p>
+        <p>{t('landing.trademark.part2')}</p>
       </div>
+      <p>{t('landing.trademark.part3')}</p>
     </div>
   );
 };

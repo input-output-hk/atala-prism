@@ -8,9 +8,11 @@ export const withRedirector = Component => props => {
 
   const redirectToLanding = () => redirectTo('');
 
-  const redirectToCredential = () => redirectTo('credential');
+  const redirectToUserInfo = () => redirectTo('userInfo');
 
-  const redirector = { redirectToLanding, redirectToCredential };
+  const redirectToCredentials = () => redirectTo('credentials');
+
+  const redirector = { redirectToLanding, redirectToUserInfo, redirectToCredentials };
 
   return <Component {...props} redirector={redirector} />;
 };

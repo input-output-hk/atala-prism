@@ -3,8 +3,8 @@ package io.iohk.connector
 import java.security.PublicKey
 
 import com.google.protobuf.ByteString
-import io.iohk.connector.errors.UnknownValueError
-import io.iohk.connector.model.{ConnectionId, ConnectionInfo, ParticipantInfo, TokenString}
+import io.iohk.connector.errors.{ConnectorError, UnknownValueError}
+import io.iohk.connector.model.{Connection, ConnectionId, ConnectionInfo, ParticipantInfo, TokenString}
 import io.iohk.connector.repositories.ConnectionsRepository
 import io.iohk.cvp.connector.protos
 import io.iohk.cvp.crypto.ECKeys.toEncodePublicKey
@@ -352,6 +352,8 @@ object SignedRequestsAuthenticatorSpec {
         limit: Int,
         lastSeenConnectionId: Option[ConnectionId]
     ): FutureEither[errors.ConnectorError, Seq[ConnectionInfo]] = ???
+
+    def getConnectionByToken(token: TokenString): FutureEither[ConnectorError, Option[Connection]] = ???
   }
 
   trait DummyNodeService extends node_api.NodeServiceGrpc.NodeService {

@@ -2,7 +2,8 @@ import React from 'react';
 import { Switch, Route } from 'react-router-dom';
 import Landing from './landing/Landing';
 import I18nError from './I18nError';
-import Credential from './credential/CredentialContainer';
+import UserInfo from './userInfo/UserInfoContainer';
+import Credentials from './credentials/CredentialsContainer';
 
 const errorRoute = { exact: true, path: '/error', key: '/error', component: I18nError };
 
@@ -12,13 +13,18 @@ const landingRoute = {
   key: '/',
   component: Landing
 };
-const credentialRoute = {
-  path: '/credential',
-  key: 'credential',
-  component: Credential
+const userInfoRoute = {
+  path: '/userInfo',
+  key: 'userInfo',
+  component: UserInfo
+};
+const credentialsRoute = {
+  path: '/credentials',
+  key: 'credentials',
+  component: Credentials
 };
 
-const routes = [errorRoute, landingRoute, credentialRoute];
+const routes = [errorRoute, landingRoute, userInfoRoute, credentialsRoute];
 
 const Router = () => (
   <Switch>

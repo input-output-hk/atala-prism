@@ -31,6 +31,13 @@ jobs:
             CI=false GENERATE_SOURCEMAP=false npm run build
 
       - run:
+          name: Create landing assembly
+          command: |
+            cd credentials-verification-landing
+            npm ci --production
+            CI=false GENERATE_SOURCEMAP=false npm run build
+
+      - run:
           name: Create node assembly
           command: |
             cd credentials-verification
@@ -57,6 +64,12 @@ jobs:
           command: |
             docker build -f credentials-verification-web/Dockerfile -t 895947072537.dkr.ecr.us-east-2.amazonaws.com/web:${TAG} credentials-verification-web
             docker push 895947072537.dkr.ecr.us-east-2.amazonaws.com/web:${TAG}
+
+      - run:
+          name: Build and push credentials-verification-landing
+          command: |
+            docker build -f credentials-verification-landing/Dockerfile -t 895947072537.dkr.ecr.us-east-2.amazonaws.com/landing:${TAG} credentials-verification-landing
+            docker push 895947072537.dkr.ecr.us-east-2.amazonaws.com/landing:${TAG}
 
       - run:
           name: Build and push credentials-verification/node

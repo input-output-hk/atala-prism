@@ -145,6 +145,12 @@ trait ServerCommon extends ScalaModule {
   )
 
   trait `tests-common` extends Tests {
+
+    val mockitoDeps = Agg(
+      ivy"org.mockito::mockito-scala:1.11.1",
+      ivy"org.mockito::mockito-scala-scalatest:1.11.1"
+    )
+
     override def moduleDeps = Seq(common.`test-util`) ++ super.moduleDeps
 
     override def ivyDeps = Agg(
@@ -157,12 +163,29 @@ trait ServerCommon extends ScalaModule {
     )
 
     def testFrameworks = Seq("org.scalatest.tools.Framework")
+
+    // Example usage: mill -i connector.test.single io.iohk.cvp.intdemo.IDServiceImplSpec
+    def single(args: String*) = T.command {
+      super.runMain("org.scalatest.run", args: _*)
+    }
   }
 }
 
 trait ServerPBCommon extends ServerCommon with ScalaPBModule {
+  def scalaPBLenses: Boolean = true
   def scalaPBVersion = versions.scalaPB
   def scalaPBGrpc = true
+
+  // simple way to allow disabling lenses which is not supported by the ScalaPBModule
+  override def scalaPBOptions = {
+    if (scalaPBLenses) super.scalaPBOptions
+    else {
+      super.scalaPBOptions.map { defaultOptions =>
+        if (defaultOptions.isEmpty) "no_lenses"
+        else defaultOptions + ",no_lenses"
+      }
+    }
+  }
 
   override def ivyDeps =
     super[ServerCommon].ivyDeps.map { deps =>
@@ -184,10 +207,7 @@ object node extends ServerPBCommon with CVPDockerModule {
 
   object test extends `tests-common` {
     override def ivyDeps = super.ivyDeps.map { deps =>
-      deps ++ Agg(
-        ivy"org.mockito::mockito-scala:1.11.1",
-        ivy"org.mockito::mockito-scala-scalatest:1.11.1"
-      )
+      deps ++ mockitoDeps
     }
   }
 
@@ -209,6 +229,13 @@ object node extends ServerPBCommon with CVPDockerModule {
 
 object connector extends ServerPBCommon with CVPDockerModule {
 
+  // for some reason, the credential.proto is breaking the integration with mill and ScalaPB
+  // and the reason seems to be while generating lenses, the same protobuf file compiles just
+  // fine while using sbt.
+  //
+  // TODO: Try upgrading mill to see if enabling lenses keeps the project compiling
+  override def scalaPBLenses = false
+
   override def mainClass = Some("io.iohk.connector.ConnectorApp")
 
   override def ivyDeps = super.ivyDeps.map { deps =>
@@ -221,10 +248,7 @@ object connector extends ServerPBCommon with CVPDockerModule {
 
   object test extends `tests-common` {
     override def ivyDeps = super.ivyDeps.map { deps =>
-      deps ++ Agg(
-        ivy"org.mockito::mockito-scala:1.11.1",
-        ivy"org.mockito::mockito-scala-scalatest:1.11.1"
-      )
+      deps ++ mockitoDeps
     }
   }
 

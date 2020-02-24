@@ -95,6 +95,12 @@ case class ConnectionInfo(
   }
 }
 
+case class Connection(connectionToken: String) {
+  def toProto: protos.Connection = {
+    protos.Connection(connectionToken)
+  }
+}
+
 class TokenString(val token: String) extends AnyVal
 
 object TokenString {
