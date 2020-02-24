@@ -123,3 +123,5 @@ case class Message(id: MessageId, connection: ConnectionId, receivedAt: Instant,
     )
   }
 }
+
+case class RequestNonce(bytes: Vector[Byte]) extends AnyVal
