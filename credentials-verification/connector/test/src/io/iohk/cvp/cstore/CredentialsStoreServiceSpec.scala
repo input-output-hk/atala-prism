@@ -4,7 +4,7 @@ import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.connector.{RpcSpecBase, SignedRequestsAuthenticator}
 import io.iohk.connector.model.{ParticipantInfo, ParticipantType}
-import io.iohk.connector.repositories.ConnectionsRepository
+import io.iohk.connector.repositories.{ConnectionsRepository, RequestNoncesRepository}
 import io.iohk.connector.repositories.daos.ParticipantsDAO
 import io.iohk.cvp.cstore.models.{IndividualConnectionStatus, StoreUser}
 import io.iohk.cvp.cstore.protos.CredentialsStoreServiceGrpc
@@ -32,10 +32,15 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
   lazy val individuals = new StoreIndividualsService(database)
   lazy val storedCredentials = new StoredCredentialsService(database)
   private lazy val connectionsRepository = new ConnectionsRepository.PostgresImpl(database)(executionContext)
+  private lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
   private lazy val nodeMock = mock[io.iohk.nodenew.node_api.NodeServiceGrpc.NodeService]
 
-  private lazy val authenticator =
-    new SignedRequestsAuthenticator(connectionsRepository, nodeMock, GrpcAuthenticationHeaderParser)
+  private lazy val authenticator = new SignedRequestsAuthenticator(
+    connectionsRepository,
+    requestNoncesRepository,
+    nodeMock,
+    GrpcAuthenticationHeaderParser
+  )
   lazy val verifierId = ParticipantId("af45a4da-65b8-473e-aadc-aa6b346250a3")
 
   override def services = Seq(

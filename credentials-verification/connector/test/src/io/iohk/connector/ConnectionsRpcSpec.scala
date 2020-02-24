@@ -150,7 +150,10 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase {
       val request = GetConnectionsPaginatedRequest("", 10)
       val requestNonce = UUID.randomUUID().toString.getBytes.toVector
       val signature =
-        ECSignature.sign(privateKey, SignedRequestsHelper.merge(requestNonce, request.toByteArray).toArray)
+        ECSignature.sign(
+          privateKey,
+          SignedRequestsHelper.merge(RequestNonce(requestNonce), request.toByteArray).toArray
+        )
 
       val verifierId = createVerifier("Verifier", Some(encodedPublicKey))
 

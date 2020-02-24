@@ -4,7 +4,8 @@ import java.security.PublicKey
 
 import io.grpc.Context
 import io.iohk.connector.errors.{ConnectorError, ErrorSupport, SignatureVerificationError}
-import io.iohk.connector.repositories.ConnectionsRepository
+import io.iohk.connector.model.RequestNonce
+import io.iohk.connector.repositories.{ConnectionsRepository, RequestNoncesRepository}
 import io.iohk.cvp.crypto.ECKeys.toPublicKey
 import io.iohk.cvp.crypto.{ECKeys, ECSignature}
 import io.iohk.cvp.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser, SignedRequestsHelper}
@@ -36,6 +37,7 @@ trait Authenticator {
 
 class SignedRequestsAuthenticator(
     connectionsRepository: ConnectionsRepository,
+    requestNoncesRepository: RequestNoncesRepository,
     nodeClient: node_api.NodeServiceGrpc.NodeService,
     grpcAuthenticationHeaderParser: GrpcAuthenticationHeaderParser
 ) extends Authenticator
@@ -84,23 +86,28 @@ class SignedRequestsAuthenticator(
     * A request must be signed by prepending the nonce, let's say requestNonce|request
     *
     * The signature is valid if the signature matches and the nonce hasn't been seen before.
+    *
+    * After the request is validated successfully, the request nonce is burn to prevent replay attacks.
     */
   private def verifyRequestSignature(
       participantId: ParticipantId,
       publicKey: PublicKey,
       request: Array[Byte],
-      requestNonce: Vector[Byte],
+      requestNonce: RequestNonce,
       signature: Vector[Byte]
   )(implicit ec: ExecutionContext): FutureEither[SignatureVerificationError, ParticipantId] = {
 
     val payload = SignedRequestsHelper.merge(requestNonce, request).toArray
-    Either
-      .cond(
-        ECSignature.verify(publicKey = publicKey, data = payload, signature = signature),
-        participantId,
-        SignatureVerificationError()
-      )
-      .toFutureEither
+    for {
+      _ <- Either
+        .cond(
+          ECSignature.verify(publicKey = publicKey, data = payload, signature = signature),
+          participantId,
+          SignatureVerificationError()
+        )
+        .toFutureEither
+      _ <- requestNoncesRepository.burn(participantId, requestNonce)
+    } yield participantId
   }
 
   private def authenticate(request: Array[Byte], authenticationHeader: GrpcAuthenticationHeader)(

@@ -3,7 +3,12 @@ package io.iohk.connector
 import com.typesafe.config.{Config, ConfigFactory}
 import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
 import io.iohk.connector.payments.BraintreePayments
-import io.iohk.connector.repositories.{ConnectionsRepository, MessagesRepository, PaymentsRepository}
+import io.iohk.connector.repositories.{
+  ConnectionsRepository,
+  MessagesRepository,
+  PaymentsRepository,
+  RequestNoncesRepository
+}
 import io.iohk.connector.services.{ConnectionsService, MessagesService}
 import io.iohk.cvp.admin.protos.AdminServiceGrpc
 import io.iohk.cvp.admin.{AdminRepository, AdminServiceImpl}
@@ -74,9 +79,15 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     val connectionsRepository = new ConnectionsRepository.PostgresImpl(xa)(executionContext)
     val paymentsRepository = new PaymentsRepository(xa)(executionContext)
     val messagesRepository = new MessagesRepository(xa)(executionContext)
+    val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(xa)(executionContext)
 
     // authenticator
-    val authenticator = new SignedRequestsAuthenticator(connectionsRepository, node, GrpcAuthenticationHeaderParser)
+    val authenticator = new SignedRequestsAuthenticator(
+      connectionsRepository,
+      requestNoncesRepository,
+      node,
+      GrpcAuthenticationHeaderParser
+    )
 
     // connector services
     val connectionsService =

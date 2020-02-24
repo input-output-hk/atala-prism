@@ -2,7 +2,7 @@ package io.iohk.cvp.cmanager.grpc.services
 
 import java.util.UUID
 
-import io.iohk.connector.repositories.ConnectionsRepository
+import io.iohk.connector.repositories.{ConnectionsRepository, RequestNoncesRepository}
 import io.iohk.connector.{RpcSpecBase, SignedRequestsAuthenticator}
 import io.iohk.cvp.cmanager.models.{Issuer, IssuerGroup, Student}
 import io.iohk.cvp.cmanager.protos
@@ -34,9 +34,15 @@ class StudentsServiceImplSpec extends RpcSpecBase {
   private lazy val studentsRepository = new StudentsRepository(database)
   private lazy val credentialsRepository = new CredentialsRepository(database)
   private lazy val connectionsRepository = new ConnectionsRepository.PostgresImpl(database)(executionContext)
+  private lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
   private lazy val nodeMock = mock[io.iohk.nodenew.node_api.NodeServiceGrpc.NodeService]
   private lazy val authenticator =
-    new SignedRequestsAuthenticator(connectionsRepository, nodeMock, GrpcAuthenticationHeaderParser)
+    new SignedRequestsAuthenticator(
+      connectionsRepository,
+      requestNoncesRepository,
+      nodeMock,
+      GrpcAuthenticationHeaderParser
+    )
   override def services = Seq(
     StudentsServiceGrpc
       .bindService(new StudentsServiceImpl(studentsRepository, credentialsRepository, authenticator), executionContext)

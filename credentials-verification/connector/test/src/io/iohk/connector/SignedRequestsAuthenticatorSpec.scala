@@ -5,18 +5,19 @@ import java.util.UUID
 
 import com.google.protobuf.ByteString
 import io.grpc.Context
-import io.iohk.connector.errors.{ConnectorError, UnknownValueError}
+import io.iohk.connector.errors.UnknownValueError
 import io.iohk.connector.model._
-import io.iohk.connector.repositories.ConnectionsRepository
+import io.iohk.connector.repositories.{ConnectionsRepository, RequestNoncesRepository}
 import io.iohk.cvp.connector.protos
-import io.iohk.cvp.crypto.ECKeys.toEncodePublicKey
+import io.iohk.cvp.crypto.ECKeys.{EncodedPublicKey, toEncodePublicKey}
 import io.iohk.cvp.crypto.{ECKeys, ECSignature}
 import io.iohk.cvp.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser, SignedRequestsHelper}
 import io.iohk.cvp.models.ParticipantId
-import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither.FutureEitherOps
 import io.iohk.nodenew.node_api
 import io.iohk.nodenew.node_api._
+import org.mockito.ArgumentMatchersSugar._
+import org.mockito.IdiomaticMockito._
 import org.scalatest.MustMatchers._
 import org.scalatest.WordSpec
 import org.scalatest.concurrent.ScalaFutures._
@@ -26,17 +27,12 @@ import scala.concurrent.Future
 
 class SignedRequestsAuthenticatorSpec extends WordSpec {
 
-  import SignedRequestsAuthenticatorSpec._
-
   private val request = protos.GetConnectionTokenInfoRequest("")
   private val response = protos.GetConnectionTokenInfoResponse()
-  private val dummyNode = new DummyNodeService {}
 
   "public" should {
-    val authenticator =
-      new SignedRequestsAuthenticator(new DummyConnectionsRepository {}, dummyNode, GrpcAuthenticationHeaderParser)
-
     "accept the request without authentication" in {
+      val authenticator = buildAuthenticator(getHeader = () => None)
       val result = authenticator.public("test", request) {
         Future.successful(response)
       }
@@ -46,13 +42,8 @@ class SignedRequestsAuthenticatorSpec extends WordSpec {
 
   "authenticated" should {
     "accept the legacy authentication" in {
-      val userId = ParticipantId.random()
-      val customParser = new GrpcAuthenticationHeaderParser {
-        override def parse(ctx: Context): Option[GrpcAuthenticationHeader] =
-          Some(GrpcAuthenticationHeader.Legacy(userId))
-      }
-      val authenticator =
-        new SignedRequestsAuthenticator(new DummyConnectionsRepository {}, dummyNode, customParser)
+      val header = GrpcAuthenticationHeader.Legacy(ParticipantId.random())
+      val authenticator = buildAuthenticator(getHeader = () => Some(header))
 
       val result = authenticator.authenticated("test", request) { _ =>
         Future.successful(response)
@@ -61,11 +52,7 @@ class SignedRequestsAuthenticatorSpec extends WordSpec {
     }
 
     "reject wrong legacy authentication" in {
-      val customParser = new GrpcAuthenticationHeaderParser {
-        override def parse(ctx: Context): Option[GrpcAuthenticationHeader] = None
-      }
-      val authenticator =
-        new SignedRequestsAuthenticator(new DummyConnectionsRepository {}, dummyNode, customParser)
+      val authenticator = buildAuthenticator(getHeader = () => None)
 
       intercept[RuntimeException] {
         authenticator.authenticated("test", request) { _ =>
@@ -75,35 +62,24 @@ class SignedRequestsAuthenticatorSpec extends WordSpec {
     }
 
     "accept the public key authentication" in {
-      val userId = ParticipantId.random()
-      val connectionsRepository = new DummyConnectionsRepository {
-        override def getParticipantId(
-            encodedPublicKey: ECKeys.EncodedPublicKey
-        ): FutureEither[errors.ConnectorError, ParticipantId] = {
-          Future.successful(Right(userId)).toFutureEither
-        }
-      }
-
       val keys = ECKeys.generateKeyPair()
       val privateKey = keys.getPrivate
       val encodedPublicKey = toEncodePublicKey(keys.getPublic)
       val requestNonce = UUID.randomUUID.toString.getBytes.toVector
       val signature =
-        ECSignature.sign(privateKey, SignedRequestsHelper.merge(requestNonce, request.toByteArray).toArray)
+        ECSignature.sign(
+          privateKey,
+          SignedRequestsHelper.merge(RequestNonce(requestNonce), request.toByteArray).toArray
+        )
 
-      val customParser = new GrpcAuthenticationHeaderParser {
-        override def parse(ctx: Context): Option[GrpcAuthenticationHeader] = {
-          Some(
-            GrpcAuthenticationHeader
-              .PublicKeyBased(
-                requestNonce = requestNonce,
-                publicKey = encodedPublicKey,
-                signature = signature
-              )
-          )
-        }
-      }
-      val authenticator = new SignedRequestsAuthenticator(connectionsRepository, dummyNode, customParser)
+      val header = GrpcAuthenticationHeader
+        .PublicKeyBased(
+          requestNonce = RequestNonce(requestNonce),
+          publicKey = encodedPublicKey,
+          signature = signature
+        )
+
+      val authenticator = buildAuthenticator(getHeader = () => Some(header))
 
       val result = authenticator.authenticated("test", request) { _ =>
         Future.successful(response)
@@ -112,33 +88,39 @@ class SignedRequestsAuthenticatorSpec extends WordSpec {
     }
 
     "reject wrong public key authentication" in {
-      val userId = ParticipantId.random()
-      val connectionsRepository = new DummyConnectionsRepository {
-        override def getParticipantId(
-            encodedPublicKey: ECKeys.EncodedPublicKey
-        ): FutureEither[errors.ConnectorError, ParticipantId] = {
-          Future.successful(Right(userId)).toFutureEither
-        }
-      }
-
       val keys = ECKeys.generateKeyPair()
       val encodedPublicKey = toEncodePublicKey(keys.getPublic)
       // signed with the wrong key
       val signature = ECSignature.sign(ECKeys.generateKeyPair().getPrivate, request.toByteArray)
+      val header = GrpcAuthenticationHeader
+        .PublicKeyBased(
+          RequestNonce(UUID.randomUUID.toString.getBytes.toVector),
+          publicKey = encodedPublicKey,
+          signature = signature
+        )
 
-      val customParser = new GrpcAuthenticationHeaderParser {
-        override def parse(ctx: Context): Option[GrpcAuthenticationHeader] = {
-          Some(
-            GrpcAuthenticationHeader
-              .PublicKeyBased(
-                UUID.randomUUID.toString.getBytes.toVector,
-                publicKey = encodedPublicKey,
-                signature = signature
-              )
-          )
-        }
+      val authenticator = buildAuthenticator(getHeader = () => Some(header))
+
+      val result = authenticator.authenticated("test", request) { _ =>
+        Future.successful(response)
       }
-      val authenticator = new SignedRequestsAuthenticator(connectionsRepository, dummyNode, customParser)
+      intercept[Exception] {
+        result.futureValue
+      }
+    }
+
+    "reject public key authentication when the reusing a nonce" in {
+      val keys = ECKeys.generateKeyPair()
+      val encodedPublicKey = toEncodePublicKey(keys.getPublic)
+      val signature = ECSignature.sign(keys.getPrivate, request.toByteArray)
+      val header = GrpcAuthenticationHeader
+        .PublicKeyBased(
+          RequestNonce(UUID.randomUUID.toString.getBytes.toVector),
+          publicKey = encodedPublicKey,
+          signature = signature
+        )
+      val authenticator =
+        buildAuthenticator(getHeader = () => Some(header), burnNonce = () => throw new RuntimeException("Nonce reused"))
 
       val result = authenticator.authenticated("test", request) { _ =>
         Future.successful(response)
@@ -151,18 +133,13 @@ class SignedRequestsAuthenticatorSpec extends WordSpec {
     "accept the DID authentication" in {
       val did = "did:prism:test"
       val keyId = "key-1"
-      val userId = ParticipantId.random()
       val keys = ECKeys.generateKeyPair()
       val privateKey = keys.getPrivate
       val requestNonce = UUID.randomUUID.toString.getBytes.toVector
-      val signature =
-        ECSignature.sign(privateKey, SignedRequestsHelper.merge(requestNonce, request.toByteArray).toArray)
-
-      val connectionsRepository = new DummyConnectionsRepository {
-        override def getParticipantId(did: String): FutureEither[errors.ConnectorError, ParticipantId] = {
-          Future.successful(Right(userId)).toFutureEither
-        }
-      }
+      val signature = ECSignature.sign(
+        privateKey,
+        SignedRequestsHelper.merge(RequestNonce(requestNonce), request.toByteArray).toArray
+      )
 
       val nodeResponse = node_api
         .GetDidDocumentResponse()
@@ -173,21 +150,15 @@ class SignedRequestsAuthenticatorSpec extends WordSpec {
           )
         )
 
-      val customNode = new DummyNodeService {
-        override def getDidDocument(request: GetDidDocumentRequest): Future[GetDidDocumentResponse] = {
-          Future.successful(nodeResponse)
-        }
-      }
+      val header = GrpcAuthenticationHeader
+        .DIDBased(
+          requestNonce = RequestNonce(requestNonce),
+          did = did,
+          keyId = keyId,
+          signature = signature
+        )
 
-      val customParser = new GrpcAuthenticationHeaderParser {
-        override def parse(ctx: Context): Option[GrpcAuthenticationHeader] = {
-          Some(
-            GrpcAuthenticationHeader
-              .DIDBased(requestNonce = requestNonce, did = did, keyId = keyId, signature = signature)
-          )
-        }
-      }
-      val authenticator = new SignedRequestsAuthenticator(connectionsRepository, customNode, customParser)
+      val authenticator = buildAuthenticator(getHeader = () => Some(header), getDidResponse = () => Some(nodeResponse))
 
       val result = authenticator.authenticated("test", request) { _ =>
         Future.successful(response)
@@ -198,16 +169,9 @@ class SignedRequestsAuthenticatorSpec extends WordSpec {
     "reject wrong DID authentication" in {
       val did = "did:prism:test"
       val keyId = "key-1"
-      val userId = ParticipantId.random()
       val keys = ECKeys.generateKeyPair()
       // The request is signed with a different key
       val signature = ECSignature.sign(ECKeys.generateKeyPair().getPrivate, request.toByteArray)
-
-      val connectionsRepository = new DummyConnectionsRepository {
-        override def getParticipantId(did: String): FutureEither[errors.ConnectorError, ParticipantId] = {
-          Future.successful(Right(userId)).toFutureEither
-        }
-      }
 
       val nodeResponse = node_api
         .GetDidDocumentResponse()
@@ -218,22 +182,15 @@ class SignedRequestsAuthenticatorSpec extends WordSpec {
           )
         )
 
-      val customNode = new DummyNodeService {
-        override def getDidDocument(request: GetDidDocumentRequest): Future[GetDidDocumentResponse] = {
-          Future.successful(nodeResponse)
-        }
-      }
+      val header = GrpcAuthenticationHeader
+        .DIDBased(
+          RequestNonce(UUID.randomUUID.toString.getBytes.toVector),
+          did = did,
+          keyId = keyId,
+          signature = signature
+        )
 
-      val customParser = new GrpcAuthenticationHeaderParser {
-        override def parse(ctx: Context): Option[GrpcAuthenticationHeader] = {
-          Some(
-            GrpcAuthenticationHeader
-              .DIDBased(UUID.randomUUID.toString.getBytes.toVector, did = did, keyId = keyId, signature = signature)
-          )
-        }
-      }
-      val authenticator = new SignedRequestsAuthenticator(connectionsRepository, customNode, customParser)
-
+      val authenticator = buildAuthenticator(getHeader = () => Some(header), getDidResponse = () => Some(nodeResponse))
       val result = authenticator.authenticated("test", request) { _ =>
         Future.successful(response)
       }
@@ -249,21 +206,30 @@ class SignedRequestsAuthenticatorSpec extends WordSpec {
       val privateKey = keys.getPrivate
       val signature = ECSignature.sign(privateKey, request.toByteArray)
 
-      val connectionsRepository = new DummyConnectionsRepository {
-        override def getParticipantId(did: String): FutureEither[errors.ConnectorError, ParticipantId] = {
-          Future.successful(Left(UnknownValueError("did", "not found"))).toFutureEither
-        }
+      val connectionsRepository = mock[ConnectionsRepository]
+      connectionsRepository.getParticipantId(any[String]).returns {
+        Future.successful(Left(UnknownValueError("did", "not found"))).toFutureEither
       }
 
       val customParser = new GrpcAuthenticationHeaderParser {
         override def parse(ctx: Context): Option[GrpcAuthenticationHeader] = {
           Some(
             GrpcAuthenticationHeader
-              .DIDBased(UUID.randomUUID.toString.getBytes.toVector, did = did, keyId = keyId, signature = signature)
+              .DIDBased(
+                RequestNonce(UUID.randomUUID.toString.getBytes.toVector),
+                did = did,
+                keyId = keyId,
+                signature = signature
+              )
           )
         }
       }
-      val authenticator = new SignedRequestsAuthenticator(connectionsRepository, dummyNode, customParser)
+      val authenticator = new SignedRequestsAuthenticator(
+        connectionsRepository,
+        mock[RequestNoncesRepository],
+        mock[NodeServiceGrpc.NodeService],
+        customParser
+      )
 
       val result = authenticator.authenticated("test", request) { _ =>
         Future.successful(response)
@@ -276,31 +242,17 @@ class SignedRequestsAuthenticatorSpec extends WordSpec {
     "fail when the did is not in the node" in {
       val did = "did:prism:test"
       val keyId = "key-1"
-      val userId = ParticipantId.random()
       val keys = ECKeys.generateKeyPair()
       val signature = ECSignature.sign(keys.getPrivate, request.toByteArray)
 
-      val connectionsRepository = new DummyConnectionsRepository {
-        override def getParticipantId(did: String): FutureEither[errors.ConnectorError, ParticipantId] = {
-          Future.successful(Right(userId)).toFutureEither
-        }
-      }
-
-      val customNode = new DummyNodeService {
-        override def getDidDocument(request: GetDidDocumentRequest): Future[GetDidDocumentResponse] = {
-          Future.failed(new RuntimeException("DID not found"))
-        }
-      }
-
-      val customParser = new GrpcAuthenticationHeaderParser {
-        override def parse(ctx: Context): Option[GrpcAuthenticationHeader] = {
-          Some(
-            GrpcAuthenticationHeader
-              .DIDBased(UUID.randomUUID.toString.getBytes.toVector, did = did, keyId = keyId, signature = signature)
-          )
-        }
-      }
-      val authenticator = new SignedRequestsAuthenticator(connectionsRepository, customNode, customParser)
+      val header = GrpcAuthenticationHeader
+        .DIDBased(
+          RequestNonce(UUID.randomUUID.toString.getBytes.toVector),
+          did = did,
+          keyId = keyId,
+          signature = signature
+        )
+      val authenticator = buildAuthenticator(getHeader = () => Some(header), getDidResponse = () => None)
 
       val result = authenticator.authenticated("test", request) { _ =>
         Future.successful(response)
@@ -313,15 +265,8 @@ class SignedRequestsAuthenticatorSpec extends WordSpec {
     "fail when the key doesn't belong to the did" in {
       val did = "did:prism:test"
       val keyId = "key-1"
-      val userId = ParticipantId.random()
       val keys = ECKeys.generateKeyPair()
       val signature = ECSignature.sign(keys.getPrivate, request.toByteArray)
-
-      val connectionsRepository = new DummyConnectionsRepository {
-        override def getParticipantId(did: String): FutureEither[errors.ConnectorError, ParticipantId] = {
-          Future.successful(Right(userId)).toFutureEither
-        }
-      }
 
       val nodeResponse = node_api
         .GetDidDocumentResponse()
@@ -332,28 +277,51 @@ class SignedRequestsAuthenticatorSpec extends WordSpec {
           )
         )
 
-      val customNode = new DummyNodeService {
-        override def getDidDocument(request: GetDidDocumentRequest): Future[GetDidDocumentResponse] = {
-          Future.successful(nodeResponse)
-        }
-      }
+      val header = GrpcAuthenticationHeader
+        .DIDBased(
+          RequestNonce(UUID.randomUUID.toString.getBytes.toVector),
+          did = did,
+          keyId = keyId + "1", // set a different key id
+          signature = signature
+        )
 
-      val customParser = new GrpcAuthenticationHeaderParser {
-        override def parse(ctx: Context): Option[GrpcAuthenticationHeader] = {
-          // set a different key id
-          Some(
-            GrpcAuthenticationHeader
-              .DIDBased(
-                UUID.randomUUID.toString.getBytes.toVector,
-                did = did,
-                keyId = keyId + "1",
-                signature = signature
-              )
+      val authenticator = buildAuthenticator(getHeader = () => Some(header), getDidResponse = () => Some(nodeResponse))
+      val result = authenticator.authenticated("test", request) { _ =>
+        Future.successful(response)
+      }
+      intercept[RuntimeException] {
+        result.futureValue
+      }
+    }
+
+    "fail when the nonce is reused" in {
+      val did = "did:prism:test"
+      val keyId = "key-1"
+      val keys = ECKeys.generateKeyPair()
+      val signature = ECSignature.sign(keys.getPrivate, request.toByteArray)
+
+      val nodeResponse = node_api
+        .GetDidDocumentResponse()
+        .withDocument(
+          node_api.DIDData(
+            id = did,
+            publicKeys = List(createNodePublicKey(keyId, keys.getPublic))
           )
-        }
-      }
-      val authenticator = new SignedRequestsAuthenticator(connectionsRepository, customNode, customParser)
+        )
 
+      val header = GrpcAuthenticationHeader
+        .DIDBased(
+          RequestNonce(UUID.randomUUID.toString.getBytes.toVector),
+          did = did,
+          keyId = keyId + "1", // set a different key id
+          signature = signature
+        )
+
+      val authenticator = buildAuthenticator(
+        getHeader = () => Some(header),
+        getDidResponse = () => Some(nodeResponse),
+        burnNonce = () => throw new RuntimeException("Nonce already used")
+      )
       val result = authenticator.authenticated("test", request) { _ =>
         Future.successful(response)
       }
@@ -373,41 +341,47 @@ class SignedRequestsAuthenticatorSpec extends WordSpec {
       keyData = node_api.PublicKey.KeyData.EcKeyData(node_api.ECKeyData(curve = ECKeys.CURVE_NAME, x = x, y = y))
     )
   }
-}
 
-object SignedRequestsAuthenticatorSpec {
-  trait DummyConnectionsRepository extends ConnectionsRepository {
-    override def insertToken(initiator: ParticipantId, token: TokenString): FutureEither[Nothing, TokenString] = ???
+  private def buildAuthenticator(
+      getuserId: () => Option[ParticipantId] = () => Some(ParticipantId.random()),
+      getHeader: () => Option[GrpcAuthenticationHeader],
+      burnNonce: () => Unit = () => (),
+      getDidResponse: () => Option[node_api.GetDidDocumentResponse] = () => None
+  ): Authenticator = {
+    val connectionsRepository = mock[ConnectionsRepository]
+    connectionsRepository.getParticipantId(any[String]).returns {
+      getuserId() match {
+        case Some(userId) => Future.successful(Right(userId)).toFutureEither
+        case None => Future.failed(new RuntimeException("Missing user")).toFutureEither
+      }
+    }
 
-    override def getTokenInfo(token: TokenString): FutureEither[errors.ConnectorError, ParticipantInfo] = ???
+    connectionsRepository.getParticipantId(any[EncodedPublicKey]).returns {
+      getuserId() match {
+        case Some(userId) => Future.successful(Right(userId)).toFutureEither
+        case None => Future.failed(new RuntimeException("Missing user")).toFutureEither
+      }
+    }
 
-    override def getParticipantId(
-        encodedPublicKey: ECKeys.EncodedPublicKey
-    ): FutureEither[errors.ConnectorError, ParticipantId] = ???
+    val customParser = new GrpcAuthenticationHeaderParser {
+      override def parse(ctx: Context): Option[GrpcAuthenticationHeader] = {
+        getHeader()
+      }
+    }
 
-    override def getParticipantId(did: String): FutureEither[errors.ConnectorError, ParticipantId] = ???
+    val requestNoncesRepository = mock[RequestNoncesRepository]
+    requestNoncesRepository
+      .burn(any[ParticipantId], any[RequestNonce])
+      .returns(Future(burnNonce()).map(Right(_)).toFutureEither)
 
-    override def addConnectionFromToken(
-        token: TokenString,
-        publicKey: ECKeys.EncodedPublicKey
-    ): FutureEither[errors.ConnectorError, (ParticipantId, ConnectionInfo)] = ???
+    val customNode = mock[NodeServiceGrpc.NodeService]
+    customNode.getDidDocument(*).returns {
+      getDidResponse() match {
+        case Some(response) => Future.successful(response)
+        case None => Future.failed(new RuntimeException("DID Document not found"))
+      }
+    }
 
-    override def getConnectionsPaginated(
-        participant: ParticipantId,
-        limit: Int,
-        lastSeenConnectionId: Option[ConnectionId]
-    ): FutureEither[errors.ConnectorError, Seq[ConnectionInfo]] = ???
-
-    def getConnectionByToken(token: TokenString): FutureEither[ConnectorError, Option[Connection]] = ???
-  }
-
-  trait DummyNodeService extends node_api.NodeServiceGrpc.NodeService {
-    override def getDidDocument(request: GetDidDocumentRequest): Future[GetDidDocumentResponse] = ???
-
-    override def createDID(request: SignedAtalaOperation): Future[CreateDIDResponse] = ???
-
-    override def issueCredential(request: SignedAtalaOperation): Future[IssueCredentialResponse] = ???
-
-    override def revokeCredential(request: SignedAtalaOperation): Future[RevokeCredentialResponse] = ???
+    new SignedRequestsAuthenticator(connectionsRepository, requestNoncesRepository, customNode, customParser)
   }
 }

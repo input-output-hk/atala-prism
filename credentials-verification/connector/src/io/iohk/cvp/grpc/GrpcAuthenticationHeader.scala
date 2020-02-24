@@ -3,6 +3,7 @@ package io.iohk.cvp.grpc
 import java.util.Base64
 
 import io.grpc.Metadata
+import io.iohk.connector.model.RequestNonce
 import io.iohk.cvp.crypto.ECKeys.EncodedPublicKey
 import io.iohk.cvp.models.ParticipantId
 
@@ -18,14 +19,14 @@ sealed trait GrpcAuthenticationHeader {
       case GrpcAuthenticationHeader.PublicKeyBased(requestNonce, publicKey, signature) =>
         val publicKeyStr = Base64.getUrlEncoder.encodeToString(publicKey.bytes.toArray)
         val signatureStr = Base64.getUrlEncoder.encodeToString(signature.toArray)
-        val requestNonceStr = Base64.getUrlEncoder.encodeToString(requestNonce.toArray)
+        val requestNonceStr = Base64.getUrlEncoder.encodeToString(requestNonce.bytes.toArray)
         metadata.put(PublicKeyKeys.metadata, publicKeyStr)
         metadata.put(SignatureKeys.metadata, signatureStr)
         metadata.put(RequestNonceKeys.metadata, requestNonceStr)
 
       case GrpcAuthenticationHeader.DIDBased(requestNonce, did, keyId, signature) =>
         val signatureStr = Base64.getUrlEncoder.encodeToString(signature.toArray)
-        val requestNonceStr = Base64.getUrlEncoder.encodeToString(requestNonce.toArray)
+        val requestNonceStr = Base64.getUrlEncoder.encodeToString(requestNonce.bytes.toArray)
         metadata.put(DidKeys.metadata, did)
         metadata.put(DidKeyIdKeys.metadata, keyId)
         metadata.put(DidSignatureKeys.metadata, signatureStr)
@@ -39,8 +40,8 @@ sealed trait GrpcAuthenticationHeader {
 object GrpcAuthenticationHeader {
 
   final case class Legacy(userId: ParticipantId) extends GrpcAuthenticationHeader
-  final case class PublicKeyBased(requestNonce: Vector[Byte], publicKey: EncodedPublicKey, signature: Vector[Byte])
+  final case class PublicKeyBased(requestNonce: RequestNonce, publicKey: EncodedPublicKey, signature: Vector[Byte])
       extends GrpcAuthenticationHeader
-  final case class DIDBased(requestNonce: Vector[Byte], did: String, keyId: String, signature: Vector[Byte])
+  final case class DIDBased(requestNonce: RequestNonce, did: String, keyId: String, signature: Vector[Byte])
       extends GrpcAuthenticationHeader
 }

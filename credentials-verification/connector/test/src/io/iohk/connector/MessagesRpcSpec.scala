@@ -5,6 +5,7 @@ import java.util.{Base64, UUID}
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.grpc.{Status, StatusRuntimeException}
+import io.iohk.connector.model.RequestNonce
 import io.iohk.connector.repositories.daos.MessagesDAO
 import io.iohk.cvp.connector.protos._
 import io.iohk.cvp.crypto.ECKeys.toEncodePublicKey
@@ -50,7 +51,10 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
 
       val requestNonce = UUID.randomUUID().toString.getBytes.toVector
       val signature =
-        ECSignature.sign(privateKey, SignedRequestsHelper.merge(requestNonce, request.toByteArray).toArray)
+        ECSignature.sign(
+          privateKey,
+          SignedRequestsHelper.merge(RequestNonce(requestNonce), request.toByteArray).toArray
+        )
       val issuerId = createIssuer("Issuer", Some(encodedPublicKey))
 
       val messages = createExampleMessages(issuerId)

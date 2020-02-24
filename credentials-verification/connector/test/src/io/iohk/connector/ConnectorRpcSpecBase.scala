@@ -10,7 +10,12 @@ import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.iohk.connector.model._
 import io.iohk.connector.payments.BraintreePayments
 import io.iohk.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO, MessagesDAO, ParticipantsDAO}
-import io.iohk.connector.repositories.{ConnectionsRepository, MessagesRepository, PaymentsRepository}
+import io.iohk.connector.repositories.{
+  ConnectionsRepository,
+  MessagesRepository,
+  PaymentsRepository,
+  RequestNoncesRepository
+}
 import io.iohk.connector.services.{ConnectionsService, MessagesService}
 import io.iohk.cvp.connector.protos.ConnectorServiceGrpc
 import io.iohk.cvp.crypto.ECKeys.EncodedPublicKey
@@ -101,7 +106,7 @@ abstract class RpcSpecBase extends PostgresRepositorySpec with BeforeAndAfterEac
             appExecutor.execute { () =>
               applier.apply(
                 GrpcAuthenticationHeader
-                  .PublicKeyBased(requestNonce, publicKey, signature)
+                  .PublicKeyBased(RequestNonce(requestNonce), publicKey, signature)
                   .toMetadata
               )
             }
@@ -121,7 +126,8 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
 
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 20.millis)
 
-  override val tables = List("messages", "connections", "connection_tokens", "holder_public_keys", "participants")
+  override val tables =
+    List("request_nonces", "messages", "connections", "connection_tokens", "holder_public_keys", "participants")
   override def services = Seq(
     ConnectorServiceGrpc
       .bindService(
@@ -139,9 +145,15 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
   lazy val paymentsRepository = new PaymentsRepository(database)(executionContext)
   lazy val connectionsService = new ConnectionsService(connectionsRepository, paymentsRepository, braintreePayments)
   lazy val messagesRepository = new MessagesRepository(database)(executionContext)
+  lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
   lazy val nodeMock = mock[io.iohk.nodenew.node_api.NodeServiceGrpc.NodeService]
   lazy val authenticator =
-    new SignedRequestsAuthenticator(connectionsRepository, nodeMock, GrpcAuthenticationHeaderParser)
+    new SignedRequestsAuthenticator(
+      connectionsRepository,
+      requestNoncesRepository,
+      nodeMock,
+      GrpcAuthenticationHeaderParser
+    )
 
   lazy val messagesService = new MessagesService(messagesRepository)
   lazy val connectorService =
