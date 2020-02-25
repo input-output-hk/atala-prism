@@ -1,12 +1,16 @@
 package io.iohk.connector
 
+import java.util.{Base64, UUID}
+
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.grpc.{Status, StatusRuntimeException}
+import io.iohk.connector.model.RequestNonce
 import io.iohk.connector.repositories.daos.MessagesDAO
 import io.iohk.cvp.connector.protos._
 import io.iohk.cvp.crypto.ECKeys.toEncodePublicKey
 import io.iohk.cvp.crypto.{ECKeys, ECSignature}
+import io.iohk.cvp.grpc.SignedRequestsHelper
 
 class MessagesRpcSpec extends ConnectorRpcSpecBase {
   "SendMessage" should {
@@ -45,12 +49,17 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
       val encodedPublicKey = toEncodePublicKey(keys.getPublic)
       val request = GetMessagesPaginatedRequest("", 10)
 
-      val signature = ECSignature.sign(privateKey, request.toByteArray)
+      val requestNonce = UUID.randomUUID().toString.getBytes.toVector
+      val signature =
+        ECSignature.sign(
+          privateKey,
+          SignedRequestsHelper.merge(RequestNonce(requestNonce), request.toByteArray).toArray
+        )
       val issuerId = createIssuer("Issuer", Some(encodedPublicKey))
 
       val messages = createExampleMessages(issuerId)
 
-      usingApiAs(signature, encodedPublicKey) { blockingStub =>
+      usingApiAs(requestNonce, signature, encodedPublicKey) { blockingStub =>
         val response = blockingStub.getMessagesPaginated(request)
         response.messages.map(m => (m.id, m.connectionId)) mustBe
           messages.take(10).map { case (messageId, connectionId) => (messageId.id.toString, connectionId.id.toString) }

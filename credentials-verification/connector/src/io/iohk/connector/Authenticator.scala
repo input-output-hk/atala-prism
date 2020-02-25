@@ -1,10 +1,14 @@
 package io.iohk.connector
 
+import java.security.PublicKey
+
+import io.grpc.Context
 import io.iohk.connector.errors.{ConnectorError, ErrorSupport, SignatureVerificationError}
-import io.iohk.connector.repositories.ConnectionsRepository
+import io.iohk.connector.model.RequestNonce
+import io.iohk.connector.repositories.{ConnectionsRepository, RequestNoncesRepository}
 import io.iohk.cvp.crypto.ECKeys.toPublicKey
 import io.iohk.cvp.crypto.{ECKeys, ECSignature}
-import io.iohk.cvp.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser}
+import io.iohk.cvp.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser, SignedRequestsHelper}
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither._
@@ -17,8 +21,6 @@ import scala.util.{Failure, Success}
 
 trait Authenticator {
 
-  import Authenticator._
-
   def logger: Logger
 
   def authenticated[Request <: GeneratedMessage, Response <: GeneratedMessage](
@@ -26,33 +28,20 @@ trait Authenticator {
       request: Request
   )(
       f: ParticipantId => Future[Response]
-  )(implicit ec: ExecutionContext, headersParser: RequestHeadersParser): Future[Response]
+  )(implicit ec: ExecutionContext): Future[Response]
 
   def public[Request <: GeneratedMessage, Response <: GeneratedMessage](methodName: String, request: Request)(
       f: => Future[Response]
   )(implicit ec: ExecutionContext): Future[Response]
 }
 
-object Authenticator {
-
-  trait RequestHeadersParser {
-    def parseAuthenticationHeader: Option[GrpcAuthenticationHeader]
-  }
-
-  implicit val gRPCHeadersParser: RequestHeadersParser = new RequestHeadersParser {
-    override def parseAuthenticationHeader: Option[GrpcAuthenticationHeader] = {
-      GrpcAuthenticationHeaderParser.current()
-    }
-  }
-}
-
 class SignedRequestsAuthenticator(
     connectionsRepository: ConnectionsRepository,
-    nodeClient: node_api.NodeServiceGrpc.NodeService
+    requestNoncesRepository: RequestNoncesRepository,
+    nodeClient: node_api.NodeServiceGrpc.NodeService,
+    grpcAuthenticationHeaderParser: GrpcAuthenticationHeaderParser
 ) extends Authenticator
     with ErrorSupport {
-
-  import Authenticator._
 
   override val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
@@ -93,6 +82,34 @@ class SignedRequestsAuthenticator(
         )
     }
 
+  /**
+    * A request must be signed by prepending the nonce, let's say requestNonce|request
+    *
+    * The signature is valid if the signature matches and the nonce hasn't been seen before.
+    *
+    * After the request is validated successfully, the request nonce is burn to prevent replay attacks.
+    */
+  private def verifyRequestSignature(
+      participantId: ParticipantId,
+      publicKey: PublicKey,
+      request: Array[Byte],
+      requestNonce: RequestNonce,
+      signature: Vector[Byte]
+  )(implicit ec: ExecutionContext): FutureEither[SignatureVerificationError, ParticipantId] = {
+
+    val payload = SignedRequestsHelper.merge(requestNonce, request).toArray
+    for {
+      _ <- Either
+        .cond(
+          ECSignature.verify(publicKey = publicKey, data = payload, signature = signature),
+          participantId,
+          SignatureVerificationError()
+        )
+        .toFutureEither
+      _ <- requestNoncesRepository.burn(participantId, requestNonce)
+    } yield participantId
+  }
+
   private def authenticate(request: Array[Byte], authenticationHeader: GrpcAuthenticationHeader)(
       implicit executionContext: ExecutionContext
   ): FutureEither[ConnectorError, ParticipantId] = {
@@ -108,16 +125,17 @@ class SignedRequestsAuthenticator(
   ): FutureEither[ConnectorError, ParticipantId] = {
 
     for {
+      // first we verify that we know the DID to avoid performing costly calls if we don't know it
+      participantId <- connectionsRepository.getParticipantId(authenticationHeader.publicKey)
       signature <- Future { Right(authenticationHeader.signature) }.toFutureEither
       publicKey <- Future { Right(toPublicKey(authenticationHeader.publicKey)) }.toFutureEither
-      _ <- Either
-        .cond(
-          ECSignature.verify(publicKey, request, signature),
-          (),
-          SignatureVerificationError()
-        )
-        .toFutureEither
-      participantId <- connectionsRepository.getParticipantId(authenticationHeader.publicKey)
+      _ <- verifyRequestSignature(
+        participantId = participantId,
+        publicKey = publicKey,
+        signature = signature,
+        request = request,
+        requestNonce = authenticationHeader.requestNonce
+      )
     } yield participantId
   }
 
@@ -146,13 +164,13 @@ class SignedRequestsAuthenticator(
         .getOrElse(throw new RuntimeException("Unknown public key id"))
 
       // Verify the actual signature
-      _ <- Either
-        .cond(
-          ECSignature.verify(publicKey, request, authenticationHeader.signature),
-          (),
-          SignatureVerificationError()
-        )
-        .toFutureEither
+      _ <- verifyRequestSignature(
+        participantId = participantId,
+        publicKey = publicKey,
+        signature = authenticationHeader.signature,
+        request = request,
+        requestNonce = authenticationHeader.requestNonce
+      )
     } yield participantId
   }
 
@@ -161,9 +179,11 @@ class SignedRequestsAuthenticator(
       request: Request
   )(
       f: ParticipantId => Future[Response]
-  )(implicit ec: ExecutionContext, headersParser: RequestHeadersParser): Future[Response] = {
+  )(implicit ec: ExecutionContext): Future[Response] = {
     {
-      headersParser.parseAuthenticationHeader
+      val ctx = Context.current()
+      grpcAuthenticationHeaderParser
+        .parse(ctx)
         .map(authenticate(request.toByteArray, _))
         .map { value =>
           value.map(v => withLogging(methodName, request, v) { f(v) }).successMap(identity)

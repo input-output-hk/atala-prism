@@ -1,6 +1,7 @@
 package io.iohk.connector
 
 import java.time.Instant
+import java.util.UUID
 import java.util.concurrent.{Executor, TimeUnit}
 
 import doobie.implicits._
@@ -9,11 +10,16 @@ import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.iohk.connector.model._
 import io.iohk.connector.payments.BraintreePayments
 import io.iohk.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO, MessagesDAO, ParticipantsDAO}
-import io.iohk.connector.repositories.{ConnectionsRepository, MessagesRepository, PaymentsRepository}
+import io.iohk.connector.repositories.{
+  ConnectionsRepository,
+  MessagesRepository,
+  PaymentsRepository,
+  RequestNoncesRepository
+}
 import io.iohk.connector.services.{ConnectionsService, MessagesService}
 import io.iohk.cvp.connector.protos.ConnectorServiceGrpc
 import io.iohk.cvp.crypto.ECKeys.EncodedPublicKey
-import io.iohk.cvp.grpc.{GrpcAuthenticationHeader, GrpcAuthenticatorInterceptor}
+import io.iohk.cvp.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser, GrpcAuthenticatorInterceptor}
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.repositories.PostgresRepositorySpec
 import org.scalatest.BeforeAndAfterEach
@@ -23,7 +29,7 @@ import scala.concurrent.duration.DurationLong
 
 trait ApiTestHelper[STUB] {
   def apply[T](participantId: ParticipantId)(f: STUB => T): T
-  def apply[T](signature: Vector[Byte], publicKey: EncodedPublicKey)(f: STUB => T): T
+  def apply[T](requestNonce: Vector[Byte], signature: Vector[Byte], publicKey: EncodedPublicKey)(f: STUB => T): T
   def unlogged[T](f: STUB => T): T
 }
 
@@ -87,7 +93,9 @@ abstract class RpcSpecBase extends PostgresRepositorySpec with BeforeAndAfterEac
         val blockingStub = stubFactory(channelHandle, callOptions)
         f(blockingStub)
       }
-      override def apply[T](signature: Vector[Byte], publicKey: EncodedPublicKey)(f: STUB => T): T = {
+      override def apply[T](requestNonce: Vector[Byte], signature: Vector[Byte], publicKey: EncodedPublicKey)(
+          f: STUB => T
+      ): T = {
 
         val callOptions = CallOptions.DEFAULT.withCallCredentials(new CallCredentials {
           override def applyRequestMetadata(
@@ -96,7 +104,11 @@ abstract class RpcSpecBase extends PostgresRepositorySpec with BeforeAndAfterEac
               applier: CallCredentials.MetadataApplier
           ): Unit = {
             appExecutor.execute { () =>
-              applier.apply(GrpcAuthenticationHeader.PublicKeyBased(publicKey, signature).toMetadata)
+              applier.apply(
+                GrpcAuthenticationHeader
+                  .PublicKeyBased(RequestNonce(requestNonce), publicKey, signature)
+                  .toMetadata
+              )
             }
           }
 
@@ -114,7 +126,8 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
 
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 20.millis)
 
-  override val tables = List("messages", "connections", "connection_tokens", "holder_public_keys", "participants")
+  override val tables =
+    List("request_nonces", "messages", "connections", "connection_tokens", "holder_public_keys", "participants")
   override def services = Seq(
     ConnectorServiceGrpc
       .bindService(
@@ -132,8 +145,15 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
   lazy val paymentsRepository = new PaymentsRepository(database)(executionContext)
   lazy val connectionsService = new ConnectionsService(connectionsRepository, paymentsRepository, braintreePayments)
   lazy val messagesRepository = new MessagesRepository(database)(executionContext)
+  lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
   lazy val nodeMock = mock[io.iohk.nodenew.node_api.NodeServiceGrpc.NodeService]
-  lazy val authenticator = new SignedRequestsAuthenticator(connectionsRepository, nodeMock)
+  lazy val authenticator =
+    new SignedRequestsAuthenticator(
+      connectionsRepository,
+      requestNoncesRepository,
+      nodeMock,
+      GrpcAuthenticationHeaderParser
+    )
 
   lazy val messagesService = new MessagesService(messagesRepository)
   lazy val connectorService =

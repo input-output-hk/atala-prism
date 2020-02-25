@@ -3,7 +3,12 @@ package io.iohk.connector
 import com.typesafe.config.{Config, ConfigFactory}
 import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
 import io.iohk.connector.payments.BraintreePayments
-import io.iohk.connector.repositories.{ConnectionsRepository, MessagesRepository, PaymentsRepository}
+import io.iohk.connector.repositories.{
+  ConnectionsRepository,
+  MessagesRepository,
+  PaymentsRepository,
+  RequestNoncesRepository
+}
 import io.iohk.connector.services.{ConnectionsService, MessagesService}
 import io.iohk.cvp.admin.protos.AdminServiceGrpc
 import io.iohk.cvp.admin.{AdminRepository, AdminServiceImpl}
@@ -19,7 +24,7 @@ import io.iohk.cvp.connector.protos._
 import io.iohk.cvp.cstore.CredentialsStoreService
 import io.iohk.cvp.cstore.protos.CredentialsStoreServiceGrpc
 import io.iohk.cvp.cstore.services.{StoreIndividualsService, StoreUsersService, StoredCredentialsService}
-import io.iohk.cvp.grpc.GrpcAuthenticatorInterceptor
+import io.iohk.cvp.grpc.{GrpcAuthenticationHeaderParser, GrpcAuthenticatorInterceptor}
 import io.iohk.cvp.intdemo.{CredentialStatusRepository, IDServiceImpl}
 import io.iohk.cvp.intdemo.protos.IDServiceGrpc
 import io.iohk.cvp.repositories.{SchemaMigrations, TransactorFactory}
@@ -74,9 +79,15 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     val connectionsRepository = new ConnectionsRepository.PostgresImpl(xa)(executionContext)
     val paymentsRepository = new PaymentsRepository(xa)(executionContext)
     val messagesRepository = new MessagesRepository(xa)(executionContext)
+    val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(xa)(executionContext)
 
     // authenticator
-    val authenticator = new SignedRequestsAuthenticator(connectionsRepository, node)
+    val authenticator = new SignedRequestsAuthenticator(
+      connectionsRepository,
+      requestNoncesRepository,
+      node,
+      GrpcAuthenticationHeaderParser
+    )
 
     // connector services
     val connectionsService =

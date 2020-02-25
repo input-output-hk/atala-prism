@@ -1,11 +1,12 @@
 package io.iohk.cvp.cmanager.grpc.services
 
 import io.iohk.connector.{RpcSpecBase, SignedRequestsAuthenticator}
-import io.iohk.connector.repositories.ConnectionsRepository
+import io.iohk.connector.repositories.{ConnectionsRepository, RequestNoncesRepository}
 import io.iohk.cvp.cmanager.models.{Issuer, IssuerGroup}
 import io.iohk.cvp.cmanager.protos
 import io.iohk.cvp.cmanager.protos.GroupsServiceGrpc
 import io.iohk.cvp.cmanager.repositories.{IssuerGroupsRepository, IssuersRepository}
+import io.iohk.cvp.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.cvp.models.ParticipantId
 import org.mockito.MockitoSugar._
 import org.scalatest.EitherValues._
@@ -23,8 +24,15 @@ class GroupsServiceImplSpec extends RpcSpecBase {
   private lazy val issuerGroupsRepository = new IssuerGroupsRepository(database)
   private lazy val issuersRepository = new IssuersRepository(database)
   private lazy val connectionsRepository = new ConnectionsRepository.PostgresImpl(database)(executionContext)
+  private lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
   private lazy val nodeMock = mock[io.iohk.nodenew.node_api.NodeServiceGrpc.NodeService]
-  private lazy val authenticator = new SignedRequestsAuthenticator(connectionsRepository, nodeMock)
+  private lazy val authenticator =
+    new SignedRequestsAuthenticator(
+      connectionsRepository,
+      requestNoncesRepository,
+      nodeMock,
+      GrpcAuthenticationHeaderParser
+    )
 
   override def services = Seq(
     GroupsServiceGrpc
