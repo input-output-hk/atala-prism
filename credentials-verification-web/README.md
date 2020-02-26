@@ -16,14 +16,14 @@ Lastly, to run the project use `npm run start` or just `npm start`.
 
 First of all, ensure you have .protos compiled. For more information go to [Compile .protos section](#Compile-.protos)
 
-Run envoy proxy. Envoy is just for dev environment
+Run envoy proxy. Envoy is just for dev environment.
 1. Edit `./envoy/envoy.yaml` setting your host ip in `clusters.hosts[socket_address.address]`. 
 1. Go to ./envoy directory and run `docker build -t envoy:{versionTag} .`. 
 1. Start envoy running `docker run -d --name {containerName} -p 9901:9901 -p 10000:10000 envoy:{versionTag}`
 
 To run backend see [Run backend doc](../credentials-verification/docs/connector/README.md)
-- Connector `mill connector.run`
-- Wallet `mill wallet.run`
+- Connector `mill -i connector.run`
+- Wallet `mill -i wallet.run`
 
 Configure envoy proxy "listening port" at .env.local file. For more information about environment variables see [Configurations](#Configurations)
 
@@ -44,7 +44,7 @@ Then run
 react-scripts package use internally .dotenv. For more information see [adding-custom-environment-variables](https://create-react-app.dev/docs/adding-custom-environment-variables).
 
 Environment variables are configured in `.env` file.
-For development purposes copy `.env` file to `.env.local`. This file is excluded from git and overrides `.env`  for all environments except test.
+For development purposes copy `.env` file to `.env.local`. This file is excluded from git and overrides `.env` for all environments except test.
 
 ### Docker build
 
