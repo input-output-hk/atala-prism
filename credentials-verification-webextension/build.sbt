@@ -4,6 +4,7 @@ import chrome.permissions.Permission.API
 import net.lullabyte.{Chrome, ChromeSbtPlugin}
 
 resolvers += Resolver.sonatypeRepo("releases")
+resolvers += Resolver.bintrayRepo("oyvindberg", "ScalablyTyped")
 
 name := "geud-wallet"
 version := "0.1"
@@ -35,6 +36,7 @@ webpackBundlingMode := BundlingMode.Application
 
 npmDependencies in Compile += "uuid" -> "3.1.0"
 npmDependencies in Compile += "elliptic" -> "6.5.2"
+npmDependencies in Compile += "bip39" -> "3.0.2"
 
 fastOptJsLib := (webpack in (Compile, fastOptJS)).value.head
 fullOptJsLib := (webpack in (Compile, fullOptJS)).value.head
@@ -106,6 +108,9 @@ libraryDependencies += "io.circe" %%% "circe-generic" % circe
 libraryDependencies += "io.circe" %%% "circe-parser" % circe
 
 libraryDependencies += "com.softwaremill.sttp" %%% "core" % sttp
+
+libraryDependencies += ScalablyTyped.B.bip39
+libraryDependencies += ScalablyTyped.B.bip32
 
 addCompilerPlugin(
   "org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full
