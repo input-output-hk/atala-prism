@@ -7,6 +7,9 @@ import { APIContext } from '../providers/ApiContext';
 import '../../App.scss';
 import './_main.scss';
 import { theme } from '../../helpers/themeHelper';
+import i18nInitialise from '../../i18nInitialisator';
+import I18nError from '../I18nError';
+import Logger from '../../helpers/Logger';
 
 const MESSAGE_DURATION = 3;
 const MAX_MESSAGES_TO_SHOW = 3;
@@ -16,15 +19,22 @@ message.config({
   maxCount: MAX_MESSAGES_TO_SHOW
 });
 
-const Main = ({ apiProvider }) => (
-  <main>
-    <APIContext.Provider value={apiProvider}>
-      <div className={`AppContainer ${theme.class()}`}>
-        <Router />
-      </div>
-    </APIContext.Provider>
-  </main>
-);
+const Main = ({ apiProvider }) => {
+  i18nInitialise().catch(error => {
+    Logger.error('[index.i18nInitialise] Error while initialising i18n', error);
+    return <I18nError />;
+  });
+
+  return (
+    <main>
+      <APIContext.Provider value={apiProvider}>
+        <div className={`AppContainer ${theme.class()}`}>
+          <Router />
+        </div>
+      </APIContext.Provider>
+    </main>
+  );
+};
 
 Main.propTypes = {
   apiProvider: PropTypes.shape().isRequired
