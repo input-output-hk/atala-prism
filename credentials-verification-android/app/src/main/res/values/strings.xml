@@ -18,6 +18,18 @@
   </string>
   <string name="privacy_policies_agreement">Privacy Policy Agreement</string>
 
+  <!-- About -->
+  <string name="about_title">About us</string>
+  <string name="about_version">Atala version </string>
+  <string name="about_version_number">129.1</string>
+  <string name="about_version_server">Testing</string>
+  <string name="about_terms_title">Terms &amp; Conditions</string>
+  <string name="about_terms_date">Last Updated: May 20, 2019</string>
+  <string name="about_policy_title">Privacy Policy</string>
+  <string name="about_policy_date">Last Updated: May 20, 2019</string>
+  <string name="about_built">Built by IOHK powered by Atala</string>
+  <string name="about_year">© 2020 Atala</string>
+
   <!-- Wallet setup -->
   <string name="seed_phrase_description">Your seed phrase is your personal key that gives you access to your account.</string>
   <string name="seed_phrase_explanation">Without it you will not be able to access any of your records or funds in case you lose your device or quite the app. \nPlease store your seed phrase securely before proceeding.</string>
@@ -69,6 +81,7 @@
   <string name="view">View</string>
   <string name="new_credentials_section_title">You have new credentials to confirm</string>
   <string name="settings">Settings</string>
+  <string name="about">About</string>
   <string name="wallet">Wallet</string>
   <string name="home">Home</string>
   <string name="profile">Profile</string>
