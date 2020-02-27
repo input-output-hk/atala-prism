@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Icon, message } from 'antd';
+import { Row, Icon } from 'antd';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import GroupsTable from './Organisms/Tables/GroupsTable';
@@ -9,15 +9,15 @@ import DeleteGroupModal from './Organisms/Modals/NewGroupModal/DeleteGroupModal'
 import { groupShape } from '../../helpers/propShapes';
 import noGroups from '../../images/noGroups.svg';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
+import { withRedirector } from '../providers/withRedirector';
 
-const NewGroupButton = () => {
+const NewGroupButton = ({ onClick }) => {
   const { t } = useTranslation();
   return (
     <CustomButton
       buttonProps={{
-        onClick: () => message.info(t('groups.onCreateNewGroupClick')),
-        className: 'theme-secondary',
-        disabled: true
+        onClick,
+        className: 'theme-secondary'
       }}
       buttonText={t('groups.createNewGroup')}
       icon={<Icon type="plus" />}
@@ -25,7 +25,15 @@ const NewGroupButton = () => {
   );
 };
 
-const Groups = ({ groups, handleGroupDeletion, setGroup, group, updateGroups, hasMore }) => {
+const Groups = ({
+  groups,
+  handleGroupDeletion,
+  setGroup,
+  group,
+  updateGroups,
+  hasMore,
+  redirector: { redirectToGroupCreation }
+}) => {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [groupToDelete, setGroupToDelete] = useState({});
@@ -56,23 +64,21 @@ const Groups = ({ groups, handleGroupDeletion, setGroup, group, updateGroups, ha
     selectedGroup: group
   };
 
+  const newGroupButton = <NewGroupButton onClick={redirectToGroupCreation} />;
+
   return (
     <div className="Wrapper">
       <DeleteGroupModal {...modalProps} />
       <div className="ContentHeader">
         <h1>{t('groups.title')}</h1>
-        {!setGroup && <NewGroupButton />}
+        {!setGroup && newGroupButton}
       </div>
       <GroupFilters updateGroups={updateGroups} />
       <Row>
         {groups.length ? (
           <GroupsTable {...tableProps} />
         ) : (
-          <EmptyComponent
-            photoSrc={noGroups}
-            model={t('groups.title')}
-            button={<NewGroupButton />}
-          />
+          <EmptyComponent photoSrc={noGroups} model={t('groups.title')} button={newGroupButton} />
         )}
       </Row>
     </div>
@@ -91,7 +97,12 @@ Groups.propTypes = {
   setGroup: PropTypes.func,
   group: PropTypes.string,
   updateGroups: PropTypes.func.isRequired,
-  hasMore: PropTypes.bool.isRequired
+  hasMore: PropTypes.bool.isRequired,
+  redirector: PropTypes.shape({ redirectToGroupCreation: PropTypes.func.isRequired }).isRequired
 };
 
-export default Groups;
+NewGroupButton.propTypes = {
+  onClick: PropTypes.func.isRequired
+};
+
+export default withRedirector(Groups);

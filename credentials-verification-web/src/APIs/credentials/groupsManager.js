@@ -1,6 +1,9 @@
 import { GroupsServicePromiseClient } from '../../protos/credentials/credentialsManager_grpc_web_pb';
 
-const { GetGroupsRequest } = require('../../protos/credentials/credentialsManager_pb');
+const {
+  GetGroupsRequest,
+  CreateGroupRequest
+} = require('../../protos/credentials/credentialsManager_pb');
 
 const { config } = require('../config');
 
@@ -14,4 +17,11 @@ export const getGroups = async () => {
   });
 
   return response.toObject().groupsList;
+};
+
+export const createGroup = async groupName => {
+  const request = new CreateGroupRequest();
+  request.setName(groupName);
+
+  await groupsService.createGroup(request, { userId: config.issuerId });
 };

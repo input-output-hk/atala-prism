@@ -485,6 +485,17 @@
       "buttonText": "Upload"
     }
   },
+  "groupCreation": {
+    "title": "Create Group",
+    "form": {
+      "buttonText": "Save",
+      "groupName": "Name"
+    },
+    "success": "Successfully created",
+    "errors": {
+      "grpc": "Error creating group"
+    }
+  },
   "theme": {
     "title": {
       "issuer": "Issuer Portal",

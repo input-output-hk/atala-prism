@@ -61,7 +61,6 @@ const GroupsContainer = ({ api, selectingProps }) => {
       groups={groups}
       updateGroups={(oldGroups, date, name) => {
         setHasMore(true);
-
         updateGroups(oldGroups, date, name);
       }}
       handleGroupDeletion={handleGroupDeletion}

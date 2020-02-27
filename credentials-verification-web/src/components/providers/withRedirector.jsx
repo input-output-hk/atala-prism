@@ -22,6 +22,10 @@ export const withRedirector = Component => props => {
 
   const redirectToIndividualCreation = () => redirectTo('individualCreation');
 
+  const redirectToGroupCreation = () => redirectTo('groups/creation');
+
+  const redirectToGroups = () => redirectTo('groups');
+
   const redirector = {
     redirectToNewCredential,
     redirectToRegistration,
@@ -30,7 +34,9 @@ export const withRedirector = Component => props => {
     redirectToConnections,
     redirectToBulkImport,
     redirectToStudentCreation,
-    redirectToIndividualCreation
+    redirectToIndividualCreation,
+    redirectToGroupCreation,
+    redirectToGroups
   };
 
   return <Component {...props} redirector={redirector} />;
