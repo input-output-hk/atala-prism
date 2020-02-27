@@ -42,7 +42,7 @@ class SettingsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDel
         InitialCellValue(icon: "logo_security", title: "settings_security_title", subtitle: "settings_security_subtitle", action: nil),
         InitialCellValue(icon: "logo_pin_code", title: "settings_pin_title", subtitle: "settings_pin_subtitle", action: nil),
         InitialCellValue(icon: "logo_support", title: "settings_support_title", subtitle: "settings_support_subtitle", action: actionRowSupport),
-        InitialCellValue(icon: "logo_about", title: "settings_about_title", subtitle: "settings_about_subtitle", action: nil),
+        InitialCellValue(icon: "logo_about", title: "settings_about_title", subtitle: "settings_about_subtitle", action: actionRowTerms),
     ]
 
     func startShowingInitial() {
@@ -67,6 +67,10 @@ class SettingsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDel
 
     lazy var actionRowSupport = SelectorAction(action: { [weak self] in
         self?.viewImpl?.changeScreenToBrowser(urlStr: Common.URL_SUPPORT)
+    })
+
+    lazy var actionRowTerms = SelectorAction(action: { [weak self] in
+        self?.viewImpl?.changeScreenToAbout()
     })
 
     // MARK: ListingBaseTableUtilsPresenterDelegate

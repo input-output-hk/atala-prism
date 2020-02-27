@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		4CBC18384291926687A7EAA9 /* Pods_credentials_verification_iOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9FE4DE3E1C77A7F27599465B /* Pods_credentials_verification_iOS.framework */; };
+		B36F27BD2406E2C400FF751B /* About.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B36F27BC2406E2C400FF751B /* About.storyboard */; };
+		B36F27BF2406F37600FF751B /* AboutViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B36F27BE2406F37600FF751B /* AboutViewController.swift */; };
+		B36F27C12406F38C00FF751B /* AboutPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B36F27C02406F38C00FF751B /* AboutPresenter.swift */; };
 		B3E8ADD723EE025C00D63D0A /* MnemonicsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E8ADD623EE025C00D63D0A /* MnemonicsTests.swift */; };
 		BE1188304FE563D375E1840B /* Pods_credentials_verification_iOSUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C51D0105B7D63E4B8C1E4B7B /* Pods_credentials_verification_iOSUITests.framework */; };
 		C73F1ED22DD26837CFB70DC5 /* Pods_credentials_verification_iOSTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 874D892C1FBD9F2CFC9A1F15 /* Pods_credentials_verification_iOSTests.framework */; };
@@ -217,6 +220,9 @@
 		9417FE70D7248A15335AFA8F /* Pods-credentials-verification-iOSUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-credentials-verification-iOSUITests.release.xcconfig"; path = "Pods/Target Support Files/Pods-credentials-verification-iOSUITests/Pods-credentials-verification-iOSUITests.release.xcconfig"; sourceTree = "<group>"; };
 		9FE4DE3E1C77A7F27599465B /* Pods_credentials_verification_iOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_credentials_verification_iOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1CBDBC54418D05C10B7AD3F /* Pods-credentials-verification-iOSUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-credentials-verification-iOSUITests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-credentials-verification-iOSUITests/Pods-credentials-verification-iOSUITests.debug.xcconfig"; sourceTree = "<group>"; };
+		B36F27BC2406E2C400FF751B /* About.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = About.storyboard; sourceTree = "<group>"; };
+		B36F27BE2406F37600FF751B /* AboutViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutViewController.swift; sourceTree = "<group>"; };
+		B36F27C02406F38C00FF751B /* AboutPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutPresenter.swift; sourceTree = "<group>"; };
 		B3E8ADD523EE025B00D63D0A /* credentials-verification-iOSTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "credentials-verification-iOSTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		B3E8ADD623EE025C00D63D0A /* MnemonicsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MnemonicsTests.swift; sourceTree = "<group>"; };
 		C51D0105B7D63E4B8C1E4B7B /* Pods_credentials_verification_iOSUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_credentials_verification_iOSUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -971,6 +977,7 @@
 			isa = PBXGroup;
 			children = (
 				EE8FD4E923726AC000EFF62E /* Settings.storyboard */,
+				B36F27BC2406E2C400FF751B /* About.storyboard */,
 			);
 			path = settings;
 			sourceTree = "<group>";
@@ -1038,6 +1045,8 @@
 			children = (
 				EE8FD4E123726A3600EFF62E /* SettingsPresenter.swift */,
 				EE8FD4E323726A4000EFF62E /* SettingsViewController.swift */,
+				B36F27C02406F38C00FF751B /* AboutPresenter.swift */,
+				B36F27BE2406F37600FF751B /* AboutViewController.swift */,
 			);
 			path = settings;
 			sourceTree = "<group>";
@@ -1258,6 +1267,7 @@
 				EE71855E23835EB000C58F62 /* ShareItemViewCell.xib in Resources */,
 				EE7185752384D5EE00C58F62 /* TabsViewCell.xib in Resources */,
 				EE7D4CC52366B9C5007C31A8 /* SteradianRegular.otf in Resources */,
+				B36F27BD2406E2C400FF751B /* About.storyboard in Resources */,
 				EE7185662384B96400C58F62 /* Browser.storyboard in Resources */,
 				EE7D4D19236A99D7007C31A8 /* NavBarCustom.xib in Resources */,
 				EE718552237DCDB100C58F62 /* Welcome.storyboard in Resources */,
@@ -1471,7 +1481,9 @@
 				EE7185562383089500C58F62 /* ConnectionConfirmViewController.swift in Sources */,
 				EE904F082373AAE000EE6344 /* NewDegreeHeaderViewCell.swift in Sources */,
 				EE22F1EB23A486FA003C4F87 /* credential.pb.swift in Sources */,
+				B36F27BF2406F37600FF751B /* AboutViewController.swift in Sources */,
 				EE7D4C432366B9C4007C31A8 /* Logger.swift in Sources */,
+				B36F27C12406F38C00FF751B /* AboutPresenter.swift in Sources */,
 				EE7D4C452366B9C4007C31A8 /* GeneralUtils.swift in Sources */,
 				EEE43A65237A60CA00E8E304 /* RegisterSeedView.swift in Sources */,
 				EE22F1EF23A486FA003C4F87 /* connector.pb.swift in Sources */,
