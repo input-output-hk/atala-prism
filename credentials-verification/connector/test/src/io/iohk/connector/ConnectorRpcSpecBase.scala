@@ -1,7 +1,6 @@
 package io.iohk.connector
 
 import java.time.Instant
-import java.util.UUID
 import java.util.concurrent.{Executor, TimeUnit}
 
 import doobie.implicits._
@@ -10,20 +9,15 @@ import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.iohk.connector.model._
 import io.iohk.connector.payments.BraintreePayments
 import io.iohk.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO, MessagesDAO, ParticipantsDAO}
-import io.iohk.connector.repositories.{
-  ConnectionsRepository,
-  MessagesRepository,
-  PaymentsRepository,
-  RequestNoncesRepository
-}
-import io.iohk.connector.services.{ConnectionsService, MessagesService}
+import io.iohk.connector.repositories._
+import io.iohk.connector.services.{ConnectionsService, MessagesService, RegistrationService}
 import io.iohk.cvp.connector.protos.ConnectorServiceGrpc
 import io.iohk.cvp.crypto.ECKeys.EncodedPublicKey
 import io.iohk.cvp.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser, GrpcAuthenticatorInterceptor}
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.repositories.PostgresRepositorySpec
-import org.scalatest.BeforeAndAfterEach
 import org.mockito.MockitoSugar._
+import org.scalatest.BeforeAndAfterEach
 
 import scala.concurrent.duration.DurationLong
 
@@ -131,7 +125,14 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
   override def services = Seq(
     ConnectorServiceGrpc
       .bindService(
-        new ConnectorService(connectionsService, messagesService, braintreePayments, paymentsRepository, authenticator),
+        new ConnectorService(
+          connectionsService,
+          messagesService,
+          registrationService,
+          braintreePayments,
+          paymentsRepository,
+          authenticator
+        ),
         executionContext
       )
   )
@@ -146,6 +147,8 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
   lazy val connectionsService = new ConnectionsService(connectionsRepository, paymentsRepository, braintreePayments)
   lazy val messagesRepository = new MessagesRepository(database)(executionContext)
   lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
+  lazy val participantsRepository = new ParticipantsRepository(database)(executionContext)
+
   lazy val nodeMock = mock[io.iohk.nodenew.node_api.NodeServiceGrpc.NodeService]
   lazy val authenticator =
     new SignedRequestsAuthenticator(
@@ -156,10 +159,17 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
     )
 
   lazy val messagesService = new MessagesService(messagesRepository)
-  lazy val connectorService =
-    new ConnectorService(connectionsService, messagesService, braintreePayments, paymentsRepository, authenticator)(
-      executionContext
-    )
+  lazy val registrationService = new RegistrationService(participantsRepository, nodeMock)(executionContext)
+  lazy val connectorService = new ConnectorService(
+    connectionsService,
+    messagesService,
+    registrationService,
+    braintreePayments,
+    paymentsRepository,
+    authenticator
+  )(
+    executionContext
+  )
 
   protected def createParticipant(
       name: String,

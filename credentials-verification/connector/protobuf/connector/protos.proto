@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package io.iohk.cvp.connector;
 
+import "node_ops.proto";
+
 service ConnectorService {
 
   // Retrieve a connection for a given connection token.
@@ -268,12 +270,20 @@ message SendMessageResponse {
 
 // Request to register DID
 message RegisterDIDRequest {
-  string DID = 1;
-  string DIDDocument = 2;
+  SignedAtalaOperation createDIDOperation = 1;
+  Role role = 2;
+  string name = 3;
+  bytes logo = 4;
+
+  enum Role {
+    issuer = 0;
+    verifier = 1;
+  }
 }
 
 // Confirmation of DID registration
 message RegisterDIDResponse {
+  string did = 1;
 }
 
 // Enumeration representing billing plan of Issuer. Possible values are hardcoded as new billing options would require implementation changes anyway.
