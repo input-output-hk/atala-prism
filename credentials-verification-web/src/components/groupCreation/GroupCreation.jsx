@@ -7,6 +7,8 @@ import CustomForm from '../common/Organisms/Forms/CustomForm';
 import { withRedirector } from '../providers/withRedirector';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 
+import './_style.scss';
+
 const i18nPrefix = 'groupCreation.form.';
 
 const getInput = (key, initialValue, t, onChange) => ({
@@ -17,7 +19,7 @@ const getInput = (key, initialValue, t, onChange) => ({
   label: t(`${i18nPrefix}${key}`),
   key,
   className: '',
-  input: <Input size="large" onChange={onChange} />
+  input: <Input onChange={onChange} />
 });
 
 const GroupForm = React.forwardRef(({ ref, updateForm, groupName }) => {
@@ -37,14 +39,15 @@ const GroupCreation = ({ createGroup, formRef, updateForm, formValues }) => {
       <div className="Header">
         <h1>{t('groupCreation.title')}</h1>
       </div>
-      <div className="Content">
-        <GroupForm ref={formRef} updateForm={updateForm} formValues={formValues} />
-      </div>
-      <div className="ControlButtons">
-        <CustomButton
-          buttonProps={{ onClick: () => createGroup(groupName) }}
-          buttonText={t('groupCreation.form.buttonText')}
-        />
+      <div className="GroupCreationContent">
+        <div className="box">
+          <h3>Write a group name</h3>
+          <GroupForm ref={formRef} updateForm={updateForm} formValues={formValues} />
+          <CustomButton
+            buttonProps={{ className: 'theme-outline', onClick: () => createGroup(groupName) }}
+            buttonText={t('groupCreation.form.buttonText')}
+          />
+        </div>
       </div>
     </div>
   );
