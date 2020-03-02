@@ -12,6 +12,7 @@ import io.iohk.atala.cvp.webextension.background.models.Command.{
 }
 import io.iohk.atala.cvp.webextension.background.models.{Command, CommandWithResponse, Event}
 import io.iohk.atala.cvp.webextension.background.wallet.Role
+import io.iohk.atala.cvp.webextension.common.Mnemonic
 import org.scalajs.dom
 
 import scala.concurrent.{ExecutionContext, Future, Promise}
@@ -66,8 +67,14 @@ class BackgroundAPI(implicit ec: ExecutionContext) {
     process(Command.GetWalletStatus)
   }
 
-  def createWallet(password: String, role: Role, organisationName: String, logo: Array[Byte]): Future[Unit] = {
-    process(Command.CreateWallet(password, role, organisationName, logo))
+  def createWallet(
+      password: String,
+      mnemonic: Mnemonic,
+      role: Role,
+      organisationName: String,
+      logo: Array[Byte]
+  ): Future[Unit] = {
+    process(Command.CreateWallet(password, mnemonic, role, organisationName, logo))
   }
 
   def unlockWallet(password: String): Future[Unit] = {

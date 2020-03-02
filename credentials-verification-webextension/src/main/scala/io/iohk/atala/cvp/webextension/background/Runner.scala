@@ -96,7 +96,6 @@ object Runner {
 
     val initialization = for {
       walletStatus <- walletManager.getStatus()
-      _ <- initializeWallet(walletManager, walletStatus)
       existingKeys = walletManager.listKeys().toSet
       _ <- Future.sequence(Set("math-faculty", "cs-faculty").diff(existingKeys).map(walletManager.createKey))
     } yield ()
@@ -111,11 +110,4 @@ object Runner {
     new Runner(commandProcessor)
   }
 
-  private def initializeWallet(walletManager: WalletManager, walletStatus: WalletStatus): Future[Unit] = {
-    if (walletStatus == WalletStatus.Missing) {
-      walletManager.createWallet(WalletManager.FIXME_WALLET_PASSWORD, Role.Verifier, "IOHK", Array())
-    } else {
-      walletManager.unlock(WalletManager.FIXME_WALLET_PASSWORD)
-    }
-  }
 }

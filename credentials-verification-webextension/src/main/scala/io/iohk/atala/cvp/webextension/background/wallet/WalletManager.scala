@@ -8,8 +8,8 @@ import io.circe.parser.parse
 import io.circe.syntax._
 import io.iohk.atala.cvp.webextension.background.services.browser.BrowserActionService
 import io.iohk.atala.cvp.webextension.background.services.storage.StorageService
+import io.iohk.atala.cvp.webextension.common.Mnemonic
 import io.iohk.atala.cvp.webextension.facades.elliptic.{EC, KeyPair}
-import org.scalajs.dom
 import org.scalajs.dom.crypto
 import org.scalajs.dom.crypto.{CryptoKey, KeyFormat}
 
@@ -52,7 +52,13 @@ object Role {
 
 }
 
-case class WalletData(keys: Map[String, String], organisationName: String, role: Role, logo: Array[Byte]) {
+case class WalletData(
+    keys: Map[String, String],
+    mnemonic: Mnemonic,
+    organisationName: String,
+    role: Role,
+    logo: Array[Byte]
+) {
   def addKey(name: String, key: String): WalletData = {
     copy(keys = keys + (name -> key))
   }
@@ -211,10 +217,16 @@ private[background] class WalletManager(browserActionService: BrowserActionServi
     } yield aesKey
   }
 
-  def createWallet(password: String, role: Role, organisationName: String, logo: Array[Byte]): Future[Unit] = {
+  def createWallet(
+      password: String,
+      mnemonic: Mnemonic,
+      role: Role,
+      organisationName: String,
+      logo: Array[Byte]
+  ): Future[Unit] = {
     val result = for {
       aesKey <- generateSecretKey(password)
-      newWalletData = WalletData(Map.empty, organisationName, role, logo)
+      newWalletData = WalletData(Map.empty, mnemonic, organisationName, role, logo)
       _ <- save(aesKey, newWalletData)
       _ = updateStorageKeyAndWalletData(aesKey, newWalletData)
     } yield ()
