@@ -11,6 +11,7 @@ import io.iohk.connector.payments.BraintreePayments
 import io.iohk.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO, MessagesDAO, ParticipantsDAO}
 import io.iohk.connector.repositories._
 import io.iohk.connector.services.{ConnectionsService, MessagesService, RegistrationService}
+import io.iohk.cvp.ParticipantPropagatorService
 import io.iohk.cvp.connector.protos.ConnectorServiceGrpc
 import io.iohk.cvp.crypto.ECKeys.EncodedPublicKey
 import io.iohk.cvp.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser, GrpcAuthenticatorInterceptor}
@@ -120,8 +121,18 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
 
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 20.millis)
 
-  override val tables =
-    List("request_nonces", "messages", "connections", "connection_tokens", "holder_public_keys", "participants")
+  override val tables = List(
+    "store_individuals",
+    "store_users",
+    "issuer_groups",
+    "issuers",
+    "request_nonces",
+    "messages",
+    "connections",
+    "connection_tokens",
+    "holder_public_keys",
+    "participants"
+  )
   override def services = Seq(
     ConnectorServiceGrpc
       .bindService(
@@ -131,7 +142,8 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
           registrationService,
           braintreePayments,
           paymentsRepository,
-          authenticator
+          authenticator,
+          participantPropagator
         ),
         executionContext
       )
@@ -157,6 +169,7 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
       nodeMock,
       GrpcAuthenticationHeaderParser
     )
+  lazy val participantPropagator = new ParticipantPropagatorService(database)(executionContext)
 
   lazy val messagesService = new MessagesService(messagesRepository)
   lazy val registrationService = new RegistrationService(participantsRepository, nodeMock)(executionContext)
@@ -166,7 +179,8 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
     registrationService,
     braintreePayments,
     paymentsRepository,
-    authenticator
+    authenticator,
+    participantPropagator
   )(
     executionContext
   )

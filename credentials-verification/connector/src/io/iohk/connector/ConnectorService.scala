@@ -9,6 +9,7 @@ import io.iohk.connector.model.{Message, ParticipantLogo, ParticipantType, Token
 import io.iohk.connector.payments.BraintreePayments
 import io.iohk.connector.repositories.PaymentsRepository
 import io.iohk.connector.services.{ConnectionsService, MessagesService, RegistrationService}
+import io.iohk.cvp.ParticipantPropagatorService
 import io.iohk.cvp.connector.protos._
 import io.iohk.cvp.crypto.ECKeys
 import io.iohk.cvp.crypto.ECKeys._
@@ -27,7 +28,8 @@ class ConnectorService(
     registrationService: RegistrationService,
     braintreePayments: BraintreePayments,
     paymentsRepository: PaymentsRepository,
-    authenticator: Authenticator
+    authenticator: Authenticator,
+    participantPropagatorService: ParticipantPropagatorService
 )(
     implicit executionContext: ExecutionContext
 ) extends ConnectorServiceGrpc.ConnectorService
@@ -200,14 +202,16 @@ class ConnectorService(
           case RegisterDIDRequest.Role.Unrecognized(_) => throw new RuntimeException("Unknown role")
         }
         logo = ParticipantLogo(request.logo.toByteArray.toVector)
-        did <- registrationService
+        result <- registrationService
           .register(tpe = tpe, logo = logo, name = request.name, createDIDOperation = createDIDOperation)
           .value
           .map {
             case Left(_) => throw new RuntimeException("Impossible")
             case Right(x) => x
           }
-      } yield RegisterDIDResponse(did = did)
+
+        _ <- participantPropagatorService.propagate(id = result.id, tpe = tpe, name = request.name, did = result.did)
+      } yield RegisterDIDResponse(did = result.did)
     }
   }
 
