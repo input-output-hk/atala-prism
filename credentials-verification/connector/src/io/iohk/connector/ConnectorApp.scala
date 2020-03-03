@@ -6,10 +6,11 @@ import io.iohk.connector.payments.BraintreePayments
 import io.iohk.connector.repositories.{
   ConnectionsRepository,
   MessagesRepository,
+  ParticipantsRepository,
   PaymentsRepository,
   RequestNoncesRepository
 }
-import io.iohk.connector.services.{ConnectionsService, MessagesService}
+import io.iohk.connector.services.{ConnectionsService, MessagesService, RegistrationService}
 import io.iohk.cvp.admin.protos.AdminServiceGrpc
 import io.iohk.cvp.admin.{AdminRepository, AdminServiceImpl}
 import io.iohk.cvp.cmanager.grpc.services.{CredentialsServiceImpl, GroupsServiceImpl, StudentsServiceImpl}
@@ -80,6 +81,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     val paymentsRepository = new PaymentsRepository(xa)(executionContext)
     val messagesRepository = new MessagesRepository(xa)(executionContext)
     val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(xa)(executionContext)
+    val participantsRepository = new ParticipantsRepository(xa)(executionContext)
 
     // authenticator
     val authenticator = new SignedRequestsAuthenticator(
@@ -93,10 +95,17 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     val connectionsService =
       new ConnectionsService(connectionsRepository, paymentsRepository, braintreePayments)(executionContext)
     val messagesService = new MessagesService(messagesRepository)
-    val connectorService =
-      new ConnectorService(connectionsService, messagesService, braintreePayments, paymentsRepository, authenticator)(
-        executionContext
-      )
+    val registrationService = new RegistrationService(participantsRepository, node)(executionContext)
+    val connectorService = new ConnectorService(
+      connectionsService,
+      messagesService,
+      registrationService,
+      braintreePayments,
+      paymentsRepository,
+      authenticator
+    )(
+      executionContext
+    )
 
     // cmanager
     val issuersRepository = new IssuersRepository(xa)(executionContext)

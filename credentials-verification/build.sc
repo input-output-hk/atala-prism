@@ -219,7 +219,7 @@ object connector extends ServerPBCommon with CVPDockerModule {
   // for some reason, the credential.proto is breaking the integration with mill and ScalaPB
   // and the reason seems to be while generating lenses, the same protobuf file compiles just
   // fine while using sbt.
-  override def scalaPBLenses = T{false}
+  override def scalaPBLenses = T { false }
 
   override def mainClass = Some("io.iohk.connector.ConnectorApp")
 
@@ -243,6 +243,21 @@ object connector extends ServerPBCommon with CVPDockerModule {
 
   override def resources = T.sources {
     resourceDir() ++ utilDir()
+  }
+
+  object client extends ScalaModule {
+
+    override def moduleDeps = Seq(node, connector)
+    override def scalaVersion = node.scalaVersion
+
+    override def ivyDeps = node.ivyDeps.map { deps =>
+      deps ++ Agg(
+        ivy"com.github.scopt::scopt:${versions.scopt}",
+        ivy"com.github.julien-truffaut::monocle-core:${versions.monocle}",
+        ivy"com.github.julien-truffaut::monocle-generic:${versions.monocle}",
+        ivy"com.github.julien-truffaut::monocle-macro:${versions.monocle}"
+      )
+    }
   }
 }
 

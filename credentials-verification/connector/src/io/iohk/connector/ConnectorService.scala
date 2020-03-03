@@ -3,12 +3,12 @@ package io.iohk.connector
 import java.util.UUID
 
 import io.iohk.connector.errors._
-import io.iohk.connector.model.{Message, TokenString}
+import io.iohk.connector.model.{Message, ParticipantLogo, ParticipantType, TokenString}
 import io.iohk.connector.model.payments.{ClientNonce, Payment => ConnectorPayment}
 import io.iohk.connector.model.requests.CreatePaymentRequest
 import io.iohk.connector.payments.BraintreePayments
 import io.iohk.connector.repositories.PaymentsRepository
-import io.iohk.connector.services.{ConnectionsService, MessagesService}
+import io.iohk.connector.services.{ConnectionsService, MessagesService, RegistrationService}
 import io.iohk.cvp.connector.protos._
 import io.iohk.cvp.crypto.ECKeys
 import io.iohk.cvp.crypto.ECKeys._
@@ -24,6 +24,7 @@ import scala.util.control.NonFatal
 class ConnectorService(
     connections: ConnectionsService,
     messages: MessagesService,
+    registrationService: RegistrationService,
     braintreePayments: BraintreePayments,
     paymentsRepository: PaymentsRepository,
     authenticator: Authenticator
@@ -186,8 +187,27 @@ class ConnectorService(
     * DID Document does not match DID (INVALID_ARGUMENT)
     */
   override def registerDID(request: RegisterDIDRequest): Future[RegisterDIDResponse] = {
-    Future.successful {
-      RegisterDIDResponse()
+    authenticator.public("registerDID", request) {
+      val createDIDOperationF = Future {
+        request.createDIDOperation
+          .getOrElse(throw new RuntimeException("The createDIDOperation is mandatory"))
+      }
+      for {
+        createDIDOperation <- createDIDOperationF
+        tpe = request.role match {
+          case RegisterDIDRequest.Role.issuer => ParticipantType.Issuer
+          case RegisterDIDRequest.Role.verifier => ParticipantType.Verifier
+          case RegisterDIDRequest.Role.Unrecognized(_) => throw new RuntimeException("Unknown role")
+        }
+        logo = ParticipantLogo(request.logo.toByteArray.toVector)
+        did <- registrationService
+          .register(tpe = tpe, logo = logo, name = request.name, createDIDOperation = createDIDOperation)
+          .value
+          .map {
+            case Left(_) => throw new RuntimeException("Impossible")
+            case Right(x) => x
+          }
+      } yield RegisterDIDResponse(did = did)
     }
   }
 
