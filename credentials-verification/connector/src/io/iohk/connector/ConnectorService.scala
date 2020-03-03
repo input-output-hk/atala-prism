@@ -3,9 +3,9 @@ package io.iohk.connector
 import java.util.UUID
 
 import io.iohk.connector.errors._
-import io.iohk.connector.model.{Message, ParticipantLogo, ParticipantType, TokenString}
 import io.iohk.connector.model.payments.{ClientNonce, Payment => ConnectorPayment}
 import io.iohk.connector.model.requests.CreatePaymentRequest
+import io.iohk.connector.model.{Message, ParticipantLogo, ParticipantType, TokenString}
 import io.iohk.connector.payments.BraintreePayments
 import io.iohk.connector.repositories.PaymentsRepository
 import io.iohk.connector.services.{ConnectionsService, MessagesService, RegistrationService}
@@ -172,8 +172,8 @@ class ConnectorService(
     * Connection does not exist (UNKNOWN)
     */
   override def deleteConnection(request: DeleteConnectionRequest): Future[DeleteConnectionResponse] = {
-    Future.successful {
-      DeleteConnectionResponse()
+    authenticator.authenticated("deleteConnection", request) { _ =>
+      Future.failed(new NotImplementedError)
     }
   }
 
@@ -220,8 +220,8 @@ class ConnectorService(
     * User not allowed to set this billing plan (PERMISSION_DENIED)
     */
   override def changeBillingPlan(request: ChangeBillingPlanRequest): Future[ChangeBillingPlanResponse] = {
-    Future.successful {
-      ChangeBillingPlanResponse()
+    authenticator.authenticated("changeBillingPlan", request) { _ =>
+      Future.failed(new NotImplementedError)
     }
   }
 
@@ -244,12 +244,11 @@ class ConnectorService(
         .successMap { tokenString =>
           GenerateConnectionTokenResponse(tokenString.token)
         }
-
     }
+
     authenticator.authenticated("generateConnectionToken", request) { participantId =>
       f(participantId)
     }
-
   }
 
   /** Return messages received after given time moment, sorted in ascending order by receive time
@@ -288,7 +287,6 @@ class ConnectorService(
     authenticator.authenticated("getMessagesPaginated", request) { participantId =>
       f(participantId)
     }
-
   }
 
   override def getMessagesForConnection(
@@ -318,7 +316,6 @@ class ConnectorService(
     authenticator.authenticated("getMessagesForConnection", request) { participantId =>
       f(participantId)
     }
-
   }
 
   /** Send message over a connection
@@ -404,7 +401,6 @@ class ConnectorService(
     authenticator.authenticated("processPayment", request) { participantId =>
       f(participantId)
     }
-
   }
 
   override def getPayments(request: GetPaymentsRequest): Future[GetPaymentsResponse] = {
