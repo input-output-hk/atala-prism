@@ -13,12 +13,14 @@ class RegistrationService(participantsRepository: ParticipantsRepository, nodeSe
     implicit ec: ExecutionContext
 ) {
 
+  import RegistrationService._
+
   def register(
       tpe: ParticipantType,
       name: String,
       logo: ParticipantLogo,
       createDIDOperation: io.iohk.cvp.node_ops.SignedAtalaOperation
-  ): FutureEither[Nothing, String] = {
+  ): FutureEither[Nothing, RegistrationResult] = {
 
     // TODO: Remove unneeded transformation by reusing the node protos
     val actualOp = io.iohk.nodenew.node_api.SignedAtalaOperation.parseFrom(createDIDOperation.toByteArray)
@@ -33,6 +35,10 @@ class RegistrationService(participantsRepository: ParticipantsRepository, nodeSe
         logo = logo
       )
       _ <- participantsRepository.create(createRequest)
-    } yield did
+    } yield RegistrationResult(did = did, id = createRequest.id)
   }
+}
+
+object RegistrationService {
+  case class RegistrationResult(id: ParticipantId, did: String)
 }

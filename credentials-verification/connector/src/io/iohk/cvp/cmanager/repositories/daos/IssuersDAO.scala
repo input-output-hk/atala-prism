@@ -12,4 +12,12 @@ object IssuersDAO {
          |VALUES (${data.id}, ${data.did}, ${data.name})
        """.stripMargin.update.run.map(_ => ())
   }
+
+  def findBy(id: Issuer.Id): ConnectionIO[Option[Issuer]] = {
+    sql"""
+         |SELECT issuer_id, name, did
+         |FROM issuers
+         |WHERE issuer_id = $id
+         |""".stripMargin.query[Issuer].option
+  }
 }

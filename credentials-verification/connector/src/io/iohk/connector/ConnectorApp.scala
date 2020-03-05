@@ -11,6 +11,7 @@ import io.iohk.connector.repositories.{
   RequestNoncesRepository
 }
 import io.iohk.connector.services.{ConnectionsService, MessagesService, RegistrationService}
+import io.iohk.cvp.ParticipantPropagatorService
 import io.iohk.cvp.admin.protos.AdminServiceGrpc
 import io.iohk.cvp.admin.{AdminRepository, AdminServiceImpl}
 import io.iohk.cvp.cmanager.grpc.services.{CredentialsServiceImpl, GroupsServiceImpl, StudentsServiceImpl}
@@ -92,6 +93,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     )
 
     // connector services
+    val participantPropagatorService = new ParticipantPropagatorService(xa)(executionContext)
     val connectionsService =
       new ConnectionsService(connectionsRepository, paymentsRepository, braintreePayments)(executionContext)
     val messagesService = new MessagesService(messagesRepository)
@@ -102,7 +104,8 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       registrationService,
       braintreePayments,
       paymentsRepository,
-      authenticator
+      authenticator,
+      participantPropagatorService
     )(
       executionContext
     )

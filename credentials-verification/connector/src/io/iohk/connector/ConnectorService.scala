@@ -3,12 +3,13 @@ package io.iohk.connector
 import java.util.UUID
 
 import io.iohk.connector.errors._
-import io.iohk.connector.model.{Message, ParticipantLogo, ParticipantType, TokenString}
 import io.iohk.connector.model.payments.{ClientNonce, Payment => ConnectorPayment}
 import io.iohk.connector.model.requests.CreatePaymentRequest
+import io.iohk.connector.model.{Message, ParticipantLogo, ParticipantType, TokenString}
 import io.iohk.connector.payments.BraintreePayments
 import io.iohk.connector.repositories.PaymentsRepository
 import io.iohk.connector.services.{ConnectionsService, MessagesService, RegistrationService}
+import io.iohk.cvp.ParticipantPropagatorService
 import io.iohk.cvp.connector.protos._
 import io.iohk.cvp.crypto.ECKeys
 import io.iohk.cvp.crypto.ECKeys._
@@ -27,7 +28,8 @@ class ConnectorService(
     registrationService: RegistrationService,
     braintreePayments: BraintreePayments,
     paymentsRepository: PaymentsRepository,
-    authenticator: Authenticator
+    authenticator: Authenticator,
+    participantPropagatorService: ParticipantPropagatorService
 )(
     implicit executionContext: ExecutionContext
 ) extends ConnectorServiceGrpc.ConnectorService
@@ -172,8 +174,8 @@ class ConnectorService(
     * Connection does not exist (UNKNOWN)
     */
   override def deleteConnection(request: DeleteConnectionRequest): Future[DeleteConnectionResponse] = {
-    Future.successful {
-      DeleteConnectionResponse()
+    authenticator.authenticated("deleteConnection", request) { _ =>
+      Future.failed(new NotImplementedError)
     }
   }
 
@@ -200,14 +202,16 @@ class ConnectorService(
           case RegisterDIDRequest.Role.Unrecognized(_) => throw new RuntimeException("Unknown role")
         }
         logo = ParticipantLogo(request.logo.toByteArray.toVector)
-        did <- registrationService
+        result <- registrationService
           .register(tpe = tpe, logo = logo, name = request.name, createDIDOperation = createDIDOperation)
           .value
           .map {
             case Left(_) => throw new RuntimeException("Impossible")
             case Right(x) => x
           }
-      } yield RegisterDIDResponse(did = did)
+
+        _ <- participantPropagatorService.propagate(id = result.id, tpe = tpe, name = request.name, did = result.did)
+      } yield RegisterDIDResponse(did = result.did)
     }
   }
 
@@ -220,8 +224,8 @@ class ConnectorService(
     * User not allowed to set this billing plan (PERMISSION_DENIED)
     */
   override def changeBillingPlan(request: ChangeBillingPlanRequest): Future[ChangeBillingPlanResponse] = {
-    Future.successful {
-      ChangeBillingPlanResponse()
+    authenticator.authenticated("changeBillingPlan", request) { _ =>
+      Future.failed(new NotImplementedError)
     }
   }
 
@@ -244,12 +248,11 @@ class ConnectorService(
         .successMap { tokenString =>
           GenerateConnectionTokenResponse(tokenString.token)
         }
-
     }
+
     authenticator.authenticated("generateConnectionToken", request) { participantId =>
       f(participantId)
     }
-
   }
 
   /** Return messages received after given time moment, sorted in ascending order by receive time
@@ -288,7 +291,6 @@ class ConnectorService(
     authenticator.authenticated("getMessagesPaginated", request) { participantId =>
       f(participantId)
     }
-
   }
 
   override def getMessagesForConnection(
@@ -318,7 +320,6 @@ class ConnectorService(
     authenticator.authenticated("getMessagesForConnection", request) { participantId =>
       f(participantId)
     }
-
   }
 
   /** Send message over a connection
@@ -404,7 +405,6 @@ class ConnectorService(
     authenticator.authenticated("processPayment", request) { participantId =>
       f(participantId)
     }
-
   }
 
   override def getPayments(request: GetPaymentsRequest): Future[GetPaymentsResponse] = {
