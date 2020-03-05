@@ -24,10 +24,12 @@
   color: #09d3ac;
 }
 
-.Wrapper{
+.Wrapper {
   margin: 2em;
   @include breakpoint(sm) {
     margin: 2em 1em;
   }
+  h1 {
+    @include secondary-text($h1, $secondary-color);
+  }
 }
-
