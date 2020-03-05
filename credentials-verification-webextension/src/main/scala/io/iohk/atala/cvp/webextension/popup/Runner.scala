@@ -1,8 +1,10 @@
 package io.iohk.atala.cvp.webextension.popup
 
+import java.util.Base64
+
 import io.iohk.atala.cvp.webextension.background.BackgroundAPI
 import io.iohk.atala.cvp.webextension.background.wallet.{Role, WalletManager, WalletStatus}
-import io.iohk.atala.cvp.webextension.common.{I18NMessages, Mnemonic}
+import io.iohk.atala.cvp.webextension.common.{ECKeyOperation, I18NMessages, Mnemonic}
 import io.iohk.atala.cvp.webextension.facades.elliptic.EC
 import org.scalajs.dom
 import org.scalajs.dom.Event
@@ -197,7 +199,18 @@ class Runner(messages: I18NMessages, backgroundAPI: BackgroundAPI)(implicit ec: 
     if (walletStatus == WalletStatus.Missing) {
       val mnemonic = Mnemonic()
       h2.innerText = mnemonic.seed
+      val operation = ECKeyOperation.toSignedAtalaOperation(mnemonic)
+      console.info(
+        s"***********Operation***************${operation.toProtoString}*****************************"
+      )
+      val encodeOperation = new String(Base64.getEncoder.encode(operation.toByteArray))
+
+      console.info(
+        s"*******Encoded Operation*******************\n${encodeOperation}\n*****************************"
+      )
+
       backgroundAPI.createWallet(WalletManager.FIXME_WALLET_PASSWORD, mnemonic, Role.Verifier, "IOHK", Array())
+
     } else {
       backgroundAPI.unlockWallet(WalletManager.FIXME_WALLET_PASSWORD)
     }
