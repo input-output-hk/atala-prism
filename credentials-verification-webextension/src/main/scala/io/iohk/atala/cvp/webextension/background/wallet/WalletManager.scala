@@ -110,7 +110,7 @@ private[background] class WalletManager(browserActionService: BrowserActionServi
 
     requestCounter += 1
     val request = SigningRequest(requestCounter, message)
-    signingRequests += requestCounter -> (request, signaturePromise)
+    signingRequests += requestCounter -> ((request, signaturePromise))
     updateBadge()
 
     signaturePromise.future
@@ -174,15 +174,19 @@ private[background] class WalletManager(browserActionService: BrowserActionServi
   }
 
   def getStatus(): Future[WalletStatus] = {
-    for {
-      storedData <- storageService.load(WalletManager.LOCAL_STORAGE_KEY)
-    } yield {
-      if (storedData.isEmpty) {
-        WalletStatus.Missing
-      } else if (this.storageKey.nonEmpty) {
-        WalletStatus.Unlocked
-      } else {
-        WalletStatus.Locked
+    // Avoid local storage call when the wallet is already loaded
+    if (this.walletData.nonEmpty) {
+      Future.successful(WalletStatus.Unlocked)
+    } else {
+      // Call local storage to figure out if the wallet actually exists
+      for {
+        storedData <- storageService.load(WalletManager.LOCAL_STORAGE_KEY)
+      } yield {
+        if (storedData.isEmpty) {
+          WalletStatus.Missing
+        } else {
+          WalletStatus.Locked
+        }
       }
     }
   }

@@ -171,6 +171,42 @@ jobs:
           name: Run Unit Tests
           command: cd credentials-verification-android && ./gradlew test
 
+  build-credentials-verification-webextension:
+    working_directory: ~/repo
+    docker:
+      - image: circleci/openjdk:8-jdk-node
+    steps:
+      - checkout
+
+      # TODO: Remove once https://github.com/lucidd/scala-js-chrome/pull/46 is merged
+      # Install custom plugin
+      - run: git clone https://github.com/AlexITC/scala-js-chrome.git --branch add-content-script --single-branch
+      - run: git branch
+      - run: cd scala-js-chrome && sbt publishLocal
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - webextension-cache-{{ checksum "credentials-verification-webextension/build.sbt" }}
+            # fallback to using the latest cache if no exact match is found
+            - webextension-cache-
+
+      - run: cd credentials-verification-webextension && sbt test:compile
+
+      - save_cache:
+          paths:
+            - ~/.m2
+            - ~/.ivy2/cache
+          key: webextension-cache-{{ checksum "credentials-verification-webextension/build.sbt" }}
+
+      - run:
+          name: Run Unit Tests
+          command: cd credentials-verification-webextension && sbt test
+
+      - run:
+          name: Package extension
+          command: cd credentials-verification-webextension && sbt chromePackage
+
 workflows:
   version: 2.1
   build-and-deploy:
@@ -178,6 +214,7 @@ workflows:
       - build-credentials-verification-web
       - build-credentials-verification
       - build-credentials-verification-android
+      - build-credentials-verification-webextension
       - deploy-ecr-images:
           filters:
             branches:

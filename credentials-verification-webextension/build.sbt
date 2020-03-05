@@ -98,6 +98,7 @@ chromeManifest := new ExtensionManifest {
 
 val circe = "0.11.1"
 val sttp = "1.7.0"
+val scalatest = "3.1.1"
 
 libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.9.7"
 
@@ -111,6 +112,8 @@ libraryDependencies += "com.softwaremill.sttp" %%% "core" % sttp
 
 libraryDependencies += ScalablyTyped.B.bip39
 libraryDependencies += ScalablyTyped.B.bip32
+
+libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest % "test"
 
 addCompilerPlugin(
   "org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full

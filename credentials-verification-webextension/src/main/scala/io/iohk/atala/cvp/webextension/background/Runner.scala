@@ -5,9 +5,8 @@ import io.circe.{Encoder, Json}
 import io.iohk.atala.cvp.webextension.Config
 import io.iohk.atala.cvp.webextension.background.models.Command
 import io.iohk.atala.cvp.webextension.background.services.browser.{BrowserActionService, BrowserNotificationService}
-import io.iohk.atala.cvp.webextension.background.services.http.HttpService
 import io.iohk.atala.cvp.webextension.background.services.storage.StorageService
-import io.iohk.atala.cvp.webextension.background.wallet.{Role, WalletManager, WalletStatus}
+import io.iohk.atala.cvp.webextension.background.wallet.WalletManager
 import io.iohk.atala.cvp.webextension.common.I18NMessages
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -88,26 +87,14 @@ object Runner {
 
   def apply(config: Config)(implicit ec: ExecutionContext): Runner = {
     val storage = new StorageService
-    val http = HttpService(config.httpConfig)
     val messages = new I18NMessages
     val browserNotificationService = new BrowserNotificationService(messages)
     val browserActionService = new BrowserActionService
     val walletManager = new WalletManager(browserActionService, storage)
 
-    val initialization = for {
-      walletStatus <- walletManager.getStatus()
-      existingKeys = walletManager.listKeys().toSet
-      _ <- Future.sequence(Set("math-faculty", "cs-faculty").diff(existingKeys).map(walletManager.createKey))
-    } yield ()
-    initialization.onComplete {
-      case Failure(ex) => Logger.log(s"Could not initialize the wallet: ${ex.toString}")
-      case _ => ()
-    }
-
     val commandProcessor =
-      new CommandProcessor(storage, browserNotificationService, browserActionService, walletManager)
+      new CommandProcessor(browserNotificationService, browserActionService, walletManager)
 
     new Runner(commandProcessor)
   }
-
 }

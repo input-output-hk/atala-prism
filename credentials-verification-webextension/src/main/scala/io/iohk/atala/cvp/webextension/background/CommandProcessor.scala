@@ -9,7 +9,6 @@ import io.iohk.atala.cvp.webextension.background.models.Command.{
 }
 import io.iohk.atala.cvp.webextension.background.models.{Command, Event}
 import io.iohk.atala.cvp.webextension.background.services.browser.{BrowserActionService, BrowserNotificationService}
-import io.iohk.atala.cvp.webextension.background.services.storage.StorageService
 import io.iohk.atala.cvp.webextension.background.wallet.WalletManager
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -18,7 +17,6 @@ import scala.concurrent.{ExecutionContext, Future}
   * Any command supported by the BackgroundAPI is handled here.
   */
 private[background] class CommandProcessor(
-    productStorage: StorageService,
     browserNotificationService: BrowserNotificationService,
     browserActionService: BrowserActionService,
     walletManager: WalletManager

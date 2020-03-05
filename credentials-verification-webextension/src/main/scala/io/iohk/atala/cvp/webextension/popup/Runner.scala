@@ -7,16 +7,16 @@ import io.iohk.atala.cvp.webextension.facades.elliptic.EC
 import org.scalajs.dom
 import org.scalajs.dom.Event
 import org.scalajs.dom.raw.{HTMLHeadElement, HTMLParagraphElement, HTMLSelectElement}
-import typings.std.document
-import typings.std.console
+import typings.std.{HTMLHeadingElement, console, document}
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 import scala.scalajs.js
 import scala.util.{Failure, Success}
 
 class Runner(messages: I18NMessages, backgroundAPI: BackgroundAPI)(implicit ec: ExecutionContext) {
 
   val CURVE_NAME = "secp256k1"
+  val DEFAULT_KEYS = Set("math-faculty", "cs-faculty")
 
   def getRequestsListElement(): dom.raw.Element = dom.document.getElementById("requests-list")
   def getKeysSelectionElement(): dom.raw.HTMLSelectElement = {
@@ -106,13 +106,6 @@ class Runner(messages: I18NMessages, backgroundAPI: BackgroundAPI)(implicit ec: 
     }
   }
 
-  def createWallet(mnemonic: Mnemonic): Unit = {
-    backgroundAPI.createWallet(WalletManager.FIXME_WALLET_PASSWORD, mnemonic, Role.Verifier, "IOHK", Array()).map { _ =>
-      log("Getting wallet status after creating it")
-      getWalletStatus()
-    }
-  }
-
   def unlockWallet(): Unit = {
     backgroundAPI.unlockWallet(WalletManager.FIXME_WALLET_PASSWORD).map { _ =>
       dom.window.location.href = "popup.html"
@@ -187,19 +180,28 @@ class Runner(messages: I18NMessages, backgroundAPI: BackgroundAPI)(implicit ec: 
 
   private def generate() = {
     console.info("**************************generate*****************************")
-    val h2 = dom.document.getElementById("h2").asInstanceOf[typings.std.HTMLHeadingElement]
-    backgroundAPI.getWalletStatus().map { walletStatus =>
-      if (walletStatus.status == WalletStatus.Missing) {
-        val mnemonic = Mnemonic()
-        backgroundAPI.createWallet(WalletManager.FIXME_WALLET_PASSWORD, mnemonic, Role.Verifier, "IOHK", Array())
-        h2.innerText = mnemonic.seed
-      } else {
-        backgroundAPI.unlockWallet(WalletManager.FIXME_WALLET_PASSWORD)
-      }
-    }
+    val h2 = dom.document.getElementById("h2").asInstanceOf[HTMLHeadingElement]
+    for {
+      // Initialize wallet based on current status
+      walletStatus <- backgroundAPI.getWalletStatus()
+      _ <- initializeWallet(walletStatus.status, h2)
 
+      // Add missing keys so default ones always exist
+      existingKeys <- backgroundAPI.listKeys()
+      missingKeys = DEFAULT_KEYS.diff(existingKeys.names.toSet)
+      _ <- Future.sequence(missingKeys.map(backgroundAPI.createKey))
+    } yield ()
   }
 
+  private def initializeWallet(walletStatus: WalletStatus, h2: HTMLHeadingElement): Future[Unit] = {
+    if (walletStatus == WalletStatus.Missing) {
+      val mnemonic = Mnemonic()
+      h2.innerText = mnemonic.seed
+      backgroundAPI.createWallet(WalletManager.FIXME_WALLET_PASSWORD, mnemonic, Role.Verifier, "IOHK", Array())
+    } else {
+      backgroundAPI.unlockWallet(WalletManager.FIXME_WALLET_PASSWORD)
+    }
+  }
 }
 
 object Runner {

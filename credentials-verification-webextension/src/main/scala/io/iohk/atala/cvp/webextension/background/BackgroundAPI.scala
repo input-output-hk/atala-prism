@@ -13,7 +13,6 @@ import io.iohk.atala.cvp.webextension.background.models.Command.{
 import io.iohk.atala.cvp.webextension.background.models.{Command, CommandWithResponse, Event}
 import io.iohk.atala.cvp.webextension.background.wallet.Role
 import io.iohk.atala.cvp.webextension.common.Mnemonic
-import org.scalajs.dom
 
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.scalajs.js
@@ -89,7 +88,7 @@ class BackgroundAPI(implicit ec: ExecutionContext) {
     val promise = Promise[Resp]
 
     val callback: js.Function1[js.Object, Unit] = { rawResult =>
-      dom.console.log("Received response", rawResult)
+      println(s"Received response $rawResult")
       val resultTry = Try(rawResult.asInstanceOf[String])
         .flatMap(parse(_).toTry.flatMap(_.as[Either[String, Resp]].toTry))
         .flatMap {
@@ -100,7 +99,7 @@ class BackgroundAPI(implicit ec: ExecutionContext) {
     }
 
     val message = (command: Command).asJson.noSpaces
-    dom.console.log("Sending command", message)
+    println(s"Sending command $message")
     chrome.runtime.Runtime
       .sendMessage(message = message, responseCallback = callback)
 
