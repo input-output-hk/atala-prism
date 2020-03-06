@@ -2,21 +2,21 @@ package io.iohk.node.client.commands
 
 import io.iohk.cvp.crypto.ECKeys
 import io.iohk.node.client.{Config, ProtoUtils, State, StateStorage}
-import io.iohk.node.geud_node._
 import io.iohk.node.models.SHA256Digest
+import io.iohk.prism.protos.{node_api, node_models}
 import monocle.Optional
 import monocle.macros.{GenLens, GenPrism}
 import monocle.std.option.some
 import scopt.OParser
 
 case class CreateDid(
-    keysToGenerate: Vector[(String, KeyUsage)] = Vector.empty,
+    keysToGenerate: Vector[(String, node_models.KeyUsage)] = Vector.empty,
     overwrite: Boolean = false,
     recreate: Boolean = false
 ) extends Command {
   import Command.signOperation
 
-  override def run(api: NodeServiceGrpc.NodeServiceBlockingStub, config: Config): Unit = {
+  override def run(api: node_api.NodeServiceGrpc.NodeServiceBlockingStub, config: Config): Unit = {
     val state = if (config.stateStorage.exists()) {
       if (recreate) {
         if (keysToGenerate.nonEmpty && !overwrite) {
@@ -45,24 +45,24 @@ case class CreateDid(
 
     val publicKeys = keys.map {
       case (keyId, keyUsage, _, key) =>
-        PublicKey(
+        node_models.PublicKey(
           id = keyId,
           usage = keyUsage,
-          keyData = PublicKey.KeyData.EcKeyData(ProtoUtils.protoECKeyFromPublicKey(key))
+          keyData = node_models.PublicKey.KeyData.EcKeyData(ProtoUtils.protoECKeyFromPublicKey(key))
         )
     }
 
-    val createDidOp = CreateDIDOperation(
+    val createDidOp = node_models.CreateDIDOperation(
       didData = Some(
-        DIDData(
+        node_models.DIDData(
           publicKeys = publicKeys
         )
       )
     )
 
-    val (masterKeyId, _, masterKey, _) = keys.find(_._2 == KeyUsage.MASTER_KEY).get
+    val (masterKeyId, _, masterKey, _) = keys.find(_._2 == node_models.KeyUsage.MASTER_KEY).get
 
-    val atalaOp = AtalaOperation(operation = AtalaOperation.Operation.CreateDid(createDidOp))
+    val atalaOp = node_models.AtalaOperation(operation = node_models.AtalaOperation.Operation.CreateDid(createDidOp))
     val signedAtalaOp = signOperation(atalaOp, masterKeyId, masterKey)
     val operationHash = SHA256Digest.compute(atalaOp.toByteArray)
 
@@ -90,7 +90,7 @@ object CreateDid {
     GenLens[Config](_.command).composePrism(some).composePrism(GenPrism[Command, CreateDid])
   val keysLens = lens.composeLens(GenLens[CreateDid](_.keysToGenerate))
 
-  def keyAppend[T](f: T => (String, KeyUsage)): (T, Config) => Config = { (x, c) =>
+  def keyAppend[T](f: T => (String, node_models.KeyUsage)): (T, Config) => Config = { (x, c) =>
     keysLens.modify(v => v :+ f(x))(c)
   }
 
@@ -101,19 +101,19 @@ object CreateDid {
       opt[String]("generate-master-key")
         .valueName("<key-id>")
         .unbounded()
-        .action(keyAppend(name => (name, KeyUsage.MASTER_KEY))),
+        .action(keyAppend(name => (name, node_models.KeyUsage.MASTER_KEY))),
       opt[String]("generate-issuing-key")
         .valueName("<key-id>")
         .unbounded()
-        .action(keyAppend(name => (name, KeyUsage.ISSUING_KEY))),
+        .action(keyAppend(name => (name, node_models.KeyUsage.ISSUING_KEY))),
       opt[String]("generate-communication-key")
         .valueName("<key-id>")
         .unbounded()
-        .action(keyAppend(name => (name, KeyUsage.COMMUNICATION_KEY))),
+        .action(keyAppend(name => (name, node_models.KeyUsage.COMMUNICATION_KEY))),
       opt[String]("generate-authentication-key")
         .valueName("<key-id>")
         .unbounded()
-        .action(keyAppend(name => (name, KeyUsage.AUTHENTICATION_KEY))),
+        .action(keyAppend(name => (name, node_models.KeyUsage.AUTHENTICATION_KEY))),
       opt[Unit]("overwrite")
         .action(lens.composeLens(GenLens[CreateDid](_.overwrite)).optify(_ => true)),
       opt[Unit]("recreate")

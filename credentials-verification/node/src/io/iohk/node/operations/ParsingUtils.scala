@@ -8,13 +8,13 @@ import io.iohk.cvp.crypto.ECKeys
 import io.iohk.node.models.{DIDPublicKey, DIDSuffix, KeyUsage, SHA256Digest}
 import io.iohk.node.operations.ValidationError.{InvalidValue, MissingValue}
 import io.iohk.node.operations.path.ValueAtPath
-import io.iohk.node.{geud_node => proto}
+import io.iohk.prism.protos.{common_models, node_models}
 
 import scala.util.Try
 
 object ParsingUtils {
 
-  def parseDate(date: ValueAtPath[proto.Date]): Either[ValidationError, LocalDate] = {
+  def parseDate(date: ValueAtPath[common_models.Date]): Either[ValidationError, LocalDate] = {
     for {
       year <- date.child(_.year, "year").parse { year =>
         Either.cond(year > 0, year, "Year needs to be specified as positive value")
@@ -30,7 +30,7 @@ object ParsingUtils {
   }
   val KEY_ID_RE = "^\\w+$".r
 
-  def parseECKey(ecData: ValueAtPath[proto.ECKeyData]): Either[ValidationError, PublicKey] = {
+  def parseECKey(ecData: ValueAtPath[node_models.ECKeyData]): Either[ValidationError, PublicKey] = {
     if (ecData(_.curve) != ECKeys.CURVE_NAME) {
       Left(ecData.child(_.curve, "curve").invalid("Unsupported curve"))
     } else if (ecData(_.x.toByteArray.isEmpty)) {
@@ -49,13 +49,13 @@ object ParsingUtils {
     }
   }
 
-  def parseKey(key: ValueAtPath[proto.PublicKey], didSuffix: DIDSuffix): Either[ValidationError, DIDPublicKey] = {
+  def parseKey(key: ValueAtPath[node_models.PublicKey], didSuffix: DIDSuffix): Either[ValidationError, DIDPublicKey] = {
     for {
       keyUsage <- key.child(_.usage, "usage").parse {
-        case proto.KeyUsage.MASTER_KEY => Right(KeyUsage.MasterKey)
-        case proto.KeyUsage.ISSUING_KEY => Right(KeyUsage.IssuingKey)
-        case proto.KeyUsage.AUTHENTICATION_KEY => Right(KeyUsage.AuthenticationKey)
-        case proto.KeyUsage.COMMUNICATION_KEY => Right(KeyUsage.CommunicationKey)
+        case node_models.KeyUsage.MASTER_KEY => Right(KeyUsage.MasterKey)
+        case node_models.KeyUsage.ISSUING_KEY => Right(KeyUsage.IssuingKey)
+        case node_models.KeyUsage.AUTHENTICATION_KEY => Right(KeyUsage.AuthenticationKey)
+        case node_models.KeyUsage.COMMUNICATION_KEY => Right(KeyUsage.CommunicationKey)
         case _ => Left("Unknown value")
       }
       keyId <- parseKeyId(key.child(_.id, "id"))

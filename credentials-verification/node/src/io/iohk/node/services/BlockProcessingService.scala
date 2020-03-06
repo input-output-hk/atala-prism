@@ -10,7 +10,7 @@ import io.iohk.cvp.crypto.ECSignature
 import io.iohk.node.operations.ValidationError.InvalidValue
 import io.iohk.node.operations._
 import io.iohk.node.operations.path.Path
-import io.iohk.node.{atala_bitcoin => atala_proto, geud_node => geud_proto}
+import io.iohk.prism.protos.{node_internal, node_models}
 import org.slf4j.LoggerFactory
 
 import scala.collection.generic.CanBuildFrom
@@ -18,7 +18,7 @@ import scala.language.higherKinds
 
 trait BlockProcessingService {
 
-  def processBlock(block: atala_proto.AtalaBlock): ConnectionIO[Boolean]
+  def processBlock(block: node_internal.AtalaBlock): ConnectionIO[Boolean]
 }
 
 class BlockProcessingServiceImpl extends BlockProcessingService {
@@ -31,15 +31,15 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
 
   protected val logger = LoggerFactory.getLogger(getClass)
 
-  def parseOperation(signedOperation: geud_proto.SignedAtalaOperation): Either[ValidationError, Operation] = {
+  def parseOperation(signedOperation: node_models.SignedAtalaOperation): Either[ValidationError, Operation] = {
     signedOperation.getOperation.operation match {
-      case _: geud_proto.AtalaOperation.Operation.CreateDid =>
+      case _: node_models.AtalaOperation.Operation.CreateDid =>
         CreateDIDOperation.parse(signedOperation)
-      case _: geud_proto.AtalaOperation.Operation.UpdateDid =>
+      case _: node_models.AtalaOperation.Operation.UpdateDid =>
         UpdateDIDOperation.parse(signedOperation)
-      case _: geud_proto.AtalaOperation.Operation.IssueCredential =>
+      case _: node_models.AtalaOperation.Operation.IssueCredential =>
         IssueCredentialOperation.parse(signedOperation)
-      case _: geud_proto.AtalaOperation.Operation.RevokeCredential =>
+      case _: node_models.AtalaOperation.Operation.RevokeCredential =>
         RevokeCredentialOperation.parse(signedOperation)
       case op =>
         Left(InvalidValue(Path.root, op.getClass.getSimpleName, "Unknown operation"))
@@ -72,7 +72,7 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
 
   // ConnectionIO[Boolean] is a temporary type used to be able to unit tests this
   // it eventually will be replaced with ConnectionIO[Unit]
-  override def processBlock(block: atala_proto.AtalaBlock): ConnectionIO[Boolean] = {
+  override def processBlock(block: node_internal.AtalaBlock): ConnectionIO[Boolean] = {
     val operations = block.operations.toList
     val parsedOperationsEither = eitherTraverse(operations) { signedOperation =>
       parseOperation(signedOperation).left.map(err => (signedOperation, err))
@@ -114,7 +114,7 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
 
   def processOperation(
       operation: Operation,
-      protoOperation: geud_proto.SignedAtalaOperation
+      protoOperation: node_models.SignedAtalaOperation
   ): ConnectionIO[Either[StateError, Unit]] = {
     val result = for {
       correctnessData <- operation.getCorrectnessData(protoOperation.signedWith)
@@ -130,7 +130,7 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
     result.value
   }
 
-  def verifySignature(key: PublicKey, protoOperation: geud_proto.SignedAtalaOperation): Either[StateError, Unit] = {
+  def verifySignature(key: PublicKey, protoOperation: node_models.SignedAtalaOperation): Either[StateError, Unit] = {
     try {
       Either.cond(
         ECSignature.verify(key, protoOperation.getOperation.toByteArray, protoOperation.signature.toByteArray.toVector),

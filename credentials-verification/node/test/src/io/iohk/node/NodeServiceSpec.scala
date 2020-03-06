@@ -6,7 +6,6 @@ import doobie.implicits._
 import io.grpc.inprocess.{InProcessChannelBuilder, InProcessServerBuilder}
 import io.grpc.{ManagedChannel, Server, Status, StatusRuntimeException}
 import io.iohk.cvp.repositories.PostgresRepositorySpec
-import io.iohk.node.geud_node.NodeServiceGrpc
 import io.iohk.node.models.{DIDPublicKey, DIDSuffix, KeyUsage, SHA256Digest}
 import io.iohk.node.operations.path.{Path, ValueAtPath}
 import io.iohk.node.operations.{
@@ -18,7 +17,7 @@ import io.iohk.node.operations.{
 import io.iohk.node.repositories.DIDDataRepository
 import io.iohk.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
 import io.iohk.node.services.{BlockProcessingServiceSpec, DIDDataService, ObjectManagementService}
-import io.iohk.node.{geud_node => geud_proto}
+import io.iohk.prism.protos.{node_api, node_models}
 import org.mockito.scalatest.MockitoSugar
 import org.scalatest.BeforeAndAfterEach
 import org.scalatest.EitherValues._
@@ -36,7 +35,7 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
   protected var serverName: String = _
   protected var serverHandle: Server = _
   protected var channelHandle: ManagedChannel = _
-  protected var service: NodeServiceGrpc.NodeServiceBlockingStub = _
+  protected var service: node_api.NodeServiceGrpc.NodeServiceBlockingStub = _
 
   val objectManagementService = mock[ObjectManagementService]
 
@@ -51,14 +50,15 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       .forName(serverName)
       .directExecutor()
       .addService(
-        NodeServiceGrpc.bindService(new NodeServiceImpl(didDataService, objectManagementService), executionContext)
+        node_api.NodeServiceGrpc
+          .bindService(new NodeServiceImpl(didDataService, objectManagementService), executionContext)
       )
       .build()
       .start()
 
     channelHandle = InProcessChannelBuilder.forName(serverName).directExecutor().build()
 
-    service = NodeServiceGrpc.blockingStub(channelHandle)
+    service = node_api.NodeServiceGrpc.blockingStub(channelHandle)
   }
 
   override def afterEach(): Unit = {
@@ -77,14 +77,14 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       val key = DIDPublicKey(didSuffix, "master", KeyUsage.MasterKey, CreateDIDOperationSpec.masterKeys.getPublic)
       PublicKeysDAO.insert(key).transact(database).unsafeRunSync()
 
-      val response = service.getDidDocument(geud_proto.GetDidDocumentRequest(s"did:atala:${didSuffix.suffix}"))
+      val response = service.getDidDocument(node_api.GetDidDocumentRequest(s"did:atala:${didSuffix.suffix}"))
       val document = response.document.value
       document.id mustBe didSuffix.suffix
       document.publicKeys.size mustBe 1
 
       val publicKey = document.publicKeys.headOption.value
       publicKey.id mustBe "master"
-      publicKey.usage mustBe geud_proto.KeyUsage.MASTER_KEY
+      publicKey.usage mustBe node_models.KeyUsage.MASTER_KEY
 
       ParsingUtils.parseECKey(ValueAtPath(publicKey.getEcKeyData, Path.root)).right.value mustBe key.key
     }

@@ -8,7 +8,7 @@ import io.iohk.cvp.crypto.ECKeys
 import io.iohk.cvp.repositories.PostgresRepositorySpec
 import io.iohk.node.models.DIDData
 import io.iohk.node.repositories.DIDDataRepository
-import io.iohk.node.{geud_node => proto}
+import io.iohk.prism.protos.node_models
 import org.scalatest.EitherValues._
 import org.scalatest.Inside._
 
@@ -18,7 +18,7 @@ object CreateDIDOperationSpec {
   def protoECKeyFromPublicKey(key: PublicKey) = {
     val point = ECKeys.getECPoint(key)
 
-    proto.ECKeyData(
+    node_models.ECKeyData(
       curve = ECKeys.CURVE_NAME,
       x = ByteString.copyFrom(point.getAffineX.toByteArray),
       y = ByteString.copyFrom(point.getAffineY.toByteArray)
@@ -36,25 +36,33 @@ object CreateDIDOperationSpec {
   val issuingKeys = ECKeys.generateKeyPair()
   val issuingEcKey = protoECKeyFromPublicKey(issuingKeys.getPublic)
 
-  val exampleOperation = proto.AtalaOperation(
-    proto.AtalaOperation.Operation.CreateDid(
-      value = proto.CreateDIDOperation(
+  val exampleOperation = node_models.AtalaOperation(
+    node_models.AtalaOperation.Operation.CreateDid(
+      value = node_models.CreateDIDOperation(
         didData = Some(
-          proto.DIDData(
+          node_models.DIDData(
             id = "",
             publicKeys = List(
-              proto.PublicKey("master", proto.KeyUsage.MASTER_KEY, proto.PublicKey.KeyData.EcKeyData(masterEcKey)),
-              proto
-                .PublicKey("issuing", proto.KeyUsage.ISSUING_KEY, proto.PublicKey.KeyData.EcKeyData(issuingEcKey)),
-              proto.PublicKey(
-                "authentication",
-                proto.KeyUsage.AUTHENTICATION_KEY,
-                proto.PublicKey.KeyData.EcKeyData(randomProtoECKey)
+              node_models.PublicKey(
+                "master",
+                node_models.KeyUsage.MASTER_KEY,
+                node_models.PublicKey.KeyData.EcKeyData(masterEcKey)
               ),
-              proto.PublicKey(
+              node_models
+                .PublicKey(
+                  "issuing",
+                  node_models.KeyUsage.ISSUING_KEY,
+                  node_models.PublicKey.KeyData.EcKeyData(issuingEcKey)
+                ),
+              node_models.PublicKey(
+                "authentication",
+                node_models.KeyUsage.AUTHENTICATION_KEY,
+                node_models.PublicKey.KeyData.EcKeyData(randomProtoECKey)
+              ),
+              node_models.PublicKey(
                 "communication",
-                proto.KeyUsage.COMMUNICATION_KEY,
-                proto.PublicKey.KeyData.EcKeyData(randomProtoECKey)
+                node_models.KeyUsage.COMMUNICATION_KEY,
+                node_models.PublicKey.KeyData.EcKeyData(randomProtoECKey)
               )
             )
           )
@@ -113,7 +121,7 @@ class CreateDIDOperationSpec extends PostgresRepositorySpec {
 
     "return error when a key has missing data" in {
       val invalidOperation = exampleOperation
-        .update(_.createDid.didData.publicKeys(0).keyData := proto.PublicKey.KeyData.Empty)
+        .update(_.createDid.didData.publicKeys(0).keyData := node_models.PublicKey.KeyData.Empty)
 
       inside(CreateDIDOperation.parse(invalidOperation)) {
         case Left(ValidationError.MissingValue(path)) =>
@@ -143,7 +151,7 @@ class CreateDIDOperationSpec extends PostgresRepositorySpec {
 
     "return error when a key has invalid usage" in {
       val invalidOperation = exampleOperation
-        .update(_.createDid.didData.publicKeys(0).usage := proto.KeyUsage.UNKNOWN_KEY)
+        .update(_.createDid.didData.publicKeys(0).usage := node_models.KeyUsage.UNKNOWN_KEY)
 
       inside(CreateDIDOperation.parse(invalidOperation)) {
         case Left(ValidationError.InvalidValue(path, _, _)) =>

@@ -8,7 +8,7 @@ import doobie.implicits._
 import io.iohk.node.models.{CredentialId, DIDPublicKey, DIDSuffix, SHA256Digest}
 import io.iohk.node.operations.path._
 import io.iohk.node.repositories.daos.{CredentialsDAO, PublicKeysDAO}
-import io.iohk.node.{geud_node => proto}
+import io.iohk.prism.protos.node_models
 
 case class RevokeCredentialOperation(
     credentialId: CredentialId,
@@ -48,7 +48,7 @@ object RevokeCredentialOperation extends SimpleOperationCompanion[RevokeCredenti
 
   import ParsingUtils._
 
-  override def parse(operation: proto.AtalaOperation): Either[ValidationError, RevokeCredentialOperation] = {
+  override def parse(operation: node_models.AtalaOperation): Either[ValidationError, RevokeCredentialOperation] = {
 
     val operationDigest = SHA256Digest.compute(operation.toByteArray)
     val revokeOperation = ValueAtPath(operation, Path.root).child(_.getRevokeCredential, "revokeCredential")

@@ -3,15 +3,15 @@ package io.iohk.node.client.commands
 import com.google.protobuf.ByteString
 import io.iohk.cvp.crypto.ECKeys
 import io.iohk.node.client.{Config, ProtoUtils, StateStorage}
-import io.iohk.node.geud_node._
 import io.iohk.node.models.SHA256Digest
+import io.iohk.prism.protos.{node_api, node_models}
 import monocle.Optional
 import monocle.macros.{GenLens, GenPrism}
 import monocle.std.option.some
 import scopt.OParser
 
 case class UpdateDid(
-    keysToGenerate: Vector[(String, KeyUsage)] = Vector.empty,
+    keysToGenerate: Vector[(String, node_models.KeyUsage)] = Vector.empty,
     keysToRemove: Vector[String] = Vector.empty,
     didSuffix: Option[String] = None,
     previousOperation: Option[SHA256Digest] = None
@@ -19,7 +19,7 @@ case class UpdateDid(
 
   import Command.signOperation
 
-  override def run(api: NodeServiceGrpc.NodeServiceBlockingStub, config: Config): Unit = {
+  override def run(api: node_api.NodeServiceGrpc.NodeServiceBlockingStub, config: Config): Unit = {
 
     val state = StateStorage.load(config.stateStorage)
     val keys = state.keys
@@ -40,27 +40,31 @@ case class UpdateDid(
 
     val addActions = generatedKeys.map {
       case (keyId, keyUsage, _, key) =>
-        val publicKey = PublicKey(
+        val publicKey = node_models.PublicKey(
           id = keyId,
           usage = keyUsage,
-          keyData = PublicKey.KeyData.EcKeyData(ProtoUtils.protoECKeyFromPublicKey(key))
+          keyData = node_models.PublicKey.KeyData.EcKeyData(ProtoUtils.protoECKeyFromPublicKey(key))
         )
-        UpdateDIDAction(action = UpdateDIDAction.Action.AddKey(AddKeyAction(key = Some(publicKey))))
+        node_models.UpdateDIDAction(
+          action = node_models.UpdateDIDAction.Action.AddKey(node_models.AddKeyAction(key = Some(publicKey)))
+        )
     }
 
     val removeActions = keysToRemove.map { keyId =>
-      UpdateDIDAction(action = UpdateDIDAction.Action.RemoveKey(RemoveKeyAction(keyId = keyId)))
+      node_models.UpdateDIDAction(
+        action = node_models.UpdateDIDAction.Action.RemoveKey(node_models.RemoveKeyAction(keyId = keyId))
+      )
     }
 
-    val updateDidOp = UpdateDIDOperation(
+    val updateDidOp = node_models.UpdateDIDOperation(
       id = suffix,
       actions = addActions ++ removeActions,
       previousOperationHash = ByteString.copyFrom(lastOperation.value)
     )
 
-    val (masterKeyId, _, masterKey, _) = keys.find(_._2 == KeyUsage.MASTER_KEY).get
+    val (masterKeyId, _, masterKey, _) = keys.find(_._2 == node_models.KeyUsage.MASTER_KEY).get
 
-    val atalaOp = AtalaOperation(operation = AtalaOperation.Operation.UpdateDid(updateDidOp))
+    val atalaOp = node_models.AtalaOperation(operation = node_models.AtalaOperation.Operation.UpdateDid(updateDidOp))
     val signedAtalaOp = signOperation(atalaOp, masterKeyId, masterKey)
     val operationHash = SHA256Digest.compute(atalaOp.toByteArray)
 
@@ -92,7 +96,7 @@ object UpdateDid {
   private val keysLens = lens.composeLens(GenLens[UpdateDid](_.keysToGenerate))
   private val keyRemovalLens = lens.composeLens(GenLens[UpdateDid](_.keysToRemove))
 
-  def keyAppend[T](f: T => (String, KeyUsage)): (T, Config) => Config = { (x, c) =>
+  def keyAppend[T](f: T => (String, node_models.KeyUsage)): (T, Config) => Config = { (x, c) =>
     keysLens.modify(v => v :+ f(x))(c)
   }
 
@@ -110,19 +114,19 @@ object UpdateDid {
       opt[String]("generate-master-key")
         .valueName("<key-id>")
         .unbounded()
-        .action(keyAppend(name => (name, KeyUsage.MASTER_KEY))),
+        .action(keyAppend(name => (name, node_models.KeyUsage.MASTER_KEY))),
       opt[String]("generate-issuing-key")
         .valueName("<key-id>")
         .unbounded()
-        .action(keyAppend(name => (name, KeyUsage.ISSUING_KEY))),
+        .action(keyAppend(name => (name, node_models.KeyUsage.ISSUING_KEY))),
       opt[String]("generate-communication-key")
         .valueName("<key-id>")
         .unbounded()
-        .action(keyAppend(name => (name, KeyUsage.COMMUNICATION_KEY))),
+        .action(keyAppend(name => (name, node_models.KeyUsage.COMMUNICATION_KEY))),
       opt[String]("generate-authentication-key")
         .valueName("<key-id>")
         .unbounded()
-        .action(keyAppend(name => (name, KeyUsage.AUTHENTICATION_KEY))),
+        .action(keyAppend(name => (name, node_models.KeyUsage.AUTHENTICATION_KEY))),
       opt[String]("remove-key")
         .valueName("<key-id>")
         .unbounded()

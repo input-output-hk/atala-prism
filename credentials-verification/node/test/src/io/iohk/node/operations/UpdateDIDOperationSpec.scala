@@ -8,7 +8,7 @@ import io.iohk.node.models.KeyUsage
 import io.iohk.node.operations.CreateDIDOperationSpec.randomProtoECKey
 import io.iohk.node.repositories.{CredentialsRepository, DIDDataRepository}
 import io.iohk.node.services.BlockProcessingServiceSpec
-import io.iohk.node.{geud_node => proto}
+import io.iohk.prism.protos.node_models
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
 
@@ -22,28 +22,28 @@ object UpdateDIDOperationSpec {
 
   lazy val createDidOperation = CreateDIDOperation.parse(CreateDIDOperationSpec.exampleOperation).right.value
 
-  val exampleOperation = proto.AtalaOperation(
-    operation = proto.AtalaOperation.Operation.UpdateDid(
-      value = proto.UpdateDIDOperation(
+  val exampleOperation = node_models.AtalaOperation(
+    operation = node_models.AtalaOperation.Operation.UpdateDid(
+      value = node_models.UpdateDIDOperation(
         previousOperationHash = ByteString.copyFrom(createDidOperation.digest.value),
         id = createDidOperation.id.suffix,
         actions = Seq(
-          proto.UpdateDIDAction(
-            proto.UpdateDIDAction.Action.AddKey(
-              proto.AddKeyAction(
+          node_models.UpdateDIDAction(
+            node_models.UpdateDIDAction.Action.AddKey(
+              node_models.AddKeyAction(
                 key = Some(
-                  proto.PublicKey(
+                  node_models.PublicKey(
                     id = "new_master",
-                    usage = proto.KeyUsage.MASTER_KEY,
-                    keyData = proto.PublicKey.KeyData.EcKeyData(randomProtoECKey)
+                    usage = node_models.KeyUsage.MASTER_KEY,
+                    keyData = node_models.PublicKey.KeyData.EcKeyData(randomProtoECKey)
                   )
                 )
               )
             )
           ),
-          proto.UpdateDIDAction(
-            proto.UpdateDIDAction.Action.RemoveKey(
-              proto.RemoveKeyAction(
+          node_models.UpdateDIDAction(
+            node_models.UpdateDIDAction.Action.RemoveKey(
+              node_models.RemoveKeyAction(
                 keyId = "issuing"
               )
             )
@@ -97,7 +97,7 @@ class UpdateDIDOperationSpec extends PostgresRepositorySpec with ProtoParsingTes
 
     "return error when AddKey usage is not provided" in {
       invalidValueTest(
-        _.updateDid.actions(0).addKey.key.usage := proto.KeyUsage.UNKNOWN_KEY,
+        _.updateDid.actions(0).addKey.key.usage := node_models.KeyUsage.UNKNOWN_KEY,
         Vector("updateDid", "actions", "0", "addKey", "key", "usage"),
         "UNKNOWN_KEY"
       )
@@ -105,7 +105,7 @@ class UpdateDIDOperationSpec extends PostgresRepositorySpec with ProtoParsingTes
 
     "return error when AddKey keyData is not provided" in {
       missingValueTest(
-        _.updateDid.actions(0).addKey.key.keyData := proto.PublicKey.KeyData.Empty,
+        _.updateDid.actions(0).addKey.key.keyData := node_models.PublicKey.KeyData.Empty,
         Vector("updateDid", "actions", "0", "addKey", "key", "keyData")
       )
     }
@@ -152,7 +152,7 @@ class UpdateDIDOperationSpec extends PostgresRepositorySpec with ProtoParsingTes
 
     "return error when empty action is provided" in {
       missingValueTest(
-        _.updateDid.actions(1).action := proto.UpdateDIDAction.Action.Empty,
+        _.updateDid.actions(1).action := node_models.UpdateDIDAction.Action.Empty,
         Vector("updateDid", "actions", "1", "action")
       )
     }

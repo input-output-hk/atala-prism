@@ -4,15 +4,15 @@ import java.time.LocalDate
 
 import com.google.protobuf.ByteString
 import io.iohk.node.client.{Config, State, StateStorage}
-import io.iohk.node.geud_node._
 import io.iohk.node.models.SHA256Digest
+import io.iohk.prism.protos.{common_models, node_api, node_models}
 import monocle.Optional
 import monocle.macros.{GenLens, GenPrism}
 import monocle.std.option.some
 import scopt.OParser
 
 case class RevokeCredential(credentialId: String = "", previousOperation: Option[SHA256Digest] = None) extends Command {
-  override def run(api: NodeServiceGrpc.NodeServiceBlockingStub, config: Config): Unit = {
+  override def run(api: node_api.NodeServiceGrpc.NodeServiceBlockingStub, config: Config): Unit = {
     val state = StateStorage.load(config.stateStorage)
     val keys = state.keys
 
@@ -22,16 +22,17 @@ case class RevokeCredential(credentialId: String = "", previousOperation: Option
 
     val revocationJavaDate = LocalDate.now()
     val revocationDate =
-      Date(revocationJavaDate.getYear, revocationJavaDate.getMonthValue, revocationJavaDate.getDayOfMonth)
+      common_models.Date(revocationJavaDate.getYear, revocationJavaDate.getMonthValue, revocationJavaDate.getDayOfMonth)
 
-    val revokeCredentialOp = RevokeCredentialOperation(
+    val revokeCredentialOp = node_models.RevokeCredentialOperation(
       credentialId = credentialId,
       previousOperationHash = ByteString.copyFrom(lastOperation.value),
       revocationDate = Some(revocationDate)
     )
 
-    val atalaOp = AtalaOperation(operation = AtalaOperation.Operation.RevokeCredential(revokeCredentialOp))
-    val (issuingKeyId, _, issuingKey, _) = keys.find(_._2 == KeyUsage.ISSUING_KEY).get
+    val atalaOp =
+      node_models.AtalaOperation(operation = node_models.AtalaOperation.Operation.RevokeCredential(revokeCredentialOp))
+    val (issuingKeyId, _, issuingKey, _) = keys.find(_._2 == node_models.KeyUsage.ISSUING_KEY).get
     val signedAtalaOp = Command.signOperation(atalaOp, issuingKeyId, issuingKey)
     val operationHash = SHA256Digest.compute(atalaOp.toByteArray)
 

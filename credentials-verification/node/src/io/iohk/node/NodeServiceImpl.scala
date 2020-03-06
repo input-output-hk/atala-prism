@@ -6,56 +6,57 @@ import com.google.protobuf.ByteString
 import io.grpc.Status
 import io.iohk.cvp.crypto.ECKeys
 import io.iohk.node.errors.NodeError
-import io.iohk.node.geud_node.NodeServiceGrpc.NodeService
 import io.iohk.node.models.KeyUsage.{AuthenticationKey, CommunicationKey, IssuingKey, MasterKey}
 import io.iohk.node.operations._
 import io.iohk.node.services.{DIDDataService, ObjectManagementService}
-import io.iohk.node.{geud_node => proto}
+import io.iohk.prism.protos.{node_api, node_models}
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class NodeServiceImpl(didDataService: DIDDataService, objectManagement: ObjectManagementService)(
     implicit ec: ExecutionContext
-) extends NodeService {
-  override def getDidDocument(request: proto.GetDidDocumentRequest): Future[proto.GetDidDocumentResponse] = {
+) extends node_api.NodeServiceGrpc.NodeService {
+  override def getDidDocument(request: node_api.GetDidDocumentRequest): Future[node_api.GetDidDocumentResponse] = {
 
     didDataService.findByDID(request.did).value.flatMap {
       case Left(err: NodeError) => Future.failed(err.toStatus.asRuntimeException())
       case Right(didData) =>
-        Future.successful(proto.GetDidDocumentResponse(Some(toDIDData(didData))))
+        Future.successful(node_api.GetDidDocumentResponse(Some(toDIDData(didData))))
     }
   }
 
-  override def createDID(request: proto.SignedAtalaOperation): Future[proto.CreateDIDResponse] = {
+  override def createDID(request: node_models.SignedAtalaOperation): Future[node_api.CreateDIDResponse] = {
     for {
       parsedOperation <- errorEitherToFuture(CreateDIDOperation.parse(request))
       _ <- objectManagement.publishAtalaOperation(request)
-    } yield proto.CreateDIDResponse(id = parsedOperation.id.suffix)
+    } yield node_api.CreateDIDResponse(id = parsedOperation.id.suffix)
   }
 
-  override def updateDID(request: proto.SignedAtalaOperation): Future[proto.UpdateDIDResponse] = {
+  override def updateDID(request: node_models.SignedAtalaOperation): Future[node_api.UpdateDIDResponse] = {
     for {
       _ <- errorEitherToFuture(UpdateDIDOperation.parse(request))
       _ <- objectManagement.publishAtalaOperation(request)
-    } yield proto.UpdateDIDResponse()
+    } yield node_api.UpdateDIDResponse()
   }
 
-  override def issueCredential(request: proto.SignedAtalaOperation): Future[proto.IssueCredentialResponse] = {
+  override def issueCredential(request: node_models.SignedAtalaOperation): Future[node_api.IssueCredentialResponse] = {
     for {
       parsedOperation <- errorEitherToFuture(IssueCredentialOperation.parse(request))
       _ <- objectManagement.publishAtalaOperation(request)
-    } yield proto.IssueCredentialResponse(id = parsedOperation.credentialId.id)
+    } yield node_api.IssueCredentialResponse(id = parsedOperation.credentialId.id)
   }
 
-  override def revokeCredential(request: proto.SignedAtalaOperation): Future[proto.RevokeCredentialResponse] = {
+  override def revokeCredential(
+      request: node_models.SignedAtalaOperation
+  ): Future[node_api.RevokeCredentialResponse] = {
     for {
       _ <- errorEitherToFuture(RevokeCredentialOperation.parse(request))
       _ <- objectManagement.publishAtalaOperation(request)
-    } yield proto.RevokeCredentialResponse()
+    } yield node_api.RevokeCredentialResponse()
   }
 
   private def toDIDData(didData: models.DIDData) = {
-    proto
+    node_models
       .DIDData()
       .withId(didData.didSuffix.suffix)
       .withPublicKeys(
@@ -63,8 +64,12 @@ class NodeServiceImpl(didDataService: DIDDataService, objectManagement: ObjectMa
       )
   }
 
-  private def toProtoPublicKey(id: String, ecKeyData: proto.ECKeyData, keyUsage: proto.KeyUsage): proto.PublicKey = {
-    proto
+  private def toProtoPublicKey(
+      id: String,
+      ecKeyData: node_models.ECKeyData,
+      keyUsage: node_models.KeyUsage
+  ): node_models.PublicKey = {
+    node_models
       .PublicKey()
       .withId(id)
       .withEcKeyData(ecKeyData)
@@ -72,21 +77,21 @@ class NodeServiceImpl(didDataService: DIDDataService, objectManagement: ObjectMa
 
   }
 
-  private def toECKeyData(key: PublicKey): proto.ECKeyData = {
+  private def toECKeyData(key: PublicKey): node_models.ECKeyData = {
     val point = ECKeys.getECPoint(key)
-    proto
+    node_models
       .ECKeyData()
       .withCurve(ECKeys.CURVE_NAME)
       .withX(ByteString.copyFrom(point.getAffineX.toByteArray))
       .withY(ByteString.copyFrom(point.getAffineY.toByteArray))
   }
 
-  private def toProtoKeyUsage(keyUsage: models.KeyUsage): proto.KeyUsage = {
+  private def toProtoKeyUsage(keyUsage: models.KeyUsage): node_models.KeyUsage = {
     keyUsage match {
-      case MasterKey => proto.KeyUsage.MASTER_KEY
-      case IssuingKey => proto.KeyUsage.ISSUING_KEY
-      case CommunicationKey => proto.KeyUsage.COMMUNICATION_KEY
-      case AuthenticationKey => proto.KeyUsage.AUTHENTICATION_KEY
+      case MasterKey => node_models.KeyUsage.MASTER_KEY
+      case IssuingKey => node_models.KeyUsage.ISSUING_KEY
+      case CommunicationKey => node_models.KeyUsage.COMMUNICATION_KEY
+      case AuthenticationKey => node_models.KeyUsage.AUTHENTICATION_KEY
 
     }
   }

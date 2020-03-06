@@ -1,12 +1,11 @@
 syntax = "proto3";
 
-package io.iohk.node;
+import "node_models.proto";
 
-import "geud_node.proto";
+package io.iohk.prism.protos;
 
 // These models are intended for internal usage inside
-// the AtalaNode (not to be publically accessible from
-// the gRPC API)
+// the AtalaNode (not to be publicly accessible from the gRPC API)
 
 message AtalaBlock {
   string version = 1;

@@ -9,7 +9,7 @@ import io.iohk.node.models.{DIDPublicKey, DIDSuffix, SHA256Digest}
 import io.iohk.node.operations.StateError.{EntityExists, UnknownKey}
 import io.iohk.node.operations.path._
 import io.iohk.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
-import io.iohk.node.{geud_node => proto}
+import io.iohk.prism.protos.{node_models => proto}
 
 case class CreateDIDOperation(id: DIDSuffix, keys: List[DIDPublicKey], digest: SHA256Digest) extends Operation {
 
@@ -71,8 +71,8 @@ object CreateDIDOperation extends SimpleOperationCompanion[CreateDIDOperation] {
       reversedKeys <- keysValue { keys =>
         keys.zipWithIndex.foldLeft(Either.right[ValidationError, List[DIDPublicKey]](List.empty)) { (acc, keyi) =>
           val (key, i) = keyi
-          acc.flatMap(list =>
-            ParsingUtils.parseKey(ValueAtPath(key, keysValue.path / i.toString), didSuffix).map(_ :: list)
+          acc.flatMap(
+            list => ParsingUtils.parseKey(ValueAtPath(key, keysValue.path / i.toString), didSuffix).map(_ :: list)
           )
         }
       }

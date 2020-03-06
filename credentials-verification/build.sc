@@ -4,6 +4,7 @@ import mill.scalalib._
 import mill.contrib.scalapblib._
 import coursier.maven.MavenRepository
 import ammonite.ops._
+import mill.define.Sources
 
 object app extends ScalaModule {
   def scalaVersion = versions.scala
@@ -185,6 +186,10 @@ trait ServerPBCommon extends ServerCommon with ScalaPBModule {
 }
 
 object node extends ServerPBCommon with CVPDockerModule {
+
+  override def scalaPBSources: Sources = T.sources {
+    millOuterCtx.millSourcePath / 'protos
+  }
 
   override def scalacOptions = Seq("-Ywarn-unused:imports", "-Xfatal-warnings", "-feature")
 
