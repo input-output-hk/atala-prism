@@ -25,6 +25,8 @@ import io.iohk.cvp.views.Preferences;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.RootAppBar;
 import io.iohk.cvp.views.utils.adapters.CredentialsRecyclerViewAdapter;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -102,6 +104,12 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> {
     newCredentialsAdapter.clearMessages();
     credentialsAdapter.clearMessages();
 
+    //HARCODEO LA NUEVA CREDENCIAL
+    List<ReceivedMessage> hardcoreMessages = new ArrayList<>();
+    ReceivedMessage message = ReceivedMessage.getDefaultInstance();
+    hardcoreMessages.add(message);
+    newCredentialsAdapter.addMesseges(hardcoreMessages);
+
     try {
       liveData = viewModel.getMessages(this.getUserIds());
 
@@ -132,6 +140,11 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> {
                 .filter(msg -> acceptedMessagesIds.contains(msg.getId())).collect(
                     Collectors.toList());
 
+            //HARCODEO LA CREDENCIAL GUARDADA
+            ReceivedMessage hardcoreOldMessage = ReceivedMessage.getDefaultInstance();
+            acceptedMessages.add(hardcoreOldMessage);
+
+            credentialsAdapter.clearMessages();
             credentialsAdapter.addMesseges(acceptedMessages);
 
             if (!acceptedMessages.isEmpty()) {

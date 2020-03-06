@@ -12,6 +12,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 import butterknife.BindView;
@@ -57,6 +58,9 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
   @BindView(R.id.accept_credential)
   public Button acceptButton;
 
+  @BindView(R.id.text_view_credential_type)
+  TextView textViewCredentialType;
+
   @BindView(R.id.text_view_university_name)
   TextView textViewUniversityName;
 
@@ -74,6 +78,15 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
 
   @BindView(R.id.credential_logo)
   ImageView imageViewCredentialLogo;
+
+  @BindView(R.id.goventment_constraint)
+  ConstraintLayout goventmentConstraint;
+
+  @BindView(R.id.university_constraint)
+  ConstraintLayout universityConstraint;
+
+  @BindView(R.id.layout_credential_title)
+  ConstraintLayout layoutcredentialtitle;
 
   @Inject
   CredentialDetailFragment(ViewModelProvider.Factory factory) {
@@ -136,23 +149,40 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
   }
 
   private void fillData(Credential credential, String connectionId) {
-    textViewUniversityName.setText(credential.getIssuerType().getIssuerLegalName());
+    //TODO: harcodeo la credencial government
+    if(!connectionId.equals("")) {
+      textViewUniversityName.setText(credential.getIssuerType().getIssuerLegalName());
 
-    SubjectData subjectData = credential.getSubjectData();
-    textViewFullName.setText(
-        MessageFormat.format("{0} {1}", subjectData.getNames(0), subjectData.getSurname(0)));
+      SubjectData subjectData = credential.getSubjectData();
+      textViewFullName.setText(
+              MessageFormat.format("{0} {1}", subjectData.getNames(0), subjectData.getSurname(0)));
 
-    textViewCredentialName.setText(credential.getDegreeAwarded());
+      textViewCredentialName.setText(credential.getDegreeAwarded());
 
-    DateUtils dateUtils = new DateUtils(getContext());
+      DateUtils dateUtils = new DateUtils(getContext());
 
-    textViewStartDate.setText(dateUtils.format(credential.getAdmissionDate()));
-    textViewGraduationDate.setText(dateUtils.format(credential.getGraduationDate()));
+      textViewStartDate.setText(dateUtils.format(credential.getAdmissionDate()));
+      textViewGraduationDate.setText(dateUtils.format(credential.getGraduationDate()));
 
-    Preferences prefs = new Preferences(getContext());
+      Preferences prefs = new Preferences(getContext());
 
-    imageViewCredentialLogo.setImageBitmap(
-        ImageUtils.getBitmapFromByteArray(prefs.getConnectionLogo(connectionId)));
+      imageViewCredentialLogo.setImageBitmap(
+              ImageUtils.getBitmapFromByteArray(prefs.getConnectionLogo(connectionId)));
+    }else{
+      goventmentConstraint.setVisibility(View.VISIBLE);
+      universityConstraint.setVisibility(View.GONE);
+
+      layoutcredentialtitle.setBackground(getResources().getDrawable(R.drawable.rounded_top_corners_grey));
+
+      textViewCredentialType.setText("National ID Card");
+      textViewCredentialType.setTextColor(getResources().getColor(R.color.grey_4));
+
+      textViewCredentialName.setText("Republic of Redland");
+      textViewCredentialName.setTextColor(getResources().getColor(R.color.black));
+
+      imageViewCredentialLogo.setImageDrawable(getResources().getDrawable(R.drawable.government_icon));
+
+    }
   }
 
   private void showOptions(boolean optionsVisible) {
@@ -172,6 +202,12 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
   }
 
   private void saveAndGoBack(String key) {
+
+    //TODO: harcodeo la key de government
+    if(key.equals("")){
+      getActivity().onBackPressed();
+    }
+
     Preferences prefs = new Preferences(getContext());
     prefs.saveMessage(messageId, key);
     getActivity().onBackPressed();
