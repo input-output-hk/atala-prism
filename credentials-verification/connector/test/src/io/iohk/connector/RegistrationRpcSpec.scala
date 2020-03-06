@@ -6,11 +6,10 @@ import io.iohk.connector.model._
 import io.iohk.connector.repositories.daos.ParticipantsDAO
 import io.iohk.cvp.cmanager.models.Issuer
 import io.iohk.cvp.cmanager.repositories.daos.IssuersDAO
-import io.iohk.cvp.connector.protos._
 import io.iohk.cvp.cstore.repositories.daos.StoreUsersDAO
 import io.iohk.cvp.models.ParticipantId
-import io.iohk.cvp.node_ops.SignedAtalaOperation
 import io.iohk.prism.protos.node_api.CreateDIDResponse
+import io.iohk.prism.protos.{connector_api, node_models}
 import org.mockito.ArgumentMatchersSugar.*
 import org.mockito.IdiomaticMockito._
 import org.scalatest.OptionValues._
@@ -25,10 +24,11 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
         val expectedDID = "did:prism:test"
         val name = "iohk"
         val logo = "none".getBytes()
-        val request = RegisterDIDRequest(name = name)
+        val request = connector_api
+          .RegisterDIDRequest(name = name)
           .withLogo(ByteString.copyFrom(logo))
-          .withRole(RegisterDIDRequest.Role.issuer)
-          .withCreateDIDOperation(SignedAtalaOperation())
+          .withRole(connector_api.RegisterDIDRequest.Role.issuer)
+          .withCreateDIDOperation(node_models.SignedAtalaOperation())
 
         nodeMock.createDID(*).returns {
           Future.successful(CreateDIDResponse("test"))
@@ -56,7 +56,8 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
 
     "propagate the participant to the issuers table" in {
       val name = "Blockchain University"
-      val (did, participantId) = register(didSuffix = "issuerX", name = name, role = RegisterDIDRequest.Role.issuer)
+      val (did, participantId) =
+        register(didSuffix = "issuerX", name = name, role = connector_api.RegisterDIDRequest.Role.issuer)
       val result = IssuersDAO.findBy(Issuer.Id(participantId.uuid)).transact(database).unsafeRunSync().value
       result.id.value must be(participantId.uuid)
       result.name.value must be(name)
@@ -65,20 +66,26 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
 
     "propagate the participant to the store_users table" in {
       val name = "Blockchain Employer"
-      val (did, participantId) = register(didSuffix = "employerX", name = name, role = RegisterDIDRequest.Role.verifier)
+      val (did, participantId) =
+        register(didSuffix = "employerX", name = name, role = connector_api.RegisterDIDRequest.Role.verifier)
       val result = StoreUsersDAO.get(participantId).transact(database).unsafeRunSync().value
       result.id must be(participantId)
     }
   }
 
-  private def register(didSuffix: String, name: String, role: RegisterDIDRequest.Role): (String, ParticipantId) = {
+  private def register(
+      didSuffix: String,
+      name: String,
+      role: connector_api.RegisterDIDRequest.Role
+  ): (String, ParticipantId) = {
     usingApiAs.unlogged { blockingStub =>
       val expectedDID = s"did:prism:$didSuffix"
       val logo = "none".getBytes()
-      val request = RegisterDIDRequest(name = name)
+      val request = connector_api
+        .RegisterDIDRequest(name = name)
         .withLogo(ByteString.copyFrom(logo))
         .withRole(role)
-        .withCreateDIDOperation(SignedAtalaOperation())
+        .withCreateDIDOperation(node_models.SignedAtalaOperation())
 
       nodeMock.createDID(*).returns {
         Future.successful(CreateDIDResponse(didSuffix))

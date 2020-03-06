@@ -6,9 +6,9 @@ import java.util.{Base64, UUID}
 import com.google.protobuf.ByteString
 import enumeratum.EnumEntry.Lowercase
 import enumeratum._
-import io.iohk.cvp.connector.protos
 import io.iohk.cvp.crypto.ECKeys.EncodedPublicKey
 import io.iohk.cvp.models.ParticipantId
+import io.iohk.prism.protos.connector_models
 
 import scala.util.Random
 
@@ -47,18 +47,18 @@ case class ParticipantInfo(
     logo: Option[ParticipantLogo]
 ) {
 
-  def toProto: protos.ParticipantInfo = {
+  def toProto: connector_models.ParticipantInfo = {
     tpe match {
       case ParticipantType.Holder =>
-        protos.ParticipantInfo(
-          protos.ParticipantInfo.Participant.Holder(
-            protos.HolderInfo(did.getOrElse(""), name)
+        connector_models.ParticipantInfo(
+          connector_models.ParticipantInfo.Participant.Holder(
+            connector_models.HolderInfo(did.getOrElse(""), name)
           )
         )
       case ParticipantType.Issuer =>
-        protos.ParticipantInfo(
-          protos.ParticipantInfo.Participant.Issuer(
-            protos.IssuerInfo(
+        connector_models.ParticipantInfo(
+          connector_models.ParticipantInfo.Participant.Issuer(
+            connector_models.IssuerInfo(
               dID = did.getOrElse(""),
               name = name,
               logo = ByteString.copyFrom(logo.map(_.bytes).getOrElse(Vector.empty).toArray)
@@ -66,9 +66,9 @@ case class ParticipantInfo(
           )
         )
       case ParticipantType.Verifier =>
-        protos.ParticipantInfo(
-          protos.ParticipantInfo.Participant.Verifier(
-            protos.VerifierInfo(
+        connector_models.ParticipantInfo(
+          connector_models.ParticipantInfo.Participant.Verifier(
+            connector_models.VerifierInfo(
               dID = did.getOrElse(""),
               name = name,
               logo = ByteString.copyFrom(logo.map(_.bytes).getOrElse(Vector.empty).toArray)
@@ -85,8 +85,8 @@ case class ConnectionInfo(
     participantInfo: ParticipantInfo,
     token: TokenString
 ) {
-  def toProto: protos.ConnectionInfo = {
-    protos.ConnectionInfo(
+  def toProto: connector_models.ConnectionInfo = {
+    connector_models.ConnectionInfo(
       id.id.toString,
       created = instantiatedAt.toEpochMilli,
       participantInfo = Some(participantInfo.toProto),
@@ -96,8 +96,8 @@ case class ConnectionInfo(
 }
 
 case class Connection(connectionToken: String) {
-  def toProto: protos.Connection = {
-    protos.Connection(connectionToken)
+  def toProto: connector_models.Connection = {
+    connector_models.Connection(connectionToken)
   }
 }
 
@@ -114,8 +114,8 @@ object TokenString {
 }
 
 case class Message(id: MessageId, connection: ConnectionId, receivedAt: Instant, content: Array[Byte]) {
-  def toProto: protos.ReceivedMessage = {
-    protos.ReceivedMessage(
+  def toProto: connector_models.ReceivedMessage = {
+    connector_models.ReceivedMessage(
       id.id.toString,
       receivedAt.toEpochMilli,
       connection.id.toString,

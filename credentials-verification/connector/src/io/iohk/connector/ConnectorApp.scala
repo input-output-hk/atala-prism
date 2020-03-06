@@ -3,13 +3,7 @@ package io.iohk.connector
 import com.typesafe.config.{Config, ConfigFactory}
 import io.grpc.{ManagedChannelBuilder, Server, ServerBuilder}
 import io.iohk.connector.payments.BraintreePayments
-import io.iohk.connector.repositories.{
-  ConnectionsRepository,
-  MessagesRepository,
-  ParticipantsRepository,
-  PaymentsRepository,
-  RequestNoncesRepository
-}
+import io.iohk.connector.repositories._
 import io.iohk.connector.services.{ConnectionsService, MessagesService, RegistrationService}
 import io.iohk.cvp.ParticipantPropagatorService
 import io.iohk.cvp.admin.protos.AdminServiceGrpc
@@ -22,19 +16,19 @@ import io.iohk.cvp.cmanager.repositories.{
   IssuersRepository,
   StudentsRepository
 }
-import io.iohk.cvp.connector.protos._
 import io.iohk.cvp.cstore.CredentialsStoreService
 import io.iohk.cvp.cstore.protos.CredentialsStoreServiceGrpc
 import io.iohk.cvp.cstore.services.{StoreIndividualsService, StoreUsersService, StoredCredentialsService}
 import io.iohk.cvp.grpc.{GrpcAuthenticationHeaderParser, GrpcAuthenticatorInterceptor}
-import io.iohk.cvp.intdemo.{CredentialStatusRepository, IDServiceImpl}
 import io.iohk.cvp.intdemo.protos.IDServiceGrpc
+import io.iohk.cvp.intdemo.{CredentialStatusRepository, IDServiceImpl}
 import io.iohk.cvp.repositories.{SchemaMigrations, TransactorFactory}
+import io.iohk.prism.protos.connector_api
 import io.iohk.prism.protos.node_api.NodeServiceGrpc
 import org.slf4j.LoggerFactory
 
-import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext
+import scala.concurrent.duration._
 
 /**
   * Run with `mill -i connector.run`, otherwise, the server will stay running even after ctrl+C.
@@ -142,7 +136,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     server = ServerBuilder
       .forPort(ConnectorApp.port)
       .intercept(new GrpcAuthenticatorInterceptor)
-      .addService(ConnectorServiceGrpc.bindService(connectorService, executionContext))
+      .addService(connector_api.ConnectorServiceGrpc.bindService(connectorService, executionContext))
       .addService(CredentialsServiceGrpc.bindService(credentialsService, executionContext))
       .addService(StudentsServiceGrpc.bindService(studentsService, executionContext))
       .addService(GroupsServiceGrpc.bindService(groupsService, executionContext))

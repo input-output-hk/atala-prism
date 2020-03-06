@@ -1,31 +1,24 @@
 package io.iohk.cvp.intdemo
 
-import io.iohk.connector.ConnectorService
-import org.scalatest.FlatSpec
-
-import scala.concurrent.{ExecutionContext, Future}
-import scala.concurrent.duration._
-import IDServiceImplSpec._
 import io.grpc.stub.StreamObserver
-import io.iohk.cvp.connector.protos.{
-  Connection,
-  GenerateConnectionTokenRequest,
-  GenerateConnectionTokenResponse,
-  GetConnectionByTokenRequest,
-  GetConnectionByTokenResponse
-}
+import io.iohk.connector.ConnectorService
+import io.iohk.cvp.intdemo.IDServiceImplSpec._
 import io.iohk.cvp.intdemo.protos.{
   GetConnectionTokenRequest,
   GetSubjectStatusRequest,
   GetSubjectStatusResponse,
   SubjectStatus
 }
+import io.iohk.prism.protos.{connector_api, connector_models}
+import org.mockito.ArgumentMatchersSugar.{any, eqTo}
 import org.mockito.MockitoSugar._
-import org.scalatest.concurrent.ScalaFutures.convertScalaFuture
-import org.scalatest.concurrent.ScalaFutures.PatienceConfig
+import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 import org.scalatest.concurrent.Eventually.eventually
-import org.mockito.ArgumentMatchersSugar.{any, eqTo}
+import org.scalatest.concurrent.ScalaFutures.{PatienceConfig, convertScalaFuture}
+
+import scala.concurrent.duration._
+import scala.concurrent.{ExecutionContext, Future}
 
 class IDServiceImplSpec extends FlatSpec {
 
@@ -33,8 +26,8 @@ class IDServiceImplSpec extends FlatSpec {
 
   "getConnectionToken" should "create a connection token via the connector" in idService {
     (connectorService, credentialStatusRepository, idService) =>
-      when(connectorService.generateConnectionToken(GenerateConnectionTokenRequest()))
-        .thenReturn(Future(GenerateConnectionTokenResponse(token)))
+      when(connectorService.generateConnectionToken(connector_api.GenerateConnectionTokenRequest()))
+        .thenReturn(Future(connector_api.GenerateConnectionTokenResponse(token)))
       when(credentialStatusRepository.merge(token, SubjectStatus.UNCONNECTED.value)).thenReturn(Future(1))
 
       val tokenResponse = idService.getConnectionToken(GetConnectionTokenRequest()).futureValue
@@ -69,8 +62,8 @@ class IDServiceImplSpec extends FlatSpec {
         .thenAnswer(Future(Some(SubjectStatus.UNCONNECTED.value)))
         .andThenAnswer(Future(Some(SubjectStatus.CONNECTED.value)))
       when(credentialStatusRepository.merge(eqTo(token), any)).thenReturn(Future(1))
-      when(connectorService.getConnectionByToken(GetConnectionByTokenRequest(token)))
-        .thenReturn(Future(GetConnectionByTokenResponse(Some(Connection(token)))))
+      when(connectorService.getConnectionByToken(connector_api.GetConnectionByTokenRequest(token)))
+        .thenReturn(Future(connector_api.GetConnectionByTokenResponse(Some(connector_models.Connection(token)))))
 
       idService.getSubjectStatusStream(GetSubjectStatusRequest(token), streamObserver)
 

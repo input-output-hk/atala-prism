@@ -10,12 +10,12 @@ import io.iohk.connector.payments.BraintreePayments
 import io.iohk.connector.repositories.PaymentsRepository
 import io.iohk.connector.services.{ConnectionsService, MessagesService, RegistrationService}
 import io.iohk.cvp.ParticipantPropagatorService
-import io.iohk.cvp.connector.protos._
 import io.iohk.cvp.crypto.ECKeys
 import io.iohk.cvp.crypto.ECKeys._
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither._
+import io.iohk.prism.protos.{connector_api, connector_models}
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -32,7 +32,7 @@ class ConnectorService(
     participantPropagatorService: ParticipantPropagatorService
 )(
     implicit executionContext: ExecutionContext
-) extends ConnectorServiceGrpc.ConnectorService
+) extends connector_api.ConnectorServiceGrpc.ConnectorService
     with ErrorSupport {
 
   val logger: Logger = LoggerFactory.getLogger(this.getClass)
@@ -41,13 +41,15 @@ class ConnectorService(
     *
     * Available to: Holder, Issuer, Validator
     */
-  override def getConnectionByToken(request: GetConnectionByTokenRequest): Future[GetConnectionByTokenResponse] = {
+  override def getConnectionByToken(
+      request: connector_api.GetConnectionByTokenRequest
+  ): Future[connector_api.GetConnectionByTokenResponse] = {
     authenticator.public("getConnectionByToken", request) {
       implicit val loggingContext = LoggingContext("request" -> request)
       connections
         .getConnectionByToken(new TokenString(request.token))
         .wrapExceptions
-        .successMap(maybeConnection => GetConnectionByTokenResponse(maybeConnection.map(_.toProto)))
+        .successMap(maybeConnection => connector_api.GetConnectionByTokenResponse(maybeConnection.map(_.toProto)))
     }
   }
 
@@ -56,8 +58,8 @@ class ConnectorService(
     * Available to: Holder, Issuer, Validator
     */
   override def getConnectionsPaginated(
-      request: GetConnectionsPaginatedRequest
-  ): Future[GetConnectionsPaginatedResponse] = {
+      request: connector_api.GetConnectionsPaginatedRequest
+  ): Future[connector_api.GetConnectionsPaginatedResponse] = {
 
     def getLastSeenConnections(userId: ParticipantId): FutureEither[ConnectorError, Seq[model.ConnectionInfo]] = {
       implicit val loggingContext = LoggingContext("request" -> request)
@@ -82,7 +84,7 @@ class ConnectorService(
       {
         for {
           conns <- getLastSeenConnections(participantId)
-        } yield GetConnectionsPaginatedResponse(conns.map(_.toProto))
+        } yield connector_api.GetConnectionsPaginatedResponse(conns.map(_.toProto))
       }.successMap(identity)
     }
 
@@ -100,15 +102,15 @@ class ConnectorService(
     * Token does not exist (UNKNOWN)
     */
   override def getConnectionTokenInfo(
-      request: GetConnectionTokenInfoRequest
-  ): Future[GetConnectionTokenInfoResponse] = {
+      request: connector_api.GetConnectionTokenInfoRequest
+  ): Future[connector_api.GetConnectionTokenInfoResponse] = {
     implicit val loggingContext = LoggingContext("request" -> request)
     authenticator.public("getConnectionTokenInfo", request) {
       connections
         .getTokenInfo(new model.TokenString(request.token))
         .wrapExceptions
         .successMap { participantInfo =>
-          GetConnectionTokenInfoResponse(Some(participantInfo.toProto))
+          connector_api.GetConnectionTokenInfoResponse(Some(participantInfo.toProto))
         }
     }
   }
@@ -121,8 +123,8 @@ class ConnectorService(
     * Token does not exist (UNKNOWN)
     */
   override def addConnectionFromToken(
-      request: AddConnectionFromTokenRequest
-  ): Future[AddConnectionFromTokenResponse] = {
+      request: connector_api.AddConnectionFromTokenRequest
+  ): Future[connector_api.AddConnectionFromTokenResponse] = {
     implicit val loggingContext = LoggingContext("request" -> request)
     def f() = {
       Future {
@@ -158,7 +160,9 @@ class ConnectorService(
           .wrapExceptions
           .successMap {
             case (userId, connectionInfo) =>
-              AddConnectionFromTokenResponse(Some(connectionInfo.toProto)).withUserId(userId.uuid.toString)
+              connector_api
+                .AddConnectionFromTokenResponse(Some(connectionInfo.toProto))
+                .withUserId(userId.uuid.toString)
           }
       }.flatten
     }
@@ -173,7 +177,9 @@ class ConnectorService(
     * Errors:
     * Connection does not exist (UNKNOWN)
     */
-  override def deleteConnection(request: DeleteConnectionRequest): Future[DeleteConnectionResponse] = {
+  override def deleteConnection(
+      request: connector_api.DeleteConnectionRequest
+  ): Future[connector_api.DeleteConnectionResponse] = {
     authenticator.authenticated("deleteConnection", request) { _ =>
       Future.failed(new NotImplementedError)
     }
@@ -188,7 +194,7 @@ class ConnectorService(
     * Invalid DID document (INVALID_ARGUMENT)
     * DID Document does not match DID (INVALID_ARGUMENT)
     */
-  override def registerDID(request: RegisterDIDRequest): Future[RegisterDIDResponse] = {
+  override def registerDID(request: connector_api.RegisterDIDRequest): Future[connector_api.RegisterDIDResponse] = {
     authenticator.public("registerDID", request) {
       val createDIDOperationF = Future {
         request.createDIDOperation
@@ -197,9 +203,9 @@ class ConnectorService(
       for {
         createDIDOperation <- createDIDOperationF
         tpe = request.role match {
-          case RegisterDIDRequest.Role.issuer => ParticipantType.Issuer
-          case RegisterDIDRequest.Role.verifier => ParticipantType.Verifier
-          case RegisterDIDRequest.Role.Unrecognized(_) => throw new RuntimeException("Unknown role")
+          case connector_api.RegisterDIDRequest.Role.issuer => ParticipantType.Issuer
+          case connector_api.RegisterDIDRequest.Role.verifier => ParticipantType.Verifier
+          case connector_api.RegisterDIDRequest.Role.Unrecognized(_) => throw new RuntimeException("Unknown role")
         }
         logo = ParticipantLogo(request.logo.toByteArray.toVector)
         result <- registrationService
@@ -211,7 +217,7 @@ class ConnectorService(
           }
 
         _ <- participantPropagatorService.propagate(id = result.id, tpe = tpe, name = request.name, did = result.did)
-      } yield RegisterDIDResponse(did = result.did)
+      } yield connector_api.RegisterDIDResponse(did = result.did)
     }
   }
 
@@ -223,7 +229,9 @@ class ConnectorService(
     * Unknown billing plan (UNKNOWN)
     * User not allowed to set this billing plan (PERMISSION_DENIED)
     */
-  override def changeBillingPlan(request: ChangeBillingPlanRequest): Future[ChangeBillingPlanResponse] = {
+  override def changeBillingPlan(
+      request: connector_api.ChangeBillingPlanRequest
+  ): Future[connector_api.ChangeBillingPlanResponse] = {
     authenticator.authenticated("changeBillingPlan", request) { _ =>
       Future.failed(new NotImplementedError)
     }
@@ -237,8 +245,8 @@ class ConnectorService(
     * Billing plan doesn't allow token generation (PERMISSION_DENIED)
     */
   override def generateConnectionToken(
-      request: GenerateConnectionTokenRequest
-  ): Future[GenerateConnectionTokenResponse] = {
+      request: connector_api.GenerateConnectionTokenRequest
+  ): Future[connector_api.GenerateConnectionTokenResponse] = {
     def f(userId: ParticipantId) = {
 
       implicit val loggingContext: LoggingContext = LoggingContext("request" -> request, "userId" -> userId)
@@ -246,7 +254,7 @@ class ConnectorService(
         .generateToken(userId)
         .wrapExceptions
         .successMap { tokenString =>
-          GenerateConnectionTokenResponse(tokenString.token)
+          connector_api.GenerateConnectionTokenResponse(tokenString.token)
         }
     }
 
@@ -259,7 +267,9 @@ class ConnectorService(
     *
     * Available to: Issuer, Holder, Validator
     */
-  override def getMessagesPaginated(request: GetMessagesPaginatedRequest): Future[GetMessagesPaginatedResponse] = {
+  override def getMessagesPaginated(
+      request: connector_api.GetMessagesPaginatedRequest
+  ): Future[connector_api.GetMessagesPaginatedResponse] = {
 
     def getLastSeenMessages(userId: ParticipantId): FutureEither[ConnectorError, Seq[Message]] = {
       implicit val loggingContext = LoggingContext("request" -> request, "userId" -> userId)
@@ -284,7 +294,7 @@ class ConnectorService(
       {
         for {
           msgs <- getLastSeenMessages(participantId)
-        } yield GetMessagesPaginatedResponse(msgs.map(_.toProto))
+        } yield connector_api.GetMessagesPaginatedResponse(msgs.map(_.toProto))
       }.successMap(identity)
     }
 
@@ -294,8 +304,8 @@ class ConnectorService(
   }
 
   override def getMessagesForConnection(
-      request: GetMessagesForConnectionRequest
-  ): Future[GetMessagesForConnectionResponse] = {
+      request: connector_api.GetMessagesForConnectionRequest
+  ): Future[connector_api.GetMessagesForConnectionResponse] = {
 
     def f(userId: ParticipantId) = {
       Future {
@@ -312,7 +322,7 @@ class ConnectorService(
           .flatMap(connectionId => messages.getMessages(userId, connectionId))
           .wrapExceptions
           .successMap { msgs =>
-            GetMessagesForConnectionResponse(msgs.map(_.toProto))
+            connector_api.GetMessagesForConnectionResponse(msgs.map(_.toProto))
           }
       }.flatten
     }
@@ -330,7 +340,7 @@ class ConnectorService(
     * Unknown connection (UNKNOWN)
     * Connection closed (FAILED_PRECONDITION)
     */
-  override def sendMessage(request: SendMessageRequest): Future[SendMessageResponse] = {
+  override def sendMessage(request: connector_api.SendMessageRequest): Future[connector_api.SendMessageResponse] = {
 
     def f(userId: ParticipantId) = {
       Future {
@@ -340,7 +350,7 @@ class ConnectorService(
         messages
           .insertMessage(userId, connectionId, request.message.toByteArray)
           .wrapExceptions
-          .successMap(_ => SendMessageResponse())
+          .successMap(_ => connector_api.SendMessageResponse())
       }.flatten
     }
 
@@ -350,14 +360,18 @@ class ConnectorService(
   }
 
   override def getBraintreePaymentsConfig(
-      request: GetBraintreePaymentsConfigRequest
-  ): Future[GetBraintreePaymentsConfigResponse] = {
+      request: connector_api.GetBraintreePaymentsConfigRequest
+  ): Future[connector_api.GetBraintreePaymentsConfigResponse] = {
     authenticator.public("getBraintreePaymentsConfig", request) {
-      Future.successful(GetBraintreePaymentsConfigResponse(tokenizationKey = braintreePayments.tokenizationKey))
+      Future.successful(
+        connector_api.GetBraintreePaymentsConfigResponse(tokenizationKey = braintreePayments.tokenizationKey)
+      )
     }
   }
 
-  override def processPayment(request: ProcessPaymentRequest): Future[ProcessPaymentResponse] = {
+  override def processPayment(
+      request: connector_api.ProcessPaymentRequest
+  ): Future[connector_api.ProcessPaymentResponse] = {
 
     def tryProcessingPayment(
         userId: ParticipantId,
@@ -396,7 +410,7 @@ class ConnectorService(
           .map {
             case Left(_) => throw new RuntimeException("Impossible")
             case Right(p) =>
-              ProcessPaymentResponse().withPayment(toPaymentProto(p))
+              connector_api.ProcessPaymentResponse().withPayment(toPaymentProto(p))
           }
       }.flatten
 
@@ -407,11 +421,11 @@ class ConnectorService(
     }
   }
 
-  override def getPayments(request: GetPaymentsRequest): Future[GetPaymentsResponse] = {
+  override def getPayments(request: connector_api.GetPaymentsRequest): Future[connector_api.GetPaymentsResponse] = {
     def f(userId: ParticipantId) = {
       paymentsRepository.find(userId).value.map {
         case Left(_) => throw new RuntimeException("Impossible")
-        case Right(payments) => GetPaymentsResponse(payments.map(toPaymentProto))
+        case Right(payments) => connector_api.GetPaymentsResponse(payments.map(toPaymentProto))
       }
     }
 
@@ -420,8 +434,9 @@ class ConnectorService(
     }
   }
 
-  private def toPaymentProto(payment: ConnectorPayment): Payment = {
-    Payment()
+  private def toPaymentProto(payment: ConnectorPayment): connector_models.Payment = {
+    connector_models
+      .Payment()
       .withAmount(payment.amount.toString())
       .withCreatedOn(payment.createdOn.toEpochMilli)
       .withId(payment.id.uuid.toString)
