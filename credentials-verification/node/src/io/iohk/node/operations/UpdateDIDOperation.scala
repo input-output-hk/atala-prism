@@ -5,12 +5,11 @@ import cats.implicits._
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.postgres.sqlstate
-import io.iohk.node.geud_node.SignedAtalaOperation
 import io.iohk.node.models.{DIDPublicKey, DIDSuffix, KeyUsage, SHA256Digest}
 import io.iohk.node.operations.StateError.EntityExists
 import io.iohk.node.operations.path._
 import io.iohk.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
-import io.iohk.node.{geud_node => proto}
+import io.iohk.prism.protos.node_models
 
 sealed trait UpdateDIDAction
 case class AddKeyAction(key: DIDPublicKey) extends UpdateDIDAction
@@ -84,7 +83,7 @@ case class UpdateDIDOperation(
 object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
 
   protected def parseAction(
-      action: ValueAtPath[proto.UpdateDIDAction],
+      action: ValueAtPath[node_models.UpdateDIDAction],
       didSuffix: DIDSuffix,
       signingKeyId: String
   ): Either[ValidationError, UpdateDIDAction] = {
@@ -110,7 +109,7 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
     * @param signedOperation signed operation, needs to be of the type compatible with the called companion object
     * @return parsed operation or ValidationError signifying the operation is invalid
     */
-  override def parse(signedOperation: SignedAtalaOperation): Either[ValidationError, UpdateDIDOperation] = {
+  override def parse(signedOperation: node_models.SignedAtalaOperation): Either[ValidationError, UpdateDIDOperation] = {
     val operation = signedOperation.getOperation
     val signingKeyId = signedOperation.signedWith
 

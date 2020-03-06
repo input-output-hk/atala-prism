@@ -4,20 +4,21 @@ import java.time.LocalDate
 
 import com.google.protobuf.ByteString
 import io.iohk.node.client.{Config, StateStorage}
-import io.iohk.node.geud_node._
 import io.iohk.node.models.SHA256Digest
+import io.iohk.prism.protos.{common_models, node_api, node_models}
 import monocle.Optional
 import monocle.macros.{GenLens, GenPrism}
 import monocle.std.option.some
 import scopt.OParser
 
 case class IssueCredential(issuer: Option[String] = None, contentHash: Option[SHA256Digest] = None) extends Command {
-  override def run(api: NodeServiceGrpc.NodeServiceBlockingStub, config: Config): Unit = {
+  override def run(api: node_api.NodeServiceGrpc.NodeServiceBlockingStub, config: Config): Unit = {
     val state = StateStorage.load(config.stateStorage)
     val keys = state.keys
 
     val issuanceJavaDate = LocalDate.now()
-    val issuanceDate = Date(issuanceJavaDate.getYear, issuanceJavaDate.getMonthValue, issuanceJavaDate.getDayOfMonth)
+    val issuanceDate =
+      common_models.Date(issuanceJavaDate.getYear, issuanceJavaDate.getMonthValue, issuanceJavaDate.getDayOfMonth)
 
     val issuerVal = issuer
       .orElse(state.didSuffix)
@@ -25,9 +26,9 @@ case class IssueCredential(issuer: Option[String] = None, contentHash: Option[SH
         throw new IllegalStateException("No default did suffix value available, provide one via --issuer option")
       )
 
-    val issueCredentialOp = IssueCredentialOperation(
+    val issueCredentialOp = node_models.IssueCredentialOperation(
       credentialData = Some(
-        CredentialData(
+        node_models.CredentialData(
           issuer = issuerVal,
           contentHash = ByteString.copyFrom(contentHash.get.value),
           issuanceDate = Some(issuanceDate)
@@ -35,8 +36,9 @@ case class IssueCredential(issuer: Option[String] = None, contentHash: Option[SH
       )
     )
 
-    val atalaOp = AtalaOperation(operation = AtalaOperation.Operation.IssueCredential(issueCredentialOp))
-    val (issuingKeyId, _, issuingKey, _) = keys.find(_._2 == KeyUsage.ISSUING_KEY).get
+    val atalaOp =
+      node_models.AtalaOperation(operation = node_models.AtalaOperation.Operation.IssueCredential(issueCredentialOp))
+    val (issuingKeyId, _, issuingKey, _) = keys.find(_._2 == node_models.KeyUsage.ISSUING_KEY).get
     val signedAtalaOp = Command.signOperation(atalaOp, issuingKeyId, issuingKey)
     val operationHash = SHA256Digest.compute(atalaOp.toByteArray)
 

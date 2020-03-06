@@ -4,7 +4,7 @@ import java.io.File
 
 import io.grpc._
 import io.iohk.node.client.commands._
-import io.iohk.node.geud_node._
+import io.iohk.prism.protos.node_api
 import monocle.POptional
 import scopt.OParser
 
@@ -80,7 +80,7 @@ object NodeClient {
     configOpt match {
       case Some(config @ Config(Some(command), host, port, _)) =>
         val channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build
-        val api = NodeServiceGrpc.blockingStub(channel)
+        val api = node_api.NodeServiceGrpc.blockingStub(channel)
         command.run(api, config)
       case Some(Config(None, _, _, _)) =>
         println(OParser.usage(parser))

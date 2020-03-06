@@ -7,7 +7,7 @@ import doobie.implicits._
 import io.iohk.cvp.repositories.PostgresRepositorySpec
 import io.iohk.node.models.{DIDPublicKey, KeyUsage}
 import io.iohk.node.repositories.{CredentialsRepository, DIDDataRepository}
-import io.iohk.node.{geud_node => proto}
+import io.iohk.prism.protos.{common_models, node_models}
 import org.scalatest.EitherValues._
 import org.scalatest.Inside._
 
@@ -31,13 +31,13 @@ object RevokeCredentialOperationSpec {
 
   val revocationDate = LocalDate.of(2019, 12, 16)
 
-  val exampleOperation = proto.AtalaOperation(
-    operation = proto.AtalaOperation.Operation.RevokeCredential(
-      value = proto.RevokeCredentialOperation(
+  val exampleOperation = node_models.AtalaOperation(
+    operation = node_models.AtalaOperation.Operation.RevokeCredential(
+      value = node_models.RevokeCredentialOperation(
         previousOperationHash = ByteString.copyFrom(credentialIssueOperation.digest.value),
         credentialId = credentialIssueOperation.digest.hexValue,
         revocationDate = Some(
-          proto.Date(revocationDate.getYear, revocationDate.getMonthValue, revocationDate.getDayOfMonth)
+          common_models.Date(revocationDate.getYear, revocationDate.getMonthValue, revocationDate.getDayOfMonth)
         )
       )
     )

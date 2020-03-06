@@ -6,11 +6,12 @@ import doobie.free.connection
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
+import io.iohk.node.AtalaReferenceLedger
 import io.iohk.node.models.{AtalaObject, SHA256Digest}
 import io.iohk.node.objects.ObjectStorageService
 import io.iohk.node.repositories.daos.AtalaObjectsDAO
 import io.iohk.node.repositories.daos.AtalaObjectsDAO.AtalaObjectCreateData
-import io.iohk.node.{AtalaReferenceLedger, atala_bitcoin => atala_proto, geud_node => geud_proto}
+import io.iohk.prism.protos.{node_internal, node_models}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -70,11 +71,11 @@ class ObjectManagementService(
       }
   }
 
-  def publishAtalaOperation(op: geud_proto.SignedAtalaOperation): Future[Unit] = {
-    val block = atala_proto.AtalaBlock("1.0", List(op))
+  def publishAtalaOperation(op: node_models.SignedAtalaOperation): Future[Unit] = {
+    val block = node_internal.AtalaBlock("1.0", List(op))
     val blockBytes = block.toByteArray
     val blockHash = SHA256Digest.compute(blockBytes)
-    val obj = atala_proto.AtalaObject(blockHash = ByteString.copyFrom(blockHash.value), blockOperationCount = 1)
+    val obj = node_internal.AtalaObject(blockHash = ByteString.copyFrom(blockHash.value), blockOperationCount = 1)
     val objBytes = obj.toByteArray
     val objHash = SHA256Digest.compute(objBytes)
 
@@ -92,7 +93,7 @@ class ObjectManagementService(
         case None =>
           val objectFileName = obj.objectId.hexValue
           val objectBytes = storage.get(objectFileName).get // TODO: error support
-          val aobject = atala_proto.AtalaObject.parseFrom(objectBytes)
+          val aobject = node_internal.AtalaObject.parseFrom(objectBytes)
           val blockHash = SHA256Digest(aobject.blockHash.toByteArray)
           AtalaObjectsDAO.setBlockHash(obj.objectId, blockHash).map(_ => blockHash)
       }
@@ -104,7 +105,7 @@ class ObjectManagementService(
   protected def processBlock(hash: SHA256Digest): ConnectionIO[Boolean] = {
     val blockFileName = hash.hexValue
     val blockBytes = storage.get(blockFileName).get // TODO: error support
-    val block = atala_proto.AtalaBlock.parseFrom(blockBytes)
+    val block = node_internal.AtalaBlock.parseFrom(blockBytes)
     blockProcessing.processBlock(block)
   }
 }

@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package io.iohk.prism.protos;
+
+import "node_models.proto";
+
+service NodeService {
+    rpc GetDidDocument(GetDidDocumentRequest) returns (GetDidDocumentResponse) {}
+
+    rpc CreateDID(SignedAtalaOperation) returns (CreateDIDResponse) {}
+
+    rpc UpdateDID(SignedAtalaOperation) returns (UpdateDIDResponse) {}
+
+    rpc IssueCredential(SignedAtalaOperation) returns (IssueCredentialResponse) {}
+
+    rpc RevokeCredential(SignedAtalaOperation) returns (RevokeCredentialResponse) {}
+}
+
+message GetDidDocumentRequest {
+    string did = 1;
+}
+
+message GetDidDocumentResponse {
+    DIDData document = 1;
+}
+
+message CreateDIDResponse {
+    string id = 1; // DID suffix, where DID is in form did:atala:[DID suffix]
+}
+
+message UpdateDIDResponse {
+}
+
+message IssueCredentialResponse {
+    string id = 1; // credential id
+}
+
+message RevokeCredentialResponse {
+}

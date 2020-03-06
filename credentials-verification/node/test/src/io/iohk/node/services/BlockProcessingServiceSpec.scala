@@ -10,7 +10,7 @@ import io.iohk.node.models.{DIDSuffix, SHA256Digest}
 import io.iohk.node.operations.CreateDIDOperationSpec
 import io.iohk.node.repositories.daos.{CredentialsDAO, DIDDataDAO}
 import io.iohk.node.repositories.{CredentialsRepository, DIDDataRepository}
-import io.iohk.node.{atala_bitcoin => atala_proto, geud_node => geud_proto}
+import io.iohk.prism.protos.{node_internal, node_models}
 
 import scala.concurrent.duration._
 
@@ -19,11 +19,11 @@ object BlockProcessingServiceSpec {
   val createDidOperation = io.iohk.node.operations.CreateDIDOperationSpec.exampleOperation
 
   def signOperation(
-      operation: geud_proto.AtalaOperation,
+      operation: node_models.AtalaOperation,
       keyId: String,
       key: PrivateKey
-  ): geud_proto.SignedAtalaOperation = {
-    geud_proto.SignedAtalaOperation(
+  ): node_models.SignedAtalaOperation = {
+    node_models.SignedAtalaOperation(
       signedWith = keyId,
       operation = Some(operation),
       signature = ByteString.copyFrom(ECSignature.sign(key, operation.toByteArray).toArray)
@@ -32,7 +32,7 @@ object BlockProcessingServiceSpec {
 
   val signedCreateDidOperation = signOperation(createDidOperation, "master", masterKeys.getPrivate)
 
-  val exampleBlock = atala_proto.AtalaBlock(
+  val exampleBlock = node_internal.AtalaBlock(
     operations = Seq(signedCreateDidOperation)
   )
 
@@ -70,7 +70,7 @@ class BlockProcessingServiceSpec extends PostgresRepositorySpec {
     "not apply operation when signature is wrong" in {
       val invalidSignatureOperation = signedCreateDidOperation.withSignature(ByteString.EMPTY)
 
-      val invalidSignatureBlock = atala_proto.AtalaBlock(
+      val invalidSignatureBlock = node_internal.AtalaBlock(
         operations = Seq(invalidSignatureOperation)
       )
 
@@ -91,7 +91,7 @@ class BlockProcessingServiceSpec extends PostgresRepositorySpec {
       val invalidOperation = createDidOperation.update(_.createDid.didData.id := "id")
       val signedInvalidOperation = signOperation(invalidOperation, "master", masterKeys.getPrivate)
 
-      val invalidBlock = atala_proto.AtalaBlock(
+      val invalidBlock = node_internal.AtalaBlock(
         operations = Seq(signedInvalidOperation)
       )
 
@@ -111,10 +111,10 @@ class BlockProcessingServiceSpec extends PostgresRepositorySpec {
         .copy()
         .update(
           _.createDid.didData.publicKeys := List(
-            geud_proto.PublicKey(
+            node_models.PublicKey(
               "master",
-              geud_proto.KeyUsage.MASTER_KEY,
-              geud_proto.PublicKey.KeyData
+              node_models.KeyUsage.MASTER_KEY,
+              node_models.PublicKey.KeyData
                 .EcKeyData(CreateDIDOperationSpec.protoECKeyFromPublicKey(ECKeys.generateKeyPair().getPublic))
             )
           )
@@ -126,17 +126,17 @@ class BlockProcessingServiceSpec extends PostgresRepositorySpec {
         .copy()
         .update(
           _.createDid.didData.publicKeys := List(
-            geud_proto.PublicKey(
+            node_models.PublicKey(
               "rootkey",
-              geud_proto.KeyUsage.MASTER_KEY,
-              geud_proto.PublicKey.KeyData
+              node_models.KeyUsage.MASTER_KEY,
+              node_models.PublicKey.KeyData
                 .EcKeyData(CreateDIDOperationSpec.protoECKeyFromPublicKey(operation3Keys.getPublic))
             )
           )
         )
       val signedOperation3 = signOperation(operation3, "rootkey", operation3Keys.getPrivate)
 
-      val block = atala_proto.AtalaBlock(
+      val block = node_internal.AtalaBlock(
         operations = Seq(signedOperation1, incorrectlySignedOperation2, signedOperation3)
       )
 

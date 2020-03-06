@@ -6,7 +6,7 @@ import cats.data.EitherT
 import doobie.free.connection.ConnectionIO
 import io.iohk.node.models.{DIDSuffix, SHA256Digest}
 import io.iohk.node.operations.path._
-import io.iohk.node.{geud_node => proto}
+import io.iohk.prism.protos.node_models
 
 package object operations {
 
@@ -106,17 +106,17 @@ package object operations {
       * @param signedOperation signed operation, needs to be of the type compatible with the called companion object
       * @return parsed operation or ValidationError signifying the operation is invalid
       */
-    def parse(signedOperation: proto.SignedAtalaOperation): Either[ValidationError, Repr]
+    def parse(signedOperation: node_models.SignedAtalaOperation): Either[ValidationError, Repr]
 
   }
 
   trait SimpleOperationCompanion[Repr <: Operation] extends OperationCompanion[Repr] {
 
-    override def parse(operation: proto.SignedAtalaOperation): Either[ValidationError, Repr] = {
+    override def parse(operation: node_models.SignedAtalaOperation): Either[ValidationError, Repr] = {
       parse(operation.getOperation)
     }
 
-    def parse(operation: proto.AtalaOperation): Either[ValidationError, Repr]
+    def parse(operation: node_models.AtalaOperation): Either[ValidationError, Repr]
   }
 
 }

@@ -7,11 +7,11 @@ import doobie.free.connection
 import doobie.implicits._
 import io.iohk.cvp.crypto.ECKeys
 import io.iohk.cvp.repositories.PostgresRepositorySpec
-import io.iohk.node.atala_bitcoin.AtalaBlock
 import io.iohk.node.models.SHA256Digest
 import io.iohk.node.operations.CreateDIDOperationSpec
 import io.iohk.node.repositories.daos.AtalaObjectsDAO
-import io.iohk.node.{AtalaReferenceLedger, objects, atala_bitcoin => atala_proto, geud_node => geud_proto}
+import io.iohk.node.{AtalaReferenceLedger, objects}
+import io.iohk.prism.protos.{node_internal, node_models}
 import org.mockito.captor.ArgCaptor
 import org.mockito.scalatest.MockitoSugar
 import org.scalatest.BeforeAndAfterEach
@@ -26,10 +26,10 @@ object ObjectManagementServiceSpec {
   val exampleOperations = newKeysPairs.zipWithIndex.map {
     case (keyPair: KeyPair, i) =>
       BlockProcessingServiceSpec.createDidOperation.update(_.createDid.didData.publicKeys.modify { keys =>
-        keys :+ geud_proto.PublicKey(
+        keys :+ node_models.PublicKey(
           id = s"key$i",
-          usage = geud_proto.KeyUsage.AUTHENTICATION_KEY,
-          keyData = geud_proto.PublicKey.KeyData.EcKeyData(
+          usage = node_models.KeyUsage.AUTHENTICATION_KEY,
+          keyData = node_models.PublicKey.KeyData.EcKeyData(
             CreateDIDOperationSpec.protoECKeyFromPublicKey(keyPair.getPublic)
           )
         )
@@ -131,7 +131,7 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
       val objectHash = createExampleObject(block)
       objectManagmentService.saveReference(objectHash).futureValue
 
-      val blockCaptor = ArgCaptor[AtalaBlock]
+      val blockCaptor = ArgCaptor[node_internal.AtalaBlock]
       verify(blockProcessing).processBlock(blockCaptor)
       blockCaptor.value mustEqual block
 
@@ -159,7 +159,7 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
         block
       }
 
-      val blockCaptor = ArgCaptor[AtalaBlock]
+      val blockCaptor = ArgCaptor[node_internal.AtalaBlock]
       verify(blockProcessing, times(blocks.size)).processBlock(blockCaptor)
       blockCaptor.values must contain theSameElementsAs blocks
 
@@ -168,26 +168,26 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
     }
   }
 
-  protected def getBlockFromStorage(ref: SHA256Digest): atala_proto.AtalaBlock = {
+  protected def getBlockFromStorage(ref: SHA256Digest): node_internal.AtalaBlock = {
     val atalaObjectData = storage.get(ref.hexValue).value
-    val atalaObject = atala_proto.AtalaObject.parseFrom(atalaObjectData)
+    val atalaObject = node_internal.AtalaObject.parseFrom(atalaObjectData)
     val atalaBlockHash = SHA256Digest(atalaObject.blockHash.toByteArray)
     val atalaBlockData = storage.get(atalaBlockHash.hexValue).value
-    atala_proto.AtalaBlock.parseFrom(atalaBlockData)
+    node_internal.AtalaBlock.parseFrom(atalaBlockData)
   }
 
   protected def exampleBlock(
-      signedOperation: geud_proto.SignedAtalaOperation = BlockProcessingServiceSpec.signedCreateDidOperation
-  ): atala_proto.AtalaBlock = {
-    atala_proto.AtalaBlock(version = "1.0", operations = Seq(signedOperation))
+      signedOperation: node_models.SignedAtalaOperation = BlockProcessingServiceSpec.signedCreateDidOperation
+  ): node_internal.AtalaBlock = {
+    node_internal.AtalaBlock(version = "1.0", operations = Seq(signedOperation))
   }
 
-  protected def createExampleObject(block: atala_proto.AtalaBlock): SHA256Digest = {
+  protected def createExampleObject(block: node_internal.AtalaBlock): SHA256Digest = {
     val blockBytes = block.toByteArray
     val blockHash = SHA256Digest.compute(blockBytes)
     storage.put(blockHash.hexValue, blockBytes)
 
-    val atalaObject = atala_proto.AtalaObject(ByteString.copyFrom(blockHash.value), 1, blockBytes.length)
+    val atalaObject = node_internal.AtalaObject(ByteString.copyFrom(blockHash.value), 1, blockBytes.length)
     val objectBytes = atalaObject.toByteArray
     val objectHash = SHA256Digest.compute(objectBytes)
     storage.put(objectHash.hexValue, objectBytes)

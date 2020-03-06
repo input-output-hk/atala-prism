@@ -5,13 +5,13 @@ import java.security.{PrivateKey, PublicKey}
 import java.util.Base64
 
 import io.iohk.cvp.crypto.ECKeys
-import io.iohk.node.geud_node.KeyUsage
 import io.iohk.node.models.SHA256Digest
+import io.iohk.prism.protos.node_models
 
 import scala.io.Source
 
 case class State(
-    keys: List[(String, KeyUsage, PrivateKey, PublicKey)] = List.empty,
+    keys: List[(String, node_models.KeyUsage, PrivateKey, PublicKey)] = List.empty,
     lastOperationPerId: Map[String, SHA256Digest] = Map.empty,
     didSuffix: Option[String] = None
 )
@@ -44,7 +44,7 @@ object StateStorage {
         case Array("key", keyId, usage, curve, d) =>
           assert(curve == ECKeys.CURVE_NAME)
           val dBytes = decoder.decode(d)
-          (keyId, KeyUsage.fromName(usage).get, ECKeys.toPrivateKey(dBytes), ECKeys.toPublicKey(dBytes))
+          (keyId, node_models.KeyUsage.fromName(usage).get, ECKeys.toPrivateKey(dBytes), ECKeys.toPublicKey(dBytes))
       }
 
       val operations = splitLines.collect {

@@ -11,7 +11,7 @@ import io.iohk.node.models._
 import io.iohk.node.operations.path._
 import io.iohk.node.repositories.daos.CredentialsDAO.CreateCredentialData
 import io.iohk.node.repositories.daos.{CredentialsDAO, PublicKeysDAO}
-import io.iohk.node.{geud_node => proto}
+import io.iohk.prism.protos.node_models
 
 case class IssueCredentialOperation(
     credentialId: CredentialId,
@@ -53,7 +53,7 @@ object IssueCredentialOperation extends SimpleOperationCompanion[IssueCredential
 
   import ParsingUtils._
 
-  override def parse(operation: proto.AtalaOperation): Either[ValidationError, IssueCredentialOperation] = {
+  override def parse(operation: node_models.AtalaOperation): Either[ValidationError, IssueCredentialOperation] = {
     val operationDigest = SHA256Digest(MessageDigest.getInstance("SHA-256").digest(operation.toByteArray))
     val credentialId = CredentialId(operationDigest)
     val createOperation = ValueAtPath(operation, Path.root).child(_.getIssueCredential, "issueCredential")

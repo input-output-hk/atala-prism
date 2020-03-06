@@ -6,7 +6,6 @@ import doobie.util.transactor.Transactor
 import io.grpc.{Server, ServerBuilder}
 import io.iohk.cvp.repositories.{SchemaMigrations, TransactorFactory}
 import io.iohk.node.bitcoin.BitcoinClient
-import io.iohk.node.geud_node._
 import io.iohk.node.models.SHA256Digest
 import io.iohk.node.objects.ObjectStorageService
 import io.iohk.node.repositories.DIDDataRepository
@@ -14,6 +13,7 @@ import io.iohk.node.repositories.atalaobjects.AtalaObjectsRepository
 import io.iohk.node.repositories.blocks.BlocksRepository
 import io.iohk.node.services.{AtalaService, BlockProcessingServiceImpl, DIDDataService, ObjectManagementService}
 import io.iohk.node.synchronizer.{LedgerSynchronizationStatusService, LedgerSynchronizerService, SynchronizerConfig}
+import io.iohk.prism.protos.node_api._
 import monix.execution.Scheduler.Implicits.{global => scheduler}
 import org.slf4j.LoggerFactory
 

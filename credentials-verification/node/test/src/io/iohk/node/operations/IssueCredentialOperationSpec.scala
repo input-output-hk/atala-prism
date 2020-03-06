@@ -6,9 +6,9 @@ import java.time.LocalDate
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.cvp.repositories.PostgresRepositorySpec
-import io.iohk.node.models.{DIDPublicKey, KeyUsage, SHA256Digest}
+import io.iohk.node.models.{DIDData, DIDPublicKey, KeyUsage, SHA256Digest}
 import io.iohk.node.repositories.{CredentialsRepository, DIDDataRepository}
-import io.iohk.node.{models, geud_node => proto}
+import io.iohk.prism.protos.{common_models, node_models}
 import org.scalatest.EitherValues._
 import org.scalatest.Inside._
 
@@ -29,15 +29,15 @@ object IssueCredentialOperationSpec {
   val contentHash = SHA256Digest(MessageDigest.getInstance("SHA256").digest(content.getBytes)).value
   val issuanceDate = LocalDate.of(2019, 12, 16)
 
-  val exampleOperation = proto.AtalaOperation(
-    operation = proto.AtalaOperation.Operation.IssueCredential(
-      value = proto.IssueCredentialOperation(
+  val exampleOperation = node_models.AtalaOperation(
+    operation = node_models.AtalaOperation.Operation.IssueCredential(
+      value = node_models.IssueCredentialOperation(
         credentialData = Some(
-          proto.CredentialData(
+          node_models.CredentialData(
             issuer = issuer.suffix,
             contentHash = ByteString.copyFrom(contentHash),
             issuanceDate =
-              Some(proto.Date(issuanceDate.getYear, issuanceDate.getMonthValue, issuanceDate.getDayOfMonth))
+              Some(common_models.Date(issuanceDate.getYear, issuanceDate.getMonthValue, issuanceDate.getDayOfMonth))
           )
         )
       )
@@ -164,7 +164,7 @@ class IssueCredentialOperationSpec extends PostgresRepositorySpec {
 
   "IssueCredentialOperation.getCorrectnessData" should {
     "provide the key reference be used for signing" in {
-      didDataRepository.create(models.DIDData(issuer, issuerDidKeys, issuerOperation.digest)).value.futureValue
+      didDataRepository.create(DIDData(issuer, issuerDidKeys, issuerOperation.digest)).value.futureValue
       val parsedOperation = IssueCredentialOperation.parse(exampleOperation).right.value
 
       val CorrectnessData(key, previousOperation) = parsedOperation
@@ -182,7 +182,7 @@ class IssueCredentialOperationSpec extends PostgresRepositorySpec {
 
   "IssueCredentialOperation.applyState" should {
     "create the DID information in the database" in {
-      didDataRepository.create(models.DIDData(issuer, issuerDidKeys, issuerOperation.digest)).value.futureValue
+      didDataRepository.create(DIDData(issuer, issuerDidKeys, issuerOperation.digest)).value.futureValue
       val parsedOperation = IssueCredentialOperation.parse(exampleOperation).right.value
 
       val result = parsedOperation
@@ -212,7 +212,7 @@ class IssueCredentialOperationSpec extends PostgresRepositorySpec {
     }
 
     "return error when the credential already exists in the db" in {
-      didDataRepository.create(models.DIDData(issuer, issuerDidKeys, issuerOperation.digest)).value.futureValue
+      didDataRepository.create(DIDData(issuer, issuerDidKeys, issuerOperation.digest)).value.futureValue
       val parsedOperation = IssueCredentialOperation.parse(exampleOperation).right.value
 
       // first insertion
