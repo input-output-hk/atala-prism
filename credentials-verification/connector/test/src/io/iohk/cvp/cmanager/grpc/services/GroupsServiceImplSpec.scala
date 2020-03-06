@@ -25,7 +25,7 @@ class GroupsServiceImplSpec extends RpcSpecBase {
   private lazy val issuersRepository = new IssuersRepository(database)
   private lazy val connectionsRepository = new ConnectionsRepository.PostgresImpl(database)(executionContext)
   private lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
-  private lazy val nodeMock = mock[io.iohk.nodenew.node_api.NodeServiceGrpc.NodeService]
+  private lazy val nodeMock = mock[io.iohk.prism.protos.node_api.NodeServiceGrpc.NodeService]
   private lazy val authenticator =
     new SignedRequestsAuthenticator(
       connectionsRepository,

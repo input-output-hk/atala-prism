@@ -10,7 +10,7 @@ import io.iohk.cvp.connector.protos._
 import io.iohk.cvp.cstore.repositories.daos.StoreUsersDAO
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.node_ops.SignedAtalaOperation
-import io.iohk.nodenew.node_api.CreateDIDResponse
+import io.iohk.prism.protos.node_api.CreateDIDResponse
 import org.mockito.ArgumentMatchersSugar.*
 import org.mockito.IdiomaticMockito._
 import org.scalatest.OptionValues._

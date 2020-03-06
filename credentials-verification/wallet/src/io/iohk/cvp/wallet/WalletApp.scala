@@ -2,6 +2,7 @@ package io.iohk.cvp.wallet
 
 import io.grpc.{Server, ServerBuilder}
 import io.iohk.cvp.wallet.models.Wallet
+import io.iohk.prism.protos.wallet_api
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext
@@ -28,7 +29,7 @@ class WalletApp(wallet: Wallet)(implicit ec: ExecutionContext) {
     val walletService = new grpc.WalletServiceImpl(wallet)
     server = ServerBuilder
       .forPort(port)
-      .addService(protos.WalletServiceGrpc.bindService(walletService, ec))
+      .addService(wallet_api.WalletServiceGrpc.bindService(walletService, ec))
       .asInstanceOf[ServerBuilder[_]] // otherwise, IntelliJ marks the next lines as errors
       .build()
       .start()

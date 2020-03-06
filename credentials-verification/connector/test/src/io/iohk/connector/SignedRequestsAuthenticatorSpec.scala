@@ -14,8 +14,8 @@ import io.iohk.cvp.crypto.{ECKeys, ECSignature}
 import io.iohk.cvp.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser, SignedRequestsHelper}
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.utils.FutureEither.FutureEitherOps
-import io.iohk.nodenew.node_api
-import io.iohk.nodenew.node_api._
+import io.iohk.prism.protos.{node_api, node_models}
+import io.iohk.prism.protos.node_api._
 import org.mockito.ArgumentMatchersSugar._
 import org.mockito.IdiomaticMockito._
 import org.scalatest.MustMatchers._
@@ -144,7 +144,7 @@ class SignedRequestsAuthenticatorSpec extends WordSpec {
       val nodeResponse = node_api
         .GetDidDocumentResponse()
         .withDocument(
-          node_api.DIDData(
+          node_models.DIDData(
             id = did,
             publicKeys = List(createNodePublicKey(keyId, keys.getPublic))
           )
@@ -176,7 +176,7 @@ class SignedRequestsAuthenticatorSpec extends WordSpec {
       val nodeResponse = node_api
         .GetDidDocumentResponse()
         .withDocument(
-          node_api.DIDData(
+          node_models.DIDData(
             id = did,
             publicKeys = List(createNodePublicKey(keyId, keys.getPublic))
           )
@@ -271,7 +271,7 @@ class SignedRequestsAuthenticatorSpec extends WordSpec {
       val nodeResponse = node_api
         .GetDidDocumentResponse()
         .withDocument(
-          node_api.DIDData(
+          node_models.DIDData(
             id = did,
             publicKeys = List(createNodePublicKey(keyId, keys.getPublic))
           )
@@ -303,7 +303,7 @@ class SignedRequestsAuthenticatorSpec extends WordSpec {
       val nodeResponse = node_api
         .GetDidDocumentResponse()
         .withDocument(
-          node_api.DIDData(
+          node_models.DIDData(
             id = did,
             publicKeys = List(createNodePublicKey(keyId, keys.getPublic))
           )
@@ -331,14 +331,14 @@ class SignedRequestsAuthenticatorSpec extends WordSpec {
     }
   }
 
-  private def createNodePublicKey(keyId: String, data: PublicKey): node_api.PublicKey = {
+  private def createNodePublicKey(keyId: String, data: PublicKey): node_models.PublicKey = {
     val point = ECKeys.getECPoint(data)
     val x = ByteString.copyFrom(point.getAffineX.toByteArray)
     val y = ByteString.copyFrom(point.getAffineY.toByteArray)
-    node_api.PublicKey(
+    node_models.PublicKey(
       id = keyId,
-      usage = node_api.KeyUsage.AUTHENTICATION_KEY,
-      keyData = node_api.PublicKey.KeyData.EcKeyData(node_api.ECKeyData(curve = ECKeys.CURVE_NAME, x = x, y = y))
+      usage = node_models.KeyUsage.AUTHENTICATION_KEY,
+      keyData = node_models.PublicKey.KeyData.EcKeyData(node_models.ECKeyData(curve = ECKeys.CURVE_NAME, x = x, y = y))
     )
   }
 

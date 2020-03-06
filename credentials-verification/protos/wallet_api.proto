@@ -1,38 +1,9 @@
 syntax = "proto3";
 
-package io.iohk.cvp.wallet;
+package io.iohk.prism.protos;
 
-import "geud_node_new.proto";
-
-// While the binary representation is adequate, JavaScript has problems parsing big integers from bytes,
-// it is simpler to leave the big integer as string.
-message BigInteger {
-    string value = 1;
-}
-
-message ECPrivateKey {
-    BigInteger d = 1;
-}
-
-message ECPublicKey {
-    BigInteger x = 1;
-    BigInteger y = 2;
-}
-
-message KeyPair {
-    string id = 1;
-    io.iohk.nodenew.KeyUsage usage = 2;
-    ECPrivateKey privateKey = 3;
-    ECPublicKey publicKey = 4;
-}
-
-message WalletData {
-    repeated KeyPair keyPair = 1;
-    string did = 2; // For now, the DID string is enough, this will change in the future when a DID is standardized over the project
-    string organisationName = 4;
-    Role role = 5;
-    bytes logo = 6;
-}
+import "node_models.proto";
+import "wallet_models.proto";
 
 service WalletService {
     // Get the wallet's DID, for now, there is a single DID.
@@ -88,12 +59,6 @@ message VerifySignedMessageResponse {
     bool verified = 1;
 }
 
-
-enum Role {
-    Issuer = 0;
-    Verifier = 1;
-}
-
 message CreateWalletRequest {
     string passphrase = 1;
     string organisationName = 2;
@@ -102,7 +67,7 @@ message CreateWalletRequest {
 }
 
 message CreateWalletResponse {
-    io.iohk.nodenew.SignedAtalaOperation operation = 1;
+    SignedAtalaOperation operation = 1;
 }
 
 message GetWalletStatusRequest {}
@@ -140,5 +105,5 @@ message ChangePassphraseResponse {}
 message GenerateDIDRequest {}
 
 message GenerateDIDResponse {
-    io.iohk.nodenew.SignedAtalaOperation operation = 1;
+    SignedAtalaOperation operation = 1;
 }
