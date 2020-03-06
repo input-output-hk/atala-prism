@@ -4,11 +4,11 @@ import com.google.protobuf.ByteString
 import io.iohk.connector.Authenticator
 import io.iohk.connector.errors.{ErrorSupport, LoggingContext}
 import io.iohk.cvp.cstore.models.StoreIndividual
-import io.iohk.cvp.cstore.protos._
 import io.iohk.cvp.cstore.repositories.daos.IndividualsDAO.StoreIndividualCreateData
 import io.iohk.cvp.cstore.repositories.daos.StoredCredentialsDAO.StoredCredentialCreateData
 import io.iohk.cvp.cstore.services.{StoreIndividualsService, StoreUsersService, StoredCredentialsService}
 import io.iohk.cvp.models.ParticipantId
+import io.iohk.prism.protos.{cstore_api, cstore_models}
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -20,12 +20,12 @@ class CredentialsStoreService(
     authenticator: Authenticator
 )(
     implicit ec: ExecutionContext
-) extends CredentialsStoreServiceGrpc.CredentialsStoreService
+) extends cstore_api.CredentialsStoreServiceGrpc.CredentialsStoreService
     with ErrorSupport {
 
   override val logger: Logger = LoggerFactory.getLogger(this.getClass)
 
-  override def register(request: RegisterRequest): Future[RegisterResponse] = {
+  override def register(request: cstore_api.RegisterRequest): Future[cstore_api.RegisterResponse] = {
     implicit val loggingContext = LoggingContext("request" -> request)
     def f() = {
       val createData = StoreUsersService.StoreUserCreationData(
@@ -37,14 +37,16 @@ class CredentialsStoreService(
         .insert(createData)
         .wrapExceptions
         .successMap { id =>
-          protos.RegisterResponse(userId = id.uuid.toString)
+          cstore_api.RegisterResponse(userId = id.uuid.toString)
         }
     }
     authenticator.public("register", request) { f() }
 
   }
 
-  override def createIndividual(request: CreateIndividualRequest): Future[CreateIndividualResponse] = {
+  override def createIndividual(
+      request: cstore_api.CreateIndividualRequest
+  ): Future[cstore_api.CreateIndividualResponse] = {
     def f(participantId: ParticipantId) = {
       implicit val loggingContext = LoggingContext("request" -> request, "userId" -> participantId)
 
@@ -57,7 +59,7 @@ class CredentialsStoreService(
         .createIndividual(participantId, createData)
         .wrapExceptions
         .successMap { individual =>
-          protos.CreateIndividualResponse(individual = Some(individualModelToProto(individual)))
+          cstore_api.CreateIndividualResponse(individual = Some(individualModelToProto(individual)))
         }
     }
 
@@ -67,10 +69,10 @@ class CredentialsStoreService(
 
   }
 
-  def individualModelToProto(individual: StoreIndividual): protos.Individual = {
-    protos.Individual(
+  def individualModelToProto(individual: StoreIndividual): cstore_models.Individual = {
+    cstore_models.Individual(
       individualId = individual.id.uuid.toString,
-      status = protos.IndividualConnectionStatus
+      status = cstore_models.IndividualConnectionStatus
         .fromName(individual.status.entryName)
         .getOrElse(throw new Exception(s"Unknown status: ${individual.status}")),
       fullName = individual.fullName,
@@ -80,7 +82,7 @@ class CredentialsStoreService(
     )
   }
 
-  override def getIndividuals(request: GetIndividualsRequest): Future[GetIndividualsResponse] = {
+  override def getIndividuals(request: cstore_api.GetIndividualsRequest): Future[cstore_api.GetIndividualsResponse] = {
     def f(participantId: ParticipantId) = {
       implicit val loggingContext = LoggingContext("request" -> request, "userId" -> participantId)
 
@@ -90,7 +92,7 @@ class CredentialsStoreService(
         .getIndividuals(participantId, lastSeen, request.limit)
         .wrapExceptions
         .successMap { individuals =>
-          protos.GetIndividualsResponse(
+          cstore_api.GetIndividualsResponse(
             individuals = individuals.map(individualModelToProto)
           )
         }
@@ -103,8 +105,8 @@ class CredentialsStoreService(
   }
 
   override def generateConnectionTokenFor(
-      request: GenerateConnectionTokenForRequest
-  ): Future[GenerateConnectionTokenForResponse] = {
+      request: cstore_api.GenerateConnectionTokenForRequest
+  ): Future[cstore_api.GenerateConnectionTokenForResponse] = {
 
     def f(participantId: ParticipantId) = {
       implicit val loggingContext = LoggingContext("request" -> request, "userId" -> participantId)
@@ -115,7 +117,7 @@ class CredentialsStoreService(
         .generateTokenFor(participantId, individualId)
         .wrapExceptions
         .successMap { token =>
-          protos.GenerateConnectionTokenForResponse(token.token)
+          cstore_api.GenerateConnectionTokenForResponse(token.token)
         }
     }
 
@@ -124,7 +126,9 @@ class CredentialsStoreService(
     }
   }
 
-  override def storeCredential(request: StoreCredentialRequest): Future[StoreCredentialResponse] = {
+  override def storeCredential(
+      request: cstore_api.StoreCredentialRequest
+  ): Future[cstore_api.StoreCredentialResponse] = {
     def f(participantId: ParticipantId) = {
       implicit val loggingContext = LoggingContext("request" -> request, "userId" -> participantId)
 
@@ -140,7 +144,7 @@ class CredentialsStoreService(
         .storeCredential(participantId, createData)
         .wrapExceptions
         .successMap { _ =>
-          StoreCredentialResponse()
+          cstore_api.StoreCredentialResponse()
         }
     }
 
@@ -150,8 +154,8 @@ class CredentialsStoreService(
   }
 
   override def getStoredCredentialsFor(
-      request: GetStoredCredentialsForRequest
-  ): Future[GetStoredCredentialsForResponse] = {
+      request: cstore_api.GetStoredCredentialsForRequest
+  ): Future[cstore_api.GetStoredCredentialsForResponse] = {
     def f(participantId: ParticipantId) = {
       implicit val loggingContext = LoggingContext("request" -> request, "userId" -> participantId)
 
@@ -161,9 +165,9 @@ class CredentialsStoreService(
         .getCredentialsFor(participantId, individualId)
         .wrapExceptions
         .successMap { credentials =>
-          protos.GetStoredCredentialsForResponse(
+          cstore_api.GetStoredCredentialsForResponse(
             credentials = credentials.map { credential =>
-              protos.SignedCredential(
+              cstore_models.SignedCredential(
                 issuerDid = credential.issuerDid,
                 proofId = credential.proofId,
                 content = ByteString.copyFrom(credential.content)

@@ -2,16 +2,16 @@ package io.iohk.cvp.cstore
 
 import com.google.protobuf.ByteString
 import doobie.implicits._
-import io.iohk.connector.{RpcSpecBase, SignedRequestsAuthenticator}
 import io.iohk.connector.model.{ParticipantInfo, ParticipantType}
-import io.iohk.connector.repositories.{ConnectionsRepository, RequestNoncesRepository}
 import io.iohk.connector.repositories.daos.ParticipantsDAO
+import io.iohk.connector.repositories.{ConnectionsRepository, RequestNoncesRepository}
+import io.iohk.connector.{RpcSpecBase, SignedRequestsAuthenticator}
 import io.iohk.cvp.cstore.models.{IndividualConnectionStatus, StoreUser}
-import io.iohk.cvp.cstore.protos.CredentialsStoreServiceGrpc
 import io.iohk.cvp.cstore.repositories.daos.{IndividualsDAO, StoreUsersDAO, StoredCredentialsDAO}
 import io.iohk.cvp.cstore.services.{StoreIndividualsService, StoreUsersService, StoredCredentialsService}
 import io.iohk.cvp.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.cvp.models.ParticipantId
+import io.iohk.prism.protos.{cstore_api, cstore_models}
 import org.mockito.MockitoSugar._
 import org.scalatest.OptionValues._
 
@@ -26,7 +26,9 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
   override val tables =
     List("stored_credentials", "store_individuals", "store_users", "connection_tokens", "participants", "connections")
 
-  val usingApiAs = usingApiAsConstructor(new CredentialsStoreServiceGrpc.CredentialsStoreServiceBlockingStub(_, _))
+  val usingApiAs = usingApiAsConstructor(
+    new cstore_api.CredentialsStoreServiceGrpc.CredentialsStoreServiceBlockingStub(_, _)
+  )
 
   lazy val storeUsers = new StoreUsersService(database)
   lazy val individuals = new StoreIndividualsService(database)
@@ -44,7 +46,7 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
   lazy val verifierId = ParticipantId("af45a4da-65b8-473e-aadc-aa6b346250a3")
 
   override def services = Seq(
-    CredentialsStoreServiceGrpc
+    cstore_api.CredentialsStoreServiceGrpc
       .bindService(
         new CredentialsStoreService(storeUsers, individuals, storedCredentials, authenticator),
         executionContext
@@ -70,7 +72,7 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
   "register" should {
     "create relevant records in the database" in {
       usingApiAs.unlogged { serviceStub =>
-        val request = protos.RegisterRequest("Verifier", ByteString.EMPTY)
+        val request = cstore_api.RegisterRequest("Verifier", ByteString.EMPTY)
         val result = serviceStub.register(request)
 
         val user = StoreUsersDAO.get(ParticipantId(result.userId)).transact(database).unsafeRunSync().value
@@ -88,12 +90,12 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
   "createIndividual" should {
     "create individual in the database" in {
       usingApiAs(verifierId) { serviceStub =>
-        val request = protos.CreateIndividualRequest("Individual Individual", "individual@email.org")
+        val request = cstore_api.CreateIndividualRequest("Individual Individual", "individual@email.org")
         val result = serviceStub.createIndividual(request)
 
         result.individual.get.fullName mustBe "Individual Individual"
         result.individual.get.email mustBe "individual@email.org"
-        result.individual.get.status mustBe protos.IndividualConnectionStatus.CREATED
+        result.individual.get.status mustBe cstore_models.IndividualConnectionStatus.CREATED
 
         val individual = IndividualsDAO
           .list(verifierId, None, 1)
@@ -115,13 +117,13 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
       val individualNames = (1 to 9).map(i => i.toString)
       usingApiAs(verifierId) { serviceStub =>
         for (individual <- individualNames) {
-          val request = protos.CreateIndividualRequest(individual)
+          val request = cstore_api.CreateIndividualRequest(individual)
           serviceStub.createIndividual(request)
         }
 
-        val obtainedIndividualsStream = Stream.iterate((Seq.empty[protos.Individual], true)) {
+        val obtainedIndividualsStream = Stream.iterate((Seq.empty[cstore_models.Individual], true)) {
           case (individuals, _) =>
-            val request = protos.GetIndividualsRequest(
+            val request = cstore_api.GetIndividualsRequest(
               lastSeenIndividualId = individuals.lastOption.map(_.individualId).getOrElse(""),
               limit = 2
             )
@@ -140,10 +142,10 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
       val individualNames = (1 to 9).map(i => i.toString)
       usingApiAs(verifierId) { serviceStub =>
         for (individual <- individualNames) {
-          val request = protos.CreateIndividualRequest(individual)
+          val request = cstore_api.CreateIndividualRequest(individual)
           serviceStub.createIndividual(request)
         }
-        val request = protos.GetIndividualsRequest(
+        val request = cstore_api.GetIndividualsRequest(
           lastSeenIndividualId = "85caaf82-9dac-4e80-824c-44284648f696",
           limit = 2
         )
@@ -157,9 +159,9 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
     "generate token for individual" in {
       usingApiAs(verifierId) { serviceStub =>
         val individualId =
-          serviceStub.createIndividual(protos.CreateIndividualRequest("Individual")).individual.get.individualId
+          serviceStub.createIndividual(cstore_api.CreateIndividualRequest("Individual")).individual.get.individualId
 
-        val request = protos.GenerateConnectionTokenForRequest(individualId = individualId)
+        val request = cstore_api.GenerateConnectionTokenForRequest(individualId = individualId)
         val response = serviceStub.generateConnectionTokenFor(request)
 
         val individual = IndividualsDAO
@@ -178,12 +180,12 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
     "store credential in the database" in {
       usingApiAs(verifierId) { serviceStub =>
         val individualId =
-          serviceStub.createIndividual(protos.CreateIndividualRequest("Individual")).individual.get.individualId
+          serviceStub.createIndividual(cstore_api.CreateIndividualRequest("Individual")).individual.get.individualId
 
         val issuerDid = "did:atala:7cd7b833ba072944ab6579da20706301ec6ab863992a41ae9d80d56d14559b39"
         val proofId = "a3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
         val request =
-          protos.StoreCredentialRequest(individualId, issuerDid, proofId, ByteString.EMPTY, ByteString.EMPTY)
+          cstore_api.StoreCredentialRequest(individualId, issuerDid, proofId, ByteString.EMPTY, ByteString.EMPTY)
         val response = serviceStub.storeCredential(request)
 
         val credential = StoredCredentialsDAO
@@ -205,15 +207,15 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
     "get credentials for individual" in {
       usingApiAs(verifierId) { serviceStub =>
         val individualId =
-          serviceStub.createIndividual(protos.CreateIndividualRequest("Individual")).individual.get.individualId
+          serviceStub.createIndividual(cstore_api.CreateIndividualRequest("Individual")).individual.get.individualId
 
         val issuerDid = "did:atala:7cd7b833ba072944ab6579da20706301ec6ab863992a41ae9d80d56d14559b39"
         val proofId = "a3cacb2d9e51bdd40264b287db15b4121ddee84eafb8c3da545c88c1d99b94d4"
         serviceStub.storeCredential(
-          protos.StoreCredentialRequest(individualId, issuerDid, proofId, ByteString.EMPTY, ByteString.EMPTY)
+          cstore_api.StoreCredentialRequest(individualId, issuerDid, proofId, ByteString.EMPTY, ByteString.EMPTY)
         )
 
-        val request = protos.GetStoredCredentialsForRequest(individualId)
+        val request = cstore_api.GetStoredCredentialsForRequest(individualId)
         val response = serviceStub.getStoredCredentialsFor(request)
 
         response.credentials.size mustBe 1

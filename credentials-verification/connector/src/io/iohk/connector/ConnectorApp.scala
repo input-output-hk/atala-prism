@@ -16,7 +16,6 @@ import io.iohk.cvp.cmanager.repositories.{
   StudentsRepository
 }
 import io.iohk.cvp.cstore.CredentialsStoreService
-import io.iohk.cvp.cstore.protos.CredentialsStoreServiceGrpc
 import io.iohk.cvp.cstore.services.{StoreIndividualsService, StoreUsersService, StoredCredentialsService}
 import io.iohk.cvp.grpc.{GrpcAuthenticationHeaderParser, GrpcAuthenticatorInterceptor}
 import io.iohk.cvp.intdemo.protos.IDServiceGrpc
@@ -24,6 +23,7 @@ import io.iohk.cvp.intdemo.{CredentialStatusRepository, IDServiceImpl}
 import io.iohk.cvp.repositories.{SchemaMigrations, TransactorFactory}
 import io.iohk.prism.protos.cmanager_api.{CredentialsServiceGrpc, GroupsServiceGrpc, StudentsServiceGrpc}
 import io.iohk.prism.protos.connector_api
+import io.iohk.prism.protos.cstore_api.CredentialsStoreServiceGrpc
 import io.iohk.prism.protos.node_api.NodeServiceGrpc
 import org.slf4j.LoggerFactory
 
