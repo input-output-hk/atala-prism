@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package io.iohk.prism.protos;
+
+import "node_models.proto";
+import "wallet_models.proto";
+
+message KeyPair {
+    string id = 1;
+    KeyUsage usage = 2;
+    ECPrivateKey privateKey = 3;
+    ECPublicKey publicKey = 4;
+}
+
+message WalletData {
+    repeated KeyPair keyPair = 1;
+    string did = 2; // For now, the DID string is enough, this will change in the future when a DID is standardized over the project
+    string organisationName = 4;
+    Role role = 5;
+    bytes logo = 6;
+}

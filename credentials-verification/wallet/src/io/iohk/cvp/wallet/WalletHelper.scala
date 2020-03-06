@@ -4,6 +4,7 @@ import java.security.{PrivateKey, PublicKey}
 
 import io.iohk.cvp.crypto.ECKeys
 import io.iohk.cvp.wallet.models.Wallet
+import io.iohk.prism.protos.{wallet_internal, wallet_models}
 import org.slf4j.LoggerFactory
 
 import scala.util.Random
@@ -24,7 +25,7 @@ object WalletHelper {
     toWalletModel(protoWallet)
   }
 
-  def toWalletModel(data: protos.WalletData): Wallet = {
+  def toWalletModel(data: wallet_internal.WalletData): Wallet = {
     val maybe = for {
       protoKeyPair <- data.keyPair
       protoPublicKey <- protoKeyPair.publicKey
@@ -36,7 +37,7 @@ object WalletHelper {
     maybe.headOption.getOrElse(fatalWalletCorrupted)
   }
 
-  def toPrivateKey(proto: protos.ECPrivateKey): PrivateKey = {
+  def toPrivateKey(proto: wallet_models.ECPrivateKey): PrivateKey = {
     proto.d
       .map(_.value)
       .map(BigInt.apply)
@@ -44,7 +45,7 @@ object WalletHelper {
       .getOrElse(fatalWalletCorrupted)
   }
 
-  def toPublicKey(proto: protos.ECPublicKey): PublicKey = {
+  def toPublicKey(proto: wallet_models.ECPublicKey): PublicKey = {
     val maybe = for {
       x <- proto.x.map(_.value).map(BigInt.apply)
       y <- proto.y.map(_.value).map(BigInt.apply)
@@ -57,11 +58,11 @@ object WalletHelper {
     throw new RuntimeException("The wallet is likely corrupted, you'll need to repair it or delete it manually")
   }
 
-  private def loadWallet(file: os.ReadablePath): protos.WalletData = {
+  private def loadWallet(file: os.ReadablePath): wallet_internal.WalletData = {
     val data = os.read.bytes(file)
     logger.info("Previous wallet found, loading it")
 
-    val wallet = protos.WalletData.parseFrom(data)
+    val wallet = wallet_internal.WalletData.parseFrom(data)
     logger.info("Wallet loaded")
 
     wallet
@@ -74,15 +75,15 @@ object WalletHelper {
     "did:iohk:" + id
   }
 
-  private def createNewWallet(file: os.Path): protos.WalletData = {
+  private def createNewWallet(file: os.Path): wallet_internal.WalletData = {
     logger.info("Generating keys")
     val pair = ECKeys.generateKeyPair()
-    val protoKeyPair = protos
+    val protoKeyPair = wallet_internal
       .KeyPair()
       .withPrivateKey(toPrivateKeyProto(pair.getPrivate))
       .withPublicKey(toPublicKeyProto(pair.getPublic))
 
-    val wallet = protos
+    val wallet = wallet_internal
       .WalletData()
       .withKeyPair(Seq(protoKeyPair))
       .withDid(generateDid())
@@ -93,15 +94,15 @@ object WalletHelper {
     wallet
   }
 
-  private def toPublicKeyProto(key: PublicKey): protos.ECPublicKey = {
+  private def toPublicKeyProto(key: PublicKey): wallet_models.ECPublicKey = {
     val point = ECKeys.getECPoint(key)
-    protos
+    wallet_models
       .ECPublicKey()
-      .withX(protos.BigInteger(point.getAffineX.toString))
-      .withY(protos.BigInteger(point.getAffineY.toString))
+      .withX(wallet_models.BigInteger(point.getAffineX.toString))
+      .withY(wallet_models.BigInteger(point.getAffineY.toString))
   }
 
-  private def toPrivateKeyProto(key: PrivateKey): protos.ECPrivateKey = {
-    protos.ECPrivateKey().withD(protos.BigInteger(ECKeys.getD(key).toString))
+  private def toPrivateKeyProto(key: PrivateKey): wallet_models.ECPrivateKey = {
+    wallet_models.ECPrivateKey().withD(wallet_models.BigInteger(ECKeys.getD(key).toString))
   }
 }

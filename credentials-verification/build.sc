@@ -270,6 +270,10 @@ object wallet extends ServerPBCommon {
 
   override def mainClass = Some("io.iohk.cvp.wallet.WalletApp")
 
+  override def scalaPBSources: Sources = T.sources {
+    millOuterCtx.millSourcePath / 'protos
+  }
+
   object test extends `tests-common` {}
 }
 
