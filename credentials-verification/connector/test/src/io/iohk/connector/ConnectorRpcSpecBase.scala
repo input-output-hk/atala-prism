@@ -161,7 +161,7 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
   lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
   lazy val participantsRepository = new ParticipantsRepository(database)(executionContext)
 
-  lazy val nodeMock = mock[io.iohk.nodenew.node_api.NodeServiceGrpc.NodeService]
+  lazy val nodeMock = mock[io.iohk.prism.protos.node_api.NodeServiceGrpc.NodeService]
   lazy val authenticator =
     new SignedRequestsAuthenticator(
       connectionsRepository,

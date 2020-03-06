@@ -221,6 +221,11 @@ object node extends ServerPBCommon with CVPDockerModule {
 
 object connector extends ServerPBCommon with CVPDockerModule {
 
+  override def scalaPBSources: Sources = T.sources(
+    millOuterCtx.millSourcePath / 'protos,
+    millSourcePath / 'protobuf
+  )
+
   // for some reason, the credential.proto is breaking the integration with mill and ScalaPB
   // and the reason seems to be while generating lenses, the same protobuf file compiles just
   // fine while using sbt.

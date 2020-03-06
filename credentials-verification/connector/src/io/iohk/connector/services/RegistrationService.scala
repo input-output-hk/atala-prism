@@ -5,7 +5,7 @@ import io.iohk.connector.repositories.ParticipantsRepository
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither.FutureEitherOps
-import io.iohk.nodenew.node_api.NodeServiceGrpc
+import io.iohk.prism.protos.node_api.NodeServiceGrpc
 
 import scala.concurrent.ExecutionContext
 
@@ -23,7 +23,7 @@ class RegistrationService(participantsRepository: ParticipantsRepository, nodeSe
   ): FutureEither[Nothing, RegistrationResult] = {
 
     // TODO: Remove unneeded transformation by reusing the node protos
-    val actualOp = io.iohk.nodenew.node_api.SignedAtalaOperation.parseFrom(createDIDOperation.toByteArray)
+    val actualOp = io.iohk.prism.protos.node_models.SignedAtalaOperation.parseFrom(createDIDOperation.toByteArray)
     for {
       createDIDResponse <- nodeService.createDID(actualOp).map(Right(_)).toFutureEither
       did = s"did:prism:${createDIDResponse.id}"

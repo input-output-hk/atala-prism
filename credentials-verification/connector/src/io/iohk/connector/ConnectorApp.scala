@@ -30,7 +30,7 @@ import io.iohk.cvp.grpc.{GrpcAuthenticationHeaderParser, GrpcAuthenticatorInterc
 import io.iohk.cvp.intdemo.{CredentialStatusRepository, IDServiceImpl}
 import io.iohk.cvp.intdemo.protos.IDServiceGrpc
 import io.iohk.cvp.repositories.{SchemaMigrations, TransactorFactory}
-import io.iohk.nodenew.node_api.NodeServiceGrpc
+import io.iohk.prism.protos.node_api.NodeServiceGrpc
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.duration._

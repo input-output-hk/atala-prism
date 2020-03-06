@@ -12,7 +12,7 @@ import io.iohk.cvp.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParse
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither._
-import io.iohk.nodenew.node_api
+import io.iohk.prism.protos.node_api
 import org.slf4j.{Logger, LoggerFactory}
 import scalapb.GeneratedMessage
 
