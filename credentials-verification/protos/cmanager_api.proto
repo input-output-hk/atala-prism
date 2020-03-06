@@ -1,6 +1,9 @@
 syntax = "proto3";
 
-package io.iohk.cvp.cmanager;
+package io.iohk.prism.protos;
+
+import "cmanager_models.proto";
+import "common_models.proto";
 
 service CredentialsService {
     rpc Register (RegisterRequest) returns (RegisterResponse) {}
@@ -95,46 +98,6 @@ message GenerateConnectionTokenResponse {
     string token = 1;
 }
 
-message Date {
-    int32 year = 1; // positive value
-    int32 month = 2; // value in the [1, 12] interval
-    int32 day = 3; // value in the [1, 31] interval (depending on the month, the max value might be 28
-}
-
-message Credential {
-    string id = 1;
-    string issuerId = 2;
-    string studentId = 3;
-    string issuerName = 4;
-    string studentName = 5;
-    string title = 6;
-    Date enrollmentDate = 7;
-    Date graduationDate = 8;
-    string groupName = 9;
-}
-
-message Student {
-    string id = 1;
-    // When introducing the groupName, the issuerId field was removed
-    reserved 2;
-    reserved "issuerId";
-    string universityAssignedId = 3;
-    string fullName = 4;
-    string email = 5;
-    Date admissionDate = 6;
-    StudentConnectionStatus connectionStatus = 7;
-    string connectionToken = 8; // present when the status is ConnectionMissing
-    string connectionId = 9; // present when the status is ConnectionAccepted
-    string groupName = 10;
-}
-
-enum StudentConnectionStatus {
-    InvitationMissing = 0;
-    ConnectionMissing = 1;
-    ConnectionAccepted = 2;
-    ConnectionRevoked = 3;
-}
-
 message CreateGroupRequest {
     string name = 1;
 }
@@ -143,8 +106,4 @@ message CreateGroupResponse {}
 message GetGroupsRequest {}
 message GetGroupsResponse {
     repeated Group groups = 1;
-}
-
-message Group {
-    string name = 1;
 }

@@ -9,7 +9,6 @@ import io.iohk.cvp.ParticipantPropagatorService
 import io.iohk.cvp.admin.protos.AdminServiceGrpc
 import io.iohk.cvp.admin.{AdminRepository, AdminServiceImpl}
 import io.iohk.cvp.cmanager.grpc.services.{CredentialsServiceImpl, GroupsServiceImpl, StudentsServiceImpl}
-import io.iohk.cvp.cmanager.protos.{CredentialsServiceGrpc, GroupsServiceGrpc, StudentsServiceGrpc}
 import io.iohk.cvp.cmanager.repositories.{
   CredentialsRepository,
   IssuerGroupsRepository,
@@ -23,6 +22,7 @@ import io.iohk.cvp.grpc.{GrpcAuthenticationHeaderParser, GrpcAuthenticatorInterc
 import io.iohk.cvp.intdemo.protos.IDServiceGrpc
 import io.iohk.cvp.intdemo.{CredentialStatusRepository, IDServiceImpl}
 import io.iohk.cvp.repositories.{SchemaMigrations, TransactorFactory}
+import io.iohk.prism.protos.cmanager_api.{CredentialsServiceGrpc, GroupsServiceGrpc, StudentsServiceGrpc}
 import io.iohk.prism.protos.connector_api
 import io.iohk.prism.protos.node_api.NodeServiceGrpc
 import org.slf4j.LoggerFactory

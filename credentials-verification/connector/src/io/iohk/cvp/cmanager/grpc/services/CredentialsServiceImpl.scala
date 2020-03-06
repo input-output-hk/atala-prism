@@ -6,8 +6,8 @@ import io.iohk.connector.Authenticator
 import io.iohk.cvp.cmanager.grpc.services.codecs.ProtoCodecs._
 import io.iohk.cvp.cmanager.models.requests.CreateCredential
 import io.iohk.cvp.cmanager.models.{Credential, Issuer, Student}
-import io.iohk.cvp.cmanager.protos
 import io.iohk.cvp.cmanager.repositories.{CredentialsRepository, IssuersRepository}
+import io.iohk.prism.protos.cmanager_api
 import io.scalaland.chimney.dsl._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -19,9 +19,11 @@ class CredentialsServiceImpl(
     authenticator: Authenticator
 )(
     implicit ec: ExecutionContext
-) extends protos.CredentialsServiceGrpc.CredentialsService {
+) extends cmanager_api.CredentialsServiceGrpc.CredentialsService {
 
-  override def createCredential(request: protos.CreateCredentialRequest): Future[protos.CreateCredentialResponse] = {
+  override def createCredential(
+      request: cmanager_api.CreateCredentialRequest
+  ): Future[cmanager_api.CreateCredentialResponse] = {
     def f(issuerId: Issuer.Id) = {
       Future {
         val studentId = Student.Id(UUID.fromString(request.studentId))
@@ -35,7 +37,7 @@ class CredentialsServiceImpl(
         credentialsRepository
           .create(model)
           .map(credentialToProto)
-          .map(protos.CreateCredentialResponse().withCredential)
+          .map(cmanager_api.CreateCredentialResponse().withCredential)
           .value
           .map {
             case Right(x) => x
@@ -50,7 +52,9 @@ class CredentialsServiceImpl(
 
   }
 
-  override def getCredentials(request: protos.GetCredentialsRequest): Future[protos.GetCredentialsResponse] = {
+  override def getCredentials(
+      request: cmanager_api.GetCredentialsRequest
+  ): Future[cmanager_api.GetCredentialsResponse] = {
 
     def f(issuerId: Issuer.Id) = {
       Future {
@@ -58,7 +62,7 @@ class CredentialsServiceImpl(
         credentialsRepository
           .getBy(issuerId, request.limit, lastSeenCredential)
           .map { list =>
-            protos.GetCredentialsResponse(list.map(credentialToProto))
+            cmanager_api.GetCredentialsResponse(list.map(credentialToProto))
           }
           .value
           .map {
@@ -74,7 +78,7 @@ class CredentialsServiceImpl(
 
   }
 
-  override def register(request: protos.RegisterRequest): Future[protos.RegisterResponse] = {
+  override def register(request: cmanager_api.RegisterRequest): Future[cmanager_api.RegisterResponse] = {
     authenticator.public("register", request) {
       Future {
         val creationData = IssuersRepository.IssuerCreationData(
@@ -86,7 +90,7 @@ class CredentialsServiceImpl(
           .insert(creationData)
           .value
           .map {
-            case Right(id) => protos.RegisterResponse(issuerId = id.value.toString)
+            case Right(id) => cmanager_api.RegisterResponse(issuerId = id.value.toString)
             case Left(e) => throw new RuntimeException(s"FAILED: $e")
           }
       }.flatten

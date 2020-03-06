@@ -1,13 +1,12 @@
 package io.iohk.cvp.cmanager.grpc.services
 
-import io.iohk.connector.{RpcSpecBase, SignedRequestsAuthenticator}
 import io.iohk.connector.repositories.{ConnectionsRepository, RequestNoncesRepository}
+import io.iohk.connector.{RpcSpecBase, SignedRequestsAuthenticator}
 import io.iohk.cvp.cmanager.models.{Issuer, IssuerGroup}
-import io.iohk.cvp.cmanager.protos
-import io.iohk.cvp.cmanager.protos.GroupsServiceGrpc
 import io.iohk.cvp.cmanager.repositories.{IssuerGroupsRepository, IssuersRepository}
 import io.iohk.cvp.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.cvp.models.ParticipantId
+import io.iohk.prism.protos.cmanager_api
 import org.mockito.MockitoSugar._
 import org.scalatest.EitherValues._
 
@@ -19,7 +18,7 @@ class GroupsServiceImplSpec extends RpcSpecBase {
 
   private implicit val executionContext = scala.concurrent.ExecutionContext.global
   private implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 20.millis)
-  private val usingApiAs = usingApiAsConstructor(new GroupsServiceGrpc.GroupsServiceBlockingStub(_, _))
+  private val usingApiAs = usingApiAsConstructor(new cmanager_api.GroupsServiceGrpc.GroupsServiceBlockingStub(_, _))
 
   private lazy val issuerGroupsRepository = new IssuerGroupsRepository(database)
   private lazy val issuersRepository = new IssuersRepository(database)
@@ -35,7 +34,7 @@ class GroupsServiceImplSpec extends RpcSpecBase {
     )
 
   override def services = Seq(
-    GroupsServiceGrpc
+    cmanager_api.GroupsServiceGrpc
       .bindService(new GroupsServiceImpl(issuerGroupsRepository, authenticator), executionContext)
   )
 
@@ -45,7 +44,7 @@ class GroupsServiceImplSpec extends RpcSpecBase {
 
       usingApiAs(toParticipantId(issuerId)) { serviceStub =>
         val newGroup = IssuerGroup.Name("IOHK University")
-        val request = protos.CreateGroupRequest(newGroup.value)
+        val request = cmanager_api.CreateGroupRequest(newGroup.value)
         val _ = serviceStub.createGroup(request)
 
         // the new group needs to exist
@@ -65,7 +64,7 @@ class GroupsServiceImplSpec extends RpcSpecBase {
       }
 
       usingApiAs(toParticipantId(issuerId)) { serviceStub =>
-        val request = protos.GetGroupsRequest()
+        val request = cmanager_api.GetGroupsRequest()
         val result = serviceStub.getGroups(request)
         result.groups.map(_.name).map(IssuerGroup.Name.apply) must be(groups)
       }
