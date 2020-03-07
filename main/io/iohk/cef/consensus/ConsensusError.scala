@@ -1,7 +1,0 @@
-package io.iohk.cef.consensus
-import io.iohk.cef.error.ApplicationError
-import io.iohk.cef.ledger.BlockHeader
-
-sealed trait ConsensusError extends ApplicationError
-
-case class UnableToProcessBlock(header: BlockHeader) extends ConsensusError
