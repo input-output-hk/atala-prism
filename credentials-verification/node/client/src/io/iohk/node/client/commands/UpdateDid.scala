@@ -68,7 +68,7 @@ case class UpdateDid(
     val signedAtalaOp = signOperation(atalaOp, masterKeyId, masterKey)
     val operationHash = SHA256Digest.compute(atalaOp.toByteArray)
 
-    val response = api.updateDID(signedAtalaOp)
+    val response = api.updateDID(node_api.UpdateDIDRequest().withSignedOperation(signedAtalaOp))
     println(response.toProtoString)
 
     println(s"Update did with didSuffix: $suffix")

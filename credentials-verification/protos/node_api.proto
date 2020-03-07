@@ -7,13 +7,13 @@ import "node_models.proto";
 service NodeService {
     rpc GetDidDocument(GetDidDocumentRequest) returns (GetDidDocumentResponse) {}
 
-    rpc CreateDID(SignedAtalaOperation) returns (CreateDIDResponse) {}
+    rpc CreateDID(CreateDIDRequest) returns (CreateDIDResponse) {}
 
-    rpc UpdateDID(SignedAtalaOperation) returns (UpdateDIDResponse) {}
+    rpc UpdateDID(UpdateDIDRequest) returns (UpdateDIDResponse) {}
 
-    rpc IssueCredential(SignedAtalaOperation) returns (IssueCredentialResponse) {}
+    rpc IssueCredential(IssuerCredentialRequest) returns (IssueCredentialResponse) {}
 
-    rpc RevokeCredential(SignedAtalaOperation) returns (RevokeCredentialResponse) {}
+    rpc RevokeCredential(RevokeCredentialRequest) returns (RevokeCredentialResponse) {}
 }
 
 message GetDidDocumentRequest {
@@ -24,16 +24,28 @@ message GetDidDocumentResponse {
     DIDData document = 1;
 }
 
+message CreateDIDRequest {
+    SignedAtalaOperation signed_operation = 1;
+}
 message CreateDIDResponse {
     string id = 1; // DID suffix, where DID is in form did:atala:[DID suffix]
 }
 
+message UpdateDIDRequest {
+    SignedAtalaOperation signed_operation = 1;
+}
 message UpdateDIDResponse {
 }
 
+message IssuerCredentialRequest {
+    SignedAtalaOperation signed_operation = 1;
+}
 message IssueCredentialResponse {
     string id = 1; // credential id
 }
 
+message RevokeCredentialRequest {
+    SignedAtalaOperation signed_operation = 1;
+}
 message RevokeCredentialResponse {
 }

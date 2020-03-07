@@ -36,7 +36,7 @@ case class RevokeCredential(credentialId: String = "", previousOperation: Option
     val signedAtalaOp = Command.signOperation(atalaOp, issuingKeyId, issuingKey)
     val operationHash = SHA256Digest.compute(atalaOp.toByteArray)
 
-    val response = api.revokeCredential(signedAtalaOp)
+    val response = api.revokeCredential(node_api.RevokeCredentialRequest().withSignedOperation(signedAtalaOp))
     println(response.toProtoString)
 
     println("Revoked credential")
