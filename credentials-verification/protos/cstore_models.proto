@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package io.iohk.prism.protos;
+
+enum IndividualConnectionStatus {
+    CREATED = 0;
+    INVITED = 1;
+    CONNECTED = 2;
+    REVOKED = 3;
+}
+
+message Individual {
+    string individualId = 1;
+    IndividualConnectionStatus status = 2;
+    string fullName = 3;
+    string email = 4;
+    string connectionToken = 5;
+    string connectionId = 6;
+}
+
+message SignedCredential {
+    string issuerDid = 1;
+    string proofId = 2;
+    bytes content = 3; // to be replaced with Credential message?
+    bytes signature = 4;
+}

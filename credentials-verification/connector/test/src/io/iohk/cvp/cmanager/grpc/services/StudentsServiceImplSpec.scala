@@ -5,8 +5,6 @@ import java.util.UUID
 import io.iohk.connector.repositories.{ConnectionsRepository, RequestNoncesRepository}
 import io.iohk.connector.{RpcSpecBase, SignedRequestsAuthenticator}
 import io.iohk.cvp.cmanager.models.{Issuer, IssuerGroup, Student}
-import io.iohk.cvp.cmanager.protos
-import io.iohk.cvp.cmanager.protos.StudentsServiceGrpc
 import io.iohk.cvp.cmanager.repositories.{
   CredentialsRepository,
   IssuerGroupsRepository,
@@ -15,6 +13,7 @@ import io.iohk.cvp.cmanager.repositories.{
 }
 import io.iohk.cvp.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.cvp.models.ParticipantId
+import io.iohk.prism.protos.{cmanager_api, common_models}
 import org.mockito.MockitoSugar._
 import org.scalatest.EitherValues._
 import org.scalatest.OptionValues._
@@ -27,7 +26,7 @@ class StudentsServiceImplSpec extends RpcSpecBase {
 
   private implicit val executionContext = scala.concurrent.ExecutionContext.global
   private implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 20.millis)
-  private val usingApiAs = usingApiAsConstructor(new StudentsServiceGrpc.StudentsServiceBlockingStub(_, _))
+  private val usingApiAs = usingApiAsConstructor(new cmanager_api.StudentsServiceGrpc.StudentsServiceBlockingStub(_, _))
 
   private lazy val issuerGroupsRepository = new IssuerGroupsRepository(database)
   private lazy val issuersRepository = new IssuersRepository(database)
@@ -44,7 +43,7 @@ class StudentsServiceImplSpec extends RpcSpecBase {
       GrpcAuthenticationHeaderParser
     )
   override def services = Seq(
-    StudentsServiceGrpc
+    cmanager_api.StudentsServiceGrpc
       .bindService(new StudentsServiceImpl(studentsRepository, credentialsRepository, authenticator), executionContext)
   )
 
@@ -58,14 +57,14 @@ class StudentsServiceImplSpec extends RpcSpecBase {
       val group = createGroup(issuerId)
 
       usingApiAs(toParticipantId(issuerId)) { serviceStub =>
-        val request = protos
+        val request = cmanager_api
           .CreateStudentRequest(
             universityAssignedId = "noneyet",
             fullName = "Alice Beakman",
             email = "alice@bkm.me",
             groupName = group.name.value
           )
-          .withAdmissionDate(protos.Date().withDay(1).withMonth(10).withYear(2000))
+          .withAdmissionDate(common_models.Date().withDay(1).withMonth(10).withYear(2000))
 
         val response = serviceStub.createStudent(request).student.value
         val studentId = Student.Id(UUID.fromString(response.id))

@@ -1,6 +1,8 @@
 syntax = "proto3";
 
-package io.iohk.cvp.cstore;
+package io.iohk.prism.protos;
+
+import "cstore_models.proto";
 
 service CredentialsStoreService {
   rpc Register (RegisterRequest) returns (RegisterResponse) {}
@@ -38,22 +40,6 @@ message GenerateConnectionTokenForRequest {
   string individualId = 1;
 }
 
-enum IndividualConnectionStatus {
-  CREATED = 0;
-  INVITED = 1;
-  CONNECTED = 2;
-  REVOKED = 3;
-}
-
-message Individual {
-  string individualId = 1;
-  IndividualConnectionStatus status = 2;
-  string fullName = 3;
-  string email = 4;
-  string connectionToken = 5;
-  string connectionId = 6;
-}
-
 message GetIndividualsRequest {
   int32 limit = 1;
   string lastSeenIndividualId = 2;
@@ -65,13 +51,6 @@ message GetIndividualsResponse {
 
 message GenerateConnectionTokenForResponse {
   string token = 1;
-}
-
-message SignedCredential {
-  string issuerDid = 1;
-  string proofId = 2;
-  bytes content = 3; // to be replaced with Credential message?
-  bytes signature = 4;
 }
 
 message StoreCredentialRequest {

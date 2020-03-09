@@ -6,9 +6,8 @@ import io.iohk.connector.Authenticator
 import io.iohk.cvp.cmanager.grpc.services.codecs.ProtoCodecs._
 import io.iohk.cvp.cmanager.models.requests.CreateStudent
 import io.iohk.cvp.cmanager.models.{Issuer, IssuerGroup, Student}
-import io.iohk.cvp.cmanager.protos
-import io.iohk.cvp.cmanager.protos._
 import io.iohk.cvp.cmanager.repositories.{CredentialsRepository, StudentsRepository}
+import io.iohk.prism.protos.cmanager_api
 import io.scalaland.chimney.dsl._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -20,9 +19,9 @@ class StudentsServiceImpl(
     authenticator: Authenticator
 )(
     implicit ec: ExecutionContext
-) extends protos.StudentsServiceGrpc.StudentsService {
+) extends cmanager_api.StudentsServiceGrpc.StudentsService {
 
-  override def createStudent(request: protos.CreateStudentRequest): Future[protos.CreateStudentResponse] = {
+  override def createStudent(request: cmanager_api.CreateStudentRequest): Future[cmanager_api.CreateStudentResponse] = {
     def f(issuerId: Issuer.Id) = {
       Future {
         val model = request
@@ -34,7 +33,7 @@ class StudentsServiceImpl(
         studentsRepository
           .create(model)
           .map(studentToProto)
-          .map(protos.CreateStudentResponse().withStudent)
+          .map(cmanager_api.CreateStudentResponse().withStudent)
           .value
           .map {
             case Right(x) => x
@@ -49,7 +48,7 @@ class StudentsServiceImpl(
 
   }
 
-  override def getStudents(request: GetStudentsRequest): Future[GetStudentsResponse] = {
+  override def getStudents(request: cmanager_api.GetStudentsRequest): Future[cmanager_api.GetStudentsResponse] = {
     def f(issuerId: Issuer.Id) = {
       Future {
         val lastSeenStudent = Try(UUID.fromString(request.lastSeenStudentId)).map(Student.Id.apply).toOption
@@ -58,7 +57,7 @@ class StudentsServiceImpl(
         studentsRepository
           .getBy(issuerId, request.limit, lastSeenStudent, groupName)
           .map { list =>
-            protos.GetStudentsResponse(list.map(studentToProto))
+            cmanager_api.GetStudentsResponse(list.map(studentToProto))
           }
           .value
           .map {
@@ -74,14 +73,14 @@ class StudentsServiceImpl(
 
   }
 
-  override def getStudent(request: GetStudentRequest): Future[GetStudentResponse] = {
+  override def getStudent(request: cmanager_api.GetStudentRequest): Future[cmanager_api.GetStudentResponse] = {
     def f(issuerId: Issuer.Id) = {
       Future {
         val studentId = Student.Id(UUID.fromString(request.studentId))
         studentsRepository
           .find(issuerId, studentId)
           .map { maybe =>
-            protos.GetStudentResponse(maybe.map(studentToProto))
+            cmanager_api.GetStudentResponse(maybe.map(studentToProto))
           }
           .value
           .map {
@@ -97,14 +96,16 @@ class StudentsServiceImpl(
 
   }
 
-  override def getStudentCredentials(request: GetStudentCredentialsRequest): Future[GetStudentCredentialsResponse] = {
+  override def getStudentCredentials(
+      request: cmanager_api.GetStudentCredentialsRequest
+  ): Future[cmanager_api.GetStudentCredentialsResponse] = {
     def f(issuerId: Issuer.Id) = {
       Future {
         val studentId = Student.Id(UUID.fromString(request.studentId))
         credentialsRepository
           .getBy(issuerId, studentId)
           .map { list =>
-            protos.GetStudentCredentialsResponse(list.map(credentialToProto))
+            cmanager_api.GetStudentCredentialsResponse(list.map(credentialToProto))
           }
           .value
           .map {
@@ -120,15 +121,15 @@ class StudentsServiceImpl(
   }
 
   override def generateConnectionToken(
-      request: GenerateConnectionTokenRequest
-  ): Future[GenerateConnectionTokenResponse] = {
+      request: cmanager_api.GenerateConnectionTokenRequest
+  ): Future[cmanager_api.GenerateConnectionTokenResponse] = {
     def f(issuerId: Issuer.Id) = {
       Future {
         val studentId = Student.Id.apply(UUID.fromString(request.studentId))
 
         studentsRepository
           .generateToken(issuerId, studentId)
-          .map(token => protos.GenerateConnectionTokenResponse(token.token))
+          .map(token => cmanager_api.GenerateConnectionTokenResponse(token.token))
           .value
           .map {
             case Right(x) => x

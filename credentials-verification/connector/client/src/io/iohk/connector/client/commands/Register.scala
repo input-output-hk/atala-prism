@@ -4,27 +4,25 @@ import java.security.{PublicKey => JPublicKey}
 
 import com.google.protobuf.ByteString
 import io.iohk.connector.client.Config
-import io.iohk.cvp.connector.protos.RegisterDIDRequest.Role
-import io.iohk.cvp.connector.protos.{ConnectorServiceGrpc, RegisterDIDRequest}
 import io.iohk.cvp.crypto.ECKeys
-import io.iohk.cvp.node_ops._
+import io.iohk.prism.protos.{connector_api, node_models}
 
 case class Register(
-    keysToGenerate: Vector[(String, KeyUsage)] = Vector("master" -> KeyUsage.MASTER_KEY)
+    keysToGenerate: Vector[(String, node_models.KeyUsage)] = Vector("master" -> node_models.KeyUsage.MASTER_KEY)
 ) extends Command {
   import Command.signOperation
 
   private def protoECKeyFromPublicKey(key: JPublicKey) = {
     val point = ECKeys.getECPoint(key)
 
-    ECKeyData(
+    node_models.ECKeyData(
       curve = ECKeys.CURVE_NAME,
       x = ByteString.copyFrom(point.getAffineX.toByteArray),
       y = ByteString.copyFrom(point.getAffineY.toByteArray)
     )
   }
 
-  override def run(api: ConnectorServiceGrpc.ConnectorServiceBlockingStub, config: Config): Unit = {
+  override def run(api: connector_api.ConnectorServiceGrpc.ConnectorServiceBlockingStub, config: Config): Unit = {
     val generatedKeys = keysToGenerate.map {
       case (keyId, usage) =>
         val keyPair = ECKeys.generateKeyPair()
@@ -33,33 +31,34 @@ case class Register(
 
     val publicKeys = generatedKeys.map {
       case (keyId, keyUsage, _, key) =>
-        PublicKey(
+        node_models.PublicKey(
           id = keyId,
           usage = keyUsage,
-          keyData = PublicKey.KeyData.EcKeyData(protoECKeyFromPublicKey(key))
+          keyData = node_models.PublicKey.KeyData.EcKeyData(protoECKeyFromPublicKey(key))
         )
     }
 
-    val createDidOp = CreateDIDOperation(
+    val createDidOp = node_models.CreateDIDOperation(
       didData = Some(
-        DIDData(
+        node_models.DIDData(
           publicKeys = publicKeys
         )
       )
     )
 
     val (masterKeyId, _, masterKey, _) = generatedKeys
-      .find(_._2 == KeyUsage.MASTER_KEY)
+      .find(_._2 == node_models.KeyUsage.MASTER_KEY)
       .getOrElse(throw new RuntimeException("The master key must be provided"))
 
-    val atalaOp = AtalaOperation(operation = AtalaOperation.Operation.CreateDid(createDidOp))
+    val atalaOp = node_models.AtalaOperation(operation = node_models.AtalaOperation.Operation.CreateDid(createDidOp))
     val signedAtalaOp = signOperation(atalaOp, masterKeyId, masterKey)
 
-    val request = RegisterDIDRequest()
+    val request = connector_api
+      .RegisterDIDRequest()
       .withCreateDIDOperation(signedAtalaOp)
       .withLogo(ByteString.EMPTY)
       .withName("iohk-test")
-      .withRole(Role.issuer)
+      .withRole(connector_api.RegisterDIDRequest.Role.issuer)
     val response = api.registerDID(request)
     println(s"Created did with didSuffix: ${response.did}")
   }

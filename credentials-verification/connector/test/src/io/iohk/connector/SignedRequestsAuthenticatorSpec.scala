@@ -8,14 +8,13 @@ import io.grpc.Context
 import io.iohk.connector.errors.UnknownValueError
 import io.iohk.connector.model._
 import io.iohk.connector.repositories.{ConnectionsRepository, RequestNoncesRepository}
-import io.iohk.cvp.connector.protos
 import io.iohk.cvp.crypto.ECKeys.{EncodedPublicKey, toEncodePublicKey}
 import io.iohk.cvp.crypto.{ECKeys, ECSignature}
 import io.iohk.cvp.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser, SignedRequestsHelper}
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.utils.FutureEither.FutureEitherOps
-import io.iohk.prism.protos.{node_api, node_models}
 import io.iohk.prism.protos.node_api._
+import io.iohk.prism.protos.{connector_api, node_api, node_models}
 import org.mockito.ArgumentMatchersSugar._
 import org.mockito.IdiomaticMockito._
 import org.scalatest.MustMatchers._
@@ -27,8 +26,8 @@ import scala.concurrent.Future
 
 class SignedRequestsAuthenticatorSpec extends WordSpec {
 
-  private val request = protos.GetConnectionTokenInfoRequest("")
-  private val response = protos.GetConnectionTokenInfoResponse()
+  private val request = connector_api.GetConnectionTokenInfoRequest("")
+  private val response = connector_api.GetConnectionTokenInfoResponse()
 
   "public" should {
     "accept the request without authentication" in {

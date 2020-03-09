@@ -12,7 +12,7 @@ import io.iohk.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO,
 import io.iohk.connector.repositories._
 import io.iohk.connector.services.{ConnectionsService, MessagesService, RegistrationService}
 import io.iohk.cvp.ParticipantPropagatorService
-import io.iohk.cvp.connector.protos.ConnectorServiceGrpc
+import io.iohk.prism.protos.{connector_api, connector_models, node_models}
 import io.iohk.cvp.crypto.ECKeys.EncodedPublicKey
 import io.iohk.cvp.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser, GrpcAuthenticatorInterceptor}
 import io.iohk.cvp.models.ParticipantId
@@ -134,7 +134,7 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
     "participants"
   )
   override def services = Seq(
-    ConnectorServiceGrpc
+    connector_api.ConnectorServiceGrpc
       .bindService(
         new ConnectorService(
           connectionsService,
@@ -149,9 +149,10 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
       )
   )
 
-  val usingApiAs: ApiTestHelper[ConnectorServiceGrpc.ConnectorServiceBlockingStub] = usingApiAsConstructor(
-    new ConnectorServiceGrpc.ConnectorServiceBlockingStub(_, _)
-  )
+  val usingApiAs: ApiTestHelper[connector_api.ConnectorServiceGrpc.ConnectorServiceBlockingStub] =
+    usingApiAsConstructor(
+      new connector_api.ConnectorServiceGrpc.ConnectorServiceBlockingStub(_, _)
+    )
 
   lazy val braintreePayments = BraintreePayments(BraintreePayments.Config(false, "none", "none", "none", "none"))
   lazy val connectionsRepository = new ConnectionsRepository.PostgresImpl(database)(executionContext)

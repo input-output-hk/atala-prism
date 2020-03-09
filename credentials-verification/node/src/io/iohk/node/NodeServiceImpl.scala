@@ -25,33 +25,50 @@ class NodeServiceImpl(didDataService: DIDDataService, objectManagement: ObjectMa
     }
   }
 
-  override def createDID(request: node_models.SignedAtalaOperation): Future[node_api.CreateDIDResponse] = {
+  override def createDID(request: node_api.CreateDIDRequest): Future[node_api.CreateDIDResponse] = {
+    val operationF = Future {
+      request.signedOperation.getOrElse(throw new RuntimeException("signed_operation missing"))
+    }
     for {
-      parsedOperation <- errorEitherToFuture(CreateDIDOperation.parse(request))
-      _ <- objectManagement.publishAtalaOperation(request)
+      operation <- operationF
+      parsedOperation <- errorEitherToFuture(CreateDIDOperation.parse(operation))
+      _ <- objectManagement.publishAtalaOperation(operation)
     } yield node_api.CreateDIDResponse(id = parsedOperation.id.suffix)
   }
 
-  override def updateDID(request: node_models.SignedAtalaOperation): Future[node_api.UpdateDIDResponse] = {
+  override def updateDID(request: node_api.UpdateDIDRequest): Future[node_api.UpdateDIDResponse] = {
+    val operationF = Future {
+      request.signedOperation.getOrElse(throw new RuntimeException("signed_operation missing"))
+    }
     for {
-      _ <- errorEitherToFuture(UpdateDIDOperation.parse(request))
-      _ <- objectManagement.publishAtalaOperation(request)
+      operation <- operationF
+      _ <- errorEitherToFuture(UpdateDIDOperation.parse(operation))
+      _ <- objectManagement.publishAtalaOperation(operation)
     } yield node_api.UpdateDIDResponse()
   }
 
-  override def issueCredential(request: node_models.SignedAtalaOperation): Future[node_api.IssueCredentialResponse] = {
+  override def issueCredential(request: node_api.IssuerCredentialRequest): Future[node_api.IssueCredentialResponse] = {
+    val operationF = Future {
+      request.signedOperation.getOrElse(throw new RuntimeException("signed_operation missing"))
+    }
     for {
-      parsedOperation <- errorEitherToFuture(IssueCredentialOperation.parse(request))
-      _ <- objectManagement.publishAtalaOperation(request)
+      operation <- operationF
+      parsedOperation <- errorEitherToFuture(IssueCredentialOperation.parse(operation))
+      operation = request.signedOperation.getOrElse(throw new RuntimeException("signed_operation missing"))
+      _ <- objectManagement.publishAtalaOperation(operation)
     } yield node_api.IssueCredentialResponse(id = parsedOperation.credentialId.id)
   }
 
   override def revokeCredential(
-      request: node_models.SignedAtalaOperation
+      request: node_api.RevokeCredentialRequest
   ): Future[node_api.RevokeCredentialResponse] = {
+    val operationF = Future {
+      request.signedOperation.getOrElse(throw new RuntimeException("signed_operation missing"))
+    }
     for {
-      _ <- errorEitherToFuture(RevokeCredentialOperation.parse(request))
-      _ <- objectManagement.publishAtalaOperation(request)
+      operation <- operationF
+      _ <- errorEitherToFuture(RevokeCredentialOperation.parse(operation))
+      _ <- objectManagement.publishAtalaOperation(operation)
     } yield node_api.RevokeCredentialResponse()
   }
 

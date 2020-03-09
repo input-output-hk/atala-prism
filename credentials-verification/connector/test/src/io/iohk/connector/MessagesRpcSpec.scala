@@ -1,16 +1,16 @@
 package io.iohk.connector
 
-import java.util.{Base64, UUID}
+import java.util.UUID
 
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.grpc.{Status, StatusRuntimeException}
 import io.iohk.connector.model.RequestNonce
 import io.iohk.connector.repositories.daos.MessagesDAO
-import io.iohk.cvp.connector.protos._
 import io.iohk.cvp.crypto.ECKeys.toEncodePublicKey
 import io.iohk.cvp.crypto.{ECKeys, ECSignature}
 import io.iohk.cvp.grpc.SignedRequestsHelper
+import io.iohk.prism.protos.connector_api
 
 class MessagesRpcSpec extends ConnectorRpcSpecBase {
   "SendMessage" should {
@@ -20,7 +20,7 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
       val connectionId = createConnection(issuerId, holderId)
 
       usingApiAs(issuerId) { blockingStub =>
-        val request = SendMessageRequest(connectionId.id.toString, ByteString.copyFrom("test".getBytes))
+        val request = connector_api.SendMessageRequest(connectionId.id.toString, ByteString.copyFrom("test".getBytes))
         val response = blockingStub.sendMessage(request)
         val msg =
           MessagesDAO.getMessagesPaginated(holderId, 1, None).transact(database).unsafeToFuture().futureValue.head
@@ -36,7 +36,7 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
       val messages = createExampleMessages(verifierId)
 
       usingApiAs(verifierId) { blockingStub =>
-        val request = GetMessagesPaginatedRequest("", 10)
+        val request = connector_api.GetMessagesPaginatedRequest("", 10)
         val response = blockingStub.getMessagesPaginated(request)
         response.messages.map(m => (m.id, m.connectionId)) mustBe
           messages.take(10).map { case (messageId, connectionId) => (messageId.id.toString, connectionId.id.toString) }
@@ -47,7 +47,7 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
       val keys = ECKeys.generateKeyPair()
       val privateKey = keys.getPrivate
       val encodedPublicKey = toEncodePublicKey(keys.getPublic)
-      val request = GetMessagesPaginatedRequest("", 10)
+      val request = connector_api.GetMessagesPaginatedRequest("", 10)
 
       val requestNonce = UUID.randomUUID().toString.getBytes.toVector
       val signature =
@@ -70,7 +70,7 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
       val verifierId = createVerifier("Verifier")
 
       usingApiAs(verifierId) { blockingStub =>
-        val request = GetMessagesPaginatedRequest("", 0)
+        val request = connector_api.GetMessagesPaginatedRequest("", 0)
 
         val status = intercept[StatusRuntimeException] {
           blockingStub.getMessagesPaginated(request)
@@ -83,7 +83,7 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
       val verifierId = createVerifier("Verifier")
 
       usingApiAs(verifierId) { blockingStub =>
-        val request = GetMessagesPaginatedRequest("", -7)
+        val request = connector_api.GetMessagesPaginatedRequest("", -7)
 
         val status = intercept[StatusRuntimeException] {
           blockingStub.getMessagesPaginated(request)
@@ -96,7 +96,7 @@ class MessagesRpcSpec extends ConnectorRpcSpecBase {
       val verifierId = createVerifier("Verifier")
 
       usingApiAs(verifierId) { blockingStub =>
-        val request = GetMessagesPaginatedRequest("aaa", 10)
+        val request = connector_api.GetMessagesPaginatedRequest("aaa", 10)
 
         val status = intercept[StatusRuntimeException] {
           blockingStub.getMessagesPaginated(request)

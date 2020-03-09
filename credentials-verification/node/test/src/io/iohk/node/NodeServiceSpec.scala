@@ -100,7 +100,7 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
 
       doReturn(Future.successful(())).when(objectManagementService).publishAtalaOperation(*)
 
-      service.createDID(operation)
+      service.createDID(node_api.CreateDIDRequest().withSignedOperation(operation))
 
       verify(objectManagementService).publishAtalaOperation(operation)
       verifyNoMoreInteractions(objectManagementService)
@@ -114,7 +114,7 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       )
 
       val error = intercept[StatusRuntimeException] {
-        service.createDID(operation)
+        service.createDID(node_api.CreateDIDRequest().withSignedOperation(operation))
       }
       error.getStatus.getCode mustEqual Status.Code.INVALID_ARGUMENT
     }
@@ -130,7 +130,7 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
 
       doReturn(Future.successful(())).when(objectManagementService).publishAtalaOperation(*)
 
-      service.issueCredential(operation)
+      service.issueCredential(node_api.IssuerCredentialRequest().withSignedOperation(operation))
 
       verify(objectManagementService).publishAtalaOperation(operation)
       verifyNoMoreInteractions(objectManagementService)
@@ -144,7 +144,7 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       )
 
       val error = intercept[StatusRuntimeException] {
-        service.issueCredential(operation)
+        service.issueCredential(node_api.IssuerCredentialRequest().withSignedOperation(operation))
       }
       error.getStatus.getCode mustEqual Status.Code.INVALID_ARGUMENT
     }
@@ -160,7 +160,7 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
 
       doReturn(Future.successful(())).when(objectManagementService).publishAtalaOperation(*)
 
-      service.revokeCredential(operation)
+      service.revokeCredential(node_api.RevokeCredentialRequest().withSignedOperation(operation))
 
       verify(objectManagementService).publishAtalaOperation(operation)
       verifyNoMoreInteractions(objectManagementService)
@@ -174,7 +174,7 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       )
 
       val error = intercept[StatusRuntimeException] {
-        service.revokeCredential(operation)
+        service.revokeCredential(node_api.RevokeCredentialRequest().withSignedOperation(operation))
       }
       error.getStatus.getCode mustEqual Status.Code.INVALID_ARGUMENT
     }

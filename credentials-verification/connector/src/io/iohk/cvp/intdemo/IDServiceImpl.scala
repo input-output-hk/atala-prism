@@ -1,24 +1,18 @@
 package io.iohk.cvp.intdemo
 
+import io.grpc.stub.StreamObserver
 import io.iohk.connector.ConnectorService
-import io.iohk.cvp.connector.protos.{GenerateConnectionTokenRequest, GetConnectionByTokenRequest}
-import io.iohk.cvp.intdemo.protos.{
-  GetConnectionTokenRequest,
-  GetConnectionTokenResponse,
-  GetSubjectStatusRequest,
-  GetSubjectStatusResponse,
-  SubjectStatus
-}
+import io.iohk.cvp.intdemo.IDServiceImpl.log
 import io.iohk.cvp.intdemo.protos.IDServiceGrpc._
+import io.iohk.cvp.intdemo.protos._
+import io.iohk.prism.protos.connector_api
 import monix.execution.Scheduler
+import monix.execution.Scheduler.{global => scheduler}
+import org.slf4j.LoggerFactory
 
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
-import monix.execution.Scheduler.{global => scheduler}
-import org.slf4j.LoggerFactory
-import IDServiceImpl.log
-import io.grpc.stub.StreamObserver
 
 class IDServiceImpl(connectorService: ConnectorService, schedulerPeriod: FiniteDuration)(
     credentialStatusRepository: CredentialStatusRepository
@@ -28,7 +22,7 @@ class IDServiceImpl(connectorService: ConnectorService, schedulerPeriod: FiniteD
 
   override def getConnectionToken(request: GetConnectionTokenRequest): Future[GetConnectionTokenResponse] = {
     for {
-      connectionResponse <- connectorService.generateConnectionToken(GenerateConnectionTokenRequest())
+      connectionResponse <- connectorService.generateConnectionToken(connector_api.GenerateConnectionTokenRequest())
       token = connectionResponse.token
       _ <- credentialStatusRepository.merge(token, SubjectStatus.UNCONNECTED.value)
     } yield {
@@ -110,16 +104,17 @@ class IDServiceImpl(connectorService: ConnectorService, schedulerPeriod: FiniteD
   }
 
   private def getConnectionStatus(connectionToken: String): Future[SubjectStatus] = {
-    connectorService.getConnectionByToken(GetConnectionByTokenRequest(connectionToken)).flatMap { response =>
-      response.connection match {
-        case Some(_) =>
-          val nextStatus = SubjectStatus.CONNECTED
-          credentialStatusRepository
-            .merge(connectionToken, nextStatus.value)
-            .map(_ => nextStatus)
-        case None =>
-          Future(SubjectStatus.UNCONNECTED)
-      }
+    connectorService.getConnectionByToken(connector_api.GetConnectionByTokenRequest(connectionToken)).flatMap {
+      response =>
+        response.connection match {
+          case Some(_) =>
+            val nextStatus = SubjectStatus.CONNECTED
+            credentialStatusRepository
+              .merge(connectionToken, nextStatus.value)
+              .map(_ => nextStatus)
+          case None =>
+            Future(SubjectStatus.UNCONNECTED)
+        }
     }
   }
 

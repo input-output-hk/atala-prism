@@ -7,11 +7,11 @@ import io.grpc.{Status, StatusRuntimeException}
 import io.iohk.connector.model.ParticipantType.Holder
 import io.iohk.connector.model._
 import io.iohk.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO, ParticipantsDAO}
-import io.iohk.cvp.connector.protos._
 import io.iohk.cvp.crypto.ECKeys._
 import io.iohk.cvp.crypto.{ECKeys, ECSignature}
 import io.iohk.cvp.grpc.SignedRequestsHelper
 import io.iohk.cvp.models.ParticipantId
+import io.iohk.prism.protos.{connector_api, connector_models}
 import org.scalatest.OptionValues._
 
 class ConnectionsRpcSpec extends ConnectorRpcSpecBase {
@@ -21,7 +21,7 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase {
       val issuerId = createIssuer("Issuer")
 
       usingApiAs(issuerId) { blockingStub =>
-        val request = GenerateConnectionTokenRequest()
+        val request = connector_api.GenerateConnectionTokenRequest()
 
         val response = blockingStub.generateConnectionToken(request)
         val token = new TokenString(response.token)
@@ -41,7 +41,7 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase {
       val token = createToken(issuerId)
 
       usingApiAs(issuerId) { blockingStub =>
-        val request = GetConnectionTokenInfoRequest(token.token)
+        val request = connector_api.GetConnectionTokenInfoRequest(token.token)
         val response = blockingStub.getConnectionTokenInfo(request)
         response.creator.value.getIssuer.name mustBe "Issuer"
         response.creator.value.getIssuer.logo.size() must be > 0 // the issuer has a logo
@@ -54,7 +54,7 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase {
       usingApiAs(issuerId) { blockingStub =>
         val token = TokenString.random()
 
-        val request = GetConnectionTokenInfoRequest(token.token)
+        val request = connector_api.GetConnectionTokenInfoRequest(token.token)
         val status = intercept[StatusRuntimeException] {
           blockingStub.getConnectionTokenInfo(request)
         }.getStatus
@@ -72,10 +72,11 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase {
       val token = createToken(issuerId)
       val publicKey = generateKeyPair().getPublic
       val ecPoint = getECPoint(publicKey)
-      val publicKeyProto = PublicKey(ecPoint.getAffineX.toString(), ecPoint.getAffineY.toString())
+      val publicKeyProto =
+        connector_models.ConnectorPublicKey(ecPoint.getAffineX.toString(), ecPoint.getAffineY.toString())
       val encodedPublicKey = toEncodePublicKey(publicKey)
       usingApiAs(holderId) { blockingStub =>
-        val request = AddConnectionFromTokenRequest(token.token).withHolderPublicKey(publicKeyProto)
+        val request = connector_api.AddConnectionFromTokenRequest(token.token).withHolderPublicKey(publicKeyProto)
         val response = blockingStub.addConnectionFromToken(request)
         val holderId = response.userId
         holderId mustNot be(empty)
@@ -109,9 +110,10 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase {
       val holderId = createHolder("Holder")
       val token = TokenString.random()
       val ecPoint = getECPoint(generateKeyPair().getPublic)
-      val publicKeyProto = PublicKey(ecPoint.getAffineX.toString(), ecPoint.getAffineY.toString())
+      val publicKeyProto =
+        connector_models.ConnectorPublicKey(ecPoint.getAffineX.toString(), ecPoint.getAffineY.toString())
       usingApiAs(holderId) { blockingStub =>
-        val request = AddConnectionFromTokenRequest(token.token).withHolderPublicKey(publicKeyProto)
+        val request = connector_api.AddConnectionFromTokenRequest(token.token).withHolderPublicKey(publicKeyProto)
 
         val status = intercept[StatusRuntimeException] {
           blockingStub.addConnectionFromToken(request)
@@ -131,11 +133,11 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase {
       val connections = createExampleConnections(verifierId, zeroTime)
 
       usingApiAs(verifierId) { blockingStub =>
-        val request = GetConnectionsPaginatedRequest("", 10)
+        val request = connector_api.GetConnectionsPaginatedRequest("", 10)
         val response = blockingStub.getConnectionsPaginated(request)
         response.connections.map(_.connectionId).toSet mustBe connections.map(_._2.id.toString).take(10).toList.toSet
 
-        val nextRequest = GetConnectionsPaginatedRequest(response.connections.last.connectionId, 10)
+        val nextRequest = connector_api.GetConnectionsPaginatedRequest(response.connections.last.connectionId, 10)
         val nextResponse = blockingStub.getConnectionsPaginated(nextRequest)
         nextResponse.connections
           .map(_.connectionId)
@@ -147,7 +149,7 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase {
       val keys = ECKeys.generateKeyPair()
       val privateKey = keys.getPrivate
       val encodedPublicKey = toEncodePublicKey(keys.getPublic)
-      val request = GetConnectionsPaginatedRequest("", 10)
+      val request = connector_api.GetConnectionsPaginatedRequest("", 10)
       val requestNonce = UUID.randomUUID().toString.getBytes.toVector
       val signature =
         ECSignature.sign(
@@ -170,7 +172,7 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase {
       val verifierId = createVerifier("Verifier")
 
       usingApiAs(verifierId) { blockingStub =>
-        val request = GetConnectionsPaginatedRequest("", 0)
+        val request = connector_api.GetConnectionsPaginatedRequest("", 0)
 
         val status = intercept[StatusRuntimeException] {
           blockingStub.getConnectionsPaginated(request)
@@ -183,7 +185,7 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase {
       val verifierId = createVerifier("Verifier")
 
       usingApiAs(verifierId) { blockingStub =>
-        val request = GetConnectionsPaginatedRequest("", -7)
+        val request = connector_api.GetConnectionsPaginatedRequest("", -7)
 
         val status = intercept[StatusRuntimeException] {
           blockingStub.getConnectionsPaginated(request)
@@ -196,7 +198,7 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase {
       val verifierId = createVerifier("Verifier")
 
       usingApiAs(verifierId) { blockingStub =>
-        val request = GetConnectionsPaginatedRequest("uaoen", 10)
+        val request = connector_api.GetConnectionsPaginatedRequest("uaoen", 10)
 
         val status = intercept[StatusRuntimeException] {
           blockingStub.getConnectionsPaginated(request)
