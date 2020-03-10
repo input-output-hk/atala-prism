@@ -79,8 +79,8 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
   @BindView(R.id.credential_logo)
   ImageView imageViewCredentialLogo;
 
-  @BindView(R.id.goventment_constraint)
-  ConstraintLayout goventmentConstraint;
+  @BindView(R.id.government_constraint)
+  ConstraintLayout governmentConstraint;
 
   @BindView(R.id.university_constraint)
   ConstraintLayout universityConstraint;
@@ -149,7 +149,7 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
   }
 
   private void fillData(Credential credential, String connectionId) {
-    //TODO: harcodeo la credencial government
+    //TODO: hardcoded government credential
     if(!connectionId.equals("")) {
       textViewUniversityName.setText(credential.getIssuerType().getIssuerLegalName());
 
@@ -169,7 +169,7 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
       imageViewCredentialLogo.setImageBitmap(
               ImageUtils.getBitmapFromByteArray(prefs.getConnectionLogo(connectionId)));
     }else{
-      goventmentConstraint.setVisibility(View.VISIBLE);
+      governmentConstraint.setVisibility(View.VISIBLE);
       universityConstraint.setVisibility(View.GONE);
 
       layoutcredentialtitle.setBackground(getResources().getDrawable(R.drawable.rounded_top_corners_grey));
@@ -202,8 +202,7 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
   }
 
   private void saveAndGoBack(String key) {
-
-    //TODO: harcodeo la key de government
+    //TODO: hardcoded government key
     if(key.equals("")){
       getActivity().onBackPressed();
     }
