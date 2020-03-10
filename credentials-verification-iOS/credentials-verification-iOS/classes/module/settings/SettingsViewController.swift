@@ -98,4 +98,9 @@ class SettingsViewController: ListingBaseViewController {
         params.append(urlStr)
         ViewControllerUtils.changeScreenSegued(caller: self, segue: "BrowserSegue", params: params)
     }
+    
+    func changeScreenToAbout() {
+        ViewControllerUtils.changeScreenSegued(caller: self, segue: "AboutSegue", params: nil)
+        
+    }
 }

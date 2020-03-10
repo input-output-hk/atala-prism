@@ -184,3 +184,16 @@
 "credentialpay_card_expiration" = "Expiry Date MM/YY";
 "credentialpay_card_cvv" = "CVV Number";
 "credentialpay_card_name" = "Cardholder Name";
+
+// <!-- About -->
+"about_tite"= "About us";
+"about_atala_version"= "Atala version";
+"about_testing"= "- Testing";
+"about_terms"= "Terms & Conditions";
+"about_privacy"= "Privacy Policy";
+"about_last_updated"= "Last Updated: May 20, 2019";
+"about_built_by" = "Built by ";
+"about_iohk" = "IOHK";
+"about_powered_by" = " powered by ";
+"about_atala" = "Atala";
+"about_copyright" = "© 2020 Atala";

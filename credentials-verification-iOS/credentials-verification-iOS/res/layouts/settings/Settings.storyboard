@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15505" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15510"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -83,6 +83,7 @@
                         <outlet property="viewEmpty" destination="yUx-3R-ae9" id="p7n-Z7-Rhc"/>
                         <outlet property="viewTable" destination="sVB-Ov-Oui" id="0kB-DO-BXh"/>
                         <segue destination="ZFz-AY-HFK" kind="show" identifier="BrowserSegue" id="o0S-7P-CXa"/>
+                        <segue destination="f8I-0x-2OO" kind="show" identifier="AboutSegue" id="RwR-0t-Cny"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="6H9-Lt-LyU" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
@@ -98,6 +99,16 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="1wo-RJ-P7w" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="1309" y="-55"/>
+        </scene>
+        <!--About-->
+        <scene sceneID="rN5-ev-0Pw">
+            <objects>
+                <viewControllerPlaceholder storyboardName="About" referencedIdentifier="About" id="f8I-0x-2OO" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="z7f-7u-aQ4"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="eNj-9h-hdK" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1356" y="141"/>
         </scene>
     </scenes>
     <resources>
