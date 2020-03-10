@@ -68,4 +68,9 @@ public class SettingsFragment extends CvpFragment {
   void onBackendIpClick() {
     navigator.showFragment(getFragmentManager(), new BackendIpFragment(), MAIN_FRAGMENT_TAG);
   }
+
+  @OnClick(R.id.about)
+  void onAboutClick() {
+    navigator.showFragmentOnTopOfMenu(getFragmentManager(), new AboutFragment());
+  }
 }
