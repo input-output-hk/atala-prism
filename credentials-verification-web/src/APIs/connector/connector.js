@@ -1,4 +1,4 @@
-import { ConnectorServicePromiseClient } from '../../protos/connector/connector_grpc_web_pb';
+import { ConnectorServicePromiseClient } from '../../protos/connector_api_grpc_web_pb';
 import Logger from '../../helpers/Logger';
 import { getCredentialBinary } from '../credentials/credentialsManager';
 import { getStudentById } from '../credentials/studentsManager';
@@ -7,9 +7,9 @@ const {
   GetConnectionsPaginatedRequest,
   GetMessagesForConnectionRequest,
   SendMessageRequest
-} = require('../../protos/connector/connector_pb');
+} = require('../../protos/connector_api_pb');
 
-const { AtalaMessage } = require('../../protos/credentials/credential_pb');
+const { AtalaMessage } = require('../../protos/credential_pb');
 
 const { config } = require('../config');
 
