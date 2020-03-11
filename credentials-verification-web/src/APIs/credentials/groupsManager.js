@@ -1,9 +1,6 @@
-import { GroupsServicePromiseClient } from '../../protos/credentials/credentialsManager_grpc_web_pb';
+import { GroupsServicePromiseClient } from '../../protos/cmanager_api_grpc_web_pb';
 
-const {
-  GetGroupsRequest,
-  CreateGroupRequest
-} = require('../../protos/credentials/credentialsManager_pb');
+const { GetGroupsRequest, CreateGroupRequest } = require('../../protos/cmanager_api_pb');
 
 const { config } = require('../config');
 

@@ -1,5 +1,5 @@
 /* eslint-disable */
-// source: src/protos/admin/admin.proto
+// source: admin.proto
 /**
  * @fileoverview
  * @enhanceable
@@ -279,12 +279,9 @@ proto.io.iohk.cvp.admin.PopulateDemoDatasetResponse.prototype.getMessage = funct
 };
 
 
-/**
- * @param {string} value
- * @return {!proto.io.iohk.cvp.admin.PopulateDemoDatasetResponse} returns this
- */
+/** @param {string} value */
 proto.io.iohk.cvp.admin.PopulateDemoDatasetResponse.prototype.setMessage = function(value) {
-  return jspb.Message.setProto3StringField(this, 1, value);
+  jspb.Message.setProto3StringField(this, 1, value);
 };
 
 

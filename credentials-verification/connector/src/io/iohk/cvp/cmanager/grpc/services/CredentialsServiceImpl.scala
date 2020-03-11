@@ -75,26 +75,5 @@ class CredentialsServiceImpl(
     authenticator.authenticated("getCredentials", request) { participantId =>
       f(Issuer.Id(participantId.uuid))
     }
-
   }
-
-  override def register(request: cmanager_api.RegisterRequest): Future[cmanager_api.RegisterResponse] = {
-    authenticator.public("register", request) {
-      Future {
-        val creationData = IssuersRepository.IssuerCreationData(
-          Issuer.Name(request.name),
-          request.did,
-          Option(request.logo).filter(!_.isEmpty).map(_.toByteArray.toVector)
-        )
-        issuersRepository
-          .insert(creationData)
-          .value
-          .map {
-            case Right(id) => cmanager_api.RegisterResponse(issuerId = id.value.toString)
-            case Left(e) => throw new RuntimeException(s"FAILED: $e")
-          }
-      }.flatten
-    }
-  }
-
 }

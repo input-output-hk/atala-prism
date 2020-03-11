@@ -35,9 +35,7 @@ In order to compile the .protos you need to install
 1. [protoc](https://github.com/protocolbuffers/protobuf/releases)
 1. [grpc-web](https://github.com/grpc/grpc-web/releases)
 
-Then run
-
-`protoc -I=. src/protos/* --js_out=import_style=commonjs:. --grpc-web_out=import_style=commonjs,mode=grpcwebtext:.`
+Then run `./scripts/compile-protos.sh`
 
 ## Configurations
 

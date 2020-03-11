@@ -1,4 +1,4 @@
-import { WalletServicePromiseClient } from '../../protos/wallet/wallet_grpc_web_pb';
+import { WalletServicePromiseClient } from '../../protos/wallet_api_grpc_web_pb';
 import Logger from '../../helpers/Logger';
 import { USER_ROLE, ORGANISATION_NAME, ISSUER, VERIFIER, LOGO } from '../../helpers/constants';
 
@@ -8,7 +8,7 @@ const {
   LockWalletRequest,
   UnlockWalletRequest,
   GetWalletStatusRequest
-} = require('../../protos/wallet/wallet_pb');
+} = require('../../protos/wallet_api_pb');
 
 const { config } = require('../config');
 
@@ -54,10 +54,8 @@ export const createWallet = async (passphrase, organisationName, role, file) => 
       file
     });
 
-    // This returns a signed operation that is not being used yet
-    await walletServicePromiseClient.createWallet(createWalletRequest);
-
-    return getDid();
+    const response = await walletServicePromiseClient.createWallet(createWalletRequest);
+    return response.getOperation();
   } catch (e) {
     Logger.info('Error at wallet creation', e);
     throw new Error(e);
@@ -115,4 +113,5 @@ export const isWalletUnlocked = async () => {
   return status === 1;
 };
 
+// TODO: When registering as issuer and then as verifier, the role is not updated.
 export const isIssuer = () => localStorage.getItem(USER_ROLE) === ISSUER;

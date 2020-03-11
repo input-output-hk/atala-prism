@@ -1,17 +1,17 @@
-import { StudentsServicePromiseClient } from '../../protos/credentials/credentialsManager_grpc_web_pb';
+import { StudentsServicePromiseClient } from '../../protos/cmanager_api_grpc_web_pb';
 import Logger from '../../helpers/Logger';
 import { isIssuer } from '../wallet/wallet';
 import { setDateInfoFromJSON } from '../helpers';
 import { HOLDER_PAGE_SIZE } from '../../helpers/constants';
 
+const { Date } = require('../../protos/common_models_pb');
 const {
   GetStudentRequest,
   GetStudentsRequest,
-  GenerateConnectionTokenRequest,
+  GenerateConnectionTokenForStudentRequest,
   GetStudentCredentialsRequest,
-  CreateStudentRequest,
-  Date
-} = require('../../protos/credentials/credentialsManager_pb');
+  CreateStudentRequest
+} = require('../../protos/cmanager_api_pb');
 
 const { config } = require('../config');
 
@@ -51,7 +51,7 @@ export const getStudents = async (
 export const generateConnectionToken = async (userId, studentId) => {
   const hardCodedUserId = isIssuer() ? config.issuerId : config.verifierId;
   Logger.info(`Generating token for studentId ${studentId}`);
-  const generateConnectionTokenRequest = new GenerateConnectionTokenRequest();
+  const generateConnectionTokenRequest = new GenerateConnectionTokenForStudentRequest();
   generateConnectionTokenRequest.setStudentid(studentId);
   const response = await studentsService.generateConnectionToken(
     generateConnectionTokenRequest,

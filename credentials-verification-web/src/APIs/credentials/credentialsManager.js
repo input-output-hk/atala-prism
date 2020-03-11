@@ -1,16 +1,15 @@
-import { CredentialsServicePromiseClient } from '../../protos/credentials/credentialsManager_grpc_web_pb';
+import { CredentialsServicePromiseClient } from '../../protos/cmanager_api_grpc_web_pb';
+import { ConnectorServicePromiseClient } from '../../protos/connector_api_grpc_web_pb';
+
 import Logger from '../../helpers/Logger';
 import { setDateInfoFromJSON } from '../helpers';
 import { getStudents } from './studentsManager';
 import { getDid } from '../wallet/wallet';
 import { CONNECTION_ACCEPTED } from '../../helpers/constants';
 
-const {
-  GetCredentialsRequest,
-  CreateCredentialRequest,
-  RegisterRequest,
-  Date
-} = require('../../protos/connector/credentialsManager_pb');
+const { Date } = require('../../protos/common_models_pb');
+const { RegisterDIDRequest } = require('../../protos/connector_api_pb');
+const { GetCredentialsRequest, CreateCredentialRequest } = require('../../protos/cmanager_api_pb');
 const {
   Credential,
   IssuerData,
@@ -19,11 +18,12 @@ const {
   SentCredential,
   IssuerSentCredential,
   Signer
-} = require('../../protos/credentials/credential_pb');
+} = require('../../protos/credential_pb');
 
 const { config } = require('../config');
 
 const credentialsService = new CredentialsServicePromiseClient(config.grpcClient, null, null);
+const connectorClient = new ConnectorServicePromiseClient(config.grpcClient, null, null);
 
 export const getCredentials = async (limit, lastSeenCredentialId = null) => {
   Logger.info(`getting credentials from ${lastSeenCredentialId}, limit ${limit}`);
@@ -299,15 +299,20 @@ export const getCredentialBinary = async (connectionData, studentData) => {
   return sentCredential.serializeBinary();
 };
 
-export const registerUser = async (name, did, file) => {
-  const registerRequest = new RegisterRequest();
-  const logo = new TextEncoder().encode(file);
+// TODO: move this to the connector layer
+// TODO: this is always getting isIssuer = false
+export const registerUser = async (createOperation, name, logoFile, isIssuer) => {
+  const registerRequest = new RegisterDIDRequest();
+  const logo = new TextEncoder().encode(logoFile);
 
+  registerRequest.setRole(
+    isIssuer ? RegisterDIDRequest.Role.ISSUER : RegisterDIDRequest.Role.VERIFIER
+  );
   registerRequest.setName(name);
-  registerRequest.setDid(did);
   registerRequest.setLogo(logo);
+  registerRequest.setCreatedidoperation(createOperation);
 
-  const response = await credentialsService.register(registerRequest, {
+  const response = await connectorClient.registerDID(registerRequest, {
     userId: config.issuerId
   });
 

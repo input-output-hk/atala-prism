@@ -6,7 +6,7 @@ import io.iohk.connector.errors.{ErrorSupport, LoggingContext}
 import io.iohk.cvp.cstore.models.StoreIndividual
 import io.iohk.cvp.cstore.repositories.daos.IndividualsDAO.StoreIndividualCreateData
 import io.iohk.cvp.cstore.repositories.daos.StoredCredentialsDAO.StoredCredentialCreateData
-import io.iohk.cvp.cstore.services.{StoreIndividualsService, StoreUsersService, StoredCredentialsService}
+import io.iohk.cvp.cstore.services.{StoreIndividualsService, StoredCredentialsService}
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.prism.protos.{cstore_api, cstore_models}
 import org.slf4j.{Logger, LoggerFactory}
@@ -14,7 +14,6 @@ import org.slf4j.{Logger, LoggerFactory}
 import scala.concurrent.{ExecutionContext, Future}
 
 class CredentialsStoreService(
-    storeUsers: StoreUsersService,
     individuals: StoreIndividualsService,
     storedCredentials: StoredCredentialsService,
     authenticator: Authenticator
@@ -24,25 +23,6 @@ class CredentialsStoreService(
     with ErrorSupport {
 
   override val logger: Logger = LoggerFactory.getLogger(this.getClass)
-
-  override def register(request: cstore_api.RegisterRequest): Future[cstore_api.RegisterResponse] = {
-    implicit val loggingContext = LoggingContext("request" -> request)
-    def f() = {
-      val createData = StoreUsersService.StoreUserCreationData(
-        request.name,
-        Option(request.logo).filter(!_.isEmpty).map(_.toByteArray.toVector)
-      )
-
-      storeUsers
-        .insert(createData)
-        .wrapExceptions
-        .successMap { id =>
-          cstore_api.RegisterResponse(userId = id.uuid.toString)
-        }
-    }
-    authenticator.public("register", request) { f() }
-
-  }
 
   override def createIndividual(
       request: cstore_api.CreateIndividualRequest

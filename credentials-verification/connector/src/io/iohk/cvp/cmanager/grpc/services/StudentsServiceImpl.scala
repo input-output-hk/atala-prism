@@ -120,16 +120,16 @@ class StudentsServiceImpl(
     }
   }
 
-  override def generateConnectionToken(
-      request: cmanager_api.GenerateConnectionTokenRequest
-  ): Future[cmanager_api.GenerateConnectionTokenResponse] = {
+  override def generateConnectionTokenForStudent(
+      request: cmanager_api.GenerateConnectionTokenForStudentRequest
+  ): Future[cmanager_api.GenerateConnectionTokenForStudentResponse] = {
     def f(issuerId: Issuer.Id) = {
       Future {
         val studentId = Student.Id.apply(UUID.fromString(request.studentId))
 
         studentsRepository
           .generateToken(issuerId, studentId)
-          .map(token => cmanager_api.GenerateConnectionTokenResponse(token.token))
+          .map(token => cmanager_api.GenerateConnectionTokenForStudentResponse(token.token))
           .value
           .map {
             case Right(x) => x
@@ -138,7 +138,7 @@ class StudentsServiceImpl(
       }.flatten
     }
 
-    authenticator.authenticated("generateConnectionToken", request) { participantId =>
+    authenticator.authenticated("generateConnectionTokenForStudent", request) { participantId =>
       f(Issuer.Id(participantId.uuid))
     }
   }

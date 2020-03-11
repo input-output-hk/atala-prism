@@ -1,11 +1,11 @@
-import { CredentialsStoreServicePromiseClient } from '../../protos/cstore/cstore_grpc_web_pb';
+import { CredentialsStoreServicePromiseClient } from '../../protos/cstore_api_grpc_web_pb';
 import Logger from '../../helpers/Logger';
 
 const {
   GenerateConnectionTokenForRequest,
   GetIndividualsRequest,
   CreateIndividualRequest
-} = require('../../../src/protos/cstore/cstore_pb');
+} = require('../../../src/protos/cstore_api_pb');
 
 const { config } = require('../config');
 
