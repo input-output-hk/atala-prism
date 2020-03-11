@@ -8,12 +8,11 @@ import io.iohk.connector.repositories.{ConnectionsRepository, RequestNoncesRepos
 import io.iohk.connector.{RpcSpecBase, SignedRequestsAuthenticator}
 import io.iohk.cvp.cstore.models.{IndividualConnectionStatus, StoreUser}
 import io.iohk.cvp.cstore.repositories.daos.{IndividualsDAO, StoreUsersDAO, StoredCredentialsDAO}
-import io.iohk.cvp.cstore.services.{StoreIndividualsService, StoreUsersService, StoredCredentialsService}
+import io.iohk.cvp.cstore.services.{StoreIndividualsService, StoredCredentialsService}
 import io.iohk.cvp.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.prism.protos.{cstore_api, cstore_models}
 import org.mockito.MockitoSugar._
-import org.scalatest.OptionValues._
 
 import scala.concurrent.duration._
 
@@ -30,7 +29,6 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
     new cstore_api.CredentialsStoreServiceGrpc.CredentialsStoreServiceBlockingStub(_, _)
   )
 
-  lazy val storeUsers = new StoreUsersService(database)
   lazy val individuals = new StoreIndividualsService(database)
   lazy val storedCredentials = new StoredCredentialsService(database)
   private lazy val connectionsRepository = new ConnectionsRepository.PostgresImpl(database)(executionContext)
@@ -48,7 +46,7 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
   override def services = Seq(
     cstore_api.CredentialsStoreServiceGrpc
       .bindService(
-        new CredentialsStoreService(storeUsers, individuals, storedCredentials, authenticator),
+        new CredentialsStoreService(individuals, storedCredentials, authenticator),
         executionContext
       )
   )
@@ -67,24 +65,6 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
       .transact(database)
       .unsafeToFuture()
       .futureValue
-  }
-
-  "register" should {
-    "create relevant records in the database" in {
-      usingApiAs.unlogged { serviceStub =>
-        val request = cstore_api.RegisterRequest("Verifier", ByteString.EMPTY)
-        val result = serviceStub.register(request)
-
-        val user = StoreUsersDAO.get(ParticipantId(result.userId)).transact(database).unsafeRunSync().value
-        // user needs just to exist
-
-        val participant =
-          ParticipantsDAO.findBy(ParticipantId(result.userId)).transact(database).value.unsafeRunSync().value
-        participant.tpe mustBe ParticipantType.Verifier
-        participant.name mustBe "Verifier"
-        participant.logo mustBe None
-      }
-    }
   }
 
   "createIndividual" should {

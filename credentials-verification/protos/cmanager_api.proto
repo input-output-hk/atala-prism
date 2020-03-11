@@ -6,7 +6,6 @@ import "cmanager_models.proto";
 import "common_models.proto";
 
 service CredentialsService {
-    rpc Register (RegisterRequest) returns (RegisterResponse) {}
     rpc CreateCredential (CreateCredentialRequest) returns (CreateCredentialResponse) {}
     rpc GetCredentials (GetCredentialsRequest) returns (GetCredentialsResponse) {}
 }
@@ -18,22 +17,12 @@ service StudentsService {
     rpc GetStudentCredentials (GetStudentCredentialsRequest) returns (GetStudentCredentialsResponse) {}
 
     // Generate a connection token to get connected to a specific student
-    rpc GenerateConnectionToken (GenerateConnectionTokenRequest) returns (GenerateConnectionTokenResponse) {}
+    rpc GenerateConnectionTokenForStudent (GenerateConnectionTokenForStudentRequest) returns (GenerateConnectionTokenForStudentResponse) {}
 }
 
 service GroupsService {
     rpc CreateGroup (CreateGroupRequest) returns (CreateGroupResponse) {}
     rpc GetGroups (GetGroupsRequest) returns (GetGroupsResponse) {}
-}
-
-message RegisterRequest {
-    string name = 1;
-    string did = 2;
-    bytes logo = 3;
-}
-
-message RegisterResponse {
-    string issuerId = 1;
 }
 
 // The authenticated issuer is creating a credential
@@ -91,10 +80,10 @@ message GetStudentCredentialsResponse {
     repeated Credential credential = 1;
 }
 
-message GenerateConnectionTokenRequest {
+message GenerateConnectionTokenForStudentRequest {
     string studentId = 1; // the student that will be linked to the token
 }
-message GenerateConnectionTokenResponse {
+message GenerateConnectionTokenForStudentResponse {
     string token = 1;
 }
 

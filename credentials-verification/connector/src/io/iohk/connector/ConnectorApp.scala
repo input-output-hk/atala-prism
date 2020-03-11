@@ -16,7 +16,7 @@ import io.iohk.cvp.cmanager.repositories.{
   StudentsRepository
 }
 import io.iohk.cvp.cstore.CredentialsStoreService
-import io.iohk.cvp.cstore.services.{StoreIndividualsService, StoreUsersService, StoredCredentialsService}
+import io.iohk.cvp.cstore.services.{StoreIndividualsService, StoredCredentialsService}
 import io.iohk.cvp.grpc.{GrpcAuthenticationHeaderParser, GrpcAuthenticatorInterceptor}
 import io.iohk.cvp.intdemo.protos.IDServiceGrpc
 import io.iohk.cvp.intdemo.{CredentialStatusRepository, IDServiceImpl}
@@ -115,11 +115,10 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       new StudentsServiceImpl(studentsRepository, credentialsRepository, authenticator)(executionContext)
     val groupsService = new GroupsServiceImpl(issuerGroupsRepository, authenticator)(executionContext)
 
-    val storeUsersService = new StoreUsersService(xa)(executionContext)
     val storeIndividualsService = new StoreIndividualsService(xa)(executionContext)
     val storedCredentialsService = new StoredCredentialsService(xa)(executionContext)
     val credentialsStoreService =
-      new CredentialsStoreService(storeUsersService, storeIndividualsService, storedCredentialsService, authenticator)(
+      new CredentialsStoreService(storeIndividualsService, storedCredentialsService, authenticator)(
         executionContext
       )
 
