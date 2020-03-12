@@ -4,6 +4,7 @@ import Landing from './landing/Landing';
 import I18nError from './I18nError';
 import UserInfo from './userInfo/UserInfoContainer';
 import Credentials from './credentials/CredentialsContainer';
+import Contact from './contact/ContactContainer';
 
 const errorRoute = { exact: true, path: '/error', key: '/error', component: I18nError };
 
@@ -23,8 +24,13 @@ const credentialsRoute = {
   key: 'credentials',
   component: Credentials
 };
+const contactRoute = {
+  path: '/contact',
+  key: 'contact',
+  component: Contact
+};
 
-const routes = [errorRoute, landingRoute, userInfoRoute, credentialsRoute];
+const routes = [errorRoute, landingRoute, userInfoRoute, credentialsRoute, contactRoute];
 
 const Router = () => (
   <Switch>

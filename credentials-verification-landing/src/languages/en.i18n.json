@@ -84,7 +84,7 @@
     "createNewGroup": "Create New Group",
     "onCreateNewGroupClick": "New Groups can not yet be created",
     "modal": {
-      "title": "Delete Grop",
+      "title": "Delete Group",
       "text": "Are you sure you want to delete the {{groupName}} group?"
     },
     "table": {
@@ -133,6 +133,10 @@
     }
   },
   "landing": {
+    "MyCredentials": {
+      "title": "My",
+      "title2": "Credentials"
+    },
     "start": {
       "info": "Digital credentials powered by Blockchain",
       "subtitle": "Carry and share your credentials inside your digital wallet.",
@@ -169,13 +173,15 @@
       "detailText": "Credentials "
     },
     "WhatYouNeed": {
-      "Title": "What do you need?"
+      "Title": "What do you need?",
+      "scanCode": "Scan Connection QR Code",
+      "share": "Share your "
     },
-    "createdCredentialGov": {
-      "Title": "This is your Government Issued Digital Identity"
+    "createdCredential": {
+      "prevCredentialName": "This is your "
     },
     "findCredential": {
-      "title": "Try Atala Prism interative Demo",
+      "title": "Try Atala Prism interactive Demo",
       "arrowAlt": "Arrow Right",
       "credentialAlt": "Man smiling",
       "cardTitle": "Find a Credential",
@@ -340,6 +346,7 @@
       "errors": {
         "emptyField": "This field is mandatory",
         "futureError": "The date must be earlier than today",
+        "futureDate": "The date must be earlier than today",
         "pastError": "The graduation date must be later than the start date",
         "atLeastOneLogo": "You must upload one logo",
         "noGroupSelected": "You must select a group before continuing"
@@ -362,6 +369,40 @@
       "title": "Check the data below"
     },
     "checkInfo": "Check the data below"
+  },
+  "newUniversityCredential": {
+    "table": {
+      "columns": {
+        "degreeName": "Degree Name",
+        "universityName": "University Name",
+        "award": "Award",
+        "fullName": "Full Name",
+        "startDate": "Start Date",
+        "graduationDate": "Graduation Date"
+      }
+    }
+  },
+  "newEmploymentCredential": {
+    "table": {
+      "columns": {
+        "companyName": "Company Name",
+        "employerAddress": "Employer Address",
+        "employeeName": "Employee Name",
+        "employmentStatus": "Employment Status",
+        "employmentStartDate": "Employment Start Date"
+      }
+    }
+  },
+  "newInsuranceCredential": {
+    "table": {
+      "columns": {
+        "providerName": "Provider Name",
+        "classOfInsurance": "Class Of Insurance",
+        "policyNumber": "Policy Number",
+        "fullName": "Full Name",
+        "policyEndDate": "Policy End Date"
+      }
+    }
   },
   "login": {
     "welcome": {
@@ -527,14 +568,15 @@
     "errors": {
       "connectionCreation": "The connection could not be created",
       "creationAndIssuing": "The credential could not be created or issued",
-      "connectionWaiting": "A connection error happened, please refresh this page and start a new"
+      "connectionWaiting": "A connection error happened, please refresh this page and start a new",
+      "listenSubjectStatusChanges": "We’re really sorry, an unexpected error happened, please request your credential again"
     },
     "personalInformation": {
       "title": "Personal Information",
       "explanation": "Please fill in the following information that will be displayed in your credential. You will not be able to change this once the credential is issued.",
       "askForCredential": "Ask for credential",
-      "titleAlert":"Privacy is very important to us!",
-      "textAlert":"Any data that you enter is protected and encrypted. We do not store any private data and do not share it with any third party.",
+      "titleAlert": "Privacy is very important to us!",
+      "textAlert": "Any data that you enter is protected and encrypted. We do not store any private data and do not share it with any third party.",
       "form": {
         "firstName": "Name",
         "lastName": "Last Name",
@@ -547,32 +589,77 @@
         "dateOfBirth": "Date of birth"
       }
     },
+    "contactInformation": {
+      "congrats": "Congrats, you received all the credentials!",
+      "title": "We love to",
+      "title2": "hear your feedback ",
+      "send": "Send",
+      "consent": "Yes, I consent to being contacted…",
+      "form": {
+        "fullName": "Full Name",
+        "email": "E-mail",
+        "formMessage": "Message"
+      }
+    },
     "introductionInformation": {
       "title": "Credential Information",
       "explanation": "Here you can ask for a credential.",
       "askForCredential": "Ask for credential",
       "miniText": "Ask for Credentials "
     },
-    "sendCredentials": {
-      "title": "Congrats!",
-      "subtitle": "Your personal information has been verified successfully. Your Credential is ready to be issued.",
-      "howToContinue1": "To continue click the ",
-      "howToContinue2": " button, then check your device.",
-      "receiveCredential": "Receive Credential",
-      "iconAlt": "Phone Image"
-    },
     "finishInfo": {
       "title": "Check your phone!",
       "explanation": "You will receive your credential on Atala Prism App Dashboard.",
-      "finishedIconAlt": "Cellphone with Credential",
+      "finishedIconAlt": "Icon Cellphone with Credential",
       "howToSee": "Open Atala Prism App and check your Dashboard to see your",
       "whatToSee": " New Credential",
       "finished": "Got it! It's done!",
       "congrats": "Congrats!",
       "openOnPhone": "Open Atala Prism on your phone.",
-      "checkHome": " Check your Home",
-      "IdType1": "to see your Government",
-      "IdType2": "Digital Identity."
+      "checkHome": "Check your Home",
+      "checkHome2": "to see your"
+    },
+    "CongratsStep": {
+      "congrats": "Congrats! You have all the Credentials."
+    },
+    "sendCredentials": {
+      "title": "Share your Credential ID",
+      "explanation": "To apply for your ",
+      "explanation2": " you must share your Government Credential ID",
+      "explanation3": " and your ",
+      "credentialIconAlt": "Icon Cellphone with Credential",
+      "sharedIconAlt": "Icon Cellphone share Credential",
+      "openOnPhone": "Open Atala Prism on your phone.",
+      "checkHome": "Check your Home",
+      "checkHome2": "to see your Credentials.",
+      "openCredentialID": "Open the ",
+      "openCredentialID2": " Detail.",
+      "share": "Select",
+      "share2": "to share your Credential with us.",
+      "optionalOpen": "Do the same with the ",
+      "governmentCredentialId": "Government Credential ID",
+      "1": "University degree",
+      "2": "Proof of Employment",
+      "3": "Certificate of Insurance"
+    },
+    "requestedCredentials": {
+      "title": "Requested Credentials"
+    },
+    "CredentialCard": {
+      "credential": "Credential",
+      "issuingAuthority": "Issuing Authority"
+    },
+    "credentialNames": {
+      "CredentialType0": "Government Issued Digital Identity",
+      "CredentialType1": "University Degree",
+      "CredentialType2": "Proof of Employment",
+      "CredentialType3": "Certificate of insurance"
+    },
+    "credentialIssuers": {
+      "CredentialType0": "Department of Interior, Republic of Redland",
+      "CredentialType1": "Redland Polytechnic",
+      "CredentialType2": "Atala Inc",
+      "CredentialType3": "Atala insurance Ltd"
     },
     "QRCard": {
       "noAppYet": "You don't have the application?",
@@ -582,7 +669,8 @@
     },
     "scanQRInfo": {
       "title": "Scan QR Code",
-      "explanation": "To obtain your Government Issued Digital Identity you must start scanning this QR Code, follow the steps",
+      "explanation": "To obtain your ",
+      "explanation2": " you must start scanning this QR Code, follow the steps",
       "step1": "Open Atala Prism on your phone.",
       "step2": {
         "part1": "Touch Connections ",
@@ -598,6 +686,20 @@
       "CREDENTIAL_AVAILABLE": "Credential available",
       "CREDENTIAL_SENT": "Credential sent",
       "CREDENTIAL_RECEIVED": "Credential received"
+    },
+    "IdCredentialCard": {
+      "CredentialTitle": "National ID Card",
+      "CredentialSubtitle": "Republic of Redland",
+      "IdentityNumber": "Identity Number",
+      "DateOfBirth": "Date of Birth",
+      "FullName": "Full Name",
+      "ExpirationDate": "Expiration Date"
+    },
+    "contactFormButton": {
+      "congrats": "Congrats!",
+      "congrats2": "You have all the Credentials.",
+      "knowMore": "Would you like to know more?",
+      "getInTouch": "Get in touch!"
     }
   },
   "errors": {
@@ -612,6 +714,7 @@
       "tooLarge": "The file is too large, the maximum size allowed is {{maxSize}}",
       "uploadError": "An error ocurred while uploading the file"
     },
+    "email": "Invalid E-mail",
     "saveDraft": "Error while saving New Credential draft",
     "emptyCredential": "Trying to save empty credential",
     "invalidCredential": "The credential has invalid fields",
@@ -620,12 +723,14 @@
     "form": {
       "emptyField": "This field is mandatory"
     },
+    "consent": "You must accept the Terms & Conditions to continue.",
     "updateSettings": "An error ocurred while updating the settings",
     "invalidSettings": "If the student pays for the credential an amount must be entered",
     "invalidPassword": "The entered password doesn't match the wallet one",
     "noWallet": "The wallet must be running to login",
     "logout": "The logout could not be completed",
     "futureError": "The date must be earlier than today",
+    "futureDate": "The date must be earlier than today",
     "pastError": "The graduation date must be later than the start date"
   }
 }

@@ -1,5 +1,3 @@
-import __ from 'lodash';
-
 // eslint-disable-next-line camelcase
 const DEFAUlT_PAGE_SIZE = 100;
 // eslint-disable-next-line camelcase
@@ -22,38 +20,6 @@ export const AVATAR_WIDTH = 50;
 
 export const RIGHT = 'right';
 export const LEFT = 'left';
-
-export const PENDING_CONNECTION = 'PENDING_CONNECTION';
-export const CONNECTION_STATUSES = {
-  invitationMissing: 0,
-  connectionMissing: 1,
-  connectionAccepted: 2,
-  connectionRevoked: 3
-};
-export const CONNECTION_STATUSES_TRANSLATOR = __.invert(CONNECTION_STATUSES);
-
-export const INDIVIDUAL_STATUSES = {
-  created: 0,
-  invited: 1,
-  connected: 2,
-  revoked: 3
-};
-export const INDIVIDUAL_STATUSES_TRANSLATOR = __.invert(INDIVIDUAL_STATUSES);
-
-export const CONNECTED = 'CONNECTED';
-
-export const LANDING_UNIVERSITY = 'IOHK University';
-// eslint-disable-next-line quotes
-export const LANDING_TITLE = "IOHK's Degree";
-export const LANDING_GROUP = 'IOHK Student Group';
-
-// eslint-disable-next-line quotes
-export const EXAMPLE_DEGREE_NAME = "Bachelor's in Engineering";
-export const EXAMPLE_UNIVERSITY_NANE = 'Free University Tbilisi';
-export const EXAMPLE_AWARD = 'First Class Honorous';
-export const EXAMPLE_FULL_NAME = 'Student Name';
-export const EXAMPLE_START_DATE = 1555005000;
-export const EXAMPLE_GRADUATION_DATE = 1555005000;
 
 const JPEG = 'image/jpeg';
 const PNG = 'image/png';
@@ -82,15 +48,17 @@ const WalletStatuses = {
 
 export const translateStatus = status => WalletStatuses[status];
 
-// Connection status
-export const CONNECTION_ACCEPTED = 1;
-
 export const CREDENTIAL_TYPES = {
   0: 'GOVERNMENT_ISSUED_DIGITAL_IDENTITY',
   1: 'UNIVERSITY_DEGREE',
   2: 'PROOF_OF_EMPLOYMENT',
   3: 'INSURANCE_POLICY'
 };
+
+export const GOVERNMENT_ISSUED_DIGITAL_IDENTITY = 0;
+export const UNIVERSITY_DEGREE = 1;
+export const PROOF_OF_EMPLOYMENT = 2;
+export const INSURANCE_POLICY = 3;
 
 export const SUBJECT_STATUSES = {
   0: 'UNCONNECTED',
@@ -100,6 +68,9 @@ export const SUBJECT_STATUSES = {
   4: 'CREDENTIAL_RECEIVED'
 };
 
+export const CONNECTED = 1;
+export const CREDENTIAL_SENT = 3;
+
 export const USER = 'atala-demo-web-user';
 
 export const FEATURE_NAME = 'features';
@@ -108,3 +79,20 @@ export const DOWNLOAD_NAME = 'download';
 
 export const APP_STORE_URL = 'https://www.apple.com/la/ios/app-store/';
 export const GOOGLE_PLAY_STORE_URL = 'https://play.google.com/store';
+
+// EXAMPLE CERTIFICATE CARD VALUES
+export const CARD_ID_ID_NUMBER = '123 456 789';
+export const CARD_ID_EXPIRATION_DATE = 1901836800;
+export const CARD_UNIVERSITY_TITLE = 'Bachelors Degree Engineering';
+export const CARD_UNIVERSITY_UNIVERSITY = 'Air Side University';
+export const CARD_UNIVERSITY_AWARD = 'First Class Honours';
+export const CARD_UNIVERSITY_START_DATE = 1426809600;
+export const CARD_UNIVERSITY_GRADUATION_DATE = 1574208000;
+export const CARD_EMPLOYMENT_COMPANY = 'Atala Inc.';
+export const CARD_EMPLOYMENT_ADDRESS = '1234 Main Street';
+export const CARD_EMPLOYMENT_STATUS = 'Full Time';
+export const CARD_EMPLOYMENT_START_DATE = 1578614400;
+export const CARD_INSURANCE_PROVIDER = 'Atala Insurance Ltd';
+export const CARD_INSURANCE_CLASS = 'Life Insurance';
+export const CARD_INSURANCE_POLICY_NUMBER = '1234 5678 90';
+export const CARD_INSURANCE_END_DATE = 1609632000;

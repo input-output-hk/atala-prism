@@ -1,60 +1,59 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { Col } from 'antd';
 import CellRenderer from '../CellRenderer/CellRenderer';
-import freeUniLgo from '../../../../images/FreeUniLogo.png';
 import './_style.scss';
-import { LANDING_TITLE, LANDING_UNIVERSITY } from '../../../../helpers/constants';
 
-const CredentialData = ({ icon, firstName, lastName, startDate, graduationDate }) => (
-  <Col lg={12} xs={24} className="CredentialTemplate">
-    <div className="CredentialHeader">
-      <CellRenderer componentName="newCredential" title="degreeName" value={LANDING_TITLE} />
-      <img className="IconUniversity" src={icon || freeUniLgo} alt="Free University Tbilisi" />
-    </div>
-    <div className="CredentialContent">
-      <CellRenderer
-        componentName="newCredential"
-        title="universityName"
-        value={LANDING_UNIVERSITY}
-      />
-      {firstName && (
-        <Fragment>
+const CredentialData = ({
+  credentialHeaderClassName,
+  credentialTemplateClassName,
+  credentialContentClassName,
+  iconLeft,
+  iconRight,
+  iconAlt,
+  componentName,
+  cellTitle,
+  cellList
+}) => {
+  const CellsRenderer = cells =>
+    cells.map(cell =>
+      cell.subList ? (
+        <div className={cell.className}>{CellsRenderer(cell.subList)}</div>
+      ) : (
+        <>
+          <CellRenderer componentName={componentName} {...cell} />
           <hr />
-          <CellRenderer
-            componentName="newCredential"
-            title="fullName"
-            value={`${firstName} ${lastName}`}
-          />
-        </Fragment>
-      )}
-      <hr />
-      <div className="DegreeDate">
-        {startDate && (
-          <CellRenderer componentName="newCredential" title="startDate" value={startDate} />
-        )}
-        {graduationDate && (
-          <CellRenderer
-            componentName="newCredential"
-            title="graduationDate"
-            value={graduationDate}
-          />
-        )}
+        </>
+      )
+    );
+  return (
+    <Col lg={12} xs={24} className={credentialTemplateClassName}>
+      <div className={credentialHeaderClassName}>
+        {iconLeft && <img className="IconUniversity" src={iconLeft} alt={iconAlt} />}
+        <CellRenderer componentName={componentName} {...cellTitle} />
+        {iconRight && <img className="IconUniversity" src={iconRight} alt={iconAlt} />}
       </div>
-    </div>
-  </Col>
-);
+      <div className={credentialContentClassName}>{CellsRenderer(cellList)}</div>
+    </Col>
+  );
+};
 
 CredentialData.defaultProps = {
-  icon: ''
+  credentialHeaderClassName: 'CredentialHeader',
+  credentialTemplateClassName: 'CredentialTemplate',
+  credentialContentClassName: 'CredentialContent'
 };
 
 CredentialData.propTypes = {
-  icon: PropTypes.string,
-  firstName: PropTypes.string.isRequired,
-  lastName: PropTypes.string.isRequired,
-  startDate: PropTypes.string.isRequired,
-  graduationDate: PropTypes.string.isRequired
+  credentialHeaderClassName: PropTypes.string,
+  credentialTemplateClassName: PropTypes.string,
+  credentialContentClassName: PropTypes.string,
+  iconLeft: PropTypes.string.isRequired,
+  iconRight: PropTypes.string.isRequired,
+  iconAlt: PropTypes.string.isRequired,
+  componentName: PropTypes.string.isRequired,
+  cellTitle: PropTypes.shape({ title: PropTypes.string, value: PropTypes.any }).isRequired,
+  cellList: PropTypes.shape([{ title: PropTypes.string, value: PropTypes.any }]).isRequired
 };
 
 export default CredentialData;

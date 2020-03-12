@@ -20,7 +20,7 @@ const ScanQRSteps = () => {
     const step = i === 1 ? secondStep : <p>{t(`credential.scanQRInfo.step${i + 1}`)}</p>;
 
     steps.push(
-      <div className="ScanQRSteps">
+      <div className="ScanQRSteps" key={i}>
         <p className="NumberText">{i + 1}.</p>
         {step}
       </div>

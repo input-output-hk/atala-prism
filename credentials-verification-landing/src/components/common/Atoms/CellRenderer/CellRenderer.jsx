@@ -17,6 +17,7 @@ const CellRenderer = ({ title, value, firstValue, componentName }) => {
 
 CellRenderer.propTypes = {
   title: PropTypes.string.isRequired,
+  firstValue: PropTypes.string.isRequired,
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   componentName: PropTypes.string.isRequired
 };

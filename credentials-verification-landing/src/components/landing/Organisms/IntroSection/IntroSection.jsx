@@ -9,11 +9,12 @@ const IntroSection = () => {
 
   const keys = ['wallet', 'crypto'];
 
-  const separator = <hr className="lineSeparatorSide" />;
+  const separator = key => <hr key={key} className="lineSeparatorSide" />;
 
   const createIntroItem = (key, pictureNumber) => (
     <IntroItem
-      itemIcon={`images/icon-04.svg`}
+      key={key}
+      itemIcon="images/icon-04.svg"
       itemTitle={t(`landing.intro.itemIcon.${key}.title`)}
       itemText={t(`landing.intro.itemIcon.${key}.text`)}
     />
@@ -28,7 +29,7 @@ const IntroSection = () => {
           .map((key, index) => createIntroItem(key, index + 2))
           .reduce(
             (acumulator, currentIntroItem) => {
-              const withSeparator = acumulator.concat(separator);
+              const withSeparator = acumulator.concat(separator(acumulator.length));
               return withSeparator.concat(currentIntroItem);
             },
             [createIntroItem('credentials', 1)]

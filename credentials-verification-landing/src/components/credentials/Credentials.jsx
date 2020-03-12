@@ -9,10 +9,11 @@ import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 import { LEFT } from '../../helpers/constants';
 
 const Credentials = ({
-  redirector: { redirectToLanding },
+  redirector: { redirectToLanding, redirectToContact },
   changeCurrentCredential,
   getStep,
-  availableCredential
+  availableCredential,
+  showContactButton
 }) => {
   const { t } = useTranslation();
 
@@ -20,6 +21,8 @@ const Credentials = ({
     <CredentialsList
       changeCurrentCredential={changeCurrentCredential}
       availableCredential={availableCredential}
+      showContactButton={showContactButton}
+      toContactForm={redirectToContact}
     />
   );
 
@@ -49,7 +52,11 @@ Credentials.propTypes = {
   availableCredential: PropTypes.number.isRequired,
   changeCurrentCredential: PropTypes.func.isRequired,
   getStep: PropTypes.func.isRequired,
-  redirector: PropTypes.shape({ redirectToLanding: PropTypes.func.isRequired }).isRequired
+  showContactButton: PropTypes.bool.isRequired,
+  redirector: PropTypes.shape({
+    redirectToLanding: PropTypes.func.isRequired,
+    redirectToContact: PropTypes.func.isRequired
+  }).isRequired
 };
 
 export default withRedirector(Credentials);

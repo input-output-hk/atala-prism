@@ -1,68 +1,125 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import FinishInfo from './Molecules/FinishInfo/FinishInfo';
+import CongratsStep from './Molecules/CongratsStep/CongratsStep';
 import CreatedCredential from './Organisms/CreatedCredential/CreatedCredential';
 import QRCard from './Molecules/QRCard/QRCard';
 import ScanQRInfo from './Molecules/ScanQRInfo/ScanQRInfo';
 import IntroductionInformation from './Organisms/IntroductionInformation/IntroductionInformation';
 import { withApi } from '../providers/withApi';
 import Logger from '../../helpers/Logger';
-import { CONNECTION_ACCEPTED, SUBJECT_STATUSES } from '../../helpers/constants';
+import { toProtoDate } from '../../helpers/formatters';
+import SendCredentials from './Molecules/SendCredential/SendCredentials';
+import RequestedCredentials from './Molecules/RequestedCredentials/RequestedCredentials';
+import {
+  CREDENTIAL_TYPES,
+  CREDENTIAL_SENT,
+  SUBJECT_STATUSES,
+  CONNECTED,
+  GOVERNMENT_ISSUED_DIGITAL_IDENTITY
+} from '../../helpers/constants';
 import Credentials from './Credentials';
 import SplittedPageInside from './Organisms/SplittedPageInside/SplittedPageInside';
 import WhatYouNeed from './Molecules/WhatYouNeed/WhatYouNeed';
+import { UserContext } from '../providers/userContext';
 
 // Credentials steps
-export const INTRODUCTION_STEP = 0;
-export const QR_STEP = 1;
-// export const SEND_CREDENTIAL_STEP = 2;
-export const SUCCESS_STEP = 2; // 3;
+const INTRODUCTION_STEP = 0;
+const QR_STEP = 1;
+const SEND_CREDENTIAL_STEP = 2;
+const SUCCESS_STEP = 3;
 
-const CredentialsContainer = ({ api: { getConnectionToken, startSubjectStatusStream } }) => {
+const CREDENTIALS = {
+  0: 'citizenId',
+  1: 'studentId',
+  2: 'employeeId',
+  3: 'insuredId'
+};
+
+const lastCredential = Object.keys(CREDENTIAL_TYPES).length - 1;
+
+const CredentialsContainer = ({
+  api: { getConnectionToken, startSubjectStatusStream, setPersonalData }
+}) => {
   const { t } = useTranslation();
 
+  const { user, setUser } = useContext(UserContext);
   const [currentStep, setCurrentStep] = useState(0);
-  const [token, setToken] = useState();
-  const [enabledCredentialToRequest, setEnabledCredentialToRequest] = useState(0);
-  const [currentCredential, setCurrentCredential] = useState(0);
+  const [token, setToken] = useState('');
+  const [enabledCredentialToRequest, setEnabledCredentialToRequest] = useState(
+    GOVERNMENT_ISSUED_DIGITAL_IDENTITY
+  );
+  const [currentCredential, setCurrentCredential] = useState(GOVERNMENT_ISSUED_DIGITAL_IDENTITY);
   const [connectionStatus, setConnectionStatus] = useState();
+  const [showContactButton, setShowContactButton] = useState(false);
+  const [showCongrats, setShowCongrats] = useState(false);
 
   useEffect(() => {
-    setCurrentStep(0);
-    setToken();
-    setConnectionStatus(undefined);
+    const { citizenId, studentId, employeeId, insuredId } = user;
+
+    const credentialsIdsArray = [citizenId, studentId, employeeId, insuredId];
+    const nextCredential = credentialsIdsArray.findIndex(element => !element);
+    if (nextCredential > GOVERNMENT_ISSUED_DIGITAL_IDENTITY) {
+      setCurrentCredential(nextCredential);
+      setEnabledCredentialToRequest(nextCredential);
+    }
+    if (nextCredential === -1) {
+      setCurrentCredential(nextCredential);
+      setShowCongrats(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    cleanCredentialState();
   }, [currentCredential]);
 
   useEffect(() => {
     const isIntroductionStep = currentStep === INTRODUCTION_STEP;
-    if (token && isIntroductionStep) setCurrentStep(currentStep + 1);
+    if (token && isIntroductionStep) initQRStep();
   }, [token, currentStep]);
 
   useEffect(() => {
     const isSuccessStep = currentStep === SUCCESS_STEP;
-    if (isSuccessStep) setEnabledCredentialToRequest(currentCredential + 1);
-  }, [currentStep, currentCredential]);
+    if (isSuccessStep) {
+      setUser({ [CREDENTIALS[currentCredential]]: token });
+      setEnabledCredentialToRequest(currentCredential + 1);
+    }
+  }, [currentStep]);
 
   useEffect(() => {
-    if (connectionStatus) {
+    const isQRStep = currentStep === QR_STEP;
+    const isSendCredentialStep = currentStep === SEND_CREDENTIAL_STEP;
+    const isConnected = connectionStatus === CONNECTED;
+    const isCredentialSended = connectionStatus === CREDENTIAL_SENT;
+    const notIdCredential = currentCredential !== GOVERNMENT_ISSUED_DIGITAL_IDENTITY;
+    if (isQRStep && isConnected && notIdCredential) {
+      setCurrentStep(currentStep + 1);
       const msg = t(`credential.generic.${SUBJECT_STATUSES[connectionStatus]}`);
-      const isQRStep = currentStep === QR_STEP;
-      const isConnectionAccepted = connectionStatus === CONNECTION_ACCEPTED;
-      // TODO change to CREDENTIAL_AVAILABLE when we can create the credential
-      if (isQRStep && isConnectionAccepted) {
-        setCurrentStep(currentStep + 1);
-        return message.success(msg);
-      }
-      return message.info(msg);
-      //  TODO change when we can create the credential. Actually it shows all status changes
+      return message.success(msg);
     }
-  }, [connectionStatus, currentStep, t]);
+    if (isQRStep && isCredentialSended) {
+      setCurrentStep(currentStep + 2);
+      const msg = t(`credential.generic.${SUBJECT_STATUSES[connectionStatus]}`);
+      return message.success(msg);
+    }
+    if (isSendCredentialStep && isCredentialSended) {
+      setCurrentStep(currentStep + 1);
+      const msg = t(`credential.generic.${SUBJECT_STATUSES[connectionStatus]}`);
+      return message.success(msg);
+    }
+  }, [connectionStatus]);
+
+  useEffect(() => {
+    const isLastCredential = lastCredential === currentCredential;
+    const isSuccessStep = currentStep === SUCCESS_STEP;
+    if (isLastCredential && isSuccessStep) setShowContactButton(true);
+  }, [currentStep]);
 
   const generateConnectionToken = async () => {
     try {
-      const newToken = await getConnectionToken();
+      const newToken = await getConnectionToken(currentCredential);
       setToken(newToken);
     } catch (error) {
       Logger.error('Error at user creation', error);
@@ -70,8 +127,34 @@ const CredentialsContainer = ({ api: { getConnectionToken, startSubjectStatusStr
     }
   };
 
+  const initQRStep = () => {
+    setCurrentStep(currentStep + 1);
+    setPersonalData({
+      connectionToken: token,
+      firstName: user.firstName,
+      dateOfBirth: toProtoDate(user.dateOfBirth)
+    });
+    listenSubjectStatusChanges();
+  };
+
+  const cleanCredentialState = () => {
+    setToken('');
+    setCurrentStep(INTRODUCTION_STEP);
+    setConnectionStatus(undefined);
+    setShowContactButton(false);
+  };
+
+  const handleStreamError = () => {
+    message.error(t('credential.errors.listenSubjectStatusChanges'));
+    cleanCredentialState();
+  };
+
   const listenSubjectStatusChanges = () => {
-    startSubjectStatusStream(token, setConnectionStatus);
+    startSubjectStatusStream(currentCredential, token, setConnectionStatus, handleStreamError);
+  };
+
+  const jumpToNextCredential = () => {
+    setCurrentCredential(currentCredential + 1);
   };
 
   const getStep = () => {
@@ -81,25 +164,30 @@ const CredentialsContainer = ({ api: { getConnectionToken, startSubjectStatusStr
           <IntroductionInformation
             nextStep={generateConnectionToken}
             buttonDisabled={enabledCredentialToRequest !== currentCredential}
+            currentCredential={currentCredential}
           />
         );
-        const renderRight = () => <WhatYouNeed textNeed="Scan Conection QR Code" />;
+        const renderRight = () => <WhatYouNeed currentCredential={currentCredential} />;
         return <SplittedPageInside renderLeft={renderLeft} renderRight={renderRight} />;
       }
       case QR_STEP: {
-        const renderLeft = () => <ScanQRInfo />;
+        const renderLeft = () => <ScanQRInfo currentCredential={currentCredential} />;
         const renderRight = () => <QRCard qrValue={token} />;
-        return (
-          <SplittedPageInside
-            onMount={listenSubjectStatusChanges}
-            renderLeft={renderLeft}
-            renderRight={renderRight}
-          />
-        );
+        return <SplittedPageInside renderLeft={renderLeft} renderRight={renderRight} />;
+      }
+      case SEND_CREDENTIAL_STEP: {
+        const renderLeft = () => <SendCredentials currentCredential={currentCredential} />;
+        const renderRight = () => <RequestedCredentials currentCredential={currentCredential} />;
+        return <SplittedPageInside renderLeft={renderLeft} renderRight={renderRight} />;
       }
       case SUCCESS_STEP: {
-        const renderLeft = () => <FinishInfo />;
-        const renderRight = () => <CreatedCredential />;
+        const renderLeft = () => (
+          <FinishInfo
+            confirmSuccessCredential={jumpToNextCredential}
+            currentCredential={currentCredential}
+          />
+        );
+        const renderRight = () => <CreatedCredential currentCredential={currentCredential} />;
 
         return <SplittedPageInside renderLeft={renderLeft} renderRight={renderRight} />;
       }
@@ -110,9 +198,10 @@ const CredentialsContainer = ({ api: { getConnectionToken, startSubjectStatusStr
 
   return (
     <Credentials
-      getStep={getStep}
+      getStep={showCongrats ? () => <CongratsStep /> : getStep}
       changeCurrentCredential={value => setCurrentCredential(value)}
       availableCredential={currentCredential}
+      showContactButton={showContactButton}
     />
   );
 };
@@ -120,7 +209,8 @@ const CredentialsContainer = ({ api: { getConnectionToken, startSubjectStatusStr
 CredentialsContainer.propTypes = {
   api: PropTypes.shape({
     getConnectionToken: PropTypes.func,
-    startSubjectStatusStream: PropTypes.func
+    startSubjectStatusStream: PropTypes.func,
+    setPersonalData: PropTypes.func
   }).isRequired
 };
 

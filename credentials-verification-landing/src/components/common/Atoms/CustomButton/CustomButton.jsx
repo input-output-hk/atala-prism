@@ -6,14 +6,14 @@ import { LEFT, RIGHT } from '../../../../helpers/constants';
 
 import './_style.scss';
 
-const CustomButton = ({ icon: { icon, side }, img, buttonText, buttonProps }) => {
+const CustomButton = ({ icon: { icon, side }, img, buttonText, buttonProps, optImg }) => {
   const { t } = useTranslation();
   return (
     <Button {...buttonProps}>
       {img.src && <img src={img.src} alt={t(img.alt)} />}
       {side === LEFT && icon}
-      {buttonText}
-      {side === RIGHT && icon}
+      {buttonText} {side === RIGHT && icon}{' '}
+      {optImg.src && <img src={optImg.src} alt={t(optImg.alt)} />}
     </Button>
   );
 };
@@ -33,11 +33,13 @@ CustomButton.propTypes = {
   }).isRequired,
   buttonText: PropTypes.string,
   icon: PropTypes.shape({ icon: PropTypes.element, side: PropTypes.string }),
-  img: PropTypes.shape({ src: PropTypes.string, alt: PropTypes.string })
+  img: PropTypes.shape({ src: PropTypes.string, alt: PropTypes.string }),
+  optImg: PropTypes.shape({ src: PropTypes.string, alt: PropTypes.string })
 };
 
 CustomButton.defaultProps = {
   img: {},
+  optImg: {},
   buttonText: '',
   icon: {}
 };
