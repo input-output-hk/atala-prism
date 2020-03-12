@@ -7,9 +7,7 @@ import { withApi } from '../providers/withApi';
 import Logger from '../../helpers/Logger';
 import { CONNECTION_ACCEPTED } from '../../helpers/constants';
 
-const CredentialSummaryController = ({
-  api: { getIndividualsAsIssuer, getStudentCredentials }
-}) => {
+const CredentialSummaryController = ({ api }) => {
   const { t } = useTranslation();
 
   const [credentialSummaries, setCredentialSummaries] = useState([]);
@@ -33,7 +31,8 @@ const CredentialSummaryController = ({
 
     setNoSummaries(!id && !_date && !_name);
 
-    return getIndividualsAsIssuer(userId, id)
+    return api.studentsManager
+      .getIndividualsAsIssuer(userId, id)
       .then(summariesResponse => {
         const parsedSummaries = summariesResponse
           .filter(({ connectionstatus }) => connectionstatus === CONNECTION_ACCEPTED)
@@ -67,6 +66,8 @@ const CredentialSummaryController = ({
     if (hasMore && !credentialSummaries.length) getCredentialSummaries();
   }, [hasMore, credentialSummaries]);
 
+  const getStudentCredentials = studentId => api.studentsManager.getStudentCredentials(studentId);
+
   const credentialSummariesProps = {
     getCredentialSummaries,
     credentialSummaries,
@@ -80,10 +81,11 @@ const CredentialSummaryController = ({
 
 CredentialSummaryController.propTypes = {
   api: PropTypes.shape({
-    getConnections: PropTypes.func,
-    getConnectionsPaginated: PropTypes.func,
-    getStudentCredentials: PropTypes.func,
-    getIndividualsAsIssuer: PropTypes.func
+    studentsManager: PropTypes.shape({
+      getStudentCredentials: PropTypes.func,
+      getIndividualsAsIssuer: PropTypes.func
+    }).isRequired,
+    getConnections: PropTypes.func
   }).isRequired
 };
 

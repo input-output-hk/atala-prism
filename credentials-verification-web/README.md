@@ -50,3 +50,9 @@ For development purposes copy `.env` file to `.env.local`. This file is excluded
 1. Build deployment bundle with `npm run build`
 1. Build docker image `docker build .`.
 1. Run container `docker run -it -p 80:HOST_PORT -e REACT_APP_GRPC_CLIENT=http://localhost:10000 --rm <image>`.
+
+## Developer considerations
+
+You should avoid destructuring or `...` operator with Api object in components. As I noticed, when using such features combined with `function` and `prototype` it produces to loose "this" context. 
+
+In some components, you should also find some functions wrapped in other functions that look as unnecessary. This is a hack to preserve "this" context.

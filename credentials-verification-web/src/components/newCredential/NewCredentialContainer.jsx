@@ -17,7 +17,7 @@ import { imageToFileReader } from '../../helpers/fileHelpers';
 const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) => {
   const { t } = useTranslation();
 
-  const { saveDraft, createCredential } = api;
+  const { saveDraft } = api;
 
   const [currentStep, setCurrentStep] = useState(0);
   const [degreeName, setDegreeName] = useState();
@@ -28,13 +28,16 @@ const NewCredentialContainer = ({ api, redirector: { redirectToCredentials } }) 
 
   const formRef = React.createRef();
 
-  const saveCredential = () => {
-    createCredential({
-      title: degreeName,
-      groupName: group.name,
-      enrollmentDate: fromUnixToProtoDateFormatter(startDate),
-      graduationDate: fromUnixToProtoDateFormatter(graduationDate)
-    })
+  const saveCredential = async () => {
+    const students = await api.studentsManager.getAllStudents(group.name);
+    api.credentialsManager
+      .createCredential({
+        title: degreeName,
+        groupName: group.name,
+        enrollmentDate: fromUnixToProtoDateFormatter(startDate),
+        graduationDate: fromUnixToProtoDateFormatter(graduationDate),
+        students
+      })
       .then(() => {
         Logger.info('Successfully saved the credential');
         redirectToCredentials();
@@ -168,7 +171,8 @@ NewCredentialContainer.propTypes = {
   api: PropTypes.shape({
     saveDraft: PropTypes.func,
     getGroups: PropTypes.func,
-    createCredential: PropTypes.func
+    credentialsManager: PropTypes.shape({ createCredential: PropTypes.func }).isRequired,
+    studentsManager: PropTypes.shape({ getAllStudents: PropTypes.func }).isRequired
   }).isRequired,
   redirector: PropTypes.shape({
     redirectToCredentials: PropTypes.func

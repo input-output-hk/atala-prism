@@ -22,7 +22,7 @@ const GroupsContainer = ({ api, selectingProps }) => {
 
     const { groupId } = getLastArrayElementOrEmpty(oldGroups);
 
-    return api
+    return api.groupsManager
       .getGroups({ name, date: filterDateAsUnix, pageSize: GROUP_PAGE_SIZE, lastId: groupId })
       .then(filteredGroups => {
         if (!filteredGroups.length) {

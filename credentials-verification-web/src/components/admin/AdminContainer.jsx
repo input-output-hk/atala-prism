@@ -10,7 +10,7 @@ const AdminContainer = ({ api }) => {
 
   const populateDemoDataset = () => {
     setIsLoading(true);
-    return api.populateDemoDataset().then(
+    return api.admin.populateDemoDataset().then(
       result => {
         setIsLoading(false);
         setStatus(result.getMessage());
@@ -22,7 +22,7 @@ const AdminContainer = ({ api }) => {
     );
   };
 
-  if (api.isAdminSupported()) {
+  if (api.admin.isAdminSupported()) {
     return (
       <Admin populateDemoDataset={populateDemoDataset} isLoading={isLoading} status={status} />
     );
@@ -32,8 +32,10 @@ const AdminContainer = ({ api }) => {
 
 AdminContainer.propTypes = {
   api: PropTypes.shape({
-    isAdminSupported: PropTypes.func,
-    populateDemoDataset: PropTypes.func
+    admin: PropTypes.shape({
+      isAdminSupported: PropTypes.func,
+      populateDemoDataset: PropTypes.func
+    }).isRequired
   }).isRequired
 };
 

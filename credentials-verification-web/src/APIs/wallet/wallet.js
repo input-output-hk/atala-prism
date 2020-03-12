@@ -1,6 +1,6 @@
 import { WalletServicePromiseClient } from '../../protos/wallet_api_grpc_web_pb';
 import Logger from '../../helpers/Logger';
-import { USER_ROLE, ORGANISATION_NAME, ISSUER, VERIFIER, LOGO } from '../../helpers/constants';
+import { ISSUER, VERIFIER } from '../../helpers/constants';
 
 const {
   CreateWalletRequest,
@@ -10,25 +10,17 @@ const {
   GetWalletStatusRequest
 } = require('../../protos/wallet_api_pb');
 
-const { config } = require('../config');
-
-const walletServicePromiseClient = new WalletServicePromiseClient(
-  config.walletGrpcClient,
-  null,
-  null
-);
-
-export const getDid = async () => {
+async function getDid() {
   const didRequest = new GetDIDRequest();
 
-  const response = await walletServicePromiseClient.getDID(didRequest, {});
+  const response = await this.client.getDID(didRequest, {});
 
   const { did } = response.toObject();
 
   return did;
-};
+}
 
-const createAndPopulateRequest = ({ passphrase, organisationName, role, file }) => {
+function createAndPopulateRequest({ passphrase, organisationName, role, file }) {
   const createWalletRequest = new CreateWalletRequest();
   const binaryFile = new Uint8Array(file);
 
@@ -43,9 +35,9 @@ const createAndPopulateRequest = ({ passphrase, organisationName, role, file }) 
   createWalletRequest.setLogo(binaryFile);
 
   return createWalletRequest;
-};
+}
 
-export const createWallet = async (passphrase, organisationName, role, file) => {
+async function createWallet(passphrase, organisationName, role, file) {
   try {
     const createWalletRequest = createAndPopulateRequest({
       passphrase,
@@ -54,64 +46,89 @@ export const createWallet = async (passphrase, organisationName, role, file) => 
       file
     });
 
-    const response = await walletServicePromiseClient.createWallet(createWalletRequest);
+    const response = await this.client.createWallet(createWalletRequest);
     return response.getOperation();
   } catch (e) {
     Logger.info('Error at wallet creation', e);
     throw new Error(e);
   }
-};
+}
 
-export const getWalletStatus = async () => {
+async function getWalletStatus() {
   const getWalletStatusRequest = new GetWalletStatusRequest();
-  const walletStatus = await walletServicePromiseClient.getWalletStatus(
-    getWalletStatusRequest,
-    null
-  );
-
+  const walletStatus = await this.client.getWalletStatus(getWalletStatusRequest, null);
   return walletStatus.getStatus();
-};
+}
 
-const cleanUserData = () => {
-  localStorage.removeItem(USER_ROLE);
-  localStorage.removeItem(ORGANISATION_NAME);
-};
+function cleanUserData(configs) {
+  configs.userRole.remove();
+  configs.organizationName.remove();
+  configs.logo.remove();
+}
 
-export const lockWallet = async () => {
+async function lockWallet() {
   const lockRequest = new LockWalletRequest();
-  await walletServicePromiseClient.lockWallet(lockRequest);
+  await this.client.lockWallet(lockRequest, null);
 
-  cleanUserData();
-};
+  cleanUserData(this.config);
+}
 
 const UserRoles = {
   0: ISSUER,
   1: VERIFIER
 };
 
-const translateUserRole = role => UserRoles[role];
+function translateUserRole(role) {
+  return UserRoles[role];
+}
 
-const setUserData = ({ role, organisationname, logo }) => {
+function setUserData({ role, organisationname, logo }, configs) {
   const roleAsString = translateUserRole(role);
-  localStorage.setItem(USER_ROLE, roleAsString);
-  localStorage.setItem(ORGANISATION_NAME, organisationname);
-  localStorage.setItem(LOGO, logo);
-};
+  configs.userRole.set(roleAsString);
+  configs.organizationName.set(organisationname);
+  configs.logo.set(logo);
+}
 
-export const unlockWallet = async passphrase => {
+async function unlockWallet(passphrase) {
   const unlockRequest = new UnlockWalletRequest();
   unlockRequest.setPassphrase(passphrase);
-  const unlockResponse = await walletServicePromiseClient.unlockWallet(unlockRequest, null);
-  setUserData(unlockResponse.toObject());
+  const unlockResponse = await this.client.unlockWallet(unlockRequest, null);
+  setUserData(unlockResponse.toObject(), this.config);
 
-  const status = await getWalletStatus();
-  return status;
-};
+  return this.getWalletStatus();
+}
 
-export const isWalletUnlocked = async () => {
-  const status = await getWalletStatus();
+async function isWalletUnlocked() {
+  const status = await this.getWalletStatus();
   return status === 1;
-};
+}
 
 // TODO: When registering as issuer and then as verifier, the role is not updated.
-export const isIssuer = () => localStorage.getItem(USER_ROLE) === ISSUER;
+function isIssuer() {
+  return this.config.userRole.get() === ISSUER;
+}
+
+function getNonce() {
+  // TODO implement
+}
+
+function signMessage(unsignedRequest, nonce) {
+  // TODO implement
+}
+
+function Wallet(config) {
+  this.config = config;
+  this.client = new WalletServicePromiseClient(this.config.walletGrpcClient, null, null);
+}
+
+Wallet.prototype.getDid = getDid;
+Wallet.prototype.createWallet = createWallet;
+Wallet.prototype.getWalletStatus = getWalletStatus;
+Wallet.prototype.lockWallet = lockWallet;
+Wallet.prototype.unlockWallet = unlockWallet;
+Wallet.prototype.isWalletUnlocked = isWalletUnlocked;
+Wallet.prototype.isIssuer = isIssuer;
+Wallet.prototype.getNonce = getNonce;
+Wallet.prototype.signMessage = signMessage;
+
+export default Wallet;

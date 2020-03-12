@@ -14,13 +14,13 @@ const withLoggedValidationComponent = (Component, validRoles) => props => {
   const [loading, setLoading] = useState(true);
   const [isWalletUnlocked, setIsWalletUnlocked] = useState(false);
   const {
-    api: { isWalletUnlocked: checkIsWalletUnlocked }
+    api: { wallet }
   } = props;
 
   useEffect(() => {
     // This component is unmounted before promise resolution sometimes.
     // Therefore checkIsWalletUnlocked was made cancellable.
-    const cancelablePromise = makeCancelable(checkIsWalletUnlocked());
+    const cancelablePromise = makeCancelable(wallet.isWalletUnlocked());
     cancelablePromise.promise
       .then(response => {
         setIsWalletUnlocked(response);

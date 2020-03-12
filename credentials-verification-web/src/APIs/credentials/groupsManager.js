@@ -2,23 +2,28 @@ import { GroupsServicePromiseClient } from '../../protos/cmanager_api_grpc_web_p
 
 const { GetGroupsRequest, CreateGroupRequest } = require('../../protos/cmanager_api_pb');
 
-const { config } = require('../config');
-
-const groupsService = new GroupsServicePromiseClient(config.grpcClient, null, null);
-
-export const getGroups = async () => {
+async function getGroups() {
   const groupRequest = new GetGroupsRequest();
 
-  const response = await groupsService.getGroups(groupRequest, {
-    userId: config.issuerId
-  });
+  const response = await this.client.getGroups(groupRequest, this.auth.getMetadata());
 
   return response.toObject().groupsList;
-};
+}
 
-export const createGroup = async groupName => {
+async function createGroup(groupName) {
   const request = new CreateGroupRequest();
   request.setName(groupName);
 
-  await groupsService.createGroup(request, { userId: config.issuerId });
-};
+  await this.client.createGroup(request, this.auth.getMetadata());
+}
+
+function GroupsManager(config, auth) {
+  this.config = config;
+  this.auth = auth;
+  this.client = new GroupsServicePromiseClient(config.grpcClient, null, null);
+}
+
+GroupsManager.prototype.getGroups = getGroups;
+GroupsManager.prototype.createGroup = createGroup;
+
+export default GroupsManager;

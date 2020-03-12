@@ -37,14 +37,23 @@ const CredentialContainer = ({ api }) => {
   //     message.error(t('errors.errorGetting', { model: field }));
   //   });
 
-  const issueCredential = credential => {
-    api
-      .issueCredential(credential)
-      .then(() => message.success(t('credentials.successfullyIssued')))
-      .catch(error => {
-        Logger.error('CredentialContainer: Error while sending credential', error);
-        message.error(t('errors.issueCredential'));
-      });
+  const issueCredential = async credential => {
+    const { studentid } = credential;
+    try {
+      const student = await api.studentsManager.getStudentById(studentid);
+      const did = await api.wallet.getDid();
+      const credentialBinary = await api.credentialsManager.getCredentialBinary(
+        credential,
+        student,
+        did
+      );
+      const { connectionid } = student;
+      await api.connector.issueCredential(credentialBinary, connectionid);
+      message.success(t('credentials.successfullyIssued'));
+    } catch (error) {
+      Logger.error('CredentialContainer: Error while sending credential', error);
+      message.error(t('errors.issueCredential'));
+    }
   };
 
   useEffect(() => {
@@ -65,7 +74,7 @@ const CredentialContainer = ({ api }) => {
   ) => {
     const { id } = getLastArrayElementOrEmpty(oldCredentials);
 
-    return api
+    return api.credentialsManager
       .getCredentials(CREDENTIAL_PAGE_SIZE, id)
       .then(({ credentials: credentialsList }) => {
         if (isFirstCall) setNoCredentials(!credentialsList.length);
@@ -116,12 +125,17 @@ const CredentialContainer = ({ api }) => {
 
 CredentialContainer.propTypes = {
   api: PropTypes.shape({
+    studentsManager: PropTypes.shape({ getStudentById: PropTypes.func.isRequired }).isRequired,
+    credentialsManager: PropTypes.shape({
+      getCredentialBinary: PropTypes.func.isRequired,
+      getCredentials: PropTypes.func.isRequired
+    }).isRequired,
+    wallet: PropTypes.shape({ getDid: PropTypes.func.isRequired }).isRequired,
+    connector: PropTypes.shape({ issueCredential: PropTypes.func.isRequired }).isRequired,
     getCredentialTypes: PropTypes.func.isRequired,
     getCategoryTypes: PropTypes.func.isRequired,
     getCredentialsGroups: PropTypes.func.isRequired,
-    getTotalCredentials: PropTypes.func.isRequired,
-    issueCredential: PropTypes.func.isRequired,
-    getCredentials: PropTypes.func.isRequired
+    getTotalCredentials: PropTypes.func.isRequired
   }).isRequired
 };
 

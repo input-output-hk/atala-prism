@@ -1,52 +1,39 @@
 import { CredentialsServicePromiseClient } from '../../protos/cmanager_api_grpc_web_pb';
-import { ConnectorServicePromiseClient } from '../../protos/connector_api_grpc_web_pb';
-
 import Logger from '../../helpers/Logger';
 import { setDateInfoFromJSON } from '../helpers';
-import { getStudents } from './studentsManager';
-import { getDid } from '../wallet/wallet';
-import { CONNECTION_ACCEPTED } from '../../helpers/constants';
 
 const { Date } = require('../../protos/common_models_pb');
-const { RegisterDIDRequest } = require('../../protos/connector_api_pb');
 const { GetCredentialsRequest, CreateCredentialRequest } = require('../../protos/cmanager_api_pb');
 const {
-  Credential,
+  AlphaCredential,
   IssuerData,
   SubjectData,
   PersonalId,
-  SentCredential,
+  AtalaMessage,
   IssuerSentCredential,
   Signer
 } = require('../../protos/credential_pb');
 
-const { config } = require('../config');
-
-const credentialsService = new CredentialsServicePromiseClient(config.grpcClient, null, null);
-const connectorClient = new ConnectorServicePromiseClient(config.grpcClient, null, null);
-
-export const getCredentials = async (limit, lastSeenCredentialId = null) => {
+async function getCredentials(limit, lastSeenCredentialId = null) {
   Logger.info(`getting credentials from ${lastSeenCredentialId}, limit ${limit}`);
 
   const getCredentialsRequest = new GetCredentialsRequest();
   getCredentialsRequest.setLimit(limit);
   getCredentialsRequest.setLastseencredentialid(lastSeenCredentialId);
 
-  const result = await credentialsService.getCredentials(getCredentialsRequest, {
-    userId: config.issuerId
-  });
+  const result = await this.client.getCredentials(getCredentialsRequest, this.auth.getMetadata());
   const { credentialsList } = result.toObject();
 
   return { credentials: credentialsList, count: credentialsList.length };
-};
+}
 
-const createAndPopulateCreationRequest = (
+function createAndPopulateCreationRequest(
   studentId,
   title,
   enrollmentDate,
   graduationDate,
   groupName
-) => {
+) {
   const createCredentialRequest = new CreateCredentialRequest();
 
   createCredentialRequest.setStudentid(studentId);
@@ -56,41 +43,13 @@ const createAndPopulateCreationRequest = (
   createCredentialRequest.setGroupname(groupName);
 
   return createCredentialRequest;
-};
+}
 
-const getAllStudents = async groupName => {
-  const allStudents = [];
-  const limit = 100;
-  let response;
-
-  // Since in the alpha version there will be only one group, all the created credentials
-  // will belong to it. Therefore all the credentials must be created for every student.
-  // Since there's no way to know how many students are in the database, every time the
-  // students are recieved it must be checked whether if those were all the remaining
-  // ones.
-  do {
-    // This gets the id of the last student so the backend can filter them
-    const { id } = allStudents.length ? allStudents[allStudents.length - 1] : {};
-
-    // The next 100 students are requested
-    // eslint-disable-next-line no-await-in-loop
-    response = await getStudents(config.issuerId, id, limit, groupName);
-
-    const connectedStudents = response.filter(
-      ({ connectionstatus }) => connectionstatus === CONNECTION_ACCEPTED
-    );
-
-    allStudents.push(...connectedStudents);
-
-    // If less than the requested students are returned it means all the students have
-    // already been brought
-  } while (response.length === limit);
-
-  return allStudents;
-};
-
-export const createCredential = async ({ title, enrollmentDate, graduationDate, groupName }) => {
-  Logger.info('Creating credentials for the all the subjects as the issuer: ', config.issuerId);
+async function createCredential({ title, enrollmentDate, graduationDate, groupName, students }) {
+  Logger.info(
+    'Creating credentials for the all the subjects as the issuer: ',
+    this.config.issuerId
+  );
 
   const enrollmentDateObject = new Date();
   const graduationDateObject = new Date();
@@ -98,9 +57,7 @@ export const createCredential = async ({ title, enrollmentDate, graduationDate, 
   setDateInfoFromJSON(enrollmentDateObject, enrollmentDate);
   setDateInfoFromJSON(graduationDateObject, graduationDate);
 
-  const allStudents = await getAllStudents(groupName);
-
-  const credentialStudentsPromises = allStudents.map(student => {
+  const credentialStudentsPromises = students.map(student => {
     const createCredentialRequest = createAndPopulateCreationRequest(
       student.id,
       title,
@@ -109,27 +66,22 @@ export const createCredential = async ({ title, enrollmentDate, graduationDate, 
       groupName
     );
 
-    return credentialsService.createCredential(createCredentialRequest, {
-      userId: config.issuerId
-    });
+    return this.client.createCredential(createCredentialRequest, this.auth.getMetadata());
   });
 
   return Promise.all(credentialStudentsPromises);
-};
+}
 
 const IssuerTypes = {
   UNIVERSITY: 0,
   SCHOOL: 1
 };
 
-const translateIssuerType = type => IssuerTypes[type];
+function translateIssuerType(type) {
+  return IssuerTypes[type];
+}
 
-const populateIssuer = ({
-  type = 'UNIVERSITY',
-  legalName = 'Free University Tbilisi',
-  name,
-  did
-}) => {
+function populateIssuer({ type = 'UNIVERSITY', legalName = 'Free University Tbilisi', name, did }) {
   const issuerData = new IssuerData();
 
   issuerData.setIssuertype(translateIssuerType(type));
@@ -138,16 +90,18 @@ const populateIssuer = ({
   issuerData.setDid(did);
 
   return issuerData;
-};
+}
 
 const DocType = {
   NationalIdCard: 0,
   Passporrt: 1
 };
 
-const translateDocType = type => DocType[type];
+function translateDocType(type) {
+  return DocType[type];
+}
 
-const populateDate = ({ year = 1999, month = 5, day = 5 }) => {
+function populateDate({ year = 1999, month = 5, day = 5 }) {
   const date = new Date();
 
   date.setYear(year);
@@ -155,18 +109,18 @@ const populateDate = ({ year = 1999, month = 5, day = 5 }) => {
   date.setDay(day);
 
   return date;
-};
+}
 
-const populatePersonalId = ({ id = '12345678', type = 'NationalIdCard' }) => {
+function populatePersonalId({ id = '12345678', type = 'NationalIdCard' }) {
   const personalId = new PersonalId();
 
   personalId.setId(id);
   personalId.setDocumenttype(translateDocType(type));
 
   return personalId;
-};
+}
 
-const populateSubject = ({ names, surnames, birthDate = {}, idInfo = {} }) => {
+function populateSubject({ names, surnames, birthDate = {}, idInfo = {} }) {
   const subjectData = new SubjectData();
 
   const dateOfBirth = populateDate(birthDate);
@@ -179,9 +133,9 @@ const populateSubject = ({ names, surnames, birthDate = {}, idInfo = {} }) => {
   subjectData.setSurnamesList(surnames);
 
   return subjectData;
-};
+}
 
-const populateSigner = ({ names, surnames, role, did, title }) => {
+function populateSigner({ names, surnames, role, did, title }) {
   const signer = Signer();
 
   signer.setNames(names);
@@ -191,11 +145,13 @@ const populateSigner = ({ names, surnames, role, did, title }) => {
   signer.setTittle(title);
 
   return signer;
-};
+}
 
-const populateSigners = (signerArray = []) => signerArray.map(populateSigner);
+function populateSigners(signerArray = []) {
+  return signerArray.map(populateSigner);
+}
 
-const setAdditionalInfo = (
+function setAdditionalInfo(
   credential,
   {
     grantingDecision = 'Placeholder Title',
@@ -206,7 +162,7 @@ const setAdditionalInfo = (
     decisionNumber = '',
     description = ''
   }
-) => {
+) {
   credential.setGrantingdecision(grantingDecision);
   credential.setDegreeawarded(degree);
   credential.setAdditionalspeciality(speciality);
@@ -216,21 +172,21 @@ const setAdditionalInfo = (
   // TODO Clarify
   credential.setYearcompletedbystudent('');
   credential.setDescription(description);
-};
+}
 
-const setDates = (
+function setDates(
   credential,
   { issuedOn = {}, expiresOn = {}, admissionDate, graduationDate, attainmentDate = {} }
-) => {
+) {
   credential.setIssuedon(populateDate(issuedOn));
   credential.setExpireson(populateDate(expiresOn));
   credential.setAdmissiondate(populateDate(admissionDate));
   credential.setGraduationdate(populateDate(graduationDate));
   credential.setAttainmentdate(populateDate(attainmentDate));
-};
+}
 
-const populateCredential = ({ issuerInfo, subjectInfo, signersInfo, additionalInfo }) => {
-  const credential = new Credential();
+function populateCredential({ issuerInfo, subjectInfo, signersInfo, additionalInfo }) {
+  const credential = new AlphaCredential();
 
   const issuerData = populateIssuer(issuerInfo);
   credential.setIssuertype(issuerData);
@@ -245,9 +201,9 @@ const populateCredential = ({ issuerInfo, subjectInfo, signersInfo, additionalIn
   setDates(credential, additionalInfo);
 
   return credential;
-};
+}
 
-export const getNamesAndSurnames = fullName => {
+export function getNamesAndSurnames(fullName) {
   const wordsSeparator = '@';
   const [joinedNames, joinedSurnames = ''] = fullName.split(' ');
 
@@ -255,12 +211,10 @@ export const getNamesAndSurnames = fullName => {
   const surnames = joinedSurnames.split(wordsSeparator);
 
   return { names, surnames };
-};
+}
 
-const parseAndPopulate = async (credentialData, studentData) => {
+function parseAndPopulate(credentialData, studentData, did) {
   const { enrollmentdate, graduationdate, id, issuername, title } = credentialData;
-
-  const did = await getDid();
 
   const issuerInfo = {
     name: issuername,
@@ -285,38 +239,28 @@ const parseAndPopulate = async (credentialData, studentData) => {
     subjectInfo,
     additionalInfo
   });
-};
+}
 
-export const getCredentialBinary = async (connectionData, studentData) => {
-  const sentCredential = new SentCredential();
+function getCredentialBinary(connectionData, studentData, did) {
+  const atalaMessage = new AtalaMessage();
   const issuerCredential = new IssuerSentCredential();
 
-  const credential = await parseAndPopulate(connectionData, studentData);
-  issuerCredential.setCredential(credential);
+  const credential = parseAndPopulate(connectionData, studentData, did);
+  issuerCredential.setAlphacredential(credential);
 
-  sentCredential.setIssuersentcredential(issuerCredential);
+  atalaMessage.setIssuersentcredential(issuerCredential);
 
-  return sentCredential.serializeBinary();
-};
+  return atalaMessage.serializeBinary();
+}
 
-// TODO: move this to the connector layer
-// TODO: this is always getting isIssuer = false
-export const registerUser = async (createOperation, name, logoFile, isIssuer) => {
-  const registerRequest = new RegisterDIDRequest();
-  const logo = new TextEncoder().encode(logoFile);
+function CredentialsManager(config, auth) {
+  this.config = config;
+  this.auth = auth;
+  this.client = new CredentialsServicePromiseClient(config.grpcClient, null, null);
+}
 
-  registerRequest.setRole(
-    isIssuer ? RegisterDIDRequest.Role.ISSUER : RegisterDIDRequest.Role.VERIFIER
-  );
-  registerRequest.setName(name);
-  registerRequest.setLogo(logo);
-  registerRequest.setCreatedidoperation(createOperation);
+CredentialsManager.prototype.getCredentials = getCredentials;
+CredentialsManager.prototype.createCredential = createCredential;
+CredentialsManager.prototype.getCredentialBinary = getCredentialBinary;
 
-  const response = await connectorClient.registerDID(registerRequest, {
-    userId: config.issuerId
-  });
-
-  const { id } = response.toObject();
-
-  return id;
-};
+export default CredentialsManager;
