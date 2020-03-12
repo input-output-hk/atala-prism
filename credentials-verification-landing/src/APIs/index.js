@@ -1,6 +1,7 @@
-import { getConnectionToken, startSubjectStatusStream } from './intdemo/intdemo';
+import { getConnectionToken, startSubjectStatusStream, setPersonalData } from './intdemo/intdemo';
 
 export const api = {
   getConnectionToken,
-  startSubjectStatusStream
+  startSubjectStatusStream,
+  setPersonalData
 };

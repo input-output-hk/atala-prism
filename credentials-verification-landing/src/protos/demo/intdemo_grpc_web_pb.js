@@ -41,16 +41,6 @@ proto.io.iohk.cvp.intdemo.IDServiceClient =
    */
   this.hostname_ = hostname;
 
-  /**
-   * @private @const {?Object} The credentials to be used to connect
-   *    to the server
-   */
-  this.credentials_ = credentials;
-
-  /**
-   * @private @const {?Object} Options for the client
-   */
-  this.options_ = options;
 };
 
 
@@ -77,16 +67,6 @@ proto.io.iohk.cvp.intdemo.IDServicePromiseClient =
    */
   this.hostname_ = hostname;
 
-  /**
-   * @private @const {?Object} The credentials to be used to connect
-   *    to the server
-   */
-  this.credentials_ = credentials;
-
-  /**
-   * @private @const {?Object} Options for the client
-   */
-  this.options_ = options;
 };
 
 
@@ -101,7 +81,10 @@ const methodDescriptor_IDService_GetConnectionToken = new grpc.web.MethodDescrip
   grpc.web.MethodType.UNARY,
   proto.io.iohk.cvp.intdemo.GetConnectionTokenRequest,
   proto.io.iohk.cvp.intdemo.GetConnectionTokenResponse,
-  /** @param {!proto.io.iohk.cvp.intdemo.GetConnectionTokenRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.intdemo.GetConnectionTokenRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -117,7 +100,10 @@ const methodDescriptor_IDService_GetConnectionToken = new grpc.web.MethodDescrip
  */
 const methodInfo_IDService_GetConnectionToken = new grpc.web.AbstractClientBase.MethodInfo(
   proto.io.iohk.cvp.intdemo.GetConnectionTokenResponse,
-  /** @param {!proto.io.iohk.cvp.intdemo.GetConnectionTokenRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.intdemo.GetConnectionTokenRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -170,86 +156,15 @@ proto.io.iohk.cvp.intdemo.IDServicePromiseClient.prototype.getConnectionToken =
  *   !proto.io.iohk.cvp.intdemo.GetSubjectStatusRequest,
  *   !proto.io.iohk.cvp.intdemo.GetSubjectStatusResponse>}
  */
-const methodDescriptor_IDService_GetSubjectStatus = new grpc.web.MethodDescriptor(
-  '/io.iohk.cvp.intdemo.IDService/GetSubjectStatus',
-  grpc.web.MethodType.UNARY,
-  proto.io.iohk.cvp.intdemo.GetSubjectStatusRequest,
-  proto.io.iohk.cvp.intdemo.GetSubjectStatusResponse,
-  /** @param {!proto.io.iohk.cvp.intdemo.GetSubjectStatusRequest} request */
-  function(request) {
-    return request.serializeBinary();
-  },
-  proto.io.iohk.cvp.intdemo.GetSubjectStatusResponse.deserializeBinary
-);
-
-
-/**
- * @const
- * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.io.iohk.cvp.intdemo.GetSubjectStatusRequest,
- *   !proto.io.iohk.cvp.intdemo.GetSubjectStatusResponse>}
- */
-const methodInfo_IDService_GetSubjectStatus = new grpc.web.AbstractClientBase.MethodInfo(
-  proto.io.iohk.cvp.intdemo.GetSubjectStatusResponse,
-  /** @param {!proto.io.iohk.cvp.intdemo.GetSubjectStatusRequest} request */
-  function(request) {
-    return request.serializeBinary();
-  },
-  proto.io.iohk.cvp.intdemo.GetSubjectStatusResponse.deserializeBinary
-);
-
-
-/**
- * @param {!proto.io.iohk.cvp.intdemo.GetSubjectStatusRequest} request The
- *     request proto
- * @param {?Object<string, string>} metadata User defined
- *     call metadata
- * @param {function(?grpc.web.Error, ?proto.io.iohk.cvp.intdemo.GetSubjectStatusResponse)}
- *     callback The callback function(error, response)
- * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.cvp.intdemo.GetSubjectStatusResponse>|undefined}
- *     The XHR Node Readable Stream
- */
-proto.io.iohk.cvp.intdemo.IDServiceClient.prototype.getSubjectStatus =
-    function(request, metadata, callback) {
-  return this.client_.rpcCall(this.hostname_ +
-      '/io.iohk.cvp.intdemo.IDService/GetSubjectStatus',
-      request,
-      metadata || {},
-      methodDescriptor_IDService_GetSubjectStatus,
-      callback);
-};
-
-
-/**
- * @param {!proto.io.iohk.cvp.intdemo.GetSubjectStatusRequest} request The
- *     request proto
- * @param {?Object<string, string>} metadata User defined
- *     call metadata
- * @return {!Promise<!proto.io.iohk.cvp.intdemo.GetSubjectStatusResponse>}
- *     A native promise that resolves to the response
- */
-proto.io.iohk.cvp.intdemo.IDServicePromiseClient.prototype.getSubjectStatus =
-    function(request, metadata) {
-  return this.client_.unaryCall(this.hostname_ +
-      '/io.iohk.cvp.intdemo.IDService/GetSubjectStatus',
-      request,
-      metadata || {},
-      methodDescriptor_IDService_GetSubjectStatus);
-};
-
-
-/**
- * @const
- * @type {!grpc.web.MethodDescriptor<
- *   !proto.io.iohk.cvp.intdemo.GetSubjectStatusRequest,
- *   !proto.io.iohk.cvp.intdemo.GetSubjectStatusResponse>}
- */
 const methodDescriptor_IDService_GetSubjectStatusStream = new grpc.web.MethodDescriptor(
   '/io.iohk.cvp.intdemo.IDService/GetSubjectStatusStream',
   grpc.web.MethodType.SERVER_STREAMING,
   proto.io.iohk.cvp.intdemo.GetSubjectStatusRequest,
   proto.io.iohk.cvp.intdemo.GetSubjectStatusResponse,
-  /** @param {!proto.io.iohk.cvp.intdemo.GetSubjectStatusRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.intdemo.GetSubjectStatusRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -265,7 +180,10 @@ const methodDescriptor_IDService_GetSubjectStatusStream = new grpc.web.MethodDes
  */
 const methodInfo_IDService_GetSubjectStatusStream = new grpc.web.AbstractClientBase.MethodInfo(
   proto.io.iohk.cvp.intdemo.GetSubjectStatusResponse,
-  /** @param {!proto.io.iohk.cvp.intdemo.GetSubjectStatusRequest} request */
+  /**
+   * @param {!proto.io.iohk.cvp.intdemo.GetSubjectStatusRequest} request
+   * @return {!Uint8Array}
+   */
   function(request) {
     return request.serializeBinary();
   },
@@ -304,6 +222,293 @@ proto.io.iohk.cvp.intdemo.IDServicePromiseClient.prototype.getSubjectStatusStrea
       request,
       metadata || {},
       methodDescriptor_IDService_GetSubjectStatusStream);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.io.iohk.cvp.intdemo.SetPersonalDataRequest,
+ *   !proto.io.iohk.cvp.intdemo.SetPersonalDataResponse>}
+ */
+const methodDescriptor_IDService_SetPersonalData = new grpc.web.MethodDescriptor(
+  '/io.iohk.cvp.intdemo.IDService/SetPersonalData',
+  grpc.web.MethodType.UNARY,
+  proto.io.iohk.cvp.intdemo.SetPersonalDataRequest,
+  proto.io.iohk.cvp.intdemo.SetPersonalDataResponse,
+  /**
+   * @param {!proto.io.iohk.cvp.intdemo.SetPersonalDataRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.cvp.intdemo.SetPersonalDataResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.io.iohk.cvp.intdemo.SetPersonalDataRequest,
+ *   !proto.io.iohk.cvp.intdemo.SetPersonalDataResponse>}
+ */
+const methodInfo_IDService_SetPersonalData = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.io.iohk.cvp.intdemo.SetPersonalDataResponse,
+  /**
+   * @param {!proto.io.iohk.cvp.intdemo.SetPersonalDataRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.cvp.intdemo.SetPersonalDataResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.io.iohk.cvp.intdemo.SetPersonalDataRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.cvp.intdemo.SetPersonalDataResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.cvp.intdemo.SetPersonalDataResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.io.iohk.cvp.intdemo.IDServiceClient.prototype.setPersonalData =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/io.iohk.cvp.intdemo.IDService/SetPersonalData',
+      request,
+      metadata || {},
+      methodDescriptor_IDService_SetPersonalData,
+      callback);
+};
+
+
+/**
+ * @param {!proto.io.iohk.cvp.intdemo.SetPersonalDataRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.io.iohk.cvp.intdemo.SetPersonalDataResponse>}
+ *     A native promise that resolves to the response
+ */
+proto.io.iohk.cvp.intdemo.IDServicePromiseClient.prototype.setPersonalData =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/io.iohk.cvp.intdemo.IDService/SetPersonalData',
+      request,
+      metadata || {},
+      methodDescriptor_IDService_SetPersonalData);
+};
+
+
+/**
+ * @param {string} hostname
+ * @param {?Object} credentials
+ * @param {?Object} options
+ * @constructor
+ * @struct
+ * @final
+ */
+proto.io.iohk.cvp.intdemo.DegreeServiceClient =
+    function(hostname, credentials, options) {
+  if (!options) options = {};
+  options['format'] = 'text';
+
+  /**
+   * @private @const {!grpc.web.GrpcWebClientBase} The client
+   */
+  this.client_ = new grpc.web.GrpcWebClientBase(options);
+
+  /**
+   * @private @const {string} The hostname
+   */
+  this.hostname_ = hostname;
+
+};
+
+
+/**
+ * @param {string} hostname
+ * @param {?Object} credentials
+ * @param {?Object} options
+ * @constructor
+ * @struct
+ * @final
+ */
+proto.io.iohk.cvp.intdemo.DegreeServicePromiseClient =
+    function(hostname, credentials, options) {
+  if (!options) options = {};
+  options['format'] = 'text';
+
+  /**
+   * @private @const {!grpc.web.GrpcWebClientBase} The client
+   */
+  this.client_ = new grpc.web.GrpcWebClientBase(options);
+
+  /**
+   * @private @const {string} The hostname
+   */
+  this.hostname_ = hostname;
+
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.io.iohk.cvp.intdemo.GetConnectionTokenRequest,
+ *   !proto.io.iohk.cvp.intdemo.GetConnectionTokenResponse>}
+ */
+const methodDescriptor_DegreeService_GetConnectionToken = new grpc.web.MethodDescriptor(
+  '/io.iohk.cvp.intdemo.DegreeService/GetConnectionToken',
+  grpc.web.MethodType.UNARY,
+  proto.io.iohk.cvp.intdemo.GetConnectionTokenRequest,
+  proto.io.iohk.cvp.intdemo.GetConnectionTokenResponse,
+  /**
+   * @param {!proto.io.iohk.cvp.intdemo.GetConnectionTokenRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.cvp.intdemo.GetConnectionTokenResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.io.iohk.cvp.intdemo.GetConnectionTokenRequest,
+ *   !proto.io.iohk.cvp.intdemo.GetConnectionTokenResponse>}
+ */
+const methodInfo_DegreeService_GetConnectionToken = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.io.iohk.cvp.intdemo.GetConnectionTokenResponse,
+  /**
+   * @param {!proto.io.iohk.cvp.intdemo.GetConnectionTokenRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.cvp.intdemo.GetConnectionTokenResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.io.iohk.cvp.intdemo.GetConnectionTokenRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.cvp.intdemo.GetConnectionTokenResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.cvp.intdemo.GetConnectionTokenResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.io.iohk.cvp.intdemo.DegreeServiceClient.prototype.getConnectionToken =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/io.iohk.cvp.intdemo.DegreeService/GetConnectionToken',
+      request,
+      metadata || {},
+      methodDescriptor_DegreeService_GetConnectionToken,
+      callback);
+};
+
+
+/**
+ * @param {!proto.io.iohk.cvp.intdemo.GetConnectionTokenRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.io.iohk.cvp.intdemo.GetConnectionTokenResponse>}
+ *     A native promise that resolves to the response
+ */
+proto.io.iohk.cvp.intdemo.DegreeServicePromiseClient.prototype.getConnectionToken =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/io.iohk.cvp.intdemo.DegreeService/GetConnectionToken',
+      request,
+      metadata || {},
+      methodDescriptor_DegreeService_GetConnectionToken);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.io.iohk.cvp.intdemo.GetSubjectStatusRequest,
+ *   !proto.io.iohk.cvp.intdemo.GetSubjectStatusResponse>}
+ */
+const methodDescriptor_DegreeService_GetSubjectStatusStream = new grpc.web.MethodDescriptor(
+  '/io.iohk.cvp.intdemo.DegreeService/GetSubjectStatusStream',
+  grpc.web.MethodType.SERVER_STREAMING,
+  proto.io.iohk.cvp.intdemo.GetSubjectStatusRequest,
+  proto.io.iohk.cvp.intdemo.GetSubjectStatusResponse,
+  /**
+   * @param {!proto.io.iohk.cvp.intdemo.GetSubjectStatusRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.cvp.intdemo.GetSubjectStatusResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.io.iohk.cvp.intdemo.GetSubjectStatusRequest,
+ *   !proto.io.iohk.cvp.intdemo.GetSubjectStatusResponse>}
+ */
+const methodInfo_DegreeService_GetSubjectStatusStream = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.io.iohk.cvp.intdemo.GetSubjectStatusResponse,
+  /**
+   * @param {!proto.io.iohk.cvp.intdemo.GetSubjectStatusRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.cvp.intdemo.GetSubjectStatusResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.io.iohk.cvp.intdemo.GetSubjectStatusRequest} request The request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.cvp.intdemo.GetSubjectStatusResponse>}
+ *     The XHR Node Readable Stream
+ */
+proto.io.iohk.cvp.intdemo.DegreeServiceClient.prototype.getSubjectStatusStream =
+    function(request, metadata) {
+  return this.client_.serverStreaming(this.hostname_ +
+      '/io.iohk.cvp.intdemo.DegreeService/GetSubjectStatusStream',
+      request,
+      metadata || {},
+      methodDescriptor_DegreeService_GetSubjectStatusStream);
+};
+
+
+/**
+ * @param {!proto.io.iohk.cvp.intdemo.GetSubjectStatusRequest} request The request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.cvp.intdemo.GetSubjectStatusResponse>}
+ *     The XHR Node Readable Stream
+ */
+proto.io.iohk.cvp.intdemo.DegreeServicePromiseClient.prototype.getSubjectStatusStream =
+    function(request, metadata) {
+  return this.client_.serverStreaming(this.hostname_ +
+      '/io.iohk.cvp.intdemo.DegreeService/GetSubjectStatusStream',
+      request,
+      metadata || {},
+      methodDescriptor_DegreeService_GetSubjectStatusStream);
 };
 
 

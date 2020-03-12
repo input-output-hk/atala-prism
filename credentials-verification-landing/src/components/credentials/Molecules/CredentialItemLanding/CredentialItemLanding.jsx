@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { useTranslation } from 'react-i18next';
 import './_style.scss';
 
 const CredentialItemLanding = ({ theme, credentialImage, credentialName, credentialIssuer }) => {

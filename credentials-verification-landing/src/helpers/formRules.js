@@ -81,4 +81,8 @@ export const passwordFormatValidation = (value, cb, t) => {
   else cb(formatPasswordErrors(errors, t));
 };
 
+const emailRegex = /^(([^\s"(),.:;<>@[\\\]]+(\.[^\s"(),.:;<>@[\\\]]+)*)|(".+"))@((\[(?:\d{1,3}\.){3}\d{1,3}])|(([\d-A-Za-z]+\.)+[A-Za-z]{2,}))$/;
+
+export const emailFormatValidation = (value, cb) => (emailRegex.test(value) ? cb() : cb('error'));
+
 export const isValidRole = (value, cb) => ([ISSUER, VERIFIER].includes(value) ? cb() : cb('error'));
