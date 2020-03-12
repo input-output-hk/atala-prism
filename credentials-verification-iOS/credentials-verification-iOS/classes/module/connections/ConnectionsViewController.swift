@@ -10,13 +10,6 @@ class ConnectionsViewController: ListingBaseViewController {
     @IBOutlet weak var viewEmpty: InformationView!
     @IBOutlet weak var viewScanQr: UIView!
     @IBOutlet weak var viewTable: UIView!
-    // Tabs
-    @IBOutlet weak var viewTabUniversities: UIView!
-    @IBOutlet weak var labelTabUniversities: UILabel!
-    @IBOutlet weak var viewTabDecoratorUniversities: UIView!
-    @IBOutlet weak var viewTabEmployers: UIView!
-    @IBOutlet weak var labelTabEmployers: UILabel!
-    @IBOutlet weak var viewTabDecoratorEmployers: UIView!
     // Scan QR
     @IBOutlet weak var viewQrScannerContainer: UIView!
     let scanner = QRCode()
@@ -34,7 +27,6 @@ class ConnectionsViewController: ListingBaseViewController {
         super.viewDidLoad()
 
         // Setup
-        setupButtons()
         setupEmptyView()
     }
 
@@ -64,14 +56,7 @@ class ConnectionsViewController: ListingBaseViewController {
 
         let isScanningQr = presenterImpl.isScanningQr()
         let isEmpty = !presenterImpl.hasData() && mode == .listing
-        let isUniversitiesMode = presenterImpl.getTabMode() == .universities
-
-        // Tabs
-        labelTabUniversities.textColor = isUniversitiesMode ? UIColor.appRed : UIColor.appGreySub
-        labelTabEmployers.textColor = !isUniversitiesMode ? UIColor.appRed : UIColor.appGreySub
-        viewTabDecoratorUniversities.isHidden = !isUniversitiesMode
-        viewTabDecoratorEmployers.isHidden = isUniversitiesMode
-
+        
         // Main views
         viewEmpty.isHidden = !isEmpty
         viewScanQr.isHidden = !isScanningQr
@@ -121,23 +106,8 @@ class ConnectionsViewController: ListingBaseViewController {
 
     // MARK: Buttons
 
-    func setupButtons() {
-        viewTabUniversities.addOnClickListener(action: actionTabUniversities)
-        viewTabEmployers.addOnClickListener(action: actionTabEmployers)
-        labelTabUniversities.addOnClickListener(action: actionTabUniversities)
-        labelTabEmployers.addOnClickListener(action: actionTabEmployers)
-    }
-
     lazy var actionScan = SelectorAction(action: { [weak self] in
         self?.presenterImpl.tappedScanButton()
-    })
-
-    lazy var actionTabEmployers = SelectorAction(action: { [weak self] in
-        self?.presenterImpl.tappedTabEmployers()
-    })
-
-    lazy var actionTabUniversities = SelectorAction(action: { [weak self] in
-        self?.presenterImpl.tappedTabUniversities()
     })
 
     // MARK: Scan QR
@@ -166,8 +136,8 @@ class ConnectionsViewController: ListingBaseViewController {
 
     func showNewConnectMessage(type: Int, title: String?, logoData: Data?) {
 
-        let lead = (type == 0 ? "connections_scan_qr_confirm_title_type_0" : "connections_scan_qr_confirm_title_type_1").localize()
-        let placeholder = type == 0 ? "ico_placeholder_university" : "ico_placeholder_employer"
+        let lead = "connections_scan_qr_confirm_title".localize()
+        let placeholder = type != 0 ? "ico_placeholder_university" : "ico_placeholder_credential"
 
         if !confirmMessageViewController.isBeingPresented {
             customPresentViewController(confirmMessageViewController.presentr, viewController: confirmMessageViewController, animated: true)

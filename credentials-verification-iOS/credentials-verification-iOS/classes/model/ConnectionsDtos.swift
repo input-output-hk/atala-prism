@@ -10,6 +10,7 @@ class ConnectionBase: Mappable {
     // Note: Don't store LogoData since the logos are stored in
     // their own dictionary and are heavy to store and load.
     var logoData: Data?
+    var type: Int? // 0 = Issuer, 1 = Verifier
 
     init() {}
 
@@ -27,7 +28,7 @@ class ConnectionBase: Mappable {
 
 class ConnectionMaker {
 
-    static func build(_ item: Io_Iohk_Cvp_Connector_ConnectionInfo) -> ConnectionBase? {
+    static func build(_ item: Io_Iohk_Prism_Protos_ConnectionInfo) -> ConnectionBase? {
 
         if item.hasParticipantInfo {
             let res = build(item.participantInfo)
@@ -37,67 +38,43 @@ class ConnectionMaker {
         return nil
     }
 
-    static func build(_ item: Io_Iohk_Cvp_Connector_ParticipantInfo) -> ConnectionBase? {
+    static func build(_ item: Io_Iohk_Prism_Protos_ParticipantInfo) -> ConnectionBase? {
 
-        // Universities
+        // Issuers
         if item.issuer.name.count > 0 {
-            let u = University()
+            let u = ConnectionBase()
             u.did = item.issuer.did
             u.name = item.issuer.name
             u.logoData = item.issuer.logo
+            u.type = 0
             return u
         }
-        // Employers
+        // Verifiers
         if item.verifier.name.count > 0 {
-            let e = Employer()
+            let e = ConnectionBase()
             e.did = item.verifier.did
             e.name = item.verifier.name
             e.logoData = item.verifier.logo
+            e.type = 1
             return e
         }
         return nil
     }
 
-    static func parseResponseList(_ responses: [Io_Iohk_Cvp_Connector_GetConnectionsPaginatedResponse]) -> ([University], [Employer]) {
+    static func parseResponseList(_ responses: [Io_Iohk_Prism_Protos_GetConnectionsPaginatedResponse]) -> [ConnectionBase] {
 
-        var universities: [University] = []
-        var employers: [Employer] = []
+        var connections: [ConnectionBase] = []
 
         for response in responses {
             response.connections.forEach { item in
 
-                let connection = ConnectionMaker.build(item)
-                if let u = connection as? University {
-                    universities.append(u)
+                if let connection = ConnectionMaker.build(item) {
+                    connections.append(connection)
                 }
-                if let e = connection as? Employer {
-                    employers.append(e)
-                }
+                
             }
         }
-        return (universities, employers)
-    }
-}
-
-class University: ConnectionBase {
-
-    required init?(map: Map) {
-        super.init(map: map)
-    }
-
-    override init() {
-        super.init()
-    }
-}
-
-class Employer: ConnectionBase {
-
-    required init?(map: Map) {
-        super.init(map: map)
-    }
-
-    override init() {
-        super.init()
+        return connections
     }
 }
 

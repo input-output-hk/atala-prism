@@ -1,5 +1,6 @@
 //
 import SwiftGRPC
+import ObjectMapper
 
 class FakeData {
 
@@ -7,9 +8,9 @@ class FakeData {
         return "ca4293a3-80bb-4d85-a7a7-fe3df67da7e1"
     }
 
-    static func fakePublicKey() -> Io_Iohk_Cvp_Connector_PublicKey {
+    static func fakePublicKey() -> Io_Iohk_Prism_Protos_ConnectorPublicKey {
 
-        var publicKey: Io_Iohk_Cvp_Connector_PublicKey = Io_Iohk_Cvp_Connector_PublicKey()
+        var publicKey: Io_Iohk_Prism_Protos_ConnectorPublicKey = Io_Iohk_Prism_Protos_ConnectorPublicKey()
         publicKey.x = "1234"
         publicKey.y = "1234"
         return publicKey
@@ -32,11 +33,11 @@ class FakeData {
         return loggedUser
     }
 
-    static func universitiesList() -> [University] {
+    static func universitiesList() -> [ConnectionBase] {
 
-        var list: [University] = []
+        var list: [ConnectionBase] = []
 
-        let u1 = University()
+        let u1 = ConnectionBase()
         u1.connectionId = "111"
         u1.name = "Business and Techonoly University"
         u1.logoUrl = "https://studyqa.com/media/upload/univers/705/41/uni_profile_70541.jpg"
@@ -45,124 +46,39 @@ class FakeData {
         return list
     }
 
-    static func employersList() -> [Employer] {
+    static func employersList() -> [ConnectionBase] {
 
-        var list: [Employer] = []
+        var list: [ConnectionBase] = []
 
-        let e1 = Employer()
+        let e1 = ConnectionBase()
         e1.connectionId = "1"
         e1.name = "HR.GE"
         e1.logoUrl = "https://studyqa.com/media/upload/univers/706/71/uni_profile_70671.jpg"
         list.append(e1)
 
-        let e2 = Employer()
+        let e2 = ConnectionBase()
         e2.connectionId = "2"
         e2.name = "ABC Bank"
         e2.logoUrl = "https://studyqa.com/media/upload/univers/809/01/uni_profile_80901.jpg"
         list.append(e2)
 
-        let e3 = Employer()
+        let e3 = ConnectionBase()
         e3.connectionId = "3"
         e3.name = "Important Employer"
         e3.logoUrl = "https://studyqa.com/media/upload/univers/706/71/uni_profile_70671.jpg"
         list.append(e3)
 
-        let e4 = Employer()
+        let e4 = ConnectionBase()
         e4.connectionId = "4"
         e4.name = "Citi Bank"
         e4.logoUrl = "https://studyqa.com/media/upload/univers/809/01/uni_profile_80901.jpg"
         list.append(e4)
 
-        let e5 = Employer()
+        let e5 = ConnectionBase()
         e5.connectionId = "5"
         e5.name = "Citi Bank 2"
         e5.logoUrl = "https://studyqa.com/media/upload/univers/809/01/uni_profile_80901.jpg"
         list.append(e5)
-
-        return list
-    }
-
-    static func degreesList() -> [Degree] {
-
-        var list: [Degree] = []
-
-        let d1 = Degree()
-        d1.connectionId = "A1"
-        d1.messageId = "A1"
-        d1.name = "Credential Free University Tbilisi"
-        d1.subtitle = nil
-        d1.type = 1
-        d1.logoUrl = "https://studyqa.com/media/upload/univers/705/41/uni_profile_70541.jpg"
-        d1.preLogoUrl = "https://www.botinero.net/images/BORRAME/logo_cap_bluet.png"
-        d1.isNew = true
-        d1.cost = 10
-        d1.fullName = "Bachelor's in Engineering"
-        d1.startDate = "03/01/2009"
-        d1.endDate = "03/01/2013"
-        d1.properties = ["University Name": "Free University Tbilisi", "Award": "First Class Honours", "Full Name": "Mauro Carreño"]
-        list.append(d1)
-
-        let d2 = Degree()
-        d2.connectionId = "A2"
-        d2.messageId = "A2"
-        d2.name = "Credential BTU"
-        d2.subtitle = "Lorem ipsum text"
-        d2.type = 1
-        d2.logoUrl = "https://studyqa.com/media/upload/univers/706/71/uni_profile_70671.jpg"
-        d2.preLogoUrl = "https://www.botinero.net/images/BORRAME/logo_cap_green.png"
-        d2.isNew = true
-        d2.cost = 30
-        d2.fullName = "Bachelor's in Engineering"
-        d2.startDate = "03/01/2009"
-        d2.endDate = "03/01/2013"
-        d2.properties = ["University Name": "Credential BTU", "Full Name": "Mauro Carreño"]
-        list.append(d2)
-
-        let d3 = Degree()
-        d3.connectionId = "A3"
-        d3.messageId = "A3"
-        d3.name = "Univerity of Texas"
-        d3.subtitle = "In Lorem we Ipsum"
-        d3.type = 1
-        d3.logoUrl = "https://studyqa.com/media/upload/univers/706/71/uni_profile_70671.jpg"
-        d3.preLogoUrl = "https://www.botinero.net/images/BORRAME/logo_cap_red.png"
-        d3.isNew = false
-        d3.fullName = "Bachelor's in Engineering"
-        d3.startDate = "03/01/2009"
-        d3.endDate = "03/01/2013"
-        d3.properties = ["University Name": "National Identity Card", "Award": "Best Student", "Nickname": "The Best-O", "Full Name": "Mauro Carreño"]
-        list.append(d3)
-
-        let d4 = Degree()
-        d4.connectionId = "A4"
-        d4.messageId = "A4"
-        d4.name = "School Certificate"
-        d4.subtitle = "Lorem ipsum text"
-        d4.type = 2
-        d4.logoUrl = "https://studyqa.com/media/upload/univers/706/71/uni_profile_70671.jpg"
-        d4.preLogoUrl = "https://www.botinero.net/images/BORRAME/logo_building_violet.png"
-        d4.isNew = false
-        d4.fullName = "Primary Schooler"
-        d4.startDate = "03/01/2009"
-        d4.endDate = "03/01/2013"
-        d4.properties = ["University Name": "School Certificate", "Award": "Best Student", "Nickname": "The Best-O", "Full Name": "Mauro Carreño"]
-        list.append(d4)
-
-        let d5 = Degree()
-        d5.connectionId = "A5"
-        d5.messageId = "A5"
-        d5.name = "Prueba nueva"
-        d5.subtitle = "Lorem ipsum text"
-        d5.type = 2
-        d5.logoUrl = "https://studyqa.com/media/upload/univers/706/71/uni_profile_70671.jpg"
-        d5.preLogoUrl = "https://www.botinero.net/images/BORRAME/logo_building_violet.png"
-        d5.isNew = true
-        d5.cost = 20
-        d5.fullName = "Primary Schooler"
-        d5.startDate = "03/01/2009"
-        d5.endDate = "03/01/2013"
-        d5.properties = ["University Name": "School Certificate", "Award": "Best Student", "Nickname": "The Best-O", "Full Name": "Mauro Carreño"]
-        list.append(d5)
 
         return list
     }
@@ -187,7 +103,7 @@ class FakeData {
         if code == "http://www.arcgis.com/apps/Cascade/index.html?appid=10cdc865c31a4bd6ba76e6efefb57730" {
             let conn = ConnectionRequest()
             conn.token = code
-            conn.info = University()
+            conn.info = ConnectionBase()
             conn.type = 0
             conn.info?.name = "Free University Tbilisi"
             conn.info?.logoUrl = "https://studyqa.com/media/upload/univers/705/41/uni_profile_70541.jpg"
@@ -234,4 +150,17 @@ class FakeData {
 
         return list
     }
+    
+    static func fakeProofOfEmployment() -> Degree {
+        let credential = Mapper<Degree>().map(JSONString:  "\n{\n  \"id\": \"tAZFcqDNVVV_D4Y_FwpqXw==\",\n  \"type\": [\"VerifiableCredential\", \"RedlandIdCredential\"],\n  \"issuer\": {\n    \"id\": \"did:atala:091d41cc-e8fc-4c44-9bd3-c938dcf76dff\",\n    \"name\": \"Department of Interior, Republic of Redland\"\n  },\n  \"issuanceDate\": \"2020-03-02\",\n  \"expiryDate\": \"2030-03-02\",\n  \"credentialSubject\": {\n    \"id\": \"unknown\",\n    \"name\": \"Leandro \",\n    \"dateOfBirth\": \"2004-02-19\"\n  }\n}\n")
+        credential?.type = .proofOfEmployment
+        return credential!;
+    }
+    
+    static func fakeCertificatOfInsurance() -> Degree {
+        let credential = Mapper<Degree>().map(JSONString:  "\n{\n  \"id\": \"tAZFcqDNVVV_D4Y_FwpqXw==\",\n  \"type\": [\"VerifiableCredential\", \"RedlandIdCredential\"],\n  \"issuer\": {\n    \"id\": \"did:atala:091d41cc-e8fc-4c44-9bd3-c938dcf76dff\",\n    \"name\": \"Department of Interior, Republic of Redland\"\n  },\n  \"issuanceDate\": \"2020-03-02\",\n  \"expiryDate\": \"2030-03-02\",\n  \"credentialSubject\": {\n    \"id\": \"unknown\",\n    \"name\": \"Leandro \",\n    \"dateOfBirth\": \"2004-02-19\"\n  }\n}\n")
+        credential?.type = .certificatOfInsurance
+        return credential!;
+    }
+
 }

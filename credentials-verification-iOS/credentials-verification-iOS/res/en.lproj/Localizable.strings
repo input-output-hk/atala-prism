@@ -48,14 +48,13 @@
 
 // <!-- Connections -->
 "connections_nav_title" = "Connections";
-"connections_empty_title" = "Connect to a University, Public Registry or potential Employers";
-"connections_empty_subtitle" = "You can receive and send your digital certificates";
+"connections_empty_title" = "Start your first Connection!";
+"connections_empty_subtitle" = "You can receive and send your \ndigital certificates";
 "connections_empty_button" = "Scan a QR";
 "connections_scan_qr_nav_title" = "Scan QR";
 "connections_scan_qr_error" = "Invalid QR code";
 "connections_scan_qr_confirm_button" = "Connect!";
-"connections_scan_qr_confirm_title_type_0" = "University Name";
-"connections_scan_qr_confirm_title_type_1" = "Employer Name";
+"connections_scan_qr_confirm_title" = "You are about to connect with";
 "connections_scan_qr_confirm_error" = "Failed to confirm connection. Try again.";
 "connections_scan_qr_confirm_payment_error" = "Failed to confirm payment. Try again.";
 "connections_universities" = "Universities";
@@ -72,8 +71,10 @@
 "home_document_nationality" = "Nationality";
 "home_document_full_name" = "Full Name";
 "home_document_date_of_birth" = "Date of Birth";
-"home_detail_title_type_1" = "University Degree";
-"home_detail_title_type_2" = "School Degree";
+"home_detail_title_type_university" = "University Degree";
+"home_detail_title_type_government_id" = "Government Issued Digital Identity";
+"home_detail_title_type_insurance" = "Certificate of Insurance";
+"home_detail_title_type_employment" = "Proof of Employment";
 "home_detail_title_new" = "Add Credential";
 "home_detail_degree_name" = "Degree Name";
 "home_detail_start_date" = "Start Date";
@@ -86,6 +87,22 @@
 "home_detail_share_success" = "Successfully shared!";
 "home_empty_title" = "Connect to a University, Public Registry or potential Employers";
 "home_empty_subtitle" = "You can receive and send your digital certificates";
+"home_detail_national_id_card" = "National ID Card";
+"home_detail_identity_number" = "Identity Number";
+"home_detail_date_of_birth" = "Date of Birth";
+"home_detail_expiration_date" = "Expiration Date";
+"home_detail_government_issued_digital_identity" = "Government Issued \nDigital Identity";
+"home_detail_company_name" = "Company Name";
+"home_detail_provider_name" = "Provider Name";
+"home_detail_employment_status" = "Employment Status";
+"home_detail_employment_start_date" = "Employment Start Date";
+"home_detail_employment_class_insurance" = "Class of Insurance";
+"home_detail_employment_policy_number" = "Policy Number";
+"home_detail_employment_policy_end_date" = "Policy End Date";
+"home_university_degree" = "University Degree";
+"home_government_id" = "Government Issued DI";
+"home_proof_employment" = "Proof of Employment";
+"home_certificate_insurance" = "Certificate of Insurance";
 
 // <!-- Profile -->
 "profile_nav_title" = "Profile";
@@ -149,7 +166,7 @@
 
 // <!-- Success -->
 "success_register_title" = "Congrats!\nYour account has been created";
-"success_register_subtitle" = "Continue connecting with your\nUniversity or School";
+"success_register_subtitle" = "Continue to start the \nconnection process";
 "success_register_button" = "Continue";
 "success_email_support_title" = "Your message has been sent successfully!";
 "success_email_support_subtitle" = "Someone from our Support Team will contact you as soon as possible";

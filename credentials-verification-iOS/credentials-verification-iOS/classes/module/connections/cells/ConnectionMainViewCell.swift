@@ -41,13 +41,10 @@ class ConnectionMainViewCell: BaseTableViewCell {
     func config(title: String?, isUniversity: Bool, logoData: Data?) {
 
         labelTitle.text = title
-        labelSubtitle.isHidden = isUniversity
-        constraintTitleVertical.constant = isUniversity ? 0.0 : -10.0
-        if isUniversity {
-            buttonIconAction.setImage(#imageLiteral(resourceName: "ico_caret"), for: .normal)
-        } else {
-            buttonIconAction.isHidden = true
-        }
-        imageLogo.applyDataImage(data: logoData, placeholderNamed: isUniversity ? "ico_placeholder_university" : "ico_placeholder_employer")
+        labelSubtitle.isHidden = true
+        constraintTitleVertical.constant = 0.0
+        buttonIconAction.isHidden = true
+        
+        imageLogo.applyDataImage(data: logoData, placeholderNamed: isUniversity ? "ico_placeholder_university" : "ico_placeholder_credential")
     }
 }
