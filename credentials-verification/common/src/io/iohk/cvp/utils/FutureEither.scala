@@ -61,16 +61,16 @@ class FutureEither[+E, +A](val value: Future[Either[E, A]]) extends AnyVal {
     map(f)
 
   def recoverLeft[A2 >: A](f: E => A2)(implicit ec: ExecutionContext): FutureEither[Nothing, A2] = {
-    val newFuture = value.map { e =>
-      e match {
-        case Right(a) => Right(a)
-        case Left(e) => Right(f(e))
-      }
-    }
-
-    new FutureEither(newFuture)
+    new FutureEither(value.map(e => Right(e.fold(f, identity))))
   }
 
+  def toFuture(ef: E => Throwable)(implicit ec: ExecutionContext): Future[A] = {
+    value.flatMap(e => e.fold(e => Future.failed(ef(e)), a => Future.successful(a)))
+  }
+
+  def toFuture(implicit ev: E <:< Throwable, ec: ExecutionContext): Future[A] = {
+    value.flatMap(e => Future.fromTry(e.toTry))
+  }
 }
 
 /**

@@ -58,7 +58,7 @@ object ConnectionsDAO {
 
   def getConnectionByToken(token: TokenString): doobie.ConnectionIO[Option[Connection]] = {
     sql"""
-         |SELECT token
+         |SELECT token, id
          |FROM connections
          |WHERE token = ${token.token}
          |""".stripMargin

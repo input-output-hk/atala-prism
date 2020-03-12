@@ -1,88 +1,127 @@
 package io.iohk.cvp.intdemo
 
-import io.grpc.stub.StreamObserver
-import io.iohk.connector.ConnectorService
-import io.iohk.cvp.intdemo.IDServiceImplSpec._
-import io.iohk.cvp.intdemo.protos.{
-  GetConnectionTokenRequest,
-  GetSubjectStatusRequest,
-  GetSubjectStatusResponse,
-  SubjectStatus
-}
-import io.iohk.prism.protos.{connector_api, connector_models}
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+
+import Testing._
+import io.grpc.{Status, StatusException}
+import io.iohk.connector.model.{Connection, ConnectionId, MessageId, TokenString}
+import io.iohk.cvp.intdemo.IdServiceImplSpec._
+import io.iohk.cvp.intdemo.protos.SubjectStatus.UNCONNECTED
+import io.iohk.cvp.intdemo.protos._
 import org.mockito.ArgumentMatchersSugar.{any, eqTo}
-import org.mockito.MockitoSugar._
+import org.mockito.MockitoSugar.{mock, verify, when}
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
-import org.scalatest.concurrent.Eventually.eventually
 import org.scalatest.concurrent.ScalaFutures.{PatienceConfig, convertScalaFuture}
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
+import scala.language.postfixOps
 
-class IDServiceImplSpec extends FlatSpec {
+class IdServiceImplSpec extends FlatSpec {
 
   implicit val pc: PatienceConfig = PatienceConfig(1 second, 100 millis)
 
-  "getConnectionToken" should "create a connection token via the connector" in idService {
-    (connectorService, credentialStatusRepository, idService) =>
-      when(connectorService.generateConnectionToken(connector_api.GenerateConnectionTokenRequest()))
-        .thenReturn(Future(connector_api.GenerateConnectionTokenResponse(token)))
-      when(credentialStatusRepository.merge(token, SubjectStatus.UNCONNECTED.value)).thenReturn(Future(1))
+  "setPersonalData" should "reject empty first name" in idService { (_, _, idService) =>
+    val response = idService
+      .setPersonalData(SetPersonalDataRequest(token.token, "", Some(today())))
+      .failed
+      .futureValue
+      .asInstanceOf[StatusException]
 
-      val tokenResponse = idService.getConnectionToken(GetConnectionTokenRequest()).futureValue
-
-      tokenResponse.connectionToken shouldBe token
+    response.getStatus shouldBe Status.INVALID_ARGUMENT
   }
 
-  "getSubjectStatus" should "obtain connection status when one is available" in idService {
-    (_, credentialStatusRepository, idService) =>
-      val expectedStatus = SubjectStatus.CONNECTED
-      when(credentialStatusRepository.find(token)).thenReturn(Future(Some(expectedStatus.value)))
+  it should "reject empty date of birth" in idService { (_, _, idService) =>
+    val response = idService
+      .setPersonalData(SetPersonalDataRequest(token.token, "name", None))
+      .failed
+      .futureValue
+      .asInstanceOf[StatusException]
 
-      val statusResponse = idService.getSubjectStatus(GetSubjectStatusRequest(token)).futureValue
-
-      statusResponse.subjectStatus shouldBe expectedStatus
+    response.getStatus shouldBe Status.INVALID_ARGUMENT
   }
 
-  it should "return UNCONNECTED when invoked with an invalid/random token" in idService {
-    (_, credentialStatusRepository, idService) =>
-      val expectedStatus = SubjectStatus.UNCONNECTED
-      when(credentialStatusRepository.find(token)).thenReturn(Future(None))
+  it should "update the personal info when the user's personal data is uploaded" in idService(UNCONNECTED, None, None) {
+    (_, repository, idService) =>
+      idService
+        .setPersonalData(
+          SetPersonalDataRequest(token.token, name, Some(Date(dob.getYear, dob.getMonthValue, dob.getDayOfMonth)))
+        )
+        .futureValue
 
-      val statusResponse = idService.getSubjectStatus(GetSubjectStatusRequest(token)).futureValue
-
-      statusResponse.subjectStatus shouldBe expectedStatus
+      verify(repository).mergePersonalInfo(token, name, dob)
   }
 
-  "getSubjectStatusStream" should "update the subject status when the connection is accepted by the wallet" in idService {
-    (connectorService, credentialStatusRepository, idService) =>
-      val streamObserver = mock[StreamObserver[GetSubjectStatusResponse]]
-      when(credentialStatusRepository.find(token))
-        .thenAnswer(Future(Some(SubjectStatus.UNCONNECTED.value)))
-        .andThenAnswer(Future(Some(SubjectStatus.CONNECTED.value)))
-      when(credentialStatusRepository.merge(eqTo(token), any)).thenReturn(Future(1))
-      when(connectorService.getConnectionByToken(connector_api.GetConnectionByTokenRequest(token)))
-        .thenReturn(Future(connector_api.GetConnectionByTokenResponse(Some(connector_models.Connection(token)))))
+  "idCredentialTemplate" should "render an ID credential correctly" in {
+    val d = LocalDate.now()
+    val df = DateTimeFormatter.ISO_LOCAL_DATE.format(d)
+    val d2 = d.plusYears(3)
+    val df2 = DateTimeFormatter.ISO_LOCAL_DATE.format(d2)
+    val dob = LocalDate.of(1973, 6, 6)
+    val dobf = DateTimeFormatter.ISO_LOCAL_DATE.format(dob)
 
-      idService.getSubjectStatusStream(GetSubjectStatusRequest(token), streamObserver)
+    val json = IdServiceImpl.idCredentialJsonTemplate(
+      id = "credential-id",
+      subjectIdNumber = "ABC-123",
+      issuanceDate = d,
+      expiryDate = d2,
+      subjectDid = "did:atala:subject-did",
+      subjectFirstName = "first-name",
+      subjectDateOfBirth = LocalDate.of(1973, 6, 6)
+    )
 
-      eventually {
-        verify(credentialStatusRepository).merge(token, SubjectStatus.CONNECTED.value)
-        verify(streamObserver, atLeastOnce).onNext(GetSubjectStatusResponse(SubjectStatus.CONNECTED))
-      }
+    val c = json.hcursor
+    c.jsonStr("id") shouldBe "credential-id"
+    c.jsonArr("type") shouldBe List("VerifiableCredential", "RedlandIdCredential")
+    c.jsonStr("issuer.id") shouldBe "did:atala:091d41cc-e8fc-4c44-9bd3-c938dcf76dff"
+    c.jsonStr("issuer.name") shouldBe "Department of Interior, Republic of Redland"
+    c.jsonStr("issuanceDate") shouldBe df
+    c.jsonStr("expiryDate") shouldBe df2
+    c.jsonStr("credentialSubject.id") shouldBe "did:atala:subject-did"
+    c.jsonStr("credentialSubject.identityNumber") shouldBe "ABC-123"
+    c.jsonStr("credentialSubject.name") shouldBe "first-name"
+    c.jsonStr("credentialSubject.dateOfBirth") shouldBe dobf
   }
 }
 
-object IDServiceImplSpec {
+object IdServiceImplSpec {
   implicit val ec: ExecutionContext = ExecutionContext.global
-  val token = "a token"
+  private val connectionId = ConnectionId.random()
+  private val messageId = MessageId.random()
+  private val issuerId = IdServiceImpl.issuerId
+  private val token = new TokenString("a token")
+  private val name = "name"
+  private val dob: LocalDate = LocalDate.of(1950, 1, 1)
 
-  def idService(testCode: (ConnectorService, CredentialStatusRepository, IDServiceImpl) => Any): Unit = {
-    val connectorService = mock[ConnectorService]
-    val credentialStatusRepository = mock[CredentialStatusRepository]
-    val service = new IDServiceImpl(connectorService, schedulerPeriod = 1 milli)(credentialStatusRepository)
+  def idService(testCode: (ConnectorIntegration, IntDemoRepository, IdServiceImpl) => Any): Unit = {
+    idService(UNCONNECTED, None, None)(testCode)
+  }
 
-    testCode(connectorService, credentialStatusRepository, service)
+  def idService(
+      subjectStatus: SubjectStatus,
+      connection: Option[Connection],
+      personalInfo: Option[(String, LocalDate)]
+  )(testCode: (ConnectorIntegration, IntDemoRepository, IdServiceImpl) => Any): Unit = {
+    val connectorIntegration = mock[ConnectorIntegration]
+    val repository = mock[IntDemoRepository]
+
+    val service = new IdServiceImpl(connectorIntegration, repository, schedulerPeriod = 1 milli)
+
+    when(connectorIntegration.sendCredential(eqTo(issuerId), eqTo(connectionId), any)).thenReturn(Future(messageId))
+    when(connectorIntegration.getConnectionByToken(token)).thenReturn(Future(connection))
+    when(repository.mergeSubjectStatus(eqTo(token), any)).thenReturn(Future(1))
+    when(repository.mergePersonalInfo(eqTo(token), eqTo(name), eqTo(dob))).thenReturn(Future(1))
+    when(repository.findSubjectStatus(token)).thenReturn(Future(Some(subjectStatus)))
+    when(repository.findPersonalInfo(token)).thenReturn(Future(personalInfo))
+
+    testCode(connectorIntegration, repository, service)
+  }
+
+  def today(): Date = toDate(LocalDate.now())
+
+  def toDate(ld: LocalDate): Date = {
+    Date(ld.getYear, ld.getMonthValue, ld.getDayOfMonth)
   }
 }

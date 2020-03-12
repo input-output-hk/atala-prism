@@ -1,0 +1,20 @@
+package io.iohk.connector.client.commands
+
+import io.circe.Printer
+import io.circe.generic.auto._
+import io.circe.syntax._
+import io.iohk.connector.client.Config
+import io.iohk.connector.model.{Connection, ConnectionId, TokenString}
+import io.iohk.prism.protos.connector_api.{ConnectorServiceGrpc, GetConnectionByTokenRequest}
+
+case object GetConnection extends Command {
+  override def run(api: ConnectorServiceGrpc.ConnectorServiceBlockingStub, config: Config): Unit = {
+    val connectionToken: String = config.connectionToken.get
+    val response = api.getConnectionByToken(GetConnectionByTokenRequest(token = connectionToken))
+    val connection = Connection(
+      connectionToken = new TokenString(response.getConnection.connectionToken),
+      connectionId = ConnectionId(response.getConnection.connectionId)
+    )
+    println(connection.asJson.printWith(new Printer(false, "  ")))
+  }
+}

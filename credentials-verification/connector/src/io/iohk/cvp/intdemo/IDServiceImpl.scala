@@ -1,134 +1,137 @@
 package io.iohk.cvp.intdemo
 
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+
+import credential._
+import io.circe._
+import io.circe.Json.fromString
+import io.grpc.Status
 import io.grpc.stub.StreamObserver
-import io.iohk.connector.ConnectorService
-import io.iohk.cvp.intdemo.IDServiceImpl.log
+import io.iohk.connector.model.TokenString
+import io.iohk.cvp.intdemo.IdServiceImpl._
 import io.iohk.cvp.intdemo.protos.IDServiceGrpc._
 import io.iohk.cvp.intdemo.protos._
-import io.iohk.prism.protos.connector_api
-import monix.execution.Scheduler
+import io.iohk.cvp.models.ParticipantId
 import monix.execution.Scheduler.{global => scheduler}
-import org.slf4j.LoggerFactory
 
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success}
+import scala.util.Random
 
-class IDServiceImpl(connectorService: ConnectorService, schedulerPeriod: FiniteDuration)(
-    credentialStatusRepository: CredentialStatusRepository
+class IdServiceImpl(
+    connectorIntegration: ConnectorIntegration,
+    intDemoRepository: IntDemoRepository,
+    schedulerPeriod: FiniteDuration
 )(
     implicit ec: ExecutionContext
 ) extends IDService {
 
-  override def getConnectionToken(request: GetConnectionTokenRequest): Future[GetConnectionTokenResponse] = {
-    for {
-      connectionResponse <- connectorService.generateConnectionToken(connector_api.GenerateConnectionTokenRequest())
-      token = connectionResponse.token
-      _ <- credentialStatusRepository.merge(token, SubjectStatus.UNCONNECTED.value)
-    } yield {
-      log.debug(s"Generated new connection token in IDService. request = $request, token = ${connectionResponse.token}")
-      GetConnectionTokenResponse(connectionResponse.token)
-    }
-  }
+  val service = new IntDemoService[(String, LocalDate)](
+    issuerId,
+    connectorIntegration,
+    intDemoRepository,
+    schedulerPeriod,
+    getPersonalData(intDemoRepository),
+    getIdCredential,
+    scheduler
+  )
 
-  override def getSubjectStatus(request: GetSubjectStatusRequest): Future[GetSubjectStatusResponse] = {
-    credentialStatusRepository
-      .find(request.connectionToken)
-      .map(
-        maybeToken =>
-          maybeToken
-            .fold[SubjectStatus](SubjectStatus.UNCONNECTED)(statusValue => SubjectStatus.fromValue(statusValue))
-      )
-      .map { status =>
-        log.debug(
-          s"Getting subjectStatus for request Generated new connection token in IDService. request = $request, status = ${status}"
-        )
-        GetSubjectStatusResponse(status)
-      }
+  override def getConnectionToken(request: GetConnectionTokenRequest): Future[GetConnectionTokenResponse] = {
+    service.getConnectionToken(request)
   }
 
   override def getSubjectStatusStream(
       request: GetSubjectStatusRequest,
-      responseObserver: io.grpc.stub.StreamObserver[GetSubjectStatusResponse]
-  ): Unit = {
-    log.debug(
-      s"Serving getSubjectStatusStream for request $request."
-    )
-
-    schedulerStatusStream(
-      request = request,
-      responseObserver = responseObserver,
-      scheduler = scheduler
-    )
-  }
-
-  private def schedulerStatusStream(
-      request: GetSubjectStatusRequest,
-      responseObserver: StreamObserver[GetSubjectStatusResponse],
-      scheduler: Scheduler
-  ): Unit = {
-    scheduler.scheduleOnce(schedulerPeriod) {
-      credentialStatusRepository.find(request.connectionToken).foreach { maybeStatus: Option[Int] =>
-        val status = maybeStatus.map(SubjectStatus.fromValue).getOrElse(SubjectStatus.UNCONNECTED)
-
-        status match {
-          case SubjectStatus.UNCONNECTED =>
-            streamUnconnectedResponse(request, status, responseObserver, scheduler)
-          case SubjectStatus.CONNECTED =>
-            streamConnectedResponse(request, responseObserver)
-          case _ =>
-            ??? // to implement in next story.
-        }
-      }
-    }
-  }
-
-  private def streamUnconnectedResponse(
-      request: GetSubjectStatusRequest,
-      currentStatus: SubjectStatus,
-      responseObserver: StreamObserver[GetSubjectStatusResponse],
-      scheduler: Scheduler
-  ): Unit = {
-    getConnectionStatus(request.connectionToken).onComplete {
-      case Success(newStatus) =>
-        if (currentStatus != newStatus) { // don't re-issue the same status
-          val response = GetSubjectStatusResponse(newStatus)
-          log.debug(s"Feeding stream response for request $request, response $response")
-          responseObserver.onNext(response)
-        }
-        schedulerStatusStream(request, responseObserver, scheduler)
-      case Failure(exception) =>
-        log.info(s"Feeding stream error for request $request, exception $exception")
-        responseObserver.onError(exception)
-    }
-  }
-
-  private def getConnectionStatus(connectionToken: String): Future[SubjectStatus] = {
-    connectorService.getConnectionByToken(connector_api.GetConnectionByTokenRequest(connectionToken)).flatMap {
-      response =>
-        response.connection match {
-          case Some(_) =>
-            val nextStatus = SubjectStatus.CONNECTED
-            credentialStatusRepository
-              .merge(connectionToken, nextStatus.value)
-              .map(_ => nextStatus)
-          case None =>
-            Future(SubjectStatus.UNCONNECTED)
-        }
-    }
-  }
-
-  private def streamConnectedResponse(
-      request: GetSubjectStatusRequest,
       responseObserver: StreamObserver[GetSubjectStatusResponse]
   ): Unit = {
-    val response = GetSubjectStatusResponse(SubjectStatus.CONNECTED)
-    log.debug(s"Feeding stream response for request $request, response $response")
-    responseObserver.onNext(response)
+    service.getSubjectStatusStream(request, responseObserver)
   }
 
+  override def setPersonalData(request: SetPersonalDataRequest): Future[SetPersonalDataResponse] = {
+    if (request.dateOfBirth.isEmpty || request.firstName.isEmpty) {
+      Future.failed(Status.INVALID_ARGUMENT.asException())
+    } else {
+      intDemoRepository
+        .mergePersonalInfo(
+          new TokenString(request.connectionToken),
+          request.firstName,
+          LocalDate.of(request.dateOfBirth.get.year, request.dateOfBirth.get.month, request.dateOfBirth.get.day)
+        )
+        .map(_ => SetPersonalDataResponse())
+    }
+  }
 }
 
-object IDServiceImpl {
-  val log = LoggerFactory.getLogger(classOf[IDServiceImpl])
+object IdServiceImpl {
+
+  val issuerId = ParticipantId("091d41cc-e8fc-4c44-9bd3-c938dcf76dff")
+
+  val credentialTypeId = "VerifiableCredential/RedlandIdCredential"
+
+  def idCredentialJsonTemplate(
+      id: String,
+      subjectIdNumber: String,
+      issuanceDate: LocalDate,
+      expiryDate: LocalDate,
+      subjectDid: String,
+      subjectFirstName: String,
+      subjectDateOfBirth: LocalDate
+  ): Json = {
+    Json.obj(
+      fields =
+        "id" -> fromString(id),
+      "type" -> Json.arr(fromString("VerifiableCredential"), fromString("RedlandIdCredential")),
+      "issuer" -> Json.obj(
+        fields =
+          "id" -> fromString("did:atala:091d41cc-e8fc-4c44-9bd3-c938dcf76dff"),
+        "name" -> fromString("Department of Interior, Republic of Redland")
+      ),
+      "issuanceDate" -> fromString(formatDate(issuanceDate)),
+      "expiryDate" -> fromString(formatDate(expiryDate)),
+      "credentialSubject" -> Json.obj(
+        "id" -> fromString(subjectDid),
+        "identityNumber" -> fromString(subjectIdNumber),
+        "name" -> fromString(subjectFirstName),
+        "dateOfBirth" -> fromString(formatDate(subjectDateOfBirth))
+      )
+    )
+  }
+
+  private def getPersonalData(
+      intDemoRepository: IntDemoRepository
+  ): TokenString => Future[Option[(String, LocalDate)]] =
+    connectionToken => intDemoRepository.findPersonalInfo(connectionToken)
+
+  private val jsonPrinter = Printer(dropNullValues = false, indent = "  ")
+
+  def getIdCredential(requiredData: (String, LocalDate)): Credential = {
+    val (name, dob) = requiredData
+    val id = "unknown"
+    val subjectIdNumber = generateSubjectIdNumber(name + dateFormatter.format(dob))
+    val issuanceDate = LocalDate.now()
+    val expiryDate = issuanceDate.plusYears(10)
+    val subjectDid = "unknown"
+    val idCredential: String =
+      idCredentialJsonTemplate(id, subjectIdNumber, issuanceDate, expiryDate, subjectDid, name, dob).printWith(
+        jsonPrinter
+      )
+    Credential(
+      typeId = credentialTypeId,
+      credentialDocument = idCredential
+    )
+  }
+
+  private def generateSubjectIdNumber(seedStr: String): String = {
+    import java.nio.ByteBuffer
+    val seed = ByteBuffer.wrap(seedStr.getBytes.take(4)).getInt
+    val random = new Random(seed)
+    s"RL-${(1 to 9).map(_ => random.nextInt(10)).mkString}"
+  }
+
+  private val dateFormatter = DateTimeFormatter.ISO_LOCAL_DATE
+
+  private def formatDate(d: LocalDate): String = {
+    dateFormatter.format(d)
+  }
 }

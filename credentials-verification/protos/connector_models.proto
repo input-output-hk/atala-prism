@@ -52,6 +52,7 @@ message ParticipantInfo {
 message Connection {
     // the connection token used to initialize the connection with the wallet
     string connectionToken = 1;
+    string connectionId = 2;
 }
 
 // Information on the connection; both sides see the same connectionId and creation time, but each sees different participantInfo

@@ -47,7 +47,14 @@ abstract class ConnectorRepositorySpecBase extends PostgresRepositorySpec {
   }
 
   protected def createConnection(initiatorId: ParticipantId, acceptorId: ParticipantId): ConnectionId = {
-    val token = createToken(initiatorId)
+    createConnection(initiatorId, acceptorId, createToken(initiatorId))
+  }
+
+  protected def createConnection(
+      initiatorId: ParticipantId,
+      acceptorId: ParticipantId,
+      token: TokenString
+  ): ConnectionId = {
     sql"""
          |INSERT INTO connections (id, initiator, acceptor, instantiated_at, token)
          |VALUES(${ConnectionId.random()}, $initiatorId, $acceptorId, now(), $token)

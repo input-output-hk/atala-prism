@@ -168,7 +168,7 @@ object ConnectionsRepository {
       }
     }
 
-    def getConnectionByToken(token: TokenString): FutureEither[ConnectorError, Option[Connection]] = {
+    override def getConnectionByToken(token: TokenString): FutureEither[ConnectorError, Option[Connection]] = {
       ConnectionsDAO
         .getConnectionByToken(token)
         .transact(xa)

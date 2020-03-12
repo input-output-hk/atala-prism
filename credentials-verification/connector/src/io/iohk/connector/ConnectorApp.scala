@@ -18,8 +18,9 @@ import io.iohk.cvp.cmanager.repositories.{
 import io.iohk.cvp.cstore.CredentialsStoreService
 import io.iohk.cvp.cstore.services.{StoreIndividualsService, StoredCredentialsService}
 import io.iohk.cvp.grpc.{GrpcAuthenticationHeaderParser, GrpcAuthenticatorInterceptor}
-import io.iohk.cvp.intdemo.protos.IDServiceGrpc
-import io.iohk.cvp.intdemo.{CredentialStatusRepository, IDServiceImpl}
+import io.iohk.cvp.intdemo.ConnectorIntegration.ConnectorIntegrationImpl
+import io.iohk.cvp.intdemo.{DegreeServiceImpl, IdServiceImpl, IntDemoRepository}
+import io.iohk.cvp.intdemo.protos.{DegreeServiceGrpc, IDServiceGrpc}
 import io.iohk.cvp.repositories.{SchemaMigrations, TransactorFactory}
 import io.iohk.prism.protos.cmanager_api.{CredentialsServiceGrpc, GroupsServiceGrpc, StudentsServiceGrpc}
 import io.iohk.prism.protos.connector_api
@@ -126,10 +127,13 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
     val adminRepository = new AdminRepository(xa)(executionContext)
     val adminService = new AdminServiceImpl(adminRepository)(executionContext)
 
-    // interactive demo, ID credential service
-    val credentialStatusRepository = new CredentialStatusRepository(xa)(executionContext)
+    // interactive demo services
+    val intDemoRepository = new IntDemoRepository(xa)(executionContext)
+    val connectorIntegration = new ConnectorIntegrationImpl(connectionsService, messagesService)(executionContext)
     val idService =
-      new IDServiceImpl(connectorService, schedulerPeriod = 1 second)(credentialStatusRepository)(executionContext)
+      new IdServiceImpl(connectorIntegration, intDemoRepository, schedulerPeriod = 1 second)(executionContext)
+    val degreeService =
+      new DegreeServiceImpl(connectorIntegration, intDemoRepository, schedulerPeriod = 1 second)(executionContext)
 
     logger.info("Starting server")
     server = ServerBuilder
@@ -141,6 +145,7 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       .addService(GroupsServiceGrpc.bindService(groupsService, executionContext))
       .addService(CredentialsStoreServiceGrpc.bindService(credentialsStoreService, executionContext))
       .addService(IDServiceGrpc.bindService(idService, executionContext))
+      .addService(DegreeServiceGrpc.bindService(degreeService, executionContext))
       .addService(AdminServiceGrpc.bindService(adminService, executionContext))
       .build()
       .start()
