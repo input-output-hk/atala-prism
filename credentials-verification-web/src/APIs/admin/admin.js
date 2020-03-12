@@ -1,13 +1,22 @@
 import { AdminServicePromiseClient } from '../../protos/admin_grpc_web_pb';
 import { isDevEnv } from '../env';
-import { config } from '../config';
 
 const { PopulateDemoDatasetRequest } = require('../../protos/admin_pb');
 
-const adminService = new AdminServicePromiseClient(config.grpcClient, null, null);
+function populateDemoDataset() {
+  return this.client.populateDemoDataset(new PopulateDemoDatasetRequest(), null);
+}
 
-export const populateDemoDataset = () => {
-  return adminService.populateDemoDataset(new PopulateDemoDatasetRequest(), null);
-};
+function isAdminSupported() {
+  return isDevEnv(this.config.grpcClient);
+}
 
-export const isAdminSupported = () => isDevEnv(config.grpcClient);
+function Admin(config) {
+  this.config = config;
+  this.client = new AdminServicePromiseClient(this.config.grpcClient, null, null);
+}
+
+Admin.prototype.populateDemoDataset = populateDemoDataset;
+Admin.prototype.isAdminSupported = isAdminSupported;
+
+export default Admin;

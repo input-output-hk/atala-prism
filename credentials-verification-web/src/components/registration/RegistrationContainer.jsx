@@ -25,10 +25,10 @@ const MNEMONIC_VALIDATION_STEP = 5;
 const ORGANIZATION_INFO_STEP = 6;
 const STEP_QUANTITY = 7;
 
-const RegistrationContainer = ({
-  api: { getTermsAndConditions, getPrivacyPolicy, createWallet, lockWallet, registerUser, isIssuer }
-}) => {
+const RegistrationContainer = ({ api }) => {
   const { t } = useTranslation();
+
+  const { getTermsAndConditions, getPrivacyPolicy } = api;
 
   const [currentStep, setCurrentStep] = useState(TERMS_AND_CONDITIONS_STEP);
   const [accepted, setAccepted] = useState(false);
@@ -108,16 +108,24 @@ const RegistrationContainer = ({
       nextStep();
     });
 
-  const validateOrganizatonInfo = async () =>
+  const lockWallet = async () => api.wallet.lockWallet();
+
+  const validateOrganizationInfo = async () =>
     organizationRef.current
       .getForm()
       .validateFieldsAndScroll((errors, { organizationName, organizationRole, logo }) => {
         if (errors) return;
         setOrganizationInfo({ organizationName, organizationRole, logo });
 
-        createWallet(password, organizationName, organizationRole, logo[0])
+        api.wallet
+          .createWallet(password, organizationName, organizationRole, logo[0])
           .then(createOperation => {
-            registerUser(createOperation, organizationName, logo, isIssuer());
+            api.connector.registerUser(
+              createOperation,
+              organizationName,
+              logo,
+              api.wallet.isIssuer()
+            );
           })
           .then(lockWallet)
           .then(nextStep)
@@ -141,7 +149,7 @@ const RegistrationContainer = ({
       case MNEMONIC_VALIDATION_STEP:
         return nextStep;
       case ORGANIZATION_INFO_STEP:
-        return validateOrganizatonInfo;
+        return validateOrganizationInfo;
       default:
         return nextStep;
     }
@@ -236,9 +244,14 @@ RegistrationContainer.propTypes = {
   api: PropTypes.shape({
     getTermsAndConditions: PropTypes.func.isRequired,
     getPrivacyPolicy: PropTypes.func.isRequired,
-    createWallet: PropTypes.func.isRequired,
-    lockWallet: PropTypes.func.isRequired,
-    registerUser: PropTypes.func.isRequired
+    wallet: PropTypes.shape({
+      createWallet: PropTypes.func.isRequired,
+      lockWallet: PropTypes.func.isRequired,
+      isIssuer: PropTypes.func.isRequired
+    }).isRequired,
+    connector: PropTypes.shape({
+      registerUser: PropTypes.func.isRequired
+    }).isRequired
   }).isRequired
 };
 

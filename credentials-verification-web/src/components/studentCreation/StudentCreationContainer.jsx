@@ -27,7 +27,7 @@ const StudentCreationContainer = ({ api, redirector: { redirectToConnections } }
   const [group, setGroup] = useState();
 
   useEffect(() => {
-    api
+    api.groupsManager
       .getGroups()
       .then(response => {
         const [{ name }] = response;
@@ -110,7 +110,7 @@ const StudentCreationContainer = ({ api, redirector: { redirectToConnections } }
     if (invalidFieldos.length) return;
 
     const creationPromises = students.map(({ fullName, email, studentId, admissionDate }) =>
-      api.createStudent({
+      api.studentsManager.createStudent({
         studentId,
         fullName,
         email,
@@ -151,7 +151,10 @@ const StudentCreationContainer = ({ api, redirector: { redirectToConnections } }
 };
 
 StudentCreationContainer.propTypes = {
-  api: PropTypes.shape({ createStudent: PropTypes.func, getGroups: PropTypes.func }).isRequired,
+  api: PropTypes.shape({
+    studentsManager: PropTypes.shape({ createStudent: PropTypes.func }).isRequired,
+    groupsManager: PropTypes.shape({ getGroups: PropTypes.func }).isRequired
+  }).isRequired,
   redirector: PropTypes.shape({ redirectToConnections: PropTypes.func }).isRequired
 };
 

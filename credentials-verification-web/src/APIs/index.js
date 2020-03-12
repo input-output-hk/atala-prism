@@ -1,55 +1,30 @@
 import { mockApi } from './__mocks__';
 
-import {
-  getConnectionsPaginated,
-  getMessagesForConnection,
-  issueCredential
-} from './connector/connector';
-import {
-  createWallet,
-  getDid,
-  getWalletStatus,
-  lockWallet,
-  unlockWallet,
-  isWalletUnlocked,
-  isIssuer
-} from './wallet/wallet';
-import { getCredentials, createCredential, registerUser } from './credentials/credentialsManager';
-import {
-  getStudents as getIndividualsAsIssuer,
-  generateConnectionToken as generateConnectionTokenAsIssuer,
-  getStudentCredentials,
-  createStudent
-} from './credentials/studentsManager';
-import { createGroup, getGroups } from './credentials/groupsManager';
-import {
-  getIndividuals as getIndividualsAsVerifier,
-  generateConnectionTokenForIndividual as generateConnectionTokenAsVerifier,
-  createIndividual
-} from './cstore/credentialsStore';
-import { isAdminSupported, populateDemoDataset } from './admin/admin';
-
-const { config } = require('./config');
+import Connector from './connector/connector';
+import Wallet from './wallet/wallet';
+import CredentialsManager from './credentials/credentialsManager';
+import StudentsManager from './credentials/studentsManager';
+import GroupsManager from './credentials/groupsManager';
+import CredentialsStore from './cstore/credentialsStore';
+import Admin from './admin/admin';
 
 export { mockApi };
 
-const getRole = issuer => {
-  return issuer ? config.issuerId : config.verifierId;
-};
-
-const getIndividuals = issuer => {
-  const functionByRole = issuer ? getIndividualsAsIssuer : getIndividualsAsVerifier;
-
-  return (limit, lastSeenId) => functionByRole(getRole(issuer), lastSeenId, limit);
-};
-
-const generateConnectionToken = issuer => {
+function getIndividuals(issuer) {
   const functionByRole = issuer
-    ? generateConnectionTokenAsIssuer
-    : generateConnectionTokenAsVerifier;
+    ? this.studentsManager.getIndividualsAsIssuer.bind(this.studentsManager)
+    : this.credentialStore.getIndividualsAsVerifier.bind(this.credentialStore);
 
-  return id => functionByRole(getRole(issuer), id);
-};
+  return (limit, lastSeenId) => functionByRole(lastSeenId, limit);
+}
+
+function generateConnectionToken(issuer) {
+  const functionByRole = issuer
+    ? this.studentsManager.generateConnectionTokenAsIssuer.bind(this.studentsManager)
+    : this.credentialStore.generateConnectionTokenForIndividual.bind(this.credentialStore);
+
+  return id => functionByRole(id);
+}
 
 // TODO when the bulk imports really exist replace this mocked promise
 const mockApiCall = file => new Promise(resolve => resolve(file));
@@ -62,35 +37,22 @@ const importBulk = (issuer, fileWithBulk) => {
   return functionByRole(fileWithBulk);
 };
 
-export const api = {
-  // These are the mocked apis that will be hardcoded
-  // in the alpha version
-  getGroups,
-  // These are the real interactions with the backend
-  generateConnectionToken,
-  getConnectionsPaginated,
-  createWallet,
-  getDid,
-  getCredentials,
-  issueCredential,
-  createCredential,
-  getWalletStatus,
-  unlockWallet,
-  isWalletUnlocked,
-  lockWallet,
-  isIssuer,
-  getStudentCredentials,
-  getMessagesForConnection,
-  registerUser,
-  getIndividuals,
-  getIndividualsAsIssuer,
-  createIndividual,
-  createStudent,
-  importBulk,
-  isAdminSupported,
-  populateDemoDataset,
-  createGroup
-};
+function Api(configuration, authenticator) {
+  this.configuration = configuration;
+  this.admin = new Admin(this.configuration);
+  this.wallet = new Wallet(this.configuration);
+  this.authenticator = new authenticator(this.configuration, this.wallet);
+  this.credentialStore = new CredentialsStore(this.configuration, this.authenticator);
+  this.studentsManager = new StudentsManager(this.configuration, this.authenticator);
+  this.groupsManager = new GroupsManager(this.configuration, this.authenticator);
+  this.connector = new Connector(this.configuration, this.authenticator);
+  this.credentialsManager = new CredentialsManager(this.configuration, this.authenticator);
+}
+
+Api.prototype.getIndividuals = getIndividuals;
+Api.prototype.generateConnectionToken = generateConnectionToken;
+
+export default Api;
 
 export const hardcodedApi = {
   getTermsAndConditions: mockApi.getTermsAndConditions,
@@ -105,5 +67,6 @@ export const hardcodedApi = {
   getCurrencies: mockApi.getCurrencies,
   getAmounts: mockApi.getAmounts,
   getSettings: mockApi.getSettings,
-  editSettings: mockApi.editSettings
+  editSettings: mockApi.editSettings,
+  importBulk
 };

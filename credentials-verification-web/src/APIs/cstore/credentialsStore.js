@@ -7,44 +7,45 @@ const {
   CreateIndividualRequest
 } = require('../../../src/protos/cstore_api_pb');
 
-const { config } = require('../config');
-
-const credentialsService = new CredentialsStoreServicePromiseClient(config.grpcClient, null, null);
-
-export const getIndividuals = async (aUserId = config.verifierId, lastSeenId, limit = 10) => {
-  const userId = aUserId || config.verifierId;
-  Logger.info(`Getting individuals userId ${userId}, limit ${limit}, lastSeenId ${lastSeenId}`);
+async function getIndividuals(lastSeenId, limit = 10) {
+  Logger.info(`Getting individuals limit ${limit}, lastSeenId ${lastSeenId}`);
   const getIndividualsRequest = new GetIndividualsRequest();
   getIndividualsRequest.setLimit(limit);
   if (lastSeenId) getIndividualsRequest.setLastseenindividualid(lastSeenId);
-  const response = await credentialsService.getIndividuals(getIndividualsRequest, { userId });
+  const response = await this.client.getIndividuals(getIndividualsRequest, this.auth.getMetadata());
   const { individualsList } = response.toObject();
 
   return individualsList;
-};
+}
 
-export const generateConnectionTokenForIndividual = async (
-  aUserId = config.verifierId,
-  individualId
-) => {
-  const userId = aUserId || config.verifierId;
-  Logger.info(`Generating connection token for individualId ${individualId} with userId ${userId}`);
+async function generateConnectionTokenForIndividual(individualId) {
+  Logger.info(`Generating connection token for individualId ${individualId}`);
   const request = new GenerateConnectionTokenForRequest();
   request.setIndividualid(individualId);
-  const res = await credentialsService.generateConnectionTokenFor(request, { userId });
+  const res = await this.client.generateConnectionTokenFor(request, this.auth.getMetadata());
 
   return res.getToken();
-};
+}
 
-export const createIndividual = async (fullName, email) => {
+async function createIndividual(fullName, email) {
   const request = new CreateIndividualRequest();
 
   request.setFullname(fullName);
   request.setEmail(email);
 
-  const individual = await credentialsService.createIndividual(request, {
-    userId: config.verifierId
-  });
+  const individual = await this.client.createIndividual(request, this.auth.getMetadata());
 
   return individual.toObject();
-};
+}
+
+function CredentialsStore(config, auth) {
+  this.config = config;
+  this.auth = auth;
+  this.client = new CredentialsStoreServicePromiseClient(this.config.grpcClient, null, null);
+}
+
+CredentialsStore.prototype.getIndividualsAsVerifier = getIndividuals;
+CredentialsStore.prototype.generateConnectionTokenForIndividual = generateConnectionTokenForIndividual;
+CredentialsStore.prototype.createIndividual = createIndividual;
+
+export default CredentialsStore;

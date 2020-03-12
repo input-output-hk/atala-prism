@@ -17,8 +17,7 @@ const ConnectionsContainer = ({ api }) => {
 
   const handleHoldersRequest = (oldSubjects = subjects, _name, _status) => {
     const { id } = getLastArrayElementOrEmpty(oldSubjects);
-
-    const getIndividuals = api.getIndividuals(api.isIssuer());
+    const getIndividuals = api.getIndividuals(api.wallet.isIssuer());
 
     return getIndividuals(HOLDER_PAGE_SIZE, id)
       .then(holders => {
@@ -54,7 +53,7 @@ const ConnectionsContainer = ({ api }) => {
   };
 
   const inviteHolder = studentId => {
-    const generateConnectionToken = api.generateConnectionToken(api.isIssuer());
+    const generateConnectionToken = api.generateConnectionToken(api.wallet.isIssuer());
 
     return generateConnectionToken(studentId);
   };
@@ -63,11 +62,16 @@ const ConnectionsContainer = ({ api }) => {
     if (!subjects.length) handleHoldersRequest();
   }, []);
 
+  // Wrapper to preserve 'this' context
+  const getCredentials = connectionId => api.connector.getMessagesForConnection(connectionId);
+
   const tableProps = {
     subjects,
     hasMore,
-    getCredentials: api.getMessagesForConnection
+    getCredentials
   };
+
+  const isIssuer = () => api.wallet.isIssuer();
 
   return (
     <Connections
@@ -75,7 +79,7 @@ const ConnectionsContainer = ({ api }) => {
       handleHoldersRequest={handleHoldersRequest}
       noConnections={noConnections}
       inviteHolder={inviteHolder}
-      isIssuer={api.isIssuer}
+      isIssuer={isIssuer}
     />
   );
 };

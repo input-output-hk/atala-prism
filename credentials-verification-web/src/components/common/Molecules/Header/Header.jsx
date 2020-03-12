@@ -10,9 +10,12 @@ import { theme } from '../../../../helpers/themeHelper';
 
 import './_style.scss';
 
-const Header = ({ api: { lockWallet } }) => {
+const Header = ({ api: { wallet } }) => {
   const userLogo = getLogoAsBase64();
   const { t } = useTranslation();
+
+  // This wrapper is necessary to preserve lockWallet context
+  const lockWallet = async () => wallet.lockWallet();
 
   return (
     <Row type="flex" align="middle" className={`HeaderContainer ${theme.class()}`}>
@@ -39,7 +42,9 @@ const Header = ({ api: { lockWallet } }) => {
 
 Header.propTypes = {
   api: PropTypes.shape({
-    lockWallet: PropTypes.func
+    wallet: PropTypes.shape({
+      lockWallet: PropTypes.func.isRequired
+    }).isRequired
   }).isRequired
 };
 

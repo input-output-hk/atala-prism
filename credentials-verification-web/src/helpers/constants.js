@@ -66,6 +66,7 @@ export const USER_ROLE = 'userRole';
 export const ORGANISATION_NAME = 'organisationName';
 export const LOGO = 'logo';
 export const DEFAULT_LANGUAGE = 'defaultLanguage';
+export const USER_ID = 'userId';
 
 // Roles
 export const VERIFIER = 'VERIFIER';

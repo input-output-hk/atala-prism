@@ -7,7 +7,7 @@ import GroupCreation from './GroupCreation';
 import Logger from '../../helpers/Logger';
 import { withRedirector } from '../providers/withRedirector';
 
-const GroupCreationContainer = ({ api: { createGroup }, redirector: { redirectToGroups } }) => {
+const GroupCreationContainer = ({ api, redirector: { redirectToGroups } }) => {
   const [groupName, setGroupName] = useState('');
   const formRef = React.createRef();
 
@@ -15,7 +15,7 @@ const GroupCreationContainer = ({ api: { createGroup }, redirector: { redirectTo
 
   const saveGroup = async () => {
     try {
-      await createGroup(groupName);
+      await api.groupsManager.createGroup(groupName);
       message.success(t('groupCreation.success'));
       redirectToGroups();
     } catch (e) {
@@ -37,7 +37,9 @@ const GroupCreationContainer = ({ api: { createGroup }, redirector: { redirectTo
 };
 
 GroupCreationContainer.propTypes = {
-  api: PropTypes.shape({ createGroup: PropTypes.func.isRequired }).isRequired,
+  api: PropTypes.shape({
+    groupsManager: PropTypes.shape({ createGroup: PropTypes.func.isRequired }).isRequired
+  }).isRequired,
   redirector: PropTypes.shape({ redirectToGroups: PropTypes.func.isRequired }).isRequired
 };
 

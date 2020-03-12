@@ -61,7 +61,7 @@ const IndividualCreationContainer = ({ api, redirector: { redirectToConnections 
     if (invalidIndividual) return;
 
     const creationPromises = individuals.map(({ fullName, email }) =>
-      api.createIndividual(fullName, email)
+      api.credentialStore.createIndividual(fullName, email)
     );
 
     Promise.all(creationPromises)
@@ -92,7 +92,9 @@ const IndividualCreationContainer = ({ api, redirector: { redirectToConnections 
 };
 
 IndividualCreationContainer.propTypes = {
-  api: PropTypes.shape({ createIndividual: PropTypes.func }).isRequired,
+  api: PropTypes.shape({
+    credentialStore: PropTypes.shape({ createIndividual: PropTypes.func }).isRequired
+  }).isRequired,
   redirector: PropTypes.shape({ redirectToConnections: PropTypes.func }).isRequired
 };
 

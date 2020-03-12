@@ -17,6 +17,10 @@ import { getSettings, editSettings } from './settings';
 import { isWalletUnlocked } from './login';
 import { isAdminSupported, populateDemoDataset } from './admin';
 
+// TODO update mock api.
+//  - It should have the same structure that real Api
+//  - Remove functions that don't exist anymore
+//  - There are many function in real Api that don't exist here
 export const mockApi = {
   getHolders,
   inviteHolder,
@@ -40,7 +44,9 @@ export const mockApi = {
   getAmounts,
   getSettings,
   editSettings,
-  isWalletUnlocked,
   isAdminSupported,
-  populateDemoDataset
+  populateDemoDataset,
+  wallet: {
+    isWalletUnlocked
+  }
 };

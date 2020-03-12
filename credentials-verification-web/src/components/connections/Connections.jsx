@@ -47,7 +47,7 @@ const Connections = ({
 
   const getStudentCredentials = connectionId => {
     const { getCredentials } = tableProps;
-    return getCredentials(undefined, connectionId);
+    return getCredentials(connectionId);
   };
 
   const viewConnection = connection => {
