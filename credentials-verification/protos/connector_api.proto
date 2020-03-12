@@ -50,7 +50,7 @@ service ConnectorService {
   // Invalid DID document (INVALID_ARGUMENT)
   // DID Document does not match DID (INVALID_ARGUMENT)
   rpc RegisterDID (RegisterDIDRequest) returns (RegisterDIDResponse) {}
-  
+
   // Change billing plan of participant who wants to generate connection tokens
   //
   // Available to: Issuer, Validator

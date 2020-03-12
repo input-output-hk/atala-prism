@@ -135,6 +135,20 @@ class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
     }
   }
 
+  "getConnectionByToken" should {
+    "return correct token and connectionId" in {
+      val h1 = createHolder("h1", None)
+      val h2 = createHolder("h2", None)
+      val token = createToken(h1)
+      val connectionId: ConnectionId = createConnection(h1, h2, token)
+
+      val connection: Connection = connectionsRepository.getConnectionByToken(token).value.futureValue.right.value.get
+
+      connection.connectionId mustBe connectionId
+      connection.connectionToken mustBe token
+    }
+  }
+
   "getParticipantId by did" should {
     "get a participant" in {
       val id = ParticipantId.random()

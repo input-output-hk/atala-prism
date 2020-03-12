@@ -27,6 +27,9 @@ object ConnectionId {
   def random(): ConnectionId = {
     new ConnectionId(UUID.randomUUID())
   }
+  def apply(connectionId: String): ConnectionId = {
+    ConnectionId(UUID.fromString(connectionId))
+  }
 }
 
 case class MessageId(id: UUID) extends AnyVal
@@ -95,13 +98,13 @@ case class ConnectionInfo(
   }
 }
 
-case class Connection(connectionToken: String) {
+case class Connection(connectionToken: TokenString, connectionId: ConnectionId) {
   def toProto: connector_models.Connection = {
-    connector_models.Connection(connectionToken)
+    connector_models.Connection(connectionToken = connectionToken.token, connectionId = connectionId.id.toString)
   }
 }
 
-class TokenString(val token: String) extends AnyVal
+case class TokenString(token: String) extends AnyVal
 
 object TokenString {
   def random(randomness: Random): TokenString = {

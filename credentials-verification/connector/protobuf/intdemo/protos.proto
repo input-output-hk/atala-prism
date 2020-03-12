@@ -4,7 +4,12 @@ package io.iohk.cvp.intdemo;
 
 service IDService {
     rpc GetConnectionToken (GetConnectionTokenRequest) returns (GetConnectionTokenResponse) {}
-    rpc GetSubjectStatus (GetSubjectStatusRequest) returns (GetSubjectStatusResponse) {}
+    rpc GetSubjectStatusStream (GetSubjectStatusRequest) returns (stream GetSubjectStatusResponse) {}
+    rpc SetPersonalData (SetPersonalDataRequest) returns (SetPersonalDataResponse) {}
+}
+
+service DegreeService {
+    rpc GetConnectionToken (GetConnectionTokenRequest) returns (GetConnectionTokenResponse) {}
     rpc GetSubjectStatusStream (GetSubjectStatusRequest) returns (stream GetSubjectStatusResponse) {}
 }
 
@@ -30,3 +35,17 @@ message GetConnectionTokenRequest {
 message GetConnectionTokenResponse {
     string connectionToken = 1;
 }
+
+message SetPersonalDataRequest {
+    string connectionToken = 1;
+    string firstName = 2;
+    Date dateOfBirth = 3;
+}
+
+message Date {
+    int32 year = 1;
+    int32 month = 2;
+    int32 day = 3;
+}
+
+message SetPersonalDataResponse {}

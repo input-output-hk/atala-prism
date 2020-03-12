@@ -1,15 +1,6 @@
 version: "3"
 services:
 
-  landing:
-    build:
-      context: ../../../credentials-verification-landing
-    ports:
-      - 127.0.0.1:80:80
-    environment:
-      REACT_APP_GRPC_CLIENT: cvp-envoy:8080
-
-
   cvp-envoy:
     build:
       context: cvp-envoy
@@ -28,7 +19,7 @@ services:
     ports:
       - 127.0.0.1:18333:18333
 
-  postgres_db:
+  postgres:
     build:
       context: cvp-postgres
     ports:
@@ -43,9 +34,9 @@ services:
     ports:
       - 127.0.0.1:50051:50051
     depends_on:
-      - postgres_db
+      - postgres
     environment:
-      GEUD_CONNECTOR_PSQL_HOST: postgres_db
+      GEUD_CONNECTOR_PSQL_HOST: postgres
       GEUD_CONNECTOR_PSQL_DATABASE: connector
       GEUD_CONNECTOR_PSQL_USERNAME: connector
       GEUD_CONNECTOR_PSQL_PASSWORD: connector
@@ -57,10 +48,10 @@ services:
     ports:
       - 127.0.0.1:50053:50053
     depends_on:
-      - postgres_db
+      - postgres
       - bitcoind
     environment:
-      GEUD_NODE_PSQL_HOST: postgres_db
+      GEUD_NODE_PSQL_HOST: postgres
       GEUD_NODE_PSQL_DATABASE: node
       GEUD_NODE_PSQL_USERNAME: node
       GEUD_NODE_PSQL_PASSWORD: node

@@ -3,9 +3,9 @@ package io.iohk.connector
 import java.util.UUID
 
 import io.iohk.connector.errors._
+import io.iohk.connector.model.{ConnectionId, Message, ParticipantLogo, ParticipantType, TokenString}
 import io.iohk.connector.model.payments.{ClientNonce, Payment => ConnectorPayment}
 import io.iohk.connector.model.requests.CreatePaymentRequest
-import io.iohk.connector.model.{Message, ParticipantLogo, ParticipantType, TokenString}
 import io.iohk.connector.payments.BraintreePayments
 import io.iohk.connector.repositories.PaymentsRepository
 import io.iohk.connector.services.{ConnectionsService, MessagesService, RegistrationService}
@@ -345,10 +345,9 @@ class ConnectorService(
     def f(userId: ParticipantId) = {
       Future {
         implicit val loggingContext = LoggingContext("request" -> request, "userId" -> userId)
-        val connectionId = model.ConnectionId(UUID.fromString(request.connectionId))
 
         messages
-          .insertMessage(userId, connectionId, request.message.toByteArray)
+          .insertMessage(userId, ConnectionId(request.connectionId), request.message.toByteArray)
           .wrapExceptions
           .successMap(_ => connector_api.SendMessageResponse())
       }.flatten

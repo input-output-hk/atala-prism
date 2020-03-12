@@ -1,6 +1,6 @@
 package io.iohk.connector.client
 
-import io.iohk.connector.client.commands.Command
+import io.iohk.connector.client.commands.{Command, UnitCommand}
 import monocle.POptional
 import scopt.OParser
 
@@ -31,7 +31,13 @@ object Config {
 }
 
 case class Config(
-    command: Option[Command] = None,
+    command: Command = UnitCommand,
     host: String = "localhost",
-    port: Int = 50051
+    port: Int = 50051,
+    userId: Option[String] = None,
+    pubKeyX: Option[String] = None,
+    pubKeyY: Option[String] = None,
+    encodedPublicKey: Option[String] = None,
+    connectionToken: Option[String] = None,
+    base64Message: Option[String] = None
 )
