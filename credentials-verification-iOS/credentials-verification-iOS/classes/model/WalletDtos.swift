@@ -23,7 +23,7 @@ class PaymentHistory: Mappable {
         amount <- map["amount"]
     }
 
-    static func build(_ intPayment: Io_Iohk_Cvp_Connector_Payment) -> PaymentHistory? {
+    static func build(_ intPayment: Io_Iohk_Prism_Protos_Payment) -> PaymentHistory? {
 
         let payment = PaymentHistory()
         payment.amount = intPayment.amount

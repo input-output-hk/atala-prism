@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15400" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15705" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15404"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15706"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
-        <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="newDegree" rowHeight="415" id="ObW-Hw-Q5H" customClass="NewDegreeViewCell" customModule="credentials_verification_iOS" customModuleProvider="target">
+        <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" selectionStyle="none" hidesAccessoryWhenEditing="NO" indentationLevel="1" indentationWidth="0.0" reuseIdentifier="newDegree" rowHeight="415" id="ObW-Hw-Q5H" customClass="NewDegreeViewCell" customModule="ATALA" customModuleProvider="target">
             <rect key="frame" x="0.0" y="0.0" width="569" height="415"/>
             <autoresizingMask key="autoresizingMask"/>
             <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="ObW-Hw-Q5H" id="gMm-gr-tpI">
@@ -58,8 +58,8 @@
                                             <action selector="actionMainButtonTapped:" destination="ObW-Hw-Q5H" eventType="touchUpInside" id="fJh-nW-him"/>
                                         </connections>
                                     </button>
-                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vsC-Bb-gEP">
-                                        <rect key="frame" x="68" y="198.5" width="33" height="16"/>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vsC-Bb-gEP">
+                                        <rect key="frame" x="68" y="198.5" width="346" height="16"/>
                                         <fontDescription key="fontDescription" type="system" pointSize="13"/>
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
@@ -81,6 +81,7 @@
                                     <constraint firstItem="vLk-Ga-6TA" firstAttribute="leading" secondItem="LQ5-vJ-YUV" secondAttribute="trailing" constant="17" id="7wF-vs-PAc"/>
                                     <constraint firstAttribute="trailing" secondItem="vLk-Ga-6TA" secondAttribute="trailing" constant="11" id="85b-mY-8xS"/>
                                     <constraint firstItem="vLk-Ga-6TA" firstAttribute="centerY" secondItem="4z7-6L-y9p" secondAttribute="centerY" id="AJl-fR-xS4"/>
+                                    <constraint firstItem="5hz-E9-tmp" firstAttribute="top" relation="greaterThanOrEqual" secondItem="vsC-Bb-gEP" secondAttribute="bottom" constant="10" id="Cn7-8a-APQ"/>
                                     <constraint firstAttribute="trailing" secondItem="5hz-E9-tmp" secondAttribute="trailing" constant="11" id="GvE-dB-v1z"/>
                                     <constraint firstItem="4z7-6L-y9p" firstAttribute="centerY" secondItem="RQq-3H-W6n" secondAttribute="centerY" id="J3e-vu-ah3"/>
                                     <constraint firstItem="5hz-E9-tmp" firstAttribute="leading" secondItem="LQ5-vJ-YUV" secondAttribute="leading" id="TnE-ht-zob"/>
@@ -90,6 +91,7 @@
                                     <constraint firstAttribute="bottom" relation="greaterThanOrEqual" secondItem="4z7-6L-y9p" secondAttribute="bottom" constant="13" id="hNN-kK-SAl"/>
                                     <constraint firstItem="LQ5-vJ-YUV" firstAttribute="leading" secondItem="4z7-6L-y9p" secondAttribute="trailing" constant="17" id="jZu-F2-6YV"/>
                                     <constraint firstItem="4z7-6L-y9p" firstAttribute="leading" secondItem="RQq-3H-W6n" secondAttribute="leading" constant="11" id="lBq-gj-l5d"/>
+                                    <constraint firstItem="vLk-Ga-6TA" firstAttribute="leading" secondItem="vsC-Bb-gEP" secondAttribute="trailing" constant="17" id="ljb-ql-hue"/>
                                     <constraint firstItem="vsC-Bb-gEP" firstAttribute="leading" secondItem="LQ5-vJ-YUV" secondAttribute="leading" id="nWK-3J-qbL"/>
                                     <constraint firstItem="LQ5-vJ-YUV" firstAttribute="centerY" secondItem="4z7-6L-y9p" secondAttribute="centerY" priority="999" constant="-10" id="pHS-yE-0zf"/>
                                 </constraints>

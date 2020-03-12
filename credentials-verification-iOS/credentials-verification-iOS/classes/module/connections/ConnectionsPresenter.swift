@@ -11,21 +11,14 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
         case scanningQr
     }
 
-    enum ConnectionsTabMode {
-        case universities
-        case employers
-    }
-
     enum ConnectionsCellType {
         case base(value: ListingBaseCellType)
         case main
     }
 
     var stateSpecial: ConnectionsSpecialState = .none
-    var tabMode: ConnectionsTabMode = .universities
 
-    var universities: [University]?
-    var employers: [Employer]?
+    var connections: [ConnectionBase]?
 
     var connectionRequest: ConnectionRequest?
 
@@ -35,30 +28,12 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
         return self.state == .special && self.stateSpecial == .scanningQr
     }
 
-    func getTabMode() -> ConnectionsTabMode {
-        return tabMode
-    }
-
     // MARK: Buttons
 
     func tappedScanButton() {
 
         Tracker.global.trackScanQrTapped()
         startQrScanning()
-    }
-
-    func tappedTabUniversities() {
-
-        tabMode = .universities
-        updateViewToState()
-        startFetchOrListing()
-    }
-
-    func tappedTabEmployers() {
-
-        tabMode = .employers
-        updateViewToState()
-        startFetchOrListing()
     }
 
     @discardableResult
@@ -89,8 +64,7 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
     // MARK: ListingBaseTableUtilsPresenterDelegate
 
     func cleanData() {
-        universities = []
-        employers = []
+        connections = []
     }
 
     func fetchData() {
@@ -102,20 +76,14 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
     }
 
     func hasData() -> Bool {
-        return ((universities?.size() ?? 0) + (employers?.size() ?? 0)) > 0
+        return (connections?.size() ?? 0) > 0
     }
 
     func getElementCount() -> Int {
         if let baseValue = super.getBaseElementCount() {
             return baseValue
         }
-
-        switch tabMode {
-        case .universities:
-            return (universities?.size() ?? 0)
-        case .employers:
-            return (employers?.size() ?? 0)
-        }
+        return (connections?.size() ?? 0)
     }
 
     func getElementType(indexPath: IndexPath) -> ConnectionsCellType {
@@ -141,11 +109,12 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
 
                 // Parse data
                 let parsedResponse = ConnectionMaker.parseResponseList(responses)
-                self.universities?.append(contentsOf: parsedResponse.0)
-                self.employers?.append(contentsOf: parsedResponse.1)
+                self.connections?.append(contentsOf: parsedResponse)
+                self.connections?.sort(by: { (lhs, rhs) -> Bool in
+                    lhs.name < rhs.name
+                })
                 // Save logos
-                ImageBank.saveLogos(list: self.universities)
-                ImageBank.saveLogos(list: self.employers)
+                ImageBank.saveLogos(list: self.connections)
             } catch {
                 return error
             }
@@ -174,7 +143,7 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
                 let conn = ConnectionRequest()
                 conn.info = connection
                 conn.token = str
-                conn.type = connection as? University != nil ? 0 : 1
+                conn.type = connection.type
 
                 self.connectionRequest = conn
             } catch {
@@ -276,13 +245,9 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
 
     func setup(for cell: ConnectionMainViewCell) {
 
-        if tabMode == .universities {
-            let university: University = universities![cell.indexPath!.row]
-            cell.config(title: university.name, isUniversity: true, logoData: sharedMemory.imageBank?.logo(for: university.connectionId))
-        } else {
-            let employer = employers![cell.indexPath!.row]
-            cell.config(title: employer.name, isUniversity: false, logoData: sharedMemory.imageBank?.logo(for: employer.connectionId))
-        }
+        let university: ConnectionBase = connections![cell.indexPath!.row]
+        cell.config(title: university.name, isUniversity: university.type != 0, logoData: sharedMemory.imageBank?.logo(for: university.connectionId))
+
     }
 
     func tappedAction(for cell: ConnectionMainViewCell) {

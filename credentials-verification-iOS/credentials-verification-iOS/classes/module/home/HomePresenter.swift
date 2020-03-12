@@ -37,8 +37,8 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
 
     var detailDegree: Degree?
 
-    var shareEmployers: [Employer]?
-    var shareSelectedEmployers: [Employer]?
+    var shareEmployers: [ConnectionBase]?
+    var shareSelectedEmployers: [ConnectionBase]?
 
     // MARK: Modes
 
@@ -64,12 +64,26 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
         detailRows = []
         detailDegree = degree
         detailRows?.append(CellRow(type: .detailHeader, value: degree))
-        detailRows?.append(CellRow(type: .detailProperty, value: ("home_detail_degree_name".localize(), degree.properties?["home_detail_degree_name".localize()])))
-        detailRows?.append(CellRow(type: .detailProperty, value: ("home_detail_result".localize(), degree.properties?["home_detail_result".localize()])))
-        detailRows?.append(CellRow(type: .detailProperty, value: ("home_detail_full_name".localize(), degree.properties?["home_detail_full_name".localize()])))
-//        degree.properties?.forEach { key, value in
-//            detailRows?.append(CellRow(type: .detailProperty, value: (key, value)))
-//        }
+        switch degree.type {
+        case .univerityDegree:
+            detailRows?.append(CellRow(type: .detailProperty, value: ("home_detail_university_name".localize(), degree.issuer?.name, false, degree.type)))
+            detailRows?.append(CellRow(type: .detailProperty, value: ("home_detail_award".localize(), degree.credentialSubject?.degreeResult, false, degree.type)))
+            detailRows?.append(CellRow(type: .detailProperty, value: ("home_detail_full_name".localize(), degree.credentialSubject?.name, false, degree.type)))
+            detailRows?.append(CellRow(type: .detailProperty, value: ("home_detail_graduation_date".localize(), degree.issuanceDate, true,  degree.type)))
+        case .governmentIssuedId:
+            detailRows?.append(CellRow(type: .document, value: degree))
+        case .certificatOfInsurance:
+            detailRows?.append(CellRow(type: .detailProperty, value: ("home_detail_employment_class_insurance".localize(), degree.credentialSubject?.degreeAwarded, false, degree.type)))
+            detailRows?.append(CellRow(type: .detailProperty, value: ("home_detail_employment_policy_number".localize(), degree.credentialSubject?.degreeResult, false, degree.type)))
+            detailRows?.append(CellRow(type: .detailProperty, value: ("home_detail_full_name".localize(), degree.credentialSubject?.name, false, degree.type)))
+            detailRows?.append(CellRow(type: .detailProperty, value: ("home_detail_employment_policy_end_date".localize(), degree.expiryDate, true,  degree.type)))
+        case .proofOfEmployment:
+            detailRows?.append(CellRow(type: .detailProperty, value: ("home_detail_employment_status".localize(), degree.credentialSubject?.degreeAwarded, false, degree.type)))
+            detailRows?.append(CellRow(type: .detailProperty, value: ("home_detail_full_name".localize(), degree.credentialSubject?.name, false, degree.type)))
+            detailRows?.append(CellRow(type: .detailProperty, value: ("home_detail_employment_start_date".localize(), degree.issuanceDate, true,  degree.type)))
+        default:
+            print("Unrecognized type")
+        }
         detailRows?.append(CellRow(type: .detailFooter, value: degree))
 
         mode = .detail
@@ -178,6 +192,8 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
                         }
                     }
                 }
+//                credentials.append(FakeData.fakeProofOfEmployment())
+//                credentials.append(FakeData.fakeCertificatOfInsurance())
                 self.makeDegreeRows(degrees: credentials)
 
             } catch {
@@ -228,7 +244,7 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
 
                 // Parse data
                 let parsedResponse = ConnectionMaker.parseResponseList(responses)
-                self.shareEmployers?.append(contentsOf: parsedResponse.1)
+                self.shareEmployers?.append(contentsOf: parsedResponse)
             } catch {
                 return error
             }
@@ -267,7 +283,11 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
             return nil
         }, success: {
             self.viewImpl?.config(isLoading: false)
-            self.viewImpl?.showSuccessMessage(doShow: true, message: "home_detail_share_success".localize())
+            let actions = [UIAlertAction(title: "ok".localize(), style: .default, handler: { _ in
+                self.tappedBackButton()
+                self.actionPullToRefresh()
+            })]
+            self.viewImpl?.showSuccessMessage(doShow: true, message: "home_detail_share_success".localize(), actions: actions)
         }, error: { error in
             self.viewImpl?.config(isLoading: false)
             self.viewImpl?.showErrorMessage(doShow: true, message: error.localizedDescription)
@@ -302,8 +322,26 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
                 isLast = true
             }
         }
+        var title = ""
+        var placeholder = ""
+        switch degree.type {
+        case .univerityDegree:
+            title = "home_university_degree".localize()
+            placeholder = "icon_university"
+        case .governmentIssuedId:
+            title = "home_government_id".localize()
+            placeholder = "icon_id"
+        case .proofOfEmployment:
+            title = "home_proof_employment".localize()
+            placeholder = "icon_proof_employment"
+        case .certificatOfInsurance:
+            title = "home_certificate_insurance".localize()
+            placeholder = "icon_insurance"
+        default:
+            print("Unrecognized type")
+        }
 
-        cell.config(title: degree.name, subtitle: degree.subtitle, logoData: sharedMemory.imageBank?.logo(for: degree.connectionId), logoPlaceholderNamed: "ico_placeholder_university", isLast: isLast)
+        cell.config(title: title, subtitle: degree.issuer?.name, logoData: nil, logoPlaceholderNamed: placeholder, isLast: isLast)
     }
 
     func tappedAction(for cell: NewDegreeViewCell) {
@@ -320,7 +358,25 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
         let cellRow = degreeRows?[cell.indexPath!.row]
         // Config for a Degree
         if let degree = cellRow?.value as? Degree {
-            cell.config(title: degree.name, subtitle: degree.subtitle, logoData: sharedMemory.imageBank?.logo(for: degree.connectionId), logoPlaceholderNamed: "ico_placeholder_university")
+            var title = ""
+            var placeholder = ""
+            switch degree.type {
+            case .univerityDegree:
+                title = "home_university_degree".localize()
+                placeholder = "icon_university"
+            case .governmentIssuedId:
+                title = "home_government_id".localize()
+                placeholder = "icon_id"
+            case .proofOfEmployment:
+                title = "home_proof_employment".localize()
+                placeholder = "icon_proof_employment"
+            case .certificatOfInsurance:
+                title = "home_certificate_insurance".localize()
+                placeholder = "icon_insurance"
+            default:
+                print("Unrecognized type")
+            }
+            cell.config(title: title, subtitle: degree.issuer?.name, logoData: nil, logoPlaceholderNamed: placeholder)
         }
         // Config for an Id
         else if let _ = cellRow?.value as? LoggedUser {
@@ -346,21 +402,33 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
     }
 
     func setup(for cell: DocumentViewCell) {
-        // TODO: Add when Document types are required
+        cell.config(degree: detailDegree, logoData: sharedMemory.imageBank?.logo(for: detailDegree?.connectionId))
     }
 
     func setup(for cell: DetailHeaderViewCell) {
-        cell.config(title: "home_detail_university_name".localize(), subtitle: detailDegree?.fullName, logoData: sharedMemory.imageBank?.logo(for: detailDegree?.connectionId))
+        switch detailDegree?.type {
+        case .univerityDegree:
+            cell.config(title: "home_detail_degree_name".localize(), subtitle: detailDegree?.credentialSubject?.degreeAwarded, logoData: sharedMemory.imageBank?.logo(for: detailDegree?.connectionId), type: detailDegree?.type)
+        case .governmentIssuedId:
+            cell.config(title: "home_detail_national_id_card".localize(), subtitle: detailDegree?.issuer?.name, logoData: sharedMemory.imageBank?.logo(for: detailDegree?.connectionId), type: detailDegree?.type)
+        case .certificatOfInsurance:
+        cell.config(title: "home_detail_provider_name".localize(), subtitle: detailDegree?.issuer?.name, logoData: sharedMemory.imageBank?.logo(for: detailDegree?.connectionId), type: detailDegree?.type)
+        case .proofOfEmployment:
+        cell.config(title: "home_detail_company_name".localize(), subtitle: detailDegree?.issuer?.name, logoData: sharedMemory.imageBank?.logo(for: detailDegree?.connectionId), type: detailDegree?.type)
+        default:
+            print("Unrecognized type")
+        }
+        
     }
 
     func setup(for cell: DetailPropertyViewCell) {
         let detailRow = detailRows![cell.indexPath!.row]
-        let pair = detailRow.value as! (String, String)
-        cell.config(title: pair.0, subtitle: pair.1)
+        let pair = detailRow.value as! (String?, String?, Bool?, CredentialType?)
+        cell.config(title: pair.0, subtitle: pair.1, isLast: pair.2, type: pair.3)
     }
-
+    
     func setup(for cell: DetailFooterViewCell) {
-        cell.config(startDate: detailDegree?.startDate, endDate: detailDegree?.endDate, isNew: detailDegree?.isNew ?? false)
+        cell.config(isNew: detailDegree?.isNew ?? false, type: detailDegree?.type)
     }
 
     // MARK: Accept and Decline buttons
@@ -419,7 +487,7 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
         cell?.refreshView()
     }
 
-    func employerIsSelected(employer: Employer) -> Bool {
+    func employerIsSelected(employer: ConnectionBase) -> Bool {
         return shareSelectedEmployers?.contains(where: { $0.connectionId == employer.connectionId }) ?? false
     }
 

@@ -9,13 +9,11 @@ protocol DetailFooterViewCellPresenterDelegate: BaseTableViewCellPresenterDelega
 
 class DetailFooterViewCell: BaseTableViewCell {
 
-    @IBOutlet weak var labelStartValue: UILabel!
-    @IBOutlet weak var labelEndValue: UILabel!
     @IBOutlet weak var viewMainBody: UIView!
     @IBOutlet weak var viewButtons: UIView!
     @IBOutlet weak var buttonDecline: UIButton!
     @IBOutlet weak var buttonConfirm: UIButton!
-
+    
     override class func default_NibName() -> String {
         return "DetailFooterViewCell"
     }
@@ -30,6 +28,7 @@ class DetailFooterViewCell: BaseTableViewCell {
         // Setup
         delegateImpl?.setup(for: self)
         viewMainBody.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_REGULAR, onlyBottoms: true)
+        viewMainBody.addShadowLayer(opacity: 0.2)
         buttonDecline.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_BUTTON, borderWidth: 3, borderColor: UIColor.appRed.cgColor)
         buttonConfirm.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_BUTTON, borderWidth: 3, borderColor: UIColor.appRed.cgColor)
     }
@@ -46,10 +45,20 @@ class DetailFooterViewCell: BaseTableViewCell {
 
     // MARK: Config
 
-    func config(startDate: String?, endDate: String?, isNew: Bool) {
+    func config(isNew: Bool,type: CredentialType?) {
 
-        labelStartValue.text = startDate
-        labelEndValue.text = endDate
+        switch type {
+        case .univerityDegree:
+            viewMainBody.backgroundColor = UIColor(red: 0.235, green: 0.224, blue: 0.227, alpha: 1)
+        case .governmentIssuedId:
+            viewMainBody.backgroundColor = .white
+        case .certificatOfInsurance:
+            viewMainBody.backgroundColor = .white
+        case .proofOfEmployment:
+            viewMainBody.backgroundColor = UIColor(red: 0.4, green: 0.149, blue: 0.553, alpha: 1)
+        default:
+            print("Unrecognized type")
+        }
 
         viewButtons.isHidden = !isNew
     }

@@ -25,6 +25,11 @@ class HomeViewController: ListingBaseViewController {
         setupEmptyView()
     }
 
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.presenterImpl.actionPullToRefresh()
+    }
+    
     @discardableResult
     override func onBackPressed() -> Bool {
         if !presenterImpl.tappedBackButton() {
@@ -54,16 +59,26 @@ class HomeViewController: ListingBaseViewController {
         var navAction: SelectorAction?
         var navActionIcon: String?
         if homeMode == .detail {
-            navActionIcon = "ico_share"
-            navAction = actionShare
             let detailDegree = presenterImpl.detailDegree
             if detailDegree?.isNew ?? false {
                 navTitle = "home_detail_title_new".localize()
-            } else if detailDegree!.type == 1 {
-                navTitle = "home_detail_title_type_1".localize()
-            } else if detailDegree!.type == 2 {
-                navTitle = "home_detail_title_type_2".localize()
+            } else {
+                navActionIcon = "ico_share"
+                navAction = actionShare
+                switch detailDegree!.type {
+                case .univerityDegree:
+                    navTitle = "home_detail_title_type_university".localize()
+                case .governmentIssuedId:
+                    navTitle = "home_detail_title_type_government_id".localize()
+                case .certificatOfInsurance:
+                    navTitle = "home_detail_title_type_insurance".localize()
+                case .proofOfEmployment:
+                    navTitle = "home_detail_title_type_employment".localize()
+                default:
+                    print("Unrecognized type")
+                }
             }
+
         }
         navBar = NavBarCustomStyle(hasNavBar: true, title: navTitle, hasBackButton: homeMode != .degrees, rightIconName: navActionIcon, rightIconAction: navAction)
         NavBarCustom.config(view: self)

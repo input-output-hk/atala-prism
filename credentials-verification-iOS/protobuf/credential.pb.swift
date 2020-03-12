@@ -100,7 +100,7 @@ extension Io_Iohk_Cvp_Credential_IdDocumentType: CaseIterable {
 
 #endif  // swift(>=4.2)
 
-struct Io_Iohk_Cvp_Credential_Credential {
+struct Io_Iohk_Cvp_Credential_AlphaCredential {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -262,10 +262,10 @@ struct Io_Iohk_Cvp_Credential_Signer {
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  /// Names should be separated with '@' characters. E.g. firstName@secondName
+  /// Names of the signer
   var names: [String] = []
 
-  /// Surnames should be separated with '@' characters. e.g. surname1@surname2
+  /// Surnames of the signer
   var surnames: [String] = []
 
   /// Rector, Dean, etc.
@@ -275,7 +275,7 @@ struct Io_Iohk_Cvp_Credential_Signer {
   var did: String = String()
 
   /// Tittle to address the person. e.g. Mr, Dr, Prof, etc.
-  var tittle: String = String()
+  var title: String = String()
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -293,13 +293,13 @@ struct Io_Iohk_Cvp_Credential_SubjectData {
     set {_uniqueStorage()._names = newValue}
   }
 
-  /// Names should be separated with '@' characters. e.g. firstName@secondName
-  var surname: [String] {
-    get {return _storage._surname}
-    set {_uniqueStorage()._surname = newValue}
+  /// surnames of the subject.
+  var surnames: [String] {
+    get {return _storage._surnames}
+    set {_uniqueStorage()._surnames = newValue}
   }
 
-  /// Surnames should be separated with '@' characters. e.g. surname1@surname2
+  /// date of birth of the holder
   var dateOfBirth: Io_Iohk_Cvp_Credential_Date {
     get {return _storage._dateOfBirth ?? Io_Iohk_Cvp_Credential_Date()}
     set {_uniqueStorage()._dateOfBirth = newValue}
@@ -368,20 +368,63 @@ struct Io_Iohk_Cvp_Credential_IssuerSentCredential {
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  var credential: Io_Iohk_Cvp_Credential_Credential {
-    get {return _storage._credential ?? Io_Iohk_Cvp_Credential_Credential()}
-    set {_uniqueStorage()._credential = newValue}
+  var value: OneOf_Value? {
+    get {return _storage._value}
+    set {_uniqueStorage()._value = newValue}
   }
-  /// Returns true if `credential` has been explicitly set.
-  var hasCredential: Bool {return _storage._credential != nil}
-  /// Clears the value of `credential`. Subsequent reads from it will return its default value.
-  mutating func clearCredential() {_uniqueStorage()._credential = nil}
+
+  var alphaCredential: Io_Iohk_Cvp_Credential_AlphaCredential {
+    get {
+      if case .alphaCredential(let v)? = _storage._value {return v}
+      return Io_Iohk_Cvp_Credential_AlphaCredential()
+    }
+    set {_uniqueStorage()._value = .alphaCredential(newValue)}
+  }
+
+  var credential: Io_Iohk_Cvp_Credential_Credential {
+    get {
+      if case .credential(let v)? = _storage._value {return v}
+      return Io_Iohk_Cvp_Credential_Credential()
+    }
+    set {_uniqueStorage()._value = .credential(newValue)}
+  }
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  enum OneOf_Value: Equatable {
+    case alphaCredential(Io_Iohk_Cvp_Credential_AlphaCredential)
+    case credential(Io_Iohk_Cvp_Credential_Credential)
+
+  #if !swift(>=4.1)
+    static func ==(lhs: Io_Iohk_Cvp_Credential_IssuerSentCredential.OneOf_Value, rhs: Io_Iohk_Cvp_Credential_IssuerSentCredential.OneOf_Value) -> Bool {
+      switch (lhs, rhs) {
+      case (.alphaCredential(let l), .alphaCredential(let r)): return l == r
+      case (.credential(let l), .credential(let r)): return l == r
+      default: return false
+      }
+    }
+  #endif
+  }
 
   init() {}
 
   fileprivate var _storage = _StorageClass.defaultInstance
+}
+
+struct Io_Iohk_Cvp_Credential_Credential {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// type id to enable dispatch to correct credential processor.
+  var typeID: String = String()
+
+  /// JSON or JWT encoded credential document (to discuss)
+  var credentialDocument: String = String()
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
 }
 
 struct Io_Iohk_Cvp_Credential_HolderSentCredential {
@@ -389,8 +432,8 @@ struct Io_Iohk_Cvp_Credential_HolderSentCredential {
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  var credential: Io_Iohk_Cvp_Credential_Credential {
-    get {return _storage._credential ?? Io_Iohk_Cvp_Credential_Credential()}
+  var credential: Io_Iohk_Cvp_Credential_AlphaCredential {
+    get {return _storage._credential ?? Io_Iohk_Cvp_Credential_AlphaCredential()}
     set {_uniqueStorage()._credential = newValue}
   }
   /// Returns true if `credential` has been explicitly set.
@@ -405,7 +448,7 @@ struct Io_Iohk_Cvp_Credential_HolderSentCredential {
   fileprivate var _storage = _StorageClass.defaultInstance
 }
 
-struct Io_Iohk_Cvp_Credential_SentCredential {
+struct Io_Iohk_Cvp_Credential_AtalaMessage {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -438,7 +481,7 @@ struct Io_Iohk_Cvp_Credential_SentCredential {
     case holderSentCredential(Io_Iohk_Cvp_Credential_HolderSentCredential)
 
   #if !swift(>=4.1)
-    static func ==(lhs: Io_Iohk_Cvp_Credential_SentCredential.OneOf_Message, rhs: Io_Iohk_Cvp_Credential_SentCredential.OneOf_Message) -> Bool {
+    static func ==(lhs: Io_Iohk_Cvp_Credential_AtalaMessage.OneOf_Message, rhs: Io_Iohk_Cvp_Credential_AtalaMessage.OneOf_Message) -> Bool {
       switch (lhs, rhs) {
       case (.issuerSentCredential(let l), .issuerSentCredential(let r)): return l == r
       case (.holderSentCredential(let l), .holderSentCredential(let r)): return l == r
@@ -471,8 +514,8 @@ extension Io_Iohk_Cvp_Credential_IdDocumentType: SwiftProtobuf._ProtoNameProvidi
   ]
 }
 
-extension Io_Iohk_Cvp_Credential_Credential: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".Credential"
+extension Io_Iohk_Cvp_Credential_AlphaCredential: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".AlphaCredential"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "issuerType"),
     2: .same(proto: "subjectData"),
@@ -622,7 +665,7 @@ extension Io_Iohk_Cvp_Credential_Credential: SwiftProtobuf.Message, SwiftProtobu
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: Io_Iohk_Cvp_Credential_Credential, rhs: Io_Iohk_Cvp_Credential_Credential) -> Bool {
+  static func ==(lhs: Io_Iohk_Cvp_Credential_AlphaCredential, rhs: Io_Iohk_Cvp_Credential_AlphaCredential) -> Bool {
     if lhs._storage !== rhs._storage {
       let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
         let _storage = _args.0
@@ -706,7 +749,7 @@ extension Io_Iohk_Cvp_Credential_Signer: SwiftProtobuf.Message, SwiftProtobuf._M
     2: .same(proto: "surnames"),
     3: .same(proto: "role"),
     4: .same(proto: "did"),
-    15: .same(proto: "tittle"),
+    5: .same(proto: "title"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -716,7 +759,7 @@ extension Io_Iohk_Cvp_Credential_Signer: SwiftProtobuf.Message, SwiftProtobuf._M
       case 2: try decoder.decodeRepeatedStringField(value: &self.surnames)
       case 3: try decoder.decodeSingularStringField(value: &self.role)
       case 4: try decoder.decodeSingularStringField(value: &self.did)
-      case 15: try decoder.decodeSingularStringField(value: &self.tittle)
+      case 5: try decoder.decodeSingularStringField(value: &self.title)
       default: break
       }
     }
@@ -735,8 +778,8 @@ extension Io_Iohk_Cvp_Credential_Signer: SwiftProtobuf.Message, SwiftProtobuf._M
     if !self.did.isEmpty {
       try visitor.visitSingularStringField(value: self.did, fieldNumber: 4)
     }
-    if !self.tittle.isEmpty {
-      try visitor.visitSingularStringField(value: self.tittle, fieldNumber: 15)
+    if !self.title.isEmpty {
+      try visitor.visitSingularStringField(value: self.title, fieldNumber: 5)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -746,7 +789,7 @@ extension Io_Iohk_Cvp_Credential_Signer: SwiftProtobuf.Message, SwiftProtobuf._M
     if lhs.surnames != rhs.surnames {return false}
     if lhs.role != rhs.role {return false}
     if lhs.did != rhs.did {return false}
-    if lhs.tittle != rhs.tittle {return false}
+    if lhs.title != rhs.title {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -756,14 +799,14 @@ extension Io_Iohk_Cvp_Credential_SubjectData: SwiftProtobuf.Message, SwiftProtob
   static let protoMessageName: String = _protobuf_package + ".SubjectData"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "names"),
-    2: .same(proto: "surname"),
+    2: .same(proto: "surnames"),
     3: .same(proto: "dateOfBirth"),
     4: .same(proto: "idDocument"),
   ]
 
   fileprivate class _StorageClass {
     var _names: [String] = []
-    var _surname: [String] = []
+    var _surnames: [String] = []
     var _dateOfBirth: Io_Iohk_Cvp_Credential_Date? = nil
     var _idDocument: Io_Iohk_Cvp_Credential_PersonalId? = nil
 
@@ -773,7 +816,7 @@ extension Io_Iohk_Cvp_Credential_SubjectData: SwiftProtobuf.Message, SwiftProtob
 
     init(copying source: _StorageClass) {
       _names = source._names
-      _surname = source._surname
+      _surnames = source._surnames
       _dateOfBirth = source._dateOfBirth
       _idDocument = source._idDocument
     }
@@ -792,7 +835,7 @@ extension Io_Iohk_Cvp_Credential_SubjectData: SwiftProtobuf.Message, SwiftProtob
       while let fieldNumber = try decoder.nextFieldNumber() {
         switch fieldNumber {
         case 1: try decoder.decodeRepeatedStringField(value: &_storage._names)
-        case 2: try decoder.decodeRepeatedStringField(value: &_storage._surname)
+        case 2: try decoder.decodeRepeatedStringField(value: &_storage._surnames)
         case 3: try decoder.decodeSingularMessageField(value: &_storage._dateOfBirth)
         case 4: try decoder.decodeSingularMessageField(value: &_storage._idDocument)
         default: break
@@ -806,8 +849,8 @@ extension Io_Iohk_Cvp_Credential_SubjectData: SwiftProtobuf.Message, SwiftProtob
       if !_storage._names.isEmpty {
         try visitor.visitRepeatedStringField(value: _storage._names, fieldNumber: 1)
       }
-      if !_storage._surname.isEmpty {
-        try visitor.visitRepeatedStringField(value: _storage._surname, fieldNumber: 2)
+      if !_storage._surnames.isEmpty {
+        try visitor.visitRepeatedStringField(value: _storage._surnames, fieldNumber: 2)
       }
       if let v = _storage._dateOfBirth {
         try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
@@ -825,7 +868,7 @@ extension Io_Iohk_Cvp_Credential_SubjectData: SwiftProtobuf.Message, SwiftProtob
         let _storage = _args.0
         let rhs_storage = _args.1
         if _storage._names != rhs_storage._names {return false}
-        if _storage._surname != rhs_storage._surname {return false}
+        if _storage._surnames != rhs_storage._surnames {return false}
         if _storage._dateOfBirth != rhs_storage._dateOfBirth {return false}
         if _storage._idDocument != rhs_storage._idDocument {return false}
         return true
@@ -916,18 +959,19 @@ extension Io_Iohk_Cvp_Credential_PersonalId: SwiftProtobuf.Message, SwiftProtobu
 extension Io_Iohk_Cvp_Credential_IssuerSentCredential: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = _protobuf_package + ".IssuerSentCredential"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "credential"),
+    1: .same(proto: "alphaCredential"),
+    2: .same(proto: "credential"),
   ]
 
   fileprivate class _StorageClass {
-    var _credential: Io_Iohk_Cvp_Credential_Credential? = nil
+    var _value: Io_Iohk_Cvp_Credential_IssuerSentCredential.OneOf_Value?
 
     static let defaultInstance = _StorageClass()
 
     private init() {}
 
     init(copying source: _StorageClass) {
-      _credential = source._credential
+      _value = source._value
     }
   }
 
@@ -943,7 +987,22 @@ extension Io_Iohk_Cvp_Credential_IssuerSentCredential: SwiftProtobuf.Message, Sw
     try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
       while let fieldNumber = try decoder.nextFieldNumber() {
         switch fieldNumber {
-        case 1: try decoder.decodeSingularMessageField(value: &_storage._credential)
+        case 1:
+          var v: Io_Iohk_Cvp_Credential_AlphaCredential?
+          if let current = _storage._value {
+            try decoder.handleConflictingOneOf()
+            if case .alphaCredential(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {_storage._value = .alphaCredential(v)}
+        case 2:
+          var v: Io_Iohk_Cvp_Credential_Credential?
+          if let current = _storage._value {
+            try decoder.handleConflictingOneOf()
+            if case .credential(let m) = current {v = m}
+          }
+          try decoder.decodeSingularMessageField(value: &v)
+          if let v = v {_storage._value = .credential(v)}
         default: break
         }
       }
@@ -952,8 +1011,12 @@ extension Io_Iohk_Cvp_Credential_IssuerSentCredential: SwiftProtobuf.Message, Sw
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     try withExtendedLifetime(_storage) { (_storage: _StorageClass) in
-      if let v = _storage._credential {
+      switch _storage._value {
+      case .alphaCredential(let v)?:
         try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+      case .credential(let v)?:
+        try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
+      case nil: break
       }
     }
     try unknownFields.traverse(visitor: &visitor)
@@ -964,11 +1027,46 @@ extension Io_Iohk_Cvp_Credential_IssuerSentCredential: SwiftProtobuf.Message, Sw
       let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
         let _storage = _args.0
         let rhs_storage = _args.1
-        if _storage._credential != rhs_storage._credential {return false}
+        if _storage._value != rhs_storage._value {return false}
         return true
       }
       if !storagesAreEqual {return false}
     }
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+extension Io_Iohk_Cvp_Credential_Credential: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".Credential"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "typeId"),
+    2: .same(proto: "credentialDocument"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      switch fieldNumber {
+      case 1: try decoder.decodeSingularStringField(value: &self.typeID)
+      case 2: try decoder.decodeSingularStringField(value: &self.credentialDocument)
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.typeID.isEmpty {
+      try visitor.visitSingularStringField(value: self.typeID, fieldNumber: 1)
+    }
+    if !self.credentialDocument.isEmpty {
+      try visitor.visitSingularStringField(value: self.credentialDocument, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: Io_Iohk_Cvp_Credential_Credential, rhs: Io_Iohk_Cvp_Credential_Credential) -> Bool {
+    if lhs.typeID != rhs.typeID {return false}
+    if lhs.credentialDocument != rhs.credentialDocument {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -981,7 +1079,7 @@ extension Io_Iohk_Cvp_Credential_HolderSentCredential: SwiftProtobuf.Message, Sw
   ]
 
   fileprivate class _StorageClass {
-    var _credential: Io_Iohk_Cvp_Credential_Credential? = nil
+    var _credential: Io_Iohk_Cvp_Credential_AlphaCredential? = nil
 
     static let defaultInstance = _StorageClass()
 
@@ -1035,15 +1133,15 @@ extension Io_Iohk_Cvp_Credential_HolderSentCredential: SwiftProtobuf.Message, Sw
   }
 }
 
-extension Io_Iohk_Cvp_Credential_SentCredential: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = _protobuf_package + ".SentCredential"
+extension Io_Iohk_Cvp_Credential_AtalaMessage: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = _protobuf_package + ".AtalaMessage"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "issuerSentCredential"),
     2: .same(proto: "holderSentCredential"),
   ]
 
   fileprivate class _StorageClass {
-    var _message: Io_Iohk_Cvp_Credential_SentCredential.OneOf_Message?
+    var _message: Io_Iohk_Cvp_Credential_AtalaMessage.OneOf_Message?
 
     static let defaultInstance = _StorageClass()
 
@@ -1101,7 +1199,7 @@ extension Io_Iohk_Cvp_Credential_SentCredential: SwiftProtobuf.Message, SwiftPro
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: Io_Iohk_Cvp_Credential_SentCredential, rhs: Io_Iohk_Cvp_Credential_SentCredential) -> Bool {
+  static func ==(lhs: Io_Iohk_Cvp_Credential_AtalaMessage, rhs: Io_Iohk_Cvp_Credential_AtalaMessage) -> Bool {
     if lhs._storage !== rhs._storage {
       let storagesAreEqual: Bool = withExtendedLifetime((lhs._storage, rhs._storage)) { (_args: (_StorageClass, _StorageClass)) in
         let _storage = _args.0

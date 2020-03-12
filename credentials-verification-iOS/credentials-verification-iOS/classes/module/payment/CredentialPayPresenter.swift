@@ -134,8 +134,7 @@ class CredentialPayPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
 
     func setup(for cell: CredentialPayViewCell) {
 
-        let cost = viewImpl?.degreeToPay?.cost ?? 0
-        cell.config(amount: "\(cost)")
+        cell.config(amount: "0")
     }
 
     func setup(for cell: TabsViewCell) {

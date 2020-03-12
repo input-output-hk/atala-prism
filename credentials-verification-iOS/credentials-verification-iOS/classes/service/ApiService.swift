@@ -10,8 +10,8 @@ class ApiService: NSObject {
 
     // MARK: Service
 
-    lazy var service: Io_Iohk_Cvp_Connector_ConnectorServiceServiceClient = {
-        Io_Iohk_Cvp_Connector_ConnectorServiceServiceClient(address: Common.URL_API, secure: false)
+    lazy var service: Io_Iohk_Prism_Protos_ConnectorServiceServiceClient = {
+        Io_Iohk_Prism_Protos_ConnectorServiceServiceClient(address: Common.URL_API, secure: false)
     }()
 
     func makeMeta(_ userId: String? = nil) -> Metadata {
@@ -38,30 +38,30 @@ class ApiService: NSObject {
 
     // MARK: Connections
 
-    func getConnectionTokenInfo(token: String) throws -> Io_Iohk_Cvp_Connector_GetConnectionTokenInfoResponse {
+    func getConnectionTokenInfo(token: String) throws -> Io_Iohk_Prism_Protos_GetConnectionTokenInfoResponse {
 
         let userId = FakeData.fakeUserId()
-        return try service.getConnectionTokenInfo(Io_Iohk_Cvp_Connector_GetConnectionTokenInfoRequest.with {
+        return try service.getConnectionTokenInfo(Io_Iohk_Prism_Protos_GetConnectionTokenInfoRequest.with {
             $0.token = token
         }, metadata: makeMeta(userId))
     }
 
-    func addConnectionToken(token: String, nonce: String) throws -> Io_Iohk_Cvp_Connector_AddConnectionFromTokenResponse {
+    func addConnectionToken(token: String, nonce: String) throws -> Io_Iohk_Prism_Protos_AddConnectionFromTokenResponse {
 
         let publicKey = FakeData.fakePublicKey()
         let userId = FakeData.fakeUserId()
-        return try service.addConnectionFromToken(Io_Iohk_Cvp_Connector_AddConnectionFromTokenRequest.with {
+        return try service.addConnectionFromToken(Io_Iohk_Prism_Protos_AddConnectionFromTokenRequest.with {
             $0.token = token
             $0.holderPublicKey = publicKey
             $0.paymentNonce = nonce
         }, metadata: makeMeta(userId))
     }
 
-    func getConnections(userIds: [String]?, limit: Int32 = DEFAULT_REQUEST_LIMIT) throws -> [Io_Iohk_Cvp_Connector_GetConnectionsPaginatedResponse] {
+    func getConnections(userIds: [String]?, limit: Int32 = DEFAULT_REQUEST_LIMIT) throws -> [Io_Iohk_Prism_Protos_GetConnectionsPaginatedResponse] {
 
-        var responseList: [Io_Iohk_Cvp_Connector_GetConnectionsPaginatedResponse] = []
+        var responseList: [Io_Iohk_Prism_Protos_GetConnectionsPaginatedResponse] = []
         for userId in userIds ?? [] {
-            let response = try service.getConnectionsPaginated(Io_Iohk_Cvp_Connector_GetConnectionsPaginatedRequest.with {
+            let response = try service.getConnectionsPaginated(Io_Iohk_Prism_Protos_GetConnectionsPaginatedRequest.with {
                 // $0.lastSeenConnectionID = token
                 $0.limit = limit
             }, metadata: makeMeta(userId))
@@ -72,11 +72,11 @@ class ApiService: NSObject {
 
     // MARK: Credentials
 
-    func getCredentials(userIds: [String]?, limit: Int32 = DEFAULT_REQUEST_LIMIT) throws -> [Io_Iohk_Cvp_Connector_GetMessagesPaginatedResponse] {
+    func getCredentials(userIds: [String]?, limit: Int32 = DEFAULT_REQUEST_LIMIT) throws -> [Io_Iohk_Prism_Protos_GetMessagesPaginatedResponse] {
 
-        var responseList: [Io_Iohk_Cvp_Connector_GetMessagesPaginatedResponse] = []
+        var responseList: [Io_Iohk_Prism_Protos_GetMessagesPaginatedResponse] = []
         for userId in userIds ?? [] {
-            let response = try service.getMessagesPaginated(Io_Iohk_Cvp_Connector_GetMessagesPaginatedRequest.with {
+            let response = try service.getMessagesPaginated(Io_Iohk_Prism_Protos_GetMessagesPaginatedRequest.with {
                 $0.limit = limit
             }, metadata: makeMeta(userId))
             responseList.append(response)
@@ -84,19 +84,16 @@ class ApiService: NSObject {
         return responseList
     }
 
-    func shareCredential(userIds: [String]?, connectionIds: [String]?, degree: Degree) throws -> [Io_Iohk_Cvp_Connector_SendMessageResponse] {
+    func shareCredential(userIds: [String]?, connectionIds: [String]?, degree: Degree) throws -> [Io_Iohk_Prism_Protos_SendMessageResponse] {
 
-        var message = Io_Iohk_Cvp_Credential_SentCredential()
-        message.holderSentCredential = Io_Iohk_Cvp_Credential_HolderSentCredential()
-        message.holderSentCredential.credential = degree.intCredential!
-        let messageData = try? message.serializedData()
+        let messageData = try? degree.intCredential?.serializedData()
 
-        var responseList: [Io_Iohk_Cvp_Connector_SendMessageResponse] = []
+        var responseList: [Io_Iohk_Prism_Protos_SendMessageResponse] = []
 
         for i in 0 ..< (userIds ?? []).count {
             let userId = userIds![i]
             let connectionId = connectionIds![i]
-            let response = try service.sendMessage(Io_Iohk_Cvp_Connector_SendMessageRequest.with {
+            let response = try service.sendMessage(Io_Iohk_Prism_Protos_SendMessageRequest.with {
                 $0.message = messageData!
                 $0.connectionID = connectionId
             }, metadata: makeMeta(userId))
@@ -107,17 +104,17 @@ class ApiService: NSObject {
 
     // MARK: Payments
 
-    func getPaymentToken() throws -> Io_Iohk_Cvp_Connector_GetBraintreePaymentsConfigResponse {
+    func getPaymentToken() throws -> Io_Iohk_Prism_Protos_GetBraintreePaymentsConfigResponse {
 
-        return try service.getBraintreePaymentsConfig(Io_Iohk_Cvp_Connector_GetBraintreePaymentsConfigRequest.with { _ in
+        return try service.getBraintreePaymentsConfig(Io_Iohk_Prism_Protos_GetBraintreePaymentsConfigRequest.with { _ in
         }, metadata: makeMeta())
     }
 
-    func getPaymentsHistory(userIds: [String]?) throws -> [Io_Iohk_Cvp_Connector_GetPaymentsResponse] {
+    func getPaymentsHistory(userIds: [String]?) throws -> [Io_Iohk_Prism_Protos_GetPaymentsResponse] {
 
-        var responseList: [Io_Iohk_Cvp_Connector_GetPaymentsResponse] = []
+        var responseList: [Io_Iohk_Prism_Protos_GetPaymentsResponse] = []
         for userId in userIds ?? [] {
-            let response = try service.getPayments(Io_Iohk_Cvp_Connector_GetPaymentsRequest.with { _ in
+            let response = try service.getPayments(Io_Iohk_Prism_Protos_GetPaymentsRequest.with { _ in
             }, metadata: makeMeta(userId))
             responseList.append(response)
         }

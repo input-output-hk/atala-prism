@@ -17,7 +17,7 @@ class ApiParseUtils: NSObject {
         for name in intSubject.names {
             fullName = "\(fullName) \(name)"
         }
-        for surname in intSubject.surname {
+        for surname in intSubject.surnames {
             fullName = "\(fullName) \(surname)"
         }
         return fullName.trim()

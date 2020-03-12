@@ -1,0 +1,229 @@
+syntax = "proto3";
+
+package io.iohk.prism.protos;
+
+import "connector_models.proto";
+import "node_models.proto";
+
+service ConnectorService {
+
+  // Retrieve a connection for a given connection token.
+  //
+  // Available to: Holder, Issuer, Validator
+  rpc GetConnectionByToken (GetConnectionByTokenRequest) returns (GetConnectionByTokenResponse) {}
+
+  // Get active connections for current participant
+  //
+  // Available to: Holder, Issuer, Validator
+  rpc GetConnectionsPaginated (GetConnectionsPaginatedRequest) returns (GetConnectionsPaginatedResponse) {}
+
+  // Return info about connection token such as creator info
+  //
+  // Available to: Holder
+  //
+  // Errors:
+  // Token does not exist (UNKNOWN)
+  rpc GetConnectionTokenInfo (GetConnectionTokenInfoRequest) returns (GetConnectionTokenInfoResponse) {}
+
+  // Instantiate connection from connection token
+  //
+  // Available to: Holder
+  //
+  // Errors:
+  // Token does not exist (UNKNOWN)
+  rpc AddConnectionFromToken (AddConnectionFromTokenRequest) returns (AddConnectionFromTokenResponse) {}
+
+  // Delete active connection
+  //
+  // Available to: Holder, Issuer, Validator
+  //
+  // Errors:
+  // Connection does not exist (UNKNOWN)
+  rpc DeleteConnection (DeleteConnectionRequest) returns (DeleteConnectionResponse) {}
+
+  // Bind DID to issuer
+  //
+  // Available to: Issuer
+  //
+  // Errors:
+  // Invalid DID (INVALID_ARGUMENT)
+  // Invalid DID document (INVALID_ARGUMENT)
+  // DID Document does not match DID (INVALID_ARGUMENT)
+  rpc RegisterDID (RegisterDIDRequest) returns (RegisterDIDResponse) {}
+  
+  // Change billing plan of participant who wants to generate connection tokens
+  //
+  // Available to: Issuer, Validator
+  //
+  // Errors:
+  // Unknown billing plan (UNKNOWN)
+  // User not allowed to set this billing plan (PERMISSION_DENIED)
+  rpc ChangeBillingPlan (ChangeBillingPlanRequest) returns (ChangeBillingPlanResponse) {}
+
+  // Generate connection token that can be used to instantiate connection
+  //
+  // Available to: Issuer, Validator
+  //
+  // Errors:
+  // Billing plan doesn't allow token generation (PERMISSION_DENIED)
+  rpc GenerateConnectionToken (GenerateConnectionTokenRequest) returns (GenerateConnectionTokenResponse) {}
+
+  // Return messages received after given time moment, sorted in ascending order by receive time
+  //
+  // Available to: Issuer, Holder, Validator
+  rpc GetMessagesPaginated (GetMessagesPaginatedRequest) returns (GetMessagesPaginatedResponse) {}
+
+  // Return messages received on the given connection, the number is supposed to be small, so, no pagination is required.
+  rpc GetMessagesForConnection (GetMessagesForConnectionRequest) returns (GetMessagesForConnectionResponse) {}
+
+  // Send message over a connection
+  //
+  // Available to: Issuer, Holder, Validator
+  //
+  // Errors:
+  // Unknown connection (UNKNOWN)
+  // Connection closed (FAILED_PRECONDITION)
+  rpc SendMessage (SendMessageRequest) returns (SendMessageResponse) {}
+
+  // Generate a URL that can be used to do a payment
+  rpc GetBraintreePaymentsConfig (GetBraintreePaymentsConfigRequest) returns (GetBraintreePaymentsConfigResponse) {}
+  rpc ProcessPayment (ProcessPaymentRequest) returns (ProcessPaymentResponse);
+  rpc GetPayments (GetPaymentsRequest) returns (GetPaymentsResponse);
+}
+
+message GetConnectionByTokenRequest {
+  string token = 1;
+}
+
+message GetConnectionByTokenResponse {
+  Connection connection = 1;
+}
+
+// Request connections instantiated by us / with us possibly after a known connection
+message GetConnectionsPaginatedRequest {
+  string lastSeenConnectionId = 1; // returned credentials will have been created after the last seen connection (optional field)
+  int32 limit = 2; // maximum number of credentials to return; must be > 0
+}
+
+// Result with connections instantiated
+message GetConnectionsPaginatedResponse {
+  repeated ConnectionInfo connections = 1; // connections sorted in ascending order by instantiation time
+}
+
+// Request to obtain information of connection token
+message GetConnectionTokenInfoRequest {
+  string token = 1; // token value to get information for
+}
+
+// Result with information on connection token
+message GetConnectionTokenInfoResponse {
+  ParticipantInfo creator = 1; // participant who generated the code
+}
+
+// Request to instantiate a connection using token
+message AddConnectionFromTokenRequest {
+  string token = 1; // token to instantiate connection
+  ConnectorPublicKey holderPublicKey = 2;
+  string paymentNonce = 3; // optional field, if present, we'll charge the user before adding the connection
+  // Note that old clients will send the holderPublicKey instead, which we'll need to encode on the server.
+  EncodedPublicKey holderEncodedPublicKey = 4; // Uncompressed encoded public key
+}
+
+// Confirmation of connection instantiation
+message AddConnectionFromTokenResponse {
+  ConnectionInfo connection = 1; // instantiated connection info
+  string userId = 2; // your generated user id
+}
+
+// Request to delete a connection
+message DeleteConnectionRequest {
+  string connectionId = 1; // id of connection to delete
+}
+
+// Confirmation of connection deletion
+message DeleteConnectionResponse {
+}
+
+// Request to generate a connection token
+message GenerateConnectionTokenRequest {
+}
+
+// Result with generated token
+message GenerateConnectionTokenResponse {
+  string token = 1; // generated token
+}
+
+// Request to return messages for us after the given known message (if any)
+message GetMessagesPaginatedRequest {
+  string lastSeenMessageId = 1; // returned credentials will have been received after the given message (if any)
+  int32 limit = 2; // maximum number of credentials to return, must be > 0
+}
+
+// Response with messages
+message GetMessagesPaginatedResponse {
+  repeated ReceivedMessage messages = 1; // messages sorted in ascending order by receiving time
+}
+
+message GetMessagesForConnectionRequest {
+  string connectionId = 1;
+}
+message GetMessagesForConnectionResponse {
+  repeated ReceivedMessage messages = 1;
+}
+
+// Request to send message
+message SendMessageRequest {
+  string connectionId = 1; // id of the connection
+  bytes message = 2; // raw message
+}
+
+// Confirmation of message sending
+message SendMessageResponse {
+}
+
+// REGISTRATION AND ACCOUNT MANAGEMENT
+
+// Request to register DID
+message RegisterDIDRequest {
+  SignedAtalaOperation createDIDOperation = 1;
+  Role role = 2;
+  string name = 3;
+  bytes logo = 4;
+
+  enum Role {
+    issuer = 0;
+    verifier = 1;
+  }
+}
+
+// Confirmation of DID registration
+message RegisterDIDResponse {
+  string did = 1;
+}
+
+// Request to change the billing plan
+message ChangeBillingPlanRequest {
+  BillingPlan billingPlan = 1; // new billing plan
+}
+
+// Confirmation of billing plan change
+message ChangeBillingPlanResponse {
+}
+
+message GetBraintreePaymentsConfigRequest {}
+message GetBraintreePaymentsConfigResponse {
+  string tokenizationKey = 1;
+}
+
+message ProcessPaymentRequest {
+  string amount = 1; // exact decimal amount
+  string nonce = 2; // client nonce
+}
+message ProcessPaymentResponse {
+  Payment payment = 1;
+}
+
+message GetPaymentsRequest {}
+message GetPaymentsResponse {
+  repeated Payment payments = 1;
+}
