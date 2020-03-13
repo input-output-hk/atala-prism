@@ -7,6 +7,9 @@ import ContactForm from './Organisms/ContactInformation/ContactInformation';
 import MyCredentials from './Molecules/MyCredentials/MyCredentials';
 import { UserContext } from '../providers/userContext';
 
+import '../credentials/_style.scss';
+import './_style.scss';
+
 const ContactContainer = ({ api }) => {
   const { t } = useTranslation();
   const { user } = useContext(UserContext);
@@ -37,24 +40,31 @@ const ContactContainer = ({ api }) => {
   };
 
   return (
-    <div>
-      <Row>
-        <Col xs={24} lg={18}>
-          <h3>{t('credential.contactInformation.congrats')}</h3>
-          <h1>{t('credential.contactInformation.title')}</h1>
-          <h1>{t('credential.contactInformation.title2')}</h1>
-          <div className="Form">
-            <ContactForm
-              submit={submitForm}
-              contactInfoRef={contactInfoRef}
-              onConsent={value => setConsent(value)}
-            />
-          </div>
-        </Col>
-        <Col xs={24} lg={6}>
-          <MyCredentials />
-        </Col>
-      </Row>
+    <div className="CredentialContainer">
+      <div className="LogoContent">
+        <img src="images/atala-logo.svg" alt={t('atalaLogo')} />
+      </div>
+      <div className="CredentialStepContent">
+        <Row className="CredentialsForm">
+          <Col xs={24} lg={14}>
+            <div className="TitleContent">
+              <p>{t('credential.contactInformation.congrats')}</p>
+              <h1>{t('credential.contactInformation.title')}</h1>
+              <h1>{t('credential.contactInformation.title2')}</h1>
+            </div>
+            <div className="Form">
+              <ContactForm
+                submit={submitForm}
+                contactInfoRef={contactInfoRef}
+                onConsent={value => setConsent(value)}
+              />
+            </div>
+          </Col>
+          <Col xs={24} lg={10} className="ImageSide">
+            <img src="images/credentials-phone-form.png" alt={t('atalaLogo')} />
+          </Col>
+        </Row>
+      </div>
     </div>
   );
 };

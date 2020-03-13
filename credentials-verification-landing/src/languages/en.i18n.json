@@ -133,6 +133,10 @@
     }
   },
   "landing": {
+    "CongratsStep":{
+      "congrats": "Hey! Nice to see you again.",
+      "finishProcess": "You've already finished this process."
+    },
     "MyCredentials": {
       "title": "My",
       "title2": "Credentials"

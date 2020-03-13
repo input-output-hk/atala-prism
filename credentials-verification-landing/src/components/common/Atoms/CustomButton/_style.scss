@@ -96,11 +96,18 @@
   align-items: center;
   padding: 0 1em;
   margin-bottom: 1.25em;
+  position: relative;
   @include primary-text($body, $black);
 
-  img {
+  .CredentialIcon {
     margin-right: 1em;
   }
+
+  .VerifiedIcon{
+    position: absolute;
+    right: 1em;
+  }
+
   &:hover,
   &:focus {
     background-color: $white;
