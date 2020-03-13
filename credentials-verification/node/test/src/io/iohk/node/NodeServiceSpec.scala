@@ -1,5 +1,6 @@
 package io.iohk.node
 
+import java.time.{LocalDateTime, ZoneOffset}
 import java.util.concurrent.TimeUnit
 
 import doobie.implicits._
@@ -17,6 +18,7 @@ import io.iohk.node.operations.{
 import io.iohk.node.repositories.DIDDataRepository
 import io.iohk.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
 import io.iohk.node.services.{BlockProcessingServiceSpec, DIDDataService, ObjectManagementService}
+import io.iohk.prism.protos.node_api.GetBuildInfoRequest
 import io.iohk.prism.protos.{node_api, node_models}
 import org.mockito.scalatest.MockitoSugar
 import org.scalatest.BeforeAndAfterEach
@@ -177,6 +179,22 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
         service.revokeCredential(node_api.RevokeCredentialRequest().withSignedOperation(operation))
       }
       error.getStatus.getCode mustEqual Status.Code.INVALID_ARGUMENT
+    }
+  }
+
+  "NodeService.getBuildInfo" should {
+    "return proper build information" in {
+      val tenMinutesAgo = LocalDateTime.now(ZoneOffset.UTC).minusMinutes(10)
+
+      val buildInfo = service.getBuildInfo(GetBuildInfoRequest())
+
+      // This changes greatly, so just test something was set
+      buildInfo.version must not be empty
+      buildInfo.scalaVersion mustBe "2.12.10"
+      buildInfo.millVersion mustBe "0.6.1"
+      // Give it enough time between build creation and test
+      val buildTime = LocalDateTime.parse(buildInfo.buildTime)
+      buildTime.compareTo(tenMinutesAgo) must be > 0
     }
   }
 }

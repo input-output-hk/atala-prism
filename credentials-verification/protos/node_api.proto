@@ -14,6 +14,8 @@ service NodeService {
     rpc IssueCredential(IssuerCredentialRequest) returns (IssueCredentialResponse) {}
 
     rpc RevokeCredential(RevokeCredentialRequest) returns (RevokeCredentialResponse) {}
+
+    rpc GetBuildInfo(GetBuildInfoRequest) returns (GetBuildInfoResponse) {}
 }
 
 message GetDidDocumentRequest {
@@ -48,4 +50,13 @@ message RevokeCredentialRequest {
     SignedAtalaOperation signed_operation = 1;
 }
 message RevokeCredentialResponse {
+}
+
+message GetBuildInfoRequest {
+}
+message GetBuildInfoResponse {
+    string version = 1;
+    string scalaVersion = 2;
+    string millVersion = 3;
+    string buildTime = 4;
 }

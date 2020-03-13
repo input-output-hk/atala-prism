@@ -4,6 +4,7 @@ import java.security.PublicKey
 
 import com.google.protobuf.ByteString
 import io.grpc.Status
+import io.iohk.cvp.BuildInfo
 import io.iohk.cvp.crypto.ECKeys
 import io.iohk.node.errors.NodeError
 import io.iohk.node.models.KeyUsage.{AuthenticationKey, CommunicationKey, IssuingKey, MasterKey}
@@ -70,6 +71,17 @@ class NodeServiceImpl(didDataService: DIDDataService, objectManagement: ObjectMa
       _ <- errorEitherToFuture(RevokeCredentialOperation.parse(operation))
       _ <- objectManagement.publishAtalaOperation(operation)
     } yield node_api.RevokeCredentialResponse()
+  }
+
+  override def getBuildInfo(request: node_api.GetBuildInfoRequest): Future[node_api.GetBuildInfoResponse] = {
+    Future
+      .successful(
+        node_api
+          .GetBuildInfoResponse()
+          .withVersion(BuildInfo.version)
+          .withScalaVersion(BuildInfo.scalaVersion)
+          .withMillVersion(BuildInfo.millVersion)
+          .withBuildTime(BuildInfo.buildTime))
   }
 
   private def toDIDData(didData: models.DIDData) = {

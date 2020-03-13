@@ -1,10 +1,39 @@
+import java.time.{LocalDateTime, ZoneOffset}
+
+import $ivy.`com.lihaoyi::mill-contrib-buildinfo:$MILL_VERSION`
 import $ivy.`com.lihaoyi::mill-contrib-scalapblib:$MILL_VERSION`
-import mill._
-import mill.scalalib._
-import mill.contrib.scalapblib._
-import coursier.maven.MavenRepository
 import ammonite.ops._
+import coursier.maven.MavenRepository
+import mill._
+import mill.contrib.buildinfo.BuildInfo
+import mill.contrib.scalapblib._
 import mill.define.Sources
+import mill.scalalib._
+
+object GitSupport  {
+
+  /**
+   * Calculate a publishable version.
+   *
+   * <p>The output format is {@code <BRANCH>-<N_COMMITS>-<CURRENT_COMMIT>}, where:
+   * <ul>
+   *   <li>{@code <BRANCH>} is the name of the current branch, unless it's a feature branch starting with
+   *   {@code ATA-<ID>}, for which it returns such prefix.
+   *   <li>{@code <N_COMMITS>} is the total number of commits in the current branch.
+   *   <li>{@code <CURRENT_COMMIT>} is the short hash of {@code HEAD}.
+   * </ul>
+   *
+   * <p>NOTE: This naming convention is also encoded into terraform env.sh and the circle-ci build.
+   */
+  def publishVersion(): String = {
+    val branchPrefix =
+      os.proc("git", "rev-parse", "--abbrev-ref", "HEAD").call().out.trim.replaceFirst("(ATA-\\d+).*", "$1").toLowerCase
+    val revCount = os.proc("git", "rev-list", "HEAD", "--count").call().out.trim
+    val shaShort = os.proc("git", "rev-parse", "--short", "HEAD").call().out.trim
+
+    s"$branchPrefix-$revCount-$shaShort"
+  }
+}
 
 object app extends ScalaModule {
   def scalaVersion = versions.scala
@@ -115,11 +144,9 @@ object common extends ScalaModule {
   * - Logback
   * - Monix
   */
-trait ServerCommon extends ScalaModule {
+trait ServerCommon extends ScalaModule with BuildInfo {
 
   def scalaVersion = versions.scala
-
-  // def scalacOptions = Seq("-Ywarn-unused:imports", "-Xfatal-warnings", "-feature")
 
   override def moduleDeps = Seq(common) ++ super.moduleDeps
 
@@ -144,6 +171,17 @@ trait ServerCommon extends ScalaModule {
     ivy"io.grpc:grpc-netty:${versions.grpc}",
     ivy"com.chuusai::shapeless:2.3.3"
   )
+
+  override def buildInfoPackageName = Some("io.iohk.cvp")
+
+  override def buildInfoMembers: T[Map[String, String]] = T {
+    Map(
+      "version" -> GitSupport.publishVersion(),
+      "scalaVersion" -> scalaVersion(),
+      "millVersion" -> sys.props("MILL_VERSION"),
+      "buildTime" -> LocalDateTime.now(ZoneOffset.UTC).toString
+    )
+  }
 
   trait `tests-common` extends Tests {
 
@@ -285,19 +323,9 @@ object wallet extends ServerPBCommon {
 trait CVPDockerModule extends Module { self: JavaModule =>
 
   case class CVPDockerConfig(name: String) {
-    val tag = s"895947072537.dkr.ecr.us-east-2.amazonaws.com/$name:$version"
+    val tag = s"895947072537.dkr.ecr.us-east-2.amazonaws.com/$name:${GitSupport.publishVersion()}"
     val dockerfile = s"$name/Dockerfile"
     val jarfile = s"$name.jar"
-  }
-
-  // This naming convention is also encoded into terraform env.sh and the circle-ci build.
-  def version: String = {
-    val branchPrefix =
-      os.proc("git", "rev-parse", "--abbrev-ref", "HEAD").call().out.trim.replaceFirst("(ATA-\\d+).*", "$1").toLowerCase
-    val revCount = os.proc("git", "rev-list", "HEAD", "--count").call().out.trim
-    val shaShort = os.proc("git", "rev-parse", "--short", "HEAD").call().out.trim
-
-    s"$branchPrefix-$revCount-$shaShort"
   }
 
   def cvpDockerConfig: CVPDockerConfig

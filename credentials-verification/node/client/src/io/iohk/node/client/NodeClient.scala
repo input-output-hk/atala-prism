@@ -70,7 +70,9 @@ object NodeClient {
         .children(IssueCredential.parser),
       cmd("revoke-credential")
         .action((x, c) => c.copy(command = Some(RevokeCredential())))
-        .children(RevokeCredential.parser)
+        .children(RevokeCredential.parser),
+      cmd("get-build-info")
+        .action((x, c) => c.copy(command = Some(GetBuildInfo())))
     )
   }
 

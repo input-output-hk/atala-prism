@@ -8,3 +8,4 @@ out
 *.tfstate.backup
 *.tfvars
 mill
+client-storage.txt
