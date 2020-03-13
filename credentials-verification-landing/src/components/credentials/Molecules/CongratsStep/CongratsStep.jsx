@@ -1,4 +1,5 @@
 import React from 'react';
+import { Col, Row } from 'antd';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { withRedirector } from '../../../providers/withRedirector';
@@ -10,10 +11,18 @@ const CongratsStep = ({ redirector: { redirectToContact } }) => {
 
   return (
     <div className="CongratsStep">
-      <h1>
-        <strong>{t('credential.CongratsStep.congrats')}</strong>
-      </h1>
-      <ContactButton toContactForm={redirectToContact} />
+      <Row>
+        <Col xs={24} lg={14} className="LeftSideCongrats">
+          <h1>
+            <strong>{t('landing.CongratsStep.congrats')}</strong>
+          </h1>
+          <h1>{t('landing.CongratsStep.finishProcess')}</h1>
+          <ContactButton toContactForm={redirectToContact} />
+        </Col>
+        <Col xs={24} lg={10} className="RightSideCongrats">
+          <img src="images/credentials-phone-form.png" alt={t('atalaLogo')} />
+        </Col>
+      </Row>
     </div>
   );
 };

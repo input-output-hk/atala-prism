@@ -10,10 +10,10 @@ const CustomButton = ({ icon: { icon, side }, img, buttonText, buttonProps, optI
   const { t } = useTranslation();
   return (
     <Button {...buttonProps}>
-      {img.src && <img src={img.src} alt={t(img.alt)} />}
+      {img.src && <img src={img.src} alt={t(img.alt)} className="CredentialIcon" />}
       {side === LEFT && icon}
       {buttonText} {side === RIGHT && icon}{' '}
-      {optImg.src && <img src={optImg.src} alt={t(optImg.alt)} />}
+      {optImg.src && <img src={optImg.src} alt={t(optImg.alt)} className="VerifiedIcon" />}
     </Button>
   );
 };
