@@ -35,6 +35,13 @@ In order to compile the .protos you need to install
 1. [protoc](https://github.com/protocolbuffers/protobuf/releases)
 1. [grpc-web](https://github.com/grpc/grpc-web/releases)
 
+    In MacOS and Linux, once you have downloaded the executable file, you can do the following to make it discoverable:
+    #
+        $ sudo mv ~/Downloads/protoc-gen-grpc-web-*-x86_64 \
+          /usr/local/bin/protoc-gen-grpc-web
+        $ chmod +x /usr/local/bin/protoc-gen-grpc-web
+    #
+
 Then run `./scripts/compile-protos.sh`
 
 ## Configurations
