@@ -1404,7 +1404,8 @@ proto.io.iohk.prism.protos.Connection.prototype.toObject = function(opt_includeI
  */
 proto.io.iohk.prism.protos.Connection.toObject = function(includeInstance, msg) {
   var f, obj = {
-    connectiontoken: jspb.Message.getFieldWithDefault(msg, 1, "")
+    connectiontoken: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    connectionid: jspb.Message.getFieldWithDefault(msg, 2, "")
   };
 
   if (includeInstance) {
@@ -1445,6 +1446,10 @@ proto.io.iohk.prism.protos.Connection.deserializeBinaryFromReader = function(msg
       var value = /** @type {string} */ (reader.readString());
       msg.setConnectiontoken(value);
       break;
+    case 2:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setConnectionid(value);
+      break;
     default:
       reader.skipField();
       break;
@@ -1481,6 +1486,13 @@ proto.io.iohk.prism.protos.Connection.serializeBinaryToWriter = function(message
       f
     );
   }
+  f = message.getConnectionid();
+  if (f.length > 0) {
+    writer.writeString(
+      2,
+      f
+    );
+  }
 };
 
 
@@ -1496,6 +1508,21 @@ proto.io.iohk.prism.protos.Connection.prototype.getConnectiontoken = function() 
 /** @param {string} value */
 proto.io.iohk.prism.protos.Connection.prototype.setConnectiontoken = function(value) {
   jspb.Message.setProto3StringField(this, 1, value);
+};
+
+
+/**
+ * optional string connectionId = 2;
+ * @return {string}
+ */
+proto.io.iohk.prism.protos.Connection.prototype.getConnectionid = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
+};
+
+
+/** @param {string} value */
+proto.io.iohk.prism.protos.Connection.prototype.setConnectionid = function(value) {
+  jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
