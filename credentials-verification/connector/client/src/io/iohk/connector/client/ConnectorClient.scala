@@ -63,7 +63,9 @@ object ConnectorClient {
             .text("Base64 encoded message")
             .required()
             .action((message, c) => c.copy(base64Message = Some(message)))
-        )
+        ),
+      cmd("get-build-info")
+        .action((x, c) => c.copy(command = GetBuildInfo())),
     )
   }
 

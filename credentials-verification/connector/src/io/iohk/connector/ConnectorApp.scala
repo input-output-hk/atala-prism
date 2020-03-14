@@ -100,7 +100,8 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       braintreePayments,
       paymentsRepository,
       authenticator,
-      participantPropagatorService
+      participantPropagatorService,
+      node
     )(
       executionContext
     )

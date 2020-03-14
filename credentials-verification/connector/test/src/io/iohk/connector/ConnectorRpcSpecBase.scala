@@ -143,7 +143,8 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
           braintreePayments,
           paymentsRepository,
           authenticator,
-          participantPropagator
+          participantPropagator,
+          nodeMock
         ),
         executionContext
       )
@@ -181,7 +182,8 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
     braintreePayments,
     paymentsRepository,
     authenticator,
-    participantPropagator
+    participantPropagator,
+    nodeMock
   )(
     executionContext
   )

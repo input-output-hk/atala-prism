@@ -3,19 +3,21 @@ package io.iohk.connector
 import java.util.UUID
 
 import io.iohk.connector.errors._
-import io.iohk.connector.model.{ConnectionId, Message, ParticipantLogo, ParticipantType, TokenString}
 import io.iohk.connector.model.payments.{ClientNonce, Payment => ConnectorPayment}
 import io.iohk.connector.model.requests.CreatePaymentRequest
+import io.iohk.connector.model._
 import io.iohk.connector.payments.BraintreePayments
 import io.iohk.connector.repositories.PaymentsRepository
 import io.iohk.connector.services.{ConnectionsService, MessagesService, RegistrationService}
+import io.iohk.cvp.BuildInfo
 import io.iohk.cvp.ParticipantPropagatorService
 import io.iohk.cvp.crypto.ECKeys
 import io.iohk.cvp.crypto.ECKeys._
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither._
-import io.iohk.prism.protos.{connector_api, connector_models}
+import io.iohk.prism.protos.node_api.NodeServiceGrpc
+import io.iohk.prism.protos.{connector_api, connector_models, node_api}
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -29,7 +31,8 @@ class ConnectorService(
     braintreePayments: BraintreePayments,
     paymentsRepository: PaymentsRepository,
     authenticator: Authenticator,
-    participantPropagatorService: ParticipantPropagatorService
+    participantPropagatorService: ParticipantPropagatorService,
+    nodeService: NodeServiceGrpc.NodeService
 )(
     implicit executionContext: ExecutionContext
 ) extends connector_api.ConnectorServiceGrpc.ConnectorService
@@ -441,5 +444,19 @@ class ConnectorService(
       .withId(payment.id.uuid.toString)
       .withStatus(payment.status.entryName)
       .withFailureReason(payment.failureReason.getOrElse(""))
+  }
+
+  override def getBuildInfo(request: connector_api.GetBuildInfoRequest): Future[connector_api.GetBuildInfoResponse] = {
+    nodeService
+      .getBuildInfo(node_api.GetBuildInfoRequest())
+      .map(
+        nodeBuildInfo =>
+          connector_api
+            .GetBuildInfoResponse()
+            .withVersion(BuildInfo.version)
+            .withScalaVersion(BuildInfo.scalaVersion)
+            .withMillVersion(BuildInfo.millVersion)
+            .withBuildTime(BuildInfo.buildTime)
+            .withNodeVersion(nodeBuildInfo.version))
   }
 }

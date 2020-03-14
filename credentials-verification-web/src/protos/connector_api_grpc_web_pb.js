@@ -1194,5 +1194,85 @@ proto.io.iohk.prism.protos.ConnectorServicePromiseClient.prototype.getPayments =
 };
 
 
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.io.iohk.prism.protos.GetBuildInfoRequest,
+ *   !proto.io.iohk.prism.protos.GetBuildInfoResponse>}
+ */
+const methodDescriptor_ConnectorService_GetBuildInfo = new grpc.web.MethodDescriptor(
+  '/io.iohk.prism.protos.ConnectorService/GetBuildInfo',
+  grpc.web.MethodType.UNARY,
+  proto.io.iohk.prism.protos.GetBuildInfoRequest,
+  proto.io.iohk.prism.protos.GetBuildInfoResponse,
+  /**
+   * @param {!proto.io.iohk.prism.protos.GetBuildInfoRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.prism.protos.GetBuildInfoResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.io.iohk.prism.protos.GetBuildInfoRequest,
+ *   !proto.io.iohk.prism.protos.GetBuildInfoResponse>}
+ */
+const methodInfo_ConnectorService_GetBuildInfo = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.io.iohk.prism.protos.GetBuildInfoResponse,
+  /**
+   * @param {!proto.io.iohk.prism.protos.GetBuildInfoRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.prism.protos.GetBuildInfoResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.io.iohk.prism.protos.GetBuildInfoRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.protos.GetBuildInfoResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.protos.GetBuildInfoResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.io.iohk.prism.protos.ConnectorServiceClient.prototype.getBuildInfo =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/io.iohk.prism.protos.ConnectorService/GetBuildInfo',
+      request,
+      metadata || {},
+      methodDescriptor_ConnectorService_GetBuildInfo,
+      callback);
+};
+
+
+/**
+ * @param {!proto.io.iohk.prism.protos.GetBuildInfoRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.io.iohk.prism.protos.GetBuildInfoResponse>}
+ *     A native promise that resolves to the response
+ */
+proto.io.iohk.prism.protos.ConnectorServicePromiseClient.prototype.getBuildInfo =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/io.iohk.prism.protos.ConnectorService/GetBuildInfo',
+      request,
+      metadata || {},
+      methodDescriptor_ConnectorService_GetBuildInfo);
+};
+
+
 module.exports = proto.io.iohk.prism.protos;
 

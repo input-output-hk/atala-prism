@@ -89,6 +89,9 @@ service ConnectorService {
   rpc GetBraintreePaymentsConfig (GetBraintreePaymentsConfigRequest) returns (GetBraintreePaymentsConfigResponse) {}
   rpc ProcessPayment (ProcessPaymentRequest) returns (ProcessPaymentResponse);
   rpc GetPayments (GetPaymentsRequest) returns (GetPaymentsResponse);
+
+  // Return the information about the Connector and Node builds
+  rpc GetBuildInfo (GetBuildInfoRequest) returns (GetBuildInfoResponse);
 }
 
 message GetConnectionByTokenRequest {
@@ -226,4 +229,13 @@ message ProcessPaymentResponse {
 message GetPaymentsRequest {}
 message GetPaymentsResponse {
   repeated Payment payments = 1;
+}
+
+message GetBuildInfoRequest {}
+message GetBuildInfoResponse {
+  string version = 1;
+  string scalaVersion = 2;
+  string millVersion = 3;
+  string buildTime = 4;
+  string nodeVersion = 5;
 }
