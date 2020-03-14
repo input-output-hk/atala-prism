@@ -10,6 +10,8 @@ Two main branches will be maintained: `develop` and `master`. `master` contains 
 
 ## Working with the codebase
 
+Be sure to follow our [contribuding guidelines](/CONTRIBUTING.md).
+
 To build the codebase, we use [bazel](https://bazel.build/).
 
 In order to keep the code format consistent, we use scalafmt and git hooks, follow these steps to configure it accordingly (otherwise, your changes are going to be rejected by CircleCI):
