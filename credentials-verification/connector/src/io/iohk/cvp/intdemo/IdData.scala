@@ -2,13 +2,12 @@ package io.iohk.cvp.intdemo
 
 import java.time.LocalDate
 
-import io.circe
 import io.circe.parser._
 
 case class IdData private (name: String, dob: LocalDate)
 
 object IdData {
-  def toIdData(protobufCredential: credential.Credential): Either[circe.Error, IdData] = {
+  def toIdData(protobufCredential: credential.Credential): IdData = {
     parse(protobufCredential.credentialDocument)
       .flatMap { json =>
         val cursor = json.hcursor.downField("credentialSubject")
@@ -17,5 +16,10 @@ object IdData {
           dob <- cursor.downField("dateOfBirth").as[LocalDate]
         } yield IdData(name, dob)
       }
+      .getOrElse(
+        throw new IllegalStateException(
+          s"The shared id credential is invalid. Document follows: '${protobufCredential.credentialDocument}''"
+        )
+      )
   }
 }

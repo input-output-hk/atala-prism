@@ -1,25 +1,15 @@
 package io.iohk.cvp.intdemo
 
-import java.time.{Instant, LocalDate}
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import java.util.UUID
 
-import io.iohk.connector.model.{ConnectionId, Message, MessageId}
-import io.iohk.cvp.intdemo.DegreeServiceImpl.credentialsOfType
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
-
 import Testing._
 
 class DegreeServiceImplSpec extends FlatSpec {
 
-  "credentialsOfType" should "ignore invalid messages" in {
-    val message = Message(MessageId(UUID.randomUUID()), ConnectionId(UUID.randomUUID()), Instant.now(), Array[Byte]())
-
-    credentialsOfType("foo")(Seq(message)) shouldBe Seq.empty
-  }
-
-  "idCredentialTemplate" should "render a Degree credential correctly" in {
+  "degreeCredentialJsonTemplate" should "render a Degree credential correctly" in {
     val d = LocalDate.now()
     val df = DateTimeFormatter.ISO_LOCAL_DATE.format(d)
 

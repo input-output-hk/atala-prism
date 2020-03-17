@@ -2,13 +2,27 @@ syntax = "proto3";
 
 package io.iohk.cvp.intdemo;
 
+// This service simulates an application run by a government body who use atala's connector.
 service IDService {
     rpc GetConnectionToken (GetConnectionTokenRequest) returns (GetConnectionTokenResponse) {}
     rpc GetSubjectStatusStream (GetSubjectStatusRequest) returns (stream GetSubjectStatusResponse) {}
     rpc SetPersonalData (SetPersonalDataRequest) returns (SetPersonalDataResponse) {}
 }
 
+// This service simulates an application run by a university who use atala's connector.
 service DegreeService {
+    rpc GetConnectionToken (GetConnectionTokenRequest) returns (GetConnectionTokenResponse) {}
+    rpc GetSubjectStatusStream (GetSubjectStatusRequest) returns (stream GetSubjectStatusResponse) {}
+}
+
+// ... a company's application
+service EmploymentService {
+    rpc GetConnectionToken (GetConnectionTokenRequest) returns (GetConnectionTokenResponse) {}
+    rpc GetSubjectStatusStream (GetSubjectStatusRequest) returns (stream GetSubjectStatusResponse) {}
+}
+
+// ... another company's application
+service InsuranceService {
     rpc GetConnectionToken (GetConnectionTokenRequest) returns (GetConnectionTokenResponse) {}
     rpc GetSubjectStatusStream (GetSubjectStatusRequest) returns (stream GetSubjectStatusResponse) {}
 }

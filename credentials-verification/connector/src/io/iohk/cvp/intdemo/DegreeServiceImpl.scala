@@ -7,8 +7,9 @@ import credential.Credential
 import io.circe._
 import io.circe.Json.fromString
 import io.grpc.stub.StreamObserver
-import io.iohk.connector.model.{Connection, Message, TokenString}
+import io.iohk.connector.model.TokenString
 import io.iohk.cvp.intdemo.DegreeServiceImpl.{getDegreeCredential, getSharedIdCredential, issuerId}
+import io.iohk.cvp.intdemo.SharedCredentials.{formatDate, getSharedCredentials, jsonPrinter}
 import io.iohk.cvp.intdemo.protos.DegreeServiceGrpc._
 import io.iohk.cvp.intdemo.protos._
 import io.iohk.cvp.models.ParticipantId
@@ -50,9 +51,7 @@ class DegreeServiceImpl(
 object DegreeServiceImpl {
   val issuerId = ParticipantId("6c170e91-92b0-4265-909d-951c11f30caa")
 
-  private val credentialTypeId = "VerifiableCredential/AirsideDegreeCredential"
-
-  private val jsonPrinter = Printer(dropNullValues = false, indent = "  ")
+  val credentialTypeId = "VerifiableCredential/AirsideDegreeCredential"
 
   case class DegreeData(idData: IdData) {
     val degreeAwarded = "Bachelor of Science"
@@ -60,46 +59,15 @@ object DegreeServiceImpl {
     val graduationYear = idData.dob.plusYears(20).getYear
   }
 
-  def credentialsOfType(s: String)(messages: Seq[Message]): Seq[Credential] = {
-    messages.collect {
-      case message =>
-        val credential = Credential.messageCompanion.parseFrom(message.content)
-        if (credential.typeId == s)
-          Some(credential)
-        else
-          None
-    }.flatten
-  }
-
-  private def getSharedCredentials(connectorIntegration: ConnectorIntegration, connectionToken: TokenString)(
-      typeId: String
-  )(implicit ec: ExecutionContext): Future[Seq[Credential]] = {
-    for {
-      maybeConnection: Option[Connection] <- connectorIntegration.getConnectionByToken(connectionToken)
-      messages <- maybeConnection
-        .fold(Future.successful(Seq.empty[Message]))(
-          connection => connectorIntegration.getMessages(issuerId, connection.connectionId)
-        )
-    } yield {
-      credentialsOfType(typeId)(messages)
-    }
-  }
-
   private def getSharedIdCredential(connectorIntegration: ConnectorIntegration)(
       implicit ec: ExecutionContext
   ): TokenString => Future[Option[Credential]] =
     connectionToken =>
-      getSharedCredentials(connectorIntegration, connectionToken)(IdServiceImpl.credentialTypeId).map(_.headOption)
+      getSharedCredentials(connectorIntegration, connectionToken, issuerId)(Set(IdServiceImpl.credentialTypeId))
+        .map(_.headOption)
 
-  private def getDegreeCredential(idCredential: Credential): Credential = {
-
-    val idData = IdData
-      .toIdData(idCredential)
-      .getOrElse(
-        throw new IllegalStateException(
-          s"The shared id credential is invalid. Document follows: '${idCredential.credentialDocument}''"
-        )
-      )
+  def getDegreeCredential(idCredential: Credential): Credential = {
+    val idData = IdData.toIdData(idCredential)
 
     val degreeData = DegreeData(idData)
 
@@ -147,9 +115,4 @@ object DegreeServiceImpl {
     )
   }
 
-  private val dateFormatter = DateTimeFormatter.ISO_LOCAL_DATE
-
-  private def formatDate(d: LocalDate): String = {
-    dateFormatter.format(d)
-  }
 }
