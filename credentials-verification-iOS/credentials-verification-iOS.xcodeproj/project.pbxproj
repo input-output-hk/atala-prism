@@ -479,6 +479,13 @@
 			name = Pods;
 			sourceTree = "<group>";
 		};
+		B3B76208241BC8A500DC42BC /* Security */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Security;
+			sourceTree = "<group>";
+		};
 		CF3BEB1B8E00D564FED97064 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -616,7 +623,7 @@
 		EE7D49D42366B9C2007C31A8 /* classes */ = {
 			isa = PBXGroup;
 			children = (
-				EE7D4AA82366B9C2007C31A8 /* aux */,
+				EE7D4AA82366B9C2007C31A8 /* utils */,
 				EE7D4A782366B9C2007C31A8 /* model */,
 				EE7D49D52366B9C2007C31A8 /* module */,
 				EE7D4B062366B9C3007C31A8 /* service */,
@@ -627,6 +634,7 @@
 		EE7D49D52366B9C2007C31A8 /* module */ = {
 			isa = PBXGroup;
 			children = (
+				B3B76208241BC8A500DC42BC /* Security */,
 				EE7D4A0C2366B9C2007C31A8 /* util */,
 				EE7D4A6F2366B9C2007C31A8 /* base */,
 				EE48AC1A23775DD800C0A441 /* other */,
@@ -710,7 +718,7 @@
 			path = temporal_fix;
 			sourceTree = "<group>";
 		};
-		EE7D4AA82366B9C2007C31A8 /* aux */ = {
+		EE7D4AA82366B9C2007C31A8 /* utils */ = {
 			isa = PBXGroup;
 			children = (
 				EE7D4AFE2366B9C3007C31A8 /* db */,
@@ -719,7 +727,7 @@
 				EE7D4AC02366B9C3007C31A8 /* pushes */,
 				EE7D4AA92366B9C2007C31A8 /* ui */,
 			);
-			path = aux;
+			path = utils;
 			sourceTree = "<group>";
 		};
 		EE7D4AA92366B9C2007C31A8 /* ui */ = {
