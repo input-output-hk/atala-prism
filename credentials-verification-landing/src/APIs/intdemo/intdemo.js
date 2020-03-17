@@ -1,6 +1,8 @@
 import {
   IDServicePromiseClient,
-  DegreeServicePromiseClient
+  DegreeServicePromiseClient,
+  EmploymentServicePromiseClient,
+  InsuranceServicePromiseClient
 } from '../../protos/demo/intdemo_grpc_web_pb';
 import { config } from '../configs';
 import {
@@ -20,9 +22,8 @@ const {
 
 const idService = new IDServicePromiseClient(config.grpcClient, null, null);
 const degreeService = new DegreeServicePromiseClient(config.grpcClient, null, null);
-// TODO complete these services when they exists
-const insuranceService = {};
-const employmentService = {};
+const insuranceService = new EmploymentServicePromiseClient(config.grpcClient, null, null);
+const employmentService = new InsuranceServicePromiseClient(config.grpcClient, null, null);
 
 const getUserId = () => config.issuerId;
 
