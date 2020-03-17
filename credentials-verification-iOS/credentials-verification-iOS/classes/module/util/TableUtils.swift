@@ -5,6 +5,14 @@ protocol TableUtilsPresenterDelegate: BaseTableViewCellPresenterDelegate {
     func getElementCount() -> Int
     func hasPullToRefresh() -> Bool
     func actionPullToRefresh()
+    func didSelectRowAt(indexPath: IndexPath)
+}
+
+extension TableUtilsPresenterDelegate {
+
+    func didSelectRowAt(indexPath: IndexPath) {
+        //this is a empty implementation to allow this method to be optional
+    }
 }
 
 protocol TableUtilsViewDelegate: class {
@@ -85,6 +93,9 @@ class TableUtils: NSObject, UITableViewDataSource, UITableViewDelegate {
         if let baseCell = cell as? BaseTableViewCell {
             baseCell.willDisplay()
         }
+    }
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        presenterDelegate.didSelectRowAt(indexPath: indexPath)
     }
 
     // MARK: Pull to refresh

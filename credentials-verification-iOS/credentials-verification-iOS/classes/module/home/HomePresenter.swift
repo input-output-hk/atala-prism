@@ -192,8 +192,6 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
                         }
                     }
                 }
-//                credentials.append(FakeData.fakeProofOfEmployment())
-//                credentials.append(FakeData.fakeCertificatOfInsurance())
                 self.makeDegreeRows(degrees: credentials)
 
             } catch {
@@ -347,6 +345,15 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
     func tappedAction(for cell: NewDegreeViewCell) {
 
         guard let rowIndex = cell.indexPath?.row, let cellRow = degreeRows?[rowIndex], let degree = cellRow.value as? Degree else {
+            return
+        }
+        Tracker.global.trackCredentialNewTapped()
+        startShowingDetails(degree: degree)
+    }
+    
+    func didSelectRowAt(indexPath: IndexPath) {
+        let rowIndex = indexPath.row
+        guard let cellRow = degreeRows?[rowIndex], let degree = cellRow.value as? Degree else {
             return
         }
         Tracker.global.trackCredentialNewTapped()
