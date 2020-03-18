@@ -71,6 +71,9 @@ object NodeClient {
       cmd("revoke-credential")
         .action((x, c) => c.copy(command = Some(RevokeCredential())))
         .children(RevokeCredential.parser),
+      cmd("send-operation")
+        .text("Sends base64-encoded SignedAtalaOperation to the node")
+        .action((x, c) => c.copy(command = Some(SendOperation()))),
       cmd("get-build-info")
         .action((x, c) => c.copy(command = Some(GetBuildInfo())))
     )
