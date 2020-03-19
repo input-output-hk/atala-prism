@@ -84,6 +84,11 @@ class IdServiceImplSpec extends FlatSpec {
     c.jsonStr("credentialSubject.name") shouldBe "first-name"
     c.jsonStr("credentialSubject.dateOfBirth") shouldBe dobf
   }
+
+  "generateSubjectIdNumber" should "Generate a 9 digit number" in {
+    IdServiceImpl.generateSubjectIdNumber("foo") shouldBe "RL-ACBD18DB4"
+    IdServiceImpl.generateSubjectIdNumber("bar") shouldBe "RL-37B51D194"
+  }
 }
 
 object IdServiceImplSpec {

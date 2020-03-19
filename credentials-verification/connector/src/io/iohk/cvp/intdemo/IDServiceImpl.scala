@@ -1,11 +1,12 @@
 package io.iohk.cvp.intdemo
 
+import java.security.MessageDigest
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 import credential._
-import io.circe._
 import io.circe.Json.fromString
+import io.circe._
 import io.grpc.Status
 import io.grpc.stub.StreamObserver
 import io.iohk.connector.model.TokenString
@@ -13,11 +14,11 @@ import io.iohk.cvp.intdemo.IdServiceImpl._
 import io.iohk.cvp.intdemo.protos.IDServiceGrpc._
 import io.iohk.cvp.intdemo.protos._
 import io.iohk.cvp.models.ParticipantId
+import javax.xml.bind.DatatypeConverter
 import monix.execution.Scheduler.{global => scheduler}
 
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Random
 
 class IdServiceImpl(
     connectorIntegration: ConnectorIntegration,
@@ -122,11 +123,10 @@ object IdServiceImpl {
     )
   }
 
-  private def generateSubjectIdNumber(seedStr: String): String = {
-    import java.nio.ByteBuffer
-    val seed = ByteBuffer.wrap(seedStr.getBytes.take(4)).getInt
-    val random = new Random(seed)
-    s"RL-${(1 to 9).map(_ => random.nextInt(10)).mkString}"
+  def generateSubjectIdNumber(seedStr: String): String = {
+    val md = MessageDigest.getInstance("MD5")
+    md.update(seedStr.getBytes("UTF-8"))
+    s"RL-${DatatypeConverter.printHexBinary(md.digest).toUpperCase.take(9)}"
   }
 
   private val dateFormatter = DateTimeFormatter.ISO_LOCAL_DATE
