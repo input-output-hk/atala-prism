@@ -9,16 +9,12 @@ import {
   CARD_UNIVERSITY_TITLE,
   CARD_UNIVERSITY_UNIVERSITY,
   CARD_UNIVERSITY_AWARD,
-  CARD_UNIVERSITY_START_DATE,
-  CARD_UNIVERSITY_GRADUATION_DATE,
   CARD_EMPLOYMENT_COMPANY,
   CARD_EMPLOYMENT_ADDRESS,
   CARD_EMPLOYMENT_STATUS,
-  CARD_EMPLOYMENT_START_DATE,
   CARD_INSURANCE_PROVIDER,
   CARD_INSURANCE_CLASS,
-  CARD_INSURANCE_POLICY_NUMBER,
-  CARD_INSURANCE_END_DATE
+  CARD_INSURANCE_POLICY_NUMBER
 } from '../../../../helpers/constants';
 import './_style.scss';
 
@@ -47,12 +43,10 @@ const CreatedCredential = ({ currentCredential }) => {
         {
           subList: [
             {
-              title: 'startDate',
-              value: moment.unix(CARD_UNIVERSITY_START_DATE).format('DD/MM/YYYY')
-            },
-            {
               title: 'graduationDate',
-              value: moment.unix(CARD_UNIVERSITY_GRADUATION_DATE).format('DD/MM/YYYY')
+              value: moment(user.dateOfBirth)
+                .add(20, 'y')
+                .format('L')
             }
           ],
           className: 'DegreeDate'
@@ -73,7 +67,9 @@ const CreatedCredential = ({ currentCredential }) => {
         { title: 'employmentStatus', value: CARD_EMPLOYMENT_STATUS },
         {
           title: 'employmentStartDate',
-          value: moment.unix(CARD_EMPLOYMENT_START_DATE).format('DD/MM/YYYY')
+          value: moment()
+            .subtract(1, 'M')
+            .format('L')
         }
       ]
     },
@@ -89,7 +85,12 @@ const CreatedCredential = ({ currentCredential }) => {
         { title: 'classOfInsurance', value: CARD_INSURANCE_CLASS },
         { title: 'policyNumber', value: CARD_INSURANCE_POLICY_NUMBER },
         { title: 'fullName', value: `${user.firstName} ${user.lastName}` },
-        { title: 'policyEndDate', value: moment.unix(CARD_INSURANCE_END_DATE).format('DD/MM/YYYY') }
+        {
+          title: 'policyEndDate',
+          value: moment()
+            .add(1, 'y')
+            .format('L')
+        }
       ]
     }
   };

@@ -58,12 +58,17 @@ const UserInfoContainer = ({ redirector: { redirectToCredentials } }) => {
     </div>
   );
 
+  const cleanUser = () => {
+    setUser(null);
+    setShowModal(false);
+  };
+
   return (
     <div>
       <IdentityVerifierModal
         showModal={showModal}
         onOk={acceptIdentity}
-        onCancel={() => setShowModal(false)}
+        onCancel={cleanUser}
         user={user}
       />
       <UserInfo getStep={getStep} />;

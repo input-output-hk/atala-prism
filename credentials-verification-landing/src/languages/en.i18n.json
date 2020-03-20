@@ -167,7 +167,6 @@
     },
     "credential": {
       "credential": "credential",
-      "description": "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
       "IssuingAuthority": "Issuing Authority",
       "credentialAlt": "Credential example that shows a credential with filled info (degree, student and university name, award and dates of start and graduation)",
       "iconAlt": "Credential Icon",
@@ -664,6 +663,12 @@
       "CredentialType1": "Redland Polytechnic",
       "CredentialType2": "Atala Inc",
       "CredentialType3": "Atala insurance Ltd"
+    },
+    "credentialDescription": {
+      "CredentialType0": "Use this Credential to easily access government services.",
+      "CredentialType1": "Use this Credential to easily apply for jobs online. Apply for discounts on various products and services too.",
+      "CredentialType2": "Use this Credential to easily apply for a mortgage, loan or to rent an apartment.",
+      "CredentialType3": "Use this Credential to easily apply for a mortgage."
     },
     "QRCard": {
       "noAppYet": "You don't have the application?",

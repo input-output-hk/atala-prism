@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { message } from 'antd';
+import _ from 'lodash';
 import { useTranslation } from 'react-i18next';
 import FinishInfo from './Molecules/FinishInfo/FinishInfo';
 import CongratsStep from './Molecules/CongratsStep/CongratsStep';
@@ -24,6 +25,7 @@ import Credentials from './Credentials';
 import SplittedPageInside from './Organisms/SplittedPageInside/SplittedPageInside';
 import WhatYouNeed from './Molecules/WhatYouNeed/WhatYouNeed';
 import { UserContext } from '../providers/userContext';
+import { withRedirector } from '../providers/withRedirector';
 
 // Credentials steps
 const INTRODUCTION_STEP = 0;
@@ -41,6 +43,7 @@ const CREDENTIALS = {
 const lastCredential = Object.keys(CREDENTIAL_TYPES).length - 1;
 
 const CredentialsContainer = ({
+  redirector: { redirectToUserInfo },
   api: { getConnectionToken, startSubjectStatusStream, setPersonalData }
 }) => {
   const { t } = useTranslation();
@@ -55,6 +58,10 @@ const CredentialsContainer = ({
   const [connectionStatus, setConnectionStatus] = useState();
   const [showContactButton, setShowContactButton] = useState(false);
   const [showCongrats, setShowCongrats] = useState(false);
+
+  useEffect(() => {
+    if (_.isEmpty(user)) redirectToUserInfo();
+  }, []);
 
   useEffect(() => {
     const { citizenId, studentId, employeeId, insuredId } = user;
@@ -211,7 +218,10 @@ CredentialsContainer.propTypes = {
     getConnectionToken: PropTypes.func,
     startSubjectStatusStream: PropTypes.func,
     setPersonalData: PropTypes.func
+  }).isRequired,
+  redirector: PropTypes.shape({
+    redirectToUserInfo: PropTypes.func
   }).isRequired
 };
 
-export default withApi(CredentialsContainer);
+export default withRedirector(withApi(CredentialsContainer));

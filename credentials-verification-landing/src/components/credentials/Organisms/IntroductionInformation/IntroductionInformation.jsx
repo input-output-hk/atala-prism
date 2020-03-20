@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
-import CredentialItemLanding from '../../Molecules/CredentialItemLanding/CredentialItemLanding';
+import CredentialItemLanding from '../../../common/Molecules/CredentialItemLanding/CredentialItemLanding';
 import './_style.scss';
 
 const IntroductionInformation = ({ nextStep, buttonDisabled, currentCredential }) => {
@@ -13,25 +13,29 @@ const IntroductionInformation = ({ nextStep, buttonDisabled, currentCredential }
       theme: 'theme-credential-1',
       credentialImage: 'images/icon-credential-id.svg',
       credentialName: t('credential.credentialNames.CredentialType0'),
-      credentialIssuer: t('credential.credentialIssuers.CredentialType0')
+      credentialIssuer: t('credential.credentialIssuers.CredentialType0'),
+      credentialDescription: t('credential.credentialDescription.CredentialType0')
     },
     1: {
       theme: 'theme-credential-2',
       credentialImage: 'images/icon-credential-university.svg',
       credentialName: t('credential.credentialNames.CredentialType1'),
-      credentialIssuer: t('credential.credentialIssuers.CredentialType1')
+      credentialIssuer: t('credential.credentialIssuers.CredentialType1'),
+      credentialDescription: t('credential.credentialDescription.CredentialType1')
     },
     2: {
       theme: 'theme-credential-3',
       credentialImage: 'images/icon-credential-employment.svg',
       credentialName: t('credential.credentialNames.CredentialType2'),
-      credentialIssuer: t('credential.credentialIssuers.CredentialType2')
+      credentialIssuer: t('credential.credentialIssuers.CredentialType2'),
+      credentialDescription: t('credential.credentialDescription.CredentialType2')
     },
     3: {
       theme: 'theme-credential-4',
       credentialImage: 'images/icon-credential-insurance.svg',
       credentialName: t('credential.credentialNames.CredentialType3'),
-      credentialIssuer: t('credential.credentialIssuers.CredentialType3')
+      credentialIssuer: t('credential.credentialIssuers.CredentialType3'),
+      credentialDescription: t('credential.credentialDescription.CredentialType3')
     }
   };
 

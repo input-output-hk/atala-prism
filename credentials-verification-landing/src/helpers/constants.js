@@ -81,18 +81,12 @@ export const APP_STORE_URL = 'https://www.apple.com/la/ios/app-store/';
 export const GOOGLE_PLAY_STORE_URL = 'https://play.google.com/store';
 
 // EXAMPLE CERTIFICATE CARD VALUES
-export const CARD_ID_ID_NUMBER = '123 456 789';
-export const CARD_ID_EXPIRATION_DATE = 1901836800;
-export const CARD_UNIVERSITY_TITLE = 'Bachelors Degree Engineering';
+export const CARD_UNIVERSITY_TITLE = 'Bachelor of Science';
 export const CARD_UNIVERSITY_UNIVERSITY = 'Air Side University';
-export const CARD_UNIVERSITY_AWARD = 'First Class Honours';
-export const CARD_UNIVERSITY_START_DATE = 1426809600;
-export const CARD_UNIVERSITY_GRADUATION_DATE = 1574208000;
+export const CARD_UNIVERSITY_AWARD = 'Upper second class honours';
 export const CARD_EMPLOYMENT_COMPANY = 'Atala Inc.';
-export const CARD_EMPLOYMENT_ADDRESS = '1234 Main Street';
+export const CARD_EMPLOYMENT_ADDRESS = '67 Clasper Way, Herefoot, HF1 0AF';
 export const CARD_EMPLOYMENT_STATUS = 'Full Time';
-export const CARD_EMPLOYMENT_START_DATE = 1578614400;
-export const CARD_INSURANCE_PROVIDER = 'Atala Insurance Ltd';
+export const CARD_INSURANCE_PROVIDER = 'Atala Insurance Ltd.';
 export const CARD_INSURANCE_CLASS = 'Life Insurance';
-export const CARD_INSURANCE_POLICY_NUMBER = '1234 5678 90';
-export const CARD_INSURANCE_END_DATE = 1609632000;
+export const CARD_INSURANCE_POLICY_NUMBER = 'ABC-123456789';

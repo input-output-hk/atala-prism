@@ -10,6 +10,7 @@
     "grpc-web": "1.0.6",
     "i18next": "17.0.18",
     "lodash": "4.17.15",
+    "md5-hex": "3.0.1",
     "moment": "2.24.0",
     "node-sass": "4.12.0",
     "prop-types": "15.7.2",

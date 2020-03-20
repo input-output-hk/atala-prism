@@ -12,19 +12,19 @@ const CredentialsView = () => {
         <p>{t('landing.credentialsView.subtitle')}</p>
       </div>
       <CredentialSummary
-        credentialText="Government Issued Digital Identity"
+        credentialText={t('credential.credentialNames.CredentialType0')}
         credentialIcon="images/icon-credential-id.svg"
       />
       <CredentialSummary
-        credentialText="University Degree"
+        credentialText={t('credential.credentialNames.CredentialType1')}
         credentialIcon="images/icon-credential-university.svg"
       />
       <CredentialSummary
-        credentialText="Proof of Employment"
+        credentialText={t('credential.credentialNames.CredentialType2')}
         credentialIcon="images/icon-credential-employment.svg"
       />
       <CredentialSummary
-        credentialText="Certificate of Insurance"
+        credentialText={t('credential.credentialNames.CredentialType3')}
         credentialIcon="images/icon-credential-insurance.svg"
       />
     </div>

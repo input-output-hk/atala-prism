@@ -3,14 +3,19 @@ import PropTypes from 'prop-types';
 import moment from 'moment';
 import { useTranslation } from 'react-i18next';
 import { Col, Row } from 'antd';
+import md5Hex from 'md5-hex';
 import flagIcon from '../../../../images/icon-flag.svg';
 import avatarId from '../../../../images/id_generic_avatar.svg';
-import { CARD_ID_ID_NUMBER, CARD_ID_EXPIRATION_DATE } from '../../../../helpers/constants';
 
 import './_style.scss';
 
 const CredentialIDTemplate = ({ firstName, lastName, dateOfBirth }) => {
   const { t } = useTranslation();
+  const fullName = `${firstName} ${lastName}`;
+  const uniqueData = fullName + moment(dateOfBirth).format('YYYY-MM-DD');
+  const identityNumber = md5Hex(uniqueData)
+    .substring(0, 9)
+    .toUpperCase();
 
   return (
     <div className="CredentialIDTemplate">
@@ -29,19 +34,23 @@ const CredentialIDTemplate = ({ firstName, lastName, dateOfBirth }) => {
           <Col xs={24} lg={18} className="InfoTemplate">
             <div className="TemplateItem">
               <span>{t('credential.IdCredentialCard.IdentityNumber')}</span>
-              <p>{CARD_ID_ID_NUMBER}</p>
+              <p>{`RL-${identityNumber}`}</p>
             </div>
             <div className="TemplateItem">
               <span>{t('credential.IdCredentialCard.DateOfBirth')}</span>
-              <p>{moment(dateOfBirth).format('DD/MM/YYYY')}</p>
+              <p>{moment(dateOfBirth).format('L')}</p>
             </div>
             <div className="TemplateItem">
               <span>{t('credential.IdCredentialCard.FullName')}</span>
-              <p>{`${firstName} ${lastName}`}</p>
+              <p>{fullName}</p>
             </div>
             <div className="TemplateItem">
               <span>{t('credential.IdCredentialCard.ExpirationDate')}</span>
-              <p>{moment.unix(CARD_ID_EXPIRATION_DATE).format('DD/MM/YYYY')}</p>
+              <p>
+                {moment()
+                  .add(20, 'y')
+                  .format('L')}
+              </p>
             </div>
           </Col>
         </Row>
