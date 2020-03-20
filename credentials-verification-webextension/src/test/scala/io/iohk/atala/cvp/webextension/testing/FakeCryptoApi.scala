@@ -19,7 +19,8 @@ object FakeCryptoApi extends js.Object {
         keyData: BufferSource,
         algorithm: KeyAlgorithmIdentifier,
         extractable: Boolean,
-        keyUsages: js.Array[KeyUsage]): js.Promise[js.Any] = {
+        keyUsages: js.Array[KeyUsage]
+    ): js.Promise[js.Any] = {
       js.Promise.resolve[js.Any](FakeCryptoKey)
     }
 
@@ -28,7 +29,8 @@ object FakeCryptoApi extends js.Object {
         baseKey: CryptoKey,
         derivedKeyType: KeyAlgorithmIdentifier,
         extractable: Boolean,
-        keyUsages: js.Array[KeyUsage]): js.Promise[js.Any] = {
+        keyUsages: js.Array[KeyUsage]
+    ): js.Promise[js.Any] = {
       js.Promise.resolve[js.Any](FakeCryptoKey)
     }
 

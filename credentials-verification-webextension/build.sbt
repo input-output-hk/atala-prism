@@ -112,9 +112,24 @@ libraryDependencies += "com.softwaremill.sttp" %%% "core" % sttp
 
 libraryDependencies += ScalablyTyped.B.bip39
 libraryDependencies += ScalablyTyped.B.bip32
-
+libraryDependencies += ScalablyTyped.B.bn_dot_js
+libraryDependencies += ScalablyTyped.E.elliptic
+// grpc libraries
+libraryDependencies += "io.grpc" % "grpc-netty" % scalapb.compiler.Version.grpcJavaVersion
+libraryDependencies += "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
 libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest % "test"
 
 addCompilerPlugin(
   "org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full
+)
+
+PB.protoSources in Compile := Seq(file("../credentials-verification/protos"))
+val dependencyProtoList = Seq("node_api.proto", "node_models.proto", "common_models.proto")
+
+includeFilter in PB.generate := new SimpleFileFilter(
+  (f: File) => dependencyProtoList.contains(f.getName)
+)
+
+PB.targets in Compile := Seq(
+  scalapb.gen() -> (sourceManaged in Compile).value / "scalapb"
 )

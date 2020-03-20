@@ -39,11 +39,13 @@ object FakeChromeApi extends js.Object() {
         listeners += callback
       }
       def removeListener(
-          callback: js.Function3[js.UndefOr[js.Any], js.Object, js.Function1[js.Any, _], Boolean]): Unit = {
+          callback: js.Function3[js.UndefOr[js.Any], js.Object, js.Function1[js.Any, _], Boolean]
+      ): Unit = {
         listeners -= callback
       }
       def hasListener(
-          callback: js.Function3[js.UndefOr[js.Any], js.Object, js.Function1[js.Any, _], Boolean]): Boolean = {
+          callback: js.Function3[js.UndefOr[js.Any], js.Object, js.Function1[js.Any, _], Boolean]
+      ): Boolean = {
         listeners.contains(callback)
       }
       def hasListeners(): Boolean = {
@@ -58,7 +60,8 @@ object FakeChromeApi extends js.Object() {
         extensionId: js.UndefOr[AppID] = js.undefined,
         message: js.Any,
         options: js.UndefOr[SendMessageOptions] = js.undefined,
-        responseCallback: js.UndefOr[js.Function1[js.Any, _]] = js.undefined): Unit = {
+        responseCallback: js.UndefOr[js.Function1[js.Any, _]] = js.undefined
+    ): Unit = {
       listeners foreach { listener =>
         listener(message, new js.Object(), responseCallback.get)
       }
