@@ -73,12 +73,12 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
         case .governmentIssuedId:
             detailRows?.append(CellRow(type: .document, value: degree))
         case .certificatOfInsurance:
-            detailRows?.append(CellRow(type: .detailProperty, value: ("home_detail_employment_class_insurance".localize(), degree.credentialSubject?.degreeAwarded, false, degree.type)))
-            detailRows?.append(CellRow(type: .detailProperty, value: ("home_detail_employment_policy_number".localize(), degree.credentialSubject?.degreeResult, false, degree.type)))
+            detailRows?.append(CellRow(type: .detailProperty, value: ("home_detail_employment_class_insurance".localize(), degree.productClass, false, degree.type)))
+            detailRows?.append(CellRow(type: .detailProperty, value: ("home_detail_employment_policy_number".localize(), degree.policyNumber, false, degree.type)))
             detailRows?.append(CellRow(type: .detailProperty, value: ("home_detail_full_name".localize(), degree.credentialSubject?.name, false, degree.type)))
             detailRows?.append(CellRow(type: .detailProperty, value: ("home_detail_employment_policy_end_date".localize(), degree.expiryDate, true,  degree.type)))
         case .proofOfEmployment:
-            detailRows?.append(CellRow(type: .detailProperty, value: ("home_detail_employment_status".localize(), degree.credentialSubject?.degreeAwarded, false, degree.type)))
+            detailRows?.append(CellRow(type: .detailProperty, value: ("home_detail_employment_status".localize(), degree.employmentStatus, false, degree.type)))
             detailRows?.append(CellRow(type: .detailProperty, value: ("home_detail_full_name".localize(), degree.credentialSubject?.name, false, degree.type)))
             detailRows?.append(CellRow(type: .detailProperty, value: ("home_detail_employment_start_date".localize(), degree.issuanceDate, true,  degree.type)))
         default:

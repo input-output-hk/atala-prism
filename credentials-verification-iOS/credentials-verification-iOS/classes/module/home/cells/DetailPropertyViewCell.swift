@@ -25,6 +25,7 @@ class DetailPropertyViewCell: BaseTableViewCell {
 
         // Setup
         delegateImpl?.setup(for: self)
+        viewMainBody.addShadowLayer(opacity: 0.2)
     }
 
     // MARK: Config

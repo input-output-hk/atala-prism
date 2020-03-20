@@ -4,14 +4,15 @@ import ObjectMapper
 enum CredentialType: String {
     case univerityDegree = "VerifiableCredential/AirsideDegreeCredential"
     case governmentIssuedId  = "VerifiableCredential/RedlandIdCredential"
-    case proofOfEmployment = "VerifiableCredential/CertificateOfEmployment"
-    case certificatOfInsurance = "VerifiableCredential/CertificateOfInsurance"
+    case proofOfEmployment = "VerifiableCredential/AtalaEmploymentCredential"
+    case certificatOfInsurance = "VerifiableCredential/AtalaCertificateOfInsurance"
 }
 
 class Issuer: Mappable {
 
     var id: String?
     var name: String?
+    var address: String?
 
     init() {}
 
@@ -21,6 +22,7 @@ class Issuer: Mappable {
     func mapping(map: Map) {
         id <- map["id"]
         name <- map["name"]
+        address <- map["address"]
     }
     
 }
@@ -63,6 +65,9 @@ class Degree: Mappable {
     var issuanceDate: String?
     var expiryDate: String?
     var credentialSubject: CredentialSubject?
+    var employmentStatus: String?
+    var policyNumber: String?
+    var productClass: String?
     // Note: Can't store Io_Iohk_Cvp_Credential_Credential because
     // it doesn't implement Mappable.
     var intCredential: Io_Iohk_Cvp_Credential_Credential?
@@ -82,6 +87,9 @@ class Degree: Mappable {
         issuanceDate <- map["issuanceDate"]
         expiryDate <- map["expiryDate"]
         credentialSubject <- map["credentialSubject"]
+        employmentStatus <- map["employmentStatus"]
+        policyNumber <- map["policyNumber"]
+        productClass <- map["productClass"]
     }
 
     static func build(_ message: Io_Iohk_Prism_Protos_ReceivedMessage, isNew: Bool) -> Degree? {
