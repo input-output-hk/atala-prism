@@ -32,11 +32,10 @@ object ECKeyOperation {
     )
   }
 
-
   private def toECKeyData(key: KeyPair): ECKeyData = {
     val publicKey = key.getPublic()
-    val  x:mutable.Seq[Byte] = publicKey.getX.asInstanceOf[bn.BN].toArray().map(_.toByte)
-    val  y:mutable.Seq[Byte] = publicKey.getY.asInstanceOf[bn.BN].toArray().map(_.toByte)
+    val x: mutable.Seq[Byte] = publicKey.getX.asInstanceOf[bn.BN].toArray().map(_.toByte)
+    val y: mutable.Seq[Byte] = publicKey.getY.asInstanceOf[bn.BN].toArray().map(_.toByte)
     ECKeyData()
       .withCurve(CURVE_NAME)
       .withX(ByteString.copyFrom(x.toArray))
