@@ -10,20 +10,17 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
-
-import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 import butterknife.BindView;
 import butterknife.OnClick;
 import io.iohk.cvp.R;
+import io.iohk.cvp.io.connector.ParticipantInfo;
+import io.iohk.cvp.io.connector.ParticipantInfo.ParticipantCase;
 import io.iohk.cvp.utils.ImageUtils;
 import io.iohk.cvp.viewmodel.AcceptConnectionViewModel;
 import io.iohk.cvp.views.Preferences;
 import javax.inject.Inject;
-
-import io.iohk.cvp.views.activities.MainActivity;
-import io.iohk.prism.protos.ParticipantInfo;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
@@ -46,18 +43,17 @@ public class AcceptConnectionDialogFragment extends CvpDialogFragment<AcceptConn
   private ViewModelProvider.Factory factory;
 
   public static AcceptConnectionDialogFragment newInstance(String token,
-                                                           ParticipantInfo participantInfo) {
-
+      ParticipantInfo participantInfo) {
     AcceptConnectionDialogFragment instance = new AcceptConnectionDialogFragment();
 
     boolean isIssuer =
-        participantInfo.getParticipantCase().getNumber() == ParticipantInfo.ParticipantCase.ISSUER.getNumber();
+        participantInfo.getParticipantCase().getNumber() == ParticipantCase.ISSUER.getNumber();
 
     Bundle args = new Bundle();
     args.putString(TOKEN_KEY, token);
     args.putString(NAME_KEY, isIssuer ? participantInfo.getIssuer().getName()
         : participantInfo.getVerifier().getName());
-    args.putString(TITLE_KEY, "You are about to connect with");
+    args.putString(TITLE_KEY, isIssuer ? "University name" : "Employer name");
     args.putByteArray(LOGO_DATA_KEY, isIssuer ? participantInfo.getIssuer().getLogo().toByteArray()
         : participantInfo.getVerifier().getLogo().toByteArray());
     instance.setArguments(args);
@@ -134,9 +130,7 @@ public class AcceptConnectionDialogFragment extends CvpDialogFragment<AcceptConn
 
       Preferences prefs = new Preferences(getContext());
       prefs.saveConnectionTokenToAccept(getArguments().getString(TOKEN_KEY));
-      ((MainActivity) getActivity()).acceptCredential( getArguments().getString(TOKEN_KEY), prefs);
-
-      //navigator.showPayment(getActivity(), response.getResult());
+      navigator.showPayment(getActivity(), response.getResult());
     });
   }
 }

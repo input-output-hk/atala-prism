@@ -9,12 +9,11 @@ import android.util.Base64;
 import com.google.protobuf.ByteString;
 import io.iohk.cvp.core.exception.ErrorCode;
 import io.iohk.cvp.core.exception.SharedPrefencesDataNotFoundException;
+import io.iohk.cvp.io.connector.AddConnectionFromTokenResponse;
 import io.iohk.cvp.utils.KeyStoreUtils;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-
-import io.iohk.prism.protos.AddConnectionFromTokenResponse;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor

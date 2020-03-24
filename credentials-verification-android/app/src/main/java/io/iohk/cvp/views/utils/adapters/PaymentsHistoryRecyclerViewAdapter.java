@@ -4,22 +4,19 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import io.iohk.cvp.R;
+import io.iohk.cvp.io.connector.Payment;
+import io.iohk.cvp.utils.DateUtils;
+import io.iohk.cvp.viewmodel.PaymentViewModel;
+import io.iohk.cvp.views.utils.components.PaymentState;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
-
-import butterknife.BindView;
-import butterknife.ButterKnife;
-import io.iohk.cvp.R;
-import io.iohk.cvp.utils.DateUtils;
-import io.iohk.cvp.viewmodel.PaymentViewModel;
-import io.iohk.cvp.views.utils.components.PaymentState;
-import io.iohk.prism.protos.Payment;
 
 public class PaymentsHistoryRecyclerViewAdapter extends
     RecyclerView.Adapter<PaymentsHistoryRecyclerViewAdapter.ViewHolder> {

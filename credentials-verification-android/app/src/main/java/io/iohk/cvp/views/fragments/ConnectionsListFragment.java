@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import butterknife.BindView;
 import io.iohk.cvp.R;
+import io.iohk.cvp.io.connector.ConnectionInfo;
 import io.iohk.cvp.viewmodel.ConnectionsActivityViewModel;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.RootAppBar;
@@ -19,8 +20,6 @@ import io.iohk.cvp.views.utils.adapters.ConnectionsRecyclerViewAdapter;
 import java.util.ArrayList;
 import java.util.List;
 import javax.inject.Inject;
-
-import io.iohk.prism.protos.ConnectionInfo;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 

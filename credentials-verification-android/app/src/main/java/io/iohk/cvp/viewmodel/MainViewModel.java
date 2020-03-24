@@ -2,14 +2,12 @@ package io.iohk.cvp.viewmodel;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-
-import javax.inject.Inject;
-
 import io.iohk.cvp.grpc.AddConnectionFromTokenRunnable;
 import io.iohk.cvp.grpc.AsyncTaskResult;
 import io.iohk.cvp.grpc.GrpcTask;
-import io.iohk.prism.protos.AddConnectionFromTokenResponse;
-import io.iohk.prism.protos.ConnectorPublicKey;
+import io.iohk.cvp.io.connector.AddConnectionFromTokenResponse;
+import io.iohk.cvp.io.connector.PublicKey;
+import javax.inject.Inject;
 
 public class MainViewModel extends CvpViewModel {
 
@@ -20,8 +18,8 @@ public class MainViewModel extends CvpViewModel {
   }
 
   public LiveData<AsyncTaskResult<AddConnectionFromTokenResponse>> addConnectionFromToken(
-          String token,
-          ConnectorPublicKey publicKey, String nonce) {
+      String token,
+      PublicKey publicKey, String nonce) {
     new GrpcTask<>(new AddConnectionFromTokenRunnable(newConnectionInfo), context)
         .execute(null, token, publicKey, nonce);
     return newConnectionInfo;

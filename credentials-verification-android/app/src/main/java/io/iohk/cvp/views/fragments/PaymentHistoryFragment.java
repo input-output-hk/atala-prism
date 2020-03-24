@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import butterknife.BindView;
 import io.iohk.cvp.R;
 import io.iohk.cvp.grpc.AsyncTaskResult;
+import io.iohk.cvp.io.connector.Payment;
 import io.iohk.cvp.utils.DateUtils;
 import io.iohk.cvp.viewmodel.PaymentViewModel;
 import io.iohk.cvp.views.Navigator;
@@ -24,8 +25,6 @@ import io.iohk.cvp.views.utils.adapters.PaymentsHistoryRecyclerViewAdapter;
 import java.util.List;
 import java.util.Objects;
 import javax.inject.Inject;
-
-import io.iohk.prism.protos.Payment;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 

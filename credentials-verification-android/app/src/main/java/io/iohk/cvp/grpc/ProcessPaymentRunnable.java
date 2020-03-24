@@ -2,9 +2,10 @@ package io.iohk.cvp.grpc;
 
 import androidx.lifecycle.MutableLiveData;
 import io.grpc.StatusRuntimeException;
-import io.iohk.prism.protos.ConnectorServiceGrpc;
-import io.iohk.prism.protos.ProcessPaymentRequest;
-import io.iohk.prism.protos.ProcessPaymentResponse;
+import io.iohk.cvp.io.connector.ConnectorServiceGrpc;
+import io.iohk.cvp.io.connector.ConnectorServiceGrpc.ConnectorServiceBlockingStub;
+import io.iohk.cvp.io.connector.ProcessPaymentRequest;
+import io.iohk.cvp.io.connector.ProcessPaymentResponse;
 
 public class ProcessPaymentRunnable extends CommonGrpcRunnable<ProcessPaymentResponse> {
 
@@ -14,13 +15,13 @@ public class ProcessPaymentRunnable extends CommonGrpcRunnable<ProcessPaymentRes
 
   @Override
   public AsyncTaskResult<ProcessPaymentResponse> run(
-      ConnectorServiceGrpc.ConnectorServiceBlockingStub blockingStub,
+      ConnectorServiceBlockingStub blockingStub,
       ConnectorServiceGrpc.ConnectorServiceStub asyncStub, Object... params) {
     return processPayment(blockingStub, params);
   }
 
   private AsyncTaskResult<ProcessPaymentResponse> processPayment(
-          ConnectorServiceGrpc.ConnectorServiceBlockingStub blockingStub, Object... params)
+      ConnectorServiceBlockingStub blockingStub, Object... params)
       throws StatusRuntimeException {
 
     ProcessPaymentRequest request = ProcessPaymentRequest.newBuilder()

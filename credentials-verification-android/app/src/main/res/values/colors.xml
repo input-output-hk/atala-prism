@@ -24,9 +24,6 @@
 
   <color name="black">#202020</color>
 
-  <color name="dark_purple">#51246C</color>
-  <color name="purple">#66268D</color>
-
   <color name="mtrl_textinput_default_box_stroke_color" tools:override="true">#E5E5E5</color>
 
 </resources>

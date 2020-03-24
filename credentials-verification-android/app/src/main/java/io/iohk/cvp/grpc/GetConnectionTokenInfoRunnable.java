@@ -2,10 +2,10 @@ package io.iohk.cvp.grpc;
 
 import androidx.lifecycle.MutableLiveData;
 import io.grpc.StatusRuntimeException;
-import io.iohk.prism.protos.ConnectorServiceGrpc;
-import io.iohk.prism.protos.GetConnectionTokenInfoRequest;
-import io.iohk.prism.protos.GetConnectionTokenInfoResponse;
-import io.iohk.prism.protos.ParticipantInfo;
+import io.iohk.cvp.io.connector.ConnectorServiceGrpc;
+import io.iohk.cvp.io.connector.GetConnectionTokenInfoRequest;
+import io.iohk.cvp.io.connector.GetConnectionTokenInfoResponse;
+import io.iohk.cvp.io.connector.ParticipantInfo;
 
 public class GetConnectionTokenInfoRunnable extends CommonGrpcRunnable<ParticipantInfo> {
 

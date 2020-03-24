@@ -3,9 +3,9 @@ package io.iohk.cvp.grpc;
 import androidx.lifecycle.MutableLiveData;
 import com.google.protobuf.ByteString;
 import io.grpc.StatusRuntimeException;
-import io.iohk.prism.protos.ConnectorServiceGrpc;
-import io.iohk.prism.protos.SendMessageRequest;
-import io.iohk.prism.protos.SendMessageResponse;
+import io.iohk.cvp.io.connector.ConnectorServiceGrpc;
+import io.iohk.cvp.io.connector.SendMessageRequest;
+import io.iohk.cvp.io.connector.SendMessageResponse;
 
 public class SendMessageRunnable extends CommonGrpcRunnable<Boolean> {
 

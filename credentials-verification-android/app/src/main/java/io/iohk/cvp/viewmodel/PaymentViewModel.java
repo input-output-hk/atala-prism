@@ -5,8 +5,7 @@ import androidx.lifecycle.MutableLiveData;
 import io.iohk.cvp.grpc.AsyncTaskResult;
 import io.iohk.cvp.grpc.GetPaymentsRunnable;
 import io.iohk.cvp.grpc.GrpcTask;
-import io.iohk.prism.protos.Payment;
-
+import io.iohk.cvp.io.connector.Payment;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
