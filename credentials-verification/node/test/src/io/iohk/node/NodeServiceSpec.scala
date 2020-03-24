@@ -184,7 +184,8 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
 
   "NodeService.getBuildInfo" should {
     "return proper build information" in {
-      val tenMinutesAgo = LocalDateTime.now(ZoneOffset.UTC).minusMinutes(10)
+      // Use a month so that's long enough to not cache the build date but short enough to be helpful for the test
+      val aMonthAgo = LocalDateTime.now(ZoneOffset.UTC).minusMonths(1)
 
       val buildInfo = service.getBuildInfo(GetBuildInfoRequest())
 
@@ -194,7 +195,7 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       buildInfo.millVersion mustBe "0.6.1"
       // Give it enough time between build creation and test
       val buildTime = LocalDateTime.parse(buildInfo.buildTime)
-      buildTime.compareTo(tenMinutesAgo) must be > 0
+      buildTime.compareTo(aMonthAgo) must be > 0
     }
   }
 }
