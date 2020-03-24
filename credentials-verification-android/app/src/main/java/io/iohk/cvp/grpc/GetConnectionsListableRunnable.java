@@ -2,11 +2,11 @@ package io.iohk.cvp.grpc;
 
 import androidx.lifecycle.MutableLiveData;
 import io.grpc.StatusRuntimeException;
-import io.iohk.cvp.io.connector.ConnectorServiceGrpc;
-import io.iohk.cvp.io.connector.GetConnectionsPaginatedRequest;
-import io.iohk.cvp.io.connector.GetConnectionsPaginatedResponse;
-import io.iohk.cvp.io.connector.ParticipantInfo;
 import io.iohk.cvp.viewmodel.dtos.ConnectionListable;
+import io.iohk.prism.protos.ConnectorServiceGrpc;
+import io.iohk.prism.protos.GetConnectionsPaginatedRequest;
+import io.iohk.prism.protos.GetConnectionsPaginatedResponse;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,9 +37,6 @@ public class GetConnectionsListableRunnable extends CommonGrpcRunnable<List<Conn
     GetConnectionsPaginatedResponse response = blockingStub.getConnectionsPaginated(request);
 
     return new AsyncTaskResult<>(response.getConnectionsList().stream()
-        .filter(
-            connection -> connection.getParticipantInfo().getParticipantCase().getNumber()
-                == ParticipantInfo.VERIFIER_FIELD_NUMBER)
         .map(ConnectionListable::new)
         .collect(Collectors.toList()));
   }

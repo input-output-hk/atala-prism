@@ -6,8 +6,9 @@ import io.iohk.cvp.grpc.AsyncTaskResult;
 import io.iohk.cvp.grpc.GetConnectionTokenInfoRunnable;
 import io.iohk.cvp.grpc.GetConnectionsInfoRunnable;
 import io.iohk.cvp.grpc.GrpcTask;
-import io.iohk.cvp.io.connector.ConnectionInfo;
-import io.iohk.cvp.io.connector.ParticipantInfo;
+import io.iohk.prism.protos.ConnectionInfo;
+import io.iohk.prism.protos.ParticipantInfo;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;

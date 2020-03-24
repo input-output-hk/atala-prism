@@ -2,11 +2,11 @@ package io.iohk.cvp.grpc;
 
 import androidx.lifecycle.MutableLiveData;
 import io.grpc.StatusRuntimeException;
-import io.iohk.cvp.io.connector.ConnectorServiceGrpc.ConnectorServiceBlockingStub;
-import io.iohk.cvp.io.connector.ConnectorServiceGrpc.ConnectorServiceStub;
-import io.iohk.cvp.io.connector.GetMessagesPaginatedRequest;
-import io.iohk.cvp.io.connector.GetMessagesPaginatedResponse;
-import io.iohk.cvp.io.connector.ReceivedMessage;
+import io.iohk.prism.protos.ConnectorServiceGrpc;
+import io.iohk.prism.protos.GetMessagesPaginatedRequest;
+import io.iohk.prism.protos.GetMessagesPaginatedResponse;
+import io.iohk.prism.protos.ReceivedMessage;
+
 import java.util.List;
 
 public class GetMessagesRunnable<A> extends
@@ -22,13 +22,13 @@ public class GetMessagesRunnable<A> extends
 
   @Override
   public AsyncTaskResult<List<ReceivedMessage>> run(
-      ConnectorServiceBlockingStub blockingStub,
-      ConnectorServiceStub asyncStub, Object... params) {
+          ConnectorServiceGrpc.ConnectorServiceBlockingStub blockingStub,
+          ConnectorServiceGrpc.ConnectorServiceStub asyncStub, Object... params) {
     return getMessages(blockingStub);
   }
 
   private AsyncTaskResult<List<ReceivedMessage>> getMessages(
-      ConnectorServiceBlockingStub blockingStub)
+      ConnectorServiceGrpc.ConnectorServiceBlockingStub blockingStub)
       throws StatusRuntimeException {
 
     GetMessagesPaginatedRequest request = GetMessagesPaginatedRequest.newBuilder()

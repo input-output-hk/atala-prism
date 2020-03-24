@@ -1,64 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?><!-- Bottom View Start-->
-
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
-  xmlns:app="http://schemas.android.com/apk/res-auto"
-  xmlns:tools="http://schemas.android.com/tools"
-  android:id="@+id/issuer_card_view"
-  android:layout_width="match_parent"
-  android:layout_height="wrap_content"
-  android:layout_marginTop="8dp"
-  android:layout_marginBottom="8dp"
-  android:layout_marginStart="@dimen/activity_default_side_margin"
-  android:layout_marginEnd="@dimen/activity_default_side_margin"
-  android:layout_gravity="center"
-  android:background="@android:color/white"
-  android:minHeight="64dp"
-  app:cardCornerRadius="@dimen/card_corner_radius"
-  app:cardElevation="1dp">
-
-  <!--What you want to show-->
-  <androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/issuer_card_view"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_alignParentBottom="true"
-    android:layout_centerHorizontal="true"
-    android:layout_gravity="center">
+    android:layout_gravity="center"
+    android:layout_marginStart="@dimen/activity_default_side_margin"
+    android:layout_marginTop="8dp"
+    android:layout_marginEnd="@dimen/activity_default_side_margin"
+    android:layout_marginBottom="8dp"
+    android:background="@android:color/white"
+    android:minHeight="64dp"
+    app:cardCornerRadius="@dimen/card_corner_radius"
+    app:cardElevation="1dp">
 
-    <RelativeLayout
-      android:id="@+id/card_logo_container"
-      android:layout_width="54dp"
-      android:layout_height="54dp"
-      android:layout_marginStart="8dp"
-      android:background="@drawable/rounded_corner_grey"
-      android:clickable="true"
-      android:focusable="true"
-      app:layout_constraintBottom_toBottomOf="parent"
-      app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toTopOf="parent">
+    <!--What you want to show-->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_gravity="center">
 
-      <ImageView
-        android:id="@+id/credential_logo"
-        android:layout_width="46dp"
-        android:layout_height="46dp"
-        android:layout_centerInParent="true"
-        android:src="@drawable/icon_scan_qr"
-        tools:ignore="ContentDescription" />
-    </RelativeLayout>
-    <TextView
-      android:id="@+id/issuer_name"
-      android:textStyle="bold"
-      android:layout_width="0dp"
-      android:layout_height="wrap_content"
-      android:layout_marginStart="24dp"
-      android:layout_marginEnd="24dp"
-      android:ellipsize="end"
-      android:maxLines="1"
-      android:text="dsad"
-      android:textColor="@color/black"
-      app:layout_constraintBottom_toBottomOf="parent"
-      app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintStart_toEndOf="@+id/card_logo_container"
-      app:layout_constraintTop_toTopOf="parent" />
+        <RelativeLayout
+            android:id="@+id/card_logo_container"
+            android:layout_width="54dp"
+            android:layout_height="54dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/rounded_corner_grey"
+            android:clickable="true"
+            android:focusable="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
-  </androidx.constraintlayout.widget.ConstraintLayout>
+            <ImageView
+                android:id="@+id/credential_logo"
+                android:layout_width="46dp"
+                android:layout_height="46dp"
+                android:layout_centerInParent="true"
+                android:src="@drawable/icon_scan_qr"
+                tools:ignore="ContentDescription" />
+        </RelativeLayout>
+
+        <TextView
+            android:id="@+id/issuer_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="24dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="dsad"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/card_logo_container"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>

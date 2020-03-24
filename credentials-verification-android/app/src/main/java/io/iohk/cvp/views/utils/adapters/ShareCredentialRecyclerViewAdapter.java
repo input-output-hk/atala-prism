@@ -87,7 +87,7 @@ public class ShareCredentialRecyclerViewAdapter extends
 
     void setConnectionInfo(ConnectionListable connectionInfo) {
       this.connectionInfo = connectionInfo;
-      verifierName.setText(connectionInfo.getVerifierName());
+      verifierName.setText(connectionInfo.getIssuerName());
       if (connectionInfo.getVerifierLogo().length > 0) {
         verifierLogo.setImageBitmap(
             ImageUtils.getBitmapFromByteArray(connectionInfo.getVerifierLogo()));

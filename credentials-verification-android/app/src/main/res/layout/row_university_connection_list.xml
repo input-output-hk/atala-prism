@@ -37,12 +37,13 @@
       app:layout_constraintTop_toTopOf="parent">
 
       <ImageView
-        android:id="@+id/credential_logo"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_centerInParent="true"
-        android:src="@drawable/free_tbilisi_state_university_logo"
-        tools:ignore="ContentDescription" />
+          android:id="@+id/credential_logo"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:layout_centerInParent="true"
+          app:srcCompat="@drawable/ic_conection_list"
+          tools:ignore="ContentDescription" />
+
     </RelativeLayout>
     <TextView
       android:id="@+id/issuer_name"

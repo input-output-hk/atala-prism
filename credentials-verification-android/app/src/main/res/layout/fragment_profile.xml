@@ -1,226 +1,227 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-  xmlns:app="http://schemas.android.com/apk/res-auto"
-  android:layout_width="match_parent"
-  android:layout_height="match_parent"
-  android:paddingTop="72dp"
-  android:background="@drawable/bg_profile">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_profile"
+    android:paddingTop="25dp">
 
   <ScrollView
-    android:layout_width="match_parent"
-    android:layout_height="0dp"
-    app:layout_constraintBottom_toBottomOf="parent"
-    app:layout_constraintEnd_toEndOf="parent"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toBottomOf="@+id/layout_profile_header">
-    <androidx.constraintlayout.widget.ConstraintLayout
-      android:id="@+id/personal_info"
       android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:paddingTop="16dp"
-      android:paddingBottom="32dp"
-      android:paddingStart="24dp"
-      android:paddingEnd="24dp"
+      android:layout_height="0dp"
       app:layout_constraintBottom_toBottomOf="parent"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintTop_toBottomOf="@+id/layout_profile_header">
 
-      <ImageView
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="5dp"
-        android:src="@drawable/rounded_corner_white"
-        app:layout_constraintBottom_toBottomOf="@id/text_input_name"
-        app:layout_constraintEnd_toEndOf="@id/text_input_name"
-        app:layout_constraintStart_toStartOf="@id/text_input_name"
-        app:layout_constraintTop_toTopOf="@id/text_input_name" />
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/personal_info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="24dp"
+        android:paddingTop="16dp"
+        android:paddingEnd="24dp"
+        android:paddingBottom="32dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/layout_profile_header">
 
       <ImageView
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="5dp"
-        android:src="@drawable/rounded_corner_white"
-        app:layout_constraintBottom_toBottomOf="@id/text_input_country"
-        app:layout_constraintEnd_toEndOf="@id/text_input_country"
-        app:layout_constraintStart_toStartOf="@id/text_input_country"
-        app:layout_constraintTop_toTopOf="@id/text_input_country" />
+          android:layout_width="0dp"
+          android:layout_height="0dp"
+          android:layout_marginTop="5dp"
+          android:src="@drawable/rounded_corner_white"
+          app:layout_constraintBottom_toBottomOf="@id/text_input_name"
+          app:layout_constraintEnd_toEndOf="@id/text_input_name"
+          app:layout_constraintStart_toStartOf="@id/text_input_name"
+          app:layout_constraintTop_toTopOf="@id/text_input_name" />
 
       <ImageView
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="5dp"
-        android:src="@drawable/rounded_corner_white"
-        app:layout_constraintBottom_toBottomOf="@id/text_input_birth_date"
-        app:layout_constraintEnd_toEndOf="@id/text_input_birth_date"
-        app:layout_constraintStart_toStartOf="@id/text_input_birth_date"
-        app:layout_constraintTop_toTopOf="@id/text_input_birth_date" />
+          android:layout_width="0dp"
+          android:layout_height="0dp"
+          android:layout_marginTop="5dp"
+          android:src="@drawable/rounded_corner_white"
+          app:layout_constraintBottom_toBottomOf="@id/text_input_country"
+          app:layout_constraintEnd_toEndOf="@id/text_input_country"
+          app:layout_constraintStart_toStartOf="@id/text_input_country"
+          app:layout_constraintTop_toTopOf="@id/text_input_country" />
 
       <ImageView
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="5dp"
-        android:src="@drawable/rounded_corner_white"
-        app:layout_constraintBottom_toBottomOf="@id/text_input_email"
-        app:layout_constraintEnd_toEndOf="@id/text_input_email"
-        app:layout_constraintStart_toStartOf="@id/text_input_email"
-        app:layout_constraintTop_toTopOf="@id/text_input_email" />
+          android:layout_width="0dp"
+          android:layout_height="0dp"
+          android:layout_marginTop="5dp"
+          android:src="@drawable/rounded_corner_white"
+          app:layout_constraintBottom_toBottomOf="@id/text_input_birth_date"
+          app:layout_constraintEnd_toEndOf="@id/text_input_birth_date"
+          app:layout_constraintStart_toStartOf="@id/text_input_birth_date"
+          app:layout_constraintTop_toTopOf="@id/text_input_birth_date" />
+
+      <ImageView
+          android:layout_width="0dp"
+          android:layout_height="0dp"
+          android:layout_marginTop="5dp"
+          android:src="@drawable/rounded_corner_white"
+          app:layout_constraintBottom_toBottomOf="@id/text_input_email"
+          app:layout_constraintEnd_toEndOf="@id/text_input_email"
+          app:layout_constraintStart_toStartOf="@id/text_input_email"
+          app:layout_constraintTop_toTopOf="@id/text_input_email" />
 
 
       <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/text_input_country"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:hint="@string/country"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/text_input_name">
+          android:id="@+id/text_input_country"
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="16dp"
+          android:hint="@string/country"
+          app:layout_constraintEnd_toEndOf="parent"
+          app:layout_constraintStart_toStartOf="parent"
+          app:layout_constraintTop_toBottomOf="@id/text_input_name">
 
         <com.google.android.material.textfield.TextInputEditText
-          android:id="@+id/edit_text_country"
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:enabled="false"
-          android:singleLine="true" />
+            android:id="@+id/edit_text_country"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:singleLine="true" />
       </com.google.android.material.textfield.TextInputLayout>
 
       <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/text_input_name"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:hint="@string/full_name"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+          android:id="@+id/text_input_name"
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="16dp"
+          android:hint="@string/full_name"
+          app:layout_constraintEnd_toEndOf="parent"
+          app:layout_constraintStart_toStartOf="parent"
+          app:layout_constraintTop_toTopOf="parent">
 
         <com.google.android.material.textfield.TextInputEditText
-          android:id="@+id/edit_text_name"
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:enabled="false"
-          android:singleLine="true" />
+            android:id="@+id/edit_text_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:singleLine="true" />
       </com.google.android.material.textfield.TextInputLayout>
 
       <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/text_input_birth_date"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:hint="@string/birth_date"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/text_input_country">
+          android:id="@+id/text_input_birth_date"
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="16dp"
+          android:hint="@string/birth_date"
+          app:layout_constraintEnd_toEndOf="parent"
+          app:layout_constraintStart_toStartOf="parent"
+          app:layout_constraintTop_toBottomOf="@id/text_input_country">
 
         <com.google.android.material.textfield.TextInputEditText
-          android:id="@+id/edit_text_birth_date"
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:enabled="false"
-          android:singleLine="true" />
+            android:id="@+id/edit_text_birth_date"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:singleLine="true" />
       </com.google.android.material.textfield.TextInputLayout>
 
       <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/text_input_email"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:hint="@string/email"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/text_input_birth_date">
+          android:id="@+id/text_input_email"
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="16dp"
+          android:hint="@string/email"
+          app:layout_constraintEnd_toEndOf="parent"
+          app:layout_constraintStart_toStartOf="parent"
+          app:layout_constraintTop_toBottomOf="@id/text_input_birth_date">
 
         <com.google.android.material.textfield.TextInputEditText
-          android:id="@+id/edit_text_email"
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:enabled="false"
-          android:singleLine="true" />
+            android:id="@+id/edit_text_email"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:singleLine="true" />
       </com.google.android.material.textfield.TextInputLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
   </ScrollView>
 
   <androidx.constraintlayout.widget.ConstraintLayout
-    android:id="@+id/layout_profile_header"
-    android:layout_width="0dp"
-    android:layout_height="wrap_content"
-    android:layout_marginTop="24dp"
-    android:layout_marginBottom="24dp"
-    android:layout_marginStart="16dp"
-    android:layout_marginEnd="16dp"
-    android:padding="16dp"
-    android:background="@drawable/rounded_corner_white"
-    android:elevation="4dp"
-    app:layout_constraintEnd_toEndOf="parent"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toTopOf="parent">
-
-    <androidx.constraintlayout.widget.ConstraintLayout
+      android:id="@+id/layout_profile_header"
       android:layout_width="0dp"
       android:layout_height="wrap_content"
-      android:layout_margin="24dp"
+      android:layout_marginStart="16dp"
+      android:layout_marginTop="24dp"
+      android:layout_marginEnd="16dp"
+      android:layout_marginBottom="24dp"
+      android:background="@drawable/rounded_corner_white"
+      android:elevation="4dp"
+      android:padding="16dp"
       app:layout_constraintEnd_toEndOf="parent"
       app:layout_constraintStart_toStartOf="parent"
       app:layout_constraintTop_toTopOf="parent">
 
-      <TextView
-        android:id="@+id/text_view_email"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="16dp"
-        android:singleLine="true"
-        android:textAlignment="center"
-        android:textColor="@color/grey_4"
-        android:textSize="13sp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_margin="24dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/layout_profile_name" />
+        app:layout_constraintTop_toTopOf="parent">
 
-      <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/layout_profile_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/profile_image">
-
-        <ImageView
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:layout_marginStart="4dp"
-          android:src="@drawable/ic_verified"
-          app:layout_constraintBottom_toBottomOf="@id/text_view_name"
-          app:layout_constraintEnd_toEndOf="parent"
-          app:layout_constraintStart_toEndOf="@id/text_view_name"
-          app:layout_constraintTop_toTopOf="@id/text_view_name" />
-
-        <TextView
-          android:id="@+id/text_view_name"
+      <TextView
+          android:id="@+id/text_view_email"
           android:layout_width="0dp"
           android:layout_height="wrap_content"
-          android:paddingTop="2dp"
-          android:paddingBottom="2dp"
+          android:layout_marginTop="8dp"
+          android:layout_marginBottom="16dp"
+          android:singleLine="true"
           android:textAlignment="center"
-          android:textColor="@color/black"
-          android:textSize="18sp"
+          android:textColor="@color/grey_4"
+          android:textSize="13sp"
           app:layout_constraintBottom_toBottomOf="parent"
+          app:layout_constraintEnd_toEndOf="parent"
           app:layout_constraintStart_toStartOf="parent"
-          app:layout_constraintTop_toTopOf="parent" />
+          app:layout_constraintTop_toBottomOf="@id/layout_profile_name" />
+
+      <androidx.constraintlayout.widget.ConstraintLayout
+          android:id="@+id/layout_profile_name"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="16dp"
+          app:layout_constraintEnd_toEndOf="parent"
+          app:layout_constraintStart_toStartOf="parent"
+          app:layout_constraintTop_toBottomOf="@id/profile_image">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:src="@drawable/ic_verified"
+            app:layout_constraintBottom_toBottomOf="@id/text_view_name"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/text_view_name"
+            app:layout_constraintTop_toTopOf="@id/text_view_name" />
+
+        <TextView
+            android:id="@+id/text_view_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:paddingTop="2dp"
+            android:paddingBottom="2dp"
+            android:textAlignment="center"
+            android:textColor="@color/black"
+            android:textSize="18sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
       </androidx.constraintlayout.widget.ConstraintLayout>
 
       <de.hdodenhof.circleimageview.CircleImageView
-        android:id="@+id/profile_image"
-        android:layout_width="96dp"
-        android:layout_height="96dp"
-        android:src="@drawable/ic_default_profile"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+          android:id="@+id/profile_image"
+          android:layout_width="96dp"
+          android:layout_height="96dp"
+          android:src="@drawable/ic_default_profile"
+          app:layout_constraintEnd_toEndOf="parent"
+          app:layout_constraintStart_toStartOf="parent"
+          app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
   </androidx.constraintlayout.widget.ConstraintLayout>

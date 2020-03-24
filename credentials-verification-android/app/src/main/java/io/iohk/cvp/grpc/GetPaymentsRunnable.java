@@ -1,12 +1,14 @@
 package io.iohk.cvp.grpc;
 
 import androidx.lifecycle.MutableLiveData;
-import io.grpc.StatusRuntimeException;
-import io.iohk.cvp.io.connector.ConnectorServiceGrpc;
-import io.iohk.cvp.io.connector.GetPaymentsRequest;
-import io.iohk.cvp.io.connector.GetPaymentsResponse;
-import io.iohk.cvp.io.connector.Payment;
+
 import java.util.List;
+
+import io.grpc.StatusRuntimeException;
+import io.iohk.prism.protos.ConnectorServiceGrpc;
+import io.iohk.prism.protos.GetPaymentsRequest;
+import io.iohk.prism.protos.GetPaymentsResponse;
+import io.iohk.prism.protos.Payment;
 
 public class GetPaymentsRunnable extends CommonGrpcRunnable<List<Payment>> {
 

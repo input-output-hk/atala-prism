@@ -2,10 +2,9 @@ package io.iohk.cvp.grpc;
 
 import androidx.lifecycle.MutableLiveData;
 import io.grpc.StatusRuntimeException;
-import io.iohk.cvp.io.connector.ConnectorServiceGrpc.ConnectorServiceBlockingStub;
-import io.iohk.cvp.io.connector.ConnectorServiceGrpc.ConnectorServiceStub;
-import io.iohk.cvp.io.connector.GetBraintreePaymentsConfigRequest;
-import io.iohk.cvp.io.connector.GetBraintreePaymentsConfigResponse;
+import io.iohk.prism.protos.ConnectorServiceGrpc;
+import io.iohk.prism.protos.GetBraintreePaymentsConfigRequest;
+import io.iohk.prism.protos.GetBraintreePaymentsConfigResponse;
 
 public class GetBraintreePaymentsConfigRunnable extends CommonGrpcRunnable<String> {
 
@@ -15,13 +14,13 @@ public class GetBraintreePaymentsConfigRunnable extends CommonGrpcRunnable<Strin
 
   @Override
   public AsyncTaskResult<String> run(
-      ConnectorServiceBlockingStub blockingStub,
-      ConnectorServiceStub asyncStub, Object... params) {
+          ConnectorServiceGrpc.ConnectorServiceBlockingStub blockingStub,
+          ConnectorServiceGrpc.ConnectorServiceStub asyncStub, Object... params) {
     return getTokenizationKey(blockingStub);
   }
 
   private AsyncTaskResult<String> getTokenizationKey(
-      ConnectorServiceBlockingStub blockingStub)
+      ConnectorServiceGrpc.ConnectorServiceBlockingStub blockingStub)
       throws StatusRuntimeException {
 
     GetBraintreePaymentsConfigRequest request = GetBraintreePaymentsConfigRequest.newBuilder()

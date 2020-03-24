@@ -7,9 +7,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.iohk.cvp.R;
-import io.iohk.cvp.io.connector.ConnectionInfo;
-import io.iohk.cvp.io.connector.VerifierInfo;
 import io.iohk.cvp.utils.ImageUtils;
+import io.iohk.prism.protos.ConnectionInfo;
+import io.iohk.prism.protos.VerifierInfo;
 
 public class EmployersRecyclerViewAdapter extends
     ConnectionsRecyclerViewAdapter<EmployersRecyclerViewAdapter.ViewHolder> {

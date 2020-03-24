@@ -8,10 +8,8 @@ import io.grpc.ClientInterceptors;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.iohk.cvp.BuildConfig;
-import io.iohk.cvp.io.connector.ConnectorServiceGrpc;
-import io.iohk.cvp.io.connector.ConnectorServiceGrpc.ConnectorServiceBlockingStub;
-import io.iohk.cvp.io.connector.ConnectorServiceGrpc.ConnectorServiceStub;
 import io.iohk.cvp.views.Preferences;
+import io.iohk.prism.protos.ConnectorServiceGrpc;
 
 public class GrpcTask<A> extends AsyncTask<Object, Void, AsyncTaskResult<A>> {
 
@@ -37,9 +35,9 @@ public class GrpcTask<A> extends AsyncTask<Object, Void, AsyncTaskResult<A>> {
     String userId = getUserId(params);
     ClientInterceptor interceptor = new HeaderClientInterceptor(userId);
     Channel channel = ClientInterceptors.intercept(origChannel, interceptor);
-    ConnectorServiceBlockingStub
+    ConnectorServiceGrpc.ConnectorServiceBlockingStub
         blockingStub = ConnectorServiceGrpc.newBlockingStub(channel);
-    ConnectorServiceStub stub = ConnectorServiceGrpc.newStub(channel);
+    ConnectorServiceGrpc.ConnectorServiceStub stub = ConnectorServiceGrpc.newStub(channel);
 
     try {
       return grpcRunnable.run(blockingStub, stub, params);

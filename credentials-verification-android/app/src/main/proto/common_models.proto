@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "io.iohk.prism.protos";
+
+package io.iohk.prism.protos;
+
+message Date {
+    int32 year = 1; // positive value
+    int32 month = 2; // value in the [1, 12] interval
+    int32 day = 3; // value in the [1, 31] interval (depending on the month, the max value might be 28
+}

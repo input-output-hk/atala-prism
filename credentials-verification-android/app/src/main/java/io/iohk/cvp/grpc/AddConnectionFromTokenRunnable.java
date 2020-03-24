@@ -2,10 +2,10 @@ package io.iohk.cvp.grpc;
 
 import androidx.lifecycle.MutableLiveData;
 import io.grpc.StatusRuntimeException;
-import io.iohk.cvp.io.connector.AddConnectionFromTokenRequest;
-import io.iohk.cvp.io.connector.AddConnectionFromTokenResponse;
-import io.iohk.cvp.io.connector.ConnectorServiceGrpc;
-import io.iohk.cvp.io.connector.PublicKey;
+import io.iohk.prism.protos.AddConnectionFromTokenRequest;
+import io.iohk.prism.protos.AddConnectionFromTokenResponse;
+import io.iohk.prism.protos.ConnectorPublicKey;
+import io.iohk.prism.protos.ConnectorServiceGrpc;
 
 public class AddConnectionFromTokenRunnable extends
     CommonGrpcRunnable<AddConnectionFromTokenResponse> {
@@ -27,7 +27,7 @@ public class AddConnectionFromTokenRunnable extends
       throws StatusRuntimeException {
 
     String token = String.valueOf(params[1]);
-    PublicKey publicKey = (PublicKey) params[2];
+    ConnectorPublicKey publicKey = (ConnectorPublicKey) params[2];
     String nonce = String.valueOf(params[3]);
 
     AddConnectionFromTokenRequest request = AddConnectionFromTokenRequest.newBuilder()
