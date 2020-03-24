@@ -17,3 +17,4 @@ var facade = {
     chrome.browserAction.setPopup({popup: popup}, callback)
   }
 };
+

@@ -8,8 +8,16 @@ import io.iohk.atala.cvp.webextension.common.{ECKeyOperation, I18NMessages, Mnem
 import io.iohk.atala.cvp.webextension.facades.elliptic.EC
 import org.scalajs.dom
 import org.scalajs.dom.Event
-import org.scalajs.dom.raw.{HTMLHeadElement, HTMLParagraphElement, HTMLSelectElement}
-import typings.std.{HTMLHeadingElement, console, document}
+import org.scalajs.dom.raw.{
+  HTMLDivElement,
+  HTMLHeadElement,
+  HTMLHeadingElement,
+  HTMLInputElement,
+  HTMLLabelElement,
+  HTMLParagraphElement,
+  HTMLSelectElement
+}
+import typings.std.{console, document}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.scalajs.js
@@ -130,6 +138,9 @@ class Runner(messages: I18NMessages, backgroundAPI: BackgroundAPI)(implicit ec: 
     val generateBtn = document.getElementById("generate").asInstanceOf[HTMLHeadElement]
     generateBtn.addEventListener("click", (ev: Event) => generate(), true)
 
+    val recoverBtn = document.getElementById("recover").asInstanceOf[HTMLDivElement]
+    recoverBtn.addEventListener("click", (ev: Event) => recover(), true)
+
     log("Getting wallet status from the popup script")
     getWalletStatus()
     if (closeButton != null) {
@@ -178,6 +189,37 @@ class Runner(messages: I18NMessages, backgroundAPI: BackgroundAPI)(implicit ec: 
 
   private def log(msg: String): Unit = {
     println(s"popup: $msg")
+  }
+  private def recover() = {
+    console.info("**************************recover*****************************")
+    val divElement = dom.document.getElementById("outerId").asInstanceOf[HTMLDivElement]
+    divElement.innerHTML =
+      """<div class="div__btngroup">
+                             |<div class="div__passphrase">
+                             |<label class="_label">Enter Passphrase: <div class="input__container">
+                             |<input class="_input" id="passphraseField" type="text" placeholder="12-word passphrase" autocorrect="off" autocapitalize="off" value="">
+                             |<div class="input__container"><label class="_label_update" id="walletStatus">
+                             |</div>
+                             |</label>
+                             |</div>
+                             |</div>
+                             |<div class="div__btngroup">
+                             |<div class="div__btn" id="openWallet">
+                             | Open wallet</div>
+                             |</div>""".stripMargin
+
+    val openWallet = document.getElementById("openWallet").asInstanceOf[HTMLDivElement]
+
+    openWallet.addEventListener("click", (ev: Event) => create(), true)
+
+  }
+
+  private def create(): Unit = {
+    val seed: HTMLInputElement = document.getElementById("passphraseField").asInstanceOf[HTMLInputElement]
+    val mnemonic = Mnemonic(seed.value)
+    backgroundAPI.createWallet(WalletManager.FIXME_WALLET_PASSWORD, mnemonic, Role.Verifier, "IOHK", Array())
+    val status = document.getElementById("walletStatus").asInstanceOf[HTMLLabelElement]
+    status.textContent = "Wallet Created"
   }
 
   private def generate() = {

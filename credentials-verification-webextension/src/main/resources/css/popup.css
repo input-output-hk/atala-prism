@@ -39,3 +39,30 @@
     padding-left: 10px;
     padding-right: 10px;
 }
+
+.div__passphrase {
+    padding-bottom: 10px;
+}
+
+
+._input {
+    background-color: #fff;
+    border: 1px solid #ccc;
+    color: #333;
+    height: 50px;
+    width: 190px;
+    padding-left: 10px;
+    padding-right: 38px;
+    border-radius: 3px;
+}
+
+.input__container {
+    position: relative;
+    margin-top: 5px;
+    box-sizing: border-box;
+}
+
+._label_update {
+    color: red;
+    text-color: blue;
+}
