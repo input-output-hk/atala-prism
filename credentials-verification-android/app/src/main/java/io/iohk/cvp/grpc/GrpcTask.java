@@ -2,16 +2,17 @@ package io.iohk.cvp.grpc;
 
 import android.content.Context;
 import android.os.AsyncTask;
+
 import io.grpc.Channel;
 import io.grpc.ClientInterceptor;
 import io.grpc.ClientInterceptors;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.iohk.cvp.BuildConfig;
-import io.iohk.cvp.io.connector.ConnectorServiceGrpc;
-import io.iohk.cvp.io.connector.ConnectorServiceGrpc.ConnectorServiceBlockingStub;
-import io.iohk.cvp.io.connector.ConnectorServiceGrpc.ConnectorServiceStub;
 import io.iohk.cvp.views.Preferences;
+import io.iohk.prism.protos.ConnectorServiceGrpc;
+import io.iohk.prism.protos.ConnectorServiceGrpc.ConnectorServiceBlockingStub;
+import io.iohk.prism.protos.ConnectorServiceGrpc.ConnectorServiceStub;
 
 public class GrpcTask<A> extends AsyncTask<Object, Void, AsyncTaskResult<A>> {
 

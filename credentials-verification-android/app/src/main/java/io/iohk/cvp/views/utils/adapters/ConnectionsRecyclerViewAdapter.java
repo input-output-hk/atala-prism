@@ -3,12 +3,15 @@ package io.iohk.cvp.views.utils.adapters;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.ViewHolder;
-import io.iohk.cvp.io.connector.ConnectionInfo;
+
 import java.util.ArrayList;
 import java.util.List;
+
+import io.iohk.prism.protos.ConnectionInfo;
 import lombok.Setter;
 
 @Setter

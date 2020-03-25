@@ -221,13 +221,12 @@ trait ServerPBCommon extends ServerCommon with ScalaPBModule {
       )
     }
 
-}
-
-object node extends ServerPBCommon with CVPDockerModule {
-
   override def scalaPBSources: Sources = T.sources {
     millOuterCtx.millSourcePath / 'protos
   }
+}
+
+object node extends ServerPBCommon with CVPDockerModule {
 
   override def scalacOptions = Seq("-Ywarn-unused:imports", "-Xfatal-warnings", "-feature")
 
@@ -258,11 +257,6 @@ object node extends ServerPBCommon with CVPDockerModule {
 }
 
 object connector extends ServerPBCommon with CVPDockerModule {
-
-  override def scalaPBSources: Sources = T.sources(
-    millOuterCtx.millSourcePath / 'protos,
-    millSourcePath / 'protobuf
-  )
 
   // for some reason, the credential.proto is breaking the integration with mill and ScalaPB
   // and the reason seems to be while generating lenses, the same protobuf file compiles just
@@ -312,10 +306,6 @@ object connector extends ServerPBCommon with CVPDockerModule {
 object wallet extends ServerPBCommon {
 
   override def mainClass = Some("io.iohk.cvp.wallet.WalletApp")
-
-  override def scalaPBSources: Sources = T.sources {
-    millOuterCtx.millSourcePath / 'protos
-  }
 
   object test extends `tests-common` {}
 }

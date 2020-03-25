@@ -1,9 +1,9 @@
 #!/bin/bash
 set -e
 
-OUT_DIR="./src/protos"
+OUT_DIR="./src/protos/demo"
 
-PROTOS_DIR="../credentials-verification/protos"
+PROTOS_DIR="../credentials-verification/protos/intdemo"
 
 # clean protos directory first to avoid keeping dust
 rm -rf $OUT_DIR
@@ -13,19 +13,6 @@ protoc -I=$OUT_DIR \
     --js_out=import_style=commonjs:$OUT_DIR \
     --grpc-web_out=import_style=commonjs,mode=grpcwebtext:${OUT_DIR} \
     --proto_path=$PROTOS_DIR \
-    --proto_path=$PROTOS_DIR/intdemo \
-    common_models.proto \
-    node_models.proto \
-    connector_models.proto \
-    connector_api.proto \
-    wallet_models.proto \
-    wallet_api.proto \
-    cstore_models.proto \
-    cstore_api.proto \
-    cmanager_models.proto \
-    cmanager_api.proto \
-    credential_models.proto \
-    admin_api.proto \
     intdemo_models.proto \
     intdemo_api.proto
 

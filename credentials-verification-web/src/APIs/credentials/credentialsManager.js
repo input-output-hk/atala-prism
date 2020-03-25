@@ -12,7 +12,7 @@ const {
   AtalaMessage,
   IssuerSentCredential,
   Signer
-} = require('../../protos/credential_pb');
+} = require('../../protos/credential_models_pb');
 
 async function getCredentials(limit, lastSeenCredentialId = null) {
   Logger.info(`getting credentials from ${lastSeenCredentialId}, limit ${limit}`);

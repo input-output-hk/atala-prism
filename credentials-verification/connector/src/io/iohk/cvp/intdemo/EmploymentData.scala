@@ -1,11 +1,12 @@
 package io.iohk.cvp.intdemo
 
 import io.circe.parser.parse
+import io.iohk.prism.protos.credential_models
 
 case class EmploymentData private (employerName: String, employerAddress: String)
 
 object EmploymentData {
-  def toEmploymentData(protobufCredential: credential.Credential): EmploymentData = {
+  def toEmploymentData(protobufCredential: credential_models.Credential): EmploymentData = {
     parse(protobufCredential.credentialDocument)
       .flatMap { json =>
         val cursor = json.hcursor.downField("issuer")

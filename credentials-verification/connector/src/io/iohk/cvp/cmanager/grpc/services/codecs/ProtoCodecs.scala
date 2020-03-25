@@ -24,11 +24,11 @@ object ProtoCodecs {
     case Student.ConnectionStatus.ConnectionRevoked => cmanager_models.StudentConnectionStatus.ConnectionRevoked
   }
 
-  def credentialToProto(credential: Credential): cmanager_models.Credential = {
+  def credentialToProto(credential: Credential): cmanager_models.CManagerCredential = {
     val graduationDate = credential.graduationDate.into[common_models.Date].transform
     val enrollmentDate = credential.enrollmentDate.into[common_models.Date].transform
     cmanager_models
-      .Credential()
+      .CManagerCredential()
       .withId(credential.id.value.toString)
       .withIssuerId(credential.issuedBy.value.toString)
       .withStudentId(credential.studentId.value.toString)

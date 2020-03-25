@@ -1,6 +1,6 @@
 package io.iohk.cvp.viewmodel.dtos;
 
-import io.iohk.cvp.io.connector.ConnectionInfo;
+import io.iohk.prism.protos.ConnectionInfo;
 import lombok.Data;
 
 @Data

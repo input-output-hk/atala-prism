@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.MutableLiveData;
@@ -14,24 +15,27 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import butterknife.BindView;
+
 import com.crashlytics.android.Crashlytics;
-import io.iohk.cvp.R;
-import io.iohk.cvp.grpc.AsyncTaskResult;
-import io.iohk.cvp.io.connector.ReceivedMessage;
-import io.iohk.cvp.io.credential.SentCredential;
-import io.iohk.cvp.viewmodel.CredentialsViewModel;
-import io.iohk.cvp.views.Preferences;
-import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
-import io.iohk.cvp.views.fragments.utils.RootAppBar;
-import io.iohk.cvp.views.utils.adapters.CredentialsRecyclerViewAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 import javax.inject.Inject;
+
+import butterknife.BindView;
+import io.iohk.cvp.R;
+import io.iohk.cvp.grpc.AsyncTaskResult;
+import io.iohk.cvp.viewmodel.CredentialsViewModel;
+import io.iohk.cvp.views.Preferences;
+import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
+import io.iohk.cvp.views.fragments.utils.RootAppBar;
+import io.iohk.cvp.views.utils.adapters.CredentialsRecyclerViewAdapter;
+import io.iohk.prism.protos.AtalaMessage;
+import io.iohk.prism.protos.ReceivedMessage;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
@@ -179,7 +183,7 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> {
     return viewModel;
   }
 
-  public void onCredentialClicked(Boolean isNew, SentCredential credential,
+  public void onCredentialClicked(Boolean isNew, AtalaMessage credential,
       String connectionId, String messageId) {
     credentialFragment.setCredential(credential);
     credentialFragment.setCredentialIsNew(isNew);

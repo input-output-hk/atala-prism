@@ -4,16 +4,15 @@ import java.security.MessageDigest
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-import credential._
 import io.circe.Json.fromString
 import io.circe._
 import io.grpc.Status
 import io.grpc.stub.StreamObserver
 import io.iohk.connector.model.{Connection, TokenString}
 import io.iohk.cvp.intdemo.IdServiceImpl._
-import io.iohk.cvp.intdemo.protos.IDServiceGrpc._
-import io.iohk.cvp.intdemo.protos._
 import io.iohk.cvp.models.ParticipantId
+import io.iohk.prism.intdemo.protos.intdemo_api
+import io.iohk.prism.protos.credential_models
 import javax.xml.bind.DatatypeConverter
 import monix.execution.Scheduler.{global => scheduler}
 
@@ -26,7 +25,7 @@ class IdServiceImpl(
     schedulerPeriod: FiniteDuration
 )(
     implicit ec: ExecutionContext
-) extends IDService {
+) extends intdemo_api.IDServiceGrpc.IDService {
 
   val service = new IntDemoService[(String, LocalDate)](
     issuerId = issuerId,
@@ -39,18 +38,22 @@ class IdServiceImpl(
     scheduler = scheduler
   )
 
-  override def getConnectionToken(request: GetConnectionTokenRequest): Future[GetConnectionTokenResponse] = {
+  override def getConnectionToken(
+      request: intdemo_api.GetConnectionTokenRequest
+  ): Future[intdemo_api.GetConnectionTokenResponse] = {
     service.getConnectionToken(request)
   }
 
   override def getSubjectStatusStream(
-      request: GetSubjectStatusRequest,
-      responseObserver: StreamObserver[GetSubjectStatusResponse]
+      request: intdemo_api.GetSubjectStatusRequest,
+      responseObserver: StreamObserver[intdemo_api.GetSubjectStatusResponse]
   ): Unit = {
     service.getSubjectStatusStream(request, responseObserver)
   }
 
-  override def setPersonalData(request: SetPersonalDataRequest): Future[SetPersonalDataResponse] = {
+  override def setPersonalData(
+      request: intdemo_api.SetPersonalDataRequest
+  ): Future[intdemo_api.SetPersonalDataResponse] = {
     if (request.dateOfBirth.isEmpty || request.firstName.isEmpty) {
       Future.failed(Status.INVALID_ARGUMENT.asException())
     } else {
@@ -60,7 +63,7 @@ class IdServiceImpl(
           request.firstName,
           LocalDate.of(request.dateOfBirth.get.year, request.dateOfBirth.get.month, request.dateOfBirth.get.day)
         )
-        .map(_ => SetPersonalDataResponse())
+        .map(_ => intdemo_api.SetPersonalDataResponse())
     }
   }
 }
@@ -110,7 +113,7 @@ object IdServiceImpl {
 
   private val jsonPrinter = Printer(dropNullValues = false, indent = "  ")
 
-  def getIdCredential(requiredData: (String, LocalDate)): Credential = {
+  def getIdCredential(requiredData: (String, LocalDate)): credential_models.Credential = {
     val (name, dob) = requiredData
     val id = "unknown"
     val subjectIdNumber = generateSubjectIdNumber(name + dateFormatter.format(dob))
@@ -121,7 +124,7 @@ object IdServiceImpl {
       idCredentialJsonTemplate(id, subjectIdNumber, issuanceDate, expiryDate, subjectDid, name, dob).printWith(
         jsonPrinter
       )
-    Credential(
+    credential_models.Credential(
       typeId = credentialTypeId,
       credentialDocument = idCredential
     )

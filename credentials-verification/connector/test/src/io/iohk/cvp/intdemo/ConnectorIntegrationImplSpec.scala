@@ -1,27 +1,26 @@
 package io.iohk.cvp.intdemo
 
-import credential.Credential
 import io.iohk.connector.model.{ConnectionId, MessageId}
 import io.iohk.connector.services.{ConnectionsService, MessagesService}
 import io.iohk.cvp.intdemo.ConnectorIntegration.ConnectorIntegrationImpl
+import io.iohk.cvp.intdemo.ConnectorIntegrationImplSpec._
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.utils.FutureEither
-import org.scalatest.FlatSpec
+import io.iohk.cvp.utils.FutureEither._
+import io.iohk.prism.protos.credential_models
+import org.mockito.ArgumentMatcher
 import org.mockito.ArgumentMatchersSugar.{any, argThat, eqTo}
 import org.mockito.MockitoSugar.{mock, times, verify, when}
+import org.scalatest.FlatSpec
 import org.scalatest.concurrent.ScalaFutures._
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import FutureEither._
-import credential.ProofRequest
-import io.iohk.cvp.intdemo.ConnectorIntegrationImplSpec._
-import org.mockito.ArgumentMatcher
 
 class ConnectorIntegrationImplSpec extends FlatSpec {
 
   "sendCredential" should "send a decodable credential" in connectorIntegration {
     (connectorIntegration, messagesService) =>
-      val credential = Credential("type-id", "credential-documenmt")
+      val credential = credential_models.Credential("type-id", "credential-documenmt")
 
       connectorIntegration.sendCredential(senderId, connectionId, credential).futureValue
 
@@ -30,7 +29,7 @@ class ConnectorIntegrationImplSpec extends FlatSpec {
 
   "sendProofRequest" should "send a decodable proof request" in connectorIntegration {
     (connectorIntegration, messagesService) =>
-      val proofRequest = ProofRequest(typeId = "a-type-id", connectionToken = "a-connection-token")
+      val proofRequest = credential_models.ProofRequest(typeId = "a-type-id", connectionToken = "a-connection-token")
 
       connectorIntegration.sendProofRequest(senderId, connectionId, proofRequest).futureValue
 
@@ -53,18 +52,18 @@ object ConnectorIntegrationImplSpec {
     testCode(connectorIntegration, messagesService)
   }
 
-  private def decodesTo(credential: Credential): Array[Byte] = {
+  private def decodesTo(credential: credential_models.Credential): Array[Byte] = {
     argThat(new ArgumentMatcher[Array[Byte]] {
       override def matches(a: Array[Byte]): Boolean = {
-        credential == Credential.parseFrom(a)
+        credential == credential_models.Credential.parseFrom(a)
       }
     })
   }
 
-  private def decodesTo(proofRequest: ProofRequest): Array[Byte] = {
+  private def decodesTo(proofRequest: credential_models.ProofRequest): Array[Byte] = {
     argThat(new ArgumentMatcher[Array[Byte]] {
       override def matches(a: Array[Byte]): Boolean = {
-        proofRequest == ProofRequest.parseFrom(a)
+        proofRequest == credential_models.ProofRequest.parseFrom(a)
       }
     })
   }

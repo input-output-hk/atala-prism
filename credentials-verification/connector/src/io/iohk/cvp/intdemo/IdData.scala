@@ -3,11 +3,12 @@ package io.iohk.cvp.intdemo
 import java.time.LocalDate
 
 import io.circe.parser._
+import io.iohk.prism.protos.credential_models
 
 case class IdData private (name: String, dob: LocalDate)
 
 object IdData {
-  def toIdData(protobufCredential: credential.Credential): IdData = {
+  def toIdData(protobufCredential: credential_models.Credential): IdData = {
     parse(protobufCredential.credentialDocument)
       .flatMap { json =>
         val cursor = json.hcursor.downField("credentialSubject")

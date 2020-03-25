@@ -1,6 +1,8 @@
 syntax = "proto3";
 
-package io.iohk.cvp.intdemo;
+import "intdemo_models.proto";
+
+package io.iohk.prism.intdemo.protos;
 
 // This service simulates an application run by a government body who use atala's connector.
 service IDService {
@@ -31,14 +33,6 @@ message GetSubjectStatusRequest {
     string connectionToken = 1;
 }
 
-enum SubjectStatus {
-    UNCONNECTED = 0;
-    CONNECTED = 1;
-    CREDENTIAL_AVAILABLE = 2;
-    CREDENTIAL_SENT = 3;
-    CREDENTIAL_RECEIVED = 4;
-}
-
 message GetSubjectStatusResponse {
     SubjectStatus subjectStatus = 1;
 }
@@ -54,12 +48,6 @@ message SetPersonalDataRequest {
     string connectionToken = 1;
     string firstName = 2;
     Date dateOfBirth = 3;
-}
-
-message Date {
-    int32 year = 1;
-    int32 month = 2;
-    int32 day = 3;
 }
 
 message SetPersonalDataResponse {}

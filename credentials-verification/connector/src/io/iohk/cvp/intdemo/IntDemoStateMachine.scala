@@ -1,28 +1,27 @@
 package io.iohk.cvp.intdemo
 
-import credential.Credential
 import io.grpc.stub.StreamObserver
 import io.iohk.connector.model.{Connection, ConnectionId, TokenString}
 import io.iohk.cvp.intdemo.IntDemoStateMachine.log
-import io.iohk.cvp.intdemo.protos.{GetSubjectStatusResponse, SubjectStatus}
-import io.iohk.cvp.intdemo.protos.SubjectStatus.{CONNECTED, CREDENTIAL_SENT, UNCONNECTED}
 import io.iohk.cvp.models.ParticipantId
+import io.iohk.prism.intdemo.protos.{intdemo_api, intdemo_models}
+import io.iohk.prism.protos.credential_models
 import monix.execution.Scheduler
 import org.slf4j.LoggerFactory
 
-import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration.FiniteDuration
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 class IntDemoStateMachine[D](
     requiredDataLoader: TokenString => Future[Option[D]],
-    getCredential: D => Credential,
+    getCredential: D => credential_models.Credential,
     proofRequestIssuer: Connection => Future[Unit],
     connectorIntegration: ConnectorIntegration,
     intDemoRepository: IntDemoRepository,
     connectionToken: TokenString,
     issuerId: ParticipantId,
-    responseObserver: StreamObserver[GetSubjectStatusResponse],
+    responseObserver: StreamObserver[intdemo_api.GetSubjectStatusResponse],
     scheduler: Scheduler,
     schedulerPeriod: FiniteDuration
 )(implicit ec: ExecutionContext) {
@@ -38,10 +37,10 @@ class IntDemoStateMachine[D](
 
     f.onComplete {
       case Success(status) =>
-        if (status == CREDENTIAL_SENT) {
-          complete(GetSubjectStatusResponse(status), responseObserver)
+        if (status == intdemo_models.SubjectStatus.CREDENTIAL_SENT) {
+          complete(intdemo_api.GetSubjectStatusResponse(status), responseObserver)
         } else {
-          next(GetSubjectStatusResponse(status), responseObserver)
+          next(intdemo_api.GetSubjectStatusResponse(status), responseObserver)
         }
       case Failure(exception) =>
         error(exception, responseObserver)
@@ -72,7 +71,7 @@ class IntDemoStateMachine[D](
       log.info(s"Failed client callback invocation for connection token ${connectionToken.token}. Got exception $t.")
   }
 
-  private def getCurrentStatus(): Future[SubjectStatus] = {
+  private def getCurrentStatus(): Future[intdemo_models.SubjectStatus] = {
     intDemoRepository.findSubjectStatus(connectionToken).map(_.get)
   }
 
@@ -80,7 +79,10 @@ class IntDemoStateMachine[D](
     connectorIntegration.getConnectionByToken(connectionToken)
   }
 
-  private def setNextState(currentStatus: SubjectStatus, nextStatus: SubjectStatus): Future[Int] = {
+  private def setNextState(
+      currentStatus: intdemo_models.SubjectStatus,
+      nextStatus: intdemo_models.SubjectStatus
+  ): Future[Int] = {
     if (currentStatus != nextStatus)
       intDemoRepository.mergeSubjectStatus(connectionToken, nextStatus)
     else
@@ -93,16 +95,16 @@ class IntDemoStateMachine[D](
   private def isWalletConnected(maybeConnection: Option[Connection]): Boolean =
     maybeConnection.isDefined
 
-  private type Action = (Option[D], Option[Connection]) => Future[SubjectStatus]
+  private type Action = (Option[D], Option[Connection]) => Future[intdemo_models.SubjectStatus]
 
   sealed trait State {
     def actionTable: Map[(Boolean, Boolean), Action]
 
     def apply(
-        currentStatus: SubjectStatus,
+        currentStatus: intdemo_models.SubjectStatus,
         maybeRequiredData: Option[D],
         maybeConnection: Option[Connection]
-    ): Future[SubjectStatus] = {
+    ): Future[intdemo_models.SubjectStatus] = {
       val actionTableWithErrors = actionTable.withDefaultValue(error(currentStatus))
 
       actionTableWithErrors(isRequiredDataAvailable(maybeRequiredData), isWalletConnected(maybeConnection))(
@@ -111,11 +113,11 @@ class IntDemoStateMachine[D](
       )
     }
 
-    def next(status: SubjectStatus): Action = { (_, _) =>
+    def next(status: intdemo_models.SubjectStatus): Action = { (_, _) =>
       Future.successful(status)
     }
 
-    def error(status: SubjectStatus): Action = { (personalInfo, connection) =>
+    def error(status: intdemo_models.SubjectStatus): Action = { (personalInfo, connection) =>
       Future.failed(
         new IllegalStateException(
           s"Credential issuance service encountered an illegal state where " +
@@ -131,20 +133,22 @@ class IntDemoStateMachine[D](
         log.info(
           s"Issuer ${issuerId.uuid} proof requests issued. Transitioning to CONNECTED on connection id ${maybeConnection.get.connectionId}."
         )
-        CONNECTED
+        intdemo_models.SubjectStatus.CONNECTED
       }
     }
 
     val emitCredentialAndStop: Action = (maybeRequiredData, maybeConnection) => {
       val requiredData = maybeRequiredData.get
       val connection = maybeConnection.get
-      emitCredential(connection.connectionId, requiredData).map(_ => CREDENTIAL_SENT)
+      emitCredential(connection.connectionId, requiredData).map(_ => intdemo_models.SubjectStatus.CREDENTIAL_SENT)
     }
 
-    private def emitCredential(connectionId: ConnectionId, requiredData: D): Future[SubjectStatus] = {
+    private def emitCredential(connectionId: ConnectionId, requiredData: D): Future[intdemo_models.SubjectStatus] = {
       val credential = getCredential(requiredData)
       log.info(s"Issuer ${issuerId.uuid} emitting credential to connection with id $connectionId.")
-      connectorIntegration.sendCredential(issuerId, connectionId, credential).map(_ => CREDENTIAL_SENT)
+      connectorIntegration
+        .sendCredential(issuerId, connectionId, credential)
+        .map(_ => intdemo_models.SubjectStatus.CREDENTIAL_SENT)
     }
   }
 
@@ -153,31 +157,32 @@ class IntDemoStateMachine[D](
     case object UnconnectedState extends State {
       val actionTable = Map(
         // req data, connected...
-        (false, false) -> next(UNCONNECTED),
+        (false, false) -> next(intdemo_models.SubjectStatus.UNCONNECTED),
         (false, true) -> emitProofRequest,
-        (true, false) -> next(UNCONNECTED),
+        (true, false) -> next(intdemo_models.SubjectStatus.UNCONNECTED),
         (true, true) -> emitCredentialAndStop
       )
     }
 
     case object ConnectedState extends State {
-      val actionTable = Map((false, true) -> next(CONNECTED), (true, true) -> emitCredentialAndStop)
+      val actionTable =
+        Map((false, true) -> next(intdemo_models.SubjectStatus.CONNECTED), (true, true) -> emitCredentialAndStop)
     }
 
     case object CredentialSentState extends State {
       val actionTable = Map(
-        (true, true) -> next(CREDENTIAL_SENT)
+        (true, true) -> next(intdemo_models.SubjectStatus.CREDENTIAL_SENT)
       )
     }
 
-    case class IllegalState(status: SubjectStatus) extends State {
+    case class IllegalState(status: intdemo_models.SubjectStatus) extends State {
       val actionTable = Map()
     }
 
-    val stateMap = Map[SubjectStatus, State](
-      UNCONNECTED -> UnconnectedState,
-      CONNECTED -> ConnectedState,
-      CREDENTIAL_SENT -> CredentialSentState
+    val stateMap = Map[intdemo_models.SubjectStatus, State](
+      intdemo_models.SubjectStatus.UNCONNECTED -> UnconnectedState,
+      intdemo_models.SubjectStatus.CONNECTED -> ConnectedState,
+      intdemo_models.SubjectStatus.CREDENTIAL_SENT -> CredentialSentState
     ).withDefault(IllegalState)
   }
 }

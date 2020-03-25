@@ -1,23 +1,22 @@
 package io.iohk.cvp.intdemo
 
-import credential.{Credential, ProofRequest}
 import io.grpc.stub.StreamObserver
 import io.iohk.connector.model.{Connection, ConnectionId, MessageId, TokenString}
 import io.iohk.cvp.intdemo.IntDemoServiceSpec._
 import io.iohk.cvp.intdemo.Testing.{eventually, neverEver}
-import io.iohk.cvp.intdemo.protos.SubjectStatus.{CONNECTED, CREDENTIAL_SENT, UNCONNECTED}
-import io.iohk.cvp.intdemo.protos._
 import io.iohk.cvp.models.ParticipantId
-import org.mockito.ArgumentMatchersSugar.{any, argThat, eqTo}
+import io.iohk.prism.intdemo.protos.{intdemo_api, intdemo_models}
+import io.iohk.prism.protos.credential_models
 import org.mockito.ArgumentMatcher
+import org.mockito.ArgumentMatchersSugar.{any, argThat, eqTo}
 import org.mockito.MockitoSugar.{after, mock, verify, when}
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 import org.scalatest.concurrent.ScalaFutures.{PatienceConfig, convertScalaFuture}
 import org.scalatest.prop.TableDrivenPropertyChecks._
 
-import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
+import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
 
 class IntDemoServiceSpec extends FlatSpec {
@@ -27,20 +26,25 @@ class IntDemoServiceSpec extends FlatSpec {
   "getConnectionToken" should "create a connection token via the connector" in intDemoService {
     (connectorIntegration, repository, intDemoService) =>
       when(connectorIntegration.generateConnectionToken(issuerId)).thenReturn(Future(token))
-      when(repository.mergeSubjectStatus(token, UNCONNECTED)).thenReturn(Future(1))
+      when(repository.mergeSubjectStatus(token, intdemo_models.SubjectStatus.UNCONNECTED)).thenReturn(Future(1))
 
-      val tokenResponse = intDemoService.getConnectionToken(GetConnectionTokenRequest()).futureValue
+      val tokenResponse = intDemoService.getConnectionToken(intdemo_api.GetConnectionTokenRequest()).futureValue
 
       tokenResponse.connectionToken shouldBe token.token
   }
 
   val nonEmittingStates = Table(
     ("Current status", "Connection", "User Info", "Expected response"),
-    (UNCONNECTED, None, None, UNCONNECTED),
-    (UNCONNECTED, Some(connection), None, CONNECTED),
-    (UNCONNECTED, None, Some(userInfo), UNCONNECTED),
-    (CONNECTED, Some(connection), None, CONNECTED),
-    (CREDENTIAL_SENT, Some(connection), Some(userInfo), CREDENTIAL_SENT)
+    (intdemo_models.SubjectStatus.UNCONNECTED, None, None, intdemo_models.SubjectStatus.UNCONNECTED),
+    (intdemo_models.SubjectStatus.UNCONNECTED, Some(connection), None, intdemo_models.SubjectStatus.CONNECTED),
+    (intdemo_models.SubjectStatus.UNCONNECTED, None, Some(userInfo), intdemo_models.SubjectStatus.UNCONNECTED),
+    (intdemo_models.SubjectStatus.CONNECTED, Some(connection), None, intdemo_models.SubjectStatus.CONNECTED),
+    (
+      intdemo_models.SubjectStatus.CREDENTIAL_SENT,
+      Some(connection),
+      Some(userInfo),
+      intdemo_models.SubjectStatus.CREDENTIAL_SENT
+    )
   )
 
   forAll(nonEmittingStates) { (currentStatus, connection, userInfo, expectedResponse) =>
@@ -52,19 +56,33 @@ class IntDemoServiceSpec extends FlatSpec {
       connection,
       userInfo
     ) { (connectorIntegration, _, intDemoService) =>
-      val streamObserver = mock[StreamObserver[GetSubjectStatusResponse]]
-      intDemoService.getSubjectStatusStream(GetSubjectStatusRequest(token.token), streamObserver)
+      val streamObserver = mock[StreamObserver[intdemo_api.GetSubjectStatusResponse]]
+      intDemoService.getSubjectStatusStream(intdemo_api.GetSubjectStatusRequest(token.token), streamObserver)
       scheduler.tick(1 second)
-      verify(streamObserver, eventually.times(1)).onNext(GetSubjectStatusResponse(expectedResponse))
-      verify(connectorIntegration, neverEver).sendCredential(any[ParticipantId], any[ConnectionId], any[Credential])
+      verify(streamObserver, eventually.times(1)).onNext(intdemo_api.GetSubjectStatusResponse(expectedResponse))
+      verify(connectorIntegration, neverEver).sendCredential(
+        any[ParticipantId],
+        any[ConnectionId],
+        any[credential_models.Credential]
+      )
       verify(streamObserver, neverEver).onError(any)
     }
   }
 
   val emittingStates = Table(
     ("Current status", "Connection", "User Info", "Expected response"),
-    (UNCONNECTED, Some(connection), Some(userInfo), CREDENTIAL_SENT),
-    (CONNECTED, Some(connection), Some(userInfo), CREDENTIAL_SENT)
+    (
+      intdemo_models.SubjectStatus.UNCONNECTED,
+      Some(connection),
+      Some(userInfo),
+      intdemo_models.SubjectStatus.CREDENTIAL_SENT
+    ),
+    (
+      intdemo_models.SubjectStatus.CONNECTED,
+      Some(connection),
+      Some(userInfo),
+      intdemo_models.SubjectStatus.CREDENTIAL_SENT
+    )
   )
 
   forAll(emittingStates) { (currentStatus, connection, userInfo, expectedResponse) =>
@@ -76,8 +94,8 @@ class IntDemoServiceSpec extends FlatSpec {
       connection,
       userInfo
     ) { (connectorIntegration, _, intDemoService) =>
-      val streamObserver = mock[StreamObserver[GetSubjectStatusResponse]]
-      intDemoService.getSubjectStatusStream(GetSubjectStatusRequest(token.token), streamObserver)
+      val streamObserver = mock[StreamObserver[intdemo_api.GetSubjectStatusResponse]]
+      intDemoService.getSubjectStatusStream(intdemo_api.GetSubjectStatusRequest(token.token), streamObserver)
       scheduler.tick(1 second)
 
       verify(connectorIntegration, eventually.times(1))
@@ -89,11 +107,11 @@ class IntDemoServiceSpec extends FlatSpec {
 
   val illegalStates = Table(
     ("Current status", "Connection", "User Info"),
-    (CONNECTED, None, None),
-    (CONNECTED, None, Some(userInfo)),
-    (CREDENTIAL_SENT, None, None),
-    (CREDENTIAL_SENT, None, Some(userInfo)),
-    (CREDENTIAL_SENT, Some(connection), None)
+    (intdemo_models.SubjectStatus.CONNECTED, None, None),
+    (intdemo_models.SubjectStatus.CONNECTED, None, Some(userInfo)),
+    (intdemo_models.SubjectStatus.CREDENTIAL_SENT, None, None),
+    (intdemo_models.SubjectStatus.CREDENTIAL_SENT, None, Some(userInfo)),
+    (intdemo_models.SubjectStatus.CREDENTIAL_SENT, Some(connection), None)
   )
 
   forAll(illegalStates) { (currentStatus, connection, userInfo) =>
@@ -105,39 +123,45 @@ class IntDemoServiceSpec extends FlatSpec {
       connection,
       userInfo
     ) { (connectorIntegration, _, intDemoService) =>
-      val streamObserver = mock[StreamObserver[GetSubjectStatusResponse]]
-      intDemoService.getSubjectStatusStream(GetSubjectStatusRequest(token.token), streamObserver)
+      val streamObserver = mock[StreamObserver[intdemo_api.GetSubjectStatusResponse]]
+      intDemoService.getSubjectStatusStream(intdemo_api.GetSubjectStatusRequest(token.token), streamObserver)
       scheduler.tick(1 second)
 
-      verify(connectorIntegration, neverEver).sendCredential(any[ParticipantId], any[ConnectionId], any[Credential])
+      verify(connectorIntegration, neverEver).sendCredential(
+        any[ParticipantId],
+        any[ConnectionId],
+        any[credential_models.Credential]
+      )
       verify(streamObserver, eventually.times(1)).onError(any[IllegalStateException])
     }
   }
 
   "getSubjectStatusStream" should "handle callback errors by terminating" in intDemoService { (_, _, intDemoService) =>
-    val streamObserver = mock[StreamObserver[GetSubjectStatusResponse]]
+    val streamObserver = mock[StreamObserver[intdemo_api.GetSubjectStatusResponse]]
 
-    when(streamObserver.onNext(any[GetSubjectStatusResponse])).thenThrow(new RuntimeException("timeout or something"))
+    when(streamObserver.onNext(any[intdemo_api.GetSubjectStatusResponse]))
+      .thenThrow(new RuntimeException("timeout or something"))
 
-    intDemoService.getSubjectStatusStream(GetSubjectStatusRequest(token.token), streamObserver)
+    intDemoService.getSubjectStatusStream(intdemo_api.GetSubjectStatusRequest(token.token), streamObserver)
     scheduler.tick(1 second)
     scheduler.tick(1 second)
 
-    verify(streamObserver, after(100).atMost(1)).onNext(any[GetSubjectStatusResponse])
+    verify(streamObserver, after(100).atMost(1)).onNext(any[intdemo_api.GetSubjectStatusResponse])
   }
 
   "getSubjectStatusStream" should s"emit proof requests return CONNECTED when a user connects" in intDemoService(
-    UNCONNECTED,
+    intdemo_models.SubjectStatus.UNCONNECTED,
     Some(connection),
     None
   ) { (connectorIntegration, _, intDemoService) =>
-    val streamObserver = mock[StreamObserver[GetSubjectStatusResponse]]
-    intDemoService.getSubjectStatusStream(GetSubjectStatusRequest(token.token), streamObserver)
+    val streamObserver = mock[StreamObserver[intdemo_api.GetSubjectStatusResponse]]
+    intDemoService.getSubjectStatusStream(intdemo_api.GetSubjectStatusRequest(token.token), streamObserver)
     scheduler.tick(1 second)
 
     verify(connectorIntegration, eventually.times(1))
       .sendProofRequest(eqTo(issuerId), eqTo(connectionId), proofRequestMatcher)
-    verify(streamObserver, eventually.times(1)).onNext(GetSubjectStatusResponse(CONNECTED))
+    verify(streamObserver, eventually.times(1))
+      .onNext(intdemo_api.GetSubjectStatusResponse(intdemo_models.SubjectStatus.CONNECTED))
     verify(streamObserver, neverEver).onError(any)
   }
 }
@@ -154,15 +178,15 @@ object IntDemoServiceSpec {
   private val token = new TokenString("a token")
   private val connection = Connection(connectionToken = token, connectionId = connectionId)
   private val userInfo = "X"
-  private val credential = Credential("type-id", "credential-document")
-  private val proofRequest = ProofRequest(typeId = "type-id", connectionToken = token.token)
+  private val credential = credential_models.Credential("type-id", "credential-document")
+  private val proofRequest = credential_models.ProofRequest(typeId = "type-id", connectionToken = token.token)
 
   def intDemoService(testCode: (ConnectorIntegration, IntDemoRepository, IntDemoService[String]) => Any): Unit = {
-    intDemoService(UNCONNECTED, None, None)(testCode)
+    intDemoService(intdemo_models.SubjectStatus.UNCONNECTED, None, None)(testCode)
   }
 
   def intDemoService(
-      subjectStatus: SubjectStatus,
+      subjectStatus: intdemo_models.SubjectStatus,
       connection: Option[Connection],
       requiredData: Option[String]
   )(testCode: (ConnectorIntegration, IntDemoRepository, IntDemoService[String]) => Any): Unit = {
@@ -193,17 +217,17 @@ object IntDemoServiceSpec {
     testCode(connectorIntegration, repository, service)
   }
 
-  private def credentialMatcher: Credential = {
-    argThat(new ArgumentMatcher[Credential] {
-      override def matches(c: Credential): Boolean = {
+  private def credentialMatcher: credential_models.Credential = {
+    argThat(new ArgumentMatcher[credential_models.Credential] {
+      override def matches(c: credential_models.Credential): Boolean = {
         c == credential
       }
     })
   }
 
-  private def proofRequestMatcher: ProofRequest = {
-    argThat(new ArgumentMatcher[ProofRequest] {
-      override def matches(p: ProofRequest): Boolean = {
+  private def proofRequestMatcher: credential_models.ProofRequest = {
+    argThat(new ArgumentMatcher[credential_models.ProofRequest] {
+      override def matches(p: credential_models.ProofRequest): Boolean = {
         println(s"Executing proof request matcher for $p")
         p == proofRequest
       }

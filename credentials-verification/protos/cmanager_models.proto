@@ -4,7 +4,7 @@ package io.iohk.prism.protos;
 
 import "common_models.proto";
 
-message Credential {
+message CManagerCredential {
     string id = 1;
     string issuerId = 2;
     string studentId = 3;

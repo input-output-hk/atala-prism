@@ -22,7 +22,7 @@ Run envoy proxy. Envoy is just for dev environment
 1. Start envoy running `docker run -d --name {containerName} -p 9901:9901 -p 10000:10000 envoy:{versionTag}`
 
 To run backend see [Run backend doc](../credentials-verification/docs/connector/README.md)
-- Connector `mill connector.run`
+- Connector `mill -i connector.run`
 
 Configure envoy proxy "listening port" at .env.local file. For more information about environment variables see [Configurations](#Configurations)
 
@@ -34,9 +34,7 @@ In order to compile the .protos you need to install
 1. [protoc](https://github.com/protocolbuffers/protobuf/releases)
 1. [grp-web](https://github.com/grpc/grpc-web/releases)
 
-Then run
-
-`protoc -I=. src/protos/* --js_out=import_style=commonjs:. --grpc-web_out=import_style=commonjs,mode=grpcwebtext:.`
+Then run: `./scripts/compile-protos.sh`
 
 ## Configurations
 

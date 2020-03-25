@@ -2,16 +2,15 @@ package io.iohk.cvp.intdemo
 
 import java.time.LocalDate
 
-import credential.{Credential, ProofRequest}
-import io.circe._
 import io.circe.Json.fromString
+import io.circe._
 import io.grpc.stub.StreamObserver
 import io.iohk.connector.model.{Connection, TokenString}
 import io.iohk.cvp.intdemo.DegreeServiceImpl.{getDegreeCredential, getSharedIdCredential, issuerId, requestIdCredential}
 import io.iohk.cvp.intdemo.SharedCredentials.{formatDate, getSharedCredentials, jsonPrinter}
-import io.iohk.cvp.intdemo.protos.DegreeServiceGrpc._
-import io.iohk.cvp.intdemo.protos._
 import io.iohk.cvp.models.ParticipantId
+import io.iohk.prism.intdemo.protos.intdemo_api
+import io.iohk.prism.protos.credential_models
 import monix.execution.Scheduler.{global => scheduler}
 
 import scala.concurrent.duration.FiniteDuration
@@ -23,9 +22,9 @@ class DegreeServiceImpl(
     schedulerPeriod: FiniteDuration
 )(
     implicit ec: ExecutionContext
-) extends DegreeService {
+) extends intdemo_api.DegreeServiceGrpc.DegreeService {
 
-  val service = new IntDemoService[Credential](
+  val service = new IntDemoService[credential_models.Credential](
     issuerId = issuerId,
     connectorIntegration = connectorIntegration,
     intDemoRepository = intDemoRepository,
@@ -36,13 +35,15 @@ class DegreeServiceImpl(
     scheduler = scheduler
   )
 
-  override def getConnectionToken(request: GetConnectionTokenRequest): Future[GetConnectionTokenResponse] = {
+  override def getConnectionToken(
+      request: intdemo_api.GetConnectionTokenRequest
+  ): Future[intdemo_api.GetConnectionTokenResponse] = {
     service.getConnectionToken(request)
   }
 
   override def getSubjectStatusStream(
-      request: GetSubjectStatusRequest,
-      responseObserver: StreamObserver[GetSubjectStatusResponse]
+      request: intdemo_api.GetSubjectStatusRequest,
+      responseObserver: StreamObserver[intdemo_api.GetSubjectStatusResponse]
   ): Unit = {
     service.getSubjectStatusStream(request, responseObserver)
   }
@@ -66,19 +67,19 @@ object DegreeServiceImpl {
       .sendProofRequest(
         issuerId,
         connection.connectionId,
-        ProofRequest(IdServiceImpl.credentialTypeId, connection.connectionToken.token)
+        credential_models.ProofRequest(IdServiceImpl.credentialTypeId, connection.connectionToken.token)
       )
       .map(_ => ())
   }
 
   private def getSharedIdCredential(connectorIntegration: ConnectorIntegration)(
       implicit ec: ExecutionContext
-  ): TokenString => Future[Option[Credential]] =
+  ): TokenString => Future[Option[credential_models.Credential]] =
     connectionToken =>
       getSharedCredentials(connectorIntegration, connectionToken, issuerId)(Set(IdServiceImpl.credentialTypeId))
         .map(_.headOption)
 
-  def getDegreeCredential(idCredential: Credential): Credential = {
+  def getDegreeCredential(idCredential: credential_models.Credential): credential_models.Credential = {
     val idData = IdData.toIdData(idCredential)
 
     val degreeData = DegreeData(idData)
@@ -93,7 +94,7 @@ object DegreeServiceImpl {
       subjectDid = "unknown"
     ).printWith(jsonPrinter)
 
-    Credential(
+    credential_models.Credential(
       typeId = credentialTypeId,
       credentialDocument = degreeCredential
     )

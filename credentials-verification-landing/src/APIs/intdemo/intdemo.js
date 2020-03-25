@@ -3,7 +3,7 @@ import {
   DegreeServicePromiseClient,
   EmploymentServicePromiseClient,
   InsuranceServicePromiseClient
-} from '../../protos/demo/intdemo_grpc_web_pb';
+} from '../../protos/demo/intdemo_api_grpc_web_pb';
 import { config } from '../configs';
 import {
   GOVERNMENT_ISSUED_DIGITAL_IDENTITY,
@@ -16,9 +16,10 @@ import Logger from '../../helpers/Logger';
 const {
   GetConnectionTokenRequest,
   GetSubjectStatusRequest,
-  SetPersonalDataRequest,
-  Date
-} = require('../../protos/demo/intdemo_pb');
+  SetPersonalDataRequest
+} = require('../../protos/demo/intdemo_api_pb');
+
+const { Date } = require('../../protos/demo/intdemo_models_pb');
 
 const idService = new IDServicePromiseClient(config.grpcClient, null, null);
 const degreeService = new DegreeServicePromiseClient(config.grpcClient, null, null);

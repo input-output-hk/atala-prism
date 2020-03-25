@@ -1,16 +1,24 @@
 syntax = "proto3";
 
 option java_multiple_files = true;
-option java_package = "io.iohk.cvp.io.connector";
+option java_package = "io.iohk.prism.protos";
 
-package io.iohk.cvp.connector;
+package io.iohk.prism.protos;
+
+import "connector_models.proto";
+import "node_models.proto";
 
 service ConnectorService {
+
+  // Retrieve a connection for a given connection token.
+  //
+  // Available to: Holder, Issuer, Validator
+  rpc GetConnectionByToken (GetConnectionByTokenRequest) returns (GetConnectionByTokenResponse) {}
+
   // Get active connections for current participant
   //
   // Available to: Holder, Issuer, Validator
-  rpc GetConnectionsPaginated (GetConnectionsPaginatedRequest) returns (GetConnectionsPaginatedResponse) {
-  }
+  rpc GetConnectionsPaginated (GetConnectionsPaginatedRequest) returns (GetConnectionsPaginatedResponse) {}
 
   // Return info about connection token such as creator info
   //
@@ -18,8 +26,7 @@ service ConnectorService {
   //
   // Errors:
   // Token does not exist (UNKNOWN)
-  rpc GetConnectionTokenInfo (GetConnectionTokenInfoRequest) returns (GetConnectionTokenInfoResponse) {
-  }
+  rpc GetConnectionTokenInfo (GetConnectionTokenInfoRequest) returns (GetConnectionTokenInfoResponse) {}
 
   // Instantiate connection from connection token
   //
@@ -27,8 +34,7 @@ service ConnectorService {
   //
   // Errors:
   // Token does not exist (UNKNOWN)
-  rpc AddConnectionFromToken (AddConnectionFromTokenRequest) returns (AddConnectionFromTokenResponse) {
-  }
+  rpc AddConnectionFromToken (AddConnectionFromTokenRequest) returns (AddConnectionFromTokenResponse) {}
 
   // Delete active connection
   //
@@ -36,8 +42,7 @@ service ConnectorService {
   //
   // Errors:
   // Connection does not exist (UNKNOWN)
-  rpc DeleteConnection (DeleteConnectionRequest) returns (DeleteConnectionResponse) {
-  }
+  rpc DeleteConnection (DeleteConnectionRequest) returns (DeleteConnectionResponse) {}
 
   // Bind DID to issuer
   //
@@ -47,8 +52,7 @@ service ConnectorService {
   // Invalid DID (INVALID_ARGUMENT)
   // Invalid DID document (INVALID_ARGUMENT)
   // DID Document does not match DID (INVALID_ARGUMENT)
-  rpc RegisterDID (RegisterDIDRequest) returns (RegisterDIDResponse) {
-  }
+  rpc RegisterDID (RegisterDIDRequest) returns (RegisterDIDResponse) {}
 
   // Change billing plan of participant who wants to generate connection tokens
   //
@@ -57,8 +61,7 @@ service ConnectorService {
   // Errors:
   // Unknown billing plan (UNKNOWN)
   // User not allowed to set this billing plan (PERMISSION_DENIED)
-  rpc ChangeBillingPlan (ChangeBillingPlanRequest) returns (ChangeBillingPlanResponse) {
-  }
+  rpc ChangeBillingPlan (ChangeBillingPlanRequest) returns (ChangeBillingPlanResponse) {}
 
   // Generate connection token that can be used to instantiate connection
   //
@@ -66,18 +69,15 @@ service ConnectorService {
   //
   // Errors:
   // Billing plan doesn't allow token generation (PERMISSION_DENIED)
-  rpc GenerateConnectionToken (GenerateConnectionTokenRequest) returns (GenerateConnectionTokenResponse) {
-  }
+  rpc GenerateConnectionToken (GenerateConnectionTokenRequest) returns (GenerateConnectionTokenResponse) {}
 
   // Return messages received after given time moment, sorted in ascending order by receive time
   //
   // Available to: Issuer, Holder, Validator
-  rpc GetMessagesPaginated (GetMessagesPaginatedRequest) returns (GetMessagesPaginatedResponse) {
-  }
+  rpc GetMessagesPaginated (GetMessagesPaginatedRequest) returns (GetMessagesPaginatedResponse) {}
 
   // Return messages received on the given connection, the number is supposed to be small, so, no pagination is required.
-  rpc GetMessagesForConnection (GetMessagesForConnectionRequest) returns (GetMessagesForConnectionResponse) {
-  }
+  rpc GetMessagesForConnection (GetMessagesForConnectionRequest) returns (GetMessagesForConnectionResponse) {}
 
   // Send message over a connection
   //
@@ -86,80 +86,23 @@ service ConnectorService {
   // Errors:
   // Unknown connection (UNKNOWN)
   // Connection closed (FAILED_PRECONDITION)
-  rpc SendMessage (SendMessageRequest) returns (SendMessageResponse) {
-  }
+  rpc SendMessage (SendMessageRequest) returns (SendMessageResponse) {}
 
   // Generate a URL that can be used to do a payment
-  rpc GetBraintreePaymentsConfig (GetBraintreePaymentsConfigRequest) returns (GetBraintreePaymentsConfigResponse) {
-  }
+  rpc GetBraintreePaymentsConfig (GetBraintreePaymentsConfigRequest) returns (GetBraintreePaymentsConfigResponse) {}
   rpc ProcessPayment (ProcessPaymentRequest) returns (ProcessPaymentResponse);
   rpc GetPayments (GetPaymentsRequest) returns (GetPaymentsResponse);
+
+  // Return the information about the Connector and Node builds
+  rpc GetBuildInfo (GetBuildInfoRequest) returns (GetBuildInfoResponse);
 }
 
-// GENERAL
-
-// just an EC public key represented with big integers as strings
-message PublicKey {
-  string x = 1;
-  string y = 2;
+message GetConnectionByTokenRequest {
+  string token = 1;
 }
 
-// Credential information; FIXME: is it a part of protocol?
-message Credential {
-  IssuerInfo issuerInfo = 1;
-  string subject = 2;
-  string title = 3;
-  CredentialType type = 4;
-  bytes credentialData = 5;
-}
-
-// Credential type; FIXME: is it a part of protocol?
-enum CredentialType {
-  UNKNOWN = 0; // random stuff
-  EDUCATION = 1; // school, university, library
-  INSTITUTIONAL = 2; // national id, goverment id, driver license
-  FINANCIAL = 3; // banks
-  BUSINESS = 4; // jobs
-  ENTERTAINMENT = 5; // permit to play music in parks (?)
-}
-
-// Information on an Issuer
-message IssuerInfo {
-  string DID = 1;
-  string name = 2;
-  bytes logo = 3;
-}
-
-// Information on a Verifier
-message VerifierInfo {
-  string DID = 1;
-  string name = 2;
-  bytes logo = 3;
-}
-
-// Information on a Holder
-message HolderInfo {
-  string DID = 1;
-  string name = 2;
-}
-
-// Type representing generic participant in the system, alternative of IssuerInfo, HolderInfo, or VerifierInfo.
-message ParticipantInfo {
-  oneof participant {
-    IssuerInfo issuer = 1;
-    HolderInfo holder = 2;
-    VerifierInfo verifier = 3;
-  }
-}
-
-// CONNECTIONS
-
-// Information on the connection; both sides see the same connectionId and creation time, but each sees different participantInfo
-message ConnectionInfo {
-  string connectionId = 1;
-  int64 created = 2; // moment of instantiation as milliseconds since the Unix Epoch
-  ParticipantInfo participantInfo = 3; // information about the participant at the other end
-  string token = 4; // the token used to generate the connection
+message GetConnectionByTokenResponse {
+  Connection connection = 1;
 }
 
 // Request connections instantiated by us / with us possibly after a known connection
@@ -186,8 +129,10 @@ message GetConnectionTokenInfoResponse {
 // Request to instantiate a connection using token
 message AddConnectionFromTokenRequest {
   string token = 1; // token to instantiate connection
-  PublicKey holderPublicKey = 2;
+  ConnectorPublicKey holderPublicKey = 2;
   string paymentNonce = 3; // optional field, if present, we'll charge the user before adding the connection
+  // Note that old clients will send the holderPublicKey instead, which we'll need to encode on the server.
+  EncodedPublicKey holderEncodedPublicKey = 4; // Uncompressed encoded public key
 }
 
 // Confirmation of connection instantiation
@@ -212,16 +157,6 @@ message GenerateConnectionTokenRequest {
 // Result with generated token
 message GenerateConnectionTokenResponse {
   string token = 1; // generated token
-}
-
-// MESSAGES
-
-// Message received via a connection
-message ReceivedMessage {
-  string id = 1;
-  int64 received = 2; // time when Connector received the message as milliseconds since the Unix Epoch
-  string connectionId = 3; // connection where the message has been received
-  bytes message = 4; // raw message
 }
 
 // Request to return messages for us after the given known message (if any)
@@ -256,20 +191,20 @@ message SendMessageResponse {
 
 // Request to register DID
 message RegisterDIDRequest {
-  string DID = 1;
-  string DIDDocument = 2;
+  SignedAtalaOperation createDIDOperation = 1;
+  Role role = 2;
+  string name = 3;
+  bytes logo = 4;
+
+  enum Role {
+    issuer = 0;
+    verifier = 1;
+  }
 }
 
 // Confirmation of DID registration
 message RegisterDIDResponse {
-}
-
-// Enumeration representing billing plan of Issuer. Possible values are hardcoded as new billing options would require implementation changes anyway.
-enum BillingPlan {
-  NO_PLAN = 0; // participant not able to generate connection tokens
-  FREE_PLAN = 1; // connections are created for free
-  SENDER_PAYS = 2; // side generating the token pays for the connection
-  RECEIVER_PAYS = 3; // side receiving the token and using it to instantiate connection pays for it
+  string did = 1;
 }
 
 // Request to change the billing plan
@@ -281,8 +216,7 @@ message ChangeBillingPlanRequest {
 message ChangeBillingPlanResponse {
 }
 
-message GetBraintreePaymentsConfigRequest {
-}
+message GetBraintreePaymentsConfigRequest {}
 message GetBraintreePaymentsConfigResponse {
   string tokenizationKey = 1;
 }
@@ -295,16 +229,16 @@ message ProcessPaymentResponse {
   Payment payment = 1;
 }
 
-message GetPaymentsRequest {
-}
+message GetPaymentsRequest {}
 message GetPaymentsResponse {
   repeated Payment payments = 1;
 }
 
-message Payment {
-  string id = 1;
-  string amount = 2;
-  int64 createdOn = 3;
-  string status = 4;
-  string failureReason = 5;
+message GetBuildInfoRequest {}
+message GetBuildInfoResponse {
+  string version = 1;
+  string scalaVersion = 2;
+  string millVersion = 3;
+  string buildTime = 4;
+  string nodeVersion = 5;
 }

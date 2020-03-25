@@ -2,14 +2,17 @@ package io.iohk.cvp.viewmodel;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import io.iohk.cvp.grpc.AsyncTaskResult;
-import io.iohk.cvp.grpc.GetPaymentsRunnable;
-import io.iohk.cvp.grpc.GrpcTask;
-import io.iohk.cvp.io.connector.Payment;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+
 import javax.inject.Inject;
+
+import io.iohk.cvp.grpc.AsyncTaskResult;
+import io.iohk.cvp.grpc.GetPaymentsRunnable;
+import io.iohk.cvp.grpc.GrpcTask;
+import io.iohk.prism.protos.Payment;
 
 public class PaymentViewModel extends CvpViewModel {
 

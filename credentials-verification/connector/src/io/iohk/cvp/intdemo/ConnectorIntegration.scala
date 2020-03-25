@@ -1,11 +1,10 @@
 package io.iohk.cvp.intdemo
 
-import credential.ProofRequest
-import credential.Credential
 import io.iohk.connector.errors.{ConnectorError, ErrorSupport}
-import io.iohk.connector.model.{Connection, ConnectionId, Message, MessageId, TokenString}
+import io.iohk.connector.model._
 import io.iohk.connector.services.{ConnectionsService, MessagesService}
 import io.iohk.cvp.models.ParticipantId
+import io.iohk.prism.protos.credential_models
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -14,13 +13,13 @@ trait ConnectorIntegration {
   def sendCredential(
       senderId: ParticipantId,
       connectionId: ConnectionId,
-      credential: Credential
+      credential: credential_models.Credential
   ): Future[MessageId]
 
   def sendProofRequest(
       senderId: ParticipantId,
       connectionId: ConnectionId,
-      proofRequest: ProofRequest
+      proofRequest: credential_models.ProofRequest
   ): Future[MessageId]
 
   def getConnectionByToken(token: TokenString): Future[Option[Connection]]
@@ -40,15 +39,15 @@ object ConnectorIntegration {
   ) extends ConnectorIntegration
       with ErrorSupport {
 
-    import io.iohk.cvp.models.ParticipantId
     import io.iohk.connector.model.{ConnectionId, TokenString}
+    import io.iohk.cvp.models.ParticipantId
 
     val logger: Logger = LoggerFactory.getLogger(classOf[ConnectorIntegrationImpl])
 
     override def sendCredential(
         senderId: ParticipantId,
         connectionId: ConnectionId,
-        credential: Credential
+        credential: credential_models.Credential
     ): Future[MessageId] = {
       sendMessage(senderId, connectionId, credential.toByteArray)
     }
@@ -56,7 +55,7 @@ object ConnectorIntegration {
     override def sendProofRequest(
         senderId: ParticipantId,
         connectionId: ConnectionId,
-        proofRequest: ProofRequest
+        proofRequest: credential_models.ProofRequest
     ): Future[MessageId] = {
       sendMessage(senderId, connectionId, proofRequest.toByteArray)
     }

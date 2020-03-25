@@ -3,13 +3,15 @@ package io.iohk.cvp.views.utils.adapters;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import androidx.recyclerview.widget.RecyclerView;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.iohk.cvp.R;
-import io.iohk.cvp.io.connector.ConnectionInfo;
-import io.iohk.cvp.io.connector.IssuerInfo;
 import io.iohk.cvp.utils.ImageUtils;
+import io.iohk.prism.protos.ConnectionInfo;
+import io.iohk.prism.protos.IssuerInfo;
 
 public class UniversitiesRecyclerViewAdapter extends
     ConnectionsRecyclerViewAdapter<UniversitiesRecyclerViewAdapter.ViewHolder> {

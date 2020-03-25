@@ -6,7 +6,6 @@ import io.iohk.connector.payments.BraintreePayments
 import io.iohk.connector.repositories._
 import io.iohk.connector.services.{ConnectionsService, MessagesService, RegistrationService}
 import io.iohk.cvp.ParticipantPropagatorService
-import io.iohk.cvp.admin.protos.AdminServiceGrpc
 import io.iohk.cvp.admin.{AdminRepository, AdminServiceImpl}
 import io.iohk.cvp.cmanager.grpc.services.{CredentialsServiceImpl, GroupsServiceImpl, StudentsServiceImpl}
 import io.iohk.cvp.cmanager.repositories.{
@@ -19,15 +18,15 @@ import io.iohk.cvp.cstore.CredentialsStoreService
 import io.iohk.cvp.cstore.services.{StoreIndividualsService, StoredCredentialsService}
 import io.iohk.cvp.grpc.{GrpcAuthenticationHeaderParser, GrpcAuthenticatorInterceptor}
 import io.iohk.cvp.intdemo.ConnectorIntegration.ConnectorIntegrationImpl
-import io.iohk.cvp.intdemo.{
-  DegreeServiceImpl,
-  EmploymentServiceImpl,
-  IdServiceImpl,
-  InsuranceServiceImpl,
-  IntDemoRepository
-}
-import io.iohk.cvp.intdemo.protos.{DegreeServiceGrpc, EmploymentServiceGrpc, IDServiceGrpc, InsuranceServiceGrpc}
+import io.iohk.cvp.intdemo._
 import io.iohk.cvp.repositories.{SchemaMigrations, TransactorFactory}
+import io.iohk.prism.intdemo.protos.intdemo_api.{
+  DegreeServiceGrpc,
+  EmploymentServiceGrpc,
+  IDServiceGrpc,
+  InsuranceServiceGrpc
+}
+import io.iohk.prism.protos.admin_api.AdminServiceGrpc
 import io.iohk.prism.protos.cmanager_api.{CredentialsServiceGrpc, GroupsServiceGrpc, StudentsServiceGrpc}
 import io.iohk.prism.protos.connector_api
 import io.iohk.prism.protos.cstore_api.CredentialsStoreServiceGrpc
@@ -39,9 +38,7 @@ import scala.concurrent.duration._
 
 /**
   * Run with `mill -i connector.run`, otherwise, the server will stay running even after ctrl+C.
-  *
-  * Launch grpcui with: grpcui -plaintext -import-path connector/protobuf --proto connector/protobuf/cmanager/protos.proto --proto connector/protobuf/connector/protos.proto localhost:50051
-  */
+  **/
 object ConnectorApp {
   def main(args: Array[String]): Unit = {
     val server = new ConnectorApp(ExecutionContext.global)

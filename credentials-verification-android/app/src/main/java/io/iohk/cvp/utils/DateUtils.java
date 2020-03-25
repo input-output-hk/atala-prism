@@ -2,8 +2,10 @@ package io.iohk.cvp.utils;
 
 import android.content.Context;
 import android.text.format.DateFormat;
-import io.iohk.cvp.io.credential.Date;
+
 import java.util.Calendar;
+
+import io.iohk.prism.protos.Date;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor

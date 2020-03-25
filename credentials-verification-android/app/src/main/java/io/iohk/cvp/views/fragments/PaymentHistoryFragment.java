@@ -5,16 +5,22 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import java.util.List;
+import java.util.Objects;
+
+import javax.inject.Inject;
+
 import butterknife.BindView;
 import io.iohk.cvp.R;
 import io.iohk.cvp.grpc.AsyncTaskResult;
-import io.iohk.cvp.io.connector.Payment;
 import io.iohk.cvp.utils.DateUtils;
 import io.iohk.cvp.viewmodel.PaymentViewModel;
 import io.iohk.cvp.views.Navigator;
@@ -22,9 +28,7 @@ import io.iohk.cvp.views.Preferences;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.StackedAppBar;
 import io.iohk.cvp.views.utils.adapters.PaymentsHistoryRecyclerViewAdapter;
-import java.util.List;
-import java.util.Objects;
-import javax.inject.Inject;
+import io.iohk.prism.protos.Payment;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 

@@ -3,19 +3,19 @@ package io.iohk.cvp.intdemo
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-import credential.Credential
 import io.circe.Printer
 import io.iohk.connector.model.{Connection, Message, TokenString}
 import io.iohk.cvp.models.ParticipantId
+import io.iohk.prism.protos.credential_models
 
 import scala.concurrent.{ExecutionContext, Future}
 
 object SharedCredentials {
 
-  def credentialsOfType(typeIds: Set[String])(messages: Seq[Message]): Seq[Credential] = {
+  def credentialsOfType(typeIds: Set[String])(messages: Seq[Message]): Seq[credential_models.Credential] = {
     messages.collect {
       case message =>
-        val credential = Credential.messageCompanion.parseFrom(message.content)
+        val credential = credential_models.Credential.messageCompanion.parseFrom(message.content)
         if (typeIds.contains(credential.typeId))
           Some(credential)
         else
@@ -27,7 +27,7 @@ object SharedCredentials {
       connectorIntegration: ConnectorIntegration,
       connectionToken: TokenString,
       issuerId: ParticipantId
-  )(typeIds: Set[String])(implicit ec: ExecutionContext): Future[Seq[Credential]] = {
+  )(typeIds: Set[String])(implicit ec: ExecutionContext): Future[Seq[credential_models.Credential]] = {
     for {
       maybeConnection: Option[Connection] <- connectorIntegration.getConnectionByToken(connectionToken)
       messages <- maybeConnection

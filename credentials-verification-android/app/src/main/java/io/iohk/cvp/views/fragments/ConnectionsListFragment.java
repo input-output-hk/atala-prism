@@ -5,21 +5,25 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
 import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.inject.Inject;
+
 import butterknife.BindView;
 import io.iohk.cvp.R;
-import io.iohk.cvp.io.connector.ConnectionInfo;
 import io.iohk.cvp.viewmodel.ConnectionsActivityViewModel;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.RootAppBar;
 import io.iohk.cvp.views.utils.adapters.ConnectionsRecyclerViewAdapter;
-import java.util.ArrayList;
-import java.util.List;
-import javax.inject.Inject;
+import io.iohk.prism.protos.ConnectionInfo;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 

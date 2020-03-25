@@ -5,22 +5,26 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.crashlytics.android.Crashlytics;
+import com.google.protobuf.InvalidProtocolBufferException;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import com.crashlytics.android.Crashlytics;
-import com.google.protobuf.InvalidProtocolBufferException;
 import io.iohk.cvp.R;
-import io.iohk.cvp.io.connector.ReceivedMessage;
-import io.iohk.cvp.io.credential.Credential;
-import io.iohk.cvp.io.credential.SentCredential;
 import io.iohk.cvp.utils.ImageUtils;
 import io.iohk.cvp.views.Preferences;
 import io.iohk.cvp.views.fragments.HomeFragment;
-import java.util.ArrayList;
-import java.util.List;
+import io.iohk.prism.protos.AlphaCredential;
+import io.iohk.prism.protos.AtalaMessage;
+import io.iohk.prism.protos.ReceivedMessage;
 
 public class CredentialsRecyclerViewAdapter extends
     RecyclerView.Adapter<CredentialsRecyclerViewAdapter.ViewHolder> {
@@ -54,8 +58,8 @@ public class CredentialsRecyclerViewAdapter extends
       ReceivedMessage msg = messages.get(position);
 
 
-      SentCredential sentCredential = SentCredential.parseFrom(msg.getMessage());
-      Credential current = sentCredential.getIssuerSentCredential().getCredential();
+      AtalaMessage sentCredential = AtalaMessage.parseFrom(msg.getMessage());
+      AlphaCredential current = sentCredential.getIssuerSentCredential().getAlphaCredential();
       holder.credential = sentCredential;
       holder.messageId = msg.getId();
       holder.connectionId = msg.getConnectionId();
@@ -97,7 +101,7 @@ public class CredentialsRecyclerViewAdapter extends
   static class ViewHolder extends RecyclerView.ViewHolder {
 
     String connectionId;
-    SentCredential credential;
+    AtalaMessage credential;
     String messageId;
 
     @BindView(R.id.degree_type)

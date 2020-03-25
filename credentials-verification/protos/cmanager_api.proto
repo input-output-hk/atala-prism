@@ -34,7 +34,7 @@ message CreateCredentialRequest {
     string groupName = 5;
 }
 message CreateCredentialResponse {
-    Credential credential = 1;
+    CManagerCredential credential = 1;
 }
 
 // The authenticated issuer is retrieving its issued credentials
@@ -43,7 +43,7 @@ message GetCredentialsRequest {
     string lastSeenCredentialId = 2; // the last seen credential (if any), the returned credentials start after this one
 }
 message GetCredentialsResponse {
-    repeated Credential credentials = 1;
+    repeated CManagerCredential credentials = 1;
 }
 
 message CreateStudentRequest {
@@ -77,7 +77,7 @@ message GetStudentCredentialsRequest {
     string studentId = 1;
 }
 message GetStudentCredentialsResponse {
-    repeated Credential credential = 1;
+    repeated CManagerCredential credential = 1;
 }
 
 message GenerateConnectionTokenForStudentRequest {

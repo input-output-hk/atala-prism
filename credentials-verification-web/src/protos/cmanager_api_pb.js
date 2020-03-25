@@ -720,7 +720,7 @@ proto.io.iohk.prism.protos.CreateCredentialResponse.prototype.toObject = functio
  */
 proto.io.iohk.prism.protos.CreateCredentialResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    credential: (f = msg.getCredential()) && cmanager_models_pb.Credential.toObject(includeInstance, f)
+    credential: (f = msg.getCredential()) && cmanager_models_pb.CManagerCredential.toObject(includeInstance, f)
   };
 
   if (includeInstance) {
@@ -758,8 +758,8 @@ proto.io.iohk.prism.protos.CreateCredentialResponse.deserializeBinaryFromReader 
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = new cmanager_models_pb.Credential;
-      reader.readMessage(value,cmanager_models_pb.Credential.deserializeBinaryFromReader);
+      var value = new cmanager_models_pb.CManagerCredential;
+      reader.readMessage(value,cmanager_models_pb.CManagerCredential.deserializeBinaryFromReader);
       msg.setCredential(value);
       break;
     default:
@@ -796,23 +796,23 @@ proto.io.iohk.prism.protos.CreateCredentialResponse.serializeBinaryToWriter = fu
     writer.writeMessage(
       1,
       f,
-      cmanager_models_pb.Credential.serializeBinaryToWriter
+      cmanager_models_pb.CManagerCredential.serializeBinaryToWriter
     );
   }
 };
 
 
 /**
- * optional Credential credential = 1;
- * @return {?proto.io.iohk.prism.protos.Credential}
+ * optional CManagerCredential credential = 1;
+ * @return {?proto.io.iohk.prism.protos.CManagerCredential}
  */
 proto.io.iohk.prism.protos.CreateCredentialResponse.prototype.getCredential = function() {
-  return /** @type{?proto.io.iohk.prism.protos.Credential} */ (
-    jspb.Message.getWrapperField(this, cmanager_models_pb.Credential, 1));
+  return /** @type{?proto.io.iohk.prism.protos.CManagerCredential} */ (
+    jspb.Message.getWrapperField(this, cmanager_models_pb.CManagerCredential, 1));
 };
 
 
-/** @param {?proto.io.iohk.prism.protos.Credential|undefined} value */
+/** @param {?proto.io.iohk.prism.protos.CManagerCredential|undefined} value */
 proto.io.iohk.prism.protos.CreateCredentialResponse.prototype.setCredential = function(value) {
   jspb.Message.setWrapperField(this, 1, value);
 };
@@ -1029,7 +1029,7 @@ proto.io.iohk.prism.protos.GetCredentialsResponse.prototype.toObject = function(
 proto.io.iohk.prism.protos.GetCredentialsResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
     credentialsList: jspb.Message.toObjectList(msg.getCredentialsList(),
-    cmanager_models_pb.Credential.toObject, includeInstance)
+    cmanager_models_pb.CManagerCredential.toObject, includeInstance)
   };
 
   if (includeInstance) {
@@ -1067,8 +1067,8 @@ proto.io.iohk.prism.protos.GetCredentialsResponse.deserializeBinaryFromReader = 
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = new cmanager_models_pb.Credential;
-      reader.readMessage(value,cmanager_models_pb.Credential.deserializeBinaryFromReader);
+      var value = new cmanager_models_pb.CManagerCredential;
+      reader.readMessage(value,cmanager_models_pb.CManagerCredential.deserializeBinaryFromReader);
       msg.addCredentials(value);
       break;
     default:
@@ -1105,35 +1105,35 @@ proto.io.iohk.prism.protos.GetCredentialsResponse.serializeBinaryToWriter = func
     writer.writeRepeatedMessage(
       1,
       f,
-      cmanager_models_pb.Credential.serializeBinaryToWriter
+      cmanager_models_pb.CManagerCredential.serializeBinaryToWriter
     );
   }
 };
 
 
 /**
- * repeated Credential credentials = 1;
- * @return {!Array<!proto.io.iohk.prism.protos.Credential>}
+ * repeated CManagerCredential credentials = 1;
+ * @return {!Array<!proto.io.iohk.prism.protos.CManagerCredential>}
  */
 proto.io.iohk.prism.protos.GetCredentialsResponse.prototype.getCredentialsList = function() {
-  return /** @type{!Array<!proto.io.iohk.prism.protos.Credential>} */ (
-    jspb.Message.getRepeatedWrapperField(this, cmanager_models_pb.Credential, 1));
+  return /** @type{!Array<!proto.io.iohk.prism.protos.CManagerCredential>} */ (
+    jspb.Message.getRepeatedWrapperField(this, cmanager_models_pb.CManagerCredential, 1));
 };
 
 
-/** @param {!Array<!proto.io.iohk.prism.protos.Credential>} value */
+/** @param {!Array<!proto.io.iohk.prism.protos.CManagerCredential>} value */
 proto.io.iohk.prism.protos.GetCredentialsResponse.prototype.setCredentialsList = function(value) {
   jspb.Message.setRepeatedWrapperField(this, 1, value);
 };
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.Credential=} opt_value
+ * @param {!proto.io.iohk.prism.protos.CManagerCredential=} opt_value
  * @param {number=} opt_index
- * @return {!proto.io.iohk.prism.protos.Credential}
+ * @return {!proto.io.iohk.prism.protos.CManagerCredential}
  */
 proto.io.iohk.prism.protos.GetCredentialsResponse.prototype.addCredentials = function(opt_value, opt_index) {
-  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.io.iohk.prism.protos.Credential, opt_index);
+  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.io.iohk.prism.protos.CManagerCredential, opt_index);
 };
 
 
@@ -2325,7 +2325,7 @@ proto.io.iohk.prism.protos.GetStudentCredentialsResponse.prototype.toObject = fu
 proto.io.iohk.prism.protos.GetStudentCredentialsResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
     credentialList: jspb.Message.toObjectList(msg.getCredentialList(),
-    cmanager_models_pb.Credential.toObject, includeInstance)
+    cmanager_models_pb.CManagerCredential.toObject, includeInstance)
   };
 
   if (includeInstance) {
@@ -2363,8 +2363,8 @@ proto.io.iohk.prism.protos.GetStudentCredentialsResponse.deserializeBinaryFromRe
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = new cmanager_models_pb.Credential;
-      reader.readMessage(value,cmanager_models_pb.Credential.deserializeBinaryFromReader);
+      var value = new cmanager_models_pb.CManagerCredential;
+      reader.readMessage(value,cmanager_models_pb.CManagerCredential.deserializeBinaryFromReader);
       msg.addCredential(value);
       break;
     default:
@@ -2401,35 +2401,35 @@ proto.io.iohk.prism.protos.GetStudentCredentialsResponse.serializeBinaryToWriter
     writer.writeRepeatedMessage(
       1,
       f,
-      cmanager_models_pb.Credential.serializeBinaryToWriter
+      cmanager_models_pb.CManagerCredential.serializeBinaryToWriter
     );
   }
 };
 
 
 /**
- * repeated Credential credential = 1;
- * @return {!Array<!proto.io.iohk.prism.protos.Credential>}
+ * repeated CManagerCredential credential = 1;
+ * @return {!Array<!proto.io.iohk.prism.protos.CManagerCredential>}
  */
 proto.io.iohk.prism.protos.GetStudentCredentialsResponse.prototype.getCredentialList = function() {
-  return /** @type{!Array<!proto.io.iohk.prism.protos.Credential>} */ (
-    jspb.Message.getRepeatedWrapperField(this, cmanager_models_pb.Credential, 1));
+  return /** @type{!Array<!proto.io.iohk.prism.protos.CManagerCredential>} */ (
+    jspb.Message.getRepeatedWrapperField(this, cmanager_models_pb.CManagerCredential, 1));
 };
 
 
-/** @param {!Array<!proto.io.iohk.prism.protos.Credential>} value */
+/** @param {!Array<!proto.io.iohk.prism.protos.CManagerCredential>} value */
 proto.io.iohk.prism.protos.GetStudentCredentialsResponse.prototype.setCredentialList = function(value) {
   jspb.Message.setRepeatedWrapperField(this, 1, value);
 };
 
 
 /**
- * @param {!proto.io.iohk.prism.protos.Credential=} opt_value
+ * @param {!proto.io.iohk.prism.protos.CManagerCredential=} opt_value
  * @param {number=} opt_index
- * @return {!proto.io.iohk.prism.protos.Credential}
+ * @return {!proto.io.iohk.prism.protos.CManagerCredential}
  */
 proto.io.iohk.prism.protos.GetStudentCredentialsResponse.prototype.addCredential = function(opt_value, opt_index) {
-  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.io.iohk.prism.protos.Credential, opt_index);
+  return jspb.Message.addToRepeatedWrapperField(this, 1, opt_value, proto.io.iohk.prism.protos.CManagerCredential, opt_index);
 };
 
 

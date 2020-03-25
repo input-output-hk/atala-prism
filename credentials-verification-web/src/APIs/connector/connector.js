@@ -8,7 +8,7 @@ const {
   RegisterDIDRequest
 } = require('../../protos/connector_api_pb');
 
-const { AtalaMessage } = require('../../protos/credential_pb');
+const { AtalaMessage } = require('../../protos/credential_models_pb');
 
 async function getConnectionsPaginated(lastSeenConnectionId, limit) {
   const connectionsPaginatedRequest = new GetConnectionsPaginatedRequest();

@@ -2,7 +2,6 @@ package io.iohk.cvp.intdemo
 
 import java.time.LocalDate
 
-import credential.{Credential, ProofRequest}
 import io.circe.Json
 import io.circe.Json.{arr, fromString, obj}
 import io.grpc.stub.StreamObserver
@@ -14,14 +13,9 @@ import io.iohk.cvp.intdemo.InsuranceServiceImpl.{
   requestIdAndEmploymentCredentials
 }
 import io.iohk.cvp.intdemo.SharedCredentials.{formatDate, jsonPrinter}
-import io.iohk.cvp.intdemo.protos.InsuranceServiceGrpc.InsuranceService
-import io.iohk.cvp.intdemo.protos.{
-  GetConnectionTokenRequest,
-  GetConnectionTokenResponse,
-  GetSubjectStatusRequest,
-  GetSubjectStatusResponse
-}
 import io.iohk.cvp.models.ParticipantId
+import io.iohk.prism.intdemo.protos.intdemo_api
+import io.iohk.prism.protos.credential_models
 import monix.execution.Scheduler.{global => scheduler}
 
 import scala.concurrent.duration.FiniteDuration
@@ -33,7 +27,7 @@ class InsuranceServiceImpl(
     schedulerPeriod: FiniteDuration
 )(
     implicit ec: ExecutionContext
-) extends InsuranceService {
+) extends intdemo_api.InsuranceServiceGrpc.InsuranceService {
 
   val service = new IntDemoService[RequiredInsuranceData](
     InsuranceServiceImpl.issuerId,
@@ -46,12 +40,14 @@ class InsuranceServiceImpl(
     scheduler
   )
 
-  override def getConnectionToken(request: GetConnectionTokenRequest): Future[GetConnectionTokenResponse] =
+  override def getConnectionToken(
+      request: intdemo_api.GetConnectionTokenRequest
+  ): Future[intdemo_api.GetConnectionTokenResponse] =
     service.getConnectionToken(request)
 
   override def getSubjectStatusStream(
-      request: GetSubjectStatusRequest,
-      responseObserver: StreamObserver[GetSubjectStatusResponse]
+      request: intdemo_api.GetSubjectStatusRequest,
+      responseObserver: StreamObserver[intdemo_api.GetSubjectStatusResponse]
   ): Unit =
     service.getSubjectStatusStream(request, responseObserver)
 }
@@ -60,7 +56,10 @@ object InsuranceServiceImpl {
   private val issuerId = ParticipantId("a1cb7eee-65c1-4d7f-9417-db8a37a6212a")
   private val credentialTypeId = "VerifiableCredential/AtalaCertificateOfInsurance"
 
-  case class RequiredInsuranceData(idCredential: Credential, employmentCredential: Credential)
+  case class RequiredInsuranceData(
+      idCredential: credential_models.Credential,
+      employmentCredential: credential_models.Credential
+  )
 
   private def requestIdAndEmploymentCredentials(connectorIntegration: ConnectorIntegration)(
       connection: Connection
@@ -69,12 +68,12 @@ object InsuranceServiceImpl {
       _ <- connectorIntegration.sendProofRequest(
         issuerId,
         connection.connectionId,
-        ProofRequest(IdServiceImpl.credentialTypeId, connection.connectionToken.token)
+        credential_models.ProofRequest(IdServiceImpl.credentialTypeId, connection.connectionToken.token)
       )
       _ <- connectorIntegration.sendProofRequest(
         issuerId,
         connection.connectionId,
-        ProofRequest(EmploymentServiceImpl.credentialTypeId, connection.connectionToken.token)
+        credential_models.ProofRequest(EmploymentServiceImpl.credentialTypeId, connection.connectionToken.token)
       )
     } yield ()
   }
@@ -85,7 +84,7 @@ object InsuranceServiceImpl {
     getSharedCredentials(connectorIntegration)(ec)(connectionToken).map(toRequiredInsuranceData)
   }
 
-  private def toRequiredInsuranceData(seq: Seq[Credential]): Option[RequiredInsuranceData] = {
+  private def toRequiredInsuranceData(seq: Seq[credential_models.Credential]): Option[RequiredInsuranceData] = {
     for {
       idCredential <- seq.find(credential => credential.typeId == IdServiceImpl.credentialTypeId)
       employmentCredential <- seq.find(credential => credential.typeId == EmploymentServiceImpl.credentialTypeId)
@@ -94,14 +93,14 @@ object InsuranceServiceImpl {
 
   private def getSharedCredentials(
       connectorIntegration: ConnectorIntegration
-  )(implicit ec: ExecutionContext): TokenString => Future[Seq[Credential]] = { connectionToken =>
+  )(implicit ec: ExecutionContext): TokenString => Future[Seq[credential_models.Credential]] = { connectionToken =>
     SharedCredentials
       .getSharedCredentials(connectorIntegration, connectionToken, issuerId)(
         Set(IdServiceImpl.credentialTypeId, EmploymentServiceImpl.credentialTypeId)
       )
   }
 
-  private def getInsuranceCredential(requiredInsuranceData: RequiredInsuranceData): Credential = {
+  private def getInsuranceCredential(requiredInsuranceData: RequiredInsuranceData): credential_models.Credential = {
 
     val idData = IdData.toIdData(requiredInsuranceData.idCredential)
 
@@ -120,7 +119,7 @@ object InsuranceServiceImpl {
       employerAddress = employmentData.employerAddress
     ).printWith(jsonPrinter)
 
-    Credential(typeId = credentialTypeId, credentialDocument = insuranceCredential)
+    credential_models.Credential(typeId = credentialTypeId, credentialDocument = insuranceCredential)
   }
 
   def insuranceCredentialJsonTemplate(

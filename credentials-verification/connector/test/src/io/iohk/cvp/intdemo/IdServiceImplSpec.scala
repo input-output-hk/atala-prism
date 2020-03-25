@@ -3,12 +3,11 @@ package io.iohk.cvp.intdemo
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-import Testing._
 import io.grpc.{Status, StatusException}
 import io.iohk.connector.model.{Connection, ConnectionId, MessageId, TokenString}
 import io.iohk.cvp.intdemo.IdServiceImplSpec._
-import io.iohk.cvp.intdemo.protos.SubjectStatus.UNCONNECTED
-import io.iohk.cvp.intdemo.protos._
+import io.iohk.cvp.intdemo.Testing._
+import io.iohk.prism.intdemo.protos.{intdemo_api, intdemo_models}
 import org.mockito.ArgumentMatchersSugar.{any, eqTo}
 import org.mockito.MockitoSugar.{mock, verify, when}
 import org.scalatest.FlatSpec
@@ -25,7 +24,7 @@ class IdServiceImplSpec extends FlatSpec {
 
   "setPersonalData" should "reject empty first name" in idService { (_, _, idService) =>
     val response = idService
-      .setPersonalData(SetPersonalDataRequest(token.token, "", Some(today())))
+      .setPersonalData(intdemo_api.SetPersonalDataRequest(token.token, "", Some(today())))
       .failed
       .futureValue
       .asInstanceOf[StatusException]
@@ -35,7 +34,7 @@ class IdServiceImplSpec extends FlatSpec {
 
   it should "reject empty date of birth" in idService { (_, _, idService) =>
     val response = idService
-      .setPersonalData(SetPersonalDataRequest(token.token, "name", None))
+      .setPersonalData(intdemo_api.SetPersonalDataRequest(token.token, "name", None))
       .failed
       .futureValue
       .asInstanceOf[StatusException]
@@ -43,15 +42,22 @@ class IdServiceImplSpec extends FlatSpec {
     response.getStatus shouldBe Status.INVALID_ARGUMENT
   }
 
-  it should "update the personal info when the user's personal data is uploaded" in idService(UNCONNECTED, None, None) {
-    (_, repository, idService) =>
-      idService
-        .setPersonalData(
-          SetPersonalDataRequest(token.token, name, Some(Date(dob.getYear, dob.getMonthValue, dob.getDayOfMonth)))
+  it should "update the personal info when the user's personal data is uploaded" in idService(
+    intdemo_models.SubjectStatus.UNCONNECTED,
+    None,
+    None
+  ) { (_, repository, idService) =>
+    idService
+      .setPersonalData(
+        intdemo_api.SetPersonalDataRequest(
+          token.token,
+          name,
+          Some(intdemo_models.Date(dob.getYear, dob.getMonthValue, dob.getDayOfMonth))
         )
-        .futureValue
+      )
+      .futureValue
 
-      verify(repository).mergePersonalInfo(token, name, dob)
+    verify(repository).mergePersonalInfo(token, name, dob)
   }
 
   "idCredentialTemplate" should "render an ID credential correctly" in {
@@ -101,11 +107,11 @@ object IdServiceImplSpec {
   private val dob: LocalDate = LocalDate.of(1950, 1, 1)
 
   def idService(testCode: (ConnectorIntegration, IntDemoRepository, IdServiceImpl) => Any): Unit = {
-    idService(UNCONNECTED, None, None)(testCode)
+    idService(intdemo_models.SubjectStatus.UNCONNECTED, None, None)(testCode)
   }
 
   def idService(
-      subjectStatus: SubjectStatus,
+      subjectStatus: intdemo_models.SubjectStatus,
       connection: Option[Connection],
       personalInfo: Option[(String, LocalDate)]
   )(testCode: (ConnectorIntegration, IntDemoRepository, IdServiceImpl) => Any): Unit = {
@@ -124,9 +130,9 @@ object IdServiceImplSpec {
     testCode(connectorIntegration, repository, service)
   }
 
-  def today(): Date = toDate(LocalDate.now())
+  def today(): intdemo_models.Date = toDate(LocalDate.now())
 
-  def toDate(ld: LocalDate): Date = {
-    Date(ld.getYear, ld.getMonthValue, ld.getDayOfMonth)
+  def toDate(ld: LocalDate): intdemo_models.Date = {
+    intdemo_models.Date(ld.getYear, ld.getMonthValue, ld.getDayOfMonth)
   }
 }

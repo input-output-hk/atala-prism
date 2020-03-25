@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package io.iohk.cvp.admin;
+package io.iohk.prism.protos;
 
 service AdminService {
   rpc PopulateDemoDataset(PopulateDemoDatasetRequest) returns (PopulateDemoDatasetResponse) {}

@@ -1,34 +1,41 @@
 package io.iohk.cvp.views.activities;
 
-import static io.iohk.cvp.utils.ActivitiesRequestCodes.BRAINTREE_REQUEST_ACTIVITY;
-import static io.iohk.cvp.views.Preferences.CONNECTION_TOKEN_TO_ACCEPT;
-
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
+
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
-import butterknife.BindColor;
-import butterknife.BindView;
-import butterknife.OnClick;
+
 import com.braintreepayments.api.dropin.DropInActivity;
 import com.braintreepayments.api.dropin.DropInResult;
 import com.braintreepayments.api.models.PaymentMethodNonce;
 import com.crashlytics.android.Crashlytics;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.security.spec.InvalidKeySpecException;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+
+import javax.inject.Inject;
+
+import butterknife.BindColor;
+import butterknife.BindView;
+import butterknife.OnClick;
 import io.iohk.cvp.R;
 import io.iohk.cvp.core.exception.CaseNotFoundException;
 import io.iohk.cvp.core.exception.CryptoException;
 import io.iohk.cvp.core.exception.ErrorCode;
 import io.iohk.cvp.core.exception.SharedPrefencesDataNotFoundException;
-import io.iohk.cvp.io.connector.AddConnectionFromTokenResponse;
 import io.iohk.cvp.utils.CryptoUtils;
 import io.iohk.cvp.viewmodel.MainViewModel;
 import io.iohk.cvp.views.Navigator;
@@ -43,14 +50,11 @@ import io.iohk.cvp.views.fragments.WalletFragment;
 import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBar;
 import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBarListener;
 import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBarOption;
-import java.math.BigDecimal;
-import java.math.MathContext;
-import java.security.spec.InvalidKeySpecException;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-import javax.inject.Inject;
+import io.iohk.prism.protos.AddConnectionFromTokenResponse;
 import lombok.Getter;
+
+import static io.iohk.cvp.utils.ActivitiesRequestCodes.BRAINTREE_REQUEST_ACTIVITY;
+import static io.iohk.cvp.views.Preferences.CONNECTION_TOKEN_TO_ACCEPT;
 
 public class MainActivity extends CvpActivity<MainViewModel> implements BottomAppBarListener {
 

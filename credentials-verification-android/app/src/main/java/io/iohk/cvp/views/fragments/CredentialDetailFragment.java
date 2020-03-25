@@ -1,7 +1,5 @@
 package io.iohk.cvp.views.fragments;
 
-import static io.iohk.cvp.utils.IntentDataConstants.CREDENTIAL_DATA_KEY;
-
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -11,28 +9,35 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
+
+import com.google.android.material.button.MaterialButton;
+
+import java.text.MessageFormat;
+import java.util.Objects;
+
+import javax.inject.Inject;
+
 import butterknife.BindView;
 import butterknife.OnClick;
-import com.google.android.material.button.MaterialButton;
 import io.iohk.cvp.R;
-import io.iohk.cvp.io.credential.Credential;
-import io.iohk.cvp.io.credential.SentCredential;
-import io.iohk.cvp.io.credential.SubjectData;
 import io.iohk.cvp.utils.DateUtils;
 import io.iohk.cvp.utils.ImageUtils;
 import io.iohk.cvp.viewmodel.CredentialsViewModel;
 import io.iohk.cvp.views.Preferences;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.StackedAppBar;
-import java.text.MessageFormat;
-import java.util.Objects;
-import javax.inject.Inject;
+import io.iohk.prism.protos.AlphaCredential;
+import io.iohk.prism.protos.AtalaMessage;
+import io.iohk.prism.protos.SubjectData;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import static io.iohk.cvp.utils.IntentDataConstants.CREDENTIAL_DATA_KEY;
 
 @Setter
 @NoArgsConstructor
@@ -41,7 +46,7 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
   private ViewModelProvider.Factory factory;
 
   @Setter
-  private SentCredential credential;
+  private AtalaMessage credential;
 
   @Setter
   private String connectionId;
@@ -142,20 +147,20 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
       Bundle savedInstanceState) {
     View view = super.onCreateView(inflater, container, savedInstanceState);
-    fillData(credential.getIssuerSentCredential().getCredential(), connectionId);
+    fillData(credential.getIssuerSentCredential().getAlphaCredential(), connectionId);
     showOptions(credentialIsNew);
 
     return view;
   }
 
-  private void fillData(Credential credential, String connectionId) {
+  private void fillData(AlphaCredential credential, String connectionId) {
     //TODO: hardcoded government credential
     if(!connectionId.equals("")) {
       textViewUniversityName.setText(credential.getIssuerType().getIssuerLegalName());
 
       SubjectData subjectData = credential.getSubjectData();
       textViewFullName.setText(
-              MessageFormat.format("{0} {1}", subjectData.getNames(0), subjectData.getSurname(0)));
+              MessageFormat.format("{0} {1}", subjectData.getNames(0), subjectData.getSurnames(0)));
 
       textViewCredentialName.setText(credential.getDegreeAwarded());
 

@@ -1,20 +1,23 @@
 package io.iohk.cvp.views;
 
-import static android.content.Context.MODE_PRIVATE;
-
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.util.Base64;
+
 import com.google.protobuf.ByteString;
-import io.iohk.cvp.core.exception.ErrorCode;
-import io.iohk.cvp.core.exception.SharedPrefencesDataNotFoundException;
-import io.iohk.cvp.io.connector.AddConnectionFromTokenResponse;
-import io.iohk.cvp.utils.KeyStoreUtils;
+
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+
+import io.iohk.cvp.core.exception.ErrorCode;
+import io.iohk.cvp.core.exception.SharedPrefencesDataNotFoundException;
+import io.iohk.cvp.utils.KeyStoreUtils;
+import io.iohk.prism.protos.AddConnectionFromTokenResponse;
 import lombok.AllArgsConstructor;
+
+import static android.content.Context.MODE_PRIVATE;
 
 @AllArgsConstructor
 public class Preferences {

@@ -1,13 +1,15 @@
 package io.iohk.cvp.grpc;
 
 import androidx.lifecycle.MutableLiveData;
-import io.grpc.StatusRuntimeException;
-import io.iohk.cvp.io.connector.ConnectorServiceGrpc.ConnectorServiceBlockingStub;
-import io.iohk.cvp.io.connector.ConnectorServiceGrpc.ConnectorServiceStub;
-import io.iohk.cvp.io.connector.GetMessagesPaginatedRequest;
-import io.iohk.cvp.io.connector.GetMessagesPaginatedResponse;
-import io.iohk.cvp.io.connector.ReceivedMessage;
+
 import java.util.List;
+
+import io.grpc.StatusRuntimeException;
+import io.iohk.prism.protos.ConnectorServiceGrpc.ConnectorServiceBlockingStub;
+import io.iohk.prism.protos.ConnectorServiceGrpc.ConnectorServiceStub;
+import io.iohk.prism.protos.GetMessagesPaginatedRequest;
+import io.iohk.prism.protos.GetMessagesPaginatedResponse;
+import io.iohk.prism.protos.ReceivedMessage;
 
 public class GetMessagesRunnable<A> extends
     CommonGrpcRunnable<List<ReceivedMessage>> {

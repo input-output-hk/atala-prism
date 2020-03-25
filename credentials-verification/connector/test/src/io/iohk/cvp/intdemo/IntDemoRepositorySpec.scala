@@ -3,15 +3,15 @@ package io.iohk.cvp.intdemo
 import java.time.LocalDate
 import java.util.concurrent.ThreadLocalRandom
 
+import doobie.implicits._
 import io.iohk.connector.model.TokenString
 import io.iohk.connector.repositories.ConnectorRepositorySpecBase
+import io.iohk.cvp.intdemo.IntDemoRepositorySpec._
+import io.iohk.prism.intdemo.protos.intdemo_models
 import org.scalatest.Matchers._
 
 import scala.concurrent.duration._
 import scala.util.Random
-import doobie.implicits._
-import IntDemoRepositorySpec._
-import io.iohk.cvp.intdemo.protos.SubjectStatus.{CONNECTED, UNCONNECTED}
 
 class IntDemoRepositorySpec extends ConnectorRepositorySpecBase {
 
@@ -22,23 +22,24 @@ class IntDemoRepositorySpec extends ConnectorRepositorySpecBase {
   "mergeStatus" should {
     "insert status when no status exists" in {
       val token = TokenString.random()
-      val status = UNCONNECTED
+      val status = intdemo_models.SubjectStatus.UNCONNECTED
 
       val rowCount: Int = repository.mergeSubjectStatus(token, status).futureValue
 
       rowCount shouldBe 1
       sql"""SELECT status FROM intdemo_credential_status WHERE token=$token"""
-        .runUnique[Int]() shouldBe UNCONNECTED.value
+        .runUnique[Int]() shouldBe intdemo_models.SubjectStatus.UNCONNECTED.value
     }
 
     "update status when one exists" in {
       val token = TokenString.random()
 
-      repository.mergeSubjectStatus(token, UNCONNECTED).futureValue
-      val rowCount = repository.mergeSubjectStatus(token, CONNECTED).futureValue
+      repository.mergeSubjectStatus(token, intdemo_models.SubjectStatus.UNCONNECTED).futureValue
+      val rowCount = repository.mergeSubjectStatus(token, intdemo_models.SubjectStatus.CONNECTED).futureValue
 
       rowCount shouldBe 1
-      sql"""SELECT status FROM intdemo_credential_status WHERE token=$token""".runUnique[Int]() shouldBe CONNECTED.value
+      sql"""SELECT status FROM intdemo_credential_status WHERE token=$token"""
+        .runUnique[Int]() shouldBe intdemo_models.SubjectStatus.CONNECTED.value
     }
   }
 
@@ -53,12 +54,12 @@ class IntDemoRepositorySpec extends ConnectorRepositorySpecBase {
 
     "return entries created with merge" in {
       val token = TokenString.random()
-      val status = UNCONNECTED
+      val status = intdemo_models.SubjectStatus.UNCONNECTED
       repository.mergeSubjectStatus(token, status).futureValue
 
       val result = repository.findSubjectStatus(token).futureValue
 
-      result shouldBe Some(UNCONNECTED)
+      result shouldBe Some(intdemo_models.SubjectStatus.UNCONNECTED)
     }
   }
 

@@ -10,17 +10,20 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
+
+import javax.inject.Inject;
+
 import butterknife.BindView;
 import butterknife.OnClick;
 import io.iohk.cvp.R;
-import io.iohk.cvp.io.connector.ParticipantInfo;
-import io.iohk.cvp.io.connector.ParticipantInfo.ParticipantCase;
 import io.iohk.cvp.utils.ImageUtils;
 import io.iohk.cvp.viewmodel.AcceptConnectionViewModel;
 import io.iohk.cvp.views.Preferences;
-import javax.inject.Inject;
+import io.iohk.prism.protos.ParticipantInfo;
+import io.iohk.prism.protos.ParticipantInfo.ParticipantCase;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor

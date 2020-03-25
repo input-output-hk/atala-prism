@@ -6,12 +6,13 @@ pushd "$dir"/../.. > /dev/null
 
 grpcui \
   -plaintext \
-  -import-path connector/protobuf \
-  -proto cmanager/protos.proto \
-  -proto connector/protos.proto \
-  -proto credential/credential.proto \
-  -proto cstore/protos.proto \
-  -proto intdemo/protos.proto \
+  -import-path protos \
+  -import-path protos/intdemo \
+  -proto protos/admin_api.proto \
+  -proto protos/intdemo/intdemo_api.proto \
+  -proto protos/cmanager_api.proto \
+  -proto protos/connector_api.proto \
+  -proto protos/cstore_api.proto \
   localhost:50051
 
 popd

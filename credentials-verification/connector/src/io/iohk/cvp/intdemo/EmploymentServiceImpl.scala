@@ -2,17 +2,9 @@ package io.iohk.cvp.intdemo
 
 import java.time.LocalDate
 
-import io.grpc.stub.StreamObserver
-import io.iohk.cvp.intdemo.protos.EmploymentServiceGrpc.EmploymentService
-import io.iohk.cvp.intdemo.protos.{
-  GetConnectionTokenRequest,
-  GetConnectionTokenResponse,
-  GetSubjectStatusRequest,
-  GetSubjectStatusResponse
-}
-import credential.{Credential, ProofRequest}
 import io.circe.Json
 import io.circe.Json.{arr, fromString, obj}
+import io.grpc.stub.StreamObserver
 import io.iohk.connector.model.{Connection, TokenString}
 import io.iohk.cvp.intdemo.EmploymentServiceImpl.{
   RequiredEmploymentData,
@@ -22,10 +14,12 @@ import io.iohk.cvp.intdemo.EmploymentServiceImpl.{
 }
 import io.iohk.cvp.intdemo.SharedCredentials.{formatDate, jsonPrinter}
 import io.iohk.cvp.models.ParticipantId
+import io.iohk.prism.intdemo.protos.intdemo_api
+import io.iohk.prism.protos.credential_models
+import monix.execution.Scheduler.{global => scheduler}
 
 import scala.concurrent.duration.FiniteDuration
 import scala.concurrent.{ExecutionContext, Future}
-import monix.execution.Scheduler.{global => scheduler}
 
 class EmploymentServiceImpl(
     connectorIntegration: ConnectorIntegration,
@@ -33,7 +27,7 @@ class EmploymentServiceImpl(
     schedulerPeriod: FiniteDuration
 )(
     implicit ec: ExecutionContext
-) extends EmploymentService {
+) extends intdemo_api.EmploymentServiceGrpc.EmploymentService {
 
   val service = new IntDemoService[RequiredEmploymentData](
     issuerId = issuerId,
@@ -46,12 +40,14 @@ class EmploymentServiceImpl(
     scheduler = scheduler
   )
 
-  override def getConnectionToken(request: GetConnectionTokenRequest): Future[GetConnectionTokenResponse] =
+  override def getConnectionToken(
+      request: intdemo_api.GetConnectionTokenRequest
+  ): Future[intdemo_api.GetConnectionTokenResponse] =
     service.getConnectionToken(request)
 
   override def getSubjectStatusStream(
-      request: GetSubjectStatusRequest,
-      responseObserver: StreamObserver[GetSubjectStatusResponse]
+      request: intdemo_api.GetSubjectStatusRequest,
+      responseObserver: StreamObserver[intdemo_api.GetSubjectStatusResponse]
   ): Unit =
     service.getSubjectStatusStream(request, responseObserver)
 }
@@ -60,7 +56,10 @@ object EmploymentServiceImpl {
   private val issuerId = ParticipantId("12c28b34-95be-4801-951e-c775f89d05ba")
   val credentialTypeId = "VerifiableCredential/AtalaEmploymentCredential"
 
-  case class RequiredEmploymentData(idCredential: Credential, degreeCredential: Credential)
+  case class RequiredEmploymentData(
+      idCredential: credential_models.Credential,
+      degreeCredential: credential_models.Credential
+  )
 
   private def requestIdAndDegreeCredentials(connectorIntegration: ConnectorIntegration)(
       connection: Connection
@@ -69,12 +68,12 @@ object EmploymentServiceImpl {
       _ <- connectorIntegration.sendProofRequest(
         issuerId,
         connection.connectionId,
-        ProofRequest(IdServiceImpl.credentialTypeId, connection.connectionToken.token)
+        credential_models.ProofRequest(IdServiceImpl.credentialTypeId, connection.connectionToken.token)
       )
       _ <- connectorIntegration.sendProofRequest(
         issuerId,
         connection.connectionId,
-        ProofRequest(DegreeServiceImpl.credentialTypeId, connection.connectionToken.token)
+        credential_models.ProofRequest(DegreeServiceImpl.credentialTypeId, connection.connectionToken.token)
       )
     } yield ()
   }
@@ -85,7 +84,7 @@ object EmploymentServiceImpl {
     getSharedCredentials(connectorIntegration)(ec)(connectionToken).map(toRequiredEmploymentData)
   }
 
-  private def toRequiredEmploymentData(seq: Seq[Credential]): Option[RequiredEmploymentData] = {
+  private def toRequiredEmploymentData(seq: Seq[credential_models.Credential]): Option[RequiredEmploymentData] = {
     for {
       idCredential <- seq.find(credential => credential.typeId == IdServiceImpl.credentialTypeId)
       degreeCredential <- seq.find(credential => credential.typeId == DegreeServiceImpl.credentialTypeId)
@@ -94,14 +93,14 @@ object EmploymentServiceImpl {
 
   private def getSharedCredentials(
       connectorIntegration: ConnectorIntegration
-  )(implicit ec: ExecutionContext): TokenString => Future[Seq[Credential]] = { connectionToken =>
+  )(implicit ec: ExecutionContext): TokenString => Future[Seq[credential_models.Credential]] = { connectionToken =>
     SharedCredentials
       .getSharedCredentials(connectorIntegration, connectionToken, issuerId)(
         Set(IdServiceImpl.credentialTypeId, DegreeServiceImpl.credentialTypeId)
       )
   }
 
-  def getEmploymentCredential(requiredEmploymentData: RequiredEmploymentData): Credential = {
+  def getEmploymentCredential(requiredEmploymentData: RequiredEmploymentData): credential_models.Credential = {
 
     val idData = IdData.toIdData(requiredEmploymentData.idCredential)
 
@@ -114,7 +113,10 @@ object EmploymentServiceImpl {
       employmentStatus = "Full time"
     ).printWith(jsonPrinter)
 
-    Credential(typeId = EmploymentServiceImpl.credentialTypeId, credentialDocument = employmentCredential)
+    credential_models.Credential(
+      typeId = EmploymentServiceImpl.credentialTypeId,
+      credentialDocument = employmentCredential
+    )
   }
 
   def employmentCredentialJsonTemplate(
