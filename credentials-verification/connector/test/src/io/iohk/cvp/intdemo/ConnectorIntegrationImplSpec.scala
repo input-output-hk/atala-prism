@@ -13,6 +13,7 @@ import org.scalatest.concurrent.ScalaFutures._
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import FutureEither._
+import credential.ProofRequest
 import io.iohk.cvp.intdemo.ConnectorIntegrationImplSpec._
 import org.mockito.ArgumentMatcher
 
@@ -25,6 +26,15 @@ class ConnectorIntegrationImplSpec extends FlatSpec {
       connectorIntegration.sendCredential(senderId, connectionId, credential).futureValue
 
       verify(messagesService, times(1)).insertMessage(eqTo(senderId), eqTo(connectionId), decodesTo(credential))
+  }
+
+  "sendProofRequest" should "send a decodable proof request" in connectorIntegration {
+    (connectorIntegration, messagesService) =>
+      val proofRequest = ProofRequest(typeId = "a-type-id", connectionToken = "a-connection-token")
+
+      connectorIntegration.sendProofRequest(senderId, connectionId, proofRequest).futureValue
+
+      verify(messagesService, times(1)).insertMessage(eqTo(senderId), eqTo(connectionId), decodesTo(proofRequest))
   }
 }
 
@@ -47,6 +57,14 @@ object ConnectorIntegrationImplSpec {
     argThat(new ArgumentMatcher[Array[Byte]] {
       override def matches(a: Array[Byte]): Boolean = {
         credential == Credential.parseFrom(a)
+      }
+    })
+  }
+
+  private def decodesTo(proofRequest: ProofRequest): Array[Byte] = {
+    argThat(new ArgumentMatcher[Array[Byte]] {
+      override def matches(a: Array[Byte]): Boolean = {
+        proofRequest == ProofRequest.parseFrom(a)
       }
     })
   }

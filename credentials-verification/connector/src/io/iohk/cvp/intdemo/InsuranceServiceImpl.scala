@@ -2,15 +2,16 @@ package io.iohk.cvp.intdemo
 
 import java.time.LocalDate
 
-import credential.Credential
+import credential.{Credential, ProofRequest}
 import io.circe.Json
 import io.circe.Json.{arr, fromString, obj}
 import io.grpc.stub.StreamObserver
-import io.iohk.connector.model.TokenString
+import io.iohk.connector.model.{Connection, TokenString}
 import io.iohk.cvp.intdemo.InsuranceServiceImpl.{
   RequiredInsuranceData,
   getInsuranceCredential,
-  getRequiredInsuranceData
+  getRequiredInsuranceData,
+  requestIdAndEmploymentCredentials
 }
 import io.iohk.cvp.intdemo.SharedCredentials.{formatDate, jsonPrinter}
 import io.iohk.cvp.intdemo.protos.InsuranceServiceGrpc.InsuranceService
@@ -40,6 +41,7 @@ class InsuranceServiceImpl(
     intDemoRepository,
     schedulerPeriod,
     getRequiredInsuranceData(connectorIntegration),
+    requestIdAndEmploymentCredentials(connectorIntegration),
     getInsuranceCredential,
     scheduler
   )
@@ -59,6 +61,23 @@ object InsuranceServiceImpl {
   private val credentialTypeId = "VerifiableCredential/AtalaCertificateOfInsurance"
 
   case class RequiredInsuranceData(idCredential: Credential, employmentCredential: Credential)
+
+  private def requestIdAndEmploymentCredentials(connectorIntegration: ConnectorIntegration)(
+      connection: Connection
+  )(implicit ec: ExecutionContext): Future[Unit] = {
+    for {
+      _ <- connectorIntegration.sendProofRequest(
+        issuerId,
+        connection.connectionId,
+        ProofRequest(IdServiceImpl.credentialTypeId, connection.connectionToken.token)
+      )
+      _ <- connectorIntegration.sendProofRequest(
+        issuerId,
+        connection.connectionId,
+        ProofRequest(EmploymentServiceImpl.credentialTypeId, connection.connectionToken.token)
+      )
+    } yield ()
+  }
 
   private def getRequiredInsuranceData(connectorIntegration: ConnectorIntegration)(
       implicit ec: ExecutionContext

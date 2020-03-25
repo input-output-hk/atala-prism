@@ -1,6 +1,6 @@
 package io.iohk.cvp.intdemo
 
-import credential.Credential
+import credential.{Credential, ProofRequest}
 import io.grpc.stub.StreamObserver
 import io.iohk.connector.model.{Connection, ConnectionId, MessageId, TokenString}
 import io.iohk.cvp.intdemo.IntDemoServiceSpec._
@@ -10,7 +10,7 @@ import io.iohk.cvp.intdemo.protos._
 import io.iohk.cvp.models.ParticipantId
 import org.mockito.ArgumentMatchersSugar.{any, argThat, eqTo}
 import org.mockito.ArgumentMatcher
-import org.mockito.MockitoSugar.{mock, verify, when, after}
+import org.mockito.MockitoSugar.{after, mock, verify, when}
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 import org.scalatest.concurrent.ScalaFutures.{PatienceConfig, convertScalaFuture}
@@ -54,8 +54,8 @@ class IntDemoServiceSpec extends FlatSpec {
     ) { (connectorIntegration, _, intDemoService) =>
       val streamObserver = mock[StreamObserver[GetSubjectStatusResponse]]
       intDemoService.getSubjectStatusStream(GetSubjectStatusRequest(token.token), streamObserver)
-
-      verify(streamObserver, eventually.atLeastOnce).onNext(GetSubjectStatusResponse(expectedResponse))
+      scheduler.tick(1 second)
+      verify(streamObserver, eventually.times(1)).onNext(GetSubjectStatusResponse(expectedResponse))
       verify(connectorIntegration, neverEver).sendCredential(any[ParticipantId], any[ConnectionId], any[Credential])
       verify(streamObserver, neverEver).onError(any)
     }
@@ -78,6 +78,7 @@ class IntDemoServiceSpec extends FlatSpec {
     ) { (connectorIntegration, _, intDemoService) =>
       val streamObserver = mock[StreamObserver[GetSubjectStatusResponse]]
       intDemoService.getSubjectStatusStream(GetSubjectStatusRequest(token.token), streamObserver)
+      scheduler.tick(1 second)
 
       verify(connectorIntegration, eventually.times(1))
         .sendCredential(eqTo(issuerId), eqTo(connectionId), credentialMatcher)
@@ -106,9 +107,10 @@ class IntDemoServiceSpec extends FlatSpec {
     ) { (connectorIntegration, _, intDemoService) =>
       val streamObserver = mock[StreamObserver[GetSubjectStatusResponse]]
       intDemoService.getSubjectStatusStream(GetSubjectStatusRequest(token.token), streamObserver)
+      scheduler.tick(1 second)
 
       verify(connectorIntegration, neverEver).sendCredential(any[ParticipantId], any[ConnectionId], any[Credential])
-      verify(streamObserver, eventually.atLeastOnce).onError(any[IllegalStateException])
+      verify(streamObserver, eventually.times(1)).onError(any[IllegalStateException])
     }
   }
 
@@ -118,15 +120,34 @@ class IntDemoServiceSpec extends FlatSpec {
     when(streamObserver.onNext(any[GetSubjectStatusResponse])).thenThrow(new RuntimeException("timeout or something"))
 
     intDemoService.getSubjectStatusStream(GetSubjectStatusRequest(token.token), streamObserver)
+    scheduler.tick(1 second)
+    scheduler.tick(1 second)
 
     verify(streamObserver, after(100).atMost(1)).onNext(any[GetSubjectStatusResponse])
+  }
+
+  "getSubjectStatusStream" should s"emit proof requests return CONNECTED when a user connects" in intDemoService(
+    UNCONNECTED,
+    Some(connection),
+    None
+  ) { (connectorIntegration, _, intDemoService) =>
+    val streamObserver = mock[StreamObserver[GetSubjectStatusResponse]]
+    intDemoService.getSubjectStatusStream(GetSubjectStatusRequest(token.token), streamObserver)
+    scheduler.tick(1 second)
+
+    verify(connectorIntegration, eventually.times(1))
+      .sendProofRequest(eqTo(issuerId), eqTo(connectionId), proofRequestMatcher)
+    verify(streamObserver, eventually.times(1)).onNext(GetSubjectStatusResponse(CONNECTED))
+    verify(streamObserver, neverEver).onError(any)
   }
 }
 
 object IntDemoServiceSpec {
 
   implicit val ec: ExecutionContext = ExecutionContext.global
-  import monix.execution.Scheduler.{global => scheduler}
+  import monix.execution.schedulers.TestScheduler
+
+  private val scheduler = TestScheduler()
   private val connectionId = ConnectionId.random()
   private val messageId = MessageId.random()
   private val issuerId = IdServiceImpl.issuerId
@@ -134,6 +155,7 @@ object IntDemoServiceSpec {
   private val connection = Connection(connectionToken = token, connectionId = connectionId)
   private val userInfo = "X"
   private val credential = Credential("type-id", "credential-document")
+  private val proofRequest = ProofRequest(typeId = "type-id", connectionToken = token.token)
 
   def intDemoService(testCode: (ConnectorIntegration, IntDemoRepository, IntDemoService[String]) => Any): Unit = {
     intDemoService(UNCONNECTED, None, None)(testCode)
@@ -147,20 +169,26 @@ object IntDemoServiceSpec {
     val connectorIntegration = mock[ConnectorIntegration]
     val repository = mock[IntDemoRepository]
 
-    val service = new IntDemoService[String](
-      issuerId,
-      connectorIntegration,
-      repository,
-      schedulerPeriod = 1 milli,
-      _ => Future(requiredData),
-      _ => credential,
-      scheduler
-    )
-
     when(connectorIntegration.sendCredential(eqTo(issuerId), eqTo(connectionId), any)).thenReturn(Future(messageId))
+    when(connectorIntegration.sendProofRequest(eqTo(issuerId), eqTo(connectionId), any)).thenReturn(Future(messageId))
     when(connectorIntegration.getConnectionByToken(token)).thenReturn(Future(connection))
     when(repository.mergeSubjectStatus(eqTo(token), any)).thenReturn(Future(1))
     when(repository.findSubjectStatus(token)).thenReturn(Future(Some(subjectStatus)))
+
+    val proofRequestIssuer: Connection => Future[Unit] = { connection =>
+      connectorIntegration.sendProofRequest(issuerId, connection.connectionId, proofRequest).map(_ => ())
+    }
+
+    val service = new IntDemoService[String](
+      issuerId = issuerId,
+      connectorIntegration = connectorIntegration,
+      intDemoRepository = repository,
+      schedulerPeriod = 1 second,
+      requiredDataLoader = _ => Future(requiredData),
+      proofRequestIssuer = proofRequestIssuer,
+      getCredential = _ => credential,
+      scheduler = scheduler
+    )
 
     testCode(connectorIntegration, repository, service)
   }
@@ -169,6 +197,15 @@ object IntDemoServiceSpec {
     argThat(new ArgumentMatcher[Credential] {
       override def matches(c: Credential): Boolean = {
         c == credential
+      }
+    })
+  }
+
+  private def proofRequestMatcher: ProofRequest = {
+    argThat(new ArgumentMatcher[ProofRequest] {
+      override def matches(p: ProofRequest): Boolean = {
+        println(s"Executing proof request matcher for $p")
+        p == proofRequest
       }
     })
   }

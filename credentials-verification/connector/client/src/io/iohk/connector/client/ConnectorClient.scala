@@ -65,7 +65,7 @@ object ConnectorClient {
             .action((message, c) => c.copy(base64Message = Some(message)))
         ),
       cmd("get-build-info")
-        .action((x, c) => c.copy(command = GetBuildInfo())),
+        .action((x, c) => c.copy(command = GetBuildInfo()))
     )
   }
 

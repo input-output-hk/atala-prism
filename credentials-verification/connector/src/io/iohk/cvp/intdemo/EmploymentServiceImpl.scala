@@ -10,11 +10,16 @@ import io.iohk.cvp.intdemo.protos.{
   GetSubjectStatusRequest,
   GetSubjectStatusResponse
 }
-import credential.Credential
+import credential.{Credential, ProofRequest}
 import io.circe.Json
 import io.circe.Json.{arr, fromString, obj}
-import io.iohk.connector.model.TokenString
-import io.iohk.cvp.intdemo.EmploymentServiceImpl.{RequiredEmploymentData, getRequiredEmploymentData, issuerId}
+import io.iohk.connector.model.{Connection, TokenString}
+import io.iohk.cvp.intdemo.EmploymentServiceImpl.{
+  RequiredEmploymentData,
+  getRequiredEmploymentData,
+  issuerId,
+  requestIdAndDegreeCredentials
+}
 import io.iohk.cvp.intdemo.SharedCredentials.{formatDate, jsonPrinter}
 import io.iohk.cvp.models.ParticipantId
 
@@ -31,13 +36,14 @@ class EmploymentServiceImpl(
 ) extends EmploymentService {
 
   val service = new IntDemoService[RequiredEmploymentData](
-    issuerId,
-    connectorIntegration,
-    intDemoRepository,
-    schedulerPeriod,
-    getRequiredEmploymentData(connectorIntegration),
-    EmploymentServiceImpl.getEmploymentCredential,
-    scheduler
+    issuerId = issuerId,
+    connectorIntegration = connectorIntegration,
+    intDemoRepository = intDemoRepository,
+    schedulerPeriod = schedulerPeriod,
+    requiredDataLoader = getRequiredEmploymentData(connectorIntegration),
+    proofRequestIssuer = requestIdAndDegreeCredentials(connectorIntegration),
+    getCredential = EmploymentServiceImpl.getEmploymentCredential,
+    scheduler = scheduler
   )
 
   override def getConnectionToken(request: GetConnectionTokenRequest): Future[GetConnectionTokenResponse] =
@@ -55,6 +61,23 @@ object EmploymentServiceImpl {
   val credentialTypeId = "VerifiableCredential/AtalaEmploymentCredential"
 
   case class RequiredEmploymentData(idCredential: Credential, degreeCredential: Credential)
+
+  private def requestIdAndDegreeCredentials(connectorIntegration: ConnectorIntegration)(
+      connection: Connection
+  )(implicit ec: ExecutionContext): Future[Unit] = {
+    for {
+      _ <- connectorIntegration.sendProofRequest(
+        issuerId,
+        connection.connectionId,
+        ProofRequest(IdServiceImpl.credentialTypeId, connection.connectionToken.token)
+      )
+      _ <- connectorIntegration.sendProofRequest(
+        issuerId,
+        connection.connectionId,
+        ProofRequest(DegreeServiceImpl.credentialTypeId, connection.connectionToken.token)
+      )
+    } yield ()
+  }
 
   private def getRequiredEmploymentData(connectorIntegration: ConnectorIntegration)(
       implicit ec: ExecutionContext

@@ -1,14 +1,13 @@
 package io.iohk.cvp.intdemo
 
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
-import credential.Credential
+import credential.{Credential, ProofRequest}
 import io.circe._
 import io.circe.Json.fromString
 import io.grpc.stub.StreamObserver
-import io.iohk.connector.model.TokenString
-import io.iohk.cvp.intdemo.DegreeServiceImpl.{getDegreeCredential, getSharedIdCredential, issuerId}
+import io.iohk.connector.model.{Connection, TokenString}
+import io.iohk.cvp.intdemo.DegreeServiceImpl.{getDegreeCredential, getSharedIdCredential, issuerId, requestIdCredential}
 import io.iohk.cvp.intdemo.SharedCredentials.{formatDate, getSharedCredentials, jsonPrinter}
 import io.iohk.cvp.intdemo.protos.DegreeServiceGrpc._
 import io.iohk.cvp.intdemo.protos._
@@ -27,13 +26,14 @@ class DegreeServiceImpl(
 ) extends DegreeService {
 
   val service = new IntDemoService[Credential](
-    issuerId,
-    connectorIntegration,
-    intDemoRepository,
-    schedulerPeriod,
-    getSharedIdCredential(connectorIntegration),
-    getDegreeCredential,
-    scheduler
+    issuerId = issuerId,
+    connectorIntegration = connectorIntegration,
+    intDemoRepository = intDemoRepository,
+    schedulerPeriod = schedulerPeriod,
+    requiredDataLoader = getSharedIdCredential(connectorIntegration),
+    proofRequestIssuer = requestIdCredential(connectorIntegration),
+    getCredential = getDegreeCredential,
+    scheduler = scheduler
   )
 
   override def getConnectionToken(request: GetConnectionTokenRequest): Future[GetConnectionTokenResponse] = {
@@ -57,6 +57,18 @@ object DegreeServiceImpl {
     val degreeAwarded = "Bachelor of Science"
     val degreeResult = "Upper second class honours"
     val graduationYear = idData.dob.plusYears(20).getYear
+  }
+
+  private def requestIdCredential(connectorIntegration: ConnectorIntegration)(
+      connection: Connection
+  )(implicit ec: ExecutionContext): Future[Unit] = {
+    connectorIntegration
+      .sendProofRequest(
+        issuerId,
+        connection.connectionId,
+        ProofRequest(IdServiceImpl.credentialTypeId, connection.connectionToken.token)
+      )
+      .map(_ => ())
   }
 
   private def getSharedIdCredential(connectorIntegration: ConnectorIntegration)(
@@ -114,5 +126,4 @@ object DegreeServiceImpl {
       )
     )
   }
-
 }

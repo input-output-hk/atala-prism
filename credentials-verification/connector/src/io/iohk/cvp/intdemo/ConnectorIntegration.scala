@@ -1,5 +1,6 @@
 package io.iohk.cvp.intdemo
 
+import credential.ProofRequest
 import credential.Credential
 import io.iohk.connector.errors.{ConnectorError, ErrorSupport}
 import io.iohk.connector.model.{Connection, ConnectionId, Message, MessageId, TokenString}
@@ -14,6 +15,12 @@ trait ConnectorIntegration {
       senderId: ParticipantId,
       connectionId: ConnectionId,
       credential: Credential
+  ): Future[MessageId]
+
+  def sendProofRequest(
+      senderId: ParticipantId,
+      connectionId: ConnectionId,
+      proofRequest: ProofRequest
   ): Future[MessageId]
 
   def getConnectionByToken(token: TokenString): Future[Option[Connection]]
@@ -43,8 +50,24 @@ object ConnectorIntegration {
         connectionId: ConnectionId,
         credential: Credential
     ): Future[MessageId] = {
+      sendMessage(senderId, connectionId, credential.toByteArray)
+    }
+
+    override def sendProofRequest(
+        senderId: ParticipantId,
+        connectionId: ConnectionId,
+        proofRequest: ProofRequest
+    ): Future[MessageId] = {
+      sendMessage(senderId, connectionId, proofRequest.toByteArray)
+    }
+
+    private def sendMessage(
+        senderId: ParticipantId,
+        connectionId: ConnectionId,
+        message: Array[Byte]
+    ): Future[MessageId] = {
       messagesService
-        .insertMessage(senderId, connectionId, credential.toByteArray)
+        .insertMessage(senderId, connectionId, message)
         .toFuture(toRuntimeException(senderId, connectionId))
     }
 

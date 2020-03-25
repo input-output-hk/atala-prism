@@ -23,7 +23,7 @@ service EmploymentService {
 
 // ... another company's application
 service InsuranceService {
-    rpc GetConnectionToken (GetConnectionTokenRequest) returns (GetConnectionTokenResponse) {}
+    rpc GetConnectionToken (GetConnectionTokenRequest) returns (GetConnectionTokenResponse);
     rpc GetSubjectStatusStream (GetSubjectStatusRequest) returns (stream GetSubjectStatusResponse) {}
 }
 

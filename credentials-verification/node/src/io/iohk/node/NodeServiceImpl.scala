@@ -81,7 +81,8 @@ class NodeServiceImpl(didDataService: DIDDataService, objectManagement: ObjectMa
           .withVersion(BuildInfo.version)
           .withScalaVersion(BuildInfo.scalaVersion)
           .withMillVersion(BuildInfo.millVersion)
-          .withBuildTime(BuildInfo.buildTime))
+          .withBuildTime(BuildInfo.buildTime)
+      )
   }
 
   private def toDIDData(didData: models.DIDData) = {

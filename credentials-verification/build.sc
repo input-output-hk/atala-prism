@@ -10,21 +10,21 @@ import mill.contrib.scalapblib._
 import mill.define.Sources
 import mill.scalalib._
 
-object GitSupport  {
+object GitSupport {
 
   /**
-   * Calculate a publishable version.
-   *
-   * <p>The output format is {@code <BRANCH>-<N_COMMITS>-<CURRENT_COMMIT>}, where:
-   * <ul>
-   *   <li>{@code <BRANCH>} is the name of the current branch, unless it's a feature branch starting with
-   *   {@code ATA-<ID>}, for which it returns such prefix.
-   *   <li>{@code <N_COMMITS>} is the total number of commits in the current branch.
-   *   <li>{@code <CURRENT_COMMIT>} is the short hash of {@code HEAD}.
-   * </ul>
-   *
-   * <p>NOTE: This naming convention is also encoded into terraform env.sh and the circle-ci build.
-   */
+    * Calculate a publishable version.
+    *
+    * <p>The output format is {@code <BRANCH>-<N_COMMITS>-<CURRENT_COMMIT>}, where:
+    * <ul>
+    *   <li>{@code <BRANCH>} is the name of the current branch, unless it's a feature branch starting with
+    *   {@code ATA-<ID>}, for which it returns such prefix.
+    *   <li>{@code <N_COMMITS>} is the total number of commits in the current branch.
+    *   <li>{@code <CURRENT_COMMIT>} is the short hash of {@code HEAD}.
+    * </ul>
+    *
+    * <p>NOTE: This naming convention is also encoded into terraform env.sh and the circle-ci build.
+    */
   def publishVersion(): String = {
     val branchPrefix =
       os.proc("git", "rev-parse", "--abbrev-ref", "HEAD").call().out.trim.replaceFirst("(ATA-\\d+).*", "$1").toLowerCase

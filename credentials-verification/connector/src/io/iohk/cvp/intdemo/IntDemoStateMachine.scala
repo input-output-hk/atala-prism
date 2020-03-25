@@ -17,6 +17,7 @@ import scala.util.{Failure, Success}
 class IntDemoStateMachine[D](
     requiredDataLoader: TokenString => Future[Option[D]],
     getCredential: D => Credential,
+    proofRequestIssuer: Connection => Future[Unit],
     connectorIntegration: ConnectorIntegration,
     intDemoRepository: IntDemoRepository,
     connectionToken: TokenString,
@@ -125,6 +126,15 @@ class IntDemoStateMachine[D](
       )
     }
 
+    val emitProofRequest: Action = (_, maybeConnection) => {
+      proofRequestIssuer(maybeConnection.get).map { _ =>
+        log.info(
+          s"Issuer ${issuerId.uuid} proof requests issued. Transitioning to CONNECTED on connection id ${maybeConnection.get.connectionId}."
+        )
+        CONNECTED
+      }
+    }
+
     val emitCredentialAndStop: Action = (maybeRequiredData, maybeConnection) => {
       val requiredData = maybeRequiredData.get
       val connection = maybeConnection.get
@@ -133,7 +143,7 @@ class IntDemoStateMachine[D](
 
     private def emitCredential(connectionId: ConnectionId, requiredData: D): Future[SubjectStatus] = {
       val credential = getCredential(requiredData)
-      log.info(s"Issuer ${issuerId.uuid} emitting credential to connection with ID $connectionId.")
+      log.info(s"Issuer ${issuerId.uuid} emitting credential to connection with id $connectionId.")
       connectorIntegration.sendCredential(issuerId, connectionId, credential).map(_ => CREDENTIAL_SENT)
     }
   }
@@ -142,10 +152,11 @@ class IntDemoStateMachine[D](
 
     case object UnconnectedState extends State {
       val actionTable = Map(
+        // req data, connected...
         (false, false) -> next(UNCONNECTED),
-        (false, true) -> next(CONNECTED),
-        (true, true) -> emitCredentialAndStop,
-        (true, false) -> next(UNCONNECTED)
+        (false, true) -> emitProofRequest,
+        (true, false) -> next(UNCONNECTED),
+        (true, true) -> emitCredentialAndStop
       )
     }
 

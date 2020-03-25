@@ -457,6 +457,7 @@ class ConnectorService(
             .withScalaVersion(BuildInfo.scalaVersion)
             .withMillVersion(BuildInfo.millVersion)
             .withBuildTime(BuildInfo.buildTime)
-            .withNodeVersion(nodeBuildInfo.version))
+            .withNodeVersion(nodeBuildInfo.version)
+      )
   }
 }

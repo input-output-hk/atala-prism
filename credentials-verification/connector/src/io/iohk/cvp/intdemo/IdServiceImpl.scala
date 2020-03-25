@@ -9,7 +9,7 @@ import io.circe.Json.fromString
 import io.circe._
 import io.grpc.Status
 import io.grpc.stub.StreamObserver
-import io.iohk.connector.model.TokenString
+import io.iohk.connector.model.{Connection, TokenString}
 import io.iohk.cvp.intdemo.IdServiceImpl._
 import io.iohk.cvp.intdemo.protos.IDServiceGrpc._
 import io.iohk.cvp.intdemo.protos._
@@ -29,13 +29,14 @@ class IdServiceImpl(
 ) extends IDService {
 
   val service = new IntDemoService[(String, LocalDate)](
-    issuerId,
-    connectorIntegration,
-    intDemoRepository,
-    schedulerPeriod,
-    getPersonalData(intDemoRepository),
-    getIdCredential,
-    scheduler
+    issuerId = issuerId,
+    connectorIntegration = connectorIntegration,
+    intDemoRepository = intDemoRepository,
+    schedulerPeriod = schedulerPeriod,
+    requiredDataLoader = getPersonalData(intDemoRepository),
+    proofRequestIssuer = noProofRequests,
+    getCredential = getIdCredential,
+    scheduler = scheduler
   )
 
   override def getConnectionToken(request: GetConnectionTokenRequest): Future[GetConnectionTokenResponse] = {
@@ -69,6 +70,9 @@ object IdServiceImpl {
   val issuerId = ParticipantId("091d41cc-e8fc-4c44-9bd3-c938dcf76dff")
 
   val credentialTypeId = "VerifiableCredential/RedlandIdCredential"
+
+  def noProofRequests(connection: Connection): Future[Unit] =
+    Future.unit
 
   def idCredentialJsonTemplate(
       id: String,

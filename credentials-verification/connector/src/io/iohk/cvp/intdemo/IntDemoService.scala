@@ -2,7 +2,7 @@ package io.iohk.cvp.intdemo
 
 import credential.Credential
 import io.grpc.stub.StreamObserver
-import io.iohk.connector.model.TokenString
+import io.iohk.connector.model.{Connection, ConnectionId, TokenString}
 import io.iohk.cvp.intdemo.IntDemoService.log
 import io.iohk.cvp.intdemo.protos.SubjectStatus.UNCONNECTED
 import io.iohk.cvp.intdemo.protos.{
@@ -24,6 +24,7 @@ class IntDemoService[D](
     intDemoRepository: IntDemoRepository,
     schedulerPeriod: FiniteDuration,
     requiredDataLoader: TokenString => Future[Option[D]],
+    proofRequestIssuer: Connection => Future[Unit],
     getCredential: D => Credential,
     scheduler: Scheduler
 )(
@@ -51,15 +52,16 @@ class IntDemoService[D](
 
     val stateMachine =
       new IntDemoStateMachine(
-        requiredDataLoader,
-        getCredential,
-        connectorIntegration,
-        intDemoRepository,
-        new TokenString(request.connectionToken),
-        issuerId,
-        responseObserver,
-        scheduler,
-        schedulerPeriod
+        requiredDataLoader = requiredDataLoader,
+        getCredential = getCredential,
+        proofRequestIssuer = proofRequestIssuer,
+        connectorIntegration = connectorIntegration,
+        intDemoRepository = intDemoRepository,
+        connectionToken = new TokenString(request.connectionToken),
+        issuerId = issuerId,
+        responseObserver = responseObserver,
+        scheduler = scheduler,
+        schedulerPeriod = schedulerPeriod
       )
 
     scheduler.scheduleOnce(schedulerPeriod)(stateMachine.tick())

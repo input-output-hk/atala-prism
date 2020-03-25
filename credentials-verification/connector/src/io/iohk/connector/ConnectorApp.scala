@@ -19,8 +19,14 @@ import io.iohk.cvp.cstore.CredentialsStoreService
 import io.iohk.cvp.cstore.services.{StoreIndividualsService, StoredCredentialsService}
 import io.iohk.cvp.grpc.{GrpcAuthenticationHeaderParser, GrpcAuthenticatorInterceptor}
 import io.iohk.cvp.intdemo.ConnectorIntegration.ConnectorIntegrationImpl
-import io.iohk.cvp.intdemo.{DegreeServiceImpl, IdServiceImpl, IntDemoRepository}
-import io.iohk.cvp.intdemo.protos.{DegreeServiceGrpc, IDServiceGrpc}
+import io.iohk.cvp.intdemo.{
+  DegreeServiceImpl,
+  EmploymentServiceImpl,
+  IdServiceImpl,
+  InsuranceServiceImpl,
+  IntDemoRepository
+}
+import io.iohk.cvp.intdemo.protos.{DegreeServiceGrpc, EmploymentServiceGrpc, IDServiceGrpc, InsuranceServiceGrpc}
 import io.iohk.cvp.repositories.{SchemaMigrations, TransactorFactory}
 import io.iohk.prism.protos.cmanager_api.{CredentialsServiceGrpc, GroupsServiceGrpc, StudentsServiceGrpc}
 import io.iohk.prism.protos.connector_api
@@ -135,6 +141,10 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       new IdServiceImpl(connectorIntegration, intDemoRepository, schedulerPeriod = 1 second)(executionContext)
     val degreeService =
       new DegreeServiceImpl(connectorIntegration, intDemoRepository, schedulerPeriod = 1 second)(executionContext)
+    val employmentService =
+      new EmploymentServiceImpl(connectorIntegration, intDemoRepository, schedulerPeriod = 1 second)(executionContext)
+    val insuranceService =
+      new InsuranceServiceImpl(connectorIntegration, intDemoRepository, schedulerPeriod = 1 second)(executionContext)
 
     logger.info("Starting server")
     server = ServerBuilder
@@ -147,6 +157,8 @@ class ConnectorApp(executionContext: ExecutionContext) { self =>
       .addService(CredentialsStoreServiceGrpc.bindService(credentialsStoreService, executionContext))
       .addService(IDServiceGrpc.bindService(idService, executionContext))
       .addService(DegreeServiceGrpc.bindService(degreeService, executionContext))
+      .addService(EmploymentServiceGrpc.bindService(employmentService, executionContext))
+      .addService(InsuranceServiceGrpc.bindService(insuranceService, executionContext))
       .addService(AdminServiceGrpc.bindService(adminService, executionContext))
       .build()
       .start()
