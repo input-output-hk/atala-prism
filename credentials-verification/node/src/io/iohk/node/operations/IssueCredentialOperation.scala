@@ -7,6 +7,7 @@ import cats.data.EitherT
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.postgres.sqlstate
+import io.iohk.cvp.crypto.SHA256Digest
 import io.iohk.node.models._
 import io.iohk.node.operations.path._
 import io.iohk.node.repositories.daos.CredentialsDAO.CreateCredentialData

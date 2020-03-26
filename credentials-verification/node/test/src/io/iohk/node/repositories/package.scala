@@ -1,6 +1,7 @@
 package io.iohk.node
 
-import io.iohk.node.models.{CredentialId, DIDSuffix, SHA256Digest}
+import io.iohk.cvp.crypto.SHA256Digest
+import io.iohk.node.models.{CredentialId, DIDSuffix}
 
 package object repositories {
 

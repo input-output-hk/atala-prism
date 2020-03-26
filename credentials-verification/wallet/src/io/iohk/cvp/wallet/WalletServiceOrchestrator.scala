@@ -1,9 +1,7 @@
 package io.iohk.cvp.wallet
 
-import java.security.{PrivateKey, PublicKey}
-
 import com.google.protobuf.ByteString
-import io.iohk.cvp.crypto.ECKeys
+import io.iohk.cvp.crypto.{ECKeys, SHA256Digest}
 import io.iohk.prism.protos.{wallet_internal, wallet_models}
 import org.slf4j.LoggerFactory
 
@@ -56,14 +54,20 @@ class WalletServiceOrchestrator(walletSecurity: WalletSecurity, walletIO: Wallet
     logger.info("Generating keys")
 
     val protoMasterKeyPair = generateProtoKeyPair("master")
-    val protoIssuerKeyPair = generateProtoKeyPair("issuing")
+    val keyPairs = List(protoMasterKeyPair)
+
+    val createOperation = ECKeyOperation.toSignedAtalaOperation(keyPairs)
+    val didSuffix = SHA256Digest.compute(createOperation.toByteArray)
+    val did = s"did:prism:$didSuffix"
 
     val wallet = wallet_internal
       .WalletData()
-      .withKeyPair(Seq(protoMasterKeyPair, protoIssuerKeyPair))
+      .withKeyPair(keyPairs)
       .withOrganisationName(organisationName)
       .withRole(role)
       .withLogo(ByteString.copyFrom(logo))
+      .withDid(did)
+      .withCreateDidSignedOperation(createOperation)
 
     wallet
   }
@@ -73,20 +77,9 @@ class WalletServiceOrchestrator(walletSecurity: WalletSecurity, walletIO: Wallet
     wallet_internal
       .KeyPair()
       .withId(id)
-      .withPrivateKey(toPrivateKeyProto(keyPair.getPrivate))
-      .withPublicKey(toPublicKeyProto(keyPair.getPublic))
-  }
-
-  private def toPublicKeyProto(key: PublicKey): wallet_models.ECPublicKey = {
-    val point = ECKeys.getECPoint(key)
-    wallet_models
-      .ECPublicKey()
-      .withX(wallet_models.BigInteger(point.getAffineX.toString))
-      .withY(wallet_models.BigInteger(point.getAffineY.toString))
-  }
-
-  private def toPrivateKeyProto(key: PrivateKey): wallet_models.ECPrivateKey = {
-    wallet_models.ECPrivateKey().withD(wallet_models.BigInteger(ECKeys.getD(key).toString))
+      .withUsage(io.iohk.prism.protos.node_models.KeyUsage.MASTER_KEY)
+      .withPrivateKey(WalletHelper.toPrivateKeyProto(keyPair.getPrivate))
+      .withPublicKey(WalletHelper.toPublicKeyProto(keyPair.getPublic))
   }
 }
 

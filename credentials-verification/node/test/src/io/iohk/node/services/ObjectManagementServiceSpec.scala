@@ -5,9 +5,8 @@ import java.security.KeyPair
 import com.google.protobuf.ByteString
 import doobie.free.connection
 import doobie.implicits._
-import io.iohk.cvp.crypto.ECKeys
+import io.iohk.cvp.crypto.{ECKeys, SHA256Digest}
 import io.iohk.cvp.repositories.PostgresRepositorySpec
-import io.iohk.node.models.SHA256Digest
 import io.iohk.node.operations.CreateDIDOperationSpec
 import io.iohk.node.repositories.daos.AtalaObjectsDAO
 import io.iohk.node.{AtalaReferenceLedger, objects}

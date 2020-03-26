@@ -1,8 +1,8 @@
 package io.iohk.node.services
 
-import shapeless.tag.@@
+import io.iohk.cvp.crypto.SHA256Digest
 import io.iohk.node.modeling._
-import io.iohk.node.models.SHA256Digest
+import shapeless.tag.@@
 
 // Kept in a separate package to avoid polluting the `models` namespace
 package modeltags {

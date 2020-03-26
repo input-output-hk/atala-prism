@@ -5,8 +5,9 @@ import java.time.LocalDate
 
 import com.google.protobuf.ByteString
 import doobie.implicits._
+import io.iohk.cvp.crypto.SHA256Digest
 import io.iohk.cvp.repositories.PostgresRepositorySpec
-import io.iohk.node.models.{DIDData, DIDPublicKey, KeyUsage, SHA256Digest}
+import io.iohk.node.models.{DIDData, DIDPublicKey, KeyUsage}
 import io.iohk.node.repositories.{CredentialsRepository, DIDDataRepository}
 import io.iohk.prism.protos.{common_models, node_models}
 import org.scalatest.EitherValues._

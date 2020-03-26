@@ -1,11 +1,11 @@
 package io.iohk.node.services
 
+import io.iohk.cvp.crypto.SHA256Digest
 import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither.FutureEitherOps
 import io.iohk.node.AtalaReferenceLedger
 import io.iohk.node.bitcoin.BitcoinClient
 import io.iohk.node.bitcoin.models.{OpData, _}
-import io.iohk.node.models.SHA256Digest
 import io.iohk.node.services.AtalaService.Result
 import org.slf4j.LoggerFactory
 

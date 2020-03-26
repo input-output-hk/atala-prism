@@ -1,9 +1,8 @@
 package io.iohk.node.client.commands
 
 import com.google.protobuf.ByteString
-import io.iohk.cvp.crypto.ECKeys
+import io.iohk.cvp.crypto.{ECKeys, SHA256Digest}
 import io.iohk.node.client.{Config, ProtoUtils, StateStorage}
-import io.iohk.node.models.SHA256Digest
 import io.iohk.prism.protos.{node_api, node_models}
 import monocle.Optional
 import monocle.macros.{GenLens, GenPrism}

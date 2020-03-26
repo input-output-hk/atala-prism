@@ -6,16 +6,13 @@ import com.google.protobuf.ByteString
 import io.iohk.cvp.crypto.ECSignature
 import io.iohk.cvp.wallet.ECKeyOperation._
 import io.iohk.cvp.wallet._
-import io.iohk.cvp.wallet.models.Wallet
-import io.iohk.prism.protos.{node_models, wallet_api, wallet_internal, wallet_models}
-
+import io.iohk.prism.protos.{wallet_api, wallet_internal}
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Success
 
-class WalletServiceImpl(wallet: Wallet)(implicit ec: ExecutionContext)
-    extends wallet_api.WalletServiceGrpc.WalletService {
+class WalletServiceImpl(implicit ec: ExecutionContext) extends wallet_api.WalletServiceGrpc.WalletService {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
 
@@ -27,19 +24,52 @@ class WalletServiceImpl(wallet: Wallet)(implicit ec: ExecutionContext)
 
   override def getDID(request: wallet_api.GetDIDRequest): Future[wallet_api.GetDIDResponse] = {
     logger.info(s"getDID - request = ${request.toProtoString}")
-    val response = wallet_api.GetDIDResponse(did = wallet.did)
-    logger.info(s"getDID - response = ${response.toProtoString}")
-    Future.successful(response)
+    val result = Future {
+      cachedWallet.get() match {
+        case Some(data) =>
+          wallet_api.GetDIDResponse(data.did)
+
+        case None => throw new RuntimeException("Wallet is locked")
+      }
+    }
+
+    result.foreach { response =>
+      logger.info(s"getDID - response = ${response.toProtoString}")
+    }
+
+    result
   }
 
   override def signMessage(request: wallet_api.SignMessageRequest): Future[wallet_api.SignMessageResponse] = {
     logger.info(s"signMessage - request = ${request.toProtoString}")
-    Future {
-      val signature = ECSignature.sign(wallet.privateKey, request.message.toByteArray)
-      val response = wallet_api.SignMessageResponse(signature = ByteString.copyFrom(signature.toArray))
-      logger.info(s"signMessage - response = ${response.toProtoString}")
-      response
+    val result = Future {
+      cachedWallet.get() match {
+        case Some(data) =>
+          val keyPair =
+            data.keyPair.headOption.getOrElse(throw new RuntimeException("Corrupted wallet, no keys found"))
+          val privateKeyProto = keyPair.privateKey
+            .getOrElse(throw new RuntimeException("Corrupted wallet, private key not found"))
+
+          val privateKey = WalletHelper.toPrivateKey(privateKeyProto)
+          val keyId = data.createDidSignedOperation
+            .map(_.signedWith)
+            .getOrElse(throw new RuntimeException("Corrupted wallet, missing key id"))
+
+          val signature = ECSignature.sign(privateKey, request.message.toByteArray)
+          wallet_api
+            .SignMessageResponse(signature = ByteString.copyFrom(signature.toArray))
+            .withDid(data.did)
+            .withDidKeyId(keyId)
+
+        case None => throw new RuntimeException("Wallet is locked")
+      }
     }
+
+    result.foreach { response =>
+      logger.info(s"signMessage - response = ${response.toProtoString}")
+    }
+
+    result
   }
 
   override def verifySignedMessage(
@@ -66,7 +96,7 @@ class WalletServiceImpl(wallet: Wallet)(implicit ec: ExecutionContext)
       .map { data =>
         cachedWallet.set(Some(data))
 
-        val response = wallet_api.CreateWalletResponse(Some(toSignedAtalaOperation(data.keyPair)))
+        val response = wallet_api.CreateWalletResponse(data.createDidSignedOperation)
         logger.info(s"createWallet - response = ${response.toProtoString}")
         response
       }
@@ -163,7 +193,7 @@ class WalletServiceImpl(wallet: Wallet)(implicit ec: ExecutionContext)
     val result = Future {
       cachedWallet.get() match {
         case Some(data) =>
-          wallet_api.GenerateDIDResponse(Some(toSignedAtalaOperation(data.keyPair)))
+          wallet_api.GenerateDIDResponse(data.createDidSignedOperation)
 
         case None => throw new RuntimeException("Wallet is locked")
       }

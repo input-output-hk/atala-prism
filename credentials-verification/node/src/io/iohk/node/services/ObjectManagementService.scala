@@ -6,8 +6,9 @@ import doobie.free.connection
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
+import io.iohk.cvp.crypto.SHA256Digest
 import io.iohk.node.AtalaReferenceLedger
-import io.iohk.node.models.{AtalaObject, SHA256Digest}
+import io.iohk.node.models.AtalaObject
 import io.iohk.node.objects.ObjectStorageService
 import io.iohk.node.repositories.daos.AtalaObjectsDAO
 import io.iohk.node.repositories.daos.AtalaObjectsDAO.AtalaObjectCreateData

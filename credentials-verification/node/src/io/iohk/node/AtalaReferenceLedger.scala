@@ -1,6 +1,6 @@
 package io.iohk.node
 
-import io.iohk.node.models.SHA256Digest
+import io.iohk.cvp.crypto.SHA256Digest
 
 import scala.concurrent.Future
 

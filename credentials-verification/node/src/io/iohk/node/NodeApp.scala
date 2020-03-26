@@ -4,9 +4,9 @@ import cats.effect.IO
 import com.typesafe.config.{Config, ConfigFactory}
 import doobie.util.transactor.Transactor
 import io.grpc.{Server, ServerBuilder}
+import io.iohk.cvp.crypto.SHA256Digest
 import io.iohk.cvp.repositories.{SchemaMigrations, TransactorFactory}
 import io.iohk.node.bitcoin.BitcoinClient
-import io.iohk.node.models.SHA256Digest
 import io.iohk.node.objects.ObjectStorageService
 import io.iohk.node.repositories.DIDDataRepository
 import io.iohk.node.repositories.atalaobjects.AtalaObjectsRepository

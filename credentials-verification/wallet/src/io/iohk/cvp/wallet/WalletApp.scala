@@ -1,7 +1,6 @@
 package io.iohk.cvp.wallet
 
 import io.grpc.{Server, ServerBuilder}
-import io.iohk.cvp.wallet.models.Wallet
 import io.iohk.prism.protos.wallet_api
 import org.slf4j.LoggerFactory
 
@@ -10,14 +9,13 @@ import scala.concurrent.ExecutionContext
 object WalletApp {
 
   def main(args: Array[String]): Unit = {
-    val wallet = WalletHelper.getOrCreate()
-    val app = new WalletApp(wallet)(ExecutionContext.global)
+    val app = new WalletApp()(ExecutionContext.global)
     app.start()
     app.blockUntilShutdown()
   }
 }
 
-class WalletApp(wallet: Wallet)(implicit ec: ExecutionContext) {
+class WalletApp()(implicit ec: ExecutionContext) {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
   private val port = 50052
@@ -26,7 +24,7 @@ class WalletApp(wallet: Wallet)(implicit ec: ExecutionContext) {
 
   private def start(): Unit = {
     logger.info("Starting server")
-    val walletService = new grpc.WalletServiceImpl(wallet)
+    val walletService = new grpc.WalletServiceImpl
     server = ServerBuilder
       .forPort(port)
       .addService(wallet_api.WalletServiceGrpc.bindService(walletService, ec))

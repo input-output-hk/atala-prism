@@ -5,6 +5,7 @@ import java.security.{PrivateKey, PublicKey}
 import com.google.protobuf.ByteString
 import io.iohk.cvp.crypto.{ECKeys, ECSignature}
 import io.iohk.prism.protos.{node_models, wallet_internal, wallet_models}
+
 object ECKeyOperation {
 
   /**
@@ -37,7 +38,6 @@ object ECKeyOperation {
       signature = ByteString.copyFrom(signature.toArray),
       operation = Some(atalaOperation)
     )
-
   }
 
   def toPublicKey(proto: wallet_models.ECPublicKey): PublicKey = {
@@ -76,5 +76,4 @@ object ECKeyOperation {
       .withEcKeyData(ecKeyData)
       .withUsage(keyUsage)
   }
-
 }

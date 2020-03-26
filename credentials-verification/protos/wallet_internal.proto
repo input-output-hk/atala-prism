@@ -18,4 +18,5 @@ message WalletData {
     string organisationName = 4;
     Role role = 5;
     bytes logo = 6;
+    SignedAtalaOperation createDidSignedOperation = 7;
 }

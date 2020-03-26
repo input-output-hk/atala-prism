@@ -4,9 +4,9 @@ import java.security.PrivateKey
 
 import com.google.protobuf.ByteString
 import doobie.implicits._
-import io.iohk.cvp.crypto.{ECKeys, ECSignature}
+import io.iohk.cvp.crypto.{ECKeys, ECSignature, SHA256Digest}
 import io.iohk.cvp.repositories.PostgresRepositorySpec
-import io.iohk.node.models.{DIDSuffix, SHA256Digest}
+import io.iohk.node.models.DIDSuffix
 import io.iohk.node.operations.CreateDIDOperationSpec
 import io.iohk.node.repositories.daos.{CredentialsDAO, DIDDataDAO}
 import io.iohk.node.repositories.{CredentialsRepository, DIDDataRepository}

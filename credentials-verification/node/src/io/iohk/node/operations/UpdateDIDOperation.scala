@@ -5,7 +5,8 @@ import cats.implicits._
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.postgres.sqlstate
-import io.iohk.node.models.{DIDPublicKey, DIDSuffix, KeyUsage, SHA256Digest}
+import io.iohk.cvp.crypto.SHA256Digest
+import io.iohk.node.models.{DIDPublicKey, DIDSuffix, KeyUsage}
 import io.iohk.node.operations.StateError.EntityExists
 import io.iohk.node.operations.path._
 import io.iohk.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}

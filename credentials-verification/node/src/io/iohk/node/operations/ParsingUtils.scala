@@ -4,8 +4,8 @@ import java.security.PublicKey
 import java.time.LocalDate
 
 import com.google.protobuf.ByteString
-import io.iohk.cvp.crypto.ECKeys
-import io.iohk.node.models.{DIDPublicKey, DIDSuffix, KeyUsage, SHA256Digest}
+import io.iohk.cvp.crypto.{ECKeys, SHA256Digest}
+import io.iohk.node.models.{DIDPublicKey, DIDSuffix, KeyUsage}
 import io.iohk.node.operations.ValidationError.{InvalidValue, MissingValue}
 import io.iohk.node.operations.path.ValueAtPath
 import io.iohk.prism.protos.{common_models, node_models}

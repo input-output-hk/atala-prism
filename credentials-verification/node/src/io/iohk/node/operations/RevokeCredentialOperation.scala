@@ -5,7 +5,8 @@ import java.time.LocalDate
 import cats.data.EitherT
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
-import io.iohk.node.models.{CredentialId, DIDPublicKey, DIDSuffix, SHA256Digest}
+import io.iohk.cvp.crypto.SHA256Digest
+import io.iohk.node.models.{CredentialId, DIDPublicKey, DIDSuffix}
 import io.iohk.node.operations.path._
 import io.iohk.node.repositories.daos.{CredentialsDAO, PublicKeysDAO}
 import io.iohk.prism.protos.node_models

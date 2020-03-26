@@ -3,8 +3,8 @@ package io.iohk.node.client.commands
 import java.time.LocalDate
 
 import com.google.protobuf.ByteString
+import io.iohk.cvp.crypto.SHA256Digest
 import io.iohk.node.client.{Config, State, StateStorage}
-import io.iohk.node.models.SHA256Digest
 import io.iohk.prism.protos.{common_models, node_api, node_models}
 import monocle.Optional
 import monocle.macros.{GenLens, GenPrism}

@@ -2,7 +2,8 @@ package io.iohk.node.repositories.daos
 
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
-import io.iohk.node.models.{DIDSuffix, SHA256Digest}
+import io.iohk.cvp.crypto.SHA256Digest
+import io.iohk.node.models.DIDSuffix
 
 object DIDDataDAO {
   def insert(didSuffix: DIDSuffix, lastOperation: SHA256Digest): ConnectionIO[Unit] = {

@@ -47,6 +47,8 @@ message SignMessageRequest {
 
 message SignMessageResponse {
     bytes signature = 1;
+    string did = 2; // the DID used to sign the message
+    string didKeyId = 3; // the key id used to sign the message
 }
 
 message VerifySignedMessageRequest {

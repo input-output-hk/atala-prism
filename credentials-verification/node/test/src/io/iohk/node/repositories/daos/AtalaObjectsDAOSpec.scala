@@ -1,8 +1,8 @@
 package io.iohk.node.repositories.daos
 
 import doobie.implicits._
+import io.iohk.cvp.crypto.SHA256Digest
 import io.iohk.cvp.repositories.PostgresRepositorySpec
-import io.iohk.node.models.SHA256Digest
 import org.scalatest.OptionValues._
 
 import scala.concurrent.duration._

@@ -4,7 +4,8 @@ import java.time.LocalDate
 
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
-import io.iohk.node.models.{Credential, CredentialId, DIDSuffix, SHA256Digest}
+import io.iohk.cvp.crypto.SHA256Digest
+import io.iohk.node.models.{Credential, CredentialId, DIDSuffix}
 
 object CredentialsDAO {
   case class CreateCredentialData(

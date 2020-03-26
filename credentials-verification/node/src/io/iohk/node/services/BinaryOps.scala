@@ -1,6 +1,6 @@
 package io.iohk.node.services
 
-import io.iohk.node.models.SHA256Digest
+import io.iohk.cvp.crypto.SHA256Digest
 import io.iohk.node.services.models._
 import io.iohk.prism.protos.node_internal._
 

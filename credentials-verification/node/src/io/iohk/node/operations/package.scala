@@ -4,7 +4,8 @@ import java.security.PublicKey
 
 import cats.data.EitherT
 import doobie.free.connection.ConnectionIO
-import io.iohk.node.models.{DIDSuffix, SHA256Digest}
+import io.iohk.cvp.crypto.SHA256Digest
+import io.iohk.node.models.DIDSuffix
 import io.iohk.node.operations.path._
 import io.iohk.prism.protos.node_models
 
