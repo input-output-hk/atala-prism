@@ -27,7 +27,7 @@ Each pull request should be small enough to be reviewed in less than 30 minutes,
 
 A pull request must have all checks succeeding before being able to merge, and at least one approval is required before merging the PR.
 
-Add `input-output-hk/atala` as reviewers, so that reviewers get assigned automatically, and then, choose any other reviewer that should review the PR.
+The team `input-output-hk/atala` will be automatically set as reviewer when the PR is created, so that 2 reviewers from the team get assigned. After that, you can add any other reviewer that should review the PR.
 
 **NOTE**: It's important to create new commits when addressing the reviewer comments (instead of `git commit --amend`), so that we know what exactly changed, when the PR is approved, squash your commits or reorganize them to remove the dirty commits.
 
