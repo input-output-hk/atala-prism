@@ -10,6 +10,26 @@ import mill.contrib.scalapblib._
 import mill.define.Sources
 import mill.scalalib._
 
+object JavaSpecVersion {
+  val REQUIRED_VERSION = "1.8"
+
+  def check(): Unit = {
+    // We rely on the _specification_ version because it is cleaner than the usual version.
+    val NAME = "java.specification.version"
+    val version = System.getProperty(NAME)
+
+    if (version != REQUIRED_VERSION) {
+      // We could throw an exception here but
+      //   1) It is probably cleaner to just exit.
+      //   2) If you try to run `mill -i` you'll get an irrelevant error message
+      System.err.println(s"Required ${NAME}: ${REQUIRED_VERSION}, got: ${version}")
+      System.exit(2)
+    }
+  }
+}
+
+JavaSpecVersion.check()
+
 object GitSupport {
 
   /**
