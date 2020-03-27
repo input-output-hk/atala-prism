@@ -2,8 +2,8 @@
 set -euo pipefail
 
 usage () {
-  echo "Usage: env.sh [[-a] [-A] [-d] [-D] [-p] [-s] [-w] [-g]] <env name>
-  Simulate, create or destory an AWS environment.
+  echo "Usage: intdemo.sh [[-a] [-A] [-d] [-D] [-p] [-s] [-w] [-g]] <env name>
+  Simulate, create or destory an AWS environment for intdemo.
 
   Environments are named by extracting the 'ata-xxxx' prefix from the currently
   git branch or from the <env name> parameter passed as the last argument.
@@ -29,22 +29,22 @@ usage () {
 
 apply_env () {
   write_vars
-  terraform init -backend-config="key=infra/services/$env_name_short/terraform.tfstate" && terraform apply ${1-} -var-file=".terraform/$env_name_short.tfvars" ${secrets-}
+  terraform init -backend-config="key=$state_key" && terraform apply ${1-} -var-file=".terraform/$env_name_short.tfvars" ${secrets-}
 }
 
 destroy_env () {
   write_vars
   drop_schemas
-  terraform init -backend-config="key=infra/services/$env_name_short/terraform.tfstate" && terraform destroy ${1-} -var-file=".terraform/$env_name_short.tfvars" ${secrets-}
+  terraform init -backend-config="key=$state_key" && terraform destroy ${1-} -var-file=".terraform/$env_name_short.tfvars" ${secrets-}
 }
 
 plan_env () {
   write_vars
-  terraform init -backend-config="key=infra/services/$env_name_short/terraform.tfstate" && terraform plan -var-file=".terraform/$env_name_short.tfvars" ${secrets-}
+  terraform init -backend-config="key=$state_key" && terraform plan -var-file=".terraform/$env_name_short.tfvars" ${secrets-}
 }
 
 show_env () {
-  terraform init -backend-config="key=infra/services/$env_name_short/terraform.tfstate" && terraform show
+  terraform init -backend-config="key=$state_key" && terraform show
 }
 
 watch_logs () {
@@ -52,11 +52,11 @@ watch_logs () {
 }
 
 graph_env () {
-  terraform init -backend-config="key=infra/services/$env_name_short/terraform.tfstate" && terraform graph -draw-cycles | dot -Tsvg > graph.svg
+  terraform init -backend-config="key=$state_key" && terraform graph -draw-cycles | dot -Tsvg > graph.svg
 }
 
 taint_env () {
-  terraform init -backend-config="key=infra/services/$env_name_short/terraform.tfstate" && terraform taint "aws_ecs_task_definition.intdemo-task-definition"
+  terraform init -backend-config="key=$state_key" && terraform taint "module.intdemo_service.aws_ecs_task_definition.intdemo_task_definition"
 }
 
 # Terraform's postgres provider will not drop a schema that we have created tables in (i.e. does not do a cascading drop)
@@ -64,12 +64,12 @@ taint_env () {
 drop_schemas () {
 
   # We remove the schemas from the terraform state file.
-  terraform init -backend-config="key=infra/services/$env_name_short/terraform.tfstate"
+  terraform init -backend-config="key=$state_key"
   terraform state rm "postgresql_schema.connector-schema"
 
   # Then do a cascading drop here.
   # (PGPASSWORD must be set in the environment)
-  psql -h credentials-database-test.co3l80tftzq2.us-east-2.rds.amazonaws.com -U postgres -d postgres -c "DROP SCHEMA \"connector-${env_name_short}\" CASCADE;"
+  psql -h credentials-database-test.co3l80tftzq2.us-east-2.rds.amazonaws.com -U postgres -d postgres -c "DROP SCHEMA \"intdemo-connector-${env_name_short}\" CASCADE;"
 }
 
 write_vars () {
@@ -157,6 +157,8 @@ pushd "$dir" > /dev/null
 env_name_default=$(git rev-parse --abbrev-ref HEAD | sed -E 's/(^ATA\-[0-9]+).*/\1/' | tr '[:upper:]' '[:lower:]')
 env_name_short=${1-$env_name_default}
 ecr_url="895947072537.dkr.ecr.us-east-2.amazonaws.com"
+
+state_key="infra/stage/services/intdemo/$env_name_short/terraform.tfstate"
 
 echo "Using env name '$env_name_short'."
 echo "Performing action '$action'."

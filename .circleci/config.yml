@@ -84,13 +84,22 @@ jobs:
             docker push 895947072537.dkr.ecr.us-east-2.amazonaws.com/connector:${TAG}
 
       - run:
-          name: Rebuild environment
+          name: Rebuild GEUD environment
           command: |
             cd credentials-verification/infra/services
             if aws s3 ls s3://atala-cvp/infra/services/$ENV/terraform.tfstate; then
               ./env.sh -t $ENV
             fi
             ./env.sh -A $ENV
+
+      - run:
+          name: Rebuild intdemo environment
+          command: |
+            cd credentials-verification/infra/stage/services/intdemo/
+            if aws s3 ls s3://atala-cvp/infra/stage/services/intdemo/$ENV/terraform.tfstate; then
+              ./intdemo.sh -t $ENV
+            fi
+            ./intdemo.sh -A $ENV
 
   build-credentials-verification:
     working_directory: ~/repo
