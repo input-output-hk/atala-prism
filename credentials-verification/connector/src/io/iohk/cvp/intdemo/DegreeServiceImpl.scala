@@ -67,7 +67,7 @@ object DegreeServiceImpl {
       .sendProofRequest(
         issuerId,
         connection.connectionId,
-        credential_models.ProofRequest(IdServiceImpl.credentialTypeId, connection.connectionToken.token)
+        credential_models.ProofRequest(Seq(IdServiceImpl.credentialTypeId), connection.connectionToken.token)
       )
       .map(_ => ())
   }

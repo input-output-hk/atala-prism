@@ -68,12 +68,10 @@ object InsuranceServiceImpl {
       _ <- connectorIntegration.sendProofRequest(
         issuerId,
         connection.connectionId,
-        credential_models.ProofRequest(IdServiceImpl.credentialTypeId, connection.connectionToken.token)
-      )
-      _ <- connectorIntegration.sendProofRequest(
-        issuerId,
-        connection.connectionId,
-        credential_models.ProofRequest(EmploymentServiceImpl.credentialTypeId, connection.connectionToken.token)
+        credential_models.ProofRequest(
+          Seq(IdServiceImpl.credentialTypeId, EmploymentServiceImpl.credentialTypeId),
+          connection.connectionToken.token
+        )
       )
     } yield ()
   }

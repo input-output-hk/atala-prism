@@ -179,7 +179,7 @@ object IntDemoServiceSpec {
   private val connection = Connection(connectionToken = token, connectionId = connectionId)
   private val userInfo = "X"
   private val credential = credential_models.Credential("type-id", "credential-document")
-  private val proofRequest = credential_models.ProofRequest(typeId = "type-id", connectionToken = token.token)
+  private val proofRequest = credential_models.ProofRequest(typeIds = Seq("type-id"), connectionToken = token.token)
 
   def intDemoService(testCode: (ConnectorIntegration, IntDemoRepository, IntDemoService[String]) => Any): Unit = {
     intDemoService(intdemo_models.SubjectStatus.UNCONNECTED, None, None)(testCode)

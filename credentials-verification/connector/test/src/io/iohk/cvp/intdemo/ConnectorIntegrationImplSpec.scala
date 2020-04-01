@@ -29,7 +29,8 @@ class ConnectorIntegrationImplSpec extends FlatSpec {
 
   "sendProofRequest" should "send a decodable proof request" in connectorIntegration {
     (connectorIntegration, messagesService) =>
-      val proofRequest = credential_models.ProofRequest(typeId = "a-type-id", connectionToken = "a-connection-token")
+      val proofRequest =
+        credential_models.ProofRequest(typeIds = Seq("a-type-id"), connectionToken = "a-connection-token")
 
       connectorIntegration.sendProofRequest(senderId, connectionId, proofRequest).futureValue
 
@@ -55,7 +56,7 @@ object ConnectorIntegrationImplSpec {
   private def decodesTo(credential: credential_models.Credential): Array[Byte] = {
     argThat(new ArgumentMatcher[Array[Byte]] {
       override def matches(a: Array[Byte]): Boolean = {
-        credential == credential_models.Credential.parseFrom(a)
+        credential == credential_models.AtalaMessage.parseFrom(a).getIssuerSentCredential.getCredential
       }
     })
   }
@@ -63,7 +64,7 @@ object ConnectorIntegrationImplSpec {
   private def decodesTo(proofRequest: credential_models.ProofRequest): Array[Byte] = {
     argThat(new ArgumentMatcher[Array[Byte]] {
       override def matches(a: Array[Byte]): Boolean = {
-        proofRequest == credential_models.ProofRequest.parseFrom(a)
+        proofRequest == credential_models.AtalaMessage.parseFrom(a).getProofRequest
       }
     })
   }

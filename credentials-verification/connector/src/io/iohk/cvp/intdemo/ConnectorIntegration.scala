@@ -5,6 +5,7 @@ import io.iohk.connector.model._
 import io.iohk.connector.services.{ConnectionsService, MessagesService}
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.prism.protos.credential_models
+import io.iohk.prism.protos.credential_models.{AtalaMessage, IssuerSentCredential}
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -49,7 +50,8 @@ object ConnectorIntegration {
         connectionId: ConnectionId,
         credential: credential_models.Credential
     ): Future[MessageId] = {
-      sendMessage(senderId, connectionId, credential.toByteArray)
+      sendMessage(senderId, connectionId,
+        AtalaMessage().withIssuerSentCredential(IssuerSentCredential().withCredential(credential)).toByteArray)
     }
 
     override def sendProofRequest(
@@ -57,7 +59,8 @@ object ConnectorIntegration {
         connectionId: ConnectionId,
         proofRequest: credential_models.ProofRequest
     ): Future[MessageId] = {
-      sendMessage(senderId, connectionId, proofRequest.toByteArray)
+      sendMessage(senderId, connectionId,
+        AtalaMessage().withProofRequest(proofRequest).toByteArray)
     }
 
     private def sendMessage(
