@@ -31,7 +31,8 @@ The team `input-output-hk/atala` will be automatically set as reviewer when the 
 
 **NOTE**: It's important to create new commits when addressing the reviewer comments (instead of `git commit --amend`), so that we know what exactly changed, when the PR is approved, squash your commits or reorganize them to remove the dirty commits.
 
-Before merging a PR, ensure that your branch has all the changes from the base branch (like `develop`).
+You are responsible to merge your PRs whne they are ready, before that, ensure that your branch has all the changes from the base branch (like `develop`).
+
 
 
 ## Merging
