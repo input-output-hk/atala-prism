@@ -102,7 +102,7 @@ message GetConnectionByTokenRequest {
 }
 
 message GetConnectionByTokenResponse {
-  Connection connection = 1;
+  io.iohk.prism.protos.Connection connection = 1;
 }
 
 // Request connections instantiated by us / with us possibly after a known connection
@@ -113,7 +113,7 @@ message GetConnectionsPaginatedRequest {
 
 // Result with connections instantiated
 message GetConnectionsPaginatedResponse {
-  repeated ConnectionInfo connections = 1; // connections sorted in ascending order by instantiation time
+  repeated io.iohk.prism.protos.ConnectionInfo connections = 1; // connections sorted in ascending order by instantiation time
 }
 
 // Request to obtain information of connection token
@@ -123,21 +123,21 @@ message GetConnectionTokenInfoRequest {
 
 // Result with information on connection token
 message GetConnectionTokenInfoResponse {
-  ParticipantInfo creator = 1; // participant who generated the code
+  io.iohk.prism.protos.ParticipantInfo creator = 1; // participant who generated the code
 }
 
 // Request to instantiate a connection using token
 message AddConnectionFromTokenRequest {
   string token = 1; // token to instantiate connection
-  ConnectorPublicKey holderPublicKey = 2;
+  io.iohk.prism.protos.ConnectorPublicKey holderPublicKey = 2;
   string paymentNonce = 3; // optional field, if present, we'll charge the user before adding the connection
   // Note that old clients will send the holderPublicKey instead, which we'll need to encode on the server.
-  EncodedPublicKey holderEncodedPublicKey = 4; // Uncompressed encoded public key
+  io.iohk.prism.protos.EncodedPublicKey holderEncodedPublicKey = 4; // Uncompressed encoded public key
 }
 
 // Confirmation of connection instantiation
 message AddConnectionFromTokenResponse {
-  ConnectionInfo connection = 1; // instantiated connection info
+  io.iohk.prism.protos.ConnectionInfo connection = 1; // instantiated connection info
   string userId = 2; // your generated user id
 }
 
@@ -167,14 +167,14 @@ message GetMessagesPaginatedRequest {
 
 // Response with messages
 message GetMessagesPaginatedResponse {
-  repeated ReceivedMessage messages = 1; // messages sorted in ascending order by receiving time
+  repeated io.iohk.prism.protos.ReceivedMessage messages = 1; // messages sorted in ascending order by receiving time
 }
 
 message GetMessagesForConnectionRequest {
   string connectionId = 1;
 }
 message GetMessagesForConnectionResponse {
-  repeated ReceivedMessage messages = 1;
+  repeated io.iohk.prism.protos.ReceivedMessage messages = 1;
 }
 
 // Request to send message
@@ -191,7 +191,7 @@ message SendMessageResponse {
 
 // Request to register DID
 message RegisterDIDRequest {
-  SignedAtalaOperation createDIDOperation = 1;
+  io.iohk.prism.protos.SignedAtalaOperation createDIDOperation = 1;
   Role role = 2;
   string name = 3;
   bytes logo = 4;
@@ -209,7 +209,7 @@ message RegisterDIDResponse {
 
 // Request to change the billing plan
 message ChangeBillingPlanRequest {
-  BillingPlan billingPlan = 1; // new billing plan
+  io.iohk.prism.protos.BillingPlan billingPlan = 1; // new billing plan
 }
 
 // Confirmation of billing plan change
@@ -226,12 +226,12 @@ message ProcessPaymentRequest {
   string nonce = 2; // client nonce
 }
 message ProcessPaymentResponse {
-  Payment payment = 1;
+  io.iohk.prism.protos.Payment payment = 1;
 }
 
 message GetPaymentsRequest {}
 message GetPaymentsResponse {
-  repeated Payment payments = 1;
+  repeated io.iohk.prism.protos.Payment payments = 1;
 }
 
 message GetBuildInfoRequest {}

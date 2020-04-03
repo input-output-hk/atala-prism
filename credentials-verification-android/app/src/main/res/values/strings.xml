@@ -1,7 +1,7 @@
 <resources>
   <string name="app_name">GeorgiaKT</string>
   <string name="scan_qr">Scan QR</string>
-  <string name="connection_label">Connect to a University, Public Registry or potential Employees</string>
+  <string name="connection_label">Start your First Connection</string>
   <string name="connection_secondary_label">You can receive and send your digital certificates</string>
 
   <!-- Activities titles -->
@@ -10,6 +10,12 @@
   <string name="wallet_setup_activity_title">Your Seed Phrase</string>
   <string name="seed_phrase_verification_activity_title">Verify Seed Phrase</string>
   <string name="qr_scanner_activity_title">Scan QR</string>
+
+  <string name="credential_detail_government_title">Government Issued Digital Identity</string>
+  <string name="credential_detail_degree_title">University Degree</string>
+  <string name="credential_detail_employed_title">Proof of Employment</string>
+  <string name="credential_detail_insurance_title">Certificate of Insurance</string>
+
 
   <!-- Terms and Conditions -->
   <string name="account_creation">Account Creation</string>
@@ -39,6 +45,12 @@
   <string name="seed_phrase_verification_description">Enter the correct words of your seed phrase bellow.</string>
   <string name="word_numeric">Word #%1$s</string>
 
+  <!-- Credential General Strings -->
+  <string name="credential_degree_name">University Degree</string>
+  <string name="credential_government_name">Government Issued DI</string>
+  <string name="credential_employment_name">Proof of Employment</string>
+  <string name="credential_insurance_name">Certificate of Insurance</string>
+
   <!-- Credential Detail -->
   <string name="degree_name">Degree Name</string>
   <string name="bachelors_in_engineering">Bachelor\'s in Engineering</string>
@@ -47,7 +59,12 @@
   <string name="some_date">10/2/2019</string>
   <string name="graduation_date">Graduation Date</string>
   <string name="start_date">Start Date</string>
+  <string name="employment_start_date">Employment Start Date</string>
+  <string name="insurance_end_date">Policy End Date</string>
+  <string name="insurance_number">Policy Number</string>
+  <string name="insurance_class">Class of Insurance</string>
   <string name="full_name">Full Name</string>
+  <string name="award_name">Award</string>
   <string name="some_name">Gergi Beridze</string>
   <string name="some_award">First Class Honours</string>
   <string name="award">Award</string>
@@ -140,7 +157,7 @@
   <string name="congrats">Congrats!</string>
   <string name="credential_payment_successful">Your Credential payment has been made successfully</string>
   <string name="your_account_has_been_created">Your account has been created</string>
-  <string name="continue_connection">Continue connecting with your University or School</string>
+  <string name="continue_connection">Continue to start the connection process </string>
   <string name="new_connection">New Connection</string>
 
   <!-- Share credential screen labels -->
@@ -160,4 +177,5 @@
   <string name="error">ERROR</string>
   <string name="ok">OK</string>
   <string name="server_error_message">Please try again. If the error persists contact support.</string>
+  <string name="server_share_successfully">Successfully shared!.</string>
 </resources>

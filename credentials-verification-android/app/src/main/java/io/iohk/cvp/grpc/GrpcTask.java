@@ -11,56 +11,54 @@ import io.grpc.ManagedChannelBuilder;
 import io.iohk.cvp.BuildConfig;
 import io.iohk.cvp.views.Preferences;
 import io.iohk.prism.protos.ConnectorServiceGrpc;
-import io.iohk.prism.protos.ConnectorServiceGrpc.ConnectorServiceBlockingStub;
-import io.iohk.prism.protos.ConnectorServiceGrpc.ConnectorServiceStub;
 
 public class GrpcTask<A> extends AsyncTask<Object, Void, AsyncTaskResult<A>> {
 
-  private final GrpcRunnable<A> grpcRunnable;
-  private final ManagedChannel origChannel;
+    private final GrpcRunnable<A> grpcRunnable;
+    private final ManagedChannel origChannel;
 
-  public GrpcTask(GrpcRunnable<A> grpcRunnable, Context context) {
-    Preferences prefs = new Preferences(context);
-    String ip = prefs.getString(Preferences.BACKEND_IP);
-    Integer port = prefs.getInt(Preferences.BACKEND_PORT);
+    public GrpcTask(GrpcRunnable<A> grpcRunnable, Context context) {
+        Preferences prefs = new Preferences(context);
+        String ip = prefs.getString(Preferences.BACKEND_IP);
+        Integer port = prefs.getInt(Preferences.BACKEND_PORT);
 
-    this.origChannel = ManagedChannelBuilder
-        .forAddress(ip.equals("") ? BuildConfig.API_BASE_URL : ip,
-            port.equals(0) ? BuildConfig.API_PORT : port)
-        .usePlaintext()
-        .build();
-    this.grpcRunnable = grpcRunnable;
+        this.origChannel = ManagedChannelBuilder
+                .forAddress(ip.equals("") ? BuildConfig.API_BASE_URL : ip,
+                        port.equals(0) ? BuildConfig.API_PORT : port)
+                .usePlaintext()
+                .build();
+        this.grpcRunnable = grpcRunnable;
 
-  }
-
-  @Override
-  public AsyncTaskResult<A> doInBackground(Object... params) {
-    String userId = getUserId(params);
-    ClientInterceptor interceptor = new HeaderClientInterceptor(userId);
-    Channel channel = ClientInterceptors.intercept(origChannel, interceptor);
-    ConnectorServiceBlockingStub
-        blockingStub = ConnectorServiceGrpc.newBlockingStub(channel);
-    ConnectorServiceStub stub = ConnectorServiceGrpc.newStub(channel);
-
-    try {
-      return grpcRunnable.run(blockingStub, stub, params);
-    } catch (Exception e) {
-      return new AsyncTaskResult<>(e);
     }
 
-  }
+    @Override
+    public AsyncTaskResult<A> doInBackground(Object... params) {
+        String userId = getUserId(params);
+        ClientInterceptor interceptor = new HeaderClientInterceptor(userId);
+        Channel channel = ClientInterceptors.intercept(origChannel, interceptor);
+        ConnectorServiceGrpc.ConnectorServiceBlockingStub
+                blockingStub = ConnectorServiceGrpc.newBlockingStub(channel);
+        ConnectorServiceGrpc.ConnectorServiceStub stub = ConnectorServiceGrpc.newStub(channel);
 
-  // FIXME we should find a better way to send user id
-  private String getUserId(Object[] params) {
-    if (params.length == 0 || params[0] == null) {
-      return null;
+        try {
+            return grpcRunnable.run(blockingStub, stub, params);
+        } catch (Exception e) {
+            return new AsyncTaskResult<>(e);
+        }
+
     }
-    return String.valueOf(params[0]);
-  }
 
-  @Override
-  protected void onPostExecute(final AsyncTaskResult<A> a) {
-    super.onPostExecute(a);
-    grpcRunnable.onPostExecute(a);
-  }
+    // FIXME we should find a better way to send user id
+    private String getUserId(Object[] params) {
+        if (params.length == 0 || params[0] == null) {
+            return null;
+        }
+        return String.valueOf(params[0]);
+    }
+
+    @Override
+    protected void onPostExecute(final AsyncTaskResult<A> a) {
+        super.onPostExecute(a);
+        grpcRunnable.onPostExecute(a);
+    }
 }

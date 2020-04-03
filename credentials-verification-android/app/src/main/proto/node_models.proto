@@ -39,7 +39,7 @@ message CredentialData {
     string id = 1;
     string issuer = 2;
     bytes contentHash = 3;
-    Date issuanceDate = 4;
+    io.iohk.prism.protos.Date issuanceDate = 4;
 }
 
 message CreateDIDOperation {
@@ -74,7 +74,7 @@ message IssueCredentialOperation {
 message RevokeCredentialOperation {
     bytes previousOperationHash = 1;
     string credentialId = 2; // revoked credential id, as returned in IssueCredentialResponse
-    Date revocationDate = 3;
+    io.iohk.prism.protos.Date revocationDate = 3;
 }
 
 message AtalaOperation {

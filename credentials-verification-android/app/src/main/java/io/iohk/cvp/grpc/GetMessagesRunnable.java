@@ -5,39 +5,37 @@ import androidx.lifecycle.MutableLiveData;
 import java.util.List;
 
 import io.grpc.StatusRuntimeException;
-import io.iohk.prism.protos.ConnectorServiceGrpc.ConnectorServiceBlockingStub;
-import io.iohk.prism.protos.ConnectorServiceGrpc.ConnectorServiceStub;
+import io.iohk.prism.protos.ConnectorServiceGrpc;
 import io.iohk.prism.protos.GetMessagesPaginatedRequest;
 import io.iohk.prism.protos.GetMessagesPaginatedResponse;
 import io.iohk.prism.protos.ReceivedMessage;
 
 public class GetMessagesRunnable<A> extends
-    CommonGrpcRunnable<List<ReceivedMessage>> {
+        CommonGrpcRunnable<List<ReceivedMessage>> {
 
-  // FIXME this is hardcoded since we are not going to implement pagination for alpha
-  private static final int QUERY_LENGTH = 100;
+    // FIXME this is hardcoded since we are not going to implement pagination for alpha
+    private static final int QUERY_LENGTH = 100;
 
-  public GetMessagesRunnable(
-      MutableLiveData<AsyncTaskResult<List<ReceivedMessage>>> liveData) {
-    super(liveData);
-  }
+    public GetMessagesRunnable(MutableLiveData<AsyncTaskResult<List<ReceivedMessage>>> liveData) {
+        super(liveData);
+    }
 
-  @Override
-  public AsyncTaskResult<List<ReceivedMessage>> run(
-      ConnectorServiceBlockingStub blockingStub,
-      ConnectorServiceStub asyncStub, Object... params) {
-    return getMessages(blockingStub);
-  }
+    @Override
+    public AsyncTaskResult<List<ReceivedMessage>> run(
+           ConnectorServiceGrpc.ConnectorServiceBlockingStub blockingStub,
+           ConnectorServiceGrpc.ConnectorServiceStub asyncStub, Object... params) {
+        return getMessages(blockingStub);
+    }
 
-  private AsyncTaskResult<List<ReceivedMessage>> getMessages(
-      ConnectorServiceBlockingStub blockingStub)
-      throws StatusRuntimeException {
+    private AsyncTaskResult<List<ReceivedMessage>> getMessages(
+            ConnectorServiceGrpc.ConnectorServiceBlockingStub blockingStub)
+            throws StatusRuntimeException {
 
-    GetMessagesPaginatedRequest request = GetMessagesPaginatedRequest.newBuilder()
-        .setLimit(QUERY_LENGTH).build();
-    GetMessagesPaginatedResponse response = blockingStub.getMessagesPaginated(request);
+        GetMessagesPaginatedRequest request = GetMessagesPaginatedRequest.newBuilder()
+                .setLimit(QUERY_LENGTH).build();
+        GetMessagesPaginatedResponse response = blockingStub.getMessagesPaginated(request);
 
-    return new AsyncTaskResult<>(response.getMessagesList());
-  }
+        return new AsyncTaskResult<>(response.getMessagesList());
+    }
 
 }

@@ -17,7 +17,6 @@ import androidx.lifecycle.ViewModelProviders;
 
 import com.google.android.material.button.MaterialButton;
 
-import java.text.MessageFormat;
 import java.util.Objects;
 
 import javax.inject.Inject;
@@ -25,203 +24,261 @@ import javax.inject.Inject;
 import butterknife.BindView;
 import butterknife.OnClick;
 import io.iohk.cvp.R;
-import io.iohk.cvp.utils.DateUtils;
-import io.iohk.cvp.utils.ImageUtils;
+import io.iohk.cvp.core.enums.CredentialType;
+import io.iohk.cvp.utils.CredentialParse;
+import io.iohk.cvp.utils.IntentDataConstants;
 import io.iohk.cvp.viewmodel.CredentialsViewModel;
+import io.iohk.cvp.viewmodel.dtos.CredentialDto;
 import io.iohk.cvp.views.Preferences;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.StackedAppBar;
-import io.iohk.prism.protos.AlphaCredential;
-import io.iohk.prism.protos.AtalaMessage;
-import io.iohk.prism.protos.SubjectData;
+import io.iohk.prism.protos.Credential;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import static io.iohk.cvp.utils.IntentDataConstants.CREDENTIAL_DATA_KEY;
 
 @Setter
 @NoArgsConstructor
 public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> {
 
-  private ViewModelProvider.Factory factory;
+    private ViewModelProvider.Factory factory;
 
-  @Setter
-  private AtalaMessage credential;
+    @Setter
+    private Credential credential;
 
-  @Setter
-  private String connectionId;
+    private CredentialDto credentialDto;
 
-  @Setter
-  private String messageId;
+    @Setter
+    private String connectionId;
 
-  @Setter
-  private Boolean credentialIsNew;
+    @Setter
+    private String messageId;
 
-  @BindView(R.id.decline_credential)
-  public MaterialButton declineButton;
+    @Setter
+    private Boolean credentialIsNew;
 
-  @BindView(R.id.accept_credential)
-  public Button acceptButton;
+    @BindView(R.id.decline_credential)
+    public MaterialButton declineButton;
 
-  @BindView(R.id.text_view_credential_type)
-  TextView textViewCredentialType;
+    @BindView(R.id.accept_credential)
+    public Button acceptButton;
 
-  @BindView(R.id.text_view_university_name)
-  TextView textViewUniversityName;
+    @BindView(R.id.text_view_credential_type)
+    TextView textViewCredentialType;
 
-  @BindView(R.id.text_view_full_name)
-  TextView textViewFullName;
+    @BindView(R.id.text_view_university_name)
+    TextView textViewUniversityName;
 
-  @BindView(R.id.text_view_credential_name)
-  TextView textViewCredentialName;
+    @BindView(R.id.text_view_full_name)
+    TextView textViewFullName;
 
-  @BindView(R.id.text_view_start_date)
-  TextView textViewStartDate;
+    @BindView(R.id.text_view_credential_name)
+    TextView textViewCredentialName;
 
-  @BindView(R.id.text_view_graduation_date)
-  TextView textViewGraduationDate;
+    @BindView(R.id.text_view_graduation_date)
+    TextView textViewGraduationDate;
 
-  @BindView(R.id.credential_logo)
-  ImageView imageViewCredentialLogo;
+    @BindView(R.id.credential_logo)
+    ImageView imageViewCredentialLogo;
 
-  @BindView(R.id.government_constraint)
-  ConstraintLayout governmentConstraint;
+    @BindView(R.id.goventment_constraint)
+    ConstraintLayout goventmentConstraint;
 
-  @BindView(R.id.university_constraint)
-  ConstraintLayout universityConstraint;
+    @BindView(R.id.university_constraint)
+    ConstraintLayout universityConstraint;
 
-  @BindView(R.id.layout_credential_title)
-  ConstraintLayout layoutcredentialtitle;
+    @BindView(R.id.layout_credential_title)
+    ConstraintLayout layoutcredentialtitle;
 
-  @Inject
-  CredentialDetailFragment(ViewModelProvider.Factory factory) {
-    this.factory = factory;
-  }
+    @BindView(R.id.identityValue)
+    TextView identityValue;
 
-  @Override
-  protected int getViewId() {
-    return R.layout.fragment_credential_detail;
-  }
+    @BindView(R.id.birthValue)
+    TextView birthValue;
 
-  @Override
-  protected AppBarConfigurator getAppBarConfigurator() {
-    setHasOptionsMenu(true);
-    // configure the appbar title, FIXME for now it is hardcode as "University Degree"
-    return new StackedAppBar(R.string.education);
-  }
+    @BindView(R.id.nameValue)
+    TextView nameValue;
 
-  @Override
-  public void onPrepareOptionsMenu(Menu menu) {
-    MenuItem shareCredentialMenuItem;
-    if (!credentialIsNew) {
-      shareCredentialMenuItem = menu.findItem(R.id.action_share_credential);
-      shareCredentialMenuItem.setVisible(true);
-    }
-  }
+    @BindView(R.id.expirationValue)
+    TextView expirationValue;
 
-  @Override
-  public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-    if (item.getItemId() == R.id.action_share_credential) {
-      navigator.showFragmentOnTopOfMenu(
-          Objects.requireNonNull(getActivity()).getSupportFragmentManager(), getShareFragment());
-      return true;
-    }
-    if (item.getItemId() == android.R.id.home) {
-      Objects.requireNonNull(getActivity()).onBackPressed();
-      return true;
-    }
-    return super.onOptionsItemSelected(item);
-  }
+    @BindView(R.id.layout_dates)
+    ConstraintLayout layoutDates;
 
-  private ShareCredentialDialogFragment getShareFragment() {
-    ShareCredentialDialogFragment fragment = new ShareCredentialDialogFragment();
-    Bundle args = new Bundle();
-    args.putByteArray(CREDENTIAL_DATA_KEY,
-        credential.getIssuerSentCredential().getCredential().toByteArray());
-    fragment.setArguments(args);
+    @BindView(R.id.text_view_award_title)
+    TextView awardTitle;
 
-    return fragment;
-  }
+    @BindView(R.id.text_view_award)
+    TextView awardValue;
 
-  @Override
-  public View onCreateView(LayoutInflater inflater, ViewGroup container,
-      Bundle savedInstanceState) {
-    View view = super.onCreateView(inflater, container, savedInstanceState);
-    fillData(credential.getIssuerSentCredential().getAlphaCredential(), connectionId);
-    showOptions(credentialIsNew);
+    @BindView(R.id.layout_finish_dates)
+    ConstraintLayout layoutFinishDates;
 
-    return view;
-  }
+    @BindView(R.id.text_view_university_name_title)
+    TextView universityNameTitle;
 
-  private void fillData(AlphaCredential credential, String connectionId) {
-    //TODO: hardcoded government credential
-    if(!connectionId.equals("")) {
-      textViewUniversityName.setText(credential.getIssuerType().getIssuerLegalName());
-
-      SubjectData subjectData = credential.getSubjectData();
-      textViewFullName.setText(
-              MessageFormat.format("{0} {1}", subjectData.getNames(0), subjectData.getSurnames(0)));
-
-      textViewCredentialName.setText(credential.getDegreeAwarded());
-
-      DateUtils dateUtils = new DateUtils(getContext());
-
-      textViewStartDate.setText(dateUtils.format(credential.getAdmissionDate()));
-      textViewGraduationDate.setText(dateUtils.format(credential.getGraduationDate()));
-
-      Preferences prefs = new Preferences(getContext());
-
-      imageViewCredentialLogo.setImageBitmap(
-              ImageUtils.getBitmapFromByteArray(prefs.getConnectionLogo(connectionId)));
-    }else{
-      governmentConstraint.setVisibility(View.VISIBLE);
-      universityConstraint.setVisibility(View.GONE);
-
-      layoutcredentialtitle.setBackground(getResources().getDrawable(R.drawable.rounded_top_corners_grey));
-
-      textViewCredentialType.setText("National ID Card");
-      textViewCredentialType.setTextColor(getResources().getColor(R.color.grey_4));
-
-      textViewCredentialName.setText("Republic of Redland");
-      textViewCredentialName.setTextColor(getResources().getColor(R.color.black));
-
-      imageViewCredentialLogo.setImageDrawable(getResources().getDrawable(R.drawable.government_icon));
-
-    }
-  }
-
-  private void showOptions(boolean optionsVisible) {
-    declineButton.setVisibility(optionsVisible ? View.VISIBLE : View.GONE);
-    acceptButton.setVisibility(optionsVisible ? View.VISIBLE : View.GONE);
-  }
-
-  @OnClick(R.id.accept_credential)
-  void onAcceptClick() {
-    saveAndGoBack(Preferences.ACCEPTED_MESSAGES_KEY);
-  }
+    @BindView(R.id.text_view_full_name_title)
+    TextView fullNameTitle;
 
 
-  @OnClick(R.id.decline_credential)
-  void onDeclineClick() {
-    saveAndGoBack(Preferences.REJECTED_MESSAGES_KEY);
-  }
-
-  private void saveAndGoBack(String key) {
-    //TODO: hardcoded government key
-    if(key.equals("")){
-      getActivity().onBackPressed();
+    @Inject
+    CredentialDetailFragment(ViewModelProvider.Factory factory) {
+        this.factory = factory;
     }
 
-    Preferences prefs = new Preferences(getContext());
-    prefs.saveMessage(messageId, key);
-    getActivity().onBackPressed();
-  }
+    @Override
+    protected int getViewId() {
+        return R.layout.fragment_credential_detail;
+    }
 
-  @Override
-  public CredentialsViewModel getViewModel() {
-    CredentialsViewModel viewModel = ViewModelProviders.of(this, factory)
-        .get(CredentialsViewModel.class);
-    viewModel.setContext(getContext());
-    return viewModel;
-  }
+    @Override
+    protected AppBarConfigurator getAppBarConfigurator() {
+        setHasOptionsMenu(true);
+
+        if (credentialDto != null) {
+            return new StackedAppBar(credentialDto.getTitle());
+        }
+        return new StackedAppBar(R.string.education);
+    }
+
+    @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        MenuItem shareCredentialMenuItem;
+        if (!credentialIsNew) {
+            shareCredentialMenuItem = menu.findItem(R.id.action_share_credential);
+            shareCredentialMenuItem.setVisible(true);
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.action_share_credential) {
+            navigator.showFragmentOnTopOfMenu(
+                    Objects.requireNonNull(getActivity()).getSupportFragmentManager(), getShareFragment());
+            return true;
+        }
+        if (item.getItemId() == android.R.id.home) {
+            Objects.requireNonNull(getActivity()).onBackPressed();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private ShareCredentialDialogFragment getShareFragment() {
+        ShareCredentialDialogFragment fragment = new ShareCredentialDialogFragment();
+        Bundle args = new Bundle();
+        args.putByteArray(IntentDataConstants.CREDENTIAL_DATA_KEY, credential.toByteArray());
+        fragment.setArguments(args);
+
+        return fragment;
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View view = super.onCreateView(inflater, container, savedInstanceState);
+        fillData(credential, connectionId);
+        showOptions(credentialIsNew);
+
+        return view;
+    }
+
+    private void fillData(Credential credential, String connectionId) {
+
+        credentialDto = CredentialParse.parse(credential);
+        if (credential.getTypeId().equals(CredentialType.REDLAND_CREDENTIAL.getValue())) {
+
+            goventmentConstraint.setVisibility(View.VISIBLE);
+            universityConstraint.setVisibility(View.GONE);
+
+            layoutcredentialtitle.setBackground(getResources().getDrawable(R.drawable.rounded_top_corners_grey));
+
+            textViewCredentialType.setText("National ID Card");
+            textViewCredentialType.setTextColor(getResources().getColor(R.color.grey_4));
+
+            textViewCredentialName.setText(credentialDto.getIssuer().getName());
+            textViewCredentialName.setTextColor(getResources().getColor(R.color.black));
+
+            imageViewCredentialLogo.setImageDrawable(getResources().getDrawable(R.drawable.ic_republic_of_redland));
+            identityValue.setText(credentialDto.getCredentialSubject().getIdentityNumber());
+            birthValue.setText(credentialDto.getCredentialSubject().getDateOfBirth());
+            nameValue.setText(credentialDto.getCredentialSubject().getName());
+            expirationValue.setText(credentialDto.getExpiryDate());
+
+        } else {
+
+            if (credential.getTypeId().equals(CredentialType.DEGREE_CREDENTIAL.getValue())) {
+
+                textViewCredentialName.setText(credentialDto.getCredentialSubject().getDegreeAwarded());
+
+                textViewUniversityName.setText(credentialDto.getIssuer().getName());
+                awardValue.setText(credentialDto.getCredentialSubject().getDegreeResult());
+                textViewFullName.setText(credentialDto.getCredentialSubject().getName());
+                textViewGraduationDate.setText(credentialDto.getIssuanceDate());
+
+            } else if (credential.getTypeId().equals(CredentialType.EMPLOYMENT_CREDENTIAL.getValue())) {
+
+                textViewCredentialType.setText("Company Name");
+                textViewCredentialType.setTextColor(getResources().getColor(R.color.white));
+                layoutcredentialtitle.setBackground(getResources().getDrawable(R.drawable.rounded_top_corners_purple));
+                universityConstraint.setBackground(getResources().getDrawable(R.drawable.rounded_bottom_corners_purple));
+
+                imageViewCredentialLogo.setImageDrawable(getResources().getDrawable(R.drawable.ic_id_proof));
+                layoutDates.setVisibility(View.GONE);
+                layoutFinishDates.setVisibility(View.GONE);
+
+                awardTitle.setText(getResources().getString(R.string.full_name));
+            } else {
+                //VerifiableCredential/CertificateOfInsurance
+                textViewCredentialType.setText("Provider Name");
+                textViewCredentialType.setTextColor(getResources().getColor(R.color.white));
+                layoutcredentialtitle.setBackground(getResources().getDrawable(R.drawable.rounded_top_corners_blue));
+                universityConstraint.setBackground(getResources().getDrawable(R.drawable.rounded_bottom_corners_white));
+
+                imageViewCredentialLogo.setImageDrawable(getResources().getDrawable(R.drawable.ic_insurance_detail));
+                layoutDates.setVisibility(View.GONE);
+                layoutFinishDates.setVisibility(View.GONE);
+
+                textViewUniversityName.setTextColor(getResources().getColor(R.color.black));
+                universityNameTitle.setTextColor(getResources().getColor(R.color.black));
+                awardTitle.setTextColor(getResources().getColor(R.color.black));
+                awardValue.setTextColor(getResources().getColor(R.color.black));
+                fullNameTitle.setTextColor(getResources().getColor(R.color.black));
+                textViewFullName.setTextColor(getResources().getColor(R.color.black));
+
+                universityNameTitle.setText(getResources().getString(R.string.insurance_class));
+                awardTitle.setText(getResources().getString(R.string.insurance_number));
+
+            }
+
+        }
+    }
+
+    private void showOptions(boolean optionsVisible) {
+        declineButton.setVisibility(optionsVisible ? View.VISIBLE : View.GONE);
+        acceptButton.setVisibility(optionsVisible ? View.VISIBLE : View.GONE);
+    }
+
+    @OnClick(R.id.accept_credential)
+    void onAcceptClick() {
+        saveAndGoBack(Preferences.ACCEPTED_MESSAGES_KEY);
+    }
+
+    @OnClick(R.id.decline_credential)
+    void onDeclineClick() {
+        saveAndGoBack(Preferences.REJECTED_MESSAGES_KEY);
+    }
+
+    private void saveAndGoBack(String key) {
+        Preferences prefs = new Preferences(getContext());
+        prefs.saveMessage(messageId, key);
+        getActivity().onBackPressed();
+    }
+
+    @Override
+    public CredentialsViewModel getViewModel() {
+        CredentialsViewModel viewModel = ViewModelProviders.of(this, factory)
+                .get(CredentialsViewModel.class);
+        viewModel.setContext(getContext());
+        return viewModel;
+    }
 }

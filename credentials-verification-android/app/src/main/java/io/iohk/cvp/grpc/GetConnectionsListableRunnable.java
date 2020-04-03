@@ -10,7 +10,7 @@ import io.iohk.cvp.viewmodel.dtos.ConnectionListable;
 import io.iohk.prism.protos.ConnectorServiceGrpc;
 import io.iohk.prism.protos.GetConnectionsPaginatedRequest;
 import io.iohk.prism.protos.GetConnectionsPaginatedResponse;
-import io.iohk.prism.protos.ParticipantInfo;
+
 
 public class GetConnectionsListableRunnable extends CommonGrpcRunnable<List<ConnectionListable>> {
 
@@ -39,9 +39,6 @@ public class GetConnectionsListableRunnable extends CommonGrpcRunnable<List<Conn
     GetConnectionsPaginatedResponse response = blockingStub.getConnectionsPaginated(request);
 
     return new AsyncTaskResult<>(response.getConnectionsList().stream()
-        .filter(
-            connection -> connection.getParticipantInfo().getParticipantCase().getNumber()
-                == ParticipantInfo.VERIFIER_FIELD_NUMBER)
         .map(ConnectionListable::new)
         .collect(Collectors.toList()));
   }

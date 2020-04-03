@@ -9,45 +9,41 @@ import androidx.recyclerview.widget.RecyclerView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.iohk.cvp.R;
-import io.iohk.cvp.utils.ImageUtils;
 import io.iohk.prism.protos.ConnectionInfo;
 import io.iohk.prism.protos.IssuerInfo;
 
 public class UniversitiesRecyclerViewAdapter extends
-    ConnectionsRecyclerViewAdapter<UniversitiesRecyclerViewAdapter.ViewHolder> {
+        ConnectionsRecyclerViewAdapter<UniversitiesRecyclerViewAdapter.ViewHolder> {
 
-  @Override
-  public void onBindViewHolder(UniversitiesRecyclerViewAdapter.ViewHolder holder,
-      ConnectionInfo connectionInfo) {
-    IssuerInfo issuerInfo = connectionInfo.getParticipantInfo().getIssuer();
-    holder.issuerName.setText(issuerInfo.getName());
-    holder.issuerLogo
-        .setImageBitmap(ImageUtils.getBitmapFromByteArray(issuerInfo.getLogo().toByteArray()));
-  }
-
-
-  @Override
-  protected int getLayoutId() {
-    return R.layout.row_university_connection_list;
-  }
-
-  @Override
-  protected ViewHolder createViewHolder(View view) {
-    return new ViewHolder(view);
-  }
-
-  static class ViewHolder extends RecyclerView.ViewHolder {
-
-    @BindView(R.id.issuer_name)
-    TextView issuerName;
-
-    @BindView(R.id.credential_logo)
-    ImageView issuerLogo;
-
-    ViewHolder(View itemView) {
-      super(itemView);
-      ButterKnife.bind(this, itemView);
+    @Override
+    public void onBindViewHolder(UniversitiesRecyclerViewAdapter.ViewHolder holder,
+                                 ConnectionInfo connectionInfo) {
+        IssuerInfo issuerInfo = connectionInfo.getParticipantInfo().getIssuer();
+        holder.issuerName.setText(issuerInfo.getName());
     }
-  }
+
+    @Override
+    protected int getLayoutId() {
+        return R.layout.row_university_connection_list;
+    }
+
+    @Override
+    protected ViewHolder createViewHolder(View view) {
+        return new ViewHolder(view);
+    }
+
+    static class ViewHolder extends RecyclerView.ViewHolder {
+
+        @BindView(R.id.issuer_name)
+        TextView issuerName;
+
+        @BindView(R.id.credential_logo)
+        ImageView issuerLogo;
+
+        ViewHolder(View itemView) {
+            super(itemView);
+            ButterKnife.bind(this, itemView);
+        }
+    }
 }
 

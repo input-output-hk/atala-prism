@@ -36,82 +36,82 @@ import lombok.Setter;
 @NoArgsConstructor
 public class PaymentHistoryFragment extends CvpFragment<PaymentViewModel> {
 
-  private ViewModelProvider.Factory factory;
+    private ViewModelProvider.Factory factory;
 
-  @BindView(R.id.payments_list)
-  public RecyclerView recyclerView;
+    @BindView(R.id.payments_list)
+    public RecyclerView recyclerView;
 
-  @Inject
-  PaymentHistoryFragment(ViewModelProvider.Factory factory) {
-    this.factory = factory;
-  }
-
-  @Inject
-  Navigator navigator;
-
-  LiveData<AsyncTaskResult<List<Payment>>> liveData;
-
-  private PaymentsHistoryRecyclerViewAdapter adapter = new PaymentsHistoryRecyclerViewAdapter(
-      new DateUtils(getContext()));
-
-  @Override
-  protected int getViewId() {
-    return R.layout.fragment_payment_history;
-  }
-
-  @Override
-  protected AppBarConfigurator getAppBarConfigurator() {
-    setHasOptionsMenu(true);
-    return new StackedAppBar(R.string.payment_history);
-  }
-
-  @Override
-  public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-    if (item.getItemId() == android.R.id.home) {
-      Objects.requireNonNull(getActivity()).onBackPressed();
-      return true;
+    @Inject
+    PaymentHistoryFragment(ViewModelProvider.Factory factory) {
+        this.factory = factory;
     }
-    return super.onOptionsItemSelected(item);
-  }
 
-  @Override
-  public View onCreateView(LayoutInflater inflater, ViewGroup container,
-      Bundle savedInstanceState) {
-    View view = super.onCreateView(inflater, container, savedInstanceState);
-    LinearLayoutManager linearLayoutManagerCredentials = new LinearLayoutManager(getContext());
+    @Inject
+    Navigator navigator;
 
-    recyclerView.setLayoutManager(linearLayoutManagerCredentials);
-    recyclerView.setAdapter(adapter);
+    LiveData<AsyncTaskResult<List<Payment>>> liveData;
 
-    Preferences prefs = new Preferences(getContext());
+    private PaymentsHistoryRecyclerViewAdapter adapter = new PaymentsHistoryRecyclerViewAdapter(
+            new DateUtils(getContext()));
 
-    liveData = viewModel.getPayments(prefs.getUserIds());
+    @Override
+    protected int getViewId() {
+        return R.layout.fragment_payment_history;
+    }
 
-    if (!liveData.hasActiveObservers()) {
-      liveData.observe(this, response -> {
-        if (response.getError() != null) {
-          getNavigator().showPopUp(getFragmentManager(), getResources().getString(
-              R.string.server_error_message));
-          return;
+    @Override
+    protected AppBarConfigurator getAppBarConfigurator() {
+        setHasOptionsMenu(true);
+        return new StackedAppBar(R.string.payment_history);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            Objects.requireNonNull(getActivity()).onBackPressed();
+            return true;
         }
-        adapter.addPayments(response.getResult());
-      });
+        return super.onOptionsItemSelected(item);
     }
-    return view;
-  }
 
-  @Override
-  public PaymentViewModel getViewModel() {
-    PaymentViewModel viewModel = ViewModelProviders.of(this, factory).get(PaymentViewModel.class);
-    viewModel.setContext(getContext());
-    return viewModel;
-  }
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View view = super.onCreateView(inflater, container, savedInstanceState);
+        LinearLayoutManager linearLayoutManagerCredentials = new LinearLayoutManager(getContext());
 
-  @Override
-  public void onDestroyView() {
-    super.onDestroyView();
-    viewModel.clearPayments();
-    adapter.clearPayments();
-    liveData.removeObservers(this);
-  }
+        recyclerView.setLayoutManager(linearLayoutManagerCredentials);
+        recyclerView.setAdapter(adapter);
+
+        Preferences prefs = new Preferences(getContext());
+
+        liveData = viewModel.getPayments(prefs.getUserIds());
+
+        if (!liveData.hasActiveObservers()) {
+            liveData.observe(this, response -> {
+                if (response.getError() != null) {
+                    getNavigator().showPopUp(getFragmentManager(), getResources().getString(
+                            R.string.server_error_message));
+                    return;
+                }
+                adapter.addPayments(response.getResult());
+            });
+        }
+        return view;
+    }
+
+    @Override
+    public PaymentViewModel getViewModel() {
+        PaymentViewModel viewModel = ViewModelProviders.of(this, factory).get(PaymentViewModel.class);
+        viewModel.setContext(getContext());
+        return viewModel;
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        viewModel.clearPayments();
+        adapter.clearPayments();
+        liveData.removeObservers(this);
+    }
 }

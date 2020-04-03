@@ -1,111 +1,111 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-  xmlns:app="http://schemas.android.com/apk/res-auto"
-  android:layout_width="match_parent"
-  android:layout_height="match_parent"
-  android:paddingTop="72dp"
-  android:background="@drawable/bg_home">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:paddingTop="25dp">
 
   <FrameLayout
-    android:id="@+id/fragment_layout"
-    android:layout_width="match_parent"
-    android:layout_height="0dp"
-    android:paddingBottom="64dp"
-    android:clickable="false"
-    app:layout_constraintBottom_toBottomOf="parent"
-    app:layout_constraintEnd_toEndOf="parent"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toTopOf="parent" />
+      android:id="@+id/fragment_layout"
+      android:layout_width="match_parent"
+      android:layout_height="0dp"
+      android:clickable="false"
+      android:paddingBottom="64dp"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toTopOf="parent" />
 
   <LinearLayout
-    android:id="@+id/no_credentials_container"
-    android:layout_width="0dp"
-    android:layout_height="0dp"
-    android:orientation="vertical"
-    app:layout_constraintBottom_toBottomOf="parent"
-    app:layout_constraintEnd_toEndOf="parent"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toBottomOf="@+id/new_credentials_container">
+      android:id="@+id/no_credentials_container"
+      android:layout_width="0dp"
+      android:layout_height="0dp"
+      android:orientation="vertical"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@+id/new_credentials_container">
 
     <ImageView
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_gravity="center"
-      android:src="@drawable/ic_no_credentials" />
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:src="@drawable/ic_no_credentials" />
 
     <TextView
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_gravity="center_horizontal"
-      android:text="@string/no_credentials_yet"
-      android:textColor="@color/black"
-      android:textSize="@dimen/titles_text_size"
-      android:visibility="gone" />
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="@string/no_credentials_yet"
+        android:textColor="@color/black"
+        android:textSize="@dimen/titles_text_size"
+        android:visibility="gone" />
 
   </LinearLayout>
 
   <androidx.constraintlayout.widget.ConstraintLayout
-    android:id="@+id/new_credentials_container"
-    android:layout_width="0dp"
-    android:layout_height="wrap_content"
-    android:layout_marginTop="32dp"
-    android:layout_marginStart="24dp"
-    android:layout_marginEnd="24dp"
-    android:background="@drawable/rounded_corner_white"
-    android:elevation="4dp"
-    android:visibility="gone"
-    app:layout_constrainedHeight="true"
-    app:layout_constraintEnd_toEndOf="parent"
-    app:layout_constraintHeight_max="250dp"
-    app:layout_constraintHeight_min="175dp"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toTopOf="parent">
-
-    <TextView
-      android:id="@+id/username"
+      android:id="@+id/new_credentials_container"
       android:layout_width="0dp"
       android:layout_height="wrap_content"
-      android:layout_marginTop="8dp"
-      android:layout_marginStart="16dp"
-      app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-      android:id="@+id/new_credentials_title"
-      android:layout_width="0dp"
-      android:layout_height="wrap_content"
-      android:layout_marginTop="8dp"
-      android:layout_marginStart="16dp"
-      android:layout_marginEnd="32dp"
-      android:text="@string/new_credentials_section_title"
-      android:textColor="@color/black"
-      android:textSize="@dimen/titles_text_size"
+      android:layout_marginStart="24dp"
+      android:layout_marginTop="32dp"
+      android:layout_marginEnd="24dp"
+      android:background="@drawable/rounded_corner_white"
+      android:elevation="4dp"
+      android:visibility="gone"
+      app:layout_constrainedHeight="true"
       app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintHeight_max="250dp"
+      app:layout_constraintHeight_min="175dp"
       app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toBottomOf="@+id/username" />
+      app:layout_constraintTop_toTopOf="parent">
+
+    <TextView
+        android:id="@+id/username"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/new_credentials_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="32dp"
+        android:text="@string/new_credentials_section_title"
+        android:textColor="@color/black"
+        android:textSize="@dimen/titles_text_size"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/username" />
 
     <androidx.recyclerview.widget.RecyclerView
-      android:id="@+id/new_credentials_list"
-      android:layout_width="0dp"
-      android:layout_height="0dp"
-      android:layout_marginTop="8dp"
-      app:layout_constraintBottom_toBottomOf="parent"
-      app:layout_constraintEnd_toEndOf="parent"
-      app:layout_constraintStart_toStartOf="parent"
-      app:layout_constraintTop_toBottomOf="@+id/new_credentials_title" />
+        android:id="@+id/new_credentials_list"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/new_credentials_title" />
 
   </androidx.constraintlayout.widget.ConstraintLayout>
 
   <androidx.recyclerview.widget.RecyclerView
-    android:id="@+id/credentials_list"
-    android:layout_width="0dp"
-    android:layout_height="0dp"
-    android:layout_marginTop="24dp"
-    android:layout_marginStart="16dp"
-    android:layout_marginEnd="16dp"
-    app:layout_constraintBottom_toBottomOf="parent"
-    app:layout_constraintEnd_toEndOf="parent"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toBottomOf="@+id/new_credentials_container" />
+      android:id="@+id/credentials_list"
+      android:layout_width="0dp"
+      android:layout_height="0dp"
+      android:layout_marginStart="16dp"
+      android:layout_marginTop="24dp"
+      android:layout_marginEnd="16dp"
+      app:layout_constraintBottom_toBottomOf="parent"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@+id/new_credentials_container" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

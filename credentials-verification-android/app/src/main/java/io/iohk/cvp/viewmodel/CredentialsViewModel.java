@@ -15,27 +15,27 @@ import io.iohk.prism.protos.ReceivedMessage;
 
 public class CredentialsViewModel extends CvpViewModel {
 
-  private final MutableLiveData<AsyncTaskResult<List<ReceivedMessage>>> messages = new MutableLiveData<>(
-      new AsyncTaskResult<>(new ArrayList<>()));
+    private final MutableLiveData<AsyncTaskResult<List<ReceivedMessage>>> messages = new MutableLiveData<>(
+            new AsyncTaskResult<>(new ArrayList<>()));
 
-  @Inject
-  public CredentialsViewModel() {
-  }
+    @Inject
+    public CredentialsViewModel() {
+    }
 
-  public void clearMessages() {
-    this.messages.setValue(
-        new AsyncTaskResult<>(new ArrayList<>()));
-  }
+    public void clearMessages() {
+        this.messages.setValue(
+                new AsyncTaskResult<>(new ArrayList<>()));
+    }
 
-  public MutableLiveData<AsyncTaskResult<List<ReceivedMessage>>> getMessages(
-      Set<String> userIds) {
-    userIds.forEach(userId -> {
-      GrpcTask task = new GrpcTask<>(new GetMessagesRunnable(messages), context);
-      task.execute(userId);
-      runningTasks.add(task);
-    });
-    return messages;
-  }
+    public MutableLiveData<AsyncTaskResult<List<ReceivedMessage>>> getMessages(
+            Set<String> userIds) {
+        userIds.forEach(userId -> {
+            GrpcTask task = new GrpcTask<>(new GetMessagesRunnable(messages), context);
+            task.execute(userId);
+            runningTasks.add(task);
+        });
+        return messages;
+    }
 
 }
 

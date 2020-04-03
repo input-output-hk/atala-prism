@@ -1,71 +1,71 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  xmlns:tools="http://schemas.android.com/tools"
-  package="io.iohk.cvp">
+    xmlns:tools="http://schemas.android.com/tools"
+    package="io.iohk.cvp">
 
-  <application
-    android:allowBackup="true"
-    android:icon="@mipmap/ic_launcher"
-    android:label="Credentials Verification"
-    android:name="io.iohk.cvp.core.CvpApplication"
-    android:roundIcon="@mipmap/ic_launcher_round"
-    android:screenOrientation="portrait"
-    android:supportsRtl="true"
-    android:theme="@style/AppTheme"
-    tools:ignore="GoogleAppIndexingWarning">
-    <activity
-      android:name="io.iohk.cvp.views.activities.LaunchActivity"
-      android:noHistory="true"
-      android:screenOrientation="portrait">
-      <intent-filter>
-        <action android:name="android.intent.action.MAIN" />
-        <category android:name="android.intent.category.LAUNCHER" />
-      </intent-filter>
-    </activity>
+    <application
+        android:name="io.iohk.cvp.core.CvpApplication"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="ATALA"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:screenOrientation="portrait"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme"
+        tools:ignore="GoogleAppIndexingWarning">
+        <activity
+            android:name="io.iohk.cvp.views.activities.LaunchActivity"
+            android:noHistory="true"
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
 
-    <activity
-      android:name="io.iohk.cvp.views.activities.MainActivity"
-      android:screenOrientation="portrait"
-      android:windowSoftInputMode="adjustPan" />
+        <activity
+            android:name="io.iohk.cvp.views.activities.MainActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustPan" />
 
-    <activity
-      android:name="io.iohk.cvp.views.activities.WelcomeActivity"
-      android:screenOrientation="portrait" />
-    <activity
-      android:name="io.iohk.cvp.views.activities.TermsAndConditionsActivity"
-      android:screenOrientation="portrait" />
-    <activity android:name="io.iohk.cvp.views.activities.WalletSetupActivity" />
-    <activity
-      android:name="io.iohk.cvp.views.activities.SeedPhraseVerificationActivity"
-      android:screenOrientation="portrait" />
-    <activity
-      android:name="io.iohk.cvp.views.activities.AccountCreatedActivity"
-      android:screenOrientation="portrait" />
-    <activity
-      android:name="io.iohk.cvp.views.activities.QrCodeScanner"
-      android:screenOrientation="portrait" />
-    <activity
-      android:name="io.iohk.cvp.views.activities.WebViewActivity"
-      android:screenOrientation="portrait" />
+        <activity
+            android:name="io.iohk.cvp.views.activities.WelcomeActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="io.iohk.cvp.views.activities.TermsAndConditionsActivity"
+            android:screenOrientation="portrait" />
+        <activity android:name="io.iohk.cvp.views.activities.WalletSetupActivity" />
+        <activity
+            android:name="io.iohk.cvp.views.activities.SeedPhraseVerificationActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="io.iohk.cvp.views.activities.AccountCreatedActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="io.iohk.cvp.views.activities.QrCodeScanner"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name="io.iohk.cvp.views.activities.WebViewActivity"
+            android:screenOrientation="portrait" />
 
-    <activity
-      android:launchMode="singleTask"
-      android:name="com.braintreepayments.api.BraintreeBrowserSwitchActivity">
-      <intent-filter>
-        <action android:name="android.intent.action.VIEW" />
+        <activity
+            android:name="com.braintreepayments.api.BraintreeBrowserSwitchActivity"
+            android:launchMode="singleTask">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
 
-        <category android:name="android.intent.category.DEFAULT" />
-        <category android:name="android.intent.category.BROWSABLE" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
 
-        <data android:scheme="${applicationId}.braintree" />
-      </intent-filter>
-    </activity>
-  </application>
+                <data android:scheme="${applicationId}.braintree" />
+            </intent-filter>
+        </activity>
+    </application>
 
-  <uses-permission
-    android:name="android.permission.CAMERA"
-    tools:ignore="ManifestOrder" />
+    <uses-permission
+        android:name="android.permission.CAMERA"
+        tools:ignore="ManifestOrder" />
 
-  <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
 </manifest>

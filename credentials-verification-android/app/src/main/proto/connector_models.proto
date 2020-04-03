@@ -5,8 +5,8 @@ option java_package = "io.iohk.prism.protos";
 
 package io.iohk.prism.protos;
 
-// GENERAL
 
+// GENERAL
 // just an EC public key represented with big integers as strings
 // TODO: merge with the node PublicKey
 message ConnectorPublicKey {

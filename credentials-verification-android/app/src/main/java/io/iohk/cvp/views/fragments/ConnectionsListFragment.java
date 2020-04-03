@@ -31,53 +31,53 @@ import lombok.Setter;
 @NoArgsConstructor
 public class ConnectionsListFragment extends CvpFragment<ConnectionsActivityViewModel> {
 
-  @BindView(R.id.universities_list)
-  RecyclerView recyclerView;
-  private ViewModelProvider.Factory factory;
-  private ConnectionsRecyclerViewAdapter adapter;
+    @BindView(R.id.universities_list)
+    RecyclerView recyclerView;
+    private ViewModelProvider.Factory factory;
+    private ConnectionsRecyclerViewAdapter adapter;
 
-  @Inject
-  public ConnectionsListFragment(ViewModelProvider.Factory factory) {
-    this.factory = factory;
-  }
+    @Inject
+    public ConnectionsListFragment(ViewModelProvider.Factory factory) {
+        this.factory = factory;
+    }
 
-  @Override
-  public View onCreateView(LayoutInflater inflater, ViewGroup container,
-      Bundle savedInstanceState) {
-    return super.onCreateView(inflater, container, savedInstanceState);
-  }
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        return super.onCreateView(inflater, container, savedInstanceState);
+    }
 
-  @Override
-  public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
-    recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-    recyclerView.setAdapter(adapter);
-  }
+    @Override
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setAdapter(adapter);
+    }
 
-  @Override
-  protected int getViewId() {
-    return R.layout.universities_list;
-  }
+    @Override
+    protected int getViewId() {
+        return R.layout.universities_list;
+    }
 
-  @Override
-  protected AppBarConfigurator getAppBarConfigurator() {
-    return new RootAppBar(R.string.connections_activity_title);
-  }
+    @Override
+    protected AppBarConfigurator getAppBarConfigurator() {
+        return new RootAppBar(R.string.connections_activity_title);
+    }
 
-  @Override
-  public ConnectionsActivityViewModel getViewModel() {
-    ConnectionsActivityViewModel viewModel = ViewModelProviders.of(this, factory)
-        .get(ConnectionsActivityViewModel.class);
-    viewModel.setContext(getContext());
-    return viewModel;
-  }
+    @Override
+    public ConnectionsActivityViewModel getViewModel() {
+        ConnectionsActivityViewModel viewModel = ViewModelProviders.of(this, factory)
+                .get(ConnectionsActivityViewModel.class);
+        viewModel.setContext(getContext());
+        return viewModel;
+    }
 
-  public void addConnections(List<ConnectionInfo> newConnections) {
-    adapter.addConnections(newConnections);
-    adapter.notifyDataSetChanged();
-  }
+    public void addConnections(List<ConnectionInfo> newConnections) {
+        adapter.addConnections(newConnections);
+        adapter.notifyDataSetChanged();
+    }
 
-  public void clearConnecitons() {
-    adapter.setConnections(new ArrayList<>());
-    adapter.notifyDataSetChanged();
-  }
+    public void clearConnecitons() {
+        adapter.setConnections(new ArrayList<>());
+        adapter.notifyDataSetChanged();
+    }
 }

@@ -18,28 +18,28 @@ import io.iohk.prism.protos.ParticipantInfo;
 
 public class ConnectionsActivityViewModel extends CvpViewModel {
 
-  private MutableLiveData<AsyncTaskResult<List<ConnectionInfo>>> connections = new MutableLiveData<>();
-  private MutableLiveData<AsyncTaskResult<ParticipantInfo>> issuerInfo = new MutableLiveData<>();
+    private MutableLiveData<AsyncTaskResult<List<ConnectionInfo>>> connections = new MutableLiveData<>();
+    private MutableLiveData<AsyncTaskResult<ParticipantInfo>> issuerInfo = new MutableLiveData<>();
 
-  @Inject
-  public ConnectionsActivityViewModel() {
-  }
+    @Inject
+    public ConnectionsActivityViewModel() {
+    }
 
-  public LiveData<AsyncTaskResult<List<ConnectionInfo>>> getConnections(Set<String> userIds) {
-    userIds.forEach(userId -> {
-      GrpcTask task = new GrpcTask<>(new GetConnectionsInfoRunnable(connections), context);
-      task.execute(userId);
-      runningTasks.add(task);
-    });
-    return connections;
-  }
+    public LiveData<AsyncTaskResult<List<ConnectionInfo>>> getConnections(Set<String> userIds) {
+        userIds.forEach(userId -> {
+            GrpcTask task = new GrpcTask<>(new GetConnectionsInfoRunnable(connections), context);
+            task.execute(userId);
+            runningTasks.add(task);
+        });
+        return connections;
+    }
 
-  public LiveData<AsyncTaskResult<ParticipantInfo>> getConnectionTokenInfo(String token) {
-    new GrpcTask<>(new GetConnectionTokenInfoRunnable(issuerInfo), context).execute(null, token);
-    return issuerInfo;
-  }
+    public LiveData<AsyncTaskResult<ParticipantInfo>> getConnectionTokenInfo(String token) {
+        new GrpcTask<>(new GetConnectionTokenInfoRunnable(issuerInfo), context).execute(null, token);
+        return issuerInfo;
+    }
 
-  public void clearConnections() {
-    connections.setValue(new AsyncTaskResult<>(new ArrayList<>()));
-  }
+    public void clearConnections() {
+        connections.setValue(new AsyncTaskResult<>(new ArrayList<>()));
+    }
 }

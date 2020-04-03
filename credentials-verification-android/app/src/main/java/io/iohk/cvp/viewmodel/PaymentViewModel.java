@@ -16,29 +16,29 @@ import io.iohk.prism.protos.Payment;
 
 public class PaymentViewModel extends CvpViewModel {
 
-  private MutableLiveData<AsyncTaskResult<List<Payment>>> payments = new MutableLiveData<>();
+    private MutableLiveData<AsyncTaskResult<List<Payment>>> payments = new MutableLiveData<>();
 
-  @Inject
-  public PaymentViewModel() {
+    @Inject
+    public PaymentViewModel() {
 
-  }
+    }
 
-  public LiveData<AsyncTaskResult<List<Payment>>> getPayments(Set<String> userIds) {
-    userIds.forEach(userId -> {
-      GrpcTask task = new GrpcTask<>(new GetPaymentsRunnable(payments), context);
-      task.execute(userId);
-      runningTasks.add(task);
-    });
-    return payments;
-  }
+    public LiveData<AsyncTaskResult<List<Payment>>> getPayments(Set<String> userIds) {
+        userIds.forEach(userId -> {
+            GrpcTask task = new GrpcTask<>(new GetPaymentsRunnable(payments), context);
+            task.execute(userId);
+            runningTasks.add(task);
+        });
+        return payments;
+    }
 
-  public void clearPayments() {
-    payments.setValue(new AsyncTaskResult<>(new ArrayList<>()));
-  }
+    public void clearPayments() {
+        payments.setValue(new AsyncTaskResult<>(new ArrayList<>()));
+    }
 
-  public enum PaymentState {
-    CHARGED,
-    FAILED
-  }
+    public enum PaymentState {
+        CHARGED,
+        FAILED
+    }
 }
 
