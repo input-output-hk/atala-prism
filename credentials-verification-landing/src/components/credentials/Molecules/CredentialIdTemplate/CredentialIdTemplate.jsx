@@ -12,7 +12,7 @@ import './_style.scss';
 const CredentialIDTemplate = ({ firstName, lastName, dateOfBirth }) => {
   const { t } = useTranslation();
   const fullName = `${firstName} ${lastName}`;
-  const uniqueData = fullName + moment(dateOfBirth).format('YYYY-MM-DD');
+  const uniqueData = firstName + moment(dateOfBirth).format('YYYY-MM-DD');
   const identityNumber = md5Hex(uniqueData)
     .substring(0, 9)
     .toUpperCase();
@@ -38,18 +38,18 @@ const CredentialIDTemplate = ({ firstName, lastName, dateOfBirth }) => {
             </div>
             <div className="TemplateItem">
               <span>{t('credential.IdCredentialCard.DateOfBirth')}</span>
-              <p>{moment(dateOfBirth).format('L')}</p>
+              <p>{moment(dateOfBirth).format('YYYY-MM-DD')}</p>
             </div>
             <div className="TemplateItem">
               <span>{t('credential.IdCredentialCard.FullName')}</span>
-              <p>{fullName}</p>
+              <p>{firstName}</p>
             </div>
             <div className="TemplateItem">
               <span>{t('credential.IdCredentialCard.ExpirationDate')}</span>
               <p>
                 {moment()
                   .add(20, 'y')
-                  .format('L')}
+                  .format('YYYY-MM-DD')}
               </p>
             </div>
           </Col>

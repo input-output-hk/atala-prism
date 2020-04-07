@@ -581,7 +581,7 @@
       "titleAlert": "Privacy is very important to us!",
       "textAlert": "Any data that you enter is protected and encrypted. We do not store any private data and do not share it with any third party.",
       "form": {
-        "firstName": "Name",
+        "firstName": "first Name",
         "lastName": "Last Name",
         "universityName": "University Name",
         "degreeName": "Degree Name",

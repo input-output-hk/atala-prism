@@ -28,7 +28,8 @@ const currentCredentialCard = {
 const CreatedCredential = ({ currentCredential }) => {
   const { t } = useTranslation();
   const { user } = useContext(UserContext);
-
+  const { firstName, lastName, dateOfBirth } = user;
+  const fullName = `${firstName} ${lastName}`;
   const currentCredentialCellList = {
     0: undefined,
     1: {
@@ -39,14 +40,14 @@ const CreatedCredential = ({ currentCredential }) => {
       cellList: [
         { title: 'universityName', value: CARD_UNIVERSITY_UNIVERSITY },
         { title: 'award', value: CARD_UNIVERSITY_AWARD },
-        { title: 'fullName', value: `${user.firstName} ${user.lastName}` },
+        { title: 'fullName', value: { firstName } },
         {
           subList: [
             {
               title: 'graduationDate',
-              value: moment(user.dateOfBirth)
+              value: moment(dateOfBirth)
                 .add(20, 'y')
-                .format('L')
+                .format('YYYY-MM-DD')
             }
           ],
           className: 'DegreeDate'
@@ -63,13 +64,13 @@ const CreatedCredential = ({ currentCredential }) => {
       cellTitle: { title: 'companyName', value: CARD_EMPLOYMENT_COMPANY },
       cellList: [
         { title: 'employerAddress', value: CARD_EMPLOYMENT_ADDRESS },
-        { title: 'employeeName', value: `${user.firstName} ${user.lastName}` },
+        { title: 'employeeName', value: { firstName } },
         { title: 'employmentStatus', value: CARD_EMPLOYMENT_STATUS },
         {
           title: 'employmentStartDate',
           value: moment()
             .subtract(1, 'M')
-            .format('L')
+            .format('YYYY-MM-DD')
         }
       ]
     },
@@ -84,12 +85,12 @@ const CreatedCredential = ({ currentCredential }) => {
       cellList: [
         { title: 'classOfInsurance', value: CARD_INSURANCE_CLASS },
         { title: 'policyNumber', value: CARD_INSURANCE_POLICY_NUMBER },
-        { title: 'fullName', value: `${user.firstName} ${user.lastName}` },
+        { title: 'fullName', value: { firstName } },
         {
           title: 'policyEndDate',
           value: moment()
             .add(1, 'y')
-            .format('L')
+            .format('YYYY-MM-DD')
         }
       ]
     }

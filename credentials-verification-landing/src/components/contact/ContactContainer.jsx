@@ -20,7 +20,7 @@ const ContactContainer = ({ api }) => {
   useEffect(() => {
     if (contactInfoRef.current.getForm())
       contactInfoRef.current.getForm().setFieldsValue({
-        fullName: `${user.firstName} ${user.lastName}`
+        fullName: user.firstName
       });
   }, [contactInfoRef.current]);
 

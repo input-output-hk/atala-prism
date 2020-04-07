@@ -30,14 +30,13 @@ const UserInfoContainer = ({ redirector: { redirectToCredentials } }) => {
     personalInfoRef.current
       .getForm()
       .validateFieldsAndScroll(
-        ['dateOfBirth', 'firstName', 'lastName'],
-        (errors, { dateOfBirth, firstName, lastName }) => {
+        ['dateOfBirth', 'firstName'],
+        (errors, { dateOfBirth, firstName }) => {
           if (errors) return;
 
           setUser({
             ...user,
             firstName,
-            lastName,
             dateOfBirth
           });
           redirectToCredentials();

@@ -27,7 +27,13 @@ const TemplateForm = React.forwardRef((_props, ref) => {
 
   const items = [
     getInput('firstName', t),
-    getInput('lastName', t),
+    {
+      fieldDecoratorData: {},
+      label: t('credential.personalInformation.form.lastName'),
+      key: 'lastName',
+      className: 'itemFormInfo',
+      input: <Input size="large" disabled={true} />,
+    },
     {
       fieldDecoratorData: {
         rules: [
