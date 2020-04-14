@@ -58,11 +58,13 @@ object ECKeyOperation {
   }
 
   private def toECKeyData(key: wallet_models.ECPublicKey): node_models.ECKeyData = {
+    val x = key.x.getOrElse(throw new RuntimeException("Invalid point X")).value
+    val y = key.y.getOrElse(throw new RuntimeException("Invalid point Y")).value
     node_models
       .ECKeyData()
       .withCurve(ECKeys.CURVE_NAME)
-      .withX(ByteString.copyFrom(key.x.getOrElse(throw new RuntimeException("Invalid point X ")).toByteArray))
-      .withY(ByteString.copyFrom(key.y.getOrElse(throw new RuntimeException("Invalid point Y ")).toByteArray))
+      .withX(ByteString.copyFrom(toUnsignedByteArray(BigInt(x))))
+      .withY(ByteString.copyFrom(toUnsignedByteArray(BigInt(y))))
   }
 
   private def toPublicKey(
@@ -75,5 +77,9 @@ object ECKeyOperation {
       .withId(id)
       .withEcKeyData(ecKeyData)
       .withUsage(keyUsage)
+  }
+
+  private def toUnsignedByteArray(src: BigInt): Array[Byte] = {
+    src.toByteArray.dropWhile(_ == 0)
   }
 }

@@ -80,7 +80,7 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       val key = DIDPublicKey(didSuffix, "master", KeyUsage.MasterKey, CreateDIDOperationSpec.masterKeys.getPublic)
       PublicKeysDAO.insert(key).transact(database).unsafeRunSync()
 
-      val response = service.getDidDocument(node_api.GetDidDocumentRequest(s"did:atala:${didSuffix.suffix}"))
+      val response = service.getDidDocument(node_api.GetDidDocumentRequest(s"did:prism:${didSuffix.suffix}"))
       val document = response.document.value
       document.id mustBe didSuffix.suffix
       document.publicKeys.size mustBe 1

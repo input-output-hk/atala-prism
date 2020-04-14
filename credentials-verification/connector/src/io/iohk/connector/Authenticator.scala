@@ -17,6 +17,7 @@ import org.slf4j.{Logger, LoggerFactory}
 import scalapb.GeneratedMessage
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.control.NonFatal
 import scala.util.{Failure, Success}
 
 trait Authenticator {
@@ -96,16 +97,17 @@ class SignedRequestsAuthenticator(
       requestNonce: RequestNonce,
       signature: Vector[Byte]
   )(implicit ec: ExecutionContext): FutureEither[SignatureVerificationError, ParticipantId] = {
-
     val payload = SignedRequestsHelper.merge(requestNonce, request).toArray
-    for {
-      _ <- Either
+    val verificationResultF = Future {
+      Either
         .cond(
           ECSignature.verify(publicKey = publicKey, data = payload, signature = signature),
           participantId,
           SignatureVerificationError()
         )
-        .toFutureEither
+    }
+    for {
+      _ <- verificationResultF.toFutureEither
       _ <- requestNoncesRepository.burn(participantId, requestNonce)
     } yield participantId
   }
@@ -180,9 +182,9 @@ class SignedRequestsAuthenticator(
   )(
       f: ParticipantId => Future[Response]
   )(implicit ec: ExecutionContext): Future[Response] = {
-    {
+    try {
       val ctx = Context.current()
-      grpcAuthenticationHeaderParser
+      val result = grpcAuthenticationHeaderParser
         .parse(ctx)
         .map(authenticate(request.toByteArray, _))
         .map { value =>
@@ -192,7 +194,18 @@ class SignedRequestsAuthenticator(
           logger.error(s"$methodName - missing userId, request = ${request.toProtoString}")
           Future.failed(throw new RuntimeException("Missing userId"))
         }
-    }.flatten
+        .flatten
+
+      result.onComplete {
+        case Success(_) => () // This case is already handled above on the `withLogging` call
+        case Failure(ex) => logger.error(s"$methodName FAILED request = ${request.toProtoString}", ex)
+      }
+      result
+    } catch {
+      case NonFatal(ex) =>
+        logger.error(s"$methodName - FATAL ERROR, request = ${request.toProtoString}", ex)
+        Future.failed(ex)
+    }
   }
 
   override def public[Request <: GeneratedMessage, Response <: GeneratedMessage](methodName: String, request: Request)(

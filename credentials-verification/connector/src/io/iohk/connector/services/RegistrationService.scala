@@ -23,11 +23,9 @@ class RegistrationService(participantsRepository: ParticipantsRepository, nodeSe
       createDIDOperation: node_models.SignedAtalaOperation
   ): FutureEither[Nothing, RegistrationResult] = {
 
-    // TODO: Remove unneeded transformation by reusing the node protos
-    val actualOp = io.iohk.prism.protos.node_models.SignedAtalaOperation.parseFrom(createDIDOperation.toByteArray)
     for {
       createDIDResponse <- nodeService
-        .createDID(node_api.CreateDIDRequest().withSignedOperation(actualOp))
+        .createDID(node_api.CreateDIDRequest().withSignedOperation(createDIDOperation))
         .map(Right(_))
         .toFutureEither
       did = s"did:prism:${createDIDResponse.id}"

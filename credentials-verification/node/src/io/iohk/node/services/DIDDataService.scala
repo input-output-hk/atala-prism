@@ -11,7 +11,7 @@ import scala.concurrent.ExecutionContext
 
 class DIDDataService(didDataRepository: DIDDataRepository)(implicit ec: ExecutionContext) {
 
-  private val DID__RE = "(did:atala:)([0-9a-f]{64}$)".r
+  private val DID__RE = "(did:prism:)([0-9a-f]{64}$)".r
 
   def findByDID(did: String): FutureEither[errors.NodeError, DIDData] = {
     val mayBeDidSuffix = DID__RE.findFirstIn(did).map { matched =>

@@ -57,8 +57,10 @@ class WalletServiceOrchestrator(walletSecurity: WalletSecurity, walletIO: Wallet
     val keyPairs = List(protoMasterKeyPair)
 
     val createOperation = ECKeyOperation.toSignedAtalaOperation(keyPairs)
-    val didSuffix = SHA256Digest.compute(createOperation.toByteArray)
-    val did = s"did:prism:$didSuffix"
+    val unsigedOperation = createOperation.operation
+      .getOrElse(throw new RuntimeException("Impossible, the operation must be present"))
+    val didSuffix = SHA256Digest.compute(unsigedOperation.toByteArray)
+    val did = s"did:prism:${didSuffix.hexValue}"
 
     val wallet = wallet_internal
       .WalletData()

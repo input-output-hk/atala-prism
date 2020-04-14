@@ -54,9 +54,11 @@ class SignedRequestsAuthenticatorSpec extends WordSpec {
       val authenticator = buildAuthenticator(getHeader = () => None)
 
       intercept[RuntimeException] {
-        authenticator.authenticated("test", request) { _ =>
-          Future.successful(response)
-        }
+        authenticator
+          .authenticated("test", request) { _ =>
+            Future.successful(response)
+          }
+          .futureValue
       }
     }
 
