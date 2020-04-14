@@ -214,7 +214,7 @@ workflows:
       - build-credentials-verification-web
       - build-credentials-verification
       - build-credentials-verification-android
-      - build-credentials-verification-webextension
+#      - build-credentials-verification-webextension
       - deploy-ecr-images:
           filters:
             branches:
