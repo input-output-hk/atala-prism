@@ -68,7 +68,9 @@ class ObjectManagementService(
     justSaveReference(ref, timestamp)
       .flatMap {
         case Some(obj) =>
-          processObject(obj).transact(xa).unsafeToFuture().map(_ => ())
+          processObject(obj).flatMap { transaction =>
+            transaction.transact(xa).unsafeToFuture().map(_ => ())
+          }
         case None =>
           Future.successful(())
       }
@@ -88,27 +90,40 @@ class ObjectManagementService(
     synchronizer.publishReference(objHash)
   }
 
-  protected def processObject(obj: AtalaObject): ConnectionIO[Boolean] = {
+  protected def processObject(obj: AtalaObject): Future[ConnectionIO[Boolean]] = {
     for {
       blockHash <- obj.blockHash match {
-        case Some(hash) =>
-          connection.pure(hash)
+        case Some(blockHash) =>
+          Future.successful(blockHash)
         case None =>
           val objectFileName = obj.objectId.hexValue
-          val objectBytes = storage.get(objectFileName).get // TODO: error support
-          val aobject = node_internal.AtalaObject.parseFrom(objectBytes)
-          val blockHash = SHA256Digest(aobject.blockHash.toByteArray)
-          AtalaObjectsDAO.setBlockHash(obj.objectId, blockHash).map(_ => blockHash)
+          for {
+            objectBytes <- storage.get(objectFileName).map(_.get) // TODO: error support
+            aobject = node_internal.AtalaObject.parseFrom(objectBytes)
+            blockHash = SHA256Digest(aobject.blockHash.toByteArray)
+            _ <- AtalaObjectsDAO
+              .setBlockHash(obj.objectId, blockHash)
+              .transact(xa)
+              .unsafeToFuture()
+          } yield blockHash
       }
-      res <- processBlock(blockHash, obj.objectTimestamp, obj.sequenceNumber)
+      blockTransaction <- processBlock(blockHash, obj.objectTimestamp, obj.sequenceNumber)
+    } yield for {
+      result <- blockTransaction
       _ <- AtalaObjectsDAO.setProcessed(obj.objectId)
-    } yield res
+    } yield result
   }
 
-  protected def processBlock(hash: SHA256Digest, blockTimestamp: Instant, blockSequenceNumber: Int): ConnectionIO[Boolean] = {
+  protected def processBlock(
+      hash: SHA256Digest,
+      blockTimestamp: Instant,
+      blockSequenceNumber: Int
+  ): Future[ConnectionIO[Boolean]] = {
     val blockFileName = hash.hexValue
-    val blockBytes = storage.get(blockFileName).get // TODO: error support
-    val block = node_internal.AtalaBlock.parseFrom(blockBytes)
-    blockProcessing.processBlock(block, blockTimestamp, blockSequenceNumber)
+    for {
+      blockBytes <- storage.get(blockFileName).map(_.get) // TODO: error support
+      block = node_internal.AtalaBlock.parseFrom(blockBytes)
+      transaction = blockProcessing.processBlock(block, blockTimestamp, blockSequenceNumber)
+    } yield transaction
   }
 }

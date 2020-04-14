@@ -9,7 +9,7 @@ import io.grpc.{Server, ServerBuilder}
 import io.iohk.cvp.crypto.SHA256Digest
 import io.iohk.cvp.repositories.{SchemaMigrations, TransactorFactory}
 import io.iohk.node.bitcoin.BitcoinClient
-import io.iohk.node.objects.ObjectStorageService
+import io.iohk.node.objects.{ObjectStorageService, S3ObjectStorageService}
 import io.iohk.node.repositories.DIDDataRepository
 import io.iohk.node.repositories.atalaobjects.AtalaObjectsRepository
 import io.iohk.node.repositories.blocks.BlocksRepository
@@ -19,6 +19,7 @@ import io.iohk.node.synchronizer.{LedgerSynchronizationStatusService, LedgerSync
 import io.iohk.prism.protos.node_api._
 import monix.execution.Scheduler.Implicits.{global => scheduler}
 import org.slf4j.LoggerFactory
+import software.amazon.awssdk.regions.Region
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future, Promise}
@@ -60,7 +61,19 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     implicit val xa = TransactorFactory(databaseConfig)
     val atalaObjectsRepository = new AtalaObjectsRepository(xa)
 
-    val storage = ObjectStorageService()
+    val storage = globalConfig.getString("storage") match {
+      case "in-memory" => new ObjectStorageService.InMemory()
+      case "filesystem" => ObjectStorageService()
+      case "s3" => {
+        val s3Config = globalConfig.getConfig("s3")
+        val bucket = s3Config.getString("bucket")
+        val keyPrefix = s3Config.getString("keyPrefix")
+        val region = if (s3Config.hasPath("region")) {
+          Some(Region.of(s3Config.getString("region")))
+        } else None
+        new S3ObjectStorageService(bucket, keyPrefix, region)
+      }
+    }
 
     val objectManagementServicePromise: Promise[ObjectManagementService] = Promise()
 

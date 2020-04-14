@@ -136,7 +136,11 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
       objectManagmentService.saveReference(objectHash, dummyTimestamp).futureValue
 
       val blockCaptor = ArgCaptor[node_internal.AtalaBlock]
-      verify(blockProcessing).processBlock(blockCaptor, mockito.ArgumentMatchers.eq(dummyTimestamp), mockito.ArgumentMatchers.eq(dummyABSequenceNumber))
+      verify(blockProcessing).processBlock(
+        blockCaptor,
+        mockito.ArgumentMatchers.eq(dummyTimestamp),
+        mockito.ArgumentMatchers.eq(dummyABSequenceNumber)
+      )
       blockCaptor.value mustEqual block
 
       verifyNoMoreInteractions(blockProcessing)
@@ -164,7 +168,8 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
       }
 
       val blockCaptor = ArgCaptor[node_internal.AtalaBlock]
-      verify(blockProcessing, times(blocks.size)).processBlock(blockCaptor, mockito.ArgumentMatchers.any(), mockito.ArgumentMatchers.any())
+      verify(blockProcessing, times(blocks.size))
+        .processBlock(blockCaptor, mockito.ArgumentMatchers.any(), mockito.ArgumentMatchers.any())
       blockCaptor.values must contain theSameElementsAs blocks
 
       verifyNoMoreInteractions(blockProcessing)
@@ -173,10 +178,10 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
   }
 
   protected def getBlockFromStorage(ref: SHA256Digest): node_internal.AtalaBlock = {
-    val atalaObjectData = storage.get(ref.hexValue).value
+    val atalaObjectData = storage.get(ref.hexValue).futureValue.value
     val atalaObject = node_internal.AtalaObject.parseFrom(atalaObjectData)
     val atalaBlockHash = SHA256Digest(atalaObject.blockHash.toByteArray)
-    val atalaBlockData = storage.get(atalaBlockHash.hexValue).value
+    val atalaBlockData = storage.get(atalaBlockHash.hexValue).futureValue.value
     node_internal.AtalaBlock.parseFrom(atalaBlockData)
   }
 

@@ -2,6 +2,7 @@ package io.iohk.node.objects
 
 import io.iohk.node.services.BinaryOps
 
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.control.NonFatal
 
 trait ObjectStorageService {
@@ -14,7 +15,7 @@ trait ObjectStorageService {
     * @param id the object identifier
     * @param data the data to store
     */
-  def put(id: ObjectId, data: Array[Byte]): Unit
+  def put(id: ObjectId, data: Array[Byte]): Future[Unit]
 
   /**
     * Find an object by its id.
@@ -22,41 +23,45 @@ trait ObjectStorageService {
     * @param id the object identifier
     * @return the object data if it was found
     */
-  def get(id: ObjectId): Option[Array[Byte]]
+  def get(id: ObjectId): Future[Option[Array[Byte]]]
 }
 
 object ObjectStorageService {
 
   type ObjectId = String
 
-  def apply(): ObjectStorageService = {
+  def apply()(implicit ec: ExecutionContext): ObjectStorageService = {
     val binaryOps = BinaryOps()
     new FileBased(os.pwd / ".node", binaryOps)
   }
 
   class InMemory extends ObjectStorageService {
     private var dataMap: Map[ObjectId, Array[Byte]] = Map.empty
-    override def put(id: ObjectId, data: Array[Byte]): Unit = {
+    override def put(id: ObjectId, data: Array[Byte]): Future[Unit] = {
       dataMap += id -> data
+      Future.successful(())
     }
 
-    override def get(id: ObjectId): Option[Array[Byte]] = {
-      dataMap.get(id)
+    override def get(id: ObjectId): Future[Option[Array[Byte]]] = {
+      Future.successful(dataMap.get(id))
     }
   }
 
-  class FileBased(baseDirectory: os.Path, binaryOps: BinaryOps) extends ObjectStorageService {
-    override def put(id: ObjectId, data: Array[Byte]): Unit = {
+  class FileBased(baseDirectory: os.Path, binaryOps: BinaryOps)(implicit ec: ExecutionContext)
+      extends ObjectStorageService {
+    override def put(id: ObjectId, data: Array[Byte]): Future[Unit] = {
       val path = baseDirectory / id
-      os.write.over(path, data, createFolders = true)
+      Future {
+        os.write.over(path, data, createFolders = true)
+      }
     }
 
-    override def get(id: ObjectId): Option[Array[Byte]] = {
+    override def get(id: ObjectId): Future[Option[Array[Byte]]] = {
       val path = baseDirectory / id
-      try {
+      Future {
         val data = os.read.bytes(path)
         Some(data)
-      } catch {
+      } recover {
         case NonFatal(_) => None
       }
     }

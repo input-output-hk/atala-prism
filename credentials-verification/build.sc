@@ -69,7 +69,7 @@ object app extends ScalaModule {
 
   object test extends Tests {
     override def ivyDeps = Agg(
-      ivy"org.scalatest::scalatest:3.0.5",
+      ivy"org.scalatest::scalatest:3.0.8",
       ivy"org.scalacheck::scalacheck:1.14.0"
     )
 
@@ -145,7 +145,7 @@ object common extends ScalaModule {
   object test extends Tests {
     override def moduleDeps = Seq(`test-util`) ++ super.moduleDeps
     override def ivyDeps = Agg(
-      ivy"org.scalatest::scalatest:3.0.5",
+      ivy"org.scalatest::scalatest:3.0.8",
       ivy"org.scalacheck::scalacheck:1.14.0",
       ivy"org.tpolecat::doobie-scalatest:${versions.doobie}"
     )
@@ -192,6 +192,10 @@ trait ServerCommon extends ScalaModule with BuildInfo {
     ivy"com.chuusai::shapeless:2.3.3"
   )
 
+  val awsS3Deps = Agg(
+    ivy"software.amazon.awssdk:s3:2.11.8"
+  )
+
   override def buildInfoPackageName = Some("io.iohk.cvp")
 
   override def buildInfoMembers: T[Map[String, String]] = T {
@@ -206,14 +210,14 @@ trait ServerCommon extends ScalaModule with BuildInfo {
   trait `tests-common` extends Tests {
 
     val mockitoDeps = Agg(
-      ivy"org.mockito::mockito-scala:1.11.1",
-      ivy"org.mockito::mockito-scala-scalatest:1.11.1"
+      ivy"org.mockito::mockito-scala:1.7.1",
+      ivy"org.mockito::mockito-scala-scalatest:1.7.1"
     )
 
     override def moduleDeps = Seq(common.`test-util`) ++ super.moduleDeps
 
     override def ivyDeps = Agg(
-      ivy"org.scalatest::scalatest:3.0.5",
+      ivy"org.scalatest::scalatest:3.0.8",
       ivy"org.scalacheck::scalacheck:1.14.0",
       ivy"com.spotify:docker-client:8.16.0",
       ivy"com.whisk::docker-testkit-scalatest:0.9.9",
@@ -248,11 +252,15 @@ trait ServerPBCommon extends ServerCommon with ScalaPBModule {
 
 object node extends ServerPBCommon with CVPDockerModule {
 
-  override def scalacOptions = Seq("-Ywarn-unused:imports", "-Xfatal-warnings", "-feature")
+  override def scalacOptions = Seq("-Ywarn-unused:imports", "-deprecation", "-Xfatal-warnings", "-feature")
 
   override def mainClass = Some("io.iohk.node.NodeApp")
 
   override def cvpDockerConfig = CVPDockerConfig(name = "node")
+
+  override def ivyDeps = super.ivyDeps.map { deps =>
+    deps ++ awsS3Deps
+  }
 
   object test extends `tests-common` {
     override def ivyDeps = super.ivyDeps.map { deps =>
