@@ -26,6 +26,7 @@ import SplittedPageInside from './Organisms/SplittedPageInside/SplittedPageInsid
 import WhatYouNeed from './Molecules/WhatYouNeed/WhatYouNeed';
 import { UserContext } from '../providers/userContext';
 import { withRedirector } from '../providers/withRedirector';
+import InteractiveMap from '../common/Organisms/InteractiveMap/InteractiveMap';
 
 // Credentials steps
 const INTRODUCTION_STEP = 0;
@@ -204,12 +205,15 @@ const CredentialsContainer = ({
   };
 
   return (
-    <Credentials
-      getStep={showCongrats ? () => <CongratsStep /> : getStep}
-      changeCurrentCredential={value => setCurrentCredential(value)}
-      availableCredential={currentCredential}
-      showContactButton={showContactButton}
-    />
+    <div>
+      <InteractiveMap mapStep={currentCredential + 1} />
+      <Credentials
+        getStep={showCongrats ? () => <CongratsStep /> : getStep}
+        changeCurrentCredential={value => setCurrentCredential(value)}
+        availableCredential={currentCredential}
+        showContactButton={showContactButton}
+      />
+    </div>
   );
 };
 

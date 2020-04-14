@@ -45,7 +45,7 @@ const IntroductionInformation = ({ nextStep, buttonDisabled, currentCredential }
         {t('credential.introductionInformation.miniText')}
         <em>_____</em>
       </span>
-      <h1>{t('credential.introductionInformation.title')}</h1>
+      <h1>{t(`credential.credentialNames.CredentialType${currentCredential}`)}</h1>
       <h2>{t('credential.introductionInformation.explanation')}</h2>
       <div className="CredentialItemContainer">
         <CredentialItemLanding {...currentCredentialItem[currentCredential]} />
