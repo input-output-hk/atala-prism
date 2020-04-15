@@ -13,3 +13,9 @@ Lastly, to run the server use `node simple_proto_server.js`.
 ### Running the app
 
 For now, the iOS app has a single screen that connects to the server sending a *Token* and receiving a *Issuer*, both are now hardcode, but with differents counters, so the client-server layers are easy to notice.
+
+
+## Proto config
+
+For now due to compilation issues all protos are added to "connector_api.proto"
+Every file is identified by a "// MARK: -" comment at the begining

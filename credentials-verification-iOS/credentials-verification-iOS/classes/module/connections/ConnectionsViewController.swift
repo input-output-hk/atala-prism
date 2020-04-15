@@ -22,6 +22,10 @@ class ConnectionsViewController: ListingBaseViewController {
     lazy var confirmMessageViewController: ConnectionConfirmViewController = {
         ConnectionConfirmViewController.makeThisView()
     }()
+    
+    lazy var confirmProofRequestViewController: ConnectionProofRequestViewController = {
+        ConnectionProofRequestViewController.makeThisView()
+    }()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -68,7 +72,7 @@ class ConnectionsViewController: ListingBaseViewController {
         navBar = NavBarCustomStyle(hasNavBar: true, title: navTitle, hasBackButton: isScanningQr, rightIconName: navIconName, rightIconAction: actionScan)
         NavBarCustom.config(view: self)
     }
-
+    
     func config(isLoading: Bool) {
 
         showLoading(doShow: isLoading)
@@ -143,5 +147,13 @@ class ConnectionsViewController: ListingBaseViewController {
             customPresentViewController(confirmMessageViewController.presentr, viewController: confirmMessageViewController, animated: true)
         }
         confirmMessageViewController.config(delegate: presenterImpl, lead: lead, title: title, logoData: logoData, placeholderNamed: placeholder)
+    }
+
+    func showNewProofRequestMessage(credentials: [Degree], requiered: [String], connection: ConnectionBase, logoData: Data?) {
+
+        if !confirmProofRequestViewController.isBeingPresented {
+            customPresentViewController(confirmProofRequestViewController.presentr, viewController: confirmProofRequestViewController, animated: true)
+        }
+        confirmProofRequestViewController.config(delegate: presenterImpl, connection: connection, credentials: credentials, requiered: requiered, logoData: logoData, placeholderNamed: "ico_placeholder_university")
     }
 }

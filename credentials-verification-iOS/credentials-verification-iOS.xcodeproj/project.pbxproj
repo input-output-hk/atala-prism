@@ -8,24 +8,23 @@
 
 /* Begin PBXBuildFile section */
 		4CBC18384291926687A7EAA9 /* Pods_credentials_verification_iOS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9FE4DE3E1C77A7F27599465B /* Pods_credentials_verification_iOS.framework */; };
+		B32A7B7024326EE300B52586 /* ConnectionProofRequest.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B32A7B6F24326EE300B52586 /* ConnectionProofRequest.storyboard */; };
+		B32A7B72243288A500B52586 /* ConnectionProofRequestViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B32A7B71243288A500B52586 /* ConnectionProofRequestViewController.swift */; };
 		B35181AB24195CAD007CA8F1 /* connector_api.proto in Sources */ = {isa = PBXBuildFile; fileRef = B35181A824195CAC007CA8F1 /* connector_api.proto */; };
 		B35181AC24195CAD007CA8F1 /* connector_models.proto in Sources */ = {isa = PBXBuildFile; fileRef = B35181A924195CAC007CA8F1 /* connector_models.proto */; };
 		B35181AD24195CAD007CA8F1 /* node_models.proto in Sources */ = {isa = PBXBuildFile; fileRef = B35181AA24195CAD007CA8F1 /* node_models.proto */; };
 		B35181B324196689007CA8F1 /* common_models.proto in Sources */ = {isa = PBXBuildFile; fileRef = B35181B224196689007CA8F1 /* common_models.proto */; };
-		B35181B824196898007CA8F1 /* common_models.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = B35181B424196898007CA8F1 /* common_models.pb.swift */; };
-		B35181B924196898007CA8F1 /* connector_models.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = B35181B524196898007CA8F1 /* connector_models.pb.swift */; };
 		B35181BA24196898007CA8F1 /* connector_api.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = B35181B624196898007CA8F1 /* connector_api.pb.swift */; };
 		B35181BB24196898007CA8F1 /* connector_api.grpc.swift in Sources */ = {isa = PBXBuildFile; fileRef = B35181B724196898007CA8F1 /* connector_api.grpc.swift */; };
-		B35181BD24196DA8007CA8F1 /* node_models.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = B35181BC24196DA8007CA8F1 /* node_models.pb.swift */; };
+		B35AE71724351395005619F0 /* ConnectionProofRequestCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B35AE71624351395005619F0 /* ConnectionProofRequestCell.swift */; };
 		B36F27BD2406E2C400FF751B /* About.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B36F27BC2406E2C400FF751B /* About.storyboard */; };
 		B36F27BF2406F37600FF751B /* AboutViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B36F27BE2406F37600FF751B /* AboutViewController.swift */; };
 		B36F27C12406F38C00FF751B /* AboutPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B36F27C02406F38C00FF751B /* AboutPresenter.swift */; };
+		B3A2F623242BDC1700D42637 /* credential_models.proto in Sources */ = {isa = PBXBuildFile; fileRef = B3A2F622242BDC1700D42637 /* credential_models.proto */; };
 		B3E8ADD723EE025C00D63D0A /* MnemonicsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3E8ADD623EE025C00D63D0A /* MnemonicsTests.swift */; };
 		BE1188304FE563D375E1840B /* Pods_credentials_verification_iOSUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C51D0105B7D63E4B8C1E4B7B /* Pods_credentials_verification_iOSUITests.framework */; };
 		C73F1ED22DD26837CFB70DC5 /* Pods_credentials_verification_iOSTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 874D892C1FBD9F2CFC9A1F15 /* Pods_credentials_verification_iOSTests.framework */; };
 		EE22F1EA23A486FA003C4F87 /* wallet.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE22F1E323A486FA003C4F87 /* wallet.pb.swift */; };
-		EE22F1EB23A486FA003C4F87 /* credential.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE22F1E423A486FA003C4F87 /* credential.pb.swift */; };
-		EE22F1EC23A486FA003C4F87 /* credential.proto in Sources */ = {isa = PBXBuildFile; fileRef = EE22F1E523A486FA003C4F87 /* credential.proto */; };
 		EE22F1ED23A486FA003C4F87 /* wallet.proto in Sources */ = {isa = PBXBuildFile; fileRef = EE22F1E623A486FA003C4F87 /* wallet.proto */; };
 		EE22F1F223A4AD2C003C4F87 /* CryptoUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE22F1F123A4AD2C003C4F87 /* CryptoUtils.swift */; };
 		EE48AC022377537200C0A441 /* Tutorial.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EE48AC012377537200C0A441 /* Tutorial.storyboard */; };
@@ -226,25 +225,24 @@
 		9417FE70D7248A15335AFA8F /* Pods-credentials-verification-iOSUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-credentials-verification-iOSUITests.release.xcconfig"; path = "Pods/Target Support Files/Pods-credentials-verification-iOSUITests/Pods-credentials-verification-iOSUITests.release.xcconfig"; sourceTree = "<group>"; };
 		9FE4DE3E1C77A7F27599465B /* Pods_credentials_verification_iOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_credentials_verification_iOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1CBDBC54418D05C10B7AD3F /* Pods-credentials-verification-iOSUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-credentials-verification-iOSUITests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-credentials-verification-iOSUITests/Pods-credentials-verification-iOSUITests.debug.xcconfig"; sourceTree = "<group>"; };
+		B32A7B6F24326EE300B52586 /* ConnectionProofRequest.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = ConnectionProofRequest.storyboard; sourceTree = "<group>"; };
+		B32A7B71243288A500B52586 /* ConnectionProofRequestViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionProofRequestViewController.swift; sourceTree = "<group>"; };
 		B35181A824195CAC007CA8F1 /* connector_api.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.protobuf; path = connector_api.proto; sourceTree = "<group>"; };
 		B35181A924195CAC007CA8F1 /* connector_models.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.protobuf; path = connector_models.proto; sourceTree = "<group>"; };
 		B35181AA24195CAD007CA8F1 /* node_models.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.protobuf; path = node_models.proto; sourceTree = "<group>"; };
 		B35181B224196689007CA8F1 /* common_models.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.protobuf; path = common_models.proto; sourceTree = "<group>"; };
-		B35181B424196898007CA8F1 /* common_models.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = common_models.pb.swift; sourceTree = "<group>"; };
-		B35181B524196898007CA8F1 /* connector_models.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = connector_models.pb.swift; sourceTree = "<group>"; };
 		B35181B624196898007CA8F1 /* connector_api.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = connector_api.pb.swift; sourceTree = "<group>"; };
 		B35181B724196898007CA8F1 /* connector_api.grpc.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = connector_api.grpc.swift; sourceTree = "<group>"; };
-		B35181BC24196DA8007CA8F1 /* node_models.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = node_models.pb.swift; sourceTree = "<group>"; };
+		B35AE71624351395005619F0 /* ConnectionProofRequestCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionProofRequestCell.swift; sourceTree = "<group>"; };
 		B36F27BC2406E2C400FF751B /* About.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = About.storyboard; sourceTree = "<group>"; };
 		B36F27BE2406F37600FF751B /* AboutViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutViewController.swift; sourceTree = "<group>"; };
 		B36F27C02406F38C00FF751B /* AboutPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutPresenter.swift; sourceTree = "<group>"; };
+		B3A2F622242BDC1700D42637 /* credential_models.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.protobuf; path = credential_models.proto; sourceTree = "<group>"; };
 		B3E8ADD523EE025B00D63D0A /* credentials-verification-iOSTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "credentials-verification-iOSTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		B3E8ADD623EE025C00D63D0A /* MnemonicsTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MnemonicsTests.swift; sourceTree = "<group>"; };
 		C51D0105B7D63E4B8C1E4B7B /* Pods_credentials_verification_iOSUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_credentials_verification_iOSUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		E497159BDF935521E81A661D /* Pods-credentials-verification-iOSTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-credentials-verification-iOSTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-credentials-verification-iOSTests/Pods-credentials-verification-iOSTests.release.xcconfig"; sourceTree = "<group>"; };
 		EE22F1E323A486FA003C4F87 /* wallet.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = wallet.pb.swift; sourceTree = "<group>"; };
-		EE22F1E423A486FA003C4F87 /* credential.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = credential.pb.swift; sourceTree = "<group>"; };
-		EE22F1E523A486FA003C4F87 /* credential.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.protobuf; path = credential.proto; sourceTree = "<group>"; };
 		EE22F1E623A486FA003C4F87 /* wallet.proto */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.protobuf; path = wallet.proto; sourceTree = "<group>"; };
 		EE22F1F123A4AD2C003C4F87 /* CryptoUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CryptoUtils.swift; sourceTree = "<group>"; };
 		EE48AC012377537200C0A441 /* Tutorial.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Tutorial.storyboard; sourceTree = "<group>"; };
@@ -591,17 +589,13 @@
 		EE7D49BE2366B5A7007C31A8 /* protobuf */ = {
 			isa = PBXGroup;
 			children = (
-				B35181B424196898007CA8F1 /* common_models.pb.swift */,
 				B35181B224196689007CA8F1 /* common_models.proto */,
 				B35181B624196898007CA8F1 /* connector_api.pb.swift */,
 				B35181B724196898007CA8F1 /* connector_api.grpc.swift */,
 				B35181A824195CAC007CA8F1 /* connector_api.proto */,
-				B35181B524196898007CA8F1 /* connector_models.pb.swift */,
 				B35181A924195CAC007CA8F1 /* connector_models.proto */,
-				B35181BC24196DA8007CA8F1 /* node_models.pb.swift */,
 				B35181AA24195CAD007CA8F1 /* node_models.proto */,
-				EE22F1E423A486FA003C4F87 /* credential.pb.swift */,
-				EE22F1E523A486FA003C4F87 /* credential.proto */,
+				B3A2F622242BDC1700D42637 /* credential_models.proto */,
 				EE22F1E323A486FA003C4F87 /* wallet.pb.swift */,
 				EE22F1E623A486FA003C4F87 /* wallet.proto */,
 				EE7D49C22366B5A7007C31A8 /* utils */,
@@ -968,6 +962,7 @@
 				EE7D4D2E236FB002007C31A8 /* cells */,
 				EE7D4D0E23693596007C31A8 /* ConnectionsPresenter.swift */,
 				EE7D4D0C23693588007C31A8 /* ConnectionsViewController.swift */,
+				B32A7B71243288A500B52586 /* ConnectionProofRequestViewController.swift */,
 			);
 			path = connections;
 			sourceTree = "<group>";
@@ -977,6 +972,7 @@
 			children = (
 				EE7D4D1423693A13007C31A8 /* Connections.storyboard */,
 				EE7D4D2F236FB379007C31A8 /* ConnectionMainViewCell.xib */,
+				B32A7B6F24326EE300B52586 /* ConnectionProofRequest.storyboard */,
 			);
 			path = connections;
 			sourceTree = "<group>";
@@ -1026,6 +1022,7 @@
 			isa = PBXGroup;
 			children = (
 				EE7D4D31236FB3C1007C31A8 /* ConnectionMainViewCell.swift */,
+				B35AE71624351395005619F0 /* ConnectionProofRequestCell.swift */,
 			);
 			path = cells;
 			sourceTree = "<group>";
@@ -1312,6 +1309,7 @@
 				EE71855823831BDB00C58F62 /* ConnectionConfirm.storyboard in Resources */,
 				EE7D4D0A2367631B007C31A8 /* Home.storyboard in Resources */,
 				EE904F202373BA2100EE6344 /* NewDegreeViewCell.xib in Resources */,
+				B32A7B7024326EE300B52586 /* ConnectionProofRequest.storyboard in Resources */,
 				EE7D4CC22366B9C5007C31A8 /* Assets.xcassets in Resources */,
 				EE8FD4EC23726AC900EFF62E /* Wallet.storyboard in Resources */,
 				EEDAF2C32389EC2400121206 /* ConfirmationViewCell.xib in Resources */,
@@ -1452,7 +1450,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its pat\nexport PATH=$PATH:${SRCROOT}/protobuf/utils\nmkdir -p ./protobuf\nprotoc --swift_out=. --swiftgrpc_out=Client=true,Server=false:. ./protobuf/common_models.proto\nprotoc --swift_out=. --swiftgrpc_out=Client=true,Server=false:. ./protobuf/node_models.proto\nprotoc --swift_out=. --swiftgrpc_out=Client=true,Server=false:. ./protobuf/connector_models.proto\nprotoc --swift_out=. --swiftgrpc_out=Client=true,Server=false:. ./protobuf/connector_api.proto\nprotoc --swift_out=. --swiftgrpc_out=Client=true,Server=false:. ./protobuf/wallet.proto\nprotoc --swift_out=. --swiftgrpc_out=Client=true,Server=false:. ./protobuf/credential.proto\n";
+			shellScript = "# Type a script or drag a script file from your workspace to insert its pat\nexport PATH=$PATH:${SRCROOT}/protobuf/utils\nmkdir -p ./protobuf\nprotoc --swift_out=. --swiftgrpc_out=Client=true,Server=false:. ./protobuf/connector_api.proto\nprotoc --swift_out=. --swiftgrpc_out=Client=true,Server=false:. ./protobuf/wallet.proto\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -1497,6 +1495,7 @@
 				EE7D4CFE236759B4007C31A8 /* DashboardPresenter.swift in Sources */,
 				EE48AC252377652F00C0A441 /* TutorialPageView.swift in Sources */,
 				EE48AC172377548700C0A441 /* LoginViewController.swift in Sources */,
+				B35AE71724351395005619F0 /* ConnectionProofRequestCell.swift in Sources */,
 				EE7D4BF82366B9C4007C31A8 /* MainNavPresenter.swift in Sources */,
 				EE48AC0F2377543200C0A441 /* RegisterViewController.swift in Sources */,
 				EE7D4CCD2367368D007C31A8 /* ViewUtils.swift in Sources */,
@@ -1504,15 +1503,16 @@
 				EE7D4CF823673C39007C31A8 /* UIApplication+Extensions.swift in Sources */,
 				B35181BB24196898007CA8F1 /* connector_api.grpc.swift in Sources */,
 				EE71856023839E6A00C58F62 /* CommonViewCell.swift in Sources */,
+				B32A7B72243288A500B52586 /* ConnectionProofRequestViewController.swift in Sources */,
 				EE22F1EA23A486FA003C4F87 /* wallet.pb.swift in Sources */,
 				EE7D4CEB23673C39007C31A8 /* Optional+Extensions.swift in Sources */,
 				EE7185562383089500C58F62 /* ConnectionConfirmViewController.swift in Sources */,
 				EE904F082373AAE000EE6344 /* NewDegreeHeaderViewCell.swift in Sources */,
-				EE22F1EB23A486FA003C4F87 /* credential.pb.swift in Sources */,
 				B36F27BF2406F37600FF751B /* AboutViewController.swift in Sources */,
 				EE7D4C432366B9C4007C31A8 /* Logger.swift in Sources */,
 				B36F27C12406F38C00FF751B /* AboutPresenter.swift in Sources */,
 				EE7D4C452366B9C4007C31A8 /* GeneralUtils.swift in Sources */,
+				B3A2F623242BDC1700D42637 /* credential_models.proto in Sources */,
 				EEE43A65237A60CA00E8E304 /* RegisterSeedView.swift in Sources */,
 				EEDAF2C62389ECDC00121206 /* ConfirmationViewCell.swift in Sources */,
 				EE7185772384F39500C58F62 /* PaddingViewCell.swift in Sources */,
@@ -1525,11 +1525,9 @@
 				EE71857E2384F9FE00C58F62 /* CredentialPayPresenter.swift in Sources */,
 				EE7D4C392366B9C4007C31A8 /* BaseNibLoadingView.swift in Sources */,
 				EE7D4CE823673C39007C31A8 /* LocalizedUI+Extensions.swift in Sources */,
-				B35181BD24196DA8007CA8F1 /* node_models.pb.swift in Sources */,
 				EE7D4CE923673C39007C31A8 /* UITable+Extensions.swift in Sources */,
 				EE8FD4DE23726A1000EFF62E /* ProfileViewController.swift in Sources */,
 				EE7D4CE623673C39007C31A8 /* UISearchBar+Extensions.swift in Sources */,
-				EE22F1EC23A486FA003C4F87 /* credential.proto in Sources */,
 				EE904F112373AB4400EE6344 /* DetailPropertyViewCell.swift in Sources */,
 				EE48AC132377544800C0A441 /* TermsViewController.swift in Sources */,
 				EE7185642384B77600C58F62 /* BrowserPresenter.swift in Sources */,
@@ -1573,7 +1571,6 @@
 				EE7D4D0D23693588007C31A8 /* ConnectionsViewController.swift in Sources */,
 				EE7D4C722366B9C4007C31A8 /* RemoteImages.swift in Sources */,
 				EE7D4C6C2366B9C4007C31A8 /* SharedMemory.swift in Sources */,
-				B35181B924196898007CA8F1 /* connector_models.pb.swift in Sources */,
 				EE7D4BBA2366B9C4007C31A8 /* UserUtils.swift in Sources */,
 				B35181B324196689007CA8F1 /* common_models.proto in Sources */,
 				EE48AC0B2377541000C0A441 /* TutorialViewController.swift in Sources */,
@@ -1584,7 +1581,6 @@
 				EE8FD4E623726A5500EFF62E /* WalletPresenter.swift in Sources */,
 				EE7D4CEC23673C39007C31A8 /* UITextField+Extensions2.swift in Sources */,
 				EE8FD4F02372864900EFF62E /* FakeData.swift in Sources */,
-				B35181B824196898007CA8F1 /* common_models.pb.swift in Sources */,
 				EE71857C2384F9EE00C58F62 /* CredentialPayViewController.swift in Sources */,
 				EE7D4CE723673C39007C31A8 /* UIColor+Extensions.swift in Sources */,
 				EE48AC0D2377542600C0A441 /* RegisterPresenter.swift in Sources */,
@@ -1787,7 +1783,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 16;
+				CURRENT_PROJECT_VERSION = 17;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 556N44M7XA;
 				INFOPLIST_FILE = "credentials-verification-iOS/Info.plist";
@@ -1812,7 +1808,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 16;
+				CURRENT_PROJECT_VERSION = 17;
 				DEVELOPMENT_TEAM = 556N44M7XA;
 				INFOPLIST_FILE = "credentials-verification-iOS/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (

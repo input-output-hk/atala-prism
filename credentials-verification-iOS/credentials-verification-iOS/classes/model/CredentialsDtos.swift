@@ -70,7 +70,7 @@ class Degree: Mappable {
     var productClass: String?
     // Note: Can't store Io_Iohk_Cvp_Credential_Credential because
     // it doesn't implement Mappable.
-    var intCredential: Io_Iohk_Cvp_Credential_Credential?
+    var intCredential: Io_Iohk_Prism_Protos_Credential?
     var isNew: Bool?
     var messageId: String?
 
@@ -92,17 +92,14 @@ class Degree: Mappable {
         productClass <- map["productClass"]
     }
 
-    static func build(_ message: Io_Iohk_Prism_Protos_ReceivedMessage, isNew: Bool) -> Degree? {
-
-        guard let sentCredential = try? Io_Iohk_Cvp_Credential_Credential(serializedData: message.message) else {
-            return nil
-        }
+    static func build(_ sentCredential: Io_Iohk_Prism_Protos_Credential, messageId: String, isNew: Bool) -> Degree? {
+        
         let credential = Mapper<Degree>().map(JSONString: sentCredential.credentialDocument)
 
         credential?.intCredential = sentCredential
         credential?.type = CredentialType(rawValue: sentCredential.typeID)
         credential?.isNew = isNew
-        credential?.messageId = message.id
+        credential?.messageId = messageId
 
 
         return credential

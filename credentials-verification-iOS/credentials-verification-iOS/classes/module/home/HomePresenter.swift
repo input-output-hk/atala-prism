@@ -186,8 +186,12 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
                         let isRejected = user.messagesRejectedIds?.contains(message.id) ?? false
                         let isNew = !(user.messagesAcceptedIds?.contains(message.id) ?? false)
                         if !isRejected {
-                            if let credential = Degree.build(message, isNew: isNew) {
-                                credentials.append(credential)
+                            if let atalaMssg = try? Io_Iohk_Prism_Protos_AtalaMessage(serializedData: message.message) {
+                                if !atalaMssg.issuerSentCredential.credential.typeID.isEmpty {
+                                    if let credential = Degree.build(atalaMssg.issuerSentCredential.credential, messageId: message.id, isNew: isNew) {
+                                        credentials.append(credential)
+                                    }
+                                }
                             }
                         }
                     }
@@ -352,12 +356,14 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
     }
     
     func didSelectRowAt(indexPath: IndexPath) {
-        let rowIndex = indexPath.row
-        guard let cellRow = degreeRows?[rowIndex], let degree = cellRow.value as? Degree else {
-            return
+        if mode == .degrees {
+            let rowIndex = indexPath.row
+            guard let cellRow = degreeRows?[rowIndex], let degree = cellRow.value as? Degree else {
+                return
+            }
+            Tracker.global.trackCredentialNewTapped()
+            startShowingDetails(degree: degree)
         }
-        Tracker.global.trackCredentialNewTapped()
-        startShowingDetails(degree: degree)
     }
 
     func setup(for cell: CommonViewCell) {

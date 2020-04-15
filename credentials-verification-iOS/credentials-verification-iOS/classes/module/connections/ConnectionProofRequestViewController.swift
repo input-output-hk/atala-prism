@@ -1,0 +1,159 @@
+//
+//  ConnectionProofRequestViewController.swift
+//  credentials-verification-iOS
+//
+//  Created by Leandro Pardo on 30/03/2020.
+//  Copyright © 2020 iohk. All rights reserved.
+//
+
+import Presentr
+import UIKit
+
+protocol ConnectionProofRequestPresenterDelegate: class {
+
+    func tappedDeclineAction(for: ConnectionProofRequestViewController)
+    func tappedConfirmAction(for: ConnectionProofRequestViewController)
+}
+
+class ConnectionProofRequestViewController: UIViewController, PresentrDelegate {
+
+    @IBOutlet weak var labelTitle: UILabel!
+    @IBOutlet weak var labelSubtitle: UILabel!
+    @IBOutlet weak var imageLogo: UIImageView!
+    @IBOutlet weak var buttonConfirm: UIButton!
+    @IBOutlet weak var buttonDecline: UIButton!
+    @IBOutlet weak var viewBg: UIView!
+    @IBOutlet weak var tableCredentials: UITableView!
+    @IBOutlet weak var tableHeightCtrt: NSLayoutConstraint!
+    
+    weak var delegate: ConnectionProofRequestPresenterDelegate?
+    var connection: ConnectionBase?
+    var credentials: [Degree] = []
+    var selectedCredentials: [Degree] = []
+    var requiered: [String] = []
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        // Do any additional setup after loading the view.
+
+        viewBg.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_REGULAR)
+        buttonDecline.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_BUTTON, borderWidth: 3, borderColor: UIColor.appRed.cgColor)
+        buttonConfirm.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_BUTTON)
+    }
+
+    static func makeThisView() -> ConnectionProofRequestViewController {
+        let storyboard = UIStoryboard(name: "ConnectionProofRequest", bundle: nil)
+        let viewcontroller = storyboard.instantiateViewController(withIdentifier: "ConnectionProofRequest")
+        return viewcontroller as! ConnectionProofRequestViewController
+    }
+
+    let presentr: Presentr = {
+
+        let presenter = Presentr(presentationType: .alert)
+        presenter.transitionType = TransitionType.coverHorizontalFromRight
+        presenter.dismissOnSwipe = false
+
+        let width = ModalSize.sideMargin(value: 21.0)
+        let height = ModalSize.custom(size: 367)
+        let center = ModalCenterPosition.center
+        presenter.presentationType = .custom(width: width, height: height, center: center)
+        presenter.transitionType = nil
+        presenter.dismissTransitionType = nil
+        presenter.dismissAnimated = true
+
+        return presenter
+    }()
+
+    func config(delegate: ConnectionProofRequestPresenterDelegate?, connection: ConnectionBase, credentials: [Degree], requiered: [String], logoData: Data?, placeholderNamed: String?) {
+
+        self.delegate = delegate
+        self.credentials = credentials
+        self.connection = connection
+        self.requiered = requiered
+        self.labelTitle.text = connection.name
+        self.imageLogo.applyDataImage(data: logoData, placeholderNamed: placeholderNamed)
+        let attrs = [NSAttributedString.Key.font : UIFont.boldSystemFont(ofSize: 16)]
+        let attributedString = NSMutableAttributedString(string:"proof_request_description_first".localize())
+        for credential in requiered {
+            switch CredentialType(rawValue: credential) {
+            case .governmentIssuedId:
+                attributedString.append(NSMutableAttributedString(string:"proof_request_id_credential".localize(), attributes:attrs))
+            case .univerityDegree:
+                attributedString.append(NSMutableAttributedString(string:"proof_request_university_credential".localize(), attributes:attrs))
+            case .proofOfEmployment:
+                attributedString.append(NSMutableAttributedString(string:"proof_request_employment_credential".localize(), attributes:attrs))
+            case .certificatOfInsurance:
+                attributedString.append(NSMutableAttributedString(string:"proof_request_insurance_credential".localize(), attributes:attrs))
+            case .none:
+                print("Undefined credential type")
+            }
+        }
+        labelSubtitle.attributedText = attributedString
+        if credentials.count > 1 {
+            tableHeightCtrt.constant = 80
+        }
+        buttonConfirm.isEnabled = false
+        buttonConfirm.backgroundColor = .appGreyMid
+        tableCredentials.reloadData()
+    }
+
+    // MARK: Component delegates
+
+    @IBAction func actionConfirmButtonTapped(_ sender: Any) {
+        self.dismiss(animated: true, completion: nil)
+        self.delegate?.tappedConfirmAction(for: self)
+    }
+
+    @IBAction func actionDeclineButtonTapped(_ sender: Any) {
+        self.dismiss(animated: true, completion: nil)
+        self.delegate?.tappedDeclineAction(for: self)
+    }
+
+    // MARK: Presentr Delegate
+
+    func presentrShouldDismiss(keyboardShowing: Bool) -> Bool {
+        self.delegate?.tappedDeclineAction(for: self)
+        return false
+    }
+    
+}
+
+extension ConnectionProofRequestViewController: UITableViewDataSource, ConnectionProofRequestCellPresenterDelegate {
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return credentials.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "ConnectionProofRequestCell") as? ConnectionProofRequestCell else  {
+            return UITableViewCell()
+        }
+        cell.config(credential: credentials[indexPath.row])
+        cell.delegate = self
+        return cell
+    }
+    
+    func setup(for cell: ConnectionProofRequestCell) {
+        
+    }
+    
+    func tappedAction(for cell: ConnectionProofRequestCell) {
+        if cell.checkbox.getState() {
+            selectedCredentials.append(cell.credential)
+        } else {
+            selectedCredentials.remove(cell.credential)
+        }
+        var isComplete = true
+        for type in requiered {
+            isComplete = isComplete && selectedCredentials.contains {
+                $0.type?.rawValue == type
+                
+            }
+        }
+        
+        buttonConfirm.isEnabled = isComplete
+        buttonConfirm.backgroundColor = isComplete ? .appRed : .appGreyMid
+    }
+    
+}

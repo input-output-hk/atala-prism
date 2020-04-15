@@ -7,11 +7,11 @@ class ApiParseUtils: NSObject {
         return date.string(withFormat: "MMM dd yyyy")
     }
 
-    static func parseDate(_ intDate: Io_Iohk_Cvp_Credential_Date) -> String {
+    static func parseDate(_ intDate: Io_Iohk_Prism_Protos_Date) -> String {
         return "\(intDate.month)/\(intDate.day)/\(intDate.year)"
     }
 
-    static func parseFullName(_ intSubject: Io_Iohk_Cvp_Credential_SubjectData) -> String {
+    static func parseFullName(_ intSubject: Io_Iohk_Prism_Protos_SubjectData) -> String {
 
         var fullName = ""
         for name in intSubject.names {

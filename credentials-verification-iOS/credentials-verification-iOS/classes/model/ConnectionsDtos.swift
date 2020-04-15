@@ -6,6 +6,7 @@ class ConnectionBase: Mappable {
     var connectionId: String?
     var did: String?
     var name: String?
+    var token: String?
     var logoUrl: String?
     // Note: Don't store LogoData since the logos are stored in
     // their own dictionary and are heavy to store and load.
@@ -22,6 +23,7 @@ class ConnectionBase: Mappable {
         connectionId <- map["connectionId"]
         did <- map["did"]
         name <- map["name"]
+        token <- map["token"]
         logoUrl <- map["logoUrl"]
     }
 }
@@ -33,6 +35,7 @@ class ConnectionMaker {
         if item.hasParticipantInfo {
             let res = build(item.participantInfo)
             res?.connectionId = item.connectionID
+            res?.token = item.token
             return res
         }
         return nil

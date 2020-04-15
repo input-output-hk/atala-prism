@@ -1,6 +1,6 @@
 //
 
-class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegate, ConnectionMainViewCellPresenterDelegate, ConnectionConfirmPresenterDelegate {
+class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegate, ConnectionMainViewCellPresenterDelegate, ConnectionConfirmPresenterDelegate, ConnectionProofRequestPresenterDelegate {
 
     var viewImpl: ConnectionsViewController? {
         return view as? ConnectionsViewController
@@ -21,6 +21,8 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
     var connections: [ConnectionBase]?
 
     var connectionRequest: ConnectionRequest?
+    
+    var detailProofRequestMessageId: String?
 
     // MARK: Modes
 
@@ -121,6 +123,7 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
             return nil
         }, success: {
             self.startListing()
+            self.fetchCredentials()
         }, error: { error in
             self.viewImpl?.showErrorMessage(doShow: true, message: error.localizedDescription)
         })
@@ -240,6 +243,101 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
             self.viewImpl?.showErrorMessage(doShow: true, message: "connections_scan_qr_confirm_error".localize())
         })
     }
+    
+    func fetchCredentials() {
+
+        guard let user = self.sharedMemory.loggedUser else {
+            return
+        }
+
+        // Call the service
+        ApiService.call(async: {
+            do {
+                let responses = try ApiService.global.getCredentials(userIds: user.connectionUserIds?.valuesArray)
+                Logger.d("getCredentials responses: \(responses)")
+
+                var credentials: [Degree] = []
+                var proofRequest: Io_Iohk_Prism_Protos_ProofRequest?
+                // Parse the messages
+                for response in responses {
+                    for message in response.messages {
+                        let isRejected = user.messagesRejectedIds?.contains(message.id) ?? false
+                        let isNew = !(user.messagesAcceptedIds?.contains(message.id) ?? false)
+                        if !isRejected {
+                            if let atalaMssg = try? Io_Iohk_Prism_Protos_AtalaMessage(serializedData: message.message) {
+                                if !atalaMssg.issuerSentCredential.credential.typeID.isEmpty && !isNew {
+                                    if let credential = Degree.build(atalaMssg.issuerSentCredential.credential, messageId: message.id, isNew: isNew) {
+                                        credentials.append(credential)
+                                    }
+                                } else if !atalaMssg.proofRequest.connectionToken.isEmpty && isNew {
+                                    proofRequest = atalaMssg.proofRequest
+                                    self.detailProofRequestMessageId = message.id
+                                }
+                            }
+                        }
+                    }
+                }
+                if proofRequest != nil {
+                    self.askProofRequest(credentials: credentials, proofRequest: proofRequest!)
+                }
+
+            } catch {
+                return error
+            }
+            return nil
+        }, success: {
+            self.startListing()
+        }, error: { error in
+            self.viewImpl?.showErrorMessage(doShow: true, message: error.localizedDescription)
+        })
+    }
+    
+    func askProofRequest(credentials: [Degree], proofRequest: Io_Iohk_Prism_Protos_ProofRequest) {
+        let filteredCredentials = credentials.filter {
+            proofRequest.typeIds.contains($0.type!.rawValue)
+        }
+        let shareConnection = self.connections?.first(where: {
+            $0.token == proofRequest.connectionToken
+        })
+        if !filteredCredentials.isEmpty && shareConnection != nil {
+            DispatchQueue.main.async {
+                self.viewImpl?.showNewProofRequestMessage(credentials: filteredCredentials, requiered: proofRequest.typeIds, connection: shareConnection!, logoData: shareConnection?.logoData)
+            }
+        }
+    }
+    
+    private func shareCredentials(connection: ConnectionBase, credentials: [Degree]) {
+
+        Tracker.global.trackCredentialShareCompleted()
+        viewImpl?.config(isLoading: true)
+
+        // Call the service
+        ApiService.call(async: {
+            do {
+                if let connId = connection.connectionId, let userId = self.sharedMemory.loggedUser?.connectionUserIds?[connId] {
+                
+                let responses = try ApiService.global.shareCredentials(userId: userId, connectionId: connId, degrees: credentials)
+                Logger.d("shareCredential response: \(responses)")
+                } else {
+                    return nil
+                }
+
+            } catch {
+                return error
+            }
+            return nil
+        }, success: {
+            self.viewImpl?.config(isLoading: false)
+            let actions = [UIAlertAction(title: "ok".localize(), style: .default, handler: { _ in
+                self.tappedBackButton()
+                self.actionPullToRefresh()
+            })]
+            self.viewImpl?.showSuccessMessage(doShow: true, message: "home_detail_share_success".localize(), actions: actions)
+        }, error: { error in
+            self.viewImpl?.config(isLoading: false)
+            self.viewImpl?.showErrorMessage(doShow: true, message: error.localizedDescription)
+        })
+    }
 
     // MARK: Table
 
@@ -280,5 +378,18 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
 
         Tracker.global.trackConnectionAccept()
         confirmQrCode()
+    }
+
+    // MARK: ConnectionProofRequestPresenterDelegate
+    
+    func tappedDeclineAction(for: ConnectionProofRequestViewController) {
+        sharedMemory.loggedUser?.messagesRejectedIds?.append(detailProofRequestMessageId!)
+        sharedMemory.loggedUser = sharedMemory.loggedUser
+    }
+    
+    func tappedConfirmAction(for vc: ConnectionProofRequestViewController) {
+        sharedMemory.loggedUser?.messagesAcceptedIds?.append(detailProofRequestMessageId!)
+        sharedMemory.loggedUser = sharedMemory.loggedUser
+        shareCredentials(connection: vc.connection!, credentials: vc.selectedCredentials)
     }
 }

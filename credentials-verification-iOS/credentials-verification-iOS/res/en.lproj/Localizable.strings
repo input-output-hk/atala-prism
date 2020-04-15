@@ -214,3 +214,15 @@
 "about_powered_by" = " powered by ";
 "about_atala" = "Atala";
 "about_copyright" = "© 2020 Atala";
+
+// <!-- Proof Requests -->
+"proof_request_description_first"= "Want you to share the following credentials with them:";
+"proof_request_id_credential"= "\n• ID Credential ";
+"proof_request_university_credential"= "\n• University Credential ";
+"proof_request_employment_credential"= "\n• Employment Credential ";
+"proof_request_insurance_credential"= "\n• Insurance Credential ";
+"proof_request_select_credential"= "Select Crendential:";
+"proof_request_cancel"= "Cancel";
+"proof_request_share"= "Share";
+"proof_request_"= "";
+"proof_request_"= "";

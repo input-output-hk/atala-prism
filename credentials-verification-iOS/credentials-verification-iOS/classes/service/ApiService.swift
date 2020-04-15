@@ -102,6 +102,23 @@ class ApiService: NSObject {
         return responseList
     }
 
+    func shareCredentials(userId: String, connectionId: String, degrees: [Degree]) throws -> [Io_Iohk_Prism_Protos_SendMessageResponse] {
+
+        
+
+        var responseList: [Io_Iohk_Prism_Protos_SendMessageResponse] = []
+
+        for i in 0 ..< (degrees).count {
+            let messageData = try? degrees[i].intCredential?.serializedData()
+            let response = try service.sendMessage(Io_Iohk_Prism_Protos_SendMessageRequest.with {
+                $0.message = messageData!
+                $0.connectionID = connectionId
+            }, metadata: makeMeta(userId))
+            responseList.append(response)
+        }
+        return responseList
+    }
+
     // MARK: Payments
 
     func getPaymentToken() throws -> Io_Iohk_Prism_Protos_GetBraintreePaymentsConfigResponse {
