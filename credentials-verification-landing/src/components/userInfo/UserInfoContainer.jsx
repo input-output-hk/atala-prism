@@ -63,7 +63,7 @@ const UserInfoContainer = ({ redirector: { redirectToCredentials } }) => {
   };
 
   return (
-    <div>
+    <div className="MainUserInfo">
       <IdentityVerifierModal
         showModal={showModal}
         onOk={acceptIdentity}

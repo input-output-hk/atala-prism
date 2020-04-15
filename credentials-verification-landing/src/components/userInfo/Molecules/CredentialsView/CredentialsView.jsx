@@ -9,7 +9,6 @@ const CredentialsView = () => {
     <div className="CredentialsView">
       <div className="CredentialsViewIntro">
         <h2>{t('landing.credentialsView.title')}</h2>
-        <p>{t('landing.credentialsView.subtitle')}</p>
       </div>
       <CredentialSummary
         credentialText={t('credential.credentialNames.CredentialType0')}

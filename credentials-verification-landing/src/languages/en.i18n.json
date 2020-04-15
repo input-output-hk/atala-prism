@@ -561,10 +561,10 @@
   },
   "credential": {
     "backHome": "Back Home",
-    "GOVERNMENT_ISSUED_DIGITAL_IDENTITY": "1. Government identity credential",
-    "UNIVERSITY_DEGREE": "2. University degree credential",
-    "PROOF_OF_EMPLOYMENT": "3. Employment credential",
-    "INSURANCE_POLICY": "4. Insurance policy credential",
+    "GOVERNMENT_ISSUED_DIGITAL_IDENTITY": "Government ID",
+    "UNIVERSITY_DEGREE": "University Degree",
+    "PROOF_OF_EMPLOYMENT": "Proof of Employment",
+    "INSURANCE_POLICY": "Health Insurance",
     "createdCredential": {
       "title": "This is your credential!"
     },
@@ -593,11 +593,14 @@
       }
     },
     "contactInformation": {
-      "congrats": "Congrats, you received all the credentials!",
-      "title": "We love to",
-      "title2": "hear your feedback ",
+      "congrats": "Start by filling out this form and we'll be in touch.",
+      "title": "Let's move forward together.",
+      "title2": "forward together.",
+      "emailSuscription": "Stay up to date on the latest announcements and products with just your email",
+      "termsConditions": "By submitting this form, I agree with Atala Prism’s Privacy Policy.",
       "send": "Send",
-      "consent": "Yes, I consent to being contacted…",
+      "consent": "Yes, I would like to subscribe to updates from Atala Prism.",
+      "consent2": "Yes, I agree.",
       "form": {
         "fullName": "Full Name",
         "email": "E-mail",
@@ -626,7 +629,7 @@
       "congrats": "Congrats! You have all the Credentials."
     },
     "sendCredentials": {
-      "title": "Share your Credential ID",
+      "title": "Share your Credentials",
       "explanation": "To apply for your ",
       "explanation2": " you must share your Government Credential ID",
       "explanation3": " and your ",
@@ -637,10 +640,10 @@
       "checkHome2": "to see your Credentials.",
       "openCredentialID": "Open the ",
       "openCredentialID2": " Detail.",
-      "share": "Select",
-      "share2": "to share your Credential with us.",
+      "share": "You will receive a Proof Request on",
+      "share2": "Connections.",
       "optionalOpen": "Do the same with the ",
-      "governmentCredentialId": "Government Credential ID",
+      "governmentCredentialId": "Select Government Credential ID and share.",
       "1": "University degree",
       "2": "Proof of Employment",
       "3": "Certificate of Insurance"
@@ -653,10 +656,10 @@
       "issuingAuthority": "Issuing Authority"
     },
     "credentialNames": {
-      "CredentialType0": "Government Issued Digital Identity",
+      "CredentialType0": "Government ID",
       "CredentialType1": "University Degree",
       "CredentialType2": "Proof of Employment",
-      "CredentialType3": "Certificate of insurance"
+      "CredentialType3": "Health Insurance"
     },
     "credentialIssuers": {
       "CredentialType0": "Department of Interior, Republic of Redland",
@@ -671,7 +674,7 @@
       "CredentialType3": "Use this Credential to easily apply for a mortgage."
     },
     "QRCard": {
-      "noAppYet": "You don't have the application?",
+      "noAppYet": "Don't have the application?",
       "downloadIt": "Download it from your store",
       "appStoreLogo": "App Store Logo",
       "googlePlayLogo": "Google Play Logo"

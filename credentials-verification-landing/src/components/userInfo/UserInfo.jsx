@@ -14,7 +14,7 @@ const UserInfo = ({ redirector: { redirectToLanding }, getStep }) => {
   return (
     <div className="CredentialContainer">
       <div className="LogoContent">
-        <img src="images/atala-logo.svg" alt={t('atalaLogo')} />
+        <img src="images/logo-atala-prism.svg" alt={t('atalaLogo')} />
       </div>
       <div className="CredentialStepContent">
         <Row>
@@ -28,6 +28,9 @@ const UserInfo = ({ redirector: { redirectToLanding }, getStep }) => {
           />
         </Row>
         {getStep()}
+      </div>
+      <div className="LogoContent">
+        <img src="images/logo-cardano.svg" alt={t('atalaLogo')} />
       </div>
     </div>
   );

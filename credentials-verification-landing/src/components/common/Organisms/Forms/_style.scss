@@ -5,10 +5,9 @@
     margin-bottom: 1em;
   }
   .ant-form-item-label {
-    line-height: 23px;
+    line-height: 21px;
     label {
       @include primary-text($label, $secondary-color);
-      @include letter-spacing();
     }
   }
 

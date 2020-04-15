@@ -21,21 +21,21 @@ const FindCredential = ({ redirector: { redirectToUserInfo } }) => {
       credentialDescription: t('credential.credentialDescription.CredentialType0')
     },
     {
-      theme: 'theme-credential-2',
+      theme: 'theme-credential-1',
       credentialImage: 'images/icon-credential-university.svg',
       credentialName: t('credential.credentialNames.CredentialType1'),
       credentialIssuer: t('credential.credentialIssuers.CredentialType1'),
       credentialDescription: t('credential.credentialDescription.CredentialType1')
     },
     {
-      theme: 'theme-credential-3',
+      theme: 'theme-credential-1',
       credentialImage: 'images/icon-credential-employment.svg',
       credentialName: t('credential.credentialNames.CredentialType2'),
       credentialIssuer: t('credential.credentialIssuers.CredentialType2'),
       credentialDescription: t('credential.credentialDescription.CredentialType2')
     },
     {
-      theme: 'theme-credential-4',
+      theme: 'theme-credential-1',
       credentialImage: 'images/icon-credential-insurance.svg',
       credentialName: t('credential.credentialNames.CredentialType3'),
       credentialIssuer: t('credential.credentialIssuers.CredentialType3'),

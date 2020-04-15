@@ -1,5 +1,8 @@
 import React, { Component } from 'react';
 import { AtalaPrismDemo } from 'atala-prism-demo';
+import atalaLogo from '../../../../images/logo-atala-prism.svg';
+import cardanoLogo from '../../../../images/logo-cardano.svg';
+import './_style.scss';
 
 class InteractiveMap extends Component {
   constructor(props) {
@@ -9,7 +12,7 @@ class InteractiveMap extends Component {
 
   componentDidMount() {
     window.addEventListener('click', () => {
-        this.setMapStep();
+      this.setMapStep();
     });
   }
 
@@ -24,8 +27,10 @@ class InteractiveMap extends Component {
 
   render() {
     return (
-      <div>
+      <div className="MapContainer">
+        <img src={atalaLogo} alt="Atala" className="AtalaLogo" />
         <AtalaPrismDemo ref="demo" />
+        <img src={cardanoLogo} alt="Cardano" className="CardanoLogo" />
       </div>
     );
   }

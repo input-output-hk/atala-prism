@@ -42,15 +42,15 @@ const ContactContainer = ({ api }) => {
   return (
     <div className="CredentialContainer">
       <div className="LogoContent">
-        <img src="images/atala-logo.svg" alt={t('atalaLogo')} />
+        <img src="images/logo-atala-prism.svg" alt={t('atalaLogo')} />
       </div>
       <div className="CredentialStepContent">
         <Row className="CredentialsForm">
-          <Col xs={24} lg={14}>
+          <Col xs={24} lg={13}>
             <div className="TitleContent">
-              <p>{t('credential.contactInformation.congrats')}</p>
               <h1>{t('credential.contactInformation.title')}</h1>
-              <h1>{t('credential.contactInformation.title2')}</h1>
+              <p>{t('credential.contactInformation.congrats')}</p>
+              <img src="images/icon-decorative.svg" className="IconDecorative" alt={t('atalaLogo')} />
             </div>
             <div className="Form">
               <ContactForm
@@ -60,10 +60,13 @@ const ContactContainer = ({ api }) => {
               />
             </div>
           </Col>
-          <Col xs={24} lg={10} className="ImageSide">
+          <Col xs={24} lg={11} className="ImageSide">
             <img src="images/credentials-phone-form.png" alt={t('atalaLogo')} />
           </Col>
         </Row>
+      </div>
+      <div className="LogoContent">
+        <img src="images/logo-cardano.svg" alt={t('atalaLogo')} />
       </div>
     </div>
   );

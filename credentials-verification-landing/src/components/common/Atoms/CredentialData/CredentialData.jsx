@@ -27,14 +27,14 @@ const CredentialData = ({
       )
     );
   return (
-    <Col lg={12} xs={24} className={credentialTemplateClassName}>
+    <div className={credentialTemplateClassName}>
       <div className={credentialHeaderClassName}>
         {iconLeft && <img className="IconUniversity" src={iconLeft} alt={iconAlt} />}
         <CellRenderer componentName={componentName} {...cellTitle} />
         {iconRight && <img className="IconUniversity" src={iconRight} alt={iconAlt} />}
       </div>
       <div className={credentialContentClassName}>{CellsRenderer(cellList)}</div>
-    </Col>
+    </div>
   );
 };
 

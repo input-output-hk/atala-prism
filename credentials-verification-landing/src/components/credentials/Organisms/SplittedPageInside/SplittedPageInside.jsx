@@ -8,10 +8,10 @@ const SplittedPageInside = ({ renderLeft, renderRight }) => {
   return (
     <div className="SplittedPageInsideContent">
       <Row>
-        <Col xs={24} lg={14}>
+        <Col xs={24} lg={24}>
           {renderLeft()}
         </Col>
-        <Col xs={24} lg={10} className="RightSide">
+        <Col xs={24} lg={24} className="RightSide">
           {renderRight()}
         </Col>
       </Row>

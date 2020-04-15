@@ -1,68 +1,105 @@
 @import '../../css/_general_styling';
 
-.CredentialsForm {
-  padding: 2.5em 8em;
+.CredentialStepContent {
+  width: 100%;
 
-  .TitleContent {
-    margin-bottom: 2em;
-    p {
-      @include primary-text($body, $secondary-color);
-      margin-bottom: 1em;
-    }
-    h1 {
-      @include secondary-text($large-title, $secondary-color);
-      line-height: 42px;
-    }
-  }
+  .CredentialsForm {
+    padding-left: 15em;
 
-  .Form {
-    .contactInformation {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-
-      button {
-        margin: 1em 0;
+    .TitleContent {
+      margin-bottom: 2em;
+      position: relative;
+      h1 {
+        @include secondary-text($large-title, $secondary-color);
+        line-height: 42px;
       }
+      p {
+        @include primary-text($body, $secondary-color);
+        margin-top: 1em;
+      }
+      .IconDecorative {
+        position: absolute;
+        left: -50px;
+        top: 110px;
+        width: 15px;
+      }
+    }
 
-      .ant-form {
-        width: 100%;
-        .itemFormInfo {
-          width: 48%;
-          margin-bottom: 2em;
+    .Form {
+      .contactInformation {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
 
-          &:last-child {
-            width: 100%;
+        p {
+          @include primary-text($label, $secondary-color);
+          margin-bottom: 0.5em;
+        }
+
+        hr {
+          border: none;
+          border-top: 1px solid $medium-grey;
+          width: 100%;
+          margin-bottom: 1em;
+        }
+
+        .FAQContainer {
+          background: $surface;
+          padding: 1em;
+          width: 100%;
+          margin-bottom: 1em;
+          border-radius: 4px;
+          p {
+            margin-bottom: 0;
+          }
+          a {
+            color: $primary-color;
+            font-weight: 600;
+            text-decoration: underline;
+          }
+        }
+
+        button {
+          margin: 1em 0;
+        }
+
+        .ant-form {
+          width: 100%;
+          .itemFormInfo {
+            width: 48%;
+            margin-bottom: 1.5em;
+
+            &:last-child {
+              width: 100%;
+            }
+          }
+        }
+
+        .ant-checkbox-wrapper {
+          margin-bottom: 1em;
+          span {
+            @include secondary-text($label, $secondary-color);
+          }
+
+          .ant-checkbox-checked .ant-checkbox-inner {
+            background-color: $primary-color;
+            border-color: $primary-color;
+          }
+
+          .ant-checkbox-wrapper:hover .ant-checkbox-inner,
+          .ant-checkbox:hover .ant-checkbox-inner,
+          .ant-checkbox-input:focus + .ant-checkbox-inner,
+          .ant-checkbox-checked::after {
+            border-color: $primary-color;
           }
         }
       }
-
-      .ant-checkbox-wrapper {
-        margin-bottom: 1em;
-        span {
-          @include secondary-text($label, $secondary-color);
-        }
-
-        .ant-checkbox-checked .ant-checkbox-inner {
-          background-color: $primary-color;
-          border-color: $primary-color;
-        }
-
-        .ant-checkbox-wrapper:hover .ant-checkbox-inner,
-        .ant-checkbox:hover .ant-checkbox-inner,
-        .ant-checkbox-input:focus + .ant-checkbox-inner,
-        .ant-checkbox-checked::after {
-          border-color: $primary-color;
-        }
-      }
     }
-  }
 
-  .ImageSide {
-    display: flex;
-    justify-content: flex-end;
-    img {
-      width: 75%;
+    .ImageSide {
+      display: flex;
+      justify-content: center;
+      padding-top: 4em;
     }
   }
 }

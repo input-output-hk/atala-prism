@@ -17,21 +17,21 @@ const IntroductionInformation = ({ nextStep, buttonDisabled, currentCredential }
       credentialDescription: t('credential.credentialDescription.CredentialType0')
     },
     1: {
-      theme: 'theme-credential-2',
+      theme: 'theme-credential-1',
       credentialImage: 'images/icon-credential-university.svg',
       credentialName: t('credential.credentialNames.CredentialType1'),
       credentialIssuer: t('credential.credentialIssuers.CredentialType1'),
       credentialDescription: t('credential.credentialDescription.CredentialType1')
     },
     2: {
-      theme: 'theme-credential-3',
+      theme: 'theme-credential-1',
       credentialImage: 'images/icon-credential-employment.svg',
       credentialName: t('credential.credentialNames.CredentialType2'),
       credentialIssuer: t('credential.credentialIssuers.CredentialType2'),
       credentialDescription: t('credential.credentialDescription.CredentialType2')
     },
     3: {
-      theme: 'theme-credential-4',
+      theme: 'theme-credential-1',
       credentialImage: 'images/icon-credential-insurance.svg',
       credentialName: t('credential.credentialNames.CredentialType3'),
       credentialIssuer: t('credential.credentialIssuers.CredentialType3'),
@@ -41,12 +41,7 @@ const IntroductionInformation = ({ nextStep, buttonDisabled, currentCredential }
 
   return (
     <div className="IntroductionInformation">
-      <span className="MiniDetailText">
-        {t('credential.introductionInformation.miniText')}
-        <em>_____</em>
-      </span>
       <h1>{t(`credential.credentialNames.CredentialType${currentCredential}`)}</h1>
-      <h2>{t('credential.introductionInformation.explanation')}</h2>
       <div className="CredentialItemContainer">
         <CredentialItemLanding {...currentCredentialItem[currentCredential]} />
       </div>

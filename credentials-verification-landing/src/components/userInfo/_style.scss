@@ -1,6 +1,9 @@
 @import '../../css/_general_styling';
 
-.FirstStep{
+.MainUserInfo {
+  background: $light-background;
+  .FirstStep {
     display: flex;
-    padding: 1em 2em;
+    padding: 0 2em;
+  }
 }

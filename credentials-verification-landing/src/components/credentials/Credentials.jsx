@@ -7,6 +7,7 @@ import CredentialsList from './Organisms/CredentialList/CredentialsList';
 import { withRedirector } from '../providers/withRedirector';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 import { LEFT } from '../../helpers/constants';
+import buttonReset from '../../images/icon-reset.svg';
 
 const Credentials = ({
   redirector: { redirectToLanding, redirectToContact },
@@ -28,18 +29,18 @@ const Credentials = ({
 
   return (
     <div className="CredentialContainer">
-      <div className="LogoContent">
-        <img src="images/atala-logo.svg" alt={t('atalaLogo')} />
-      </div>
       <div className="CredentialStepContent">
-        <Row>
+        <Row className="ControlButtons">
+          <button>
+            <img src={buttonReset} alt="ButtonReset" className="ButtonReset" />
+          </button>
+          <hr />
           <CustomButton
             buttonProps={{
               onClick: redirectToLanding,
-              className: 'theme-link'
+              className: 'theme-primary'
             }}
-            icon={{ icon: <Icon type="left" />, side: LEFT }}
-            buttonText={t('credential.backHome')}
+            icon={{ icon: <Icon type="close" />, side: LEFT }}
           />
         </Row>
         <SplittedPage renderLeft={credentialsRenderer} renderRight={getStep} />

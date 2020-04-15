@@ -12,9 +12,18 @@ const ContactInformation = ({ submit, contactInfoRef, onConsent }) => {
   return (
     <div className="contactInformation">
       <ContactInformationForm ref={contactInfoRef} />
+      <p>{t('credential.contactInformation.emailSuscription')}</p>
       <Checkbox onChange={event => onConsent(event.target.checked)}>
         {t('credential.contactInformation.consent')}
       </Checkbox>
+      <hr></hr>
+      <p>{t('credential.contactInformation.termsConditions')}</p>
+      <Checkbox onChange={event => onConsent(event.target.checked)}>
+        {t('credential.contactInformation.consent2')}
+      </Checkbox>
+      <div className="FAQContainer">
+        <p>Check out our <a href="#">FAQs</a> for answers to any other questions.</p>
+      </div>
       <CustomButton
         buttonProps={{
           onClick: submit,

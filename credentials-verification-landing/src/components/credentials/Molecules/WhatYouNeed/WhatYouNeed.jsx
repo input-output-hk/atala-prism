@@ -41,8 +41,10 @@ const WhatYouNeed = ({ currentCredential }) => {
   ));
   return (
     <div className="WhatYouNeed">
-      <h3>{t('landing.WhatYouNeed.Title')}</h3>
-      <div className="WhatYouNeedContainer">{needItems}</div>
+      <div className="WhatYouNeedContainer">
+        <h3>{t('landing.WhatYouNeed.Title')}</h3>
+        {needItems}
+      </div>
     </div>
   );
 };

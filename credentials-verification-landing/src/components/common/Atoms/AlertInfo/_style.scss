@@ -5,9 +5,9 @@
   border-radius: 2px;
   padding: 1em;
   margin-bottom: 1.5em;
-  margin-top: 2em;
+  margin-top: 1em;
 
   p {
-    @include primary-text($body, $primary-color);
+    @include primary-text($label, $primary-color);
   }
 }

@@ -12,10 +12,10 @@ const SplittedPage = ({ onMount, renderLeft, renderRight }) => {
   return (
     <div className="SplittedPageContent">
       <Row>
-        <Col xs={24} lg={7}>
+        <Col xs={24} lg={10}>
           {renderLeft()}
         </Col>
-        <Col xs={24} lg={17}>
+        <Col xs={24} lg={14}>
           {renderRight()}
         </Col>
       </Row>

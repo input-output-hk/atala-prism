@@ -205,7 +205,7 @@ const CredentialsContainer = ({
   };
 
   return (
-    <div>
+    <div className="InteractiveDemoContainer">
       <InteractiveMap mapStep={currentCredential + 1} />
       <Credentials
         getStep={showCongrats ? () => <CongratsStep /> : getStep}

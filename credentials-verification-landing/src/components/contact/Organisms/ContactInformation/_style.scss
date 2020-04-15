@@ -1,16 +1,10 @@
 @import '../../../../css/_general_styling';
 
 .PersonalInformation {
-  margin: 0 2em;
-  padding-left: 3em;
+  padding: 0 3em;
 
   h1 {
     @include secondary-text($h1, $secondary-color);
     margin-bottom: 0.25em;
-  }
-
-  h2 {
-    @include primary-text($h3, $dark-grey);
-    margin-bottom: 1.5em;
   }
 }

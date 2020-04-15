@@ -2,7 +2,6 @@
 
 .CredentialItemLanding {
   @include container();
-  width: 430px;
   padding: 0;
   display: flex;
   flex-flow: column;
@@ -17,21 +16,23 @@
     height: 100%;
 
     img {
-      margin-left: 0.5em;
+      width: inherit;
+      height: 30px;
     }
 
     .CredentialDescription {
-      margin-left: 1.5em;
+      margin-left: 1em;
       span {
         @include primary-text($explain, $grey);
         text-transform: uppercase;
         letter-spacing: 1px;
       }
       h3 {
-        @include secondary-text($h3, $black);
+        @include primary-text($body, $black);
+        font-weight: 600;
       }
       p {
-        @include primary-text($body, $black);
+        @include primary-text($label, $black);
         margin-bottom: 1em;
       }
     }

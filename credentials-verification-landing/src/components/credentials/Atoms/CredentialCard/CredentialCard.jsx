@@ -11,8 +11,6 @@ const CredentialCard = ({ icon, alt, credential, authority }) => {
       <div className="credentialCardContent">
         <span>{t('credential.CredentialCard.credential')}</span>
         <h3>{credential}</h3>
-        <span>{t('credential.CredentialCard.issuingAuthority')}</span>
-        <h3>{authority}</h3>
       </div>
     </div>
   );

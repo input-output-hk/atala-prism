@@ -6,12 +6,12 @@
 }
 
 html {
-   /* background: transparent;  */
-   background: #fff;
+  /* background: transparent;  */
+  background: #fff;
 }
 
 .loaded {
-  opacity: 0.0;
+  opacity: 0;
   filter: blur(2ex);
   transition: opacity 3s, filter 3s, visibility 3s;
   visibility: hidden;
@@ -20,11 +20,26 @@ html {
 canvas {
   width: 100%;
   height: 100%;
-  position: absolute;  
+  position: absolute;
 }
 
 .atala-prism-demo-root {
   height: 100%;
   width: 100%;
   /* position: relative; */
+}
+
+.AtalaLogo {
+  left: 2em;
+  top: 2em;
+  z-index: 50;
+  position: absolute;
+  width: 150px;
+}
+
+.CardanoLogo {
+  left: 2em;
+  bottom: 2em;
+  z-index: 50;
+  position: absolute;
 }

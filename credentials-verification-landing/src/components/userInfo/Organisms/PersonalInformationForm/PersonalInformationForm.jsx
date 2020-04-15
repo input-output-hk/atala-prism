@@ -17,7 +17,7 @@ const getInput = (key, t) => ({
   label: t(`credential.personalInformation.form.${key}`),
   key,
   className: 'itemFormInfo',
-  input: <Input size="large" />
+  input: <Input />
 });
 
 const TemplateForm = React.forwardRef((_props, ref) => {
@@ -46,7 +46,7 @@ const TemplateForm = React.forwardRef((_props, ref) => {
       label: t('credential.personalInformation.form.dateOfBirth'),
       key: 'dateOfBirth',
       className: 'DatePickerContainer',
-      input: <DatePicker allowClear={false} size="large" locale={locale} />
+      input: <DatePicker allowClear={false} locale={locale} />
     }
   ];
 

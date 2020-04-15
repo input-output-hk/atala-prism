@@ -523,7 +523,7 @@
       "finished": "Got it! It's done!"
     },
     "QRCard": {
-      "noAppYet": "You don't have the application?",
+      "noAppYet": "Don't have the application?",
       "downloadIt": "Download it from your store",
       "appStoreLogo": "App Store Logo",
       "googlePlayLogo": "Google Play Logo"

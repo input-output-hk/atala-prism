@@ -23,7 +23,7 @@ const TemplateForm = React.forwardRef((_props, ref) => {
       label: t(`credential.contactInformation.form.${key}`),
       key,
       className: 'itemFormInfo',
-      input: <Input size="large" placeholder="..." {...inputProps} />
+      input: <Input placeholder="..." {...inputProps} />
     };
   };
 

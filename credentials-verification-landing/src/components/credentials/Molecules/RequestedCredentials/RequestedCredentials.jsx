@@ -43,11 +43,9 @@ const RequestedCredentials = ({ currentCredential }) => {
     ));
 
   return (
-    <div>
+    <div className="RequestedCredentialsContent">
       <div className="RequestedCredentialsTitle">
-        <h3>
-          <strong>{t('credential.requestedCredentials.title')}</strong>
-        </h3>
+        <h3>{t('credential.requestedCredentials.title')}</h3>
       </div>
       {requestedCredentials(currentCredential)}
     </div>
