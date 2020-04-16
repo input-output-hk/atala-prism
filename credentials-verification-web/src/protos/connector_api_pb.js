@@ -799,9 +799,12 @@ proto.io.iohk.prism.protos.GetConnectionByTokenRequest.prototype.getToken = func
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.GetConnectionByTokenRequest} returns this
+ */
 proto.io.iohk.prism.protos.GetConnectionByTokenRequest.prototype.setToken = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -929,17 +932,21 @@ proto.io.iohk.prism.protos.GetConnectionByTokenResponse.prototype.getConnection 
 };
 
 
-/** @param {?proto.io.iohk.prism.protos.Connection|undefined} value */
+/**
+ * @param {?proto.io.iohk.prism.protos.Connection|undefined} value
+ * @return {!proto.io.iohk.prism.protos.GetConnectionByTokenResponse} returns this
+*/
 proto.io.iohk.prism.protos.GetConnectionByTokenResponse.prototype.setConnection = function(value) {
-  jspb.Message.setWrapperField(this, 1, value);
+  return jspb.Message.setWrapperField(this, 1, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.GetConnectionByTokenResponse} returns this
  */
 proto.io.iohk.prism.protos.GetConnectionByTokenResponse.prototype.clearConnection = function() {
-  this.setConnection(undefined);
+  return this.setConnection(undefined);
 };
 
 
@@ -1085,9 +1092,12 @@ proto.io.iohk.prism.protos.GetConnectionsPaginatedRequest.prototype.getLastseenc
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.GetConnectionsPaginatedRequest} returns this
+ */
 proto.io.iohk.prism.protos.GetConnectionsPaginatedRequest.prototype.setLastseenconnectionid = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -1100,9 +1110,12 @@ proto.io.iohk.prism.protos.GetConnectionsPaginatedRequest.prototype.getLimit = f
 };
 
 
-/** @param {number} value */
+/**
+ * @param {number} value
+ * @return {!proto.io.iohk.prism.protos.GetConnectionsPaginatedRequest} returns this
+ */
 proto.io.iohk.prism.protos.GetConnectionsPaginatedRequest.prototype.setLimit = function(value) {
-  jspb.Message.setProto3IntField(this, 2, value);
+  return jspb.Message.setProto3IntField(this, 2, value);
 };
 
 
@@ -1238,9 +1251,12 @@ proto.io.iohk.prism.protos.GetConnectionsPaginatedResponse.prototype.getConnecti
 };
 
 
-/** @param {!Array<!proto.io.iohk.prism.protos.ConnectionInfo>} value */
+/**
+ * @param {!Array<!proto.io.iohk.prism.protos.ConnectionInfo>} value
+ * @return {!proto.io.iohk.prism.protos.GetConnectionsPaginatedResponse} returns this
+*/
 proto.io.iohk.prism.protos.GetConnectionsPaginatedResponse.prototype.setConnectionsList = function(value) {
-  jspb.Message.setRepeatedWrapperField(this, 1, value);
+  return jspb.Message.setRepeatedWrapperField(this, 1, value);
 };
 
 
@@ -1256,9 +1272,10 @@ proto.io.iohk.prism.protos.GetConnectionsPaginatedResponse.prototype.addConnecti
 
 /**
  * Clears the list making it empty but non-null.
+ * @return {!proto.io.iohk.prism.protos.GetConnectionsPaginatedResponse} returns this
  */
 proto.io.iohk.prism.protos.GetConnectionsPaginatedResponse.prototype.clearConnectionsList = function() {
-  this.setConnectionsList([]);
+  return this.setConnectionsList([]);
 };
 
 
@@ -1383,9 +1400,12 @@ proto.io.iohk.prism.protos.GetConnectionTokenInfoRequest.prototype.getToken = fu
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.GetConnectionTokenInfoRequest} returns this
+ */
 proto.io.iohk.prism.protos.GetConnectionTokenInfoRequest.prototype.setToken = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -1513,17 +1533,21 @@ proto.io.iohk.prism.protos.GetConnectionTokenInfoResponse.prototype.getCreator =
 };
 
 
-/** @param {?proto.io.iohk.prism.protos.ParticipantInfo|undefined} value */
+/**
+ * @param {?proto.io.iohk.prism.protos.ParticipantInfo|undefined} value
+ * @return {!proto.io.iohk.prism.protos.GetConnectionTokenInfoResponse} returns this
+*/
 proto.io.iohk.prism.protos.GetConnectionTokenInfoResponse.prototype.setCreator = function(value) {
-  jspb.Message.setWrapperField(this, 1, value);
+  return jspb.Message.setWrapperField(this, 1, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.GetConnectionTokenInfoResponse} returns this
  */
 proto.io.iohk.prism.protos.GetConnectionTokenInfoResponse.prototype.clearCreator = function() {
-  this.setCreator(undefined);
+  return this.setCreator(undefined);
 };
 
 
@@ -1697,9 +1721,12 @@ proto.io.iohk.prism.protos.AddConnectionFromTokenRequest.prototype.getToken = fu
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.AddConnectionFromTokenRequest} returns this
+ */
 proto.io.iohk.prism.protos.AddConnectionFromTokenRequest.prototype.setToken = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -1713,17 +1740,21 @@ proto.io.iohk.prism.protos.AddConnectionFromTokenRequest.prototype.getHolderpubl
 };
 
 
-/** @param {?proto.io.iohk.prism.protos.ConnectorPublicKey|undefined} value */
+/**
+ * @param {?proto.io.iohk.prism.protos.ConnectorPublicKey|undefined} value
+ * @return {!proto.io.iohk.prism.protos.AddConnectionFromTokenRequest} returns this
+*/
 proto.io.iohk.prism.protos.AddConnectionFromTokenRequest.prototype.setHolderpublickey = function(value) {
-  jspb.Message.setWrapperField(this, 2, value);
+  return jspb.Message.setWrapperField(this, 2, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.AddConnectionFromTokenRequest} returns this
  */
 proto.io.iohk.prism.protos.AddConnectionFromTokenRequest.prototype.clearHolderpublickey = function() {
-  this.setHolderpublickey(undefined);
+  return this.setHolderpublickey(undefined);
 };
 
 
@@ -1745,9 +1776,12 @@ proto.io.iohk.prism.protos.AddConnectionFromTokenRequest.prototype.getPaymentnon
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.AddConnectionFromTokenRequest} returns this
+ */
 proto.io.iohk.prism.protos.AddConnectionFromTokenRequest.prototype.setPaymentnonce = function(value) {
-  jspb.Message.setProto3StringField(this, 3, value);
+  return jspb.Message.setProto3StringField(this, 3, value);
 };
 
 
@@ -1761,17 +1795,21 @@ proto.io.iohk.prism.protos.AddConnectionFromTokenRequest.prototype.getHolderenco
 };
 
 
-/** @param {?proto.io.iohk.prism.protos.EncodedPublicKey|undefined} value */
+/**
+ * @param {?proto.io.iohk.prism.protos.EncodedPublicKey|undefined} value
+ * @return {!proto.io.iohk.prism.protos.AddConnectionFromTokenRequest} returns this
+*/
 proto.io.iohk.prism.protos.AddConnectionFromTokenRequest.prototype.setHolderencodedpublickey = function(value) {
-  jspb.Message.setWrapperField(this, 4, value);
+  return jspb.Message.setWrapperField(this, 4, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.AddConnectionFromTokenRequest} returns this
  */
 proto.io.iohk.prism.protos.AddConnectionFromTokenRequest.prototype.clearHolderencodedpublickey = function() {
-  this.setHolderencodedpublickey(undefined);
+  return this.setHolderencodedpublickey(undefined);
 };
 
 
@@ -1920,17 +1958,21 @@ proto.io.iohk.prism.protos.AddConnectionFromTokenResponse.prototype.getConnectio
 };
 
 
-/** @param {?proto.io.iohk.prism.protos.ConnectionInfo|undefined} value */
+/**
+ * @param {?proto.io.iohk.prism.protos.ConnectionInfo|undefined} value
+ * @return {!proto.io.iohk.prism.protos.AddConnectionFromTokenResponse} returns this
+*/
 proto.io.iohk.prism.protos.AddConnectionFromTokenResponse.prototype.setConnection = function(value) {
-  jspb.Message.setWrapperField(this, 1, value);
+  return jspb.Message.setWrapperField(this, 1, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.AddConnectionFromTokenResponse} returns this
  */
 proto.io.iohk.prism.protos.AddConnectionFromTokenResponse.prototype.clearConnection = function() {
-  this.setConnection(undefined);
+  return this.setConnection(undefined);
 };
 
 
@@ -1952,9 +1994,12 @@ proto.io.iohk.prism.protos.AddConnectionFromTokenResponse.prototype.getUserid = 
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.AddConnectionFromTokenResponse} returns this
+ */
 proto.io.iohk.prism.protos.AddConnectionFromTokenResponse.prototype.setUserid = function(value) {
-  jspb.Message.setProto3StringField(this, 2, value);
+  return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
@@ -2079,9 +2124,12 @@ proto.io.iohk.prism.protos.DeleteConnectionRequest.prototype.getConnectionid = f
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.DeleteConnectionRequest} returns this
+ */
 proto.io.iohk.prism.protos.DeleteConnectionRequest.prototype.setConnectionid = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -2408,9 +2456,12 @@ proto.io.iohk.prism.protos.GenerateConnectionTokenResponse.prototype.getToken = 
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.GenerateConnectionTokenResponse} returns this
+ */
 proto.io.iohk.prism.protos.GenerateConnectionTokenResponse.prototype.setToken = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -2547,9 +2598,12 @@ proto.io.iohk.prism.protos.GetMessagesPaginatedRequest.prototype.getLastseenmess
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.GetMessagesPaginatedRequest} returns this
+ */
 proto.io.iohk.prism.protos.GetMessagesPaginatedRequest.prototype.setLastseenmessageid = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -2562,9 +2616,12 @@ proto.io.iohk.prism.protos.GetMessagesPaginatedRequest.prototype.getLimit = func
 };
 
 
-/** @param {number} value */
+/**
+ * @param {number} value
+ * @return {!proto.io.iohk.prism.protos.GetMessagesPaginatedRequest} returns this
+ */
 proto.io.iohk.prism.protos.GetMessagesPaginatedRequest.prototype.setLimit = function(value) {
-  jspb.Message.setProto3IntField(this, 2, value);
+  return jspb.Message.setProto3IntField(this, 2, value);
 };
 
 
@@ -2700,9 +2757,12 @@ proto.io.iohk.prism.protos.GetMessagesPaginatedResponse.prototype.getMessagesLis
 };
 
 
-/** @param {!Array<!proto.io.iohk.prism.protos.ReceivedMessage>} value */
+/**
+ * @param {!Array<!proto.io.iohk.prism.protos.ReceivedMessage>} value
+ * @return {!proto.io.iohk.prism.protos.GetMessagesPaginatedResponse} returns this
+*/
 proto.io.iohk.prism.protos.GetMessagesPaginatedResponse.prototype.setMessagesList = function(value) {
-  jspb.Message.setRepeatedWrapperField(this, 1, value);
+  return jspb.Message.setRepeatedWrapperField(this, 1, value);
 };
 
 
@@ -2718,9 +2778,10 @@ proto.io.iohk.prism.protos.GetMessagesPaginatedResponse.prototype.addMessages = 
 
 /**
  * Clears the list making it empty but non-null.
+ * @return {!proto.io.iohk.prism.protos.GetMessagesPaginatedResponse} returns this
  */
 proto.io.iohk.prism.protos.GetMessagesPaginatedResponse.prototype.clearMessagesList = function() {
-  this.setMessagesList([]);
+  return this.setMessagesList([]);
 };
 
 
@@ -2845,9 +2906,12 @@ proto.io.iohk.prism.protos.GetMessagesForConnectionRequest.prototype.getConnecti
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.GetMessagesForConnectionRequest} returns this
+ */
 proto.io.iohk.prism.protos.GetMessagesForConnectionRequest.prototype.setConnectionid = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -2983,9 +3047,12 @@ proto.io.iohk.prism.protos.GetMessagesForConnectionResponse.prototype.getMessage
 };
 
 
-/** @param {!Array<!proto.io.iohk.prism.protos.ReceivedMessage>} value */
+/**
+ * @param {!Array<!proto.io.iohk.prism.protos.ReceivedMessage>} value
+ * @return {!proto.io.iohk.prism.protos.GetMessagesForConnectionResponse} returns this
+*/
 proto.io.iohk.prism.protos.GetMessagesForConnectionResponse.prototype.setMessagesList = function(value) {
-  jspb.Message.setRepeatedWrapperField(this, 1, value);
+  return jspb.Message.setRepeatedWrapperField(this, 1, value);
 };
 
 
@@ -3001,9 +3068,10 @@ proto.io.iohk.prism.protos.GetMessagesForConnectionResponse.prototype.addMessage
 
 /**
  * Clears the list making it empty but non-null.
+ * @return {!proto.io.iohk.prism.protos.GetMessagesForConnectionResponse} returns this
  */
 proto.io.iohk.prism.protos.GetMessagesForConnectionResponse.prototype.clearMessagesList = function() {
-  this.setMessagesList([]);
+  return this.setMessagesList([]);
 };
 
 
@@ -3140,9 +3208,12 @@ proto.io.iohk.prism.protos.SendMessageRequest.prototype.getConnectionid = functi
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.SendMessageRequest} returns this
+ */
 proto.io.iohk.prism.protos.SendMessageRequest.prototype.setConnectionid = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -3179,9 +3250,12 @@ proto.io.iohk.prism.protos.SendMessageRequest.prototype.getMessage_asU8 = functi
 };
 
 
-/** @param {!(string|Uint8Array)} value */
+/**
+ * @param {!(string|Uint8Array)} value
+ * @return {!proto.io.iohk.prism.protos.SendMessageRequest} returns this
+ */
 proto.io.iohk.prism.protos.SendMessageRequest.prototype.setMessage = function(value) {
-  jspb.Message.setProto3BytesField(this, 2, value);
+  return jspb.Message.setProto3BytesField(this, 2, value);
 };
 
 
@@ -3454,17 +3528,21 @@ proto.io.iohk.prism.protos.RegisterDIDRequest.prototype.getCreatedidoperation = 
 };
 
 
-/** @param {?proto.io.iohk.prism.protos.SignedAtalaOperation|undefined} value */
+/**
+ * @param {?proto.io.iohk.prism.protos.SignedAtalaOperation|undefined} value
+ * @return {!proto.io.iohk.prism.protos.RegisterDIDRequest} returns this
+*/
 proto.io.iohk.prism.protos.RegisterDIDRequest.prototype.setCreatedidoperation = function(value) {
-  jspb.Message.setWrapperField(this, 1, value);
+  return jspb.Message.setWrapperField(this, 1, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.RegisterDIDRequest} returns this
  */
 proto.io.iohk.prism.protos.RegisterDIDRequest.prototype.clearCreatedidoperation = function() {
-  this.setCreatedidoperation(undefined);
+  return this.setCreatedidoperation(undefined);
 };
 
 
@@ -3486,9 +3564,12 @@ proto.io.iohk.prism.protos.RegisterDIDRequest.prototype.getRole = function() {
 };
 
 
-/** @param {!proto.io.iohk.prism.protos.RegisterDIDRequest.Role} value */
+/**
+ * @param {!proto.io.iohk.prism.protos.RegisterDIDRequest.Role} value
+ * @return {!proto.io.iohk.prism.protos.RegisterDIDRequest} returns this
+ */
 proto.io.iohk.prism.protos.RegisterDIDRequest.prototype.setRole = function(value) {
-  jspb.Message.setProto3EnumField(this, 2, value);
+  return jspb.Message.setProto3EnumField(this, 2, value);
 };
 
 
@@ -3501,9 +3582,12 @@ proto.io.iohk.prism.protos.RegisterDIDRequest.prototype.getName = function() {
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.RegisterDIDRequest} returns this
+ */
 proto.io.iohk.prism.protos.RegisterDIDRequest.prototype.setName = function(value) {
-  jspb.Message.setProto3StringField(this, 3, value);
+  return jspb.Message.setProto3StringField(this, 3, value);
 };
 
 
@@ -3540,9 +3624,12 @@ proto.io.iohk.prism.protos.RegisterDIDRequest.prototype.getLogo_asU8 = function(
 };
 
 
-/** @param {!(string|Uint8Array)} value */
+/**
+ * @param {!(string|Uint8Array)} value
+ * @return {!proto.io.iohk.prism.protos.RegisterDIDRequest} returns this
+ */
 proto.io.iohk.prism.protos.RegisterDIDRequest.prototype.setLogo = function(value) {
-  jspb.Message.setProto3BytesField(this, 4, value);
+  return jspb.Message.setProto3BytesField(this, 4, value);
 };
 
 
@@ -3667,9 +3754,12 @@ proto.io.iohk.prism.protos.RegisterDIDResponse.prototype.getDid = function() {
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.RegisterDIDResponse} returns this
+ */
 proto.io.iohk.prism.protos.RegisterDIDResponse.prototype.setDid = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -3794,9 +3884,12 @@ proto.io.iohk.prism.protos.ChangeBillingPlanRequest.prototype.getBillingplan = f
 };
 
 
-/** @param {!proto.io.iohk.prism.protos.BillingPlan} value */
+/**
+ * @param {!proto.io.iohk.prism.protos.BillingPlan} value
+ * @return {!proto.io.iohk.prism.protos.ChangeBillingPlanRequest} returns this
+ */
 proto.io.iohk.prism.protos.ChangeBillingPlanRequest.prototype.setBillingplan = function(value) {
-  jspb.Message.setProto3EnumField(this, 1, value);
+  return jspb.Message.setProto3EnumField(this, 1, value);
 };
 
 
@@ -4123,9 +4216,12 @@ proto.io.iohk.prism.protos.GetBraintreePaymentsConfigResponse.prototype.getToken
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.GetBraintreePaymentsConfigResponse} returns this
+ */
 proto.io.iohk.prism.protos.GetBraintreePaymentsConfigResponse.prototype.setTokenizationkey = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -4262,9 +4358,12 @@ proto.io.iohk.prism.protos.ProcessPaymentRequest.prototype.getAmount = function(
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.ProcessPaymentRequest} returns this
+ */
 proto.io.iohk.prism.protos.ProcessPaymentRequest.prototype.setAmount = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -4277,9 +4376,12 @@ proto.io.iohk.prism.protos.ProcessPaymentRequest.prototype.getNonce = function()
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.ProcessPaymentRequest} returns this
+ */
 proto.io.iohk.prism.protos.ProcessPaymentRequest.prototype.setNonce = function(value) {
-  jspb.Message.setProto3StringField(this, 2, value);
+  return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
@@ -4407,17 +4509,21 @@ proto.io.iohk.prism.protos.ProcessPaymentResponse.prototype.getPayment = functio
 };
 
 
-/** @param {?proto.io.iohk.prism.protos.Payment|undefined} value */
+/**
+ * @param {?proto.io.iohk.prism.protos.Payment|undefined} value
+ * @return {!proto.io.iohk.prism.protos.ProcessPaymentResponse} returns this
+*/
 proto.io.iohk.prism.protos.ProcessPaymentResponse.prototype.setPayment = function(value) {
-  jspb.Message.setWrapperField(this, 1, value);
+  return jspb.Message.setWrapperField(this, 1, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.ProcessPaymentResponse} returns this
  */
 proto.io.iohk.prism.protos.ProcessPaymentResponse.prototype.clearPayment = function() {
-  this.setPayment(undefined);
+  return this.setPayment(undefined);
 };
 
 
@@ -4663,9 +4769,12 @@ proto.io.iohk.prism.protos.GetPaymentsResponse.prototype.getPaymentsList = funct
 };
 
 
-/** @param {!Array<!proto.io.iohk.prism.protos.Payment>} value */
+/**
+ * @param {!Array<!proto.io.iohk.prism.protos.Payment>} value
+ * @return {!proto.io.iohk.prism.protos.GetPaymentsResponse} returns this
+*/
 proto.io.iohk.prism.protos.GetPaymentsResponse.prototype.setPaymentsList = function(value) {
-  jspb.Message.setRepeatedWrapperField(this, 1, value);
+  return jspb.Message.setRepeatedWrapperField(this, 1, value);
 };
 
 
@@ -4681,9 +4790,10 @@ proto.io.iohk.prism.protos.GetPaymentsResponse.prototype.addPayments = function(
 
 /**
  * Clears the list making it empty but non-null.
+ * @return {!proto.io.iohk.prism.protos.GetPaymentsResponse} returns this
  */
 proto.io.iohk.prism.protos.GetPaymentsResponse.prototype.clearPaymentsList = function() {
-  this.setPaymentsList([]);
+  return this.setPaymentsList([]);
 };
 
 
@@ -4957,9 +5067,12 @@ proto.io.iohk.prism.protos.GetBuildInfoResponse.prototype.getVersion = function(
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.GetBuildInfoResponse} returns this
+ */
 proto.io.iohk.prism.protos.GetBuildInfoResponse.prototype.setVersion = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -4972,9 +5085,12 @@ proto.io.iohk.prism.protos.GetBuildInfoResponse.prototype.getScalaversion = func
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.GetBuildInfoResponse} returns this
+ */
 proto.io.iohk.prism.protos.GetBuildInfoResponse.prototype.setScalaversion = function(value) {
-  jspb.Message.setProto3StringField(this, 2, value);
+  return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
@@ -4987,9 +5103,12 @@ proto.io.iohk.prism.protos.GetBuildInfoResponse.prototype.getMillversion = funct
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.GetBuildInfoResponse} returns this
+ */
 proto.io.iohk.prism.protos.GetBuildInfoResponse.prototype.setMillversion = function(value) {
-  jspb.Message.setProto3StringField(this, 3, value);
+  return jspb.Message.setProto3StringField(this, 3, value);
 };
 
 
@@ -5002,9 +5121,12 @@ proto.io.iohk.prism.protos.GetBuildInfoResponse.prototype.getBuildtime = functio
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.GetBuildInfoResponse} returns this
+ */
 proto.io.iohk.prism.protos.GetBuildInfoResponse.prototype.setBuildtime = function(value) {
-  jspb.Message.setProto3StringField(this, 4, value);
+  return jspb.Message.setProto3StringField(this, 4, value);
 };
 
 
@@ -5017,9 +5139,12 @@ proto.io.iohk.prism.protos.GetBuildInfoResponse.prototype.getNodeversion = funct
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.GetBuildInfoResponse} returns this
+ */
 proto.io.iohk.prism.protos.GetBuildInfoResponse.prototype.setNodeversion = function(value) {
-  jspb.Message.setProto3StringField(this, 5, value);
+  return jspb.Message.setProto3StringField(this, 5, value);
 };
 
 

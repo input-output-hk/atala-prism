@@ -268,9 +268,12 @@ proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest.prototype.getConnecti
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest} returns this
+ */
 proto.io.iohk.prism.intdemo.protos.GetSubjectStatusRequest.prototype.setConnectiontoken = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -395,9 +398,12 @@ proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse.prototype.getSubject
 };
 
 
-/** @param {!proto.io.iohk.prism.intdemo.protos.SubjectStatus} value */
+/**
+ * @param {!proto.io.iohk.prism.intdemo.protos.SubjectStatus} value
+ * @return {!proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse} returns this
+ */
 proto.io.iohk.prism.intdemo.protos.GetSubjectStatusResponse.prototype.setSubjectstatus = function(value) {
-  jspb.Message.setProto3EnumField(this, 1, value);
+  return jspb.Message.setProto3EnumField(this, 1, value);
 };
 
 
@@ -623,9 +629,12 @@ proto.io.iohk.prism.intdemo.protos.GetConnectionTokenResponse.prototype.getConne
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.intdemo.protos.GetConnectionTokenResponse} returns this
+ */
 proto.io.iohk.prism.intdemo.protos.GetConnectionTokenResponse.prototype.setConnectiontoken = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -776,9 +785,12 @@ proto.io.iohk.prism.intdemo.protos.SetPersonalDataRequest.prototype.getConnectio
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.intdemo.protos.SetPersonalDataRequest} returns this
+ */
 proto.io.iohk.prism.intdemo.protos.SetPersonalDataRequest.prototype.setConnectiontoken = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -791,9 +803,12 @@ proto.io.iohk.prism.intdemo.protos.SetPersonalDataRequest.prototype.getFirstname
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.intdemo.protos.SetPersonalDataRequest} returns this
+ */
 proto.io.iohk.prism.intdemo.protos.SetPersonalDataRequest.prototype.setFirstname = function(value) {
-  jspb.Message.setProto3StringField(this, 2, value);
+  return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
@@ -807,17 +822,21 @@ proto.io.iohk.prism.intdemo.protos.SetPersonalDataRequest.prototype.getDateofbir
 };
 
 
-/** @param {?proto.io.iohk.prism.intdemo.protos.Date|undefined} value */
+/**
+ * @param {?proto.io.iohk.prism.intdemo.protos.Date|undefined} value
+ * @return {!proto.io.iohk.prism.intdemo.protos.SetPersonalDataRequest} returns this
+*/
 proto.io.iohk.prism.intdemo.protos.SetPersonalDataRequest.prototype.setDateofbirth = function(value) {
-  jspb.Message.setWrapperField(this, 3, value);
+  return jspb.Message.setWrapperField(this, 3, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.intdemo.protos.SetPersonalDataRequest} returns this
  */
 proto.io.iohk.prism.intdemo.protos.SetPersonalDataRequest.prototype.clearDateofbirth = function() {
-  this.setDateofbirth(undefined);
+  return this.setDateofbirth(undefined);
 };
 
 

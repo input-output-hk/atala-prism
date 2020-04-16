@@ -21,7 +21,9 @@ async function getCredentials(limit, lastSeenCredentialId = null) {
   getCredentialsRequest.setLimit(limit);
   getCredentialsRequest.setLastseencredentialid(lastSeenCredentialId);
 
-  const result = await this.client.getCredentials(getCredentialsRequest, this.auth.getMetadata());
+  const metadata = await this.auth.getMetadata(getCredentialsRequest);
+
+  const result = await this.client.getCredentials(getCredentialsRequest, metadata);
   const { credentialsList } = result.toObject();
 
   return { credentials: credentialsList, count: credentialsList.length };
@@ -66,7 +68,9 @@ async function createCredential({ title, enrollmentDate, graduationDate, groupNa
       groupName
     );
 
-    return this.client.createCredential(createCredentialRequest, this.auth.getMetadata());
+    return this.auth
+      .getMetadata(createCredentialRequest)
+      .then(metadata => this.client.createCredential(createCredentialRequest, metadata));
   });
 
   return Promise.all(credentialStudentsPromises);

@@ -1,3 +1,4 @@
+import URLSafeBase64 from 'urlsafe-base64';
 import { ISSUER } from '../helpers/constants';
 
 function Legacy(configs) {
@@ -10,15 +11,19 @@ function Legacy(configs) {
 }
 
 function DIDBased(configs, wallet) {
+  const bytesToURLSafeBase64 = buff => URLSafeBase64.encode(Buffer.from(buff));
+
   const getMetadata = async unsignedRequest => {
     const nonce = wallet.getNonce();
-    const did = wallet.getDid();
     const signedRequest = await wallet.signMessage(unsignedRequest, nonce);
+    const signature = signedRequest.getSignature();
+    const did = signedRequest.getDid();
+    const didKeyId = signedRequest.getDidkeyid();
     return {
-      requestNonce: nonce,
+      requestNonce: bytesToURLSafeBase64(nonce),
       did,
-      didKeyId: '', // TODO get keyId
-      didSignature: signedRequest
+      didKeyId,
+      didSignature: bytesToURLSafeBase64(signature)
     };
   };
 

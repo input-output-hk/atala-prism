@@ -32,7 +32,9 @@
     "react-router-dom": "5.1.2",
     "react-scripts": "3.3.1",
     "react-spinners": "0.6.1",
-    "react-tooltip": "3.11.2"
+    "react-tooltip": "3.11.2",
+    "urlsafe-base64": "1.0.0",
+    "uuid": "7.0.3"
   },
   "devDependencies": {
     "@testing-library/react": "9.4.0",

@@ -450,9 +450,12 @@ proto.io.iohk.prism.protos.ECKeyData.prototype.getCurve = function() {
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.ECKeyData} returns this
+ */
 proto.io.iohk.prism.protos.ECKeyData.prototype.setCurve = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -489,9 +492,12 @@ proto.io.iohk.prism.protos.ECKeyData.prototype.getX_asU8 = function() {
 };
 
 
-/** @param {!(string|Uint8Array)} value */
+/**
+ * @param {!(string|Uint8Array)} value
+ * @return {!proto.io.iohk.prism.protos.ECKeyData} returns this
+ */
 proto.io.iohk.prism.protos.ECKeyData.prototype.setX = function(value) {
-  jspb.Message.setProto3BytesField(this, 2, value);
+  return jspb.Message.setProto3BytesField(this, 2, value);
 };
 
 
@@ -528,9 +534,12 @@ proto.io.iohk.prism.protos.ECKeyData.prototype.getY_asU8 = function() {
 };
 
 
-/** @param {!(string|Uint8Array)} value */
+/**
+ * @param {!(string|Uint8Array)} value
+ * @return {!proto.io.iohk.prism.protos.ECKeyData} returns this
+ */
 proto.io.iohk.prism.protos.ECKeyData.prototype.setY = function(value) {
-  jspb.Message.setProto3BytesField(this, 3, value);
+  return jspb.Message.setProto3BytesField(this, 3, value);
 };
 
 
@@ -706,9 +715,12 @@ proto.io.iohk.prism.protos.PublicKey.prototype.getId = function() {
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.PublicKey} returns this
+ */
 proto.io.iohk.prism.protos.PublicKey.prototype.setId = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -721,9 +733,12 @@ proto.io.iohk.prism.protos.PublicKey.prototype.getUsage = function() {
 };
 
 
-/** @param {!proto.io.iohk.prism.protos.KeyUsage} value */
+/**
+ * @param {!proto.io.iohk.prism.protos.KeyUsage} value
+ * @return {!proto.io.iohk.prism.protos.PublicKey} returns this
+ */
 proto.io.iohk.prism.protos.PublicKey.prototype.setUsage = function(value) {
-  jspb.Message.setProto3EnumField(this, 2, value);
+  return jspb.Message.setProto3EnumField(this, 2, value);
 };
 
 
@@ -737,17 +752,21 @@ proto.io.iohk.prism.protos.PublicKey.prototype.getEckeydata = function() {
 };
 
 
-/** @param {?proto.io.iohk.prism.protos.ECKeyData|undefined} value */
+/**
+ * @param {?proto.io.iohk.prism.protos.ECKeyData|undefined} value
+ * @return {!proto.io.iohk.prism.protos.PublicKey} returns this
+*/
 proto.io.iohk.prism.protos.PublicKey.prototype.setEckeydata = function(value) {
-  jspb.Message.setOneofWrapperField(this, 8, proto.io.iohk.prism.protos.PublicKey.oneofGroups_[0], value);
+  return jspb.Message.setOneofWrapperField(this, 8, proto.io.iohk.prism.protos.PublicKey.oneofGroups_[0], value);
 };
 
 
 /**
  * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.PublicKey} returns this
  */
 proto.io.iohk.prism.protos.PublicKey.prototype.clearEckeydata = function() {
-  this.setEckeydata(undefined);
+  return this.setEckeydata(undefined);
 };
 
 
@@ -903,9 +922,12 @@ proto.io.iohk.prism.protos.DIDData.prototype.getId = function() {
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.DIDData} returns this
+ */
 proto.io.iohk.prism.protos.DIDData.prototype.setId = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -919,9 +941,12 @@ proto.io.iohk.prism.protos.DIDData.prototype.getPublickeysList = function() {
 };
 
 
-/** @param {!Array<!proto.io.iohk.prism.protos.PublicKey>} value */
+/**
+ * @param {!Array<!proto.io.iohk.prism.protos.PublicKey>} value
+ * @return {!proto.io.iohk.prism.protos.DIDData} returns this
+*/
 proto.io.iohk.prism.protos.DIDData.prototype.setPublickeysList = function(value) {
-  jspb.Message.setRepeatedWrapperField(this, 2, value);
+  return jspb.Message.setRepeatedWrapperField(this, 2, value);
 };
 
 
@@ -937,9 +962,10 @@ proto.io.iohk.prism.protos.DIDData.prototype.addPublickeys = function(opt_value,
 
 /**
  * Clears the list making it empty but non-null.
+ * @return {!proto.io.iohk.prism.protos.DIDData} returns this
  */
 proto.io.iohk.prism.protos.DIDData.prototype.clearPublickeysList = function() {
-  this.setPublickeysList([]);
+  return this.setPublickeysList([]);
 };
 
 
@@ -1102,9 +1128,12 @@ proto.io.iohk.prism.protos.CredentialData.prototype.getId = function() {
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.CredentialData} returns this
+ */
 proto.io.iohk.prism.protos.CredentialData.prototype.setId = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -1117,9 +1146,12 @@ proto.io.iohk.prism.protos.CredentialData.prototype.getIssuer = function() {
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.CredentialData} returns this
+ */
 proto.io.iohk.prism.protos.CredentialData.prototype.setIssuer = function(value) {
-  jspb.Message.setProto3StringField(this, 2, value);
+  return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
@@ -1156,9 +1188,12 @@ proto.io.iohk.prism.protos.CredentialData.prototype.getContenthash_asU8 = functi
 };
 
 
-/** @param {!(string|Uint8Array)} value */
+/**
+ * @param {!(string|Uint8Array)} value
+ * @return {!proto.io.iohk.prism.protos.CredentialData} returns this
+ */
 proto.io.iohk.prism.protos.CredentialData.prototype.setContenthash = function(value) {
-  jspb.Message.setProto3BytesField(this, 3, value);
+  return jspb.Message.setProto3BytesField(this, 3, value);
 };
 
 
@@ -1172,17 +1207,21 @@ proto.io.iohk.prism.protos.CredentialData.prototype.getIssuancedate = function()
 };
 
 
-/** @param {?proto.io.iohk.prism.protos.Date|undefined} value */
+/**
+ * @param {?proto.io.iohk.prism.protos.Date|undefined} value
+ * @return {!proto.io.iohk.prism.protos.CredentialData} returns this
+*/
 proto.io.iohk.prism.protos.CredentialData.prototype.setIssuancedate = function(value) {
-  jspb.Message.setWrapperField(this, 4, value);
+  return jspb.Message.setWrapperField(this, 4, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.CredentialData} returns this
  */
 proto.io.iohk.prism.protos.CredentialData.prototype.clearIssuancedate = function() {
-  this.setIssuancedate(undefined);
+  return this.setIssuancedate(undefined);
 };
 
 
@@ -1319,17 +1358,21 @@ proto.io.iohk.prism.protos.CreateDIDOperation.prototype.getDiddata = function() 
 };
 
 
-/** @param {?proto.io.iohk.prism.protos.DIDData|undefined} value */
+/**
+ * @param {?proto.io.iohk.prism.protos.DIDData|undefined} value
+ * @return {!proto.io.iohk.prism.protos.CreateDIDOperation} returns this
+*/
 proto.io.iohk.prism.protos.CreateDIDOperation.prototype.setDiddata = function(value) {
-  jspb.Message.setWrapperField(this, 1, value);
+  return jspb.Message.setWrapperField(this, 1, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.CreateDIDOperation} returns this
  */
 proto.io.iohk.prism.protos.CreateDIDOperation.prototype.clearDiddata = function() {
-  this.setDiddata(undefined);
+  return this.setDiddata(undefined);
 };
 
 
@@ -1466,17 +1509,21 @@ proto.io.iohk.prism.protos.AddKeyAction.prototype.getKey = function() {
 };
 
 
-/** @param {?proto.io.iohk.prism.protos.PublicKey|undefined} value */
+/**
+ * @param {?proto.io.iohk.prism.protos.PublicKey|undefined} value
+ * @return {!proto.io.iohk.prism.protos.AddKeyAction} returns this
+*/
 proto.io.iohk.prism.protos.AddKeyAction.prototype.setKey = function(value) {
-  jspb.Message.setWrapperField(this, 1, value);
+  return jspb.Message.setWrapperField(this, 1, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.AddKeyAction} returns this
  */
 proto.io.iohk.prism.protos.AddKeyAction.prototype.clearKey = function() {
-  this.setKey(undefined);
+  return this.setKey(undefined);
 };
 
 
@@ -1610,9 +1657,12 @@ proto.io.iohk.prism.protos.RemoveKeyAction.prototype.getKeyid = function() {
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.RemoveKeyAction} returns this
+ */
 proto.io.iohk.prism.protos.RemoveKeyAction.prototype.setKeyid = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -1780,17 +1830,21 @@ proto.io.iohk.prism.protos.UpdateDIDAction.prototype.getAddkey = function() {
 };
 
 
-/** @param {?proto.io.iohk.prism.protos.AddKeyAction|undefined} value */
+/**
+ * @param {?proto.io.iohk.prism.protos.AddKeyAction|undefined} value
+ * @return {!proto.io.iohk.prism.protos.UpdateDIDAction} returns this
+*/
 proto.io.iohk.prism.protos.UpdateDIDAction.prototype.setAddkey = function(value) {
-  jspb.Message.setOneofWrapperField(this, 1, proto.io.iohk.prism.protos.UpdateDIDAction.oneofGroups_[0], value);
+  return jspb.Message.setOneofWrapperField(this, 1, proto.io.iohk.prism.protos.UpdateDIDAction.oneofGroups_[0], value);
 };
 
 
 /**
  * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.UpdateDIDAction} returns this
  */
 proto.io.iohk.prism.protos.UpdateDIDAction.prototype.clearAddkey = function() {
-  this.setAddkey(undefined);
+  return this.setAddkey(undefined);
 };
 
 
@@ -1813,17 +1867,21 @@ proto.io.iohk.prism.protos.UpdateDIDAction.prototype.getRemovekey = function() {
 };
 
 
-/** @param {?proto.io.iohk.prism.protos.RemoveKeyAction|undefined} value */
+/**
+ * @param {?proto.io.iohk.prism.protos.RemoveKeyAction|undefined} value
+ * @return {!proto.io.iohk.prism.protos.UpdateDIDAction} returns this
+*/
 proto.io.iohk.prism.protos.UpdateDIDAction.prototype.setRemovekey = function(value) {
-  jspb.Message.setOneofWrapperField(this, 2, proto.io.iohk.prism.protos.UpdateDIDAction.oneofGroups_[0], value);
+  return jspb.Message.setOneofWrapperField(this, 2, proto.io.iohk.prism.protos.UpdateDIDAction.oneofGroups_[0], value);
 };
 
 
 /**
  * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.UpdateDIDAction} returns this
  */
 proto.io.iohk.prism.protos.UpdateDIDAction.prototype.clearRemovekey = function() {
-  this.setRemovekey(undefined);
+  return this.setRemovekey(undefined);
 };
 
 
@@ -2015,9 +2073,12 @@ proto.io.iohk.prism.protos.UpdateDIDOperation.prototype.getPreviousoperationhash
 };
 
 
-/** @param {!(string|Uint8Array)} value */
+/**
+ * @param {!(string|Uint8Array)} value
+ * @return {!proto.io.iohk.prism.protos.UpdateDIDOperation} returns this
+ */
 proto.io.iohk.prism.protos.UpdateDIDOperation.prototype.setPreviousoperationhash = function(value) {
-  jspb.Message.setProto3BytesField(this, 1, value);
+  return jspb.Message.setProto3BytesField(this, 1, value);
 };
 
 
@@ -2030,9 +2091,12 @@ proto.io.iohk.prism.protos.UpdateDIDOperation.prototype.getId = function() {
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.UpdateDIDOperation} returns this
+ */
 proto.io.iohk.prism.protos.UpdateDIDOperation.prototype.setId = function(value) {
-  jspb.Message.setProto3StringField(this, 2, value);
+  return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
@@ -2046,9 +2110,12 @@ proto.io.iohk.prism.protos.UpdateDIDOperation.prototype.getActionsList = functio
 };
 
 
-/** @param {!Array<!proto.io.iohk.prism.protos.UpdateDIDAction>} value */
+/**
+ * @param {!Array<!proto.io.iohk.prism.protos.UpdateDIDAction>} value
+ * @return {!proto.io.iohk.prism.protos.UpdateDIDOperation} returns this
+*/
 proto.io.iohk.prism.protos.UpdateDIDOperation.prototype.setActionsList = function(value) {
-  jspb.Message.setRepeatedWrapperField(this, 3, value);
+  return jspb.Message.setRepeatedWrapperField(this, 3, value);
 };
 
 
@@ -2064,9 +2131,10 @@ proto.io.iohk.prism.protos.UpdateDIDOperation.prototype.addActions = function(op
 
 /**
  * Clears the list making it empty but non-null.
+ * @return {!proto.io.iohk.prism.protos.UpdateDIDOperation} returns this
  */
 proto.io.iohk.prism.protos.UpdateDIDOperation.prototype.clearActionsList = function() {
-  this.setActionsList([]);
+  return this.setActionsList([]);
 };
 
 
@@ -2194,17 +2262,21 @@ proto.io.iohk.prism.protos.IssueCredentialOperation.prototype.getCredentialdata 
 };
 
 
-/** @param {?proto.io.iohk.prism.protos.CredentialData|undefined} value */
+/**
+ * @param {?proto.io.iohk.prism.protos.CredentialData|undefined} value
+ * @return {!proto.io.iohk.prism.protos.IssueCredentialOperation} returns this
+*/
 proto.io.iohk.prism.protos.IssueCredentialOperation.prototype.setCredentialdata = function(value) {
-  jspb.Message.setWrapperField(this, 1, value);
+  return jspb.Message.setWrapperField(this, 1, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.IssueCredentialOperation} returns this
  */
 proto.io.iohk.prism.protos.IssueCredentialOperation.prototype.clearCredentialdata = function() {
-  this.setCredentialdata(undefined);
+  return this.setCredentialdata(undefined);
 };
 
 
@@ -2388,9 +2460,12 @@ proto.io.iohk.prism.protos.RevokeCredentialOperation.prototype.getPreviousoperat
 };
 
 
-/** @param {!(string|Uint8Array)} value */
+/**
+ * @param {!(string|Uint8Array)} value
+ * @return {!proto.io.iohk.prism.protos.RevokeCredentialOperation} returns this
+ */
 proto.io.iohk.prism.protos.RevokeCredentialOperation.prototype.setPreviousoperationhash = function(value) {
-  jspb.Message.setProto3BytesField(this, 1, value);
+  return jspb.Message.setProto3BytesField(this, 1, value);
 };
 
 
@@ -2403,9 +2478,12 @@ proto.io.iohk.prism.protos.RevokeCredentialOperation.prototype.getCredentialid =
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.RevokeCredentialOperation} returns this
+ */
 proto.io.iohk.prism.protos.RevokeCredentialOperation.prototype.setCredentialid = function(value) {
-  jspb.Message.setProto3StringField(this, 2, value);
+  return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
@@ -2419,17 +2497,21 @@ proto.io.iohk.prism.protos.RevokeCredentialOperation.prototype.getRevocationdate
 };
 
 
-/** @param {?proto.io.iohk.prism.protos.Date|undefined} value */
+/**
+ * @param {?proto.io.iohk.prism.protos.Date|undefined} value
+ * @return {!proto.io.iohk.prism.protos.RevokeCredentialOperation} returns this
+*/
 proto.io.iohk.prism.protos.RevokeCredentialOperation.prototype.setRevocationdate = function(value) {
-  jspb.Message.setWrapperField(this, 3, value);
+  return jspb.Message.setWrapperField(this, 3, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.RevokeCredentialOperation} returns this
  */
 proto.io.iohk.prism.protos.RevokeCredentialOperation.prototype.clearRevocationdate = function() {
-  this.setRevocationdate(undefined);
+  return this.setRevocationdate(undefined);
 };
 
 
@@ -2636,17 +2718,21 @@ proto.io.iohk.prism.protos.AtalaOperation.prototype.getCreatedid = function() {
 };
 
 
-/** @param {?proto.io.iohk.prism.protos.CreateDIDOperation|undefined} value */
+/**
+ * @param {?proto.io.iohk.prism.protos.CreateDIDOperation|undefined} value
+ * @return {!proto.io.iohk.prism.protos.AtalaOperation} returns this
+*/
 proto.io.iohk.prism.protos.AtalaOperation.prototype.setCreatedid = function(value) {
-  jspb.Message.setOneofWrapperField(this, 1, proto.io.iohk.prism.protos.AtalaOperation.oneofGroups_[0], value);
+  return jspb.Message.setOneofWrapperField(this, 1, proto.io.iohk.prism.protos.AtalaOperation.oneofGroups_[0], value);
 };
 
 
 /**
  * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.AtalaOperation} returns this
  */
 proto.io.iohk.prism.protos.AtalaOperation.prototype.clearCreatedid = function() {
-  this.setCreatedid(undefined);
+  return this.setCreatedid(undefined);
 };
 
 
@@ -2669,17 +2755,21 @@ proto.io.iohk.prism.protos.AtalaOperation.prototype.getUpdatedid = function() {
 };
 
 
-/** @param {?proto.io.iohk.prism.protos.UpdateDIDOperation|undefined} value */
+/**
+ * @param {?proto.io.iohk.prism.protos.UpdateDIDOperation|undefined} value
+ * @return {!proto.io.iohk.prism.protos.AtalaOperation} returns this
+*/
 proto.io.iohk.prism.protos.AtalaOperation.prototype.setUpdatedid = function(value) {
-  jspb.Message.setOneofWrapperField(this, 2, proto.io.iohk.prism.protos.AtalaOperation.oneofGroups_[0], value);
+  return jspb.Message.setOneofWrapperField(this, 2, proto.io.iohk.prism.protos.AtalaOperation.oneofGroups_[0], value);
 };
 
 
 /**
  * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.AtalaOperation} returns this
  */
 proto.io.iohk.prism.protos.AtalaOperation.prototype.clearUpdatedid = function() {
-  this.setUpdatedid(undefined);
+  return this.setUpdatedid(undefined);
 };
 
 
@@ -2702,17 +2792,21 @@ proto.io.iohk.prism.protos.AtalaOperation.prototype.getIssuecredential = functio
 };
 
 
-/** @param {?proto.io.iohk.prism.protos.IssueCredentialOperation|undefined} value */
+/**
+ * @param {?proto.io.iohk.prism.protos.IssueCredentialOperation|undefined} value
+ * @return {!proto.io.iohk.prism.protos.AtalaOperation} returns this
+*/
 proto.io.iohk.prism.protos.AtalaOperation.prototype.setIssuecredential = function(value) {
-  jspb.Message.setOneofWrapperField(this, 3, proto.io.iohk.prism.protos.AtalaOperation.oneofGroups_[0], value);
+  return jspb.Message.setOneofWrapperField(this, 3, proto.io.iohk.prism.protos.AtalaOperation.oneofGroups_[0], value);
 };
 
 
 /**
  * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.AtalaOperation} returns this
  */
 proto.io.iohk.prism.protos.AtalaOperation.prototype.clearIssuecredential = function() {
-  this.setIssuecredential(undefined);
+  return this.setIssuecredential(undefined);
 };
 
 
@@ -2735,17 +2829,21 @@ proto.io.iohk.prism.protos.AtalaOperation.prototype.getRevokecredential = functi
 };
 
 
-/** @param {?proto.io.iohk.prism.protos.RevokeCredentialOperation|undefined} value */
+/**
+ * @param {?proto.io.iohk.prism.protos.RevokeCredentialOperation|undefined} value
+ * @return {!proto.io.iohk.prism.protos.AtalaOperation} returns this
+*/
 proto.io.iohk.prism.protos.AtalaOperation.prototype.setRevokecredential = function(value) {
-  jspb.Message.setOneofWrapperField(this, 4, proto.io.iohk.prism.protos.AtalaOperation.oneofGroups_[0], value);
+  return jspb.Message.setOneofWrapperField(this, 4, proto.io.iohk.prism.protos.AtalaOperation.oneofGroups_[0], value);
 };
 
 
 /**
  * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.AtalaOperation} returns this
  */
 proto.io.iohk.prism.protos.AtalaOperation.prototype.clearRevokecredential = function() {
-  this.setRevokecredential(undefined);
+  return this.setRevokecredential(undefined);
 };
 
 
@@ -2905,9 +3003,12 @@ proto.io.iohk.prism.protos.SignedAtalaOperation.prototype.getSignedwith = functi
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.SignedAtalaOperation} returns this
+ */
 proto.io.iohk.prism.protos.SignedAtalaOperation.prototype.setSignedwith = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -2944,9 +3045,12 @@ proto.io.iohk.prism.protos.SignedAtalaOperation.prototype.getSignature_asU8 = fu
 };
 
 
-/** @param {!(string|Uint8Array)} value */
+/**
+ * @param {!(string|Uint8Array)} value
+ * @return {!proto.io.iohk.prism.protos.SignedAtalaOperation} returns this
+ */
 proto.io.iohk.prism.protos.SignedAtalaOperation.prototype.setSignature = function(value) {
-  jspb.Message.setProto3BytesField(this, 2, value);
+  return jspb.Message.setProto3BytesField(this, 2, value);
 };
 
 
@@ -2960,17 +3064,21 @@ proto.io.iohk.prism.protos.SignedAtalaOperation.prototype.getOperation = functio
 };
 
 
-/** @param {?proto.io.iohk.prism.protos.AtalaOperation|undefined} value */
+/**
+ * @param {?proto.io.iohk.prism.protos.AtalaOperation|undefined} value
+ * @return {!proto.io.iohk.prism.protos.SignedAtalaOperation} returns this
+*/
 proto.io.iohk.prism.protos.SignedAtalaOperation.prototype.setOperation = function(value) {
-  jspb.Message.setWrapperField(this, 3, value);
+  return jspb.Message.setWrapperField(this, 3, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.SignedAtalaOperation} returns this
  */
 proto.io.iohk.prism.protos.SignedAtalaOperation.prototype.clearOperation = function() {
-  this.setOperation(undefined);
+  return this.setOperation(undefined);
 };
 
 

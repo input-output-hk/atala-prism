@@ -5,7 +5,8 @@ const { GetGroupsRequest, CreateGroupRequest } = require('../../protos/cmanager_
 async function getGroups() {
   const groupRequest = new GetGroupsRequest();
 
-  const response = await this.client.getGroups(groupRequest, this.auth.getMetadata());
+  const metadata = await this.auth.getMetadata(groupRequest);
+  const response = await this.client.getGroups(groupRequest, metadata);
 
   return response.toObject().groupsList;
 }
@@ -14,7 +15,9 @@ async function createGroup(groupName) {
   const request = new CreateGroupRequest();
   request.setName(groupName);
 
-  await this.client.createGroup(request, this.auth.getMetadata());
+  const metadata = await this.auth.getMetadata(request);
+
+  await this.client.createGroup(request, metadata);
 }
 
 function GroupsManager(config, auth) {

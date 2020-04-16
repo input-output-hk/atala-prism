@@ -31,7 +31,9 @@ async function getStudents(lastSeenCredentialId = null, limit = HOLDER_PAGE_SIZE
     groupName
   );
 
-  const result = await this.client.getStudents(getStudentsRequest, this.auth.getMetadata());
+  const metadata = await this.auth.getMetadata(getStudentsRequest);
+
+  const result = await this.client.getStudents(getStudentsRequest, metadata);
 
   const { studentsList } = result.toObject();
 
@@ -71,9 +73,12 @@ async function generateConnectionTokenAsIssuer(studentId) {
   Logger.info(`Generating token for studentId ${studentId}`);
   const generateConnectionTokenRequest = new GenerateConnectionTokenForStudentRequest();
   generateConnectionTokenRequest.setStudentid(studentId);
+
+  const metadata = await this.auth.getMetadata(generateConnectionTokenRequest);
+
   const response = await this.client.generateConnectionTokenForStudent(
     generateConnectionTokenRequest,
-    this.auth.getMetadata()
+    metadata
   );
 
   return response.getToken();
@@ -83,7 +88,9 @@ async function getStudentById(studentId) {
   const getStudentRequest = new GetStudentRequest();
   getStudentRequest.setStudentid(studentId);
 
-  const result = await this.client.getStudent(getStudentRequest, this.auth.getMetadata());
+  const metadata = await this.auth.getMetadata(getStudentRequest);
+
+  const result = await this.client.getStudent(getStudentRequest, metadata);
 
   const { student } = result.toObject();
 
@@ -97,9 +104,11 @@ async function getStudentCredentials(studentId) {
     const getStudentCredentialsRequest = new GetStudentCredentialsRequest();
     getStudentCredentialsRequest.setStudentid(studentId);
 
+    const metadata = await this.auth.getMetadata(getStudentCredentialsRequest);
+
     const response = await this.client.getStudentCredentials(
       getStudentCredentialsRequest,
-      this.auth.getMetadata()
+      metadata
     );
     const { credentialList } = response.toObject();
 
@@ -126,7 +135,9 @@ async function createStudent({ studentId, fullName, email, admissionDate, groupN
   request.setAdmissiondate(date);
   request.setGroupname(groupName);
 
-  const student = await this.client.createStudent(request, this.auth.getMetadata());
+  const metadata = await this.auth.getMetadata(request);
+
+  const student = await this.client.createStudent(request, metadata);
 
   Logger.info('Created student:', student.toObject());
 }

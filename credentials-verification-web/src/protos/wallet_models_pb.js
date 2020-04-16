@@ -201,9 +201,12 @@ proto.io.iohk.prism.protos.BigInteger.prototype.getValue = function() {
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.BigInteger} returns this
+ */
 proto.io.iohk.prism.protos.BigInteger.prototype.setValue = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -331,17 +334,21 @@ proto.io.iohk.prism.protos.ECPrivateKey.prototype.getD = function() {
 };
 
 
-/** @param {?proto.io.iohk.prism.protos.BigInteger|undefined} value */
+/**
+ * @param {?proto.io.iohk.prism.protos.BigInteger|undefined} value
+ * @return {!proto.io.iohk.prism.protos.ECPrivateKey} returns this
+*/
 proto.io.iohk.prism.protos.ECPrivateKey.prototype.setD = function(value) {
-  jspb.Message.setWrapperField(this, 1, value);
+  return jspb.Message.setWrapperField(this, 1, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.ECPrivateKey} returns this
  */
 proto.io.iohk.prism.protos.ECPrivateKey.prototype.clearD = function() {
-  this.setD(undefined);
+  return this.setD(undefined);
 };
 
 
@@ -492,17 +499,21 @@ proto.io.iohk.prism.protos.ECPublicKey.prototype.getX = function() {
 };
 
 
-/** @param {?proto.io.iohk.prism.protos.BigInteger|undefined} value */
+/**
+ * @param {?proto.io.iohk.prism.protos.BigInteger|undefined} value
+ * @return {!proto.io.iohk.prism.protos.ECPublicKey} returns this
+*/
 proto.io.iohk.prism.protos.ECPublicKey.prototype.setX = function(value) {
-  jspb.Message.setWrapperField(this, 1, value);
+  return jspb.Message.setWrapperField(this, 1, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.ECPublicKey} returns this
  */
 proto.io.iohk.prism.protos.ECPublicKey.prototype.clearX = function() {
-  this.setX(undefined);
+  return this.setX(undefined);
 };
 
 
@@ -525,17 +536,21 @@ proto.io.iohk.prism.protos.ECPublicKey.prototype.getY = function() {
 };
 
 
-/** @param {?proto.io.iohk.prism.protos.BigInteger|undefined} value */
+/**
+ * @param {?proto.io.iohk.prism.protos.BigInteger|undefined} value
+ * @return {!proto.io.iohk.prism.protos.ECPublicKey} returns this
+*/
 proto.io.iohk.prism.protos.ECPublicKey.prototype.setY = function(value) {
-  jspb.Message.setWrapperField(this, 2, value);
+  return jspb.Message.setWrapperField(this, 2, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.ECPublicKey} returns this
  */
 proto.io.iohk.prism.protos.ECPublicKey.prototype.clearY = function() {
-  this.setY(undefined);
+  return this.setY(undefined);
 };
 
 

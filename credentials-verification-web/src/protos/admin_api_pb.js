@@ -279,9 +279,12 @@ proto.io.iohk.prism.protos.PopulateDemoDatasetResponse.prototype.getMessage = fu
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.PopulateDemoDatasetResponse} returns this
+ */
 proto.io.iohk.prism.protos.PopulateDemoDatasetResponse.prototype.setMessage = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 

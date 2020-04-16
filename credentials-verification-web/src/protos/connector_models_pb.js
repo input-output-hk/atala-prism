@@ -368,9 +368,12 @@ proto.io.iohk.prism.protos.ConnectorPublicKey.prototype.getX = function() {
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.ConnectorPublicKey} returns this
+ */
 proto.io.iohk.prism.protos.ConnectorPublicKey.prototype.setX = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -383,9 +386,12 @@ proto.io.iohk.prism.protos.ConnectorPublicKey.prototype.getY = function() {
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.ConnectorPublicKey} returns this
+ */
 proto.io.iohk.prism.protos.ConnectorPublicKey.prototype.setY = function(value) {
-  jspb.Message.setProto3StringField(this, 2, value);
+  return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
@@ -534,9 +540,12 @@ proto.io.iohk.prism.protos.EncodedPublicKey.prototype.getPublickey_asU8 = functi
 };
 
 
-/** @param {!(string|Uint8Array)} value */
+/**
+ * @param {!(string|Uint8Array)} value
+ * @return {!proto.io.iohk.prism.protos.EncodedPublicKey} returns this
+ */
 proto.io.iohk.prism.protos.EncodedPublicKey.prototype.setPublickey = function(value) {
-  jspb.Message.setProto3BytesField(this, 1, value);
+  return jspb.Message.setProto3BytesField(this, 1, value);
 };
 
 
@@ -685,9 +694,12 @@ proto.io.iohk.prism.protos.IssuerInfo.prototype.getDid = function() {
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.IssuerInfo} returns this
+ */
 proto.io.iohk.prism.protos.IssuerInfo.prototype.setDid = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -700,9 +712,12 @@ proto.io.iohk.prism.protos.IssuerInfo.prototype.getName = function() {
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.IssuerInfo} returns this
+ */
 proto.io.iohk.prism.protos.IssuerInfo.prototype.setName = function(value) {
-  jspb.Message.setProto3StringField(this, 2, value);
+  return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
@@ -739,9 +754,12 @@ proto.io.iohk.prism.protos.IssuerInfo.prototype.getLogo_asU8 = function() {
 };
 
 
-/** @param {!(string|Uint8Array)} value */
+/**
+ * @param {!(string|Uint8Array)} value
+ * @return {!proto.io.iohk.prism.protos.IssuerInfo} returns this
+ */
 proto.io.iohk.prism.protos.IssuerInfo.prototype.setLogo = function(value) {
-  jspb.Message.setProto3BytesField(this, 3, value);
+  return jspb.Message.setProto3BytesField(this, 3, value);
 };
 
 
@@ -890,9 +908,12 @@ proto.io.iohk.prism.protos.VerifierInfo.prototype.getDid = function() {
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.VerifierInfo} returns this
+ */
 proto.io.iohk.prism.protos.VerifierInfo.prototype.setDid = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -905,9 +926,12 @@ proto.io.iohk.prism.protos.VerifierInfo.prototype.getName = function() {
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.VerifierInfo} returns this
+ */
 proto.io.iohk.prism.protos.VerifierInfo.prototype.setName = function(value) {
-  jspb.Message.setProto3StringField(this, 2, value);
+  return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
@@ -944,9 +968,12 @@ proto.io.iohk.prism.protos.VerifierInfo.prototype.getLogo_asU8 = function() {
 };
 
 
-/** @param {!(string|Uint8Array)} value */
+/**
+ * @param {!(string|Uint8Array)} value
+ * @return {!proto.io.iohk.prism.protos.VerifierInfo} returns this
+ */
 proto.io.iohk.prism.protos.VerifierInfo.prototype.setLogo = function(value) {
-  jspb.Message.setProto3BytesField(this, 3, value);
+  return jspb.Message.setProto3BytesField(this, 3, value);
 };
 
 
@@ -1083,9 +1110,12 @@ proto.io.iohk.prism.protos.HolderInfo.prototype.getDid = function() {
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.HolderInfo} returns this
+ */
 proto.io.iohk.prism.protos.HolderInfo.prototype.setDid = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -1098,9 +1128,12 @@ proto.io.iohk.prism.protos.HolderInfo.prototype.getName = function() {
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.HolderInfo} returns this
+ */
 proto.io.iohk.prism.protos.HolderInfo.prototype.setName = function(value) {
-  jspb.Message.setProto3StringField(this, 2, value);
+  return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
@@ -1283,17 +1316,21 @@ proto.io.iohk.prism.protos.ParticipantInfo.prototype.getIssuer = function() {
 };
 
 
-/** @param {?proto.io.iohk.prism.protos.IssuerInfo|undefined} value */
+/**
+ * @param {?proto.io.iohk.prism.protos.IssuerInfo|undefined} value
+ * @return {!proto.io.iohk.prism.protos.ParticipantInfo} returns this
+*/
 proto.io.iohk.prism.protos.ParticipantInfo.prototype.setIssuer = function(value) {
-  jspb.Message.setOneofWrapperField(this, 1, proto.io.iohk.prism.protos.ParticipantInfo.oneofGroups_[0], value);
+  return jspb.Message.setOneofWrapperField(this, 1, proto.io.iohk.prism.protos.ParticipantInfo.oneofGroups_[0], value);
 };
 
 
 /**
  * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.ParticipantInfo} returns this
  */
 proto.io.iohk.prism.protos.ParticipantInfo.prototype.clearIssuer = function() {
-  this.setIssuer(undefined);
+  return this.setIssuer(undefined);
 };
 
 
@@ -1316,17 +1353,21 @@ proto.io.iohk.prism.protos.ParticipantInfo.prototype.getHolder = function() {
 };
 
 
-/** @param {?proto.io.iohk.prism.protos.HolderInfo|undefined} value */
+/**
+ * @param {?proto.io.iohk.prism.protos.HolderInfo|undefined} value
+ * @return {!proto.io.iohk.prism.protos.ParticipantInfo} returns this
+*/
 proto.io.iohk.prism.protos.ParticipantInfo.prototype.setHolder = function(value) {
-  jspb.Message.setOneofWrapperField(this, 2, proto.io.iohk.prism.protos.ParticipantInfo.oneofGroups_[0], value);
+  return jspb.Message.setOneofWrapperField(this, 2, proto.io.iohk.prism.protos.ParticipantInfo.oneofGroups_[0], value);
 };
 
 
 /**
  * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.ParticipantInfo} returns this
  */
 proto.io.iohk.prism.protos.ParticipantInfo.prototype.clearHolder = function() {
-  this.setHolder(undefined);
+  return this.setHolder(undefined);
 };
 
 
@@ -1349,17 +1390,21 @@ proto.io.iohk.prism.protos.ParticipantInfo.prototype.getVerifier = function() {
 };
 
 
-/** @param {?proto.io.iohk.prism.protos.VerifierInfo|undefined} value */
+/**
+ * @param {?proto.io.iohk.prism.protos.VerifierInfo|undefined} value
+ * @return {!proto.io.iohk.prism.protos.ParticipantInfo} returns this
+*/
 proto.io.iohk.prism.protos.ParticipantInfo.prototype.setVerifier = function(value) {
-  jspb.Message.setOneofWrapperField(this, 3, proto.io.iohk.prism.protos.ParticipantInfo.oneofGroups_[0], value);
+  return jspb.Message.setOneofWrapperField(this, 3, proto.io.iohk.prism.protos.ParticipantInfo.oneofGroups_[0], value);
 };
 
 
 /**
  * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.ParticipantInfo} returns this
  */
 proto.io.iohk.prism.protos.ParticipantInfo.prototype.clearVerifier = function() {
-  this.setVerifier(undefined);
+  return this.setVerifier(undefined);
 };
 
 
@@ -1505,9 +1550,12 @@ proto.io.iohk.prism.protos.Connection.prototype.getConnectiontoken = function() 
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.Connection} returns this
+ */
 proto.io.iohk.prism.protos.Connection.prototype.setConnectiontoken = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -1520,9 +1568,12 @@ proto.io.iohk.prism.protos.Connection.prototype.getConnectionid = function() {
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.Connection} returns this
+ */
 proto.io.iohk.prism.protos.Connection.prototype.setConnectionid = function(value) {
-  jspb.Message.setProto3StringField(this, 2, value);
+  return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
@@ -1685,9 +1736,12 @@ proto.io.iohk.prism.protos.ConnectionInfo.prototype.getConnectionid = function()
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.ConnectionInfo} returns this
+ */
 proto.io.iohk.prism.protos.ConnectionInfo.prototype.setConnectionid = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -1700,9 +1754,12 @@ proto.io.iohk.prism.protos.ConnectionInfo.prototype.getCreated = function() {
 };
 
 
-/** @param {number} value */
+/**
+ * @param {number} value
+ * @return {!proto.io.iohk.prism.protos.ConnectionInfo} returns this
+ */
 proto.io.iohk.prism.protos.ConnectionInfo.prototype.setCreated = function(value) {
-  jspb.Message.setProto3IntField(this, 2, value);
+  return jspb.Message.setProto3IntField(this, 2, value);
 };
 
 
@@ -1716,17 +1773,21 @@ proto.io.iohk.prism.protos.ConnectionInfo.prototype.getParticipantinfo = functio
 };
 
 
-/** @param {?proto.io.iohk.prism.protos.ParticipantInfo|undefined} value */
+/**
+ * @param {?proto.io.iohk.prism.protos.ParticipantInfo|undefined} value
+ * @return {!proto.io.iohk.prism.protos.ConnectionInfo} returns this
+*/
 proto.io.iohk.prism.protos.ConnectionInfo.prototype.setParticipantinfo = function(value) {
-  jspb.Message.setWrapperField(this, 3, value);
+  return jspb.Message.setWrapperField(this, 3, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.ConnectionInfo} returns this
  */
 proto.io.iohk.prism.protos.ConnectionInfo.prototype.clearParticipantinfo = function() {
-  this.setParticipantinfo(undefined);
+  return this.setParticipantinfo(undefined);
 };
 
 
@@ -1748,9 +1809,12 @@ proto.io.iohk.prism.protos.ConnectionInfo.prototype.getToken = function() {
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.ConnectionInfo} returns this
+ */
 proto.io.iohk.prism.protos.ConnectionInfo.prototype.setToken = function(value) {
-  jspb.Message.setProto3StringField(this, 4, value);
+  return jspb.Message.setProto3StringField(this, 4, value);
 };
 
 
@@ -1911,9 +1975,12 @@ proto.io.iohk.prism.protos.ReceivedMessage.prototype.getId = function() {
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.ReceivedMessage} returns this
+ */
 proto.io.iohk.prism.protos.ReceivedMessage.prototype.setId = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -1926,9 +1993,12 @@ proto.io.iohk.prism.protos.ReceivedMessage.prototype.getReceived = function() {
 };
 
 
-/** @param {number} value */
+/**
+ * @param {number} value
+ * @return {!proto.io.iohk.prism.protos.ReceivedMessage} returns this
+ */
 proto.io.iohk.prism.protos.ReceivedMessage.prototype.setReceived = function(value) {
-  jspb.Message.setProto3IntField(this, 2, value);
+  return jspb.Message.setProto3IntField(this, 2, value);
 };
 
 
@@ -1941,9 +2011,12 @@ proto.io.iohk.prism.protos.ReceivedMessage.prototype.getConnectionid = function(
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.ReceivedMessage} returns this
+ */
 proto.io.iohk.prism.protos.ReceivedMessage.prototype.setConnectionid = function(value) {
-  jspb.Message.setProto3StringField(this, 3, value);
+  return jspb.Message.setProto3StringField(this, 3, value);
 };
 
 
@@ -1980,9 +2053,12 @@ proto.io.iohk.prism.protos.ReceivedMessage.prototype.getMessage_asU8 = function(
 };
 
 
-/** @param {!(string|Uint8Array)} value */
+/**
+ * @param {!(string|Uint8Array)} value
+ * @return {!proto.io.iohk.prism.protos.ReceivedMessage} returns this
+ */
 proto.io.iohk.prism.protos.ReceivedMessage.prototype.setMessage = function(value) {
-  jspb.Message.setProto3BytesField(this, 4, value);
+  return jspb.Message.setProto3BytesField(this, 4, value);
 };
 
 
@@ -2155,9 +2231,12 @@ proto.io.iohk.prism.protos.Payment.prototype.getId = function() {
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.Payment} returns this
+ */
 proto.io.iohk.prism.protos.Payment.prototype.setId = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -2170,9 +2249,12 @@ proto.io.iohk.prism.protos.Payment.prototype.getAmount = function() {
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.Payment} returns this
+ */
 proto.io.iohk.prism.protos.Payment.prototype.setAmount = function(value) {
-  jspb.Message.setProto3StringField(this, 2, value);
+  return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
@@ -2185,9 +2267,12 @@ proto.io.iohk.prism.protos.Payment.prototype.getCreatedon = function() {
 };
 
 
-/** @param {number} value */
+/**
+ * @param {number} value
+ * @return {!proto.io.iohk.prism.protos.Payment} returns this
+ */
 proto.io.iohk.prism.protos.Payment.prototype.setCreatedon = function(value) {
-  jspb.Message.setProto3IntField(this, 3, value);
+  return jspb.Message.setProto3IntField(this, 3, value);
 };
 
 
@@ -2200,9 +2285,12 @@ proto.io.iohk.prism.protos.Payment.prototype.getStatus = function() {
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.Payment} returns this
+ */
 proto.io.iohk.prism.protos.Payment.prototype.setStatus = function(value) {
-  jspb.Message.setProto3StringField(this, 4, value);
+  return jspb.Message.setProto3StringField(this, 4, value);
 };
 
 
@@ -2215,9 +2303,12 @@ proto.io.iohk.prism.protos.Payment.prototype.getFailurereason = function() {
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.Payment} returns this
+ */
 proto.io.iohk.prism.protos.Payment.prototype.setFailurereason = function(value) {
-  jspb.Message.setProto3StringField(this, 5, value);
+  return jspb.Message.setProto3StringField(this, 5, value);
 };
 
 

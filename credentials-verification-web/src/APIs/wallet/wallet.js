@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid';
 import { WalletServicePromiseClient } from '../../protos/wallet_api_grpc_web_pb';
 import Logger from '../../helpers/Logger';
 import { ISSUER, VERIFIER } from '../../helpers/constants';
@@ -7,7 +8,8 @@ const {
   GetDIDRequest,
   LockWalletRequest,
   UnlockWalletRequest,
-  GetWalletStatusRequest
+  GetWalletStatusRequest,
+  SignMessageRequest
 } = require('../../protos/wallet_api_pb');
 
 async function getDid() {
@@ -109,11 +111,19 @@ function isIssuer() {
 }
 
 function getNonce() {
-  // TODO implement
+  const buffer = [];
+  uuidv4(null, buffer);
+  return Uint8Array.from(buffer);
 }
 
 function signMessage(unsignedRequest, nonce) {
-  // TODO implement
+  const requestBytes = unsignedRequest.serializeBinary();
+  const toSign = new Uint8Array(nonce.length + requestBytes.length);
+  toSign.set(nonce);
+  toSign.set(requestBytes, nonce.length);
+  const request = new SignMessageRequest();
+  request.setMessage(toSign);
+  return this.client.signMessage(request, null);
 }
 
 function Wallet(config) {

@@ -565,17 +565,21 @@ proto.io.iohk.prism.protos.AlphaCredential.prototype.getIssuertype = function() 
 };
 
 
-/** @param {?proto.io.iohk.prism.protos.IssuerData|undefined} value */
+/**
+ * @param {?proto.io.iohk.prism.protos.IssuerData|undefined} value
+ * @return {!proto.io.iohk.prism.protos.AlphaCredential} returns this
+*/
 proto.io.iohk.prism.protos.AlphaCredential.prototype.setIssuertype = function(value) {
-  jspb.Message.setWrapperField(this, 1, value);
+  return jspb.Message.setWrapperField(this, 1, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.AlphaCredential} returns this
  */
 proto.io.iohk.prism.protos.AlphaCredential.prototype.clearIssuertype = function() {
-  this.setIssuertype(undefined);
+  return this.setIssuertype(undefined);
 };
 
 
@@ -598,17 +602,21 @@ proto.io.iohk.prism.protos.AlphaCredential.prototype.getSubjectdata = function()
 };
 
 
-/** @param {?proto.io.iohk.prism.protos.SubjectData|undefined} value */
+/**
+ * @param {?proto.io.iohk.prism.protos.SubjectData|undefined} value
+ * @return {!proto.io.iohk.prism.protos.AlphaCredential} returns this
+*/
 proto.io.iohk.prism.protos.AlphaCredential.prototype.setSubjectdata = function(value) {
-  jspb.Message.setWrapperField(this, 2, value);
+  return jspb.Message.setWrapperField(this, 2, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.AlphaCredential} returns this
  */
 proto.io.iohk.prism.protos.AlphaCredential.prototype.clearSubjectdata = function() {
-  this.setSubjectdata(undefined);
+  return this.setSubjectdata(undefined);
 };
 
 
@@ -630,9 +638,12 @@ proto.io.iohk.prism.protos.AlphaCredential.prototype.getGrantingdecision = funct
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.AlphaCredential} returns this
+ */
 proto.io.iohk.prism.protos.AlphaCredential.prototype.setGrantingdecision = function(value) {
-  jspb.Message.setProto3StringField(this, 3, value);
+  return jspb.Message.setProto3StringField(this, 3, value);
 };
 
 
@@ -646,9 +657,12 @@ proto.io.iohk.prism.protos.AlphaCredential.prototype.getSigningauthoritiesList =
 };
 
 
-/** @param {!Array<!proto.io.iohk.prism.protos.Signer>} value */
+/**
+ * @param {!Array<!proto.io.iohk.prism.protos.Signer>} value
+ * @return {!proto.io.iohk.prism.protos.AlphaCredential} returns this
+*/
 proto.io.iohk.prism.protos.AlphaCredential.prototype.setSigningauthoritiesList = function(value) {
-  jspb.Message.setRepeatedWrapperField(this, 4, value);
+  return jspb.Message.setRepeatedWrapperField(this, 4, value);
 };
 
 
@@ -664,9 +678,10 @@ proto.io.iohk.prism.protos.AlphaCredential.prototype.addSigningauthorities = fun
 
 /**
  * Clears the list making it empty but non-null.
+ * @return {!proto.io.iohk.prism.protos.AlphaCredential} returns this
  */
 proto.io.iohk.prism.protos.AlphaCredential.prototype.clearSigningauthoritiesList = function() {
-  this.setSigningauthoritiesList([]);
+  return this.setSigningauthoritiesList([]);
 };
 
 
@@ -679,9 +694,12 @@ proto.io.iohk.prism.protos.AlphaCredential.prototype.getDegreeawarded = function
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.AlphaCredential} returns this
+ */
 proto.io.iohk.prism.protos.AlphaCredential.prototype.setDegreeawarded = function(value) {
-  jspb.Message.setProto3StringField(this, 5, value);
+  return jspb.Message.setProto3StringField(this, 5, value);
 };
 
 
@@ -694,9 +712,12 @@ proto.io.iohk.prism.protos.AlphaCredential.prototype.getAdditionalspeciality = f
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.AlphaCredential} returns this
+ */
 proto.io.iohk.prism.protos.AlphaCredential.prototype.setAdditionalspeciality = function(value) {
-  jspb.Message.setProto3StringField(this, 6, value);
+  return jspb.Message.setProto3StringField(this, 6, value);
 };
 
 
@@ -710,17 +731,21 @@ proto.io.iohk.prism.protos.AlphaCredential.prototype.getIssuedon = function() {
 };
 
 
-/** @param {?proto.io.iohk.prism.protos.Date|undefined} value */
+/**
+ * @param {?proto.io.iohk.prism.protos.Date|undefined} value
+ * @return {!proto.io.iohk.prism.protos.AlphaCredential} returns this
+*/
 proto.io.iohk.prism.protos.AlphaCredential.prototype.setIssuedon = function(value) {
-  jspb.Message.setWrapperField(this, 7, value);
+  return jspb.Message.setWrapperField(this, 7, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.AlphaCredential} returns this
  */
 proto.io.iohk.prism.protos.AlphaCredential.prototype.clearIssuedon = function() {
-  this.setIssuedon(undefined);
+  return this.setIssuedon(undefined);
 };
 
 
@@ -742,9 +767,12 @@ proto.io.iohk.prism.protos.AlphaCredential.prototype.getIssuenumber = function()
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.AlphaCredential} returns this
+ */
 proto.io.iohk.prism.protos.AlphaCredential.prototype.setIssuenumber = function(value) {
-  jspb.Message.setProto3StringField(this, 8, value);
+  return jspb.Message.setProto3StringField(this, 8, value);
 };
 
 
@@ -757,9 +785,12 @@ proto.io.iohk.prism.protos.AlphaCredential.prototype.getRegistrationnumber = fun
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.AlphaCredential} returns this
+ */
 proto.io.iohk.prism.protos.AlphaCredential.prototype.setRegistrationnumber = function(value) {
-  jspb.Message.setProto3StringField(this, 9, value);
+  return jspb.Message.setProto3StringField(this, 9, value);
 };
 
 
@@ -772,9 +803,12 @@ proto.io.iohk.prism.protos.AlphaCredential.prototype.getDecisionnumber = functio
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.AlphaCredential} returns this
+ */
 proto.io.iohk.prism.protos.AlphaCredential.prototype.setDecisionnumber = function(value) {
-  jspb.Message.setProto3StringField(this, 10, value);
+  return jspb.Message.setProto3StringField(this, 10, value);
 };
 
 
@@ -787,9 +821,12 @@ proto.io.iohk.prism.protos.AlphaCredential.prototype.getYearcompletedbystudent =
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.AlphaCredential} returns this
+ */
 proto.io.iohk.prism.protos.AlphaCredential.prototype.setYearcompletedbystudent = function(value) {
-  jspb.Message.setProto3StringField(this, 15, value);
+  return jspb.Message.setProto3StringField(this, 15, value);
 };
 
 
@@ -802,9 +839,12 @@ proto.io.iohk.prism.protos.AlphaCredential.prototype.getDescription = function()
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.AlphaCredential} returns this
+ */
 proto.io.iohk.prism.protos.AlphaCredential.prototype.setDescription = function(value) {
-  jspb.Message.setProto3StringField(this, 16, value);
+  return jspb.Message.setProto3StringField(this, 16, value);
 };
 
 
@@ -818,17 +858,21 @@ proto.io.iohk.prism.protos.AlphaCredential.prototype.getExpireson = function() {
 };
 
 
-/** @param {?proto.io.iohk.prism.protos.Date|undefined} value */
+/**
+ * @param {?proto.io.iohk.prism.protos.Date|undefined} value
+ * @return {!proto.io.iohk.prism.protos.AlphaCredential} returns this
+*/
 proto.io.iohk.prism.protos.AlphaCredential.prototype.setExpireson = function(value) {
-  jspb.Message.setWrapperField(this, 17, value);
+  return jspb.Message.setWrapperField(this, 17, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.AlphaCredential} returns this
  */
 proto.io.iohk.prism.protos.AlphaCredential.prototype.clearExpireson = function() {
-  this.setExpireson(undefined);
+  return this.setExpireson(undefined);
 };
 
 
@@ -851,17 +895,21 @@ proto.io.iohk.prism.protos.AlphaCredential.prototype.getAdmissiondate = function
 };
 
 
-/** @param {?proto.io.iohk.prism.protos.Date|undefined} value */
+/**
+ * @param {?proto.io.iohk.prism.protos.Date|undefined} value
+ * @return {!proto.io.iohk.prism.protos.AlphaCredential} returns this
+*/
 proto.io.iohk.prism.protos.AlphaCredential.prototype.setAdmissiondate = function(value) {
-  jspb.Message.setWrapperField(this, 18, value);
+  return jspb.Message.setWrapperField(this, 18, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.AlphaCredential} returns this
  */
 proto.io.iohk.prism.protos.AlphaCredential.prototype.clearAdmissiondate = function() {
-  this.setAdmissiondate(undefined);
+  return this.setAdmissiondate(undefined);
 };
 
 
@@ -884,17 +932,21 @@ proto.io.iohk.prism.protos.AlphaCredential.prototype.getGraduationdate = functio
 };
 
 
-/** @param {?proto.io.iohk.prism.protos.Date|undefined} value */
+/**
+ * @param {?proto.io.iohk.prism.protos.Date|undefined} value
+ * @return {!proto.io.iohk.prism.protos.AlphaCredential} returns this
+*/
 proto.io.iohk.prism.protos.AlphaCredential.prototype.setGraduationdate = function(value) {
-  jspb.Message.setWrapperField(this, 19, value);
+  return jspb.Message.setWrapperField(this, 19, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.AlphaCredential} returns this
  */
 proto.io.iohk.prism.protos.AlphaCredential.prototype.clearGraduationdate = function() {
-  this.setGraduationdate(undefined);
+  return this.setGraduationdate(undefined);
 };
 
 
@@ -917,17 +969,21 @@ proto.io.iohk.prism.protos.AlphaCredential.prototype.getAttainmentdate = functio
 };
 
 
-/** @param {?proto.io.iohk.prism.protos.Date|undefined} value */
+/**
+ * @param {?proto.io.iohk.prism.protos.Date|undefined} value
+ * @return {!proto.io.iohk.prism.protos.AlphaCredential} returns this
+*/
 proto.io.iohk.prism.protos.AlphaCredential.prototype.setAttainmentdate = function(value) {
-  jspb.Message.setWrapperField(this, 20, value);
+  return jspb.Message.setWrapperField(this, 20, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.AlphaCredential} returns this
  */
 proto.io.iohk.prism.protos.AlphaCredential.prototype.clearAttainmentdate = function() {
-  this.setAttainmentdate(undefined);
+  return this.setAttainmentdate(undefined);
 };
 
 
@@ -1097,9 +1153,12 @@ proto.io.iohk.prism.protos.IssuerData.prototype.getIssuerlegalname = function() 
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.IssuerData} returns this
+ */
 proto.io.iohk.prism.protos.IssuerData.prototype.setIssuerlegalname = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -1112,9 +1171,12 @@ proto.io.iohk.prism.protos.IssuerData.prototype.getAcademicauthority = function(
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.IssuerData} returns this
+ */
 proto.io.iohk.prism.protos.IssuerData.prototype.setAcademicauthority = function(value) {
-  jspb.Message.setProto3StringField(this, 2, value);
+  return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
@@ -1127,9 +1189,12 @@ proto.io.iohk.prism.protos.IssuerData.prototype.getIssuertype = function() {
 };
 
 
-/** @param {!proto.io.iohk.prism.protos.IssuerType} value */
+/**
+ * @param {!proto.io.iohk.prism.protos.IssuerType} value
+ * @return {!proto.io.iohk.prism.protos.IssuerData} returns this
+ */
 proto.io.iohk.prism.protos.IssuerData.prototype.setIssuertype = function(value) {
-  jspb.Message.setProto3EnumField(this, 3, value);
+  return jspb.Message.setProto3EnumField(this, 3, value);
 };
 
 
@@ -1142,9 +1207,12 @@ proto.io.iohk.prism.protos.IssuerData.prototype.getDid = function() {
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.IssuerData} returns this
+ */
 proto.io.iohk.prism.protos.IssuerData.prototype.setDid = function(value) {
-  jspb.Message.setProto3StringField(this, 4, value);
+  return jspb.Message.setProto3StringField(this, 4, value);
 };
 
 
@@ -1324,26 +1392,31 @@ proto.io.iohk.prism.protos.Signer.prototype.getNamesList = function() {
 };
 
 
-/** @param {!Array<string>} value */
+/**
+ * @param {!Array<string>} value
+ * @return {!proto.io.iohk.prism.protos.Signer} returns this
+ */
 proto.io.iohk.prism.protos.Signer.prototype.setNamesList = function(value) {
-  jspb.Message.setField(this, 1, value || []);
+  return jspb.Message.setField(this, 1, value || []);
 };
 
 
 /**
  * @param {string} value
  * @param {number=} opt_index
+ * @return {!proto.io.iohk.prism.protos.Signer} returns this
  */
 proto.io.iohk.prism.protos.Signer.prototype.addNames = function(value, opt_index) {
-  jspb.Message.addToRepeatedField(this, 1, value, opt_index);
+  return jspb.Message.addToRepeatedField(this, 1, value, opt_index);
 };
 
 
 /**
  * Clears the list making it empty but non-null.
+ * @return {!proto.io.iohk.prism.protos.Signer} returns this
  */
 proto.io.iohk.prism.protos.Signer.prototype.clearNamesList = function() {
-  this.setNamesList([]);
+  return this.setNamesList([]);
 };
 
 
@@ -1356,26 +1429,31 @@ proto.io.iohk.prism.protos.Signer.prototype.getSurnamesList = function() {
 };
 
 
-/** @param {!Array<string>} value */
+/**
+ * @param {!Array<string>} value
+ * @return {!proto.io.iohk.prism.protos.Signer} returns this
+ */
 proto.io.iohk.prism.protos.Signer.prototype.setSurnamesList = function(value) {
-  jspb.Message.setField(this, 2, value || []);
+  return jspb.Message.setField(this, 2, value || []);
 };
 
 
 /**
  * @param {string} value
  * @param {number=} opt_index
+ * @return {!proto.io.iohk.prism.protos.Signer} returns this
  */
 proto.io.iohk.prism.protos.Signer.prototype.addSurnames = function(value, opt_index) {
-  jspb.Message.addToRepeatedField(this, 2, value, opt_index);
+  return jspb.Message.addToRepeatedField(this, 2, value, opt_index);
 };
 
 
 /**
  * Clears the list making it empty but non-null.
+ * @return {!proto.io.iohk.prism.protos.Signer} returns this
  */
 proto.io.iohk.prism.protos.Signer.prototype.clearSurnamesList = function() {
-  this.setSurnamesList([]);
+  return this.setSurnamesList([]);
 };
 
 
@@ -1388,9 +1466,12 @@ proto.io.iohk.prism.protos.Signer.prototype.getRole = function() {
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.Signer} returns this
+ */
 proto.io.iohk.prism.protos.Signer.prototype.setRole = function(value) {
-  jspb.Message.setProto3StringField(this, 3, value);
+  return jspb.Message.setProto3StringField(this, 3, value);
 };
 
 
@@ -1403,9 +1484,12 @@ proto.io.iohk.prism.protos.Signer.prototype.getDid = function() {
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.Signer} returns this
+ */
 proto.io.iohk.prism.protos.Signer.prototype.setDid = function(value) {
-  jspb.Message.setProto3StringField(this, 4, value);
+  return jspb.Message.setProto3StringField(this, 4, value);
 };
 
 
@@ -1418,9 +1502,12 @@ proto.io.iohk.prism.protos.Signer.prototype.getTitle = function() {
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.Signer} returns this
+ */
 proto.io.iohk.prism.protos.Signer.prototype.setTitle = function(value) {
-  jspb.Message.setProto3StringField(this, 5, value);
+  return jspb.Message.setProto3StringField(this, 5, value);
 };
 
 
@@ -1592,26 +1679,31 @@ proto.io.iohk.prism.protos.SubjectData.prototype.getNamesList = function() {
 };
 
 
-/** @param {!Array<string>} value */
+/**
+ * @param {!Array<string>} value
+ * @return {!proto.io.iohk.prism.protos.SubjectData} returns this
+ */
 proto.io.iohk.prism.protos.SubjectData.prototype.setNamesList = function(value) {
-  jspb.Message.setField(this, 1, value || []);
+  return jspb.Message.setField(this, 1, value || []);
 };
 
 
 /**
  * @param {string} value
  * @param {number=} opt_index
+ * @return {!proto.io.iohk.prism.protos.SubjectData} returns this
  */
 proto.io.iohk.prism.protos.SubjectData.prototype.addNames = function(value, opt_index) {
-  jspb.Message.addToRepeatedField(this, 1, value, opt_index);
+  return jspb.Message.addToRepeatedField(this, 1, value, opt_index);
 };
 
 
 /**
  * Clears the list making it empty but non-null.
+ * @return {!proto.io.iohk.prism.protos.SubjectData} returns this
  */
 proto.io.iohk.prism.protos.SubjectData.prototype.clearNamesList = function() {
-  this.setNamesList([]);
+  return this.setNamesList([]);
 };
 
 
@@ -1624,26 +1716,31 @@ proto.io.iohk.prism.protos.SubjectData.prototype.getSurnamesList = function() {
 };
 
 
-/** @param {!Array<string>} value */
+/**
+ * @param {!Array<string>} value
+ * @return {!proto.io.iohk.prism.protos.SubjectData} returns this
+ */
 proto.io.iohk.prism.protos.SubjectData.prototype.setSurnamesList = function(value) {
-  jspb.Message.setField(this, 2, value || []);
+  return jspb.Message.setField(this, 2, value || []);
 };
 
 
 /**
  * @param {string} value
  * @param {number=} opt_index
+ * @return {!proto.io.iohk.prism.protos.SubjectData} returns this
  */
 proto.io.iohk.prism.protos.SubjectData.prototype.addSurnames = function(value, opt_index) {
-  jspb.Message.addToRepeatedField(this, 2, value, opt_index);
+  return jspb.Message.addToRepeatedField(this, 2, value, opt_index);
 };
 
 
 /**
  * Clears the list making it empty but non-null.
+ * @return {!proto.io.iohk.prism.protos.SubjectData} returns this
  */
 proto.io.iohk.prism.protos.SubjectData.prototype.clearSurnamesList = function() {
-  this.setSurnamesList([]);
+  return this.setSurnamesList([]);
 };
 
 
@@ -1657,17 +1754,21 @@ proto.io.iohk.prism.protos.SubjectData.prototype.getDateofbirth = function() {
 };
 
 
-/** @param {?proto.io.iohk.prism.protos.Date|undefined} value */
+/**
+ * @param {?proto.io.iohk.prism.protos.Date|undefined} value
+ * @return {!proto.io.iohk.prism.protos.SubjectData} returns this
+*/
 proto.io.iohk.prism.protos.SubjectData.prototype.setDateofbirth = function(value) {
-  jspb.Message.setWrapperField(this, 3, value);
+  return jspb.Message.setWrapperField(this, 3, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.SubjectData} returns this
  */
 proto.io.iohk.prism.protos.SubjectData.prototype.clearDateofbirth = function() {
-  this.setDateofbirth(undefined);
+  return this.setDateofbirth(undefined);
 };
 
 
@@ -1690,17 +1791,21 @@ proto.io.iohk.prism.protos.SubjectData.prototype.getIddocument = function() {
 };
 
 
-/** @param {?proto.io.iohk.prism.protos.PersonalId|undefined} value */
+/**
+ * @param {?proto.io.iohk.prism.protos.PersonalId|undefined} value
+ * @return {!proto.io.iohk.prism.protos.SubjectData} returns this
+*/
 proto.io.iohk.prism.protos.SubjectData.prototype.setIddocument = function(value) {
-  jspb.Message.setWrapperField(this, 4, value);
+  return jspb.Message.setWrapperField(this, 4, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.SubjectData} returns this
  */
 proto.io.iohk.prism.protos.SubjectData.prototype.clearIddocument = function() {
-  this.setIddocument(undefined);
+  return this.setIddocument(undefined);
 };
 
 
@@ -1846,9 +1951,12 @@ proto.io.iohk.prism.protos.PersonalId.prototype.getId = function() {
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.PersonalId} returns this
+ */
 proto.io.iohk.prism.protos.PersonalId.prototype.setId = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -1861,9 +1969,12 @@ proto.io.iohk.prism.protos.PersonalId.prototype.getDocumenttype = function() {
 };
 
 
-/** @param {!proto.io.iohk.prism.protos.IdDocumentType} value */
+/**
+ * @param {!proto.io.iohk.prism.protos.IdDocumentType} value
+ * @return {!proto.io.iohk.prism.protos.PersonalId} returns this
+ */
 proto.io.iohk.prism.protos.PersonalId.prototype.setDocumenttype = function(value) {
-  jspb.Message.setProto3EnumField(this, 2, value);
+  return jspb.Message.setProto3EnumField(this, 2, value);
 };
 
 
@@ -2031,17 +2142,21 @@ proto.io.iohk.prism.protos.IssuerSentCredential.prototype.getAlphacredential = f
 };
 
 
-/** @param {?proto.io.iohk.prism.protos.AlphaCredential|undefined} value */
+/**
+ * @param {?proto.io.iohk.prism.protos.AlphaCredential|undefined} value
+ * @return {!proto.io.iohk.prism.protos.IssuerSentCredential} returns this
+*/
 proto.io.iohk.prism.protos.IssuerSentCredential.prototype.setAlphacredential = function(value) {
-  jspb.Message.setOneofWrapperField(this, 1, proto.io.iohk.prism.protos.IssuerSentCredential.oneofGroups_[0], value);
+  return jspb.Message.setOneofWrapperField(this, 1, proto.io.iohk.prism.protos.IssuerSentCredential.oneofGroups_[0], value);
 };
 
 
 /**
  * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.IssuerSentCredential} returns this
  */
 proto.io.iohk.prism.protos.IssuerSentCredential.prototype.clearAlphacredential = function() {
-  this.setAlphacredential(undefined);
+  return this.setAlphacredential(undefined);
 };
 
 
@@ -2064,17 +2179,21 @@ proto.io.iohk.prism.protos.IssuerSentCredential.prototype.getCredential = functi
 };
 
 
-/** @param {?proto.io.iohk.prism.protos.Credential|undefined} value */
+/**
+ * @param {?proto.io.iohk.prism.protos.Credential|undefined} value
+ * @return {!proto.io.iohk.prism.protos.IssuerSentCredential} returns this
+*/
 proto.io.iohk.prism.protos.IssuerSentCredential.prototype.setCredential = function(value) {
-  jspb.Message.setOneofWrapperField(this, 2, proto.io.iohk.prism.protos.IssuerSentCredential.oneofGroups_[0], value);
+  return jspb.Message.setOneofWrapperField(this, 2, proto.io.iohk.prism.protos.IssuerSentCredential.oneofGroups_[0], value);
 };
 
 
 /**
  * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.IssuerSentCredential} returns this
  */
 proto.io.iohk.prism.protos.IssuerSentCredential.prototype.clearCredential = function() {
-  this.setCredential(undefined);
+  return this.setCredential(undefined);
 };
 
 
@@ -2220,9 +2339,12 @@ proto.io.iohk.prism.protos.Credential.prototype.getTypeid = function() {
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.Credential} returns this
+ */
 proto.io.iohk.prism.protos.Credential.prototype.setTypeid = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -2235,9 +2357,12 @@ proto.io.iohk.prism.protos.Credential.prototype.getCredentialdocument = function
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.Credential} returns this
+ */
 proto.io.iohk.prism.protos.Credential.prototype.setCredentialdocument = function(value) {
-  jspb.Message.setProto3StringField(this, 2, value);
+  return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
@@ -2365,17 +2490,21 @@ proto.io.iohk.prism.protos.HolderSentCredential.prototype.getCredential = functi
 };
 
 
-/** @param {?proto.io.iohk.prism.protos.AlphaCredential|undefined} value */
+/**
+ * @param {?proto.io.iohk.prism.protos.AlphaCredential|undefined} value
+ * @return {!proto.io.iohk.prism.protos.HolderSentCredential} returns this
+*/
 proto.io.iohk.prism.protos.HolderSentCredential.prototype.setCredential = function(value) {
-  jspb.Message.setWrapperField(this, 1, value);
+  return jspb.Message.setWrapperField(this, 1, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.HolderSentCredential} returns this
  */
 proto.io.iohk.prism.protos.HolderSentCredential.prototype.clearCredential = function() {
-  this.setCredential(undefined);
+  return this.setCredential(undefined);
 };
 
 
@@ -2521,9 +2650,12 @@ proto.io.iohk.prism.protos.ProofRequest.prototype.getTypeid = function() {
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.ProofRequest} returns this
+ */
 proto.io.iohk.prism.protos.ProofRequest.prototype.setTypeid = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -2536,9 +2668,12 @@ proto.io.iohk.prism.protos.ProofRequest.prototype.getConnectiontoken = function(
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.ProofRequest} returns this
+ */
 proto.io.iohk.prism.protos.ProofRequest.prototype.setConnectiontoken = function(value) {
-  jspb.Message.setProto3StringField(this, 2, value);
+  return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
@@ -2721,17 +2856,21 @@ proto.io.iohk.prism.protos.AtalaMessage.prototype.getIssuersentcredential = func
 };
 
 
-/** @param {?proto.io.iohk.prism.protos.IssuerSentCredential|undefined} value */
+/**
+ * @param {?proto.io.iohk.prism.protos.IssuerSentCredential|undefined} value
+ * @return {!proto.io.iohk.prism.protos.AtalaMessage} returns this
+*/
 proto.io.iohk.prism.protos.AtalaMessage.prototype.setIssuersentcredential = function(value) {
-  jspb.Message.setOneofWrapperField(this, 1, proto.io.iohk.prism.protos.AtalaMessage.oneofGroups_[0], value);
+  return jspb.Message.setOneofWrapperField(this, 1, proto.io.iohk.prism.protos.AtalaMessage.oneofGroups_[0], value);
 };
 
 
 /**
  * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.AtalaMessage} returns this
  */
 proto.io.iohk.prism.protos.AtalaMessage.prototype.clearIssuersentcredential = function() {
-  this.setIssuersentcredential(undefined);
+  return this.setIssuersentcredential(undefined);
 };
 
 
@@ -2754,17 +2893,21 @@ proto.io.iohk.prism.protos.AtalaMessage.prototype.getHoldersentcredential = func
 };
 
 
-/** @param {?proto.io.iohk.prism.protos.HolderSentCredential|undefined} value */
+/**
+ * @param {?proto.io.iohk.prism.protos.HolderSentCredential|undefined} value
+ * @return {!proto.io.iohk.prism.protos.AtalaMessage} returns this
+*/
 proto.io.iohk.prism.protos.AtalaMessage.prototype.setHoldersentcredential = function(value) {
-  jspb.Message.setOneofWrapperField(this, 2, proto.io.iohk.prism.protos.AtalaMessage.oneofGroups_[0], value);
+  return jspb.Message.setOneofWrapperField(this, 2, proto.io.iohk.prism.protos.AtalaMessage.oneofGroups_[0], value);
 };
 
 
 /**
  * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.AtalaMessage} returns this
  */
 proto.io.iohk.prism.protos.AtalaMessage.prototype.clearHoldersentcredential = function() {
-  this.setHoldersentcredential(undefined);
+  return this.setHoldersentcredential(undefined);
 };
 
 
@@ -2787,17 +2930,21 @@ proto.io.iohk.prism.protos.AtalaMessage.prototype.getProofrequest = function() {
 };
 
 
-/** @param {?proto.io.iohk.prism.protos.ProofRequest|undefined} value */
+/**
+ * @param {?proto.io.iohk.prism.protos.ProofRequest|undefined} value
+ * @return {!proto.io.iohk.prism.protos.AtalaMessage} returns this
+*/
 proto.io.iohk.prism.protos.AtalaMessage.prototype.setProofrequest = function(value) {
-  jspb.Message.setOneofWrapperField(this, 3, proto.io.iohk.prism.protos.AtalaMessage.oneofGroups_[0], value);
+  return jspb.Message.setOneofWrapperField(this, 3, proto.io.iohk.prism.protos.AtalaMessage.oneofGroups_[0], value);
 };
 
 
 /**
  * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.AtalaMessage} returns this
  */
 proto.io.iohk.prism.protos.AtalaMessage.prototype.clearProofrequest = function() {
-  this.setProofrequest(undefined);
+  return this.setProofrequest(undefined);
 };
 
 

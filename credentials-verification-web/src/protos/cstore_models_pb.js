@@ -239,9 +239,12 @@ proto.io.iohk.prism.protos.Individual.prototype.getIndividualid = function() {
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.Individual} returns this
+ */
 proto.io.iohk.prism.protos.Individual.prototype.setIndividualid = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -254,9 +257,12 @@ proto.io.iohk.prism.protos.Individual.prototype.getStatus = function() {
 };
 
 
-/** @param {!proto.io.iohk.prism.protos.IndividualConnectionStatus} value */
+/**
+ * @param {!proto.io.iohk.prism.protos.IndividualConnectionStatus} value
+ * @return {!proto.io.iohk.prism.protos.Individual} returns this
+ */
 proto.io.iohk.prism.protos.Individual.prototype.setStatus = function(value) {
-  jspb.Message.setProto3EnumField(this, 2, value);
+  return jspb.Message.setProto3EnumField(this, 2, value);
 };
 
 
@@ -269,9 +275,12 @@ proto.io.iohk.prism.protos.Individual.prototype.getFullname = function() {
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.Individual} returns this
+ */
 proto.io.iohk.prism.protos.Individual.prototype.setFullname = function(value) {
-  jspb.Message.setProto3StringField(this, 3, value);
+  return jspb.Message.setProto3StringField(this, 3, value);
 };
 
 
@@ -284,9 +293,12 @@ proto.io.iohk.prism.protos.Individual.prototype.getEmail = function() {
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.Individual} returns this
+ */
 proto.io.iohk.prism.protos.Individual.prototype.setEmail = function(value) {
-  jspb.Message.setProto3StringField(this, 4, value);
+  return jspb.Message.setProto3StringField(this, 4, value);
 };
 
 
@@ -299,9 +311,12 @@ proto.io.iohk.prism.protos.Individual.prototype.getConnectiontoken = function() 
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.Individual} returns this
+ */
 proto.io.iohk.prism.protos.Individual.prototype.setConnectiontoken = function(value) {
-  jspb.Message.setProto3StringField(this, 5, value);
+  return jspb.Message.setProto3StringField(this, 5, value);
 };
 
 
@@ -314,9 +329,12 @@ proto.io.iohk.prism.protos.Individual.prototype.getConnectionid = function() {
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.Individual} returns this
+ */
 proto.io.iohk.prism.protos.Individual.prototype.setConnectionid = function(value) {
-  jspb.Message.setProto3StringField(this, 6, value);
+  return jspb.Message.setProto3StringField(this, 6, value);
 };
 
 
@@ -477,9 +495,12 @@ proto.io.iohk.prism.protos.SignedCredential.prototype.getIssuerdid = function() 
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.SignedCredential} returns this
+ */
 proto.io.iohk.prism.protos.SignedCredential.prototype.setIssuerdid = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -492,9 +513,12 @@ proto.io.iohk.prism.protos.SignedCredential.prototype.getProofid = function() {
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.SignedCredential} returns this
+ */
 proto.io.iohk.prism.protos.SignedCredential.prototype.setProofid = function(value) {
-  jspb.Message.setProto3StringField(this, 2, value);
+  return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
@@ -531,9 +555,12 @@ proto.io.iohk.prism.protos.SignedCredential.prototype.getContent_asU8 = function
 };
 
 
-/** @param {!(string|Uint8Array)} value */
+/**
+ * @param {!(string|Uint8Array)} value
+ * @return {!proto.io.iohk.prism.protos.SignedCredential} returns this
+ */
 proto.io.iohk.prism.protos.SignedCredential.prototype.setContent = function(value) {
-  jspb.Message.setProto3BytesField(this, 3, value);
+  return jspb.Message.setProto3BytesField(this, 3, value);
 };
 
 
@@ -570,9 +597,12 @@ proto.io.iohk.prism.protos.SignedCredential.prototype.getSignature_asU8 = functi
 };
 
 
-/** @param {!(string|Uint8Array)} value */
+/**
+ * @param {!(string|Uint8Array)} value
+ * @return {!proto.io.iohk.prism.protos.SignedCredential} returns this
+ */
 proto.io.iohk.prism.protos.SignedCredential.prototype.setSignature = function(value) {
-  jspb.Message.setProto3BytesField(this, 4, value);
+  return jspb.Message.setProto3BytesField(this, 4, value);
 };
 
 

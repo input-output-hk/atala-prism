@@ -16,8 +16,10 @@ async function getConnectionsPaginated(lastSeenConnectionId, limit) {
   connectionsPaginatedRequest.setLastseenconnectionid(lastSeenConnectionId);
   connectionsPaginatedRequest.setLimit(limit);
 
+  const metadata = await this.auth.getMetadata(connectionsPaginatedRequest);
+
   return this.client
-    .getConnectionsPaginated(connectionsPaginatedRequest, this.auth.getMetadata())
+    .getConnectionsPaginated(connectionsPaginatedRequest, metadata)
     .then(call => {
       const { connectionsList } = call.toObject();
       return connectionsList;
@@ -38,7 +40,10 @@ async function getMessagesForConnection(connectionId) {
   Logger.info(`Getting messages for connectionId ${connectionId}`);
   const request = new GetMessagesForConnectionRequest();
   request.setConnectionid(connectionId);
-  const result = await this.client.getMessagesForConnection(request, this.auth.getMetadata());
+
+  const metadata = await this.auth.getMetadata(request);
+
+  const result = await this.client.getMessagesForConnection(request, metadata);
   return result.getMessagesList().map(msg => mapMessageToCredential(msg));
 }
 
@@ -62,7 +67,9 @@ async function issueCredential(message, connectionId) {
   sendMessageRequest.setConnectionid(connectionId);
   sendMessageRequest.setMessage(message);
 
-  return this.client.sendMessage(sendMessageRequest, this.auth.getMetadata()).catch(error => {
+  const metadata = await this.auth.getMetadata(sendMessageRequest);
+
+  return this.client.sendMessage(sendMessageRequest, metadata).catch(error => {
     Logger.error('Error issuing the credential: ', error);
     throw new Error(error);
   });
@@ -79,7 +86,7 @@ async function registerUser(createOperation, name, logoFile, isIssuer) {
   registerRequest.setLogo(logo);
   registerRequest.setCreatedidoperation(createOperation);
 
-  const response = await this.client.registerDID(registerRequest, this.auth.getMetadata());
+  const response = await this.client.registerDID(registerRequest);
 
   const { id } = response.toObject();
 

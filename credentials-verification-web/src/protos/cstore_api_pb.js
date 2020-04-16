@@ -368,9 +368,12 @@ proto.io.iohk.prism.protos.CreateIndividualRequest.prototype.getFullname = funct
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.CreateIndividualRequest} returns this
+ */
 proto.io.iohk.prism.protos.CreateIndividualRequest.prototype.setFullname = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -383,9 +386,12 @@ proto.io.iohk.prism.protos.CreateIndividualRequest.prototype.getEmail = function
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.CreateIndividualRequest} returns this
+ */
 proto.io.iohk.prism.protos.CreateIndividualRequest.prototype.setEmail = function(value) {
-  jspb.Message.setProto3StringField(this, 2, value);
+  return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
@@ -513,17 +519,21 @@ proto.io.iohk.prism.protos.CreateIndividualResponse.prototype.getIndividual = fu
 };
 
 
-/** @param {?proto.io.iohk.prism.protos.Individual|undefined} value */
+/**
+ * @param {?proto.io.iohk.prism.protos.Individual|undefined} value
+ * @return {!proto.io.iohk.prism.protos.CreateIndividualResponse} returns this
+*/
 proto.io.iohk.prism.protos.CreateIndividualResponse.prototype.setIndividual = function(value) {
-  jspb.Message.setWrapperField(this, 1, value);
+  return jspb.Message.setWrapperField(this, 1, value);
 };
 
 
 /**
  * Clears the message field making it undefined.
+ * @return {!proto.io.iohk.prism.protos.CreateIndividualResponse} returns this
  */
 proto.io.iohk.prism.protos.CreateIndividualResponse.prototype.clearIndividual = function() {
-  this.setIndividual(undefined);
+  return this.setIndividual(undefined);
 };
 
 
@@ -657,9 +667,12 @@ proto.io.iohk.prism.protos.GenerateConnectionTokenForRequest.prototype.getIndivi
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.GenerateConnectionTokenForRequest} returns this
+ */
 proto.io.iohk.prism.protos.GenerateConnectionTokenForRequest.prototype.setIndividualid = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -796,9 +809,12 @@ proto.io.iohk.prism.protos.GetIndividualsRequest.prototype.getLimit = function()
 };
 
 
-/** @param {number} value */
+/**
+ * @param {number} value
+ * @return {!proto.io.iohk.prism.protos.GetIndividualsRequest} returns this
+ */
 proto.io.iohk.prism.protos.GetIndividualsRequest.prototype.setLimit = function(value) {
-  jspb.Message.setProto3IntField(this, 1, value);
+  return jspb.Message.setProto3IntField(this, 1, value);
 };
 
 
@@ -811,9 +827,12 @@ proto.io.iohk.prism.protos.GetIndividualsRequest.prototype.getLastseenindividual
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.GetIndividualsRequest} returns this
+ */
 proto.io.iohk.prism.protos.GetIndividualsRequest.prototype.setLastseenindividualid = function(value) {
-  jspb.Message.setProto3StringField(this, 2, value);
+  return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
@@ -949,9 +968,12 @@ proto.io.iohk.prism.protos.GetIndividualsResponse.prototype.getIndividualsList =
 };
 
 
-/** @param {!Array<!proto.io.iohk.prism.protos.Individual>} value */
+/**
+ * @param {!Array<!proto.io.iohk.prism.protos.Individual>} value
+ * @return {!proto.io.iohk.prism.protos.GetIndividualsResponse} returns this
+*/
 proto.io.iohk.prism.protos.GetIndividualsResponse.prototype.setIndividualsList = function(value) {
-  jspb.Message.setRepeatedWrapperField(this, 1, value);
+  return jspb.Message.setRepeatedWrapperField(this, 1, value);
 };
 
 
@@ -967,9 +989,10 @@ proto.io.iohk.prism.protos.GetIndividualsResponse.prototype.addIndividuals = fun
 
 /**
  * Clears the list making it empty but non-null.
+ * @return {!proto.io.iohk.prism.protos.GetIndividualsResponse} returns this
  */
 proto.io.iohk.prism.protos.GetIndividualsResponse.prototype.clearIndividualsList = function() {
-  this.setIndividualsList([]);
+  return this.setIndividualsList([]);
 };
 
 
@@ -1094,9 +1117,12 @@ proto.io.iohk.prism.protos.GenerateConnectionTokenForResponse.prototype.getToken
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.GenerateConnectionTokenForResponse} returns this
+ */
 proto.io.iohk.prism.protos.GenerateConnectionTokenForResponse.prototype.setToken = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -1269,9 +1295,12 @@ proto.io.iohk.prism.protos.StoreCredentialRequest.prototype.getIndividualid = fu
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.StoreCredentialRequest} returns this
+ */
 proto.io.iohk.prism.protos.StoreCredentialRequest.prototype.setIndividualid = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -1284,9 +1313,12 @@ proto.io.iohk.prism.protos.StoreCredentialRequest.prototype.getIssuerdid = funct
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.StoreCredentialRequest} returns this
+ */
 proto.io.iohk.prism.protos.StoreCredentialRequest.prototype.setIssuerdid = function(value) {
-  jspb.Message.setProto3StringField(this, 2, value);
+  return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
@@ -1299,9 +1331,12 @@ proto.io.iohk.prism.protos.StoreCredentialRequest.prototype.getProofid = functio
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.StoreCredentialRequest} returns this
+ */
 proto.io.iohk.prism.protos.StoreCredentialRequest.prototype.setProofid = function(value) {
-  jspb.Message.setProto3StringField(this, 3, value);
+  return jspb.Message.setProto3StringField(this, 3, value);
 };
 
 
@@ -1338,9 +1373,12 @@ proto.io.iohk.prism.protos.StoreCredentialRequest.prototype.getContent_asU8 = fu
 };
 
 
-/** @param {!(string|Uint8Array)} value */
+/**
+ * @param {!(string|Uint8Array)} value
+ * @return {!proto.io.iohk.prism.protos.StoreCredentialRequest} returns this
+ */
 proto.io.iohk.prism.protos.StoreCredentialRequest.prototype.setContent = function(value) {
-  jspb.Message.setProto3BytesField(this, 4, value);
+  return jspb.Message.setProto3BytesField(this, 4, value);
 };
 
 
@@ -1377,9 +1415,12 @@ proto.io.iohk.prism.protos.StoreCredentialRequest.prototype.getSignature_asU8 = 
 };
 
 
-/** @param {!(string|Uint8Array)} value */
+/**
+ * @param {!(string|Uint8Array)} value
+ * @return {!proto.io.iohk.prism.protos.StoreCredentialRequest} returns this
+ */
 proto.io.iohk.prism.protos.StoreCredentialRequest.prototype.setSignature = function(value) {
-  jspb.Message.setProto3BytesField(this, 5, value);
+  return jspb.Message.setProto3BytesField(this, 5, value);
 };
 
 
@@ -1605,9 +1646,12 @@ proto.io.iohk.prism.protos.GetStoredCredentialsForRequest.prototype.getIndividua
 };
 
 
-/** @param {string} value */
+/**
+ * @param {string} value
+ * @return {!proto.io.iohk.prism.protos.GetStoredCredentialsForRequest} returns this
+ */
 proto.io.iohk.prism.protos.GetStoredCredentialsForRequest.prototype.setIndividualid = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -1743,9 +1787,12 @@ proto.io.iohk.prism.protos.GetStoredCredentialsForResponse.prototype.getCredenti
 };
 
 
-/** @param {!Array<!proto.io.iohk.prism.protos.SignedCredential>} value */
+/**
+ * @param {!Array<!proto.io.iohk.prism.protos.SignedCredential>} value
+ * @return {!proto.io.iohk.prism.protos.GetStoredCredentialsForResponse} returns this
+*/
 proto.io.iohk.prism.protos.GetStoredCredentialsForResponse.prototype.setCredentialsList = function(value) {
-  jspb.Message.setRepeatedWrapperField(this, 1, value);
+  return jspb.Message.setRepeatedWrapperField(this, 1, value);
 };
 
 
@@ -1761,9 +1808,10 @@ proto.io.iohk.prism.protos.GetStoredCredentialsForResponse.prototype.addCredenti
 
 /**
  * Clears the list making it empty but non-null.
+ * @return {!proto.io.iohk.prism.protos.GetStoredCredentialsForResponse} returns this
  */
 proto.io.iohk.prism.protos.GetStoredCredentialsForResponse.prototype.clearCredentialsList = function() {
-  this.setCredentialsList([]);
+  return this.setCredentialsList([]);
 };
 
 

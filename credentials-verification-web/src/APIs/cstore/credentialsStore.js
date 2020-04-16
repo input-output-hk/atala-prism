@@ -12,7 +12,10 @@ async function getIndividuals(lastSeenId, limit = 10) {
   const getIndividualsRequest = new GetIndividualsRequest();
   getIndividualsRequest.setLimit(limit);
   if (lastSeenId) getIndividualsRequest.setLastseenindividualid(lastSeenId);
-  const response = await this.client.getIndividuals(getIndividualsRequest, this.auth.getMetadata());
+
+  const metadata = await this.auth.getMetadata(getIndividualsRequest);
+
+  const response = await this.client.getIndividuals(getIndividualsRequest, metadata);
   const { individualsList } = response.toObject();
 
   return individualsList;
@@ -22,7 +25,10 @@ async function generateConnectionTokenForIndividual(individualId) {
   Logger.info(`Generating connection token for individualId ${individualId}`);
   const request = new GenerateConnectionTokenForRequest();
   request.setIndividualid(individualId);
-  const res = await this.client.generateConnectionTokenFor(request, this.auth.getMetadata());
+
+  const metadata = await this.auth.getMetadata(request);
+
+  const res = await this.client.generateConnectionTokenFor(request, metadata);
 
   return res.getToken();
 }
@@ -33,7 +39,9 @@ async function createIndividual(fullName, email) {
   request.setFullname(fullName);
   request.setEmail(email);
 
-  const individual = await this.client.createIndividual(request, this.auth.getMetadata());
+  const metadata = await this.auth.getMetadata(request);
+
+  const individual = await this.client.createIndividual(request, metadata);
 
   return individual.toObject();
 }
