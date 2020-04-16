@@ -1,7 +1,5 @@
 package io.iohk.node.repositories
 
-import java.time.LocalDate
-
 import cats.data.{EitherT, OptionT}
 import cats.effect.IO
 import doobie.implicits._
@@ -10,7 +8,9 @@ import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither._
 import io.iohk.node.errors.NodeError
 import io.iohk.node.errors.NodeError.UnknownValueError
-import io.iohk.node.models.{Credential, CredentialId}
+import io.iohk.node.models.nodeState.CredentialState
+import io.iohk.node.models.CredentialId
+import io.iohk.node.operations.TimestampInfo
 import io.iohk.node.repositories.daos.CredentialsDAO
 import io.iohk.node.repositories.daos.CredentialsDAO.CreateCredentialData
 
@@ -31,7 +31,7 @@ class CredentialsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
       .toFutureEither
   }
 
-  def find(credentialId: CredentialId): FutureEither[NodeError, Credential] = {
+  def find(credentialId: CredentialId): FutureEither[NodeError, CredentialState] = {
     OptionT(CredentialsDAO.find(credentialId))
       .toRight(UnknownValueError("credential_id", credentialId.id))
       .transact(xa)
@@ -40,9 +40,9 @@ class CredentialsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
       .toFutureEither
   }
 
-  def revoke(credentialId: CredentialId, revocationDate: LocalDate): FutureEither[NodeError, Boolean] = {
+  def revoke(credentialId: CredentialId, revocationTimestamp: TimestampInfo): FutureEither[NodeError, Boolean] = {
     EitherT
-      .right[NodeError](CredentialsDAO.revoke(credentialId, revocationDate))
+      .right[NodeError](CredentialsDAO.revoke(credentialId, revocationTimestamp))
       .transact(xa)
       .value
       .unsafeToFuture()

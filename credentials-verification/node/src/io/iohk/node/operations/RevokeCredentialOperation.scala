@@ -1,21 +1,20 @@
 package io.iohk.node.operations
 
-import java.time.LocalDate
-
 import cats.data.EitherT
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import io.iohk.cvp.crypto.SHA256Digest
-import io.iohk.node.models.{CredentialId, DIDPublicKey, DIDSuffix}
+import io.iohk.node.models.nodeState.DIDPublicKeyState
+import io.iohk.node.models.{CredentialId, DIDSuffix}
 import io.iohk.node.operations.path._
 import io.iohk.node.repositories.daos.{CredentialsDAO, PublicKeysDAO}
 import io.iohk.prism.protos.node_models
 
 case class RevokeCredentialOperation(
     credentialId: CredentialId,
-    revocationDate: LocalDate,
     previousOperation: SHA256Digest,
-    digest: SHA256Digest
+    digest: SHA256Digest,
+    timestampInfo: TimestampInfo
 ) extends Operation {
   override def linkedPreviousOperation: Option[SHA256Digest] = Some(previousOperation)
 
@@ -25,31 +24,36 @@ case class RevokeCredentialOperation(
         CredentialsDAO
           .find(credentialId)
           .map(
-            _.map(cred => (cred.issuer, cred.lastOperation))
+            _.map(cred => (cred.issuerDIDSuffix, cred.lastOperation))
               .toRight(StateError.EntityMissing("credential", credentialId.id))
           )
       }
       (issuer, prevOp) = issuerPrevOp
-      key <- EitherT[ConnectionIO, StateError, DIDPublicKey] {
+      keyState <- EitherT[ConnectionIO, StateError, DIDPublicKeyState] {
         PublicKeysDAO.find(issuer, keyId).map(_.toRight(StateError.UnknownKey(issuer, keyId)))
       }.subflatMap { didKey =>
-        Either.cond(didKey.keyUsage.canIssue, didKey.key, StateError.InvalidKeyUsed("issuing key"))
+        Either.cond(didKey.keyUsage.canIssue, didKey, StateError.InvalidKeyUsed("issuing key"))
       }
-    } yield CorrectnessData(key, Some(prevOp))
+      _ <- EitherT.fromEither[ConnectionIO] {
+        Either.cond(
+          keyState.revokedOn.isEmpty,
+          (),
+          StateError.KeyAlreadyRevoked() : StateError
+        )
+      }
+    } yield CorrectnessData(keyState.key, Some(prevOp))
   }
 
   override def applyState(): EitherT[ConnectionIO, StateError, Unit] = EitherT[ConnectionIO, StateError, Unit] {
     CredentialsDAO
-      .revoke(credentialId, revocationDate)
+      .revoke(credentialId, timestampInfo)
       .map(_ => Right(()))
   }
 }
 
 object RevokeCredentialOperation extends SimpleOperationCompanion[RevokeCredentialOperation] {
 
-  import ParsingUtils._
-
-  override def parse(operation: node_models.AtalaOperation): Either[ValidationError, RevokeCredentialOperation] = {
+  override def parse(operation: node_models.AtalaOperation, timestampInfo: TimestampInfo): Either[ValidationError, RevokeCredentialOperation] = {
 
     val operationDigest = SHA256Digest.compute(operation.toByteArray)
     val revokeOperation = ValueAtPath(operation, Path.root).child(_.getRevokeCredential, "revokeCredential")
@@ -65,7 +69,6 @@ object RevokeCredentialOperation extends SimpleOperationCompanion[RevokeCredenti
       previousOperation <- ParsingUtils.parseHash(
         revokeOperation.child(_.previousOperationHash, "previousOperationHash")
       )
-      revocationDate <- revokeOperation.childGet(_.revocationDate, "revocationDate").flatMap(parseDate)
-    } yield RevokeCredentialOperation(credentialId, revocationDate, previousOperation, operationDigest)
+    } yield RevokeCredentialOperation(credentialId, previousOperation, operationDigest, timestampInfo)
   }
 }

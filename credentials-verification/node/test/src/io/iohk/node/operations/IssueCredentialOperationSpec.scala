@@ -24,7 +24,8 @@ object IssueCredentialOperationSpec {
     DIDPublicKey(issuer, "issuing", KeyUsage.IssuingKey, issuingKeys.getPublic)
   )
 
-  lazy val issuerOperation = CreateDIDOperation.parse(CreateDIDOperationSpec.exampleOperation).right.value
+  lazy val dummyTimestamp = TimestampInfo.dummyTime
+  lazy val issuerOperation = CreateDIDOperation.parse(CreateDIDOperationSpec.exampleOperation, dummyTimestamp).right.value
   lazy val issuer = issuerOperation.id
   val content = ""
   val contentHash = SHA256Digest(MessageDigest.getInstance("SHA256").digest(content.getBytes)).value
@@ -58,7 +59,7 @@ class IssueCredentialOperationSpec extends PostgresRepositorySpec {
 
   "IssueCredentialOperation.parse" should {
     "parse valid CreateDid AtalaOperation" in {
-      IssueCredentialOperation.parse(exampleOperation) mustBe a[Right[_, _]]
+      IssueCredentialOperation.parse(exampleOperation, dummyTimestamp) mustBe a[Right[_, _]]
     }
 
     "return error when id is provided" in {
@@ -66,7 +67,7 @@ class IssueCredentialOperationSpec extends PostgresRepositorySpec {
       val invalidOperation = exampleOperation
         .update(_.issueCredential.credentialData.id := providedCredentialId)
 
-      inside(IssueCredentialOperation.parse(invalidOperation)) {
+      inside(IssueCredentialOperation.parse(invalidOperation, dummyTimestamp)) {
         case Left(ValidationError.InvalidValue(path, value, _)) =>
           path.path mustBe Vector("issueCredential", "credentialData", "id")
           value mustBe providedCredentialId
@@ -77,7 +78,7 @@ class IssueCredentialOperationSpec extends PostgresRepositorySpec {
       val invalidOperation = exampleOperation
         .update(_.issueCredential.credentialData.issuer := "")
 
-      inside(IssueCredentialOperation.parse(invalidOperation)) {
+      inside(IssueCredentialOperation.parse(invalidOperation, dummyTimestamp)) {
         case Left(ValidationError.InvalidValue(path, value, _)) =>
           path.path mustBe Vector("issueCredential", "credentialData", "issuer")
           value mustBe ""
@@ -88,7 +89,7 @@ class IssueCredentialOperationSpec extends PostgresRepositorySpec {
       val invalidOperation = exampleOperation
         .update(_.issueCredential.credentialData.issuer := "my best friend")
 
-      inside(IssueCredentialOperation.parse(invalidOperation)) {
+      inside(IssueCredentialOperation.parse(invalidOperation, dummyTimestamp)) {
         case Left(ValidationError.InvalidValue(path, value, _)) =>
           path.path mustBe Vector("issueCredential", "credentialData", "issuer")
           value mustBe "my best friend"
@@ -99,7 +100,7 @@ class IssueCredentialOperationSpec extends PostgresRepositorySpec {
       val invalidOperation = exampleOperation
         .update(_.issueCredential.credentialData.contentHash := ByteString.EMPTY)
 
-      inside(IssueCredentialOperation.parse(invalidOperation)) {
+      inside(IssueCredentialOperation.parse(invalidOperation, dummyTimestamp)) {
         case Left(ValidationError.InvalidValue(path, value, _)) =>
           path.path mustBe Vector("issueCredential", "credentialData", "contentHash")
           value mustBe "0x0"
@@ -111,62 +112,18 @@ class IssueCredentialOperationSpec extends PostgresRepositorySpec {
       val invalidOperation = exampleOperation
         .update(_.issueCredential.credentialData.contentHash := invalidHash)
 
-      inside(IssueCredentialOperation.parse(invalidOperation)) {
+      inside(IssueCredentialOperation.parse(invalidOperation, dummyTimestamp)) {
         case Left(ValidationError.InvalidValue(path, value, _)) =>
           path.path mustBe Vector("issueCredential", "credentialData", "contentHash")
           value mustBe "0x616263"
-      }
-    }
-
-    "return error when no date is provided" in {
-      val invalidOperation = exampleOperation
-        .update(_.issueCredential.credentialData.issuanceDate := null)
-
-      inside(IssueCredentialOperation.parse(invalidOperation)) {
-        case Left(ValidationError.MissingValue(path)) =>
-          path.path mustBe Vector("issueCredential", "credentialData", "issuanceDate")
-      }
-    }
-
-    "return error if year is invalid" in {
-      val invalidOperation = exampleOperation
-        .update(_.issueCredential.credentialData.issuanceDate.year := -1)
-
-      inside(IssueCredentialOperation.parse(invalidOperation)) {
-        case Left(ValidationError.InvalidValue(path, value, _)) =>
-          path.path mustBe Vector("issueCredential", "credentialData", "issuanceDate", "year")
-          value mustBe "-1"
-      }
-    }
-
-    "return error if month is invalid" in {
-      val invalidOperation = exampleOperation
-        .update(_.issueCredential.credentialData.issuanceDate.month := 13)
-
-      inside(IssueCredentialOperation.parse(invalidOperation)) {
-        case Left(ValidationError.InvalidValue(path, value, _)) =>
-          path.path mustBe Vector("issueCredential", "credentialData", "issuanceDate", "month")
-          value mustBe "13"
-      }
-    }
-
-    "return error if day is invalid" in {
-      val invalidOperation = exampleOperation
-        .update(_.issueCredential.credentialData.issuanceDate.month := 2)
-        .update(_.issueCredential.credentialData.issuanceDate.day := 30)
-
-      inside(IssueCredentialOperation.parse(invalidOperation)) {
-        case Left(ValidationError.InvalidValue(path, value, _)) =>
-          path.path mustBe Vector("issueCredential", "credentialData", "issuanceDate", "day")
-          value mustBe "30"
       }
     }
   }
 
   "IssueCredentialOperation.getCorrectnessData" should {
     "provide the key reference be used for signing" in {
-      didDataRepository.create(DIDData(issuer, issuerDidKeys, issuerOperation.digest)).value.futureValue
-      val parsedOperation = IssueCredentialOperation.parse(exampleOperation).right.value
+      didDataRepository.create(DIDData(issuer, issuerDidKeys, issuerOperation.digest), dummyTimestamp).value.futureValue
+      val parsedOperation = IssueCredentialOperation.parse(exampleOperation, dummyTimestamp).right.value
 
       val CorrectnessData(key, previousOperation) = parsedOperation
         .getCorrectnessData("issuing")
@@ -183,8 +140,8 @@ class IssueCredentialOperationSpec extends PostgresRepositorySpec {
 
   "IssueCredentialOperation.applyState" should {
     "create the DID information in the database" in {
-      didDataRepository.create(DIDData(issuer, issuerDidKeys, issuerOperation.digest)).value.futureValue
-      val parsedOperation = IssueCredentialOperation.parse(exampleOperation).right.value
+      didDataRepository.create(DIDData(issuer, issuerDidKeys, issuerOperation.digest), dummyTimestamp).value.futureValue
+      val parsedOperation = IssueCredentialOperation.parse(exampleOperation, dummyTimestamp).right.value
 
       val result = parsedOperation
         .applyState()
@@ -198,7 +155,7 @@ class IssueCredentialOperationSpec extends PostgresRepositorySpec {
     }
 
     "return error when issuer is missing in the DB" in {
-      val parsedOperation = IssueCredentialOperation.parse(exampleOperation).right.value
+      val parsedOperation = IssueCredentialOperation.parse(exampleOperation, dummyTimestamp).right.value
 
       val result = parsedOperation
         .applyState()
@@ -213,8 +170,8 @@ class IssueCredentialOperationSpec extends PostgresRepositorySpec {
     }
 
     "return error when the credential already exists in the db" in {
-      didDataRepository.create(DIDData(issuer, issuerDidKeys, issuerOperation.digest)).value.futureValue
-      val parsedOperation = IssueCredentialOperation.parse(exampleOperation).right.value
+      didDataRepository.create(DIDData(issuer, issuerDidKeys, issuerOperation.digest), dummyTimestamp).value.futureValue
+      val parsedOperation = IssueCredentialOperation.parse(exampleOperation, dummyTimestamp).right.value
 
       // first insertion
       parsedOperation

@@ -1,5 +1,7 @@
 package io.iohk.node.repositories.daos
 
+import java.time.Instant
+
 import doobie.implicits._
 import io.iohk.cvp.crypto.SHA256Digest
 import io.iohk.cvp.repositories.PostgresRepositorySpec
@@ -20,7 +22,7 @@ class AtalaObjectsDAOSpec extends PostgresRepositorySpec {
 
   "AtalaObjectsDAO" should {
     "retrieve inserted objects" in {
-      AtalaObjectsDAO.insert(AtalaObjectsDAO.AtalaObjectCreateData(objectId, 1)).transact(database).unsafeRunSync()
+      AtalaObjectsDAO.insert(AtalaObjectsDAO.AtalaObjectCreateData(objectId, 1, Instant.ofEpochMilli(0))).transact(database).unsafeRunSync()
       val retrieved = AtalaObjectsDAO.get(objectId).transact(database).unsafeRunSync().value
       retrieved.objectId mustBe objectId
       retrieved.sequenceNumber mustBe 1
@@ -29,14 +31,14 @@ class AtalaObjectsDAOSpec extends PostgresRepositorySpec {
     }
 
     "mark object as processed" in {
-      AtalaObjectsDAO.insert(AtalaObjectsDAO.AtalaObjectCreateData(objectId, 1)).transact(database).unsafeRunSync()
+      AtalaObjectsDAO.insert(AtalaObjectsDAO.AtalaObjectCreateData(objectId, 1, Instant.ofEpochMilli(0))).transact(database).unsafeRunSync()
       AtalaObjectsDAO.setProcessed(objectId).transact(database).unsafeRunSync()
       val retrieved = AtalaObjectsDAO.get(objectId).transact(database).unsafeRunSync().value
       retrieved.processed mustBe true
     }
 
     "add block hash to the object" in {
-      AtalaObjectsDAO.insert(AtalaObjectsDAO.AtalaObjectCreateData(objectId, 1)).transact(database).unsafeRunSync()
+      AtalaObjectsDAO.insert(AtalaObjectsDAO.AtalaObjectCreateData(objectId, 1, Instant.ofEpochMilli(0))).transact(database).unsafeRunSync()
       AtalaObjectsDAO.setBlockHash(objectId, blockHash).transact(database).unsafeRunSync()
       val retrieved = AtalaObjectsDAO.get(objectId).transact(database).unsafeRunSync().value
       retrieved.blockHash mustBe Some(blockHash)
@@ -45,7 +47,7 @@ class AtalaObjectsDAOSpec extends PostgresRepositorySpec {
     "return object with highest sequence number" in {
       for ((objId, zeroBasedI) <- objectIds.zipWithIndex) {
         AtalaObjectsDAO
-          .insert(AtalaObjectsDAO.AtalaObjectCreateData(objId, zeroBasedI + 1))
+          .insert(AtalaObjectsDAO.AtalaObjectCreateData(objId, zeroBasedI + 1, Instant.ofEpochMilli(0)))
           .transact(database)
           .unsafeRunSync()
       }

@@ -22,7 +22,7 @@ class NodeServiceImpl(didDataService: DIDDataService, objectManagement: ObjectMa
     didDataService.findByDID(request.did).value.flatMap {
       case Left(err: NodeError) => Future.failed(err.toStatus.asRuntimeException())
       case Right(didData) =>
-        Future.successful(node_api.GetDidDocumentResponse(Some(toDIDData(didData))))
+        Future.successful(node_api.GetDidDocumentResponse(Some(toDIDData(didData.toDIDData))))
     }
   }
 
@@ -32,9 +32,9 @@ class NodeServiceImpl(didDataService: DIDDataService, objectManagement: ObjectMa
     }
     for {
       operation <- operationF
-      parsedOperation <- errorEitherToFuture(CreateDIDOperation.parse(operation))
+      parsedOp <- errorEitherToFuture(CreateDIDOperation.parseWithMockedTime(operation))
       _ <- objectManagement.publishAtalaOperation(operation)
-    } yield node_api.CreateDIDResponse(id = parsedOperation.id.suffix)
+    } yield node_api.CreateDIDResponse(id = parsedOp.id.suffix)
   }
 
   override def updateDID(request: node_api.UpdateDIDRequest): Future[node_api.UpdateDIDResponse] = {
@@ -43,7 +43,7 @@ class NodeServiceImpl(didDataService: DIDDataService, objectManagement: ObjectMa
     }
     for {
       operation <- operationF
-      _ <- errorEitherToFuture(UpdateDIDOperation.parse(operation))
+      _ <- errorEitherToFuture(UpdateDIDOperation.validate(operation))
       _ <- objectManagement.publishAtalaOperation(operation)
     } yield node_api.UpdateDIDResponse()
   }
@@ -54,10 +54,10 @@ class NodeServiceImpl(didDataService: DIDDataService, objectManagement: ObjectMa
     }
     for {
       operation <- operationF
-      parsedOperation <- errorEitherToFuture(IssueCredentialOperation.parse(operation))
+      parsedOp <- errorEitherToFuture(IssueCredentialOperation.parseWithMockedTime(operation))
       operation = request.signedOperation.getOrElse(throw new RuntimeException("signed_operation missing"))
       _ <- objectManagement.publishAtalaOperation(operation)
-    } yield node_api.IssueCredentialResponse(id = parsedOperation.credentialId.id)
+    } yield node_api.IssueCredentialResponse(id = parsedOp.credentialId.id)
   }
 
   override def revokeCredential(
@@ -68,7 +68,7 @@ class NodeServiceImpl(didDataService: DIDDataService, objectManagement: ObjectMa
     }
     for {
       operation <- operationF
-      _ <- errorEitherToFuture(RevokeCredentialOperation.parse(operation))
+      _ <- errorEitherToFuture(RevokeCredentialOperation.validate(operation))
       _ <- objectManagement.publishAtalaOperation(operation)
     } yield node_api.RevokeCredentialResponse()
   }

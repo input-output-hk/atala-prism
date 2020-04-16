@@ -1,13 +1,13 @@
 package io.iohk.node.operations
 
-import java.time.LocalDate
+import java.time.Instant
 
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.iohk.cvp.repositories.PostgresRepositorySpec
 import io.iohk.node.models.{DIDPublicKey, KeyUsage}
 import io.iohk.node.repositories.{CredentialsRepository, DIDDataRepository}
-import io.iohk.prism.protos.{common_models, node_models}
+import io.iohk.prism.protos.node_models
 import org.scalatest.EitherValues._
 import org.scalatest.Inside._
 
@@ -22,23 +22,22 @@ object RevokeCredentialOperationSpec {
     DIDPublicKey(issuer, "issuing", KeyUsage.IssuingKey, issuingKeys.getPublic)
   )
 
-  lazy val issuerOperation = CreateDIDOperation.parse(CreateDIDOperationSpec.exampleOperation).right.value
+  lazy val dummyTimestamp = TimestampInfo.dummyTime
+  lazy val issuerOperation = CreateDIDOperation.parse(CreateDIDOperationSpec.exampleOperation, dummyTimestamp).right.value
   lazy val credentialIssueOperation =
-    IssueCredentialOperation.parse(IssueCredentialOperationSpec.exampleOperation).right.value
+    IssueCredentialOperation.parse(IssueCredentialOperationSpec.exampleOperation, dummyTimestamp).right.value
 
   lazy val issuer = issuerOperation.id
   lazy val credentialId = credentialIssueOperation.credentialId
 
-  val revocationDate = LocalDate.of(2019, 12, 16)
+  val revocationDate = TimestampInfo(Instant.ofEpochMilli(0), 0, 1)
 
   val exampleOperation = node_models.AtalaOperation(
     operation = node_models.AtalaOperation.Operation.RevokeCredential(
       value = node_models.RevokeCredentialOperation(
         previousOperationHash = ByteString.copyFrom(credentialIssueOperation.digest.value),
         credentialId = credentialIssueOperation.digest.hexValue,
-        revocationDate = Some(
-          common_models.Date(revocationDate.getYear, revocationDate.getMonthValue, revocationDate.getDayOfMonth)
-        )
+        revocationDate = None
       )
     )
   )
@@ -58,14 +57,14 @@ class RevokeCredentialOperationSpec extends PostgresRepositorySpec {
 
   "RevokeCredentialOperation.parse" should {
     "parse valid RevokeCredential AtalaOperation" in {
-      RevokeCredentialOperation.parse(exampleOperation) mustBe a[Right[_, _]]
+      RevokeCredentialOperation.parse(exampleOperation, dummyTimestamp) mustBe a[Right[_, _]]
     }
 
     "return error when no previous operation is provided" in {
       val invalidOperation = exampleOperation
         .update(_.revokeCredential.previousOperationHash := ByteString.EMPTY)
 
-      inside(RevokeCredentialOperation.parse(invalidOperation)) {
+      inside(RevokeCredentialOperation.parse(invalidOperation, dummyTimestamp)) {
         case Left(ValidationError.InvalidValue(path, value, _)) =>
           path.path mustBe Vector("revokeCredential", "previousOperationHash")
           value mustBe "0x0"
@@ -77,7 +76,7 @@ class RevokeCredentialOperationSpec extends PostgresRepositorySpec {
       val invalidOperation = exampleOperation
         .update(_.revokeCredential.previousOperationHash := bs)
 
-      inside(RevokeCredentialOperation.parse(invalidOperation)) {
+      inside(RevokeCredentialOperation.parse(invalidOperation, dummyTimestamp)) {
         case Left(ValidationError.InvalidValue(path, value, _)) =>
           path.path mustBe Vector("revokeCredential", "previousOperationHash")
           value mustBe "0x616263"
@@ -88,7 +87,7 @@ class RevokeCredentialOperationSpec extends PostgresRepositorySpec {
       val invalidOperation = exampleOperation
         .update(_.revokeCredential.credentialId := "")
 
-      inside(RevokeCredentialOperation.parse(invalidOperation)) {
+      inside(RevokeCredentialOperation.parse(invalidOperation, dummyTimestamp)) {
         case Left(ValidationError.InvalidValue(path, value, _)) =>
           path.path mustBe Vector("revokeCredential", "credentialId")
           value mustBe ""
@@ -100,20 +99,10 @@ class RevokeCredentialOperationSpec extends PostgresRepositorySpec {
       val invalidOperation = exampleOperation
         .update(_.revokeCredential.credentialId := cid)
 
-      inside(RevokeCredentialOperation.parse(invalidOperation)) {
+      inside(RevokeCredentialOperation.parse(invalidOperation, dummyTimestamp)) {
         case Left(ValidationError.InvalidValue(path, value, _)) =>
           path.path mustBe Vector("revokeCredential", "credentialId")
           value mustBe cid
-      }
-    }
-
-    "return error if no revocation date is provided" in {
-      val invalidOperation = exampleOperation
-        .update(_.revokeCredential.modify(_.copy(revocationDate = None)))
-
-      inside(RevokeCredentialOperation.parse(invalidOperation)) {
-        case Left(ValidationError.MissingValue(path)) =>
-          path.path mustBe Vector("revokeCredential", "revocationDate")
       }
     }
   }
@@ -123,7 +112,7 @@ class RevokeCredentialOperationSpec extends PostgresRepositorySpec {
       issuerOperation.applyState().transact(database).value.unsafeRunSync()
       credentialIssueOperation.applyState().transact(database).value.unsafeRunSync()
 
-      val parsedOperation = RevokeCredentialOperation.parse(exampleOperation).right.value
+      val parsedOperation = RevokeCredentialOperation.parse(exampleOperation, dummyTimestamp).right.value
 
       val CorrectnessData(key, previousOperation) = parsedOperation
         .getCorrectnessData("issuing")
@@ -143,7 +132,7 @@ class RevokeCredentialOperationSpec extends PostgresRepositorySpec {
       issuerOperation.applyState().transact(database).value.unsafeRunSync()
       credentialIssueOperation.applyState().transact(database).value.unsafeRunSync()
 
-      val parsedOperation = RevokeCredentialOperation.parse(exampleOperation).right.value
+      val parsedOperation = RevokeCredentialOperation.parse(exampleOperation, revocationDate).right.value
 
       parsedOperation.applyState().transact(database).value.unsafeRunSync().right.value
 
@@ -154,7 +143,7 @@ class RevokeCredentialOperationSpec extends PostgresRepositorySpec {
         .right
         .value
 
-      credential.revokedOn mustBe (Some(revocationDate))
+      credential.revokedOn mustBe Some(revocationDate)
     }
   }
 

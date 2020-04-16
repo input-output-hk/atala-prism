@@ -9,7 +9,9 @@ import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither._
 import io.iohk.node.errors.NodeError
 import io.iohk.node.errors.NodeError.UnknownValueError
+import io.iohk.node.models.nodeState.{DIDDataState, DIDPublicKeyState}
 import io.iohk.node.models.{DIDData, DIDPublicKey, DIDSuffix}
+import io.iohk.node.operations.TimestampInfo
 import io.iohk.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
 
 import scala.concurrent.ExecutionContext
@@ -18,17 +20,17 @@ class DIDDataRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
 
   /** Creates DID record in the database
     *
-    * @param didSuffix method-specific part of the DID (did:[method-name]:[did-suffix])
-    * @param lastOperation hash of the operation affecting the record (creation here)
-    * @param keys list of keys to be associated
+    * @param didData did document information
+    * @param timestampInfo the protocol timestamp information derived from the blockchain and sequence numbers
     * @return unit indicating success or error
     */
   def create(
-      didData: DIDData
+      didData: DIDData,
+      timestampInfo: TimestampInfo
   ): FutureEither[NodeError, Unit] = {
     val query = for {
       _ <- DIDDataDAO.insert(didData.didSuffix, didData.lastOperation)
-      _ <- didData.keys.traverse((key: DIDPublicKey) => PublicKeysDAO.insert(key))
+      _ <- didData.keys.traverse((key: DIDPublicKey) => PublicKeysDAO.insert(key, timestampInfo))
     } yield ()
 
     query
@@ -38,12 +40,12 @@ class DIDDataRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
       .toFutureEither
   }
 
-  def findByDidSuffix(didSuffix: DIDSuffix): FutureEither[NodeError, DIDData] = {
+  def findByDidSuffix(didSuffix: DIDSuffix): FutureEither[NodeError, DIDDataState] = {
     val query = for {
       lastOperation <- OptionT(DIDDataDAO.getLastOperation(didSuffix))
         .toRight[NodeError](UnknownValueError("didSuffix", didSuffix.suffix))
       keys <- EitherT.right[NodeError](PublicKeysDAO.findAll(didSuffix))
-    } yield DIDData(didSuffix, keys, lastOperation)
+    } yield DIDDataState(didSuffix, keys, lastOperation)
 
     query
       .transact(xa)
@@ -52,7 +54,7 @@ class DIDDataRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
       .toFutureEither
   }
 
-  def findKey(didSuffix: DIDSuffix, keyId: String): FutureEither[NodeError, DIDPublicKey] = {
+  def findKey(didSuffix: DIDSuffix, keyId: String): FutureEither[NodeError, DIDPublicKeyState] = {
     OptionT(PublicKeysDAO.find(didSuffix, keyId))
       .toRight[NodeError](UnknownValueError("didSuffix", didSuffix.suffix))
       .transact(xa)

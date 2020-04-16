@@ -6,21 +6,28 @@ import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.postgres.sqlstate
 import io.iohk.cvp.crypto.SHA256Digest
+import io.iohk.node.models.KeyUsage.MasterKey
 import io.iohk.node.models.{DIDPublicKey, DIDSuffix}
-import io.iohk.node.operations.StateError.{EntityExists, UnknownKey}
+import io.iohk.node.operations.StateError.{EntityExists, InvalidKeyUsed, UnknownKey}
 import io.iohk.node.operations.path._
 import io.iohk.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
 import io.iohk.prism.protos.{node_models => proto}
 
-case class CreateDIDOperation(id: DIDSuffix, keys: List[DIDPublicKey], digest: SHA256Digest) extends Operation {
+case class CreateDIDOperation(id: DIDSuffix, keys: List[DIDPublicKey], digest: SHA256Digest, timestampInfo: TimestampInfo) extends Operation {
 
   override def getCorrectnessData(keyId: String): EitherT[ConnectionIO, StateError, CorrectnessData] = {
-    EitherT.fromEither {
-      keys
-        .find(_.keyId == keyId)
-        .map(didKey => CorrectnessData(didKey.key, None))
-        .toRight(UnknownKey(id, keyId))
-    }
+    val keyOpt = keys.find(_.keyId == keyId)
+    for {
+      _ <-  EitherT.fromEither[ConnectionIO] {
+        keyOpt.filter(_.keyUsage == MasterKey)
+          .toRight(InvalidKeyUsed("master key"))
+      }
+      data <- EitherT.fromEither[ConnectionIO] {
+        keyOpt
+          .map(didKey => CorrectnessData(didKey.key, None))
+          .toRight(UnknownKey(id, keyId) : StateError)
+      }
+    } yield data
   }
 
   override def applyState(): EitherT[ConnectionIO, StateError, Unit] = {
@@ -46,7 +53,7 @@ case class CreateDIDOperation(id: DIDSuffix, keys: List[DIDPublicKey], digest: S
 
       _ <- keys.traverse[ConnectionIOEitherTError, Unit] { key: DIDPublicKey =>
         EitherT {
-          PublicKeysDAO.insert(key).attemptSomeSqlState {
+          PublicKeysDAO.insert(key, timestampInfo).attemptSomeSqlState {
             case sqlstate.class23.UNIQUE_VIOLATION =>
               EntityExists("public key", key.keyId): StateError
           }
@@ -80,13 +87,13 @@ object CreateDIDOperation extends SimpleOperationCompanion[CreateDIDOperation] {
     } yield reversedKeys.reverse
   }
 
-  override def parse(operation: proto.AtalaOperation): Either[ValidationError, CreateDIDOperation] = {
+  override def parse(operation: proto.AtalaOperation, timestampInfo: TimestampInfo): Either[ValidationError, CreateDIDOperation] = {
     val operationDigest = SHA256Digest.compute(operation.toByteArray)
     val didSuffix = DIDSuffix(operationDigest)
     val createOperation = ValueAtPath(operation, Path.root).child(_.getCreateDid, "createDid")
     for {
       data <- createOperation.childGet(_.didData, "didData")
       keys <- parseData(data, didSuffix)
-    } yield CreateDIDOperation(didSuffix, keys, operationDigest)
+    } yield CreateDIDOperation(didSuffix, keys, operationDigest, timestampInfo)
   }
 }

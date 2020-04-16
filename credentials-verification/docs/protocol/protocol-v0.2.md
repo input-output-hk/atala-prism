@@ -196,6 +196,7 @@ alias referredKey: Option[Key] = extractKey(decoded)
 alias messageSigned   = decoded.operation
 
  referredKey.nonEmpty &&
+ referredKey.get.usage == MasterKey &&
  isValid(decoded.signature, messageSigned, referredKey.get) &&
  ! state.dids.contains(didSuffix)
 ```

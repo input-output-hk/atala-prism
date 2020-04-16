@@ -3,10 +3,12 @@ package io.iohk.node.repositories.daos
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import io.iohk.cvp.crypto.ECKeys
+import io.iohk.node.models.nodeState.DIDPublicKeyState
 import io.iohk.node.models.{DIDPublicKey, DIDSuffix}
+import io.iohk.node.operations.TimestampInfo
 
 object PublicKeysDAO {
-  def insert(key: DIDPublicKey): ConnectionIO[Unit] = {
+  def insert(key: DIDPublicKey, timestampInfo: TimestampInfo): ConnectionIO[Unit] = {
     val curveName = ECKeys.CURVE_NAME
     val point = ECKeys.getECPoint(key.key)
 
@@ -14,30 +16,31 @@ object PublicKeysDAO {
     val yBytes = point.getAffineY.toByteArray
 
     sql"""
-         |INSERT INTO public_keys (did_suffix, key_id, key_usage, curve, x, y)
-         |VALUES (${key.didSuffix}, ${key.keyId}, ${key.keyUsage}, $curveName, $xBytes, $yBytes)
+         |INSERT INTO public_keys (did_suffix, key_id, key_usage, curve, x, y, added_on, added_on_absn, added_on_osn)
+         |VALUES (${key.didSuffix}, ${key.keyId}, ${key.keyUsage}, $curveName, $xBytes, $yBytes, ${timestampInfo.atalaBlockTimestamp}, ${timestampInfo.atalaBlockSequenceNumber}, ${timestampInfo.operationSequenceNumber})
        """.stripMargin.update.run.map(_ => ())
   }
 
-  def find(didSuffix: DIDSuffix, keyId: String): ConnectionIO[Option[DIDPublicKey]] = {
+  def find(didSuffix: DIDSuffix, keyId: String): ConnectionIO[Option[DIDPublicKeyState]] = {
     sql"""
-         |SELECT did_suffix, key_id, key_usage, curve, x, y
+         |SELECT did_suffix, key_id, key_usage, curve, x, y, added_on, added_on_absn, added_on_osn, revoked_on, revoked_on_absn, revoked_on_osn
          |FROM public_keys
          |WHERE did_suffix = $didSuffix AND key_id = $keyId
-       """.stripMargin.query[DIDPublicKey].option
+       """.stripMargin.query[DIDPublicKeyState].option
   }
 
-  def findAll(didSuffix: DIDSuffix): ConnectionIO[List[DIDPublicKey]] = {
+  def findAll(didSuffix: DIDSuffix): ConnectionIO[List[DIDPublicKeyState]] = {
     sql"""
-         |SELECT did_suffix, key_id, key_usage, curve, x, y
+         |SELECT did_suffix, key_id, key_usage, curve, x, y, added_on, added_on_absn, added_on_osn, revoked_on, revoked_on_absn, revoked_on_osn
          |FROM public_keys
          |WHERE did_suffix = $didSuffix
-       """.stripMargin.query[DIDPublicKey].to[List]
+       """.stripMargin.query[DIDPublicKeyState].to[List]
   }
 
-  def remove(keyId: String): ConnectionIO[Boolean] = {
+  def revoke(keyId: String, timestampInfo: TimestampInfo): ConnectionIO[Boolean] = {
     sql"""
-         |DELETE FROM public_keys
+         |UPDATE public_keys
+         |SET revoked_on = ${timestampInfo.atalaBlockTimestamp}, revoked_on_absn = ${timestampInfo.atalaBlockSequenceNumber}, revoked_on_osn = ${timestampInfo.operationSequenceNumber}
          |WHERE key_id = $keyId
          |""".stripMargin.update.run.map(_ > 0)
   }

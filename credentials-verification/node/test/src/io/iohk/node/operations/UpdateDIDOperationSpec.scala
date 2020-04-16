@@ -20,7 +20,8 @@ object UpdateDIDOperationSpec {
 
   val newMasterKeys = ECKeys.generateKeyPair()
 
-  lazy val createDidOperation = CreateDIDOperation.parse(CreateDIDOperationSpec.exampleOperation).right.value
+  lazy val dummyTimestamp = TimestampInfo.dummyTime
+  lazy val createDidOperation = CreateDIDOperation.parse(CreateDIDOperationSpec.exampleOperation, dummyTimestamp).right.value
 
   val exampleOperation = node_models.AtalaOperation(
     operation = node_models.AtalaOperation.Operation.UpdateDid(
@@ -70,7 +71,7 @@ class UpdateDIDOperationSpec extends PostgresRepositorySpec with ProtoParsingTes
 
   "UpdateDIDOperation.parse" should {
     "parse valid CreateDid AtalaOperation" in {
-      val result = UpdateDIDOperation.parse(signedExampleOperation).right.value
+      val result = UpdateDIDOperation.parse(signedExampleOperation, dummyTimestamp).right.value
       result.actions.size mustBe exampleOperation.getUpdateDid.actions.size
     }
 
@@ -163,7 +164,7 @@ class UpdateDIDOperationSpec extends PostgresRepositorySpec with ProtoParsingTes
     "provide the data required for correctness verification" in {
       createDidOperation.applyState().transact(database).value.unsafeRunSync()
 
-      val parsedOperation = UpdateDIDOperation.parse(signedExampleOperation).right.value
+      val parsedOperation = UpdateDIDOperation.parse(signedExampleOperation, dummyTimestamp).right.value
 
       val CorrectnessData(key, previousOperation) = parsedOperation
         .getCorrectnessData("master")
@@ -182,7 +183,7 @@ class UpdateDIDOperationSpec extends PostgresRepositorySpec with ProtoParsingTes
     "update DID keys in the database" in {
       createDidOperation.applyState().transact(database).value.unsafeRunSync()
 
-      val parsedOperation = UpdateDIDOperation.parse(signedExampleOperation).right.value
+      val parsedOperation = UpdateDIDOperation.parse(signedExampleOperation, dummyTimestamp).right.value
 
       parsedOperation.applyState().transact(database).value.unsafeRunSync().right.value
 
@@ -190,17 +191,19 @@ class UpdateDIDOperationSpec extends PostgresRepositorySpec with ProtoParsingTes
 
       val initialKeys = CreateDIDOperationSpec.exampleOperation.getCreateDid.getDidData.publicKeys.map(_.id).toSet
       val expectedKeys = initialKeys + "new_master" - "issuing"
-      did.keys.map(_.keyId) must contain theSameElementsAs expectedKeys
+      did.keys.filter(_.revokedOn.isEmpty).map(_.keyId) must contain theSameElementsAs expectedKeys
 
       val newKey = did.keys.find(_.keyId == "new_master").value
 
       newKey.keyUsage mustBe KeyUsage.MasterKey
       newKey.didSuffix mustBe createDidOperation.id
-      newKey mustBe parsedOperation.actions(0).asInstanceOf[AddKeyAction].key
+      newKey.toDIDPublicKey mustBe parsedOperation.actions(0).asInstanceOf[AddKeyAction].key
+      newKey.addedOn mustBe dummyTimestamp
+      newKey.revokedOn mustBe None
     }
 
     "return error when issuer is missing in the DB" in {
-      val parsedOperation = UpdateDIDOperation.parse(signedExampleOperation).right.value
+      val parsedOperation = UpdateDIDOperation.parse(signedExampleOperation, dummyTimestamp).right.value
 
       val result = parsedOperation
         .applyState()
@@ -222,7 +225,7 @@ class UpdateDIDOperationSpec extends PostgresRepositorySpec with ProtoParsingTes
         .value
         .unsafeRunSync()
 
-      val parsedOperation = UpdateDIDOperation.parse(signedExampleOperation).right.value
+      val parsedOperation = UpdateDIDOperation.parse(signedExampleOperation, dummyTimestamp).right.value
 
       val result = parsedOperation
         .applyState()
@@ -245,7 +248,7 @@ class UpdateDIDOperationSpec extends PostgresRepositorySpec with ProtoParsingTes
         .value
         .unsafeRunSync()
 
-      val parsedOperation = UpdateDIDOperation.parse(signedExampleOperation).right.value
+      val parsedOperation = UpdateDIDOperation.parse(signedExampleOperation, dummyTimestamp).right.value
 
       val result = parsedOperation
         .applyState()

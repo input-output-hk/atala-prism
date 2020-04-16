@@ -3,7 +3,7 @@ package io.iohk.node.services
 import doobie.implicits._
 import io.iohk.cvp.repositories.PostgresRepositorySpec
 import io.iohk.node.errors.NodeError.UnknownValueError
-import io.iohk.node.operations.{CreateDIDOperation, CreateDIDOperationSpec}
+import io.iohk.node.operations.{CreateDIDOperation, CreateDIDOperationSpec, TimestampInfo}
 import io.iohk.node.repositories.DIDDataRepository
 import org.scalatest.EitherValues._
 
@@ -16,10 +16,11 @@ class DIDDataServiceSpec extends PostgresRepositorySpec {
   lazy val didDataRepository = new DIDDataRepository(database)
   lazy val didDataService = new DIDDataService(didDataRepository)
   override val tables = List("public_keys", "did_data")
+  val dummyTimestamp = TimestampInfo.dummyTime
 
   "DIDDataServiceSpec.findByDID" should {
     "retrieve DID document from database" in {
-      val parsedOperation = CreateDIDOperation.parse(exampleOperation).right.value
+      val parsedOperation = CreateDIDOperation.parse(exampleOperation, dummyTimestamp).right.value
 
       val result = parsedOperation
         .applyState()

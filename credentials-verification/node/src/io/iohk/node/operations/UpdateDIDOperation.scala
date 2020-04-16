@@ -6,6 +6,7 @@ import doobie.free.connection.ConnectionIO
 import doobie.implicits._
 import doobie.postgres.sqlstate
 import io.iohk.cvp.crypto.SHA256Digest
+import io.iohk.node.models.nodeState.DIDPublicKeyState
 import io.iohk.node.models.{DIDPublicKey, DIDSuffix, KeyUsage}
 import io.iohk.node.operations.StateError.EntityExists
 import io.iohk.node.operations.path._
@@ -14,13 +15,14 @@ import io.iohk.prism.protos.node_models
 
 sealed trait UpdateDIDAction
 case class AddKeyAction(key: DIDPublicKey) extends UpdateDIDAction
-case class RemoveKeyAction(keyId: String) extends UpdateDIDAction
+case class RevokeKeyAction(keyId: String) extends UpdateDIDAction
 
 case class UpdateDIDOperation(
     id: DIDSuffix,
     actions: List[UpdateDIDAction],
     previousOperation: SHA256Digest,
-    digest: SHA256Digest
+    digest: SHA256Digest,
+    timestampInfo: TimestampInfo
 ) extends Operation {
 
   override def linkedPreviousOperation: Option[SHA256Digest] = Some(previousOperation)
@@ -33,10 +35,14 @@ case class UpdateDIDOperation(
           .getLastOperation(id)
           .map(_.toRight(StateError.EntityMissing("did", id.toString)))
       }
-      key <- EitherT[ConnectionIO, StateError, DIDPublicKey] {
+      key <- EitherT[ConnectionIO, StateError, DIDPublicKeyState] {
         PublicKeysDAO.find(id, keyId).map(_.toRight(StateError.UnknownKey(id, keyId)))
       }.subflatMap { didKey =>
         Either.cond(didKey.keyUsage == KeyUsage.MasterKey, didKey.key, StateError.InvalidKeyUsed("master key"))
+      }
+      _ <- EitherT.fromEither[ConnectionIO] {
+        val revokedKeyIds = actions.collect { case RevokeKeyAction(id) => id }
+        Either.cond(! (revokedKeyIds contains keyId), (), StateError.InvalidRevocation() : StateError)
       }
     } yield CorrectnessData(key, Some(lastOperation))
   }
@@ -45,13 +51,13 @@ case class UpdateDIDOperation(
     action match {
       case AddKeyAction(key) =>
         EitherT {
-          PublicKeysDAO.insert(key).attemptSomeSqlState {
+          PublicKeysDAO.insert(key, timestampInfo).attemptSomeSqlState {
             case sqlstate.class23.UNIQUE_VIOLATION =>
               EntityExists("DID", id.suffix): StateError
           }
         }
-      case RemoveKeyAction(keyId) =>
-        EitherT.right[StateError](PublicKeysDAO.remove(keyId)).subflatMap { wasRemoved =>
+      case RevokeKeyAction(keyId) =>
+        EitherT.right[StateError](PublicKeysDAO.revoke(keyId, timestampInfo)).subflatMap { wasRemoved =>
           Either.cond(wasRemoved, (), StateError.EntityMissing("key", keyId))
         }
     }
@@ -99,7 +105,7 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
       for {
         keyId <- ParsingUtils.parseKeyId(keyIdVal)
         _ <- Either.cond(keyId != signingKeyId, (), keyIdVal.invalid("Cannot remove key used to sign operation"))
-      } yield RemoveKeyAction(keyId)
+      } yield RevokeKeyAction(keyId)
     } else {
       Left(action.child(_.action, "action").missing())
     }
@@ -108,9 +114,10 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
   /** Parses the protobuf representation of operation
     *
     * @param signedOperation signed operation, needs to be of the type compatible with the called companion object
+    * @param timestampInfo timestamp information provided by the caller, needed to instantiate the operation objects
     * @return parsed operation or ValidationError signifying the operation is invalid
     */
-  override def parse(signedOperation: node_models.SignedAtalaOperation): Either[ValidationError, UpdateDIDOperation] = {
+  override def parse(signedOperation: node_models.SignedAtalaOperation, timestampInfo: TimestampInfo): Either[ValidationError, UpdateDIDOperation] = {
     val operation = signedOperation.getOperation
     val signingKeyId = signedOperation.signedWith
 
@@ -137,6 +144,6 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
               parsedAction <- parseAction(action, didSuffix, signingKeyId)
             } yield parsedAction :: acc
         }
-    } yield UpdateDIDOperation(didSuffix, reversedActions.reverse, previousOperation, operationDigest)
+    } yield UpdateDIDOperation(didSuffix, reversedActions.reverse, previousOperation, operationDigest, timestampInfo)
   }
 }

@@ -1,16 +1,18 @@
 package io.iohk.node.services
 
 import java.security.KeyPair
+import java.time.Instant
 
 import com.google.protobuf.ByteString
 import doobie.free.connection
 import doobie.implicits._
 import io.iohk.cvp.crypto.{ECKeys, SHA256Digest}
 import io.iohk.cvp.repositories.PostgresRepositorySpec
-import io.iohk.node.operations.CreateDIDOperationSpec
+import io.iohk.node.operations.{CreateDIDOperationSpec, TimestampInfo}
 import io.iohk.node.repositories.daos.AtalaObjectsDAO
 import io.iohk.node.{AtalaReferenceLedger, objects}
 import io.iohk.prism.protos.{node_internal, node_models}
+import org.mockito
 import org.mockito.captor.ArgCaptor
 import org.mockito.scalatest.MockitoSugar
 import org.scalatest.BeforeAndAfterEach
@@ -53,6 +55,9 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
   val blockProcessing: BlockProcessingService = mock[BlockProcessingService]
 
   lazy val objectManagmentService = new ObjectManagementService(storage, ledger, blockProcessing)
+
+  lazy val dummyTimestamp = TimestampInfo.dummyTime.atalaBlockTimestamp
+  lazy val dummyABSequenceNumber = TimestampInfo.dummyTime.atalaBlockSequenceNumber
 
   override def beforeEach(): Unit = {
     super.beforeEach()
@@ -102,7 +107,7 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
     "add reference to the database" in {
       val block = exampleBlock()
       val objectHash = createExampleObject(block)
-      objectManagmentService.justSaveReference(objectHash).futureValue
+      objectManagmentService.justSaveReference(objectHash, dummyTimestamp).futureValue
 
       val atalaObject = AtalaObjectsDAO.get(objectHash).transact(database).unsafeRunSync().value
       atalaObject.sequenceNumber mustBe 1
@@ -113,9 +118,9 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
     "be idempotent - ignore re-adding the same hash" in {
       val block = exampleBlock()
       val objectHash = createExampleObject(block)
-      objectManagmentService.justSaveReference(objectHash).futureValue
+      objectManagmentService.justSaveReference(objectHash, dummyTimestamp).futureValue
 
-      objectManagmentService.justSaveReference(objectHash).futureValue
+      objectManagmentService.justSaveReference(objectHash, dummyTimestamp).futureValue
 
       val atalaObject = AtalaObjectsDAO.get(objectHash).transact(database).unsafeRunSync().value
       atalaObject.sequenceNumber mustBe 1
@@ -124,14 +129,14 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
     }
 
     "process the block" in {
-      doReturn(connection.pure(true)).when(blockProcessing).processBlock(*)
+      doReturn(connection.pure(true)).when(blockProcessing).processBlock(*, *, *)
 
       val block = exampleBlock()
       val objectHash = createExampleObject(block)
-      objectManagmentService.saveReference(objectHash).futureValue
+      objectManagmentService.saveReference(objectHash, dummyTimestamp).futureValue
 
       val blockCaptor = ArgCaptor[node_internal.AtalaBlock]
-      verify(blockProcessing).processBlock(blockCaptor)
+      verify(blockProcessing).processBlock(blockCaptor, mockito.ArgumentMatchers.eq(dummyTimestamp), mockito.ArgumentMatchers.eq(dummyABSequenceNumber))
       blockCaptor.value mustEqual block
 
       verifyNoMoreInteractions(blockProcessing)
@@ -143,12 +148,12 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
     }
 
     "add references for many blocks" in {
-      doReturn(connection.pure(true)).when(blockProcessing).processBlock(*)
+      doReturn(connection.pure(true)).when(blockProcessing).processBlock(*, *, *)
 
       val blocks = for ((signedOp, i) <- exampleSignedOperations.zipWithIndex) yield {
         val block = exampleBlock(signedOp)
         val objectHash = createExampleObject(block)
-        objectManagmentService.saveReference(objectHash).futureValue
+        objectManagmentService.saveReference(objectHash, Instant.ofEpochMilli(i)).futureValue
 
         val atalaObject = AtalaObjectsDAO.get(objectHash).transact(database).unsafeRunSync().value
         atalaObject.sequenceNumber mustBe (i + 1)
@@ -159,7 +164,7 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
       }
 
       val blockCaptor = ArgCaptor[node_internal.AtalaBlock]
-      verify(blockProcessing, times(blocks.size)).processBlock(blockCaptor)
+      verify(blockProcessing, times(blocks.size)).processBlock(blockCaptor, mockito.ArgumentMatchers.any(), mockito.ArgumentMatchers.any())
       blockCaptor.values must contain theSameElementsAs blocks
 
       verifyNoMoreInteractions(blockProcessing)

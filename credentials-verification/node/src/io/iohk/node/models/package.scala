@@ -1,11 +1,12 @@
 package io.iohk.node
 
 import java.security.PublicKey
-import java.time.LocalDate
+import java.time.Instant
 
 import enumeratum.EnumEntry.UpperSnakecase
 import enumeratum._
 import io.iohk.cvp.crypto.SHA256Digest
+import io.iohk.node.operations.TimestampInfo
 
 package object models {
 
@@ -58,18 +59,53 @@ package object models {
   }
 
   case class Credential(
-      credentialId: CredentialId,
-      issuer: DIDSuffix,
-      contentHash: SHA256Digest,
-      issuedOn: LocalDate,
-      revokedOn: Option[LocalDate] = None,
-      lastOperation: SHA256Digest
+    credentialId: CredentialId,
+    issuerDIDSuffix: DIDSuffix,
+    contentHash: SHA256Digest,
+    lastOperation: SHA256Digest
   )
 
   case class AtalaObject(
       objectId: SHA256Digest,
+      objectTimestamp: Instant,
       sequenceNumber: Int,
       blockHash: Option[SHA256Digest],
       processed: Boolean
   )
+
+  object nodeState {
+
+    case class CredentialState(
+      credentialId: CredentialId,
+      issuerDIDSuffix: DIDSuffix,
+      contentHash: SHA256Digest,
+      issuedOn: TimestampInfo,
+      revokedOn: Option[TimestampInfo] = None,
+      lastOperation: SHA256Digest
+    ) {
+      def toCredential: Credential = Credential(credentialId, issuerDIDSuffix, contentHash, lastOperation)
+    }
+
+    case class DIDPublicKeyState(
+      didSuffix: DIDSuffix,
+      keyId: String,
+      keyUsage: KeyUsage,
+      key: PublicKey,
+      addedOn: TimestampInfo,
+      revokedOn: Option[TimestampInfo]
+    ) {
+      def toDIDPublicKey: DIDPublicKey = DIDPublicKey(didSuffix, keyId, keyUsage, key)
+    }
+
+    case class DIDDataState(
+      didSuffix: DIDSuffix,
+      keys: List[DIDPublicKeyState],
+      lastOperation: SHA256Digest
+    ) {
+      def toDIDData: DIDData = {
+        DIDData(didSuffix, keys map { _.toDIDPublicKey }, lastOperation)
+      }
+    }
+
+  }
 }

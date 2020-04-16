@@ -1,5 +1,7 @@
 package io.iohk.node.services
 
+import java.time.Instant
+
 import cats.effect.IO
 import com.google.protobuf.ByteString
 import doobie.free.connection
@@ -37,7 +39,7 @@ class ObjectManagementService(
   // - put the info about the object into the db
   // for now, until we have block processing queue, it also manages processing
   // the referenced block
-  def justSaveReference(ref: SHA256Digest): Future[Option[AtalaObject]] = {
+  def justSaveReference(ref: SHA256Digest, timestamp: Instant): Future[Option[AtalaObject]] = {
     val query = for {
       existingObject <- AtalaObjectsDAO.get(ref)
       _ <- {
@@ -49,7 +51,7 @@ class ObjectManagementService(
 
       newestObject <- AtalaObjectsDAO.getNewest()
       obj <- AtalaObjectsDAO.insert(
-        AtalaObjectCreateData(ref, newestObject.fold(INITIAL_SEQUENCE_NUMBER)(_.sequenceNumber + 1))
+        AtalaObjectCreateData(ref, newestObject.fold(INITIAL_SEQUENCE_NUMBER)(_.sequenceNumber + 1), timestamp)
       )
     } yield Some(obj)
 
@@ -61,9 +63,9 @@ class ObjectManagementService(
       }
   }
 
-  def saveReference(ref: SHA256Digest): Future[Unit] = {
+  def saveReference(ref: SHA256Digest, timestamp: Instant): Future[Unit] = {
     // TODO: just add the object to processing queue, instead of processing here
-    justSaveReference(ref)
+    justSaveReference(ref, timestamp)
       .flatMap {
         case Some(obj) =>
           processObject(obj).transact(xa).unsafeToFuture().map(_ => ())
@@ -98,15 +100,15 @@ class ObjectManagementService(
           val blockHash = SHA256Digest(aobject.blockHash.toByteArray)
           AtalaObjectsDAO.setBlockHash(obj.objectId, blockHash).map(_ => blockHash)
       }
-      res <- processBlock(blockHash)
+      res <- processBlock(blockHash, obj.objectTimestamp, obj.sequenceNumber)
       _ <- AtalaObjectsDAO.setProcessed(obj.objectId)
     } yield res
   }
 
-  protected def processBlock(hash: SHA256Digest): ConnectionIO[Boolean] = {
+  protected def processBlock(hash: SHA256Digest, blockTimestamp: Instant, blockSequenceNumber: Int): ConnectionIO[Boolean] = {
     val blockFileName = hash.hexValue
     val blockBytes = storage.get(blockFileName).get // TODO: error support
     val block = node_internal.AtalaBlock.parseFrom(blockBytes)
-    blockProcessing.processBlock(block)
+    blockProcessing.processBlock(block, blockTimestamp, blockSequenceNumber)
   }
 }

@@ -10,12 +10,7 @@ import io.iohk.cvp.crypto.SHA256Digest
 import io.iohk.cvp.repositories.PostgresRepositorySpec
 import io.iohk.node.models.{DIDPublicKey, DIDSuffix, KeyUsage}
 import io.iohk.node.operations.path.{Path, ValueAtPath}
-import io.iohk.node.operations.{
-  CreateDIDOperationSpec,
-  IssueCredentialOperationSpec,
-  ParsingUtils,
-  RevokeCredentialOperationSpec
-}
+import io.iohk.node.operations.{CreateDIDOperationSpec, IssueCredentialOperationSpec, ParsingUtils, RevokeCredentialOperationSpec, TimestampInfo}
 import io.iohk.node.repositories.DIDDataRepository
 import io.iohk.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
 import io.iohk.node.services.{BlockProcessingServiceSpec, DIDDataService, ObjectManagementService}
@@ -76,9 +71,10 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
     "return DID document from data in the database" in {
       val didDigest = SHA256Digest.compute("test".getBytes())
       val didSuffix = DIDSuffix(didDigest)
+      val dummyTime = TimestampInfo.dummyTime
       DIDDataDAO.insert(didSuffix, didDigest).transact(database).unsafeRunSync()
       val key = DIDPublicKey(didSuffix, "master", KeyUsage.MasterKey, CreateDIDOperationSpec.masterKeys.getPublic)
-      PublicKeysDAO.insert(key).transact(database).unsafeRunSync()
+      PublicKeysDAO.insert(key, dummyTime).transact(database).unsafeRunSync()
 
       val response = service.getDidDocument(node_api.GetDidDocumentRequest(s"did:prism:${didSuffix.suffix}"))
       val document = response.document.value

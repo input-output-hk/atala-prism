@@ -22,5 +22,18 @@ CREATE TABLE public_keys(
   curve TEXT NOT NULL,
   x BYTEA NOT NULL,
   y BYTEA NOT NULL,
+  added_on TIMESTAMPTZ NOT NULL,
+  added_on_absn INTEGER NOT NULL,
+  --^ Atala Block Sequence Number (absn) of the operation that added the key
+  added_on_osn INTEGER NOT NULL,
+  --^ Operation Sequence Number (osn) of the operation that added the key
+
+  revoked_on TIMESTAMPTZ NULL DEFAULT NULL,
+  revoked_on_absn INTEGER NULL DEFAULT NULL,
+  --^ Atala Block Sequence Number (absn) of the operation that revoked the key
+  revoked_on_osn INTEGER NULL DEFAULT NULL,
+  --^ Operation Sequence Number (osn) of the operation that revoked the key
+
   CONSTRAINT public_keys_pk PRIMARY KEY (did_suffix, key_id)
+  -- add constraints about congruent addition of sequence_numbers
 );

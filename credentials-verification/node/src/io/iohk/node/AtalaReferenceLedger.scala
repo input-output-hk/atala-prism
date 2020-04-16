@@ -1,6 +1,9 @@
 package io.iohk.node
 
+import java.time.Instant
+
 import io.iohk.cvp.crypto.SHA256Digest
+import io.iohk.node.services.models.ReferenceHandler
 
 import scala.concurrent.Future
 
@@ -9,11 +12,11 @@ trait AtalaReferenceLedger {
 }
 
 trait BlockchainSynchronizerFactory {
-  def apply(onNewReference: SHA256Digest => Future[Unit]): AtalaReferenceLedger
+  def apply(onNewReference: ReferenceHandler): AtalaReferenceLedger
 }
 
-class InMemoryAtalaReferenceLedger(onNewReference: SHA256Digest => Future[Unit]) extends AtalaReferenceLedger {
+class InMemoryAtalaReferenceLedger(onNewReference: ReferenceHandler) extends AtalaReferenceLedger {
   override def publishReference(ref: SHA256Digest): Future[Unit] = {
-    onNewReference(ref)
+    onNewReference(ref, Instant.now())
   }
 }

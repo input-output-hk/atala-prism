@@ -1,5 +1,7 @@
 package io.iohk.node.services
 
+import java.time.Instant
+
 import io.iohk.cvp.crypto.SHA256Digest
 import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither.FutureEitherOps
@@ -7,6 +9,7 @@ import io.iohk.node.AtalaReferenceLedger
 import io.iohk.node.bitcoin.BitcoinClient
 import io.iohk.node.bitcoin.models.{OpData, _}
 import io.iohk.node.services.AtalaService.Result
+import io.iohk.node.services.models.ReferenceHandler
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -18,7 +21,7 @@ trait AtalaService extends AtalaReferenceLedger {
 class AtalaServiceImpl(
     bitcoinClient: BitcoinClient,
     binaryOps: BinaryOps,
-    onNewReference: SHA256Digest => Future[Unit]
+    onNewReference: ReferenceHandler
 )(
     implicit ec: ExecutionContext
 ) extends AtalaService {
@@ -76,7 +79,8 @@ class AtalaServiceImpl(
 
         Future
           .traverse(atalaReferences) { reference =>
-            onNewReference(reference)
+            // TODO: Update Instant.ofEpochMilli(block.header.time) for proper expression
+            onNewReference(reference, Instant.ofEpochMilli(block.header.time))
           }
           .map(_ => Right(()))
           .toFutureEither
@@ -94,7 +98,7 @@ object AtalaService {
 
   def apply(
       bitcoinClient: BitcoinClient,
-      onNewReference: SHA256Digest => Future[Unit]
+      onNewReference: ReferenceHandler
   )(
       implicit ec: ExecutionContext
   ): AtalaService = {

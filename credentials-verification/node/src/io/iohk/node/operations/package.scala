@@ -1,6 +1,7 @@
 package io.iohk.node
 
 import java.security.PublicKey
+import java.time.Instant
 
 import cats.data.EitherT
 import doobie.free.connection.ConnectionIO
@@ -77,10 +78,37 @@ package object operations {
     case class InvalidPreviousOperation() extends StateError
 
     case class InvalidSignature() extends StateError
+
+    // Error signifying that the update operation is attempting to revoke the key signing the operation
+    case class InvalidRevocation() extends StateError
+
+    // Error signifying that the key used has been revoked already
+    case class KeyAlreadyRevoked() extends StateError
   }
 
   /** Data required to verify the correctness of the operation */
   case class CorrectnessData(key: PublicKey, previousOperation: Option[SHA256Digest])
+
+  case class TimestampInfo(
+    atalaBlockTimestamp: Instant, // timestamp provided from the underlying blockchain
+    atalaBlockSequenceNumber: Int, // transaction index inside the underlying blockchain block
+    operationSequenceNumber: Int // operation index inside the AtalaBlock
+  ) {
+    def occurredBefore(later: TimestampInfo): Boolean = {
+      (atalaBlockTimestamp isBefore later.atalaBlockTimestamp) || (
+        atalaBlockTimestamp == later.atalaBlockTimestamp &&
+          atalaBlockSequenceNumber < later.atalaBlockSequenceNumber
+      ) || (
+        atalaBlockTimestamp == later.atalaBlockTimestamp &&
+          atalaBlockSequenceNumber == later.atalaBlockSequenceNumber &&
+            operationSequenceNumber < later.operationSequenceNumber
+      )
+    }
+  }
+
+  object TimestampInfo {
+    def dummyTime: TimestampInfo = TimestampInfo(Instant.ofEpochMilli(0), 1, 0)
+  }
 
   /** Representation of already parsed valid operation, common for operations */
   trait Operation {
@@ -97,6 +125,8 @@ package object operations {
     def digest: SHA256Digest
 
     def linkedPreviousOperation: Option[SHA256Digest] = None
+
+    def timestampInfo: TimestampInfo
   }
 
   /** Companion object for operation */
@@ -105,19 +135,38 @@ package object operations {
     /** Parses the protobuf representation of operation
       *
       * @param signedOperation signed operation, needs to be of the type compatible with the called companion object
+      * @param timestampInfo timestamp information provided by the caller, needed to instantiate the operation objects
       * @return parsed operation or ValidationError signifying the operation is invalid
       */
-    def parse(signedOperation: node_models.SignedAtalaOperation): Either[ValidationError, Repr]
+    def parse(signedOperation: node_models.SignedAtalaOperation, timestampInfo: TimestampInfo): Either[ValidationError, Repr]
 
+    /** Parses the protobuf representation of operation and report errors (if any)
+      *
+      * @param signedOperation signed operation, needs to be of the type compatible with the called companion object
+      * @return Unit if the operation is valid or ValidationError signifying the operation is invalid
+      */
+    def validate(signedOperation: node_models.SignedAtalaOperation): Either[ValidationError, Unit] = {
+      parseWithMockedTime(signedOperation) map (_ => ())
+    }
+
+    /** Parses the protobuf representation of operation and report errors (if any) using a dummy time parameter
+      * (defined in io.iohk.node.operations.TimestampInfo.dummyTime)
+      *
+      * @param signedOperation signed operation, needs to be of the type compatible with the called companion object
+      * @return parsed operation filled with TimestampInfo.dummyTime or ValidationError signifying the operation is invalid
+      */
+    def parseWithMockedTime(signedOperation: node_models.SignedAtalaOperation): Either[ValidationError, Repr] = {
+      parse(signedOperation, TimestampInfo.dummyTime)
+    }
   }
 
   trait SimpleOperationCompanion[Repr <: Operation] extends OperationCompanion[Repr] {
 
-    override def parse(operation: node_models.SignedAtalaOperation): Either[ValidationError, Repr] = {
-      parse(operation.getOperation)
+    override def parse(operation: node_models.SignedAtalaOperation, timestampInfo: TimestampInfo): Either[ValidationError, Repr] = {
+      parse(operation.getOperation, timestampInfo)
     }
 
-    def parse(operation: node_models.AtalaOperation): Either[ValidationError, Repr]
+    def parse(operation: node_models.AtalaOperation, timestampInfo: TimestampInfo): Either[ValidationError, Repr]
   }
 
 }

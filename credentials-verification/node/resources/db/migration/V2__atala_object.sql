@@ -12,6 +12,7 @@ CHECK (
 CREATE TABLE atala_objects(
   atala_object_id ATALA_OBJECT_ID NOT NULL,
   sequence_number INTEGER NOT NULL,
+  object_timestamp TIMESTAMPTZ NOT NULL,
   atala_block_hash BLOCK_HASH_TYPE NULL DEFAULT NULL,
   processed BOOLEAN NOT NULL DEFAULT FALSE,
   -- constraints

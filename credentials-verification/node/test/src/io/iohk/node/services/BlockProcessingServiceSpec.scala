@@ -7,7 +7,7 @@ import doobie.implicits._
 import io.iohk.cvp.crypto.{ECKeys, ECSignature, SHA256Digest}
 import io.iohk.cvp.repositories.PostgresRepositorySpec
 import io.iohk.node.models.DIDSuffix
-import io.iohk.node.operations.CreateDIDOperationSpec
+import io.iohk.node.operations.{CreateDIDOperationSpec, TimestampInfo}
 import io.iohk.node.repositories.daos.{CredentialsDAO, DIDDataDAO}
 import io.iohk.node.repositories.{CredentialsRepository, DIDDataRepository}
 import io.iohk.prism.protos.{node_internal, node_models}
@@ -47,14 +47,16 @@ class BlockProcessingServiceSpec extends PostgresRepositorySpec {
   lazy val didDataRepository = new DIDDataRepository(database)
   lazy val credentialsRepository = new CredentialsRepository(database)
 
-  override val tables = List("credentials", "public_keys", "did_data")
 
+  override val tables = List("credentials", "public_keys", "did_data")
   val service = new BlockProcessingServiceImpl()
+  val dummyTimestamp = TimestampInfo.dummyTime.atalaBlockTimestamp
+  val dummyABSequenceNumber = TimestampInfo.dummyTime.atalaBlockSequenceNumber
 
   "BlockProcessingService" should {
     "apply block in" in {
       val result = service
-        .processBlock(exampleBlock)
+        .processBlock(exampleBlock, dummyTimestamp, dummyABSequenceNumber)
         .transact(database)
         .unsafeToFuture()
         .futureValue
@@ -75,7 +77,7 @@ class BlockProcessingServiceSpec extends PostgresRepositorySpec {
       )
 
       val result = service
-        .processBlock(invalidSignatureBlock)
+        .processBlock(invalidSignatureBlock, dummyTimestamp, dummyABSequenceNumber)
         .transact(database)
         .unsafeToFuture()
         .futureValue
@@ -96,7 +98,7 @@ class BlockProcessingServiceSpec extends PostgresRepositorySpec {
       )
 
       val result = service
-        .processBlock(invalidBlock)
+        .processBlock(invalidBlock, dummyTimestamp, dummyABSequenceNumber)
         .transact(database)
         .unsafeToFuture()
         .futureValue
@@ -141,7 +143,7 @@ class BlockProcessingServiceSpec extends PostgresRepositorySpec {
       )
 
       val result = service
-        .processBlock(block)
+        .processBlock(block, dummyTimestamp, dummyABSequenceNumber)
         .transact(database)
         .unsafeToFuture()
         .futureValue

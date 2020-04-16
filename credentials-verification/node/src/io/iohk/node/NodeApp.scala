@@ -1,5 +1,7 @@
 package io.iohk.node
 
+import java.time.Instant
+
 import cats.effect.IO
 import com.typesafe.config.{Config, ConfigFactory}
 import doobie.util.transactor.Transactor
@@ -11,6 +13,7 @@ import io.iohk.node.objects.ObjectStorageService
 import io.iohk.node.repositories.DIDDataRepository
 import io.iohk.node.repositories.atalaobjects.AtalaObjectsRepository
 import io.iohk.node.repositories.blocks.BlocksRepository
+import io.iohk.node.services.models.ReferenceHandler
 import io.iohk.node.services.{AtalaService, BlockProcessingServiceImpl, DIDDataService, ObjectManagementService}
 import io.iohk.node.synchronizer.{LedgerSynchronizationStatusService, LedgerSynchronizerService, SynchronizerConfig}
 import io.iohk.prism.protos.node_api._
@@ -60,9 +63,10 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     val storage = ObjectStorageService()
 
     val objectManagementServicePromise: Promise[ObjectManagementService] = Promise()
-    def onAtalaReference(ref: SHA256Digest): Future[Unit] = {
+
+    def onAtalaReference(ref: SHA256Digest, timestamp: Instant): Future[Unit] = {
       objectManagementServicePromise.future.map { objectManagementService =>
-        objectManagementService.saveReference(ref)
+        objectManagementService.saveReference(ref, timestamp)
       }
     }
 
@@ -98,7 +102,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     }
   }
 
-  def initializeBitcoin(config: Config, onAtalaReference: SHA256Digest => Future[Unit])(
+  def initializeBitcoin(config: Config, onAtalaReference: ReferenceHandler)(
       implicit xa: Transactor[IO]
   ): AtalaService = {
     logger.info("Creating bitcoin client")

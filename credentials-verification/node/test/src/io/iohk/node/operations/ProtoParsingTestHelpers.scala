@@ -23,7 +23,7 @@ trait ProtoParsingTestHelpers {
     val invalidOperation = exampleOperation.update(mutation)
     val signedOperation = BlockProcessingServiceSpec.signOperation(invalidOperation, signingKeyId, signingKey)
 
-    inside(operationCompanion.parse(signedOperation)) {
+    inside(operationCompanion.parse(signedOperation, TimestampInfo.dummyTime)) {
       case Left(ValidationError.MissingValue(path)) =>
         path.path mustBe expectedPath
     }
@@ -37,7 +37,7 @@ trait ProtoParsingTestHelpers {
     val invalidOperation = exampleOperation.update(mutation)
     val signedOperation = BlockProcessingServiceSpec.signOperation(invalidOperation, signingKeyId, signingKey)
 
-    inside(operationCompanion.parse(signedOperation)) {
+    inside(operationCompanion.parse(signedOperation, TimestampInfo.dummyTime)) {
       case Left(ValidationError.InvalidValue(path, value, _)) =>
         path.path mustBe expectedPath
         value mustBe expectedValue

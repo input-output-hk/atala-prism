@@ -1,10 +1,9 @@
 package io.iohk.node.repositories
 
-import java.time.LocalDate
-
 import io.iohk.cvp.repositories.PostgresRepositorySpec
 import io.iohk.node.errors.NodeError.UnknownValueError
 import io.iohk.node.models.DIDData
+import io.iohk.node.operations.TimestampInfo
 import io.iohk.node.repositories.daos.CredentialsDAO.CreateCredentialData
 import org.scalatest.EitherValues._
 
@@ -25,15 +24,15 @@ class CredentialsRepositorySpec extends PostgresRepositorySpec {
   val credentialOperationDigest = digestGen(1, 2)
   val credentialId = credentialIdFromDigest(credentialOperationDigest)
   val credentialDigest = digestGen(127, 1)
-  val issuanceDate = LocalDate.parse("2019-02-03")
-  val revocationDate = LocalDate.parse("2019-11-05")
+  val issuanceDate = TimestampInfo.dummyTime
+  val revocationDate = TimestampInfo.dummyTime
   val createCredentialData =
     CreateCredentialData(credentialId, credentialOperationDigest, didSuffix, credentialDigest, issuanceDate)
 
   "CredentialsRepository" should {
     "retrieve inserted credential" in {
       val result = (for {
-        _ <- didDataRepository.create(didData)
+        _ <- didDataRepository.create(didData, issuanceDate)
         _ <- credentialsRepository.create(
           createCredentialData
         )
@@ -41,7 +40,7 @@ class CredentialsRepositorySpec extends PostgresRepositorySpec {
       } yield credential).value.futureValue.right.value
 
       result.credentialId mustBe credentialId
-      result.issuer mustBe didSuffix
+      result.issuerDIDSuffix mustBe didSuffix
       result.contentHash mustBe credentialDigest
       result.revokedOn mustBe None
     }
@@ -50,7 +49,7 @@ class CredentialsRepositorySpec extends PostgresRepositorySpec {
       val otherCredentialId = credentialIdFromDigest(digestGen(1, 3))
 
       val result = (for {
-        _ <- didDataRepository.create(didData)
+        _ <- didDataRepository.create(didData, issuanceDate)
         _ <- credentialsRepository.create(createCredentialData)
         credential <- credentialsRepository.find(otherCredentialId)
       } yield credential).value.futureValue.left.value
@@ -60,7 +59,7 @@ class CredentialsRepositorySpec extends PostgresRepositorySpec {
 
     "revoke credential" in {
       val (revocation, credential) = (for {
-        _ <- didDataRepository.create(didData)
+        _ <- didDataRepository.create(didData, issuanceDate)
         _ <- credentialsRepository.create(createCredentialData)
         revocation <- credentialsRepository.revoke(credentialId, revocationDate)
         credential <- credentialsRepository.find(credentialId)
@@ -74,7 +73,7 @@ class CredentialsRepositorySpec extends PostgresRepositorySpec {
       val otherCredentialId = credentialIdFromDigest(digestGen(1, 3))
 
       val result = (for {
-        _ <- didDataRepository.create(didData)
+        _ <- didDataRepository.create(didData, TimestampInfo.dummyTime)
         _ <- credentialsRepository.create(createCredentialData)
         revocation <- credentialsRepository.revoke(otherCredentialId, revocationDate)
       } yield revocation).value.futureValue.right.value
