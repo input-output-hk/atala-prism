@@ -12,14 +12,18 @@ import javax.inject.Inject;
 import io.iohk.cvp.grpc.AsyncTaskResult;
 import io.iohk.cvp.grpc.GetConnectionTokenInfoRunnable;
 import io.iohk.cvp.grpc.GetConnectionsInfoRunnable;
+import io.iohk.cvp.grpc.GetMessagesRunnable;
 import io.iohk.cvp.grpc.GrpcTask;
 import io.iohk.prism.protos.ConnectionInfo;
 import io.iohk.prism.protos.ParticipantInfo;
+import io.iohk.prism.protos.ReceivedMessage;
 
 public class ConnectionsActivityViewModel extends CvpViewModel {
 
     private MutableLiveData<AsyncTaskResult<List<ConnectionInfo>>> connections = new MutableLiveData<>();
     private MutableLiveData<AsyncTaskResult<ParticipantInfo>> issuerInfo = new MutableLiveData<>();
+    private MutableLiveData<AsyncTaskResult<List<ReceivedMessage>>> messages = new MutableLiveData<>();
+
 
     @Inject
     public ConnectionsActivityViewModel() {
@@ -37,6 +41,15 @@ public class ConnectionsActivityViewModel extends CvpViewModel {
     public LiveData<AsyncTaskResult<ParticipantInfo>> getConnectionTokenInfo(String token) {
         new GrpcTask<>(new GetConnectionTokenInfoRunnable(issuerInfo), context).execute(null, token);
         return issuerInfo;
+    }
+
+    public MutableLiveData<AsyncTaskResult<List<ReceivedMessage>>> getMessages(Set<String> userIds) {
+        userIds.forEach(userId -> {
+            GrpcTask task = new GrpcTask<>(new GetMessagesRunnable(messages), context);
+            task.execute(userId);
+            runningTasks.add(task);
+        });
+        return messages;
     }
 
     public void clearConnections() {

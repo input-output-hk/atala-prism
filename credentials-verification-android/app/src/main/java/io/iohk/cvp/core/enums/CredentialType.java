@@ -1,5 +1,7 @@
 package io.iohk.cvp.core.enums;
 
+import java.util.Optional;
+
 public enum CredentialType {
 
     REDLAND_CREDENTIAL(1, "VerifiableCredential/RedlandIdCredential"),
@@ -22,5 +24,14 @@ public enum CredentialType {
 
     public int getId() {
         return id;
+    }
+
+    public static Optional<CredentialType> getByValue(String value){
+        for (CredentialType c : CredentialType.values()) {
+            if (c.value.equalsIgnoreCase(value)) {
+                return Optional.of(c);
+            }
+        }
+        return Optional.empty();
     }
 }

@@ -36,6 +36,10 @@ public class Preferences {
     private static final String USER_ID_LIST_KEY = "user_id";
     private static final String CONNECTION_USER_ID_KEY = "connection_id_user_id";
     private static final String CONNECTION_LOGO_KEY = "connection_logo";
+
+    public static final String PROOF_REQUEST_SHARED_KEY = "proof_request_shared";
+    public static final String PROOF_REQUEST_CANCEL_KEY = "proof_request_cancel";
+
     private Context context;
 
     public void savePrivateKey(byte[] pk) {

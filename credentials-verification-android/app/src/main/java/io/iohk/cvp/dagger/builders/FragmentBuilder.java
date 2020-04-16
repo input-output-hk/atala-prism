@@ -23,6 +23,7 @@ import io.iohk.cvp.views.fragments.PaymentHistoryFragment;
 import io.iohk.cvp.views.fragments.ProfileFragment;
 import io.iohk.cvp.views.fragments.SettingsFragment;
 import io.iohk.cvp.views.fragments.ShareCredentialDialogFragment;
+import io.iohk.cvp.views.fragments.ShareProofRequestDialogFragment;
 import io.iohk.cvp.views.fragments.WalletFragment;
 
 @Module
@@ -69,6 +70,9 @@ public abstract class FragmentBuilder {
 
   @ContributesAndroidInjector(modules = AddConnectionsModule.class)
   abstract AcceptConnectionDialogFragment contributeAcceptConnectionDialogFragment();
+
+  @ContributesAndroidInjector(modules = AddConnectionsModule.class)
+  abstract ShareProofRequestDialogFragment contributeShareProofRequestDialogFragment();
 
   @ContributesAndroidInjector
   abstract BackendIpFragment contributeBackendIpFragment();

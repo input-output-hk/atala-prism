@@ -23,6 +23,7 @@ import io.iohk.cvp.utils.CredentialParse;
 import io.iohk.cvp.viewmodel.dtos.CredentialDto;
 import io.iohk.cvp.views.Preferences;
 import io.iohk.cvp.views.fragments.HomeFragment;
+import io.iohk.prism.protos.AtalaMessage;
 import io.iohk.prism.protos.Credential;
 import io.iohk.prism.protos.ReceivedMessage;
 
@@ -56,7 +57,7 @@ public class CredentialsRecyclerViewAdapter extends
     public void onBindViewHolder(CredentialsRecyclerViewAdapter.ViewHolder holder, int position) {
         try {
             ReceivedMessage msg = messages.get(position);
-            Credential current = Credential.parseFrom(msg.getMessage());
+            Credential current = AtalaMessage.parseFrom(msg.getMessage()).getIssuerSentCredential().getCredential();
             CredentialDto credentialDto = CredentialParse.parse(current);
 
             holder.credential = current;

@@ -7,7 +7,7 @@
   <!-- Activities titles -->
   <string name="connections_activity_title">Connections</string>
   <string name="terms_and_conditions_activity_title">Terms and Conditions</string>
-  <string name="wallet_setup_activity_title">Tu frase de recuperacion</string>
+  <string name="wallet_setup_activity_title">Your recovery phrase</string>
   <string name="seed_phrase_verification_activity_title">Verify Seed Phrase</string>
   <string name="qr_scanner_activity_title">Scan QR</string>
 
@@ -16,6 +16,10 @@
   <string name="credential_detail_employed_title">Proof of Employment</string>
   <string name="credential_detail_insurance_title">Certificate of Insurance</string>
 
+  <string name="credential_government_type_title">\n• ID Credential </string>
+  <string name="credential_degree_type_title">\n• University Credential </string>
+  <string name="credential_employed_type_title">\n• Employment Credential </string>
+  <string name="credential_insurance_type_title">\n• Insurance Credential </string>
 
   <!-- Terms and Conditions -->
   <string name="account_creation">Account Creation</string>
@@ -180,4 +184,5 @@
   <string name="error">ERROR</string>
   <string name="server_error_message">Please try again. If the error persists contact support.</string>
   <string name="server_share_successfully">Successfully shared!.</string>
+  <string name="select_all_credential_alert">You have to select all the credentials.</string>
 </resources>

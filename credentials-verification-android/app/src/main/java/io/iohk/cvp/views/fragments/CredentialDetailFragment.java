@@ -74,6 +74,9 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
     @BindView(R.id.text_view_credential_name)
     TextView textViewCredentialName;
 
+    @BindView(R.id.text_view_graduation_date_title)
+    TextView viewGraduationDateTitle;
+
     @BindView(R.id.text_view_graduation_date)
     TextView textViewGraduationDate;
 
@@ -173,8 +176,7 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = super.onCreateView(inflater, container, savedInstanceState);
         fillData(credential, connectionId);
         showOptions(credentialIsNew);
@@ -219,24 +221,51 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
 
                 textViewCredentialType.setText("Company Name");
                 textViewCredentialType.setTextColor(getResources().getColor(R.color.white));
+
+                textViewCredentialName.setText(credentialDto.getIssuer().getName());
+                textViewCredentialName.setTextColor(getResources().getColor(R.color.white));
+
+                awardTitle.setText("Employment Status");
+                awardValue.setText("Full Time");
+
+                textViewFullName.setText("Giorgi Beridze");
+
+                universityNameTitle.setText("Employment Start Date");
+                textViewUniversityName.setText("10/01/2020");
+
+                viewGraduationDateTitle.setText("Employment Start Date");
+                textViewGraduationDate.setText("03/03/2020");
+
                 layoutcredentialtitle.setBackground(getResources().getDrawable(R.drawable.rounded_top_corners_purple));
                 universityConstraint.setBackground(getResources().getDrawable(R.drawable.rounded_bottom_corners_purple));
 
                 imageViewCredentialLogo.setImageDrawable(getResources().getDrawable(R.drawable.ic_id_proof));
-                layoutDates.setVisibility(View.GONE);
-                layoutFinishDates.setVisibility(View.GONE);
 
-                awardTitle.setText(getResources().getString(R.string.full_name));
             } else {
                 //VerifiableCredential/CertificateOfInsurance
                 textViewCredentialType.setText("Provider Name");
                 textViewCredentialType.setTextColor(getResources().getColor(R.color.white));
+
+                textViewCredentialName.setText(credentialDto.getIssuer().getName());
+                textViewCredentialName.setTextColor(getResources().getColor(R.color.white));
+
+                textViewFullName.setText(credentialDto.getCredentialSubject().getName());
+
+                universityNameTitle.setText(getResources().getString(R.string.insurance_class));
+                textViewUniversityName.setText("Life Insurance");
+
+                awardTitle.setText(getResources().getString(R.string.insurance_number));
+                awardValue.setText("1234 5678 90");
+
+                textViewFullName.setText("Giorgi Beridze");
+
+                viewGraduationDateTitle.setText("Policy End Date");
+                textViewGraduationDate.setText("03/01/2009");
+
                 layoutcredentialtitle.setBackground(getResources().getDrawable(R.drawable.rounded_top_corners_blue));
                 universityConstraint.setBackground(getResources().getDrawable(R.drawable.rounded_bottom_corners_white));
 
                 imageViewCredentialLogo.setImageDrawable(getResources().getDrawable(R.drawable.ic_insurance_detail));
-                layoutDates.setVisibility(View.GONE);
-                layoutFinishDates.setVisibility(View.GONE);
 
                 textViewUniversityName.setTextColor(getResources().getColor(R.color.black));
                 universityNameTitle.setTextColor(getResources().getColor(R.color.black));
@@ -244,9 +273,8 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
                 awardValue.setTextColor(getResources().getColor(R.color.black));
                 fullNameTitle.setTextColor(getResources().getColor(R.color.black));
                 textViewFullName.setTextColor(getResources().getColor(R.color.black));
-
-                universityNameTitle.setText(getResources().getString(R.string.insurance_class));
-                awardTitle.setText(getResources().getString(R.string.insurance_number));
+                viewGraduationDateTitle.setTextColor(getResources().getColor(R.color.black));
+                textViewGraduationDate.setTextColor(getResources().getColor(R.color.black));
 
             }
 

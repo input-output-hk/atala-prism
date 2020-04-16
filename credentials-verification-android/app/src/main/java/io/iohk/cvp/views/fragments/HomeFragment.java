@@ -33,6 +33,7 @@ import io.iohk.cvp.views.Preferences;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.RootAppBar;
 import io.iohk.cvp.views.utils.adapters.CredentialsRecyclerViewAdapter;
+import io.iohk.prism.protos.AtalaMessage;
 import io.iohk.prism.protos.Credential;
 import io.iohk.prism.protos.ReceivedMessage;
 import lombok.NoArgsConstructor;
@@ -111,39 +112,51 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> {
 
             if (!liveData.hasActiveObservers()) {
                 liveData.observe(this, result -> {
+                    try {
+                        if (result.getError() != null) {
+                            getNavigator().showPopUp(getFragmentManager(), getResources().getString(
+                                    R.string.server_error_message));
+                        } else {
+                            Preferences prefs = new Preferences(getContext());
 
-                    if (result.getError() != null) {
-                        getNavigator().showPopUp(getFragmentManager(), getResources().getString(
-                                R.string.server_error_message));
-                    } else {
-                        Preferences prefs = new Preferences(getContext());
+                            Set<String> acceptedMessagesIds = prefs.getStoredMessages(Preferences.ACCEPTED_MESSAGES_KEY);
+                            Set<String> rejectedMessagesIds = prefs.getStoredMessages(Preferences.REJECTED_MESSAGES_KEY);
 
-                        Set<String> acceptedMessagesIds = prefs.getStoredMessages(Preferences.ACCEPTED_MESSAGES_KEY);
-                        Set<String> rejectedMessagesIds = prefs.getStoredMessages(Preferences.REJECTED_MESSAGES_KEY);
+                            List<ReceivedMessage> messages = result.getResult();
 
-                        List<ReceivedMessage> messages = result.getResult();
+                            List<ReceivedMessage> newMessages = messages.stream()
+                                    .filter(msg -> {
+                                        try {
+                                            AtalaMessage current = AtalaMessage.parseFrom(msg.getMessage());
+                                            if (!acceptedMessagesIds.contains(msg.getId()) && !rejectedMessagesIds
+                                                    .contains(msg.getId()) && !current.getIssuerSentCredential().getCredential().getTypeId().isEmpty()) {
+                                                return true;
+                                            }
+                                            return false;
+                                        }catch (Exception e){
+                                            return false;
+                                        }
+                                    }).collect(Collectors.toList());
 
-                        List<ReceivedMessage> newMessages = messages.stream()
-                                .filter(msg -> !acceptedMessagesIds.contains(msg.getId()) && !rejectedMessagesIds
-                                        .contains(msg.getId())).collect(
-                                        Collectors.toList());
+                            newCredentialsAdapter.addMesseges(newMessages);
 
-                        newCredentialsAdapter.addMesseges(newMessages);
+                            List<ReceivedMessage> acceptedMessages = messages.stream()
+                                    .filter(msg -> acceptedMessagesIds.contains(msg.getId())).collect(
+                                            Collectors.toList());
 
-                        List<ReceivedMessage> acceptedMessages = messages.stream()
-                                .filter(msg -> acceptedMessagesIds.contains(msg.getId())).collect(
-                                        Collectors.toList());
+                            credentialsAdapter.addMesseges(acceptedMessages);
 
-                        credentialsAdapter.addMesseges(acceptedMessages);
+                            if (!acceptedMessages.isEmpty()) {
+                                credentialsRecyclerView.setVisibility(View.VISIBLE);
+                                noCredentialsContainer.setVisibility(View.GONE);
+                            }
 
-                        if (!acceptedMessages.isEmpty()) {
-                            credentialsRecyclerView.setVisibility(View.VISIBLE);
-                            noCredentialsContainer.setVisibility(View.GONE);
+                            if (!newMessages.isEmpty()) {
+                                newCredentialsContainer.setVisibility(View.VISIBLE);
+                            }
                         }
-
-                        if (!newMessages.isEmpty()) {
-                            newCredentialsContainer.setVisibility(View.VISIBLE);
-                        }
+                    }catch (Exception e){
+                        Crashlytics.logException(e);
                     }
                 });
             }
@@ -175,7 +188,6 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> {
         credentialFragment.setCredentialIsNew(isNew);
         credentialFragment.setConnectionId(connectionId);
         credentialFragment.setMessageId(messageId);
-
 
         navigator.showFragmentOnTop(
                 Objects.requireNonNull(getActivity()).getSupportFragmentManager(), credentialFragment);
