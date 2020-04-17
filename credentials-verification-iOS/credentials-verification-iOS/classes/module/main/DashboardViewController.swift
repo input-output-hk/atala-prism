@@ -17,10 +17,10 @@ class DashboardViewController: BaseTabPagerViewController {
 
     public typealias MyBar = TMBar.TabBar
     let bar = MyBar()
-    let viewControllersStoryboardIdentifiers = ["Home", "Profile", "Connections", "Wallet", "Settings"]
-    let viewControllersIdentifiers = ["Home", "Profile", "Connections", "Wallet", "Settings"]
-    let viewControllersTitles = ["tab_home", "tab_profile", "tab_connections", "tab_wallet", "tab_settings"]
-    let viewControllersIcons = ["tab_home", "tab_profile", "tab_empty", "tab_wallet", "tab_settings"]
+    let viewControllersStoryboardIdentifiers = ["Home", "Connections", "Connections", "Profile", "Settings"]
+    let viewControllersIdentifiers = ["Home", "Connections", "Connections", "Profile", "Settings"]
+    let viewControllersTitles = ["tab_credentials", "tab_contacts", "", "tab_profile", "tab_settings"]
+    let viewControllersIcons = ["tab_credentials", "tab_contacts", "tab_empty", "tab_profile", "tab_settings"]
 
     lazy var viewControllers = { makeAllChildViewControllers() }()
 

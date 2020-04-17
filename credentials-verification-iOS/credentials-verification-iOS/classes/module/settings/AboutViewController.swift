@@ -47,10 +47,9 @@ class AboutViewController: BaseViewController {
         }
         
         let attrs = [NSAttributedString.Key.font : UIFont.boldSystemFont(ofSize: 13)]
-        let attributedString = NSMutableAttributedString(string:"about_built_by".localize())
-        attributedString.append(NSMutableAttributedString(string:"about_iohk".localize(), attributes:attrs))
+        let attributedString = NSMutableAttributedString(string:"about_atala_prism".localize(), attributes:attrs)
         attributedString.append(NSMutableAttributedString(string:"about_powered_by".localize()))
-        attributedString.append(NSMutableAttributedString(string:"about_atala".localize(), attributes:attrs))
+        attributedString.append(NSMutableAttributedString(string:"about_cardano".localize(), attributes:attrs))
         labelBuiltBy.attributedText = attributedString
 
 

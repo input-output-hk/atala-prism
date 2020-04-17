@@ -45,12 +45,14 @@
 "tab_connections" = "Connections";
 "tab_wallet" = "Wallet";
 "tab_settings" = "Settings";
+"tab_credentials" = "Credentials";
+"tab_contacts" = "Contacts";
 
 // <!-- Connections -->
-"connections_nav_title" = "Connections";
-"connections_empty_title" = "Start your first Connection!";
-"connections_empty_subtitle" = "You can receive and send your \ndigital certificates";
-"connections_empty_button" = "Scan a QR";
+"connections_nav_title" = "Contacts";
+"connections_empty_title" = "Connect to an organization to receive your first credential";
+"connections_empty_subtitle" = "Receive, store and share your degital credentials";
+"connections_empty_button" = "Scan QR code";
 "connections_scan_qr_nav_title" = "Scan QR";
 "connections_scan_qr_error" = "Invalid QR code";
 "connections_scan_qr_confirm_button" = "Connect!";
@@ -62,7 +64,7 @@
 "connections_more_info" = "More Info";
 
 // <!-- Home -->
-"home_nav_title" = "My Credentials";
+"home_nav_title" = "Credentials";
 "home_degrees_new_hello" = "Hello %1$@!";
 "home_degrees_new_title" = "You have new credentials to confirm";
 "home_degrees_new_view_btn" = "VIEW";
@@ -100,7 +102,7 @@
 "home_detail_employment_policy_number" = "Policy Number";
 "home_detail_employment_policy_end_date" = "Policy End Date";
 "home_university_degree" = "University Degree";
-"home_government_id" = "Government Issued DI";
+"home_government_id" = "Government Issued ID";
 "home_proof_employment" = "Proof of Employment";
 "home_certificate_insurance" = "Certificate of Insurance";
 
@@ -132,14 +134,14 @@
 "welcome_button" = "Get Started";
 
 // <!-- Login: Tutorial -->
-"tutorial_1_title" = "Own and share your achievements";
-"tutorial_1_subtitle" = "Securely store all your important documents in one place.";
+"tutorial_1_title" = "Own and share your data";
+"tutorial_1_subtitle" = "Store all your important documents in one place and share in easy, secure and private way";
 "tutorial_1_button" = "Get Started";
 "tutorial_2_title" = "Take control of your personal information";
 "tutorial_2_subtitle" = "Secure your personal information and only share what you need to. ";
 "tutorial_2_button" = "Continue";
-"tutorial_3_title" = "Join a next generation payment network";
-"tutorial_3_subtitle" = "Transact everywhere privately, securely and conveniently";
+"tutorial_3_title" = "Get instant access to services";
+"tutorial_3_subtitle" = "Prove your identity in one click and instantly access services everywhere Atala PRISM is supported.";
 "tutorial_3_button_register" = "Create Account";
 "tutorial_3_button_login" = "Restore Account";
 
@@ -204,16 +206,15 @@
 
 // <!-- About -->
 "about_tite"= "About us";
-"about_atala_version"= "Atala version";
+"about_atala_version"= "Atala PRISM version";
 "about_testing"= "- Testing";
 "about_terms"= "Terms & Conditions";
 "about_privacy"= "Privacy Policy";
 "about_last_updated"= "Last Updated: May 20, 2019";
-"about_built_by" = "Built by ";
-"about_iohk" = "IOHK";
+"about_atala_prism" = "Atala PRISM";
 "about_powered_by" = " powered by ";
-"about_atala" = "Atala";
-"about_copyright" = "© 2020 Atala";
+"about_cardano" = "Cardano";
+"about_copyright" = "©2020 IOHK";
 
 // <!-- Proof Requests -->
 "proof_request_description_first"= "Want you to share the following credentials with them:";
@@ -224,5 +225,3 @@
 "proof_request_select_credential"= "Select Crendential:";
 "proof_request_cancel"= "Cancel";
 "proof_request_share"= "Share";
-"proof_request_"= "";
-"proof_request_"= "";
