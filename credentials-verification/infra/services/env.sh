@@ -57,7 +57,14 @@ graph_env () {
 }
 
 taint_env () {
-  terraform init -backend-config="key=infra/services/$env_name_short/terraform.tfstate" && terraform taint "aws_ecs_task_definition.cvp-task-definition"
+  task_definition_path="aws_ecs_task_definition.cvp-task-definition"
+  terraform init -backend-config="key=infra/services/$env_name_short/terraform.tfstate"
+  if terraform state show $task_definition_path > /dev/null; then
+    echo "Tainting the environment"
+    terraform taint $task_definition_path
+  else
+      echo "No environment to taint"
+  fi
 }
 
 # Terraform's postgres provider will not drop a schema that we have created tables in (i.e. does not do a cascading drop)

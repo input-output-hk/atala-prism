@@ -87,18 +87,14 @@ jobs:
           name: Rebuild GEUD environment
           command: |
             cd credentials-verification/infra/services
-            if aws s3 ls s3://atala-cvp/infra/services/$ENV/terraform.tfstate; then
-              ./env.sh -t $ENV
-            fi
+            ./env.sh -t $ENV
             ./env.sh -A $ENV
 
       - run:
           name: Rebuild intdemo environment
           command: |
             cd credentials-verification/infra/stage/services/intdemo/
-            if aws s3 ls s3://atala-cvp/infra/stage/services/intdemo/$ENV/terraform.tfstate; then
-              ./intdemo.sh -t $ENV
-            fi
+            ./intdemo.sh -t $ENV
             ./intdemo.sh -A $ENV
 
   build-credentials-verification:
