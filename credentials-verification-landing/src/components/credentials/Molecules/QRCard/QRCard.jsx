@@ -6,25 +6,32 @@ import DownloadButtons from '../../../landing/Molecules/DownloadButtons/Download
 
 import './_style.scss';
 
-const QRCard = ({ qrValue }) => {
+const QRCard = ({ qrValue, showDownloadHelp }) => {
   const { t } = useTranslation();
 
   return (
     <div className="QRCard">
       <QRCode value={qrValue} />
-      <div className="QRCardContent">
-        <div className="QRCardText">
-          <h3>{t('credential.QRCard.noAppYet')}</h3>
-          <p>{t('credential.QRCard.downloadIt')}</p>
+      {showDownloadHelp && (
+        <div className="QRCardContent">
+          <div className="QRCardText">
+            <h3>{t('credential.QRCard.noAppYet')}</h3>
+            <p>{t('credential.QRCard.downloadIt')}</p>
+          </div>
+          <DownloadButtons />
         </div>
-        <DownloadButtons />
-      </div>
+      )}
     </div>
   );
 };
 
 QRCard.propTypes = {
-  qrValue: PropTypes.string.isRequired
+  qrValue: PropTypes.string.isRequired,
+  showDownloadHelp: PropTypes.bool
+};
+
+QRCard.defaultProps = {
+  showDownloadHelp: false
 };
 
 export default QRCard;

@@ -4,6 +4,8 @@ import atalaLogo from '../../../../images/logo-atala-prism.svg';
 import cardanoLogo from '../../../../images/logo-cardano.svg';
 import './_style.scss';
 
+const FirstStep = 1;
+
 class InteractiveMap extends Component {
   constructor(props) {
     super(props);
@@ -11,9 +13,8 @@ class InteractiveMap extends Component {
   }
 
   componentDidMount() {
-    window.addEventListener('click', () => {
-      this.setMapStep();
-    });
+    const { mapStep } = this.props;
+    if (mapStep !== FirstStep) this.setMapStep();
   }
 
   componentDidUpdate() {
@@ -22,7 +23,8 @@ class InteractiveMap extends Component {
 
   setMapStep() {
     const { mapStep } = this.props;
-    this.refs.demo.setStep(mapStep);
+    const { demo } = this.refs;
+    if (mapStep && demo) demo.setStep(mapStep);
   }
 
   render() {

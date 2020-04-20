@@ -59,6 +59,7 @@ const CredentialsContainer = ({
   const [connectionStatus, setConnectionStatus] = useState();
   const [showContactButton, setShowContactButton] = useState(false);
   const [showCongrats, setShowCongrats] = useState(false);
+  const [mapInitFirstStep, setMapInitFirstStep] = useState(false);
 
   useEffect(() => {
     if (_.isEmpty(user)) redirectToUserInfo();
@@ -85,7 +86,9 @@ const CredentialsContainer = ({
 
   useEffect(() => {
     const isIntroductionStep = currentStep === INTRODUCTION_STEP;
+    const isIdCredential = currentCredential === GOVERNMENT_ISSUED_DIGITAL_IDENTITY;
     if (token && isIntroductionStep) initQRStep();
+    if (token && isIntroductionStep && isIdCredential) setMapInitFirstStep(true);
   }, [token, currentStep]);
 
   useEffect(() => {
@@ -180,7 +183,12 @@ const CredentialsContainer = ({
       }
       case QR_STEP: {
         const renderLeft = () => <ScanQRInfo currentCredential={currentCredential} />;
-        const renderRight = () => <QRCard qrValue={token} />;
+        const renderRight = () => (
+          <QRCard
+            qrValue={token}
+            showDownloadHelp={currentCredential === GOVERNMENT_ISSUED_DIGITAL_IDENTITY}
+          />
+        );
         return <SplittedPageInside renderLeft={renderLeft} renderRight={renderRight} />;
       }
       case SEND_CREDENTIAL_STEP: {
@@ -206,7 +214,7 @@ const CredentialsContainer = ({
 
   return (
     <div className="InteractiveDemoContainer">
-      <InteractiveMap mapStep={currentCredential + 1} />
+      <InteractiveMap mapStep={currentCredential + 1} mapInitFirstStep />
       <Credentials
         getStep={showCongrats ? () => <CongratsStep /> : getStep}
         changeCurrentCredential={value => setCurrentCredential(value)}

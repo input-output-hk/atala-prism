@@ -40,7 +40,7 @@ const CreatedCredential = ({ currentCredential }) => {
       cellList: [
         { title: 'universityName', value: CARD_UNIVERSITY_UNIVERSITY },
         { title: 'award', value: CARD_UNIVERSITY_AWARD },
-        { title: 'fullName', value: { firstName } },
+        { title: 'fullName', value: firstName },
         {
           subList: [
             {
@@ -64,7 +64,7 @@ const CreatedCredential = ({ currentCredential }) => {
       cellTitle: { title: 'companyName', value: CARD_EMPLOYMENT_COMPANY },
       cellList: [
         { title: 'employerAddress', value: CARD_EMPLOYMENT_ADDRESS },
-        { title: 'employeeName', value: { firstName } },
+        { title: 'employeeName', value: firstName },
         { title: 'employmentStatus', value: CARD_EMPLOYMENT_STATUS },
         {
           title: 'employmentStartDate',
@@ -85,7 +85,7 @@ const CreatedCredential = ({ currentCredential }) => {
       cellList: [
         { title: 'classOfInsurance', value: CARD_INSURANCE_CLASS },
         { title: 'policyNumber', value: CARD_INSURANCE_POLICY_NUMBER },
-        { title: 'fullName', value: { firstName } },
+        { title: 'fullName', value: firstName },
         {
           title: 'policyEndDate',
           value: moment()

@@ -21,7 +21,7 @@ const CredentialData = ({
         <div className={cell.className}>{CellsRenderer(cell.subList)}</div>
       ) : (
         <>
-          <CellRenderer componentName={componentName} {...cell} />
+          <CellRenderer key={cell.title} componentName={componentName} {...cell} />
           <hr />
         </>
       )
@@ -41,19 +41,21 @@ const CredentialData = ({
 CredentialData.defaultProps = {
   credentialHeaderClassName: 'CredentialHeader',
   credentialTemplateClassName: 'CredentialTemplate',
-  credentialContentClassName: 'CredentialContent'
+  credentialContentClassName: 'CredentialContent',
+  iconLeft: undefined,
+  iconRight: undefined
 };
 
 CredentialData.propTypes = {
   credentialHeaderClassName: PropTypes.string,
   credentialTemplateClassName: PropTypes.string,
   credentialContentClassName: PropTypes.string,
-  iconLeft: PropTypes.string.isRequired,
-  iconRight: PropTypes.string.isRequired,
+  iconLeft: PropTypes.string,
+  iconRight: PropTypes.string,
   iconAlt: PropTypes.string.isRequired,
   componentName: PropTypes.string.isRequired,
   cellTitle: PropTypes.shape({ title: PropTypes.string, value: PropTypes.any }).isRequired,
-  cellList: PropTypes.shape([{ title: PropTypes.string, value: PropTypes.any }]).isRequired
+  cellList: PropTypes.arrayOf(PropTypes.shape({ title: PropTypes.string, value: PropTypes.any })).isRequired
 };
 
 export default CredentialData;

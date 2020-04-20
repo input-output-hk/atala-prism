@@ -10,7 +10,10 @@ export const withRedirector = Component => props => {
 
   const redirectToUserInfo = () => redirectTo('userInfo');
 
-  const redirectToCredentials = () => redirectTo('credentials');
+  const redirectToCredentials = () => {
+    redirectTo('credentials');
+    window.location.reload(true);
+  };
 
   const redirectToContact = () => redirectTo('contact');
 
