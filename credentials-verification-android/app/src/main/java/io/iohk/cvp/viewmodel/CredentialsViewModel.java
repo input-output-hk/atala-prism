@@ -27,13 +27,10 @@ public class CredentialsViewModel extends CvpViewModel {
                 new AsyncTaskResult<>(new ArrayList<>()));
     }
 
-    public MutableLiveData<AsyncTaskResult<List<ReceivedMessage>>> getMessages(
-            Set<String> userIds) {
-        userIds.forEach(userId -> {
-            GrpcTask task = new GrpcTask<>(new GetMessagesRunnable(messages), context);
-            task.execute(userId);
-            runningTasks.add(task);
-        });
+    public MutableLiveData<AsyncTaskResult<List<ReceivedMessage>>> getMessages(Set<String> userIds) {
+        GrpcTask task = new GrpcTask<>(new GetMessagesRunnable(messages), context);
+        task.execute(userIds);
+        runningTasks.add(task);
         return messages;
     }
 

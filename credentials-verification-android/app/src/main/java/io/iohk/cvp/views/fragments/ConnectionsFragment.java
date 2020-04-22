@@ -148,7 +148,6 @@ public class ConnectionsFragment extends CvpFragment<ConnectionsActivityViewMode
         universitiesListFragment.clearConnecitons();
         employersListFragment.clearConnecitons();
         listConnections(this.getUserIds());
-        getProofRequest();
     }
 
     public void getProofRequest() {
@@ -203,7 +202,7 @@ public class ConnectionsFragment extends CvpFragment<ConnectionsActivityViewMode
                                         Collectors.toList()));
 
                         if (!proofRequestMessages.isEmpty() && !acceptedMessages.isEmpty()) {
-                            for (ReceivedMessage proofRequestMessage:proofRequestMessages) {
+                            for (ReceivedMessage proofRequestMessage : proofRequestMessages) {
                                 ProofRequest proofRequest = AtalaMessage.parseFrom(proofRequestMessage.getMessage()).getProofRequest();
                                 //Search for conection
                                 ConnectionInfo shareConnection = null;
@@ -243,7 +242,6 @@ public class ConnectionsFragment extends CvpFragment<ConnectionsActivityViewMode
 
     public void listConnections(Set<String> userIds) {
         liveData = viewModel.getConnections(userIds);
-
         if (!liveData.hasActiveObservers()) {
             liveData.observe(this, response -> {
                 FragmentManager fm = getFragmentManager();
@@ -282,6 +280,8 @@ public class ConnectionsFragment extends CvpFragment<ConnectionsActivityViewMode
                                 == ParticipantInfo.VERIFIER_FIELD_NUMBER)
                         .collect(Collectors.toList());
                 employersListFragment.addConnections(verifiersConnections);
+
+                getProofRequest();
             });
         }
     }
@@ -310,9 +310,8 @@ public class ConnectionsFragment extends CvpFragment<ConnectionsActivityViewMode
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        ActivityUtils
-                .onQrcodeResult(requestCode, resultCode, (MainActivity) getActivity(),
-                        viewModel, data, this);
+        ActivityUtils.onQrcodeResult(requestCode, resultCode, (MainActivity) getActivity(),
+                viewModel, data, this);
     }
 
     @Override

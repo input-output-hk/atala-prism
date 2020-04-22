@@ -3,6 +3,12 @@ package io.iohk.cvp.grpc;
 import android.content.Context;
 import android.os.AsyncTask;
 
+import org.bitcoinj.net.ProtobufConnection;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 import io.grpc.Channel;
 import io.grpc.ClientInterceptor;
 import io.grpc.ClientInterceptors;
@@ -33,19 +39,44 @@ public class GrpcTask<A> extends AsyncTask<Object, Void, AsyncTaskResult<A>> {
 
     @Override
     public AsyncTaskResult<A> doInBackground(Object... params) {
-        String userId = getUserId(params);
-        ClientInterceptor interceptor = new HeaderClientInterceptor(userId);
-        Channel channel = ClientInterceptors.intercept(origChannel, interceptor);
-        ConnectorServiceGrpc.ConnectorServiceBlockingStub
-                blockingStub = ConnectorServiceGrpc.newBlockingStub(channel);
-        ConnectorServiceGrpc.ConnectorServiceStub stub = ConnectorServiceGrpc.newStub(channel);
+        Set<String> userIds = getUserIds(params);
+        List<A> returnList = new ArrayList<>();
+        if (userIds != null) {
+            userIds.forEach(userId -> {
+                ClientInterceptor interceptor = new HeaderClientInterceptor(userId);
+                Channel channel = ClientInterceptors.intercept(origChannel, interceptor);
+                ConnectorServiceGrpc.ConnectorServiceBlockingStub
+                        blockingStub = ConnectorServiceGrpc.newBlockingStub(channel);
+                ConnectorServiceGrpc.ConnectorServiceStub stub = ConnectorServiceGrpc.newStub(channel);
+                try {
+                    A result = grpcRunnable.run(blockingStub, stub, params).getResult();
+                    if(result instanceof List){
+                        returnList.addAll((List) result);
+                    } else {
+                        returnList.add(result);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
 
-        try {
-            return grpcRunnable.run(blockingStub, stub, params);
-        } catch (Exception e) {
-            return new AsyncTaskResult<>(e);
+            return new AsyncTaskResult(returnList);
+        } else {
+            String userId = getUserId(params);
+
+            ClientInterceptor interceptor = new HeaderClientInterceptor(userId);
+            Channel channel = ClientInterceptors.intercept(origChannel, interceptor);
+            ConnectorServiceGrpc.ConnectorServiceBlockingStub
+                    blockingStub = ConnectorServiceGrpc.newBlockingStub(channel);
+            ConnectorServiceGrpc.ConnectorServiceStub stub = ConnectorServiceGrpc.newStub(channel);
+
+            try {
+                return grpcRunnable.run(blockingStub, stub, params);
+            } catch (Exception e) {
+                return new AsyncTaskResult<>(e);
+            }
+
         }
-
     }
 
     // FIXME we should find a better way to send user id
@@ -54,6 +85,17 @@ public class GrpcTask<A> extends AsyncTask<Object, Void, AsyncTaskResult<A>> {
             return null;
         }
         return String.valueOf(params[0]);
+    }
+
+    private Set<String> getUserIds(Object[] params) {
+        try {
+            if (params == null || (params.length == 0 || params[0] == null)) {
+                return null;
+            }
+            return (Set<String>) params[0];
+        }catch (Exception e){
+            return null;
+        }
     }
 
     @Override

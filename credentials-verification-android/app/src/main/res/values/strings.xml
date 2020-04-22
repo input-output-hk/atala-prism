@@ -1,7 +1,7 @@
 <resources>
-  <string name="app_name">GeorgiaKT</string>
-  <string name="scan_qr">Scan QR</string>
-  <string name="connection_label">Start your First Connection</string>
+  <string name="app_name">Atala Prism</string>
+  <string name="scan_qr">Scan QR code</string>
+  <string name="connection_label">Connect to an organization to receive your first credential</string>
   <string name="connection_secondary_label">You can receive and send your digital certificates</string>
 
   <!-- Activities titles -->
@@ -31,15 +31,15 @@
 
   <!-- About -->
   <string name="about_title">About us</string>
-  <string name="about_version">Atala version </string>
+  <string name="about_version">Atala PRISM version </string>
   <string name="about_version_number">129.1</string>
   <string name="about_version_server">Testing</string>
   <string name="about_terms_title">Terms &amp; Conditions</string>
   <string name="about_terms_date">Last Updated: May 20, 2019</string>
   <string name="about_policy_title">Privacy Policy</string>
   <string name="about_policy_date">Last Updated: May 20, 2019</string>
-  <string name="about_built">Built by IOHK powered by Atala</string>
-  <string name="about_year">© 2020 Atala</string>
+  <string name="about_built">Atala PRISM powered by Cardano</string>
+  <string name="about_year">© 2020 iohk</string>
 
 
   <!-- Wallet setup -->
@@ -86,12 +86,12 @@
   <string name="welcome">Welcome</string>
   <string name="get_started">Get started</string>
   <string name="empty_title" />
-  <string name="tutorial_step_1_slogan_1">Own and share your achievements</string>
-  <string name="tutorial_step_1_slogan_2">Securely store all your important documents in one place</string>
+  <string name="tutorial_step_1_slogan_1">Own and share your data</string>
+  <string name="tutorial_step_1_slogan_2">Store all your important documents in one place and share in easy, secure and private way</string>
   <string name="tutorial_step_2_slogan_1">Take control of your personal information</string>
   <string name="tutorial_step_2_slogan_2">Secure your personal information and only share what you need to</string>
-  <string name="tutorial_step_3_slogan_1">Join a next generation payment network</string>
-  <string name="tutorial_step_3_slogan_2">Transact everywhere privately, securely and conveniently</string>
+  <string name="tutorial_step_3_slogan_1">Get instant access to services</string>
+  <string name="tutorial_step_3_slogan_2">Prove your identity in one click and instantly access services everywhere Atala PRISM is supported</string>
   <string name="accept">Accept</string>
   <string name="verify">Verify</string>
   <string name="continue_string">Continue</string>

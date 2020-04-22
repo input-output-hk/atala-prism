@@ -6,7 +6,7 @@ public enum CredentialType {
 
     REDLAND_CREDENTIAL(1, "VerifiableCredential/RedlandIdCredential"),
     DEGREE_CREDENTIAL(2, "VerifiableCredential/AirsideDegreeCredential"),
-    EMPLOYMENT_CREDENTIAL(3, "VerifiableCredential/CertificateOfEmployment"),
+    EMPLOYMENT_CREDENTIAL(3, "VerifiableCredential/AtalaEmploymentCredential"),
     INSURANCE_CREDENTIAL(4, "VerifiableCredential/CertificateOfInsurance");
 
     private String value;

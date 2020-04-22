@@ -22,8 +22,7 @@ public class ConnectionsListablesViewModel extends CvpViewModel {
   }
 
   public LiveData<AsyncTaskResult<List<ConnectionListable>>> getConnections(Set<String> userIds) {
-    userIds.forEach(userId ->
-        new GrpcTask<>(new GetConnectionsListableRunnable(connections), context).execute(userId));
+    new GrpcTask<>(new GetConnectionsListableRunnable(connections), context).execute(userIds);
 
     return connections;
   }

@@ -30,11 +30,9 @@ public class ConnectionsActivityViewModel extends CvpViewModel {
     }
 
     public LiveData<AsyncTaskResult<List<ConnectionInfo>>> getConnections(Set<String> userIds) {
-        userIds.forEach(userId -> {
-            GrpcTask task = new GrpcTask<>(new GetConnectionsInfoRunnable(connections), context);
-            task.execute(userId);
-            runningTasks.add(task);
-        });
+        GrpcTask task = new GrpcTask<>(new GetConnectionsInfoRunnable(connections), context);
+        task.execute(userIds);
+        runningTasks.add(task);
         return connections;
     }
 
@@ -44,11 +42,9 @@ public class ConnectionsActivityViewModel extends CvpViewModel {
     }
 
     public MutableLiveData<AsyncTaskResult<List<ReceivedMessage>>> getMessages(Set<String> userIds) {
-        userIds.forEach(userId -> {
-            GrpcTask task = new GrpcTask<>(new GetMessagesRunnable(messages), context);
-            task.execute(userId);
-            runningTasks.add(task);
-        });
+        GrpcTask task = new GrpcTask<>(new GetMessagesRunnable(messages), context);
+        task.execute(userIds);
+        runningTasks.add(task);
         return messages;
     }
 

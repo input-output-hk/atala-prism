@@ -35,19 +35,19 @@
     app:srcCompat="@drawable/icon_scan_qr" />
 
   <TextView
-    android:id="@+id/textView2"
-    android:layout_width="293dp"
-    android:layout_height="57dp"
-    android:layout_marginStart="48dp"
-    android:layout_marginTop="16dp"
-    android:layout_marginEnd="48dp"
-    android:text="@string/connection_label"
-    android:textAlignment="center"
-    android:textColor="@color/black"
-    android:textSize="20sp"
-    app:layout_constraintEnd_toEndOf="parent"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toBottomOf="@+id/imageView" />
+      android:id="@+id/textView2"
+      android:layout_width="293dp"
+      android:layout_height="57dp"
+      android:layout_marginStart="48dp"
+      android:layout_marginTop="16dp"
+      android:layout_marginEnd="48dp"
+      android:text="@string/connection_label"
+      android:textAlignment="center"
+      android:textColor="@color/black"
+      android:textSize="20sp"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@+id/imageView" />
 
   <TextView
     android:id="@+id/textView"
