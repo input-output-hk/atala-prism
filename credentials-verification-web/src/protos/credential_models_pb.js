@@ -208,7 +208,7 @@ if (goog.DEBUG && !COMPILED) {
  * @constructor
  */
 proto.io.iohk.prism.protos.ProofRequest = function(opt_data) {
-  jspb.Message.initialize(this, opt_data, 0, -1, null, null);
+  jspb.Message.initialize(this, opt_data, 0, -1, proto.io.iohk.prism.protos.ProofRequest.repeatedFields_, null);
 };
 goog.inherits(proto.io.iohk.prism.protos.ProofRequest, jspb.Message);
 if (goog.DEBUG && !COMPILED) {
@@ -2518,6 +2518,13 @@ proto.io.iohk.prism.protos.HolderSentCredential.prototype.hasCredential = functi
 
 
 
+/**
+ * List of repeated fields within this message type.
+ * @private {!Array<number>}
+ * @const
+ */
+proto.io.iohk.prism.protos.ProofRequest.repeatedFields_ = [1];
+
 
 
 if (jspb.Message.GENERATE_TO_OBJECT) {
@@ -2549,7 +2556,7 @@ proto.io.iohk.prism.protos.ProofRequest.prototype.toObject = function(opt_includ
  */
 proto.io.iohk.prism.protos.ProofRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    typeid: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    typeidsList: (f = jspb.Message.getRepeatedField(msg, 1)) == null ? undefined : f,
     connectiontoken: jspb.Message.getFieldWithDefault(msg, 2, "")
   };
 
@@ -2589,7 +2596,7 @@ proto.io.iohk.prism.protos.ProofRequest.deserializeBinaryFromReader = function(m
     switch (field) {
     case 1:
       var value = /** @type {string} */ (reader.readString());
-      msg.setTypeid(value);
+      msg.addTypeids(value);
       break;
     case 2:
       var value = /** @type {string} */ (reader.readString());
@@ -2624,9 +2631,9 @@ proto.io.iohk.prism.protos.ProofRequest.prototype.serializeBinary = function() {
  */
 proto.io.iohk.prism.protos.ProofRequest.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = message.getTypeid();
+  f = message.getTypeidsList();
   if (f.length > 0) {
-    writer.writeString(
+    writer.writeRepeatedString(
       1,
       f
     );
@@ -2642,20 +2649,39 @@ proto.io.iohk.prism.protos.ProofRequest.serializeBinaryToWriter = function(messa
 
 
 /**
- * optional string typeId = 1;
- * @return {string}
+ * repeated string typeIds = 1;
+ * @return {!Array<string>}
  */
-proto.io.iohk.prism.protos.ProofRequest.prototype.getTypeid = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+proto.io.iohk.prism.protos.ProofRequest.prototype.getTypeidsList = function() {
+  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 1));
+};
+
+
+/**
+ * @param {!Array<string>} value
+ * @return {!proto.io.iohk.prism.protos.ProofRequest} returns this
+ */
+proto.io.iohk.prism.protos.ProofRequest.prototype.setTypeidsList = function(value) {
+  return jspb.Message.setField(this, 1, value || []);
 };
 
 
 /**
  * @param {string} value
+ * @param {number=} opt_index
  * @return {!proto.io.iohk.prism.protos.ProofRequest} returns this
  */
-proto.io.iohk.prism.protos.ProofRequest.prototype.setTypeid = function(value) {
-  return jspb.Message.setProto3StringField(this, 1, value);
+proto.io.iohk.prism.protos.ProofRequest.prototype.addTypeids = function(value, opt_index) {
+  return jspb.Message.addToRepeatedField(this, 1, value, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.io.iohk.prism.protos.ProofRequest} returns this
+ */
+proto.io.iohk.prism.protos.ProofRequest.prototype.clearTypeidsList = function() {
+  return this.setTypeidsList([]);
 };
 
 

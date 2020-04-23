@@ -129,7 +129,22 @@ jobs:
       - checkout
 
       - setup_remote_docker
-
+      - run:
+          name: "Install protoc"
+          command: |
+              protoc_version=3.11.4
+              archive=protoc-${protoc_version}-linux-x86_64
+              curl -O -L https://github.com/protocolbuffers/protobuf/releases/download/v${protoc_version}/$archive.zip
+              sudo unzip -d '/usr/local' $archive.zip 'bin/*' 'include/*'
+              rm -rf $archive.zip
+      - run:
+          name: "Install protoc-gen-grpc-web"
+          command: |
+              grpcweb_version=1.0.7
+              archive=protoc-gen-grpc-web-${grpcweb_version}-linux-x86_64
+              curl -O -L https://github.com/grpc/grpc-web/releases/download/${grpcweb_version}/$archive
+              chmod +x $archive
+              sudo mv $archive /usr/local/bin/protoc-gen-grpc-web
       - run:
           name: Move to target folder then run tests
           command: cd credentials-verification-web && ./web-testing-script.sh
