@@ -10,7 +10,13 @@ import io.iohk.cvp.crypto.SHA256Digest
 import io.iohk.cvp.repositories.PostgresRepositorySpec
 import io.iohk.node.models.{DIDPublicKey, DIDSuffix, KeyUsage}
 import io.iohk.node.operations.path.{Path, ValueAtPath}
-import io.iohk.node.operations.{CreateDIDOperationSpec, IssueCredentialOperationSpec, ParsingUtils, RevokeCredentialOperationSpec, TimestampInfo}
+import io.iohk.node.operations.{
+  CreateDIDOperationSpec,
+  IssueCredentialOperationSpec,
+  ParsingUtils,
+  RevokeCredentialOperationSpec,
+  TimestampInfo
+}
 import io.iohk.node.repositories.DIDDataRepository
 import io.iohk.node.repositories.daos.{DIDDataDAO, PublicKeysDAO}
 import io.iohk.node.services.{BlockProcessingServiceSpec, DIDDataService, ObjectManagementService}
@@ -189,7 +195,7 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
       // This changes greatly, so just test something was set
       buildInfo.version must not be empty
       buildInfo.scalaVersion mustBe "2.12.10"
-      buildInfo.millVersion mustBe "0.6.1"
+      buildInfo.millVersion mustBe "0.6.2"
       // Give it enough time between build creation and test
       val buildTime = LocalDateTime.parse(buildInfo.buildTime)
       buildTime.compareTo(aMonthAgo) must be > 0

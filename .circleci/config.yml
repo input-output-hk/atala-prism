@@ -1,9 +1,13 @@
 version: 2.1
+parameters:
+  scala-mill-docker-image:
+    type: string
+    default: "inputoutput/scala-mill:2.12.10-0.6.2-0.12.24"
 jobs:
 
   deploy-ecr-images:
     docker:
-      - image: inputoutput/scala-mill:2.12.10-0.6.1-0.12.24
+      - image: << pipeline.parameters.scala-mill-docker-image >>
     steps:
       - checkout
 
@@ -100,7 +104,7 @@ jobs:
   build-credentials-verification:
     working_directory: ~/repo
     docker:
-      - image: inputoutput/scala-mill:2.12.10-0.6.1
+      - image: << pipeline.parameters.scala-mill-docker-image >>
       - image: postgres:11.5
         environment:
           POSTGRES_USER: postgres
