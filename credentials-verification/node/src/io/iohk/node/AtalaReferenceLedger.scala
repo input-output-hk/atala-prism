@@ -3,20 +3,29 @@ package io.iohk.node
 import java.time.Instant
 
 import io.iohk.cvp.crypto.SHA256Digest
-import io.iohk.node.services.models.ReferenceHandler
+import io.iohk.node.services.models.{AtalaObjectUpdate, ObjectHandler}
 
 import scala.concurrent.Future
 
 trait AtalaReferenceLedger {
+  def supportsOnChainData: Boolean
   def publishReference(ref: SHA256Digest): Future[Unit]
+  def publishObject(bytes: Array[Byte]): Future[Unit]
 }
 
 trait BlockchainSynchronizerFactory {
-  def apply(onNewReference: ReferenceHandler): AtalaReferenceLedger
+  def apply(onNewObject: ObjectHandler): AtalaReferenceLedger
 }
 
-class InMemoryAtalaReferenceLedger(onNewReference: ReferenceHandler) extends AtalaReferenceLedger {
+class InMemoryAtalaReferenceLedger(onNewObject: ObjectHandler) extends AtalaReferenceLedger {
+
+  override def supportsOnChainData: Boolean = true
+
   override def publishReference(ref: SHA256Digest): Future[Unit] = {
-    onNewReference(ref, Instant.now())
+    onNewObject(AtalaObjectUpdate.Reference(ref), Instant.now())
+  }
+
+  override def publishObject(bytes: Array[Byte]): Future[Unit] = {
+    onNewObject(AtalaObjectUpdate.ByteContent(bytes), Instant.now())
   }
 }

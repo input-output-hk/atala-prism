@@ -30,7 +30,6 @@ class AtalaObjectsDAOSpec extends PostgresRepositorySpec {
       retrieved.objectId mustBe objectId
       retrieved.sequenceNumber mustBe 1
       retrieved.processed mustBe false
-      retrieved.blockHash mustBe None
     }
 
     "mark object as processed" in {
@@ -41,16 +40,6 @@ class AtalaObjectsDAOSpec extends PostgresRepositorySpec {
       AtalaObjectsDAO.setProcessed(objectId).transact(database).unsafeRunSync()
       val retrieved = AtalaObjectsDAO.get(objectId).transact(database).unsafeRunSync().value
       retrieved.processed mustBe true
-    }
-
-    "add block hash to the object" in {
-      AtalaObjectsDAO
-        .insert(AtalaObjectsDAO.AtalaObjectCreateData(objectId, 1, Instant.ofEpochMilli(0)))
-        .transact(database)
-        .unsafeRunSync()
-      AtalaObjectsDAO.setBlockHash(objectId, blockHash).transact(database).unsafeRunSync()
-      val retrieved = AtalaObjectsDAO.get(objectId).transact(database).unsafeRunSync().value
-      retrieved.blockHash mustBe Some(blockHash)
     }
 
     "return object with highest sequence number" in {

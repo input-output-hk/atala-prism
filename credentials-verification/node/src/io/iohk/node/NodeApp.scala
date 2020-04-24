@@ -6,14 +6,13 @@ import cats.effect.IO
 import com.typesafe.config.{Config, ConfigFactory}
 import doobie.util.transactor.Transactor
 import io.grpc.{Server, ServerBuilder}
-import io.iohk.cvp.crypto.SHA256Digest
 import io.iohk.cvp.repositories.{SchemaMigrations, TransactorFactory}
 import io.iohk.node.bitcoin.BitcoinClient
 import io.iohk.node.objects.{ObjectStorageService, S3ObjectStorageService}
 import io.iohk.node.repositories.DIDDataRepository
 import io.iohk.node.repositories.atalaobjects.AtalaObjectsRepository
 import io.iohk.node.repositories.blocks.BlocksRepository
-import io.iohk.node.services.models.ReferenceHandler
+import io.iohk.node.services.models.{AtalaObjectUpdate, ObjectHandler}
 import io.iohk.node.services.{AtalaService, BlockProcessingServiceImpl, DIDDataService, ObjectManagementService}
 import io.iohk.node.synchronizer.{LedgerSynchronizationStatusService, LedgerSynchronizerService, SynchronizerConfig}
 import io.iohk.prism.protos.node_api._
@@ -77,9 +76,9 @@ class NodeApp(executionContext: ExecutionContext) { self =>
 
     val objectManagementServicePromise: Promise[ObjectManagementService] = Promise()
 
-    def onAtalaReference(ref: SHA256Digest, timestamp: Instant): Future[Unit] = {
+    def onAtalaReference(ref: AtalaObjectUpdate, timestamp: Instant): Future[Unit] = {
       objectManagementServicePromise.future.map { objectManagementService =>
-        objectManagementService.saveReference(ref, timestamp)
+        objectManagementService.saveObject(ref, timestamp)
       }
     }
 
@@ -117,7 +116,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     }
   }
 
-  def initializeBitcoin(config: Config, onAtalaReference: ReferenceHandler)(implicit
+  def initializeBitcoin(config: Config, onAtalaReference: ObjectHandler)(implicit
       xa: Transactor[IO]
   ): AtalaService = {
     logger.info("Creating bitcoin client")

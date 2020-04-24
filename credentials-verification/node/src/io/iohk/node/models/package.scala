@@ -69,7 +69,7 @@ package object models {
       objectId: SHA256Digest,
       objectTimestamp: Instant,
       sequenceNumber: Int,
-      blockHash: Option[SHA256Digest],
+      byteContent: Option[Array[Byte]],
       processed: Boolean
   )
 

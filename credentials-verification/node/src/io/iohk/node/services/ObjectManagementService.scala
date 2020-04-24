@@ -14,6 +14,8 @@ import io.iohk.node.models.AtalaObject
 import io.iohk.node.objects.ObjectStorageService
 import io.iohk.node.repositories.daos.AtalaObjectsDAO
 import io.iohk.node.repositories.daos.AtalaObjectsDAO.AtalaObjectCreateData
+import io.iohk.node.services.models.AtalaObjectUpdate
+import io.iohk.prism.protos.node_internal.AtalaObject.Block
 import io.iohk.prism.protos.{node_internal, node_models}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -39,9 +41,19 @@ class ObjectManagementService(
   // - put the info about the object into the db
   // for now, until we have block processing queue, it also manages processing
   // the referenced block
-  def justSaveReference(ref: SHA256Digest, timestamp: Instant): Future[Option[AtalaObject]] = {
+  def justSaveObject(objectUpdate: AtalaObjectUpdate, timestamp: Instant): Future[Option[AtalaObject]] = {
+    val hash = objectUpdate match {
+      case AtalaObjectUpdate.Reference(ref) => ref
+      case AtalaObjectUpdate.ByteContent(bytes) => SHA256Digest.compute(bytes)
+    }
+
+    val content = objectUpdate match {
+      case AtalaObjectUpdate.Reference(ref) => None
+      case AtalaObjectUpdate.ByteContent(bytes) => Some(bytes)
+    }
+
     val query = for {
-      existingObject <- AtalaObjectsDAO.get(ref)
+      existingObject <- AtalaObjectsDAO.get(hash)
       _ <- {
         existingObject match {
           case Some(_) => connection.raiseError(new ReferenceAlreadyProcessed)
@@ -51,7 +63,12 @@ class ObjectManagementService(
 
       newestObject <- AtalaObjectsDAO.getNewest()
       obj <- AtalaObjectsDAO.insert(
-        AtalaObjectCreateData(ref, newestObject.fold(INITIAL_SEQUENCE_NUMBER)(_.sequenceNumber + 1), timestamp)
+        AtalaObjectCreateData(
+          hash,
+          newestObject.fold(INITIAL_SEQUENCE_NUMBER)(_.sequenceNumber + 1),
+          timestamp,
+          content
+        )
       )
     } yield Some(obj)
 
@@ -63,9 +80,9 @@ class ObjectManagementService(
       }
   }
 
-  def saveReference(ref: SHA256Digest, timestamp: Instant): Future[Unit] = {
+  def saveObject(obj: AtalaObjectUpdate, timestamp: Instant): Future[Unit] = {
     // TODO: just add the object to processing queue, instead of processing here
-    justSaveReference(ref, timestamp)
+    justSaveObject(obj, timestamp)
       .flatMap {
         case Some(obj) =>
           processObject(obj).flatMap { transaction =>
@@ -80,7 +97,8 @@ class ObjectManagementService(
     val block = node_internal.AtalaBlock("1.0", List(op))
     val blockBytes = block.toByteArray
     val blockHash = SHA256Digest.compute(blockBytes)
-    val obj = node_internal.AtalaObject(blockHash = ByteString.copyFrom(blockHash.value), blockOperationCount = 1)
+    val obj =
+      node_internal.AtalaObject(block = Block.BlockHash(ByteString.copyFrom(blockHash.value)), blockOperationCount = 1)
     val objBytes = obj.toByteArray
     val objHash = SHA256Digest.compute(objBytes)
 
@@ -90,25 +108,33 @@ class ObjectManagementService(
     synchronizer.publishReference(objHash)
   }
 
+  protected def getProtobufObject(obj: AtalaObject): Future[node_internal.AtalaObject] = {
+    val byteContentFut = obj.byteContent match {
+      case Some(content) => Future.successful(content)
+      case None => storage.get(obj.objectId.hexValue).map(_.get) // TODO: error support
+    }
+
+    byteContentFut.map(node_internal.AtalaObject.parseFrom)
+  }
+
+  protected def getBlockFromObject(obj: node_internal.AtalaObject): Future[node_internal.AtalaBlock] = {
+    obj.block match {
+      case node_internal.AtalaObject.Block.BlockContent(block) => Future.successful(block)
+      case node_internal.AtalaObject.Block.BlockHash(hash) =>
+        storage
+          .get(SHA256Digest(hash.toByteArray).hexValue)
+          .map(_.get) // TODO: error support
+          .map(node_internal.AtalaBlock.parseFrom)
+      case node_internal.AtalaObject.Block.Empty =>
+        throw new IllegalStateException("Block has neither block content nor block hash")
+    }
+  }
+
   protected def processObject(obj: AtalaObject): Future[ConnectionIO[Boolean]] = {
     for {
-      blockHash <- obj.blockHash match {
-        case Some(blockHash) =>
-          Future.successful(blockHash)
-        case None =>
-          val objectFileName = obj.objectId.hexValue
-          for {
-            objectBytes <- storage.get(objectFileName).map(_.get) // TODO: error support
-            aobject = node_internal.AtalaObject.parseFrom(objectBytes)
-            blockHash = SHA256Digest(aobject.blockHash.toByteArray)
-            _ <-
-              AtalaObjectsDAO
-                .setBlockHash(obj.objectId, blockHash)
-                .transact(xa)
-                .unsafeToFuture()
-          } yield blockHash
-      }
-      blockTransaction <- processBlock(blockHash, obj.objectTimestamp, obj.sequenceNumber)
+      protobufObject <- getProtobufObject(obj)
+      block <- getBlockFromObject(protobufObject)
+      blockTransaction = processBlock(block, obj.objectTimestamp, obj.sequenceNumber)
     } yield for {
       result <- blockTransaction
       _ <- AtalaObjectsDAO.setProcessed(obj.objectId)
@@ -116,15 +142,10 @@ class ObjectManagementService(
   }
 
   protected def processBlock(
-      hash: SHA256Digest,
+      block: node_internal.AtalaBlock,
       blockTimestamp: Instant,
       blockSequenceNumber: Int
-  ): Future[ConnectionIO[Boolean]] = {
-    val blockFileName = hash.hexValue
-    for {
-      blockBytes <- storage.get(blockFileName).map(_.get) // TODO: error support
-      block = node_internal.AtalaBlock.parseFrom(blockBytes)
-      transaction = blockProcessing.processBlock(block, blockTimestamp, blockSequenceNumber)
-    } yield transaction
+  ): ConnectionIO[Boolean] = {
+    blockProcessing.processBlock(block, blockTimestamp, blockSequenceNumber)
   }
 }

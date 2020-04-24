@@ -13,7 +13,10 @@ message AtalaBlock {
 }
 
 message AtalaObject {
-  bytes blockHash = 1;
   int32 blockOperationCount = 2;
   int32 blockByteLength = 3;
+  oneof block {
+    bytes blockHash = 1;
+    AtalaBlock blockContent = 4;
+  }
 }

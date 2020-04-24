@@ -9,7 +9,7 @@ import io.iohk.node.AtalaReferenceLedger
 import io.iohk.node.bitcoin.BitcoinClient
 import io.iohk.node.bitcoin.models.{OpData, _}
 import io.iohk.node.services.AtalaService.Result
-import io.iohk.node.services.models.ReferenceHandler
+import io.iohk.node.services.models.{AtalaObjectUpdate, ObjectHandler}
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -21,7 +21,7 @@ trait AtalaService extends AtalaReferenceLedger {
 class AtalaServiceImpl(
     bitcoinClient: BitcoinClient,
     binaryOps: BinaryOps,
-    onNewReference: ReferenceHandler
+    onNewReference: ObjectHandler
 )(implicit
     ec: ExecutionContext
 ) extends AtalaService {
@@ -29,6 +29,8 @@ class AtalaServiceImpl(
   private val logger = LoggerFactory.getLogger(this.getClass)
 
   private val ATALA_HEADER = "ATALA://".getBytes("UTF-8")
+
+  override def supportsOnChainData: Boolean = false
 
   override def publishReference(ref: SHA256Digest): Future[Unit] = {
     val opDataBytes: Array[Byte] = ATALA_HEADER ++ ref.value
@@ -51,6 +53,10 @@ class AtalaServiceImpl(
           new RuntimeException(s"FATAL: Atala identifier is too long to store in bitcoin (${opDataBytes.length}")
         )
     }
+  }
+
+  override def publishObject(bytes: Array[Byte]): Future[Unit] = {
+    throw new NotImplementedError("Publishing whole objects not implemented for Bitcoin ledger")
   }
 
   def synchronizeBlock(blockhash: Blockhash): Result[Nothing, Unit] = {
@@ -86,7 +92,7 @@ class AtalaServiceImpl(
         Future
           .traverse(atalaReferences) { reference =>
             // TODO: Update Instant.ofEpochMilli(block.header.time) for proper expression
-            onNewReference(reference, Instant.ofEpochMilli(block.header.time))
+            onNewReference(AtalaObjectUpdate.Reference(reference), Instant.ofEpochMilli(block.header.time))
           }
           .map(_ => Right(()))
           .toFutureEither
@@ -104,7 +110,7 @@ object AtalaService {
 
   def apply(
       bitcoinClient: BitcoinClient,
-      onNewReference: ReferenceHandler
+      onNewReference: ObjectHandler
   )(implicit
       ec: ExecutionContext
   ): AtalaService = {

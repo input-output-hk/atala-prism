@@ -19,6 +19,12 @@ package object models {
 
   type AtalaObjectId = SHA256Digest @@ AtalaObjectIdTag
   object AtalaObjectId extends TypeCompanion[SHA256Digest, AtalaObjectIdTag]
-  type ReferenceHandler = (SHA256Digest, Instant) => Future[Unit]
+
+  sealed trait AtalaObjectUpdate
+  object AtalaObjectUpdate {
+    final case class Reference(hash: SHA256Digest) extends AtalaObjectUpdate
+    final case class ByteContent(obj: Array[Byte]) extends AtalaObjectUpdate
+  }
+  type ObjectHandler = (AtalaObjectUpdate, Instant) => Future[Unit]
 
 }
