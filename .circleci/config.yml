@@ -1,10 +1,37 @@
 version: 2.1
+
 parameters:
   scala-mill-docker-image:
     type: string
     default: "inputoutput/scala-mill:2.12.10-0.6.2-0.12.24"
-jobs:
 
+commands:
+  install-protoc:
+    description: "Install protoc and its plugins"
+    parameters:
+      protoc-version:
+        type: string
+        default: "3.11.4"
+      grpcweb-version:
+        type: string
+        default: "1.0.7"
+    steps:
+      - run:
+          name: "Install protoc"
+          command: |
+              archive=protoc-<< parameters.protoc-version >>-linux-x86_64
+              curl -O -L https://github.com/protocolbuffers/protobuf/releases/download/v<< parameters.protoc-version >>/$archive.zip
+              sudo unzip -d '/usr/local' $archive.zip 'bin/*' 'include/*'
+              rm -rf ${archive}.zip
+      - run:
+          name: "Install protoc-gen-grpc-web"
+          command: |
+              archive=protoc-gen-grpc-web-<< parameters.grpcweb-version >>-linux-x86_64
+              curl -O -L https://github.com/grpc/grpc-web/releases/download/<< parameters.grpcweb-version >>/$archive
+              chmod +x $archive
+              sudo mv $archive /usr/local/bin/protoc-gen-grpc-web
+
+jobs:
   deploy-ecr-images:
     docker:
       - image: << pipeline.parameters.scala-mill-docker-image >>
@@ -125,6 +152,17 @@ jobs:
           paths:
             - "~/.ivy2/cache"
 
+  build-credentials-verification-landing:
+    working_directory: ~/repo
+    docker:
+      - image: circleci/node:10-browsers
+    steps:
+      - checkout
+      - install-protoc
+      - run:
+          name: Move to target folder then run tests
+          command: cd credentials-verification-landing && ./web-testing-script.sh
+
   build-credentials-verification-web:
     working_directory: ~/repo
     docker:
@@ -133,22 +171,7 @@ jobs:
       - checkout
 
       - setup_remote_docker
-      - run:
-          name: "Install protoc"
-          command: |
-              protoc_version=3.11.4
-              archive=protoc-${protoc_version}-linux-x86_64
-              curl -O -L https://github.com/protocolbuffers/protobuf/releases/download/v${protoc_version}/$archive.zip
-              sudo unzip -d '/usr/local' $archive.zip 'bin/*' 'include/*'
-              rm -rf $archive.zip
-      - run:
-          name: "Install protoc-gen-grpc-web"
-          command: |
-              grpcweb_version=1.0.7
-              archive=protoc-gen-grpc-web-${grpcweb_version}-linux-x86_64
-              curl -O -L https://github.com/grpc/grpc-web/releases/download/${grpcweb_version}/$archive
-              chmod +x $archive
-              sudo mv $archive /usr/local/bin/protoc-gen-grpc-web
+      - install-protoc
       - run:
           name: Move to target folder then run tests
           command: cd credentials-verification-web && ./web-testing-script.sh
@@ -235,9 +258,10 @@ workflows:
   version: 2.1
   build-and-deploy:
     jobs:
-      - build-credentials-verification-web
       - build-credentials-verification
       - build-credentials-verification-android
+      - build-credentials-verification-landing
+      - build-credentials-verification-web
 #      - build-credentials-verification-webextension
       - deploy-ecr-images:
           filters:

@@ -181,9 +181,12 @@ proto.io.iohk.prism.intdemo.protos.Date.prototype.getYear = function() {
 };
 
 
-/** @param {number} value */
+/**
+ * @param {number} value
+ * @return {!proto.io.iohk.prism.intdemo.protos.Date} returns this
+ */
 proto.io.iohk.prism.intdemo.protos.Date.prototype.setYear = function(value) {
-  jspb.Message.setProto3IntField(this, 1, value);
+  return jspb.Message.setProto3IntField(this, 1, value);
 };
 
 
@@ -196,9 +199,12 @@ proto.io.iohk.prism.intdemo.protos.Date.prototype.getMonth = function() {
 };
 
 
-/** @param {number} value */
+/**
+ * @param {number} value
+ * @return {!proto.io.iohk.prism.intdemo.protos.Date} returns this
+ */
 proto.io.iohk.prism.intdemo.protos.Date.prototype.setMonth = function(value) {
-  jspb.Message.setProto3IntField(this, 2, value);
+  return jspb.Message.setProto3IntField(this, 2, value);
 };
 
 
@@ -211,9 +217,12 @@ proto.io.iohk.prism.intdemo.protos.Date.prototype.getDay = function() {
 };
 
 
-/** @param {number} value */
+/**
+ * @param {number} value
+ * @return {!proto.io.iohk.prism.intdemo.protos.Date} returns this
+ */
 proto.io.iohk.prism.intdemo.protos.Date.prototype.setDay = function(value) {
-  jspb.Message.setProto3IntField(this, 3, value);
+  return jspb.Message.setProto3IntField(this, 3, value);
 };
 
 
