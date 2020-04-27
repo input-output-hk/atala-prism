@@ -80,7 +80,10 @@ object ConnectionsRepository {
         .findByPublicKey(encodedPublicKey)
         .map(_.id)
         .toRight(
-          UnknownValueError("encodedPublicKey", Base64.getEncoder.encodeToString(encodedPublicKey.bytes.toArray)).logWarn
+          UnknownValueError(
+            "encodedPublicKey",
+            Base64.getEncoder.encodeToString(encodedPublicKey.bytes.toArray)
+          ).logWarn
         )
         .transact(xa)
         .value
@@ -111,9 +114,10 @@ object ConnectionsRepository {
       implicit val loggingContext = LoggingContext("token" -> token)
 
       val query = for {
-        initiator <- ParticipantsDAO
-          .findByAvailableToken(token)
-          .toRight(UnknownValueError("token", token.token).logWarn)
+        initiator <-
+          ParticipantsDAO
+            .findByAvailableToken(token)
+            .toRight(UnknownValueError("token", token.token).logWarn)
 
         // Create a holder, which has no name nor did, instead it has a public key
         acceptorInfo = ParticipantInfo(ParticipantId.random(), ParticipantType.Holder, Some(publicKey), "", None, None)

@@ -43,27 +43,28 @@ object DockerPostgresService extends DockerKit {
 
   private var isRunning = false
 
-  def getPostgres(): PostgresConfig = synchronized {
-    if (!isRunning) {
-      Runtime.getRuntime.addShutdownHook(new Thread {
-        override def run(): Unit = {
+  def getPostgres(): PostgresConfig =
+    synchronized {
+      if (!isRunning) {
+        Runtime.getRuntime.addShutdownHook(new Thread {
+          override def run(): Unit = {
 
-          println("Stopping Docker container with Postgres")
-          stopAllQuietly()
-          println("Stopped Docker container with Postgres")
-        }
-      })
+            println("Stopping Docker container with Postgres")
+            stopAllQuietly()
+            println("Stopped Docker container with Postgres")
+          }
+        })
 
-      println("Starting Docker container with Postgres")
-      startAllOrFail()
-      isContainerReady(postgresContainer).futureValue mustEqual true
-      isRunning = true
-      println("Started Docker container with Postgres")
+        println("Starting Docker container with Postgres")
+        startAllOrFail()
+        isContainerReady(postgresContainer).futureValue mustEqual true
+        isRunning = true
+        println("Started Docker container with Postgres")
+      }
+
+      val hostname = postgresContainer.hostname.getOrElse("localhost")
+      PostgresConfig(s"$hostname:$PostgresExposedPort", DatabaseName, PostgresUsername, PostgresPassword)
     }
-
-    val hostname = postgresContainer.hostname.getOrElse("localhost")
-    PostgresConfig(s"$hostname:$PostgresExposedPort", DatabaseName, PostgresUsername, PostgresPassword)
-  }
 
   class PostgresReadyChecker extends DockerReadyChecker {
 

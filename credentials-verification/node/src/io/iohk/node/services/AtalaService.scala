@@ -22,8 +22,8 @@ class AtalaServiceImpl(
     bitcoinClient: BitcoinClient,
     binaryOps: BinaryOps,
     onNewReference: ReferenceHandler
-)(
-    implicit ec: ExecutionContext
+)(implicit
+    ec: ExecutionContext
 ) extends AtalaService {
 
   private val logger = LoggerFactory.getLogger(this.getClass)
@@ -99,8 +99,8 @@ object AtalaService {
   def apply(
       bitcoinClient: BitcoinClient,
       onNewReference: ReferenceHandler
-  )(
-      implicit ec: ExecutionContext
+  )(implicit
+      ec: ExecutionContext
   ): AtalaService = {
     val binaryOps = BinaryOps()
     new AtalaServiceImpl(bitcoinClient, binaryOps, onNewReference)

@@ -148,16 +148,17 @@ package object dids {
       }
     }
 
-    def toJavaPublicKey(key: PublicKey): Try[JPublicKey] = key match {
-      case PublicKey(_, _, jwkKey @ JWKPublicKey("EC", _, crv, _, _, _, _, _)) =>
-        if (JWKUtils.jwkSupportedCurves.get(crv).contains(ECKeys.CURVE_NAME)) {
-          Success(ECKeys.toPublicKey(jwkKey.xBytes, jwkKey.yBytes))
-        } else {
-          Failure(new IllegalArgumentException("Unsupported EC curve"))
-        }
-      case _ =>
-        Failure(new IllegalArgumentException("Unsupported key type"))
-    }
+    def toJavaPublicKey(key: PublicKey): Try[JPublicKey] =
+      key match {
+        case PublicKey(_, _, jwkKey @ JWKPublicKey("EC", _, crv, _, _, _, _, _)) =>
+          if (JWKUtils.jwkSupportedCurves.get(crv).contains(ECKeys.CURVE_NAME)) {
+            Success(ECKeys.toPublicKey(jwkKey.xBytes, jwkKey.yBytes))
+          } else {
+            Failure(new IllegalArgumentException("Unsupported EC curve"))
+          }
+        case _ =>
+          Failure(new IllegalArgumentException("Unsupported key type"))
+      }
 
     def signingKey(keyId: String, key: JPublicKey, keyType: DIDPublicKeyType, algorithm: String): PublicKey = {
       fromJavaPublicKey(keyId, key, keyType, algorithm, JWKUtils.KeyUse.sig)

@@ -15,8 +15,8 @@ object Issuer {
     }
   }
 
-  def sign(claims: SubjectClaims, privateKey: PrivateKey, publicKey: PublicKey, didDocument: dids.Document)(
-      implicit encoding: SignableEncoding[Certificate]
+  def sign(claims: SubjectClaims, privateKey: PrivateKey, publicKey: PublicKey, didDocument: dids.Document)(implicit
+      encoding: SignableEncoding[Certificate]
   ): String = {
     val didKey =
       findKey(publicKey, didDocument).getOrElse(throw new IllegalArgumentException("Key not found in DID document"))

@@ -36,8 +36,8 @@ object DataPreparation {
     Issuer(id, Issuer.Name(name), did)
   }
 
-  def createCredential(issuedBy: Issuer.Id, studentId: Student.Id, tag: String = "")(
-      implicit database: Transactor[IO]
+  def createCredential(issuedBy: Issuer.Id, studentId: Student.Id, tag: String = "")(implicit
+      database: Transactor[IO]
   ): Credential = {
     val request = CreateCredential(
       issuedBy = issuedBy,
@@ -51,8 +51,8 @@ object DataPreparation {
     CredentialsDAO.create(request).transact(database).unsafeRunSync()
   }
 
-  def createStudent(issuer: Issuer.Id, name: String, groupName: IssuerGroup.Name, tag: String = "")(
-      implicit database: Transactor[IO]
+  def createStudent(issuer: Issuer.Id, name: String, groupName: IssuerGroup.Name, tag: String = "")(implicit
+      database: Transactor[IO]
   ): Student = {
     val group = IssuerGroupsDAO
       .find(issuer, groupName)

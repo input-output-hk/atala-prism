@@ -33,10 +33,11 @@ class GroupsServiceImplSpec extends RpcSpecBase {
       GrpcAuthenticationHeaderParser
     )
 
-  override def services = Seq(
-    cmanager_api.GroupsServiceGrpc
-      .bindService(new GroupsServiceImpl(issuerGroupsRepository, authenticator), executionContext)
-  )
+  override def services =
+    Seq(
+      cmanager_api.GroupsServiceGrpc
+        .bindService(new GroupsServiceImpl(issuerGroupsRepository, authenticator), executionContext)
+    )
 
   "createGroup" should {
     "create a group" in {

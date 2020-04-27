@@ -25,8 +25,8 @@ class FutureEither[+E, +A](val value: Future[Either[E, A]]) extends AnyVal {
   def innerFlatMap[E2 >: E, B](f: A => Either[E2, B])(implicit ec: ExecutionContext): FutureEither[E2, B] =
     transform(e => Left(e), f)
 
-  def transform[E2, A2](fa: E => Either[E2, A2], fb: A => Either[E2, A2])(
-      implicit ec: ExecutionContext
+  def transform[E2, A2](fa: E => Either[E2, A2], fb: A => Either[E2, A2])(implicit
+      ec: ExecutionContext
   ): FutureEither[E2, A2] = {
     val newFuture = value.map {
       case Left(e) => fa(e)
@@ -36,8 +36,8 @@ class FutureEither[+E, +A](val value: Future[Either[E, A]]) extends AnyVal {
     new FutureEither(newFuture)
   }
 
-  def transformWith[E2, A2](fa: E => FutureEither[E2, A2], fb: A => FutureEither[E2, A2])(
-      implicit ec: ExecutionContext
+  def transformWith[E2, A2](fa: E => FutureEither[E2, A2], fb: A => FutureEither[E2, A2])(implicit
+      ec: ExecutionContext
   ): FutureEither[E2, A2] = {
 
     val newFuture = value.flatMap {

@@ -20,8 +20,8 @@ class DegreeServiceImpl(
     connectorIntegration: ConnectorIntegration,
     intDemoRepository: IntDemoRepository,
     schedulerPeriod: FiniteDuration
-)(
-    implicit ec: ExecutionContext
+)(implicit
+    ec: ExecutionContext
 ) extends intdemo_api.DegreeServiceGrpc.DegreeService {
 
   val service = new IntDemoService[credential_models.Credential](
@@ -72,8 +72,8 @@ object DegreeServiceImpl {
       .map(_ => ())
   }
 
-  private def getSharedIdCredential(connectorIntegration: ConnectorIntegration)(
-      implicit ec: ExecutionContext
+  private def getSharedIdCredential(connectorIntegration: ConnectorIntegration)(implicit
+      ec: ExecutionContext
   ): TokenString => Future[Option[credential_models.Credential]] =
     connectionToken =>
       getSharedCredentials(connectorIntegration, connectionToken, issuerId)(Set(IdServiceImpl.credentialTypeId))

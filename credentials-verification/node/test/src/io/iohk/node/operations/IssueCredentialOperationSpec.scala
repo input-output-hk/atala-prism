@@ -25,7 +25,8 @@ object IssueCredentialOperationSpec {
   )
 
   lazy val dummyTimestamp = TimestampInfo.dummyTime
-  lazy val issuerOperation = CreateDIDOperation.parse(CreateDIDOperationSpec.exampleOperation, dummyTimestamp).right.value
+  lazy val issuerOperation =
+    CreateDIDOperation.parse(CreateDIDOperationSpec.exampleOperation, dummyTimestamp).right.value
   lazy val issuer = issuerOperation.id
   val content = ""
   val contentHash = SHA256Digest(MessageDigest.getInstance("SHA256").digest(content.getBytes)).value

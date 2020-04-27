@@ -90,18 +90,18 @@ package object operations {
   case class CorrectnessData(key: PublicKey, previousOperation: Option[SHA256Digest])
 
   case class TimestampInfo(
-    atalaBlockTimestamp: Instant, // timestamp provided from the underlying blockchain
-    atalaBlockSequenceNumber: Int, // transaction index inside the underlying blockchain block
-    operationSequenceNumber: Int // operation index inside the AtalaBlock
+      atalaBlockTimestamp: Instant, // timestamp provided from the underlying blockchain
+      atalaBlockSequenceNumber: Int, // transaction index inside the underlying blockchain block
+      operationSequenceNumber: Int // operation index inside the AtalaBlock
   ) {
     def occurredBefore(later: TimestampInfo): Boolean = {
       (atalaBlockTimestamp isBefore later.atalaBlockTimestamp) || (
         atalaBlockTimestamp == later.atalaBlockTimestamp &&
-          atalaBlockSequenceNumber < later.atalaBlockSequenceNumber
+        atalaBlockSequenceNumber < later.atalaBlockSequenceNumber
       ) || (
         atalaBlockTimestamp == later.atalaBlockTimestamp &&
-          atalaBlockSequenceNumber == later.atalaBlockSequenceNumber &&
-            operationSequenceNumber < later.operationSequenceNumber
+        atalaBlockSequenceNumber == later.atalaBlockSequenceNumber &&
+        operationSequenceNumber < later.operationSequenceNumber
       )
     }
   }
@@ -138,7 +138,10 @@ package object operations {
       * @param timestampInfo timestamp information provided by the caller, needed to instantiate the operation objects
       * @return parsed operation or ValidationError signifying the operation is invalid
       */
-    def parse(signedOperation: node_models.SignedAtalaOperation, timestampInfo: TimestampInfo): Either[ValidationError, Repr]
+    def parse(
+        signedOperation: node_models.SignedAtalaOperation,
+        timestampInfo: TimestampInfo
+    ): Either[ValidationError, Repr]
 
     /** Parses the protobuf representation of operation and report errors (if any)
       *
@@ -162,7 +165,10 @@ package object operations {
 
   trait SimpleOperationCompanion[Repr <: Operation] extends OperationCompanion[Repr] {
 
-    override def parse(operation: node_models.SignedAtalaOperation, timestampInfo: TimestampInfo): Either[ValidationError, Repr] = {
+    override def parse(
+        operation: node_models.SignedAtalaOperation,
+        timestampInfo: TimestampInfo
+    ): Either[ValidationError, Repr] = {
       parse(operation.getOperation, timestampInfo)
     }
 

@@ -24,10 +24,11 @@ class RegistrationService(participantsRepository: ParticipantsRepository, nodeSe
   ): FutureEither[Nothing, RegistrationResult] = {
 
     for {
-      createDIDResponse <- nodeService
-        .createDID(node_api.CreateDIDRequest().withSignedOperation(createDIDOperation))
-        .map(Right(_))
-        .toFutureEither
+      createDIDResponse <-
+        nodeService
+          .createDID(node_api.CreateDIDRequest().withSignedOperation(createDIDOperation))
+          .map(Right(_))
+          .toFutureEither
       did = s"did:prism:${createDIDResponse.id}"
       createRequest = ParticipantsRepository.CreateParticipantRequest(
         id = ParticipantId.random(),

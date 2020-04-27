@@ -14,8 +14,8 @@ import io.iohk.prism.protos.{node_api, node_models}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class NodeServiceImpl(didDataService: DIDDataService, objectManagement: ObjectManagementService)(
-    implicit ec: ExecutionContext
+class NodeServiceImpl(didDataService: DIDDataService, objectManagement: ObjectManagementService)(implicit
+    ec: ExecutionContext
 ) extends node_api.NodeServiceGrpc.NodeService {
   override def getDidDocument(request: node_api.GetDidDocumentRequest): Future[node_api.GetDidDocumentResponse] = {
 

@@ -7,8 +7,8 @@ import io.iohk.prism.protos.{cmanager_api, cmanager_models}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class GroupsServiceImpl(issuerGroupsRepository: IssuerGroupsRepository, authenticator: Authenticator)(
-    implicit ec: ExecutionContext
+class GroupsServiceImpl(issuerGroupsRepository: IssuerGroupsRepository, authenticator: Authenticator)(implicit
+    ec: ExecutionContext
 ) extends cmanager_api.GroupsServiceGrpc.GroupsService {
 
   override def createGroup(request: cmanager_api.CreateGroupRequest): Future[cmanager_api.CreateGroupResponse] = {

@@ -30,10 +30,11 @@ object SharedCredentials {
   )(typeIds: Set[String])(implicit ec: ExecutionContext): Future[Seq[credential_models.Credential]] = {
     for {
       maybeConnection: Option[Connection] <- connectorIntegration.getConnectionByToken(connectionToken)
-      messages <- maybeConnection
-        .fold(Future.successful(Seq.empty[Message]))(
-          connection => connectorIntegration.getMessages(issuerId, connection.connectionId)
-        )
+      messages <-
+        maybeConnection
+          .fold(Future.successful(Seq.empty[Message]))(connection =>
+            connectorIntegration.getMessages(issuerId, connection.connectionId)
+          )
     } yield {
       credentialsOfType(typeIds)(messages)
     }

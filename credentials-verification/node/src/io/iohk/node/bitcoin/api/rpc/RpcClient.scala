@@ -19,8 +19,8 @@ import RpcClient._
 /**
   * Implementation of the `BitcoinApiClient` that accesses the RPC provided by bitcoind
   */
-class RpcClient(config: RpcClient.Config)(
-    implicit backend: SttpBackend[Future, Nothing],
+class RpcClient(config: RpcClient.Config)(implicit
+    backend: SttpBackend[Future, Nothing],
     ec: ExecutionContext
 ) extends BitcoinApiClient { self =>
 
@@ -101,8 +101,8 @@ object RpcClient {
     * @tparam A the success type.
     * @return The success or the error response.
     */
-  private def getResult[A](response: Response[String])(
-      implicit decoder: Decoder[A]
+  private def getResult[A](response: Response[String])(implicit
+      decoder: Decoder[A]
   ): Either[BitcoinError, A] = {
 
     response.body.fold(

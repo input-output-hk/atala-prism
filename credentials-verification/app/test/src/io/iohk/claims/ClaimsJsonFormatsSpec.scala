@@ -27,21 +27,22 @@ class ClaimsJsonFormatsSpec extends WordSpec with Matchers with GeneratorDrivenP
      |}
    """.stripMargin
 
-  def expectedCertificate = Certificate(
-    new URI("did:example:university"),
-    LocalDateTime.of(2019, 8, 7, 13, 55, 50),
-    SubjectClaims(
-      new URI("did:example:student"),
-      Map("degree" -> "Masters Degree in Astrology")
-    ),
-    Some(
-      CertificateProof(
-        "Secp256k1VerificationKey2018",
-        LocalDateTime.of(2019, 8, 7, 13, 55, 50),
-        new URI("did:example:university/keys/1")
+  def expectedCertificate =
+    Certificate(
+      new URI("did:example:university"),
+      LocalDateTime.of(2019, 8, 7, 13, 55, 50),
+      SubjectClaims(
+        new URI("did:example:student"),
+        Map("degree" -> "Masters Degree in Astrology")
+      ),
+      Some(
+        CertificateProof(
+          "Secp256k1VerificationKey2018",
+          LocalDateTime.of(2019, 8, 7, 13, 55, 50),
+          new URI("did:example:university/keys/1")
+        )
       )
     )
-  )
 
   "Format[Certificate]" should {
     "parse json certificate correctly" in {

@@ -10,7 +10,8 @@ class AtalaMessageParsingSpec extends FlatSpec {
   "Protobuff" should "parse a credential" in {
     val credential = Credential("type-id", "document")
 
-    val credentialProto = AtalaMessage().withIssuerSentCredential(IssuerSentCredential().withCredential(credential)).toByteArray
+    val credentialProto =
+      AtalaMessage().withIssuerSentCredential(IssuerSentCredential().withCredential(credential)).toByteArray
 
     val parsedCredential: AtalaMessage = AtalaMessage.parseFrom(credentialProto)
 

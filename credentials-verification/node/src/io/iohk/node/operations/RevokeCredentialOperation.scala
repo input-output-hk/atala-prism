@@ -38,22 +38,26 @@ case class RevokeCredentialOperation(
         Either.cond(
           keyState.revokedOn.isEmpty,
           (),
-          StateError.KeyAlreadyRevoked() : StateError
+          StateError.KeyAlreadyRevoked(): StateError
         )
       }
     } yield CorrectnessData(keyState.key, Some(prevOp))
   }
 
-  override def applyState(): EitherT[ConnectionIO, StateError, Unit] = EitherT[ConnectionIO, StateError, Unit] {
-    CredentialsDAO
-      .revoke(credentialId, timestampInfo)
-      .map(_ => Right(()))
-  }
+  override def applyState(): EitherT[ConnectionIO, StateError, Unit] =
+    EitherT[ConnectionIO, StateError, Unit] {
+      CredentialsDAO
+        .revoke(credentialId, timestampInfo)
+        .map(_ => Right(()))
+    }
 }
 
 object RevokeCredentialOperation extends SimpleOperationCompanion[RevokeCredentialOperation] {
 
-  override def parse(operation: node_models.AtalaOperation, timestampInfo: TimestampInfo): Either[ValidationError, RevokeCredentialOperation] = {
+  override def parse(
+      operation: node_models.AtalaOperation,
+      timestampInfo: TimestampInfo
+  ): Either[ValidationError, RevokeCredentialOperation] = {
 
     val operationDigest = SHA256Digest.compute(operation.toByteArray)
     val revokeOperation = ValueAtPath(operation, Path.root).child(_.getRevokeCredential, "revokeCredential")

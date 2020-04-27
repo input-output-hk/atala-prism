@@ -25,26 +25,70 @@ package object daos {
   implicit val credentialIdGet: Get[CredentialId] = Get[String].map(CredentialId(_))
 
   implicit val didPublicKeyWrite: Write[DIDPublicKeyState] = {
-    Write[(DIDSuffix, String, KeyUsage, String, Array[Byte], Array[Byte],
-      Instant, Int, Int, Option[Instant], Option[Int], Option[Int])].contramap { key =>
+    Write[
+      (
+          DIDSuffix,
+          String,
+          KeyUsage,
+          String,
+          Array[Byte],
+          Array[Byte],
+          Instant,
+          Int,
+          Int,
+          Option[Instant],
+          Option[Int],
+          Option[Int]
+      )
+    ].contramap { key =>
       val curveName = ECKeys.CURVE_NAME
       val point = ECKeys.getECPoint(key.key)
-      (key.didSuffix, key.keyId, key.keyUsage, curveName, point.getAffineX.toByteArray, point.getAffineY.toByteArray,
-        key.addedOn.atalaBlockTimestamp, key.addedOn.atalaBlockSequenceNumber, key.addedOn.operationSequenceNumber,
-        key.revokedOn map (_.atalaBlockTimestamp), key.revokedOn map (_.atalaBlockSequenceNumber),
-        key.revokedOn map (_.operationSequenceNumber))
+      (
+        key.didSuffix,
+        key.keyId,
+        key.keyUsage,
+        curveName,
+        point.getAffineX.toByteArray,
+        point.getAffineY.toByteArray,
+        key.addedOn.atalaBlockTimestamp,
+        key.addedOn.atalaBlockSequenceNumber,
+        key.addedOn.operationSequenceNumber,
+        key.revokedOn map (_.atalaBlockTimestamp),
+        key.revokedOn map (_.atalaBlockSequenceNumber),
+        key.revokedOn map (_.operationSequenceNumber)
+      )
     }
   }
 
   implicit val didPublicKeyRead: Read[DIDPublicKeyState] = {
-    Read[(DIDSuffix, String, KeyUsage, String, Array[Byte], Array[Byte],
-      Instant, Int, Int, Option[Instant], Option[Int], Option[Int])].map {
+    Read[
+      (
+          DIDSuffix,
+          String,
+          KeyUsage,
+          String,
+          Array[Byte],
+          Array[Byte],
+          Instant,
+          Int,
+          Int,
+          Option[Instant],
+          Option[Int],
+          Option[Int]
+      )
+    ].map {
       case (didSuffix, keyId, keyUsage, curveId, x, y, aTimestamp, aABSN, aOSN, rTimestamp, rABSN, rOSN) =>
         assert(curveId == ECKeys.CURVE_NAME)
         val javaPublicKey = ECKeys.toPublicKey(x, y)
-        val revokeTimestampInfo = for(t <- rTimestamp; absn <- rABSN; osn <- rOSN) yield TimestampInfo(t, absn, osn)
-        DIDPublicKeyState(didSuffix, keyId, keyUsage, javaPublicKey,
-          TimestampInfo(aTimestamp, aABSN, aOSN), revokeTimestampInfo)
+        val revokeTimestampInfo = for (t <- rTimestamp; absn <- rABSN; osn <- rOSN) yield TimestampInfo(t, absn, osn)
+        DIDPublicKeyState(
+          didSuffix,
+          keyId,
+          keyUsage,
+          javaPublicKey,
+          TimestampInfo(aTimestamp, aABSN, aOSN),
+          revokeTimestampInfo
+        )
     }
   }
 

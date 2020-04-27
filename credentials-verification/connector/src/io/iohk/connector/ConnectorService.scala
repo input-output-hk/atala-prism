@@ -33,8 +33,8 @@ class ConnectorService(
     authenticator: Authenticator,
     participantPropagatorService: ParticipantPropagatorService,
     nodeService: NodeServiceGrpc.NodeService
-)(
-    implicit executionContext: ExecutionContext
+)(implicit
+    executionContext: ExecutionContext
 ) extends connector_api.ConnectorServiceGrpc.ConnectorService
     with ErrorSupport {
 
@@ -211,13 +211,14 @@ class ConnectorService(
           case connector_api.RegisterDIDRequest.Role.Unrecognized(_) => throw new RuntimeException("Unknown role")
         }
         logo = ParticipantLogo(request.logo.toByteArray.toVector)
-        result <- registrationService
-          .register(tpe = tpe, logo = logo, name = request.name, createDIDOperation = createDIDOperation)
-          .value
-          .map {
-            case Left(_) => throw new RuntimeException("Impossible")
-            case Right(x) => x
-          }
+        result <-
+          registrationService
+            .register(tpe = tpe, logo = logo, name = request.name, createDIDOperation = createDIDOperation)
+            .value
+            .map {
+              case Left(_) => throw new RuntimeException("Impossible")
+              case Right(x) => x
+            }
 
         _ <- participantPropagatorService.propagate(id = result.id, tpe = tpe, name = request.name, did = result.did)
       } yield connector_api.RegisterDIDResponse(did = result.did)
@@ -449,15 +450,14 @@ class ConnectorService(
   override def getBuildInfo(request: connector_api.GetBuildInfoRequest): Future[connector_api.GetBuildInfoResponse] = {
     nodeService
       .getBuildInfo(node_api.GetBuildInfoRequest())
-      .map(
-        nodeBuildInfo =>
-          connector_api
-            .GetBuildInfoResponse()
-            .withVersion(BuildInfo.version)
-            .withScalaVersion(BuildInfo.scalaVersion)
-            .withMillVersion(BuildInfo.millVersion)
-            .withBuildTime(BuildInfo.buildTime)
-            .withNodeVersion(nodeBuildInfo.version)
+      .map(nodeBuildInfo =>
+        connector_api
+          .GetBuildInfoResponse()
+          .withVersion(BuildInfo.version)
+          .withScalaVersion(BuildInfo.scalaVersion)
+          .withMillVersion(BuildInfo.millVersion)
+          .withBuildTime(BuildInfo.buildTime)
+          .withNodeVersion(nodeBuildInfo.version)
       )
   }
 }

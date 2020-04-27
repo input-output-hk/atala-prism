@@ -28,8 +28,8 @@ class ObjectManagementService(
     storage: ObjectStorageService,
     synchronizer: AtalaReferenceLedger,
     blockProcessing: BlockProcessingService
-)(
-    implicit xa: Transactor[IO],
+)(implicit
+    xa: Transactor[IO],
     ec: ExecutionContext
 ) {
 
@@ -101,10 +101,11 @@ class ObjectManagementService(
             objectBytes <- storage.get(objectFileName).map(_.get) // TODO: error support
             aobject = node_internal.AtalaObject.parseFrom(objectBytes)
             blockHash = SHA256Digest(aobject.blockHash.toByteArray)
-            _ <- AtalaObjectsDAO
-              .setBlockHash(obj.objectId, blockHash)
-              .transact(xa)
-              .unsafeToFuture()
+            _ <-
+              AtalaObjectsDAO
+                .setBlockHash(obj.objectId, blockHash)
+                .transact(xa)
+                .unsafeToFuture()
           } yield blockHash
       }
       blockTransaction <- processBlock(blockHash, obj.objectTimestamp, obj.sequenceNumber)

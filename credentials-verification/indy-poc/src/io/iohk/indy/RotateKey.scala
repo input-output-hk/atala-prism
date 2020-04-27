@@ -105,7 +105,8 @@ object RotateKey extends HasMain {
     val responseData = new JSONObject(getNymResponse).getJSONObject("result").getString("data")
     val trustAnchorVerkeyFromLedger = new JSONObject(responseData).getString("verkey")
     println("Current from ledger: " + trustAnchorVerkeyFromLedger)
-    val `match` = !trustAnchorDID.equals(trustAnchorVerkeyFromWallet) && trustAnchorVerkeyFromWallet == trustAnchorVerkeyFromLedger
+    val `match` =
+      !trustAnchorDID.equals(trustAnchorVerkeyFromWallet) && trustAnchorVerkeyFromWallet == trustAnchorVerkeyFromLedger
     println("Matching: " + `match`)
 
     // Do some cleanup.

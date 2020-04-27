@@ -42,7 +42,7 @@ case class UpdateDIDOperation(
       }
       _ <- EitherT.fromEither[ConnectionIO] {
         val revokedKeyIds = actions.collect { case RevokeKeyAction(id) => id }
-        Either.cond(! (revokedKeyIds contains keyId), (), StateError.InvalidRevocation() : StateError)
+        Either.cond(!(revokedKeyIds contains keyId), (), StateError.InvalidRevocation(): StateError)
       }
     } yield CorrectnessData(key, Some(lastOperation))
   }
@@ -117,7 +117,10 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
     * @param timestampInfo timestamp information provided by the caller, needed to instantiate the operation objects
     * @return parsed operation or ValidationError signifying the operation is invalid
     */
-  override def parse(signedOperation: node_models.SignedAtalaOperation, timestampInfo: TimestampInfo): Either[ValidationError, UpdateDIDOperation] = {
+  override def parse(
+      signedOperation: node_models.SignedAtalaOperation,
+      timestampInfo: TimestampInfo
+  ): Either[ValidationError, UpdateDIDOperation] = {
     val operation = signedOperation.getOperation
     val signingKeyId = signedOperation.signedWith
 
@@ -135,15 +138,16 @@ object UpdateDIDOperation extends OperationCompanion[UpdateDIDOperation] {
       previousOperation <- ParsingUtils.parseHash(
         updateOperation.child(_.previousOperationHash, "previousOperationHash")
       )
-      reversedActions <- updateOperation
-        .children(_.actions, "actions")
-        .foldLeft[Either[ValidationError, List[UpdateDIDAction]]](Right(Nil)) {
-          case (eitherAcc, action) =>
-            for {
-              acc <- eitherAcc
-              parsedAction <- parseAction(action, didSuffix, signingKeyId)
-            } yield parsedAction :: acc
-        }
+      reversedActions <-
+        updateOperation
+          .children(_.actions, "actions")
+          .foldLeft[Either[ValidationError, List[UpdateDIDAction]]](Right(Nil)) {
+            case (eitherAcc, action) =>
+              for {
+                acc <- eitherAcc
+                parsedAction <- parseAction(action, didSuffix, signingKeyId)
+              } yield parsedAction :: acc
+          }
     } yield UpdateDIDOperation(didSuffix, reversedActions.reverse, previousOperation, operationDigest, timestampInfo)
   }
 }

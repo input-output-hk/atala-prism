@@ -12,8 +12,8 @@ import org.bouncycastle.jce.interfaces.ECPublicKey
 object CertificateSigning {
   private val signingMethod = Secp256k1VerificationKey2018
 
-  def sign(certificate: Certificate, keyId: URI, key: PrivateKey)(
-      implicit encoding: SignableEncoding[Certificate]
+  def sign(certificate: Certificate, keyId: URI, key: PrivateKey)(implicit
+      encoding: SignableEncoding[Certificate]
   ): String = {
     val provenCertificate = certificate.copy(
       proof = Some(

@@ -19,7 +19,11 @@ import scala.language.higherKinds
 
 trait BlockProcessingService {
 
-  def processBlock(block: node_internal.AtalaBlock, blockTimestamp: Instant, blockSequenceNumber: Int): ConnectionIO[Boolean]
+  def processBlock(
+      block: node_internal.AtalaBlock,
+      blockTimestamp: Instant,
+      blockSequenceNumber: Int
+  ): ConnectionIO[Boolean]
 }
 
 class BlockProcessingServiceImpl extends BlockProcessingService {
@@ -32,7 +36,10 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
 
   protected val logger = LoggerFactory.getLogger(getClass)
 
-  def parseOperation(signedOperation: node_models.SignedAtalaOperation, timestampInfo: TimestampInfo): Either[ValidationError, Operation] = {
+  def parseOperation(
+      signedOperation: node_models.SignedAtalaOperation,
+      timestampInfo: TimestampInfo
+  ): Either[ValidationError, Operation] = {
     signedOperation.getOperation.operation match {
       case _: node_models.AtalaOperation.Operation.CreateDid =>
         CreateDIDOperation.parse(signedOperation, timestampInfo)
@@ -73,11 +80,17 @@ class BlockProcessingServiceImpl extends BlockProcessingService {
 
   // ConnectionIO[Boolean] is a temporary type used to be able to unit tests this
   // it eventually will be replaced with ConnectionIO[Unit]
-  override def processBlock(block: node_internal.AtalaBlock, blockTimestamp: Instant, blockSequenceNumber: Int): ConnectionIO[Boolean] = {
+  override def processBlock(
+      block: node_internal.AtalaBlock,
+      blockTimestamp: Instant,
+      blockSequenceNumber: Int
+  ): ConnectionIO[Boolean] = {
     val operations = block.operations.toList
     val operationsWithSeqNumbers = operations.zipWithIndex
-    val parsedOperationsEither = eitherTraverse(operationsWithSeqNumbers) { case (signedOperation, osn) =>
-      parseOperation(signedOperation, TimestampInfo(blockTimestamp, blockSequenceNumber, osn)).left.map(err => (signedOperation, err))
+    val parsedOperationsEither = eitherTraverse(operationsWithSeqNumbers) {
+      case (signedOperation, osn) =>
+        parseOperation(signedOperation, TimestampInfo(blockTimestamp, blockSequenceNumber, osn)).left
+          .map(err => (signedOperation, err))
     }
 
     parsedOperationsEither match {

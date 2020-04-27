@@ -79,11 +79,12 @@ class BitcoinClient(apiClient: BitcoinApiClient)(implicit ec: ExecutionContext) 
     }
 
     val comp = for {
-      unspent <- apiClient
-        .listUnspent()
-        .map(_.filter(_.amount >= BITCOIN_FEE)) // TODO: accumulate UTXOs until we get enough to pay the fee
-        .failWhen(_.isEmpty)(INTERNAL_ERROR, 1)
-        .map(_.head)
+      unspent <-
+        apiClient
+          .listUnspent()
+          .map(_.filter(_.amount >= BITCOIN_FEE)) // TODO: accumulate UTXOs until we get enough to pay the fee
+          .failWhen(_.isEmpty)(INTERNAL_ERROR, 1)
+          .map(_.head)
       changeAddress <- apiClient.getRawChangeAddress()
       (ti, to) = composeTx(unspent, changeAddress)
       rawTx <- apiClient.createRawTransaction(List(ti), to)

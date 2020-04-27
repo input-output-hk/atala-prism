@@ -17,8 +17,8 @@ class StudentsServiceImpl(
     studentsRepository: StudentsRepository,
     credentialsRepository: CredentialsRepository,
     authenticator: Authenticator
-)(
-    implicit ec: ExecutionContext
+)(implicit
+    ec: ExecutionContext
 ) extends cmanager_api.StudentsServiceGrpc.StudentsService {
 
   override def createStudent(request: cmanager_api.CreateStudentRequest): Future[cmanager_api.CreateStudentResponse] = {

@@ -52,8 +52,8 @@ class SignedRequestsAuthenticator(
       participantId: ParticipantId
   )(
       run: => Future[Response]
-  )(
-      implicit ec: ExecutionContext
+  )(implicit
+      ec: ExecutionContext
   ): Future[Response] =
     run.andThen {
       case Success(response) =>
@@ -112,8 +112,8 @@ class SignedRequestsAuthenticator(
     } yield participantId
   }
 
-  private def authenticate(request: Array[Byte], authenticationHeader: GrpcAuthenticationHeader)(
-      implicit executionContext: ExecutionContext
+  private def authenticate(request: Array[Byte], authenticationHeader: GrpcAuthenticationHeader)(implicit
+      executionContext: ExecutionContext
   ): FutureEither[ConnectorError, ParticipantId] = {
     authenticationHeader match {
       case GrpcAuthenticationHeader.Legacy(userId) => Future.successful(Right(userId)).toFutureEither
@@ -122,8 +122,8 @@ class SignedRequestsAuthenticator(
     }
   }
 
-  private def authenticate(request: Array[Byte], authenticationHeader: GrpcAuthenticationHeader.PublicKeyBased)(
-      implicit ec: ExecutionContext
+  private def authenticate(request: Array[Byte], authenticationHeader: GrpcAuthenticationHeader.PublicKeyBased)(implicit
+      ec: ExecutionContext
   ): FutureEither[ConnectorError, ParticipantId] = {
 
     for {
@@ -141,29 +141,31 @@ class SignedRequestsAuthenticator(
     } yield participantId
   }
 
-  private def authenticate(request: Array[Byte], authenticationHeader: GrpcAuthenticationHeader.DIDBased)(
-      implicit ec: ExecutionContext
+  private def authenticate(request: Array[Byte], authenticationHeader: GrpcAuthenticationHeader.DIDBased)(implicit
+      ec: ExecutionContext
   ): FutureEither[ConnectorError, ParticipantId] = {
     for {
       // first we verify that we know the DID to avoid performing costly calls if we don't know it
       participantId <- connectionsRepository.getParticipantId(authenticationHeader.did)
 
-      didDocumentResponse <- nodeClient
-        .getDidDocument(node_api.GetDidDocumentRequest(authenticationHeader.did))
-        .map(Right(_))
-        .toFutureEither
+      didDocumentResponse <-
+        nodeClient
+          .getDidDocument(node_api.GetDidDocumentRequest(authenticationHeader.did))
+          .map(Right(_))
+          .toFutureEither
 
       didDocument = didDocumentResponse.document.getOrElse(throw new RuntimeException("Unknown DID"))
       // TODO: Validate keyUsage and revocation
       // we haven't defined which keys can sign requests, and the model doesn't specify when a key is revoked
-      publicKey = didDocument.publicKeys
-        .find(_.id == authenticationHeader.keyId)
-        .flatMap(_.keyData.ecKeyData)
-        .map { data =>
-          // TODO: Validate curve, right now we support a single curve
-          ECKeys.toPublicKey(x = data.x.toByteArray, y = data.y.toByteArray)
-        }
-        .getOrElse(throw new RuntimeException("Unknown public key id"))
+      publicKey =
+        didDocument.publicKeys
+          .find(_.id == authenticationHeader.keyId)
+          .flatMap(_.keyData.ecKeyData)
+          .map { data =>
+            // TODO: Validate curve, right now we support a single curve
+            ECKeys.toPublicKey(x = data.x.toByteArray, y = data.y.toByteArray)
+          }
+          .getOrElse(throw new RuntimeException("Unknown public key id"))
 
       // Verify the actual signature
       _ <- verifyRequestSignature(

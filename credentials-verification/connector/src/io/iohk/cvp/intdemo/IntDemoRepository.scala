@@ -48,14 +48,15 @@ object IntDemoRepository {
     override def toString: String = s"Database error: $databaseReportedError"
   }
 
-  def valueOf(status: intdemo_models.SubjectStatus): Int = status match {
-    case intdemo_models.SubjectStatus.UNCONNECTED => intdemo_models.SubjectStatus.UNCONNECTED.value
-    case intdemo_models.SubjectStatus.CONNECTED => intdemo_models.SubjectStatus.CONNECTED.value
-    case intdemo_models.SubjectStatus.CREDENTIAL_AVAILABLE => intdemo_models.SubjectStatus.CREDENTIAL_AVAILABLE.value
-    case intdemo_models.SubjectStatus.CREDENTIAL_SENT => intdemo_models.SubjectStatus.CREDENTIAL_SENT.value
-    case intdemo_models.SubjectStatus.CREDENTIAL_RECEIVED => intdemo_models.SubjectStatus.CREDENTIAL_RECEIVED.value
-    case intdemo_models.SubjectStatus.Unrecognized(value) => value
-  }
+  def valueOf(status: intdemo_models.SubjectStatus): Int =
+    status match {
+      case intdemo_models.SubjectStatus.UNCONNECTED => intdemo_models.SubjectStatus.UNCONNECTED.value
+      case intdemo_models.SubjectStatus.CONNECTED => intdemo_models.SubjectStatus.CONNECTED.value
+      case intdemo_models.SubjectStatus.CREDENTIAL_AVAILABLE => intdemo_models.SubjectStatus.CREDENTIAL_AVAILABLE.value
+      case intdemo_models.SubjectStatus.CREDENTIAL_SENT => intdemo_models.SubjectStatus.CREDENTIAL_SENT.value
+      case intdemo_models.SubjectStatus.CREDENTIAL_RECEIVED => intdemo_models.SubjectStatus.CREDENTIAL_RECEIVED.value
+      case intdemo_models.SubjectStatus.Unrecognized(value) => value
+    }
 
   def mergeStatus(
       token: String,

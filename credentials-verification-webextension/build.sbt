@@ -126,9 +126,7 @@ addCompilerPlugin(
 PB.protoSources in Compile := Seq(file("../credentials-verification/protos"))
 val dependencyProtoList = Seq("node_api.proto", "node_models.proto", "common_models.proto")
 
-includeFilter in PB.generate := new SimpleFileFilter(
-  (f: File) => dependencyProtoList.contains(f.getName)
-)
+includeFilter in PB.generate := new SimpleFileFilter((f: File) => dependencyProtoList.contains(f.getName))
 
 PB.targets in Compile := Seq(
   scalapb.gen() -> (sourceManaged in Compile).value / "scalapb"

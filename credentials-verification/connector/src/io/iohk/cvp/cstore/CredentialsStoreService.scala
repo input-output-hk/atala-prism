@@ -17,8 +17,8 @@ class CredentialsStoreService(
     individuals: StoreIndividualsService,
     storedCredentials: StoredCredentialsService,
     authenticator: Authenticator
-)(
-    implicit ec: ExecutionContext
+)(implicit
+    ec: ExecutionContext
 ) extends cstore_api.CredentialsStoreServiceGrpc.CredentialsStoreService
     with ErrorSupport {
 

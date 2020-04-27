@@ -154,10 +154,11 @@ private[background] class WalletManager(browserActionService: BrowserActionServi
     println(s"Serialized wallet: $json")
 
     val result = for {
-      arrayBuffer <- crypto.crypto.subtle
-        .encrypt(initialAesCtr, key, json.getBytes.toTypedArray.buffer)
-        .toFuture
-        .asInstanceOf[Future[ArrayBuffer]]
+      arrayBuffer <-
+        crypto.crypto.subtle
+          .encrypt(initialAesCtr, key, json.getBytes.toTypedArray.buffer)
+          .toFuture
+          .asInstanceOf[Future[ArrayBuffer]]
       arr = Array.ofDim[Byte](arrayBuffer.byteLength)
       _ = TypedArrayBuffer.wrap(arrayBuffer).get(arr)
       encodedJson = new String(Base64.getEncoder.encode(arr))
@@ -196,28 +197,30 @@ private[background] class WalletManager(browserActionService: BrowserActionServi
       crypto.Pbkdf2Params("PBKDF2", WalletManager.PASSWORD_SALT.getBytes.toTypedArray.buffer, 100L, "SHA-512")
 
     for {
-      pbkdf2Key <- crypto.crypto.subtle
-        .importKey(
-          KeyFormat.raw,
-          password.getBytes.toTypedArray.buffer,
-          "PBKDF2",
-          false,
-          js.Array(crypto.KeyUsage.deriveKey, crypto.KeyUsage.deriveBits)
-        )
-        .toFuture
-        .asInstanceOf[Future[crypto.CryptoKey]]
+      pbkdf2Key <-
+        crypto.crypto.subtle
+          .importKey(
+            KeyFormat.raw,
+            password.getBytes.toTypedArray.buffer,
+            "PBKDF2",
+            false,
+            js.Array(crypto.KeyUsage.deriveKey, crypto.KeyUsage.deriveBits)
+          )
+          .toFuture
+          .asInstanceOf[Future[crypto.CryptoKey]]
 
       aesCtr = crypto.AesDerivedKeyParams("AES-CTR", 256)
-      aesKey <- crypto.crypto.subtle
-        .deriveKey(
-          pbdkf2,
-          pbkdf2Key,
-          aesCtr,
-          true,
-          js.Array(crypto.KeyUsage.encrypt, crypto.KeyUsage.decrypt)
-        )
-        .toFuture
-        .asInstanceOf[Future[crypto.CryptoKey]]
+      aesKey <-
+        crypto.crypto.subtle
+          .deriveKey(
+            pbdkf2,
+            pbkdf2Key,
+            aesCtr,
+            true,
+            js.Array(crypto.KeyUsage.encrypt, crypto.KeyUsage.decrypt)
+          )
+          .toFuture
+          .asInstanceOf[Future[crypto.CryptoKey]]
     } yield aesKey
   }
 
@@ -247,21 +250,22 @@ private[background] class WalletManager(browserActionService: BrowserActionServi
     val result = for {
       aesKey <- generateSecretKey(password)
       storedEncryptedJsonOption <- storageService.load(WalletManager.LOCAL_STORAGE_KEY)
-      json <- storedEncryptedJsonOption
-        .map { storedEncryptedJson =>
-          val encryptedJson = storedEncryptedJson.asInstanceOf[String]
-          val encryptedBytes = Base64.getDecoder.decode(encryptedJson.asInstanceOf[String]).toTypedArray.buffer
-          crypto.crypto.subtle
-            .decrypt(initialAesCtr, aesKey, encryptedBytes)
-            .toFuture
-            .asInstanceOf[Future[ArrayBuffer]]
-            .map { buffer =>
-              val arr = Array.ofDim[Byte](buffer.byteLength)
-              TypedArrayBuffer.wrap(buffer).get(arr)
-              new String(arr, "UTF-8")
-            }
-        }
-        .getOrElse(throw new RuntimeException("You need to create the wallet before unlocking it"))
+      json <-
+        storedEncryptedJsonOption
+          .map { storedEncryptedJson =>
+            val encryptedJson = storedEncryptedJson.asInstanceOf[String]
+            val encryptedBytes = Base64.getDecoder.decode(encryptedJson.asInstanceOf[String]).toTypedArray.buffer
+            crypto.crypto.subtle
+              .decrypt(initialAesCtr, aesKey, encryptedBytes)
+              .toFuture
+              .asInstanceOf[Future[ArrayBuffer]]
+              .map { buffer =>
+                val arr = Array.ofDim[Byte](buffer.byteLength)
+                TypedArrayBuffer.wrap(buffer).get(arr)
+                new String(arr, "UTF-8")
+              }
+          }
+          .getOrElse(throw new RuntimeException("You need to create the wallet before unlocking it"))
       _ = updateStorageKeyAndWalletData(aesKey, parseWalletDataFromJson(json))
     } yield ()
 

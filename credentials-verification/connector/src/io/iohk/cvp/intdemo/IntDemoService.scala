@@ -21,8 +21,8 @@ class IntDemoService[D](
     proofRequestIssuer: Connection => Future[Unit],
     getCredential: D => credential_models.Credential,
     scheduler: Scheduler
-)(
-    implicit ec: ExecutionContext
+)(implicit
+    ec: ExecutionContext
 ) {
 
   def getConnectionToken(

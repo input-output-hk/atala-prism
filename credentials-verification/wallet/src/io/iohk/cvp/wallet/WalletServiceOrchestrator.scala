@@ -87,8 +87,8 @@ class WalletServiceOrchestrator(walletSecurity: WalletSecurity, walletIO: Wallet
 
 object WalletServiceOrchestrator {
 
-  def apply(walletSecurity: WalletSecurity, walletIO: WalletIO)(
-      implicit ec: ExecutionContext
+  def apply(walletSecurity: WalletSecurity, walletIO: WalletIO)(implicit
+      ec: ExecutionContext
   ): WalletServiceOrchestrator =
     new WalletServiceOrchestrator(walletSecurity, walletIO)
 }

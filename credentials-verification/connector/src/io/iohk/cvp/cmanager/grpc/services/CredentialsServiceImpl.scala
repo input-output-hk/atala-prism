@@ -17,8 +17,8 @@ class CredentialsServiceImpl(
     issuersRepository: IssuersRepository,
     credentialsRepository: CredentialsRepository,
     authenticator: Authenticator
-)(
-    implicit ec: ExecutionContext
+)(implicit
+    ec: ExecutionContext
 ) extends cmanager_api.CredentialsServiceGrpc.CredentialsService {
 
   override def createCredential(

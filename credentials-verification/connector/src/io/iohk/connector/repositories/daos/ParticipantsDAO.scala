@@ -15,46 +15,51 @@ object ParticipantsDAO {
        """.stripMargin.update.run.map(_ => ())
   }
 
-  def findBy(id: ParticipantId): OptionT[doobie.ConnectionIO, ParticipantInfo] = OptionT {
-    sql"""
+  def findBy(id: ParticipantId): OptionT[doobie.ConnectionIO, ParticipantInfo] =
+    OptionT {
+      sql"""
          |SELECT id, tpe, public_key ,name, did, logo
          |FROM participants
          |WHERE id = $id
       """.stripMargin.query[ParticipantInfo].option
-  }
+    }
 
-  def findBy(token: TokenString): OptionT[doobie.ConnectionIO, ParticipantInfo] = OptionT {
-    sql"""
+  def findBy(token: TokenString): OptionT[doobie.ConnectionIO, ParticipantInfo] =
+    OptionT {
+      sql"""
          |SELECT p.id, p.tpe, p.public_key, p.name, p.did, p.logo
          |FROM connection_tokens t
          |JOIN participants p ON p.id = t.initiator
          |WHERE t.token = $token
       """.stripMargin.query[ParticipantInfo].option
-  }
+    }
 
-  def findByAvailableToken(token: TokenString): OptionT[doobie.ConnectionIO, ParticipantInfo] = OptionT {
-    sql"""
+  def findByAvailableToken(token: TokenString): OptionT[doobie.ConnectionIO, ParticipantInfo] =
+    OptionT {
+      sql"""
          |SELECT p.id, p.tpe, p.public_key, p.name, p.did, p.logo
          |FROM connection_tokens t
          |JOIN participants p ON p.id = t.initiator
          |WHERE t.token = $token AND
          |      used_at IS NULL
       """.stripMargin.query[ParticipantInfo].option
-  }
+    }
 
-  def findByPublicKey(publicKey: EncodedPublicKey): OptionT[doobie.ConnectionIO, ParticipantInfo] = OptionT {
-    sql"""
+  def findByPublicKey(publicKey: EncodedPublicKey): OptionT[doobie.ConnectionIO, ParticipantInfo] =
+    OptionT {
+      sql"""
          |SELECT id, tpe, public_key, name, did, logo
          |FROM participants
          |WHERE public_key = $publicKey
       """.stripMargin.query[ParticipantInfo].option
-  }
+    }
 
-  def findByDID(did: String): OptionT[doobie.ConnectionIO, ParticipantInfo] = OptionT {
-    sql"""
+  def findByDID(did: String): OptionT[doobie.ConnectionIO, ParticipantInfo] =
+    OptionT {
+      sql"""
          |SELECT id, tpe, public_key, name, did, logo
          |FROM participants
          |WHERE did = $did
       """.stripMargin.query[ParticipantInfo].option
-  }
+    }
 }

@@ -25,8 +25,8 @@ class EmploymentServiceImpl(
     connectorIntegration: ConnectorIntegration,
     intDemoRepository: IntDemoRepository,
     schedulerPeriod: FiniteDuration
-)(
-    implicit ec: ExecutionContext
+)(implicit
+    ec: ExecutionContext
 ) extends intdemo_api.EmploymentServiceGrpc.EmploymentService {
 
   val service = new IntDemoService[RequiredEmploymentData](
@@ -76,8 +76,8 @@ object EmploymentServiceImpl {
     } yield ()
   }
 
-  private def getRequiredEmploymentData(connectorIntegration: ConnectorIntegration)(
-      implicit ec: ExecutionContext
+  private def getRequiredEmploymentData(connectorIntegration: ConnectorIntegration)(implicit
+      ec: ExecutionContext
   ): TokenString => Future[Option[RequiredEmploymentData]] = { connectionToken =>
     getSharedCredentials(connectorIntegration)(ec)(connectionToken).map(toRequiredEmploymentData)
   }

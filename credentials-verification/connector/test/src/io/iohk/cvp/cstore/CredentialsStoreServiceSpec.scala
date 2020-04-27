@@ -43,13 +43,14 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
   )
   lazy val verifierId = ParticipantId("af45a4da-65b8-473e-aadc-aa6b346250a3")
 
-  override def services = Seq(
-    cstore_api.CredentialsStoreServiceGrpc
-      .bindService(
-        new CredentialsStoreService(individuals, storedCredentials, authenticator),
-        executionContext
-      )
-  )
+  override def services =
+    Seq(
+      cstore_api.CredentialsStoreServiceGrpc
+        .bindService(
+          new CredentialsStoreService(individuals, storedCredentials, authenticator),
+          executionContext
+        )
+    )
 
   override def beforeEach(): Unit = {
     super.beforeEach()

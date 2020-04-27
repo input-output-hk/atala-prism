@@ -35,8 +35,8 @@ trait ConnectorIntegration {
 
 object ConnectorIntegration {
 
-  class ConnectorIntegrationImpl(connectionsService: ConnectionsService, messagesService: MessagesService)(
-      implicit ec: ExecutionContext
+  class ConnectorIntegrationImpl(connectionsService: ConnectionsService, messagesService: MessagesService)(implicit
+      ec: ExecutionContext
   ) extends ConnectorIntegration
       with ErrorSupport {
 
@@ -50,8 +50,11 @@ object ConnectorIntegration {
         connectionId: ConnectionId,
         credential: credential_models.Credential
     ): Future[MessageId] = {
-      sendMessage(senderId, connectionId,
-        AtalaMessage().withIssuerSentCredential(IssuerSentCredential().withCredential(credential)).toByteArray)
+      sendMessage(
+        senderId,
+        connectionId,
+        AtalaMessage().withIssuerSentCredential(IssuerSentCredential().withCredential(credential)).toByteArray
+      )
     }
 
     override def sendProofRequest(
@@ -59,8 +62,7 @@ object ConnectorIntegration {
         connectionId: ConnectionId,
         proofRequest: credential_models.ProofRequest
     ): Future[MessageId] = {
-      sendMessage(senderId, connectionId,
-        AtalaMessage().withProofRequest(proofRequest).toByteArray)
+      sendMessage(senderId, connectionId, AtalaMessage().withProofRequest(proofRequest).toByteArray)
     }
 
     private def sendMessage(

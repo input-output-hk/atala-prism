@@ -107,8 +107,8 @@ object ConnectorClient {
       .build()
 
     config.userId
-      .fold[Channel](unauthenticatedChannel)(
-        userId => ClientInterceptors.intercept(unauthenticatedChannel, new UserIdInterceptor(userId))
+      .fold[Channel](unauthenticatedChannel)(userId =>
+        ClientInterceptors.intercept(unauthenticatedChannel, new UserIdInterceptor(userId))
       )
   }
 }

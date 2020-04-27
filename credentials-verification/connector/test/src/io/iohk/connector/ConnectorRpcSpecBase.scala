@@ -133,22 +133,23 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
     "holder_public_keys",
     "participants"
   )
-  override def services = Seq(
-    connector_api.ConnectorServiceGrpc
-      .bindService(
-        new ConnectorService(
-          connectionsService,
-          messagesService,
-          registrationService,
-          braintreePayments,
-          paymentsRepository,
-          authenticator,
-          participantPropagator,
-          nodeMock
-        ),
-        executionContext
-      )
-  )
+  override def services =
+    Seq(
+      connector_api.ConnectorServiceGrpc
+        .bindService(
+          new ConnectorService(
+            connectionsService,
+            messagesService,
+            registrationService,
+            braintreePayments,
+            paymentsRepository,
+            authenticator,
+            participantPropagator,
+            nodeMock
+          ),
+          executionContext
+        )
+    )
 
   val usingApiAs: ApiTestHelper[connector_api.ConnectorServiceGrpc.ConnectorServiceBlockingStub] =
     usingApiAsConstructor(

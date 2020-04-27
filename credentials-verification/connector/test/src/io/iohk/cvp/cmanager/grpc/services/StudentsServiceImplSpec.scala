@@ -42,10 +42,14 @@ class StudentsServiceImplSpec extends RpcSpecBase {
       nodeMock,
       GrpcAuthenticationHeaderParser
     )
-  override def services = Seq(
-    cmanager_api.StudentsServiceGrpc
-      .bindService(new StudentsServiceImpl(studentsRepository, credentialsRepository, authenticator), executionContext)
-  )
+  override def services =
+    Seq(
+      cmanager_api.StudentsServiceGrpc
+        .bindService(
+          new StudentsServiceImpl(studentsRepository, credentialsRepository, authenticator),
+          executionContext
+        )
+    )
 
   private def createGroup(issuer: Issuer.Id): IssuerGroup = {
     issuerGroupsRepository.create(issuer, IssuerGroup.Name("Group X")).value.futureValue.right.value

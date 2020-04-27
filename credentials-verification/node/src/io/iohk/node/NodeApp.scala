@@ -103,7 +103,9 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     server = ServerBuilder
       .forPort(NodeApp.port)
       .addService(NodeServiceGrpc.bindService(nodeService, executionContext))
-      .addService(ProtoReflectionService.newInstance()) //TODO: Decide before release if we should keep this (or guard it with a config flag)
+      .addService(
+        ProtoReflectionService.newInstance()
+      ) //TODO: Decide before release if we should keep this (or guard it with a config flag)
       .build()
       .start()
 
@@ -115,8 +117,8 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     }
   }
 
-  def initializeBitcoin(config: Config, onAtalaReference: ReferenceHandler)(
-      implicit xa: Transactor[IO]
+  def initializeBitcoin(config: Config, onAtalaReference: ReferenceHandler)(implicit
+      xa: Transactor[IO]
   ): AtalaService = {
     logger.info("Creating bitcoin client")
     val bitcoinClient = BitcoinClient(bitcoinConfig(config))

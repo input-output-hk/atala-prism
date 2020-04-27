@@ -23,7 +23,8 @@ object RevokeCredentialOperationSpec {
   )
 
   lazy val dummyTimestamp = TimestampInfo.dummyTime
-  lazy val issuerOperation = CreateDIDOperation.parse(CreateDIDOperationSpec.exampleOperation, dummyTimestamp).right.value
+  lazy val issuerOperation =
+    CreateDIDOperation.parse(CreateDIDOperationSpec.exampleOperation, dummyTimestamp).right.value
   lazy val credentialIssueOperation =
     IssueCredentialOperation.parse(IssueCredentialOperationSpec.exampleOperation, dummyTimestamp).right.value
 

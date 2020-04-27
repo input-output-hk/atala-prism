@@ -41,19 +41,21 @@ class ConnectionsService(
       paymentNonce: Option[ClientNonce]
   ): FutureEither[ConnectorError, (ParticipantId, ConnectionInfo)] = {
     val connectionPrice = 5
-    def tryProcessingPayment() = paymentNonce match {
-      case Some(value) => braintreePayments.processPayment(connectionPrice, value).map(Option.apply)
-      case None => Future.successful(Right(Option.empty)).toFutureEither
-    }
+    def tryProcessingPayment() =
+      paymentNonce match {
+        case Some(value) => braintreePayments.processPayment(connectionPrice, value).map(Option.apply)
+        case None => Future.successful(Right(Option.empty)).toFutureEither
+      }
 
-    def tryStoringPayment(userId: ParticipantId) = paymentNonce match {
-      case Some(value) =>
-        val request = CreatePaymentRequest(value, connectionPrice, Payment.Status.Charged, None)
-        paymentsRepository.create(userId, request).map(Option.apply)
+    def tryStoringPayment(userId: ParticipantId) =
+      paymentNonce match {
+        case Some(value) =>
+          val request = CreatePaymentRequest(value, connectionPrice, Payment.Status.Charged, None)
+          paymentsRepository.create(userId, request).map(Option.apply)
 
-      case None =>
-        Future.successful(Right(Option.empty)).toFutureEither
-    }
+        case None =>
+          Future.successful(Right(Option.empty)).toFutureEither
+      }
 
     for {
       _ <- tryProcessingPayment().failOnLeft(e => new RuntimeException(s"Failed to process payment: ${e.reason}"))

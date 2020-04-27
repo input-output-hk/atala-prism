@@ -7,8 +7,8 @@ import io.iohk.atala.cvp.webextension.common.I18NMessages
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
-class Runner(config: ActiveTabConfig, backgroundAPI: BackgroundAPI, messages: I18NMessages)(
-    implicit ec: ExecutionContext
+class Runner(config: ActiveTabConfig, backgroundAPI: BackgroundAPI, messages: I18NMessages)(implicit
+    ec: ExecutionContext
 ) {
 
   def run(): Unit = {

@@ -27,9 +27,10 @@ class LedgerSynchronizerService(
     */
   def synchronize(blockhash: Blockhash): FutureEither[Nothing, Unit] = {
     for {
-      candidate <- bitcoinClient
-        .getBlock(blockhash)
-        .failOnLeft(e => new RuntimeException(s"Synchronization failed while retrieving the target block: $e"))
+      candidate <-
+        bitcoinClient
+          .getBlock(blockhash)
+          .failOnLeft(e => new RuntimeException(s"Synchronization failed while retrieving the target block: $e"))
 
       status <- syncStatusService.getSyncingStatus(candidate.header)
       _ <- sync(status)
@@ -74,13 +75,15 @@ class LedgerSynchronizerService(
       case (previous, height) =>
         for {
           _ <- previous
-          blockhash <- bitcoinClient
-            .getBlockhash(height)
-            .failOnLeft(e => new RuntimeException(s"Synchronization failed while pushing $goal: $e"))
+          blockhash <-
+            bitcoinClient
+              .getBlockhash(height)
+              .failOnLeft(e => new RuntimeException(s"Synchronization failed while pushing $goal: $e"))
 
-          block <- bitcoinClient
-            .getBlock(blockhash)
-            .failOnLeft(e => new RuntimeException(s"Synchronization failed while pushing $goal: $e"))
+          block <-
+            bitcoinClient
+              .getBlock(blockhash)
+              .failOnLeft(e => new RuntimeException(s"Synchronization failed while pushing $goal: $e"))
 
           _ <- append(block.header)
         } yield ()

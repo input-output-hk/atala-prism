@@ -62,16 +62,18 @@ object app extends ScalaModule {
 
   override def moduleDeps = Seq(common) ++ super.moduleDeps
 
-  override def ivyDeps = Agg(
-    ivy"com.typesafe.play::play-json:2.7.3",
-    ivy"com.beachape::enumeratum:1.5.13"
-  )
+  override def ivyDeps =
+    Agg(
+      ivy"com.typesafe.play::play-json:2.7.3",
+      ivy"com.beachape::enumeratum:1.5.13"
+    )
 
   object test extends Tests {
-    override def ivyDeps = Agg(
-      ivy"org.scalatest::scalatest:3.0.8",
-      ivy"org.scalacheck::scalacheck:1.14.0"
-    )
+    override def ivyDeps =
+      Agg(
+        ivy"org.scalatest::scalatest:3.0.8",
+        ivy"org.scalacheck::scalacheck:1.14.0"
+      )
 
     def testFrameworks = Seq("org.scalatest.tools.Framework")
   }
@@ -82,21 +84,23 @@ object `indy-poc` extends ScalaModule {
 
   override def mainClass = Some("io.iohk.indy.ExampleRunner")
 
-  override def repositories() = super.repositories ++ Seq(
-    MavenRepository("https://repo.sovrin.org/repository/maven-public")
-  )
+  override def repositories() =
+    super.repositories ++ Seq(
+      MavenRepository("https://repo.sovrin.org/repository/maven-public")
+    )
 
-  override def ivyDeps = Agg(
-    ivy"org.bouncycastle:bcprov-jdk15on:1.62",
-    ivy"org.bouncycastle:bcpkix-jdk15on:1.62",
-    ivy"com.typesafe.play::play-json:2.7.3",
-    ivy"com.lihaoyi::os-lib:0.2.7",
-    ivy"org.hyperledger:indy:1.8.1-dev-985",
-    ivy"org.slf4j:slf4j-api:1.7.26",
-    // log4j is used by the indysdk java wrapper, using them is the simplest way to get the logs
-    ivy"org.slf4j:slf4j-log4j12:1.8.0-alpha2",
-    ivy"log4j:log4j:1.2.17"
-  )
+  override def ivyDeps =
+    Agg(
+      ivy"org.bouncycastle:bcprov-jdk15on:1.62",
+      ivy"org.bouncycastle:bcpkix-jdk15on:1.62",
+      ivy"com.typesafe.play::play-json:2.7.3",
+      ivy"com.lihaoyi::os-lib:0.2.7",
+      ivy"org.hyperledger:indy:1.8.1-dev-985",
+      ivy"org.slf4j:slf4j-api:1.7.26",
+      // log4j is used by the indysdk java wrapper, using them is the simplest way to get the logs
+      ivy"org.slf4j:slf4j-log4j12:1.8.0-alpha2",
+      ivy"log4j:log4j:1.2.17"
+    )
 }
 
 object versions {
@@ -114,41 +118,44 @@ object versions {
 object common extends ScalaModule {
   def scalaVersion = versions.scala
 
-  override def ivyDeps = Agg(
-    ivy"org.flywaydb:flyway-core:6.0.2",
-    ivy"org.postgresql:postgresql:42.2.6",
-    ivy"com.typesafe:config:1.3.4",
-    ivy"org.slf4j:slf4j-api:1.7.25",
-    ivy"org.tpolecat::doobie-core:${versions.doobie}",
-    ivy"org.tpolecat::doobie-hikari:${versions.doobie}",
-    ivy"io.monix::monix:3.0.0",
-    ivy"org.bouncycastle:bcprov-jdk15on:1.62",
-    ivy"org.bouncycastle:bcpkix-jdk15on:1.62",
-    ivy"com.lihaoyi::os-lib:0.2.7"
-  )
+  override def ivyDeps =
+    Agg(
+      ivy"org.flywaydb:flyway-core:6.0.2",
+      ivy"org.postgresql:postgresql:42.2.6",
+      ivy"com.typesafe:config:1.3.4",
+      ivy"org.slf4j:slf4j-api:1.7.25",
+      ivy"org.tpolecat::doobie-core:${versions.doobie}",
+      ivy"org.tpolecat::doobie-hikari:${versions.doobie}",
+      ivy"io.monix::monix:3.0.0",
+      ivy"org.bouncycastle:bcprov-jdk15on:1.62",
+      ivy"org.bouncycastle:bcpkix-jdk15on:1.62",
+      ivy"com.lihaoyi::os-lib:0.2.7"
+    )
 
   object `test-util` extends ScalaModule {
     def scalaVersion = versions.scala
 
     override def moduleDeps = Seq(common) ++ super.moduleDeps
 
-    override def ivyDeps = Agg(
-      ivy"com.spotify:docker-client:8.16.0",
-      ivy"com.whisk::docker-testkit-scalatest:0.9.9",
-      ivy"com.whisk::docker-testkit-impl-spotify:0.9.9",
-      ivy"org.tpolecat::doobie-scalatest:${versions.doobie}",
-      ivy"com.softwaremill.diffx::diffx-scalatest:0.3.3",
-      ivy"com.beachape::enumeratum:1.5.13"
-    )
+    override def ivyDeps =
+      Agg(
+        ivy"com.spotify:docker-client:8.16.0",
+        ivy"com.whisk::docker-testkit-scalatest:0.9.9",
+        ivy"com.whisk::docker-testkit-impl-spotify:0.9.9",
+        ivy"org.tpolecat::doobie-scalatest:${versions.doobie}",
+        ivy"com.softwaremill.diffx::diffx-scalatest:0.3.3",
+        ivy"com.beachape::enumeratum:1.5.13"
+      )
   }
 
   object test extends Tests {
     override def moduleDeps = Seq(`test-util`) ++ super.moduleDeps
-    override def ivyDeps = Agg(
-      ivy"org.scalatest::scalatest:3.0.8",
-      ivy"org.scalacheck::scalacheck:1.14.0",
-      ivy"org.tpolecat::doobie-scalatest:${versions.doobie}"
-    )
+    override def ivyDeps =
+      Agg(
+        ivy"org.scalatest::scalatest:3.0.8",
+        ivy"org.scalacheck::scalacheck:1.14.0",
+        ivy"org.tpolecat::doobie-scalatest:${versions.doobie}"
+      )
 
     def testFrameworks = Seq("org.scalatest.tools.Framework")
   }
@@ -170,27 +177,28 @@ trait ServerCommon extends ScalaModule with BuildInfo {
 
   override def moduleDeps = Seq(common) ++ super.moduleDeps
 
-  override def ivyDeps = Agg(
-    ivy"org.flywaydb:flyway-core:6.0.2",
-    ivy"org.postgresql:postgresql:42.2.6",
-    ivy"com.beachape::enumeratum:1.5.13",
-    ivy"com.typesafe:config:1.3.4",
-    ivy"org.slf4j:slf4j-api:1.7.25",
-    ivy"ch.qos.logback:logback-core:${versions.logback}",
-    ivy"ch.qos.logback:logback-classic:${versions.logback}",
-    ivy"com.softwaremill.sttp::core:${versions.sttp}",
-    ivy"com.softwaremill.sttp::async-http-client-backend-future:${versions.sttp}",
-    ivy"org.tpolecat::doobie-core:${versions.doobie}",
-    ivy"org.tpolecat::doobie-hikari:${versions.doobie}",
-    ivy"org.tpolecat::doobie-postgres:${versions.doobie}",
-    ivy"io.circe::circe-core:${versions.circe}",
-    ivy"io.circe::circe-generic:${versions.circe}",
-    ivy"io.circe::circe-parser:${versions.circe}",
-    ivy"io.monix::monix:3.0.0",
-    ivy"io.scalaland::chimney:0.3.3",
-    ivy"io.grpc:grpc-netty:${versions.grpc}",
-    ivy"com.chuusai::shapeless:2.3.3"
-  )
+  override def ivyDeps =
+    Agg(
+      ivy"org.flywaydb:flyway-core:6.0.2",
+      ivy"org.postgresql:postgresql:42.2.6",
+      ivy"com.beachape::enumeratum:1.5.13",
+      ivy"com.typesafe:config:1.3.4",
+      ivy"org.slf4j:slf4j-api:1.7.25",
+      ivy"ch.qos.logback:logback-core:${versions.logback}",
+      ivy"ch.qos.logback:logback-classic:${versions.logback}",
+      ivy"com.softwaremill.sttp::core:${versions.sttp}",
+      ivy"com.softwaremill.sttp::async-http-client-backend-future:${versions.sttp}",
+      ivy"org.tpolecat::doobie-core:${versions.doobie}",
+      ivy"org.tpolecat::doobie-hikari:${versions.doobie}",
+      ivy"org.tpolecat::doobie-postgres:${versions.doobie}",
+      ivy"io.circe::circe-core:${versions.circe}",
+      ivy"io.circe::circe-generic:${versions.circe}",
+      ivy"io.circe::circe-parser:${versions.circe}",
+      ivy"io.monix::monix:3.0.0",
+      ivy"io.scalaland::chimney:0.3.3",
+      ivy"io.grpc:grpc-netty:${versions.grpc}",
+      ivy"com.chuusai::shapeless:2.3.3"
+    )
 
   val awsS3Deps = Agg(
     ivy"software.amazon.awssdk:s3:2.11.8"
@@ -198,14 +206,15 @@ trait ServerCommon extends ScalaModule with BuildInfo {
 
   override def buildInfoPackageName = Some("io.iohk.cvp")
 
-  override def buildInfoMembers: T[Map[String, String]] = T {
-    Map(
-      "version" -> GitSupport.publishVersion(),
-      "scalaVersion" -> scalaVersion(),
-      "millVersion" -> sys.props("MILL_VERSION"),
-      "buildTime" -> LocalDateTime.now(ZoneOffset.UTC).toString
-    )
-  }
+  override def buildInfoMembers: T[Map[String, String]] =
+    T {
+      Map(
+        "version" -> GitSupport.publishVersion(),
+        "scalaVersion" -> scalaVersion(),
+        "millVersion" -> sys.props("MILL_VERSION"),
+        "buildTime" -> LocalDateTime.now(ZoneOffset.UTC).toString
+      )
+    }
 
   trait `tests-common` extends Tests {
 
@@ -216,21 +225,23 @@ trait ServerCommon extends ScalaModule with BuildInfo {
 
     override def moduleDeps = Seq(common.`test-util`) ++ super.moduleDeps
 
-    override def ivyDeps = Agg(
-      ivy"org.scalatest::scalatest:3.0.8",
-      ivy"org.scalacheck::scalacheck:1.14.0",
-      ivy"com.spotify:docker-client:8.16.0",
-      ivy"com.whisk::docker-testkit-scalatest:0.9.9",
-      ivy"com.whisk::docker-testkit-impl-spotify:0.9.9",
-      ivy"org.tpolecat::doobie-scalatest:${versions.doobie}"
-    )
+    override def ivyDeps =
+      Agg(
+        ivy"org.scalatest::scalatest:3.0.8",
+        ivy"org.scalacheck::scalacheck:1.14.0",
+        ivy"com.spotify:docker-client:8.16.0",
+        ivy"com.whisk::docker-testkit-scalatest:0.9.9",
+        ivy"com.whisk::docker-testkit-impl-spotify:0.9.9",
+        ivy"org.tpolecat::doobie-scalatest:${versions.doobie}"
+      )
 
     def testFrameworks = Seq("org.scalatest.tools.Framework")
 
     // Example usage: mill -i connector.test.single io.iohk.cvp.intdemo.IDServiceImplSpec
-    def single(args: String*) = T.command {
-      super.runMain("org.scalatest.run", args: _*)
-    }
+    def single(args: String*) =
+      T.command {
+        super.runMain("org.scalatest.run", args: _*)
+      }
   }
 }
 
@@ -245,9 +256,10 @@ trait ServerPBCommon extends ServerCommon with ScalaPBModule {
       )
     }
 
-  override def scalaPBSources: Sources = T.sources {
-    millOuterCtx.millSourcePath / 'protos
-  }
+  override def scalaPBSources: Sources =
+    T.sources {
+      millOuterCtx.millSourcePath / 'protos
+    }
 }
 
 object node extends ServerPBCommon with CVPDockerModule {
@@ -258,14 +270,16 @@ object node extends ServerPBCommon with CVPDockerModule {
 
   override def cvpDockerConfig = CVPDockerConfig(name = "node")
 
-  override def ivyDeps = super.ivyDeps.map { deps =>
-    deps ++ awsS3Deps
-  }
+  override def ivyDeps =
+    super.ivyDeps.map { deps =>
+      deps ++ awsS3Deps
+    }
 
   object test extends `tests-common` {
-    override def ivyDeps = super.ivyDeps.map { deps =>
-      deps ++ mockitoDeps
-    }
+    override def ivyDeps =
+      super.ivyDeps.map { deps =>
+        deps ++ mockitoDeps
+      }
   }
 
   object client extends ScalaModule {
@@ -273,14 +287,15 @@ object node extends ServerPBCommon with CVPDockerModule {
     override def moduleDeps = Seq(node)
     override def scalaVersion = node.scalaVersion
 
-    override def ivyDeps = node.ivyDeps.map { deps =>
-      deps ++ Agg(
-        ivy"com.github.scopt::scopt:${versions.scopt}",
-        ivy"com.github.julien-truffaut::monocle-core:${versions.monocle}",
-        ivy"com.github.julien-truffaut::monocle-generic:${versions.monocle}",
-        ivy"com.github.julien-truffaut::monocle-macro:${versions.monocle}"
-      )
-    }
+    override def ivyDeps =
+      node.ivyDeps.map { deps =>
+        deps ++ Agg(
+          ivy"com.github.scopt::scopt:${versions.scopt}",
+          ivy"com.github.julien-truffaut::monocle-core:${versions.monocle}",
+          ivy"com.github.julien-truffaut::monocle-generic:${versions.monocle}",
+          ivy"com.github.julien-truffaut::monocle-macro:${versions.monocle}"
+        )
+      }
   }
 }
 
@@ -293,41 +308,45 @@ object connector extends ServerPBCommon with CVPDockerModule {
 
   override def mainClass = Some("io.iohk.connector.ConnectorApp")
 
-  override def ivyDeps = super.ivyDeps.map { deps =>
-    deps ++ Agg(
-      ivy"com.braintreepayments.gateway:braintree-java:2.106.0"
-    )
-  }
+  override def ivyDeps =
+    super.ivyDeps.map { deps =>
+      deps ++ Agg(
+        ivy"com.braintreepayments.gateway:braintree-java:2.106.0"
+      )
+    }
 
   override def cvpDockerConfig = CVPDockerConfig(name = "connector")
 
   object test extends `tests-common` {
-    override def ivyDeps = super.ivyDeps.map { deps =>
-      deps ++ mockitoDeps
-    }
+    override def ivyDeps =
+      super.ivyDeps.map { deps =>
+        deps ++ mockitoDeps
+      }
   }
 
   def utilDir = T.sources { os.pwd / 'util }
 
   def resourceDir = T.sources { millSourcePath / "resources" }
 
-  override def resources = T.sources {
-    resourceDir() ++ utilDir()
-  }
+  override def resources =
+    T.sources {
+      resourceDir() ++ utilDir()
+    }
 
   object client extends ScalaModule {
 
     override def moduleDeps = Seq(node, connector)
     override def scalaVersion = node.scalaVersion
 
-    override def ivyDeps = node.ivyDeps.map { deps =>
-      deps ++ Agg(
-        ivy"com.github.scopt::scopt:${versions.scopt}",
-        ivy"com.github.julien-truffaut::monocle-core:${versions.monocle}",
-        ivy"com.github.julien-truffaut::monocle-generic:${versions.monocle}",
-        ivy"com.github.julien-truffaut::monocle-macro:${versions.monocle}"
-      )
-    }
+    override def ivyDeps =
+      node.ivyDeps.map { deps =>
+        deps ++ Agg(
+          ivy"com.github.scopt::scopt:${versions.scopt}",
+          ivy"com.github.julien-truffaut::monocle-core:${versions.monocle}",
+          ivy"com.github.julien-truffaut::monocle-generic:${versions.monocle}",
+          ivy"com.github.julien-truffaut::monocle-macro:${versions.monocle}"
+        )
+      }
   }
 }
 
@@ -380,15 +399,18 @@ trait CVPDockerModule extends Module { self: JavaModule =>
     os.proc("docker", "push", tag).call(stdout = os.Inherit, stderr = os.Inherit)
   }
 
-  def `docker-login` = T {
-    doLogin()
-  }
+  def `docker-login` =
+    T {
+      doLogin()
+    }
 
-  def `docker-build` = T {
-    doBuild(assembly().path, T.ctx().dest, cvpDockerConfig.jarfile, cvpDockerConfig.dockerfile, cvpDockerConfig.tag)
-  }
+  def `docker-build` =
+    T {
+      doBuild(assembly().path, T.ctx().dest, cvpDockerConfig.jarfile, cvpDockerConfig.dockerfile, cvpDockerConfig.tag)
+    }
 
-  def `docker-push` = T {
-    doPush(`docker-build`(), `docker-login`(), cvpDockerConfig.tag)
-  }
+  def `docker-push` =
+    T {
+      doPush(`docker-build`(), `docker-login`(), cvpDockerConfig.tag)
+    }
 }

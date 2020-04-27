@@ -25,8 +25,8 @@ class InsuranceServiceImpl(
     connectorIntegration: ConnectorIntegration,
     intDemoRepository: IntDemoRepository,
     schedulerPeriod: FiniteDuration
-)(
-    implicit ec: ExecutionContext
+)(implicit
+    ec: ExecutionContext
 ) extends intdemo_api.InsuranceServiceGrpc.InsuranceService {
 
   val service = new IntDemoService[RequiredInsuranceData](
@@ -76,8 +76,8 @@ object InsuranceServiceImpl {
     } yield ()
   }
 
-  private def getRequiredInsuranceData(connectorIntegration: ConnectorIntegration)(
-      implicit ec: ExecutionContext
+  private def getRequiredInsuranceData(connectorIntegration: ConnectorIntegration)(implicit
+      ec: ExecutionContext
   ): TokenString => Future[Option[RequiredInsuranceData]] = { connectionToken =>
     getSharedCredentials(connectorIntegration)(ec)(connectionToken).map(toRequiredInsuranceData)
   }

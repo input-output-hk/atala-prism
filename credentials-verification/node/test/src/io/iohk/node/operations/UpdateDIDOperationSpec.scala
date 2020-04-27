@@ -21,7 +21,8 @@ object UpdateDIDOperationSpec {
   val newMasterKeys = ECKeys.generateKeyPair()
 
   lazy val dummyTimestamp = TimestampInfo.dummyTime
-  lazy val createDidOperation = CreateDIDOperation.parse(CreateDIDOperationSpec.exampleOperation, dummyTimestamp).right.value
+  lazy val createDidOperation =
+    CreateDIDOperation.parse(CreateDIDOperationSpec.exampleOperation, dummyTimestamp).right.value
 
   val exampleOperation = node_models.AtalaOperation(
     operation = node_models.AtalaOperation.Operation.UpdateDid(
