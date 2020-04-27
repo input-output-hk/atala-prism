@@ -4,25 +4,15 @@ import { Col, Row, message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { withApi } from '../providers/withApi';
 import ContactForm from './Organisms/ContactInformation/ContactInformation';
-import MyCredentials from './Molecules/MyCredentials/MyCredentials';
-import { UserContext } from '../providers/userContext';
 
 import '../credentials/_style.scss';
 import './_style.scss';
 
 const ContactContainer = ({ api }) => {
   const { t } = useTranslation();
-  const { user } = useContext(UserContext);
 
   const contactInfoRef = useRef();
   const [consent, setConsent] = useState(false);
-
-  useEffect(() => {
-    if (contactInfoRef.current.getForm())
-      contactInfoRef.current.getForm().setFieldsValue({
-        fullName: user.firstName
-      });
-  }, [contactInfoRef.current]);
 
   const submitForm = () => {
     contactInfoRef.current

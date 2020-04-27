@@ -6,9 +6,10 @@ export const withRedirector = Component => props => {
 
   const redirectTo = route => history.push(`/${route}`);
 
-  const redirectToLanding = () => redirectTo('');
-
-  const redirectToUserInfo = () => redirectTo('userInfo');
+  const redirectToLanding = () => {
+    redirectTo('');
+    window.location.reload(true);
+  };
 
   const redirectToCredentials = () => {
     redirectTo('credentials');
@@ -19,7 +20,6 @@ export const withRedirector = Component => props => {
 
   const redirector = {
     redirectToLanding,
-    redirectToUserInfo,
     redirectToCredentials,
     redirectToContact
   };

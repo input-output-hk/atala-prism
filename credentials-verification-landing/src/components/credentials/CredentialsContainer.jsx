@@ -27,6 +27,7 @@ import WhatYouNeed from './Molecules/WhatYouNeed/WhatYouNeed';
 import { UserContext } from '../providers/userContext';
 import { withRedirector } from '../providers/withRedirector';
 import InteractiveMap from '../common/Organisms/InteractiveMap/InteractiveMap';
+import PersonasModal from './Molecules/PersonasModal/PersonasModal';
 
 // Credentials steps
 const INTRODUCTION_STEP = 0;
@@ -44,7 +45,6 @@ const CREDENTIALS = {
 const lastCredential = Object.keys(CREDENTIAL_TYPES).length - 1;
 
 const CredentialsContainer = ({
-  redirector: { redirectToUserInfo },
   api: { getConnectionToken, startSubjectStatusStream, setPersonalData }
 }) => {
   const { t } = useTranslation();
@@ -60,10 +60,11 @@ const CredentialsContainer = ({
   const [showContactButton, setShowContactButton] = useState(false);
   const [showCongrats, setShowCongrats] = useState(false);
   const [mapInitFirstStep, setMapInitFirstStep] = useState(false);
+  const [showPersonasModal, setShowPersonasModal] = useState(false);
 
   useEffect(() => {
-    if (_.isEmpty(user)) redirectToUserInfo();
-  }, []);
+    if (_.isEmpty(user)) setShowPersonasModal(true);
+  }, [user]);
 
   useEffect(() => {
     const { citizenId, studentId, employeeId, insuredId } = user;
@@ -212,9 +213,15 @@ const CredentialsContainer = ({
     }
   };
 
+  const selectPersona = selectedUser => {
+    setUser(selectedUser);
+    setShowPersonasModal(false);
+  };
+
   return (
     <div className="InteractiveDemoContainer">
-      <InteractiveMap mapStep={currentCredential + 1} mapInitFirstStep />
+      <PersonasModal showModal={showPersonasModal} selectPersona={selectPersona} />
+      <InteractiveMap mapStep={currentCredential + 1} mapInitFirstStep={mapInitFirstStep} />
       <Credentials
         getStep={showCongrats ? () => <CongratsStep /> : getStep}
         changeCurrentCredential={value => setCurrentCredential(value)}
@@ -230,9 +237,6 @@ CredentialsContainer.propTypes = {
     getConnectionToken: PropTypes.func,
     startSubjectStatusStream: PropTypes.func,
     setPersonalData: PropTypes.func
-  }).isRequired,
-  redirector: PropTypes.shape({
-    redirectToUserInfo: PropTypes.func
   }).isRequired
 };
 

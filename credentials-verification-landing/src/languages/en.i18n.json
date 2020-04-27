@@ -133,7 +133,7 @@
     }
   },
   "landing": {
-    "CongratsStep":{
+    "CongratsStep": {
       "congrats": "Hey! Nice to see you again.",
       "finishProcess": "You've already finished this process."
     },
@@ -184,15 +184,20 @@
       "prevCredentialName": "This is your "
     },
     "findCredential": {
-      "title": "Try Atala Prism interactive Demo",
+      "title": "Experience how Atala Prism can",
+      "title2": "power your world today!",
       "arrowAlt": "Arrow Right",
       "credentialAlt": "Man smiling",
       "cardTitle": "Find a Credential",
       "cardSubtitle1": "It is a long established fact that a reader will be distracted by the readable content of ",
       "cardSubtitle2": "a page.",
       "warning": "You will be ask for some personal data",
-      "askForCredential": "Ask for Credential",
-      "detailText": "Digital Credentials "
+      "askForCredential": "GET STARTED!",
+      "detailText": "Interactive Demo",
+      "subtitle": "IT’S EASY.",
+      "step1": "Download the Atala Prism Mobile App",
+      "step2": "Receive your Government Issued Identity",
+      "step3": "Instantly authenticate yourself and access many services"
     },
     "trust": {
       "trustName": "Trust 1",
@@ -223,6 +228,35 @@
           "student": "Student"
         }
       }
+    },
+    "personasModal": {
+      "title": "Choose a User",
+      "studentPersona": {
+        "name": "Jo",
+        "description": "As a recent graduate, she is on lookout for her first job.",
+        "history": "Part of the digital first generation, her smartphone is where life happens so it makes sense for her to control her identity and credentials straight from her pocket.",
+        "type": "student",
+        "pronoun": "her"
+      },
+      "touristPersona": {
+        "name": "Grace",
+        "description": "Grace description",
+        "history": "Grace history",
+        "type": "tourist",
+        "pronoun": "her"
+      },
+      "executivePersona": {
+        "name": "Brandon",
+        "description": "Brandon description",
+        "history": "Brandon history",
+        "type": "executive",
+        "pronoun": "his"
+      },
+      "enabledButton": "'s story",
+      "disabledButton": "Coming soon",
+      "joinAtala": "Join",
+      "joinAtala1": "on",
+      "joinAtala2": "journey in the smart city powered by Atala Prism!"
     },
     "actions": {
       "createCredential": "Create Credential"
@@ -659,7 +693,19 @@
       "CredentialType0": "Government ID",
       "CredentialType1": "University Degree",
       "CredentialType2": "Proof of Employment",
-      "CredentialType3": "Health Insurance"
+      "CredentialType3": "Health Insurance",
+      "tourist": {
+        "CredentialType0": "tourist credential 1",
+        "CredentialType1": "tourist credential 2",
+        "CredentialType2": "tourist credential 3",
+        "CredentialType3": "tourist credential 4"
+      },
+      "executive": {
+        "CredentialType0": "executive credential 1",
+        "CredentialType1": "executive credential 2",
+        "CredentialType2": "executive credential 3",
+        "CredentialType3": "executive credential 4"
+      }
     },
     "credentialIssuers": {
       "CredentialType0": "Department of Interior, Republic of Redland",

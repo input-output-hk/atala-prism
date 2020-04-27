@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import { Icon, Row } from 'antd';
 import { useTranslation } from 'react-i18next';
@@ -8,6 +8,7 @@ import { withRedirector } from '../providers/withRedirector';
 import CustomButton from '../common/Atoms/CustomButton/CustomButton';
 import { LEFT } from '../../helpers/constants';
 import buttonReset from '../../images/icon-reset.svg';
+import { UserContext } from '../providers/userContext';
 
 const Credentials = ({
   redirector: { redirectToLanding, redirectToContact },
@@ -17,6 +18,8 @@ const Credentials = ({
   showContactButton
 }) => {
   const { t } = useTranslation();
+
+  const { setUser } = useContext(UserContext);
 
   const credentialsRenderer = () => (
     <CredentialsList
@@ -31,7 +34,7 @@ const Credentials = ({
     <div className="CredentialContainer">
       <div className="CredentialStepContent">
         <Row className="ControlButtons">
-          <button>
+          <button onClick={() => setUser(null)}>
             <img src={buttonReset} alt="ButtonReset" className="ButtonReset" />
           </button>
           <hr />
