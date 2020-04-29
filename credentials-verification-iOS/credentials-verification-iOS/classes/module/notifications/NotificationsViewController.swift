@@ -1,11 +1,18 @@
 //
-import Presentr
+//  NotificationsViewController.swift
+//  credentials-verification-iOS
+//
+//  Created by Leandro Pardo on 16/04/2020.
+//  Copyright © 2020 iohk. All rights reserved.
+//
 
-class ConnectionsViewController: ListingBaseViewController {
+import UIKit
 
-    var presenterImpl = ConnectionsPresenter()
+class NotificationsViewController: ListingBaseViewController {
+    
+    var presenterImpl = NotificationsPresenter()
     override var presenter: BasePresenter { return presenterImpl }
-
+    
     // Views
     @IBOutlet weak var viewEmpty: InformationView!
     @IBOutlet weak var viewScanQr: UIView!
@@ -13,7 +20,7 @@ class ConnectionsViewController: ListingBaseViewController {
     // Scan QR
     @IBOutlet weak var viewQrScannerContainer: UIView!
     let scanner = QRCode()
-
+    
     var navBar: NavBarCustomStyle = NavBarCustomStyle(hasNavBar: true)
     override func navBarCustomStyle() -> NavBarCustomStyle {
         return navBar
@@ -26,11 +33,12 @@ class ConnectionsViewController: ListingBaseViewController {
     lazy var confirmProofRequestViewController: ConnectionProofRequestViewController = {
         ConnectionProofRequestViewController.makeThisView()
     }()
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         // Setup
+        setupButtons()
         setupEmptyView()
     }
     
@@ -38,7 +46,7 @@ class ConnectionsViewController: ListingBaseViewController {
         super.viewWillAppear(animated)
         self.presenterImpl.actionPullToRefresh()
     }
-
+    
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
 
@@ -53,18 +61,19 @@ class ConnectionsViewController: ListingBaseViewController {
         }
         return false
     }
-
+    
     // MARK: Config
-
+    
     func setupEmptyView() {
-
-        viewEmpty.config(imageNamed: "img_qr_red", title: "connections_empty_title".localize(), subtitle: "connections_empty_subtitle".localize(), buttonText: "connections_empty_button".localize(), buttonAction: actionScan)
+        
+        viewEmpty.config(imageNamed: "img_qr_red", title: "notifications_empty_title".localize(), subtitle: "notifications_empty_subtitle".localize(), buttonText: "connections_empty_button".localize(), buttonAction: actionScan)
     }
-
+    
     override func config(mode: ListingBasePresenter.ListingBaseState) {
-
-        let isScanningQr = presenterImpl.isScanningQr()
+        
+        let credentialsMode = presenterImpl.getMode()
         let isEmpty = !presenterImpl.hasData() && mode == .listing
+        let isScanningQr = presenterImpl.isScanningQr()
         
         // Main views
         viewEmpty.isHidden = !isEmpty
@@ -72,51 +81,82 @@ class ConnectionsViewController: ListingBaseViewController {
         viewTable.isHidden = isEmpty || isScanningQr
 
         // Change the nav bar
-        let navTitle = isScanningQr ? "connections_scan_qr_nav_title".localize() : "connections_nav_title".localize()
-        let navIconName = (!isEmpty && !isScanningQr) ? "ico_qr" : nil
-        navBar = NavBarCustomStyle(hasNavBar: true, title: navTitle, hasBackButton: isScanningQr, rightIconName: navIconName, rightIconAction: actionScan)
+        if credentialsMode == .detail {
+            navBar = NavBarCustomStyle(hasNavBar: true, title: "credentials_detail_title_new".localize(), hasBackButton: credentialsMode != .degrees, rightIconName: nil, rightIconAction: nil)
+        } else {
+            let navTitle = isScanningQr ? "notifications_scan_qr_nav_title".localize() : "notifications_title".localize()
+            let navIconName = (!isEmpty && !isScanningQr && mode != .fetching) ? "ico_qr" : nil
+            navBar = NavBarCustomStyle(hasNavBar: true, title: navTitle, hasBackButton: isScanningQr, rightIconName: navIconName, rightIconAction: actionScan)
+        }
+
         NavBarCustom.config(view: self)
     }
     
     func config(isLoading: Bool) {
-
+        
         showLoading(doShow: isLoading)
     }
-
+    
     // MARK: Table
-
+    
     override func setupTable() {
         tableUtils = TableUtils(view: self, presenter: presenterImpl, table: table)
     }
-
+    
     override func getHeaderHeight() -> CGFloat {
         return AppConfigs.TABLE_HEADER_HEIGHT_REGULAR
     }
-
+    
     override func getCellIdentifier(for indexPath: IndexPath) -> String {
-
+        
         switch presenterImpl.getElementType(indexPath: indexPath) {
-        case .main:
-            return "main"
+        case .degree:
+            return "common"
+        case .newDegreeHeader:
+            return "newDegreeHeader"
+        case .newDegree:
+            return "newDegree"
+        case .document:
+            return "document"
+        case .detailHeader:
+            return "detailHeader"
+        case .detailProperty:
+            return "detailProperty"
+        case .detailFooter:
+            return "detailFooter"
         default:
             return super.getCellIdentifier(for: indexPath)
         }
     }
-
+    
     override func getCellNib(for indexPath: IndexPath) -> String? {
-
+        
         switch presenterImpl.getElementType(indexPath: indexPath) {
-        case .main:
-            return ConnectionMainViewCell.default_NibName()
+        case .degree:
+            return DegreeViewCell.default_NibName()
+        case .newDegreeHeader:
+            return NewDegreeHeaderViewCell.default_NibName()
+        case .newDegree:
+            return NewDegreeViewCell.default_NibName()
+        case .document:
+            return DocumentViewCell.default_NibName()
+        case .detailHeader:
+            return DetailHeaderViewCell.default_NibName()
+        case .detailProperty:
+            return DetailPropertyViewCell.default_NibName()
+        case .detailFooter:
+            return DetailFooterViewCell.default_NibName()
         default:
             return super.getCellNib(for: indexPath)
         }
     }
-
+    
     // MARK: Buttons
-
+    
+    func setupButtons() {}
+    
     lazy var actionScan = SelectorAction(action: { [weak self] in
-        self?.presenterImpl.tappedScanButton()
+          self?.presenterImpl.tappedScanButton()
     })
 
     // MARK: Scan QR
@@ -152,13 +192,5 @@ class ConnectionsViewController: ListingBaseViewController {
             customPresentViewController(confirmMessageViewController.presentr, viewController: confirmMessageViewController, animated: true)
         }
         confirmMessageViewController.config(delegate: presenterImpl, lead: lead, title: title, logoData: logoData, placeholderNamed: placeholder)
-    }
-
-    func showNewProofRequestMessage(credentials: [Degree], requiered: [String], connection: ConnectionBase, logoData: Data?) {
-
-        if !confirmProofRequestViewController.isBeingPresented {
-            customPresentViewController(confirmProofRequestViewController.presentr, viewController: confirmProofRequestViewController, animated: true)
-        }
-        confirmProofRequestViewController.config(delegate: presenterImpl, connection: connection, credentials: credentials, requiered: requiered, logoData: logoData, placeholderNamed: "ico_placeholder_university")
     }
 }

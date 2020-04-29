@@ -1,8 +1,8 @@
 //
 
-class HomeViewController: ListingBaseViewController {
+class CredentialsViewController: ListingBaseViewController {
 
-    var presenterImpl = HomePresenter()
+    var presenterImpl = CredentialsPresenter()
     override var presenter: BasePresenter { return presenterImpl }
 
     @IBOutlet weak var viewEmpty: InformationView!
@@ -47,7 +47,7 @@ class HomeViewController: ListingBaseViewController {
 
     override func config(mode: ListingBasePresenter.ListingBaseState) {
 
-        let homeMode = presenterImpl.getMode()
+        let credentialsMode = presenterImpl.getMode()
         let isEmpty = !presenterImpl.hasData() && mode == .listing
 
         // Main views
@@ -55,32 +55,32 @@ class HomeViewController: ListingBaseViewController {
         viewTable.isHidden = isEmpty
 
         // Change the nav bar
-        var navTitle = homeMode == .degrees ? "home_nav_title".localize() : "home_document_title".localize()
+        var navTitle = credentialsMode == .degrees ? "credentials_nav_title".localize() : "credentials_document_title".localize()
         var navAction: SelectorAction?
         var navActionIcon: String?
-        if homeMode == .detail {
+        if credentialsMode == .detail {
             let detailDegree = presenterImpl.detailDegree
             if detailDegree?.isNew ?? false {
-                navTitle = "home_detail_title_new".localize()
+                navTitle = "credentials_detail_title_new".localize()
             } else {
                 navActionIcon = "ico_share"
                 navAction = actionShare
                 switch detailDegree!.type {
                 case .univerityDegree:
-                    navTitle = "home_detail_title_type_university".localize()
+                    navTitle = "credentials_detail_title_type_university".localize()
                 case .governmentIssuedId:
-                    navTitle = "home_detail_title_type_government_id".localize()
+                    navTitle = "credentials_detail_title_type_government_id".localize()
                 case .certificatOfInsurance:
-                    navTitle = "home_detail_title_type_insurance".localize()
+                    navTitle = "credentials_detail_title_type_insurance".localize()
                 case .proofOfEmployment:
-                    navTitle = "home_detail_title_type_employment".localize()
+                    navTitle = "credentials_detail_title_type_employment".localize()
                 default:
                     print("Unrecognized type")
                 }
             }
 
         }
-        navBar = NavBarCustomStyle(hasNavBar: true, title: navTitle, hasBackButton: homeMode != .degrees, rightIconName: navActionIcon, rightIconAction: navAction)
+        navBar = NavBarCustomStyle(hasNavBar: true, title: navTitle, hasBackButton: credentialsMode != .degrees, rightIconName: navActionIcon, rightIconAction: navAction)
         NavBarCustom.config(view: self)
     }
 

@@ -17,8 +17,9 @@ class DashboardViewController: BaseTabPagerViewController {
 
     public typealias MyBar = TMBar.TabBar
     let bar = MyBar()
-    let viewControllersStoryboardIdentifiers = ["Home", "Connections", "Connections", "Profile", "Settings"]
-    let viewControllersIdentifiers = ["Home", "Connections", "Connections", "Profile", "Settings"]
+
+    let viewControllersStoryboardIdentifiers = ["Credentials", "Connections", "Notifications", "Profile", "Settings"]
+    let viewControllersIdentifiers = ["Credentials", "Connections", "Notifications", "Profile", "Settings"]
     let viewControllersTitles = ["tab_credentials", "tab_contacts", "", "tab_profile", "tab_settings"]
     let viewControllersIcons = ["tab_credentials", "tab_contacts", "tab_empty", "tab_profile", "tab_settings"]
 
@@ -38,6 +39,12 @@ class DashboardViewController: BaseTabPagerViewController {
         super.viewWillAppear(animated)
 
         configTabbarDecorator()
+        NotificationCenter.default.addObserver(self, selector: #selector(onShowCredentialsScreen), name: .showCredentialsScreen, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(onShowContactsScreen), name: .showContactsScreen, object: nil)
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        NotificationCenter.default.removeObserver(self)
     }
 
     // MARK: Setups
@@ -70,6 +77,7 @@ class DashboardViewController: BaseTabPagerViewController {
 
         // Select the initial tab
         scrollToPage(Page.at(index: 2), animated: false)
+        
     }
 
     func setupBarButtons() {
@@ -102,7 +110,17 @@ class DashboardViewController: BaseTabPagerViewController {
         Logger.d("Central button tapped")
         scrollToPage(Page.at(index: 2), animated: true)
     }
-
+    
+    // MARK: Change tab notifications
+    
+    @objc func onShowCredentialsScreen() {
+        scrollToPage(Page.at(index: 0), animated: true)
+    }
+    
+    @objc func onShowContactsScreen() {
+        scrollToPage(Page.at(index: 1), animated: true)
+    }
+    
     // MARK: Pager
 
     @objc func nextPage(_ sender: UIBarButtonItem) {
@@ -174,4 +192,11 @@ extension DashboardViewController: TMBarDataSource {
         let item = TMBarItem(title: viewControllersTitles[index].localize(), image: setupBarButtonImage(index: index))
         return item
     }
+}
+
+// MARK: Custom notifications to show screens
+
+extension Notification.Name {
+    static let showCredentialsScreen = Notification.Name("showCredentialsScreen")
+    static let showContactsScreen = Notification.Name("showContactsScreen")
 }

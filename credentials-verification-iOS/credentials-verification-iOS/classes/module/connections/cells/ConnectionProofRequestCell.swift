@@ -48,13 +48,13 @@ class ConnectionProofRequestCell: BaseTableViewCell, SwitchCustomDelegate {
         self.credential = credential
         switch credential.type {
         case .governmentIssuedId:
-            labelTitle.text = "home_detail_title_type_government_id".localize()
+            labelTitle.text = "credentials_detail_title_type_government_id".localize()
         case .univerityDegree:
-            labelTitle.text = "home_detail_title_type_university".localize()
+            labelTitle.text = "credentials_detail_title_type_university".localize()
         case .proofOfEmployment:
-            labelTitle.text = "home_detail_title_type_employment".localize()
+            labelTitle.text = "credentials_detail_title_type_employment".localize()
         case .certificatOfInsurance:
-            labelTitle.text = "home_detail_title_type_insurance".localize()
+            labelTitle.text = "credentials_detail_title_type_insurance".localize()
         case .none:
             print("Undefined credential type")
         }

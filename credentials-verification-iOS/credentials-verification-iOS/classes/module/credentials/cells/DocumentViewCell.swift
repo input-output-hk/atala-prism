@@ -16,6 +16,7 @@ class DocumentViewCell: BaseTableViewCell {
     @IBOutlet weak var labelFullNameTitle: UILabel!
     @IBOutlet weak var labelBirthdayTitle: UILabel!
     @IBOutlet weak var labelExpirationDateTitle: UILabel!
+    @IBOutlet weak var viewMainBody: UIView!
     
     override class func default_NibName() -> String {
         return "DocumentViewCell"

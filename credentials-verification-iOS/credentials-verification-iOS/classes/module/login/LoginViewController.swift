@@ -140,7 +140,7 @@ extension LoginViewController {
         if view != textFieldUrl {
             return
         }
-        Common.URL_API = textFieldUrl.textField.text ?? "intdemo-ata-2375.cef.iohkdev.io:50051"
+        Common.URL_API = textFieldUrl.textField.text ?? "intdemo-develop.cef.iohkdev.io:50051"
         Logger.d("Changed URL to: \(Common.URL_API)")
     }
 }

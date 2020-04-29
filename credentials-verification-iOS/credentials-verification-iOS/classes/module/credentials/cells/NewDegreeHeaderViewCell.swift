@@ -30,7 +30,7 @@ class NewDegreeHeaderViewCell: BaseTableViewCell {
 
     func config(name: String?) {
 
-        let greeting = String(format: "home_degrees_new_hello".localize(), name ?? "")
+        let greeting = String(format: "credentials_degrees_new_hello".localize(), name ?? "")
         labelTitle.text = greeting
 
         viewMainBody.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_REGULAR, onlyTops: true)

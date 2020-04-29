@@ -2,19 +2,19 @@
 import SwiftGRPC
 import SwiftProtobuf
 
-class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegate, NewDegreeViewCellPresenterDelegate, DegreeViewCellPresenterDelegate, NewDegreeHeaderViewCellPresenterDelegate, DocumentViewCellPresenterDelegate, DetailHeaderViewCellPresenterDelegate, DetailFooterViewCellPresenterDelegate, DetailPropertyViewCellPresenterDelegate, ShareDialogPresenterDelegate {
+class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegate, NewDegreeViewCellPresenterDelegate, DegreeViewCellPresenterDelegate, NewDegreeHeaderViewCellPresenterDelegate, DocumentViewCellPresenterDelegate, DetailHeaderViewCellPresenterDelegate, DetailFooterViewCellPresenterDelegate, DetailPropertyViewCellPresenterDelegate, ShareDialogPresenterDelegate {
 
-    var viewImpl: HomeViewController? {
-        return view as? HomeViewController
+    var viewImpl: CredentialsViewController? {
+        return view as? CredentialsViewController
     }
 
-    enum HomeMode {
+    enum CredentialsMode {
         case degrees
         case document
         case detail
     }
 
-    enum HomeCellType {
+    enum CredentialsCellType {
         case base(value: ListingBaseCellType)
         case degree // degrees mode
         case newDegreeHeader // degrees mode
@@ -26,11 +26,11 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
     }
 
     struct CellRow {
-        var type: HomeCellType
+        var type: CredentialsCellType
         var value: Any?
     }
 
-    var mode: HomeMode = .degrees
+    var mode: CredentialsMode = .degrees
 
     var degreeRows: [CellRow]?
     var detailRows: [CellRow]?
@@ -42,7 +42,7 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
 
     // MARK: Modes
 
-    func getMode() -> HomeMode {
+    func getMode() -> CredentialsMode {
         return mode
     }
 
@@ -66,21 +66,21 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
         detailRows?.append(CellRow(type: .detailHeader, value: degree))
         switch degree.type {
         case .univerityDegree:
-            detailRows?.append(CellRow(type: .detailProperty, value: ("home_detail_university_name".localize(), degree.issuer?.name, false, degree.type)))
-            detailRows?.append(CellRow(type: .detailProperty, value: ("home_detail_award".localize(), degree.credentialSubject?.degreeResult, false, degree.type)))
-            detailRows?.append(CellRow(type: .detailProperty, value: ("home_detail_full_name".localize(), degree.credentialSubject?.name, false, degree.type)))
-            detailRows?.append(CellRow(type: .detailProperty, value: ("home_detail_graduation_date".localize(), degree.issuanceDate, true,  degree.type)))
+            detailRows?.append(CellRow(type: .detailProperty, value: ("credentials_detail_university_name".localize(), degree.issuer?.name, false, degree.type)))
+            detailRows?.append(CellRow(type: .detailProperty, value: ("credentials_detail_award".localize(), degree.credentialSubject?.degreeResult, false, degree.type)))
+            detailRows?.append(CellRow(type: .detailProperty, value: ("credentials_detail_full_name".localize(), degree.credentialSubject?.name, false, degree.type)))
+            detailRows?.append(CellRow(type: .detailProperty, value: ("credentials_detail_graduation_date".localize(), degree.issuanceDate, true,  degree.type)))
         case .governmentIssuedId:
             detailRows?.append(CellRow(type: .document, value: degree))
         case .certificatOfInsurance:
-            detailRows?.append(CellRow(type: .detailProperty, value: ("home_detail_employment_class_insurance".localize(), degree.productClass, false, degree.type)))
-            detailRows?.append(CellRow(type: .detailProperty, value: ("home_detail_employment_policy_number".localize(), degree.policyNumber, false, degree.type)))
-            detailRows?.append(CellRow(type: .detailProperty, value: ("home_detail_full_name".localize(), degree.credentialSubject?.name, false, degree.type)))
-            detailRows?.append(CellRow(type: .detailProperty, value: ("home_detail_employment_policy_end_date".localize(), degree.expiryDate, true,  degree.type)))
+            detailRows?.append(CellRow(type: .detailProperty, value: ("credentials_detail_employment_class_insurance".localize(), degree.productClass, false, degree.type)))
+            detailRows?.append(CellRow(type: .detailProperty, value: ("credentials_detail_employment_policy_number".localize(), degree.policyNumber, false, degree.type)))
+            detailRows?.append(CellRow(type: .detailProperty, value: ("credentials_detail_full_name".localize(), degree.credentialSubject?.name, false, degree.type)))
+            detailRows?.append(CellRow(type: .detailProperty, value: ("credentials_detail_employment_policy_end_date".localize(), degree.expiryDate, true,  degree.type)))
         case .proofOfEmployment:
-            detailRows?.append(CellRow(type: .detailProperty, value: ("home_detail_employment_status".localize(), degree.employmentStatus, false, degree.type)))
-            detailRows?.append(CellRow(type: .detailProperty, value: ("home_detail_full_name".localize(), degree.credentialSubject?.name, false, degree.type)))
-            detailRows?.append(CellRow(type: .detailProperty, value: ("home_detail_employment_start_date".localize(), degree.issuanceDate, true,  degree.type)))
+            detailRows?.append(CellRow(type: .detailProperty, value: ("credentials_detail_employment_status".localize(), degree.employmentStatus, false, degree.type)))
+            detailRows?.append(CellRow(type: .detailProperty, value: ("credentials_detail_full_name".localize(), degree.credentialSubject?.name, false, degree.type)))
+            detailRows?.append(CellRow(type: .detailProperty, value: ("credentials_detail_employment_start_date".localize(), degree.issuanceDate, true,  degree.type)))
         default:
             print("Unrecognized type")
         }
@@ -144,7 +144,7 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
         }
     }
 
-    func getElementType(indexPath: IndexPath) -> HomeCellType {
+    func getElementType(indexPath: IndexPath) -> CredentialsCellType {
         if let baseValue = super.getBaseElementType(indexPath: indexPath) {
             return .base(value: baseValue)
         }
@@ -185,7 +185,7 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
                     for message in response.messages {
                         let isRejected = user.messagesRejectedIds?.contains(message.id) ?? false
                         let isNew = !(user.messagesAcceptedIds?.contains(message.id) ?? false)
-                        if !isRejected {
+                        if !isRejected && !isNew {
                             if let atalaMssg = try? Io_Iohk_Prism_Protos_AtalaMessage(serializedData: message.message) {
                                 if !atalaMssg.issuerSentCredential.credential.typeID.isEmpty {
                                     if let credential = Degree.build(atalaMssg.issuerSentCredential.credential, messageId: message.id, isNew: isNew) {
@@ -195,6 +195,9 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
                             }
                         }
                     }
+                }
+                credentials.sort { (lhs, rhs) -> Bool in
+                    lhs.issuer?.name < rhs.issuer?.name
                 }
                 self.makeDegreeRows(degrees: credentials)
 
@@ -211,17 +214,8 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
 
     private func makeDegreeRows(degrees: [Degree]) {
 
-        let newDeg = degrees.filter { $0.isNew ?? false }
-        let oldDeg = degrees.filter { !($0.isNew ?? false) }
-
         // Transform data into rows
-        if newDeg.size() > 0 {
-            self.degreeRows?.append(CellRow(type: .newDegreeHeader, value: nil))
-        }
-        newDeg.forEach { degree in
-            self.degreeRows?.append(CellRow(type: .newDegree, value: degree))
-        }
-        oldDeg.forEach { degree in
+        degrees.forEach { degree in
             self.degreeRows?.append(CellRow(type: .degree, value: degree))
         }
         // NOTE: Won't add the National Id for now
@@ -289,7 +283,7 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
                 self.tappedBackButton()
                 self.actionPullToRefresh()
             })]
-            self.viewImpl?.showSuccessMessage(doShow: true, message: "home_detail_share_success".localize(), actions: actions)
+            self.viewImpl?.showSuccessMessage(doShow: true, message: "credentials_detail_share_success".localize(), actions: actions)
         }, error: { error in
             self.viewImpl?.config(isLoading: false)
             self.viewImpl?.showErrorMessage(doShow: true, message: error.localizedDescription)
@@ -328,16 +322,16 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
         var placeholder = ""
         switch degree.type {
         case .univerityDegree:
-            title = "home_university_degree".localize()
+            title = "credentials_university_degree".localize()
             placeholder = "icon_university"
         case .governmentIssuedId:
-            title = "home_government_id".localize()
+            title = "credentials_government_id".localize()
             placeholder = "icon_id"
         case .proofOfEmployment:
-            title = "home_proof_employment".localize()
+            title = "credentials_proof_employment".localize()
             placeholder = "icon_proof_employment"
         case .certificatOfInsurance:
-            title = "home_certificate_insurance".localize()
+            title = "credentials_certificate_insurance".localize()
             placeholder = "icon_insurance"
         default:
             print("Unrecognized type")
@@ -375,16 +369,16 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
             var placeholder = ""
             switch degree.type {
             case .univerityDegree:
-                title = "home_university_degree".localize()
+                title = "credentials_university_degree".localize()
                 placeholder = "icon_university"
             case .governmentIssuedId:
-                title = "home_government_id".localize()
+                title = "credentials_government_id".localize()
                 placeholder = "icon_id"
             case .proofOfEmployment:
-                title = "home_proof_employment".localize()
+                title = "credentials_proof_employment".localize()
                 placeholder = "icon_proof_employment"
             case .certificatOfInsurance:
-                title = "home_certificate_insurance".localize()
+                title = "credentials_certificate_insurance".localize()
                 placeholder = "icon_insurance"
             default:
                 print("Unrecognized type")
@@ -393,7 +387,7 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
         }
         // Config for an Id
         else if let _ = cellRow?.value as? LoggedUser {
-            cell.config(title: "home_document_title".localize(), subtitle: nil, logoData: nil, logoPlaceholderNamed: "ico_placeholder_credential")
+            cell.config(title: "credentials_document_title".localize(), subtitle: nil, logoData: nil, logoPlaceholderNamed: "ico_placeholder_credential")
         }
     }
 
@@ -421,13 +415,13 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
     func setup(for cell: DetailHeaderViewCell) {
         switch detailDegree?.type {
         case .univerityDegree:
-            cell.config(title: "home_detail_degree_name".localize(), subtitle: detailDegree?.credentialSubject?.degreeAwarded, logoData: sharedMemory.imageBank?.logo(for: detailDegree?.connectionId), type: detailDegree?.type)
+            cell.config(title: "credentials_detail_degree_name".localize(), subtitle: detailDegree?.credentialSubject?.degreeAwarded, logoData: sharedMemory.imageBank?.logo(for: detailDegree?.connectionId), type: detailDegree?.type)
         case .governmentIssuedId:
-            cell.config(title: "home_detail_national_id_card".localize(), subtitle: detailDegree?.issuer?.name, logoData: sharedMemory.imageBank?.logo(for: detailDegree?.connectionId), type: detailDegree?.type)
+            cell.config(title: "credentials_detail_national_id_card".localize(), subtitle: detailDegree?.issuer?.name, logoData: sharedMemory.imageBank?.logo(for: detailDegree?.connectionId), type: detailDegree?.type)
         case .certificatOfInsurance:
-        cell.config(title: "home_detail_provider_name".localize(), subtitle: detailDegree?.issuer?.name, logoData: sharedMemory.imageBank?.logo(for: detailDegree?.connectionId), type: detailDegree?.type)
+        cell.config(title: "credentials_detail_provider_name".localize(), subtitle: detailDegree?.issuer?.name, logoData: sharedMemory.imageBank?.logo(for: detailDegree?.connectionId), type: detailDegree?.type)
         case .proofOfEmployment:
-        cell.config(title: "home_detail_company_name".localize(), subtitle: detailDegree?.issuer?.name, logoData: sharedMemory.imageBank?.logo(for: detailDegree?.connectionId), type: detailDegree?.type)
+        cell.config(title: "credentials_detail_company_name".localize(), subtitle: detailDegree?.issuer?.name, logoData: sharedMemory.imageBank?.logo(for: detailDegree?.connectionId), type: detailDegree?.type)
         default:
             print("Unrecognized type")
         }
@@ -445,27 +439,17 @@ class HomePresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDelegat
     }
 
     // MARK: Accept and Decline buttons
-
+    
     func tappedDeclineAction(for cell: DetailFooterViewCell) {
-
-        Tracker.global.trackCredentialNewDecline()
-        sharedMemory.loggedUser?.messagesRejectedIds?.append(detailDegree!.messageId!)
-        sharedMemory.loggedUser = sharedMemory.loggedUser
-        startShowingDegrees()
-        actionPullToRefresh()
+        
     }
-
+    
     func tappedConfirmAction(for cell: DetailFooterViewCell) {
-
-        Tracker.global.trackCredentialNewConfirm()
-        sharedMemory.loggedUser?.messagesAcceptedIds?.append(detailDegree!.messageId!)
-        sharedMemory.loggedUser = sharedMemory.loggedUser
-        tappedBackButton()
-        actionPullToRefresh()
+        
     }
-
+    
     // MARK: Share
-
+    
     func tappedShareButton() {
         fetchShareEmployers()
     }

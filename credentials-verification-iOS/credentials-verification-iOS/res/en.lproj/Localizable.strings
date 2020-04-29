@@ -40,7 +40,6 @@
 
 
 // <!-- Dashboard -->
-"tab_home" = "Home";
 "tab_profile" = "Profile";
 "tab_connections" = "Connections";
 "tab_wallet" = "Wallet";
@@ -51,7 +50,7 @@
 // <!-- Connections -->
 "connections_nav_title" = "Contacts";
 "connections_empty_title" = "Connect to an organization to receive your first credential";
-"connections_empty_subtitle" = "Receive, store and share your degital credentials";
+"connections_empty_subtitle" = "Receive, store and share your digital credentials";
 "connections_empty_button" = "Scan QR code";
 "connections_scan_qr_nav_title" = "Scan QR";
 "connections_scan_qr_error" = "Invalid QR code";
@@ -63,48 +62,48 @@
 "connections_employers" = "Employers";
 "connections_more_info" = "More Info";
 
-// <!-- Home -->
-"home_nav_title" = "Credentials";
-"home_degrees_new_hello" = "Hello %1$@!";
-"home_degrees_new_title" = "You have new credentials to confirm";
-"home_degrees_new_view_btn" = "VIEW";
-"home_document_title" = "National ID Card";
-"home_document_identity_number" = "Identity Number";
-"home_document_nationality" = "Nationality";
-"home_document_full_name" = "Full Name";
-"home_document_date_of_birth" = "Date of Birth";
-"home_detail_title_type_university" = "University Degree";
-"home_detail_title_type_government_id" = "Government Issued Digital Identity";
-"home_detail_title_type_insurance" = "Certificate of Insurance";
-"home_detail_title_type_employment" = "Proof of Employment";
-"home_detail_title_new" = "Add Credential";
-"home_detail_degree_name" = "Degree Name";
-"home_detail_start_date" = "Start Date";
-"home_detail_graduation_date" = "Graduation Date";
-"home_detail_university_name" = "University Name";
-"home_detail_full_name" = "Full Name";
-"home_detail_award" = "Award";
-"home_detail_result" = "Result";
-"home_detail_share_button" = "Share!";
-"home_detail_share_success" = "Successfully shared!";
-"home_empty_title" = "Connect to a University, Public Registry or potential Employers";
-"home_empty_subtitle" = "You can receive and send your digital certificates";
-"home_detail_national_id_card" = "National ID Card";
-"home_detail_identity_number" = "Identity Number";
-"home_detail_date_of_birth" = "Date of Birth";
-"home_detail_expiration_date" = "Expiration Date";
-"home_detail_government_issued_digital_identity" = "Government Issued \nDigital Identity";
-"home_detail_company_name" = "Company Name";
-"home_detail_provider_name" = "Provider Name";
-"home_detail_employment_status" = "Employment Status";
-"home_detail_employment_start_date" = "Employment Start Date";
-"home_detail_employment_class_insurance" = "Class of Insurance";
-"home_detail_employment_policy_number" = "Policy Number";
-"home_detail_employment_policy_end_date" = "Policy End Date";
-"home_university_degree" = "University Degree";
-"home_government_id" = "Government Issued ID";
-"home_proof_employment" = "Proof of Employment";
-"home_certificate_insurance" = "Certificate of Insurance";
+// <!-- Credentials -->
+"credentials_nav_title" = "Credentials";
+"credentials_degrees_new_hello" = "Hello %1$@!";
+"credentials_degrees_new_title" = "You have new credentials to confirm";
+"credentials_degrees_new_view_btn" = "VIEW";
+"credentials_document_title" = "National ID Card";
+"credentials_document_identity_number" = "Identity Number";
+"credentials_document_nationality" = "Nationality";
+"credentials_document_full_name" = "Full Name";
+"credentials_document_date_of_birth" = "Date of Birth";
+"credentials_detail_title_type_university" = "University Degree";
+"credentials_detail_title_type_government_id" = "Government Issued Digital Identity";
+"credentials_detail_title_type_insurance" = "Certificate of Insurance";
+"credentials_detail_title_type_employment" = "Proof of Employment";
+"credentials_detail_title_new" = "Add Credential";
+"credentials_detail_degree_name" = "Degree Name";
+"credentials_detail_start_date" = "Start Date";
+"credentials_detail_graduation_date" = "Graduation Date";
+"credentials_detail_university_name" = "University Name";
+"credentials_detail_full_name" = "Full Name";
+"credentials_detail_award" = "Award";
+"credentials_detail_result" = "Result";
+"credentials_detail_share_button" = "Share!";
+"credentials_detail_share_success" = "Successfully shared!";
+"credentials_empty_title" = "Connect to a University, Public Registry or potential Employers";
+"credentials_empty_subtitle" = "You can receive and send your digital certificates";
+"credentials_detail_national_id_card" = "National ID Card";
+"credentials_detail_identity_number" = "Identity Number";
+"credentials_detail_date_of_birth" = "Date of Birth";
+"credentials_detail_expiration_date" = "Expiration Date";
+"credentials_detail_government_issued_digital_identity" = "Government Issued \nDigital Identity";
+"credentials_detail_company_name" = "Company Name";
+"credentials_detail_provider_name" = "Provider Name";
+"credentials_detail_employment_status" = "Employment Status";
+"credentials_detail_employment_start_date" = "Employment Start Date";
+"credentials_detail_employment_class_insurance" = "Class of Insurance";
+"credentials_detail_employment_policy_number" = "Policy Number";
+"credentials_detail_employment_policy_end_date" = "Policy End Date";
+"credentials_university_degree" = "University Degree";
+"credentials_government_id" = "Government Issued ID";
+"credentials_proof_employment" = "Proof of Employment";
+"credentials_certificate_insurance" = "Certificate of Insurance";
 
 // <!-- Profile -->
 "profile_nav_title" = "Profile";
@@ -225,3 +224,9 @@
 "proof_request_select_credential"= "Select Crendential:";
 "proof_request_cancel"= "Cancel";
 "proof_request_share"= "Share";
+
+// <!-- Notifications -->
+"notifications_title" = "Notifications";
+"notifications_scan_qr_nav_title" = "Scan QR code";
+"notifications_empty_title" = "Connect to an organization to receive your credentials";
+"notifications_empty_subtitle" = "Receive, store and share your digital credentials";
