@@ -3,7 +3,7 @@
     "name": "connector",
     "image": "${connector-docker-image}",
     "memoryReservation": 10,
-    "links": [],
+    "links": ["node"],
     "hostname": "connector",
     "portMappings": [
       {
@@ -30,6 +30,14 @@
       {
         "name": "GEUD_CONNECTOR_PSQL_PASSWORD",
         "value": "${connector-psql-password}"
+      },
+      {
+        "name": "PRISM_CONNECTOR_NODE_HOST",
+        "value": "node"
+      },
+      {
+        "name": "PRISM_CONNECTOR_NODE_PORT",
+        "value": "50053"
       }
     ],
     "mountPoints": [],
@@ -90,6 +98,10 @@
       {
         "name": "GEUD_NODE_BITCOIND_PASSWORD",
         "value": "${node-bitcoind-password}"
+      },
+      {
+        "name": "GEUD_NODE_LEDGER",
+        "value": "in-memory"
       }
     ],
     "mountPoints": [],

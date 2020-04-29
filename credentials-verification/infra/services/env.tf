@@ -423,7 +423,7 @@ resource aws_ecs_service cvp-service {
   name            = "cvp-service-${var.env_name_short}"
   cluster         = aws_ecs_cluster.credentials-cluster.id
   task_definition = aws_ecs_task_definition.cvp-task-definition.arn
-  desired_count   = 2
+  desired_count   = 1
 
   depends_on = [aws_iam_instance_profile.ecs-instance-profile]
 

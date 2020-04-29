@@ -9,6 +9,7 @@ import mill.contrib.buildinfo.BuildInfo
 import mill.contrib.scalapblib._
 import mill.define.Sources
 import mill.scalalib._
+import mill.modules.Assembly.Rule
 
 object JavaSpecVersion {
   val REQUIRED_VERSION = "1.8"
@@ -247,6 +248,13 @@ trait ServerCommon extends ScalaModule with BuildInfo {
 
 trait ServerPBCommon extends ServerCommon with ScalaPBModule {
   def scalaPBVersion = versions.scalaPB
+
+  // merge service files, otherwise GRPC client doesn't work:
+  // https://github.com/grpc/grpc-java/issues/5493
+  override def assemblyRules =
+    super.assemblyRules ++ Seq(
+      Rule.AppendPattern("META-INF/services/*")
+    )
 
   override def ivyDeps =
     super[ServerCommon].ivyDeps.map { deps =>
