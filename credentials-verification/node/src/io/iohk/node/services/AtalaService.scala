@@ -39,8 +39,14 @@ class AtalaServiceImpl(
           .sendDataTx(opData)
           .map(_ => ())
           .value
-          .map(_.right.get) // TODO proper error support
+          .map {
+            case Right(()) => ()
+            case Left(error) =>
+              logger.error(s"FATAL: Error during publishing reference: ${error}")
+              throw new RuntimeException(s"FATAL: Error during publishing reference: ${error}")
+          }
       case None =>
+        logger.error(s"FATAL: Atala identifier is too long to store in bitcoin (${opDataBytes.length}")
         Future.failed(
           new RuntimeException(s"FATAL: Atala identifier is too long to store in bitcoin (${opDataBytes.length}")
         )
