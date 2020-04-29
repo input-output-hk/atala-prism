@@ -36,6 +36,10 @@ variable ecs_cluster_iam_role_name {
   description = "Name of ECS cluster IAM role (used for dependencies only)"
 }
 
+variable execution_role_arn {
+  type = string
+}
+
 variable grpc_web_proxy_port {
   description = "Port for the envoy gprc-web proxy."
   type        = number
@@ -65,11 +69,15 @@ variable security_group_id {
   description = "ID of Security Group to use"
 }
 
-variable intdemo_subnets {
+variable component_subnets {
   description = "Subnet to deploy intdemo service to - using AWSVPC networking"
 }
 
 variable envoy_subnets {
+  description = "Subnet where ECS cluster is located"
+}
+
+variable lb_subnets {
   description = "Subnet where ECS cluster is located"
 }
 

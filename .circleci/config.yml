@@ -175,9 +175,9 @@ jobs:
       - run:
           name: Rebuild intdemo environment
           command: |
-            cd credentials-verification/infra/stage/services/intdemo/
-            ./intdemo.sh -t $ENV
-            ./intdemo.sh -A $ENV
+            cd credentials-verification/infra/stage/services/prism/
+            ./prism.sh -t $ENV
+            ./prism.sh -A $ENV
 
   build-credentials-verification:
     working_directory: ~/repo

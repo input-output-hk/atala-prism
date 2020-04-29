@@ -41,5 +41,5 @@ variable "vpc_state_key" {
 
 variable atala_prism_domain {
   description = "Domain name of atala prism"
-  default = "atalaprism.io"
+  default     = "atalaprism.io"
 }

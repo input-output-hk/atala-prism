@@ -22,18 +22,18 @@ variable "atala_prism_domain" {
 
 variable "atala_prism_zoneid" {
   description = "Route53 ZoneId for the domain"
-  default = "Z04196731VMWR6G5290VG"
+  default     = "Z04196731VMWR6G5290VG"
 }
 
 provider aws {
-  region = var.aws_region
+  region  = var.aws_region
   profile = var.aws_profile
 }
 
 resource aws_acm_certificate default {
-  domain_name = var.atala_prism_domain
+  domain_name               = var.atala_prism_domain
   subject_alternative_names = ["*.${var.atala_prism_domain}"]
-  validation_method = "DNS"
+  validation_method         = "DNS"
   lifecycle {
     create_before_destroy = true
   }
@@ -41,15 +41,15 @@ resource aws_acm_certificate default {
 
 resource aws_route53_record validation {
   zone_id = var.atala_prism_zoneid
-  name = aws_acm_certificate.default.domain_validation_options[0].resource_record_name
-  type = aws_acm_certificate.default.domain_validation_options[0].resource_record_type
+  name    = aws_acm_certificate.default.domain_validation_options[0].resource_record_name
+  type    = aws_acm_certificate.default.domain_validation_options[0].resource_record_type
   records = [
-    aws_acm_certificate.default.domain_validation_options[0].resource_record_value]
+  aws_acm_certificate.default.domain_validation_options[0].resource_record_value]
   ttl = "300"
 }
 
 resource aws_acm_certificate_validation default {
-  certificate_arn = aws_acm_certificate.default.arn
+  certificate_arn         = aws_acm_certificate.default.arn
   validation_record_fqdns = [aws_route53_record.validation.fqdn]
 }
 

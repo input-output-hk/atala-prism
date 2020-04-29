@@ -1,4 +1,4 @@
-# Intdemo service module
+# PRISM service module
 
 Deploys Credentials Demo Website as ECS tasks cluster, together with Envoy loadbalancer. It requires previous ECS cluster deployment, which can be done using `ecs_cluster` module.
 

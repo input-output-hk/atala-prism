@@ -34,10 +34,10 @@ locals {
   private_dns_namespace_name = data.terraform_remote_state.vpc.outputs.private_dns_namespace_name
 }
 
-resource aws_cloudwatch_log_group intdemo_log_group {
-  name = "intdemo-log-group-${var.env_name_short}"
+resource aws_cloudwatch_log_group prism_log_group {
+  name = "${var.env_name_short}-prism-log-group"
   tags = {
-    Name = "intdemo-log-group-${var.env_name_short}"
+    Name = "${var.env_name_short}-prism-log-group"
   }
 }
 
@@ -92,8 +92,8 @@ module security_group {
   source  = "terraform-aws-modules/security-group/aws"
   version = "~> 3.0"
 
-  name        = "intdemo_security_group"
-  description = "Security group for intdemo ECS instance"
+  name        = "${var.env_name_short}-prism-security-group"
+  description = "Security group for prism ECS instances"
   vpc_id      = local.vpc_id
 
   ingress_cidr_blocks = ["0.0.0.0/0"]
@@ -154,17 +154,7 @@ module security_group {
 module "ecs_cluster" {
   source = "../../../modules/ecs_cluster"
 
-  name              = "ecs-cluster-intdemo-${var.env_name_short}"
-  security_group_id = module.security_group.this_security_group_id
-  subnet_ids        = local.subnet_ids
-
-  aws_region = var.aws_region
-
-  autoscale_min     = var.autoscale_min
-  autoscale_max     = var.autoscale_max
-  autoscale_desired = var.autoscale_desired
-
-  instance_type = var.instance_type
+  name = "${var.env_name_short}-prism-ecs-cluster"
 }
 
 data "aws_acm_certificate" "prism_tls_cert" {
@@ -172,9 +162,9 @@ data "aws_acm_certificate" "prism_tls_cert" {
   statuses = ["ISSUED"]
 }
 
-# deploy intdemo into the ECS cluster
-module "intdemo_service" {
-  source = "../../../modules/services/intdemo"
+# deploy prism into the ECS cluster
+module "prism_service" {
+  source = "../../../modules/services/prism"
 
   env_name_short = var.env_name_short
   aws_region     = var.aws_region
@@ -187,12 +177,15 @@ module "intdemo_service" {
   grpc_web_proxy_port    = var.grpc_web_proxy_port
 
   vpc_id                     = local.vpc_id
-  intdemo_subnets            = local.priv_subnet_ids
-  envoy_subnets              = local.subnet_ids
+  component_subnets          = local.priv_subnet_ids
+  envoy_subnets              = local.priv_subnet_ids
+  lb_subnets                 = local.subnet_ids
   security_group_id          = module.security_group.this_security_group_id
   private_dns_namespace_id   = local.private_dns_namespace_id
   private_dns_namespace_name = local.private_dns_namespace_name
-  log_group_name             = aws_cloudwatch_log_group.intdemo_log_group.name
+  log_group_name             = aws_cloudwatch_log_group.prism_log_group.name
+
+  execution_role_arn = module.ecs_cluster.iam_role_arn
 
   ecs_cluster_id            = module.ecs_cluster.ecs_cluster_id
   ecs_cluster_iam_role_name = module.ecs_cluster.iam_role_name
@@ -213,5 +206,5 @@ resource aws_route53_record intdemo_dns_entry {
   name    = "${var.env_name_short}.${var.atala_prism_domain}"
   type    = "CNAME"
   ttl     = "300"
-  records = [module.intdemo_service.envoy_lb_dns_name]
+  records = [module.prism_service.envoy_lb_dns_name]
 }
