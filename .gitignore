@@ -13,3 +13,4 @@ bazel-*
 .bazelrc.local
 
 result
+credentials-verification/docs/cardano/docker/cardano-data
