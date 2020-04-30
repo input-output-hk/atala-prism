@@ -18,8 +18,7 @@ First of all, ensure you have .protos compiled. For more information go to [Comp
 
 Run envoy proxy. Envoy is just for dev environment
 1. Edit `./envoy/envoy.yaml` setting your host ip in `clusters.hosts[socket_address.address]`. 
-1. Go to ./envoy directory and run `docker build -t envoy:{versionTag} .`. 
-1. Start envoy running `docker run -d --name {containerName} -p 9901:9901 -p 10000:10000 envoy:{versionTag}`
+1. Start envoy running `docker run --rm -ti --net=host -v $PWD/envoy/envoy.yaml:/etc/envoy/envoy.yaml envoyproxy/envoy:v1.12.1`
 
 To run backend see [Run backend doc](../credentials-verification/docs/connector/README.md)
 - Connector `mill -i connector.run`
