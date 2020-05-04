@@ -155,4 +155,9 @@ class SettingsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDel
         let value = initialRows![cell.indexPath!.row].value as! InitialCellValue
         value.action?.action()
     }
+    
+    func didSelectRowAt(indexPath: IndexPath) {
+        let value = initialRows![indexPath.row].value as! InitialCellValue
+        value.action?.action()
+    }
 }

@@ -73,8 +73,8 @@
 "credentials_document_full_name" = "Full Name";
 "credentials_document_date_of_birth" = "Date of Birth";
 "credentials_detail_title_type_university" = "University Degree";
-"credentials_detail_title_type_government_id" = "Government Issued Digital Identity";
-"credentials_detail_title_type_insurance" = "Certificate of Insurance";
+"credentials_detail_title_type_government_id" = "Government ID";
+"credentials_detail_title_type_insurance" = "Health Insurance";
 "credentials_detail_title_type_employment" = "Proof of Employment";
 "credentials_detail_title_new" = "Add Credential";
 "credentials_detail_degree_name" = "Degree Name";
@@ -101,9 +101,9 @@
 "credentials_detail_employment_policy_number" = "Policy Number";
 "credentials_detail_employment_policy_end_date" = "Policy End Date";
 "credentials_university_degree" = "University Degree";
-"credentials_government_id" = "Government Issued ID";
+"credentials_government_id" = "Government ID";
 "credentials_proof_employment" = "Proof of Employment";
-"credentials_certificate_insurance" = "Certificate of Insurance";
+"credentials_certificate_insurance" = "Health Insurance";
 
 // <!-- Profile -->
 "profile_nav_title" = "Profile";

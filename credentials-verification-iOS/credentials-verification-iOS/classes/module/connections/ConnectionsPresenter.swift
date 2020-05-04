@@ -120,8 +120,7 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
                     lhs.name < rhs.name
                 })
                 // Save logos
-                // TODO: Logos are not currently implemented in this version
-//                ImageBank.saveLogos(list: self.connections)
+                ImageBank.saveLogos(list: self.connections)
             } catch {
                 return error
             }

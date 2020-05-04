@@ -12,9 +12,9 @@ protocol ShareDialogPresenterDelegate: class {
     func shareItemConfig(for cell: ShareDialogItemCollectionViewCell?, at index: Int, item: Any?)
 }
 
-class ShareDialogViewController: UIViewController, PresentrDelegate, UICollectionViewDataSource, UICollectionViewDelegate {
+class ShareDialogViewController: UIViewController, PresentrDelegate, UITableViewDataSource, UITableViewDelegate {
 
-    @IBOutlet weak var collectionView: UICollectionView!
+    @IBOutlet weak var collectionView: UITableView!
     @IBOutlet weak var buttonConfirm: UIButton!
     @IBOutlet weak var viewBg: UIView!
     @IBOutlet weak var viewBgRest: UIView!
@@ -30,6 +30,7 @@ class ShareDialogViewController: UIViewController, PresentrDelegate, UICollectio
         buttonConfirm.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_BUTTON)
         registerNib()
         collectionView.delegate = self
+        collectionView.dataSource = self
         viewBgRest.addOnClickListener(action: actionBgRestTap)
     }
 
@@ -88,13 +89,13 @@ class ShareDialogViewController: UIViewController, PresentrDelegate, UICollectio
 
     // MARK: Collection
 
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return self.delegate?.shareItemCount(for: self) ?? 0
     }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-
-        if let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ShareDialogItemCollectionViewCell.reuseIdentifier,
+        if let cell = collectionView.dequeueReusableCell(withIdentifier: ShareDialogItemCollectionViewCell.reuseIdentifier,
                                                          for: indexPath) as? ShareDialogItemCollectionViewCell {
 
             let item = self.delegate?.shareItem(for: self, at: indexPath.row)
@@ -103,60 +104,20 @@ class ShareDialogViewController: UIViewController, PresentrDelegate, UICollectio
 
             return cell
         }
-        return UICollectionViewCell()
+        return UITableViewCell()
     }
 
     func registerNib() {
         let nib = UINib(nibName: ShareDialogItemCollectionViewCell.nibName, bundle: nil)
-        collectionView?.register(nib, forCellWithReuseIdentifier: ShareDialogItemCollectionViewCell.reuseIdentifier)
-        if let flowLayout = self.collectionView?.collectionViewLayout as? UICollectionViewFlowLayout {
-            flowLayout.estimatedItemSize = CGSize(width: 1, height: 1)
-        }
+        collectionView?.register(nib, forCellReuseIdentifier: ShareDialogItemCollectionViewCell.reuseIdentifier)
     }
 }
 
-extension ShareDialogViewController: UICollectionViewDelegateFlowLayout {
-
-    func collectionView(_ collectionView: UICollectionView,
-                        layout collectionViewLayout: UICollectionViewLayout,
-                        sizeForItemAt indexPath: IndexPath) -> CGSize {
-
-        guard let cell: ShareDialogItemCollectionViewCell = Bundle.main.loadNibNamed(ShareDialogItemCollectionViewCell.nibName,
-                                                                                     owner: self,
-                                                                                     options: nil)?.first as? ShareDialogItemCollectionViewCell else {
-            return CGSize.zero
-        }
-        let item = self.delegate?.shareItem(for: self, at: indexPath.row)
-        cell.config(index: indexPath.row, item: item, delegate: self)
-        delegate?.shareItemConfig(for: cell, at: indexPath.row, item: item)
-        cell.setNeedsLayout()
-        cell.layoutIfNeeded()
-        let size: CGSize = cell.contentView.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize)
-        return CGSize(width: size.width, height: 30)
-    }
-
-    func collectionView(collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAtIndexPath indexPath: NSIndexPath) -> CGSize {
-        return CGSize(width: 80, height: 80)
-    }
-
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
-        return UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 10)
-    }
-
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
-        return 3.0
-    }
-
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
-        return 3.0
-    }
-}
-
-class ShareDialogItemCollectionViewCell: UICollectionViewCell {
+class ShareDialogItemCollectionViewCell: UITableViewCell {
 
     @IBOutlet weak var labelTitle: UILabel!
     @IBOutlet weak var imageLogo: UIImageView!
-    @IBOutlet weak var viewTick: UIView!
+    @IBOutlet weak var viewTick: UIImageView!
     @IBOutlet weak var viewBg: UIView!
 
     weak var delegate: ShareDialogViewController?
@@ -183,7 +144,7 @@ class ShareDialogItemCollectionViewCell: UICollectionViewCell {
         self.labelTitle.text = name
         self.imageLogo.applyDataImage(data: logoData, placeholderNamed: placeholderNamed)
         self.imageLogo.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_REGULAR)
-        self.viewTick.isHidden = !isSelected
+        self.viewTick.image = isSelected ? #imageLiteral(resourceName: "ico_share_tick") : #imageLiteral(resourceName: "ico_share_empty")
         self.viewBg.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_REGULAR, borderWidth: isSelected ? 2 : 0, borderColor: UIColor.appRed.cgColor)
         self.viewBg.addShadowLayer(radius: 4)
         self.viewTick.addDropShadow()

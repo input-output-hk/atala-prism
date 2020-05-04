@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="15400" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="16096" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15404"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -21,8 +21,8 @@
             <rect key="frame" x="0.0" y="0.0" width="486" height="776"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
-                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="GJP-Ka-SvB">
-                    <rect key="frame" x="35" y="0.0" width="351" height="26.5"/>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="GJP-Ka-SvB">
+                    <rect key="frame" x="60" y="0.0" width="366" height="26.5"/>
                     <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="22"/>
                     <nil key="textColor"/>
                     <nil key="highlightedColor"/>
@@ -30,8 +30,8 @@
                         <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="appBlack"/>
                     </userDefinedRuntimeAttributes>
                 </label>
-                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vzt-Xm-8Y3">
-                    <rect key="frame" x="35" y="46.5" width="381" height="14.5"/>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vzt-Xm-8Y3">
+                    <rect key="frame" x="55" y="46.5" width="376" height="14.5"/>
                     <fontDescription key="fontDescription" type="system" pointSize="12"/>
                     <nil key="textColor"/>
                     <nil key="highlightedColor"/>
@@ -85,15 +85,15 @@
                 <constraint firstItem="GJP-Ka-SvB" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="DzY-z3-UiG"/>
                 <constraint firstItem="vzt-Xm-8Y3" firstAttribute="top" secondItem="GJP-Ka-SvB" secondAttribute="bottom" constant="20" id="FsG-0f-nXk"/>
                 <constraint firstItem="CGh-RN-rmM" firstAttribute="top" relation="greaterThanOrEqual" secondItem="vzt-Xm-8Y3" secondAttribute="bottom" constant="10" id="GsU-en-Bus"/>
-                <constraint firstAttribute="trailing" secondItem="vzt-Xm-8Y3" secondAttribute="trailing" constant="70" id="LOm-kI-O2R"/>
+                <constraint firstAttribute="trailing" secondItem="vzt-Xm-8Y3" secondAttribute="trailing" constant="55" id="LOm-kI-O2R"/>
                 <constraint firstItem="CGh-RN-rmM" firstAttribute="centerY" secondItem="iN0-l3-epB" secondAttribute="centerY" constant="30" id="Nwg-jk-9aL"/>
                 <constraint firstItem="RnO-Ul-gIi" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="31" id="R1I-Jy-Pjw"/>
-                <constraint firstItem="GJP-Ka-SvB" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="35" id="biu-Le-XAN"/>
+                <constraint firstItem="GJP-Ka-SvB" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="60" id="biu-Le-XAN"/>
                 <constraint firstItem="CGh-RN-rmM" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="82" id="btX-jk-9rD"/>
                 <constraint firstAttribute="trailing" secondItem="CGh-RN-rmM" secondAttribute="trailing" constant="82" id="d57-5R-3NX"/>
-                <constraint firstItem="vzt-Xm-8Y3" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="35" id="eUq-Fl-oxP"/>
+                <constraint firstItem="vzt-Xm-8Y3" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="55" id="eUq-Fl-oxP"/>
                 <constraint firstItem="RnO-Ul-gIi" firstAttribute="top" relation="greaterThanOrEqual" secondItem="CGh-RN-rmM" secondAttribute="bottom" constant="10" id="qPu-0Q-W6Y"/>
-                <constraint firstAttribute="trailing" secondItem="GJP-Ka-SvB" secondAttribute="trailing" constant="100" id="zc8-Bg-l6E"/>
+                <constraint firstAttribute="trailing" secondItem="GJP-Ka-SvB" secondAttribute="trailing" constant="60" id="zc8-Bg-l6E"/>
             </constraints>
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
             <point key="canvasLocation" x="184.05797101449278" y="81.696428571428569"/>

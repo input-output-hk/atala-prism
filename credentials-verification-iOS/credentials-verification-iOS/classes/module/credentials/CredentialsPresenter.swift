@@ -239,7 +239,17 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
                 self.shareSelectedEmployers = []
 
                 // Parse data
-                let parsedResponse = ConnectionMaker.parseResponseList(responses)
+                var parsedResponse = ConnectionMaker.parseResponseList(responses)
+                if let currentId = self.detailDegree?.issuer?.id?.suffix(from: (self.detailDegree?.issuer?.id?.lastIndex(of: ":"))!) {
+                    parsedResponse = parsedResponse.filter {
+                        !($0.did?.contains(currentId))!
+                    }
+                }
+                parsedResponse.sort(by: { (lhs, rhs) -> Bool in
+                    lhs.name < rhs.name
+                })
+                // Save logos
+                ImageBank.saveLogos(list: parsedResponse)
                 self.shareEmployers?.append(contentsOf: parsedResponse)
             } catch {
                 return error
