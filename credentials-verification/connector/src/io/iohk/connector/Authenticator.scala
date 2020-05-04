@@ -62,7 +62,8 @@ class SignedRequestsAuthenticator(
         )
       case Failure(ex) =>
         logger.error(
-          s"$methodName, userId = $participantId, request = ${request.toProtoString}, $ex"
+          s"$methodName, userId = $participantId, request = ${request.toProtoString}",
+          ex
         )
     }
 
@@ -79,7 +80,8 @@ class SignedRequestsAuthenticator(
         )
       case Failure(ex) =>
         logger.error(
-          s"$methodName, request = ${request.toProtoString}, $ex"
+          s"$methodName, request = ${request.toProtoString}",
+          ex
         )
     }
 
