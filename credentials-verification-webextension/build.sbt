@@ -1,10 +1,11 @@
 import chrome._
 import chrome.permissions.Permission
 import chrome.permissions.Permission.API
-import net.lullabyte.{Chrome, ChromeSbtPlugin}
+import com.alexitc.{Chrome, ChromeSbtPlugin}
 
 resolvers += Resolver.sonatypeRepo("releases")
 resolvers += Resolver.bintrayRepo("oyvindberg", "ScalablyTyped")
+resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots"
 
 name := "geud-wallet"
 version := "0.1"
@@ -15,11 +16,10 @@ scalacOptions ++= Seq(
   "-Xlint",
   "-deprecation",
   //"-Xfatal-warnings",
-  "-feature",
-  "-P:scalajs:sjsDefinedByDefault"
+  "-feature"
 )
 
-enablePlugins(ChromeSbtPlugin, BuildInfoPlugin, ScalaJSBundlerPlugin)
+enablePlugins(ChromeSbtPlugin, BuildInfoPlugin, ScalaJSBundlerPlugin, ScalablyTypedConverterPlugin)
 
 // build-info
 buildInfoPackage := "io.iohk.atala.cvp.webextension"
@@ -29,14 +29,12 @@ buildInfoKeys ++= Seq[BuildInfoKey](
 )
 
 // scala-js-chrome
-relativeSourceMaps := true
+scalaJSLinkerConfig := scalaJSLinkerConfig.value.withRelativizeSourceMapBase(
+  Some((Compile / fastOptJS / artifactPath).value.toURI)
+)
 skip in packageJSDependencies := false
 
 webpackBundlingMode := BundlingMode.Application
-
-npmDependencies in Compile += "uuid" -> "3.1.0"
-npmDependencies in Compile += "elliptic" -> "6.5.2"
-npmDependencies in Compile += "bip39" -> "3.0.2"
 
 fastOptJsLib := (webpack in (Compile, fastOptJS)).value.head
 fullOptJsLib := (webpack in (Compile, fullOptJS)).value.head
@@ -96,38 +94,46 @@ chromeManifest := new ExtensionManifest {
   override val webAccessibleResources = List("icons/*")
 }
 
-val circe = "0.11.1"
-val sttp = "1.7.0"
+val circe = "0.13.0"
+val grpcWebVersion = "0.2.0+21-b26c9e0a-SNAPSHOT"
 val scalatest = "3.1.1"
 
-libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "0.9.7"
+libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "1.0.0"
 
-libraryDependencies += "net.lullabyte" %%% "scala-js-chrome" % "1b6d0d9cbeb95a23d5ecd4ba0defd6f1373fae1b"
+libraryDependencies += "com.alexitc" %%% "scala-js-chrome" % "0.7.0"
 
 libraryDependencies += "io.circe" %%% "circe-core" % circe
 libraryDependencies += "io.circe" %%% "circe-generic" % circe
 libraryDependencies += "io.circe" %%% "circe-parser" % circe
 
-libraryDependencies += "com.softwaremill.sttp" %%% "core" % sttp
+// js
+npmDependencies in Compile ++= Seq(
+  "uuid" -> "3.1.0",
+  "elliptic" -> "6.5.2",
+  "bip39" -> "3.0.2",
+  "bip32" -> "2.0.5",
+  "bn.js" -> "5.1.1", // already provides types
+  "elliptic" -> "6.5.2",
+  "@types/elliptic" -> "6.4.12",
+  "grpc-web" -> "1.0.7"
+)
 
-libraryDependencies += ScalablyTyped.B.bip39
-libraryDependencies += ScalablyTyped.B.bip32
-libraryDependencies += ScalablyTyped.B.bn_dot_js
-libraryDependencies += ScalablyTyped.E.elliptic
-// grpc libraries
-libraryDependencies += "io.grpc" % "grpc-netty" % scalapb.compiler.Version.grpcJavaVersion
-libraryDependencies += "com.thesamet.scalapb" %% "scalapb-runtime-grpc" % scalapb.compiler.Version.scalapbVersion
 libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest % "test"
+
+// grpc libraries
+libraryDependencies += "com.thesamet.scalapb.grpcweb" %%% "scalapb-grpcweb" % grpcWebVersion
 
 addCompilerPlugin(
   "org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full
 )
 
 PB.protoSources in Compile := Seq(file("../credentials-verification/protos"))
-val dependencyProtoList = Seq("node_api.proto", "node_models.proto", "common_models.proto")
+val dependencyProtoList =
+  Seq("connector_api.proto", "connector_models.proto", "node_models.proto", "common_models.proto")
 
 includeFilter in PB.generate := new SimpleFileFilter((f: File) => dependencyProtoList.contains(f.getName))
 
 PB.targets in Compile := Seq(
-  scalapb.gen() -> (sourceManaged in Compile).value / "scalapb"
+  scalapb.gen(grpc = false) -> (sourceManaged in Compile).value / "scalapb",
+  scalapb.grpcweb.GrpcWebCodeGenerator -> (sourceManaged in Compile).value / "scalapb"
 )

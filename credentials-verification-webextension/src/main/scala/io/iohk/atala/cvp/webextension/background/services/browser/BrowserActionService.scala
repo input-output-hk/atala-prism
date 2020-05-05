@@ -3,13 +3,12 @@ package io.iohk.atala.cvp.webextension.background.services.browser
 import io.iohk.atala.cvp.webextension.facades.CommonsFacade
 
 import scala.concurrent.{Future, Promise}
-import scala.scalajs.js
 
 class BrowserActionService {
   def setBadgeText(text: String, callback: () => Unit): Unit = CommonsFacade.setBadgeText(text, callback)
   def setBadgeText(text: String): Future[Unit] = {
     val promise = Promise[Unit]()
-    CommonsFacade.setBadgeText(text, () => promise.success())
+    CommonsFacade.setBadgeText(text, () => promise.success(()))
     promise.future
   }
 
@@ -19,7 +18,7 @@ class BrowserActionService {
 
   def setBadgeBackgroundColor(color: String): Future[Unit] = {
     val promise = Promise[Unit]()
-    CommonsFacade.setBadgeBackgroundColor(color, () => promise.success())
+    CommonsFacade.setBadgeBackgroundColor(color, () => promise.success(()))
     promise.future
   }
 
@@ -29,7 +28,7 @@ class BrowserActionService {
 
   def setPopup(popup: String): Future[Unit] = {
     val promise = Promise[Unit]()
-    CommonsFacade.setPopup(popup, () => promise.success())
+    CommonsFacade.setPopup(popup, () => promise.success(()))
     promise.future
   }
 }

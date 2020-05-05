@@ -7,7 +7,7 @@ import typings.bip32.{mod => bip32}
 import typings.bnJs.{mod => bn}
 import typings.elliptic.mod.ec
 import typings.elliptic.mod.ec.{KeyPair, Signature}
-
+import scala.scalajs.js.JSConverters._
 import scala.collection.mutable
 import scala.scalajs.js.typedarray._
 
@@ -24,7 +24,8 @@ object ECKeyOperation {
 
     val createDIDOperation = CreateDIDOperation(Some(didData))
     val atalaOperation = AtalaOperation(AtalaOperation.Operation.CreateDid(createDIDOperation))
-    val signature: Signature = ecKeyPair.privateKeyPair.sign(atalaOperation.toByteArray.toTypedArray)
+    val signature: Signature =
+      ecKeyPair.privateKeyPair.sign(atalaOperation.toByteArray.toJSArray.asInstanceOf[Uint8Array])
     SignedAtalaOperation(
       signedWith = "master",
       signature = ByteString.copyFrom(signature.toDER().asInstanceOf[Int8Array].toArray),
