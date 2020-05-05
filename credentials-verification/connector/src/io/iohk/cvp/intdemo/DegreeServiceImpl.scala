@@ -115,7 +115,7 @@ object DegreeServiceImpl {
       "issuer" -> Json.obj(
         fields =
           "id" -> fromString("did:atala:6c170e91-92b0-4265-909d-951c11f30caa"),
-        "name" -> fromString("Air Side University")
+        "name" -> fromString("University of Innovation and Technology")
       ),
       "issuanceDate" -> fromString(formatDate(issuanceDate)),
       "credentialSubject" -> Json.obj(

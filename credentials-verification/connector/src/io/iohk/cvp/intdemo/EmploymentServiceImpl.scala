@@ -130,7 +130,7 @@ object EmploymentServiceImpl {
       "type" -> arr(fromString("VerifiableCredential"), fromString("AtalaEmploymentCredential")),
       "issuer" -> obj(
         "id" -> fromString("did:atala:12c28b34-95be-4801-951e-c775f89d05ba"),
-        "name" -> fromString("Atala Inc."),
+        "name" -> fromString("Decentralized  Inc."),
         "address" -> fromString("67 Clasper Way, Herefoot, HF1 0AF")
       ),
       "issuanceDate" -> fromString(formatDate(issuanceDate)),

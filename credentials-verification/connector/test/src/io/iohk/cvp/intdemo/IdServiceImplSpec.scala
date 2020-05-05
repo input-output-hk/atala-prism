@@ -82,7 +82,7 @@ class IdServiceImplSpec extends FlatSpec {
     c.jsonStr("id") shouldBe "credential-id"
     c.jsonArr("type") shouldBe List("VerifiableCredential", "RedlandIdCredential")
     c.jsonStr("issuer.id") shouldBe "did:atala:091d41cc-e8fc-4c44-9bd3-c938dcf76dff"
-    c.jsonStr("issuer.name") shouldBe "Department of Interior, Republic of Redland"
+    c.jsonStr("issuer.name") shouldBe "Metropol City Government"
     c.jsonStr("issuanceDate") shouldBe df
     c.jsonStr("expiryDate") shouldBe df2
     c.jsonStr("credentialSubject.id") shouldBe "did:atala:subject-did"

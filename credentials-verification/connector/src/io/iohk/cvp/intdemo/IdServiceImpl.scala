@@ -93,7 +93,7 @@ object IdServiceImpl {
       "issuer" -> Json.obj(
         fields =
           "id" -> fromString("did:atala:091d41cc-e8fc-4c44-9bd3-c938dcf76dff"),
-        "name" -> fromString("Department of Interior, Republic of Redland")
+        "name" -> fromString("Metropol City Government")
       ),
       "issuanceDate" -> fromString(formatDate(issuanceDate)),
       "expiryDate" -> fromString(formatDate(expiryDate)),

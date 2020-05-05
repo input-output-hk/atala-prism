@@ -137,7 +137,7 @@ object InsuranceServiceImpl {
       "type" -> arr(fromString("VerifiableCredential"), fromString("AtalaCertificateOfInsurance")),
       "issuer" -> obj(
         "id" -> fromString("did:atala:a1cb7eee-65c1-4d7f-9417-db8a37a6212a"),
-        "name" -> fromString("Atala Insurance Ltd.")
+        "name" -> fromString("Verified Insurance Ltd.")
       ),
       "issuanceDate" -> fromString(formatDate(issuanceDate)),
       "expiryDate" -> fromString(formatDate(expiryDate)),

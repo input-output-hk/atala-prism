@@ -27,7 +27,7 @@ class DegreeServiceImplSpec extends FlatSpec {
     c.jsonStr("id") shouldBe "credential-id"
     c.jsonArr("type") shouldBe List("VerifiableCredential", "AirsideDegreeCredential")
     c.jsonStr("issuer.id") shouldBe "did:atala:6c170e91-92b0-4265-909d-951c11f30caa"
-    c.jsonStr("issuer.name") shouldBe "Air Side University"
+    c.jsonStr("issuer.name") shouldBe "University of Innovation and Technology"
     c.jsonStr("issuanceDate") shouldBe df
     c.jsonStr("credentialSubject.id") shouldBe "did:atala:subject-did"
     c.jsonStr("credentialSubject.name") shouldBe "name"

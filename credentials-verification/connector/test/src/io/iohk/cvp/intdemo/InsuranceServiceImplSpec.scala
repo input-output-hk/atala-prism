@@ -27,7 +27,7 @@ class InsuranceServiceImplSpec extends FlatSpec {
     c.jsonStr("id") shouldBe "credential-id"
     c.jsonArr("type") shouldBe List("VerifiableCredential", "AtalaCertificateOfInsurance")
     c.jsonStr("issuer.id") shouldBe "did:atala:a1cb7eee-65c1-4d7f-9417-db8a37a6212a"
-    c.jsonStr("issuer.name") shouldBe "Atala Insurance Ltd."
+    c.jsonStr("issuer.name") shouldBe "Verified Insurance Ltd."
     c.jsonStr("issuanceDate") shouldBe "1966-06-06"
     c.jsonStr("expiryDate") shouldBe "1967-06-06"
     c.jsonStr("policyNumber") shouldBe "XYZ"
