@@ -115,18 +115,19 @@ jobs:
             docker push 895947072537.dkr.ecr.us-east-2.amazonaws.com/connector:${TAG}
 
       - run:
-          name: Rebuild GEUD environment
-          command: |
-            cd credentials-verification/infra/services
-            ./env.sh -t $ENV
-            ./env.sh -A $ENV
-
-      - run:
           name: Rebuild intdemo environment
           command: |
             cd credentials-verification/infra/stage/services/intdemo/
             ./intdemo.sh -t $ENV
             ./intdemo.sh -A $ENV
+
+# Uncomment on your branch if you wish to work on GEUD and require env builds.
+#      - run:
+#          name: Rebuild GEUD environment
+#          command: |
+#            cd credentials-verification/infra/services
+#            ./env.sh -t $ENV
+#            ./env.sh -A $ENV
 
   build-credentials-verification:
     working_directory: ~/repo
