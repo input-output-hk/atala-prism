@@ -1,45 +1,64 @@
 @import '../../../../css/general_styling';
 
 .FindCredential {
+  padding: 4em 8em 1em 8em;
+  background: $light-grey;
+  margin-top: -30px;
   display: flex;
-  padding: 4em 4em 0 4em;
-  align-items: flex-start;
-  background: $black;
+  width: 100%;
 
   @include breakpoint(md) {
     width: 100%;
   }
 
-  .FindCredentialContainer {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    width: 70%;
-
-    .CredentialItemLanding {
-      margin-bottom: 4em;
-      width: 48%;
+  .MapContainer {
+    width: 45%;
+    padding-top: 2em;
+    .AtalaLogo,
+    .CardanoLogo {
+      display: none;
     }
   }
 
   .TextContainer {
-    width: 30%;
+    width: 55%;
+    z-index: 100;
     @include breakpoint(sm) {
       width: 100%;
     }
 
     .MiniDetailText {
-      color: $white;
+      color: $black;
     }
 
-    h1 {
-      @include secondary-text($h1, $white);
-      width: 60%;
-      margin-top: 0.5em;
-    }
+    .InteractiveDemoText {
+      margin-left: 200px;
+      h1 {
+        @include secondary-text($h1, $black);
+      }
 
-    button {
-      margin-top: 2em;
+      h3 {
+        @include secondary-text($body, $primary-color);
+        margin-top: 2em;
+      }
+
+      .StepTextItem {
+        display: flex;
+        width: 350px;
+        p {
+          @include primary-text($body, $black);
+          margin-top: 0.5em;
+
+          &.NumberText{
+            font-weight: 700;
+            margin-right: 0.5em;
+          }
+        }
+      }
+
+      button {
+        margin-top: 2em;
+      }
     }
   }
 }

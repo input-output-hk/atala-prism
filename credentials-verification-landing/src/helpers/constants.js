@@ -73,20 +73,26 @@ export const CREDENTIAL_SENT = 3;
 
 export const USER = 'atala-demo-web-user';
 
-export const FEATURE_NAME = 'features';
-export const CREDENTIAL_NAME = 'credentials';
-export const DOWNLOAD_NAME = 'download';
+export const VISION_NAME = 'vision';
+export const DEMO_NAME = 'demo';
+export const COMPONENTS_NAME = 'components';
+export const BENEFITS_NAME = 'benefits';
+export const USE_CASES_NAME = 'useCases';
+export const CASE_STUDY_NAME = 'caseStudy';
+export const GET_STARTED_NAME = 'getStarted';
+export const FAQ_NAME = 'faq';
+export const CONTACT_US_NAME = 'contactUs';
 
 export const APP_STORE_URL = 'https://www.apple.com/la/ios/app-store/';
 export const GOOGLE_PLAY_STORE_URL = 'https://play.google.com/store';
 
 // EXAMPLE CERTIFICATE CARD VALUES
 export const CARD_UNIVERSITY_TITLE = 'Bachelor of Science';
-export const CARD_UNIVERSITY_UNIVERSITY = 'Air Side University';
+export const CARD_UNIVERSITY_UNIVERSITY = 'University of Innovation and Technology';
 export const CARD_UNIVERSITY_AWARD = 'Upper second class honours';
-export const CARD_EMPLOYMENT_COMPANY = 'Atala Inc.';
+export const CARD_EMPLOYMENT_COMPANY = 'Decentralized Inc.';
 export const CARD_EMPLOYMENT_ADDRESS = '67 Clasper Way, Herefoot, HF1 0AF';
 export const CARD_EMPLOYMENT_STATUS = 'Full Time';
-export const CARD_INSURANCE_PROVIDER = 'Atala Insurance Ltd.';
+export const CARD_INSURANCE_PROVIDER = 'Verified Insurance Ltd.';
 export const CARD_INSURANCE_CLASS = 'Life Insurance';
 export const CARD_INSURANCE_POLICY_NUMBER = 'ABC-123456789';

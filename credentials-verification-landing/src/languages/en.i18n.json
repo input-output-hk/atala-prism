@@ -110,9 +110,15 @@
   },
   "navBar": {
     "menuItems": {
-      "features": "Features",
-      "credentials": "Credentials",
-      "download": "Download"
+      "vision": "Vision",
+      "demo": "Demo",
+      "components": "Components",
+      "benefits": "Benefits",
+      "useCases": "Use Cases",
+      "caseStudy": "Case Study",
+      "getStarted": "Get Started",
+      "faq": "FAQ",
+      "contactUs": "Contact Us"
     }
   },
   "userInfo": {
@@ -129,7 +135,7 @@
       "state": "State / Province",
       "statePlaceholder": "Redland",
       "country": "Country",
-      "countryPlaceholder": "Republic of Redland"
+      "countryPlaceholder": "Metropol City"
     }
   },
   "landing": {
@@ -142,26 +148,29 @@
       "title2": "Credentials"
     },
     "start": {
-      "info": "Digital credentials powered by Blockchain",
-      "subtitle": "Carry and share your credentials inside your digital wallet.",
+      "info": "Powering the Trust Economy.",
+      "subtitle": "Atala Prism is a decentralized identity solution that enables people to own their personal data and seamlessly interact with organizations in a secure and private way.",
       "welcome": "Welcome"
     },
     "downloadAndroidAlt": "Download Android",
     "intro": {
-      "question": "What is Atala Prism?",
-      "explanation": "Digital wallet and credentials verification platform. All in one.",
+      "question": "ATALA PRISM fosters growth in the digital economy.",
+      "explanation": "Vision",
       "itemIcon": {
         "credentials": {
-          "title": "Credentials",
-          "text": "It is a long established fact that a reader will be distracted by the readable content of a page."
+          "image": "images/icon-01.svg",
+          "title": "For Growing Businesses",
+          "text": "Onboard customers with one click using verifiable credentials. Reduce compliance costs by accepting reusable KYC credentials. Drive sales with a secure one click purchase experience. Reduce business risks associated with holding customer data by building serverless apps that store data with users."
         },
         "wallet": {
-          "title": "Wallet",
-          "text": "It is a long established fact that a reader will be distracted by the readable content of a page."
+          "image": "images/icon-02.svg",
+          "title": "For Effective Governments",
+          "text": "Reduce cost to serve by eliminating need for face-to-face verifications. Decrease cost of fraud against citizens, businesses and the government using verifiable identities. Deliver a great citizen experience by providing a digital identity that can be used to seamlessly access services in the public or private sector. Go paperless."
         },
         "crypto": {
-          "title": "Crypto",
-          "text": "It is a long established fact that a reader will be distracted by the readable content of a page."
+          "image": "images/icon-03.svg",
+          "title": "For Empowered Individuals",
+          "text": "Identify yourself with one click. Get instant access to products and services. Control how your data is accessed and used. Share your data with trusted parties in a secure and private way. Store all your important records in one place and verify them for a lifetime."
         }
       }
     },
@@ -170,10 +179,21 @@
       "IssuingAuthority": "Issuing Authority",
       "credentialAlt": "Credential example that shows a credential with filled info (degree, student and university name, award and dates of start and graduation)",
       "iconAlt": "Credential Icon",
-      "title": "Lorem Ipsum is simply printing text.",
-      "subtitle1": "It is a long established fact that a reader will be distracted by the readable content of ",
-      "subtitle2": "a page.",
-      "detailText": "Credentials "
+      "title": "Atala Prism Key Components",
+      "titlecomponent1": "Mobile App",
+      "component1": "Mobile App for storing and sharing digital credentials.",
+      "titlecomponent2": "SDK",
+      "component2": "SDK to integrate wallet functionality into 3rd Party Apps.",
+      "titlecomponent3": "Management Console",
+      "component3": "Tool for issuing and verifying credentials.",
+      "titlecomponent4": "APIs",
+      "component4": "APIs to integrate Credential verification and issuance capabilities.",
+      "titlecomponent5": "Enrollment Tool",
+      "component5": "Mobile App for capturing biometric data as part of onboarding process.",
+      "titlecomponent6": "SmartCard",
+      "component6": "SmartCard for storing and sharing digital credentials.",
+      "title7": "Coming Soon",
+      "detailText": "Components "
     },
     "WhatYouNeed": {
       "Title": "What do you need?",
@@ -184,8 +204,8 @@
       "prevCredentialName": "This is your "
     },
     "findCredential": {
-      "title": "Experience how Atala Prism can",
-      "title2": "power your world today!",
+      "title": "Experience how Atala Prism",
+      "title2": "can power your world today!",
       "arrowAlt": "Arrow Right",
       "credentialAlt": "Man smiling",
       "cardTitle": "Find a Credential",
@@ -197,18 +217,119 @@
       "subtitle": "IT’S EASY.",
       "step1": "Download the Atala Prism Mobile App",
       "step2": "Receive your Government Issued Identity",
-      "step3": "Instantly authenticate yourself and access many services"
+      "step3": "Instantly authenticate yourself and start accessing services you want straight away!"
+    },
+    "quotes": {
+      "phrase": "Decentralized identity provides a new way to own your personal information and enables secure and trusted transactions in your everyday life."
     },
     "trust": {
       "trustName": "Trust 1",
       "info": "It is a long established fact that a reader will be distracted by the readable content of a page.",
-      "predownloadText": "Lorem Ipsum is simply dummy text of the printing texto simulado.",
+      "predownloadText": "Why Atala Prism?",
       "mobile": "Mobile phones with screens of the mobile app",
-      "downloadInfo": "Download App"
+      "downloadInfo": "Benefits",
+      "component3": "Tool for issuing and verifying credentials.",
+      "titlebenefit1": "Sustainable",
+      "benefit1": "Atala Prism is built on Cardano, which is designed for sustainability and based on peer reviewed academic research.",
+      "titlebenefit2": "Scalable",
+      "benefit2": "It can scale to millions of users with confidence using state of the art, layer 2 technology.",
+      "titlebenefit3": "Future-Proof",
+      "benefit3": "Designed based on the latest standards and specifications in decentralized identity. Built on open source software and engineered for interoperability.",
+      "titlebenefit4": "Inclusive",
+      "benefit4": "Designed for everyone. Even those without smartphones, internet access or sufficient literacy can own a verifiable identity.",
+      "titlebenefit5": "Cost-Efficient",
+      "benefit5": "It can cost efficiently scale to millions of users and implements a novel batching scheme to reduce public blockchain fees.",
+      "titlebenefit6": "Flexible",
+      "benefit6": "It supports flexible deployment models and choice of the underlying blockchain platform."
+
+    },
+    "caseStudy": {
+      "title": "Identity and Credentials Verification Pilot",
+      "title2": "for the Republic of Georgia",
+      "caseStudyAlt": "Case Study Republic of Georgia",
+      "detailText": "Case Study",
+      "part1": "Graduates need access to the degrees they earned to join the workforce and that's why Atala Prism is teaming up with the Ministry of Education and universities in the Republic of Georgia. With Atala Prism, students can receive, store and send their achievements right from their phone. Immediate verification of credentials means no need for background checks, saving universities and employers valuable time and resource.",
+      "part2": "The launch of Atala Prism in Georgia establishes a new gold standard of authenticating digital identity and credentials. Businesses, governments and individuals can reap the benefits of this smart, decentralized solution."
+    },
+    "getStarted": {
+      "title": "We work with your team to:",
+      "getStartedAlt": "Case Study Republic of Georgia",
+      "detailText": "Get Started",
+      "part1": "Help you understand decentralised identity and the bold opportunity it presents for your business.",
+      "part2": "Develop a Proof of Concept, built by a team of leading engineers who have designed some of the most advanced blockchain protocols available.",
+      "part3": "Deploy, manage and scale your business."
+    },
+    "faqPanel": {
+      "title": "Your questions, answered",
+      "detailText": "FAQ",
+      "titlefaq1": "What is Atala Prism?",
+      "faq1": "Atala Prism is a decentralized identity solution that is built on the Cardano blockchain. It enables a new approach to identity where users own their identity and have complete control over how their personal data is used and accessed. Data is shared with other individuals or organizations over secure and private peer-to-peer communication channels. Atala Prism is designed for everybody.",
+      "titlefaq2": "What problems does Atala Prism solve?",
+      "faq2": "Current identity systems create a significant risk and cost for businesses as they are required to store and secure sensitive information. Governments face inefficiencies in their manual-based, bureaucratic processes, as well as personal data frauds. Individuals also have a lack of trust that their information might be misused or sold to third parties without their consent. Atala Prism solves these problems by enabling a new approach for digital identity where people have ownership of their personal information and only share what is required with businesses or institutions  in an easy, secure and private way.",
+      "titlefaq3": "Who is Atala Prism for?",
+      "faq3": "Atala Prism is for businesses, governments and individuals. Businesses can quickly onboard new customers, reduce compliance risks and costs, and deliver seamless user experiences. Governments can issue digital identities and enable instant access to public and private services. Individuals have ownership of their identity and data, and can control how their personal information is used and accessed.",
+      "titlefaq4": "How do I know that my data and identification are safe with Atala Prism?",
+      "faq4": "All your personal information is securely and privately stored on your smartphone or smartcard. Leveraging blockchain technology, Atala Prism ensures that transactions are performed in a secure, peer-to-peer fashion. You are the only person with access to your data and credentials.",
+      "titlefaq5": "How does removing third parties keep my data and information safe?",
+      "faq5": "Third parties, including technology companies and municipalities, can sell your information, prevent you from accessing your data or shut down your account without your permission. With Atala Prism, you have complete control over your own data.",
+      "titlefaq6": "Isn’t Atala Prism a third party that is in control of my data?",
+      "faq6": "No. All data is securely stored and encrypted on your phone or smartcard. You are the only person that can access it using your biometrics (i.e. fingerprint or faceID) or your PIN code.",
+      "titlefaq7": "Can I only send identification and credentials in the Atala Prism ecosystem?",
+      "faq7": "Anyone can integrate with Atala Prism. Since it is built using industry standards, third-party apps will be able to connect easily in the future."
+
     },
     "credentialsView": {
       "title": "These are the Credentials",
       "subtitle": "Lorem Ipsum is simply dummy text of the printing and typesetting industry. "
+    },
+    "contactPanel": {
+      "title": "Contact Us",
+      "detailText": "Contact",
+      "part1": "Atala Prism is powered by",
+      "part2": "Cardano",
+      "part3": " a decentralised public blockchain and cryptocurrency project and is fully open source. Cardano is developing a smart contract platform which seeks to deliver more advanced features than any protocol previously developed. It is the first blockchain platform to evolve out of a scientific philosophy and a research-first driven approach. The development team consists of a large global collective of expert engineers and researchers.",
+      "part4": "Cardano is developed by",
+      "part5": "IOHK,",
+      "part6": " a blockchain technology company and industry leader in the fields of cryptography and distributed systems.",
+      "part7": "For any inquiries, please fill in the Contact form below:"
+    },
+    "useCasesPanel": {
+      "detailText": "Use Cases",
+      "title": "Use Cases",
+      "subtitle": "Atala Prism enables the issuance of digital IDs and credentials that are user owned and controlled. They can be shared in an easy, secure and private way. Instantly verifiable, the credentials eliminate the need to constantly rely on issuing parties. Here are some sample use cases:",
+      "listItem1": "Digital ID",
+      "listItem2": "Degrees",
+      "listItem3": "Certificates",
+      "listItem4": "Transcripts",
+      "listItem5": "Examinations",
+      "listItem6": "Badges",
+      "listItem7": "Civic Records",
+      "listItem8": "Licenses",
+      "listItem9": "Records",
+      "listItem10": "Awards",
+      "listItem11": "Health Records",
+      "listItem12": "Vaccinations",
+      "listItem13": "Prescriptions",
+      "listItem14": "Job Reference",
+      "listItem15": "Loyalty Program",
+      "listItem16": "Invoices",
+      "listItem17": "Account Details",
+      "listItem18": "Asset Ownership",
+      "listItem19": "KYC compliance",
+      "listItem20": "Statements",
+      "listItem21": "Agreements",
+      "listItem22": "Car Sharing Membership",
+      "listItem23": "Bus, Train, Flight Tickets",
+      "listItem24": "Boarding Pass",
+      "listItem25": "Travel Card",
+      "listItem26": "Travel Insurance",
+      "listItem27": "Parking Permit",
+      "listItem28": "Gym Membership",
+      "listItem29": "Museum Pass",
+      "listItem30": "Concert Ticket",
+      "listItem31": "Movie Ticket",
+      "listItem32": "Library Pass",
+      "listItem33": "Zoo Annual Pass"
     },
     "trademark": {
       "part1": "Terms & Conditions",
@@ -240,15 +361,15 @@
       },
       "touristPersona": {
         "name": "Grace",
-        "description": "Grace description",
-        "history": "Grace history",
+        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing.",
+        "history": "Morbi pulvinar posuere lorem a fringilla. Curabitur hendrerit nisi eget ullamcorper luctus. Curabitur iaculis consequat porta. Suspendisse potenti. Donec sed varius mi.",
         "type": "tourist",
         "pronoun": "her"
       },
       "executivePersona": {
         "name": "Brandon",
-        "description": "Brandon description",
-        "history": "Brandon history",
+        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing.",
+        "history": "Morbi pulvinar posuere lorem a fringilla. Curabitur hendrerit nisi eget ullamcorper luctus. Curabitur iaculis consequat porta. Suspendisse potenti. Donec sed varius mi.",
         "type": "executive",
         "pronoun": "his"
       },
@@ -708,10 +829,10 @@
       }
     },
     "credentialIssuers": {
-      "CredentialType0": "Department of Interior, Republic of Redland",
-      "CredentialType1": "Redland Polytechnic",
-      "CredentialType2": "Atala Inc",
-      "CredentialType3": "Atala insurance Ltd"
+      "CredentialType0": "Metropol City Goverment",
+      "CredentialType1": "University of Innovation and Technology",
+      "CredentialType2": "Decentralized Inc",
+      "CredentialType3": "Verified insurance Ltd"
     },
     "credentialDescription": {
       "CredentialType0": "Use this Credential to easily access government services.",
@@ -747,7 +868,7 @@
     },
     "IdCredentialCard": {
       "CredentialTitle": "National ID Card",
-      "CredentialSubtitle": "Republic of Redland",
+      "CredentialSubtitle": "Metropol City",
       "IdentityNumber": "Identity Number",
       "DateOfBirth": "Date of Birth",
       "FullName": "Full Name",

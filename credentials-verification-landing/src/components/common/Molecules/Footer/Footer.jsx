@@ -9,14 +9,16 @@ const Footer = () => {
 
   return (
     <div className="Footer">
-      <button type="button" onClick={scrollToTop}>
-        <img src="images/atala-logo-v2.svg" alt={t('atalaLogo')} />
-      </button>
-      <div className="FooterText">
-        <p>{t('landing.trademark.part1')}</p>
-        <p>{t('landing.trademark.part2')}</p>
+      <div className="FooterContent">
+        <button type="button" onClick={scrollToTop}>
+          <img src="images/atala-prism-black.svg" alt={t('atalaLogo')} />
+        </button>
+        <div className="FooterText">
+          <p>{t('landing.trademark.part1')}</p>
+          <p>{t('landing.trademark.part2')}</p>
+        </div>
+        <p>{t('landing.trademark.part3')}</p>
       </div>
-      <p>{t('landing.trademark.part3')}</p>
     </div>
   );
 };

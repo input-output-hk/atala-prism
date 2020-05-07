@@ -1,33 +1,13 @@
-import React, { useContext, useRef, useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
-import { Col, Row, message } from 'antd';
+import React from 'react';
+import { Col, Row } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { withApi } from '../providers/withApi';
-import ContactForm from './Organisms/ContactInformation/ContactInformation';
+import Contact from './Organisms/Contact/Contact';
 
 import '../credentials/_style.scss';
 import './_style.scss';
 
-const ContactContainer = ({ api }) => {
+const ContactContainer = () => {
   const { t } = useTranslation();
-
-  const contactInfoRef = useRef();
-  const [consent, setConsent] = useState(false);
-
-  const submitForm = () => {
-    contactInfoRef.current
-      .getForm()
-      .validateFields(
-        ['fullName', 'email', 'formMessage'],
-        (errors, { fullName, email, formMessage }) => {
-          if (!consent) return message.error(t('errors.consent'));
-          if (errors) return;
-
-          // TODO integrate with Backend Service when exist
-          console.log('fields=', fullName, email, formMessage, consent);
-        }
-      );
-  };
 
   return (
     <div className="CredentialContainer">
@@ -43,11 +23,7 @@ const ContactContainer = ({ api }) => {
               <img src="images/icon-decorative.svg" className="IconDecorative" alt={t('atalaLogo')} />
             </div>
             <div className="Form">
-              <ContactForm
-                submit={submitForm}
-                contactInfoRef={contactInfoRef}
-                onConsent={value => setConsent(value)}
-              />
+              <Contact />
             </div>
           </Col>
           <Col xs={24} lg={11} className="ImageSide">
@@ -62,12 +38,5 @@ const ContactContainer = ({ api }) => {
   );
 };
 
-ContactContainer.propTypes = {
-  api: PropTypes.shape({
-    getConnectionToken: PropTypes.func,
-    startSubjectStatusStream: PropTypes.func,
-    SetPersonalData: PropTypes.func
-  }).isRequired
-};
 
-export default withApi(ContactContainer);
+export default ContactContainer;

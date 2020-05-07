@@ -10,14 +10,35 @@ const TrustSection = () => {
   return (
     <div className="TrustSection">
       <div className="DownloadContainer">
-        <span className="MiniDetailText">
-          {t('landing.trust.downloadInfo')}
-          <em>_____</em>
-        </span>
+        <span className="MiniDetailText">{t('landing.trust.downloadInfo')}</span>
         <h1>{t('landing.trust.predownloadText')}</h1>
-        <DownloadButtons />
       </div>
-      <img src="images/trust-bg.png" alt="Verified Icon" className="MobilePhones" />
+      <div className="BenefitsContainer">
+        <div className="BenefitItem">
+          <h3>{t('landing.trust.titlebenefit1')}</h3>
+          <p>{t('landing.trust.benefit1')}</p>
+        </div>
+        <div className="BenefitItem">
+          <h3>{t('landing.trust.titlebenefit2')}</h3>
+          <p>{t('landing.trust.benefit2')}</p>
+        </div>
+        <div className="BenefitItem">
+          <h3>{t('landing.trust.titlebenefit3')}</h3>
+          <p>{t('landing.trust.benefit3')}</p>
+        </div>
+        <div className="BenefitItem">
+          <h3>{t('landing.trust.titlebenefit4')}</h3>
+          <p>{t('landing.trust.benefit4')}</p>
+        </div>
+        <div className="BenefitItem">
+          <h3>{t('landing.trust.titlebenefit5')}</h3>
+          <p>{t('landing.trust.benefit5')}</p>
+        </div>
+        <div className="BenefitItem">
+          <h3>{t('landing.trust.titlebenefit6')}</h3>
+          <p>{t('landing.trust.benefit6')}</p>
+        </div>
+      </div>
     </div>
   );
 };

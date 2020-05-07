@@ -1,64 +1,88 @@
 @import '../../../../css/general_styling';
 
-.CredentialSection {
+.ComponentsPanel {
   display: flex;
-  background: $white;
-  padding: 0 5em 10em;
-  justify-content: space-around;
+  flex-direction: column;
   align-items: center;
-  width: 100%;
-  background-image: url('../../../../images/credentials-example-bg.png');
-  background-position: bottom right;
-  background-repeat: no-repeat;
-
-  @include breakpoint(md) {
-    padding: 0 2em 10em;
-    .ImageContainer {
-      width: 50%;
-      img {
-        width: 100%;
-      }
-    }
-  }
-
-  @include breakpoint(sm) {
-    flex-direction: column;
-    padding: 0 2em;
+  .CredentialSection {
+    display: flex;
+    background: $white;
+    padding: 4em 8em;
+    justify-content: space-around;
+    align-items: flex-end;
+    width: 100%;
+    background-image: url('../../../../images/credentials-example-bg.png');
+    background-position: bottom right;
+    background-repeat: no-repeat;
 
     .ImageContainer {
-      width: 100%;
+      width: 35%;
+      display: flex;
+      justify-content: center;
+      padding: 2em 0;
       img {
-        width: 100%;
+        width: 320px;
       }
     }
-  }
 
-  .TextContainer {
-    width: 35%;
-    padding: 2em 0;
+    .TextContainer {
+      width: 65%;
+      padding: 2.5em 0;
 
-    img {
-      margin-bottom: 1em;
-    }
+      .MiniDetailText {
+        color: $primary-color;
+      }
 
-    h1 {
-      @include secondary-text($title, $secondary-color);
-      line-height: 38px;
-      margin: 0.5em 0;
-    }
-
-    h3 {
-      @include primary-text($h3, $dark-grey);
-    }
-
-    @include breakpoint(md) {
       h1 {
-        @include secondary-text($h1, $secondary-color);
+        @include secondary-text($h1, $black);
+        margin-left: 200px;
+        margin-bottom: 1.5em;
+      }
+
+      .ComponentsContainer {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        margin-left: 200px;
+
+        .ComponentItem {
+          width: 45%;
+          border-left: 1px solid $primary-color;
+          padding: 0 1em;
+          margin-bottom: 2em;
+
+          h3 {
+            @include primary-text($h3, $black);
+            font-weight: 600;
+          }
+
+          p {
+            @include primary-text($label, $black);
+
+            &.ComingSoon {
+              color: $dark-grey;
+              font-weight: 600;
+            }
+          }
+        }
+      }
+
+      @include breakpoint(md) {
+        h1 {
+          @include secondary-text($h1, $secondary-color);
+        }
+      }
+
+      @include breakpoint(sm) {
+        width: 100%;
       }
     }
-
-    @include breakpoint(sm) {
-      width: 100%;
-    }
+  }
+  .triangle-down {
+    width: 0;
+    height: 0;
+    border-left: 20px solid transparent;
+    border-right: 20px solid transparent;
+    border-top: 30px solid $white;
   }
 }

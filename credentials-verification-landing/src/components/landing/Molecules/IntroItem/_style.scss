@@ -17,10 +17,10 @@
   }
 
   h2 {
-    @include secondary-text($h2, $secondary-color);
+    @include secondary-text($h3, $black);
   }
 
   p {
-    @include primary-text($body, $dark-grey);
+    @include primary-text($label, $dark-grey);
   }
 }

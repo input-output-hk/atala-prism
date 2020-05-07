@@ -3,9 +3,9 @@ import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import { Modal } from 'antd';
 import PersonaCard from '../PersonaCard/PersonaCard';
-import studentProfilePic from '../../../../images/atala-form-bg.png';
-import touristProfilePic from '../../../../images/atala-form-bg.png';
-import executiveProfilePic from '../../../../images/atala-form-bg.png';
+import studentProfilePic from '../../../../images/atala-avatar-jo.png';
+import touristProfilePic from '../../../../images/atala-avatar-grace.png';
+import executiveProfilePic from '../../../../images/atala-avatar-brandon.png';
 
 import './_style.scss';
 
@@ -14,7 +14,7 @@ const PersonasModal = ({ showModal, selectPersona }) => {
 
   const personas = [
     {
-      name: t('credentials.personasModal.studentPersona.name'),
+      firstName: t('credentials.personasModal.studentPersona.name'),
       profilePic: studentProfilePic,
       profilePicAlt: `${t('credentials.personasModal.studentPersona.name')} profile picture`,
       dateOfBirth: '1999-01-11T14:21:29.326Z',
@@ -31,7 +31,7 @@ const PersonasModal = ({ showModal, selectPersona }) => {
       disabled: false
     },
     {
-      name: t('credentials.personasModal.touristPersona.name'),
+      firstName: t('credentials.personasModal.touristPersona.name'),
       profilePic: touristProfilePic,
       profilePicAlt: `${t('credentials.personasModal.touristPersona.name')} profile picture`,
       dateOfBirth: '1996-04-02T14:21:29.326Z',
@@ -48,8 +48,7 @@ const PersonasModal = ({ showModal, selectPersona }) => {
       disabled: true
     },
     {
-      name: t('credentials.personasModal.executivePersona.name'),
-      name: t('credentials.personasModal.executivePersona.name'),
+      firstName: t('credentials.personasModal.executivePersona.name'),
       profilePic: executiveProfilePic,
       profilePicAlt: `${t('credentials.personasModal.executivePersona.name')} profile picture`,
       dateOfBirth: '1984-06-03T14:21:29.326Z',
@@ -72,7 +71,7 @@ const PersonasModal = ({ showModal, selectPersona }) => {
   ));
 
   return (
-    <Modal visible={showModal} footer={null} closable={false}>
+    <Modal visible={showModal} footer={null} closable={false} width="75%" style={{ top: 20 }}>
       <div className="PersonasModal">
         <h1>{t('credentials.personasModal.title')}</h1>
         <div className="PersonaCards">{personaCards}</div>

@@ -1,33 +1,26 @@
 @import '../../../../css/general_styling';
 
 .Header {
-  width: 100%;
+  width: 100vw;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  padding-bottom: 2em;
-  height: 100px;
+  padding: 1.25em 8em;
   align-items: center;
+  background: $white;
+  position: fixed;
+  z-index: 500;
+
+  box-shadow: $shadow-header;
 
   .Logo {
     img {
-      height: 40px;
+      height: 35px;
     }
   }
   .NavBar {
     width: 40%;
     justify-content: flex-end;
     display: flex;
-  }
-}
-
-@media only screen and (max-width: 600px) {
-  .Header {
-    .Logo {
-      width: 80%;
-    }
-    .NavBar {
-      width: 20px;
-    }
   }
 }

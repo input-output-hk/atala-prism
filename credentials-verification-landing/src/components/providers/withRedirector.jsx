@@ -16,7 +16,10 @@ export const withRedirector = Component => props => {
     window.location.reload(true);
   };
 
-  const redirectToContact = () => redirectTo('contact');
+  const redirectToContact = () => {
+    redirectTo('contact');
+    window.location.reload(true);
+  };
 
   const redirector = {
     redirectToLanding,

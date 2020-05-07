@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Col } from 'antd';
 import CellRenderer from '../CellRenderer/CellRenderer';
 import './_style.scss';
 

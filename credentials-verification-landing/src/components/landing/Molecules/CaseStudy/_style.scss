@@ -1,0 +1,34 @@
+@import '../../../../css/general_styling';
+
+.CaseStudyContent {
+  display: flex;
+  padding: 8em;
+  background: $white;
+
+  .TextContainer {
+    width: 60%;
+
+    .CaseStudyDescription {
+      margin-left: 200px;
+      width: 50%;
+      h1 {
+        @include secondary-text($h1, $black);
+        line-height: 30px;
+      }
+      p {
+        @include primary-text($label, $black);
+        margin-top: 3em;
+      }
+    }
+  }
+
+  .ImageContainer {
+    width: 40%;
+    display: flex;
+    justify-content: center;
+
+    img {
+      width: 95%;
+    }
+  }
+}

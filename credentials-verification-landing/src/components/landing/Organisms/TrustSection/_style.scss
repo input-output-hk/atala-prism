@@ -1,53 +1,52 @@
 @import '../../../../css/general_styling';
 
 .TrustSection {
-  background: $primary-color;
+  background: $black;
   width: 100%;
-
-  .MobilePhones {
-    margin-top: -200px;
-    width: 1000px;
-
-    @include breakpoint(md) {
-      width: 100%;
-      margin-top: 0;
-    }
-
-    @include breakpoint(sm) {
-      display: none;
-    }
-  }
+  padding: 6em 8em;
+  margin-top: -30px;
 
   .DownloadContainer {
-    height: 100px;
-    display: flex;
-    float: right;
-    width: 50%;
-    flex-direction: column;
-    padding-top: 7em;
-
-    @include breakpoint(md) {
-      align-items: flex-start;
-      padding-right: 0;
-      padding-left: 350px;
-    }
-
-    @include breakpoint(sm) {
-      padding: 4em 2em;
-      width: 100%;
-      height: auto;
-      align-items: center;
-    }
 
     .MiniDetailText {
       color: $white;
     }
 
     h1 {
-      @include secondary-text($h1, $white);
+      @include secondary-text($h1, $primary-color);
       line-height: 32px;
       width: 360px;
-      margin-top: 0.5em;
+      margin-bottom: 2.5em;
+      margin-left: 200px;
     }
   }
+
+  .BenefitsContainer {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin-left: 200px;
+
+    .BenefitItem {
+      width: 30%;
+      border-left: 1px solid $primary-color;
+      padding: 0 1em;
+      margin-bottom: 3em;
+
+      h3 {
+        @include primary-text($h3, $white);
+        font-weight: 600;
+      }
+
+      p {
+        @include primary-text($label, $white);
+
+        &.ComingSoon {
+          color: $dark-grey;
+          font-weight: 600;
+        }
+      }
+    }
+  }
+
 }

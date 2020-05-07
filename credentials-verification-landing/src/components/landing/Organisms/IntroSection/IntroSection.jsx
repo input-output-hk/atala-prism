@@ -14,7 +14,7 @@ const IntroSection = () => {
   const createIntroItem = (key, pictureNumber) => (
     <IntroItem
       key={key}
-      itemIcon="images/icon-04.svg"
+      itemIcon={t(`landing.intro.itemIcon.${key}.image`)}
       itemTitle={t(`landing.intro.itemIcon.${key}.title`)}
       itemText={t(`landing.intro.itemIcon.${key}.text`)}
     />
@@ -22,8 +22,8 @@ const IntroSection = () => {
 
   return (
     <div className="IntroSection">
+      <p className="SectionName">{t('landing.intro.explanation')}</p>
       <h1>{t('landing.intro.question')}</h1>
-      <p>{t('landing.intro.explanation')}</p>
       <div className="IntroItemContainer">
         {keys
           .map((key, index) => createIntroItem(key, index + 2))

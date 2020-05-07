@@ -4,9 +4,9 @@
 
 .ant-menu {
   background-color: transparent;
-  color: $white;
+  color: $dark-grey;
   border-bottom: transparent;
-  @include primary-text($body, $white);
+  @include primary-text($body, $dark-grey);
 }
 
 .ant-menu-horizontal > .ant-menu-item:hover {
@@ -28,9 +28,9 @@
 .ant-menu-horizontal > .ant-menu-submenu-selected .ant-submenu-item:active,
 .ant-menu-horizontal > .ant-menu-submenu-selected .ant-menu-item-active:hover,
 .ant-menu-horizontal > .ant-menu-submenu-selected .ant-menu-hidden.ant-menu-vertical:hover {
-  border-bottom: 2px solid $white;
-  color: $white;
-  font-weight: bold;
+  border-bottom: 2px solid transparent;
+  color: $black;
+  font-weight: 700;
 }
 
 .ant-menu-submenu-popup {

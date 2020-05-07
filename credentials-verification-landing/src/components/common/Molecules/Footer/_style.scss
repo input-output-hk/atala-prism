@@ -2,44 +2,51 @@
 
 .Footer {
   width: 100%;
-  padding: 3em 4em;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  margin-top: -7px;
+  padding: 0 8em;
+
   background-color: $white;
 
-  img {
-    height: 25px;
-  }
-
-  p {
-    @include primary-text($label, $primary-color);
-  }
-
-  .FooterText {
+  .FooterContent {
+    padding: 2.5em 0;
+    border-top: 1px solid $dark-grey;
     display: flex;
     justify-content: space-between;
+    align-items: center;
 
-    p {
-      margin-right: 1.5em;
-    }
-  }
-
-  @include breakpoint(md) {
-    p {
-      padding-left: 5em;
-    }
-  }
-
-  @include breakpoint(sm) {
-    flex-direction: column;
-    align-items: flex-start;
-
-    p {
-      padding-left: 0;
-    }
     img {
-      margin-bottom: 1em;
+      height: 25px;
+    }
+
+    p {
+      @include primary-text($label, $primary-color);
+    }
+
+    .FooterText {
+      display: flex;
+      justify-content: space-between;
+
+      p {
+        margin-right: 1.5em;
+      }
+    }
+
+    @include breakpoint(md) {
+      p {
+        padding-left: 5em;
+      }
+    }
+
+    @include breakpoint(sm) {
+      flex-direction: column;
+      align-items: flex-start;
+
+      p {
+        padding-left: 0;
+      }
+      img {
+        margin-bottom: 1em;
+      }
     }
   }
 }

@@ -8,7 +8,7 @@ import './_style.scss';
 const PersonaCard = ({
   profilePic,
   profilePicAlt,
-  name,
+  firstName,
   dateOfBirth,
   description,
   history,
@@ -29,28 +29,33 @@ const PersonaCard = ({
   return (
     <div className={disabled ? 'PersonaCardDisabled' : 'PersonaCardEnabled'}>
       <img src={profilePic} alt={profilePicAlt} />
-      <p>{name}</p>
-      <p>{description}</p>
-      <p>{history}</p>
-      <p>{`${t('credentials.personasModal.joinAtala')} ${name} ${t(
-        'credentials.personasModal.joinAtala1'
-      )} ${pronoun} ${t('credentials.personasModal.joinAtala2')}`}</p>
-      <div>
-        <p>{type}</p>
-        {personaCredentials}
+      <div className="CardContent">
+        <h3>{firstName}</h3>
+        <p>
+          <strong>{description}</strong>
+        </p>
+        <p>{history}</p>
+        <p>{`${t('credentials.personasModal.joinAtala')} ${firstName} ${t(
+          'credentials.personasModal.joinAtala1'
+        )} ${pronoun} ${t('credentials.personasModal.joinAtala2')}`}</p>
+        <div className="CredentialType">
+          <h3>{type}</h3>
+          {personaCredentials}
+        </div>
+        <CustomButton
+          buttonProps={{
+            className: 'theme-primary',
+            onClick: () => selectPersona({ firstName, dateOfBirth }),
+            disabled: disabled
+          }}
+          buttonText={
+            disabled
+              ? t('credentials.personasModal.disabledButton')
+              : `${firstName}${t('credentials.personasModal.enabledButton')}`
+          }
+        />
       </div>
-      <CustomButton
-        buttonProps={{
-          className: 'theme-primary',
-          onClick: () => selectPersona({ name, dateOfBirth }),
-          disabled: disabled
-        }}
-        buttonText={
-          disabled
-            ? t('credentials.personasModal.disabledButton')
-            : `${name}${t('credentials.personasModal.enabledButton')}`
-        }
-      />
+      <div className="CardOverlay" />
     </div>
   );
 };
@@ -59,7 +64,7 @@ PersonaCard.propTypes = {
   profilePic: PropTypes.string.isRequired,
   profilePicAlt: PropTypes.string.isRequired,
   dateOfBirth: PropTypes.string.isRequired,
-  name: PropTypes.string.isRequired,
+  firstName: PropTypes.string.isRequired,
   description: PropTypes.string.isRequired,
   history: PropTypes.string.isRequired,
   type: PropTypes.string.isRequired,

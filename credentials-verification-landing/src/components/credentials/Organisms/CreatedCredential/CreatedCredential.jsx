@@ -42,15 +42,8 @@ const CreatedCredential = ({ currentCredential }) => {
         { title: 'award', value: CARD_UNIVERSITY_AWARD },
         { title: 'fullName', value: firstName },
         {
-          subList: [
-            {
-              title: 'graduationDate',
-              value: moment(dateOfBirth)
-                .add(20, 'y')
-                .format('YYYY-MM-DD')
-            }
-          ],
-          className: 'DegreeDate'
+          title: 'graduationDate',
+          value: moment().format('YYYY-MM-DD')
         }
       ]
     },
@@ -63,14 +56,11 @@ const CreatedCredential = ({ currentCredential }) => {
       componentName: 'newEmploymentCredential',
       cellTitle: { title: 'companyName', value: CARD_EMPLOYMENT_COMPANY },
       cellList: [
-        { title: 'employerAddress', value: CARD_EMPLOYMENT_ADDRESS },
-        { title: 'employeeName', value: firstName },
         { title: 'employmentStatus', value: CARD_EMPLOYMENT_STATUS },
+        { title: 'employeeName', value: firstName },
         {
           title: 'employmentStartDate',
-          value: moment()
-            .subtract(1, 'M')
-            .format('YYYY-MM-DD')
+          value: moment().format('YYYY-MM-DD')
         }
       ]
     },

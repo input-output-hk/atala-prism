@@ -7,9 +7,7 @@ html {
 .LandingContainer {
   .LandingHeader {
     background: $white;
-    padding: 0 8em;
     width: 100%;
-    height: 650px;
     background-image: url('../../images/landing-bg.png');
     background-position: bottom;
     background-repeat: no-repeat;
@@ -21,20 +19,21 @@ html {
 
     .LadingHeaderContent {
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      height: 400px;
+      padding: 4em 2em 0 8em;
       @include breakpoint(sm) {
         flex-direction: column;
       }
 
       .HeaderImages {
-        margin-top: 250px;
         display: flex;
+        padding: 4em 0;
         width: 55%;
         justify-content: center;
 
         img {
-          height: 650px;
+          height: 600px;
         }
 
         @include breakpoint(md) {
@@ -52,21 +51,18 @@ html {
       }
 
       .HeaderText {
-        width: 45%;
-        padding: 10em 0 2em;
-
-        .MiniDetailText {
-          color: $white;
-        }
+        width: 42.5%;
+        padding-right: 4em;
 
         h1 {
           @include secondary-text($large-title, $white);
           line-height: 44px;
+          width: 350px;
           margin: 0.5em 0;
         }
 
         h3 {
-          @include primary-text($h2, $white);
+          @include primary-text($h3, $white);
         }
 
         @include breakpoint(md) {

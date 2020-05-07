@@ -1,0 +1,39 @@
+@import '../../../../css/general_styling';
+
+.FaqPanelContent {
+  display: flex;
+  flex-direction: column;
+  padding: 8em;
+  background: $surface;
+
+  .MiniDetailText {
+    color: $primary-color;
+  }
+
+  .TextContainer {
+    width: 70%;
+    margin-left: 200px;
+
+    h1 {
+      @include secondary-text($h1, $black);
+      line-height: 30px;
+    }
+
+    .FaqContainer {
+      width: 80%;
+
+      .FaqItem {
+        margin-top: 3em;
+        padding-left: 1em;
+        border-left: 1px solid $primary-color;
+        h3 {
+          @include primary-text($body, $black);
+          font-weight: 600;
+        }
+        p {
+          @include primary-text($label, $black);
+        }
+      }
+    }
+  }
+}

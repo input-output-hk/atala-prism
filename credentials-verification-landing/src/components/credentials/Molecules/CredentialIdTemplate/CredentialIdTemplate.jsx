@@ -9,9 +9,8 @@ import avatarId from '../../../../images/id_generic_avatar.svg';
 
 import './_style.scss';
 
-const CredentialIDTemplate = ({ firstName, lastName, dateOfBirth }) => {
+const CredentialIDTemplate = ({ firstName, dateOfBirth }) => {
   const { t } = useTranslation();
-  const fullName = `${firstName} ${lastName}`;
   const uniqueData = firstName + moment(dateOfBirth).format('YYYY-MM-DD');
   const identityNumber = md5Hex(uniqueData)
     .substring(0, 9)
@@ -48,7 +47,7 @@ const CredentialIDTemplate = ({ firstName, lastName, dateOfBirth }) => {
               <span>{t('credential.IdCredentialCard.ExpirationDate')}</span>
               <p>
                 {moment()
-                  .add(20, 'y')
+                  .add(10, 'y')
                   .format('YYYY-MM-DD')}
               </p>
             </div>

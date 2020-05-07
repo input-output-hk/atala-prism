@@ -11,7 +11,7 @@ const Header = props => {
     <div className="Header">
       <div className="Logo">
         <button type="button" onClick={scrollToTop}>
-          <img src="images/atala-logo.svg" alt={t('atalaLogo')} />
+          <img src="images/atala-prism-black.svg" alt={t('atalaLogo')} />
         </button>
       </div>
       <div className="NavBar">

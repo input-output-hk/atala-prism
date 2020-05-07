@@ -4,24 +4,51 @@ import Header from '../common/Molecules/Header/Header';
 import IntroSection from './Organisms/IntroSection/IntroSection';
 import CredentialSection from './Organisms/CredentialSection/CredentialSection';
 import FindCredential from './Molecules/FindCredential/FindCredential';
-import DownloadButtons from './Molecules/DownloadButtons/DownloadButtons';
 import './_style.scss';
 import Footer from '../common/Molecules/Footer/Footer';
 import { scrollToRef } from '../../helpers/genericHelpers';
-import { FEATURE_NAME, CREDENTIAL_NAME, DOWNLOAD_NAME } from '../../helpers/constants';
+import {
+  VISION_NAME,
+  DEMO_NAME,
+  COMPONENTS_NAME,
+  BENEFITS_NAME,
+  USE_CASES_NAME,
+  CASE_STUDY_NAME,
+  GET_STARTED_NAME,
+  FAQ_NAME,
+  CONTACT_US_NAME
+} from '../../helpers/constants';
 import TrustSection from './Organisms/TrustSection/TrustSection';
+import QuotesPanel from './Molecules/QuotesPanel/QuotesPanel';
+import CaseStudy from './Molecules/CaseStudy/CaseStudy';
+import GetStarted from './Molecules/GetStarted/GetStarted';
+import FaqPanel from './Molecules/FaqPanel/FaqPanel';
+import ContactPanel from './Organisms/ContactPanel/ContactPanel';
+import UseCasesPanel from './Organisms/UseCasesPanel/UseCasesPanel';
 
 const Landing = () => {
   const { t } = useTranslation();
 
-  const featuresSection = useRef(null);
-  const credentialsSection = useRef(null);
-  const downloadSection = useRef(null);
+  const visionSection = useRef(null);
+  const demoSection = useRef(null);
+  const componentsSection = useRef(null);
+  const benefitsSection = useRef(null);
+  const useCasesSection = useRef(null);
+  const caseStudySection = useRef(null);
+  const getStartedSection = useRef(null);
+  const faqSection = useRef(null);
+  const contactUsSection = useRef(null);
 
   const refTranslator = {
-    [FEATURE_NAME]: featuresSection,
-    [CREDENTIAL_NAME]: credentialsSection,
-    [DOWNLOAD_NAME]: downloadSection
+    [VISION_NAME]: visionSection,
+    [DEMO_NAME]: demoSection,
+    [COMPONENTS_NAME]: componentsSection,
+    [BENEFITS_NAME]: benefitsSection,
+    [USE_CASES_NAME]: useCasesSection,
+    [CASE_STUDY_NAME]: caseStudySection,
+    [GET_STARTED_NAME]: getStartedSection,
+    [FAQ_NAME]: faqSection,
+    [CONTACT_US_NAME]: contactUsSection
   };
 
   const executeScroll = ref => scrollToRef(refTranslator[ref]);
@@ -32,28 +59,43 @@ const Landing = () => {
         <Header executeScroll={executeScroll} />
         <div className="LadingHeaderContent">
           <div className="HeaderText">
-            <span className="MiniDetailText">
-              {t('landing.start.welcome')}
-              <em>_____</em>
-            </span>
             <h1>{t('landing.start.info')}</h1>
             <h3>{t('landing.start.subtitle')}</h3>
-            <DownloadButtons />
           </div>
           <div className="HeaderImages">
-            <img src="images/phones-header.png" alt={t('landing.downloadAndroidAlt')} />
+            <img src="images/digital-id-graph.svg" alt={t('landing.downloadAndroidAlt')} />
           </div>
         </div>
       </div>
-      <div ref={featuresSection}>
+      <div ref={visionSection}>
         <IntroSection />
       </div>
-      <div ref={credentialsSection}>
+      <QuotesPanel />
+
+      <div ref={demoSection}>
+        <FindCredential />
+      </div>
+
+      <div ref={componentsSection}>
         <CredentialSection />
       </div>
-      <FindCredential />
-      <div ref={downloadSection}>
+      <div ref={benefitsSection}>
         <TrustSection />
+      </div>
+      <div ref={useCasesSection}>
+        <UseCasesPanel />
+      </div>
+      <div ref={caseStudySection}>
+        <CaseStudy />
+      </div>
+      <div ref={getStartedSection}>
+        <GetStarted />
+      </div>
+      <div ref={faqSection}>
+        <FaqPanel />
+      </div>
+      <div ref={contactUsSection}>
+        <ContactPanel />
       </div>
       <Footer executeScroll={executeScroll} />
     </div>
