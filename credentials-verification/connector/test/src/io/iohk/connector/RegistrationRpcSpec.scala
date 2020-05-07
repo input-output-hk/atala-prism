@@ -64,7 +64,7 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
       result.did must be(did)
     }
 
-    "propagate the participant to the store_users table" in {
+    "propagate the participant to the verifiers table" in {
       val name = "Blockchain Employer"
       val (did, participantId) =
         register(didSuffix = "employerX", name = name, role = connector_api.RegisterDIDRequest.Role.verifier)

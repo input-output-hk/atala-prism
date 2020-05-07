@@ -13,7 +13,7 @@ object IndividualsDAO {
   def insert(userId: ParticipantId, data: StoreIndividualCreateData): ConnectionIO[StoreIndividual] = {
     val individualId = ParticipantId.random()
     sql"""
-         |INSERT INTO store_individuals (user_id, individual_id, full_name, email, created_at)
+         |INSERT INTO verifier_holders (user_id, individual_id, full_name, email, created_at)
          |VALUES ($userId, $individualId, ${data.fullName}, ${data.email}, now())
          |RETURNING individual_id, status, connection_token, connection_id, full_name, email, created_at
        """.stripMargin.query[StoreIndividual].unique
@@ -27,12 +27,12 @@ object IndividualsDAO {
         sql"""
              |WITH CTE AS (
              |  SELECT COALESCE(max(created_at), to_timestamp(0)) AS last_created_at
-             |  FROM store_individuals
+             |  FROM verifier_holders
              |  WHERE user_id = ${userId} AND individual_id = $lastSeen
              |)
              |
              |SELECT individual_id, status, connection_token, connection_id, full_name, email, created_at
-             |FROM CTE CROSS JOIN store_individuals
+             |FROM CTE CROSS JOIN verifier_holders
              |WHERE user_id = $userId AND (created_at, individual_id) > (last_created_at, $lastSeen)
              |ORDER BY (created_at, individual_id) ASC
              |LIMIT $limit
@@ -40,7 +40,7 @@ object IndividualsDAO {
       case None =>
         sql"""
              |SELECT individual_id, status, connection_token, connection_id, full_name, email, created_at
-             |FROM store_individuals
+             |FROM verifier_holders
              |WHERE user_id = $userId
              |ORDER BY (created_at, individual_id) ASC
              |LIMIT $limit
@@ -51,7 +51,7 @@ object IndividualsDAO {
 
   def setConnectionToken(userId: ParticipantId, individualId: ParticipantId, token: TokenString): ConnectionIO[Unit] = {
     sql"""
-         |UPDATE store_individuals
+         |UPDATE verifier_holders
          |SET connection_token = $token, status = ${IndividualConnectionStatus.Invited: IndividualConnectionStatus}
          |WHERE user_id = $userId AND individual_id = $individualId
        """.stripMargin.update.run.map(_ => ())
@@ -59,7 +59,7 @@ object IndividualsDAO {
 
   def addConnection(connectionToken: TokenString, connectionId: ConnectionId): ConnectionIO[Unit] = {
     sql"""
-         |UPDATE store_individuals
+         |UPDATE verifier_holders
          |SET connection_id = $connectionId, status = ${IndividualConnectionStatus.Connected: IndividualConnectionStatus}
          |WHERE connection_token = $connectionToken
        """.stripMargin.update.run.map(_ => ())

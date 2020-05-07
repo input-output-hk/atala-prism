@@ -301,7 +301,7 @@ def render_issuer_participant(d):
   VALUES({issuer_id}, 'issuer', {did}, {name}, {logo});'''.format(**sql(d))
 
 def render_verifier(d):
-    return '''INSERT INTO store_users(user_id) VALUES({verifier_id});'''.format(**sql(d))
+    return '''INSERT INTO verifiers(user_id) VALUES({verifier_id});'''.format(**sql(d))
 
 def render_verifier_participant(d):
     return '''INSERT INTO participants(id, tpe, did, name, logo)
@@ -310,11 +310,11 @@ def render_verifier_participant(d):
 def render_student(d):
     dd = d.copy()
     dd['connection_status'] = student_statuses[d['connection_status']]
-    return '''INSERT INTO students (student_id, group_id, university_assigned_id, full_name, email, admission_date, created_on, connection_status, connection_token, connection_id)
+    return '''INSERT INTO issuer_subjects (student_id, group_id, university_assigned_id, full_name, email, admission_date, created_on, connection_status, connection_token, connection_id)
   VALUES ({student_id}, {group_id}, {university_assigned_id}, {full_name}, {email}, {admission_date}, {created_at}, {connection_status}, {connection_token}, {connection_id});'''.format(**sql(dd))
 
 def render_individual(d):
-    return '''INSERT INTO store_individuals (user_id, individual_id, status, connection_token, connection_id, full_name, email, created_at)
+    return '''INSERT INTO verifier_holders (user_id, individual_id, status, connection_token, connection_id, full_name, email, created_at)
   VALUES ({verifier_id}, {individual_id}, {connection_status}, {connection_token}, {connection_id}, {full_name}, {email}, {created_at});'''.format(**sql(d))
 
 def render_holder_participant(d):

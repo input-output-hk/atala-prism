@@ -24,7 +24,7 @@ object StudentsDAO {
     val connectionStatus: Student.ConnectionStatus = Student.ConnectionStatus.InvitationMissing
 
     sql"""
-         |INSERT INTO students
+         |INSERT INTO issuer_subjects
          |  (student_id, university_assigned_id, full_name, email, admission_date, created_on, connection_status, group_id)
          |VALUES
          |  ($id, ${data.universityAssignedId}, ${data.fullName}, ${data.email},
@@ -46,11 +46,11 @@ object StudentsDAO {
         sql"""
              |WITH CTE AS (
              |  SELECT created_on AS last_seen_time
-             |  FROM students
+             |  FROM issuer_subjects
              |  WHERE student_id = $lastSeen
              |)
              |SELECT student_id, university_assigned_id, full_name, email, admission_date, created_on, connection_status, connection_token, connection_id, g.name
-             |FROM CTE CROSS JOIN students JOIN issuer_groups g USING (group_id)
+             |FROM CTE CROSS JOIN issuer_subjects JOIN issuer_groups g USING (group_id)
              |WHERE issuer_id = $issuer AND
              |      (created_on > last_seen_time OR (created_on = last_seen_time AND student_id > $lastSeen)) AND
              |      g.name = $group
@@ -61,11 +61,11 @@ object StudentsDAO {
         sql"""
              |WITH CTE AS (
              |  SELECT created_on AS last_seen_time
-             |  FROM students
+             |  FROM issuer_subjects
              |  WHERE student_id = $lastSeen
              |)
              |SELECT student_id, university_assigned_id, full_name, email, admission_date, created_on, connection_status, connection_token, connection_id, g.name
-             |FROM CTE CROSS JOIN students JOIN issuer_groups g USING (group_id)
+             |FROM CTE CROSS JOIN issuer_subjects JOIN issuer_groups g USING (group_id)
              |WHERE issuer_id = $issuer AND
              |      (created_on > last_seen_time OR (created_on = last_seen_time AND student_id > $lastSeen))
              |ORDER BY created_on ASC, student_id
@@ -74,7 +74,7 @@ object StudentsDAO {
       case (None, Some(group)) =>
         sql"""
              |SELECT student_id, university_assigned_id, full_name, email, admission_date, created_on, connection_status, connection_token, connection_id, g.name
-             |FROM students JOIN issuer_groups g USING (group_id)
+             |FROM issuer_subjects JOIN issuer_groups g USING (group_id)
              |WHERE issuer_id = $issuer AND
              |      g.name = $group
              |ORDER BY created_on ASC, student_id
@@ -83,7 +83,7 @@ object StudentsDAO {
       case (None, None) =>
         sql"""
              |SELECT student_id, university_assigned_id, full_name, email, admission_date, created_on, connection_status, connection_token, connection_id, g.name
-             |FROM students JOIN issuer_groups g USING (group_id)
+             |FROM issuer_subjects JOIN issuer_groups g USING (group_id)
              |WHERE issuer_id = $issuer
              |ORDER BY created_on ASC, student_id
              |LIMIT $limit
@@ -95,7 +95,7 @@ object StudentsDAO {
   def find(issuerId: Issuer.Id, studentId: Student.Id): doobie.ConnectionIO[Option[Student]] = {
     sql"""
          |SELECT student_id, university_assigned_id, full_name, email, admission_date, created_on, connection_status, connection_token, connection_id, g.name
-         |FROM students JOIN issuer_groups g USING (group_id)
+         |FROM issuer_subjects JOIN issuer_groups g USING (group_id)
          |WHERE student_id = $studentId AND
          |      issuer_id = $issuerId
          |""".stripMargin.query[Student].option
@@ -106,26 +106,26 @@ object StudentsDAO {
       case UpdateStudentRequest.ConnectionTokenGenerated(studentId, token) =>
         val status: Student.ConnectionStatus = Student.ConnectionStatus.ConnectionMissing
         sql"""
-             |UPDATE students
+             |UPDATE issuer_subjects
              |SET connection_token = $token,
              |    connection_status = $status::STUDENT_CONNECTION_STATUS_TYPE
              |FROM issuer_groups
              |WHERE student_id = $studentId AND
              |      issuer_id = $issuerId AND
-             |      students.group_id = issuer_groups.group_id
+             |      issuer_subjects.group_id = issuer_groups.group_id
               """.stripMargin.update.run.map(_ => ())
       case UpdateStudentRequest.ConnectionAccepted(token, connectionId) =>
         val status: Student.ConnectionStatus = Student.ConnectionStatus.ConnectionAccepted
         // when the connection is accepted, we don't have the student id, just the token
         // TODO: Refactor the code to keep the student_id and participant_id with the same value
         sql"""
-             |UPDATE students
+             |UPDATE issuer_subjects
              |SET connection_id = $connectionId,
              |    connection_status = $status::STUDENT_CONNECTION_STATUS_TYPE
              |FROM issuer_groups
              |WHERE connection_token = $token AND
              |      issuer_id = $issuerId AND
-             |      students.group_id = issuer_groups.group_id
+             |      issuer_subjects.group_id = issuer_groups.group_id
               """.stripMargin.update.run.map(_ => ())
     }
   }

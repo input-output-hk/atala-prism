@@ -23,7 +23,7 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 20.millis)
 
   override val tables =
-    List("stored_credentials", "store_individuals", "store_users", "connection_tokens", "participants", "connections")
+    List("stored_credentials", "verifier_holders", "verifiers", "connection_tokens", "participants", "connections")
 
   val usingApiAs = usingApiAsConstructor(
     new cstore_api.CredentialsStoreServiceGrpc.CredentialsStoreServiceBlockingStub(_, _)

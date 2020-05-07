@@ -8,6 +8,6 @@ trait CManagerRepositorySpec extends PostgresRepositorySpec {
 
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 5.millis)
 
-  override val tables = List("credentials", "students", "issuer_groups", "issuers")
+  override val tables = List("credentials", "issuer_subjects", "issuer_groups", "issuers")
 
 }

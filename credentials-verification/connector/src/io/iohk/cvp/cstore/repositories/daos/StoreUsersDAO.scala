@@ -8,7 +8,7 @@ import io.iohk.cvp.models.ParticipantId
 object StoreUsersDAO {
   def insert(user: StoreUser): ConnectionIO[Unit] = {
     sql"""
-         |INSERT INTO store_users (user_id)
+         |INSERT INTO verifiers (user_id)
          |VALUES (${user.id});
        """.stripMargin.update.run.map(_ => ())
   }
@@ -16,7 +16,7 @@ object StoreUsersDAO {
   def get(userId: ParticipantId): ConnectionIO[Option[StoreUser]] = {
     sql"""
          |SELECT user_id
-         |FROM store_users
+         |FROM verifiers
          |WHERE user_id = $userId
        """.stripMargin.query[StoreUser].option
   }
