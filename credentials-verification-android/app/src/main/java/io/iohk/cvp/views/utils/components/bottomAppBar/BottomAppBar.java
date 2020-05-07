@@ -22,17 +22,17 @@ public class BottomAppBar extends CoordinatorLayout {
   @BindColor(R.color.black)
   ColorStateList colorBlack;
 
-  @BindView(R.id.home_menu_item)
-  ImageButton homeMenuItem;
+  @BindView(R.id.my_credentials_menu_item)
+  ImageButton myCredentialItem;
 
-  @BindDrawable(R.drawable.ic_home_grey)
-  Drawable icHomeGrey;
+  @BindDrawable(R.drawable.ic_credentials_grey)
+  Drawable icCredentialsGrey;
 
-  @BindDrawable(R.drawable.ic_home_red)
-  Drawable icHomeRed;
+  @BindDrawable(R.drawable.ic_credentials_red)
+  Drawable icCredentialsRed;
 
-  @BindView(R.id.profile_menu_item)
-  ImageButton profileMenuItem;
+  @BindView(R.id.contacts_menu_item)
+  ImageButton contactsMenuItem;
 
   @BindDrawable(R.drawable.ic_profile_grey)
   Drawable icProfileGrey;
@@ -40,14 +40,14 @@ public class BottomAppBar extends CoordinatorLayout {
   @BindDrawable(R.drawable.ic_profile_red)
   Drawable icProfileRed;
 
-  @BindView(R.id.wallet_menu_item)
-  ImageButton walletMenuItem;
+  @BindDrawable(R.drawable.ic_contacts_grey)
+  Drawable icContactGrey;
 
-  @BindDrawable(R.drawable.ic_wallet_grey)
-  Drawable icWalletGrey;
+  @BindDrawable(R.drawable.ic_contacts_red)
+  Drawable icContactRed;
 
-  @BindDrawable(R.drawable.ic_wallet_red)
-  Drawable icWalletRed;
+  @BindView(R.id.profile_menu_item)
+  ImageButton profileMenuItem;
 
   @BindView(R.id.settings_menu_item)
   ImageButton settingsMenuItem;
@@ -70,29 +70,29 @@ public class BottomAppBar extends CoordinatorLayout {
   }
 
   public void setItemColors(BottomAppBarOption optionSelected) {
-    homeMenuItem
-        .setImageDrawable(BottomAppBarOption.HOME.equals(optionSelected) ? icHomeRed : icHomeGrey);
+    myCredentialItem
+        .setImageDrawable(BottomAppBarOption.CREDENTIAL.equals(optionSelected) ? icCredentialsRed : icCredentialsGrey);
+    contactsMenuItem.setImageDrawable(
+        BottomAppBarOption.CONTACTS.equals(optionSelected) ? icContactRed : icContactGrey);
     profileMenuItem.setImageDrawable(
         BottomAppBarOption.PROFILE.equals(optionSelected) ? icProfileRed : icProfileGrey);
-    walletMenuItem.setImageDrawable(
-        BottomAppBarOption.WALLET.equals(optionSelected) ? icWalletRed : icWalletGrey);
     settingsMenuItem.setImageDrawable(
         BottomAppBarOption.SETTINGS.equals(optionSelected) ? icSettingsRed : icSettingsGrey);
   }
 
-  @OnClick(R.id.home_menu_item)
-  public void onHomeClick() {
-    onItemSelected(BottomAppBarOption.HOME);
+  @OnClick(R.id.my_credentials_menu_item)
+  public void onMyCredentialsClick() {
+    onItemSelected(BottomAppBarOption.CREDENTIAL);
+  }
+
+  @OnClick(R.id.contacts_menu_item)
+  public void onContactsClick() {
+    onItemSelected(BottomAppBarOption.CONTACTS);
   }
 
   @OnClick(R.id.profile_menu_item)
   public void onProfileClick() {
     onItemSelected(BottomAppBarOption.PROFILE);
-  }
-
-  @OnClick(R.id.wallet_menu_item)
-  public void onWalletClick() {
-    onItemSelected(BottomAppBarOption.WALLET);
   }
 
   @OnClick(R.id.settings_menu_item)

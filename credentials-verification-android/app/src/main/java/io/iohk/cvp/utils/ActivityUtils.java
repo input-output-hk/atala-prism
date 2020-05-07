@@ -7,6 +7,7 @@ import androidx.fragment.app.FragmentManager;
 
 import io.iohk.cvp.R;
 import io.iohk.cvp.viewmodel.ConnectionsActivityViewModel;
+import io.iohk.cvp.viewmodel.NewConnectionsViewModel;
 import io.iohk.cvp.views.activities.MainActivity;
 import io.iohk.cvp.views.fragments.AcceptConnectionDialogFragment;
 import io.iohk.cvp.views.fragments.CvpFragment;
@@ -16,7 +17,7 @@ import java.util.Objects;
 public class ActivityUtils {
 
     public static void onQrcodeResult(int requestCode, int resultCode, MainActivity activity,
-                                      ConnectionsActivityViewModel viewModel, Intent data, CvpFragment fragment) {
+                                      NewConnectionsViewModel viewModel, Intent data, CvpFragment fragment) {
 
         if (requestCode == ActivitiesRequestCodes.QR_SCANNER_REQUEST_ACTIVITY
                 && resultCode == Activity.RESULT_OK) {

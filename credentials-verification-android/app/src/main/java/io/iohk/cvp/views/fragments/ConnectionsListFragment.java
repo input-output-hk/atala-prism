@@ -60,7 +60,7 @@ public class ConnectionsListFragment extends CvpFragment<ConnectionsActivityView
 
     @Override
     protected AppBarConfigurator getAppBarConfigurator() {
-        return new RootAppBar(R.string.connections_activity_title);
+        return new RootAppBar(R.string.contacts);
     }
 
     @Override

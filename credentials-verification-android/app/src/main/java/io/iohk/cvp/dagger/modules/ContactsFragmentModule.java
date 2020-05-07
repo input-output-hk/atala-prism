@@ -5,14 +5,14 @@ import androidx.lifecycle.ViewModelProvider;
 import dagger.Module;
 import dagger.Provides;
 import io.iohk.cvp.utils.ViewModelProviderFactory;
+import io.iohk.cvp.viewmodel.ConnectionsActivityViewModel;
 import io.iohk.cvp.viewmodel.CredentialsViewModel;
 
 @Module
-public class ConnectionsListFragmentModule {
+public class ContactsFragmentModule {
 
   @Provides
-  ViewModelProvider.Factory provideViewModelProvider(CredentialsViewModel viewModel) {
+  ViewModelProvider.Factory provideViewModelProvider(ConnectionsActivityViewModel viewModel) {
     return new ViewModelProviderFactory<>(viewModel);
   }
-
 }

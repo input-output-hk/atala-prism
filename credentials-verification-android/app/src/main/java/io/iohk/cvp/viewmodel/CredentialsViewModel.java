@@ -13,10 +13,10 @@ import io.iohk.cvp.grpc.GetMessagesRunnable;
 import io.iohk.cvp.grpc.GrpcTask;
 import io.iohk.prism.protos.ReceivedMessage;
 
-public class CredentialsViewModel extends CvpViewModel {
+public class CredentialsViewModel extends NewConnectionsViewModel {
 
     private final MutableLiveData<AsyncTaskResult<List<ReceivedMessage>>> messages = new MutableLiveData<>(
-            new AsyncTaskResult<>(new ArrayList<>()));
+            new AsyncTaskResult<>());
 
     @Inject
     public CredentialsViewModel() {

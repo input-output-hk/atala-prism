@@ -40,13 +40,13 @@ import io.iohk.cvp.utils.CryptoUtils;
 import io.iohk.cvp.viewmodel.MainViewModel;
 import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.Preferences;
-import io.iohk.cvp.views.fragments.ConnectionsFragment;
+import io.iohk.cvp.views.fragments.HomeFragment;
+import io.iohk.cvp.views.fragments.ContactsFragment;
 import io.iohk.cvp.views.fragments.CvpFragment;
 import io.iohk.cvp.views.fragments.FirstConnectionFragment;
-import io.iohk.cvp.views.fragments.HomeFragment;
+import io.iohk.cvp.views.fragments.MyCredentials;
 import io.iohk.cvp.views.fragments.ProfileFragment;
 import io.iohk.cvp.views.fragments.SettingsFragment;
-import io.iohk.cvp.views.fragments.WalletFragment;
 import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBar;
 import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBarListener;
 import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBarOption;
@@ -61,16 +61,16 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
     public static final String MAIN_FRAGMENT_TAG = "MAIN_FRAGMENT";
 
     @Inject
-    ConnectionsFragment connectionsFragment;
+    HomeFragment homeFragment;
 
     @Inject
-    HomeFragment homeFragment;
+    MyCredentials myCredentialsFragment;
 
     @Inject
     SettingsFragment settingsFragment;
 
     @Inject
-    WalletFragment walletFragment;
+    ContactsFragment contactsFragment;
 
     @Inject
     ProfileFragment profileFragment;
@@ -112,7 +112,7 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
 
         Preferences prefs = new Preferences(getApplicationContext());
         if (!prefs.getUserIds().isEmpty()) {
-            ft.replace(R.id.fragment_layout, connectionsFragment, MAIN_FRAGMENT_TAG);
+            ft.replace(R.id.fragment_layout, homeFragment, MAIN_FRAGMENT_TAG);
         } else {
             ft.replace(R.id.fragment_layout, new FirstConnectionFragment(), MAIN_FRAGMENT_TAG);
         }
@@ -136,22 +136,22 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
 
     @Override
     public void onNavigation(BottomAppBarOption option, String userId) {
-        if (BottomAppBarOption.CONNECTIONS.equals(option)) {
+        if (BottomAppBarOption.HOME.equals(option) || BottomAppBarOption.FIRSTCONNECTION.equals(option)) {
             fab.setBackgroundTintList(colorRed);
-            bottomAppBar.setItemColors(option);
         } else {
             fab.setBackgroundTintList(colorBlack);
         }
+        bottomAppBar.setItemColors(option);
 
         getFragmentToRender(option)
                 .ifPresent(cvpFragment -> {
                     Fragment currentFragment = this.getSupportFragmentManager()
                             .findFragmentByTag(MAIN_FRAGMENT_TAG);
-                    if (currentFragment instanceof ConnectionsFragment
-                            && cvpFragment instanceof ConnectionsFragment) {
+
+                    if (currentFragment instanceof ContactsFragment && cvpFragment instanceof ContactsFragment) {
                         Set<String> userIds = new HashSet<>();
                         userIds.add(userId);
-                        ((ConnectionsFragment) currentFragment).listConnections(userIds);
+                        ((ContactsFragment) currentFragment).listConnections(userIds);
                     } else {
                         navigator.showFragment(getSupportFragmentManager(), cvpFragment, MAIN_FRAGMENT_TAG);
                     }
@@ -160,20 +160,27 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
 
     private Optional<CvpFragment> getFragmentToRender(BottomAppBarOption option) {
         switch (option) {
-            case CONNECTIONS:
+            case CONTACTS:
                 Preferences prefs = new Preferences(getApplicationContext());
                 if (!prefs.getUserIds().isEmpty()) {
-                    return Optional.of(connectionsFragment);
+                    return Optional.of(contactsFragment);
                 }
-                return Optional.of(new FirstConnectionFragment());
+
+                FirstConnectionFragment f = new FirstConnectionFragment();
+                f.setTitleId(R.string.contacts);
+                return Optional.of(f);
+            case CREDENTIAL:
+                return Optional.of(myCredentialsFragment);
             case HOME:
                 return Optional.of(homeFragment);
             case SETTINGS:
                 return Optional.of(settingsFragment);
-            case WALLET:
-                return Optional.of(walletFragment);
             case PROFILE:
                 return Optional.of(profileFragment);
+            case FIRSTCONNECTION:
+                FirstConnectionFragment fragment = new FirstConnectionFragment();
+                fragment.setTitleId(R.string.home_title);
+                return Optional.of(fragment);
             default:
                 Crashlytics.logException(
                         new CaseNotFoundException("Couldn't find fragment for option " + option,
@@ -223,7 +230,7 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
 
     @OnClick(R.id.fab)
     public void onFabClick() {
-        onNavigation(BottomAppBarOption.CONNECTIONS, null);
+        onNavigation(BottomAppBarOption.HOME, null);
     }
 
     private void sendPayments(BigDecimal amount, String nonce, String connectionToken,
@@ -239,7 +246,8 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
                         }
                         AddConnectionFromTokenResponse info = response.getResult();
                         prefs.addConnection(info);
-                        onNavigation(BottomAppBarOption.CONNECTIONS, info.getUserId());
+                        onNavigation(BottomAppBarOption.CONTACTS, info.getUserId());
+                        bottomAppBar.setItemColors(BottomAppBarOption.CONTACTS);
                     });
         } catch (SharedPrefencesDataNotFoundException | InvalidKeySpecException | CryptoException e) {
             Crashlytics.logException(e);
@@ -247,7 +255,7 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
         }
     }
 
-    public void acceptCredential(String connectionToken, Preferences prefs) {
+    public void acceptConnection(String connectionToken, Preferences prefs) {
         try {
             viewModel
                     .addConnectionFromToken(connectionToken, CryptoUtils.getPublicKey(prefs), "")
@@ -259,7 +267,8 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
                         }
                         AddConnectionFromTokenResponse info = response.getResult();
                         prefs.addConnection(info);
-                        onNavigation(BottomAppBarOption.CONNECTIONS, info.getUserId());
+                        onNavigation(BottomAppBarOption.CONTACTS, info.getUserId());
+                        bottomAppBar.setItemColors(BottomAppBarOption.CONTACTS);
                     });
 
         } catch (SharedPrefencesDataNotFoundException | InvalidKeySpecException | CryptoException e) {

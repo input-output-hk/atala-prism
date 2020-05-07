@@ -8,7 +8,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.lifecycle.ViewModelProvider;
@@ -19,7 +18,6 @@ import javax.inject.Inject;
 import butterknife.BindView;
 import butterknife.OnClick;
 import io.iohk.cvp.R;
-import io.iohk.cvp.utils.ImageUtils;
 import io.iohk.cvp.viewmodel.AcceptConnectionViewModel;
 import io.iohk.cvp.views.Preferences;
 import io.iohk.cvp.views.activities.MainActivity;
@@ -39,9 +37,6 @@ public class AcceptConnectionDialogFragment extends CvpDialogFragment<AcceptConn
 
     @BindView(R.id.participantName)
     TextView participantNameTextView;
-
-    @BindView(R.id.participantLogo)
-    ImageView participantLogoImgView;
 
     private ViewModelProvider.Factory factory;
 
@@ -87,8 +82,6 @@ public class AcceptConnectionDialogFragment extends CvpDialogFragment<AcceptConn
 
         titleTextView.setText(getArguments().getString(TITLE_KEY));
         participantNameTextView.setText(getArguments().getString(NAME_KEY));
-        participantLogoImgView.setImageBitmap(
-                ImageUtils.getBitmapFromByteArray(getArguments().getByteArray(LOGO_DATA_KEY)));
         return view;
     }
 
@@ -134,7 +127,7 @@ public class AcceptConnectionDialogFragment extends CvpDialogFragment<AcceptConn
 
             Preferences prefs = new Preferences(getContext());
             prefs.saveConnectionTokenToAccept(getArguments().getString(TOKEN_KEY));
-            ((MainActivity) getActivity()).acceptCredential(getArguments().getString(TOKEN_KEY), prefs);
+            ((MainActivity) getActivity()).acceptConnection(getArguments().getString(TOKEN_KEY), prefs);
 
         });
     }

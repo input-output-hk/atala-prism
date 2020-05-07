@@ -23,26 +23,30 @@
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintStart_toStartOf="parent"
     app:layout_constraintTop_toTopOf="parent">
+
     <LinearLayout
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:layout_weight="1"
-      android:gravity="center"
-      android:orientation="vertical">
-      <TextView
-        android:id="@+id/step1_text"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="1"
-        android:textAlignment="center"
-        android:textColor="@color/black"
-        android:textSize="16sp" />
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical">
+
+      <TextView
+          android:id="@+id/step1_text"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="1"
+          android:textAlignment="center"
+          android:textColor="@color/black"
+          android:textSize="16sp" />
+
       <View
-        android:id="@+id/step1_dot"
-        android:layout_width="5dp"
-        android:layout_height="5dp"
-        android:background="@drawable/dot" />
+          android:id="@+id/step1_dot"
+          android:layout_width="5dp"
+          android:layout_height="5dp"
+          android:background="@drawable/dot" />
     </LinearLayout>
+
     <LinearLayout
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
@@ -139,41 +143,41 @@
   </LinearLayout>
 
   <RelativeLayout
-    android:id="@+id/welcome_body_container"
-    android:layout_width="0dp"
-    android:layout_height="0dp"
-    app:layout_constraintBottom_toTopOf="@+id/welcomeButtonsContainer"
-    app:layout_constraintEnd_toEndOf="parent"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toBottomOf="@+id/steps_counter">
+      android:id="@+id/welcome_body_container"
+      android:layout_width="0dp"
+      android:layout_height="0dp"
+      app:layout_constraintBottom_toTopOf="@+id/welcomeButtonsContainer"
+      app:layout_constraintEnd_toEndOf="parent"
+      app:layout_constraintStart_toStartOf="parent"
+      app:layout_constraintTop_toBottomOf="@+id/steps_counter">
 
     <include
-      android:id="@+id/welcome_view"
-      layout="@layout/welcome_layout"
-      android:layout_width="match_parent"
-      android:layout_height="match_parent" />
+        android:id="@+id/welcome_view"
+        layout="@layout/welcome_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
     <include
-      android:id="@+id/tutorial_step1_view"
-      layout="@layout/tutorial_step_1"
-      android:layout_width="match_parent"
-      android:layout_height="match_parent"
-      android:visibility="gone" />
+        android:id="@+id/tutorial_step1_view"
+        layout="@layout/tutorial_step_1"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
 
     <include
-      android:id="@+id/tutorial_step2_view"
-      layout="@layout/tutorial_step_2"
-      android:layout_width="match_parent"
-      android:layout_height="match_parent"
-      android:visibility="gone" />
+        android:id="@+id/tutorial_step2_view"
+        layout="@layout/tutorial_step_2"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
 
 
     <include
-      android:id="@+id/tutorial_step3_view"
-      layout="@layout/tutorial_step_3"
-      android:layout_width="match_parent"
-      android:layout_height="match_parent"
-      android:visibility="gone" />
+        android:id="@+id/tutorial_step3_view"
+        layout="@layout/tutorial_step_3"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
 
   </RelativeLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

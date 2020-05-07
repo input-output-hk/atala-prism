@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -24,7 +25,6 @@ import com.crashlytics.android.Crashlytics;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -39,8 +39,7 @@ import io.iohk.cvp.views.Preferences;
 import io.iohk.cvp.views.activities.MainActivity;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.RootAppBar;
-import io.iohk.cvp.views.utils.adapters.NewCredentialsRecyclerViewAdapter;
-import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBarOption;
+import io.iohk.cvp.views.utils.adapters.CredentialsRecyclerViewAdapter;
 import io.iohk.prism.protos.AtalaMessage;
 import io.iohk.prism.protos.Credential;
 import io.iohk.prism.protos.ReceivedMessage;
@@ -49,13 +48,7 @@ import lombok.Setter;
 
 @Setter
 @NoArgsConstructor
-public class HomeFragment extends CvpFragment<CredentialsViewModel> {
-
-    @BindView(R.id.new_credentials_container)
-    ConstraintLayout newCredentialsContainer;
-
-    @BindView(R.id.loading)
-    RelativeLayout loading;
+public class MyCredentials extends CvpFragment<CredentialsViewModel> {
 
     @BindView(R.id.credentials_list)
     RecyclerView credentialsRecyclerView;
@@ -63,21 +56,26 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> {
     @BindView(R.id.fragment_layout)
     FrameLayout fragmentLayout;
 
+    @BindView(R.id.no_credentials_container)
+    LinearLayout noCredentialsContainer;
+
+    @BindView(R.id.loading)
+    RelativeLayout loading;
+
     @Inject
     CredentialDetailFragment credentialFragment;
-
     private ViewModelProvider.Factory factory;
     private MutableLiveData<AsyncTaskResult<List<ReceivedMessage>>> liveData;
-    private NewCredentialsRecyclerViewAdapter credentialsAdapter;
+    private CredentialsRecyclerViewAdapter credentialsAdapter;
 
     @Inject
-    HomeFragment(ViewModelProvider.Factory factory) {
+    MyCredentials(ViewModelProvider.Factory factory) {
         this.factory = factory;
     }
 
     @Override
     protected int getViewId() {
-        return R.layout.fragment_credentials;
+        return R.layout.fragment_home;
     }
 
     @Override
@@ -91,7 +89,7 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> {
 
         View view = super.onCreateView(inflater, container, savedInstanceState);
         Preferences prefs = new Preferences(getContext());
-        credentialsAdapter = new NewCredentialsRecyclerViewAdapter(R.layout.row_new_credential, this, true, prefs);
+        credentialsAdapter = new CredentialsRecyclerViewAdapter(R.layout.row_credential, this, false, prefs);
         credentialsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         credentialsRecyclerView.setAdapter(credentialsAdapter);
 
@@ -101,17 +99,18 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> {
     @Override
     public void onResume() {
         super.onResume();
-        listNewCredentials();
+        listMyCredentials();
     }
 
-    public void listNewCredentials() {
+    public void listMyCredentials() {
         loading.setVisibility(View.VISIBLE);
         credentialsAdapter.clearMessages();
         liveData = viewModel.getMessages(this.getUserIds());
         if (!liveData.hasActiveObservers()) {
             liveData.observe(this, result -> {
                 try {
-                    if (result.getResult() == null) {
+
+                    if(result.getResult() == null){
                         return;
                     }
 
@@ -120,33 +119,23 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> {
                                 R.string.server_error_message));
                     } else {
                         Preferences prefs = new Preferences(getContext());
-
                         Set<String> acceptedMessagesIds = prefs.getStoredMessages(Preferences.ACCEPTED_MESSAGES_KEY);
-                        Set<String> rejectedMessagesIds = prefs.getStoredMessages(Preferences.REJECTED_MESSAGES_KEY);
 
                         List<ReceivedMessage> messages = result.getResult();
-                        List<ReceivedMessage> newMessages = messages.stream()
-                                .filter(msg -> {
-                                    try {
-                                        AtalaMessage current = AtalaMessage.parseFrom(msg.getMessage());
-                                        if (!acceptedMessagesIds.contains(msg.getId()) && !rejectedMessagesIds
-                                                .contains(msg.getId()) && !current.getIssuerSentCredential().getCredential().getTypeId().isEmpty()) {
-                                            return true;
-                                        }
-                                        return false;
-                                    } catch (Exception e) {
-                                        return false;
-                                    }
-                                }).collect(Collectors.toList());
+                        List<ReceivedMessage> acceptedMessages = messages.stream()
+                                .filter(msg -> acceptedMessagesIds.contains(msg.getId())).collect(
+                                        Collectors.toList());
 
-                        credentialsAdapter.addMesseges(newMessages);
-
-                        if (newMessages.isEmpty()) {
-                            ((MainActivity) getActivity()).onNavigation(BottomAppBarOption.FIRSTCONNECTION, null);
+                        credentialsAdapter.addMesseges(acceptedMessages);
+                        if (acceptedMessages.isEmpty()) {
+                            credentialsRecyclerView.setVisibility(View.GONE);
+                            noCredentialsContainer.setVisibility(View.VISIBLE);
                         }
+
                         loading.setVisibility(View.GONE);
                     }
                 } catch (Exception e) {
+                    loading.setVisibility(View.GONE);
                     Crashlytics.logException(e);
                 }
             });
@@ -171,37 +160,5 @@ public class HomeFragment extends CvpFragment<CredentialsViewModel> {
 
         navigator.showFragmentOnTop(
                 Objects.requireNonNull(getActivity()).getSupportFragmentManager(), credentialFragment);
-    }
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
-    }
-
-    @Override
-    public void onPrepareOptionsMenu(Menu menu) {
-        MenuItem paymentHistoryMenuItem;
-        paymentHistoryMenuItem = menu.findItem(R.id.action_new_connection);
-        paymentHistoryMenuItem.setVisible(true);
-    }
-
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.action_new_connection) {
-            navigator.showQrScanner(this);
-            return true;
-        }
-        // If we got here, the user's action was not recognized.
-        // Invoke the superclass to handle it.
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        ActivityUtils.onQrcodeResult(requestCode, resultCode, (MainActivity) getActivity(),
-                viewModel, data, this);
     }
 }

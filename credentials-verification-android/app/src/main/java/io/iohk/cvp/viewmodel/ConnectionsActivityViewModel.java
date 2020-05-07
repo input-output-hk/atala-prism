@@ -18,7 +18,7 @@ import io.iohk.prism.protos.ConnectionInfo;
 import io.iohk.prism.protos.ParticipantInfo;
 import io.iohk.prism.protos.ReceivedMessage;
 
-public class ConnectionsActivityViewModel extends CvpViewModel {
+public class ConnectionsActivityViewModel extends NewConnectionsViewModel {
 
     private MutableLiveData<AsyncTaskResult<List<ConnectionInfo>>> connections = new MutableLiveData<>();
     private MutableLiveData<AsyncTaskResult<ParticipantInfo>> issuerInfo = new MutableLiveData<>();

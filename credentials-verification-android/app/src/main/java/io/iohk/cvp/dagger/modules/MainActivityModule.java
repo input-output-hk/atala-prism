@@ -5,8 +5,8 @@ import dagger.Module;
 import dagger.Provides;
 import io.iohk.cvp.utils.ViewModelProviderFactory;
 import io.iohk.cvp.viewmodel.MainViewModel;
-import io.iohk.cvp.views.fragments.ConnectionsFragment;
 import io.iohk.cvp.views.fragments.HomeFragment;
+import io.iohk.cvp.views.fragments.MyCredentials;
 import io.iohk.cvp.views.fragments.ProfileFragment;
 import io.iohk.cvp.views.fragments.SettingsFragment;
 import io.iohk.cvp.views.fragments.WalletFragment;
@@ -15,13 +15,13 @@ import io.iohk.cvp.views.fragments.WalletFragment;
 public class MainActivityModule {
 
   @Provides
-  ConnectionsFragment provideConnectionsFragment() {
-    return new ConnectionsFragment();
+  HomeFragment provideConnectionsFragment() {
+    return new HomeFragment();
   }
 
   @Provides
-  HomeFragment provideHomeFragment() {
-    return new HomeFragment();
+  MyCredentials provideHomeFragment() {
+    return new MyCredentials();
   }
 
   @Provides

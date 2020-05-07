@@ -3,6 +3,7 @@ package io.iohk.cvp.views.fragments;
 import android.app.Dialog;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,7 +25,6 @@ import com.google.android.gms.common.SupportErrorDialogFragment;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 import javax.inject.Inject;
 
@@ -35,9 +35,12 @@ import io.iohk.cvp.core.enums.CredentialType;
 import io.iohk.cvp.core.exception.ErrorCode;
 import io.iohk.cvp.core.exception.SharedPrefencesDataNotFoundException;
 import io.iohk.cvp.grpc.AsyncTaskResult;
+import io.iohk.cvp.utils.ImageUtils;
 import io.iohk.cvp.viewmodel.ConnectionsListablesViewModel;
 import io.iohk.cvp.views.Preferences;
+import io.iohk.cvp.views.activities.MainActivity;
 import io.iohk.cvp.views.utils.components.ShareCredentialRow;
+import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBarOption;
 import io.iohk.cvp.views.utils.dialogs.SuccessDialog;
 import io.iohk.prism.protos.ConnectionInfo;
 import io.iohk.prism.protos.Credential;
@@ -107,6 +110,9 @@ public class ShareProofRequestDialogFragment extends CvpDialogFragment<Connectio
             getDialog().getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
             getDialog().getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         }
+
+        participantLogoImgView.setImageBitmap(
+                                ImageUtils.getBitmapFromByteArray(connection.getParticipantInfo().getIssuer().getLogo().toByteArray()));
 
         try {
             titleTextView.setText(connection.getParticipantInfo().getIssuer().getName());
@@ -195,8 +201,8 @@ public class ShareProofRequestDialogFragment extends CvpDialogFragment<Connectio
                                     prefs.saveMessage(proofRequest.getConnectionToken(), Preferences.PROOF_REQUEST_SHARED_KEY);
                                     SuccessDialog.newInstance(this, R.string.server_share_successfully)
                                             .show(getFragmentManager(), "dialog");
-
                                     this.dismiss();
+                                    ((MainActivity) getActivity()).onNavigation(BottomAppBarOption.HOME, null);
                                 }
 
                             }
@@ -229,5 +235,24 @@ public class ShareProofRequestDialogFragment extends CvpDialogFragment<Connectio
             }
         }
         return "";
+    }
+
+    private Drawable getCredentialLogo(Credential credential){
+        Optional<CredentialType> credentialTypeOptional = CredentialType.getByValue(credential.getTypeId());
+        if(credentialTypeOptional.isPresent()) {
+            switch (credentialTypeOptional.get().getId()) {
+                case 1:
+                    return getResources().getDrawable(R.drawable.ic_id_government);
+                case 2:
+                    return getResources().getDrawable(R.drawable.ic_id_university);
+                case 3:
+                    return getResources().getDrawable(R.drawable.ic_id_proof);
+                case 4:
+                    return getResources().getDrawable(R.drawable.ic_id_insurance);
+                default:
+                    return null;
+            }
+        }
+        return null;
     }
 }

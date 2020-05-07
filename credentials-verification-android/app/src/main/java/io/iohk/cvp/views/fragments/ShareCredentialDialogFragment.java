@@ -75,8 +75,7 @@ public class ShareCredentialDialogFragment extends CvpFragment<ConnectionsListab
 
         adapter = new ShareCredentialRecyclerViewAdapter(this);
         recyclerView.setLayoutManager(
-                new LinearLayoutManager(getContext(), RecyclerView.HORIZONTAL, false)
-        );
+                new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
         recyclerView.setAdapter(adapter);
 
         LiveData<AsyncTaskResult<List<ConnectionListable>>> liveData = viewModel

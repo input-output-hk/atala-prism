@@ -22,23 +22,23 @@ import io.iohk.cvp.core.enums.CredentialType;
 import io.iohk.cvp.utils.CredentialParse;
 import io.iohk.cvp.viewmodel.dtos.CredentialDto;
 import io.iohk.cvp.views.Preferences;
-import io.iohk.cvp.views.fragments.MyCredentials;
+import io.iohk.cvp.views.fragments.HomeFragment;
 import io.iohk.prism.protos.AtalaMessage;
 import io.iohk.prism.protos.Credential;
 import io.iohk.prism.protos.ReceivedMessage;
 
-public class CredentialsRecyclerViewAdapter extends
-        RecyclerView.Adapter<CredentialsRecyclerViewAdapter.ViewHolder> {
+public class NewCredentialsRecyclerViewAdapter extends
+        RecyclerView.Adapter<NewCredentialsRecyclerViewAdapter.ViewHolder> {
 
     private final int holderLayoutId;
-    private final MyCredentials listener;
+    private final HomeFragment listener;
     private final Boolean hasNewCredentials;
     private final Preferences preferences;
 
     private List<ReceivedMessage> messages = new ArrayList<>();
 
-    public CredentialsRecyclerViewAdapter(int holderLayoutId, MyCredentials listener,
-                                          Boolean hasNewCredentials, Preferences prefs) {
+    public NewCredentialsRecyclerViewAdapter(int holderLayoutId, HomeFragment listener,
+                                             Boolean hasNewCredentials, Preferences prefs) {
         this.holderLayoutId = holderLayoutId;
         this.listener = listener;
         this.hasNewCredentials = hasNewCredentials;
@@ -55,7 +55,7 @@ public class CredentialsRecyclerViewAdapter extends
     }
 
     @Override
-    public void onBindViewHolder(CredentialsRecyclerViewAdapter.ViewHolder holder, int position) {
+    public void onBindViewHolder(NewCredentialsRecyclerViewAdapter.ViewHolder holder, int position) {
         try {
             ReceivedMessage msg = messages.get(position);
             Credential current = AtalaMessage.parseFrom(msg.getMessage()).getIssuerSentCredential().getCredential();
@@ -65,7 +65,6 @@ public class CredentialsRecyclerViewAdapter extends
             holder.messageId = msg.getId();
             holder.connectionId = msg.getConnectionId();
             holder.listener = this.listener;
-            holder.isNew = this.hasNewCredentials;
 
             if (current.getTypeId().equals(CredentialType.REDLAND_CREDENTIAL.getValue())) {
                 holder.credentialType.setText(listener.getResources().getString(R.string.credential_government_name));
@@ -120,8 +119,7 @@ public class CredentialsRecyclerViewAdapter extends
         @BindView(R.id.credential_logo)
         ImageView issuerLogo;
 
-        MyCredentials listener;
-        Boolean isNew;
+        HomeFragment listener;
 
 
         ViewHolder(View itemView) {
@@ -131,7 +129,7 @@ public class CredentialsRecyclerViewAdapter extends
 
         @OnClick(R.id.issuer_card_view)
         public void onCredentialClicked() {
-            listener.onCredentialClicked(isNew, credential, connectionId, messageId);
+            listener.onCredentialClicked(true, credential, connectionId, messageId);
         }
 
     }

@@ -8,6 +8,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -50,7 +51,10 @@ import io.iohk.prism.protos.ReceivedMessage;
 import lombok.Setter;
 
 @Setter
-public class ConnectionsFragment extends CvpFragment<ConnectionsActivityViewModel> {
+public class ContactsFragment extends CvpFragment<ConnectionsActivityViewModel> {
+
+    @BindView(R.id.loading)
+    RelativeLayout loading;
 
     @Inject
     ViewModelProvider.Factory factory;
@@ -62,10 +66,7 @@ public class ConnectionsFragment extends CvpFragment<ConnectionsActivityViewMode
     ViewPager viewPager;
 
     @Inject
-    ConnectionsListFragment universitiesListFragment;
-
-    @Inject
-    ConnectionsListFragment employersListFragment;
+    ConnectionsListFragment connectionsListFragment;
 
     private LiveData<AsyncTaskResult<List<ConnectionInfo>>> liveData;
 
@@ -80,7 +81,7 @@ public class ConnectionsFragment extends CvpFragment<ConnectionsActivityViewMode
     private List<String> proofRequestOpen;
 
     @Inject
-    public ConnectionsFragment() {
+    public ContactsFragment() {
     }
 
     @Override
@@ -109,8 +110,7 @@ public class ConnectionsFragment extends CvpFragment<ConnectionsActivityViewMode
                              Bundle savedInstanceState) {
         View view = super.onCreateView(inflater, container, savedInstanceState);
 
-        universitiesListFragment.setAdapter(new UniversitiesRecyclerViewAdapter());
-        employersListFragment.setAdapter(new EmployersRecyclerViewAdapter());
+        connectionsListFragment.setAdapter(new UniversitiesRecyclerViewAdapter());
 
         proofRequestMessages = new ArrayList<>();
         acceptedMessages = new ArrayList<>();
@@ -118,8 +118,7 @@ public class ConnectionsFragment extends CvpFragment<ConnectionsActivityViewMode
         proofRequestOpen = new ArrayList<>();
 
         ConnectionTabsAdapter adapter = new ConnectionTabsAdapter(
-                getChildFragmentManager(), 1, universitiesListFragment,
-                employersListFragment);
+                getChildFragmentManager(), 1, connectionsListFragment);
 
         viewPager.setAdapter(adapter);
 
@@ -144,10 +143,56 @@ public class ConnectionsFragment extends CvpFragment<ConnectionsActivityViewMode
     }
 
     @Override
-    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
-        universitiesListFragment.clearConnecitons();
-        employersListFragment.clearConnecitons();
+    public void onResume() {
+        super.onResume();
+        connectionsListFragment.clearConnecitons();
         listConnections(this.getUserIds());
+    }
+
+    public void listConnections(Set<String> userIds) {
+        loading.setVisibility(View.VISIBLE);
+        liveData = viewModel.getConnections(userIds);
+        if (!liveData.hasActiveObservers()) {
+            liveData.observe(this, response -> {
+                if (response.getResult() == null) {
+                    return;
+                }
+
+                FragmentManager fm = getFragmentManager();
+                if (response.getError() != null) {
+                    SupportErrorDialogFragment.newInstance(new Dialog(getContext()))
+                            .show(fm, "");
+                    getNavigator().showPopUp(getFragmentManager(), getResources().getString(
+                            R.string.server_error_message));
+                    return;
+                }
+
+                List<ConnectionInfo> connections = response.getResult();
+                shareConnections.addAll(connections.stream()
+                        .filter(conn -> {
+                            if (conn.getParticipantInfo().getParticipantCase().getNumber() == ParticipantInfo.ISSUER_FIELD_NUMBER) {
+                                for (ConnectionInfo issuerConnection : shareConnections) {
+                                    if (conn.getParticipantInfo().getIssuer().getName().equals(issuerConnection.getParticipantInfo()
+                                            .getIssuer().getName())) {
+                                        return false;
+                                    }
+                                }
+                                getProofRequest();
+                                return true;
+                            }
+                            return false;
+                        }).collect(Collectors.toList()));
+
+                List<ConnectionInfo> issuerConnections = connections.stream()
+                        .filter(conn -> conn.getParticipantInfo().getParticipantCase().getNumber()
+                                == ParticipantInfo.ISSUER_FIELD_NUMBER)
+                        .collect(Collectors.toList());
+                connectionsListFragment.addConnections(issuerConnections);
+
+                loading.setVisibility(View.GONE);
+                getProofRequest();
+            });
+        }
     }
 
     public void getProofRequest() {
@@ -240,52 +285,6 @@ public class ConnectionsFragment extends CvpFragment<ConnectionsActivityViewMode
         }
     }
 
-    public void listConnections(Set<String> userIds) {
-        liveData = viewModel.getConnections(userIds);
-        if (!liveData.hasActiveObservers()) {
-            liveData.observe(this, response -> {
-                FragmentManager fm = getFragmentManager();
-                if (response.getError() != null) {
-                    SupportErrorDialogFragment.newInstance(new Dialog(getContext()))
-                            .show(fm, "");
-                    getNavigator().showPopUp(getFragmentManager(), getResources().getString(
-                            R.string.server_error_message));
-                    return;
-                }
-
-                List<ConnectionInfo> connections = response.getResult();
-                shareConnections.addAll(connections.stream()
-                        .filter(conn -> {
-                            if (conn.getParticipantInfo().getParticipantCase().getNumber() == ParticipantInfo.ISSUER_FIELD_NUMBER) {
-                                for (ConnectionInfo issuerConnection : shareConnections) {
-                                    if (conn.getParticipantInfo().getIssuer().getName().equals(issuerConnection.getParticipantInfo()
-                                            .getIssuer().getName())) {
-                                        return false;
-                                    }
-                                }
-                                getProofRequest();
-                                return true;
-                            }
-                            return false;
-                        }).collect(Collectors.toList()));
-
-                List<ConnectionInfo> issuerConnections = connections.stream()
-                        .filter(conn -> conn.getParticipantInfo().getParticipantCase().getNumber()
-                                == ParticipantInfo.ISSUER_FIELD_NUMBER)
-                        .collect(Collectors.toList());
-                universitiesListFragment.addConnections(issuerConnections);
-
-                List<ConnectionInfo> verifiersConnections = connections.stream()
-                        .filter(conn -> conn.getParticipantInfo().getParticipantCase().getNumber()
-                                == ParticipantInfo.VERIFIER_FIELD_NUMBER)
-                        .collect(Collectors.toList());
-                employersListFragment.addConnections(verifiersConnections);
-
-                getProofRequest();
-            });
-        }
-    }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.action_new_connection) {
@@ -304,7 +303,7 @@ public class ConnectionsFragment extends CvpFragment<ConnectionsActivityViewMode
 
     @Override
     protected AppBarConfigurator getAppBarConfigurator() {
-        return new RootAppBar(R.string.connections_activity_title);
+        return new RootAppBar(R.string.contacts);
     }
 
     @Override
@@ -312,13 +311,5 @@ public class ConnectionsFragment extends CvpFragment<ConnectionsActivityViewMode
         super.onActivityResult(requestCode, resultCode, data);
         ActivityUtils.onQrcodeResult(requestCode, resultCode, (MainActivity) getActivity(),
                 viewModel, data, this);
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        liveData.removeObservers(this);
-        viewModel.clearConnections();
-        viewModel.stopTasks();
     }
 }

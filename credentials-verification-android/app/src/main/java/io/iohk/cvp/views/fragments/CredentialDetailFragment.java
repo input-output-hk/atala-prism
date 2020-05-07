@@ -30,8 +30,10 @@ import io.iohk.cvp.utils.IntentDataConstants;
 import io.iohk.cvp.viewmodel.CredentialsViewModel;
 import io.iohk.cvp.viewmodel.dtos.CredentialDto;
 import io.iohk.cvp.views.Preferences;
+import io.iohk.cvp.views.activities.MainActivity;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.StackedAppBar;
+import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBarOption;
 import io.iohk.prism.protos.Credential;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -299,7 +301,7 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
     private void saveAndGoBack(String key) {
         Preferences prefs = new Preferences(getContext());
         prefs.saveMessage(messageId, key);
-        getActivity().onBackPressed();
+        ((MainActivity) getActivity()).onNavigation(BottomAppBarOption.CREDENTIAL, null);
     }
 
     @Override

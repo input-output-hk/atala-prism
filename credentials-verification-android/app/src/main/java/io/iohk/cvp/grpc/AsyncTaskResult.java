@@ -13,6 +13,9 @@ public class AsyncTaskResult<A> {
     return error;
   }
 
+  public AsyncTaskResult() {
+  }
+
   public AsyncTaskResult(A result) {
     this.result = result;
   }
