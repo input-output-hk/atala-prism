@@ -4,9 +4,9 @@ import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import doobie.util.{Get, Read}
-import io.iohk.node.bitcoin.models.{BlockError, BlockHeader, Blockhash}
 import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither.{FutureEitherOps, FutureOptionOps}
+import io.iohk.node.bitcoin.models.{BlockError, BlockHeader, Blockhash}
 
 import scala.concurrent.ExecutionContext
 
@@ -20,9 +20,8 @@ class BlocksRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
          |VALUES (${block.hash.toBytesBE}, ${block.height}, ${block.time}, ${block.previous.map(_.toBytesBE)})
      """.stripMargin.update.run
       .transact(xa)
-      .map(_ => ())
       .unsafeToFuture()
-      .map(Right.apply)
+      .map(_ => Right(()))
       .toFutureEither
   }
 
@@ -38,11 +37,9 @@ class BlocksRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
       .transact(xa)
       .unsafeToFuture()
       .toFutureEither(BlockError.NotFound(blockhash))
-      .value
-      .toFutureEither
   }
 
-  def getLatest: FutureEither[BlockError.NoOneAvailable.type, BlockHeader] = {
+  def getLatest: FutureEither[BlockError.NoneAvailable.type, BlockHeader] = {
     val program =
       sql"""
            |SELECT blockhash, height, time, previous_blockhash
@@ -54,12 +51,10 @@ class BlocksRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
     program
       .transact(xa)
       .unsafeToFuture()
-      .toFutureEither(BlockError.NoOneAvailable)
-      .value
-      .toFutureEither
+      .toFutureEither(BlockError.NoneAvailable)
   }
 
-  def removeLatest(): FutureEither[BlockError.NoOneAvailable.type, BlockHeader] = {
+  def removeLatest(): FutureEither[BlockError.NoneAvailable.type, BlockHeader] = {
     val program =
       sql"""
            |WITH CTE AS (
@@ -77,9 +72,7 @@ class BlocksRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
     program
       .transact(xa)
       .unsafeToFuture()
-      .toFutureEither(BlockError.NoOneAvailable)
-      .value
-      .toFutureEither
+      .toFutureEither(BlockError.NoneAvailable)
   }
 }
 

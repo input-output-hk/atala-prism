@@ -55,7 +55,7 @@ class LedgerSynchronizationStatusService(
     blocksRepository.getLatest
       .transformWith(
         fa = {
-          case BlockError.NoOneAvailable =>
+          case BlockError.NoneAvailable =>
             val result = SynchronizationStatus.MissingBlockInterval(0 to candidate.height)
             Right(result).toFutureEither
         },
