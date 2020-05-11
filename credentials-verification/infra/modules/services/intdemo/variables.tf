@@ -84,3 +84,7 @@ variable private_dns_namespace_name {
 variable log_group_name {
   description = "Name of AWS Cloudwatch log group"
 }
+
+variable tls_certificate_arn {
+  description = "ARN of TLS certificate to install in the NLB."
+}

@@ -167,6 +167,11 @@ module "ecs_cluster" {
   instance_type = var.instance_type
 }
 
+data "aws_acm_certificate" "cef-iohk-dev-io" {
+  domain   = "cef.iohkdev.io"
+  statuses = ["ISSUED"]
+}
+
 # deploy intdemo into the ECS cluster
 module "intdemo_service" {
   source = "../../../modules/services/intdemo"
@@ -196,6 +201,8 @@ module "intdemo_service" {
   psql_database = local.psql_database
   psql_username = local.psql_username
   psql_password = local.psql_password
+
+  tls_certificate_arn = data.aws_acm_certificate.cef-iohk-dev-io.arn
 }
 
 # public DNS record for the intdemo

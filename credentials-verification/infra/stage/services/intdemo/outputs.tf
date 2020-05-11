@@ -11,7 +11,7 @@ output "command_to_test_envoy_proxy" {
 }
 
 output "command_to_test_intdemo_web_app" {
-  value = "curl -i '${local.hostname}'"
+  value = "curl -ik 'https://${local.hostname}'"
 }
 
 output "connector_db_details" {

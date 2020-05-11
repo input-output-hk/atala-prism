@@ -245,11 +245,16 @@ module "intdemo_lb" {
       port               = var.envoy_port
       protocol           = "TCP"
       target_group_index = 1
-    },
-    {
-      port               = var.landing_port
-      protocol           = "TCP"
-      target_group_index = 2
-    },
+    }
   ]
+
+  https_listeners = [
+    {
+      port               = 443
+      protocol           = "TLS"
+      certificate_arn    = var.tls_certificate_arn
+      target_group_index = 2
+    }
+  ]
+
 }
