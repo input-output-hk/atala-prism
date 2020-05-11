@@ -32,7 +32,6 @@ class Runner(
   def run(): Unit = {
     Logger.log("This was run by the background script")
     processExternalMessages()
-    ClientTest.run()
   }
 
   // this is needed as defining a generic method seems to be the only way to tell Scala

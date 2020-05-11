@@ -4,8 +4,8 @@ import scala.scalajs.js
 
 object FakeApis {
   def configure(): Unit = {
-    js.Dynamic.global.chrome = FakeChromeApi
-    js.Dynamic.global.crypto = FakeCryptoApi
-    js.Dynamic.global.facade = FakeCommonsFacade
+    js.Dynamic.global.global.chrome = FakeChromeApi
+    js.Dynamic.global.global.crypto = FakeCryptoApi
+    js.Dynamic.global.global.facade = FakeCommonsFacade
   }
 }

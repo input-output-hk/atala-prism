@@ -29,10 +29,10 @@ class BackgroundAPISpec extends AsyncWordSpec with BeforeAndAfterAll with Before
 
   override def beforeEach(): Unit = {
     // Remove any listener from any previous test
-    js.Dynamic.global.chrome.runtime.onMessage.removeAllListeners()
+    js.Dynamic.global.global.chrome.runtime.onMessage.removeAllListeners()
 
     // Delete any data stored by any previous test
-    js.Dynamic.global.chrome.storage.local.clear()
+    js.Dynamic.global.global.chrome.storage.local.clear()
 
     // Run the background script
     Runner(

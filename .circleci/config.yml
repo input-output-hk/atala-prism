@@ -236,13 +236,6 @@ jobs:
       - image: circleci/openjdk:8-jdk-node
     steps:
       - checkout
-
-      # TODO: Remove once https://github.com/lucidd/scala-js-chrome/pull/46 is merged
-      # Install custom plugin
-      - run: git clone https://github.com/AlexITC/scala-js-chrome.git --branch add-content-script --single-branch
-      - run: git branch
-      - run: cd scala-js-chrome && sbt publishLocal
-
       # Download and cache dependencies
       - restore_cache:
           keys:
@@ -274,7 +267,7 @@ workflows:
       - build-credentials-verification-android
       - build-credentials-verification-landing
       - build-credentials-verification-web
-#      - build-credentials-verification-webextension
+      - build-credentials-verification-webextension
       - deploy-ecr-images:
           filters:
             branches:
