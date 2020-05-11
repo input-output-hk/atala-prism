@@ -22,8 +22,6 @@ import scala.concurrent.duration.DurationDouble
 
 class StudentsServiceImplSpec extends RpcSpecBase {
 
-  override val tables = List("credentials", "issuer_subjects", "issuer_groups", "issuers", "connections")
-
   private implicit val executionContext = scala.concurrent.ExecutionContext.global
   private implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 20.millis)
   private val usingApiAs = usingApiAsConstructor(new cmanager_api.StudentsServiceGrpc.StudentsServiceBlockingStub(_, _))

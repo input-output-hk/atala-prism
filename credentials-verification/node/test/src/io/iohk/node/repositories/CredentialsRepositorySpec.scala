@@ -15,8 +15,6 @@ class CredentialsRepositorySpec extends PostgresRepositorySpec {
   lazy val didDataRepository = new DIDDataRepository(database)
   lazy val credentialsRepository = new CredentialsRepository(database)
 
-  override val tables = List("credentials", "public_keys", "did_data")
-
   val didOperationDigest = digestGen(0, 1)
   val didSuffix = didSuffixFromDigest(didOperationDigest)
   val didData = DIDData(didSuffix, Nil, didOperationDigest)

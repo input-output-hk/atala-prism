@@ -15,8 +15,6 @@ import scala.concurrent.duration.DurationLong
 
 class ConnectionsRepositorySpec extends ConnectorRepositorySpecBase {
 
-  override val tables = List("connections", "connection_tokens", "holder_public_keys", "participants")
-
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 5.millis)
   lazy val connectionsRepository = new ConnectionsRepository.PostgresImpl(database)
 

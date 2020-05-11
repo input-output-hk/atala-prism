@@ -48,8 +48,6 @@ class ObjectManagementServiceSpec extends PostgresRepositorySpec with MockitoSug
 
   import ObjectManagementServiceSpec._
 
-  override val tables = List("atala_objects")
-
   val storage = new objects.ObjectStorageService.InMemory
 
   val ledger: AtalaReferenceLedger = mock[AtalaReferenceLedger]

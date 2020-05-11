@@ -68,8 +68,6 @@ class UpdateDIDOperationSpec extends PostgresRepositorySpec with ProtoParsingTes
   val signedExampleOperation = BlockProcessingServiceSpec.signOperation(exampleOperation, signingKeyId, signingKey)
   override def operationCompanion: OperationCompanion[UpdateDIDOperation] = UpdateDIDOperation
 
-  override val tables = List("credentials", "public_keys", "did_data")
-
   "UpdateDIDOperation.parse" should {
     "parse valid CreateDid AtalaOperation" in {
       val result = UpdateDIDOperation.parse(signedExampleOperation, dummyTimestamp).right.value

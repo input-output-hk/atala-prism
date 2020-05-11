@@ -47,7 +47,6 @@ class BlockProcessingServiceSpec extends PostgresRepositorySpec {
   lazy val didDataRepository = new DIDDataRepository(database)
   lazy val credentialsRepository = new CredentialsRepository(database)
 
-  override val tables = List("credentials", "public_keys", "did_data")
   val service = new BlockProcessingServiceImpl()
   val dummyTimestamp = TimestampInfo.dummyTime.atalaBlockTimestamp
   val dummyABSequenceNumber = TimestampInfo.dummyTime.atalaBlockSequenceNumber

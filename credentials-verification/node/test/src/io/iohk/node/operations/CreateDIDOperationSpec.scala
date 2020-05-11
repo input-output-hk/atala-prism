@@ -81,8 +81,6 @@ class CreateDIDOperationSpec extends PostgresRepositorySpec {
   lazy val didDataRepository = new DIDDataRepository(database)
   lazy val dummyTimestamp = TimestampInfo.dummyTime
 
-  override val tables = List("public_keys", "did_data")
-
   "CreateDIDOperation.parse" should {
     "parse valid CreateDid AtalaOperation" in {
       CreateDIDOperation.parse(exampleOperation, dummyTimestamp) mustBe a[Right[_, _]]

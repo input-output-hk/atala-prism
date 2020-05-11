@@ -34,8 +34,6 @@ trait PostgresRepositorySpec
 
   implicit def ec: ExecutionContext = ExecutionContext.global
 
-  protected val tables = List("blocks")
-
   val POSTGRES_HOST_ENVNAME = "POSTGRES_TEST_HOST"
   val POSTGRES_DB_ENVNAME = "POSTGRES_TEST_DB"
   val POSTGRES_USER_ENVNAME = "POSTGRES_TEST_USER"
@@ -94,8 +92,20 @@ trait PostgresRepositorySpec
 
   protected def clearDatabase(): Unit = {
     import doobie.implicits._
-    tables.foreach { table =>
-      (fr"DELETE FROM" ++ Fragment.const(table)).update.run.transact(database).unsafeRunSync()
-    }
+    sql"""
+         |DO
+         |$$$$
+         |DECLARE
+         |  truncate_stmt TEXT;
+         |BEGIN
+         |  SELECT 'TRUNCATE ' || STRING_AGG(format('%I.%I', schemaname, tablename), ', ')
+         |    INTO truncate_stmt
+         |  FROM pg_tables
+         |  WHERE schemaname IN ('public');
+         |
+         |  EXECUTE truncate_stmt;
+         |END;
+         |$$$$
+         |""".stripMargin.update.run.transact(database).unsafeRunSync()
   }
 }

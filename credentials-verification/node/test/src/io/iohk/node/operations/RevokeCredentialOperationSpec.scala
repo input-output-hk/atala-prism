@@ -52,8 +52,6 @@ class RevokeCredentialOperationSpec extends PostgresRepositorySpec {
   lazy val didDataRepository = new DIDDataRepository(database)
   lazy val credentialsRepository = new CredentialsRepository(database)
 
-  override val tables = List("credentials", "public_keys", "did_data")
-
   override def beforeEach(): Unit = {}
 
   "RevokeCredentialOperation.parse" should {

@@ -7,8 +7,6 @@ import io.iohk.cvp.models.ParticipantId
 import org.scalatest.EitherValues._
 
 class RequestNoncesRepositorySpec extends ConnectorRepositorySpecBase {
-  override val tables = List("request_nonces", "participants")
-
   lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)
 
   private def available(participantId: ParticipantId, requestNonce: RequestNonce): Boolean = {

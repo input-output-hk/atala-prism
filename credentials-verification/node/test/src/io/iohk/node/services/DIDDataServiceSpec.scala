@@ -15,7 +15,6 @@ class DIDDataServiceSpec extends PostgresRepositorySpec {
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 50.millis)
   lazy val didDataRepository = new DIDDataRepository(database)
   lazy val didDataService = new DIDDataService(didDataRepository)
-  override val tables = List("public_keys", "did_data")
   val dummyTimestamp = TimestampInfo.dummyTime
 
   "DIDDataServiceSpec.findByDID" should {

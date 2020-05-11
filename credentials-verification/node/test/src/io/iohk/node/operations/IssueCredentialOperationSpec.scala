@@ -56,8 +56,6 @@ class IssueCredentialOperationSpec extends PostgresRepositorySpec {
   lazy val didDataRepository = new DIDDataRepository(database)
   lazy val credentialsRepository = new CredentialsRepository(database)
 
-  override val tables = List("credentials", "public_keys", "did_data")
-
   "IssueCredentialOperation.parse" should {
     "parse valid CreateDid AtalaOperation" in {
       IssueCredentialOperation.parse(exampleOperation, dummyTimestamp) mustBe a[Right[_, _]]

@@ -121,18 +121,6 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
 
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 20.millis)
 
-  override val tables = List(
-    "verifier_holders",
-    "verifiers",
-    "issuer_groups",
-    "issuers",
-    "request_nonces",
-    "messages",
-    "connections",
-    "connection_tokens",
-    "holder_public_keys",
-    "participants"
-  )
   override def services =
     Seq(
       connector_api.ConnectorServiceGrpc

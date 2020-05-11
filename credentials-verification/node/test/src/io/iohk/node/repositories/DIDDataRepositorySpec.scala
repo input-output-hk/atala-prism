@@ -14,8 +14,6 @@ class DIDDataRepositorySpec extends PostgresRepositorySpec {
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 500.millis)
   lazy val didDataRepository = new DIDDataRepository(database)
 
-  override val tables = List("public_keys", "did_data")
-
   val operationDigest = digestGen(0, 1)
   val didSuffix = didSuffixFromDigest(operationDigest)
 

@@ -12,8 +12,6 @@ import scala.concurrent.duration._
 class AtalaObjectsDAOSpec extends PostgresRepositorySpec {
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 50.millis)
 
-  override val tables = List("atala_objects")
-
   val objectIds = (1 to 9).map(i => SHA256Digest.compute(s"object$i".getBytes))
   val objectId = objectIds(0)
 

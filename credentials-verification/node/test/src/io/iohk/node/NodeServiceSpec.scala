@@ -34,8 +34,6 @@ class NodeServiceSpec extends PostgresRepositorySpec with MockitoSugar with Befo
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 50.millis)
   implicit val executionContext = scala.concurrent.ExecutionContext.global
 
-  override val tables: List[String] = List("public_keys", "did_data")
-
   protected var serverName: String = _
   protected var serverHandle: Server = _
   protected var channelHandle: ManagedChannel = _
