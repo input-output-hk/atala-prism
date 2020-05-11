@@ -205,7 +205,6 @@ class CredentialPayPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
 
     func tappedAction(for cell: ConfirmationViewCell) {
 
-        Tracker.global.trackPaymentConfirmTapped()
         // TODO: Call WS
         viewImpl?.changeScreenToSuccess(action: actionSuccessContinue)
     }

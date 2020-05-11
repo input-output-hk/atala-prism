@@ -51,7 +51,6 @@ class ConnectionsWorker: NSObject {
                 self.delegate?.config(isLoading: false)
                 self.delegate?.showNewConnectMessage(type: self.connectionRequest?.type ?? 0, title: self.connectionRequest!.info?.name, logoData: self.connectionRequest?.info?.logoData)
             }, error: { error in
-                Tracker.global.trackConnectionFail()
                 self.delegate?.config(isLoading: false)
                 self.delegate?.showErrorMessage(doShow: true, message: "connections_scan_qr_error".localize())
             })

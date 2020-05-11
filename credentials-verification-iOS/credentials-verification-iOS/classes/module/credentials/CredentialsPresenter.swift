@@ -266,7 +266,6 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
 
     private func shareWithSelectedEmployers() {
 
-        Tracker.global.trackCredentialShareCompleted()
         viewImpl?.config(isLoading: true)
 
         // Call the service
@@ -355,7 +354,6 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
         guard let rowIndex = cell.indexPath?.row, let cellRow = degreeRows?[rowIndex], let degree = cellRow.value as? Degree else {
             return
         }
-        Tracker.global.trackCredentialNewTapped()
         startShowingDetails(degree: degree)
     }
     
@@ -365,7 +363,6 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
             guard let cellRow = degreeRows?[rowIndex], let degree = cellRow.value as? Degree else {
                 return
             }
-            Tracker.global.trackCredentialNewTapped()
             startShowingDetails(degree: degree)
         }
     }

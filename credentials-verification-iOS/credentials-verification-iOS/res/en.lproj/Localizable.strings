@@ -86,8 +86,8 @@
 "credentials_detail_result" = "Result";
 "credentials_detail_share_button" = "Share!";
 "credentials_detail_share_success" = "Successfully shared!";
-"credentials_empty_title" = "Connect to a University, Public Registry or potential Employers";
-"credentials_empty_subtitle" = "You can receive and send your digital certificates";
+"credentials_empty_title" = "Connect to an organization to receive your credentials";
+"credentials_empty_subtitle" = "Receive, store and share your digital credentials";
 "credentials_detail_national_id_card" = "National ID Card";
 "credentials_detail_identity_number" = "Identity Number";
 "credentials_detail_date_of_birth" = "Date of Birth";

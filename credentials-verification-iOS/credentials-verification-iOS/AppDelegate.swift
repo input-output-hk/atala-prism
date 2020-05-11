@@ -1,6 +1,5 @@
 //
-import Crashlytics
-import Fabric
+import FirebaseCrashlytics
 import Firebase
 import UIKit
 
@@ -11,7 +10,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Override point for customization after application launch.
 
         setupFirebase()
-        setupCrashlytics()
         setupLoggingPlatform()
 
         // Only for the debug version, restore the custom URL
@@ -45,10 +43,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     // MARK: Firebase et al.
-
-    func setupCrashlytics() {
-        Fabric.with([Crashlytics.self])
-    }
 
     func setupFirebase() {
         FirebaseApp.configure()

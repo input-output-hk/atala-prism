@@ -39,7 +39,6 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
 
     func tappedScanButton() {
 
-        Tracker.global.trackScanQrTapped()
         startQrScanning()
     }
 
@@ -114,11 +113,9 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
 
                 // Parse data
                 let parsedResponse = ConnectionMaker.parseResponseList(responses)
+                let sortedResponse = parsedResponse.sorted { $0.name < $1.name}
                 self.cleanData()
-                self.connections?.append(contentsOf: parsedResponse)
-                self.connections?.sort(by: { (lhs, rhs) -> Bool in
-                    lhs.name < rhs.name
-                })
+                self.connections?.append(contentsOf: sortedResponse)
                 // Save logos
                 ImageBank.saveLogos(list: self.connections)
             } catch {
@@ -197,7 +194,6 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
     
     private func shareCredentials(connection: ConnectionBase, credentials: [Degree]) {
 
-        Tracker.global.trackCredentialShareCompleted()
         viewImpl?.config(isLoading: true)
 
         // Call the service

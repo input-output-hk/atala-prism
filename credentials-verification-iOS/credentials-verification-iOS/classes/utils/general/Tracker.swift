@@ -5,28 +5,30 @@ class Tracker {
 
     static let global = Tracker()
 
+    // MARK: Sign-Up/Registration
+    
     func trackCreateAccountTapped() {
         Analytics.logEvent("create_account", parameters: nil)
     }
 
     func trackAcceptTerms() {
-        Analytics.logEvent("student_accept_tcs", parameters: nil)
+        Analytics.logEvent("user_accept_tcs", parameters: nil)
     }
 
     func trackAcceptPrivacy() {
-        Analytics.logEvent("student_accept_pp", parameters: nil)
+        Analytics.logEvent("user_accept_pp", parameters: nil)
     }
 
     func trackContinuedAfterAcceptTerms() {
-        Analytics.logEvent("student_continue_post_accept", parameters: nil)
+        Analytics.logEvent("user_continue_post_accept", parameters: nil)
     }
 
     func trackAcceptRecovery() {
-        Analytics.logEvent("student_accept_recovery_phrase", parameters: nil)
+        Analytics.logEvent("user_accept_recovery_phrase", parameters: nil)
     }
 
     func trackContinuedAfterAcceptRecovery() {
-        Analytics.logEvent("student_accept_recovery_phrase_continue", parameters: nil)
+        Analytics.logEvent("user_accept_recovery_phrase_continue", parameters: nil)
     }
 
     func trackRecoverySuccess() {
@@ -37,25 +39,29 @@ class Tracker {
         Analytics.logEvent("verify_recovery_phrase_fail", parameters: nil)
     }
 
-    func trackScanQrTapped() {
-        Analytics.logEvent("connect_scan_qr_code", parameters: nil)
+    func trackSecureAppFingerprint() {
+        Analytics.logEvent("secure_app_fingerprint", parameters: nil)
     }
 
+    func trackSecureAppFacial() {
+        Analytics.logEvent("secure_app_facial_recognition", parameters: nil)
+    }
+
+    func trackSecureAppPasscode() {
+        Analytics.logEvent("secure_app_fingerprint_passcode", parameters: nil)
+    }
+    
+    // MARK: Accept Connection
+
     func trackConnectionAccept() {
-        Analytics.logEvent("connect_with_issuer_verifier_confirm", parameters: nil)
+        Analytics.logEvent("new_connection_confirm", parameters: nil)
     }
 
     func trackConnectionDecline() {
-        Analytics.logEvent("connect_with_issuer_verifier_decline", parameters: nil)
+        Analytics.logEvent("new_connection_decline", parameters: nil)
     }
-
-    func trackConnectionFail() {
-        Analytics.logEvent("connect_with_issuer_fail", parameters: nil)
-    }
-
-    func trackCredentialNewTapped() {
-        Analytics.logEvent("new_credential_view", parameters: nil)
-    }
+    
+    // MARK: Accept Credentials
 
     func trackCredentialNewConfirm() {
         Analytics.logEvent("new_credential_confirm", parameters: nil)
@@ -65,19 +71,4 @@ class Tracker {
         Analytics.logEvent("credential_decline", parameters: nil)
     }
 
-    func trackPaymentConfirmTapped() {
-        Analytics.logEvent("credential_pay_cc", parameters: nil)
-    }
-
-    func trackPaymentSuccess() {
-        Analytics.logEvent("credential_pay_cc_success", parameters: nil)
-    }
-
-    func trackPaymentFail() {
-        Analytics.logEvent("credential_pay_cc_fail", parameters: nil)
-    }
-
-    func trackCredentialShareCompleted() {
-        Analytics.logEvent("share_credential", parameters: nil)
-    }
 }

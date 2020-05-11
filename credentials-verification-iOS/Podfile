@@ -22,10 +22,9 @@ target 'credentials-verification-iOS' do
   pod 'Presentr', '~> 1.9.0' 
   pod 'Toast-Swift', '~> 5.0.0'
   # Firebase
-  pod 'Fabric', '~> 1.10.2'
-  pod 'Crashlytics', '~> 3.14.0'
-  pod 'Firebase/Analytics', '~> 6.13.0'
-  pod 'Firebase/Performance', '~> 6.13.0'
+  pod 'Firebase/Crashlytics'
+  pod 'Firebase/Analytics'
+  pod 'Firebase/Performance'
   # Payments
   pod 'BraintreeDropIn', '~> 7.5.0'
   # Mnemonics

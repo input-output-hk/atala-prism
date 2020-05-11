@@ -115,8 +115,6 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
     // MARK: Buttons
 
     func tappedScanButton() {
-
-        Tracker.global.trackScanQrTapped()
         startQrScanning()
     }
 
@@ -321,7 +319,6 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
         guard let rowIndex = cell.indexPath?.row, let cellRow = degreeRows?[rowIndex], let degree = cellRow.value as? Degree else {
             return
         }
-        Tracker.global.trackCredentialNewTapped()
         startShowingDetails(degree: degree)
     }
     
@@ -331,7 +328,6 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
             guard let cellRow = degreeRows?[rowIndex], let degree = cellRow.value as? Degree else {
                 return
             }
-            Tracker.global.trackCredentialNewTapped()
             startShowingDetails(degree: degree)
         }
     }

@@ -1,17 +1,14 @@
 //
 
-import Crashlytics
+import FirebaseCrashlytics
 
 class CrashReporter: NSObject {
 
     static func logUser(loggedUser: LoggedUser?) {
 
-        if loggedUser == nil {
-            return
-        }
+        if let loggedUserId = loggedUser?.id {
+            Crashlytics.crashlytics().setUserID(loggedUserId)
 
-        Crashlytics.sharedInstance().setUserIdentifier(loggedUser?.id)
-        Crashlytics.sharedInstance().setUserEmail(loggedUser?.email)
-        Crashlytics.sharedInstance().setUserName(loggedUser?.lastName)
+        }
     }
 }
