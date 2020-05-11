@@ -5,8 +5,9 @@ import doobie.implicits._
 import io.iohk.connector.model._
 import io.iohk.connector.repositories.daos.ParticipantsDAO
 import io.iohk.cvp.cmanager.models.Issuer
-import io.iohk.cvp.cmanager.repositories.daos.IssuersDAO
-import io.iohk.cvp.cstore.repositories.daos.StoreUsersDAO
+import io.iohk.cvp.cmanager.repositories.IssuersRepository
+import io.iohk.cvp.cstore.models.Verifier
+import io.iohk.cvp.cstore.repositories.VerifiersRepository
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.prism.protos.node_api.CreateDIDResponse
 import io.iohk.prism.protos.{connector_api, node_models}
@@ -56,20 +57,18 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
 
     "propagate the participant to the issuers table" in {
       val name = "Blockchain University"
-      val (did, participantId) =
+      val participantId =
         register(didSuffix = "issuerX", name = name, role = connector_api.RegisterDIDRequest.Role.issuer)
-      val result = IssuersDAO.findBy(Issuer.Id(participantId.uuid)).transact(database).unsafeRunSync().value
-      result.id.value must be(participantId.uuid)
-      result.name.value must be(name)
-      result.did must be(did)
+      val result = new IssuersRepository(database).findBy(Issuer.Id(participantId.uuid)).value.futureValue
+      result map (_.value.id.value) must be(Right(participantId.uuid))
     }
 
     "propagate the participant to the verifiers table" in {
       val name = "Blockchain Employer"
-      val (did, participantId) =
+      val participantId =
         register(didSuffix = "employerX", name = name, role = connector_api.RegisterDIDRequest.Role.verifier)
-      val result = StoreUsersDAO.get(participantId).transact(database).unsafeRunSync().value
-      result.id must be(participantId)
+      val result = new VerifiersRepository(database).findBy(Verifier.Id(participantId.uuid)).value.futureValue
+      result map (_.value.id.value) must be(Right(participantId.uuid))
     }
   }
 
@@ -77,7 +76,7 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
       didSuffix: String,
       name: String,
       role: connector_api.RegisterDIDRequest.Role
-  ): (String, ParticipantId) = {
+  ): ParticipantId = {
     usingApiAs.unlogged { blockingStub =>
       val expectedDID = s"did:prism:$didSuffix"
       val logo = "none".getBytes()
@@ -90,7 +89,7 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
       nodeMock.createDID(*).returns {
         Future.successful(CreateDIDResponse(didSuffix))
       }
-      val response = blockingStub.registerDID(request)
+      blockingStub.registerDID(request)
 
       val id = ParticipantsDAO
         .findByDID(expectedDID)
@@ -100,7 +99,7 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
         .value
         .id
 
-      (response.did, id)
+      id
     }
   }
 }

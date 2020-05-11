@@ -2,7 +2,9 @@ package io.iohk.cvp.cmanager.grpc.services
 
 import java.util.UUID
 
-import io.iohk.connector.repositories.{ConnectionsRepository, RequestNoncesRepository}
+import io.iohk.connector.model.{ParticipantLogo, ParticipantType}
+import io.iohk.connector.repositories.ParticipantsRepository.CreateParticipantRequest
+import io.iohk.connector.repositories.{ConnectionsRepository, ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.connector.{RpcSpecBase, SignedRequestsAuthenticator}
 import io.iohk.cvp.cmanager.models.{Issuer, IssuerGroup, Student}
 import io.iohk.cvp.cmanager.repositories.{
@@ -28,6 +30,7 @@ class StudentsServiceImplSpec extends RpcSpecBase {
 
   private lazy val issuerGroupsRepository = new IssuerGroupsRepository(database)
   private lazy val issuersRepository = new IssuersRepository(database)
+  private lazy val participantsRepository = new ParticipantsRepository(database)
   private lazy val studentsRepository = new StudentsRepository(database)
   private lazy val credentialsRepository = new CredentialsRepository(database)
   private lazy val connectionsRepository = new ConnectionsRepository.PostgresImpl(database)(executionContext)
@@ -84,12 +87,24 @@ class StudentsServiceImplSpec extends RpcSpecBase {
   }
 
   private def createIssuer(): Issuer.Id = {
-    issuersRepository
-      .insert(IssuersRepository.IssuerCreationData(Issuer.Name("IOHK"), "did:prism:issuer1", None))
+    val id = Issuer.Id(UUID.randomUUID())
+    participantsRepository
+      .create(
+        CreateParticipantRequest(
+          ParticipantId(id.value),
+          ParticipantType.Issuer,
+          "Issuer",
+          "did:prism:test",
+          ParticipantLogo(Vector())
+        )
+      )
       .value
       .futureValue
-      .right
+    issuersRepository
+      .insert(IssuersRepository.IssuerCreationData(id))
       .value
+      .futureValue
+    id
   }
 
   private def toParticipantId(issuer: Issuer.Id): ParticipantId = {

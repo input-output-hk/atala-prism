@@ -1,6 +1,7 @@
 package io.iohk.cvp.cstore
 
 import java.time.Instant
+import java.util.UUID
 
 import enumeratum.EnumEntry.UpperSnakecase
 import enumeratum.{EnumEntry, _}
@@ -19,7 +20,11 @@ package object models {
     case object Revoked extends IndividualConnectionStatus
   }
 
-  case class StoreUser(id: ParticipantId)
+  case class Verifier(id: Verifier.Id)
+
+  object Verifier {
+    case class Id(value: UUID) extends AnyVal
+  }
 
   case class StoreIndividual(
       id: ParticipantId,

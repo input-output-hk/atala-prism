@@ -1,47 +1,36 @@
 package io.iohk.cvp.cmanager.repositories
 
-import java.util.UUID
-
 import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.connector.model.{ParticipantInfo, ParticipantLogo, ParticipantType}
-import io.iohk.connector.repositories.daos.ParticipantsDAO
 import io.iohk.cvp.cmanager.models.Issuer
 import io.iohk.cvp.cmanager.repositories.IssuersRepository.IssuerCreationData
 import io.iohk.cvp.cmanager.repositories.daos.IssuersDAO
-import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither.FutureEitherOps
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 object IssuersRepository {
-  case class IssuerCreationData(name: Issuer.Name, did: String, logo: Option[Vector[Byte]])
+  case class IssuerCreationData(id: Issuer.Id)
 }
 
 class IssuersRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
-  def insert(data: IssuerCreationData): FutureEither[Nothing, Issuer.Id] = {
-    val id = UUID.randomUUID()
-
-    val query = for {
-      _ <- IssuersDAO.insert(Issuer(Issuer.Id(id), data.name, data.did))
-      _ <- ParticipantsDAO.insert(
-        ParticipantInfo(
-          ParticipantId(id),
-          ParticipantType.Issuer,
-          None,
-          data.name.value,
-          Some(data.did),
-          data.logo.map(ParticipantLogo(_))
-        )
-      )
-    } yield ()
-
-    query
+  def insert(data: IssuerCreationData): FutureEither[Nothing, Unit] = {
+    IssuersDAO
+      .insert(Issuer(data.id))
       .transact(xa)
       .unsafeToFuture()
-      .map(_ => Right(Issuer.Id(id)))
+      .map(Right(_))
+      .toFutureEither
+  }
+
+  def findBy(id: Issuer.Id): FutureEither[Nothing, Option[Issuer]] = {
+    IssuersDAO
+      .findBy(id)
+      .transact(xa)
+      .unsafeToFuture()
+      .map(Right(_))
       .toFutureEither
   }
 }

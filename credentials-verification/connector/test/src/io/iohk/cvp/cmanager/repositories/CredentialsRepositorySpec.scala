@@ -15,7 +15,8 @@ class CredentialsRepositorySpec extends CManagerRepositorySpec {
 
   "create" should {
     "create a new credential" in {
-      val issuer = createIssuer("Issuer-1")
+      val issuerName = "Issuer-1"
+      val issuer = createIssuer(issuerName)
       val group = createIssuerGroup(issuer.id, IssuerGroup.Name("grp1"))
       val student = createStudent(issuer.id, "Student 1", group.name)
       val request = CreateCredential(
@@ -33,7 +34,7 @@ class CredentialsRepositorySpec extends CManagerRepositorySpec {
       credential.graduationDate must be(request.graduationDate)
       credential.issuedBy must be(request.issuedBy)
       credential.studentId must be(request.studentId)
-      credential.issuerName must be(issuer.name.value)
+      credential.issuerName must be(issuerName)
       credential.studentName must be(student.fullName)
       credential.title must be(request.title)
       credential.groupName must be(request.groupName)

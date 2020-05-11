@@ -12,7 +12,7 @@ import io.iohk.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO,
 import io.iohk.cvp.cmanager.models
 import io.iohk.cvp.cmanager.repositories.daos.StudentsDAO
 import io.iohk.cvp.crypto.ECKeys.EncodedPublicKey
-import io.iohk.cvp.cstore.repositories.daos.IndividualsDAO
+import io.iohk.cvp.cstore.repositories.daos.VerifierHoldersDAO
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither._
@@ -140,7 +140,7 @@ object ConnectionsRepository {
 
         // corresponding hack to add connectionId to the individual in cstore, TODO: ditto
         _ <- EitherT.right[ConnectorError] {
-          IndividualsDAO.addConnection(token, connectionId)
+          VerifierHoldersDAO.addConnection(token, connectionId)
         }
 
         _ <- EitherT.right[ConnectorError](ConnectionTokensDAO.markAsUsed(token))

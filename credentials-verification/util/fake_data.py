@@ -289,8 +289,8 @@ def proto_credential(d):
             )
 
 def render_issuer(d):
-    return '''INSERT INTO issuers(issuer_id, did, name)
-  VALUES({issuer_id}, {did}, {name});'''.format(**sql(d))
+    return '''INSERT INTO issuers(issuer_id)
+  VALUES({issuer_id});'''.format(**sql(d))
 
 def render_group(g):
     return '''INSERT INTO issuer_groups (group_id, issuer_id, name)
@@ -301,7 +301,7 @@ def render_issuer_participant(d):
   VALUES({issuer_id}, 'issuer', {did}, {name}, {logo});'''.format(**sql(d))
 
 def render_verifier(d):
-    return '''INSERT INTO verifiers(user_id) VALUES({verifier_id});'''.format(**sql(d))
+    return '''INSERT INTO verifiers(verifier_id) VALUES({verifier_id});'''.format(**sql(d))
 
 def render_verifier_participant(d):
     return '''INSERT INTO participants(id, tpe, did, name, logo)

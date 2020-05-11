@@ -7,21 +7,21 @@ import io.iohk.connector.errors.ConnectorError
 import io.iohk.connector.model.TokenString
 import io.iohk.connector.repositories.daos.ConnectionTokensDAO
 import io.iohk.cvp.cstore.models.StoreIndividual
-import io.iohk.cvp.cstore.repositories.daos.IndividualsDAO
-import io.iohk.cvp.cstore.repositories.daos.IndividualsDAO.StoreIndividualCreateData
+import io.iohk.cvp.cstore.repositories.daos.VerifierHoldersDAO
+import io.iohk.cvp.cstore.repositories.daos.VerifierHoldersDAO.HolderCreateData
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither.FutureEitherOps
 
 import scala.concurrent.ExecutionContext
 
-class StoreIndividualsService(xa: Transactor[IO])(implicit ec: ExecutionContext) {
+class VerifierHoldersService(xa: Transactor[IO])(implicit ec: ExecutionContext) {
 
   def createIndividual(
       userId: ParticipantId,
-      data: StoreIndividualCreateData
+      data: HolderCreateData
   ): FutureEither[ConnectorError, StoreIndividual] = {
-    IndividualsDAO
+    VerifierHoldersDAO
       .insert(userId, data)
       .transact(xa)
       .unsafeToFuture()
@@ -34,7 +34,7 @@ class StoreIndividualsService(xa: Transactor[IO])(implicit ec: ExecutionContext)
       lastSeen: Option[ParticipantId],
       limit: Int
   ): FutureEither[ConnectorError, Seq[StoreIndividual]] = {
-    IndividualsDAO
+    VerifierHoldersDAO
       .list(userId, lastSeen, limit)
       .transact(xa)
       .unsafeToFuture()
@@ -49,7 +49,7 @@ class StoreIndividualsService(xa: Transactor[IO])(implicit ec: ExecutionContext)
     val token = TokenString.random()
     val query = for {
       _ <- ConnectionTokensDAO.insert(userId, token)
-      _ <- IndividualsDAO.setConnectionToken(userId, individualId, token)
+      _ <- VerifierHoldersDAO.setConnectionToken(userId, individualId, token)
     } yield token
 
     query

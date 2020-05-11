@@ -6,11 +6,11 @@ import io.iohk.connector.model.{ConnectionId, TokenString}
 import io.iohk.cvp.cstore.models.{IndividualConnectionStatus, StoreIndividual}
 import io.iohk.cvp.models.ParticipantId
 
-object IndividualsDAO {
+object VerifierHoldersDAO {
 
-  case class StoreIndividualCreateData(fullName: String, email: Option[String])
+  case class HolderCreateData(fullName: String, email: Option[String])
 
-  def insert(userId: ParticipantId, data: StoreIndividualCreateData): ConnectionIO[StoreIndividual] = {
+  def insert(userId: ParticipantId, data: HolderCreateData): ConnectionIO[StoreIndividual] = {
     val individualId = ParticipantId.random()
     sql"""
          |INSERT INTO verifier_holders (user_id, individual_id, full_name, email, created_at)

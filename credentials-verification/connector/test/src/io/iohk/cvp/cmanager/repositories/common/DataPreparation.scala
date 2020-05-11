@@ -21,19 +21,12 @@ object DataPreparation {
   def createIssuer(name: String = "Issuer", tag: String = "")(implicit database: Transactor[IO]): Issuer = {
     val id = Issuer.Id(UUID.randomUUID())
     val did = s"did:geud:issuer-x$tag"
-    sql"""
-         |INSERT INTO issuers (issuer_id, name, did)
-         |VALUES ($id, $name, $did)
-         |""".stripMargin.update.run.transact(database).unsafeRunSync()
-
     // dirty hack to create a participant while creating an issuer, TODO: Merge the tables
     val participant = ParticipantInfo(ParticipantId(id.value), ParticipantType.Issuer, None, name, Option(did), None)
-    sql"""
-         |INSERT INTO participants (id, tpe, name, did)
-         |VALUES (${participant.id}, ${participant.tpe}, ${participant.name}, ${participant.did})
-       """.stripMargin.update.run.transact(database).unsafeRunSync()
+    ParticipantsDAO.insert(participant).transact(database).unsafeRunSync()
+    IssuersDAO.insert(Issuer(id)).transact(database).unsafeRunSync()
 
-    Issuer(id, Issuer.Name(name), did)
+    Issuer(id)
   }
 
   def createCredential(issuedBy: Issuer.Id, studentId: Student.Id, tag: String = "")(implicit

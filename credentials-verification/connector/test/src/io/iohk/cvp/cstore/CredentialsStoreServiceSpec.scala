@@ -2,13 +2,16 @@ package io.iohk.cvp.cstore
 
 import com.google.protobuf.ByteString
 import doobie.implicits._
-import io.iohk.connector.model.{ParticipantInfo, ParticipantType}
+import io.iohk.connector.model.{ParticipantInfo, ParticipantLogo, ParticipantType}
+import io.iohk.connector.repositories.ParticipantsRepository.CreateParticipantRequest
 import io.iohk.connector.repositories.daos.ParticipantsDAO
-import io.iohk.connector.repositories.{ConnectionsRepository, RequestNoncesRepository}
+import io.iohk.connector.repositories.{ConnectionsRepository, ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.connector.{RpcSpecBase, SignedRequestsAuthenticator}
-import io.iohk.cvp.cstore.models.{IndividualConnectionStatus, StoreUser}
-import io.iohk.cvp.cstore.repositories.daos.{IndividualsDAO, StoreUsersDAO, StoredCredentialsDAO}
-import io.iohk.cvp.cstore.services.{StoreIndividualsService, StoredCredentialsService}
+import io.iohk.cvp.cstore.models.{IndividualConnectionStatus, Verifier}
+import io.iohk.cvp.cstore.repositories.VerifiersRepository
+import io.iohk.cvp.cstore.repositories.VerifiersRepository.VerifierCreationData
+import io.iohk.cvp.cstore.repositories.daos.{VerifierHoldersDAO, StoredCredentialsDAO, VerifiersDAO}
+import io.iohk.cvp.cstore.services.{VerifierHoldersService, StoredCredentialsService}
 import io.iohk.cvp.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.prism.protos.{cstore_api, cstore_models}
@@ -26,7 +29,7 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
     new cstore_api.CredentialsStoreServiceGrpc.CredentialsStoreServiceBlockingStub(_, _)
   )
 
-  lazy val individuals = new StoreIndividualsService(database)
+  lazy val individuals = new VerifierHoldersService(database)
   lazy val storedCredentials = new StoredCredentialsService(database)
   private lazy val connectionsRepository = new ConnectionsRepository.PostgresImpl(database)(executionContext)
   private lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
@@ -52,16 +55,22 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
   override def beforeEach(): Unit = {
     super.beforeEach()
 
-    StoreUsersDAO
-      .insert(StoreUser(verifierId))
-      .transact(database)
-      .unsafeToFuture()
+    new ParticipantsRepository(database)
+      .create(
+        CreateParticipantRequest(
+          verifierId,
+          ParticipantType.Verifier,
+          "Verifier",
+          "did:prism:test",
+          ParticipantLogo(Vector())
+        )
+      )
+      .value
       .futureValue
 
-    ParticipantsDAO
-      .insert(ParticipantInfo(verifierId, ParticipantType.Verifier, None, "Verifier", None, None))
-      .transact(database)
-      .unsafeToFuture()
+    new VerifiersRepository(database)
+      .insert(VerifierCreationData(Verifier.Id(verifierId.uuid)))
+      .value
       .futureValue
   }
 
@@ -75,7 +84,7 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
         result.individual.get.email mustBe "individual@email.org"
         result.individual.get.status mustBe cstore_models.IndividualConnectionStatus.CREATED
 
-        val individual = IndividualsDAO
+        val individual = VerifierHoldersDAO
           .list(verifierId, None, 1)
           .transact(database)
           .unsafeToFuture()
@@ -142,7 +151,7 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
         val request = cstore_api.GenerateConnectionTokenForRequest(individualId = individualId)
         val response = serviceStub.generateConnectionTokenFor(request)
 
-        val individual = IndividualsDAO
+        val individual = VerifierHoldersDAO
           .list(verifierId, None, 1)
           .transact(database)
           .unsafeToFuture()

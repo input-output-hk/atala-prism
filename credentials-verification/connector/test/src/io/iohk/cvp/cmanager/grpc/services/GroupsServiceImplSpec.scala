@@ -1,6 +1,11 @@
 package io.iohk.cvp.cmanager.grpc.services
 
-import io.iohk.connector.repositories.{ConnectionsRepository, RequestNoncesRepository}
+import java.util.UUID
+
+import io.iohk.connector.model.{ParticipantLogo, ParticipantType}
+import io.iohk.connector.repositories.ParticipantsRepository.CreateParticipantRequest
+import io.iohk.connector.repositories.daos.ParticipantsDAO
+import io.iohk.connector.repositories.{ConnectionsRepository, ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.connector.{RpcSpecBase, SignedRequestsAuthenticator}
 import io.iohk.cvp.cmanager.models.{Issuer, IssuerGroup}
 import io.iohk.cvp.cmanager.repositories.{IssuerGroupsRepository, IssuersRepository}
@@ -20,6 +25,7 @@ class GroupsServiceImplSpec extends RpcSpecBase {
 
   private lazy val issuerGroupsRepository = new IssuerGroupsRepository(database)
   private lazy val issuersRepository = new IssuersRepository(database)
+  private lazy val participantsRepository = new ParticipantsRepository(database)
   private lazy val connectionsRepository = new ConnectionsRepository.PostgresImpl(database)(executionContext)
   private lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
   private lazy val nodeMock = mock[io.iohk.prism.protos.node_api.NodeServiceGrpc.NodeService]
@@ -71,12 +77,19 @@ class GroupsServiceImplSpec extends RpcSpecBase {
   }
 
   private def createIssuer(): Issuer.Id = {
-    issuersRepository
-      .insert(IssuersRepository.IssuerCreationData(Issuer.Name("IOHK"), "did:prism:issuer1", None))
+    val id = UUID.randomUUID()
+    val mockDID = "did:prims:test"
+    participantsRepository
+      .create(
+        CreateParticipantRequest(ParticipantId(id), ParticipantType.Issuer, "", mockDID, ParticipantLogo(Vector()))
+      )
       .value
       .futureValue
-      .right
+    issuersRepository
+      .insert(IssuersRepository.IssuerCreationData(Issuer.Id(id)))
       .value
+      .futureValue
+    Issuer.Id(id)
   }
 
   private def toParticipantId(issuer: Issuer.Id): ParticipantId = {

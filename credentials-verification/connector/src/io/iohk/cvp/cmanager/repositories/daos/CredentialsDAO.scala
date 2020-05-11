@@ -18,9 +18,14 @@ object CredentialsDAO {
          |  VALUES ($id, ${data.issuedBy}, ${data.studentId}, ${data.title}, ${data.enrollmentDate}, ${data.graduationDate}, ${data.groupName}, $createdOn)
          |  RETURNING credential_id, issuer_id, student_id, title, enrollment_date, graduation_date, group_name, created_on
          |)
-         |SELECT inserted.*, issuers.name AS issuer_name, issuer_subjects.full_name AS student_name
+         | , PTS AS (
+         |  SELECT id AS issuer_id, name
+         |  FROM participants
+         |  WHERE tpe = 'issuer'::PARTICIPANT_TYPE
+         |)
+         |SELECT inserted.*, PTS.name AS issuer_name, issuer_subjects.full_name AS student_name
          |FROM inserted
-         |     JOIN issuers USING (issuer_id)
+         |     JOIN PTS USING (issuer_id)
          |     JOIN issuer_subjects USING (student_id)
          |""".stripMargin.query[Credential].unique
   }
@@ -38,9 +43,14 @@ object CredentialsDAO {
              |  FROM credentials
              |  WHERE credential_id = $lastSeen
              |)
-             |SELECT credential_id, c.issuer_id, student_id, title, enrollment_date, graduation_date, group_name, c.created_on, issuers.name AS issuer_name, issuer_subjects.full_name AS student_name
+             | , PTS AS (
+             |  SELECT id AS issuer_id, name
+             |  FROM participants
+             |  WHERE tpe = 'issuer'::PARTICIPANT_TYPE
+             |)
+             |SELECT credential_id, c.issuer_id, student_id, title, enrollment_date, graduation_date, group_name, c.created_on, PTS.name AS issuer_name, issuer_subjects.full_name AS student_name
              |FROM CTE CROSS JOIN credentials c
-             |     JOIN issuers USING (issuer_id)
+             |     JOIN PTS USING (issuer_id)
              |     JOIN issuer_subjects USING (student_id)
              |WHERE c.issuer_id = $issuedBy AND
              |      (c.created_on > last_seen_time OR (c.created_on = last_seen_time AND credential_id > $lastSeen))
@@ -49,9 +59,14 @@ object CredentialsDAO {
              |""".stripMargin
       case None =>
         sql"""
-             |SELECT credential_id, c.issuer_id, student_id, title, enrollment_date, graduation_date, group_name, c.created_on, issuers.name AS issuer_name, issuer_subjects.full_name AS student_name
+             |WITH PTS AS (
+             |  SELECT id AS issuer_id, name
+             |  FROM participants
+             |  WHERE tpe = 'issuer'::PARTICIPANT_TYPE
+             |)
+             |SELECT credential_id, c.issuer_id, student_id, title, enrollment_date, graduation_date, group_name, c.created_on, PTS.name AS issuer_name, issuer_subjects.full_name AS student_name
              |FROM credentials c
-             |     JOIN issuers USING (issuer_id)
+             |     JOIN PTS USING (issuer_id)
              |     JOIN issuer_subjects USING (student_id)
              |WHERE c.issuer_id = $issuedBy
              |ORDER BY c.created_on ASC, credential_id
@@ -63,9 +78,14 @@ object CredentialsDAO {
 
   def getBy(issuedBy: Issuer.Id, studentId: Student.Id): doobie.ConnectionIO[List[Credential]] = {
     sql"""
-         |SELECT credential_id, c.issuer_id, student_id, title, enrollment_date, graduation_date, group_name, c.created_on, issuers.name AS issuer_name, issuer_subjects.full_name AS student_name
+         |WITH PTS AS (
+         |  SELECT id AS issuer_id, name
+         |  FROM participants
+         |  WHERE tpe = 'issuer'::PARTICIPANT_TYPE
+         |)
+         |SELECT credential_id, c.issuer_id, student_id, title, enrollment_date, graduation_date, group_name, c.created_on, PTS.name AS issuer_name, issuer_subjects.full_name AS student_name
          |FROM credentials c
-         |     JOIN issuers USING (issuer_id)
+         |     JOIN PTS USING (issuer_id)
          |     JOIN issuer_subjects USING (student_id)
          |WHERE c.issuer_id = $issuedBy AND
          |      c.student_id = $studentId
