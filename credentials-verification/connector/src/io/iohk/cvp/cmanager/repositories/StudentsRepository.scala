@@ -7,7 +7,7 @@ import io.iohk.connector.model.TokenString
 import io.iohk.connector.repositories.daos.ConnectionTokensDAO
 import io.iohk.cvp.cmanager.models.requests.CreateStudent
 import io.iohk.cvp.cmanager.models.{Issuer, IssuerGroup, Student}
-import io.iohk.cvp.cmanager.repositories.daos.{IssuerGroupsDAO, StudentsDAO}
+import io.iohk.cvp.cmanager.repositories.daos.{IssuerGroupsDAO, IssuerSubjectsDAO}
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither.FutureEitherOps
@@ -19,7 +19,7 @@ class StudentsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
     val query = for {
       groupMaybe <- IssuerGroupsDAO.find(data.issuer, data.groupName)
       group = groupMaybe.getOrElse(throw new RuntimeException("Group not found"))
-      student <- StudentsDAO.create(data, group.id)
+      student <- IssuerSubjectsDAO.create(data, group.id)
     } yield student
 
     query
@@ -35,7 +35,7 @@ class StudentsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
       lastSeenStudent: Option[Student.Id],
       groupName: Option[IssuerGroup.Name]
   ): FutureEither[Nothing, List[Student]] = {
-    StudentsDAO
+    IssuerSubjectsDAO
       .getBy(issuer, limit, lastSeenStudent, groupName)
       .transact(xa)
       .unsafeToFuture()
@@ -44,7 +44,7 @@ class StudentsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
   }
 
   def find(issuerId: Issuer.Id, studentId: Student.Id): FutureEither[Nothing, Option[Student]] = {
-    StudentsDAO
+    IssuerSubjectsDAO
       .find(issuerId, studentId)
       .transact(xa)
       .map(Right(_))
@@ -57,7 +57,10 @@ class StudentsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
 
     val tx = for {
       _ <- ConnectionTokensDAO.insert(toParticipantId(issuerId), token)
-      _ <- StudentsDAO.update(issuerId, StudentsDAO.UpdateStudentRequest.ConnectionTokenGenerated(studentId, token))
+      _ <- IssuerSubjectsDAO.update(
+        issuerId,
+        IssuerSubjectsDAO.UpdateSubjectRequest.ConnectionTokenGenerated(studentId, token)
+      )
     } yield ()
 
     tx.transact(xa)

@@ -10,7 +10,7 @@ import io.iohk.connector.errors._
 import io.iohk.connector.model._
 import io.iohk.connector.repositories.daos.{ConnectionTokensDAO, ConnectionsDAO, ParticipantsDAO}
 import io.iohk.cvp.cmanager.models
-import io.iohk.cvp.cmanager.repositories.daos.StudentsDAO
+import io.iohk.cvp.cmanager.repositories.daos.IssuerSubjectsDAO
 import io.iohk.cvp.crypto.ECKeys.EncodedPublicKey
 import io.iohk.cvp.cstore.repositories.daos.VerifierHoldersDAO
 import io.iohk.cvp.models.ParticipantId
@@ -132,9 +132,9 @@ object ConnectionsRepository {
 
         // hack to add the connectionId to the student (if any), TODO: this should be moved to another layer
         _ <- EitherT.right[ConnectorError] {
-          StudentsDAO.update(
+          IssuerSubjectsDAO.update(
             models.Issuer.Id(initiator.id.uuid),
-            StudentsDAO.UpdateStudentRequest.ConnectionAccepted(token, connectionId)
+            IssuerSubjectsDAO.UpdateSubjectRequest.ConnectionAccepted(token, connectionId)
           )
         }
 

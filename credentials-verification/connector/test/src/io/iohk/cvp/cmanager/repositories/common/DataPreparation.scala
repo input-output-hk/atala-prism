@@ -62,7 +62,7 @@ object DataPreparation {
       groupName = group.name
     )
 
-    StudentsDAO.create(request, group.id).transact(database).unsafeRunSync()
+    IssuerSubjectsDAO.create(request, group.id).transact(database).unsafeRunSync()
   }
 
   def createIssuerGroup(issuer: Issuer.Id, name: IssuerGroup.Name)(implicit database: Transactor[IO]): IssuerGroup = {

@@ -8,29 +8,30 @@ import io.iohk.connector.model.{ConnectionId, TokenString}
 import io.iohk.cvp.cmanager.models.requests.CreateStudent
 import io.iohk.cvp.cmanager.models.{Issuer, IssuerGroup, Student}
 
-object StudentsDAO {
+object IssuerSubjectsDAO {
 
   import io.iohk.connector.repositories.daos._
 
-  sealed trait UpdateStudentRequest
-  object UpdateStudentRequest {
-    final case class ConnectionTokenGenerated(studentId: Student.Id, token: TokenString) extends UpdateStudentRequest
-    final case class ConnectionAccepted(token: TokenString, connectionId: ConnectionId) extends UpdateStudentRequest
+  sealed trait UpdateSubjectRequest
+  object UpdateSubjectRequest {
+    final case class ConnectionTokenGenerated(studentId: Student.Id, token: TokenString) extends UpdateSubjectRequest
+    final case class ConnectionAccepted(token: TokenString, connectionId: ConnectionId) extends UpdateSubjectRequest
   }
 
   def create(data: CreateStudent, groupId: IssuerGroup.Id): doobie.ConnectionIO[Student] = {
     val id = Student.Id(UUID.randomUUID())
-    val createdOn = Instant.now()
+    val createdAt = Instant.now()
     val connectionStatus: Student.ConnectionStatus = Student.ConnectionStatus.InvitationMissing
 
     sql"""
          |INSERT INTO issuer_subjects
-         |  (student_id, university_assigned_id, full_name, email, admission_date, created_on, connection_status, group_id)
+         |  (subject_id, subject_data, created_at, connection_status, group_id)
          |VALUES
-         |  ($id, ${data.universityAssignedId}, ${data.fullName}, ${data.email},
-         |   ${data.admissionDate}, $createdOn, $connectionStatus::STUDENT_CONNECTION_STATUS_TYPE, $groupId)
+         |  ($id, jsonb_build_object('university_assigned_id', ${data.universityAssignedId},
+         |   'full_name', ${data.fullName}, 'email', ${data.email}, 'admission_date', ${data.admissionDate}::DATE),
+         |   $createdAt, $connectionStatus::STUDENT_CONNECTION_STATUS_TYPE, $groupId)
          |""".stripMargin.update.run
-      .map(_ => Student.create(data, id, createdOn, connectionStatus))
+      .map(_ => Student.create(data, id, createdAt, connectionStatus))
   }
 
   def getBy(
@@ -45,47 +46,47 @@ object StudentsDAO {
       case (Some(lastSeen), Some(group)) =>
         sql"""
              |WITH CTE AS (
-             |  SELECT created_on AS last_seen_time
+             |  SELECT created_at AS last_seen_time
              |  FROM issuer_subjects
-             |  WHERE student_id = $lastSeen
+             |  WHERE subject_id = $lastSeen
              |)
-             |SELECT student_id, university_assigned_id, full_name, email, admission_date, created_on, connection_status, connection_token, connection_id, g.name
+             |SELECT subject_id, subject_data ->> 'university_assigned_id', subject_data ->> 'full_name', subject_data ->> 'email', (subject_data ->> 'admission_date')::DATE, created_at, connection_status, connection_token, connection_id, g.name
              |FROM CTE CROSS JOIN issuer_subjects JOIN issuer_groups g USING (group_id)
              |WHERE issuer_id = $issuer AND
-             |      (created_on > last_seen_time OR (created_on = last_seen_time AND student_id > $lastSeen)) AND
+             |      (created_at > last_seen_time OR (created_at = last_seen_time AND subject_id > $lastSeen)) AND
              |      g.name = $group
-             |ORDER BY created_on ASC, student_id
+             |ORDER BY created_at ASC, subject_id
              |LIMIT $limit
              |""".stripMargin
       case (Some(lastSeen), None) =>
         sql"""
              |WITH CTE AS (
-             |  SELECT created_on AS last_seen_time
+             |  SELECT created_at AS last_seen_time
              |  FROM issuer_subjects
-             |  WHERE student_id = $lastSeen
+             |  WHERE subject_id = $lastSeen
              |)
-             |SELECT student_id, university_assigned_id, full_name, email, admission_date, created_on, connection_status, connection_token, connection_id, g.name
+             |SELECT subject_id, subject_data ->> 'university_assigned_id', subject_data ->> 'full_name', subject_data ->> 'email', subject_data ->> 'admission_date', created_at, connection_status, connection_token, connection_id, g.name
              |FROM CTE CROSS JOIN issuer_subjects JOIN issuer_groups g USING (group_id)
              |WHERE issuer_id = $issuer AND
-             |      (created_on > last_seen_time OR (created_on = last_seen_time AND student_id > $lastSeen))
-             |ORDER BY created_on ASC, student_id
+             |      (created_at > last_seen_time OR (created_at = last_seen_time AND subject_id > $lastSeen))
+             |ORDER BY created_at ASC, subject_id
              |LIMIT $limit
              |""".stripMargin
       case (None, Some(group)) =>
         sql"""
-             |SELECT student_id, university_assigned_id, full_name, email, admission_date, created_on, connection_status, connection_token, connection_id, g.name
+             |SELECT subject_id, subject_data ->> 'university_assigned_id', subject_data ->> 'full_name', subject_data ->> 'email', subject_data ->> 'admission_date', created_at, connection_status, connection_token, connection_id, g.name
              |FROM issuer_subjects JOIN issuer_groups g USING (group_id)
              |WHERE issuer_id = $issuer AND
              |      g.name = $group
-             |ORDER BY created_on ASC, student_id
+             |ORDER BY created_at ASC, subject_id
              |LIMIT $limit
              |""".stripMargin
       case (None, None) =>
         sql"""
-             |SELECT student_id, university_assigned_id, full_name, email, admission_date, created_on, connection_status, connection_token, connection_id, g.name
+             |SELECT subject_id, subject_data ->> 'university_assigned_id', subject_data ->> 'full_name', subject_data ->> 'email', subject_data ->> 'admission_date', created_at, connection_status, connection_token, connection_id, g.name
              |FROM issuer_subjects JOIN issuer_groups g USING (group_id)
              |WHERE issuer_id = $issuer
-             |ORDER BY created_on ASC, student_id
+             |ORDER BY created_at ASC, subject_id
              |LIMIT $limit
              |""".stripMargin
     }
@@ -94,30 +95,30 @@ object StudentsDAO {
 
   def find(issuerId: Issuer.Id, studentId: Student.Id): doobie.ConnectionIO[Option[Student]] = {
     sql"""
-         |SELECT student_id, university_assigned_id, full_name, email, admission_date, created_on, connection_status, connection_token, connection_id, g.name
+         |SELECT subject_id, subject_data ->> 'university_assigned_id', subject_data ->> 'full_name', subject_data ->> 'email', subject_data ->> 'admission_date', created_at, connection_status, connection_token, connection_id, g.name
          |FROM issuer_subjects JOIN issuer_groups g USING (group_id)
-         |WHERE student_id = $studentId AND
+         |WHERE subject_id = $studentId AND
          |      issuer_id = $issuerId
          |""".stripMargin.query[Student].option
   }
 
-  def update(issuerId: Issuer.Id, request: UpdateStudentRequest): doobie.ConnectionIO[Unit] = {
+  def update(issuerId: Issuer.Id, request: UpdateSubjectRequest): doobie.ConnectionIO[Unit] = {
     request match {
-      case UpdateStudentRequest.ConnectionTokenGenerated(studentId, token) =>
+      case UpdateSubjectRequest.ConnectionTokenGenerated(studentId, token) =>
         val status: Student.ConnectionStatus = Student.ConnectionStatus.ConnectionMissing
         sql"""
              |UPDATE issuer_subjects
              |SET connection_token = $token,
              |    connection_status = $status::STUDENT_CONNECTION_STATUS_TYPE
              |FROM issuer_groups
-             |WHERE student_id = $studentId AND
+             |WHERE subject_id = $studentId AND
              |      issuer_id = $issuerId AND
              |      issuer_subjects.group_id = issuer_groups.group_id
               """.stripMargin.update.run.map(_ => ())
-      case UpdateStudentRequest.ConnectionAccepted(token, connectionId) =>
+      case UpdateSubjectRequest.ConnectionAccepted(token, connectionId) =>
         val status: Student.ConnectionStatus = Student.ConnectionStatus.ConnectionAccepted
         // when the connection is accepted, we don't have the student id, just the token
-        // TODO: Refactor the code to keep the student_id and participant_id with the same value
+        // TODO: Refactor the code to keep the subject_id and participant_id with the same value
         sql"""
              |UPDATE issuer_subjects
              |SET connection_id = $connectionId,

@@ -2,7 +2,6 @@ package io.iohk.cvp.cstore.repositories.daos
 
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
-import doobie.util.log.LogHandler
 import io.iohk.connector.model.{ConnectionId, TokenString}
 import io.iohk.cvp.cstore.models.{IndividualConnectionStatus, StoreIndividual}
 import io.iohk.cvp.models.ParticipantId
