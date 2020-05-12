@@ -8,7 +8,7 @@ import io.iohk.connector.model.TokenString
 import io.iohk.connector.repositories.daos.ConnectionTokensDAO
 import io.iohk.cvp.cstore.models.StoreIndividual
 import io.iohk.cvp.cstore.repositories.daos.VerifierHoldersDAO
-import io.iohk.cvp.cstore.repositories.daos.VerifierHoldersDAO.HolderCreateData
+import io.iohk.cvp.cstore.repositories.daos.VerifierHoldersDAO.VerifierHolderCreateData
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither.FutureEitherOps
@@ -19,7 +19,7 @@ class VerifierHoldersService(xa: Transactor[IO])(implicit ec: ExecutionContext) 
 
   def createIndividual(
       userId: ParticipantId,
-      data: HolderCreateData
+      data: VerifierHolderCreateData
   ): FutureEither[ConnectorError, StoreIndividual] = {
     VerifierHoldersDAO
       .insert(userId, data)

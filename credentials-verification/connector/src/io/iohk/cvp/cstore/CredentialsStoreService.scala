@@ -4,7 +4,7 @@ import com.google.protobuf.ByteString
 import io.iohk.connector.Authenticator
 import io.iohk.connector.errors.{ErrorSupport, LoggingContext}
 import io.iohk.cvp.cstore.models.StoreIndividual
-import io.iohk.cvp.cstore.repositories.daos.VerifierHoldersDAO.HolderCreateData
+import io.iohk.cvp.cstore.repositories.daos.VerifierHoldersDAO.VerifierHolderCreateData
 import io.iohk.cvp.cstore.repositories.daos.StoredCredentialsDAO.StoredCredentialCreateData
 import io.iohk.cvp.cstore.services.{VerifierHoldersService, StoredCredentialsService}
 import io.iohk.cvp.models.ParticipantId
@@ -30,7 +30,7 @@ class CredentialsStoreService(
     def f(participantId: ParticipantId) = {
       implicit val loggingContext = LoggingContext("request" -> request, "userId" -> participantId)
 
-      val createData = HolderCreateData(
+      val createData = VerifierHolderCreateData(
         fullName = request.fullName,
         email = Some(request.email).filterNot(_.isEmpty)
       )

@@ -2,12 +2,14 @@ package io.iohk.cvp.cstore.repositories
 
 import java.util.UUID
 
+import cats.data.NonEmptyList
 import doobie.postgres.implicits._
 import doobie.util.invariant.InvalidEnum
 import doobie.util.{Get, Put}
 import io.iohk.connector.model.ConnectionId
 import io.iohk.cvp.cstore.models.{IndividualConnectionStatus, Verifier}
 import io.iohk.cvp.models.ParticipantId
+import org.postgresql.util.PGobject
 
 package object daos {
   implicit val participantIdPut: Put[ParticipantId] = io.iohk.connector.repositories.daos.participantIdPut

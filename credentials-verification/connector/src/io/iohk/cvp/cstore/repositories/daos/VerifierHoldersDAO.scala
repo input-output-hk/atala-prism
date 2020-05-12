@@ -2,24 +2,28 @@ package io.iohk.cvp.cstore.repositories.daos
 
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
+import doobie.util.log.LogHandler
 import io.iohk.connector.model.{ConnectionId, TokenString}
 import io.iohk.cvp.cstore.models.{IndividualConnectionStatus, StoreIndividual}
 import io.iohk.cvp.models.ParticipantId
 
 object VerifierHoldersDAO {
 
-  case class HolderCreateData(fullName: String, email: Option[String])
-
-  def insert(userId: ParticipantId, data: HolderCreateData): ConnectionIO[StoreIndividual] = {
+  case class VerifierHolderCreateData(fullName: String, email: Option[String])
+  def insert(verifierId: ParticipantId, data: VerifierHolderCreateData): ConnectionIO[StoreIndividual] = {
     val individualId = ParticipantId.random()
     sql"""
-         |INSERT INTO verifier_holders (user_id, individual_id, full_name, email, created_at)
-         |VALUES ($userId, $individualId, ${data.fullName}, ${data.email}, now())
-         |RETURNING individual_id, status, connection_token, connection_id, full_name, email, created_at
+         |INSERT INTO verifier_holders (verifier_id, holder_id, holder_data, created_at)
+         |VALUES ($verifierId, $individualId, jsonb_build_object('full_name', ${data.fullName}, 'email', ${data.email}), now())
+         |RETURNING holder_id, connection_status, connection_token, connection_id, holder_data ->> 'full_name', holder_data ->> 'email', created_at
        """.stripMargin.query[StoreIndividual].unique
   }
 
-  def list(userId: ParticipantId, lastSeen: Option[ParticipantId], limit: Int): ConnectionIO[Seq[StoreIndividual]] = {
+  def list(
+      verifierId: ParticipantId,
+      lastSeen: Option[ParticipantId],
+      limit: Int
+  ): ConnectionIO[Seq[StoreIndividual]] = {
     lastSeen match {
       case Some(lastSeen) =>
         // max in CTE select is to force aggregation there is going to be at most one row
@@ -28,21 +32,21 @@ object VerifierHoldersDAO {
              |WITH CTE AS (
              |  SELECT COALESCE(max(created_at), to_timestamp(0)) AS last_created_at
              |  FROM verifier_holders
-             |  WHERE user_id = ${userId} AND individual_id = $lastSeen
+             |  WHERE verifier_id = ${verifierId} AND holder_id = $lastSeen
              |)
              |
-             |SELECT individual_id, status, connection_token, connection_id, full_name, email, created_at
+             |SELECT holder_id, connection_status, connection_token, connection_id, holder_data ->> 'full_name', holder_data ->> 'email', created_at
              |FROM CTE CROSS JOIN verifier_holders
-             |WHERE user_id = $userId AND (created_at, individual_id) > (last_created_at, $lastSeen)
-             |ORDER BY (created_at, individual_id) ASC
+             |WHERE verifier_id = $verifierId AND (created_at, holder_id) > (last_created_at, $lastSeen)
+             |ORDER BY (created_at, holder_id) ASC
              |LIMIT $limit
        """.stripMargin.query[StoreIndividual].to[Seq]
       case None =>
         sql"""
-             |SELECT individual_id, status, connection_token, connection_id, full_name, email, created_at
+             |SELECT holder_id, connection_status, connection_token, connection_id, holder_data ->> 'full_name', holder_data ->> 'email', created_at
              |FROM verifier_holders
-             |WHERE user_id = $userId
-             |ORDER BY (created_at, individual_id) ASC
+             |WHERE verifier_id = $verifierId
+             |ORDER BY (created_at, holder_id) ASC
              |LIMIT $limit
            """.stripMargin.query[StoreIndividual].to[Seq]
 
@@ -52,15 +56,15 @@ object VerifierHoldersDAO {
   def setConnectionToken(userId: ParticipantId, individualId: ParticipantId, token: TokenString): ConnectionIO[Unit] = {
     sql"""
          |UPDATE verifier_holders
-         |SET connection_token = $token, status = ${IndividualConnectionStatus.Invited: IndividualConnectionStatus}
-         |WHERE user_id = $userId AND individual_id = $individualId
+         |SET connection_token = $token, connection_status = ${IndividualConnectionStatus.Invited: IndividualConnectionStatus}
+         |WHERE verifier_id = $userId AND holder_id = $individualId
        """.stripMargin.update.run.map(_ => ())
   }
 
   def addConnection(connectionToken: TokenString, connectionId: ConnectionId): ConnectionIO[Unit] = {
     sql"""
          |UPDATE verifier_holders
-         |SET connection_id = $connectionId, status = ${IndividualConnectionStatus.Connected: IndividualConnectionStatus}
+         |SET connection_id = $connectionId, connection_status = ${IndividualConnectionStatus.Connected: IndividualConnectionStatus}
          |WHERE connection_token = $connectionToken
        """.stripMargin.update.run.map(_ => ())
 
