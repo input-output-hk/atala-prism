@@ -16,7 +16,7 @@ class EmploymentDataSpec extends FlatSpec {
     )
     val employmentData = EmploymentData.toEmploymentData(employmentCredential)
 
-    employmentData.employerName shouldBe "Decentralized  Inc."
+    employmentData.employerName shouldBe "Decentralized Inc."
     employmentData.employerAddress shouldBe "67 Clasper Way, Herefoot, HF1 0AF"
   }
 }

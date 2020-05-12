@@ -22,7 +22,7 @@ class EmploymentServiceImplSpec extends FlatSpec {
     c.jsonStr("id") shouldBe "credential-id"
     c.jsonArr("type") shouldBe List("VerifiableCredential", "AtalaEmploymentCredential")
     c.jsonStr("issuer.id") shouldBe "did:atala:12c28b34-95be-4801-951e-c775f89d05ba"
-    c.jsonStr("issuer.name") shouldBe "Decentralized  Inc."
+    c.jsonStr("issuer.name") shouldBe "Decentralized Inc."
     c.jsonStr("issuer.address") shouldBe "67 Clasper Way, Herefoot, HF1 0AF"
     c.jsonStr("issuanceDate") shouldBe "1980-02-02"
     c.jsonStr("employmentStartDate") shouldBe "1980-01-01"
