@@ -7,6 +7,8 @@ import android.widget.FrameLayout;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModel;
 
+import com.google.firebase.analytics.FirebaseAnalytics;
+
 import java.util.Calendar;
 import java.util.Objects;
 
@@ -16,6 +18,7 @@ import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.OnClick;
 import io.iohk.cvp.R;
+import io.iohk.cvp.utils.FirebaseAnalyticsEvents;
 import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.fragments.LargeDescriptionDialogFragment;
 import io.iohk.cvp.views.utils.components.CheckboxWithDescription;
@@ -58,6 +61,11 @@ public class TermsAndConditionsActivity extends CvpActivity {
       isClicked -> {
         termsAndConditionsChecked = isClicked;
         updateButtonState();
+
+        Bundle bundle = new Bundle();
+        bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, FirebaseAnalyticsEvents.ACCEPT_TCS);
+        FirebaseAnalytics.getInstance(this).logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
+
       },
       // TODO: get the last time the terms and conditions where updated
       () -> showLargeDescription(termsAndConditionsTitle, Calendar.getInstance(), R.string.terms_and_conditions_asset_name)
@@ -66,6 +74,10 @@ public class TermsAndConditionsActivity extends CvpActivity {
       isClicked -> {
         privacyPolicyChecked = isClicked;
         updateButtonState();
+
+        Bundle bundle = new Bundle();
+        bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, FirebaseAnalyticsEvents.ACCEPT_PP);
+        FirebaseAnalytics.getInstance(this).logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
       },
       // TODO: get the last time the privacy policies and conditions where updated
       // TODO: import the privacy policies asset when needed
@@ -102,6 +114,10 @@ public class TermsAndConditionsActivity extends CvpActivity {
   @OnClick(R.id.continue_button)
   public void onContinueClick() {
     navigator.showWalletSetup(this);
+
+    Bundle bundle = new Bundle();
+    bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, FirebaseAnalyticsEvents.CONTINUE_AFTER_TC_PP);
+    FirebaseAnalytics.getInstance(this).logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
   }
 
 }

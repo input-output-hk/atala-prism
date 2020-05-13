@@ -11,9 +11,12 @@ import butterknife.BindString;
 import butterknife.BindView;
 import butterknife.OnClick;
 import com.crashlytics.android.Crashlytics;
+import com.google.firebase.analytics.FirebaseAnalytics;
+
 import io.iohk.cvp.R;
 import io.iohk.cvp.core.exception.CaseNotFoundException;
 import io.iohk.cvp.core.exception.ErrorCode;
+import io.iohk.cvp.utils.FirebaseAnalyticsEvents;
 import io.iohk.cvp.views.Navigator;
 import java.util.Objects;
 import javax.inject.Inject;
@@ -102,6 +105,10 @@ public class WelcomeActivity extends CvpActivity {
   public void onClickCreateAccount() {
     // TODO this should take you to the wallet setup
     navigator.showTermsAndConditions(this);
+
+    Bundle bundle = new Bundle();
+    bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, FirebaseAnalyticsEvents.CREATE_ACCOUNT);
+    FirebaseAnalytics.getInstance(this).logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
   }
 
   private void changeViewsByStep(boolean isAdvancing) {

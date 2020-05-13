@@ -18,6 +18,7 @@ import javax.inject.Inject;
 import butterknife.BindView;
 import butterknife.OnClick;
 import io.iohk.cvp.R;
+import io.iohk.cvp.utils.FirebaseAnalyticsEvents;
 import io.iohk.cvp.viewmodel.AcceptConnectionViewModel;
 import io.iohk.cvp.views.Preferences;
 import io.iohk.cvp.views.activities.MainActivity;
@@ -111,11 +112,13 @@ public class AcceptConnectionDialogFragment extends CvpDialogFragment<AcceptConn
 
     @OnClick(R.id.cancel_button)
     public void onCancelClick() {
+        ((MainActivity)getActivity()).sentFirebaseAnalyticsEvent(FirebaseAnalyticsEvents.NEW_CREDENTIAL_DECLINE);
         this.dismiss();
     }
 
     @OnClick(R.id.connect_button)
     public void onConnectClick() {
+        ((MainActivity)getActivity()).sentFirebaseAnalyticsEvent(FirebaseAnalyticsEvents.NEW_CREDENTIAL_CONFIRM);
         viewModel.getTokenizationKey().observe(this, response -> {
             this.dismiss();
 
@@ -128,7 +131,6 @@ public class AcceptConnectionDialogFragment extends CvpDialogFragment<AcceptConn
             Preferences prefs = new Preferences(getContext());
             prefs.saveConnectionTokenToAccept(getArguments().getString(TOKEN_KEY));
             ((MainActivity) getActivity()).acceptConnection(getArguments().getString(TOKEN_KEY), prefs);
-
         });
     }
 }

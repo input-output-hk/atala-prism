@@ -5,9 +5,13 @@ import android.widget.Button;
 import android.widget.GridView;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
+
+import com.google.firebase.analytics.FirebaseAnalytics;
+
 import butterknife.BindView;
 import butterknife.OnClick;
 import io.iohk.cvp.R;
+import io.iohk.cvp.utils.FirebaseAnalyticsEvents;
 import io.iohk.cvp.viewmodel.WalletSetupViewModel;
 import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.utils.adapters.SeedPhraseAdapter;
@@ -84,7 +88,13 @@ public class WalletSetupActivity extends CvpActivity<WalletSetupViewModel> imple
 
   @Override
   public void stateChanged(Boolean isClicked) {
+
+    Bundle bundle = new Bundle();
+    bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, FirebaseAnalyticsEvents.ACCEPT_RECOVERY_PHRASE);
+    FirebaseAnalytics.getInstance(this).logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
+
     acceptButton.setEnabled(isClicked);
+
   }
 
   @Override
@@ -104,6 +114,11 @@ public class WalletSetupActivity extends CvpActivity<WalletSetupViewModel> imple
 
   @OnClick(R.id.accept_button)
   public void onContinueClick() {
+
+    Bundle bundle = new Bundle();
+    bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, FirebaseAnalyticsEvents.ACCEPT_RECOVERY_PHRASE_CONTINUE);
+    FirebaseAnalytics.getInstance(this).logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
+
     navigator.showSeedPhraseVerification(this, adapter.getSeedPhrase(), firstWordIndexToCheck,
         secondWordIndexToCheck);
   }

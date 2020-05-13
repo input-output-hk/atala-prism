@@ -26,6 +26,7 @@ import butterknife.OnClick;
 import io.iohk.cvp.R;
 import io.iohk.cvp.core.enums.CredentialType;
 import io.iohk.cvp.utils.CredentialParse;
+import io.iohk.cvp.utils.FirebaseAnalyticsEvents;
 import io.iohk.cvp.utils.IntentDataConstants;
 import io.iohk.cvp.viewmodel.CredentialsViewModel;
 import io.iohk.cvp.viewmodel.dtos.CredentialDto;
@@ -290,11 +291,13 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
 
     @OnClick(R.id.accept_credential)
     void onAcceptClick() {
+        ((MainActivity)getActivity()).sentFirebaseAnalyticsEvent(FirebaseAnalyticsEvents.NEW_CONNECTION_CONFIRM);
         saveAndGoBack(Preferences.ACCEPTED_MESSAGES_KEY);
     }
 
     @OnClick(R.id.decline_credential)
     void onDeclineClick() {
+        ((MainActivity)getActivity()).sentFirebaseAnalyticsEvent(FirebaseAnalyticsEvents.NEW_CONNECTION_DECLINE);
         saveAndGoBack(Preferences.REJECTED_MESSAGES_KEY);
     }
 

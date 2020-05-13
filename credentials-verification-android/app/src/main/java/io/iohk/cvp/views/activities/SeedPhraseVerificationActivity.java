@@ -9,10 +9,13 @@ import butterknife.OnClick;
 import com.crashlytics.android.Crashlytics;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.firebase.analytics.FirebaseAnalytics;
+
 import io.iohk.cvp.R;
 import io.iohk.cvp.core.exception.CryptoException;
 import io.iohk.cvp.crypto.ECKeys;
 import io.iohk.cvp.io.wallet.KeyPair;
+import io.iohk.cvp.utils.FirebaseAnalyticsEvents;
 import io.iohk.cvp.viewmodel.WalletSetupViewModel;
 import io.iohk.cvp.views.Navigator;
 import io.iohk.cvp.views.Preferences;
@@ -99,6 +102,16 @@ public class SeedPhraseVerificationActivity extends CvpActivity<WalletSetupViewM
   }
 
   private void updateButtonState() {
+    if(firstSeedValidated && secondSeedValidated){
+      Bundle bundle = new Bundle();
+      bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, FirebaseAnalyticsEvents.VERIFY_RECOVERY_PHRASE_SUCCESS);
+      FirebaseAnalytics.getInstance(this).logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
+    }else{
+      Bundle bundle = new Bundle();
+      bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, FirebaseAnalyticsEvents.VERIFY_RECOVERY_PHRASE_FIAL);
+      FirebaseAnalytics.getInstance(this).logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
+    }
+
     verifyButton.setEnabled(firstSeedValidated && secondSeedValidated);
   }
 

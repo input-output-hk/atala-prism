@@ -18,6 +18,7 @@ import com.braintreepayments.api.dropin.DropInResult;
 import com.braintreepayments.api.models.PaymentMethodNonce;
 import com.crashlytics.android.Crashlytics;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.analytics.FirebaseAnalytics;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -99,6 +100,8 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
     @Inject
     ViewModelProvider.Factory factory;
 
+    private FirebaseAnalytics mFirebaseAnalytics;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION,
@@ -108,8 +111,9 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
         bottomAppBar.setListener(this);
         fab.setBackgroundTintList(colorRed);
 
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
 
+        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         Preferences prefs = new Preferences(getApplicationContext());
         if (!prefs.getUserIds().isEmpty()) {
             ft.replace(R.id.fragment_layout, homeFragment, MAIN_FRAGMENT_TAG);
@@ -275,5 +279,12 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
             Crashlytics.logException(e);
             // TODO show error message
         }
+    }
+
+
+    public void sentFirebaseAnalyticsEvent(String eventName){
+        Bundle bundle = new Bundle();
+        bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, eventName);
+        mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
     }
 }
