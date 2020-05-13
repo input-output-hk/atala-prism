@@ -267,7 +267,8 @@ workflows:
       - build-credentials-verification-android
       - build-credentials-verification-landing
       - build-credentials-verification-web
-      - build-credentials-verification-webextension
+# TODO: Enable once https://github.com/scalapb/scalapb-grpcweb/ releases a non-snapshot version
+#      - build-credentials-verification-webextension
       - deploy-ecr-images:
           filters:
             branches:
