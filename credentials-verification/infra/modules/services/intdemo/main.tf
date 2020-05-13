@@ -62,7 +62,7 @@ module "landing_container_definition" {
   ]
 
   environment = [
-    { name = "REACT_APP_GRPC_CLIENT", value = "http://intdemo-${var.env_name_short}.cef.iohkdev.io:${var.envoy_port}" },
+    { name = "REACT_APP_GRPC_CLIENT", value = "https://intdemo-${var.env_name_short}.cef.iohkdev.io:4433" },
   ]
 
   logConfiguration = {
@@ -250,11 +250,16 @@ module "intdemo_lb" {
 
   https_listeners = [
     {
+      port             = 4433
+      protocol = "TLS"
+      certificate_arn  = var.tls_certificate_arn
+      target_group_index = 1
+    },
+    {
       port               = 443
       protocol           = "TLS"
       certificate_arn    = var.tls_certificate_arn
       target_group_index = 2
     }
   ]
-
 }
