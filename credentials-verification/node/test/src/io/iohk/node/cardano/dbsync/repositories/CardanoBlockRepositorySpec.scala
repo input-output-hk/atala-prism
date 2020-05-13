@@ -1,4 +1,4 @@
-package io.iohk.node.cardano.repositories
+package io.iohk.node.cardano.dbsync.repositories
 
 import java.time.Instant
 

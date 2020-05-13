@@ -1,11 +1,11 @@
-package io.iohk.node.cardano
+package io.iohk.node.cardano.dbsync
 
 import com.typesafe.config.Config
 import io.iohk.cvp.repositories.TransactorFactory
 import io.iohk.cvp.utils.FutureEither
-import io.iohk.node.cardano.CardanoDbSyncClient.Result
+import io.iohk.node.cardano.dbsync.CardanoDbSyncClient.Result
+import io.iohk.node.cardano.dbsync.repositories.CardanoBlockRepository
 import io.iohk.node.cardano.models.{Block, BlockError, BlockHash}
-import io.iohk.node.cardano.repositories.CardanoBlockRepository
 
 import scala.concurrent.ExecutionContext
 

@@ -1,4 +1,4 @@
-package io.iohk.node.cardano.repositories.daos
+package io.iohk.node.cardano.dbsync.repositories.daos
 
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._

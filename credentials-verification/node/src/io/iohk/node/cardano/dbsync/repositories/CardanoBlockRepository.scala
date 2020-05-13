@@ -1,4 +1,4 @@
-package io.iohk.node.cardano.repositories
+package io.iohk.node.cardano.dbsync.repositories
 
 import cats.effect.IO
 import doobie.implicits._
@@ -6,11 +6,11 @@ import doobie.util.transactor.Transactor
 import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither.FutureOptionOps
 import io.iohk.node.cardano.models.{Block, BlockError, BlockHash}
-import io.iohk.node.cardano.repositories.daos.{BlockDAO, TransactionDAO}
+import io.iohk.node.cardano.dbsync.repositories.daos.{BlockDAO, TransactionDAO}
 
 import scala.concurrent.ExecutionContext
 
-private[cardano] class CardanoBlockRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
+private[dbsync] class CardanoBlockRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
   def getBlock(hash: BlockHash): FutureEither[BlockError.NotFound, Block.Canonical] = {
     BlockDAO
       .find(hash)
