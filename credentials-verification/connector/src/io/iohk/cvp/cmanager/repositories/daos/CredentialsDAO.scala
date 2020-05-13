@@ -14,9 +14,9 @@ object CredentialsDAO {
     val createdOn = Instant.now()
     sql"""
          |WITH inserted AS (
-         |  INSERT INTO credentials (credential_id, issuer_id, subject_id, title, enrollment_date, graduation_date, group_name, created_on)
-         |  VALUES ($id, ${data.issuedBy}, ${data.studentId}, ${data.title}, ${data.enrollmentDate}, ${data.graduationDate}, ${data.groupName}, $createdOn)
-         |  RETURNING credential_id, issuer_id, subject_id, title, enrollment_date, graduation_date, group_name, created_on
+         |  INSERT INTO credentials (credential_id, issuer_id, subject_id, credential_data, group_name, created_on)
+         |  VALUES ($id, ${data.issuedBy}, ${data.studentId}, jsonb_build_object('title', ${data.title}, 'enrollment_date', ${data.enrollmentDate}::DATE, 'graduation_date', ${data.graduationDate}::DATE), ${data.groupName}, $createdOn)
+         |  RETURNING credential_id, issuer_id, subject_id, credential_data ->> 'title', (credential_data ->> 'enrollment_date')::DATE, (credential_data ->> 'graduation_date')::DATE, group_name, created_on
          |)
          | , PTS AS (
          |  SELECT id AS issuer_id, name
@@ -48,7 +48,7 @@ object CredentialsDAO {
              |  FROM participants
              |  WHERE tpe = 'issuer'::PARTICIPANT_TYPE
              |)
-             |SELECT credential_id, c.issuer_id, c.subject_id, title, enrollment_date, graduation_date, group_name, c.created_on, PTS.name AS issuer_name, issuer_subjects.subject_data ->> 'full_name' AS student_name
+             |SELECT credential_id, c.issuer_id, c.subject_id, credential_data ->> 'title', (credential_data ->> 'enrollment_date')::DATE, (credential_data ->> 'graduation_date')::DATE, group_name, c.created_on, PTS.name AS issuer_name, issuer_subjects.subject_data ->> 'full_name' AS student_name
              |FROM CTE CROSS JOIN credentials c
              |     JOIN PTS USING (issuer_id)
              |     JOIN issuer_subjects USING (subject_id)
@@ -64,7 +64,7 @@ object CredentialsDAO {
              |  FROM participants
              |  WHERE tpe = 'issuer'::PARTICIPANT_TYPE
              |)
-             |SELECT credential_id, c.issuer_id, c.subject_id, title, enrollment_date, graduation_date, group_name, c.created_on, PTS.name AS issuer_name, issuer_subjects.subject_data ->> 'full_name' AS student_name
+             |SELECT credential_id, c.issuer_id, c.subject_id, credential_data ->> 'title', (credential_data ->> 'enrollment_date')::DATE, (credential_data ->> 'graduation_date')::DATE, group_name, c.created_on, PTS.name AS issuer_name, issuer_subjects.subject_data ->> 'full_name' AS student_name
              |FROM credentials c
              |     JOIN PTS USING (issuer_id)
              |     JOIN issuer_subjects USING (subject_id)
@@ -83,7 +83,7 @@ object CredentialsDAO {
          |  FROM participants
          |  WHERE tpe = 'issuer'::PARTICIPANT_TYPE
          |)
-         |SELECT credential_id, c.issuer_id, c.subject_id, title, enrollment_date, graduation_date, group_name, c.created_on, PTS.name AS issuer_name, issuer_subjects.subject_data ->> 'full_name' AS student_name
+         |SELECT credential_id, c.issuer_id, c.subject_id, credential_data ->> 'title', (credential_data ->> 'enrollment_date')::DATE, (credential_data ->> 'graduation_date')::DATE, group_name, c.created_on, PTS.name AS issuer_name, issuer_subjects.subject_data ->> 'full_name' AS student_name
          |FROM credentials c
          |     JOIN PTS USING (issuer_id)
          |     JOIN issuer_subjects USING (subject_id)
