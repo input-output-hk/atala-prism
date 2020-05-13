@@ -5,7 +5,7 @@ import java.security.PublicKey
 import io.grpc.Context
 import io.iohk.connector.errors.{ConnectorError, ErrorSupport, SignatureVerificationError}
 import io.iohk.connector.model.RequestNonce
-import io.iohk.connector.repositories.{ConnectionsRepository, RequestNoncesRepository}
+import io.iohk.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.cvp.crypto.ECKeys.toPublicKey
 import io.iohk.cvp.crypto.{ECKeys, ECSignature}
 import io.iohk.cvp.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser, SignedRequestsHelper}
@@ -37,7 +37,7 @@ trait Authenticator {
 }
 
 class SignedRequestsAuthenticator(
-    connectionsRepository: ConnectionsRepository,
+    participantsRepository: ParticipantsRepository,
     requestNoncesRepository: RequestNoncesRepository,
     nodeClient: node_api.NodeServiceGrpc.NodeService,
     grpcAuthenticationHeaderParser: GrpcAuthenticationHeaderParser
@@ -130,7 +130,7 @@ class SignedRequestsAuthenticator(
 
     for {
       // first we verify that we know the DID to avoid performing costly calls if we don't know it
-      participantId <- connectionsRepository.getParticipantId(authenticationHeader.publicKey)
+      participantId <- participantsRepository.findBy(authenticationHeader.publicKey).map(_.id)
       signature <- Future { Right(authenticationHeader.signature) }.toFutureEither
       publicKey <- Future { Right(toPublicKey(authenticationHeader.publicKey)) }.toFutureEither
       _ <- verifyRequestSignature(
@@ -148,7 +148,7 @@ class SignedRequestsAuthenticator(
   ): FutureEither[ConnectorError, ParticipantId] = {
     for {
       // first we verify that we know the DID to avoid performing costly calls if we don't know it
-      participantId <- connectionsRepository.getParticipantId(authenticationHeader.did)
+      participantId <- participantsRepository.findBy(authenticationHeader.did).map(_.id)
 
       didDocumentResponse <-
         nodeClient

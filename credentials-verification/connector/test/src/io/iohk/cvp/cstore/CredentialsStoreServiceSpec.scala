@@ -2,16 +2,15 @@ package io.iohk.cvp.cstore
 
 import com.google.protobuf.ByteString
 import doobie.implicits._
-import io.iohk.connector.model.{ParticipantInfo, ParticipantLogo, ParticipantType}
+import io.iohk.connector.model.{ParticipantLogo, ParticipantType}
 import io.iohk.connector.repositories.ParticipantsRepository.CreateParticipantRequest
-import io.iohk.connector.repositories.daos.ParticipantsDAO
-import io.iohk.connector.repositories.{ConnectionsRepository, ParticipantsRepository, RequestNoncesRepository}
+import io.iohk.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.connector.{RpcSpecBase, SignedRequestsAuthenticator}
 import io.iohk.cvp.cstore.models.{IndividualConnectionStatus, Verifier}
 import io.iohk.cvp.cstore.repositories.VerifiersRepository
 import io.iohk.cvp.cstore.repositories.VerifiersRepository.VerifierCreationData
-import io.iohk.cvp.cstore.repositories.daos.{VerifierHoldersDAO, StoredCredentialsDAO, VerifiersDAO}
-import io.iohk.cvp.cstore.services.{VerifierHoldersService, StoredCredentialsService}
+import io.iohk.cvp.cstore.repositories.daos.{StoredCredentialsDAO, VerifierHoldersDAO}
+import io.iohk.cvp.cstore.services.{StoredCredentialsService, VerifierHoldersService}
 import io.iohk.cvp.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.prism.protos.{cstore_api, cstore_models}
@@ -31,12 +30,12 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
 
   lazy val individuals = new VerifierHoldersService(database)
   lazy val storedCredentials = new StoredCredentialsService(database)
-  private lazy val connectionsRepository = new ConnectionsRepository.PostgresImpl(database)(executionContext)
+  private lazy val participantsRepository = new ParticipantsRepository(database)(executionContext)
   private lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
   private lazy val nodeMock = mock[io.iohk.prism.protos.node_api.NodeServiceGrpc.NodeService]
 
   private lazy val authenticator = new SignedRequestsAuthenticator(
-    connectionsRepository,
+    participantsRepository,
     requestNoncesRepository,
     nodeMock,
     GrpcAuthenticationHeaderParser

@@ -2,20 +2,20 @@ package io.iohk.connector
 
 import java.util.UUID
 
+import com.google.protobuf.ByteString
 import io.iohk.connector.errors._
+import io.iohk.connector.model._
 import io.iohk.connector.model.payments.{ClientNonce, Payment => ConnectorPayment}
 import io.iohk.connector.model.requests.CreatePaymentRequest
-import io.iohk.connector.model._
 import io.iohk.connector.payments.BraintreePayments
-import io.iohk.connector.repositories.PaymentsRepository
+import io.iohk.connector.repositories.{ParticipantsRepository, PaymentsRepository}
 import io.iohk.connector.services.{ConnectionsService, MessagesService, RegistrationService}
-import io.iohk.cvp.BuildInfo
-import io.iohk.cvp.ParticipantPropagatorService
 import io.iohk.cvp.crypto.ECKeys
 import io.iohk.cvp.crypto.ECKeys._
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither._
+import io.iohk.cvp.{BuildInfo, ParticipantPropagatorService}
 import io.iohk.prism.protos.node_api.NodeServiceGrpc
 import io.iohk.prism.protos.{connector_api, connector_models, node_api}
 import org.slf4j.{Logger, LoggerFactory}
@@ -32,7 +32,8 @@ class ConnectorService(
     paymentsRepository: PaymentsRepository,
     authenticator: Authenticator,
     participantPropagatorService: ParticipantPropagatorService,
-    nodeService: NodeServiceGrpc.NodeService
+    nodeService: NodeServiceGrpc.NodeService,
+    participantsRepository: ParticipantsRepository
 )(implicit
     executionContext: ExecutionContext
 ) extends connector_api.ConnectorServiceGrpc.ConnectorService
@@ -459,5 +460,30 @@ class ConnectorService(
           .withBuildTime(BuildInfo.buildTime)
           .withNodeVersion(nodeBuildInfo.version)
       )
+  }
+
+  override def getCurrentUser(
+      request: connector_api.GetCurrentUserRequest
+  ): Future[connector_api.GetCurrentUserResponse] = {
+    authenticator.authenticated("getCurrentUser", request) { participantId =>
+      participantsRepository
+        .findBy(participantId)
+        .map { info =>
+          val role = info.tpe match {
+            case ParticipantType.Holder =>
+              throw new NotImplementedError("This method is not available for holders right now")
+
+            case ParticipantType.Issuer => connector_api.GetCurrentUserResponse.Role.issuer
+            case ParticipantType.Verifier => connector_api.GetCurrentUserResponse.Role.verifier
+          }
+          val logo = info.logo.map(_.bytes).getOrElse(Vector.empty).toArray
+          connector_api
+            .GetCurrentUserResponse()
+            .withName(info.name)
+            .withRole(role)
+            .withLogo(ByteString.copyFrom(logo))
+        }
+        .successMap(identity)
+    }
   }
 }

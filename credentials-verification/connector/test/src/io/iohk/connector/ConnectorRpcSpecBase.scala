@@ -133,7 +133,8 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
             paymentsRepository,
             authenticator,
             participantPropagator,
-            nodeMock
+            nodeMock,
+            participantsRepository
           ),
           executionContext
         )
@@ -155,7 +156,7 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
   lazy val nodeMock = mock[io.iohk.prism.protos.node_api.NodeServiceGrpc.NodeService]
   lazy val authenticator =
     new SignedRequestsAuthenticator(
-      connectionsRepository,
+      participantsRepository,
       requestNoncesRepository,
       nodeMock,
       GrpcAuthenticationHeaderParser
@@ -172,7 +173,8 @@ class ConnectorRpcSpecBase extends RpcSpecBase {
     paymentsRepository,
     authenticator,
     participantPropagator,
-    nodeMock
+    nodeMock,
+    participantsRepository
   )(
     executionContext
   )

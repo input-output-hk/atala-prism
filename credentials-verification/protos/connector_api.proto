@@ -94,7 +94,8 @@ service ConnectorService {
   rpc GetPayments (GetPaymentsRequest) returns (GetPaymentsResponse);
   // Return the information about the Connector and Node builds
   rpc GetBuildInfo (GetBuildInfoRequest) returns (GetBuildInfoResponse);
-
+  // Return the details for the authenticated user
+  rpc GetCurrentUser (GetCurrentUserRequest) returns (GetCurrentUserResponse);
 }
 
 message GetConnectionByTokenRequest {
@@ -195,6 +196,18 @@ message RegisterDIDRequest {
   Role role = 2;
   string name = 3;
   bytes logo = 4;
+
+  enum Role {
+    issuer = 0;
+    verifier = 1;
+  }
+}
+
+message GetCurrentUserRequest {}
+message GetCurrentUserResponse {
+  Role role = 1;
+  string name = 2;
+  bytes logo = 3;
 
   enum Role {
     issuer = 0;

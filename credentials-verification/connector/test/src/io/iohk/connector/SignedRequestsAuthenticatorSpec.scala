@@ -7,7 +7,7 @@ import com.google.protobuf.ByteString
 import io.grpc.Context
 import io.iohk.connector.errors.UnknownValueError
 import io.iohk.connector.model._
-import io.iohk.connector.repositories.{ConnectionsRepository, RequestNoncesRepository}
+import io.iohk.connector.repositories.{ConnectionsRepository, ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.cvp.crypto.ECKeys.{EncodedPublicKey, toEncodePublicKey}
 import io.iohk.cvp.crypto.{ECKeys, ECSignature}
 import io.iohk.cvp.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser, SignedRequestsHelper}
@@ -207,8 +207,8 @@ class SignedRequestsAuthenticatorSpec extends WordSpec {
       val privateKey = keys.getPrivate
       val signature = ECSignature.sign(privateKey, request.toByteArray)
 
-      val connectionsRepository = mock[ConnectionsRepository]
-      connectionsRepository.getParticipantId(any[String]).returns {
+      val participantsRepository = mock[ParticipantsRepository]
+      participantsRepository.findBy(any[String]).returns {
         Future.successful(Left(UnknownValueError("did", "not found"))).toFutureEither
       }
 
@@ -226,7 +226,7 @@ class SignedRequestsAuthenticatorSpec extends WordSpec {
         }
       }
       val authenticator = new SignedRequestsAuthenticator(
-        connectionsRepository,
+        participantsRepository,
         mock[RequestNoncesRepository],
         mock[NodeServiceGrpc.NodeService],
         customParser
@@ -343,23 +343,31 @@ class SignedRequestsAuthenticatorSpec extends WordSpec {
     )
   }
 
+  // NOTE: To meet the repository interface we need to return the whole participant details while the authenticator
+  // just uses the id, hence, hardcoding the values should be enough.
+  private def dummyParticipantInfo(id: ParticipantId): ParticipantInfo = {
+    ParticipantInfo(id = id, tpe = ParticipantType.Issuer, None, "no-name", None, None)
+  }
+
   private def buildAuthenticator(
       getuserId: () => Option[ParticipantId] = () => Some(ParticipantId.random()),
       getHeader: () => Option[GrpcAuthenticationHeader],
       burnNonce: () => Unit = () => (),
       getDidResponse: () => Option[node_api.GetDidDocumentResponse] = () => None
   ): Authenticator = {
-    val connectionsRepository = mock[ConnectionsRepository]
-    connectionsRepository.getParticipantId(any[String]).returns {
+    val participantsRepository = mock[ParticipantsRepository]
+    participantsRepository.findBy(any[String]).returns {
       getuserId() match {
-        case Some(userId) => Future.successful(Right(userId)).toFutureEither
+        case Some(userId) =>
+          Future.successful(Right(dummyParticipantInfo(userId))).toFutureEither
         case None => Future.failed(new RuntimeException("Missing user")).toFutureEither
       }
     }
 
-    connectionsRepository.getParticipantId(any[EncodedPublicKey]).returns {
+    participantsRepository.findBy(any[EncodedPublicKey]).returns {
       getuserId() match {
-        case Some(userId) => Future.successful(Right(userId)).toFutureEither
+        case Some(userId) =>
+          Future.successful(Right(dummyParticipantInfo(userId))).toFutureEither
         case None => Future.failed(new RuntimeException("Missing user")).toFutureEither
       }
     }
@@ -383,6 +391,6 @@ class SignedRequestsAuthenticatorSpec extends WordSpec {
       }
     }
 
-    new SignedRequestsAuthenticator(connectionsRepository, requestNoncesRepository, customNode, customParser)
+    new SignedRequestsAuthenticator(participantsRepository, requestNoncesRepository, customNode, customParser)
   }
 }

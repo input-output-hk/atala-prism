@@ -38,7 +38,7 @@ class StudentsServiceImplSpec extends RpcSpecBase {
   private lazy val nodeMock = mock[io.iohk.prism.protos.node_api.NodeServiceGrpc.NodeService]
   private lazy val authenticator =
     new SignedRequestsAuthenticator(
-      connectionsRepository,
+      participantsRepository,
       requestNoncesRepository,
       nodeMock,
       GrpcAuthenticationHeaderParser

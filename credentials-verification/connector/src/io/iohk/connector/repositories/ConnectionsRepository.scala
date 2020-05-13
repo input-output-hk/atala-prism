@@ -1,7 +1,5 @@
 package io.iohk.connector.repositories
 
-import java.util.Base64
-
 import cats.data.EitherT
 import cats.effect.IO
 import doobie.implicits._
@@ -25,10 +23,6 @@ trait ConnectionsRepository {
   def insertToken(initiator: ParticipantId, token: TokenString): FutureEither[Nothing, TokenString]
 
   def getTokenInfo(token: TokenString): FutureEither[ConnectorError, ParticipantInfo]
-
-  def getParticipantId(encodedPublicKey: EncodedPublicKey): FutureEither[ConnectorError, ParticipantId]
-
-  def getParticipantId(did: String): FutureEither[ConnectorError, ParticipantId]
 
   def addConnectionFromToken(
       token: TokenString,
@@ -67,39 +61,6 @@ object ConnectionsRepository {
       ParticipantsDAO
         .findBy(token)
         .toRight(UnknownValueError("token", token.token).logWarn)
-        .transact(xa)
-        .value
-        .unsafeToFuture()
-        .toFutureEither
-    }
-
-    override def getParticipantId(encodedPublicKey: EncodedPublicKey): FutureEither[ConnectorError, ParticipantId] = {
-      implicit val loggingContext = LoggingContext("encodedPublicKey" -> encodedPublicKey)
-
-      ParticipantsDAO
-        .findByPublicKey(encodedPublicKey)
-        .map(_.id)
-        .toRight(
-          UnknownValueError(
-            "encodedPublicKey",
-            Base64.getEncoder.encodeToString(encodedPublicKey.bytes.toArray)
-          ).logWarn
-        )
-        .transact(xa)
-        .value
-        .unsafeToFuture()
-        .toFutureEither
-    }
-
-    override def getParticipantId(did: String): FutureEither[ConnectorError, ParticipantId] = {
-      implicit val loggingContext = LoggingContext("did" -> did)
-
-      ParticipantsDAO
-        .findByDID(did)
-        .map(_.id)
-        .toRight(
-          UnknownValueError("did", did).logWarn
-        )
         .transact(xa)
         .value
         .unsafeToFuture()
