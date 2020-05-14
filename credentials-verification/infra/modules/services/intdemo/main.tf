@@ -62,7 +62,7 @@ module "landing_container_definition" {
   ]
 
   environment = [
-    { name = "REACT_APP_GRPC_CLIENT", value = "https://intdemo-${var.env_name_short}.cef.iohkdev.io:4433" },
+    { name = "REACT_APP_GRPC_CLIENT", value = "https://${var.env_name_short}.${var.atala_prism_domain}:4433" },
   ]
 
   logConfiguration = {
@@ -130,15 +130,16 @@ module "envoy_container_definition" {
   portMappings = [
     { containerPort = 9901, protocol = "tcp" },
     { containerPort = var.connector_port, protocol = "tcp" },
-    { containerPort = var.envoy_port, protocol = "tcp" },
+    { containerPort = var.grpc_web_proxy_port, protocol = "tcp" },
     { containerPort = var.landing_port, protocol = "tcp" },
   ]
 
   environment = [
+    { name = "ATALA_PRISM_DOMAIN", value = var.atala_prism_domain },
     { name = "LANDING_PAGE_ADDRESS", value = local.intdemo_host },
     { name = "LANDING_PAGE_PORT", value = "80" },
     { name = "CONNECTOR_ADDRESS", value = local.intdemo_host },
-    { name = "CONNECTOR_PORT", value = "${var.connector_port}" },
+    { name = "CONNECTOR_PORT", value = var.connector_port },
     { name = "PROMETHEUS", value = "true" },
     { name = "PROMETHEUS_CONTAINER_PORT", value = "9901" },
     { name = "PROMETHEUS_ENDPOINT", value = "15s:/stats/prometheus" },
@@ -181,7 +182,7 @@ resource aws_ecs_service envoy_service {
   load_balancer {
     target_group_arn = module.intdemo_lb.target_group_arns[1]
     container_name   = "envoy"
-    container_port   = var.envoy_port
+    container_port   = var.grpc_web_proxy_port
   }
 
   load_balancer {
@@ -226,13 +227,13 @@ module "intdemo_lb" {
     {
       name_prefix      = "envoy"
       backend_protocol = "TCP"
-      backend_port     = var.envoy_port
+      backend_port     = var.grpc_web_proxy_port
     },
     {
       name_prefix      = "land"
       backend_protocol = "TCP"
       backend_port     = var.landing_port
-    },
+    }
   ]
 
   http_tcp_listeners = [
@@ -240,19 +241,14 @@ module "intdemo_lb" {
       port               = var.connector_port
       protocol           = "TCP"
       target_group_index = 0
-    },
-    {
-      port               = var.envoy_port
-      protocol           = "TCP"
-      target_group_index = 1
     }
   ]
 
   https_listeners = [
     {
-      port             = 4433
-      protocol = "TLS"
-      certificate_arn  = var.tls_certificate_arn
+      port               = 4433
+      protocol           = "TLS"
+      certificate_arn    = var.tls_certificate_arn
       target_group_index = 1
     },
     {

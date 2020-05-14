@@ -115,8 +115,8 @@ module security_group {
 
     // envoy proxy inbound
     {
-      from_port   = var.envoy_port
-      to_port     = var.envoy_port
+      from_port   = var.grpc_web_proxy_port
+      to_port     = var.grpc_web_proxy_port
       protocol    = "tcp"
       cidr_blocks = "0.0.0.0/0"
     },
@@ -167,8 +167,8 @@ module "ecs_cluster" {
   instance_type = var.instance_type
 }
 
-data "aws_acm_certificate" "cef-iohk-dev-io" {
-  domain   = "cef.iohkdev.io"
+data "aws_acm_certificate" "prism_tls_cert" {
+  domain   = var.atala_prism_domain
   statuses = ["ISSUED"]
 }
 
@@ -183,8 +183,8 @@ module "intdemo_service" {
   connector_port         = var.connector_port
   landing_docker_image   = var.landing_docker_image
   landing_port           = var.landing_port
-  envoy_docker_image     = var.envoy_docker_image
-  envoy_port             = var.envoy_port
+  envoy_docker_image     = var.intdemo_lb_envoy_docker_image
+  grpc_web_proxy_port    = var.grpc_web_proxy_port
 
   vpc_id                     = local.vpc_id
   intdemo_subnets            = local.priv_subnet_ids
@@ -202,13 +202,15 @@ module "intdemo_service" {
   psql_username = local.psql_username
   psql_password = local.psql_password
 
-  tls_certificate_arn = data.aws_acm_certificate.cef-iohk-dev-io.arn
+  tls_certificate_arn = data.aws_acm_certificate.prism_tls_cert.arn
+
+  atala_prism_domain = var.atala_prism_domain
 }
 
 # public DNS record for the intdemo
 resource aws_route53_record intdemo_dns_entry {
-  zone_id = "Z1KSGMIKO36ZPM"
-  name    = "intdemo-${var.env_name_short}.cef.iohkdev.io"
+  zone_id = var.atala_prism_zoneid
+  name    = "${var.env_name_short}.${var.atala_prism_domain}"
   type    = "CNAME"
   ttl     = "300"
   records = [module.intdemo_service.envoy_lb_dns_name]

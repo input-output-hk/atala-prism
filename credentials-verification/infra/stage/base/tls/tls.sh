@@ -1,8 +1,8 @@
 #!/usr/bin/env zsh
-set -e
+set -euo pipefail
 
 usage() {
-  print "Usage: tls.sh [[-a] [-d] [-p] [-s]] <domain>
+  print "Usage: tls.sh [[-a] [-d] [-p] [-s]] <domain name>
   Setup TLS certificate in ACM.
   <domain> is a domain name controlled by the account
   -a    apply changes
@@ -14,15 +14,15 @@ usage() {
 }
 
 apply_env() {
-  terraform init -backend-config="key=$state_key" && terraform apply -var "name=$name"
+  terraform init -backend-config="key=$state_key" && terraform apply -var "atala_prism_domain=$atala_prism_domain"
 }
 
 destroy_env() {
-  terraform init -backend-config="key=$state_key" && terraform destroy -var "name=$name"
+  terraform init -backend-config="key=$state_key" && terraform destroy -var "atala_prism_domain=$atala_prism_domain"
 }
 
 plan_env() {
-  terraform init -backend-config="key=$state_key" && terraform plan -var "name=$name"
+  terraform init -backend-config="key=$state_key" && terraform plan -var "atala_prism_domain=$atala_prism_domain"
 }
 
 show_env() {
@@ -44,14 +44,11 @@ while getopts ':adps' arg; do
 done
 shift $((OPTIND -1))
 
-name=$1
-if [[ -z "${name// }" ]]; then
-  name='cef.iohkdev.io'
-fi
+atala_prism_domain=${1:-atalaprism.io}
 
-state_key="infra/base/tls/$name/terraform.tfstate"
+state_key="infra/base/tls/$atala_prism_domain/terraform.tfstate"
 
-print "Using domain name '$name'."
+print "Using domain name '$atala_prism_domain'."
 print "Performing action '$action'."
 
 case $action in

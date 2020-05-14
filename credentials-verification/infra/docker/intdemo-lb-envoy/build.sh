@@ -1,4 +1,5 @@
-#!/usr/bin/env zsh
+#!/usr/bin/env bash
+set -euo pipefail
 
 usage() {
   print "Usage: build.sh [[-b] [-p]]
@@ -10,14 +11,20 @@ usage() {
 }
 
 build() {
-  docker build -t "895947072537.dkr.ecr.us-east-2.amazonaws.com/intdemo-lb-envoy" .
+  docker build -t "$tag" .
   exit
 }
 
 push() {
-  docker push "895947072537.dkr.ecr.us-east-2.amazonaws.com/intdemo-lb-envoy"
+  docker push "$tag"
   exit
 }
+
+dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+pushd "$dir" > /dev/null
+source ../../functions.sh
+
+tag=$(next_docker_tag "intdemo-lb-envoy")
 
 while getopts ':bp' arg; do
   case $arg in

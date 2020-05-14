@@ -56,12 +56,12 @@ variable landing_port {
   default     = 80
 }
 
-variable envoy_docker_image {
+variable intdemo_lb_envoy_docker_image {
   description = "Docker image for the envoy grpc proxy."
   default     = "895947072537.dkr.ecr.us-east-2.amazonaws.com/intdemo-lb-envoy:latest"
 }
 
-variable envoy_port {
+variable grpc_web_proxy_port {
   description = "Port for the envoy gprc-web proxy."
   type        = number
   default     = 8080
@@ -82,4 +82,14 @@ variable "vpc_state_key" {
   description = "Key for VPC Terraform state resolving"
   type        = string
   default     = null # value will be computed based on vpc_name
+}
+
+variable atala_prism_domain {
+  description = "Domain name of atala prism"
+  default = "atalaprism.io"
+}
+
+variable "atala_prism_zoneid" {
+  description = "Route53 ZoneId for the domain"
+  default = "Z04196731VMWR6G5290VG"
 }

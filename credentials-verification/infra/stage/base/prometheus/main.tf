@@ -176,7 +176,7 @@ resource "aws_volume_attachment" "prometheus_data" {
 # public DNS record for the instance
 resource "aws_route53_record" "prometheus_dns_entry" {
   zone_id = "Z1KSGMIKO36ZPM"
-  name    = "${var.name}-prometheus.cef.iohkdev.io"
+  name    = "${var.name}-prometheus.${var.atala_prism_domain}"
   type    = "A"
   ttl     = "300"
   records = [aws_instance.prometheus_instance.public_ip]

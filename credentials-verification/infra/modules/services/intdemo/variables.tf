@@ -36,7 +36,7 @@ variable ecs_cluster_iam_role_name {
   description = "Name of ECS cluster IAM role (used for dependencies only)"
 }
 
-variable envoy_port {
+variable grpc_web_proxy_port {
   description = "Port for the envoy gprc-web proxy."
   type        = number
 }
@@ -87,4 +87,8 @@ variable log_group_name {
 
 variable tls_certificate_arn {
   description = "ARN of TLS certificate to install in the NLB."
+}
+
+variable atala_prism_domain {
+  description = "Domain name of atala prism"
 }
