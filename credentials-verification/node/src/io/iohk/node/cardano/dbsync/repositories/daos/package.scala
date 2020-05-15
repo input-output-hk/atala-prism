@@ -8,7 +8,7 @@ import io.iohk.node.cardano.models.{BlockHash, BlockHeader, Transaction, Transac
 package object daos {
   private[daos] implicit val blockHashGet: Get[BlockHash] = Get[Array[Byte]].tmap { bytes =>
     BlockHash
-      .fromBytesBE(bytes)
+      .from(bytes)
       .getOrElse(throw new RuntimeException("Corrupted block hash"))
   }
 
@@ -19,7 +19,7 @@ package object daos {
 
   private[daos] implicit val transactionIdGet: Get[TransactionId] = Get[Array[Byte]].tmap { bytes =>
     TransactionId
-      .fromBytesBE(bytes)
+      .from(bytes)
       .getOrElse(throw new RuntimeException("Corrupted transaction ID"))
   }
 

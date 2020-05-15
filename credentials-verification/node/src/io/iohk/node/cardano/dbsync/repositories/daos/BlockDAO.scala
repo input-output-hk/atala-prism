@@ -2,6 +2,7 @@ package io.iohk.node.cardano.dbsync.repositories.daos
 
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
+import io.iohk.cvp.utils.DoobieImplicits._
 import io.iohk.node.cardano.models.{BlockHash, BlockHeader}
 
 private[repositories] object BlockDAO {
@@ -10,7 +11,7 @@ private[repositories] object BlockDAO {
            |SELECT b.hash, b.block_no, b.time, bprev.hash
            |FROM block AS b
            |LEFT JOIN block AS bprev ON b.previous = bprev.id
-           |WHERE b.hash = ${hash.toBytesBE}
+           |WHERE b.hash = ${hash.value}
            |  AND b.block_no IS NOT NULL
        """.stripMargin.query[BlockHeader].option
   }

@@ -92,6 +92,6 @@ package object daos {
     }
   }
 
-  implicit val blockhashPut: Put[Blockhash] = Put[List[Byte]].contramap(_.toBytesBE)
-  implicit val transactionIdPut: Put[TransactionId] = Put[List[Byte]].contramap(_.toBytesBE)
+  implicit val blockhashPut: Put[Blockhash] = Put[Array[Byte]].contramap(_.value.toArray)
+  implicit val transactionIdPut: Put[TransactionId] = Put[Array[Byte]].contramap(_.value.toArray)
 }

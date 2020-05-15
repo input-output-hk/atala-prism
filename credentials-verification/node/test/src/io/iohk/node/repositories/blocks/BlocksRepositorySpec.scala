@@ -59,6 +59,6 @@ class BlocksRepositorySpec extends PostgresRepositorySpec {
   def randomBlock(): BlockHeader = {
     val bytes = Array.ofDim[Byte](32)
     Random.nextBytes(bytes)
-    BlockHeader(Blockhash.fromBytesBE(bytes).value, Random.nextInt(100), Random.nextLong(), None)
+    BlockHeader(Blockhash.from(bytes).value, Random.nextInt(100), Random.nextLong(), None)
   }
 }

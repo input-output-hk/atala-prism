@@ -38,7 +38,7 @@ private[api] object JsonCodecs {
   }
 
   implicit val transactionIdEncoder: Encoder[TransactionId] =
-    Encoder[String].contramap(_.string)
+    Encoder[String].contramap(_.toString)
   implicit val transactionIdDecoder: Decoder[TransactionId] = Decoder.decodeString.emapTry { string =>
     Try(TransactionId.from(string).getOrElse(throw new RuntimeException("Invalid transaction ID")))
   }

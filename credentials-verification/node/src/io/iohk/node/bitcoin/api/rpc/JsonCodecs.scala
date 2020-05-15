@@ -37,7 +37,7 @@ object JsonCodecs {
   implicit val utxoCodec: Codec[Utxo] = deriveCodec[Utxo]
 
   implicit val BlockhashJsonEncoder: Encoder[Blockhash] =
-    Encoder[String].contramap(_.string)
+    Encoder[String].contramap(_.toString)
 
   implicit val BlockVerbosityJsonEncoder: Encoder[BlockVerbosity] =
     Encoder[Int].contramap(_.int)
@@ -49,7 +49,7 @@ object JsonCodecs {
     Encoder[String].contramap(_.identifier)
 
   implicit val TransactionIdEncoder: Encoder[TransactionId] =
-    Encoder[String].contramap(_.string)
+    Encoder[String].contramap(_.toString)
 
   implicit val TransactionInputEncoder: Encoder[TransactionInput] =
     deriveEncoder[TransactionInput]

@@ -4,6 +4,7 @@ import java.time.Instant
 
 import doobie.implicits._
 import io.iohk.cvp.repositories.PostgresRepositorySpec
+import io.iohk.cvp.utils.DoobieImplicits._
 import io.iohk.node.cardano.models._
 import org.scalatest.EitherValues._
 
@@ -53,9 +54,9 @@ class CardanoBlockRepositorySpec extends PostgresRepositorySpec {
     sql"""
          |INSERT INTO block (hash, block_no, previous, time)
          |  VALUES (
-         |    ${block.header.hash.toBytesBE},
+         |    ${block.header.hash.value},
          |    $blockNoOption,
-         |    (SELECT id FROM block WHERE hash = ${block.header.previousBlockHash.map(_.toBytesBE)}),
+         |    (SELECT id FROM block WHERE hash = ${block.header.previousBlockHash.map(_.value)}),
          |    ${block.header.time})
     """.stripMargin.update.run.transact(database).unsafeRunSync()
 
@@ -66,8 +67,8 @@ class CardanoBlockRepositorySpec extends PostgresRepositorySpec {
     sql"""
          |INSERT INTO tx (hash, block)
          |  VALUES (
-         |    ${transaction.id.toBytesBE},
-         |    (SELECT id FROM block WHERE hash = ${transaction.blockHash.toBytesBE}))
+         |    ${transaction.id.value},
+         |    (SELECT id FROM block WHERE hash = ${transaction.blockHash.value}))
     """.stripMargin.update.run.transact(database).unsafeRunSync()
   }
 
@@ -193,17 +194,17 @@ class CardanoBlockRepositorySpec extends PostgresRepositorySpec {
     }
   }
 
-  def random32Bytes(): Array[Byte] = {
+  def random32Bytes(): Seq[Byte] = {
     val bytes = Array.ofDim[Byte](32)
     Random.nextBytes(bytes)
     bytes
   }
 
   def randomBlockHash(): BlockHash = {
-    BlockHash.fromBytesBE(random32Bytes()).get
+    BlockHash.from(random32Bytes()).get
   }
 
   def randomTransactionId(): TransactionId = {
-    TransactionId.fromBytesBE(random32Bytes()).get
+    TransactionId.from(random32Bytes()).get
   }
 }

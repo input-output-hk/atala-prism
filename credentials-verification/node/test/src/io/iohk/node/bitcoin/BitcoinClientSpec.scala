@@ -125,11 +125,11 @@ class BitcoinClientSpec extends WordSpec with ScalaFutures {
   }
 
   private def blockPath(blockhash: Blockhash): String = {
-    s"bitcoin/blocks/${blockhash.string}"
+    s"bitcoin/blocks/${blockhash.toString}"
   }
 
   private def fullBlockPath(blockhash: Blockhash): String = {
-    s"bitcoin/full-blocks/${blockhash.string}"
+    s"bitcoin/full-blocks/${blockhash.toString}"
   }
 
   private def readResource(resource: String): String = {

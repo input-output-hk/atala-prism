@@ -1,19 +1,14 @@
 package io.iohk.node.cardano.models
 
-import io.iohk.node.models.SHA256Value
+import com.typesafe.config.ConfigMemorySize
+import io.iohk.node.models.{HashValue, HashValueConfig, HashValueFrom}
 
-class BlockHash private (val string: String) extends AnyVal with SHA256Value {
+import scala.collection.compat.immutable.ArraySeq
 
-  override def toString: String = string
-}
+class BlockHash private (val value: ArraySeq[Byte]) extends AnyVal with HashValue {}
 
-object BlockHash {
+object BlockHash extends HashValueFrom[BlockHash] {
+  override val config: HashValueConfig = HashValueConfig(ConfigMemorySize.ofBytes(32))
 
-  def from(string: String): Option[BlockHash] = {
-    SHA256Value.from(string).map(x => new BlockHash(x.string))
-  }
-
-  def fromBytesBE(bytes: Array[Byte]): Option[BlockHash] = {
-    SHA256Value.fromBytesBE(bytes).map(x => new BlockHash(x.string))
-  }
+  override def constructor(value: ArraySeq[Byte]): BlockHash = new BlockHash(value)
 }

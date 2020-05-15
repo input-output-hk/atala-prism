@@ -1,21 +1,14 @@
 package io.iohk.node.cardano.models
 
-import java.util.Locale
+import com.typesafe.config.ConfigMemorySize
+import io.iohk.node.models.{HashValue, HashValueConfig, HashValueFrom}
 
-// TODO: Generalize SHA256Value and extend it here (they have different lengths so cannot be done now)
-class WalletId private (val string: String) extends AnyVal {
-  override def toString: String = string
-}
+import scala.collection.compat.immutable.ArraySeq
 
-object WalletId {
-  private val Pattern = "^[a-f0-9]{40}$".r
+class WalletId private (val value: ArraySeq[Byte]) extends AnyVal with HashValue {}
 
-  def from(string: String): Option[WalletId] = {
-    val lowercaseString = string.toLowerCase(Locale.ROOT)
+object WalletId extends HashValueFrom[WalletId] {
+  override val config: HashValueConfig = HashValueConfig(ConfigMemorySize.ofBytes(20))
 
-    lowercaseString match {
-      case Pattern() => Some(new WalletId(lowercaseString))
-      case _ => None
-    }
-  }
+  override def constructor(value: ArraySeq[Byte]): WalletId = new WalletId(value)
 }

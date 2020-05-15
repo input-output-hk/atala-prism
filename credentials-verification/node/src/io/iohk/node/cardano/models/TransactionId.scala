@@ -1,17 +1,14 @@
 package io.iohk.node.cardano.models
 
-import io.iohk.node.models.SHA256Value
+import com.typesafe.config.ConfigMemorySize
+import io.iohk.node.models.{HashValue, HashValueConfig, HashValueFrom}
 
-class TransactionId private (val string: String) extends AnyVal with SHA256Value {
-  override def toString: String = string
-}
+import scala.collection.compat.immutable.ArraySeq
 
-object TransactionId {
-  def from(string: String): Option[TransactionId] = {
-    SHA256Value.from(string).map(x => new TransactionId(x.string))
-  }
+class TransactionId private (val value: ArraySeq[Byte]) extends AnyVal with HashValue {}
 
-  def fromBytesBE(bytes: Array[Byte]): Option[TransactionId] = {
-    SHA256Value.fromBytesBE(bytes).map(x => new TransactionId(x.string))
-  }
+object TransactionId extends HashValueFrom[TransactionId] {
+  override val config: HashValueConfig = HashValueConfig(ConfigMemorySize.ofBytes(32))
+
+  override def constructor(value: ArraySeq[Byte]): TransactionId = new TransactionId(value)
 }

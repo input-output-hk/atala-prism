@@ -4,6 +4,7 @@ import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
 import doobie.util.{Get, Read}
+import io.iohk.cvp.utils.DoobieImplicits._
 import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither.{FutureEitherOps, FutureOptionOps}
 import io.iohk.node.bitcoin.models.{BlockError, BlockHeader, Blockhash}
@@ -17,7 +18,7 @@ class BlocksRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
   def create(block: BlockHeader): FutureEither[Nothing, Unit] = {
     sql"""
          |INSERT INTO blocks (blockhash, height, time, previous_blockhash)
-         |VALUES (${block.hash.toBytesBE}, ${block.height}, ${block.time}, ${block.previous.map(_.toBytesBE)})
+         |VALUES (${block.hash.value}, ${block.height}, ${block.time}, ${block.previous.map(_.value)})
      """.stripMargin.update.run
       .transact(xa)
       .unsafeToFuture()
@@ -30,7 +31,7 @@ class BlocksRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
       sql"""
            |SELECT blockhash, height, time, previous_blockhash
            |FROM blocks
-           |WHERE blockhash = ${blockhash.toBytesBE}
+           |WHERE blockhash = ${blockhash.value}
        """.stripMargin.query[BlockHeader].option
 
     program
@@ -77,9 +78,9 @@ class BlocksRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
 }
 
 object BlocksRepository {
-  private implicit val blockhashGet: Get[Blockhash] = Get[Array[Byte]].tmap { bytes =>
+  private implicit val blockhashGet: Get[Blockhash] = Get[List[Byte]].tmap { bytes =>
     Blockhash
-      .fromBytesBE(bytes)
+      .from(bytes)
       .getOrElse(throw new RuntimeException("Corrupted blockhash"))
   }
 

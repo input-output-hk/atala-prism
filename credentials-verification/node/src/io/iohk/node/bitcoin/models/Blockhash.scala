@@ -1,19 +1,14 @@
 package io.iohk.node.bitcoin.models
 
-import io.iohk.node.models.SHA256Value
+import com.typesafe.config.ConfigMemorySize
+import io.iohk.node.models.{HashValue, HashValueConfig, HashValueFrom}
 
-class Blockhash private (val string: String) extends AnyVal with SHA256Value {
+import scala.collection.compat.immutable.ArraySeq
 
-  override def toString: String = string
-}
+class Blockhash private (val value: ArraySeq[Byte]) extends AnyVal with HashValue {}
 
-object Blockhash {
+object Blockhash extends HashValueFrom[Blockhash] {
+  override val config: HashValueConfig = HashValueConfig(ConfigMemorySize.ofBytes(32))
 
-  def from(string: String): Option[Blockhash] = {
-    SHA256Value.from(string).map(x => new Blockhash(x.string))
-  }
-
-  def fromBytesBE(bytes: Array[Byte]): Option[Blockhash] = {
-    SHA256Value.fromBytesBE(bytes).map(x => new Blockhash(x.string))
-  }
+  override def constructor(value: ArraySeq[Byte]): Blockhash = new Blockhash(value)
 }
