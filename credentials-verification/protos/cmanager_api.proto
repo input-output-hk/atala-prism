@@ -20,6 +20,10 @@ service StudentsService {
     rpc GenerateConnectionTokenForStudent (GenerateConnectionTokenForStudentRequest) returns (GenerateConnectionTokenForStudentResponse) {}
 }
 
+service SubjectsService {
+    rpc CreateSubject (CreateSubjectRequest) returns (CreateSubjectResponse) {}
+}
+
 service GroupsService {
     rpc CreateGroup (CreateGroupRequest) returns (CreateGroupResponse) {}
     rpc GetGroups (GetGroupsRequest) returns (GetGroupsResponse) {}
@@ -85,6 +89,15 @@ message GenerateConnectionTokenForStudentRequest {
 }
 message GenerateConnectionTokenForStudentResponse {
     string token = 1;
+}
+
+// subjects
+message CreateSubjectRequest {
+    string groupName = 1;
+    string jsonData = 2;
+}
+message CreateSubjectResponse {
+    IssuerSubject subject = 1;
 }
 
 message CreateGroupRequest {

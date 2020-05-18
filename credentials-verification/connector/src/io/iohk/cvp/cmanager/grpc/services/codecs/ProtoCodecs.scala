@@ -2,7 +2,7 @@ package io.iohk.cvp.cmanager.grpc.services.codecs
 
 import java.time.LocalDate
 
-import io.iohk.cvp.cmanager.models.{Credential, Student}
+import io.iohk.cvp.cmanager.models.{Credential, Student, Subject}
 import io.iohk.prism.protos.{cmanager_models, common_models}
 import io.scalaland.chimney.Transformer
 import io.scalaland.chimney.dsl._
@@ -52,5 +52,16 @@ object ProtoCodecs {
       .withConnectionToken(student.connectionToken.map(_.token).getOrElse(""))
       .withConnectionId(student.connectionId.map(_.toString).getOrElse(""))
       .withGroupName(student.groupName.value)
+  }
+
+  def subjectToProto(subject: Subject): cmanager_models.IssuerSubject = {
+    cmanager_models
+      .IssuerSubject()
+      .withId(subject.id.value.toString)
+      .withConnectionStatus(studentConnectionStatus2Proto.transform(subject.connectionStatus))
+      .withConnectionToken(subject.connectionToken.map(_.token).getOrElse(""))
+      .withConnectionId(subject.connectionId.map(_.toString).getOrElse(""))
+      .withGroupName(subject.groupName.value)
+      .withJsonData(subject.data.noSpaces)
   }
 }

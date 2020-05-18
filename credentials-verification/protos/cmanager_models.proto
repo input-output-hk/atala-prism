@@ -38,6 +38,18 @@ enum StudentConnectionStatus {
     ConnectionRevoked = 3;
 }
 
+// subject
+message IssuerSubject {
+    string id = 1;
+    string jsonData = 2;
+    string groupName = 3;
+    // NOTE: as enum values need to be unique, we reuse the student status for now, eventually,
+    // TODO: we should rename that enum.
+    StudentConnectionStatus connectionStatus = 4;
+    string connectionToken = 5; // present when the status is ConnectionMissing
+    string connectionId = 6; // present when the status is ConnectionAccepted
+}
+
 message Group {
     string name = 1;
 }

@@ -5,8 +5,8 @@ import java.util.UUID
 
 import doobie.implicits._
 import io.iohk.connector.model.{ConnectionId, TokenString}
-import io.iohk.cvp.cmanager.models.requests.CreateStudent
-import io.iohk.cvp.cmanager.models.{Issuer, IssuerGroup, Student}
+import io.iohk.cvp.cmanager.models.requests.{CreateStudent, CreateSubject}
+import io.iohk.cvp.cmanager.models.{Issuer, IssuerGroup, Student, Subject}
 
 object IssuerSubjectsDAO {
 
@@ -32,6 +32,20 @@ object IssuerSubjectsDAO {
          |   $createdAt, $connectionStatus::STUDENT_CONNECTION_STATUS_TYPE, $groupId)
          |""".stripMargin.update.run
       .map(_ => Student.create(data, id, createdAt, connectionStatus))
+  }
+
+  def create(data: CreateSubject, groupId: IssuerGroup.Id): doobie.ConnectionIO[Subject] = {
+    val id = Subject.Id(UUID.randomUUID())
+    val createdAt = Instant.now()
+    val connectionStatus: Student.ConnectionStatus = Student.ConnectionStatus.InvitationMissing
+
+    sql"""
+         |INSERT INTO issuer_subjects
+         |  (subject_id, subject_data, created_at, connection_status, group_id)
+         |VALUES
+         |  ($id, ${data.data}, $createdAt, $connectionStatus::STUDENT_CONNECTION_STATUS_TYPE, $groupId)
+         |""".stripMargin.update.run
+      .map(_ => Subject.create(data, id, createdAt, connectionStatus))
   }
 
   def getBy(
@@ -100,6 +114,15 @@ object IssuerSubjectsDAO {
          |WHERE subject_id = $studentId AND
          |      issuer_id = $issuerId
          |""".stripMargin.query[Student].option
+  }
+
+  def findSubject(issuerId: Issuer.Id, subjectId: Subject.Id): doobie.ConnectionIO[Option[Subject]] = {
+    sql"""
+         |SELECT subject_id, subject_data, created_at, connection_status, connection_token, connection_id, g.name
+         |FROM issuer_subjects JOIN issuer_groups g USING (group_id)
+         |WHERE subject_id = $subjectId AND
+         |      issuer_id = $issuerId
+         |""".stripMargin.query[Subject].option
   }
 
   def update(issuerId: Issuer.Id, request: UpdateSubjectRequest): doobie.ConnectionIO[Unit] = {
