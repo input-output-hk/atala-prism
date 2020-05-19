@@ -184,11 +184,10 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
                 for response in responses {
                     for message in response.messages {
                         let isRejected = user.messagesRejectedIds?.contains(message.id) ?? false
-                        let isNew = !(user.messagesAcceptedIds?.contains(message.id) ?? false)
-                        if !isRejected && !isNew {
+                        if !isRejected {
                             if let atalaMssg = try? Io_Iohk_Prism_Protos_AtalaMessage(serializedData: message.message) {
                                 if !atalaMssg.issuerSentCredential.credential.typeID.isEmpty {
-                                    if let credential = Degree.build(atalaMssg.issuerSentCredential.credential, messageId: message.id, isNew: isNew) {
+                                    if let credential = Degree.build(atalaMssg.issuerSentCredential.credential, messageId: message.id, isNew: false) {
                                         credentials.append(credential)
                                     }
                                 }
@@ -447,12 +446,12 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
 
     // MARK: Accept and Decline buttons
     
-    func tappedDeclineAction(for cell: DetailFooterViewCell) {
-        
+    func tappedDeclineAction(for cell: DetailFooterViewCell?) {
+        // Do nothing
     }
     
-    func tappedConfirmAction(for cell: DetailFooterViewCell) {
-        
+    func tappedConfirmAction(for cell: DetailFooterViewCell?) {
+        // Do nothing
     }
     
     // MARK: Share

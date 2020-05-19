@@ -52,11 +52,14 @@ class ConnectionConfirmViewController: UIViewController, PresentrDelegate {
         return presenter
     }()
 
-    func config(delegate: ConnectionConfirmPresenterDelegate?, lead: String?, title: String?, logoData: Data?, placeholderNamed: String?) {
-
+    func config(delegate: ConnectionConfirmPresenterDelegate?, lead: String?, title: String?, logoData: Data?, placeholderNamed: String?, isDuplicated: Bool) {
+        
         self.delegate = delegate
         labelLead.text = lead
         labelTitle.text = title
+        if isDuplicated{
+            buttonConfirm.setTitle("connections_scan_qr_confirm_duplicated_button".localize(), for: .normal)
+        }
         imageLogo.applyDataImage(data: logoData, placeholderNamed: placeholderNamed)
     }
 

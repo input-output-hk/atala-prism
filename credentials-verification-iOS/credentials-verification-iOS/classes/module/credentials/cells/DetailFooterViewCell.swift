@@ -3,8 +3,8 @@
 protocol DetailFooterViewCellPresenterDelegate: BaseTableViewCellPresenterDelegate {
 
     func setup(for cell: DetailFooterViewCell)
-    func tappedDeclineAction(for cell: DetailFooterViewCell)
-    func tappedConfirmAction(for cell: DetailFooterViewCell)
+    func tappedDeclineAction(for cell: DetailFooterViewCell?)
+    func tappedConfirmAction(for cell: DetailFooterViewCell?)
 }
 
 class DetailFooterViewCell: BaseTableViewCell {

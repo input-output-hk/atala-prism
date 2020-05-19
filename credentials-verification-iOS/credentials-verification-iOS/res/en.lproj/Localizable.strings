@@ -55,7 +55,9 @@
 "connections_scan_qr_nav_title" = "Scan QR";
 "connections_scan_qr_error" = "Invalid QR code";
 "connections_scan_qr_confirm_button" = "Connect!";
+"connections_scan_qr_confirm_duplicated_button" = "Connect again";
 "connections_scan_qr_confirm_title" = "You are about to connect with";
+"connections_scan_qr_confirm_duplicated_title" = "You have already connected to:";
 "connections_scan_qr_confirm_error" = "Failed to confirm connection. Try again.";
 "connections_scan_qr_confirm_payment_error" = "Failed to confirm payment. Try again.";
 "connections_universities" = "Universities";

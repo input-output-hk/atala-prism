@@ -73,7 +73,7 @@ class ConnectionsViewController: ListingBaseViewController {
 
         // Change the nav bar
         let navTitle = isScanningQr ? "connections_scan_qr_nav_title".localize() : "connections_nav_title".localize()
-        let navIconName = (!isEmpty && !isScanningQr) ? "ico_qr" : nil
+        let navIconName = (!isEmpty && !isScanningQr && mode != .fetching) ? "ico_qr" : nil
         navBar = NavBarCustomStyle(hasNavBar: true, title: navTitle, hasBackButton: isScanningQr, rightIconName: navIconName, rightIconAction: actionScan)
         NavBarCustom.config(view: self)
     }
@@ -142,18 +142,18 @@ class ConnectionsViewController: ListingBaseViewController {
     func stopQrScan() {
         scanner.stopScan()
     }
-
-    func showNewConnectMessage(type: Int, title: String?, logoData: Data?) {
-
-        let lead = "connections_scan_qr_confirm_title".localize()
+    
+    func showNewConnectMessage(type: Int, title: String?, logoData: Data?, isDuplicated: Bool) {
+        
+        let lead = isDuplicated ? "connections_scan_qr_confirm_duplicated_title".localize() : "connections_scan_qr_confirm_title".localize()
         let placeholder = type != 0 ? "ico_placeholder_university" : "ico_placeholder_credential"
-
+        
         if !confirmMessageViewController.isBeingPresented {
             customPresentViewController(confirmMessageViewController.presentr, viewController: confirmMessageViewController, animated: true)
         }
-        confirmMessageViewController.config(delegate: presenterImpl, lead: lead, title: title, logoData: logoData, placeholderNamed: placeholder)
+        confirmMessageViewController.config(delegate: presenterImpl, lead: lead, title: title, logoData: logoData, placeholderNamed: placeholder, isDuplicated: isDuplicated)
     }
-
+    
     func showNewProofRequestMessage(credentials: [Degree], requiered: [String], connection: ConnectionBase, logoData: Data?) {
 
         if !confirmProofRequestViewController.isBeingPresented {

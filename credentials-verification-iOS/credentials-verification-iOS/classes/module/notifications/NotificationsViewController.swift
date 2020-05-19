@@ -183,14 +183,14 @@ class NotificationsViewController: ListingBaseViewController {
         scanner.stopScan()
     }
 
-    func showNewConnectMessage(type: Int, title: String?, logoData: Data?) {
+    func showNewConnectMessage(type: Int, title: String?, logoData: Data?, isDuplicated: Bool) {
 
-        let lead = "connections_scan_qr_confirm_title".localize()
+        let lead = isDuplicated ? "connections_scan_qr_confirm_duplicated_title".localize() : "connections_scan_qr_confirm_title".localize()
         let placeholder = type != 0 ? "ico_placeholder_university" : "ico_placeholder_credential"
 
         if !confirmMessageViewController.isBeingPresented {
             customPresentViewController(confirmMessageViewController.presentr, viewController: confirmMessageViewController, animated: true)
         }
-        confirmMessageViewController.config(delegate: presenterImpl, lead: lead, title: title, logoData: logoData, placeholderNamed: placeholder)
+        confirmMessageViewController.config(delegate: presenterImpl, lead: lead, title: title, logoData: logoData, placeholderNamed: placeholder, isDuplicated: isDuplicated)
     }
 }

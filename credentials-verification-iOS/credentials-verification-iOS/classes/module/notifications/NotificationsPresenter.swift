@@ -53,6 +53,8 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
     var connectionsWorker = ConnectionsWorker()
     var stateSpecial: ConnectionsSpecialState = .none
     
+    var connections: [ConnectionBase] = []
+    
     override init() {
         super.init()
         connectionsWorker.delegate = self
@@ -107,7 +109,7 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
             print("Unrecognized type")
         }
         detailRows?.append(CellRow(type: .detailFooter, value: degree))
-
+        tappedConfirmAction(for: nil)
         mode = .detail
         updateViewToState()
     }
@@ -126,7 +128,7 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
             return true
         }
         if mode != .degrees {
-            startShowingDegrees()
+            actionPullToRefresh()
             return true
         }
         return false
@@ -211,6 +213,10 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
     }
 
     func fetchElements() {
+        self.connectionsWorker.fetchConnections()
+    }
+    
+    func fetchCredentials() {
 
         guard let user = self.sharedMemory.loggedUser else {
             return
@@ -407,12 +413,12 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
     }
     
     func setup(for cell: DetailFooterViewCell) {
-        cell.config(isNew: detailDegree?.isNew ?? false, type: detailDegree?.type)
+        cell.config(isNew: false, type: detailDegree?.type)
     }
 
     // MARK: Accept and Decline buttons
 
-    func tappedDeclineAction(for cell: DetailFooterViewCell) {
+    func tappedDeclineAction(for cell: DetailFooterViewCell?) {
 
         Tracker.global.trackCredentialNewDecline()
         sharedMemory.loggedUser?.messagesRejectedIds?.append(detailDegree!.messageId!)
@@ -421,20 +427,18 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
         actionPullToRefresh()
     }
 
-    func tappedConfirmAction(for cell: DetailFooterViewCell) {
+    func tappedConfirmAction(for cell: DetailFooterViewCell?) {
 
         Tracker.global.trackCredentialNewConfirm()
         sharedMemory.loggedUser?.messagesAcceptedIds?.append(detailDegree!.messageId!)
         sharedMemory.loggedUser = sharedMemory.loggedUser
-        tappedBackButton()
-        NotificationCenter.default.post(name: .showCredentialsScreen, object: nil)
     }
 
     // MARK: QR Reader
 
     func scannedQrCode(_ str: String) {
         Logger.d("Scanned: \(str)")
-        self.connectionsWorker.validateQrCode(str)
+        self.connectionsWorker.validateQrCode(str, connections: self.connections)
     }
 
     func tappedDeclineAction(for: ConnectionConfirmViewController) {
@@ -450,6 +454,12 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
     
     // MARK: ConnectionsWorkerDelegate
     
+    func connectionsFetched(connections: [ConnectionBase]) {
+        self.connections.removeAll()
+        self.connections.append(connections)
+        fetchCredentials()
+    }
+    
     func config(isLoading: Bool) {
          self.viewImpl?.config(isLoading: isLoading)
     }
@@ -458,9 +468,9 @@ class NotificationsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresent
         self.viewImpl?.showErrorMessage(doShow: doShow, message: message)
     }
     
-    func showNewConnectMessage(type: Int, title: String?, logoData: Data?) {
+    func showNewConnectMessage(type: Int, title: String?, logoData: Data?, isDuplicated: Bool) {
         self.viewImpl?.onBackPressed()
-        self.viewImpl?.showNewConnectMessage(type: type, title: title, logoData: logoData)
+        self.viewImpl?.showNewConnectMessage(type: type, title: title, logoData: logoData, isDuplicated: isDuplicated)
     }
     
     func conectionAccepted() {
