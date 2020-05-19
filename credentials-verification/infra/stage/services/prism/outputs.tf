@@ -15,5 +15,9 @@ output "command_to_test_intdemo_web_app" {
 }
 
 output "connector_db_details" {
-  value = "connector db: ${local.psql_host}:${local.psql_username}:${local.psql_password}:${local.psql_database}"
+  value = "connector db: ${local.psql_host}:${local.connector_psql_username}:${local.connector_psql_password}:${local.psql_database}"
+}
+
+output "node_db_details" {
+  value = "node db: ${local.psql_host}:${local.node_psql_username}:${local.node_psql_password}:${local.psql_database}"
 }

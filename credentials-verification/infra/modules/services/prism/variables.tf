@@ -15,12 +15,30 @@ variable connector_port {
   type        = number
 }
 
+variable node_docker_image {
+  description = "Docker image for the node."
+}
+
+variable node_port {
+  description = "Port number for the node"
+  type        = number
+}
+
 variable landing_docker_image {
   description = "Docker image for the interactive demo web app."
 }
 
 variable landing_port {
   description = "Port for the interactive demo web app."
+  type        = number
+}
+
+variable web_console_docker_image {
+  description = "Docker image for the web console."
+}
+
+variable web_console_port {
+  description = "Port for the web console."
   type        = number
 }
 
@@ -46,19 +64,27 @@ variable grpc_web_proxy_port {
 }
 
 variable psql_host {
-  description = "PostgreSQL host for connector to connect to"
+  description = "PostgreSQL host to connect to"
 }
 
 variable psql_database {
-  description = "PostgreSQL database to use for connector"
+  description = "PostgreSQL database to use"
 }
 
-variable psql_username {
+variable connector_psql_username {
   description = "PostgreSQL username to use for connector"
 }
 
-variable psql_password {
+variable connector_psql_password {
   description = "PostgreSQL password to use for connector"
+}
+
+variable node_psql_username {
+  description = "PostgreSQL username to use for node"
+}
+
+variable node_psql_password {
+  description = "PostgreSQL password to use for node"
 }
 
 variable vpc_id {

@@ -27,6 +27,16 @@ variable ecs_cluster_iam_role_name {
   description = "Name of ECS cluster IAM role (used for dependencies only)"
 }
 
+variable node_host {
+  description = "PRISM node host for connector to connect to"
+  type        = string
+}
+
+variable node_port {
+  description = "PRISM node port for connector to connect to"
+  type        = number
+}
+
 variable psql_host {
   description = "PostgreSQL host for connector to connect to"
 }

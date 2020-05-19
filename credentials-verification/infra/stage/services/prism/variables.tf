@@ -46,6 +46,17 @@ variable connector_port {
   default     = 50051
 }
 
+variable node_docker_image {
+  description = "Docker image for the node."
+  type        = string
+}
+
+variable node_port {
+  description = "Port number for the node"
+  type        = number
+  default     = 50053
+}
+
 variable landing_docker_image {
   description = "Docker image for the interactive demo web app."
 }
@@ -56,9 +67,19 @@ variable landing_port {
   default     = 80
 }
 
-variable intdemo_lb_envoy_docker_image {
+variable web_console_docker_image {
+  description = "Docker image for the interactive demo web app."
+}
+
+variable web_console_port {
+  description = "Port for the interactive demo web app."
+  type        = number
+  default     = 80
+}
+
+variable prism_lb_envoy_docker_image {
   description = "Docker image for the envoy grpc proxy."
-  default     = "895947072537.dkr.ecr.us-east-2.amazonaws.com/intdemo-lb-envoy:latest"
+  default     = "895947072537.dkr.ecr.us-east-2.amazonaws.com/prism-lb-envoy:latest"
 }
 
 variable grpc_web_proxy_port {

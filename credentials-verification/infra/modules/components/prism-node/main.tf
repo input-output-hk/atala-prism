@@ -1,4 +1,4 @@
-resource "aws_service_discovery_service" "intdemo_discovery" {
+resource "aws_service_discovery_service" "node_discovery" {
   name = "${var.parent_name}-node"
 
   dns_config {
@@ -33,6 +33,8 @@ module "node_container_definition" {
     { name = "GEUD_NODE_PSQL_DATABASE", value = var.psql_database },
     { name = "GEUD_NODE_PSQL_USERNAME", value = var.psql_username },
     { name = "GEUD_NODE_PSQL_PASSWORD", value = var.psql_password },
+    { name = "GEUD_NODE_PSQL_PASSWORD", value = var.psql_password },
+    { name = "GEUD_NODE_LEDGER", value = "in-memory" },
   ]
 
   logConfiguration = {
@@ -64,7 +66,7 @@ resource aws_ecs_task_definition "node_task_definition" {
   memory = 512
 
   tags = {
-    Name = "${var.env_name_short}-node-task-def"
+    Name = "${var.parent_name}-node-task-def"
   }
 }
 
@@ -72,8 +74,8 @@ resource aws_ecs_service node_service {
   name            = "${var.parent_name}-node-service"
   launch_type     = "FARGATE"
   cluster         = var.ecs_cluster_id
-  task_definition = aws_ecs_task_definition.node_task_definiton.arn
-  desired_count   = 2
+  task_definition = aws_ecs_task_definition.node_task_definition.arn
+  desired_count   = 1
 
   service_registries {
     registry_arn = aws_service_discovery_service.node_discovery.arn

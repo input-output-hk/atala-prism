@@ -46,8 +46,14 @@ data aws_db_instance credentials_database {
   db_instance_identifier = "credentials-database-test"
 }
 
-# PostgreSQL password for the created user
+# PostgreSQL password for the created connector user
 resource random_password connector_psql_password {
+  length  = 16
+  special = false
+}
+
+# PostgreSQL password for the created node user
+resource random_password node_psql_password {
   length  = 16
   special = false
 }
@@ -61,15 +67,17 @@ provider "postgresql" {
 }
 
 locals {
-  psql_host     = "${data.aws_db_instance.credentials_database.address}:${data.aws_db_instance.credentials_database.port}"
-  psql_database = "postgres"
-  psql_username = "intdemo-connector-${var.env_name_short}"
-  psql_password = random_password.connector_psql_password.result
+  psql_host               = "${data.aws_db_instance.credentials_database.address}:${data.aws_db_instance.credentials_database.port}"
+  psql_database           = "postgres"
+  connector_psql_username = "prism-connector-${var.env_name_short}"
+  connector_psql_password = random_password.connector_psql_password.result
+  node_psql_username      = "prism-node-${var.env_name_short}"
+  node_psql_password      = random_password.node_psql_password.result
 }
 
 # Create connector user
 resource postgresql_role connector_role {
-  name                = local.psql_username
+  name                = local.connector_psql_username
   login               = true
   password            = random_password.connector_psql_password.result
   encrypted_password  = true
@@ -77,12 +85,31 @@ resource postgresql_role connector_role {
 }
 
 resource postgresql_schema connector_schema {
-  name = local.psql_username
+  name = local.connector_psql_username
   policy {
     create            = true
     usage             = true
     create_with_grant = true
     role              = postgresql_role.connector_role.name
+  }
+}
+
+# Create node user
+resource postgresql_role node_role {
+  name                = local.node_psql_username
+  login               = true
+  password            = random_password.node_psql_password.result
+  encrypted_password  = true
+  skip_reassign_owned = true
+}
+
+resource postgresql_schema node_schema {
+  name = local.node_psql_username
+  policy {
+    create            = true
+    usage             = true
+    create_with_grant = true
+    role              = postgresql_role.node_role.name
   }
 }
 
@@ -129,6 +156,14 @@ module security_group {
       cidr_blocks = "0.0.0.0/0"
     },
 
+    // node inbound
+    {
+      from_port   = var.node_port
+      to_port     = var.node_port
+      protocol    = "tcp"
+      cidr_blocks = "0.0.0.0/0"
+    },
+
     // allows all traffic within the vpc
     {
       # -1/-1 means all ports here
@@ -169,12 +204,16 @@ module "prism_service" {
   env_name_short = var.env_name_short
   aws_region     = var.aws_region
 
-  connector_docker_image = var.connector_docker_image
-  connector_port         = var.connector_port
-  landing_docker_image   = var.landing_docker_image
-  landing_port           = var.landing_port
-  envoy_docker_image     = var.intdemo_lb_envoy_docker_image
-  grpc_web_proxy_port    = var.grpc_web_proxy_port
+  connector_docker_image   = var.connector_docker_image
+  connector_port           = var.connector_port
+  node_docker_image        = var.node_docker_image
+  node_port                = var.node_port
+  landing_docker_image     = var.landing_docker_image
+  landing_port             = var.landing_port
+  web_console_docker_image = var.web_console_docker_image
+  web_console_port         = var.web_console_port
+  envoy_docker_image       = var.prism_lb_envoy_docker_image
+  grpc_web_proxy_port      = var.grpc_web_proxy_port
 
   vpc_id                     = local.vpc_id
   component_subnets          = local.priv_subnet_ids
@@ -190,10 +229,12 @@ module "prism_service" {
   ecs_cluster_id            = module.ecs_cluster.ecs_cluster_id
   ecs_cluster_iam_role_name = module.ecs_cluster.iam_role_name
 
-  psql_host     = local.psql_host
-  psql_database = local.psql_database
-  psql_username = local.psql_username
-  psql_password = local.psql_password
+  psql_host               = local.psql_host
+  psql_database           = local.psql_database
+  connector_psql_username = local.connector_psql_username
+  connector_psql_password = local.connector_psql_password
+  node_psql_username      = local.node_psql_username
+  node_psql_password      = local.node_psql_password
 
   tls_certificate_arn = data.aws_acm_certificate.prism_tls_cert.arn
 
@@ -204,6 +245,15 @@ module "prism_service" {
 resource aws_route53_record intdemo_dns_entry {
   zone_id = var.atala_prism_zoneid
   name    = "${var.env_name_short}.${var.atala_prism_domain}"
+  type    = "CNAME"
+  ttl     = "300"
+  records = [module.prism_service.envoy_lb_dns_name]
+}
+
+# public DNS record for the PRISM console
+resource aws_route53_record prism_dns_entry {
+  zone_id = var.atala_prism_zoneid
+  name    = "console-${var.env_name_short}.${var.atala_prism_domain}"
   type    = "CNAME"
   ttl     = "300"
   records = [module.prism_service.envoy_lb_dns_name]

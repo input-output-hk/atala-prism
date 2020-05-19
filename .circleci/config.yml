@@ -115,9 +115,9 @@ jobs:
             docker push 895947072537.dkr.ecr.us-east-2.amazonaws.com/connector:${TAG}
 
       - run:
-          name: Build and push intdemo-lb-envoy
+          name: Build and push prism-lb-envoy
           command: |
-            cd credentials-verification/infra/docker/intdemo-lb-envoy
+            cd credentials-verification/infra/docker/prism-lb-envoy
             ./build.sh -b
             ./build.sh -p
 
@@ -150,7 +150,7 @@ jobs:
             ./env.sh -t $ENV
             ./env.sh -A $ENV
 
-  rebuild-intdemo-env:
+  rebuild-prism-env:
     docker:
       - image: << pipeline.parameters.scala-mill-docker-image >>
     steps:
@@ -173,7 +173,7 @@ jobs:
             . $BASH_ENV && echo "Env short name set to $ENV. Image tag set to $TAG"
 
       - run:
-          name: Rebuild intdemo environment
+          name: Rebuild prism environment
           command: |
             cd credentials-verification/infra/stage/services/prism/
             ./prism.sh -t $ENV
@@ -329,19 +329,11 @@ workflows:
           requires:
             - build-credentials-verification-web
             - build-credentials-verification
-      - rebuild-intdemo-env:
+      - rebuild-prism-env:
           filters:
             branches:
               only:
                 - /develop.*/
                 - /test.*/
-          requires:
-            - deploy-ecr-images
-      - rebuild-geud-env:
-          filters:
-            branches:
-              only:
-                - /develop.*/
-                - /gued-test.*/
           requires:
             - deploy-ecr-images

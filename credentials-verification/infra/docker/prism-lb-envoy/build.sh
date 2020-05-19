@@ -24,7 +24,7 @@ dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 pushd "$dir" > /dev/null
 source ../../functions.sh
 
-tag=$(next_docker_tag "intdemo-lb-envoy")
+tag=$(next_docker_tag "prism-lb-envoy")
 
 while getopts ':bp' arg; do
   case $arg in

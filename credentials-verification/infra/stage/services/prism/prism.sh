@@ -70,15 +70,20 @@ graph_env () {
 }
 
 taint_env () {
-    # TODO: taint tasks
-    task_definition_path="module.intdemo_service.aws_ecs_task_definition.intdemo_task_definition"
     terraform init -backend-config="key=$state_key"
-    if terraform state show $task_definition_path > /dev/null; then
-        echo "Tainting the environment"
-        terraform taint $task_definition_path
-    else
-        echo "No environment to taint"
+
+    # read lines with active modules in state into a bash array
+    # https://stackoverflow.com/questions/11426529/reading-output-of-a-command-into-an-array-in-bash
+    mapfile -t aws_services_paths < <(terraform show | grep -Po '(?<=# )(.*aws_ecs_service.[^.:]+)')
+
+    if [ ${#aws_services_paths[@]} -eq 0 ]; then
+        echo "No service to taint"
     fi
+
+    for path in ${aws_services_paths[@]}; do
+        echo "Tainting $path"
+        terraform taint $path
+    done
 }
 
 # Terraform's postgres provider will not drop a schema that we have created tables in (i.e. does not do a cascading drop)
@@ -91,8 +96,8 @@ drop_schemas () {
 
   # Then do a cascading drop here.
   # (PGPASSWORD must be set in the environment)
-  psql -h credentials-database-test.co3l80tftzq2.us-east-2.rds.amazonaws.com -U postgres -d postgres -c "DROP SCHEMA IF EXISTS \"intdemo-connector-${env_name_short}\" CASCADE;"
-  psql -h credentials-database-test.co3l80tftzq2.us-east-2.rds.amazonaws.com -U postgres -d postgres -c "DROP SCHEMA IF EXISTS \"intdemo-node-${env_name_short}\" CASCADE;"
+  psql -h credentials-database-test.co3l80tftzq2.us-east-2.rds.amazonaws.com -U postgres -d postgres -c "DROP SCHEMA IF EXISTS \"prism-connector-${env_name_short}\" CASCADE;"
+  psql -h credentials-database-test.co3l80tftzq2.us-east-2.rds.amazonaws.com -U postgres -d postgres -c "DROP SCHEMA IF EXISTS \"prism-node-${env_name_short}\" CASCADE;"
 }
 
 write_vars () {
@@ -116,16 +121,20 @@ env_name_short                = "$env_name_short"
 # usually want you want. For rollback, or other scenarios where
 # you want a specific component version, edit these values according to your needs.
 connector_docker_image        = "$connector_docker_image"
+node_docker_image             = "$node_docker_image"
 landing_docker_image          = "$landing_docker_image"
-intdemo_lb_envoy_docker_image = "$intdemo_lb_envoy_docker_image"
+web_console_docker_image          = "$web_console_docker_image"
+prism_lb_envoy_docker_image = "$prism_lb_envoy_docker_image"
 EOF
   fi
 }
 
 set_vars () {
   connector_docker_image=$(get_docker_image "connector" "$env_name_short" "develop")
+  node_docker_image=$(get_docker_image "node" "$env_name_short" "develop")
   landing_docker_image=$(get_docker_image "landing" "$env_name_short" "develop")
-  intdemo_lb_envoy_docker_image=$(get_docker_image "intdemo-lb-envoy" "$env_name_short" "develop")
+  web_console_docker_image=$(get_docker_image "web" "$env_name_short" "develop")
+  prism_lb_envoy_docker_image=$(get_docker_image "prism-lb-envoy" "$env_name_short" "develop")
 
   if [ -f "$HOME/.secrets.tfvars" ]; then
     secrets="-var-file=$HOME/.secrets.tfvars"
@@ -134,7 +143,7 @@ set_vars () {
 
   echo "Using connector image: $connector_docker_image"
   echo "Using landing image: $landing_docker_image"
-  echo "Using envoy image: $intdemo_lb_envoy_docker_image"
+  echo "Using envoy image: $prism_lb_envoy_docker_image"
 }
 
 clean_config() {
