@@ -1,48 +1,32 @@
 package io.iohk.connector.repositories
 
-import java.util.UUID
-
 import doobie.postgres.implicits._
+import doobie.util.Meta
 import doobie.util.invariant.InvalidEnum
-import doobie.util.{Get, Put}
 import io.iohk.connector.model.payments.{ClientNonce, Payment}
-import io.iohk.connector.model.{ConnectionId, MessageId, ParticipantLogo, ParticipantType}
+import io.iohk.connector.model.{MessageId, ParticipantLogo, ParticipantType}
 import io.iohk.cvp.crypto.ECKeys.EncodedPublicKey
-import io.iohk.cvp.models.ParticipantId
+import io.iohk.cvp.daos.BaseDAO
 
-package object daos {
-  implicit val pgPackageTypeMeta = pgEnumString[ParticipantType](
+package object daos extends BaseDAO {
+
+  implicit val pgPackageTypeMeta: Meta[ParticipantType] = pgEnumString[ParticipantType](
     "PARTICIPANT_TYPE",
     a => ParticipantType.withNameOption(a).getOrElse(throw InvalidEnum[ParticipantType](a)),
     _.entryName
   )
-  implicit val bigIntPut: Put[BigInt] = implicitly[Put[BigDecimal]].contramap(BigDecimal.apply)
-  implicit val bigIntGet: Get[BigInt] = implicitly[Get[BigDecimal]].map(_.toBigInt())
 
-  implicit val participantIdPut: Put[ParticipantId] = Put[UUID].contramap((_: ParticipantId).uuid)
-  implicit val connectionIdPut: Put[ConnectionId] = Put[UUID].contramap((_: ConnectionId).id)
-  implicit val messageIdPut: Put[MessageId] = Put[UUID].contramap((_: MessageId).id)
+  implicit val messageIdMeta: Meta[MessageId] = uuidMeta.timap(MessageId.apply)(_.id)
 
-  implicit val participantIdGet: Get[ParticipantId] = Get[UUID].map(new ParticipantId(_))
-  implicit val connectionIdGet: Get[ConnectionId] = Get[UUID].map(new ConnectionId(_))
-  implicit val messageIdGet: Get[MessageId] = Get[UUID].map(new MessageId(_))
+  implicit val participantLogoMeta: Meta[ParticipantLogo] =
+    Meta[Array[Byte]].timap(b => ParticipantLogo.apply(b.toVector))(_.bytes.toArray)
 
-  implicit val participantLogoPut: Put[ParticipantLogo] = Put[Array[Byte]].contramap(_.bytes.toArray)
-  implicit val participantLogoGet: Get[ParticipantLogo] =
-    Get[Array[Byte]].map(bytes => ParticipantLogo.apply(bytes.toVector))
+  implicit val encodedPublicKeyMeta: Meta[EncodedPublicKey] =
+    Meta[Array[Byte]].timap(b => EncodedPublicKey.apply(b.toVector))(_.bytes.toArray)
 
-  implicit val encodedPublicKeyPut: Put[EncodedPublicKey] = Put[Array[Byte]].contramap(_.bytes.toArray)
-  implicit val encodedPublicKeyGet: Get[EncodedPublicKey] =
-    Get[Array[Byte]].map(bytes => EncodedPublicKey.apply(bytes.toVector))
+  implicit val paymentIdMeta: Meta[Payment.Id] = uuidMeta.timap(Payment.Id.apply)(_.uuid)
+  implicit val clientNonceMeta: Meta[ClientNonce] = Meta[String].timap(new ClientNonce(_))(_.string)
 
-  implicit val paymentIdPut: Put[Payment.Id] = Put[UUID].contramap(_.uuid)
-  implicit val paymentIdGet: Get[Payment.Id] = Get[UUID].map(Payment.Id.apply)
-
-  implicit val clientNoncePut: Put[ClientNonce] = Put[String].contramap(_.string)
-  implicit val clientNonceGet: Get[ClientNonce] = Get[String].map(s => new ClientNonce(s))
-
-  implicit val paymentStatusPut: Put[Payment.Status] = Put[String].contramap(_.value)
-  implicit val paymentStatusGet: Get[Payment.Status] = {
-    Get[String].map(Payment.Status.withNameInsensitive)
-  }
+  implicit val paymentStatusMeta: Meta[Payment.Status] =
+    Meta[String].timap(Payment.Status.withNameInsensitive)(_.value)
 }

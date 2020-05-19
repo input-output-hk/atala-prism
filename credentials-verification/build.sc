@@ -126,6 +126,7 @@ object common extends ScalaModule {
       ivy"com.typesafe:config:1.3.4",
       ivy"org.slf4j:slf4j-api:1.7.25",
       ivy"org.tpolecat::doobie-core:${versions.doobie}",
+      ivy"org.tpolecat::doobie-postgres-circe:${versions.doobie}",
       ivy"org.tpolecat::doobie-hikari:${versions.doobie}",
       ivy"io.monix::monix:3.0.0",
       ivy"org.bouncycastle:bcprov-jdk15on:1.62",

@@ -10,8 +10,6 @@ import io.iohk.cvp.cmanager.models.{Issuer, IssuerGroup, Student, Subject}
 
 object IssuerSubjectsDAO {
 
-  import io.iohk.connector.repositories.daos._
-
   sealed trait UpdateSubjectRequest
   object UpdateSubjectRequest {
     final case class ConnectionTokenGenerated(studentId: Student.Id, token: TokenString) extends UpdateSubjectRequest
@@ -38,7 +36,6 @@ object IssuerSubjectsDAO {
     val id = Subject.Id(UUID.randomUUID())
     val createdAt = Instant.now()
     val connectionStatus: Student.ConnectionStatus = Student.ConnectionStatus.InvitationMissing
-
     sql"""
          |INSERT INTO issuer_subjects
          |  (subject_id, subject_data, created_at, connection_status, group_id)
