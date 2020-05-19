@@ -8,7 +8,7 @@ import io.grpc.Context
 import io.iohk.connector.errors.UnknownValueError
 import io.iohk.connector.model._
 import io.iohk.connector.repositories.{ConnectionsRepository, ParticipantsRepository, RequestNoncesRepository}
-import io.iohk.cvp.crypto.ECKeys.{EncodedPublicKey, toEncodePublicKey}
+import io.iohk.cvp.crypto.ECKeys.{EncodedPublicKey, toEncodedPublicKey}
 import io.iohk.cvp.crypto.{ECKeys, ECSignature}
 import io.iohk.cvp.grpc.{GrpcAuthenticationHeader, GrpcAuthenticationHeaderParser, SignedRequestsHelper}
 import io.iohk.cvp.models.ParticipantId
@@ -65,7 +65,7 @@ class SignedRequestsAuthenticatorSpec extends WordSpec {
     "accept the public key authentication" in {
       val keys = ECKeys.generateKeyPair()
       val privateKey = keys.getPrivate
-      val encodedPublicKey = toEncodePublicKey(keys.getPublic)
+      val encodedPublicKey = toEncodedPublicKey(keys.getPublic)
       val requestNonce = UUID.randomUUID.toString.getBytes.toVector
       val signature =
         ECSignature.sign(
@@ -90,7 +90,7 @@ class SignedRequestsAuthenticatorSpec extends WordSpec {
 
     "reject wrong public key authentication" in {
       val keys = ECKeys.generateKeyPair()
-      val encodedPublicKey = toEncodePublicKey(keys.getPublic)
+      val encodedPublicKey = toEncodedPublicKey(keys.getPublic)
       // signed with the wrong key
       val signature = ECSignature.sign(ECKeys.generateKeyPair().getPrivate, request.toByteArray)
       val header = GrpcAuthenticationHeader
@@ -112,7 +112,7 @@ class SignedRequestsAuthenticatorSpec extends WordSpec {
 
     "reject public key authentication when the reusing a nonce" in {
       val keys = ECKeys.generateKeyPair()
-      val encodedPublicKey = toEncodePublicKey(keys.getPublic)
+      val encodedPublicKey = toEncodedPublicKey(keys.getPublic)
       val signature = ECSignature.sign(keys.getPrivate, request.toByteArray)
       val header = GrpcAuthenticationHeader
         .PublicKeyBased(

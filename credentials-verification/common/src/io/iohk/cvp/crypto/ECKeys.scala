@@ -84,7 +84,7 @@ object ECKeys {
     }
   }
 
-  def toEncodePublicKey(publicKey: PublicKey): EncodedPublicKey = {
+  def toEncodedPublicKey(publicKey: PublicKey): EncodedPublicKey = {
     val encodeBytes = encodePoint(getECPoint(publicKey), ecParameterSpec.getCurve)
     EncodedPublicKey(encodeBytes.toVector)
   }

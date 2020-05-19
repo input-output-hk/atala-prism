@@ -74,7 +74,7 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase {
       val ecPoint = getECPoint(publicKey)
       val publicKeyProto =
         connector_models.ConnectorPublicKey(ecPoint.getAffineX.toString(), ecPoint.getAffineY.toString())
-      val encodedPublicKey = toEncodePublicKey(publicKey)
+      val encodedPublicKey = toEncodedPublicKey(publicKey)
       usingApiAs(holderId) { blockingStub =>
         val request = connector_api.AddConnectionFromTokenRequest(token.token).withHolderPublicKey(publicKeyProto)
         val response = blockingStub.addConnectionFromToken(request)
@@ -148,7 +148,7 @@ class ConnectionsRpcSpec extends ConnectorRpcSpecBase {
     "return new connections authenticating by signature" in {
       val keys = ECKeys.generateKeyPair()
       val privateKey = keys.getPrivate
-      val encodedPublicKey = toEncodePublicKey(keys.getPublic)
+      val encodedPublicKey = toEncodedPublicKey(keys.getPublic)
       val request = connector_api.GetConnectionsPaginatedRequest("", 10)
       val requestNonce = UUID.randomUUID().toString.getBytes.toVector
       val signature =

@@ -5,7 +5,7 @@ import java.util.UUID
 
 import io.grpc.{Status, StatusRuntimeException}
 import io.iohk.connector.model.RequestNonce
-import io.iohk.cvp.crypto.ECKeys.toEncodePublicKey
+import io.iohk.cvp.crypto.ECKeys.toEncodedPublicKey
 import io.iohk.cvp.crypto.{ECKeys, ECSignature}
 import io.iohk.cvp.grpc.SignedRequestsHelper
 import io.iohk.prism.protos.{connector_api, node_api}
@@ -42,7 +42,7 @@ class ConnectorServiceSpec extends ConnectorRpcSpecBase {
     def prepareSignedRequest() = {
       val keys = ECKeys.generateKeyPair()
       val privateKey = keys.getPrivate
-      val encodedPublicKey = toEncodePublicKey(keys.getPublic)
+      val encodedPublicKey = toEncodedPublicKey(keys.getPublic)
       val request = connector_api.GetCurrentUserRequest()
       val requestNonce = UUID.randomUUID().toString.getBytes.toVector
       val signature = ECSignature.sign(

@@ -145,7 +145,7 @@ class ConnectorService(
             try {
               request.holderPublicKey
                 .map { protoKey =>
-                  toEncodePublicKey(
+                  toEncodedPublicKey(
                     toPublicKey(
                       x = BigInt(protoKey.x),
                       y = BigInt(protoKey.y)
@@ -155,7 +155,7 @@ class ConnectorService(
                 .getOrElse(throw new RuntimeException("Missing public key"))
             } catch {
               case NonFatal(e) =>
-                toEncodePublicKey(ECKeys.generateKeyPair().getPublic)
+                toEncodedPublicKey(ECKeys.generateKeyPair().getPublic)
             }
           }
 
