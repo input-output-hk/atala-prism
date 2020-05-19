@@ -29,6 +29,7 @@ trait CardanoWalletApiClient {
 object CardanoWalletApiClient {
 
   type Config = ApiClient.Config
+  val Config = ApiClient.Config
 
   def apply(config: Config)(implicit ec: ExecutionContext): CardanoWalletApiClient = {
     new ApiClient(config)(ApiClient.DefaultBackend, ec)

@@ -1,0 +1,55 @@
+{
+  "id": "1423856bc91c49e928f6f30f4e8d665d53eb4ab6028bd0ac971809d514c92db1",
+  "amount": {
+    "quantity": 42000000,
+    "unit": "lovelace"
+  },
+  "inserted_at": {
+    "time": "2019-02-27T14:46:45.000Z",
+    "block": {
+      "slot_number": 1337,
+      "epoch_number": 14,
+      "height": {
+        "quantity": 1337,
+        "unit": "block"
+      }
+    }
+  },
+  "pending_since": {
+    "time": "2019-02-27T14:46:45.000Z",
+    "block": {
+      "slot_number": 1337,
+      "epoch_number": 14,
+      "height": {
+        "quantity": 1337,
+        "unit": "block"
+      }
+    }
+  },
+  "depth": {
+    "quantity": 1337,
+    "unit": "block"
+  },
+  "direction": "outgoing",
+  "inputs": [
+    {
+      "address": "2cWKMJemoBak1J2hvHu2avkfanhpTNM1wiMYsnFGoHG3t87R5tQYQdoWDNav2PcjMAVaL",
+      "amount": {
+        "quantity": 42000000,
+        "unit": "lovelace"
+      },
+      "id": "1423856bc91c49e928f6f30f4e8d665d53eb4ab6028bd0ac971809d514c92db1",
+      "index": 0
+    }
+  ],
+  "outputs": [
+    {
+      "address": "2cWKMJemoBakZBR9TG2YAmxxtJpyvBqv31yWuHjUWpjbc24XbxiLytuzxSdyMtrbCfGmb",
+      "amount": {
+        "quantity": 42000000,
+        "unit": "lovelace"
+      }
+    }
+  ],
+  "status": "pending"
+}

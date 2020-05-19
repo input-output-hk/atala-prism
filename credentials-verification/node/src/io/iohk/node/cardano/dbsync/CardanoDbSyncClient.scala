@@ -1,6 +1,5 @@
 package io.iohk.node.cardano.dbsync
 
-import com.typesafe.config.Config
 import io.iohk.cvp.repositories.TransactorFactory
 import io.iohk.cvp.utils.FutureEither
 import io.iohk.node.cardano.dbsync.CardanoDbSyncClient.Result
@@ -20,21 +19,11 @@ class CardanoDbSyncClient(cardanoBlockRepository: CardanoBlockRepository)(implic
 object CardanoDbSyncClient {
   type Result[E, A] = FutureEither[E, A]
 
+  case class Config(dbConfig: TransactorFactory.Config)
+
   def apply(config: Config)(implicit ec: ExecutionContext): CardanoDbSyncClient = {
-    val dbConfig = transactorConfig(config)
-    val cardanoBlockRepository = new CardanoBlockRepository(TransactorFactory(dbConfig))
+    val cardanoBlockRepository = new CardanoBlockRepository(TransactorFactory(config.dbConfig))
 
     new CardanoDbSyncClient(cardanoBlockRepository)
-  }
-
-  private def transactorConfig(config: Config): TransactorFactory.Config = {
-    val url = config.getString("url")
-    val username = config.getString("username")
-    val password = config.getString("password")
-    TransactorFactory.Config(
-      jdbcUrl = url,
-      username = username,
-      password = password
-    )
   }
 }

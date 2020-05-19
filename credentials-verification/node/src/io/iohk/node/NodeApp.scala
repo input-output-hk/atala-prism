@@ -8,12 +8,15 @@ import doobie.util.transactor.Transactor
 import io.grpc.{Server, ServerBuilder}
 import io.iohk.cvp.repositories.{SchemaMigrations, TransactorFactory}
 import io.iohk.node.bitcoin.BitcoinClient
+import io.iohk.node.cardano.CardanoClient
+import io.iohk.node.cardano.dbsync.CardanoDbSyncClient
+import io.iohk.node.cardano.wallet.CardanoWalletApiClient
 import io.iohk.node.objects.{ObjectStorageService, S3ObjectStorageService}
 import io.iohk.node.repositories.DIDDataRepository
 import io.iohk.node.repositories.atalaobjects.AtalaObjectsRepository
 import io.iohk.node.repositories.blocks.BlocksRepository
+import io.iohk.node.services._
 import io.iohk.node.services.models.{AtalaObjectUpdate, ObjectHandler}
-import io.iohk.node.services.{AtalaService, BlockProcessingServiceImpl, DIDDataService, ObjectManagementService}
 import io.iohk.node.synchronizer.{LedgerSynchronizationStatusService, LedgerSynchronizerService, SynchronizerConfig}
 import io.iohk.prism.protos.node_api._
 import monix.execution.Scheduler.Implicits.{global => scheduler}
@@ -84,6 +87,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
 
     val atalaReferenceLedger = globalConfig.getString("ledger") match {
       case "bitcoin" => initializeBitcoin(globalConfig.getConfig("bitcoin"), onAtalaReference)
+      case "cardano" => initializeCardano(globalConfig.getConfig("cardano"), onAtalaReference)
       case "in-memory" =>
         logger.info("Using in-memory ledger")
         new InMemoryAtalaReferenceLedger(onAtalaReference)
@@ -116,7 +120,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     }
   }
 
-  def initializeBitcoin(config: Config, onAtalaReference: ObjectHandler)(implicit
+  private def initializeBitcoin(config: Config, onAtalaReference: ObjectHandler)(implicit
       xa: Transactor[IO]
   ): AtalaService = {
     logger.info("Creating bitcoin client")
@@ -135,6 +139,11 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     atalaService
   }
 
+  private def initializeCardano(config: Config, onAtalaReference: ObjectHandler): CardanoLedgerService = {
+    logger.info("Creating cardano client")
+    CardanoLedgerService(cardanoConfig(config), onAtalaReference)
+  }
+
   private def stop(): Unit = {
     if (server != null) {
       server.shutdown()
@@ -147,7 +156,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     }
   }
 
-  def applyDatabaseMigrations(databaseConfig: TransactorFactory.Config): Unit = {
+  private def applyDatabaseMigrations(databaseConfig: TransactorFactory.Config): Unit = {
     val appliedMigrations = SchemaMigrations.migrate(databaseConfig)
     if (appliedMigrations == 0) {
       logger.info("Database up to date")
@@ -156,7 +165,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     }
   }
 
-  def transactorConfig(config: Config): TransactorFactory.Config = {
+  private def transactorConfig(config: Config): TransactorFactory.Config = {
     val url = config.getString("url")
     val username = config.getString("username")
     val password = config.getString("password")
@@ -175,4 +184,27 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     BitcoinClient.Config(host, port, username, password)
   }
 
+  private def cardanoConfig(config: Config): CardanoLedgerService.Config = {
+    val walletId = config.getString("walletId")
+    val walletPassphrase = config.getString("walletPassphrase")
+    val paymentAddress = config.getString("paymentAddress")
+    val dbSyncConfig = cardanoDbSyncConfig(config.getConfig("dbSync"))
+    val walletConfig = cardanoWalletConfig(config.getConfig("wallet"))
+    CardanoLedgerService.Config(
+      walletId,
+      walletPassphrase,
+      paymentAddress,
+      CardanoClient.Config(dbSyncConfig, walletConfig)
+    )
+  }
+
+  private def cardanoDbSyncConfig(config: Config): CardanoDbSyncClient.Config = {
+    CardanoDbSyncClient.Config(transactorConfig(config.getConfig("db")))
+  }
+
+  private def cardanoWalletConfig(config: Config): CardanoWalletApiClient.Config = {
+    val host = config.getString("host")
+    val port = config.getInt("port")
+    CardanoWalletApiClient.Config(host, port)
+  }
 }

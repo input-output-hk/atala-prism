@@ -10,7 +10,7 @@ import io.iohk.node.cardano.dbsync.repositories.daos.{BlockDAO, TransactionDAO}
 
 import scala.concurrent.ExecutionContext
 
-private[dbsync] class CardanoBlockRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
+class CardanoBlockRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
   def getBlock(hash: BlockHash): FutureEither[BlockError.NotFound, Block.Canonical] = {
     BlockDAO
       .find(hash)
