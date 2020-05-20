@@ -44,4 +44,19 @@ extension UIViewController {
         guard let alert = UIApplication.topViewController() as? UIAlertController else { return nil }
         return alert
     }
+    
+    func topViewController() -> UIViewController! {
+        if self.isKind(of: UITabBarController.self) {
+            let tabbarController =  self as! UITabBarController
+            return tabbarController.selectedViewController!.topViewController()
+        } else if (self.isKind(of: UINavigationController.self)) {
+            let navigationController = self as! UINavigationController
+            return navigationController.visibleViewController!.topViewController()
+        } else if ((self.presentedViewController) != nil){
+            let controller = self.presentedViewController
+            return controller!.topViewController()
+        } else {
+            return self
+        }
+    }
 }

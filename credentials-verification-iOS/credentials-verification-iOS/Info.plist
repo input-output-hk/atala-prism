@@ -27,6 +27,8 @@
 	</dict>
 	<key>NSCameraUsageDescription</key>
 	<string>NSCameraUsageDescription</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Face ID is used to unlock the app</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

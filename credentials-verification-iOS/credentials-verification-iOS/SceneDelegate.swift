@@ -22,6 +22,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func sceneDidBecomeActive(_ scene: UIScene) {
         // Called when the scene has moved from an inactive state to an active state.
         // Use this method to restart any tasks that were paused (or not yet started) when the scene was inactive.
+        showLockScreen(animated: true)
     }
 
     func sceneWillResignActive(_ scene: UIScene) {
@@ -32,11 +33,20 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func sceneWillEnterForeground(_ scene: UIScene) {
         // Called as the scene transitions from the background to the foreground.
         // Use this method to undo the changes made on entering the background.
+        showLockScreen(animated: false)
     }
 
     func sceneDidEnterBackground(_ scene: UIScene) {
         // Called as the scene transitions from the foreground to the background.
         // Use this method to save data, release shared resources, and store enough scene-specific state information
         // to restore the scene back to its current state.
+    }
+    
+    func showLockScreen(animated: Bool) {
+        if let pin = SharedMemory.global.loggedUser?.appPin, !pin.isEmpty, let topVC = self.window?.rootViewController?.topViewController(), !topVC.isKind(of: LockViewController.self) {
+            let storyboard = UIStoryboard(name: "Lock", bundle: nil)
+            let loginVC = storyboard.instantiateViewController(withIdentifier: "LockViewController")
+            topVC.present(loginVC, animated: animated, completion: nil)
+        }
     }
 }

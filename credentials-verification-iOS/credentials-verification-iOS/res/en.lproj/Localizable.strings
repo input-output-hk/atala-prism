@@ -122,7 +122,7 @@
 "settings_backup_title" = "Backup Data";
 "settings_backup_subtitle" = "Please create backup now!";
 "settings_security_title" = "Security";
-"settings_security_subtitle" = "Secure your app using Biometrics";
+"settings_security_subtitle" = "Set Up Biometrics and PIN Code";
 "settings_pin_title" = "PIN Code";
 "settings_pin_subtitle" = "Change the code to unlock this app";
 "settings_support_title" = "Support";
@@ -232,3 +232,43 @@
 "notifications_scan_qr_nav_title" = "Scan QR code";
 "notifications_empty_title" = "Connect to an organization to receive your credentials";
 "notifications_empty_subtitle" = "Receive, store and share your digital credentials";
+
+// <!-- Security -->
+"security_title" = "Security";
+"security_use_touch_id" = "Use Touch & Face ID as Pin";
+"security_change_pin" = "Change Pin Code";
+"security_setting_up" = "Setting up";
+"security_touch_id" = "Touch ID";
+"security_pin_code_title" = "Pin Code";
+"security_face_id" = "Face ID";
+"security_step_one" = "1 of 2";
+"security_step_two" = "2 of 2";
+"security_description_touch_id" = "With Touch ID you can login easily and fast without password.\n\nYou must configure it in your operating system, open your configuration options.";
+"security_description_face_id" = "With Face ID you can login easily and fast without password.\n\nYou must configure it in your operating system, open your configuration options.";
+"security_allow_touch_id" = "Allow Touch ID";
+"security_allow_face_id" = "Allow Face ID";
+"security_not_now" = "Not now";
+"security_setup_pin" = "To set up your PIN create a 4 digit code then\nconfirm it below";
+"security_pin_code" = "PIN CODE";
+"security_confirm_pin" = "CONFIRM YOUR PIN CODE";
+"security_pin_match" = "Your PIN Codes are the same";
+"security_pin_mismatch" = "Your PIN Codes don't match";
+"security_continue" = "Continue";
+"security_unerroled_touch_id"= "Touch ID is not configured on your device";
+"security_unerroled_face_id" = "Face ID is not configured on your device";
+"security_change_pin_code" = "Change Pin Code";
+"security_change_pin_descr" = "White your current PIN, then create a new 4 digit code and confirm it below";
+"security_current_pin" = "CURRENT PIN CODE";
+"security_new_pin" = "NEW PIN CODE";
+"security_confirm_new_pin" = "CONFIRM YOUR NEW PIN CODE";
+"security_next" = "Next";
+"security_change_pin_success" = "Your PIN has been updated";
+"security_change_pin_error" = "Your current PIN is incorrect";
+
+// <!-- Unlock -->
+"unlock_title" = "Write your PIN";
+"unlock_pin_error" = "Your PIN is incorrect";
+"unlock_unerroled_touch_id"= "Touch ID is not configured on your device";
+"unlock_unerroled_face_id" = "Face ID is not configured on your device";
+"unlock_biometrics_error" = "You could not be identified, please use your PIN";
+"unlock_app" = "Unlock your app";

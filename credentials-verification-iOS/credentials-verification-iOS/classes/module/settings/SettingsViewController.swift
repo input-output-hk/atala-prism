@@ -103,4 +103,9 @@ class SettingsViewController: ListingBaseViewController {
         ViewControllerUtils.changeScreenSegued(caller: self, segue: "AboutSegue", params: nil)
         
     }
+    
+    func changeScreenToSecurity() {
+        ViewControllerUtils.changeScreenSegued(caller: self, segue: "SecuritySegue", params: nil)
+        
+    }
 }

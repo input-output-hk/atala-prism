@@ -84,11 +84,22 @@
                         <outlet property="viewTable" destination="sVB-Ov-Oui" id="0kB-DO-BXh"/>
                         <segue destination="ZFz-AY-HFK" kind="show" identifier="BrowserSegue" id="o0S-7P-CXa"/>
                         <segue destination="f8I-0x-2OO" kind="show" identifier="AboutSegue" id="RwR-0t-Cny"/>
+                        <segue destination="BkX-y6-Rae" kind="show" identifier="SecuritySegue" id="dcR-2r-IHg"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="6H9-Lt-LyU" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="649" y="68"/>
+            <point key="canvasLocation" x="668" y="84"/>
+        </scene>
+        <!--Security-->
+        <scene sceneID="RnM-Kc-2Xs">
+            <objects>
+                <viewControllerPlaceholder storyboardIdentifier="Security" storyboardName="Security" referencedIdentifier="Security" id="BkX-y6-Rae" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="1hQ-gj-6iT"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="qtW-95-Gzw" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1347" y="30"/>
         </scene>
         <!--Browser-->
         <scene sceneID="NdF-OO-9Bq">
@@ -98,7 +109,7 @@
                 </viewControllerPlaceholder>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="1wo-RJ-P7w" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1309" y="-55"/>
+            <point key="canvasLocation" x="1346" y="84"/>
         </scene>
         <!--About-->
         <scene sceneID="rN5-ev-0Pw">

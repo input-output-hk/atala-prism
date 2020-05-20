@@ -26,6 +26,9 @@ class LoggedUser: Mappable {
     
     var seed: Data?
     var mnemonics: [String]?
+    
+    var appPin: String?
+    var appBiometrics: Bool?
 
     init() {
         connectionUserIds = [:]
@@ -61,5 +64,8 @@ class LoggedUser: Mappable {
         
         seed <- map["seed"]
         mnemonics <- map["mnemonics"]
+        
+        appPin <- map["appPin"]
+        appBiometrics <- map["appBiometrics"]
     }
 }

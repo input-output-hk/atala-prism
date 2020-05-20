@@ -38,6 +38,8 @@ class Tracker {
     func trackRecoveryFail() {
         Analytics.logEvent("verify_recovery_phrase_fail", parameters: nil)
     }
+    
+    // MARK: App security
 
     func trackSecureAppFingerprint() {
         Analytics.logEvent("secure_app_fingerprint", parameters: nil)
