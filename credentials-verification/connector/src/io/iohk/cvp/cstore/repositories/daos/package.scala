@@ -8,7 +8,7 @@ import io.iohk.cvp.daos.BaseDAO
 
 package object daos extends BaseDAO {
 
-  implicit val verifierIdMeta: Meta[Verifier.Id] = uuidMeta.timap(Verifier.Id.apply)(_.value)
+  implicit val verifierIdMeta: Meta[Verifier.Id] = uuidMeta.timap(Verifier.Id.apply)(_.uuid)
 
   implicit val pgPackageTypeMeta: Meta[IndividualConnectionStatus] = pgEnumString[IndividualConnectionStatus](
     "INDIVIDUAL_CONNECTION_STATUS_TYPE",

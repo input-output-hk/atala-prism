@@ -8,6 +8,8 @@ service CredentialsStoreService {
 
   rpc CreateIndividual (CreateIndividualRequest) returns (CreateIndividualResponse) {}
 
+  rpc CreateHolder (CreateHolderRequest) returns (CreateHolderResponse) {}
+
   rpc GetIndividuals (GetIndividualsRequest) returns (GetIndividualsResponse) {}
 
   rpc GenerateConnectionTokenFor(GenerateConnectionTokenForRequest) returns (GenerateConnectionTokenForResponse) {}
@@ -24,6 +26,14 @@ message CreateIndividualRequest {
 
 message CreateIndividualResponse {
   Individual individual = 1;
+}
+
+message CreateHolderRequest {
+  string jsonData = 1;
+}
+
+message CreateHolderResponse {
+  VerifierHolder holder = 1;
 }
 
 message GenerateConnectionTokenForRequest {

@@ -5,6 +5,7 @@ import java.util.UUID
 
 import enumeratum.EnumEntry.UpperSnakecase
 import enumeratum.{EnumEntry, _}
+import io.circe.Json
 import io.iohk.connector.model.ConnectionId
 import io.iohk.cvp.models.ParticipantId
 
@@ -23,7 +24,7 @@ package object models {
   case class Verifier(id: Verifier.Id)
 
   object Verifier {
-    case class Id(value: UUID) extends AnyVal
+    case class Id(uuid: UUID) extends AnyVal
   }
 
   case class StoreIndividual(
@@ -35,6 +36,19 @@ package object models {
       email: Option[String],
       createdAt: Instant
   )
+
+  case class VerifierHolder(
+      id: VerifierHolder.Id,
+      data: Json,
+      status: IndividualConnectionStatus,
+      connectionToken: Option[String],
+      connectionId: Option[ConnectionId],
+      createdAt: Instant
+  )
+
+  object VerifierHolder {
+    case class Id(uuid: UUID) extends AnyVal
+  }
 
   case class SHA256Digest(value: Array[Byte]) {
     require(value.length == 32)

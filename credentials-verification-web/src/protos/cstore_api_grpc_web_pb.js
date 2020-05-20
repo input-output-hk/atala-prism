@@ -155,6 +155,86 @@ proto.io.iohk.prism.protos.CredentialsStoreServicePromiseClient.prototype.create
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
+ *   !proto.io.iohk.prism.protos.CreateHolderRequest,
+ *   !proto.io.iohk.prism.protos.CreateHolderResponse>}
+ */
+const methodDescriptor_CredentialsStoreService_CreateHolder = new grpc.web.MethodDescriptor(
+  '/io.iohk.prism.protos.CredentialsStoreService/CreateHolder',
+  grpc.web.MethodType.UNARY,
+  proto.io.iohk.prism.protos.CreateHolderRequest,
+  proto.io.iohk.prism.protos.CreateHolderResponse,
+  /**
+   * @param {!proto.io.iohk.prism.protos.CreateHolderRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.prism.protos.CreateHolderResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.io.iohk.prism.protos.CreateHolderRequest,
+ *   !proto.io.iohk.prism.protos.CreateHolderResponse>}
+ */
+const methodInfo_CredentialsStoreService_CreateHolder = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.io.iohk.prism.protos.CreateHolderResponse,
+  /**
+   * @param {!proto.io.iohk.prism.protos.CreateHolderRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.prism.protos.CreateHolderResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.io.iohk.prism.protos.CreateHolderRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.protos.CreateHolderResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.protos.CreateHolderResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.io.iohk.prism.protos.CredentialsStoreServiceClient.prototype.createHolder =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/io.iohk.prism.protos.CredentialsStoreService/CreateHolder',
+      request,
+      metadata || {},
+      methodDescriptor_CredentialsStoreService_CreateHolder,
+      callback);
+};
+
+
+/**
+ * @param {!proto.io.iohk.prism.protos.CreateHolderRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.io.iohk.prism.protos.CreateHolderResponse>}
+ *     A native promise that resolves to the response
+ */
+proto.io.iohk.prism.protos.CredentialsStoreServicePromiseClient.prototype.createHolder =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/io.iohk.prism.protos.CredentialsStoreService/CreateHolder',
+      request,
+      metadata || {},
+      methodDescriptor_CredentialsStoreService_CreateHolder);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
  *   !proto.io.iohk.prism.protos.GetIndividualsRequest,
  *   !proto.io.iohk.prism.protos.GetIndividualsResponse>}
  */

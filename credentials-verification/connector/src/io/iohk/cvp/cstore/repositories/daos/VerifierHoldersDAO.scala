@@ -1,14 +1,18 @@
 package io.iohk.cvp.cstore.repositories.daos
 
+import java.util.UUID
+
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
+import io.circe.Json
 import io.iohk.connector.model.{ConnectionId, TokenString}
-import io.iohk.cvp.cstore.models.{IndividualConnectionStatus, StoreIndividual}
+import io.iohk.cvp.cstore.models.{IndividualConnectionStatus, StoreIndividual, Verifier, VerifierHolder}
 import io.iohk.cvp.models.ParticipantId
 
 object VerifierHoldersDAO {
 
   case class VerifierHolderCreateData(fullName: String, email: Option[String])
+
   def insert(verifierId: ParticipantId, data: VerifierHolderCreateData): ConnectionIO[StoreIndividual] = {
     val individualId = ParticipantId.random()
     sql"""
@@ -16,6 +20,15 @@ object VerifierHoldersDAO {
          |VALUES ($verifierId, $individualId, jsonb_build_object('full_name', ${data.fullName}, 'email', ${data.email}), now())
          |RETURNING holder_id, connection_status, connection_token, connection_id, holder_data ->> 'full_name', holder_data ->> 'email', created_at
        """.stripMargin.query[StoreIndividual].unique
+  }
+
+  def insert(verifierId: Verifier.Id, data: Json): ConnectionIO[VerifierHolder] = {
+    val holderId = VerifierHolder.Id(UUID.randomUUID())
+    sql"""
+         |INSERT INTO verifier_holders (verifier_id, holder_id, holder_data, created_at)
+         |VALUES ($verifierId, $holderId, $data, now())
+         |RETURNING holder_id, holder_data, connection_status, connection_token, connection_id, created_at
+       """.stripMargin.query[VerifierHolder].unique
   }
 
   def list(

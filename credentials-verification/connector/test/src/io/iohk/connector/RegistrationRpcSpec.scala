@@ -68,7 +68,7 @@ class RegistrationRpcSpec extends ConnectorRpcSpecBase {
       val participantId =
         register(didSuffix = "employerX", name = name, role = connector_api.RegisterDIDRequest.Role.verifier)
       val result = new VerifiersRepository(database).findBy(Verifier.Id(participantId.uuid)).value.futureValue
-      result map (_.value.id.value) must be(Right(participantId.uuid))
+      result map (_.value.id.uuid) must be(Right(participantId.uuid))
     }
   }
 

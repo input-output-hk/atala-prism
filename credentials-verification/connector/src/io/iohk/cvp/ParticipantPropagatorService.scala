@@ -1,8 +1,7 @@
 package io.iohk.cvp
 
+import _root_.doobie.util.transactor.Transactor
 import cats.effect.IO
-import doobie.implicits._
-import doobie.util.transactor.Transactor
 import io.iohk.connector.model.ParticipantType
 import io.iohk.cvp.cmanager.models.Issuer
 import io.iohk.cvp.cmanager.repositories.IssuersRepository

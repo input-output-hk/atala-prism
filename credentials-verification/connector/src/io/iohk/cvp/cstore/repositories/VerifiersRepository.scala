@@ -1,7 +1,5 @@
 package io.iohk.cvp.cstore.repositories
 
-import java.util.UUID
-
 import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
@@ -11,7 +9,7 @@ import io.iohk.cvp.cstore.repositories.daos.VerifiersDAO
 import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither.FutureEitherOps
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 object VerifiersRepository {
   case class VerifierCreationData(id: Verifier.Id)

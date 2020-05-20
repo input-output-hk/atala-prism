@@ -3,11 +3,14 @@ package io.iohk.cvp.cstore
 import com.google.protobuf.ByteString
 import io.iohk.connector.Authenticator
 import io.iohk.connector.errors.{ErrorSupport, LoggingContext}
-import io.iohk.cvp.cstore.models.StoreIndividual
+import io.iohk.cvp.cstore.grpc.ProtoCodecs
+import io.iohk.cvp.cstore.models.{StoreIndividual, Verifier, VerifierHolder}
+import io.iohk.cvp.cstore.repositories.VerifierHoldersRepository
 import io.iohk.cvp.cstore.repositories.daos.VerifierHoldersDAO.VerifierHolderCreateData
 import io.iohk.cvp.cstore.repositories.daos.StoredCredentialsDAO.StoredCredentialCreateData
-import io.iohk.cvp.cstore.services.{VerifierHoldersService, StoredCredentialsService}
+import io.iohk.cvp.cstore.services.{StoredCredentialsService, VerifierHoldersService}
 import io.iohk.cvp.models.ParticipantId
+import io.iohk.prism.protos.cstore_api.{CreateHolderRequest, CreateHolderResponse}
 import io.iohk.prism.protos.{cstore_api, cstore_models}
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -16,6 +19,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class CredentialsStoreService(
     individuals: VerifierHoldersService,
     storedCredentials: StoredCredentialsService,
+    holdersRepository: VerifierHoldersRepository,
     authenticator: Authenticator
 )(implicit
     ec: ExecutionContext
@@ -46,7 +50,25 @@ class CredentialsStoreService(
     authenticator.authenticated("createIndividual", request) { participantId =>
       f(participantId)
     }
+  }
 
+  override def createHolder(request: cstore_api.CreateHolderRequest): Future[cstore_api.CreateHolderResponse] = {
+    def f(participantId: ParticipantId) = {
+      Future {
+        implicit val loggingContext = LoggingContext("request" -> request, "userId" -> participantId)
+        val json = io.circe.parser.parse(request.jsonData).getOrElse(throw new RuntimeException("Invalid json"))
+        val verifierId = Verifier.Id(participantId.uuid)
+        holdersRepository
+          .create(verifierId, json)
+          .wrapExceptions
+          .successMap(ProtoCodecs.toHolderProto)
+          .map(cstore_api.CreateHolderResponse().withHolder)
+      }.flatten
+    }
+
+    authenticator.authenticated("createHolder", request) { participantId =>
+      f(participantId)
+    }
   }
 
   def individualModelToProto(individual: StoreIndividual): cstore_models.Individual = {

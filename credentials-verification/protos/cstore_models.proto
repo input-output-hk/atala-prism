@@ -18,6 +18,16 @@ message Individual {
     string connectionId = 6;
 }
 
+message VerifierHolder {
+    string holderId = 1;
+    string jsonData = 2;
+    // NOTE: as enum values need to be unique, we reuse the individual status for now, eventually,
+    // TODO: we should rename that enum.
+    IndividualConnectionStatus status = 3;
+    string connectionToken = 4;
+    string connectionId = 5;
+}
+
 message SignedCredential {
     string issuerDid = 1;
     string proofId = 2;

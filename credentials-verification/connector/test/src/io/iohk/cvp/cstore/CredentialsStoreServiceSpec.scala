@@ -2,19 +2,21 @@ package io.iohk.cvp.cstore
 
 import com.google.protobuf.ByteString
 import doobie.implicits._
+import io.circe.Json
 import io.iohk.connector.model.{ParticipantLogo, ParticipantType}
 import io.iohk.connector.repositories.ParticipantsRepository.CreateParticipantRequest
 import io.iohk.connector.repositories.{ParticipantsRepository, RequestNoncesRepository}
 import io.iohk.connector.{RpcSpecBase, SignedRequestsAuthenticator}
 import io.iohk.cvp.cstore.models.{IndividualConnectionStatus, Verifier}
-import io.iohk.cvp.cstore.repositories.VerifiersRepository
 import io.iohk.cvp.cstore.repositories.VerifiersRepository.VerifierCreationData
 import io.iohk.cvp.cstore.repositories.daos.{StoredCredentialsDAO, VerifierHoldersDAO}
+import io.iohk.cvp.cstore.repositories.{VerifierHoldersRepository, VerifiersRepository}
 import io.iohk.cvp.cstore.services.{StoredCredentialsService, VerifierHoldersService}
 import io.iohk.cvp.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.prism.protos.{cstore_api, cstore_models}
 import org.mockito.MockitoSugar._
+import org.scalatest.OptionValues._
 
 import scala.concurrent.duration._
 
@@ -30,6 +32,7 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
 
   lazy val individuals = new VerifierHoldersService(database)
   lazy val storedCredentials = new StoredCredentialsService(database)
+  private lazy val holdersRepository = new VerifierHoldersRepository(database)
   private lazy val participantsRepository = new ParticipantsRepository(database)(executionContext)
   private lazy val requestNoncesRepository = new RequestNoncesRepository.PostgresImpl(database)(executionContext)
   private lazy val nodeMock = mock[io.iohk.prism.protos.node_api.NodeServiceGrpc.NodeService]
@@ -46,7 +49,7 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
     Seq(
       cstore_api.CredentialsStoreServiceGrpc
         .bindService(
-          new CredentialsStoreService(individuals, storedCredentials, authenticator),
+          new CredentialsStoreService(individuals, storedCredentials, holdersRepository, authenticator),
           executionContext
         )
     )
@@ -94,6 +97,25 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
         individual.status mustBe IndividualConnectionStatus.Created
         individual.fullName mustBe "Individual Individual"
         individual.email mustBe Some("individual@email.org")
+      }
+    }
+  }
+
+  "createHolder" should {
+    "create a holder in the database" in {
+      usingApiAs(verifierId) { serviceStub =>
+        val json = Json.obj(
+          "name" -> Json.fromString("Individual Individual"),
+          "email" -> Json.fromString("individual@email.org")
+        )
+        val request = cstore_api.CreateHolderRequest(json.noSpaces)
+
+        val result = serviceStub.createHolder(request).holder.value
+        result.jsonData must be(json.noSpaces)
+        result.status mustBe cstore_models.IndividualConnectionStatus.CREATED
+        result.connectionToken must be(empty)
+        result.connectionId must be(empty)
+        result.holderId mustNot be(empty)
       }
     }
   }
