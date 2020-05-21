@@ -4,11 +4,10 @@ import io.iohk.atala.cvp.webextension.Config
 import io.iohk.atala.cvp.webextension.activetab.ActiveTabConfig
 import io.iohk.atala.cvp.webextension.background.wallet.{Role, SigningRequest, WalletStatus}
 import io.iohk.atala.cvp.webextension.common.Mnemonic
-import io.iohk.atala.cvp.webextension.testing.FakeApis
+import io.iohk.atala.cvp.webextension.testing.{FakeApis, FakeConnectorClientService}
 import org.scalatest.matchers.must.Matchers._
 import org.scalatest.wordspec.AsyncWordSpec
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
-
 import scala.concurrent.{ExecutionContextExecutor, Future}
 import scala.scalajs.concurrent.JSExecutionContext
 import scala.scalajs.js
@@ -33,11 +32,11 @@ class BackgroundAPISpec extends AsyncWordSpec with BeforeAndAfterAll with Before
 
     // Delete any data stored by any previous test
     js.Dynamic.global.global.chrome.storage.local.clear()
-
     // Run the background script
     Runner(
       Config(
-        ActiveTabConfig()
+        ActiveTabConfig(),
+        connectorUrl = "http://loclahost:10000/test"
       )
     ).run()
   }
@@ -51,7 +50,7 @@ class BackgroundAPISpec extends AsyncWordSpec with BeforeAndAfterAll with Before
 
   "createKey" should {
     "fail when the wallet is not loaded" in {
-      val api = new BackgroundAPI()
+      val api = new BackgroundAPI(FakeConnectorClientService)
 
       recoverToExceptionIf[RuntimeException] {
         for {
@@ -61,7 +60,7 @@ class BackgroundAPISpec extends AsyncWordSpec with BeforeAndAfterAll with Before
     }
 
     "create a new key" in {
-      val api = new BackgroundAPI()
+      val api = new BackgroundAPI(FakeConnectorClientService)
 
       for {
         _ <- setUpWallet(api)
@@ -74,8 +73,7 @@ class BackgroundAPISpec extends AsyncWordSpec with BeforeAndAfterAll with Before
     }
 
     "fail when creating an existing key" in {
-      val api = new BackgroundAPI()
-
+      val api = new BackgroundAPI(FakeConnectorClientService)
       recoverToExceptionIf[RuntimeException] {
         for {
           _ <- setUpWallet(api, List(TEST_KEY))
@@ -88,7 +86,7 @@ class BackgroundAPISpec extends AsyncWordSpec with BeforeAndAfterAll with Before
 
   "listKeys" should {
     "return no keys when the wallet is not loaded" in {
-      val api = new BackgroundAPI()
+      val api = new BackgroundAPI(FakeConnectorClientService)
 
       for {
         keys <- api.listKeys()
@@ -98,7 +96,7 @@ class BackgroundAPISpec extends AsyncWordSpec with BeforeAndAfterAll with Before
     }
 
     "return all keys" in {
-      val api = new BackgroundAPI()
+      val api = new BackgroundAPI(FakeConnectorClientService)
 
       for {
         _ <- setUpWallet(api, List(TEST_KEY))
@@ -112,7 +110,7 @@ class BackgroundAPISpec extends AsyncWordSpec with BeforeAndAfterAll with Before
 
   "requestSignature" should {
     "get the message signed" in {
-      val api = new BackgroundAPI()
+      val api = new BackgroundAPI(FakeConnectorClientService)
 
       for {
         _ <- setUpWallet(api, List(TEST_KEY))
@@ -128,8 +126,7 @@ class BackgroundAPISpec extends AsyncWordSpec with BeforeAndAfterAll with Before
     }
 
     "be able to request signature without the wallet loaded" in {
-      val api = new BackgroundAPI()
-
+      val api = new BackgroundAPI(FakeConnectorClientService)
       // Fire request, but wait its result until signing happens
       val signatureResultFuture = api.requestSignature("sign-me")
       for {
@@ -145,7 +142,7 @@ class BackgroundAPISpec extends AsyncWordSpec with BeforeAndAfterAll with Before
 
   "getSignatureRequests" should {
     "return the pending signature requests" in {
-      val api = new BackgroundAPI()
+      val api = new BackgroundAPI(FakeConnectorClientService)
 
       for {
         _ <- setUpWallet(api)
@@ -158,8 +155,7 @@ class BackgroundAPISpec extends AsyncWordSpec with BeforeAndAfterAll with Before
     }
 
     "return the pending signature requests even with the wallet not loaded" in {
-      val api = new BackgroundAPI()
-
+      val api = new BackgroundAPI(FakeConnectorClientService)
       api.requestSignature("sign-me")
       for {
         signingRequests <- api.getSignatureRequests()
@@ -171,8 +167,7 @@ class BackgroundAPISpec extends AsyncWordSpec with BeforeAndAfterAll with Before
 
   "signRequestWithKey" should {
     "sign the pending request" in {
-      val api = new BackgroundAPI()
-
+      val api = new BackgroundAPI(FakeConnectorClientService)
       for {
         _ <- setUpWallet(api, List(TEST_KEY))
         // Do not wait on the request
@@ -186,8 +181,7 @@ class BackgroundAPISpec extends AsyncWordSpec with BeforeAndAfterAll with Before
     }
 
     "fail when requestId does not exist" in {
-      val api = new BackgroundAPI()
-
+      val api = new BackgroundAPI(FakeConnectorClientService)
       recoverToExceptionIf[RuntimeException] {
         for {
           _ <- setUpWallet(api, List(TEST_KEY))
@@ -198,8 +192,7 @@ class BackgroundAPISpec extends AsyncWordSpec with BeforeAndAfterAll with Before
     }
 
     "fail when key does not exist" in {
-      val api = new BackgroundAPI()
-
+      val api = new BackgroundAPI(FakeConnectorClientService)
       recoverToExceptionIf[RuntimeException] {
         for {
           _ <- setUpWallet(api)
@@ -211,8 +204,7 @@ class BackgroundAPISpec extends AsyncWordSpec with BeforeAndAfterAll with Before
     }
 
     "fail when wallet is not loaded" in {
-      val api = new BackgroundAPI()
-
+      val api = new BackgroundAPI(FakeConnectorClientService)
       api.requestSignature("sign-me")
       recoverToExceptionIf[RuntimeException] {
         for {
@@ -224,8 +216,7 @@ class BackgroundAPISpec extends AsyncWordSpec with BeforeAndAfterAll with Before
 
   "getWalletStatus" should {
     "return Missing when no wallet has been created" in {
-      val api = new BackgroundAPI()
-
+      val api = new BackgroundAPI(FakeConnectorClientService)
       for {
         status <- api.getWalletStatus()
       } yield {
@@ -234,7 +225,7 @@ class BackgroundAPISpec extends AsyncWordSpec with BeforeAndAfterAll with Before
     }
 
     "return Locked when wallet has been set but not loaded" in {
-      val api = new BackgroundAPI()
+      val api = new BackgroundAPI(FakeConnectorClientService)
 
       for {
         _ <- setUpWallet(api)
@@ -247,7 +238,7 @@ class BackgroundAPISpec extends AsyncWordSpec with BeforeAndAfterAll with Before
     }
 
     "return Unlocked when wallet has been loaded" in {
-      val api = new BackgroundAPI()
+      val api = new BackgroundAPI(FakeConnectorClientService)
 
       for {
         _ <- setUpWallet(api)
@@ -261,7 +252,7 @@ class BackgroundAPISpec extends AsyncWordSpec with BeforeAndAfterAll with Before
 
   "createWallet" should {
     "create the wallet" in {
-      val api = new BackgroundAPI()
+      val api = new BackgroundAPI(FakeConnectorClientService)
 
       for {
         _ <- api.createWallet(PASSWORD, Mnemonic(), Role.Verifier, ORGANISATION_NAME, Array())
@@ -272,7 +263,7 @@ class BackgroundAPISpec extends AsyncWordSpec with BeforeAndAfterAll with Before
     }
 
     "create the wallet again even if already created" in {
-      val api = new BackgroundAPI()
+      val api = new BackgroundAPI(FakeConnectorClientService)
 
       for {
         _ <- api.createWallet(PASSWORD, Mnemonic(), Role.Verifier, ORGANISATION_NAME, Array())
@@ -287,7 +278,7 @@ class BackgroundAPISpec extends AsyncWordSpec with BeforeAndAfterAll with Before
 
   "unlockWallet" should {
     "unlock the wallet" in {
-      val api = new BackgroundAPI()
+      val api = new BackgroundAPI(FakeConnectorClientService)
 
       for {
         _ <- setUpWallet(api)
@@ -301,8 +292,7 @@ class BackgroundAPISpec extends AsyncWordSpec with BeforeAndAfterAll with Before
     }
 
     "unlock the wallet again when already unlocked" in {
-      val api = new BackgroundAPI()
-
+      val api = new BackgroundAPI(FakeConnectorClientService)
       for {
         _ <- setUpWallet(api)
 
@@ -316,7 +306,7 @@ class BackgroundAPISpec extends AsyncWordSpec with BeforeAndAfterAll with Before
 
   "lockWallet" should {
     "lock the wallet" in {
-      val api = new BackgroundAPI()
+      val api = new BackgroundAPI(FakeConnectorClientService)
 
       for {
         _ <- setUpWallet(api)

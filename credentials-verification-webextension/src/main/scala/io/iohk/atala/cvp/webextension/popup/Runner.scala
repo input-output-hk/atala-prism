@@ -1,24 +1,16 @@
 package io.iohk.atala.cvp.webextension.popup
 
 import java.util.Base64
-
+import io.iohk.atala.cvp.webextension.Config
 import io.iohk.atala.cvp.webextension.background.BackgroundAPI
+import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorClientService
 import io.iohk.atala.cvp.webextension.background.wallet.{Role, WalletManager, WalletStatus}
 import io.iohk.atala.cvp.webextension.common.{ECKeyOperation, I18NMessages, Mnemonic}
 import io.iohk.atala.cvp.webextension.facades.elliptic.EC
 import org.scalajs.dom
 import org.scalajs.dom.Event
-import org.scalajs.dom.raw.{
-  HTMLDivElement,
-  HTMLHeadElement,
-  HTMLHeadingElement,
-  HTMLInputElement,
-  HTMLLabelElement,
-  HTMLParagraphElement,
-  HTMLSelectElement
-}
+import org.scalajs.dom.raw._
 import typings.std.{console, document}
-
 import scala.concurrent.{ExecutionContext, Future}
 import scala.scalajs.js
 import scala.util.{Failure, Success}
@@ -130,16 +122,28 @@ class Runner(messages: I18NMessages, backgroundAPI: BackgroundAPI)(implicit ec: 
     }
   }
 
+  def popup() = {
+    dom.window.onload = _ => {
+      dom.document.body = InitialWalletView(backgroundAPI).htmlBody
+    }
+  }
+
   def run(): Unit = {
     log("This was run by the popup script")
 
     val closeButton = dom.document.getElementById("close-button")
 
-    val generateBtn = document.getElementById("generate").asInstanceOf[HTMLHeadElement]
-    generateBtn.addEventListener("click", (ev: Event) => generate(), true)
-
     val recoverBtn = document.getElementById("recover").asInstanceOf[HTMLDivElement]
     recoverBtn.addEventListener("click", (ev: Event) => recover(), true)
+
+    val registerBtn = document.getElementById("registrationScreen").asInstanceOf[HTMLDivElement]
+    val divElement = dom.document.getElementById("containerId").asInstanceOf[HTMLDivElement]
+
+    registerBtn.addEventListener(
+      "click",
+      (ev: Event) => RegistrationView(backgroundAPI).registrationScreen(divElement),
+      true
+    )
 
     log("Getting wallet status from the popup script")
     getWalletStatus()
@@ -192,7 +196,7 @@ class Runner(messages: I18NMessages, backgroundAPI: BackgroundAPI)(implicit ec: 
   }
   private def recover() = {
     console.info("**************************recover*****************************")
-    val divElement = dom.document.getElementById("outerId").asInstanceOf[HTMLDivElement]
+    val divElement = dom.document.getElementById("containerId").asInstanceOf[HTMLDivElement]
     divElement.innerHTML =
       """<div class="div__btngroup">
                              |<div class="div__passphrase">
@@ -222,6 +226,7 @@ class Runner(messages: I18NMessages, backgroundAPI: BackgroundAPI)(implicit ec: 
     status.textContent = "Wallet Created"
   }
 
+  //TODO remove this
   private def generate() = {
     console.info("**************************generate*****************************")
     val h2 = dom.document.getElementById("h2").asInstanceOf[HTMLHeadingElement]
@@ -261,9 +266,10 @@ class Runner(messages: I18NMessages, backgroundAPI: BackgroundAPI)(implicit ec: 
 
 object Runner {
 
-  def apply()(implicit ec: ExecutionContext): Runner = {
+  def apply(config: Config)(implicit ec: ExecutionContext): Runner = {
     val messages = new I18NMessages
-    val backgroundAPI = new BackgroundAPI()
+    val connectorService = ConnectorClientService(config.connectorUrl)
+    val backgroundAPI = new BackgroundAPI(connectorService)
     new Runner(messages, backgroundAPI)
   }
 }

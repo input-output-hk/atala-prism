@@ -8,7 +8,8 @@ import io.iohk.atala.cvp.webextension.activetab.ActiveTabConfig
   * For convenience, there are two configs, the Default one and the one for Development.
   */
 case class Config(
-    activeTabConfig: activetab.ActiveTabConfig
+    activeTabConfig: activetab.ActiveTabConfig,
+    connectorUrl: String
 )
 
 // TODO: REPLACE ME
@@ -16,13 +17,15 @@ object Config {
 
   val Default: Config = {
     Config(
-      ActiveTabConfig()
+      ActiveTabConfig(),
+      connectorUrl = "http://cvp-develop.cef.iohkdev.io"
     )
   }
 
   val Dev: Config = {
     Config(
-      ActiveTabConfig()
+      ActiveTabConfig(),
+      connectorUrl = "http://localhost:10000"
     )
   }
 }

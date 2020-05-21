@@ -26,6 +26,10 @@ object ECKeyOperation {
     val atalaOperation = AtalaOperation(AtalaOperation.Operation.CreateDid(createDIDOperation))
     val signature: Signature =
       ecKeyPair.privateKeyPair.sign(atalaOperation.toByteArray.toJSArray.asInstanceOf[Uint8Array])
+
+    println(s"***************signature verified ${ecKeyPair.publicKeyPair
+      .verify(atalaOperation.toByteArray.toJSArray.asInstanceOf[Uint8Array], signature)}")
+
     SignedAtalaOperation(
       signedWith = "master",
       signature = ByteString.copyFrom(signature.toDER().asInstanceOf[Int8Array].toArray),

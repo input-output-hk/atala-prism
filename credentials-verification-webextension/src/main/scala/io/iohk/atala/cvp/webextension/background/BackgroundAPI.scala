@@ -1,5 +1,6 @@
 package io.iohk.atala.cvp.webextension.background
 
+import com.google.protobuf.ByteString
 import io.circe.Decoder
 import io.circe.generic.auto._
 import io.circe.parser.parse
@@ -11,8 +12,10 @@ import io.iohk.atala.cvp.webextension.background.models.Command.{
   WalletStatusResult
 }
 import io.iohk.atala.cvp.webextension.background.models.{Command, CommandWithResponse, Event}
+import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorClientService
 import io.iohk.atala.cvp.webextension.background.wallet.Role
-import io.iohk.atala.cvp.webextension.common.Mnemonic
+import io.iohk.atala.cvp.webextension.common.{ECKeyOperation, Mnemonic}
+import io.iohk.prism.protos.connector_api.RegisterDIDRequest
 
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.scalajs.js
@@ -30,7 +33,7 @@ import scala.util.{Failure, Success, Try}
   *
   * The BackgroundAPI abstracts all that complex logic from the caller and gives a simple API based on futures.
   */
-class BackgroundAPI(implicit ec: ExecutionContext) {
+class BackgroundAPI(connectorClient: ConnectorClientService)(implicit ec: ExecutionContext) {
 
   def sendBrowserNotification(title: String, message: String): Future[Unit] = {
     val command = Command.SendBrowserNotification(title, message)
@@ -73,7 +76,12 @@ class BackgroundAPI(implicit ec: ExecutionContext) {
       organisationName: String,
       logo: Array[Byte]
   ): Future[Unit] = {
-    process(Command.CreateWallet(password, mnemonic, role, organisationName, logo))
+    for {
+      _ <- process(Command.CreateWallet(password, mnemonic, role, organisationName, logo))
+      _ <- registerDid(mnemonic, role, organisationName, logo)
+    } yield {
+      ()
+    }
   }
 
   def unlockWallet(password: String): Future[Unit] = {
@@ -82,6 +90,22 @@ class BackgroundAPI(implicit ec: ExecutionContext) {
 
   def lockWallet(): Future[Unit] = {
     process(Command.LockWallet())
+  }
+
+  private def registerDid(mnemonic: Mnemonic, role: Role, organisationName: String, logo: Array[Byte]): Future[Unit] = {
+    val connectRole = Role.toConnectorApiRole(role)
+    val logoByteString = ByteString.copyFrom(logo)
+    val registerDIDRequest =
+      RegisterDIDRequest(
+        Some(ECKeyOperation.toSignedAtalaOperation(mnemonic)),
+        connectRole,
+        organisationName,
+        logoByteString
+      )
+    connectorClient.registerDID(registerDIDRequest).map { response =>
+      println(s"*****RegisteredDID******=${response.did}")
+      ()
+    }
   }
 
   private def process[Resp](command: CommandWithResponse[Resp])(implicit dec: Decoder[Resp]): Future[Resp] = {

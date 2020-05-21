@@ -2,6 +2,7 @@ package io.iohk.atala.cvp.webextension.activetab
 
 import io.iohk.atala.cvp.webextension.Config
 import io.iohk.atala.cvp.webextension.background.BackgroundAPI
+import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorClientService
 import io.iohk.atala.cvp.webextension.common.I18NMessages
 
 import scala.concurrent.ExecutionContext
@@ -30,7 +31,8 @@ class Runner(config: ActiveTabConfig, backgroundAPI: BackgroundAPI, messages: I1
 object Runner {
 
   def apply(config: Config)(implicit ec: ExecutionContext): Runner = {
-    val backgroundAPI = new BackgroundAPI
+    val connectorService = ConnectorClientService(config.connectorUrl)
+    val backgroundAPI = new BackgroundAPI(connectorService)
     val messages = new I18NMessages
     new Runner(config.activeTabConfig, backgroundAPI, messages)
   }

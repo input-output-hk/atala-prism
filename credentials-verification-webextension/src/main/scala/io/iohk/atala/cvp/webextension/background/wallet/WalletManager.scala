@@ -10,6 +10,7 @@ import io.iohk.atala.cvp.webextension.background.services.browser.BrowserActionS
 import io.iohk.atala.cvp.webextension.background.services.storage.StorageService
 import io.iohk.atala.cvp.webextension.common.Mnemonic
 import io.iohk.atala.cvp.webextension.facades.elliptic.{EC, KeyPair}
+import io.iohk.prism.protos.connector_api.RegisterDIDRequest
 import org.scalajs.dom.crypto
 import org.scalajs.dom.crypto.{CryptoKey, KeyFormat}
 
@@ -50,6 +51,19 @@ object Role {
 
   final case object Verifier extends Role
 
+  def toConnectorApiRole(role: Role): RegisterDIDRequest.Role = {
+    role match {
+      case Issuer => RegisterDIDRequest.Role.issuer
+      case Verifier => RegisterDIDRequest.Role.verifier
+    }
+  }
+
+  def toRole(value: String): Role = {
+    value match {
+      case "Issuer" => Issuer
+      case "Verifier" => Verifier
+    }
+  }
 }
 
 case class WalletData(

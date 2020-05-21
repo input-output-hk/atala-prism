@@ -97,6 +97,7 @@ chromeManifest := new ExtensionManifest {
 val circe = "0.13.0"
 val grpcWebVersion = "0.2.0+21-b26c9e0a-SNAPSHOT"
 val scalatest = "3.1.1"
+val scalatagsVersion = "0.9.1"
 
 libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "1.0.0"
 
@@ -105,6 +106,8 @@ libraryDependencies += "com.alexitc" %%% "scala-js-chrome" % "0.7.0"
 libraryDependencies += "io.circe" %%% "circe-core" % circe
 libraryDependencies += "io.circe" %%% "circe-generic" % circe
 libraryDependencies += "io.circe" %%% "circe-parser" % circe
+
+libraryDependencies += "com.lihaoyi" %%% "scalatags" % scalatagsVersion
 
 // js
 npmDependencies in Compile ++= Seq(

@@ -1,5 +1,4 @@
 import io.iohk.atala.cvp.webextension._
-
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.scalajs.js.annotation.JSExportTopLevel
 
@@ -35,6 +34,6 @@ object Main {
 
   @JSExportTopLevel("runOnPopup")
   def runOnPopup(): Unit = {
-    popup.Runner().run()
+    popup.Runner(config).popup()
   }
 }
