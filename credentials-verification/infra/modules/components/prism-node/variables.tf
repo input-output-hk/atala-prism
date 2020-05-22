@@ -6,6 +6,12 @@ variable aws_region {
   description = "The AWS region to create resources in."
 }
 
+variable enabled {
+  description = "Whether or not this module is enabled (as 'count' for modules doesn't work in Terraform 0.12)"
+  type        = bool
+  default     = true
+}
+
 variable execution_role_arn {
   type = string
 }

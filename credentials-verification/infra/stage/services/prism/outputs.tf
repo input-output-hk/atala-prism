@@ -1,5 +1,7 @@
 locals {
-  hostname = aws_route53_record.intdemo_dns_entry.name
+  intdemo_hostname = var.intdemo_enabled ? aws_route53_record.intdemo_dns_entry[0].name : ""
+  geud_hostname    = var.geud_enabled ? aws_route53_record.console_dns_entry[0].name : ""
+  hostname         = var.intdemo_enabled ? local.intdemo_hostname : (var.geud_enabled ? local.geud_hostname : module.prism_service.envoy_lb_dns_name)
 }
 
 output "command_to_test_connector" {
@@ -11,7 +13,11 @@ output "command_to_test_envoy_proxy" {
 }
 
 output "command_to_test_intdemo_web_app" {
-  value = "curl -ik 'https://${local.hostname}'"
+  value = var.intdemo_enabled ? "curl -ik 'https://${local.intdemo_hostname}'" : "Intdemo disabled"
+}
+
+output "command_to_test_geud_web_app" {
+  value = var.geud_enabled ? "curl -ik 'https://${local.geud_hostname}'" : "GEUD disabled"
 }
 
 output "connector_db_details" {

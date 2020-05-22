@@ -204,16 +204,19 @@ module "prism_service" {
   env_name_short = var.env_name_short
   aws_region     = var.aws_region
 
-  connector_docker_image   = var.connector_docker_image
-  connector_port           = var.connector_port
-  node_docker_image        = var.node_docker_image
-  node_port                = var.node_port
-  landing_docker_image     = var.landing_docker_image
-  landing_port             = var.landing_port
-  web_console_docker_image = var.web_console_docker_image
-  web_console_port         = var.web_console_port
-  envoy_docker_image       = var.prism_lb_envoy_docker_image
-  grpc_web_proxy_port      = var.grpc_web_proxy_port
+  intdemo_enabled = var.intdemo_enabled
+  geud_enabled    = var.geud_enabled
+
+  connector_docker_image     = var.connector_docker_image
+  connector_port             = var.connector_port
+  node_docker_image          = var.node_docker_image
+  node_port                  = var.node_port
+  landing_docker_image       = var.landing_docker_image
+  landing_port               = var.landing_port
+  prism_console_docker_image = var.prism_console_docker_image
+  prism_console_port         = var.prism_console_port
+  envoy_docker_image         = var.prism_lb_envoy_docker_image
+  grpc_web_proxy_port        = var.grpc_web_proxy_port
 
   vpc_id                     = local.vpc_id
   component_subnets          = local.priv_subnet_ids
@@ -243,6 +246,7 @@ module "prism_service" {
 
 # public DNS record for the intdemo
 resource aws_route53_record intdemo_dns_entry {
+  count   = var.intdemo_enabled ? 1 : 0
   zone_id = var.atala_prism_zoneid
   name    = "${var.env_name_short}.${var.atala_prism_domain}"
   type    = "CNAME"
@@ -251,7 +255,8 @@ resource aws_route53_record intdemo_dns_entry {
 }
 
 # public DNS record for the PRISM console
-resource aws_route53_record prism_dns_entry {
+resource aws_route53_record console_dns_entry {
+  count   = var.geud_enabled ? 1 : 0
   zone_id = var.atala_prism_zoneid
   name    = "console-${var.env_name_short}.${var.atala_prism_domain}"
   type    = "CNAME"

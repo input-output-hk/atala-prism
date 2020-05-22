@@ -57,7 +57,8 @@ module "node" {
 }
 
 module "landing_page" {
-  source = "../../components/intdemo-landing"
+  source  = "../../components/intdemo-landing"
+  enabled = var.intdemo_enabled
 
   landing_docker_image = var.landing_docker_image
   port                 = var.landing_port
@@ -80,10 +81,11 @@ module "landing_page" {
 }
 
 module "console" {
-  source = "../../components/prism-console"
+  source  = "../../components/prism-console"
+  enabled = var.geud_enabled
 
-  prism_console_docker_image = var.web_console_docker_image
-  port                       = var.web_console_port
+  prism_console_docker_image = var.prism_console_docker_image
+  port                       = var.prism_console_port
   connector_grpc_url         = "https://console-${var.env_name_short}.${var.atala_prism_domain}:4433"
 
   parent_name               = "prism-${var.env_name_short}"
@@ -111,9 +113,9 @@ module "envoy" {
   exposed_ports = [for i, tg in local.target_groups : { port = tg.backend_port, lb_target_group_arn = module.prism_lb.target_group_arns[i] }]
 
   environment = [
-    { name = "LANDING_PAGE_ADDRESS", value = module.landing_page.landing_host },
+    { name = "LANDING_PAGE_ADDRESS", value = var.intdemo_enabled ? module.landing_page.landing_host : "0.0.0.0" },
     { name = "LANDING_PAGE_PORT", value = "80" },
-    { name = "PRISM_CONSOLE_ADDRESS", value = module.console.console_host },
+    { name = "PRISM_CONSOLE_ADDRESS", value = var.geud_enabled ? module.console.console_host : "0.0.0.0" },
     { name = "PRISM_CONSOLE_PORT", value = "80" },
     { name = "CONNECTOR_ADDRESS", value = module.connector.connector_host },
     { name = "CONNECTOR_PORT", value = var.connector_port },

@@ -6,6 +6,16 @@ variable aws_region {
   description = "The AWS region to create resources in."
 }
 
+variable intdemo_enabled {
+  description = "Whether or not deploy intdemo components"
+  type        = bool
+}
+
+variable geud_enabled {
+  description = "Whether or not deploy geud components"
+  type        = bool
+}
+
 variable connector_docker_image {
   description = "Docker image for the connector."
 }
@@ -33,11 +43,11 @@ variable landing_port {
   type        = number
 }
 
-variable web_console_docker_image {
+variable prism_console_docker_image {
   description = "Docker image for the web console."
 }
 
-variable web_console_port {
+variable prism_console_port {
   description = "Port for the web console."
   type        = number
 }

@@ -120,12 +120,18 @@ env_name_short                = "$env_name_short"
 # for the latest image versions, under the assumption this is
 # usually want you want. For rollback, or other scenarios where
 # you want a specific component version, edit these values according to your needs.
-connector_docker_image        = "$connector_docker_image"
-node_docker_image             = "$node_docker_image"
-landing_docker_image          = "$landing_docker_image"
-web_console_docker_image          = "$web_console_docker_image"
+connector_docker_image      = "$connector_docker_image"
+node_docker_image           = "$node_docker_image"
+landing_docker_image        = "$landing_docker_image"
+prism_console_docker_image  = "$prism_console_docker_image"
 prism_lb_envoy_docker_image = "$prism_lb_envoy_docker_image"
+
+intdemo_enabled = $intdemo_enabled
+geud_enabled    = $geud_enabled
+
 EOF
+  else
+    echo "Note: .terraform/$env_name_short.tfvars already exists, will not write variables"
   fi
 }
 
@@ -133,7 +139,7 @@ set_vars () {
   connector_docker_image=$(get_docker_image "connector" "$env_name_short" "develop")
   node_docker_image=$(get_docker_image "node" "$env_name_short" "develop")
   landing_docker_image=$(get_docker_image "landing" "$env_name_short" "develop")
-  web_console_docker_image=$(get_docker_image "web" "$env_name_short" "develop")
+  prism_console_docker_image=$(get_docker_image "web" "$env_name_short" "develop")
   prism_lb_envoy_docker_image=$(get_docker_image "prism-lb-envoy" "$env_name_short" "develop")
 
   if [ -f "$HOME/.secrets.tfvars" ]; then
@@ -142,7 +148,9 @@ set_vars () {
   fi
 
   echo "Using connector image: $connector_docker_image"
+  echo "Using node image: $node_docker_image"
   echo "Using landing image: $landing_docker_image"
+  echo "Using prism console image: $prism_console_docker_image"
   echo "Using envoy image: $prism_lb_envoy_docker_image"
 }
 
@@ -181,8 +189,23 @@ env_name_short=${1-$env_name_default}
 tf_vars_file=".terraform/$env_name_short.tfvars"
 state_key="infra/stage/services/prism/$env_name_short/terraform.tfstate"
 
+intdemo_enabled=${INTDEMO_ENABLED:-"false"}
+geud_enabled=${GEUD_ENABLED:-"false"}
+
 echo "Using env name '$env_name_short'."
 echo "Performing action '$action'."
+
+case $intdemo_enabled in
+  true  ) echo "Intdemo enabled";;
+  false ) echo "Intdemo disabled, use INTDEMO_ENABLED=true to enable";;
+  *     ) echo "Warning: unknown value INTDEMO_ENABLED=$intdemo_enabled";;
+esac
+
+case $geud_enabled in
+  true  ) echo "GEUD enabled";;
+  false ) echo "GEUD disabled, use GEUD_ENABLED=true to enable";;
+  *     ) echo "Warning: unknown value GEUD_ENABLED=$geud_enabled";;
+esac
 
 case $action in
   (apply) apply_env;;

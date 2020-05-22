@@ -15,6 +15,18 @@ variable aws_region {
   default     = "us-east-2"
 }
 
+variable intdemo_enabled {
+  description = "Whether or not deploy intdemo components"
+  type        = bool
+  default     = true
+}
+
+variable geud_enabled {
+  description = "Whether or not deploy geud components"
+  type        = bool
+  default     = true
+}
+
 variable autoscale_min {
   description = "Minimum autoscale (number of EC2 instances in ECS cluster)"
   default     = "1"
@@ -67,12 +79,12 @@ variable landing_port {
   default     = 80
 }
 
-variable web_console_docker_image {
-  description = "Docker image for the interactive demo web app."
+variable prism_console_docker_image {
+  description = "Docker image for the PRISM console web app."
 }
 
-variable web_console_port {
-  description = "Port for the interactive demo web app."
+variable prism_console_port {
+  description = "Port for the PRISM console web app."
   type        = number
   default     = 80
 }

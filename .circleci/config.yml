@@ -121,38 +121,16 @@ jobs:
             ./build.sh -b
             ./build.sh -p
 
-  rebuild-geud-env:
-    docker:
-      - image: << pipeline.parameters.scala-mill-docker-image >>
-    steps:
-      - checkout
-
-      - setup_remote_docker
-
-      - restore_cache:
-          key: ivy-cache-{{ checksum "credentials-verification/build.sc" }}
-
-      - run:
-          name: Set tag convention
-          command: |
-            branchPrefix=$(git rev-parse --abbrev-ref HEAD | sed -E 's/(^ATA\-[0-9]+).*/\1/' | tr '[:upper:]' '[:lower:]')
-            revCount=$(git rev-list HEAD --count)
-            shaShort=$(git rev-parse --short HEAD)
-            tag="${branchPrefix}-${revCount}-${shaShort}"
-            echo "export TAG=$tag" >> $BASH_ENV;
-            echo "export ENV=$branchPrefix" >> $BASH_ENV;
-            . $BASH_ENV && echo "Env short name set to $ENV. Image tag set to $TAG"
-
-      - run:
-          name: Rebuild GEUD environment
-          command: |
-            cd credentials-verification/infra/services
-            ./env.sh -t $ENV
-            ./env.sh -A $ENV
-
   rebuild-prism-env:
     docker:
       - image: << pipeline.parameters.scala-mill-docker-image >>
+    parameters:
+      geud-enabled:
+        type: boolean
+        default: true
+      intdemo-enabled:
+        type: boolean
+        default: true
     steps:
       - checkout
 
@@ -170,7 +148,9 @@ jobs:
             tag="${branchPrefix}-${revCount}-${shaShort}"
             echo "export TAG=$tag" >> $BASH_ENV;
             echo "export ENV=$branchPrefix" >> $BASH_ENV;
-            . $BASH_ENV && echo "Env short name set to $ENV. Image tag set to $TAG"
+            echo "export INTDEMO_ENABLED=<< parameters.intdemo-enabled >>" >> $BASH_ENV;
+            echo "export GEUD_ENABLED=<< parameters.geud-enabled >>" >> $BASH_ENV;
+            . $BASH_ENV && echo "Env short name set to $ENV. Image tag set to $TAG. Intdemo enabled: $INTDEMO_ENABLED. GEUD enabled: $GEUD_ENABLED"
 
       - run:
           name: Rebuild prism environment
@@ -326,14 +306,34 @@ workflows:
               only:
                 - /develop.*/
                 - /test.*/
+                - /geud-test.*/
           requires:
             - build-credentials-verification-web
             - build-credentials-verification
       - rebuild-prism-env:
+          intdemo-enabled: true
+          geud-enabled: true
           filters:
             branches:
               only:
                 - /develop.*/
+          requires:
+            - deploy-ecr-images
+      - rebuild-prism-env:
+          intdemo-enabled: true
+          geud-enabled: false
+          filters:
+            branches:
+              only:
                 - /test.*/
+          requires:
+            - deploy-ecr-images
+      - rebuild-prism-env:
+          intdemo-enabled: false
+          geud-enabled: true
+          filters:
+            branches:
+              only:
+                - /geud-test.*/
           requires:
             - deploy-ecr-images

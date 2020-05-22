@@ -1,4 +1,6 @@
 resource "aws_service_discovery_service" "connector_discovery" {
+  count = var.enabled ? 1 : 0
+
   name = "${var.parent_name}-connector"
 
   dns_config {
@@ -57,6 +59,8 @@ module "connector_container_definition" {
 }
 
 resource aws_ecs_task_definition "connector_task_definition" {
+  count = var.enabled ? 1 : 0
+
   family                = "${var.parent_name}-connector-task-def"
   container_definitions = format("[%s]", module.connector_container_definition.container_definitions)
 
@@ -74,14 +78,16 @@ resource aws_ecs_task_definition "connector_task_definition" {
 }
 
 resource aws_ecs_service connector_service {
+  count = var.enabled ? 1 : 0
+
   name            = "${var.parent_name}-connector-service"
   launch_type     = "FARGATE"
   cluster         = var.ecs_cluster_id
-  task_definition = aws_ecs_task_definition.connector_task_definition.arn
+  task_definition = aws_ecs_task_definition.connector_task_definition[0].arn
   desired_count   = 2
 
   service_registries {
-    registry_arn = aws_service_discovery_service.connector_discovery.arn
+    registry_arn = aws_service_discovery_service.connector_discovery[0].arn
   }
 
   network_configuration {

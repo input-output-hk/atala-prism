@@ -1,4 +1,6 @@
 resource "aws_service_discovery_service" "landing_discovery" {
+  count = var.enabled ? 1 : 0
+
   name = "${var.parent_name}-landing"
 
   dns_config {
@@ -52,6 +54,8 @@ module "landing_container_definition" {
 }
 
 resource aws_ecs_task_definition "landing_task_definition" {
+  count = var.enabled ? 1 : 0
+
   family                = "${var.parent_name}-landing-task-def"
   container_definitions = format("[%s]", module.landing_container_definition.container_definitions)
 
@@ -69,14 +73,16 @@ resource aws_ecs_task_definition "landing_task_definition" {
 }
 
 resource aws_ecs_service landing_service {
+  count = var.enabled ? 1 : 0
+
   name            = "${var.parent_name}-landing-service"
   launch_type     = "FARGATE"
   cluster         = var.ecs_cluster_id
-  task_definition = aws_ecs_task_definition.landing_task_definition.arn
+  task_definition = aws_ecs_task_definition.landing_task_definition[0].arn
   desired_count   = 2
 
   service_registries {
-    registry_arn = aws_service_discovery_service.landing_discovery.arn
+    registry_arn = aws_service_discovery_service.landing_discovery[0].arn
   }
 
   network_configuration {
