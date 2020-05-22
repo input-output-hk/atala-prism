@@ -33,17 +33,18 @@ class CardanoBlockRepositorySpec extends PostgresRepositorySpec {
          |	CONSTRAINT uinteger_check CHECK ((VALUE >= 0));
          |
          |CREATE TABLE public.block (
-         |    id serial,
+         |    id SERIAL,
          |    hash public.hash32type NOT NULL,
          |    block_no public.uinteger,
-         |    previous bigint,
-         |    "time" timestamp without time zone NOT NULL
+         |    previous BIGINT,
+         |    "time" TIMESTAMP WITHOUT TIME ZONE NOT NULL
          |);
          |
          |CREATE TABLE public.tx (
          |    id SERIAL,
          |    hash public.hash32type NOT NULL,
-         |    block bigint NOT NULL
+         |    block BIGINT NOT NULL,
+         |    block_index INT4 NOT NULL
          |);
       """.stripMargin.update.run.transact(database).unsafeRunSync()
   }
@@ -60,15 +61,16 @@ class CardanoBlockRepositorySpec extends PostgresRepositorySpec {
          |    ${block.header.time})
     """.stripMargin.update.run.transact(database).unsafeRunSync()
 
-    block.transactions.foreach(insertTransaction)
+    block.transactions.zipWithIndex.foreach(insertTransaction _ tupled _)
   }
 
-  private def insertTransaction(transaction: Transaction): Unit = {
+  private def insertTransaction(transaction: Transaction, blockIndex: Int): Unit = {
     sql"""
-         |INSERT INTO tx (hash, block)
+         |INSERT INTO tx (hash, block, block_index)
          |  VALUES (
          |    ${transaction.id.value},
-         |    (SELECT id FROM block WHERE hash = ${transaction.blockHash.value}))
+         |    (SELECT id FROM block WHERE hash = ${transaction.blockHash.value}),
+         |    $blockIndex)
     """.stripMargin.update.run.transact(database).unsafeRunSync()
   }
 
