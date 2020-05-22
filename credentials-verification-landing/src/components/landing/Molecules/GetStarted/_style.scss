@@ -36,3 +36,38 @@
     justify-content: center;
   }
 }
+
+@media only screen and (max-width: 1024px) {
+  .GetStartedContent {
+    padding: 4em;
+    min-height: auto;
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  .GetStartedContent {
+    .TextContainer {
+      .GetStartedDescription {
+        margin-left: 0;
+        width: 90%;
+      }
+    }
+  }
+}
+
+@media only screen and (max-width: 450px) {
+  .GetStartedContent {
+    min-height: 750px;
+    .TextContainer {
+      width: 100%;
+      .GetStartedDescription {
+
+        h1{
+          font-size: 22px;
+        }
+        margin-left: 0;
+        width: 100%;
+      }
+    }
+  }
+}

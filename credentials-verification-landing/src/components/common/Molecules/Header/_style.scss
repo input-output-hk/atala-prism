@@ -19,8 +19,13 @@
     }
   }
   .NavBar {
-    width: 40%;
     justify-content: flex-end;
     display: flex;
+  }
+}
+
+@media only screen and (max-width: 1024px) {
+  .Header {
+    padding: 1.25em 4em;
   }
 }

@@ -11,7 +11,7 @@ import i18nInitialise from './i18nInitialisator';
 i18nInitialise()
   .then(() => {
     ReactDOM.render(
-      <BrowserRouter>
+      <BrowserRouter forceRefresh={true} >
         <App />
       </BrowserRouter>,
       document.getElementById('root')

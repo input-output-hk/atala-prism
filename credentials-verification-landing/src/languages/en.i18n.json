@@ -149,12 +149,12 @@
     },
     "start": {
       "info": "Powering the Trust Economy.",
-      "subtitle": "Atala Prism is a decentralized identity solution that enables people to own their personal data and seamlessly interact with organizations in a secure and private way.",
+      "subtitle": "Atala PRISM is a decentralized identity solution that enables people to own their personal data and seamlessly interact with organizations in a secure and private way.",
       "welcome": "Welcome"
     },
     "downloadAndroidAlt": "Download Android",
     "intro": {
-      "question": "ATALA PRISM fosters growth in the digital economy.",
+      "question": "Atala PRISM fosters growth in the digital economy.",
       "explanation": "Vision",
       "itemIcon": {
         "credentials": {
@@ -179,19 +179,19 @@
       "IssuingAuthority": "Issuing Authority",
       "credentialAlt": "Credential example that shows a credential with filled info (degree, student and university name, award and dates of start and graduation)",
       "iconAlt": "Credential Icon",
-      "title": "Atala Prism Key Components",
+      "title": "Atala PRISM Key Components",
       "titlecomponent1": "Mobile App",
-      "component1": "Mobile App for storing and sharing digital credentials.",
+      "component1": "Enjoy a customizable mobile app for receiving, storing and sharing digital credentials.",
       "titlecomponent2": "SDK",
-      "component2": "SDK to integrate wallet functionality into 3rd Party Apps.",
+      "component2": "Integrate a digital identity functionality straight into your apps.",
       "titlecomponent3": "Management Console",
-      "component3": "Tool for issuing and verifying credentials.",
+      "component3": "Easily issue or verify digital credentials with the user-friendly, decentralized management platform.",
       "titlecomponent4": "APIs",
-      "component4": "APIs to integrate Credential verification and issuance capabilities.",
+      "component4": "Streamline your processes  by integrating credential issuance and verification into your workflow.",
       "titlecomponent5": "Enrollment Tool",
-      "component5": "Mobile App for capturing biometric data as part of onboarding process.",
+      "component5": "Capture biometric data as part of the onboarding process using a lightweight mobile App.",
       "titlecomponent6": "SmartCard",
-      "component6": "SmartCard for storing and sharing digital credentials.",
+      "component6": "Expand your ecosystem using a low cost smart card for storing and sharing digital credentials.",
       "title7": "Coming Soon",
       "detailText": "Components "
     },
@@ -201,11 +201,11 @@
       "share": "Share your "
     },
     "createdCredential": {
-      "prevCredentialName": "This is your "
+      "prevCredentialName": "You should see the following"
     },
     "findCredential": {
-      "title": "Experience how Atala Prism",
-      "title2": "can power your world today!",
+      "title": "Experience how Atala PRISM",
+      "title2": "can power a smarter world today!",
       "arrowAlt": "Arrow Right",
       "credentialAlt": "Man smiling",
       "cardTitle": "Find a Credential",
@@ -215,9 +215,9 @@
       "askForCredential": "GET STARTED!",
       "detailText": "Interactive Demo",
       "subtitle": "IT’S EASY.",
-      "step1": "Download the Atala Prism Mobile App",
-      "step2": "Receive your Government Issued Identity",
-      "step3": "Instantly authenticate yourself and start accessing services you want straight away!"
+      "step1": "Download the Atala PRISM Mobile App",
+      "step2": "Get your government issued identity on your phone. Instantly authenticate yourself and access services straight away!",
+      "disclaimer": "In order to best experience the interactive demo, please use a laptop or desktop."
     },
     "quotes": {
       "phrase": "Decentralized identity provides a new way to own your personal information and enables secure and trusted transactions in your everyday life."
@@ -225,20 +225,20 @@
     "trust": {
       "trustName": "Trust 1",
       "info": "It is a long established fact that a reader will be distracted by the readable content of a page.",
-      "predownloadText": "Why Atala Prism?",
+      "predownloadText": "Why Atala PRISM?",
       "mobile": "Mobile phones with screens of the mobile app",
       "downloadInfo": "Benefits",
       "component3": "Tool for issuing and verifying credentials.",
       "titlebenefit1": "Sustainable",
-      "benefit1": "Atala Prism is built on Cardano, which is designed for sustainability and based on peer reviewed academic research.",
+      "benefit1": "Atala PRISM is built on Cardano, which is designed for sustainability and based on peer-reviewed academic research.",
       "titlebenefit2": "Scalable",
-      "benefit2": "It can scale to millions of users with confidence using state of the art, layer 2 technology.",
+      "benefit2": "It can scale to millions of users with confidence using state-of-the-art, layer 2 technology.",
       "titlebenefit3": "Future-Proof",
       "benefit3": "Designed based on the latest standards and specifications in decentralized identity. Built on open source software and engineered for interoperability.",
       "titlebenefit4": "Inclusive",
       "benefit4": "Designed for everyone. Even those without smartphones, internet access or sufficient literacy can own a verifiable identity.",
       "titlebenefit5": "Cost-Efficient",
-      "benefit5": "It can cost efficiently scale to millions of users and implements a novel batching scheme to reduce public blockchain fees.",
+      "benefit5": "It can cost-efficiently scale to millions of users and implements a novel batching scheme to reduce public blockchain fees.",
       "titlebenefit6": "Flexible",
       "benefit6": "It supports flexible deployment models and choice of the underlying blockchain platform."
 
@@ -248,8 +248,8 @@
       "title2": "for the Republic of Georgia",
       "caseStudyAlt": "Case Study Republic of Georgia",
       "detailText": "Case Study",
-      "part1": "Graduates need access to the degrees they earned to join the workforce and that's why Atala Prism is teaming up with the Ministry of Education and universities in the Republic of Georgia. With Atala Prism, students can receive, store and send their achievements right from their phone. Immediate verification of credentials means no need for background checks, saving universities and employers valuable time and resource.",
-      "part2": "The launch of Atala Prism in Georgia establishes a new gold standard of authenticating digital identity and credentials. Businesses, governments and individuals can reap the benefits of this smart, decentralized solution."
+      "part1": "Graduates need access to the degrees they earned to join the workforce and that's why Atala PRISM is teaming up with the Ministry of Education and universities in the Republic of Georgia. With Atala PRISM, students can receive, store and send their achievements right from their phone. Immediate verification of credentials means no need for background checks, saving universities and employers valuable time and resource.",
+      "part2": "The launch of Atala PRISM in Georgia establishes a new gold standard of authenticating digital identity and credentials. Businesses, governments and individuals can reap the benefits of this smart, decentralized solution."
     },
     "getStarted": {
       "title": "We work with your team to:",
@@ -262,20 +262,20 @@
     "faqPanel": {
       "title": "Your questions, answered",
       "detailText": "FAQ",
-      "titlefaq1": "What is Atala Prism?",
-      "faq1": "Atala Prism is a decentralized identity solution that is built on the Cardano blockchain. It enables a new approach to identity where users own their identity and have complete control over how their personal data is used and accessed. Data is shared with other individuals or organizations over secure and private peer-to-peer communication channels. Atala Prism is designed for everybody.",
-      "titlefaq2": "What problems does Atala Prism solve?",
-      "faq2": "Current identity systems create a significant risk and cost for businesses as they are required to store and secure sensitive information. Governments face inefficiencies in their manual-based, bureaucratic processes, as well as personal data frauds. Individuals also have a lack of trust that their information might be misused or sold to third parties without their consent. Atala Prism solves these problems by enabling a new approach for digital identity where people have ownership of their personal information and only share what is required with businesses or institutions  in an easy, secure and private way.",
-      "titlefaq3": "Who is Atala Prism for?",
-      "faq3": "Atala Prism is for businesses, governments and individuals. Businesses can quickly onboard new customers, reduce compliance risks and costs, and deliver seamless user experiences. Governments can issue digital identities and enable instant access to public and private services. Individuals have ownership of their identity and data, and can control how their personal information is used and accessed.",
-      "titlefaq4": "How do I know that my data and identification are safe with Atala Prism?",
-      "faq4": "All your personal information is securely and privately stored on your smartphone or smartcard. Leveraging blockchain technology, Atala Prism ensures that transactions are performed in a secure, peer-to-peer fashion. You are the only person with access to your data and credentials.",
+      "titlefaq1": "What is Atala PRISM?",
+      "faq1": "Atala PRISM is a decentralized identity solution that is built on the Cardano blockchain. It enables a new approach to identity where users own their identity and have complete control over how their personal data is used and accessed. Data is shared with other individuals or organizations over secure and private peer-to-peer communication channels. Atala PRISM is designed for everybody.",
+      "titlefaq2": "What problems does Atala PRISM solve?",
+      "faq2": "Current identity systems create a significant risk and cost for businesses as they are required to store and secure sensitive information. Governments face inefficiencies in their manual-based, bureaucratic processes, as well as personal data frauds. Individuals also have a lack of trust that their information might be misused or sold to third parties without their consent. Atala PRISM solves these problems by enabling a new approach for digital identity where people have ownership of their personal information and only share what is required with businesses or institutions  in an easy, secure and private way.",
+      "titlefaq3": "Who is Atala PRISM for?",
+      "faq3": "Atala PRISM is for businesses, governments and individuals. Businesses can quickly onboard new customers, reduce compliance risks and costs, and deliver seamless user experiences. Governments can issue digital identities and enable instant access to public and private services. Individuals have ownership of their identity and data, and can control how their personal information is used and accessed.",
+      "titlefaq4": "How do I know that my data and identification are safe with Atala PRISM?",
+      "faq4": "All your personal information is securely and privately stored on your smartphone or smartcard. Leveraging blockchain technology, Atala PRISM ensures that transactions are performed in a secure, peer-to-peer fashion. You are the only person with access to your data and credentials.",
       "titlefaq5": "How does removing third parties keep my data and information safe?",
-      "faq5": "Third parties, including technology companies and municipalities, can sell your information, prevent you from accessing your data or shut down your account without your permission. With Atala Prism, you have complete control over your own data.",
-      "titlefaq6": "Isn’t Atala Prism a third party that is in control of my data?",
+      "faq5": "Third parties, including technology companies and municipalities, can sell your information, prevent you from accessing your data or shut down your account without your permission. With Atala PRISM, you have complete control over your own data.",
+      "titlefaq6": "Isn’t Atala PRISM a third party that is in control of my data?",
       "faq6": "No. All data is securely stored and encrypted on your phone or smartcard. You are the only person that can access it using your biometrics (i.e. fingerprint or faceID) or your PIN code.",
-      "titlefaq7": "Can I only send identification and credentials in the Atala Prism ecosystem?",
-      "faq7": "Anyone can integrate with Atala Prism. Since it is built using industry standards, third-party apps will be able to connect easily in the future."
+      "titlefaq7": "Can I only send identification and credentials in the Atala PRISM ecosystem?",
+      "faq7": "Anyone can integrate with Atala PRISM. Since it is built using industry standards, third-party apps will be able to connect easily in the future."
 
     },
     "credentialsView": {
@@ -285,8 +285,8 @@
     "contactPanel": {
       "title": "Contact Us",
       "detailText": "Contact",
-      "part1": "Atala Prism is powered by",
-      "part2": "Cardano",
+      "part1": "Atala PRISM is powered by",
+      "part2": "Cardano,",
       "part3": " a decentralised public blockchain and cryptocurrency project and is fully open source. Cardano is developing a smart contract platform which seeks to deliver more advanced features than any protocol previously developed. It is the first blockchain platform to evolve out of a scientific philosophy and a research-first driven approach. The development team consists of a large global collective of expert engineers and researchers.",
       "part4": "Cardano is developed by",
       "part5": "IOHK,",
@@ -296,7 +296,7 @@
     "useCasesPanel": {
       "detailText": "Use Cases",
       "title": "Use Cases",
-      "subtitle": "Atala Prism enables the issuance of digital IDs and credentials that are user owned and controlled. They can be shared in an easy, secure and private way. Instantly verifiable, the credentials eliminate the need to constantly rely on issuing parties. Here are some sample use cases:",
+      "subtitle": "Atala PRISM enables the issuance of digital IDs and credentials that are user owned and controlled. They can be shared in an easy, secure and private way. Instantly verifiable, the credentials eliminate the need to constantly rely on issuing parties. Here are some sample use cases:",
       "listItem1": "Digital ID",
       "listItem2": "Degrees",
       "listItem3": "Certificates",
@@ -353,31 +353,31 @@
     "personasModal": {
       "title": "Choose a User",
       "studentPersona": {
-        "name": "Jo",
-        "description": "As a recent graduate, she is on lookout for her first job.",
-        "history": "Part of the digital first generation, her smartphone is where life happens so it makes sense for her to control her identity and credentials straight from her pocket.",
-        "type": "student",
-        "pronoun": "her"
+        "title": "This is Jo.",
+        "shortName": "Jo",
+        "completeName": "Jo Wong",
+        "description": "Join Jo on her journey through the smart city powered by Atala PRISM!",
+        "history": "As a recent graduate, she is on the lookout for her first job. Part of the ‘mobile first generation’, her phone is where life happens. Instead of old fashioned documents, it makes sense for her to hold and manage her identity and credentials straight from her phone.",
+        "type": "Student Credentials"
       },
       "touristPersona": {
-        "name": "Grace",
-        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing.",
-        "history": "Morbi pulvinar posuere lorem a fringilla. Curabitur hendrerit nisi eget ullamcorper luctus. Curabitur iaculis consequat porta. Suspendisse potenti. Donec sed varius mi.",
-        "type": "tourist",
-        "pronoun": "her"
+        "title": "This is Grace.",
+        "shortName": "Grace",
+        "completeName": "Grace Hamilton",
+        "description": "Join Grace on her journey through the smart city powered by Atala PRISM!",
+        "history": "Grace is a young globetrotter who enjoys visiting new places. She likes to travel light and as efficiently as possible. So it feels natural to her to carry all her traveling documentation straight on her phone.",
+        "type": "Tourist Credentials"
       },
       "executivePersona": {
-        "name": "Brandon",
-        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing.",
-        "history": "Morbi pulvinar posuere lorem a fringilla. Curabitur hendrerit nisi eget ullamcorper luctus. Curabitur iaculis consequat porta. Suspendisse potenti. Donec sed varius mi.",
-        "type": "executive",
-        "pronoun": "his"
+        "title": "This is Brandon.",
+        "shortName": "Brandon",
+        "completeName": "Brandon Tusk",
+        "description": "Join Brandon on his journey through the smart city powered by Atala PRISM!",
+        "history": "As a business executive, Brandon needs to attend conferences and client offices often. He likes to be up-to-speed with innovative technologies both in his office and outside of it. That’s why he prefers to live the smart way with all important documentation stored straight on his phone.",
+        "type": "Company Executive Credentials"
       },
       "enabledButton": "'s story",
-      "disabledButton": "Coming soon",
-      "joinAtala": "Join",
-      "joinAtala1": "on",
-      "joinAtala2": "journey in the smart city powered by Atala Prism!"
+      "disabledButton": "Coming soon"
     },
     "actions": {
       "createCredential": "Create Credential"
@@ -536,7 +536,7 @@
         "award": "Award",
         "fullName": "Full Name",
         "startDate": "Start Date",
-        "graduationDate": "Graduation Date"
+        "graduationDate": "Issuance date"
       }
     }
   },
@@ -748,14 +748,17 @@
       }
     },
     "contactInformation": {
-      "congrats": "Start by filling out this form and we'll be in touch.",
+      "congrats": "Start by filling out this form and one of our team will get back to you.",
       "title": "Let's move forward together.",
       "title2": "forward together.",
-      "emailSuscription": "Stay up to date on the latest announcements and products with just your email",
-      "termsConditions": "By submitting this form, I agree with Atala Prism’s Privacy Policy.",
+      "emailSuscription": "Or stay up to date on the latest announcements and products with just your email:",
+      "termsConditions": "By submitting this form, I agree with Atala PRISM’s Privacy Policy.",
       "send": "Send",
-      "consent": "Yes, I would like to subscribe to updates from Atala Prism.",
+      "consent": "Yes, I would like to subscribe to updates from Atala PRISM.",
       "consent2": "Yes, I agree.",
+      "faq1": "Check out our",
+      "faq2": "FAQs",
+      "faq3": " for answers to any other questions you may have.",
       "form": {
         "fullName": "Full Name",
         "email": "E-mail",
@@ -770,15 +773,15 @@
     },
     "finishInfo": {
       "title": "Check your phone!",
-      "explanation": "You will receive your credential on Atala Prism App Dashboard.",
+      "explanation": "You have now received your ",
       "finishedIconAlt": "Icon Cellphone with Credential",
-      "howToSee": "Open Atala Prism App and check your Dashboard to see your",
+      "howToSee": "Open Atala PRISM App and check your Dashboard to see your",
       "whatToSee": " New Credential",
-      "finished": "Got it! It's done!",
+      "finished": "Continue",
       "congrats": "Congrats!",
-      "openOnPhone": "Open Atala Prism on your phone.",
-      "checkHome": "Check your Home",
-      "checkHome2": "to see your"
+      "openOnPhone": "Check your Notifications ",
+      "checkHome": "View your credential.",
+      "checkHome2": "tab."
     },
     "CongratsStep": {
       "congrats": "Congrats! You have all the Credentials."
@@ -786,22 +789,22 @@
     "sendCredentials": {
       "title": "Share your Credentials",
       "explanation": "To apply for your ",
-      "explanation2": " you must share your Government Credential ID",
+      "explanation2": " you must share your Government ID",
       "explanation3": " and your ",
       "credentialIconAlt": "Icon Cellphone with Credential",
       "sharedIconAlt": "Icon Cellphone share Credential",
-      "openOnPhone": "Open Atala Prism on your phone.",
+      "openOnPhone": "Open Atala PRISM on your phone.",
       "checkHome": "Check your Home",
       "checkHome2": "to see your Credentials.",
       "openCredentialID": "Open the ",
       "openCredentialID2": " Detail.",
       "share": "You will receive a Proof Request on",
-      "share2": "Connections.",
+      "share2": "Contacts.",
       "optionalOpen": "Do the same with the ",
-      "governmentCredentialId": "Select Government Credential ID and share.",
+      "governmentCredentialId": "Select Government ID and share.",
       "1": "University degree",
       "2": "Proof of Employment",
-      "3": "Certificate of Insurance"
+      "3": "Health Insurance"
     },
     "requestedCredentials": {
       "title": "Requested Credentials"
@@ -829,34 +832,48 @@
       }
     },
     "credentialIssuers": {
-      "CredentialType0": "Metropol City Goverment",
+      "CredentialType0": "Metropol City Government",
       "CredentialType1": "University of Innovation and Technology",
-      "CredentialType2": "Decentralized Inc",
-      "CredentialType3": "Verified insurance Ltd"
+      "CredentialType2": "Decentralized  Inc.",
+      "CredentialType3": "Verified insurance Ltd."
     },
     "credentialDescription": {
-      "CredentialType0": "Use this Credential to easily access government services.",
-      "CredentialType1": "Use this Credential to easily apply for jobs online. Apply for discounts on various products and services too.",
-      "CredentialType2": "Use this Credential to easily apply for a mortgage, loan or to rent an apartment.",
-      "CredentialType3": "Use this Credential to easily apply for a mortgage."
+      "CredentialType0": "Metropol city has announced that all residents will be issued with a new digital ID. This forward thinking initiative will give citizens fast and friction-free access to many government and municipal services, making it easier than ever before to take public transport, pay city taxes and vote on local issues, straight from your phone. The city simply verifies the resident and issues a digital ID that is stored securely on their Atala PRISM wallet. Metropol City Resident Jo is excited that this verified digital ID enables her to live smarter; straight from her phone.",
+      "CredentialType1": "After graduating, Jo finds out that her University will be issuing her degree digitally. This innovative approach means that potential employers will be able to instantly verify her degree, making the process of recruitment much faster. All Jo needs to do is use Atala PRISM to share her digital ID with her University, who will issue her with her ‘digital degree’. It’s super convenient for everyone and means that Jo can put her years of studying to good use, faster.",
+      "CredentialType2": "After finding her dream role at a Startup, Jo’s new employer issues her with a ‘Proof of Employment’ certificate that she can access via the Atala PRISM app. This certificate enables Jo to live her life even more efficiently, including renting an apartment closer to her new office. After finding her perfect place, Jo simply uses her Atala PRISM app to demonstrate Proof of Employment to the landlord. She doesn't need to waste time filling out lengthy forms and submitting to lengthy background checks.",
+      "CredentialType3": "Atala PRISM is making Jo’s working life smarter and more streamlined and the next step is to add her health insurance. All she needs to do is share her ID and Proof of Employment with the insurance company via Atala PRISM. In the future, Jo will be able to use her phone to share her insurance details with her doctor or pick up a prescription at a local pharmacy. All confidentially, securely and in seconds."
+    },
+    "credentialAsk": {
+      "CredentialType0": "Get your ID",
+      "CredentialType1": "Get your degree",
+      "CredentialType2": "Apply now",
+      "CredentialType3": "Sign up"
     },
     "QRCard": {
-      "noAppYet": "Don't have the application?",
-      "downloadIt": "Download it from your store",
+      "noAppYet": "Don't have the Atala PRISM mobile app?",
+      "downloadIt": "Download it below:",
       "appStoreLogo": "App Store Logo",
       "googlePlayLogo": "Google Play Logo"
     },
     "scanQRInfo": {
-      "title": "Scan QR Code",
-      "explanation": "To obtain your ",
-      "explanation2": " you must start scanning this QR Code, follow the steps",
-      "step1": "Open Atala Prism on your phone.",
-      "step2": {
-        "part1": "Touch Connections ",
-        "part2": " in the Main Menu.",
-        "alt": "Connection Menu Icon"
+      "title": {
+        "CredentialType0": "Connect with the Government",
+        "CredentialType1": "Connect with the University",
+        "CredentialType2": "Connect with Your Employer",
+        "CredentialType3": "Connect with Your Health Insurer"
       },
-      "step3": "When the camera is activated, point your phone towards this screen to scan the code",
+      "explanation": "To obtain your ",
+      "explanation2": ", follow the steps below:",
+      "step1": "Open Atala PRISM on your phone.",
+      "step2": {
+        "part1": "Go to the Notifications ",
+        "part2": " button in the main",
+        "alt": "Notifications Menu Icon",
+        "part3": "menu and tap the Scan QR code ",
+        "part4": "icon.",
+        "alt2": "Scan QR Code button"
+      },
+      "step3": "Scan the QR code below:",
       "scannedQR": "I scanned the QR!"
     },
     "generic": {
@@ -868,7 +885,7 @@
     },
     "IdCredentialCard": {
       "CredentialTitle": "National ID Card",
-      "CredentialSubtitle": "Metropol City",
+      "CredentialSubtitle": "Metropol City Government",
       "IdentityNumber": "Identity Number",
       "DateOfBirth": "Date of Birth",
       "FullName": "Full Name",

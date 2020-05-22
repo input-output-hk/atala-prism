@@ -32,8 +32,8 @@ class InteractiveMap extends Component {
     return (
       <div className="MapContainer">
         <img src={atalaLogo} alt="Atala" className="AtalaLogo" />
-        <div className={"AtalaPrismDemoMap"}>
-          <AtalaPrismDemo ref="demo" />
+        <div className={'AtalaPrismDemoMap'}>
+          <AtalaPrismDemo ref="demo" style={'outline:none;'} />
         </div>
         <img src={cardanoLogo} alt="Cardano" className="CardanoLogo" />
       </div>

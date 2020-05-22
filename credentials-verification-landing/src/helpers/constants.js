@@ -73,6 +73,10 @@ export const CREDENTIAL_SENT = 3;
 
 export const USER = 'atala-demo-web-user';
 
+export const PAGE = 'page';
+export const LANDING_PAGE = 'landing';
+export const CREDENTIALS_PAGE = 'credentials';
+
 export const VISION_NAME = 'vision';
 export const DEMO_NAME = 'demo';
 export const COMPONENTS_NAME = 'components';
@@ -89,10 +93,16 @@ export const GOOGLE_PLAY_STORE_URL = 'https://play.google.com/store';
 // EXAMPLE CERTIFICATE CARD VALUES
 export const CARD_UNIVERSITY_TITLE = 'Bachelor of Science';
 export const CARD_UNIVERSITY_UNIVERSITY = 'University of Innovation and Technology';
-export const CARD_UNIVERSITY_AWARD = 'Upper second class honours';
+export const CARD_UNIVERSITY_AWARD = 'First-class honors';
 export const CARD_EMPLOYMENT_COMPANY = 'Decentralized Inc.';
 export const CARD_EMPLOYMENT_ADDRESS = '67 Clasper Way, Herefoot, HF1 0AF';
-export const CARD_EMPLOYMENT_STATUS = 'Full Time';
+export const CARD_EMPLOYMENT_STATUS = 'Full-time';
 export const CARD_INSURANCE_PROVIDER = 'Verified Insurance Ltd.';
-export const CARD_INSURANCE_CLASS = 'Life Insurance';
+export const CARD_INSURANCE_CLASS = 'Health Insurance';
 export const CARD_INSURANCE_POLICY_NUMBER = 'ABC-123456789';
+
+export const GET_CREDENTIALS = 'Get_Credentials';
+export const STEP_1_EVENT = 'step_1_event';
+export const STEP_2_EVENT = 'step_2_event';
+export const STEP_3_EVENT = 'step_3_event';
+export const STEP_4_EVENT = 'step_4_event';

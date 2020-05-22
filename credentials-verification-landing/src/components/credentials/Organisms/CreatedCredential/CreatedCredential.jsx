@@ -5,16 +5,17 @@ import { useTranslation } from 'react-i18next';
 import CredentialData from '../../../common/Atoms/CredentialData/CredentialData';
 import { UserContext } from '../../../providers/userContext';
 import CredentialIDTemplate from '../../Molecules/CredentialIdTemplate/CredentialIdTemplate';
+import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import {
   CARD_UNIVERSITY_TITLE,
   CARD_UNIVERSITY_UNIVERSITY,
   CARD_UNIVERSITY_AWARD,
   CARD_EMPLOYMENT_COMPANY,
-  CARD_EMPLOYMENT_ADDRESS,
   CARD_EMPLOYMENT_STATUS,
   CARD_INSURANCE_PROVIDER,
   CARD_INSURANCE_CLASS,
-  CARD_INSURANCE_POLICY_NUMBER
+  CARD_INSURANCE_POLICY_NUMBER,
+  INSURANCE_POLICY
 } from '../../../../helpers/constants';
 import './_style.scss';
 
@@ -25,7 +26,7 @@ const currentCredentialCard = {
   3: CredentialData
 };
 
-const CreatedCredential = ({ currentCredential }) => {
+const CreatedCredential = ({ confirmSuccessCredential, currentCredential }) => {
   const { t } = useTranslation();
   const { user } = useContext(UserContext);
   const { firstName, lastName, dateOfBirth } = user;
@@ -36,11 +37,11 @@ const CreatedCredential = ({ currentCredential }) => {
       iconRight: 'images/icon-generic-university.svg',
       iconAlt: 'university credential logo',
       componentName: 'newUniversityCredential',
-      cellTitle: { title: 'degreeName', value: CARD_UNIVERSITY_TITLE },
+      cellTitle: { title: 'universityName', value: CARD_UNIVERSITY_UNIVERSITY },
       cellList: [
-        { title: 'universityName', value: CARD_UNIVERSITY_UNIVERSITY },
-        { title: 'award', value: CARD_UNIVERSITY_AWARD },
         { title: 'fullName', value: firstName },
+        { title: 'degreeName', value: CARD_UNIVERSITY_TITLE },
+        { title: 'award', value: CARD_UNIVERSITY_AWARD },
         {
           title: 'graduationDate',
           value: moment().format('YYYY-MM-DD')
@@ -56,8 +57,8 @@ const CreatedCredential = ({ currentCredential }) => {
       componentName: 'newEmploymentCredential',
       cellTitle: { title: 'companyName', value: CARD_EMPLOYMENT_COMPANY },
       cellList: [
-        { title: 'employmentStatus', value: CARD_EMPLOYMENT_STATUS },
         { title: 'employeeName', value: firstName },
+        { title: 'employmentStatus', value: CARD_EMPLOYMENT_STATUS },
         {
           title: 'employmentStartDate',
           value: moment().format('YYYY-MM-DD')
@@ -73,9 +74,9 @@ const CreatedCredential = ({ currentCredential }) => {
       componentName: 'newInsuranceCredential',
       cellTitle: { title: 'providerName', value: CARD_INSURANCE_PROVIDER },
       cellList: [
+        { title: 'fullName', value: firstName },
         { title: 'classOfInsurance', value: CARD_INSURANCE_CLASS },
         { title: 'policyNumber', value: CARD_INSURANCE_POLICY_NUMBER },
-        { title: 'fullName', value: firstName },
         {
           title: 'policyEndDate',
           value: moment()
@@ -90,14 +91,21 @@ const CreatedCredential = ({ currentCredential }) => {
   const cardContent = currentCredentialCellList[currentCredential];
 
   return (
-    <div className="CreatedCredential">
-      <h3>
-        {t('landing.createdCredential.prevCredentialName') +
-          t(`credential.credentialNames.CredentialType${currentCredential}`)}
-      </h3>
-      <div className="ContainerCredential">
-        <Card {...user} {...cardContent} />
+    <div>
+      <div className="CreatedCredential">
+        <h3>{t('landing.createdCredential.prevCredentialName')}</h3>
+        <div className="ContainerCredential">
+          <Card {...user} {...cardContent} />
+        </div>
       </div>
+      {currentCredential !== INSURANCE_POLICY && (
+        <div className="centeredButton">
+          <CustomButton
+            buttonProps={{ onClick: confirmSuccessCredential, className: 'theme-secondary' }}
+            buttonText={t('credential.finishInfo.finished')}
+          />
+        </div>
+      )}
     </div>
   );
 };

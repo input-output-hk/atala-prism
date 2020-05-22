@@ -3,11 +3,10 @@
 .TrustSection {
   background: $black;
   width: 100%;
-  padding: 6em 8em;
+  padding: 8em;
   margin-top: -30px;
 
   .DownloadContainer {
-
     .MiniDetailText {
       color: $white;
     }
@@ -48,5 +47,37 @@
       }
     }
   }
+}
 
+@media only screen and (max-width: 1024px) {
+  .TrustSection {
+    padding: 4em;
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  .TrustSection {
+    .DownloadContainer {
+      h1 {
+        margin-left: 0;
+      }
+    }
+
+    .BenefitsContainer {
+      margin-left: 0;
+      .BenefitItem {
+        width: 33%;
+      }
+    }
+  }
+}
+
+@media only screen and (max-width: 450px) {
+  .TrustSection {
+    .BenefitsContainer {
+      .BenefitItem {
+        width: 100%;
+      }
+    }
+  }
 }

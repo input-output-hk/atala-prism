@@ -6,14 +6,15 @@ import CustomButton from '../../../common/Atoms/CustomButton/CustomButton';
 import './_style.scss';
 
 const PersonaCard = ({
+  title,
   profilePic,
   profilePicAlt,
-  firstName,
+  shortName,
+  completeName,
   dateOfBirth,
   description,
   history,
   type,
-  pronoun,
   credentials,
   disabled,
   selectPersona
@@ -30,28 +31,25 @@ const PersonaCard = ({
     <div className={disabled ? 'PersonaCardDisabled' : 'PersonaCardEnabled'}>
       <img src={profilePic} alt={profilePicAlt} />
       <div className="CardContent">
-        <h3>{firstName}</h3>
-        <p>
-          <strong>{description}</strong>
-        </p>
+        <h3>{title}</h3>
         <p>{history}</p>
-        <p>{`${t('credentials.personasModal.joinAtala')} ${firstName} ${t(
-          'credentials.personasModal.joinAtala1'
-        )} ${pronoun} ${t('credentials.personasModal.joinAtala2')}`}</p>
         <div className="CredentialType">
           <h3>{type}</h3>
           {personaCredentials}
         </div>
+        <p>
+          <strong>{description}</strong>
+        </p>
         <CustomButton
           buttonProps={{
             className: 'theme-primary',
-            onClick: () => selectPersona({ firstName, dateOfBirth }),
+            onClick: () => selectPersona({ firstName: completeName, dateOfBirth }),
             disabled: disabled
           }}
           buttonText={
             disabled
               ? t('credentials.personasModal.disabledButton')
-              : `${firstName}${t('credentials.personasModal.enabledButton')}`
+              : `${shortName}${t('credentials.personasModal.enabledButton')}`
           }
         />
       </div>
@@ -64,7 +62,8 @@ PersonaCard.propTypes = {
   profilePic: PropTypes.string.isRequired,
   profilePicAlt: PropTypes.string.isRequired,
   dateOfBirth: PropTypes.string.isRequired,
-  firstName: PropTypes.string.isRequired,
+  shortName: PropTypes.string.isRequired,
+  completeName: PropTypes.string.isRequired,
   description: PropTypes.string.isRequired,
   history: PropTypes.string.isRequired,
   type: PropTypes.string.isRequired,

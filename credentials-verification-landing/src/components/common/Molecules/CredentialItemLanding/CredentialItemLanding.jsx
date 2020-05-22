@@ -19,7 +19,6 @@ const CredentialItemLanding = ({
         <div className="CredentialDescription">
           <span>{t('landing.credential.credential')}</span>
           <h3>{credentialName}</h3>
-          <p>{credentialDescription}</p>
           <span>{t('landing.credential.IssuingAuthority')}</span>
           <h3>{credentialIssuer}</h3>
         </div>

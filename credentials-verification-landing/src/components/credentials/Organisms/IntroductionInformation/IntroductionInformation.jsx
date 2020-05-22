@@ -42,6 +42,7 @@ const IntroductionInformation = ({ nextStep, buttonDisabled, currentCredential }
   return (
     <div className="IntroductionInformation">
       <h1>{t(`credential.credentialNames.CredentialType${currentCredential}`)}</h1>
+      <p>{t(`credential.credentialDescription.CredentialType${currentCredential}`)}</p>
       <div className="CredentialItemContainer">
         <CredentialItemLanding {...currentCredentialItem[currentCredential]} />
       </div>
@@ -51,7 +52,7 @@ const IntroductionInformation = ({ nextStep, buttonDisabled, currentCredential }
           className: 'theme-primary',
           disabled: buttonDisabled
         }}
-        buttonText={t('credential.introductionInformation.askForCredential')}
+        buttonText={t(`credential.credentialAsk.CredentialType${currentCredential}`)}
       />
     </div>
   );

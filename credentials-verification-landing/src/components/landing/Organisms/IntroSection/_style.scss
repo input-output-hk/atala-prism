@@ -11,13 +11,13 @@
   p {
     @include primary-text($label, $black);
 
-    &.SectionName{
+    &.SectionName {
       color: $primary-color;
     }
   }
 
-  @include breakpoint(md) {
-    padding: 10em 2em;
+  @include breakpoint(lg) {
+    padding: 4em;
   }
 
   .IntroItemContainer {
@@ -26,14 +26,51 @@
     margin-top: 5em;
     margin-left: 200px;
 
-    .lineSeparatorSide{
+    .lineSeparatorSide {
       display: none;
     }
-
 
     @include breakpoint(sm) {
       width: 100%;
       flex-direction: column;
+    }
+  }
+}
+
+@media only screen and (max-width: 1024px) {
+  .IntroSection {
+    padding: 4em;
+
+    h1 {
+      @include secondary-text($h1, $black);
+      margin-left: 200px;
+    }
+
+    .IntroItemContainer {
+      flex-direction: column;
+      .IntroItem {
+        width: 100%;
+        margin-bottom: 1.5em;
+      }
+    }
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  .IntroSection {
+
+    h1 {
+      @include secondary-text($h1, $black);
+      margin-left: 0;
+    }
+
+    .IntroItemContainer {
+      margin-left: 0;
+      flex-direction: column;
+      .IntroItem {
+        width: 100%;
+        margin-bottom: 1.5em;
+      }
     }
   }
 }

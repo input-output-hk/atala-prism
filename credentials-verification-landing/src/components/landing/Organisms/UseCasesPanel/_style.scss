@@ -89,3 +89,27 @@
     }
   }
 }
+
+@media only screen and (max-width: 1024px) {
+  .UseCasesPanel {
+    padding: 4em;
+
+    .UseCasesContainer {
+      width: 75%;
+    }
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  .UseCasesPanel {
+    .TextContainer {
+      margin-left: 0;
+      width: 95%;
+    }
+
+    .UseCasesContainer {
+      margin-left: 0;
+      width: 100%;
+    }
+  }
+}

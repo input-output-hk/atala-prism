@@ -3,7 +3,7 @@
 .ContactPanel {
   background: $white;
   width: 100%;
-  padding: 6em 8em 0 8em;
+  padding: 8em 8em 0 8em;
   display: flex;
   flex-direction: column;
 
@@ -99,5 +99,45 @@
   .IllustrationFooter {
     align-self: flex-end;
     margin-right: 5em;
+  }
+}
+
+@media only screen and (max-width: 1024px) {
+  .ContactPanel {
+    padding: 4em 4em 0 4em;
+
+    .ContactPanelContainer {
+      .paragraphContent {
+        width: 70%;
+      }
+    }
+    .ContactPanelForm {
+      width: 70%;
+    }
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  .ContactPanel {
+    .ContactPanelContainer {
+      .paragraphContent {
+        width: 100%;
+        margin-left: 0;
+      }
+    }
+    .ContactPanelForm {
+      width: 100%;
+      margin-left: 0;
+    }
+  }
+}
+
+@media only screen and (max-width: 450px) {
+  .ContactPanel {
+    .IllustrationFooter {
+      align-self: flex-end;
+      margin-right: 1em;
+      width: 100px;
+    }
   }
 }

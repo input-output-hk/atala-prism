@@ -1,19 +1,20 @@
 @import '../../../../css/general_styling';
 
 .FindCredential {
-  padding: 4em 8em 1em 8em;
+  padding: 8em 8em 1em 8em;
   background: $light-grey;
   margin-top: -30px;
   display: flex;
   width: 100%;
 
-  @include breakpoint(md) {
-    width: 100%;
+  @include breakpoint(lg) {
+    padding: 4em 4em 1em 4em;
   }
 
   .MapContainer {
-    width: 45%;
-    padding-top: 2em;
+    width: 40%;
+    margin-top: -2.5em;
+    padding-left: 5em;
     .AtalaLogo,
     .CardanoLogo {
       display: none;
@@ -21,7 +22,7 @@
   }
 
   .TextContainer {
-    width: 55%;
+    width: 60%;
     z-index: 100;
     @include breakpoint(sm) {
       width: 100%;
@@ -43,21 +44,72 @@
       }
 
       .StepTextItem {
-        display: flex;
-        width: 350px;
+        width: 300px;
         p {
           @include primary-text($body, $black);
-          margin-top: 0.5em;
 
-          &.NumberText{
+          &.NumberText {
             font-weight: 700;
             margin-right: 0.5em;
           }
         }
       }
 
-      button {
-        margin-top: 2em;
+      .DisclaimerText {
+        display: flex;
+        width: 300px;
+        p {
+          @include primary-text($label, $primary-color);
+          font-weight: 600;
+        }
+      }
+
+      .theme-primary {
+        margin: 2em 0;
+        font-weight: 600;
+      }
+    }
+  }
+}
+
+@media only screen and (max-width: 1024px) {
+  .FindCredential {
+    .TextContainer {
+      .InteractiveDemoText {
+        margin-left: 0;
+      }
+    }
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  .FindCredential {
+    position: relative;
+
+    .MapContainer {
+      width: 100%;
+      padding-left: 0;
+    }
+    .TextContainer {
+      width: 65%;
+      position: absolute;
+      background: rgba(255, 255, 255, 0.8);
+      padding: 1.5em;
+    }
+  }
+}
+
+@media only screen and (max-width: 450px) {
+  .FindCredential {
+    .TextContainer {
+      width: 80%;
+      .InteractiveDemoText {
+        h1 {
+          @include secondary-text($h2, $black);
+        }
+        .StepTextItem {
+          width: 100%;
+        }
       }
     }
   }

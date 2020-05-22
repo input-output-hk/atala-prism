@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import employmentIcon from '../../../../images/shared-proof.png';
 import universityIcon from '../../../../images/shared-university.png';
 import insuranceIcon from '../../../../images/shared-insurance.png';
-import iconConnection from '../../../../images/touch-connections.svg';
+import iconConnection from '../../../../images/contacts-icon.svg';
 import {
   UNIVERSITY_DEGREE,
   PROOF_OF_EMPLOYMENT,

@@ -26,3 +26,25 @@
     border-top: 30px solid $primary-color;
   }
 }
+
+@media only screen and (max-width: 1024px) {
+  .QuotesPanelContent {
+    .QuotesPanel {
+      display: flex;
+      padding: 4em 8em;
+
+      h1 {
+        @include secondary-text($h2, $white);
+        font-weight: 600;
+      }
+    }
+  }
+}
+
+@media only screen and (max-width: 450px) {
+  .QuotesPanelContent {
+    .QuotesPanel {
+      padding: 4em;
+    }
+  }
+}

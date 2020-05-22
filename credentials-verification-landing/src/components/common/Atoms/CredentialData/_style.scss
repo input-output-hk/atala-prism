@@ -37,12 +37,12 @@
 
     &.EmploymentTheme {
       background: #51246c;
-      justify-content: flex-start;
+      flex-direction: row-reverse;
+      width: 300px;
 
       .IconUniversity {
         width: 40px;
         height: 40px;
-        border-radius: 50px;
         margin-right: 1em;
       }
     }
@@ -51,6 +51,7 @@
 
     &.InsuranceTheme {
       background: #4a2dff;
+      width: 300px;
 
       .IconUniversity {
         height: 35px;
@@ -93,6 +94,7 @@
 
     &.EmploymentTheme {
       background: #66268d;
+      width: 300px;
 
       .CellRenderer {
         padding: 0.5em 0;
@@ -114,6 +116,7 @@
 
     &.InsuranceTheme {
       background: $white;
+      width: 300px;
 
       .CellRenderer {
         padding: 0.5em 0;

@@ -12,19 +12,12 @@ html {
     background-position: bottom;
     background-repeat: no-repeat;
     background-size: cover;
-    @include breakpoint(md) {
-      padding: 0 2em;
-      height: auto;
-    }
 
     .LadingHeaderContent {
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 4em 2em 0 8em;
-      @include breakpoint(sm) {
-        flex-direction: column;
-      }
 
       .HeaderImages {
         display: flex;
@@ -69,10 +62,12 @@ html {
           width: 50%;
           padding: 5em 0 2em;
           h1 {
-            @include secondary-text($title, $white);
+            @include secondary-text($h1, $white);
+            line-height: 26px;
+            margin-bottom: 1em;
           }
           h3 {
-            @include primary-text($h2, $white);
+            @include primary-text($body, $white);
           }
         }
 
@@ -80,6 +75,40 @@ html {
           width: 100%;
           padding: 2em 0;
         }
+      }
+    }
+  }
+}
+
+@media only screen and (max-width: 1024px) {
+  .LandingContainer {
+    .LandingHeader {
+      .LadingHeaderContent {
+        padding: 4em 2em 0 4em;
+
+        .HeaderText {
+          width: 50%;
+          padding-right: 2em;
+        }
+
+        .HeaderImages {
+          width: 50%;
+
+          img {
+            width: 80%;
+            height: auto;
+          }
+        }
+      }
+    }
+  }
+}
+
+@media only screen and (max-width: 450px) {
+  .LandingContainer {
+    .LandingHeader {
+      .LadingHeaderContent {
+        padding: 8em 2em 0 4em;
       }
     }
   }

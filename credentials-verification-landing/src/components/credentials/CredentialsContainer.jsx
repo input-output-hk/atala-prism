@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { message } from 'antd';
 import _ from 'lodash';
 import { useTranslation } from 'react-i18next';
+import { useAnalytics } from 'reactfire';
 import FinishInfo from './Molecules/FinishInfo/FinishInfo';
 import CongratsStep from './Molecules/CongratsStep/CongratsStep';
 import CreatedCredential from './Organisms/CreatedCredential/CreatedCredential';
@@ -19,11 +20,14 @@ import {
   CREDENTIAL_SENT,
   SUBJECT_STATUSES,
   CONNECTED,
-  GOVERNMENT_ISSUED_DIGITAL_IDENTITY
+  GOVERNMENT_ISSUED_DIGITAL_IDENTITY,
+  STEP_1_EVENT,
+  STEP_2_EVENT,
+  STEP_3_EVENT,
+  STEP_4_EVENT,
 } from '../../helpers/constants';
 import Credentials from './Credentials';
 import SplittedPageInside from './Organisms/SplittedPageInside/SplittedPageInside';
-import WhatYouNeed from './Molecules/WhatYouNeed/WhatYouNeed';
 import { UserContext } from '../providers/userContext';
 import { withRedirector } from '../providers/withRedirector';
 import InteractiveMap from '../common/Organisms/InteractiveMap/InteractiveMap';
@@ -42,15 +46,22 @@ const CREDENTIALS = {
   3: 'insuredId'
 };
 
+const eventLogger = {
+  1: STEP_2_EVENT,
+  2: STEP_3_EVENT,
+  3: STEP_4_EVENT
+};
+
 const lastCredential = Object.keys(CREDENTIAL_TYPES).length - 1;
 
 const CredentialsContainer = ({
   api: { getConnectionToken, startSubjectStatusStream, setPersonalData }
 }) => {
+  const firebase = useAnalytics();
   const { t } = useTranslation();
 
   const { user, setUser } = useContext(UserContext);
-  const [currentStep, setCurrentStep] = useState(0);
+  const [currentStep, setCurrentStep] = useState(INTRODUCTION_STEP);
   const [token, setToken] = useState('');
   const [enabledCredentialToRequest, setEnabledCredentialToRequest] = useState(
     GOVERNMENT_ISSUED_DIGITAL_IDENTITY
@@ -108,11 +119,13 @@ const CredentialsContainer = ({
     const notIdCredential = currentCredential !== GOVERNMENT_ISSUED_DIGITAL_IDENTITY;
     if (isQRStep && isConnected && notIdCredential) {
       setCurrentStep(currentStep + 1);
+      firebase.logEvent(eventLogger[currentCredential]);
       const msg = t(`credential.generic.${SUBJECT_STATUSES[connectionStatus]}`);
       return message.success(msg);
     }
     if (isQRStep && isCredentialSended) {
       setCurrentStep(currentStep + 2);
+      firebase.logEvent(STEP_1_EVENT);
       const msg = t(`credential.generic.${SUBJECT_STATUSES[connectionStatus]}`);
       return message.success(msg);
     }
@@ -169,6 +182,16 @@ const CredentialsContainer = ({
     setCurrentCredential(currentCredential + 1);
   };
 
+
+  const selectPersona = selectedUser => {
+    setUser(selectedUser);
+    setCurrentCredential(GOVERNMENT_ISSUED_DIGITAL_IDENTITY);
+    setEnabledCredentialToRequest(GOVERNMENT_ISSUED_DIGITAL_IDENTITY);
+    setShowCongrats(false);
+    cleanCredentialState();
+    setShowPersonasModal(false);
+  };
+
   const getStep = () => {
     switch (currentStep) {
       case INTRODUCTION_STEP: {
@@ -179,7 +202,7 @@ const CredentialsContainer = ({
             currentCredential={currentCredential}
           />
         );
-        const renderRight = () => <WhatYouNeed currentCredential={currentCredential} />;
+        const renderRight = () => <div />;
         return <SplittedPageInside renderLeft={renderLeft} renderRight={renderRight} />;
       }
       case QR_STEP: {
@@ -198,24 +221,19 @@ const CredentialsContainer = ({
         return <SplittedPageInside renderLeft={renderLeft} renderRight={renderRight} />;
       }
       case SUCCESS_STEP: {
-        const renderLeft = () => (
-          <FinishInfo
+        const renderLeft = () => <FinishInfo currentCredential={currentCredential} />;
+        const renderRight = () => (
+          <CreatedCredential
             confirmSuccessCredential={jumpToNextCredential}
             currentCredential={currentCredential}
           />
         );
-        const renderRight = () => <CreatedCredential currentCredential={currentCredential} />;
 
         return <SplittedPageInside renderLeft={renderLeft} renderRight={renderRight} />;
       }
       default:
         return <div />;
     }
-  };
-
-  const selectPersona = selectedUser => {
-    setUser(selectedUser);
-    setShowPersonasModal(false);
   };
 
   return (

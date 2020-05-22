@@ -12,15 +12,15 @@ const CongratsStep = ({ redirector: { redirectToContact } }) => {
   return (
     <div className="CongratsStep">
       <Row>
+        <Col xs={24} lg={10} className="RightSideCongrats">
+          <img src="images/all-credentials.png" alt={t('atalaLogo')} />
+        </Col>
         <Col xs={24} lg={14} className="LeftSideCongrats">
           <h1>
             <strong>{t('landing.CongratsStep.congrats')}</strong>
           </h1>
           <h1>{t('landing.CongratsStep.finishProcess')}</h1>
           <ContactButton toContactForm={redirectToContact} />
-        </Col>
-        <Col xs={24} lg={10} className="RightSideCongrats">
-          <img src="images/credentials-phone-form.png" alt={t('atalaLogo')} />
         </Col>
       </Row>
     </div>

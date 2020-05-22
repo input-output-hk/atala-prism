@@ -8,17 +8,14 @@ export const withRedirector = Component => props => {
 
   const redirectToLanding = () => {
     redirectTo('');
-    window.location.reload(true);
   };
 
   const redirectToCredentials = () => {
     redirectTo('credentials');
-    window.location.reload(true);
   };
 
   const redirectToContact = () => {
     redirectTo('contact');
-    window.location.reload(true);
   };
 
   const redirector = {

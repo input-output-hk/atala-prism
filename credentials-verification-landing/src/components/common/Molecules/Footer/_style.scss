@@ -50,3 +50,15 @@
     }
   }
 }
+
+@media only screen and (max-width: 1024px) {
+  .Footer {
+    padding: 0 4em;
+  }
+}
+
+@media only screen and (max-width: 450px) {
+  .Footer {
+    margin-top: -4px;
+  }
+}

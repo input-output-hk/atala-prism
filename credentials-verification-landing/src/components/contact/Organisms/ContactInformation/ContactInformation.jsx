@@ -16,13 +16,17 @@ const ContactInformation = ({ submit, contactInfoRef, onConsent }) => {
       <Checkbox onChange={event => onConsent(event.target.checked)}>
         {t('credential.contactInformation.consent')}
       </Checkbox>
-      <hr></hr>
+      <hr />
       <p>{t('credential.contactInformation.termsConditions')}</p>
       <Checkbox onChange={event => onConsent(event.target.checked)}>
         {t('credential.contactInformation.consent2')}
       </Checkbox>
       <div className="FAQContainer">
-        <p>Check out our <a href="#">FAQs</a> for answers to any other questions.</p>
+        <p>
+          {t('credential.contactInformation.faq1')}{' '}
+          <a href="#">{t('credential.contactInformation.faq2')}</a>{' '}
+          {t('credential.contactInformation.faq3')}
+        </p>
       </div>
       <CustomButton
         buttonProps={{

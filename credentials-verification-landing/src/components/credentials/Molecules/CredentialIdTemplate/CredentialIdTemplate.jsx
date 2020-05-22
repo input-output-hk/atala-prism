@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Col, Row } from 'antd';
 import md5Hex from 'md5-hex';
 import flagIcon from '../../../../images/icon-flag.svg';
-import avatarId from '../../../../images/id_generic_avatar.svg';
+import avatarId from '../../../../images/jo-wong-avatar.png';
 
 import './_style.scss';
 
@@ -32,16 +32,16 @@ const CredentialIDTemplate = ({ firstName, dateOfBirth }) => {
           </Col>
           <Col xs={24} lg={18} className="InfoTemplate">
             <div className="TemplateItem">
-              <span>{t('credential.IdCredentialCard.IdentityNumber')}</span>
-              <p>{`RL-${identityNumber}`}</p>
+              <span>{t('credential.IdCredentialCard.FullName')}</span>
+              <p>{firstName}</p>
             </div>
             <div className="TemplateItem">
               <span>{t('credential.IdCredentialCard.DateOfBirth')}</span>
               <p>{moment(dateOfBirth).format('YYYY-MM-DD')}</p>
             </div>
             <div className="TemplateItem">
-              <span>{t('credential.IdCredentialCard.FullName')}</span>
-              <p>{firstName}</p>
+              <span>{t('credential.IdCredentialCard.IdentityNumber')}</span>
+              <p>{`RL-${identityNumber}`}</p>
             </div>
             <div className="TemplateItem">
               <span>{t('credential.IdCredentialCard.ExpirationDate')}</span>
