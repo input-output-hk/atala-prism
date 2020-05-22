@@ -8,7 +8,7 @@ const {
   RegisterDIDRequest
 } = require('../../protos/connector_api_pb');
 
-const { AtalaMessage } = require('../../protos/credential_models_pb');
+const { AtalaMessage, Credential } = require('../../protos/credential_models_pb');
 
 async function getConnectionsPaginated(lastSeenConnectionId, limit) {
   const connectionsPaginatedRequest = new GetConnectionsPaginatedRequest();
@@ -36,15 +36,23 @@ async function mapMessageToCredential(message) {
   return holderSentCredential.getCredential().toObject();
 }
 
+function getCredentialFromMessage(message) {
+  const credDoc = Credential.deserializeBinary(message.getMessage_asU8()).getCredentialdocument();
+  return JSON.parse(credDoc);
+}
+
 async function getMessagesForConnection(connectionId) {
   Logger.info(`Getting messages for connectionId ${connectionId}`);
   const request = new GetMessagesForConnectionRequest();
   request.setConnectionid(connectionId);
 
   const metadata = await this.auth.getMetadata(request);
-
   const result = await this.client.getMessagesForConnection(request, metadata);
-  return result.getMessagesList().map(msg => mapMessageToCredential(msg));
+
+  // TODO: we should use mapMessageToCredential and update HolderSentCredential to contain a Credential
+  // instead of an AlphaCredential. getCredentialFromMessage is only used as mobile apps are currently
+  // not wrapping the Credential in an AtalaMessage
+  return result.getMessagesList().map(msg => getCredentialFromMessage(msg));
 }
 
 const errorCredential = {

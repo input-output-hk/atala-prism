@@ -1,11 +1,13 @@
+import moment from 'moment';
 import { CredentialsServicePromiseClient } from '../../protos/cmanager_api_grpc_web_pb';
 import Logger from '../../helpers/Logger';
 import { setDateInfoFromJSON } from '../helpers';
+import { dayMonthYearBackendFormatter } from '../../helpers/formatters';
 
 const { Date } = require('../../protos/common_models_pb');
 const { GetCredentialsRequest, CreateCredentialRequest } = require('../../protos/cmanager_api_pb');
 const {
-  AlphaCredential,
+  Credential,
   IssuerData,
   SubjectData,
   PersonalId,
@@ -189,20 +191,23 @@ function setDates(
   credential.setAttainmentdate(populateDate(attainmentDate));
 }
 
-function populateCredential({ issuerInfo, subjectInfo, signersInfo, additionalInfo }) {
-  const credential = new AlphaCredential();
+function populateCredential({ issuerInfo, subjectInfo, additionalInfo }) {
+  const credentialType = ['VerifiableCredential', 'AirsideDegreeCredential'];
+  const credential = new Credential();
+  const credentialDocument = {
+    type: credentialType,
+    issuer: issuerInfo,
+    issuanceDate: dayMonthYearBackendFormatter(additionalInfo.graduationDate),
+    credentialSubject: {
+      name: subjectInfo.fullname,
+      degreeAwarded: 'Bachelor of Science',
+      degreeResult: 'Upper second class honours',
+      graduationYear: additionalInfo.graduationDate.year
+    }
+  };
 
-  const issuerData = populateIssuer(issuerInfo);
-  credential.setIssuertype(issuerData);
-
-  const subjectData = populateSubject(subjectInfo);
-  credential.setSubjectdata(subjectData);
-
-  const signers = populateSigners(signersInfo);
-  credential.setSigningauthoritiesList(signers);
-
-  setAdditionalInfo(credential, additionalInfo);
-  setDates(credential, additionalInfo);
+  credential.setTypeid(credentialType.join('/'));
+  credential.setCredentialdocument(JSON.stringify(credentialDocument));
 
   return credential;
 }
@@ -228,7 +233,7 @@ function parseAndPopulate(credentialData, studentData, did) {
   const { fullname } = studentData;
 
   const subjectInfo = {
-    ...getNamesAndSurnames(fullname)
+    fullname
   };
 
   const additionalInfo = {
@@ -250,7 +255,7 @@ function getCredentialBinary(connectionData, studentData, did) {
   const issuerCredential = new IssuerSentCredential();
 
   const credential = parseAndPopulate(connectionData, studentData, did);
-  issuerCredential.setAlphacredential(credential);
+  issuerCredential.setCredential(credential);
 
   atalaMessage.setIssuersentcredential(issuerCredential);
 

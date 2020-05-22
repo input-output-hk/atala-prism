@@ -95,24 +95,16 @@ const CredentialListDetail = ({
 };
 
 const mapTransaction = (credential, setConnectionInfo) => {
-  const {
-    degreeawarded,
-    additionalspeciality,
-    admissiondate,
-    issuertype,
-    subjectdata,
-    graduationdate,
-    grantingDecision
-  } = credential;
+  const { issuer, issuanceDate, credentialSubject } = credential;
   return {
     icon: null,
-    type: getTitle(degreeawarded, additionalspeciality),
-    date: dayMonthYearBackendFormatter(admissiondate),
+    type: credentialSubject.degreeAwarded,
+    date: issuanceDate,
     setConnectionInfo,
-    university: getIssuerName(issuertype),
-    student: getStudentName(subjectdata),
-    graduationDate: dayMonthYearBackendFormatter(graduationdate),
-    result: grantingDecision,
+    university: issuer.name,
+    student: credentialSubject.name,
+    graduationDate: issuanceDate,
+    result: credentialSubject.degreeResult,
     lg: 24
   };
 };
