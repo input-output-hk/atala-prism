@@ -1,20 +1,13 @@
 package io.iohk.cvp.views.fragments;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
-import android.widget.TextView;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
@@ -22,10 +15,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.crashlytics.android.Crashlytics;
+import com.google.protobuf.InvalidProtocolBufferException;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -33,10 +27,9 @@ import javax.inject.Inject;
 import butterknife.BindView;
 import io.iohk.cvp.R;
 import io.iohk.cvp.grpc.AsyncTaskResult;
-import io.iohk.cvp.utils.ActivityUtils;
+import io.iohk.cvp.utils.CredentialParse;
 import io.iohk.cvp.viewmodel.CredentialsViewModel;
 import io.iohk.cvp.views.Preferences;
-import io.iohk.cvp.views.activities.MainActivity;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.RootAppBar;
 import io.iohk.cvp.views.utils.adapters.CredentialsRecyclerViewAdapter;
@@ -118,16 +111,32 @@ public class MyCredentials extends CvpFragment<CredentialsViewModel> {
                         getNavigator().showPopUp(getFragmentManager(), getResources().getString(
                                 R.string.server_error_message));
                     } else {
-                        Preferences prefs = new Preferences(getContext());
-                        Set<String> acceptedMessagesIds = prefs.getStoredMessages(Preferences.ACCEPTED_MESSAGES_KEY);
+                        //TODO: WE HAVE TO USE Credential INSTEAD OF ReceivedMessage
+                        List<ReceivedMessage> messages = result.getResult().stream()
+                                .filter(receivedMessage -> {
+                                    try {
+                                        return !AtalaMessage.parseFrom(
+                                                receivedMessage.getMessage()).getIssuerSentCredential().getCredential().getTypeId().isEmpty();
+                                    } catch (InvalidProtocolBufferException e) {
+                                        return false;
+                                    }
+                                }).collect(Collectors.toList());
 
-                        List<ReceivedMessage> messages = result.getResult();
-                        List<ReceivedMessage> acceptedMessages = messages.stream()
-                                .filter(msg -> acceptedMessagesIds.contains(msg.getId())).collect(
-                                        Collectors.toList());
+                        messages.sort(new Comparator<ReceivedMessage>() {
+                            public int compare(ReceivedMessage o1, ReceivedMessage o2) {
+                                try {
+                                    return CredentialParse.parse(AtalaMessage.parseFrom(
+                                            o1.getMessage()).getIssuerSentCredential().getCredential())
+                                            .getIssuer().getName().compareTo(CredentialParse.parse(AtalaMessage.parseFrom(o2.getMessage()).getIssuerSentCredential()
+                                                    .getCredential()).getIssuer().getName());
+                                }catch (Exception e){
+                                    return 1;
+                                }
+                            }
+                        });
 
-                        credentialsAdapter.addMesseges(acceptedMessages);
-                        if (acceptedMessages.isEmpty()) {
+                        credentialsAdapter.addMesseges(messages);
+                        if (messages.isEmpty()) {
                             credentialsRecyclerView.setVisibility(View.GONE);
                             noCredentialsContainer.setVisibility(View.VISIBLE);
                         }

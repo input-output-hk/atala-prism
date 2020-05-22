@@ -4,13 +4,22 @@ package io.iohk.cvp.views.fragments;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Bundle;
+import android.view.View;
 
 import androidx.annotation.NonNull;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import butterknife.OnClick;
 import io.iohk.cvp.R;
+import io.iohk.cvp.grpc.AsyncTaskResult;
 import io.iohk.cvp.utils.ActivitiesRequestCodes;
 import io.iohk.cvp.utils.ActivityUtils;
 import io.iohk.cvp.utils.PermissionUtils;
@@ -21,6 +30,8 @@ import io.iohk.cvp.views.fragments.utils.RootAppBar;
 
 import javax.inject.Inject;
 
+import io.iohk.prism.protos.ConnectionInfo;
+import io.iohk.prism.protos.ParticipantInfo;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
@@ -28,8 +39,20 @@ import lombok.Setter;
 @NoArgsConstructor
 public class FirstConnectionFragment extends CvpFragment<ConnectionsActivityViewModel> {
 
+
     private ViewModelProvider.Factory factory;
     private int idTitle;
+
+    private List<ConnectionInfo> issuerConnections;
+
+    public static FirstConnectionFragment newInstance(int idTitle, List<ConnectionInfo> issuerConnections) {
+
+        FirstConnectionFragment instance = new FirstConnectionFragment();
+        instance.idTitle = idTitle;
+        instance.issuerConnections = issuerConnections;
+
+        return instance;
+    }
 
     @Inject
     public FirstConnectionFragment(ViewModelProvider.Factory factory) {
@@ -47,10 +70,6 @@ public class FirstConnectionFragment extends CvpFragment<ConnectionsActivityView
                 .get(ConnectionsActivityViewModel.class);
         viewModel.setContext(getContext());
         return viewModel;
-    }
-
-    public void setTitleId(int idTitle) {
-        this.idTitle = idTitle;
     }
 
     private int getTitleId() {
@@ -83,7 +102,7 @@ public class FirstConnectionFragment extends CvpFragment<ConnectionsActivityView
         super.onActivityResult(requestCode, resultCode, data);
         ActivityUtils
                 .onQrcodeResult(requestCode, resultCode, (MainActivity) getActivity(),
-                        viewModel, data, this);
+                        viewModel, data, this, issuerConnections);
     }
 
     @Override

@@ -54,6 +54,8 @@ public class WalletSetupActivity extends CvpActivity<WalletSetupViewModel> imple
 
   private Integer secondWordIndexToCheck;
 
+  private FirebaseAnalytics mFirebaseAnalytics;
+
   protected int getView() {
     return R.layout.activity_wallet_setup;
   }
@@ -62,6 +64,8 @@ public class WalletSetupActivity extends CvpActivity<WalletSetupViewModel> imple
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     Objects.requireNonNull(getSupportActionBar()).hide();
+
+    mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
 
     checkbox.setListeners(this, null);
     adapter = new SeedPhraseAdapter();
@@ -88,10 +92,7 @@ public class WalletSetupActivity extends CvpActivity<WalletSetupViewModel> imple
 
   @Override
   public void stateChanged(Boolean isClicked) {
-
-    Bundle bundle = new Bundle();
-    bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, FirebaseAnalyticsEvents.ACCEPT_RECOVERY_PHRASE);
-    FirebaseAnalytics.getInstance(this).logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
+    mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, null);
 
     acceptButton.setEnabled(isClicked);
 
@@ -114,10 +115,7 @@ public class WalletSetupActivity extends CvpActivity<WalletSetupViewModel> imple
 
   @OnClick(R.id.accept_button)
   public void onContinueClick() {
-
-    Bundle bundle = new Bundle();
-    bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, FirebaseAnalyticsEvents.ACCEPT_RECOVERY_PHRASE_CONTINUE);
-    FirebaseAnalytics.getInstance(this).logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
+    mFirebaseAnalytics.logEvent(FirebaseAnalyticsEvents.ACCEPT_RECOVERY_PHRASE_CONTINUE, null);
 
     navigator.showSeedPhraseVerification(this, adapter.getSeedPhrase(), firstWordIndexToCheck,
         secondWordIndexToCheck);

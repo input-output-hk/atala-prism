@@ -106,7 +106,16 @@ public class ShareCredentialRecyclerViewAdapter extends
         void onClick() {
             connectionInfo.setIsSelected(!connectionInfo.getIsSelected());
             setBackground();
-            checkShare.setChecked(!connectionInfo.getIsSelected());
+            checkShare.setChecked(connectionInfo.getIsSelected());
+            fragment.updateButtonState();
+            fragment.updateSelectedVerifiers(connectionInfo.getConnectionId(),
+                    connectionInfo.getIsSelected());
+        }
+
+        @OnClick(R.id.checkShare)
+        void onCheckShareClick() {
+            connectionInfo.setIsSelected(!connectionInfo.getIsSelected());
+            setBackground();
             fragment.updateButtonState();
             fragment.updateSelectedVerifiers(connectionInfo.getConnectionId(),
                     connectionInfo.getIsSelected());

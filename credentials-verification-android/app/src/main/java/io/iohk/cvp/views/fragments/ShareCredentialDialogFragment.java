@@ -18,10 +18,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.common.SupportErrorDialogFragment;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -31,13 +33,17 @@ import io.iohk.cvp.R;
 import io.iohk.cvp.core.exception.ErrorCode;
 import io.iohk.cvp.core.exception.SharedPrefencesDataNotFoundException;
 import io.iohk.cvp.grpc.AsyncTaskResult;
+import io.iohk.cvp.utils.CredentialParse;
 import io.iohk.cvp.viewmodel.ConnectionsListablesViewModel;
 import io.iohk.cvp.viewmodel.dtos.ConnectionListable;
+import io.iohk.cvp.viewmodel.dtos.CredentialDto;
 import io.iohk.cvp.views.Preferences;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.utils.adapters.ShareCredentialRecyclerViewAdapter;
 import io.iohk.cvp.views.utils.dialogs.SuccessDialog;
+import io.iohk.prism.protos.ConnectionInfo;
 import io.iohk.prism.protos.Credential;
+import io.iohk.prism.protos.ParticipantInfo;
 import lombok.NoArgsConstructor;
 
 import static io.iohk.cvp.utils.IntentDataConstants.CREDENTIAL_DATA_KEY;
@@ -62,6 +68,8 @@ public class ShareCredentialDialogFragment extends CvpFragment<ConnectionsListab
 
     private LiveData<AsyncTaskResult<Boolean>> liveData;
 
+    private CredentialDto credential;
+
 
     @Inject
     ShareCredentialDialogFragment(ViewModelProvider.Factory factory) {
@@ -71,27 +79,41 @@ public class ShareCredentialDialogFragment extends CvpFragment<ConnectionsListab
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
         View view = super.onCreateView(inflater, container, savedInstanceState);
+        try {
+            adapter = new ShareCredentialRecyclerViewAdapter(this);
+            recyclerView.setLayoutManager(
+                    new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
+            recyclerView.setAdapter(adapter);
 
-        adapter = new ShareCredentialRecyclerViewAdapter(this);
-        recyclerView.setLayoutManager(
-                new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
-        recyclerView.setAdapter(adapter);
+            credential = CredentialParse.parse(Credential.parseFrom(getArguments().getByteArray(CREDENTIAL_DATA_KEY)));
 
-        LiveData<AsyncTaskResult<List<ConnectionListable>>> liveData = viewModel
-                .getConnections(this.getUserIds());
+            LiveData<AsyncTaskResult<List<ConnectionListable>>> liveData = viewModel
+                    .getConnections(this.getUserIds());
 
-        if (!liveData.hasActiveObservers()) {
-            liveData.observe(this, response -> {
+            if (!liveData.hasActiveObservers()) {
+                liveData.observe(this, response -> {
 
-                if (response.getError() != null) {
-                    getNavigator().showPopUp(getFragmentManager(), getResources().getString(
-                            R.string.server_error_message));
-                    return;
-                }
-                adapter.addConnections(response.getResult());
-                adapter.notifyDataSetChanged();
-            });
+                    if (response.getError() != null) {
+                        getNavigator().showPopUp(getFragmentManager(), getResources().getString(
+                                R.string.server_error_message));
+                        return;
+                    }
+
+                    List<ConnectionListable> connections = new ArrayList<>();
+                    connections.addAll(response.getResult().stream()
+                            .filter(conn -> {
+                                    return !conn.getDid().substring(conn.getDid().lastIndexOf(":"))
+                                            .equals(credential.getIssuer().getId().substring(credential.getIssuer().getId().lastIndexOf(":")));
+                            }).collect(Collectors.toList()));
+
+                    adapter.addConnections(connections);
+                    adapter.notifyDataSetChanged();
+                });
+            }
+        }catch (Exception e){
+            Crashlytics.logException(e);
         }
         return view;
     }

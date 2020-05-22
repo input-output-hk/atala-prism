@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.iohk.cvp.R;
+import io.iohk.cvp.utils.ImageUtils;
 import io.iohk.prism.protos.ConnectionInfo;
 import io.iohk.prism.protos.IssuerInfo;
 
@@ -20,6 +21,11 @@ public class UniversitiesRecyclerViewAdapter extends
                                  ConnectionInfo connectionInfo) {
         IssuerInfo issuerInfo = connectionInfo.getParticipantInfo().getIssuer();
         holder.issuerName.setText(issuerInfo.getName());
+
+        if(issuerInfo.getLogo() != null && !issuerInfo.getLogo().isEmpty()){
+            holder.issuerLogo.setImageBitmap(ImageUtils.getBitmapFromByteArray(issuerInfo.getLogo().toByteArray()));
+        }
+
     }
 
     @Override

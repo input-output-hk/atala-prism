@@ -3,6 +3,7 @@ package io.iohk.cvp.views.fragments;
 import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -10,7 +11,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentManager;
 import androidx.lifecycle.LiveData;
@@ -22,11 +22,16 @@ import androidx.viewpager.widget.ViewPager;
 import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.common.SupportErrorDialogFragment;
 import com.google.android.material.tabs.TabLayout;
+import com.google.protobuf.InvalidProtocolBufferException;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
@@ -34,13 +39,13 @@ import butterknife.BindView;
 import io.iohk.cvp.R;
 import io.iohk.cvp.grpc.AsyncTaskResult;
 import io.iohk.cvp.utils.ActivityUtils;
+import io.iohk.cvp.utils.comparator.ConnectionInfoComparator;
 import io.iohk.cvp.viewmodel.ConnectionsActivityViewModel;
 import io.iohk.cvp.views.Preferences;
 import io.iohk.cvp.views.activities.MainActivity;
 import io.iohk.cvp.views.fragments.utils.AppBarConfigurator;
 import io.iohk.cvp.views.fragments.utils.RootAppBar;
 import io.iohk.cvp.views.utils.adapters.ConnectionTabsAdapter;
-import io.iohk.cvp.views.utils.adapters.EmployersRecyclerViewAdapter;
 import io.iohk.cvp.views.utils.adapters.UniversitiesRecyclerViewAdapter;
 import io.iohk.prism.protos.AtalaMessage;
 import io.iohk.prism.protos.ConnectionInfo;
@@ -74,11 +79,11 @@ public class ContactsFragment extends CvpFragment<ConnectionsActivityViewModel> 
 
     private List<ReceivedMessage> proofRequestMessages;
 
-    private List<ReceivedMessage> acceptedMessages;
-
     private List<ConnectionInfo> shareConnections;
 
     private List<String> proofRequestOpen;
+
+    private List<ConnectionInfo> issuerConnections;
 
     @Inject
     public ContactsFragment() {
@@ -112,8 +117,8 @@ public class ContactsFragment extends CvpFragment<ConnectionsActivityViewModel> 
 
         connectionsListFragment.setAdapter(new UniversitiesRecyclerViewAdapter());
 
+        issuerConnections = new ArrayList<>();
         proofRequestMessages = new ArrayList<>();
-        acceptedMessages = new ArrayList<>();
         shareConnections = new ArrayList<>();
         proofRequestOpen = new ArrayList<>();
 
@@ -183,11 +188,14 @@ public class ContactsFragment extends CvpFragment<ConnectionsActivityViewModel> 
                             return false;
                         }).collect(Collectors.toList()));
 
-                List<ConnectionInfo> issuerConnections = connections.stream()
+                issuerConnections = connections.stream()
                         .filter(conn -> conn.getParticipantInfo().getParticipantCase().getNumber()
                                 == ParticipantInfo.ISSUER_FIELD_NUMBER)
                         .collect(Collectors.toList());
+                issuerConnections.sort(new ConnectionInfoComparator());
+
                 connectionsListFragment.addConnections(issuerConnections);
+                ((MainActivity)getActivity()).setIssuerConnections(issuerConnections);
 
                 loading.setVisibility(View.GONE);
                 getProofRequest();
@@ -230,23 +238,7 @@ public class ContactsFragment extends CvpFragment<ConnectionsActivityViewModel> 
                                     }
                                 }).collect(Collectors.toList()));
 
-
-                        Set<String> acceptedMessagesIds = prefs.getStoredMessages(Preferences.ACCEPTED_MESSAGES_KEY);
-                        acceptedMessages.addAll(messages.stream()
-                                .filter(msg -> {
-                                    if (acceptedMessagesIds.contains(msg.getId())) {
-                                        for (ReceivedMessage acceptedMessage : acceptedMessages) {
-                                            if (acceptedMessage.getId().equals(msg.getId())) {
-                                                return false;
-                                            }
-                                        }
-                                        return true;
-                                    }
-                                    return false;
-                                }).collect(
-                                        Collectors.toList()));
-
-                        if (!proofRequestMessages.isEmpty() && !acceptedMessages.isEmpty()) {
+                        if (!proofRequestMessages.isEmpty() && !messages.isEmpty()) {
                             for (ReceivedMessage proofRequestMessage : proofRequestMessages) {
                                 ProofRequest proofRequest = AtalaMessage.parseFrom(proofRequestMessage.getMessage()).getProofRequest();
                                 //Search for conection
@@ -259,13 +251,20 @@ public class ContactsFragment extends CvpFragment<ConnectionsActivityViewModel> 
                                 }
 
                                 //Search for credentials
-                                List<Credential> credentialsToShare = new ArrayList<>();
-                                for (ReceivedMessage acceptedMessage : acceptedMessages) {
-                                    Credential credential = AtalaMessage.parseFrom(acceptedMessage.getMessage()).getIssuerSentCredential().getCredential();
-                                    if (proofRequest.getTypeIdsList().contains(credential.getTypeId())) {
-                                        credentialsToShare.add(credential);
-                                    }
-                                }
+                                List<Credential> credentialsToShare = messages.stream()
+                                        .flatMap(message -> {
+                                            try {
+                                                Credential credential =  AtalaMessage.parseFrom(message.getMessage()).getIssuerSentCredential().getCredential();
+                                                return Stream.of(credential);
+                                            } catch (InvalidProtocolBufferException e) {
+                                                Log.d("ATALA - Contacs Fragment","Impossible to parse Credential");
+                                                return Stream.empty();
+                                            }
+                                        })
+                                        .filter(acceptedMessage ->
+                                                proofRequest.getTypeIdsList().contains(acceptedMessage.getTypeId())
+                                        )
+                                        .collect(Collectors.toList());
 
                                 if (shareConnection != null && credentialsToShare.size() == proofRequest.getTypeIdsList().size() &&
                                         !proofRequestOpen.contains(proofRequest.getConnectionToken())) {
@@ -310,6 +309,6 @@ public class ContactsFragment extends CvpFragment<ConnectionsActivityViewModel> 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         ActivityUtils.onQrcodeResult(requestCode, resultCode, (MainActivity) getActivity(),
-                viewModel, data, this);
+                viewModel, data, this, issuerConnections);
     }
 }

@@ -18,6 +18,7 @@ import androidx.lifecycle.ViewModelProviders;
 import com.google.android.material.button.MaterialButton;
 
 import java.util.Objects;
+import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -58,12 +59,6 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
 
     @Setter
     private Boolean credentialIsNew;
-
-    @BindView(R.id.decline_credential)
-    public MaterialButton declineButton;
-
-    @BindView(R.id.accept_credential)
-    public Button acceptButton;
 
     @BindView(R.id.text_view_credential_type)
     TextView textViewCredentialType;
@@ -125,6 +120,10 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
     @BindView(R.id.text_view_full_name_title)
     TextView fullNameTitle;
 
+    @BindView(R.id.layout_university_name)
+    ConstraintLayout layoutUniversityName;
+
+
 
     @Inject
     CredentialDetailFragment(ViewModelProvider.Factory factory) {
@@ -182,8 +181,7 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = super.onCreateView(inflater, container, savedInstanceState);
         fillData(credential, connectionId);
-        showOptions(credentialIsNew);
-
+        saveCredential();
         return view;
     }
 
@@ -197,7 +195,7 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
 
             layoutcredentialtitle.setBackground(getResources().getDrawable(R.drawable.rounded_top_corners_grey));
 
-            textViewCredentialType.setText("National ID Card");
+            textViewCredentialType.setText(getResources().getString(R.string.national_card));
             textViewCredentialType.setTextColor(getResources().getColor(R.color.grey_4));
 
             textViewCredentialName.setText(credentialDto.getIssuer().getName());
@@ -213,57 +211,69 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
 
             if (credential.getTypeId().equals(CredentialType.DEGREE_CREDENTIAL.getValue())) {
 
-                textViewCredentialName.setText(credentialDto.getCredentialSubject().getDegreeAwarded());
+                textViewCredentialType.setText(getResources().getString(R.string.university_name));
+                textViewCredentialName.setText(credentialDto.getIssuer().getName());
+                textViewCredentialName.setTextColor(getResources().getColor(R.color.white));
 
-                textViewUniversityName.setText(credentialDto.getIssuer().getName());
-                awardValue.setText(credentialDto.getCredentialSubject().getDegreeResult());
-                textViewFullName.setText(credentialDto.getCredentialSubject().getName());
+                universityNameTitle.setText(getResources().getString(R.string.full_name));
+                textViewUniversityName.setText(credentialDto.getCredentialSubject().getName());
+
+                awardTitle.setText(getResources().getString(R.string.degree_name));
+                awardValue.setText(credentialDto.getCredentialSubject().getDegreeAwarded());
+
+                fullNameTitle.setText(getResources().getString(R.string.award));
+                textViewFullName.setText(credentialDto.getCredentialSubject().getDegreeResult());
+
+                viewGraduationDateTitle.setText(getResources().getString(R.string.issuance_date));
                 textViewGraduationDate.setText(credentialDto.getIssuanceDate());
+
+                layoutUniversityName.setVisibility(View.VISIBLE);
 
             } else if (credential.getTypeId().equals(CredentialType.EMPLOYMENT_CREDENTIAL.getValue())) {
 
-                textViewCredentialType.setText("Company Name");
+                textViewCredentialType.setText(getResources().getString(R.string.company_name));
                 textViewCredentialType.setTextColor(getResources().getColor(R.color.white));
+
+
+                awardTitle.setText(getResources().getString(R.string.full_name));
+                awardValue.setText(credentialDto.getCredentialSubject().getName());
 
                 textViewCredentialName.setText(credentialDto.getIssuer().getName());
                 textViewCredentialName.setTextColor(getResources().getColor(R.color.white));
 
-                awardTitle.setText("Employment Status");
-                awardValue.setText("Full Time");
+                fullNameTitle.setText(getResources().getString(R.string.employment_status));
+                textViewFullName.setText(credentialDto.getEmploymentStatus());
 
-                textViewFullName.setText("Giorgi Beridze");
-
-                universityNameTitle.setText("Employment Start Date");
-                textViewUniversityName.setText("10/01/2020");
-
-                viewGraduationDateTitle.setText("Employment Start Date");
-                textViewGraduationDate.setText("03/03/2020");
+                viewGraduationDateTitle.setText(getResources().getString(R.string.employment_start_date));
+                textViewGraduationDate.setText(credentialDto.getIssuanceDate());
 
                 layoutcredentialtitle.setBackground(getResources().getDrawable(R.drawable.rounded_top_corners_purple));
                 universityConstraint.setBackground(getResources().getDrawable(R.drawable.rounded_bottom_corners_purple));
 
                 imageViewCredentialLogo.setImageDrawable(getResources().getDrawable(R.drawable.ic_id_proof));
 
+                layoutUniversityName.setVisibility(View.GONE);
+
             } else {
                 //VerifiableCredential/CertificateOfInsurance
-                textViewCredentialType.setText("Provider Name");
+                textViewCredentialType.setText(getResources().getString(R.string.provider_name));
                 textViewCredentialType.setTextColor(getResources().getColor(R.color.white));
 
                 textViewCredentialName.setText(credentialDto.getIssuer().getName());
                 textViewCredentialName.setTextColor(getResources().getColor(R.color.white));
 
-                textViewFullName.setText(credentialDto.getCredentialSubject().getName());
 
-                universityNameTitle.setText(getResources().getString(R.string.insurance_class));
-                textViewUniversityName.setText("Life Insurance");
+                universityNameTitle.setText(getResources().getString(R.string.full_name));
+                textViewUniversityName.setText(credentialDto.getCredentialSubject().getName());
 
-                awardTitle.setText(getResources().getString(R.string.insurance_number));
-                awardValue.setText("1234 5678 90");
+                awardTitle.setText(getResources().getString(R.string.insurance_class));
+                awardValue.setText(credentialDto.getProductClass());
 
-                textViewFullName.setText("Giorgi Beridze");
+                fullNameTitle.setText(getResources().getString(R.string.insurance_number));
+                textViewFullName.setText(credentialDto.getPolicyNumber());
 
-                viewGraduationDateTitle.setText("Policy End Date");
-                textViewGraduationDate.setText("03/01/2009");
+                viewGraduationDateTitle.setText(getResources().getString(R.string.insurance_end_date));
+                textViewGraduationDate.setText(credentialDto.getExpiryDate());
 
                 layoutcredentialtitle.setBackground(getResources().getDrawable(R.drawable.rounded_top_corners_blue));
                 universityConstraint.setBackground(getResources().getDrawable(R.drawable.rounded_bottom_corners_white));
@@ -284,27 +294,12 @@ public class CredentialDetailFragment extends CvpFragment<CredentialsViewModel> 
         }
     }
 
-    private void showOptions(boolean optionsVisible) {
-        declineButton.setVisibility(optionsVisible ? View.VISIBLE : View.GONE);
-        acceptButton.setVisibility(optionsVisible ? View.VISIBLE : View.GONE);
-    }
-
-    @OnClick(R.id.accept_credential)
-    void onAcceptClick() {
-        ((MainActivity)getActivity()).sentFirebaseAnalyticsEvent(FirebaseAnalyticsEvents.NEW_CONNECTION_CONFIRM);
-        saveAndGoBack(Preferences.ACCEPTED_MESSAGES_KEY);
-    }
-
-    @OnClick(R.id.decline_credential)
-    void onDeclineClick() {
-        ((MainActivity)getActivity()).sentFirebaseAnalyticsEvent(FirebaseAnalyticsEvents.NEW_CONNECTION_DECLINE);
-        saveAndGoBack(Preferences.REJECTED_MESSAGES_KEY);
-    }
-
-    private void saveAndGoBack(String key) {
+    private void saveCredential() {
         Preferences prefs = new Preferences(getContext());
-        prefs.saveMessage(messageId, key);
-        ((MainActivity) getActivity()).onNavigation(BottomAppBarOption.CREDENTIAL, null);
+        Set<String> acceptedMessagesIds = prefs.getStoredMessages(Preferences.ACCEPTED_MESSAGES_KEY);
+        if(!acceptedMessagesIds.contains(messageId)){
+            prefs.saveMessage(messageId, Preferences.ACCEPTED_MESSAGES_KEY);
+        }
     }
 
     @Override

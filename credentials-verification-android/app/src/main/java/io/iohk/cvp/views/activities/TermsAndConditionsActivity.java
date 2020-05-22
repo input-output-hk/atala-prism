@@ -49,6 +49,8 @@ public class TermsAndConditionsActivity extends CvpActivity {
   private Boolean termsAndConditionsChecked = false;
   private Boolean privacyPolicyChecked = false;
 
+  private FirebaseAnalytics mFirebaseAnalytics;
+
   protected int getView() {
     return R.layout.terms_and_conditions_activity;
   }
@@ -57,27 +59,24 @@ public class TermsAndConditionsActivity extends CvpActivity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     Objects.requireNonNull(getSupportActionBar()).hide();
+    mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
+
     firstCheckbox.setListeners(
       isClicked -> {
+        mFirebaseAnalytics.logEvent(FirebaseAnalyticsEvents.ACCEPT_TCS, null);
+
         termsAndConditionsChecked = isClicked;
         updateButtonState();
-
-        Bundle bundle = new Bundle();
-        bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, FirebaseAnalyticsEvents.ACCEPT_TCS);
-        FirebaseAnalytics.getInstance(this).logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
-
       },
       // TODO: get the last time the terms and conditions where updated
       () -> showLargeDescription(termsAndConditionsTitle, Calendar.getInstance(), R.string.terms_and_conditions_asset_name)
     );
     secondCheckbox.setListeners(
       isClicked -> {
+        mFirebaseAnalytics.logEvent(FirebaseAnalyticsEvents.ACCEPT_PP, null);
+
         privacyPolicyChecked = isClicked;
         updateButtonState();
-
-        Bundle bundle = new Bundle();
-        bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, FirebaseAnalyticsEvents.ACCEPT_PP);
-        FirebaseAnalytics.getInstance(this).logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
       },
       // TODO: get the last time the privacy policies and conditions where updated
       // TODO: import the privacy policies asset when needed
@@ -113,11 +112,8 @@ public class TermsAndConditionsActivity extends CvpActivity {
 
   @OnClick(R.id.continue_button)
   public void onContinueClick() {
+    mFirebaseAnalytics.logEvent(FirebaseAnalyticsEvents.CONTINUE_AFTER_TC_PP, null);
     navigator.showWalletSetup(this);
-
-    Bundle bundle = new Bundle();
-    bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, FirebaseAnalyticsEvents.CONTINUE_AFTER_TC_PP);
-    FirebaseAnalytics.getInstance(this).logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
   }
 
 }

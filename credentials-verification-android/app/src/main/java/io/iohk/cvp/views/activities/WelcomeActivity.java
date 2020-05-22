@@ -79,10 +79,13 @@ public class WelcomeActivity extends CvpActivity {
 
   private int currentStep = 0;
 
+  private FirebaseAnalytics mFirebaseAnalytics;
+
   @Override
   public void onCreate(Bundle state) {
     super.onCreate(state);
     Objects.requireNonNull(getSupportActionBar()).hide();
+    mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
   }
 
   @Override
@@ -103,12 +106,10 @@ public class WelcomeActivity extends CvpActivity {
 
   @OnClick(R.id.create_account_btn)
   public void onClickCreateAccount() {
+    mFirebaseAnalytics.logEvent(FirebaseAnalyticsEvents.CREATE_ACCOUNT,null);
+
     // TODO this should take you to the wallet setup
     navigator.showTermsAndConditions(this);
-
-    Bundle bundle = new Bundle();
-    bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, FirebaseAnalyticsEvents.CREATE_ACCOUNT);
-    FirebaseAnalytics.getInstance(this).logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
   }
 
   private void changeViewsByStep(boolean isAdvancing) {

@@ -62,20 +62,6 @@
             android:textSize="16dp"
             android:text="Want you to share the following credentials with them:"/>
 
-
-        <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <LinearLayout
-                android:id="@+id/credentialTypesContent"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:minHeight="60dp"/>
-
-        </ScrollView>
-
     </LinearLayout>
 
     <FrameLayout
@@ -107,7 +93,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Select Crendential:"
+            android:text="Requested Credential(s):"
             android:textColor="#202020"
             android:textSize="12dp"/>
 

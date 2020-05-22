@@ -73,7 +73,12 @@
   <string name="some_name">Gergi Beridze</string>
   <string name="some_award">First Class Honours</string>
   <string name="award">Award</string>
+  <string name="national_card">National ID Card</string>
   <string name="university_degree">University Degree</string>
+  <string name="issuance_date">Issuance date</string>
+  <string name="company_name">Company Name</string>
+  <string name="employment_status">Employment Status</string>
+  <string name="provider_name">Provider Name</string>
   <string name="decline">Decline</string>
   <string name="confirm">Confirm</string>
 
@@ -101,7 +106,7 @@
   <string name="employers">Employers</string>
   <string name="home_title">Credentials</string>
   <string name="view">View</string>
-  <string name="new_credentials_section_title">You have new credentials to confirm</string>
+  <string name="new_credentials_section_title">You have a new credential</string>
   <string name="settings">Settings</string>
   <string name="about">About</string>
   <string name="wallet">Wallet</string>
@@ -184,4 +189,10 @@
   <string name="server_error_message">Please try again. If the error persists contact support.</string>
   <string name="server_share_successfully">Successfully shared!.</string>
   <string name="select_all_credential_alert">You have to select all the credentials.</string>
+
+  <string name="connection_acept_title">Would you like to connect with</string>
+  <string name="connection_re_acept_title">You have already connected to</string>
+  <string name="connection_acept_button">Confirm</string>
+  <string name="connection_re_acept_button">Connect again</string>
+
 </resources>

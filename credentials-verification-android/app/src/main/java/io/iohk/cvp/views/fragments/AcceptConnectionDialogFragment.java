@@ -8,10 +8,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
+
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -19,9 +23,11 @@ import butterknife.BindView;
 import butterknife.OnClick;
 import io.iohk.cvp.R;
 import io.iohk.cvp.utils.FirebaseAnalyticsEvents;
+import io.iohk.cvp.utils.ImageUtils;
 import io.iohk.cvp.viewmodel.AcceptConnectionViewModel;
 import io.iohk.cvp.views.Preferences;
 import io.iohk.cvp.views.activities.MainActivity;
+import io.iohk.prism.protos.ConnectionInfo;
 import io.iohk.prism.protos.ParticipantInfo;
 import lombok.NoArgsConstructor;
 
@@ -29,6 +35,7 @@ import lombok.NoArgsConstructor;
 public class AcceptConnectionDialogFragment extends CvpDialogFragment<AcceptConnectionViewModel> {
 
     private static final String TITLE_KEY = "title";
+    private static final String BUTTON_KEY = "button";
     private static final String TOKEN_KEY = "token";
     private static final String NAME_KEY = "participantName";
     private static final String LOGO_DATA_KEY = "logo";
@@ -39,23 +46,30 @@ public class AcceptConnectionDialogFragment extends CvpDialogFragment<AcceptConn
     @BindView(R.id.participantName)
     TextView participantNameTextView;
 
+    @BindView(R.id.connect_button)
+    Button connectButton;
+
+    @BindView(R.id.participantLogo)
+    ImageView participantLogo;
+
     private ViewModelProvider.Factory factory;
 
-    public static AcceptConnectionDialogFragment newInstance(String token,
-                                                             ParticipantInfo participantInfo) {
+    public static AcceptConnectionDialogFragment newInstance(String title, String buttonDescription,
+                                                             String token, ParticipantInfo participantInfo) {
 
         AcceptConnectionDialogFragment instance = new AcceptConnectionDialogFragment();
 
-        boolean isIssuer =
-                participantInfo.getParticipantCase().getNumber() == ParticipantInfo.ParticipantCase.ISSUER.getNumber();
+        boolean isIssuer = participantInfo.getParticipantCase().getNumber() == ParticipantInfo.ParticipantCase.ISSUER.getNumber();
 
         Bundle args = new Bundle();
+        args.putString(TITLE_KEY, title);
+        args.putString(BUTTON_KEY, buttonDescription);
         args.putString(TOKEN_KEY, token);
         args.putString(NAME_KEY, isIssuer ? participantInfo.getIssuer().getName()
                 : participantInfo.getVerifier().getName());
-        args.putString(TITLE_KEY, "You are about to connect with");
         args.putByteArray(LOGO_DATA_KEY, isIssuer ? participantInfo.getIssuer().getLogo().toByteArray()
                 : participantInfo.getVerifier().getLogo().toByteArray());
+
         instance.setArguments(args);
         instance.setCancelable(false);
 
@@ -83,6 +97,14 @@ public class AcceptConnectionDialogFragment extends CvpDialogFragment<AcceptConn
 
         titleTextView.setText(getArguments().getString(TITLE_KEY));
         participantNameTextView.setText(getArguments().getString(NAME_KEY));
+        connectButton.setText(getArguments().getString(BUTTON_KEY));
+
+        try{
+            participantLogo.setImageBitmap(ImageUtils.getBitmapFromByteArray(getArguments().getByteArray(LOGO_DATA_KEY)));
+        }catch (Exception e){
+            //NOTHIG
+            //ByteArray is null or the image could not be decoded.
+        }
         return view;
     }
 
@@ -98,7 +120,7 @@ public class AcceptConnectionDialogFragment extends CvpDialogFragment<AcceptConn
         WindowManager.LayoutParams params = window.getAttributes();
         float factor = getContext().getResources().getDisplayMetrics().density;
         params.width = (int) (350 * factor);
-        params.height = (int) (250 * factor);
+        params.height = (int) (200 * factor);
         window.setAttributes(params);
     }
 

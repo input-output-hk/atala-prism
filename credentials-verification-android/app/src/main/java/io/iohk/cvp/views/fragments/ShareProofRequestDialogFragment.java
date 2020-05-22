@@ -61,9 +61,6 @@ public class ShareProofRequestDialogFragment extends CvpDialogFragment<Connectio
     @BindView(R.id.participantLogo)
     ImageView participantLogoImgView;
 
-    @BindView(R.id.credentialTypesContent)
-    LinearLayout credentialTypesContent;
-
     @BindView(R.id.credentailsToShareContent)
     LinearLayout credentailsToShareContent;
 
@@ -119,7 +116,6 @@ public class ShareProofRequestDialogFragment extends CvpDialogFragment<Connectio
             for (Credential acceptedCredential : acceptedcredentials) {
                 TextView text = new TextView(getActivity());
                 text.setText(getCredentialType(acceptedCredential));
-                credentialTypesContent.addView(text);
                 credentailsToShareContent.addView(new ShareCredentialRow(getActivity(), acceptedCredential));
             }
 
@@ -142,7 +138,7 @@ public class ShareProofRequestDialogFragment extends CvpDialogFragment<Connectio
         WindowManager.LayoutParams params = window.getAttributes();
         float factor = getContext().getResources().getDisplayMetrics().density;
         params.width = (int) (350 * factor);
-        params.height = (int) (400 * factor);
+        params.height = (int) (330 * factor);
         window.setAttributes(params);
     }
 
@@ -202,7 +198,7 @@ public class ShareProofRequestDialogFragment extends CvpDialogFragment<Connectio
                                     SuccessDialog.newInstance(this, R.string.server_share_successfully)
                                             .show(getFragmentManager(), "dialog");
                                     this.dismiss();
-                                    ((MainActivity) getActivity()).onNavigation(BottomAppBarOption.HOME, null);
+                                    ((MainActivity) getActivity()).onNavigation(BottomAppBarOption.CONTACTS, null);
                                 }
 
                             }

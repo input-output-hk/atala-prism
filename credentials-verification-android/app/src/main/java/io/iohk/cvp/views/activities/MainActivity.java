@@ -23,7 +23,9 @@ import com.google.firebase.analytics.FirebaseAnalytics;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -52,6 +54,7 @@ import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBar;
 import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBarListener;
 import io.iohk.cvp.views.utils.components.bottomAppBar.BottomAppBarOption;
 import io.iohk.prism.protos.AddConnectionFromTokenResponse;
+import io.iohk.prism.protos.ConnectionInfo;
 import lombok.Getter;
 
 import static io.iohk.cvp.utils.ActivitiesRequestCodes.BRAINTREE_REQUEST_ACTIVITY;
@@ -102,6 +105,8 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
 
     private FirebaseAnalytics mFirebaseAnalytics;
 
+    private List<ConnectionInfo> issuerConnections;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION,
@@ -110,6 +115,7 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
 
         bottomAppBar.setListener(this);
         fab.setBackgroundTintList(colorRed);
+        issuerConnections = new ArrayList<>();
 
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
 
@@ -118,7 +124,8 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
         if (!prefs.getUserIds().isEmpty()) {
             ft.replace(R.id.fragment_layout, homeFragment, MAIN_FRAGMENT_TAG);
         } else {
-            ft.replace(R.id.fragment_layout, new FirstConnectionFragment(), MAIN_FRAGMENT_TAG);
+            FirstConnectionFragment f = FirstConnectionFragment.newInstance(R.string.notifications, issuerConnections);
+            ft.replace(R.id.fragment_layout, f, MAIN_FRAGMENT_TAG);
         }
         ft.commit();
     }
@@ -170,8 +177,7 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
                     return Optional.of(contactsFragment);
                 }
 
-                FirstConnectionFragment f = new FirstConnectionFragment();
-                f.setTitleId(R.string.contacts);
+                FirstConnectionFragment f = FirstConnectionFragment.newInstance(R.string.contacts, issuerConnections);
                 return Optional.of(f);
             case CREDENTIAL:
                 return Optional.of(myCredentialsFragment);
@@ -182,8 +188,7 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
             case PROFILE:
                 return Optional.of(profileFragment);
             case FIRSTCONNECTION:
-                FirstConnectionFragment fragment = new FirstConnectionFragment();
-                fragment.setTitleId(R.string.home_title);
+                FirstConnectionFragment fragment = FirstConnectionFragment.newInstance(R.string.notifications, issuerConnections);
                 return Optional.of(fragment);
             default:
                 Crashlytics.logException(
@@ -281,10 +286,11 @@ public class MainActivity extends CvpActivity<MainViewModel> implements BottomAp
         }
     }
 
-
     public void sentFirebaseAnalyticsEvent(String eventName){
-        Bundle bundle = new Bundle();
-        bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, eventName);
-        mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
+        mFirebaseAnalytics.logEvent(eventName, null);
+    }
+
+    public void setIssuerConnections(List<ConnectionInfo> issuerConnections) {
+        this.issuerConnections = issuerConnections;
     }
 }
