@@ -27,8 +27,8 @@ services:
       - node-ipc:/ipc
 
   cardano-db-sync:
-    # master version on 2020-04-28
-    image: inputoutput/cardano-db-sync:8fe44c55940470d061a279eaa3976f5b9d0be65e
+    # Version 2.0.0
+    image: inputoutput/cardano-db-sync:bf1b61be25802b69191ac3de04ed377a972cc809
     environment:
       - NETWORK=${NETWORK:-testnet}
       - POSTGRES_HOST=postgres
