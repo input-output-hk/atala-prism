@@ -4,13 +4,13 @@ import java.time.Instant
 import java.util.UUID
 
 import doobie.implicits._
-import io.iohk.cvp.cmanager.models.requests.CreateCredential
-import io.iohk.cvp.cmanager.models.{Credential, Issuer, Student}
+import io.iohk.cvp.cmanager.models.requests.{CreateGenericCredential, CreateUniversityCredential}
+import io.iohk.cvp.cmanager.models.{GenericCredential, Issuer, Student, Subject, UniversityCredential}
 
 object CredentialsDAO {
 
-  def create(data: CreateCredential): doobie.ConnectionIO[Credential] = {
-    val id = Credential.Id(UUID.randomUUID())
+  def createUniversityCredential(data: CreateUniversityCredential): doobie.ConnectionIO[UniversityCredential] = {
+    val id = UniversityCredential.Id(UUID.randomUUID())
     val createdOn = Instant.now()
     sql"""
          |WITH inserted AS (
@@ -27,14 +27,14 @@ object CredentialsDAO {
          |FROM inserted
          |     JOIN PTS USING (issuer_id)
          |     JOIN issuer_subjects USING (subject_id)
-         |""".stripMargin.query[Credential].unique
+         |""".stripMargin.query[UniversityCredential].unique
   }
 
-  def getBy(
+  def getUniversityCredentialsBy(
       issuedBy: Issuer.Id,
       limit: Int,
-      lastSeenCredential: Option[Credential.Id]
-  ): doobie.ConnectionIO[List[Credential]] = {
+      lastSeenCredential: Option[UniversityCredential.Id]
+  ): doobie.ConnectionIO[List[UniversityCredential]] = {
     val query = lastSeenCredential match {
       case Some(lastSeen) =>
         sql"""
@@ -73,10 +73,13 @@ object CredentialsDAO {
              |LIMIT $limit
              |""".stripMargin
     }
-    query.query[Credential].to[List]
+    query.query[UniversityCredential].to[List]
   }
 
-  def getBy(issuedBy: Issuer.Id, studentId: Student.Id): doobie.ConnectionIO[List[Credential]] = {
+  def getUniversityCredentialsBy(
+      issuedBy: Issuer.Id,
+      studentId: Student.Id
+  ): doobie.ConnectionIO[List[UniversityCredential]] = {
     sql"""
          |WITH PTS AS (
          |  SELECT id AS issuer_id, name
@@ -90,6 +93,91 @@ object CredentialsDAO {
          |WHERE c.issuer_id = $issuedBy AND
          |      c.subject_id = $studentId
          |ORDER BY c.created_on ASC, credential_id
-         |""".stripMargin.query[Credential].to[List]
+         |""".stripMargin.query[UniversityCredential].to[List]
+  }
+
+  // Generic credentials methods
+  def create(data: CreateGenericCredential): doobie.ConnectionIO[GenericCredential] = {
+    val id = UniversityCredential.Id(UUID.randomUUID())
+    val createdOn = Instant.now()
+    sql"""
+         |WITH inserted AS (
+         |  INSERT INTO credentials (credential_id, issuer_id, subject_id, credential_data, group_name, created_on)
+         |  VALUES ($id, ${data.issuedBy}, ${data.subjectId}, ${data.credentialData}, ${data.groupName}, $createdOn)
+         |  RETURNING credential_id, issuer_id, subject_id, credential_data, group_name, created_on
+         |)
+         | , PTS AS (
+         |  SELECT id AS issuer_id, name
+         |  FROM participants
+         |  WHERE tpe = 'issuer'::PARTICIPANT_TYPE
+         |)
+         |SELECT inserted.*, PTS.name AS issuer_name, issuer_subjects.subject_data
+         |FROM inserted
+         |     JOIN PTS USING (issuer_id)
+         |     JOIN issuer_subjects USING (subject_id)
+         |""".stripMargin.query[GenericCredential].unique
+  }
+
+  def getBy(
+      issuedBy: Issuer.Id,
+      limit: Int,
+      lastSeenCredential: Option[GenericCredential.Id]
+  ): doobie.ConnectionIO[List[GenericCredential]] = {
+    val query = lastSeenCredential match {
+      case Some(lastSeen) =>
+        sql"""
+             |WITH CTE AS (
+             |  SELECT created_on AS last_seen_time
+             |  FROM credentials
+             |  WHERE credential_id = $lastSeen
+             |)
+             | , PTS AS (
+             |  SELECT id AS issuer_id, name
+             |  FROM participants
+             |  WHERE tpe = 'issuer'::PARTICIPANT_TYPE
+             |)
+             |SELECT credential_id, c.issuer_id, c.subject_id, credential_data, group_name, c.created_on, PTS.name AS issuer_name, issuer_subjects.subject_data
+             |FROM CTE CROSS JOIN credentials c
+             |     JOIN PTS USING (issuer_id)
+             |     JOIN issuer_subjects USING (subject_id)
+             |WHERE c.issuer_id = $issuedBy AND
+             |      (c.created_on > last_seen_time OR (c.created_on = last_seen_time AND credential_id > $lastSeen))
+             |ORDER BY c.created_on ASC, credential_id
+             |LIMIT $limit
+             |""".stripMargin
+      case None =>
+        sql"""
+             |WITH PTS AS (
+             |  SELECT id AS issuer_id, name
+             |  FROM participants
+             |  WHERE tpe = 'issuer'::PARTICIPANT_TYPE
+             |)
+             |SELECT credential_id, c.issuer_id, c.subject_id, credential_data, group_name, c.created_on, PTS.name AS issuer_name, issuer_subjects.subject_data
+             |FROM credentials c
+             |     JOIN PTS USING (issuer_id)
+             |     JOIN issuer_subjects USING (subject_id)
+             |WHERE c.issuer_id = $issuedBy
+             |ORDER BY c.created_on ASC, credential_id
+             |LIMIT $limit
+             |""".stripMargin
+    }
+    query.query[GenericCredential].to[List]
+  }
+
+  def getBy(issuedBy: Issuer.Id, subjectId: Subject.Id): doobie.ConnectionIO[List[GenericCredential]] = {
+    sql"""
+         |WITH PTS AS (
+         |  SELECT id AS issuer_id, name
+         |  FROM participants
+         |  WHERE tpe = 'issuer'::PARTICIPANT_TYPE
+         |)
+         |SELECT credential_id, c.issuer_id, c.subject_id, credential_data, group_name, c.created_on, PTS.name AS issuer_name, issuer_subjects.subject_data
+         |FROM credentials c
+         |     JOIN PTS USING (issuer_id)
+         |     JOIN issuer_subjects USING (subject_id)
+         |WHERE c.issuer_id = $issuedBy AND
+         |      c.subject_id = $subjectId
+         |ORDER BY c.created_on ASC, credential_id
+         |""".stripMargin.query[GenericCredential].to[List]
   }
 }

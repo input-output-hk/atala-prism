@@ -3,8 +3,9 @@ package io.iohk.cvp.cmanager.repositories
 import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
-import io.iohk.cvp.cmanager.models.requests.CreateCredential
-import io.iohk.cvp.cmanager.models.{Credential, Issuer, Student}
+import io.iohk.cvp.cmanager.models
+import io.iohk.cvp.cmanager.models.requests.{CreateGenericCredential, CreateUniversityCredential}
+import io.iohk.cvp.cmanager.models.{GenericCredential, Issuer, Student, Subject, UniversityCredential}
 import io.iohk.cvp.cmanager.repositories.daos.CredentialsDAO
 import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither.FutureEitherOps
@@ -13,7 +14,42 @@ import scala.concurrent.ExecutionContext
 
 class CredentialsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
 
-  def create(data: CreateCredential): FutureEither[Nothing, Credential] = {
+  def createUniversityCredential(data: CreateUniversityCredential): FutureEither[Nothing, UniversityCredential] = {
+    CredentialsDAO
+      .createUniversityCredential(data)
+      .transact(xa)
+      .unsafeToFuture
+      .map(Right(_))
+      .toFutureEither
+  }
+
+  def getUniversityCredentialsBy(
+      issuedBy: Issuer.Id,
+      limit: Int,
+      lastSeenCredential: Option[UniversityCredential.Id]
+  ): FutureEither[Nothing, List[UniversityCredential]] = {
+    CredentialsDAO
+      .getUniversityCredentialsBy(issuedBy, limit, lastSeenCredential)
+      .transact(xa)
+      .unsafeToFuture()
+      .map(Right(_))
+      .toFutureEither
+  }
+
+  def getUniversityCredentialsBy(
+      issuedBy: Issuer.Id,
+      studentId: Student.Id
+  ): FutureEither[Nothing, List[UniversityCredential]] = {
+    CredentialsDAO
+      .getUniversityCredentialsBy(issuedBy, studentId)
+      .transact(xa)
+      .unsafeToFuture()
+      .map(Right(_))
+      .toFutureEither
+  }
+
+  // Generic versions
+  def create(data: CreateGenericCredential): FutureEither[Nothing, GenericCredential] = {
     CredentialsDAO
       .create(data)
       .transact(xa)
@@ -25,8 +61,8 @@ class CredentialsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
   def getBy(
       issuedBy: Issuer.Id,
       limit: Int,
-      lastSeenCredential: Option[Credential.Id]
-  ): FutureEither[Nothing, List[Credential]] = {
+      lastSeenCredential: Option[GenericCredential.Id]
+  ): FutureEither[Nothing, List[GenericCredential]] = {
     CredentialsDAO
       .getBy(issuedBy, limit, lastSeenCredential)
       .transact(xa)
@@ -35,9 +71,9 @@ class CredentialsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
       .toFutureEither
   }
 
-  def getBy(issuedBy: Issuer.Id, studentId: Student.Id): FutureEither[Nothing, List[Credential]] = {
+  def getBy(issuedBy: Issuer.Id, subjectId: Subject.Id): FutureEither[Nothing, List[GenericCredential]] = {
     CredentialsDAO
-      .getBy(issuedBy, studentId)
+      .getBy(issuedBy, subjectId)
       .transact(xa)
       .unsafeToFuture()
       .map(Right(_))

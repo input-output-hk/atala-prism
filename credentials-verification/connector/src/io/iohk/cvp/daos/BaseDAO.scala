@@ -16,7 +16,7 @@ trait BaseDAO {
   implicit val subjectIdMeta: Meta[Subject.Id] = uuidMeta.timap(Subject.Id.apply)(_.value)
   implicit val groupNameMeta: Meta[IssuerGroup.Name] = Meta[String].timap(IssuerGroup.Name.apply)(_.value)
   implicit val groupIdMeta: Meta[IssuerGroup.Id] = uuidMeta.timap(IssuerGroup.Id.apply)(_.value)
-  implicit val credentialIdMeta: Meta[Credential.Id] = uuidMeta.timap(Credential.Id.apply)(_.value)
+  implicit val credentialIdMeta: Meta[UniversityCredential.Id] = uuidMeta.timap(UniversityCredential.Id.apply)(_.value)
   implicit val issuerIdMeta: Meta[Issuer.Id] = uuidMeta.timap(Issuer.Id.apply)(_.value)
   implicit val studentIdMeta: Meta[Student.Id] = uuidMeta.timap(Student.Id.apply)(_.value)
   implicit val studentConnectionStatusMeta: Meta[Student.ConnectionStatus] =

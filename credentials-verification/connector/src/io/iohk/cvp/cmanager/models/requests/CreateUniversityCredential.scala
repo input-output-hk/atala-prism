@@ -4,7 +4,7 @@ import java.time.LocalDate
 
 import io.iohk.cvp.cmanager.models.{Issuer, Student}
 
-case class CreateCredential(
+case class CreateUniversityCredential(
     issuedBy: Issuer.Id,
     studentId: Student.Id,
     title: String,

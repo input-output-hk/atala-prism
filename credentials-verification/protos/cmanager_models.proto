@@ -53,3 +53,14 @@ message IssuerSubject {
 message Group {
     string name = 1;
 }
+
+// Generic version of cmanager credentials
+message CManagerGenericCredential {
+    string credentialId = 1; // credential identifier internal to the cmanager
+    string issuerId = 2; // issuer identifier internal to the cmanager/connector
+    string subjectId = 3; // subject identifier internal to cmanager/connector
+    string credentialData = 4; // the actual claims of the credential
+    string issuerName = 5; // the name of the issuer according to the cmanager/connector internal data
+    string groupName = 6; // group name associated to the credential in the cmanager internal data
+    string subjectData = 7; // internal data from the related subject stored in cmanager tables
+}

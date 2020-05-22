@@ -103,9 +103,9 @@ class StudentsServiceImpl(
       Future {
         val studentId = Student.Id(UUID.fromString(request.studentId))
         credentialsRepository
-          .getBy(issuerId, studentId)
+          .getUniversityCredentialsBy(issuerId, studentId)
           .map { list =>
-            cmanager_api.GetStudentCredentialsResponse(list.map(credentialToProto))
+            cmanager_api.GetStudentCredentialsResponse(list.map(universityCredentialToProto))
           }
           .value
           .map {

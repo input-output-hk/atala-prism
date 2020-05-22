@@ -4,10 +4,17 @@ import java.util.UUID
 
 import io.iohk.connector.Authenticator
 import io.iohk.cvp.cmanager.grpc.services.codecs.ProtoCodecs._
-import io.iohk.cvp.cmanager.models.requests.CreateCredential
-import io.iohk.cvp.cmanager.models.{Credential, Issuer, Student}
+import io.iohk.cvp.cmanager.models.requests.{CreateGenericCredential, CreateUniversityCredential}
+import io.iohk.cvp.cmanager.models.{GenericCredential, Issuer, Student, Subject, UniversityCredential}
 import io.iohk.cvp.cmanager.repositories.{CredentialsRepository, IssuersRepository}
+import io.iohk.cvp.utils.FutureEither
 import io.iohk.prism.protos.cmanager_api
+import io.iohk.prism.protos.cmanager_api.{
+  CreateGenericCredentialRequest,
+  CreateGenericCredentialResponse,
+  GetGenericCredentialsRequest,
+  GetGenericCredentialsResponse
+}
 import io.scalaland.chimney.dsl._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -23,57 +30,83 @@ class CredentialsServiceImpl(
 
   override def createCredential(
       request: cmanager_api.CreateCredentialRequest
-  ): Future[cmanager_api.CreateCredentialResponse] = {
-    def f(issuerId: Issuer.Id) = {
-      Future {
-        val studentId = Student.Id(UUID.fromString(request.studentId))
-        val model = request
-          .into[CreateCredential]
-          .withFieldConst(_.issuedBy, issuerId)
-          .withFieldConst(_.studentId, studentId)
-          .enableUnsafeOption
-          .transform
+  ): Future[cmanager_api.CreateCredentialResponse] =
+    authenticatedHandler("createCredential", request) { issuerId =>
+      val studentId = Student.Id(UUID.fromString(request.studentId))
+      val model = request
+        .into[CreateUniversityCredential]
+        .withFieldConst(_.issuedBy, issuerId)
+        .withFieldConst(_.studentId, studentId)
+        .enableUnsafeOption
+        .transform
 
-        credentialsRepository
-          .create(model)
-          .map(credentialToProto)
-          .map(cmanager_api.CreateCredentialResponse().withCredential)
-          .value
-          .map {
-            case Right(x) => x
-            case Left(e) => throw new RuntimeException(s"FAILED: $e")
-          }
-      }.flatten
+      credentialsRepository
+        .createUniversityCredential(model)
+        .map(universityCredentialToProto)
+        .map(cmanager_api.CreateCredentialResponse().withCredential)
     }
-
-    authenticator.authenticated("createCredential", request) { participantId =>
-      f(Issuer.Id(participantId.uuid))
-    }
-
-  }
 
   override def getCredentials(
       request: cmanager_api.GetCredentialsRequest
-  ): Future[cmanager_api.GetCredentialsResponse] = {
-
-    def f(issuerId: Issuer.Id) = {
-      Future {
-        val lastSeenCredential = Try(UUID.fromString(request.lastSeenCredentialId)).map(Credential.Id.apply).toOption
-        credentialsRepository
-          .getBy(issuerId, request.limit, lastSeenCredential)
-          .map { list =>
-            cmanager_api.GetCredentialsResponse(list.map(credentialToProto))
-          }
-          .value
-          .map {
-            case Right(x) => x
-            case Left(e) => throw new RuntimeException(s"FAILED: $e")
-          }
-      }.flatten
+  ): Future[cmanager_api.GetCredentialsResponse] =
+    authenticatedHandler("getCredentials", request) { issuerId =>
+      val lastSeenCredential =
+        Try(UUID.fromString(request.lastSeenCredentialId)).map(UniversityCredential.Id.apply).toOption
+      credentialsRepository
+        .getUniversityCredentialsBy(issuerId, request.limit, lastSeenCredential)
+        .map { list =>
+          cmanager_api.GetCredentialsResponse(list.map(universityCredentialToProto))
+        }
     }
 
-    authenticator.authenticated("getCredentials", request) { participantId =>
-      f(Issuer.Id(participantId.uuid))
+  /** Generic versions
+    */
+  override def createGenericCredential(
+      request: CreateGenericCredentialRequest
+  ): Future[CreateGenericCredentialResponse] =
+    authenticatedHandler("createGenericCredential", request) { issuerId =>
+      val subjectId = Subject.Id(UUID.fromString(request.subjectId))
+      lazy val json =
+        io.circe.parser.parse(request.credentialData).getOrElse(throw new RuntimeException("Invalid json"))
+      val model = request
+        .into[CreateGenericCredential]
+        .withFieldConst(_.issuedBy, issuerId)
+        .withFieldConst(_.subjectId, subjectId)
+        .withFieldConst(_.credentialData, json)
+        .enableUnsafeOption
+        .transform
+
+      credentialsRepository
+        .create(model)
+        .map(genericCredentialToProto)
+        .map(cmanager_api.CreateGenericCredentialResponse().withGenericCredential)
+    }
+
+  override def getGenericCredentials(
+      request: GetGenericCredentialsRequest
+  ): Future[GetGenericCredentialsResponse] =
+    authenticatedHandler("getGenericCredentials", request) { issuerId =>
+      val lastSeenCredential =
+        Try(UUID.fromString(request.lastSeenCredentialId)).map(GenericCredential.Id.apply).toOption
+      credentialsRepository
+        .getBy(issuerId, request.limit, lastSeenCredential)
+        .map { list =>
+          cmanager_api.GetGenericCredentialsResponse(list.map(genericCredentialToProto))
+        }
+    }
+
+  private def authenticatedHandler[Request <: scalapb.GeneratedMessage, Response <: scalapb.GeneratedMessage](
+      methodName: String,
+      request: Request
+  )(
+      block: Issuer.Id => FutureEither[Nothing, Response]
+  ): Future[Response] = {
+    authenticator.authenticated(methodName, request) { participantId =>
+      block(Issuer.Id(participantId.uuid)).value
+        .map {
+          case Right(x) => x
+          case Left(e) => throw new RuntimeException(s"FAILED: $e")
+        }
     }
   }
 }

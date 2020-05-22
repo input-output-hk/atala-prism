@@ -2,7 +2,7 @@ package io.iohk.cvp.cmanager.grpc.services.codecs
 
 import java.time.LocalDate
 
-import io.iohk.cvp.cmanager.models.{Credential, Student, Subject}
+import io.iohk.cvp.cmanager.models.{GenericCredential, Student, Subject, UniversityCredential}
 import io.iohk.prism.protos.{cmanager_models, common_models}
 import io.scalaland.chimney.Transformer
 import io.scalaland.chimney.dsl._
@@ -24,7 +24,7 @@ object ProtoCodecs {
     case Student.ConnectionStatus.ConnectionRevoked => cmanager_models.StudentConnectionStatus.ConnectionRevoked
   }
 
-  def credentialToProto(credential: Credential): cmanager_models.CManagerCredential = {
+  def universityCredentialToProto(credential: UniversityCredential): cmanager_models.CManagerCredential = {
     val graduationDate = credential.graduationDate.into[common_models.Date].transform
     val enrollmentDate = credential.enrollmentDate.into[common_models.Date].transform
     cmanager_models
@@ -63,5 +63,18 @@ object ProtoCodecs {
       .withConnectionId(subject.connectionId.map(_.toString).getOrElse(""))
       .withGroupName(subject.groupName.value)
       .withJsonData(subject.data.noSpaces)
+  }
+
+  def genericCredentialToProto(credential: GenericCredential): cmanager_models.CManagerGenericCredential = {
+    cmanager_models
+      .CManagerGenericCredential()
+      .withCredentialId(credential.credentialId.value.toString)
+      .withIssuerId(credential.issuedBy.value.toString)
+      .withSubjectId(credential.subjectId.value.toString)
+      .withCredentialData(credential.credentialData.noSpaces)
+      .withIssuerName(credential.issuerName)
+      .withGroupName(credential.groupName)
+      .withSubjectData(credential.subjectData.noSpaces)
+
   }
 }

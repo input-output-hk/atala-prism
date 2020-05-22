@@ -235,6 +235,166 @@ proto.io.iohk.prism.protos.CredentialsServicePromiseClient.prototype.getCredenti
 
 
 /**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.io.iohk.prism.protos.CreateGenericCredentialRequest,
+ *   !proto.io.iohk.prism.protos.CreateGenericCredentialResponse>}
+ */
+const methodDescriptor_CredentialsService_CreateGenericCredential = new grpc.web.MethodDescriptor(
+  '/io.iohk.prism.protos.CredentialsService/CreateGenericCredential',
+  grpc.web.MethodType.UNARY,
+  proto.io.iohk.prism.protos.CreateGenericCredentialRequest,
+  proto.io.iohk.prism.protos.CreateGenericCredentialResponse,
+  /**
+   * @param {!proto.io.iohk.prism.protos.CreateGenericCredentialRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.prism.protos.CreateGenericCredentialResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.io.iohk.prism.protos.CreateGenericCredentialRequest,
+ *   !proto.io.iohk.prism.protos.CreateGenericCredentialResponse>}
+ */
+const methodInfo_CredentialsService_CreateGenericCredential = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.io.iohk.prism.protos.CreateGenericCredentialResponse,
+  /**
+   * @param {!proto.io.iohk.prism.protos.CreateGenericCredentialRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.prism.protos.CreateGenericCredentialResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.io.iohk.prism.protos.CreateGenericCredentialRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.protos.CreateGenericCredentialResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.protos.CreateGenericCredentialResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.io.iohk.prism.protos.CredentialsServiceClient.prototype.createGenericCredential =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/io.iohk.prism.protos.CredentialsService/CreateGenericCredential',
+      request,
+      metadata || {},
+      methodDescriptor_CredentialsService_CreateGenericCredential,
+      callback);
+};
+
+
+/**
+ * @param {!proto.io.iohk.prism.protos.CreateGenericCredentialRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.io.iohk.prism.protos.CreateGenericCredentialResponse>}
+ *     A native promise that resolves to the response
+ */
+proto.io.iohk.prism.protos.CredentialsServicePromiseClient.prototype.createGenericCredential =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/io.iohk.prism.protos.CredentialsService/CreateGenericCredential',
+      request,
+      metadata || {},
+      methodDescriptor_CredentialsService_CreateGenericCredential);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.io.iohk.prism.protos.GetGenericCredentialsRequest,
+ *   !proto.io.iohk.prism.protos.GetGenericCredentialsResponse>}
+ */
+const methodDescriptor_CredentialsService_GetGenericCredentials = new grpc.web.MethodDescriptor(
+  '/io.iohk.prism.protos.CredentialsService/GetGenericCredentials',
+  grpc.web.MethodType.UNARY,
+  proto.io.iohk.prism.protos.GetGenericCredentialsRequest,
+  proto.io.iohk.prism.protos.GetGenericCredentialsResponse,
+  /**
+   * @param {!proto.io.iohk.prism.protos.GetGenericCredentialsRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.prism.protos.GetGenericCredentialsResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.io.iohk.prism.protos.GetGenericCredentialsRequest,
+ *   !proto.io.iohk.prism.protos.GetGenericCredentialsResponse>}
+ */
+const methodInfo_CredentialsService_GetGenericCredentials = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.io.iohk.prism.protos.GetGenericCredentialsResponse,
+  /**
+   * @param {!proto.io.iohk.prism.protos.GetGenericCredentialsRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.prism.protos.GetGenericCredentialsResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.io.iohk.prism.protos.GetGenericCredentialsRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.protos.GetGenericCredentialsResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.protos.GetGenericCredentialsResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.io.iohk.prism.protos.CredentialsServiceClient.prototype.getGenericCredentials =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/io.iohk.prism.protos.CredentialsService/GetGenericCredentials',
+      request,
+      metadata || {},
+      methodDescriptor_CredentialsService_GetGenericCredentials,
+      callback);
+};
+
+
+/**
+ * @param {!proto.io.iohk.prism.protos.GetGenericCredentialsRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.io.iohk.prism.protos.GetGenericCredentialsResponse>}
+ *     A native promise that resolves to the response
+ */
+proto.io.iohk.prism.protos.CredentialsServicePromiseClient.prototype.getGenericCredentials =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/io.iohk.prism.protos.CredentialsService/GetGenericCredentials',
+      request,
+      metadata || {},
+      methodDescriptor_CredentialsService_GetGenericCredentials);
+};
+
+
+/**
  * @param {string} hostname
  * @param {?Object} credentials
  * @param {?Object} options

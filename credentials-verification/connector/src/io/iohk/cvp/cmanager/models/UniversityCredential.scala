@@ -3,8 +3,8 @@ package io.iohk.cvp.cmanager.models
 import java.time.{Instant, LocalDate}
 import java.util.UUID
 
-case class Credential(
-    id: Credential.Id,
+case class UniversityCredential(
+    id: UniversityCredential.Id,
     issuedBy: Issuer.Id,
     studentId: Student.Id,
     title: String,
@@ -16,7 +16,7 @@ case class Credential(
     studentName: String
 )
 
-object Credential {
+object UniversityCredential {
 
   case class Id(value: UUID) extends AnyVal
 }

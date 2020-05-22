@@ -8,6 +8,10 @@ import "common_models.proto";
 service CredentialsService {
     rpc CreateCredential (CreateCredentialRequest) returns (CreateCredentialResponse) {}
     rpc GetCredentials (GetCredentialsRequest) returns (GetCredentialsResponse) {}
+
+    // Generic versions
+    rpc CreateGenericCredential (CreateGenericCredentialRequest) returns (CreateGenericCredentialResponse) {}
+    rpc GetGenericCredentials (GetGenericCredentialsRequest) returns (GetGenericCredentialsResponse) {}
 }
 
 service StudentsService {
@@ -108,4 +112,23 @@ message CreateGroupResponse {}
 message GetGroupsRequest {}
 message GetGroupsResponse {
     repeated Group groups = 1;
+}
+
+// The authenticated issuer is creating a credential
+message CreateGenericCredentialRequest {
+    string subjectId = 1;
+    string credentialData = 2;
+    string groupName = 3;
+}
+message CreateGenericCredentialResponse {
+    CManagerGenericCredential genericCredential = 1;
+}
+
+// The authenticated issuer is retrieving its issued credentials
+message GetGenericCredentialsRequest {
+    int32 limit = 1; // the max amount of credentials to return, must be > 0
+    string lastSeenCredentialId = 2; // the last seen credential (if any), the returned credentials start after this one
+}
+message GetGenericCredentialsResponse {
+    repeated CManagerGenericCredential credentials = 1;
 }
