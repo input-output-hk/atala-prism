@@ -1,15 +1,11 @@
 package io.iohk.node.cardano.dbsync.repositories
 
-import java.time.Instant
-
-import doobie.implicits._
 import io.iohk.cvp.repositories.PostgresRepositorySpec
-import io.iohk.cvp.utils.DoobieImplicits._
+import io.iohk.node.cardano.dbsync.repositories.testing.TestCardanoBlockRepository
 import io.iohk.node.cardano.models._
 import org.scalatest.EitherValues._
 
 import scala.concurrent.duration.DurationLong
-import scala.util.Random
 
 class CardanoBlockRepositorySpec extends PostgresRepositorySpec {
   implicit val pc: PatienceConfig = PatienceConfig(20.seconds, 500.millis)
@@ -18,158 +14,47 @@ class CardanoBlockRepositorySpec extends PostgresRepositorySpec {
   override def beforeAll(): Unit = {
     super.beforeAll()
 
-    createTables()
-  }
-
-  /**
-    * Creates a trimmed-down version of the {@code cexplorer} database structure.
-    */
-  private def createTables(): Unit = {
-    sql"""
-         |CREATE DOMAIN public.hash32type AS bytea
-         |	CONSTRAINT hash32type_check CHECK ((octet_length(VALUE) = 32));
-         |
-         |CREATE DOMAIN public.uinteger AS integer
-         |	CONSTRAINT uinteger_check CHECK ((VALUE >= 0));
-         |
-         |CREATE TABLE public.block (
-         |    id SERIAL,
-         |    hash public.hash32type NOT NULL,
-         |    block_no public.uinteger,
-         |    previous BIGINT,
-         |    "time" TIMESTAMP WITHOUT TIME ZONE NOT NULL
-         |);
-         |
-         |CREATE TABLE public.tx (
-         |    id SERIAL,
-         |    hash public.hash32type NOT NULL,
-         |    block BIGINT NOT NULL,
-         |    block_index INT4 NOT NULL
-         |);
-      """.stripMargin.update.run.transact(database).unsafeRunSync()
-  }
-
-  private def insertBlock(block: Block.Full): Unit = {
-    // Queries are meant to ignore null block numbers, so we nullify them when they are zero
-    val blockNoOption = if (block.header.blockNo == 0) None else Some(block.header.blockNo)
-    sql"""
-         |INSERT INTO block (hash, block_no, previous, time)
-         |  VALUES (
-         |    ${block.header.hash.value},
-         |    $blockNoOption,
-         |    (SELECT id FROM block WHERE hash = ${block.header.previousBlockHash.map(_.value)}),
-         |    ${block.header.time})
-    """.stripMargin.update.run.transact(database).unsafeRunSync()
-
-    block.transactions.zipWithIndex.foreach(insertTransaction _ tupled _)
-  }
-
-  private def insertTransaction(transaction: Transaction, blockIndex: Int): Unit = {
-    sql"""
-         |INSERT INTO tx (hash, block, block_index)
-         |  VALUES (
-         |    ${transaction.id.value},
-         |    (SELECT id FROM block WHERE hash = ${transaction.blockHash.value}),
-         |    $blockIndex)
-    """.stripMargin.update.run.transact(database).unsafeRunSync()
-  }
-
-  /**
-    * Creates and returns the genesis block and {@code n} random blocks.
-    */
-  private def createRandomBlocks(n: Int): Seq[Block.Full] = {
-    var previousBlockHash: Option[BlockHash] = None
-    val genesisTime = Instant.now().minusSeconds(1000)
-    0 to n map { blockNo =>
-      val time = genesisTime.plusSeconds(20 * blockNo)
-      val blockHash = randomBlockHash()
-      val block = Block.Full(
-        BlockHeader(blockHash, blockNo, time, previousBlockHash),
-        createRandomTransactions(blockHash, blockNo).toList
-      )
-      previousBlockHash = Some(blockHash)
-      block
-    }
-  }
-
-  private def createRandomTransactions(blockHash: BlockHash, n: Int): Seq[Transaction] = {
-    0 to n map { _ =>
-      Transaction(randomTransactionId(), blockHash)
-    }
-  }
-
-  "getBlock" should {
-    "return the requested block" in {
-      val blocks = createRandomBlocks(5)
-      blocks.foreach(insertBlock)
-      val toFindBlock = Block.Canonical(blocks(3).header)
-
-      val result = blockRepository.getBlock(toFindBlock.header.hash).value.futureValue
-
-      val block = result.right.value
-      block must be(toFindBlock)
-    }
-
-    "return NotFound when the block is not found" in {
-      createRandomBlocks(5).foreach(insertBlock)
-      val blockHash = randomBlockHash()
-
-      val result = blockRepository.getBlock(blockHash).value.futureValue
-
-      val error = result.left.value
-      error must be(BlockError.NotFound(blockHash))
-    }
-
-    "return NotFound for the genesis block" in {
-      val blocks = createRandomBlocks(5)
-      blocks.foreach(insertBlock)
-      val blockHash = blocks.head.header.hash
-
-      val result = blockRepository.getBlock(blockHash).value.futureValue
-
-      val error = result.left.value
-      error must be(BlockError.NotFound(blockHash))
-    }
+    TestCardanoBlockRepository.createTables()
   }
 
   "getFullBlock" should {
     "return the requested block with all its transactions" in {
-      val blocks = createRandomBlocks(5)
-      blocks.foreach(insertBlock)
+      val blocks = TestCardanoBlockRepository.createRandomBlocks(5)
+      blocks.foreach(TestCardanoBlockRepository.insertBlock)
       val toFindBlock = blocks(3)
 
-      val result = blockRepository.getFullBlock(toFindBlock.header.hash).value.futureValue
+      val result = blockRepository.getFullBlock(toFindBlock.header.blockNo).value.futureValue
 
       val block = result.right.value
       block must be(toFindBlock)
     }
 
     "return NotFound when the block is not found" in {
-      createRandomBlocks(5).foreach(insertBlock)
-      val blockHash = randomBlockHash()
+      TestCardanoBlockRepository.createRandomBlocks(5).foreach(TestCardanoBlockRepository.insertBlock)
+      val blockNo = 1337
 
-      val result = blockRepository.getFullBlock(blockHash).value.futureValue
+      val result = blockRepository.getFullBlock(blockNo).value.futureValue
 
       val error = result.left.value
-      error must be(BlockError.NotFound(blockHash))
+      error must be(BlockError.NotFound(blockNo))
     }
 
     "return NotFound for the genesis block" in {
-      val blocks = createRandomBlocks(5)
-      blocks.foreach(insertBlock)
-      val blockHash = blocks.head.header.hash
+      val blocks = TestCardanoBlockRepository.createRandomBlocks(5)
+      blocks.foreach(TestCardanoBlockRepository.insertBlock)
+      val blockNo = blocks.head.header.blockNo
 
-      val result = blockRepository.getFullBlock(blockHash).value.futureValue
+      val result = blockRepository.getFullBlock(blockNo).value.futureValue
 
       val error = result.left.value
-      error must be(BlockError.NotFound(blockHash))
+      error must be(BlockError.NotFound(blockNo))
     }
   }
 
   "getLatestBlock" should {
     "return the latest block" in {
-      val blocks = createRandomBlocks(5)
-      blocks.foreach(insertBlock)
+      val blocks = TestCardanoBlockRepository.createRandomBlocks(5)
+      blocks.foreach(TestCardanoBlockRepository.insertBlock)
       val latestBlock = Block.Canonical(blocks.last.header)
 
       val result = blockRepository.getLatestBlock().value.futureValue
@@ -179,8 +64,8 @@ class CardanoBlockRepositorySpec extends PostgresRepositorySpec {
     }
 
     "return NoneAvailable when only the genesis block exist" in {
-      val blocks = createRandomBlocks(0)
-      blocks.foreach(insertBlock)
+      val blocks = TestCardanoBlockRepository.createRandomBlocks(0)
+      blocks.foreach(TestCardanoBlockRepository.insertBlock)
 
       val result = blockRepository.getLatestBlock().value.futureValue
 
@@ -194,19 +79,5 @@ class CardanoBlockRepositorySpec extends PostgresRepositorySpec {
       val error = result.left.value
       error must be(BlockError.NoneAvailable)
     }
-  }
-
-  def random32Bytes(): Seq[Byte] = {
-    val bytes = Array.ofDim[Byte](32)
-    Random.nextBytes(bytes)
-    bytes
-  }
-
-  def randomBlockHash(): BlockHash = {
-    BlockHash.from(random32Bytes()).get
-  }
-
-  def randomTransactionId(): TransactionId = {
-    TransactionId.from(random32Bytes()).get
   }
 }

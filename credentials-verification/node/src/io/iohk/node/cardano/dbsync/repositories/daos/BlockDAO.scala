@@ -2,17 +2,15 @@ package io.iohk.node.cardano.dbsync.repositories.daos
 
 import doobie.free.connection.ConnectionIO
 import doobie.implicits._
-import io.iohk.cvp.utils.DoobieImplicits._
-import io.iohk.node.cardano.models.{BlockHash, BlockHeader}
+import io.iohk.node.cardano.models.BlockHeader
 
 private[repositories] object BlockDAO {
-  def find(hash: BlockHash): ConnectionIO[Option[BlockHeader]] = {
+  def find(blockNo: Int): ConnectionIO[Option[BlockHeader]] = {
     sql"""
-           |SELECT b.hash, b.block_no, b.time, bprev.hash
-           |FROM block AS b
-           |LEFT JOIN block AS bprev ON b.previous = bprev.id
-           |WHERE b.hash = ${hash.value}
-           |  AND b.block_no IS NOT NULL
+         |SELECT b.hash, b.block_no, b.time, bprev.hash
+         |FROM block AS b
+         |LEFT JOIN block AS bprev ON b.previous = bprev.id
+         |WHERE b.block_no = $blockNo
        """.stripMargin.query[BlockHeader].option
   }
 

@@ -11,6 +11,10 @@ import org.scalatest.OptionValues._
 import scala.concurrent.ExecutionContext
 
 object FakeCardanoWalletApiClient {
+
+  /**
+    * Sets up a CardanoWalletApiClient instance that will return a successful response for the given path and request.
+    */
   object Success {
     def apply(
         expectedPath: String,
@@ -23,6 +27,9 @@ object FakeCardanoWalletApiClient {
     }
   }
 
+  /**
+    * Sets up a CardanoWalletApiClient instance that will return a fail response for the given path and request.
+    */
   object Fail {
     def apply(
         expectedPath: String,
@@ -38,6 +45,20 @@ object FakeCardanoWalletApiClient {
         400,
         createJsonErrorResponse(errorCode, errorMessage)
       )
+    }
+  }
+
+  /**
+    * Sets up a CardanoWalletApiClient instance that will return {@code 404 Not Found} errors for all requests.
+    */
+  object NotFound {
+    def apply()(implicit
+        ec: ExecutionContext
+    ): CardanoWalletApiClient = {
+      val config = ApiClient.Config("localhost", 8090)
+      val backend = SttpBackendStub.asynchronousFuture
+
+      new ApiClient(config)(backend, ec)
     }
   }
 

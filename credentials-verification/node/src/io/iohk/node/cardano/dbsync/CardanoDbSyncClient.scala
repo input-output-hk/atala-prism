@@ -4,16 +4,18 @@ import io.iohk.cvp.repositories.TransactorFactory
 import io.iohk.cvp.utils.FutureEither
 import io.iohk.node.cardano.dbsync.CardanoDbSyncClient.Result
 import io.iohk.node.cardano.dbsync.repositories.CardanoBlockRepository
-import io.iohk.node.cardano.models.{Block, BlockError, BlockHash}
+import io.iohk.node.cardano.models.{Block, BlockError}
 
 import scala.concurrent.ExecutionContext
 
 class CardanoDbSyncClient(cardanoBlockRepository: CardanoBlockRepository)(implicit ec: ExecutionContext) {
-  def getBlock(hash: BlockHash): Result[BlockError.NotFound, Block.Canonical] =
-    cardanoBlockRepository.getBlock(hash)
+  def getFullBlock(blockNo: Int): Result[BlockError.NotFound, Block.Full] = {
+    cardanoBlockRepository.getFullBlock(blockNo)
+  }
 
-  def getFullBlock(hash: BlockHash): Result[BlockError.NotFound, Block.Full] =
-    cardanoBlockRepository.getFullBlock(hash)
+  def getLatestBlock(): Result[BlockError.NoneAvailable.type, Block.Canonical] = {
+    cardanoBlockRepository.getLatestBlock()
+  }
 }
 
 object CardanoDbSyncClient {

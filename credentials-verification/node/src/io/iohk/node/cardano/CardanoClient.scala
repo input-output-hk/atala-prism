@@ -11,12 +11,12 @@ import scala.concurrent.ExecutionContext
 class CardanoClient(cardanoDbSyncClient: CardanoDbSyncClient, cardanoWalletApiClient: CardanoWalletApiClient)(implicit
     ec: ExecutionContext
 ) {
-  def getBlock(hash: BlockHash): Result[BlockError.NotFound, Block.Canonical] = {
-    cardanoDbSyncClient.getBlock(hash)
+  def getFullBlock(blockNo: Int): Result[BlockError.NotFound, Block.Full] = {
+    cardanoDbSyncClient.getFullBlock(blockNo)
   }
 
-  def getFullBlock(hash: BlockHash): Result[BlockError.NotFound, Block.Full] = {
-    cardanoDbSyncClient.getFullBlock(hash)
+  def getLatestBlock(): Result[BlockError.NoneAvailable.type, Block.Canonical] = {
+    cardanoDbSyncClient.getLatestBlock()
   }
 
   def postTransaction(

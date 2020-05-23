@@ -12,9 +12,9 @@ import io.iohk.node.cardano.CardanoClient
 import io.iohk.node.cardano.dbsync.CardanoDbSyncClient
 import io.iohk.node.cardano.wallet.CardanoWalletApiClient
 import io.iohk.node.objects.{ObjectStorageService, S3ObjectStorageService}
-import io.iohk.node.repositories.DIDDataRepository
 import io.iohk.node.repositories.atalaobjects.AtalaObjectsRepository
 import io.iohk.node.repositories.blocks.BlocksRepository
+import io.iohk.node.repositories.{DIDDataRepository, KeyValuesRepository}
 import io.iohk.node.services._
 import io.iohk.node.services.models.{AtalaObjectUpdate, ObjectHandler}
 import io.iohk.node.synchronizer.{LedgerSynchronizationStatusService, LedgerSynchronizerService, SynchronizerConfig}
@@ -85,9 +85,11 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       }
     }
 
+    val keyValueService = new KeyValueService(new KeyValuesRepository(xa))
+
     val atalaReferenceLedger = globalConfig.getString("ledger") match {
       case "bitcoin" => initializeBitcoin(globalConfig.getConfig("bitcoin"), onAtalaReference)
-      case "cardano" => initializeCardano(globalConfig.getConfig("cardano"), onAtalaReference)
+      case "cardano" => initializeCardano(globalConfig.getConfig("cardano"), keyValueService, onAtalaReference)
       case "in-memory" =>
         logger.info("Using in-memory ledger")
         new InMemoryAtalaReferenceLedger(onAtalaReference)
@@ -139,9 +141,13 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     atalaService
   }
 
-  private def initializeCardano(config: Config, onAtalaReference: ObjectHandler): CardanoLedgerService = {
+  private def initializeCardano(
+      config: Config,
+      keyValueService: KeyValueService,
+      onAtalaReference: ObjectHandler
+  ): CardanoLedgerService = {
     logger.info("Creating cardano client")
-    CardanoLedgerService(cardanoConfig(config), onAtalaReference)
+    CardanoLedgerService(cardanoConfig(config), keyValueService, onAtalaReference)
   }
 
   private def stop(): Unit = {
@@ -188,12 +194,14 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     val walletId = config.getString("walletId")
     val walletPassphrase = config.getString("walletPassphrase")
     val paymentAddress = config.getString("paymentAddress")
+    val blockConfirmationsToWait = config.getInt("blockConfirmationsToWait")
     val dbSyncConfig = cardanoDbSyncConfig(config.getConfig("dbSync"))
     val walletConfig = cardanoWalletConfig(config.getConfig("wallet"))
     CardanoLedgerService.Config(
       walletId,
       walletPassphrase,
       paymentAddress,
+      blockConfirmationsToWait,
       CardanoClient.Config(dbSyncConfig, walletConfig)
     )
   }
