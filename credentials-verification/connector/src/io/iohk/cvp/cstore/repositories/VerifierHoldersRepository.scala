@@ -21,4 +21,17 @@ class VerifierHoldersRepository(xa: Transactor[IO])(implicit ec: ExecutionContex
       .map(Right(_))
       .toFutureEither
   }
+
+  def list(
+      verifierId: Verifier.Id,
+      lastSeen: Option[Verifier.Id],
+      limit: Int
+  ): FutureEither[ConnectorError, Seq[VerifierHolder]] = {
+    VerifierHoldersDAO
+      .list(verifierId, lastSeen, limit)
+      .transact(xa)
+      .unsafeToFuture()
+      .map(Right(_))
+      .toFutureEither
+  }
 }

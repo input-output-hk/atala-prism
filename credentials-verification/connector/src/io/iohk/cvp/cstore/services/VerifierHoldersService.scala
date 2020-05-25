@@ -22,7 +22,7 @@ class VerifierHoldersService(xa: Transactor[IO])(implicit ec: ExecutionContext) 
       data: VerifierHolderCreateData
   ): FutureEither[ConnectorError, StoreIndividual] = {
     VerifierHoldersDAO
-      .insert(userId, data)
+      .insertIndividual(userId, data)
       .transact(xa)
       .unsafeToFuture()
       .map(Right(_))
@@ -35,7 +35,7 @@ class VerifierHoldersService(xa: Transactor[IO])(implicit ec: ExecutionContext) 
       limit: Int
   ): FutureEither[ConnectorError, Seq[StoreIndividual]] = {
     VerifierHoldersDAO
-      .list(userId, lastSeen, limit)
+      .listIndividuals(userId, lastSeen, limit)
       .transact(xa)
       .unsafeToFuture()
       .map(Right(_))
@@ -43,13 +43,13 @@ class VerifierHoldersService(xa: Transactor[IO])(implicit ec: ExecutionContext) 
   }
 
   def generateTokenFor(
-      userId: ParticipantId,
-      individualId: ParticipantId
+      verifierId: ParticipantId,
+      holderId: ParticipantId
   ): FutureEither[ConnectorError, TokenString] = {
     val token = TokenString.random()
     val query = for {
-      _ <- ConnectionTokensDAO.insert(userId, token)
-      _ <- VerifierHoldersDAO.setConnectionToken(userId, individualId, token)
+      _ <- ConnectionTokensDAO.insert(verifierId, token)
+      _ <- VerifierHoldersDAO.setConnectionToken(verifierId, holderId, token)
     } yield token
 
     query

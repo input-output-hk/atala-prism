@@ -7,16 +7,14 @@ import "cstore_models.proto";
 service CredentialsStoreService {
 
   rpc CreateIndividual (CreateIndividualRequest) returns (CreateIndividualResponse) {}
-
-  rpc CreateHolder (CreateHolderRequest) returns (CreateHolderResponse) {}
-
   rpc GetIndividuals (GetIndividualsRequest) returns (GetIndividualsResponse) {}
-
   rpc GenerateConnectionTokenFor(GenerateConnectionTokenForRequest) returns (GenerateConnectionTokenForResponse) {}
-
   rpc StoreCredential (StoreCredentialRequest) returns (StoreCredentialResponse) {}
-
   rpc GetStoredCredentialsFor (GetStoredCredentialsForRequest) returns (GetStoredCredentialsForResponse) {}
+
+  // Generic versions
+  rpc CreateHolder (CreateHolderRequest) returns (CreateHolderResponse) {}
+  rpc GetHolders (GetHoldersRequest) returns (GetHoldersResponse) {}
 }
 
 message CreateIndividualRequest {
@@ -28,15 +26,8 @@ message CreateIndividualResponse {
   Individual individual = 1;
 }
 
-message CreateHolderRequest {
-  string jsonData = 1;
-}
-
-message CreateHolderResponse {
-  VerifierHolder holder = 1;
-}
-
 message GenerateConnectionTokenForRequest {
+  // TODO: Rename to `holderId` after removing legacy methods
   string individualId = 1;
 }
 
@@ -65,9 +56,28 @@ message StoreCredentialResponse {
 }
 
 message GetStoredCredentialsForRequest {
+  // TODO: Rename to `holderId` after removing legacy methods
   string individualId = 1;
 }
 
 message GetStoredCredentialsForResponse {
   repeated SignedCredential credentials = 1;
+}
+
+// Generic versions
+message CreateHolderRequest {
+  string jsonData = 1;
+}
+
+message CreateHolderResponse {
+  VerifierHolder holder = 1;
+}
+
+message GetHoldersRequest {
+  int32 limit = 1;
+  string lastSeenHolderId = 2;
+}
+
+message GetHoldersResponse {
+  repeated VerifierHolder holders = 1;
 }

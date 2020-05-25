@@ -1,5 +1,7 @@
 package io.iohk.cvp.cstore
 
+import java.util.UUID
+
 import com.google.protobuf.ByteString
 import doobie.implicits._
 import io.circe.Json
@@ -14,6 +16,7 @@ import io.iohk.cvp.cstore.repositories.{VerifierHoldersRepository, VerifiersRepo
 import io.iohk.cvp.cstore.services.{StoredCredentialsService, VerifierHoldersService}
 import io.iohk.cvp.grpc.GrpcAuthenticationHeaderParser
 import io.iohk.cvp.models.ParticipantId
+import io.iohk.prism.protos.cstore_api.CredentialsStoreServiceGrpc
 import io.iohk.prism.protos.{cstore_api, cstore_models}
 import org.mockito.MockitoSugar._
 import org.scalatest.OptionValues._
@@ -87,7 +90,7 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
         result.individual.get.status mustBe cstore_models.IndividualConnectionStatus.CREATED
 
         val individual = VerifierHoldersDAO
-          .list(verifierId, None, 1)
+          .listIndividuals(verifierId, None, 1)
           .transact(database)
           .unsafeToFuture()
           .futureValue
@@ -173,7 +176,7 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
         val response = serviceStub.generateConnectionTokenFor(request)
 
         val individual = VerifierHoldersDAO
-          .list(verifierId, None, 1)
+          .listIndividuals(verifierId, None, 1)
           .transact(database)
           .unsafeToFuture()
           .futureValue
@@ -232,6 +235,47 @@ class CredentialsStoreServiceSpec extends RpcSpecBase {
         credential.proofId mustBe proofId
         credential.content.toByteArray must be(empty)
         credential.signature.toByteArray must be(empty)
+      }
+    }
+  }
+
+  "getHolders" should {
+
+    def holder(i: Int): Json =
+      Json.obj(
+        "name" -> Json.fromString(s"Holder $i"),
+        "email" -> Json.fromString(s"holder_$i@email.org")
+      )
+    val holders = for (i <- 0 to 9) yield holder(i)
+
+    "return holders ordered by creation date" in {
+      usingApiAs(verifierId) { serviceStub =>
+        for (h <- holders) {
+          val request = cstore_api.CreateHolderRequest(jsonData = h.noSpaces)
+          serviceStub.createHolder(request)
+        }
+
+        val request = cstore_api.GetHoldersRequest(limit = holders.size)
+        val response = serviceStub.getHolders(request)
+        val obtainedHolders = response.holders
+        obtainedHolders.size mustBe holders.size
+        obtainedHolders.map(_.jsonData) mustBe holders.map(_.noSpaces)
+      }
+    }
+
+    "return first holders when referenced holder does not exist" in {
+      val individualNames = (1 to 9).map(i => i.toString)
+      usingApiAs(verifierId) { serviceStub =>
+        for (h <- holders) {
+          val request = cstore_api.CreateHolderRequest(jsonData = h.noSpaces)
+          serviceStub.createHolder(request)
+        }
+        val request = cstore_api.GetHoldersRequest(
+          lastSeenHolderId = UUID.randomUUID().toString,
+          limit = 2
+        )
+        val response = serviceStub.getHolders(request)
+        response.holders.toList.map(_.jsonData) mustBe holders.take(2).map(_.noSpaces)
       }
     }
   }

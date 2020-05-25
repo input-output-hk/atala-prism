@@ -1,6 +1,6 @@
 package io.iohk.cvp.cstore.grpc
 
-import io.iohk.cvp.cstore.models.{IndividualConnectionStatus, VerifierHolder}
+import io.iohk.cvp.cstore.models.{IndividualConnectionStatus, StoreIndividual, VerifierHolder}
 import io.iohk.prism.protos.cstore_models
 
 object ProtoCodecs {
@@ -8,6 +8,19 @@ object ProtoCodecs {
     cstore_models.IndividualConnectionStatus
       .fromName(status.entryName)
       .getOrElse(throw new Exception(s"Unknown status: $status"))
+  }
+
+  def toIndividualProto(individual: StoreIndividual): cstore_models.Individual = {
+    cstore_models.Individual(
+      individualId = individual.id.uuid.toString,
+      status = cstore_models.IndividualConnectionStatus
+        .fromName(individual.status.entryName)
+        .getOrElse(throw new Exception(s"Unknown status: ${individual.status}")),
+      fullName = individual.fullName,
+      connectionToken = individual.connectionToken.getOrElse(""),
+      connectionId = individual.connectionId.fold("")(_.id.toString),
+      email = individual.email.getOrElse("")
+    )
   }
 
   def toHolderProto(holder: VerifierHolder): cstore_models.VerifierHolder = {
