@@ -111,7 +111,7 @@ object InsuranceServiceImpl {
       subjectFullName = idData.name,
       subjectDid = "unknown",
       policyNumber = "ABC-123456789",
-      productClass = "Life Insurance",
+      productClass = "Health Insurance",
       subjectDateOfBirth = idData.dob,
       employerName = employmentData.employerName,
       employerAddress = employmentData.employerAddress
