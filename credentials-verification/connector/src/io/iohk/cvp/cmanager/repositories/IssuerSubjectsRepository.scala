@@ -3,9 +3,12 @@ package io.iohk.cvp.cmanager.repositories
 import cats.effect.IO
 import doobie.implicits._
 import doobie.util.transactor.Transactor
+import io.iohk.connector.model.TokenString
+import io.iohk.connector.repositories.daos.ConnectionTokensDAO
 import io.iohk.cvp.cmanager.models.requests.CreateSubject
-import io.iohk.cvp.cmanager.models.{Issuer, Subject}
+import io.iohk.cvp.cmanager.models.{Issuer, IssuerGroup, Subject}
 import io.iohk.cvp.cmanager.repositories.daos.{IssuerGroupsDAO, IssuerSubjectsDAO}
+import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.utils.FutureEither
 import io.iohk.cvp.utils.FutureEither.FutureEitherOps
 
@@ -16,8 +19,8 @@ class IssuerSubjectsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext
     val query = for {
       groupMaybe <- IssuerGroupsDAO.find(data.issuerId, data.groupName)
       group = groupMaybe.getOrElse(throw new RuntimeException("Group not found"))
-      student <- IssuerSubjectsDAO.create(data, group.id)
-    } yield student
+      subject <- IssuerSubjectsDAO.create(data, group.id)
+    } yield subject
 
     query
       .transact(xa)
@@ -34,4 +37,36 @@ class IssuerSubjectsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext
       .unsafeToFuture()
       .toFutureEither
   }
+
+  def getBy(
+      issuer: Issuer.Id,
+      limit: Int,
+      lastSeenSubject: Option[Subject.Id],
+      groupName: Option[IssuerGroup.Name]
+  ): FutureEither[Nothing, List[Subject]] = {
+    IssuerSubjectsDAO
+      .getBy(issuer, limit, lastSeenSubject, groupName)
+      .transact(xa)
+      .unsafeToFuture()
+      .map(Right(_))
+      .toFutureEither
+  }
+
+  def generateToken(issuerId: Issuer.Id, subjectId: Subject.Id): FutureEither[Nothing, TokenString] = {
+    val token = TokenString.random()
+
+    val tx = for {
+      _ <- ConnectionTokensDAO.insert(ParticipantId(issuerId.value), token)
+      _ <- IssuerSubjectsDAO.update(
+        issuerId,
+        IssuerSubjectsDAO.UpdateSubjectRequest.ConnectionTokenGenerated(subjectId, token)
+      )
+    } yield ()
+
+    tx.transact(xa)
+      .unsafeToFuture()
+      .map(_ => Right(token))
+      .toFutureEither
+  }
+
 }

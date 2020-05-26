@@ -141,4 +141,30 @@ class CredentialsRepositorySpec extends CManagerRepositorySpec {
       result.toSet must be(Set(credC))
     }
   }
+
+  "getBy" should {
+    "return subject's credentials" in {
+      val issuerId = createIssuer("Issuer X").id
+      val group = createIssuerGroup(issuerId, IssuerGroup.Name("grp1"))
+      val subjectId1 = createSubject(issuerId, "IOHK Student", group.name).id
+      val subjectId2 = createSubject(issuerId, "IOHK Student 2", group.name).id
+      createGenericCredential(issuerId, subjectId2, "A")
+      val cred1 = createGenericCredential(issuerId, subjectId1, "B")
+      createGenericCredential(issuerId, subjectId2, "C")
+      val cred2 = createGenericCredential(issuerId, subjectId1, "D")
+      createGenericCredential(issuerId, subjectId2, "E")
+
+      val result = credentialsRepository.getBy(issuerId, subjectId1).value.futureValue.right.value
+      result must be(List(cred1, cred2))
+    }
+
+    "return empty list of credentials when not present" in {
+      val issuerId = createIssuer("Issuer X").id
+      val group = createIssuerGroup(issuerId, IssuerGroup.Name("grp1"))
+      val subjectId = createSubject(issuerId, "IOHK Student", group.name).id
+
+      val result = credentialsRepository.getBy(issuerId, subjectId).value.futureValue.right.value
+      result must be(empty)
+    }
+  }
 }

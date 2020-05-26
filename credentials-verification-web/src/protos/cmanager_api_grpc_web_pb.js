@@ -979,6 +979,326 @@ proto.io.iohk.prism.protos.SubjectsServicePromiseClient.prototype.createSubject 
 
 
 /**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.io.iohk.prism.protos.GetSubjectsRequest,
+ *   !proto.io.iohk.prism.protos.GetSubjectsResponse>}
+ */
+const methodDescriptor_SubjectsService_GetSubjects = new grpc.web.MethodDescriptor(
+  '/io.iohk.prism.protos.SubjectsService/GetSubjects',
+  grpc.web.MethodType.UNARY,
+  proto.io.iohk.prism.protos.GetSubjectsRequest,
+  proto.io.iohk.prism.protos.GetSubjectsResponse,
+  /**
+   * @param {!proto.io.iohk.prism.protos.GetSubjectsRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.prism.protos.GetSubjectsResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.io.iohk.prism.protos.GetSubjectsRequest,
+ *   !proto.io.iohk.prism.protos.GetSubjectsResponse>}
+ */
+const methodInfo_SubjectsService_GetSubjects = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.io.iohk.prism.protos.GetSubjectsResponse,
+  /**
+   * @param {!proto.io.iohk.prism.protos.GetSubjectsRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.prism.protos.GetSubjectsResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.io.iohk.prism.protos.GetSubjectsRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.protos.GetSubjectsResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.protos.GetSubjectsResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.io.iohk.prism.protos.SubjectsServiceClient.prototype.getSubjects =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/io.iohk.prism.protos.SubjectsService/GetSubjects',
+      request,
+      metadata || {},
+      methodDescriptor_SubjectsService_GetSubjects,
+      callback);
+};
+
+
+/**
+ * @param {!proto.io.iohk.prism.protos.GetSubjectsRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.io.iohk.prism.protos.GetSubjectsResponse>}
+ *     A native promise that resolves to the response
+ */
+proto.io.iohk.prism.protos.SubjectsServicePromiseClient.prototype.getSubjects =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/io.iohk.prism.protos.SubjectsService/GetSubjects',
+      request,
+      metadata || {},
+      methodDescriptor_SubjectsService_GetSubjects);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.io.iohk.prism.protos.GetSubjectRequest,
+ *   !proto.io.iohk.prism.protos.GetSubjectResponse>}
+ */
+const methodDescriptor_SubjectsService_GetSubject = new grpc.web.MethodDescriptor(
+  '/io.iohk.prism.protos.SubjectsService/GetSubject',
+  grpc.web.MethodType.UNARY,
+  proto.io.iohk.prism.protos.GetSubjectRequest,
+  proto.io.iohk.prism.protos.GetSubjectResponse,
+  /**
+   * @param {!proto.io.iohk.prism.protos.GetSubjectRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.prism.protos.GetSubjectResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.io.iohk.prism.protos.GetSubjectRequest,
+ *   !proto.io.iohk.prism.protos.GetSubjectResponse>}
+ */
+const methodInfo_SubjectsService_GetSubject = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.io.iohk.prism.protos.GetSubjectResponse,
+  /**
+   * @param {!proto.io.iohk.prism.protos.GetSubjectRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.prism.protos.GetSubjectResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.io.iohk.prism.protos.GetSubjectRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.protos.GetSubjectResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.protos.GetSubjectResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.io.iohk.prism.protos.SubjectsServiceClient.prototype.getSubject =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/io.iohk.prism.protos.SubjectsService/GetSubject',
+      request,
+      metadata || {},
+      methodDescriptor_SubjectsService_GetSubject,
+      callback);
+};
+
+
+/**
+ * @param {!proto.io.iohk.prism.protos.GetSubjectRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.io.iohk.prism.protos.GetSubjectResponse>}
+ *     A native promise that resolves to the response
+ */
+proto.io.iohk.prism.protos.SubjectsServicePromiseClient.prototype.getSubject =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/io.iohk.prism.protos.SubjectsService/GetSubject',
+      request,
+      metadata || {},
+      methodDescriptor_SubjectsService_GetSubject);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.io.iohk.prism.protos.GetSubjectCredentialsRequest,
+ *   !proto.io.iohk.prism.protos.GetSubjectCredentialsResponse>}
+ */
+const methodDescriptor_SubjectsService_GetSubjectCredentials = new grpc.web.MethodDescriptor(
+  '/io.iohk.prism.protos.SubjectsService/GetSubjectCredentials',
+  grpc.web.MethodType.UNARY,
+  proto.io.iohk.prism.protos.GetSubjectCredentialsRequest,
+  proto.io.iohk.prism.protos.GetSubjectCredentialsResponse,
+  /**
+   * @param {!proto.io.iohk.prism.protos.GetSubjectCredentialsRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.prism.protos.GetSubjectCredentialsResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.io.iohk.prism.protos.GetSubjectCredentialsRequest,
+ *   !proto.io.iohk.prism.protos.GetSubjectCredentialsResponse>}
+ */
+const methodInfo_SubjectsService_GetSubjectCredentials = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.io.iohk.prism.protos.GetSubjectCredentialsResponse,
+  /**
+   * @param {!proto.io.iohk.prism.protos.GetSubjectCredentialsRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.prism.protos.GetSubjectCredentialsResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.io.iohk.prism.protos.GetSubjectCredentialsRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.protos.GetSubjectCredentialsResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.protos.GetSubjectCredentialsResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.io.iohk.prism.protos.SubjectsServiceClient.prototype.getSubjectCredentials =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/io.iohk.prism.protos.SubjectsService/GetSubjectCredentials',
+      request,
+      metadata || {},
+      methodDescriptor_SubjectsService_GetSubjectCredentials,
+      callback);
+};
+
+
+/**
+ * @param {!proto.io.iohk.prism.protos.GetSubjectCredentialsRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.io.iohk.prism.protos.GetSubjectCredentialsResponse>}
+ *     A native promise that resolves to the response
+ */
+proto.io.iohk.prism.protos.SubjectsServicePromiseClient.prototype.getSubjectCredentials =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/io.iohk.prism.protos.SubjectsService/GetSubjectCredentials',
+      request,
+      metadata || {},
+      methodDescriptor_SubjectsService_GetSubjectCredentials);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectRequest,
+ *   !proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectResponse>}
+ */
+const methodDescriptor_SubjectsService_GenerateConnectionTokenForSubject = new grpc.web.MethodDescriptor(
+  '/io.iohk.prism.protos.SubjectsService/GenerateConnectionTokenForSubject',
+  grpc.web.MethodType.UNARY,
+  proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectRequest,
+  proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectResponse,
+  /**
+   * @param {!proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectResponse.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectRequest,
+ *   !proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectResponse>}
+ */
+const methodInfo_SubjectsService_GenerateConnectionTokenForSubject = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectResponse,
+  /**
+   * @param {!proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.io.iohk.prism.protos.SubjectsServiceClient.prototype.generateConnectionTokenForSubject =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/io.iohk.prism.protos.SubjectsService/GenerateConnectionTokenForSubject',
+      request,
+      metadata || {},
+      methodDescriptor_SubjectsService_GenerateConnectionTokenForSubject,
+      callback);
+};
+
+
+/**
+ * @param {!proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.io.iohk.prism.protos.GenerateConnectionTokenForSubjectResponse>}
+ *     A native promise that resolves to the response
+ */
+proto.io.iohk.prism.protos.SubjectsServicePromiseClient.prototype.generateConnectionTokenForSubject =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/io.iohk.prism.protos.SubjectsService/GenerateConnectionTokenForSubject',
+      request,
+      metadata || {},
+      methodDescriptor_SubjectsService_GenerateConnectionTokenForSubject);
+};
+
+
+/**
  * @param {string} hostname
  * @param {?Object} credentials
  * @param {?Object} options

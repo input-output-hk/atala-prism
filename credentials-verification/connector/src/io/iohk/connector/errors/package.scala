@@ -100,6 +100,8 @@ package object errors {
           case Right(vv) => Future.successful(f(vv))
         }
       }
+
+      def flatten(implicit ec: ExecutionContext): Future[T] = successMap(identity)
     }
   }
 }

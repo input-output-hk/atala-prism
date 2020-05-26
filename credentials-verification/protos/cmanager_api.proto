@@ -26,6 +26,12 @@ service StudentsService {
 
 service SubjectsService {
     rpc CreateSubject (CreateSubjectRequest) returns (CreateSubjectResponse) {}
+    rpc GetSubjects (GetSubjectsRequest) returns (GetSubjectsResponse) {}
+    rpc GetSubject (GetSubjectRequest) returns (GetSubjectResponse) {}
+    rpc GetSubjectCredentials (GetSubjectCredentialsRequest) returns (GetSubjectCredentialsResponse) {}
+
+    // Generate a connection token to get connected to a specific subject
+    rpc GenerateConnectionTokenForSubject (GenerateConnectionTokenForSubjectRequest) returns (GenerateConnectionTokenForSubjectResponse) {}
 }
 
 service GroupsService {
@@ -104,6 +110,38 @@ message CreateSubjectResponse {
     IssuerSubject subject = 1;
 }
 
+message GetSubjectsRequest {
+    int32 limit = 1; // the max amount of subjects to return, must be > 0
+    string lastSeenSubjectId = 2; // the last seen subject (if any), the returned subjects start after this one
+    string groupName = 3; // if provided, get only the subjects that belong to this group
+}
+message GetSubjectsResponse {
+    repeated IssuerSubject subjects = 1;
+}
+
+message GetSubjectRequest {
+    string subjectId = 1;
+}
+message GetSubjectResponse {
+    IssuerSubject subject = 1;
+}
+
+message GetSubjectCredentialsRequest {
+    string subjectId = 1;
+}
+message GetSubjectCredentialsResponse {
+    repeated CManagerGenericCredential genericCredentials = 1;
+}
+
+message GenerateConnectionTokenForSubjectRequest {
+    string subjectId = 1; // the subject that will be linked to the token
+}
+message GenerateConnectionTokenForSubjectResponse {
+    string token = 1;
+}
+
+
+// groups
 message CreateGroupRequest {
     string name = 1;
 }
@@ -114,6 +152,7 @@ message GetGroupsResponse {
     repeated Group groups = 1;
 }
 
+// generic credentials
 // The authenticated issuer is creating a credential
 message CreateGenericCredentialRequest {
     string subjectId = 1;

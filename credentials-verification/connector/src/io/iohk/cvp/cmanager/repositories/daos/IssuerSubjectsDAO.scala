@@ -12,7 +12,7 @@ object IssuerSubjectsDAO {
 
   sealed trait UpdateSubjectRequest
   object UpdateSubjectRequest {
-    final case class ConnectionTokenGenerated(studentId: Student.Id, token: TokenString) extends UpdateSubjectRequest
+    final case class ConnectionTokenGenerated(subjectId: Subject.Id, token: TokenString) extends UpdateSubjectRequest
     final case class ConnectionAccepted(token: TokenString, connectionId: ConnectionId) extends UpdateSubjectRequest
   }
 
@@ -45,7 +45,7 @@ object IssuerSubjectsDAO {
       .map(_ => Subject.create(data, id, createdAt, connectionStatus))
   }
 
-  def getBy(
+  def getStudentsBy(
       issuer: Issuer.Id,
       limit: Int,
       lastSeenStudent: Option[Student.Id],
@@ -104,7 +104,7 @@ object IssuerSubjectsDAO {
     query.query[Student].to[List]
   }
 
-  def find(issuerId: Issuer.Id, studentId: Student.Id): doobie.ConnectionIO[Option[Student]] = {
+  def findStudent(issuerId: Issuer.Id, studentId: Student.Id): doobie.ConnectionIO[Option[Student]] = {
     sql"""
          |SELECT subject_id, subject_data ->> 'university_assigned_id', subject_data ->> 'full_name', subject_data ->> 'email', subject_data ->> 'admission_date', created_at, connection_status, connection_token, connection_id, g.name
          |FROM issuer_subjects JOIN issuer_groups g USING (group_id)
@@ -124,14 +124,14 @@ object IssuerSubjectsDAO {
 
   def update(issuerId: Issuer.Id, request: UpdateSubjectRequest): doobie.ConnectionIO[Unit] = {
     request match {
-      case UpdateSubjectRequest.ConnectionTokenGenerated(studentId, token) =>
+      case UpdateSubjectRequest.ConnectionTokenGenerated(subjectId, token) =>
         val status: Student.ConnectionStatus = Student.ConnectionStatus.ConnectionMissing
         sql"""
              |UPDATE issuer_subjects
              |SET connection_token = $token,
              |    connection_status = $status::STUDENT_CONNECTION_STATUS_TYPE
              |FROM issuer_groups
-             |WHERE subject_id = $studentId AND
+             |WHERE subject_id = $subjectId AND
              |      issuer_id = $issuerId AND
              |      issuer_subjects.group_id = issuer_groups.group_id
               """.stripMargin.update.run.map(_ => ())
@@ -149,5 +149,64 @@ object IssuerSubjectsDAO {
              |      issuer_subjects.group_id = issuer_groups.group_id
               """.stripMargin.update.run.map(_ => ())
     }
+  }
+
+  def getBy(
+      issuerId: Issuer.Id,
+      limit: Int,
+      lastSeenSubject: Option[Subject.Id],
+      groupName: Option[IssuerGroup.Name]
+  ): doobie.ConnectionIO[List[Subject]] = {
+
+    // TODO: Refactor to a single or at most two queries, likely using doobie fragments
+    val query = (lastSeenSubject, groupName) match {
+      case (Some(lastSeen), Some(group)) =>
+        sql"""
+             |WITH CTE AS (
+             |  SELECT created_at AS last_seen_time
+             |  FROM issuer_subjects
+             |  WHERE subject_id = $lastSeen
+             |)
+             |SELECT subject_id, subject_data, created_at, connection_status, connection_token, connection_id, g.name
+             |FROM CTE CROSS JOIN issuer_subjects JOIN issuer_groups g USING (group_id)
+             |WHERE issuer_id = $issuerId AND
+             |      (created_at > last_seen_time OR (created_at = last_seen_time AND subject_id > $lastSeen)) AND
+             |      g.name = $group
+             |ORDER BY created_at ASC, subject_id
+             |LIMIT $limit
+             |""".stripMargin
+      case (Some(lastSeen), None) =>
+        sql"""
+             |WITH CTE AS (
+             |  SELECT created_at AS last_seen_time
+             |  FROM issuer_subjects
+             |  WHERE subject_id = $lastSeen
+             |)
+             |SELECT subject_id, subject_data, created_at, connection_status, connection_token, connection_id, g.name
+             |FROM CTE CROSS JOIN issuer_subjects JOIN issuer_groups g USING (group_id)
+             |WHERE issuer_id = $issuerId AND
+             |      (created_at > last_seen_time OR (created_at = last_seen_time AND subject_id > $lastSeen))
+             |ORDER BY created_at ASC, subject_id
+             |LIMIT $limit
+             |""".stripMargin
+      case (None, Some(group)) =>
+        sql"""
+             |SELECT subject_id, subject_data, created_at, connection_status, connection_token, connection_id, g.name
+             |FROM issuer_subjects JOIN issuer_groups g USING (group_id)
+             |WHERE issuer_id = $issuerId AND
+             |      g.name = $group
+             |ORDER BY created_at ASC, subject_id
+             |LIMIT $limit
+             |""".stripMargin
+      case (None, None) =>
+        sql"""
+             |SELECT subject_id, subject_data, created_at, connection_status, connection_token, connection_id, g.name
+             |FROM issuer_subjects JOIN issuer_groups g USING (group_id)
+             |WHERE issuer_id = $issuerId
+             |ORDER BY created_at ASC, subject_id
+             |LIMIT $limit
+             |""".stripMargin
+    }
+    query.query[Subject].to[List]
   }
 }

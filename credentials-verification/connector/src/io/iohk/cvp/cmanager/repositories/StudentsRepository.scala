@@ -6,7 +6,7 @@ import doobie.util.transactor.Transactor
 import io.iohk.connector.model.TokenString
 import io.iohk.connector.repositories.daos.ConnectionTokensDAO
 import io.iohk.cvp.cmanager.models.requests.CreateStudent
-import io.iohk.cvp.cmanager.models.{Issuer, IssuerGroup, Student}
+import io.iohk.cvp.cmanager.models.{Issuer, IssuerGroup, Student, Subject}
 import io.iohk.cvp.cmanager.repositories.daos.{IssuerGroupsDAO, IssuerSubjectsDAO}
 import io.iohk.cvp.models.ParticipantId
 import io.iohk.cvp.utils.FutureEither
@@ -36,7 +36,7 @@ class StudentsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
       groupName: Option[IssuerGroup.Name]
   ): FutureEither[Nothing, List[Student]] = {
     IssuerSubjectsDAO
-      .getBy(issuer, limit, lastSeenStudent, groupName)
+      .getStudentsBy(issuer, limit, lastSeenStudent, groupName)
       .transact(xa)
       .unsafeToFuture()
       .map(Right(_))
@@ -45,7 +45,7 @@ class StudentsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
 
   def find(issuerId: Issuer.Id, studentId: Student.Id): FutureEither[Nothing, Option[Student]] = {
     IssuerSubjectsDAO
-      .find(issuerId, studentId)
+      .findStudent(issuerId, studentId)
       .transact(xa)
       .map(Right(_))
       .unsafeToFuture()
@@ -59,7 +59,7 @@ class StudentsRepository(xa: Transactor[IO])(implicit ec: ExecutionContext) {
       _ <- ConnectionTokensDAO.insert(toParticipantId(issuerId), token)
       _ <- IssuerSubjectsDAO.update(
         issuerId,
-        IssuerSubjectsDAO.UpdateSubjectRequest.ConnectionTokenGenerated(studentId, token)
+        IssuerSubjectsDAO.UpdateSubjectRequest.ConnectionTokenGenerated(Subject.Id(studentId.value), token)
       )
     } yield ()
 
