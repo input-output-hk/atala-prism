@@ -71,25 +71,9 @@ class ConnectionProofRequestViewController: UIViewController, PresentrDelegate {
         self.credentials = credentials
         self.connection = connection
         self.requiered = requiered
+        self.selectedCredentials.removeAll()
         self.labelTitle.text = connection.name
         self.imageLogo.applyDataImage(data: logoData, placeholderNamed: placeholderNamed)
-        let attrs = [NSAttributedString.Key.font : UIFont.boldSystemFont(ofSize: 16)]
-        let attributedString = NSMutableAttributedString(string:"proof_request_description_first".localize())
-        for credential in requiered {
-            switch CredentialType(rawValue: credential) {
-            case .governmentIssuedId:
-                attributedString.append(NSMutableAttributedString(string:"proof_request_id_credential".localize(), attributes:attrs))
-            case .univerityDegree:
-                attributedString.append(NSMutableAttributedString(string:"proof_request_university_credential".localize(), attributes:attrs))
-            case .proofOfEmployment:
-                attributedString.append(NSMutableAttributedString(string:"proof_request_employment_credential".localize(), attributes:attrs))
-            case .certificatOfInsurance:
-                attributedString.append(NSMutableAttributedString(string:"proof_request_insurance_credential".localize(), attributes:attrs))
-            case .none:
-                print("Undefined credential type")
-            }
-        }
-        labelSubtitle.attributedText = attributedString
         if credentials.count > 1 {
             tableHeightCtrt.constant = 80
         }
@@ -148,7 +132,6 @@ extension ConnectionProofRequestViewController: UITableViewDataSource, Connectio
         for type in requiered {
             isComplete = isComplete && selectedCredentials.contains {
                 $0.type?.rawValue == type
-                
             }
         }
         

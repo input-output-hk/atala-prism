@@ -66,20 +66,20 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
         detailRows?.append(CellRow(type: .detailHeader, value: degree))
         switch degree.type {
         case .univerityDegree:
-            detailRows?.append(CellRow(type: .detailProperty, value: ("credentials_detail_university_name".localize(), degree.issuer?.name, false, degree.type)))
-            detailRows?.append(CellRow(type: .detailProperty, value: ("credentials_detail_award".localize(), degree.credentialSubject?.degreeResult, false, degree.type)))
             detailRows?.append(CellRow(type: .detailProperty, value: ("credentials_detail_full_name".localize(), degree.credentialSubject?.name, false, degree.type)))
-            detailRows?.append(CellRow(type: .detailProperty, value: ("credentials_detail_graduation_date".localize(), degree.issuanceDate, true,  degree.type)))
+            detailRows?.append(CellRow(type: .detailProperty, value: ("credentials_detail_degree_name".localize(), degree.credentialSubject?.degreeAwarded, false, degree.type)))
+            detailRows?.append(CellRow(type: .detailProperty, value: ("credentials_detail_award".localize(), degree.credentialSubject?.degreeResult, false, degree.type)))
+            detailRows?.append(CellRow(type: .detailProperty, value: ("credentials_detail_issuance_date".localize(), degree.issuanceDate, true,  degree.type)))
         case .governmentIssuedId:
             detailRows?.append(CellRow(type: .document, value: degree))
         case .certificatOfInsurance:
+            detailRows?.append(CellRow(type: .detailProperty, value: ("credentials_detail_full_name".localize(), degree.credentialSubject?.name, false, degree.type)))
             detailRows?.append(CellRow(type: .detailProperty, value: ("credentials_detail_employment_class_insurance".localize(), degree.productClass, false, degree.type)))
             detailRows?.append(CellRow(type: .detailProperty, value: ("credentials_detail_employment_policy_number".localize(), degree.policyNumber, false, degree.type)))
-            detailRows?.append(CellRow(type: .detailProperty, value: ("credentials_detail_full_name".localize(), degree.credentialSubject?.name, false, degree.type)))
             detailRows?.append(CellRow(type: .detailProperty, value: ("credentials_detail_employment_policy_end_date".localize(), degree.expiryDate, true,  degree.type)))
         case .proofOfEmployment:
-            detailRows?.append(CellRow(type: .detailProperty, value: ("credentials_detail_employment_status".localize(), degree.employmentStatus, false, degree.type)))
             detailRows?.append(CellRow(type: .detailProperty, value: ("credentials_detail_full_name".localize(), degree.credentialSubject?.name, false, degree.type)))
+            detailRows?.append(CellRow(type: .detailProperty, value: ("credentials_detail_employment_status".localize(), degree.employmentStatus, false, degree.type)))
             detailRows?.append(CellRow(type: .detailProperty, value: ("credentials_detail_employment_start_date".localize(), degree.issuanceDate, true,  degree.type)))
         default:
             print("Unrecognized type")
@@ -207,7 +207,7 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
         }, success: {
             self.startListing()
         }, error: { error in
-            self.viewImpl?.showErrorMessage(doShow: true, message: error.localizedDescription)
+            self.viewImpl?.showErrorMessage(doShow: true, message: "service_error".localize())
         })
     }
 
@@ -259,7 +259,7 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
             self.viewImpl?.showShareDialog()
         }, error: { error in
             self.viewImpl?.config(isLoading: false)
-            self.viewImpl?.showErrorMessage(doShow: true, message: error.localizedDescription)
+            self.viewImpl?.showErrorMessage(doShow: true, message: "service_error".localize())
         })
     }
 
@@ -294,7 +294,7 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
             self.viewImpl?.showSuccessMessage(doShow: true, message: "credentials_detail_share_success".localize(), actions: actions)
         }, error: { error in
             self.viewImpl?.config(isLoading: false)
-            self.viewImpl?.showErrorMessage(doShow: true, message: error.localizedDescription)
+            self.viewImpl?.showErrorMessage(doShow: true, message: "service_error".localize())
         })
     }
 
@@ -421,13 +421,13 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
     func setup(for cell: DetailHeaderViewCell) {
         switch detailDegree?.type {
         case .univerityDegree:
-            cell.config(title: "credentials_detail_degree_name".localize(), subtitle: detailDegree?.credentialSubject?.degreeAwarded, logoData: sharedMemory.imageBank?.logo(for: detailDegree?.connectionId), type: detailDegree?.type)
+            cell.config(title: "credentials_detail_university_name".localize(), subtitle: detailDegree?.issuer?.name, logoData: sharedMemory.imageBank?.logo(for: detailDegree?.connectionId), type: detailDegree?.type)
         case .governmentIssuedId:
             cell.config(title: "credentials_detail_national_id_card".localize(), subtitle: detailDegree?.issuer?.name, logoData: sharedMemory.imageBank?.logo(for: detailDegree?.connectionId), type: detailDegree?.type)
         case .certificatOfInsurance:
-        cell.config(title: "credentials_detail_provider_name".localize(), subtitle: detailDegree?.issuer?.name, logoData: sharedMemory.imageBank?.logo(for: detailDegree?.connectionId), type: detailDegree?.type)
+            cell.config(title: "credentials_detail_provider_name".localize(), subtitle: detailDegree?.issuer?.name, logoData: sharedMemory.imageBank?.logo(for: detailDegree?.connectionId), type: detailDegree?.type)
         case .proofOfEmployment:
-        cell.config(title: "credentials_detail_company_name".localize(), subtitle: detailDegree?.issuer?.name, logoData: sharedMemory.imageBank?.logo(for: detailDegree?.connectionId), type: detailDegree?.type)
+            cell.config(title: "credentials_detail_company_name".localize(), subtitle: detailDegree?.issuer?.name, logoData: sharedMemory.imageBank?.logo(for: detailDegree?.connectionId), type: detailDegree?.type)
         default:
             print("Unrecognized type")
         }

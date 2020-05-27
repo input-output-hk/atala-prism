@@ -31,7 +31,6 @@ class RegisterPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDel
 
     func tappedLegalSwitch(newState: Bool) {
 
-        Tracker.global.trackAcceptRecovery()
         acceptedLegal = newState
         updateContinueButtonState()
     }

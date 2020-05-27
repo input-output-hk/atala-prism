@@ -18,6 +18,8 @@ class ConnectionConfirmViewController: UIViewController, PresentrDelegate {
     @IBOutlet weak var viewBg: UIView!
 
     weak var delegate: ConnectionConfirmPresenterDelegate?
+    
+    var isDuplicated: Bool = false
 
     override func viewDidLoad() {
         super.viewDidLoad()

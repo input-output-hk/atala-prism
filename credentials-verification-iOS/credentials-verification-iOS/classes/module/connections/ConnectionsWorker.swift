@@ -45,7 +45,7 @@ class ConnectionsWorker: NSObject {
         }, success: {
             self.delegate?.connectionsFetched(connections: connections)
         }, error: { error in
-            self.delegate?.showErrorMessage(doShow: true, message: error.localizedDescription)
+            self.delegate?.showErrorMessage(doShow: true, message: "service_error".localize())
         })
     }
     

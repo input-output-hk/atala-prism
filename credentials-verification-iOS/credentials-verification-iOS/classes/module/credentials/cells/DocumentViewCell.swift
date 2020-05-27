@@ -48,6 +48,7 @@ class DocumentViewCell: BaseTableViewCell {
         labelFullName.text = degree?.credentialSubject?.name
         labelBirthday.text = degree?.credentialSubject?.dateOfBirth
         labelExpirationDate.text = degree?.expiryDate
-        imageProfile.applyDataImage(data: nil, placeholderNamed: "icon_id")
+        imageProfile.applyDataImage(data: nil, placeholderNamed: "jo_wong_avatar")
+        imageProfile.addRoundCorners(radius: 8)
     }
 }

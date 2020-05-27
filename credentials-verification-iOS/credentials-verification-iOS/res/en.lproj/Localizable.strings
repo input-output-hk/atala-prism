@@ -21,6 +21,7 @@
 "decline" = "Decline";
 "verify" = "Verify";
 "next" = "Next";
+"service_error" = "Service is unavailable. Try again later";
 
  // <!-- Default errors and loadings -->
 "coming_soon_btn" = "COMING SOON";
@@ -54,9 +55,9 @@
 "connections_empty_button" = "Scan QR code";
 "connections_scan_qr_nav_title" = "Scan QR";
 "connections_scan_qr_error" = "Invalid QR code";
-"connections_scan_qr_confirm_button" = "Connect!";
+"connections_scan_qr_confirm_button" = "Confirm";
 "connections_scan_qr_confirm_duplicated_button" = "Connect again";
-"connections_scan_qr_confirm_title" = "You are about to connect with";
+"connections_scan_qr_confirm_title" = "Would you like to connect with";
 "connections_scan_qr_confirm_duplicated_title" = "You have already connected to:";
 "connections_scan_qr_confirm_error" = "Failed to confirm connection. Try again.";
 "connections_scan_qr_confirm_payment_error" = "Failed to confirm payment. Try again.";
@@ -67,7 +68,7 @@
 // <!-- Credentials -->
 "credentials_nav_title" = "Credentials";
 "credentials_degrees_new_hello" = "Hello %1$@!";
-"credentials_degrees_new_title" = "You have new credentials to confirm";
+"credentials_degrees_new_title" = "You have a new credential";
 "credentials_degrees_new_view_btn" = "VIEW";
 "credentials_document_title" = "National ID Card";
 "credentials_document_identity_number" = "Identity Number";
@@ -81,7 +82,7 @@
 "credentials_detail_title_new" = "Add Credential";
 "credentials_detail_degree_name" = "Degree Name";
 "credentials_detail_start_date" = "Start Date";
-"credentials_detail_graduation_date" = "Graduation Date";
+"credentials_detail_issuance_date" = "Issuance Date";
 "credentials_detail_university_name" = "University Name";
 "credentials_detail_full_name" = "Full Name";
 "credentials_detail_award" = "Award";
@@ -223,7 +224,7 @@
 "proof_request_university_credential"= "\n• University Credential ";
 "proof_request_employment_credential"= "\n• Employment Credential ";
 "proof_request_insurance_credential"= "\n• Insurance Credential ";
-"proof_request_select_credential"= "Select Crendential:";
+"proof_request_select_credential"= "Requested Credential(s):";
 "proof_request_cancel"= "Cancel";
 "proof_request_share"= "Share";
 

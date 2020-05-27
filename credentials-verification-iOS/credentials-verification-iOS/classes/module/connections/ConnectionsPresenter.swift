@@ -152,7 +152,7 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
         }, success: {
             // Already asked for proof rquest do nothing
         }, error: { error in
-            self.viewImpl?.showErrorMessage(doShow: true, message: error.localizedDescription)
+            self.viewImpl?.showErrorMessage(doShow: true, message: "service_error".localize())
         })
     }
     
@@ -198,7 +198,7 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
             self.viewImpl?.showSuccessMessage(doShow: true, message: "credentials_detail_share_success".localize(), actions: actions)
         }, error: { error in
             self.viewImpl?.config(isLoading: false)
-            self.viewImpl?.showErrorMessage(doShow: true, message: error.localizedDescription)
+            self.viewImpl?.showErrorMessage(doShow: true, message: "service_error".localize())
         })
     }
 

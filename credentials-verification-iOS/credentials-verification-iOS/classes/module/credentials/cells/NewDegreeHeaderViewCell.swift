@@ -7,7 +7,6 @@ protocol NewDegreeHeaderViewCellPresenterDelegate: BaseTableViewCellPresenterDel
 
 class NewDegreeHeaderViewCell: BaseTableViewCell {
 
-    @IBOutlet weak var labelTitle: UILabel!
     @IBOutlet weak var viewMainBody: UIView!
 
     override class func default_NibName() -> String {
@@ -29,10 +28,6 @@ class NewDegreeHeaderViewCell: BaseTableViewCell {
     // MARK: Config
 
     func config(name: String?) {
-
-        let greeting = String(format: "credentials_degrees_new_hello".localize(), name ?? "")
-        labelTitle.text = greeting
-
         viewMainBody.addRoundCorners(radius: AppConfigs.CORNER_RADIUS_REGULAR, onlyTops: true)
     }
 }

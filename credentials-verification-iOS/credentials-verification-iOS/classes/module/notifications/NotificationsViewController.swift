@@ -82,7 +82,21 @@ class NotificationsViewController: ListingBaseViewController {
 
         // Change the nav bar
         if credentialsMode == .detail {
-            navBar = NavBarCustomStyle(hasNavBar: true, title: "credentials_detail_title_new".localize(), hasBackButton: credentialsMode != .degrees, rightIconName: nil, rightIconAction: nil)
+            let detailDegree = presenterImpl.detailDegree
+            var navTitle = ""
+            switch detailDegree!.type {
+            case .univerityDegree:
+                navTitle = "credentials_detail_title_type_university".localize()
+            case .governmentIssuedId:
+                navTitle = "credentials_detail_title_type_government_id".localize()
+            case .certificatOfInsurance:
+                navTitle = "credentials_detail_title_type_insurance".localize()
+            case .proofOfEmployment:
+                navTitle = "credentials_detail_title_type_employment".localize()
+            default:
+                print("Unrecognized type")
+            }
+            navBar = NavBarCustomStyle(hasNavBar: true, title: navTitle, hasBackButton: credentialsMode != .degrees, rightIconName: nil, rightIconAction: nil)
         } else {
             let navTitle = isScanningQr ? "notifications_scan_qr_nav_title".localize() : "notifications_title".localize()
             let navIconName = (!isEmpty && !isScanningQr && mode != .fetching) ? "ico_qr" : nil

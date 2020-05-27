@@ -58,7 +58,7 @@ class DashboardViewController: BaseTabPagerViewController {
         // Customization
         bar.layout.contentInset = UIEdgeInsets(top: 10.0, left: 0.0, bottom: 14.0, right: 0.0)
         bar.indicator.tintColor = .white
-        bar.fadesContentEdges = true
+        bar.fadesContentEdges = false
         bar.backgroundView.style = .flat(color: .white)
 
         // Disable scroll

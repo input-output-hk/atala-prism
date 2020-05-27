@@ -10,7 +10,6 @@ class ConnectionMainViewCell: BaseTableViewCell {
 
     @IBOutlet weak var labelTitle: UILabel!
     @IBOutlet weak var labelSubtitle: UILabel!
-    @IBOutlet weak var buttonIconAction: UIButton!
     @IBOutlet weak var imageLogo: UIImageView!
     @IBOutlet weak var constraintTitleVertical: NSLayoutConstraint!
 
@@ -43,7 +42,6 @@ class ConnectionMainViewCell: BaseTableViewCell {
         labelTitle.text = title
         labelSubtitle.isHidden = true
         constraintTitleVertical.constant = 0.0
-        buttonIconAction.isHidden = true
         
         imageLogo.applyDataImage(data: logoData, placeholderNamed: isUniversity ? "ico_placeholder_university" : "ico_placeholder_credential")
     }
