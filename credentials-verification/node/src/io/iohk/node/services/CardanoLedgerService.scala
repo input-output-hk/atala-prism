@@ -85,7 +85,7 @@ class CardanoLedgerService private[services] (
   private def syncBlock(blockNo: Int): Future[Unit] = {
     for {
       block <- cardanoClient.getFullBlock(blockNo).toFuture(_ => new RuntimeException(s"Block $blockNo was not found"))
-      _ = processAtalaObjects(block)
+      _ <- processAtalaObjects(block)
     } yield ()
   }
 
