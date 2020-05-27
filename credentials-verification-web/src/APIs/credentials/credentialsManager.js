@@ -201,7 +201,7 @@ function populateCredential({ issuerInfo, subjectInfo, additionalInfo }) {
     credentialSubject: {
       name: subjectInfo.fullname,
       degreeAwarded: 'Bachelor of Science',
-      degreeResult: 'Upper second class honours',
+      degreeResult: 'First class honors',
       graduationYear: additionalInfo.graduationDate.year
     }
   };

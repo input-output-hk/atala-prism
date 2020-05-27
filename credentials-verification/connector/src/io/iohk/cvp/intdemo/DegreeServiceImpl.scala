@@ -56,7 +56,7 @@ object DegreeServiceImpl {
 
   case class DegreeData(idData: IdData) {
     val degreeAwarded = "Bachelor of Science"
-    val degreeResult = "Upper second class honours"
+    val degreeResult = "First class honors"
     val graduationYear = idData.dob.plusYears(20).getYear
   }
 
