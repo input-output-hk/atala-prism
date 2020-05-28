@@ -193,7 +193,7 @@ module "ecs_cluster" {
 }
 
 data "aws_acm_certificate" "prism_tls_cert" {
-  domain   = var.atala_prism_domain
+  domain = var.atala_prism_domain
   statuses = ["ISSUED"]
 }
 
@@ -262,4 +262,56 @@ resource aws_route53_record console_dns_entry {
   type    = "CNAME"
   ttl     = "300"
   records = [module.prism_service.envoy_lb_dns_name]
+}
+
+// Monitoring config
+// NB: cloudwatch alarms and associated SNS topic MUST be in us-east-1
+// (https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/monitoring-health-checks.html)
+provider aws {
+  alias  = "us-east-1"
+  region = "us-east-1"
+}
+
+# Landing page failure, over a 30 second period will fail the health check.
+resource aws_route53_health_check landing_page_check {
+  count             = var.monitoring_alerts_enabled
+  fqdn              = "${var.env_name_short}.${var.atala_prism_domain}"
+  port              = 443
+  type              = "HTTPS"
+  resource_path     = "/ruokay"
+  failure_threshold = "3"
+  request_interval  = "10"
+
+  regions = ["us-west-1", "us-east-1", "eu-west-1", "ap-southeast-1", "ap-northeast-1", "sa-east-1"]
+
+  tags = {
+    Name = "intdemo-landing-hc-${var.env_name_short}"
+  }
+}
+
+data aws_sns_topic atala_prism_service_alerts {
+  provider = aws.us-east-1
+  name = "atala-prism-service-alerts"
+}
+
+resource aws_cloudwatch_metric_alarm alarm {
+  provider            = aws.us-east-1
+  count               = var.monitoring_alerts_enabled
+  alarm_name          = "${var.env_name_short}_landing_healthcheck"
+  namespace           = "AWS/Route53"
+  metric_name         = "HealthCheckStatus"
+  comparison_operator = "LessThanThreshold"
+  evaluation_periods  = "1"
+  period              = "60"
+  statistic           = "Minimum"
+  threshold           = "1"
+  unit                = "None"
+
+  dimensions = {
+    HealthCheckId = aws_route53_health_check.landing_page_check[0].id
+  }
+
+  alarm_description = "This alarm is raised when there is no response from the landing page in environment ${var.env_name_short}."
+  alarm_actions = [data.aws_sns_topic.atala_prism_service_alerts.arn]
+  ok_actions = [data.aws_sns_topic.atala_prism_service_alerts.arn]
 }

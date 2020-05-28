@@ -2,7 +2,7 @@
 set -euo pipefail
 
 usage () {
-  echo "Usage: prism.sh [[-a] [-A] [-d] [-D] [-p] [-s] [-w] [-g] [-c]] <env name>
+  echo "Usage: prism.sh [[-a] [-A] [-d] [-D] [-p] [-s] [-w] [-g] [-c] [-m]] <env name>
   Simulate, create or destory an AWS environment for prism.
 
   Environments are named by extracting the 'ata-xxxx' prefix from the currently
@@ -37,6 +37,7 @@ usage () {
   -g    create a 'graph.svg' file showing the dependencies of all resources.
   -t    'taint'. Forces a reploy on the next apply.
   -c    'clean', Remove .terraform/<env name>.tfvars file if it exists.
+  -m    'monitor'. Set to enable monitoring alerts from this environment to the atala-prism-service-alerts channel.
   "
   exit 1
 }
@@ -129,6 +130,8 @@ prism_lb_envoy_docker_image = "$prism_lb_envoy_docker_image"
 intdemo_enabled = $intdemo_enabled
 geud_enabled    = $geud_enabled
 
+# Toggle alerts to slack. 1 for on, 0 for off.
+monitoring_alerts_enabled          = "$monitor"
 EOF
   else
     echo "Note: .terraform/$env_name_short.tfvars already exists, will not write variables"
@@ -159,7 +162,8 @@ clean_config() {
 }
 
 action="plan"
-while getopts ':aAdDpswgtc' arg; do
+monitor="0"
+while getopts ':aAdDpswgtcm' arg; do
   case $arg in
     (a) action="apply";;
     (A) action="auto-apply";;
@@ -171,6 +175,7 @@ while getopts ':aAdDpswgtc' arg; do
     (g) action="graph";;
     (t) action="taint";;
     (c) action="clean-config";;
+    (m) monitor="1";;
     (\*) usage
          exit 1;;
     (\?) usage

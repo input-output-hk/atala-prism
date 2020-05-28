@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-branchPrefix=$(git rev-parse --abbrev-ref HEAD | sed -E 's/(^ATA\-[0-9]+).*/\1/' | tr '[:upper:]' '[:lower:]')
+branchPrefix=$(git rev-parse --abbrev-ref HEAD | sed -E 's/(^[aA][tT][aA]\-[0-9]+).*/\1/' | tr '[:upper:]' '[:lower:]')
 revCount=$(git rev-list HEAD --count)
 shaShort=$(git rev-parse --short HEAD)
 tag="${branchPrefix}-${revCount}-${shaShort}"

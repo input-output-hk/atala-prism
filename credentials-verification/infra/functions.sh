@@ -21,7 +21,7 @@ next_tag() {
 }
 
 get_branch_prefix() {
-  git rev-parse --abbrev-ref HEAD | sed -E 's/(^ATA\-[0-9]+).*/\1/' | tr '[:upper:]' '[:lower:]'
+  git rev-parse --abbrev-ref HEAD | sed -E 's/(^[aA][tT][aA]\-[0-9]+).*/\1/' | tr '[:upper:]' '[:lower:]'
 }
 
 
@@ -62,3 +62,10 @@ get_docker_image() {
   echo -n "$docker_image"
 }
 
+read_secrets() {
+  if [ -f "$HOME/.secrets.tfvars" ]; then
+    echo -n "-var-file=$HOME/.secrets.tfvars"
+  else
+    echo -n ""
+  fi
+}

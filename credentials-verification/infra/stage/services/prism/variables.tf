@@ -122,7 +122,13 @@ variable atala_prism_domain {
   default     = "atalaprism.io"
 }
 
-variable "atala_prism_zoneid" {
+variable atala_prism_zoneid {
   description = "Route53 ZoneId for the domain"
   default     = "Z04196731VMWR6G5290VG"
+}
+
+variable monitoring_alerts_enabled {
+  description = "Set to 1 to enable monitoring alerts from this environment to the atala-prism-service-alerts channel."
+  type = number
+  default = 0
 }
