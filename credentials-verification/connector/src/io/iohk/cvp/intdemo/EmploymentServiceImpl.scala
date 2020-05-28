@@ -108,7 +108,7 @@ object EmploymentServiceImpl {
       subjectFullName = idData.name,
       subjectDid = "unknown",
       employmentStartDate = LocalDate.now().minusMonths(1),
-      employmentStatus = "Full time"
+      employmentStatus = "Full-time"
     ).printWith(jsonPrinter)
 
     credential_models.Credential(
