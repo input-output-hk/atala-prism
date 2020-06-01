@@ -5,22 +5,49 @@
   flex-direction: column;
   align-items: flex-start;
   text-align: left;
-  width: 25%;
+  width: 27.5%;
+
+  .HeaderItem {
+    min-height: 145px;
+    img {
+      margin-bottom: 1.5em;
+    }
+
+    h2 {
+      @include secondary-text($h3, $black);
+    }
+
+    p {
+      @include primary-text($label, $black);
+    }
+  }
+
+  .BulletItems {
+    margin-top: 1.5em;
+
+    li {
+      margin-bottom: 1.25em;
+      list-style: none;
+      border-left: 1px solid $primary-color;
+      padding-left: 1em;
+      p {
+        @include primary-text($label, $black);
+      }
+    }
+  }
+
+  &:nth-child(3) {
+    .BulletItems {
+      ul {
+        li:last-child {
+          display: none;
+        }
+      }
+    }
+  }
 
   @include breakpoint(sm) {
     width: 100%;
     margin-bottom: 2em;
-  }
-
-  img {
-    margin-bottom: 1.5em;
-  }
-
-  h2 {
-    @include secondary-text($h3, $black);
-  }
-
-  p {
-    @include primary-text($label, $dark-grey);
   }
 }

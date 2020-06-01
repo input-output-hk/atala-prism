@@ -16,3 +16,11 @@
     }
   }
 }
+
+@media only screen and (max-width: 450px) {
+  .DownloadButtons {
+    img {
+      width: 125px;
+    }
+  }
+}

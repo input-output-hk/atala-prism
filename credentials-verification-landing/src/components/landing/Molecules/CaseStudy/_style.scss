@@ -3,7 +3,7 @@
 .CaseStudyContent {
   display: flex;
   padding: 8em;
-  background: $white;
+  background: $background;
 
   .TextContainer {
     width: 60%;
@@ -35,7 +35,7 @@
 
 @media only screen and (max-width: 1024px) {
   .CaseStudyContent {
-    padding: 4em;
+    padding: 8em 4em 4em 4em;
 
     .TextContainer {
       .CaseStudyDescription {

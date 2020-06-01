@@ -1,7 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import iconContacts from '../../../../images/touch-connections.svg';
-import iconConnection from '../../../../images/scan-qr-code.svg';
 
 import './_style.scss';
 
@@ -20,8 +19,6 @@ const ScanQRSteps = () => {
       </div>
       <div className="LineStep">
         <p>{t(`credential.scanQRInfo.step${i}.part3`)}</p>
-        <img src={iconConnection} alt={t(`credential.scanQRInfo.step${i}.alt2`)} />
-        <p>{t(`credential.scanQRInfo.step${i}.part4`)}</p>
       </div>
     </div>
   );

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import IntroItem from '../../Molecules/IntroItem/IntroItem';
 
 import './_style.scss';
+import ItemCollapse from '../../Molecules/ItemCollapse/ItemCollapse';
 
 const IntroSection = () => {
   const { t } = useTranslation();
@@ -34,6 +35,9 @@ const IntroSection = () => {
             },
             [createIntroItem('credentials', 1)]
           )}
+      </div>
+      <div className="ReadMoreContainer">
+        <ItemCollapse />
       </div>
     </div>
   );

@@ -24,7 +24,7 @@ import {
   STEP_1_EVENT,
   STEP_2_EVENT,
   STEP_3_EVENT,
-  STEP_4_EVENT,
+  STEP_4_EVENT
 } from '../../helpers/constants';
 import Credentials from './Credentials';
 import SplittedPageInside from './Organisms/SplittedPageInside/SplittedPageInside';
@@ -72,6 +72,7 @@ const CredentialsContainer = ({
   const [showCongrats, setShowCongrats] = useState(false);
   const [mapInitFirstStep, setMapInitFirstStep] = useState(false);
   const [showPersonasModal, setShowPersonasModal] = useState(false);
+  const [mapReset, setMapReset] = useState(false);
 
   useEffect(() => {
     if (_.isEmpty(user)) setShowPersonasModal(true);
@@ -164,7 +165,7 @@ const CredentialsContainer = ({
 
   const cleanCredentialState = () => {
     setToken('');
-    setCurrentStep(INTRODUCTION_STEP);
+    setCurrentStep(GOVERNMENT_ISSUED_DIGITAL_IDENTITY);
     setConnectionStatus(undefined);
     setShowContactButton(false);
   };
@@ -182,9 +183,9 @@ const CredentialsContainer = ({
     setCurrentCredential(currentCredential + 1);
   };
 
-
   const selectPersona = selectedUser => {
     setUser(selectedUser);
+    setMapReset(true);
     setCurrentCredential(GOVERNMENT_ISSUED_DIGITAL_IDENTITY);
     setEnabledCredentialToRequest(GOVERNMENT_ISSUED_DIGITAL_IDENTITY);
     setShowCongrats(false);
@@ -239,7 +240,12 @@ const CredentialsContainer = ({
   return (
     <div className="InteractiveDemoContainer">
       <PersonasModal showModal={showPersonasModal} selectPersona={selectPersona} />
-      <InteractiveMap mapStep={currentCredential + 1} mapInitFirstStep={mapInitFirstStep} />
+      <InteractiveMap
+        mapStep={currentCredential + 1}
+        mapInitFirstStep={mapInitFirstStep}
+        mapReset={mapReset}
+        onReset={() => setMapReset(false)}
+      />
       <Credentials
         getStep={showCongrats ? () => <CongratsStep /> : getStep}
         changeCurrentCredential={value => setCurrentCredential(value)}

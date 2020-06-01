@@ -7,6 +7,14 @@
   color: $dark-grey;
   border-bottom: transparent;
   @include primary-text($body, $dark-grey);
+  -webkit-transition: 500ms ease-out;
+  -moz-transition: 500ms ease-out;
+  -o-transition: 500ms ease-out;
+}
+
+.ant-menu-item,
+.ant-menu-submenu-title {
+  padding: 0 15px;
 }
 
 .ant-menu-item,
@@ -35,7 +43,6 @@
 .ant-menu-horizontal > .ant-menu-submenu-selected .ant-menu-hidden.ant-menu-vertical:hover {
   border-bottom: 2px solid transparent;
   color: $black;
-  font-weight: 700;
 }
 
 .ant-menu-submenu-popup {

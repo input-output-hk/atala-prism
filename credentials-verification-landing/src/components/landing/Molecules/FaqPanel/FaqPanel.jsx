@@ -18,7 +18,7 @@ const FaqPanel = () => {
           </div>
           <div className="FaqItem">
             <h3>{t('landing.faqPanel.titlefaq2')}</h3>
-            <p>{t('landing.faqPanel.faq3')}</p>
+            <p>{t('landing.faqPanel.faq2')}</p>
           </div>
           <div className="FaqItem">
             <h3>{t('landing.faqPanel.titlefaq3')}</h3>

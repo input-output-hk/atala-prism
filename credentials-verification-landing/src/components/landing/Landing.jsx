@@ -63,7 +63,7 @@ const Landing = () => {
             <h3>{t('landing.start.subtitle')}</h3>
           </div>
           <div className="HeaderImages">
-            <img src="images/digital-id-graph.svg" alt={t('landing.downloadAndroidAlt')} />
+            <img src="images/atala-prism-graph.svg" alt={t('landing.downloadAndroidAlt')} />
           </div>
         </div>
       </div>
@@ -89,7 +89,7 @@ const Landing = () => {
         <CaseStudy />
       </div>
       <div ref={getStartedSection}>
-        <GetStarted />
+        <GetStarted executeScroll={executeScroll} />
       </div>
       <div ref={faqSection}>
         <FaqPanel />

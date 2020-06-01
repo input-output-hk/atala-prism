@@ -8,3 +8,11 @@
     margin-bottom: 0.25em;
   }
 }
+
+.contactInformation {
+  a {
+    color: $primary-color;
+    font-weight: 600;
+    text-decoration: underline;
+  }
+}

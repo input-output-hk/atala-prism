@@ -18,8 +18,20 @@ class InteractiveMap extends Component {
   }
 
   componentDidUpdate() {
-    const { mapStep, mapInitFirstStep } = this.props;
+    const { mapStep, mapInitFirstStep, mapReset } = this.props;
+    if (mapReset) {
+      this.resetMap();
+    }
     if (mapInitFirstStep || mapStep !== FirstStep) this.setMapStep();
+  }
+
+  resetMap() {
+    const { onReset } = this.props;
+    const { demo } = this.refs;
+    try {
+      if (demo) demo.reset();
+    } catch {}
+    onReset();
   }
 
   setMapStep() {

@@ -14,8 +14,16 @@ const Footer = () => {
           <img src="images/atala-prism-black.svg" alt={t('atalaLogo')} />
         </button>
         <div className="FooterText">
-          <p>{t('landing.trademark.part1')}</p>
-          <p>{t('landing.trademark.part2')}</p>
+          <p>
+            <a href="/terms-and-conditions" target="_blank">
+              {t('landing.trademark.part1')}
+            </a>
+          </p>
+          <p>
+            <a href="/privacy-policy" target="_blank">
+            {t('landing.trademark.part2')}
+            </a>
+          </p>
         </div>
         <p>{t('landing.trademark.part3')}</p>
       </div>

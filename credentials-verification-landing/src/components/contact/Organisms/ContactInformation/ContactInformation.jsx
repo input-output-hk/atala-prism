@@ -17,7 +17,12 @@ const ContactInformation = ({ submit, contactInfoRef, onConsent }) => {
         {t('credential.contactInformation.consent')}
       </Checkbox>
       <hr />
-      <p>{t('credential.contactInformation.termsConditions')}</p>
+      <p>
+        {t('credential.contactInformation.termsConditions')}
+        <a href="/privacy-policy" target="_blank">
+          {t('credential.contactInformation.termsConditions2')}
+        </a>
+      </p>
       <Checkbox onChange={event => onConsent(event.target.checked)}>
         {t('credential.contactInformation.consent2')}
       </Checkbox>

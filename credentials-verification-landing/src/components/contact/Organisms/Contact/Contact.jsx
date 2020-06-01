@@ -1,10 +1,8 @@
 import React, { useRef, useState } from 'react';
-import PropTypes from 'prop-types';
 import jsonp from 'jsonp';
 import queryString from 'query-string';
 import { message } from 'antd';
 import { useTranslation } from 'react-i18next';
-import { withApi } from '../../../providers/withApi';
 import ContactForm from '../ContactInformation/ContactInformation';
 import { config } from '../../../../APIs/configs';
 
@@ -39,7 +37,12 @@ const Contact = () => {
       { param: 'c' },
       (err, data) => {
         console.log('err:', err);
-        console.log('data:', data);
+        console.log('err:', data);
+        if (err) return message.error(t('contact.unexpectedError'));
+        if (data)
+          data.result === 'success'
+            ? message.success(t('contact.mail.success'))
+            : message.error(t('contact.mail.error'));
       }
     );
   };

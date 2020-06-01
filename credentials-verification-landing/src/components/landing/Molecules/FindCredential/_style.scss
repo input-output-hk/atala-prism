@@ -8,7 +8,7 @@
   width: 100%;
 
   @include breakpoint(lg) {
-    padding: 4em 4em 1em 4em;
+    padding: 8em 4em 1em 4em;
   }
 
   .MapContainer {
@@ -102,13 +102,16 @@
 @media only screen and (max-width: 450px) {
   .FindCredential {
     .TextContainer {
-      width: 80%;
+      width: 78%;
       .InteractiveDemoText {
         h1 {
           @include secondary-text($h2, $black);
         }
         .StepTextItem {
           width: 100%;
+        }
+        .DisclaimerText {
+          width: 280px;
         }
       }
     }

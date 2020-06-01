@@ -14,11 +14,11 @@ const ContactPanel = () => {
         <div className="paragraphContent">
           <h1>{t('landing.contactPanel.title')}</h1>
           <h3>
-            {t('landing.contactPanel.part1')} <a>{t('landing.contactPanel.part2')}</a>
+            {t('landing.contactPanel.part1')} <a href="https://www.cardano.org/" target="_blank">{t('landing.contactPanel.part2')}</a>
             {t('landing.contactPanel.part3')}
           </h3>
           <h3>
-            {t('landing.contactPanel.part4')} <a>{t('landing.contactPanel.part5')}</a>{' '}
+            {t('landing.contactPanel.part4')} <a href="https://iohk.io/" target="_blank">{t('landing.contactPanel.part5')}</a>{' '}
             {t('landing.contactPanel.part6')}
           </h3>
           <h3>{t('landing.contactPanel.part7')}</h3>

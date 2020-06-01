@@ -20,6 +20,13 @@
     },
     "learnReact": "Learn React"
   },
+  "contact": {
+    "unexpectedError": "unexpected error sending the message",
+    "mail": {
+      "error": "message couldn't be delivered",
+      "success": "message was successfully sent"
+    }
+  },
   "connections": {
     "title": "Connections",
     "status": {
@@ -154,23 +161,39 @@
     },
     "downloadAndroidAlt": "Download Android",
     "intro": {
-      "question": "Atala PRISM fosters growth in the digital economy.",
+      "question": "Atala PRISM fosters growth in the digital economy",
       "explanation": "Vision",
       "itemIcon": {
+        "readMore": "Read More",
         "credentials": {
           "image": "images/icon-01.svg",
           "title": "For Growing Businesses",
-          "text": "Onboard customers with one click using verifiable credentials. Reduce compliance costs by accepting reusable KYC credentials. Drive sales with a secure one click purchase experience. Reduce business risks associated with holding customer data by building serverless apps that store data with users."
+          "text": "Expand your customer base, increase your profits and future proof your business.",
+          "bullet1": "Immediate customer verification via reusable KYC credentials means fewer scams, as well as reduced time and cost to authenticate your customers.",
+          "bullet2": "Easily comply with regulatory requirements (including GDPR) with built-in data and privacy compliance.",
+          "bullet3": "Reduce abandoned sales levels with instant registration and checkout to your products and services.",
+          "bullet4": "Offer your customers a streamlined experience with hassle-free, automated user journeys.",
+          "bullet5": "Enable your customers to access your products and services with a single click. Eliminate long forms and make life easier."
         },
         "wallet": {
           "image": "images/icon-02.svg",
           "title": "For Effective Governments",
-          "text": "Reduce cost to serve by eliminating need for face-to-face verifications. Decrease cost of fraud against citizens, businesses and the government using verifiable identities. Deliver a great citizen experience by providing a digital identity that can be used to seamlessly access services in the public or private sector. Go paperless."
+          "text": "Implement secure, next-generation services that make your government more effective, responsive and agile.",
+          "bullet1": "Improve administrative efficiency within departments with fewer face-to-face verifications. Go digital.",
+          "bullet2": "Verified digital identity for everyone means a significant reduction in fraud levels against all parties – individuals, businesses, organizations and government.",
+          "bullet3": "Enable instant access to public and private sector services with a single, universal digital identity. Individuals spending less time authenticating who they are and registering for services means a better overall experience.",
+          "bullet4": "Get rid of any manual paperwork and use a secure digital format instead. Prepare for growth with smart digital services.",
+          "bullet5": "Prueba"
         },
         "crypto": {
           "image": "images/icon-03.svg",
           "title": "For Empowered Individuals",
-          "text": "Identify yourself with one click. Get instant access to products and services. Control how your data is accessed and used. Share your data with trusted parties in a secure and private way. Store all your important records in one place and verify them for a lifetime."
+          "text": "Open up a world of opportunity by empowering individuals to own their personal data and access a myriad of services.",
+          "bullet1": "Become the sole owner of your digital identity and data. Use and retain ownership across all platforms.",
+          "bullet2": "You are in charge of your data. Send it only to people and organizations you trust.",
+          "bullet3": "Manage who can access your data. No more third parties snooping into your private information without your knowledge or consent.",
+          "bullet4": "Store all your important credentials like your identity, licenses or qualifications in one safe, portable place, right on your phone.",
+          "bullet5": "Instantly access a variety of services. No more forms. No more passwords. No more wasted time."
         }
       }
     },
@@ -179,9 +202,9 @@
       "IssuingAuthority": "Issuing Authority",
       "credentialAlt": "Credential example that shows a credential with filled info (degree, student and university name, award and dates of start and graduation)",
       "iconAlt": "Credential Icon",
-      "title": "Atala PRISM Key Components",
+      "title": "Key Components",
       "titlecomponent1": "Mobile App",
-      "component1": "Enjoy a customizable mobile app for receiving, storing and sharing digital credentials.",
+      "component1": "Offer end-users a customizable mobile app for receiving, storing and sharing digital credentials.",
       "titlecomponent2": "SDK",
       "component2": "Integrate a digital identity functionality straight into your apps.",
       "titlecomponent3": "Management Console",
@@ -189,9 +212,9 @@
       "titlecomponent4": "APIs",
       "component4": "Streamline your processes  by integrating credential issuance and verification into your workflow.",
       "titlecomponent5": "Enrollment Tool",
-      "component5": "Capture biometric data as part of the onboarding process using a lightweight mobile App.",
+      "component5": "Capture biometric data as part of the onboarding process using a lightweight mobile app.",
       "titlecomponent6": "SmartCard",
-      "component6": "Expand your ecosystem using a low cost smart card for storing and sharing digital credentials.",
+      "component6": "Expand your ecosystem using a low-cost smart card for storing and sharing digital credentials.",
       "title7": "Coming Soon",
       "detailText": "Components "
     },
@@ -220,7 +243,7 @@
       "disclaimer": "In order to best experience the interactive demo, please use a laptop or desktop."
     },
     "quotes": {
-      "phrase": "Decentralized identity provides a new way to own your personal information and enables secure and trusted transactions in your everyday life."
+      "phrase": "Decentralized identity provides a new way to own your personal information and enables secure and trusted transactions in your everyday life"
     },
     "trust": {
       "trustName": "Trust 1",
@@ -234,14 +257,13 @@
       "titlebenefit2": "Scalable",
       "benefit2": "It can scale to millions of users with confidence using state-of-the-art, layer 2 technology.",
       "titlebenefit3": "Future-Proof",
-      "benefit3": "Designed based on the latest standards and specifications in decentralized identity. Built on open source software and engineered for interoperability.",
+      "benefit3": "Designed based on the latest standards and specifications in decentralized identity. Built on open-source software and engineered for interoperability.",
       "titlebenefit4": "Inclusive",
       "benefit4": "Designed for everyone. Even those without smartphones, internet access or sufficient literacy can own a verifiable identity.",
       "titlebenefit5": "Cost-Efficient",
-      "benefit5": "It can cost-efficiently scale to millions of users and implements a novel batching scheme to reduce public blockchain fees.",
+      "benefit5": "It can cost-efficiently onboard millions of users and implements a novel batching scheme to reduce public blockchain fees.",
       "titlebenefit6": "Flexible",
       "benefit6": "It supports flexible deployment models and choice of the underlying blockchain platform."
-
     },
     "caseStudy": {
       "title": "Identity and Credentials Verification Pilot",
@@ -268,15 +290,14 @@
       "faq2": "Current identity systems create a significant risk and cost for businesses as they are required to store and secure sensitive information. Governments face inefficiencies in their manual-based, bureaucratic processes, as well as personal data frauds. Individuals also have a lack of trust that their information might be misused or sold to third parties without their consent. Atala PRISM solves these problems by enabling a new approach for digital identity where people have ownership of their personal information and only share what is required with businesses or institutions  in an easy, secure and private way.",
       "titlefaq3": "Who is Atala PRISM for?",
       "faq3": "Atala PRISM is for businesses, governments and individuals. Businesses can quickly onboard new customers, reduce compliance risks and costs, and deliver seamless user experiences. Governments can issue digital identities and enable instant access to public and private services. Individuals have ownership of their identity and data, and can control how their personal information is used and accessed.",
-      "titlefaq4": "How do I know that my data and identification are safe with Atala PRISM?",
-      "faq4": "All your personal information is securely and privately stored on your smartphone or smartcard. Leveraging blockchain technology, Atala PRISM ensures that transactions are performed in a secure, peer-to-peer fashion. You are the only person with access to your data and credentials.",
-      "titlefaq5": "How does removing third parties keep my data and information safe?",
-      "faq5": "Third parties, including technology companies and municipalities, can sell your information, prevent you from accessing your data or shut down your account without your permission. With Atala PRISM, you have complete control over your own data.",
-      "titlefaq6": "Isn’t Atala PRISM a third party that is in control of my data?",
-      "faq6": "No. All data is securely stored and encrypted on your phone or smartcard. You are the only person that can access it using your biometrics (i.e. fingerprint or faceID) or your PIN code.",
-      "titlefaq7": "Can I only send identification and credentials in the Atala PRISM ecosystem?",
+      "titlefaq4": "How do I know that personal data and identification are safe with Atala PRISM?",
+      "faq4": "All personal information is securely and privately stored on your consumers’ smartphones or smartcards. Leveraging blockchain technology, Atala PRISM ensures that transactions are performed in a secure, peer-to-peer fashion. Each of your consumers is the only person with access to their data and credentials.",
+      "titlefaq5": "How does removing third parties keep personal data and information safe?",
+      "faq5": "Third parties, including technology companies and municipalities, can sell personal information, prevent individuals from accessing their data or shut down their account without permission. With Atala PRISM, individuals have complete control over their own data.",
+      "titlefaq6": "Isn’t Atala PRISM a third party that is in control of personal data?",
+      "faq6": "No. All data is securely stored and encrypted on the individual’s phone or smartcard. Each individual is the only person that can access it using their biometrics (i.e. fingerprint or faceID) or PIN code.",
+      "titlefaq7": "Are identity and credentials shareable only within the Atala PRISM ecosystem?",
       "faq7": "Anyone can integrate with Atala PRISM. Since it is built using industry standards, third-party apps will be able to connect easily in the future."
-
     },
     "credentialsView": {
       "title": "These are the Credentials",
@@ -286,17 +307,17 @@
       "title": "Contact Us",
       "detailText": "Contact",
       "part1": "Atala PRISM is powered by",
-      "part2": "Cardano,",
-      "part3": " a decentralised public blockchain and cryptocurrency project and is fully open source. Cardano is developing a smart contract platform which seeks to deliver more advanced features than any protocol previously developed. It is the first blockchain platform to evolve out of a scientific philosophy and a research-first driven approach. The development team consists of a large global collective of expert engineers and researchers.",
-      "part4": "Cardano is developed by",
+      "part2": "Cardano",
+      "part3": " which is built by a decentralized community of scientists, engineers, and thought leaders united in a common purpose: to create a technology platform that will ignite the positive change the world needs. It is the first blockchain platform to be built through peer-reviewed research, to be secure enough to protect the data of billions, scalable enough to accommodate global systems, and robust enough to support foundational change.",
+      "part4": "Cardano is developed by ",
       "part5": "IOHK,",
       "part6": " a blockchain technology company and industry leader in the fields of cryptography and distributed systems.",
-      "part7": "For any inquiries, please fill in the Contact form below:"
+      "part7": "For any inquiries, please fill in the contact form below:"
     },
     "useCasesPanel": {
       "detailText": "Use Cases",
       "title": "Use Cases",
-      "subtitle": "Atala PRISM enables the issuance of digital IDs and credentials that are user owned and controlled. They can be shared in an easy, secure and private way. Instantly verifiable, the credentials eliminate the need to constantly rely on issuing parties. Here are some sample use cases:",
+      "subtitle": "Atala PRISM enables the issuance of digital identities and credentials that users own and control. They can be shared in an easy, secure and private way. They are instantly verifiable from anywhere and eliminate the need for third party verification services.",
       "listItem1": "Digital ID",
       "listItem2": "Degrees",
       "listItem3": "Certificates",
@@ -752,7 +773,8 @@
       "title": "Let's move forward together.",
       "title2": "forward together.",
       "emailSuscription": "Or stay up to date on the latest announcements and products with just your email:",
-      "termsConditions": "By submitting this form, I agree with Atala PRISM’s Privacy Policy.",
+      "termsConditions": "By submitting this form, I agree with Atala PRISM’s ",
+      "termsConditions2": "Privacy Policy.",
       "send": "Send",
       "consent": "Yes, I would like to subscribe to updates from Atala PRISM.",
       "consent2": "Yes, I agree.",
@@ -869,9 +891,9 @@
         "part1": "Go to the Notifications ",
         "part2": " button in the main",
         "alt": "Notifications Menu Icon",
-        "part3": "menu and tap the Scan QR code ",
+        "part3": "menu and tap the Scan QR code button.",
         "part4": "icon.",
-        "alt2": "Scan QR Code button"
+        "alt2": "Scan QR Code Icon"
       },
       "step3": "Scan the QR code below:",
       "scannedQR": "I scanned the QR!"
@@ -929,7 +951,7 @@
     "futureDate": "The date must be earlier than today",
     "pastError": "The graduation date must be later than the start date"
   },
-  "legal":{
+  "legal": {
     "privacyPolicy": {
       "title": "Privacy Policy",
       "lastUpdate": "Last Updated: May 15ht, 2020",
