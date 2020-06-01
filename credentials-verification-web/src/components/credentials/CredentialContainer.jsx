@@ -38,9 +38,9 @@ const CredentialContainer = ({ api }) => {
   //   });
 
   const issueCredential = async credential => {
-    const { studentid } = credential;
+    const { subjectId } = credential;
     try {
-      const student = await api.studentsManager.getStudentById(studentid);
+      const student = await api.studentsManager.getStudentById(subjectId);
       const did = await api.wallet.getDid();
       const credentialBinary = await api.credentialsManager.getCredentialBinary(
         credential,

@@ -1,11 +1,12 @@
-import moment from 'moment';
 import { CredentialsServicePromiseClient } from '../../protos/cmanager_api_grpc_web_pb';
 import Logger from '../../helpers/Logger';
-import { setDateInfoFromJSON } from '../helpers';
 import { dayMonthYearBackendFormatter } from '../../helpers/formatters';
 
 const { Date } = require('../../protos/common_models_pb');
-const { GetCredentialsRequest, CreateCredentialRequest } = require('../../protos/cmanager_api_pb');
+const {
+  GetGenericCredentialsRequest,
+  CreateGenericCredentialRequest
+} = require('../../protos/cmanager_api_pb');
 const {
   Credential,
   IssuerData,
@@ -19,60 +20,51 @@ const {
 async function getCredentials(limit, lastSeenCredentialId = null) {
   Logger.info(`getting credentials from ${lastSeenCredentialId}, limit ${limit}`);
 
-  const getCredentialsRequest = new GetCredentialsRequest();
+  const getCredentialsRequest = new GetGenericCredentialsRequest();
   getCredentialsRequest.setLimit(limit);
   getCredentialsRequest.setLastseencredentialid(lastSeenCredentialId);
 
   const metadata = await this.auth.getMetadata(getCredentialsRequest);
 
-  const result = await this.client.getCredentials(getCredentialsRequest, metadata);
-  const { credentialsList } = result.toObject();
+  const result = await this.client.getGenericCredentials(getCredentialsRequest, metadata);
+  const credentialsList = result.getCredentialsList().map(cred => {
+    const credentialData = JSON.parse(cred.getCredentialdata());
+    const subjectId = cred.getSubjectid();
+    const groupname = cred.getGroupname();
+    const subjectData = JSON.parse(cred.getSubjectdata());
+    return Object.assign({ subjectId, groupname, subjectData }, credentialData);
+  });
 
   return { credentials: credentialsList, count: credentialsList.length };
 }
 
-function createAndPopulateCreationRequest(
-  studentId,
-  title,
-  enrollmentDate,
-  graduationDate,
-  groupName
-) {
-  const createCredentialRequest = new CreateCredentialRequest();
+function createAndPopulateCreationRequest(studentId, credentialData, groupName) {
+  const createCredentialRequest = new CreateGenericCredentialRequest();
 
-  createCredentialRequest.setStudentid(studentId);
-  createCredentialRequest.setTitle(title);
-  createCredentialRequest.setEnrollmentdate(enrollmentDate);
-  createCredentialRequest.setGraduationdate(graduationDate);
+  createCredentialRequest.setSubjectid(studentId);
+  createCredentialRequest.setCredentialdata(JSON.stringify(credentialData));
   createCredentialRequest.setGroupname(groupName);
 
   return createCredentialRequest;
 }
 
-async function createCredential({ title, enrollmentDate, graduationDate, groupName, students }) {
+async function createCredential({ title, enrollmentdate, graduationdate, groupName, students }) {
   Logger.info(
     'Creating credentials for the all the subjects as the issuer: ',
     this.config.issuerId
   );
 
-  const enrollmentDateObject = new Date();
-  const graduationDateObject = new Date();
-
-  setDateInfoFromJSON(enrollmentDateObject, enrollmentDate);
-  setDateInfoFromJSON(graduationDateObject, graduationDate);
-
   const credentialStudentsPromises = students.map(student => {
+    const credentialData = { title, enrollmentdate, graduationdate };
     const createCredentialRequest = createAndPopulateCreationRequest(
       student.id,
-      title,
-      enrollmentDateObject,
-      graduationDateObject,
+      credentialData,
       groupName
     );
 
     return this.auth
       .getMetadata(createCredentialRequest)
-      .then(metadata => this.client.createCredential(createCredentialRequest, metadata));
+      .then(metadata => this.client.createGenericCredential(createCredentialRequest, metadata));
   });
 
   return Promise.all(credentialStudentsPromises);
