@@ -77,7 +77,7 @@ object IdServiceImpl {
   def noProofRequests(connection: Connection): Future[Unit] =
     Future.unit
 
-  def idCredentialJsonTemplate(
+  private def idCredentialJsonTemplate(
       id: String,
       subjectIdNumber: String,
       issuanceDate: LocalDate,
@@ -106,6 +106,10 @@ object IdServiceImpl {
     )
   }
 
+  private def idCredentialHtmlTemplate(idCredentialJson: Json): String = {
+    io.iohk.cvp.intdemo.html.IdCredential(credential = idCredentialJson).body
+  }
+
   private def getPersonalData(
       intDemoRepository: IntDemoRepository
   ): TokenString => Future[Option[(String, LocalDate)]] =
@@ -120,17 +124,21 @@ object IdServiceImpl {
     val issuanceDate = LocalDate.now()
     val expiryDate = issuanceDate.plusYears(10)
     val subjectDid = "unknown"
-    val idCredential: String =
-      idCredentialJsonTemplate(id, subjectIdNumber, issuanceDate, expiryDate, subjectDid, name, dob).printWith(
-        jsonPrinter
-      )
+    val idCredentialJson =
+      idCredentialJsonTemplate(id, subjectIdNumber, issuanceDate, expiryDate, subjectDid, name, dob)
+    val credentialHtml = idCredentialHtmlTemplate(idCredentialJson)
+    // Append "view.html"
+    val idCredentialJsonWithView =
+      idCredentialJson.deepMerge(Json.obj("view" -> Json.obj("html" -> fromString(credentialHtml))))
+    val credentialDocument = idCredentialJsonWithView.printWith(jsonPrinter)
+
     credential_models.Credential(
       typeId = credentialTypeId,
-      credentialDocument = idCredential
+      credentialDocument = credentialDocument
     )
   }
 
-  def generateSubjectIdNumber(seedStr: String): String = {
+  private def generateSubjectIdNumber(seedStr: String): String = {
     val md = MessageDigest.getInstance("MD5")
     md.update(seedStr.getBytes("UTF-8"))
     s"RL-${DatatypeConverter.printHexBinary(md.digest).toUpperCase.take(9)}"

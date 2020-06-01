@@ -2,14 +2,16 @@ import java.time.{LocalDateTime, ZoneOffset}
 
 import $ivy.`com.lihaoyi::mill-contrib-buildinfo:$MILL_VERSION`
 import $ivy.`com.lihaoyi::mill-contrib-scalapblib:$MILL_VERSION`
+import $ivy.`com.lihaoyi::mill-contrib-twirllib:$MILL_VERSION`
 import ammonite.ops._
 import coursier.maven.MavenRepository
 import mill._
 import mill.contrib.buildinfo.BuildInfo
 import mill.contrib.scalapblib._
 import mill.define.Sources
-import mill.scalalib._
 import mill.modules.Assembly.Rule
+import mill.scalalib._
+import mill.twirllib._
 
 object JavaSpecVersion {
   val REQUIRED_VERSION = "1.8"
@@ -108,12 +110,15 @@ object versions {
   def scalaPB = "0.9.6"
   val scala = "2.12.10"
   val circe = "0.12.2"
+  // circe-optics does not release the same as circe, so use the closest version
+  val circeOptics = "0.12.0"
   val doobie = "0.7.0"
   val sttp = "1.6.6"
   val logback = "1.2.3"
   val grpc = "1.24.0"
   val monocle = "2.0.0"
   val scopt = "4.0.0-RC2"
+  val twirl = "1.5.0"
 }
 
 object common extends ScalaModule {
@@ -308,19 +313,23 @@ object node extends ServerPBCommon with CVPDockerModule {
   }
 }
 
-object connector extends ServerPBCommon with CVPDockerModule {
+object connector extends ServerPBCommon with CVPDockerModule with TwirlModule {
 
   // for some reason, the credential.proto is breaking the integration with mill and ScalaPB
   // and the reason seems to be while generating lenses, the same protobuf file compiles just
   // fine while using sbt.
   override def scalaPBLenses = T { false }
 
+  def twirlVersion = versions.twirl
+
   override def mainClass = Some("io.iohk.connector.ConnectorApp")
 
   override def ivyDeps =
     super.ivyDeps.map { deps =>
       deps ++ Agg(
-        ivy"com.braintreepayments.gateway:braintree-java:2.106.0"
+        ivy"com.braintreepayments.gateway:braintree-java:2.106.0",
+        ivy"com.typesafe.play::twirl-api:${versions.twirl}",
+        ivy"io.circe::circe-optics:${versions.circeOptics}"
       )
     }
 
@@ -340,6 +349,11 @@ object connector extends ServerPBCommon with CVPDockerModule {
   override def resources =
     T.sources {
       resourceDir() ++ utilDir()
+    }
+
+  override def generatedSources =
+    T {
+      super.generatedSources() ++ Seq(compileTwirl().classes)
     }
 
   object client extends ScalaModule {

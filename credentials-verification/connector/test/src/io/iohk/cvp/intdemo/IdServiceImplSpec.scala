@@ -3,6 +3,7 @@ package io.iohk.cvp.intdemo
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
+import io.circe.parser.parse
 import io.grpc.{Status, StatusException}
 import io.iohk.connector.model.{Connection, ConnectionId, MessageId, TokenString}
 import io.iohk.cvp.intdemo.IdServiceImplSpec._
@@ -10,6 +11,7 @@ import io.iohk.cvp.intdemo.Testing._
 import io.iohk.prism.intdemo.protos.{intdemo_api, intdemo_models}
 import org.mockito.ArgumentMatchersSugar.{any, eqTo}
 import org.mockito.MockitoSugar.{mock, verify, when}
+import org.scalatest.EitherValues._
 import org.scalatest.FlatSpec
 import org.scalatest.Matchers._
 import org.scalatest.concurrent.ScalaFutures.{PatienceConfig, convertScalaFuture}
@@ -60,40 +62,67 @@ class IdServiceImplSpec extends FlatSpec {
     verify(repository).mergePersonalInfo(token, name, dob)
   }
 
-  "idCredentialTemplate" should "render an ID credential correctly" in {
-    val d = LocalDate.now()
-    val df = DateTimeFormatter.ISO_LOCAL_DATE.format(d)
-    val d2 = d.plusYears(3)
-    val df2 = DateTimeFormatter.ISO_LOCAL_DATE.format(d2)
-    val dob = LocalDate.of(1973, 6, 6)
-    val dobf = DateTimeFormatter.ISO_LOCAL_DATE.format(dob)
+  "getIdCredential" should "return a correct ID credential" in {
+    val credential = IdServiceImpl.getIdCredential(("first-name", LocalDate.of(1973, 6, 2)))
 
-    val json = IdServiceImpl.idCredentialJsonTemplate(
-      id = "credential-id",
-      subjectIdNumber = "ABC-123",
-      issuanceDate = d,
-      expiryDate = d2,
-      subjectDid = "did:atala:subject-did",
-      subjectFirstName = "first-name",
-      subjectDateOfBirth = LocalDate.of(1973, 6, 6)
-    )
+    // Verify type
+    credential.typeId shouldBe "VerifiableCredential/RedlandIdCredential"
 
-    val c = json.hcursor
-    c.jsonStr("id") shouldBe "credential-id"
-    c.jsonArr("type") shouldBe List("VerifiableCredential", "RedlandIdCredential")
-    c.jsonStr("issuer.id") shouldBe "did:atala:091d41cc-e8fc-4c44-9bd3-c938dcf76dff"
-    c.jsonStr("issuer.name") shouldBe "Metropol City Government"
-    c.jsonStr("issuanceDate") shouldBe df
-    c.jsonStr("expiryDate") shouldBe df2
-    c.jsonStr("credentialSubject.id") shouldBe "did:atala:subject-did"
-    c.jsonStr("credentialSubject.identityNumber") shouldBe "ABC-123"
-    c.jsonStr("credentialSubject.name") shouldBe "first-name"
-    c.jsonStr("credentialSubject.dateOfBirth") shouldBe dobf
-  }
+    // Verify JSON document
+    val document = parse(credential.credentialDocument).right.value.hcursor
+    val today = LocalDate.now().atStartOfDay().toLocalDate
+    val yesterday = today.minusDays(1)
+    val issuanceDate = LocalDate.from(DateTimeFormatter.ISO_LOCAL_DATE.parse(document.jsonStr("issuanceDate")))
+    val expiryDate = issuanceDate.plusYears(10)
+    val formattedExpiryDate = DateTimeFormatter.ISO_LOCAL_DATE.format(expiryDate)
 
-  "generateSubjectIdNumber" should "Generate a 9 digit number" in {
-    IdServiceImpl.generateSubjectIdNumber("foo") shouldBe "RL-ACBD18DB4"
-    IdServiceImpl.generateSubjectIdNumber("bar") shouldBe "RL-37B51D194"
+    document.jsonStr("id") shouldBe "unknown"
+    document.jsonArr("type") shouldBe List("VerifiableCredential", "RedlandIdCredential")
+    document.jsonStr("issuer.id") shouldBe "did:atala:091d41cc-e8fc-4c44-9bd3-c938dcf76dff"
+    document.jsonStr("issuer.name") shouldBe "Metropol City Government"
+    // Test issuance to be today or yesterday, in case the test started to run yesterday
+    issuanceDate should (be(today) or be(yesterday))
+    document.jsonStr("expiryDate") shouldBe formattedExpiryDate
+    document.jsonStr("credentialSubject.id") shouldBe "unknown"
+    document.jsonStr("credentialSubject.identityNumber") shouldBe "RL-2DF6E5A51"
+    document.jsonStr("credentialSubject.name") shouldBe "first-name"
+    document.jsonStr("credentialSubject.dateOfBirth") shouldBe "1973-06-02"
+
+    // Verify HTML view
+    document.jsonStr("view.html") shouldBe
+      s"""<div style="height: 310px; width: 600px; border: 1px solid #e5e5e5; border-radius: 10px; font-family: Helvetica; font-size: 18px">
+         |    <div style="overflow: hidden; background-color: #e5e5e5; padding: 30px">
+         |        <div style="float: left">
+         |            <div style="font-size: 23px; color: #828282; margin-bottom: 15px">National ID Card</div>
+         |            <div style="font-size: 30px; margin-bottom: 15px">Metropol City Government</div>
+         |        </div>
+         |        <div style="float: right; margin-top: 10px">
+         |            <div style="height: 60px; width: 90px; background-color: #ffeaeb; text-align: center; border-radius: 5px">
+         |                <p style="vertical-align: middle; display: inline-block; line-height: 1.5; color: #ff2d3b">Flag</p>
+         |            </div>
+         |        </div>
+         |    </div>
+         |    <div style="overflow: hidden; padding: 15px">
+         |        <div style="float: left; margin: 0 5px">
+         |            <div style="height: 120px; width: 120px; background-color: #ffeaeb; text-align: center; border-radius: 10px; margin: 0 10px">
+         |                <p style="vertical-align: middle; display: inline-block; line-height: 5; color: #ff2d3b">Picture</p>
+         |            </div>
+         |        </div>
+         |        <div style="float: left; margin: 0 20px">
+         |            <div style="font-size: 14px; color: #828282; margin-bottom: 10px">Full Name</div>
+         |            <div style="margin-bottom: 20px">first-name</div>
+         |            <div style="font-size: 14px; color: #828282; margin-bottom: 10px">Identity Number</div>
+         |            <div>RL-2DF6E5A51</div>
+         |        </div>
+         |        <div style="float: right; margin-right: 35px">
+         |            <div style="font-size: 14px; color: #828282; margin-bottom: 10px">Date of Birth</div>
+         |            <div style="margin-bottom: 20px">1973-06-02</div>
+         |            <div style="font-size: 14px; color: #828282; margin-bottom: 10px">Expiration Date</div>
+         |            <div>$formattedExpiryDate</div>
+         |        </div>
+         |    </div>
+         |</div>
+         |""".stripMargin
   }
 }
 
