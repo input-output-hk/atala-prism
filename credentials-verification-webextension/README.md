@@ -20,6 +20,14 @@ Then, running `sbt chromePackage` on this project is enough.
 
 ## Development
 - Running `sbt ~chromeUnpackedFast` will build the app each time it detects changes on the code, it also disables js optimizations which result in faster builds (placing the build at `target/chrome/unpacked-fast`).
+  - You can run the following to spin up all required dependencies, except PostgreSQL, along `sbt ~chromeUnpackedFast`:
+    ```shell script
+    ./run_local.sh
+    ```
+    That will open a `tmux` session you can kill typing `CTRL+B` followed by `:kill-session`, or just exit each sub-terminal normally.
+    
+    **NOTE**: You have to have the PostgreSQL DB running already.
+    **WARNING**: Beware that killing the session may leave `envoy` running and, next time you try to run it, it will fail to run again, but it's a harmless problem because it would be running anyway.
 - Be sure to integrate scalafmt on your IntelliJ to format the source code on save (see https://scalameta.org/scalafmt/docs/installation.html#intellij).
 
 ### Running
