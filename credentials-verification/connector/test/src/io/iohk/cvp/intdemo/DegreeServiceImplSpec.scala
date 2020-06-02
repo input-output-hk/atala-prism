@@ -19,7 +19,7 @@ class DegreeServiceImplSpec extends FlatSpec {
       subjectDid = "did:atala:subject-did",
       subjectFullName = "name",
       degreeAwarded = "Bachelor of Science",
-      degreeResult = "First class honors",
+      degreeResult = "First-class honors",
       graduationYear = 1995
     )
 
@@ -32,7 +32,7 @@ class DegreeServiceImplSpec extends FlatSpec {
     c.jsonStr("credentialSubject.id") shouldBe "did:atala:subject-did"
     c.jsonStr("credentialSubject.name") shouldBe "name"
     c.jsonStr("credentialSubject.degreeAwarded") shouldBe "Bachelor of Science"
-    c.jsonStr("credentialSubject.degreeResult") shouldBe "First class honors"
+    c.jsonStr("credentialSubject.degreeResult") shouldBe "First-class honors"
     c.jsonNum[Int]("credentialSubject.graduationYear") shouldBe 1995
   }
 }
