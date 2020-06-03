@@ -1,8 +1,8 @@
-#!/usr/bin/env zsh
+#!/usr/bin/env bash
 set -e
 
 usage() {
-  print "Usage: cardano.sh [[-a] [-d] [-p] [-s]] <vpc name>
+  echo "Usage: cardano.sh [[-a] [-d] [-p] [-s]] <vpc name>
   Setup Prometheus monitoring for supporting environments.
   <vpc name> should be the same name as used for vpc creation.
   -a    apply changes.
@@ -57,8 +57,8 @@ fi
 
 state_key="infra/stage/cardano/$name/terraform.tfstate"
 
-print "Using name '$name'."
-print "Performing action '$action'."
+echo "Using name '$name'."
+echo "Performing action '$action'."
 
 case $action in
   (apply) apply_env;;

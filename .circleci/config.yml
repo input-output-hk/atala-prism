@@ -187,6 +187,21 @@ jobs:
           command: ./scalafmt --test
 
       - run:
+          name: Configure AWS
+          command: |
+            aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID --profile default
+            aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY --profile default
+            aws configure set region $AWS_DEFAULT_REGION --profile default
+            $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
+
+      - run:
+          name: Obtain Cardano db sync and wallet endpoints config
+          command: |
+            .circleci/generate_cardano_variables.sh >> $BASH_ENV;
+            echo "export ENV=$branchPrefix" >> $BASH_ENV;
+            . $BASH_ENV && echo "Env short name set to $ENV. Image tag set to $TAG"
+
+      - run:
           name: Test credentials-verification components
           command: cd credentials-verification && mill -i __.compile && mill -i __.test
 

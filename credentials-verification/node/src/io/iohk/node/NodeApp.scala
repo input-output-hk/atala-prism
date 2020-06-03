@@ -8,9 +8,6 @@ import doobie.util.transactor.Transactor
 import io.grpc.{Server, ServerBuilder}
 import io.iohk.cvp.repositories.{SchemaMigrations, TransactorFactory}
 import io.iohk.node.bitcoin.BitcoinClient
-import io.iohk.node.cardano.CardanoClient
-import io.iohk.node.cardano.dbsync.CardanoDbSyncClient
-import io.iohk.node.cardano.wallet.CardanoWalletApiClient
 import io.iohk.node.objects.{ObjectStorageService, S3ObjectStorageService}
 import io.iohk.node.repositories.atalaobjects.AtalaObjectsRepository
 import io.iohk.node.repositories.blocks.BlocksRepository
@@ -54,7 +51,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
   private def start(): Unit = {
     logger.info("Loading config")
     val globalConfig = ConfigFactory.load()
-    val databaseConfig = transactorConfig(globalConfig.getConfig("db"))
+    val databaseConfig = NodeConfig.transactorConfig(globalConfig.getConfig("db"))
 
     logger.info("Applying database migrations")
     applyDatabaseMigrations(databaseConfig)
@@ -126,7 +123,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       xa: Transactor[IO]
   ): AtalaService = {
     logger.info("Creating bitcoin client")
-    val bitcoinClient = BitcoinClient(bitcoinConfig(config))
+    val bitcoinClient = BitcoinClient(NodeConfig.bitcoinConfig(config))
 
     val blocksRepository = new BlocksRepository(xa)
 
@@ -147,7 +144,7 @@ class NodeApp(executionContext: ExecutionContext) { self =>
       onAtalaReference: ObjectHandler
   ): CardanoLedgerService = {
     logger.info("Creating cardano client")
-    CardanoLedgerService(cardanoConfig(config), keyValueService, onAtalaReference)
+    CardanoLedgerService(NodeConfig.cardanoConfig(config), keyValueService, onAtalaReference)
   }
 
   private def stop(): Unit = {
@@ -169,50 +166,5 @@ class NodeApp(executionContext: ExecutionContext) { self =>
     } else {
       logger.info(s"$appliedMigrations migration scripts applied")
     }
-  }
-
-  private def transactorConfig(config: Config): TransactorFactory.Config = {
-    val url = config.getString("url")
-    val username = config.getString("username")
-    val password = config.getString("password")
-    TransactorFactory.Config(
-      jdbcUrl = url,
-      username = username,
-      password = password
-    )
-  }
-
-  def bitcoinConfig(config: Config): BitcoinClient.Config = {
-    val host = config.getString("host")
-    val port = config.getInt("port")
-    val username = config.getString("username")
-    val password = config.getString("password")
-    BitcoinClient.Config(host, port, username, password)
-  }
-
-  private def cardanoConfig(config: Config): CardanoLedgerService.Config = {
-    val walletId = config.getString("walletId")
-    val walletPassphrase = config.getString("walletPassphrase")
-    val paymentAddress = config.getString("paymentAddress")
-    val blockConfirmationsToWait = config.getInt("blockConfirmationsToWait")
-    val dbSyncConfig = cardanoDbSyncConfig(config.getConfig("dbSync"))
-    val walletConfig = cardanoWalletConfig(config.getConfig("wallet"))
-    CardanoLedgerService.Config(
-      walletId,
-      walletPassphrase,
-      paymentAddress,
-      blockConfirmationsToWait,
-      CardanoClient.Config(dbSyncConfig, walletConfig)
-    )
-  }
-
-  private def cardanoDbSyncConfig(config: Config): CardanoDbSyncClient.Config = {
-    CardanoDbSyncClient.Config(transactorConfig(config.getConfig("db")))
-  }
-
-  private def cardanoWalletConfig(config: Config): CardanoWalletApiClient.Config = {
-    val host = config.getString("host")
-    val port = config.getInt("port")
-    CardanoWalletApiClient.Config(host, port)
   }
 }
