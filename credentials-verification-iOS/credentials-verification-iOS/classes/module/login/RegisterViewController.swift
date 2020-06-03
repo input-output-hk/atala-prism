@@ -12,7 +12,7 @@ class RegisterViewController: BaseViewController, RegisterSeedViewDelegate, Swit
     var viewSeeds: [RegisterSeedView] = []
 
     override func navBarCustomStyle() -> NavBarCustomStyle {
-        return NavBarCustomStyle(hasNavBar: true, title: "register_nav_title".localize(), hasBackButton: true)
+        return NavBarCustomStyle(hasNavBar: true, title: nil, hasBackButton: true)
     }
 
     static func openThisView(_ caller: UIViewController?) {

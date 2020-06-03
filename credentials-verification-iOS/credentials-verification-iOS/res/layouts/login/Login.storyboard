@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16096" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16086"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -10,13 +10,23 @@
         <!--Login View Controller-->
         <scene sceneID="oaf-M1-oiN">
             <objects>
-                <viewController storyboardIdentifier="Login" useStoryboardIdentifierAsRestorationIdentifier="YES" id="Jzz-c9-nKt" customClass="LoginViewController" customModule="ATALA" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="Login" useStoryboardIdentifierAsRestorationIdentifier="YES" id="Jzz-c9-nKt" customClass="LoginViewController" customModule="Atala_Prism" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="MnG-lC-2BY">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="RNz-FI-Ejd">
+                                <rect key="frame" x="31" y="114" width="55" height="26.5"/>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="22"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="appBlack"/>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="localized" value="login_nav_title"/>
+                                </userDefinedRuntimeAttributes>
+                            </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="b3l-c0-cbs">
-                                <rect key="frame" x="31" y="124" width="293" height="17"/>
+                                <rect key="frame" x="31" y="150.5" width="293" height="17"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
@@ -45,22 +55,22 @@
                                     <action selector="actionContinueButton:" destination="Jzz-c9-nKt" eventType="touchUpInside" id="aGq-nO-cRe"/>
                                 </connections>
                             </button>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="hTy-EQ-ABZ" customClass="TextFieldTitledView" customModule="ATALA" customModuleProvider="target">
-                                <rect key="frame" x="31" y="172" width="352" height="68"/>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="hTy-EQ-ABZ" customClass="TextFieldTitledView" customModule="Atala_Prism" customModuleProvider="target">
+                                <rect key="frame" x="31" y="198.5" width="352" height="68"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="68" id="cKg-sJ-eX9"/>
                                 </constraints>
                             </view>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="q8i-I4-LVC" customClass="TextFieldTitledView" customModule="ATALA" customModuleProvider="target">
-                                <rect key="frame" x="31" y="250" width="352" height="68"/>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="q8i-I4-LVC" customClass="TextFieldTitledView" customModule="Atala_Prism" customModuleProvider="target">
+                                <rect key="frame" x="31" y="276.5" width="352" height="68"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="68" id="K9D-DP-hkW"/>
                                 </constraints>
                             </view>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="8p0-mc-vTR" customClass="TextFieldTitledView" customModule="ATALA" customModuleProvider="target">
-                                <rect key="frame" x="31" y="368" width="352" height="68"/>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="8p0-mc-vTR" customClass="TextFieldTitledView" customModule="Atala_Prism" customModuleProvider="target">
+                                <rect key="frame" x="31" y="394.5" width="352" height="68"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="68" id="FZT-fk-loi"/>
@@ -71,15 +81,16 @@
                         <constraints>
                             <constraint firstItem="hTy-EQ-ABZ" firstAttribute="top" secondItem="b3l-c0-cbs" secondAttribute="bottom" constant="31" id="0MS-CG-8tS"/>
                             <constraint firstItem="q8i-I4-LVC" firstAttribute="top" secondItem="hTy-EQ-ABZ" secondAttribute="bottom" constant="10" id="4ag-sd-G3b"/>
+                            <constraint firstItem="RNz-FI-Ejd" firstAttribute="top" secondItem="VyB-wh-xfW" secondAttribute="top" constant="70" id="CSC-jj-ZCB"/>
                             <constraint firstItem="hTy-EQ-ABZ" firstAttribute="leading" secondItem="VyB-wh-xfW" secondAttribute="leading" constant="31" id="Edb-Dk-SwD"/>
                             <constraint firstItem="VyB-wh-xfW" firstAttribute="trailing" secondItem="3Za-yW-TUn" secondAttribute="trailing" constant="31" id="Mdf-2I-GRm"/>
                             <constraint firstItem="q8i-I4-LVC" firstAttribute="leading" secondItem="VyB-wh-xfW" secondAttribute="leading" constant="31" id="Nng-fW-ka3"/>
                             <constraint firstItem="3Za-yW-TUn" firstAttribute="leading" secondItem="VyB-wh-xfW" secondAttribute="leading" constant="31" id="OI5-xQ-EKo"/>
                             <constraint firstItem="b3l-c0-cbs" firstAttribute="leading" secondItem="VyB-wh-xfW" secondAttribute="leading" constant="31" id="TJ4-gH-mkM"/>
-                            <constraint firstAttribute="leading" secondItem="VyB-wh-xfW" secondAttribute="leading" constant="31" id="UYr-wK-5sC"/>
                             <constraint firstItem="VyB-wh-xfW" firstAttribute="trailing" secondItem="q8i-I4-LVC" secondAttribute="trailing" constant="31" id="bkh-1G-aPF"/>
-                            <constraint firstItem="b3l-c0-cbs" firstAttribute="top" secondItem="VyB-wh-xfW" secondAttribute="top" constant="80" id="bqr-tO-E7Z"/>
+                            <constraint firstItem="b3l-c0-cbs" firstAttribute="top" secondItem="RNz-FI-Ejd" secondAttribute="bottom" constant="10" id="bqr-tO-E7Z"/>
                             <constraint firstItem="VyB-wh-xfW" firstAttribute="trailing" secondItem="hTy-EQ-ABZ" secondAttribute="trailing" constant="31" id="c8W-l2-NXH"/>
+                            <constraint firstItem="RNz-FI-Ejd" firstAttribute="leading" secondItem="VyB-wh-xfW" secondAttribute="leading" constant="31" id="fUc-lK-Jg5"/>
                             <constraint firstItem="8p0-mc-vTR" firstAttribute="leading" secondItem="VyB-wh-xfW" secondAttribute="leading" constant="31" id="mpm-qS-zkf"/>
                             <constraint firstItem="VyB-wh-xfW" firstAttribute="trailing" secondItem="b3l-c0-cbs" secondAttribute="trailing" constant="90" id="qmu-9Z-1Mq"/>
                             <constraint firstItem="8p0-mc-vTR" firstAttribute="top" secondItem="q8i-I4-LVC" secondAttribute="bottom" constant="50" id="rnM-CK-qJe"/>

@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="16096" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
-        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="TutorialPageView" customModule="ATALA" customModuleProvider="target">
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="TutorialPageView" customModule="Atala_Prism" customModuleProvider="target">
             <connections>
-                <outlet property="buttonFirst" destination="4eJ-KA-4u4" id="wVQ-N6-Udp"/>
-                <outlet property="buttonSecond" destination="LO6-UA-rfK" id="6g8-NR-aMa"/>
                 <outlet property="imageMain" destination="CGh-RN-rmM" id="6vk-cf-GLa"/>
                 <outlet property="labelSubtitle" destination="vzt-Xm-8Y3" id="1Hm-r7-3fC"/>
                 <outlet property="labelTitle" destination="GJP-Ka-SvB" id="dJG-JP-Hdj"/>
@@ -45,54 +43,18 @@
                         <constraint firstAttribute="height" constant="220" id="IYK-Nu-DqQ"/>
                     </constraints>
                 </imageView>
-                <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="14" translatesAutoresizingMaskIntoConstraints="NO" id="RnO-Ul-gIi">
-                    <rect key="frame" x="31" y="702" width="424" height="44"/>
-                    <subviews>
-                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="4eJ-KA-4u4">
-                            <rect key="frame" x="0.0" y="0.0" width="205" height="44"/>
-                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                            <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="16"/>
-                            <inset key="contentEdgeInsets" minX="0.0" minY="12" maxX="0.0" maxY="12"/>
-                            <state key="normal" title="Button"/>
-                            <userDefinedRuntimeAttributes>
-                                <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="appWhite"/>
-                                <userDefinedRuntimeAttribute type="string" keyPath="backgroundColorIB" value="appRed"/>
-                            </userDefinedRuntimeAttributes>
-                            <connections>
-                                <action selector="actionFirstButton:" destination="-1" eventType="touchUpInside" id="65I-xS-nyZ"/>
-                            </connections>
-                        </button>
-                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="LO6-UA-rfK">
-                            <rect key="frame" x="219" y="0.0" width="205" height="44"/>
-                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                            <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="16"/>
-                            <state key="normal" title="Button"/>
-                            <userDefinedRuntimeAttributes>
-                                <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="appWhite"/>
-                                <userDefinedRuntimeAttribute type="string" keyPath="backgroundColorIB" value="appRed"/>
-                            </userDefinedRuntimeAttributes>
-                            <connections>
-                                <action selector="actionSecondButton:" destination="-1" eventType="touchUpInside" id="TOn-pC-m7M"/>
-                            </connections>
-                        </button>
-                    </subviews>
-                </stackView>
             </subviews>
             <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
             <constraints>
-                <constraint firstAttribute="bottom" secondItem="RnO-Ul-gIi" secondAttribute="bottom" constant="30" id="2u3-fX-ehm"/>
-                <constraint firstAttribute="trailing" secondItem="RnO-Ul-gIi" secondAttribute="trailing" constant="31" id="99W-IN-spt"/>
                 <constraint firstItem="GJP-Ka-SvB" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="DzY-z3-UiG"/>
                 <constraint firstItem="vzt-Xm-8Y3" firstAttribute="top" secondItem="GJP-Ka-SvB" secondAttribute="bottom" constant="20" id="FsG-0f-nXk"/>
                 <constraint firstItem="CGh-RN-rmM" firstAttribute="top" relation="greaterThanOrEqual" secondItem="vzt-Xm-8Y3" secondAttribute="bottom" constant="10" id="GsU-en-Bus"/>
                 <constraint firstAttribute="trailing" secondItem="vzt-Xm-8Y3" secondAttribute="trailing" constant="55" id="LOm-kI-O2R"/>
                 <constraint firstItem="CGh-RN-rmM" firstAttribute="centerY" secondItem="iN0-l3-epB" secondAttribute="centerY" constant="30" id="Nwg-jk-9aL"/>
-                <constraint firstItem="RnO-Ul-gIi" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="31" id="R1I-Jy-Pjw"/>
                 <constraint firstItem="GJP-Ka-SvB" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="60" id="biu-Le-XAN"/>
                 <constraint firstItem="CGh-RN-rmM" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="82" id="btX-jk-9rD"/>
                 <constraint firstAttribute="trailing" secondItem="CGh-RN-rmM" secondAttribute="trailing" constant="82" id="d57-5R-3NX"/>
                 <constraint firstItem="vzt-Xm-8Y3" firstAttribute="leading" secondItem="iN0-l3-epB" secondAttribute="leading" constant="55" id="eUq-Fl-oxP"/>
-                <constraint firstItem="RnO-Ul-gIi" firstAttribute="top" relation="greaterThanOrEqual" secondItem="CGh-RN-rmM" secondAttribute="bottom" constant="10" id="qPu-0Q-W6Y"/>
                 <constraint firstAttribute="trailing" secondItem="GJP-Ka-SvB" secondAttribute="trailing" constant="60" id="zc8-Bg-l6E"/>
             </constraints>
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>

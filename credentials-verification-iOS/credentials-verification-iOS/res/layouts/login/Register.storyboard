@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="15400" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="15404"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -10,13 +10,23 @@
         <!--Register View Controller-->
         <scene sceneID="W6T-YG-fMh">
             <objects>
-                <viewController storyboardIdentifier="Register" useStoryboardIdentifierAsRestorationIdentifier="YES" id="ESO-vp-3Cc" customClass="RegisterViewController" customModule="ATALA" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="Register" useStoryboardIdentifierAsRestorationIdentifier="YES" id="ESO-vp-3Cc" customClass="RegisterViewController" customModule="Atala_Prism" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="Spp-Dz-DbP">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="54h-jQ-PL4">
+                                <rect key="frame" x="31" y="114" width="55" height="26.5"/>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="22"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                                <userDefinedRuntimeAttributes>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="appBlack"/>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="localized" value="register_nav_title"/>
+                                </userDefinedRuntimeAttributes>
+                            </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ju5-HY-coY">
-                                <rect key="frame" x="31" y="124" width="342" height="17"/>
+                                <rect key="frame" x="31" y="150.5" width="342" height="17"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
@@ -26,7 +36,7 @@
                                 </userDefinedRuntimeAttributes>
                             </label>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="pTH-wA-5Sh">
-                                <rect key="frame" x="31" y="472" width="342" height="17"/>
+                                <rect key="frame" x="31" y="498.5" width="342" height="17"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
@@ -35,8 +45,8 @@
                                     <userDefinedRuntimeAttribute type="string" keyPath="localized" value="register_warning"/>
                                 </userDefinedRuntimeAttributes>
                             </label>
-                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Ywh-vQ-hJ3" customClass="SwitchCustomView" customModule="ATALA" customModuleProvider="target">
-                                <rect key="frame" x="31" y="515" width="30" height="30"/>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Ywh-vQ-hJ3" customClass="SwitchCustomView" customModule="Atala_Prism" customModuleProvider="target">
+                                <rect key="frame" x="31" y="541.5" width="30" height="30"/>
                                 <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="30" id="3zl-Ox-jhy"/>
@@ -48,7 +58,7 @@
                                 </userDefinedRuntimeAttributes>
                             </view>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5ni-FJ-yQA">
-                                <rect key="frame" x="66" y="520.5" width="307" height="17"/>
+                                <rect key="frame" x="66" y="547" width="307" height="17"/>
                                 <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="14"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
@@ -71,14 +81,14 @@
                                 <userDefinedRuntimeAttributes>
                                     <userDefinedRuntimeAttribute type="string" keyPath="textColorIB" value="appWhite"/>
                                     <userDefinedRuntimeAttribute type="string" keyPath="backgroundColorIB" value="appRed"/>
-                                    <userDefinedRuntimeAttribute type="string" keyPath="localized" value="next"/>
+                                    <userDefinedRuntimeAttribute type="string" keyPath="localized" value="accept"/>
                                 </userDefinedRuntimeAttributes>
                                 <connections>
                                     <action selector="actionContinueButton:" destination="ESO-vp-3Cc" eventType="touchUpInside" id="L4E-0p-bTK"/>
                                 </connections>
                             </button>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="KKJ-hl-Vi8">
-                                <rect key="frame" x="31" y="176" width="352" height="251"/>
+                                <rect key="frame" x="31" y="202.5" width="352" height="251"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="17" translatesAutoresizingMaskIntoConstraints="NO" id="7UQ-k0-MCd">
                                         <rect key="frame" x="0.0" y="0.0" width="352" height="251"/>
@@ -125,14 +135,16 @@
                             <constraint firstItem="KKJ-hl-Vi8" firstAttribute="leading" secondItem="ACv-Ld-ve2" secondAttribute="leading" constant="31" id="QUJ-XI-yZe"/>
                             <constraint firstItem="ACv-Ld-ve2" firstAttribute="bottom" secondItem="FZL-l8-afI" secondAttribute="bottom" constant="31" id="W2w-5c-Pgd"/>
                             <constraint firstItem="ACv-Ld-ve2" firstAttribute="trailing" secondItem="Ju5-HY-coY" secondAttribute="trailing" constant="41" id="cfT-Ef-MMA"/>
+                            <constraint firstItem="54h-jQ-PL4" firstAttribute="leading" secondItem="ACv-Ld-ve2" secondAttribute="leading" constant="31" id="dMK-Vv-Xjp"/>
                             <constraint firstItem="Ywh-vQ-hJ3" firstAttribute="top" secondItem="pTH-wA-5Sh" secondAttribute="bottom" constant="26" id="fKf-KD-PIK"/>
                             <constraint firstItem="pTH-wA-5Sh" firstAttribute="leading" secondItem="Ju5-HY-coY" secondAttribute="leading" id="fW6-UB-4q6"/>
                             <constraint firstItem="ACv-Ld-ve2" firstAttribute="trailing" secondItem="FZL-l8-afI" secondAttribute="trailing" constant="31" id="jog-H1-7fe"/>
                             <constraint firstItem="Ju5-HY-coY" firstAttribute="leading" secondItem="ACv-Ld-ve2" secondAttribute="leading" constant="31" id="mLx-MG-u9I"/>
                             <constraint firstItem="pTH-wA-5Sh" firstAttribute="top" secondItem="KKJ-hl-Vi8" secondAttribute="bottom" constant="45" id="sXM-f4-OK6"/>
-                            <constraint firstItem="Ju5-HY-coY" firstAttribute="top" secondItem="ACv-Ld-ve2" secondAttribute="top" constant="80" id="w58-V3-qfV"/>
+                            <constraint firstItem="Ju5-HY-coY" firstAttribute="top" secondItem="54h-jQ-PL4" secondAttribute="bottom" constant="10" id="w58-V3-qfV"/>
                             <constraint firstItem="5ni-FJ-yQA" firstAttribute="trailing" secondItem="pTH-wA-5Sh" secondAttribute="trailing" id="xJv-Sd-xuI"/>
                             <constraint firstItem="KKJ-hl-Vi8" firstAttribute="top" secondItem="Ju5-HY-coY" secondAttribute="bottom" constant="35" id="yt2-iX-a1f"/>
+                            <constraint firstItem="54h-jQ-PL4" firstAttribute="top" secondItem="ACv-Ld-ve2" secondAttribute="top" constant="70" id="yxD-Op-HZL"/>
                             <constraint firstItem="Ywh-vQ-hJ3" firstAttribute="leading" secondItem="Ju5-HY-coY" secondAttribute="leading" id="za0-We-TlG"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="ACv-Ld-ve2"/>

@@ -1,26 +1,21 @@
 //
 
-class TutorialViewController: BaseViewController, TutorialPageViewDelegate, UIScrollViewDelegate {
+class TutorialViewController: BaseViewController, UIScrollViewDelegate {
 
     @IBOutlet weak var scrollView: UIScrollView!
     @IBOutlet weak var viewIndicator1: UIView!
-    @IBOutlet weak var labelIndicator1: UILabel!
     @IBOutlet weak var viewIndicatorContainer1: UIView!
     @IBOutlet weak var viewIndicator2: UIView!
-    @IBOutlet weak var labelIndicator2: UILabel!
     @IBOutlet weak var viewIndicatorContainer2: UIView!
     @IBOutlet weak var viewIndicator3: UIView!
-    @IBOutlet weak var labelIndicator3: UILabel!
     @IBOutlet weak var viewIndicatorContainer3: UIView!
+    @IBOutlet weak var buttonContinue: UIButton!
 
     var presenterImpl = TutorialPresenter()
     override var presenter: BasePresenter { return presenterImpl }
 
     var currentPageIndex: Int = 0
     var pages: [TutorialPageView] = []
-    var pageIndicatorNumbers: [UILabel] {
-        return [labelIndicator1, labelIndicator2, labelIndicator3]
-    }
 
     var pageIndicatorIcons: [UIView] {
         return [viewIndicator1, viewIndicator2, viewIndicator3]
@@ -40,6 +35,7 @@ class TutorialViewController: BaseViewController, TutorialPageViewDelegate, UISc
         // Setup
         currentPageIndex = 0
         setupScroll()
+        setupButtons()
     }
 
     override func viewDidLayoutSubviews() {
@@ -63,6 +59,11 @@ class TutorialViewController: BaseViewController, TutorialPageViewDelegate, UISc
         scrollView.delegate = self
     }
 
+    func setupButtons() {
+
+        buttonContinue.layer.cornerRadius = AppConfigs.CORNER_RADIUS_BUTTON
+    }
+
     func setupTutorialPages() {
 
         pages = []
@@ -79,7 +80,7 @@ class TutorialViewController: BaseViewController, TutorialPageViewDelegate, UISc
         for i in 0 ..< pages.count {
             pages[i].frame = CGRect(x: scrollView.frame.width * CGFloat(i), y: 0, width: scrollView.frame.width, height: scrollView.frame.height)
             scrollView.addSubview(pages[i])
-            pages[i].config(delegate: self, index: i)
+            pages[i].config(index: i)
             pageIndicatorContainers[i].addOnClickListener(action: actionPages[i])
         }
 
@@ -87,7 +88,10 @@ class TutorialViewController: BaseViewController, TutorialPageViewDelegate, UISc
     }
 
     // MARK: Buttons
-
+    @IBAction func tappedButtonContinue(_ sender: Any) {
+        presenterImpl.tappedRegisterButton()
+    }
+    
     func tappedButtonAction(for view: TutorialPageView, buttonIndex: Int) {
 
         if currentPageIndex + 1 < pages.count {
@@ -122,14 +126,16 @@ class TutorialViewController: BaseViewController, TutorialPageViewDelegate, UISc
         scrollView.scrollRectToVisible(nextPage.frame, animated: animated)
 
         for i in 0 ..< pages.count {
-            pageIndicatorIcons[i].isHidden = index != i
-            pageIndicatorNumbers[i].textColor = index <= i ? UIColor.appBlack : UIColor.appGreyMid
+            pageIndicatorIcons[i].backgroundColor = index != i ? .appGrey : .appRed
         }
     }
 
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        // let pageIndex = round(scrollView.contentOffset.x/view.frame.width)
-        // pageControl.currentPage = Int(pageIndex)
+        let pageIndex = Int(round(scrollView.contentOffset.x/view.frame.width))
+//         pageControl.currentPage = Int(pageIndex)
+        for i in 0 ..< pages.count {
+            pageIndicatorIcons[i].backgroundColor = pageIndex != i ? .appGrey : .appRed
+        }
     }
 
     // MARK: Screens

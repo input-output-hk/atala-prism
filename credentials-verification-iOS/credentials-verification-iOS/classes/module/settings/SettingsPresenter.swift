@@ -40,7 +40,7 @@ class SettingsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenterDel
     lazy var initialStaticCells: [InitialCellValue] = [
         InitialCellValue(icon: "logo_backup", title: "settings_backup_title", subtitle: "settings_backup_subtitle", action: nil),
         InitialCellValue(icon: "logo_security", title: "settings_security_title", subtitle: "settings_security_subtitle", action: actionRowSecurity),
-        InitialCellValue(icon: "logo_support", title: "settings_support_title", subtitle: "settings_support_subtitle", action: actionRowSupport),
+        InitialCellValue(icon: "logo_support", title: "settings_support_title", subtitle: "settings_support_subtitle", action: nil),
         InitialCellValue(icon: "logo_about", title: "settings_about_title", subtitle: "settings_about_subtitle", action: actionRowTerms),
     ]
 

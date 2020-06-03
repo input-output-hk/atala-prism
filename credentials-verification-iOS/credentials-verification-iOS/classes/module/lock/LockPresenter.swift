@@ -25,7 +25,7 @@ class LockPresenter: BasePresenter {
         var error: NSError?
         if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) {
             let reason = "unlock_app".localize()
-            context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason! ) { success, error in
+            context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason! ) { success, policyError in
 
                 if success {
 
@@ -37,15 +37,21 @@ class LockPresenter: BasePresenter {
                     }
 
                 } else {
-                    print(error?.localizedDescription ?? "Failed to authenticate")
+                    print(policyError?.localizedDescription ?? "Failed to authenticate")
+                    var errorMsg = "unlock_biometrics_error".localize()
+                    if policyError?._code == Int(kLAErrorUserCancel) {
+                        errorMsg = "unlock_touch_id_cancel".localize()
+                    } else if policyError?._code == Int(kLAErrorAuthenticationFailed) {
+                        errorMsg = context.biometryType == .faceID ? "unlock_face_id_error".localize() : "unlock_touch_id_error".localize()
+                    }
                     DispatchQueue.main.asyncAfter(wallDeadline: .now() + 1) { [unowned self] in
-                        ViewUtils.showErrorMessage(doShow: true, view: self.viewImpl!, title: nil, message: "unlock_biometrics_error".localize())
+                        ViewUtils.showErrorMessage(doShow: true, view: self.viewImpl!, title: nil, message: errorMsg)
                         self.viewImpl?.disableBiometrics()
                     }
                 }
             }
         } else {
-            DispatchQueue.main.async { [unowned self] in
+            DispatchQueue.main.asyncAfter(wallDeadline: .now() + 0.3) { [unowned self] in
                 if context.biometryType == .faceID {
                     ViewUtils.showErrorMessage(doShow: true, view: self.viewImpl!, title: nil, message: "unlock_unerroled_face_id".localize())
                 } else {

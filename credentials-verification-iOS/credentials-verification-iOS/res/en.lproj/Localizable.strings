@@ -21,6 +21,7 @@
 "decline" = "Decline";
 "verify" = "Verify";
 "next" = "Next";
+"accept" = "Accept";
 "service_error" = "Service is unavailable. Try again later";
 
  // <!-- Default errors and loadings -->
@@ -68,7 +69,7 @@
 // <!-- Credentials -->
 "credentials_nav_title" = "Credentials";
 "credentials_degrees_new_hello" = "Hello %1$@!";
-"credentials_degrees_new_title" = "You have a new credential";
+"credentials_degrees_new_title" = "You have new credential(s)";
 "credentials_degrees_new_view_btn" = "VIEW";
 "credentials_document_title" = "National ID Card";
 "credentials_document_identity_number" = "Identity Number";
@@ -88,10 +89,10 @@
 "credentials_detail_award" = "Award";
 "credentials_detail_result" = "Result";
 "credentials_detail_share_button" = "Share!";
-"credentials_detail_share_success" = "Successfully shared!";
+"credentials_detail_share_success" = "Credential(s) successfully shared";
 "credentials_empty_title" = "Connect to an organization to receive your credentials";
 "credentials_empty_subtitle" = "Receive, store and share your digital credentials";
-"credentials_detail_national_id_card" = "National ID Card";
+"credentials_detail_national_id_card" = "Government ID";
 "credentials_detail_identity_number" = "Identity Number";
 "credentials_detail_date_of_birth" = "Date of Birth";
 "credentials_detail_expiration_date" = "Expiration Date";
@@ -120,16 +121,16 @@
 
 // <!-- Settings -->
 "settings_nav_title" = "Settings";
-"settings_backup_title" = "Backup Data";
-"settings_backup_subtitle" = "Please create backup now!";
+"settings_backup_title" = "Backup Account";
+"settings_backup_subtitle" = "Create a backup now";
 "settings_security_title" = "Security";
-"settings_security_subtitle" = "Set Up Biometrics and PIN Code";
+"settings_security_subtitle" = "Secure app with a Pin or Biometrics";
 "settings_pin_title" = "PIN Code";
 "settings_pin_subtitle" = "Change the code to unlock this app";
 "settings_support_title" = "Support";
-"settings_support_subtitle" = "Do you have any doubts?";
+"settings_support_subtitle" = "Get in touch with us";
 "settings_about_title" = "About";
-"settings_about_subtitle" = "Legal, Versions and Network Info";
+"settings_about_subtitle" = "Legal and version information";
 
 // <!-- Login: Welcome -->
 "welcome_title" = "Welcome";
@@ -150,20 +151,20 @@
 // <!-- Login: Terms -->
 "terms_lead" = "Account Creation";
 "terms_title" = "Terms \& Conditions";
-"terms_subtitle" = "To continue creating your account you must accept the following terms and conditions.";
+"terms_subtitle" = "Please indicate that you have read and agree to the Terms and Conditions and the Privacy Policy Agreement.";
 "terms_accept_terms" = "<b><font color=#000000>Accept </font><font color=#FF002D>Terms and Conditions</font></b>";
 "terms_accept_privacy" = "<b><font color=#000000>Accept </font><font color=#FF002D>Privacy Policy Agreement</font></b>";
 
 // <!-- Login: Register -->
 "register_nav_title" = "Your Seed Phrase";
-"register_subtitle" = "Your seed phrase is your personal key that gives you access to your account.";
-"register_warning" = "Without it you will not be able to access any of your records or funds in case you lose your device or quite the app.\n\nPlease store your seed phrase securely before proceeding.";
-"register_accept_terms" = "I understand that if I lose my seed phrase that I will not be able to access my account.";
-"register_seed_text" = "%1$d.%2$@";
+"register_subtitle" = "Your Seed Phrase is used to generate and recover your account.";
+"register_warning" = "Please save these 12 words on a piece of paper. The order is important. This seed will allow you to recover your account.";
+"register_accept_terms" = "I understand that if I lose my seed phrase that I will not be able to recover my account.";
+"register_seed_text" = "%1$d. %2$@";
 
 // <!-- Login: Login -->
 "login_nav_title" = "Verify Seed Phrase";
-"login_subtitle" = "Enter the correct words of your seed phrase bellow.";
+"login_subtitle" = "Enter the following words to verify your Seed Phrase.";
 "login_input_title" = "Word \#%1$d";
 "login_input_title_empty" = "Word";
 "login_phrase_invalid_error" = "Words were invalid. Please try again.";
@@ -207,7 +208,7 @@
 "credentialpay_card_name" = "Cardholder Name";
 
 // <!-- About -->
-"about_tite"= "About us";
+"about_tite"= "About";
 "about_atala_version"= "Atala PRISM version";
 "about_testing"= "- Testing";
 "about_terms"= "Terms & Conditions";
@@ -219,7 +220,7 @@
 "about_copyright" = "©2020 IOHK";
 
 // <!-- Proof Requests -->
-"proof_request_description_first"= "Want you to share the following credentials with them:";
+"proof_request_description_first"= "Share the following information to process your credential";
 "proof_request_id_credential"= "\n• ID Credential ";
 "proof_request_university_credential"= "\n• University Credential ";
 "proof_request_employment_credential"= "\n• Employment Credential ";
@@ -238,18 +239,18 @@
 "security_title" = "Security";
 "security_use_touch_id" = "Use Touch & Face ID as Pin";
 "security_change_pin" = "Change Pin Code";
-"security_setting_up" = "Setting up";
+"security_setting_up" = "Setup";
 "security_touch_id" = "Touch ID";
 "security_pin_code_title" = "Pin Code";
 "security_face_id" = "Face ID";
 "security_step_one" = "1 of 2";
 "security_step_two" = "2 of 2";
-"security_description_touch_id" = "With Touch ID you can login easily and fast without password.\n\nYou must configure it in your operating system, open your configuration options.";
-"security_description_face_id" = "With Face ID you can login easily and fast without password.\n\nYou must configure it in your operating system, open your configuration options.";
-"security_allow_touch_id" = "Allow Touch ID";
-"security_allow_face_id" = "Allow Face ID";
+"security_description_touch_id" = "Touch ID enables quick and easy login without a password. Please enable the App to use Touch ID under Settings";
+"security_description_face_id" = "Face ID enables quick and easy login without a password. Please enable the App to use Touch ID under Settings";
+"security_allow_touch_id" = "Enable Touch ID";
+"security_allow_face_id" = "Enable Face ID";
 "security_not_now" = "Not now";
-"security_setup_pin" = "To set up your PIN create a 4 digit code then\nconfirm it below";
+"security_setup_pin" = "Enter a 4 digit code";
 "security_pin_code" = "PIN CODE";
 "security_confirm_pin" = "CONFIRM YOUR PIN CODE";
 "security_pin_match" = "Your PIN Codes are the same";
@@ -258,7 +259,7 @@
 "security_unerroled_touch_id"= "Touch ID is not configured on your device";
 "security_unerroled_face_id" = "Face ID is not configured on your device";
 "security_change_pin_code" = "Change Pin Code";
-"security_change_pin_descr" = "White your current PIN, then create a new 4 digit code and confirm it below";
+"security_change_pin_descr" = "Write your current PIN, then create a new 4 digit code and confirm it below";
 "security_current_pin" = "CURRENT PIN CODE";
 "security_new_pin" = "NEW PIN CODE";
 "security_confirm_new_pin" = "CONFIRM YOUR NEW PIN CODE";
@@ -267,9 +268,12 @@
 "security_change_pin_error" = "Your current PIN is incorrect";
 
 // <!-- Unlock -->
-"unlock_title" = "Write your PIN";
-"unlock_pin_error" = "Your PIN is incorrect";
+"unlock_title" = "Enter your PIN";
+"unlock_pin_error" = "Incorrect PIN code";
 "unlock_unerroled_touch_id"= "Touch ID is not configured on your device";
 "unlock_unerroled_face_id" = "Face ID is not configured on your device";
 "unlock_biometrics_error" = "You could not be identified, please use your PIN";
 "unlock_app" = "Unlock your app";
+"unlock_touch_id_cancel" = "Touch ID has been cancelled. Please enter your PIN code instead";
+"unlock_touch_id_error" = "Fingerprint recognition failed";
+"unlock_face_id_error" = "Face recognition failed";

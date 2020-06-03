@@ -59,7 +59,7 @@ class SecurityViewController: ListingBaseViewController {
     override var presenter: BasePresenter { return presenterImpl }
     
     override func navBarCustomStyle() -> NavBarCustomStyle {
-        return NavBarCustomStyle(hasNavBar: true, title: "security_title".localize(), hasBackButton: true)
+        return NavBarCustomStyle(hasNavBar: true, title: nil, hasBackButton: true)
     }
     
     override func viewDidLoad() {

@@ -27,12 +27,15 @@ class LockViewController: BaseViewController {
         // Setup
         setupButtons()
         setupViews()
-        ViewControllerUtils.addTapToDismissKeyboard(view: self)
+        if sharedMemory.loggedUser?.appBiometrics ?? false {
+            presenterImpl.tappedBiometrics()
+        }
+
     }
     
     func setupButtons() {
         keyboardButtons.forEach { $0.addRoundCorners(radius: 4) }
-        biometricsBttn.isHidden = !(sharedMemory.loggedUser?.appBiometrics ?? false)
+        biometricsBttn.isHidden = true
     }
     
     func setupViews() {

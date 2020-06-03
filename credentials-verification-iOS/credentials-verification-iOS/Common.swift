@@ -17,7 +17,7 @@ struct Common {
 
     // Api
     static var URL_API = "develop.atalaprism.io:50051"
-    static let URL_TERMS = "https://www.amazon.com/gp/help/customer/display.html/ref=hp_nodeid_596184_terms?nodeId=14309551"
-    static let URL_PRIVACY = "https://www.amazon.com/gp/help/customer/display.html/ref=hp_nodeid_596184_terms?nodeId=14309551"
+    static let URL_TERMS = "https://\(URL_API.prefix(upTo: URL_API.lastIndex(of: ":")!))/terms-and-conditions"
+    static let URL_PRIVACY = "https://\(URL_API.prefix(upTo: URL_API.lastIndex(of: ":")!))/privacy-policy"
     static let URL_SUPPORT = "https://www.amazon.com/gp/help/customer/display.html/ref=hp_nodeid_596184_terms?nodeId=14309551"
 }

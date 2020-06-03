@@ -87,6 +87,7 @@ class ViewControllerUtils {
     public static func addTapToDismissKeyboard(view: UIViewController) {
 
         let tapGesture = UITapGestureRecognizer(target: view, action: #selector(view.hideKeyboard))
+        tapGesture.cancelsTouchesInView = false
         view.view.addGestureRecognizer(tapGesture)
     }
 

@@ -195,7 +195,7 @@ class ConnectionsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
                 self.tappedBackButton()
                 self.actionPullToRefresh()
             })]
-            self.viewImpl?.showSuccessMessage(doShow: true, message: "credentials_detail_share_success".localize(), actions: actions)
+            self.viewImpl?.showSuccessMessage(doShow: true, message: "", title: "credentials_detail_share_success".localize(), actions: actions)
         }, error: { error in
             self.viewImpl?.config(isLoading: false)
             self.viewImpl?.showErrorMessage(doShow: true, message: "service_error".localize())

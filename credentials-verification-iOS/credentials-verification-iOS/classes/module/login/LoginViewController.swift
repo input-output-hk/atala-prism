@@ -11,7 +11,7 @@ class LoginViewController: BaseViewController {
     @IBOutlet weak var textFieldUrl: TextFieldTitledView!
 
     override func navBarCustomStyle() -> NavBarCustomStyle {
-        return NavBarCustomStyle(hasNavBar: true, title: "login_nav_title".localize(), hasBackButton: true)
+        return NavBarCustomStyle(hasNavBar: true, title: nil, hasBackButton: true)
     }
 
     var textFields: [TextFieldTitledView] {
