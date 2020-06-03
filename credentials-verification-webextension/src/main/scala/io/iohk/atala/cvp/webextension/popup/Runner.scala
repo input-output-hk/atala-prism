@@ -1,9 +1,9 @@
 package io.iohk.atala.cvp.webextension.popup
 
 import java.util.Base64
+
 import io.iohk.atala.cvp.webextension.Config
 import io.iohk.atala.cvp.webextension.background.BackgroundAPI
-import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorClientService
 import io.iohk.atala.cvp.webextension.background.wallet.{Role, WalletManager, WalletStatus}
 import io.iohk.atala.cvp.webextension.common.{ECKeyOperation, I18NMessages, Mnemonic}
 import io.iohk.atala.cvp.webextension.facades.elliptic.EC
@@ -11,6 +11,7 @@ import org.scalajs.dom
 import org.scalajs.dom.Event
 import org.scalajs.dom.raw._
 import typings.std.{console, document}
+
 import scala.concurrent.{ExecutionContext, Future}
 import scala.scalajs.js
 import scala.util.{Failure, Success}
@@ -129,34 +130,9 @@ class Runner(messages: I18NMessages, backgroundAPI: BackgroundAPI)(implicit ec: 
   }
 
   def run(): Unit = {
-    log("This was run by the popup script")
-
-    val closeButton = dom.document.getElementById("close-button")
-
-    val recoverBtn = document.getElementById("recover").asInstanceOf[HTMLDivElement]
-    recoverBtn.addEventListener("click", (ev: Event) => recover(), true)
-
-    val registerBtn = document.getElementById("registrationScreen").asInstanceOf[HTMLDivElement]
-    val divElement = dom.document.getElementById("containerId").asInstanceOf[HTMLDivElement]
-
-    registerBtn.addEventListener(
-      "click",
-      (ev: Event) => RegistrationView(backgroundAPI).registrationScreen(divElement),
-      true
-    )
-
-    log("Getting wallet status from the popup script")
-    getWalletStatus()
-    if (closeButton != null) {
-      loadRequests()
-      loadKeys()
-      closeButton.addEventListener("click", (ev: Event) => lockWallet(), true)
-    } else {
-      val openButton = dom.document.getElementById("open-button")
-      openButton.addEventListener("click", (ev: Event) => unlockWallet(), true)
+    dom.window.onload = _ => {
+      dom.document.body = InitialWalletView(backgroundAPI).htmlBody
     }
-
-    testEc()
   }
 
   def testEc(): Unit = {
@@ -194,53 +170,6 @@ class Runner(messages: I18NMessages, backgroundAPI: BackgroundAPI)(implicit ec: 
   private def log(msg: String): Unit = {
     println(s"popup: $msg")
   }
-  private def recover() = {
-    console.info("**************************recover*****************************")
-    val divElement = dom.document.getElementById("containerId").asInstanceOf[HTMLDivElement]
-    divElement.innerHTML =
-      """<div class="div__btngroup">
-                             |<div class="div__passphrase">
-                             |<label class="_label">Enter Passphrase: <div class="input__container">
-                             |<input class="_input" id="passphraseField" type="text" placeholder="12-word passphrase" autocorrect="off" autocapitalize="off" value="">
-                             |<div class="input__container"><label class="_label_update" id="walletStatus">
-                             |</div>
-                             |</label>
-                             |</div>
-                             |</div>
-                             |<div class="div__btngroup">
-                             |<div class="div__btn" id="openWallet">
-                             | Open wallet</div>
-                             |</div>""".stripMargin
-
-    val openWallet = document.getElementById("openWallet").asInstanceOf[HTMLDivElement]
-
-    openWallet.addEventListener("click", (ev: Event) => create(), true)
-
-  }
-
-  private def create(): Unit = {
-    val seed: HTMLInputElement = document.getElementById("passphraseField").asInstanceOf[HTMLInputElement]
-    val mnemonic = Mnemonic(seed.value)
-    backgroundAPI.createWallet(WalletManager.FIXME_WALLET_PASSWORD, mnemonic, Role.Verifier, "IOHK", Array())
-    val status = document.getElementById("walletStatus").asInstanceOf[HTMLLabelElement]
-    status.textContent = "Wallet Created"
-  }
-
-  //TODO remove this
-  private def generate() = {
-    console.info("**************************generate*****************************")
-    val h2 = dom.document.getElementById("h2").asInstanceOf[HTMLHeadingElement]
-    for {
-      // Initialize wallet based on current status
-      walletStatus <- backgroundAPI.getWalletStatus()
-      _ <- initializeWallet(walletStatus.status, h2)
-
-      // Add missing keys so default ones always exist
-      existingKeys <- backgroundAPI.listKeys()
-      missingKeys = DEFAULT_KEYS.diff(existingKeys.names.toSet)
-      _ <- Future.sequence(missingKeys.map(backgroundAPI.createKey))
-    } yield ()
-  }
 
   private def initializeWallet(walletStatus: WalletStatus, h2: HTMLHeadingElement): Future[Unit] = {
     if (walletStatus == WalletStatus.Missing) {
@@ -268,8 +197,7 @@ object Runner {
 
   def apply(config: Config)(implicit ec: ExecutionContext): Runner = {
     val messages = new I18NMessages
-    val connectorService = ConnectorClientService(config.connectorUrl)
-    val backgroundAPI = new BackgroundAPI(connectorService)
+    val backgroundAPI = new BackgroundAPI()
     new Runner(messages, backgroundAPI)
   }
 }

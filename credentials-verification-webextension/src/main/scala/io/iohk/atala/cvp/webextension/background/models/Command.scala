@@ -43,6 +43,7 @@ private[background] object Command {
 
   final case class UnlockWallet(password: String) extends CommandWithResponse[Unit]
   final case class LockWallet() extends CommandWithResponse[Unit]
+  final case class RecoverWallet(password: String, mnemonic: Mnemonic) extends CommandWithResponse[Unit]
 
   def decode(string: String): Try[Command] = {
     parse(string).toTry

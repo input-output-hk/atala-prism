@@ -47,6 +47,8 @@ private[background] class CommandProcessor(
         walletManager.getStatus().map(WalletStatusResult.apply).map(CommandResponse.apply)
       case Command.CreateWallet(password, mnemonic, role, organisationName, logo) =>
         walletManager.createWallet(password, mnemonic, role, organisationName, logo).map(CommandResponse.apply)
+      case Command.RecoverWallet(password, mnemonic) =>
+        walletManager.recoverWallet(password, mnemonic).map(CommandResponse.apply)
       case Command.UnlockWallet(password) =>
         for {
           _ <- walletManager.unlock(password)

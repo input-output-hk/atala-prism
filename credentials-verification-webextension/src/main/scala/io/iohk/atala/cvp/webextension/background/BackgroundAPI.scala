@@ -1,6 +1,5 @@
 package io.iohk.atala.cvp.webextension.background
 
-import com.google.protobuf.ByteString
 import io.circe.Decoder
 import io.circe.generic.auto._
 import io.circe.parser.parse
@@ -12,11 +11,8 @@ import io.iohk.atala.cvp.webextension.background.models.Command.{
   WalletStatusResult
 }
 import io.iohk.atala.cvp.webextension.background.models.{Command, CommandWithResponse, Event}
-import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorClientService
 import io.iohk.atala.cvp.webextension.background.wallet.Role
-import io.iohk.atala.cvp.webextension.common.{ECKeyOperation, Mnemonic}
-import io.iohk.prism.protos.connector_api.RegisterDIDRequest
-
+import io.iohk.atala.cvp.webextension.common.Mnemonic
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.scalajs.js
 import scala.util.{Failure, Success, Try}
@@ -33,7 +29,7 @@ import scala.util.{Failure, Success, Try}
   *
   * The BackgroundAPI abstracts all that complex logic from the caller and gives a simple API based on futures.
   */
-class BackgroundAPI(connectorClient: ConnectorClientService)(implicit ec: ExecutionContext) {
+class BackgroundAPI()(implicit ec: ExecutionContext) {
 
   def sendBrowserNotification(title: String, message: String): Future[Unit] = {
     val command = Command.SendBrowserNotification(title, message)
@@ -69,6 +65,13 @@ class BackgroundAPI(connectorClient: ConnectorClientService)(implicit ec: Execut
     process(Command.GetWalletStatus)
   }
 
+  def recoverWallet(
+      password: String,
+      mnemonic: Mnemonic
+  ): Future[Unit] = {
+    process(Command.RecoverWallet(password, mnemonic)).map(_ => ())
+  }
+
   def createWallet(
       password: String,
       mnemonic: Mnemonic,
@@ -76,12 +79,7 @@ class BackgroundAPI(connectorClient: ConnectorClientService)(implicit ec: Execut
       organisationName: String,
       logo: Array[Byte]
   ): Future[Unit] = {
-    for {
-      _ <- process(Command.CreateWallet(password, mnemonic, role, organisationName, logo))
-      _ <- registerDid(mnemonic, role, organisationName, logo)
-    } yield {
-      ()
-    }
+    process(Command.CreateWallet(password, mnemonic, role, organisationName, logo)).map(_ => ())
   }
 
   def unlockWallet(password: String): Future[Unit] = {
@@ -90,22 +88,6 @@ class BackgroundAPI(connectorClient: ConnectorClientService)(implicit ec: Execut
 
   def lockWallet(): Future[Unit] = {
     process(Command.LockWallet())
-  }
-
-  private def registerDid(mnemonic: Mnemonic, role: Role, organisationName: String, logo: Array[Byte]): Future[Unit] = {
-    val connectRole = Role.toConnectorApiRole(role)
-    val logoByteString = ByteString.copyFrom(logo)
-    val registerDIDRequest =
-      RegisterDIDRequest(
-        Some(ECKeyOperation.toSignedAtalaOperation(mnemonic)),
-        connectRole,
-        organisationName,
-        logoByteString
-      )
-    connectorClient.registerDID(registerDIDRequest).map { response =>
-      println(s"*****RegisteredDID******=${response.did}")
-      ()
-    }
   }
 
   private def process[Resp](command: CommandWithResponse[Resp])(implicit dec: Decoder[Resp]): Future[Resp] = {

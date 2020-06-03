@@ -118,7 +118,9 @@ npmDependencies in Compile ++= Seq(
   "bn.js" -> "5.1.1", // already provides types
   "elliptic" -> "6.5.2",
   "@types/elliptic" -> "6.4.12",
-  "grpc-web" -> "1.0.7"
+  "grpc-web" -> "1.0.7",
+  "bitcoinjs-lib" -> "5.1.8",
+  "hash.js" -> "1.1.7"
 )
 
 libraryDependencies += "org.scalatest" %%% "scalatest" % scalatest % "test"

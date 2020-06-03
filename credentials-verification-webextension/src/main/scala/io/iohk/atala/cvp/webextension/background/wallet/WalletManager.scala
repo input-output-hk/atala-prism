@@ -1,19 +1,20 @@
 package io.iohk.atala.cvp.webextension.background.wallet
 
 import java.util.Base64
-
+import com.google.protobuf.ByteString
 import io.circe.Json
 import io.circe.generic.auto._
 import io.circe.parser.parse
 import io.circe.syntax._
 import io.iohk.atala.cvp.webextension.background.services.browser.BrowserActionService
+import io.iohk.atala.cvp.webextension.background.services.connector.ConnectorClientService
 import io.iohk.atala.cvp.webextension.background.services.storage.StorageService
-import io.iohk.atala.cvp.webextension.common.Mnemonic
+import io.iohk.atala.cvp.webextension.common.{ECKeyOperation, Mnemonic}
 import io.iohk.atala.cvp.webextension.facades.elliptic.{EC, KeyPair}
-import io.iohk.prism.protos.connector_api.RegisterDIDRequest
+import io.iohk.prism.protos.connector_api.{GetCurrentUserRequest, GetCurrentUserResponse, RegisterDIDRequest}
 import org.scalajs.dom.crypto
 import org.scalajs.dom.crypto.{CryptoKey, KeyFormat}
-
+import scala.scalajs.js.JSConverters._
 import scala.concurrent.{ExecutionContext, Future, Promise}
 import scala.scalajs.js
 import scala.scalajs.js.typedarray.{ArrayBuffer, _}
@@ -58,6 +59,13 @@ object Role {
     }
   }
 
+  def toRole(role: GetCurrentUserResponse.Role): Role = {
+    role match {
+      case GetCurrentUserResponse.Role.issuer => Issuer
+      case GetCurrentUserResponse.Role.verifier => Verifier
+    }
+  }
+
   def toRole(value: String): Role = {
     value match {
       case "Issuer" => Issuer
@@ -78,8 +86,12 @@ case class WalletData(
   }
 }
 
-private[background] class WalletManager(browserActionService: BrowserActionService, storageService: StorageService)(
-    implicit ectx: ExecutionContext
+private[background] class WalletManager(
+    browserActionService: BrowserActionService,
+    storageService: StorageService,
+    connectorClientService: ConnectorClientService
+)(implicit
+    ectx: ExecutionContext
 ) {
   val ec: EC = new EC(WalletManager.CURVE_NAME)
 
@@ -250,6 +262,7 @@ private[background] class WalletManager(browserActionService: BrowserActionServi
       newWalletData = WalletData(Map.empty, mnemonic, organisationName, role, logo)
       _ <- save(aesKey, newWalletData)
       _ = updateStorageKeyAndWalletData(aesKey, newWalletData)
+      _ <- registerDid(mnemonic, role, organisationName, logo)
     } yield ()
 
     result.onComplete {
@@ -257,6 +270,25 @@ private[background] class WalletManager(browserActionService: BrowserActionServi
       case Failure(exception) => println("Failed creating wallet"); exception.printStackTrace()
     }
 
+    result
+  }
+
+  def recoverWallet(
+      password: String,
+      mnemonic: Mnemonic
+  ): Future[Unit] = {
+    val result = for {
+      response <- recoverAccount(mnemonic)
+      aesKey <- generateSecretKey(password)
+      newWalletData = WalletData(Map.empty, mnemonic, response.name, Role.toRole(response.role), response.logo.bytes)
+      _ <- save(aesKey, newWalletData)
+      _ = updateStorageKeyAndWalletData(aesKey, newWalletData)
+    } yield ()
+
+    result.onComplete {
+      case Success(_) => println("Successfully recovered wallet")
+      case Failure(exception) => println("Failed recovering wallet"); exception.printStackTrace()
+    }
     result
   }
 
@@ -302,5 +334,33 @@ private[background] class WalletManager(browserActionService: BrowserActionServi
   def lock(): Unit = {
     this.storageKey = None
     this.walletData = None
+  }
+
+  private def registerDid(mnemonic: Mnemonic, role: Role, organisationName: String, logo: Array[Byte]): Future[Unit] = {
+    val connectRole = Role.toConnectorApiRole(role)
+    val logoByteString = ByteString.copyFrom(logo)
+    val registerDIDRequest =
+      RegisterDIDRequest(
+        Some(ECKeyOperation.toSignedAtalaOperation(mnemonic)),
+        connectRole,
+        organisationName,
+        logoByteString
+      )
+    connectorClientService.registerDID(registerDIDRequest).map { response =>
+      println(s"*****RegisteredDID******=${response.did}")
+      ()
+    }
+  }
+
+  private def recoverAccount(mnemonic: Mnemonic): Future[GetCurrentUserResponse] = {
+    val recoverWallet = RecoverWallet(mnemonic)
+    val requestNonce = recoverWallet.requestNonce()
+    val request = GetCurrentUserRequest()
+    val did = "did" -> recoverWallet.createDIDId()
+    val didKeyId = "didKeyId" -> ECKeyOperation.firstMasterKeyId
+    val didSignature = "didSignature" -> recoverWallet.getUrlEncodedDIDSignature(requestNonce, request)
+    val requestNoncePair = "requestNonce" -> recoverWallet.getUrlEncodedRequestNonce(requestNonce)
+    val metadata = Map(did, didKeyId, didSignature, requestNoncePair)
+    connectorClientService.getCurrentUser(request, metadata.toJSDictionary)
   }
 }

@@ -1,47 +1,54 @@
 package io.iohk.atala.cvp.webextension.popup
 
 import io.iohk.atala.cvp.webextension.background.BackgroundAPI
-import io.iohk.atala.cvp.webextension.background.wallet.{Role, WalletManager}
+import io.iohk.atala.cvp.webextension.background.wallet.WalletManager
 import io.iohk.atala.cvp.webextension.common.Mnemonic
-import org.scalajs.dom.Event
-import org.scalajs.dom.raw.{HTMLDivElement, HTMLInputElement, HTMLLabelElement}
-import typings.std.{console, document}
+import org.scalajs.dom.html.{Div, Input}
+import scalatags.JsDom.all.{div, _}
+import typings.std.console
 
 class RecoveryView(backgroundAPI: BackgroundAPI) {
 
-  //TODO When working on recovery story
-  def recover(divElement: HTMLDivElement) = {
+  def recover(divElement: Div) = {
     console.info("**************************recover*****************************")
-    divElement.innerHTML =
-      """<div class="div__btngroup">
-        |<div class="div__passphrase">
-        |<label class="_label">Enter Passphrase: <div class="input__container">
-        |<input class="_input" id="passphraseField" type="text" placeholder="12-word passphrase" autocorrect="off" autocapitalize="off" value="">
-        |<div class="input__container"><label class="_label_update" id="walletStatus">
-        |</div>
-        |</label>
-        |</div>
-        |</div>
-        |<div class="div__btngroup">
-        |<div class="div__btn" id="openWallet">
-        | Open wallet</div>
-        |</div>""".stripMargin
 
-    val openWallet =
-      document.getElementById("openWallet").asInstanceOf[HTMLDivElement]
+    val seedPhraseInput =
+      input(cls := "_input", id := "seedPhrase", `type` := "text", placeholder := "12-word seed phrase").render
+    val recoverWalletDiv = div(
+      cls := "div__btn",
+      id := "recoverWallet",
+      "Recover wallet",
+      onclick := { () =>
+        recoverWallet(seedPhraseInput)
+      }
+    ).render
 
-    openWallet.addEventListener("click", (ev: Event) => create(), true)
+    val recover = {
+      div(
+        cls := "div__btngroup",
+        div(
+          cls := "div__passphrase",
+          label(
+            cls := "_label",
+            "Enter Passphrase:",
+            div(
+              cls := "input__container",
+              seedPhraseInput,
+              div(cls := "input__container", label(cls := "_label_update", id := "walletStatus"))
+            )
+          )
+        ),
+        div(cls := "div__btngroup", recoverWalletDiv)
+      )
+    }.render
 
+    divElement.innerHTML = ""
+    divElement.appendChild(recover)
   }
 
-  private def create(): Unit = {
-    val seed: HTMLInputElement =
-      document.getElementById("passphraseField").asInstanceOf[HTMLInputElement]
-    val mnemonic = Mnemonic(seed.value)
-    backgroundAPI.createWallet(WalletManager.FIXME_WALLET_PASSWORD, mnemonic, Role.Verifier, "IOHK", Array())
-    val status =
-      document.getElementById("walletStatus").asInstanceOf[HTMLLabelElement]
-    status.textContent = "Wallet Created"
+  private def recoverWallet(seedPhrase: Input): Unit = {
+    val mnemonic = Mnemonic(seedPhrase.value)
+    backgroundAPI.recoverWallet(WalletManager.FIXME_WALLET_PASSWORD, mnemonic)
   }
 }
 

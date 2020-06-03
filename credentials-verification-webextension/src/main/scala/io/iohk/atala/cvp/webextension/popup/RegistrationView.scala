@@ -12,7 +12,7 @@ import typings.std.console
 import scala.scalajs.js.typedarray.{ArrayBuffer, TypedArrayBuffer}
 class RegistrationView(backgroundAPI: BackgroundAPI) {
 
-  def registrationScreen(divElement: HTMLDivElement): Unit = {
+  def registrationScreen(divElement: Div): Unit = {
     console.info("**************************organisationScreen*****************************")
     val mnemonic = Mnemonic()
     lazy val seedDiv: Div = div(`class` := "input__container")(mnemonic.seed).render

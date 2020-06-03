@@ -34,6 +34,6 @@ object Main {
 
   @JSExportTopLevel("runOnPopup")
   def runOnPopup(): Unit = {
-    popup.Runner(config).popup()
+    popup.Runner(config).run()
   }
 }
