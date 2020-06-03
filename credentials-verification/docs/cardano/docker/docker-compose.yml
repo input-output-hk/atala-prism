@@ -18,8 +18,7 @@ services:
       - "5433:5432"
 
   cardano-node:
-    # Version 1.11.0
-    image: inputoutput/cardano-node:376562b0cb6dfde4b9f41e9f3ccea45cbfb41c22
+    image: inputoutput/cardano-node:1.12.0
     environment:
       - NETWORK=${NETWORK:-testnet}
     volumes:
@@ -27,8 +26,7 @@ services:
       - node-ipc:/ipc
 
   cardano-db-sync:
-    # Version 2.0.0
-    image: inputoutput/cardano-db-sync:bf1b61be25802b69191ac3de04ed377a972cc809
+    image: inputoutput/cardano-db-sync:2.0.0
     environment:
       - NETWORK=${NETWORK:-testnet}
       - POSTGRES_HOST=postgres
