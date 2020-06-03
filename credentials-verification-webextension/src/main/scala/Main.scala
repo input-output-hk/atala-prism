@@ -1,4 +1,5 @@
 import io.iohk.atala.cvp.webextension._
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.scalajs.js.annotation.JSExportTopLevel
 
@@ -12,10 +13,10 @@ import scala.scalajs.js.annotation.JSExportTopLevel
   */
 object Main {
 
-  private val config = if (io.iohk.atala.cvp.webextension.BuildInfo.production) {
-    Config.Default
+  private val config = if (BuildInfo.production) {
+    Config.default(BuildInfo.activeTabContextScripts)
   } else {
-    Config.Dev
+    Config.dev(BuildInfo.activeTabContextScripts)
   }
 
   def main(args: Array[String]): Unit = {
@@ -24,7 +25,12 @@ object Main {
 
   @JSExportTopLevel("runOnTab")
   def runOnTab(): Unit = {
-    activetab.Runner(config).run()
+    activetab.isolated.Runner(config).run()
+  }
+
+  @JSExportTopLevel("runOnCurrentTabContext")
+  def runOnCurrentTabContext(): Unit = {
+    activetab.context.Runner(config).run()
   }
 
   @JSExportTopLevel("runOnBackground")

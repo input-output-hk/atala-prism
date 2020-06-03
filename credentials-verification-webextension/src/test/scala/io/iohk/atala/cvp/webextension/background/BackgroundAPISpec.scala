@@ -34,7 +34,7 @@ class BackgroundAPISpec extends AsyncWordSpec with BeforeAndAfterAll with Before
 
     Runner(
       Config(
-        ActiveTabConfig(),
+        ActiveTabConfig(List.empty),
         connectorUrl = "http://localhost:10000/test"
       ),
       FakeConnectorClientService

@@ -21,13 +21,6 @@ scalacOptions ++= Seq(
 
 enablePlugins(ChromeSbtPlugin, BuildInfoPlugin, ScalaJSBundlerPlugin, ScalablyTypedConverterPlugin)
 
-// build-info
-buildInfoPackage := "io.iohk.atala.cvp.webextension"
-buildInfoKeys := Seq[BuildInfoKey](name)
-buildInfoKeys ++= Seq[BuildInfoKey](
-  "production" -> (sys.env.getOrElse("PROD", "false") == "true")
-)
-
 // scala-js-chrome
 scalaJSLinkerConfig := scalaJSLinkerConfig.value.withRelativizeSourceMapBase(
   Some((Compile / fastOptJS / artifactPath).value.toURI)
@@ -51,49 +44,61 @@ artifactPath in (Compile, fullOptJS) := {
   (crossTarget in (Compile, fullOptJS)).value / "main.js"
 }
 
+// scripts used on all modules
+val manifestCommonScripts = List("scripts/common.js", "main-bundle.js")
+
+// The script that runs on the current tab context needs the common scripts to execute scalajs code.
+val manifestActiveTabContextScripts = manifestCommonScripts :+ "scripts/active-tab-context-script.js"
+
 chromeManifest := new ExtensionManifest {
   override val name = "__MSG_extensionName__" // NOTE: i18n on the manifest is not supported on firefox
   override val version = Keys.version.value
   override val description = Some(
-    "ATALA Browser Wallet Extension" //
+    "ATALA Browser Wallet Extension"
   )
   override val icons = Chrome.icons("icons", "app.png", Set(48, 96, 128))
 
   // TODO: REPLACE ME, use only the minimum required permissions
-  override val permissions =
-    Set[Permission](
-      API.Storage,
-      API.Notifications,
-      API.Alarms
-    )
+  override val permissions = Set[Permission](
+    API.Storage,
+    API.Notifications,
+    API.Alarms
+  )
 
   override val defaultLocale: Option[String] = Some("en")
 
   override val browserAction: Option[BrowserAction] =
     Some(BrowserAction(icons, Some("Popup action message"), Some("popup.html")))
 
-  // scripts used on all modules
-  val commonScripts = List("scripts/common.js", "main-bundle.js")
+  override val background = Background(
+    scripts = manifestCommonScripts ::: List("scripts/background-script.js")
+  )
 
-  override val background =
-    Background(
-      scripts = commonScripts ::: List("scripts/background-script.js")
+  override val contentScripts: List[ContentScript] = List(
+    ContentScript(
+      matches = List(
+        "*://*.atalaprism.io/"
+      ),
+      css = List("css/active-tab.css"),
+      js = manifestCommonScripts :+ "scripts/active-tab-script.js"
     )
+  )
 
-  override val contentScripts: List[ContentScript] =
-    List(
-      ContentScript(
-        matches = List(
-          "https://iohk.io/*"
-        ),
-        css = List("css/active-tab.css"),
-        js = commonScripts ::: List("scripts/active-tab-script.js")
-      )
-    )
-
-  override val webAccessibleResources = List("icons/*")
+  // the script running on the tab context requires the common scripts
+  override val webAccessibleResources = "icons/*" :: manifestActiveTabContextScripts
 }
 
+// build-info
+buildInfoPackage := "io.iohk.atala.cvp.webextension"
+buildInfoKeys := Seq[BuildInfoKey](name)
+buildInfoKeys ++= Seq[BuildInfoKey](
+  "production" -> (sys.env.getOrElse("PROD", "false") == "true"),
+  // it's simpler to propagate the required js scripts from this file to avoid hardcoding
+  // them on the code that actually injects them.
+  "activeTabContextScripts" -> manifestActiveTabContextScripts
+)
+
+// dependencies
 val circe = "0.13.0"
 val grpcWebVersion = "0.3.0"
 val scalatest = "3.1.1"

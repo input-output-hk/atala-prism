@@ -12,19 +12,18 @@ case class Config(
     connectorUrl: String
 )
 
-// TODO: REPLACE ME
 object Config {
 
-  val Default: Config = {
+  def default(activeTabContextScripts: Seq[String]): Config = {
     Config(
-      ActiveTabConfig(),
-      connectorUrl = "http://cvp-develop.cef.iohkdev.io"
+      ActiveTabConfig(contextScripts = activeTabContextScripts),
+      connectorUrl = "http://console-develop.atalaprism.io/"
     )
   }
 
-  val Dev: Config = {
+  def dev(activeTabContextScripts: Seq[String]): Config = {
     Config(
-      ActiveTabConfig(),
+      ActiveTabConfig(contextScripts = activeTabContextScripts),
       connectorUrl = "http://localhost:10000"
     )
   }
