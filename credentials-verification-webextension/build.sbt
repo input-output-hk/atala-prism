@@ -95,7 +95,7 @@ chromeManifest := new ExtensionManifest {
 }
 
 val circe = "0.13.0"
-val grpcWebVersion = "0.2.0+21-b26c9e0a-SNAPSHOT"
+val grpcWebVersion = "0.3.0"
 val scalatest = "3.1.1"
 val scalatagsVersion = "0.9.1"
 

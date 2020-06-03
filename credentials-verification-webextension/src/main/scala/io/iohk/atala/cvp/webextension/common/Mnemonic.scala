@@ -2,12 +2,10 @@ package io.iohk.atala.cvp.webextension.common
 
 import typings.bip39.{mod => bip39}
 import typings.node.Buffer
+
 import scala.concurrent.Future
 
 case class Mnemonic(seed: String) {
-  def toHex: String = {
-    bip39.mnemonicToSeedSync(seed).toString("hex")
-  }
   def toSyncBuffer: Buffer = {
     bip39.mnemonicToSeedSync(seed)
   }
