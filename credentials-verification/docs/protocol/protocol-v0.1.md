@@ -341,6 +341,8 @@ Malicious issuer, running its own node, can create an Atala Block including key 
 
 We don't have a solution for that problem - but the protocol assumes some level of trust towards the issuer anyways. If they want to make a credential invalid they don't need to launch any attacks - they can just revoke it.
 
+The name _Late publish attack_ comes from https://medium.com/transmute-techtalk/sidetree-and-the-late-publish-attack-72e8e4e6bf53 blogpost, where it has been first described (according to our knowledge).
+
 ### DoS attack
 
 Attacker might try to disrupt the service by creating blocks with large amount of operations. To counteract that limits are imposed on the number of operations in the block.
