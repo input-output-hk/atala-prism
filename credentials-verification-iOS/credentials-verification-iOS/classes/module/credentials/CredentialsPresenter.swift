@@ -78,7 +78,7 @@ class CredentialsPresenter: ListingBasePresenter, ListingBaseTableUtilsPresenter
             detailRows?.append(CellRow(type: .detailProperty, value: ("credentials_detail_employment_policy_number".localize(), degree.policyNumber, false, degree.type)))
             detailRows?.append(CellRow(type: .detailProperty, value: ("credentials_detail_employment_policy_end_date".localize(), degree.expiryDate, true,  degree.type)))
         case .proofOfEmployment:
-            detailRows?.append(CellRow(type: .detailProperty, value: ("credentials_detail_full_name".localize(), degree.credentialSubject?.name, false, degree.type)))
+            detailRows?.append(CellRow(type: .detailProperty, value: ("credentials_detail_employee_name".localize(), degree.credentialSubject?.name, false, degree.type)))
             detailRows?.append(CellRow(type: .detailProperty, value: ("credentials_detail_employment_status".localize(), degree.employmentStatus, false, degree.type)))
             detailRows?.append(CellRow(type: .detailProperty, value: ("credentials_detail_employment_start_date".localize(), degree.issuanceDate, true,  degree.type)))
         default:

@@ -86,6 +86,7 @@
 "credentials_detail_issuance_date" = "Issuance Date";
 "credentials_detail_university_name" = "University Name";
 "credentials_detail_full_name" = "Full Name";
+"credentials_detail_employee_name" = "Employee Name";
 "credentials_detail_award" = "Award";
 "credentials_detail_result" = "Result";
 "credentials_detail_share_button" = "Share!";
